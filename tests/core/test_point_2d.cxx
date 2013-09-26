@@ -20,6 +20,7 @@ int test_point_2d( int argc, char* argv[] )
 {
   point_2d pt(10.0, 33.3);
 
+  return 0;
 }
 
 
