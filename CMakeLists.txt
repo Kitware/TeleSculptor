@@ -12,6 +12,8 @@ set(maptk_VERSION_MINOR 1)
 set(maptk_VERSION_PATCH 0)
 set(maptk_VERSION "${maptk_VERSION_MAJOR}.${maptk_VERSION_MINOR}.${maptk_VERSION_PATCH}")
 
+# add the CMake directory for CMake modules
+set(CMAKE_MODULE_PATH "${maptk_all_SOURCE_DIR}/CMake" ${CMAKE_MODULE_PATH})
 
 set(EXECUTABLE_OUTPUT_PATH    ${CMAKE_BINARY_DIR}/bin)
 if (WIN32)
