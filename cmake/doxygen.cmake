@@ -22,7 +22,7 @@ macro (create_doxygen outputdir inputdir name)
                 -D "DOXY_DOCUMENTATION_OUTPUT_PATH=${outputdir}"
                 -D "DOXY_PROJECT_NAME=${name}"
                 -D "DOXY_TAG_FILES=${ARGN}"
-                -P "${CMAKE_SOURCE_DIR}/CMake/doxygen-script.cmake"
+                -P "${CMAKE_SOURCE_DIR}/cmake/doxygen-script.cmake"
         DEPENDS ${CMAKE_SOURCE_DIR}/Doxyfile.in
                 ${outputdir}/${name}
         WORKING_DIRECTORY
