@@ -50,16 +50,16 @@ if( NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY )
 endif()
 
 # Set up the build export configuration
-set( MAPTK_EXPORT_FILE "${maptk_all_BINARY_DIR}/maptkConfig.cmake" )
+set( MAPTK_EXPORT_FILE "${maptk_all_BINARY_DIR}/maptk-config.cmake" )
 configure_file(
-  "${maptk_all_SOURCE_DIR}/maptkConfig.cmake.in"
+  "${maptk_all_SOURCE_DIR}/conf/maptk-config.cmake.in"
   "${MAPTK_EXPORT_FILE}"
 )
 
 # Set up the install export
-set( MAPTK_EXPORT_INSTALL_FILE "${maptk_all_BINARY_DIR}/CMakeFiles/maptkConfig.cmake" )
+set( MAPTK_EXPORT_INSTALL_FILE "${maptk_all_BINARY_DIR}/CMakeFiles/maptk-config.cmake" )
 configure_file(
-  "${maptk_all_SOURCE_DIR}/maptkConfig-install.cmake.in"
+  "${maptk_all_SOURCE_DIR}/conf/maptk-config-install.cmake.in"
   "${MAPTK_EXPORT_INSTALL_FILE}"
   @ONLY
 )
@@ -108,10 +108,10 @@ if( MAPTK_BUILD_TESTS )
 endif( MAPTK_BUILD_TESTS )
 
 # Configure the CMake EXPORT file during installation
-install( FILES ${maptk_all_BINARY_DIR}/CMakeFiles/maptkConfig.cmake
+install( FILES ${maptk_all_BINARY_DIR}/CMakeFiles/maptk-config.cmake
   DESTINATION lib/cmake
 )
-install( EXPORT maptk DESTINATION lib/cmake FILE maptkConfigTargets.cmake )
+install( EXPORT maptk DESTINATION lib/cmake FILE maptk-config-targets.cmake )
 
 
 # build a CPack driven installer package

@@ -1,0 +1,4 @@
+configure_file(
+    "${DOXYGEN_TEMPLATE}"
+    "${DOXY_DOCUMENTATION_OUTPUT_PATH}/${DOXY_PROJECT_NAME}/Doxyfile"
+    @ONLY)

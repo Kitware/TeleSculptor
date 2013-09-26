@@ -4,4 +4,4 @@ get_filename_component(_MAPTK_ROOT "${_SELF_DIR}/../.." ABSOLUTE)
 set( MAPTK_INCLUDE_DIRS "${_MAPTK_ROOT}/include" )
 
 # Include the library targets
-include(${_SELF_DIR}/maptkConfigTargets.cmake)
+include(${_SELF_DIR}/maptk-config-targets.cmake)
