@@ -21,7 +21,7 @@ public:
   point_2_<T>() { d_[0] = d_[1] = 0.0; }
 
   /// Constructor for a 2D point
-  point_2_<T>(T x, T y) { this->set(x,y); }
+  point_2_<T>(T x, T y) { this->set_pos(x,y); }
 
   /// Accessor for the X coordinate
   T x() const { return d_[0]; }
