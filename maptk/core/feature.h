@@ -9,65 +9,65 @@
 
 #include <iostream>
 
+#include "point_2d.h"
 #include "covariance_2d.h"
 
 namespace maptk
 {
 
 /// A representation of a 2D image feature point.
-class feature
+template <typename T>
+class feature_
 {
 public:
   /// Default Constructor
-  feature();
+  feature_<T>();
 
   /// Constructor for a feature
-  feature(double x, double y, double mag=0.0, 
-          double scale=1.0, double angle=0.0);
+  feature_<T>(const point_2_<T>& loc, T mag=0.0,
+              T scale=1.0, T angle=0.0);
 
-  // Accessor for the horizontal image coordinate
-  double x() const { return x_; }
-  // Accessor for the vertical image coordinate
-  double y() const { return y_; }
+  // Accessor for the image coordinates
+  const point_2_<T>& loc() const { return loc_; }
   // Accessor for the feature magnitude
-  double magnitude() const { return magnitude_; }
+  T magnitude() const { return magnitude_; }
   // Accessor for the feature scale
-  double scale() const { return scale_; }
+  T scale() const { return scale_; }
   // Accessor for the feature angle
-  double angle() const { return angle_; }
+  T angle() const { return angle_; }
   // Accessor for the covariance
   const covariance_2d& covar() const { return covar_; }
 
   // Set the feature position in image space
-  void set_pos(double x, double y) 
-  { 
-    x_ = x; 
-    y_ = y; 
-  }
+  void set_loc(const point_2_<T>& loc) { loc_ = loc; }
   /// Set the magnitude of the feature response
-  void set_magnitude(double magnitude) { magnitude_ = magnitude; }
+  void set_magnitude(T magnitude) { magnitude_ = magnitude; }
   /// Set the scale of the feature
-  void set_scale(double scale) { scale_ = scale; }
+  void set_scale(T scale) { scale_ = scale; }
   /// Set the angle of the feature
-  void set_angle(double angle) { angle_ = angle; }
+  void set_angle(T angle) { angle_ = angle; }
   /// Set the covariance matrix of the feature
   void set_covar(const covariance_2d& covar) { covar_ = covar; }
 
 protected:
 
-  double x_;
-  double y_;
-  double magnitude_;
-  double scale_;
-  double angle_;
+  point_2_<T> loc_;
+  T magnitude_;
+  T scale_;
+  T angle_;
   covariance_2d covar_;
 };
 
+typedef feature_<double> feature_d;
+typedef feature_<float> feature_f;
+
 /// output stream operator for a feature
-std::ostream&  operator<<(std::ostream& s, const feature& f);
+template <typename T>
+std::ostream&  operator<<(std::ostream& s, const feature_<T>& f);
 
 /// input stream operator for a feature
-std::istream&  operator>>(std::istream& s, feature& f);
+template <typename T>
+std::istream&  operator>>(std::istream& s, feature_<T>& f);
 
 
 } // end namespace maptk
