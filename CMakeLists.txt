@@ -99,7 +99,7 @@ add_definitions( -DBOOST_ALL_NO_LIB )
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 # this is where the main source code lives
-add_subdirectory( src )
+add_subdirectory( maptk )
 
 option( MAPTK_BUILD_TESTS "Build tests" "ON" )
 if( MAPTK_BUILD_TESTS )
