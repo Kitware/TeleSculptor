@@ -22,7 +22,7 @@ create_test_sourcelist( test_sources
 add_executable( maptk_test_core
   ${test_sources}
 )
-target_link_libraries( maptk_test_core maptk_core testlib )
+target_link_libraries( maptk_test_core maptk_core )
 
 # Create ADD_TEST lines for some tests automatically.  Tests taking
 # special arguments will be specified manually later.
