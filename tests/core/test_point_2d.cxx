@@ -4,23 +4,38 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+#include <test_common.h>
+
 #include <maptk/core/point_2d.h>
 
+#define TEST_ARGS ()
 
-// Put everything in an anonymous namespace so that different tests
-// won't conflict.
-namespace {
+DECLARE_TEST_MAP();
 
-using namespace maptk;
-
-
-} // end anonymous namespace
-
-int test_point_2d( int argc, char* argv[] )
+int
+main(int argc, char* argv[])
 {
-  point_2d pt(10.0, 33.3);
+  CHECK_ARGS(1);
 
-  return 0;
+  testname_t const testname = argv[1];
+
+  RUN_TEST(testname);
 }
 
 
+IMPLEMENT_TEST(construct)
+{
+  maptk::point_2d ptd(10.0, 33.3);
+  maptk::point_2f ptf(5.0f, 4.5f);
+
+  if (ptd.x() != 10.0 || ptf.x() != 5.0f)
+  {
+    TEST_ERROR("X coordinate of point_2_ not initialized correctly");
+  }
+
+  if (ptd.y() != 33.3 || ptf.y() != 4.5f)
+  {
+    TEST_ERROR("Y coordinate of point_2_ not initialized correctly");
+  }
+
+}
