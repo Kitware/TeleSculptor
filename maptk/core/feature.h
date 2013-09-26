@@ -36,7 +36,7 @@ public:
   // Accessor for the feature angle
   T angle() const { return angle_; }
   // Accessor for the covariance
-  const covariance_2d& covar() const { return covar_; }
+  const covariance_2_<T>& covar() const { return covar_; }
 
   // Set the feature position in image space
   void set_loc(const point_2_<T>& loc) { loc_ = loc; }
@@ -47,7 +47,7 @@ public:
   /// Set the angle of the feature
   void set_angle(T angle) { angle_ = angle; }
   /// Set the covariance matrix of the feature
-  void set_covar(const covariance_2d& covar) { covar_ = covar; }
+  void set_covar(const covariance_2_<T>& covar) { covar_ = covar; }
 
 protected:
 
@@ -55,7 +55,7 @@ protected:
   T magnitude_;
   T scale_;
   T angle_;
-  covariance_2d covar_;
+  covariance_2_<T> covar_;
 };
 
 typedef feature_<double> feature_d;

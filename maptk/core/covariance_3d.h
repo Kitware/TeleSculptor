@@ -13,40 +13,41 @@ namespace maptk
 {
 
 /// A representation of covariance of a measurement in 3D
-class covariance_3d
+template <typename T>
+class covariance_3_
 {
 public:
   /// Default Constructor
-  covariance_3d()
+  covariance_3_<T>()
   {
     s_[0] = s_[1] = s_[2] = 1.0;
     s_[3] = s_[4] = s_[5] = 0.0;
   }
 
-  /// Constructor for a feature
-  covariance_3d(double sxx, double syy, double szz,
-                double sxy, double sxz, double syz)
+  /// Constructor for covariance
+  covariance_3_<T>(T sxx, T syy, T szz,
+                   T sxy, T sxz, T syz)
   {
     this->set(sxx, syy, szz, sxy, sxz, sxy);
   }
 
   // Accessor for the variance in X
-  double sxx() const { return s_[0]; }
+  T sxx() const { return s_[0]; }
   // Accessor for the variance in Y
-  double syy() const { return s_[1]; }
+  T syy() const { return s_[1]; }
   // Accessor for the variance in Z
-  double szz() const { return s_[2]; }
+  T szz() const { return s_[2]; }
   // Accessor for the covariance in X and Y
-  double sxy() const { return s_[3]; }
+  T sxy() const { return s_[3]; }
   // Accessor for the covariance in X and Z
-  double sxz() const { return s_[4]; }
+  T sxz() const { return s_[4]; }
   // Accessor for the covariance in Y and Z
-  double syz() const { return s_[5]; }
+  T syz() const { return s_[5]; }
 
   // Set the feature position in image space
-  void set(double sxx, double syy, double szz,
-           double sxy, double sxz, double syz) 
-  { 
+  void set(T sxx, T syy, T szz,
+           T sxy, T sxz, T syz)
+  {
     s_[0] = sxx;
     s_[1] = syy;
     s_[2] = szz;
@@ -56,22 +57,27 @@ public:
   }
 
   /// Compute the generalized variance (determinant of covariance)
-  double generalized_variance() const;
+  T generalized_variance() const;
 
   /// Access the underlying data
-  const double* data() const { return s_; }
+  const T* data() const { return s_; }
 
 protected:
 
-  double s_[6];
+  T s_[6];
 
 };
 
+typedef covariance_3_<double> covariance_3d;
+typedef covariance_3_<float> covariance_3f;
+
 /// output stream operator for a feature
-std::ostream&  operator<<(std::ostream& s, const covarariance_3d& c);
+template <typename T>
+std::ostream&  operator<<(std::ostream& s, const covariance_3_<T>& c);
 
 /// input stream operator for a feature
-std::istream&  operator>>(std::istream& s, covariance_3d& c);
+template <typename T>
+std::istream&  operator>>(std::istream& s, covariance_3_<T>& c);
 
 
 } // end namespace maptk

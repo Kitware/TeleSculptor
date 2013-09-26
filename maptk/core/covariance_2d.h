@@ -13,18 +13,19 @@ namespace maptk
 {
 
 /// A representation of covariance of a measurement in 2D
-class covariance_2d
+template <typename T>
+class covariance_2_
 {
 public:
   /// Default Constructor
-  covariance_2d()
+  covariance_2_<T>()
   {
     s_[0] = s_[1] = 1.0;
     s_[2] = 0.0;
   }
 
-  /// Constructor for a feature
-  covariance_2d(double sxx, double syy, double sxy)
+  /// Constructor for covariance
+  covariance_2_<T>(T sxx, T syy, T sxy)
   {
     s_[0] = sxx;
     s_[1] = syy;
@@ -32,37 +33,42 @@ public:
   }
 
   // Accessor for the variance in X
-  double sxx() const { return s_[0]; }
+  T sxx() const { return s_[0]; }
   // Accessor for the variance in Y
-  double syy() const { return s_[1]; }
+  T syy() const { return s_[1]; }
   // Accessor for the covariance in X and Y
-  double sxy() const { return s_[2]; }
+  T sxy() const { return s_[2]; }
 
   // Set the feature position in image space
-  void set(double sxx, double syy, double sxy) 
-  { 
+  void set(T sxx, T syy, T sxy)
+  {
     s_[0] = sxx;
     s_[1] = syy;
     s_[2] = sxy;
   }
 
   /// Compute the generalized variance (determinant of covariance)
-  double generalized_variance() const;
+  T generalized_variance() const;
 
   /// Access the underlying data
-  const double* data() const { return s_; }
+  const T* data() const { return s_; }
 
 protected:
 
-  double s_[3];
+  T s_[3];
 
 };
 
+typedef covariance_2_<double> covariance_2d;
+typedef covariance_2_<float> covariance_2f;
+
 /// output stream operator for a feature
-std::ostream&  operator<<(std::ostream& s, const covariance_2d& c);
+template <typename T>
+std::ostream&  operator<<(std::ostream& s, const covariance_2_<T>& c);
 
 /// input stream operator for a feature
-std::istream&  operator>>(std::istream& s, covariance_2d& c);
+template <typename T>
+std::istream&  operator>>(std::istream& s, covariance_2_<T>& c);
 
 
 } // end namespace maptk
