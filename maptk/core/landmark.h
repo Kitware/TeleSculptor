@@ -9,58 +9,54 @@
 
 #include <iostream>
 
+#include "point_3d.h"
 #include "covariance_3d.h"
 
 namespace maptk
 {
 
 /// A representation of a 3D world point
-class landmark
+template <typename T>
+class landmark_
 {
 public:
   /// Default Constructor
-  landmark();
+  landmark_<T>();
 
   /// Constructor for a feature
-  landmark(double x, double y, double z);
+  landmark_<T>(const point_3_<T>& loc);
 
-  // Accessor for the X world coordinate
-  double x() const { return x_; }
-  // Accessor for the Y world coordinate
-  double y() const { return y_; }
-  // Accessor for the Z world coordinate
-  double z() const { return z_; }
+  // Accessor for the world coordinates
+  const point_3_<T>& loc() const { return loc_; }
   // Accessor for the feature scale
-  double scale() const { return scale_; }
+  T scale() const { return scale_; }
   // Accessor for the covariance
   const covariance_3d& covar() const { return covar_; }
 
   // Set the feature position in image space
-  void set_pos(double x, double y, double z) 
-  { 
-    x_ = x; 
-    y_ = y; 
-    z_ = z;
-  }
+  void set_loc(const point_3_<T>& loc) { loc_ = loc; }
   /// Set the scale of the feature
-  void set_scale(double scale) { scale_ = scale; }
+  void set_scale(T scale) { scale_ = scale; }
   /// Set the covariance matrix of the feature
   void set_covar(const covariance_3d& covar) { covar_ = covar; }
 
 protected:
 
-  double x_;
-  double y_;
-  double z_;
-  double scale_;
+  point_3_<T> loc_;
+  T scale_;
   covariance_3d covar_;
 };
 
+typedef landmark_<double> landmark_d;
+typedef landmark_<float> landmark_f;
+
 /// output stream operator for a landmark
-std::ostream&  operator<<(std::ostream& s, const landmark& m);
+template <typename T>
+std::ostream&  operator<<(std::ostream& s, const landmark_<T>& m);
 
 /// input stream operator for a landmark
-std::istream&  operator>>(std::istream& s, landmark& m);
+template <typename T>
+std::istream&  operator>>(std::istream& s, landmark_<T>& m);
 
 
 } // end namespace maptk
