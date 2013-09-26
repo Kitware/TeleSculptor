@@ -54,11 +54,11 @@ typedef point_2_<float> point_2f;
 
 /// output stream operator for a 2D Point
 template <typename T>
-vcl_ostream&  operator<<(vcl_ostream& s, const point_2_<T>& p);
+std::ostream&  operator<<(std::ostream& s, const point_2_<T>& p);
 
 /// input stream operator for a 2D Point
 template <typename T>
-vcl_istream&  operator>>(vcl_istream& s, point_2_<T>& p);
+std::istream&  operator>>(std::istream& s, point_2_<T>& p);
 
 
 } // end namespace maptk

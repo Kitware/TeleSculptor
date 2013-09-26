@@ -57,10 +57,10 @@ protected:
 };
 
 /// output stream operator for a landmark
-vcl_ostream&  operator<<(vcl_ostream& s, const landmark& m);
+std::ostream&  operator<<(std::ostream& s, const landmark& m);
 
 /// input stream operator for a landmark
-vcl_istream&  operator>>(vcl_istream& s, landmark& m);
+std::istream&  operator>>(std::istream& s, landmark& m);
 
 
 } // end namespace maptk

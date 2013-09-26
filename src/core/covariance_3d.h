@@ -68,10 +68,10 @@ protected:
 };
 
 /// output stream operator for a feature
-vcl_ostream&  operator<<(vcl_ostream& s, const covarariance_3d& c);
+std::ostream&  operator<<(std::ostream& s, const covarariance_3d& c);
 
 /// input stream operator for a feature
-vcl_istream&  operator>>(vcl_istream& s, covariance_3d& c);
+std::istream&  operator>>(std::istream& s, covariance_3d& c);
 
 
 } // end namespace maptk

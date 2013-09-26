@@ -64,10 +64,10 @@ protected:
 };
 
 /// output stream operator for a feature
-vcl_ostream&  operator<<(vcl_ostream& s, const feature& f);
+std::ostream&  operator<<(std::ostream& s, const feature& f);
 
 /// input stream operator for a feature
-vcl_istream&  operator>>(vcl_istream& s, feature& f);
+std::istream&  operator>>(std::istream& s, feature& f);
 
 
 } // end namespace maptk

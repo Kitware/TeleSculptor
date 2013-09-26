@@ -38,10 +38,10 @@ protected:
 };
 
 /// output stream operator for a camera
-vcl_ostream&  operator<<(vcl_ostream& s, const camera& c);
+std::ostream&  operator<<(std::ostream& s, const camera& c);
 
 /// input stream operator for a camera
-vcl_istream&  operator>>(vcl_istream& s, camera& c);
+std::istream&  operator>>(std::istream& s, camera& c);
 
 
 } // end namespace maptk
