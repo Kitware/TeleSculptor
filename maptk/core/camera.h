@@ -7,7 +7,7 @@
 #ifndef MAPTK_CAMERA_H_
 #define MAPTK_CAMERA_H_
 
-#include <vector>
+#include <iostream>
 
 #include "covariance_3d.h"
 

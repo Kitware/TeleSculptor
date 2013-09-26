@@ -7,6 +7,8 @@
 #ifndef MAPTK_CAMERA_INTRINSICS_H_
 #define MAPTK_CAMERA_INTRINSICS_H_
 
+#include <iostream>
+
 namespace maptk
 {
 

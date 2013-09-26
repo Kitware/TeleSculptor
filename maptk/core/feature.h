@@ -7,7 +7,7 @@
 #ifndef MAPTK_FEATURE_H_
 #define MAPTK_FEATURE_H_
 
-#include <vector>
+#include <iostream>
 
 #include "covariance_2d.h"
 

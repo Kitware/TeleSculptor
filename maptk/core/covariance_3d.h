@@ -7,7 +7,7 @@
 #ifndef MAPTK_COVARIANCE_3D_H_
 #define MAPTK_COVARIANCE_3D_H_
 
-#include <vector>
+#include <iostream>
 
 namespace maptk
 {

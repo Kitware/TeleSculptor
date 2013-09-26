@@ -7,7 +7,7 @@
 #ifndef MAPTK_LANDMARK_H_
 #define MAPTK_LANDMARK_H_
 
-#include <vector>
+#include <iostream>
 
 #include "covariance_3d.h"
 

@@ -8,6 +8,7 @@
 #define MAPTK_DESCRIPTOR_H_
 
 #include <vector>
+#include <iostream>
 
 namespace maptk
 {

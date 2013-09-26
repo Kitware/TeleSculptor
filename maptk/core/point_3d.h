@@ -7,6 +7,7 @@
 #ifndef MAPTK_POINT_3D_H_
 #define MAPTK_POINT_3D_H_
 
+#include <iostream>
 
 namespace maptk
 {
