@@ -9,30 +9,43 @@
 
 #include <iostream>
 
+#include "point_2d.h"
+
 namespace maptk
 {
 
 /// A representation of camera intrinsic parameters
-class camera_intrinsics
+template <typename T>
+class camera_intrinsics_
 {
 public:
   /// Default Constructor
-  camera_intrinsics();
+  camera_intrinsics_<T>();
 
-  /// Constructor for a feature
-  camera(double focal_length, 
-         double aspect_ratio=1.0, 
-         double skew=0.0);
+  /// Constructor for camera intrinsics
+  camera_intrinsics_<T>(T focal_length,
+                        const point_2_<T>& prin_pt,
+                        T aspect_ratio=1.0,
+                        T skew=0.0);
 
 protected:
-
+  T focal_length_;
+  point_2_<T> prin_pt_;
+  T aspect_ratio_;
+  T skew_;
 };
 
-/// output stream operator for a camera
-std::ostream&  operator<<(std::ostream& s, const camera_intrinsics& c);
 
-/// input stream operator for a camera
-std::istream&  operator>>(std::istream& s, camera_intrinsics& c);
+typedef camera_intrinsics_<double> camera_intrinsics_d;
+typedef camera_intrinsics_<float> camera_intrinsics_f;
+
+/// output stream operator for camera intrinsics
+template <typename T>
+std::ostream&  operator<<(std::ostream& s, const camera_intrinsics_<T>& k);
+
+/// input stream operator for camera intrinsics
+template <typename T>
+std::istream&  operator>>(std::istream& s, camera_intrinsics_<T>& c);
 
 
 } // end namespace maptk
