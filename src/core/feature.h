@@ -34,7 +34,7 @@ public:
   // Accessor for the feature scale
   double scale() const { return scale_; }
   // Accessor for the feature angle
-  double angle() const { return angle_; }i
+  double angle() const { return angle_; }
   // Accessor for the covariance
   const covariance_2d& covar() const { return covar_; }
 

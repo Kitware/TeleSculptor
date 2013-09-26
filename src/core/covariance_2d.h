@@ -59,7 +59,7 @@ protected:
 };
 
 /// output stream operator for a feature
-std::ostream&  operator<<(std::ostream& s, const covarariance_2d& c);
+std::ostream&  operator<<(std::ostream& s, const covariance_2d& c);
 
 /// input stream operator for a feature
 std::istream&  operator>>(std::istream& s, covariance_2d& c);
