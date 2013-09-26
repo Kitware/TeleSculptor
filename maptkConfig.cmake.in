@@ -1,0 +1,5 @@
+
+# MAPTK include directory
+set( MAPTK_INCLUDE_DIRS "@maptk_all_SOURCE_DIR@/src" )
+
+# Export definitions for maptk to be used from find_package
