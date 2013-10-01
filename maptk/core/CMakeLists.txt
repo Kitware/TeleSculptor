@@ -3,8 +3,7 @@
 set( maptk_core_sources
   camera.h
   camera_intrinsics.h
-  covariance_2d.h
-  covariance_3d.h
+  covariance.h
   descriptor.h
   feature.h                feature.cxx
   landmark.h
