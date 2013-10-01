@@ -8,6 +8,7 @@ set( maptk_core_sources
   descriptor.h
   feature.h                feature.cxx
   landmark.h
+  matrix.h                 matrix.cxx
   vector.h                 vector.cxx
 )
 
