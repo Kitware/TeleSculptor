@@ -10,6 +10,7 @@ set( maptk_core_sources
   landmark.h
   point_2d.h
   point_3d.h
+  vector.h                 vector.cxx
 )
 
 
