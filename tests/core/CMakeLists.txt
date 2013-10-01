@@ -6,5 +6,5 @@ set(test_libraries
 ##############################
 # Core tests
 ##############################
-maptk_discover_tests(point_2d test_libraries test_point_2d.cxx)
+maptk_discover_tests(vector test_libraries test_vector.cxx)
 

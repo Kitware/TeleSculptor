@@ -9,7 +9,7 @@
 
 #include <iostream>
 
-#include "point_2d.h"
+#include "vector.h"
 #include "covariance_2d.h"
 
 namespace maptk
@@ -24,11 +24,11 @@ public:
   feature_<T>();
 
   /// Constructor for a feature
-  feature_<T>(const point_2_<T>& loc, T mag=0.0,
+  feature_<T>(const vector_2_<T>& loc, T mag=0.0,
               T scale=1.0, T angle=0.0);
 
   // Accessor for the image coordinates
-  const point_2_<T>& loc() const { return loc_; }
+  const vector_2_<T>& loc() const { return loc_; }
   // Accessor for the feature magnitude
   T magnitude() const { return magnitude_; }
   // Accessor for the feature scale
@@ -39,7 +39,7 @@ public:
   const covariance_2_<T>& covar() const { return covar_; }
 
   // Set the feature position in image space
-  void set_loc(const point_2_<T>& loc) { loc_ = loc; }
+  void set_loc(const vector_2_<T>& loc) { loc_ = loc; }
   /// Set the magnitude of the feature response
   void set_magnitude(T magnitude) { magnitude_ = magnitude; }
   /// Set the scale of the feature
@@ -51,7 +51,7 @@ public:
 
 protected:
 
-  point_2_<T> loc_;
+  vector_2_<T> loc_;
   T magnitude_;
   T scale_;
   T angle_;

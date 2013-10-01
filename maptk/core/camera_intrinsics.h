@@ -9,7 +9,7 @@
 
 #include <iostream>
 
-#include "point_2d.h"
+#include "vector.h"
 
 namespace maptk
 {
@@ -24,13 +24,13 @@ public:
 
   /// Constructor for camera intrinsics
   camera_intrinsics_<T>(T focal_length,
-                        const point_2_<T>& prin_pt,
+                        const vector_2_<T>& prin_pt,
                         T aspect_ratio=1.0,
                         T skew=0.0);
 
 protected:
   T focal_length_;
-  point_2_<T> prin_pt_;
+  vector_2_<T> prin_pt_;
   T aspect_ratio_;
   T skew_;
 };

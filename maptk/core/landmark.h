@@ -9,7 +9,7 @@
 
 #include <iostream>
 
-#include "point_3d.h"
+#include "vector.h"
 #include "covariance_3d.h"
 
 namespace maptk
@@ -24,17 +24,17 @@ public:
   landmark_<T>();
 
   /// Constructor for a feature
-  landmark_<T>(const point_3_<T>& loc);
+  landmark_<T>(const vector_3_<T>& loc);
 
   // Accessor for the world coordinates
-  const point_3_<T>& loc() const { return loc_; }
+  const vector_3_<T>& loc() const { return loc_; }
   // Accessor for the feature scale
   T scale() const { return scale_; }
   // Accessor for the covariance
   const covariance_3_<T>& covar() const { return covar_; }
 
   // Set the feature position in image space
-  void set_loc(const point_3_<T>& loc) { loc_ = loc; }
+  void set_loc(const vector_3_<T>& loc) { loc_ = loc; }
   /// Set the scale of the feature
   void set_scale(T scale) { scale_ = scale; }
   /// Set the covariance matrix of the feature
@@ -42,7 +42,7 @@ public:
 
 protected:
 
-  point_3_<T> loc_;
+  vector_3_<T> loc_;
   T scale_;
   covariance_3_<T> covar_;
 };
