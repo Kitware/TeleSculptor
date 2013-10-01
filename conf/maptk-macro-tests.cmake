@@ -127,7 +127,7 @@ function (maptk_discover_tests group libraries file)
     set(test_name)
     set(property)
 
-    string(REGEX MATCH "^IMPLEMENT_TEST\\(([A-Za-z_]+)\\)$"
+    string(REGEX MATCH "^IMPLEMENT_TEST\\(([A-Za-z_0-9]+)\\)$"
       match "${test_line}")
     if (match)
       set(test_name "${CMAKE_MATCH_1}")
@@ -141,7 +141,7 @@ function (maptk_discover_tests group libraries file)
       set(properties)
       set(maptk_test_environment)
     endif ()
-    string(REGEX MATCHALL "^TEST_PROPERTY\\(([A-Za-z_]+), (.*)\\)$"
+    string(REGEX MATCHALL "^TEST_PROPERTY\\(([A-Za-z_0-9]+), (.*)\\)$"
       match "${test_line}")
     if (match)
       set(prop "${CMAKE_MATCH_1}")
