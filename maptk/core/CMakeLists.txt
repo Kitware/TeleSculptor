@@ -1,7 +1,7 @@
 # maptk/core
 
 set( maptk_core_sources
-  camera.h
+  camera.h                 camera.cxx
   camera_intrinsics.h      camera_intrinsics.cxx
   covariance.h
   descriptor.h

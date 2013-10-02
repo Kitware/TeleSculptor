@@ -9,39 +9,80 @@
 
 #include <iostream>
 
-#include "covariance_3d.h"
+#include "camera_intrinsics.h"
+#include "covariance.h"
+#include "rotation.h"
+#include "vector.h"
 
 namespace maptk
 {
 
 /// A representation of a camera
 /// Contains camera location, orientation, and intrinsics
-class camera
+template <typename T>
+class camera_
 {
 public:
   /// Default Constructor
-  camera();
+  camera_<T>()
+  : center_(T(0), T(0), T(0)),
+    rotation_(),
+    intrinsics_()
+  {}
 
-  /// Constructor for a feature
-  camera(double x, double y, double z);
+  /// Constructor - from camera center, rotation, and intrinsics
+  camera_<T>(const vector_3_<T>& center,
+             const rotation_<T>& rotation,
+             const camera_intrinsics_<T>& intrincs = camera_intrinsics_<T>());
 
-  // Accessor for the covariance of 3D location
-  const covariance_3d& loc_covar() const { return loc_covar_; }
+  /// Accessor for the camera center of projection (position)
+  const vector_3_<T> center() const { return center_; }
+  /// Accessor for the translation vector
+  const vector_3_<T> translation() const { return - (rotation_ * center_); }
+  /// Accessor for the covariance of camera center
+  const covariance_<3,T>& center_covar() const { return center_covar_; }
+  /// Accessor for the rotation
+  const rotation_<T>& rotation() const { return rotation_; }
+  /// Accessor for the intrinsics
+  const camera_intrinsics_<T>& intrinsics() const { return intrinsics_; }
 
+  /// Set the camera center of projection
+  void set_center(const vector_3_<T>& center) { center_ = center; }
+  /// Set the translation vector (relative to current rotation)
+  void set_translation(const vector_3_<T>& translation)
+  {
+    center_ = - (rotation_.inverse() * translation);
+  }
   /// Set the covariance matrix of the feature
-  void set_loc_covar(const covariance_3d& loc_covar) { loc_covar_ = loc_covar; }
-  
+  void set_center_covar(const covariance_<3,T>& center_covar) { center_covar_ = center_covar; }
+  /// Set the rotation
+  void set_rotation(const rotation_<T>& rotation) { rotation_ = rotation; }
+  /// Set the intrinsics
+  void set_intrinsics(const camera_intrinsics_<T>& intrinsics) { intrinsics_ = intrinsics; }
 
 protected:
-
-  covariance_3d loc_covar_;
+  /// The camera center of project
+  vector_3_<T> center_;
+  /// The covariance of the camera center location
+  covariance_<3,T> center_covar_;
+  /// The camera rotation
+  rotation_<T> rotation_;
+  /// The camera intrinics
+  camera_intrinsics_<T> intrinsics_;
 };
 
+
+typedef camera_<double> camera_d;
+typedef camera_<float> camera_f;
+
+
 /// output stream operator for a camera
-std::ostream&  operator<<(std::ostream& s, const camera& c);
+template <typename T>
+std::ostream&  operator<<(std::ostream& s, const camera_<T>& c);
 
 /// input stream operator for a camera
-std::istream&  operator>>(std::istream& s, camera& c);
+template <typename T>
+std::istream&  operator>>(std::istream& s, camera_<T>& c);
 
 
 } // end namespace maptk
