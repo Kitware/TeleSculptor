@@ -21,7 +21,7 @@ class rotation_
 {
 public:
   /// Default Constructor
-  rotation_<T>() {}
+  rotation_<T>() : q_(0,0,0,1) {}
 
   /// Constructor - from a 4D quaternion vector (i,j,k,r)
   rotation_<T>(const vector_<4,T>& quaternion)
