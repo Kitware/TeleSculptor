@@ -80,10 +80,10 @@ template <typename T>
 rotation_<T>
 ::operator matrix_<3,3,T>() const
 {
-  T x2 = q_[0]*q_[0], xy = q_[0]*q_[1], rx = q_[3]*q_[0],
-    y2 = q_[1]*q_[1], yz = q_[1]*q_[2], ry = q_[3]*q_[1],
-    z2 = q_[2]*q_[2], zx = q_[2]*q_[0], rz = q_[3]*q_[2],
-    r2 = q_[3]*q_[3];
+  T x2 = q_.x()*q_.x(), xy = q_.x()*q_.y(), rx = q_.w()*q_.x(),
+    y2 = q_.y()*q_.y(), yz = q_.y()*q_.z(), ry = q_.w()*q_.y(),
+    z2 = q_.z()*q_.z(), zx = q_.z()*q_.x(), rz = q_.w()*q_.z(),
+    r2 = q_.w()*q_.w();
   matrix_<3,3,T> mat;
   // fill diagonal terms
   mat(0,0) = r2 + x2 - y2 - z2;
@@ -114,6 +114,21 @@ rotation_<T>
   comp_q[1] = q1[3]*q2[1] + q1[1]*q2[3] + q1[2]*q2[0] - q1[0]*q2[2];
   comp_q[2] = q1[3]*q2[2] + q1[2]*q2[3] + q1[0]*q2[1] - q1[1]*q2[0];
   return rotation_<T>(comp_q);
+}
+
+
+/// Rotate a vector
+/// \note for a large number of vectors, it is more efficient to
+/// create a rotation matrix and use matrix multiplcation
+template <typename T>
+vector_<3,T>
+rotation_<T>
+::operator*(const vector_<3,T>& rhs) const
+{
+  const T& real = q_.w();
+  const vector_3_<T> imag(q_.x(), q_.y(), q_.z());
+  const vector_<3,T> ixv(cross_product(imag, rhs));
+  return rhs + T(2*real)*ixv - T(2)*cross_product(ixv,imag);
 }
 
 

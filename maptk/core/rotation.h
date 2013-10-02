@@ -46,6 +46,11 @@ public:
   /// Compose two rotations
   rotation_<T> operator*(const rotation_<T>& rhs) const;
 
+  /// Rotate a vector
+  /// \note for a large number of vectors, it is more efficient to
+  /// create a rotation matrix and use matrix multiplcation
+  vector_<3,T> operator*(const vector_<3,T>& rhs) const;
+
 
 protected:
   /// rotatation stored internally as a quaternion vector
