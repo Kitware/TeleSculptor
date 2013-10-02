@@ -11,6 +11,63 @@ namespace maptk
 {
 
 
+/// Fill the matrix with this value
+template <unsigned M, unsigned N, typename T>
+matrix_<M,N,T>&
+matrix_<M,N,T>
+::fill(const T& value)
+{
+  T* p = data_[0];
+  unsigned int n = M*N;
+  while(n--)
+  {
+    *p++ = value;
+  }
+  return *this;
+}
+
+
+/// Fill the diagonal with this value
+template <unsigned M, unsigned N, typename T>
+matrix_<M,N,T>&
+matrix_<M,N,T>
+::fill_diagonal(const T& value)
+{
+  for (unsigned int i=0; i < min_dim; ++i)
+  {
+    this->data_[i][i] = value;
+  }
+  return *this;
+}
+
+
+/// Set the diagonal to this vector
+template <unsigned M, unsigned N, typename T>
+matrix_<M,N,T>&
+matrix_<M,N,T>
+::set_diagonal(const vector_<min_dim,T>& diag)
+{
+  for (unsigned int i=0; i < min_dim; ++i)
+  {
+    this->data_[i][i] = diag[i];
+  }
+  return *this;
+}
+
+
+/// Set the matrix to the identity matrix
+/// Extra rows or columns of a non-square matrix are set to zero
+template <unsigned M, unsigned N, typename T>
+matrix_<M,N,T>&
+matrix_<M,N,T>
+::set_identity()
+{
+  this->fill(T(0));
+  this->fill_diagonal(T(1));
+  return *this;
+}
+
+
 /// output stream operator for a matrix
 template <unsigned M, unsigned N, typename T>
 std::ostream&  operator<<(std::ostream& s, const matrix_<M,N,T>& m)

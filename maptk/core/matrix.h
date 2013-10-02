@@ -9,6 +9,9 @@
 
 #include <iostream>
 #include <cassert>
+#include <boost/integer/static_min_max.hpp>
+
+#include "vector.h"
 
 namespace maptk
 {
@@ -18,6 +21,13 @@ template <unsigned M, unsigned N, typename T>
 class matrix_
 {
 public:
+  /// a compile time constant defined to be min(M,N)
+  static unsigned const min_dim = boost::static_unsigned_min<M,N>::value;
+  /// a compile time constant defined to be max(M,N)
+  static unsigned const max_dim = boost::static_unsigned_max<M,N>::value;
+  /// a compile time constant defined to be M*N
+  static unsigned const num_elems = M*N;
+
   /// Constructor - does not initialize
   matrix_<M,N,T>() {}
 
@@ -34,15 +44,7 @@ public:
   }
 
   /// Constructor - fill with a constant value
-  explicit matrix_<M,N,T>(const T& value)
-  {
-    T* p = data_[0];
-    unsigned int n = M*N;
-    while(n--)
-    {
-      *p++ = value;
-    }
-  }
+  explicit matrix_<M,N,T>(const T& value) { this->fill(value); }
 
   /// Assignment operator
   matrix_<M,N,T>& operator=(const matrix_<M,N,T>& other)
@@ -78,6 +80,19 @@ public:
 
   /// Return a pointer to the contiguous block of memory
   T const* data() const { return data_[0]; }
+
+  /// Fill the matrix with this value
+  matrix_<M,N,T>& fill(const T& value);
+
+  /// Fill the diagonal with this value
+  matrix_<M,N,T>& fill_diagonal(const T& value);
+
+  /// Set the diagonal to this vector
+  matrix_<M,N,T>& set_diagonal(const vector_<min_dim,T>& diag);
+
+  /// Set the matrix to the identity matrix
+  /// Extra rows or columns of a non-square matrix are set to zero
+  matrix_<M,N,T>& set_identity();
 
 protected:
   T data_[M][N];
