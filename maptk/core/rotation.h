@@ -37,13 +37,19 @@ public:
   /// Convert to a 3x3 matrix
   operator matrix_<3,3,T>() const;
 
+  /// Compute the inverse rotation
+  rotation_<T> inverse() const
+  {
+    return rotation_<T>(vector_4_<T>(-q_.x(), -q_.y(), -q_.z(), q_.w()));
+  }
+
   /// Compose two rotations
   rotation_<T> operator*(const rotation_<T>& rhs) const;
 
 
 protected:
   /// rotatation stored internally as a quaternion vector
-  vector_<4,T> q_;
+  vector_4_<T> q_;
 };
 
 
