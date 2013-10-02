@@ -61,8 +61,8 @@ protected:
 };
 
 
-typedef rotation_<double> rotation_3d;
-typedef rotation_<float> rotation_2f;
+typedef rotation_<double> rotation_d;
+typedef rotation_<float> rotation_f;
 
 
 /// output stream operator for a rotation
