@@ -24,6 +24,12 @@ public:
   /// Default Constructor
   covariance_<N,T>() {}
 
+  /// Copy constructor
+  covariance_<N,T>(const covariance_<N,T>& other)
+  {
+    memcpy( data_, other.data_, sizeof(data_) );
+  }
+
   /// Constructor - initialize to identity matrix times a scalar
   explicit covariance_<N,T>(const T& value)
   {
@@ -53,6 +59,15 @@ public:
     }
   }
 
+  /// Assignment operator
+  covariance_<N,T>& operator=(const covariance_<N,T>& other)
+  {
+    memcpy( data_, other.data_, sizeof(data_) );
+    return *this;
+  }
+
+
+  /// Extract a full matrix
   operator matrix_<N,N,T>() const
   {
     matrix_<N,N,T> mat;
