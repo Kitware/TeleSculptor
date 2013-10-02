@@ -138,6 +138,29 @@ protected:
 };
 
 
+//: Compute the 2D cross product
+// \relatesalso vector_
+template <typename T>
+inline T
+cross_product(const vector_<2,T>& v1, const vector_<2,T>& v2)
+{
+  return v1[0] * v2[1] - v1[1] * v2[0];
+}
+
+
+/// Compute the 3D cross product
+/// \relatesalso vector_
+template <typename T>
+inline vector_<3,T>
+cross_product(const vector_<3,T>& v1, const vector_<3,T>& v2)
+{
+  vector_<3,T> result;
+  result[0] = v1[1] * v2[2] - v1[2] * v2[1];
+  result[1] = v1[2] * v2[0] - v1[0] * v2[2];
+  result[2] = v1[0] * v2[1] - v1[1] * v2[0];
+  return result;
+}
+
 /// A representation of a 2D vector.
 /// This derived class exists to add convenience
 /// constructors and accessors
