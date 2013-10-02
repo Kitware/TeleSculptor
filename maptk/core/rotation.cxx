@@ -5,7 +5,9 @@
  */
 
 #include "rotation.h"
+
 #include <cmath>
+#include <limits>
 
 namespace maptk
 {
@@ -16,6 +18,15 @@ template <typename T>
 rotation_<T>
 ::rotation_(const T& yaw, const T& pitch, const T& roll)
 {
+  using std::sin;
+  using std::cos;
+  double half_x = 0.5 * double(yaw);
+  double half_y = 0.5 * double(pitch);
+  double half_z = 0.5 * double(roll);
+  rotation_<T> Rx(vector_4_<T>(T(sin(half_x)), 0, 0, T(cos(half_x))));
+  rotation_<T> Ry(vector_4_<T>(0, T(sin(half_y)), 0, T(cos(half_y))));
+  rotation_<T> Rz(vector_4_<T>(0, 0, T(sin(half_z)), T(cos(half_z))));
+  *this = Rz * Rx * Ry;
 }
 
 
@@ -97,6 +108,29 @@ rotation_<T>
   mat(2,0) = 2 * (zx - ry);
   mat(2,1) = 2 * (yz + rx);
   return mat;
+}
+
+
+/// Convert to yaw, pitch, and roll
+template <typename T>
+void
+rotation_<T>
+::get_yaw_pitch_roll(T& yaw, T& pitch, T& roll)
+{
+  matrix_<3,3,T> rotM(*this);
+  T xy = T(std::sqrt(double(rotM(0,0)*rotM(0,0)) + rotM(1,0)*rotM(1,0)));
+  if( xy > std::numeric_limits<T>::epsilon() * T(8) )
+  {
+    yaw   = T(std::atan2(double(rotM(2,1)),double(rotM(2,2))));
+    pitch = T(std::atan2(double(-rotM(2,0)),double(xy)));
+    roll  = T(std::atan2(double(rotM(1,0)),double(rotM(0,0))));
+  }
+  else
+  {
+    yaw   = T(std::atan2(double(-rotM(1,2)),double(rotM(1,1))));
+    pitch = T(std::atan2(double(-rotM(2,0)),double(xy)));
+    roll  = T(0);
+  }
 }
 
 
