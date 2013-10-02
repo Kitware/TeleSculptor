@@ -161,6 +161,23 @@ cross_product(const vector_<3,T>& v1, const vector_<3,T>& v2)
   return result;
 }
 
+
+/// Compute the inner product
+template <unsigned N, typename T>
+inline T
+inner_product(const vector_<N,T>& v1, const vector_<N,T>& v2)
+{
+  const T* a = v1.data();
+  const T* b = v2.data();
+  T sum = T(0);
+  for ( unsigned int i=0; i < N; ++i,++a,++b )
+  {
+    sum += *a * *b;
+  }
+  return sum;
+}
+
+
 /// A representation of a 2D vector.
 /// This derived class exists to add convenience
 /// constructors and accessors
