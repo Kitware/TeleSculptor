@@ -76,6 +76,19 @@ public:
     return result;
   }
 
+  /// Return true if *this == v
+  bool compare_eq (const vector_<N,T>& v) const
+  {
+    for ( unsigned int i=0; i < N; ++i )
+    {
+      if ( (*this)[i] != v[i] )
+      {
+        return false;
+      }
+    }
+    return true;
+  }
+
   /// Helper routines for arithmetic. N is the size, and is the
   /// template parameter.
 
@@ -306,6 +319,138 @@ typedef vector_3_<double> vector_3d;
 typedef vector_3_<float> vector_3f;
 typedef vector_4_<double> vector_4d;
 typedef vector_4_<float> vector_4f;
+
+
+// --- Vector-scalar operators ----------------------------------------
+
+/// Vector-scalar addtion operator
+/// \relatesalso vector_
+template <unsigned N, typename T>
+inline vector_<N,T> operator+( const vector_<N,T>& v, const T& s )
+{
+  vector_<N,T> r;
+  vector_<N,T>::add( v.data(), s, r.data() );
+  return r;
+}
+
+/// Scalar-vector addition operator
+/// \relatesalso vector_
+template <unsigned N, typename T>
+inline vector_<N,T> operator+( const T& s, const vector_<N,T>& v )
+{
+  vector_<N,T> r;
+  vector_<N,T>::add( v.data(), s, r.data() );
+  return r;
+}
+
+/// Vector-scalar subraction operator
+/// \relatesalso vector_
+template <unsigned N, typename T>
+inline vector_<N,T> operator-( const vector_<N,T>& v, const T& s )
+{
+  vector_<N,T> r;
+  vector_<N,T>::sub( v.data(), s, r.data() );
+  return r;
+}
+
+/// Scalar-vector subraction operator
+/// \relatesalso vector_
+template <unsigned N, typename T>
+inline vector_<N,T> operator-( const T& s, const vector_<N,T>& v )
+{
+  vector_<N,T> r;
+  vector_<N,T>::sub( s, v.data(), r.data() );
+  return r;
+}
+
+/// Scalar post-multiplcation operator
+/// \relatesalso vector_
+template <unsigned N, typename T>
+inline vector_<N,T> operator*( const vector_<N,T>& v, const T& s )
+{
+  vector_<N,T> r;
+  vector_<N,T>::mul( v.data(), s, r.data() );
+  return r;
+}
+
+/// Scalar pre-multiplication operator
+/// \relatesalso vector_
+template <unsigned N, typename T>
+inline vector_<N,T> operator*( const T& s, const vector_<N,T>& v )
+{
+  vector_<N,T> r;
+  vector_<N,T>::mul( v.data(), s, r.data() );
+  return r;
+}
+
+/// Scalar division operator
+/// \relatesalso vector_
+template <unsigned N, typename T>
+inline vector_<N,T> operator/( const vector_<N,T>& v, const T& s )
+{
+  vector_<N,T> r;
+  vector_<N,T>::div( v.data(), s, r.data() );
+  return r;
+}
+
+
+// --- Vector-vector operators ----------------------------------------
+
+/// Addition operator
+/// \relatesalso vector_
+template <unsigned N, typename T>
+inline vector_<N,T> operator+( const vector_<N,T>& a, const vector_<N,T>& b )
+{
+  vector_<N,T> r;
+  vector_<N,T>::add( a.data(), b.data(), r.data() );
+  return r;
+}
+
+/// Subraction operator
+/// \relatesalso vector_
+template <unsigned N, typename T>
+inline vector_<N,T> operator-( const vector_<N,T>& a, const vector_<N,T>& b )
+{
+  vector_<N,T> r;
+  vector_<N,T>::sub( a.data(), b.data(), r.data() );
+  return r;
+}
+
+/// Element-wise product
+/// \relatesalso vector_
+template <unsigned N, typename T>
+inline vector_<N,T> element_product( const vector_<N,T>& a, const vector_<N,T>& b )
+{
+  vector_<N,T> r;
+  vector_<N,T>::mul( a.data(), b.data(), r.data() );
+  return r;
+}
+
+/// Element-wise quotient
+/// \relatesalso vector_
+template <unsigned N, typename T>
+inline vector_<N,T> element_quotient( const vector_<N,T>& a, const vector_<N,T>& b )
+{
+  vector_<N,T> r;
+  vector_<N,T>::div( a.data(), b.data(), r.data() );
+  return r;
+}
+
+/// Equality operator
+/// \relatesalso vector_
+template <unsigned N, typename T>
+inline bool operator==( const vector_<N,T>& a, const vector_<N,T>& b )
+{
+  return a.compare_eq(b);
+}
+
+/// Inequality operator
+/// \relatesalso vector_
+template <unsigned N, typename T>
+inline bool operator!=( const vector_<N,T>& a, const vector_<N,T>& b )
+{
+  return ! a.compare_eq(b);
+}
 
 /// output stream operator for a vector
 template <unsigned N, typename T>
