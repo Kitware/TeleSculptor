@@ -9,6 +9,8 @@
 
 #include <iostream>
 
+#include "vector_cmath.h"
+
 namespace maptk
 {
 
@@ -17,8 +19,8 @@ template <unsigned N, typename T>
 class vector_
 {
 public:
-  /// typedef for easier self reference
-  typedef vector_<N,T> self;
+  /// typedef for vector cmath
+  typedef vector_cmath_<N,T> cmath;
 
   /// Constructor - does not initialize
   vector_<N,T>() {}
@@ -51,28 +53,28 @@ public:
 
 
   /// Add a scalar in place
-  vector_<N,T>& operator+=( T s ) { self::add( data_, s, data_ ); return *this; }
+  vector_<N,T>& operator+=( T s ) { cmath::add( data_, s, data_ ); return *this; }
 
   /// Subract a scalr in place
-  vector_<N,T>& operator-=( T s ) { self::sub( data_, s, data_ ); return *this; }
+  vector_<N,T>& operator-=( T s ) { cmath::sub( data_, s, data_ ); return *this; }
 
   /// Multiply a scalar in place
-  vector_<N,T>& operator*=( T s ) { self::mul( data_, s, data_ ); return *this; }
+  vector_<N,T>& operator*=( T s ) { cmath::mul( data_, s, data_ ); return *this; }
 
   /// Divide by a scalar in place
-  vector_<N,T>& operator/=( T s ) { self::div( data_, s, data_ ); return *this; }
+  vector_<N,T>& operator/=( T s ) { cmath::div( data_, s, data_ ); return *this; }
 
   /// Add a vector in place
-  vector_<N,T>& operator+=( const vector_<N,T>& v ) { self::add( data_, v.data_, data_ ); return *this; }
+  vector_<N,T>& operator+=( const vector_<N,T>& v ) { cmath::add( data_, v.data_, data_ ); return *this; }
 
   /// Subract a vector in place
-  vector_<N,T>& operator-=( const vector_<N,T>& v ) { self::sub( data_, v.data_, data_ ); return *this; }
+  vector_<N,T>& operator-=( const vector_<N,T>& v ) { cmath::sub( data_, v.data_, data_ ); return *this; }
 
   /// Negate operator
   vector_<N,T> operator-() const
   {
     vector_<N,T> result;
-    self::sub( T(0), data_, result.data_ );
+    cmath::sub( T(0), data_, result.data_ );
     return result;
   }
 
@@ -89,62 +91,6 @@ public:
     return true;
   }
 
-  /// Helper routines for arithmetic. N is the size, and is the
-  /// template parameter.
-
-  inline static void add( const T* a, const T* b, T* r )
-  {
-    for ( unsigned int i=0; i < N; ++i,++r,++a,++b )
-      *r = *a + *b;
-  }
-
-  inline static void add( const T* a, T b, T* r )
-  {
-    for ( unsigned int i=0; i < N; ++i,++r,++a )
-      *r = *a + b;
-  }
-
-  inline static void sub( const T* a, const T* b, T* r )
-  {
-    for ( unsigned int i=0; i < N; ++i,++r,++a,++b )
-      *r = *a - *b;
-  }
-
-  inline static void sub( const T* a, T b, T* r )
-  {
-    for ( unsigned int i=0; i < N; ++i,++r,++a )
-      *r = *a - b;
-  }
-
-  inline static void sub( T a, const T* b, T* r )
-  {
-    for ( unsigned int i=0; i < N; ++i,++r,++b )
-      *r = a - *b;
-  }
-
-  inline static void mul( const T* a, const T* b, T* r )
-  {
-    for ( unsigned int i=0; i < N; ++i,++r,++a,++b )
-      *r = *a * *b;
-  }
-
-  inline static void mul( const T* a, T b, T* r )
-  {
-    for ( unsigned int i=0; i < N; ++i,++r,++a )
-      *r = *a * b;
-  }
-
-  inline static void div( const T* a, const T* b, T* r )
-  {
-    for ( unsigned int i=0; i < N; ++i,++r,++a,++b )
-      *r = *a / *b;
-  }
-
-  inline static void div( const T* a, T b, T* r )
-  {
-    for ( unsigned int i=0; i < N; ++i,++r,++a )
-      *r = *a / b;
-  }
 
 protected:
   T data_[N];
@@ -329,7 +275,7 @@ template <unsigned N, typename T>
 inline vector_<N,T> operator+( const vector_<N,T>& v, const T& s )
 {
   vector_<N,T> r;
-  vector_<N,T>::add( v.data(), s, r.data() );
+  vector_cmath_<N,T>::add( v.data(), s, r.data() );
   return r;
 }
 
@@ -339,7 +285,7 @@ template <unsigned N, typename T>
 inline vector_<N,T> operator+( const T& s, const vector_<N,T>& v )
 {
   vector_<N,T> r;
-  vector_<N,T>::add( v.data(), s, r.data() );
+  vector_cmath_<N,T>::add( v.data(), s, r.data() );
   return r;
 }
 
@@ -349,7 +295,7 @@ template <unsigned N, typename T>
 inline vector_<N,T> operator-( const vector_<N,T>& v, const T& s )
 {
   vector_<N,T> r;
-  vector_<N,T>::sub( v.data(), s, r.data() );
+  vector_cmath_<N,T>::sub( v.data(), s, r.data() );
   return r;
 }
 
@@ -359,7 +305,7 @@ template <unsigned N, typename T>
 inline vector_<N,T> operator-( const T& s, const vector_<N,T>& v )
 {
   vector_<N,T> r;
-  vector_<N,T>::sub( s, v.data(), r.data() );
+  vector_cmath_<N,T>::sub( s, v.data(), r.data() );
   return r;
 }
 
@@ -369,7 +315,7 @@ template <unsigned N, typename T>
 inline vector_<N,T> operator*( const vector_<N,T>& v, const T& s )
 {
   vector_<N,T> r;
-  vector_<N,T>::mul( v.data(), s, r.data() );
+  vector_cmath_<N,T>::mul( v.data(), s, r.data() );
   return r;
 }
 
@@ -379,7 +325,7 @@ template <unsigned N, typename T>
 inline vector_<N,T> operator*( const T& s, const vector_<N,T>& v )
 {
   vector_<N,T> r;
-  vector_<N,T>::mul( v.data(), s, r.data() );
+  vector_cmath_<N,T>::mul( v.data(), s, r.data() );
   return r;
 }
 
@@ -389,7 +335,7 @@ template <unsigned N, typename T>
 inline vector_<N,T> operator/( const vector_<N,T>& v, const T& s )
 {
   vector_<N,T> r;
-  vector_<N,T>::div( v.data(), s, r.data() );
+  vector_cmath_<N,T>::div( v.data(), s, r.data() );
   return r;
 }
 
@@ -402,7 +348,7 @@ template <unsigned N, typename T>
 inline vector_<N,T> operator+( const vector_<N,T>& a, const vector_<N,T>& b )
 {
   vector_<N,T> r;
-  vector_<N,T>::add( a.data(), b.data(), r.data() );
+  vector_cmath_<N,T>::add( a.data(), b.data(), r.data() );
   return r;
 }
 
@@ -412,7 +358,7 @@ template <unsigned N, typename T>
 inline vector_<N,T> operator-( const vector_<N,T>& a, const vector_<N,T>& b )
 {
   vector_<N,T> r;
-  vector_<N,T>::sub( a.data(), b.data(), r.data() );
+  vector_cmath_<N,T>::sub( a.data(), b.data(), r.data() );
   return r;
 }
 
@@ -422,7 +368,7 @@ template <unsigned N, typename T>
 inline vector_<N,T> element_product( const vector_<N,T>& a, const vector_<N,T>& b )
 {
   vector_<N,T> r;
-  vector_<N,T>::mul( a.data(), b.data(), r.data() );
+  vector_cmath_<N,T>::mul( a.data(), b.data(), r.data() );
   return r;
 }
 
@@ -432,7 +378,7 @@ template <unsigned N, typename T>
 inline vector_<N,T> element_quotient( const vector_<N,T>& a, const vector_<N,T>& b )
 {
   vector_<N,T> r;
-  vector_<N,T>::div( a.data(), b.data(), r.data() );
+  vector_cmath_<N,T>::div( a.data(), b.data(), r.data() );
   return r;
 }
 

@@ -10,6 +10,7 @@ set( maptk_core_sources
   matrix.h                 matrix.cxx
   rotation.h               rotation.cxx
   vector.h                 vector.cxx
+  vector_cmath.h
 )
 
 
