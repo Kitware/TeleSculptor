@@ -89,6 +89,19 @@ public:
       *r = *a / b;
   }
 
+  /// Test for vector equality
+  inline static bool eq( const T* a, const T* b )
+  {
+    for ( unsigned int i=0; i < N; ++i,++a,++b )
+    {
+      if ( *a != *b )
+      {
+        return false;
+      }
+    }
+    return true;
+  }
+
 };
 
 } // end namespace maptk

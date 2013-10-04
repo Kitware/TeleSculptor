@@ -78,19 +78,6 @@ public:
     return result;
   }
 
-  /// Return true if *this == v
-  bool compare_eq (const vector_<N,T>& v) const
-  {
-    for ( unsigned int i=0; i < N; ++i )
-    {
-      if ( (*this)[i] != v[i] )
-      {
-        return false;
-      }
-    }
-    return true;
-  }
-
 
 protected:
   T data_[N];
@@ -387,7 +374,7 @@ inline vector_<N,T> element_quotient( const vector_<N,T>& a, const vector_<N,T>&
 template <unsigned N, typename T>
 inline bool operator==( const vector_<N,T>& a, const vector_<N,T>& b )
 {
-  return a.compare_eq(b);
+  return vector_cmath_<N,T>::eq( a.data(), b.data() );
 }
 
 /// Inequality operator
@@ -395,7 +382,7 @@ inline bool operator==( const vector_<N,T>& a, const vector_<N,T>& b )
 template <unsigned N, typename T>
 inline bool operator!=( const vector_<N,T>& a, const vector_<N,T>& b )
 {
-  return ! a.compare_eq(b);
+  return ! vector_cmath_<N,T>::eq( a.data(), b.data() );
 }
 
 /// output stream operator for a vector
