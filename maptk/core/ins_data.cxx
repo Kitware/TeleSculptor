@@ -8,7 +8,7 @@
 
 #include <vector>
 #include <sstream>
-
+#include <iomanip>
 
 namespace maptk
 {
@@ -43,18 +43,19 @@ bool operator !=(const ins_data& d1, const ins_data& d2)
 /// output stream operator for INS data
 std::ostream&  operator<<(std::ostream& s, const ins_data& d)
 {
+  using std::setprecision;
   s << d.source_name << ", "
-    << d.yaw << ", "
-    << d.pitch << ", "
-    << d.roll << ", "
-    << d.lat << ", "
-    << d.lon << ", "
-    << d.alt << ", "
-    << d.gps_sec << ", "
+    << setprecision(12) << d.yaw << ", "
+    << setprecision(12) << d.pitch << ", "
+    << setprecision(12) << d.roll << ", "
+    << setprecision(12) << d.lat << ", "
+    << setprecision(12) << d.lon << ", "
+    << setprecision(12) << d.alt << ", "
+    << setprecision(12) << d.gps_sec << ", "
     << d.gps_week << ", "
-    << d.n_vel << ", "
-    << d.e_vel << ", "
-    << d.up_vel << ", "
+    << setprecision(12) << d.n_vel << ", "
+    << setprecision(12) << d.e_vel << ", "
+    << setprecision(12) << d.up_vel << ", "
     << d.imu_status << ", "
     << d.local_adj << ", "
     << d.dst_flag << '\n';
