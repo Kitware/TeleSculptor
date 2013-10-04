@@ -12,6 +12,7 @@
 #include <boost/integer/static_min_max.hpp>
 
 #include "vector.h"
+#include "vector_cmath.h"
 
 namespace maptk
 {
@@ -27,6 +28,9 @@ public:
   static unsigned const max_dim = boost::static_unsigned_max<M,N>::value;
   /// a compile time constant defined to be M*N
   static unsigned const num_elems = M*N;
+  /// typedef for vector cmath (i.e. treat the matrix as a vector)
+  typedef vector_cmath_<num_elems,T> cmath;
+
 
   /// Constructor - does not initialize
   matrix_<M,N,T>() {}
@@ -94,6 +98,41 @@ public:
   /// Extra rows or columns of a non-square matrix are set to zero
   matrix_<M,N,T>& set_identity();
 
+  /// Add a scalar in place
+  matrix_<M,N,T>& operator+=( T s ) { cmath::add( data_[0], s, data_[0] ); return *this; }
+
+  /// Subract a scalr in place
+  matrix_<M,N,T>& operator-=( T s ) { cmath::sub( data_[0], s, data_[0] ); return *this; }
+
+  /// Multiply a scalar in place
+  matrix_<M,N,T>& operator*=( T s ) { cmath::mul( data_[0], s, data_[0] ); return *this; }
+
+  /// Divide by a scalar in place
+  matrix_<M,N,T>& operator/=( T s ) { cmath::div( data_[0], s, data_[0] ); return *this; }
+
+  /// Add a matrix in place
+  matrix_<M,N,T>& operator+=( const matrix_<M,N,T>& m )
+  {
+    cmath::add( data_[0], m.data_[0], data_[0] );
+    return *this;
+  }
+
+  /// Subract a matrix in place
+  matrix_<M,N,T>& operator-=( const matrix_<M,N,T>& m )
+  {
+    cmath::sub( data_[0], m.data_[0], data_[0] );
+    return *this;
+  }
+
+  /// Negate operator
+  matrix_<M,N,T> operator-() const
+  {
+    matrix_<M,N,T> result;
+    cmath::sub( T(0), data_[0], result.data_[0] );
+    return result;
+  }
+
+
 protected:
   T data_[M][N];
 };
@@ -106,13 +145,144 @@ typedef matrix_<3,3,float> matrix_3x3f;
 typedef matrix_<3,4,double> matrix_3x4d;
 typedef matrix_<3,4,float> matrix_3x4f;
 
-/// output stream operator for a vector
-template <unsigned M, unsigned N, typename T>
-std::ostream&  operator<<(std::ostream& s, const matrix_<M,N,T>& v);
+// --- Matrix-scalar operators ----------------------------------------
 
-/// input stream operator for a vector
+/// Matrix-scalar addtion operator
+/// \relatesalso matrix_
 template <unsigned M, unsigned N, typename T>
-std::istream&  operator>>(std::istream& s, matrix_<M,N,T>& v);
+inline matrix_<M,N,T> operator+( const matrix_<M,N,T>& m, const T& s )
+{
+  matrix_<M,N,T> r;
+  vector_cmath_<M*N,T>::add( m.data(), s, r.data() );
+  return r;
+}
+
+/// Scalar-matrix addition operator
+/// \relatesalso matrix_
+template <unsigned M, unsigned N, typename T>
+inline matrix_<M,N,T> operator+( const T& s, const matrix_<M,N,T>& m )
+{
+  matrix_<M,N,T> r;
+  vector_cmath_<M*N,T>::add( m.data(), s, r.data() );
+  return r;
+}
+
+/// Matrix-scalar subraction operator
+/// \relatesalso matrix_
+template <unsigned M, unsigned N, typename T>
+inline matrix_<M,N,T> operator-( const matrix_<M,N,T>& m, const T& s )
+{
+  matrix_<M,N,T> r;
+  vector_cmath_<M*N,T>::sub( m.data(), s, r.data() );
+  return r;
+}
+
+/// Scalar-matrix subraction operator
+/// \relatesalso matrix_
+template <unsigned M, unsigned N, typename T>
+inline matrix_<M,N,T> operator-( const T& s, const matrix_<M,N,T>& m )
+{
+  matrix_<M,N,T> r;
+  vector_cmath_<M*N,T>::sub( s, m.data(), r.data() );
+  return r;
+}
+
+/// Scalar post-multiplcation operator
+/// \relatesalso matrix_
+template <unsigned M, unsigned N, typename T>
+inline matrix_<M,N,T> operator*( const matrix_<M,N,T>& m, const T& s )
+{
+  matrix_<M,N,T> r;
+  vector_cmath_<M*N,T>::mul( m.data(), s, r.data() );
+  return r;
+}
+
+/// Scalar pre-multiplication operator
+/// \relatesalso matrix_
+template <unsigned M, unsigned N, typename T>
+inline matrix_<M,N,T> operator*( const T& s, const matrix_<M,N,T>& m )
+{
+  matrix_<M,N,T> r;
+  vector_cmath_<M*N,T>::mul( m.data(), s, r.data() );
+  return r;
+}
+
+/// Scalar division operator
+/// \relatesalso matrix_
+template <unsigned M, unsigned N, typename T>
+inline matrix_<M,N,T> operator/( const matrix_<M,N,T>& m, const T& s )
+{
+  matrix_<M,N,T> r;
+  vector_cmath_<M*N,T>::div( m.data(), s, r.data() );
+  return r;
+}
+
+
+// --- Matrix-matrix operators ----------------------------------------
+
+/// Addition operator
+/// \relatesalso matrix_
+template <unsigned M, unsigned N, typename T>
+inline matrix_<M,N,T> operator+( const matrix_<M,N,T>& a, const matrix_<M,N,T>& b )
+{
+  matrix_<M,N,T> r;
+  vector_cmath_<M*N,T>::add( a.data(), b.data(), r.data() );
+  return r;
+}
+
+/// Subraction operator
+/// \relatesalso matrix_
+template <unsigned M, unsigned N, typename T>
+inline matrix_<M,N,T> operator-( const matrix_<M,N,T>& a, const matrix_<M,N,T>& b )
+{
+  matrix_<M,N,T> r;
+  vector_cmath_<M*N,T>::sub( a.data(), b.data(), r.data() );
+  return r;
+}
+
+/// Element-wise product
+/// \relatesalso matrix_
+template <unsigned M, unsigned N, typename T>
+inline matrix_<M,N,T> element_product( const matrix_<M,N,T>& a, const matrix_<M,N,T>& b )
+{
+  matrix_<M,N,T> r;
+  vector_cmath_<M*N,T>::mul( a.data(), b.data(), r.data() );
+  return r;
+}
+
+/// Element-wise quotient
+/// \relatesalso matrix_
+template <unsigned M, unsigned N, typename T>
+inline matrix_<M,N,T> element_quotient( const matrix_<M,N,T>& a, const matrix_<M,N,T>& b )
+{
+  matrix_<M,N,T> r;
+  vector_cmath_<M*N,T>::div( a.data(), b.data(), r.data() );
+  return r;
+}
+
+/// Equality operator
+/// \relatesalso matrix_
+template <unsigned M, unsigned N, typename T>
+inline bool operator==( const matrix_<M,N,T>& a, const matrix_<M,N,T>& b )
+{
+  return vector_cmath_<M*N,T>::eq(a.data(), b.data());
+}
+
+/// Inequality operator
+/// \relatesalso matrix_
+template <unsigned M, unsigned N, typename T>
+inline bool operator!=( const matrix_<M,N,T>& a, const matrix_<M,N,T>& b )
+{
+  return ! vector_cmath_<M*N,T>::eq(a.data(), b.data());
+}
+
+/// output stream operator for a matrix
+template <unsigned M, unsigned N, typename T>
+std::ostream&  operator<<(std::ostream& s, const matrix_<M,N,T>& m);
+
+/// input stream operator for a matrix
+template <unsigned M, unsigned N, typename T>
+std::istream&  operator>>(std::istream& s, matrix_<M,N,T>& m);
 
 
 } // end namespace maptk
