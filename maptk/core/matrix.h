@@ -276,6 +276,63 @@ inline bool operator!=( const matrix_<M,N,T>& a, const matrix_<M,N,T>& b )
   return ! vector_cmath_<M*N,T>::eq(a.data(), b.data());
 }
 
+// --- Matrix and vector multiplication -----------------------------------
+
+/// Multiply matrix_ (M x N) and vector_ (N)
+/// \relatesalso vector_
+/// \relatesalso matrix_
+template <unsigned M, unsigned N, typename T>
+inline
+vector_<M,T> operator*(const matrix_<M,N,T>& a, const vector_<N,T>& b)
+{
+  vector_<M,T> out;
+  for (unsigned i = 0; i < M; ++i)
+  {
+    T accum = a(i,0) * b(0);
+    for (unsigned k = 1; k < N; ++k)
+      accum += a(i,k) * b(k);
+    out(i) = accum;
+  }
+  return out;
+}
+
+/// Multiply vector_ (M) and matrix_ (M x N)
+/// \relatesalso vector_
+/// \relatesalso matrix_
+template <unsigned M, unsigned N, typename T>
+inline
+vector_<N,T> operator*(const vector_<M,T>& a, const matrix_<M,N,T>& b)
+{
+  vector_<N,T> out;
+  for (unsigned i = 0; i < N; ++i)
+  {
+    T accum = a(0) * b(0,i);
+    for (unsigned k = 1; k < M; ++k)
+      accum += a(k) * b(k,i);
+    out(i) = accum;
+  }
+  return out;
+}
+
+/// Multiply two matrix_ (M x N) times (N x O)
+/// \relatesalso matrix_
+template <unsigned M, unsigned N, unsigned O, typename T>
+inline
+matrix_<M,O,T> operator*(const matrix_<M,N,T>& a, const matrix_<N,O,T>& b)
+{
+  matrix_<M,O,T> out;
+  for (unsigned i = 0; i < M; ++i)
+    for (unsigned j = 0; j < O; ++j)
+    {
+      T accum = a(i,0) * b(0,j);
+      for (unsigned k = 1; k < N; ++k)
+        accum += a(i,k) * b(k,j);
+      out(i,j) = accum;
+    }
+  return out;
+}
+
+
 /// output stream operator for a matrix
 template <unsigned M, unsigned N, typename T>
 std::ostream&  operator<<(std::ostream& s, const matrix_<M,N,T>& m);
