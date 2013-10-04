@@ -7,4 +7,5 @@ set(test_libraries
 # Core tests
 ##############################
 maptk_discover_tests(vector test_libraries test_vector.cxx)
+maptk_discover_tests(rotation test_libraries test_rotation.cxx)
 
