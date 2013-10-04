@@ -10,6 +10,7 @@ set(maptk_core_headers_public
   feature_set.h
   image.h
   image_container.h
+  ins_data.h
   landmark.h
   matrix.h
   rotation.h
@@ -27,6 +28,7 @@ set(maptk_core_sources
   camera_intrinsics.cxx
   feature.cxx
   image.cxx
+  ins_data.cxx
   matrix.cxx
   rotation.cxx
   track.cxx
