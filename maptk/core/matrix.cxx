@@ -68,6 +68,24 @@ matrix_<M,N,T>
 }
 
 
+/// Return the transpose of this matrix
+template <unsigned M, unsigned N, typename T>
+matrix_<N,M,T>
+matrix_<M,N,T>
+::transpose() const
+{
+  matrix_<N,M,T> result;
+  for (unsigned int i=0; i<M; ++i)
+  {
+    for (unsigned int j=0; j<N; ++j)
+    {
+      result(j,i) = this->data_[i][j];
+    }
+  }
+  return result;
+}
+
+
 /// output stream operator for a matrix
 template <unsigned M, unsigned N, typename T>
 std::ostream&  operator<<(std::ostream& s, const matrix_<M,N,T>& m)

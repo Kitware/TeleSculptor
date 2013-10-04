@@ -98,6 +98,9 @@ public:
   /// Extra rows or columns of a non-square matrix are set to zero
   matrix_<M,N,T>& set_identity();
 
+  /// Return the transpose of this matrix
+  matrix_<N,M,T> transpose() const;
+
   /// Add a scalar in place
   matrix_<M,N,T>& operator+=( T s ) { cmath::add( data_[0], s, data_[0] ); return *this; }
 
