@@ -37,6 +37,10 @@ public:
   /// Convert to a 3x3 matrix
   operator matrix_<3,3,T>() const;
 
+  /// Access the quaternion as a 4-vector
+  /// The first 3 components are imaginary (i,j,k) the last is real
+  const vector_4_<T>& quaternion() const { return q_; }
+
   /// Convert to yaw, pitch, and roll
   void get_yaw_pitch_roll(T& yaw, T& pitch, T& roll);
 
