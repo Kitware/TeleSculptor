@@ -106,10 +106,16 @@ template std::istream&  operator>>(std::istream& s, matrix_<M,N,T>& m)
 
 INSTANTIATE_MATRIX(2, 2, double);
 INSTANTIATE_MATRIX(2, 2, float);
+INSTANTIATE_MATRIX(2, 3, double);
+INSTANTIATE_MATRIX(2, 3, float);
+INSTANTIATE_MATRIX(3, 2, double);
+INSTANTIATE_MATRIX(3, 2, float);
 INSTANTIATE_MATRIX(3, 3, double);
 INSTANTIATE_MATRIX(3, 3, float);
 INSTANTIATE_MATRIX(3, 4, double);
 INSTANTIATE_MATRIX(3, 4, float);
+INSTANTIATE_MATRIX(4, 3, double);
+INSTANTIATE_MATRIX(4, 3, float);
 INSTANTIATE_MATRIX(4, 4, double);
 INSTANTIATE_MATRIX(4, 4, float);
 

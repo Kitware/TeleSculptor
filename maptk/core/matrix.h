@@ -139,11 +139,19 @@ protected:
 
 
 typedef matrix_<2,2,double> matrix_2x2d;
-typedef matrix_<2,2,float> matrix_2x2f;
+typedef matrix_<2,2,float>  matrix_2x2f;
+typedef matrix_<2,3,double> matrix_2x3d;
+typedef matrix_<2,3,float>  matrix_2x3f;
+typedef matrix_<3,2,double> matrix_3x2d;
+typedef matrix_<3,2,float>  matrix_3x2f;
 typedef matrix_<3,3,double> matrix_3x3d;
-typedef matrix_<3,3,float> matrix_3x3f;
+typedef matrix_<3,3,float>  matrix_3x3f;
 typedef matrix_<3,4,double> matrix_3x4d;
-typedef matrix_<3,4,float> matrix_3x4f;
+typedef matrix_<3,4,float>  matrix_3x4f;
+typedef matrix_<4,3,double> matrix_4x3d;
+typedef matrix_<4,3,float>  matrix_4x3f;
+typedef matrix_<4,4,double> matrix_4x4d;
+typedef matrix_<4,4,float>  matrix_4x4f;
 
 // --- Matrix-scalar operators ----------------------------------------
 
