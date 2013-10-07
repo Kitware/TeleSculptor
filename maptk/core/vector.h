@@ -8,6 +8,7 @@
 #define MAPTK_VECTOR_H_
 
 #include <iostream>
+#include <cstring>
 
 #include "vector_cmath.h"
 
