@@ -8,6 +8,7 @@
 #define MAPTK_MATRIX_H_
 
 #include <iostream>
+#include <cstring>
 #include <cassert>
 #include <boost/integer/static_min_max.hpp>
 
