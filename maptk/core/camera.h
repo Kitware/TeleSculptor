@@ -26,7 +26,7 @@ public:
   /// Default Constructor
   camera_<T>()
   : center_(T(0), T(0), T(0)),
-    rotation_(),
+    orientation_(),
     intrinsics_()
   {}
 
@@ -38,11 +38,11 @@ public:
   /// Accessor for the camera center of projection (position)
   const vector_3_<T> center() const { return center_; }
   /// Accessor for the translation vector
-  const vector_3_<T> translation() const { return - (rotation_ * center_); }
+  const vector_3_<T> translation() const { return - (orientation_ * center_); }
   /// Accessor for the covariance of camera center
   const covariance_<3,T>& center_covar() const { return center_covar_; }
   /// Accessor for the rotation
-  const rotation_<T>& rotation() const { return rotation_; }
+  const rotation_<T>& rotation() const { return orientation_; }
   /// Accessor for the intrinsics
   const camera_intrinsics_<T>& intrinsics() const { return intrinsics_; }
 
@@ -51,12 +51,12 @@ public:
   /// Set the translation vector (relative to current rotation)
   void set_translation(const vector_3_<T>& translation)
   {
-    center_ = - (rotation_.inverse() * translation);
+    center_ = - (orientation_.inverse() * translation);
   }
   /// Set the covariance matrix of the feature
   void set_center_covar(const covariance_<3,T>& center_covar) { center_covar_ = center_covar; }
   /// Set the rotation
-  void set_rotation(const rotation_<T>& rotation) { rotation_ = rotation; }
+  void set_rotation(const rotation_<T>& rotation) { orientation_ = rotation; }
   /// Set the intrinsics
   void set_intrinsics(const camera_intrinsics_<T>& intrinsics) { intrinsics_ = intrinsics; }
 
@@ -66,7 +66,7 @@ protected:
   /// The covariance of the camera center location
   covariance_<3,T> center_covar_;
   /// The camera rotation
-  rotation_<T> rotation_;
+  rotation_<T> orientation_;
   /// The camera intrinics
   camera_intrinsics_<T> intrinsics_;
 };
