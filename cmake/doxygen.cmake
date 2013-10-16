@@ -17,13 +17,13 @@ macro (create_doxygen outputdir inputdir name)
     add_custom_command(
         OUTPUT  ${outputdir}/${name}/Doxyfile
         COMMAND ${CMAKE_COMMAND}
-                -D "DOXYGEN_TEMPLATE=${CMAKE_SOURCE_DIR}/conf/doxyfile.in"
+                -D "DOXYGEN_TEMPLATE=${CMAKE_SOURCE_DIR}/conf/Doxyfile.in"
                 -D "DOXY_PROJECT_SOURCE_DIR=${inputdir}"
                 -D "DOXY_DOCUMENTATION_OUTPUT_PATH=${outputdir}"
                 -D "DOXY_PROJECT_NAME=${name}"
                 -D "DOXY_TAG_FILES=${ARGN}"
                 -P "${CMAKE_SOURCE_DIR}/cmake/doxygen-script.cmake"
-        DEPENDS ${CMAKE_SOURCE_DIR}/Doxyfile.in
+        DEPENDS ${CMAKE_SOURCE_DIR}/conf/Doxyfile.in
                 ${outputdir}/${name}
         WORKING_DIRECTORY
                 ${outputdir}/${name}
