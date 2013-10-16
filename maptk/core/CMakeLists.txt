@@ -20,6 +20,7 @@ set(maptk_core_headers_public
   algo/image_io.h
   algo/detect_features.h
   algo/extract_descriptors.h
+  algo/geo_map.h
   )
 
 set(maptk_core_sources
@@ -31,6 +32,8 @@ set(maptk_core_sources
   rotation.cxx
   track.cxx
   vector.cxx
+
+  algo/geo_map.cxx
   )
 
 # installing header files
