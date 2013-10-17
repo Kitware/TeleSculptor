@@ -8,6 +8,7 @@
 #define MAPTK_FEATURE_H_
 
 #include <iostream>
+#include <typeinfo>
 
 #include "vector.h"
 #include "covariance.h"
@@ -16,8 +17,37 @@ namespace maptk
 {
 
 /// A representation of a 2D image feature point.
+///
+/// The base class of features is abstract and provides a
+/// double precision interface.  The templated derived class
+/// can store values in either single or double precision.
+class feature
+{
+public:
+  /// Destructor
+  virtual ~feature() {}
+
+  /// Access the type info of the underlying data (double or float)
+  virtual const std::type_info& data_type() const = 0;
+
+  /// Accessor for the image coordinates
+  virtual vector_2d loc() const = 0;
+  /// Accessor for the feature magnitude
+  virtual double magnitude() const = 0;
+  /// Accessor for the feature scale
+  virtual double scale() const = 0;
+  /// Accessor for the feature angle
+  virtual double angle() const = 0;
+  /// Accessor for the covariance
+  virtual covariance_2d covar() const = 0;
+};
+
+
+/// A concrete 2D image feature point.
+///
+/// Templated over real number type (double or float).
 template <typename T>
-class feature_
+class feature_ : public feature
 {
 public:
   /// Default Constructor
@@ -27,16 +57,36 @@ public:
   feature_<T>(const vector_2_<T>& loc, T mag=0.0,
               T scale=1.0, T angle=0.0);
 
+  /// Access staticly available type of underlying data (double or float)
+  static const std::type_info& static_data_type() { return typeid(T); }
+  /// Access the type info of the underlying data (double or float)
+  virtual const std::type_info& data_type() const { return typeid(T); }
+
+  // Accessor for the image coordinates using underlying data type
+  const vector_2_<T>& get_loc() const { return loc_; }
   // Accessor for the image coordinates
-  const vector_2_<T>& loc() const { return loc_; }
+  virtual vector_2d loc() const { return static_cast<vector_2d>(loc_); }
+
+  // Accessor for the feature magnitude using underlying data type
+  T get_magnitude() const { return magnitude_; }
   // Accessor for the feature magnitude
-  T magnitude() const { return magnitude_; }
+  virtual double magnitude() const { return static_cast<double>(magnitude_); }
+
+  // Accessor for the feature scale using underlying data type
+  T get_scale() const { return scale_; }
   // Accessor for the feature scale
-  T scale() const { return scale_; }
+  virtual double scale() const { return static_cast<double>(scale_); }
+
+  // Accessor for the feature angle using underlying data type
+  T get_angle() const { return angle_; }
   // Accessor for the feature angle
-  T angle() const { return angle_; }
+  virtual double angle() const { return static_cast<double>(angle_); }
+
+  // Accessor for the covariance using underlying data type
+  const covariance_<2,T>& get_covar() const { return covar_; }
   // Accessor for the covariance
-  const covariance_<2,T>& covar() const { return covar_; }
+  virtual covariance_2d covar() const { return static_cast<covariance_2d>(covar_); }
+
 
   // Set the feature position in image space
   void set_loc(const vector_2_<T>& loc) { loc_ = loc; }
