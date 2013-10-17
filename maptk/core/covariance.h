@@ -30,6 +30,18 @@ public:
     memcpy( data_, other.data_, sizeof(data_) );
   }
 
+  /// Copy Constructor from another type
+  template <typename U>
+  explicit covariance_<N,T>(const covariance_<N,U>& other)
+  {
+    const U* in = other.data();
+    T* out = this->data_;
+    for(unsigned i=0; i<N; ++i, ++in, ++out)
+    {
+      *out = static_cast<T>(*in);
+    }
+  }
+
   /// Constructor - initialize to identity matrix times a scalar
   explicit covariance_<N,T>(const T& value)
   {
