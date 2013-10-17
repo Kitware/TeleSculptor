@@ -22,7 +22,7 @@ public:
   /// Default Constructor
   descriptor();
 
-  virtual ~desriptor() {}
+  virtual ~descriptor() {}
 
   /// The size of the descriptor in bytes
   virtual std::size_t size() const = 0;
