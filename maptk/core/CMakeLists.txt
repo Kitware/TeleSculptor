@@ -9,6 +9,7 @@ set( maptk_core_sources
   landmark.h
   matrix.h                 matrix.cxx
   rotation.h               rotation.cxx
+  track.h                  track.cxx
   vector.h                 vector.cxx
   vector_cmath.h
 )
