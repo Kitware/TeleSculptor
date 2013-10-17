@@ -32,6 +32,18 @@ public:
     memcpy( data_, other.data_, sizeof(data_) );
   }
 
+  /// Copy Constructor from another type
+  template <typename U>
+  explicit vector_<N,T>(const vector_<N,U>& other)
+  {
+    const U* in = other.data();
+    T* out = this->data_;
+    for(unsigned i=0; i<N; ++i, ++in, ++out)
+    {
+      *out = static_cast<T>(*in);
+    }
+  }
+
   /// Assignment operator
   vector_<N,T>& operator=(const vector_<N,T>& other)
   {

@@ -42,6 +42,18 @@ public:
     memcpy( data_[0], other.data_[0], M*N*sizeof(T) );
   }
 
+  /// Copy Constructor from another type
+  template <typename U>
+  explicit matrix_<M,N,T>(const matrix_<M,N,U>& other)
+  {
+    const U* in = other.data();
+    T* out = this->data_;
+    for(unsigned i=0; i<num_elems; ++i, ++in, ++out)
+    {
+      *out = static_cast<T>(*in);
+    }
+  }
+
   /// Constructor - from block of data (row-wise)
   explicit matrix_<M,N,T>(const T* data)
   {
