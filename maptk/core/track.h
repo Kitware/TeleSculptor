@@ -22,18 +22,18 @@ namespace maptk
 /// A track is a sequence of feature points and their descriptors
 /// that represent a sequence of observations of the same world location.
 /// A track is required to construct a landmark in 3D.
-template <typename T>
-class track_
+class track
 {
 public:
   typedef boost::shared_ptr<descriptor> descriptor_sptr;
+  typedef boost::shared_ptr<feature> feature_sptr;
 
   /// A structure to hold the state of a track on a given frame
   struct track_state
   {
     /// Constructor
     track_state(unsigned int frame,
-                const feature_<T>& feature,
+                feature_sptr feature,
                 descriptor_sptr descriptor)
     : frame_id(frame),
       feat(feature),
@@ -42,15 +42,15 @@ public:
     /// The frame identifier (i.e. frame number)
     unsigned int frame_id;
     /// The feature detected on frame \a frame_id
-    feature_<T> feat;
+    feature_sptr feat;
     /// The descriptor extracted on frame \a frame_id
     descriptor_sptr desc;
   };
 
-  typedef typename std::vector<track_state>::const_iterator history_const_itr;
+  typedef std::vector<track_state>::const_iterator history_const_itr;
 
   /// Default Constructor
-  track_<T>();
+  track();
 
   /// Access the first frame number covered by this track
   unsigned int first_frame() const;
@@ -77,9 +77,6 @@ protected:
   /// The ordered array of track states
   std::vector<track_state> history_;
 };
-
-typedef track_<double> track_d;
-typedef track_<float>  track_f;
 
 
 } // end namespace maptk

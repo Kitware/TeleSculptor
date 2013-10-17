@@ -11,9 +11,8 @@ namespace maptk
 {
 
 /// Access the first frame number covered by this track
-template <typename T>
 unsigned int
-track_<T>
+track
 ::first_frame() const
 {
   if( this->history_.empty() )
@@ -25,9 +24,8 @@ track_<T>
 
 
 /// Access the last frame number covered by this track
-template <typename T>
 unsigned int
-track_<T>
+track
 ::last_frame() const
 {
   if( this->history_.empty() )
@@ -39,9 +37,8 @@ track_<T>
 
 
 /// Append a track state.
-template <typename T>
 bool
-track_<T>
+track
 ::append(const track_state& state)
 {
   if( !this->history_.empty() &&
@@ -54,11 +51,4 @@ track_<T>
 }
 
 
-#define INSTANTIATE_TRACK(T) \
-template class track_<T>; \
-
-INSTANTIATE_TRACK(double);
-INSTANTIATE_TRACK(float);
-
-#undef INSTANTIATE_TRACK
 } // end namespace maptk
