@@ -21,7 +21,7 @@ image_memory
 
 /// Constructor - allocated n bytes
 image_memory
-::image_memory(std::size_t n)
+::image_memory(size_t n)
 : data_(new char[n]),
   size_(n)
 {
@@ -74,7 +74,7 @@ image_memory
 /// Do nothing if size has not changed
 void
 image_memory
-::set_size(std::size_t n)
+::set_size(size_t n)
 {
   if( size_ == n )
   {
@@ -91,15 +91,10 @@ image_memory
 
 //======================================================================
 
-simple_image
-::~simple_image()
-{
-}
-
 
 /// Constructor that allocates image memory
-simple_image
-::simple_image(size_t width, size_t height, size_t depth, bool interleave)
+image
+::image(size_t width, size_t height, size_t depth, bool interleave)
 : data_(new image_memory(width*height*depth)),
   first_pixel_(reinterpret_cast<byte*>(data_->data())),
   width_(width),
@@ -119,9 +114,9 @@ simple_image
 
 
 /// Constructor that points at existing memory
-simple_image
-::simple_image(const byte* first_pixel, size_t width, size_t height, size_t depth,
-               ptrdiff_t w_step, ptrdiff_t h_step, ptrdiff_t d_step)
+image
+::image(const byte* first_pixel, size_t width, size_t height, size_t depth,
+        ptrdiff_t w_step, ptrdiff_t h_step, ptrdiff_t d_step)
 : data_(),
   first_pixel_(const_cast<byte*>(first_pixel)),
   width_(width),
@@ -134,9 +129,63 @@ simple_image
 }
 
 
+/// Constructor that shares memory with another image
+image
+::image(const image::memory_sptr& mem,
+        const byte* first_pixel, size_t width, size_t height, size_t depth,
+        ptrdiff_t w_step, ptrdiff_t h_step, ptrdiff_t d_step)
+: data_(mem),
+  first_pixel_(const_cast<byte*>(first_pixel)),
+  width_(width),
+  height_(height),
+  depth_(depth),
+  w_step_(w_step),
+  h_step_(h_step),
+  d_step_(d_step)
+{
+}
+
+
+/// Copy Constructor
+/// the new image will share the same memory as the old image
+image
+::image(const image& other)
+: data_(other.data_),
+  first_pixel_(other.first_pixel_),
+  width_(other.width_),
+  height_(other.height_),
+  depth_(other.depth_),
+  w_step_(other.w_step_),
+  h_step_(other.h_step_),
+  d_step_(other.d_step_)
+{
+}
+
+
+/// Assignment operator
+const image&
+image
+::operator=(const image& other)
+{
+  if( this == &other )
+  {
+    return *this;
+  }
+  data_ = other.data_;
+  first_pixel_ = other.first_pixel_;
+  width_ = other.width_;
+  height_ = other.height_;
+  depth_ = other.depth_;
+  w_step_ = other.w_step_;
+  h_step_ = other.h_step_;
+  d_step_ = other.d_step_;
+  return *this;
+}
+
+
 /// Const access to the image data
 const image::byte*
-simple_image
+image
 ::data() const
 {
   if( !data_ )
@@ -149,7 +198,7 @@ simple_image
 
 /// Access to the image data
 image::byte*
-simple_image
+image
 ::data()
 {
   if( !data_ )
@@ -164,7 +213,7 @@ simple_image
 /// This size includes all allocated image memory,
 /// which could be larger than width*height*depth.
 size_t
-simple_image
+image
 ::size() const
 {
   if( !data_ )
