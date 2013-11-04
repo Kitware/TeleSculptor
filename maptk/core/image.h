@@ -53,13 +53,14 @@ protected:
   size_t size_;
 };
 
+typedef boost::shared_ptr<image_memory> image_memory_sptr;
+
 
 /// The representation of an in-memory image.
 /// Images share memory using the image_memory class.
 class image
 {
 public:
-  typedef boost::shared_ptr<image_memory> memory_sptr;
   typedef unsigned char byte;
 
   /// Default Constructor
@@ -73,7 +74,7 @@ public:
         ptrdiff_t w_step, ptrdiff_t h_step, ptrdiff_t d_step);
 
   /// Constructor that shares memory with another image
-  image(const memory_sptr& mem,
+  image(const image_memory_sptr& mem,
         const byte* first_pixel, size_t width, size_t height, size_t depth,
         ptrdiff_t w_step, ptrdiff_t h_step, ptrdiff_t d_step);
 
@@ -126,7 +127,7 @@ public:
 protected:
 
   /// Smart pointer to memory viewed by this class
-  memory_sptr data_;
+  image_memory_sptr data_;
   /// Pointer to the pixel at the origin
   byte* first_pixel_;
   /// Width of the image

@@ -131,7 +131,7 @@ image
 
 /// Constructor that shares memory with another image
 image
-::image(const image::memory_sptr& mem,
+::image(const image_memory_sptr& mem,
         const byte* first_pixel, size_t width, size_t height, size_t depth,
         ptrdiff_t w_step, ptrdiff_t h_step, ptrdiff_t d_step)
 : data_(mem),
