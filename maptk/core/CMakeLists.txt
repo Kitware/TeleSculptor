@@ -9,6 +9,7 @@ set( maptk_core_sources
   feature.h                feature.cxx
   feature_set.h
   image.h                  image.cxx
+  image_container.h
   landmark.h
   matrix.h                 matrix.cxx
   rotation.h               rotation.cxx
