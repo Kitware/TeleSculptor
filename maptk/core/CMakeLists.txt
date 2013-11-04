@@ -18,6 +18,7 @@ set( maptk_core_sources
   vector_cmath.h
 
   algo/image_io.h
+  algo/detect_features.h
 )
 
 
