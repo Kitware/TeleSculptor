@@ -15,6 +15,47 @@
 namespace maptk
 {
 
+/// This class represents a block of image memory on the heap.
+/// The image object use shared pointers to this class.
+/// Derived image memory classes can proved access to image memory
+/// stored in other forms, such as on the GPU or in 3rd party data structures.
+class image_memory
+{
+public:
+  /// Default Constructor
+  image_memory();
+
+  /// Constructor - allocates n bytes
+  image_memory(std::size_t n);
+
+  /// Copy constructor
+  image_memory(const image_memory& other);
+
+  /// Assignment operator
+  image_memory& operator=(const image_memory& other);
+
+  /// Destructor
+  virtual ~image_memory();
+
+  /// Return a pointer to the allocated memory
+  virtual void* data();
+
+  /// The number of bytes allocated
+  std::size_t size() const { return size_; }
+
+  /// Reallocate new memory of size n bytes
+  /// If the size has not changed, this function does nothing.
+  virtual void set_size(std::size_t n);
+
+protected:
+  /// The image data
+  void *data_;
+
+  /// THe number of bytes allocated
+  std::size_t size_;
+};
+
+
 /// An abstract representation of an image.
 ///
 /// This class provides an interface for passing image data
@@ -26,6 +67,8 @@ namespace maptk
 class image
 {
 public:
+  typedef boost::shared_ptr<image_memory> memory_sptr;
+
   /// Destructor
   virtual ~image() {}
 
@@ -90,15 +133,15 @@ public:
                ptrdiff_t w_step, ptrdiff_t h_step, ptrdiff_t d_step);
 
   /// Const access to the image data
-  virtual const byte* data() const { return data_; }
+  virtual const byte* data() const;
 
   /// Access to the image data
-  virtual byte* data() { return data_; }
+  virtual byte* data();
 
   /// The size of the image data in bytes
   /// This size includes all allocated image memory,
   /// which could be larger than width*height*depth.
-  virtual size_t size() const { return size_; }
+  virtual size_t size() const;
 
   /// Const access to the pointer to first image pixel
   /// This may differ from \a data() if the image is a
@@ -130,10 +173,8 @@ public:
 
 protected:
 
-  /// The size of the data allocated in \a data_
-  size_t size_;
-  /// Pointer to memory owned by this class
-  byte* data_;
+  /// Smart pointer to memory viewed by this class
+  memory_sptr data_;
   /// Pointer to the pixel at the origin
   byte* first_pixel_;
   /// Width of the image
