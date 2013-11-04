@@ -3,7 +3,7 @@
 set( maptk_vxl_sources
   image_container.h        image_container.cxx
   vil_image_memory.h       vil_image_memory.cxx
-#  image_io.h               image_io.cxx
+  image_io.h               image_io.cxx
 )
 
 
