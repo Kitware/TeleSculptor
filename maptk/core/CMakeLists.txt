@@ -19,6 +19,7 @@ set( maptk_core_sources
 
   algo/image_io.h
   algo/detect_features.h
+  algo/extract_descriptors.h
 )
 
 
