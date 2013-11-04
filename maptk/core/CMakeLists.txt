@@ -5,14 +5,21 @@ set( maptk_core_sources
   camera_intrinsics.h      camera_intrinsics.cxx
   covariance.h
   descriptor.h
+  descriptor_set.h
   feature.h                feature.cxx
+  feature_set.h
   image.h                  image.cxx
+  image_container.h
   landmark.h
   matrix.h                 matrix.cxx
   rotation.h               rotation.cxx
   track.h                  track.cxx
   vector.h                 vector.cxx
   vector_cmath.h
+
+  algo/image_io.h
+  algo/detect_features.h
+  algo/extract_descriptors.h
 )
 
 

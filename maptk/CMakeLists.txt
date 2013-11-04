@@ -4,7 +4,7 @@ add_subdirectory( core )
 
 
 set( MAPTK_LIBRARIES
-  "maptk_core";
+  "maptk_core"
   CACHE INTERNAL "" )
 
 include( ${CMAKE_SOURCE_DIR}/cmake/doxygen.cmake )
