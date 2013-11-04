@@ -6,6 +6,7 @@ set( maptk_core_sources
   covariance.h
   descriptor.h
   feature.h                feature.cxx
+  image.h                  image.cxx
   landmark.h
   matrix.h                 matrix.cxx
   rotation.h               rotation.cxx
