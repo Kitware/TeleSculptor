@@ -1,11 +1,17 @@
 project( maptk )
 
-add_subdirectory( core )
+include_directories("${maptk_all_SOURCE_DIR}")
 
+add_subdirectory( core )
 
 set( MAPTK_LIBRARIES
   "maptk_core"
   CACHE INTERNAL "" )
+
+if( MAPTK_ENABLE_VXL )
+  add_subdirectory( vxl )
+  list(APPEND MAPTK_LIBRARIES "maptk_vxl")
+endif()
 
 include( ${CMAKE_SOURCE_DIR}/cmake/doxygen.cmake )
 
