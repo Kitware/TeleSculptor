@@ -183,32 +183,6 @@ image
 }
 
 
-/// Const access to the image data
-const image::byte*
-image
-::data() const
-{
-  if( !data_ )
-  {
-    return NULL;
-  }
-  return reinterpret_cast<const byte*>(data_->data());
-}
-
-
-/// Access to the image data
-image::byte*
-image
-::data()
-{
-  if( !data_ )
-  {
-    return NULL;
-  }
-  return reinterpret_cast<byte*>(data_->data());
-}
-
-
 /// The size of the image data in bytes
 /// This size includes all allocated image memory,
 /// which could be larger than width*height*depth.

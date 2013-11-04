@@ -85,11 +85,11 @@ public:
   /// Assignment operator
   const image& operator=(const image& other);
 
-  /// Const access to the image data
-  const byte* data() const;
+  /// Const access to the image memory
+  const image_memory_sptr& memory() const { return data_; }
 
-  /// Access to the image data
-  byte* data();
+  /// Access to the image memory
+  image_memory_sptr memory() { return data_; }
 
   /// The size of the image data in bytes
   /// This size includes all allocated image memory,
