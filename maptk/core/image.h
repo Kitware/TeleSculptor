@@ -180,6 +180,8 @@ public:
 
 };
 
+typedef boost::shared_ptr<image_container> image_container_sptr;
+
 
 /// This concrete image container is simply a wrapper around an image
 class simple_image_container

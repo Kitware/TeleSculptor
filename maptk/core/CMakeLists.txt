@@ -15,6 +15,8 @@ set( maptk_core_sources
   track.h                  track.cxx
   vector.h                 vector.cxx
   vector_cmath.h
+
+  algo/image_io.h
 )
 
 
