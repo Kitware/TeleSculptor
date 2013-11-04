@@ -12,6 +12,7 @@
 
 #include "vector.h"
 #include "covariance.h"
+#include <boost/shared_ptr.hpp>
 
 namespace maptk
 {
@@ -41,6 +42,8 @@ public:
   /// Accessor for the covariance
   virtual covariance_2d covar() const = 0;
 };
+
+typedef boost::shared_ptr<feature> feature_sptr;
 
 
 /// A concrete 2D image feature point.

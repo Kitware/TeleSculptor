@@ -9,6 +9,7 @@
 
 #include <vector>
 #include <iostream>
+#include <boost/shared_ptr.hpp>
 
 namespace maptk
 {
@@ -38,6 +39,8 @@ public:
   virtual std::vector<double> as_double() const = 0;
 
 };
+
+typedef boost::shared_ptr<descriptor> descriptor_sptr;
 
 
 template <typename T, unsigned N>

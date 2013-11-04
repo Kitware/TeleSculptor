@@ -5,7 +5,9 @@ set( maptk_core_sources
   camera_intrinsics.h      camera_intrinsics.cxx
   covariance.h
   descriptor.h
+  descriptor_set.h
   feature.h                feature.cxx
+  feature_set.h
   image.h                  image.cxx
   landmark.h
   matrix.h                 matrix.cxx
