@@ -5,6 +5,7 @@
  */
 
 #include "image.h"
+#include <cstring>
 
 
 namespace maptk
