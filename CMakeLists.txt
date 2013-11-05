@@ -64,11 +64,6 @@ configure_file(
   @ONLY
 )
 
-
-# The following are required to uses Dart and the Cdash dashboard
-enable_testing()
-include(CTest)
-
 option( MAPTK_ENABLE_OPENCV "Enable OpenCV-dependent code" "OFF" )
 option( MAPTK_ENABLE_VXL "Enable VXL-dependent code" "OFF" )
 option( MAPTK_ENABLE_VISCL "Enable VisCL dependent code (for OpenCL on GPU)" "OFF" )
@@ -101,11 +96,12 @@ include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 # this is where the main source code lives
 add_subdirectory( maptk )
 
-option( MAPTK_BUILD_TESTS "Build tests" "ON" )
-if( MAPTK_BUILD_TESTS )
-  enable_testing()
+# The following are required to uses Dart and the Cdash dashboard
+enable_testing()
+include(CTest)
+if(BUILD_TESTING)
   add_subdirectory( tests )
-endif( MAPTK_BUILD_TESTS )
+endif(BUILD_TESTING)
 
 # Configure the CMake EXPORT file during installation
 install( FILES ${maptk_all_BINARY_DIR}/CMakeFiles/maptk-config.cmake
