@@ -22,8 +22,9 @@ set( maptk_core_sources
   algo/extract_descriptors.h
 )
 
+# installing header files
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  DESTINATION ${MAPTK_INCLUDE_INSTALL_PATH}/maptk
+  DESTINATION ${MAPTK_INSTALL_DEST_INCLUDE}/maptk
   FILES_MATCHING PATTERN "*.h"
 )
 
