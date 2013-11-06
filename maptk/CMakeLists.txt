@@ -1,4 +1,4 @@
-project(maptk_modules)
+project(MAPTK_MODULES)
 
 add_subdirectory(core)
 
