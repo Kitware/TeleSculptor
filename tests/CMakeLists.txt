@@ -21,8 +21,8 @@ set(maptk_test_data_directory
 
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
-include_directories("${maptk_all_SOURCE_DIR}")
-include_directories("${maptk_all_BINARY_DIR}")
+include_directories("${MAPTK_SOURCE_DIR}")
+include_directories("${MAPTK_BINARY_DIR}")
 
 add_subdirectory( core )
 

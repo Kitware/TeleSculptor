@@ -7,7 +7,7 @@ set( MAPTK_LIBRARIES
   "maptk_core"
   CACHE INTERNAL "" )
 
-include( ${CMAKE_SOURCE_DIR}/cmake/doxygen.cmake )
+include(doxygen)
 
 if( DOXYGEN_FOUND )
   set( DOCUMENTATION_OUTPUT_PATH

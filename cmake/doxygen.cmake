@@ -14,6 +14,8 @@ macro (create_doxygen outputdir inputdir name)
         OUTPUT  ${outputdir}/${name}
         COMMAND cmake -E make_directory ${outputdir}/${name}
         COMMENT "Creating documentation directory for ${name}")
+    # Calling cmake script to configure and copy the Doxyfile template for
+    # this specific directory.
     add_custom_command(
         OUTPUT  ${outputdir}/${name}/Doxyfile
         COMMAND ${CMAKE_COMMAND}
