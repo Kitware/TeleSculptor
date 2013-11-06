@@ -29,8 +29,8 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 
 add_library(maptk_core ${maptk_core_sources})
 set_target_properties(maptk_core PROPERTIES
-  VERSION ${maptk_VERSION}
-  SOVERSION ${maptk_VERSION}
+  VERSION ${MAPTK_VERSION}
+  SOVERSION ${MAPTK_VERSION}
 )
 install(TARGETS maptk_core
   ${MAPTK_INSTALL_TARGETS_ARGS_COMMON}

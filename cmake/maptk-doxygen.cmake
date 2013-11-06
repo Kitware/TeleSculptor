@@ -1,8 +1,35 @@
+#
+# Setup and define MapTK Doxygen support
+#
+
 find_package(Doxygen)
 
-add_custom_target(doxygen)
+if(DOXYGEN_FOUND)
+  option(MAPTK_BUILD_DOCS "Build MapTK documentation via Doxygen with the ALL target." OFF)
+  if(MAPTK_BUILD_DOCS)
+    add_custom_target(doxygen ALL)
+  else()
+    add_custom_target(doxygen)
+  endif()
+endif()
 
+
+#
+# Register a directory to have Doxygen generate documentation over
+#
+# If Doxygen was not found, this method does nothing as documentation cannot
+# be built, period. If Doxygen was found, but the documentation build option
+# was turned off, the targets are still made, but are not added to the ALL
+# build target.
+#
+# Arguments:
+#   outputdir - Root directory to output generated documentation to.
+#   inputdir  - Root input directory to configure Doxygen to cover.
+#   name      - Name of this directory tree. This name creates a separate
+#               section under the given ``outputdir``.
+#
 macro (maptk_create_doxygen outputdir inputdir name)
+  if(DOXYGEN_FOUND)
     foreach (tag ${ARGN})
         string(REGEX REPLACE "=.*" "" tagfile ${tag})
         set(tagdeps
@@ -49,5 +76,6 @@ macro (maptk_create_doxygen outputdir inputdir name)
         DEPENDS ${outputdir}/${name}/index.html)
     add_dependencies(doxygen
         doxygen-${name})
+  endif()
 
 endmacro (maptk_create_doxygen)

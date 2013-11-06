@@ -79,6 +79,8 @@ configure_file(
 ###
 # Dependencies and Modules
 #
+include(maptk-doxygen)
+
 if(WIN32)
   set(Boost_USE_STATIC_LIBS True)
 endif()
@@ -134,6 +136,7 @@ install(EXPORT maptk
   FILE maptk-config-targets.cmake
 )
 
+# TODO: If the build doc directory exists, install it.
 
 
 ###
