@@ -158,4 +158,3 @@ function (maptk_discover_tests group libraries file)
     endif ()
   endforeach ()
 endfunction ()
-

@@ -62,7 +62,7 @@ option(MAPTK_ENABLE_VISCL   "Enable VisCL dependent code (for OpenCL on GPU)" OF
 # Set up the build export configuration
 set(MAPTK_EXPORT_FILE "${MAPTK_BINARY_DIR}/maptk-config.cmake")
 configure_file(
-  "${MAPTK_SOURCE_DIR}/conf/maptk-config.cmake.in"
+  "${MAPTK_SOURCE_DIR}/cmake/maptk-config.cmake.in"
   "${MAPTK_EXPORT_FILE}"
 )
 
@@ -70,7 +70,7 @@ configure_file(
 set(MAPTK_EXPORT_INSTALL_FILE "${MAPTK_BINARY_DIR}/CMakeFiles/maptk-config.cmake")
 set(MAPTK_EXPORT_INSTALL_TARGETS_FILE "maptk-config-targets.cmake")
 configure_file(
-  "${MAPTK_SOURCE_DIR}/conf/maptk-config-install.cmake.in"
+  "${MAPTK_SOURCE_DIR}/cmake/maptk-config-install.cmake.in"
   "${MAPTK_EXPORT_INSTALL_FILE}"
   @ONLY
 )

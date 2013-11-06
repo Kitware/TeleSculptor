@@ -6,15 +6,15 @@ if (WIN32)
   # TODO: Output to a different directory and then use $<CONFIGURATION> in the
   # working path when generator expressions are supported in test properties.
   set(maptk_test_output_path
-    "${maptk_output_dir}/bin")
+    "${MAPTK_BINARY_DIR}/bin")
 else ()
   set(maptk_test_output_path
-    "${maptk_binary_dir}/tests/bin")
+    "${MAPTK_BINARY_DIR}/tests/bin")
   set(maptk_test_working_path
-    "${maptk_binary_dir}/tests")
+    "${MAPTK_BINARY_DIR}/tests")
 endif ()
 
-include("${maptk_source_dir}/conf/maptk-macro-tests.cmake")
+include(maptk-macro-tests)
 
 set(maptk_test_data_directory
   "${CMAKE_CURRENT_SOURCE_DIR}/data")
