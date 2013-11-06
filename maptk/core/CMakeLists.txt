@@ -32,5 +32,7 @@ set_target_properties(maptk_core PROPERTIES
   VERSION ${maptk_VERSION}
   SOVERSION ${maptk_VERSION}
 )
-install(TARGETS maptk_core EXPORT maptk)
+install(TARGETS maptk_core
+  ${MAPTK_INSTALL_TARGETS_ARGS_COMMON}
+)
 export(TARGETS maptk_core APPEND FILE "${MAPTK_EXPORT_FILE}")
