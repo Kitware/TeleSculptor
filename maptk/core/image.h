@@ -64,7 +64,7 @@ public:
   typedef unsigned char byte;
 
   /// Default Constructor
-  image() {}
+  image();
 
   /// Constructor that allocates image memory
   image(size_t width, size_t height, size_t depth=1, bool interleave=false);

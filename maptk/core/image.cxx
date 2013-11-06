@@ -92,6 +92,21 @@ image_memory
 //======================================================================
 
 
+/// Default Constructor
+image
+::image()
+: data_(),
+  first_pixel_(NULL),
+  width_(0),
+  height_(0),
+  depth_(0),
+  w_step_(0),
+  h_step_(0),
+  d_step_(0)
+{
+}
+
+
 /// Constructor that allocates image memory
 image
 ::image(size_t width, size_t height, size_t depth, bool interleave)
