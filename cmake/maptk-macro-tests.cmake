@@ -37,6 +37,15 @@
 #     Adds a test to run. This runs the executable test-${name} with the
 #     arguments ${instance} ${ARGN}. If enabled, it adds a target named
 #     test-${name}-${instance} to be run by the build if wanted.
+#
+#   (RECOMENDED)
+#   maptk_discover_tests(group libraries file)
+#     Discovers tests declared within the specified ``file`` (test names must
+#     be alphanumeric), defining a test target executable that under the given
+#     ``group`` name. The executable generated will be linked against the
+#     given ``libraries``. Additional arguments and are eventually passed to
+#     the ``add_test()`` call under the hood.
+#
 
 option(MAPTK_TEST_ADD_TARGETS "Add targets for tests to the build system" OFF)
 mark_as_advanced(MAPTK_TEST_ADD_TARGETS)
