@@ -124,6 +124,40 @@ public:
   /// The the step in memory to next pixel in the depth direction
   ptrdiff_t d_step() const { return d_step_; }
 
+  /// Access pixels in the first channel of the image
+  inline byte& operator()(unsigned i, unsigned j)
+  {
+    assert(i < width_);
+    assert(j < height_);
+    return first_pixel_[w_step_*i + h_step_*j];
+  }
+
+  /// Const access pixels in the first channel of the image
+  inline const byte& operator()(unsigned i, unsigned j) const
+  {
+    assert(i < width_);
+    assert(j < height_);
+    return first_pixel_[w_step_*i + h_step_*j];
+  }
+
+  /// Access pixels in the image (width, height, channel)
+  inline byte& operator()(unsigned i, unsigned j, unsigned k)
+  {
+    assert(i < width_);
+    assert(j < height_);
+    assert(k < depth_);
+    return first_pixel_[w_step_*i + h_step_*j + d_step_*k];
+  }
+
+  /// Const access pixels in the image (width, height, channel)
+  inline const byte& operator()(unsigned i, unsigned j, unsigned k) const
+  {
+    assert(i < width_);
+    assert(j < height_);
+    assert(k < depth_);
+    return first_pixel_[w_step_*i + h_step_*j + d_step_*k];
+  }
+
 protected:
 
   /// Smart pointer to memory viewed by this class
@@ -144,6 +178,12 @@ protected:
   ptrdiff_t d_step_;
 
 };
+
+
+/// Compare to images to see if the pixels have the same values.
+/// This does not require that the images have the same memory layout,
+/// only that the images have the same dimensions and pixel values.
+bool equal_content(const image& img1, const image& img2);
 
 
 } // end namespace maptk

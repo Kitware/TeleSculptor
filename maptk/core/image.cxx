@@ -198,4 +198,32 @@ image
 }
 
 
+/// Compare to images to see if the pixels have the same values.
+/// This does not require that the images have the same memory layout,
+/// only that the images have the same dimensions and pixel values.
+bool equal_content(const image& img1, const image& img2)
+{
+  if( img1.width()  != img2.width()  ||
+      img1.height() != img2.height() ||
+      img1.depth()  != img2.depth()  )
+  {
+    return false;
+  }
+  for( unsigned k=0; k<img1.depth(); ++k)
+  {
+    for( unsigned j=0; j<img1.height(); ++j)
+    {
+      for( unsigned i=0; i<img1.width(); ++i)
+      {
+        if( img1(i,j,k) != img2(i,j,k) )
+        {
+          return false;
+        }
+      }
+    }
+  }
+  return true;
+}
+
+
 } // end namespace maptk
