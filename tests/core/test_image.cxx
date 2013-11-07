@@ -87,6 +87,7 @@ IMPLEMENT_TEST(copy_constructor)
   }
 }
 
+
 IMPLEMENT_TEST(equal_content)
 {
   unsigned w=100, h=200, d=3;
@@ -106,25 +107,6 @@ IMPLEMENT_TEST(equal_content)
       for(unsigned i=0; i<w; ++i)
       {
         img1(i,j,k) = img2(i,j,k) = static_cast<unsigned char>((w*h*k + w*j + i) % 255);
-      }
-    }
-  }
-  if( img1.width()  != img2.width()  ||
-      img1.height() != img2.height() ||
-      img1.depth()  != img2.depth()  )
-  {
-    TEST_ERROR("images are not the same size");
-  }
-  for( unsigned k=0; k<img1.depth(); ++k)
-  {
-    for( unsigned j=0; j<img1.height(); ++j)
-    {
-      for( unsigned i=0; i<img1.width(); ++i)
-      {
-        if( img1(i,j,k) != img2(i,j,k) )
-        {
-          std::cerr << "image differ at "<< i<<", "<<j<<", "<<k<<std::endl;
-        }
       }
     }
   }
