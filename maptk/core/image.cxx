@@ -56,7 +56,16 @@ image_memory
   {
     return *this;
   }
-  set_size(other.size());
+  if( size_ != other.size_ )
+  {
+    delete [] reinterpret_cast<char*>(data_);
+    data_ = 0;
+    if (other.size_ > 0)
+    {
+      data_ = new char[other.size_];
+    }
+    size_ = other.size_;
+  }
   std::memcpy(data_, other.data_, size_);
   return *this;
 }
@@ -70,25 +79,6 @@ image_memory
   return data_;
 }
 
-
-/// Reallocate memory for n bytes
-/// Do nothing if size has not changed
-void
-image_memory
-::set_size(size_t n)
-{
-  if( size_ == n )
-  {
-    return;
-  }
-  delete [] reinterpret_cast<char*>(data_);
-  data_ = 0;
-  if (n > 0)
-  {
-    data_ = new char[n];
-  }
-  size_ = n;
-}
 
 //======================================================================
 

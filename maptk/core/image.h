@@ -41,10 +41,6 @@ public:
   /// The number of bytes allocated
   size_t size() const { return size_; }
 
-  /// Reallocate new memory of size n bytes
-  /// If the size has not changed, this function does nothing.
-  virtual void set_size(size_t n);
-
 protected:
   /// The image data
   void *data_;
