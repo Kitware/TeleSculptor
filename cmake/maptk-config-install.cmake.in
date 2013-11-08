@@ -1,7 +1,6 @@
 # Build the appropriate include directory
-get_filename_component(_SELF_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-get_filename_component(_MAPTK_ROOT "${_SELF_DIR}/../.." ABSOLUTE)
+get_filename_component(_MAPTK_ROOT "${CMAKE_CURRENT_LIST_DIR}/../.." ABSOLUTE)
 set(MAPTK_INCLUDE_DIRS "${_MAPTK_ROOT}/include")
 
 # Include the library targets
-include(${_SELF_DIR}/maptk-config-targets.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/maptk-config-targets.cmake)

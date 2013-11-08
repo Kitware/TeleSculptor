@@ -14,7 +14,6 @@ else ()
     "${MAPTK_BINARY_DIR}/tests")
 endif ()
 
-include(maptk-macro-tests)
 
 set(maptk_test_data_directory
   "${CMAKE_CURRENT_SOURCE_DIR}/data")

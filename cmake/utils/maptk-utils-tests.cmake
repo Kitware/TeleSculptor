@@ -38,7 +38,7 @@
 #     arguments ${instance} ${ARGN}. If enabled, it adds a target named
 #     test-${name}-${instance} to be run by the build if wanted.
 #
-#   (RECOMENDED)
+#   (RECOMMENDED)
 #   maptk_discover_tests(group libraries file)
 #     Discovers tests declared within the specified ``file`` (test names must
 #     be alphanumeric), defining a test target executable that under the given

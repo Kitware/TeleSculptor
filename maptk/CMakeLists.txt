@@ -1,5 +1,6 @@
 project(MAPTK_MODULES)
 
+message(STATUS "Entering core module")
 add_subdirectory(core)
 
 set(MAPTK_LIBRARIES
@@ -7,8 +8,7 @@ set(MAPTK_LIBRARIES
   CACHE INTERNAL ""
   )
 
-maptk_create_doxygen(
-  ${MAPTK_BUILD_DEST_DOC}
+message(STATUS "Calling doxygen create on core")
+maptk_create_doxygen(core
   ${CMAKE_CURRENT_SOURCE_DIR}/core
-  core
   )

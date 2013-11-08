@@ -20,20 +20,26 @@ set( maptk_core_sources
   algo/image_io.h
   algo/detect_features.h
   algo/extract_descriptors.h
-)
+  )
 
 # installing header files
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  DESTINATION ${MAPTK_INSTALL_DEST_INCLUDE}/maptk
+  DESTINATION include/maptk
   FILES_MATCHING PATTERN "*.h"
-)
+  )
 
 add_library(maptk_core ${maptk_core_sources})
 set_target_properties(maptk_core PROPERTIES
   VERSION ${MAPTK_VERSION}
   SOVERSION ${MAPTK_VERSION}
-)
+  ARCHIVE_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/lib"
+  LIBRARY_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/lib"
+  RUNTIME_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/bin"
+  )
 install(TARGETS maptk_core
-  ${MAPTK_INSTALL_TARGETS_ARGS_COMMON}
-)
+  EXPORT maptk
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+  )
 export(TARGETS maptk_core APPEND FILE "${MAPTK_EXPORT_FILE}")

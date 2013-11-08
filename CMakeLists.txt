@@ -1,5 +1,5 @@
-cmake_minimum_required( VERSION 2.8 )
-project( MAPTK )
+cmake_minimum_required(VERSION 2.8.3)
+project(MAPTK)
 
 ###
 # Versioning
@@ -13,42 +13,15 @@ set(MAPTK_VERSION "${MAPTK_VERSION_MAJOR}.${MAPTK_VERSION_MINOR}.${MAPTK_VERSION
 ###
 # Add the CMake directory for CMake modules
 #
-set(CMAKE_MODULE_PATH "${MAPTK_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+list(INSERT CMAKE_MODULE_PATH 0
+  "${MAPTK_SOURCE_DIR}/cmake"
+  )
 
 
 ###
-# Cross-platform path determination
+# Options and setup
 #
-set(MAPTK_BUILD_DEST_BIN        ${CMAKE_BINARY_DIR}/bin)
-set(MAPTK_BUILD_DEST_DOC        ${CMAKE_BINARY_DIR}/doc)
-set(MAPTK_BUILD_DEST_LIB        ${CMAKE_BINARY_DIR}/lib)
-
-set(MAPTK_INSTALL_DEST_BIN      ${CMAKE_INSTALL_PREFIX}/bin)
-set(MAPTK_INSTALL_DEST_INCLUDE  ${CMAKE_INSTALL_PREFIX}/include)
-set(MAPTK_INSTALL_DEST_DOC      ${CMAKE_INSTALL_PREFIX}/share/doc/${CMAKE_PROJECT_NAME}-${MAPTK_VERSION})
-set(MAPTK_INSTALL_DEST_LIB      ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX})
-
-set(MAPTK_INSTALL_TARGETS_ARGS_COMMON
-  EXPORT maptk
-  RUNTIME DESTINATION ${MAPTK_INSTALL_DEST_BIN}
-  LIBRARY DESTINATION ${MAPTK_INSTALL_DEST_LIB}
-  ARCHIVE DESTINATION ${MAPTK_INSTALL_DEST_LIB}
-)
-
-if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
-  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${MAPTK_BUILD_DEST_LIB})
-endif()
-if(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
-  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${MAPTK_BUILD_DEST_LIB})
-endif()
-if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
-  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${MAPTK_BUILD_DEST_BIN})
-endif()
-
-
-###
-# Options
-#
+include(CMakeDependentOption)
 
 # we can't build shared libraries on Windows so we leave it off by default;
 # we haven't set up DLL exports or anything like that
@@ -57,6 +30,9 @@ option(BUILD_SHARED_LIBS    "Build shared libraries."                         OF
 option(MAPTK_ENABLE_OPENCV  "Enable OpenCV-dependent code"                    OFF)
 option(MAPTK_ENABLE_VXL     "Enable VXL-dependent code"                       OFF)
 option(MAPTK_ENABLE_VISCL   "Enable VisCL dependent code (for OpenCL on GPU)" OFF)
+
+message(STATUS "Importing MapTK utilities")
+include(maptk-utils)
 
 
 ###
@@ -83,7 +59,6 @@ configure_file(
 ###
 # Dependencies and Modules
 #
-include(maptk-doxygen)
 
 if(WIN32)
   set(Boost_USE_STATIC_LIBS True)
@@ -112,6 +87,7 @@ if( MAPTK_ENABLE_VISCL )
 endif( MAPTK_ENABLE_VISCL )
 
 # this is where the main source code lives
+message(STATUS "Entering modules directory")
 add_subdirectory(maptk)
 
 
@@ -123,6 +99,7 @@ add_subdirectory(maptk)
 enable_testing()
 include(CTest)
 if(BUILD_TESTING)
+  message(STATUS "Testin enabled")
   add_subdirectory(tests)
 endif(BUILD_TESTING)
 
@@ -151,17 +128,17 @@ install(EXPORT maptk
 set(MAPTK_DEPS "")
 
 if(EXISTS /etc/redhat-release)
+  message(STATUS "Found that we're on a RHEL system.")
   file(READ /etc/redhat-release RHEL_VERSION)
   string(REGEX REPLACE ".*release ([^\\. ]*).*" "\\1" RHEL_VERSION "${RHEL_VERSION}")
   set(CPACK_SYSTEM_NAME "el${RHEL_VERSION}.${CMAKE_SYSTEM_PROCESSOR}")
   set(CPACK_RPM_PACKAGE_AUTOREQPROV " no")
   set(CPACK_RPM_PACKAGE_REQUIRES "${MAPTK_DEPS}")
-
 else()
   set(CPACK_SYSTEM_NAME "${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
 endif()
 
-set(CPACK_PACKAGE_NAME              "maptk")
+set(CPACK_PACKAGE_NAME              "MAPTK")
 set(CPACK_PACKAGE_VENDOR            "Kitware, Inc.")
 set(CPACK_PACKAGE_CONTACT           "kitware@kitware.com")
 set(CPACK_MONOLITHIC_INSTALL        true)
