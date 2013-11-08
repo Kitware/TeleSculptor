@@ -154,6 +154,14 @@ public:
     return first_pixel_[w_step_*i + h_step_*j + d_step_*k];
   }
 
+  /// Deep copy the image data from another image into this one
+  void copy_from(const image& other);
+
+  /// Set the size of the image.
+  /// If the size has not changed, do nothing,
+  /// Otherwise, allocate new memory matching the new size
+  void set_size(size_t width, size_t height, size_t depth);
+
 protected:
 
   /// Smart pointer to memory viewed by this class

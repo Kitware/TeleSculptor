@@ -204,6 +204,67 @@ image
 }
 
 
+/// Deep copy the image data from another image into this one
+void
+image
+::copy_from(const image& other)
+{
+  set_size(other.width_, other.height_, other.depth_);
+
+  // TODO check if the images are contiguous and use a
+  // memcpy for more efficient copying
+
+  const ptrdiff_t o_d_step = other.d_step();
+  const ptrdiff_t o_h_step = other.h_step();
+  const ptrdiff_t o_w_step = other.w_step();
+
+  const byte* o_data = other.first_pixel();
+  byte* data = this->first_pixel_;
+  for (unsigned int d=0; d<depth_; ++d, o_data+=o_d_step, data+=d_step_)
+  {
+    const byte* o_row = o_data;
+    byte* row = data;
+    for (unsigned int h=0; h<height_; ++h, o_row+=o_h_step, row+=h_step_)
+    {
+      const byte* o_pixel = o_row;
+      byte* pixel = row;
+      for (unsigned int w=0; w<width_; ++w, o_pixel+=o_w_step, pixel+=w_step_)
+      {
+        *pixel = *o_pixel;
+      }
+    }
+  }
+}
+
+
+/// Set the size of the image.
+/// If the size has not changed, do nothing,
+/// Otherwise, allocate new memory matching the new size
+void
+image
+::set_size(size_t width, size_t height, size_t depth)
+{
+  if( width == width_ && height == height_ && depth == depth_ )
+  {
+    return;
+  }
+
+  data_ = image_memory_sptr(new image_memory(width*height*depth));
+  width_ = width;
+  height_ = height;
+  depth_ = depth;
+  first_pixel_ = reinterpret_cast<byte*>(data_->data());
+
+  // preserve the pixel ordering (e.g. interleaved) as much as possible
+  if( w_step_ == 0 || w_step_ != depth_ )
+  {
+    w_step_ = 1;
+  }
+  h_step_ = width * w_step_;
+  d_step_ = (w_step_ == 1) ? width*height : 1;
+}
+
+
 /// Compare to images to see if the pixels have the same values.
 /// This does not require that the images have the same memory layout,
 /// only that the images have the same dimensions and pixel values.
