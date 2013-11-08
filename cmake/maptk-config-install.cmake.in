@@ -1,5 +1,5 @@
 # Build the appropriate include directory
-get_filename_component(_MAPTK_ROOT "${CMAKE_CURRENT_LIST_DIR}/../.." ABSOLUTE)
+get_filename_component(MAPTK_ROOT "${CMAKE_CURRENT_LIST_DIR}/../.." ABSOLUTE)
 set(MAPTK_INCLUDE_DIRS "${_MAPTK_ROOT}/include")
 
 # Include the library targets
