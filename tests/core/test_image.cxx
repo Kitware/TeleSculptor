@@ -88,6 +88,75 @@ IMPLEMENT_TEST(copy_constructor)
 }
 
 
+IMPLEMENT_TEST(set_size)
+{
+  maptk::image img(10, 20, 4);
+  unsigned char* data = img.first_pixel();
+  img.set_size(10, 20, 4);
+  if( img.first_pixel() != data )
+  {
+    TEST_ERROR("Calling set_size with the existing size should keep the same memory");
+  }
+  // keep another copy of the original image to prevent the original memory from
+  // being deleted and then reallocated.
+  maptk::image img_copy = img;
+  img.set_size(20, 10, 4);
+  if( img.first_pixel() == data )
+  {
+    TEST_ERROR("Calling set_size with a new size should allocate new memory");
+  }
+  if( img.width() != 20 || img.height() != 10 || img.depth() != 4 )
+  {
+    TEST_ERROR("Image does not have correct size after set_size");
+  }
+}
+
+
+IMPLEMENT_TEST(copy_from)
+{
+  unsigned w=100, h=200, d=3;
+  maptk::image img1(w,h,d);
+  for(unsigned k=0; k<d; ++k)
+  {
+    for(unsigned j=0; j<h; ++j)
+    {
+      for(unsigned i=0; i<w; ++i)
+      {
+        img1(i,j,k)  = static_cast<unsigned char>((w*h*k + w*j + i) % 255);
+      }
+    }
+  }
+
+  maptk::image img2;
+  img2.copy_from(img1);
+  if( img1.first_pixel() == img2.first_pixel() )
+  {
+    TEST_ERROR("Deep copied images should not share the same memory");
+  }
+  if( ! equal_content(img1, img2) )
+  {
+    TEST_ERROR("Deep copied images should have the same content");
+  }
+
+  maptk::image img3(200, 400, 3);
+  // create a view into the center of img3
+  maptk::image img4(img3.memory(), img3.first_pixel()+50*200 + 50,
+                    w, h, d,
+                    1, 200, 200*400);
+  // copy data into the view
+  unsigned char * data = img4.first_pixel();
+  img4.copy_from(img1);
+  if( img4.first_pixel() != data )
+  {
+    TEST_ERROR("Deep copying with the correct size should not reallocate memory");
+  }
+  if( ! equal_content(img1, img4) )
+  {
+    TEST_ERROR("Deep copied images (in a view) should have the same content");
+  }
+}
+
+
 IMPLEMENT_TEST(equal_content)
 {
   unsigned w=100, h=200, d=3;
