@@ -8,7 +8,7 @@
 #define MAPTK_ALGO_IMAGE_IO_H_
 
 #include <string>
-#include <maptk/core/image.h>
+#include <maptk/core/image_container.h>
 
 namespace maptk
 {

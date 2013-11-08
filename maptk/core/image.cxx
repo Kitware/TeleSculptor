@@ -93,6 +93,21 @@ image_memory
 //======================================================================
 
 
+/// Default Constructor
+image
+::image()
+: data_(),
+  first_pixel_(NULL),
+  width_(0),
+  height_(0),
+  depth_(0),
+  w_step_(0),
+  h_step_(0),
+  d_step_(0)
+{
+}
+
+
 /// Constructor that allocates image memory
 image
 ::image(size_t width, size_t height, size_t depth, bool interleave)
@@ -132,7 +147,7 @@ image
 
 /// Constructor that shares memory with another image
 image
-::image(const image::memory_sptr& mem,
+::image(const image_memory_sptr& mem,
         const byte* first_pixel, size_t width, size_t height, size_t depth,
         ptrdiff_t w_step, ptrdiff_t h_step, ptrdiff_t d_step)
 : data_(mem),
@@ -184,32 +199,6 @@ image
 }
 
 
-/// Const access to the image data
-const image::byte*
-image
-::data() const
-{
-  if( !data_ )
-  {
-    return NULL;
-  }
-  return reinterpret_cast<const byte*>(data_->data());
-}
-
-
-/// Access to the image data
-image::byte*
-image
-::data()
-{
-  if( !data_ )
-  {
-    return NULL;
-  }
-  return reinterpret_cast<byte*>(data_->data());
-}
-
-
 /// The size of the image data in bytes
 /// This size includes all allocated image memory,
 /// which could be larger than width*height*depth.
@@ -222,6 +211,34 @@ image
     return 0;
   }
   return data_->size();
+}
+
+
+/// Compare to images to see if the pixels have the same values.
+/// This does not require that the images have the same memory layout,
+/// only that the images have the same dimensions and pixel values.
+bool equal_content(const image& img1, const image& img2)
+{
+  if( img1.width()  != img2.width()  ||
+      img1.height() != img2.height() ||
+      img1.depth()  != img2.depth()  )
+  {
+    return false;
+  }
+  for( unsigned k=0; k<img1.depth(); ++k)
+  {
+    for( unsigned j=0; j<img1.height(); ++j)
+    {
+      for( unsigned i=0; i<img1.width(); ++i)
+      {
+        if( img1(i,j,k) != img2(i,j,k) )
+        {
+          return false;
+        }
+      }
+    }
+  }
+  return true;
 }
 
 

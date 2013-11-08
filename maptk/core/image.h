@@ -53,17 +53,18 @@ protected:
   size_t size_;
 };
 
+typedef boost::shared_ptr<image_memory> image_memory_sptr;
+
 
 /// The representation of an in-memory image.
 /// Images share memory using the image_memory class.
 class image
 {
 public:
-  typedef boost::shared_ptr<image_memory> memory_sptr;
   typedef unsigned char byte;
 
   /// Default Constructor
-  image() {}
+  image();
 
   /// Constructor that allocates image memory
   image(size_t width, size_t height, size_t depth=1, bool interleave=false);
@@ -73,7 +74,7 @@ public:
         ptrdiff_t w_step, ptrdiff_t h_step, ptrdiff_t d_step);
 
   /// Constructor that shares memory with another image
-  image(const memory_sptr& mem,
+  image(const image_memory_sptr& mem,
         const byte* first_pixel, size_t width, size_t height, size_t depth,
         ptrdiff_t w_step, ptrdiff_t h_step, ptrdiff_t d_step);
 
@@ -84,11 +85,11 @@ public:
   /// Assignment operator
   const image& operator=(const image& other);
 
-  /// Const access to the image data
-  const byte* data() const;
+  /// Const access to the image memory
+  const image_memory_sptr& memory() const { return data_; }
 
-  /// Access to the image data
-  byte* data();
+  /// Access to the image memory
+  image_memory_sptr memory() { return data_; }
 
   /// The size of the image data in bytes
   /// This size includes all allocated image memory,
@@ -123,10 +124,44 @@ public:
   /// The the step in memory to next pixel in the depth direction
   ptrdiff_t d_step() const { return d_step_; }
 
+  /// Access pixels in the first channel of the image
+  inline byte& operator()(unsigned i, unsigned j)
+  {
+    assert(i < width_);
+    assert(j < height_);
+    return first_pixel_[w_step_*i + h_step_*j];
+  }
+
+  /// Const access pixels in the first channel of the image
+  inline const byte& operator()(unsigned i, unsigned j) const
+  {
+    assert(i < width_);
+    assert(j < height_);
+    return first_pixel_[w_step_*i + h_step_*j];
+  }
+
+  /// Access pixels in the image (width, height, channel)
+  inline byte& operator()(unsigned i, unsigned j, unsigned k)
+  {
+    assert(i < width_);
+    assert(j < height_);
+    assert(k < depth_);
+    return first_pixel_[w_step_*i + h_step_*j + d_step_*k];
+  }
+
+  /// Const access pixels in the image (width, height, channel)
+  inline const byte& operator()(unsigned i, unsigned j, unsigned k) const
+  {
+    assert(i < width_);
+    assert(j < height_);
+    assert(k < depth_);
+    return first_pixel_[w_step_*i + h_step_*j + d_step_*k];
+  }
+
 protected:
 
   /// Smart pointer to memory viewed by this class
-  memory_sptr data_;
+  image_memory_sptr data_;
   /// Pointer to the pixel at the origin
   byte* first_pixel_;
   /// Width of the image
@@ -143,6 +178,12 @@ protected:
   ptrdiff_t d_step_;
 
 };
+
+
+/// Compare to images to see if the pixels have the same values.
+/// This does not require that the images have the same memory layout,
+/// only that the images have the same dimensions and pixel values.
+bool equal_content(const image& img1, const image& img2);
 
 
 } // end namespace maptk
