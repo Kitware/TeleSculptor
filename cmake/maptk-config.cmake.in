@@ -1,5 +1,6 @@
 
 # MAPTK include directory
-set( MAPTK_INCLUDE_DIRS "@MAPTK_SOURCE_DIR@/maptk" )
+set(MAPTK_INCLUDE_DIRS "@MAPTK_SOURCE_DIR@/maptk")
 
 # Export definitions for maptk to be used from find_package
+include("${CMAKE_CURRENT_LIST_DIR}/maptk-config-targets.cmake")

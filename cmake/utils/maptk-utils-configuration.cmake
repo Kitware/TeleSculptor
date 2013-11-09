@@ -10,43 +10,7 @@
 # Top level condiguration target
 add_custom_target(configure ALL)
 
-# Helper function for creating configuration scripts
-#
-# Required variables to be defined:
-#   ``generated_configure_script``
-#       - Path of the file to generate
-#
-function(_maptk_configure_file name source dest)
-  file(WRITE "${generated_configure_script}"
-    "# Configuring file \"${source}\" -> \"${dest}\"\n"
-    )
-
-  # Set each argument given, along with its value, to the generated file.
-  foreach(arg IN LISTS ARGN)
-
-    file(APPEND "${generated_configure_script}"
-      "set(${arg} \"${${arg}}\")\n"
-      )
-  endforeach()
-
-  file(APPEND "${generated_configure_script}" "
-configure_file(
-  \"${source}\"
-  \"${dest}\"
-  @ONLY)\n"
-  )
-
-  set(clean_files
-    "${dest}"
-    "${generated_configure_script}"
-    )
-  set_directory_properties(
-    PROPERTIES
-      ADDITIONAL_MAKE_CLEAN_FILES "${clean_files}"
-    )
-endfunction()
-
-#
+#+
 # Configure the given sourcefile to the given destfile
 #
 #   maptk_configure_file(name sourcefile destfile [var1 [var2 ...]])
@@ -58,24 +22,29 @@ endfunction()
 # This functions by generating custom configuration files for each call that
 # controlls the configuration. Generated files are marked for cleaning.
 #
+# The special symbols ``__OUTPUT_PATH__`` and ``__SOURCE_PATH__`` are reserved
+# by this method, so don't use them as configuration variables in the file you
+# are trying to configure.
+#-
 function(maptk_configure_file name source dest)
-  message(STATUS "[configure-${name}] Configuring '${source}' -> '${dest}'")
-  message(STATUS "[configure-${name}] ARGN: '${ARGN}'")
+  message(STATUS "[configure-${name}] Creating configure command")
 
-  set(generated_configure_script
-    "${CMAKE_CURRENT_BINARY_DIR}/configure.${name}.cmake"
-    )
-
-  # Generated configure script
-  _maptk_configure_file("${name}" "${source}" "${dest}" ${ARGN})
-
+  set(gen_command_args)
+  foreach(arg IN LISTS ARGN)
+    set(gen_command_args
+      ${gen_command_args}
+      "-D${arg}=${${arg}}"
+      )
+  endforeach()
   add_custom_command(
     OUTPUT  "${dest}"
-    COMMAND "${CMAKE_COMMAND}" -P "${generated_configure_script}"
+    COMMAND "${CMAKE_COMMAND}"
+            ${gen_command_args}
+            "-D__SOURCE_PATH__:PATH=${source}"
+            "-D__OUTPUT_PATH__:PATH=${dest}"
+            -P "${MAPTK_SOURCE_DIR}/cmake/tools/maptk-configure-helper.cmake"
     MAIN_DEPENDENCY
             "${source}"
-    DEPENDS "${source}"
-            "${generated_configure_script}"
     WORKING_DIRECTORY
             "${CMAKE_CURRENT_BINARY_DIR}"
     COMMENT "Configuring ${name} file \"${source}\" -> \"${dest}\""
@@ -94,5 +63,4 @@ function(maptk_configure_file name source dest)
       configure-${name}
       )
   endif()
-
 endfunction()

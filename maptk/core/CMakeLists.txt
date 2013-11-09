@@ -1,20 +1,20 @@
 # maptk/core
 
-set( maptk_core_sources
-  camera.h                 camera.cxx
-  camera_intrinsics.h      camera_intrinsics.cxx
+set(maptk_core_headers_public
+  camera.h
+  camera_intrinsics.h
   covariance.h
   descriptor.h
   descriptor_set.h
-  feature.h                feature.cxx
+  feature.h
   feature_set.h
-  image.h                  image.cxx
+  image.h
   image_container.h
   landmark.h
-  matrix.h                 matrix.cxx
-  rotation.h               rotation.cxx
-  track.h                  track.cxx
-  vector.h                 vector.cxx
+  matrix.h
+  rotation.h
+  track.h
+  vector.h
   vector_cmath.h
 
   algo/image_io.h
@@ -22,24 +22,24 @@ set( maptk_core_sources
   algo/extract_descriptors.h
   )
 
-# installing header files
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  DESTINATION include/maptk
-  FILES_MATCHING PATTERN "*.h"
+set(maptk_core_sources
+  camera.cxx
+  camera_intrinsics.cxx
+  feature.cxx
+  image.cxx
+  matrix.cxx
+  rotation.cxx
+  track.cxx
+  vector.cxx
   )
 
-add_library(maptk_core ${maptk_core_sources})
-set_target_properties(maptk_core PROPERTIES
-  VERSION ${MAPTK_VERSION}
-  SOVERSION ${MAPTK_VERSION}
-  ARCHIVE_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/lib"
-  LIBRARY_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/lib"
-  RUNTIME_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/bin"
+# installing header files
+maptk_install(
+  FILES ${maptk_core_headers_public}
+  DESTINATION include/maptk/core
   )
-install(TARGETS maptk_core
-  EXPORT maptk
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
+
+maptk_add_library(maptk_core
+  ${maptk_core_headers_public}
+  ${maptk_core_sources}
   )
-export(TARGETS maptk_core APPEND FILE "${MAPTK_EXPORT_FILE}")

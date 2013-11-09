@@ -31,29 +31,15 @@ option(MAPTK_ENABLE_OPENCV  "Enable OpenCV-dependent code"                    OF
 option(MAPTK_ENABLE_VXL     "Enable VXL-dependent code"                       OFF)
 option(MAPTK_ENABLE_VISCL   "Enable VisCL dependent code (for OpenCL on GPU)" OFF)
 
-message(STATUS "Importing MapTK utilities")
-include(maptk-utils)
 
 
 ###
-# MAPTK CMake config and export file
+# MAPTK CMake config
 #
+message(STATUS "Importing MapTK utilities")
+include(maptk-utils)
 
-# Set up the build export configuration
-set(MAPTK_EXPORT_FILE "${MAPTK_BINARY_DIR}/maptk-config.cmake")
-configure_file(
-  "${MAPTK_SOURCE_DIR}/cmake/maptk-config.cmake.in"
-  "${MAPTK_EXPORT_FILE}"
-)
-
-# Set up the install export
-set(MAPTK_EXPORT_INSTALL_FILE "${MAPTK_BINARY_DIR}/CMakeFiles/maptk-config.cmake")
-set(MAPTK_EXPORT_INSTALL_TARGETS_FILE "maptk-config-targets.cmake")
-configure_file(
-  "${MAPTK_SOURCE_DIR}/cmake/maptk-config-install.cmake.in"
-  "${MAPTK_EXPORT_INSTALL_FILE}"
-  @ONLY
-)
+set(maptk_export_name maptk_exports)
 
 
 ###
@@ -105,19 +91,36 @@ endif(BUILD_TESTING)
 
 
 ###
-# Top level installation
+# Top level installation stuffs
 #
 
-# install CMake configuration files
-install(FILES ${MAPTK_EXPORT_INSTALL_FILE}
-  DESTINATION lib/cmake
-)
-install(EXPORT maptk
-  DESTINATION lib/cmake
-  FILE maptk-config-targets.cmake
-)
+# Configure build-tree CMake config file and export associated targets file
+set(MAPTK_CONFIG_FILE "${MAPTK_BINARY_DIR}/maptk-config.cmake")
+maptk_configure_file(maptk-config
+  "${MAPTK_SOURCE_DIR}/cmake/maptk-config.cmake.in"
+  "${MAPTK_CONFIG_FILE}"
+  MAPTK_SOURCE_DIR
+  )
+maptk_export_targets("${MAPTK_BINARY_DIR}/maptk-config-targets.cmake")
 
-# TODO: If the build doc directory exists, install it.
+# Configure install-tree CMake config file and export associated targets file
+set(cmake_install_dir lib/cmake/maptk)
+set(MAPTK_CONFIG_INSTALL_FILE "${MAPTK_BINARY_DIR}/maptk-config-install.cmake")
+maptk_configure_file(maptk-install-config
+  "${MAPTK_SOURCE_DIR}/cmake/maptk-config-install.cmake.in"
+  "${MAPTK_CONFIG_INSTALL_FILE}"
+  )
+maptk_install(
+  FILES       "${MAPTK_CONFIG_INSTALL_FILE}"
+  DESTINATION "${cmake_install_dir}"
+  RENAME      maptk-config.cmake
+  )
+maptk_install(
+  EXPORT      ${maptk_export_name}
+  NAMESPACE   maptk_
+  DESTINATION "${cmake_install_dir}"
+  FILE        maptk-config-targets.cmake
+  )
 
 
 ###
