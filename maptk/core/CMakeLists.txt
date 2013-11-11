@@ -34,9 +34,9 @@ set(maptk_core_sources
   )
 
 # installing header files
-maptk_install(
-  FILES ${maptk_core_headers_public}
-  DESTINATION include/maptk/core
+maptk_install_headers(
+  ${maptk_core_headers_public}
+  SUBDIR core
   )
 
 maptk_add_library(maptk_core

@@ -12,11 +12,37 @@
 #   component
 #     If set, the target will not be installed under this component (the
 #     default is 'runtime').
+include(CMakeParseArguments)
 
 # Global collection variables
 set(__maptk_export_targets
   CACHE INTERNAL "Targets exported by MapTK"
   )
+set(MAPTK_LIBRARIES
+  CACHE INTERNAL "Libraries build as part of maptk"
+  )
+
+#+
+# Helper macro to manage export string string generation and the no_export
+# flag.
+#
+# Sets the variable "exports" which should be expanded into the install
+# command.
+#-
+macro(_maptk_export name)
+  set(exports)
+  if(no_export)
+    return()
+  endif()
+  set(exports
+    EXPORT ${maptk_export_name}
+    )
+  set(__maptk_export_targets
+    ${__maptk_export_targets}
+    ${name}
+    CACHE INTERNAL "Targets exported by MapTK"
+    )
+endmacro()
 
 #+
 # Wrapper around install(...) that catches ``no_install`` if set
@@ -33,6 +59,38 @@ function(maptk_install)
   endif()
 
   install(${ARGN})
+endfunction()
+
+#+
+# Add an executable to MapTK
+#
+#   maptk_add_executable(name [args...])
+#
+# All args given to this function are passed to CMake's add_executable(...)
+# function after providing the name, so refer to CMake's documentation for
+# additional valid arguments.
+#
+# This function will add the executable to the set of targets to be exported
+# unless ``no_export`` was set.
+#-
+function(maptk_add_executable name)
+  add_executable(${name} ${ARGN})
+  set_target_properties(${name}
+    PROPERTIES
+      RUNTIME_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/bin"
+    )
+
+  if(NOT component)
+    set(component runtime)
+  endif()
+
+  _maptk_export(${name})
+  maptk_install(
+    TARGETS     ${name}
+    ${exports}
+    DESTINATION bin
+    COMPONENT   ${component}
+    )
 endfunction()
 
 #+
@@ -82,29 +140,13 @@ function(maptk_add_library name)
     RUNTIME DESTINATION bin
     COMPONENT           ${component}
     )
-endfunction()
 
-#+
-# Helper macro to manage export string string generation and the no_export
-# flag.
-#
-# Sets the variable "exports" which should be expanded into the install
-# command.
-#-
-macro(_maptk_export name)
-  set(exports)
-  if(no_export)
-    return()
-  endif()
-  set(exports
-    EXPORT ${maptk_export_name}
-    )
-  set(__maptk_export_targets
-    ${__maptk_export_targets}
+  set(MAPTK_LIBRARIES
+    ${MAPTK_LIBRARIES}
     ${name}
-    CACHE INTERNAL "Targets exported by MapTK"
+    CACHE INTERNAL "Libraries build as part of maptk"
     )
-endmacro()
+endfunction()
 
 #+
 #   maptk_export_targets(file [APPEND])
@@ -124,4 +166,51 @@ function(maptk_export_targets file)
   #  PROPERTIES
   #    ADDITIONAL_MAKE_CLEAN_FILES "${file}"
   #  )
+endfunction()
+
+#+
+#   maptk_install_headers(header1 [header2 ...] [SUBDIR dir])
+#
+# Install MapTK public header files to include/maptk.
+#
+# A SUBDIR may be provided in order to place the header files in a
+# subdirectory under that. This path must be relative.
+#-
+function(maptk_install_headers)
+  set(oneValueArgs SUBDIR)
+  cmake_parse_arguments(mih "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+  #maptk_install(
+  #  FILES       ${mih_UNPARSED_ARGUMENTS}
+  #  DESTINATION "include/maptk/${mih_SUBDIR}"
+  #  )
+  foreach(header IN LISTS mih_UNPARSED_ARGUMENTS)
+    maptk_install(
+      FILES       "${header}"
+      DESTINATION "include/maptk/${mih_SUBDIR}/${header}"
+      )
+  endforeach()
+endfunction()
+
+#+
+# Add files to the private header source group
+#
+#   maptk_private_header_group(file1 [file2 ...])
+#
+#-
+function(maptk_private_header_group)
+  source_group("Header Files\\Private"
+    ${ARGN}
+    )
+endfunction()
+
+#+
+# Add files to the private template group
+#
+#   maptk_private_template_group(file1 [file2 ...])
+#
+#-
+function(maptk_private_template_group)
+  source_group("Template Files\\Private"
+    ${ARGN}
+    )
 endfunction()

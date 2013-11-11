@@ -47,7 +47,7 @@ set(maptk_export_name maptk_exports)
 #
 
 if(WIN32)
-  set(Boost_USE_STATIC_LIBS True)
+  set(Boost_USE_STATIC_LIBS TRUE)
 endif()
 find_package(Boost 1.42 REQUIRED COMPONENTS thread filesystem system date_time regex)
 add_definitions(-DBOOST_ALL_NO_LIB)
@@ -67,10 +67,10 @@ if(MAPTK_ENABLE_VXL)
   link_directories(${VXL_LIBRARY_DIR})
 endif()
 
-if( MAPTK_ENABLE_VISCL )
+if(MAPTK_ENABLE_VISCL)
   find_package(viscl REQUIRED)
   include_directories(SYSTEM ${viscl_INCLUDE_DIR})
-endif( MAPTK_ENABLE_VISCL )
+endif()
 
 # this is where the main source code lives
 message(STATUS "Entering modules directory")
@@ -117,7 +117,6 @@ maptk_install(
   )
 maptk_install(
   EXPORT      ${maptk_export_name}
-  NAMESPACE   maptk_
   DESTINATION "${cmake_install_dir}"
   FILE        maptk-config-targets.cmake
   )
