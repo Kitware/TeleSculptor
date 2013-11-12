@@ -1,0 +1,193 @@
+# Doxyfile 1.5.7.1-KDevelop
+
+#---------------------------------------------------------------------------
+# Project related configuration options
+#---------------------------------------------------------------------------
+DOXYFILE_ENCODING      = UTF-8
+PROJECT_NAME           = @doxy_project_name@
+PROJECT_NUMBER         =
+OUTPUT_DIRECTORY       = @doxy_doc_output_path@/@doxy_project_name@
+CREATE_SUBDIRS         = YES
+OUTPUT_LANGUAGE        = English
+BRIEF_MEMBER_DESC      = YES
+REPEAT_BRIEF           = YES
+ABBREVIATE_BRIEF       = "The $name class" \
+                         "The $name widget" \
+                         "The $name file" \
+                         is \
+                         provides \
+                         specifies \
+                         contains \
+                         represents \
+                         a \
+                         an \
+                         the
+ALWAYS_DETAILED_SEC    = NO
+INLINE_INHERITED_MEMB  = NO
+FULL_PATH_NAMES        = YES
+STRIP_FROM_PATH        = @doxy_project_source_dir@
+STRIP_FROM_INC_PATH    =
+SHORT_NAMES            = NO
+JAVADOC_AUTOBRIEF      = NO
+QT_AUTOBRIEF           = NO
+MULTILINE_CPP_IS_BRIEF = NO
+INHERIT_DOCS           = YES
+SEPARATE_MEMBER_PAGES  = NO
+TAB_SIZE               = 8
+ALIASES                = tt{1}="<tt>\1</tt>"
+ALIASES               += port{1}="\tt{\1}"
+ALIASES               += key{1}="\tt{\1}"
+ALIASES               += flag{1}="\tt{\1}"
+ALIASES               += provider{1}="\tt{\1}"
+ALIASES               += type{1}="\tt{\1}"
+ALIASES               += term{1}="<dt>\1</dt>"
+ALIASES               += termdef{1}="<dd>\1</dd>"
+ALIASES               += doxdir{1}="\tt{\1}"
+ALIASES               += portvar{1}="\em{\1}"
+ALIASES               += cond{1}="\em{\1}"
+ALIASES               += preconds="<dl><dt><b>Preconditions:</b></dt><dd>"
+ALIASES               += endpreconds="</dd></dl>"
+ALIASES               += precond{1}="<p>\1</p>"
+ALIASES               += postconds="<dl><dt><b>Postconditions:</b></dt><dd>"
+ALIASES               += endpostconds="</dd></dl>"
+ALIASES               += postcond{1}="<p>\1</p>"
+ALIASES               += oports="\section output_ports Output ports"
+ALIASES               += oport{1}="\li \port{\1} —"
+ALIASES               += iports="\section input_ports Input ports"
+ALIASES               += iport{1}="\li \port{\1} —"
+ALIASES               += configs="\section configuration Configuration"
+ALIASES               += config{1}="\li \key{\1} —"
+ALIASES               += reqs="\section requirements Requirements"
+ALIASES               += req="\li"
+ALIASES               += cflag{1}="\li \flag{\1} —"
+ALIASES               += cprov{1}="\li \provider{\1} —"
+ALIASES               += mflag{1}="\li \flag{\1} —"
+ALIASES               += pflag{1}="\li \flag{\1} —"
+ALIASES               += ptype{1}="\li \type{\1} —"
+ALIASES               += process="\xrefitem processes \"Process description\" \"Process listing\""
+ALIASES               += scheduler="\xrefitem schedulers \"Scheduler description\" \"Scheduler listing\""
+OPTIMIZE_OUTPUT_FOR_C  = NO
+OPTIMIZE_OUTPUT_JAVA   = NO
+OPTIMIZE_FOR_FORTRAN   = NO
+OPTIMIZE_OUTPUT_VHDL   = NO
+BUILTIN_STL_SUPPORT    = NO
+CPP_CLI_SUPPORT        = NO
+SIP_SUPPORT            = NO
+IDL_PROPERTY_SUPPORT   = YES
+DISTRIBUTE_GROUP_DOC   = NO
+SUBGROUPING            = YES
+TYPEDEF_HIDES_STRUCT   = NO
+SYMBOL_CACHE_SIZE      = 0
+#---------------------------------------------------------------------------
+# Build related configuration options
+#---------------------------------------------------------------------------
+EXTRACT_ALL            = NO
+EXTRACT_PRIVATE        = NO
+EXTRACT_STATIC         = NO
+EXTRACT_LOCAL_CLASSES  = NO
+EXTRACT_LOCAL_METHODS  = NO
+EXTRACT_ANON_NSPACES   = NO
+HIDE_UNDOC_MEMBERS     = NO
+HIDE_UNDOC_CLASSES     = NO
+HIDE_FRIEND_COMPOUNDS  = NO
+HIDE_IN_BODY_DOCS      = NO
+INTERNAL_DOCS          = NO
+CASE_SENSE_NAMES       = YES
+HIDE_SCOPE_NAMES       = NO
+SHOW_INCLUDE_FILES     = YES
+INLINE_INFO            = YES
+SORT_MEMBER_DOCS       = YES
+SORT_BRIEF_DOCS        = NO
+SORT_GROUP_NAMES       = NO
+SORT_BY_SCOPE_NAME     = NO
+GENERATE_TODOLIST      = YES
+GENERATE_TESTLIST      = YES
+GENERATE_BUGLIST       = YES
+GENERATE_DEPRECATEDLIST= YES
+ENABLED_SECTIONS       =
+MAX_INITIALIZER_LINES  = 30
+SHOW_USED_FILES        = YES
+SHOW_FILES             = YES
+SHOW_NAMESPACES        = YES
+FILE_VERSION_FILTER    =
+LAYOUT_FILE            =
+#---------------------------------------------------------------------------
+# configuration options related to warning and progress messages
+#---------------------------------------------------------------------------
+QUIET                  = YES
+WARNINGS               = YES
+WARN_IF_UNDOCUMENTED   = YES
+WARN_IF_DOC_ERROR      = YES
+WARN_NO_PARAMDOC       = YES
+WARN_FORMAT            = "$file:$line: $text"
+#---------------------------------------------------------------------------
+# configuration options related to the input files
+#---------------------------------------------------------------------------
+INPUT                  = @doxy_project_source_dir@
+INPUT_ENCODING         = UTF-8
+FILE_PATTERNS          = *.cxx \
+                         *.txx \
+                         *.h \
+                         *.dox
+RECURSIVE              = YES
+EXCLUDE                =
+EXCLUDE_SYMLINKS       = NO
+EXCLUDE_PATTERNS       = @doxy_exclude_patterns@
+EXCLUDE_SYMBOLS        =
+EXAMPLE_PATH           = @doxy_project_source_dir@/doc
+EXAMPLE_PATTERNS       = *
+EXAMPLE_RECURSIVE      = NO
+IMAGE_PATH             =
+INPUT_FILTER           =
+FILTER_PATTERNS        =
+FILTER_SOURCE_FILES    = NO
+#---------------------------------------------------------------------------
+# Configuration options related to the preprocessor
+#---------------------------------------------------------------------------
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = NO
+EXPAND_ONLY_PREDEF     = YES
+SEARCH_INCLUDES        = YES
+INCLUDE_PATH           = @doxy_include_path@
+INCLUDE_FILE_PATTERNS  =
+PREDEFINED             = DOXYGEN_IGNORE
+EXPAND_AS_DEFINED      =
+SKIP_FUNCTION_MACROS   = NO
+#---------------------------------------------------------------------------
+# Configuration::additions related to external references
+#---------------------------------------------------------------------------
+TAGFILES               = @doxy_tag_files@
+GENERATE_TAGFILE       = @doxy_doc_output_path@/@doxy_project_name@.tag
+ALLEXTERNALS           = NO
+EXTERNAL_GROUPS        = NO
+PERL_PATH              = /usr/bin/perl
+#---------------------------------------------------------------------------
+# Configuration options related to the dot tool
+#---------------------------------------------------------------------------
+CLASS_DIAGRAMS         = YES
+MSCGEN_PATH            =
+HIDE_UNDOC_RELATIONS   = YES
+HAVE_DOT               = YES
+DOT_FONTNAME           = DejaVu Sans
+DOT_FONTSIZE           = 10
+DOT_FONTPATH           =
+CLASS_GRAPH            = YES
+COLLABORATION_GRAPH    = YES
+GROUP_GRAPHS           = YES
+UML_LOOK               = NO
+TEMPLATE_RELATIONS     = NO
+INCLUDE_GRAPH          = YES
+INCLUDED_BY_GRAPH      = NO
+CALL_GRAPH             = NO
+CALLER_GRAPH           = NO
+GRAPHICAL_HIERARCHY    = YES
+DIRECTORY_GRAPH        = YES
+DOT_IMAGE_FORMAT       = png
+DOT_PATH               =
+DOTFILE_DIRS           =
+DOT_GRAPH_MAX_NODES    = 50
+MAX_DOT_GRAPH_DEPTH    = 1000
+DOT_TRANSPARENT        = YES
+DOT_MULTI_TARGETS      = NO
+GENERATE_LEGEND        = YES
+DOT_CLEANUP            = YES

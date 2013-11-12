@@ -1,24 +1,26 @@
 # maptk/vxl
 
-set( maptk_vxl_sources
-  image_container.h        image_container.cxx
-  vil_image_memory.h       vil_image_memory.cxx
-  image_io.h               image_io.cxx
-)
+set(maptk_vxl_headers_public
+  image_container.h
+  vil_image_memory.h
+  image_io.h
+  )
 
+set(maptk_vxl_sources
+  image_container.cxx
+  vil_image_memory.cxx
+  image_io.cxx
+  )
 
+# installing header files
+maptk_install_headers(
+  ${maptk_vxl_headers_public}
+  SUBDIR vxl
+  )
 
-add_library( maptk_vxl ${maptk_vxl_sources} )
-set_target_properties( maptk_vxl PROPERTIES
-  VERSION ${maptk_VERSION} SOVERSION ${maptk_VERSION}
-)
+maptk_add_library(maptk_vxl
+  ${maptk_vxl_headers_public}
+  ${maptk_vxl_sources}
+  )
 
-target_link_libraries( maptk_vxl maptk_core vil )
-
-install( TARGETS maptk_vxl EXPORT maptk
-  RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib
-)
-install( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} DESTINATION include/maptk
-  FILES_MATCHING PATTERN "*.h"
-)
-export( TARGETS maptk_vxl APPEND FILE "${MAPTK_EXPORT_FILE}")
+target_link_libraries(maptk_vxl maptk_core vil)

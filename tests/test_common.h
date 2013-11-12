@@ -4,6 +4,15 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ *
+ * \brief Macro definitions for creating and running test cases
+ *
+ * These integrate with the paired CTest infrastucture managed by MAPTK's
+ * CMake.
+ */
+
 #ifndef MAPTK_TEST_TEST_COMMON_H
 #define MAPTK_TEST_TEST_COMMON_H
 
@@ -18,12 +27,24 @@
 
 typedef std::string testname_t;
 
+/// Report an error to stderr.
+/**
+ * @param msg The message to report.
+ */
 #define TEST_ERROR(msg)                         \
   do                                            \
   {                                             \
     std::cerr << "Error: " << msg << std::endl; \
   } while (false)
 
+/// Attempt a code block that should throw some exception
+/**
+ * @param ex      Exception class or type to expect.
+ * @param code    Block of code to execute in which we expect the given
+ *                exception.
+ * @param action  Message describing the action that should have caused
+ *                the expected exception.
+ */
 #define EXPECT_EXCEPTION(ex, code, action)  \
   do                                        \
   {                                         \
@@ -63,6 +84,16 @@ typedef std::string testname_t;
     }                                       \
   } while (false)
 
+
+/// Set-up macro defining the test case function map for the current file
+/**
+ * This *MUST* be declared once at the top of every file containing test case
+ * functions.
+ *
+ * \a TEST_ARGS must be defined before this call, declaring the function
+ * argument signature for test cases declared in the file, i.e. if cases
+ * needed to take in a path to a data directory or the like.
+ */
 #define DECLARE_TEST_MAP()                                    \
   namespace                                                   \
   {                                                           \
@@ -79,8 +110,26 @@ typedef std::string testname_t;
     }                                                         \
   }                                                           \
 
+/// Add a CMake property to the next test declared
+/**
+ * This is a hook for the CMake parsing code to set CTest test properties via
+ * the ``set_tests_properties(...)`` CMake method. Properties declared are set
+ * on the next test declared. The special property \a ENVIRONMENT can only be
+ * set once. Subsiquent TEST_PROPERTY calls setting \a ENVIRONMENT overwrite
+ * previous set attempts.
+ *
+ * @param property  The CMake test property to set.
+ * @param value     The value to set to the CMake test property.
+ *
+ * @sa IMPLEMENT_TEST(testname)
+ */
 #define TEST_PROPERTY(property, value, ...)
 
+/// Define a test case
+/**
+ * @param testname  The name of the test case to define.
+ * @sa TEST_PROPERTY
+ */
 #define IMPLEMENT_TEST(testname)                       \
   static void                                          \
   test_##testname TEST_ARGS;                           \
@@ -89,6 +138,11 @@ typedef std::string testname_t;
   void                                                 \
   test_##testname TEST_ARGS
 
+/// Check the number of positional arguments given to the top level executable
+/**
+ * @param numargs The number of arguments to expect after the name of the
+ *                executable.
+ */
 #define CHECK_ARGS(numargs)     \
   do                            \
   {                             \
@@ -102,6 +156,15 @@ typedef std::string testname_t;
     }                           \
   } while (false)
 
+/// Run the a test case by a given name
+/**
+ * Find an run the test function associated with the given testname.
+ *
+ * @param testname  The name of the test to run. This name should match one
+ *                  given to an IMPLEMENT_TEST() macro.
+ *
+ * @sa DECLARE_TEST_MAP(), IMPLEMENT_TEST(), CHECK_ARGS()
+ */
 #define RUN_TEST(testname, ...)                 \
   do                                            \
   {                                             \
