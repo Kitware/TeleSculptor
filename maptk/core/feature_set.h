@@ -9,6 +9,7 @@
 
 
 #include "feature.h"
+#include <vector>
 #include <boost/shared_ptr.hpp>
 
 namespace maptk
