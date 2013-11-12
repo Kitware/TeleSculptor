@@ -7,7 +7,7 @@
 #       If defined, configuration actions do not add explicit build targets.
 #
 
-# Top level condiguration target
+# Top level configuration target
 add_custom_target(configure ALL)
 
 #+

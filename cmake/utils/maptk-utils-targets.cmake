@@ -1,5 +1,5 @@
 #
-# MapTK Target creation and installation support
+# MAPTK Target creation and installation support
 #
 # Variables that affect behavior of functions:
 #
@@ -15,12 +15,15 @@
 include(CMakeParseArguments)
 
 # Global collection variables
-set(__maptk_export_targets
-  CACHE INTERNAL "Targets exported by MapTK"
+define_property(GLOBAL PROPERTY maptk_export_targets
+  BRIEF_DOCS "Targets exported by MAPTK"
+  FULL_DOCS "List of MAPTK targets to be exported in build and install trees."
   )
-set(MAPTK_LIBRARIES
-  CACHE INTERNAL "Libraries build as part of maptk"
+define_property(GLOBAL PROPERTY maptk_libraries
+  BRIEF_DOCS "Libraries build as part of MAPTK"
+  FULL_DOCS "List of static/shared libraries build by MAPTK"
   )
+
 
 #+
 # Helper macro to manage export string string generation and the no_export
@@ -29,20 +32,17 @@ set(MAPTK_LIBRARIES
 # Sets the variable "exports" which should be expanded into the install
 # command.
 #-
-macro(_maptk_export name)
+function(_maptk_export name)
   set(exports)
   if(no_export)
     return()
   endif()
   set(exports
     EXPORT ${maptk_export_name}
+    PARENT_SCOPE
     )
-  set(__maptk_export_targets
-    ${__maptk_export_targets}
-    ${name}
-    CACHE INTERNAL "Targets exported by MapTK"
-    )
-endmacro()
+  set_property(GLOBAL APPEND PROPERTY maptk_export_targets ${name})
+endfunction()
 
 #+
 # Wrapper around install(...) that catches ``no_install`` if set
@@ -62,7 +62,7 @@ function(maptk_install)
 endfunction()
 
 #+
-# Add an executable to MapTK
+# Add an executable to MAPTK
 #
 #   maptk_add_executable(name [args...])
 #
@@ -94,7 +94,7 @@ function(maptk_add_executable name)
 endfunction()
 
 #+
-# Add a library to MapTK
+# Add a library to MAPTK
 #
 #   maptk_add_library(name [args...])
 #
@@ -141,23 +141,20 @@ function(maptk_add_library name)
     COMPONENT           ${component}
     )
 
-  set(MAPTK_LIBRARIES
-    ${MAPTK_LIBRARIES}
-    ${name}
-    CACHE INTERNAL "Libraries build as part of maptk"
-    )
+  set_property(GLOBAL APPEND PROPERTY maptk_libraries ${name})
 endfunction()
 
 #+
 #   maptk_export_targets(file [APPEND])
 #
-# Export all recorded MapTK targets to the given file in the build tree. If
+# Export all recorded MAPTK targets to the given file in the build tree. If
 # there are no targets recorded, this is a no-op. APPEND may be give to tell
 # us to append to the given file instead of overwriting it.
 #-
 function(maptk_export_targets file)
+  get_property(export_targets GLOBAL PROPERTY maptk_export_targets)
   export(
-    TARGETS ${__maptk_export_targets}
+    TARGETS ${export_targets}
     ${ARGN}
     FILE "${file}"
     )
@@ -171,7 +168,7 @@ endfunction()
 #+
 #   maptk_install_headers(header1 [header2 ...] [SUBDIR dir])
 #
-# Install MapTK public header files to include/maptk.
+# Install MAPTK public header files to include/maptk.
 #
 # A SUBDIR may be provided in order to place the header files in a
 # subdirectory under that. This path must be relative.

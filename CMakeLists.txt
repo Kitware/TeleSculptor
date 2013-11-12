@@ -36,7 +36,6 @@ option(MAPTK_ENABLE_VISCL   "Enable VisCL dependent code (for OpenCL on GPU)" OF
 ###
 # MAPTK CMake config
 #
-message(STATUS "Importing MapTK utilities")
 include(maptk-utils)
 
 set(maptk_export_name maptk_exports)
@@ -49,7 +48,7 @@ set(maptk_export_name maptk_exports)
 if(WIN32)
   set(Boost_USE_STATIC_LIBS TRUE)
 endif()
-find_package(Boost 1.42 REQUIRED COMPONENTS thread filesystem system date_time regex)
+find_package(Boost 1.42 REQUIRED)
 add_definitions(-DBOOST_ALL_NO_LIB)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
@@ -73,7 +72,6 @@ if(MAPTK_ENABLE_VISCL)
 endif()
 
 # this is where the main source code lives
-message(STATUS "Entering modules directory")
 add_subdirectory(maptk)
 
 
@@ -82,16 +80,18 @@ add_subdirectory(maptk)
 #
 
 # The following are required to uses Dart and the Cdash dashboard
-enable_testing()
-include(CTest)
-if(BUILD_TESTING)
-  message(STATUS "Testin enabled")
+option(MAPTK_ENABLE_TESTING "Build MAPTK testing" OFF)
+if(MAPTK_ENABLE_TESTING)
+  enable_testing()
+  include(CTest)
+  set(BUILD_TESTING ON)
+  mark_as_advanced(BUILD_TESTING)
   add_subdirectory(tests)
-endif(BUILD_TESTING)
+endif()
 
 
 ###
-# Top level installation stuffs
+# Top level installation
 #
 
 # Configure build-tree CMake config file and export associated targets file
@@ -130,7 +130,6 @@ maptk_install(
 set(MAPTK_DEPS "")
 
 if(EXISTS /etc/redhat-release)
-  message(STATUS "Found that we're on a RHEL system.")
   file(READ /etc/redhat-release RHEL_VERSION)
   string(REGEX REPLACE ".*release ([^\\. ]*).*" "\\1" RHEL_VERSION "${RHEL_VERSION}")
   set(CPACK_SYSTEM_NAME "el${RHEL_VERSION}.${CMAKE_SYSTEM_PROCESSOR}")

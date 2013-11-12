@@ -1,11 +1,11 @@
 #
-# Setup and define MapTK Doxygen support
+# Setup and define MAPTK Doxygen support
 #
 
 find_package(Doxygen)
 
 cmake_dependent_option(MAPTK_ENABLE_DOCS
-  "Build MapTK documentation via Doxygen." OFF
+  "Build MAPTK documentation via Doxygen." OFF
   DOXYGEN_FOUND OFF
   )
 cmake_dependent_option(MAPTK_INSTALL_DOCS

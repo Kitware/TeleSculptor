@@ -1,11 +1,13 @@
 #
-# Utility macros and functions dealing with MapTK modules
+# Utility macros and functions dealing with MAPTK modules
 #
 include(CMakeParseArguments)
 
-set(_maptk_modules_enabled
-  CACHE INTERNAL "Active (turned on) maptk modules"
+define_property(GLOBAL PROPERTY maptk_modules_enabled
+  BRIEF_DOCS "Active MAPTK modules"
+  FULL_DOCS "List of all modules marked enabled (turned on). These are the modules to be built."
   )
+
 
 #
 # Add a directory as a named module.
@@ -30,25 +32,6 @@ function(maptk_add_module name directory)
     message(WARNING "maptk_add_module called with unparsed args! (${module_UNPARSED_ARGUMENTS})")
   endif()
 
-  # Check that name is unique among modules registered so far
-  list(FIND _maptk_modules_enabled "${name}" duplicate_index)
-  if(NOT duplicate_index EQUAL -1)
-    message(FATAL_ERROR "Attempted to register duplicate module '${name}'!")
-  endif()
-
-  #TODO: Check that each dep is in module enable list
-  foreach(dep IN LISTS module_DEPENDS)
-    list(FIND _maptk_modules_enabled ${dep} dep_index)
-    if(dep_index EQUAL -1)
-      message(SEND_ERROR "Module '${name}' missing module dependency: '${dep}'")
-      set(module_error TRUE)
-    endif()
-  endforeach()
-  # suppresses an optional module's enable flag from appearing if we failed above check
-  if(module_error)
-    return()
-  endif()
-
   if(module_OPTIONAL)
     option(ENABLE_MODULE_${name} "Enable optional module ${name}" OFF)
   else()
@@ -57,12 +40,29 @@ function(maptk_add_module name directory)
   endif()
 
   if(ENABLE_MODULE_${name})
+    get_property(current_modules GLOBAL PROPERTY maptk_modules_enabled)
+
+    # Check that name is unique among modules registered so far
+    list(FIND current_modules "${name}" duplicate_index)
+    if(NOT duplicate_index EQUAL -1)
+      message(FATAL_ERROR "Attempted to register duplicate module '${name}'!")
+    endif()
+
+    # Check that each dep is in module enable list
+    foreach(dep IN LISTS module_DEPENDS)
+      list(FIND current_modules ${dep} dep_index)
+      if(dep_index EQUAL -1)
+        message(SEND_ERROR "Module '${name}' missing dependency: '${dep}'")
+        set(module_error TRUE)
+      endif()
+    endforeach()
+    # suppresses an optional module's enable flag from appearing if we failed above check
+    if(module_error)
+      return()
+    endif()
+
     add_subdirectory("${directory}")
     maptk_create_doxygen("${name}" "${directory}")
-    set(_maptk_modules_enabled
-      ${_maptk_modules_enabled}
-      ${name}
-      CACHE INTERNAL "Active (turned on) maptk modules"
-      )
+    set_property(GLOBAL APPEND PROPERTY maptk_modules_enabled ${name})
   endif()
 endfunction()
