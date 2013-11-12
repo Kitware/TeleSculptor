@@ -1,25 +1,15 @@
-project( maptk )
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag(-fvisibility=hidden MAPTK_HAVE_GCC_VISIBILITY)
 
-add_subdirectory( core )
+# Configure config.h.in
+maptk_configure_file(config.h
+  "${CMAKE_CURRENT_SOURCE_DIR}/config.h.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/config.h"
+  MAPTK_HAVE_GCC_VISIBILITY
+  )
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/config.h"
+  DESTINATION include/maptk
+  )
 
-
-set( MAPTK_LIBRARIES
-  "maptk_core"
-  CACHE INTERNAL "" )
-
-include( ${CMAKE_SOURCE_DIR}/cmake/doxygen.cmake )
-
-if( DOXYGEN_FOUND )
-  set( DOCUMENTATION_OUTPUT_PATH
-    ${CMAKE_BINARY_DIR}/doc )
-#  create_doxygen(
-#    ${DOCUMENTATION_OUTPUT_PATH}
-#    ${CMAKE_CURRENT_SOURCE_DIR}/dir
-#    module
-#    ${DOCUMENTATION_OUTPUT_PATH}/othermodule.tag=../othermodule
-#    ${DOCUMENTATION_OUTPUT_PATH}/othermodule2.tag=../othermodule2)
-  create_doxygen(
-    ${DOCUMENTATION_OUTPUT_PATH}
-    ${CMAKE_CURRENT_SOURCE_DIR}/core
-    core)
-endif()
+# Adding module subdirectories
+maptk_add_module(core "${CMAKE_CURRENT_LIST_DIR}/core")
