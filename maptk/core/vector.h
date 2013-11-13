@@ -155,6 +155,11 @@ public:
   vector_2_<T> (const vector_<2,T>& base)
   : vector_<2,T>(base) {}
 
+  /// Constructor from another data type
+  template <typename U>
+  explicit vector_2_<T> (const vector_2_<U>& other)
+  : vector_<2,T>(other) {}
+
   /// Constructor for a 2D vector
   vector_2_<T>(const T& x, const T& y)
   {
@@ -190,6 +195,11 @@ public:
   /// Constructor from base class
   vector_3_<T> (const vector_<3,T>& base)
   : vector_<3,T>(base) {}
+
+  /// Constructor from another data type
+  template <typename U>
+  explicit vector_3_<T> (const vector_3_<U>& other)
+  : vector_<3,T>(other) {}
 
   /// Constructor for a 3D vector
   vector_3_<T>(const T& x, const T& y, const T& z)
@@ -231,6 +241,11 @@ public:
   /// Constructor from base class
   vector_4_<T> (const vector_<4,T>& base)
   : vector_<4,T>(base) {}
+
+  /// Constructor from another data type
+  template <typename U>
+  explicit vector_4_<T> (const vector_4_<U>& other)
+  : vector_<4,T>(other) {}
 
   /// Constructor for a 4D vector
   vector_4_<T>(const T& x, const T& y, const T& z, const T& w)

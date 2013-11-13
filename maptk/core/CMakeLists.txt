@@ -10,6 +10,7 @@ set(maptk_core_headers_public
   feature_set.h
   image.h
   image_container.h
+  ins_data.h
   landmark.h
   matrix.h
   rotation.h
@@ -20,6 +21,7 @@ set(maptk_core_headers_public
   algo/image_io.h
   algo/detect_features.h
   algo/extract_descriptors.h
+  algo/geo_map.h
   )
 
 set(maptk_core_sources
@@ -27,10 +29,13 @@ set(maptk_core_sources
   camera_intrinsics.cxx
   feature.cxx
   image.cxx
+  ins_data.cxx
   matrix.cxx
   rotation.cxx
   track.cxx
   vector.cxx
+
+  algo/geo_map.cxx
   )
 
 # installing header files
