@@ -16,6 +16,6 @@ include_directories("${MAPTK_SOURCE_DIR}")
 # Adding module subdirectories
 maptk_add_module(core "${CMAKE_CURRENT_LIST_DIR}/core")
 
-if( MAPTK_ENABLE_VXL )
+if(MAPTK_ENABLE_VXL)
   maptk_add_module(vxl "${CMAKE_CURRENT_LIST_DIR}/vxl")
 endif()
