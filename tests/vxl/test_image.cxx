@@ -6,6 +6,7 @@
 
 #include <test_common.h>
 
+#include <cstdio>
 #include <maptk/vxl/image_container.h>
 #include <maptk/vxl/image_io.h>
 
@@ -46,5 +47,9 @@ IMPLEMENT_TEST(image_convert)
   if( ! equal_content(img, img2) )
   {
     TEST_ERROR("Saved image is not identical to loaded image");
+  }
+  if( std::remove("test.png") != 0 )
+  {
+    TEST_ERROR("Unable to delete temporary image file.");
   }
 }
