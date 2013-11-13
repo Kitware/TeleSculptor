@@ -14,27 +14,18 @@ namespace vxl
 {
 
 
-
-/// Reallocate memory for n bytes
-/// Do nothing if size has not changed
-void
-vil_image_memory
-::set_size(size_t n)
-{
-  vil_data_->set_size(n, VIL_PIXEL_FORMAT_BYTE);
-  size_ = n;
-}
-
-
 /// Create space for n bytes
 void
 maptk_memory_chunk
 ::set_size(unsigned long n, vil_pixel_format pixel_format)
 {
-  maptk_data_->set_size(n);
-  size_ = n;
+  if( n != size_ )
+  {
+    maptk_data_ = image_memory_sptr(new image_memory(n));
+    size_ = n;
+  }
+  pixel_format_ = pixel_format;
 }
-
 
 
 } // end namespace vxl

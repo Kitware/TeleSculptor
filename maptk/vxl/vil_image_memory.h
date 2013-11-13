@@ -31,10 +31,6 @@ public:
   /// Return a pointer to the allocated memory
   virtual void* data() { return vil_data_->data(); }
 
-  /// Reallocate new memory of size n bytes
-  /// If the size has not changed, this function does nothing.
-  virtual void set_size(size_t n);
-
   /// Return the underlying vil_memory_chunk
   vil_memory_chunk_sptr memory_chunk() const { return vil_data_; }
 
