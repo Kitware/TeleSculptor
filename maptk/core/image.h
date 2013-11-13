@@ -41,10 +41,6 @@ public:
   /// The number of bytes allocated
   size_t size() const { return size_; }
 
-  /// Reallocate new memory of size n bytes
-  /// If the size has not changed, this function does nothing.
-  virtual void set_size(size_t n);
-
 protected:
   /// The image data
   void *data_;
@@ -157,6 +153,14 @@ public:
     assert(k < depth_);
     return first_pixel_[w_step_*i + h_step_*j + d_step_*k];
   }
+
+  /// Deep copy the image data from another image into this one
+  void copy_from(const image& other);
+
+  /// Set the size of the image.
+  /// If the size has not changed, do nothing,
+  /// Otherwise, allocate new memory matching the new size
+  void set_size(size_t width, size_t height, size_t depth);
 
 protected:
 
