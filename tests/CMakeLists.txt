@@ -25,3 +25,6 @@ include_directories("${MAPTK_BINARY_DIR}")
 
 add_subdirectory(core)
 
+if (MAPTK_ENABLE_VXL)
+  add_subdirectory( vxl )
+endif()
