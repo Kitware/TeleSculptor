@@ -19,3 +19,7 @@ maptk_add_module(core "${CMAKE_CURRENT_LIST_DIR}/core")
 if(MAPTK_ENABLE_VXL)
   maptk_add_module(vxl "${CMAKE_CURRENT_LIST_DIR}/vxl")
 endif()
+
+if(MAPTK_ENABLE_OPENCV)
+  maptk_add_module(ocv "${CMAKE_CURRENT_LIST_DIR}/ocv")
+endif()
