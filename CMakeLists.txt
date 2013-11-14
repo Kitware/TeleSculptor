@@ -30,6 +30,7 @@ option(BUILD_SHARED_LIBS    "Build shared libraries."                         OF
 option(MAPTK_ENABLE_OPENCV  "Enable OpenCV-dependent code"                    OFF)
 option(MAPTK_ENABLE_VXL     "Enable VXL-dependent code"                       OFF)
 option(MAPTK_ENABLE_VISCL   "Enable VisCL dependent code (for OpenCL on GPU)" OFF)
+option(MAPTK_ENABLE_PROJ4   "Enable PROJ4 dependent code"                     OFF)
 
 
 
@@ -69,6 +70,10 @@ endif()
 if(MAPTK_ENABLE_VISCL)
   find_package(viscl REQUIRED)
   include_directories(SYSTEM ${viscl_INCLUDE_DIR})
+endif()
+
+if(MAPTK_ENABLE_PROJ4)
+  find_package(PROJ4)
 endif()
 
 # this is where the main source code lives
