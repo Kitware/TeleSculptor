@@ -181,9 +181,10 @@ function(maptk_install_headers)
   #  DESTINATION "include/maptk/${mih_SUBDIR}"
   #  )
   foreach(header IN LISTS mih_UNPARSED_ARGUMENTS)
+    get_filename_component(H_SUBDIR "${header}" DIRECTORY)
     maptk_install(
       FILES       "${header}"
-      DESTINATION "include/maptk/${mih_SUBDIR}/${header}"
+      DESTINATION "include/maptk/${mih_SUBDIR}/${H_SUBDIR}"
       )
   endforeach()
 endfunction()
