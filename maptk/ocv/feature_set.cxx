@@ -24,7 +24,7 @@ feature_set
   for(cvKP_itr it = data_.begin(); it != data_.end(); ++it)
   {
     const cv::KeyPoint& kp = *it;
-    feature_<float> *f = new feature_<float>();
+    feature_f *f = new feature_f();
     f->set_loc(vector_2f(kp.pt.x, kp.pt.y));
     f->set_magnitude(kp.response);
     f->set_scale(kp.size);
