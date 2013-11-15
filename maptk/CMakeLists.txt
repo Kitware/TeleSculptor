@@ -23,3 +23,7 @@ endif()
 if(MAPTK_ENABLE_OPENCV)
   maptk_add_module(ocv "${CMAKE_CURRENT_LIST_DIR}/ocv")
 endif()
+
+if(MAPTK_ENABLE_PROJ4)
+  maptk_add_module(proj4 "${CMAKE_CURRENT_LIST_DIR}/proj4")
+endif()
