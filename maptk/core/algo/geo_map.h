@@ -20,27 +20,35 @@ class geo_map
 {
 public:
   /// Default Constructor
-  geo_map();
+  geo_map() {}
 
-  /// Convert UTM coordinates to Latitude and Longitude
-  /// \param east is the easting (X) UTM coordnate
-  /// \param north is the northing (Y) UTM coordinate
-  /// \param zone is the UTM zone (values 1-60)
-  /// \param north_hemi is true if in the northern hemisphere, false for southern
-  /// \param lat is the output latitude in degrees
-  /// \param lon is the output longitude in degrees
+  /// Convert UTM coordinate into latitude and longitude.
+  /**
+   * \param       easting     The easting (X) UTM coordinate in meters.
+   * \param       northing    The northing (Y) UTM coordinate in meters.
+   * \param       zone        The zone of the UTM coordinate (1-60).
+   * \param       north_hemi  True if the UTM northing coordinate is in respect
+   *                          to the northern hemisphere.
+   * \param[out]  lat         Output latitude (Y) in decimal degrees.
+   * \param[out]  lon         Output longiture (X) in decimal degrees.
+   */
   virtual void utm_to_latlon(double east, double north,
                              int zone, bool north_hemi,
                              double& lat, double& lon) const = 0;
 
-  /// Convert Latitude and Longitude coordinates to UTM
-  /// \param lat is the output latitude in degrees
-  /// \param lon is the output longitude in degrees
-  /// \param zone is the UTM zone (values 1-60)
-  /// \param north_hemi is true if in the northern hemisphere, false for southern
-  /// \param east is the easting (X) UTM coordnate
-  /// \param north is the northing (Y) UTM coordinate
-  /// \param setzone if a valid zone, use this instead of the computed one.
+  /// Convert latitude and longitude into UTM coordinates.
+  /**
+   * \param       lat         The latitude (Y) coordinate in decimal degrees.
+   * \param       lon         The longitude (X) coordinate in decimal degrees.
+   * \param[out]  easting     Output easting (X) coordinate in meters.
+   * \param[out]  northing    Output northing (Y) coordinate in meters.
+   * \param[out]  zone        Zone of the output UTM coordinate.
+   * \param[out]  north_hemi  True if the output UTM coordinate northing is in
+   *                          respect to the northern hemisphere. False if not.
+   * \param       setzone     If a valid UTM zone, use the given zone instead
+   *                          of the computed zone from the given lat/lon
+   *                          coordinate.
+   */
   virtual void latlon_to_utm(double lat, double lon,
                              double& east, double& north,
                              int& zone, bool& north_hemi,
@@ -50,6 +58,12 @@ public:
   /// \param lat is the output latitude in degrees
   /// \param lon is the output longitude in degrees
   /// \returns the standard UTM zone number for this location.
+
+  /// Return the standard zone number for a given latitude and longitude
+  /**
+   * \param lat latitude in decimal degrees.
+   * \param lon longitude in decimal degrees.
+   */
   virtual int latlon_zone(double lat, double lon) const;
 
 };
