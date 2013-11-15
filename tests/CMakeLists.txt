@@ -32,3 +32,7 @@ endif()
 if (MAPTK_ENABLE_OPENCV)
   add_subdirectory(ocv)
 endif()
+
+if(MAPTK_ENABLE_PROJ4)
+  add_subdirectory(proj4)
+endif()
