@@ -1,0 +1,85 @@
+/*ckwg +5
+ * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
+ * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
+ */
+
+#ifndef MAPTK_PROJ4_GEO_MAP_H_
+#define MAPTK_PROJ4_GEO_MAP_H_
+
+#include <maptk/core/algo/geo_map.h>
+#include <proj_api.h>
+
+namespace maptk
+{
+
+namespace algo
+{
+
+class proj_geo_map
+: public geo_map
+{
+public:
+
+  /// Default Constructor
+  proj_geo_map() {}
+
+  /// Convert UTM coordinate into latitude and longitude.
+  /**
+   * \param       easting     The easting (X) UTM coordinate in meters.
+   * \param       northing    The northing (Y) UTM coordinate in meters.
+   * \param       zone        The zone of the UTM coordinate (1-60).
+   * \param       north_hemi  True if the UTM northing coordinate is in respect
+   *                          to the northern hemisphere.
+   * \param[out]  lat         Output latitude (Y) in decimal degrees.
+   * \param[out]  lon         Output longiture (X) in decimal degrees.
+   */
+  virtual void utm_to_latlon(double easting, double northing,
+                             int zone, bool north_hemi,
+                             double& lat, double& lon) const;
+
+  /// Convert latitude and longitude into UTM coordinates.
+  /**
+   * \param       lat         The latitude (Y) coordinate in decimal degrees.
+   * \param       lon         The longitude (X) coordinate in decimal degrees.
+   * \param[out]  easting     Output easting (X) coordinate in meters.
+   * \param[out]  northing    Output northing (Y) coordinate in meters.
+   * \param[out]  zone        Zone of the output UTM coordinate.
+   * \param[out]  north_hemi  True if the output UTM coordinate northing is in
+   *                          respect to the northern hemisphere. False if not.
+   * \param       setzone     If a valid UTM zone, use the given zone instead
+   *                          of the computed zone from the given lat/lon
+   *                          coordinate.
+   */
+  virtual void latlon_to_utm(double lat, double lon,
+                             double& easting, double& northing,
+                             int& zone, bool& north_hemi,
+                             int setzone=-1) const;
+
+protected:
+  /// Create and return a UTM PROJ4 projection in WGS84
+  /**
+   * Projection will have reference to the given zone.
+   * \param   zone  Zone to assign to the UTM projection object.
+   * \return        The generated projection object, or NULL if we failed to
+   *                create the projection.
+   */
+  projPJ gen_utm_pj(int zone) const;
+
+  /// Create and return a lonlat PROJ4 projection in WGS84
+  /**
+   * \return The generated projection object, or NULL if we failed to create
+   *         the projection.
+   */
+  projPJ gen_latlon_pj() const;
+
+  /// Meters aligning north and south halves of a UTM zone (10^7)
+  static const int utm_shift = 10000000;
+
+};// end class proj4::geo_map
+
+} // end namespace proj4
+
+} // end namespace maptk
+
+#endif // MAPTK_PROJ4_GEO_MAP_H_
