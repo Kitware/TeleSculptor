@@ -6,7 +6,6 @@
 
 #include <test_common.h>
 
-#include <cstdio>
 #include <maptk/proj4/geo_map.h>
 
 // test_common.h required things
@@ -22,11 +21,6 @@ int main(int argc, char** argv)
   CHECK_ARGS(1);
   testname_t const testname = argv[1];
   RUN_TEST(testname);
-}
-
-bool is_about(double value, double target, double epsilon)
-{
-  return (value <= (target + epsilon)) && (value >= (target - epsilon));
 }
 
 IMPLEMENT_TEST(latlon_to_utm)
@@ -45,22 +39,10 @@ IMPLEMENT_TEST(latlon_to_utm)
          expected_northing = -1908018.40;
   int expected_zone = 35;
   bool expected_np = true;
-  if(! is_about(easting, expected_easting, met_epsilon))
-    TEST_ERROR("Result UTM easting more than a centimeter off expected "
-               << "value of " << expected_easting << ". "
-               << "(got " << easting << ")");
-  if(! is_about(northing, expected_northing, met_epsilon))
-    TEST_ERROR("Result UTM northing more than a centimeter off expected "
-               << "value of " << expected_easting << ". "
-               << "(got " << easting << ")");
-  if(! zone == expected_zone)
-    TEST_ERROR("Result UTM zone not equal to expected (" << expected_zone
-               << " expected, got " << zone << ")");
-  if(! is_northp == expected_np)
-    TEST_ERROR("Result point does not match expected \"is north point\" "
-               << "result. (expected " << expected_np
-               << ", got " << is_northp << ")");
-
+  TEST_NEAR("easting", easting, expected_easting, met_epsilon);
+  TEST_NEAR("northing", northing, expected_northing, met_epsilon);
+  TEST_EQUAL("zone", zone, expected_zone);
+  TEST_EQUAL("is north point", is_northp, expected_np);
 }
 
 IMPLEMENT_TEST(utm_to_latlon)
@@ -76,17 +58,8 @@ IMPLEMENT_TEST(utm_to_latlon)
 
   gm.utm_to_latlon(easting, northing, zone, is_np, lat, lon);
 
-  if(! is_about(lat, ex_lat, deg_epsilon))
-    printf("Error: lat check failed.\n"
-           "\tExpected %.16f\n"
-           "\tGot      %.16f\n",
-           ex_lat, lat);
-
-  if(! is_about(lon, ex_lon, deg_epsilon))
-    printf("Error: lon check failed.\n"
-           "\tExpected %.16f\n"
-           "\tGot      %.16f\n",
-           ex_lon, lon);
+  TEST_NEAR("latitude", lat, ex_lat, deg_epsilon);
+  TEST_NEAR("longitude", lon, ex_lon, deg_epsilon);
 }
 
 IMPLEMENT_TEST(backprojection)
@@ -109,16 +82,8 @@ IMPLEMENT_TEST(backprojection)
   gm.utm_to_latlon(easting, northing, zone, is_np,
                    lat, lon);
 
-  if(! is_about(lat, orig_lat, deg_epsilon))
-    printf("Error: back-projection lat check failed.\n"
-           "\tExpected %.16f\n"
-           "\tGot      %.16f\n",
-           orig_lat, lat);
-  if(! is_about(lon, orig_lon, deg_epsilon))
-    printf("Error: back-projection lon check failed.\n"
-           "\tExpected %.16f\n"
-           "\tGot      %.16f\n",
-           orig_lon, lon);
+  TEST_NEAR("bp_lat", lat, orig_lat, deg_epsilon);
+  TEST_NEAR("bp_lon", lon, orig_lon, deg_epsilon);
 
   // UTM back projection
   gm.utm_to_latlon(orig_easting, orig_northing, orig_zone, orig_is_np,
@@ -126,24 +91,8 @@ IMPLEMENT_TEST(backprojection)
   gm.latlon_to_utm(lat, lon,
                    easting, northing, zone, is_np);
 
-  if(! is_about(easting, orig_easting, met_epsilon))
-    printf("Error: back-projection easting check failed.\n"
-           "\tExpected %.3f\n"
-           "\tGot      %.3f\n",
-           orig_easting, easting);
-  if(! is_about(northing, orig_northing, met_epsilon))
-    printf("Error: back-projection northing check failed.\n"
-           "\tExpected %.3f\n"
-           "\tGot      %.3f\n",
-           orig_northing, northing);
-  if(! (zone == orig_zone))
-    printf("Error: back-projection zone check failed.\n"
-           "\tExpected %d\n"
-           "\tGot      %d\n",
-           orig_zone, zone);
-  if(! (is_np == orig_is_np))
-    printf("Error: back-projection north-point check failed.\n"
-           "\tExpected %d\n"
-           "\tGot      %d\n",
-           orig_is_np, is_np);
+  TEST_NEAR("bp_easting", easting, orig_easting, met_epsilon);
+  TEST_NEAR("bp_northing", northing, orig_northing, met_epsilon);
+  TEST_EQUAL("bp_zone", zone, orig_zone);
+  TEST_EQUAL("bp_np", is_np, orig_is_np);
 }

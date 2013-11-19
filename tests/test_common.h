@@ -24,6 +24,8 @@
 #include <string>
 
 #include <cstdlib>
+#include <cstdio>
+#include <cmath>
 
 typedef std::string testname_t;
 
@@ -128,7 +130,7 @@ typedef std::string testname_t;
 /// Define a test case
 /**
  * @param testname  The name of the test case to define.
- * @sa TEST_PROPERTY
+ * @sa TEST/home/purg/dev/perseas/test_runs/test-d2d_conductor_wrapper/test_output_loc/1111/activities_PROPERTY
  */
 #define IMPLEMENT_TEST(testname)                       \
   static void                                          \
@@ -159,6 +161,7 @@ typedef std::string testname_t;
 /// Run the a test case by a given name
 /**
  * Find an run the test function associated with the given testname.
+ * Parameters after the test name are the arguments to pass to the function.
  *
  * @param testname  The name of the test to run. This name should match one
  *                  given to an IMPLEMENT_TEST() macro.
@@ -194,5 +197,46 @@ typedef std::string testname_t;
                                                 \
     return EXIT_SUCCESS;                        \
   } while (false)
+
+
+//
+// Testing helper methods
+//
+
+/// Equality test with message generation on inequality
+/**
+ * @param name
+ */
+#define TEST_EQUAL(name, value, expected)                                 \
+  do                                                                      \
+  {                                                                       \
+    if(value != expected)                                                 \
+    {                                                                     \
+      TEST_ERROR("TEST_EQUAL check '" << name << "' failed." << std::endl \
+                 << "    Expected: " << expected << std::endl             \
+                 << "    Got     : " << value);                           \
+    }                                                                     \
+  } while(false)
+
+/// Test double/float approximate equality to a given epsilon
+/**
+ * @param name    An identifying name for the test.
+ * @param value   The value subject for comparison.
+ * @param target  The value to compare to.
+ * @param epsilon The allowed varience.
+ */
+static void TEST_NEAR(char   const *name,
+                      double const &value,
+                      double const &target,
+                      double const &epsilon)
+{
+  if(fabs(value - target) > epsilon)
+  {
+    TEST_ERROR("TEST_NEAR check '" << name << "' failed:" << std::endl
+               << "    Expected: " << target << std::endl
+               << "    Got     : " << value  << std::endl
+               << "    (epsilon: " << epsilon << ")");
+  }
+}
 
 #endif // MAPTK_TEST_TEST_COMMON_H
