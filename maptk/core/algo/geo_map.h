@@ -32,7 +32,7 @@ public:
    * \param[out]  lat         Output latitude (Y) in decimal degrees.
    * \param[out]  lon         Output longiture (X) in decimal degrees.
    */
-  virtual void utm_to_latlon(double east, double north,
+  virtual void utm_to_latlon(double easting, double northing,
                              int zone, bool north_hemi,
                              double& lat, double& lon) const = 0;
 
@@ -50,14 +50,9 @@ public:
    *                          coordinate.
    */
   virtual void latlon_to_utm(double lat, double lon,
-                             double& east, double& north,
+                             double& easting, double& northing,
                              int& zone, bool& north_hemi,
                              int setzone=-1) const = 0;
-
-  /// Return the standard zone number for a Latitude and Longitude
-  /// \param lat is the output latitude in degrees
-  /// \param lon is the output longitude in degrees
-  /// \returns the standard UTM zone number for this location.
 
   /// Return the standard zone number for a given latitude and longitude
   /**
