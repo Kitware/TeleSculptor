@@ -21,7 +21,7 @@ namespace
 /// Meters aligning north and south halves of a UTM zone (10^7)
 static const int utm_shift = 10000000;
 
-/// Create and return a UTM PROJ4 projection in WGS84
+/// Create and return a UTM PROJ projection in WGS84
 /**
  * Projection will have reference to the given zone.
  * \param   zone  Zone to assign to the UTM projection object.
@@ -35,7 +35,7 @@ static projPJ gen_utm_pj(int zone)
   return pj_init_plus(utm_config.str().c_str());
 }
 
-/// Create and return a lonlat PROJ4 projection in WGS84
+/// Create and return a lonlat PROJ projection in WGS84
 /**
  * \return The generated projection object, or NULL if we failed to create
  *         the projection.
@@ -106,20 +106,20 @@ proj_geo_map
   projPJ pj_latlon = gen_latlon_pj(),
          pj_utm = gen_utm_pj(zone);
 
-  // PROJ4 wants radians
+  // PROJ wants radians
   easting = lon * DEG_TO_RAD;
   northing = lat * DEG_TO_RAD;
   int ret = pj_transform(pj_latlon, pj_utm, 1, 1,
                          &easting, &northing, NULL);
   assert(ret == 0);
 
-  // proj4 always returns with respect to the northern hemisphere.
+  // proj always returns with respect to the northern hemisphere.
   north_hemi = true;
 
   pj_free(pj_latlon);
   pj_free(pj_utm);
 }
 
-} // end namespace proj4
+} // end namespace algo
 
 } // end namespace maptk

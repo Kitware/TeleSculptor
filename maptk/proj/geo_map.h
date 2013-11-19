@@ -4,8 +4,8 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
-#ifndef MAPTK_PROJ4_GEO_MAP_H_
-#define MAPTK_PROJ4_GEO_MAP_H_
+#ifndef MAPTK_PROJ_GEO_MAP_H_
+#define MAPTK_PROJ_GEO_MAP_H_
 
 #include <maptk/core/algo/geo_map.h>
 
@@ -55,10 +55,10 @@ public:
                              int& zone, bool& north_hemi,
                              int setzone=-1) const;
 
-};// end class proj4::geo_map
+};// end class proj_geo_map
 
-} // end namespace proj4
+} // end namespace algo
 
 } // end namespace maptk
 
-#endif // MAPTK_PROJ4_GEO_MAP_H_
+#endif // MAPTK_PROJ_GEO_MAP_H_

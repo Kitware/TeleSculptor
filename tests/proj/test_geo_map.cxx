@@ -6,7 +6,7 @@
 
 #include <test_common.h>
 
-#include <maptk/proj4/geo_map.h>
+#include <maptk/proj/geo_map.h>
 
 // test_common.h required things
 #define TEST_ARGS ()
