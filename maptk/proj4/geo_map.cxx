@@ -10,7 +10,42 @@
 #include <iostream>
 #include <sstream>
 
+#include <proj_api.h>
+
 using namespace std;
+
+// Private Helper functions
+namespace
+{
+
+/// Meters aligning north and south halves of a UTM zone (10^7)
+static const int utm_shift = 10000000;
+
+/// Create and return a UTM PROJ4 projection in WGS84
+/**
+ * Projection will have reference to the given zone.
+ * \param   zone  Zone to assign to the UTM projection object.
+ * \return        The generated projection object, or NULL if we failed to
+ *                create the projection.
+ */
+static projPJ gen_utm_pj(int zone)
+{
+  stringstream utm_config;
+  utm_config << "+proj=utm +ellps=WGS84 +zone=" << zone;
+  return pj_init_plus(utm_config.str().c_str());
+}
+
+/// Create and return a lonlat PROJ4 projection in WGS84
+/**
+ * \return The generated projection object, or NULL if we failed to create
+ *         the projection.
+ */
+static projPJ gen_latlon_pj()
+{
+  return pj_init_plus("+proj=lonlat +ellps=WGS84");
+}
+
+}
 
 namespace maptk
 {
@@ -34,7 +69,7 @@ proj_geo_map
 
   // force northing to be relative to equator
   if(! north_hemi)
-    northing -= this->utm_shift;
+    northing -= utm_shift;
 
   lon = easting;
   lat = northing;
@@ -83,24 +118,6 @@ proj_geo_map
 
   pj_free(pj_latlon);
   pj_free(pj_utm);
-}
-
-/// Create and return a UTM PROJ4 projection in WGS84
-projPJ
-proj_geo_map
-::gen_utm_pj(int zone) const
-{
-  stringstream utm_config;
-  utm_config << "+proj=utm +ellps=WGS84 +zone=" << zone;
-  return pj_init_plus(utm_config.str().c_str());
-}
-
-/// Create and return a lonlat PROJ4 projection in WGS84
-projPJ
-proj_geo_map
-::gen_latlon_pj() const
-{
-  return pj_init_plus("+proj=lonlat +ellps=WGS84");
 }
 
 } // end namespace proj4

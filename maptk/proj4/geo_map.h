@@ -8,7 +8,6 @@
 #define MAPTK_PROJ4_GEO_MAP_H_
 
 #include <maptk/core/algo/geo_map.h>
-#include <proj_api.h>
 
 namespace maptk
 {
@@ -55,26 +54,6 @@ public:
                              double& easting, double& northing,
                              int& zone, bool& north_hemi,
                              int setzone=-1) const;
-
-protected:
-  /// Create and return a UTM PROJ4 projection in WGS84
-  /**
-   * Projection will have reference to the given zone.
-   * \param   zone  Zone to assign to the UTM projection object.
-   * \return        The generated projection object, or NULL if we failed to
-   *                create the projection.
-   */
-  projPJ gen_utm_pj(int zone) const;
-
-  /// Create and return a lonlat PROJ4 projection in WGS84
-  /**
-   * \return The generated projection object, or NULL if we failed to create
-   *         the projection.
-   */
-  projPJ gen_latlon_pj() const;
-
-  /// Meters aligning north and south halves of a UTM zone (10^7)
-  static const int utm_shift = 10000000;
 
 };// end class proj4::geo_map
 
