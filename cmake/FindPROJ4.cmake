@@ -1,8 +1,11 @@
 #
 # Find module for PROJ4
 #
-# The following variables will guild the find:
+# The following variables will guide the find:
 #   PROJ4_ROOT        - Set to the install prefix of the PROJ4 library.
+#   PROJ4_DIR         - Find the package based on this path to the package's
+#                       CMake configuration file. This supersedes the use of
+#                       PROJ4_ROOT.
 #
 # The following variables will be set:
 #   PROJ4_FOUND       - Set to TRUE if PROJ4 could be found.
