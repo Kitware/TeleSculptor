@@ -256,7 +256,7 @@ image
   first_pixel_ = reinterpret_cast<byte*>(data_->data());
 
   // preserve the pixel ordering (e.g. interleaved) as much as possible
-  if( w_step_ == 0 || w_step_ != depth_ )
+  if( w_step_ == 0 || w_step_ != static_cast<ptrdiff_t>(depth_) )
   {
     w_step_ = 1;
   }
