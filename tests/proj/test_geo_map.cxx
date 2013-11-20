@@ -47,7 +47,7 @@ IMPLEMENT_TEST(latlon_to_utm)
 
 IMPLEMENT_TEST(utm_to_latlon)
 {
-  maptk::algo::proj_geo_map gm;
+  maptk::proj::proj_geo_map gm;
   double easting = 180954.88,
          northing = -1908018.40,
          lat, lon,
@@ -64,7 +64,7 @@ IMPLEMENT_TEST(utm_to_latlon)
 
 IMPLEMENT_TEST(backprojection)
 {
-  maptk::algo::proj_geo_map gm;
+  maptk::proj::proj_geo_map gm;
   double orig_lat = -17.234908,
          orig_lon = 24.000048,
          orig_easting = 180954.88,

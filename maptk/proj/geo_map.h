@@ -16,7 +16,7 @@ namespace proj
 {
 
 class proj_geo_map
-: public geo_map
+: public algo::geo_map
 {
 public:
 
