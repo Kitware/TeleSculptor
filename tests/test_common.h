@@ -130,7 +130,7 @@ typedef std::string testname_t;
 /// Define a test case
 /**
  * @param testname  The name of the test case to define.
- * @sa TEST/home/purg/dev/perseas/test_runs/test-d2d_conductor_wrapper/test_output_loc/1111/activities_PROPERTY
+ * @sa TEST_PROPERTY
  */
 #define IMPLEMENT_TEST(testname)                       \
   static void                                          \
