@@ -200,7 +200,7 @@ typedef std::string testname_t;
 
 
 //
-// Testing helper methods
+// Testing helper macros/methods
 //
 
 /// Equality test with message generation on inequality
@@ -218,6 +218,19 @@ typedef std::string testname_t;
     }                                                           \
   } while(false)
 
+/// Test double approximate equality to given epsilon
+/**
+ * @param value   The value subject for comparison.
+ * @param target  The value to compare to.
+ * @param epsilon The allowed varience.
+ */
+static bool is_almost(double const &value,
+                      double const &target,
+                      double const &epsilon)
+{
+  return fabs(value - target) <= epsilon;
+}
+
 /// Test double/float approximate equality to a given epsilon
 /**
  * @param name    An identifying name for the test.
@@ -225,18 +238,16 @@ typedef std::string testname_t;
  * @param target  The value to compare to.
  * @param epsilon The allowed varience.
  */
-static void TEST_NEAR(char   const *name,
-                      double const &value,
-                      double const &target,
-                      double const &epsilon)
-{
-  if(fabs(value - target) > epsilon)
-  {
-    TEST_ERROR("TEST_NEAR check '" << name
-               << "' failed: (epsilon: " << epsilon << ")\n"
-               << "    Expected: " << target << "\n"
-               << "    Got     : " << value);
-  }
-}
+#define TEST_NEAR(name, value, target, epsilon) \
+  do  \
+  {   \
+    if(! is_almost(value, target, epsilon)) \
+    { \
+      TEST_ERROR("TEST_NEAR check '" << name \
+                 << "' failed: (epsilon: " << epsilon << ")\n" \
+                 << "    Expected: " << target << "\n" \
+                 << "    Got     : " << value); \
+    } \
+  }while(false)
 
 #endif // MAPTK_TEST_TEST_COMMON_H
