@@ -207,15 +207,15 @@ typedef std::string testname_t;
 /**
  * @param name
  */
-#define TEST_EQUAL(name, value, expected)                                 \
-  do                                                                      \
-  {                                                                       \
-    if(value != expected)                                                 \
-    {                                                                     \
-      TEST_ERROR("TEST_EQUAL check '" << name << "' failed." << std::endl \
-                 << "    Expected: " << expected << std::endl             \
-                 << "    Got     : " << value);                           \
-    }                                                                     \
+#define TEST_EQUAL(name, value, expected)                       \
+  do                                                            \
+  {                                                             \
+    if(value != expected)                                       \
+    {                                                           \
+      TEST_ERROR("TEST_EQUAL check '" << name << "' failed:\n"  \
+                 << "    Expected: " << expected << "\n"        \
+                 << "    Got     : " << value);                 \
+    }                                                           \
   } while(false)
 
 /// Test double/float approximate equality to a given epsilon
@@ -232,10 +232,10 @@ static void TEST_NEAR(char   const *name,
 {
   if(fabs(value - target) > epsilon)
   {
-    TEST_ERROR("TEST_NEAR check '" << name << "' failed:" << std::endl
-               << "    Expected: " << target << std::endl
-               << "    Got     : " << value  << std::endl
-               << "    (epsilon: " << epsilon << ")");
+    TEST_ERROR("TEST_NEAR check '" << name
+               << "' failed: (epsilon: " << epsilon << ")\n"
+               << "    Expected: " << target << "\n"
+               << "    Got     : " << value);
   }
 }
 
