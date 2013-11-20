@@ -65,33 +65,33 @@ public:
   /// Access the type info of the underlying data (double or float)
   virtual const std::type_info& data_type() const { return typeid(T); }
 
-  // Accessor for the image coordinates using underlying data type
+  /// Accessor for the image coordinates using underlying data type
   const vector_2_<T>& get_loc() const { return loc_; }
-  // Accessor for the image coordinates
+  /// Accessor for the image coordinates
   virtual vector_2d loc() const { return static_cast<vector_2d>(loc_); }
 
-  // Accessor for the feature magnitude using underlying data type
+  /// Accessor for the feature magnitude using underlying data type
   T get_magnitude() const { return magnitude_; }
-  // Accessor for the feature magnitude
+  /// Accessor for the feature magnitude
   virtual double magnitude() const { return static_cast<double>(magnitude_); }
 
-  // Accessor for the feature scale using underlying data type
+  /// Accessor for the feature scale using underlying data type
   T get_scale() const { return scale_; }
-  // Accessor for the feature scale
+  /// Accessor for the feature scale
   virtual double scale() const { return static_cast<double>(scale_); }
 
-  // Accessor for the feature angle using underlying data type
+  /// Accessor for the feature angle using underlying data type
   T get_angle() const { return angle_; }
-  // Accessor for the feature angle
+  /// Accessor for the feature angle
   virtual double angle() const { return static_cast<double>(angle_); }
 
-  // Accessor for the covariance using underlying data type
+  /// Accessor for the covariance using underlying data type
   const covariance_<2,T>& get_covar() const { return covar_; }
-  // Accessor for the covariance
+  /// Accessor for the covariance
   virtual covariance_2d covar() const { return static_cast<covariance_2d>(covar_); }
 
 
-  // Set the feature position in image space
+  /// Set the feature position in image space
   void set_loc(const vector_2_<T>& loc) { loc_ = loc; }
   /// Set the magnitude of the feature response
   void set_magnitude(T magnitude) { magnitude_ = magnitude; }

@@ -66,7 +66,7 @@ ocv_image_container
   // If the image does not have these properties we must allocate
   // a new cv::Mat and deep copy the data.  Otherwise, share memory.
   if( img.d_step() == 1 &&
-      img.w_step() == img.depth() )
+      img.w_step() == static_cast<ptrdiff_t>(img.depth()) )
   {
     image_memory_sptr memory = img.memory();
     cv::Mat out(img.height(), img.width(),
