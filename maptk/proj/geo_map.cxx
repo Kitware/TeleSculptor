@@ -50,7 +50,7 @@ static projPJ gen_latlon_pj()
 namespace maptk
 {
 
-namespace algo
+namespace proj
 {
 
 /// Convert UTM coordinate into latitude and longitude.
@@ -120,6 +120,6 @@ proj_geo_map
   pj_free(pj_utm);
 }
 
-} // end namespace algo
+} // end namespace proj
 
 } // end namespace maptk

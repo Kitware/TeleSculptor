@@ -12,7 +12,7 @@
 namespace maptk
 {
 
-namespace algo
+namespace proj
 {
 
 class proj_geo_map
@@ -57,7 +57,7 @@ public:
 
 };// end class proj_geo_map
 
-} // end namespace algo
+} // end namespace proj
 
 } // end namespace maptk
 

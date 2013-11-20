@@ -25,7 +25,7 @@ int main(int argc, char** argv)
 
 IMPLEMENT_TEST(latlon_to_utm)
 {
-  maptk::algo::proj_geo_map gm;
+  maptk::proj::proj_geo_map gm;
   double lat = -17.234908,
          lon = 24.000048,
          easting, northing;
