@@ -48,7 +48,6 @@ function(maptk_configure_file name source dest)
             -P "${MAPTK_SOURCE_DIR}/cmake/tools/maptk-configure-helper.cmake"
     MAIN_DEPENDENCY
             "${source}"
-    DEPENDS "${source}"
     WORKING_DIRECTORY
             "${CMAKE_CURRENT_BINARY_DIR}"
     COMMENT "Configuring ${name} file \"${source}\" -> \"${dest}\""
