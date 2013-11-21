@@ -382,7 +382,7 @@ while(NOT dashboard_done)
   if(dashboard_continuous)
     # Delay until at least 5 minutes past START TIME
     ctest_sleep(${START_TIME} 300 ${CTEST_ELAPSED_TIME})
-    if(${CTEST_ELAPSED_TIME} GREATER 43200)
+    if(${CTEST_ELAPSED_TIME} GREATER 86400)
       set(dashboard_done 1)
     endif()
   else()
