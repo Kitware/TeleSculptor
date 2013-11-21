@@ -92,6 +92,8 @@ function(maptk_create_doxygen name inputdir)
       doxy_project_name
       )
     message(STATUS "[doxy-${name}] Linking configuration depencencies")
+    # TODO: There seems to be some concurrency issue here. Even when forced
+    #       into serial chain, sometimes breaks on `make -j8`
     add_dependencies(configure-${name}-doxyfile.common
       doxygen-${name}-dir
       )

@@ -24,6 +24,8 @@
 #include <string>
 
 #include <cstdlib>
+#include <cstdio>
+#include <cmath>
 
 typedef std::string testname_t;
 
@@ -159,6 +161,7 @@ typedef std::string testname_t;
 /// Run the a test case by a given name
 /**
  * Find an run the test function associated with the given testname.
+ * Parameters after the test name are the arguments to pass to the function.
  *
  * @param testname  The name of the test to run. This name should match one
  *                  given to an IMPLEMENT_TEST() macro.
@@ -194,5 +197,57 @@ typedef std::string testname_t;
                                                 \
     return EXIT_SUCCESS;                        \
   } while (false)
+
+
+//
+// Testing helper macros/methods
+//
+
+/// Equality test with message generation on inequality
+/**
+ * @param name
+ */
+#define TEST_EQUAL(name, value, expected)                       \
+  do                                                            \
+  {                                                             \
+    if(value != expected)                                       \
+    {                                                           \
+      TEST_ERROR("TEST_EQUAL check '" << name << "' failed:\n"  \
+                 << "    Expected: " << expected << "\n"        \
+                 << "    Got     : " << value);                 \
+    }                                                           \
+  } while(false)
+
+/// Test double approximate equality to given epsilon
+/**
+ * @param value   The value subject for comparison.
+ * @param target  The value to compare to.
+ * @param epsilon The allowed varience.
+ */
+static bool is_almost(double const &value,
+                      double const &target,
+                      double const &epsilon)
+{
+  return fabs(value - target) <= epsilon;
+}
+
+/// Test double/float approximate equality to a given epsilon
+/**
+ * @param name    An identifying name for the test.
+ * @param value   The value subject for comparison.
+ * @param target  The value to compare to.
+ * @param epsilon The allowed varience.
+ */
+#define TEST_NEAR(name, value, target, epsilon) \
+  do  \
+  {   \
+    if(! is_almost(value, target, epsilon)) \
+    { \
+      TEST_ERROR("TEST_NEAR check '" << name \
+                 << "' failed: (epsilon: " << epsilon << ")\n" \
+                 << "    Expected: " << target << "\n" \
+                 << "    Got     : " << value); \
+    } \
+  }while(false)
 
 #endif // MAPTK_TEST_TEST_COMMON_H

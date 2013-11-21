@@ -4,23 +4,24 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
-#ifndef MAPTK_ALGO_GEO_MAP_H_
-#define MAPTK_ALGO_GEO_MAP_H_
+#ifndef MAPTK_PROJ_GEO_MAP_H_
+#define MAPTK_PROJ_GEO_MAP_H_
 
+#include <maptk/core/algo/geo_map.h>
 
 namespace maptk
 {
 
-namespace algo
+namespace proj
 {
 
-
-/// A base class for geographic conversions
-class geo_map
+class proj_geo_map
+: public algo::geo_map
 {
 public:
+
   /// Default Constructor
-  geo_map() {}
+  proj_geo_map() {}
 
   /// Convert UTM coordinate into latitude and longitude.
   /**
@@ -34,7 +35,7 @@ public:
    */
   virtual void utm_to_latlon(double easting, double northing,
                              int zone, bool north_hemi,
-                             double& lat, double& lon) const = 0;
+                             double& lat, double& lon) const;
 
   /// Convert latitude and longitude into UTM coordinates.
   /**
@@ -52,21 +53,12 @@ public:
   virtual void latlon_to_utm(double lat, double lon,
                              double& easting, double& northing,
                              int& zone, bool& north_hemi,
-                             int setzone=-1) const = 0;
+                             int setzone=-1) const;
 
-  /// Return the standard zone number for a given latitude and longitude
-  /**
-   * \param lat latitude in decimal degrees.
-   * \param lon longitude in decimal degrees.
-   */
-  virtual int latlon_zone(double lat, double lon) const;
+};// end class proj_geo_map
 
-};
-
-
-} // end namespace algo
+} // end namespace proj
 
 } // end namespace maptk
 
-
-#endif // MAPTK_ALGO_GEO_MAP_H_
+#endif // MAPTK_PROJ_GEO_MAP_H_

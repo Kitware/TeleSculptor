@@ -17,14 +17,13 @@ int
 geo_map
 ::latlon_zone(double lat, double lon) const
 {
-  int ilon = static_cast<int>(lon);
-  while(ilon < -180)
+  while(lon < -180)
   {
-    ilon += 360;
+    lon += 360;
   }
   // this simplifed implementation ignores the exceptions to the
   // standard UTM zone rules (e.g. around Norway)
-  return ((ilon + 186) / 6) % 60;
+  return (static_cast<int>((lon + 180) / 6) % 60) + 1;
 }
 
 } // end namespace algo
