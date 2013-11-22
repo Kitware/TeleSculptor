@@ -7,6 +7,7 @@
 # "C:\Dashboards\Scripts". Create a file next to this script, say
 # "my_dashboard.cmake", with code of the following form:
 #
+#   # Client maintainer: me@mydomain.net
 #   set(CTEST_SITE "machine.site")
 #   set(CTEST_BUILD_NAME "Platform-Compiler")
 #   set(CTEST_BUILD_CONFIGURATION Debug)
@@ -17,7 +18,7 @@
 #
 #   ctest -S ~/Dashboards/Scripts/my_dashboard.cmake -V
 #
-# By default, the souce and build trees will be placed in the path
+# By default, the source and build trees will be placed in the path
 # "../MyTests/" relative to your script location.
 #
 # The following variables may be set before including this script to configure
@@ -113,7 +114,7 @@ elseif(NOT DEFINED CTEST_USE_LAUNCHERS)
   set(CTEST_USE_LAUNCHERS 1)
 endif()
 
-# Contiguring testing
+# Configuring testing
 if(NOT DEFINED CTEST_TEST_CTEST)
   set(CTEST_TEST_CTEST 1)
 endif()
@@ -121,7 +122,7 @@ if(NOT CTEST_TEST_TIMEOUT)
   set(CTEST_TEST_TIMEOUT 1500)
 endif()
 
-# Selecting git source to use
+# Selecting Git source to use
 if(NOT DEFINED dashboard_git_url)
   # TODO: When this project goes public, this will probably need to be changed.
   set(dashboard_git_url "git://kwsource.kitwarein.com/computer-vision/map-tk.git")
@@ -207,7 +208,8 @@ if(NOT EXISTS "${CTEST_SOURCE_DIRECTORY}"
   set(ctest_checkout_script "${CTEST_DASHBOARD_ROOT}/${_name}-init.cmake")
   file(WRITE "${ctest_checkout_script}" "# git repo init script for ${_name}
 execute_process(
-  COMMAND \"${CTEST_GIT_COMMAND}\" clone -n ${git_branch_new} -- \"${dashboard_git_url}\" \"${CTEST_SOURCE_DIRECTORY}\"
+  COMMAND \"${CTEST_GIT_COMMAND}\" clone -n ${git_branch_new} --
+          \"${dashboard_git_url}\" \"${CTEST_SOURCE_DIRECTORY}\"
   )
 if(EXISTS \"${CTEST_SOURCE_DIRECTORY}/.git\")
   execute_process(
@@ -380,7 +382,7 @@ while(NOT dashboard_done)
   endif()
 
   if(dashboard_continuous)
-    # Delay until at least 5 minutes past START TIME
+    # Delay until at least 5 minutes past START_TIME
     ctest_sleep(${START_TIME} 300 ${CTEST_ELAPSED_TIME})
     if(${CTEST_ELAPSED_TIME} GREATER 86400)
       set(dashboard_done 1)
