@@ -20,16 +20,17 @@ typedef unsigned char byte;
 class descriptor
 {
 public:
-  /// Default Constructor
-  descriptor();
-
+  /// Destructor
   virtual ~descriptor() {}
 
-  /// The size of the descriptor in bytes
+  /// The number of elements of the underlying type
   virtual std::size_t size() const = 0;
 
+  /// The number of bytes used to represent the data
+  virtual std::size_t num_bytes() const = 0;
+
   /// Return the descriptor as a vector of bytes
-  /// This should always work, 
+  /// This should always work,
   /// even if the underlying type is not bytes
   virtual std::vector<byte> as_bytes() const = 0;
 
@@ -43,28 +44,95 @@ public:
 typedef boost::shared_ptr<descriptor> descriptor_sptr;
 
 
+/// Abstract base class of a descriptor containing an array of type T
+template <typename T>
+class descriptor_array_of
+  : public descriptor
+{
+public:
+
+  /// The number of bytes used to represent the data
+  std::size_t num_bytes() const { return this->size() * sizeof(T); }
+
+  /// Return the descriptor as a vector of bytes
+  std::vector<byte> as_bytes() const
+  {
+    const byte* byte_data = reinterpret_cast<const byte*>(this->raw_data());
+    return std::vector<byte>(byte_data, byte_data+this->num_bytes());
+  }
+
+  /// Return the descriptor as a vector of doubles
+  std::vector<double> as_double() const
+  {
+    const unsigned length = this->size();
+    std::vector<double> double_data(length);
+    for(unsigned i=0; i<length; ++i)
+    {
+      double_data[i] = static_cast<double>(this->raw_data()[i]);
+    }
+    return double_data;
+  }
+
+  /// Return an pointer to the raw data array
+  virtual T* raw_data() = 0;
+
+  /// Return an pointer to the raw data array
+  virtual const T* raw_data() const = 0;
+
+};
+
+
+/// A representation of a descriptor of fixed type and size
 template <typename T, unsigned N>
 class descriptor_fixed
-  : public descriptor
+  : public descriptor_array_of<T>
 {
 public:
   /// Default Constructor
   descriptor_fixed<T,N>() {}
 
-  /// The size of the descriptor in bytes
-  std::size_t size() const { return N * sizeof(T); }
+  /// The number of elements of the underlying type
+  std::size_t size() const { return N; }
 
-  /// Return the descriptor as a vector of bytes
-  std::vector<byte> as_bytes() const
-  {
-    std::vector<byte> vec_bytes;
-    // TODO: implement this
-    return vec_bytes;
-  }
+  /// Return an pointer to the raw data array
+  T* raw_data() { return data_; }
+
+  /// Return an pointer to the raw data array
+  const T* raw_data() const { return data_; }
 
 protected:
   T data_[N];
 };
+
+
+/// A representation of a descriptor of fixed type and variable size
+template <typename T>
+class descriptor_dynamic
+  : public descriptor_array_of<T>
+{
+public:
+  /// Constructor
+  descriptor_dynamic<T>(size_t len)
+  : data_(new T[len]),
+    length_(len) {}
+
+  /// Destructor
+  ~descriptor_dynamic<T>() { delete [] data_; }
+
+  /// The number of elements of the underlying type
+  std::size_t size() const { return length_; }
+
+  /// Return an pointer to the raw data array
+  T* raw_data() { return data_; }
+
+  /// Return an pointer to the raw data array
+  const T* raw_data() const { return data_; }
+
+protected:
+  T* data_;
+  size_t length_;
+};
+
 
 /// output stream operator for a feature
 std::ostream&  operator<<(std::ostream& s, const descriptor& d);
