@@ -224,7 +224,7 @@ typedef std::string testname_t;
  * @param target  The value to compare to.
  * @param epsilon The allowed varience.
  */
-static bool is_almost(double const &value,
+inline bool is_almost(double const &value,
                       double const &target,
                       double const &epsilon)
 {
