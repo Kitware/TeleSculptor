@@ -7,7 +7,7 @@
 #ifndef MAPTK_ALGO_EXTRACT_DESCRIPTORS_H_
 #define MAPTK_ALGO_EXTRACT_DESCRIPTORS_H_
 
-#include <maptk/core/image.h>
+#include <maptk/core/image_container.h>
 #include <maptk/core/feature_set.h>
 #include <maptk/core/descriptor_set.h>
 
