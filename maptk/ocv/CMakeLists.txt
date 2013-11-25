@@ -1,6 +1,7 @@
 # maptk/ocv
 
 set(maptk_ocv_headers_public
+  descriptor_set.h
   detect_features.h
   feature_set.h
   image_container.h
@@ -9,6 +10,7 @@ set(maptk_ocv_headers_public
   )
 
 set(maptk_ocv_sources
+  descriptor_set.cxx
   detect_features.cxx
   feature_set.cxx
   image_container.cxx
