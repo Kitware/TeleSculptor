@@ -10,7 +10,7 @@
 #   # Client maintainer: me@mydomain.net
 #   set(CTEST_SITE "machine.site")
 #   set(CTEST_BUILD_NAME "Platform-Compiler")
-#   set(CTEST_BUILD_CONFIGURATION Debug)
+#   set(CTEST_CONFIGURATION_TYPE Debug)
 #   set(CTEST_CMAKE_GENERATOR "Unix Makefiles")
 #   include("${CTEST_SCRIPT_DIRECTORY}/MAPTK_common.cmake")
 #
@@ -103,8 +103,8 @@ if(NOT "${dashboard_model}" MATCHES "^(Nightly|Experimental|Continuous)$")
 endif()
 
 # Default to debug build configuration if one not provided
-if(NOT DEFINED CTEST_BUILD_CONFIGURATION)
-  set(CTEST_BUILD_CONFIGURATION Debug)
+if(NOT DEFINED CTEST_CONFIGURATION_TYPE)
+  set(CTEST_CONFIGURATION_TYPE Debug)
 endif()
 
 # Choosing CTest reporting mode
@@ -255,7 +255,7 @@ foreach(v
     CTEST_SOURCE_DIRECTORY
     CTEST_BINARY_DIRECTORY
     CTEST_CMAKE_GENERATOR
-    CTEST_BUILD_CONFIGURATION
+    CTEST_CONFIGURATION_TYPE
     CTEST_GIT_COMMAND
     CTEST_CHECKOUT_COMMAND
     CTEST_CONFIGURE_COMMAND
@@ -274,7 +274,7 @@ macro(write_cache)
   set(cache_build_type "")
   set(cache_make_program "")
   if(CTEST_CMAKE_GENERATOR MATCHES "Make")
-    set(cache_build_type "CMAKE_BUILD_TYPE:STRING=${CTEST_BUILD_CONFIGURATION}")
+    set(cache_build_type "CMAKE_BUILD_TYPE:STRING=${CTEST_CONFIGURATION_TYPE}")
     if(CMAKE_MAKE_PROGRAM)
       set(cache_make_program "CMAKE_MAKE_PROGRAM:FILEPATH=${CMAKE_MAKE_PROGRAM}")
     endif()
