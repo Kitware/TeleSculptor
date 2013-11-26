@@ -43,4 +43,11 @@
 # define MAPTK_NO_EXPORT
 #endif
 
+// no-throw macro
+#if __cplusplus < 201103L
+# define MAPTK_NOTHROW throw ()
+#else
+# define MAPTK_NOTHROW noexcept
+#endif
+
 #endif // MAPTK_CONFIG_H

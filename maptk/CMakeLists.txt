@@ -12,6 +12,7 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/config.h"
   )
 
 include_directories("${MAPTK_SOURCE_DIR}")
+include_directories("${MAPTK_BINARY_DIR}")
 
 # Adding module subdirectories
 maptk_add_module(core "${CMAKE_CURRENT_LIST_DIR}/core")
