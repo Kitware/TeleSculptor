@@ -6,10 +6,18 @@
 
 #include <maptk/ocv/descriptor_set.h>
 
+/// This macro applies another macro to all of the types listed below.
+/// The listed type are all the types supported for conversion between
+/// cv::Mat and maptk::descriptor
+#define APPLY_TO_TYPES(MACRO) \
+    MACRO(byte); \
+    MACRO(float); \
+    MACRO(double)
 
 namespace
 {
 
+/// Templated helper function to convert matrix row into a descriptor
 template <typename T>
 maptk::descriptor_sptr
 ocv_to_maptk_descriptor(const cv::Mat& v)
@@ -34,7 +42,35 @@ ocv_to_maptk_descriptor(const cv::Mat& v)
   return descriptor_sptr(d);
 }
 
+
+/// Templated helper function to convert descriptors into a cv::Mat
+template <typename T>
+cv::Mat
+maptk_descriptors_to_ocv(const std::vector<maptk::descriptor_sptr>& desc)
+{
+  using namespace maptk;
+  const unsigned num = desc.size();
+  const unsigned dim = desc[0]->size();
+  cv::Mat_<T> mat(num,dim);
+  for( unsigned int i=0; i<num; ++i )
+  {
+    const descriptor_array_of<T>* d =
+        dynamic_cast<const descriptor_array_of<T>*>(desc[i].get());
+    if( !d || d->size() != dim )
+    {
+      std::cerr << "Error: mismatch type or size "
+                << "when converting descriptors to OpenCV"
+                << std::endl;
+      return cv::Mat();
+    }
+    cv::Mat_<T> row = mat.row(i);
+    std::copy(d->raw_data(), d->raw_data() + dim, row.begin());
+  }
+  return mat;
+}
+
 } // end anonymous namespace
+
 
 namespace maptk
 {
@@ -60,15 +96,40 @@ descriptor_set
 
   switch(data_.type())
   {
-  CONVERT_CASE(byte);
-  CONVERT_CASE(float);
-  CONVERT_CASE(double);
+  APPLY_TO_TYPES(CONVERT_CASE);
   default:
     std::cerr << "Error: No case to handle OpenCV descriptors of type "
               << data_.type() <<std::endl;
   }
 #undef CONVERT_CASE
   return desc;
+}
+
+
+/// Convert any descriptor set to an OpenCV cv::Mat
+cv::Mat
+descriptors_to_ocv_matrix(descriptor_set_sptr desc_set)
+{
+  // if the descriptor set already contains a cv::Mat representation
+  // then return the existing matrix
+  if( const ocv::descriptor_set* d =
+          dynamic_cast<const ocv::descriptor_set*>(desc_set.get()) )
+  {
+    return d->ocv_desc_matrix();
+  }
+  std::vector<descriptor_sptr> desc = desc_set->descriptors();
+  if( desc.empty() )
+  {
+    return cv::Mat();
+  }
+#define CONVERT_CASE(T) \
+  if( dynamic_cast<const descriptor_array_of<T>*>(desc[0].get()) ) \
+  { \
+    return maptk_descriptors_to_ocv<T>(desc); \
+  }
+  APPLY_TO_TYPES(CONVERT_CASE);
+#undef CONVERT_CASE
+  return cv::Mat();
 }
 
 
