@@ -35,10 +35,10 @@ IMPLEMENT_TEST(has_value)
 {
   maptk::config_t const config = maptk::config::empty_config();
 
-  maptk::config::key_t const keya = maptk::config::key_t("keya");
-  maptk::config::key_t const keyb = maptk::config::key_t("keyb");
+  maptk::config_key_t const keya = maptk::config_key_t("keya");
+  maptk::config_key_t const keyb = maptk::config_key_t("keyb");
 
-  maptk::config::value_t const valuea = maptk::config::value_t("valuea");
+  maptk::config_value_t const valuea = maptk::config_value_t("valuea");
 
   config->set_value(keya, valuea);
 
@@ -57,13 +57,13 @@ IMPLEMENT_TEST(get_value)
 {
   maptk::config_t const config = maptk::config::empty_config();
 
-  maptk::config::key_t const keya = maptk::config::key_t("keya");
+  maptk::config_key_t const keya = maptk::config_key_t("keya");
 
-  maptk::config::value_t const valuea = maptk::config::value_t("valuea");
+  maptk::config_value_t const valuea = maptk::config_value_t("valuea");
 
   config->set_value(keya, valuea);
 
-  maptk::config::value_t const get_valuea = config->get_value<maptk::config::value_t>(keya);
+  maptk::config_value_t const get_valuea = config->get_value<maptk::config_value_t>(keya);
 
   if (valuea != get_valuea)
   {
@@ -75,16 +75,16 @@ IMPLEMENT_TEST(get_value_nested)
 {
   maptk::config_t const config = maptk::config::empty_config();
 
-  maptk::config::key_t const keya = maptk::config::key_t("keya");
-  maptk::config::key_t const keyb = maptk::config::key_t("keyb");
+  maptk::config_key_t const keya = maptk::config_key_t("keya");
+  maptk::config_key_t const keyb = maptk::config_key_t("keyb");
 
-  maptk::config::value_t const valuea = maptk::config::value_t("valuea");
+  maptk::config_value_t const valuea = maptk::config_value_t("valuea");
 
   config->set_value(keya + maptk::config::block_sep + keyb, valuea);
 
   maptk::config_t const nested_config = config->subblock(keya);
 
-  maptk::config::value_t const get_valuea = nested_config->get_value<maptk::config::value_t>(keyb);
+  maptk::config_value_t const get_valuea = nested_config->get_value<maptk::config_value_t>(keyb);
 
   if (valuea != get_valuea)
   {
@@ -96,16 +96,16 @@ IMPLEMENT_TEST(get_value_no_exist)
 {
   maptk::config_t const config = maptk::config::empty_config();
 
-  maptk::config::key_t const keya = maptk::config::key_t("keya");
-  maptk::config::key_t const keyb = maptk::config::key_t("keyb");
+  maptk::config_key_t const keya = maptk::config_key_t("keya");
+  maptk::config_key_t const keyb = maptk::config_key_t("keyb");
 
-  maptk::config::value_t const valueb = maptk::config::value_t("valueb");
+  maptk::config_value_t const valueb = maptk::config_value_t("valueb");
 
   EXPECT_EXCEPTION(maptk::no_such_configuration_value_exception,
-                   config->get_value<maptk::config::value_t>(keya),
+                   config->get_value<maptk::config_value_t>(keya),
                    "retrieving an unset value");
 
-  maptk::config::value_t const get_valueb = config->get_value<maptk::config::value_t>(keyb, valueb);
+  maptk::config_value_t const get_valueb = config->get_value<maptk::config_value_t>(keyb, valueb);
 
   if (valueb != get_valueb)
   {
@@ -117,9 +117,9 @@ IMPLEMENT_TEST(get_value_type_mismatch)
 {
   maptk::config_t const config = maptk::config::empty_config();
 
-  maptk::config::key_t const keya = maptk::config::key_t("keya");
+  maptk::config_key_t const keya = maptk::config_key_t("keya");
 
-  maptk::config::value_t const valuea = maptk::config::value_t("valuea");
+  maptk::config_value_t const valuea = maptk::config_value_t("valuea");
   int const valueb = 100;
 
   config->set_value(keya, valuea);
@@ -140,14 +140,14 @@ IMPLEMENT_TEST(bool_conversion)
 {
   maptk::config_t const config = maptk::config::empty_config();
 
-  maptk::config::key_t const key = maptk::config::key_t("key");
+  maptk::config_key_t const key = maptk::config_key_t("key");
 
-  maptk::config::value_t const lit_true = maptk::config::value_t("true");
-  maptk::config::value_t const lit_false = maptk::config::value_t("false");
-  maptk::config::value_t const lit_True = maptk::config::value_t("True");
-  maptk::config::value_t const lit_False = maptk::config::value_t("False");
-  maptk::config::value_t const lit_1 = maptk::config::value_t("1");
-  maptk::config::value_t const lit_0 = maptk::config::value_t("0");
+  maptk::config_value_t const lit_true = maptk::config_value_t("true");
+  maptk::config_value_t const lit_false = maptk::config_value_t("false");
+  maptk::config_value_t const lit_True = maptk::config_value_t("True");
+  maptk::config_value_t const lit_False = maptk::config_value_t("False");
+  maptk::config_value_t const lit_1 = maptk::config_value_t("1");
+  maptk::config_value_t const lit_0 = maptk::config_value_t("0");
 
   bool val;
 
@@ -204,11 +204,11 @@ IMPLEMENT_TEST(unset_value)
 {
   maptk::config_t const config = maptk::config::empty_config();
 
-  maptk::config::key_t const keya = maptk::config::key_t("keya");
-  maptk::config::key_t const keyb = maptk::config::key_t("keyb");
+  maptk::config_key_t const keya = maptk::config_key_t("keya");
+  maptk::config_key_t const keyb = maptk::config_key_t("keyb");
 
-  maptk::config::value_t const valuea = maptk::config::value_t("valuea");
-  maptk::config::value_t const valueb = maptk::config::value_t("valueb");
+  maptk::config_value_t const valuea = maptk::config_value_t("valuea");
+  maptk::config_value_t const valueb = maptk::config_value_t("valueb");
 
   config->set_value(keya, valuea);
   config->set_value(keyb, valueb);
@@ -216,10 +216,10 @@ IMPLEMENT_TEST(unset_value)
   config->unset_value(keya);
 
   EXPECT_EXCEPTION(maptk::no_such_configuration_value_exception,
-                   config->get_value<maptk::config::value_t>(keya),
+                   config->get_value<maptk::config_value_t>(keya),
                    "retrieving an unset value");
 
-  maptk::config::value_t const get_valueb = config->get_value<maptk::config::value_t>(keyb);
+  maptk::config_value_t const get_valueb = config->get_value<maptk::config_value_t>(keyb);
 
   if (valueb != get_valueb)
   {
@@ -231,21 +231,21 @@ IMPLEMENT_TEST(available_values)
 {
   maptk::config_t const config = maptk::config::empty_config();
 
-  maptk::config::key_t const keya = maptk::config::key_t("keya");
-  maptk::config::key_t const keyb = maptk::config::key_t("keyb");
+  maptk::config_key_t const keya = maptk::config_key_t("keya");
+  maptk::config_key_t const keyb = maptk::config_key_t("keyb");
 
-  maptk::config::value_t const valuea = maptk::config::value_t("valuea");
-  maptk::config::value_t const valueb = maptk::config::value_t("valueb");
+  maptk::config_value_t const valuea = maptk::config_value_t("valuea");
+  maptk::config_value_t const valueb = maptk::config_value_t("valueb");
 
   config->set_value(keya, valuea);
   config->set_value(keyb, valueb);
 
-  maptk::config::keys_t keys;
+  maptk::config_keys_t keys;
 
   keys.push_back(keya);
   keys.push_back(keyb);
 
-  maptk::config::keys_t const get_keys = config->available_values();
+  maptk::config_keys_t const get_keys = config->available_values();
 
   if (keys.size() != get_keys.size())
   {
@@ -257,10 +257,10 @@ IMPLEMENT_TEST(read_only)
 {
   maptk::config_t const config = maptk::config::empty_config();
 
-  maptk::config::key_t const keya = maptk::config::key_t("keya");
+  maptk::config_key_t const keya = maptk::config_key_t("keya");
 
-  maptk::config::value_t const valuea = maptk::config::value_t("valuea");
-  maptk::config::value_t const valueb = maptk::config::value_t("valueb");
+  maptk::config_value_t const valuea = maptk::config_value_t("valuea");
+  maptk::config_value_t const valueb = maptk::config_value_t("valueb");
 
   config->set_value(keya, valuea);
 
@@ -270,7 +270,7 @@ IMPLEMENT_TEST(read_only)
                    config->set_value(keya, valueb),
                    "setting a read only value");
 
-  maptk::config::value_t const get_valuea = config->get_value<maptk::config::value_t>(keya);
+  maptk::config_value_t const get_valuea = config->get_value<maptk::config_value_t>(keya);
 
   if (valuea != get_valuea)
   {
@@ -282,9 +282,9 @@ IMPLEMENT_TEST(read_only_unset)
 {
   maptk::config_t const config = maptk::config::empty_config();
 
-  maptk::config::key_t const keya = maptk::config::key_t("keya");
+  maptk::config_key_t const keya = maptk::config_key_t("keya");
 
-  maptk::config::value_t const valuea = maptk::config::value_t("valuea");
+  maptk::config_value_t const valuea = maptk::config_value_t("valuea");
 
   config->set_value(keya, valuea);
 
@@ -294,7 +294,7 @@ IMPLEMENT_TEST(read_only_unset)
                    config->unset_value(keya),
                    "unsetting a read only value");
 
-  maptk::config::value_t const get_valuea = config->get_value<maptk::config::value_t>(keya);
+  maptk::config_value_t const get_valuea = config->get_value<maptk::config_value_t>(keya);
 
   if (valuea != get_valuea)
   {
@@ -306,16 +306,16 @@ IMPLEMENT_TEST(subblock)
 {
   maptk::config_t const config = maptk::config::empty_config();
 
-  maptk::config::key_t const block_name = maptk::config::key_t("block");
-  maptk::config::key_t const other_block_name = maptk::config::key_t("other_block");
+  maptk::config_key_t const block_name = maptk::config_key_t("block");
+  maptk::config_key_t const other_block_name = maptk::config_key_t("other_block");
 
-  maptk::config::key_t const keya = maptk::config::key_t("keya");
-  maptk::config::key_t const keyb = maptk::config::key_t("keyb");
-  maptk::config::key_t const keyc = maptk::config::key_t("keyc");
+  maptk::config_key_t const keya = maptk::config_key_t("keya");
+  maptk::config_key_t const keyb = maptk::config_key_t("keyb");
+  maptk::config_key_t const keyc = maptk::config_key_t("keyc");
 
-  maptk::config::value_t const valuea = maptk::config::value_t("valuea");
-  maptk::config::value_t const valueb = maptk::config::value_t("valueb");
-  maptk::config::value_t const valuec = maptk::config::value_t("valuec");
+  maptk::config_value_t const valuea = maptk::config_value_t("valuea");
+  maptk::config_value_t const valueb = maptk::config_value_t("valueb");
+  maptk::config_value_t const valuec = maptk::config_value_t("valuec");
 
   config->set_value(block_name + maptk::config::block_sep + keya, valuea);
   config->set_value(block_name + maptk::config::block_sep + keyb, valueb);
@@ -325,7 +325,7 @@ IMPLEMENT_TEST(subblock)
 
   if (subblock->has_value(keya))
   {
-    maptk::config::value_t const get_valuea = subblock->get_value<maptk::config::value_t>(keya);
+    maptk::config_value_t const get_valuea = subblock->get_value<maptk::config_value_t>(keya);
 
     if (valuea != get_valuea)
     {
@@ -339,7 +339,7 @@ IMPLEMENT_TEST(subblock)
 
   if (subblock->has_value(keyb))
   {
-    maptk::config::value_t const get_valueb = subblock->get_value<maptk::config::value_t>(keyb);
+    maptk::config_value_t const get_valueb = subblock->get_value<maptk::config_value_t>(keyb);
 
     if (valueb != get_valueb)
     {
@@ -361,15 +361,15 @@ IMPLEMENT_TEST(subblock_nested)
 {
   maptk::config_t const config = maptk::config::empty_config();
 
-  maptk::config::key_t const block_name = maptk::config::key_t("block");
-  maptk::config::key_t const other_block_name = maptk::config::key_t("other_block");
-  maptk::config::key_t const nested_block_name = block_name + maptk::config::block_sep + other_block_name;
+  maptk::config_key_t const block_name = maptk::config_key_t("block");
+  maptk::config_key_t const other_block_name = maptk::config_key_t("other_block");
+  maptk::config_key_t const nested_block_name = block_name + maptk::config::block_sep + other_block_name;
 
-  maptk::config::key_t const keya = maptk::config::key_t("keya");
-  maptk::config::key_t const keyb = maptk::config::key_t("keyb");
+  maptk::config_key_t const keya = maptk::config_key_t("keya");
+  maptk::config_key_t const keyb = maptk::config_key_t("keyb");
 
-  maptk::config::value_t const valuea = maptk::config::value_t("valuea");
-  maptk::config::value_t const valueb = maptk::config::value_t("valueb");
+  maptk::config_value_t const valuea = maptk::config_value_t("valuea");
+  maptk::config_value_t const valueb = maptk::config_value_t("valueb");
 
   config->set_value(nested_block_name + maptk::config::block_sep + keya, valuea);
   config->set_value(nested_block_name + maptk::config::block_sep + keyb, valueb);
@@ -378,7 +378,7 @@ IMPLEMENT_TEST(subblock_nested)
 
   if (subblock->has_value(keya))
   {
-    maptk::config::value_t const get_valuea = subblock->get_value<maptk::config::value_t>(keya);
+    maptk::config_value_t const get_valuea = subblock->get_value<maptk::config_value_t>(keya);
 
     if (valuea != get_valuea)
     {
@@ -392,7 +392,7 @@ IMPLEMENT_TEST(subblock_nested)
 
   if (subblock->has_value(keyb))
   {
-    maptk::config::value_t const get_valueb = subblock->get_value<maptk::config::value_t>(keyb);
+    maptk::config_value_t const get_valueb = subblock->get_value<maptk::config_value_t>(keyb);
 
     if (valueb != get_valueb)
     {
@@ -409,15 +409,15 @@ IMPLEMENT_TEST(subblock_match)
 {
   maptk::config_t const config = maptk::config::empty_config();
 
-  maptk::config::key_t const block_name = maptk::config::key_t("block");
+  maptk::config_key_t const block_name = maptk::config_key_t("block");
 
-  maptk::config::value_t const valuea = maptk::config::value_t("valuea");
+  maptk::config_value_t const valuea = maptk::config_value_t("valuea");
 
   config->set_value(block_name, valuea);
 
   maptk::config_t const subblock = config->subblock(block_name);
 
-  maptk::config::keys_t const keys = subblock->available_values();
+  maptk::config_keys_t const keys = subblock->available_values();
 
   if (!keys.empty())
   {
@@ -429,17 +429,17 @@ IMPLEMENT_TEST(subblock_prefix_match)
 {
   maptk::config_t const config = maptk::config::empty_config();
 
-  maptk::config::key_t const block_name = maptk::config::key_t("block");
+  maptk::config_key_t const block_name = maptk::config_key_t("block");
 
-  maptk::config::key_t const keya = maptk::config::key_t("keya");
+  maptk::config_key_t const keya = maptk::config_key_t("keya");
 
-  maptk::config::value_t const valuea = maptk::config::value_t("valuea");
+  maptk::config_value_t const valuea = maptk::config_value_t("valuea");
 
   config->set_value(block_name + keya, valuea);
 
   maptk::config_t const subblock = config->subblock(block_name);
 
-  maptk::config::keys_t const keys = subblock->available_values();
+  maptk::config_keys_t const keys = subblock->available_values();
 
   if (!keys.empty())
   {
@@ -451,16 +451,16 @@ IMPLEMENT_TEST(subblock_view)
 {
   maptk::config_t const config = maptk::config::empty_config();
 
-  maptk::config::key_t const block_name = maptk::config::key_t("block");
-  maptk::config::key_t const other_block_name = maptk::config::key_t("other_block");
+  maptk::config_key_t const block_name = maptk::config_key_t("block");
+  maptk::config_key_t const other_block_name = maptk::config_key_t("other_block");
 
-  maptk::config::key_t const keya = maptk::config::key_t("keya");
-  maptk::config::key_t const keyb = maptk::config::key_t("keyb");
-  maptk::config::key_t const keyc = maptk::config::key_t("keyc");
+  maptk::config_key_t const keya = maptk::config_key_t("keya");
+  maptk::config_key_t const keyb = maptk::config_key_t("keyb");
+  maptk::config_key_t const keyc = maptk::config_key_t("keyc");
 
-  maptk::config::value_t const valuea = maptk::config::value_t("valuea");
-  maptk::config::value_t const valueb = maptk::config::value_t("valueb");
-  maptk::config::value_t const valuec = maptk::config::value_t("valuec");
+  maptk::config_value_t const valuea = maptk::config_value_t("valuea");
+  maptk::config_value_t const valueb = maptk::config_value_t("valueb");
+  maptk::config_value_t const valuec = maptk::config_value_t("valuec");
 
   config->set_value(block_name + maptk::config::block_sep + keya, valuea);
   config->set_value(block_name + maptk::config::block_sep + keyb, valueb);
@@ -480,7 +480,7 @@ IMPLEMENT_TEST(subblock_view)
 
   config->set_value(block_name + maptk::config::block_sep + keya, valueb);
 
-  maptk::config::value_t const get_valuea1 = subblock->get_value<maptk::config::value_t>(keya);
+  maptk::config_value_t const get_valuea1 = subblock->get_value<maptk::config_value_t>(keya);
 
   if (valueb != get_valuea1)
   {
@@ -489,7 +489,7 @@ IMPLEMENT_TEST(subblock_view)
 
   subblock->set_value(keya, valuea);
 
-  maptk::config::value_t const get_valuea2 = config->get_value<maptk::config::value_t>(block_name + maptk::config::block_sep + keya);
+  maptk::config_value_t const get_valuea2 = config->get_value<maptk::config_value_t>(block_name + maptk::config::block_sep + keya);
 
   if (valuea != get_valuea2)
   {
@@ -505,12 +505,12 @@ IMPLEMENT_TEST(subblock_view)
 
   config->set_value(block_name + maptk::config::block_sep + keyc, valuec);
 
-  maptk::config::keys_t keys;
+  maptk::config_keys_t keys;
 
   keys.push_back(keya);
   keys.push_back(keyc);
 
-  maptk::config::keys_t const get_keys = subblock->available_values();
+  maptk::config_keys_t const get_keys = subblock->available_values();
 
   if (keys.size() != get_keys.size())
   {
@@ -522,15 +522,15 @@ IMPLEMENT_TEST(subblock_view_nested)
 {
   maptk::config_t const config = maptk::config::empty_config();
 
-  maptk::config::key_t const block_name = maptk::config::key_t("block");
-  maptk::config::key_t const other_block_name = maptk::config::key_t("other_block");
-  maptk::config::key_t const nested_block_name = block_name + maptk::config::block_sep + other_block_name;
+  maptk::config_key_t const block_name = maptk::config_key_t("block");
+  maptk::config_key_t const other_block_name = maptk::config_key_t("other_block");
+  maptk::config_key_t const nested_block_name = block_name + maptk::config::block_sep + other_block_name;
 
-  maptk::config::key_t const keya = maptk::config::key_t("keya");
-  maptk::config::key_t const keyb = maptk::config::key_t("keyb");
+  maptk::config_key_t const keya = maptk::config_key_t("keya");
+  maptk::config_key_t const keyb = maptk::config_key_t("keyb");
 
-  maptk::config::value_t const valuea = maptk::config::value_t("valuea");
-  maptk::config::value_t const valueb = maptk::config::value_t("valueb");
+  maptk::config_value_t const valuea = maptk::config_value_t("valuea");
+  maptk::config_value_t const valueb = maptk::config_value_t("valueb");
 
   config->set_value(nested_block_name + maptk::config::block_sep + keya, valuea);
   config->set_value(nested_block_name + maptk::config::block_sep + keyb, valueb);
@@ -539,7 +539,7 @@ IMPLEMENT_TEST(subblock_view_nested)
 
   if (subblock->has_value(keya))
   {
-    maptk::config::value_t const get_valuea = subblock->get_value<maptk::config::value_t>(keya);
+    maptk::config_value_t const get_valuea = subblock->get_value<maptk::config_value_t>(keya);
 
     if (valuea != get_valuea)
     {
@@ -553,7 +553,7 @@ IMPLEMENT_TEST(subblock_view_nested)
 
   if (subblock->has_value(keyb))
   {
-    maptk::config::value_t const get_valueb = subblock->get_value<maptk::config::value_t>(keyb);
+    maptk::config_value_t const get_valueb = subblock->get_value<maptk::config_value_t>(keyb);
 
     if (valueb != get_valueb)
     {
@@ -570,15 +570,15 @@ IMPLEMENT_TEST(subblock_view_match)
 {
   maptk::config_t const config = maptk::config::empty_config();
 
-  maptk::config::key_t const block_name = maptk::config::key_t("block");
+  maptk::config_key_t const block_name = maptk::config_key_t("block");
 
-  maptk::config::value_t const valuea = maptk::config::value_t("valuea");
+  maptk::config_value_t const valuea = maptk::config_value_t("valuea");
 
   config->set_value(block_name, valuea);
 
   maptk::config_t const subblock = config->subblock_view(block_name);
 
-  maptk::config::keys_t const keys = subblock->available_values();
+  maptk::config_keys_t const keys = subblock->available_values();
 
   if (!keys.empty())
   {
@@ -590,17 +590,17 @@ IMPLEMENT_TEST(subblock_view_prefix_match)
 {
   maptk::config_t const config = maptk::config::empty_config();
 
-  maptk::config::key_t const block_name = maptk::config::key_t("block");
+  maptk::config_key_t const block_name = maptk::config_key_t("block");
 
-  maptk::config::key_t const keya = maptk::config::key_t("keya");
+  maptk::config_key_t const keya = maptk::config_key_t("keya");
 
-  maptk::config::value_t const valuea = maptk::config::value_t("valuea");
+  maptk::config_value_t const valuea = maptk::config_value_t("valuea");
 
   config->set_value(block_name + keya, valuea);
 
   maptk::config_t const subblock = config->subblock_view(block_name);
 
-  maptk::config::keys_t const keys = subblock->available_values();
+  maptk::config_keys_t const keys = subblock->available_values();
 
   if (!keys.empty())
   {
@@ -613,13 +613,13 @@ IMPLEMENT_TEST(merge_config)
   maptk::config_t const configa = maptk::config::empty_config();
   maptk::config_t const configb = maptk::config::empty_config();
 
-  maptk::config::key_t const keya = maptk::config::key_t("keya");
-  maptk::config::key_t const keyb = maptk::config::key_t("keyb");
-  maptk::config::key_t const keyc = maptk::config::key_t("keyc");
+  maptk::config_key_t const keya = maptk::config_key_t("keya");
+  maptk::config_key_t const keyb = maptk::config_key_t("keyb");
+  maptk::config_key_t const keyc = maptk::config_key_t("keyc");
 
-  maptk::config::value_t const valuea = maptk::config::value_t("valuea");
-  maptk::config::value_t const valueb = maptk::config::value_t("valueb");
-  maptk::config::value_t const valuec = maptk::config::value_t("valuec");
+  maptk::config_value_t const valuea = maptk::config_value_t("valuea");
+  maptk::config_value_t const valueb = maptk::config_value_t("valueb");
+  maptk::config_value_t const valuec = maptk::config_value_t("valuec");
 
   configa->set_value(keya, valuea);
   configa->set_value(keyb, valuea);
@@ -629,21 +629,21 @@ IMPLEMENT_TEST(merge_config)
 
   configa->merge_config(configb);
 
-  maptk::config::value_t const get_valuea = configa->get_value<maptk::config::value_t>(keya);
+  maptk::config_value_t const get_valuea = configa->get_value<maptk::config_value_t>(keya);
 
   if (valuea != get_valuea)
   {
     TEST_ERROR("Unmerged key changed");
   }
 
-  maptk::config::value_t const get_valueb = configa->get_value<maptk::config::value_t>(keyb);
+  maptk::config_value_t const get_valueb = configa->get_value<maptk::config_value_t>(keyb);
 
   if (valueb != get_valueb)
   {
     TEST_ERROR("Conflicting key was not overwritten");
   }
 
-  maptk::config::value_t const get_valuec = configa->get_value<maptk::config::value_t>(keyc);
+  maptk::config_value_t const get_valuec = configa->get_value<maptk::config_value_t>(keyc);
 
   if (valuec != get_valuec)
   {

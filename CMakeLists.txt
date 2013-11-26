@@ -49,7 +49,7 @@ set(maptk_export_name maptk_exports)
 if(WIN32)
   set(Boost_USE_STATIC_LIBS TRUE)
 endif()
-find_package(Boost 1.42 REQUIRED)
+find_package(Boost 1.42 REQUIRED COMPONENTS system filesystem)
 add_definitions(-DBOOST_ALL_NO_LIB)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 

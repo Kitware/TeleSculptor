@@ -8,6 +8,7 @@ set(maptk_core_headers_public
   covariance.h
   descriptor.h
   descriptor_set.h
+  exceptions.h
   feature.h
   feature_set.h
   image.h
@@ -20,8 +21,12 @@ set(maptk_core_headers_public
   registrar.h
   track.h
   track_set.h
+  types.h
   vector.h
   vector_cmath.h
+
+  exceptions/base.h
+  exceptions/config.h
 
   algo/algorithm.h
   algo/algorithm.txx
@@ -49,11 +54,14 @@ set(maptk_core_sources
   track_set.cxx
   vector.cxx
 
+  exceptions/base.cxx
+  exceptions/config.cxx
+
   algo/detect_features.cxx
   algo/estimate_homography.cxx
   algo/extract_descriptors.cxx
-  algo/image_io.cxx
   algo/geo_map.cxx
+  algo/image_io.cxx
   algo/match_features.cxx
   algo/match_features_homography.cxx
   algo/register.cxx
@@ -69,6 +77,9 @@ maptk_install_headers(
 maptk_add_library(maptk_core
   ${maptk_core_headers_public}
   ${maptk_core_sources}
+  )
+target_link_libraries(maptk_core
+  ${Boost_LIBRARIES}
   )
 set_target_properties(maptk_core
   PROPERTIES
