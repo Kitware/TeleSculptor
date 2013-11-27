@@ -27,6 +27,7 @@ set(maptk_core_headers_public
 
   exceptions/base.h
   exceptions/config.h
+  exceptions/config_io.h
 
   algo/algorithm.h
   algo/algorithm.txx
@@ -56,6 +57,7 @@ set(maptk_core_sources
 
   exceptions/base.cxx
   exceptions/config.cxx
+  exceptions/config_io.cxx
 
   algo/detect_features.cxx
   algo/estimate_homography.cxx
