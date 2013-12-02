@@ -48,7 +48,7 @@ protected:
 
 /// Convert any descriptor set to an OpenCV cv::Mat
 cv::Mat
-descriptors_to_ocv_matrix(descriptor_set_sptr desc_set);
+descriptors_to_ocv_matrix(const maptk::descriptor_set& desc_set);
 
 
 } // end namespace ocv

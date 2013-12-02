@@ -108,16 +108,16 @@ descriptor_set
 
 /// Convert any descriptor set to an OpenCV cv::Mat
 cv::Mat
-descriptors_to_ocv_matrix(descriptor_set_sptr desc_set)
+descriptors_to_ocv_matrix(const maptk::descriptor_set& desc_set)
 {
   // if the descriptor set already contains a cv::Mat representation
   // then return the existing matrix
   if( const ocv::descriptor_set* d =
-          dynamic_cast<const ocv::descriptor_set*>(desc_set.get()) )
+          dynamic_cast<const ocv::descriptor_set*>(&desc_set) )
   {
     return d->ocv_desc_matrix();
   }
-  std::vector<descriptor_sptr> desc = desc_set->descriptors();
+  std::vector<descriptor_sptr> desc = desc_set.descriptors();
   if( desc.empty() )
   {
     return cv::Mat();
