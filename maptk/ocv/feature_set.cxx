@@ -37,15 +37,15 @@ feature_set
 
 /// Convert any feature set to a vector of OpenCV cv::KeyPoints
 std::vector<cv::KeyPoint>
-features_to_ocv_keypoints(feature_set_sptr feat_set)
+features_to_ocv_keypoints(const maptk::feature_set& feat_set)
 {
   if( const ocv::feature_set* f =
-          dynamic_cast<const ocv::feature_set*>(feat_set.get()) )
+          dynamic_cast<const ocv::feature_set*>(&feat_set) )
   {
     return f->ocv_keypoints();
   }
   std::vector<cv::KeyPoint> kpts;
-  std::vector<feature_sptr> feat = feat_set->features();
+  std::vector<feature_sptr> feat = feat_set.features();
   typedef std::vector<feature_sptr>::const_iterator feat_itr;
   for(feat_itr it = feat.begin(); it != feat.end(); ++it)
   {

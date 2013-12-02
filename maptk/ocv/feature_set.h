@@ -48,7 +48,7 @@ protected:
 
 /// Convert any feature set to a vector of OpenCV cv::KeyPoints
 std::vector<cv::KeyPoint>
-features_to_ocv_keypoints(feature_set_sptr features);
+features_to_ocv_keypoints(const maptk::feature_set& features);
 
 
 } // end namespace ocv
