@@ -24,7 +24,7 @@ ocv_to_maptk_descriptor(const cv::Mat& v)
 {
   using namespace maptk;
   descriptor_array_of<T>* d = NULL;
-  switch(v.rows)
+  switch(v.cols)
   {
   case 64:
     d = new descriptor_fixed<T,64>();
@@ -36,7 +36,7 @@ ocv_to_maptk_descriptor(const cv::Mat& v)
     d = new descriptor_fixed<T,256>();
     break;
   default:
-    d = new descriptor_dynamic<T>(v.rows);
+    d = new descriptor_dynamic<T>(v.cols);
   }
   std::copy(v.begin<T>(), v.end<T>(), d->raw_data());
   return descriptor_sptr(d);
