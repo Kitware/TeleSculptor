@@ -99,14 +99,14 @@ ocv_image_container
 
 /// Extract a cv::Mat from any image container
 cv::Mat
-image_container_to_ocv_matrix(image_container_sptr img)
+image_container_to_ocv_matrix(const image_container& img)
 {
   if( const ocv_image_container* c =
-          dynamic_cast<const ocv_image_container*>(img.get()) )
+          dynamic_cast<const ocv_image_container*>(&img) )
   {
     return c->get_Mat();
   }
-  return ocv_image_container::maptk_to_ocv(img->get_image());
+  return ocv_image_container::maptk_to_ocv(img.get_image());
 }
 
 

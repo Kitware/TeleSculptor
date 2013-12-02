@@ -77,7 +77,7 @@ protected:
  * return the underlying cv::Mat.  Otherwise, convert the image data
  * to cv:Mat by shallow copy (if possible) or deep copy as a last resort.
  */
-cv::Mat image_container_to_ocv_matrix(image_container_sptr img);
+cv::Mat image_container_to_ocv_matrix(const image_container& img);
 
 
 } // end namespace ocv
