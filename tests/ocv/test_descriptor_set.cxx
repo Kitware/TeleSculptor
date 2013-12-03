@@ -136,20 +136,28 @@ void test_conversions(const cv::Mat& data)
 }
 
 
-IMPLEMENT_TEST(types_and_sizes)
+IMPLEMENT_TEST(double_conversions)
 {
   test_conversions(cv::Mat(1, 50, CV_64F));
   test_conversions(cv::Mat(64, 50, CV_64F));
   test_conversions(cv::Mat(128, 1, CV_64F));
   test_conversions(cv::Mat(125, 20, CV_64F));
   test_conversions(cv::Mat(256, 10, CV_64F));
+}
 
+
+IMPLEMENT_TEST(float_conversions)
+{
   test_conversions(cv::Mat(1, 50, CV_32F));
   test_conversions(cv::Mat(64, 50, CV_32F));
   test_conversions(cv::Mat(128, 1, CV_32F));
   test_conversions(cv::Mat(125, 20, CV_32F));
   test_conversions(cv::Mat(256, 10, CV_32F));
+}
 
+
+IMPLEMENT_TEST(byte_conversions)
+{
   test_conversions(cv::Mat(1, 50, CV_8U));
   test_conversions(cv::Mat(64, 50, CV_8U));
   test_conversions(cv::Mat(128, 1, CV_8U));
