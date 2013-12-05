@@ -14,6 +14,7 @@ set(maptk_core_headers_public
   landmark.h
   matrix.h
   rotation.h
+  registrar.h
   track.h
   vector.h
   vector_cmath.h
