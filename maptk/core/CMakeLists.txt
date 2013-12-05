@@ -19,6 +19,7 @@ set(maptk_core_headers_public
   vector.h
   vector_cmath.h
 
+  algo/algorithm.h
   algo/image_io.h
   algo/detect_features.h
   algo/extract_descriptors.h
