@@ -25,6 +25,10 @@
 #include <maptk/ocv/register.h>
 #endif
 
+#if defined(MAPTK_HAVE_MODULE_PROJ)
+#include <maptk/proj/register.h>
+#endif
+
 namespace maptk
 {
 
@@ -36,6 +40,10 @@ inline void register_modules()
 
 #if defined(MAPTK_HAVE_MODULE_OCV)
   ocv::register_algorithms();
+#endif
+
+#if defined(MAPTK_HAVE_MODULE_PROJ)
+  proj::register_algorithms();
 #endif
 }
 
