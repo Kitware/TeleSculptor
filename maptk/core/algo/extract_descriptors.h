@@ -7,7 +7,8 @@
 #ifndef MAPTK_ALGO_EXTRACT_DESCRIPTORS_H_
 #define MAPTK_ALGO_EXTRACT_DESCRIPTORS_H_
 
-#include <maptk/core/image.h>
+#include <maptk/core/algo/algorithm.h>
+#include <maptk/core/image_container.h>
 #include <maptk/core/feature_set.h>
 #include <maptk/core/descriptor_set.h>
 
@@ -18,9 +19,12 @@ namespace algo
 {
 
 /// An abstract base class for extracting feature descriptors
-class extract_descriptors
+class extract_descriptors : public algorithm_def<extract_descriptors>
 {
 public:
+  /// Return the name of this algorithm
+  std::string type_name() const { return "extract_descriptors"; }
+
   /// Extract from the image a descriptor corresoponding to each feature
   /// \param image_data contains the image data to process
   /// \param features the feature locations at which descriptors are extracted

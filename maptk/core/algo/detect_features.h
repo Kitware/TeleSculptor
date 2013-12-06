@@ -7,6 +7,7 @@
 #ifndef MAPTK_ALGO_DETECT_FEATURES_H_
 #define MAPTK_ALGO_DETECT_FEATURES_H_
 
+#include <maptk/core/algo/algorithm.h>
 #include <maptk/core/image_container.h>
 #include <maptk/core/feature_set.h>
 
@@ -17,9 +18,12 @@ namespace algo
 {
 
 /// An abstract base class for detecting feature points
-class detect_features
+class detect_features : public algorithm_def<detect_features>
 {
 public:
+  /// Return the name of this algorithm
+  std::string type_name() const { return "detect_features"; }
+
   /// Extract a set of image features from the provided image
   /// \param image_data contains the image data to process
   /// \returns a set of image features

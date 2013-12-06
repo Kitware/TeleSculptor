@@ -43,6 +43,14 @@ detect_features
 }
 
 
+/// Copy Constructor
+detect_features
+::detect_features(const detect_features& other)
+: d_(new priv(*other.d_))
+{
+}
+
+
 /// Extract a set of image features from the provided image
 /// \param image_data contains the image data to process
 /// \returns a set of image features

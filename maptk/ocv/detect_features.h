@@ -18,11 +18,17 @@ namespace ocv
 
 /// An algorithm class for detecting feature points using OpenCV
 class detect_features
-: public algo::detect_features
+: public algo::algorithm_impl<detect_features, algo::detect_features>
 {
 public:
   /// Constructor
   detect_features();
+
+  /// Copy Constructor
+  detect_features(const detect_features& other);
+
+  /// Return the name of this implementation
+  std::string impl_name() const { return "ocv"; }
 
   /// Extract a set of image features from the provided image
   /// \param image_data contains the image data to process

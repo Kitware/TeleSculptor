@@ -21,9 +21,9 @@ set(maptk_core_headers_public
 
   algo/algorithm.h
   algo/algorithm.txx
-  algo/image_io.h
   algo/detect_features.h
   algo/extract_descriptors.h
+  algo/image_io.h
   algo/geo_map.h
   )
 
@@ -38,6 +38,8 @@ set(maptk_core_sources
   track.cxx
   vector.cxx
 
+  algo/detect_features.cxx
+  algo/extract_descriptors.cxx
   algo/image_io.cxx
   algo/geo_map.cxx
   )
