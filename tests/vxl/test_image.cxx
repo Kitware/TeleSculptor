@@ -7,6 +7,7 @@
 #include <test_common.h>
 
 #include <cstdio>
+#include <maptk/vxl/register.h>
 #include <maptk/vxl/image_container.h>
 #include <maptk/vxl/image_io.h>
 
@@ -22,6 +23,23 @@ main(int argc, char* argv[])
   testname_t const testname = argv[1];
 
   RUN_TEST(testname);
+}
+
+
+IMPLEMENT_TEST(factory)
+{
+  using namespace maptk;
+  vxl::register_algorithms();
+  typedef boost::shared_ptr<algo::image_io> image_io_sptr;
+  image_io_sptr img_io = maptk::algo::image_io::create("vxl");
+  if (!img_io)
+  {
+    TEST_ERROR("Unable to create image_io algorithm of type vxl");
+  }
+  if (typeid(*img_io.get()) != typeid(vxl::image_io))
+  {
+    TEST_ERROR("Factory method did not construct the correct type");
+  }
 }
 
 
