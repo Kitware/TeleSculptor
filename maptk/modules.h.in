@@ -17,4 +17,28 @@
 #cmakedefine MAPTK_HAVE_MODULE_VISCL
 #cmakedefine MAPTK_HAVE_MODULE_PROJ
 
+#if defined(MAPTK_HAVE_MODULE_VXL)
+#include <maptk/vxl/register.h>
+#endif
+
+#if defined(MAPTK_HAVE_MODULE_OCV)
+#include <maptk/ocv/register.h>
+#endif
+
+namespace maptk
+{
+
+inline void register_modules()
+{
+#if defined(MAPTK_HAVE_MODULE_VXL)
+  vxl::register_algorithms();
+#endif
+
+#if defined(MAPTK_HAVE_MODULE_OCV)
+  ocv::register_algorithms();
+#endif
+}
+
+} // end namespace maptk
+
 #endif // MAPTK_MODULES_H

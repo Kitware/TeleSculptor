@@ -20,6 +20,23 @@ class image_io
 : public algo::image_io
 {
 public:
+  typedef boost::shared_ptr<algo::image_io> base_sptr;
+
+  /// Return the name of this implementation
+  std::string impl_name() const { return "vxl"; }
+
+  /// Returns a clone of this algorithm
+  base_sptr clone() const
+  {
+    return base_sptr(new vxl::image_io(*this));
+  }
+
+  /// Register this algorithm implementation
+  static bool register_self()
+  {
+    return algo::image_io::register_instance(base_sptr(new vxl::image_io));
+  }
+
   /// Load image image from the file
   /// \param filename the path to the file the load
   /// \returns an image container refering to the loaded image

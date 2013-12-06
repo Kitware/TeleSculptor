@@ -37,6 +37,7 @@ set(maptk_core_sources
   track.cxx
   vector.cxx
 
+  algo/image_io.cxx
   algo/geo_map.cxx
   )
 
