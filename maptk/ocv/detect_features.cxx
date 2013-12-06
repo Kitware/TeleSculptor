@@ -30,6 +30,11 @@ public:
   {
   }
 
+  priv(const priv& other)
+  : detector(cv::FeatureDetector::create(other.detector->name()))
+  {
+  }
+
   /// the feature detector algorithm
   cv::Ptr<cv::FeatureDetector> detector;
 };
@@ -47,6 +52,13 @@ detect_features
 detect_features
 ::detect_features(const detect_features& other)
 : d_(new priv(*other.d_))
+{
+}
+
+
+/// Destructor
+detect_features
+::~detect_features()
 {
 }
 

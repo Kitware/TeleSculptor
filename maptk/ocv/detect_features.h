@@ -24,6 +24,9 @@ public:
   /// Constructor
   detect_features();
 
+  /// Destructor
+  ~detect_features();
+
   /// Copy Constructor
   detect_features(const detect_features& other);
 
