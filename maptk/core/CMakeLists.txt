@@ -12,6 +12,7 @@ set(maptk_core_headers_public
   image_container.h
   ins_data.h
   landmark.h
+  match_set.h
   matrix.h
   rotation.h
   registrar.h
