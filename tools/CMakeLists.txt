@@ -9,3 +9,8 @@ maptk_add_executable(maptk_track_features track_features.cxx)
 target_link_libraries(maptk_track_features
   LINK_PRIVATE
     ${maptk_libs})
+
+maptk_add_executable(maptk_pos2krtd pos2krtd.cxx)
+target_link_libraries(maptk_pos2krtd
+  LINK_PRIVATE
+    ${maptk_libs})
