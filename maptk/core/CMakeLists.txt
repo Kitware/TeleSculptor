@@ -28,6 +28,7 @@ set(maptk_core_headers_public
   algo/image_io.h
   algo/geo_map.h
   algo/match_features.h
+  algo/track_features.h
   )
 
 set(maptk_core_sources
@@ -46,6 +47,7 @@ set(maptk_core_sources
   algo/image_io.cxx
   algo/geo_map.cxx
   algo/match_features.cxx
+  algo/track_features.cxx
   )
 
 # installing header files

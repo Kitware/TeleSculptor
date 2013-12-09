@@ -79,6 +79,8 @@ protected:
 };
 
 
+typedef boost::shared_ptr<track> track_sptr;
+
 } // end namespace maptk
 
 
