@@ -76,9 +76,11 @@ if(MAPTK_ENABLE_PROJ)
   find_package(PROJ)
 endif()
 
-# this is where the main source code lives
+# this is where the libraries source code lives
 add_subdirectory(maptk)
 
+# this is where the executables source code lives
+add_subdirectory(tools)
 
 ###
 # Testing
