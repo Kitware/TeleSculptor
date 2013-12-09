@@ -39,6 +39,21 @@ extract_descriptors
 }
 
 
+/// Copy Constructor
+extract_descriptors
+::extract_descriptors(const extract_descriptors& other)
+: d_(new priv(*other.d_))
+{
+}
+
+
+/// Destructor
+extract_descriptors
+::~extract_descriptors()
+{
+}
+
+
 /// Extract from the image a descriptor corresoponding to each feature
 descriptor_set_sptr
 extract_descriptors
