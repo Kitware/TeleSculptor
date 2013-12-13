@@ -22,6 +22,15 @@ public:
 namespace maptk
 {
 
+
+/// Construct a track from a single track state
+track
+::track(const track_state& ts)
+: history_(1,ts)
+{
+}
+
+
 /// Access the first frame number covered by this track
 unsigned int
 track

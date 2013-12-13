@@ -50,7 +50,10 @@ public:
   typedef std::vector<track_state>::const_iterator history_const_itr;
 
   /// Default Constructor
-  track();
+  track() {}
+
+  /// Construct a track from a single track state
+  explicit track(const track_state& ts);
 
   /// Access the first frame number covered by this track
   unsigned int first_frame() const;
