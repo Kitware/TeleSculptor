@@ -70,6 +70,13 @@ public:
   /// Access a const iterator to the end of the history
   history_const_itr end() const { return history_.end(); }
 
+  /// Find the track state iterator matching \a frame
+  /**
+   *  \param [in] frame the frame number to access
+   *  \return an iterator at the frame if found, or end() if not
+   */
+  history_const_itr find(unsigned int frame) const;
+
   /// Return the number of states in the track.
   size_t size() const { return history_.size(); }
 
