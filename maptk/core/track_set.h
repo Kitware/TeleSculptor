@@ -47,11 +47,26 @@ public:
    */
   virtual track_set_sptr active_tracks(int offset = -1);
 
+  /// Return all tracks inactive on a frame.
+  /**
+   * Inactive tracks are any tracks which do not contain a state on the target frame.
+   * \param [in] offset the frame offset for selecting the active frame.
+   *                    Postive number are absolute frame numbers while negative
+   *                    numbers are relative to the last frame.  For example,
+   *                    offset of -1 refers to the last frame and is the default.
+   * \returns a track set which is the subset of tracks that are inactive.
+   */
+  virtual track_set_sptr inactive_tracks(int offset = -1);
+
   /// Return the set of features in tracks on the last frame
   virtual feature_set_sptr last_frame_features() const;
 
   /// Return the set of descriptors in tracks on the last frame
   virtual descriptor_set_sptr last_frame_descriptors() const;
+
+protected:
+  /// Convert an offset number to an absolute frame number
+  unsigned int offset_to_frame(int offset) const;
 };
 
 

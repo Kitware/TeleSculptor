@@ -38,26 +38,12 @@ track_set
 }
 
 
-
 /// Return all tracks active on a frame.
 track_set_sptr
 track_set
 ::active_tracks(int offset)
 {
-  unsigned int frame_number;
-  if( offset >= 0 )
-  {
-    frame_number = static_cast<unsigned int>(offset);
-  }
-  else
-  {
-    frame_number = this->last_frame() + 1;
-    if( -offset <= frame_number )
-    {
-      frame_number += offset;
-    }
-  }
-
+  unsigned int frame_number = offset_to_frame(offset);
   const std::vector<track_sptr> all_tracks = this->tracks();
   std::vector<track_sptr> active_tracks;
   BOOST_FOREACH(track_sptr t, all_tracks)
@@ -68,6 +54,25 @@ track_set
     }
   }
   return track_set_sptr(new simple_track_set(active_tracks));
+}
+
+
+/// Return all tracks active on a frame.
+track_set_sptr
+track_set
+::inactive_tracks(int offset)
+{
+  unsigned int frame_number = offset_to_frame(offset);
+  const std::vector<track_sptr> all_tracks = this->tracks();
+  std::vector<track_sptr> inactive_tracks;
+  BOOST_FOREACH(track_sptr t, all_tracks)
+  {
+    if( t->find(frame_number) == t->end() )
+    {
+      inactive_tracks.push_back(t);
+    }
+  }
+  return track_set_sptr(new simple_track_set(inactive_tracks));
 }
 
 
@@ -109,5 +114,25 @@ track_set
   }
   return descriptor_set_sptr(new simple_descriptor_set(last_descriptors));
 }
+
+
+/// Convert an offset number to an absolute frame number
+unsigned int
+track_set
+::offset_to_frame(int offset) const
+{
+  if( offset >= 0 )
+  {
+    return static_cast<unsigned int>(offset);
+  }
+
+  unsigned int frame_number = this->last_frame() + 1;
+  if( -offset <= frame_number )
+  {
+    frame_number += offset;
+  }
+  return frame_number;
+}
+
 
 } // end namespace maptk
