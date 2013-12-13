@@ -40,6 +40,7 @@ set(maptk_core_sources
   matrix.cxx
   rotation.cxx
   track.cxx
+  track_set.cxx
   vector.cxx
 
   algo/detect_features.cxx

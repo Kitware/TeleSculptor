@@ -11,9 +11,14 @@
 #include "track.h"
 #include <vector>
 #include <boost/shared_ptr.hpp>
+#include <maptk/core/feature_set.h>
+#include <maptk/core/descriptor_set.h>
 
 namespace maptk
 {
+
+class track_set;
+typedef boost::shared_ptr<track_set> track_set_sptr;
 
 /// A collection of 2D feature point tracks
 class track_set
@@ -23,13 +28,32 @@ public:
   virtual ~track_set() {}
 
   /// Return the number of tracks in the set
-  virtual size_t size() const = 0;
+  virtual size_t size() const;
 
   /// Return a vector of track shared pointers
   virtual std::vector<track_sptr> tracks() const = 0;
+
+  /// Return the last (largest) frame number containing tracks
+  virtual unsigned int last_frame() const;
+
+  /// Return all tracks active on a frame.
+  /**
+   * Active tracks are any tracks which contain a state on the target frame.
+   * \param [in] offset the frame offset for selecting the active frame.
+   *                    Postive number are absolute frame numbers while negative
+   *                    numbers are relative to the last frame.  For example,
+   *                    offset of -1 refers to the last frame and is the default.
+   * \returns a track set which is the subset of tracks that are active.
+   */
+  virtual track_set_sptr active_tracks(int offset = -1);
+
+  /// Return the set of features in tracks on the last frame
+  virtual feature_set_sptr last_frame_features() const;
+
+  /// Return the set of descriptors in tracks on the last frame
+  virtual descriptor_set_sptr last_frame_descriptors() const;
 };
 
-typedef boost::shared_ptr<track_set> track_set_sptr;
 
 
 /// A concrete track set that simply wraps a vector of tracks.
