@@ -10,6 +10,7 @@
 #include <string>
 #include <maptk/core/algo/algorithm.h>
 #include <maptk/core/image_container.h>
+#include <boost/shared_ptr.hpp>
 
 namespace maptk
 {
@@ -36,6 +37,10 @@ public:
   virtual void save(const std::string& filename,
                     image_container_sptr data) const = 0;
 };
+
+
+typedef boost::shared_ptr<image_io> image_io_sptr;
+
 
 } // end namespace algo
 
