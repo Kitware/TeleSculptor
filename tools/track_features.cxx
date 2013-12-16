@@ -14,6 +14,8 @@
 #include <maptk/core/algo/image_io.h>
 #include <maptk/core/algo/detect_features.h>
 #include <maptk/core/algo/extract_descriptors.h>
+#include <maptk/core/algo/match_features.h>
+#include <maptk/core/algo/track_features.h>
 
 static int maptk_main(int argc, char const* argv[])
 {
@@ -38,20 +40,49 @@ static int maptk_main(int argc, char const* argv[])
     files.push_back(line);
   }
 
-
-  typedef boost::shared_ptr<maptk::algo::image_io> image_io_sptr;
-  image_io_sptr image_reader = maptk::algo::image_io::create("ocv");
+  namespace alg = maptk::algo;
+  alg::image_io_sptr image_reader = alg::image_io::create("ocv");
+  alg::detect_features_sptr feature_detector = alg::detect_features::create("ocv");
+  alg::extract_descriptors_sptr descriptor_extractor = alg::extract_descriptors::create("ocv");
+  alg::match_features_sptr feature_matcher = alg::match_features::create("ocv");
+  alg::track_features_sptr feature_tracker = alg::track_features::create("simple");
 
   if( !image_reader )
   {
     std::cerr << "No image I/O module available" << std::endl;
     return EXIT_FAILURE;
   }
+  if( !feature_detector )
+  {
+    std::cerr << "No feature detector module available" << std::endl;
+    return EXIT_FAILURE;
+  }
+  if( !descriptor_extractor )
+  {
+    std::cerr << "No descriptor extractor module available" << std::endl;
+    return EXIT_FAILURE;
+  }
+  if( !feature_matcher )
+  {
+    std::cerr << "No feature matcher module available" << std::endl;
+    return EXIT_FAILURE;
+  }
+  if( !feature_tracker )
+  {
+    std::cerr << "No feature_tracker module available" << std::endl;
+    return EXIT_FAILURE;
+  }
 
+  feature_tracker->set_feature_detector(feature_detector);
+  feature_tracker->set_descriptor_extractor(descriptor_extractor);
+  feature_tracker->set_feature_matcher(feature_matcher);
+
+  maptk::track_set_sptr tracks;
   for(unsigned i=0; i<files.size(); ++i)
   {
     std::cout << "processing frame "<<i<<": "<<files[i]<<std::endl;
     maptk::image_container_sptr img = image_reader->load(files[i]);
+    tracks = feature_tracker->track(tracks, i, img);
   }
 
   return EXIT_SUCCESS;
