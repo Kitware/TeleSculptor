@@ -31,7 +31,7 @@ public:
   }
 
   priv(const priv& other)
-  : matcher(cv::DescriptorMatcher::create(other.matcher->name()))
+  : matcher(other.matcher->clone(true))
   {
   }
 

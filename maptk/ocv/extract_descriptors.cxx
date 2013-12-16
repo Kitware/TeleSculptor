@@ -26,6 +26,12 @@ public:
   {
   }
 
+  /// Copy constructor
+  priv(const priv& other)
+  : extractor(cv::DescriptorExtractor::create("SURF"))
+  {
+  }
+
   /// the descriptor extractor algorithm
   cv::Ptr<cv::DescriptorExtractor> extractor;
 };
