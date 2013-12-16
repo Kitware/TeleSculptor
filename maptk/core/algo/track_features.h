@@ -13,6 +13,7 @@
 #include <maptk/core/algo/match_features.h>
 #include <maptk/core/image_container.h>
 #include <maptk/core/track_set.h>
+#include <boost/shared_ptr.hpp>
 
 namespace maptk
 {
@@ -67,6 +68,9 @@ protected:
   /// The feature matching algorithm to use
   match_features_sptr matcher_;
 };
+
+
+typedef boost::shared_ptr<track_features> track_features_sptr;
 
 
 /// A basic feature tracker
