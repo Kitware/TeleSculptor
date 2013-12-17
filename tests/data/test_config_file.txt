@@ -1,0 +1,8 @@
+
+foo:bar = baz
+foo:things = stuff
+foo:sublevel:value = cool things and stuff
+
+second_block:has = a value
+
+global_var = exo

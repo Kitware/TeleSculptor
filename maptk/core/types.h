@@ -36,6 +36,9 @@ typedef std::string config_description_t;
 /// The type to be used for file and directory paths
 typedef boost::filesystem::path path_t;
 
+/// The type for a static token in the config parser
+typedef std::string token_t;
+
 }
 
 #endif // MAPTK_CORE_TYPES_H

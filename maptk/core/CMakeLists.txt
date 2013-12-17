@@ -4,6 +4,7 @@ set(maptk_core_headers_public
   camera.h
   camera_intrinsics.h
   config.h
+  config_io.h
   core-config.h
   covariance.h
   descriptor.h
@@ -46,6 +47,7 @@ set(maptk_core_sources
   camera.cxx
   camera_intrinsics.cxx
   config.cxx
+  config_io.cxx
   feature.cxx
   image.cxx
   ins_data.cxx

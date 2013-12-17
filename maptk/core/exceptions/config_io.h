@@ -13,6 +13,7 @@
 namespace maptk
 {
 
+/// Base config_io exception class
 class MAPTK_CORE_EXPORT config_io_exception
   : public maptk_core_base_exception
 {
@@ -29,6 +30,7 @@ class MAPTK_CORE_EXPORT config_io_exception
     std::string m_reason;
 };
 
+/// Exception for when a file could not be found
 class MAPTK_CORE_EXPORT file_not_found_exception
   : public config_io_exception
 {
@@ -46,6 +48,7 @@ class MAPTK_CORE_EXPORT file_not_found_exception
     path_t m_file_path;
 };
 
+/// Exception for when a file could not be read or parsed for whatever reason.
 class MAPTK_CORE_EXPORT file_not_read_exception
   : public config_io_exception
 {
@@ -63,12 +66,13 @@ class MAPTK_CORE_EXPORT file_not_read_exception
     path_t m_file_path;
 };
 
+/// Exception for when a file was not able to be written
 class MAPTK_CORE_EXPORT file_write_exception
   : public config_io_exception
 {
   public:
     /**
-     * \bried Constructor
+     * \brief Constructor
      * \param file_path The file path to which the write was attempted.
      * \param reason    The reason for the write exception
      */
