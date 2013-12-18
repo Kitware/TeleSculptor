@@ -17,14 +17,16 @@
 #include <maptk/core/algo/match_features.h>
 #include <maptk/core/algo/track_features.h>
 
+#include <boost/foreach.hpp>
+
 static int maptk_main(int argc, char const* argv[])
 {
   // register the algorithms in the various modules for dynamic look-up
   maptk::register_modules();
 
-  if( argc != 2 )
+  if( argc != 3 )
   {
-    std::cerr << "Usage: "<<argv[0] <<" image_list.txt"<<std::endl;
+    std::cerr << "Usage: "<<argv[0] <<" image_list.txt tracks.txt"<<std::endl;
     return EXIT_FAILURE;
   }
 
@@ -83,6 +85,25 @@ static int maptk_main(int argc, char const* argv[])
     std::cout << "processing frame "<<i<<": "<<files[i]<<std::endl;
     maptk::image_container_sptr img = image_reader->load(files[i]);
     tracks = feature_tracker->track(tracks, i, img);
+  }
+
+  std::vector<maptk::track_sptr> trks = tracks->tracks();
+
+  std::ofstream ofs(argv[2]);
+  if (!ofs)
+  {
+    std::cerr << "Error: Could not open track file for writing: "<<argv[2]<<std::endl;
+    return EXIT_FAILURE;
+  }
+  unsigned track_id = 0;
+  BOOST_FOREACH(maptk::track_sptr t, trks)
+  {
+    typedef maptk::track::history_const_itr state_itr;
+    for (state_itr si = t->begin(); si != t->end(); ++si)
+    {
+      ofs << track_id << " " << si->frame_id << " " << *si->feat << "\n";
+    }
+    ++track_id;
   }
 
   return EXIT_SUCCESS;
