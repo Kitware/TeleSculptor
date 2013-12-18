@@ -69,6 +69,17 @@ std::istream&  operator>>(std::istream& s, feature_<T>& f)
 }
 
 
+/// output stream operator for a feature base class
+std::ostream&  operator<<(std::ostream& s, const feature& f)
+{
+  // TODO include covariance once stream operators are defined
+  s << f.loc() << " "
+    << f.magnitude() << " "
+    << f.scale() << " "
+    << f.angle();
+  return s;
+}
+
 #define INSTANTIATE_FEATURE(T) \
 template class feature_<T>; \
 template std::ostream&  operator<<(std::ostream& s, const feature_<T>& f); \

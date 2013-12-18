@@ -122,6 +122,8 @@ std::ostream&  operator<<(std::ostream& s, const feature_<T>& f);
 template <typename T>
 std::istream&  operator>>(std::istream& s, feature_<T>& f);
 
+/// output stream operator for base class feature
+std::ostream&  operator<<(std::ostream& s, const feature& f);
 
 } // end namespace maptk
 
