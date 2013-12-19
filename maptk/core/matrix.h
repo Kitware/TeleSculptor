@@ -114,6 +114,9 @@ public:
   /// Return the transpose of this matrix
   matrix_<N,M,T> transpose() const;
 
+  /// Return the Frobenius norm of the matrix (sqrt of sum of squares)
+  T frobenius_norm() const { return cmath::l2_norm( data_[0] ); }
+
   /// Add a scalar in place
   matrix_<M,N,T>& operator+=( T s ) { cmath::add( data_[0], s, data_[0] ); return *this; }
 
