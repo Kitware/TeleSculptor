@@ -29,7 +29,7 @@ struct config_value_s {
 };
 
 /// The type that represents multiple stored configuration values.
-typedef std::vector<config_value_s> config_value_set;
+typedef std::vector<config_value_s> config_value_set_t;
 
 }
 
@@ -49,9 +49,9 @@ namespace
 static token_t const config_block_start = token_t("block");
 static token_t const config_block_end = token_t("endblock");
 
-template<typename Iterator>
+template <typename Iterator>
 class config_grammar
-  : public qi::grammar<Iterator, config_value_set()>
+  : public qi::grammar<Iterator, config_value_set_t()>
 {
   public:
     config_grammar();
@@ -66,7 +66,7 @@ class config_grammar
     qi::rule<Iterator, config_key_t()> config_key;
     qi::rule<Iterator, config_value_t()> config_value;
     qi::rule<Iterator, config_value_s()> config_value_full;
-    qi::rule<Iterator, config_value_set()> config_values;
+    qi::rule<Iterator, config_value_set_t()> config_value_set;
 };
 
 template <typename Iterator>
@@ -79,8 +79,8 @@ config_grammar<Iterator>
   , config_key()
   , config_value()
   , config_value_full()
-  , config_values()
-  , config_grammar::base_type(config_values, "config-declaration")
+  , config_value_set()
+  , config_grammar::base_type(config_value_set)
 {
   opt_whitespace.name("opt-whitespace");
   opt_whitespace %= *( qi::blank );
@@ -114,9 +114,15 @@ config_grammar<Iterator>
       opt_whitespace >> config_key > opt_whitespace > '=' > opt_whitespace > config_value > line_end
     );
 
-  config_values.name("config-values");
-  config_values %= +config_value_full;
+  config_value_set.name("config-values");
+  config_value_set %= +config_value_full;
 
+}
+
+template <typename Iterator>
+config_grammar<Iterator>
+::~config_grammar()
+{
 }
 
 }
@@ -149,8 +155,8 @@ config_t read_config_file(path_t const& file_path)
             std::back_inserter(storage));
 
   // Commence parsing!
-  config_value_set config_values;
-  config_grammar grammar;
+  config_value_set_t config_values;
+  config_grammar<std::string::const_iterator> grammar;
   std::string::const_iterator s_begin = storage.begin();
   std::string::const_iterator s_end = storage.end();
   bool r = qi::parse(s_begin, s_end, grammar, config_values);

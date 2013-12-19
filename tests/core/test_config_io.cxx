@@ -14,7 +14,7 @@
 
 #include <boost/filesystem.hpp>
 
-#define TEST_ARGS (char* data_dir)
+#define TEST_ARGS (maptk::path_t data_dir)
 DECLARE_TEST_MAP();
 
 int main(int argc, char* argv[])
@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
   // expecting test name and data directory path`
   CHECK_ARGS(2);
   testname_t const testname = argv[1];
-  path_t data_dir(argv[2]);
+  maptk::path_t data_dir(argv[2]);
   RUN_TEST(testname, data_dir);
 }
 
