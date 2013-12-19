@@ -36,11 +36,19 @@ public:
   /// Return a vector of feature shared pointers
   virtual std::vector<feature_sptr> features() const;
 
+  /// Return the underlying OpenCV vector of cv::KeyPoints
+  const std::vector<cv::KeyPoint>& ocv_keypoints() const { return data_; }
+
 protected:
 
   /// The vector of KeyPoints
   std::vector<cv::KeyPoint> data_;
 };
+
+
+/// Convert any feature set to a vector of OpenCV cv::KeyPoints
+std::vector<cv::KeyPoint>
+features_to_ocv_keypoints(const maptk::feature_set& features);
 
 
 } // end namespace ocv

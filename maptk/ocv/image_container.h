@@ -71,6 +71,15 @@ protected:
 };
 
 
+/// Extract a cv::Mat from any image container
+/**
+ * If \a img is actually an ocv_image_container then
+ * return the underlying cv::Mat.  Otherwise, convert the image data
+ * to cv:Mat by shallow copy (if possible) or deep copy as a last resort.
+ */
+cv::Mat image_container_to_ocv_matrix(const image_container& img);
+
+
 } // end namespace ocv
 
 } // end namespace maptk
