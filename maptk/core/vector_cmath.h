@@ -7,6 +7,7 @@
 #ifndef MAPTK_VECTOR_CMATH_H_
 #define MAPTK_VECTOR_CMATH_H_
 
+#include <cmath>
 
 namespace maptk
 {
@@ -100,6 +101,23 @@ public:
       }
     }
     return true;
+  }
+
+  /// The squared L2 norm (sum of squares) of a vector
+  inline static T l2_norm_squared( const T* a)
+  {
+    T val(0);
+    for ( unsigned int i=0; i < N; ++i,++a )
+    {
+      val += (*a)*(*a);
+    }
+    return val;
+  }
+
+  /// The L2 norm (square root of sum of squares) of a vector
+  inline static T l2_norm( const T* a)
+  {
+    return std::sqrt(l2_norm_squared(a));
   }
 
 };
