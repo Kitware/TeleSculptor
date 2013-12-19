@@ -10,7 +10,8 @@
 #include <vector>
 
 #include <maptk/core/algo/algorithm.h>
-#include <maptk/core/vector.h>
+#include <maptk/core/feature_set.h>
+#include <maptk/core/match_set.h>
 #include <maptk/core/matrix.h>
 #include <boost/shared_ptr.hpp>
 
@@ -26,6 +27,22 @@ class estimate_homography : public algorithm_def<estimate_homography>
 public:
   /// Return the name of this algorithm
   std::string type_name() const { return "estimate_homography"; }
+
+  /// Estimate a homography matrix from corresponding features
+  /**
+   * \param [in]  feat1 the set of all features from the source image
+   * \param [in]  feat2 the set of all features from the destination image
+   * \param [in]  matches the set of correspondences between \a feat1 and \a feat2
+   * \param [out] inliers for each match in \a matcher, the value is true if
+   *                      this pair is an inlier to the homography estimate
+   * \param [in]  inlier_scale error distance tolerated for matches to be inliers
+   */
+  virtual matrix_3x3d
+  estimate(feature_set_sptr feat1,
+           feature_set_sptr feat2,
+           match_set_sptr matches,
+           std::vector<bool>& inliers,
+           double inlier_scale = 1.0) const;
 
   /// Estimate a homography matrix from corresponding points
   /**
