@@ -5,6 +5,9 @@
  */
 
 #include "geo_map.h"
+#include <maptk/core/algo/algorithm.txx>
+
+INSTANTIATE_ALGORITHM_DEF(maptk::algo::geo_map);
 
 namespace maptk
 {

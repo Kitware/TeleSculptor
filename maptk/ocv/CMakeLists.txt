@@ -8,6 +8,7 @@ set(maptk_ocv_headers_public
   image_container.h
   mat_image_memory.h
   image_io.h
+  register.h
   )
 
 set(maptk_ocv_sources
@@ -18,6 +19,7 @@ set(maptk_ocv_sources
   image_container.cxx
   mat_image_memory.cxx
   image_io.cxx
+  register.cxx
   )
 
 # installing header files

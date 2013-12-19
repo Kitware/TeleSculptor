@@ -8,6 +8,7 @@
 #define MAPTK_ALGO_IMAGE_IO_H_
 
 #include <string>
+#include <maptk/core/algo/algorithm.h>
 #include <maptk/core/image_container.h>
 
 namespace maptk
@@ -17,9 +18,12 @@ namespace algo
 {
 
 /// An abstract base class for reading and writing images
-class image_io
+class image_io : public algorithm_def<image_io>
 {
 public:
+  /// Return the name of this algorithm
+  std::string type_name() const { return "image_io"; }
+
   /// Load image image from the file
   /// \param filename the path to the file the load
   /// \returns an image container refering to the loaded image

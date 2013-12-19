@@ -2,10 +2,12 @@
 
 set(maptk_proj_headers_public
   geo_map.h
+  register.h
   )
 
 set(maptk_proj_sources
   geo_map.cxx
+  register.cxx
   )
 
 maptk_install_headers(

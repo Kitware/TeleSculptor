@@ -16,12 +16,15 @@ namespace proj
 {
 
 class proj_geo_map
-: public algo::geo_map
+: public  algo::algorithm_impl<proj_geo_map, algo::geo_map>
 {
 public:
 
   /// Default Constructor
   proj_geo_map() {}
+
+  /// Return the name of this implementation
+  std::string impl_name() const { return "proj"; }
 
   /// Convert UTM coordinate into latitude and longitude.
   /**

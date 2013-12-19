@@ -17,9 +17,12 @@ namespace vxl
 
 /// A class for using VXL to read and write images
 class image_io
-: public algo::image_io
+: public algo::algorithm_impl<image_io, algo::image_io>
 {
 public:
+  /// Return the name of this implementation
+  std::string impl_name() const { return "vxl"; }
+
   /// Load image image from the file
   /// \param filename the path to the file the load
   /// \returns an image container refering to the loaded image

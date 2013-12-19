@@ -4,12 +4,14 @@ set(maptk_vxl_headers_public
   image_container.h
   vil_image_memory.h
   image_io.h
+  register.h
   )
 
 set(maptk_vxl_sources
   image_container.cxx
   vil_image_memory.cxx
   image_io.cxx
+  register.cxx
   )
 
 # installing header files
