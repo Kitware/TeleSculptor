@@ -6,6 +6,7 @@
 
 #include <test_common.h>
 
+#include <maptk/proj/register.h>
 #include <maptk/proj/geo_map.h>
 
 // test_common.h required things
@@ -22,6 +23,24 @@ int main(int argc, char** argv)
   testname_t const testname = argv[1];
   RUN_TEST(testname);
 }
+
+
+IMPLEMENT_TEST(factory)
+{
+  using namespace maptk;
+  proj::register_algorithms();
+  typedef boost::shared_ptr<algo::geo_map> geo_map_sptr;
+  geo_map_sptr gmap = maptk::algo::geo_map::create("proj");
+  if (!gmap)
+  {
+    TEST_ERROR("Unable to create geo_map algorithm of type proj");
+  }
+  if (typeid(*gmap.get()) != typeid(proj::proj_geo_map))
+  {
+    TEST_ERROR("Factory method did not construct the correct type");
+  }
+}
+
 
 IMPLEMENT_TEST(latlon_to_utm)
 {

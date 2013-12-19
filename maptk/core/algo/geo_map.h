@@ -7,6 +7,7 @@
 #ifndef MAPTK_ALGO_GEO_MAP_H_
 #define MAPTK_ALGO_GEO_MAP_H_
 
+#include <maptk/core/algo/algorithm.h>
 
 namespace maptk
 {
@@ -16,11 +17,14 @@ namespace algo
 
 
 /// A base class for geographic conversions
-class geo_map
+class geo_map : public algorithm_def<geo_map>
 {
 public:
   /// Default Constructor
   geo_map() {}
+
+  /// Return the name of this algorithm
+  std::string type_name() const { return "geo_map"; }
 
   /// Convert UTM coordinate into latitude and longitude.
   /**
