@@ -7,6 +7,7 @@
 #include <maptk/ocv/register.h>
 #include <maptk/ocv/image_io.h>
 #include <maptk/ocv/detect_features.h>
+#include <maptk/ocv/estimate_homography.h>
 #include <maptk/ocv/extract_descriptors.h>
 #include <maptk/ocv/match_features.h>
 
@@ -21,6 +22,7 @@ void register_algorithms()
 {
   ocv::image_io::register_self();
   ocv::detect_features::register_self();
+  ocv::estimate_homography::register_self();
   ocv::extract_descriptors::register_self();
   ocv::match_features::register_self();
 }
