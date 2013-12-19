@@ -50,7 +50,10 @@ public:
   typedef std::vector<track_state>::const_iterator history_const_itr;
 
   /// Default Constructor
-  track();
+  track() {}
+
+  /// Construct a track from a single track state
+  explicit track(const track_state& ts);
 
   /// Access the first frame number covered by this track
   unsigned int first_frame() const;
@@ -70,6 +73,13 @@ public:
   /// Access a const iterator to the end of the history
   history_const_itr end() const { return history_.end(); }
 
+  /// Find the track state iterator matching \a frame
+  /**
+   *  \param [in] frame the frame number to access
+   *  \return an iterator at the frame if found, or end() if not
+   */
+  history_const_itr find(unsigned int frame) const;
+
   /// Return the number of states in the track.
   size_t size() const { return history_.size(); }
 
@@ -78,6 +88,8 @@ protected:
   std::vector<track_state> history_;
 };
 
+
+typedef boost::shared_ptr<track> track_sptr;
 
 } // end namespace maptk
 

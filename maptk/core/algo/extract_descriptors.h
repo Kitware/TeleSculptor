@@ -11,6 +11,7 @@
 #include <maptk/core/image_container.h>
 #include <maptk/core/feature_set.h>
 #include <maptk/core/descriptor_set.h>
+#include <boost/shared_ptr.hpp>
 
 namespace maptk
 {
@@ -34,6 +35,10 @@ public:
           feature_set_sptr features) const = 0;
 
 };
+
+
+typedef boost::shared_ptr<extract_descriptors> extract_descriptors_sptr;
+
 
 } // end namespace algo
 

@@ -12,10 +12,12 @@ set(maptk_core_headers_public
   image_container.h
   ins_data.h
   landmark.h
+  match_set.h
   matrix.h
   rotation.h
   registrar.h
   track.h
+  track_set.h
   vector.h
   vector_cmath.h
 
@@ -25,6 +27,9 @@ set(maptk_core_headers_public
   algo/extract_descriptors.h
   algo/image_io.h
   algo/geo_map.h
+  algo/match_features.h
+  algo/register.h
+  algo/track_features.h
   )
 
 set(maptk_core_sources
@@ -36,12 +41,16 @@ set(maptk_core_sources
   matrix.cxx
   rotation.cxx
   track.cxx
+  track_set.cxx
   vector.cxx
 
   algo/detect_features.cxx
   algo/extract_descriptors.cxx
   algo/image_io.cxx
   algo/geo_map.cxx
+  algo/match_features.cxx
+  algo/register.cxx
+  algo/track_features.cxx
   )
 
 # installing header files

@@ -18,11 +18,20 @@ namespace ocv
 
 /// An class for extracting feature descriptors using OpenCV
 class extract_descriptors
-: algo::extract_descriptors
+: public algo::algorithm_impl<extract_descriptors, algo::extract_descriptors>
 {
 public:
   /// Default Constructor
   extract_descriptors();
+
+  /// Destructor
+  ~extract_descriptors();
+
+  /// Copy Constructor
+  extract_descriptors(const extract_descriptors& other);
+
+  /// Return the name of this implementation
+  std::string impl_name() const { return "ocv"; }
 
   /// Extract from the image a descriptor corresoponding to each feature
   /// \param image_data contains the image data to process

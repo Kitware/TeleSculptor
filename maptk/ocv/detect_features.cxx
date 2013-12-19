@@ -31,7 +31,7 @@ public:
   }
 
   priv(const priv& other)
-  : detector(cv::FeatureDetector::create(other.detector->name()))
+  : detector(cv::FeatureDetector::create("SURF"))
   {
   }
 

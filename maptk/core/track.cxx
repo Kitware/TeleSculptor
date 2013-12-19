@@ -6,9 +6,30 @@
 
 #include "track.h"
 
+namespace
+{
+class compare_state_frame
+{
+public:
+  bool operator()(const maptk::track::track_state& ts, unsigned int frame)
+  {
+    return ts.frame_id < frame;
+  }
+};
+}
+
 
 namespace maptk
 {
+
+
+/// Construct a track from a single track state
+track
+::track(const track_state& ts)
+: history_(1,ts)
+{
+}
+
 
 /// Access the first frame number covered by this track
 unsigned int
@@ -48,6 +69,26 @@ track
   }
   this->history_.push_back(state);
   return true;
+}
+
+
+/// Find the track state iterator matching \a frame
+track::history_const_itr
+track
+::find(unsigned int frame) const
+{
+  if( frame < this->first_frame() ||
+      frame > this->last_frame() )
+  {
+    return this->end();
+  }
+  history_const_itr it = std::lower_bound(this->begin(), this->end(),
+                                          frame, compare_state_frame());
+  if( it != this->end() && it->frame_id == frame )
+  {
+    return it;
+  }
+  return this->end();
 }
 
 

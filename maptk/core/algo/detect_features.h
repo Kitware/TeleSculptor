@@ -10,6 +10,7 @@
 #include <maptk/core/algo/algorithm.h>
 #include <maptk/core/image_container.h>
 #include <maptk/core/feature_set.h>
+#include <boost/shared_ptr.hpp>
 
 namespace maptk
 {
@@ -31,6 +32,10 @@ public:
   detect(image_container_sptr image_data) const = 0;
 
 };
+
+
+typedef boost::shared_ptr<detect_features> detect_features_sptr;
+
 
 } // end namespace algo
 

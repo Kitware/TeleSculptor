@@ -7,6 +7,8 @@
 #ifndef MAPTK_MODULES_H
 #define MAPTK_MODULES_H
 
+#include <maptk/core/algo/register.h>
+
 /**
  * \file
  * \brief Macros defining which modules are available
@@ -34,6 +36,8 @@ namespace maptk
 
 inline void register_modules()
 {
+  algo::register_algorithms();
+
 #if defined(MAPTK_HAVE_MODULE_VXL)
   vxl::register_algorithms();
 #endif
