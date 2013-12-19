@@ -312,10 +312,10 @@ vector_<M,T> operator*(const matrix_<M,N,T>& a, const vector_<N,T>& b)
   vector_<M,T> out;
   for (unsigned i = 0; i < M; ++i)
   {
-    T accum = a(i,0) * b(0);
+    T accum = a(i,0) * b[0];
     for (unsigned k = 1; k < N; ++k)
-      accum += a(i,k) * b(k);
-    out(i) = accum;
+      accum += a(i,k) * b[k];
+    out[i] = accum;
   }
   return out;
 }
@@ -330,10 +330,10 @@ vector_<N,T> operator*(const vector_<M,T>& a, const matrix_<M,N,T>& b)
   vector_<N,T> out;
   for (unsigned i = 0; i < N; ++i)
   {
-    T accum = a(0) * b(0,i);
+    T accum = a[0] * b(0,i);
     for (unsigned k = 1; k < M; ++k)
-      accum += a(k) * b(k,i);
-    out(i) = accum;
+      accum += a[k] * b(k,i);
+    out[i] = accum;
   }
   return out;
 }
