@@ -24,6 +24,7 @@ set(maptk_core_headers_public
   algo/algorithm.h
   algo/algorithm.txx
   algo/detect_features.h
+  algo/estimate_homography.h
   algo/extract_descriptors.h
   algo/image_io.h
   algo/geo_map.h
@@ -45,6 +46,7 @@ set(maptk_core_sources
   vector.cxx
 
   algo/detect_features.cxx
+  algo/estimate_homography.cxx
   algo/extract_descriptors.cxx
   algo/image_io.cxx
   algo/geo_map.cxx
