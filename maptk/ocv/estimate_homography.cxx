@@ -25,6 +25,11 @@ estimate_homography
            std::vector<bool>& inliers,
            double inlier_scale) const
 {
+  if (pts1.size() < 4 || pts2.size() < 4)
+  {
+    std::cerr << "Not enough points to estimate a homography" <<std::endl;
+    return matrix_3x3d(0.0);
+  }
 
   std::vector<cv::Point2f> points1, points2;
   BOOST_FOREACH(const vector_2d& v, pts1)
