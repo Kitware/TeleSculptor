@@ -6,4 +6,5 @@ set(test_libraries
 ##############################
 # MAPTK VXL tests
 ##############################
-maptk_discover_tests(vxl_image test_libraries test_image.cxx)
+maptk_discover_tests(vxl_estimate_homography test_libraries test_estimate_homography.cxx)
+maptk_discover_tests(vxl_image               test_libraries test_image.cxx)
