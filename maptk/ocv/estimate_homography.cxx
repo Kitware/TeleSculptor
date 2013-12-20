@@ -47,7 +47,10 @@ estimate_homography
                                  inlier_scale,
                                  inliers_mat );
   inliers.resize(inliers_mat.rows);
-  inliers_mat.copyTo(inliers);
+  for(unsigned i=0; i<inliers.size(); ++i)
+  {
+    inliers[i] = inliers_mat.at<bool>(i);
+  }
 
   return matrix_from_ocv<3,3,double>(H);
 }
