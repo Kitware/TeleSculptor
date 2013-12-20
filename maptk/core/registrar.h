@@ -9,6 +9,7 @@
 
 #include <string>
 #include <map>
+#include <iostream>
 #include <boost/shared_ptr.hpp>
 #include <boost/foreach.hpp>
 
