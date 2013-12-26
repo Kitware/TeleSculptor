@@ -47,3 +47,10 @@ IMPLEMENT_TEST(config_path_not_file)
     "calling config read with directory path as argument"
   );
 }
+
+IMPLEMENT_TEST(read_test_config)
+{
+
+  maptk::config_t conf = maptk::read_config_file(data_dir / "test_config_file.txt");
+
+}

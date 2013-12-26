@@ -13,6 +13,7 @@
 #include <maptk/core/exceptions.h>
 
 #include <boost/filesystem.hpp>
+#include <boost/foreach.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/spirit/include/qi.hpp>
 
@@ -23,7 +24,8 @@ namespace maptk
 
 struct config_value_s {
   /// the configuration path within the block structure
-  config_key_t key;
+  config_keys_t key_path;
+
   /// value associated with the given key
   config_value_t value;
 };
@@ -36,7 +38,7 @@ typedef std::vector<config_value_s> config_value_set_t;
 // Adapting structure to boost fusion tuples for use in spirit::qi
 BOOST_FUSION_ADAPT_STRUCT(
   maptk::config_value_s,
-  (maptk::config_key_t, key)
+  (maptk::config_keys_t, key_path)
   (maptk::config_value_t, value)
 )
 
@@ -61,9 +63,11 @@ class config_grammar
     qi::rule<Iterator> opt_whitespace;
     qi::rule<Iterator> whitespace;
     qi::rule<Iterator> eol;
+    qi::rule<Iterator> opt_line_end;
     qi::rule<Iterator> line_end;
 
     qi::rule<Iterator, config_key_t()> config_key;
+    qi::rule<Iterator, config_keys_t()> config_key_path;
     qi::rule<Iterator, config_value_t()> config_value;
     qi::rule<Iterator, config_value_s()> config_value_full;
     qi::rule<Iterator, config_value_set_t()> config_value_set;
@@ -75,8 +79,10 @@ config_grammar<Iterator>
   : opt_whitespace()
   , whitespace()
   , eol()
+  , opt_line_end()
   , line_end()
   , config_key()
+  , config_key_path()
   , config_value()
   , config_value_full()
   , config_value_set()
@@ -92,6 +98,9 @@ config_grammar<Iterator>
   eol %= qi::lit("\r\n")
        | qi::lit("\n");
 
+  opt_line_end.name("opt-line-end");
+  opt_line_end %= *( eol );
+
   line_end.name("line-end");
   line_end %= +( eol );
 
@@ -100,6 +109,13 @@ config_grammar<Iterator>
     +( qi::alnum
      | qi::char_("_")
      );
+
+  config_key_path.name("config-key-path");
+  config_key_path %=
+    config_key
+    >> *( qi::lit(maptk::config::block_sep)
+        > config_key
+        );
 
   config_value.name("config-value");
   config_value %=
@@ -111,11 +127,13 @@ config_grammar<Iterator>
   config_value_full.name("config-value-full");
   config_value_full %=
     (
-      opt_whitespace >> config_key > opt_whitespace > '=' > opt_whitespace > config_value > line_end
+      opt_whitespace >> config_key_path > opt_whitespace
+        > '=' > opt_whitespace
+        > config_value > line_end
     );
 
   config_value_set.name("config-values");
-  config_value_set %= +config_value_full;
+  config_value_set %= opt_line_end >> +config_value_full;
 
 }
 
@@ -153,6 +171,8 @@ config_t read_config_file(path_t const& file_path)
   std::copy(std::istream_iterator<char>(input_stream),
             std::istream_iterator<char>(),
             std::back_inserter(storage));
+  std::cerr << "Storage string:" << std::endl
+            << storage << std::endl;
 
   // Commence parsing!
   config_value_set_t config_values;
@@ -168,6 +188,14 @@ config_t read_config_file(path_t const& file_path)
   else if (!r)
   {
     throw file_not_read_exception(file_path, "File not parsed, or parsed completely!");
+  }
+
+  // Now that we have the various key/value pairs, construct the config
+  // object.
+  config_t conf = config::empty_config();
+  BOOST_FOREACH( config_value_s kv, config_values)
+  {
+    std::cerr << "VALUE: " << kv.value << std::endl;
   }
 }
 

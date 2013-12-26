@@ -25,7 +25,7 @@ namespace maptk
 {
 
 /**
- * \brief Read in a configuration file, producing a \c config object.
+ * \brief Read in a configuration file, producing a \c config object
  *
  * \throws file_not_found_exception Thrown when the file could not be found
  *                                  on the file system.
