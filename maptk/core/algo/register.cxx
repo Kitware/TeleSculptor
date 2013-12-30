@@ -6,6 +6,7 @@
 
 #include <maptk/core/algo/register.h>
 #include <maptk/core/algo/track_features.h>
+#include <maptk/core/algo/match_features_homography.h>
 
 namespace maptk
 {
@@ -17,6 +18,7 @@ namespace algo
 void register_algorithms()
 {
   simple_track_features::register_self();
+  match_features_homography::register_self();
 }
 
 
