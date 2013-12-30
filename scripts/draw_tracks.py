@@ -1,7 +1,14 @@
 #!/usr/bin/python
-# Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
-# KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
-# Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
+"""
+Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
+Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
+
+This script is used to read a feature tracks file and draw the tracks as
+randomly colored poly-lines.  This provides a visualization for a quick
+visual assessment of the quality of the tracks (e.g. number of tracks and
+their distribution, number of bad tracks, etc.)
+"""
 
 from optparse import OptionParser
 
