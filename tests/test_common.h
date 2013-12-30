@@ -203,20 +203,7 @@ typedef std::string testname_t;
 // Testing helper macros/methods
 //
 
-/// Equality test with message generation on inequality
-/**
- * @param name
- */
-#define TEST_EQUAL(name, value, expected)                       \
-  do                                                            \
-  {                                                             \
-    if(value != expected)                                       \
-    {                                                           \
-      TEST_ERROR("TEST_EQUAL check '" << name << "' failed:\n"  \
-                 << "    Expected: " << expected << "\n"        \
-                 << "    Got     : " << value);                 \
-    }                                                           \
-  } while(false)
+namespace maptk{ namespace testing {
 
 /// Test double approximate equality to given epsilon
 /**
@@ -231,6 +218,28 @@ inline bool is_almost(double const &value,
   return fabs(value - target) <= epsilon;
 }
 
+}}
+
+/// General equality test with message generation on inequality
+/**
+ * Test equality between values with a '!=' expression. This wrapps a standard
+ * error response message.
+ *
+ * @param name      A descriptive name for this specific test.
+ * @param value     The experimental value of the equality check.
+ * @param expected  The expected value of the equality check.
+ */
+#define TEST_EQUAL(name, value, expected)                       \
+  do                                                            \
+  {                                                             \
+    if(value != expected)                                       \
+    {                                                           \
+      TEST_ERROR("TEST_EQUAL check '" << name << "' failed:\n"  \
+                 << "    Expected: ``" << expected << "``\n"    \
+                 << "    Got     : ``" << value << "``");       \
+    }                                                           \
+  } while(false)
+
 /// Test double/float approximate equality to a given epsilon
 /**
  * @param name    An identifying name for the test.
@@ -241,7 +250,7 @@ inline bool is_almost(double const &value,
 #define TEST_NEAR(name, value, target, epsilon) \
   do  \
   {   \
-    if(! is_almost(value, target, epsilon)) \
+    if(! maptk::testing::is_almost(value, target, epsilon)) \
     { \
       TEST_ERROR("TEST_NEAR check '" << name \
                  << "' failed: (epsilon: " << epsilon << ")\n" \

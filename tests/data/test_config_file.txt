@@ -1,8 +1,10 @@
 
 foo:bar = baz
 foo:things = stuff
-foo:sublevel:value = cool things and stuff
+foo:sublevel:value = cool_things_and_stuff    
 
 second_block:has = a value
 
-global_var = exo
+global_var = 3.14
+global_var2 = 1.12  
+

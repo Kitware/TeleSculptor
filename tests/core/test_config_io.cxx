@@ -6,6 +6,7 @@
 
 #include <test_common.h>
 
+#include <string>
 #include <iostream>
 
 #include <maptk/core/config_io.h>
@@ -50,7 +51,27 @@ IMPLEMENT_TEST(config_path_not_file)
 
 IMPLEMENT_TEST(read_test_config)
 {
+  maptk::config_t config = maptk::read_config_file(data_dir / "test_config_file.txt");
+  TEST_EQUAL("foo:bar read",
+             config->get_value<std::string>("foo:bar"),
+             "baz");
+  TEST_EQUAL("foo:things read",
+             config->get_value<std::string>("foo:things"),
+             "stuff");
+  TEST_EQUAL("foo:sublevel:value read",
+             config->get_value<std::string>("foo:sublevel:value"),
+             "cool things and stuff");
+  TEST_EQUAL("second_block:has read",
+             config->get_value<std::string>("second_block:has"),
+             "a value");
+  TEST_NEAR("global_var read",
+            config->get_value<float>("global_var"),
+            3.14,
+            0.001);
+  TEST_NEAR("global_var2 read",
+            config->get_value<double>("global_var2"),
+            1.12,
+            0.001);
 
-  maptk::config_t conf = maptk::read_config_file(data_dir / "test_config_file.txt");
-
+  // extract sub-block, see that value access maintained
 }

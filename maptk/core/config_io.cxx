@@ -12,6 +12,7 @@
 
 #include <maptk/core/exceptions.h>
 
+#include <boost/algorithm/string/join.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
@@ -171,14 +172,15 @@ config_t read_config_file(path_t const& file_path)
   std::copy(std::istream_iterator<char>(input_stream),
             std::istream_iterator<char>(),
             std::back_inserter(storage));
-  std::cerr << "Storage string:" << std::endl
-            << storage << std::endl;
+  // std::cerr << "Storage string:" << std::endl
+  //           << storage << std::endl;
 
   // Commence parsing!
   config_value_set_t config_values;
   config_grammar<std::string::const_iterator> grammar;
   std::string::const_iterator s_begin = storage.begin();
   std::string::const_iterator s_end = storage.end();
+
   bool r = qi::parse(s_begin, s_end, grammar, config_values);
 
   if( r && s_begin == s_end )
@@ -195,8 +197,14 @@ config_t read_config_file(path_t const& file_path)
   config_t conf = config::empty_config();
   BOOST_FOREACH( config_value_s kv, config_values)
   {
-    std::cerr << "VALUE: " << kv.value << std::endl;
+    config_key_t key_path = boost::algorithm::join(kv.key_path, config::block_sep);
+    // std::cerr << "KEY: " << key_path << std::endl;
+    // std::cerr << "VALUE: " << kv.value << std::endl << std::endl;
+    // add key/value to config object here
+    conf->set_value(key_path, kv.value);
   }
+
+  return conf;
 }
 
 }
