@@ -35,6 +35,8 @@ class TrackState(object):
 
 
 def parse_track_state_line(line):
+    """Parse a line of a feature track file and produce a track state.
+    """
     if not line or line[0] == '#':
         return None
     tokens = line.split(' ')
@@ -51,6 +53,8 @@ def parse_track_state_line(line):
 
 
 def load_tracks(filename):
+    """Load a feature track file into a map of tracks ids to track states.
+    """
     track_map = {}
     with open(filename, 'r') as f:
         for line in f:
