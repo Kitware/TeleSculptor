@@ -11,6 +11,18 @@ namespace maptk
 {
 
 
+/// output stream operator for a feature base class
+std::ostream&  operator<<(std::ostream& s, const feature& f)
+{
+  // TODO include covariance once stream operators are defined
+  s << f.loc() << " "
+    << f.magnitude() << " "
+    << f.scale() << " "
+    << f.angle();
+  return s;
+}
+
+
 /// Default Constructor
 template <typename T>
 feature_<T>

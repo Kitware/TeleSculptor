@@ -45,6 +45,9 @@ public:
 
 typedef boost::shared_ptr<feature> feature_sptr;
 
+/// output stream operator for base class feature
+std::ostream&  operator<<(std::ostream& s, const feature& f);
+
 
 /// A concrete 2D image feature point.
 ///
@@ -121,7 +124,6 @@ std::ostream&  operator<<(std::ostream& s, const feature_<T>& f);
 /// input stream operator for a feature
 template <typename T>
 std::istream&  operator>>(std::istream& s, feature_<T>& f);
-
 
 } // end namespace maptk
 
