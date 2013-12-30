@@ -121,16 +121,15 @@ config_grammar<Iterator>
   config_value.name("config-value");
   config_value %=
     +( qi::graph
-     | qi::char_(' ')
-     | qi::char_('\t')
+     | qi::hold[*qi::blank >> qi::graph]
      );
 
   config_value_full.name("config-value-full");
   config_value_full %=
     (
-      opt_whitespace >> config_key_path > opt_whitespace
-        > '=' > opt_whitespace
-        > config_value > line_end
+        (opt_whitespace >> config_key_path >> opt_whitespace)
+      > '='
+      > (opt_whitespace >> config_value >> opt_whitespace) > line_end
     );
 
   config_value_set.name("config-values");

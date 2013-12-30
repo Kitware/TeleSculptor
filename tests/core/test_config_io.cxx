@@ -63,15 +63,15 @@ IMPLEMENT_TEST(read_test_config)
              "cool things and stuff");
   TEST_EQUAL("second_block:has read",
              config->get_value<std::string>("second_block:has"),
-             "a value");
+             "a value    with  spaces");
   TEST_NEAR("global_var read",
             config->get_value<float>("global_var"),
             3.14,
-            0.001);
+            0.000001);
   TEST_NEAR("global_var2 read",
             config->get_value<double>("global_var2"),
             1.12,
-            0.001);
+            0.000001);
 
   // extract sub-block, see that value access maintained
 }
