@@ -115,7 +115,7 @@ rotation_<T>
 template <typename T>
 void
 rotation_<T>
-::get_yaw_pitch_roll(T& yaw, T& pitch, T& roll)
+::get_yaw_pitch_roll(T& yaw, T& pitch, T& roll) const
 {
   matrix_<3,3,T> rotM(*this);
   T xy = T(std::sqrt(double(rotM(0,0)*rotM(0,0)) + rotM(1,0)*rotM(1,0)));

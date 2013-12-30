@@ -42,7 +42,7 @@ public:
   const vector_4_<T>& quaternion() const { return q_; }
 
   /// Convert to yaw, pitch, and roll
-  void get_yaw_pitch_roll(T& yaw, T& pitch, T& roll);
+  void get_yaw_pitch_roll(T& yaw, T& pitch, T& roll) const;
 
   /// Compute the inverse rotation
   rotation_<T> inverse() const
