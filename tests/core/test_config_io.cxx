@@ -49,7 +49,7 @@ IMPLEMENT_TEST(config_path_not_file)
   );
 }
 
-IMPLEMENT_TEST(read_test_config)
+IMPLEMENT_TEST(successful_config_read)
 {
   maptk::config_t config = maptk::read_config_file(data_dir / "test_config_file.txt");
   TEST_EQUAL("foo:bar read",
@@ -74,4 +74,15 @@ IMPLEMENT_TEST(read_test_config)
             0.000001);
 
   // extract sub-block, see that value access maintained
+  maptk::config_t foo_subblock = config->subblock_view("foo");
+  TEST_EQUAL("foo subblock bar read",
+             foo_subblock->get_value<std::string>("bar"),
+             "baz");
+  TEST_EQUAL("foo subblock sublevel read",
+             foo_subblock->get_value<std::string>("sublevel:value"),
+             "cool things and stuff");
+  TEST_EQUAL("foo nested extraction",
+             config->subblock_view("foo")->subblock_view("sublevel")
+                                         ->get_value<std::string>("value"),
+             "cool things and stuff");
 }
