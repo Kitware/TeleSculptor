@@ -5,7 +5,7 @@ set(maptk_core_headers_public
   camera_intrinsics.h
   config.h
   config_io.h
-  core-config.h
+  core_config.h
   covariance.h
   descriptor.h
   descriptor_set.h

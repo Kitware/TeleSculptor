@@ -7,7 +7,7 @@
 #ifndef MAPTK_CORE_CONFIG_H
 #define MAPTK_CORE_CONFIG_H
 
-#include "core-config.h"
+#include "core_config.h"
 #include "types.h"
 #include "exceptions/config.h"
 

@@ -7,7 +7,7 @@
 #ifndef MAPTK_CORE_EXCEPTIONS_BASE_H
 #define MAPTK_CORE_EXCEPTIONS_BASE_H
 
-#include <maptk/core/core-config.h>
+#include <maptk/core/core_config.h>
 #include <string>
 
 namespace maptk

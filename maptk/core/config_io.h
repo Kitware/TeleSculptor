@@ -7,10 +7,10 @@
 #ifndef MAPTK_CORE_CONFIG_IO_H
 #define MAPTK_CORE_CONFIG_IO_H
 
-#include "core-config.h"
+#include "core_config.h"
 
 // This the configuration object and has nothing to do with package
-// configuration like core-config.h does
+// configuration like core_config.h does
 #include "config.h"
 #include "types.h"
 
