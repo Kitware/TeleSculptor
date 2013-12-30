@@ -5,6 +5,7 @@
  */
 
 #include "camera.h"
+#include <iomanip>
 
 namespace maptk
 {
@@ -13,7 +14,11 @@ namespace maptk
 template <typename T>
 std::ostream&  operator<<(std::ostream& s, const camera_<T>& k)
 {
-  // TODO: implement me
+  using std::setprecision;
+  s << setprecision(12) << matrix_<3,3,T>(k.intrinsics()) << "\n"
+    << setprecision(12) << matrix_<3,3,T>(k.rotation()) << "\n"
+    << setprecision(12) << k.translation() << "\n\n"
+    << "0\n";
   return s;
 }
 
@@ -22,7 +27,13 @@ std::ostream&  operator<<(std::ostream& s, const camera_<T>& k)
 template <typename T>
 std::istream&  operator>>(std::istream& s, camera_<T>& k)
 {
-  // TODO: implement me
+  matrix_<3,3,T> K, R;
+  vector_<3,T> t;
+  double d;
+  s >> K >> R >> t >> d;
+  k.set_intrinsics(camera_intrinsics_<T>(K));
+  k.set_rotation(rotation_<T>(R));
+  k.set_translation(t);
   return s;
 }
 
