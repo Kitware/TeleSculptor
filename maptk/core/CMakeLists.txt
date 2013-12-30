@@ -12,6 +12,7 @@ set(maptk_core_headers_public
   image_container.h
   ins_data.h
   landmark.h
+  local_geo_cs.h
   match_set.h
   matrix.h
   rotation.h
@@ -39,6 +40,7 @@ set(maptk_core_sources
   feature.cxx
   image.cxx
   ins_data.cxx
+  local_geo_cs.cxx
   matrix.cxx
   rotation.cxx
   track.cxx
