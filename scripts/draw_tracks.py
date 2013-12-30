@@ -21,7 +21,7 @@ class TrackState(object):
     """Represents the state of a feature track at a particular frame of video.
     """
     def __init__(self, track_id, frame_num,
-                 location=[0.0, 0.0],
+                 location=(0.0, 0.0),
                  magnitude=1.0,
                  scale=1.0,
                  angle=0.0):
