@@ -23,6 +23,7 @@ namespace qi = boost::spirit::qi;
 namespace maptk
 {
 
+/// Basic configuration key/value encapsulation structure
 struct config_value_s {
   /// the configuration path within the block structure
   config_keys_t key_path;
@@ -49,9 +50,12 @@ namespace maptk
 namespace
 {
 
+/// Token representing the beginning of a block declaration
 static token_t const config_block_start = token_t("block");
+/// Token representing the end of a block declaration
 static token_t const config_block_end = token_t("endblock");
 
+/// Grammar definition for configuration files
 template <typename Iterator>
 class config_grammar
   : public qi::grammar<Iterator, config_value_set_t()>

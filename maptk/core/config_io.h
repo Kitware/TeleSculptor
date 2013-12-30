@@ -24,9 +24,8 @@
 namespace maptk
 {
 
+/// Read in a configuration file, producing a \c config object
 /**
- * \brief Read in a configuration file, producing a \c config object
- *
  * \throws file_not_found_exception Thrown when the file could not be found
  *                                  on the file system.
  * \throws file_not_read_exception  Thrown when the file could not be read or
@@ -39,9 +38,8 @@ namespace maptk
  */
 config_t  MAPTK_CORE_EXPORT read_config_file(path_t const& file_path);
 
+/// Output to file the given \c config object to the specified file path
 /**
- * \brief Output to file the given \c config object to the specified file path
- *
  * If a file exists at the target location, it will be overwritten.
  *
  * \throws file_write_exception Thrown when something prevents output of the

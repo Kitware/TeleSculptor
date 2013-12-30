@@ -27,7 +27,7 @@
 
 /**
  * \file
- * \brief Header for \link maptk::config configuration\endlink in the pipeline.
+ * \brief Header for \link maptk::config configuration object
  */
 
 namespace maptk
@@ -42,21 +42,18 @@ class MAPTK_CORE_EXPORT config
 {
   public:
 
+    /// Create an empty configuration.
     /**
-     * \brief Create an empty configuration.
      * \param name The name of the configuration block.
      * \returns An empty configuration block.
      */
     static config_t empty_config(config_key_t const& name = config_key_t());
 
-    /**
-     * \brief Destructor.
-     */
+    /// Destructor
     ~config();
 
+    /// Get a subblock from the configuration.
     /**
-     * \brief Get a subblock from the configuration.
-     *
      * Retrieve an unlinked configuration subblock from the current
      * configuration. Changes made to it do not affect \c *this.
      *
@@ -65,9 +62,8 @@ class MAPTK_CORE_EXPORT config
      */
     config_t subblock(config_key_t const& key) const;
 
+    /// Get a subblock view into the configuration.
     /**
-     * \brief Get a subblock view into the configuration.
-     *
      * Retrieve a view into the current configuration. Changes made to \c *this
      * are seen through the view and vice versa.
      *
@@ -76,9 +72,8 @@ class MAPTK_CORE_EXPORT config
      */
     config_t subblock_view(config_key_t const& key);
 
+    /// Internally cast the value.
     /**
-     * \brief Internally cast the value.
-     *
      * \throws no_such_configuration_value_exception Thrown if the requested index does not exist.
      * \throws bad_configuration_cast_exception Thrown if the cast fails.
      *
@@ -88,9 +83,8 @@ class MAPTK_CORE_EXPORT config
     template <typename T>
     T get_value(config_key_t const& key) const;
 
+    /// Cast the value, returning a default value in case of an error.
     /**
-     * \brief Cast the value, returning a default value in case of an error.
-     *
      * \param key The index of the configuration value to retrieve.
      * \param def The value \p key does not exist or the cast fails.
      * \returns The value stored within the configuration, or \p def if something goes wrong.
@@ -98,9 +92,8 @@ class MAPTK_CORE_EXPORT config
     template <typename T>
     T get_value(config_key_t const& key, T const& def) const MAPTK_NOTHROW;
 
+    /// Set a value within the configuration.
     /**
-     * \brief Set a value within the configuration.
-     *
      * \throws set_on_read_only_value_exception Thrown if \p key is marked as read-only.
      *
      * \postconds
@@ -112,9 +105,8 @@ class MAPTK_CORE_EXPORT config
      */
     void set_value(config_key_t const& key, config_value_t const& value);
 
+    /// Remove a value from the configuration.
     /**
-     * \brief Remove a value from the configuration.
-     *
      * \throws unset_on_read_only_value_exception Thrown if \p key is marked as read-only.
      * \throws no_such_configuration_value_exception Thrown if the requested index does not exist.
      *
@@ -126,17 +118,16 @@ class MAPTK_CORE_EXPORT config
      */
     void unset_value(config_key_t const& key);
 
+    /// Query if a value is read-only.
     /**
-     * \brief Query if a value is read-only.
      *
      * \param key The key of the value query.
      * \returns True if \p key is read-only, false otherwise.
      */
     bool is_read_only(config_key_t const& key) const;
 
+    /// Set the value within the configuration as read-only.
     /**
-     * \brief Set the value within the configuration as read-only.
-     *
      * \postconds
      * \postcond{<code>this->is_read_only(key) == true</code>}
      * \endpostconds
@@ -145,8 +136,8 @@ class MAPTK_CORE_EXPORT config
      */
     void mark_read_only(config_key_t const& key);
 
+    /// Merge the values in \p config into the current config.
     /**
-     * \brief Merge the values in \p config into the current config.
      * \note Any values currently set within \c *this will be overwritten if conficts occur.
      *
      * \throws set_on_read_only_value_exception Thrown if \p key is marked as read-only.
@@ -159,14 +150,14 @@ class MAPTK_CORE_EXPORT config
      */
     void merge_config(config_t const& config);
 
+    ///Return the values available in the configuration.
     /**
-     * \brief Return the values available in the configuration.
      * \returns All of the keys available within the block.
      */
     config_keys_t available_values() const;
 
+    /// Check if a value exists for \p key.
     /**
-     * \brief Check if a value exists for \p key.
      * \param key The index of the configuration value to check.
      * \returns Whether the key exists.
      */
@@ -177,8 +168,10 @@ class MAPTK_CORE_EXPORT config
     /// The magic group for global parameters.
     static config_key_t const global_value;
   private:
+    /// Internal constructor
     MAPTK_NO_EXPORT config(config_key_t const& name, config_t parent);
 
+    /// private helper method to extract a value for a key
     boost::optional<config_value_t> find_value(config_key_t const& key) const;
     MAPTK_NO_EXPORT config_value_t get_value(config_key_t const& key) const;
 
@@ -191,8 +184,8 @@ class MAPTK_CORE_EXPORT config
     ro_list_t m_ro_list;
 };
 
+/// Default cast handling of configuration values.
 /**
- * \brief Default cast handling of configuration values.
  * \note Do not use this in user code. Use \ref config_cast instead.
  * \param value The value to convert.
  * \returns The value of \p value in the requested type.
@@ -212,8 +205,8 @@ config_cast_default(config_value_t const& value)
   }
 }
 
+/// Type-specific casting handling
 /**
- * \brief Type-specific casting handling.
  * \note Do not use this in user code. Use \ref config_cast instead.
  * \param value The value to convert.
  * \returns The value of \p value in the requested type.
@@ -226,9 +219,8 @@ config_cast_inner(config_value_t const& value)
   return config_cast_default<T>(value);
 }
 
+/// Type-specific casting handling.
 /**
- * \brief Type-specific casting handling.
- *
  * This is the \c bool specialization to handle \tt{true} and \tt{false}
  * literals versus just \tt{1} and \tt{0}.
  *
@@ -239,8 +231,8 @@ config_cast_inner(config_value_t const& value)
 template <>
 MAPTK_CORE_EXPORT bool config_cast_inner(config_value_t const& value);
 
+/// Cast a configuration value to the requested type.
 /**
- * \brief Cast a configuration value to the requested type.
  * \throws bad_configuration_cast Thrown when the conversion fails.
  * \param value The value to convert.
  * \returns The value of \p value in the requested type.
@@ -253,6 +245,7 @@ config_cast(config_value_t const& value)
   return config_cast_inner<T>(value);
 }
 
+/// Internally cast the value.
 template <typename T>
 T
 config
@@ -275,6 +268,7 @@ config
   }
 }
 
+/// Cast the value, returning a default value in case of an error.
 template <typename T>
 T
 config

@@ -19,7 +19,7 @@
 /**
  * \file config.cxx
  *
- * \brief Implementation of \link sprokit::config configuration\endlink in the pipeline.
+ * \brief Implementation of \link maptk::config configuration object
  */
 
 namespace maptk
@@ -28,9 +28,12 @@ namespace maptk
 config_key_t const config::block_sep = config_key_t(":");
 config_key_t const config::global_value = config_key_t("_global");
 
+/// private helper method for determining key path prefixes
 static bool does_not_begin_with(config_key_t const& key, config_key_t const& name);
+/// private helper method to strip a block name from a key path
 static config_key_t strip_block_name(config_key_t const& subblock, config_key_t const& key);
 
+/// Create an empty configuration.
 config_t
 config
 ::empty_config(config_key_t const& name)
@@ -38,11 +41,13 @@ config
   return config_t(new config(name, config_t()));
 }
 
+/// Destructor
 config
 ::~config()
 {
 }
 
+/// Get a subblock from the configuration.
 config_t
 config
 ::subblock(config_key_t const& key) const
@@ -64,6 +69,7 @@ config
   return conf;
 }
 
+/// Get a subblock view into the configuration.
 config_t
 config
 ::subblock_view(config_key_t const& key)
@@ -71,6 +77,7 @@ config
   return config_t(new config(key, shared_from_this()));
 }
 
+/// Set a value within the configuration.
 void
 config
 ::set_value(config_key_t const& key, config_value_t const& value)
@@ -92,6 +99,7 @@ config
   }
 }
 
+/// Remove a value from the configuration.
 void
 config
 ::unset_value(config_key_t const& key)
@@ -120,6 +128,7 @@ config
   }
 }
 
+/// Query if a value is read-only.
 bool
 config
 ::is_read_only(config_key_t const& key) const
@@ -127,6 +136,7 @@ config
   return (0 != m_ro_list.count(key));
 }
 
+/// Set the value within the configuration as read-only.
 void
 config
 ::mark_read_only(config_key_t const& key)
@@ -134,6 +144,7 @@ config
   m_ro_list.insert(key);
 }
 
+/// Merge the values in \p config into the current config.
 void
 config
 ::merge_config(config_t const& conf)
@@ -148,6 +159,7 @@ config
   }
 }
 
+///Return the values available in the configuration.
 config_keys_t
 config
 ::available_values() const
@@ -177,6 +189,7 @@ config
   return keys;
 }
 
+/// Check if a value exists for \p key.
 bool
 config
 ::has_value(config_key_t const& key) const
@@ -189,6 +202,7 @@ config
   return (0 != m_store.count(key));
 }
 
+/// Internal constructor
 config
 ::config(config_key_t const& name, config_t parent)
   : m_parent(parent)
@@ -198,6 +212,7 @@ config
 {
 }
 
+/// private helper method to extract a value for a key
 boost::optional<config_value_t>
 config
 ::find_value(config_key_t const& key) const
@@ -229,6 +244,7 @@ config
   return i->second;
 }
 
+/// Type-specific casting handling, bool specialization
 template <>
 bool
 config_cast_inner(config_value_t const& value)
@@ -250,6 +266,14 @@ config_cast_inner(config_value_t const& value)
   return config_cast_default<bool>(value);
 }
 
+/// private helper method for determining key path prefixes
+/**
+ * \param key   The key string to check.
+ * \param name  The prefix string to check for. Should not include a trailing
+ *              block separator.
+ * \returns True if the given key does not begin with the given name and is
+ *          not a global variable.
+ */
 bool
 does_not_begin_with(config_key_t const& key, config_key_t const& name)
 {
@@ -259,6 +283,16 @@ does_not_begin_with(config_key_t const& key, config_key_t const& name)
           !boost::starts_with(key, global_start));
 }
 
+/// private helper method to strip a block name from a key path
+/**
+ * Conditionally strip the given subblock name from the given key path. If the
+ * given key doesn't start with the given subblock, the given key is returned
+ * as is.
+ *
+ * \param subblock  The subblock string to strip if present.
+ * \param key       The key to conditionally strip from.
+ * \returns The stripped key name.
+ */
 config_key_t
 strip_block_name(config_key_t const& subblock, config_key_t const& key)
 {
