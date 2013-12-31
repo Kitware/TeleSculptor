@@ -9,7 +9,7 @@
 #include <string>
 #include <iostream>
 
-#include <maptk/core/config_io.h>
+#include <maptk/core/config_block_io.h>
 #include <maptk/core/exceptions.h>
 #include <maptk/core/types.h>
 
@@ -33,7 +33,7 @@ IMPLEMENT_TEST(config_path_not_exist)
 
   EXPECT_EXCEPTION(
     maptk::file_not_found_exception,
-    maptk::read_config_file(fp),
+    maptk::read_config_block_file(fp),
     "calling config read with non-existant file"
   );
 }
@@ -44,14 +44,14 @@ IMPLEMENT_TEST(config_path_not_file)
 
   EXPECT_EXCEPTION(
     maptk::file_not_found_exception,
-    maptk::read_config_file(fp),
+    maptk::read_config_block_file(fp),
     "calling config read with directory path as argument"
   );
 }
 
 IMPLEMENT_TEST(successful_config_read)
 {
-  maptk::config_t config = maptk::read_config_file(data_dir / "test_config_file.txt");
+  maptk::config_block_t config = maptk::read_config_block_file(data_dir / "test_config_file.txt");
   TEST_EQUAL("foo:bar read",
              config->get_value<std::string>("foo:bar"),
              "baz");
@@ -74,7 +74,7 @@ IMPLEMENT_TEST(successful_config_read)
             0.000001);
 
   // extract sub-block, see that value access maintained
-  maptk::config_t foo_subblock = config->subblock_view("foo");
+  maptk::config_block_t foo_subblock = config->subblock_view("foo");
   TEST_EQUAL("foo subblock bar read",
              foo_subblock->get_value<std::string>("bar"),
              "baz");

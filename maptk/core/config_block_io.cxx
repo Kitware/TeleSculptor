@@ -4,7 +4,7 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
-#include "config_io.h"
+#include "config_block_io.h"
 
 #include <fstream>
 #include <iostream>
@@ -24,24 +24,24 @@ namespace maptk
 {
 
 /// Basic configuration key/value encapsulation structure
-struct config_value_s {
+struct config_block_value_s {
   /// the configuration path within the block structure
-  config_keys_t key_path;
+  config_block_keys_t key_path;
 
   /// value associated with the given key
-  config_value_t value;
+  config_block_value_t value;
 };
 
 /// The type that represents multiple stored configuration values.
-typedef std::vector<config_value_s> config_value_set_t;
+typedef std::vector<config_block_value_s> config_block_value_set_t;
 
 }
 
 // Adapting structure to boost fusion tuples for use in spirit::qi
 BOOST_FUSION_ADAPT_STRUCT(
-  maptk::config_value_s,
-  (maptk::config_keys_t, key_path)
-  (maptk::config_value_t, value)
+  maptk::config_block_value_s,
+  (maptk::config_block_keys_t, key_path)
+  (maptk::config_block_value_t, value)
 )
 
 namespace maptk
@@ -57,12 +57,12 @@ static token_t const config_block_end = token_t("endblock");
 
 /// Grammar definition for configuration files
 template <typename Iterator>
-class config_grammar
-  : public qi::grammar<Iterator, config_value_set_t()>
+class config_block_grammar
+  : public qi::grammar<Iterator, config_block_value_set_t()>
 {
   public:
-    config_grammar();
-    ~config_grammar();
+    config_block_grammar();
+    ~config_block_grammar();
 
   private:
     qi::rule<Iterator> opt_whitespace;
@@ -71,27 +71,27 @@ class config_grammar
     qi::rule<Iterator> opt_line_end;
     qi::rule<Iterator> line_end;
 
-    qi::rule<Iterator, config_key_t()> config_key;
-    qi::rule<Iterator, config_keys_t()> config_key_path;
-    qi::rule<Iterator, config_value_t()> config_value;
-    qi::rule<Iterator, config_value_s()> config_value_full;
-    qi::rule<Iterator, config_value_set_t()> config_value_set;
+    qi::rule<Iterator, config_block_key_t()> config_block_key;
+    qi::rule<Iterator, config_block_keys_t()> config_block_key_path;
+    qi::rule<Iterator, config_block_value_t()> config_block_value;
+    qi::rule<Iterator, config_block_value_s()> config_block_value_full;
+    qi::rule<Iterator, config_block_value_set_t()> config_block_value_set;
 };
 
 template <typename Iterator>
-config_grammar<Iterator>
-::config_grammar()
+config_block_grammar<Iterator>
+::config_block_grammar()
   : opt_whitespace()
   , whitespace()
   , eol()
   , opt_line_end()
   , line_end()
-  , config_key()
-  , config_key_path()
-  , config_value()
-  , config_value_full()
-  , config_value_set()
-  , config_grammar::base_type(config_value_set)
+  , config_block_key()
+  , config_block_key_path()
+  , config_block_value()
+  , config_block_value_full()
+  , config_block_value_set()
+  , config_block_grammar::base_type(config_block_value_set)
 {
   opt_whitespace.name("opt-whitespace");
   opt_whitespace %= *( qi::blank );
@@ -109,48 +109,48 @@ config_grammar<Iterator>
   line_end.name("line-end");
   line_end %= +( eol );
 
-  config_key.name("config-key");
-  config_key %=
+  config_block_key.name("config-key");
+  config_block_key %=
     +( qi::alnum
      | qi::char_("_")
      );
 
-  config_key_path.name("config-key-path");
-  config_key_path %=
-    config_key
-    >> *( qi::lit(maptk::config::block_sep)
-        > config_key
+  config_block_key_path.name("config-key-path");
+  config_block_key_path %=
+    config_block_key
+    >> *( qi::lit(maptk::config_block::block_sep)
+        > config_block_key
         );
 
-  config_value.name("config-value");
-  config_value %=
+  config_block_value.name("config-value");
+  config_block_value %=
     +( qi::graph
      | qi::hold[*qi::blank >> qi::graph]
      );
 
-  config_value_full.name("config-value-full");
-  config_value_full %=
+  config_block_value_full.name("config-value-full");
+  config_block_value_full %=
     (
-        (opt_whitespace >> config_key_path >> opt_whitespace)
+        (opt_whitespace >> config_block_key_path >> opt_whitespace)
       > '='
-      > (opt_whitespace >> config_value >> opt_whitespace) > line_end
+      > (opt_whitespace >> config_block_value >> opt_whitespace) > line_end
     );
 
-  config_value_set.name("config-values");
-  config_value_set %= opt_line_end >> +config_value_full;
+  config_block_value_set.name("config-values");
+  config_block_value_set %= opt_line_end >> +config_block_value_full;
 
 }
 
 template <typename Iterator>
-config_grammar<Iterator>
-::~config_grammar()
+config_block_grammar<Iterator>
+::~config_block_grammar()
 {
 }
 
 }
 
 /// Read in a configuration file, producing a \c config object.
-config_t read_config_file(path_t const& file_path)
+config_block_t read_config_block_file(path_t const& file_path)
 {
   // Check that file exists
   if( ! boost::filesystem::exists(file_path) )
@@ -179,16 +179,16 @@ config_t read_config_file(path_t const& file_path)
   //           << storage << std::endl;
 
   // Commence parsing!
-  config_value_set_t config_values;
-  config_grammar<std::string::const_iterator> grammar;
+  config_block_value_set_t config_block_values;
+  config_block_grammar<std::string::const_iterator> grammar;
   std::string::const_iterator s_begin = storage.begin();
   std::string::const_iterator s_end = storage.end();
 
-  bool r = qi::parse(s_begin, s_end, grammar, config_values);
+  bool r = qi::parse(s_begin, s_end, grammar, config_block_values);
 
   if( r && s_begin == s_end )
   {
-    std::cerr << "File parsed! Contained " << config_values.size() << " entries." << std::endl;
+    std::cerr << "File parsed! Contained " << config_block_values.size() << " entries." << std::endl;
   }
   else if (!r)
   {
@@ -197,10 +197,10 @@ config_t read_config_file(path_t const& file_path)
 
   // Now that we have the various key/value pairs, construct the config
   // object.
-  config_t conf = config::empty_config();
-  BOOST_FOREACH( config_value_s kv, config_values)
+  config_block_t conf = config_block::empty_config();
+  BOOST_FOREACH( config_block_value_s kv, config_block_values)
   {
-    config_key_t key_path = boost::algorithm::join(kv.key_path, config::block_sep);
+    config_block_key_t key_path = boost::algorithm::join(kv.key_path, config_block::block_sep);
     // std::cerr << "KEY: " << key_path << std::endl;
     // std::cerr << "VALUE: " << kv.value << std::endl << std::endl;
     // add key/value to config object here

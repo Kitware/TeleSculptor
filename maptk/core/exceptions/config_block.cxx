@@ -4,42 +4,42 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
-#include "config.h"
+#include "config_block.h"
 
 #include <sstream>
 
 namespace maptk
 {
 
-configuration_exception
-::configuration_exception() MAPTK_NOTHROW
+config_block_exception
+::config_block_exception() MAPTK_NOTHROW
   : maptk_core_base_exception()
 {
 }
 
-configuration_exception
-::~configuration_exception() MAPTK_NOTHROW
+config_block_exception
+::~config_block_exception() MAPTK_NOTHROW
 {
 }
 
-bad_configuration_cast
-::bad_configuration_cast(char const* reason) MAPTK_NOTHROW
-  : configuration_exception()
+bad_config_block_cast
+::bad_config_block_cast(char const* reason) MAPTK_NOTHROW
+  : config_block_exception()
 {
   this->m_what = reason;
 }
 
-bad_configuration_cast
-::~bad_configuration_cast() MAPTK_NOTHROW
+bad_config_block_cast
+::~bad_config_block_cast() MAPTK_NOTHROW
 {
 }
 
-bad_configuration_cast_exception
-::bad_configuration_cast_exception(config_key_t const& key,
-                                   config_value_t const& value,
-                                   char const* type,
-                                   char const* reason) MAPTK_NOTHROW
-  : configuration_exception()
+bad_config_block_cast_exception
+::bad_config_block_cast_exception(config_block_key_t const& key,
+                                  config_block_value_t const& value,
+                                  char const* type,
+                                  char const* reason) MAPTK_NOTHROW
+  : config_block_exception()
   , m_key(key)
   , m_value(value)
   , m_type(type)
@@ -52,14 +52,14 @@ bad_configuration_cast_exception
   m_what = sstr.str();
 }
 
-bad_configuration_cast_exception
-::~bad_configuration_cast_exception() MAPTK_NOTHROW
+bad_config_block_cast_exception
+::~bad_config_block_cast_exception() MAPTK_NOTHROW
 {
 }
 
 no_such_configuration_value_exception
-::no_such_configuration_value_exception(config_key_t const& key) MAPTK_NOTHROW
-  : configuration_exception()
+::no_such_configuration_value_exception(config_block_key_t const& key) MAPTK_NOTHROW
+  : config_block_exception()
   , m_key(key)
 {
   std::ostringstream sstr;
@@ -74,10 +74,10 @@ no_such_configuration_value_exception
 }
 
 set_on_read_only_value_exception
-::set_on_read_only_value_exception(config_key_t const& key,
-                                   config_value_t const& value,
-                                   config_value_t const& new_value) MAPTK_NOTHROW
-  : configuration_exception()
+::set_on_read_only_value_exception(config_block_key_t const& key,
+                                   config_block_value_t const& value,
+                                   config_block_value_t const& new_value) MAPTK_NOTHROW
+  : config_block_exception()
   , m_key(key)
   , m_value(value)
   , m_new_value(new_value)
@@ -96,9 +96,9 @@ set_on_read_only_value_exception
 }
 
 unset_on_read_only_value_exception
-::unset_on_read_only_value_exception(config_key_t const& key,
-                                     config_value_t const& value) MAPTK_NOTHROW
-  : configuration_exception()
+::unset_on_read_only_value_exception(config_block_key_t const& key,
+                                     config_block_value_t const& value) MAPTK_NOTHROW
+  : config_block_exception()
   , m_key(key)
   , m_value(value)
 {

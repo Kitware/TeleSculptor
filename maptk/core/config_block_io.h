@@ -11,7 +11,7 @@
 
 // This the configuration object and has nothing to do with package
 // configuration like core_config.h does
-#include "config.h"
+#include "config_block.h"
 #include "types.h"
 
 /**
@@ -36,7 +36,7 @@ namespace maptk
  * \param file_path The path to the file to read in.
  * \return A \c config object representing the contents of the read-in file.
  */
-config_t  MAPTK_CORE_EXPORT read_config_file(path_t const& file_path);
+config_block_t  MAPTK_CORE_EXPORT read_config_block_file(path_t const& file_path);
 
 /// Output to file the given \c config object to the specified file path
 /**
@@ -48,8 +48,8 @@ config_t  MAPTK_CORE_EXPORT read_config_file(path_t const& file_path);
  * \param config    The \c config object to output.
  * \param file_path The path to output the file to.
  */
-//void      MAPTK_CORE_EXPORT write_config_file(config_t const& config,
-//                                              path_t const& file_path);
+//void      MAPTK_CORE_EXPORT write_config_block_file(config_block_t const& config,
+//                                                    path_t const& file_path);
 
 }
 

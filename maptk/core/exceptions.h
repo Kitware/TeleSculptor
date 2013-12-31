@@ -15,7 +15,7 @@
  */
 
 #include "exceptions/base.h"
-#include "exceptions/config.h"
-#include "exceptions/config_io.h"
+#include "exceptions/config_block.h"
+#include "exceptions/config_block_io.h"
 
 #endif // MAPTK_CORE_EXCEPTIONS_H

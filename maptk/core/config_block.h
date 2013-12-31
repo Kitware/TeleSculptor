@@ -9,7 +9,7 @@
 
 #include "core_config.h"
 #include "types.h"
-#include "exceptions/config.h"
+#include "exceptions/config_block.h"
 
 #include <boost/optional/optional.hpp>
 #include <boost/enable_shared_from_this.hpp>
@@ -36,8 +36,8 @@ namespace maptk
 /**
  * \brief Stores configuration values for use within a \ref pipeline.
  */
-class MAPTK_CORE_EXPORT config
-  : public boost::enable_shared_from_this<config>,
+class MAPTK_CORE_EXPORT config_block
+  : public boost::enable_shared_from_this<config_block>,
            boost::noncopyable
 {
   public:
@@ -47,10 +47,10 @@ class MAPTK_CORE_EXPORT config
      * \param name The name of the configuration block.
      * \returns An empty configuration block.
      */
-    static config_t empty_config(config_key_t const& name = config_key_t());
+    static config_block_t empty_config(config_block_key_t const& name = config_block_key_t());
 
     /// Destructor
-    ~config();
+    ~config_block();
 
     /// Get a subblock from the configuration.
     /**
@@ -60,7 +60,7 @@ class MAPTK_CORE_EXPORT config
      * \param key The name of the sub-configuration to retrieve.
      * \returns A subblock with copies of the values.
      */
-    config_t subblock(config_key_t const& key) const;
+    config_block_t subblock(config_block_key_t const& key) const;
 
     /// Get a subblock view into the configuration.
     /**
@@ -70,7 +70,7 @@ class MAPTK_CORE_EXPORT config
      * \param key The name of the sub-configuration to retrieve.
      * \returns A subblock which links to the \c *this.
      */
-    config_t subblock_view(config_key_t const& key);
+    config_block_t subblock_view(config_block_key_t const& key);
 
     /// Internally cast the value.
     /**
@@ -81,7 +81,7 @@ class MAPTK_CORE_EXPORT config
      * \returns The value stored within the configuration.
      */
     template <typename T>
-    T get_value(config_key_t const& key) const;
+    T get_value(config_block_key_t const& key) const;
 
     /// Cast the value, returning a default value in case of an error.
     /**
@@ -90,7 +90,7 @@ class MAPTK_CORE_EXPORT config
      * \returns The value stored within the configuration, or \p def if something goes wrong.
      */
     template <typename T>
-    T get_value(config_key_t const& key, T const& def) const MAPTK_NOTHROW;
+    T get_value(config_block_key_t const& key, T const& def) const MAPTK_NOTHROW;
 
     /// Set a value within the configuration.
     /**
@@ -103,7 +103,7 @@ class MAPTK_CORE_EXPORT config
      * \param key The index of the configuration value to set.
      * \param value The value to set for the \p key.
      */
-    void set_value(config_key_t const& key, config_value_t const& value);
+    void set_value(config_block_key_t const& key, config_block_value_t const& value);
 
     /// Remove a value from the configuration.
     /**
@@ -116,7 +116,7 @@ class MAPTK_CORE_EXPORT config
      *
      * \param key The index of the configuration value to unset.
      */
-    void unset_value(config_key_t const& key);
+    void unset_value(config_block_key_t const& key);
 
     /// Query if a value is read-only.
     /**
@@ -124,7 +124,7 @@ class MAPTK_CORE_EXPORT config
      * \param key The key of the value query.
      * \returns True if \p key is read-only, false otherwise.
      */
-    bool is_read_only(config_key_t const& key) const;
+    bool is_read_only(config_block_key_t const& key) const;
 
     /// Set the value within the configuration as read-only.
     /**
@@ -134,7 +134,7 @@ class MAPTK_CORE_EXPORT config
      *
      * \param key The key of the value to mark as read-only.
      */
-    void mark_read_only(config_key_t const& key);
+    void mark_read_only(config_block_key_t const& key);
 
     /// Merge the values in \p config into the current config.
     /**
@@ -148,52 +148,52 @@ class MAPTK_CORE_EXPORT config
      *
      * \param config The other configuration.
      */
-    void merge_config(config_t const& config);
+    void merge_config(config_block_t const& config);
 
     ///Return the values available in the configuration.
     /**
      * \returns All of the keys available within the block.
      */
-    config_keys_t available_values() const;
+    config_block_keys_t available_values() const;
 
     /// Check if a value exists for \p key.
     /**
      * \param key The index of the configuration value to check.
      * \returns Whether the key exists.
      */
-    bool has_value(config_key_t const& key) const;
+    bool has_value(config_block_key_t const& key) const;
 
     /// The separator between blocks.
-    static config_key_t const block_sep;
+    static config_block_key_t const block_sep;
     /// The magic group for global parameters.
-    static config_key_t const global_value;
+    static config_block_key_t const global_value;
   private:
     /// Internal constructor
-    MAPTK_NO_EXPORT config(config_key_t const& name, config_t parent);
+    MAPTK_NO_EXPORT config_block(config_block_key_t const& name, config_block_t parent);
 
     /// private helper method to extract a value for a key
-    boost::optional<config_value_t> find_value(config_key_t const& key) const;
-    MAPTK_NO_EXPORT config_value_t get_value(config_key_t const& key) const;
+    boost::optional<config_block_value_t> find_value(config_block_key_t const& key) const;
+    MAPTK_NO_EXPORT config_block_value_t get_value(config_block_key_t const& key) const;
 
-    typedef std::map<config_key_t, config_value_t> store_t;
-    typedef std::set<config_key_t> ro_list_t;
+    typedef std::map<config_block_key_t, config_block_value_t> store_t;
+    typedef std::set<config_block_key_t> ro_list_t;
 
-    config_t m_parent;
-    config_key_t m_name;
+    config_block_t m_parent;
+    config_block_key_t m_name;
     store_t m_store;
     ro_list_t m_ro_list;
 };
 
 /// Default cast handling of configuration values.
 /**
- * \note Do not use this in user code. Use \ref config_cast instead.
+ * \note Do not use this in user code. Use \ref config_block_cast instead.
  * \param value The value to convert.
  * \returns The value of \p value in the requested type.
  */
 template <typename T>
 inline
 T
-config_cast_default(config_value_t const& value)
+config_block_cast_default(config_block_value_t const& value)
 {
   try
   {
@@ -201,35 +201,35 @@ config_cast_default(config_value_t const& value)
   }
   catch (boost::bad_lexical_cast const& e)
   {
-    throw bad_configuration_cast(e.what());
+    throw bad_config_block_cast(e.what());
   }
 }
 
 /// Type-specific casting handling
 /**
- * \note Do not use this in user code. Use \ref config_cast instead.
+ * \note Do not use this in user code. Use \ref config_block_cast instead.
  * \param value The value to convert.
  * \returns The value of \p value in the requested type.
  */
 template <typename T>
 inline
 T
-config_cast_inner(config_value_t const& value)
+config_block_cast_inner(config_block_value_t const& value)
 {
-  return config_cast_default<T>(value);
+  return config_block_cast_default<T>(value);
 }
 
-/// Type-specific casting handling.
+/// Type-specific casting handling, bool specialization
 /**
  * This is the \c bool specialization to handle \tt{true} and \tt{false}
  * literals versus just \tt{1} and \tt{0}.
  *
- * \note Do not use this in user code. Use \ref config_cast instead.
+ * \note Do not use this in user code. Use \ref config_block_cast instead.
  * \param value The value to convert.
  * \returns The value of \p value in the requested type.
  */
 template <>
-MAPTK_CORE_EXPORT bool config_cast_inner(config_value_t const& value);
+MAPTK_CORE_EXPORT bool config_block_cast_inner(config_block_value_t const& value);
 
 /// Cast a configuration value to the requested type.
 /**
@@ -240,18 +240,18 @@ MAPTK_CORE_EXPORT bool config_cast_inner(config_value_t const& value);
 template <typename T>
 inline
 T
-config_cast(config_value_t const& value)
+config_block_cast(config_block_value_t const& value)
 {
-  return config_cast_inner<T>(value);
+  return config_block_cast_inner<T>(value);
 }
 
 /// Internally cast the value.
 template <typename T>
 T
-config
-::get_value(config_key_t const& key) const
+config_block
+::get_value(config_block_key_t const& key) const
 {
-  boost::optional<config_value_t> value = find_value(key);
+  boost::optional<config_block_value_t> value = find_value(key);
 
   if (!value)
   {
@@ -260,19 +260,19 @@ config
 
   try
   {
-    return config_cast<T>(*value);
+    return config_block_cast<T>(*value);
   }
-  catch (bad_configuration_cast const& e)
+  catch (bad_config_block_cast const& e)
   {
-    throw bad_configuration_cast_exception(key, *value, typeid(T).name(), e.what());
+    throw bad_config_block_cast_exception(key, *value, typeid(T).name(), e.what());
   }
 }
 
 /// Cast the value, returning a default value in case of an error.
 template <typename T>
 T
-config
-::get_value(config_key_t const& key, T const& def) const MAPTK_NOTHROW
+config_block
+::get_value(config_block_key_t const& key, T const& def) const MAPTK_NOTHROW
 {
   try
   {

@@ -3,8 +3,8 @@
 set(maptk_core_headers_public
   camera.h
   camera_intrinsics.h
-  config.h
-  config_io.h
+  config_block.h
+  config_block_io.h
   core_config.h
   covariance.h
   descriptor.h
@@ -27,8 +27,8 @@ set(maptk_core_headers_public
   vector_cmath.h
 
   exceptions/base.h
-  exceptions/config.h
-  exceptions/config_io.h
+  exceptions/config_block.h
+  exceptions/config_block_io.h
 
   algo/algorithm.h
   algo/algorithm.txx
@@ -46,8 +46,8 @@ set(maptk_core_headers_public
 set(maptk_core_sources
   camera.cxx
   camera_intrinsics.cxx
-  config.cxx
-  config_io.cxx
+  config_block.cxx
+  config_block_io.cxx
   feature.cxx
   image.cxx
   ins_data.cxx
@@ -58,8 +58,8 @@ set(maptk_core_sources
   vector.cxx
 
   exceptions/base.cxx
-  exceptions/config.cxx
-  exceptions/config_io.cxx
+  exceptions/config_block.cxx
+  exceptions/config_block_io.cxx
 
   algo/detect_features.cxx
   algo/estimate_homography.cxx
