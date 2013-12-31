@@ -3,12 +3,14 @@
 set(maptk_ocv_headers_public
   descriptor_set.h
   detect_features.h
+  estimate_homography.h
   extract_descriptors.h
   feature_set.h
   image_container.h
   mat_image_memory.h
   match_features.h
   match_set.h
+  matrix.h
   image_io.h
   register.h
   )
@@ -16,6 +18,7 @@ set(maptk_ocv_headers_public
 set(maptk_ocv_sources
   descriptor_set.cxx
   detect_features.cxx
+  estimate_homography.cxx
   extract_descriptors.cxx
   feature_set.cxx
   image_container.cxx
