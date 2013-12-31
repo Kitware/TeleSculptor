@@ -24,7 +24,7 @@ public:
   /// Return the name of this implementation
   std::string impl_name() const { return "vxl"; }
 
-/// Estimate a homography matrix from corresponding points
+  /// Estimate a homography matrix from corresponding points
   /**
    * \param [in]  pts1 the vector or corresponding points from the source image
    * \param [in]  pts2 the vector of corresponding points from the destination image
