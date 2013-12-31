@@ -17,6 +17,7 @@ from matplotlib.path import Path
 import matplotlib.patches as patches
 import random
 
+
 class TrackState(object):
     """Represents the state of a feature track at a particular frame of video.
     """
