@@ -19,7 +19,7 @@
 /**
  * \file config.cxx
  *
- * \brief Implementation of \link maptk::config_block configuration object
+ * \brief Implementation of \link maptk::config_block\endlink configuration object
  */
 
 namespace maptk

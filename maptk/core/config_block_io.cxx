@@ -65,16 +65,26 @@ class config_block_grammar
     ~config_block_grammar();
 
   private:
+    /// Optional whitespace (spaces/tabs)
     qi::rule<Iterator> opt_whitespace;
+    /// Required whitespace (at least one space/tab)
     qi::rule<Iterator> whitespace;
+    /// End-of-line rule (single EoL)
     qi::rule<Iterator> eol;
+    /// Optional eol rule (0 or more)
     qi::rule<Iterator> opt_line_end;
+    /// Required eol rule (1 or more)
     qi::rule<Iterator> line_end;
 
+    /// Matches a single config_block key element
     qi::rule<Iterator, config_block_key_t()> config_block_key;
+    /// Matches full config_block key path
     qi::rule<Iterator, config_block_keys_t()> config_block_key_path;
+    /// Matches any valid "value" (printable characters with joining spaces)
     qi::rule<Iterator, config_block_value_t()> config_block_value;
+    /// A key/value pair
     qi::rule<Iterator, config_block_value_s()> config_block_value_full;
+    /// Result set of config block key/value pairs
     qi::rule<Iterator, config_block_value_set_t()> config_block_value_set;
 };
 
@@ -93,6 +103,8 @@ config_block_grammar<Iterator>
   , config_block_value_set()
   , config_block_grammar::base_type(config_block_value_set)
 {
+  using namespace qi::labels;
+
   opt_whitespace.name("opt-whitespace");
   opt_whitespace %= *( qi::blank );
 
@@ -109,11 +121,10 @@ config_block_grammar<Iterator>
   line_end.name("line-end");
   line_end %= +( eol );
 
+
   config_block_key.name("config-key");
   config_block_key %=
-    +( qi::alnum
-     | qi::char_("_")
-     );
+    +( qi::alnum | qi::char_("_") );
 
   config_block_key_path.name("config-key-path");
   config_block_key_path %=
@@ -130,14 +141,19 @@ config_block_grammar<Iterator>
 
   config_block_value_full.name("config-value-full");
   config_block_value_full %=
-    (
-        (opt_whitespace >> config_block_key_path >> opt_whitespace)
-      > '='
-      > (opt_whitespace >> config_block_value >> opt_whitespace) > line_end
+    ( (opt_whitespace >> config_block_key_path >> opt_whitespace)
+    > '='
+    > (opt_whitespace >> config_block_value >> opt_whitespace) > eol
     );
 
+
+  // Main grammar parsing rule
   config_block_value_set.name("config-values");
-  config_block_value_set %= opt_line_end >> +config_block_value_full;
+  config_block_value_set %=
+    +( (opt_whitespace >> eol)  // empty line with extra whitespace
+     | line_end                 // one or more empty lines
+     | config_block_value_full  // keypath/value specification
+     );
 
 }
 
@@ -150,7 +166,7 @@ config_block_grammar<Iterator>
 }
 
 /// Read in a configuration file, producing a \c config object.
-config_block_t read_config_block_file(path_t const& file_path)
+config_block_t read_config_file(path_t const& file_path)
 {
   // Check that file exists
   if( ! boost::filesystem::exists(file_path) )
@@ -179,20 +195,28 @@ config_block_t read_config_block_file(path_t const& file_path)
   //           << storage << std::endl;
 
   // Commence parsing!
+  typedef std::string::const_iterator str_iter;
   config_block_value_set_t config_block_values;
-  config_block_grammar<std::string::const_iterator> grammar;
+  config_block_grammar<str_iter> grammar;
   std::string::const_iterator s_begin = storage.begin();
   std::string::const_iterator s_end = storage.end();
 
-  bool r = qi::parse(s_begin, s_end, grammar, config_block_values);
+  try
+  {
+    bool r = qi::parse(s_begin, s_end, grammar, config_block_values);
 
-  if( r && s_begin == s_end )
-  {
-    std::cerr << "File parsed! Contained " << config_block_values.size() << " entries." << std::endl;
+    if( r && s_begin == s_end )
+    {
+      std::cerr << "File parsed! Contained " << config_block_values.size() << " entries." << std::endl;
+    }
+    else if (!r)
+    {
+      throw file_not_read_exception(file_path, "File not parsed, or parsed completely!");
+    }
   }
-  else if (!r)
+  catch (qi::expectation_failure<str_iter> const& e)
   {
-    throw file_not_read_exception(file_path, "File not parsed, or parsed completely!");
+    throw file_not_parsed_exception(file_path, "Grammar expectation failure");
   }
 
   // Now that we have the various key/value pairs, construct the config
@@ -208,6 +232,12 @@ config_block_t read_config_block_file(path_t const& file_path)
   }
 
   return conf;
+}
+
+/// Output to file the given \c config object to the specified file path
+void write_config_block_file(config_block_t const& config,
+                             path_t const& file_path)
+{
 }
 
 }

@@ -27,7 +27,7 @@
 
 /**
  * \file
- * \brief Header for \link maptk::config configuration object
+ * \brief Header for \link maptk::config\endlink configuration object
  */
 
 namespace maptk

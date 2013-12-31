@@ -203,7 +203,11 @@ typedef std::string testname_t;
 // Testing helper macros/methods
 //
 
-namespace maptk{ namespace testing {
+namespace maptk
+{
+
+namespace testing
+{
 
 /// Test double approximate equality to given epsilon
 /**
@@ -218,7 +222,9 @@ inline bool is_almost(double const &value,
   return fabs(value - target) <= epsilon;
 }
 
-}}
+} //end namespace testing
+
+} //end namespace maptk
 
 /// General equality test with message generation on inequality
 /**

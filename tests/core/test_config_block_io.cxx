@@ -33,7 +33,7 @@ IMPLEMENT_TEST(config_path_not_exist)
 
   EXPECT_EXCEPTION(
     maptk::file_not_found_exception,
-    maptk::read_config_block_file(fp),
+    maptk::read_config_file(fp),
     "calling config read with non-existant file"
   );
 }
@@ -44,14 +44,14 @@ IMPLEMENT_TEST(config_path_not_file)
 
   EXPECT_EXCEPTION(
     maptk::file_not_found_exception,
-    maptk::read_config_block_file(fp),
+    maptk::read_config_file(fp),
     "calling config read with directory path as argument"
   );
 }
 
 IMPLEMENT_TEST(successful_config_read)
 {
-  maptk::config_block_t config = maptk::read_config_block_file(data_dir / "test_config_file.txt");
+  maptk::config_block_t config = maptk::read_config_file(data_dir / "test_config-valid_file.txt");
   TEST_EQUAL("foo:bar read",
              config->get_value<std::string>("foo:bar"),
              "baz");
@@ -85,4 +85,22 @@ IMPLEMENT_TEST(successful_config_read)
              config->subblock_view("foo")->subblock_view("sublevel")
                                          ->get_value<std::string>("value"),
              "cool things and stuff");
+}
+
+IMPLEMENT_TEST(invalid_config_file)
+{
+  EXPECT_EXCEPTION(
+      maptk::file_not_parsed_exception,
+      maptk::read_config_file(data_dir / "test_config-invalid_file.txt"),
+      "calling config_block read on badly formatted file"
+      );
+}
+
+IMPLEMENT_TEST(invalid_keypath)
+{
+  EXPECT_EXCEPTION(
+      maptk::file_not_parsed_exception,
+      maptk::read_config_file(data_dir / "test_config-invalid_keypath.txt"),
+      "read attempt on file with invalid key path"
+      );
 }
