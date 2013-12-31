@@ -39,6 +39,9 @@ public:
   /// Access the local UTM origin zone
   int utm_origin_zone() const { return utm_origin_zone_; }
 
+  /// Access the geographic mapping algorithm
+  algo::geo_map_sptr geo_map_algo() const { return geo_map_algo_; }
+
   /// Use the pose data provided by INS to update camera pose
   void update_camera(const ins_data& ins, camera_d& cam);
 
