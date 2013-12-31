@@ -17,8 +17,10 @@
 #include <boost/foreach.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/spirit/include/qi.hpp>
+#include <boost/spirit/include/phoenix.hpp>
 
 namespace qi = boost::spirit::qi;
+namespace phoenix = boost::phoenix;
 
 namespace maptk
 {
@@ -54,6 +56,8 @@ namespace
 static token_t const config_block_start = token_t("block");
 /// Token representing the end of a block declaration
 static token_t const config_block_end = token_t("endblock");
+/// Token representing the start of a comment
+static token_t const config_comment_start = token_t("#");
 
 /// Grammar definition for configuration files
 template <typename Iterator>
@@ -84,6 +88,10 @@ class config_block_grammar
     qi::rule<Iterator, config_block_value_t()> config_block_value;
     /// A key/value pair
     qi::rule<Iterator, config_block_value_s()> config_block_value_full;
+
+    /// A comment within the config file
+    qi::rule<Iterator> comment;
+
     /// Result set of config block key/value pairs
     qi::rule<Iterator, config_block_value_set_t()> config_block_value_set;
 };
@@ -101,9 +109,11 @@ config_block_grammar<Iterator>
   , config_block_value()
   , config_block_value_full()
   , config_block_value_set()
+  , comment()
   , config_block_grammar::base_type(config_block_value_set)
 {
   using namespace qi::labels;
+  using phoenix::push_back;
 
   opt_whitespace.name("opt-whitespace");
   opt_whitespace %= *( qi::blank );
@@ -147,12 +157,18 @@ config_block_grammar<Iterator>
     );
 
 
+  comment.name("comment");
+  comment %=
+    +( opt_whitespace >> config_comment_start >> opt_whitespace >> config_block_value >> eol );
+
+
   // Main grammar parsing rule
   config_block_value_set.name("config-values");
-  config_block_value_set %=
+  config_block_value_set =
     +( (opt_whitespace >> eol)  // empty line with extra whitespace
      | line_end                 // one or more empty lines
-     | config_block_value_full  // keypath/value specification
+     | config_block_value_full[push_back(_val, _1)]  // keypath/value specification
+     | comment                  // comment lines
      );
 
 }
@@ -221,6 +237,9 @@ config_block_t read_config_file(path_t const& file_path)
 
   // Now that we have the various key/value pairs, construct the config
   // object.
+  //using std::cerr;
+  //using std::endl;
+  //cerr << "Constructing config_block from file:" << endl;
   config_block_t conf = config_block::empty_config();
   BOOST_FOREACH( config_block_value_s kv, config_block_values)
   {
@@ -229,6 +248,7 @@ config_block_t read_config_file(path_t const& file_path)
     // std::cerr << "VALUE: " << kv.value << std::endl << std::endl;
     // add key/value to config object here
     conf->set_value(key_path, kv.value);
+    //cerr << "\t`" << key_path << "` -> `" << kv.value << "`" << endl;
   }
 
   return conf;

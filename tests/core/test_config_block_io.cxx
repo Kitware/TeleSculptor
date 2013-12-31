@@ -14,6 +14,7 @@
 #include <maptk/core/types.h>
 
 #include <boost/filesystem.hpp>
+#include <boost/foreach.hpp>
 
 #define TEST_ARGS (maptk::path_t const& data_dir)
 DECLARE_TEST_MAP();
@@ -52,6 +53,18 @@ IMPLEMENT_TEST(config_path_not_file)
 IMPLEMENT_TEST(successful_config_read)
 {
   maptk::config_block_t config = maptk::read_config_file(data_dir / "test_config-valid_file.txt");
+
+  using std::cerr;
+  using std::endl;
+  cerr << "Available keys in the config_block:" << endl;
+  BOOST_FOREACH(maptk::config_block_key_t key, config->available_values())
+  {
+    cerr << "\t" << key << " := " << config->get_value<std::string>(key) << endl;
+  }
+
+  TEST_EQUAL("num config params",
+             config->available_values().size(),
+             7);
   TEST_EQUAL("foo:bar read",
              config->get_value<std::string>("foo:bar"),
              "baz");
@@ -72,6 +85,9 @@ IMPLEMENT_TEST(successful_config_read)
             config->get_value<double>("global_var2"),
             1.12,
             0.000001);
+  TEST_EQUAL("tabbed:value read",
+             config->get_value<std::string>("tabbed:value"),
+             "should be valid");
 
   // extract sub-block, see that value access maintained
   maptk::config_block_t foo_subblock = config->subblock_view("foo");
@@ -103,4 +119,31 @@ IMPLEMENT_TEST(invalid_keypath)
       maptk::read_config_file(data_dir / "test_config-invalid_keypath.txt"),
       "read attempt on file with invalid key path"
       );
+}
+
+IMPLEMENT_TEST(config_with_comments)
+{
+  maptk::config_block_t config = maptk::read_config_file(data_dir / "test_config-comments.txt");
+
+  using std::string;
+
+  TEST_EQUAL("num config params",
+             config->available_values().size(),
+             5);
+
+  TEST_EQUAL("general:logging param",
+             config->get_value<string>("general:logging"),
+             "on");
+  TEST_EQUAL("general:another_var param",
+             config->get_value<string>("general:another_var"),
+             "foo");
+  TEST_EQUAL("general:yet_more param",
+             config->get_value<string>("general:yet_more"),
+             "bar");
+  TEST_EQUAL("trailing:comment",
+             config->get_value<string>("trailing:comment"),
+             "should work");
+  TEST_EQUAL("final:value param",
+             config->get_value<string>("final:value"),
+             "things and stuff");
 }

@@ -8,3 +8,5 @@ second_block:has = a value    with  spaces
 global_var = 3.14
 global_var2 = 1.12  
 
+    tabbed:value = should be valid
+
