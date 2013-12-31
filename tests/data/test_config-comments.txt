@@ -12,6 +12,4 @@ general:yet_more = bar
 
     # A comment with spaces in front of it. Because
 
-trailing:comment =   should work
-
 final:value = things and stuff

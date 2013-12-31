@@ -153,7 +153,8 @@ config_block_grammar<Iterator>
   config_block_value_full %=
     ( (opt_whitespace >> config_block_key_path >> opt_whitespace)
     > '='
-    > (opt_whitespace >> config_block_value >> opt_whitespace) > eol
+    > (opt_whitespace >> config_block_value >> opt_whitespace)
+    > eol
     );
 
 
@@ -179,7 +180,7 @@ config_block_grammar<Iterator>
 {
 }
 
-}
+} //end namespace
 
 /// Read in a configuration file, producing a \c config object.
 config_block_t read_config_file(path_t const& file_path)

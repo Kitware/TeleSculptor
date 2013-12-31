@@ -129,7 +129,7 @@ IMPLEMENT_TEST(config_with_comments)
 
   TEST_EQUAL("num config params",
              config->available_values().size(),
-             5);
+             4);
 
   TEST_EQUAL("general:logging param",
              config->get_value<string>("general:logging"),
@@ -140,9 +140,6 @@ IMPLEMENT_TEST(config_with_comments)
   TEST_EQUAL("general:yet_more param",
              config->get_value<string>("general:yet_more"),
              "bar");
-  TEST_EQUAL("trailing:comment",
-             config->get_value<string>("trailing:comment"),
-             "should work");
   TEST_EQUAL("final:value param",
              config->get_value<string>("final:value"),
              "things and stuff");
