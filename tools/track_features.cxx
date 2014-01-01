@@ -15,6 +15,7 @@
 #include <maptk/core/algo/detect_features.h>
 #include <maptk/core/algo/extract_descriptors.h>
 #include <maptk/core/algo/match_features.h>
+#include <maptk/core/algo/match_features_homography.h>
 #include <maptk/core/algo/track_features.h>
 
 #include <boost/foreach.hpp>
@@ -47,6 +48,7 @@ static int maptk_main(int argc, char const* argv[])
   alg::detect_features_sptr feature_detector = alg::detect_features::create("ocv");
   alg::extract_descriptors_sptr descriptor_extractor = alg::extract_descriptors::create("ocv");
   alg::match_features_sptr feature_matcher = alg::match_features::create("ocv");
+  alg::estimate_homography_sptr homog_estimator = alg::estimate_homography::create("ocv");
   alg::track_features_sptr feature_tracker = alg::track_features::create("simple");
 
   if( !image_reader )
@@ -69,11 +71,22 @@ static int maptk_main(int argc, char const* argv[])
     std::cerr << "No feature matcher module available" << std::endl;
     return EXIT_FAILURE;
   }
+  if( !homog_estimator )
+  {
+    std::cerr << "No homography_estimator module available" << std::endl;
+    return EXIT_FAILURE;
+  }
   if( !feature_tracker )
   {
     std::cerr << "No feature_tracker module available" << std::endl;
     return EXIT_FAILURE;
   }
+
+  // nest the feature matcher in a homography feature matcher
+  alg::match_features_homography* feat_mat_homog = new alg::match_features_homography;
+  feat_mat_homog->set_feature_matcher(feature_matcher);
+  feat_mat_homog->set_homography_estimator(homog_estimator);
+  feature_matcher.reset(feat_mat_homog);
 
   feature_tracker->set_feature_detector(feature_detector);
   feature_tracker->set_descriptor_extractor(descriptor_extractor);
