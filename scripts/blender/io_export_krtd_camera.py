@@ -25,6 +25,13 @@ import os.path
 
 def writeCameras(context, filepath, frame_start, frame_end,
                  frame_step=1, only_selected=False):
+    """Write one KRTD file for each camera position along a camera path.
+
+    Camera positions are selected between frame_start and frame_end with a
+    step size of frame_step.  The frame number is inserted into filepath
+    right before the extension.  Uses the first camera it finds, or the first
+    selected camera if only_selected is true.
+    """
     scene = bpy.context.scene
     width = scene.render.resolution_x
     height = scene.render.resolution_y

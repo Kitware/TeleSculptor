@@ -23,12 +23,12 @@ from math import radians
 def parseCameraKrtd(fin):
     """Parse a single camera in KRTD format from the file object.
 
-    Returns a (K,R,t,d) tuple using numpy.matrix types where:
+    Returns a (K,R,t,d) tuple using mathutils types where:
 
     - K is a 3x3 calibration matrix
     - R is a 3x3 rotation matrix
     - t is a 1x3 translation vector (transposed).
-    - d is a 1xN distortion parameter vector
+    - d is a 1xN distortion parameter list
     """
     K1 = mathutils.Vector(map(float, next(fin).split()))
     K2 = mathutils.Vector(map(float, next(fin).split()))
@@ -49,7 +49,9 @@ def parseCameraKrtd(fin):
     return (K, R, t, d)
 
 
-def readCameras(context, filepath):
+def readCamera(context, filepath):
+    """Read a camera from a KRTD file and construct a blender camera object
+    """
     with open(filepath, 'r') as f:
         (K, R, t, d) = parseCameraKrtd(f)
         cam = bpy.data.cameras.new("KRTD")
@@ -59,7 +61,24 @@ def readCameras(context, filepath):
         cam_ob.data.lens = K[0][0] / (2.0 * K[0][2]) * cam_ob.data.sensor_width
 
 
-from bpy.props import StringProperty
+def readCameras(context, filepath, load_all):
+    """Read cameras from a KRTD files and construct a blender camera objects
+
+    If load_all is false then load a single camera from filepath, otherwise
+    load all files matching '*.krtd' in the filepath directory
+    """
+    if not load_all:
+        readCamera(context, filepath)
+    else:
+        import glob
+        import os.path
+        directory = os.path.dirname(filepath)
+        files = glob.glob(os.path.join(directory, '*.krtd'))
+        for f in files:
+            readCamera(context, f)
+
+
+from bpy.props import StringProperty, BoolProperty
 from bpy_extras.io_utils import ImportHelper
 
 
@@ -70,9 +89,17 @@ class CameraImporter(bpy.types.Operator, ImportHelper):
 
     filename_ext = ".krtd"
     filter_glob = StringProperty(default="*.krtd", options={'HIDDEN'})
+    filepath = StringProperty(
+            name="File Path",
+            description="Directory used for importing the file",
+            maxlen=1024,
+            subtype='FILE_PATH',
+            )
+    load_all = BoolProperty(name="Load all files in directory",
+            default=False)
 
     def execute(self, context):
-        readCameras(context, self.filepath)
+        readCameras(context, self.filepath, self.load_all)
         return {'FINISHED'}
 
     def invoke(self, context, event):
@@ -82,11 +109,8 @@ class CameraImporter(bpy.types.Operator, ImportHelper):
 
 
 def menu_import(self, context):
-    import os
-    default_path = os.path.splitext(bpy.data.filepath)[0] + ".krtd"
     self.layout.operator(CameraImporter.bl_idname,
-                         text="KRTD Cameras (.krtd)").filepath = \
-                         default_path
+                         text="KRTD Cameras (.krtd)")
 
 
 def register():
