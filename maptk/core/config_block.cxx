@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2011-2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2011-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -38,6 +38,7 @@ config_block_t
 config_block
 ::empty_config(config_block_key_t const& name)
 {
+  // remember, config_block_t is a boost shared pointer
   return config_block_t(new config_block(name, config_block_t()));
 }
 

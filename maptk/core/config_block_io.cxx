@@ -1,11 +1,12 @@
 /*ckwg +5
- * Copyright 2011-2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2011-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
 #include "config_block_io.h"
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <vector>
@@ -182,8 +183,9 @@ config_block_grammar<Iterator>
 
 } //end namespace
 
-/// Read in a configuration file, producing a \c config object.
-config_block_t read_config_file(path_t const& file_path)
+/// Read in a configuration file, producing a \c config_block object
+config_block_t read_config_file(path_t const& file_path,
+                                config_block_key_t const& block_name)
 {
   // Check that file exists
   if( ! boost::filesystem::exists(file_path) )
@@ -197,7 +199,7 @@ config_block_t read_config_file(path_t const& file_path)
   }
 
   // Reading in input file data
-  std::fstream input_stream(file_path.c_str(), std::fstream::in);
+  std::ifstream input_stream(file_path.c_str(), std::fstream::in);
   if( ! input_stream )
   {
     throw file_not_read_exception(file_path, "Could not open file at given "
@@ -224,7 +226,7 @@ config_block_t read_config_file(path_t const& file_path)
 
     if( r && s_begin == s_end )
     {
-      std::cerr << "File parsed! Contained " << config_block_values.size() << " entries." << std::endl;
+      std::cerr << "File parsed! Contained " << config_block_values.size() << " k/v entries." << std::endl;
     }
     else if (!r)
     {
@@ -241,24 +243,65 @@ config_block_t read_config_file(path_t const& file_path)
   //using std::cerr;
   //using std::endl;
   //cerr << "Constructing config_block from file:" << endl;
-  config_block_t conf = config_block::empty_config();
+  config_block_t cb = config_block::empty_config(block_name);
   BOOST_FOREACH( config_block_value_s kv, config_block_values)
   {
     config_block_key_t key_path = boost::algorithm::join(kv.key_path, config_block::block_sep);
     // std::cerr << "KEY: " << key_path << std::endl;
     // std::cerr << "VALUE: " << kv.value << std::endl << std::endl;
     // add key/value to config object here
-    conf->set_value(key_path, kv.value);
+    cb->set_value(key_path, kv.value);
     //cerr << "\t`" << key_path << "` -> `" << kv.value << "`" << endl;
   }
 
-  return conf;
+  return cb;
 }
 
-/// Output to file the given \c config object to the specified file path
-void write_config_block_file(config_block_t const& config,
-                             path_t const& file_path)
+/// Output to file the given \c config_block object to the specified file path
+void write_config_file(config_block_t const& config,
+                       path_t const& file_path)
 {
+  // If there are no config parameters in the given config_block, throw
+  if(!config->available_values().size())
+  {
+    throw file_write_exception(file_path, "No parameters in the given "
+                                          "config_block!");
+  }
+
+  // If the given path is a directory, we obviously can't write to it.
+  if(boost::filesystem::is_directory(file_path))
+  {
+    throw file_write_exception(file_path, "Path given is a directory, to "
+                                          "which we clearly can't write.");
+  }
+
+  // Check that the directory of the given filepath exists, creating necessary
+  // directories where needed.
+  path_t parent_dir = file_path.parent_path();
+  if(!boost::filesystem::is_directory(parent_dir))
+  {
+    //std::cerr << "at least one containing directory not found, creating them..." << std::endl;
+    if(!boost::filesystem::create_directories(parent_dir))
+    {
+      throw file_write_exception(parent_dir, "Attempted directory creation, "
+                                             "but no directory created! No "
+                                             "idea what happened here...");
+    }
+  }
+
+  // Gather aavailable keys and sort them alphanumerically. Because.
+  config_block_keys_t avail_keys = config->available_values();
+  std::sort(avail_keys.begin(), avail_keys.end());
+
+  // open output file and write each key/value to a line.
+  std::ofstream ofile(file_path.c_str());
+  BOOST_FOREACH( config_block_key_t key, avail_keys )
+  {
+    // Format: ``key_path = value\n``
+    ofile << key << " = " << config->get_value<config_block_value_t>(key) << "\n";
+  }
+  ofile.flush();
+  ofile.close();
 }
 
 }
