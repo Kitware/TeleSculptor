@@ -5,17 +5,18 @@ include_directories( SYSTEM ${VXL_RPL_INCLUDE_DIR} )
 set(maptk_vxl_headers_public
   estimate_homography.h
   image_container.h
-  vil_image_memory.h
   image_io.h
   register.h
+  vil_image_memory.h
+  vxl_config.h
   )
 
 set(maptk_vxl_sources
   estimate_homography.cxx
   image_container.cxx
-  vil_image_memory.cxx
   image_io.cxx
   register.cxx
+  vil_image_memory.cxx
   )
 
 # installing header files

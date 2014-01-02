@@ -39,7 +39,7 @@
 #     test-${name}-${instance} to be run by the build if wanted.
 #
 #   (RECOMMENDED)
-#   maptk_discover_tests(group libraries file)
+#   maptk_discover_tests(group libraries file [arg1 [arg2 ...]])
 #     Discovers tests declared within the specified ``file`` (test names must
 #     be alphanumeric), defining a test target executable that under the given
 #     ``group`` name. The executable generated will be linked against the
@@ -140,8 +140,7 @@ function (maptk_discover_tests group libraries file)
       match "${test_line}")
     if (match)
       set(test_name "${CMAKE_MATCH_1}")
-      maptk_add_test("${group}" "${test_name}"
-        ${ARGN})
+      maptk_add_test("${group}" "${test_name}" ${ARGN})
       if (properties)
         set_tests_properties("test-${group}-${test_name}"
           PROPERTIES
