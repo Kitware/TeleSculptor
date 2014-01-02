@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -19,11 +19,9 @@
 namespace fs = boost::filesystem;
 
 
-/// Convert a POS file to a KRTD file
-bool convert_pos2krtd(const std::string& pos_filename,
-                      const std::string& krtd_filename,
-                      maptk::local_geo_cs& cs,
-                      maptk::camera_d base_camera)
+/// Read a POS file from disk into an INS data structure
+bool read_pos_file(const std::string& pos_filename,
+                   maptk::ins_data& ins)
 {
   std::ifstream ifs(pos_filename.c_str());
   if (!ifs)
@@ -32,6 +30,15 @@ bool convert_pos2krtd(const std::string& pos_filename,
     return false;
   }
 
+  ifs >> ins;
+  return ! ifs.fail();
+}
+
+
+/// Write a camera to a KRTD file on disk
+bool write_krtd_file(const std::string& krtd_filename,
+                     const maptk::camera_d& cam)
+{
   std::ofstream ofs(krtd_filename.c_str());
   if (!ofs)
   {
@@ -39,9 +46,16 @@ bool convert_pos2krtd(const std::string& pos_filename,
     return false;
   }
 
-  maptk::ins_data ins;
-  ifs >> ins;
+  ofs << cam;
+  return ! ofs.fail();
+}
 
+
+/// Convert a INS data to a camera
+bool convert_ins2camera(const maptk::ins_data& ins,
+                        maptk::local_geo_cs& cs,
+                        maptk::camera_d& cam)
+{
   if( cs.utm_origin_zone() < 0 )
   {
     std::cout << "lat: "<<ins.lat<<" lon: "<<ins.lon<<std::endl;
@@ -49,11 +63,21 @@ bool convert_pos2krtd(const std::string& pos_filename,
     std::cout << "using zone "<< cs.utm_origin_zone() <<std::endl;
   }
 
-  cs.update_camera(ins, base_camera);
-
-  ofs << base_camera;
-
+  cs.update_camera(ins, cam);
   return true;
+}
+
+
+/// Convert a POS file to a KRTD file
+bool convert_pos2krtd(const std::string& pos_filename,
+                      const std::string& krtd_filename,
+                      maptk::local_geo_cs& cs,
+                      maptk::camera_d base_camera)
+{
+  maptk::ins_data ins;
+  return read_pos_file(pos_filename, ins) &&
+         convert_ins2camera(ins, cs, base_camera) &&
+         write_krtd_file(krtd_filename, base_camera);
 }
 
 
