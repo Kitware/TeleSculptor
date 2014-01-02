@@ -49,36 +49,39 @@ def parseCameraKrtd(fin):
     return (K, R, t, d)
 
 
-def readCamera(context, filepath):
+def readCamera(context, filepath, scale):
     """Read a camera from a KRTD file and construct a blender camera object
     """
     with open(filepath, 'r') as f:
         (K, R, t, d) = parseCameraKrtd(f)
+        t = scale * t
         cam = bpy.data.cameras.new("KRTD")
         cam_ob = bpy.data.objects.new("KRTD", cam)
         cam_ob.matrix_world = R*t
         bpy.context.scene.objects.link(cam_ob)
-        cam_ob.data.lens = K[0][0] / (2.0 * K[0][2]) * cam_ob.data.sensor_width
+        if K[0][2] != 0.0:
+            cam_ob.data.lens = K[0][0] / (2.0 * K[0][2]) \
+                               * cam_ob.data.sensor_width
 
 
-def readCameras(context, filepath, load_all):
+def readCameras(context, filepath, scale, load_all):
     """Read cameras from a KRTD files and construct a blender camera objects
 
     If load_all is false then load a single camera from filepath, otherwise
     load all files matching '*.krtd' in the filepath directory
     """
     if not load_all:
-        readCamera(context, filepath)
+        readCamera(context, filepath, scale)
     else:
         import glob
         import os.path
         directory = os.path.dirname(filepath)
         files = glob.glob(os.path.join(directory, '*.krtd'))
         for f in files:
-            readCamera(context, f)
+            readCamera(context, f, scale)
 
 
-from bpy.props import StringProperty, BoolProperty
+from bpy.props import StringProperty, FloatProperty, BoolProperty
 from bpy_extras.io_utils import ImportHelper
 
 
@@ -95,11 +98,18 @@ class CameraImporter(bpy.types.Operator, ImportHelper):
             maxlen=1024,
             subtype='FILE_PATH',
             )
-    load_all = BoolProperty(name="Load all files in directory",
-            default=False)
+    scale = FloatProperty(
+            name = "Scale",
+            description="Scale camera coordinate system",
+            default = 1.0, min = 0.001, max = 1000.0
+            )
+    load_all = BoolProperty(
+            name="Load all files in directory",
+            default=False
+            )
 
     def execute(self, context):
-        readCameras(context, self.filepath, self.load_all)
+        readCameras(context, self.filepath, self.scale, self.load_all)
         return {'FINISHED'}
 
     def invoke(self, context, event):
