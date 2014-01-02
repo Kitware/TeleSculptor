@@ -2,6 +2,7 @@
 
 set(maptk_proj_headers_public
   geo_map.h
+  proj_config.h
   register.h
   )
 

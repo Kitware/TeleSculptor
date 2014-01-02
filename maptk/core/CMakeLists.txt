@@ -85,9 +85,3 @@ maptk_add_library(maptk_core
 target_link_libraries(maptk_core
   ${Boost_LIBRARIES}
   )
-set_target_properties(maptk_core
-  PROPERTIES
-    VERSION       ${MAPTK_VERSION}
-    SOVERSION     0
-    DEFINE_SYMBOL MAKE_MAPTK_CORE_LIB
-  )

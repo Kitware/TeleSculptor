@@ -101,16 +101,26 @@ endfunction()
 # Remaining arguments passed to this function are given to the underlying
 # add_library call, so refer to CMake documentation for additional arguments.
 #
+# Library version will be set to that of the current MAPTK version.
+# Additionally defines the symbol "MAKE_<cname>_LIB" where ``cname`` is the
+# ``name`` capitolized.
+#
 # This function will add the library to the set of targets to be exported
 # unless ``no_export`` was set.
 #-
 function(maptk_add_library name)
+  string(TOUPPER "${name}" upper_name)
+  message(STATUS "Making library \"${name}\" with defined symbol \"MAPTK_${upper_name}_LIB\"")
+
   add_library("${name}" ${ARGN})
   set_target_properties("${name}"
     PROPERTIES
       ARCHIVE_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/lib"
       LIBRARY_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/lib"
       RUNTIME_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/bin"
+      VERSION                  ${MAPTK_VERSION}
+      SOVERSION                0
+      DEFINE_SYMBOL            MAPTK_${upper_name}_LIB
     )
 
   add_dependencies("${name}"

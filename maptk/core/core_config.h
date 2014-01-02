@@ -9,9 +9,7 @@
 
 #include <maptk/config.h>
 
-/**
- * \brief Define symbol visibility in maptk::core
- */
+/// Define symbol visibility in maptk::core
 #ifndef MAPTK_CORE_EXPORT
 # ifdef MAKE_MAPTK_CORE_LIB
 #   define MAPTK_CORE_EXPORT MAPTK_EXPORT

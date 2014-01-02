@@ -185,7 +185,7 @@ config_block_grammar<Iterator>
 
 /// Read in a configuration file, producing a \c config_block object
 config_block_sptr read_config_file(path_t const& file_path,
-                                config_block_key_t const& block_name)
+                                   config_block_key_t const& block_name)
 {
   // Check that file exists
   if( ! boost::filesystem::exists(file_path) )

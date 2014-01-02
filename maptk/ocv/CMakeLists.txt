@@ -7,11 +7,12 @@ set(maptk_ocv_headers_public
   extract_descriptors.h
   feature_set.h
   image_container.h
+  image_io.h
   mat_image_memory.h
   match_features.h
   match_set.h
   matrix.h
-  image_io.h
+  ocv_config.h
   register.h
   )
 
@@ -22,10 +23,10 @@ set(maptk_ocv_sources
   extract_descriptors.cxx
   feature_set.cxx
   image_container.cxx
+  image_io.cxx
   mat_image_memory.cxx
   match_features.cxx
   match_set.cxx
-  image_io.cxx
   register.cxx
   )
 

@@ -11,7 +11,6 @@
 #include <vector>
 
 #include <boost/filesystem/path.hpp>
-#include <boost/shared_ptr.hpp>
 
 /**
  * \file
