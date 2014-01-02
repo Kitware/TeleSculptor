@@ -19,7 +19,7 @@
 /**
  * \file config.cxx
  *
- * \brief Implementation of \link maptk::config_block\endlink configuration object
+ * \brief Implementation of \link maptk::config_block configuration \endlink object
  */
 
 namespace maptk
@@ -29,17 +29,19 @@ config_block_key_t const config_block::block_sep = config_block_key_t(":");
 config_block_key_t const config_block::global_value = config_block_key_t("_global");
 
 /// private helper method for determining key path prefixes
-static bool does_not_begin_with(config_block_key_t const& key, config_block_key_t const& name);
+static bool does_not_begin_with(config_block_key_t const& key,
+                                config_block_key_t const& name);
 /// private helper method to strip a block name from a key path
-static config_block_key_t strip_block_name(config_block_key_t const& subblock, config_block_key_t const& key);
+static config_block_key_t strip_block_name(config_block_key_t const& subblock,
+                                           config_block_key_t const& key);
 
 /// Create an empty configuration.
-config_block_t
+config_block_sptr
 config_block
 ::empty_config(config_block_key_t const& name)
 {
-  // remember, config_block_t is a boost shared pointer
-  return config_block_t(new config_block(name, config_block_t()));
+  // remember, config_block_sptr is a boost shared pointer
+  return config_block_sptr(new config_block(name, config_block_sptr()));
 }
 
 /// Destructor
@@ -49,11 +51,11 @@ config_block
 }
 
 /// Get a subblock from the configuration.
-config_block_t
+config_block_sptr
 config_block
 ::subblock(config_block_key_t const& key) const
 {
-  config_block_t conf = empty_config(key);
+  config_block_sptr conf = empty_config(key);
 
   BOOST_FOREACH (config_block_key_t const& key_name, available_values())
   {
@@ -71,11 +73,11 @@ config_block
 }
 
 /// Get a subblock view into the configuration.
-config_block_t
+config_block_sptr
 config_block
 ::subblock_view(config_block_key_t const& key)
 {
-  return config_block_t(new config_block(key, shared_from_this()));
+  return config_block_sptr(new config_block(key, shared_from_this()));
 }
 
 /// Set a value within the configuration.
@@ -148,7 +150,7 @@ config_block
 /// Merge the values in \p config_block into the current config.
 void
 config_block
-::merge_config(config_block_t const& conf)
+::merge_config(config_block_sptr const& conf)
 {
   config_block_keys_t const keys = conf->available_values();
 
@@ -205,7 +207,7 @@ config_block
 
 /// Internal constructor
 config_block
-::config_block(config_block_key_t const& name, config_block_t parent)
+::config_block(config_block_key_t const& name, config_block_sptr parent)
   : m_parent(parent)
   , m_name(name)
   , m_store()

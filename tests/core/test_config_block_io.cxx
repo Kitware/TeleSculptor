@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2011-2014 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -52,7 +52,7 @@ IMPLEMENT_TEST(config_path_not_file)
 
 IMPLEMENT_TEST(successful_config_read)
 {
-  maptk::config_block_t config = maptk::read_config_file(data_dir / "test_config-valid_file.txt");
+  maptk::config_block_sptr config = maptk::read_config_file(data_dir / "test_config-valid_file.txt");
 
   using std::cerr;
   using std::endl;
@@ -90,7 +90,7 @@ IMPLEMENT_TEST(successful_config_read)
              "should be valid");
 
   // extract sub-block, see that value access maintained
-  maptk::config_block_t foo_subblock = config->subblock_view("foo");
+  maptk::config_block_sptr foo_subblock = config->subblock_view("foo");
   TEST_EQUAL("foo subblock bar read",
              foo_subblock->get_value<std::string>("bar"),
              "baz");
@@ -105,7 +105,7 @@ IMPLEMENT_TEST(successful_config_read)
 
 IMPLEMENT_TEST(successful_config_read_named_block)
 {
-  maptk::config_block_t config = maptk::read_config_file(data_dir / "test_config-valid_file.txt",
+  maptk::config_block_sptr config = maptk::read_config_file(data_dir / "test_config-valid_file.txt",
                                                          "block_name_here");
 
   using std::cerr;
@@ -164,7 +164,7 @@ IMPLEMENT_TEST(invalid_keypath)
 
 IMPLEMENT_TEST(config_with_comments)
 {
-  maptk::config_block_t config = maptk::read_config_file(data_dir / "test_config-comments.txt");
+  maptk::config_block_sptr config = maptk::read_config_file(data_dir / "test_config-comments.txt");
 
   using std::string;
 
@@ -192,10 +192,10 @@ IMPLEMENT_TEST(write_config_simple_success)
   using namespace std;
   namespace bfs = boost::filesystem;
 
-  config_block_t orig_config = config_block::empty_config("simple_test");
+  config_block_sptr orig_config = config_block::empty_config("simple_test");
   orig_config->set_value("test_key_1", "test_value_a");
   orig_config->set_value("test_key_2", "test_value_b");
-  config_block_t subblock = orig_config->subblock_view("subblock");
+  config_block_sptr subblock = orig_config->subblock_view("subblock");
   subblock->set_value("foobar", "baz");
 
   cerr << "ConfigBlock for writing:" << endl;
@@ -218,11 +218,11 @@ IMPLEMENT_TEST(write_config_simple_success)
 
   // Read files back in, confirning output is readable and the same as
   // what we should have output.
-  std::vector<config_block_t> configs;
+  std::vector<config_block_sptr> configs;
   configs.push_back(read_config_file(output_path_1));
   configs.push_back(read_config_file(output_path_2));
 
-  BOOST_FOREACH( config_block_t config, configs)
+  BOOST_FOREACH( config_block_sptr config, configs)
   {
     TEST_EQUAL("num params", config->available_values().size(), 3);
     TEST_EQUAL("test_key_1 read", config->get_value<config_block_value_t>("test_key_1"),
@@ -240,7 +240,7 @@ IMPLEMENT_TEST(write_config_simple_success)
 IMPLEMENT_TEST(invalid_directory_write)
 {
   using namespace maptk;
-  config_block_t config = config_block::empty_config("empty");
+  config_block_sptr config = config_block::empty_config("empty");
   config->set_value("foo", "bar");
   EXPECT_EXCEPTION(
       file_write_exception,
@@ -255,7 +255,7 @@ IMPLEMENT_TEST(empty_config_write_failure)
   using namespace maptk;
   namespace bfs = boost::filesystem;
 
-  config_block_t config = config_block::empty_config("empty");
+  config_block_sptr config = config_block::empty_config("empty");
   path_t output_file = bfs::temp_directory_path() / bfs::unique_path();
   EXPECT_EXCEPTION(
       file_write_exception,

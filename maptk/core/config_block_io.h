@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2011-2014 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -40,14 +40,14 @@ namespace maptk
  *                    underlying name (empty config_block_key_t value).
  * \return A \c config_block object representing the contents of the read-in file.
  */
-config_block_t  MAPTK_CORE_EXPORT read_config_file(path_t const& file_path,
-                                                   config_block_key_t const& block_name = config_block_key_t());
+config_block_sptr MAPTK_CORE_EXPORT read_config_file(path_t const& file_path,
+                                                     config_block_key_t const& block_name = config_block_key_t());
 
 /// Output to file the given \c config_block object to the specified file path
 /**
  * If a file exists at the target location, it will be overwritten. If the
  * containing directory of the given path does not exist, it will be created
- * before the file is opened for writting.
+ * before the file is opened for writing.
  *
  * \throws file_write_exception
  *    Thrown when something prevents output of the file.
@@ -58,7 +58,7 @@ config_block_t  MAPTK_CORE_EXPORT read_config_file(path_t const& file_path,
  * \param config    The \c config_block object to output.
  * \param file_path The path to output the file to.
  */
-void MAPTK_CORE_EXPORT write_config_file(config_block_t const& config,
+void MAPTK_CORE_EXPORT write_config_file(config_block_sptr const& config,
                                          path_t const& file_path);
 
 }

@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2011-2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2011-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -33,7 +33,7 @@ IMPLEMENT_TEST(block_sep_size)
 
 IMPLEMENT_TEST(has_value)
 {
-  maptk::config_block_t const config = maptk::config_block::empty_config();
+  maptk::config_block_sptr const config = maptk::config_block::empty_config();
 
   maptk::config_block_key_t const keya = maptk::config_block_key_t("keya");
   maptk::config_block_key_t const keyb = maptk::config_block_key_t("keyb");
@@ -55,7 +55,7 @@ IMPLEMENT_TEST(has_value)
 
 IMPLEMENT_TEST(get_value)
 {
-  maptk::config_block_t const config = maptk::config_block::empty_config();
+  maptk::config_block_sptr const config = maptk::config_block::empty_config();
 
   maptk::config_block_key_t const keya = maptk::config_block_key_t("keya");
 
@@ -73,7 +73,7 @@ IMPLEMENT_TEST(get_value)
 
 IMPLEMENT_TEST(get_value_nested)
 {
-  maptk::config_block_t const config = maptk::config_block::empty_config();
+  maptk::config_block_sptr const config = maptk::config_block::empty_config();
 
   maptk::config_block_key_t const keya = maptk::config_block_key_t("keya");
   maptk::config_block_key_t const keyb = maptk::config_block_key_t("keyb");
@@ -82,7 +82,7 @@ IMPLEMENT_TEST(get_value_nested)
 
   config->set_value(keya + maptk::config_block::block_sep + keyb, valuea);
 
-  maptk::config_block_t const nested_config = config->subblock(keya);
+  maptk::config_block_sptr const nested_config = config->subblock(keya);
 
   maptk::config_block_value_t const get_valuea = nested_config->get_value<maptk::config_block_value_t>(keyb);
 
@@ -94,7 +94,7 @@ IMPLEMENT_TEST(get_value_nested)
 
 IMPLEMENT_TEST(get_value_no_exist)
 {
-  maptk::config_block_t const config = maptk::config_block::empty_config();
+  maptk::config_block_sptr const config = maptk::config_block::empty_config();
 
   maptk::config_block_key_t const keya = maptk::config_block_key_t("keya");
   maptk::config_block_key_t const keyb = maptk::config_block_key_t("keyb");
@@ -115,7 +115,7 @@ IMPLEMENT_TEST(get_value_no_exist)
 
 IMPLEMENT_TEST(get_value_type_mismatch)
 {
-  maptk::config_block_t const config = maptk::config_block::empty_config();
+  maptk::config_block_sptr const config = maptk::config_block::empty_config();
 
   maptk::config_block_key_t const keya = maptk::config_block_key_t("keya");
 
@@ -138,7 +138,7 @@ IMPLEMENT_TEST(get_value_type_mismatch)
 
 IMPLEMENT_TEST(bool_conversion)
 {
-  maptk::config_block_t const config = maptk::config_block::empty_config();
+  maptk::config_block_sptr const config = maptk::config_block::empty_config();
 
   maptk::config_block_key_t const key = maptk::config_block_key_t("key");
 
@@ -202,7 +202,7 @@ IMPLEMENT_TEST(bool_conversion)
 
 IMPLEMENT_TEST(unset_value)
 {
-  maptk::config_block_t const config = maptk::config_block::empty_config();
+  maptk::config_block_sptr const config = maptk::config_block::empty_config();
 
   maptk::config_block_key_t const keya = maptk::config_block_key_t("keya");
   maptk::config_block_key_t const keyb = maptk::config_block_key_t("keyb");
@@ -229,7 +229,7 @@ IMPLEMENT_TEST(unset_value)
 
 IMPLEMENT_TEST(available_values)
 {
-  maptk::config_block_t const config = maptk::config_block::empty_config();
+  maptk::config_block_sptr const config = maptk::config_block::empty_config();
 
   maptk::config_block_key_t const keya = maptk::config_block_key_t("keya");
   maptk::config_block_key_t const keyb = maptk::config_block_key_t("keyb");
@@ -255,7 +255,7 @@ IMPLEMENT_TEST(available_values)
 
 IMPLEMENT_TEST(read_only)
 {
-  maptk::config_block_t const config = maptk::config_block::empty_config();
+  maptk::config_block_sptr const config = maptk::config_block::empty_config();
 
   maptk::config_block_key_t const keya = maptk::config_block_key_t("keya");
 
@@ -280,7 +280,7 @@ IMPLEMENT_TEST(read_only)
 
 IMPLEMENT_TEST(read_only_unset)
 {
-  maptk::config_block_t const config = maptk::config_block::empty_config();
+  maptk::config_block_sptr const config = maptk::config_block::empty_config();
 
   maptk::config_block_key_t const keya = maptk::config_block_key_t("keya");
 
@@ -304,7 +304,7 @@ IMPLEMENT_TEST(read_only_unset)
 
 IMPLEMENT_TEST(subblock)
 {
-  maptk::config_block_t const config = maptk::config_block::empty_config();
+  maptk::config_block_sptr const config = maptk::config_block::empty_config();
 
   maptk::config_block_key_t const block_name = maptk::config_block_key_t("block");
   maptk::config_block_key_t const other_block_name = maptk::config_block_key_t("other_block");
@@ -321,7 +321,7 @@ IMPLEMENT_TEST(subblock)
   config->set_value(block_name + maptk::config_block::block_sep + keyb, valueb);
   config->set_value(other_block_name + maptk::config_block::block_sep + keyc, valuec);
 
-  maptk::config_block_t const subblock = config->subblock(block_name);
+  maptk::config_block_sptr const subblock = config->subblock(block_name);
 
   if (subblock->has_value(keya))
   {
@@ -359,7 +359,7 @@ IMPLEMENT_TEST(subblock)
 
 IMPLEMENT_TEST(subblock_nested)
 {
-  maptk::config_block_t const config = maptk::config_block::empty_config();
+  maptk::config_block_sptr const config = maptk::config_block::empty_config();
 
   maptk::config_block_key_t const block_name = maptk::config_block_key_t("block");
   maptk::config_block_key_t const other_block_name = maptk::config_block_key_t("other_block");
@@ -374,7 +374,7 @@ IMPLEMENT_TEST(subblock_nested)
   config->set_value(nested_block_name + maptk::config_block::block_sep + keya, valuea);
   config->set_value(nested_block_name + maptk::config_block::block_sep + keyb, valueb);
 
-  maptk::config_block_t const subblock = config->subblock(nested_block_name);
+  maptk::config_block_sptr const subblock = config->subblock(nested_block_name);
 
   if (subblock->has_value(keya))
   {
@@ -407,7 +407,7 @@ IMPLEMENT_TEST(subblock_nested)
 
 IMPLEMENT_TEST(subblock_match)
 {
-  maptk::config_block_t const config = maptk::config_block::empty_config();
+  maptk::config_block_sptr const config = maptk::config_block::empty_config();
 
   maptk::config_block_key_t const block_name = maptk::config_block_key_t("block");
 
@@ -415,7 +415,7 @@ IMPLEMENT_TEST(subblock_match)
 
   config->set_value(block_name, valuea);
 
-  maptk::config_block_t const subblock = config->subblock(block_name);
+  maptk::config_block_sptr const subblock = config->subblock(block_name);
 
   maptk::config_block_keys_t const keys = subblock->available_values();
 
@@ -427,7 +427,7 @@ IMPLEMENT_TEST(subblock_match)
 
 IMPLEMENT_TEST(subblock_prefix_match)
 {
-  maptk::config_block_t const config = maptk::config_block::empty_config();
+  maptk::config_block_sptr const config = maptk::config_block::empty_config();
 
   maptk::config_block_key_t const block_name = maptk::config_block_key_t("block");
 
@@ -437,7 +437,7 @@ IMPLEMENT_TEST(subblock_prefix_match)
 
   config->set_value(block_name + keya, valuea);
 
-  maptk::config_block_t const subblock = config->subblock(block_name);
+  maptk::config_block_sptr const subblock = config->subblock(block_name);
 
   maptk::config_block_keys_t const keys = subblock->available_values();
 
@@ -449,7 +449,7 @@ IMPLEMENT_TEST(subblock_prefix_match)
 
 IMPLEMENT_TEST(subblock_view)
 {
-  maptk::config_block_t const config = maptk::config_block::empty_config();
+  maptk::config_block_sptr const config = maptk::config_block::empty_config();
 
   maptk::config_block_key_t const block_name = maptk::config_block_key_t("block");
   maptk::config_block_key_t const other_block_name = maptk::config_block_key_t("other_block");
@@ -466,7 +466,7 @@ IMPLEMENT_TEST(subblock_view)
   config->set_value(block_name + maptk::config_block::block_sep + keyb, valueb);
   config->set_value(other_block_name + maptk::config_block::block_sep + keyc, valuec);
 
-  maptk::config_block_t const subblock = config->subblock_view(block_name);
+  maptk::config_block_sptr const subblock = config->subblock_view(block_name);
 
   if (!subblock->has_value(keya))
   {
@@ -520,7 +520,7 @@ IMPLEMENT_TEST(subblock_view)
 
 IMPLEMENT_TEST(subblock_view_nested)
 {
-  maptk::config_block_t const config = maptk::config_block::empty_config();
+  maptk::config_block_sptr const config = maptk::config_block::empty_config();
 
   maptk::config_block_key_t const block_name = maptk::config_block_key_t("block");
   maptk::config_block_key_t const other_block_name = maptk::config_block_key_t("other_block");
@@ -535,7 +535,7 @@ IMPLEMENT_TEST(subblock_view_nested)
   config->set_value(nested_block_name + maptk::config_block::block_sep + keya, valuea);
   config->set_value(nested_block_name + maptk::config_block::block_sep + keyb, valueb);
 
-  maptk::config_block_t const subblock = config->subblock_view(nested_block_name);
+  maptk::config_block_sptr const subblock = config->subblock_view(nested_block_name);
 
   if (subblock->has_value(keya))
   {
@@ -568,7 +568,7 @@ IMPLEMENT_TEST(subblock_view_nested)
 
 IMPLEMENT_TEST(subblock_view_match)
 {
-  maptk::config_block_t const config = maptk::config_block::empty_config();
+  maptk::config_block_sptr const config = maptk::config_block::empty_config();
 
   maptk::config_block_key_t const block_name = maptk::config_block_key_t("block");
 
@@ -576,7 +576,7 @@ IMPLEMENT_TEST(subblock_view_match)
 
   config->set_value(block_name, valuea);
 
-  maptk::config_block_t const subblock = config->subblock_view(block_name);
+  maptk::config_block_sptr const subblock = config->subblock_view(block_name);
 
   maptk::config_block_keys_t const keys = subblock->available_values();
 
@@ -588,7 +588,7 @@ IMPLEMENT_TEST(subblock_view_match)
 
 IMPLEMENT_TEST(subblock_view_prefix_match)
 {
-  maptk::config_block_t const config = maptk::config_block::empty_config();
+  maptk::config_block_sptr const config = maptk::config_block::empty_config();
 
   maptk::config_block_key_t const block_name = maptk::config_block_key_t("block");
 
@@ -598,7 +598,7 @@ IMPLEMENT_TEST(subblock_view_prefix_match)
 
   config->set_value(block_name + keya, valuea);
 
-  maptk::config_block_t const subblock = config->subblock_view(block_name);
+  maptk::config_block_sptr const subblock = config->subblock_view(block_name);
 
   maptk::config_block_keys_t const keys = subblock->available_values();
 
@@ -610,8 +610,8 @@ IMPLEMENT_TEST(subblock_view_prefix_match)
 
 IMPLEMENT_TEST(merge_config)
 {
-  maptk::config_block_t const configa = maptk::config_block::empty_config();
-  maptk::config_block_t const configb = maptk::config_block::empty_config();
+  maptk::config_block_sptr const configa = maptk::config_block::empty_config();
+  maptk::config_block_sptr const configb = maptk::config_block::empty_config();
 
   maptk::config_block_key_t const keya = maptk::config_block_key_t("keya");
   maptk::config_block_key_t const keyb = maptk::config_block_key_t("keyb");

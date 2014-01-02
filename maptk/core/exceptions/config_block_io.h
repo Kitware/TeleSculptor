@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2011-2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -38,8 +38,8 @@ class MAPTK_CORE_EXPORT file_not_found_exception
   : public config_block_io_exception
 {
   public:
+    /// Constructor
     /**
-     * \brief Constructor
      * \param file_path The file path that was looked for.
      * \param reason    The reason the file wasn't found.
      */
@@ -53,8 +53,8 @@ class MAPTK_CORE_EXPORT file_not_read_exception
   : public config_block_io_exception
 {
   public:
+    ///Constructor
     /**
-     * \brief Constructor
      * \param file_path The file path on which the read was attempted.
      * \param reason    The reason for the read exception.
      */
@@ -83,8 +83,8 @@ class MAPTK_CORE_EXPORT file_write_exception
   : public config_block_io_exception
 {
   public:
+    /// Constructor
     /**
-     * \brief Constructor
      * \param file_path The file path to which the write was attempted.
      * \param reason    The reason for the write exception
      */

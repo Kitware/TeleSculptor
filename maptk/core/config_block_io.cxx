@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2011-2014 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -184,7 +184,7 @@ config_block_grammar<Iterator>
 } //end namespace
 
 /// Read in a configuration file, producing a \c config_block object
-config_block_t read_config_file(path_t const& file_path,
+config_block_sptr read_config_file(path_t const& file_path,
                                 config_block_key_t const& block_name)
 {
   // Check that file exists
@@ -243,7 +243,7 @@ config_block_t read_config_file(path_t const& file_path,
   //using std::cerr;
   //using std::endl;
   //cerr << "Constructing config_block from file:" << endl;
-  config_block_t cb = config_block::empty_config(block_name);
+  config_block_sptr cb = config_block::empty_config(block_name);
   BOOST_FOREACH( config_block_value_s kv, config_block_values)
   {
     config_block_key_t key_path = boost::algorithm::join(kv.key_path, config_block::block_sep);
@@ -258,7 +258,7 @@ config_block_t read_config_file(path_t const& file_path,
 }
 
 /// Output to file the given \c config_block object to the specified file path
-void write_config_file(config_block_t const& config,
+void write_config_file(config_block_sptr const& config,
                        path_t const& file_path)
 {
   // If there are no config parameters in the given config_block, throw
@@ -289,7 +289,8 @@ void write_config_file(config_block_t const& config,
     }
   }
 
-  // Gather aavailable keys and sort them alphanumerically. Because.
+  // Gather available keys and sort them alphanumerically for a sensibly laidout
+  // file.
   config_block_keys_t avail_keys = config->available_values();
   std::sort(avail_keys.begin(), avail_keys.end());
 

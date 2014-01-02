@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2011-2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2011-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -27,14 +27,19 @@
 
 /**
  * \file
- * \brief Header for \link maptk::config\endlink configuration object
+ * \brief Header for \link maptk::config configuration \endlink object
  */
 
 namespace maptk
 {
 
+class config_block;
+/// Shared pointer for the \c config_block class
+typedef boost::shared_ptr<config_block> config_block_sptr;
+
+/// Stores configuration values for use within a \ref pipeline.
 /**
- * \brief Stores configuration values for use within a \ref pipeline.
+ * The associated shared pointer for this object is \c config_block_sptr
  */
 class MAPTK_CORE_EXPORT config_block
   : public boost::enable_shared_from_this<config_block>,
@@ -47,7 +52,7 @@ class MAPTK_CORE_EXPORT config_block
      * \param name The name of the configuration block.
      * \returns An empty configuration block.
      */
-    static config_block_t empty_config(config_block_key_t const& name = config_block_key_t());
+    static config_block_sptr empty_config(config_block_key_t const& name = config_block_key_t());
 
     /// Destructor
     ~config_block();
@@ -60,7 +65,7 @@ class MAPTK_CORE_EXPORT config_block
      * \param key The name of the sub-configuration to retrieve.
      * \returns A subblock with copies of the values.
      */
-    config_block_t subblock(config_block_key_t const& key) const;
+    config_block_sptr subblock(config_block_key_t const& key) const;
 
     /// Get a subblock view into the configuration.
     /**
@@ -70,7 +75,7 @@ class MAPTK_CORE_EXPORT config_block
      * \param key The name of the sub-configuration to retrieve.
      * \returns A subblock which links to the \c *this.
      */
-    config_block_t subblock_view(config_block_key_t const& key);
+    config_block_sptr subblock_view(config_block_key_t const& key);
 
     /// Internally cast the value.
     /**
@@ -148,7 +153,7 @@ class MAPTK_CORE_EXPORT config_block
      *
      * \param config The other configuration.
      */
-    void merge_config(config_block_t const& config);
+    void merge_config(config_block_sptr const& config);
 
     ///Return the values available in the configuration.
     /**
@@ -169,7 +174,7 @@ class MAPTK_CORE_EXPORT config_block
     static config_block_key_t const global_value;
   private:
     /// Internal constructor
-    MAPTK_NO_EXPORT config_block(config_block_key_t const& name, config_block_t parent);
+    MAPTK_NO_EXPORT config_block(config_block_key_t const& name, config_block_sptr parent);
 
     /// private helper method to extract a value for a key
     boost::optional<config_block_value_t> find_value(config_block_key_t const& key) const;
@@ -178,7 +183,7 @@ class MAPTK_CORE_EXPORT config_block
     typedef std::map<config_block_key_t, config_block_value_t> store_t;
     typedef std::set<config_block_key_t> ro_list_t;
 
-    config_block_t m_parent;
+    config_block_sptr m_parent;
     config_block_key_t m_name;
     store_t m_store;
     ro_list_t m_ro_list;
