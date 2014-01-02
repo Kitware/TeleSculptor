@@ -88,15 +88,44 @@ bool convert_pos2krtd_dir(const fs::path& pos_dir,
                           maptk::camera_d base_camera)
 {
   fs::directory_iterator it(pos_dir), eod;
+  std::vector<maptk::camera_d> cameras;
+  std::vector<std::string> krtd_filenames;
   BOOST_FOREACH(fs::path const &p, std::make_pair(it, eod))
   {
     fs::path krtd_filename = krtd_dir / (basename(p) + ".krtd");
     std::cout << "processing "<< p <<" --> " << krtd_filename<< std::endl;
-    if( !convert_pos2krtd(p.string(), krtd_filename.string(), cs, base_camera) )
+    maptk::ins_data ins;
+    if ( !read_pos_file(p.string(), ins) )
+    {
+      return false;
+    }
+    convert_ins2camera(ins, cs, base_camera);
+    cameras.push_back(base_camera);
+    krtd_filenames.push_back(krtd_filename.string());
+  }
+
+  maptk::vector_3d mean(0,0,0);
+  BOOST_FOREACH(const maptk::camera_d& cam, cameras)
+  {
+    mean += cam.center();
+  }
+  mean /= cameras.size();
+  // only use the mean easting and northing
+  mean[2] = 0.0;
+
+  for(unsigned int i=0; i<cameras.size(); ++i)
+  {
+    maptk::camera_d& cam = cameras[i];
+    cam.set_center(cam.center() - mean);
+
+    if( !write_krtd_file(krtd_filenames[i], cam) )
     {
       return false;
     }
   }
+
+  std::cout << "using local UTM origin at "<<mean[0] <<", "<<mean[1]
+            <<", zone "<<cs.utm_origin_zone() <<std::endl;
   return true;
 }
 
