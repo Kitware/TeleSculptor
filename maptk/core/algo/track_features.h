@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -27,6 +27,12 @@ class track_features : public algorithm_def<track_features>
 public:
   /// Return the name of this algorithm
   std::string type_name() const { return "track_features"; }
+
+  /// Get this alg's \link maptk::config_block configuration block \endlink
+  virtual config_block_sptr get_configuration();
+
+  /// Set this algo's properties via a config block
+  virtual void configure(config_block_sptr config);
 
   /// Extend a previous set of tracks using the current frame
   /**

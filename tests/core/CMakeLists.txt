@@ -13,3 +13,4 @@ maptk_discover_tests(core_ins_data test_libraries test_ins_data.cxx)
 maptk_discover_tests(core_config test_libraries test_config_block.cxx)
 maptk_discover_tests(core_config_io test_libraries test_config_block_io.cxx
   "${maptk_test_data_directory}")
+maptk_discover_tests(core_algo test_libraries test_algo.cxx)

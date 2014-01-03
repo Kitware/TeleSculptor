@@ -15,6 +15,7 @@
  */
 
 #include "exceptions/base.h"
+#include "exceptions/algorithm.h"
 #include "exceptions/config_block.h"
 #include "exceptions/config_block_io.h"
 

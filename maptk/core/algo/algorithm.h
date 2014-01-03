@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -9,6 +9,9 @@
 
 #include <string>
 #include <vector>
+
+#include <maptk/core/config_block.h>
+
 #include <boost/shared_ptr.hpp>
 
 namespace maptk
@@ -26,6 +29,29 @@ public:
 
   /// Return the name of this implementation
   virtual std::string impl_name() const = 0;
+
+  /// Get this alg's \link maptk::config_block configuration block \endlink
+  /**
+   * This base virtial function implementation returns an empty configuration
+   * block whose name is set to \c this->type_name.
+   *
+   * \returns \c config_block containing the configuration for this algorithm
+   *          and any nested components.
+   */
+  virtual config_block_sptr get_configuration();
+
+  /// Set this algo's properties via a config block
+  /**
+   * \throws no_such_configuration_value_exception
+   *    Thrown if an expected configuration value is not present.
+   * \thrown algorithm_configuration_exception
+   *    Thrown when the algorithm is given an invalid \c config_block or is'
+   *    otherwise unable to configure itself.
+   *
+   * \param config  The \c config_block instance containing the configuration
+   *                parameters for this algorithm
+   */
+  virtual void configure(config_block_sptr config) {};//= 0;
 
 };
 
@@ -62,6 +88,7 @@ public:
 
   /// Return a vector of the impl_name of each registered implementation
   static std::vector<std::string> registered_names();
+
 };
 
 
