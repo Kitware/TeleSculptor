@@ -1,14 +1,21 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
 #include "local_geo_cs.h"
+#include <boost/math/constants/constants.hpp>
 
 
 namespace maptk
 {
+
+
+/// scale factor converting radians to degrees
+const double rad2deg = 180.0 / boost::math::constants::pi<double>();
+/// scale factor converting degrees to radians
+const double deg2rad = boost::math::constants::pi<double>() / 180.0;
 
 
 /// Constructor
@@ -30,7 +37,9 @@ local_geo_cs
   {
     return;
   }
-  cam.set_rotation(rotation_d(ins.yaw, ins.pitch, ins.roll));
+  cam.set_rotation(rotation_d(ins.yaw * deg2rad,
+                              ins.pitch * deg2rad,
+                              ins.roll * deg2rad));
   double x,y;
   int zone;
   bool is_north_hemi;
@@ -50,6 +59,9 @@ local_geo_cs
     return;
   }
   cam.rotation().get_yaw_pitch_roll(ins.yaw, ins.pitch, ins.roll);
+  ins.yaw *= rad2deg;
+  ins.pitch *= rad2deg;
+  ins.roll *= rad2deg;
   vector_3d c = cam.center() + utm_origin_;
   int zone;
   bool is_north_hemi;
