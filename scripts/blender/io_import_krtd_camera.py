@@ -41,12 +41,12 @@ def parseCameraKrtd(fin):
     R = mathutils.Matrix([R1, R2, R3])
     next(fin)
     t = mathutils.Vector(map(float, next(fin).split()))
-    t = mathutils.Matrix.Translation(-1 * R.transposed() * t)
+    t = -1 * R.transposed() * t
     next(fin)
     d = map(float, next(fin).split())
     Rflip = mathutils.Matrix.Rotation(radians(180), 3, 'X')
     R = Rflip * R
-    R = R.transposed().to_4x4()
+    R = R.transposed()
     return (K, R, t, d)
 
 
@@ -58,7 +58,7 @@ def readCamera(context, filepath, scale):
         t = scale * t
         cam = bpy.data.cameras.new("KRTD")
         cam_ob = bpy.data.objects.new("KRTD", cam)
-        cam_ob.matrix_world = t * R
+        cam_ob.matrix_world = mathutils.Matrix.Translation(t) * R.to_4x4()
         bpy.context.scene.objects.link(cam_ob)
         if K[0][2] != 0.0:
             cam_ob.data.lens = K[0][0] / (2.0 * K[0][2]) \
