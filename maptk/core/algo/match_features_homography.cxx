@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -13,6 +13,19 @@ namespace maptk
 
 namespace algo
 {
+
+
+/// Get this alg's \link maptk::config_block configuration block \endlink
+config_block_sptr
+match_features_homography
+::get_configuration()
+{
+  config_block_sptr config = algorithm::get_configuration();
+  // TODO: logic to pick out match_features impl config_blocks, besides
+  //       outself, to prevent and infinite loop.
+  config->set_value("match_features_algo", "");
+  return config;
+}
 
 
 /// Match one set of features and corresponding descriptors to another

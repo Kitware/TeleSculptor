@@ -9,6 +9,7 @@
 
 #include "algorithm.h"
 #include <maptk/core/registrar.h>
+#include <boost/foreach.hpp>
 
 namespace maptk
 {
@@ -53,6 +54,25 @@ algorithm_def<Self>
 ::registered_names()
 {
   return registrar<Self>::registered_names();
+}
+
+
+/// Return a \c config_block for all registered implementations
+template <typename Self>
+config_block_sptr
+algorithm_def<Self>
+::get_impl_configurations()
+{
+  config_block_sptr config = config_block::empty_config();
+  BOOST_FOREACH( std::string impl_name, algorithm_def<Self>::registered_names() )
+  {
+    // create a clone of the impl in order to get access to its configuration,
+    // merging it with the main config_block under a subblock that is the name
+    // of the impl.
+    config->subblock_view(impl_name)
+          ->merge_config(algorithm_def<Self>::create(impl_name)->get_configuration());
+  }
+  return config;
 }
 
 

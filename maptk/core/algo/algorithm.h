@@ -89,6 +89,17 @@ public:
   /// Return a vector of the impl_name of each registered implementation
   static std::vector<std::string> registered_names();
 
+  /// Return a \c config_block for all registered implementations
+  /**
+   * For each registered implementation of this definition, add a subblock,
+   * labeled under the name of that implementation, of that implementation's
+   * config_block.
+   *
+   * If no implementations have non-empty configurations, the \c config_block
+   * returned will be empty.
+   */
+  static config_block_sptr get_impl_configurations();
+
 };
 
 

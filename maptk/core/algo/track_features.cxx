@@ -50,7 +50,9 @@ track_features
   config->set_value("match_features_algo", mf_impl);
 
   // merge in sub-algorithm configs if there is anything in their blocks
-  // if( // TODO:: RIGHT HERE!!! THIS THING!!!
+  config->merge_config( detect_features::get_impl_configurations() );
+  config->merge_config( extract_descriptors::get_impl_configurations() );
+  config->merge_config( match_features::get_impl_configurations() );
 
   return config;
 }

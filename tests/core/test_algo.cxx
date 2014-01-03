@@ -41,10 +41,6 @@ IMPLEMENT_TEST(track_features_before_configuration)
   track_features_sptr track_features_impl = track_features::create("simple");
   config_block_sptr tf_config = track_features_impl->get_configuration();
 
-  config_block_sptr nested_alg = config_block::empty_config("nested_alg");
-  nested_alg->set_value("sub_parameter", "some value");
-  tf_config->subblock_view(nested_alg->get_name())->merge_config(nested_alg);
-
   using namespace std;
   cerr << "Contents of config_block:" << endl;
   BOOST_FOREACH( config_block_key_t key, tf_config->available_values() )
