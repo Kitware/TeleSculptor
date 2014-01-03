@@ -65,7 +65,28 @@ def readCamera(context, filepath, scale):
                                * cam_ob.data.sensor_width
 
 
-def readCameras(context, filepath, scale, load_all):
+def readCameraPath(context, files, scale):
+    """Read a camera path from a sequence KRTD files
+    """
+    cam = bpy.data.cameras.new("camera_KRTD")
+    cam_ob = bpy.data.objects.new("KRTD", cam)
+    bpy.context.scene.objects.link(cam_ob)
+    bpy.context.scene.frame_start = 0
+    bpy.context.scene.frame_end = len(files)
+    for fnum, filepath in enumerate(files):
+        with open(filepath, 'r') as f:
+            (K, R, t, d) = parseCameraKrtd(f)
+            t = scale * t
+            cam_ob.matrix_world = mathutils.Matrix.Translation(t) * R.to_4x4()
+            if K[0][2] != 0.0:
+                cam_ob.data.lens = K[0][0] / (2.0 * K[0][2]) \
+                                   * cam_ob.data.sensor_width
+            cam.keyframe_insert("lens", frame=fnum)
+            cam_ob.keyframe_insert("location", frame=fnum)
+            cam_ob.keyframe_insert("rotation_euler", frame=fnum)
+
+
+def readCameras(context, filepath, scale, load_all, make_path):
     """Read cameras from a KRTD files and construct a blender camera objects
 
     If load_all is false then load a single camera from filepath, otherwise
@@ -77,9 +98,12 @@ def readCameras(context, filepath, scale, load_all):
         import glob
         import os.path
         directory = os.path.dirname(filepath)
-        files = glob.glob(os.path.join(directory, '*.krtd'))
-        for f in files:
-            readCamera(context, f, scale)
+        files = sorted(glob.glob(os.path.join(directory, '*.krtd')))
+        if make_path:
+            readCameraPath(context, files, scale)
+        else:
+            for f in files:
+                readCamera(context, f, scale)
 
 
 from bpy.props import StringProperty, FloatProperty, BoolProperty
@@ -108,9 +132,14 @@ class CameraImporter(bpy.types.Operator, ImportHelper):
             name="Load all files in directory",
             default=False
             )
+    make_path = BoolProperty(
+            name="Make a camera path",
+            default=False
+            )
 
     def execute(self, context):
-        readCameras(context, self.filepath, self.scale, self.load_all)
+        readCameras(context, self.filepath, self.scale,
+                    self.load_all, self.make_path)
         return {'FINISHED'}
 
     def invoke(self, context, event):
