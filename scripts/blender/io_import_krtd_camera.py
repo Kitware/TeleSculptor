@@ -56,7 +56,7 @@ def readCamera(context, filepath, scale):
     with open(filepath, 'r') as f:
         (K, R, t, d) = parseCameraKrtd(f)
         t = scale * t
-        cam = bpy.data.cameras.new("KRTD")
+        cam = bpy.data.cameras.new("camera_KRTD")
         cam_ob = bpy.data.objects.new("KRTD", cam)
         cam_ob.matrix_world = mathutils.Matrix.Translation(t) * R.to_4x4()
         bpy.context.scene.objects.link(cam_ob)
