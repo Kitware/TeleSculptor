@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -8,6 +8,7 @@
 
 #include <cmath>
 #include <limits>
+#include <boost/math/constants/constants.hpp>
 
 namespace maptk
 {
@@ -20,13 +21,16 @@ rotation_<T>
 {
   using std::sin;
   using std::cos;
-  double half_x = 0.5 * double(yaw);
-  double half_y = 0.5 * double(pitch);
-  double half_z = 0.5 * double(roll);
+  const double pi_over_2 = boost::math::constants::pi<double>() / 2.0;
+  const double half_x = 0.5 * static_cast<double>(roll);
+  const double half_y = 0.5 * static_cast<double>(pitch);
+  const double half_z = 0.5 * static_cast<double>(yaw + pi_over_2);
   rotation_<T> Rx(vector_4_<T>(T(sin(half_x)), 0, 0, T(cos(half_x))));
   rotation_<T> Ry(vector_4_<T>(0, T(sin(half_y)), 0, T(cos(half_y))));
   rotation_<T> Rz(vector_4_<T>(0, 0, T(sin(half_z)), T(cos(half_z))));
-  *this = Rz * Rx * Ry;
+  // FIXME this final 180 degree rotation is only needed for CLIF data
+  rotation_<T> R180(vector_4_<T>(0, T(sin(pi_over_2)), 0, T(cos(pi_over_2))));
+  *this = R180 * Rx * Ry * Rz;
 }
 
 
