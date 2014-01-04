@@ -9,6 +9,7 @@
 #include <maptk/core/exceptions/algorithm.h>
 
 #include <algorithm>
+#include <iostream>
 #include <set>
 #include <sstream>
 #include <string>
@@ -31,28 +32,18 @@ namespace algo
 /// Get this alg's \link maptk::config_block configuration block \endlink
 config_block_sptr
 track_features
-::get_configuration()
+::get_configuration() const
 {
+  // get base config from base class
   config_block_sptr config = algorithm::get_configuration();
 
-  // Value to assigned is either the impl name of the currently assigned algo
-  // or a listing of all available impl types (when none is currently assigned)
-# define rnames(algo) boost::algorithm::join(algo::registered_names(), " | ")
-  std::string
-    df_impl = detector_  ? detector_->impl_name()  : rnames(detect_features)
-  , ed_impl = extractor_ ? extractor_->impl_name() : rnames(extract_descriptors)
-  , mf_impl = matcher_   ? matcher_->impl_name()   : rnames(match_features)
-  ;
-# undef rnames
-
-  config->set_value("detect_features_algo", df_impl);
-  config->set_value("extract_descriptors_algo", ed_impl);
-  config->set_value("match_features_algo", mf_impl);
-
-  // merge in sub-algorithm configs if there is anything in their blocks
-  config->merge_config( detect_features::get_impl_configurations() );
-  config->merge_config( extract_descriptors::get_impl_configurations() );
-  config->merge_config( match_features::get_impl_configurations() );
+  // Sub-algorithm implementation name + sub_config block
+  // - Feature Detector algorithm
+  get_nested_algo_configuration(detect_features, detector_, config);
+  // - Descriptor Extractor algorithm
+  get_nested_algo_configuration(extract_descriptors, extractor_, config);
+  // - Feature Matcher algorithm
+  get_nested_algo_configuration(match_features, matcher_, config);
 
   return config;
 }
@@ -60,40 +51,36 @@ track_features
 /// Set this algo's properties via a config block
 void
 track_features
-::configure(config_block_sptr config)
+::set_configuration(config_block_sptr in_config)
 {
-  std::string
-    df_impl_name = config->get_value<std::string>("detect_features_algo"),
-    ed_impl_name = config->get_value<std::string>("extract_descriptors_algo"),
-    mf_impl_name = config->get_value<std::string>("match_features_algo");
+  // Starting with our generated config_block to ensure that assumed values are present
+  // An alternative is to check for key presence before performing a get_value() call.
+  config_block_sptr config = this->get_configuration();
+  config->merge_config(in_config);
 
-  // Check that value read in for each algorithm impl is value for that algo type
-  std::vector<std::string>
-    valid_df_names = detect_features::registered_names(),
-    valid_ed_names = extract_descriptors::registered_names(),
-    valid_mf_names = match_features::registered_names();
+  // Setting nested algorithm instances via setter methods instead of directly
+  // assigning to instance property.
+  detect_features_sptr df;
+  set_nested_algo_configuration(detect_features, df, config);
+  this->set_feature_detector(df);
 
-# define check_valid(algo_name, name, check_vector)                                     \
-  do                                                                                    \
-  {                                                                                     \
-    if(std::find(check_vector.begin(), check_vector.end(), name) == check_vector.end()) \
-    {                                                                                   \
-      std::ostringstream sstr;                                                          \
-      sstr << "Invalid algorithm impl name given for " << algo_name << ". "             \
-           << "Given: \"" << name << "\"";                                              \
-      throw algorithm_configuration_exception(type_name(), impl_name(), sstr.str());    \
-    }                                                                                   \
-  } while(false)
+  extract_descriptors_sptr ed;
+  set_nested_algo_configuration(extract_descriptors, ed, config);
+  this->set_descriptor_extractor(ed);
 
-  check_valid("detect_features_algo",     df_impl_name, valid_df_names);
-  check_valid("extract_descriptors_algo", ed_impl_name, valid_ed_names);
-  check_valid("match_features_algo",      mf_impl_name, valid_mf_names);
-# undef check_valid
+  match_features_sptr mf;
+  set_nested_algo_configuration(match_features, mf, config);
+  this->set_feature_matcher(mf);
+}
 
-  // Setting algorithm impls to member variables
-  this->set_feature_detector(detect_features::create(df_impl_name));
-  this->set_descriptor_extractor(extract_descriptors::create(ed_impl_name));
-  this->set_feature_matcher(match_features::create(mf_impl_name));
+
+void
+track_features
+::check_configuration(config_block_sptr config) const
+{
+  check_nested_algo_configuration(detect_features, config);
+  check_nested_algo_configuration(extract_descriptors, config);
+  check_nested_algo_configuration(match_features, config);
 }
 
 /// Extend a previous set of tracks using the current frame

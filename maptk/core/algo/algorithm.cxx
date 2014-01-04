@@ -16,7 +16,7 @@ namespace algo
 /// Get this alg's \link maptk::config_block configuration block \endlink
 config_block_sptr
 algorithm
-::get_configuration()
+::get_configuration() const
 {
   return config_block::empty_config(this->type_name());
 }

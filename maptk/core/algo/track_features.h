@@ -29,10 +29,11 @@ public:
   std::string type_name() const { return "track_features"; }
 
   /// Get this alg's \link maptk::config_block configuration block \endlink
-  virtual config_block_sptr get_configuration();
-
+  virtual config_block_sptr get_configuration() const;
   /// Set this algo's properties via a config block
-  virtual void configure(config_block_sptr config);
+  virtual void set_configuration(config_block_sptr config);
+  /// Check that the algorithm's currently configuration is valid
+  virtual void check_configuration(config_block_sptr config) const;
 
   /// Extend a previous set of tracks using the current frame
   /**

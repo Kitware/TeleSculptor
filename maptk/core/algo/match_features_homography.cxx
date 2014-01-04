@@ -5,7 +5,13 @@
  */
 
 #include <maptk/core/algo/match_features_homography.h>
+#include <maptk/core/exceptions/algorithm.h>
 #include <maptk/core/match_set.h>
+
+#include <boost/algorithm/string/join.hpp>
+#include <boost/foreach.hpp>
+
+#include <iostream>
 
 
 namespace maptk
@@ -14,17 +20,41 @@ namespace maptk
 namespace algo
 {
 
-
 /// Get this alg's \link maptk::config_block configuration block \endlink
 config_block_sptr
 match_features_homography
-::get_configuration()
+::get_configuration() const
 {
   config_block_sptr config = algorithm::get_configuration();
-  // TODO: logic to pick out match_features impl config_blocks, besides
-  //       outself, to prevent and infinite loop.
-  config->set_value("match_features_algo", "");
+
+  // nested algorithm configurations
+  get_nested_algo_configuration(match_features, matcher_, config);
+  get_nested_algo_configuration(estimate_homography, h_estimator_, config);
+
   return config;
+}
+
+
+void
+match_features_homography
+::set_configuration(config_block_sptr in_config)
+{
+  // Starting with our generated config_block to ensure that assumed values are present
+  // An alternative is to check for key presence before performing a get_value() call.
+  config_block_sptr config = this->get_configuration();
+  config->merge_config(in_config);
+
+  // Set nested algorithm configurations
+  set_nested_algo_configuration(estimate_homography, h_estimator_, config);
+  set_nested_algo_configuration(match_features, matcher_, config);
+}
+
+void
+match_features_homography
+::check_configuration(config_block_sptr config) const
+{
+  check_nested_algo_configuration(estimate_homography, config);
+  check_nested_algo_configuration(match_features, config);
 }
 
 

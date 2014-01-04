@@ -44,6 +44,17 @@ class MAPTK_CORE_EXPORT algorithm_configuration_exception
     virtual ~algorithm_configuration_exception() MAPTK_NOTHROW;
 };
 
+/// Exception for when checking an invalid impl name against an algo def
+class MAPTK_CORE_EXPORT invalid_name_exception
+  : public algorithm_exception
+{
+  public:
+    invalid_name_exception(std::string type,
+                           std::string impl,
+                           std::string reason) MAPTK_NOTHROW;
+    virtual ~invalid_name_exception() MAPTK_NOTHROW;
+};
+
 } // end namespace maptk
 
 #endif // MAPTK_CORE_EXCEPTIONS_ALGORITHM_H

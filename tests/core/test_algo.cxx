@@ -10,6 +10,7 @@
 
 #include <maptk/core/algo/register.h>
 
+#include <maptk/core/algo/match_features_homography.h>
 #include <maptk/core/algo/track_features.h>
 #include <maptk/core/config_block.h>
 #include <maptk/core/exceptions/algorithm.h>
@@ -30,8 +31,17 @@ int main(int argc, char* argv[])
   RUN_TEST(testname);
 }
 
+#define print_config(config) \
+  BOOST_FOREACH( config_block_key_t key, config->available_values() ) \
+  { \
+    cerr << "\t" \
+         << key << " = " << config->get_value<config_block_key_t>(key) \
+         << endl; \
+  }
+
 IMPLEMENT_TEST(track_features_before_configuration)
 {
+  using namespace std;
   using namespace maptk;
   using namespace maptk::algo;
 
@@ -39,20 +49,119 @@ IMPLEMENT_TEST(track_features_before_configuration)
   maptk::algo::register_algorithms();
 
   track_features_sptr track_features_impl = track_features::create("simple");
+
+  cerr << "Contents of config_block BEFORE attempted configuration:" << endl;
   config_block_sptr tf_config = track_features_impl->get_configuration();
+  print_config(tf_config);
 
+  cerr << "Setting mf algo impl" << endl;
+  tf_config->set_value("match_features_algorithm", "homography_guided");
+
+  cerr << "Contents of config_block after cb set:" << endl;
+  print_config(tf_config);
+
+  track_features_impl->set_configuration(tf_config);
+
+  cerr << "algo's config after set:" << endl;
+  tf_config = track_features_impl->get_configuration();
+  print_config(tf_config);
+
+  cerr << "Setting mf's mf algo" << endl;
+  tf_config->set_value("homography_guided:match_features_algorithm", "homography_guided");
+
+  cerr << "Contents of config_block after set:" << endl;
+  print_config(tf_config);
+
+  track_features_impl->set_configuration(tf_config);
+
+  cerr << "algo's config after second algo set:" << endl;
+  tf_config = track_features_impl->get_configuration();
+  print_config(tf_config);
+
+  cerr << "One more level for good measure" << endl;
+  tf_config->set_value("homography_guided:homography_guided:match_features_algorithm", "homography_guided");
+
+  cerr << "Contents of cb after set:" << endl;
+  print_config(tf_config);
+
+  track_features_impl->set_configuration(tf_config);
+
+  cerr << "algo's config after third algo set" << endl;
+  tf_config = track_features_impl->get_configuration();
+  print_config(tf_config);
+
+  cerr << "One more level for good measure" << endl;
+  tf_config->set_value("homography_guided:homography_guided:homography_guided:match_features_algorithm", "homography_guided");
+
+  cerr << "Contents of cb after set:" << endl;
+  print_config(tf_config);
+
+  track_features_impl->set_configuration(tf_config);
+
+  cerr << "algo's config after third algo set" << endl;
+  tf_config = track_features_impl->get_configuration();
+  print_config(tf_config);
+
+}
+
+IMPLEMENT_TEST(track_features_check_config)
+{
+  // register core algorithms
+  maptk::algo::register_algorithms();
+
+  using namespace maptk;
+  using namespace maptk::algo;
   using namespace std;
-  cerr << "Contents of config_block:" << endl;
-  BOOST_FOREACH( config_block_key_t key, tf_config->available_values() )
-  {
-    cerr << "\t"
-         << key << " := " << tf_config->get_value<config_block_value_t>(key)
-         << endl;
-  };
 
+  track_features_sptr tf_impl = track_features::create("simple");
+
+  // Checking that exception is thrown when trying to configure with no config
+  // parameters.
+  config_block_sptr config = config_block::empty_config("track_features_check_config");
   EXPECT_EXCEPTION(
       algorithm_configuration_exception,
-      track_features_impl->configure(tf_config),
-      "configuring track_features algorithm with a known invalid config"
+      tf_impl->check_configuration(config),
+      "checking against an empty config");
+
+  // Checking that default impl switch value is invalid (base default is
+  // nothing).
+  config = tf_impl->get_configuration();
+  cerr << "Default config:" << endl;
+  print_config(config);
+  EXPECT_EXCEPTION(
+      algorithm_configuration_exception,
+      tf_impl->check_configuration(config),
+      "checking against default configuration.");
+
+  // Adding valid implementation name for match_features algo, but should
+  // still fail as the underlying match_features impl wants another nested
+  // algo specification.
+  config->set_value("match_features_algorithm", "homography_guided");
+  //config->set_value("match_features_algorithm:homography_guided:match_features_algorithm", "homography_guided");
+  cerr << "Modified configuration:" << endl;
+  print_config(config);
+  EXPECT_EXCEPTION(
+      algorithm_configuration_exception,
+      tf_impl->check_configuration(config),
+      "checking against nested default configurations.");
+
+  cerr << "Config from perspective of algo with that that config:" << endl;
+  tf_impl->set_configuration(config);
+  config_block_sptr cb = tf_impl->get_configuration();
+  print_config(cb);
+
+  // Checking that, even though there were nested algorithms that weren't set,
+  // at least the one that we did set propaged correctly and triggered the
+  // sub-config generation.
+  TEST_EQUAL(
+      "param check 1",
+      cb->get_value<std::string>("match_features_algorithm"),
+      "homography_guided"
       );
+  TEST_EQUAL(
+      "param check 2",
+      cb->has_value("homography_guided:match_features_algorithm"),
+      true
+      );
+
 }

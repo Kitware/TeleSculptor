@@ -8,7 +8,15 @@
 #define MAPTK_ALGO_ALGORITHM_TXX_
 
 #include "algorithm.h"
+
+#include <algorithm>
+#include <iostream>
+#include <sstream>
+#include <typeinfo>
+
+#include <maptk/core/exceptions/algorithm.h>
 #include <maptk/core/registrar.h>
+
 #include <boost/foreach.hpp>
 
 namespace maptk
@@ -54,6 +62,17 @@ algorithm_def<Self>
 ::registered_names()
 {
   return registrar<Self>::registered_names();
+}
+
+
+/// Check the given name against registered implementation names
+template <typename Self>
+bool
+algorithm_def<Self>
+::check_impl_name(std::string const& impl_name)
+{
+  std::vector<std::string> valid_names = algorithm_def<Self>::registered_names();
+  return std::find(valid_names.begin(), valid_names.end(), impl_name) != valid_names.end();
 }
 
 

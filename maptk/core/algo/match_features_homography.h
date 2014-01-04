@@ -32,7 +32,11 @@ public:
   std::string impl_name() const { return "homography_guided"; }
 
   /// Get this alg's \link maptk::config_block configuration block \endlink
-  virtual config_block_sptr get_configuration();
+  virtual config_block_sptr get_configuration() const;
+  /// Set this algo's properties via a config block
+  virtual void set_configuration(config_block_sptr config);
+  /// Check that the algorithm's currently configuration is valid
+  virtual void check_configuration(config_block_sptr config) const;
 
   /// Match one set of features and corresponding descriptors to another
   /**
