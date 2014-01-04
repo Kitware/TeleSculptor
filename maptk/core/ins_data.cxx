@@ -87,21 +87,28 @@ std::istream&  operator>>(std::istream& s, ins_data& d)
     ss >> d.name; \
   }
 
-  PARSE_FIELD(0, source_name);
-  PARSE_FIELD(1, yaw);
-  PARSE_FIELD(2, pitch);
-  PARSE_FIELD(3, roll);
-  PARSE_FIELD(4, lat);
-  PARSE_FIELD(5, lon);
-  PARSE_FIELD(6, alt);
-  PARSE_FIELD(7, gps_sec);
-  PARSE_FIELD(8, gps_week);
-  PARSE_FIELD(9, n_vel);
-  PARSE_FIELD(10, e_vel);
-  PARSE_FIELD(11, up_vel);
-  PARSE_FIELD(12, imu_status);
-  PARSE_FIELD(13, local_adj);
-  PARSE_FIELD(14, dst_flag);
+  int base=0;
+  // some POS files do not have the source name
+  if( tokens.size() == 15 )
+  {
+    PARSE_FIELD(0, source_name);
+    base = 1;
+  }
+
+  PARSE_FIELD(base+0, yaw);
+  PARSE_FIELD(base+1, pitch);
+  PARSE_FIELD(base+2, roll);
+  PARSE_FIELD(base+3, lat);
+  PARSE_FIELD(base+4, lon);
+  PARSE_FIELD(base+5, alt);
+  PARSE_FIELD(base+6, gps_sec);
+  PARSE_FIELD(base+7, gps_week);
+  PARSE_FIELD(base+8, n_vel);
+  PARSE_FIELD(base+9, e_vel);
+  PARSE_FIELD(base+10, up_vel);
+  PARSE_FIELD(base+11, imu_status);
+  PARSE_FIELD(base+12, local_adj);
+  PARSE_FIELD(base+13, dst_flag);
 #undef PARSE_FIELD
 
   return s;

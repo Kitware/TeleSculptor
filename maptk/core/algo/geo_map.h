@@ -68,6 +68,9 @@ public:
 };
 
 
+typedef boost::shared_ptr<geo_map> geo_map_sptr;
+
+
 } // end namespace algo
 
 } // end namespace maptk
