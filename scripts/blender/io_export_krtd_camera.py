@@ -23,6 +23,9 @@ import mathutils
 from math import radians, log10
 import os.path
 
+from bpy.props import StringProperty, IntProperty, BoolProperty
+from bpy_extras.io_utils import ExportHelper
+
 
 def writeCameras(context, filepath, frame_start, frame_end,
                  frame_step=1, only_selected=False):
@@ -82,10 +85,6 @@ def writeCameras(context, filepath, frame_start, frame_end,
         fw("%g %g %g\n\n" % t[:])
         # write the empty lens distortion coefficients
         fw("0\n")
-
-
-from bpy.props import StringProperty, IntProperty, BoolProperty
-from bpy_extras.io_utils import ExportHelper
 
 
 class CameraExporter(bpy.types.Operator, ExportHelper):

@@ -21,6 +21,10 @@ import bpy
 import mathutils
 from math import radians
 
+from bpy.props import StringProperty, FloatProperty, BoolProperty
+from bpy_extras.io_utils import ImportHelper
+
+
 def parseCameraKrtd(fin):
     """Parse a single camera in KRTD format from the file object.
 
@@ -105,10 +109,6 @@ def readCameras(context, filepath, scale, load_all, make_path):
         else:
             for f in files:
                 readCamera(context, f, scale)
-
-
-from bpy.props import StringProperty, FloatProperty, BoolProperty
-from bpy_extras.io_utils import ImportHelper
 
 
 class CameraImporter(bpy.types.Operator, ImportHelper):
