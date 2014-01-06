@@ -53,9 +53,9 @@ Core Library
    occur in 3rd party code and MAPTK image structure provides a vehicle
    for transferring data between 3rd party representations.
 
- * Feature tracking structures provide abstract base class implementations
+ * Feature tracking structures provide abstract base class implementations,
    which are not templated by float type.  There are derived classes
-   which are templated and provide implementations based on lower-level
+   that are templated and provide implementations based on lower-level
    mathematical structures.  As with the image class, these are structures
    are primarily a means to transfer data between 3rd party libraries by
    establishing a common interface.
@@ -83,8 +83,7 @@ Core Library
    The config_block structure represents a configuration of (potentially
    nested) algorithms and their parameters.  The config_block is read and
    written to a configuration file to allow run-time configuration of
-   algorithms.
-   associated parameters
+   algorithms and their associated parameters
 
  * The algo directory provides a hierarchy of algorithms that can be
    combined together (or even nested) to build a sparse bundle adjustment
@@ -96,7 +95,7 @@ Core Library
 
  * The abstract algorithms in this release are
    - image_io (read and write image files)
-   - geo_map (convert lat-long to utm coordinates)
+   - geo_map (convert Lat-Long to UTM coordinates)
    - detect_features (detect feature points on an image)
    - extract_descriptors (extract descriptors around feature points in an image)
    - match_features (match features in two images based on feature & descriptor)
@@ -188,7 +187,7 @@ Compiled Command-line Tools
    ASCII text file format.  This tool uses the image_io and track_features
    algorithms to compute results.  The tool accepts a config file to select
    between algorithms implementations and to adjust parameter.  However, in
-   these release, only a minimal set of config options are exposed.
+   this release, only a minimal set of config options are exposed.
 
  * pos2krtd -- Accepts a POS file, or a directory of POS files and produces
    corresponding KRTD camera files.  The yaw, pitch, roll, latitude, longitude,
@@ -205,7 +204,7 @@ Python Scripts
  * draw_tracks.py -- Accepts a track file (as produced by track_features)
    and draws the tracks on a single plot with each feature track drawn as a
    polyline in a randomly selected color.  This script provides a visual
-   debugging tool to asses the quality and distribution of tracks produced
+   debugging tool to assess the quality and distribution of tracks produced
    by the track_features tool.
 
  * blender/io_import_krtd_camera.py -- This is a Python plug-in for the
