@@ -146,12 +146,12 @@ public:
   /**
    * The nested algorithm will not be set if the implementation switch (as
    * defined in the \c get_nested_algo_configuration) is not present or set to
-   * an invalid value relative to the registered names for this 
+   * an invalid value relative to the registered names for this
    * \c algorithm_def.
    *
    * \param name                An identifying name for the nested algorithm.
    * \param config[in]          The \c config_block instance from which we will
-   *                              draw configuration needed for the nested 
+   *                              draw configuration needed for the nested
    *                              algorithm instance.
    * \param nested_algo[in,out] The nested algorithm's sptr variable.
    */
@@ -166,7 +166,7 @@ public:
    *
    * If the name is valid, we also recursively call check_configuration() on the
    * set implementation. This is done with a fresh create so we don't have to
-   * rely on the implementation being defined in the instance this is called 
+   * rely on the implementation being defined in the instance this is called
    * from.
    *
    * \param name        An identifying name for the nested algorithm.
