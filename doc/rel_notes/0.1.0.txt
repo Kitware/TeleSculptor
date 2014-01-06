@@ -1,0 +1,226 @@
+MAPTK v0.1.0 Release Notes
+==========================
+
+This is the first formal release of MAPTK.  The features in this initial release
+are summarized below.  Future release notes will describe modifications since
+the previous release.
+
+
+Library Features
+----------------
+
+Package Configuration, Build System, & Documentation
+
+ * Build system uses CMake as a meta build system for easy build configuration,
+   cross-platform compiling, and dashboard regression testing.
+
+ * A unit testing framework using CTest is provided in the 'test' directory.
+   This makes writing unit tests easy.
+
+ * A CMake script is provided to make it easy for users to submit nightly builds
+   and unit test runs to the MAPTK CDash dashboard.  The CMake script is
+   cmake/dashboard-scripts/MAPTK_common.cmake
+
+ * CMake scripts are provided to make it very easy to build the MAPTK code
+   documentation using Doxygen.  Just turn on the "MAPTK_ENABLE_DOCS" option
+   in CMake to create a documentation build target (if you have Doxygen).
+   Turn on "MAPTK_INSTALL_DOCS" to have to built documentation installed.
+
+
+Core Library
+
+ * The core library contains
+   - low-level mathematical structures (matrix, vector, covariance, rotation)
+   - camera representation structures (camera, camera intrinsics)
+   - feature tracking structures (image, feature, descriptor, landmark, track)
+   - geographic structures (INS data, local geo coordinate system)
+   - configuration management (config block, registrar)
+   - definitions of C++ exceptions (exceptions directory)
+   - abstract algorithm definitions (algo directory)
+
+ * The low-level mathematical structures are templated for use with either
+   single or double precision floating point types.  They provide basic
+   linear algebra for 1-4 dimensional spaces.
+
+ * The camera structures are also currently templated over float type and
+   provide a basic pin-hole camera model representation by building on the
+   lower-level mathematical types
+
+ * The image representation currently supports on unsigned byte images.
+   It is designed to represent various image memory layouts and easily
+   share memory between multiple image objects.  Minimal image manipulation
+   operators are provided.  The intent is that most image manipulation will
+   occur in 3rd party code and MAPTK image structure provides a vehicle
+   for transferring data between 3rd party representations.
+
+ * Feature tracking structures provide abstract base class implementations,
+   which are not templated by float type.  There are derived classes
+   that are templated and provide implementations based on lower-level
+   mathematical structures.  As with the image class, these are structures
+   are primarily a means to transfer data between 3rd party libraries by
+   establishing a common interface.
+
+ * Feature tracking structures also have corresponding "set" structures to
+   encapsulate collections of these objects (feature_set, descriptor_set,
+   match_set, track_set).  These are abstract base classes that provide
+   "simple" derived classes (e.g. simple_feature_set) that implement the
+   set using a STL vector of objects.  The purpose of these sets is to
+   allow the add-on modules to use custom data contains that only need to
+   convert data structure on demand.  For example, an OpenCL feature
+   detector could store features in GPU memory and pass them directly
+   to an OpenCL descriptor extractor without needing to transfer back
+   to CPU memory.
+
+ * Geographic structures are currently focus on the data in the POS file
+   format and mapping coordinates between Lat-Long and UTM.  The ins_data
+   structure is a direct representation of the contents of a POS file.
+   The local geographic coordinate system (local_geo_cs) structure provides
+   mappings between INS data and camera pose in a local UTM coordinate system.
+
+ * Configuration structures are used to dynamically configure combinations
+   of algorithms and parameters at run time.  The registrar class is used
+   to create a look-up table of all registered algorithms by their name.
+   The config_block structure represents a configuration of (potentially
+   nested) algorithms and their parameters.  The config_block is read and
+   written to a configuration file to allow run-time configuration of
+   algorithms and their associated parameters
+
+ * The algo directory provides a hierarchy of algorithms that can be
+   combined together (or even nested) to build a sparse bundle adjustment
+   system.  Each algorithm provides an abstract base class, which defines
+   the algorithm API.  Each algorithm then has one or more implementations,
+   generally using 3rd party software, that provide the required functionality.
+   This allows a highly modular system where each algorithm component can be
+   swapped out for alternate implementations.
+
+ * The abstract algorithms in this release are
+   - image_io (read and write image files)
+   - geo_map (convert Lat-Long to UTM coordinates)
+   - detect_features (detect feature points on an image)
+   - extract_descriptors (extract descriptors around feature points in an image)
+   - match_features (match features in two images based on feature & descriptor)
+   - estimate_homography (uses feature matches to estimate a homography matrix)
+   - track_features (track features from frame to frame producing tracks)
+       The track_features algorithm makes use of nested abstract algorithms
+       detect_features, extract_descriptors, and match_features
+
+ * While most algorithm implementations are in add-on modules, some are in
+   core/algo.  In this release, these are
+   - simple_track_features (implements track_features)
+       Most of the work is done by the nested algorithms
+   - match_feature_homography (implements match_features)
+       This is an algorithm modifier.  It contains another match_features
+       algorithm to do the real work.  It then uses an estimate_homography
+       algorithm to estimate a homography and uses it to filter the matches.
+
+
+Proj Module
+
+ * This module provides implementations dependent on the Proj4 library for
+   geographic coordinate projections.
+
+ * Provides an implementation of the geo_map algorithm using pj_transform().
+
+
+VXL Module
+
+ * This module provides implementations dependent on the VXL (Vision X
+   Libraries) collection of computer vision libraries.
+
+ * Provides an implementation of an image_container for vil_image_view.
+   This allows shallow copies (shared memory) between VXL and MAPTK image
+   representations.
+
+ * Provides an implementation of the image_io algorithm.
+   This uses vil_load() and vil_save() to read and write images.
+
+ * Provides an implementation of the estimate_homography algorithm.
+   This uses rrel (Rensselaer robust estimation library)
+
+
+OCV Module
+
+ * This module provides implementations dependent on the OpenCV
+   collection of computer vision libraries.
+
+ * Provides an implementation of an image_container for cv::Mat.
+   This allows shallow copies (shared memory) between OpenCV and MAPTK image
+   representations.
+
+ * Provides an implementation of the image_io algorithm.
+   This uses cv::imread() and cv::imwrite() to read and write images.
+
+ * Provides an implementation of the feature_set container.
+   This allows passing of features in cv::Keypoint format and conversions
+   between cv::Keypoint and maptk::feature.
+
+ * Provides an implementation of the detect_features algorithm.
+   This allows feature detection using cv::FeatureDetector.
+
+ * Provides an implementation of the descriptor_set container.
+   This allows passing of descriptor in cv::Mat format and conversions
+   between cv::Mat and maptk::descriptor.
+
+ * Provides an implementation of the extract_descriptors algorithm.
+   This allows feature detection using cv::DescriptorExtractor.
+
+ * Provides an implementation of the match_set container.
+   This allows passing of feature matches in cv::DMatch format and conversions
+   between cv::Dmatch and maptk::match.
+
+ * Provides an implementation of the match_features algorithm.
+   This allows feature matching using cv::DescriptorMatcher.
+
+ * Provides conversion functions between cv::Mat and maptk::matrix.
+
+ * Provides an implementation of the estimate_homography algorithm.
+   This uses cv::findHomography()
+
+
+Tools and Scripts
+-----------------
+
+Compiled Command-line Tools
+
+ * track_features -- Accepts a list of images files, computes frame-to-frame
+   feature tracking, and writes of the resulting feature tracks in a simple
+   ASCII text file format.  This tool uses the image_io and track_features
+   algorithms to compute results.  The tool accepts a config file to select
+   between algorithms implementations and to adjust parameter.  However, in
+   this release, only a minimal set of config options are exposed.
+
+ * pos2krtd -- Accepts a POS file, or a directory of POS files and produces
+   corresponding KRTD camera files.  The yaw, pitch, roll, latitude, longitude,
+   and altitude fields of the POS file are mapped to a rotation matrix and
+   a translation vector in UTM coordinates.  If a directory of POS files is
+   provided, the KRTD files are also translated to local UTM coordinate
+   system with the origin on the ground at the mean of the camera easting and
+   northing values.  In this release, the intrinsic camera parameters are
+   not specified and produce an identity calibration (K) matrix.
+
+
+Python Scripts
+
+ * draw_tracks.py -- Accepts a track file (as produced by track_features)
+   and draws the tracks on a single plot with each feature track drawn as a
+   polyline in a randomly selected color.  This script provides a visual
+   debugging tool to assess the quality and distribution of tracks produced
+   by the track_features tool.
+
+ * blender/io_import_krtd_camera.py -- This is a Python plug-in for the
+   open source Blender application.  It adds a menu item to the "File > Import"
+   menu that allows importing KRTD camera files and constructing Blender camera
+   objects.  By default it loads a single KRTD file, but it also has options
+   to load a directory of KRTD files and produce either multiple camera
+   objects or an animation sequence of a single camera object.  Translation,
+   rotation, and focal length parameters are imported.  This script is
+   useful for visualizing the output of the pos2krtd tool.  Imported cameras
+   could even be used in rendering of a new synthetic data set with realistic
+   camera motion parameters.
+
+ * blender/io_export_krtd_camera.py -- This is a Python plug-in for the
+   open source Blender application.  It adds a menu item to the "File > Export"
+   menu that allows exporting blender camera objects to KRTD files.
+   Specifically, it supports exporting an animated camera as a sequence
+   of KRTD files.  The script provides the inverse functionality to the
+   io_import_krtd_camera,py script.
