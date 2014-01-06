@@ -56,7 +56,7 @@ class MAPTK_CORE_EXPORT config_block
     static config_block_sptr empty_config(config_block_key_t const& name = config_block_key_t());
 
     /// Destructor
-    ~config_block();
+    virtual ~config_block();
 
     /// Get the name of this \c config_block instance.
     config_block_key_t get_name();

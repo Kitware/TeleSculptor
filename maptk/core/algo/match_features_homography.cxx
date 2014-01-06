@@ -57,8 +57,11 @@ bool
 match_features_homography
 ::check_configuration(config_block_sptr config) const
 {
-  estimate_homography::check_nested_algo_configuration("homography_estimator", config);
-  match_features::check_nested_algo_configuration("feature_matcher", config);
+  return (
+    estimate_homography::check_nested_algo_configuration("homography_estimator", config)
+    &&
+    match_features::check_nested_algo_configuration("feature_matcher", config)
+  );
 }
 
 

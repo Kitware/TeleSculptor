@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -23,6 +23,10 @@ class estimate_homography
 public:
   /// Return the name of this implementation
   std::string impl_name() const { return "vxl"; }
+
+  // No configuration yet for this class.
+  virtual void set_configuration(config_block_sptr /*config*/) {}
+  virtual bool check_configuration(config_block_sptr /*config*/) const { return true; }
 
   /// Estimate a homography matrix from corresponding points
   /**

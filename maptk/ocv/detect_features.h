@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -25,13 +25,17 @@ public:
   detect_features();
 
   /// Destructor
-  ~detect_features();
+  virtual ~detect_features();
 
   /// Copy Constructor
   detect_features(const detect_features& other);
 
   /// Return the name of this implementation
   std::string impl_name() const { return "ocv"; }
+
+  // No configuration yet for this class
+  virtual void set_configuration(config_block_sptr /*config*/) { }
+  virtual bool check_configuration(config_block_sptr /*config*/) const { return true; }
 
   /// Extract a set of image features from the provided image
   /// \param image_data contains the image data to process
