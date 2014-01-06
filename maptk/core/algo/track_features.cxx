@@ -39,11 +39,12 @@ track_features
 
   // Sub-algorithm implementation name + sub_config block
   // - Feature Detector algorithm
-  get_nested_algo_configuration(detect_features, detector_, config);
+  detect_features::get_nested_algo_configuration("feature_detector", config, detector_);
+
   // - Descriptor Extractor algorithm
-  get_nested_algo_configuration(extract_descriptors, extractor_, config);
+  extract_descriptors::get_nested_algo_configuration("descriptor_extractor", config, extractor_);
   // - Feature Matcher algorithm
-  get_nested_algo_configuration(match_features, matcher_, config);
+  match_features::get_nested_algo_configuration("feature_matcher", config, matcher_);
 
   return config;
 }
@@ -61,26 +62,29 @@ track_features
   // Setting nested algorithm instances via setter methods instead of directly
   // assigning to instance property.
   detect_features_sptr df;
-  set_nested_algo_configuration(detect_features, df, config);
+  detect_features::set_nested_algo_configuration("feature_detector", config, df);
   this->set_feature_detector(df);
 
   extract_descriptors_sptr ed;
-  set_nested_algo_configuration(extract_descriptors, ed, config);
+  extract_descriptors::set_nested_algo_configuration("descriptor_extractor", config, ed);
   this->set_descriptor_extractor(ed);
 
   match_features_sptr mf;
-  set_nested_algo_configuration(match_features, mf, config);
+  match_features::set_nested_algo_configuration("feature_matcher", config, mf);
   this->set_feature_matcher(mf);
 }
 
-
-void
+bool
 track_features
 ::check_configuration(config_block_sptr config) const
 {
-  check_nested_algo_configuration(detect_features, config);
-  check_nested_algo_configuration(extract_descriptors, config);
-  check_nested_algo_configuration(match_features, config);
+  return (
+    detect_features::check_nested_algo_configuration("feature_detector", config)
+    &&
+    extract_descriptors::check_nested_algo_configuration("descriptor_extractor", config)
+    &&
+    match_features::check_nested_algo_configuration("feature_matcher", config)
+  );
 }
 
 /// Extend a previous set of tracks using the current frame

@@ -30,9 +30,9 @@ public:
   /// Return the name of this implementation
   virtual std::string impl_name() const = 0;
 
-  /// Get this alg's \link maptk::config_block configuration block \endlink
+  /// Get this algorithm's \link maptk::config_block configuration block \endlink
   /**
-   * This base virtial function implementation returns an empty configuration
+   * This base virtual function implementation returns an empty configuration
    * block whose name is set to \c this->type_name.
    *
    * \returns \c config_block containing the configuration for this algorithm
@@ -40,7 +40,7 @@ public:
    */
   virtual config_block_sptr get_configuration() const;
 
-  /// Set this algo's properties via a config block
+  /// Set this algorithm's properties via a config block
   /**
    * \throws no_such_configuration_value_exception
    *    Thrown if an expected configuration value is not present.
@@ -55,16 +55,15 @@ public:
 
   /// Check that the algorithm's configuration config_block is valid
   /**
-   * If the algorithm's configuration is valid, nothing occurrs.
    * This checks solely within the provided \c config_block and not against
-   * the current state of the instance.
-   *
-   * \throws algorithm_configuration_exception
-   *    When configuration of the algorithm is invalid.
+   * the current state of the instance. This isn't static for inheritence
+   * reasons.
    *
    * \param config  The config block to check configuration of.
+   *
+   * \returns true if the configuration check passed and false if it didn't.
    */
-  virtual void check_configuration(config_block_sptr config) const = 0;
+  virtual bool check_configuration(config_block_sptr config) const = 0;
 
 };
 
@@ -109,7 +108,7 @@ public:
    * /returns true if the given \c impl_name is valid for this definition, or
    *          false if it is not a valid implementation name.
    */
-  static bool check_impl_name(std::string const& impl_name);
+  static bool has_impl_name(std::string const& impl_name);
 
   /// Return a \c config_block for all registered implementations
   /**
@@ -117,10 +116,64 @@ public:
    * labeled under the name of that implementation, of that implementation's
    * config_block.
    *
-   * If no implementations have non-empty configurations, the \c config_block
-   * returned will be empty.
+   * If no implementation of this definition has any configuraiton properties,
+   * the \c config_block returned will be empty.
    */
   static config_block_sptr get_impl_configurations();
+
+  /// Helper function for properly getting a nested algorithm's configuration
+  /**
+   * Adds a configurable algorithm implementation switch for this algorithm_def.
+   * If the variable pointed to by \c nested_algo is a defined sptr to an
+   * implementation, its \link maptk::config_block configuration \endlink
+   * parameters are merged with the given
+   * \link maptk::config_block config_block \endlink.
+   *
+   * This should be called within an algorithm_def or algorithm_impl
+   * get_configuration() method. This macro relies on the nested algorithm
+   * instance being stored in a variable \c var_name.
+   *
+   * \param name            An identifying name for the nested algorithm
+   * \param config[in]      The \c config_block instance in which to put the
+   *                          nested algorithm's configuration.
+   * \param nested_algo[in] The nested algorithm's sptr variable.
+   */
+  static void get_nested_algo_configuration(std::string name,
+                                            config_block_sptr config,
+                                            base_sptr nested_algo);
+
+  /// Helper function for properly setting a nested algorithm's configuration
+  /**
+   * The nested algorithm will not be set if the implementation switch (as
+   * defined in the \c get_nested_algo_configuration) is not present or set to
+   * an invalid value relative to the registered names for this 
+   * \c algorithm_def.
+   *
+   * \param name                An identifying name for the nested algorithm.
+   * \param config[in]          The \c config_block instance from which we will
+   *                              draw configuration needed for the nested 
+   *                              algorithm instance.
+   * \param nested_algo[in,out] The nested algorithm's sptr variable.
+   */
+  static void set_nested_algo_configuration(std::string name,
+                                            config_block_sptr config,
+                                            base_sptr &nested_algo);
+
+  /// Helper macro for checking that basic nested algorithm configuration is valid
+  /**
+   * Check that the expected implementation switch exists and that its value is
+   * registered implementation name.
+   *
+   * If the name is valid, we also recursively call check_configuration() on the
+   * set implementation. This is done with a fresh create so we don't have to
+   * rely on the implementation being defined in the instance this is called 
+   * from.
+   *
+   * \param name        An identifying name for the nested algorithm.
+   * \param config[in]  The \c config_block to check.
+   */
+  static bool check_nested_algo_configuration(std::string name,
+                                              config_block_sptr config);
 
 };
 
@@ -159,116 +212,6 @@ public:
   }
 
 };
-
-
-/// Helper macro for properly getting a nested algorithm's configuration
-/**
- * Adds a configurable algorithm implementation switch for the specified
- * algorithm_def. If the variable pointed to by \c var_name is a defined
- * sptr to an instnace, its \link maptk::config_block configuration \endlink
- * is merged with the given \c config_block.
- *
- * This should be called within an algorithm_def or algorithm_impl
- * get_configuration() method. This macro relies on the nested algorithm
- * instance being stored in a variable \c var_name.
- *
- * \param algo_def      The algorithm_def type of the nested algorithm
- * \param var_name      The name of the variable that the nested algorithm is
- *                        being stored in, ideally a class variable, but may
- *                        be a local variable. This should be the Boost sptr
- *                        to the class.
- * \param config_block  The \c config_block object in which to put the nested
- *                        algorithm's configuration. This will include an
- *                        algorithm_impl switch as well as the nested
- *                        configuration block if the \c var_name is defined
- *                        with a valid algorithm_impl instance (sptr).
- */
-#define get_nested_algo_configuration(algo_def, var_name, config)       \
-  do                                                                    \
-  {                                                                     \
-    if(var_name)                                                        \
-    {                                                                   \
-      config->set_value(#algo_def "_algorithm", var_name->impl_name()); \
-      config->subblock_view(var_name->impl_name())                      \
-            ->merge_config(var_name->get_configuration());              \
-    }                                                                   \
-    else                                                                \
-    {                                                                   \
-      config->set_value(#algo_def "_algorithm",                         \
-          "# Pick one: [ "                                              \
-          + boost::algorithm::join(algo_def::registered_names(), " | ") \
-          + " ]");                                                      \
-    }                                                                   \
-  } while(false)
-
-
-/// Helper macro for properly setting a nested algorithm's configuration
-/**
- * The nested algorithm will not be set if the implementation switch (as
- * defined in the \c get_nested_algo_configuration) is not present or set to
- * an invalid value in relation to the registered names for the given
- * \c algo_def.
- *
- * \param algo_def  The \c algorithm_def of the nested algorithm
- * \param var_name  The variable to which we will store a created
- *                    \c algorithm_impl sptr.
- * \param config    The \c config_block from which we will draw configuration
- *                    needed for the nested algorithm instance.
- */
-#define set_nested_algo_configuration(algo_def, var_name, config)                     \
-  do                                                                                  \
-  {                                                                                   \
-    if(config->has_value(#algo_def "_algorithm"))                                     \
-    {                                                                                 \
-      std::string impl_name = config->get_value<std::string>(#algo_def "_algorithm"); \
-      if(algo_def::check_impl_name(impl_name))                                        \
-      {                                                                               \
-        var_name = algo_def::create(impl_name);                                       \
-        var_name->set_configuration(config->subblock_view(impl_name));                \
-      }                                                                               \
-    }                                                                                 \
-  } while (false)
-
-
-/// Helper macro for checking that basic nested algorithm configuration
-/**
- * Check that the expected implementation switch exists and that its value is
- * registered implementation name.
- *
- * If the name is valid, we also recursively call check_configuration() on the
- * set implementation. This is done with a fresh create so we don't have to
- * rely on the implementation being defined in the instance this is called from.
- *
- * \preconds
- * \pre{File that uses this macro has <maptk/core/exceptions.h> or
- *      <maptk/core/exceptions/algorithm.h> included.}
- * \endpreconds
- *
- * \throws algorithm_configuration_exception
- *    When the algorithm implementation switch is not present or when the value
- *    given to the switch is not a valid, registered implementation name.
- *
- * \param algo_def  The \c algorithm_def of the nested algorithm.
- * \param config    The \c config_block to check.
- */
-#define check_nested_algo_configuration(algo_def, config)                       \
-  do                                                                            \
-  {                                                                             \
-    if(!config->has_value(#algo_def "_algorithm"))                              \
-    {                                                                           \
-      throw algorithm_configuration_exception(type_name(), impl_name(),         \
-          "Missing implementation switch for nested algorithm \""               \
-          #algo_def "\"");                                                      \
-    }                                                                           \
-    std::string iname = config->get_value<std::string>(#algo_def "_algorithm"); \
-    if(!algo_def::check_impl_name(iname))                                       \
-    {                                                                           \
-      throw algorithm_configuration_exception(type_name(), impl_name(),         \
-          "Invlid implementation name for nested algorithm \""                  \
-          #algo_def "\". Given: \"" + iname + "\"");                            \
-    }                                                                           \
-    algo_def::create(iname)->check_configuration(config->subblock_view(iname)); \
-  } while (false)
 
 
 } // end namespace algo

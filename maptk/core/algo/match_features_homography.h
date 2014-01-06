@@ -36,7 +36,7 @@ public:
   /// Set this algo's properties via a config block
   virtual void set_configuration(config_block_sptr config);
   /// Check that the algorithm's currently configuration is valid
-  virtual void check_configuration(config_block_sptr config) const;
+  virtual bool check_configuration(config_block_sptr config) const;
 
   /// Match one set of features and corresponding descriptors to another
   /**

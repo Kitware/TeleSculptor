@@ -28,8 +28,10 @@ match_features_homography
   config_block_sptr config = algorithm::get_configuration();
 
   // nested algorithm configurations
-  get_nested_algo_configuration(match_features, matcher_, config);
-  get_nested_algo_configuration(estimate_homography, h_estimator_, config);
+  estimate_homography::get_nested_algo_configuration("homography_estimator",
+                                                     config, h_estimator_);
+  match_features::get_nested_algo_configuration("feature_matcher", config,
+                                                matcher_);
 
   return config;
 }
@@ -45,16 +47,18 @@ match_features_homography
   config->merge_config(in_config);
 
   // Set nested algorithm configurations
-  set_nested_algo_configuration(estimate_homography, h_estimator_, config);
-  set_nested_algo_configuration(match_features, matcher_, config);
+  estimate_homography::set_nested_algo_configuration("homography_estimator",
+                                                     config, h_estimator_);
+  match_features::set_nested_algo_configuration("feature_matcher", config,
+                                                matcher_);
 }
 
-void
+bool
 match_features_homography
 ::check_configuration(config_block_sptr config) const
 {
-  check_nested_algo_configuration(estimate_homography, config);
-  check_nested_algo_configuration(match_features, config);
+  estimate_homography::check_nested_algo_configuration("homography_estimator", config);
+  match_features::check_nested_algo_configuration("feature_matcher", config);
 }
 
 
