@@ -115,6 +115,7 @@ config_block_grammar<Iterator>
 {
   using namespace qi::labels;
   using phoenix::push_back;
+  using phoenix::at_c;
 
   opt_whitespace.name("opt-whitespace");
   opt_whitespace %= *( qi::blank );
@@ -151,10 +152,10 @@ config_block_grammar<Iterator>
      );
 
   config_block_value_full.name("config-value-full");
-  config_block_value_full %=
-    ( (opt_whitespace >> config_block_key_path >> opt_whitespace)
+  config_block_value_full =
+    ( (opt_whitespace >> config_block_key_path[at_c<0>(_val) = _1] >> opt_whitespace)
     > '='
-    > (opt_whitespace >> config_block_value >> opt_whitespace)
+    > (opt_whitespace >> -(config_block_value[at_c<1>(_val) = _1]) >> opt_whitespace)
     > eol
     );
 
@@ -261,6 +262,10 @@ config_block_sptr read_config_file(path_t const& file_path,
 void write_config_file(config_block_sptr const& config,
                        path_t const& file_path)
 {
+  using std::cerr;
+  using std::endl;
+  namespace bfs = boost::filesystem;
+
   // If there are no config parameters in the given config_block, throw
   if(!config->available_values().size())
   {
@@ -269,7 +274,7 @@ void write_config_file(config_block_sptr const& config,
   }
 
   // If the given path is a directory, we obviously can't write to it.
-  if(boost::filesystem::is_directory(file_path))
+  if(bfs::is_directory(file_path))
   {
     throw file_write_exception(file_path, "Path given is a directory, to "
                                           "which we clearly can't write.");
@@ -277,11 +282,11 @@ void write_config_file(config_block_sptr const& config,
 
   // Check that the directory of the given filepath exists, creating necessary
   // directories where needed.
-  path_t parent_dir = file_path.parent_path();
-  if(!boost::filesystem::is_directory(parent_dir))
+  path_t parent_dir = bfs::absolute(file_path.parent_path());
+  if(!bfs::is_directory(parent_dir))
   {
     //std::cerr << "at least one containing directory not found, creating them..." << std::endl;
-    if(!boost::filesystem::create_directories(parent_dir))
+    if(!bfs::create_directories(parent_dir))
     {
       throw file_write_exception(parent_dir, "Attempted directory creation, "
                                              "but no directory created! No "

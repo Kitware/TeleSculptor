@@ -100,7 +100,7 @@ algorithm_def<Self>
 template <typename Self>
 void
 algorithm_def<Self>
-::get_nested_algo_configuration(std::string name,
+::get_nested_algo_configuration(std::string const& name,
                                 config_block_sptr config,
                                 base_sptr nested_algo)
 {
@@ -125,7 +125,7 @@ algorithm_def<Self>
 template <typename Self>
 void
 algorithm_def<Self>
-::set_nested_algo_configuration(std::string name,
+::set_nested_algo_configuration(std::string const& name,
                                 config_block_sptr config,
                                 base_sptr &nested_algo)
 {
@@ -150,7 +150,7 @@ algorithm_def<Self>
 template <typename Self>
 bool
 algorithm_def<Self>
-::check_nested_algo_configuration(std::string name,
+::check_nested_algo_configuration(std::string const& name,
                                   config_block_sptr config)
 {
   if(!config->has_value(name + config_block::block_sep + "type"))

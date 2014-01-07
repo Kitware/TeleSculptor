@@ -129,16 +129,12 @@ public:
    * parameters are merged with the given
    * \link maptk::config_block config_block \endlink.
    *
-   * This should be called within an algorithm_def or algorithm_impl
-   * get_configuration() method. This macro relies on the nested algorithm
-   * instance being stored in a variable \c var_name.
-   *
    * \param name            An identifying name for the nested algorithm
    * \param config[in]      The \c config_block instance in which to put the
    *                          nested algorithm's configuration.
    * \param nested_algo[in] The nested algorithm's sptr variable.
    */
-  static void get_nested_algo_configuration(std::string name,
+  static void get_nested_algo_configuration(std::string const& name,
                                             config_block_sptr config,
                                             base_sptr nested_algo);
 
@@ -155,7 +151,7 @@ public:
    *                              algorithm instance.
    * \param nested_algo[in,out] The nested algorithm's sptr variable.
    */
-  static void set_nested_algo_configuration(std::string name,
+  static void set_nested_algo_configuration(std::string const& name,
                                             config_block_sptr config,
                                             base_sptr &nested_algo);
 
@@ -172,7 +168,7 @@ public:
    * \param name        An identifying name for the nested algorithm.
    * \param config[in]  The \c config_block to check.
    */
-  static bool check_nested_algo_configuration(std::string name,
+  static bool check_nested_algo_configuration(std::string const& name,
                                               config_block_sptr config);
 
 };
