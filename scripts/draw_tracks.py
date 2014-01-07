@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 """
 ckwg +5
 Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
