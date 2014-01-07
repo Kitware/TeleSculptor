@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -25,13 +25,17 @@ public:
   match_features();
 
   /// Destructor
-  ~match_features();
+  virtual ~match_features();
 
   /// Copy Constructor
   match_features(const match_features& other);
 
   /// Return the name of this implementation
   std::string impl_name() const { return "ocv"; }
+
+  // No configuration for this class yet
+  virtual void set_configuration(config_block_sptr /*config*/) { };
+  virtual bool check_configuration(config_block_sptr /*config*/) const { return true; }
 
   /// Match one set of features and corresponding descriptors to another
   /**

@@ -50,6 +50,14 @@ config_block
 {
 }
 
+/// Get the name of this \c config_block instance.
+config_block_key_t
+config_block
+::get_name()
+{
+  return this->m_name;
+}
+
 /// Get a subblock from the configuration.
 config_block_sptr
 config_block

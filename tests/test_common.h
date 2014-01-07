@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2011-2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2011-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -253,16 +253,16 @@ inline bool is_almost(double const &value,
  * @param target  The value to compare to.
  * @param epsilon The allowed varience.
  */
-#define TEST_NEAR(name, value, target, epsilon) \
-  do  \
-  {   \
-    if(! maptk::testing::is_almost(value, target, epsilon)) \
-    { \
-      TEST_ERROR("TEST_NEAR check '" << name \
-                 << "' failed: (epsilon: " << epsilon << ")\n" \
-                 << "    Expected: " << target << "\n" \
-                 << "    Got     : " << value); \
-    } \
+#define TEST_NEAR(name, value, target, epsilon)                 \
+  do                                                            \
+  {                                                             \
+    if(! maptk::testing::is_almost(value, target, epsilon))     \
+    {                                                           \
+      TEST_ERROR("TEST_NEAR check '" << name                    \
+                 << "' failed: (epsilon: " << epsilon << ")\n"  \
+                 << "    Expected: " << target << "\n"          \
+                 << "    Got     : " << value);                 \
+    }                                                           \
   }while(false)
 
 #endif // MAPTK_TEST_TEST_COMMON_H

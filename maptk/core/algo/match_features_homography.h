@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -7,6 +7,7 @@
 #ifndef MAPTK_ALGO_MATCH_FEATURES_HOMOGRAPHY_H_
 #define MAPTK_ALGO_MATCH_FEATURES_HOMOGRAPHY_H_
 
+#include <maptk/core/config_block.h>
 #include <maptk/core/algo/match_features.h>
 #include <maptk/core/algo/estimate_homography.h>
 
@@ -29,6 +30,13 @@ public:
 
   /// Return the name of this implementation
   std::string impl_name() const { return "homography_guided"; }
+
+  /// Get this alg's \link maptk::config_block configuration block \endlink
+  virtual config_block_sptr get_configuration() const;
+  /// Set this algo's properties via a config block
+  virtual void set_configuration(config_block_sptr config);
+  /// Check that the algorithm's currently configuration is valid
+  virtual bool check_configuration(config_block_sptr config) const;
 
   /// Match one set of features and corresponding descriptors to another
   /**

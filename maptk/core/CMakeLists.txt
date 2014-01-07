@@ -27,6 +27,7 @@ set(maptk_core_headers_public
   vector.h
   vector_cmath.h
 
+  exceptions/algorithm.h
   exceptions/base.h
   exceptions/config_block.h
   exceptions/config_block_io.h
@@ -59,10 +60,12 @@ set(maptk_core_sources
   track_set.cxx
   vector.cxx
 
+  exceptions/algorithm.cxx
   exceptions/base.cxx
   exceptions/config_block.cxx
   exceptions/config_block_io.cxx
 
+  algo/algorithm.cxx
   algo/detect_features.cxx
   algo/estimate_homography.cxx
   algo/extract_descriptors.cxx

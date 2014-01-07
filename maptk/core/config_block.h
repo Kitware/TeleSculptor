@@ -56,7 +56,10 @@ class MAPTK_CORE_EXPORT config_block
     static config_block_sptr empty_config(config_block_key_t const& name = config_block_key_t());
 
     /// Destructor
-    ~config_block();
+    virtual ~config_block();
+
+    /// Get the name of this \c config_block instance.
+    config_block_key_t get_name();
 
     /// Get a subblock from the configuration.
     /**
@@ -91,6 +94,9 @@ class MAPTK_CORE_EXPORT config_block
 
     /// Cast the value, returning a default value in case of an error.
     /**
+     * \throws no_such_configuration_value_exception Thrown if the requested index does not exist.
+     * \throws bad_configuration_cast_exception Thrown if the cast fails.
+     *
      * \param key The index of the configuration value to retrieve.
      * \param def The value \p key does not exist or the cast fails.
      * \returns The value stored within the configuration, or \p def if something goes wrong.

@@ -119,7 +119,7 @@ class MAPTK_CORE_EXPORT set_on_read_only_value_exception
     /**
      * \brief Destructor.
      */
-    ~set_on_read_only_value_exception() MAPTK_NOTHROW;
+    virtual ~set_on_read_only_value_exception() MAPTK_NOTHROW;
 
     /// The requested key name.
     config_block_key_t const m_key;
@@ -148,7 +148,7 @@ class MAPTK_CORE_EXPORT unset_on_read_only_value_exception
     /**
      * \brief Destructor.
      */
-    ~unset_on_read_only_value_exception() MAPTK_NOTHROW;
+    virtual ~unset_on_read_only_value_exception() MAPTK_NOTHROW;
 
     /// The requested key name.
     config_block_key_t const m_key;
