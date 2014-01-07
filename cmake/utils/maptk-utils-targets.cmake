@@ -110,7 +110,7 @@ endfunction()
 #-
 function(maptk_add_library name)
   string(TOUPPER "${name}" upper_name)
-  message(STATUS "Making library \"${name}\" with defined symbol \"MAPTK_${upper_name}_LIB\"")
+  message(STATUS "Making library \"${name}\" with defined symbol \"MAKE_${upper_name}_LIB\"")
 
   add_library("${name}" ${ARGN})
   set_target_properties("${name}"
@@ -120,7 +120,7 @@ function(maptk_add_library name)
       RUNTIME_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/bin"
       VERSION                  ${MAPTK_VERSION}
       SOVERSION                0
-      DEFINE_SYMBOL            MAPTK_${upper_name}_LIB
+      DEFINE_SYMBOL            MAKE_${upper_name}_LIB
     )
 
   add_dependencies("${name}"
