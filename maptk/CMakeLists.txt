@@ -35,6 +35,10 @@ if(MAPTK_ENABLE_PROJ)
     )
 endif()
 
+if(MAPTK_ENABLE_VISCL)
+  maptk_add_module(viscl "${CMAKE_CURRENT_LIST_DIR}/viscl")
+endif()
+
 # Configure a header file to indicate which modules are enabled
 get_property(current_modules GLOBAL PROPERTY maptk_modules_enabled)
 foreach(mod IN LISTS current_modules)
