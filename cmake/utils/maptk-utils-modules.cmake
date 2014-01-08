@@ -62,7 +62,7 @@ function(maptk_add_module name directory)
     endif()
 
     add_subdirectory("${directory}")
-    maptk_create_doxygen("${name}" "${directory}")
+    maptk_create_doxygen("${name}" "${directory}" ${module_DEPENDS})
     set_property(GLOBAL APPEND PROPERTY maptk_modules_enabled ${name})
   endif()
 endfunction()
