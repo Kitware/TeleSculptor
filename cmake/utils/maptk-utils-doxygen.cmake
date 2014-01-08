@@ -21,11 +21,11 @@ endif()
 #+
 # Register a directory to have Doxygen generate documentation.
 #
-#   maptk_create_doxygen(inputdir name [tagdep1 [tagdep2 ...]])
+#   maptk_create_doxygen(name input_dir [tagdep1 [tagdep2 ...]])
 #
 # Create documentation via Doxygen over the given inputdir. The name given is
 # used to create the build targets. 'tagdep' arguments should be names of
-# other documentation sets this set depends on.
+# other documentation sets (i.e. module names) this set depends on.
 #
 # If Doxygen was not found, this method does nothing as documentation cannot
 # be built, period.
@@ -36,8 +36,7 @@ function(maptk_create_doxygen name inputdir)
 
     set(doxy_project_name       "${name}")
     set(doxy_project_source_dir "${inputdir}")
-    set(doxy_include_path     "${MAPTK_BINARY_DIR}/maptk")
-    #set(doxy_include_path       "${MAPTK_SOURCE_DIR}")
+    set(doxy_include_path       "${MAPTK_SOURCE_DIR};${MAPTK_BINARY_DIR}")
     set(doxy_doc_output_path    "${MAPTK_BINARY_DIR}/doc")
 
     set(doxy_files_dir "${MAPTK_SOURCE_DIR}/cmake/templates/doxygen")
@@ -45,12 +44,17 @@ function(maptk_create_doxygen name inputdir)
     # Build up tag file and target dependency lists
     set(doxy_tag_files)
     set(tag_target_deps)
-    foreach (tag IN LISTS ${ARGN})
+    message(STATUS "[doxy-${name}] given tag deps: \"${ARGN}\"")
+    foreach (tag IN LISTS ARGN)
+      message(STATUS "[doxy-${name}] - tag: ${tag}")
       list(APPEND doxy_tag_files
-        "${doxy_doc_output_path}/${tag}.tag=../${tag}"
+        "${doxy_doc_output_path}/${tag}.tag=${doxy_doc_output_path}/${tag}"
         )
       list(APPEND tag_target_deps
-        doxygen-${tag}-tag
+        # Make creating a tag for a docset depend on the completion of the
+        # entirety of its dependency docset, not just its tags (causes some
+        # race conditions if just tags).
+        doxygen-${tag}
         )
     endforeach (tag)
     string(REPLACE ";" " " doxy_tag_files "${doxy_tag_files}")
@@ -104,11 +108,12 @@ function(maptk_create_doxygen name inputdir)
       doxygen-${name}-dir
       )
 
-    # Doxygen generated target
+    # Doxygen generation targets
     message(STATUS "[doxy-${name}] Creating tag generation target")
     add_custom_target(doxygen-${name}-tag
       DEPENDS configure-${name}-doxyfile.common
               configure-${name}-doxyfile.tag
+              ${tag_target_deps}
       COMMAND "${DOXYGEN_EXECUTABLE}"
               "${doxy_doc_output_path}/${name}/Doxyfile.tag"
       WORKING_DIRECTORY
@@ -121,7 +126,6 @@ function(maptk_create_doxygen name inputdir)
       DEPENDS configure-${name}-doxyfile.common
               configure-${name}-doxyfile
               doxygen-${name}-tag
-              ${tag_target_deps}
       COMMAND "${DOXYGEN_EXECUTABLE}"
               "${doxy_doc_output_path}/${name}/Doxyfile"
       WORKING_DIRECTORY

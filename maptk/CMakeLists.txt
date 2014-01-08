@@ -18,15 +18,21 @@ include_directories("${MAPTK_BINARY_DIR}")
 maptk_add_module(core "${CMAKE_CURRENT_LIST_DIR}/core")
 
 if(MAPTK_ENABLE_VXL)
-  maptk_add_module(vxl "${CMAKE_CURRENT_LIST_DIR}/vxl")
+  maptk_add_module(vxl "${CMAKE_CURRENT_LIST_DIR}/vxl"
+    DEPENDS core
+    )
 endif()
 
 if(MAPTK_ENABLE_OPENCV)
-  maptk_add_module(ocv "${CMAKE_CURRENT_LIST_DIR}/ocv")
+  maptk_add_module(ocv "${CMAKE_CURRENT_LIST_DIR}/ocv"
+    DEPENDS core
+    )
 endif()
 
 if(MAPTK_ENABLE_PROJ)
-  maptk_add_module(proj "${CMAKE_CURRENT_LIST_DIR}/proj")
+  maptk_add_module(proj "${CMAKE_CURRENT_LIST_DIR}/proj"
+    DEPENDS core
+    )
 endif()
 
 # Configure a header file to indicate which modules are enabled
