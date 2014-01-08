@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -11,9 +11,46 @@
 
 #include "vector.h"
 #include "covariance.h"
+#include <boost/shared_ptr.hpp>
+
+
+/**
+ * \file
+ * \brief Header for \link maptk::landmark landmark \endlink objects
+ */
+
 
 namespace maptk
 {
+
+/// An abstract representation of a 3D world point.
+/**
+ * The base class landmark is abstract and provides a
+ * double precision interface.  The templated derived class
+ * can store values in either single or double precision.
+ */
+class landmark
+{
+public:
+  /// Destructor
+  virtual ~landmark() {}
+
+  /// Access the type info of the underlying data (double or float)
+  virtual const std::type_info& data_type() const = 0;
+
+  /// Accessor for the world coordinates
+  virtual vector_3d loc() const = 0;
+  /// Accessor for the landmark scale
+  virtual double scale() const = 0;
+  /// Accessor for the covariance
+  virtual covariance_3d covar() const = 0;
+};
+
+typedef boost::shared_ptr<landmark> landmark_sptr;
+
+/// output stream operator for a base class landmark
+std::ostream&  operator<<(std::ostream& s, const landmark& m);
+
 
 /// A representation of a 3D world point
 template <typename T>
@@ -23,28 +60,41 @@ public:
   /// Default Constructor
   landmark_<T>();
 
-  /// Constructor for a feature
-  landmark_<T>(const vector_3_<T>& loc);
+  /// Constructor for a landmark
+  landmark_<T>(const vector_3_<T>& loc, T scale=1);
 
-  // Accessor for the world coordinates
-  const vector_3_<T>& loc() const { return loc_; }
-  // Accessor for the feature scale
-  T scale() const { return scale_; }
-  // Accessor for the covariance
-  const covariance_<3,T>& covar() const { return covar_; }
+  /// Access staticly available type of underlying data (double or float)
+  static const std::type_info& static_data_type() { return typeid(T); }
+  /// Access the type info of the underlying data (double or float)
+  virtual const std::type_info& data_type() const { return typeid(T); }
 
-  // Set the feature position in image space
+  /// Accessor for the world coordinates using underlying data type
+  const vector_3_<T>& get_loc() const { return loc_; }
+  /// Accessor for the world coordinates
+  virtual vector_3d loc() const { return static_cast<vector_3d>(loc_); }
+
+  /// Accessor for the landmark scale using underlying data type
+  T get_scale() const { return scale_; }
+  /// Accessor for the landmark scale
+  virtual double scale() const { return static_cast<double>(scale_); }
+
+  /// Accessor for the covariance using underlying data type
+  const covariance_<3,T>& get_covar() const { return covar_; }
+  /// Accessor for the covariance
+  virtual covariance_3d covar() const { return static_cast<covariance_3d>(covar_); }
+
+  // Set the landmark position in image space
   void set_loc(const vector_3_<T>& loc) { loc_ = loc; }
-  /// Set the scale of the feature
+  /// Set the scale of the landmark
   void set_scale(T scale) { scale_ = scale; }
-  /// Set the covariance matrix of the feature
+  /// Set the covariance matrix of the landmark location
   void set_covar(const covariance_<3,T>& covar) { covar_ = covar; }
 
 protected:
 
   vector_3_<T> loc_;
   T scale_;
-  covariance_3_<3,T> covar_;
+  covariance_<3,T> covar_;
 };
 
 typedef landmark_<double> landmark_d;
