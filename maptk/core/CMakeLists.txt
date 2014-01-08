@@ -53,6 +53,7 @@ set(maptk_core_sources
   feature.cxx
   image.cxx
   ins_data.cxx
+  landmark.cxx
   local_geo_cs.cxx
   matrix.cxx
   rotation.cxx
