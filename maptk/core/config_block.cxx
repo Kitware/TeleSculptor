@@ -17,7 +17,7 @@
 #include <sstream>
 
 /**
- * \file config.cxx
+ * \file maptk/core/config_block.cxx
  *
  * \brief Implementation of \link maptk::config_block configuration \endlink object
  */
