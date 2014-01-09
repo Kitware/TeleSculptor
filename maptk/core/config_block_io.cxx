@@ -91,7 +91,7 @@ class config_block_grammar
     qi::rule<Iterator, config_block_value_s()> config_block_value_full;
 
     /// A comment within the config file
-    qi::rule<Iterator> comment;
+    qi::rule<Iterator, config_block_value_t()> comment;
 
     /// Result set of config block key/value pairs
     qi::rule<Iterator, config_block_value_set_t()> config_block_value_set;
@@ -100,7 +100,8 @@ class config_block_grammar
 template <typename Iterator>
 config_block_grammar<Iterator>
 ::config_block_grammar()
-  : opt_whitespace()
+  : config_block_grammar::base_type(config_block_value_set)
+  , opt_whitespace()
   , whitespace()
   , eol()
   , opt_line_end()
@@ -109,9 +110,8 @@ config_block_grammar<Iterator>
   , config_block_key_path()
   , config_block_value()
   , config_block_value_full()
-  , config_block_value_set()
   , comment()
-  , config_block_grammar::base_type(config_block_value_set)
+  , config_block_value_set()
 {
   using namespace qi::labels;
   using phoenix::push_back;
