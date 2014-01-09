@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -86,7 +86,7 @@ void test_conversions(const cv::Mat& data)
 #define CURRENT_TYPE "descriptor_set ("<< type_names[data.type()%8] \
                                        <<": "<<data.size() << ")"
   ocv::descriptor_set ds(data);
-  if (ds.size() != data.rows)
+  if (static_cast<int>(ds.size()) != data.rows)
   {
     TEST_ERROR(CURRENT_TYPE " is not the expected size");
   }
@@ -99,7 +99,7 @@ void test_conversions(const cv::Mat& data)
   data.convertTo(double_data, CV_64F);
   for( unsigned i=0; i<desc.size(); ++i)
   {
-    if (desc[i]->size() != data.cols)
+    if (static_cast<int>(desc[i]->size()) != data.cols)
     {
       TEST_ERROR(CURRENT_TYPE " some descriptors do not have the correct dimension");
       break;

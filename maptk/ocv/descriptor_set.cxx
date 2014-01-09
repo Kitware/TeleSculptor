@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -85,7 +85,6 @@ descriptor_set
 {
   std::vector<descriptor_sptr> desc;
   const unsigned num_desc = data_.rows;
-  const unsigned desc_dim = data_.cols;
 #define CONVERT_CASE(T) \
   case cv::DataType<T>::type: \
   for( unsigned i=0; i<num_desc; ++i ) \

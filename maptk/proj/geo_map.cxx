@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -19,6 +19,11 @@ namespace
 {
 
 /// Meters aligning north and south halves of a UTM zone (10^7)
+/**
+ * The UTM specification allows for the description of a point's northing to
+ * be relative to the equator (is_northp) or the south pole (!is_northp). This
+ * is the offset, in meters, between the two hemisphere notations.
+ */
 static const int utm_shift = 10000000;
 
 /// Create and return a UTM PROJ projection in WGS84
