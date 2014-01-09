@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -127,7 +127,7 @@ track_set
   }
 
   unsigned int frame_number = this->last_frame() + 1;
-  if( -offset <= frame_number )
+  if( static_cast<unsigned int>(-offset) <= frame_number )
   {
     frame_number += offset;
   }
