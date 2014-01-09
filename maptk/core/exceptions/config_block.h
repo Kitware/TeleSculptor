@@ -15,7 +15,7 @@ namespace maptk
 {
 
 /**
- * \brief The base class for all exceptions thrown from \ref config.
+ * \brief The base class for all exceptions thrown from \ref config_block
  * \ingroup exceptions
  */
 class MAPTK_CORE_EXPORT config_block_exception

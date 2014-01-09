@@ -73,6 +73,10 @@ std::istream&  operator>>(std::istream& s, landmark_<T>& m)
 }
 
 
+/// Helper macro for predeclaring specific landmark_ types and stream operators
+/**
+ * \param T Type to declare class and steam operators for.
+ */
 #define INSTANTIATE_LANDMARK(T) \
 template class landmark_<T>; \
 template std::ostream&  operator<<(std::ostream& s, const landmark_<T>& f); \
