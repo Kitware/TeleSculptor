@@ -1,0 +1,29 @@
+MAPTK v0.1.1 Release Notes
+==========================
+
+This release provides patches to the MAPTK v0.1.0 release to address issues.
+MAPTK v0.1.1 is primarily a bug fix release with very minimal new functionality.
+
+
+Updates since v0.1.0
+--------------------
+
+Core Library
+
+ * Completed the implementation of the landmark class, fixed compiler errors,
+   and provided template instantiations so that it is compiled.
+
+ * Added a non-templated base class landmark with a double precision interface
+   that mirrors the approach used in the feature class.
+
+
+Fixes since v0.1.0
+------------------
+
+Documentation
+
+ * fixed some documentation of the landmark class that was mistakenly using
+   the name feature.
+
+ * Enabled dependency between modules in Doxygen so that Doxygen generated
+   documentation for add-on modules can refer to the documentation in core.
