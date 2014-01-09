@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -24,7 +24,7 @@ maptk::matrix_3x3d sample_homography()
 {
   maptk::matrix_3x3d H(0.0);
   H(0,0) = 2.0;
-  H(1,1) = 3,0;
+  H(1,1) = 3.0;
   H(2,2) = 1.0;
   H(0,2) = -1.5;
   H(1,2) = 5.0;

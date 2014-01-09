@@ -20,6 +20,11 @@ Core Library
 Fixes since v0.1.0
 ------------------
 
+Core Library
+
+ * Fixed bug in function maptk::local_geo_cs::update_ins_data(). Was not
+   using reference coordinate UTM zone.
+
 Documentation
 
  * fixed some documentation of the landmark class that was mistakenly using
@@ -27,3 +32,7 @@ Documentation
 
  * Enabled dependency between modules in Doxygen so that Doxygen generated
    documentation for add-on modules can refer to the documentation in core.
+
+Warnings / Errors
+
+  * Fixed various gcc compiler warnings (GCC 4.7.7)
