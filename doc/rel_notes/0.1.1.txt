@@ -27,3 +27,10 @@ Documentation
 
  * Enabled dependency between modules in Doxygen so that Doxygen generated
    documentation for add-on modules can refer to the documentation in core.
+
+Warnings / Errors
+
+  * Fixed various gcc compiler warnings (GCC 4.7.7)
+
+  * Fixed bug with ins_data update, missing use of reference coordinate UTM
+    zone.
