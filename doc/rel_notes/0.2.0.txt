@@ -1,0 +1,13 @@
+MAPTK v0.2.0 Release Notes
+==========================
+
+This is a minor release MAPTK that provides both new functionality and fixes
+over the previous v0.1.1 release.
+
+
+Updates since v0.1.1
+--------------------
+
+
+Fixes since v0.1.1
+------------------
