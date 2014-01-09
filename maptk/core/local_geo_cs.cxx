@@ -63,9 +63,7 @@ local_geo_cs
   ins.pitch *= rad2deg;
   ins.roll *= rad2deg;
   vector_3d c = cam.center() + utm_origin_;
-  int zone;
-  bool is_north_hemi;
-  geo_map_algo_->utm_to_latlon(c.x(), c.y(), zone, is_north_hemi,
+  geo_map_algo_->utm_to_latlon(c.x(), c.y(), utm_origin_zone_, true,
                                ins.lat, ins.lon);
   ins.alt = c.z();
 }
