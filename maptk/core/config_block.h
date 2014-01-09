@@ -28,7 +28,7 @@
 
 /**
  * \file
- * \brief Header for \link maptk::config configuration \endlink object
+ * \brief Header for \link maptk::config_block configuration \endlink object
  */
 
 namespace maptk
@@ -38,7 +38,7 @@ class config_block;
 /// Shared pointer for the \c config_block class
 typedef boost::shared_ptr<config_block> config_block_sptr;
 
-/// Stores configuration values for use within a \ref pipeline.
+/// Configuration value storage structure
 /**
  * The associated shared pointer for this object is \c config_block_sptr
  */

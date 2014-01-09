@@ -14,7 +14,7 @@
 
 /**
  * \file
- * \brief Shared type declarations for the \ref maptk::core module.
+ * \brief Shared type declarations for the maptk/core module.
  */
 
 namespace maptk
