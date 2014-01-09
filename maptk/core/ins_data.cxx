@@ -80,14 +80,14 @@ std::istream&  operator>>(std::istream& s, ins_data& d)
   d = ins_data();
 
 #define PARSE_FIELD(num, name) \
-  if(int(tokens.size()) > num) \
+  if(tokens.size() > num) \
   { \
     ss.clear(); \
     ss.str(tokens[num]); \
     ss >> d.name; \
   }
 
-  int base=0;
+  unsigned int base=0;
   // some POS files do not have the source name
   if( tokens.size() == 15 )
   {
