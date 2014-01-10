@@ -18,8 +18,8 @@ namespace vxl
 image_container
 ::image_container(const maptk::image_container& image_cont)
 {
-  const maptk::vxl::image_container* vic =
-      dynamic_cast<const maptk::vxl::image_container*>(&image_cont);
+  const vxl::image_container* vic =
+      dynamic_cast<const vxl::image_container*>(&image_cont);
   if( vic )
   {
     this->data_ = vic->data_;

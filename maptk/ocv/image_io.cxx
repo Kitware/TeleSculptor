@@ -23,7 +23,7 @@ image_io
 ::load(const std::string& filename) const
 {
   cv::Mat img = cv::imread(filename.c_str());
-  return image_container_sptr(new maptk::ocv::image_container(img));
+  return image_container_sptr(new ocv::image_container(img));
 }
 
 
@@ -37,7 +37,7 @@ image_io
        image_container_sptr data) const
 {
   cv::imwrite(filename.c_str(),
-              maptk::ocv::image_container::maptk_to_ocv(data->get_image()));
+              ocv::image_container::maptk_to_ocv(data->get_image()));
 }
 
 } // end namespace ocv

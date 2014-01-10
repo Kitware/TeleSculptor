@@ -19,8 +19,8 @@ image_container
 ::image_container(const maptk::image_container& image_cont)
 {
   // testing if image_cont is an ocv image container
-  const maptk::ocv::image_container* oic =
-      dynamic_cast<const maptk::ocv::image_container*>(&image_cont);
+  const ocv::image_container* oic =
+      dynamic_cast<const ocv::image_container*>(&image_cont);
   if( oic )
   {
     this->data_ = oic->data_;
@@ -102,12 +102,12 @@ image_container
 cv::Mat
 image_container_to_ocv_matrix(const maptk::image_container& img)
 {
-  if( const maptk::ocv::image_container* c =
-          dynamic_cast<const maptk::ocv::image_container*>(&img) )
+  if( const ocv::image_container* c =
+          dynamic_cast<const ocv::image_container*>(&img) )
   {
     return c->get_Mat();
   }
-  return maptk::ocv::image_container::maptk_to_ocv(img.get_image());
+  return ocv::image_container::maptk_to_ocv(img.get_image());
 }
 
 
