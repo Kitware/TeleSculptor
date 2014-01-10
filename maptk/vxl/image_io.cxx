@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -21,7 +21,7 @@ image_io
 ::load(const std::string& filename) const
 {
   vil_image_view<vxl_byte> img = vil_load(filename.c_str());
-  return image_container_sptr(new vxl_image_container(img));
+  return image_container_sptr(new maptk::vxl::image_container(img));
 }
 
 
@@ -31,7 +31,7 @@ image_io
 ::save(const std::string& filename,
        image_container_sptr data) const
 {
-  vil_save(vxl_image_container::maptk_to_vxl(data->get_image()),
+  vil_save(maptk::vxl::image_container::maptk_to_vxl(data->get_image()),
            filename.c_str());
 }
 

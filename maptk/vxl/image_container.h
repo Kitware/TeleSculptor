@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -19,24 +19,24 @@ namespace vxl
 
 
 /// This image container wraps a vil_image_view
-class vxl_image_container
-: public image_container
+class image_container
+: public maptk::image_container
 {
 public:
 
   /// Constructor - from a vil_image_view
-  explicit vxl_image_container(const vil_image_view<vxl_byte>& d)
+  explicit image_container(const vil_image_view<vxl_byte>& d)
   : data_(d) {}
 
   /// Constructor - convert maptk image to vil
-  explicit vxl_image_container(const image& maptk_image)
+  explicit image_container(const image& maptk_image)
   : data_(maptk_to_vxl(maptk_image)) {}
 
   /// Constructor - convert base image container to vil
-  explicit vxl_image_container(const image_container& image_cont);
+  explicit image_container(const maptk::image_container& image_cont);
 
   /// Copy Constructor
-  vxl_image_container(const vxl_image_container& other)
+  image_container(const maptk::vxl::image_container& other)
   : data_(other.data_) {}
 
   /// The size of the image data in bytes

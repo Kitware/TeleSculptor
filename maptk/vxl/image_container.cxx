@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -15,11 +15,11 @@ namespace vxl
 
 
 /// Constructor - convert base image container to vil
-vxl_image_container
-::vxl_image_container(const image_container& image_cont)
+image_container
+::image_container(const maptk::image_container& image_cont)
 {
-  const vxl_image_container* vic =
-      dynamic_cast<const vxl_image_container*>(&image_cont);
+  const maptk::vxl::image_container* vic =
+      dynamic_cast<const maptk::vxl::image_container*>(&image_cont);
   if( vic )
   {
     this->data_ = vic->data_;
@@ -35,7 +35,7 @@ vxl_image_container
 /// This size includes all allocated image memory,
 /// which could be larger than width*height*depth.
 size_t
-vxl_image_container
+image_container
 ::size() const
 {
   if( !data_ )
@@ -48,7 +48,7 @@ vxl_image_container
 
 /// Convert a VXL vil_image_view to a MAPTK image
 image
-vxl_image_container
+image_container
 ::vxl_to_maptk(const vil_image_view<vxl_byte>& img)
 {
   vil_memory_chunk_sptr chunk = img.memory_chunk();
@@ -77,7 +77,7 @@ vxl_image_container
 
 /// Convert a MAPTK image to a VXL vil_image_view
 vil_image_view<vxl_byte>
-vxl_image_container
+image_container
 ::maptk_to_vxl(const image& img)
 {
   image_memory_sptr memory = img.memory();
