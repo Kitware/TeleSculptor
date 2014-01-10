@@ -1,0 +1,32 @@
+namespace maptk {
+// The following text is included in the main documentation page by doxygen
+/** \mainpage maptk::vxl documentation
+\section sec-contents Contents
+The MAPTK vxl library provides various components by building on
+               <a href="http://vxl.sourceforge.net/">VXL</a>
+
+
+\subsection sec-image Image Structures
+- \ref vxl::vil_image_memory : an image memory container for sharing image
+               memory between
+               <a href="http://public.kitware.com/vxl/doc/development/core/vil/html/classvil__image__view.html">
+               vil_image_view<vxl_byte></a> and maptk::image.
+
+
+\subsection sec-containers Custom Containers
+- \ref vxl::image_container : holds an image in
+               <a href="http://public.kitware.com/vxl/doc/development/core/vil/html/classvil__image__view.html">
+               vil_image_view<vxl_byte></a> format
+
+
+\subsection sec-algorithm-impls Algorithm Implementations
+- \ref vxl::image_io : read and write images with
+               <a href="http://public.kitware.com/vxl/doc/development/core/vil/html/vil__load_8h.html">
+               vil_load()</a> and
+               <a href="http://public.kitware.com/vxl/doc/development/core/vil/html/vil__save_8h.html">
+               vil_save()</a>
+- \ref vxl::estimate_homography : estimate a homography with
+               <a href="http://public.kitware.com/vxl/doc/development/contrib/rpl/rrel/html/classrrel__homography2d__est.html">
+               rrel_homography2d_est</a>
+*/
+}
