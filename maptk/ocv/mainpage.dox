@@ -1,19 +1,19 @@
 namespace maptk {
 // The following text is included in the main documentation page by doxygen
 /** \mainpage maptk::ocv documentation
-\section sec-contents Contents
+\section sec-ocv-contents Contents
 The MAPTK ocv library provides various components by building on
                <a href="http://opencv.org/">OpenCV</a>
 
 
-\subsection sec-image Image Structures
+\subsection sec-ocv-image Image Structures
 - \ref ocv::mat_image_memory : an image memory container for sharing image
                memory between
                <a href="http://docs.opencv.org/modules/core/doc/basic_structures.html#Mat">
                cv::Mat</a> and maptk::image.
 
 
-\subsection sec-containers Custom Containers
+\subsection sec-ocv-containers Custom Containers
 - \ref ocv::image_container : holds an image in
                <a href="http://docs.opencv.org/modules/core/doc/basic_structures.html#Mat">
                cv::Mat</a> format
@@ -28,7 +28,7 @@ The MAPTK ocv library provides various components by building on
                cv::DMatch</a>
 
 
-\subsection sec-algorithm-impls Algorithm Implementations
+\subsection sec-ocv-algorithm-impls Algorithm Implementations
 - \ref ocv::image_io : read and write images with
                <a href="http://docs.opencv.org/modules/highgui/doc/reading_and_writing_images_and_video.html#imread">
                cv::imread()</a> and
