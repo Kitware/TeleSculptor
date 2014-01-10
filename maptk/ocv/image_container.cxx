@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -15,11 +15,12 @@ namespace ocv
 
 
 /// Constructor - convert base image container to cv::Mat
-ocv_image_container
-::ocv_image_container(const image_container& image_cont)
+image_container
+::image_container(const maptk::image_container& image_cont)
 {
-  const ocv_image_container* oic =
-      dynamic_cast<const ocv_image_container*>(&image_cont);
+  // testing if image_cont is an ocv image container
+  const maptk::ocv::image_container* oic =
+      dynamic_cast<const maptk::ocv::image_container*>(&image_cont);
   if( oic )
   {
     this->data_ = oic->data_;
@@ -35,7 +36,7 @@ ocv_image_container
 /// This size includes all allocated image memory,
 /// which could be larger than width*height*depth.
 size_t
-ocv_image_container
+image_container
 ::size() const
 {
   return data_.rows * data_.step;
@@ -44,7 +45,7 @@ ocv_image_container
 
 /// Convert an OpenCV cv::Mat to a MAPTK image
 image
-ocv_image_container
+image_container
 ::ocv_to_maptk(const cv::Mat& img)
 {
   image_memory_sptr memory(new mat_image_memory(img));
@@ -57,7 +58,7 @@ ocv_image_container
 
 /// Convert a MAPTK image to an OpenCV cv::Mat
 cv::Mat
-ocv_image_container
+image_container
 ::maptk_to_ocv(const image& img)
 {
   // cv::Mat is limited in the image data layouts that it supports.
@@ -99,14 +100,14 @@ ocv_image_container
 
 /// Extract a cv::Mat from any image container
 cv::Mat
-image_container_to_ocv_matrix(const image_container& img)
+image_container_to_ocv_matrix(const maptk::image_container& img)
 {
-  if( const ocv_image_container* c =
-          dynamic_cast<const ocv_image_container*>(&img) )
+  if( const maptk::ocv::image_container* c =
+          dynamic_cast<const maptk::ocv::image_container*>(&img) )
   {
     return c->get_Mat();
   }
-  return ocv_image_container::maptk_to_ocv(img.get_image());
+  return maptk::ocv::image_container::maptk_to_ocv(img.get_image());
 }
 
 
