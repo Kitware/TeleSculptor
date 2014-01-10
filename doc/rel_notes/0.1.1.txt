@@ -16,6 +16,18 @@ Core Library
  * Added a non-templated base class landmark with a double precision interface
    that mirrors the approach used in the feature class.
 
+OpenCV Library
+
+ * Renamed maptk::ocv::ocv_image_container to maptk::ocv::image_container
+
+PROJ Library
+
+ * Renamed maptk::proj::proj_geo_map to maptk::proj::geo_map
+
+VXL Library
+
+ * Renamed maptk::vxl::vxl_image_container to maptk::vxl::image_container
+
 
 Fixes since v0.1.0
 ------------------
