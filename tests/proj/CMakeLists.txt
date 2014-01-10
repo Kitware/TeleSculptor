@@ -9,4 +9,4 @@ set(test_libraries
 #####################
 # MAPTK Proj tests #
 #####################
-maptk_discover_tests(proj_geo_map test_libraries test_geo_map.cxx)
+maptk_discover_tests(geo_map test_libraries test_geo_map.cxx)

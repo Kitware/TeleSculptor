@@ -15,13 +15,13 @@ namespace maptk
 namespace proj
 {
 
-class proj_geo_map
-: public  algo::algorithm_impl<proj_geo_map, algo::geo_map>
+class geo_map
+: public  algo::algorithm_impl<geo_map, algo::geo_map>
 {
 public:
 
   /// Default Constructor
-  proj_geo_map() {}
+  geo_map() {}
 
   /// Return the name of this implementation
   std::string impl_name() const { return "proj"; }
@@ -62,7 +62,7 @@ public:
                              int& zone, bool& north_hemi,
                              int setzone=-1) const;
 
-};// end class proj_geo_map
+};// end class geo_map
 
 } // end namespace proj
 
