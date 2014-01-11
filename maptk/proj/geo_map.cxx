@@ -60,7 +60,7 @@ namespace proj
 
 /// Convert UTM coordinate into latitude and longitude.
 void
-proj_geo_map
+geo_map
 ::utm_to_latlon(double easting, double northing,
                 int zone, bool north_hemi,
                 double& lat, double& lon) const
@@ -96,7 +96,7 @@ proj_geo_map
 
 /// Convert latitude and longitude into UTM coordinates.
 void
-proj_geo_map
+geo_map
 ::latlon_to_utm(double lat, double lon,
                 double& easting, double& northing,
                 int& zone, bool& north_hemi,
