@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -19,24 +19,24 @@ namespace ocv
 
 
 /// This image container wraps a cv::Mat
-class ocv_image_container
-: public image_container
+class image_container
+: public maptk::image_container
 {
 public:
 
   /// Constructor - from a cv::Mat
-  explicit ocv_image_container(const cv::Mat& d)
+  explicit image_container(const cv::Mat& d)
   : data_(d) {}
 
   /// Constructor - convert maptk image to cv::Mat
-  explicit ocv_image_container(const image& maptk_image)
+  explicit image_container(const image& maptk_image)
   : data_(maptk_to_ocv(maptk_image)) {}
 
   /// Constructor - convert base image container to cv::Mat
-  explicit ocv_image_container(const image_container& image_cont);
+  explicit image_container(const maptk::image_container& image_cont);
 
   /// Copy Constructor
-  ocv_image_container(const ocv_image_container& other)
+  image_container(const maptk::ocv::image_container& other)
   : data_(other.data_) {}
 
   /// The size of the image data in bytes
@@ -73,11 +73,11 @@ protected:
 
 /// Extract a cv::Mat from any image container
 /**
- * If \a img is actually an ocv_image_container then
+ * If \a img is actually an maptk::ocv::image_container then
  * return the underlying cv::Mat.  Otherwise, convert the image data
  * to cv:Mat by shallow copy (if possible) or deep copy as a last resort.
  */
-cv::Mat image_container_to_ocv_matrix(const image_container& img);
+cv::Mat image_container_to_ocv_matrix(const maptk::image_container& img);
 
 
 } // end namespace ocv

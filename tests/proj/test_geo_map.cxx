@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -35,7 +35,7 @@ IMPLEMENT_TEST(factory)
   {
     TEST_ERROR("Unable to create geo_map algorithm of type proj");
   }
-  if (typeid(*gmap.get()) != typeid(proj::proj_geo_map))
+  if (typeid(*gmap.get()) != typeid(proj::geo_map))
   {
     TEST_ERROR("Factory method did not construct the correct type");
   }
@@ -44,7 +44,7 @@ IMPLEMENT_TEST(factory)
 
 IMPLEMENT_TEST(latlon_to_utm)
 {
-  maptk::proj::proj_geo_map gm;
+  maptk::proj::geo_map gm;
   double lat = -17.234908,
          lon = 24.000048,
          easting, northing;
@@ -66,7 +66,7 @@ IMPLEMENT_TEST(latlon_to_utm)
 
 IMPLEMENT_TEST(utm_to_latlon)
 {
-  maptk::proj::proj_geo_map gm;
+  maptk::proj::geo_map gm;
   double easting = 180954.88,
          northing = -1908018.40,
          lat, lon,
@@ -83,7 +83,7 @@ IMPLEMENT_TEST(utm_to_latlon)
 
 IMPLEMENT_TEST(backprojection)
 {
-  maptk::proj::proj_geo_map gm;
+  maptk::proj::geo_map gm;
   double orig_lat = -17.234908,
          orig_lon = 24.000048,
          orig_easting = 180954.88,

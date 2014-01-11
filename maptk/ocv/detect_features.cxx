@@ -70,7 +70,7 @@ feature_set_sptr
 detect_features
 ::detect(image_container_sptr image_data) const
 {
-  cv::Mat img = ocv_image_container::maptk_to_ocv(image_data->get_image());
+  cv::Mat img = ocv::image_container::maptk_to_ocv(image_data->get_image());
   std::vector<cv::KeyPoint> keypoints;
   d_->detector->detect(img, keypoints);
   return feature_set_sptr(new feature_set(keypoints));
