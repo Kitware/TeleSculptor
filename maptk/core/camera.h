@@ -15,14 +15,50 @@
 #include "covariance.h"
 #include "rotation.h"
 #include "vector.h"
+#include <boost/shared_ptr.hpp>
+
 
 namespace maptk
 {
 
+
+/// An abstract representation of camera
+/**
+ * The base class of cameras is abstract and provides a
+ * double precision interface.  The templated derived class
+ * can store values in either single or double precision.
+ */
+class camera
+{
+public:
+  /// Destructor
+  virtual ~camera() {}
+
+  /// Access the type info of the underlying data (double or float)
+  virtual const std::type_info& data_type() const = 0;
+
+  /// Accessor for the camera center of projection (position)
+  virtual vector_3d center() const = 0;
+  /// Accessor for the translation vector
+  virtual vector_3d translation() const = 0;
+  /// Accessor for the covariance of camera center
+  virtual covariance_3d center_covar() const = 0;
+  /// Accessor for the rotation
+  virtual rotation_d rotation() const = 0;
+  /// Accessor for the intrinsics
+  virtual camera_intrinsics_d intrinsics() const = 0;
+};
+
+/// typedef for a camera shared pointer
+typedef boost::shared_ptr<camera> camera_sptr;
+
+
 /// A representation of a camera
-/// Contains camera location, orientation, and intrinsics
+/**
+ * Contains camera location, orientation, and intrinsics
+ */
 template <typename T>
-class camera_
+class camera_ : public camera
 {
 public:
   /// Default Constructor
@@ -41,16 +77,46 @@ public:
     intrinsics_(intrincs)
   {}
 
+  /// Copy Constructor from another type
+  template <typename U>
+  explicit camera_<T>(const camera_<U>& other)
+  : center_(static_cast<vector_3_<T> >(other.get_center())),
+    center_covar_(static_cast<covariance_<3,T> >(other.get_center_covar())),
+    orientation_(static_cast<rotation_<T> >(get_rotation())),
+    intrinsics_(static_cast<camera_intrinsics_<T> >(get_intrinsics()))
+  {}
+
+  /// Access staticly available type of underlying data (double or float)
+  static const std::type_info& static_data_type() { return typeid(T); }
+  /// Access the type info of the underlying data (double or float)
+  virtual const std::type_info& data_type() const { return typeid(T); }
+
   /// Accessor for the camera center of projection (position)
-  const vector_3_<T> center() const { return center_; }
+  virtual vector_3d center() const
+  { return static_cast<vector_3d>(center_); }
   /// Accessor for the translation vector
-  const vector_3_<T> translation() const { return - (orientation_ * center_); }
+  virtual vector_3d translation() const
+  { return static_cast<vector_3d>(get_translation()); }
   /// Accessor for the covariance of camera center
-  const covariance_<3,T>& center_covar() const { return center_covar_; }
+  virtual covariance_3d center_covar() const
+  { return static_cast<covariance_3d>(center_covar_); }
   /// Accessor for the rotation
-  const rotation_<T>& rotation() const { return orientation_; }
+  virtual rotation_d rotation() const
+  { return static_cast<rotation_d>(orientation_); }
   /// Accessor for the intrinsics
-  const camera_intrinsics_<T>& intrinsics() const { return intrinsics_; }
+  virtual camera_intrinsics_d intrinsics() const
+  { return static_cast<camera_intrinsics_d>(intrinsics_); }
+
+  /// Accessor for the camera center of projection using underlying data type
+  const vector_3_<T>& get_center() const { return center_; }
+  /// Accessor for the translation vector using underlying data type
+  vector_3_<T> get_translation() const { return - (orientation_ * center_); }
+  /// Accessor for the covariance of camera center using underlying data type
+  const covariance_<3,T>& get_center_covar() const { return center_covar_; }
+  /// Accessor for the rotation using underlying data type
+  const rotation_<T>& get_rotation() const { return orientation_; }
+  /// Accessor for the intrinsics using underlying data type
+  const camera_intrinsics_<T>& get_intrinsics() const { return intrinsics_; }
 
   /// Set the camera center of projection
   void set_center(const vector_3_<T>& center) { center_ = center; }

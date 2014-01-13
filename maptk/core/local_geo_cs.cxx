@@ -62,7 +62,7 @@ local_geo_cs
   ins.yaw *= rad2deg;
   ins.pitch *= rad2deg;
   ins.roll *= rad2deg;
-  vector_3d c = cam.center() + utm_origin_;
+  vector_3d c = cam.get_center() + utm_origin_;
   geo_map_algo_->utm_to_latlon(c.x(), c.y(), utm_origin_zone_, true,
                                ins.lat, ins.lon);
   ins.alt = c.z();

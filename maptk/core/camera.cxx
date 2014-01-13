@@ -15,9 +15,9 @@ template <typename T>
 std::ostream&  operator<<(std::ostream& s, const camera_<T>& k)
 {
   using std::setprecision;
-  s << setprecision(12) << matrix_<3,3,T>(k.intrinsics()) << "\n"
-    << setprecision(12) << matrix_<3,3,T>(k.rotation()) << "\n"
-    << setprecision(12) << k.translation() << "\n\n"
+  s << setprecision(12) << matrix_<3,3,T>(k.get_intrinsics()) << "\n"
+    << setprecision(12) << matrix_<3,3,T>(k.get_rotation()) << "\n"
+    << setprecision(12) << k.get_translation() << "\n\n"
     << "0\n";
   return s;
 }
