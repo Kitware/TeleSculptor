@@ -38,6 +38,7 @@ option(MAPTK_ENABLE_PROJ    "Enable PROJ dependent code"                      OF
 # MAPTK CMake config
 #
 include(maptk-utils)
+include(maptk-flags)
 
 set(maptk_export_name maptk_exports)
 
