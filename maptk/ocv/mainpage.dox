@@ -1,0 +1,50 @@
+namespace maptk {
+// The following text is included in the main documentation page by doxygen
+/** \mainpage maptk::ocv documentation
+\section sec-ocv-contents Contents
+The MAPTK ocv library provides various components by building on
+               <a href="http://opencv.org/">OpenCV</a>
+
+
+\subsection sec-ocv-image Image Structures
+- \ref ocv::mat_image_memory : an image memory container for sharing image
+               memory between
+               <a href="http://docs.opencv.org/modules/core/doc/basic_structures.html#Mat">
+               cv::Mat</a> and maptk::image.
+
+
+\subsection sec-ocv-containers Custom Containers
+- \ref ocv::image_container : holds an image in
+               <a href="http://docs.opencv.org/modules/core/doc/basic_structures.html#Mat">
+               cv::Mat</a> format
+- \ref ocv::feature_set : holds a collection of features stored as
+               <a href="http://docs.opencv.org/modules/features2d/doc/common_interfaces_of_feature_detectors.html#keypoint">
+               cv::Keypoint</a>
+- \ref ocv::descriptor_set : holds a collection of descriptors stored in a
+               <a href="http://docs.opencv.org/modules/core/doc/basic_structures.html#Mat">
+               cv::Mat</a>
+- \ref ocv::match_set : holds a collection of matches stored as
+               <a href="http://docs.opencv.org/modules/features2d/doc/common_interfaces_of_descriptor_matchers.html#dmatch">
+               cv::DMatch</a>
+
+
+\subsection sec-ocv-algorithm-impls Algorithm Implementations
+- \ref ocv::image_io : read and write images with
+               <a href="http://docs.opencv.org/modules/highgui/doc/reading_and_writing_images_and_video.html#imread">
+               cv::imread()</a> and
+               <a href="http://docs.opencv.org/modules/highgui/doc/reading_and_writing_images_and_video.html#imwrite">
+               cv::imwrite()</a>
+- \ref ocv::detect_features : detect features with
+               <a href="http://docs.opencv.org/modules/features2d/doc/common_interfaces_of_feature_detectors.html#featuredetector">
+               cv::FeatureDetector</a>
+- \ref ocv::extract_descriptors : extract descriptors with
+               <a href="http://docs.opencv.org/modules/features2d/doc/common_interfaces_of_descriptor_extractors.html#descriptorextractor">
+               cv::DescriptorExtractor</a>
+- \ref ocv::match_features : match features with
+               <a href="http://docs.opencv.org/modules/features2d/doc/common_interfaces_of_descriptor_matchers.html#descriptormatcher">
+               cv::DescriptorMatcher</a>
+- \ref ocv::estimate_homography : estimate a homography with
+               <a href="http://docs.opencv.org/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html#findhomography">
+               cv::findHomography()</a>
+*/
+}

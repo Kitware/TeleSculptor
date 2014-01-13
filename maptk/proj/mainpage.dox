@@ -1,0 +1,12 @@
+namespace maptk {
+// The following text is included in the main documentation page by doxygen
+/** \mainpage maptk::proj documentation
+\section sec-proj-contents Contents
+The MAPTK proj library provides geographic transformations by building on
+               <a href="http://trac.osgeo.org/proj/">PROJ.4</a>
+
+
+\subsection sec-proj-algorithm-impls Algorithm Implementations
+- \ref proj::geo_map : convert geographic coordinates between Lat-Long and UTM
+*/
+}
