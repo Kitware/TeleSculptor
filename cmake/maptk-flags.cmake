@@ -26,4 +26,5 @@ else()
 endif()
 
 get_property(maptk_cxx_flags GLOBAL PROPERTY maptk_warnings)
+string(REPLACE ";" " " maptk_cxx_flags "${maptk_cxx_flags}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${maptk_cxx_flags}")
