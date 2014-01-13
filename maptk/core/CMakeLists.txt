@@ -3,6 +3,7 @@
 set(maptk_core_headers_public
   camera.h
   camera_intrinsics.h
+  camera_map.h
   config_block.h
   config_block_io.h
   core_config.h
