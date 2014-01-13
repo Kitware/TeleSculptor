@@ -87,6 +87,23 @@ track_features
   );
 }
 
+
+/// Default Constructor
+simple_track_features
+::simple_track_features()
+: next_track_id_(0)
+{
+}
+
+
+/// Copy Constructor
+simple_track_features
+::simple_track_features(const simple_track_features& other)
+: next_track_id_(other.next_track_id_)
+{
+}
+
+
 /// Extend a previous set of tracks using the current frame
 track_set_sptr
 simple_track_features
@@ -121,6 +138,7 @@ simple_track_features
     {
        track::track_state ts(frame_number, *fit, *dit);
        new_tracks.push_back(track_sptr(new maptk::track(ts)));
+       new_tracks.back()->set_id(this->next_track_id_++);
     }
     return track_set_sptr(new simple_track_set(new_tracks));
   }
@@ -154,6 +172,7 @@ simple_track_features
   {
     track::track_state ts(frame_number, vf[i], df[i]);
     all_tracks.push_back(track_sptr(new maptk::track(ts)));
+    all_tracks.back()->set_id(this->next_track_id_++);
   }
   return track_set_sptr(new simple_track_set(all_tracks));
 }

@@ -90,10 +90,10 @@ class MAPTK_CORE_EXPORT simple_track_features
 {
 public:
   /// Default Constructor
-  simple_track_features() {}
+  simple_track_features();
 
   /// Copy Constructor
-  simple_track_features(const simple_track_features&) {}
+  simple_track_features(const simple_track_features&);
 
   /// Return the name of this implementation
   std::string impl_name() const { return "simple"; }
@@ -109,6 +109,10 @@ public:
   track(track_set_sptr prev_tracks,
         unsigned int frame_number,
         image_container_sptr image_data) const;
+
+private:
+  /// The ID to use for the next created track
+  mutable unsigned long next_track_id_;
 };
 
 

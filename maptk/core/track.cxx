@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -23,10 +23,28 @@ namespace maptk
 {
 
 
+/// Default Constructor
+track
+::track()
+: id_(0)
+{
+}
+
+
+/// Copy Constructor
+track
+::track(const track& other)
+: history_(other.history_),
+  id_(other.id_)
+{
+}
+
+
 /// Construct a track from a single track state
 track
 ::track(const track_state& ts)
-: history_(1,ts)
+: history_(1,ts),
+  id_(0)
 {
 }
 

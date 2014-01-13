@@ -20,10 +20,11 @@ namespace maptk
 {
 
 /// A representation of a feature track.
-///
-/// A track is a sequence of feature points and their descriptors
-/// that represent a sequence of observations of the same world location.
-/// A track is required to construct a landmark in 3D.
+/**
+ * A track is a sequence of feature points and their descriptors
+ * that represent a sequence of observations of the same world location.
+ * A track is required to construct a landmark in 3D.
+ */
 class MAPTK_CORE_EXPORT track
 {
 public:
@@ -52,10 +53,19 @@ public:
   typedef std::vector<track_state>::const_iterator history_const_itr;
 
   /// Default Constructor
-  track() {}
+  track();
+
+  /// Copy Constructor
+  track(const track& other);
 
   /// Construct a track from a single track state
   explicit track(const track_state& ts);
+
+  /// Access the track identification number
+  unsigned long id() const { return id_; }
+
+  /// Set the track identification number
+  void set_id(unsigned long id) { id_ = id; }
 
   /// Access the first frame number covered by this track
   unsigned int first_frame() const;
@@ -64,9 +74,11 @@ public:
   unsigned int last_frame() const;
 
   /// Append a track state.
-  /// The added track state must have a frame_id greater than
-  /// the last frame in the history.
-  /// \returns true if successful, false not correctly ordered
+  /**
+   * The added track state must have a frame_id greater than
+   * the last frame in the history.
+   * \returns true if successful, false not correctly ordered
+   */
   bool append(const track_state& state);
 
   /// Access a const iterator to the start of the history
@@ -88,6 +100,8 @@ public:
 protected:
   /// The ordered array of track states
   std::vector<track_state> history_;
+  /// The unique track identification number
+  unsigned long id_;
 };
 
 

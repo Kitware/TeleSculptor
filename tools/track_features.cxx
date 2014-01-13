@@ -198,15 +198,13 @@ static int maptk_main(int argc, char const* argv[])
 
   // Writing out tracks to file
   std::vector<maptk::track_sptr> trks = tracks->tracks();
-  unsigned track_id = 0;
   BOOST_FOREACH(maptk::track_sptr t, trks)
   {
     typedef maptk::track::history_const_itr state_itr;
     for (state_itr si = t->begin(); si != t->end(); ++si)
     {
-      ofs << track_id << " " << si->frame_id << " " << *si->feat << "\n";
+      ofs << t->id() << " " << si->frame_id << " " << *si->feat << "\n";
     }
-    ++track_id;
   }
 
   return EXIT_SUCCESS;
