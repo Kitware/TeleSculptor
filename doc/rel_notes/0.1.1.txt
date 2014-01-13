@@ -28,6 +28,10 @@ VXL Library
 
  * Renamed maptk::vxl::vxl_image_container to maptk::vxl::image_container
 
+Documentation
+
+ * Added overview pages for each of the libraries in the Doxygen documentation.
+
 
 Fixes since v0.1.0
 ------------------
@@ -39,7 +43,7 @@ Core Library
 
 Documentation
 
- * fixed some documentation of the landmark class that was mistakenly using
+ * Fixed some documentation of the landmark class that was mistakenly using
    the name feature.
 
  * Enabled dependency between modules in Doxygen so that Doxygen generated
