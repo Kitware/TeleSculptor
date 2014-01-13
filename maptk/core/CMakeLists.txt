@@ -16,6 +16,7 @@ set(maptk_core_headers_public
   image_container.h
   ins_data.h
   landmark.h
+  landmark_map.h
   local_geo_cs.h
   match_set.h
   matrix.h
