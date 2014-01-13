@@ -41,6 +41,15 @@ public:
     skew_(skew)
   {}
 
+  /// Copy Constructor from another type
+  template <typename U>
+  explicit camera_intrinsics_<T>(const camera_intrinsics_<U>& other)
+  : focal_length_(static_cast<T>(other.focal_length())),
+    principal_point_(static_cast<vector_2_<T> >(other.principal_point())),
+    aspect_ratio_(static_cast<T>(other.aspect_ratio())),
+    skew_(static_cast<T>(other.skew()))
+  {}
+
   /// Constructor - from a calibration matrix
   /// \note ignores values below the diagonal
   explicit camera_intrinsics_<T>(const matrix_<3,3,T>& K);
