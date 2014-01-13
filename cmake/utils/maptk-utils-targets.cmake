@@ -26,7 +26,7 @@ define_property(GLOBAL PROPERTY maptk_libraries
 
 
 #+
-# Helper macro to manage export string string generation and the no_export
+# Helper function to manage export string string generation and the no_export
 # flag.
 #
 # Sets the variable "exports" which should be expanded into the install
@@ -42,6 +42,21 @@ function(_maptk_export name)
     PARENT_SCOPE
     )
   set_property(GLOBAL APPEND PROPERTY maptk_export_targets ${name})
+endfunction()
+
+function(_maptk_compile_pic name)
+  message(STATUS "Adding PIC flag to target: ${name}")
+  if (CMAKE_VERSION VERSION_GREATER "2.8.9")
+    set_target_properties("${name}"
+      PROPERTIES
+        POSITION_INDEPENDENT_CODE TRUE
+      )
+  elseif(NOT MSVC)
+    set_target_properties("${name}"
+      PROPERTIES
+        COMPILE_FLAGS "-fPIC"
+      )
+  endif()
 endfunction()
 
 #+
@@ -139,6 +154,11 @@ function(maptk_add_library name)
 
   if(NOT component)
     set(component runtime)
+  endif()
+
+  get_target_property(target_type "${name}" TYPE)
+  if (target_type STREQUAL "STATIC_LIBRARY")
+    _maptk_compile_pic("${name}")
   endif()
 
   _maptk_export(${name})
