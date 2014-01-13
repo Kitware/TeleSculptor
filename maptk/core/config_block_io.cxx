@@ -9,11 +9,13 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <vector>
 
 #include <maptk/core/exceptions.h>
 
 #include <boost/algorithm/string/join.hpp>
+#include <boost/algorithm/string/trim.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
@@ -97,6 +99,7 @@ class config_block_grammar
     qi::rule<Iterator, config_block_value_set_t()> config_block_value_set;
 };
 
+
 template <typename Iterator>
 config_block_grammar<Iterator>
 ::config_block_grammar()
@@ -140,15 +143,17 @@ config_block_grammar<Iterator>
 
   config_block_key_path.name("config-key-path");
   config_block_key_path %=
-    config_block_key
-    >> *( qi::lit(maptk::config_block::block_sep)
-        > config_block_key
-        );
+    config_block_key % qi::lit(maptk::config_block::block_sep);
 
   config_block_value.name("config-value");
+  // Works as intended in 1.47.0 and up, but broken for 1.46.1
+  //config_block_value %=
+  //  +( (qi::graph - "#")
+  //   | qi::hold[+(qi::blank) >> (qi::graph - "#")]
+  //   );
   config_block_value %=
-    +( qi::graph
-     | qi::hold[*qi::blank >> qi::graph]
+    +( (qi::graph - "#")
+     | qi::blank
      );
 
   config_block_value_full.name("config-value-full");
@@ -156,22 +161,23 @@ config_block_grammar<Iterator>
     ( (opt_whitespace >> config_block_key_path[at_c<0>(_val) = _1] >> opt_whitespace)
     > '='
     > (opt_whitespace >> -(config_block_value[at_c<1>(_val) = _1]) >> opt_whitespace)
-    > eol
     );
 
 
   comment.name("comment");
-  comment %=
-    +( opt_whitespace >> config_comment_start >> opt_whitespace >> config_block_value >> eol );
+  comment =
+    +( config_comment_start >> opt_whitespace >> config_block_value[_val = _1] );
 
 
   // Main grammar parsing rule
   config_block_value_set.name("config-values");
   config_block_value_set =
-    +( (opt_whitespace >> eol)  // empty line with extra whitespace
+    +( (opt_whitespace >> eol)  // empty line with possible extra whitespace
      | line_end                 // one or more empty lines
-     | config_block_value_full[push_back(_val, _1)]  // keypath/value specification
-     | comment                  // comment lines
+       // comment lines
+     | (opt_whitespace >> comment >> opt_whitespace >> eol)
+       // keypath/value specification
+     | (config_block_value_full[push_back(_val, _1)] >> -comment >> opt_whitespace >> eol)
      );
 
 }
@@ -229,9 +235,15 @@ config_block_sptr read_config_file(path_t const& file_path,
     {
       std::cerr << "File parsed! Contained " << config_block_values.size() << " k/v entries." << std::endl;
     }
+    else if (s_begin != s_end )
+    {
+      std::ostringstream sstr;
+      sstr << "File not parsed completely! Parameters read in: " << config_block_values.size();
+      throw file_not_read_exception(file_path, sstr.str().c_str());
+    }
     else if (!r)
     {
-      throw file_not_read_exception(file_path, "File not parsed, or parsed completely!");
+      throw file_not_read_exception(file_path, "File not parsed!");
     }
   }
   catch (qi::expectation_failure<str_iter> const& e)
@@ -250,8 +262,11 @@ config_block_sptr read_config_file(path_t const& file_path,
     config_block_key_t key_path = boost::algorithm::join(kv.key_path, config_block::block_sep);
     // std::cerr << "KEY: " << key_path << std::endl;
     // std::cerr << "VALUE: " << kv.value << std::endl << std::endl;
+
     // add key/value to config object here
-    cb->set_value(key_path, kv.value);
+    //cb->set_value(key_path, kv.value);
+    cb->set_value(key_path, boost::algorithm::trim_copy(kv.value));
+
     //cerr << "\t`" << key_path << "` -> `" << kv.value << "`" << endl;
   }
 
