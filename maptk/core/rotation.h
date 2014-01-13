@@ -24,6 +24,11 @@ public:
   /// Default Constructor
   rotation_<T>() : q_(0,0,0,1) {}
 
+  /// Copy Constructor from another type
+  template <typename U>
+  explicit rotation_<T>(const rotation_<U>& other)
+  : q_(static_cast<vector_4_<T> >(other.quaternion())) {}
+
   /// Constructor - from a 4D quaternion vector (i,j,k,r)
   rotation_<T>(const vector_<4,T>& quaternion)
   : q_(quaternion) {}
