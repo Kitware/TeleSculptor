@@ -1,0 +1,17 @@
+MAPTK v0.1.2 Release Notes
+==========================
+
+This release provides patches to the MAPTK v0.1.1 release to address issues.
+MAPTK v0.1.2 is primarily a bug fix release with minimal new functionality.
+
+
+Fixes since v0.1.1
+------------------
+
+Core Library
+
+ * New minimum requirement for Boost: 1.46.1. This is enforced in the
+   CMakeLists.txt when finding Boost.
+
+ * Fixed grammar for configuration file parsing to be compatible for Boost
+   1.46.1 and above.
