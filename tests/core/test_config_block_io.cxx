@@ -64,7 +64,7 @@ IMPLEMENT_TEST(successful_config_read)
 
   TEST_EQUAL("num config params",
              config->available_values().size(),
-             7);
+             8);
   TEST_EQUAL("foo:bar read",
              config->get_value<std::string>("foo:bar"),
              "baz");
@@ -77,6 +77,9 @@ IMPLEMENT_TEST(successful_config_read)
   TEST_EQUAL("second_block:has read",
              config->get_value<std::string>("second_block:has"),
              "a value    with  spaces");
+  TEST_EQUAL("second_block:mode read",
+             config->get_value<std::string>("second_block:more"),
+             "has a trailing comment");
   TEST_NEAR("global_var read",
             config->get_value<float>("global_var"),
             3.14,
@@ -118,7 +121,7 @@ IMPLEMENT_TEST(successful_config_read_named_block)
 
   TEST_EQUAL("num config params",
              config->available_values().size(),
-             7);
+             8);
   TEST_EQUAL("foo:bar read",
              config->get_value<std::string>("foo:bar"),
              "baz");
@@ -131,6 +134,9 @@ IMPLEMENT_TEST(successful_config_read_named_block)
   TEST_EQUAL("second_block:has read",
              config->get_value<std::string>("second_block:has"),
              "a value    with  spaces");
+  TEST_EQUAL("second_block:mode read",
+             config->get_value<std::string>("second_block:more"),
+             "has a trailing comment");
   TEST_NEAR("global_var read",
             config->get_value<float>("global_var"),
             3.14,
