@@ -4,6 +4,7 @@ include_directories( SYSTEM ${VXL_RPL_INCLUDE_DIR} )
 
 set(maptk_vxl_headers_public
   camera.h
+  camera_map.h
   estimate_homography.h
   image_container.h
   image_io.h
@@ -14,6 +15,7 @@ set(maptk_vxl_headers_public
 
 set(maptk_vxl_sources
   camera.cxx
+  camera_map.cxx
   estimate_homography.cxx
   image_container.cxx
   image_io.cxx
