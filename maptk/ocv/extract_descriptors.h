@@ -7,7 +7,9 @@
 #ifndef MAPTK_OCV_EXTRACT_DESCRIPTORS_H_
 #define MAPTK_OCV_EXTRACT_DESCRIPTORS_H_
 
+#include "ocv_config.h"
 #include <maptk/core/algo/extract_descriptors.h>
+
 #include <boost/scoped_ptr.hpp>
 
 namespace maptk
@@ -17,8 +19,8 @@ namespace ocv
 {
 
 /// An class for extracting feature descriptors using OpenCV
-class extract_descriptors
-: public algo::algorithm_impl<extract_descriptors, algo::extract_descriptors>
+class MAPTK_OCV_EXPORT extract_descriptors
+  : public algo::algorithm_impl<extract_descriptors, algo::extract_descriptors>
 {
 public:
   /// Default Constructor
