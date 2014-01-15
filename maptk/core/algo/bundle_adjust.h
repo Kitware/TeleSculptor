@@ -33,8 +33,8 @@ public:
    * \param [in] tracks the tracks to use as constraints
    */
   virtual void
-  optimize(camera_map_sptr cameras,
-           landmark_map_sptr landmarks,
+  optimize(camera_map_sptr& cameras,
+           landmark_map_sptr& landmarks,
            track_set_sptr tracks) const = 0;
 };
 
