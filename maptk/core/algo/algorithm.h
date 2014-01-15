@@ -193,7 +193,7 @@ public:
  *  \sa algorithm_def
  */
 template <typename Self, typename Base>
-class MAPTK_CORE_EXPORT algorithm_impl
+class algorithm_impl
   : public Base
 {
 public:
