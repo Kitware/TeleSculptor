@@ -7,8 +7,11 @@
 #ifndef MAPTK_VXL_IMAGE_CONTAINER_H_
 #define MAPTK_VXL_IMAGE_CONTAINER_H_
 
-#include <maptk/core/image_container.h>
+#include "vxl_config.h"
+
 #include <vil/vil_image_view.h>
+
+#include <maptk/core/image_container.h>
 
 
 namespace maptk
@@ -19,8 +22,8 @@ namespace vxl
 
 
 /// This image container wraps a vil_image_view
-class image_container
-: public maptk::image_container
+class MAPTK_VXL_EXPORT image_container
+  : public maptk::image_container
 {
 public:
 

@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -7,8 +7,11 @@
 #ifndef MAPTK_VIL_IMAGE_MEMORY_H_
 #define MAPTK_VIL_IMAGE_MEMORY_H_
 
-#include <maptk/core/image.h>
+#include "vxl_config.h"
+
 #include <vil/vil_memory_chunk.h>
+
+#include <maptk/core/image.h>
 
 namespace maptk
 {
@@ -17,8 +20,8 @@ namespace vxl
 {
 
 /// An image memory class that shares memory with VXL using vil_memory_chunk
-class vil_image_memory
-: public image_memory
+class MAPTK_VXL_EXPORT vil_image_memory
+  : public image_memory
 {
 public:
   /// Constructor - allocates n bytes
@@ -41,8 +44,8 @@ protected:
 };
 
 
-class maptk_memory_chunk
-: public vil_memory_chunk
+class MAPTK_VXL_EXPORT maptk_memory_chunk
+ : public vil_memory_chunk
 {
 public:
   /// Constructor - from maptk image memory
