@@ -9,6 +9,7 @@ if (NOT MAPTK_ENABLE_DLL_WARNINGS)
 endif()
 
 maptk_check_compiler_flag(/W3)
+maptk_check_compiler_flag(/MP)
 
 # Disable deprication warnings for standard C and STL functions in VS2005 and
 # later.
