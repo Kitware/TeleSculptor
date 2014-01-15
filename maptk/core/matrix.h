@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -7,9 +7,12 @@
 #ifndef MAPTK_MATRIX_H_
 #define MAPTK_MATRIX_H_
 
+#include "core_config.h"
+
 #include <iostream>
 #include <cstring>
 #include <cassert>
+
 #include <boost/integer/static_min_max.hpp>
 
 #include "vector.h"
@@ -20,7 +23,7 @@ namespace maptk
 
 /// A representation of a matrix
 template <unsigned M, unsigned N, typename T>
-class matrix_
+class MAPTK_CORE_EXPORT matrix_
 {
 public:
   /// a compile time constant defined to be min(M,N)
@@ -362,11 +365,11 @@ matrix_<M,O,T> operator*(const matrix_<M,N,T>& a, const matrix_<N,O,T>& b)
 
 /// output stream operator for a matrix
 template <unsigned M, unsigned N, typename T>
-std::ostream&  operator<<(std::ostream& s, const matrix_<M,N,T>& m);
+MAPTK_CORE_EXPORT std::ostream&  operator<<(std::ostream& s, const matrix_<M,N,T>& m);
 
 /// input stream operator for a matrix
 template <unsigned M, unsigned N, typename T>
-std::istream&  operator>>(std::istream& s, matrix_<M,N,T>& m);
+MAPTK_CORE_EXPORT std::istream&  operator>>(std::istream& s, matrix_<M,N,T>& m);
 
 
 } // end namespace maptk

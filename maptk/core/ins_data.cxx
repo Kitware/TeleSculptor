@@ -41,7 +41,7 @@ bool operator !=(const ins_data& d1, const ins_data& d2)
 
 
 /// output stream operator for INS data
-std::ostream&  operator<<(std::ostream& s, const ins_data& d)
+std::ostream& operator<<(std::ostream& s, const ins_data& d)
 {
   using std::setprecision;
   s << d.source_name << ", "
@@ -63,7 +63,7 @@ std::ostream&  operator<<(std::ostream& s, const ins_data& d)
 }
 
 /// input stream operator for INS data
-std::istream&  operator>>(std::istream& s, ins_data& d)
+std::istream& operator>>(std::istream& s, ins_data& d)
 {
   std::string line;
   std::getline(s, line);

@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -12,7 +12,7 @@ namespace maptk
 
 
 /// output stream operator for a feature base class
-std::ostream&  operator<<(std::ostream& s, const feature& f)
+std::ostream& operator<<(std::ostream& s, const feature& f)
 {
   // TODO include covariance once stream operators are defined
   s << f.loc() << " "
@@ -82,9 +82,9 @@ std::istream&  operator>>(std::istream& s, feature_<T>& f)
 
 
 #define INSTANTIATE_FEATURE(T) \
-template class feature_<T>; \
-template std::ostream&  operator<<(std::ostream& s, const feature_<T>& f); \
-template std::istream&  operator>>(std::istream& s, feature_<T>& f)
+template class MAPTK_CORE_EXPORT feature_<T>; \
+template MAPTK_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const feature_<T>& f); \
+template MAPTK_CORE_EXPORT std::istream& operator>>(std::istream& s, feature_<T>& f)
 
 INSTANTIATE_FEATURE(double);
 INSTANTIATE_FEATURE(float);

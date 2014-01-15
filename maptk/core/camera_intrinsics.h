@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -7,17 +7,19 @@
 #ifndef MAPTK_CAMERA_INTRINSICS_H_
 #define MAPTK_CAMERA_INTRINSICS_H_
 
+#include "core_config.h"
+
 #include <iostream>
 
-#include "vector.h"
 #include "matrix.h"
+#include "vector.h"
 
 namespace maptk
 {
 
 /// A representation of camera intrinsic parameters
 template <typename T>
-class camera_intrinsics_
+class MAPTK_CORE_EXPORT camera_intrinsics_
 {
 public:
   /// Default Constructor
@@ -77,11 +79,11 @@ typedef camera_intrinsics_<float> camera_intrinsics_f;
 
 /// output stream operator for camera intrinsics
 template <typename T>
-std::ostream&  operator<<(std::ostream& s, const camera_intrinsics_<T>& k);
+MAPTK_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const camera_intrinsics_<T>& k);
 
 /// input stream operator for camera intrinsics
 template <typename T>
-std::istream&  operator>>(std::istream& s, camera_intrinsics_<T>& c);
+MAPTK_CORE_EXPORT std::istream& operator>>(std::istream& s, camera_intrinsics_<T>& c);
 
 
 } // end namespace maptk

@@ -7,13 +7,16 @@
 #ifndef MAPTK_ALGO_TRACK_FEATURES_H_
 #define MAPTK_ALGO_TRACK_FEATURES_H_
 
+#include <maptk/core/core_config.h>
+
+#include <boost/shared_ptr.hpp>
+
 #include <maptk/core/algo/algorithm.h>
 #include <maptk/core/algo/detect_features.h>
 #include <maptk/core/algo/extract_descriptors.h>
 #include <maptk/core/algo/match_features.h>
 #include <maptk/core/image_container.h>
 #include <maptk/core/track_set.h>
-#include <boost/shared_ptr.hpp>
 
 namespace maptk
 {
@@ -22,7 +25,8 @@ namespace algo
 {
 
 /// An abstract base class for tracking feature points
-class track_features : public algorithm_def<track_features>
+class MAPTK_CORE_EXPORT track_features
+  : public algorithm_def<track_features>
 {
 public:
   /// Return the name of this algorithm
@@ -81,8 +85,8 @@ typedef boost::shared_ptr<track_features> track_features_sptr;
 
 
 /// A basic feature tracker
-class simple_track_features
-: public algo::algorithm_impl<simple_track_features, track_features>
+class MAPTK_CORE_EXPORT simple_track_features
+  : public algo::algorithm_impl<simple_track_features, track_features>
 {
 public:
   /// Default Constructor

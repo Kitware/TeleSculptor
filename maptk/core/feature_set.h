@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -7,10 +7,11 @@
 #ifndef MAPTK_FEATURE_SET_H_
 #define MAPTK_FEATURE_SET_H_
 
+#include <vector>
+
+#include <boost/shared_ptr.hpp>
 
 #include "feature.h"
-#include <vector>
-#include <boost/shared_ptr.hpp>
 
 namespace maptk
 {
@@ -38,7 +39,7 @@ typedef boost::shared_ptr<feature_set> feature_set_sptr;
 
 /// A concrete feature set that simply wraps a vector of features.
 class simple_feature_set
-: public feature_set
+  : public feature_set
 {
 public:
   /// Default Constructor

@@ -9,8 +9,6 @@
 
 #include "core_config.h"
 
-// This the configuration object and has nothing to do with package
-// configuration like core_config.h does
 #include "config_block.h"
 #include "types.h"
 

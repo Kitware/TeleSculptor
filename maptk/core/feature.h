@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -7,12 +7,15 @@
 #ifndef MAPTK_FEATURE_H_
 #define MAPTK_FEATURE_H_
 
+#include "core_config.h"
+
 #include <iostream>
 #include <typeinfo>
 
-#include "vector.h"
-#include "covariance.h"
 #include <boost/shared_ptr.hpp>
+
+#include "covariance.h"
+#include "vector.h"
 
 namespace maptk
 {
@@ -46,14 +49,15 @@ public:
 typedef boost::shared_ptr<feature> feature_sptr;
 
 /// output stream operator for base class feature
-std::ostream&  operator<<(std::ostream& s, const feature& f);
+MAPTK_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const feature& f);
 
 
 /// A concrete 2D image feature point.
 ///
 /// Templated over real number type (double or float).
 template <typename T>
-class feature_ : public feature
+class MAPTK_CORE_EXPORT feature_
+  : public feature
 {
 public:
   /// Default Constructor
@@ -119,11 +123,11 @@ typedef feature_<float> feature_f;
 
 /// output stream operator for a feature
 template <typename T>
-std::ostream&  operator<<(std::ostream& s, const feature_<T>& f);
+MAPTK_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const feature_<T>& f);
 
 /// input stream operator for a feature
 template <typename T>
-std::istream&  operator>>(std::istream& s, feature_<T>& f);
+MAPTK_CORE_EXPORT std::istream& operator>>(std::istream& s, feature_<T>& f);
 
 } // end namespace maptk
 

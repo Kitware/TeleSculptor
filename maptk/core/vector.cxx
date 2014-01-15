@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -36,9 +36,9 @@ std::istream&  operator>>(std::istream& s, vector_<N,T>& v)
 
 
 #define INSTANTIATE_VECTOR(N,T) \
-template class vector_<N,T>; \
-template std::ostream&  operator<<(std::ostream& s, const vector_<N,T>& v); \
-template std::istream&  operator>>(std::istream& s, vector_<N,T>& v)
+template class MAPTK_CORE_EXPORT vector_<N,T>; \
+template MAPTK_CORE_EXPORT std::ostream&  operator<<(std::ostream& s, const vector_<N,T>& v); \
+template MAPTK_CORE_EXPORT std::istream&  operator>>(std::istream& s, vector_<N,T>& v)
 
 INSTANTIATE_VECTOR(2, double);
 INSTANTIATE_VECTOR(2, float);

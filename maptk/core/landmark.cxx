@@ -78,9 +78,9 @@ std::istream&  operator>>(std::istream& s, landmark_<T>& m)
  * \param T Type to declare class and steam operators for.
  */
 #define INSTANTIATE_LANDMARK(T) \
-template class landmark_<T>; \
-template std::ostream&  operator<<(std::ostream& s, const landmark_<T>& f); \
-template std::istream&  operator>>(std::istream& s, landmark_<T>& f)
+template class MAPTK_CORE_EXPORT landmark_<T>; \
+template MAPTK_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const landmark_<T>& f); \
+template MAPTK_CORE_EXPORT std::istream& operator>>(std::istream& s, landmark_<T>& f)
 
 INSTANTIATE_LANDMARK(double);
 INSTANTIATE_LANDMARK(float);

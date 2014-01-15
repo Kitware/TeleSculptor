@@ -7,9 +7,11 @@
 #ifndef MAPTK_ALGO_MATCH_FEATURES_HOMOGRAPHY_H_
 #define MAPTK_ALGO_MATCH_FEATURES_HOMOGRAPHY_H_
 
-#include <maptk/core/config_block.h>
-#include <maptk/core/algo/match_features.h>
+#include <maptk/core/core_config.h>
+
 #include <maptk/core/algo/estimate_homography.h>
+#include <maptk/core/algo/match_features.h>
+#include <maptk/core/config_block.h>
 
 namespace maptk
 {
@@ -18,8 +20,8 @@ namespace algo
 {
 
 /// Combines a feature matcher and homography estimation for constrained matching
-class match_features_homography
-: public algo::algorithm_impl<match_features_homography, match_features>
+class MAPTK_CORE_EXPORT match_features_homography
+  : public algo::algorithm_impl<match_features_homography, match_features>
 {
 public:
   /// Default Constructor

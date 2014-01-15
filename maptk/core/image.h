@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -7,7 +7,10 @@
 #ifndef MAPTK_IMAGE_H_
 #define MAPTK_IMAGE_H_
 
+#include "core_config.h"
+
 #include <cstddef>
+
 #include <boost/shared_ptr.hpp>
 
 namespace maptk
@@ -17,7 +20,7 @@ namespace maptk
 /// The image object use shared pointers to this class.
 /// Derived image memory classes can proved access to image memory
 /// stored in other forms, such as on the GPU or in 3rd party data structures.
-class image_memory
+class MAPTK_CORE_EXPORT image_memory
 {
 public:
   /// Default Constructor
@@ -54,7 +57,7 @@ typedef boost::shared_ptr<image_memory> image_memory_sptr;
 
 /// The representation of an in-memory image.
 /// Images share memory using the image_memory class.
-class image
+class MAPTK_CORE_EXPORT image
 {
 public:
   typedef unsigned char byte;
@@ -187,7 +190,7 @@ protected:
 /// Compare to images to see if the pixels have the same values.
 /// This does not require that the images have the same memory layout,
 /// only that the images have the same dimensions and pixel values.
-bool equal_content(const image& img1, const image& img2);
+MAPTK_CORE_EXPORT bool equal_content(const image& img1, const image& img2);
 
 
 } // end namespace maptk

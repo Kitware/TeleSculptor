@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -7,9 +7,10 @@
 #ifndef MAPTK_INS_DATA_H_
 #define MAPTK_INS_DATA_H_
 
+#include "core_config.h"
+
 #include <iostream>
 #include <string>
-
 
 namespace maptk
 {
@@ -79,16 +80,16 @@ public:
 };
 
 /// equality operator
-bool operator ==(const ins_data& d1, const ins_data& d2);
+MAPTK_CORE_EXPORT bool operator ==(const ins_data& d1, const ins_data& d2);
 
 /// inequality operator
-bool operator !=(const ins_data& d1, const ins_data& d2);
+MAPTK_CORE_EXPORT bool operator !=(const ins_data& d1, const ins_data& d2);
 
 /// output stream operator for INS data
-std::ostream&  operator<<(std::ostream& s, const ins_data& d);
+MAPTK_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const ins_data& d);
 
 /// input stream operator for a INS data
-std::istream&  operator>>(std::istream& s, ins_data& d);
+MAPTK_CORE_EXPORT std::istream& operator>>(std::istream& s, ins_data& d);
 
 
 } // end namespace maptk

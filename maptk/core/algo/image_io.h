@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -8,9 +8,11 @@
 #define MAPTK_ALGO_IMAGE_IO_H_
 
 #include <string>
+
+#include <boost/shared_ptr.hpp>
+
 #include <maptk/core/algo/algorithm.h>
 #include <maptk/core/image_container.h>
-#include <boost/shared_ptr.hpp>
 
 namespace maptk
 {
