@@ -173,7 +173,7 @@ algorithm_def<Self>
 } // end namespace maptk
 
 #define INSTANTIATE_ALGORITHM_DEF(T) \
-template class MAPTK_CORE_EXPORT maptk::algo::algorithm_def<T>; \
+template class maptk::algo::algorithm_def<T>; \
 namespace maptk \
 { \
 template<> registrar<T>* registrar<T>::instance_ = 0; \
