@@ -238,11 +238,11 @@ inline bool is_almost(double const &value,
 #define TEST_EQUAL(name, value, expected)                       \
   do                                                            \
   {                                                             \
-    if(value != expected)                                       \
+    if((value) != (expected))                                   \
     {                                                           \
       TEST_ERROR("TEST_EQUAL check '" << name << "' failed:\n"  \
-                 << "    Expected: ``" << expected << "``\n"    \
-                 << "    Got     : ``" << value << "``");       \
+                 << "    Expected: ``" << (expected) << "``\n"  \
+                 << "    Got     : ``" << (value) << "``");     \
     }                                                           \
   } while(false)
 
@@ -253,16 +253,16 @@ inline bool is_almost(double const &value,
  * @param target  The value to compare to.
  * @param epsilon The allowed varience.
  */
-#define TEST_NEAR(name, value, target, epsilon)                 \
-  do                                                            \
-  {                                                             \
-    if(! maptk::testing::is_almost(value, target, epsilon))     \
-    {                                                           \
-      TEST_ERROR("TEST_NEAR check '" << name                    \
-                 << "' failed: (epsilon: " << epsilon << ")\n"  \
-                 << "    Expected: " << target << "\n"          \
-                 << "    Got     : " << value);                 \
-    }                                                           \
+#define TEST_NEAR(name, value, target, epsilon)                  \
+  do                                                             \
+  {                                                              \
+    if(! maptk::testing::is_almost(value, target, epsilon))      \
+    {                                                            \
+      TEST_ERROR("TEST_NEAR check '" << name                     \
+                 << "' failed: (epsilon: " << (epsilon) << ")\n" \
+                 << "    Expected: " << (target) << "\n"         \
+                 << "    Got     : " << (value));                \
+    }                                                            \
   }while(false)
 
 #endif // MAPTK_TEST_TEST_COMMON_H
