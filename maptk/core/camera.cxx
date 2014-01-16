@@ -47,6 +47,16 @@ camera_<T>
 }
 
 
+/// Project a 3D point into a 2D image point
+template <typename T>
+vector_2_<T>
+camera_<T>
+::project(const vector_3_<T>& pt) const
+{
+  return this->intrinsics_.map(this->orientation_ * (pt - this->center_));
+}
+
+
 template <typename T>
 std::ostream&  operator<<(std::ostream& s, const camera_<T>& k)
 {

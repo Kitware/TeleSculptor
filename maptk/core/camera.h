@@ -141,6 +141,10 @@ public:
    */
   void look_at(const vector_3_<T>& stare_point,
                const vector_3_<T>& up_direction=vector_3_<T>(0,0,1) );
+
+  /// Project a 3D point into a 2D image point
+  vector_2_<T> project(const vector_3_<T>& pt) const;
+
 protected:
   /// The camera center of project
   vector_3_<T> center_;
