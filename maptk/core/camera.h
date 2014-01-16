@@ -71,10 +71,10 @@ public:
   /// Constructor - from camera center, rotation, and intrinsics
   camera_<T>(const vector_3_<T>& center,
              const rotation_<T>& rotation,
-             const camera_intrinsics_<T>& intrincs = camera_intrinsics_<T>())
+             const camera_intrinsics_<T>& intrinsics = camera_intrinsics_<T>())
   : center_(center),
     orientation_(rotation),
-    intrinsics_(intrincs)
+    intrinsics_(intrinsics)
   {}
 
   /// Copy Constructor from another type
