@@ -75,6 +75,15 @@ public:
   /// Convert to a 3x3 calibration matrix
   operator matrix_<3,3,T>() const;
 
+  /// Map normalized image coordinates into actual image coordinates
+  vector_2_<T> map(const vector_2_<T>& norm_pt) const;
+
+  /// Map a 3D point in camera coordinates into actual image coordinates
+  vector_2_<T> map(const vector_3_<T>& norm_hpt) const;
+
+  /// Unmap actual image coordinates back into normalized image coordinates
+  vector_2_<T> unmap(const vector_2_<T>& norm_pt) const;
+
 protected:
   T focal_length_;
   vector_2_<T> principal_point_;
