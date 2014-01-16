@@ -58,7 +58,7 @@ typedef boost::shared_ptr<camera> camera_sptr;
  * Contains camera location, orientation, and intrinsics
  */
 template <typename T>
-class camera_ : public camera
+class MAPTK_CORE_EXPORT camera_ : public camera
 {
 public:
   /// Default Constructor
@@ -132,6 +132,15 @@ public:
   /// Set the intrinsics
   void set_intrinsics(const camera_intrinsics_<T>& intrinsics) { intrinsics_ = intrinsics; }
 
+  /// Rotate the camera about its center such that it looks at the given point.
+  /**
+   * The camera should also be rotated about its principal axis such that
+   * the vertical image direction is closest to \ref up_direction in the world.
+   * \param [in] stare_point the location at which the camera is oriented to point
+   * \param [in] up_direction the vector which is "up" in the world (defaults to Z-axis)
+   */
+  void look_at(const vector_3_<T>& stare_point,
+               const vector_3_<T>& up_direction=vector_3_<T>(0,0,1) );
 protected:
   /// The camera center of project
   vector_3_<T> center_;
