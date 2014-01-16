@@ -93,6 +93,8 @@ public:
     return result;
   }
 
+  /// The magnitude (L2 norm) of the vector
+  T magnitude() const { return cmath::l2_norm( data_ ); }
 
 protected:
   T data_[N];
@@ -136,6 +138,15 @@ inner_product(const vector_<N,T>& v1, const vector_<N,T>& v2)
     sum += *a * *b;
   }
   return sum;
+}
+
+
+/// Compute a normalized version of this vector
+template <unsigned N, typename T>
+inline vector_<N,T>
+normalized(const vector_<N,T>& v)
+{
+  return v / v.magnitude();
 }
 
 
