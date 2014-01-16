@@ -7,6 +7,7 @@ set(test_libraries
 # Core tests
 ##############################
 maptk_discover_tests(core_algo               test_libraries test_algo.cxx)
+maptk_discover_tests(core_camera             test_libraries test_camera.cxx)
 maptk_discover_tests(core_camera_intrinsics  test_libraries test_camera_intrinsics.cxx)
 maptk_discover_tests(core_config             test_libraries test_config_block.cxx)
 maptk_discover_tests(core_config_io          test_libraries test_config_block_io.cxx
