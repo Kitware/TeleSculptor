@@ -15,3 +15,8 @@ Core Library
 
  * Fixed grammar for configuration file parsing to be compatible for Boost
    1.46.1 and above.
+
+Tests
+
+ * Increased the tolerence on the homogaphy estimation noisy points test.
+   It was failing randomly because the error was just over the tolerence.
