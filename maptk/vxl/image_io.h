@@ -7,6 +7,7 @@
 #ifndef MAPTK_VXL_IMAGE_IO_H_
 #define MAPTK_VXL_IMAGE_IO_H_
 
+#include "vxl_config.h"
 #include <maptk/core/algo/image_io.h>
 
 namespace maptk
@@ -16,8 +17,8 @@ namespace vxl
 {
 
 /// A class for using VXL to read and write images
-class image_io
-: public algo::algorithm_impl<image_io, algo::image_io>
+class MAPTK_VXL_EXPORT image_io
+  : public algo::algorithm_impl<image_io, algo::image_io>
 {
 public:
   /// Return the name of this implementation

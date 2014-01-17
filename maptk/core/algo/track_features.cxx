@@ -147,7 +147,7 @@ simple_track_features
   std::vector<unsigned> unmatched;
   std::back_insert_iterator<std::vector<unsigned> > unmatched_insert_itr(unmatched);
   std::set_difference(boost::counting_iterator<unsigned>(0),
-                      boost::counting_iterator<unsigned>(vf.size()),
+                      boost::counting_iterator<unsigned>(static_cast<unsigned int>(vf.size())),
                       matched.begin(), matched.end(),
                       unmatched_insert_itr);
   BOOST_FOREACH(unsigned i, unmatched)

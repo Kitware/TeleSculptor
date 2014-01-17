@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -118,9 +118,9 @@ std::istream&  operator>>(std::istream& s, matrix_<M,N,T>& m)
 
 
 #define INSTANTIATE_MATRIX(M,N,T) \
-template class matrix_<M,N,T>; \
-template std::ostream&  operator<<(std::ostream& s, const matrix_<M,N,T>& m); \
-template std::istream&  operator>>(std::istream& s, matrix_<M,N,T>& m)
+template class MAPTK_CORE_EXPORT matrix_<M,N,T>; \
+template MAPTK_CORE_EXPORT std::ostream&  operator<<(std::ostream& s, const matrix_<M,N,T>& m); \
+template MAPTK_CORE_EXPORT std::istream&  operator>>(std::istream& s, matrix_<M,N,T>& m)
 
 INSTANTIATE_MATRIX(2, 2, double);
 INSTANTIATE_MATRIX(2, 2, float);

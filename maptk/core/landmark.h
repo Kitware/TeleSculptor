@@ -7,11 +7,14 @@
 #ifndef MAPTK_LANDMARK_H_
 #define MAPTK_LANDMARK_H_
 
+#include "core_config.h"
+
 #include <iostream>
 
-#include "vector.h"
-#include "covariance.h"
 #include <boost/shared_ptr.hpp>
+
+#include "covariance.h"
+#include "vector.h"
 
 
 /**
@@ -49,12 +52,12 @@ public:
 typedef boost::shared_ptr<landmark> landmark_sptr;
 
 /// output stream operator for a base class landmark
-std::ostream&  operator<<(std::ostream& s, const landmark& m);
+MAPTK_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const landmark& m);
 
 
 /// A representation of a 3D world point
 template <typename T>
-class landmark_
+class MAPTK_CORE_EXPORT landmark_
 {
 public:
   /// Default Constructor
@@ -102,11 +105,11 @@ typedef landmark_<float> landmark_f;
 
 /// output stream operator for a landmark
 template <typename T>
-std::ostream&  operator<<(std::ostream& s, const landmark_<T>& m);
+MAPTK_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const landmark_<T>& m);
 
 /// input stream operator for a landmark
 template <typename T>
-std::istream&  operator>>(std::istream& s, landmark_<T>& m);
+MAPTK_CORE_EXPORT std::istream& operator>>(std::istream& s, landmark_<T>& m);
 
 
 } // end namespace maptk

@@ -7,9 +7,10 @@
 #ifndef MAPTK_OCV_IMAGE_CONTAINER_H_
 #define MAPTK_OCV_IMAGE_CONTAINER_H_
 
+#include "ocv_config.h"
 #include <maptk/core/image_container.h>
-#include <opencv2/core/core.hpp>
 
+#include <opencv2/core/core.hpp>
 
 namespace maptk
 {
@@ -19,8 +20,8 @@ namespace ocv
 
 
 /// This image container wraps a cv::Mat
-class image_container
-: public maptk::image_container
+class MAPTK_OCV_EXPORT image_container
+  : public maptk::image_container
 {
 public:
 
@@ -77,7 +78,7 @@ protected:
  * return the underlying cv::Mat.  Otherwise, convert the image data
  * to cv:Mat by shallow copy (if possible) or deep copy as a last resort.
  */
-cv::Mat image_container_to_ocv_matrix(const maptk::image_container& img);
+MAPTK_OCV_EXPORT cv::Mat image_container_to_ocv_matrix(const maptk::image_container& img);
 
 
 } // end namespace ocv

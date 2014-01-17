@@ -7,7 +7,9 @@
 #ifndef MAPTK_OCV_MATCH_FEATURES_H_
 #define MAPTK_OCV_MATCH_FEATURES_H_
 
+#include "ocv_config.h"
 #include <maptk/core/algo/match_features.h>
+
 #include <boost/scoped_ptr.hpp>
 
 namespace maptk
@@ -17,8 +19,8 @@ namespace ocv
 {
 
 /// An abstract base class for matching feature points
-class match_features
-: public algo::algorithm_impl<match_features, algo::match_features>
+class MAPTK_OCV_EXPORT match_features
+  : public algo::algorithm_impl<match_features, algo::match_features>
 {
 public:
   /// Constructor

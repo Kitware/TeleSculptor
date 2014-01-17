@@ -187,9 +187,9 @@ std::istream&  operator>>(std::istream& s, rotation_<T>& r)
 
 
 #define INSTANTIATE_ROTATION(T) \
-template class rotation_<T>; \
-template std::ostream&  operator<<(std::ostream& s, const rotation_<T>& r); \
-template std::istream&  operator>>(std::istream& s, rotation_<T>& r)
+template class MAPTK_CORE_EXPORT rotation_<T>; \
+template MAPTK_CORE_EXPORT std::ostream&  operator<<(std::ostream& s, const rotation_<T>& r); \
+template MAPTK_CORE_EXPORT std::istream&  operator>>(std::istream& s, rotation_<T>& r)
 
 INSTANTIATE_ROTATION(double);
 INSTANTIATE_ROTATION(float);

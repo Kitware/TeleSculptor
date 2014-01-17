@@ -1,18 +1,20 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
 
 #include <maptk/vxl/estimate_homography.h>
+
+#include <boost/foreach.hpp>
+
 #include <vnl/vnl_double_3.h>
 #include <vnl/vnl_double_3x3.h>
 #include <rrel/rrel_homography2d_est.h>
 #include <rrel/rrel_irls.h>
 #include <rrel/rrel_trunc_quad_obj.h>
 #include <rrel/rrel_ran_sam_search.h>
-#include <boost/foreach.hpp>
 
 namespace maptk
 {

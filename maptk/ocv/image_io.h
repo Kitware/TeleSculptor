@@ -7,6 +7,7 @@
 #ifndef MAPTK_OCV_IMAGE_IO_H_
 #define MAPTK_OCV_IMAGE_IO_H_
 
+#include "ocv_config.h"
 #include <maptk/core/algo/image_io.h>
 
 namespace maptk
@@ -16,8 +17,8 @@ namespace ocv
 {
 
 /// A class for using OpenCV to read and write images
-class image_io
-: public algo::algorithm_impl<image_io, algo::image_io>
+class MAPTK_OCV_EXPORT image_io
+  : public algo::algorithm_impl<image_io, algo::image_io>
 {
 public:
   /// Return the name of this implementation

@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -7,13 +7,16 @@
 #ifndef MAPTK_ALGO_ESTIMATE_HOMOGRAPHY_H_
 #define MAPTK_ALGO_ESTIMATE_HOMOGRAPHY_H_
 
+#include <maptk/core/core_config.h>
+
 #include <vector>
+
+#include <boost/shared_ptr.hpp>
 
 #include <maptk/core/algo/algorithm.h>
 #include <maptk/core/feature_set.h>
 #include <maptk/core/match_set.h>
 #include <maptk/core/matrix.h>
-#include <boost/shared_ptr.hpp>
 
 namespace maptk
 {
@@ -22,7 +25,8 @@ namespace algo
 {
 
 /// An abstract base class for estimating a homography from matching 2D points
-class estimate_homography : public algorithm_def<estimate_homography>
+class MAPTK_CORE_EXPORT estimate_homography
+  : public algorithm_def<estimate_homography>
 {
 public:
   /// Return the name of this algorithm

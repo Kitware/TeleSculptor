@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -7,10 +7,11 @@
 #ifndef MAPTK_LOCAL_GEO_CS_H_
 #define MAPTK_LOCAL_GEO_CS_H_
 
-#include "ins_data.h"
-#include "camera.h"
-#include "algo/geo_map.h"
+#include "core_config.h"
 
+#include "algo/geo_map.h"
+#include "camera.h"
+#include "ins_data.h"
 
 namespace maptk
 {
@@ -21,7 +22,7 @@ namespace maptk
  *  Provides functions to use global INS data to update local camera pose
  *  and local camera pose to update global INS data.
  */
-class local_geo_cs
+class MAPTK_CORE_EXPORT local_geo_cs
 {
 public:
   /// Constructor

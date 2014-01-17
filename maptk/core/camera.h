@@ -1,11 +1,13 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
 #ifndef MAPTK_CAMERA_H_
 #define MAPTK_CAMERA_H_
+
+#include "core_config.h"
 
 #include <iostream>
 
@@ -33,7 +35,11 @@ public:
   /// Constructor - from camera center, rotation, and intrinsics
   camera_<T>(const vector_3_<T>& center,
              const rotation_<T>& rotation,
-             const camera_intrinsics_<T>& intrincs = camera_intrinsics_<T>());
+             const camera_intrinsics_<T>& intrincs = camera_intrinsics_<T>())
+  : center_(center),
+    orientation_(rotation),
+    intrinsics_(intrincs)
+  {}
 
   /// Accessor for the camera center of projection (position)
   const vector_3_<T> center() const { return center_; }
@@ -78,11 +84,11 @@ typedef camera_<float> camera_f;
 
 /// output stream operator for a camera
 template <typename T>
-std::ostream&  operator<<(std::ostream& s, const camera_<T>& c);
+MAPTK_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const camera_<T>& c);
 
 /// input stream operator for a camera
 template <typename T>
-std::istream&  operator>>(std::istream& s, camera_<T>& c);
+MAPTK_CORE_EXPORT std::istream& operator>>(std::istream& s, camera_<T>& c);
 
 
 } // end namespace maptk

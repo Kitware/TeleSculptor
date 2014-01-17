@@ -7,6 +7,7 @@
 #ifndef MAPTK_VXL_ESTIMATE_HOMOGRAPHY_H_
 #define MAPTK_VXL_ESTIMATE_HOMOGRAPHY_H_
 
+#include "vxl_config.h"
 
 #include <maptk/core/algo/estimate_homography.h>
 
@@ -17,8 +18,8 @@ namespace vxl
 {
 
 /// A class that uses RREL in VXL to estimate a homography from matching 2D points
-class estimate_homography
-: public algo::algorithm_impl<estimate_homography, algo::estimate_homography>
+class MAPTK_VXL_EXPORT estimate_homography
+  : public algo::algorithm_impl<estimate_homography, algo::estimate_homography>
 {
 public:
   /// Return the name of this implementation

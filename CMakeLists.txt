@@ -25,7 +25,11 @@ include(CMakeDependentOption)
 
 # we can't build shared libraries on Windows so we leave it off by default;
 # we haven't set up DLL exports or anything like that
-option(BUILD_SHARED_LIBS    "Build shared libraries."                         OFF)
+if (WIN32)
+  option(BUILD_SHARED_LIBS    "Build shared libraries."                       ON)
+else()
+  option(BUILD_SHARED_LIBS    "Build shared libraries."                       OFF)
+endif()
 
 option(MAPTK_ENABLE_OPENCV  "Enable OpenCV-dependent code"                    OFF)
 option(MAPTK_ENABLE_VXL     "Enable VXL-dependent code"                       OFF)
@@ -38,6 +42,7 @@ option(MAPTK_ENABLE_PROJ    "Enable PROJ dependent code"                      OF
 # MAPTK CMake config
 #
 include(maptk-utils)
+include(maptk-flags)
 
 set(maptk_export_name maptk_exports)
 
