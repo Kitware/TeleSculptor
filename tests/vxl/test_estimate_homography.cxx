@@ -179,7 +179,7 @@ IMPLEMENT_TEST(noisy_points)
   double H_error = (true_H - H).frobenius_norm();
   std::cout << "Homography estimation error: "<< H_error << std::endl;
   TEST_NEAR("Frobenius norm between estimated and true homography",
-            H_error, 0.0, 0.1);
+            H_error, 0.0, 0.2);
 
   unsigned num_inliers = std::count(inliers.begin(), inliers.end(), true);
   std::cout << "num inliers "<<num_inliers<<std::endl;
