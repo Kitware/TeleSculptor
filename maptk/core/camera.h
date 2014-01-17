@@ -142,6 +142,9 @@ public:
   void look_at(const vector_3_<T>& stare_point,
                const vector_3_<T>& up_direction=vector_3_<T>(0,0,1) );
 
+  /// Convert to a 3x4 homogeneous projection matrix
+  operator matrix_<3,4,T>() const;
+
   /// Project a 3D point into a 2D image point
   vector_2_<T> project(const vector_3_<T>& pt) const;
 

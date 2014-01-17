@@ -47,6 +47,21 @@ camera_<T>
 }
 
 
+/// Convert to a 3x4 homogeneous projection matrix
+template <typename T>
+camera_<T>
+::operator matrix_<3,4,T>() const
+{
+  matrix_<3,4,T> P;
+  matrix_<3,3,T> R(this->get_rotation());
+  matrix_<3,3,T> K(this->get_intrinsics());
+  vector_<3,T>   t(this->get_translation());
+  P.update(R);
+  P.set_column(3,t);
+  return K * P;
+}
+
+
 /// Project a 3D point into a 2D image point
 template <typename T>
 vector_2_<T>
