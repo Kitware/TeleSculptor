@@ -5,6 +5,20 @@ This release provides patches to the MAPTK v0.1.1 release to address issues.
 MAPTK v0.1.2 is primarily a bug fix release with minimal new functionality.
 
 
+Updates since v0.1.1
+--------------------
+
+CMake
+
+ * Added compiler specific flag settings structures, with initial, basic GCC
+   and MSVC flags.
+
+ * Added addition of position-independent code flag when building statically.
+
+ * Build shared by default on Windows (no support yet for static Windows
+   builds).
+
+
 Fixes since v0.1.1
 ------------------
 
@@ -44,19 +58,5 @@ Tests
    This allows arguments to be expressions, like "a > 0.0", without
    interfering with the stream operators.
 
- * Increased the tolerence on the homogaphy estimation noisy points test.
-   It was failing randomly because the error was just over the tolerence.
-
-
-Updated since v0.1.1
---------------------
-
-CMake
-
- * Added compiler specific flag settings structures, with initial, basic GCC
-   and MSVC flags.
-
- * Added addition of position-independent code flag when building statically.
-
- * Build shared by default on Windows (no support yet for static Windows
-   builds).
+ * Increased the tolerance on the homography estimation noisy points test.
+   It was failing randomly because the error was just over the tolerance.
