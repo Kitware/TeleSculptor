@@ -8,6 +8,10 @@ MAPTK v0.1.2 is primarily a bug fix release with minimal new functionality.
 Fixes since v0.1.1
 ------------------
 
+CMake
+
+ * Corrected ``MAKE_<module>_LIB`` flag typo bug in target utils.
+
 Core Library
 
  * New minimum requirement for Boost: 1.46.1. This is enforced in the
@@ -15,3 +19,34 @@ Core Library
 
  * Fixed grammar for configuration file parsing to be compatible for Boost
    1.46.1 and above.
+
+ * Fixed and added use of export flags to resolve and support DLL compilation
+   on Windows.
+
+OpenCV Library
+
+ * Added use of export flags to resolve and support DLL compilation on
+   Windows.
+
+Proj Library
+
+ * Added use of export flags to resolve and support DLL compilation on
+   Windows.
+
+VXL Library
+
+ * Added use of export flags to resolve and support DLL compilation on
+   Windows.
+
+Updated since v0.1.1
+--------------------
+
+CMake
+
+ * Added compiler specific flag settings structures, with initial, basic GCC
+   and MSVC flags.
+
+ * Added addition of position-independent code flag when building statically.
+
+ * Build shared by default on Windows (no support yet for static Windows
+   builds).
