@@ -28,6 +28,12 @@ public:
   /// Constructor - does not initialize
   vector_<N,T>() {}
 
+  /// Constructor from an array of data - no bounds checking
+  vector_<N,T>(const T* data)
+  {
+    memcpy( data_, data, sizeof(data_) );
+  }
+
   /// Copy Constructor
   vector_<N,T>(const vector_<N,T>& other)
   {
