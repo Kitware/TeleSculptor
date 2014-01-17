@@ -15,3 +15,9 @@ Core Library
 
  * Fixed grammar for configuration file parsing to be compatible for Boost
    1.46.1 and above.
+
+Tests
+
+ * Added parentheses around arguments to test macros in test_common.h.
+   This allows arguments to be expressions, like "a > 0.0", without
+   interfering with the stream operators.
