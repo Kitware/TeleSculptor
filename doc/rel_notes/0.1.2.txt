@@ -21,3 +21,6 @@ Tests
  * Added parentheses around arguments to test macros in test_common.h.
    This allows arguments to be expressions, like "a > 0.0", without
    interfering with the stream operators.
+
+ * Increased the tolerence on the homogaphy estimation noisy points test.
+   It was failing randomly because the error was just over the tolerence.
