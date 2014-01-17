@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -7,8 +7,9 @@
 #ifndef MAPTK_OCV_DESCRIPTOR_SET_H_
 #define MAPTK_OCV_DESCRIPTOR_SET_H_
 
-
+#include "ocv_config.h"
 #include <maptk/core/descriptor_set.h>
+
 #include <opencv2/features2d/features2d.hpp>
 
 
@@ -19,8 +20,8 @@ namespace ocv
 {
 
 /// A concrete descriptor set that wraps OpenCV descriptors.
-class descriptor_set
-: public maptk::descriptor_set
+class MAPTK_OCV_EXPORT descriptor_set
+  : public maptk::descriptor_set
 {
 public:
   /// Default Constructor
@@ -47,7 +48,7 @@ protected:
 
 
 /// Convert any descriptor set to an OpenCV cv::Mat
-cv::Mat
+MAPTK_OCV_EXPORT cv::Mat
 descriptors_to_ocv_matrix(const maptk::descriptor_set& desc_set);
 
 

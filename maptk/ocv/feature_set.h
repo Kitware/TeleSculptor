@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -7,8 +7,9 @@
 #ifndef MAPTK_OCV_FEATURE_SET_H_
 #define MAPTK_OCV_FEATURE_SET_H_
 
-
+#include "ocv_config.h"
 #include <maptk/core/feature_set.h>
+
 #include <opencv2/features2d/features2d.hpp>
 
 namespace maptk
@@ -19,8 +20,8 @@ namespace ocv
 
 
 /// A concrete feature set that wraps OpenCV KeyPoints
-class feature_set
-: public maptk::feature_set
+class MAPTK_OCV_EXPORT feature_set
+  : public maptk::feature_set
 {
 public:
   /// Default Constructor
@@ -47,7 +48,7 @@ protected:
 
 
 /// Convert any feature set to a vector of OpenCV cv::KeyPoints
-std::vector<cv::KeyPoint>
+MAPTK_OCV_EXPORT std::vector<cv::KeyPoint>
 features_to_ocv_keypoints(const maptk::feature_set& features);
 
 

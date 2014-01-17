@@ -8,15 +8,8 @@
 #define MAPTK_CORE_CONFIG_H
 
 #include "core_config.h"
-#include "types.h"
-#include "exceptions/config_block.h"
 
-#include <boost/optional/optional.hpp>
-#include <boost/enable_shared_from_this.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/noncopyable.hpp>
-#include <boost/shared_ptr.hpp>
-
+#include <cstddef>
 #include <exception>
 #include <map>
 #include <set>
@@ -24,7 +17,14 @@
 #include <typeinfo>
 #include <vector>
 
-#include <cstddef>
+#include <boost/optional/optional.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/noncopyable.hpp>
+#include <boost/shared_ptr.hpp>
+
+#include "types.h"
+#include "exceptions/config_block.h"
 
 /**
  * \file

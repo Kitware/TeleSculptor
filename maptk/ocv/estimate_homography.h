@@ -7,7 +7,7 @@
 #ifndef MAPTK_OCV_ESTIMATE_HOMOGRAPHY_H_
 #define MAPTK_OCV_ESTIMATE_HOMOGRAPHY_H_
 
-
+#include "ocv_config.h"
 #include <maptk/core/algo/estimate_homography.h>
 
 namespace maptk
@@ -17,8 +17,8 @@ namespace ocv
 {
 
 /// A class that using OpenCV to estimate a homography from matching 2D points
-class estimate_homography
-: public algo::algorithm_impl<estimate_homography, algo::estimate_homography>
+class MAPTK_OCV_EXPORT estimate_homography
+  : public algo::algorithm_impl<estimate_homography, algo::estimate_homography>
 {
 public:
   /// Return the name of this implementation

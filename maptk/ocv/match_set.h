@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -7,8 +7,9 @@
 #ifndef MAPTK_OCV_MATCH_SET_H_
 #define MAPTK_OCV_MATCH_SET_H_
 
-
+#include "ocv_config.h"
 #include <maptk/core/match_set.h>
+
 #include <opencv2/features2d/features2d.hpp>
 
 namespace maptk
@@ -19,8 +20,8 @@ namespace ocv
 
 
 /// A concrete match set that wraps OpenCV cv::DMatch objects
-class match_set
-: public maptk::match_set
+class MAPTK_OCV_EXPORT match_set
+  : public maptk::match_set
 {
 public:
   /// Default constructor
@@ -46,7 +47,7 @@ private:
 
 
 /// Convert any match set to a vector of OpenCV cv::DMatch
-std::vector<cv::DMatch>
+MAPTK_OCV_EXPORT std::vector<cv::DMatch>
 matches_to_ocv_dmatch(const maptk::match_set& match_set);
 
 

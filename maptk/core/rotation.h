@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -8,8 +8,9 @@
 #define MAPTK_ROTATION_H_
 
 #include <iostream>
-#include "vector.h"
+
 #include "matrix.h"
+#include "vector.h"
 
 namespace maptk
 {
@@ -17,7 +18,7 @@ namespace maptk
 /// A representation of 3D rotation.
 /// Internally rotation is stored in quaternion form
 template <typename T>
-class rotation_
+class MAPTK_CORE_EXPORT rotation_
 {
 public:
   /// Default Constructor
@@ -71,11 +72,11 @@ typedef rotation_<float> rotation_f;
 
 /// output stream operator for a rotation
 template <unsigned N, typename T>
-std::ostream&  operator<<(std::ostream& s, const rotation_<T>& r);
+MAPTK_CORE_EXPORT std::ostream&  operator<<(std::ostream& s, const rotation_<T>& r);
 
 /// input stream operator for a rotation
 template <unsigned N, typename T>
-std::istream&  operator>>(std::istream& s, rotation_<T>& r);
+MAPTK_CORE_EXPORT std::istream&  operator>>(std::istream& s, rotation_<T>& r);
 
 
 } // end namespace maptk

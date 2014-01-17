@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -7,8 +7,10 @@
 #ifndef MAPTK_VECTOR_H_
 #define MAPTK_VECTOR_H_
 
-#include <iostream>
+#include "core_config.h"
+
 #include <cstring>
+#include <iostream>
 
 #include "vector_cmath.h"
 
@@ -415,11 +417,11 @@ inline bool operator!=( const vector_<N,T>& a, const vector_<N,T>& b )
 
 /// output stream operator for a vector
 template <unsigned N, typename T>
-std::ostream&  operator<<(std::ostream& s, const vector_<N,T>& v);
+MAPTK_CORE_EXPORT std::ostream&  operator<<(std::ostream& s, const vector_<N,T>& v);
 
 /// input stream operator for a vector
 template <unsigned N, typename T>
-std::istream&  operator>>(std::istream& s, vector_<N,T>& v);
+MAPTK_CORE_EXPORT std::istream&  operator>>(std::istream& s, vector_<N,T>& v);
 
 
 } // end namespace maptk

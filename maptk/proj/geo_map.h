@@ -7,6 +7,7 @@
 #ifndef MAPTK_PROJ_GEO_MAP_H_
 #define MAPTK_PROJ_GEO_MAP_H_
 
+#include "proj_config.h"
 #include <maptk/core/algo/geo_map.h>
 
 namespace maptk
@@ -15,8 +16,8 @@ namespace maptk
 namespace proj
 {
 
-class geo_map
-: public  algo::algorithm_impl<geo_map, algo::geo_map>
+class MAPTK_PROJ_EXPORT geo_map
+  : public algo::algorithm_impl<geo_map, algo::geo_map>
 {
 public:
 

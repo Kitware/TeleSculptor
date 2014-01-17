@@ -7,7 +7,9 @@
 #ifndef MAPTK_OCV_DETECT_FEATURES_H_
 #define MAPTK_OCV_DETECT_FEATURES_H_
 
+#include "ocv_config.h"
 #include <maptk/core/algo/detect_features.h>
+
 #include <boost/scoped_ptr.hpp>
 
 namespace maptk
@@ -17,8 +19,8 @@ namespace ocv
 {
 
 /// An algorithm class for detecting feature points using OpenCV
-class detect_features
-: public algo::algorithm_impl<detect_features, algo::detect_features>
+class MAPTK_OCV_EXPORT detect_features
+  : public algo::algorithm_impl<detect_features, algo::detect_features>
 {
 public:
   /// Constructor

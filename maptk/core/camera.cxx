@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -39,9 +39,8 @@ std::istream&  operator>>(std::istream& s, camera_<T>& k)
 
 
 #define INSTANTIATE_CAMERA(T) \
-template class camera_<T>; \
-template std::ostream&  operator<<(std::ostream& s, const camera_<T>& c); \
-template std::istream&  operator>>(std::istream& s, camera_<T>& c)
+template MAPTK_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const camera_<T>& c); \
+template MAPTK_CORE_EXPORT std::istream& operator>>(std::istream& s, camera_<T>& c)
 
 INSTANTIATE_CAMERA(double);
 INSTANTIATE_CAMERA(float);

@@ -248,7 +248,9 @@ config_block_sptr read_config_file(path_t const& file_path,
   }
   catch (qi::expectation_failure<str_iter> const& e)
   {
-    throw file_not_parsed_exception(file_path, "Grammar expectation failure");
+    std::ostringstream sstr;
+    sstr << "Grammar expectation failure: " << e.what_;
+    throw file_not_parsed_exception(file_path, sstr.str().c_str());
   }
 
   // Now that we have the various key/value pairs, construct the config

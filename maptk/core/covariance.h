@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -7,7 +7,10 @@
 #ifndef MAPTK_COVARIANCE_H_
 #define MAPTK_COVARIANCE_H_
 
+#include "core_config.h"
+
 #include <iostream>
+
 #include "matrix.h"
 
 namespace maptk
@@ -134,11 +137,13 @@ typedef covariance_<3,float> covariance_3f;
 
 /// output stream operator for a covariance
 template <unsigned N, typename T>
-std::ostream&  operator<<(std::ostream& s, const covariance_<N,T>& c);
+//MAPTK_CORE_EXPORT
+std::ostream& operator<<(std::ostream& s, const covariance_<N,T>& c);
 
 /// input stream operator for a covariance
 template <unsigned N, typename T>
-std::istream&  operator>>(std::istream& s, covariance_<N,T>& c);
+//MAPTK_CORE_EXPORT
+std::istream& operator>>(std::istream& s, covariance_<N,T>& c);
 
 
 } // end namespace maptk

@@ -7,12 +7,14 @@
 #ifndef MAPTK_ALGO_ALGORITHM_H_
 #define MAPTK_ALGO_ALGORITHM_H_
 
+#include <maptk/core/core_config.h>
+
 #include <string>
 #include <vector>
 
-#include <maptk/core/config_block.h>
-
 #include <boost/shared_ptr.hpp>
+
+#include <maptk/core/config_block.h>
 
 namespace maptk
 {
@@ -21,7 +23,7 @@ namespace algo
 {
 
 /// An abstract base class for all algorithms
-class algorithm
+class MAPTK_CORE_EXPORT algorithm
 {
 public:
   /// Return the name of this algorithm
@@ -84,7 +86,8 @@ public:
  *  \sa algorithm_impl
  */
 template <typename Self>
-class algorithm_def : public algorithm
+class MAPTK_CORE_EXPORT algorithm_def
+  : public algorithm
 {
 public:
   typedef boost::shared_ptr<Self> base_sptr;
@@ -190,7 +193,8 @@ public:
  *  \sa algorithm_def
  */
 template <typename Self, typename Base>
-class algorithm_impl : public Base
+class algorithm_impl
+  : public Base
 {
 public:
   typedef boost::shared_ptr<Base> base_sptr;
