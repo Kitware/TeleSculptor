@@ -44,3 +44,24 @@ IMPLEMENT_TEST(look_at)
   // Y axis is inverted
   TEST_EQUAL("look_at up projects up", tmp.y() < 0.0, true);
 }
+
+
+IMPLEMENT_TEST(projection)
+{
+  using namespace maptk;
+  vector_2d pp(300,400);
+  camera_intrinsics_d K(1000, pp);
+  vector_3d focus(0, 1, -2);
+  maptk::camera_d cam(vector_3d(3, -4, 7), rotation_d(), K);
+  cam.look_at(focus);
+
+  matrix_3x4d P(cam);
+  vector_3d test_pt(1,2,3);
+  vector_4d test_hpt(test_pt.x(), test_pt.y(), test_pt.z(), 1.0);
+
+  vector_3d proj_hpt = P * test_hpt;
+  vector_2d proj_pt(proj_hpt.x()/proj_hpt.z(), proj_hpt.y()/proj_hpt.z());
+
+  TEST_NEAR("camera projection = matrix multiplication",
+             (cam.project(test_pt) - proj_pt).magnitude(), 0.0, 1e-12);
+}
