@@ -21,7 +21,7 @@ namespace algo
 
 /// An abstract base class for matching feature points
 class MAPTK_CORE_EXPORT match_features
-: public algorithm_def<match_features>
+  : public algorithm_def<match_features>
 {
 public:
   /// Return the name of this algorithm

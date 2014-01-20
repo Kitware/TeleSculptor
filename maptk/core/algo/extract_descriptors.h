@@ -21,7 +21,7 @@ namespace algo
 
 /// An abstract base class for extracting feature descriptors
 class MAPTK_CORE_EXPORT extract_descriptors
-: public algorithm_def<extract_descriptors>
+  : public algorithm_def<extract_descriptors>
 {
 public:
   /// Return the name of this algorithm
