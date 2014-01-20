@@ -148,7 +148,8 @@ IMPLEMENT_TEST(ideal_points)
   TEST_NEAR("Frobenius norm between estimated and true homography",
             H_error, 0.0, 1e-4);
 
-  unsigned num_inliers = std::count(inliers.begin(), inliers.end(), true);
+  unsigned num_inliers = static_cast<unsigned>(std::count(inliers.begin(),
+                                                          inliers.end(), true));
   std::cout << "num inliers "<<num_inliers<<std::endl;
   TEST_EQUAL("All points are inliers", num_inliers, 100);
 }
@@ -181,7 +182,8 @@ IMPLEMENT_TEST(noisy_points)
   TEST_NEAR("Frobenius norm between estimated and true homography",
             H_error, 0.0, 0.2);
 
-  unsigned num_inliers = std::count(inliers.begin(), inliers.end(), true);
+  unsigned num_inliers = static_cast<unsigned>(std::count(inliers.begin(),
+                                                          inliers.end(), true));
   std::cout << "num inliers "<<num_inliers<<std::endl;
   if (num_inliers < 90)
   {
@@ -223,7 +225,8 @@ IMPLEMENT_TEST(outlier_points)
   TEST_NEAR("Frobenius norm between estimated and true homography",
             H_error, 0.0, 1e-4);
 
-  unsigned num_inliers = std::count(inliers.begin(), inliers.end(), true);
+  unsigned num_inliers = static_cast<unsigned>(std::count(inliers.begin(),
+                                                          inliers.end(), true));
   std::cout << "num inliers "<<num_inliers<<std::endl;
 
   unsigned correct_inliers = 0;

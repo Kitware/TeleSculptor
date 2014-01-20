@@ -49,8 +49,8 @@ cv::Mat
 maptk_descriptors_to_ocv(const std::vector<maptk::descriptor_sptr>& desc)
 {
   using namespace maptk;
-  const unsigned num = desc.size();
-  const unsigned dim = desc[0]->size();
+  const unsigned int num = static_cast<unsigned_int>(desc.size());
+  const unsigned int dim = static_cast<unsinged_int>(desc[0]->size());
   cv::Mat_<T> mat(num,dim);
   for( unsigned int i=0; i<num; ++i )
   {
