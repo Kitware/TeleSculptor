@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -20,7 +20,8 @@ namespace algo
 {
 
 /// An abstract base class for matching feature points
-class match_features : public algorithm_def<match_features>
+class MAPTK_CORE_EXPORT match_features
+: public algorithm_def<match_features>
 {
 public:
   /// Return the name of this algorithm

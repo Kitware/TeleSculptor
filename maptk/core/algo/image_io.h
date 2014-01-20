@@ -21,7 +21,7 @@ namespace algo
 {
 
 /// An abstract base class for reading and writing images
-class image_io : public algorithm_def<image_io>
+class MAPTK_CORE_EXPORT image_io : public algorithm_def<image_io>
 {
 public:
   /// Return the name of this algorithm

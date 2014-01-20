@@ -20,8 +20,8 @@ namespace algo
 {
 
 /// An abstract base class for detecting feature points
-class detect_features
-  : public algorithm_def<detect_features>
+class MAPTK_CORE_EXPORT detect_features
+: public algorithm_def<detect_features>
 {
 public:
   /// Return the name of this algorithm
