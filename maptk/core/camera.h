@@ -58,7 +58,8 @@ typedef boost::shared_ptr<camera> camera_sptr;
  * Contains camera location, orientation, and intrinsics
  */
 template <typename T>
-class MAPTK_CORE_EXPORT camera_ : public camera
+class MAPTK_CORE_EXPORT camera_
+  : public camera
 {
 public:
   /// Default Constructor
