@@ -83,6 +83,7 @@ match_features_homography
   std::vector<bool> inliers;
   matrix_3x3d H = h_estimator_->estimate(feat1, feat2, init_matches,
                                          inliers, 2.0);
+  (void) H; // H not yet used, avoid compiler warning
   std::cout << "inlier ratio: "<< std::count(inliers.begin(), inliers.end(), true)
             << "/"<<inliers.size() << std::endl;
 
