@@ -12,6 +12,13 @@
 #include "matrix.h"
 #include "vector.h"
 
+
+/**
+ * \file
+ * \brief Header for \link maptk::rotation_ rotation_<T> \endlink class
+ */
+
+
 namespace maptk
 {
 

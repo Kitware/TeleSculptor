@@ -7,6 +7,14 @@
 #include "matrix.h"
 
 
+/**
+ * \file
+ * \brief Implementation of \link maptk::matrix_ matrix_<M,N,T> \endlink
+ *        for \c T = { \c float, \c double }, \c M = { 2, 3, 4}, and
+ *        \c N = { 2, 3, 4}
+ */
+
+
 namespace maptk
 {
 

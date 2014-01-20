@@ -6,6 +6,15 @@
 
 #include "camera_intrinsics.h"
 
+
+/**
+ * \file
+ * \brief Implementation of \link maptk::camera_intrinsics_
+ *        camera_intrinsics_<T> \endlink class
+ *        for \c T = { \c float, \c double }
+ */
+
+
 namespace maptk
 {
 

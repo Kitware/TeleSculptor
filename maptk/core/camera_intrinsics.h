@@ -14,6 +14,14 @@
 #include "matrix.h"
 #include "vector.h"
 
+
+/**
+ * \file
+ * \brief Header for \link maptk::camera_intrinsics_ camera_intrinsics_<T>
+ *        \endlink class
+ */
+
+
 namespace maptk
 {
 

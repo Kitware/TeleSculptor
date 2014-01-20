@@ -7,6 +7,14 @@
 #include "vector.h"
 
 
+/**
+ * \file
+ * \brief Implementation of \link maptk::vector_ vector_<N,T> \endlink and
+ *        related classes for \c T = { \c float, \c double } and
+ *        \c N = { 2, 3, 4}
+ */
+
+
 namespace maptk
 {
 

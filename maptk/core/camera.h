@@ -18,6 +18,13 @@
 #include <boost/shared_ptr.hpp>
 
 
+/**
+ * \file
+ * \brief Header for \link maptk::camera camera \endlink and
+ *        \link maptk::camera_ camera_<T> \endlink classes
+ */
+
+
 namespace maptk
 {
 

@@ -14,6 +14,16 @@
 
 #include "vector_cmath.h"
 
+
+/**
+ * \file
+ * \brief Header for \link maptk::vector_ vector_<N,T> \endlink class
+ *        as well as \link maptk::vector_2_ vector_2_<T> \endlink,
+ *        \link maptk::vector_3_ vector_3_<T> \endlink, and
+ *        \link maptk::vector_4_ vector_4_<T> \endlink classes
+ */
+
+
 namespace maptk
 {
 

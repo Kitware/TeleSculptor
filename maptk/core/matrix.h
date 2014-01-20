@@ -19,6 +19,13 @@
 #include "vector.h"
 #include "vector_cmath.h"
 
+
+/**
+ * \file
+ * \brief Header for \link maptk::matrix_ matrix_<M,N,T> \endlink class
+ */
+
+
 namespace maptk
 {
 

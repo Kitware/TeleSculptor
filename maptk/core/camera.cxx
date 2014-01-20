@@ -7,6 +7,14 @@
 #include "camera.h"
 #include <iomanip>
 
+
+/**
+ * \file
+ * \brief Implementation of \link maptk::camera_ camera_<T> \endlink class
+ *        for \c T = { \c float, \c double }
+ */
+
+
 namespace maptk
 {
 
