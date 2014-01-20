@@ -8,6 +8,42 @@ over the previous v0.1.1 release.
 Updates since v0.1.1
 --------------------
 
+Core
+
+ * Applied the "abstract base class, templated derived class" pattern to the
+   camera class.  The same pattern had been used for features and landmarks.
+   It allows a camera to be implemented in either double or float but
+   maintain a type-agnostic interface through a common base class.
+
+ * Added type conversion for rotation, camera, and camera_intrinsics
+   (e.g. cast rotation_<double> to rotation_<float>).
+
+ * Added a look_at() member function to the camera_ class to set the camera
+   rotation such that the camera looks at a specified point and has an up
+   direction aligned with the specified scene up direction.
+   Unit tests provided.
+
+ * Added map() and unmap() member functions to camera_intrinsics to apply
+   and undo the camera intrinsic mapping as 2D-2D transformation.  Also can
+   map 3D points in normalized camera coordinates to 2D image coordinates.
+   Unit tests provided.
+
+ * Added project() member function to the camera_ class project 3D points to
+   2D image points by applying both extrinsic and intrinsic parameters.
+   Unit tests provided.
+
+ * Added a magnitude() member and normalized() function for the vector class.
+
+ * Added a vector_<T> constructor from a raw array of data (const T*)
+
+ * Added a matrix_<T> member functions to set and extract rows and columns.
+
+ * Added a matrix_<T> member function to update a sub-matrix.
+
 
 Fixes since v0.1.1
 ------------------
+
+Core
+
+ * Fixed typo in variable name in camera_ constructor (intrincs --> intrinsics)
