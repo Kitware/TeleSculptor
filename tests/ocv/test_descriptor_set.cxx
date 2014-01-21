@@ -133,34 +133,55 @@ void test_conversions(const cv::Mat& data)
   }
 }
 
+inline cv::Mat rand_double_mat(int r, int c)
+{
+  cv::Mat m(r, c, CV_64F);
+  cv::randu(m, 0.0, 1.0);
+  return m;
+}
+
+inline cv::Mat rand_float_mat(int r, int c)
+{
+  cv::Mat m(r, c, CV_32F);
+  cv::randu(m, 0.0f, 1.0f);
+  return m;
+}
+
+inline cv::Mat rand_byte_mat(int r, int c)
+{
+  cv::Mat m(r, c, CV_8U);
+  cv::randu(m, 0, 255);
+  return m;
+}
+
 }
 
 
 IMPLEMENT_TEST(double_conversions)
 {
-  test_conversions(cv::Mat(1, 50, CV_64F));
-  test_conversions(cv::Mat(64, 50, CV_64F));
-  test_conversions(cv::Mat(128, 1, CV_64F));
-  test_conversions(cv::Mat(125, 20, CV_64F));
-  test_conversions(cv::Mat(256, 10, CV_64F));
+  test_conversions(rand_double_mat(1, 50));
+  test_conversions(rand_double_mat(64, 50));
+  test_conversions(rand_double_mat(128, 1));
+  test_conversions(rand_double_mat(125, 20));
+  test_conversions(rand_double_mat(256, 10));
 }
 
 
 IMPLEMENT_TEST(float_conversions)
 {
-  test_conversions(cv::Mat(1, 50, CV_32F));
-  test_conversions(cv::Mat(64, 50, CV_32F));
-  test_conversions(cv::Mat(128, 1, CV_32F));
-  test_conversions(cv::Mat(125, 20, CV_32F));
-  test_conversions(cv::Mat(256, 10, CV_32F));
+  test_conversions(rand_float_mat(1, 50));
+  test_conversions(rand_float_mat(64, 50));
+  test_conversions(rand_float_mat(128, 1));
+  test_conversions(rand_float_mat(125, 20));
+  test_conversions(rand_float_mat(256, 10));
 }
 
 
 IMPLEMENT_TEST(byte_conversions)
 {
-  test_conversions(cv::Mat(1, 50, CV_8U));
-  test_conversions(cv::Mat(64, 50, CV_8U));
-  test_conversions(cv::Mat(128, 1, CV_8U));
-  test_conversions(cv::Mat(125, 20, CV_8U));
-  test_conversions(cv::Mat(256, 10, CV_8U));
+  test_conversions(rand_byte_mat(1, 50));
+  test_conversions(rand_byte_mat(64, 50));
+  test_conversions(rand_byte_mat(128, 1));
+  test_conversions(rand_byte_mat(125, 20));
+  test_conversions(rand_byte_mat(256, 10));
 }
