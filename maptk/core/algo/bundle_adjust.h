@@ -39,6 +39,10 @@ public:
 };
 
 
+/// type definition for shared pointer to a bundle adjust algorithm
+typedef boost::shared_ptr<bundle_adjust> bundle_adjust_sptr;
+
+
 } // end namespace algo
 
 } // end namespace maptk
