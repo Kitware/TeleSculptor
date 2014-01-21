@@ -109,7 +109,7 @@ bool convert_pos2krtd_dir(const fs::path& pos_dir,
   {
     mean += cam.center();
   }
-  mean /= cameras.size();
+  mean /= static_cast<double>(cameras.size());
   // only use the mean easting and northing
   mean[2] = 0.0;
 

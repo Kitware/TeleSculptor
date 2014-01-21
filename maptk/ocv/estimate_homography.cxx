@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -34,11 +34,13 @@ estimate_homography
   std::vector<cv::Point2f> points1, points2;
   BOOST_FOREACH(const vector_2d& v, pts1)
   {
-    points1.push_back(cv::Point2f(v.x(), v.y()));
+    points1.push_back(cv::Point2f(static_cast<float>(v.x()),
+                                  static_cast<float>(v.y())));
   }
   BOOST_FOREACH(const vector_2d& v, pts2)
   {
-    points2.push_back(cv::Point2f(v.x(), v.y()));
+    points2.push_back(cv::Point2f(static_cast<float>(v.x()),
+                                  static_cast<float>(v.y())));
   }
 
   cv::Mat inliers_mat;

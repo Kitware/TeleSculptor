@@ -99,7 +99,9 @@ image_container
   }
 
   return vil_image_view<vxl_byte>(chunk, img.first_pixel(),
-                                  img.width(), img.height(), img.depth(),
+                                  static_cast<unsigned int>(img.width()),
+                                  static_cast<unsigned int>(img.height()),
+                                  static_cast<unsigned int>(img.depth()),
                                   img.w_step(), img.h_step(), img.d_step());
 }
 

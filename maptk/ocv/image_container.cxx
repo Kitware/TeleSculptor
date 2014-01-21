@@ -70,8 +70,8 @@ image_container
       img.w_step() == static_cast<ptrdiff_t>(img.depth()) )
   {
     image_memory_sptr memory = img.memory();
-    cv::Mat out(img.height(), img.width(),
-                CV_MAKETYPE(CV_8U, img.depth()),
+    cv::Mat out(static_cast<int>(img.height()), static_cast<int>(img.width()),
+                CV_MAKETYPE(CV_8U, static_cast<int>(img.depth())),
                 memory->data(), img.h_step());
 
     // if this MAPTK image is already wrapping cv::Mat allocated data,
@@ -88,8 +88,8 @@ image_container
   }
 
   // allocated a new cv::Mat
-  cv::Mat out(img.height(), img.width(),
-              CV_MAKETYPE(CV_8U, img.depth()));
+  cv::Mat out(static_cast<int>(img.height()), static_cast<int>(img.width()),
+              CV_MAKETYPE(CV_8U, static_cast<int>(img.depth())));
   // wrap the new image as a MAPTK image (always a shallow copy)
   image new_img = ocv_to_maptk(out);
   new_img.copy_from(img);

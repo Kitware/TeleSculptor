@@ -60,3 +60,7 @@ Tests
 
  * Increased the tolerance on the homography estimation noisy points test.
    It was failing randomly because the error was just over the tolerance.
+
+Warnings / Errors
+
+ * Fixed various Windows VS10 compiler warnings
