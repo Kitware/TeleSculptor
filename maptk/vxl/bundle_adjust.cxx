@@ -99,7 +99,7 @@ bundle_adjust
         lm_ids.insert(id);
       }
     }
-    if( !id_map.empty() )
+    if( !frame_lm_ids.empty() )
     {
       id_map[frame] = frame_lm_ids;
     }
@@ -110,7 +110,7 @@ bundle_adjust
   std::vector<track_id_t> lm_id_index;
   std::map<track_id_t, frame_id_t> lm_id_reverse_map;
   std::vector<vgl_point_3d<double> > active_world_pts;
-  BOOST_FOREACH(const track_id_t& id, lm_id_index)
+  BOOST_FOREACH(const track_id_t& id, lm_ids)
   {
     lm_id_reverse_map[id] = lm_id_index.size();
     lm_id_index.push_back(id);
