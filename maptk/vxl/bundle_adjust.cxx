@@ -68,6 +68,8 @@ bundle_adjust
   }
   typedef vxl::camera_map::map_vcam_t map_vcam_t;
   typedef maptk::landmark_map::map_landmark_t map_landmark_t;
+  typedef unsigned long track_id_t;
+  typedef unsigned int frame_id_t;
 
   // extract data from containers
   map_vcam_t vcams = camera_map_to_vpgl(*cameras);
@@ -75,21 +77,21 @@ bundle_adjust
   std::vector<track_sptr> trks = tracks->tracks();
 
   // find the set of all frame numbers containing a camera and track data
-  std::set<unsigned long> lm_ids;
-  typedef std::map<unsigned int, std::set<unsigned long> > id_map_t;
+  std::set<track_id_t> lm_ids;
+  typedef std::map<frame_id_t, std::set<track_id_t> > id_map_t;
   id_map_t id_map;
   BOOST_FOREACH(const map_vcam_t::value_type& p, vcams)
   {
-    const unsigned int frame = p.first;
+    const frame_id_t& frame = p.first;
     track_set_sptr ftracks = tracks->active_tracks(static_cast<int>(frame));
     if (! ftracks || ftracks->size() == 0)
     {
       continue;
     }
-    std::set<unsigned long> frame_lm_ids;
+    std::set<track_id_t> frame_lm_ids;
     BOOST_FOREACH(const track_sptr& t, ftracks->tracks())
     {
-      const unsigned long id = t->id();
+      const track_id_t id = t->id();
       // make sure the track id has an associated landmark
       if( lms.find(id) != lms.end() )
       {
@@ -105,18 +107,18 @@ bundle_adjust
 
   // create a compact set of data to optimize,
   // with mapping back to original indices
-  std::vector<unsigned long> lm_id_index;
-  std::map<unsigned long, unsigned int> lm_id_reverse_map;
+  std::vector<track_id_t> lm_id_index;
+  std::map<track_id_t, frame_id_t> lm_id_reverse_map;
   std::vector<vgl_point_3d<double> > active_world_pts;
-  BOOST_FOREACH(const unsigned long id, lm_id_index)
+  BOOST_FOREACH(const track_id_t& id, lm_id_index)
   {
     lm_id_reverse_map[id] = lm_id_index.size();
     lm_id_index.push_back(id);
     vector_3d pt = lms[id]->loc();
     active_world_pts.push_back(vgl_point_3d<double>(pt.x(), pt.y(), pt.z()));
   }
-  std::vector<unsigned int> cam_id_index;
-  std::map<unsigned int, unsigned int> cam_id_reverse_map;
+  std::vector<frame_id_t> cam_id_index;
+  std::map<frame_id_t, frame_id_t> cam_id_reverse_map;
   std::vector<vpgl_perspective_camera<double> > active_vcams;
   BOOST_FOREACH(const id_map_t::value_type& p, id_map)
   {
@@ -132,9 +134,9 @@ bundle_adjust
            std::vector<bool>(active_world_pts.size(), false));
   BOOST_FOREACH(const id_map_t::value_type& p, id_map)
   {
-    const unsigned int c_idx = cam_id_reverse_map[p.first];
+    const frame_id_t c_idx = cam_id_reverse_map[p.first];
     std::vector<bool>& mask_row = mask[c_idx];
-    BOOST_FOREACH(const unsigned long lm_idx, p.second)
+    BOOST_FOREACH(const track_id_t& lm_idx, p.second)
     {
       mask_row[lm_id_reverse_map[lm_idx]] = true;
     }
