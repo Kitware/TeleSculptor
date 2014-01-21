@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -52,11 +52,11 @@ features_to_ocv_keypoints(const maptk::feature_set& feat_set)
     const feature_sptr f = *it;
     cv::KeyPoint kp;
     vector_2d pt = f->loc();
-    kp.pt.x = pt.x();
-    kp.pt.y = pt.y();
-    kp.response = f->magnitude();
-    kp.size = f->scale();
-    kp.angle = f->angle();
+    kp.pt.x = static_cast<float>(pt.x());
+    kp.pt.y = static_cast<float>(pt.y());
+    kp.response = static_cast<float>(f->magnitude());
+    kp.size = static_cast<float>(f->scale());
+    kp.angle = static_cast<float>(f->angle());
     kpts.push_back(kp);
   }
   return kpts;

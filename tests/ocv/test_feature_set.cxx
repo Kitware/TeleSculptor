@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -59,7 +59,7 @@ IMPLEMENT_TEST(populated_set)
   std::vector<cv::KeyPoint> kpts;
   for (unsigned i=0; i<num_feat; ++i)
   {
-    cv::KeyPoint kp(i/2.0f, i/3.0f, i/10.0, (i*3.14159f)/num_feat, 100.0f/i);
+    cv::KeyPoint kp(i/2.0f, i/3.0f, i/10.0f, (i*3.14159f)/num_feat, 100.0f/i);
     kpts.push_back(kp);
   }
   ocv::feature_set fs(kpts);
