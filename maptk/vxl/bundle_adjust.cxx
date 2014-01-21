@@ -128,7 +128,6 @@ bundle_adjust
   }
 
   // Construct the camera/landmark visibility matrix
-  std::vector<vgl_point_2d<double> > image_pts;
   std::vector<std::vector<bool> >
       mask(active_vcams.size(),
            std::vector<bool>(active_world_pts.size(), false));
@@ -139,6 +138,31 @@ bundle_adjust
     BOOST_FOREACH(const track_id_t& lm_idx, p.second)
     {
       mask_row[lm_id_reverse_map[lm_idx]] = true;
+    }
+  }
+
+  // Populate the vector of observations in the correct order
+  std::vector<vgl_point_2d<double> > image_pts;
+  for (unsigned int i=0; i<active_vcams.size(); ++i)
+  {
+    const frame_id_t f_id = cam_id_index[i];
+    for (unsigned int j=0; j<active_world_pts.size(); ++j)
+    {
+      if(mask[i][j])
+      {
+        const track_id_t t_id = lm_id_index[j];
+        track_sptr t;
+        BOOST_FOREACH(t, trks)
+        {
+          if(t->id() == t_id)
+          {
+            break;
+          }
+        }
+        track::history_const_itr tsi = t->find(f_id);
+        vector_2d loc(tsi->feat->loc());
+        image_pts.push_back(vgl_point_2d<double>(loc.x(), loc.y()));
+      }
     }
   }
 
