@@ -14,6 +14,16 @@
 
 #include "vector_cmath.h"
 
+
+/**
+ * \file
+ * \brief Header for \link maptk::vector_ vector_<N,T> \endlink class
+ *        as well as \link maptk::vector_2_ vector_2_<T> \endlink,
+ *        \link maptk::vector_3_ vector_3_<T> \endlink, and
+ *        \link maptk::vector_4_ vector_4_<T> \endlink classes
+ */
+
+
 namespace maptk
 {
 
@@ -27,6 +37,12 @@ public:
 
   /// Constructor - does not initialize
   vector_<N,T>() {}
+
+  /// Constructor from an array of data - no bounds checking
+  vector_<N,T>(const T* data)
+  {
+    memcpy( data_, data, sizeof(data_) );
+  }
 
   /// Copy Constructor
   vector_<N,T>(const vector_<N,T>& other)
@@ -93,6 +109,8 @@ public:
     return result;
   }
 
+  /// The magnitude (L2 norm) of the vector
+  T magnitude() const { return cmath::l2_norm( data_ ); }
 
 protected:
   T data_[N];
@@ -136,6 +154,15 @@ inner_product(const vector_<N,T>& v1, const vector_<N,T>& v2)
     sum += *a * *b;
   }
   return sum;
+}
+
+
+/// Compute a normalized version of this vector
+template <unsigned N, typename T>
+inline vector_<N,T>
+normalized(const vector_<N,T>& v)
+{
+  return v / v.magnitude();
 }
 
 

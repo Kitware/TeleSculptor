@@ -14,9 +14,17 @@
 #include <cassert>
 
 #include <boost/integer/static_min_max.hpp>
+#include <boost/static_assert.hpp>
 
 #include "vector.h"
 #include "vector_cmath.h"
+
+
+/**
+ * \file
+ * \brief Header for \link maptk::matrix_ matrix_<M,N,T> \endlink class
+ */
+
 
 namespace maptk
 {
@@ -116,6 +124,62 @@ public:
 
   /// Return the transpose of this matrix
   matrix_<N,M,T> transpose() const;
+
+  /// Update a sub-block of this matrix located at (top, left)
+  template <unsigned A, unsigned B>
+  matrix_<M,N,T>& update(const matrix_<A,B,T>& m,
+                         unsigned top=0, unsigned left=0)
+  {
+    BOOST_STATIC_ASSERT(A<=N);
+    BOOST_STATIC_ASSERT(B<=M);
+    assert(top + A <= M);
+    assert(left + B <= N);
+    for (unsigned int i=0; i<A; ++i)
+    {
+      for (unsigned int j=0; j<B; ++j)
+      {
+        this->data_[i+top][j+left] = m(i, j);
+      }
+    }
+    return *this;
+  }
+
+  /// Update a row of the matrix with the values in a vector
+  matrix_<M,N,T>& set_row(unsigned row, const vector_<N,T>& v)
+  {
+    for (unsigned int j=0; j<N; ++j)
+    {
+      this->data_[row][j] = v[j];
+    }
+    return *this;
+  }
+
+  /// Update a column of the matrix with the values in a vector
+  matrix_<M,N,T>& set_column(unsigned col, const vector_<M,T>& v)
+  {
+    for (unsigned int i=0; i<M; ++i)
+    {
+      this->data_[i][col] = v[i];
+    }
+    return *this;
+  }
+
+  /// Access a row of the matrix
+  vector_<N,T> row(unsigned r) const
+  {
+    return vector_<N,T>(this->data_[r]);
+  }
+
+  /// Access a column of the matrix
+  vector_<M,T> column(unsigned c) const
+  {
+    vector_<M,T> v;
+    for (unsigned int i=0; i<M; ++i)
+    {
+      v[i] = this->data_[i][c];
+    }
+    return v;
+  }
 
   /// Return the Frobenius norm of the matrix (sqrt of sum of squares)
   T frobenius_norm() const { return cmath::l2_norm( data_[0] ); }
