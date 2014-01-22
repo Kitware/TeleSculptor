@@ -68,7 +68,7 @@ IMPLEMENT_TEST(cube)
   // and a the projections of each landmark into each frame
   camera_intrinsics_d K(1000, vector_2d(640,480));
   rotation_d R; // identity
-  std::map<unsigned int, camera_sptr> cameras;
+  camera_map::map_camera_t cameras;
   std::vector<std::vector<vector_2d> > projections(landmark_pts.size());
   const size_t num_cams = 20;
   for (size_t i=0; i<num_cams; ++i)
@@ -103,7 +103,7 @@ IMPLEMENT_TEST(cube)
   }
 
   // create landmarks from landmark_pts
-  std::map<unsigned long, landmark_sptr> landmarks;
+  landmark_map::map_landmark_t landmarks;
   for (size_t i=0; i<num_pts; ++i)
   {
     //landmarks[i] = landmark_sptr(new landmark_d(landmark_pts[i]));

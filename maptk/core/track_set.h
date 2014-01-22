@@ -37,7 +37,7 @@ public:
   virtual std::vector<track_sptr> tracks() const = 0;
 
   /// Return the last (largest) frame number containing tracks
-  virtual unsigned int last_frame() const;
+  virtual frame_id_t last_frame() const;
 
   /// Return all tracks active on a frame.
   /**
@@ -69,7 +69,7 @@ public:
 
 protected:
   /// Convert an offset number to an absolute frame number
-  unsigned int offset_to_frame(int offset) const;
+  frame_id_t offset_to_frame(int offset) const;
 };
 
 

@@ -12,6 +12,7 @@
  * \brief Header file for a map from frame IDs to cameras
  */
 
+#include "types.h"
 #include "camera.h"
 #include <map>
 #include <boost/shared_ptr.hpp>
@@ -24,7 +25,7 @@ class camera_map
 {
 public:
   /// typedef for std::map from integer IDs to cameras
-  typedef std::map<unsigned int, camera_sptr> map_camera_t;
+  typedef std::map<frame_id_t, camera_sptr> map_camera_t;
 
   /// Destructor
   virtual ~camera_map() {}

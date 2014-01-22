@@ -8,6 +8,7 @@
 #define MAPTK_TRACK_H_
 
 #include "core_config.h"
+#include "types.h"
 
 #include <vector>
 
@@ -35,7 +36,7 @@ public:
   struct track_state
   {
     /// Constructor
-    track_state(unsigned int frame,
+    track_state(frame_id_t frame,
                 feature_sptr feature,
                 descriptor_sptr descriptor)
     : frame_id(frame),
@@ -43,7 +44,7 @@ public:
       desc(descriptor) {}
 
     /// The frame identifier (i.e. frame number)
-    unsigned int frame_id;
+    frame_id_t frame_id;
     /// The feature detected on frame \a frame_id
     feature_sptr feat;
     /// The descriptor extracted on frame \a frame_id
@@ -62,16 +63,16 @@ public:
   explicit track(const track_state& ts);
 
   /// Access the track identification number
-  unsigned long id() const { return id_; }
+  track_id_t id() const { return id_; }
 
   /// Set the track identification number
-  void set_id(unsigned long id) { id_ = id; }
+  void set_id(track_id_t id) { id_ = id; }
 
   /// Access the first frame number covered by this track
-  unsigned int first_frame() const;
+  frame_id_t first_frame() const;
 
   /// Access the last frame number covered by this track
-  unsigned int last_frame() const;
+  frame_id_t last_frame() const;
 
   /// Append a track state.
   /**
@@ -92,7 +93,7 @@ public:
    *  \param [in] frame the frame number to access
    *  \return an iterator at the frame if found, or end() if not
    */
-  history_const_itr find(unsigned int frame) const;
+  history_const_itr find(frame_id_t frame) const;
 
   /// Return the number of states in the track.
   size_t size() const { return history_.size(); }
@@ -101,7 +102,7 @@ protected:
   /// The ordered array of track states
   std::vector<track_state> history_;
   /// The unique track identification number
-  unsigned long id_;
+  track_id_t id_;
 };
 
 

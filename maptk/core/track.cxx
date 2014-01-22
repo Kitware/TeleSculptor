@@ -11,7 +11,7 @@ namespace
 class compare_state_frame
 {
 public:
-  bool operator()(const maptk::track::track_state& ts, unsigned int frame)
+  bool operator()(const maptk::track::track_state& ts, maptk::frame_id_t frame)
   {
     return ts.frame_id < frame;
   }
@@ -50,7 +50,7 @@ track
 
 
 /// Access the first frame number covered by this track
-unsigned int
+frame_id_t
 track
 ::first_frame() const
 {
@@ -63,7 +63,7 @@ track
 
 
 /// Access the last frame number covered by this track
-unsigned int
+frame_id_t
 track
 ::last_frame() const
 {
@@ -93,7 +93,7 @@ track
 /// Find the track state iterator matching \a frame
 track::history_const_itr
 track
-::find(unsigned int frame) const
+::find(frame_id_t frame) const
 {
   if( frame < this->first_frame() ||
       frame > this->last_frame() )

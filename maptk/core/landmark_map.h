@@ -12,6 +12,7 @@
  * \brief Header file for a map from IDs to landmarks
  */
 
+#include "types.h"
 #include "landmark.h"
 #include <map>
 #include <boost/shared_ptr.hpp>
@@ -24,7 +25,7 @@ class landmark_map
 {
 public:
   /// typedef for std::map from integer IDs to landmarks
-  typedef std::map<unsigned long, landmark_sptr> map_landmark_t;
+  typedef std::map<landmark_id_t, landmark_sptr> map_landmark_t;
 
   /// Destructor
   virtual ~landmark_map() {}

@@ -68,8 +68,6 @@ bundle_adjust
   }
   typedef vxl::camera_map::map_vcam_t map_vcam_t;
   typedef maptk::landmark_map::map_landmark_t map_landmark_t;
-  typedef unsigned long track_id_t;
-  typedef unsigned int frame_id_t;
 
   // extract data from containers
   map_vcam_t vcams = camera_map_to_vpgl(*cameras);

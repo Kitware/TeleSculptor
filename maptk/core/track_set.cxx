@@ -21,11 +21,11 @@ track_set
 
 
 /// Return the last (largest) frame number containing tracks
-unsigned int
+frame_id_t
 track_set
 ::last_frame() const
 {
-  unsigned int last_frame = 0;
+  frame_id_t last_frame = 0;
   const std::vector<track_sptr> all_tracks = this->tracks();
   BOOST_FOREACH(track_sptr t, all_tracks)
   {
@@ -43,7 +43,7 @@ track_set_sptr
 track_set
 ::active_tracks(int offset)
 {
-  unsigned int frame_number = offset_to_frame(offset);
+  frame_id_t frame_number = offset_to_frame(offset);
   const std::vector<track_sptr> all_tracks = this->tracks();
   std::vector<track_sptr> active_tracks;
   BOOST_FOREACH(track_sptr t, all_tracks)
@@ -62,7 +62,7 @@ track_set_sptr
 track_set
 ::inactive_tracks(int offset)
 {
-  unsigned int frame_number = offset_to_frame(offset);
+  frame_id_t frame_number = offset_to_frame(offset);
   const std::vector<track_sptr> all_tracks = this->tracks();
   std::vector<track_sptr> inactive_tracks;
   BOOST_FOREACH(track_sptr t, all_tracks)
@@ -81,7 +81,7 @@ feature_set_sptr
 track_set
 ::last_frame_features() const
 {
-  const unsigned int last_frame = this->last_frame();
+  const frame_id_t last_frame = this->last_frame();
   std::vector<feature_sptr> last_features;
   const std::vector<track_sptr> all_tracks = this->tracks();
   std::vector<track_sptr> active_tracks;
@@ -101,7 +101,7 @@ descriptor_set_sptr
 track_set
 ::last_frame_descriptors() const
 {
-  const unsigned int last_frame = this->last_frame();
+  const frame_id_t last_frame = this->last_frame();
   std::vector<descriptor_sptr> last_descriptors;
   const std::vector<track_sptr> all_tracks = this->tracks();
   std::vector<track_sptr> active_tracks;
@@ -117,17 +117,17 @@ track_set
 
 
 /// Convert an offset number to an absolute frame number
-unsigned int
+frame_id_t
 track_set
 ::offset_to_frame(int offset) const
 {
   if( offset >= 0 )
   {
-    return static_cast<unsigned int>(offset);
+    return static_cast<frame_id_t>(offset);
   }
 
-  unsigned int frame_number = this->last_frame() + 1;
-  if( static_cast<unsigned int>(-offset) <= frame_number )
+  frame_id_t frame_number = this->last_frame() + 1;
+  if( static_cast<frame_id_t>(-offset) <= frame_number )
   {
     frame_number += offset;
   }
