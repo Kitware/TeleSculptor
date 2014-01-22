@@ -6,6 +6,7 @@
 
 #include <test_common.h>
 
+#include <maptk/core/metrics.h>
 #include <maptk/vxl/register.h>
 #include <maptk/vxl/bundle_adjust.h>
 #include <vnl/vnl_random.h>
@@ -113,6 +114,20 @@ IMPLEMENT_TEST(cube)
   camera_map_sptr cam_map(new simple_camera_map(cameras));
   landmark_map_sptr lm_map(new simple_landmark_map(landmarks));
   track_set_sptr trk_set(new simple_track_set(tracks));
+
+  double init_rmse = reprojection_rmse(cam_map->cameras(),
+                                       lm_map->landmarks(),
+                                       trk_set->tracks());
+  std::cout << "initial reprojection RMSE: " << init_rmse << std::endl;
+  if (init_rmse < 10.0)
+  {
+    TEST_ERROR("Initial reprojection RMSE should be large before SBA");
+  }
+
   ba.optimize(cam_map, lm_map, trk_set);
 
+  double end_rmse = reprojection_rmse(cam_map->cameras(),
+                                      lm_map->landmarks(),
+                                      trk_set->tracks());
+  TEST_NEAR("RMSE after SBA", end_rmse, 0.0, 1e-6);
 }
