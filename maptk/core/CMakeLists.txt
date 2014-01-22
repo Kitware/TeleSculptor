@@ -21,6 +21,7 @@ set(maptk_core_headers_public
   local_geo_cs.h
   match_set.h
   matrix.h
+  metrics.h
   rotation.h
   registrar.h
   track.h
@@ -59,6 +60,7 @@ set(maptk_core_sources
   landmark.cxx
   local_geo_cs.cxx
   matrix.cxx
+  metrics.cxx
   rotation.cxx
   track.cxx
   track_set.cxx
