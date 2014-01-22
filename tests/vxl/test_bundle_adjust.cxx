@@ -103,11 +103,10 @@ IMPLEMENT_TEST(cube)
     }
   }
 
-  // create landmarks from landmark_pts
+  // initialize all landmarks to the origin
   landmark_map::map_landmark_t landmarks;
   for (size_t i=0; i<num_pts; ++i)
   {
-    //landmarks[i] = landmark_sptr(new landmark_d(landmark_pts[i]));
     landmarks[i] = landmark_sptr(new landmark_d(vector_3d(0,0,0)));
   }
 
