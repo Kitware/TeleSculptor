@@ -12,6 +12,14 @@
 #include <maptk/core/camera_map.h>
 #include <maptk/core/landmark_map.h>
 
+
+/**
+ * \file
+ * \brief Header defining abstract \link maptk::algo::bundle_adjust
+ *        bundle adjustment \endlink algorithm
+ */
+
+
 namespace maptk
 {
 

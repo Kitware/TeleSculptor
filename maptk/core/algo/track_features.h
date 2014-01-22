@@ -18,6 +18,14 @@
 #include <maptk/core/image_container.h>
 #include <maptk/core/track_set.h>
 
+
+/**
+ * \file
+ * \brief Header defining abstract \link maptk::algo::track_features feature
+ *        tracking \endlink algorithm and concrete \link
+ *        maptk::algo::simple_track_features simple_track_features \endlink
+ */
+
 namespace maptk
 {
 

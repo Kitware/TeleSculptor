@@ -8,6 +8,14 @@
 #include <maptk/core/track_set.h>
 #include <boost/foreach.hpp>
 
+
+/**
+ * \file
+ * \brief Implementation of \link maptk::track_set track_set \endlink
+ *        member functions
+ */
+
+
 namespace maptk
 {
 

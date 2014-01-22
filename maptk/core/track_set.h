@@ -17,6 +17,15 @@
 #include "feature_set.h"
 #include "track.h"
 
+
+/**
+ * \file
+ * \brief Header file for an abstract \link maptk::track_set track_set
+ *        \endlink and a concrete \link maptk::simple_track_set
+ *        simple_track_set \endlink
+ */
+
+
 namespace maptk
 {
 

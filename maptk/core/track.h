@@ -17,6 +17,13 @@
 #include "descriptor.h"
 #include "feature.h"
 
+
+/**
+ * \file
+ * \brief Header for \link maptk::track track \endlink objects
+ */
+
+
 namespace maptk
 {
 

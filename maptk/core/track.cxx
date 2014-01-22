@@ -6,6 +6,13 @@
 
 #include "track.h"
 
+
+/**
+ * \file
+ * \brief Implementation of \link maptk::track track \endlink
+ */
+
+
 namespace
 {
 class compare_state_frame

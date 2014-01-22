@@ -19,6 +19,13 @@
 #include <boost/iterator/counting_iterator.hpp>
 #include <boost/algorithm/string/join.hpp>
 
+/**
+ * \file
+ * \brief Implementation of \link maptk::algo::simple_track_features
+          simple_track_features \endlink
+ */
+
+
 
 INSTANTIATE_ALGORITHM_DEF(maptk::algo::track_features);
 
