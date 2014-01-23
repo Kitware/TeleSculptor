@@ -23,7 +23,9 @@ namespace maptk
 {
 
 /// A representation of 3D rotation.
-/// Internally rotation is stored in quaternion form
+/**
+ * Internally rotation is stored in quaternion form
+ */
 template <typename T>
 class MAPTK_CORE_EXPORT rotation_
 {
@@ -44,14 +46,18 @@ public:
   rotation_<T>(const T& yaw, const T& pitch, const T& roll);
 
   /// Constructor - from a matrix
-  /// requires orthonormal matrix with +1 determinant
+  /**
+   * requires orthonormal matrix with +1 determinant
+   */
   explicit rotation_<T>(const matrix_<3,3,T>& mat);
 
   /// Convert to a 3x3 matrix
   operator matrix_<3,3,T>() const;
 
   /// Access the quaternion as a 4-vector
-  /// The first 3 components are imaginary (i,j,k) the last is real
+  /**
+   * The first 3 components are imaginary (i,j,k) the last is real
+   */
   const vector_4_<T>& quaternion() const { return q_; }
 
   /// Convert to yaw, pitch, and roll
@@ -67,8 +73,10 @@ public:
   rotation_<T> operator*(const rotation_<T>& rhs) const;
 
   /// Rotate a vector
-  /// \note for a large number of vectors, it is more efficient to
-  /// create a rotation matrix and use matrix multiplcation
+  /**
+   * \note for a large number of vectors, it is more efficient to
+   *       create a rotation matrix and use matrix multiplcation
+   */
   vector_<3,T> operator*(const vector_<3,T>& rhs) const;
 
 
