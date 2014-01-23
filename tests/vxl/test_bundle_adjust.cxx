@@ -96,7 +96,6 @@ camera_seq(maptk::frame_id_t num_cams = 20)
   camera_map::map_camera_t cameras;
 
   // create a camera sequence (elliptical path)
-  // and a the projections of each landmark into each frame
   camera_intrinsics_d K(1000, vector_2d(640,480));
   rotation_d R; // identity
   for (frame_id_t i=0; i<num_cams; ++i)
@@ -107,6 +106,28 @@ camera_seq(maptk::frame_id_t num_cams = 20)
     camera_d* cam = new camera_d(vector_3d(x,y,2+frac), R, K);
     // look at the origin
     cam->look_at(vector_3d(0,0,0));
+    cameras[i] = camera_sptr(cam);
+  }
+  return camera_map_sptr(new simple_camera_map(cameras));
+}
+
+
+// create an initial camera sequence with all cameras at the same location
+maptk::camera_map_sptr
+init_cameras(maptk::frame_id_t num_cams = 20)
+{
+  using namespace maptk;
+  camera_map::map_camera_t cameras;
+
+  // create a camera sequence (elliptical path)
+  camera_intrinsics_d K(1000, vector_2d(640,480));
+  rotation_d R; // identity
+  vector_3d c(0, 0, 1);
+  for (frame_id_t i=0; i<num_cams; ++i)
+  {
+    camera_d* cam = new camera_d(c, R, K);
+    // look at the origin
+    cam->look_at(vector_3d(0,0,0), vector_3d(0,1,0));
     cameras[i] = camera_sptr(cam);
   }
   return camera_map_sptr(new simple_camera_map(cameras));
@@ -139,7 +160,41 @@ projected_tracks(maptk::landmark_map_sptr landmarks,
 }
 
 
-IMPLEMENT_TEST(cube)
+// input to SBA is the ideal solution, make sure it doesn't diverge
+IMPLEMENT_TEST(from_solution)
+{
+  using namespace maptk;
+  vxl::bundle_adjust ba;
+
+  // create landmarks at the corners of a cube
+  landmark_map_sptr landmarks = cube_corners(2.0);
+
+  // create a camera sequence (elliptical path)
+  camera_map_sptr cameras = camera_seq();
+
+  // create tracks from the projections
+  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+
+  double init_rmse = reprojection_rmse(cameras->cameras(),
+                                       landmarks->landmarks(),
+                                       tracks->tracks());
+  std::cout << "initial reprojection RMSE: " << init_rmse << std::endl;
+  if (init_rmse > 1e-12)
+  {
+    TEST_ERROR("Initial reprojection RMSE should be small");
+  }
+
+  ba.optimize(cameras, landmarks, tracks);
+
+  double end_rmse = reprojection_rmse(cameras->cameras(),
+                                      landmarks->landmarks(),
+                                      tracks->tracks());
+  TEST_NEAR("RMSE after SBA", end_rmse, 0.0, 1e-12);
+}
+
+
+// initialize all landmarks to the origin as input to SBA
+IMPLEMENT_TEST(zero_landmarks)
 {
   using namespace maptk;
   vxl::bundle_adjust ba;
@@ -169,6 +224,46 @@ IMPLEMENT_TEST(cube)
   ba.optimize(cameras, landmarks0, tracks);
 
   double end_rmse = reprojection_rmse(cameras->cameras(),
+                                      landmarks0->landmarks(),
+                                      tracks->tracks());
+  TEST_NEAR("RMSE after SBA", end_rmse, 0.0, 1e-6);
+}
+
+
+// initialize all landmarks to the origin and all cameras to same location as input to SBA
+IMPLEMENT_TEST(zero_landmarks_same_cameras)
+{
+  using namespace maptk;
+  vxl::bundle_adjust ba;
+
+  // create landmarks at the corners of a cube
+  landmark_map_sptr landmarks = cube_corners(2.0);
+
+  // create a camera sequence (elliptical path)
+  camera_map_sptr cameras = camera_seq();
+
+  // create tracks from the projections
+  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+
+  // initialize all landmarks to the origin
+  landmark_map_sptr landmarks0 = init_landmarks(landmarks->size());
+
+  // initialize all cameras to at (0,0,1) looking at the origin
+  camera_map_sptr cameras0 = init_cameras(cameras->size());
+
+
+  double init_rmse = reprojection_rmse(cameras0->cameras(),
+                                       landmarks0->landmarks(),
+                                       tracks->tracks());
+  std::cout << "initial reprojection RMSE: " << init_rmse << std::endl;
+  if (init_rmse < 10.0)
+  {
+    TEST_ERROR("Initial reprojection RMSE should be large before SBA");
+  }
+
+  ba.optimize(cameras0, landmarks0, tracks);
+
+  double end_rmse = reprojection_rmse(cameras0->cameras(),
                                       landmarks0->landmarks(),
                                       tracks->tracks());
   TEST_NEAR("RMSE after SBA", end_rmse, 0.0, 1e-6);
