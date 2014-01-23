@@ -49,32 +49,48 @@ IMPLEMENT_TEST(create)
 }
 
 
-// construct a vector of points at the corners of a cube centered at c
+// construct a map of landmarks at the corners of a cube centered at c
 // with a side length of s
-std::vector<maptk::vector_3d>
+maptk::landmark_map_sptr
 cube_corners(double s, const maptk::vector_3d& c=maptk::vector_3d(0,0,0))
 {
   using namespace maptk;
 
   // create corners of a cube
-  std::vector<vector_3d> corners;
+  landmark_map::map_landmark_t landmarks;
   s /= 2.0;
-  corners.push_back(c + vector_3d(-s, -s, -s));
-  corners.push_back(c + vector_3d(-s, -s,  s));
-  corners.push_back(c + vector_3d(-s,  s, -s));
-  corners.push_back(c + vector_3d(-s,  s,  s));
-  corners.push_back(c + vector_3d( s, -s, -s));
-  corners.push_back(c + vector_3d( s, -s,  s));
-  corners.push_back(c + vector_3d( s,  s, -s));
-  corners.push_back(c + vector_3d( s,  s,  s));
+  landmarks[0] = landmark_sptr(new landmark_d(c + vector_3d(-s, -s, -s)));
+  landmarks[1] = landmark_sptr(new landmark_d(c + vector_3d(-s, -s,  s)));
+  landmarks[2] = landmark_sptr(new landmark_d(c + vector_3d(-s,  s, -s)));
+  landmarks[3] = landmark_sptr(new landmark_d(c + vector_3d(-s,  s,  s)));
+  landmarks[4] = landmark_sptr(new landmark_d(c + vector_3d( s, -s, -s)));
+  landmarks[5] = landmark_sptr(new landmark_d(c + vector_3d( s, -s,  s)));
+  landmarks[6] = landmark_sptr(new landmark_d(c + vector_3d( s,  s, -s)));
+  landmarks[7] = landmark_sptr(new landmark_d(c + vector_3d( s,  s,  s)));
 
-  return corners;
+  return landmark_map_sptr(new simple_landmark_map(landmarks));
+}
+
+
+// construct map of landmarks will all locations at c
+maptk::landmark_map_sptr
+init_landmarks(maptk::landmark_id_t num_lm,
+               const maptk::vector_3d& c=maptk::vector_3d(0,0,0))
+{
+  using namespace maptk;
+
+  landmark_map::map_landmark_t lm_map;
+  for (landmark_id_t i=0; i<num_lm; ++i)
+  {
+    lm_map[i] = landmark_sptr(new landmark_d(c));
+  }
+  return landmark_map_sptr(new simple_landmark_map(lm_map));
 }
 
 
 // create a camera sequence (elliptical path)
-maptk::camera_map::map_camera_t
-camera_seq(frame_id_t num_cams = 20)
+maptk::camera_map_sptr
+camera_seq(maptk::frame_id_t num_cams = 20)
 {
   using namespace maptk;
   camera_map::map_camera_t cameras;
@@ -93,31 +109,33 @@ camera_seq(frame_id_t num_cams = 20)
     cam->look_at(vector_3d(0,0,0));
     cameras[i] = camera_sptr(cam);
   }
-  return cameras;
+  return camera_map_sptr(new simple_camera_map(cameras));
 }
 
 
-// create tracks by projecting the points into the cameras
-std::vector<maptk::track_sptr>
-projected_tracks(const std::vector<maptk::vector_3d>& points,
-                 const maptk::camera_map::map_camera_t& cameras)
+// create tracks by projecting the landmarks into the cameras
+maptk::track_set_sptr
+projected_tracks(maptk::landmark_map_sptr landmarks,
+                 maptk::camera_map_sptr cameras)
 {
   using namespace maptk;
   std::vector<track_sptr> tracks;
-  const track_id_t num_pts = static_cast<track_id_t>(points.size());
+  camera_map::map_camera_t cam_map = cameras->cameras();
+  landmark_map::map_landmark_t lm_map = landmarks->landmarks();
+  const track_id_t num_pts = static_cast<track_id_t>(landmarks->size());
   for (track_id_t i=0; i<num_pts; ++i)
   {
     track_sptr t(new track);
     t->set_id(i);
     tracks.push_back(t);
-    BOOST_FOREACH(const camera_map::map_camera_t::value_type& p, cameras)
+    BOOST_FOREACH(const camera_map::map_camera_t::value_type& p, cam_map)
     {
       const camera_d& cam = dynamic_cast<const camera_d&>(*p.second);
-      feature_sptr f(new feature_d(cam.project(points[i])));
+      feature_sptr f(new feature_d(cam.project(lm_map[i]->loc())));
       t->append(track::track_state(p.first, f, descriptor_sptr()));
     }
   }
-  return tracks;
+  return track_set_sptr(new simple_track_set(tracks));
 }
 
 
@@ -127,39 +145,31 @@ IMPLEMENT_TEST(cube)
   vxl::bundle_adjust ba;
 
   // create landmarks at the corners of a cube
-  std::vector<vector_3d> points = cube_corners(2.0);
+  landmark_map_sptr landmarks = cube_corners(2.0);
 
   // create a camera sequence (elliptical path)
-  camera_map::map_camera_t cameras = camera_seq();
+  camera_map_sptr cameras = camera_seq();
 
   // create tracks from the projections
-  std::vector<track_sptr> tracks = projected_tracks(points, cameras);
+  track_set_sptr tracks = projected_tracks(landmarks, cameras);
 
   // initialize all landmarks to the origin
-  landmark_map::map_landmark_t landmarks;
-  const landmark_id_t num_pts = static_cast<landmark_id_t>(points.size());
-  for (landmark_id_t i=0; i<num_pts; ++i)
-  {
-    landmarks[i] = landmark_sptr(new landmark_d(vector_3d(0,0,0)));
-  }
+  landmark_map_sptr landmarks0 = init_landmarks(landmarks->size());
 
-  camera_map_sptr cam_map(new simple_camera_map(cameras));
-  landmark_map_sptr lm_map(new simple_landmark_map(landmarks));
-  track_set_sptr trk_set(new simple_track_set(tracks));
 
-  double init_rmse = reprojection_rmse(cam_map->cameras(),
-                                       lm_map->landmarks(),
-                                       trk_set->tracks());
+  double init_rmse = reprojection_rmse(cameras->cameras(),
+                                       landmarks0->landmarks(),
+                                       tracks->tracks());
   std::cout << "initial reprojection RMSE: " << init_rmse << std::endl;
   if (init_rmse < 10.0)
   {
     TEST_ERROR("Initial reprojection RMSE should be large before SBA");
   }
 
-  ba.optimize(cam_map, lm_map, trk_set);
+  ba.optimize(cameras, landmarks0, tracks);
 
-  double end_rmse = reprojection_rmse(cam_map->cameras(),
-                                      lm_map->landmarks(),
-                                      trk_set->tracks());
+  double end_rmse = reprojection_rmse(cameras->cameras(),
+                                      landmarks0->landmarks(),
+                                      tracks->tracks());
   TEST_NEAR("RMSE after SBA", end_rmse, 0.0, 1e-6);
 }
