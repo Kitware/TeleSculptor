@@ -109,6 +109,17 @@ public:
    */
   vector_<3,T> operator*(const vector_<3,T>& rhs) const;
 
+  /// Equality operator
+  inline bool operator==(const rotation_<T>& rhs) const
+  {
+    return this->q_ == rhs.q_;
+  }
+
+  /// Inequality operator
+  inline bool operator!=(const rotation_<T>& rhs) const
+  {
+    return !(*this == rhs);
+  }
 
 protected:
   /// rotatation stored internally as a quaternion vector
