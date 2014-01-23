@@ -272,6 +272,7 @@ rotation_<T>
 template <typename T>
 std::ostream&  operator<<(std::ostream& s, const rotation_<T>& r)
 {
+  s << r.quaternion();
   return s;
 }
 
@@ -280,6 +281,9 @@ std::ostream&  operator<<(std::ostream& s, const rotation_<T>& r)
 template <typename T>
 std::istream&  operator>>(std::istream& s, rotation_<T>& r)
 {
+  vector_4_<T> q;
+  s >> q;
+  r = rotation_<T>(q);
   return s;
 }
 

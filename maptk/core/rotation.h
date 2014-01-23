@@ -121,11 +121,11 @@ typedef rotation_<float> rotation_f;
 
 
 /// output stream operator for a rotation
-template <unsigned N, typename T>
+template <typename T>
 MAPTK_CORE_EXPORT std::ostream&  operator<<(std::ostream& s, const rotation_<T>& r);
 
 /// input stream operator for a rotation
-template <unsigned N, typename T>
+template <typename T>
 MAPTK_CORE_EXPORT std::istream&  operator>>(std::istream& s, rotation_<T>& r);
 
 
