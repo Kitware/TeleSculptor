@@ -10,6 +10,7 @@
 #include <maptk/vxl/vxl_config.h>
 
 #include <maptk/core/algo/bundle_adjust.h>
+#include <boost/scoped_ptr.hpp>
 
 /**
  * \file
@@ -27,6 +28,15 @@ class MAPTK_VXL_EXPORT bundle_adjust
 : public algo::algorithm_impl<bundle_adjust, algo::bundle_adjust>
 {
 public:
+  /// Constructor
+  bundle_adjust();
+
+  /// Destructor
+  virtual ~bundle_adjust();
+
+  /// Copy Constructor
+  bundle_adjust(const bundle_adjust& other);
+
   /// Return the name of this implementation
   std::string impl_name() const { return "vxl"; }
 
@@ -47,6 +57,11 @@ public:
   optimize(camera_map_sptr& cameras,
            landmark_map_sptr& landmarks,
            track_set_sptr tracks) const;
+
+private:
+  /// private implementation class
+  class priv;
+  boost::scoped_ptr<priv> d_;
 };
 
 

@@ -21,6 +21,48 @@ namespace maptk
 namespace vxl
 {
 
+
+/// Private implementation class
+class bundle_adjust::priv
+{
+public:
+  /// Constructor
+  priv()
+  {
+  }
+
+  priv(const priv& other)
+  {
+  }
+
+  /// the vxl sparse bundle adjustor
+  vpgl_bundle_adjust ba;
+};
+
+
+/// Constructor
+bundle_adjust
+::bundle_adjust()
+: d_(new priv)
+{
+}
+
+
+/// Copy Constructor
+bundle_adjust
+::bundle_adjust(const bundle_adjust& other)
+: d_(new priv(*other.d_))
+{
+}
+
+
+/// Destructor
+bundle_adjust
+::~bundle_adjust()
+{
+}
+
+
 /// Get this algorithm's \link maptk::config_block configuration block \endlink
 config_block_sptr
 bundle_adjust
@@ -28,7 +70,14 @@ bundle_adjust
 {
   // get base config from base class
   config_block_sptr config = maptk::algo::bundle_adjust::get_configuration();
-
+  config->set_value("verbose", "false");
+  config->set_value("use_m_estimator", "false");
+  config->set_value("m_estimator_scale", "1.0");
+  config->set_value("estimate_focal_length", "false");
+  config->set_value("normalize_data", "true");
+  config->set_value("max_iterations", "1000");
+  config->set_value("x_tolerance", "1e-8");
+  config->set_value("g_tolerance", "1e-8");
   return config;
 }
 
@@ -42,6 +91,14 @@ bundle_adjust
   // An alternative is to check for key presence before performing a get_value() call.
   config_block_sptr config = this->get_configuration();
   config->merge_config(in_config);
+  d_->ba.set_verbose(config->get_value<bool>("verbose"));
+  d_->ba.set_use_m_estimator(config->get_value<bool>("use_m_estimator"));
+  d_->ba.set_m_estimator_scale(config->get_value<double>("m_estimator_scale"));
+  d_->ba.set_self_calibrate(config->get_value<bool>("estimate_focal_length"));
+  d_->ba.set_normalize_data(config->get_value<bool>("normalize_data"));
+  d_->ba.set_max_iterations(config->get_value<unsigned>("max_iterations"));
+  d_->ba.set_x_tolerence(config->get_value<double>("x_tolerance"));
+  d_->ba.set_g_tolerence(config->get_value<double>("g_tolerance"));
 }
 
 
@@ -165,8 +222,7 @@ bundle_adjust
   }
 
   // Run the vpgl bundle adjustment on the selected data
-  vpgl_bundle_adjust ba;
-  ba.optimize(active_vcams, active_world_pts, image_pts, mask);
+  d_->ba.optimize(active_vcams, active_world_pts, image_pts, mask);
 
   // map optimized results back into maptk structures
   for(unsigned int i=0; i<active_vcams.size(); ++i)
