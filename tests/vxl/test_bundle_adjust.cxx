@@ -248,6 +248,7 @@ IMPLEMENT_TEST(noisy_landmarks)
   vxl::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
+  cfg->set_value("g_tolerance", "1e-12");
   ba.set_configuration(cfg);
 
   // create landmarks at the corners of a cube
@@ -288,6 +289,7 @@ IMPLEMENT_TEST(noisy_landmarks_noisy_cameras)
   vxl::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
+  cfg->set_value("g_tolerance", "1e-12");
   ba.set_configuration(cfg);
 
   // create landmarks at the corners of a cube
@@ -331,6 +333,7 @@ IMPLEMENT_TEST(zero_landmarks)
   vxl::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
+  cfg->set_value("g_tolerance", "1e-12");
   ba.set_configuration(cfg);
 
   // create landmarks at the corners of a cube
@@ -371,6 +374,7 @@ IMPLEMENT_TEST(zero_landmarks_same_cameras)
   vxl::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
+  cfg->set_value("g_tolerance", "1e-12");
   ba.set_configuration(cfg);
 
   // create landmarks at the corners of a cube
