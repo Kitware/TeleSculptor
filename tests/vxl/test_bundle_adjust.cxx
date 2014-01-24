@@ -239,6 +239,31 @@ subset_tracks(maptk::track_set_sptr in_tracks, double keep_frac=0.75)
 }
 
 
+// add Gaussian noise to track feature locations
+maptk::track_set_sptr
+noisy_tracks(maptk::track_set_sptr in_tracks, double stdev=1.0)
+{
+  using namespace maptk;
+
+  std::vector<track_sptr> tracks = in_tracks->tracks();
+  std::vector<track_sptr> new_tracks;
+  BOOST_FOREACH(const track_sptr& t, tracks)
+  {
+    track_sptr nt(new track);
+    nt->set_id(t->id());
+    for(track::history_const_itr it=t->begin(); it!=t->end(); ++it)
+    {
+      vector_2d loc = it->feat->loc() + random_point2(stdev);
+      track::track_state ts(*it);
+      ts.feat = feature_sptr(new feature_d(loc));
+      nt->append(ts);
+    }
+    new_tracks.push_back(nt);
+  }
+  return track_set_sptr(new simple_track_set(new_tracks));
+}
+
+
 // input to SBA is the ideal solution, make sure it doesn't diverge
 IMPLEMENT_TEST(from_solution)
 {
@@ -602,4 +627,54 @@ IMPLEMENT_TEST(subset_tracks)
                                       landmarks0->landmarks(),
                                       tracks0->tracks());
   TEST_NEAR("RMSE after SBA", end_rmse, 0.0, 1e-6);
+}
+
+
+// add noise to landmarks and cameras and tracks before input to SBA
+// select a subset of tracks/track_states to constrain the problem
+IMPLEMENT_TEST(noisy_tracks)
+{
+  using namespace maptk;
+  vxl::bundle_adjust ba;
+  config_block_sptr cfg = ba.get_configuration();
+  cfg->set_value("verbose", "true");
+  cfg->set_value("g_tolerance", "1e-12");
+  ba.set_configuration(cfg);
+
+  // create landmarks at the corners of a cube
+  landmark_map_sptr landmarks = cube_corners(2.0);
+
+  // create a camera sequence (elliptical path)
+  camera_map_sptr cameras = camera_seq();
+
+  // create tracks from the projections
+  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+
+  // add Gaussian noise to the landmark positions
+  landmark_map_sptr landmarks0 = noisy_landmarks(landmarks, 0.1);
+
+  // add Gaussian noise to the camera positions and orientations
+  camera_map_sptr cameras0 = noisy_cameras(cameras, 0.1, 0.1);
+
+  // remove some tracks/track_states and add Gaussian noise
+  const double track_stdev = 1.0;
+  track_set_sptr tracks0 = noisy_tracks(subset_tracks(tracks, 0.5),
+                                        track_stdev);
+
+
+  double init_rmse = reprojection_rmse(cameras0->cameras(),
+                                       landmarks0->landmarks(),
+                                       tracks0->tracks());
+  std::cout << "initial reprojection RMSE: " << init_rmse << std::endl;
+  if (init_rmse < 10.0)
+  {
+    TEST_ERROR("Initial reprojection RMSE should be large before SBA");
+  }
+
+  ba.optimize(cameras0, landmarks0, tracks0);
+
+  double end_rmse = reprojection_rmse(cameras0->cameras(),
+                                      landmarks0->landmarks(),
+                                      tracks0->tracks());
+  TEST_NEAR("RMSE after SBA", end_rmse, 0.0, track_stdev);
 }
