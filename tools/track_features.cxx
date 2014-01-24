@@ -12,6 +12,7 @@
 
 #include <maptk/modules.h>
 
+#include <maptk/core/track_set_io.h>
 #include <maptk/core/algo/image_io.h>
 #include <maptk/core/algo/detect_features.h>
 #include <maptk/core/algo/extract_descriptors.h>
@@ -171,16 +172,10 @@ static int maptk_main(int argc, char const* argv[])
   std::string output_tracks_file = config->get_value<std::string>("output_tracks_file");
 
   std::ifstream ifs(image_list_file.c_str());
-  std::ofstream ofs(output_tracks_file.c_str());
 
   if (!ifs)
   {
     std::cerr << "Error: Could not open image list \""<<image_list_file<<"\""<<std::endl;
-    return EXIT_FAILURE;
-  }
-  if (!ofs)
-  {
-    std::cerr << "Error: Could not open track file for writing: \""<<output_tracks_file<<"\""<<std::endl;
     return EXIT_FAILURE;
   }
 
@@ -201,15 +196,7 @@ static int maptk_main(int argc, char const* argv[])
   }
 
   // Writing out tracks to file
-  std::vector<maptk::track_sptr> trks = tracks->tracks();
-  BOOST_FOREACH(maptk::track_sptr t, trks)
-  {
-    typedef maptk::track::history_const_itr state_itr;
-    for (state_itr si = t->begin(); si != t->end(); ++si)
-    {
-      ofs << t->id() << " " << si->frame_id << " " << *si->feat << "\n";
-    }
-  }
+  maptk::write_track_file(tracks, output_tracks_file);
 
   return EXIT_SUCCESS;
 }

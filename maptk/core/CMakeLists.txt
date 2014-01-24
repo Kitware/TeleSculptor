@@ -26,6 +26,7 @@ set(maptk_core_headers_public
   registrar.h
   track.h
   track_set.h
+  track_set_io.h
   types.h
   vector.h
   vector_cmath.h
@@ -64,6 +65,7 @@ set(maptk_core_sources
   rotation.cxx
   track.cxx
   track_set.cxx
+  track_set_io.cxx
   vector.cxx
 
   exceptions/algorithm.cxx
