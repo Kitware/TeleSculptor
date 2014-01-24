@@ -31,6 +31,7 @@ main(int argc, char* argv[])
   CHECK_ARGS(1);
 
   maptk::vxl::register_algorithms();
+  rng.reseed(1234);
 
   testname_t const testname = argv[1];
 
