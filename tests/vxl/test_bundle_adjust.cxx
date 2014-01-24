@@ -15,10 +15,18 @@
 static vnl_random rng;
 
 
-maptk::vector_2d random_point(double mean, double stdev)
+inline
+maptk::vector_3d random_point3(double stdev)
+{
+  maptk::vector_3d v(rng.normal64(), rng.normal64(), rng.normal64());
+  return stdev * v;
+}
+
+inline
+maptk::vector_2d random_point2(double stdev)
 {
   maptk::vector_2d v(rng.normal64(), rng.normal64());
-  return stdev * v + mean;
+  return stdev * v;
 }
 
 #define TEST_ARGS ()
@@ -89,6 +97,23 @@ init_landmarks(maptk::landmark_id_t num_lm,
 }
 
 
+// add Gaussian noise to the landmark positions
+maptk::landmark_map_sptr
+noisy_landmarks(maptk::landmark_map_sptr landmarks,
+                double stdev=1.0)
+{
+  using namespace maptk;
+
+  landmark_map::map_landmark_t lm_map = landmarks->landmarks();
+  BOOST_FOREACH(landmark_map::map_landmark_t::value_type& p, lm_map)
+  {
+    landmark_d& lm = dynamic_cast<landmark_d&>(*p.second);
+    lm.set_loc(lm.get_loc() + random_point3(stdev));
+  }
+  return landmark_map_sptr(new simple_landmark_map(lm_map));
+}
+
+
 // create a camera sequence (elliptical path)
 maptk::camera_map_sptr
 camera_seq(maptk::frame_id_t num_cams = 20)
@@ -132,6 +157,25 @@ init_cameras(maptk::frame_id_t num_cams = 20)
     cameras[i] = camera_sptr(cam);
   }
   return camera_map_sptr(new simple_camera_map(cameras));
+}
+
+
+// add positional and rotational Gaussian noise to cameras
+maptk::camera_map_sptr
+noisy_cameras(maptk::camera_map_sptr cameras,
+              double pos_stdev=1.0, double rot_stdev=1.0)
+{
+  using namespace maptk;
+
+  camera_map::map_camera_t cam_map = cameras->cameras();
+  BOOST_FOREACH(camera_map::map_camera_t::value_type& p, cam_map)
+  {
+    camera_d& cam = dynamic_cast<camera_d&>(*p.second);
+    cam.set_center(cam.get_center() + random_point3(pos_stdev));
+    rotation_d rand_rot(random_point3(rot_stdev));
+    cam.set_rotation(cam.get_rotation() * rand_rot);
+  }
+  return camera_map_sptr(new simple_camera_map(cam_map));
 }
 
 
@@ -191,6 +235,83 @@ IMPLEMENT_TEST(from_solution)
                                       landmarks->landmarks(),
                                       tracks->tracks());
   TEST_NEAR("RMSE after SBA", end_rmse, 0.0, 1e-12);
+}
+
+
+// add noise to landmarks before input to SBA
+IMPLEMENT_TEST(noisy_landmarks)
+{
+  using namespace maptk;
+  vxl::bundle_adjust ba;
+
+  // create landmarks at the corners of a cube
+  landmark_map_sptr landmarks = cube_corners(2.0);
+
+  // create a camera sequence (elliptical path)
+  camera_map_sptr cameras = camera_seq();
+
+  // create tracks from the projections
+  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+
+  // add Gaussian noise to the landmark positions
+  landmark_map_sptr landmarks0 = noisy_landmarks(landmarks, 0.1);
+
+
+  double init_rmse = reprojection_rmse(cameras->cameras(),
+                                       landmarks0->landmarks(),
+                                       tracks->tracks());
+  std::cout << "initial reprojection RMSE: " << init_rmse << std::endl;
+  if (init_rmse < 10.0)
+  {
+    TEST_ERROR("Initial reprojection RMSE should be large before SBA");
+  }
+
+  ba.optimize(cameras, landmarks0, tracks);
+
+  double end_rmse = reprojection_rmse(cameras->cameras(),
+                                      landmarks0->landmarks(),
+                                      tracks->tracks());
+  TEST_NEAR("RMSE after SBA", end_rmse, 0.0, 1e-6);
+}
+
+
+// add noise to landmarks and cameras before input to SBA
+IMPLEMENT_TEST(noisy_landmarks_noisy_cameras)
+{
+  using namespace maptk;
+  vxl::bundle_adjust ba;
+
+  // create landmarks at the corners of a cube
+  landmark_map_sptr landmarks = cube_corners(2.0);
+
+  // create a camera sequence (elliptical path)
+  camera_map_sptr cameras = camera_seq();
+
+  // create tracks from the projections
+  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+
+  // add Gaussian noise to the landmark positions
+  landmark_map_sptr landmarks0 = noisy_landmarks(landmarks, 0.1);
+
+  // add Gaussian noise to the camera positions and orientations
+  camera_map_sptr cameras0 = noisy_cameras(cameras, 0.1, 0.1);
+
+
+  double init_rmse = reprojection_rmse(cameras0->cameras(),
+                                       landmarks0->landmarks(),
+                                       tracks->tracks());
+  std::cout << "initial reprojection RMSE: " << init_rmse << std::endl;
+  if (init_rmse < 10.0)
+  {
+    TEST_ERROR("Initial reprojection RMSE should be large before SBA");
+  }
+
+  ba.optimize(cameras0, landmarks0, tracks);
+
+  double end_rmse = reprojection_rmse(cameras0->cameras(),
+                                      landmarks0->landmarks(),
+                                      tracks->tracks());
+  TEST_NEAR("RMSE after SBA", end_rmse, 0.0, 1e-6);
 }
 
 
