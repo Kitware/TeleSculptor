@@ -41,6 +41,14 @@ Core
 
  * Added a matrix_<T> member function to update a sub-matrix.
 
+ * Implemented the input and output stream operator for the rotation class.
+
+ * Added == and != operators to the rotation class.
+
+ * Added constructors and accessor functions to convert rotations to and
+   from axis/angle representation and the related Rodrigues vector
+   representation.  Unit tests provided.
+
  * Added a track ID member to the track class.
 
  * Added landmark_map abstract container class to hold mappings between
@@ -77,3 +85,8 @@ Core
  * Fixed typo in variable name in camera_ constructor (intrincs --> intrinsics)
 
  * Fixed landmark inheritance: landmark_<T> is now derived from landmark.
+
+ * Fixed invalid doxygen syntax in rotation.h
+
+ * Rotation constructor from quaternion vector is now explicit to avoid
+   accidental casting.
