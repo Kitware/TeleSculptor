@@ -205,6 +205,40 @@ projected_tracks(maptk::landmark_map_sptr landmarks,
 }
 
 
+// randomly drop a fraction of the track states
+maptk::track_set_sptr
+subset_tracks(maptk::track_set_sptr in_tracks, double keep_frac=0.75)
+{
+  using namespace maptk;
+
+  std::srand(0);
+  std::vector<track_sptr> tracks = in_tracks->tracks();
+  std::vector<track_sptr> new_tracks;
+  const int rand_thresh = static_cast<int>(keep_frac * RAND_MAX);
+  BOOST_FOREACH(const track_sptr& t, tracks)
+  {
+    track_sptr nt(new track);
+    nt->set_id(t->id());
+    std::cout << "track "<<t->id()<<":";
+    for(track::history_const_itr it=t->begin(); it!=t->end(); ++it)
+    {
+      if(std::rand() < rand_thresh)
+      {
+        nt->append(*it);
+        std::cout << " .";
+      }
+      else
+      {
+        std::cout << " X";
+      }
+    }
+    std::cout << std::endl;
+    new_tracks.push_back(nt);
+  }
+  return track_set_sptr(new simple_track_set(new_tracks));
+}
+
+
 // input to SBA is the ideal solution, make sure it doesn't diverge
 IMPLEMENT_TEST(from_solution)
 {
@@ -407,5 +441,165 @@ IMPLEMENT_TEST(zero_landmarks_same_cameras)
   double end_rmse = reprojection_rmse(cameras0->cameras(),
                                       landmarks0->landmarks(),
                                       tracks->tracks());
+  TEST_NEAR("RMSE after SBA", end_rmse, 0.0, 1e-6);
+}
+
+
+// add noise to landmarks and cameras before input to SBA
+// select a subset of cameras to optimize
+IMPLEMENT_TEST(subset_cameras)
+{
+  using namespace maptk;
+  vxl::bundle_adjust ba;
+  config_block_sptr cfg = ba.get_configuration();
+  cfg->set_value("verbose", "true");
+  cfg->set_value("g_tolerance", "1e-12");
+  ba.set_configuration(cfg);
+
+  // create landmarks at the corners of a cube
+  landmark_map_sptr landmarks = cube_corners(2.0);
+
+  // create a camera sequence (elliptical path)
+  camera_map_sptr cameras = camera_seq();
+
+  // create tracks from the projections
+  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+
+  // add Gaussian noise to the landmark positions
+  landmark_map_sptr landmarks0 = noisy_landmarks(landmarks, 0.1);
+
+  // add Gaussian noise to the camera positions and orientations
+  camera_map_sptr cameras0 = noisy_cameras(cameras, 0.1, 0.1);
+
+  camera_map::map_camera_t cam_map = cameras0->cameras();
+  camera_map::map_camera_t cam_map2;
+  BOOST_FOREACH(camera_map::map_camera_t::value_type& p, cam_map)
+  {
+    /// take every third camera
+    if(p.first % 3 == 0)
+    {
+      cam_map2.insert(p);
+    }
+  }
+  cameras0 = camera_map_sptr(new simple_camera_map(cam_map2));
+
+
+  TEST_EQUAL("Reduced number of cameras", cameras0->size(), 7);
+
+  double init_rmse = reprojection_rmse(cameras0->cameras(),
+                                       landmarks0->landmarks(),
+                                       tracks->tracks());
+  std::cout << "initial reprojection RMSE: " << init_rmse << std::endl;
+  if (init_rmse < 10.0)
+  {
+    TEST_ERROR("Initial reprojection RMSE should be large before SBA");
+  }
+
+  ba.optimize(cameras0, landmarks0, tracks);
+
+  double end_rmse = reprojection_rmse(cameras0->cameras(),
+                                      landmarks0->landmarks(),
+                                      tracks->tracks());
+  TEST_NEAR("RMSE after SBA", end_rmse, 0.0, 1e-6);
+}
+
+
+// add noise to landmarks and cameras before input to SBA
+// select a subset of landmarks to optimize
+IMPLEMENT_TEST(subset_landmarks)
+{
+  using namespace maptk;
+  vxl::bundle_adjust ba;
+  config_block_sptr cfg = ba.get_configuration();
+  cfg->set_value("verbose", "true");
+  cfg->set_value("g_tolerance", "1e-12");
+  ba.set_configuration(cfg);
+
+  // create landmarks at the corners of a cube
+  landmark_map_sptr landmarks = cube_corners(2.0);
+
+  // create a camera sequence (elliptical path)
+  camera_map_sptr cameras = camera_seq();
+
+  // create tracks from the projections
+  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+
+  // add Gaussian noise to the landmark positions
+  landmark_map_sptr landmarks0 = noisy_landmarks(landmarks, 0.1);
+
+  // add Gaussian noise to the camera positions and orientations
+  camera_map_sptr cameras0 = noisy_cameras(cameras, 0.1, 0.1);
+
+  // remove some landmarks
+  landmark_map::map_landmark_t lm_map = landmarks0->landmarks();
+  lm_map.erase(1);
+  lm_map.erase(4);
+  lm_map.erase(5);
+  landmarks0 = landmark_map_sptr(new simple_landmark_map(lm_map));
+
+  TEST_EQUAL("Reduced number of landmarks", landmarks0->size(), 5);
+
+  double init_rmse = reprojection_rmse(cameras0->cameras(),
+                                       landmarks0->landmarks(),
+                                       tracks->tracks());
+  std::cout << "initial reprojection RMSE: " << init_rmse << std::endl;
+  if (init_rmse < 10.0)
+  {
+    TEST_ERROR("Initial reprojection RMSE should be large before SBA");
+  }
+
+  ba.optimize(cameras0, landmarks0, tracks);
+
+  double end_rmse = reprojection_rmse(cameras0->cameras(),
+                                      landmarks0->landmarks(),
+                                      tracks->tracks());
+  TEST_NEAR("RMSE after SBA", end_rmse, 0.0, 1e-6);
+}
+
+
+// add noise to landmarks and cameras before input to SBA
+// select a subset of tracks/track_states to constrain the problem
+IMPLEMENT_TEST(subset_tracks)
+{
+  using namespace maptk;
+  vxl::bundle_adjust ba;
+  config_block_sptr cfg = ba.get_configuration();
+  cfg->set_value("verbose", "true");
+  cfg->set_value("g_tolerance", "1e-12");
+  ba.set_configuration(cfg);
+
+  // create landmarks at the corners of a cube
+  landmark_map_sptr landmarks = cube_corners(2.0);
+
+  // create a camera sequence (elliptical path)
+  camera_map_sptr cameras = camera_seq();
+
+  // create tracks from the projections
+  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+
+  // add Gaussian noise to the landmark positions
+  landmark_map_sptr landmarks0 = noisy_landmarks(landmarks, 0.1);
+
+  // add Gaussian noise to the camera positions and orientations
+  camera_map_sptr cameras0 = noisy_cameras(cameras, 0.1, 0.1);
+
+  // remove some tracks/track_states
+  track_set_sptr tracks0 = subset_tracks(tracks, 0.5);
+
+
+  double init_rmse = reprojection_rmse(cameras0->cameras(),
+                                       landmarks0->landmarks(),
+                                       tracks0->tracks());
+  std::cout << "initial reprojection RMSE: " << init_rmse << std::endl;
+  if (init_rmse < 10.0)
+  {
+    TEST_ERROR("Initial reprojection RMSE should be large before SBA");
+  }
+
+  ba.optimize(cameras0, landmarks0, tracks0);
+
+  double end_rmse = reprojection_rmse(cameras0->cameras(),
+                                      landmarks0->landmarks(),
+                                      tracks0->tracks());
   TEST_NEAR("RMSE after SBA", end_rmse, 0.0, 1e-6);
 }
