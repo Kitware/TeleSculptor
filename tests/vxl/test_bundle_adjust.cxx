@@ -210,6 +210,9 @@ IMPLEMENT_TEST(from_solution)
 {
   using namespace maptk;
   vxl::bundle_adjust ba;
+  config_block_sptr cfg = ba.get_configuration();
+  cfg->set_value("verbose", "true");
+  ba.set_configuration(cfg);
 
   // create landmarks at the corners of a cube
   landmark_map_sptr landmarks = cube_corners(2.0);
@@ -243,6 +246,9 @@ IMPLEMENT_TEST(noisy_landmarks)
 {
   using namespace maptk;
   vxl::bundle_adjust ba;
+  config_block_sptr cfg = ba.get_configuration();
+  cfg->set_value("verbose", "true");
+  ba.set_configuration(cfg);
 
   // create landmarks at the corners of a cube
   landmark_map_sptr landmarks = cube_corners(2.0);
@@ -280,6 +286,9 @@ IMPLEMENT_TEST(noisy_landmarks_noisy_cameras)
 {
   using namespace maptk;
   vxl::bundle_adjust ba;
+  config_block_sptr cfg = ba.get_configuration();
+  cfg->set_value("verbose", "true");
+  ba.set_configuration(cfg);
 
   // create landmarks at the corners of a cube
   landmark_map_sptr landmarks = cube_corners(2.0);
@@ -320,6 +329,9 @@ IMPLEMENT_TEST(zero_landmarks)
 {
   using namespace maptk;
   vxl::bundle_adjust ba;
+  config_block_sptr cfg = ba.get_configuration();
+  cfg->set_value("verbose", "true");
+  ba.set_configuration(cfg);
 
   // create landmarks at the corners of a cube
   landmark_map_sptr landmarks = cube_corners(2.0);
@@ -357,6 +369,9 @@ IMPLEMENT_TEST(zero_landmarks_same_cameras)
 {
   using namespace maptk;
   vxl::bundle_adjust ba;
+  config_block_sptr cfg = ba.get_configuration();
+  cfg->set_value("verbose", "true");
+  ba.set_configuration(cfg);
 
   // create landmarks at the corners of a cube
   landmark_map_sptr landmarks = cube_corners(2.0);
