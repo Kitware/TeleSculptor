@@ -15,4 +15,5 @@ maptk_discover_tests(core_config_io          test_libraries test_config_block_io
 maptk_discover_tests(core_image              test_libraries test_image.cxx)
 maptk_discover_tests(core_ins_data           test_libraries test_ins_data.cxx)
 maptk_discover_tests(core_rotation           test_libraries test_rotation.cxx)
+maptk_discover_tests(core_track              test_libraries test_track.cxx)
 maptk_discover_tests(core_vector             test_libraries test_vector.cxx)

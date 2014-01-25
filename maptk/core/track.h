@@ -8,6 +8,7 @@
 #define MAPTK_TRACK_H_
 
 #include "core_config.h"
+#include "types.h"
 
 #include <vector>
 
@@ -16,14 +17,22 @@
 #include "descriptor.h"
 #include "feature.h"
 
+
+/**
+ * \file
+ * \brief Header for \link maptk::track track \endlink objects
+ */
+
+
 namespace maptk
 {
 
 /// A representation of a feature track.
-///
-/// A track is a sequence of feature points and their descriptors
-/// that represent a sequence of observations of the same world location.
-/// A track is required to construct a landmark in 3D.
+/**
+ * A track is a sequence of feature points and their descriptors
+ * that represent a sequence of observations of the same world location.
+ * A track is required to construct a landmark in 3D.
+ */
 class MAPTK_CORE_EXPORT track
 {
 public:
@@ -34,7 +43,7 @@ public:
   struct track_state
   {
     /// Constructor
-    track_state(unsigned int frame,
+    track_state(frame_id_t frame,
                 feature_sptr feature,
                 descriptor_sptr descriptor)
     : frame_id(frame),
@@ -42,7 +51,7 @@ public:
       desc(descriptor) {}
 
     /// The frame identifier (i.e. frame number)
-    unsigned int frame_id;
+    frame_id_t frame_id;
     /// The feature detected on frame \a frame_id
     feature_sptr feat;
     /// The descriptor extracted on frame \a frame_id
@@ -52,21 +61,32 @@ public:
   typedef std::vector<track_state>::const_iterator history_const_itr;
 
   /// Default Constructor
-  track() {}
+  track();
+
+  /// Copy Constructor
+  track(const track& other);
 
   /// Construct a track from a single track state
   explicit track(const track_state& ts);
 
+  /// Access the track identification number
+  track_id_t id() const { return id_; }
+
+  /// Set the track identification number
+  void set_id(track_id_t id) { id_ = id; }
+
   /// Access the first frame number covered by this track
-  unsigned int first_frame() const;
+  frame_id_t first_frame() const;
 
   /// Access the last frame number covered by this track
-  unsigned int last_frame() const;
+  frame_id_t last_frame() const;
 
   /// Append a track state.
-  /// The added track state must have a frame_id greater than
-  /// the last frame in the history.
-  /// \returns true if successful, false not correctly ordered
+  /**
+   * The added track state must have a frame_id greater than
+   * the last frame in the history.
+   * \returns true if successful, false not correctly ordered
+   */
   bool append(const track_state& state);
 
   /// Access a const iterator to the start of the history
@@ -80,7 +100,7 @@ public:
    *  \param [in] frame the frame number to access
    *  \return an iterator at the frame if found, or end() if not
    */
-  history_const_itr find(unsigned int frame) const;
+  history_const_itr find(frame_id_t frame) const;
 
   /// Return the number of states in the track.
   size_t size() const { return history_.size(); }
@@ -88,6 +108,8 @@ public:
 protected:
   /// The ordered array of track states
   std::vector<track_state> history_;
+  /// The unique track identification number
+  track_id_t id_;
 };
 
 

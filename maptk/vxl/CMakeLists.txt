@@ -3,6 +3,9 @@
 include_directories( SYSTEM ${VXL_RPL_INCLUDE_DIR} )
 
 set(maptk_vxl_headers_public
+  bundle_adjust.h
+  camera.h
+  camera_map.h
   estimate_homography.h
   image_container.h
   image_io.h
@@ -12,6 +15,9 @@ set(maptk_vxl_headers_public
   )
 
 set(maptk_vxl_sources
+  bundle_adjust.cxx
+  camera.cxx
+  camera_map.cxx
   estimate_homography.cxx
   image_container.cxx
   image_io.cxx
@@ -30,4 +36,4 @@ maptk_add_library(maptk_vxl
   ${maptk_vxl_sources}
   )
 
-target_link_libraries(maptk_vxl maptk_core vil rrel)
+target_link_libraries(maptk_vxl maptk_core vil vpgl_algo rrel)

@@ -1,17 +1,24 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
 #include "track.h"
 
+
+/**
+ * \file
+ * \brief Implementation of \link maptk::track track \endlink
+ */
+
+
 namespace
 {
 class compare_state_frame
 {
 public:
-  bool operator()(const maptk::track::track_state& ts, unsigned int frame)
+  bool operator()(const maptk::track::track_state& ts, maptk::frame_id_t frame)
   {
     return ts.frame_id < frame;
   }
@@ -23,16 +30,34 @@ namespace maptk
 {
 
 
+/// Default Constructor
+track
+::track()
+: id_(0)
+{
+}
+
+
+/// Copy Constructor
+track
+::track(const track& other)
+: history_(other.history_),
+  id_(other.id_)
+{
+}
+
+
 /// Construct a track from a single track state
 track
 ::track(const track_state& ts)
-: history_(1,ts)
+: history_(1,ts),
+  id_(0)
 {
 }
 
 
 /// Access the first frame number covered by this track
-unsigned int
+frame_id_t
 track
 ::first_frame() const
 {
@@ -45,7 +70,7 @@ track
 
 
 /// Access the last frame number covered by this track
-unsigned int
+frame_id_t
 track
 ::last_frame() const
 {
@@ -75,7 +100,7 @@ track
 /// Find the track state iterator matching \a frame
 track::history_const_itr
 track
-::find(unsigned int frame) const
+::find(frame_id_t frame) const
 {
   if( frame < this->first_frame() ||
       frame > this->last_frame() )

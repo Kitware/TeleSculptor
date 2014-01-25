@@ -109,6 +109,9 @@ public:
     return result;
   }
 
+  /// The squared magnitude (L2 norm) of the vector
+  T magnitude_sqr() const { return cmath::l2_norm_squared( data_ ); }
+
   /// The magnitude (L2 norm) of the vector
   T magnitude() const { return cmath::l2_norm( data_ ); }
 

@@ -35,6 +35,15 @@ typedef boost::filesystem::path path_t;
 /// The type for a static token in the config_block parser
 typedef std::string token_t;
 
+/// The type of a landmark ID number
+typedef unsigned int landmark_id_t;
+
+/// The type of a track ID number
+typedef unsigned int track_id_t;
+
+/// The type of a frame number or camera ID
+typedef unsigned int frame_id_t;
+
 }
 
 #endif // MAPTK_CORE_TYPES_H

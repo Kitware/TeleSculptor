@@ -32,13 +32,41 @@ Core
    2D image points by applying both extrinsic and intrinsic parameters.
    Unit tests provided.
 
- * Added a magnitude() member and normalized() function for the vector class.
+ * Added a magnitude(), magnitude_sqr() members and normalized() function for
+   the vector class.
 
  * Added a vector_<T> constructor from a raw array of data (const T*)
 
  * Added a matrix_<T> member functions to set and extract rows and columns.
 
  * Added a matrix_<T> member function to update a sub-matrix.
+
+ * Added a track ID member to the track class.
+
+ * Added landmark_map abstract container class to hold mappings between
+   track/landmark IDs and landmark objects.  Also provided a default
+   implementation using std::map.
+
+ * Added camera_map abstract container class to hold mappings between frame
+   numbers and camera objects.  Also provided a default implementation
+   using std::map.
+
+ * Added a bundle adjustment abstract algorithm that take a camera_map,
+   a landmark_map, and a track_set and returns optimized versions of the
+   camera_map and landmark_map.
+
+ * Added metrics for computing reprojection errors on SBA results.
+   Currently support is Root-Mean-Square-Error (RMSE) of reprojections.
+
+VXL
+
+ * Added conversions between maptk::camera_<T> and vpgl_perspective_camera<T>
+
+ * Added vxl::camera_map to implement the maptk::camera_map container using
+   a map of vpgl_perspective_camera<double> internally.
+
+ * Added vxl::bundle_adjust to implement to maptk::algo::bundle_adjust using
+   vpgl_bundle_adjust from VXL.
 
 
 Fixes since v0.1.2
@@ -47,3 +75,5 @@ Fixes since v0.1.2
 Core
 
  * Fixed typo in variable name in camera_ constructor (intrincs --> intrinsics)
+
+ * Fixed landmark inheritance: landmark_<T> is now derived from landmark.

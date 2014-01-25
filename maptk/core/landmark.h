@@ -58,6 +58,7 @@ MAPTK_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const landmark& m);
 /// A representation of a 3D world point
 template <typename T>
 class MAPTK_CORE_EXPORT landmark_
+  : public landmark
 {
 public:
   /// Default Constructor
