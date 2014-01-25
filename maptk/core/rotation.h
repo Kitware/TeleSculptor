@@ -24,7 +24,7 @@ namespace maptk
 
 /// A representation of 3D rotation.
 /**
- * Internally rotation is stored in quaternion form
+ * Internally, rotation is stored in quaternion form
  */
 template <typename T>
 class MAPTK_CORE_EXPORT rotation_
