@@ -63,7 +63,7 @@ IMPLEMENT_TEST(cube)
   landmark_pts.push_back(vector_3d( 1, -1,  1));
   landmark_pts.push_back(vector_3d( 1,  1, -1));
   landmark_pts.push_back(vector_3d( 1,  1,  1));
-  const size_t num_pts = landmark_pts.size();
+  const landmark_id_t num_pts = landmark_pts.size();
 
   // create a camera sequence (elliptical path)
   // and a the projections of each landmark into each frame
@@ -71,8 +71,8 @@ IMPLEMENT_TEST(cube)
   rotation_d R; // identity
   camera_map::map_camera_t cameras;
   std::vector<std::vector<vector_2d> > projections(landmark_pts.size());
-  const size_t num_cams = 20;
-  for (size_t i=0; i<num_cams; ++i)
+  const frame_id_t num_cams = 20;
+  for (frame_id_t i=0; i<num_cams; ++i)
   {
     double frac = static_cast<double>(i) / num_cams;
     double x = 4 * std::cos(2*frac);
@@ -82,7 +82,7 @@ IMPLEMENT_TEST(cube)
     cam->look_at(vector_3d(0,0,0));
     cameras[i] = camera_sptr(cam);
     //std::cout << "camera "<<i<<" center "<<cam->get_center()<<std::endl;
-    for (size_t j=0; j<num_pts; ++j)
+    for (landmark_id_t j=0; j<num_pts; ++j)
     {
       projections[j].push_back(cam->project(landmark_pts[j]));
       //std::cout << "camera "<<i<<" point "<<j<<" : "<<projections[j].back() <<std::endl;
@@ -91,12 +91,12 @@ IMPLEMENT_TEST(cube)
 
   // create tracks from the projections
   std::vector<track_sptr> tracks;
-  for (size_t i=0; i<num_pts; ++i)
+  for (landmark_id_t i=0; i<num_pts; ++i)
   {
     track_sptr t(new track);
     t->set_id(i);
     tracks.push_back(t);
-    for (size_t j=0; j<num_cams; ++j)
+    for (frame_id_t j=0; j<num_cams; ++j)
     {
       feature_sptr f(new feature_d(projections[i][j]));
       t->append(track::track_state(j, f, descriptor_sptr()));
@@ -105,7 +105,7 @@ IMPLEMENT_TEST(cube)
 
   // initialize all landmarks to the origin
   landmark_map::map_landmark_t landmarks;
-  for (size_t i=0; i<num_pts; ++i)
+  for (landmark_id_t i=0; i<num_pts; ++i)
   {
     landmarks[i] = landmark_sptr(new landmark_d(vector_3d(0,0,0)));
   }

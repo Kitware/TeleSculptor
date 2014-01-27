@@ -167,7 +167,7 @@ bundle_adjust
   std::vector<vgl_point_3d<double> > active_world_pts;
   BOOST_FOREACH(const track_id_t& id, lm_ids)
   {
-    lm_id_reverse_map[id] = lm_id_index.size();
+    lm_id_reverse_map[id] = static_cast<track_id_t>(lm_id_index.size());
     lm_id_index.push_back(id);
     vector_3d pt = lms[id]->loc();
     active_world_pts.push_back(vgl_point_3d<double>(pt.x(), pt.y(), pt.z()));
@@ -177,7 +177,7 @@ bundle_adjust
   std::vector<vpgl_perspective_camera<double> > active_vcams;
   BOOST_FOREACH(const id_map_t::value_type& p, id_map)
   {
-    cam_id_reverse_map[p.first] = cam_id_index.size();
+    cam_id_reverse_map[p.first] = static_cast<frame_id_t>(cam_id_index.size());
     cam_id_index.push_back(p.first);
     active_vcams.push_back(vcams[p.first]);
   }
