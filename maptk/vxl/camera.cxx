@@ -75,9 +75,9 @@ maptk_to_vpgl_camera(const camera_<T>& mcam,
 
 
 #define INSTANTIATE_CAMERA(T) \
-template camera_sptr vpgl_camera_to_maptk(const vpgl_perspective_camera<T>& vcam); \
-template void vpgl_camera_to_maptk(const vpgl_perspective_camera<T>&, camera_<T>&); \
-template void maptk_to_vpgl_camera(const camera_<T>&, vpgl_perspective_camera<T>&)
+template MAPTK_VXL_EXPORT camera_sptr vpgl_camera_to_maptk(const vpgl_perspective_camera<T>& vcam); \
+template MAPTK_VXL_EXPORT void vpgl_camera_to_maptk(const vpgl_perspective_camera<T>&, camera_<T>&); \
+template MAPTK_VXL_EXPORT void maptk_to_vpgl_camera(const camera_<T>&, vpgl_perspective_camera<T>&)
 
 INSTANTIATE_CAMERA(double);
 INSTANTIATE_CAMERA(float);
