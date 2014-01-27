@@ -28,10 +28,10 @@ template <typename T>
 vpgl_perspective_camera<T> sample_vpgl_camera()
 {
   using namespace maptk;
-  vpgl_calibration_matrix<T> vk(4000.0, vgl_point_2d<T>(300,400),
-                                1.0, 0.75, 0.0001);
-  vgl_rotation_3d<T> vr(0.7, 0.1, 1.3);
-  vgl_point_3d<T> vc(100.0, 0.0, 20.0);
+  vpgl_calibration_matrix<T> vk(T(4000), vgl_point_2d<T>(300,400),
+                                T(1.0), T(0.75), T(0.0001));
+  vgl_rotation_3d<T> vr(T(0.7), T(0.1), T(1.3));
+  vgl_point_3d<T> vc(T(100.0), T(0.0), T(20.0));
   return vpgl_perspective_camera<T>(vk, vc, vr);
 }
 
@@ -82,5 +82,5 @@ IMPLEMENT_TEST(convert_camera_double)
 
 IMPLEMENT_TEST(convert_camera_float)
 {
-  test_convert_camera<float>(1e-7);
+  test_convert_camera<float>(1e-7f);
 }
