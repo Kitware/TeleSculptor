@@ -60,6 +60,8 @@ Core
 
  * Added key description in maptk::config_block.
 
+ * Added output of key descriptions as comments in configuration file output.
+
 VXL
 
  * Added conversions between maptk::camera_<T> and vpgl_perspective_camera<T>
