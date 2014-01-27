@@ -17,8 +17,55 @@
  *        for \c T = { \c float, \c double }
  */
 
+namespace
+{
+
+/// helper function to covert axis/angle into quaternion
+template <typename T>
+maptk::vector_4_<T>
+quaternion_from_axis_angle(const maptk::vector_<3,T>& axis, T angle)
+{
+  maptk::vector_4_<T> q;
+  T a = angle / T(2);
+  T sa = std::sin(a);
+  q[0] = sa * axis[0];
+  q[1] = sa * axis[1];
+  q[2] = sa * axis[2];
+  q[3] = std::cos(a);
+  return q;
+}
+
+} // end anonymous namespace
+
+
 namespace maptk
 {
+
+/// Constructor - from a Rodrigues vector
+template <typename T>
+rotation_<T>
+::rotation_(const vector_<3,T>& rvec)
+{
+  T mag = rvec.magnitude();
+  if (mag == T(0))
+  {
+    // identity rotation is a special case
+    q_ = vector_4_<T>(0,0,0,1);
+  }
+  else
+  {
+    q_ = quaternion_from_axis_angle(rvec/mag, mag);
+  }
+}
+
+
+/// Constructor - from rotation angle and axis
+template <typename T>
+rotation_<T>
+::rotation_(T angle, const vector_<3,T>& axis)
+  : q_(quaternion_from_axis_angle(normalized(axis), angle))
+{
+}
 
 
 /// Constructor - from yaw, pitch, and roll
@@ -122,6 +169,50 @@ rotation_<T>
 }
 
 
+
+/// Returns the axis of rotation
+template <typename T>
+vector_3_<T>
+rotation_<T>
+::axis() const
+{
+  vector_3_<T> dir(q_.x(), q_.y(), q_.z());
+  T mag = dir.magnitude();
+  if (mag == T(0))
+  {
+    return vector_3_<T>(0,0,1);
+  }
+  return dir / mag;
+}
+
+
+/// Returns the angle of the rotation in radians about the axis
+template <typename T>
+T
+rotation_<T>
+::angle() const
+{
+  const double i = vector_3_<T>(q_.x(), q_.y(), q_.z()).magnitude();
+  const double r = q_.w();
+  return static_cast<T>(2.0 * std::atan2(i, r));
+}
+
+
+/// Return the rotation as a Rodrigues vector
+template <typename T>
+vector_3_<T>
+rotation_<T>
+::rodrigues() const
+{
+  T angle = this->angle();
+  if (angle == 0.0)
+  {
+    return vector_3_<T>(0,0,0);
+  }
+  return this->axis() * angle;
+}
+
+
 /// Convert to yaw, pitch, and roll
 template <typename T>
 void
@@ -181,6 +272,7 @@ rotation_<T>
 template <typename T>
 std::ostream&  operator<<(std::ostream& s, const rotation_<T>& r)
 {
+  s << r.quaternion();
   return s;
 }
 
@@ -189,6 +281,9 @@ std::ostream&  operator<<(std::ostream& s, const rotation_<T>& r)
 template <typename T>
 std::istream&  operator>>(std::istream& s, rotation_<T>& r)
 {
+  vector_4_<T> q;
+  s >> q;
+  r = rotation_<T>(q);
   return s;
 }
 
