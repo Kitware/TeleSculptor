@@ -62,7 +62,7 @@ maptk_to_vpgl_camera(const camera_<T>& mcam,
   vcam.set_calibration(vpgl_calibration_matrix<T>(mk.focal_length(),
                                                   vgl_point_2d<T>(mpp.x(),
                                                                   mpp.y()),
-                                                  1, 1.0 / mk.aspect_ratio(),
+                                                  1, T(1) / mk.aspect_ratio(),
                                                   mk.skew()));
 
   const vector_4_<T>& mr = mcam.get_rotation().quaternion();
