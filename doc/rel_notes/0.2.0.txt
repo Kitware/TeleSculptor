@@ -62,6 +62,9 @@ Core
 
  * Added output of key descriptions as comments in configuration file output.
 
+ * Added use of config_block key descriptions to nested algorithm utilities
+   and track_features utility.
+
 VXL
 
  * Added conversions between maptk::camera_<T> and vpgl_perspective_camera<T>
