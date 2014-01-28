@@ -16,3 +16,8 @@ target_link_libraries(maptk_pos2krtd
     ${maptk_libs}
     ${Boost_SYSTEM_LIBRARY}
     ${Boost_FILESYSTEM_LIBRARY})
+
+maptk_add_executable(maptk_bundle_adjust_tracks bundle_adjust_tracks.cxx)
+target_link_libraries(maptk_bundle_adjust_tracks
+  LINK_PRIVATE
+    ${maptk_libs})
