@@ -63,7 +63,7 @@ IMPLEMENT_TEST(cube)
   landmark_pts.push_back(vector_3d( 1, -1,  1));
   landmark_pts.push_back(vector_3d( 1,  1, -1));
   landmark_pts.push_back(vector_3d( 1,  1,  1));
-  const landmark_id_t num_pts = landmark_pts.size();
+  const landmark_id_t num_pts = static_cast<landmark_id_t>(landmark_pts.size());
 
   // create a camera sequence (elliptical path)
   // and a the projections of each landmark into each frame
