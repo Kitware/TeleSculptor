@@ -334,7 +334,7 @@ config_block_sptr read_config_file(path_t const& file_path,
     // std::cerr << "VALUE: " << kv.value << std::endl << std::endl;
 
     // add key/value to config object here
-    //cb->set_value(key_path, kv.value);
+    // TODO: Parse out comment above k/v, set as description
     cb->set_value(key_path, boost::algorithm::trim_copy(kv.value));
 
     //cerr << "\t`" << key_path << "` -> `" << kv.value << "`" << endl;
@@ -397,7 +397,7 @@ void write_config_file(config_block_sptr const& config,
     config_block_description_t descr = config->get_description(key);
     if (descr != config_block_description_t())
     {
-      std::cerr << "[write_config_file] Writing comment for '" << key << "'." << std::endl;
+      //std::cerr << "[write_config_file] Writing comment for '" << key << "'." << std::endl;
       write_cb_comment(ofile, descr);
     }
 

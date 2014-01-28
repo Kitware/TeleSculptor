@@ -74,7 +74,9 @@ config_block
 
     config_block_key_t const stripped_key_name = strip_block_name(key, key_name);
 
-    conf->set_value(stripped_key_name, get_value(key_name));
+    conf->set_value(stripped_key_name,
+                    get_value(key_name),
+                    get_description(key_name));
   }
 
   return conf;
@@ -115,7 +117,7 @@ config_block
 {
   if (m_parent)
   {
-    m_parent->set_value(m_name + block_sep + key, value);
+    m_parent->set_value(m_name + block_sep + key, value, descr);
   }
   else
   {
@@ -127,7 +129,13 @@ config_block
     }
 
     m_store[key] = value;
-    m_descr_store[key] = descr;
+
+    // Only assign the description given if there is no stored description
+    // for this key, or the given description is non-zero.
+    if (m_descr_store.count(key) == 0 || descr.size() > 0)
+    {
+      m_descr_store[key] = descr;
+    }
   }
 }
 
@@ -190,8 +198,9 @@ config_block
   BOOST_FOREACH (config_block_key_t const& key, keys)
   {
     config_block_value_t const& val = conf->get_value<config_block_value_t>(key);
+    config_block_description_t const& descr = conf->get_description(key);
 
-    set_value(key, val);
+    set_value(key, val, descr);
   }
 }
 
