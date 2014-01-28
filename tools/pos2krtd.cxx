@@ -11,28 +11,13 @@
 #include<vector>
 
 #include <maptk/modules.h>
+#include <maptk/core/ins_data_io.h>
 #include <maptk/core/local_geo_cs.h>
 
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 
 namespace fs = boost::filesystem;
-
-
-/// Read a POS file from disk into an INS data structure
-bool read_pos_file(const std::string& pos_filename,
-                   maptk::ins_data& ins)
-{
-  std::ifstream ifs(pos_filename.c_str());
-  if (!ifs)
-  {
-    std::cerr << "Error: Could not open POS file "<<pos_filename<<std::endl;
-    return false;
-  }
-
-  ifs >> ins;
-  return ! ifs.fail();
-}
 
 
 /// Write a camera to a KRTD file on disk
@@ -75,8 +60,8 @@ bool convert_pos2krtd(const std::string& pos_filename,
                       maptk::camera_d base_camera)
 {
   maptk::ins_data ins;
-  return read_pos_file(pos_filename, ins) &&
-         convert_ins2camera(ins, cs, base_camera) &&
+  ins = maptk::read_pos_file(pos_filename);
+  return convert_ins2camera(ins, cs, base_camera) &&
          write_krtd_file(krtd_filename, base_camera);
 }
 
@@ -95,10 +80,7 @@ bool convert_pos2krtd_dir(const fs::path& pos_dir,
     fs::path krtd_filename = krtd_dir / (basename(p) + ".krtd");
     std::cout << "processing "<< p <<" --> " << krtd_filename<< std::endl;
     maptk::ins_data ins;
-    if ( !read_pos_file(p.string(), ins) )
-    {
-      return false;
-    }
+    ins = maptk::read_pos_file(p.string());
     convert_ins2camera(ins, cs, base_camera);
     cameras.push_back(base_camera);
     krtd_filenames.push_back(krtd_filename.string());
