@@ -8,6 +8,7 @@
 #define MAPTK_LOCAL_GEO_CS_H_
 
 #include "core_config.h"
+#include "types.h"
 
 #include "algo/geo_map.h"
 #include "camera.h"
@@ -59,6 +60,37 @@ private:
   /// The UTM zone number containing the UTM origin
   int utm_origin_zone_;
 };
+
+
+/// Use a sequence of ins_data objects to initialize a sequence of cameras
+/**
+ * \param [in]     ins_map is a mapping from frame number to INS data object
+ * \param [in]     base_camera is the camera to reposition at each INS pose.
+ * \param [in,out] lgcs is the local geographic coordinate system used to map
+ *                 lat/long to a local UTM coordinate system
+ * \returns a mapping from frame number to camera
+ * \note The \c lgcs object is updated only if it does not contain a valid
+ *       utm_origin_zone().  If updated, the computed local origin
+ *       and zone are determined from the mean camera easting and northing
+ *       at zero altitude.
+ */
+std::map<frame_id_t, camera_sptr>
+initialize_cameras_with_ins(const std::map<frame_id_t, ins_data>& ins_map,
+                            const camera_d& base_camera,
+                            local_geo_cs& lgcs);
+
+
+/// Extract a sequence of ins_data from a sequence of cameras and local_geo_cs
+/**
+ * \param [in] cam_map is a mapping from frame number to camera
+ * \param [in] lgcs is the local geographic coordinate system used to map
+ *             local UTM to lat/long
+ * \returns a mapping from frame_number of ins_data object
+ * \note the supplied lgcs must have a valid utm_origin_zone()
+ */
+std::map<frame_id_t, ins_data>
+ins_from_cameras(const std::map<frame_id_t, camera_sptr>& cam_map,
+                 const local_geo_cs& lgcs);
 
 
 } // end namespace maptk
