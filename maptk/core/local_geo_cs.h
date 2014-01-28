@@ -44,10 +44,10 @@ public:
   algo::geo_map_sptr geo_map_algo() const { return geo_map_algo_; }
 
   /// Use the pose data provided by INS to update camera pose
-  void update_camera(const ins_data& ins, camera_d& cam);
+  void update_camera(const ins_data& ins, camera_d& cam) const;
 
   /// Use the camera pose to update an INS data structure
-  void update_ins_data(const camera_d& cam, ins_data& ins);
+  void update_ins_data(const camera_d& cam, ins_data& ins) const;
 
 private:
   /// An algorithm provided to compute geographic transformations

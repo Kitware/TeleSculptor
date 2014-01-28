@@ -31,7 +31,7 @@ local_geo_cs
 /// Use the pose data provided by INS to update camera pose
 void
 local_geo_cs
-::update_camera(const ins_data& ins, camera_d& cam)
+::update_camera(const ins_data& ins, camera_d& cam) const
 {
   if( !geo_map_algo_ )
   {
@@ -52,7 +52,7 @@ local_geo_cs
 /// Use the camera pose to update an INS data structure
 void
 local_geo_cs
-::update_ins_data(const camera_d& cam, ins_data& ins)
+::update_ins_data(const camera_d& cam, ins_data& ins) const
 {
   if( !geo_map_algo_ )
   {
