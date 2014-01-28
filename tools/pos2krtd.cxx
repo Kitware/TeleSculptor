@@ -73,40 +73,32 @@ bool convert_pos2krtd_dir(const fs::path& pos_dir,
                           maptk::camera_d base_camera)
 {
   fs::directory_iterator it(pos_dir), eod;
-  std::vector<maptk::camera_d> cameras;
+  std::map<maptk::frame_id_t, maptk::ins_data> ins_map;
   std::vector<std::string> krtd_filenames;
   BOOST_FOREACH(fs::path const &p, std::make_pair(it, eod))
   {
     fs::path krtd_filename = krtd_dir / (basename(p) + ".krtd");
     std::cout << "processing "<< p <<" --> " << krtd_filename<< std::endl;
-    maptk::ins_data ins;
-    ins = maptk::read_pos_file(p.string());
-    convert_ins2camera(ins, cs, base_camera);
-    cameras.push_back(base_camera);
+    maptk::frame_id_t frame = static_cast<maptk::frame_id_t>(krtd_filenames.size());
+    ins_map[frame] = maptk::read_pos_file(p.string());
     krtd_filenames.push_back(krtd_filename.string());
   }
 
-  maptk::vector_3d mean(0,0,0);
-  BOOST_FOREACH(const maptk::camera_d& cam, cameras)
-  {
-    mean += cam.center();
-  }
-  mean /= static_cast<double>(cameras.size());
-  // only use the mean easting and northing
-  mean[2] = 0.0;
+  std::map<maptk::frame_id_t, maptk::camera_sptr> cam_map;
+  cam_map = maptk::initialize_cameras_with_ins(ins_map, base_camera, cs);
 
-  for(unsigned int i=0; i<cameras.size(); ++i)
+  typedef std::map<maptk::frame_id_t, maptk::camera_sptr>::value_type cam_map_val_t;
+  BOOST_FOREACH(cam_map_val_t const &p, cam_map)
   {
-    maptk::camera_d& cam = cameras[i];
-    cam.set_center(cam.center() - mean);
-
-    if( !write_krtd_file(krtd_filenames[i], cam) )
+    maptk::camera_d* cam = dynamic_cast<maptk::camera_d*>(p.second.get());
+    if( !write_krtd_file(krtd_filenames[p.first], *cam) )
     {
       return false;
     }
   }
 
-  std::cout << "using local UTM origin at "<<mean[0] <<", "<<mean[1]
+  maptk::vector_3d origin = cs.utm_origin();
+  std::cout << "using local UTM origin at "<<origin[0] <<", "<<origin[1]
             <<", zone "<<cs.utm_origin_zone() <<std::endl;
   return true;
 }
