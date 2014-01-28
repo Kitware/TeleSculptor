@@ -5,7 +5,7 @@
  */
 
 #include "track.h"
-
+#include <boost/foreach.hpp>
 
 /**
  * \file
@@ -114,6 +114,20 @@ track
     return it;
   }
   return this->end();
+}
+
+
+/// Return the set of all frame IDs covered by this track
+std::set<frame_id_t>
+track
+::all_frame_ids() const
+{
+  std::set<frame_id_t> ids;
+  BOOST_FOREACH(const track_state& ts, this->history_)
+  {
+    ids.insert(ts.frame_id);
+  }
+  return ids;
 }
 
 

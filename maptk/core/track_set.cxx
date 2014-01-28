@@ -28,6 +28,37 @@ track_set
 }
 
 
+/// Return the set of all frame IDs covered by these tracks
+std::set<frame_id_t>
+track_set
+::all_frame_ids() const
+{
+  std::set<frame_id_t> ids;
+  const std::vector<track_sptr> all_tracks = this->tracks();
+  BOOST_FOREACH(track_sptr t, all_tracks)
+  {
+    std::set<frame_id_t> t_ids = t->all_frame_ids();
+    ids.insert(t_ids.begin(), t_ids.end());
+  }
+  return ids;
+}
+
+
+/// Return the set of all track IDs in this track set
+std::set<track_id_t>
+track_set
+::all_track_ids() const
+{
+  std::set<track_id_t> ids;
+  const std::vector<track_sptr> all_tracks = this->tracks();
+  BOOST_FOREACH(track_sptr t, all_tracks)
+  {
+    ids.insert(t->id());
+  }
+  return ids;
+}
+
+
 /// Return the last (largest) frame number containing tracks
 frame_id_t
 track_set
