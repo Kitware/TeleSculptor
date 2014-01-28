@@ -42,7 +42,7 @@ static maptk::config_block_sptr default_config()
                     "Path an input file containing new-line separated paths "
                     "to sequential image files.");
   config->set_value("output_tracks_file", "",
-                    "Path to to a file to write output tracks to. If this "
+                    "Path to a file to write output tracks to. If this "
                     "file exists, it will be overwritten.");
 
   maptk::algo::track_features::get_nested_algo_configuration("feature_tracker", config, maptk::algo::track_features_sptr());

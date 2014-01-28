@@ -234,7 +234,7 @@ void write_cb_comment(std::ostream & ofile, config_block_description_t const& co
 
       if (line_buffer.size() > 0)
       {
-        if ((line_buffer.size() + cur_word.size()) > line_width)
+        if ((line_buffer.size() + space_token.size() + cur_word.size()) > line_width)
         {
           ofile << line_buffer << "\n";
           line_buffer = comment_token;
