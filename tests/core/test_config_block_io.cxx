@@ -28,6 +28,14 @@ int main(int argc, char* argv[])
   RUN_TEST(testname, data_dir);
 }
 
+#define print_config(config) \
+  BOOST_FOREACH( config_block_key_t key, config->available_values() ) \
+  { \
+    std::cerr << "\t" \
+              << key << " = " << config->get_value<config_block_key_t>(key) \
+              << std::endl; \
+  }
+
 IMPLEMENT_TEST(config_path_not_exist)
 {
   maptk::path_t fp("/this/shouldnt/exist/anywhere");
@@ -199,16 +207,55 @@ IMPLEMENT_TEST(write_config_simple_success)
   namespace bfs = boost::filesystem;
 
   config_block_sptr orig_config = config_block::empty_config("simple_test");
-  orig_config->set_value("test_key_1", "test_value_a");
-  orig_config->set_value("test_key_2", "test_value_b");
-  config_block_sptr subblock = orig_config->subblock_view("subblock");
-  subblock->set_value("foobar", "baz");
+
+  config_block_key_t keyA = config_block_key_t("test_key_1");
+  config_block_key_t keyB = config_block_key_t("test_key_2");
+  config_block_key_t keyC = config_block_key_t("test_key_3");
+  config_block_key_t keyD = config_block_key_t("test_key_4");
+  config_block_key_t keyE = config_block_key_t("test_key_5");
+  config_block_key_t keyF = config_block_key_t("test_key_6");
+  config_block_key_t keyG = config_block_key_t("test_key_7");
+
+  config_block_value_t valueA = config_block_value_t("test_value_a");
+  config_block_value_t valueB = config_block_value_t("test_value_b");
+  config_block_value_t valueC = config_block_value_t("test_value_c");
+  config_block_value_t valueD = config_block_value_t("test_value_d");
+  config_block_value_t valueE = config_block_value_t("test_value_e");
+  config_block_value_t valueF = config_block_value_t("test_value_f");
+  config_block_value_t valueG = config_block_value_t("test_value_g");
+
+  config_block_description_t descrD = config_block_description_t("Test descr 1");
+  config_block_description_t descrE = config_block_description_t(
+      "This is a really long description that should probably span multiple "
+      "lines because it exceeds the defined character width we would like "
+      "in order to make output files more readable."
+      );
+  config_block_description_t descrF = config_block_description_t(
+      "this is a comment\n"
+      "that has manual new-line splits\n"
+      "that should be preserved\n"
+      "\n"
+      "Pretend list:\n"
+      "  - foo\n"
+      "    - bar\n"
+      );
+  config_block_description_t descrG = config_block_description_t(
+      "This has a # in it"
+      );
+
+  config_block_key_t subblock_name = config_block_key_t("subblock");
+  config_block_sptr subblock = orig_config->subblock_view(subblock_name);
+
+  orig_config->set_value(keyA, valueA);
+  orig_config->set_value(keyB, valueB);
+  subblock->set_value(keyC, valueC);
+  orig_config->set_value(keyD, valueD, descrD);
+  orig_config->set_value(keyE, valueE, descrE);
+  orig_config->set_value(keyF, valueF, descrF);
+  orig_config->set_value(keyG, valueG, descrG);
 
   cerr << "ConfigBlock for writing:" << endl;
-  BOOST_FOREACH( config_block_key_t key, orig_config->available_values() )
-  {
-    cerr << "\t" << key << " :: " << orig_config->get_value<config_block_value_t>(key) << endl;
-  }
+  print_config(orig_config);
 
   path_t base_path = bfs::temp_directory_path() / bfs::unique_path();
   cerr << "Working in temporary directory: " << base_path << endl;
@@ -230,16 +277,31 @@ IMPLEMENT_TEST(write_config_simple_success)
 
   BOOST_FOREACH( config_block_sptr config, configs)
   {
-    TEST_EQUAL("num params", config->available_values().size(), 3);
-    TEST_EQUAL("test_key_1 read", config->get_value<config_block_value_t>("test_key_1"),
-                                  "test_value_a");
-    TEST_EQUAL("test_key_2 read", config->get_value<config_block_value_t>("test_key_2"),
-                                  "test_value_b");
-    TEST_EQUAL("subblock:foobar read", config->get_value<config_block_value_t>("subblock:foobar"),
-                                       "baz");
+    TEST_EQUAL("num params", config->available_values().size(), 7);
+    TEST_EQUAL("key-A read",
+               config->get_value<config_block_value_t>(keyA),
+               valueA);
+    TEST_EQUAL("key-B read",
+               config->get_value<config_block_value_t>(keyB),
+               valueB);
+    TEST_EQUAL("subblock key-C read",
+               config->get_value<config_block_value_t>(subblock_name + config_block::block_sep + keyC),
+               valueC);
+    TEST_EQUAL("key-D read",
+               config->get_value<config_block_value_t>(keyD),
+               valueD);
+    TEST_EQUAL("key-E read",
+               config->get_value<config_block_value_t>(keyE),
+               valueE);
+    TEST_EQUAL("key-F read",
+               config->get_value<config_block_value_t>(keyF),
+               valueF);
+    TEST_EQUAL("key-G read",
+               config->get_value<config_block_value_t>(keyG),
+               valueG);
   }
 
-  cerr << "Cleaning up temp directory" << endl;
+  cerr << "Cleaning up temp directory: " << base_path << endl;
   bfs::remove_all(base_path);
 }
 

@@ -104,8 +104,28 @@ class MAPTK_CORE_EXPORT config_block
     template <typename T>
     T get_value(config_block_key_t const& key, T const& def) const MAPTK_NOTHROW;
 
+    /// Get the description associated to a value
+    /**
+     * If the provided key has no description associated with it, an empty
+     * \c config_block_description_t value is returned.
+     *
+     * \throws no_such_configuration_value_exception Thrown if the requested
+     *                                               key does not exist.
+     *
+     * \param key The name of the parameter to get the description of.
+     * \returns The description of the requested key.
+     */
+    config_block_description_t get_description(config_block_key_t const& key) const;
+
     /// Set a value within the configuration.
     /**
+     * If this key already exists, has a description and no new description
+     * was passed with this \c set_value call, the previous description is
+     * retained. We assume that the previous description is still valid and
+     * this a value overwrite. If it is intended for the description to also
+     * be overwritted, an \c unset_value call should be performed on the key
+     * first, and then this \c set_value call.
+     *
      * \throws set_on_read_only_value_exception Thrown if \p key is marked as read-only.
      *
      * \postconds
@@ -115,7 +135,9 @@ class MAPTK_CORE_EXPORT config_block
      * \param key The index of the configuration value to set.
      * \param value The value to set for the \p key.
      */
-    void set_value(config_block_key_t const& key, config_block_value_t const& value);
+    void set_value(config_block_key_t const& key,
+                   config_block_value_t const& value,
+                   config_block_description_t const& descr = config_block_key_t());
 
     /// Remove a value from the configuration.
     /**
@@ -193,6 +215,7 @@ class MAPTK_CORE_EXPORT config_block
     config_block_sptr m_parent;
     config_block_key_t m_name;
     store_t m_store;
+    store_t m_descr_store;
     ro_list_t m_ro_list;
 };
 

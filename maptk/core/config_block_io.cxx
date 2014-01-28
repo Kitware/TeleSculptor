@@ -15,6 +15,7 @@
 #include <maptk/core/exceptions.h>
 
 #include <boost/algorithm/string/join.hpp>
+#include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
@@ -88,12 +89,15 @@ class config_block_grammar
     /// Matches full config_block key path
     qi::rule<Iterator, config_block_keys_t()> config_block_key_path;
     /// Matches any valid "value" (printable characters with joining spaces)
-    qi::rule<Iterator, config_block_value_t()> config_block_value;
+    qi::rule<Iterator, config_block_value_t()> config_block_value; ///< excludes '#'s
     /// A key/value pair
     qi::rule<Iterator, config_block_value_s()> config_block_value_full;
 
     /// A comment within the config file
+    qi::rule<Iterator, config_block_value_t()> comment_value; ///< includes '#''s
     qi::rule<Iterator, config_block_value_t()> comment;
+    // TODO: comment_lines + include logic for slurping up comment values into
+    //       config_block structure as key descriptions.
 
     /// Result set of config block key/value pairs
     qi::rule<Iterator, config_block_value_set_t()> config_block_value_set;
@@ -113,6 +117,7 @@ config_block_grammar<Iterator>
   , config_block_key_path()
   , config_block_value()
   , config_block_value_full()
+  , comment_value()
   , comment()
   , config_block_value_set()
 {
@@ -164,9 +169,13 @@ config_block_grammar<Iterator>
     );
 
 
+  comment_value.name("comment-value");
+  comment_value =
+    +( qi::graph | qi::blank );
+
   comment.name("comment");
   comment =
-    +( config_comment_start >> opt_whitespace >> config_block_value[_val = _1] );
+    +( config_comment_start >> opt_whitespace >> *comment_value[_val = _1] );
 
 
   // Main grammar parsing rule
@@ -188,7 +197,66 @@ config_block_grammar<Iterator>
 {
 }
 
-} //end namespace
+/// Helper method to write out a comment to a configuration file ostream
+/**
+ * Assumptions:
+ *  - If a block starts with a space, we assume its preformatted and don't
+ *    token compress.
+ */
+void write_cb_comment(std::ostream & ofile, config_block_description_t const& comment)
+{
+  typedef config_block_description_t cbd_t;
+  size_t line_width = 80;
+  cbd_t comment_token = cbd_t(config_comment_start);
+  cbd_t space_token = cbd_t(" ");
+
+  // Add a leading new-line to separate comment block from previous config
+  // entry.
+  ofile << "\n";
+
+  // preserve manually specified new-lines in the comment string, adding a
+  // trailing new-line
+  std::list<cbd_t> blocks;
+  boost::algorithm::split(blocks, comment, boost::is_any_of("\n"));
+  while (blocks.size() > 0)
+  {
+    cbd_t cur_block = blocks.front();
+    blocks.pop_front();
+    cbd_t line_buffer = "";
+
+    std::list<cbd_t> words;
+    //boost::algorithm::split(words, cur_block, boost::is_any_of(" "), boost::token_compress_on);
+    boost::algorithm::split(words, cur_block, boost::is_any_of(" "));
+    while (words.size() > 0)
+    {
+      cbd_t cur_word = words.front();
+      words.pop_front();
+
+      if (line_buffer.size() > 0)
+      {
+        if ((line_buffer.size() + space_token.size() + cur_word.size()) > line_width)
+        {
+          ofile << line_buffer << "\n";
+          line_buffer = comment_token;
+        }
+        line_buffer = line_buffer + space_token + cur_word;
+      }
+      else
+      {
+        // Nothing in buffer. Start with comment token.
+        line_buffer = comment_token + space_token + cur_word;
+      }
+    }
+
+    // flush remaining contents of line buffer if there is anything
+    if (line_buffer.size() > 0)
+    {
+      ofile << line_buffer << "\n";
+    }
+  }
+}
+
+} //end anonymous namespace
 
 /// Read in a configuration file, producing a \c config_block object
 config_block_sptr read_config_file(path_t const& file_path,
@@ -266,7 +334,7 @@ config_block_sptr read_config_file(path_t const& file_path,
     // std::cerr << "VALUE: " << kv.value << std::endl << std::endl;
 
     // add key/value to config object here
-    //cb->set_value(key_path, kv.value);
+    // TODO: Parse out comment above k/v, set as description
     cb->set_value(key_path, boost::algorithm::trim_copy(kv.value));
 
     //cerr << "\t`" << key_path << "` -> `" << kv.value << "`" << endl;
@@ -320,7 +388,19 @@ void write_config_file(config_block_sptr const& config,
   std::ofstream ofile(file_path.c_str());
   BOOST_FOREACH( config_block_key_t key, avail_keys )
   {
-    // Format: ``key_path = value\n``
+    // Each key may or may not have an associated description string. If there
+    // is one, write that out as a comment.
+    // - comments will be limited to 80 character width lines, including "# "
+    //   prefix.
+    // - value output format: ``key_path = value\n``
+
+    config_block_description_t descr = config->get_description(key);
+    if (descr != config_block_description_t())
+    {
+      //std::cerr << "[write_config_file] Writing comment for '" << key << "'." << std::endl;
+      write_cb_comment(ofile, descr);
+    }
+
     ofile << key << " = " << config->get_value<config_block_value_t>(key) << "\n";
   }
   ofile.flush();

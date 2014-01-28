@@ -650,3 +650,45 @@ IMPLEMENT_TEST(merge_config)
     TEST_ERROR("New key did not appear");
   }
 }
+
+IMPLEMENT_TEST(set_value_description)
+{
+  using namespace maptk;
+
+  config_block_sptr const config = config_block::empty_config();
+
+  config_block_key_t const keya = config_block_key_t("keya");
+  config_block_key_t const keyb = config_block_key_t("sub:keyb");
+  config_block_key_t const keyc = config_block_key_t("keyc");
+
+  config_block_value_t const valuea = config_block_value_t("valuea");
+  config_block_value_t const valueb = config_block_value_t("valueb");
+  config_block_value_t const valuec = config_block_value_t("valuec");
+
+  config_block_description_t const descra = config_block_description_t("This is config value A");
+  config_block_description_t const descrb = config_block_description_t("This is config value B");
+
+  config->set_value(keya, valuea, descra);
+  config->set_value(keyb, valueb, descrb);
+  config->set_value(keyc, valuec);
+
+  config_block_sptr subblock = config->subblock_view("sub");
+
+  TEST_EQUAL("descra", config->get_description(keya), descra);
+  TEST_EQUAL("descrc", config->get_description(keyc), config_block_description_t());
+  TEST_EQUAL("descrb", subblock->get_description("keyb"), descrb);
+
+  EXPECT_EXCEPTION(
+      no_such_configuration_value_exception,
+      config->get_description(config_block_key_t("not_a_key")),
+      "accessing description of invalid key"
+      );
+
+  config->unset_value(keya);
+
+  EXPECT_EXCEPTION(
+      no_such_configuration_value_exception,
+      config->get_description(keya),
+      "accessing description of unset key"
+      );
+}

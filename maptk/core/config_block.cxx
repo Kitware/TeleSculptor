@@ -74,7 +74,9 @@ config_block
 
     config_block_key_t const stripped_key_name = strip_block_name(key, key_name);
 
-    conf->set_value(stripped_key_name, get_value(key_name));
+    conf->set_value(stripped_key_name,
+                    get_value(key_name),
+                    get_description(key_name));
   }
 
   return conf;
@@ -88,14 +90,34 @@ config_block
   return config_block_sptr(new config_block(key, shared_from_this()));
 }
 
-/// Set a value within the configuration.
-void
+config_block_description_t
 config_block
-::set_value(config_block_key_t const& key, config_block_value_t const& value)
+::get_description(config_block_key_t const& key) const
 {
   if (m_parent)
   {
-    m_parent->set_value(m_name + block_sep + key, value);
+    return m_parent->get_description(m_name + block_sep + key);
+  }
+
+  store_t::const_iterator i = m_descr_store.find(key);
+  if (i == m_descr_store.end())
+  {
+    throw no_such_configuration_value_exception(key);
+  }
+
+  return i->second;
+}
+
+/// Set a value within the configuration.
+void
+config_block
+::set_value(config_block_key_t const& key,
+            config_block_value_t const& value,
+            config_block_description_t const& descr)
+{
+  if (m_parent)
+  {
+    m_parent->set_value(m_name + block_sep + key, value, descr);
   }
   else
   {
@@ -107,6 +129,13 @@ config_block
     }
 
     m_store[key] = value;
+
+    // Only assign the description given if there is no stored description
+    // for this key, or the given description is non-zero.
+    if (m_descr_store.count(key) == 0 || descr.size() > 0)
+    {
+      m_descr_store[key] = descr;
+    }
   }
 }
 
@@ -129,13 +158,17 @@ config_block
     }
 
     store_t::iterator const i = m_store.find(key);
+    store_t::iterator const j = m_descr_store.find(key);
 
+    // value and descr stores managed in parallel, so if key doesn't exist in
+    // value store, there will be no parallel value in the descr store.
     if (i == m_store.end())
     {
       throw no_such_configuration_value_exception(key);
     }
 
     m_store.erase(i);
+    m_descr_store.erase(j);
   }
 }
 
@@ -165,8 +198,9 @@ config_block
   BOOST_FOREACH (config_block_key_t const& key, keys)
   {
     config_block_value_t const& val = conf->get_value<config_block_value_t>(key);
+    config_block_description_t const& descr = conf->get_description(key);
 
-    set_value(key, val);
+    set_value(key, val, descr);
   }
 }
 
@@ -219,6 +253,7 @@ config_block
   : m_parent(parent)
   , m_name(name)
   , m_store()
+  , m_descr_store()
   , m_ro_list()
 {
 }

@@ -104,19 +104,25 @@ algorithm_def<Self>
                                 config_block_sptr config,
                                 base_sptr nested_algo)
 {
+  config_block_description_t type_comment =
+    "Algorithm to use for '" + name + "'.\n"
+    "Must be one of the following options:\n\t- "
+    + boost::algorithm::join(algorithm_def<Self>::registered_names(), "\n\t- ")
+    ;
+
   if(nested_algo)
   {
     config->set_value(name + config_block::block_sep + "type",
-                      nested_algo->impl_name());
+                      nested_algo->impl_name(),
+                      type_comment);
     config->subblock_view(name + config_block::block_sep + nested_algo->impl_name())
           ->merge_config(nested_algo->get_configuration());
   }
   else
   {
     config->set_value(name + config_block::block_sep + "type",
-                      "# Pick one: [ "
-                      + boost::algorithm::join(algorithm_def<Self>::registered_names(), " | ")
-                      + " ]");
+                      "",
+                      type_comment);
   }
 }
 
