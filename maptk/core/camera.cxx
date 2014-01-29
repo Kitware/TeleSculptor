@@ -18,6 +18,17 @@
 namespace maptk
 {
 
+/// output stream operator for a base class camera
+std::ostream& operator<<(std::ostream& s, const camera& c)
+{
+  using std::setprecision;
+  s << setprecision(12) << matrix_3x3d(c.intrinsics()) << "\n"
+    << setprecision(12) << matrix_3x3d(c.rotation()) << "\n"
+    << setprecision(12) << c.translation() << "\n\n"
+    << "0\n";
+  return s;
+}
+
 
 /// Rotate the camera about its center such that it looks at the given point.
 template <typename T>
