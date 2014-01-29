@@ -19,6 +19,7 @@ set(maptk_core_headers_public
   ins_data_io.h
   landmark.h
   landmark_map.h
+  landmark_map_io.h
   local_geo_cs.h
   match_set.h
   matrix.h
@@ -61,6 +62,7 @@ set(maptk_core_sources
   ins_data.cxx
   ins_data_io.cxx
   landmark.cxx
+  landmark_map_io.cxx
   local_geo_cs.cxx
   matrix.cxx
   metrics.cxx
