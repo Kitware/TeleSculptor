@@ -4,11 +4,12 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
-#include<iostream>
-#include<fstream>
-#include<exception>
-#include<string>
-#include<vector>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <exception>
+#include <string>
+#include <vector>
 
 #include <maptk/modules.h>
 
@@ -16,6 +17,8 @@
 #include <maptk/core/track_set_io.h>
 #include <maptk/core/local_geo_cs.h>
 #include <maptk/core/ins_data_io.h>
+#include <maptk/core/landmark_map_io.h>
+#include <maptk/core/camera_io.h>
 #include <maptk/core/metrics.h>
 #include <maptk/core/algo/bundle_adjust.h>
 #include <maptk/core/algo/geo_map.h>
@@ -42,13 +45,23 @@ static maptk::config_block_sptr default_config()
 
   config_block_sptr config = config_block::empty_config("bundle_adjust_tracks_tool");
 
-  config->set_value("track_file", "",
+  config->set_value("input_track_file", "",
                     "Path an input file containing feature tracks");
 
-  config->set_value("pos_files", "",
-                    "A directory containing the POS files, or a text file"
+  config->set_value("input_pos_files", "",
+                    "A directory containing the input POS files, or a text file"
                     "containing a newline-separated list of POS files. "
                     "This is optional, leave blank to ignore.");
+
+  config->set_value("output_ply_file", "output/landmarks.ply",
+                    "Path to the output PLY file in which to write "
+                    "resulting 3D landmark points");
+
+  config->set_value("output_pos_dir", "output/pos",
+                    "A directory in which to write the output POS files.");
+
+  config->set_value("output_krtd_dir", "output/krtd",
+                    "A directory in which to write the output KRTD files.");
 
   algo::bundle_adjust::get_nested_algo_configuration("bundle_adjuster", config,
                                                      algo::bundle_adjust_sptr());
@@ -62,10 +75,10 @@ static maptk::config_block_sptr default_config()
 static bool check_config(maptk::config_block_sptr config)
 {
   return (
-         config->has_value("track_file")
-      && bfs::exists(maptk::path_t(config->get_value<std::string>("track_file")))
-      && (  !config->has_value("pos_files")
-         || bfs::exists(maptk::path_t(config->get_value<std::string>("pos_files"))) )
+         config->has_value("input_track_file")
+      && bfs::exists(maptk::path_t(config->get_value<std::string>("input_track_file")))
+      && (  !config->has_value("input_pos_files")
+         || bfs::exists(maptk::path_t(config->get_value<std::string>("input_pos_files"))) )
       && maptk::algo::bundle_adjust::check_nested_algo_configuration("bundle_adjuster", config)
       && maptk::algo::geo_map::check_nested_algo_configuration("geo_mapper", config)
       );
@@ -194,7 +207,7 @@ static int maptk_main(int argc, char const* argv[])
   }
 
   // Read the track file
-  std::string track_file = config->get_value<std::string>("track_file");
+  std::string track_file = config->get_value<std::string>("input_track_file");
   maptk::track_set_sptr tracks = maptk::read_track_file(track_file);
 
   // Create the local coordinate system
@@ -203,9 +216,9 @@ static int maptk_main(int argc, char const* argv[])
 
   std::map<maptk::frame_id_t, maptk::camera_sptr> cameras;
   // if POS files are available, use them to initialize the cameras
-  if( config->has_value("pos_files") )
+  if( config->has_value("input_pos_files") )
   {
-    std::string pos_files = config->get_value<std::string>("pos_files");
+    std::string pos_files = config->get_value<std::string>("input_pos_files");
     std::vector<bfs::path> files;
     if( bfs::is_directory(pos_files) )
     {
@@ -270,6 +283,46 @@ static int maptk_main(int argc, char const* argv[])
                                              lm_map->landmarks(),
                                              tracks->tracks());
   std::cout << "final reprojection RMSE: " << end_rmse << std::endl;
+
+  // Write the output PLY file
+  if( config->has_value("output_ply_file") )
+  {
+    std::string ply_file = config->get_value<std::string>("output_ply_file");
+    write_ply_file(lm_map, ply_file);
+  }
+
+  // Write the output POS files
+  if( config->has_value("output_pos_dir") )
+  {
+    bfs::path pos_dir = config->get_value<std::string>("output_pos_dir");
+    typedef std::map<maptk::frame_id_t, maptk::ins_data> ins_map_t;
+    ins_map_t ins_map = maptk::ins_from_cameras(cam_map->cameras(), local_cs);
+    BOOST_FOREACH(const ins_map_t::value_type& p, ins_map)
+    {
+      std::stringstream ss;
+      ss.fill('0');
+      ss.width(6);
+      ss << p.first << ".pos";
+      bfs::path out_pos_file = pos_dir / ss.str();
+      write_pos_file(p.second, out_pos_file);
+    }
+  }
+
+  // Write the output KRTD files
+  if( config->has_value("output_krtd_dir") )
+  {
+    bfs::path krtd_dir = config->get_value<std::string>("output_krtd_dir");
+    typedef maptk::camera_map::map_camera_t::value_type cam_map_val_t;
+    BOOST_FOREACH(const cam_map_val_t& p, cam_map->cameras())
+    {
+      std::stringstream ss;
+      ss.fill('0');
+      ss.width(6);
+      ss << p.first << ".krtd";
+      bfs::path out_krtd_file = krtd_dir / ss.str();
+      write_krtd_file(*p.second, out_krtd_file);
+    }
+  }
 
   return EXIT_SUCCESS;
 }
