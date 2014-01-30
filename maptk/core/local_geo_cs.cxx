@@ -67,6 +67,7 @@ local_geo_cs
   geo_map_algo_->utm_to_latlon(c.x(), c.y(), utm_origin_zone_, true,
                                ins.lat, ins.lon);
   ins.alt = c.z();
+  ins.source_name = "MAPTK";
 }
 
 
