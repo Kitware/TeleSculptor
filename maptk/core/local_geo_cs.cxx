@@ -127,23 +127,23 @@ initialize_cameras_with_ins(const std::map<frame_id_t, ins_data>& ins_map,
 }
 
 
-/// Extract a sequence of ins_data from a sequence of cameras and local_geo_cs
-std::map<frame_id_t, ins_data>
-ins_from_cameras(const std::map<frame_id_t, camera_sptr>& cam_map,
-                 const local_geo_cs& lgcs)
+/// Update a sequence of ins_data from a sequence of cameras and local_geo_cs
+void
+update_ins_from_cameras(const std::map<frame_id_t, camera_sptr>& cam_map,
+                        const local_geo_cs& lgcs,
+                        std::map<frame_id_t, ins_data>& ins_map)
 {
-  std::map<frame_id_t, ins_data> ins_map;
   if( lgcs.utm_origin_zone() < 0 )
   {
     // TODO throw an exception here
     std::cerr << "local geo coordinates do not have an origin" <<std::endl;
-    return ins_map;
+    return;
   }
 
-  ins_data active_ins;
   typedef std::map<frame_id_t, camera_sptr>::value_type cam_map_val_t;
   BOOST_FOREACH(cam_map_val_t const &p, cam_map)
   {
+    ins_data& active_ins = ins_map[p.first];
     if( camera_d* cam = dynamic_cast<camera_d*>(p.second.get()) )
     {
       lgcs.update_ins_data(*cam, active_ins);
@@ -152,9 +152,7 @@ ins_from_cameras(const std::map<frame_id_t, camera_sptr>& cam_map,
     {
       lgcs.update_ins_data(camera_d(*cam), active_ins);
     }
-    ins_map[p.first] = active_ins;
   }
-  return ins_map;
 }
 
 

@@ -80,17 +80,20 @@ initialize_cameras_with_ins(const std::map<frame_id_t, ins_data>& ins_map,
                             local_geo_cs& lgcs);
 
 
-/// Extract a sequence of ins_data from a sequence of cameras and local_geo_cs
+/// Update a sequence of ins_data from a sequence of cameras and local_geo_cs
 /**
  * \param [in] cam_map is a mapping from frame number to camera
  * \param [in] lgcs is the local geographic coordinate system used to map
  *             local UTM to lat/long
- * \returns a mapping from frame_number of ins_data object
+ * \param [in,out]  a mapping from frame_number of ins_data object to update.
+ *                  If no ins_data object is found for a frame,
+ *                  a new one is created
  * \note the supplied lgcs must have a valid utm_origin_zone()
  */
-std::map<frame_id_t, ins_data>
-ins_from_cameras(const std::map<frame_id_t, camera_sptr>& cam_map,
-                 const local_geo_cs& lgcs);
+void
+update_ins_from_cameras(const std::map<frame_id_t, camera_sptr>& cam_map,
+                        const local_geo_cs& lgcs,
+                        std::map<frame_id_t, ins_data>& ins_map);
 
 
 } // end namespace maptk

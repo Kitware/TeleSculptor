@@ -214,6 +214,7 @@ static int maptk_main(int argc, char const* argv[])
   maptk::local_geo_cs local_cs(geo_mapper);
   maptk::camera_d base_camera;
 
+  std::map<maptk::frame_id_t, maptk::ins_data> ins_map;
   std::map<maptk::frame_id_t, maptk::camera_sptr> cameras;
   // if POS files are available, use them to initialize the cameras
   if( config->has_value("input_pos_files") )
@@ -240,7 +241,6 @@ static int maptk_main(int argc, char const* argv[])
       }
     }
 
-    std::map<maptk::frame_id_t, maptk::ins_data> ins_map;
     maptk::frame_id_t frame = 0;
     BOOST_FOREACH(const bfs::path& fpath, files)
     {
@@ -296,7 +296,7 @@ static int maptk_main(int argc, char const* argv[])
   {
     bfs::path pos_dir = config->get_value<std::string>("output_pos_dir");
     typedef std::map<maptk::frame_id_t, maptk::ins_data> ins_map_t;
-    ins_map_t ins_map = maptk::ins_from_cameras(cam_map->cameras(), local_cs);
+    maptk::update_ins_from_cameras(cam_map->cameras(), local_cs, ins_map);
     BOOST_FOREACH(const ins_map_t::value_type& p, ins_map)
     {
       std::stringstream ss;
