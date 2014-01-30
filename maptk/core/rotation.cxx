@@ -82,9 +82,7 @@ rotation_<T>
   rotation_<T> Rx(vector_4_<T>(T(sin(half_x)), 0, 0, T(cos(half_x))));
   rotation_<T> Ry(vector_4_<T>(0, T(sin(half_y)), 0, T(cos(half_y))));
   rotation_<T> Rz(vector_4_<T>(0, 0, T(sin(half_z)), T(cos(half_z))));
-  // FIXME this final 180 degree rotation is only needed for CLIF data
-  rotation_<T> R180(vector_4_<T>(0, T(sin(pi_over_2)), 0, T(cos(pi_over_2))));
-  *this = R180 * Rx * Ry * Rz;
+  *this = Rx * Ry * Rz;
 }
 
 
@@ -220,18 +218,16 @@ rotation_<T>
 ::get_yaw_pitch_roll(T& yaw, T& pitch, T& roll) const
 {
   matrix_<3,3,T> rotM(*this);
-  T xy = T(std::sqrt(double(rotM(0,0)*rotM(0,0)) + rotM(1,0)*rotM(1,0)));
-  if( xy > std::numeric_limits<T>::epsilon() * T(8) )
+  T xy = T(std::sqrt(double(rotM(1,2)*rotM(1,2)) + rotM(2,2)*rotM(2,2)));
+  yaw   = T(std::atan2(double(-rotM(0,1)),double(rotM(0,0))));
+  pitch = T(std::atan2(double(rotM(0,2)),double(xy)));
+  roll  = T(std::atan2(double(-rotM(1,2)),double(rotM(2,2))));
+  // correct for 90 degree yaw offset
+  const double pi = boost::math::constants::pi<double>();
+  yaw -= pi / 2.0;
+  if (yaw <= -pi)
   {
-    yaw   = T(std::atan2(double(rotM(2,1)),double(rotM(2,2))));
-    pitch = T(std::atan2(double(-rotM(2,0)),double(xy)));
-    roll  = T(std::atan2(double(rotM(1,0)),double(rotM(0,0))));
-  }
-  else
-  {
-    yaw   = T(std::atan2(double(-rotM(1,2)),double(rotM(1,1))));
-    pitch = T(std::atan2(double(-rotM(2,0)),double(xy)));
-    roll  = T(0);
+    yaw += 2.0 * pi;
   }
 }
 
