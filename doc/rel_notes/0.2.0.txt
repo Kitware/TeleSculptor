@@ -73,6 +73,25 @@ Core
  * Added use of config_block key descriptions to nested algorithm utilities
    and track_features utility.
 
+ * Added functions for reading and writing track files. Updated tools
+   to use these functions.
+
+ * Added explicit functions for reading and writing POS files (ins_data).
+   Updated tools to use these functions.
+
+ * Added explicit functions for reading and writing cameras in KRTD files.
+   Also provided camera base class operator<< to support this.
+
+ * Added a function to write a landmark map in PLY file format.
+
+ * Added functions for batch initialization of cameras with INS data and
+   batch updating of INS data using cameras.
+
+ * Added helper functions to track_set to return the set of all track IDs
+   and all frame IDs contained in the tracks in the set.
+
+ * Added a tool to run sparse bundle adjustment on tracks read from a file.
+
 VXL
 
  * Added conversions between maptk::camera_<T> and vpgl_perspective_camera<T>
@@ -97,3 +116,17 @@ Core
 
  * Rotation constructor from quaternion vector is now explicit to avoid
    accidental casting.
+
+ * update_camera() and update_ins_data() functions of local_geo_cs are now const
+   as they should have been.
+
+ * Set ins_data source_name to be MAPTK in defualt constructor and update
+   functions to avoid writing out unnamed POS files.
+
+ * Removed CLIF hack in rotation yaw-pitch-roll constructor.
+
+ * Fixed rotation_::get_yaw_pitch_roll() function to work symmetrically
+   with the related constructor.  Added tests to verify.
+
+ * Added std::skipws in operator>> for vector_ and matrix_ to allow used in
+   boost::lexical_cast, which is used by the config file parser.
