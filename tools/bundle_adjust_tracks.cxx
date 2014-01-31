@@ -236,6 +236,7 @@ static int maptk_main(int argc, char const* argv[])
 
   // Read the track file
   std::string track_file = config->get_value<std::string>("input_track_file");
+  std::cout << "loading track file: " << track_file <<std::endl;
   maptk::track_set_sptr tracks = maptk::read_track_file(track_file);
 
   // Create the local coordinate system
@@ -269,6 +270,7 @@ static int maptk_main(int argc, char const* argv[])
       }
     }
 
+    std::cout << "loading POS files" <<std::endl;
     maptk::frame_id_t frame = 0;
     BOOST_FOREACH(const bfs::path& fpath, files)
     {
