@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -8,6 +8,8 @@
 #include <maptk/ocv/image_container.h>
 #include <maptk/ocv/feature_set.h>
 #include <maptk/ocv/descriptor_set.h>
+
+#include <maptk/ocv/ocv_algo_tools.txx>
 
 
 namespace maptk
@@ -57,6 +59,39 @@ extract_descriptors
 extract_descriptors
 ::~extract_descriptors()
 {
+}
+
+
+/// Get this algorithm's \link maptk::config_block configuration block \endlink
+config_block_sptr
+extract_descriptors
+::get_configuration()
+{
+  // base configuration block
+  config_block_sptr config = algorithm::get_configuration();
+
+  get_nested_ocv_algo_configuration<cv::DescriptorExtractor>(
+      "SURF_extractor", config,d_->extractor);
+
+  return config;
+}
+
+
+/// Set this algorithm's properties via a config block
+void
+extract_descriptors
+::set_configuration(config_block_sptr config)
+{
+
+}
+
+
+/// Check that the algorithm's configuration config_block is valid
+bool
+extract_descriptors
+::check_configuration(config_block_sptr config) const
+{
+  return true;
 }
 
 
