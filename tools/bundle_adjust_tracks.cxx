@@ -63,6 +63,15 @@ static maptk::config_block_sptr default_config()
   config->set_value("output_krtd_dir", "output/krtd",
                     "A directory in which to write the output KRTD files.");
 
+  config->set_value("min_track_length", "50",
+                    "Filter the input tracks keeping those covering "
+                    "at least this many frames.");
+
+  config->set_value("camera_sample_rate", "1",
+                    "Sub-sample the cameras for by this rate.\n"
+                    "Set to 1 to use all cameras, "
+                    "2 to use every other camera, etc.");
+
   config->set_value("base_camera:focal_length", "1.0",
                     "focal length of the base camera model");
 
@@ -110,6 +119,42 @@ base_camera_from_config(maptk::config_block_sptr config)
                         config->get_value<double>("aspect_ratio"),
                         config->get_value<double>("skew"));
   return camera_d(vector_3d(0,0,1), rotation_d(), K);
+}
+
+
+/// filter track set by removing short tracks
+maptk::track_set_sptr
+filter_tracks(maptk::track_set_sptr tracks, size_t min_length)
+{
+  using namespace maptk;
+  std::vector<track_sptr> trks = tracks->tracks();
+  std::vector<track_sptr> good_trks;
+  BOOST_FOREACH(track_sptr t, trks)
+  {
+    if( t->size() >= min_length )
+    {
+      good_trks.push_back(t);
+    }
+  }
+  return track_set_sptr(new simple_track_set(good_trks));
+}
+
+
+/// subsample a every Nth camera, where N is specfied by factor
+maptk::camera_map_sptr
+subsample_cameras(maptk::camera_map_sptr cameras, unsigned factor)
+{
+  using namespace maptk;
+  camera_map::map_camera_t cams = cameras->cameras();
+  camera_map::map_camera_t sub_cams;
+  BOOST_FOREACH(const camera_map::map_camera_t::value_type& p, cams)
+  {
+    if(p.first % factor == 0)
+    {
+      sub_cams.insert(p);
+    }
+  }
+  return camera_map_sptr(new simple_camera_map(sub_cams));
 }
 
 
@@ -239,6 +284,15 @@ static int maptk_main(int argc, char const* argv[])
   std::cout << "loading track file: " << track_file <<std::endl;
   maptk::track_set_sptr tracks = maptk::read_track_file(track_file);
 
+  std::cout << "loaded "<<tracks->size()<<" tracks"<<std::endl;
+  size_t min_track_len = config->get_value<size_t>("min_track_length");
+  if( min_track_len > 1 )
+  {
+    tracks = filter_tracks(tracks, min_track_len);
+    std::cout << "filtered down to "<<tracks->size()<<" long tracks"<<std::endl;
+  }
+
+
   // Create the local coordinate system
   maptk::local_geo_cs local_cs(geo_mapper);
   maptk::camera_d base_camera = base_camera_from_config(config->subblock("base_camera"));
@@ -301,6 +355,14 @@ static int maptk_main(int argc, char const* argv[])
   // Run bundle adjustment
   maptk::camera_map_sptr cam_map(new maptk::simple_camera_map(cameras));
   maptk::landmark_map_sptr lm_map(new maptk::simple_landmark_map(landmarks));
+
+  std::cout << "initialized "<<cam_map->size()<<" cameras"<<std::endl;
+  unsigned int cam_samp_rate = config->get_value<unsigned int>("camera_sample_rate");
+  if(cam_samp_rate > 1)
+  {
+    cam_map = subsample_cameras(cam_map, cam_samp_rate);
+    std::cout << "subsampled down to "<<cam_map->size()<<" cameras"<<std::endl;
+  }
 
   double init_rmse = maptk::reprojection_rmse(cam_map->cameras(),
                                               lm_map->landmarks(),
