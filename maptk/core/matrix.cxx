@@ -118,7 +118,7 @@ std::istream&  operator>>(std::istream& s, matrix_<M,N,T>& m)
   {
     for (unsigned int j=0; j<N; ++j)
     {
-      s >> m[i][j];
+      s >> std::skipws >> m[i][j];
     }
   }
   return s;
