@@ -12,28 +12,13 @@
 
 #include <maptk/modules.h>
 #include <maptk/core/ins_data_io.h>
+#include <maptk/core/camera_io.h>
 #include <maptk/core/local_geo_cs.h>
 
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 
 namespace fs = boost::filesystem;
-
-
-/// Write a camera to a KRTD file on disk
-bool write_krtd_file(const std::string& krtd_filename,
-                     const maptk::camera_d& cam)
-{
-  std::ofstream ofs(krtd_filename.c_str());
-  if (!ofs)
-  {
-    std::cerr << "Error: Could not open KRTD file "<<krtd_filename<<std::endl;
-    return false;
-  }
-
-  ofs << cam;
-  return ! ofs.fail();
-}
 
 
 /// Convert a INS data to a camera
@@ -61,8 +46,12 @@ bool convert_pos2krtd(const std::string& pos_filename,
 {
   maptk::ins_data ins;
   ins = maptk::read_pos_file(pos_filename);
-  return convert_ins2camera(ins, cs, base_camera) &&
-         write_krtd_file(krtd_filename, base_camera);
+  if ( !convert_ins2camera(ins, cs, base_camera) )
+  {
+    return false;
+  }
+  maptk::write_krtd_file(base_camera, krtd_filename);
+  return true;
 }
 
 
@@ -91,10 +80,7 @@ bool convert_pos2krtd_dir(const fs::path& pos_dir,
   BOOST_FOREACH(cam_map_val_t const &p, cam_map)
   {
     maptk::camera_d* cam = dynamic_cast<maptk::camera_d*>(p.second.get());
-    if( !write_krtd_file(krtd_filenames[p.first], *cam) )
-    {
-      return false;
-    }
+    maptk::write_krtd_file(*cam, krtd_filenames[p.first]);
   }
 
   maptk::vector_3d origin = cs.utm_origin();
