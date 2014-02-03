@@ -74,6 +74,7 @@ private:
  *       and zone are determined from the mean camera easting and northing
  *       at zero altitude.
  */
+MAPTK_CORE_EXPORT
 std::map<frame_id_t, camera_sptr>
 initialize_cameras_with_ins(const std::map<frame_id_t, ins_data>& ins_map,
                             const camera_d& base_camera,
@@ -90,6 +91,7 @@ initialize_cameras_with_ins(const std::map<frame_id_t, ins_data>& ins_map,
  *                  a new one is created
  * \note the supplied lgcs must have a valid utm_origin_zone()
  */
+MAPTK_CORE_EXPORT
 void
 update_ins_from_cameras(const std::map<frame_id_t, camera_sptr>& cam_map,
                         const local_geo_cs& lgcs,
