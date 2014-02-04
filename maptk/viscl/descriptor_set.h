@@ -9,12 +9,12 @@
 
 
 #include <maptk/core/descriptor_set.h>
-
+#include <viscl/core/buffer.h>
 
 namespace maptk
 {
 
-namespace viscl
+namespace vcl
 {
 
 /// A concrete descriptor set that wraps VisCL descriptors.
@@ -22,36 +22,35 @@ class descriptor_set
 : public maptk::descriptor_set
 {
 public:
+
   /// Default Constructor
   descriptor_set() {}
 
   /// Constructor from VisCL descriptors
-  // TODO implement constructor
-  //explicit descriptor_set(const type& viscl_descriptors)
-  //: data_(data_descriptors) {}
+  explicit descriptor_set(const viscl::buffer& viscl_descriptors)
+  : data_(viscl_descriptors) {}
 
   /// Return the number of descriptor in the set
-  virtual size_t size() const { return 0; } //TODO number of descriptors
+  virtual size_t size() const { return data_.len(); }
 
   /// Return a vector of descriptor shared pointers
+  //WARNING: These descriptors must be matched by hamming distance
   virtual std::vector<descriptor_sptr> descriptors() const;
 
   /// Return the native VisCL descriptors structure
-  // TODO define this
-  //const type& viscl_descriptors() const { return data_; }
+  const viscl::buffer& viscl_descriptors() const { return data_; }
 
 protected:
 
   /// The handle to a VisCL set of descriptors
-  // TODO define this variable
-  // type data_;
+  viscl::buffer data_;
 };
 
 
 /// Convert any descriptor set a VisCL descriptor set
-// TODO function to convert/upload descriptors to GPU
-//type
-//descriptors_to_viscl(const maptk::descriptor_set& desc_set);
+/// descriptor must be a cl_int4
+viscl::buffer
+descriptors_to_viscl(const maptk::descriptor_set& desc_set);
 
 
 } // end namespace viscl

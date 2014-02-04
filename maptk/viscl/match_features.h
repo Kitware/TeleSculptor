@@ -13,7 +13,7 @@
 namespace maptk
 {
 
-namespace viscl
+namespace vcl
 {
 
 /// An abstract base class for matching feature points
@@ -37,6 +37,8 @@ public:
   virtual void set_configuration(config_block_sptr /*config*/) { };
   virtual bool check_configuration(config_block_sptr /*config*/) const { return true; }
 
+  void set_img_dimensions(unsigned int width, unsigned int height);
+
   /// Match one set of features and corresponding descriptors to another
   /**
    * \param [in] feat1 the first set of features to match
@@ -53,6 +55,10 @@ private:
   /// private implementation class
   class priv;
   boost::scoped_ptr<priv> d_;
+
+  //Used to create a keypoint map if one doesnt exist for features
+  unsigned int imgwidth_;
+  unsigned int imgheight_;
 };
 
 } // end namespace viscl

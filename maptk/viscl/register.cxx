@@ -12,15 +12,15 @@
 namespace maptk
 {
 
-namespace viscl
+namespace vcl
 {
 
 /// register all algorithms in this module
 void register_algorithms()
 {
-  viscl::detect_features::register_self();
-  viscl::extract_descriptors::register_self();
-  viscl::match_features::register_self();
+  vcl::detect_features::register_self();
+  vcl::extract_descriptors::register_self();
+  vcl::match_features::register_self();
 }
 
 

@@ -13,7 +13,7 @@
 namespace maptk
 {
 
-namespace viscl
+namespace vcl
 {
 
 /// An algorithm class for detecting feature points using VisCL

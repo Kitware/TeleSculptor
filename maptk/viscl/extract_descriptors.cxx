@@ -9,11 +9,12 @@
 #include <maptk/viscl/feature_set.h>
 #include <maptk/viscl/descriptor_set.h>
 
+#include <viscl/tasks/BRIEF.h>
 
 namespace maptk
 {
 
-namespace viscl
+namespace vcl
 {
 
 /// Private implementation class
@@ -30,7 +31,7 @@ public:
   {
   }
 
-  /// TODO any VISCL data needed goes here
+  viscl::brief<10> brief;
 };
 
 
@@ -67,10 +68,12 @@ extract_descriptors
   {
     return descriptor_set_sptr();
   }
-  // TODO extract image form image_data, upload if needed
-  // TODO extract features data, upload if needed
-  // TODO extract descriptors
-  return descriptor_set_sptr(new viscl::descriptor_set(/* TODO data */));
+
+  viscl::image img = vcl::image_container_to_viscl(*image_data);
+  vcl::feature_set::type fs = vcl::features_to_viscl(*features, img.width(), img.height());
+  viscl::buffer descriptors;
+  d_->brief.compute_descriptors(img, fs.features_, features->size(), descriptors);
+  return descriptor_set_sptr(new vcl::descriptor_set(descriptors));
 }
 
 

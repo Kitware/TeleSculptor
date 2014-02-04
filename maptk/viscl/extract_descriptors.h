@@ -13,7 +13,7 @@
 namespace maptk
 {
 
-namespace viscl
+namespace vcl
 {
 
 /// An class for extracting feature descriptors using VisCL

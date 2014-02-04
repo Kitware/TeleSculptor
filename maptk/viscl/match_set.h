@@ -9,11 +9,12 @@
 
 
 #include <maptk/core/match_set.h>
+#include <viscl/core/buffer.h>
 
 namespace maptk
 {
 
-namespace viscl
+namespace vcl
 {
 
 
@@ -26,9 +27,8 @@ public:
   match_set() {}
 
   /// Constructor from VisCL matches
-  //TODO define 'type'
-  //explicit match_set(const type& viscl_matches)
-  //: data_(viscl_matches) {}
+  explicit match_set(const viscl::buffer& viscl_matches)
+   : data_(viscl_matches) {}
 
   /// Return the number of matches in the set
   virtual size_t size() const { return 0; } // TODO return size
@@ -37,20 +37,17 @@ public:
   virtual std::vector<match> matches() const;
 
   /// Return the underlying VisCL match data
-  // TODO define 'type'
-  //const type& viscl_matches() const { return data_; }
+  const viscl::buffer& viscl_matches() const { return data_; }
 
 private:
   // The collection of VisCL match data
-  //TODO define 'type'
-  //type data_;
+  viscl::buffer data_;
 };
 
 
 /// Convert any match set to VisCL match data
-//TODO define 'type'
-//type
-//matches_to_viscl(const maptk::match_set& match_set);
+viscl::buffer
+matches_to_viscl(const maptk::match_set& match_set, size_t numkpts2);
 
 
 } // end namespace viscl

@@ -11,7 +11,7 @@
 namespace maptk
 {
 
-namespace viscl
+namespace vcl
 {
 
 /// register all algorithms in this module

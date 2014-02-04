@@ -10,11 +10,13 @@
 #include <maptk/viscl/feature_set.h>
 #include <maptk/viscl/image_container.h>
 
+#include <viscl/tasks/hessian.h>
+
 
 namespace maptk
 {
 
-namespace viscl
+namespace vcl
 {
 
 
@@ -32,7 +34,7 @@ public:
   {
   }
 
-  /// TODO define any private VisCL data needed
+  viscl::hessian detector;
 };
 
 
@@ -66,10 +68,17 @@ feature_set_sptr
 detect_features
 ::detect(image_container_sptr image_data) const
 {
-  // TODO convert the image data to VisCL
-  // TODO run feature detection
-  // TODO return a viscl::feature_set
-  return feature_set_sptr(new feature_set(/* TODO data */));
+  viscl::image img = vcl::image_container_to_viscl(*image_data);
+  vcl::feature_set::type feature_data;
+
+  //TODO: add config for smoothing sigma, max kpts, and threshold
+  const unsigned int max_kpts = 5000;
+  const float thresh = 0.03f;
+  const float sigma = 2.0f;
+
+  d_->detector.smooth_and_detect(img, feature_data.kptmap_, feature_data.features_, feature_data.numfeat_, max_kpts, thresh, sigma);
+
+  return feature_set_sptr(new feature_set(feature_data));
 }
 
 

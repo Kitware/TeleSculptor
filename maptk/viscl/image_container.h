@@ -8,14 +8,13 @@
 #define MAPTK_VISCL_IMAGE_CONTAINER_H_
 
 #include <maptk/core/image_container.h>
-
+#include <viscl/core/image.h>
 
 namespace maptk
 {
 
-namespace viscl
+namespace vcl
 {
-
 
 /// This image container wraps a VisCL image
 class viscl_image_container
@@ -24,22 +23,19 @@ class viscl_image_container
 public:
 
   /// Constructor - from a VisCL image
-  // TODO define 'type'
-  //explicit viscl_image_container(const type& d)
-  //: data_(d) {}
+  explicit viscl_image_container(const viscl::image& d)
+  : data_(d) {}
 
   /// Constructor - convert maptk image to VisCL image
-  // TODO define 'type'
-  //explicit viscl_image_container(const image& maptk_image)
-  //: data_(maptk_to_viscl(maptk_image)) {}
+  explicit viscl_image_container(const image& maptk_image)
+  : data_(maptk_to_viscl(maptk_image)) {}
 
   /// Constructor - convert base image container to VisCL
   explicit viscl_image_container(const image_container& image_cont);
 
   /// Copy Constructor
-  // TODO define data_
-  //viscl_image_container(const viscl_image_container& other)
-  //: data_(other.data_) {}
+  viscl_image_container(const viscl_image_container& other)
+  : data_(other.data_) {}
 
   /// The size of the image data in bytes
   /// This size includes all allocated image memory,
@@ -47,33 +43,30 @@ public:
   virtual size_t size() const;
 
   /// The width of the image in pixels
-  virtual size_t width() const { return 0; } // TODO implement
+  virtual size_t width() const { return data_.width(); }
 
   /// The height of the image in pixels
-  virtual size_t height() const { return 0; } // TODO implement
+  virtual size_t height() const { return data_.height(); }
 
   /// The depth (or number of channels) of the image
-  virtual size_t depth() const { return 0; } // TODO implement
+  //viscl images only support 1 plane images at the moment
+  virtual size_t depth() const { return data_.depth(); }
 
   /// Get and in-memory image class to access the data
   virtual image get_image() const { return viscl_to_maptk(data_); }
 
   /// Access the underlying VisCL data structure
-  // TODO implement
-  //type get_viscl_image() const { return data_; }
+  viscl::image get_viscl_image() const { return data_; }
 
   /// Convert a VisCL image to a MAPTK image
-  // TODO implement
-  //static image viscl_to_maptk(const type& img);
+  static image viscl_to_maptk(const viscl::image& img);
 
   /// Convert a MAPTK image to a VisCL image
-  // TODO implement
-  //static type maptk_to_viscl(const image& img);
+  static viscl::image maptk_to_viscl(const image& img);
 
 protected:
 
-  // TODO set VisCL image data type
-  //type data_;
+  viscl::image data_;
 };
 
 
@@ -83,8 +76,7 @@ protected:
  * return the underlying VisCL image.  Otherwise, convert the image data
  * and upload to the GPU.
  */
-// TODO implement
-//type image_container_to_viscl(const image_container& img);
+viscl::image image_container_to_viscl(const image_container& img);
 
 
 } // end namespace viscl

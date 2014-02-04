@@ -11,11 +11,12 @@
 #include <maptk/viscl/descriptor_set.h>
 #include <maptk/viscl/match_set.h>
 
+#include <viscl/tasks/track_descr_match.h>
 
 namespace maptk
 {
 
-namespace viscl
+namespace vcl
 {
 
 
@@ -33,14 +34,14 @@ public:
   {
   }
 
-  // TODO add custom VisCL data here
+  viscl::track_descr_match matcher;
 };
 
 
 /// Constructor
 match_features
 ::match_features()
-: d_(new priv)
+: d_(new priv), imgwidth_(0), imgheight_(0)
 {
 }
 
@@ -48,7 +49,7 @@ match_features
 /// Copy Constructor
 match_features
 ::match_features(const match_features& other)
-: d_(new priv(*other.d_))
+: d_(new priv(*other.d_)), imgwidth_(other.imgwidth_), imgheight_(other.imgheight_)
 {
 }
 
@@ -59,6 +60,13 @@ match_features
 {
 }
 
+void
+match_features
+::set_img_dimensions(unsigned int width, unsigned int height)
+{
+  imgwidth_ = width;
+  imgheight_ = height;
+}
 
 /// Match one set of features and corresponding descriptors to another
 match_set_sptr
@@ -70,10 +78,16 @@ match_features
   {
     return match_set_sptr();
   }
-  // TODO convert to VisCL matches
-  type d1 = descriptors_to_viscl(*desc1);
-  type d2 = descriptors_to_viscl(*desc2);
-  // TODO compute matches
+
+  viscl::buffer d1 = descriptors_to_viscl(*desc1);
+  viscl::buffer d2 = descriptors_to_viscl(*desc2);
+  vcl::feature_set::type f1 = vcl::features_to_viscl(*feat1, imgwidth_, imgheight_);
+  vcl::feature_set::type f2 = vcl::features_to_viscl(*feat2, imgwidth_, imgheight_);
+
+  size_t numkpts2 = feat2->size();
+  viscl::buffer matches = d_->matcher.match(f1.features_, f1.kptmap_, d1,
+                                            f2.features_, numkpts2, f2.kptmap_, d2);
+
   return match_set_sptr(new match_set(matches));
 }
 
