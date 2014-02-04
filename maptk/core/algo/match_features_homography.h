@@ -12,6 +12,7 @@
 #include <maptk/core/algo/estimate_homography.h>
 #include <maptk/core/algo/match_features.h>
 #include <maptk/core/config_block.h>
+#include <boost/scoped_ptr.hpp>
 
 namespace maptk
 {
@@ -25,10 +26,13 @@ class MAPTK_CORE_EXPORT match_features_homography
 {
 public:
   /// Default Constructor
-  match_features_homography() {}
+  match_features_homography();
 
   /// Copy Constructor
-  match_features_homography(const match_features_homography&) {}
+  match_features_homography(const match_features_homography&);
+
+  /// Destructor
+  virtual ~match_features_homography();
 
   /// Return the name of this implementation
   std::string impl_name() const { return "homography_guided"; }
@@ -70,6 +74,10 @@ private:
 
   /// The homography estimation algorithm to use
   estimate_homography_sptr h_estimator_;
+
+  /// private implementation class
+  class priv;
+  boost::scoped_ptr<priv> d_;
 };
 
 

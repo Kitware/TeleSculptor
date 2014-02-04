@@ -20,12 +20,59 @@ namespace maptk
 namespace algo
 {
 
+/// Private implementation class
+class match_features_homography::priv
+{
+public:
+  /// Constructor
+  priv()
+  : inlier_scale(2.0)
+  {
+  }
+
+  priv(const priv& other)
+  : inlier_scale(other.inlier_scale)
+  {
+  }
+
+  // the scale of inlier points
+  double inlier_scale;
+};
+
+
+/// Constructor
+match_features_homography
+::match_features_homography()
+: d_(new priv)
+{
+}
+
+
+/// Copy Constructor
+match_features_homography
+::match_features_homography(const match_features_homography& other)
+: d_(new priv(*other.d_))
+{
+}
+
+
+/// Destructor
+match_features_homography
+::~match_features_homography()
+{
+}
+
+
 /// Get this alg's \link maptk::config_block configuration block \endlink
 config_block_sptr
 match_features_homography
 ::get_configuration() const
 {
   config_block_sptr config = algorithm::get_configuration();
+  config->set_value("inlier_scale",
+                    boost::lexical_cast<std::string>(d_->inlier_scale),
+                    "The acceptable error distance between warped and measured "
+                    "point to be considered an inlier match.");
 
   // nested algorithm configurations
   estimate_homography::get_nested_algo_configuration("homography_estimator",
@@ -51,6 +98,7 @@ match_features_homography
                                                      config, h_estimator_);
   match_features::set_nested_algo_configuration("feature_matcher", config,
                                                 matcher_);
+  d_->inlier_scale = config->get_value<double>("inlier_scale");
 }
 
 bool
@@ -82,7 +130,7 @@ match_features_homography
   // estimate a homography from the initial matches
   std::vector<bool> inliers;
   matrix_3x3d H = h_estimator_->estimate(feat1, feat2, init_matches,
-                                         inliers, 2.0);
+                                         inliers, d_->inlier_scale);
   (void) H; // H not yet used, avoid compiler warning
   std::cout << "inlier ratio: "<< std::count(inliers.begin(), inliers.end(), true)
             << "/"<<inliers.size() << std::endl;
