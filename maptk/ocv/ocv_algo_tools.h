@@ -15,7 +15,11 @@
 
 #include <string>
 
+#include <maptk/core/config_block.h>
+#include <maptk/core/exceptions/config_block.h>
 #include <maptk/core/types.h>
+
+#include <opencv2/core/core.hpp>
 
 namespace maptk
 {
@@ -36,10 +40,9 @@ namespace ocv
  * \paraom algo   The cv pointer to the algorithm to pull configuration
  *                options from.
  */
-template <typename T>
 void get_nested_ocv_algo_configuration(std::string const& name,
                                        config_block_sptr config,
-                                       cv::Ptr<T> algo);
+                                       cv::Ptr<cv::Algorithm> algo);
 
 /// Set nested OpenCV algoruthm's parameters based on a given \c config
 /**
@@ -55,10 +58,9 @@ void get_nested_ocv_algo_configuration(std::string const& name,
  * \paraom algo   The cv pointer to the algorithm to set configuration
  *                options to.
  */
-template <typename T>
 void set_nested_ocv_algo_configuration(std::string const& name,
                                        config_block_sptr config,
-                                       cv::Ptr<T> algo);
+                                       cv::Ptr<cv::Algorithm> algo);
 
 /// Basic check of nested OpenCV algorithm configuration in the given \c config
 /**
@@ -77,10 +79,9 @@ void set_nested_ocv_algo_configuration(std::string const& name,
  * \param algo    The cv pointer to the algorithn to use as a reference to
  *                check the \c config.
  */
-template <typename T>
 bool check_nested_ocv_algo_configuration(std::string const& name,
                                          config_block_sptr config,
-                                         cv::Ptr<T> algo);
+                                         cv::Ptr<cv::Algorithm> algo);
 
 
 } // end namespace ocv

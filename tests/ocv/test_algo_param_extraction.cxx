@@ -16,10 +16,10 @@
 
 #include <boost/foreach.hpp>
 
-#include <maptk/core/types.h>
-#include <maptk/ocv/register.h>
 #include <maptk/core/exceptions.h>
+#include <maptk/core/types.h>
 #include <maptk/ocv/extract_descriptors.h>
+#include <maptk/ocv/register.h>
 
 #define TEST_ARGS ()
 

@@ -9,7 +9,7 @@
 #include <vector>
 #include <maptk/ocv/feature_set.h>
 #include <maptk/ocv/image_container.h>
-#include <maptk/ocv/ocv_algo_tools.txx>
+#include <maptk/ocv/ocv_algo_tools.h>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/nonfree/nonfree.hpp>
 
@@ -72,7 +72,7 @@ detect_features
   // base configuration block
   config_block_sptr config = algorithm::get_configuration();
 
-  get_nested_ocv_algo_configuration<cv::FeatureDetector>(
+  get_nested_ocv_algo_configuration(
       "GridSURF_detector", config, d_->detector);
 
   return config;
@@ -84,7 +84,7 @@ void
 detect_features
 ::set_configuration(config_block_sptr config)
 {
-  set_nested_ocv_algo_configuration<cv::FeatureDetector>(
+  set_nested_ocv_algo_configuration(
       "GridSURF_detector", config, d_->detector);
 }
 
@@ -94,7 +94,7 @@ bool
 detect_features
 ::check_configuration(config_block_sptr config) const
 {
-  bool nested_ok = check_nested_ocv_algo_configuration<cv::FeatureDetector>(
+  bool nested_ok = check_nested_ocv_algo_configuration(
       "GridSURF_detector", config, d_->detector);
 
   return nested_ok;

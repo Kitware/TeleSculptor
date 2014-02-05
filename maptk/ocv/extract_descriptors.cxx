@@ -14,7 +14,7 @@
 #include <maptk/ocv/feature_set.h>
 #include <maptk/ocv/descriptor_set.h>
 
-#include <maptk/ocv/ocv_algo_tools.txx>
+#include <maptk/ocv/ocv_algo_tools.h>
 
 
 namespace maptk
@@ -75,7 +75,7 @@ extract_descriptors
   // base configuration block
   config_block_sptr config = algorithm::get_configuration();
 
-  get_nested_ocv_algo_configuration<cv::DescriptorExtractor>(
+  get_nested_ocv_algo_configuration(
       "SURF_extractor", config, d_->extractor);
 
   return config;
@@ -87,7 +87,7 @@ void
 extract_descriptors
 ::set_configuration(config_block_sptr config)
 {
-  set_nested_ocv_algo_configuration<cv::DescriptorExtractor>(
+  set_nested_ocv_algo_configuration(
       "SURF_extractor", config, d_->extractor);
 }
 
@@ -97,7 +97,7 @@ bool
 extract_descriptors
 ::check_configuration(config_block_sptr config) const
 {
-  bool nested_ok = check_nested_ocv_algo_configuration<cv::DescriptorExtractor>(
+  bool nested_ok = check_nested_ocv_algo_configuration(
       "SURF_extractor", config, d_->extractor);
 
   return nested_ok;

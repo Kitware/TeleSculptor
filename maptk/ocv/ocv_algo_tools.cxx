@@ -9,13 +9,10 @@
  * \brief Template implementations of OCV configuration helper methods
  */
 
-#ifndef MAPTK_OCV_OCV_ALGO_TOOLS_TXX
-#define MAPTK_OCV_OCV_ALGO_TOOLS_TXX
+#include "ocv_algo_tools.h"
 
 #include <iostream>
 #include <vector>
-
-#include <maptk/core/exceptions/config_block.h>
 
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
@@ -33,15 +30,14 @@ namespace
 
 /// Extract an OCV algorithm property and insert its value into a config_block
 /**
- * \param algo_t  The algorithm type
  * \param param_t The type of the parameter being extracted and stored.
  * \param algo        The cv pointer to the algorithm object.
  * \param algo_name   The name given to the nested algorithm.
  * \param param_name  The name of the parameter to store
  * \param config      The \c config_block to store the parameter in.
  */
-template <typename algo_t, typename param_t>
-void ocv_algo_param_to_config(cv::Ptr<algo_t> algo,
+template <typename param_t>
+void ocv_algo_param_to_config(cv::Ptr<cv::Algorithm> algo,
                               std::string const& algo_name,
                               std::string const& param_name,
                               config_block_sptr config)
@@ -56,15 +52,14 @@ void ocv_algo_param_to_config(cv::Ptr<algo_t> algo,
 
 /// Set a configuration parameter from a config_block to the nested algo
 /**
- * \param algo_t  The algorithm type
  * \param param_t The type of the parameter being extracted and stored.
  * \param algo        The cv pointer to the algorithm object.
  * \param algo_name   The name given to the nested algorithm.
  * \param param_name  The name of the parameter to store
  * \param config      The \c config_block to store the parameter in.
  */
-template <typename algo_t, typename param_t>
-void config_to_ocv_algo_param(cv::Ptr<algo_t> algo,
+template <typename param_t>
+void config_to_ocv_algo_param(cv::Ptr<cv::Algorithm> algo,
                               std::string const& algo_name,
                               std::string const& param_name,
                               config_block_sptr config)
@@ -111,11 +106,10 @@ bool check_ocv_algo_param_in_config(std::string const& algo_name,
 
 
 /// Add nested OpenCV algorithm's configuration options to the given \c config
-template <typename T>
 void
 get_nested_ocv_algo_configuration(std::string const& name,
                                   config_block_sptr config,
-                                  cv::Ptr<T> algo)
+                                  cv::Ptr<cv::Algorithm> algo)
 {
   // How to use the get method on an algo:
   //    algo->template get<int>("some-name")
@@ -138,15 +132,15 @@ get_nested_ocv_algo_configuration(std::string const& name,
 
     if (ptypeid == 0) // int
     {
-      ocv_algo_param_to_config<T, int>(algo, name, pname, config);
+      ocv_algo_param_to_config<int>(algo, name, pname, config);
     }
     else if (ptypeid == 1) // bool
     {
-      ocv_algo_param_to_config<T, bool>(algo, name, pname, config);
+      ocv_algo_param_to_config<bool>(algo, name, pname, config);
     }
     else if (ptypeid == 2) // double
     {
-      ocv_algo_param_to_config<T, double>(algo, name, pname, config);
+      ocv_algo_param_to_config<double>(algo, name, pname, config);
     }
     else
     {
@@ -160,11 +154,10 @@ get_nested_ocv_algo_configuration(std::string const& name,
 
 
 /// Set nested OpenCV algoruthm's parameters based on a given \c config
-template <typename T>
 void
 set_nested_ocv_algo_configuration(std::string const& name,
                                   config_block_sptr config,
-                                  cv::Ptr<T> algo)
+                                  cv::Ptr<cv::Algorithm> algo)
 {
   std::vector<std::string> algo_params;
   algo->getParams(algo_params);
@@ -175,15 +168,15 @@ set_nested_ocv_algo_configuration(std::string const& name,
 
     if (ptypeid == 0) // int
     {
-      config_to_ocv_algo_param<T, int>(algo, name, pname, config);
+      config_to_ocv_algo_param<int>(algo, name, pname, config);
     }
     else if (ptypeid == 1) // bool
     {
-      config_to_ocv_algo_param<T, bool>(algo, name, pname, config);
+      config_to_ocv_algo_param<bool>(algo, name, pname, config);
     }
     else if (ptypeid == 2) // double
     {
-      config_to_ocv_algo_param<T, double>(algo, name, pname, config);
+      config_to_ocv_algo_param<double>(algo, name, pname, config);
     }
     else
     {
@@ -197,11 +190,10 @@ set_nested_ocv_algo_configuration(std::string const& name,
 
 
 /// Basic check of nested OpenCV algorithm configuration in the given \c config
-template <typename T>
 bool
 check_nested_ocv_algo_configuration(std::string const& name,
                                     config_block_sptr config,
-                                    cv::Ptr<T> algo)
+                                    cv::Ptr<cv::Algorithm> algo)
 {
   std::vector<std::string> algo_params;
   algo->getParams(algo_params);
@@ -240,5 +232,3 @@ check_nested_ocv_algo_configuration(std::string const& name,
 } // end namespace ocv
 
 } // end namespace maptk
-
-#endif // MAPTK_OCV_OCV_ALGO_TOOLS_TXX

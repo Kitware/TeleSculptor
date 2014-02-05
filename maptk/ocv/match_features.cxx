@@ -10,7 +10,7 @@
 #include <maptk/ocv/feature_set.h>
 #include <maptk/ocv/descriptor_set.h>
 #include <maptk/ocv/match_set.h>
-#include <maptk/ocv/ocv_algo_tools.txx>
+#include <maptk/ocv/ocv_algo_tools.h>
 #include <opencv2/features2d/features2d.hpp>
 
 
@@ -123,7 +123,7 @@ match_features
 {
   config_block_sptr config = algorithm::get_configuration();
 
-  get_nested_ocv_algo_configuration<cv::DescriptorMatcher>(
+  get_nested_ocv_algo_configuration(
       "FlannBased_matcher", config, d_->matcher);
 
   return config;
@@ -135,7 +135,7 @@ void
 match_features
 ::set_configuration(config_block_sptr config)
 {
-  set_nested_ocv_algo_configuration<cv::DescriptorMatcher>(
+  set_nested_ocv_algo_configuration(
       "FlannBased_matcher", config, d_->matcher);
 }
 
@@ -145,7 +145,7 @@ bool
 match_features
 ::check_configuration(config_block_sptr config) const
 {
-  bool nested_ok = check_nested_ocv_algo_configuration<cv::DescriptorMatcher>(
+  bool nested_ok = check_nested_ocv_algo_configuration(
       "FlannBased_matcher", config, d_->matcher);
 
   return nested_ok;
