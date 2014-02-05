@@ -43,7 +43,7 @@ namespace
 template <typename algo_t, typename param_t>
 void ocv_algo_param_to_config(cv::Ptr<algo_t> algo,
                               std::string const& algo_name,
-                              std::string const& param_name, 
+                              std::string const& param_name,
                               config_block_sptr config)
 {
   param_t param = algo->template get<param_t>(param_name);
@@ -155,7 +155,7 @@ get_nested_ocv_algo_configuration(std::string const& name,
            << "Unexpected parameter type ID: " << ptypeid
            << endl;
     }
-  }  
+  }
 }
 
 
@@ -211,7 +211,7 @@ check_nested_ocv_algo_configuration(std::string const& name,
   BOOST_FOREACH( std::string pname, algo_params )
   {
     int ptypeid = algo->paramType(pname);
-    
+
     if (ptypeid == 0) // int
     {
       all_success &= check_ocv_algo_param_in_config<int>(name, pname, config);
