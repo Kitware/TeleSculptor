@@ -186,6 +186,17 @@ static int maptk_main(int argc, char const* argv[])
     files.push_back(line);
   }
 
+  // verify that we can open the output file for writing
+  // so that we don't find a problem only after spending
+  // hours of computation time.
+  std::ofstream ofs(output_tracks_file.c_str());
+  if (!ofs)
+  {
+    std::cerr << "Error: Could not open track file for writing: \""
+              <<output_tracks_file<<"\""<<std::endl;
+    return EXIT_FAILURE;
+  }
+
   // Track features on each frame sequentially
   maptk::track_set_sptr tracks;
   for(unsigned i=0; i<files.size(); ++i)
@@ -195,6 +206,8 @@ static int maptk_main(int argc, char const* argv[])
     tracks = feature_tracker->track(tracks, i, img);
   }
 
+  // release the output file so that the function below can write to it.
+  ofs.close();
   // Writing out tracks to file
   maptk::write_track_file(tracks, output_tracks_file);
 
