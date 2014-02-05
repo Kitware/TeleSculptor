@@ -18,7 +18,10 @@
 
 #include <maptk/core/exceptions.h>
 #include <maptk/core/types.h>
+
+#include <maptk/ocv/detect_features.h>
 #include <maptk/ocv/extract_descriptors.h>
+#include <maptk/ocv/match_features.h>
 #include <maptk/ocv/register.h>
 
 #define TEST_ARGS ()
@@ -44,6 +47,39 @@ main(int argc, char* argv[])
          << key << " = " << config->get_value<config_block_key_t>(key) \
          << std::endl; \
   }
+
+
+IMPLEMENT_TEST(detect_features_args)
+{
+  using namespace std;
+  using namespace maptk;
+
+  algo::detect_features_sptr df = algo::detect_features::create("ocv");
+  config_block_sptr config = df->get_configuration();
+
+  cerr << "[test-detect_features_args] First-time get-config:" << endl;
+  print_config(config);
+
+  // test checking and setting the config of algo
+  cerr << "[test-detect_features_args] Checking configuration" << endl;
+  TEST_EQUAL("config check",
+             df->check_configuration(config),
+             true);
+  cerr << "[test-detect_features_args] Setting configuration" << endl;
+  df->set_configuration(config);
+
+  // an empty config should fail the check test
+  config_block_sptr empty_conf = config_block::empty_config();
+  TEST_EQUAL("empty config check test",
+             df->check_configuration(empty_conf),
+             false);
+
+  EXPECT_EXCEPTION(
+    config_block_exception,
+    df->set_configuration(empty_conf),
+    "setting empty config");
+}
+
 
 IMPLEMENT_TEST(extract_descriptors_args)
 {
@@ -74,4 +110,38 @@ IMPLEMENT_TEST(extract_descriptors_args)
     config_block_exception,
     ed->set_configuration(empty_conf),
     "setting empty config");
+}
+
+
+IMPLEMENT_TEST(match_features_args)
+{
+  using namespace std;
+  using namespace maptk;
+
+  algo::match_features_sptr mf = algo::match_features::create("ocv");
+  config_block_sptr config = mf->get_configuration();
+
+  cerr << "[test-match_features_args] First-time get-config:" << endl;
+  print_config(config);
+
+  // test checking and setting the config of algo
+  cerr << "[test-match_features_args] Checking configuration" << endl;
+  TEST_EQUAL("config check",
+             mf->check_configuration(config),
+             true);
+  cerr << "[test-match_features_args] Setting configuration" << endl;
+  mf->set_configuration(config);
+
+  // an empty config should fail the check test
+  /*
+  config_block_sptr empty_conf = config_block::empty_config();
+  TEST_EQUAL("empty config check test",
+             mf->check_configuration(empty_conf),
+             false);
+
+  EXPECT_EXCEPTION(
+    config_block_exception,
+    mf->set_configuration(empty_conf),
+    "setting empty config");
+  */
 }
