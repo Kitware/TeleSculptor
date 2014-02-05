@@ -13,12 +13,12 @@
 #define MAPTK_OCV_OCV_ALGO_TOOLS_TXX
 
 #include <iostream>
-#include <sstream>
 #include <vector>
 
 #include <maptk/core/exceptions/config_block.h>
 
 #include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
 
 namespace maptk
 {
@@ -33,9 +33,6 @@ namespace
 
 /// Extract an OCV algorithm property and insert its value into a config_block
 /**
- * \pre{type given to \c param_t must have a << stream operator defined
- *      for conversion to a string for storage in the \c config_block}
- *
  * \param algo_t  The algorithm type
  * \param param_t The type of the parameter being extracted and stored.
  * \param algo        The cv pointer to the algorithm object.
@@ -51,12 +48,8 @@ void ocv_algo_param_to_config(cv::Ptr<algo_t> algo,
 {
   param_t param = algo->template get<param_t>(param_name);
   std::string param_descr = algo->paramHelp(param_name);
-
-  std::ostringstream sstr;
-  sstr << param;
-
   config->set_value(algo_name + config_block::block_sep + param_name,
-                    sstr.str(),
+                    boost::lexical_cast<std::string>(param),
                     param_descr);
 }
 
