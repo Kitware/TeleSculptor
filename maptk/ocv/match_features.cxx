@@ -10,6 +10,7 @@
 #include <maptk/ocv/feature_set.h>
 #include <maptk/ocv/descriptor_set.h>
 #include <maptk/ocv/match_set.h>
+#include <maptk/ocv/ocv_algo_tools.txx>
 #include <opencv2/features2d/features2d.hpp>
 
 
@@ -49,10 +50,10 @@ public:
 
   /// Compute descriptor matching from 1 to 2 and from 2 to 1.
   /**
-    * Only return descriptor matches if the one of the top N
-    * matches from 1 to 2 is also a top N match from 2 to 1.
-    * Here N is defined by parameter cross_check_knn
-    */
+   * Only return descriptor matches if the one of the top N
+   * matches from 1 to 2 is also a top N match from 2 to 1.
+   * Here N is defined by parameter cross_check_knn
+   */
   void cross_check_match(const cv::Mat& descriptors1,
                          const cv::Mat& descriptors2,
                          std::vector<cv::DMatch>& filtered_matches12)
@@ -112,6 +113,42 @@ match_features
 match_features
 ::~match_features()
 {
+}
+
+
+/// Get this algorithm's \link maptk::config_block configuration block \endlink
+config_block_sptr
+match_features
+::get_configuration() const
+{
+  config_block_sptr config = algorithm::get_configuration();
+
+  get_nested_ocv_algo_configuration<cv::DescriptorMatcher>(
+      "FlannBased_matcher", config, d_->matcher);
+
+  return config;
+}
+
+
+/// Set this algorithm's properties via a config block
+void
+match_features
+::set_configuration(config_block_sptr config)
+{
+  set_nested_ocv_algo_configuration<cv::DescriptorMatcher>(
+      "FlannBased_matcher", config, d_->matcher);
+}
+
+
+/// Check that the algorithm's configuration config_block is valid
+bool
+match_features
+::check_configuration(config_block_sptr config) const
+{
+  bool nested_ok = check_nested_ocv_algo_configuration<cv::DescriptorMatcher>(
+      "FlannBased_matcher", config, d_->matcher);
+
+  return nested_ok;
 }
 
 
