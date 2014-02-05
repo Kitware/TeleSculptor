@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief Implementation of OCV DescriptorExtractor wrapping.
+ */
+
 #include <maptk/ocv/extract_descriptors.h>
 #include <maptk/ocv/image_container.h>
 #include <maptk/ocv/feature_set.h>
@@ -65,13 +70,13 @@ extract_descriptors
 /// Get this algorithm's \link maptk::config_block configuration block \endlink
 config_block_sptr
 extract_descriptors
-::get_configuration()
+::get_configuration() const
 {
   // base configuration block
   config_block_sptr config = algorithm::get_configuration();
 
   get_nested_ocv_algo_configuration<cv::DescriptorExtractor>(
-      "SURF_extractor", config,d_->extractor);
+      "SURF_extractor", config, d_->extractor);
 
   return config;
 }
@@ -82,7 +87,8 @@ void
 extract_descriptors
 ::set_configuration(config_block_sptr config)
 {
-
+  set_nested_ocv_algo_configuration<cv::DescriptorExtractor>(
+      "SURF_extractor", config, d_->extractor);
 }
 
 
@@ -91,7 +97,10 @@ bool
 extract_descriptors
 ::check_configuration(config_block_sptr config) const
 {
-  return true;
+  bool nested_ok = check_nested_ocv_algo_configuration<cv::DescriptorExtractor>(
+      "SURF_extractor", config, d_->extractor);
+
+  return nested_ok;
 }
 
 

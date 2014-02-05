@@ -12,6 +12,8 @@ set(maptk_ocv_headers_public
   match_features.h
   match_set.h
   matrix.h
+  ocv_algo_tools.h
+  ocv_algo_tools.txx
   ocv_config.h
   register.h
   )
