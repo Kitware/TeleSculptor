@@ -71,8 +71,8 @@ match_features_homography
   config_block_sptr config = algorithm::get_configuration();
   config->set_value("inlier_scale",
                     boost::lexical_cast<std::string>(d_->inlier_scale),
-                    "The acceptable error distance between warped and measured "
-                    "point to be considered an inlier match.");
+                    "The acceptable error distance (in pixels) between warped "
+                    "and measured points to be considered an inlier match.");
 
   // nested algorithm configurations
   estimate_homography::get_nested_algo_configuration("homography_estimator",
