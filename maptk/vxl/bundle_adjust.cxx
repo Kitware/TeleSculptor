@@ -85,7 +85,9 @@ bundle_adjust
                     "cameras.  Warning: there is often a depth/focal length "
                     "ambiguity which can lead to long optimizations. ");
   config->set_value("normalize_data", "true",
-                    "normalize the data for numerical stability");
+                    "Normalize the data for numerical stability. "
+                    "There is no reason not enable this option, except "
+                    "for testing purposes.");
   config->set_value("max_iterations", "1000",
                     "Termination condition: maximum number of LM iterations");
   config->set_value("x_tolerance", "1e-8",
