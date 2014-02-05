@@ -337,7 +337,7 @@ IMPLEMENT_TEST(noisy_landmarks)
   double end_rmse = reprojection_rmse(cameras->cameras(),
                                       landmarks0->landmarks(),
                                       tracks->tracks());
-  TEST_NEAR("RMSE after SBA", end_rmse, 0.0, 1e-6);
+  TEST_NEAR("RMSE after SBA", end_rmse, 0.0, 1e-5);
 }
 
 
@@ -381,7 +381,7 @@ IMPLEMENT_TEST(noisy_landmarks_noisy_cameras)
   double end_rmse = reprojection_rmse(cameras0->cameras(),
                                       landmarks0->landmarks(),
                                       tracks->tracks());
-  TEST_NEAR("RMSE after SBA", end_rmse, 0.0, 1e-6);
+  TEST_NEAR("RMSE after SBA", end_rmse, 0.0, 1e-5);
 }
 
 
@@ -422,7 +422,7 @@ IMPLEMENT_TEST(zero_landmarks)
   double end_rmse = reprojection_rmse(cameras->cameras(),
                                       landmarks0->landmarks(),
                                       tracks->tracks());
-  TEST_NEAR("RMSE after SBA", end_rmse, 0.0, 1e-6);
+  TEST_NEAR("RMSE after SBA", end_rmse, 0.0, 1e-5);
 }
 
 
@@ -466,7 +466,7 @@ IMPLEMENT_TEST(zero_landmarks_same_cameras)
   double end_rmse = reprojection_rmse(cameras0->cameras(),
                                       landmarks0->landmarks(),
                                       tracks->tracks());
-  TEST_NEAR("RMSE after SBA", end_rmse, 0.0, 1e-6);
+  TEST_NEAR("RMSE after SBA", end_rmse, 0.0, 1e-5);
 }
 
 
@@ -525,7 +525,7 @@ IMPLEMENT_TEST(subset_cameras)
   double end_rmse = reprojection_rmse(cameras0->cameras(),
                                       landmarks0->landmarks(),
                                       tracks->tracks());
-  TEST_NEAR("RMSE after SBA", end_rmse, 0.0, 1e-6);
+  TEST_NEAR("RMSE after SBA", end_rmse, 0.0, 1e-5);
 }
 
 
@@ -578,7 +578,7 @@ IMPLEMENT_TEST(subset_landmarks)
   double end_rmse = reprojection_rmse(cameras0->cameras(),
                                       landmarks0->landmarks(),
                                       tracks->tracks());
-  TEST_NEAR("RMSE after SBA", end_rmse, 0.0, 1e-6);
+  TEST_NEAR("RMSE after SBA", end_rmse, 0.0, 1e-5);
 }
 
 
@@ -626,7 +626,7 @@ IMPLEMENT_TEST(subset_tracks)
   double end_rmse = reprojection_rmse(cameras0->cameras(),
                                       landmarks0->landmarks(),
                                       tracks0->tracks());
-  TEST_NEAR("RMSE after SBA", end_rmse, 0.0, 1e-6);
+  TEST_NEAR("RMSE after SBA", end_rmse, 0.0, 1e-5);
 }
 
 
