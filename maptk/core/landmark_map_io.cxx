@@ -15,6 +15,13 @@
 #include <boost/foreach.hpp>
 
 
+/**
+ * \file
+ * \brief Implementation of file IO functions for a \ref maptk::landmark_map
+ *
+ * Uses the PLY file format
+ */
+
 namespace maptk
 {
 

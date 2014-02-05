@@ -17,6 +17,13 @@
 #include <boost/foreach.hpp>
 
 
+/**
+ * \file
+ * \brief Implementation of file IO functions for a \ref maptk::ins_data
+ *
+ * File format is the POS file.
+ */
+
 namespace maptk
 {
 

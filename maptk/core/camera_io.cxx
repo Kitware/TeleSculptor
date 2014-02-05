@@ -14,6 +14,13 @@
 #include <boost/foreach.hpp>
 
 
+/**
+ * \file
+ * \brief Implementation of file IO functions for a \ref maptk::camera
+ *
+ * File format is the KRTD file.
+ */
+
 namespace maptk
 {
 

@@ -18,6 +18,13 @@
 #include <boost/foreach.hpp>
 
 
+/**
+ * \file
+ * \brief Implementation of file IO functions for a \ref maptk::track_set
+ *
+ * \todo Describe format here.
+ */
+
 namespace maptk
 {
 
