@@ -72,8 +72,7 @@ detect_features
   // base configuration block
   config_block_sptr config = algorithm::get_configuration();
 
-  get_nested_ocv_algo_configuration(
-      "GridSURF_detector", config, d_->detector);
+  get_nested_ocv_algo_configuration("detector", config, d_->detector);
 
   return config;
 }
@@ -85,7 +84,7 @@ detect_features
 ::set_configuration(config_block_sptr config)
 {
   set_nested_ocv_algo_configuration(
-      "GridSURF_detector", config, d_->detector);
+      "detector", config, d_->detector);
 }
 
 
@@ -95,7 +94,7 @@ detect_features
 ::check_configuration(config_block_sptr config) const
 {
   bool nested_ok = check_nested_ocv_algo_configuration(
-      "GridSURF_detector", config, d_->detector);
+      "detector", config);
 
   return nested_ok;
 }

@@ -123,8 +123,7 @@ match_features
 {
   config_block_sptr config = algorithm::get_configuration();
 
-  get_nested_ocv_algo_configuration(
-      "FlannBased_matcher", config, d_->matcher);
+  get_nested_ocv_algo_configuration("matcher", config, d_->matcher);
 
   return config;
 }
@@ -136,7 +135,7 @@ match_features
 ::set_configuration(config_block_sptr config)
 {
   set_nested_ocv_algo_configuration(
-      "FlannBased_matcher", config, d_->matcher);
+      "matcher", config, d_->matcher);
 }
 
 
@@ -146,7 +145,7 @@ match_features
 ::check_configuration(config_block_sptr config) const
 {
   bool nested_ok = check_nested_ocv_algo_configuration(
-      "FlannBased_matcher", config, d_->matcher);
+      "matcher", config);
 
   return nested_ok;
 }

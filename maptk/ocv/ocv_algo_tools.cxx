@@ -14,6 +14,7 @@
 #include <iostream>
 #include <vector>
 
+#include <boost/algorithm/string/join.hpp>
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 
@@ -26,6 +27,10 @@ namespace ocv
 
 namespace
 {
+
+
+/// String used to record nested algorithm implementation type
+static std::string const type_token = "type";
 
 
 /// Extract an OCV algorithm property and insert its value into a config_block
@@ -44,6 +49,8 @@ void ocv_algo_param_to_config(cv::Ptr<cv::Algorithm> algo,
 {
   param_t param = algo->template get<param_t>(param_name);
   std::string param_descr = algo->paramHelp(param_name);
+  //DEBUG
+  std::cerr << "\tGetting '" << algo_name << "' param '" << param_name << "': " << param << std::endl;
   config->set_value(algo_name + config_block::block_sep + param_name,
                     boost::lexical_cast<std::string>(param),
                     param_descr);
@@ -52,6 +59,12 @@ void ocv_algo_param_to_config(cv::Ptr<cv::Algorithm> algo,
 
 /// Set a configuration parameter from a config_block to the nested algo
 /**
+ * Checks if the ``algo_name:param_name`` key exists and if it can be extracted
+ * as the templated type.
+ *
+ * If the given config_block doesn't have the expected key, we will do nothing,
+ * maintaining the default value in the algorithm.
+ *
  * \param param_t The type of the parameter being extracted and stored.
  * \param algo        The cv pointer to the algorithm object.
  * \param algo_name   The name given to the nested algorithm.
@@ -64,17 +77,24 @@ void config_to_ocv_algo_param(cv::Ptr<cv::Algorithm> algo,
                               std::string const& param_name,
                               config_block_sptr config)
 {
-  param_t param = config->get_value<param_t>(
-      algo_name + config_block::block_sep + param_name);
-  algo->set(param_name, param);
+  config_block_key_t param_key = algo_name + config_block::block_sep + param_name;
+  if (config->has_value(param_key))
+  {
+    param_t param = config->get_value<param_t>(param_key);
+    //DEBUG
+    std::cerr << "\tSetting '" << algo_name << "' param '" << param_name << "': " << param << std::endl;
+    algo->set(param_name, param);
+  }
+  // else leaving algo default alone
 }
 
 
 /// Check that a parameter in a nested algo exists in the config_block
 /**
- * Check that the \c config_block contains the proper variable as would have
- * been set by \c ocv_algo_param_to_config and that the extracted value can
- * be case to the algorithm parameter's expected type.
+ * All open CV algorithm parameters are optional (they all have default
+ * values). Because of this, we don't fail if the paramter is not in the
+ * given \c config_block. We only fail if the parameter extraction from the
+ * \c config_block fails.
  *
  * \param param_t The type of the parameter being extracted and stored.
  * \param algo_name   The name given to the nested algorithm.
@@ -93,12 +113,15 @@ bool check_ocv_algo_param_in_config(std::string const& algo_name,
     {
       param_t test_val = config->get_value<param_t>(key);
       (void) test_val;
-      return true;
+      //DEBUG
+      std::cerr << "\tChecking '" << algo_name << "' param '" << param_name << "': " << test_val << std::endl;
     }
     catch (config_block_exception ex)
-    { /* any exception is a check failure */ }
+    {
+      return false;
+    }
   }
-  return false;
+  return true;
 }
 
 
@@ -117,73 +140,121 @@ get_nested_ocv_algo_configuration(std::string const& name,
   //           needed
   using namespace std;
 
-  vector<string> algo_params;
-  algo->getParams(algo_params);
-
-  cerr << "[get_nested_ocv_algo_configuration] Available params for "
-       << algo->name() << ": "
-       << endl;
-  BOOST_FOREACH( string pname, algo_params)
+  // we were given a pointer to an instantiated algorithm
+  if (! algo.empty())
   {
-    cerr << "\t- '" << pname << "'" << endl;
-    cerr << "\t\t- type id: " << algo->paramType(pname) << endl;
+    std::string impl_name = algo->info()->name();
+    config->set_value(name + config_block::block_sep + type_token,
+                      impl_name);
 
-    int ptypeid = algo->paramType(pname);
+    vector<string> algo_params;
+    algo->getParams(algo_params);
 
-    if (ptypeid == 0) // int
+    BOOST_FOREACH( string pname, algo_params)
     {
-      ocv_algo_param_to_config<int>(algo, name, pname, config);
+      int ptypeid = algo->paramType(pname);
+      switch(ptypeid)
+      {
+        case 0: // int
+          ocv_algo_param_to_config<int>(algo, impl_name, pname, config->subblock_view(name));
+          break;
+        case 1: // bool
+          ocv_algo_param_to_config<bool>(algo, impl_name, pname, config->subblock_view(name));
+          break;
+        case 2: // double
+          ocv_algo_param_to_config<double>(algo, impl_name, pname, config->subblock_view(name));
+          break;
+        case 6: // cv::Algorithm
+          {
+            // Recursively call this method for an OpenCV algorithm's nested
+            // algorithm. Options are laid out just like a nested OCV
+            // algorithm of MAPTK algorithm.
+            cv::Ptr<cv::Algorithm> nested_algo = algo->get<cv::Algorithm>(pname);
+            get_nested_ocv_algo_configuration(
+                pname,
+                config->subblock_view(name + config_block::block_sep + impl_name),
+                nested_algo
+                );
+            break;
+          }
+        default:
+          cerr << "WARNING: [get_nested_ocv_algo_configuration] "
+             << name << "(" << algo->info()->name() << ")->" << pname << " -- "
+             << "Unexpected parameter type ID: " << ptypeid
+             << endl;
+          break;
+      }
     }
-    else if (ptypeid == 1) // bool
-    {
-      ocv_algo_param_to_config<bool>(algo, name, pname, config);
-    }
-    else if (ptypeid == 2) // double
-    {
-      ocv_algo_param_to_config<double>(algo, name, pname, config);
-    }
-    else
-    {
-      cerr << "WARNING: [get_nested_ocv_algo_configuration] "
-           << name << "(" << algo->info()->name() << ")->" << pname << " -- "
-           << "Unexpected parameter type ID: " << ptypeid
-           << endl;
-    }
+  }
+  else
+  {
+    config->set_value(name + config_block::block_sep + type_token, "");
   }
 }
 
 
 /// Set nested OpenCV algoruthm's parameters based on a given \c config
 void
-set_nested_ocv_algo_configuration(std::string const& name,
-                                  config_block_sptr config,
-                                  cv::Ptr<cv::Algorithm> algo)
+set_nested_ocv_algo_configuration_helper(std::string const& name,
+                                         config_block_sptr config,
+                                         cv::Ptr<cv::Algorithm> &algo)
 {
-  std::vector<std::string> algo_params;
-  algo->getParams(algo_params);
+  config_block_key_t type_key = name + config_block::block_sep + type_token;
 
-  BOOST_FOREACH( std::string pname, algo_params )
+  if (config->has_value(type_key))
   {
-    int ptypeid = algo->paramType(pname);
+    std::string impl_name = config->get_value<std::string>(type_key);
 
-    if (ptypeid == 0) // int
+    // if the current algo ptr is not empty and is the same type as impl_name,
+    // leave it alone, else create a new algo and set it to algo
+    if (algo.empty() or algo->info()->name() != impl_name)
     {
-      config_to_ocv_algo_param<int>(algo, name, pname, config);
+      //DEBUG
+      std::cerr << "[set_nested_ocv_algo_configuration_helper] Creating new algorithm instance '" << impl_name << "'" << std::endl;
+      algo = cv::Algorithm::create<cv::Algorithm>(impl_name);
+
+      // TODO: Add null check
     }
-    else if (ptypeid == 1) // bool
+
+    // reassigning the formal name of the algo impl as they can be created,
+    // apparently, based on many different names.
+    impl_name = algo->info()->name();
+
+    // scan through algo parameters, settings ones that we can encode in the config_block
+    std::vector<std::string> algo_params;
+    algo->getParams(algo_params);
+    BOOST_FOREACH( std::string const pname, algo_params )
     {
-      config_to_ocv_algo_param<bool>(algo, name, pname, config);
-    }
-    else if (ptypeid == 2) // double
-    {
-      config_to_ocv_algo_param<double>(algo, name, pname, config);
-    }
-    else
-    {
-      std::cerr << "WARNING: [set_nested_ocv_algo_configuration] "
+      int ptypeid = algo->paramType(pname);
+      switch(ptypeid)
+      {
+        case 0: // int
+          config_to_ocv_algo_param<int>(algo, impl_name, pname, config->subblock_view(name));
+          break;
+        case 1: // bool
+          config_to_ocv_algo_param<bool>(algo, impl_name, pname, config->subblock_view(name));
+          break;
+        case 2: // double
+          config_to_ocv_algo_param<double>(algo, impl_name, pname, config->subblock_view(name));
+          break;
+        case 6: // cv::Algorithm
+          {
+            // recursively set nested args on nested algo
+            cv::Ptr<cv::Algorithm> nested_algo = algo->get<cv::Algorithm>(pname);
+            set_nested_ocv_algo_configuration_helper(
+                pname,
+                config->subblock_view(name + config_block::block_sep + impl_name),
+                nested_algo
+                );
+            algo->set(pname, nested_algo);
+            break;
+          }
+        default:
+          std::cerr << "WARNING: [set_nested_ocv_algo_configuration_helper] "
                 << name << "(" << algo->info()->name() << ")->" << pname << " -- "
                 << "Unexpected parameter type ID: " << ptypeid
                 << std::endl;
+      }
     }
   }
 }
@@ -192,36 +263,63 @@ set_nested_ocv_algo_configuration(std::string const& name,
 /// Basic check of nested OpenCV algorithm configuration in the given \c config
 bool
 check_nested_ocv_algo_configuration(std::string const& name,
-                                    config_block_sptr config,
-                                    cv::Ptr<cv::Algorithm> algo)
+                                    config_block_sptr config)
 {
-  std::vector<std::string> algo_params;
-  algo->getParams(algo_params);
+  // Config doesn't necessarilly need to have anything in it as OpenCV
+  // algorithm's are valid with their defaults. However, we should at least
+  // have an algorithm type specification that creates a valid cv::Algorithm.
+  // We then check the rest of the nested configuration based on the configured
+  // algo type.
+  config_block_key_t algo_type_key = name + config_block::block_sep + type_token;
+  if (! config->has_value(algo_type_key))
+  {
+    // No type configured.
+    return false;
+  }
+  std::string impl_name = config->get_value<std::string>(algo_type_key);
+  cv::Ptr<cv::Algorithm> algo = cv::Algorithm::create<cv::Algorithm>(impl_name);
+  if (algo.empty())
+  {
+    // Impl name must not be valid as no algorithm was created.
+    return false;
+  }
 
   bool all_success = true;
+
+  // Reassigning the impl_name as there are many sort-cut names that OpenCV
+  // allows. We want to use the "official" name from here out.
+  impl_name = algo->info()->name();
+
+  std::vector<std::string> algo_params;
+  algo->getParams(algo_params);
 
   BOOST_FOREACH( std::string pname, algo_params )
   {
     int ptypeid = algo->paramType(pname);
-
-    if (ptypeid == 0) // int
+    switch(ptypeid)
     {
-      all_success &= check_ocv_algo_param_in_config<int>(name, pname, config);
-    }
-    else if (ptypeid == 1) // bool
-    {
-      all_success &= check_ocv_algo_param_in_config<bool>(name, pname, config);
-    }
-    else if (ptypeid == 2) // double
-    {
-      all_success &= check_ocv_algo_param_in_config<double>(name, pname, config);
-    }
-    else
-    {
-      std::cerr << "WARNING: [check_nested_ocv_algo_configuration] "
-                << name << "(" << algo->info()->name() << ")->" << pname << " -- "
-                << "Unexpected parameter type ID: " << ptypeid
-                << std::endl;
+      case 0: // int
+        all_success &= check_ocv_algo_param_in_config<int>(impl_name, pname, config->subblock_view(name));
+        break;
+      case 1: // bool
+        all_success &= check_ocv_algo_param_in_config<bool>(impl_name, pname, config->subblock_view(name));
+        break;
+      case 2: // double
+        all_success &= check_ocv_algo_param_in_config<double>(impl_name, pname, config->subblock_view(name));
+        break;
+      case 6: // cv::Algorithm
+        {
+          all_success &= check_nested_ocv_algo_configuration(
+              pname,
+              config->subblock_view(name + config_block::block_sep + impl_name)
+              );
+          break;
+        }
+      default:
+        std::cerr << "WARNING: [check_nested_ocv_algo_configuration] "
+                  << name << "(" << algo->info()->name() << ")->" << pname << " -- "
+                  << "Unexpected parameter type ID: " << ptypeid
+                  << std::endl;
     }
   }
 

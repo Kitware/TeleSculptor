@@ -75,8 +75,7 @@ extract_descriptors
   // base configuration block
   config_block_sptr config = algorithm::get_configuration();
 
-  get_nested_ocv_algo_configuration(
-      "SURF_extractor", config, d_->extractor);
+  get_nested_ocv_algo_configuration("extractor", config, d_->extractor);
 
   return config;
 }
@@ -88,7 +87,7 @@ extract_descriptors
 ::set_configuration(config_block_sptr config)
 {
   set_nested_ocv_algo_configuration(
-      "SURF_extractor", config, d_->extractor);
+      "extractor", config, d_->extractor);
 }
 
 
@@ -98,7 +97,7 @@ extract_descriptors
 ::check_configuration(config_block_sptr config) const
 {
   bool nested_ok = check_nested_ocv_algo_configuration(
-      "SURF_extractor", config, d_->extractor);
+      "extractor", config);
 
   return nested_ok;
 }
