@@ -70,14 +70,32 @@ bundle_adjust
 {
   // get base config from base class
   config_block_sptr config = maptk::algo::bundle_adjust::get_configuration();
-  config->set_value("verbose", "false");
-  config->set_value("use_m_estimator", "false");
-  config->set_value("m_estimator_scale", "1.0");
-  config->set_value("estimate_focal_length", "false");
-  config->set_value("normalize_data", "true");
-  config->set_value("max_iterations", "1000");
-  config->set_value("x_tolerance", "1e-8");
-  config->set_value("g_tolerance", "1e-8");
+  config->set_value("verbose", "false",
+                    "If true, write status messages to the terminal showing "
+                    "optimization progress at each iteration");
+  config->set_value("use_m_estimator", "false",
+                    "If true, use a M-estimator for a robust loss function. "
+                    "Currently only the Beaton-Tukey loss function is supported.");
+  config->set_value("m_estimator_scale", "1.0"
+                    "The scale of the M-estimator, if enabled, in pixels. "
+                    "Inlier landmarks should project to within this distance "
+                    "from the feature point.");
+  config->set_value("estimate_focal_length", "false",
+                    "If true, estimate a shared intrinsic focal length for all "
+                    "cameras.  Warning: there is often a depth/focal length "
+                    "ambiguity which can lead to long optimizations. ");
+  config->set_value("normalize_data", "true",
+                    "Normalize the data for numerical stability. "
+                    "There is no reason not enable this option, except "
+                    "for testing purposes.");
+  config->set_value("max_iterations", "1000",
+                    "Termination condition: maximum number of LM iterations");
+  config->set_value("x_tolerance", "1e-8",
+                    "Termination condition: Relative change is parameters. "
+                    "Exit when (mag(delta_params) / mag(params) < x_tol).");
+  config->set_value("g_tolerance", "1e-8",
+                    "Termination condition: Maximum gradient magnitude. "
+                    "Exit when (max(grad_params) < g_tol)");
   return config;
 }
 
