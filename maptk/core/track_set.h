@@ -10,6 +10,7 @@
 #include "core_config.h"
 
 #include <vector>
+#include <set>
 
 #include <boost/shared_ptr.hpp>
 
@@ -44,6 +45,12 @@ public:
 
   /// Return a vector of track shared pointers
   virtual std::vector<track_sptr> tracks() const = 0;
+
+  /// Return the set of all frame IDs covered by these tracks
+  virtual std::set<frame_id_t> all_frame_ids() const;
+
+  /// Return the set of all track IDs in this track set
+  virtual std::set<track_id_t> all_track_ids() const;
 
   /// Return the last (largest) frame number containing tracks
   virtual frame_id_t last_frame() const;

@@ -24,7 +24,7 @@ struct ins_data
 public:
   /// Default Constructor
   ins_data()
-  : source_name(""),
+  : source_name("MAPTK"),
     yaw(0.0), pitch(0.0), roll(0.0),
     lat(0.0), lon(0.0),   alt(0.0),
     gps_sec(0.0), gps_week(0),

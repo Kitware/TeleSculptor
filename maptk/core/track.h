@@ -11,6 +11,7 @@
 #include "types.h"
 
 #include <vector>
+#include <set>
 
 #include <boost/shared_ptr.hpp>
 
@@ -101,6 +102,9 @@ public:
    *  \return an iterator at the frame if found, or end() if not
    */
   history_const_itr find(frame_id_t frame) const;
+
+  /// Return the set of all frame IDs covered by this track
+  std::set<frame_id_t> all_frame_ids() const;
 
   /// Return the number of states in the track.
   size_t size() const { return history_.size(); }

@@ -37,7 +37,7 @@ std::istream&  operator>>(std::istream& s, vector_<N,T>& v)
 {
   for( unsigned i=0; i<N; ++i)
   {
-    s >> v[i];
+    s >> std::skipws >> v[i];
   }
   return s;
 }

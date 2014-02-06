@@ -11,44 +11,14 @@
 #include<vector>
 
 #include <maptk/modules.h>
+#include <maptk/core/ins_data_io.h>
+#include <maptk/core/camera_io.h>
 #include <maptk/core/local_geo_cs.h>
 
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 
 namespace fs = boost::filesystem;
-
-
-/// Read a POS file from disk into an INS data structure
-bool read_pos_file(const std::string& pos_filename,
-                   maptk::ins_data& ins)
-{
-  std::ifstream ifs(pos_filename.c_str());
-  if (!ifs)
-  {
-    std::cerr << "Error: Could not open POS file "<<pos_filename<<std::endl;
-    return false;
-  }
-
-  ifs >> ins;
-  return ! ifs.fail();
-}
-
-
-/// Write a camera to a KRTD file on disk
-bool write_krtd_file(const std::string& krtd_filename,
-                     const maptk::camera_d& cam)
-{
-  std::ofstream ofs(krtd_filename.c_str());
-  if (!ofs)
-  {
-    std::cerr << "Error: Could not open KRTD file "<<krtd_filename<<std::endl;
-    return false;
-  }
-
-  ofs << cam;
-  return ! ofs.fail();
-}
 
 
 /// Convert a INS data to a camera
@@ -75,9 +45,13 @@ bool convert_pos2krtd(const std::string& pos_filename,
                       maptk::camera_d base_camera)
 {
   maptk::ins_data ins;
-  return read_pos_file(pos_filename, ins) &&
-         convert_ins2camera(ins, cs, base_camera) &&
-         write_krtd_file(krtd_filename, base_camera);
+  ins = maptk::read_pos_file(pos_filename);
+  if ( !convert_ins2camera(ins, cs, base_camera) )
+  {
+    return false;
+  }
+  maptk::write_krtd_file(base_camera, krtd_filename);
+  return true;
 }
 
 
@@ -88,43 +62,29 @@ bool convert_pos2krtd_dir(const fs::path& pos_dir,
                           maptk::camera_d base_camera)
 {
   fs::directory_iterator it(pos_dir), eod;
-  std::vector<maptk::camera_d> cameras;
+  std::map<maptk::frame_id_t, maptk::ins_data> ins_map;
   std::vector<std::string> krtd_filenames;
   BOOST_FOREACH(fs::path const &p, std::make_pair(it, eod))
   {
     fs::path krtd_filename = krtd_dir / (basename(p) + ".krtd");
     std::cout << "processing "<< p <<" --> " << krtd_filename<< std::endl;
-    maptk::ins_data ins;
-    if ( !read_pos_file(p.string(), ins) )
-    {
-      return false;
-    }
-    convert_ins2camera(ins, cs, base_camera);
-    cameras.push_back(base_camera);
+    maptk::frame_id_t frame = static_cast<maptk::frame_id_t>(krtd_filenames.size());
+    ins_map[frame] = maptk::read_pos_file(p.string());
     krtd_filenames.push_back(krtd_filename.string());
   }
 
-  maptk::vector_3d mean(0,0,0);
-  BOOST_FOREACH(const maptk::camera_d& cam, cameras)
-  {
-    mean += cam.center();
-  }
-  mean /= static_cast<double>(cameras.size());
-  // only use the mean easting and northing
-  mean[2] = 0.0;
+  std::map<maptk::frame_id_t, maptk::camera_sptr> cam_map;
+  cam_map = maptk::initialize_cameras_with_ins(ins_map, base_camera, cs);
 
-  for(unsigned int i=0; i<cameras.size(); ++i)
+  typedef std::map<maptk::frame_id_t, maptk::camera_sptr>::value_type cam_map_val_t;
+  BOOST_FOREACH(cam_map_val_t const &p, cam_map)
   {
-    maptk::camera_d& cam = cameras[i];
-    cam.set_center(cam.center() - mean);
-
-    if( !write_krtd_file(krtd_filenames[i], cam) )
-    {
-      return false;
-    }
+    maptk::camera_d* cam = dynamic_cast<maptk::camera_d*>(p.second.get());
+    maptk::write_krtd_file(*cam, krtd_filenames[p.first]);
   }
 
-  std::cout << "using local UTM origin at "<<mean[0] <<", "<<mean[1]
+  maptk::vector_3d origin = cs.utm_origin();
+  std::cout << "using local UTM origin at "<<origin[0] <<", "<<origin[1]
             <<", zone "<<cs.utm_origin_zone() <<std::endl;
   return true;
 }

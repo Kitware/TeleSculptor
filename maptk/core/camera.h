@@ -59,6 +59,9 @@ public:
 /// typedef for a camera shared pointer
 typedef boost::shared_ptr<camera> camera_sptr;
 
+/// output stream operator for a base class camera
+MAPTK_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const camera& c);
+
 
 /// A representation of a camera
 /**

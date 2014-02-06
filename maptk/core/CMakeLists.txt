@@ -3,6 +3,7 @@
 set(maptk_core_headers_public
   camera.h
   camera_intrinsics.h
+  camera_io.h
   camera_map.h
   config_block.h
   config_block_io.h
@@ -16,8 +17,10 @@ set(maptk_core_headers_public
   image.h
   image_container.h
   ins_data.h
+  ins_data_io.h
   landmark.h
   landmark_map.h
+  landmark_map_io.h
   local_geo_cs.h
   match_set.h
   matrix.h
@@ -26,6 +29,7 @@ set(maptk_core_headers_public
   registrar.h
   track.h
   track_set.h
+  track_set_io.h
   types.h
   vector.h
   vector_cmath.h
@@ -52,18 +56,22 @@ set(maptk_core_headers_public
 set(maptk_core_sources
   camera.cxx
   camera_intrinsics.cxx
+  camera_io.cxx
   config_block.cxx
   config_block_io.cxx
   feature.cxx
   image.cxx
   ins_data.cxx
+  ins_data_io.cxx
   landmark.cxx
+  landmark_map_io.cxx
   local_geo_cs.cxx
   matrix.cxx
   metrics.cxx
   rotation.cxx
   track.cxx
   track_set.cxx
+  track_set_io.cxx
   vector.cxx
 
   exceptions/algorithm.cxx
