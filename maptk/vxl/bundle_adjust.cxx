@@ -76,7 +76,7 @@ bundle_adjust
   config->set_value("use_m_estimator", "false",
                     "If true, use a M-estimator for a robust loss function. "
                     "Currently only the Beaton-Tukey loss function is supported.");
-  config->set_value("m_estimator_scale", "1.0"
+  config->set_value("m_estimator_scale", "1.0",
                     "The scale of the M-estimator, if enabled, in pixels. "
                     "Inlier landmarks should project to within this distance "
                     "from the feature point.");
