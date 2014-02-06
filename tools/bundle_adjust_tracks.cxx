@@ -118,7 +118,7 @@ base_camera_from_config(maptk::config_block_sptr config)
                         config->get_value<vector_2d>("principal_point"),
                         config->get_value<double>("aspect_ratio"),
                         config->get_value<double>("skew"));
-  return camera_d(vector_3d(0,0,1), rotation_d(), K);
+  return camera_d(vector_3d(0,0,-1), rotation_d(), K);
 }
 
 
