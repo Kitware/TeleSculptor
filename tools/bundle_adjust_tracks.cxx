@@ -101,7 +101,7 @@ static bool check_config(maptk::config_block_sptr config)
   return (
          config->has_value("input_track_file")
       && bfs::exists(maptk::path_t(config->get_value<std::string>("input_track_file")))
-      && (  !config->has_value("input_pos_files")
+      && ( config->get_value<std::string>("input_pos_files") == ""
          || bfs::exists(maptk::path_t(config->get_value<std::string>("input_pos_files"))) )
       && maptk::algo::bundle_adjust::check_nested_algo_configuration("bundle_adjuster", config)
       && maptk::algo::geo_map::check_nested_algo_configuration("geo_mapper", config)
@@ -300,7 +300,7 @@ static int maptk_main(int argc, char const* argv[])
   std::map<maptk::frame_id_t, maptk::ins_data> ins_map;
   std::map<maptk::frame_id_t, maptk::camera_sptr> cameras;
   // if POS files are available, use them to initialize the cameras
-  if( config->has_value("input_pos_files") )
+  if( config->get_value<std::string>("input_pos_files") != "" )
   {
     std::string pos_files = config->get_value<std::string>("input_pos_files");
     std::vector<bfs::path> files;
