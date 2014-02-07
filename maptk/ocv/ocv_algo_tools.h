@@ -38,12 +38,14 @@ namespace helper_
 {
 
 /// Non-exported helper method for setting nested OpenCV Algorithm parameters
+MAPTK_OCV_NO_EXPORT
 void set_nested_ocv_algo_configuration_helper(std::string const& name,
                                               config_block_sptr config,
                                               cv::Ptr<cv::Algorithm> &algo);
 
 /// Non-exported helper method for checking nested OpenCV Algorithm
 /// configurations
+MAPTK_OCV_NO_EXPORT
 bool check_nested_ocv_algo_configuration_helper(std::string const& name,
                                                 config_block_sptr config,
                                                 cv::Ptr<cv::Algorithm> algo);
@@ -51,10 +53,11 @@ bool check_nested_ocv_algo_configuration_helper(std::string const& name,
 /// Templated helper method and specialization for creating a new OpenCV
 /// Algorithm instance.
 template <typename algo_t>
+MAPTK_OCV_NO_EXPORT
 cv::Ptr<algo_t> create_ocv_algo(std::string const& impl_name)
 {
   // attempt to use the given type to natively create the algorithm with
-  // possible special rules contained in the subclas. If this does not
+  // possible special rules contained in the subclass. If this does not
   // yeild a valid instance, attempt creating an algorithm using the base
   // cv::Algorithm creation rules.
   cv::Ptr<algo_t> a;
@@ -67,8 +70,6 @@ cv::Ptr<algo_t> create_ocv_algo(std::string const& impl_name)
   // if the create call returned something empty or errored, a will still empty.
   if (a.empty())
   {
-    //DEBUG
-    //std::cerr << "Falling back on general creation with name '" << impl_name << "'" << std::endl;
     a = cv::Algorithm::create<algo_t>(impl_name);
   }
   return a;
@@ -77,6 +78,7 @@ cv::Ptr<algo_t> create_ocv_algo(std::string const& impl_name)
 
 /// cv::Algorithm specialization
 template <>
+MAPTK_OCV_NO_EXPORT
 cv::Ptr<cv::Algorithm> create_ocv_algo<cv::Algorithm>(std::string const& impl_name);
 
 
@@ -105,7 +107,7 @@ void get_nested_ocv_algo_configuration(std::string const& name,
                                        cv::Ptr<cv::Algorithm> algo);
 
 
-/// Set nested OpenCV algoruthm's parameters based on a given \c config
+/// Set nested OpenCV algorithm's parameters based on a given \c config
 /**
  * \param algo_t  Type of OpenCV algorithm we are dealing with.
  * \param name    A \c std::string name for this nested algorithm. This should
@@ -123,7 +125,7 @@ void set_nested_ocv_algo_configuration(std::string const& name,
                                        cv::Ptr<algo_t> &algo)
 {
   // check that the config has a type for the nested algo, creating a new
-  // instance if the given algo is NULL or not of the same time specified
+  // instance if the given algo is NULL or not of the same type specified
   // in the config.
   config_block_key_t type_key = name + config_block::block_sep + type_token;
   std::string impl_name = config->get_value<std::string>(type_key, "");
@@ -133,10 +135,6 @@ void set_nested_ocv_algo_configuration(std::string const& name,
     // configured type, create a new algo instance.
     if (algo.empty() or algo->info()->name() != impl_name)
     {
-      //DEBUG
-      //std::cerr << "[set_nested_ocv_algo_configuration_helper] "
-      //          << "Creating new algorithm instance '" << impl_name << "'"
-      //          << std::endl;
       algo = helper_::create_ocv_algo<algo_t>(impl_name);
     }
 
@@ -161,7 +159,7 @@ void set_nested_ocv_algo_configuration(std::string const& name,
  * algorithm class.
  *
  * \param name    A \c std::string name for this nested algorithm. This should
- *                match the name used whe \c get_nested_ocv_algo_configuration
+ *                match the name used when \c get_nested_ocv_algo_configuration
  *                was called for this nested algorithm.
  * \param config  The \c maptk::config_block to check.
  * \param algo    The cv pointer to the algorithn to use as a reference to

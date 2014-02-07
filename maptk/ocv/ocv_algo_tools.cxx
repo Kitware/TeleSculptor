@@ -6,7 +6,7 @@
 
 /**
  * \file
- * \brief Template implementations of OCV configuration helper methods
+ * \brief Implementations of OCV configuration helper methods
  */
 
 #include "ocv_algo_tools.h"
@@ -147,14 +147,26 @@ get_nested_ocv_algo_configuration(std::string const& name,
       int ptypeid = algo->paramType(pname);
       switch(ptypeid)
       {
-        case 0: // int
-          ocv_algo_param_to_config<int>(algo, impl_name, pname, config->subblock_view(name));
-          break;
         case 1: // bool
           ocv_algo_param_to_config<bool>(algo, impl_name, pname, config->subblock_view(name));
           break;
+        case 0: // int
+        //case 8: // unsigned int  WARNING: These are unsafe type conversion
+        //case 9: // uint64        given the current method of setting
+        //                         parameters. Insufficient pass-throughs in
+        //                         cv::Algorithm class (will have to access
+        //                         underlying cv::AlgorithmInfo instance
+        //                         directly).
+        case 10:// short
+        case 11:// uchar
+          ocv_algo_param_to_config<int>(algo, impl_name, pname, config->subblock_view(name));
+          break;
         case 2: // double
+        case 7: // float
           ocv_algo_param_to_config<double>(algo, impl_name, pname, config->subblock_view(name));
+          break;
+        case 3: // std::string
+          ocv_algo_param_to_config<std::string>(algo, impl_name, pname, config->subblock_view(name));
           break;
         case 6: // cv::Algorithm
           {
@@ -208,14 +220,26 @@ set_nested_ocv_algo_configuration_helper(std::string const& name,
       int ptypeid = algo->paramType(pname);
       switch(ptypeid)
       {
-        case 0: // int
-          config_to_ocv_algo_param<int>(algo, impl_name, pname, config->subblock_view(name));
-          break;
         case 1: // bool
           config_to_ocv_algo_param<bool>(algo, impl_name, pname, config->subblock_view(name));
           break;
+        case 0: // int
+        //case 8: // unsigned int  WARNING: These are unsafe type conversion
+        //case 9: // uint64        given the current method of setting
+        //                         parameters. Insufficient pass-throughs in
+        //                         cv::Algorithm class (will have to access
+        //                         underlying cv::AlgorithmInfo instance
+        //                         directly).
+        case 10:// short
+        case 11:// uchar
+          config_to_ocv_algo_param<int>(algo, impl_name, pname, config->subblock_view(name));
+          break;
         case 2: // double
+        case 7: // float
           config_to_ocv_algo_param<double>(algo, impl_name, pname, config->subblock_view(name));
+          break;
+        case 3: // std::string
+          config_to_ocv_algo_param<std::string>(algo, impl_name, pname, config->subblock_view(name));
           break;
         case 6: // cv::Algorithm
           {
@@ -258,17 +282,30 @@ check_nested_ocv_algo_configuration_helper(std::string const& name,
     ptypeid = algo->paramType(pname);
     switch(ptypeid)
     {
-      case 0: // int
-        all_success =
-          all_success && check_ocv_algo_param_in_config<int>(impl_name, pname, config->subblock_view(name));
-        break;
       case 1: // bool
         all_success =
           all_success && check_ocv_algo_param_in_config<bool>(impl_name, pname, config->subblock_view(name));
         break;
+      case 0: // int
+      //case 8: // unsigned int  WARNING: These are unsafe type conversion
+      //case 9: // uint64        given the current method of setting
+      //                         parameters. Insufficient pass-throughs in
+      //                         cv::Algorithm class (will have to access
+      //                         underlying cv::AlgorithmInfo instance
+      //                         directly).
+      case 10:// short
+      case 11:// uchar
+        all_success =
+          all_success && check_ocv_algo_param_in_config<int>(impl_name, pname, config->subblock_view(name));
+        break;
       case 2: // double
+        case 7: // float
         all_success =
           all_success && check_ocv_algo_param_in_config<double>(impl_name, pname, config->subblock_view(name));
+        break;
+      case 3: // std::string
+        all_success =
+          all_success && check_ocv_algo_param_in_config<std::string>(impl_name, pname, config->subblock_view(name));
         break;
       case 6: // cv::Algorithm
         {
