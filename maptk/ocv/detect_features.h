@@ -35,9 +35,12 @@ public:
   /// Return the name of this implementation
   std::string impl_name() const { return "ocv"; }
 
-  // No configuration yet for this class
-  virtual void set_configuration(config_block_sptr /*config*/) { }
-  virtual bool check_configuration(config_block_sptr /*config*/) const { return true; }
+  /// Get this algorithm's \link maptk::config_block configuration block \endlink
+  virtual config_block_sptr get_configuration() const;
+  /// Set this algorithm's properties via a config block
+  virtual void set_configuration(config_block_sptr config);
+  /// Check that the algorithm's configuration config_block is valid
+  virtual bool check_configuration(config_block_sptr config) const;
 
   /// Extract a set of image features from the provided image
   /// \param image_data contains the image data to process

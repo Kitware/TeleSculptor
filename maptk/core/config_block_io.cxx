@@ -96,7 +96,7 @@ class config_block_grammar
     /// A comment within the config file
     qi::rule<Iterator, config_block_value_t()> comment_value; ///< includes '#''s
     qi::rule<Iterator, config_block_value_t()> comment;
-    // TODO: comment_lines + include logic for slurping up comment values into
+    // TODO: (advanced) include logic for slurping up comment values into
     //       config_block structure as key descriptions.
 
     /// Result set of config block key/value pairs
@@ -144,7 +144,7 @@ config_block_grammar<Iterator>
 
   config_block_key.name("config-key");
   config_block_key %=
-    +( qi::alnum | qi::char_("_") );
+    +( qi::alnum | qi::char_("_") | qi::char_(".") );
 
   config_block_key_path.name("config-key-path");
   config_block_key_path %=

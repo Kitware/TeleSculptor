@@ -102,6 +102,11 @@ VXL
  * Added vxl::bundle_adjust to implement to maptk::algo::bundle_adjust using
    vpgl_bundle_adjust from VXL.
 
+OpenCV
+
+ * Added ability to configure nested, and recursively nested OpenCV
+   cv::Algorithm instances.
+
 
 Fixes since v0.1.2
 ------------------

@@ -1,13 +1,20 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
+ */
+
+/**
+ * \file
+ * \brief Implementation of OCV DescriptorExtractor wrapping.
  */
 
 #include <maptk/ocv/extract_descriptors.h>
 #include <maptk/ocv/image_container.h>
 #include <maptk/ocv/feature_set.h>
 #include <maptk/ocv/descriptor_set.h>
+
+#include <maptk/ocv/ocv_algo_tools.h>
 
 
 namespace maptk
@@ -57,6 +64,43 @@ extract_descriptors
 extract_descriptors
 ::~extract_descriptors()
 {
+}
+
+
+/// Get this algorithm's \link maptk::config_block configuration block \endlink
+config_block_sptr
+extract_descriptors
+::get_configuration() const
+{
+  // base configuration block
+  config_block_sptr config = algorithm::get_configuration();
+
+  get_nested_ocv_algo_configuration("extractor", config, d_->extractor);
+
+  return config;
+}
+
+
+/// Set this algorithm's properties via a config block
+void
+extract_descriptors
+::set_configuration(config_block_sptr config)
+{
+  set_nested_ocv_algo_configuration(
+      "extractor", config, d_->extractor);
+}
+
+
+/// Check that the algorithm's configuration config_block is valid
+bool
+extract_descriptors
+::check_configuration(config_block_sptr config) const
+{
+  bool nested_ok =
+    check_nested_ocv_algo_configuration<cv::DescriptorExtractor>(
+        "extractor", config);
+
+  return nested_ok;
 }
 
 

@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief MAPTK algorithm wrapping of OCV's DescriptorExtractor
+ */
+
 #ifndef MAPTK_OCV_EXTRACT_DESCRIPTORS_H_
 #define MAPTK_OCV_EXTRACT_DESCRIPTORS_H_
 
@@ -35,9 +40,12 @@ public:
   /// Return the name of this implementation
   std::string impl_name() const { return "ocv"; }
 
-  // No configuration for this class yet
-  virtual void set_configuration(config_block_sptr /*config*/) { }
-  virtual bool check_configuration(config_block_sptr /*config*/) const { return true; }
+  /// Get this algorithm's \link maptk::config_block configuration block \endlink
+  virtual config_block_sptr get_configuration() const;
+  /// Set this algorithm's properties via a config block
+  virtual void set_configuration(config_block_sptr config);
+  /// Check that the algorithm's configuration config_block is valid
+  virtual bool check_configuration(config_block_sptr config) const;
 
   /// Extract from the image a descriptor corresoponding to each feature
   /// \param image_data contains the image data to process
