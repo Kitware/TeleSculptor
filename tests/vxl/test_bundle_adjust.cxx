@@ -405,7 +405,8 @@ IMPLEMENT_TEST(zero_landmarks)
   track_set_sptr tracks = projected_tracks(landmarks, cameras);
 
   // initialize all landmarks to the origin
-  landmark_map_sptr landmarks0 = init_landmarks(landmarks->size());
+  landmark_id_t num_landmarks = static_cast<landmark_id_t>(landmarks->size());
+  landmark_map_sptr landmarks0 = init_landmarks(num_landmarks);
 
 
   double init_rmse = reprojection_rmse(cameras->cameras(),
@@ -446,10 +447,12 @@ IMPLEMENT_TEST(zero_landmarks_same_cameras)
   track_set_sptr tracks = projected_tracks(landmarks, cameras);
 
   // initialize all landmarks to the origin
-  landmark_map_sptr landmarks0 = init_landmarks(landmarks->size());
+  landmark_id_t num_landmarks = static_cast<landmark_id_t>(landmarks->size());
+  landmark_map_sptr landmarks0 = init_landmarks(num_landmarks);
 
   // initialize all cameras to at (0,0,1) looking at the origin
-  camera_map_sptr cameras0 = init_cameras(cameras->size());
+  frame_id_t num_cameras = static_cast<frame_id_t>(cameras->size());
+  camera_map_sptr cameras0 = init_cameras(num_cameras);
 
 
   double init_rmse = reprojection_rmse(cameras0->cameras(),
