@@ -131,13 +131,15 @@ get_nested_ocv_algo_configuration(std::string const& name,
                                   cv::Ptr<cv::Algorithm> algo)
 {
   using namespace std;
+  config_block_description_t type_descr =
+    "The OpenCV cv::Algorithm type to use for '" + name + "'.";
 
   // we were given a pointer to an instantiated algorithm
   if (! algo.empty())
   {
     std::string impl_name = algo->info()->name();
     config->set_value(name + config_block::block_sep + type_token,
-                      impl_name);
+                      impl_name, type_descr);
 
     vector<string> algo_params;
     algo->getParams(algo_params);
@@ -192,7 +194,7 @@ get_nested_ocv_algo_configuration(std::string const& name,
   }
   else
   {
-    config->set_value(name + config_block::block_sep + type_token, "");
+    config->set_value(name + config_block::block_sep + type_token, "", type_descr);
   }
 }
 

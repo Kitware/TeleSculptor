@@ -65,7 +65,12 @@ cv::Ptr<algo_t> create_ocv_algo(std::string const& impl_name)
   {
     a = algo_t::create(impl_name);
   }
-  catch (cv::Exception const& e) { }
+  catch (cv::Exception const& e)
+  {
+    std::cerr << "[---] Ignore the above error message, it will be handled. "
+              << "OpenCV is silly."
+              << std::endl;
+  }
 
   // if the create call returned something empty or errored, a will still empty.
   if (a.empty())
@@ -142,6 +147,12 @@ void set_nested_ocv_algo_configuration(std::string const& name,
     helper_::set_nested_ocv_algo_configuration_helper(name, config,
                                                       converted_algo);
     algo = cv::Ptr<algo_t>(converted_algo);
+  }
+  else
+  {
+    std::cerr << "[WARNING] No algorithm type set for '" << name << "'. "
+              << "Using default cv::Algorithm '" << algo->info()->name() << "'."
+              << std::endl;
   }
 }
 
