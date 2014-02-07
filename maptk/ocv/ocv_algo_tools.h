@@ -68,7 +68,7 @@ cv::Ptr<algo_t> create_ocv_algo(std::string const& impl_name)
   if (a.empty())
   {
     //DEBUG
-    std::cerr << "Falling back on general creation with name '" << impl_name << "'" << std::endl;
+    //std::cerr << "Falling back on general creation with name '" << impl_name << "'" << std::endl;
     a = cv::Algorithm::create<algo_t>(impl_name);
   }
   return a;
@@ -134,9 +134,9 @@ void set_nested_ocv_algo_configuration(std::string const& name,
     if (algo.empty() or algo->info()->name() != impl_name)
     {
       //DEBUG
-      std::cerr << "[set_nested_ocv_algo_configuration_helper] "
-                << "Creating new algorithm instance '" << impl_name << "'"
-                << std::endl;
+      //std::cerr << "[set_nested_ocv_algo_configuration_helper] "
+      //          << "Creating new algorithm instance '" << impl_name << "'"
+      //          << std::endl;
       algo = helper_::create_ocv_algo<algo_t>(impl_name);
     }
 

@@ -46,7 +46,7 @@ void ocv_algo_param_to_config(cv::Ptr<cv::Algorithm> algo,
   param_t param = algo->template get<param_t>(param_name);
   std::string param_descr = algo->paramHelp(param_name);
   //DEBUG
-  std::cerr << "\tGetting '" << algo_name << "' param '" << param_name << "': " << param << std::endl;
+  //std::cerr << "\tGetting '" << algo_name << "' param '" << param_name << "': " << param << std::endl;
   config->set_value(algo_name + config_block::block_sep + param_name,
                     boost::lexical_cast<std::string>(param),
                     param_descr);
@@ -78,7 +78,7 @@ void config_to_ocv_algo_param(cv::Ptr<cv::Algorithm> algo,
   {
     param_t param = config->get_value<param_t>(param_key);
     //DEBUG
-    std::cerr << "\tSetting '" << algo_name << "' param '" << param_name << "': " << param << std::endl;
+    //std::cerr << "\tSetting '" << algo_name << "' param '" << param_name << "': " << param << std::endl;
     algo->set(param_name, param);
   }
   // else leaving algo default alone
@@ -110,7 +110,7 @@ bool check_ocv_algo_param_in_config(std::string const& algo_name,
       param_t test_val = config->get_value<param_t>(key);
       (void) test_val;
       //DEBUG
-      std::cerr << "\tChecking '" << algo_name << "' param '" << param_name << "': " << test_val << std::endl;
+      //std::cerr << "\tChecking '" << algo_name << "' param '" << param_name << "': " << test_val << std::endl;
     }
     catch (config_block_exception ex)
     {
