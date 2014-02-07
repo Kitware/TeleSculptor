@@ -96,8 +96,9 @@ bool
 extract_descriptors
 ::check_configuration(config_block_sptr config) const
 {
-  bool nested_ok = check_nested_ocv_algo_configuration(
-      "extractor", config);
+  bool nested_ok =
+    check_nested_ocv_algo_configuration<cv::DescriptorExtractor>(
+        "extractor", config);
 
   return nested_ok;
 }

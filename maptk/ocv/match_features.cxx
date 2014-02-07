@@ -144,8 +144,9 @@ bool
 match_features
 ::check_configuration(config_block_sptr config) const
 {
-  bool nested_ok = check_nested_ocv_algo_configuration(
-      "matcher", config);
+  bool nested_ok =
+    check_nested_ocv_algo_configuration<cv::DescriptorMatcher>(
+        "matcher", config);
 
   return nested_ok;
 }

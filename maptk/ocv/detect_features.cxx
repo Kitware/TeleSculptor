@@ -93,8 +93,9 @@ bool
 detect_features
 ::check_configuration(config_block_sptr config) const
 {
-  bool nested_ok = check_nested_ocv_algo_configuration(
-      "detector", config);
+  bool nested_ok =
+    check_nested_ocv_algo_configuration<cv::FeatureDetector>(
+        "detector", config);
 
   return nested_ok;
 }

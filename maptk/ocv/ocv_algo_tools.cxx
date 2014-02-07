@@ -29,10 +29,6 @@ namespace
 {
 
 
-/// String used to record nested algorithm implementation type
-static std::string const type_token = "type";
-
-
 /// Extract an OCV algorithm property and insert its value into a config_block
 /**
  * \param param_t The type of the parameter being extracted and stored.
@@ -134,10 +130,6 @@ get_nested_ocv_algo_configuration(std::string const& name,
                                   config_block_sptr config,
                                   cv::Ptr<cv::Algorithm> algo)
 {
-  // How to use the get method on an algo:
-  //    algo->template get<int>("some-name")
-  //          !^^^^^^!
-  //           needed
   using namespace std;
 
   // we were given a pointer to an instantiated algorithm
@@ -193,32 +185,20 @@ get_nested_ocv_algo_configuration(std::string const& name,
 }
 
 
-/// Set nested OpenCV algoruthm's parameters based on a given \c config
+namespace helper_
+{
+
+
+// (Helper) Set nested OpenCV algorithm's parameters based on a given \c config
 void
 set_nested_ocv_algo_configuration_helper(std::string const& name,
                                          config_block_sptr config,
                                          cv::Ptr<cv::Algorithm> &algo)
 {
-  config_block_key_t type_key = name + config_block::block_sep + type_token;
-
-  if (config->has_value(type_key))
+  // Only proceed if a valid algorithm was created
+  if (!algo.empty())
   {
-    std::string impl_name = config->get_value<std::string>(type_key);
-
-    // if the current algo ptr is not empty and is the same type as impl_name,
-    // leave it alone, else create a new algo and set it to algo
-    if (algo.empty() or algo->info()->name() != impl_name)
-    {
-      //DEBUG
-      std::cerr << "[set_nested_ocv_algo_configuration_helper] Creating new algorithm instance '" << impl_name << "'" << std::endl;
-      algo = cv::Algorithm::create<cv::Algorithm>(impl_name);
-
-      // TODO: Add null check
-    }
-
-    // reassigning the formal name of the algo impl as they can be created,
-    // apparently, based on many different names.
-    impl_name = algo->info()->name();
+    std::string impl_name = algo->info()->name();
 
     // scan through algo parameters, settings ones that we can encode in the config_block
     std::vector<std::string> algo_params;
@@ -241,7 +221,7 @@ set_nested_ocv_algo_configuration_helper(std::string const& name,
           {
             // recursively set nested args on nested algo
             cv::Ptr<cv::Algorithm> nested_algo = algo->get<cv::Algorithm>(pname);
-            set_nested_ocv_algo_configuration_helper(
+            set_nested_ocv_algo_configuration(
                 pname,
                 config->subblock_view(name + config_block::block_sep + impl_name),
                 nested_algo
@@ -262,54 +242,38 @@ set_nested_ocv_algo_configuration_helper(std::string const& name,
 
 /// Basic check of nested OpenCV algorithm configuration in the given \c config
 bool
-check_nested_ocv_algo_configuration(std::string const& name,
-                                    config_block_sptr config)
+check_nested_ocv_algo_configuration_helper(std::string const& name,
+                                           config_block_sptr config,
+                                           cv::Ptr<cv::Algorithm> algo)
 {
-  // Config doesn't necessarilly need to have anything in it as OpenCV
-  // algorithm's are valid with their defaults. However, we should at least
-  // have an algorithm type specification that creates a valid cv::Algorithm.
-  // We then check the rest of the nested configuration based on the configured
-  // algo type.
-  config_block_key_t algo_type_key = name + config_block::block_sep + type_token;
-  if (! config->has_value(algo_type_key))
-  {
-    // No type configured.
-    return false;
-  }
-  std::string impl_name = config->get_value<std::string>(algo_type_key);
-  cv::Ptr<cv::Algorithm> algo = cv::Algorithm::create<cv::Algorithm>(impl_name);
-  if (algo.empty())
-  {
-    // Impl name must not be valid as no algorithm was created.
-    return false;
-  }
-
-  bool all_success = true;
-
-  // Reassigning the impl_name as there are many sort-cut names that OpenCV
-  // allows. We want to use the "official" name from here out.
-  impl_name = algo->info()->name();
+  std::string impl_name = algo->info()->name();
 
   std::vector<std::string> algo_params;
   algo->getParams(algo_params);
 
+  bool all_success = true;
+  int ptypeid;
   BOOST_FOREACH( std::string pname, algo_params )
   {
-    int ptypeid = algo->paramType(pname);
+    ptypeid = algo->paramType(pname);
     switch(ptypeid)
     {
       case 0: // int
-        all_success &= check_ocv_algo_param_in_config<int>(impl_name, pname, config->subblock_view(name));
+        all_success =
+          all_success && check_ocv_algo_param_in_config<int>(impl_name, pname, config->subblock_view(name));
         break;
       case 1: // bool
-        all_success &= check_ocv_algo_param_in_config<bool>(impl_name, pname, config->subblock_view(name));
+        all_success =
+          all_success && check_ocv_algo_param_in_config<bool>(impl_name, pname, config->subblock_view(name));
         break;
       case 2: // double
-        all_success &= check_ocv_algo_param_in_config<double>(impl_name, pname, config->subblock_view(name));
+        all_success =
+          all_success && check_ocv_algo_param_in_config<double>(impl_name, pname, config->subblock_view(name));
         break;
       case 6: // cv::Algorithm
         {
-          all_success &= check_nested_ocv_algo_configuration(
+          all_success = all_success && check_nested_ocv_algo_configuration
+            <cv::Algorithm>(
               pname,
               config->subblock_view(name + config_block::block_sep + impl_name)
               );
@@ -322,10 +286,18 @@ check_nested_ocv_algo_configuration(std::string const& name,
                   << std::endl;
     }
   }
-
   return all_success;
 }
 
+
+template<>
+cv::Ptr<cv::Algorithm> create_ocv_algo<cv::Algorithm>(std::string const& impl_name)
+{
+  return cv::Algorithm::create<cv::Algorithm>(impl_name);
+}
+
+
+} // end namespace helper_
 
 } // end namespace ocv
 
