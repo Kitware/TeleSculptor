@@ -2,7 +2,18 @@ MAPTK v0.2.0 Release Notes
 ==========================
 
 This is a minor release MAPTK that provides both new functionality and fixes
-over the previous v0.1.2 release.
+over the previous v0.1.2 release.  The primary contribution of this release is
+the addition of a bundle adjustment algorithm and tool for running it on
+tracks from the feature tracking tool.  Currently, the only concrete
+implementation of bundle adjustment is provided by VXL.
+
+Secondarily, this release provides support for documentation strings for
+configuration options. These strings are written as comments in the
+configuration files. Furthermore, internal parameters used by OpenCV algorithms
+following the cv::Algorithm design are now automatically converted to MAPTK
+config options.  So, for example, one can now select which algorithm to use
+in the OpenCV FeatureDetector (SIFT, SURF, ORB, etc.) and then set the
+various parameters of that chosen algorithm.
 
 
 Updates since v0.1.2
