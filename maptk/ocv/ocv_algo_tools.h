@@ -14,6 +14,7 @@
 #define MAPTK_OCV_OCV_ALGO_TOOLS_H
 
 #include <string>
+#include <iostream>
 
 #include <maptk/core/config_block.h>
 #include <maptk/core/exceptions/config_block.h>
