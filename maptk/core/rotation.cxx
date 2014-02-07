@@ -223,11 +223,11 @@ rotation_<T>
   pitch = T(std::atan2(double(rotM(0,2)),double(xy)));
   roll  = T(std::atan2(double(-rotM(1,2)),double(rotM(2,2))));
   // correct for 90 degree yaw offset
-  const double pi = boost::math::constants::pi<double>();
-  yaw -= pi / 2.0;
+  const T pi = boost::math::constants::pi<T>();
+  yaw -= pi / 2;
   if (yaw <= -pi)
   {
-    yaw += 2.0 * pi;
+    yaw += 2 * pi;
   }
 }
 
