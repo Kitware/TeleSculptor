@@ -54,7 +54,6 @@ bool check_nested_ocv_algo_configuration_helper(std::string const& name,
 /// Templated helper method and specialization for creating a new OpenCV
 /// Algorithm instance.
 template <typename algo_t>
-MAPTK_OCV_NO_EXPORT
 cv::Ptr<algo_t> create_ocv_algo(std::string const& impl_name)
 {
   // attempt to use the given type to natively create the algorithm with
@@ -125,7 +124,6 @@ void get_nested_ocv_algo_configuration(std::string const& name,
  *                options to.
  */
 template <typename algo_t>
-MAPTK_OCV_EXPORT
 void set_nested_ocv_algo_configuration(std::string const& name,
                                        config_block_sptr config,
                                        cv::Ptr<algo_t> &algo)
@@ -178,7 +176,6 @@ void set_nested_ocv_algo_configuration(std::string const& name,
  *                check the \c config.
  */
 template <typename algo_t>
-MAPTK_OCV_EXPORT
 bool check_nested_ocv_algo_configuration(std::string const& name,
                                          config_block_sptr config)
 {
