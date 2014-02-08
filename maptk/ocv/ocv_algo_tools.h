@@ -38,15 +38,15 @@ static std::string const type_token = "type";
 namespace helper_
 {
 
-/// Non-exported helper method for setting nested OpenCV Algorithm parameters
-MAPTK_OCV_NO_EXPORT
+/// Helper method for setting nested OpenCV Algorithm parameters
+MAPTK_OCV_EXPORT
 void set_nested_ocv_algo_configuration_helper(std::string const& name,
                                               config_block_sptr config,
                                               cv::Ptr<cv::Algorithm> &algo);
 
-/// Non-exported helper method for checking nested OpenCV Algorithm
+/// Helper method for checking nested OpenCV Algorithm
 /// configurations
-MAPTK_OCV_NO_EXPORT
+MAPTK_OCV_EXPORT
 bool check_nested_ocv_algo_configuration_helper(std::string const& name,
                                                 config_block_sptr config,
                                                 cv::Ptr<cv::Algorithm> algo);
@@ -84,7 +84,7 @@ cv::Ptr<algo_t> create_ocv_algo(std::string const& impl_name)
 
 /// cv::Algorithm specialization
 template <>
-MAPTK_OCV_NO_EXPORT
+MAPTK_OCV_EXPORT
 cv::Ptr<cv::Algorithm> create_ocv_algo<cv::Algorithm>(std::string const& impl_name);
 
 
