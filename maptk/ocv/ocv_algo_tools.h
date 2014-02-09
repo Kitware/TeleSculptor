@@ -65,7 +65,7 @@ cv::Ptr<algo_t> create_ocv_algo(std::string const& impl_name)
   {
     a = algo_t::create(impl_name);
   }
-  catch (cv::Exception const& e)
+  catch (cv::Exception const&)
   {
     std::cerr << "[---] Ignore the above error message, it will be handled. "
               << "OpenCV is silly."
