@@ -9,6 +9,7 @@
 
 
 #include <maptk/core/match_set.h>
+#include <maptk/viscl/viscl_config.h>
 #include <viscl/core/buffer.h>
 
 namespace maptk
@@ -19,7 +20,7 @@ namespace vcl
 
 
 /// A concrete match set that wraps VisCL matches
-class match_set
+class MAPTK_VISCL_EXPORT match_set
 : public maptk::match_set
 {
 public:
@@ -46,7 +47,7 @@ private:
 
 
 /// Convert any match set to VisCL match data
-viscl::buffer
+MAPTK_VISCL_EXPORT viscl::buffer
 matches_to_viscl(const maptk::match_set& match_set, size_t numkpts2);
 
 

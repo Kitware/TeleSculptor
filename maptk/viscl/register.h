@@ -7,6 +7,7 @@
 #ifndef MAPTK_VISCL_REGISTER_H_
 #define MAPTK_VISCL_REGISTER_H_
 
+#include "viscl_config.h"
 
 namespace maptk
 {
@@ -15,7 +16,7 @@ namespace vcl
 {
 
 /// register all algorithms in this module
-void register_algorithms();
+MAPTK_VISCL_EXPORT void register_algorithms();
 
 
 } // end namespace viscl

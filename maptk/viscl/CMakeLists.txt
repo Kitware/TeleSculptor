@@ -42,4 +42,4 @@ maptk_add_library(maptk_viscl
   ${maptk_viscl_sources}
   )
 
-target_link_libraries( maptk_viscl maptk_core ${VISCL_LIBRARY} )
+target_link_libraries( maptk_viscl maptk_core viscl_core viscl_tasks )

@@ -8,6 +8,7 @@
 #define MAPTK_VISCL_EXTRACT_DESCRIPTORS_H_
 
 #include <maptk/core/algo/extract_descriptors.h>
+#include <maptk/viscl/viscl_config.h>
 #include <boost/scoped_ptr.hpp>
 
 namespace maptk
@@ -17,7 +18,7 @@ namespace vcl
 {
 
 /// An class for extracting feature descriptors using VisCL
-class extract_descriptors
+class MAPTK_VISCL_EXPORT extract_descriptors
 : public algo::algorithm_impl<extract_descriptors, algo::extract_descriptors>
 {
 public:

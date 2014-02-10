@@ -7,10 +7,11 @@
 #ifndef MAPTK_VISCL_FEATURE_SET_H_
 #define MAPTK_VISCL_FEATURE_SET_H_
 
-
+#include <maptk/viscl/viscl_config.h>
 #include <maptk/core/feature_set.h>
 #include <viscl/core/buffer.h>
 #include <viscl/core/image.h>
+
 
 namespace maptk
 {
@@ -22,7 +23,7 @@ namespace vcl
 /// A VisCL feature only has the location set
 /// It is possible to get the smoothing scale but that value is not
 /// saved on the GPU so would have to be provided externally
-class feature_set
+class MAPTK_VISCL_EXPORT feature_set
 : public maptk::feature_set
 {
 public:
@@ -63,7 +64,7 @@ protected:
 /// computed from - they are nessessary to create a search map for viscl tracker
 /// viscl only cares about integer feature location, therefore you will lose info converting from
 /// maptk feature set to viscl and back
-feature_set::type
+MAPTK_VISCL_EXPORT feature_set::type
 features_to_viscl(const maptk::feature_set& features, size_t width, size_t height);
 
 

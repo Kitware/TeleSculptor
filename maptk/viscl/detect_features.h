@@ -8,6 +8,7 @@
 #define MAPTK_VISCL_DETECT_FEATURES_H_
 
 #include <maptk/core/algo/detect_features.h>
+#include <maptk/viscl/viscl_config.h>
 #include <boost/scoped_ptr.hpp>
 
 namespace maptk
@@ -17,7 +18,7 @@ namespace vcl
 {
 
 /// An algorithm class for detecting feature points using VisCL
-class detect_features
+class MAPTK_VISCL_EXPORT detect_features
 : public algo::algorithm_impl<detect_features, algo::detect_features>
 {
 public:

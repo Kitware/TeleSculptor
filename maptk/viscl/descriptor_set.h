@@ -9,6 +9,7 @@
 
 
 #include <maptk/core/descriptor_set.h>
+#include <maptk/viscl/viscl_config.h>
 #include <viscl/core/buffer.h>
 
 namespace maptk
@@ -18,7 +19,7 @@ namespace vcl
 {
 
 /// A concrete descriptor set that wraps VisCL descriptors.
-class descriptor_set
+class MAPTK_VISCL_EXPORT descriptor_set
 : public maptk::descriptor_set
 {
 public:
@@ -49,7 +50,7 @@ protected:
 
 /// Convert any descriptor set a VisCL descriptor set
 /// descriptor must be a cl_int4
-viscl::buffer
+MAPTK_VISCL_EXPORT viscl::buffer
 descriptors_to_viscl(const maptk::descriptor_set& desc_set);
 
 

@@ -8,6 +8,7 @@
 #define MAPTK_VISCL_IMAGE_CONTAINER_H_
 
 #include <maptk/core/image_container.h>
+#include <maptk/viscl/viscl_config.h>
 #include <viscl/core/image.h>
 
 namespace maptk
@@ -17,7 +18,7 @@ namespace vcl
 {
 
 /// This image container wraps a VisCL image
-class viscl_image_container
+class MAPTK_VISCL_EXPORT viscl_image_container
 : public image_container
 {
 public:
@@ -76,7 +77,7 @@ protected:
  * return the underlying VisCL image.  Otherwise, convert the image data
  * and upload to the GPU.
  */
-viscl::image image_container_to_viscl(const image_container& img);
+MAPTK_VISCL_EXPORT viscl::image image_container_to_viscl(const image_container& img);
 
 
 } // end namespace viscl
