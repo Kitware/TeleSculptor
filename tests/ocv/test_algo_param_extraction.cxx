@@ -58,6 +58,18 @@ using namespace std;
 using namespace maptk;
 
 
+IMPLEMENT_TEST(detect_features_opencv)
+{
+  cv::Ptr<cv::FeatureDetector> df = cv::FeatureDetector::create("GridSURF");
+  cerr << "Created algo name: " << df->info()->name() << endl;
+
+  cerr << "Getting nested algorithm" << endl;
+  cv::Ptr<cv::Algorithm> nested_detector = df->getAlgorithm("detector");
+  cerr << "[BEFORE] Trying to extract name of nested algorithm..." << endl;
+  cerr << "[ AFTER] Nested algorithm name: " << nested_detector->info()->name() << endl;
+}
+
+
 IMPLEMENT_TEST(detect_features_args_defaults)
 {
   algo::detect_features_sptr df = algo::detect_features::create("ocv");
