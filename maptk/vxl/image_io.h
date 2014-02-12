@@ -28,17 +28,17 @@ public:
   virtual void set_configuration(config_block_sptr /*config*/) { }
   virtual bool check_configuration(config_block_sptr /*config*/) const { return true; }
 
-  /// Load image image from the file
+private:
+  /// Implementation specific load functionality.
   /// \param filename the path to the file the load
   /// \returns an image container refering to the loaded image
-  virtual image_container_sptr load(const std::string& filename) const;
+  virtual image_container_sptr load_(const std::string& filename) const;
 
-  /// Save image image to a file
-  /// Image file format is based on file extension.
+  /// Implementation specific save functionality.
   /// \param filename the path to the file to save
   /// \param data the image container refering to the image to write
-  virtual void save(const std::string& filename,
-                    image_container_sptr data) const;
+  virtual void save_(const std::string& filename,
+                     image_container_sptr data) const;
 };
 
 } // end namespace vxl

@@ -18,5 +18,6 @@
 #include "exceptions/algorithm.h"
 #include "exceptions/config_block.h"
 #include "exceptions/config_block_io.h"
+#include "exceptions/io.h"
 
 #endif // MAPTK_CORE_EXCEPTIONS_H

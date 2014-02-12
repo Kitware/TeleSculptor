@@ -18,7 +18,7 @@ namespace vxl
 /// Load image image from the file
 image_container_sptr
 image_io
-::load(const std::string& filename) const
+::load_(const std::string& filename) const
 {
   vil_image_view<vxl_byte> img = vil_load(filename.c_str());
   return image_container_sptr(new vxl::image_container(img));
@@ -28,7 +28,7 @@ image_io
 /// Save image image to a file
 void
 image_io
-::save(const std::string& filename,
+::save_(const std::string& filename,
        image_container_sptr data) const
 {
   vil_save(vxl::image_container::maptk_to_vxl(data->get_image()),

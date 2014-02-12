@@ -21,6 +21,7 @@
 #include <maptk/core/algo/track_features.h>
 #include <maptk/core/config_block.h>
 #include <maptk/core/config_block_io.h>
+#include <maptk/core/exceptions.h>
 #include <maptk/core/types.h>
 
 #include <boost/foreach.hpp>
@@ -121,6 +122,7 @@ static int maptk_main(int argc, char const* argv[])
   // Else error if provided config not valid.
 
   namespace algo = maptk::algo;
+  namespace bfs = boost::filesystem;
 
   // Set up top level configuration w/ defaults where applicable.
   maptk::config_block_sptr config = default_config();
@@ -172,18 +174,20 @@ static int maptk_main(int argc, char const* argv[])
   std::string output_tracks_file = config->get_value<std::string>("output_tracks_file");
 
   std::ifstream ifs(image_list_file.c_str());
-
   if (!ifs)
   {
     std::cerr << "Error: Could not open image list \""<<image_list_file<<"\""<<std::endl;
     return EXIT_FAILURE;
   }
-
-  // Creating input image list
-  std::vector<std::string> files;
+  // Creating input image list, checking file existance
+  std::vector<maptk::path_t> files;
   for (std::string line; std::getline(ifs,line); )
   {
     files.push_back(line);
+    if (!bfs::exists(files[files.size()-1]))
+    {
+      throw maptk::path_not_exists(files[files.size()-1]);
+    }
   }
 
   // verify that we can open the output file for writing
@@ -202,7 +206,7 @@ static int maptk_main(int argc, char const* argv[])
   for(unsigned i=0; i<files.size(); ++i)
   {
     std::cout << "processing frame "<<i<<": "<<files[i]<<std::endl;
-    maptk::image_container_sptr img = image_reader->load(files[i]);
+    maptk::image_container_sptr img = image_reader->load(files[i].string());
     tracks = feature_tracker->track(tracks, i, img);
   }
 

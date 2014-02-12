@@ -31,14 +31,24 @@ public:
   /// Load image image from the file
   /// \param filename the path to the file the load
   /// \returns an image container refering to the loaded image
-  virtual image_container_sptr load(const std::string& filename) const = 0;
+  image_container_sptr load(std::string const& filename) const;
 
   /// Save image image to a file
   /// Image file format is based on file extension.
   /// \param filename the path to the file to save
   /// \param data the image container refering to the image to write
-  virtual void save(const std::string& filename,
-                    image_container_sptr data) const = 0;
+  void save(std::string const& filename, image_container_sptr data) const;
+
+private:
+  /// Implementation specific load functionality.
+  /// \param filename the path to the file the load
+  /// \returns an image container refering to the loaded image
+  virtual image_container_sptr load_(std::string const& filename) const = 0;
+  /// Implementation specific save functionality.
+  /// \param filename the path to the file to save
+  /// \param data the image container refering to the image to write
+  virtual void save_(std::string const& filename,
+                     image_container_sptr data) const = 0;
 };
 
 
