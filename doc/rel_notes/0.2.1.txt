@@ -7,6 +7,17 @@ Minor patch release since v0.2.0 containing bug fixes and small improvements.
 Updates since v0.2.0
 --------------------
 
+OpenCV
+
+ * Added test exposing OpenCV bug/error on Windows. Single test expected to
+   fail on windows until this is resolved within OpenCV or we have a
+   workaround.
+
 
 Fixes since v0.2.0
 ------------------
+
+OpenCV
+
+ * Changed OCV detect_features default nested algorithm from GridSURF to SURF.
+   Windows has an issue with GridSURF and its nested algorithm.
