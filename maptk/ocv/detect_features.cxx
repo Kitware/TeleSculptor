@@ -27,12 +27,12 @@ class detect_features::priv
 public:
   /// Constructor
   priv()
-  : detector(cv::FeatureDetector::create("GridSURF"))
+  : detector(cv::FeatureDetector::create("SURF"))
   {
   }
 
   priv(const priv& other)
-  : detector(cv::FeatureDetector::create("GridSURF"))
+  : detector(cv::FeatureDetector::create("SURF"))
   {
   }
 

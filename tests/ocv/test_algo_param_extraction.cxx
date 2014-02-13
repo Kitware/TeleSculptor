@@ -58,6 +58,37 @@ using namespace std;
 using namespace maptk;
 
 
+IMPLEMENT_TEST(detect_features_opencv)
+{
+  // Tests our ability to construct an OpenCV algorithm, specifically GridSURF,
+  // and access the underlying nested algorithm.
+  //
+  // NOTE: cv::Algorithm::getAlgorithm() returns a cv::Algorithm, and thats it.
+
+  cerr << "Creating algo in a variety of ways" << endl;
+  cv::Ptr<cv::FeatureDetector> fd_fd = cv::FeatureDetector::create("GridSURF");
+  cv::Ptr<cv::Algorithm>     algo_fd = cv::FeatureDetector::create("GridSURF");
+
+  cerr << "- fd-fd           constructed" << endl;
+  cv::Ptr<cv::Algorithm> nested1 = fd_fd->getAlgorithm("detector");
+  TEST_EQUAL("fd-fd nested algo not empty", nested1.empty(), 0);
+  if ( !nested1.empty() )
+  {
+    cerr << "  - Before extraction..." << endl;
+    cerr << "  - After extraction: " << nested1->info()->name() << endl;
+  }
+
+  cerr << "- algo-fd         constructed" << endl;
+  cv::Ptr<cv::Algorithm> nested2 = algo_fd->getAlgorithm("detector");
+  TEST_EQUAL("algo-fd nested algo not empty", nested2.empty(), 0);
+  if ( !nested2.empty() )
+  {
+    cerr << "  - Before extraction..." << endl;
+    cerr << "  - After extraction: " << nested2->info()->name() << endl;
+  }
+}
+
+
 IMPLEMENT_TEST(detect_features_args_defaults)
 {
   algo::detect_features_sptr df = algo::detect_features::create("ocv");
@@ -136,9 +167,7 @@ IMPLEMENT_TEST(algo_set_empty_pointer)
   print_config(dflt_config);
   cerr << "[] Setting algo_ptr using dflt_config generated earlier" << endl;
   ocv::set_nested_ocv_algo_configuration("detector", dflt_config, algo_ptr);
-  cerr << "[] Post-set algo_ptr name: " << algo_ptr->info()->name() << endl
-       << "[] Post-set algo_ptr detector algo: " << algo_ptr->get<cv::Algorithm>("detector")->info()->name() << endl
-       ;
+  cerr << "[] Post-set algo_ptr name: " << algo_ptr->info()->name() << endl;
 
   // new ptr should now have a value
   TEST_EQUAL("algo_ptr now initialized test",
@@ -159,10 +188,11 @@ IMPLEMENT_TEST(detect_features_subclass_type_label)
   algo::detect_features_sptr df = algo::detect_features::create("ocv");
   cerr << "[] Creating empty config except for a detector type" << endl;
   config_block_sptr new_config = config_block::empty_config();
-  new_config->set_value("detector:type", "GridSURF");
+  new_config->set_value("detector:type", "SURF");
   cerr << "[] pre-set configuration:" << endl;
   print_config(new_config);
   cerr << "[] config check result: " << df->check_configuration(new_config) << endl;
+  TEST_EQUAL("config check test", df->check_configuration(new_config), true);
   df->set_configuration(new_config);
   new_config = df->get_configuration();
   cerr << "[] post-set configuration:" << endl;
