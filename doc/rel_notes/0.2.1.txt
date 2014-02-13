@@ -1,0 +1,12 @@
+MAPTK v0.2.1 Release Notes
+==========================
+
+Minor patch release since v0.2.0 containing bug fixes and small improvements.
+
+
+Updates since v0.2.0
+--------------------
+
+
+Fixes since v0.2.0
+------------------
