@@ -24,7 +24,7 @@ io_exception
 
 
 path_not_exists
-::path_not_exists(maptk::path_t path) MAPTK_NOTHROW
+::path_not_exists(path_t path) MAPTK_NOTHROW
   : m_path(path)
 {
   std::ostringstream sstr;
@@ -34,6 +34,32 @@ path_not_exists
 
 path_not_exists
 ::~path_not_exists() MAPTK_NOTHROW
+{
+}
+
+
+path_not_a_file
+::path_not_a_file(path_t path) MAPTK_NOTHROW
+  : m_path(path)
+{
+  m_what = "Path does not point to a file: " + path.string();
+}
+
+path_not_a_file
+::~path_not_a_file() MAPTK_NOTHROW
+{
+}
+
+
+path_not_a_directory
+::path_not_a_directory(path_t path) MAPTK_NOTHROW
+  : m_path(path)
+{
+  m_what = "Path does not point to a directory: " + path.string();
+}
+
+path_not_a_directory
+::~path_not_a_directory() MAPTK_NOTHROW
 {
 }
 

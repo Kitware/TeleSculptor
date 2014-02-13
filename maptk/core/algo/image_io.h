@@ -4,6 +4,12 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief Interface for image_io \link maptk::algorithm_def algorithm
+ *        definition \endlink.
+ */
+
 #ifndef MAPTK_ALGO_IMAGE_IO_H_
 #define MAPTK_ALGO_IMAGE_IO_H_
 
@@ -29,14 +35,36 @@ public:
   std::string type_name() const { return "image_io"; }
 
   /// Load image image from the file
-  /// \param filename the path to the file the load
-  /// \returns an image container refering to the loaded image
+  /**
+   * \throws maptk::path_not_exists {
+   *    Thrown when the given path does not exist.
+   *    }
+   * \throws maptk::path_not_a_file {
+   *    Thrown when the given path does not point to a file (i.e. it points to
+   *    a directory).
+   *    }
+   *
+   * \param filename the path to the file the load
+   * \returns an image container refering to the loaded image
+   */
   image_container_sptr load(std::string const& filename) const;
 
   /// Save image image to a file
-  /// Image file format is based on file extension.
-  /// \param filename the path to the file to save
-  /// \param data the image container refering to the image to write
+  /**
+   * Image file format is based on file extension.
+   *
+   * \throws maptk::path_not_exists {
+   *    Thrown when the expected containing directory of the given path does
+   *    not exist.
+   *    }
+   * \throws maptk::path_not_a_directory {
+   *    Thrown when the expected containing directory of the given path is is
+   *    not actually a directory.
+   *    }
+   *
+   * \param filename the path to the file to save
+   * \param data the image container refering to the image to write
+   */
   void save(std::string const& filename, image_container_sptr data) const;
 
 private:
