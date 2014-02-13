@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief VXL image_io interface
+ */
+
 #ifndef MAPTK_VXL_IMAGE_IO_H_
 #define MAPTK_VXL_IMAGE_IO_H_
 
@@ -30,13 +35,17 @@ public:
 
 private:
   /// Implementation specific load functionality.
-  /// \param filename the path to the file the load
-  /// \returns an image container refering to the loaded image
+  /*
+   * \param filename the path to the file the load
+   * \returns an image container refering to the loaded image
+   */
   virtual image_container_sptr load_(const std::string& filename) const;
 
   /// Implementation specific save functionality.
-  /// \param filename the path to the file to save
-  /// \param data the image container refering to the image to write
+  /**
+   * \param filename the path to the file to save
+   * \param data the image container refering to the image to write
+   */
   virtual void save_(const std::string& filename,
                      image_container_sptr data) const;
 };
