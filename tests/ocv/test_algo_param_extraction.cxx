@@ -149,26 +149,24 @@ IMPLEMENT_TEST(algo_set_empty_pointer)
 }
 
 
-// Does not work on Windows as there is an issue with nested algorithms
-// within OpenCV.
-//
-//IMPLEMENT_TEST(detect_features_subclass_type_label)
-//{
-//  //
-//  cerr << "--- Test resetting algorithm type :: sub-class custom label ---" << endl;
-//  //
-//  algo::detect_features_sptr df = algo::detect_features::create("ocv");
-//  cerr << "[] Creating empty config except for a detector type" << endl;
-//  config_block_sptr new_config = config_block::empty_config();
-//  new_config->set_value("detector:type", "GridSURF");
-//  cerr << "[] pre-set configuration:" << endl;
-//  print_config(new_config);
-//  cerr << "[] config check result: " << df->check_configuration(new_config) << endl;
-//  df->set_configuration(new_config);
-//  new_config = df->get_configuration();
-//  cerr << "[] post-set configuration:" << endl;
-//  print_config(new_config);
-//}
+IMPLEMENT_TEST(detect_features_subclass_type_label)
+{
+  //
+  cerr << "--- Test resetting algorithm type :: sub-class custom label ---" << endl;
+  //
+  algo::detect_features_sptr df = algo::detect_features::create("ocv");
+  cerr << "[] Creating empty config except for a detector type" << endl;
+  config_block_sptr new_config = config_block::empty_config();
+  new_config->set_value("detector:type", "SURF");
+  cerr << "[] pre-set configuration:" << endl;
+  print_config(new_config);
+  cerr << "[] config check result: " << df->check_configuration(new_config) << endl;
+  TEST_EQUAL("config check test", df->check_configuration(new_config), true);
+  df->set_configuration(new_config);
+  new_config = df->get_configuration();
+  cerr << "[] post-set configuration:" << endl;
+  print_config(new_config);
+}
 
 
 IMPLEMENT_TEST(detect_features_general_type_label)
