@@ -402,7 +402,7 @@ static int maptk_main(int argc, char const* argv[])
         ins_map[filename2frame[pos_file_stem]] = maptk::read_pos_file(fpath);
       }
     }
-    if (ins_map.size())
+    if (!ins_map.empty())
     {
       // Warn if the POS file set is sparse compared to input frames
       // TODO: generated interpolated cameras for missing POS files.
