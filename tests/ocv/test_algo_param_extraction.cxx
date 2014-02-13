@@ -58,6 +58,37 @@ using namespace std;
 using namespace maptk;
 
 
+IMPLEMENT_TEST(detect_features_opencv)
+{
+  // Tests our ability to construct an OpenCV algorithm, specifically GridSURF,
+  // and access the underlying nested algorithm.
+  //
+  // NOTE: cv::Algorithm::getAlgorithm() returns a cv::Algorithm, and thats it.
+
+  cerr << "Creating algo in a variety of ways" << endl;
+  cv::Ptr<cv::FeatureDetector> fd_fd = cv::FeatureDetector::create("GridSURF");
+  cv::Ptr<cv::Algorithm>     algo_fd = cv::FeatureDetector::create("GridSURF");
+
+  cerr << "- fd-fd           constructed" << endl;
+  cv::Ptr<cv::Algorithm> nested1 = fd_fd->getAlgorithm("detector");
+  TEST_EQUAL("fd-fd nested algo not empty", nested1.empty(), 0);
+  if ( !nested1.empty() )
+  {
+    cerr << "  - Before extraction..." << endl;
+    cerr << "  - After extraction: " << nested1->info()->name() << endl;
+  }
+
+  cerr << "- algo-fd         constructed" << endl;
+  cv::Ptr<cv::Algorithm> nested2 = algo_fd->getAlgorithm("detector");
+  TEST_EQUAL("algo-fd nested algo not empty", nested2.empty(), 0);
+  if ( !nested2.empty() )
+  {
+    cerr << "  - Before extraction..." << endl;
+    cerr << "  - After extraction: " << nested2->info()->name() << endl;
+  }
+}
+
+
 IMPLEMENT_TEST(detect_features_args_defaults)
 {
   algo::detect_features_sptr df = algo::detect_features::create("ocv");
