@@ -380,13 +380,13 @@ static int maptk_main(int argc, char const* argv[])
     else
     {
       std::ifstream ifs(pos_files.c_str());
-
       if (!ifs)
       {
-        std::cerr << "Error: Could not open POS file list \""<<pos_files<<"\""<<std::endl;
+        std::cerr << "Error: Could not open POS file list "
+                  << "\"" <<pos_files << "\""
+                  << std::endl;
         return EXIT_FAILURE;
       }
-
       for (std::string line; std::getline(ifs,line); )
       {
         files.push_back(line);
@@ -402,17 +402,27 @@ static int maptk_main(int argc, char const* argv[])
         ins_map[filename2frame[pos_file_stem]] = maptk::read_pos_file(fpath);
       }
     }
-    // Warn if the POS file set is sparse compared to input frames
-    // TODO: generated interpolated cameras for missing POS files.
-    if (filename2frame.size() != ins_map.size())
+    if (ins_map.size())
     {
-      std::cerr << "Warning: Input POS file-set is sparse compared to input "
-                << "imagery! (not as many input POS files as there were input "
-                << "images)"
-                << std::endl;
-    }
+      // Warn if the POS file set is sparse compared to input frames
+      // TODO: generated interpolated cameras for missing POS files.
+      if (filename2frame.size() != ins_map.size())
+      {
+        std::cerr << "Warning: Input POS file-set is sparse compared to input "
+                  << "imagery! (not as many input POS files as there were input "
+                  << "images)"
+                  << std::endl;
+      }
 
-    cameras = maptk::initialize_cameras_with_ins(ins_map, base_camera, local_cs);
+      cameras = maptk::initialize_cameras_with_ins(ins_map, base_camera, local_cs);
+    }
+    else
+    {
+      std::cerr << "ERROR: No POS files from input set match input image "
+                << "frames. Check POS files!"
+                << std::endl;
+      return EXIT_FAILURE;
+    }
   }
   // if no POS files, then initialize all cameras to a fixed location
   else
