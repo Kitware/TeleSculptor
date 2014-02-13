@@ -52,6 +52,7 @@ set(maptk_core_headers_public
   algo/match_features_homography.h
   algo/register.h
   algo/track_features.h
+  algo/triangulate_landmarks.h
   )
 
 set(maptk_core_sources
@@ -92,6 +93,7 @@ set(maptk_core_sources
   algo/match_features_homography.cxx
   algo/register.cxx
   algo/track_features.cxx
+  algo/triangulate_landmarks.cxx
   )
 
 # installing header files
