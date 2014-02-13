@@ -102,17 +102,53 @@ static maptk::config_block_sptr default_config()
 
 static bool check_config(maptk::config_block_sptr config)
 {
-  return (
-         config->has_value("input_track_file")
-      && bfs::exists(maptk::path_t(config->get_value<std::string>("input_track_file")))
-      && config->has_value("image_list_file")
-      && bfs::exists(maptk::path_t(config->get_value<std::string>("image_list_file")))
-      && ( config->get_value<std::string>("input_pos_files") == ""
-         || bfs::exists(maptk::path_t(config->get_value<std::string>("input_pos_files"))) )
-      // nested algorithms
-      && maptk::algo::bundle_adjust::check_nested_algo_configuration("bundle_adjuster", config)
-      && maptk::algo::geo_map::check_nested_algo_configuration("geo_mapper", config)
-      );
+  bool config_valid = true;
+
+#define warn(msg) \
+  std::cerr << "Config Check Fail: " << msg << std::endl; \
+  config_valid = false
+
+  if (!config->has_value("input_track_file"))
+  {
+    warn("Not given a tracks file path");
+  }
+  else if (!bfs::exists(config->get_value<std::string>("input_track_file")))
+  {
+    warn("Given tracks file path doesn't point to an existant file.");
+  }
+
+  if (!config->has_value("image_list_file"))
+  {
+    warn("Not given an image list file");
+  }
+  else if (!bfs::exists(config->get_value<std::string>("image_list_file")))
+  {
+    warn("Given image list file path doesn't point to an existant file.");
+  }
+
+  if (! config->has_value("input_pos_files"))
+  {
+    warn("No POS file specification given. This should either be an empty "
+         "string or the path to a directory/file list of POS files.");
+  }
+  else if (config->get_value<std::string>("input_pos_files") != ""
+           && !bfs::exists(config->get_value<std::string>("input_pos_files")))
+  {
+    warn("POS input path given, but doesn't point to an existant location.");
+  }
+
+  if (!maptk::algo::bundle_adjust::check_nested_algo_configuration("bundle_adjuster", config))
+  {
+    warn("Failed config check in nested bundle_adjuster.");
+  }
+  if (!maptk::algo::geo_map::check_nested_algo_configuration("geo_mapper", config))
+  {
+    warn("Failed config check in nested geo_mapper.");
+  }
+
+#undef warn
+
+  return config_valid;
 }
 
 
@@ -316,15 +352,13 @@ static int maptk_main(int argc, char const* argv[])
   // the frames are "in order" and that there are no missing frame (same
   // assumptions as makde in tracking).
   // Creating forward and revese mappings for frame to file stem-name.
-  std::map<maptk::frame_id_t, std::string> frame2filename;
+  std::vector<std::string> frame2filename;  // valid since we are assuming no frame gaps
   std::map<std::string, maptk::frame_id_t> filename2frame;
-  maptk::frame_id_t i = 0;
   BOOST_FOREACH(maptk::path_t i_file, image_files)
   {
     std::string i_file_stem = i_file.stem().string();
-    frame2filename[i] = i_file_stem;
-    filename2frame[i_file_stem] = i;
-    i++;
+    frame2filename.push_back(i_file_stem);
+    filename2frame[i_file_stem] = frame2filename.size() - 1;
   }
 
   // Create the local coordinate system
