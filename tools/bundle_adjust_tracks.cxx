@@ -104,49 +104,49 @@ static bool check_config(maptk::config_block_sptr config)
 {
   bool config_valid = true;
 
-#define warn(msg) \
+#define MAPTK_WARN(msg) \
   std::cerr << "Config Check Fail: " << msg << std::endl; \
   config_valid = false
 
   if (!config->has_value("input_track_file"))
   {
-    warn("Not given a tracks file path");
+    MAPTK_WARN("Not given a tracks file path");
   }
   else if (!bfs::exists(config->get_value<std::string>("input_track_file")))
   {
-    warn("Given tracks file path doesn't point to an existant file.");
+    MAPTK_WARN("Given tracks file path doesn't point to an existing file.");
   }
 
   if (!config->has_value("image_list_file"))
   {
-    warn("Not given an image list file");
+    MAPTK_WARN("Not given an image list file");
   }
   else if (!bfs::exists(config->get_value<std::string>("image_list_file")))
   {
-    warn("Given image list file path doesn't point to an existant file.");
+    MAPTK_WARN("Given image list file path doesn't point to an existing file.");
   }
 
   if (! config->has_value("input_pos_files"))
   {
-    warn("No POS file specification given. This should either be an empty "
+    MAPTK_WARN("No POS file specification given. This should either be an empty "
          "string or the path to a directory/file list of POS files.");
   }
   else if (config->get_value<std::string>("input_pos_files") != ""
            && !bfs::exists(config->get_value<std::string>("input_pos_files")))
   {
-    warn("POS input path given, but doesn't point to an existant location.");
+    MAPTK_WARN("POS input path given, but doesn't point to an existing location.");
   }
 
   if (!maptk::algo::bundle_adjust::check_nested_algo_configuration("bundle_adjuster", config))
   {
-    warn("Failed config check in nested bundle_adjuster.");
+    MAPTK_WARN("Failed config check in bundle_adjuster algorithm.");
   }
   if (!maptk::algo::geo_map::check_nested_algo_configuration("geo_mapper", config))
   {
-    warn("Failed config check in nested geo_mapper.");
+    MAPTK_WARN("Failed config check in geo_mapper algorithm.");
   }
 
-#undef warn
+#undef MAPTK_WARN
 
   return config_valid;
 }
@@ -357,8 +357,8 @@ static int maptk_main(int argc, char const* argv[])
   BOOST_FOREACH(maptk::path_t i_file, image_files)
   {
     std::string i_file_stem = i_file.stem().string();
+    filename2frame[i_file_stem] = static_cast<maptk::frame_id_t>(frame2filename.size());
     frame2filename.push_back(i_file_stem);
-    filename2frame[i_file_stem] = frame2filename.size() - 1;
   }
 
   // Create the local coordinate system

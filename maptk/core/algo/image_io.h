@@ -58,7 +58,7 @@ public:
    *    not exist.
    *    }
    * \throws maptk::path_not_a_directory {
-   *    Thrown when the expected containing directory of the given path is is
+   *    Thrown when the expected containing directory of the given path is
    *    not actually a directory.
    *    }
    *

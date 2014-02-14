@@ -26,7 +26,7 @@ class MAPTK_CORE_EXPORT io_exception
 public:
   /// Constructor
   io_exception() MAPTK_NOTHROW;
-  /// Deconstructor
+  /// Destructor
   virtual ~io_exception() MAPTK_NOTHROW;
 };
 
@@ -40,7 +40,7 @@ public:
    * \param path The path that doesn't point to an existing file or directory
    */
   path_not_exists(path_t path) MAPTK_NOTHROW;
-  /// Deconstructor
+  /// Destructor
   virtual ~path_not_exists() MAPTK_NOTHROW;
 
   // Path that didn't exist.
@@ -57,7 +57,7 @@ public:
    * \param path The path that doesn't point to a file.
    */
   path_not_a_file(path_t path) MAPTK_NOTHROW;
-  /// Deconstructor
+  /// Destructor
   virtual ~path_not_a_file() MAPTK_NOTHROW;
 
   // Path to a location that isn't a file.
@@ -74,7 +74,7 @@ public:
    * \param path The path that doesn't point to a directory.
    */
   path_not_a_directory(path_t path) MAPTK_NOTHROW;
-  /// Deconstructor
+  /// Destructor
   virtual ~path_not_a_directory() MAPTK_NOTHROW;
 
   // Path to a location that isn't a directory.
