@@ -83,7 +83,7 @@ bundle_adjust
   config->set_value("estimate_focal_length", "false",
                     "If true, estimate a shared intrinsic focal length for all "
                     "cameras.  Warning: there is often a depth/focal length "
-                    "ambiguity which can lead to long optimizations. ");
+                    "ambiguity which can lead to long optimizations.");
   config->set_value("normalize_data", "true",
                     "Normalize the data for numerical stability. "
                     "There is no reason not enable this option, except "

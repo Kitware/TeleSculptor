@@ -48,6 +48,10 @@ static maptk::config_block_sptr default_config()
   config->set_value("input_track_file", "",
                     "Path an input file containing feature tracks");
 
+  config->set_value("image_list_file", "",
+                    "Path to the input image list file used to generated the "
+                    "input tracks.");
+
   config->set_value("input_pos_files", "",
                     "A directory containing the input POS files, or a text file"
                     "containing a newline-separated list of POS files. "
@@ -98,14 +102,53 @@ static maptk::config_block_sptr default_config()
 
 static bool check_config(maptk::config_block_sptr config)
 {
-  return (
-         config->has_value("input_track_file")
-      && bfs::exists(maptk::path_t(config->get_value<std::string>("input_track_file")))
-      && ( config->get_value<std::string>("input_pos_files") == ""
-         || bfs::exists(maptk::path_t(config->get_value<std::string>("input_pos_files"))) )
-      && maptk::algo::bundle_adjust::check_nested_algo_configuration("bundle_adjuster", config)
-      && maptk::algo::geo_map::check_nested_algo_configuration("geo_mapper", config)
-      );
+  bool config_valid = true;
+
+#define MAPTK_WARN(msg) \
+  std::cerr << "Config Check Fail: " << msg << std::endl; \
+  config_valid = false
+
+  if (!config->has_value("input_track_file"))
+  {
+    MAPTK_WARN("Not given a tracks file path");
+  }
+  else if (!bfs::exists(config->get_value<std::string>("input_track_file")))
+  {
+    MAPTK_WARN("Given tracks file path doesn't point to an existing file.");
+  }
+
+  if (!config->has_value("image_list_file"))
+  {
+    MAPTK_WARN("Not given an image list file");
+  }
+  else if (!bfs::exists(config->get_value<std::string>("image_list_file")))
+  {
+    MAPTK_WARN("Given image list file path doesn't point to an existing file.");
+  }
+
+  if (! config->has_value("input_pos_files"))
+  {
+    MAPTK_WARN("No POS file specification given. This should either be an empty "
+         "string or the path to a directory/file list of POS files.");
+  }
+  else if (config->get_value<std::string>("input_pos_files") != ""
+           && !bfs::exists(config->get_value<std::string>("input_pos_files")))
+  {
+    MAPTK_WARN("POS input path given, but doesn't point to an existing location.");
+  }
+
+  if (!maptk::algo::bundle_adjust::check_nested_algo_configuration("bundle_adjuster", config))
+  {
+    MAPTK_WARN("Failed config check in bundle_adjuster algorithm.");
+  }
+  if (!maptk::algo::geo_map::check_nested_algo_configuration("geo_mapper", config))
+  {
+    MAPTK_WARN("Failed config check in geo_mapper algorithm.");
+  }
+
+#undef MAPTK_WARN
+
+  return config_valid;
 }
 
 
@@ -292,12 +335,38 @@ static int maptk_main(int argc, char const* argv[])
     std::cout << "filtered down to "<<tracks->size()<<" long tracks"<<std::endl;
   }
 
+  // Read in image list file
+  std::string image_list_file = config->get_value<std::string>("image_list_file");
+  std::ifstream image_list_ifs(image_list_file.c_str());
+  if (!image_list_ifs)
+  {
+    std::cerr << "Error: Could not open image list file!" << std::endl;
+    return EXIT_FAILURE;
+  }
+  std::vector<maptk::path_t> image_files;
+  for (std::string line; std::getline(image_list_ifs, line); )
+  {
+    image_files.push_back(line);
+  }
+  // Since input tracks were generated over these frames, we can assume that
+  // the frames are "in order" and that there are no missing frame (same
+  // assumptions as makde in tracking).
+  // Creating forward and revese mappings for frame to file stem-name.
+  std::vector<std::string> frame2filename;  // valid since we are assuming no frame gaps
+  std::map<std::string, maptk::frame_id_t> filename2frame;
+  BOOST_FOREACH(maptk::path_t i_file, image_files)
+  {
+    std::string i_file_stem = i_file.stem().string();
+    filename2frame[i_file_stem] = static_cast<maptk::frame_id_t>(frame2filename.size());
+    frame2filename.push_back(i_file_stem);
+  }
 
   // Create the local coordinate system
   maptk::local_geo_cs local_cs(geo_mapper);
   maptk::camera_d base_camera = base_camera_from_config(config->subblock("base_camera"));
 
-  std::map<maptk::frame_id_t, maptk::ins_data> ins_map;
+  typedef std::map<maptk::frame_id_t, maptk::ins_data> ins_map_t;
+  ins_map_t ins_map;
   std::map<maptk::frame_id_t, maptk::camera_sptr> cameras;
   // if POS files are available, use them to initialize the cameras
   if( config->get_value<std::string>("input_pos_files") != "" )
@@ -311,13 +380,13 @@ static int maptk_main(int argc, char const* argv[])
     else
     {
       std::ifstream ifs(pos_files.c_str());
-
       if (!ifs)
       {
-        std::cerr << "Error: Could not POS file list \""<<pos_files<<"\""<<std::endl;
+        std::cerr << "Error: Could not open POS file list "
+                  << "\"" <<pos_files << "\""
+                  << std::endl;
         return EXIT_FAILURE;
       }
-
       for (std::string line; std::getline(ifs,line); )
       {
         files.push_back(line);
@@ -325,12 +394,35 @@ static int maptk_main(int argc, char const* argv[])
     }
 
     std::cout << "loading POS files" <<std::endl;
-    maptk::frame_id_t frame = 0;
-    BOOST_FOREACH(const bfs::path& fpath, files)
+    BOOST_FOREACH(maptk::path_t const& fpath, files)
     {
-      ins_map[frame++] = maptk::read_pos_file(fpath);
+      std::string pos_file_stem = fpath.stem().string();
+      if (filename2frame.count(pos_file_stem))
+      {
+        ins_map[filename2frame[pos_file_stem]] = maptk::read_pos_file(fpath);
+      }
     }
-    cameras = maptk::initialize_cameras_with_ins(ins_map, base_camera, local_cs);
+    if (!ins_map.empty())
+    {
+      // Warn if the POS file set is sparse compared to input frames
+      // TODO: generated interpolated cameras for missing POS files.
+      if (filename2frame.size() != ins_map.size())
+      {
+        std::cerr << "Warning: Input POS file-set is sparse compared to input "
+                  << "imagery! (not as many input POS files as there were input "
+                  << "images)"
+                  << std::endl;
+      }
+
+      cameras = maptk::initialize_cameras_with_ins(ins_map, base_camera, local_cs);
+    }
+    else
+    {
+      std::cerr << "ERROR: No POS files from input set match input image "
+                << "frames. Check POS files!"
+                << std::endl;
+      return EXIT_FAILURE;
+    }
   }
   // if no POS files, then initialize all cameras to a fixed location
   else
@@ -387,15 +479,11 @@ static int maptk_main(int argc, char const* argv[])
   if( config->has_value("output_pos_dir") )
   {
     bfs::path pos_dir = config->get_value<std::string>("output_pos_dir");
-    typedef std::map<maptk::frame_id_t, maptk::ins_data> ins_map_t;
+    // update ins_map with refined data. Its ok if ins map is empty.
     maptk::update_ins_from_cameras(cam_map->cameras(), local_cs, ins_map);
     BOOST_FOREACH(const ins_map_t::value_type& p, ins_map)
     {
-      std::stringstream ss;
-      ss.fill('0');
-      ss.width(6);
-      ss << p.first << ".pos";
-      bfs::path out_pos_file = pos_dir / ss.str();
+      bfs::path out_pos_file = pos_dir / (frame2filename[p.first] + ".pos");
       write_pos_file(p.second, out_pos_file);
     }
   }
@@ -407,11 +495,7 @@ static int maptk_main(int argc, char const* argv[])
     typedef maptk::camera_map::map_camera_t::value_type cam_map_val_t;
     BOOST_FOREACH(const cam_map_val_t& p, cam_map->cameras())
     {
-      std::stringstream ss;
-      ss.fill('0');
-      ss.width(6);
-      ss << p.first << ".krtd";
-      bfs::path out_krtd_file = krtd_dir / ss.str();
+      bfs::path out_krtd_file = krtd_dir / (frame2filename[p.first] + ".krtd");
       write_krtd_file(*p.second, out_krtd_file);
     }
   }
