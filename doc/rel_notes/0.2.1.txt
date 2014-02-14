@@ -13,6 +13,13 @@ OpenCV
    fail on windows until this is resolved within OpenCV or we have a
    workaround.
 
+Tools
+
+ * Added support in SBA tool to handle a sparse set of POS files (missing POS
+   files for frames).
+
+ * Improved error reprting when checking configuration in SBA tool.
+
 
 Fixes since v0.2.0
 ------------------
@@ -21,3 +28,8 @@ OpenCV
 
  * Changed OCV detect_features default nested algorithm from GridSURF to SURF.
    Windows has an issue with GridSURF and its nested algorithm.
+
+Tools
+
+ * SBA tool now outputs POS and KRTD files that have same filename stem as the
+   source frames they are associated with.
