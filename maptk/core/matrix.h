@@ -144,6 +144,24 @@ public:
     return *this;
   }
 
+  /// Extract a sub-block of this matrix located at (top, left)
+  template <unsigned A, unsigned B>
+  void extract(matrix_<A,B,T>& m,
+               unsigned top=0, unsigned left=0) const
+  {
+    BOOST_STATIC_ASSERT(A<=N);
+    BOOST_STATIC_ASSERT(B<=M);
+    assert(top + A <= M);
+    assert(left + B <= N);
+    for (unsigned int i=0; i<A; ++i)
+    {
+      for (unsigned int j=0; j<B; ++j)
+      {
+        m(i,j) = this->data_[i+top][j+left];
+      }
+    }
+  }
+
   /// Update a row of the matrix with the values in a vector
   matrix_<M,N,T>& set_row(unsigned row, const vector_<N,T>& v)
   {
