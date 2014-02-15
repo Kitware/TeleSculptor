@@ -12,6 +12,7 @@
 #include <maptk/vxl/bundle_adjust.h>
 #include <maptk/vxl/camera_map.h>
 #include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
 #include <set>
 #include <vpgl/algo/vpgl_bundle_adjust.h>
 
@@ -28,15 +29,41 @@ class bundle_adjust::priv
 public:
   /// Constructor
   priv()
+  : verbose(false),
+    use_m_estimator(false),
+    m_estimator_scale(1.0),
+    estimate_focal_length(false),
+    normalize_data(true),
+    max_iterations(1000),
+    x_tolerance(1e-8),
+    g_tolerance(1e-8)
   {
   }
 
   priv(const priv& other)
+  : verbose(other.verbose),
+    use_m_estimator(other.use_m_estimator),
+    m_estimator_scale(other.m_estimator_scale),
+    estimate_focal_length(other.estimate_focal_length),
+    normalize_data(other.normalize_data),
+    max_iterations(other.max_iterations),
+    x_tolerance(other.x_tolerance),
+    g_tolerance(other.g_tolerance)
   {
   }
 
   /// the vxl sparse bundle adjustor
   vpgl_bundle_adjust ba;
+  // vpgl_bundle_adjust does not currently allow accessors for parameters,
+  // so we need to cache the parameters here.
+  bool verbose;
+  bool use_m_estimator;
+  double m_estimator_scale;
+  bool estimate_focal_length;
+  bool normalize_data;
+  unsigned max_iterations;
+  double x_tolerance;
+  double g_tolerance;
 };
 
 
@@ -70,30 +97,35 @@ bundle_adjust
 {
   // get base config from base class
   config_block_sptr config = maptk::algo::bundle_adjust::get_configuration();
-  config->set_value("verbose", "false",
+  config->set_value("verbose", d_->verbose ? "true" : "false",
                     "If true, write status messages to the terminal showing "
                     "optimization progress at each iteration");
-  config->set_value("use_m_estimator", "false",
+  config->set_value("use_m_estimator", d_->use_m_estimator ? "true" : "false",
                     "If true, use a M-estimator for a robust loss function. "
                     "Currently only the Beaton-Tukey loss function is supported.");
-  config->set_value("m_estimator_scale", "1.0",
+  config->set_value("m_estimator_scale",
+                    boost::lexical_cast<std::string>(d_->m_estimator_scale),
                     "The scale of the M-estimator, if enabled, in pixels. "
                     "Inlier landmarks should project to within this distance "
                     "from the feature point.");
-  config->set_value("estimate_focal_length", "false",
+  config->set_value("estimate_focal_length",
+                    d_->estimate_focal_length ? "true" : "false",
                     "If true, estimate a shared intrinsic focal length for all "
                     "cameras.  Warning: there is often a depth/focal length "
                     "ambiguity which can lead to long optimizations.");
-  config->set_value("normalize_data", "true",
+  config->set_value("normalize_data", d_->normalize_data ? "true" : "false",
                     "Normalize the data for numerical stability. "
                     "There is no reason not enable this option, except "
                     "for testing purposes.");
-  config->set_value("max_iterations", "1000",
+  config->set_value("max_iterations",
+                    boost::lexical_cast<std::string>(d_->max_iterations),
                     "Termination condition: maximum number of LM iterations");
-  config->set_value("x_tolerance", "1e-8",
+  config->set_value("x_tolerance",
+                    boost::lexical_cast<std::string>(d_->x_tolerance),
                     "Termination condition: Relative change is parameters. "
                     "Exit when (mag(delta_params) / mag(params) < x_tol).");
-  config->set_value("g_tolerance", "1e-8",
+  config->set_value("g_tolerance",
+                    boost::lexical_cast<std::string>(d_->g_tolerance),
                     "Termination condition: Maximum gradient magnitude. "
                     "Exit when (max(grad_params) < g_tol)");
   return config;
@@ -109,14 +141,38 @@ bundle_adjust
   // An alternative is to check for key presence before performing a get_value() call.
   config_block_sptr config = this->get_configuration();
   config->merge_config(in_config);
-  d_->ba.set_verbose(config->get_value<bool>("verbose"));
-  d_->ba.set_use_m_estimator(config->get_value<bool>("use_m_estimator"));
-  d_->ba.set_m_estimator_scale(config->get_value<double>("m_estimator_scale"));
-  d_->ba.set_self_calibrate(config->get_value<bool>("estimate_focal_length"));
-  d_->ba.set_normalize_data(config->get_value<bool>("normalize_data"));
-  d_->ba.set_max_iterations(config->get_value<unsigned>("max_iterations"));
-  d_->ba.set_x_tolerence(config->get_value<double>("x_tolerance"));
-  d_->ba.set_g_tolerence(config->get_value<double>("g_tolerance"));
+
+  d_->verbose = config->get_value<bool>("verbose",
+                                        d_->verbose);
+  d_->ba.set_verbose(d_->verbose);
+
+  d_->use_m_estimator = config->get_value<bool>("use_m_estimator",
+                                                d_->use_m_estimator);
+  d_->ba.set_use_m_estimator(d_->use_m_estimator);
+
+  d_->m_estimator_scale = config->get_value<double>("m_estimator_scale",
+                                                    d_->m_estimator_scale);
+  d_->ba.set_m_estimator_scale(d_->m_estimator_scale);
+
+  d_->estimate_focal_length = config->get_value<bool>("estimate_focal_length",
+                                                      d_->estimate_focal_length);
+  d_->ba.set_self_calibrate(d_->estimate_focal_length);
+
+  d_->normalize_data = config->get_value<bool>("normalize_data",
+                                               d_->normalize_data);
+  d_->ba.set_normalize_data(d_->normalize_data);
+
+  d_->max_iterations = config->get_value<unsigned>("max_iterations",
+                                                   d_->max_iterations);
+  d_->ba.set_max_iterations(d_->max_iterations);
+
+  d_->x_tolerance = config->get_value<double>("x_tolerance",
+                                              d_->x_tolerance);
+  d_->ba.set_x_tolerence(d_->x_tolerance);
+
+  d_->g_tolerance = config->get_value<double>("g_tolerance",
+                                              d_->g_tolerance);
+  d_->ba.set_g_tolerence(d_->g_tolerance);
 }
 
 
