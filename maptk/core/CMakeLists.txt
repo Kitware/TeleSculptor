@@ -27,6 +27,7 @@ set(maptk_core_headers_public
   metrics.h
   rotation.h
   registrar.h
+  similarity.h
   track.h
   track_set.h
   track_set_io.h
@@ -71,6 +72,7 @@ set(maptk_core_sources
   matrix.cxx
   metrics.cxx
   rotation.cxx
+  similarity.cxx
   track.cxx
   track_set.cxx
   track_set_io.cxx
