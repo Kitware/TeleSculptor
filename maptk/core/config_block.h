@@ -135,6 +135,29 @@ class MAPTK_CORE_EXPORT config_block
      * \param key The index of the configuration value to set.
      * \param value The value to set for the \p key.
      */
+    template <typename T>
+    void set_value(config_block_key_t const& key,
+                   T const& value,
+                   config_block_description_t const& descr = config_block_key_t());
+
+    /// Set a value within the configuration.
+    /**
+     * If this key already exists, has a description and no new description
+     * was passed with this \c set_value call, the previous description is
+     * retained. We assume that the previous description is still valid and
+     * this a value overwrite. If it is intended for the description to also
+     * be overwritted, an \c unset_value call should be performed on the key
+     * first, and then this \c set_value call.
+     *
+     * \throws set_on_read_only_value_exception Thrown if \p key is marked as read-only.
+     *
+     * \postconds
+     * \postcond{<code>this->get_value<value_t>(key) == value</code>}
+     * \endpostconds
+     *
+     * \param key The index of the configuration value to set.
+     * \param value The value to set for the \p key.
+     */
     void set_value(config_block_key_t const& key,
                    config_block_value_t const& value,
                    config_block_description_t const& descr = config_block_key_t());
@@ -240,6 +263,27 @@ config_block_cast_default(config_block_value_t const& value)
   }
 }
 
+/// Default cast handling of configuration values.
+/**
+ * \note Do not use this in user code. Use \ref config_block_cast instead.
+ * \param value The value to convert.
+ * \returns The value of \p value as a config_block_value_t
+ */
+template <typename T>
+inline
+config_block_value_t
+config_block_cast_default(T const& value)
+{
+  try
+  {
+    return boost::lexical_cast<config_block_value_t>(value);
+  }
+  catch (boost::bad_lexical_cast const& e)
+  {
+    throw bad_config_block_cast(e.what());
+  }
+}
+
 /// Type-specific casting handling
 /**
  * \note Do not use this in user code. Use \ref config_block_cast instead.
@@ -254,6 +298,20 @@ config_block_cast_inner(config_block_value_t const& value)
   return config_block_cast_default<T>(value);
 }
 
+/// Type-specific casting handling
+/**
+ * \note Do not use this in user code. Use \ref config_block_cast instead.
+ * \param value The value to convert.
+ * \returns The value of \p value as a config_block_value_t.
+ */
+template <typename T>
+inline
+config_block_value_t
+config_block_cast_inner(T const& value)
+{
+  return config_block_cast_default(value);
+}
+
 /// Type-specific casting handling, bool specialization
 /**
  * This is the \c bool specialization to handle \tt{true} and \tt{false}
@@ -265,6 +323,23 @@ config_block_cast_inner(config_block_value_t const& value)
  */
 template <>
 MAPTK_CORE_EXPORT bool config_block_cast_inner(config_block_value_t const& value);
+
+/// Type-specific casting handling, bool specialization
+/**
+ * This is the \c bool specialization to handle \tt{true} and \tt{false}
+ * literals
+ *
+ * \note Do not use this in user code. Use \ref config_block_cast instead.
+ * \param value The value to convert.
+ * \returns The value of \p value as either "true" or "false".
+ */
+template <>
+inline
+config_block_value_t
+config_block_cast_inner(bool const& value)
+{
+  return value ? "true" : "false";
+}
 
 /// Cast a configuration value to the requested type.
 /**
@@ -278,6 +353,20 @@ T
 config_block_cast(config_block_value_t const& value)
 {
   return config_block_cast_inner<T>(value);
+}
+
+/// Cast a value into the configuration value type.
+/**
+ * \throws bad_configuration_cast Thrown when the conversion fails.
+ * \param value The value to convert.
+ * \returns The config_block_value_t representation of value.
+ */
+template <typename T>
+inline
+config_block_value_t
+config_block_cast(T const& value)
+{
+  return config_block_cast_inner(value);
 }
 
 /// Internally cast the value.
@@ -317,6 +406,17 @@ config_block
   {
     return def;
   }
+}
+
+/// Set a value within the configuration.
+template <typename T>
+void
+config_block
+::set_value(config_block_key_t const& key,
+            T const& value,
+            config_block_description_t const& descr)
+{
+  set_value(key, config_block_cast(value), descr);
 }
 
 }
