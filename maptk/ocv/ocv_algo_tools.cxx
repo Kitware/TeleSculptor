@@ -16,7 +16,6 @@
 
 #include <boost/algorithm/string/join.hpp>
 #include <boost/foreach.hpp>
-#include <boost/lexical_cast.hpp>
 
 namespace maptk
 {
@@ -48,8 +47,7 @@ void ocv_algo_param_to_config(cv::Ptr<cv::Algorithm> algo,
   //DEBUG
   //std::cerr << "\tGetting '" << algo_name << "' param '" << param_name << "': " << param << std::endl;
   config->set_value(algo_name + config_block::block_sep + param_name,
-                    boost::lexical_cast<std::string>(param),
-                    param_descr);
+                    param, param_descr);
 }
 
 

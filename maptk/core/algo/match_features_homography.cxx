@@ -69,8 +69,7 @@ match_features_homography
 ::get_configuration() const
 {
   config_block_sptr config = algorithm::get_configuration();
-  config->set_value("inlier_scale",
-                    boost::lexical_cast<std::string>(d_->inlier_scale),
+  config->set_value("inlier_scale", d_->inlier_scale,
                     "The acceptable error distance (in pixels) between warped "
                     "and measured points to be considered an inlier match.");
 
