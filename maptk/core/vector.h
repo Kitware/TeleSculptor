@@ -11,6 +11,8 @@
 
 #include <cstring>
 #include <iostream>
+#include <cassert>
+#include <boost/static_assert.hpp>
 
 #include "vector_cmath.h"
 
@@ -81,6 +83,24 @@ public:
   /// Return a pointer to the contiguous block of memory
   T const* data() const { return data_; }
 
+  /// Extract a lower dimensional sub-vector
+  template <unsigned M>
+  void extract(vector_<M,T>& v, unsigned offset=0) const
+  {
+    BOOST_STATIC_ASSERT(M<=N);
+    assert(offset + M <= N);
+    v = vector_<M,T>(data_ + offset);
+  }
+
+  /// Update values from a lower dimensional sub-vector
+  template <unsigned M>
+  vector_<N,T>& update(const vector_<M,T>& v, unsigned offset=0)
+  {
+    BOOST_STATIC_ASSERT(M<=N);
+    assert(offset + M <= N);
+    memcpy( data_ + offset, v.data(), sizeof(T)*M );
+    return *this;
+  }
 
 
   /// Add a scalar in place
