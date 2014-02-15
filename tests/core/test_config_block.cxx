@@ -7,6 +7,7 @@
 #include <test_common.h>
 
 #include <maptk/core/config_block.h>
+#include <maptk/core/vector.h>
 
 #define TEST_ARGS ()
 
@@ -136,6 +137,35 @@ IMPLEMENT_TEST(get_value_type_mismatch)
   }
 }
 
+IMPLEMENT_TEST(value_conversion)
+{
+  maptk::config_block_sptr const config = maptk::config_block::empty_config();
+  maptk::config_block_key_t const key = maptk::config_block_key_t("key");
+
+  {
+    config->set_value(key, 123.456);
+    double val = config->get_value<double>(key);
+
+    TEST_EQUAL("A double value is not converted to a config value and back again",
+               val, 123.456);
+  }
+  {
+    config->set_value(key, 1234567);
+    unsigned int val = config->get_value<unsigned int>(key);
+
+    TEST_EQUAL("An unsigned int value is not converted to a config value and back again",
+               val, 1234567);
+  }
+  {
+    maptk::vector_2d in_val(2.34, 0.0567);
+    config->set_value(key, in_val);
+    maptk::vector_2d val = config->get_value<maptk::vector_2d>(key);
+
+    TEST_EQUAL("A vector_2d value is not converted to a config value and back again",
+               val, in_val);
+  }
+}
+
 IMPLEMENT_TEST(bool_conversion)
 {
   maptk::config_block_sptr const config = maptk::config_block::empty_config();
@@ -196,7 +226,23 @@ IMPLEMENT_TEST(bool_conversion)
 
   if (val)
   {
-    TEST_ERROR("The value \'0\' did not get converted to true when read as a boolean");
+    TEST_ERROR("The value \'0\' did not get converted to false when read as a boolean");
+  }
+
+  config->set_value(key, true);
+  val = config->get_value<bool>(key);
+
+  if (!val)
+  {
+    TEST_ERROR("The value true did not get converted back to true when read as a boolean");
+  }
+
+  config->set_value(key, false);
+  val = config->get_value<bool>(key);
+
+  if (val)
+  {
+    TEST_ERROR("The value false did not get converted back to false when read as a boolean");
   }
 }
 
