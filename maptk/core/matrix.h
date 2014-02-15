@@ -445,6 +445,27 @@ matrix_<M,O,T> operator*(const matrix_<M,N,T>& a, const matrix_<N,O,T>& b)
 }
 
 
+/// Compute the determinant of a 2x2 square matrix
+template <typename T>
+inline
+T determinant(const matrix_<2,2,T>& m)
+{
+  const T* d = m.data();
+  return d[0]*d[3] - d[1]*d[2];
+}
+
+/// Compute the determinant of a 3x3 square matrix
+template <typename T>
+inline
+T determinant(const matrix_<3,3,T>& m)
+{
+  const T* d = m.data();
+  return d[0]*(d[4]*d[8] - d[5]*d[7])
+       + d[1]*(d[5]*d[6] - d[3]*d[8])
+       + d[2]*(d[3]*d[7] - d[4]*d[6]);
+}
+
+
 /// output stream operator for a matrix
 template <unsigned M, unsigned N, typename T>
 MAPTK_CORE_EXPORT std::ostream&  operator<<(std::ostream& s, const matrix_<M,N,T>& m);
