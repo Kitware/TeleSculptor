@@ -5,6 +5,23 @@ MAPTK v0.3.0 Release Notes
 Updates since v0.2.1
 --------------------
 
+Core Library
+
+ * Added abstract algorithms for triangulation of landmarks.
+
+VXL Library
+
+ * Added implementation of triangulation of landmarks algorithm using vpgl.
+
+Tests
+
+ * Factored out some reuseable test functions into common header files.
+
+Tools
+
+ * When loading POS files in the bundle_adjust_tracks tools, triangulate to
+   compute initial landmark positions.
+
 
 Fixes since v0.2.1
 ------------------

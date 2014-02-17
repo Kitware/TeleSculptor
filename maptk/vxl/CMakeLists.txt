@@ -10,6 +10,7 @@ set(maptk_vxl_headers_public
   image_container.h
   image_io.h
   register.h
+  triangulate_landmarks.h
   vil_image_memory.h
   vxl_config.h
   )
@@ -22,6 +23,7 @@ set(maptk_vxl_sources
   image_container.cxx
   image_io.cxx
   register.cxx
+  triangulate_landmarks.cxx
   vil_image_memory.cxx
   )
 
