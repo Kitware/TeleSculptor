@@ -31,7 +31,7 @@ static rng_t rng;
 
 
 inline
-maptk::vector_3d random_point3(double stdev)
+maptk::vector_3d random_point3d(double stdev)
 {
   normal_gen_t norm(rng, norm_dist_t(0.0, stdev));
   maptk::vector_3d v(norm(), norm(), norm());
@@ -40,7 +40,7 @@ maptk::vector_3d random_point3(double stdev)
 
 
 inline
-maptk::vector_2d random_point2(double stdev)
+maptk::vector_2d random_point2d(double stdev)
 {
   normal_gen_t norm(rng, norm_dist_t(0.0, stdev));
   maptk::vector_2d v(norm(), norm());

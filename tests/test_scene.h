@@ -73,7 +73,7 @@ noisy_landmarks(maptk::landmark_map_sptr landmarks,
   BOOST_FOREACH(landmark_map::map_landmark_t::value_type& p, lm_map)
   {
     landmark_d& lm = dynamic_cast<landmark_d&>(*p.second);
-    lm.set_loc(lm.get_loc() + random_point3(stdev));
+    lm.set_loc(lm.get_loc() + random_point3d(stdev));
   }
   return landmark_map_sptr(new simple_landmark_map(lm_map));
 }
@@ -136,8 +136,8 @@ noisy_cameras(maptk::camera_map_sptr cameras,
   BOOST_FOREACH(camera_map::map_camera_t::value_type& p, cam_map)
   {
     camera_d& cam = dynamic_cast<camera_d&>(*p.second);
-    cam.set_center(cam.get_center() + random_point3(pos_stdev));
-    rotation_d rand_rot(random_point3(rot_stdev));
+    cam.set_center(cam.get_center() + random_point3d(pos_stdev));
+    rotation_d rand_rot(random_point3d(rot_stdev));
     cam.set_rotation(cam.get_rotation() * rand_rot);
   }
   return camera_map_sptr(new simple_camera_map(cam_map));
@@ -218,7 +218,7 @@ noisy_tracks(maptk::track_set_sptr in_tracks, double stdev=1.0)
     nt->set_id(t->id());
     for(track::history_const_itr it=t->begin(); it!=t->end(); ++it)
     {
-      vector_2d loc = it->feat->loc() + random_point2(stdev);
+      vector_2d loc = it->feat->loc() + random_point2d(stdev);
       track::track_state ts(*it);
       ts.feat = feature_sptr(new feature_d(loc));
       nt->append(ts);
