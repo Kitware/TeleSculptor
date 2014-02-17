@@ -9,6 +9,15 @@ Core Library
 
  * Added abstract algorithms for triangulation of landmarks.
 
+ * Added function to extract a sub-matrix from a matrix
+
+ * Added functions to extract and update a sub-vector from a vector
+
+ * Added functions to compute determinants of 2x2 and 3x3 matrices.
+
+ * Added a class to represent a similarity transformation (scale, rotation,
+   and translation).
+
 VXL Library
 
  * Added implementation of triangulation of landmarks algorithm using vpgl.

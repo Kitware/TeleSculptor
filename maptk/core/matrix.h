@@ -144,6 +144,24 @@ public:
     return *this;
   }
 
+  /// Extract a sub-block of this matrix located at (top, left)
+  template <unsigned A, unsigned B>
+  void extract(matrix_<A,B,T>& m,
+               unsigned top=0, unsigned left=0) const
+  {
+    BOOST_STATIC_ASSERT(A<=N);
+    BOOST_STATIC_ASSERT(B<=M);
+    assert(top + A <= M);
+    assert(left + B <= N);
+    for (unsigned int i=0; i<A; ++i)
+    {
+      for (unsigned int j=0; j<B; ++j)
+      {
+        m(i,j) = this->data_[i+top][j+left];
+      }
+    }
+  }
+
   /// Update a row of the matrix with the values in a vector
   matrix_<M,N,T>& set_row(unsigned row, const vector_<N,T>& v)
   {
@@ -424,6 +442,27 @@ matrix_<M,O,T> operator*(const matrix_<M,N,T>& a, const matrix_<N,O,T>& b)
       out(i,j) = accum;
     }
   return out;
+}
+
+
+/// Compute the determinant of a 2x2 square matrix
+template <typename T>
+inline
+T determinant(const matrix_<2,2,T>& m)
+{
+  const T* d = m.data();
+  return d[0]*d[3] - d[1]*d[2];
+}
+
+/// Compute the determinant of a 3x3 square matrix
+template <typename T>
+inline
+T determinant(const matrix_<3,3,T>& m)
+{
+  const T* d = m.data();
+  return d[0]*(d[4]*d[8] - d[5]*d[7])
+       + d[1]*(d[5]*d[6] - d[3]*d[8])
+       + d[2]*(d[3]*d[7] - d[4]*d[6]);
 }
 
 
