@@ -29,6 +29,11 @@ OpenCV
  * Changed OCV detect_features default nested algorithm from GridSURF to SURF.
    Windows has an issue with GridSURF and its nested algorithm.
 
+VXL
+
+ * Cached parameters to vpgl_bundle_adjust so that they are not reset to defaults
+   each time a config file is parsed and written back out.
+
 Tools
 
  * SBA tool now outputs POS and KRTD files that have same filename stem as the
