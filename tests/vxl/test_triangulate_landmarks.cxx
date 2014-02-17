@@ -48,13 +48,13 @@ IMPLEMENT_TEST(from_solution)
   vxl::triangulate_landmarks tri_lm;
 
   // create landmarks at the corners of a cube
-  landmark_map_sptr landmarks = cube_corners(2.0);
+  landmark_map_sptr landmarks = testing::cube_corners(2.0);
 
   // create a camera sequence (elliptical path)
-  camera_map_sptr cameras = camera_seq();
+  camera_map_sptr cameras = testing::camera_seq();
 
   // create tracks from the projections
-  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+  track_set_sptr tracks = testing::projected_tracks(landmarks, cameras);
 
   double init_rmse = reprojection_rmse(cameras->cameras(),
                                        landmarks->landmarks(),
@@ -81,16 +81,16 @@ IMPLEMENT_TEST(noisy_landmarks)
   vxl::triangulate_landmarks tri_lm;
 
   // create landmarks at the corners of a cube
-  landmark_map_sptr landmarks = cube_corners(2.0);
+  landmark_map_sptr landmarks = testing::cube_corners(2.0);
 
   // create a camera sequence (elliptical path)
-  camera_map_sptr cameras = camera_seq();
+  camera_map_sptr cameras = testing::camera_seq();
 
   // create tracks from the projections
-  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+  track_set_sptr tracks = testing::projected_tracks(landmarks, cameras);
 
   // add Gaussian noise to the landmark positions
-  landmark_map_sptr landmarks0 = noisy_landmarks(landmarks, 0.1);
+  landmark_map_sptr landmarks0 = testing::noisy_landmarks(landmarks, 0.1);
 
 
   double init_rmse = reprojection_rmse(cameras->cameras(),
@@ -118,17 +118,17 @@ IMPLEMENT_TEST(zero_landmarks)
   vxl::triangulate_landmarks tri_lm;
 
   // create landmarks at the corners of a cube
-  landmark_map_sptr landmarks = cube_corners(2.0);
+  landmark_map_sptr landmarks = testing::cube_corners(2.0);
 
   // create a camera sequence (elliptical path)
-  camera_map_sptr cameras = camera_seq();
+  camera_map_sptr cameras = testing::camera_seq();
 
   // create tracks from the projections
-  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+  track_set_sptr tracks = testing::projected_tracks(landmarks, cameras);
 
   // initialize all landmarks to the origin
   landmark_id_t num_landmarks = static_cast<landmark_id_t>(landmarks->size());
-  landmark_map_sptr landmarks0 = init_landmarks(num_landmarks);
+  landmark_map_sptr landmarks0 = testing::init_landmarks(num_landmarks);
 
 
   double init_rmse = reprojection_rmse(cameras->cameras(),
@@ -156,17 +156,17 @@ IMPLEMENT_TEST(subset_cameras)
   vxl::triangulate_landmarks tri_lm;
 
   // create landmarks at the corners of a cube
-  landmark_map_sptr landmarks = cube_corners(2.0);
+  landmark_map_sptr landmarks = testing::cube_corners(2.0);
 
   // create a camera sequence (elliptical path)
-  camera_map_sptr cameras = camera_seq();
+  camera_map_sptr cameras = testing::camera_seq();
 
   // create tracks from the projections
-  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+  track_set_sptr tracks = testing::projected_tracks(landmarks, cameras);
 
   // initialize all landmarks to the origin
   landmark_id_t num_landmarks = static_cast<landmark_id_t>(landmarks->size());
-  landmark_map_sptr landmarks0 = init_landmarks(num_landmarks);
+  landmark_map_sptr landmarks0 = testing::init_landmarks(num_landmarks);
 
   camera_map::map_camera_t cam_map = cameras->cameras();
   camera_map::map_camera_t cam_map2;
@@ -208,17 +208,17 @@ IMPLEMENT_TEST(subset_landmarks)
   vxl::triangulate_landmarks tri_lm;
 
   // create landmarks at the corners of a cube
-  landmark_map_sptr landmarks = cube_corners(2.0);
+  landmark_map_sptr landmarks = testing::cube_corners(2.0);
 
   // create a camera sequence (elliptical path)
-  camera_map_sptr cameras = camera_seq();
+  camera_map_sptr cameras = testing::camera_seq();
 
   // create tracks from the projections
-  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+  track_set_sptr tracks = testing::projected_tracks(landmarks, cameras);
 
   // initialize all landmarks to the origin
   landmark_id_t num_landmarks = static_cast<landmark_id_t>(landmarks->size());
-  landmark_map_sptr landmarks0 = init_landmarks(num_landmarks);
+  landmark_map_sptr landmarks0 = testing::init_landmarks(num_landmarks);
 
   // remove some landmarks
   landmark_map::map_landmark_t lm_map = landmarks0->landmarks();
@@ -254,20 +254,20 @@ IMPLEMENT_TEST(subset_tracks)
   vxl::triangulate_landmarks tri_lm;
 
   // create landmarks at the corners of a cube
-  landmark_map_sptr landmarks = cube_corners(2.0);
+  landmark_map_sptr landmarks = testing::cube_corners(2.0);
 
   // create a camera sequence (elliptical path)
-  camera_map_sptr cameras = camera_seq();
+  camera_map_sptr cameras = testing::camera_seq();
 
   // create tracks from the projections
-  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+  track_set_sptr tracks = testing::projected_tracks(landmarks, cameras);
 
   // initialize all landmarks to the origin
   landmark_id_t num_landmarks = static_cast<landmark_id_t>(landmarks->size());
-  landmark_map_sptr landmarks0 = init_landmarks(num_landmarks);
+  landmark_map_sptr landmarks0 = testing::init_landmarks(num_landmarks);
 
   // remove some tracks/track_states
-  track_set_sptr tracks0 = subset_tracks(tracks, 0.5);
+  track_set_sptr tracks0 = testing::subset_tracks(tracks, 0.5);
 
   double init_rmse = reprojection_rmse(cameras->cameras(),
                                        landmarks0->landmarks(),
@@ -294,22 +294,23 @@ IMPLEMENT_TEST(noisy_tracks)
   vxl::triangulate_landmarks tri_lm;
 
   // create landmarks at the corners of a cube
-  landmark_map_sptr landmarks = cube_corners(2.0);
+  landmark_map_sptr landmarks = testing::cube_corners(2.0);
 
   // create a camera sequence (elliptical path)
-  camera_map_sptr cameras = camera_seq();
+  camera_map_sptr cameras = testing::camera_seq();
 
   // create tracks from the projections
-  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+  track_set_sptr tracks = testing::projected_tracks(landmarks, cameras);
 
   // initialize all landmarks to the origin
   landmark_id_t num_landmarks = static_cast<landmark_id_t>(landmarks->size());
-  landmark_map_sptr landmarks0 = init_landmarks(num_landmarks);
+  landmark_map_sptr landmarks0 = testing::init_landmarks(num_landmarks);
 
   // remove some tracks/track_states and add Gaussian noise
   const double track_stdev = 1.0;
-  track_set_sptr tracks0 = noisy_tracks(subset_tracks(tracks, 0.5),
-                                        track_stdev);
+  track_set_sptr tracks0 = testing::noisy_tracks(
+                               testing::subset_tracks(tracks, 0.5),
+                               track_stdev);
 
 
   double init_rmse = reprojection_rmse(cameras->cameras(),

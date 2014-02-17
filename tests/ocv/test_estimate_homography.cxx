@@ -118,6 +118,7 @@ IMPLEMENT_TEST(four_points)
 IMPLEMENT_TEST(ideal_points)
 {
   using namespace maptk;
+  using namespace maptk::testing;
   ocv::estimate_homography estimator;
 
   matrix_3x3d true_H = sample_homography();
@@ -151,6 +152,7 @@ IMPLEMENT_TEST(ideal_points)
 IMPLEMENT_TEST(noisy_points)
 {
   using namespace maptk;
+  using namespace maptk::testing;
   ocv::estimate_homography estimator;
 
   matrix_3x3d true_H = sample_homography();
@@ -188,6 +190,7 @@ IMPLEMENT_TEST(noisy_points)
 IMPLEMENT_TEST(outlier_points)
 {
   using namespace maptk;
+  using namespace maptk::testing;
   ocv::estimate_homography estimator;
 
   matrix_3x3d true_H = sample_homography();

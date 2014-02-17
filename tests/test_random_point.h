@@ -18,6 +18,11 @@
 #include <boost/random.hpp>
 #include <boost/random/normal_distribution.hpp>
 
+namespace maptk
+{
+
+namespace testing
+{
 
 /// random number generator type
 typedef boost::mt19937 rng_t;
@@ -47,5 +52,8 @@ maptk::vector_2d random_point2d(double stdev)
   return v;
 }
 
+} // end namespace testing
+
+} // end namespace maptk
 
 #endif // MAPTK_TEST_TEST_RANDOM_POINT_H_

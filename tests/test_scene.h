@@ -23,6 +23,12 @@
 #include <boost/foreach.hpp>
 
 
+namespace maptk
+{
+
+namespace testing
+{
+
 // construct a map of landmarks at the corners of a cube centered at c
 // with a side length of s
 maptk::landmark_map_sptr
@@ -228,5 +234,8 @@ noisy_tracks(maptk::track_set_sptr in_tracks, double stdev=1.0)
   return track_set_sptr(new simple_track_set(new_tracks));
 }
 
+} // end namespace testing
+
+} // end namespace maptk
 
 #endif // MAPTK_TEST_TEST_SCENE_H_
