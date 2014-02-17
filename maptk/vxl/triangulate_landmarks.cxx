@@ -138,7 +138,7 @@ triangulate_landmarks
     {
       if (!tsi->feat)
       {
-        // thre is no valid feature for this track state
+        // there is no valid feature for this track state
         continue;
       }
       map_vcam_t::const_iterator c_itr = vcams.find(tsi->frame_id);
