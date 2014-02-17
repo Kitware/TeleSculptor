@@ -23,6 +23,9 @@ Core Library
  * Add transform() functions to apply similarity transformations to landmarks,
    cameras, covariances, and maps of cameras and landmarks.
 
+ * Added a templated set_value function to config_block to allow setting values
+   directly without first needing a boost::lexical_cast.
+
 VXL Library
 
  * Added implementation of triangulation of landmarks algorithm using vpgl.
