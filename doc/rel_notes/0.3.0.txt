@@ -18,6 +18,11 @@ Core Library
  * Added a class to represent a similarity transformation (scale, rotation,
    and translation).
 
+ * Added clone() functions to camera and landmark.
+
+ * Add transform() functions to apply similarity transformations to landmarks,
+   cameras, covariances, and maps of cameras and landmarks.
+
 VXL Library
 
  * Added implementation of triangulation of landmarks algorithm using vpgl.
