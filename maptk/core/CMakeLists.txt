@@ -31,6 +31,7 @@ set(maptk_core_headers_public
   track.h
   track_set.h
   track_set_io.h
+  transform.h
   types.h
   vector.h
   vector_cmath.h
