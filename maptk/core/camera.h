@@ -29,6 +29,10 @@
 namespace maptk
 {
 
+/// forward declaration of camera class
+class camera;
+/// typedef for a camera shared pointer
+typedef boost::shared_ptr<camera> camera_sptr;
 
 /// An abstract representation of camera
 /**
@@ -41,6 +45,9 @@ class camera
 public:
   /// Destructor
   virtual ~camera() {}
+
+  /// Create a clone of this camera object
+  virtual camera_sptr clone() const = 0;
 
   /// Access the type info of the underlying data (double or float)
   virtual const std::type_info& data_type() const = 0;
@@ -59,9 +66,6 @@ public:
   /// Apply a similarity transformation to the camera in place
   virtual void transform(const similarity_d& xform) = 0;
 };
-
-/// typedef for a camera shared pointer
-typedef boost::shared_ptr<camera> camera_sptr;
 
 /// output stream operator for a base class camera
 MAPTK_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const camera& c);
@@ -100,6 +104,10 @@ public:
     orientation_(static_cast<rotation_<T> >(get_rotation())),
     intrinsics_(static_cast<camera_intrinsics_<T> >(get_intrinsics()))
   {}
+
+  /// Create a clone of this camera object
+  virtual camera_sptr clone() const
+  { return camera_sptr(new camera_<T>(*this)); }
 
   /// Access staticly available type of underlying data (double or float)
   static const std::type_info& static_data_type() { return typeid(T); }

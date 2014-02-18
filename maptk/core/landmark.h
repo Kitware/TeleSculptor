@@ -27,6 +27,12 @@
 namespace maptk
 {
 
+
+/// forward declaration of landmark class
+class landmark;
+/// typedef for a landmark shared pointer
+typedef boost::shared_ptr<landmark> landmark_sptr;
+
 /// An abstract representation of a 3D world point.
 /**
  * The base class landmark is abstract and provides a
@@ -38,6 +44,9 @@ class landmark
 public:
   /// Destructor
   virtual ~landmark() {}
+
+  /// Create a clone of this landmark object
+  virtual landmark_sptr clone() const = 0;
 
   /// Access the type info of the underlying data (double or float)
   virtual const std::type_info& data_type() const = 0;
@@ -52,8 +61,6 @@ public:
   /// Apply a similarity transformation to the landmark in place
   virtual void transform(const similarity_d& xform) = 0;
 };
-
-typedef boost::shared_ptr<landmark> landmark_sptr;
 
 /// output stream operator for a base class landmark
 MAPTK_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const landmark& m);
@@ -70,6 +77,10 @@ public:
 
   /// Constructor for a landmark
   landmark_<T>(const vector_3_<T>& loc, T scale=1);
+
+  /// Create a clone of this landmark object
+  virtual landmark_sptr clone() const
+  { return landmark_sptr(new landmark_<T>(*this)); }
 
   /// Access staticly available type of underlying data (double or float)
   static const std::type_info& static_data_type() { return typeid(T); }
