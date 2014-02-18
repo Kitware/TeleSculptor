@@ -10,6 +10,8 @@
 
 #include "similarity.h"
 #include "covariance.h"
+#include "camera_map.h"
+#include "landmark_map.h"
 
 
 /**
@@ -36,18 +38,21 @@ namespace maptk
  *  \return a 3D covariance transformed by the similarity transformation
  */
 template <typename T>
+MAPTK_CORE_EXPORT
 covariance_<3,T> transform(const covariance_<3,T>& covar,
-                           const similarity_<T>& xform)
-{
-  // TODO trasform covariance parameters directly
-  // instead of converting to matrix form and back
-  matrix_<3,3,T> C(covar);
-  matrix_<3,3,T> sR(xform.rotation());
-  sR /= xform.scale();
-  C = sR * C * sR.transpose();
-  return covariance_<3,T>(C);
-}
+                           const similarity_<T>& xform);
 
+
+/// construct a transformed map of cameras by applying a similarity transformation
+MAPTK_CORE_EXPORT
+camera_map_sptr transform(camera_map_sptr cameras,
+                          const similarity_d& xform);
+
+
+/// construct a transformed map of landmarks by applying a similarity transformation
+MAPTK_CORE_EXPORT
+landmark_map_sptr transform(landmark_map_sptr landmarks,
+                            const similarity_d& xform);
 
 } // end namespace maptk
 

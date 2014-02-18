@@ -77,6 +77,7 @@ set(maptk_core_sources
   track.cxx
   track_set.cxx
   track_set_io.cxx
+  transform.cxx
   vector.cxx
 
   exceptions/algorithm.cxx
