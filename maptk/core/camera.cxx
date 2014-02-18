@@ -91,6 +91,25 @@ camera_<T>
 }
 
 
+/// Transform the camera by applying a similarity transformation in place
+template <typename T>
+camera_<T>&
+camera_<T>
+::apply_transform(const similarity_<T>& xform)
+{
+  this->center_ = xform * this->center_;
+  this->orientation_ = this->orientation_ * xform.rotation().inverse();
+  // TODO trasform covariance directly
+  // instead of converting to matrix form and back
+  matrix_<3,3,T> C(this->center_covar_);
+  matrix_<3,3,T> sR(xform.rotation());
+  sR /= xform.scale();
+  C = sR * C * sR.transpose();
+  this->center_covar_ = covariance_<3,T>(C);
+  return *this;
+}
+
+
 template <typename T>
 std::ostream&  operator<<(std::ostream& s, const camera_<T>& k)
 {

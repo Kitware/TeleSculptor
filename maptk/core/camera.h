@@ -15,6 +15,7 @@
 #include "covariance.h"
 #include "rotation.h"
 #include "vector.h"
+#include "similarity.h"
 #include <boost/shared_ptr.hpp>
 
 
@@ -54,6 +55,9 @@ public:
   virtual rotation_d rotation() const = 0;
   /// Accessor for the intrinsics
   virtual camera_intrinsics_d intrinsics() const = 0;
+
+  /// Apply a similarity transformation to the camera in place
+  virtual void transform(const similarity_d& xform) = 0;
 };
 
 /// typedef for a camera shared pointer
@@ -158,6 +162,18 @@ public:
 
   /// Project a 3D point into a 2D image point
   vector_2_<T> project(const vector_3_<T>& pt) const;
+
+  /// Apply a similarity transformation to the camera in place
+  virtual void transform(const similarity_d& xform)
+  { apply_transform(similarity_<T>(xform)); }
+
+  /// Transform the camera by applying a similarity transformation in place
+  /**
+   * \note covariance scales inversely such that the Mahalanobis distance
+   *       is invariant.  For example,
+   *       x'*C*x == y'*D*y for y = xform*x and D = transform(C, xform)
+   */
+  camera_<T>& apply_transform(const similarity_<T>& xform);
 
 protected:
   /// The camera center of project
