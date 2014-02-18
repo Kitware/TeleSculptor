@@ -170,6 +170,13 @@ IMPLEMENT_TEST(value_conversion)
     TEST_EQUAL("A std::string value was not converted to a config value and back again",
                val, "some string");
   }
+  {
+    maptk::config_block_value_t in_val("Some value string");
+    config->set_value(key, in_val);
+    maptk::config_block_value_t val = config->get_value<maptk::config_block_key_t>(key);
+    TEST_EQUAL("A cb_value_t value was not converted to a config value and back again",
+               in_val, val);
+  }
 }
 
 IMPLEMENT_TEST(bool_conversion)
