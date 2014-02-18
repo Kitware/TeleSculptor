@@ -15,6 +15,7 @@
 
 #include "covariance.h"
 #include "vector.h"
+#include "similarity.h"
 
 
 /**
@@ -47,6 +48,9 @@ public:
   virtual double scale() const = 0;
   /// Accessor for the covariance
   virtual covariance_3d covar() const = 0;
+
+  /// Apply a similarity transformation to the landmark in place
+  virtual void transform(const similarity_d& xform) = 0;
 };
 
 typedef boost::shared_ptr<landmark> landmark_sptr;
@@ -93,6 +97,18 @@ public:
   void set_scale(T scale) { scale_ = scale; }
   /// Set the covariance matrix of the landmark location
   void set_covar(const covariance_<3,T>& covar) { covar_ = covar; }
+
+  /// Apply a similarity transformation to the landmark in place
+  virtual void transform(const similarity_d& xform)
+  { apply_transform(similarity_<T>(xform)); }
+
+  /// Transform the landmark by applying a similarity transformation in place
+  /**
+   * \note covariance scales inversely such that the Mahalanobis distance
+   *       is invariant.  For example,
+   *       x'*C*x == y'*D*y for y = xform*x and D = transform(C, xform)
+   */
+  landmark_<T>& apply_transform(const similarity_<T>& xform);
 
 protected:
 
