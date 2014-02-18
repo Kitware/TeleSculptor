@@ -96,12 +96,18 @@ public:
 
 protected:
 
+  /// A vector representing the 3D position of the landmark
   vector_3_<T> loc_;
+  /// The scale of the landmark in 3D
   T scale_;
+  /// Covariance representing uncertainty in the estimate of 3D position
   covariance_<3,T> covar_;
 };
 
+
+/// A double precision landmark
 typedef landmark_<double> landmark_d;
+/// A single precision landmark
 typedef landmark_<float> landmark_f;
 
 /// output stream operator for a landmark
