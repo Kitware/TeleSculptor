@@ -43,10 +43,22 @@ covariance_<3,T> transform(const covariance_<3,T>& covar,
                            const similarity_<T>& xform);
 
 
+/// construct a transformed camera by applying a similarity transformation
+MAPTK_CORE_EXPORT
+camera_sptr transform(camera_sptr cam,
+                      const similarity_d& xform);
+
+
 /// construct a transformed map of cameras by applying a similarity transformation
 MAPTK_CORE_EXPORT
 camera_map_sptr transform(camera_map_sptr cameras,
                           const similarity_d& xform);
+
+
+/// construct a transformed landmark by applying a similarity transformation
+MAPTK_CORE_EXPORT
+landmark_sptr transform(landmark_sptr lm,
+                        const similarity_d& xform);
 
 
 /// construct a transformed map of landmarks by applying a similarity transformation

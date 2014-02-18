@@ -32,6 +32,16 @@ covariance_<3,T> transform(const covariance_<3,T>& covar,
 }
 
 
+/// construct a transformed camera by applying a similarity transformation
+camera_sptr transform(camera_sptr cam,
+                      const similarity_d& xform)
+{
+  cam = cam->clone();
+  cam->transform(xform);
+  return cam;
+}
+
+
 /// construct a transformed map of cameras by applying a similarity transformation
 camera_map_sptr transform(camera_map_sptr cameras,
                           const similarity_d& xform)
@@ -39,9 +49,20 @@ camera_map_sptr transform(camera_map_sptr cameras,
   camera_map::map_camera_t cam_map = cameras->cameras();
   BOOST_FOREACH(camera_map::map_camera_t::value_type& p, cam_map)
   {
-    p.second->transform(xform);
+    p.second = transform(p.second, xform);
   }
   return camera_map_sptr(new simple_camera_map(cam_map));
+}
+
+
+/// construct a transformed landmark by applying a similarity transformation
+MAPTK_CORE_EXPORT
+landmark_sptr transform(landmark_sptr lm,
+                        const similarity_d& xform)
+{
+  lm = lm->clone();
+  lm->transform(xform);
+  return lm;
 }
 
 
@@ -52,7 +73,7 @@ landmark_map_sptr transform(landmark_map_sptr landmarks,
   landmark_map::map_landmark_t lm_map = landmarks->landmarks();
   BOOST_FOREACH(landmark_map::map_landmark_t::value_type& p, lm_map)
   {
-    p.second->transform(xform);
+    p.second = transform(p.second, xform);
   }
   return landmark_map_sptr(new simple_landmark_map(lm_map));
 }
