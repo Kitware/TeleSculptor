@@ -40,7 +40,7 @@ similarity_<T>
     return;
   }
   // take the cube root
-  this->scale_ = std::pow(this->scale_, 1/3.0);
+  this->scale_ = std::pow(this->scale_, static_cast<T>(1/3.0));
   // factor scale out of sr
   sr /= this->scale_;
   this->rot_ = rotation_<T>(sr);
