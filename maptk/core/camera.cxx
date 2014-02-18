@@ -99,13 +99,7 @@ camera_<T>
 {
   this->center_ = xform * this->center_;
   this->orientation_ = this->orientation_ * xform.rotation().inverse();
-  // TODO trasform covariance directly
-  // instead of converting to matrix form and back
-  matrix_<3,3,T> C(this->center_covar_);
-  matrix_<3,3,T> sR(xform.rotation());
-  sR /= xform.scale();
-  C = sR * C * sR.transpose();
-  this->center_covar_ = covariance_<3,T>(C);
+  this->center_covar_ = maptk::transform(this->center_covar_, xform);
   return *this;
 }
 

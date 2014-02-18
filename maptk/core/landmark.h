@@ -103,11 +103,6 @@ public:
   { apply_transform(similarity_<T>(xform)); }
 
   /// Transform the landmark by applying a similarity transformation in place
-  /**
-   * \note covariance scales inversely such that the Mahalanobis distance
-   *       is invariant.  For example,
-   *       x'*C*x == y'*D*y for y = xform*x and D = transform(C, xform)
-   */
   landmark_<T>& apply_transform(const similarity_<T>& xform);
 
 protected:

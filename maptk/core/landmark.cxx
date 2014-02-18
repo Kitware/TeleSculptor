@@ -55,13 +55,7 @@ landmark_<T>
 {
   this->loc_ = xform * this->loc_;
   this->scale_ *= xform.scale();
-  // TODO trasform covariance directly
-  // instead of converting to matrix form and back
-  matrix_<3,3,T> C(this->covar_);
-  matrix_<3,3,T> sR(xform.rotation());
-  sR /= xform.scale();
-  C = sR * C * sR.transpose();
-  this->covar_ = covariance_<3,T>(C);
+  this->covar_ = maptk::transform(this->covar_, xform);
   return *this;
 }
 
