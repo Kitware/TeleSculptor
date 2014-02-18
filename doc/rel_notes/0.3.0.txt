@@ -26,6 +26,8 @@ Core Library
  * Added a templated set_value function to config_block to allow setting values
    directly without first needing a boost::lexical_cast.
 
+ * Added "yes" and "no" as value boolean configuration strings
+
 VXL Library
 
  * Added implementation of triangulation of landmarks algorithm using vpgl.
