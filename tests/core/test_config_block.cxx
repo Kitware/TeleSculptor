@@ -164,6 +164,12 @@ IMPLEMENT_TEST(value_conversion)
     TEST_EQUAL("A vector_2d value is not converted to a config value and back again",
                val, in_val);
   }
+  {
+    config->set_value(key, "some string");
+    std::string val = config->get_value<std::string>(key);
+    TEST_EQUAL("A std::string value was not converted to a config value and back again",
+               val, "some string");
+  }
 }
 
 IMPLEMENT_TEST(bool_conversion)

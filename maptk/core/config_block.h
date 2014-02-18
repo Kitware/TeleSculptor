@@ -140,28 +140,6 @@ class MAPTK_CORE_EXPORT config_block
                    T const& value,
                    config_block_description_t const& descr = config_block_key_t());
 
-    /// Set a value within the configuration.
-    /**
-     * If this key already exists, has a description and no new description
-     * was passed with this \c set_value call, the previous description is
-     * retained. We assume that the previous description is still valid and
-     * this a value overwrite. If it is intended for the description to also
-     * be overwritted, an \c unset_value call should be performed on the key
-     * first, and then this \c set_value call.
-     *
-     * \throws set_on_read_only_value_exception Thrown if \p key is marked as read-only.
-     *
-     * \postconds
-     * \postcond{<code>this->get_value<value_t>(key) == value</code>}
-     * \endpostconds
-     *
-     * \param key The index of the configuration value to set.
-     * \param value The value to set for the \p key.
-     */
-    void set_value(config_block_key_t const& key,
-                   config_block_value_t const& value,
-                   config_block_description_t const& descr = config_block_key_t());
-
     /// Remove a value from the configuration.
     /**
      * \throws unset_on_read_only_value_exception Thrown if \p key is marked as read-only.
@@ -228,9 +206,12 @@ class MAPTK_CORE_EXPORT config_block
     /// Internal constructor
     MAPTK_NO_EXPORT config_block(config_block_key_t const& name, config_block_sptr parent);
 
-    /// private helper method to extract a value for a key
+    /// private helper method to extract/set a value for a key
     boost::optional<config_block_value_t> find_value(config_block_key_t const& key) const;
-    MAPTK_NO_EXPORT config_block_value_t get_value(config_block_key_t const& key) const;
+    MAPTK_NO_EXPORT config_block_value_t m_get_value(config_block_key_t const& key) const;
+    void m_set_value(config_block_key_t const& key,
+                     config_block_value_t const& value,
+                     config_block_description_t const& descr = config_block_key_t());
 
     typedef std::map<config_block_key_t, config_block_value_t> store_t;
     typedef std::set<config_block_key_t> ro_list_t;
@@ -248,35 +229,14 @@ class MAPTK_CORE_EXPORT config_block
  * \param value The value to convert.
  * \returns The value of \p value in the requested type.
  */
-template <typename T>
+template <typename R, typename T>
 inline
-T
-config_block_cast_default(config_block_value_t const& value)
-{
-  try
-  {
-    return boost::lexical_cast<T>(value);
-  }
-  catch (boost::bad_lexical_cast const& e)
-  {
-    throw bad_config_block_cast(e.what());
-  }
-}
-
-/// Default cast handling of configuration values.
-/**
- * \note Do not use this in user code. Use \ref config_block_cast instead.
- * \param value The value to convert.
- * \returns The value of \p value as a config_block_value_t
- */
-template <typename T>
-inline
-config_block_value_t
+R
 config_block_cast_default(T const& value)
 {
   try
   {
-    return boost::lexical_cast<config_block_value_t>(value);
+    return boost::lexical_cast<R>(value);
   }
   catch (boost::bad_lexical_cast const& e)
   {
@@ -290,32 +250,19 @@ config_block_cast_default(T const& value)
  * \param value The value to convert.
  * \returns The value of \p value in the requested type.
  */
-template <typename T>
+template <typename R, typename T>
 inline
-T
-config_block_cast_inner(config_block_value_t const& value)
-{
-  return config_block_cast_default<T>(value);
-}
-
-/// Type-specific casting handling
-/**
- * \note Do not use this in user code. Use \ref config_block_cast instead.
- * \param value The value to convert.
- * \returns The value of \p value as a config_block_value_t.
- */
-template <typename T>
-inline
-config_block_value_t
+R
 config_block_cast_inner(T const& value)
 {
-  return config_block_cast_default(value);
+  return config_block_cast_default<R, T>(value);
 }
 
-/// Type-specific casting handling, bool specialization
+/// Type-specific casting handling, cb_value_t->bool specialization
 /**
- * This is the \c bool specialization to handle \tt{true} and \tt{false}
- * literals versus just \tt{1} and \tt{0}.
+ * This is the \c bool to \c config_block_value_t specialization to handle
+ * \tt{true}, \tt{false}, \tt{yes} and \tt{no} literal conversion versus just
+ * \tt{1} and \tt{0} (1 and 0 still handled if provided).
  *
  * \note Do not use this in user code. Use \ref config_block_cast instead.
  * \param value The value to convert.
@@ -324,10 +271,10 @@ config_block_cast_inner(T const& value)
 template <>
 MAPTK_CORE_EXPORT bool config_block_cast_inner(config_block_value_t const& value);
 
-/// Type-specific casting handling, bool specialization
+/// Type-specific casting handling, bool->cb_value_t specialization
 /**
- * This is the \c bool specialization to handle \tt{true} and \tt{false}
- * literals
+ * This is the \c config_block_value_t to \c bool specialization that outputs
+ * \tt{true} and \tt{false} literals instead of 1 or 0.
  *
  * \note Do not use this in user code. Use \ref config_block_cast instead.
  * \param value The value to convert.
@@ -335,8 +282,7 @@ MAPTK_CORE_EXPORT bool config_block_cast_inner(config_block_value_t const& value
  */
 template <>
 inline
-config_block_value_t
-config_block_cast_inner(bool const& value)
+config_block_value_t config_block_cast_inner(bool const& value)
 {
   return value ? "true" : "false";
 }
@@ -347,26 +293,12 @@ config_block_cast_inner(bool const& value)
  * \param value The value to convert.
  * \returns The value of \p value in the requested type.
  */
-template <typename T>
+template <typename R, typename T>
 inline
-T
-config_block_cast(config_block_value_t const& value)
-{
-  return config_block_cast_inner<T>(value);
-}
-
-/// Cast a value into the configuration value type.
-/**
- * \throws bad_configuration_cast Thrown when the conversion fails.
- * \param value The value to convert.
- * \returns The config_block_value_t representation of value.
- */
-template <typename T>
-inline
-config_block_value_t
+R
 config_block_cast(T const& value)
 {
-  return config_block_cast_inner(value);
+  return config_block_cast_inner<R, T>(value);
 }
 
 /// Internally cast the value.
@@ -384,7 +316,7 @@ config_block
 
   try
   {
-    return config_block_cast<T>(*value);
+    return config_block_cast<T, config_block_value_t>(*value);
   }
   catch (bad_config_block_cast const& e)
   {
@@ -416,9 +348,9 @@ config_block
             T const& value,
             config_block_description_t const& descr)
 {
-  set_value(key, config_block_cast(value), descr);
+  this->m_set_value(key, config_block_cast<config_block_value_t, T>(value), descr);
 }
 
 }
 
-#endif // MAPTK_CORE_CONFIG_H
+#endif // MAPTK_CORE_CONFIG_

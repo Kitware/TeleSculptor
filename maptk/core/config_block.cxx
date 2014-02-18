@@ -75,7 +75,7 @@ config_block
     config_block_key_t const stripped_key_name = strip_block_name(key, key_name);
 
     conf->set_value(stripped_key_name,
-                    get_value(key_name),
+                    m_get_value(key_name),
                     get_description(key_name));
   }
 
@@ -106,37 +106,6 @@ config_block
   }
 
   return i->second;
-}
-
-/// Set a value within the configuration.
-void
-config_block
-::set_value(config_block_key_t const& key,
-            config_block_value_t const& value,
-            config_block_description_t const& descr)
-{
-  if (m_parent)
-  {
-    m_parent->set_value(m_name + block_sep + key, value, descr);
-  }
-  else
-  {
-    if (is_read_only(key))
-    {
-      config_block_value_t const current_value = get_value<config_block_value_t>(key, config_block_value_t());
-
-      throw set_on_read_only_value_exception(key, current_value, value);
-    }
-
-    m_store[key] = value;
-
-    // Only assign the description given if there is no stored description
-    // for this key, or the given description is non-zero.
-    if (m_descr_store.count(key) == 0 || descr.size() > 0)
-    {
-      m_descr_store[key] = descr;
-    }
-  }
 }
 
 /// Remove a value from the configuration.
@@ -200,7 +169,7 @@ config_block
     config_block_value_t const& val = conf->get_value<config_block_value_t>(key);
     config_block_description_t const& descr = conf->get_description(key);
 
-    set_value(key, val, descr);
+    m_set_value(key, val, descr);
   }
 }
 
@@ -268,16 +237,16 @@ config_block
     return boost::none;
   }
 
-  return get_value(key);
+  return m_get_value(key);
 }
 
 config_block_value_t
 config_block
-::get_value(config_block_key_t const& key) const
+::m_get_value(config_block_key_t const& key) const
 {
   if (m_parent)
   {
-    return m_parent->get_value(m_name + block_sep + key);
+    return m_parent->m_get_value(m_name + block_sep + key);
   }
 
   store_t::const_iterator i = m_store.find(key);
@@ -290,6 +259,38 @@ config_block
   return i->second;
 }
 
+/// Set a value within the configuration.
+void
+config_block
+::m_set_value(config_block_key_t const& key,
+              config_block_value_t const& value,
+              config_block_description_t const& descr)
+{
+  if (m_parent)
+  {
+    m_parent->set_value(m_name + block_sep + key, value, descr);
+  }
+  else
+  {
+    if (is_read_only(key))
+    {
+      config_block_value_t const current_value = get_value<config_block_value_t>(key, config_block_value_t());
+
+      throw set_on_read_only_value_exception(key, current_value, value);
+    }
+
+    m_store[key] = value;
+
+    // Only assign the description given if there is no stored description
+    // for this key, or the given description is non-zero.
+    if (m_descr_store.count(key) == 0 || descr.size() > 0)
+    {
+      m_descr_store[key] = descr;
+    }
+  }
+}
+
+
 /// Type-specific casting handling, bool specialization
 template <>
 bool
@@ -297,19 +298,21 @@ config_block_cast_inner(config_block_value_t const& value)
 {
   static config_block_value_t const true_string = config_block_value_t("true");
   static config_block_value_t const false_string = config_block_value_t("false");
+  static config_block_value_t const yes_string = config_block_value_t("yes");
+  static config_block_value_t const no_string = config_block_value_t("no");
 
   config_block_value_t const value_lower = boost::to_lower_copy(value);
 
-  if (value_lower == true_string)
+  if (value_lower == true_string || value_lower == yes_string)
   {
     return true;
   }
-  else if (value_lower == false_string)
+  else if (value_lower == false_string || value_lower == no_string)
   {
     return false;
   }
 
-  return config_block_cast_default<bool>(value);
+  return config_block_cast_default<bool, config_block_value_t>(value);
 }
 
 /// private helper method for determining key path prefixes
