@@ -294,7 +294,7 @@ config_block
 /// Type-specific casting handling, bool specialization
 template <>
 bool
-config_block_cast_inner(config_block_value_t const& value)
+config_block_cast(config_block_value_t const& value)
 {
   static config_block_value_t const true_string = config_block_value_t("true");
   static config_block_value_t const false_string = config_block_value_t("false");

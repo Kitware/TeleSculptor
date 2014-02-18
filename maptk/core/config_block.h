@@ -244,16 +244,16 @@ config_block_cast_default(T const& value)
   }
 }
 
-/// Type-specific casting handling
+/// Cast a configuration value to the requested type.
 /**
- * \note Do not use this in user code. Use \ref config_block_cast instead.
+ * \throws bad_configuration_cast Thrown when the conversion fails.
  * \param value The value to convert.
  * \returns The value of \p value in the requested type.
  */
 template <typename R, typename T>
 inline
 R
-config_block_cast_inner(T const& value)
+config_block_cast(T const& value)
 {
   return config_block_cast_default<R, T>(value);
 }
@@ -268,8 +268,9 @@ config_block_cast_inner(T const& value)
  * \param value The value to convert.
  * \returns The value of \p value in the requested type.
  */
-template <>
-MAPTK_CORE_EXPORT bool config_block_cast_inner(config_block_value_t const& value);
+template<>
+MAPTK_CORE_EXPORT
+bool config_block_cast(config_block_value_t const& value);
 
 /// Type-specific casting handling, bool->cb_value_t specialization
 /**
@@ -280,25 +281,11 @@ MAPTK_CORE_EXPORT bool config_block_cast_inner(config_block_value_t const& value
  * \param value The value to convert.
  * \returns The value of \p value as either "true" or "false".
  */
-template <>
+template<>
 inline
-config_block_value_t config_block_cast_inner(bool const& value)
+config_block_value_t config_block_cast(bool const& value)
 {
   return value ? "true" : "false";
-}
-
-/// Cast a configuration value to the requested type.
-/**
- * \throws bad_configuration_cast Thrown when the conversion fails.
- * \param value The value to convert.
- * \returns The value of \p value in the requested type.
- */
-template <typename R, typename T>
-inline
-R
-config_block_cast(T const& value)
-{
-  return config_block_cast_inner<R, T>(value);
 }
 
 /// Internally cast the value.
