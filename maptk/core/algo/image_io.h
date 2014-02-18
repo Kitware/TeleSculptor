@@ -6,7 +6,7 @@
 
 /**
  * \file
- * \brief Interface for image_io \link maptk::algorithm_def algorithm
+ * \brief Interface for image_io \link maptk::algo::algorithm_def algorithm
  *        definition \endlink.
  */
 
@@ -80,6 +80,7 @@ private:
 };
 
 
+/// Shared pointer type for generic image_io definition type.
 typedef boost::shared_ptr<image_io> image_io_sptr;
 
 

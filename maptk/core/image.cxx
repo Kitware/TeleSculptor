@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -238,8 +238,6 @@ image
 
 
 /// Set the size of the image.
-/// If the size has not changed, do nothing,
-/// Otherwise, allocate new memory matching the new size
 void
 image
 ::set_size(size_t width, size_t height, size_t depth)

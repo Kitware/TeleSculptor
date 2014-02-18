@@ -26,8 +26,9 @@
  */
 
 
-
+/// \cond DoxygenSuppress
 INSTANTIATE_ALGORITHM_DEF(maptk::algo::track_features);
+/// \endcond
 
 
 namespace maptk

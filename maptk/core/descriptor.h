@@ -17,6 +17,7 @@
 namespace maptk
 {
 
+/// Convenience typedef for the size of a byte
 typedef unsigned char byte;
 
 /// A representation of a feature descriptor used in matching.
@@ -44,6 +45,7 @@ public:
 
 };
 
+/// Shared pointer for base descriptor type
 typedef boost::shared_ptr<descriptor> descriptor_sptr;
 
 
@@ -104,6 +106,7 @@ public:
   const T* raw_data() const { return data_; }
 
 protected:
+  /// data array
   T data_[N];
 };
 
@@ -132,7 +135,9 @@ public:
   const T* raw_data() const { return data_; }
 
 protected:
+  /// data array
   T* data_;
+  /// length of data array
   size_t length_;
 };
 

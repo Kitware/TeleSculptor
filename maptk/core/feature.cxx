@@ -81,6 +81,7 @@ std::istream&  operator>>(std::istream& s, feature_<T>& f)
 }
 
 
+/// \cond DoxygenSuppress
 #define INSTANTIATE_FEATURE(T) \
 template class MAPTK_CORE_EXPORT feature_<T>; \
 template MAPTK_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const feature_<T>& f); \
@@ -90,5 +91,6 @@ INSTANTIATE_FEATURE(double);
 INSTANTIATE_FEATURE(float);
 
 #undef INSTANTIATE_FEATURE
+/// \endcond
 
 } // end namespace maptk

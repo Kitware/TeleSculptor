@@ -34,6 +34,7 @@ public:
   virtual std::vector<feature_sptr> features() const = 0;
 };
 
+/// Shared pointer for base feature_set type
 typedef boost::shared_ptr<feature_set> feature_set_sptr;
 
 

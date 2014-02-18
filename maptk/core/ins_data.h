@@ -86,9 +86,17 @@ MAPTK_CORE_EXPORT bool operator ==(const ins_data& d1, const ins_data& d2);
 MAPTK_CORE_EXPORT bool operator !=(const ins_data& d1, const ins_data& d2);
 
 /// output stream operator for INS data
+/**
+ * \param s output stream
+ * \param d ins_data to stream
+ */
 MAPTK_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const ins_data& d);
 
 /// input stream operator for a INS data
+/**
+ * \param s input stream
+ * \param d ins_data to stream into
+ */
 MAPTK_CORE_EXPORT std::istream& operator>>(std::istream& s, ins_data& d);
 
 

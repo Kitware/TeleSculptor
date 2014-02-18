@@ -60,7 +60,10 @@ public:
   }
 
   /// Constructor - from a matrix
-  /// averages off diagonal elements to enforce symmetry
+  /**
+   * Averages off diagonal elements to enforce symmetry
+   * \param mat matrix to construct from.
+   */
   explicit covariance_<N,T>(const matrix_<N,N,T>& mat)
   {
     unsigned int n=0;
@@ -127,15 +130,22 @@ protected:
     return (j>i) ? j*(j+1)/2+i : i*(i+1)/2+j;
   }
 
+  /// data of the sparse symmetric covarience matrix
   T data_[data_size];
 };
 
+/// \cond DoxygenSuppress
 typedef covariance_<2,double> covariance_2d;
 typedef covariance_<2,float> covariance_2f;
 typedef covariance_<3,double> covariance_3d;
 typedef covariance_<3,float> covariance_3f;
+/// \endcond
 
 /// output stream operator for a covariance
+/**
+ * \param s output stream
+ * \param c covariance matrix to stream
+ */
 template <unsigned N, typename T>
 //MAPTK_CORE_EXPORT
 std::ostream& operator<<(std::ostream& s, const covariance_<N,T>& c);

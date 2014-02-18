@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -14,6 +14,7 @@
 namespace maptk
 {
 
+/// Standard match pairing
 typedef std::pair<unsigned, unsigned> match;
 
 /// A collection of matching indices between one set of objects and another.
@@ -30,6 +31,7 @@ public:
   virtual std::vector<match> matches() const = 0;
 };
 
+/// Shared pointer of base match_set type
 typedef boost::shared_ptr<match_set> match_set_sptr;
 
 

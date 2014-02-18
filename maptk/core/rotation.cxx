@@ -284,6 +284,7 @@ std::istream&  operator>>(std::istream& s, rotation_<T>& r)
 }
 
 
+/// \cond DoxygenSuppress
 #define INSTANTIATE_ROTATION(T) \
 template class MAPTK_CORE_EXPORT rotation_<T>; \
 template MAPTK_CORE_EXPORT std::ostream&  operator<<(std::ostream& s, const rotation_<T>& r); \
@@ -293,4 +294,6 @@ INSTANTIATE_ROTATION(double);
 INSTANTIATE_ROTATION(float);
 
 #undef INSTANTIATE_ROTATION
+/// \endcond
+
 } // end namespace maptk

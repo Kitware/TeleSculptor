@@ -220,10 +220,12 @@ public:
 
 
 protected:
+  /// matrix data
   T data_[M][N];
 };
 
 
+/// \cond DoxygenSuppress
 typedef matrix_<2,2,double> matrix_2x2d;
 typedef matrix_<2,2,float>  matrix_2x2f;
 typedef matrix_<2,3,double> matrix_2x3d;
@@ -238,11 +240,16 @@ typedef matrix_<4,3,double> matrix_4x3d;
 typedef matrix_<4,3,float>  matrix_4x3f;
 typedef matrix_<4,4,double> matrix_4x4d;
 typedef matrix_<4,4,float>  matrix_4x4f;
+/// \endcond
 
 // --- Matrix-scalar operators ----------------------------------------
 
 /// Matrix-scalar addtion operator
-/// \relatesalso matrix_
+/**
+ * \relatesalso matrix_
+ * \param m a matrix
+ * \param s a scalar
+ */
 template <unsigned M, unsigned N, typename T>
 inline matrix_<M,N,T> operator+( const matrix_<M,N,T>& m, const T& s )
 {
@@ -252,7 +259,11 @@ inline matrix_<M,N,T> operator+( const matrix_<M,N,T>& m, const T& s )
 }
 
 /// Scalar-matrix addition operator
-/// \relatesalso matrix_
+/**
+ * \relatesalso matrix_
+ * \param m a matrix
+ * \param s a scalar
+ */
 template <unsigned M, unsigned N, typename T>
 inline matrix_<M,N,T> operator+( const T& s, const matrix_<M,N,T>& m )
 {
@@ -262,7 +273,11 @@ inline matrix_<M,N,T> operator+( const T& s, const matrix_<M,N,T>& m )
 }
 
 /// Matrix-scalar subraction operator
-/// \relatesalso matrix_
+/**
+ * \relatesalso matrix_
+ * \param m a matrix
+ * \param s a scalar
+ */
 template <unsigned M, unsigned N, typename T>
 inline matrix_<M,N,T> operator-( const matrix_<M,N,T>& m, const T& s )
 {
@@ -272,7 +287,11 @@ inline matrix_<M,N,T> operator-( const matrix_<M,N,T>& m, const T& s )
 }
 
 /// Scalar-matrix subraction operator
-/// \relatesalso matrix_
+/**
+ * \relatesalso matrix_
+ * \param m a matrix
+ * \param s a scalar
+ */
 template <unsigned M, unsigned N, typename T>
 inline matrix_<M,N,T> operator-( const T& s, const matrix_<M,N,T>& m )
 {
@@ -282,7 +301,11 @@ inline matrix_<M,N,T> operator-( const T& s, const matrix_<M,N,T>& m )
 }
 
 /// Scalar post-multiplcation operator
-/// \relatesalso matrix_
+/**
+ * \relatesalso matrix_
+ * \param m a matrix
+ * \param s a scalar
+ */
 template <unsigned M, unsigned N, typename T>
 inline matrix_<M,N,T> operator*( const matrix_<M,N,T>& m, const T& s )
 {
@@ -292,7 +315,11 @@ inline matrix_<M,N,T> operator*( const matrix_<M,N,T>& m, const T& s )
 }
 
 /// Scalar pre-multiplication operator
-/// \relatesalso matrix_
+/**
+ * \relatesalso matrix_
+ * \param m a matrix
+ * \param s a scalar
+ */
 template <unsigned M, unsigned N, typename T>
 inline matrix_<M,N,T> operator*( const T& s, const matrix_<M,N,T>& m )
 {
@@ -302,7 +329,11 @@ inline matrix_<M,N,T> operator*( const T& s, const matrix_<M,N,T>& m )
 }
 
 /// Scalar division operator
-/// \relatesalso matrix_
+/**
+ * \relatesalso matrix_
+ * \param m a matrix
+ * \param s a scalar
+ */
 template <unsigned M, unsigned N, typename T>
 inline matrix_<M,N,T> operator/( const matrix_<M,N,T>& m, const T& s )
 {
@@ -315,7 +346,11 @@ inline matrix_<M,N,T> operator/( const matrix_<M,N,T>& m, const T& s )
 // --- Matrix-matrix operators ----------------------------------------
 
 /// Addition operator
-/// \relatesalso matrix_
+/**
+ * \relatesalso matrix_
+ * \param a a matrix
+ * \param b another matrix
+ */
 template <unsigned M, unsigned N, typename T>
 inline matrix_<M,N,T> operator+( const matrix_<M,N,T>& a, const matrix_<M,N,T>& b )
 {
@@ -325,7 +360,11 @@ inline matrix_<M,N,T> operator+( const matrix_<M,N,T>& a, const matrix_<M,N,T>& 
 }
 
 /// Subraction operator
-/// \relatesalso matrix_
+/**
+ * \relatesalso matrix_
+ * \param a a matrix
+ * \param b another matrix
+ */
 template <unsigned M, unsigned N, typename T>
 inline matrix_<M,N,T> operator-( const matrix_<M,N,T>& a, const matrix_<M,N,T>& b )
 {
@@ -335,7 +374,11 @@ inline matrix_<M,N,T> operator-( const matrix_<M,N,T>& a, const matrix_<M,N,T>& 
 }
 
 /// Element-wise product
-/// \relatesalso matrix_
+/**
+ * \relatesalso matrix_
+ * \param a a matrix
+ * \param b another matrix
+ */
 template <unsigned M, unsigned N, typename T>
 inline matrix_<M,N,T> element_product( const matrix_<M,N,T>& a, const matrix_<M,N,T>& b )
 {
@@ -345,7 +388,11 @@ inline matrix_<M,N,T> element_product( const matrix_<M,N,T>& a, const matrix_<M,
 }
 
 /// Element-wise quotient
-/// \relatesalso matrix_
+/**
+ * \relatesalso matrix_
+ * \param a a matrix
+ * \param b another matrix
+ */
 template <unsigned M, unsigned N, typename T>
 inline matrix_<M,N,T> element_quotient( const matrix_<M,N,T>& a, const matrix_<M,N,T>& b )
 {
@@ -355,7 +402,11 @@ inline matrix_<M,N,T> element_quotient( const matrix_<M,N,T>& a, const matrix_<M
 }
 
 /// Equality operator
-/// \relatesalso matrix_
+/**
+ * \relatesalso matrix_
+ * \param a a matrix
+ * \param b another matrix
+ */
 template <unsigned M, unsigned N, typename T>
 inline bool operator==( const matrix_<M,N,T>& a, const matrix_<M,N,T>& b )
 {
@@ -363,7 +414,11 @@ inline bool operator==( const matrix_<M,N,T>& a, const matrix_<M,N,T>& b )
 }
 
 /// Inequality operator
-/// \relatesalso matrix_
+/**
+ * \relatesalso matrix_
+ * \param a a matrix
+ * \param b another matrix
+ */
 template <unsigned M, unsigned N, typename T>
 inline bool operator!=( const matrix_<M,N,T>& a, const matrix_<M,N,T>& b )
 {
@@ -373,8 +428,12 @@ inline bool operator!=( const matrix_<M,N,T>& a, const matrix_<M,N,T>& b )
 // --- Matrix and vector multiplication -----------------------------------
 
 /// Multiply matrix_ (M x N) and vector_ (N)
-/// \relatesalso vector_
-/// \relatesalso matrix_
+/**
+ * \relatesalso vector_
+ * \relatesalso matrix_
+ * \param a a matrix
+ * \param b a vector
+ */
 template <unsigned M, unsigned N, typename T>
 inline
 vector_<M,T> operator*(const matrix_<M,N,T>& a, const vector_<N,T>& b)
@@ -391,8 +450,12 @@ vector_<M,T> operator*(const matrix_<M,N,T>& a, const vector_<N,T>& b)
 }
 
 /// Multiply vector_ (M) and matrix_ (M x N)
-/// \relatesalso vector_
-/// \relatesalso matrix_
+/**
+ * \relatesalso vector_
+ * \relatesalso matrix_
+ * \param a a vector
+ * \param b a matrix
+ */
 template <unsigned M, unsigned N, typename T>
 inline
 vector_<N,T> operator*(const vector_<M,T>& a, const matrix_<M,N,T>& b)
@@ -409,7 +472,11 @@ vector_<N,T> operator*(const vector_<M,T>& a, const matrix_<M,N,T>& b)
 }
 
 /// Multiply two matrix_ (M x N) times (N x O)
-/// \relatesalso matrix_
+/**
+ * \relatesalso matrix_
+ * \param a a matrix
+ * \param b another matrix
+ */
 template <unsigned M, unsigned N, unsigned O, typename T>
 inline
 matrix_<M,O,T> operator*(const matrix_<M,N,T>& a, const matrix_<N,O,T>& b)
@@ -428,10 +495,18 @@ matrix_<M,O,T> operator*(const matrix_<M,N,T>& a, const matrix_<N,O,T>& b)
 
 
 /// output stream operator for a matrix
+/**
+ * \param s an output stream
+ * \param m a matrix to stream
+ */
 template <unsigned M, unsigned N, typename T>
 MAPTK_CORE_EXPORT std::ostream&  operator<<(std::ostream& s, const matrix_<M,N,T>& m);
 
 /// input stream operator for a matrix
+/**
+ * \param s an input stream
+ * \param m a matrix to stream into
+ */
 template <unsigned M, unsigned N, typename T>
 MAPTK_CORE_EXPORT std::istream&  operator>>(std::istream& s, matrix_<M,N,T>& m);
 

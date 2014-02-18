@@ -17,9 +17,11 @@ namespace maptk
 {
 
 /// This class represents a block of image memory on the heap.
-/// The image object use shared pointers to this class.
-/// Derived image memory classes can proved access to image memory
-/// stored in other forms, such as on the GPU or in 3rd party data structures.
+/**
+ * The image object use shared pointers to this class.
+ * Derived image memory classes can proved access to image memory
+ * stored in other forms, such as on the GPU or in 3rd party data structures.
+ */
 class MAPTK_CORE_EXPORT image_memory
 {
 public:
@@ -27,12 +29,22 @@ public:
   image_memory();
 
   /// Constructor - allocates n bytes
+  /**
+   * \param n bytes to allocate
+   */
   image_memory(size_t n);
 
   /// Copy constructor
+  /**
+   * \param other The other image_memory to copy from.
+   */
   image_memory(const image_memory& other);
 
   /// Assignment operator
+  /**
+   * Other image_memory whose internal data is copied into ours.
+   * \param other image_memory to copy from.
+   */
   image_memory& operator=(const image_memory& other);
 
   /// Destructor
@@ -48,18 +60,22 @@ protected:
   /// The image data
   void *data_;
 
-  /// THe number of bytes allocated
+  /// The number of bytes allocated
   size_t size_;
 };
 
+/// Shared pointer for base image_memory type
 typedef boost::shared_ptr<image_memory> image_memory_sptr;
 
 
 /// The representation of an in-memory image.
-/// Images share memory using the image_memory class.
+/**
+ * Images share memory using the image_memory class.
+ */
 class MAPTK_CORE_EXPORT image
 {
 public:
+  /// Convenience typedef for the size of a byte
   typedef unsigned char byte;
 
   /// Default Constructor
@@ -78,7 +94,10 @@ public:
         ptrdiff_t w_step, ptrdiff_t h_step, ptrdiff_t d_step);
 
   /// Copy Constructor
-  /// the new image will share the same memory as the old image
+  /**
+   * The new image will share the same memory as the old image
+   * \param other The other image.
+   */
   image(const image& other);
 
   /// Assignment operator
@@ -91,18 +110,24 @@ public:
   image_memory_sptr memory() { return data_; }
 
   /// The size of the image data in bytes
-  /// This size includes all allocated image memory,
-  /// which could be larger than width*height*depth.
+  /**
+   * This size includes all allocated image memory,
+   * which could be larger than width*height*depth.
+   */
   size_t size() const;
 
   /// Const access to the pointer to first image pixel
-  /// This may differ from \a data() if the image is a
-  /// window into a large image memory chunk.
+  /**
+   * This may differ from \a data() if the image is a
+   * window into a large image memory chunk.
+   */
   const byte* first_pixel() const { return first_pixel_; }
 
   /// Access to the pointer to first image pixel
-  /// This may differ from \a data() if the image is a
-  /// window into a larger image memory chunk.
+  /**
+   * This may differ from \a data() if the image is a
+   * window into a larger image memory chunk.
+   */
   byte* first_pixel() { return first_pixel_; }
 
   /// The width of the image in pixels
@@ -124,6 +149,10 @@ public:
   ptrdiff_t d_step() const { return d_step_; }
 
   /// Access pixels in the first channel of the image
+  /**
+   * \param i width position (x)
+   * \param j height position (y)
+   */
   inline byte& operator()(unsigned i, unsigned j)
   {
     assert(i < width_);
@@ -161,8 +190,13 @@ public:
   void copy_from(const image& other);
 
   /// Set the size of the image.
-  /// If the size has not changed, do nothing,
-  /// Otherwise, allocate new memory matching the new size
+  /**
+   * If the size has not changed, do nothing.
+   * Otherwise, allocate new memory matching the new size.
+   * \param width a new pixel width
+   * \param height a new pixel height
+   * \param depth a new pixel depth
+   */
   void set_size(size_t width, size_t height, size_t depth);
 
 protected:
@@ -188,8 +222,12 @@ protected:
 
 
 /// Compare to images to see if the pixels have the same values.
-/// This does not require that the images have the same memory layout,
-/// only that the images have the same dimensions and pixel values.
+/**
+ * This does not require that the images have the same memory layout,
+ * only that the images have the same dimensions and pixel values.
+ * \param img1 first image to compare
+ * \param img2 second image to compare
+ */
 MAPTK_CORE_EXPORT bool equal_content(const image& img1, const image& img2);
 
 

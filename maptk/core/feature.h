@@ -46,9 +46,14 @@ public:
   virtual covariance_2d covar() const = 0;
 };
 
+/// Shared pointer for base feature type
 typedef boost::shared_ptr<feature> feature_sptr;
 
 /// output stream operator for base class feature
+/**
+ * \param s output stream
+ * \param f feature to stream
+ */
 MAPTK_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const feature& f);
 
 
@@ -111,14 +116,21 @@ public:
 
 protected:
 
+  /// location of feature
   vector_2_<T> loc_;
+  /// magnitude of feature
   T magnitude_;
+  /// scale of feature
   T scale_;
+  /// angle of feature
   T angle_;
+  /// covariance matrix of feature
   covariance_<2,T> covar_;
 };
 
+/// Double-precision feature_ type
 typedef feature_<double> feature_d;
+/// Single-precision feature_ type
 typedef feature_<float> feature_f;
 
 /// output stream operator for a feature

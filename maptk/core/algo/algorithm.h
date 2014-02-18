@@ -46,7 +46,7 @@ public:
   /**
    * \throws no_such_configuration_value_exception
    *    Thrown if an expected configuration value is not present.
-   * \thrown algorithm_configuration_exception
+   * \throws algorithm_configuration_exception
    *    Thrown when the algorithm is given an invalid \c config_block or is'
    *    otherwise unable to configure itself.
    *
@@ -90,6 +90,7 @@ class MAPTK_CORE_EXPORT algorithm_def
   : public algorithm
 {
 public:
+  /// Shared pointer type of the templated maptk::algorithm_def class
   typedef boost::shared_ptr<Self> base_sptr;
 
   /// Returns a clone of this algorithm
@@ -108,7 +109,8 @@ public:
   /**
    * If the given name is not a valid implementation name.
    *
-   * /returns true if the given \c impl_name is valid for this definition, or
+   * \param impl_name implementation name to check for the validity of.
+   * \returns true if the given \c impl_name is valid for this definition, or
    *          false if it is not a valid implementation name.
    */
   static bool has_impl_name(std::string const& impl_name);
@@ -132,10 +134,10 @@ public:
    * parameters are merged with the given
    * \link maptk::config_block config_block \endlink.
    *
-   * \param name            An identifying name for the nested algorithm
-   * \param config[in]      The \c config_block instance in which to put the
+   * \param     name        An identifying name for the nested algorithm
+   * \param[in] config      The \c config_block instance in which to put the
    *                          nested algorithm's configuration.
-   * \param nested_algo[in] The nested algorithm's sptr variable.
+   * \param[in] nested_algo The nested algorithm's sptr variable.
    */
   static void get_nested_algo_configuration(std::string const& name,
                                             config_block_sptr config,
@@ -149,10 +151,10 @@ public:
    * \c algorithm_def.
    *
    * \param name                An identifying name for the nested algorithm.
-   * \param config[in]          The \c config_block instance from which we will
+   * \param[in] config          The \c config_block instance from which we will
    *                              draw configuration needed for the nested
    *                              algorithm instance.
-   * \param nested_algo[in,out] The nested algorithm's sptr variable.
+   * \param[in,out] nested_algo The nested algorithm's sptr variable.
    */
   static void set_nested_algo_configuration(std::string const& name,
                                             config_block_sptr config,
@@ -168,8 +170,8 @@ public:
    * rely on the implementation being defined in the instance this is called
    * from.
    *
-   * \param name        An identifying name for the nested algorithm.
-   * \param config[in]  The \c config_block to check.
+   * \param     name        An identifying name for the nested algorithm.
+   * \param[in] config  The \c config_block to check.
    */
   static bool check_nested_algo_configuration(std::string const& name,
                                               config_block_sptr config);
@@ -197,6 +199,7 @@ class algorithm_impl
   : public Base
 {
 public:
+  /// shared pointer type of this impl's base maptk::algorithm_def class.
   typedef boost::shared_ptr<Base> base_sptr;
 
   /// Returns a clone of this algorithm

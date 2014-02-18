@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -48,6 +48,7 @@ public:
 
 };
 
+/// Shared pointer for base image_container type
 typedef boost::shared_ptr<image_container> image_container_sptr;
 
 
@@ -79,7 +80,7 @@ public:
   virtual image get_image() const { return data; };
 
 protected:
-
+  /// data for this image container
   image data;
 };
 

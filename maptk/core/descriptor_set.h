@@ -32,6 +32,7 @@ public:
   virtual std::vector<descriptor_sptr> descriptors() const = 0;
 };
 
+/// Shared pointer for base descriptor_set type
 typedef boost::shared_ptr<descriptor_set> descriptor_set_sptr;
 
 

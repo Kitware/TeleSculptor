@@ -38,9 +38,11 @@ class MAPTK_CORE_EXPORT algorithm_configuration_exception
   : public algorithm_exception
 {
   public:
+    /// Constructor
     algorithm_configuration_exception(std::string type,
                                       std::string impl,
                                       std::string reason) MAPTK_NOTHROW;
+    /// Destructor
     virtual ~algorithm_configuration_exception() MAPTK_NOTHROW;
 };
 
@@ -49,9 +51,11 @@ class MAPTK_CORE_EXPORT invalid_name_exception
   : public algorithm_exception
 {
   public:
+    /// Constructor
     invalid_name_exception(std::string type,
                            std::string impl,
                            std::string reason) MAPTK_NOTHROW;
+    /// Destructor
     virtual ~invalid_name_exception() MAPTK_NOTHROW;
 };
 
