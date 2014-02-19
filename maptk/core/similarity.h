@@ -43,7 +43,7 @@ public:
   template <typename U>
   explicit similarity_<T>(const similarity_<U>& other)
   : scale_(static_cast<T>(other.scale())),
-    rot_(static_cast<rotation_<T> >(other.rotation)),
+    rot_(static_cast<rotation_<T> >(other.rotation())),
     trans_(static_cast<vector_3_<T> >(other.translation())) {}
 
   /// Constructor - from scale, rotatation, and translation

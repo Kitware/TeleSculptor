@@ -31,6 +31,7 @@ set(maptk_core_headers_public
   track.h
   track_set.h
   track_set_io.h
+  transform.h
   types.h
   vector.h
   vector_cmath.h
@@ -76,6 +77,7 @@ set(maptk_core_sources
   track.cxx
   track_set.cxx
   track_set_io.cxx
+  transform.cxx
   vector.cxx
 
   exceptions/algorithm.cxx
