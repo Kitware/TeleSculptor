@@ -12,7 +12,6 @@
 #include <iostream>
 
 #include "matrix.h"
-#include "similarity.h"
 
 namespace maptk
 {
