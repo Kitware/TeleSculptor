@@ -12,7 +12,6 @@
 #include <maptk/vxl/bundle_adjust.h>
 #include <maptk/vxl/camera_map.h>
 #include <boost/foreach.hpp>
-#include <boost/lexical_cast.hpp>
 #include <set>
 #include <vpgl/algo/vpgl_bundle_adjust.h>
 
@@ -97,35 +96,30 @@ bundle_adjust
 {
   // get base config from base class
   config_block_sptr config = maptk::algo::bundle_adjust::get_configuration();
-  config->set_value("verbose", d_->verbose ? "true" : "false",
+  config->set_value("verbose", d_->verbose,
                     "If true, write status messages to the terminal showing "
                     "optimization progress at each iteration");
-  config->set_value("use_m_estimator", d_->use_m_estimator ? "true" : "false",
+  config->set_value("use_m_estimator", d_->use_m_estimator,
                     "If true, use a M-estimator for a robust loss function. "
                     "Currently only the Beaton-Tukey loss function is supported.");
-  config->set_value("m_estimator_scale",
-                    boost::lexical_cast<std::string>(d_->m_estimator_scale),
+  config->set_value("m_estimator_scale", d_->m_estimator_scale,
                     "The scale of the M-estimator, if enabled, in pixels. "
                     "Inlier landmarks should project to within this distance "
                     "from the feature point.");
-  config->set_value("estimate_focal_length",
-                    d_->estimate_focal_length ? "true" : "false",
+  config->set_value("estimate_focal_length", d_->estimate_focal_length,
                     "If true, estimate a shared intrinsic focal length for all "
                     "cameras.  Warning: there is often a depth/focal length "
                     "ambiguity which can lead to long optimizations.");
-  config->set_value("normalize_data", d_->normalize_data ? "true" : "false",
+  config->set_value("normalize_data", d_->normalize_data,
                     "Normalize the data for numerical stability. "
                     "There is no reason not enable this option, except "
                     "for testing purposes.");
-  config->set_value("max_iterations",
-                    boost::lexical_cast<std::string>(d_->max_iterations),
+  config->set_value("max_iterations", d_->max_iterations,
                     "Termination condition: maximum number of LM iterations");
-  config->set_value("x_tolerance",
-                    boost::lexical_cast<std::string>(d_->x_tolerance),
+  config->set_value("x_tolerance", d_->x_tolerance,
                     "Termination condition: Relative change is parameters. "
                     "Exit when (mag(delta_params) / mag(params) < x_tol).");
-  config->set_value("g_tolerance",
-                    boost::lexical_cast<std::string>(d_->g_tolerance),
+  config->set_value("g_tolerance", d_->g_tolerance,
                     "Termination condition: Maximum gradient magnitude. "
                     "Exit when (max(grad_params) < g_tol)");
   return config;
