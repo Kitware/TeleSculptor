@@ -177,35 +177,6 @@ IMPLEMENT_TEST(value_conversion)
     TEST_EQUAL("A cb_value_t value was not converted to a config value and back again",
                val, in_val);
   }
-  {
-    std::string val1;
-    config->set_value(key, true);
-    val1 = config->get_value<std::string>(key);
-    TEST_EQUAL("bool->str (true) conversion failed",
-               val1, "true");
-    config->set_value(key, false);
-    val1 = config->get_value<std::string>(key);
-    TEST_EQUAL("bool->str (false) conversion failed",
-               val1, "false");
-
-    bool val2;
-    config->set_value(key, "yes");
-    val2 = config->get_value<bool>(key);
-    TEST_EQUAL("std->bool (\"yes\") conversion failed",
-               val2, true);
-    config->set_value(key, "no");
-    val2 = config->get_value<bool>(key);
-    TEST_EQUAL("std->bool (\"no\") conversion failed",
-               val2, false);
-    config->set_value(key, "true");
-    val2 = config->get_value<bool>(key);
-    TEST_EQUAL("std->bool (\"true\") conversion failed",
-               val2, true);
-    config->set_value(key, "false");
-    val2 = config->get_value<bool>(key);
-    TEST_EQUAL("std->bool (\"false\") conversion failed",
-               val2, false);
-  }
 }
 
 IMPLEMENT_TEST(bool_conversion)
@@ -220,6 +191,8 @@ IMPLEMENT_TEST(bool_conversion)
   maptk::config_block_value_t const lit_False = maptk::config_block_value_t("False");
   maptk::config_block_value_t const lit_1 = maptk::config_block_value_t("1");
   maptk::config_block_value_t const lit_0 = maptk::config_block_value_t("0");
+  maptk::config_block_value_t const lit_yes = maptk::config_block_value_t("yes");
+  maptk::config_block_value_t const lit_no = maptk::config_block_value_t("no");
 
   bool val;
 
@@ -269,6 +242,22 @@ IMPLEMENT_TEST(bool_conversion)
   if (val)
   {
     TEST_ERROR("The value \'0\' did not get converted to false when read as a boolean");
+  }
+
+  config->set_value(key, lit_yes);
+  val = config->get_value<bool>(key);
+
+  if (!val)
+  {
+    TEST_ERROR("The value \'yes\' did not get converted to true when read as a boolean");
+  }
+
+  config->set_value(key, lit_no);
+  val = config->get_value<bool>(key);
+
+  if (val)
+  {
+    TEST_ERROR("The value \'no\' did not get converted to false when read as a boolean");
   }
 
   config->set_value(key, true);

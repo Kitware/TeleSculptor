@@ -240,6 +240,7 @@ config_block
   return m_get_value(key);
 }
 
+/// private value getter function
 config_block_value_t
 config_block
 ::m_get_value(config_block_key_t const& key) const
@@ -259,7 +260,7 @@ config_block
   return i->second;
 }
 
-/// Set a value within the configuration.
+/// private key/value setter
 void
 config_block
 ::m_set_value(config_block_key_t const& key,
