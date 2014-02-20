@@ -12,10 +12,10 @@
 #ifndef MAPTK_VXL_ESTIMATE_SIMILARITY_TRANSFORM_H
 #define MAPTK_VXL_ESTIMATE_SIMILARITY_TRANSFORM_H
 
-#include <maptk/core/algo/algorithm.h>
+#include <maptk/vxl/vxl_config.h>
+
 #include <maptk/core/algo/estimate_similarity_transform.h>
 #include <maptk/core/vector.h>
-#include <maptk/vxl/vxl_config.h>
 
 
 namespace maptk
@@ -24,19 +24,20 @@ namespace maptk
 namespace vxl
 {
 
+
 class MAPTK_VXL_EXPORT estimate_similarity_transform
   : public algo::algorithm_impl<estimate_similarity_transform,
                                 algo::estimate_similarity_transform>
 {
 public:
-  /// Constructor
-  estimate_similarity_transform();
-
-  /// Destructor
-  virtual ~estimate_similarity_transform();
-
   /// Name of this implementation
   std::string impl_name() const { return "vxl"; }
+
+  // No custom configuration at this time
+  /// \cond Doxygen Suppress
+  virtual void set_configuration(config_block_sptr /*config*/) { };
+  virtual bool check_configuration(config_block_sptr /*config*/) const { return true; }
+  /// \endcond
 
   /// Estimate the similarity transformation between two parallel sets of 3d points
   /**

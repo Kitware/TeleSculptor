@@ -36,12 +36,6 @@ public:
   /// Name of this algo definition
   std::string type_name() const { return "estimate_similarity_transform"; }
 
-  // No custom configuration at this time
-  /// \cond Doxygen Suppress
-  virtual void set_configuration(config_block_sptr /*config*/) { };
-  virtual bool check_configuration(config_block_sptr /*config*/) { return true; }
-  /// \endcond
-
   /// Estimate the similarity transformation between two parallel sets of 3d points
   /**
    * \param from List of length N of 3D points in the from space.
@@ -81,6 +75,11 @@ public:
   estimate_transform(std::vector<landmark_sptr> &from,
                      std::vector<landmark_sptr> &to) const;
 };
+
+
+/// Shared pointer for similarity transformation algorithms
+typedef boost::shared_ptr<estimate_similarity_transform> estimate_similarity_transform_sptr;
+
 
 } // end algo namespace
 

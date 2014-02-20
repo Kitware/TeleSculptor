@@ -44,9 +44,10 @@ estimate_similarity_transform
   }
   else if (from.size() < 3)
   {
-    throw algorithm_exception(this->type_name(), this->impl_name(),
-        "At least 3 or more point pairs must be give in order to estimate "
-        "the similarity transformation");
+    std::ostringstream sstr;
+    sstr << "At least 3 or more point pairs must be give in order to estimate "
+         << "the similarity transformation. Given: " << from.size();
+    throw algorithm_exception(this->type_name(), this->impl_name(), sstr.str());
   }
   // TODO: Test for collinearity
   // a <- (from[0], to[0])
