@@ -15,7 +15,9 @@
 #include <maptk/core/algo/estimate_similarity_transform.h>
 
 
+/// \cond DoxygenSuppress
 INSTANTIATE_ALGORITHM_DEF(maptk::algo::estimate_similarity_transform);
+/// \endcond
 
 
 namespace maptk

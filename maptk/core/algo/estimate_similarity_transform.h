@@ -46,6 +46,8 @@ public:
   /**
    * \param from List of length N of 3D points in the from space.
    * \param to   List of length N of 3D points in the to space.
+   * \throws algorithm_exception When the from and to points sets are
+   *                             misaligned, insufficient or degenerate.
    * \returns An estimated similarity transform mapping 3D points in the
    *          \c from space to points in the \c to space.
    */
@@ -57,6 +59,8 @@ public:
   /**
    * \param from List of length N of cameras in the from space.
    * \param to   List of length N of cameras in the to space.
+   * \throws algorithm_exception When the from and to points sets are
+   *                             misaligned, insufficient or degenerate.
    * \returns An estimated similarity transform mapping camera centers in the
    *          \c from space to camera centers in the \c to space.
    */
@@ -68,6 +72,8 @@ public:
   /**
    * \param from List of length N of landmarks in the from space.
    * \param to   List of length N of landmarks in the to space.
+   * \throws algorithm_exception When the from and to points sets are
+   *                             misaligned, insufficient or degenerate.
    * \returns An estinated similarity transform mapping landmark locations in
    *          the \c from space to located in the \c to space.
    */
