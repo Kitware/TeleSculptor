@@ -67,7 +67,7 @@ public:
   static cv::Mat maptk_to_ocv(const image& img);
 
 protected:
-
+  /// image data
   cv::Mat data_;
 };
 

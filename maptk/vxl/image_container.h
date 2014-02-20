@@ -56,9 +56,10 @@ public:
   /// The depth (or number of channels) of the image
   virtual size_t depth() const { return data_.nplanes(); }
 
-  /// Get and in-memory image class to access the data
+  /// Get an in-memory image class to access the data
   virtual image get_image() const { return vxl_to_maptk(data_); }
 
+  /// Get image data in this container.
   vil_image_view<vxl_byte> get_vil_image_view() const { return data_; }
 
   /// Convert a VXL vil_image_view to a MAPTK image
@@ -68,7 +69,7 @@ public:
   static vil_image_view<vxl_byte> maptk_to_vxl(const image& img);
 
 protected:
-
+  /// image data
   vil_image_view<vxl_byte> data_;
 };
 

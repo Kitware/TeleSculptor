@@ -44,6 +44,7 @@ protected:
 };
 
 
+/// An image memory class that shared memory with MAPTK using image_memory
 class MAPTK_VXL_EXPORT maptk_memory_chunk
  : public vil_memory_chunk
 {
