@@ -49,6 +49,7 @@ public:
   virtual covariance_3d covar() const = 0;
 };
 
+/// Shared pointer type for the base landmark class
 typedef boost::shared_ptr<landmark> landmark_sptr;
 
 /// output stream operator for a base class landmark
@@ -106,13 +107,17 @@ public:
   void set_covar(const covariance_<3,T>& covar) { covar_ = covar; }
 
 protected:
-
+  /// landmark 3d position
   vector_3_<T> loc_;
+  /// landmark scale
   T scale_;
+  /// landmark covariance matrix
   covariance_<3,T> covar_;
 };
 
+/// Double precision landmark type
 typedef landmark_<double> landmark_d;
+/// Sincle precision landmark type
 typedef landmark_<float> landmark_f;
 
 /// output stream operator for a landmark
