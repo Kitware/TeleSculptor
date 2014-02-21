@@ -37,11 +37,6 @@ namespace maptk
 class MAPTK_CORE_EXPORT track
 {
 public:
-  /// convenience type for the shared pointer of a descriptor
-  typedef boost::shared_ptr<descriptor> descriptor_sptr;
-  /// convenience type for the shared pointer of a feature
-  typedef boost::shared_ptr<feature> feature_sptr;
-
   /// A structure to hold the state of a track on a given frame
   struct track_state
   {

@@ -17,7 +17,7 @@
 namespace maptk
 {
 
-/// Convenience typedef for the size of a byte
+/// Convenience typedef for a byte
 typedef unsigned char byte;
 
 /// A representation of a feature descriptor used in matching.

@@ -14,7 +14,7 @@
 namespace maptk
 {
 
-/// Standard match pairing
+/// Index pair indicating matching features between two arrays
 typedef std::pair<unsigned, unsigned> match;
 
 /// A collection of matching indices between one set of objects and another.

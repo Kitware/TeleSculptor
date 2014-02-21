@@ -193,9 +193,9 @@ public:
   /**
    * If the size has not changed, do nothing.
    * Otherwise, allocate new memory matching the new size.
-   * \param width a new pixel width
-   * \param height a new pixel height
-   * \param depth a new pixel depth
+   * \param width a new image width
+   * \param height a new image height
+   * \param depth a new image depth
    */
   void set_size(size_t width, size_t height, size_t depth);
 

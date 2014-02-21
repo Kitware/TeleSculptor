@@ -62,7 +62,7 @@ public:
   /// Constructor - from a matrix
   /**
    * requires orthonormal matrix with +1 determinant
-   * \param rot orthonormal mactrix to construct from
+   * \param rot orthonormal matrix to construct from
    */
   explicit rotation_<T>(const matrix_<3,3,T>& rot);
 
