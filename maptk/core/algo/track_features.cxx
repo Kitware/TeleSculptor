@@ -50,6 +50,7 @@ track_features
 
   // - Descriptor Extractor algorithm
   extract_descriptors::get_nested_algo_configuration("descriptor_extractor", config, extractor_);
+
   // - Feature Matcher algorithm
   match_features::get_nested_algo_configuration("feature_matcher", config, matcher_);
 
