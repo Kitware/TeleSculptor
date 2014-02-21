@@ -57,7 +57,7 @@ public:
 
 protected:
 
-  /// The vector of featrues
+  /// The vector of features
   std::vector<feature_sptr> data_;
 };
 
