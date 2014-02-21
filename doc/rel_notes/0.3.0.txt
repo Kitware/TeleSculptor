@@ -29,7 +29,7 @@ Core Library
  * Added "yes" and "no" as value boolean configuration strings
 
  * Replaced track_features_simple with track_features_default class,
-   requiring any config file to change this value from "simple" to "default.
+   requiring any config file to change this value from "simple" to "default".
 
 VXL Library
 
