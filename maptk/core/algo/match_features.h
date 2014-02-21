@@ -47,6 +47,7 @@ public:
 };
 
 
+/// Shared pointer type for match_features algorithm definition class
 typedef boost::shared_ptr<match_features> match_features_sptr;
 
 

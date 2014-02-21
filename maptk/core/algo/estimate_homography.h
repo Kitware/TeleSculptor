@@ -70,6 +70,7 @@ public:
 };
 
 
+/// Shared pointer type of base estimate_homography algorithm definition class
 typedef boost::shared_ptr<estimate_homography> estimate_homography_sptr;
 
 

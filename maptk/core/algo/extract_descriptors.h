@@ -43,6 +43,7 @@ public:
 };
 
 
+/// Shared pointer for base extract_descriptors algorithm definition class
 typedef boost::shared_ptr<extract_descriptors> extract_descriptors_sptr;
 
 

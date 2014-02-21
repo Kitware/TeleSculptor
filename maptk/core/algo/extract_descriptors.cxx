@@ -12,4 +12,6 @@
 #include <maptk/core/algo/extract_descriptors.h>
 #include <maptk/core/algo/algorithm.txx>
 
+/// \cond DoxygenSuppress
 INSTANTIATE_ALGORITHM_DEF(maptk::algo::extract_descriptors);
+/// \endcond

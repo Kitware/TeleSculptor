@@ -76,6 +76,7 @@ public:
 };
 
 
+/// Shared pointer for geo_map algorithm definition class
 typedef boost::shared_ptr<geo_map> geo_map_sptr;
 
 

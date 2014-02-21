@@ -13,7 +13,9 @@
 #include <maptk/core/algo/algorithm.txx>
 #include <boost/foreach.hpp>
 
+/// \cond DoxygenSuppress
 INSTANTIATE_ALGORITHM_DEF(maptk::algo::estimate_homography);
+/// \endcond
 
 
 namespace maptk

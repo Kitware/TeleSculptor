@@ -41,6 +41,7 @@ public:
 };
 
 
+/// Shared pointer for detect_features algorithm definition class
 typedef boost::shared_ptr<detect_features> detect_features_sptr;
 
 

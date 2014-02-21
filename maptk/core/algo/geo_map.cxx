@@ -12,7 +12,9 @@
 #include "geo_map.h"
 #include <maptk/core/algo/algorithm.txx>
 
+/// \cond DoxygenSuppress
 INSTANTIATE_ALGORITHM_DEF(maptk::algo::geo_map);
+/// \endcond
 
 namespace maptk
 {
