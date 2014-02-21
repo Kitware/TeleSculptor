@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief test OCV descriptor_set class
+ */
+
 #include <test_common.h>
 
 #include <maptk/ocv/descriptor_set.h>

@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief core image_container interface
+ */
+
 #ifndef MAPTK_IMAGE_CONTAINER_H_
 #define MAPTK_IMAGE_CONTAINER_H_
 

@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief core match_features_homography algorithm impl interface
+ */
+
 #ifndef MAPTK_ALGO_MATCH_FEATURES_HOMOGRAPHY_H_
 #define MAPTK_ALGO_MATCH_FEATURES_HOMOGRAPHY_H_
 

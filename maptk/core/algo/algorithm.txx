@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief implementation of algorithm/_def/_impl templated methods
+ */
+
 #ifndef MAPTK_ALGO_ALGORITHM_TXX_
 #define MAPTK_ALGO_ALGORITHM_TXX_
 

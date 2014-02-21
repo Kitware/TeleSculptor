@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief estimate_homography algorithm definition
+ */
+
 #ifndef MAPTK_ALGO_ESTIMATE_HOMOGRAPHY_H_
 #define MAPTK_ALGO_ESTIMATE_HOMOGRAPHY_H_
 

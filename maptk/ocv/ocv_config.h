@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief OCV module configuration header
+ */
+
 #ifndef MAPTK_OCV_OCV_CONFIG_H
 #define MAPTK_OCV_OCV_CONFIG_H
 

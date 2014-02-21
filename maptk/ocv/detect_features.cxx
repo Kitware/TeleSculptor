@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief OCV detect_features algorithm implementation
+ */
+
 #include "detect_features.h"
 
 #include <vector>

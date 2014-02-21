@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief core feature_set class interface
+ */
+
 #ifndef MAPTK_FEATURE_SET_H_
 #define MAPTK_FEATURE_SET_H_
 

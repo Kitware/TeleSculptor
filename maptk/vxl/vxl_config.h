@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief VXL configuration header
+ */
+
 #ifndef MAPTK_VXL_VXL_CONFIG_H
 #define MAPTK_VXL_VXL_CONFIG_H
 

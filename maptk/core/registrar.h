@@ -4,6 +4,13 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief algorithm regstrar class
+ *
+ * Not exported as its used internally as an implementation detail.
+ */
+
 #ifndef MAPTK_REGISTRAR_H_
 #define MAPTK_REGISTRAR_H_
 

@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief core local_geo_cs interface
+ */
+
 #ifndef MAPTK_LOCAL_GEO_CS_H_
 #define MAPTK_LOCAL_GEO_CS_H_
 

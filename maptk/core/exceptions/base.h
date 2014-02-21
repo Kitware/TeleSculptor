@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief MAPTK base exception interface
+ */
+
 #ifndef MAPTK_CORE_EXCEPTIONS_BASE_H
 #define MAPTK_CORE_EXCEPTIONS_BASE_H
 

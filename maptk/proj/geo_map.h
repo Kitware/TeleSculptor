@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief PROJ geo_map algorithm interface
+ */
+
 #ifndef MAPTK_PROJ_GEO_MAP_H_
 #define MAPTK_PROJ_GEO_MAP_H_
 

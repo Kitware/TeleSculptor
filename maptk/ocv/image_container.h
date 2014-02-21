@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief OCV image_container inteface
+ */
+
 #ifndef MAPTK_OCV_IMAGE_CONTAINER_H_
 #define MAPTK_OCV_IMAGE_CONTAINER_H_
 

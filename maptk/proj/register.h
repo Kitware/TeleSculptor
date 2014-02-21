@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief PROJ algorithm registration interface
+ */
+
 #ifndef MAPTK_PROJ_REGISTER_H_
 #define MAPTK_PROJ_REGISTER_H_
 

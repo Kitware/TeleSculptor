@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief extract_descriptors algorithm definition
+ */
+
 #ifndef MAPTK_ALGO_EXTRACT_DESCRIPTORS_H_
 #define MAPTK_ALGO_EXTRACT_DESCRIPTORS_H_
 

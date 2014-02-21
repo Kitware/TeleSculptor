@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief VXL image memory interface
+ */
+
 #ifndef MAPTK_VIL_IMAGE_MEMORY_H_
 #define MAPTK_VIL_IMAGE_MEMORY_H_
 

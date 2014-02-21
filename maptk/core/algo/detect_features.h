@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief detect_features algorithm definition
+ */
+
 #ifndef MAPTK_ALGO_DETECT_FEATURES_H_
 #define MAPTK_ALGO_DETECT_FEATURES_H_
 

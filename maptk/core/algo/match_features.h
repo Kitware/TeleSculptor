@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief match_features algorithm definition interface
+ */
+
 #ifndef MAPTK_ALGO_MATCH_FEATURES_H_
 #define MAPTK_ALGO_MATCH_FEATURES_H_
 

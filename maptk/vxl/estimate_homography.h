@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief VXL homography estimation algorithm
+ */
+
 #ifndef MAPTK_VXL_ESTIMATE_HOMOGRAPHY_H_
 #define MAPTK_VXL_ESTIMATE_HOMOGRAPHY_H_
 

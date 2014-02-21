@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief VXL algorithm registration implementation
+ */
+
 #include <maptk/vxl/register.h>
 
 #include <maptk/vxl/bundle_adjust.h>

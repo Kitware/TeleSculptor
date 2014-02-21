@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief core config_block_io tests
+ */
+
 #include <test_common.h>
 
 #include <string>

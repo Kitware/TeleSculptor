@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief core covariance interface
+ */
+
 #ifndef MAPTK_COVARIANCE_H_
 #define MAPTK_COVARIANCE_H_
 

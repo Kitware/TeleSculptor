@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief VXL image container implementation
+ */
+
 #include "image_container.h"
 #include "vil_image_memory.h"
 

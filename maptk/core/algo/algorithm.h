@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief base algorithm/_def/_impl class interfaces
+ */
+
 #ifndef MAPTK_ALGO_ALGORITHM_H_
 #define MAPTK_ALGO_ALGORITHM_H_
 

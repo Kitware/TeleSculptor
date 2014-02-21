@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief geo_map algorithm general helper function
+ */
+
 #include "geo_map.h"
 #include <maptk/core/algo/algorithm.txx>
 

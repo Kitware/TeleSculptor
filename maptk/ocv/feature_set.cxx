@@ -4,6 +4,10 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief OCV feature_set implementation
+ */
 
 #include <maptk/ocv/feature_set.h>
 
