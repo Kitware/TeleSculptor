@@ -107,6 +107,9 @@ private:
 
   /// The ID to use for the next created track
   mutable unsigned long next_track_id_;
+
+  /// Is frame stitching enabled?
+  bool enable_stitching_;
 };
 
 

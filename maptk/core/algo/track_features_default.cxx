@@ -35,7 +35,8 @@ namespace algo
 /// Default Constructor
 track_features_default
 ::track_features_default()
-: next_track_id_(0)
+: next_track_id_(0),
+  enable_stitching_(false)
 {
 }
 
@@ -64,6 +65,12 @@ track_features_default
 
   // - Feature Matcher algorithm
   match_features::get_nested_algo_configuration("feature_matcher", config, matcher_);
+
+  // Frame stitching parameters
+  config->set_value("enable_stitching", enable_stitching_,
+                    "Should frame stitching be enabled? This option will attempt "
+                    "and bridge the gap between bad frames.");
+
 
   return config;
 }
