@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -42,13 +42,14 @@ estimate_similarity_transform
     throw algorithm_exception(this->type_name(), this->impl_name(),
                               sstr.str());
   }
-  else if (from.size() < 3)
+  else if (from.size() < 4)
   {
     std::ostringstream sstr;
     sstr << "At least 3 or more point pairs must be give in order to estimate "
          << "the similarity transformation. Given: " << from.size();
     throw algorithm_exception(this->type_name(), this->impl_name(), sstr.str());
   }
+
   // TODO: Test for collinearity
   // a <- (from[0], to[0])
   // b <- (from[1], to[1])
