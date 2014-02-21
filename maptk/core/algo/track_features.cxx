@@ -120,7 +120,7 @@ simple_track_features
         image_container_sptr image_data) const
 {
   // verify that all dependent algorithms have been initialized
-  if( ! detector_ || ! extractor_ || !matcher_ )
+  if( !detector_ || !extractor_ || !matcher_ )
   {
     return track_set_sptr();
   }
