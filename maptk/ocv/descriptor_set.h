@@ -53,6 +53,9 @@ protected:
 
 
 /// Convert any descriptor set to an OpenCV cv::Mat
+/**
+ * \param desc_set descriptors to convert to cv::mat
+ */
 MAPTK_OCV_EXPORT cv::Mat
 descriptors_to_ocv_matrix(const maptk::descriptor_set& desc_set);
 

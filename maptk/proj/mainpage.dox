@@ -1,4 +1,8 @@
 namespace maptk {
+
+/// PROJ module namespace
+namespace proj { }
+
 // The following text is included in the main documentation page by doxygen
 /** \mainpage maptk::proj documentation
 \section sec-proj-contents Contents

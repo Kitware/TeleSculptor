@@ -53,6 +53,12 @@ bool check_nested_ocv_algo_configuration_helper(std::string const& name,
 
 /// Templated helper method and specialization for creating a new OpenCV
 /// Algorithm instance.
+/**
+ * \tparam algo_t cv::Algorithm class or sub-class to attempt creation from. We
+ *                will always fall-back to attempting
+ *                \c cv::Algorithm::create(impl_name) if creation with the
+ *                specific sub-class fails.
+ */
 template <typename algo_t>
 cv::Ptr<algo_t> create_ocv_algo(std::string const& impl_name)
 {
@@ -104,7 +110,7 @@ cv::Ptr<cv::Algorithm> create_ocv_algo<cv::Algorithm>(std::string const& impl_na
  * \param name    A \c std::string name for this nested algorithm.
  * \param config  The \c maptk::config_block to add the given algorithm's
  *                options to.
- * \paraom algo   The cv pointer to the nested algorithm.
+ * \param algo   The cv pointer to the nested algorithm.
  */
 MAPTK_OCV_EXPORT
 void get_nested_ocv_algo_configuration(std::string const& name,
@@ -114,13 +120,13 @@ void get_nested_ocv_algo_configuration(std::string const& name,
 
 /// Set nested OpenCV algorithm's parameters based on a given \c config
 /**
- * \param algo_t  Type of OpenCV algorithm we are dealing with.
+ * \tparam algo_t Type of OpenCV algorithm we are dealing with.
  * \param name    A \c std::string name for this nested algorithm. This should
  *                match the name used when \c get_nested_ocv_algo_configuration
  *                was called for this nested algorithm.
  * \param config  The \c maptk::config_block to set OpenCV property values
  *                from.
- * \paraom algo   The cv pointer to the algorithm to set configuration
+ * \param algo    The cv pointer to the algorithm to set configuration
  *                options to.
  */
 template <typename algo_t>
@@ -168,12 +174,11 @@ void set_nested_ocv_algo_configuration(std::string const& name,
  * We assume that what is pointed to be \c algo is an initialized OpenCV
  * algorithm class.
  *
+ * \tparam algo_t Type of OpenCV algorithm we are dealing with.
  * \param name    A \c std::string name for this nested algorithm. This should
  *                match the name used when \c get_nested_ocv_algo_configuration
  *                was called for this nested algorithm.
  * \param config  The \c maptk::config_block to check.
- * \param algo    The cv pointer to the algorithn to use as a reference to
- *                check the \c config.
  */
 template <typename algo_t>
 bool check_nested_ocv_algo_configuration(std::string const& name,

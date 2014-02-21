@@ -21,6 +21,7 @@
 # else
 #   define MAPTK_OCV_EXPORT MAPTK_IMPORT
 # endif
+/// Marks symbols not to be exported
 # define MAPTK_OCV_NO_EXPORT MAPTK_NO_EXPORT
 #endif
 

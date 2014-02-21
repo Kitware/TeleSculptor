@@ -17,10 +17,8 @@
 /// Define symbol visibility in maptk::core
 #ifndef MAPTK_CORE_EXPORT
 # ifdef MAKE_MAPTK_CORE_LIB
-/// Mark labeled symbols for export
 #   define MAPTK_CORE_EXPORT MAPTK_EXPORT
 # else
-/// Mark labeled symbols for import
 #   define MAPTK_CORE_EXPORT MAPTK_IMPORT
 # endif
 /// Mark labeled symbols as not to be exported

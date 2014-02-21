@@ -1,3 +1,4 @@
+/// Primary namespace under which the contents of the MAPTK package are located
 namespace maptk {
 // The following text is included in the main documentation page by doxygen
 /** \mainpage maptk::core documentation

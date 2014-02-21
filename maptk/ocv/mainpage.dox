@@ -1,4 +1,8 @@
 namespace maptk {
+
+/// OCV module namespace
+namespace ocv { }
+
 // The following text is included in the main documentation page by doxygen
 /** \mainpage maptk::ocv documentation
 \section sec-ocv-contents Contents

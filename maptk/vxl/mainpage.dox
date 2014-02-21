@@ -1,4 +1,8 @@
 namespace maptk {
+
+/// VXL module namespace
+namespace vxl { }
+
 // The following text is included in the main documentation page by doxygen
 /** \mainpage maptk::vxl documentation
 \section sec-vxl-contents Contents

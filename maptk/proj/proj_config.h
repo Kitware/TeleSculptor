@@ -21,6 +21,7 @@
 # else
 #   define MAPTK_PROJ_EXPORT MAPTK_IMPORT
 # endif
+/// Marks symbols not to be exported
 # define MATPK_PROJ_NO_EXPORT MAPTK_NO_EXPORT
 #endif
 
