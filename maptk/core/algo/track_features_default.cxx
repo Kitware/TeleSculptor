@@ -47,6 +47,65 @@ track_features_default
 {
 }
 
+/// Get this alg's \link maptk::config_block configuration block \endlink
+config_block_sptr
+track_features_default
+::get_configuration() const
+{
+  // get base config from base class
+  config_block_sptr config = algorithm::get_configuration();
+
+  // Sub-algorithm implementation name + sub_config block
+  // - Feature Detector algorithm
+  detect_features::get_nested_algo_configuration("feature_detector", config, detector_);
+
+  // - Descriptor Extractor algorithm
+  extract_descriptors::get_nested_algo_configuration("descriptor_extractor", config, extractor_);
+
+  // - Feature Matcher algorithm
+  match_features::get_nested_algo_configuration("feature_matcher", config, matcher_);
+
+  return config;
+}
+
+/// Set this algo's properties via a config block
+void
+track_features_default
+::set_configuration(config_block_sptr in_config)
+{
+  // Starting with our generated config_block to ensure that assumed values are present
+  // An alternative is to check for key presence before performing a get_value() call.
+  config_block_sptr config = this->get_configuration();
+  config->merge_config(in_config);
+
+  // Setting nested algorithm instances via setter methods instead of directly
+  // assigning to instance property.
+  detect_features_sptr df;
+  detect_features::set_nested_algo_configuration("feature_detector", config, df);
+  detector_ = df;
+
+  extract_descriptors_sptr ed;
+  extract_descriptors::set_nested_algo_configuration("descriptor_extractor", config, ed);
+  extractor_ = ed;
+
+  match_features_sptr mf;
+  match_features::set_nested_algo_configuration("feature_matcher", config, mf);
+  matcher_ = mf;
+}
+
+bool
+track_features_default
+::check_configuration(config_block_sptr config) const
+{
+  return (
+    detect_features::check_nested_algo_configuration("feature_detector", config)
+    &&
+    extract_descriptors::check_nested_algo_configuration("descriptor_extractor", config)
+    &&
+    match_features::check_nested_algo_configuration("feature_matcher", config)
+  );
+}
+
 
 /// Extend a previous set of tracks using the current frame
 track_set_sptr

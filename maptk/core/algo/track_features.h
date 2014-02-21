@@ -36,15 +36,9 @@ class MAPTK_CORE_EXPORT track_features
   : public algorithm_def<track_features>
 {
 public:
+
   /// Return the name of this algorithm
   std::string type_name() const { return "track_features"; }
-
-  /// Get this algorithm's \link maptk::config_block configuration block \endlink
-  virtual config_block_sptr get_configuration() const;
-  /// Set this algorithm's properties via a config block
-  virtual void set_configuration(config_block_sptr config);
-  /// Check that the algorithm's currently configuration is valid
-  virtual bool check_configuration(config_block_sptr config) const;
 
   /// Extend a previous set of tracks using the current frame
   /**
@@ -58,21 +52,9 @@ public:
         unsigned int frame_number,
         image_container_sptr image_data) const = 0;
 
-protected:
-
-  /// The feature detector algorithm to use
-  detect_features_sptr detector_;
-
-  /// The descriptor extractor algorithm to use
-  extract_descriptors_sptr extractor_;
-
-  /// The feature matching algorithm to use
-  match_features_sptr matcher_;
 };
 
-
 typedef boost::shared_ptr<track_features> track_features_sptr;
-
 
 } // end namespace algo
 

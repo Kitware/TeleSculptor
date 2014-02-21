@@ -47,6 +47,13 @@ public:
   /// Return the name of this implementation
   std::string impl_name() const { return "default"; }
 
+  /// Get this algorithm's \link maptk::config_block configuration block \endlink
+  virtual config_block_sptr get_configuration() const;
+  /// Set this algorithm's properties via a config block
+  virtual void set_configuration(config_block_sptr config);
+  /// Check that the algorithm's currently configuration is valid
+  virtual bool check_configuration(config_block_sptr config) const;
+
   /// Extend a previous set of tracks using the current frame
   /**
    * \param [in] prev_tracks the tracks from previous tracking steps
@@ -60,6 +67,15 @@ public:
         image_container_sptr image_data) const;
 
 private:
+
+  /// The feature detector algorithm to use
+  detect_features_sptr detector_;
+
+  /// The descriptor extractor algorithm to use
+  extract_descriptors_sptr extractor_;
+
+  /// The feature matching algorithm to use
+  match_features_sptr matcher_;
 
   /// The ID to use for the next created track
   mutable unsigned long next_track_id_;
