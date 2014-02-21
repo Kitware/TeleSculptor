@@ -71,15 +71,15 @@ track_features
   // assigning to instance property.
   detect_features_sptr df;
   detect_features::set_nested_algo_configuration("feature_detector", config, df);
-  this->set_feature_detector(df);
+  detector_ = df;
 
   extract_descriptors_sptr ed;
   extract_descriptors::set_nested_algo_configuration("descriptor_extractor", config, ed);
-  this->set_descriptor_extractor(ed);
+  extractor_ = ed;
 
   match_features_sptr mf;
   match_features::set_nested_algo_configuration("feature_matcher", config, mf);
-  this->set_feature_matcher(mf);
+  matcher_ = mf;
 }
 
 bool

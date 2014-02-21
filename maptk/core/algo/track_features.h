@@ -58,25 +58,8 @@ public:
         unsigned int frame_number,
         image_container_sptr image_data) const = 0;
 
-  /// Set the feature detection algorithm to use in tracking
-  void set_feature_detector(detect_features_sptr alg)
-  {
-    detector_ = alg;
-  }
-
-  /// Set the descriptor extraction algorithm to use in tracking
-  void set_descriptor_extractor(extract_descriptors_sptr alg)
-  {
-    extractor_ = alg;
-  }
-
-  /// Set the feature matching algorithm to use in tracking
-  void set_feature_matcher(match_features_sptr alg)
-  {
-    matcher_ = alg;
-  }
-
 protected:
+
   /// The feature detector algorithm to use
   detect_features_sptr detector_;
 
