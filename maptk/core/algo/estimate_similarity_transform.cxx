@@ -11,6 +11,7 @@
  */
 
 #include <boost/foreach.hpp>
+
 #include <maptk/core/algo/algorithm.txx>
 #include <maptk/core/algo/estimate_similarity_transform.h>
 
@@ -78,20 +79,24 @@ estimate_similarity_transform
  *                      the \c map_t provided (i.e. \c loc for \c landmark
  *                      class or \c center for \c camera class)
  */
-#define map_to_pts(map_t, from_map, to_map, from_pts, to_pts, accessor_func)  \
+#define MAPTK_EST_MAP_TO_PTS(map_t, from_map, to_map, from_pts, to_pts, accessor_func) \
   do                                                                          \
   {                                                                           \
     map_t::const_iterator from_it = from_map.begin(),                         \
                           to_it   = to_map.begin();                           \
     /* STL map structure's stored data is ordered (binary search tree impl */ \
     /* O(from.size + to.size) */                                              \
-    while (from_it != from_map.end() || to_it != to_map.end())                \
+    while (from_it != from_map.end() && to_it != to_map.end())                \
     {                                                                         \
       /* increment the lesser of the two when the frame IDs don't match */    \
       if (from_it->first > to_it->first)                                      \
+      {                                                                       \
         ++to_it;                                                              \
+      }                                                                       \
       else if (from_it->first < to_it->first)                                 \
+      {                                                                       \
         ++from_it;                                                            \
+      }                                                                       \
       else                                                                    \
       {                                                                       \
         from_pts.push_back(from_it->second->accessor_func());                 \
@@ -106,12 +111,17 @@ estimate_similarity_transform
 /// Estimate the similarity transform between two corresponding camera maps
 similarity_d
 estimate_similarity_transform
-::estimate_transform(camera_map const& from,
-                     camera_map const& to) const
+::estimate_transform(camera_map_sptr const from,
+                     camera_map_sptr const to) const
 {
   // determine point pairings based on shared frame IDs
   std::vector<vector_3d> from_pts, to_pts;
-  map_to_pts(camera_map::map_camera_t, from.cameras(), to.cameras(), from_pts, to_pts, center);
+  camera_map::map_camera_t from_map = from->cameras(),
+                           to_map = to->cameras();
+  MAPTK_EST_MAP_TO_PTS(camera_map::map_camera_t,
+                       from_map, to_map,
+                       from_pts, to_pts,
+                       center);
   return this->estimate_transform(from_pts, to_pts);
 }
 
@@ -119,17 +129,22 @@ estimate_similarity_transform
 /// Estimate the similarity transform between two corresponding landmark maps
 similarity_d
 estimate_similarity_transform
-::estimate_transform(landmark_map const& from,
-                     landmark_map const& to) const
+::estimate_transform(landmark_map_sptr const from,
+                     landmark_map_sptr const to) const
 {
   // determine point pairings based on shared frame IDs
   std::vector<vector_3d> from_pts, to_pts;
-  map_to_pts(landmark_map::map_landmark_t, from.landmarks(), to.landmarks(), from_pts, to_pts, loc);
+  landmark_map::map_landmark_t from_map = from->landmarks(),
+                               to_map = to->landmarks();
+  MAPTK_EST_MAP_TO_PTS(landmark_map::map_landmark_t,
+                       from_map, to_map,
+                       from_pts, to_pts,
+                       loc);
   return this->estimate_transform(from_pts, to_pts);
 }
 
 
-#undef map_to_pts
+#undef MAPTK_EST_MAP_TO_PTS
 
 
 } // end namespace algo

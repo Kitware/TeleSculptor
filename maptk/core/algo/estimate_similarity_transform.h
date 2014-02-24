@@ -97,8 +97,8 @@ public:
    *          \c from space to camera centers in the \c to space.
    */
   virtual similarity_d
-  estimate_transform(camera_map const& from,
-                     camera_map const& to) const;
+  estimate_transform(camera_map_sptr const from,
+                     camera_map_sptr const to) const;
 
   /// Estimate the similarity transform between two corresponding landmark maps
   /**
@@ -117,8 +117,8 @@ public:
    *          \c from space to camera centers in the \c to space.
    */
   virtual similarity_d
-  estimate_transform(landmark_map const& from,
-                     landmark_map const& to) const;
+  estimate_transform(landmark_map_sptr const from,
+                     landmark_map_sptr const to) const;
 };
 
 
