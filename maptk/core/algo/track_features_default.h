@@ -112,7 +112,7 @@ private:
   bool stitching_enabled_;
 
   /// Stitching percent feature match required
-  double stitching_per_match_req_;
+  double stitching_percent_match_req_;
 
   /// Stitching required new shot size in frames
   unsigned stitching_new_shot_length_;

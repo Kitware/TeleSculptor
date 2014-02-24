@@ -37,7 +37,7 @@ track_features_default
 ::track_features_default()
 : next_track_id_(0),
   stitching_enabled_(false),
-  stitching_per_match_req_(0.4),
+  stitching_percent_match_req_(0.4),
   stitching_new_shot_length_(3),
   stitching_max_search_length_(10)
 {
@@ -75,11 +75,12 @@ track_features_default
                     "bridge the gap between frames which don't meet certain criteria "
                     "(percentage of feature points tracked) and will instead attempt "
                     "to match features on the current frame against past frames to "
-                    "meet the criteria. This is useful when there are bad frames.");
+                    "meet this criteria. This is useful when there can be bad frames.");
 
-  config->set_value("stitching_per_match_req", stitching_per_match_req_,
+  config->set_value("stitching_percent_match_req", stitching_percent_match_req_,
                     "The required percentage of features needed to be matched for a "
-                    "stitch to be considered successful (between 0.0 and 1.0).");
+                    "stitch to be considered successful (value must be between 0.0 and "
+                    "1.0).");
 
   config->set_value("stitching_new_shot_length", stitching_new_shot_length_,
                     "Number of frames for a new shot to be considered valid before "
@@ -121,7 +122,7 @@ track_features_default
 
   if( stitching_enabled_ )
   {
-    stitching_per_match_req_ = config->get_value<double>("stitching_per_match_req");
+    stitching_percent_match_req_ = config->get_value<double>("stitching_percent_match_req");
     stitching_new_shot_length_ = config->get_value<unsigned>("stitching_new_shot_length");
     stitching_max_search_length_ = config->get_value<unsigned>("stitching_max_search_length");
   }
@@ -215,7 +216,19 @@ track_features_default
     all_tracks.back()->set_id(this->next_track_id_++);
   }
 
-  return track_set_sptr(new simple_track_set(all_tracks));
+  track_set_sptr output_set = track_set_sptr(new simple_track_set(all_tracks));
+
+  // handle shot stitching
+  if( stitching_enabled_ && frame_number > stitching_new_shot_length_ )
+  {
+    // check if we should attempt to stitch together past frames
+    frame_id_t frame_to_stitch = frame_number - stitching_new_shot_length_;
+    double percentage_tracked = output_set->percentage_tracked( frame_to_stitch );
+
+    //if( percentage_tracked <
+  }
+
+  return output_set;
 }
 
 
