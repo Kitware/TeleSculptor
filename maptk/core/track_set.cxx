@@ -115,6 +115,72 @@ track_set
 }
 
 
+/// Return all new tracks on a given frame.
+track_set_sptr
+track_set
+::new_tracks(int offset)
+{
+  frame_id_t frame_number = offset_to_frame(offset);
+  const std::vector<track_sptr> all_tracks = this->tracks();
+  std::vector<track_sptr> new_tracks;
+  BOOST_FOREACH(track_sptr t, all_tracks)
+  {
+    if( t->first_frame() == frame_number )
+    {
+      new_tracks.push_back(t);
+    }
+  }
+  return track_set_sptr(new simple_track_set(new_tracks));
+}
+
+
+/// Return all new tracks on a given frame.
+track_set_sptr
+track_set
+::terminated_tracks(int offset)
+{
+  frame_id_t frame_number = offset_to_frame(offset);
+  const std::vector<track_sptr> all_tracks = this->tracks();
+  std::vector<track_sptr> terminated_tracks;
+  BOOST_FOREACH(track_sptr t, all_tracks)
+  {
+    if( t->last_frame() == frame_number )
+    {
+      terminated_tracks.push_back(t);
+    }
+  }
+  return track_set_sptr(new simple_track_set(terminated_tracks));
+}
+
+
+/// Return the percentage of tracks successfully tracked to the next frame.
+double
+track_set
+::percentage_tracked(int offset)
+{
+  const frame_id_t frame_number = offset_to_frame(offset);
+  const frame_id_t next_frame_number = frame_number + 1;
+  const std::vector<track_sptr> all_tracks = this->tracks();
+  unsigned tracked = 0, not_tracked = 0;
+  BOOST_FOREACH(track_sptr t, all_tracks)
+  {
+    if( t->find(frame_number) != t->end() )
+    {
+      if( t->find(next_frame_number) != t->end() )
+      {
+        tracked++;
+      }
+      else
+      {
+        not_tracked++;
+      }
+    }
+  }
+  unsigned total = tracked + not_tracked;
+  return ( total > 0 ? static_cast<double>(tracked) / total : 0.0 );
+}
+
+
 /// Return the set of features in tracks on the last frame
 feature_set_sptr
 track_set

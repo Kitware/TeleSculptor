@@ -77,6 +77,40 @@ public:
    */
   virtual track_set_sptr inactive_tracks(int offset = -1);
 
+  /// Return all tracks newly initialized on the given frame.
+  /**
+   * New tracks include any tracks with a first track state on the target frame.
+   * \param [in] offset the frame offset for selecting the active frame.
+   *                    Postive number are absolute frame numbers while negative
+   *                    numbers are relative to the last frame.  For example,
+   *                    offset of -1 refers to the last frame and is the default.
+   * \returns a floating point percent value (between 0.0 and 1.0).
+   */
+  virtual track_set_sptr new_tracks(int offset = -1);
+
+  /// Return all tracks terminated on the given frame.
+  /**
+   * Terminated tracks include any tracks with a last track state on the frame.
+   * \param [in] offset the frame offset for selecting the active frame.
+   *                    Postive number are absolute frame numbers while negative
+   *                    numbers are relative to the last frame.  For example,
+   *                    offset of -1 refers to the last frame and is the default.
+   * \returns a floating point percent value (between 0.0 and 1.0).
+   */
+  virtual track_set_sptr terminated_tracks(int offset = -1);
+
+  /// Return the percentage of tracks successfully tracked to the next frame.
+  /**
+   * The number of tracks successfully tracked to the next frame includes tracks with
+   * a track state on both the frame for the specified offset and the proceeding one.
+   * \param [in] offset the frame offset for selecting the active frame.
+   *                    Postive number are absolute frame numbers while negative
+   *                    numbers are relative to the last frame.  For example,
+   *                    offset of -1 refers to the last frame and is the default.
+   * \returns a floating point percent value (between 0.0 and 1.0).
+   */
+  virtual double percentage_tracked(int offset = -1);
+
   /// Return the set of features in tracks on the last frame
   virtual feature_set_sptr last_frame_features() const;
 
