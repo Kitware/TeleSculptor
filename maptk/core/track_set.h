@@ -69,6 +69,7 @@ public:
   /// Return all tracks inactive on a frame.
   /**
    * Inactive tracks are any tracks which do not contain a state on the target frame.
+   *
    * \param [in] offset the frame offset for selecting the active frame.
    *                    Postive number are absolute frame numbers while negative
    *                    numbers are relative to the last frame.  For example,
@@ -80,6 +81,7 @@ public:
   /// Return all tracks newly initialized on the given frame.
   /**
    * New tracks include any tracks with a first track state on the target frame.
+   *
    * \param [in] offset the frame offset for selecting the active frame.
    *                    Postive number are absolute frame numbers while negative
    *                    numbers are relative to the last frame.  For example,
@@ -91,6 +93,7 @@ public:
   /// Return all tracks terminated on the given frame.
   /**
    * Terminated tracks include any tracks with a last track state on the frame.
+   *
    * \param [in] offset the frame offset for selecting the active frame.
    *                    Postive number are absolute frame numbers while negative
    *                    numbers are relative to the last frame.  For example,
@@ -99,17 +102,23 @@ public:
    */
   virtual track_set_sptr terminated_tracks(int offset = -1);
 
-  /// Return the percentage of tracks successfully tracked to the next frame.
+  /// Return the percentage of tracks successfully tracked between the two frames.
   /**
-   * The number of tracks successfully tracked to the next frame includes tracks with
-   * a track state on both the frame for the specified offset and the proceeding one.
-   * \param [in] offset the frame offset for selecting the active frame.
-   *                    Postive number are absolute frame numbers while negative
-   *                    numbers are relative to the last frame.  For example,
-   *                    offset of -1 refers to the last frame and is the default.
+   * The percentage of tracks successfully tracked between frames is defined as the
+   * number of tracks which have a track state on both frames, divided by the total
+   * number of unique tracks which appear on both frames.
+   *
+   * \param [in] offset1 the frame offset for the first frame in the operation.
+   *                     Postive number are absolute frame numbers while negative
+   *                     numbers are relative to the last frame.  For example,
+   *                     offset of -1 refers to the last frame and is the default.
+   * \param [in] offset2 the frame offset for the second frame in the operation.
+   *                     Postive number are absolute frame numbers while negative
+   *                     numbers are relative to the last frame.  For example,
+   *                     offset of -1 refers to the last frame and is the default.
    * \returns a floating point percent value (between 0.0 and 1.0).
    */
-  virtual double percentage_tracked(int offset = -1);
+  virtual double percentage_tracked(int offset1 = -1, int offset2 = -1);
 
   /// Return the set of features in tracks on the last frame
   virtual feature_set_sptr last_frame_features() const;

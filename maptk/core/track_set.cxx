@@ -35,11 +35,13 @@ track_set
 {
   std::set<frame_id_t> ids;
   const std::vector<track_sptr> all_tracks = this->tracks();
+
   BOOST_FOREACH(track_sptr t, all_tracks)
   {
     std::set<frame_id_t> t_ids = t->all_frame_ids();
     ids.insert(t_ids.begin(), t_ids.end());
   }
+
   return ids;
 }
 
@@ -51,10 +53,12 @@ track_set
 {
   std::set<track_id_t> ids;
   const std::vector<track_sptr> all_tracks = this->tracks();
+
   BOOST_FOREACH(track_sptr t, all_tracks)
   {
     ids.insert(t->id());
   }
+
   return ids;
 }
 
@@ -66,6 +70,7 @@ track_set
 {
   frame_id_t last_frame = 0;
   const std::vector<track_sptr> all_tracks = this->tracks();
+
   BOOST_FOREACH(track_sptr t, all_tracks)
   {
     if( t->last_frame() > last_frame )
@@ -73,6 +78,7 @@ track_set
       last_frame = t->last_frame();
     }
   }
+
   return last_frame;
 }
 
@@ -85,6 +91,7 @@ track_set
   frame_id_t frame_number = offset_to_frame(offset);
   const std::vector<track_sptr> all_tracks = this->tracks();
   std::vector<track_sptr> active_tracks;
+
   BOOST_FOREACH(track_sptr t, all_tracks)
   {
     if( t->find(frame_number) != t->end() )
@@ -92,6 +99,7 @@ track_set
       active_tracks.push_back(t);
     }
   }
+
   return track_set_sptr(new simple_track_set(active_tracks));
 }
 
@@ -104,6 +112,7 @@ track_set
   frame_id_t frame_number = offset_to_frame(offset);
   const std::vector<track_sptr> all_tracks = this->tracks();
   std::vector<track_sptr> inactive_tracks;
+
   BOOST_FOREACH(track_sptr t, all_tracks)
   {
     if( t->find(frame_number) == t->end() )
@@ -111,6 +120,7 @@ track_set
       inactive_tracks.push_back(t);
     }
   }
+
   return track_set_sptr(new simple_track_set(inactive_tracks));
 }
 
@@ -123,6 +133,7 @@ track_set
   frame_id_t frame_number = offset_to_frame(offset);
   const std::vector<track_sptr> all_tracks = this->tracks();
   std::vector<track_sptr> new_tracks;
+
   BOOST_FOREACH(track_sptr t, all_tracks)
   {
     if( t->first_frame() == frame_number )
@@ -130,6 +141,7 @@ track_set
       new_tracks.push_back(t);
     }
   }
+
   return track_set_sptr(new simple_track_set(new_tracks));
 }
 
@@ -142,6 +154,7 @@ track_set
   frame_id_t frame_number = offset_to_frame(offset);
   const std::vector<track_sptr> all_tracks = this->tracks();
   std::vector<track_sptr> terminated_tracks;
+
   BOOST_FOREACH(track_sptr t, all_tracks)
   {
     if( t->last_frame() == frame_number )
@@ -149,6 +162,7 @@ track_set
       terminated_tracks.push_back(t);
     }
   }
+
   return track_set_sptr(new simple_track_set(terminated_tracks));
 }
 
@@ -156,28 +170,28 @@ track_set
 /// Return the percentage of tracks successfully tracked to the next frame.
 double
 track_set
-::percentage_tracked(int offset)
+::percentage_tracked(int offset1, int offset2)
 {
-  const frame_id_t frame_number = offset_to_frame(offset);
-  const frame_id_t next_frame_number = frame_number + 1;
+  const frame_id_t frame_number1 = offset_to_frame(offset1);
+  const frame_id_t frame_number2 = offset_to_frame(offset2);
+
   const std::vector<track_sptr> all_tracks = this->tracks();
-  unsigned tracked = 0, not_tracked = 0;
+  unsigned total_tracks = 0, tracks_both = 0;
+
   BOOST_FOREACH(track_sptr t, all_tracks)
   {
-    if( t->find(frame_number) != t->end() )
-    {
-      if( t->find(next_frame_number) != t->end() )
-      {
-        tracked++;
-      }
-      else
-      {
-        not_tracked++;
-      }
-    }
+    const bool found_on_f1 = t->find(frame_number1) != t->end();
+    const bool found_on_f2 = t->find(frame_number2) != t->end();
+
+    total_tracks += (found_on_f1 || found_on_f2 ? 1 : 0);
+    tracks_both += (found_on_f1 && found_on_f2 ? 1 : 0);
   }
-  unsigned total = tracked + not_tracked;
-  return ( total > 0 ? static_cast<double>(tracked) / total : 0.0 );
+
+  if( total_tracks == 0 )
+  {
+    return 0.0;
+  }
+  return static_cast<double>(tracks_both) / total_tracks;
 }
 
 
@@ -190,6 +204,7 @@ track_set
   std::vector<feature_sptr> last_features;
   const std::vector<track_sptr> all_tracks = this->tracks();
   std::vector<track_sptr> active_tracks;
+
   BOOST_FOREACH(track_sptr t, all_tracks)
   {
     if( t->last_frame() == last_frame )
@@ -197,6 +212,7 @@ track_set
       last_features.push_back((t->end()-1)->feat);
     }
   }
+
   return feature_set_sptr(new simple_feature_set(last_features));
 }
 
@@ -210,6 +226,7 @@ track_set
   std::vector<descriptor_sptr> last_descriptors;
   const std::vector<track_sptr> all_tracks = this->tracks();
   std::vector<track_sptr> active_tracks;
+
   BOOST_FOREACH(track_sptr t, all_tracks)
   {
     if( t->last_frame() == last_frame )
@@ -217,6 +234,7 @@ track_set
       last_descriptors.push_back((t->end()-1)->desc);
     }
   }
+
   return descriptor_set_sptr(new simple_descriptor_set(last_descriptors));
 }
 
@@ -232,6 +250,7 @@ track_set
   }
 
   frame_id_t frame_number = this->last_frame() + 1;
+
   if( static_cast<frame_id_t>(-offset) <= frame_number )
   {
     frame_number += offset;
