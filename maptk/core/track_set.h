@@ -58,6 +58,7 @@ public:
   /// Return all tracks active on a frame.
   /**
    * Active tracks are any tracks which contain a state on the target frame.
+   *
    * \param [in] offset the frame offset for selecting the active frame.
    *                    Postive number are absolute frame numbers while negative
    *                    numbers are relative to the last frame.  For example,
