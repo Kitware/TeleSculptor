@@ -223,9 +223,23 @@ track_features_default
   {
     // check if we should attempt to stitch together past frames
     frame_id_t frame_to_stitch = frame_number - stitching_new_shot_length_;
-    double percentage_tracked = output_set->percentage_tracked( frame_to_stitch );
+    double per_tracked = output_set->percentage_tracked( frame_to_stitch-1, frame_to_stitch );
 
-    //if( percentage_tracked <
+    bool attempt_to_stitch = ( per_tracked < stitching_percent_match_req_ );
+    while( attempt_to_stitch )
+    {
+
+    }
+    if( per_tracked < stitching_percent_match_req_ )
+    {
+      for( unsigned i = frame_to_stitch + 1; i < frame_number; i++ )
+      {
+        if( output_set->percentage_tracked( i-1, i ) < stitching_percent_match_req_ )
+        {
+
+        }
+      }
+    }
   }
 
   return output_set;
