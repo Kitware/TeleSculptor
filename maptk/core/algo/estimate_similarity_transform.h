@@ -17,9 +17,11 @@
 
 #include <maptk/core/algo/algorithm.h>
 #include <maptk/core/camera.h>
+#include <maptk/core/camera_map.h>
 #include <maptk/core/config_block.h>
 #include <maptk/core/core_config.h>
 #include <maptk/core/landmark.h>
+#include <maptk/core/landmark_map.h>
 #include <maptk/core/similarity.h>
 #include <maptk/core/vector.h>
 
@@ -36,44 +38,87 @@ public:
   /// Name of this algo definition
   std::string type_name() const { return "estimate_similarity_transform"; }
 
-  /// Estimate the similarity transformation between two parallel sets of 3d points
+  /// Estimate the similarity transformation between two corresponding sets of
+  /// 3d points
   /**
    * \param from List of length N of 3D points in the from space.
    * \param to   List of length N of 3D points in the to space.
-   * \throws algorithm_exception When the from and to points sets are
+   * \throws algorithm_exception When the from and to point sets are
    *                             misaligned, insufficient or degenerate.
    * \returns An estimated similarity transform mapping 3D points in the
    *          \c from space to points in the \c to space.
    */
   virtual similarity_d
-  estimate_transform(std::vector<vector_3d> &from,
-                     std::vector<vector_3d> &to) const = 0;
+  estimate_transform(std::vector<vector_3d> const& from,
+                     std::vector<vector_3d> const& to) const = 0;
 
-  /// Estimate the similarity transform between two parallel sets of cameras
+  /// Estimate the similarity transform between two corresponding sets of
+  /// cameras
   /**
    * \param from List of length N of cameras in the from space.
    * \param to   List of length N of cameras in the to space.
-   * \throws algorithm_exception When the from and to points sets are
+   * \throws algorithm_exception When the from and to point sets are
    *                             misaligned, insufficient or degenerate.
    * \returns An estimated similarity transform mapping camera centers in the
    *          \c from space to camera centers in the \c to space.
    */
   virtual similarity_d
-  estimate_transform(std::vector<camera_sptr> &from,
-                     std::vector<camera_sptr> &to) const;
+  estimate_transform(std::vector<camera_sptr> const& from,
+                     std::vector<camera_sptr> const& to) const;
 
-  /// Estimate the similarity transform between two parallel sets of landmarks.
+  /// Estimate the similarity transform between two corresponding sets of
+  /// landmarks.
   /**
    * \param from List of length N of landmarks in the from space.
    * \param to   List of length N of landmarks in the to space.
-   * \throws algorithm_exception When the from and to points sets are
+   * \throws algorithm_exception When the from and to point sets are
    *                             misaligned, insufficient or degenerate.
    * \returns An estinated similarity transform mapping landmark locations in
    *          the \c from space to located in the \c to space.
    */
   virtual similarity_d
-  estimate_transform(std::vector<landmark_sptr> &from,
-                     std::vector<landmark_sptr> &to) const;
+  estimate_transform(std::vector<landmark_sptr> const& from,
+                     std::vector<landmark_sptr> const& to) const;
+
+  /// Estimate the similarity transform between two corresponding camera maps
+  /**
+   * Cameras with corresponding frame IDs in the two maps are paired for
+   * transform estimation. Cameras with no corresponding frame ID in the other
+   * map are ignored. An algorithm_exception is thrown if there are no shared
+   * frame IDs between the two provided maps (nothing to pair).
+   *
+   * \throws algorithm_exception When the from and to point sets are
+   *                             misaligned, insufficient or degenerate.
+   * \param from Map of original cameras, sharing N frames with the transformed
+   *             cameras, where N > 0.
+   * \param to   Map of transformed cameras, sharing N frames with the original
+   *             cameras, where N > 0.
+   * \returns An estimated similarity transform mapping camera centers in the
+   *          \c from space to camera centers in the \c to space.
+   */
+  virtual similarity_d
+  estimate_transform(camera_map const& from,
+                     camera_map const& to) const;
+
+  /// Estimate the similarity transform between two corresponding landmark maps
+  /**
+   * Landmarks with corresponding frame IDs in the two maps are paired for
+   * transform estimation. Landmarks with no corresponding frame ID in the
+   * other map are ignored. An algoirithm_exception is thrown if there are no
+   * shared frame IDs between the two provided maps (nothing to pair).
+   *
+   * \throws algorithm_exception When the from and to point sets are
+   *                             misaligned, insufficient or degenerate.
+   * \param from Map of original landmarks, sharing N frames with the
+   *             transformed landmarks, where N > 0.
+   * \param to   Map of transformed landmarks, sharing N frames with the
+   *             original landmarks, where N > 0.
+   * \returns An estimated similarity transform mapping landmark centers in the
+   *          \c from space to camera centers in the \c to space.
+   */
+  virtual similarity_d
+  estimate_transform(landmark_map const& from,
+                     landmark_map const& to) const;
 };
 
 
