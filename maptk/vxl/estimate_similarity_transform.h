@@ -39,8 +39,12 @@ public:
   virtual bool check_configuration(config_block_sptr /*config*/) const { return true; }
   /// \endcond
 
-  /// Estimate the similarity transformation between two parallel sets of 3d points
+  /// Estimate the similarity transformation between two corresponding sets of
+  /// 3d points
   /**
+   * Complexity: Θ(n), where n = from.size() (from and to must be of equal
+   * length).
+   *
    * \param from List of length N of 3D points in the from space.
    * \param to   List of length N of 3D points in the to space.
    * \throws algorithm_exception When the from and to points sets are
@@ -49,8 +53,8 @@ public:
    *          \c from space to points in the \c to space.
    */
   virtual similarity_d
-  estimate_transform(std::vector<vector_3d> &from,
-                     std::vector<vector_3d> &to) const;
+  estimate_transform(std::vector<vector_3d> const& from,
+                     std::vector<vector_3d> const& to) const;
 
 };
 

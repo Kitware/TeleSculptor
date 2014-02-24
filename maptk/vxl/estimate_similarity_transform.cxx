@@ -31,8 +31,8 @@ namespace vxl
 
 similarity_d
 estimate_similarity_transform
-::estimate_transform(std::vector<vector_3d> &from,
-                     std::vector<vector_3d> &to) const
+::estimate_transform(std::vector<vector_3d> const& from,
+                     std::vector<vector_3d> const& to) const
 {
   if (from.size() != to.size())
   {
@@ -42,10 +42,11 @@ estimate_similarity_transform
     throw algorithm_exception(this->type_name(), this->impl_name(),
                               sstr.str());
   }
+  // TODO: Determine why there is a deficiency with 3 correspondences
   else if (from.size() < 4)
   {
     std::ostringstream sstr;
-    sstr << "At least 3 or more point pairs must be give in order to estimate "
+    sstr << "At least 4 or more point pairs must be give in order to estimate "
          << "the similarity transformation. Given: " << from.size();
     throw algorithm_exception(this->type_name(), this->impl_name(), sstr.str());
   }
@@ -54,9 +55,13 @@ estimate_similarity_transform
   // a <- (from[0], to[0])
   // b <- (from[1], to[1])
   // e <- some epsillon value
+  // collinear_count <- 0
   // for c in [(from[2], to[2]), ... , (from[n-1], to[n-1])] {
   //     if cross((b-a), (c-a)).magnitude > e:
-  //        throw error "Found collinear points
+  //        collinear_count += 1
+  // }
+  // if (collinear_count >= (n-2)) {
+  //    raise exception
   // }
 
   vgl_compute_similarity_3d<double> v_estimator;
@@ -73,6 +78,7 @@ estimate_similarity_transform
     );
   }
 
+  // Θ(N), where N = pts.size()
   v_estimator.estimate();
 
   // extract components

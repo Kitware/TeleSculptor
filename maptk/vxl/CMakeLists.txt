@@ -40,4 +40,4 @@ maptk_add_library(maptk_vxl
   ${maptk_vxl_sources}
   )
 
-target_link_libraries(maptk_vxl maptk_core vil vpgl_algo rrel vcl vgl vgl_algo vnl)
+target_link_libraries(maptk_vxl maptk_core vil vpgl_algo rrel vgl_algo)
