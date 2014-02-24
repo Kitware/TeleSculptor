@@ -31,6 +31,8 @@ Core Library
  * Replaced track_features_simple with track_features_default class,
    requiring any config file to change this value from "simple" to "default".
 
+ * Added several helper functions to track_set class.
+
 VXL Library
 
  * Added implementation of triangulation of landmarks algorithm using vpgl.
