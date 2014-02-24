@@ -28,13 +28,20 @@ Core Library
 
  * Added "yes" and "no" as value boolean configuration strings
 
+ * Added algorithm definition for similarity transformation estimation.
+
 VXL Library
 
  * Added implementation of triangulation of landmarks algorithm using vpgl.
 
+ * Added similarity transformation estimation implementation using
+   vgl_compute_similarity_3d.
+
 Tests
 
  * Factored out some reuseable test functions into common header files.
+
+ * Added tests for VXL similarity transform estimation
 
 Tools
 
