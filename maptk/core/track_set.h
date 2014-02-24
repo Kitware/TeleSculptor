@@ -63,6 +63,7 @@ public:
    *                    Postive number are absolute frame numbers while negative
    *                    numbers are relative to the last frame.  For example,
    *                    offset of -1 refers to the last frame and is the default.
+   *
    * \returns a track set which is the subset of tracks that are active.
    */
   virtual track_set_sptr active_tracks(int offset = -1);
@@ -75,6 +76,7 @@ public:
    *                    Postive number are absolute frame numbers while negative
    *                    numbers are relative to the last frame.  For example,
    *                    offset of -1 refers to the last frame and is the default.
+   *
    * \returns a track set which is the subset of tracks that are inactive.
    */
   virtual track_set_sptr inactive_tracks(int offset = -1);
@@ -87,6 +89,7 @@ public:
    *                    Postive number are absolute frame numbers while negative
    *                    numbers are relative to the last frame.  For example,
    *                    offset of -1 refers to the last frame and is the default.
+   *
    * \returns a track set containing all new tracks for the given frame.
    */
   virtual track_set_sptr new_tracks(int offset = -1);
@@ -99,6 +102,7 @@ public:
    *                    Postive number are absolute frame numbers while negative
    *                    numbers are relative to the last frame.  For example,
    *                    offset of -1 refers to the last frame and is the default.
+   *
    * \returns a track set containing all terminated tracks for the given frame.
    */
   virtual track_set_sptr terminated_tracks(int offset = -1);
@@ -117,6 +121,7 @@ public:
    *                     Postive number are absolute frame numbers while negative
    *                     numbers are relative to the last frame.  For example,
    *                     offset of -1 refers to the last frame and is the default.
+   *
    * \returns a floating point percent value (between 0.0 and 1.0).
    */
   virtual double percentage_tracked(int offset1 = -1, int offset2 = -1);
