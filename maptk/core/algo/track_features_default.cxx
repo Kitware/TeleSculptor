@@ -36,7 +36,10 @@ namespace algo
 track_features_default
 ::track_features_default()
 : next_track_id_(0),
-  enable_stitching_(false)
+  stitching_enabled_(false),
+  stitching_per_match_req_(0.4),
+  stitching_new_shot_length_(3),
+  stitching_max_search_length_(10)
 {
 }
 
@@ -67,10 +70,24 @@ track_features_default
   match_features::get_nested_algo_configuration("feature_matcher", config, matcher_);
 
   // Frame stitching parameters
-  config->set_value("enable_stitching", enable_stitching_,
-                    "Should frame stitching be enabled? This option will attempt "
-                    "and bridge the gap between bad frames.");
+  config->set_value("stitching_enabled", stitching_enabled_,
+                    "Should frame stitching be enabled? This option will attempt to "
+                    "bridge the gap between frames which don't meet certain criteria "
+                    "(percentage of feature points tracked) and will instead attempt "
+                    "to match features on the current frame against past frames to "
+                    "meet the criteria. This is useful when there are bad frames.");
 
+  config->set_value("stitching_per_match_req", stitching_per_match_req_,
+                    "The required percentage of features needed to be matched for a "
+                    "stitch to be considered successful (between 0.0 and 1.0).");
+
+  config->set_value("stitching_new_shot_length", stitching_new_shot_length_,
+                    "Number of frames for a new shot to be considered valid before "
+                    "attempting to stitch to prior shots.");
+
+  config->set_value("stitching_max_search_length", stitching_max_search_length_,
+                    "Maximum number of frames to search in the past for matching to "
+                    "the end of the last shot.");
 
   return config;
 }
@@ -98,6 +115,16 @@ track_features_default
   match_features_sptr mf;
   match_features::set_nested_algo_configuration("feature_matcher", config, mf);
   matcher_ = mf;
+
+  // Settings for frame stitching
+  stitching_enabled_ = config->get_value<bool>("stitching_enabled");
+
+  if( stitching_enabled_ )
+  {
+    stitching_per_match_req_ = config->get_value<double>("stitching_per_match_req");
+    stitching_new_shot_length_ = config->get_value<unsigned>("stitching_new_shot_length");
+    stitching_max_search_length_ = config->get_value<unsigned>("stitching_max_search_length");
+  }
 }
 
 bool

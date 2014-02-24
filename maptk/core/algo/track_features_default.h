@@ -109,7 +109,16 @@ private:
   mutable unsigned long next_track_id_;
 
   /// Is frame stitching enabled?
-  bool enable_stitching_;
+  bool stitching_enabled_;
+
+  /// Stitching percent feature match required
+  double stitching_per_match_req_;
+
+  /// Stitching required new shot size in frames
+  unsigned stitching_new_shot_length_;
+
+  /// Max search length for stitching in frames
+  unsigned stitching_max_search_length_;
 };
 
 
