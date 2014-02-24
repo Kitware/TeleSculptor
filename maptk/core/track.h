@@ -86,9 +86,19 @@ public:
   /**
    * The added track state must have a frame_id greater than
    * the last frame in the history.
+   *
    * \returns true if successful, false not correctly ordered
    */
   bool append(const track_state& state);
+
+  /// Append the history contents of another track.
+  /**
+   * The first state of the input track must contain a frame number
+   * greater than the last state of this track.
+   *
+   * \returns true if successful, false not correctly ordered
+   */
+  bool append(const track& to_append);
 
   /// Access a const iterator to the start of the history
   history_const_itr begin() const { return history_.begin(); }
@@ -108,6 +118,9 @@ public:
 
   /// Return the number of states in the track.
   size_t size() const { return history_.size(); }
+
+  /// Return whether or not this track has any states.
+  bool empty() const { return history_.empty(); }
 
 protected:
   /// The ordered array of track states

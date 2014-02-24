@@ -97,6 +97,21 @@ track
 }
 
 
+/// Append an entire other track.
+bool
+track
+::append(const track& to_append)
+{
+  if( !this->history_.empty() && !to_append.empty() &&
+      this->last_frame() >= to_append.first_frame() )
+  {
+    return false;
+  }
+  this->history_.insert(this->history_.end(), to_append.begin(), to_append.end());
+  return true;
+}
+
+
 /// Find the track state iterator matching \a frame
 track::history_const_itr
 track
