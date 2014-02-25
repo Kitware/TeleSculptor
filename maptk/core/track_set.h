@@ -124,7 +124,7 @@ public:
    *
    * \returns a floating point percent value (between 0.0 and 1.0).
    */
-  virtual double percentage_tracked(int offset1 = -1, int offset2 = -1);
+  virtual double percentage_tracked(int offset1 = -2, int offset2 = -1);
 
   /// Return the set of features in tracks on the last frame
   virtual feature_set_sptr last_frame_features() const;
