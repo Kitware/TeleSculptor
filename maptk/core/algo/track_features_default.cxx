@@ -232,6 +232,7 @@ bool track_id_in_set( track_sptr trk_ptr, std::set<track_id_t>* set_ptr )
   return set_ptr->find( trk_ptr->id() ) != set_ptr->end();
 }
 
+
 /// Handle track stitching if enabled
 track_set_sptr
 track_features_default
