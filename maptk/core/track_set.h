@@ -132,6 +132,28 @@ public:
   /// Return the set of descriptors in tracks on the last frame
   virtual descriptor_set_sptr last_frame_descriptors() const;
 
+  /// Return the set of features in all tracks for the given frame.
+  /**
+   * \param [in] offset the frame offset for selecting the target frame.
+   *                    Postive number are absolute frame numbers while negative
+   *                    numbers are relative to the last frame.  For example,
+   *                    offset of -1 refers to the last frame and is the default.
+   *
+   * \returns a feature_set_sptr for all features on the give frame.
+   */
+  virtual feature_set_sptr frame_features(int offset = -1) const;
+
+  /// Return the set of descriptors in all tracks for the given frame.
+  /**
+   * \param [in] offset the frame offset for selecting the target frame.
+   *                    Postive number are absolute frame numbers while negative
+   *                    numbers are relative to the last frame.  For example,
+   *                    offset of -1 refers to the last frame and is the default.
+   *
+   * \returns a descriptor_set_sptr for all features on the give frame.
+   */
+  virtual descriptor_set_sptr frame_descriptors(int offset = -1) const;
+
 protected:
   /// Convert an offset number to an absolute frame number
   frame_id_t offset_to_frame(int offset) const;

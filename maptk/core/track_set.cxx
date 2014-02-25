@@ -203,7 +203,6 @@ track_set
   const frame_id_t last_frame = this->last_frame();
   std::vector<feature_sptr> last_features;
   const std::vector<track_sptr> all_tracks = this->tracks();
-  std::vector<track_sptr> active_tracks;
 
   BOOST_FOREACH(track_sptr t, all_tracks)
   {
@@ -225,7 +224,6 @@ track_set
   const frame_id_t last_frame = this->last_frame();
   std::vector<descriptor_sptr> last_descriptors;
   const std::vector<track_sptr> all_tracks = this->tracks();
-  std::vector<track_sptr> active_tracks;
 
   BOOST_FOREACH(track_sptr t, all_tracks)
   {
@@ -236,6 +234,50 @@ track_set
   }
 
   return descriptor_set_sptr(new simple_descriptor_set(last_descriptors));
+}
+
+
+/// Return the set of features in all tracks for the given frame.
+feature_set_sptr
+track_set
+::frame_features(int offset) const
+{
+  const frame_id_t frame_number = offset_to_frame(offset);
+  const std::vector<track_sptr> all_tracks = this->tracks();
+  std::vector<feature_sptr> features;
+
+  BOOST_FOREACH(track_sptr t, all_tracks)
+  {
+    track::history_const_itr itr = t->find(frame_number);
+    if( itr != t->end() )
+    {
+      features.push_back(itr->feat);
+    }
+  }
+
+  return feature_set_sptr(new simple_feature_set(features));
+}
+
+
+/// Return the set of descriptors in all tracks for the given frame.
+descriptor_set_sptr
+track_set
+::frame_descriptors(int offset) const
+{
+  const frame_id_t frame_number = offset_to_frame(offset);
+  const std::vector<track_sptr> all_tracks = this->tracks();
+  std::vector<descriptor_sptr> descriptors;
+
+  BOOST_FOREACH(track_sptr t, all_tracks)
+  {
+    track::history_const_itr itr = t->find(frame_number);
+    if( itr != t->end() )
+    {
+      descriptors.push_back(itr->desc);
+    }
+  }
+
+  return descriptor_set_sptr(new simple_descriptor_set(descriptors));
 }
 
 
