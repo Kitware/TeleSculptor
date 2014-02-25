@@ -43,6 +43,7 @@ std::istream&  operator>>(std::istream& s, vector_<N,T>& v)
 }
 
 
+/// \cond DoxygenSuppress
 #define INSTANTIATE_VECTOR(N,T) \
 template class MAPTK_CORE_EXPORT vector_<N,T>; \
 template MAPTK_CORE_EXPORT std::ostream&  operator<<(std::ostream& s, const vector_<N,T>& v); \
@@ -56,4 +57,6 @@ INSTANTIATE_VECTOR(4, double);
 INSTANTIATE_VECTOR(4, float);
 
 #undef INSTANTIATE_VECTOR
+/// \endcond
+
 } // end namespace maptk

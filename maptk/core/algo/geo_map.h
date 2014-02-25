@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief geo_map algorithm definition
+ */
+
 #ifndef MAPTK_ALGO_GEO_MAP_H_
 #define MAPTK_ALGO_GEO_MAP_H_
 
@@ -71,6 +76,7 @@ public:
 };
 
 
+/// Shared pointer for geo_map algorithm definition class
 typedef boost::shared_ptr<geo_map> geo_map_sptr;
 
 

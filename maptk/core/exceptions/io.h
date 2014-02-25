@@ -20,6 +20,7 @@ namespace maptk
 {
 
 
+/// MAPTK Generic IO exception
 class MAPTK_CORE_EXPORT io_exception
   : public maptk_core_base_exception
 {
@@ -31,6 +32,7 @@ public:
 };
 
 
+/// Exception for when a given path doesn't point to anything on the filesystem
 class MAPTK_CORE_EXPORT path_not_exists
   : public io_exception
 {
@@ -43,11 +45,12 @@ public:
   /// Destructor
   virtual ~path_not_exists() MAPTK_NOTHROW;
 
-  // Path that didn't exist.
+  /// Path that didn't exist.
   path_t m_path;
 };
 
 
+/// Exception for when a given path doesn't point to a file.
 class MAPTK_CORE_EXPORT path_not_a_file
   : public io_exception
 {
@@ -60,11 +63,12 @@ public:
   /// Destructor
   virtual ~path_not_a_file() MAPTK_NOTHROW;
 
-  // Path to a location that isn't a file.
+  /// Path to a location that isn't a file.
   path_t m_path;
 };
 
 
+/// Exception for when a given path doesn't point to a directory.
 class MAPTK_CORE_EXPORT path_not_a_directory
   : public io_exception
 {
@@ -77,7 +81,7 @@ public:
   /// Destructor
   virtual ~path_not_a_directory() MAPTK_NOTHROW;
 
-  // Path to a location that isn't a directory.
+  /// Path to a location that isn't a directory.
   path_t m_path;
 };
 

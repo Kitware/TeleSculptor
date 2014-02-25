@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief implementation of algorithm/_def/_impl templated methods
+ */
+
 #ifndef MAPTK_ALGO_ALGORITHM_TXX_
 #define MAPTK_ALGO_ALGORITHM_TXX_
 
@@ -178,11 +183,14 @@ algorithm_def<Self>
 
 } // end namespace maptk
 
+
+/// \cond DoxygenSuppress
 #define INSTANTIATE_ALGORITHM_DEF(T) \
 template class maptk::algo::algorithm_def<T>; \
 namespace maptk \
 { \
 template<> registrar<T>* registrar<T>::instance_ = 0; \
 }
+/// \endcond
 
 #endif // MAPTK_ALGO_ALGORITHM_TXX_

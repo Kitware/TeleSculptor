@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief OCV detect_features algorithm impl interface
+ */
+
 #ifndef MAPTK_OCV_DETECT_FEATURES_H_
 #define MAPTK_OCV_DETECT_FEATURES_H_
 
@@ -43,8 +48,10 @@ public:
   virtual bool check_configuration(config_block_sptr config) const;
 
   /// Extract a set of image features from the provided image
-  /// \param image_data contains the image data to process
-  /// \returns a set of image features
+  /**
+   * \param image_data contains the image data to process
+   * \returns a set of image features
+   */
   virtual feature_set_sptr
   detect(image_container_sptr image_data) const;
 

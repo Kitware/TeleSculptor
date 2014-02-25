@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief algorithm exception implementations
+ */
+
 #include "algorithm.h"
 #include <sstream>
 

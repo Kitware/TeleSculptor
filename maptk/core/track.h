@@ -37,9 +37,6 @@ namespace maptk
 class MAPTK_CORE_EXPORT track
 {
 public:
-  typedef boost::shared_ptr<descriptor> descriptor_sptr;
-  typedef boost::shared_ptr<feature> feature_sptr;
-
   /// A structure to hold the state of a track on a given frame
   struct track_state
   {
@@ -59,6 +56,7 @@ public:
     descriptor_sptr desc;
   };
 
+  /// convenience type for the const iterator of the track state vector
   typedef std::vector<track_state>::const_iterator history_const_itr;
 
   /// Default Constructor
@@ -87,6 +85,7 @@ public:
    * The added track state must have a frame_id greater than
    * the last frame in the history.
    * \returns true if successful, false not correctly ordered
+   * \param state track state to add to this track.
    */
   bool append(const track_state& state);
 
@@ -117,6 +116,7 @@ protected:
 };
 
 
+/// Shared pointer for general track type
 typedef boost::shared_ptr<track> track_sptr;
 
 } // end namespace maptk

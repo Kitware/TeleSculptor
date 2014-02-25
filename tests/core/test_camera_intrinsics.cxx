@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief core camera_intrinsics tests
+ */
+
 #include <test_common.h>
 
 #include <maptk/core/camera_intrinsics.h>

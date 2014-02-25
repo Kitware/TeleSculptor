@@ -17,7 +17,10 @@
 
 #include <boost/filesystem.hpp>
 
+
+/// \cond DoxygenSuppress
 INSTANTIATE_ALGORITHM_DEF(maptk::algo::image_io);
+/// \endcond
 
 
 namespace maptk

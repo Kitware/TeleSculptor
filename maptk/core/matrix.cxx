@@ -64,7 +64,9 @@ matrix_<M,N,T>
 
 
 /// Set the matrix to the identity matrix
-/// Extra rows or columns of a non-square matrix are set to zero
+/**
+ * Extra rows or columns of a non-square matrix are set to zero
+ */
 template <unsigned M, unsigned N, typename T>
 matrix_<M,N,T>&
 matrix_<M,N,T>
@@ -125,6 +127,7 @@ std::istream&  operator>>(std::istream& s, matrix_<M,N,T>& m)
 }
 
 
+/// \cond DoxygenSuppress
 #define INSTANTIATE_MATRIX(M,N,T) \
 template class MAPTK_CORE_EXPORT matrix_<M,N,T>; \
 template MAPTK_CORE_EXPORT std::ostream&  operator<<(std::ostream& s, const matrix_<M,N,T>& m); \
@@ -147,4 +150,6 @@ INSTANTIATE_MATRIX(4, 4, float);
 
 
 #undef INSTANTIATE_MATRIX
+/// \endcond
+
 } // end namespace maptk

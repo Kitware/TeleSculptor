@@ -4,11 +4,14 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief OCV descriptor_set implementation
+ */
+
 #include <maptk/ocv/descriptor_set.h>
 
 /// This macro applies another macro to all of the types listed below.
-/// The listed type are all the types supported for conversion between
-/// cv::Mat and maptk::descriptor
 #define APPLY_TO_TYPES(MACRO) \
     MACRO(byte); \
     MACRO(float); \
@@ -85,6 +88,7 @@ descriptor_set
 {
   std::vector<descriptor_sptr> desc;
   const unsigned num_desc = data_.rows;
+  /// \cond DoxygenSuppress
 #define CONVERT_CASE(T) \
   case cv::DataType<T>::type: \
   for( unsigned i=0; i<num_desc; ++i ) \
@@ -101,6 +105,7 @@ descriptor_set
               << data_.type() <<std::endl;
   }
 #undef CONVERT_CASE
+  /// \endcond
   return desc;
 }
 
@@ -121,6 +126,7 @@ descriptors_to_ocv_matrix(const maptk::descriptor_set& desc_set)
   {
     return cv::Mat();
   }
+  /// \cond DoxygenSuppress
 #define CONVERT_CASE(T) \
   if( dynamic_cast<const descriptor_array_of<T>*>(desc[0].get()) ) \
   { \
@@ -128,6 +134,7 @@ descriptors_to_ocv_matrix(const maptk::descriptor_set& desc_set)
   }
   APPLY_TO_TYPES(CONVERT_CASE);
 #undef CONVERT_CASE
+  /// \endcond
   return cv::Mat();
 }
 

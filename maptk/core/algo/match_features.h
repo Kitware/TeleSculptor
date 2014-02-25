@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief match_features algorithm definition interface
+ */
+
 #ifndef MAPTK_ALGO_MATCH_FEATURES_H_
 #define MAPTK_ALGO_MATCH_FEATURES_H_
 
@@ -42,6 +47,7 @@ public:
 };
 
 
+/// Shared pointer type for match_features algorithm definition class
 typedef boost::shared_ptr<match_features> match_features_sptr;
 
 

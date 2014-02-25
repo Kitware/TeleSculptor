@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief PROJ geo_map algorithm implementation
+ */
+
 #include "geo_map.h"
 
 #include <assert.h>

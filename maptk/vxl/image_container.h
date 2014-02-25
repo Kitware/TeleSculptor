@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief VXL image container interface
+ */
+
 #ifndef MAPTK_VXL_IMAGE_CONTAINER_H_
 #define MAPTK_VXL_IMAGE_CONTAINER_H_
 
@@ -43,8 +48,10 @@ public:
   : data_(other.data_) {}
 
   /// The size of the image data in bytes
-  /// This size includes all allocated image memory,
-  /// which could be larger than width*height*depth.
+  /**
+   * This size includes all allocated image memory,
+   * which could be larger than width*height*depth.
+   */
   virtual size_t size() const;
 
   /// The width of the image in pixels
@@ -56,9 +63,10 @@ public:
   /// The depth (or number of channels) of the image
   virtual size_t depth() const { return data_.nplanes(); }
 
-  /// Get and in-memory image class to access the data
+  /// Get an in-memory image class to access the data
   virtual image get_image() const { return vxl_to_maptk(data_); }
 
+  /// Get image data in this container.
   vil_image_view<vxl_byte> get_vil_image_view() const { return data_; }
 
   /// Convert a VXL vil_image_view to a MAPTK image
@@ -68,7 +76,7 @@ public:
   static vil_image_view<vxl_byte> maptk_to_vxl(const image& img);
 
 protected:
-
+  /// image data
   vil_image_view<vxl_byte> data_;
 };
 

@@ -49,9 +49,14 @@ public:
   virtual covariance_3d covar() const = 0;
 };
 
+/// Shared pointer type for the base landmark class
 typedef boost::shared_ptr<landmark> landmark_sptr;
 
 /// output stream operator for a base class landmark
+/**
+ * \param s output stream
+ * \param m landmark to stream
+ */
 MAPTK_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const landmark& m);
 
 
@@ -65,6 +70,10 @@ public:
   landmark_<T>();
 
   /// Constructor for a landmark
+  /**
+   * \param loc 3D location of the landmark
+   * \param scale optional scale of the landmark (default of 1)
+   */
   landmark_<T>(const vector_3_<T>& loc, T scale=1);
 
   /// Access staticly available type of underlying data (double or float)
@@ -88,6 +97,9 @@ public:
   virtual covariance_3d covar() const { return static_cast<covariance_3d>(covar_); }
 
   // Set the landmark position in image space
+  /**
+   * \param loc new location of this landmark
+   */
   void set_loc(const vector_3_<T>& loc) { loc_ = loc; }
   /// Set the scale of the landmark
   void set_scale(T scale) { scale_ = scale; }
@@ -95,13 +107,17 @@ public:
   void set_covar(const covariance_<3,T>& covar) { covar_ = covar; }
 
 protected:
-
+  /// landmark 3d position
   vector_3_<T> loc_;
+  /// landmark scale
   T scale_;
+  /// landmark covariance matrix
   covariance_<3,T> covar_;
 };
 
+/// Double precision landmark type
 typedef landmark_<double> landmark_d;
+/// Sincle precision landmark type
 typedef landmark_<float> landmark_f;
 
 /// output stream operator for a landmark

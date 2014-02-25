@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief core feature iterface
+ */
+
 #ifndef MAPTK_FEATURE_H_
 #define MAPTK_FEATURE_H_
 
@@ -21,10 +26,11 @@ namespace maptk
 {
 
 /// A representation of a 2D image feature point.
-///
-/// The base class of features is abstract and provides a
-/// double precision interface.  The templated derived class
-/// can store values in either single or double precision.
+/**
+ * The base class of features is abstract and provides a
+ * double precision interface.  The templated derived class
+ * can store values in either single or double precision.
+ */
 class feature
 {
 public:
@@ -46,15 +52,21 @@ public:
   virtual covariance_2d covar() const = 0;
 };
 
+/// Shared pointer for base feature type
 typedef boost::shared_ptr<feature> feature_sptr;
 
 /// output stream operator for base class feature
+/**
+ * \param s output stream
+ * \param f feature to stream
+ */
 MAPTK_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const feature& f);
 
 
 /// A concrete 2D image feature point.
-///
-/// Templated over real number type (double or float).
+/**
+ * Templated over real number type (double or float).
+ */
 template <typename T>
 class MAPTK_CORE_EXPORT feature_
   : public feature
@@ -111,14 +123,21 @@ public:
 
 protected:
 
+  /// location of feature
   vector_2_<T> loc_;
+  /// magnitude of feature
   T magnitude_;
+  /// scale of feature
   T scale_;
+  /// angle of feature
   T angle_;
+  /// covariance matrix of feature
   covariance_<2,T> covar_;
 };
 
+/// Double-precision feature_ type
 typedef feature_<double> feature_d;
+/// Single-precision feature_ type
 typedef feature_<float> feature_f;
 
 /// output stream operator for a feature

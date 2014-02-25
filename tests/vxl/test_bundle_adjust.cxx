@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief test VXL bundle adjustment functionality
+ */
+
 #include <test_common.h>
 
 #include <maptk/core/metrics.h>

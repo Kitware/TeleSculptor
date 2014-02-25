@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief local_geo_cs implementation
+ */
+
 #include "local_geo_cs.h"
 #include <boost/math/constants/constants.hpp>
 #include <boost/foreach.hpp>

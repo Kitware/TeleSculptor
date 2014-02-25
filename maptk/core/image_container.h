@@ -1,7 +1,12 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
+ */
+
+/**
+ * \file
+ * \brief core image_container interface
  */
 
 #ifndef MAPTK_IMAGE_CONTAINER_H_
@@ -16,12 +21,13 @@ namespace maptk
 {
 
 /// An abstract representation of an image container.
-///
-/// This class provides an interface for passing image data
-/// between algorithms.  It is intended to be a wrapper for image
-/// classes in third-party libraries and facilitate conversion between
-/// various representations.  It provides limited access to the underlying
-/// data and is not intended for direct use in image processing algorithms.
+/**
+ * This class provides an interface for passing image data
+ * between algorithms.  It is intended to be a wrapper for image
+ * classes in third-party libraries and facilitate conversion between
+ * various representations.  It provides limited access to the underlying
+ * data and is not intended for direct use in image processing algorithms.
+ */
 class image_container
 {
 public:
@@ -30,8 +36,10 @@ public:
   virtual ~image_container() {}
 
   /// The size of the image data in bytes
-  /// This size includes all allocated image memory,
-  /// which could be larger than width*height*depth.
+  /**
+   * This size includes all allocated image memory,
+   * which could be larger than width*height*depth.
+   */
   virtual size_t size() const = 0;
 
   /// The width of the image in pixels
@@ -48,6 +56,7 @@ public:
 
 };
 
+/// Shared pointer for base image_container type
 typedef boost::shared_ptr<image_container> image_container_sptr;
 
 
@@ -62,8 +71,10 @@ public:
   : data(d) {}
 
   /// The size of the image data in bytes
-  /// This size includes all allocated image memory,
-  /// which could be larger than width*height*depth.
+  /**
+   * This size includes all allocated image memory,
+   * which could be larger than width*height*depth.
+   */
   virtual size_t size() const { return data.size(); }
 
   /// The width of the image in pixels
@@ -79,7 +90,7 @@ public:
   virtual image get_image() const { return data; };
 
 protected:
-
+  /// data for this image container
   image data;
 };
 

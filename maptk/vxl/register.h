@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief VXL algorithm registration interface
+ */
+
 #ifndef MAPTK_VXL_REGISTER_H_
 #define MAPTK_VXL_REGISTER_H_
 
