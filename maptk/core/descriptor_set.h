@@ -24,8 +24,8 @@ namespace maptk
  * The base class of descriptor_set is abstract and provides a
  * double precision interface.  The templated derived class
  * can store values in either single or double precision.
- * class descriptor_set
  */
+class descriptor_set
 {
 public:
   /// Destructor

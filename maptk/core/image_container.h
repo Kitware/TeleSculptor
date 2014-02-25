@@ -27,8 +27,8 @@ namespace maptk
  * classes in third-party libraries and facilitate conversion between
  * various representations.  It provides limited access to the underlying
  * data and is not intended for direct use in image processing algorithms.
- * class image_container
  */
+class image_container
 {
 public:
 

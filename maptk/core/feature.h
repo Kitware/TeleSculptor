@@ -30,8 +30,8 @@ namespace maptk
  * The base class of features is abstract and provides a
  * double precision interface.  The templated derived class
  * can store values in either single or double precision.
- * class feature
  */
+class feature
 {
 public:
   /// Destructor

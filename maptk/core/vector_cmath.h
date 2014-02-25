@@ -23,8 +23,8 @@ namespace maptk
  * functions for basic vector operations.  These functions
  * are templated over scalar type and dimension.
  * All members of this struct are static
- * template <unsigned N, typename T>
  */
+template <unsigned N, typename T>
 struct vector_cmath_
 {
 public:
