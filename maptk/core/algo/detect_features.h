@@ -33,8 +33,10 @@ public:
   std::string type_name() const { return "detect_features"; }
 
   /// Extract a set of image features from the provided image
-  /// \param image_data contains the image data to process
-  /// \returns a set of image features
+  /**
+   * \param image_data contains the image data to proces'
+   * \returns a set of image features
+   */
   virtual feature_set_sptr
   detect(image_container_sptr image_data) const = 0;
 

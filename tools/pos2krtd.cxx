@@ -6,7 +6,7 @@
 
 /**
  * \file
- * \brief PSO file to KRTD conversion utility
+ * \brief POS file to KRTD conversion utility
  */
 
 #include<iostream>

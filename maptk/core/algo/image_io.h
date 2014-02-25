@@ -69,12 +69,16 @@ public:
 
 private:
   /// Implementation specific load functionality.
-  /// \param filename the path to the file the load
-  /// \returns an image container refering to the loaded image
+  /**
+   * \param filename the path to the file the load
+   * \returns an image container refering to the loaded image
+   */
   virtual image_container_sptr load_(std::string const& filename) const = 0;
   /// Implementation specific save functionality.
-  /// \param filename the path to the file to save
-  /// \param data the image container refering to the image to write
+  /**
+   * \param filename the path to the file to save
+   * \param data the image container refering to the image to write
+   */
   virtual void save_(std::string const& filename,
                      image_container_sptr data) const = 0;
 };

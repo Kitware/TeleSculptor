@@ -44,15 +44,13 @@ void set_nested_ocv_algo_configuration_helper(std::string const& name,
                                               config_block_sptr config,
                                               cv::Ptr<cv::Algorithm> &algo);
 
-/// Helper method for checking nested OpenCV Algorithm
-/// configurations
+/// Helper method for checking nested OpenCV Algorithm configurations
 MAPTK_OCV_EXPORT
 bool check_nested_ocv_algo_configuration_helper(std::string const& name,
                                                 config_block_sptr config,
                                                 cv::Ptr<cv::Algorithm> algo);
 
-/// Templated helper method and specialization for creating a new OpenCV
-/// Algorithm instance.
+/// Templated helper method for creating a new OpenCV algorithm instance.
 /**
  * \tparam algo_t cv::Algorithm class or sub-class to attempt creation from. We
  *                will always fall-back to attempting
@@ -87,7 +85,11 @@ cv::Ptr<algo_t> create_ocv_algo(std::string const& impl_name)
 }
 
 
-/// cv::Algorithm specialization
+/// cv::Algorithm specialization when given type is cv::Algorithm
+/**
+ * Create call on a cv::Algorithm is performed differently than on sub-classes
+ * (its templated itself vs. other not being so).
+ */
 template <>
 MAPTK_OCV_EXPORT
 cv::Ptr<cv::Algorithm> create_ocv_algo<cv::Algorithm>(std::string const& impl_name);

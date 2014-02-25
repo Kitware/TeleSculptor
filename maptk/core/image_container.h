@@ -21,13 +21,14 @@ namespace maptk
 {
 
 /// An abstract representation of an image container.
-///
-/// This class provides an interface for passing image data
-/// between algorithms.  It is intended to be a wrapper for image
-/// classes in third-party libraries and facilitate conversion between
-/// various representations.  It provides limited access to the underlying
-/// data and is not intended for direct use in image processing algorithms.
-class image_container
+/**
+ * This class provides an interface for passing image data
+ * between algorithms.  It is intended to be a wrapper for image
+ * classes in third-party libraries and facilitate conversion between
+ * various representations.  It provides limited access to the underlying
+ * data and is not intended for direct use in image processing algorithms.
+ * class image_container
+ */
 {
 public:
 
@@ -35,8 +36,10 @@ public:
   virtual ~image_container() {}
 
   /// The size of the image data in bytes
-  /// This size includes all allocated image memory,
-  /// which could be larger than width*height*depth.
+  /**
+   * This size includes all allocated image memory,
+   * which could be larger than width*height*depth.
+   */
   virtual size_t size() const = 0;
 
   /// The width of the image in pixels
@@ -68,8 +71,10 @@ public:
   : data(d) {}
 
   /// The size of the image data in bytes
-  /// This size includes all allocated image memory,
-  /// which could be larger than width*height*depth.
+  /**
+   * This size includes all allocated image memory,
+   * which could be larger than width*height*depth.
+   */
   virtual size_t size() const { return data.size(); }
 
   /// The width of the image in pixels

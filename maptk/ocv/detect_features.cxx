@@ -107,8 +107,10 @@ detect_features
 
 
 /// Extract a set of image features from the provided image
-/// \param image_data contains the image data to process
-/// \returns a set of image features
+/**
+ * \param image_data contains the image data to process
+ * \returns a set of image features
+ */
 feature_set_sptr
 detect_features
 ::detect(image_container_sptr image_data) const

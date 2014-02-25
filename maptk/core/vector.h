@@ -435,7 +435,6 @@ inline vector_<N,T> operator/( const vector_<N,T>& v, const T& s )
 // --- Vector-vector operators ----------------------------------------
 
 /// Addition operator
-/// \relatesalso vector_
 /**
  * \relatesalso vector_
  * \param a a vector
@@ -450,7 +449,6 @@ inline vector_<N,T> operator+( const vector_<N,T>& a, const vector_<N,T>& b )
 }
 
 /// Subraction operator
-/// \relatesalso vector_
 /**
  * \relatesalso vector_
  * \param a a vector

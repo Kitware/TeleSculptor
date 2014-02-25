@@ -119,7 +119,9 @@ public:
   matrix_<M,N,T>& set_diagonal(const vector_<min_dim,T>& diag);
 
   /// Set the matrix to the identity matrix
-  /// Extra rows or columns of a non-square matrix are set to zero
+  /**
+   * Extra rows or columns of a non-square matrix are set to zero
+   */
   matrix_<M,N,T>& set_identity();
 
   /// Return the transpose of this matrix

@@ -20,11 +20,12 @@ namespace maptk
 {
 
 /// An abstract ordered collection of feature descriptors.
-///
-/// The base class of descriptor_set is abstract and provides a
-/// double precision interface.  The templated derived class
-/// can store values in either single or double precision.
-class descriptor_set
+/**
+ * The base class of descriptor_set is abstract and provides a
+ * double precision interface.  The templated derived class
+ * can store values in either single or double precision.
+ * class descriptor_set
+ */
 {
 public:
   /// Destructor

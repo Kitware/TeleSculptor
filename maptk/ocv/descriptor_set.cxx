@@ -12,8 +12,10 @@
 #include <maptk/ocv/descriptor_set.h>
 
 /// This macro applies another macro to all of the types listed below.
-/// The listed type are all the types supported for conversion between
-/// cv::Mat and maptk::descriptor
+/**
+ * The listed type are all the types supported for conversion between
+ * cv::Mat and maptk::descriptor
+ */
 #define APPLY_TO_TYPES(MACRO) \
     MACRO(byte); \
     MACRO(float); \

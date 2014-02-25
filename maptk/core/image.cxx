@@ -158,7 +158,9 @@ image
 
 
 /// Copy Constructor
-/// the new image will share the same memory as the old image
+/**
+ * the new image will share the same memory as the old image
+ */
 image
 ::image(const image& other)
 : data_(other.data_),
@@ -195,8 +197,6 @@ image
 
 
 /// The size of the image data in bytes
-/// This size includes all allocated image memory,
-/// which could be larger than width*height*depth.
 size_t
 image
 ::size() const
@@ -269,8 +269,6 @@ image
 
 
 /// Compare to images to see if the pixels have the same values.
-/// This does not require that the images have the same memory layout,
-/// only that the images have the same dimensions and pixel values.
 bool equal_content(const image& img1, const image& img2)
 {
   if( img1.width()  != img2.width()  ||

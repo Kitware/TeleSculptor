@@ -21,9 +21,10 @@ namespace maptk
 {
 
 /// Inertial Navigation System (INS) data
-///
-/// This struct hold IMU and GPS sensor readings
-/// provided in the imagery metadata
+/**
+ * This struct hold IMU and GPS sensor readings
+ * provided in the imagery metadata
+ */
 struct ins_data
 {
 public:

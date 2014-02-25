@@ -39,13 +39,17 @@ public:
   virtual std::size_t num_bytes() const = 0;
 
   /// Return the descriptor as a vector of bytes
-  /// This should always work,
-  /// even if the underlying type is not bytes
+  /**
+   * This should always work,
+   * even if the underlying type is not bytes
+   */
   virtual std::vector<byte> as_bytes() const = 0;
 
   /// Return the descriptor as a vector of doubles
-  /// Return an empty vector if this makes no sense
-  /// for the underlying type.
+  /**
+   * Return an empty vector if this makes no sense
+   * for the underlying type.
+   */
   virtual std::vector<double> as_double() const = 0;
 
 };

@@ -46,8 +46,10 @@ public:
   : data_(other.data_) {}
 
   /// The size of the image data in bytes
-  /// This size includes all allocated image memory,
-  /// which could be larger than width*height*depth.
+  /**
+   * This size includes all allocated image memory,
+   * which could be larger than width*height*depth.
+   */
   virtual size_t size() const;
 
   /// The width of the image in pixels

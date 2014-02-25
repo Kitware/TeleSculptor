@@ -6,7 +6,7 @@
 
 /**
  * \file
- * \brief vector match templated functions
+ * \brief vector math templated functions
  */
 
 #ifndef MAPTK_VECTOR_CMATH_H_
@@ -18,12 +18,13 @@ namespace maptk
 {
 
 /// C-style vector math operatorations
-///
-/// This struct is intended to provided efficient helper
-/// functions for basic vector operations.  These functions
-/// are templated over scalar type and dimension.
-/// All members of this struct are static
-template <unsigned N, typename T>
+/**
+ * This struct is intended to provided efficient helper
+ * functions for basic vector operations.  These functions
+ * are templated over scalar type and dimension.
+ * All members of this struct are static
+ * template <unsigned N, typename T>
+ */
 struct vector_cmath_
 {
 public:

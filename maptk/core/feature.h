@@ -26,11 +26,12 @@ namespace maptk
 {
 
 /// A representation of a 2D image feature point.
-///
-/// The base class of features is abstract and provides a
-/// double precision interface.  The templated derived class
-/// can store values in either single or double precision.
-class feature
+/**
+ * The base class of features is abstract and provides a
+ * double precision interface.  The templated derived class
+ * can store values in either single or double precision.
+ * class feature
+ */
 {
 public:
   /// Destructor
@@ -63,8 +64,9 @@ MAPTK_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const feature& f);
 
 
 /// A concrete 2D image feature point.
-///
-/// Templated over real number type (double or float).
+/**
+ * Templated over real number type (double or float).
+ */
 template <typename T>
 class MAPTK_CORE_EXPORT feature_
   : public feature

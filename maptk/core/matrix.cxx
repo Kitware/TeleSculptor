@@ -64,7 +64,9 @@ matrix_<M,N,T>
 
 
 /// Set the matrix to the identity matrix
-/// Extra rows or columns of a non-square matrix are set to zero
+/**
+ * Extra rows or columns of a non-square matrix are set to zero
+ */
 template <unsigned M, unsigned N, typename T>
 matrix_<M,N,T>&
 matrix_<M,N,T>

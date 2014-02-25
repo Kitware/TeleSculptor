@@ -20,7 +20,9 @@ namespace maptk
 
 
 /// Constructor - from a calibration matrix
-/// \note ignores values below the diagonal
+/**
+ * \note ignores values below the diagonal
+ */
 template <typename T>
 camera_intrinsics_<T>
 ::camera_intrinsics_(const matrix_<3,3,T>& K)

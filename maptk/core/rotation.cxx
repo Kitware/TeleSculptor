@@ -87,7 +87,9 @@ rotation_<T>
 
 
 /// Constructor - from a matrix
-/// requires orthonormal matrix with +1 determinant
+/**
+ * requires orthonormal matrix with +1 determinant
+ */
 template <typename T>
 rotation_<T>
 ::rotation_(const matrix_<3,3,T>& rot)
@@ -250,8 +252,10 @@ rotation_<T>
 
 
 /// Rotate a vector
-/// \note for a large number of vectors, it is more efficient to
-/// create a rotation matrix and use matrix multiplcation
+/**
+ * \note for a large number of vectors, it is more efficient to
+ * create a rotation matrix and use matrix multiplcation
+ */
 template <typename T>
 vector_<3,T>
 rotation_<T>
