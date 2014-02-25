@@ -4,6 +4,12 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief Header for \link maptk::camera_intrinsics_ camera_intrinsics_<T>
+ *        \endlink class
+ */
+
 #ifndef MAPTK_CAMERA_INTRINSICS_H_
 #define MAPTK_CAMERA_INTRINSICS_H_
 
@@ -13,13 +19,6 @@
 
 #include "matrix.h"
 #include "vector.h"
-
-
-/**
- * \file
- * \brief Header for \link maptk::camera_intrinsics_ camera_intrinsics_<T>
- *        \endlink class
- */
 
 
 namespace maptk

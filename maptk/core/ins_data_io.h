@@ -4,6 +4,13 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief File IO functions for a \ref maptk::ins_data
+ *
+ * File format is the POS file.
+ */
+
 #ifndef MAPTK_INS_DATA_IO_H_
 #define MAPTK_INS_DATA_IO_H_
 
@@ -12,12 +19,6 @@
 
 #include "ins_data.h"
 
-/**
- * \file
- * \brief File IO functions for a \ref maptk::ins_data
- *
- * File format is the POS file.
- */
 
 namespace maptk
 {

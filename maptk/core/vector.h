@@ -4,6 +4,14 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief Header for \link maptk::vector_ vector_<N,T> \endlink class
+ *        as well as \link maptk::vector_2_ vector_2_<T> \endlink,
+ *        \link maptk::vector_3_ vector_3_<T> \endlink, and
+ *        \link maptk::vector_4_ vector_4_<T> \endlink classes
+ */
+
 #ifndef MAPTK_VECTOR_H_
 #define MAPTK_VECTOR_H_
 
@@ -15,15 +23,6 @@
 #include <boost/static_assert.hpp>
 
 #include "vector_cmath.h"
-
-
-/**
- * \file
- * \brief Header for \link maptk::vector_ vector_<N,T> \endlink class
- *        as well as \link maptk::vector_2_ vector_2_<T> \endlink,
- *        \link maptk::vector_3_ vector_3_<T> \endlink, and
- *        \link maptk::vector_4_ vector_4_<T> \endlink classes
- */
 
 
 namespace maptk

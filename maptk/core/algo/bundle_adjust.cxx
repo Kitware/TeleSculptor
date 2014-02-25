@@ -4,15 +4,15 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
-#include <maptk/core/algo/bundle_adjust.h>
-#include <maptk/core/algo/algorithm.txx>
-
-
 /**
  * \file
  * \brief Instantiation of \link maptk::algo::algorithm_def algorithm_def<T>
  *        \endlink for \link maptk::algo::bundle_adjust bundle_adjust \endlink
  */
+
+#include <maptk/core/algo/bundle_adjust.h>
+#include <maptk/core/algo/algorithm.txx>
+
 
 /// \cond DoxygenSuppress
 INSTANTIATE_ALGORITHM_DEF(maptk::algo::bundle_adjust);

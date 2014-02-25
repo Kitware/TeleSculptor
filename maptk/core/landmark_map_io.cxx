@@ -4,6 +4,13 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief Implementation of file IO functions for a \ref maptk::landmark_map
+ *
+ * Uses the PLY file format
+ */
+
 #include "landmark_map_io.h"
 
 #include <fstream>
@@ -14,13 +21,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 
-
-/**
- * \file
- * \brief Implementation of file IO functions for a \ref maptk::landmark_map
- *
- * Uses the PLY file format
- */
 
 namespace maptk
 {

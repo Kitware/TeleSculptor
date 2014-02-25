@@ -4,15 +4,14 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
-#include "vector.h"
-
-
 /**
  * \file
  * \brief Implementation of \link maptk::vector_ vector_<N,T> \endlink and
  *        related classes for \c T = { \c float, \c double } and
  *        \c N = { 2, 3, 4}
  */
+
+#include "vector.h"
 
 
 namespace maptk

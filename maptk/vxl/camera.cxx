@@ -4,7 +4,6 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
-
 /**
  * \file
  * \brief Implementation for conversions between maptk and vpgl cameras

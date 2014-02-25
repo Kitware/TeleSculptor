@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief Header for evaluation metric functions.
+ */
+
 #ifndef MAPTK_METRICS_H_
 #define MAPTK_METRICS_H_
 
@@ -16,11 +21,6 @@
 #include <vector>
 #include <map>
 #include <cmath>
-
-/**
- * \file
- * \brief Header for evaluation metric functions.
- */
 
 namespace maptk
 {

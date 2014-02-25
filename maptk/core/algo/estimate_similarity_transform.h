@@ -31,6 +31,7 @@ namespace maptk
 namespace algo
 {
 
+/// Algorithm for estimating the similarity transform between two point sets
 class MAPTK_CORE_EXPORT estimate_similarity_transform
   : public algorithm_def<estimate_similarity_transform>
 {

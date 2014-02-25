@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief Header for \link maptk::landmark landmark \endlink objects
+ */
+
 #ifndef MAPTK_LANDMARK_H_
 #define MAPTK_LANDMARK_H_
 
@@ -16,12 +21,6 @@
 #include "covariance.h"
 #include "vector.h"
 #include "similarity.h"
-
-
-/**
- * \file
- * \brief Header for \link maptk::landmark landmark \endlink objects
- */
 
 
 namespace maptk

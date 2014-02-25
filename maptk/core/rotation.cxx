@@ -4,18 +4,18 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief Implementation of \link maptk::rotation_ rotation_<T> \endlink
+ *        for \c T = { \c float, \c double }
+ */
+
 #include "rotation.h"
 
 #include <cmath>
 #include <limits>
 #include <boost/math/constants/constants.hpp>
 
-
-/**
- * \file
- * \brief Implementation of \link maptk::rotation_ rotation_<T> \endlink
- *        for \c T = { \c float, \c double }
- */
 
 namespace
 {

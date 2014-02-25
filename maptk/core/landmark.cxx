@@ -4,15 +4,15 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
-#include "landmark.h"
-#include "transform.h"
-
-
 /**
  * \file
  * \brief Implementation and template instantiation for
  * \link maptk::landmark landmark \endlink objects
  */
+
+#include "landmark.h"
+#include "transform.h"
+
 
 namespace maptk
 {

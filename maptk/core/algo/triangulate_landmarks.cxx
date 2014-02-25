@@ -4,10 +4,6 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
-#include <maptk/core/algo/triangulate_landmarks.h>
-#include <maptk/core/algo/algorithm.txx>
-
-
 /**
  * \file
  * \brief Instantiation of \link maptk::algo::algorithm_def algorithm_def<T>
@@ -15,4 +11,10 @@
  *        triangulate_landmarks \endlink
  */
 
+#include <maptk/core/algo/triangulate_landmarks.h>
+#include <maptk/core/algo/algorithm.txx>
+
+
+/// \cond DoxygenSuppress
 INSTANTIATE_ALGORITHM_DEF(maptk::algo::triangulate_landmarks);
+/// \endcond

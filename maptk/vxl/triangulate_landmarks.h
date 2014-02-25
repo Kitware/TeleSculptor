@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief Header for VXL triangulate_landmarks algorithm
+ */
+
 #ifndef MAPTK_VXL_TRIANGULATE_LANDMARKS_H_
 #define MAPTK_VXL_TRIANGULATE_LANDMARKS_H_
 
@@ -11,11 +16,6 @@
 
 #include <maptk/core/algo/triangulate_landmarks.h>
 #include <boost/scoped_ptr.hpp>
-
-/**
- * \file
- * \brief Header for VXL triangulate_landmarks algorithm
- */
 
 namespace maptk
 {

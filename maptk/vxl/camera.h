@@ -4,13 +4,13 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
-#ifndef MAPTK_VXL_CAMERA_H_
-#define MAPTK_VXL_CAMERA_H_
-
 /**
  * \file
  * \brief Header file for conversions between maptk and vpgl cameras
  */
+
+#ifndef MAPTK_VXL_CAMERA_H_
+#define MAPTK_VXL_CAMERA_H_
 
 #include <maptk/vxl/vxl_config.h>
 

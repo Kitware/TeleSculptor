@@ -4,6 +4,12 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief Header for \link maptk::camera camera \endlink and
+ *        \link maptk::camera_ camera_<T> \endlink classes
+ */
+
 #ifndef MAPTK_CAMERA_H_
 #define MAPTK_CAMERA_H_
 
@@ -17,13 +23,6 @@
 #include "vector.h"
 #include "similarity.h"
 #include <boost/shared_ptr.hpp>
-
-
-/**
- * \file
- * \brief Header for \link maptk::camera camera \endlink and
- *        \link maptk::camera_ camera_<T> \endlink classes
- */
 
 
 namespace maptk

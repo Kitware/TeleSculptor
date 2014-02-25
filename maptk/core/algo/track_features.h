@@ -4,6 +4,12 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief Header defining abstract \link maptk::algo::track_features feature
+ *        tracking \endlink algorithm
+ */
+
 #ifndef MAPTK_ALGO_TRACK_FEATURES_H_
 #define MAPTK_ALGO_TRACK_FEATURES_H_
 
@@ -18,12 +24,6 @@
 #include <maptk/core/image_container.h>
 #include <maptk/core/track_set.h>
 
-
-/**
- * \file
- * \brief Header defining abstract \link maptk::algo::track_features feature
- *        tracking \endlink algorithm
- */
 
 namespace maptk
 {

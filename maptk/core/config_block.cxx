@@ -4,6 +4,12 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file maptk/core/config_block.cxx
+ *
+ * \brief Implementation of \link maptk::config_block configuration \endlink object
+ */
+
 #include "config_block.h"
 
 #include <boost/algorithm/string/case_conv.hpp>
@@ -16,11 +22,6 @@
 #include <iterator>
 #include <sstream>
 
-/**
- * \file maptk/core/config_block.cxx
- *
- * \brief Implementation of \link maptk::config_block configuration \endlink object
- */
 
 namespace maptk
 {

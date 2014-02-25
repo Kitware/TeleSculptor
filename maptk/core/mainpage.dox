@@ -87,7 +87,7 @@ types.
 
 
 \subsection sec-core-algorithm-impls Algorithm Implementations
-- \ref algo::simple_track_features : converts frame-to-frame feature matching
+- \ref algo::track_features_default : converts frame-to-frame feature matching
                into tracks
          - Implements \ref algo::track_features.
          - Requires instances of \ref algo::detect_features,

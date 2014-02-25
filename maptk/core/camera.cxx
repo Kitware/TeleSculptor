@@ -4,16 +4,15 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
-#include "camera.h"
-#include <iomanip>
-#include "transform.h"
-
-
 /**
  * \file
  * \brief Implementation of \link maptk::camera_ camera_<T> \endlink class
  *        for \c T = { \c float, \c double }
  */
+
+#include "camera.h"
+#include <iomanip>
+#include "transform.h"
 
 
 namespace maptk

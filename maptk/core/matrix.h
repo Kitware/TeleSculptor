@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief Header for \link maptk::matrix_ matrix_<M,N,T> \endlink class
+ */
+
 #ifndef MAPTK_MATRIX_H_
 #define MAPTK_MATRIX_H_
 
@@ -18,12 +23,6 @@
 
 #include "vector.h"
 #include "vector_cmath.h"
-
-
-/**
- * \file
- * \brief Header for \link maptk::matrix_ matrix_<M,N,T> \endlink class
- */
 
 
 namespace maptk

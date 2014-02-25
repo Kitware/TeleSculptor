@@ -4,6 +4,12 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief Header defining the \link maptk::algo::track_features_default
+ *        track_features_default \endlink algorithm
+ */
+
 #ifndef MAPTK_ALGO_TRACK_FEATURES_DEFAULT_H_
 #define MAPTK_ALGO_TRACK_FEATURES_DEFAULT_H_
 
@@ -19,12 +25,6 @@
 #include <maptk/core/image_container.h>
 #include <maptk/core/track_set.h>
 
-
-/**
- * \file
- * \brief Header defining the \link maptk::algo::track_features_default
- *        track_features_default \endlink algorithm
- */
 
 namespace maptk
 {
@@ -50,8 +50,14 @@ public:
   /// Get this algorithm's \link maptk::config_block configuration block \endlink
   virtual config_block_sptr get_configuration() const;
   /// Set this algorithm's properties via a config block
+  /**
+   * \param config \c config_block to draw config properties from
+   */
   virtual void set_configuration(config_block_sptr config);
   /// Check that the algorithm's currently configuration is valid
+  /**
+   * \param config \c config_block to check the configuration of.
+   */
   virtual bool check_configuration(config_block_sptr config) const;
 
   /// Extend a previous set of tracks using the current frame

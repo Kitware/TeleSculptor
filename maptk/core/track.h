@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief Header for \link maptk::track track \endlink objects
+ */
+
 #ifndef MAPTK_TRACK_H_
 #define MAPTK_TRACK_H_
 
@@ -17,12 +22,6 @@
 
 #include "descriptor.h"
 #include "feature.h"
-
-
-/**
- * \file
- * \brief Header for \link maptk::track track \endlink objects
- */
 
 
 namespace maptk

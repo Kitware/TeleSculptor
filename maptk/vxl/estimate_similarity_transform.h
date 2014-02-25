@@ -25,6 +25,7 @@ namespace vxl
 {
 
 
+/// VXL implementation of similarity transform estimation
 class MAPTK_VXL_EXPORT estimate_similarity_transform
   : public algo::algorithm_impl<estimate_similarity_transform,
                                 algo::estimate_similarity_transform>

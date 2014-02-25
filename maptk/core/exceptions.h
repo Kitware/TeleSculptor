@@ -4,15 +4,15 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
-#ifndef MAPTK_CORE_EXCEPTIONS_H
-#define MAPTK_CORE_EXCEPTIONS_H
-
 /**
  * \file
  * \brief Base include file for all maptk::core exceptions
  *
  * All exception types for maptk::core are included through this file.
  */
+
+#ifndef MAPTK_CORE_EXCEPTIONS_H
+#define MAPTK_CORE_EXCEPTIONS_H
 
 #include "exceptions/base.h"
 #include "exceptions/algorithm.h"
