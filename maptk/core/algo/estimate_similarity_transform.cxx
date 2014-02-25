@@ -66,46 +66,51 @@ estimate_similarity_transform
 }
 
 
-/// Helper macro for assigning camera/landmark map contents to point vectors
+namespace
+{
+
+/// Helper function for assigning camera/landmark map contents to point vectors
 /**
- * \param map_t         std::map type to be used
+ * \tparam M      Map type
+ * \tparam T      Type of the element stored under the boost::shared_ptr
+ * \tparam afunc  Pointer to the accessor function.
+ *
  * \param from_map      map of objects at \c from position
  * \param to_map        map of objects at \c to position
  * \param from_pts      vector of vector_3d to store \c from points that have
  *                      a corresponding \c to point.
  * \param to_pts        vector of vector_3d to store \c to points that have
  *                      a corresponding \c from point.
- * \param accessor_func The name of the vector_3d point accessor function for
- *                      the \c map_t provided (i.e. \c loc for \c landmark
- *                      class or \c center for \c camera class)
  */
-#define MAPTK_EST_MAP_TO_PTS(map_t, from_map, to_map, from_pts, to_pts, accessor_func) \
-  do                                                                          \
-  {                                                                           \
-    map_t::const_iterator from_it = from_map.begin(),                         \
-                          to_it   = to_map.begin();                           \
-    /* STL map structure's stored data is ordered (binary search tree impl */ \
-    /* O(from.size + to.size) */                                              \
-    while (from_it != from_map.end() && to_it != to_map.end())                \
-    {                                                                         \
-      /* increment the lesser of the two when the frame IDs don't match */    \
-      if (from_it->first > to_it->first)                                      \
-      {                                                                       \
-        ++to_it;                                                              \
-      }                                                                       \
-      else if (from_it->first < to_it->first)                                 \
-      {                                                                       \
-        ++from_it;                                                            \
-      }                                                                       \
-      else                                                                    \
-      {                                                                       \
-        from_pts.push_back(from_it->second->accessor_func());                 \
-        to_pts.push_back(to_it->second->accessor_func());                     \
-        ++from_it;                                                            \
-        ++to_it;                                                              \
-      }                                                                       \
-    }                                                                         \
-  } while (false)
+template<typename M, typename T, vector_3d (T::*afunc)() const>
+void map_to_pts(M const& from_map, M const& to_map,
+                std::vector<vector_3d> &from_pts, std::vector<vector_3d> &to_pts)
+{
+  typename M::const_iterator from_it = from_map.begin(),
+                             to_it   = to_map.begin();
+  // STL map structure's stored data is ordered (binary search tree impl
+  // O(from.size + to.size)
+  while (from_it != from_map.end() && to_it != to_map.end())
+  {
+    // increment the lesser of the two when the frame IDs don't match
+    if (from_it->first > to_it->first)
+    {
+      ++to_it;
+    }
+    else if (from_it->first < to_it->first)
+    {
+      ++from_it;
+    }
+    else // equal
+    {
+      from_pts.push_back( ((*from_it->second).*afunc)() );
+      to_pts.push_back( ((*to_it->second).*afunc)() );
+      ++from_it; ++to_it;
+    }
+  }
+}
+
+}
 
 
 /// Estimate the similarity transform between two corresponding camera maps
@@ -118,10 +123,8 @@ estimate_similarity_transform
   std::vector<vector_3d> from_pts, to_pts;
   camera_map::map_camera_t from_map = from->cameras(),
                            to_map = to->cameras();
-  MAPTK_EST_MAP_TO_PTS(camera_map::map_camera_t,
-                       from_map, to_map,
-                       from_pts, to_pts,
-                       center);
+  map_to_pts< camera_map::map_camera_t, camera, &camera::center >
+    (from_map, to_map, from_pts, to_pts);
   return this->estimate_transform(from_pts, to_pts);
 }
 
@@ -136,10 +139,8 @@ estimate_similarity_transform
   std::vector<vector_3d> from_pts, to_pts;
   landmark_map::map_landmark_t from_map = from->landmarks(),
                                to_map = to->landmarks();
-  MAPTK_EST_MAP_TO_PTS(landmark_map::map_landmark_t,
-                       from_map, to_map,
-                       from_pts, to_pts,
-                       loc);
+  map_to_pts< landmark_map::map_landmark_t, landmark, &landmark::loc >
+    (from_map, to_map, from_pts, to_pts);
   return this->estimate_transform(from_pts, to_pts);
 }
 
