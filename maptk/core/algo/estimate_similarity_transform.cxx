@@ -71,18 +71,19 @@ namespace
 
 /// Helper function for assigning camera/landmark map contents to point vectors
 /**
- * \tparam M      Map type
- * \tparam T      Type of the element stored under the boost::shared_ptr
- * \tparam afunc  Pointer to the accessor function.
+ * \tparam M      Map type whose value_type::second_type is a boost::shared_ptr
+ * \tparam afunc  Pointer to the accessor function in the object that is
+ *                contained in the boost::shared_ptr.
  *
- * \param from_map      map of objects at \c from position
- * \param to_map        map of objects at \c to position
- * \param from_pts      vector of vector_3d to store \c from points that have
+ * \param from_map      map of type M of objects at \c from position
+ * \param to_map        map of type M of objects at \c to position
+ * \param from_pts      vector in which to store \c from points that have
  *                      a corresponding \c to point.
- * \param to_pts        vector of vector_3d to store \c to points that have
+ * \param to_pts        vector in which to store \c to points that have
  *                      a corresponding \c from point.
  */
-template<typename M, typename T, vector_3d (T::*afunc)() const>
+template< typename M,
+          vector_3d (M::value_type::second_type::element_type::*afunc)() const >
 void map_to_pts(M const& from_map, M const& to_map,
                 std::vector<vector_3d> &from_pts, std::vector<vector_3d> &to_pts)
 {
@@ -123,7 +124,7 @@ estimate_similarity_transform
   std::vector<vector_3d> from_pts, to_pts;
   camera_map::map_camera_t from_map = from->cameras(),
                            to_map = to->cameras();
-  map_to_pts< camera_map::map_camera_t, camera, &camera::center >
+  map_to_pts< camera_map::map_camera_t, &camera::center >
     (from_map, to_map, from_pts, to_pts);
   return this->estimate_transform(from_pts, to_pts);
 }
@@ -139,7 +140,7 @@ estimate_similarity_transform
   std::vector<vector_3d> from_pts, to_pts;
   landmark_map::map_landmark_t from_map = from->landmarks(),
                                to_map = to->landmarks();
-  map_to_pts< landmark_map::map_landmark_t, landmark, &landmark::loc >
+  map_to_pts< landmark_map::map_landmark_t, &landmark::loc >
     (from_map, to_map, from_pts, to_pts);
   return this->estimate_transform(from_pts, to_pts);
 }
