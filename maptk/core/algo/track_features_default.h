@@ -94,19 +94,7 @@ public:
         unsigned int frame_number,
         image_container_sptr image_data) const;
 
-private:
-
-  /// The feature detector algorithm to use
-  detect_features_sptr detector_;
-
-  /// The descriptor extractor algorithm to use
-  extract_descriptors_sptr extractor_;
-
-  /// The feature matching algorithm to use
-  match_features_sptr matcher_;
-
-  /// The ID to use for the next created track
-  mutable unsigned long next_track_id_;
+protected:
 
   /// Is frame stitching enabled?
   bool stitching_enabled_;
@@ -121,9 +109,29 @@ private:
   unsigned stitching_max_search_length_;
 
   /// Helper function for basic track stitching
+  /**
+   * \param [in] frame_number the frame number of the current frame
+   * \param [in] input the input track set to stitch
+   * \returns an updated set a tracks after the stitching operation
+   */
   virtual track_set_sptr
   track_stitching( frame_id_t frame_number,
                    track_set_sptr input ) const;
+
+private:
+
+  /// The feature detector algorithm to use
+  detect_features_sptr detector_;
+
+  /// The descriptor extractor algorithm to use
+  extract_descriptors_sptr extractor_;
+
+  /// The feature matching algorithm to use
+  match_features_sptr matcher_;
+
+  /// The ID to use for the next created track
+  mutable unsigned long next_track_id_;
+
 };
 
 

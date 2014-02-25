@@ -37,11 +37,11 @@ namespace algo
 /// Default Constructor
 track_features_default
 ::track_features_default()
-: next_track_id_(0),
-  stitching_enabled_(false),
+: stitching_enabled_(false),
   stitching_percent_match_req_(0.4),
   stitching_new_shot_length_(2),
-  stitching_max_search_length_(5)
+  stitching_max_search_length_(5),
+  next_track_id_(0)
 {
 }
 
