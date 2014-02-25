@@ -58,8 +58,8 @@ class MAPTK_CORE_EXPORT invalid_name_exception
   public:
     /// Constructor
     invalid_name_exception(std::string type,
-                           std::string impl,
-                           std::string reason) MAPTK_NOTHROW;
+                           std::string impl) MAPTK_NOTHROW;
+
     /// Destructor
     virtual ~invalid_name_exception() MAPTK_NOTHROW;
 };

@@ -6,6 +6,7 @@
 
 #include "camera.h"
 #include <iomanip>
+#include "transform.h"
 
 
 /**
@@ -88,6 +89,19 @@ camera_<T>
 ::project(const vector_3_<T>& pt) const
 {
   return this->intrinsics_.map(this->orientation_ * (pt - this->center_));
+}
+
+
+/// Transform the camera by applying a similarity transformation in place
+template <typename T>
+camera_<T>&
+camera_<T>
+::apply_transform(const similarity_<T>& xform)
+{
+  this->center_ = xform * this->center_;
+  this->orientation_ = this->orientation_ * xform.rotation().inverse();
+  this->center_covar_ = maptk::transform(this->center_covar_, xform);
+  return *this;
 }
 
 

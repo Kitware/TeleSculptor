@@ -23,6 +23,11 @@ algorithm_exception
   , m_algo_impl(impl)
   , m_reason(reason)
 {
+  // generic what string
+  std::ostringstream sstr;
+  sstr << "[algo::" << type << "::" << impl << "]: "
+       << reason;
+  m_what = sstr.str();
 }
 
 algorithm_exception
@@ -50,12 +55,12 @@ algorithm_configuration_exception
 
 invalid_name_exception
 ::invalid_name_exception(std::string type,
-                         std::string impl,
-                         std::string reason) MAPTK_NOTHROW
-  : algorithm_exception(type, impl, reason)
+                         std::string impl) MAPTK_NOTHROW
+  : algorithm_exception(type, impl, "")
 {
   std::ostringstream sstr;
-  sstr << "Invalid algorithm impl name \"" << m_algo_impl << "\" for type \"" << m_algo_type << "\".";
+  sstr << "Invalid algorithm impl name \"" << m_algo_impl << "\""
+       << "for type \"" << m_algo_type << "\".";
   m_what = sstr.str();
 }
 

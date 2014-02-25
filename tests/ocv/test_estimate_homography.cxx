@@ -10,18 +10,11 @@
  */
 
 #include <test_common.h>
+#include <test_random_point.h>
 
 #include <maptk/ocv/register.h>
 #include <maptk/ocv/estimate_homography.h>
 #include <opencv2/core/core.hpp>
-
-
-maptk::vector_2d random_point(double mean, double stdev)
-{
-  std::vector<double> data(2);
-  cv::randn(data, mean, stdev);
-  return maptk::vector_2d(data[0], data[1]);
-}
 
 
 maptk::matrix_3x3d sample_homography()
@@ -130,6 +123,7 @@ IMPLEMENT_TEST(four_points)
 IMPLEMENT_TEST(ideal_points)
 {
   using namespace maptk;
+  using namespace maptk::testing;
   ocv::estimate_homography estimator;
 
   matrix_3x3d true_H = sample_homography();
@@ -138,7 +132,7 @@ IMPLEMENT_TEST(ideal_points)
   std::vector<vector_2d> pts1, pts2;
   for(unsigned i=0; i<100; ++i)
   {
-    vector_2d v2 = random_point(500.0, 1000.0);
+    vector_2d v2 = random_point2d(1000.0) + 500.0;
     pts1.push_back(v2);
     vector_3d v3 = true_H * vector_3d(v2.x(), v2.y(), 1.0);
     pts2.push_back(vector_2d(v3.x()/v3.z(), v3.y()/v3.z()));
@@ -163,6 +157,7 @@ IMPLEMENT_TEST(ideal_points)
 IMPLEMENT_TEST(noisy_points)
 {
   using namespace maptk;
+  using namespace maptk::testing;
   ocv::estimate_homography estimator;
 
   matrix_3x3d true_H = sample_homography();
@@ -171,11 +166,11 @@ IMPLEMENT_TEST(noisy_points)
   std::vector<vector_2d> pts1, pts2;
   for(unsigned i=0; i<100; ++i)
   {
-    vector_2d v2 = random_point(500.0, 1000.0);
-    pts1.push_back(v2 + random_point(0, 0.1));
+    vector_2d v2 = random_point2d(1000.0) + 500.0;
+    pts1.push_back(v2 + random_point2d(0.1));
     vector_3d v3 = true_H * vector_3d(v2.x(), v2.y(), 1.0);
     pts2.push_back(vector_2d(v3.x()/v3.z(), v3.y()/v3.z())
-                   + random_point(0, 0.1));
+                   + random_point2d(0.1));
   }
 
   std::vector<bool> inliers;
@@ -190,9 +185,9 @@ IMPLEMENT_TEST(noisy_points)
   unsigned num_inliers = static_cast<unsigned>(std::count(inliers.begin(),
                                                           inliers.end(), true));
   std::cout << "num inliers "<<num_inliers<<std::endl;
-  if (num_inliers < 90)
+  if (num_inliers < 75)
   {
-    TEST_ERROR("Fewer than 90% of points detected as inliers");
+    TEST_ERROR("Fewer than 75% of points detected as inliers");
   }
 }
 
@@ -200,6 +195,7 @@ IMPLEMENT_TEST(noisy_points)
 IMPLEMENT_TEST(outlier_points)
 {
   using namespace maptk;
+  using namespace maptk::testing;
   ocv::estimate_homography estimator;
 
   matrix_3x3d true_H = sample_homography();
@@ -209,14 +205,14 @@ IMPLEMENT_TEST(outlier_points)
   std::vector<bool> true_inliers;
   for(unsigned i=0; i<100; ++i)
   {
-    vector_2d v2 = random_point(500.0, 1000.0);
+    vector_2d v2 = random_point2d(1000.0) + 500.0;
     pts1.push_back(v2);
     vector_3d v3 = true_H * vector_3d(v2.x(), v2.y(), 1.0);
     pts2.push_back(vector_2d(v3.x()/v3.z(), v3.y()/v3.z()));
     true_inliers.push_back(true);
     if (i%3 == 0)
     {
-      pts2.back() = random_point(500.0, 1000.0);
+      pts2.back() = random_point2d(1000.0) + 500.0;
       true_inliers.back() = false;
     }
   }

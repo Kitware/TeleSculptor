@@ -26,6 +26,7 @@
 #include <maptk/core/camera_io.h>
 #include <maptk/core/metrics.h>
 #include <maptk/core/algo/bundle_adjust.h>
+#include <maptk/core/algo/triangulate_landmarks.h>
 #include <maptk/core/algo/geo_map.h>
 #include <maptk/core/config_block.h>
 #include <maptk/core/config_block_io.h>
@@ -98,6 +99,8 @@ static maptk::config_block_sptr default_config()
 
   algo::bundle_adjust::get_nested_algo_configuration("bundle_adjuster", config,
                                                      algo::bundle_adjust_sptr());
+  algo::triangulate_landmarks::get_nested_algo_configuration("triangulator", config,
+                                                             algo::triangulate_landmarks_sptr());
   algo::geo_map::get_nested_algo_configuration("geo_mapper", config,
                                                algo::geo_map_sptr());
 
@@ -145,6 +148,10 @@ static bool check_config(maptk::config_block_sptr config)
   if (!maptk::algo::bundle_adjust::check_nested_algo_configuration("bundle_adjuster", config))
   {
     MAPTK_WARN("Failed config check in bundle_adjuster algorithm.");
+  }
+  if (!maptk::algo::triangulate_landmarks::check_nested_algo_configuration("triangulator", config))
+  {
+    MAPTK_WARN("Failed config check in triangulator algorithm.");
   }
   if (!maptk::algo::geo_map::check_nested_algo_configuration("geo_mapper", config))
   {
@@ -283,6 +290,7 @@ static int maptk_main(int argc, char const* argv[])
   // Set up top level configuration w/ defaults where applicable.
   maptk::config_block_sptr config = default_config();
   algo::bundle_adjust_sptr bundle_adjuster;
+  algo::triangulate_landmarks_sptr triangulator;
   algo::geo_map_sptr geo_mapper;
 
   // If -c/--config given, read in confg file, merge in with default just generated
@@ -297,6 +305,8 @@ static int maptk_main(int argc, char const* argv[])
 
   algo::bundle_adjust::set_nested_algo_configuration("bundle_adjuster", config, bundle_adjuster);
   algo::bundle_adjust::get_nested_algo_configuration("bundle_adjuster", config, bundle_adjuster);
+  algo::triangulate_landmarks::set_nested_algo_configuration("triangulator", config, triangulator);
+  algo::triangulate_landmarks::get_nested_algo_configuration("triangulator", config, triangulator);
   algo::geo_map::set_nested_algo_configuration("geo_mapper", config, geo_mapper);
   algo::geo_map::get_nested_algo_configuration("geo_mapper", config, geo_mapper);
 
@@ -370,9 +380,19 @@ static int maptk_main(int argc, char const* argv[])
   maptk::local_geo_cs local_cs(geo_mapper);
   maptk::camera_d base_camera = base_camera_from_config(config->subblock("base_camera"));
 
+  // Initialize all landmarks to the origin
+  std::set<maptk::track_id_t> track_ids = tracks->all_track_ids();
+  maptk::landmark_map::map_landmark_t landmarks;
+  BOOST_FOREACH(const maptk::track_id_t& tid, track_ids)
+  {
+    maptk::landmark_sptr lm(new maptk::landmark_d(maptk::vector_3d(0,0,0)));
+    landmarks[static_cast<maptk::landmark_id_t>(tid)] = lm;
+  }
+  maptk::landmark_map_sptr lm_map(new maptk::simple_landmark_map(landmarks));
+
   typedef std::map<maptk::frame_id_t, maptk::ins_data> ins_map_t;
   ins_map_t ins_map;
-  std::map<maptk::frame_id_t, maptk::camera_sptr> cameras;
+  maptk::camera_map::map_camera_t cameras;
   // if POS files are available, use them to initialize the cameras
   if( config->get_value<std::string>("input_pos_files") != "" )
   {
@@ -420,6 +440,9 @@ static int maptk_main(int argc, char const* argv[])
       }
 
       cameras = maptk::initialize_cameras_with_ins(ins_map, base_camera, local_cs);
+      maptk::camera_map_sptr cam_map(new maptk::simple_camera_map(cameras));
+      // triangulate to provide initial point locations
+      triangulator->triangulate(cam_map, tracks, lm_map);
     }
     else
     {
@@ -439,19 +462,7 @@ static int maptk_main(int argc, char const* argv[])
     }
   }
 
-  // Initialize all landmarks to the origin
-  std::set<maptk::track_id_t> track_ids = tracks->all_track_ids();
-  maptk::landmark_map::map_landmark_t landmarks;
-  BOOST_FOREACH(const maptk::track_id_t& tid, track_ids)
-  {
-    maptk::landmark_sptr lm(new maptk::landmark_d(maptk::vector_3d(0,0,0)));
-    landmarks[static_cast<maptk::landmark_id_t>(tid)] = lm;
-  }
-  // TODO triangulate landmarks if initial cameras are valid
-
-  // Run bundle adjustment
   maptk::camera_map_sptr cam_map(new maptk::simple_camera_map(cameras));
-  maptk::landmark_map_sptr lm_map(new maptk::simple_landmark_map(landmarks));
 
   std::cout << "initialized "<<cam_map->size()<<" cameras"<<std::endl;
   unsigned int cam_samp_rate = config->get_value<unsigned int>("camera_sample_rate");
@@ -461,6 +472,7 @@ static int maptk_main(int argc, char const* argv[])
     std::cout << "subsampled down to "<<cam_map->size()<<" cameras"<<std::endl;
   }
 
+  // Run bundle adjustment
   double init_rmse = maptk::reprojection_rmse(cam_map->cameras(),
                                               lm_map->landmarks(),
                                               tracks->tracks());
