@@ -239,7 +239,7 @@ track_features_default
 ::track_stitching( frame_id_t frame_number, track_set_sptr input ) const
 {
   // check if enabled and possible
-  if( !stitching_enabled_ || frame_number > stitching_new_shot_length_ )
+  if( !stitching_enabled_ || frame_number <= stitching_new_shot_length_ )
   {
     return input;
   }
