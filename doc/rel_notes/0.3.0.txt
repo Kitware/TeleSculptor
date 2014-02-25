@@ -31,13 +31,20 @@ Core Library
  * Replaced track_features_simple with track_features_default class,
    requiring any config file to change this value from "simple" to "default".
 
+ * Added algorithm definition for similarity transformation estimation.
+
 VXL Library
 
  * Added implementation of triangulation of landmarks algorithm using vpgl.
 
+ * Added similarity transformation estimation implementation using
+   vgl_compute_similarity_3d.
+
 Tests
 
  * Factored out some reuseable test functions into common header files.
+
+ * Added tests for VXL similarity transform estimation
 
 Tools
 
