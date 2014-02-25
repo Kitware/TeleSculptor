@@ -158,9 +158,6 @@ image
 
 
 /// Copy Constructor
-/**
- * the new image will share the same memory as the old image
- */
 image
 ::image(const image& other)
 : data_(other.data_),

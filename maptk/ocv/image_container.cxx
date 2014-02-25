@@ -38,10 +38,6 @@ image_container
 
 
 /// The size of the image data in bytes
-/**
- * This size includes all allocated image memory,
- * which could be larger than width*height*depth.
- */
 size_t
 image_container
 ::size() const

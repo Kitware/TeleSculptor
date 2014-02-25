@@ -34,7 +34,7 @@ public:
 
   /// Extract a set of image features from the provided image
   /**
-   * \param image_data contains the image data to proces'
+   * \param image_data contains the image data to process
    * \returns a set of image features
    */
   virtual feature_set_sptr
