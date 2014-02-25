@@ -55,12 +55,14 @@ estimate_similarity_transform
   // a <- (from[0], to[0])
   // b <- (from[1], to[1])
   // e <- some epsillon value
-  // collinear_count <- 0
+  // collinear <- true
   // for c in [(from[2], to[2]), ... , (from[n-1], to[n-1])] {
-  //     if cross((b-a), (c-a)).magnitude > e:
-  //        collinear_count += 1
+  //     if cross((b-a), (c-a)).magnitude > e {
+  //        collinear <- false
+  //        break
+  //     }
   // }
-  // if (collinear_count >= (n-2)) {
+  // if collinear {
   //    raise exception
   // }
 
