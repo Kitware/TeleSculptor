@@ -119,6 +119,11 @@ private:
 
   /// Max search length for stitching in frames
   unsigned stitching_max_search_length_;
+
+  /// Helper function for basic track stitching
+  virtual track_set_sptr
+  track_stitching( frame_id_t frame_number,
+                   track_set_sptr input ) const;
 };
 
 
