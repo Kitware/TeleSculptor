@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief test OCV homography estimation algorithm
+ */
+
 #include <test_common.h>
 #include <test_random_point.h>
 

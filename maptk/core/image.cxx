@@ -1,7 +1,12 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
+ */
+
+/**
+ * \file
+ * \brief core image class implementation
  */
 
 #include "image.h"
@@ -153,7 +158,6 @@ image
 
 
 /// Copy Constructor
-/// the new image will share the same memory as the old image
 image
 ::image(const image& other)
 : data_(other.data_),
@@ -190,8 +194,6 @@ image
 
 
 /// The size of the image data in bytes
-/// This size includes all allocated image memory,
-/// which could be larger than width*height*depth.
 size_t
 image
 ::size() const
@@ -238,8 +240,6 @@ image
 
 
 /// Set the size of the image.
-/// If the size has not changed, do nothing,
-/// Otherwise, allocate new memory matching the new size
 void
 image
 ::set_size(size_t width, size_t height, size_t depth)
@@ -266,8 +266,6 @@ image
 
 
 /// Compare to images to see if the pixels have the same values.
-/// This does not require that the images have the same memory layout,
-/// only that the images have the same dimensions and pixel values.
 bool equal_content(const image& img1, const image& img2)
 {
   if( img1.width()  != img2.width()  ||

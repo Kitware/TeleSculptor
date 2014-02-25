@@ -54,6 +54,8 @@ public:
 
 };
 
+
+/// Shared pointer for generic track_features definition type.
 typedef boost::shared_ptr<track_features> track_features_sptr;
 
 } // end namespace algo

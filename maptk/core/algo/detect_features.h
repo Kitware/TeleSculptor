@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief detect_features algorithm definition
+ */
+
 #ifndef MAPTK_ALGO_DETECT_FEATURES_H_
 #define MAPTK_ALGO_DETECT_FEATURES_H_
 
@@ -28,14 +33,17 @@ public:
   std::string type_name() const { return "detect_features"; }
 
   /// Extract a set of image features from the provided image
-  /// \param image_data contains the image data to process
-  /// \returns a set of image features
+  /**
+   * \param image_data contains the image data to process
+   * \returns a set of image features
+   */
   virtual feature_set_sptr
   detect(image_container_sptr image_data) const = 0;
 
 };
 
 
+/// Shared pointer for detect_features algorithm definition class
 typedef boost::shared_ptr<detect_features> detect_features_sptr;
 
 

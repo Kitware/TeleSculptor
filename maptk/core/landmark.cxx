@@ -87,10 +87,7 @@ std::istream&  operator>>(std::istream& s, landmark_<T>& m)
 }
 
 
-/// Helper macro for predeclaring specific landmark_ types and stream operators
-/**
- * \param T Type to declare class and steam operators for.
- */
+/// \cond DoxygenSuppress
 #define INSTANTIATE_LANDMARK(T) \
 template class MAPTK_CORE_EXPORT landmark_<T>; \
 template MAPTK_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const landmark_<T>& f); \
@@ -100,5 +97,6 @@ INSTANTIATE_LANDMARK(double);
 INSTANTIATE_LANDMARK(float);
 
 #undef INSTANTIATE_LANDMARK
+/// \endcond
 
 } // end namespace maptk

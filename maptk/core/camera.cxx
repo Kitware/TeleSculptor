@@ -132,6 +132,7 @@ std::istream&  operator>>(std::istream& s, camera_<T>& k)
 }
 
 
+/// \cond DoxygenSuppress
 #define INSTANTIATE_CAMERA(T) \
 template class MAPTK_CORE_EXPORT camera_<T>; \
 template MAPTK_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const camera_<T>& c); \
@@ -141,4 +142,6 @@ INSTANTIATE_CAMERA(double);
 INSTANTIATE_CAMERA(float);
 
 #undef INSTANTIATE_CAMERA
+/// \endcond
+
 } // end namespace maptk

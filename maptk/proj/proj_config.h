@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief PROJ module configuration header
+ */
+
 #ifndef MAPTK_PROJ_PROJ_CONFIG_H
 #define MAPTK_PROJ_PROJ_CONFIG_H
 
@@ -16,6 +21,7 @@
 # else
 #   define MAPTK_PROJ_EXPORT MAPTK_IMPORT
 # endif
+/// Marks symbols not to be exported
 # define MATPK_PROJ_NO_EXPORT MAPTK_NO_EXPORT
 #endif
 

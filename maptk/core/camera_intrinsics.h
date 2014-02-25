@@ -59,7 +59,10 @@ public:
   {}
 
   /// Constructor - from a calibration matrix
-  /// \note ignores values below the diagonal
+  /**
+   * \note ignores values below the diagonal
+   * \param K calibration matrix to construct from
+   */
   explicit camera_intrinsics_<T>(const matrix_<3,3,T>& K);
 
   /// Access the focal length
@@ -93,21 +96,35 @@ public:
   vector_2_<T> unmap(const vector_2_<T>& norm_pt) const;
 
 protected:
+  /// focal length of camera
   T focal_length_;
+  /// principal point of camera
   vector_2_<T> principal_point_;
+  /// aspect ratio of camera
   T aspect_ratio_;
+  /// skew of camera
   T skew_;
 };
 
 
+/// double-precision camera_intrinsics_ type
 typedef camera_intrinsics_<double> camera_intrinsics_d;
+/// single-precision camera_intrinsics_ type
 typedef camera_intrinsics_<float> camera_intrinsics_f;
 
 /// output stream operator for camera intrinsics
+/**
+ * \param s output stream
+ * \param k camera_intrinsics_ to stream
+ */
 template <typename T>
 MAPTK_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const camera_intrinsics_<T>& k);
 
 /// input stream operator for camera intrinsics
+/**
+ * \param s input stream
+ * \param c camera_intrinsics_ to stream into
+ */
 template <typename T>
 MAPTK_CORE_EXPORT std::istream& operator>>(std::istream& s, camera_intrinsics_<T>& c);
 

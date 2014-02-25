@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief estimate_homography algorithm definition
+ */
+
 #ifndef MAPTK_ALGO_ESTIMATE_HOMOGRAPHY_H_
 #define MAPTK_ALGO_ESTIMATE_HOMOGRAPHY_H_
 
@@ -65,6 +70,7 @@ public:
 };
 
 
+/// Shared pointer type of base estimate_homography algorithm definition class
 typedef boost::shared_ptr<estimate_homography> estimate_homography_sptr;
 
 

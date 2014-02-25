@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief core descriptor_set interface
+ */
+
 #ifndef MAPTK_DESCRIPTOR_SET_H_
 #define MAPTK_DESCRIPTOR_SET_H_
 
@@ -15,10 +20,11 @@ namespace maptk
 {
 
 /// An abstract ordered collection of feature descriptors.
-///
-/// The base class of descriptor_set is abstract and provides a
-/// double precision interface.  The templated derived class
-/// can store values in either single or double precision.
+/**
+ * The base class of descriptor_set is abstract and provides a
+ * double precision interface.  The templated derived class
+ * can store values in either single or double precision.
+ */
 class descriptor_set
 {
 public:
@@ -32,6 +38,7 @@ public:
   virtual std::vector<descriptor_sptr> descriptors() const = 0;
 };
 
+/// Shared pointer for base descriptor_set type
 typedef boost::shared_ptr<descriptor_set> descriptor_set_sptr;
 
 

@@ -136,12 +136,17 @@ public:
   T magnitude() const { return cmath::l2_norm( data_ ); }
 
 protected:
+  /// data of the vector
   T data_[N];
 };
 
 
-//: Compute the 2D cross product
-// \relatesalso vector_
+/// Compute the 2D cross product
+/**
+ * \relatesalso vector_
+ * \param v1 a vector
+ * \param v2 another vector
+ */
 template <typename T>
 inline T
 cross_product(const vector_<2,T>& v1, const vector_<2,T>& v2)
@@ -151,7 +156,11 @@ cross_product(const vector_<2,T>& v1, const vector_<2,T>& v2)
 
 
 /// Compute the 3D cross product
-/// \relatesalso vector_
+/**
+ * \relatesalso vector_
+ * \param v1 a vector
+ * \param v2 another vector
+ */
 template <typename T>
 inline vector_<3,T>
 cross_product(const vector_<3,T>& v1, const vector_<3,T>& v2)
@@ -190,8 +199,10 @@ normalized(const vector_<N,T>& v)
 
 
 /// A representation of a 2D vector.
-/// This derived class exists to add convenience
-/// constructors and accessors
+/**
+ * This derived class exists to add convenience
+ * constructors and accessors
+ */
 template <typename T>
 class vector_2_ : public vector_<2,T>
 {
@@ -231,8 +242,10 @@ public:
 
 
 /// A representation of a 3D vector.
-/// This derived class exists to add convenience
-/// constructors and accessors
+/**
+ * This derived class exists to add convenience
+ * constructors and accessors
+ */
 template <typename T>
 class vector_3_ : public vector_<3,T>
 {
@@ -277,8 +290,10 @@ public:
 
 
 /// A representation of a 4D vector.
-/// This derived class exists to add convenience
-/// constructors and accessors
+/**
+ * This derived class exists to add convenience
+ * constructors and accessors
+ */
 template <typename T>
 class vector_4_ : public vector_<4,T>
 {
@@ -326,18 +341,24 @@ public:
   const T& w() const { return this->data_[3]; }
 };
 
+/// \cond DoxygenSuppress
 typedef vector_2_<double> vector_2d;
 typedef vector_2_<float> vector_2f;
 typedef vector_3_<double> vector_3d;
 typedef vector_3_<float> vector_3f;
 typedef vector_4_<double> vector_4d;
 typedef vector_4_<float> vector_4f;
+/// \endcond
 
 
 // --- Vector-scalar operators ----------------------------------------
 
 /// Vector-scalar addtion operator
-/// \relatesalso vector_
+/**
+ * \relatesalso vector_
+ * \param v a vector
+ * \param s a scalar to add
+ */
 template <unsigned N, typename T>
 inline vector_<N,T> operator+( const vector_<N,T>& v, const T& s )
 {
@@ -347,7 +368,11 @@ inline vector_<N,T> operator+( const vector_<N,T>& v, const T& s )
 }
 
 /// Scalar-vector addition operator
-/// \relatesalso vector_
+/**
+ * \relatesalso vector_
+ * \param s a scalar
+ * \param v vector to be element-wise multiplied by scalar
+ */
 template <unsigned N, typename T>
 inline vector_<N,T> operator+( const T& s, const vector_<N,T>& v )
 {
@@ -357,7 +382,11 @@ inline vector_<N,T> operator+( const T& s, const vector_<N,T>& v )
 }
 
 /// Vector-scalar subraction operator
-/// \relatesalso vector_
+/**
+ * \relatesalso vector_
+ * \param s a scalar
+ * \param v vector to be element-wise subtracted by scalar
+ */
 template <unsigned N, typename T>
 inline vector_<N,T> operator-( const vector_<N,T>& v, const T& s )
 {
@@ -367,7 +396,11 @@ inline vector_<N,T> operator-( const vector_<N,T>& v, const T& s )
 }
 
 /// Scalar-vector subraction operator
-/// \relatesalso vector_
+/**
+ * \relatesalso vector_
+ * \param s a scalar to subtract
+ * \param v a vector to subtract from.
+ */
 template <unsigned N, typename T>
 inline vector_<N,T> operator-( const T& s, const vector_<N,T>& v )
 {
@@ -377,7 +410,11 @@ inline vector_<N,T> operator-( const T& s, const vector_<N,T>& v )
 }
 
 /// Scalar post-multiplcation operator
-/// \relatesalso vector_
+/**
+ * \relatesalso vector_
+ * \param v a vector to multiply
+ * \param s a scalar to multiply with
+ */
 template <unsigned N, typename T>
 inline vector_<N,T> operator*( const vector_<N,T>& v, const T& s )
 {
@@ -387,7 +424,11 @@ inline vector_<N,T> operator*( const vector_<N,T>& v, const T& s )
 }
 
 /// Scalar pre-multiplication operator
-/// \relatesalso vector_
+/**
+ * \relatesalso vector_
+ * \param s a scalar to multiply with
+ * \param v a vector to multiply
+ */
 template <unsigned N, typename T>
 inline vector_<N,T> operator*( const T& s, const vector_<N,T>& v )
 {
@@ -397,7 +438,11 @@ inline vector_<N,T> operator*( const T& s, const vector_<N,T>& v )
 }
 
 /// Scalar division operator
-/// \relatesalso vector_
+/**
+ * \relatesalso vector_
+ * \param v a vector to divide from
+ * \param s a scalar to divide out
+ */
 template <unsigned N, typename T>
 inline vector_<N,T> operator/( const vector_<N,T>& v, const T& s )
 {
@@ -410,7 +455,11 @@ inline vector_<N,T> operator/( const vector_<N,T>& v, const T& s )
 // --- Vector-vector operators ----------------------------------------
 
 /// Addition operator
-/// \relatesalso vector_
+/**
+ * \relatesalso vector_
+ * \param a a vector
+ * \param b another vector of the same shape
+ */
 template <unsigned N, typename T>
 inline vector_<N,T> operator+( const vector_<N,T>& a, const vector_<N,T>& b )
 {
@@ -420,7 +469,11 @@ inline vector_<N,T> operator+( const vector_<N,T>& a, const vector_<N,T>& b )
 }
 
 /// Subraction operator
-/// \relatesalso vector_
+/**
+ * \relatesalso vector_
+ * \param a a vector
+ * \param b another vector of the same shape
+ */
 template <unsigned N, typename T>
 inline vector_<N,T> operator-( const vector_<N,T>& a, const vector_<N,T>& b )
 {
@@ -430,7 +483,11 @@ inline vector_<N,T> operator-( const vector_<N,T>& a, const vector_<N,T>& b )
 }
 
 /// Element-wise product
-/// \relatesalso vector_
+/**
+ * \relatesalso vector_
+ * \param a a vector
+ * \param b another vector of the same shape
+ */
 template <unsigned N, typename T>
 inline vector_<N,T> element_product( const vector_<N,T>& a, const vector_<N,T>& b )
 {
@@ -440,7 +497,11 @@ inline vector_<N,T> element_product( const vector_<N,T>& a, const vector_<N,T>& 
 }
 
 /// Element-wise quotient
-/// \relatesalso vector_
+/**
+ * \relatesalso vector_
+ * \param a a vector
+ * \param b another vector of the same shape
+ */
 template <unsigned N, typename T>
 inline vector_<N,T> element_quotient( const vector_<N,T>& a, const vector_<N,T>& b )
 {
@@ -450,7 +511,11 @@ inline vector_<N,T> element_quotient( const vector_<N,T>& a, const vector_<N,T>&
 }
 
 /// Equality operator
-/// \relatesalso vector_
+/**
+ * \relatesalso vector_
+ * \param a a vector
+ * \param b another vector of the same shape
+ */
 template <unsigned N, typename T>
 inline bool operator==( const vector_<N,T>& a, const vector_<N,T>& b )
 {
@@ -458,7 +523,11 @@ inline bool operator==( const vector_<N,T>& a, const vector_<N,T>& b )
 }
 
 /// Inequality operator
-/// \relatesalso vector_
+/**
+ * \relatesalso vector_
+ * \param a a vector
+ * \param b another vector of the same shape
+ */
 template <unsigned N, typename T>
 inline bool operator!=( const vector_<N,T>& a, const vector_<N,T>& b )
 {
@@ -466,10 +535,18 @@ inline bool operator!=( const vector_<N,T>& a, const vector_<N,T>& b )
 }
 
 /// output stream operator for a vector
+/**
+ * \param s an output stream
+ * \param v vector to stream
+ */
 template <unsigned N, typename T>
 MAPTK_CORE_EXPORT std::ostream&  operator<<(std::ostream& s, const vector_<N,T>& v);
 
 /// input stream operator for a vector
+/**
+ * \param s an input stream
+ * \param v vector to stream into
+ */
 template <unsigned N, typename T>
 MAPTK_CORE_EXPORT std::istream&  operator>>(std::istream& s, vector_<N,T>& v);
 

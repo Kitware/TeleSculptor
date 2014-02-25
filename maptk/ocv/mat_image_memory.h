@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief OCV mat_image_memory interface
+ */
+
 #ifndef MAPTK_MAT_IMAGE_MEMORY_H_
 #define MAPTK_MAT_IMAGE_MEMORY_H_
 

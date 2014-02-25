@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief config_block related exceptions implementation
+ */
+
 #include "config_block.h"
 
 #include <sstream>

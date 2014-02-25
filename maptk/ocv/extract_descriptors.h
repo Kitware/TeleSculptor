@@ -48,9 +48,11 @@ public:
   virtual bool check_configuration(config_block_sptr config) const;
 
   /// Extract from the image a descriptor corresoponding to each feature
-  /// \param image_data contains the image data to process
-  /// \param features the feature locations at which descriptors are extracted
-  /// \returns a set of feature descriptors
+  /**
+   * \param image_data contains the image data to process
+   * \param features the feature locations at which descriptors are extracted
+   * \returns a set of feature descriptors
+   */
   virtual descriptor_set_sptr
   extract(image_container_sptr image_data,
           feature_set_sptr features) const;

@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief POS file to KRTD conversion utility
+ */
+
 #include<iostream>
 #include<fstream>
 #include<exception>

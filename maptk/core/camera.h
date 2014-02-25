@@ -158,7 +158,7 @@ public:
   /// Rotate the camera about its center such that it looks at the given point.
   /**
    * The camera should also be rotated about its principal axis such that
-   * the vertical image direction is closest to \ref up_direction in the world.
+   * the vertical image direction is closest to \c up_direction in the world.
    * \param [in] stare_point the location at which the camera is oriented to point
    * \param [in] up_direction the vector which is "up" in the world (defaults to Z-axis)
    */
@@ -190,15 +190,25 @@ protected:
 };
 
 
+/// Double-precision camera type
 typedef camera_<double> camera_d;
+/// Single-precision camera type
 typedef camera_<float> camera_f;
 
 
 /// output stream operator for a camera
+/**
+ * \param s output stream
+ * \param c camera to stream
+ */
 template <typename T>
 MAPTK_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const camera_<T>& c);
 
 /// input stream operator for a camera
+/**
+ * \param s input stream
+ * \param c camera to stream into
+ */
 template <typename T>
 MAPTK_CORE_EXPORT std::istream& operator>>(std::istream& s, camera_<T>& c);
 

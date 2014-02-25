@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief OCV image_container implementation
+ */
+
 #include "image_container.h"
 #include "mat_image_memory.h"
 
@@ -33,8 +38,6 @@ image_container
 
 
 /// The size of the image data in bytes
-/// This size includes all allocated image memory,
-/// which could be larger than width*height*depth.
 size_t
 image_container
 ::size() const

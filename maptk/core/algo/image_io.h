@@ -6,7 +6,7 @@
 
 /**
  * \file
- * \brief Interface for image_io \link maptk::algorithm_def algorithm
+ * \brief Interface for image_io \link maptk::algo::algorithm_def algorithm
  *        definition \endlink.
  */
 
@@ -69,17 +69,22 @@ public:
 
 private:
   /// Implementation specific load functionality.
-  /// \param filename the path to the file the load
-  /// \returns an image container refering to the loaded image
+  /**
+   * \param filename the path to the file the load
+   * \returns an image container refering to the loaded image
+   */
   virtual image_container_sptr load_(std::string const& filename) const = 0;
   /// Implementation specific save functionality.
-  /// \param filename the path to the file to save
-  /// \param data the image container refering to the image to write
+  /**
+   * \param filename the path to the file to save
+   * \param data the image container refering to the image to write
+   */
   virtual void save_(std::string const& filename,
                      image_container_sptr data) const = 0;
 };
 
 
+/// Shared pointer type for generic image_io definition type.
 typedef boost::shared_ptr<image_io> image_io_sptr;
 
 

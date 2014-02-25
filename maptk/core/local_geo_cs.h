@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief core local_geo_cs interface
+ */
+
 #ifndef MAPTK_LOCAL_GEO_CS_H_
 #define MAPTK_LOCAL_GEO_CS_H_
 
@@ -86,7 +91,7 @@ initialize_cameras_with_ins(const std::map<frame_id_t, ins_data>& ins_map,
  * \param [in] cam_map is a mapping from frame number to camera
  * \param [in] lgcs is the local geographic coordinate system used to map
  *             local UTM to lat/long
- * \param [in,out]  a mapping from frame_number of ins_data object to update.
+ * \param [in,out]  ins_map a mapping from frame_number of ins_data object to update.
  *                  If no ins_data object is found for a frame,
  *                  a new one is created
  * \note the supplied lgcs must have a valid utm_origin_zone()

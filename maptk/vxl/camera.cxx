@@ -74,6 +74,7 @@ maptk_to_vpgl_camera(const camera_<T>& mcam,
 }
 
 
+/// \cond DoxygenSuppress
 #define INSTANTIATE_CAMERA(T) \
 template MAPTK_VXL_EXPORT camera_sptr vpgl_camera_to_maptk(const vpgl_perspective_camera<T>& vcam); \
 template MAPTK_VXL_EXPORT void vpgl_camera_to_maptk(const vpgl_perspective_camera<T>&, camera_<T>&); \
@@ -83,6 +84,7 @@ INSTANTIATE_CAMERA(double);
 INSTANTIATE_CAMERA(float);
 
 #undef INSTANTIATE_CAMERA
+/// \endcond
 
 } // end namespace vxl
 

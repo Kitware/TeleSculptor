@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief core ins_data interface
+ */
+
 #ifndef MAPTK_INS_DATA_H_
 #define MAPTK_INS_DATA_H_
 
@@ -16,9 +21,10 @@ namespace maptk
 {
 
 /// Inertial Navigation System (INS) data
-///
-/// This struct hold IMU and GPS sensor readings
-/// provided in the imagery metadata
+/**
+ * This struct hold IMU and GPS sensor readings
+ * provided in the imagery metadata
+ */
 struct ins_data
 {
 public:
@@ -86,9 +92,17 @@ MAPTK_CORE_EXPORT bool operator ==(const ins_data& d1, const ins_data& d2);
 MAPTK_CORE_EXPORT bool operator !=(const ins_data& d1, const ins_data& d2);
 
 /// output stream operator for INS data
+/**
+ * \param s output stream
+ * \param d ins_data to stream
+ */
 MAPTK_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const ins_data& d);
 
 /// input stream operator for a INS data
+/**
+ * \param s input stream
+ * \param d ins_data to stream into
+ */
 MAPTK_CORE_EXPORT std::istream& operator>>(std::istream& s, ins_data& d);
 
 

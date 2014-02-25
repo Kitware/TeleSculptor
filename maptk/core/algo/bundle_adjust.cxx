@@ -14,4 +14,6 @@
  *        \endlink for \link maptk::algo::bundle_adjust bundle_adjust \endlink
  */
 
+/// \cond DoxygenSuppress
 INSTANTIATE_ALGORITHM_DEF(maptk::algo::bundle_adjust);
+/// \endcond

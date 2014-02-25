@@ -1,7 +1,14 @@
 /*ckwg +5
- * Copyright 2013 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
+ */
+
+/**
+ * \file
+ * \brief algorithm regstrar class
+ *
+ * Not exported as its used internally as an implementation detail.
  */
 
 #ifndef MAPTK_REGISTRAR_H_
@@ -21,8 +28,11 @@ template <typename T>
 class registrar
 {
 public:
+  /// map type for string-to-item relationship
   typedef std::map<std::string, boost::shared_ptr<T> > item_map;
+  /// convenience type for item_map's values
   typedef typename item_map::value_type item_pair;
+  /// convenienve type for item_map's const iterator
   typedef typename item_map::const_iterator item_const_itr;
 
   /// Access the singleton instance of this class

@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief VXL homography estimation algorithm
+ */
+
 #ifndef MAPTK_VXL_ESTIMATE_HOMOGRAPHY_H_
 #define MAPTK_VXL_ESTIMATE_HOMOGRAPHY_H_
 
@@ -26,8 +31,10 @@ public:
   std::string impl_name() const { return "vxl"; }
 
   // No configuration yet for this class.
+  /// \cond DoxygenSuppress
   virtual void set_configuration(config_block_sptr /*config*/) {}
   virtual bool check_configuration(config_block_sptr /*config*/) const { return true; }
+  /// \endcond
 
   /// Estimate a homography matrix from corresponding points
   /**

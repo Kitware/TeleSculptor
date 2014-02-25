@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief OCV algorithm register implementation
+ */
+
 #include <maptk/ocv/register.h>
 #include <maptk/ocv/image_io.h>
 #include <maptk/ocv/detect_features.h>

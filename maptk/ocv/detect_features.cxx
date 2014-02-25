@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief OCV detect_features algorithm implementation
+ */
+
 #include "detect_features.h"
 
 #include <vector>
@@ -102,8 +107,6 @@ detect_features
 
 
 /// Extract a set of image features from the provided image
-/// \param image_data contains the image data to process
-/// \returns a set of image features
 feature_set_sptr
 detect_features
 ::detect(image_container_sptr image_data) const

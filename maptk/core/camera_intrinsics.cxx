@@ -20,7 +20,6 @@ namespace maptk
 
 
 /// Constructor - from a calibration matrix
-/// \note ignores values below the diagonal
 template <typename T>
 camera_intrinsics_<T>
 ::camera_intrinsics_(const matrix_<3,3,T>& K)
@@ -101,6 +100,7 @@ std::istream&  operator>>(std::istream& s, camera_intrinsics_<T>& k)
 }
 
 
+/// \cond DoxygenSuppress
 #define INSTANTIATE_CAMERA_INTRINSICS(T) \
 template class MAPTK_CORE_EXPORT camera_intrinsics_<T>; \
 template MAPTK_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const camera_intrinsics_<T>& k); \
@@ -110,4 +110,6 @@ INSTANTIATE_CAMERA_INTRINSICS(double);
 INSTANTIATE_CAMERA_INTRINSICS(float);
 
 #undef INSTANTIATE_CAMERA_INTRINSICS
+/// \endcond
+
 } // end namespace maptk
