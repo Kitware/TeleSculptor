@@ -22,8 +22,7 @@
 /**
  * \file
  * \brief Header defining abstract \link maptk::algo::track_features feature
- *        tracking \endlink algorithm and concrete \link
- *        maptk::algo::simple_track_features simple_track_features \endlink
+ *        tracking \endlink algorithm
  */
 
 namespace maptk
@@ -37,15 +36,9 @@ class MAPTK_CORE_EXPORT track_features
   : public algorithm_def<track_features>
 {
 public:
+
   /// Return the name of this algorithm
   std::string type_name() const { return "track_features"; }
-
-  /// Get this algorithm's \link maptk::config_block configuration block \endlink
-  virtual config_block_sptr get_configuration() const;
-  /// Set this algorithm's properties via a config block
-  virtual void set_configuration(config_block_sptr config);
-  /// Check that the algorithm's currently configuration is valid
-  virtual bool check_configuration(config_block_sptr config) const;
 
   /// Extend a previous set of tracks using the current frame
   /**
@@ -59,70 +52,9 @@ public:
         unsigned int frame_number,
         image_container_sptr image_data) const = 0;
 
-  /// Set the feature detection algorithm to use in tracking
-  void set_feature_detector(detect_features_sptr alg)
-  {
-    detector_ = alg;
-  }
-
-  /// Set the descriptor extraction algorithm to use in tracking
-  void set_descriptor_extractor(extract_descriptors_sptr alg)
-  {
-    extractor_ = alg;
-  }
-
-  /// Set the feature matching algorithm to use in tracking
-  void set_feature_matcher(match_features_sptr alg)
-  {
-    matcher_ = alg;
-  }
-
-protected:
-  /// The feature detector algorithm to use
-  detect_features_sptr detector_;
-
-  /// The descriptor extractor algorithm to use
-  extract_descriptors_sptr extractor_;
-
-  /// The feature matching algorithm to use
-  match_features_sptr matcher_;
 };
-
 
 typedef boost::shared_ptr<track_features> track_features_sptr;
-
-
-/// A basic feature tracker
-class MAPTK_CORE_EXPORT simple_track_features
-  : public algo::algorithm_impl<simple_track_features, track_features>
-{
-public:
-  /// Default Constructor
-  simple_track_features();
-
-  /// Copy Constructor
-  simple_track_features(const simple_track_features&);
-
-  /// Return the name of this implementation
-  std::string impl_name() const { return "simple"; }
-
-  /// Extend a previous set of tracks using the current frame
-  /**
-   * \param [in] prev_tracks the tracks from previous tracking steps
-   * \param [in] frame_number the frame number of the current frame
-   * \param [in] image_data the image pixels for the current frame
-   * \returns an updated set a tracks including the current frame
-   */
-  virtual track_set_sptr
-  track(track_set_sptr prev_tracks,
-        unsigned int frame_number,
-        image_container_sptr image_data) const;
-
-private:
-  /// The ID to use for the next created track
-  mutable unsigned long next_track_id_;
-};
-
 
 } // end namespace algo
 

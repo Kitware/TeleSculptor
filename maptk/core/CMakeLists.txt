@@ -55,6 +55,7 @@ set(maptk_core_headers_public
   algo/match_features_homography.h
   algo/register.h
   algo/track_features.h
+  algo/track_features_default.h
   algo/triangulate_landmarks.h
   )
 
@@ -99,6 +100,7 @@ set(maptk_core_sources
   algo/match_features_homography.cxx
   algo/register.cxx
   algo/track_features.cxx
+  algo/track_features_default.cxx
   algo/triangulate_landmarks.cxx
   )
 
