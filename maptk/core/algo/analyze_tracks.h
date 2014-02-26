@@ -44,8 +44,11 @@ public:
   virtual void
   analyze(track_set_sptr track_set) const = 0;
 
+
   /// Output various information about the tracks stored in the input set
   /**
+   *  Can additionally use input imagery.
+   *
    * \param [in] track_set the tracks to analyze
    * \param [in] image_data a list of images the tracks were computed on
    */

@@ -3,6 +3,7 @@
 include_directories( SYSTEM ${VXL_RPL_INCLUDE_DIR} )
 
 set(maptk_vxl_headers_public
+  analyze_tracks.h
   bundle_adjust.h
   camera.h
   camera_map.h
@@ -17,6 +18,7 @@ set(maptk_vxl_headers_public
   )
 
 set(maptk_vxl_sources
+  analyze_tracks.cxx
   bundle_adjust.cxx
   camera.cxx
   camera_map.cxx
