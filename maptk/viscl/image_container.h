@@ -39,8 +39,10 @@ public:
   : data_(other.data_) {}
 
   /// The size of the image data in bytes
-  /// This size includes all allocated image memory,
-  /// which could be larger than width*height*depth.
+  /**
+    * This size includes all allocated image memory,
+    * which could be larger than width*height*depth.
+    */
   virtual size_t size() const;
 
   /// The width of the image in pixels
@@ -50,7 +52,9 @@ public:
   virtual size_t height() const { return data_.height(); }
 
   /// The depth (or number of channels) of the image
-  //viscl images only support 1 plane images at the moment
+  /**
+    * viscl images only support 1 plane images at the moment
+    */
   virtual size_t depth() const { return data_.depth(); }
 
   /// Get and in-memory image class to access the data
@@ -80,7 +84,7 @@ protected:
 MAPTK_VISCL_EXPORT viscl::image image_container_to_viscl(const image_container& img);
 
 
-} // end namespace viscl
+} // end namespace vcl
 
 } // end namespace maptk
 

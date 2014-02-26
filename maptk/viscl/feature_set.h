@@ -20,9 +20,11 @@ namespace vcl
 {
 
 /// A concrete feature set that wraps VisCL features
-/// A VisCL feature only has the location set
-/// It is possible to get the smoothing scale but that value is not
-/// saved on the GPU so would have to be provided externally
+/**
+  * A VisCL feature only has the location set
+  * It is possible to get the smoothing scale but that value is not
+  * saved on the GPU so would have to be provided externally
+  */
 class MAPTK_VISCL_EXPORT feature_set
 : public maptk::feature_set
 {
@@ -42,8 +44,10 @@ public:
   explicit feature_set(const type& viscl_features)
   : data_(viscl_features) {}
 
-  /// Return the number of feature in the set
-  /// The base version is fairly expensive
+  /// Return the number of features in the set
+  /**
+    * Downloads the size from the GPU
+    */
   virtual size_t size() const;
 
   /// Return a vector of feature shared pointers
@@ -58,17 +62,16 @@ protected:
   type data_;
 };
 
-
 /// Convert any feature set to a VisCL data (upload if needed)
-/// width and height are the dimensions of the image that the features were
-/// computed from - they are nessessary to create a search map for viscl tracker
-/// viscl only cares about integer feature location, therefore you will lose info converting from
-/// maptk feature set to viscl and back
+/**
+  * viscl only cares about integer feature location, therefore will lose
+  * info converting from maptk feature set to viscl and back
+  */
 MAPTK_VISCL_EXPORT feature_set::type
-features_to_viscl(const maptk::feature_set& features, size_t width, size_t height);
+features_to_viscl(const maptk::feature_set& features);
 
 
-} // end namespace viscl
+} // end namespace vcl
 
 } // end namespace maptk
 

@@ -35,7 +35,9 @@ public:
   virtual size_t size() const { return data_.len(); }
 
   /// Return a vector of descriptor shared pointers
-  //WARNING: These descriptors must be matched by hamming distance
+  /**
+    * Warning: These descriptors must be matched by hamming distance
+    */
   virtual std::vector<descriptor_sptr> descriptors() const;
 
   /// Return the native VisCL descriptors structure
@@ -48,13 +50,12 @@ protected:
 };
 
 
-/// Convert any descriptor set a VisCL descriptor set
-/// descriptor must be a cl_int4
+/// Convert a descriptor set to a VisCL descriptor set must be <int,4>
 MAPTK_VISCL_EXPORT viscl::buffer
 descriptors_to_viscl(const maptk::descriptor_set& desc_set);
 
 
-} // end namespace viscl
+} // end namespace vcl
 
 } // end namespace maptk
 

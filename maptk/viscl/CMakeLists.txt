@@ -1,14 +1,9 @@
 # maptk/viscl
 
-find_package(OpenCL REQUIRED)
-if(NOT OPENCL_HAS_CXX)
-  message(WARNING "C++ bindings not found.  Using Kronos supplied reference OpenCL v1.1 C++ bindings.")
-  list(APPEND OPENCL_INCLUDE_DIRS ${viscl_SOURCE_DIR}/kronos)
-endif()
-include_directories(SYSTEM ${OPENCL_INCLUDE_DIRS})
-add_definitions(${OPENCL_CXX_DEFINITIONS})
+include_directories(SYSTEM ${viscl_OPENCL_INCLUDE_DIRS})
 
 set(maptk_viscl_headers_public
+  convert_image.h
   descriptor_set.h
   detect_features.h
   extract_descriptors.h
@@ -18,9 +13,11 @@ set(maptk_viscl_headers_public
   match_set.h
   viscl_config.h
   register.h
+  utils.h
   )
 
 set(maptk_viscl_sources
+  convert_image.cxx
   descriptor_set.cxx
   detect_features.cxx
   extract_descriptors.cxx
@@ -29,6 +26,7 @@ set(maptk_viscl_sources
   match_features.cxx
   match_set.cxx
   register.cxx
+  utils.cxx
   )
 
 # installing header files
@@ -42,4 +40,4 @@ maptk_add_library(maptk_viscl
   ${maptk_viscl_sources}
   )
 
-target_link_libraries( maptk_viscl maptk_core viscl_core viscl_tasks )
+target_link_libraries( maptk_viscl maptk_core viscl_core viscl_tasks viscl_vxl)

@@ -32,7 +32,12 @@ public:
    : data_(viscl_matches) {}
 
   /// Return the number of matches in the set
-  virtual size_t size() const { return 0; } // TODO return size
+  /**
+    * Warning: this function is slow, it downloads all of the matches
+    * to count them it is recommended to use matches() if you need both
+    * the size and the matches.
+    */
+  virtual size_t size() const;
 
   /// Return a vector of matching indices
   virtual std::vector<match> matches() const;
@@ -47,11 +52,14 @@ private:
 
 
 /// Convert any match set to VisCL match data
+/**
+  * Will remove duplicate matches to a kpt from 2nd set
+  */
 MAPTK_VISCL_EXPORT viscl::buffer
-matches_to_viscl(const maptk::match_set& match_set, size_t numkpts2);
+matches_to_viscl(const maptk::match_set& match_set);
 
 
-} // end namespace viscl
+} // end namespace vcl
 
 } // end namespace maptk
 

@@ -8,6 +8,7 @@
 #include <maptk/viscl/detect_features.h>
 #include <maptk/viscl/extract_descriptors.h>
 #include <maptk/viscl/match_features.h>
+#include <maptk/viscl/convert_image.h>
 
 namespace maptk
 {
@@ -21,9 +22,10 @@ void register_algorithms()
   vcl::detect_features::register_self();
   vcl::extract_descriptors::register_self();
   vcl::match_features::register_self();
+  vcl::convert_image::register_self();
 }
 
 
-} // end namespace viscl
+} // end namespace vcl
 
 } // end namespace maptk

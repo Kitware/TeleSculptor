@@ -55,7 +55,7 @@ inline void register_modules()
 #endif
 
 #if defined(MAPTK_HAVE_MODULE_VISCL)
-  viscl::register_algorithms();
+  vcl::register_algorithms();
 #endif
 }
 

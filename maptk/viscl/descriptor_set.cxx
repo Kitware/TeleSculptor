@@ -24,14 +24,14 @@ descriptor_set
 
   cl_int4 *buf = new cl_int4[data_.len()];
 
-  viscl::cl_queue_t queue = queue = viscl::manager::inst()->create_queue();
+  viscl::cl_queue_t queue = viscl::manager::inst()->create_queue();
   queue->enqueueReadBuffer(*data_().get(), CL_TRUE, 0, data_.mem_size(), buf);
   queue->finish();
 
   for (unsigned int i = 0; i < data_.len(); i++)
   {
     descriptor_fixed<int,4> *d = new descriptor_fixed<int,4>;
-    memcpy(d->raw_data(), &buf[i].s, sizeof(cl_int4));
+    memcpy(d->raw_data(), &buf[i].s, sizeof(int)*4);
     desc.push_back(descriptor_sptr(d));
   }
 
@@ -41,9 +41,7 @@ descriptor_set
 }
 
 
-//viscl cannot take an arbitrary descriptor so this function is not
-//implemented when type is not viscl, could check if type is <int,4> and
-//convert
+
 viscl::buffer
 descriptors_to_viscl(const maptk::descriptor_set& desc_set)
 {
@@ -53,11 +51,40 @@ descriptors_to_viscl(const maptk::descriptor_set& desc_set)
     return m_viscl->viscl_descriptors();
   }
 
+  //viscl cannot take an arbitrary descriptor so this function
+  //only checks for <int,4> descriptors
+  std::vector<cl_int4> viscl_descr;
+  std::vector<descriptor_sptr> descriptors = desc_set.descriptors();
+  for (unsigned int i = 0; i < descriptors.size(); i++)
+  {
+    //check if type is <int,4> if not we are done
+    if ( const descriptor_fixed<int,4> * dfixed =
+          dynamic_cast<const descriptor_fixed<int,4> *>(descriptors[i].get()) )
+    {
+      cl_int4 d;
+      memcpy(&d.s, dfixed->raw_data(), sizeof(int)*4);
+      viscl_descr.push_back(d);
+    }
+    else
+    {
+      break;
+    }
+  }
+
+  if (viscl_descr.size() == descriptors.size())
+  {
+    viscl::buffer buf = viscl::manager::inst()->create_buffer<cl_int4>(CL_MEM_READ_WRITE, viscl_descr.size());
+    viscl::cl_queue_t queue = viscl::manager::inst()->create_queue();
+    queue->enqueueWriteBuffer(*buf().get(), CL_TRUE, 0, buf.mem_size(), &viscl_descr[0]);
+    queue->finish();
+    return buf;
+  }
+
   //TODO: throw exception
   return viscl::buffer();
 }
 
 
-} // end namespace viscl
+} // end namespace vcl
 
 } // end namespace maptk

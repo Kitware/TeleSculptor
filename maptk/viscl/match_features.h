@@ -34,11 +34,14 @@ public:
   /// Return the name of this implementation
   std::string impl_name() const { return "viscl"; }
 
-  // No configuration for this class yet
-  virtual void set_configuration(config_block_sptr /*config*/) { };
-  virtual bool check_configuration(config_block_sptr /*config*/) const { return true; }
+  /// Get this algorithm's \link maptk::config_block configuration block \endlink
+  virtual config_block_sptr get_configuration() const;
 
-  void set_img_dimensions(unsigned int width, unsigned int height);
+  /// Set this algorithm's properties via a config block
+  virtual void set_configuration(config_block_sptr config);
+
+  /// Check that the algorithm's configuration config_block is valid
+  virtual bool check_configuration(config_block_sptr config) const;
 
   /// Match one set of features and corresponding descriptors to another
   /**
@@ -56,13 +59,9 @@ private:
   /// private implementation class
   class priv;
   boost::scoped_ptr<priv> d_;
-
-  //Used to create a keypoint map if one doesnt exist for features
-  unsigned int imgwidth_;
-  unsigned int imgheight_;
 };
 
-} // end namespace viscl
+} // end namespace vcl
 
 } // end namespace maptk
 

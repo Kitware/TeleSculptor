@@ -12,6 +12,7 @@
 #include <maptk/viscl/match_set.h>
 
 #include <viscl/tasks/track_descr_match.h>
+#include "utils.h"
 
 namespace maptk
 {
@@ -41,7 +42,7 @@ public:
 /// Constructor
 match_features
 ::match_features()
-: d_(new priv), imgwidth_(0), imgheight_(0)
+: d_(new priv)
 {
 }
 
@@ -49,7 +50,7 @@ match_features
 /// Copy Constructor
 match_features
 ::match_features(const match_features& other)
-: d_(new priv(*other.d_)), imgwidth_(other.imgwidth_), imgheight_(other.imgheight_)
+: d_(new priv(*other.d_))
 {
 }
 
@@ -60,12 +61,31 @@ match_features
 {
 }
 
+/// Get this algorithm's \link maptk::config_block configuration block \endlink
+config_block_sptr
+match_features
+::get_configuration() const
+{
+  config_block_sptr config = algorithm::get_configuration();
+  config->set_value("search_box_radius", "200", "Maximum pixel radius to search for kpt match.");
+  return config;
+}
+
+/// Set this algorithm's properties via a config block
 void
 match_features
-::set_img_dimensions(unsigned int width, unsigned int height)
+::set_configuration(config_block_sptr config)
 {
-  imgwidth_ = width;
-  imgheight_ = height;
+  unsigned int sbr = config->get_value<unsigned int>("search_box_radius", 200);
+  d_->matcher.set_search_box_radius(sbr);
+}
+
+/// Check that the algorithm's configuration config_block is valid
+bool
+match_features
+::check_configuration(config_block_sptr config) const
+{
+  return true;
 }
 
 /// Match one set of features and corresponding descriptors to another
@@ -81,8 +101,9 @@ match_features
 
   viscl::buffer d1 = descriptors_to_viscl(*desc1);
   viscl::buffer d2 = descriptors_to_viscl(*desc2);
-  vcl::feature_set::type f1 = vcl::features_to_viscl(*feat1, imgwidth_, imgheight_);
-  vcl::feature_set::type f2 = vcl::features_to_viscl(*feat2, imgwidth_, imgheight_);
+
+  vcl::feature_set::type f1 = vcl::features_to_viscl(*feat1);
+  vcl::feature_set::type f2 = vcl::features_to_viscl(*feat2);
 
   size_t numkpts2 = feat2->size();
   viscl::buffer matches = d_->matcher.match(f1.features_, f1.kptmap_, d1,
@@ -92,6 +113,6 @@ match_features
 }
 
 
-} // end namespace viscl
+} // end namespace vcl
 
 } // end namespace maptk

@@ -34,14 +34,15 @@ public:
   /// Return the name of this implementation
   std::string impl_name() const { return "viscl"; }
 
-  // No configuration for this class yet
+  // No configuration for this class yet TODO: eventually descriptor size
   virtual void set_configuration(config_block_sptr /*config*/) { }
   virtual bool check_configuration(config_block_sptr /*config*/) const { return true; }
 
   /// Extract from the image a descriptor corresoponding to each feature
-  /// \param image_data contains the image data to process
-  /// \param features the feature locations at which descriptors are extracted
-  /// \returns a set of feature descriptors
+  /** \param image_data contains the image data to process
+    * \param features the feature locations at which descriptors are extracted
+    * \returns a set of feature descriptors
+    */
   virtual descriptor_set_sptr
   extract(image_container_sptr image_data,
           feature_set_sptr features) const;
@@ -52,7 +53,7 @@ private:
   boost::scoped_ptr<priv> d_;
 };
 
-} // end namespace viscl
+} // end namespace vcl
 
 } // end namespace maptk
 

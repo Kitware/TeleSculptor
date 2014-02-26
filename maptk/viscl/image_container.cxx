@@ -7,6 +7,11 @@
 #include "image_container.h"
 
 #include <viscl/core/manager.h>
+#include <vil/vil_image_view.h>
+#include <vil/vil_save.h>
+
+#include <viscl/tasks/gaussian_smooth.h>
+#include <viscl/vxl/transfer.h>
 
 namespace maptk
 {
@@ -18,23 +23,12 @@ namespace vcl
 /// Constructor - convert base image container to a VisCL image
 viscl_image_container
 ::viscl_image_container(const image_container& image_cont)
+: data_(image_container_to_viscl(image_cont))
 {
-  const viscl_image_container* vic =
-      dynamic_cast<const viscl_image_container*>(&image_cont);
-  if( vic )
-  {
-    this->data_ = vic->data_;
-  }
-  else
-  {
-    this->data_ = maptk_to_viscl(image_cont.get_image());
-  }
 }
 
 
 /// The size of the image data in bytes
-/// This size includes all allocated image memory,
-/// which could be larger than width*height*depth.
 size_t
 viscl_image_container
 ::size() const
@@ -76,31 +70,50 @@ viscl::image
 viscl_image_container
 ::maptk_to_viscl(const image& img)
 {
+  cl::ImageFormat img_fmt;
+  img_fmt = cl::ImageFormat(CL_INTENSITY, CL_UNORM_INT8);
+
   // viscl::image is only able to display single channel images at the moment
   // it also only supports byte and float images below only byte are supported
   if( img.depth() == 1 )
   {
-    image_memory_sptr memory = img.memory();
-    cl::ImageFormat img_fmt;
-    img_fmt = cl::ImageFormat(CL_INTENSITY, CL_UNORM_INT8);
-
     return viscl::image(boost::make_shared<cl::Image2D>(
-              viscl::manager::inst()->get_context(),
-              CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
-              img_fmt,
-              img.width(),
-              img.height(),
-              0,
-              (void *)img.first_pixel()));
+                          viscl::manager::inst()->get_context(),
+                          CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
+                          img_fmt,
+                          img.width(),
+                          img.height(),
+                          0,
+                          (void *)img.first_pixel()));
   }
 
-  //TODO: throw exception for color image, or return image with CL_RGB
-  //image but no viscl algorithm could use it
-  return viscl::image();
+  //Convert color image to a grey scale image and upload it.
+  unsigned char *grey = new unsigned char [img.width() * img.height()];
+  for (unsigned int j = 0; j < img.height(); j++)
+  {
+    for (unsigned int i = 0; i < img.width(); i++)
+    {
+      double value = 0.2125 * img(i,j,0) + 0.7154 * img(i,j,0) + 0.0721 * img(i,j,0);
+      grey[j * img.width() + i] = static_cast<unsigned char>(value);
+    }
+  }
+
+  viscl::image image = viscl::image(boost::make_shared<cl::Image2D>(
+                                      viscl::manager::inst()->get_context(),
+                                      CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
+                                      img_fmt,
+                                      img.width(),
+                                      img.height(),
+                                      0,
+                                      grey));
+
+  delete [] grey;
+
+  return image;
 }
 
 
-// Extract a VisCL image from any image container
+/// Extract a VisCL image from any image container
 viscl::image
 image_container_to_viscl(const image_container& img)
 {
@@ -113,6 +126,6 @@ image_container_to_viscl(const image_container& img)
 }
 
 
-} // end namespace viscl
+} // end namespace vcl
 
 } // end namespace maptk

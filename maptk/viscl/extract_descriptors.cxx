@@ -70,13 +70,13 @@ extract_descriptors
   }
 
   viscl::image img = vcl::image_container_to_viscl(*image_data);
-  vcl::feature_set::type fs = vcl::features_to_viscl(*features, img.width(), img.height());
+  vcl::feature_set::type fs = vcl::features_to_viscl(*features);
   viscl::buffer descriptors;
   d_->brief.compute_descriptors(img, fs.features_, features->size(), descriptors);
   return descriptor_set_sptr(new vcl::descriptor_set(descriptors));
 }
 
 
-} // end namespace viscl
+} // end namespace vcl
 
 } // end namespace maptk

@@ -12,6 +12,7 @@
 #include <maptk/core/algo/register.h>
 #include <maptk/core/algo/track_features_default.h>
 #include <maptk/core/algo/match_features_homography.h>
+#include <maptk/core/algo/convert_image.h>
 
 namespace maptk
 {
@@ -24,6 +25,7 @@ void register_algorithms()
 {
   track_features_default::register_self();
   match_features_homography::register_self();
+  default_convert_image::register_self();
 }
 
 

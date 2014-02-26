@@ -9,7 +9,7 @@
 
 #include <maptk/config.h>
 
-/// Define symbol visibility in maptk::viscl
+/// Define symbol visibility in maptk::vcl
 #ifndef MAPTK_VISCL_EXPORT
 # ifdef MAKE_MAPTK_VISCL_LIB
 #   define MAPTK_VISCL_EXPORT MAPTK_EXPORT
