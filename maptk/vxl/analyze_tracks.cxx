@@ -161,7 +161,7 @@ analyze_tracks
 }
 
 
-/// Output various information about the tracks stored in the input set
+/// Output images with tracked features drawn on them
 void
 analyze_tracks
 ::write_images(track_set_sptr track_set,
