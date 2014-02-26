@@ -40,9 +40,9 @@ public:
   virtual bool check_configuration(config_block_sptr /*config*/) const { return true; }
   /// \endcond
 
-  /// Estimate the similarity transformation between two corresponding sets of
-  /// 3d points
+  /// Estimate the similarity transform between two corresponding point sets
   /**
+   *
    * Complexity: Θ(n), where n = from.size() (from and to must be of equal
    * length).
    *

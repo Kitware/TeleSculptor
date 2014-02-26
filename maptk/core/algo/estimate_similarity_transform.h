@@ -39,8 +39,7 @@ public:
   /// Name of this algo definition
   std::string type_name() const { return "estimate_similarity_transform"; }
 
-  /// Estimate the similarity transformation between two corresponding sets of
-  /// 3d points
+  /// Estimate the similarity transform between two corresponding point sets
   /**
    * \param from List of length N of 3D points in the from space.
    * \param to   List of length N of 3D points in the to space.
@@ -53,8 +52,7 @@ public:
   estimate_transform(std::vector<vector_3d> const& from,
                      std::vector<vector_3d> const& to) const = 0;
 
-  /// Estimate the similarity transform between two corresponding sets of
-  /// cameras
+  /// Estimate the similarity transform between two corresponding sets of cameras
   /**
    * \param from List of length N of cameras in the from space.
    * \param to   List of length N of cameras in the to space.
@@ -67,8 +65,7 @@ public:
   estimate_transform(std::vector<camera_sptr> const& from,
                      std::vector<camera_sptr> const& to) const;
 
-  /// Estimate the similarity transform between two corresponding sets of
-  /// landmarks.
+  /// Estimate the similarity transform between two corresponding sets of landmarks.
   /**
    * \param from List of length N of landmarks in the from space.
    * \param to   List of length N of landmarks in the to space.

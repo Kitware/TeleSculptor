@@ -29,6 +29,7 @@ namespace vxl
 {
 
 
+/// Estimate the similarity transform between two corresponding point sets
 similarity_d
 estimate_similarity_transform
 ::estimate_transform(std::vector<vector_3d> const& from,
