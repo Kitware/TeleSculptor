@@ -103,7 +103,8 @@ analyze_tracks
 /// Output various information about the tracks stored in the input set
 void
 analyze_tracks
-::analyze(track_set_sptr track_set) const
+::print_info(track_set_sptr track_set,
+             stream_t& stream) const
 {
 
 }
@@ -112,11 +113,10 @@ analyze_tracks
 /// Output various information about the tracks stored in the input set
 void
 analyze_tracks
-::analyze(track_set_sptr track_set,
-          image_container_sptr_list image_data) const
+::write_images(track_set_sptr track_set,
+               image_container_sptr_list image_data) const
 {
-  /// Output any data not using image contents
-  this->analyze(track_set);
+
 }
 
 

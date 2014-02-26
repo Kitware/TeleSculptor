@@ -23,7 +23,7 @@ namespace maptk
 namespace vxl
 {
 
-/// A class for triangulating landmarks from tracks and cameras using VXL
+/// A class for outputting various information about feature tracks
 class MAPTK_VXL_EXPORT analyze_tracks
 : public algo::algorithm_impl<analyze_tracks, algo::analyze_tracks>
 {
@@ -48,23 +48,23 @@ public:
   /// Check that the algorithm's currently configuration is valid
   virtual bool check_configuration(config_block_sptr config) const;
 
-  /// Output various information about the tracks stored in the input set
+  /// Output various information about the tracks stored in the input set.
   /**
    * \param [in] track_set the tracks to analyze
+   * \param [in] stream an output stream to write data onto
    */
   virtual void
-  analyze(track_set_sptr track_set) const;
+  print_info(track_set_sptr track_set,
+             stream_t& stream = std::cout) const;
 
-  /// Output various information about the tracks stored in the input set
+  /// Write features tracks on top of the input images.
   /**
-   *  This call can additionally use input imagery.
-   *
    * \param [in] track_set the tracks to analyze
    * \param [in] image_data a list of images the tracks were computed on
    */
   virtual void
-  analyze(track_set_sptr track_set,
-          image_container_sptr_list image_data) const;
+  write_images(track_set_sptr track_set,
+               image_container_sptr_list image_data) const;
 
 private:
 

@@ -21,3 +21,8 @@ maptk_add_executable(maptk_bundle_adjust_tracks bundle_adjust_tracks.cxx)
 target_link_libraries(maptk_bundle_adjust_tracks
   LINK_PRIVATE
     ${maptk_libs})
+
+maptk_add_executable(maptk_analyze_tracks analyze_tracks.cxx)
+target_link_libraries(maptk_analyze_tracks
+  LINK_PRIVATE
+    ${maptk_libs})

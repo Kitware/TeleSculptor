@@ -9,11 +9,11 @@
  * \brief Feature tracker utility
  */
 
-#include<iostream>
-#include<fstream>
-#include<exception>
-#include<string>
-#include<vector>
+#include <iostream>
+#include <fstream>
+#include <exception>
+#include <string>
+#include <vector>
 
 #include <maptk/modules.h>
 
