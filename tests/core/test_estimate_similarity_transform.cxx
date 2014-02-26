@@ -136,16 +136,16 @@ IMPLEMENT_TEST(sync_camera_map)
 IMPLEMENT_TEST(disjoint_camera_maps)
 {
   // uniform overlap
-  size_t i_b=0, i_e=50,
-         j_b=25, j_e=75,
-         overlap=50-25;
+  frame_id_t i_b=0, i_e=50,
+             j_b=25, j_e=75;
+  size_t overlap=static_cast<size_t>(i_e - j_b);
 
   camera_map::map_camera_t from_map, to_map;
-  for(frame_id_t i=i_b; i<static_cast<frame_id_t>(i_e); ++i)
+  for(frame_id_t i=i_b; i<i_e; ++i)
   {
     from_map[i] = camera_sptr(new camera_d());
   }
-  for(frame_id_t j=j_b; j<static_cast<frame_id_t>(j_e); ++j)
+  for(frame_id_t j=j_b; j<j_e; ++j)
   {
     to_map[j] = camera_sptr(new camera_d());
   }
@@ -202,16 +202,16 @@ IMPLEMENT_TEST(sync_landmark_map)
 IMPLEMENT_TEST(disjoint_landmark_maps)
 {
   // uniform overlap
-  size_t i_b=0, i_e=50,
-         j_b=25, j_e=75,
-         overlap=50-25;
+  frame_id_t i_b=0, i_e=50,
+             j_b=25, j_e=75;
+  size_t overlap=static_cast<size_t>(i_e - j_b);
 
   landmark_map::map_landmark_t from_map, to_map;
-  for(frame_id_t i=i_b; i<static_cast<frame_id_t>(i_e); ++i)
+  for(frame_id_t i=i_b; i<i_e; ++i)
   {
     from_map[i] = landmark_sptr(new landmark_d());
   }
-  for(frame_id_t j=j_b; j<static_cast<frame_id_t>(j_e); ++j)
+  for(frame_id_t j=j_b; j<j_e; ++j)
   {
     to_map[j] = landmark_sptr(new landmark_d());
   }
