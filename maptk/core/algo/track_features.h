@@ -18,9 +18,6 @@
 #include <boost/shared_ptr.hpp>
 
 #include <maptk/core/algo/algorithm.h>
-#include <maptk/core/algo/detect_features.h>
-#include <maptk/core/algo/extract_descriptors.h>
-#include <maptk/core/algo/match_features.h>
 #include <maptk/core/image_container.h>
 #include <maptk/core/track_set.h>
 
