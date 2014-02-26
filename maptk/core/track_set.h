@@ -52,6 +52,9 @@ public:
   /// Return the set of all track IDs in this track set
   virtual std::set<track_id_t> all_track_ids() const;
 
+  /// Return the first (smallest) frame number containing tracks
+  virtual frame_id_t first_frame() const;
+
   /// Return the last (largest) frame number containing tracks
   virtual frame_id_t last_frame() const;
 
