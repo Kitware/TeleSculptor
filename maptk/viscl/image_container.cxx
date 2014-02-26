@@ -42,7 +42,6 @@ image
 viscl_image_container
 ::viscl_to_maptk(const viscl::image& img_cl)
 {
-
   size_t width = img_cl.width();
   size_t height = img_cl.height();
   image img(width, height);
