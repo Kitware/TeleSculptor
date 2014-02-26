@@ -9,7 +9,6 @@
 #include <vector>
 
 #include <maptk/core/algo/algorithm.h>
-#include <maptk/core/algo/algorithm.txx>
 #include <maptk/core/algo/estimate_similarity_transform.h>
 #include <maptk/core/camera.h>
 #include <maptk/core/camera_map.h>
@@ -17,6 +16,7 @@
 #include <maptk/core/landmark.h>
 #include <maptk/core/landmark_map.h>
 #include <maptk/core/similarity.h>
+#include <maptk/core/types.h>
 #include <maptk/core/vector.h>
 
 
@@ -120,7 +120,7 @@ IMPLEMENT_TEST(sync_camera_map)
   size_t N(63);
 
   camera_map::map_camera_t from_map, to_map;
-  for(size_t i=0; i<N; ++i)
+  for(frame_id_t i=0; i<static_cast<frame_id_t>(N); ++i)
   {
     from_map[i] = camera_sptr(new camera_d());
     to_map[i] = camera_sptr(new camera_d());
@@ -141,11 +141,11 @@ IMPLEMENT_TEST(disjoint_camera_maps)
          overlap=50-25;
 
   camera_map::map_camera_t from_map, to_map;
-  for(size_t i=i_b; i<i_e; ++i)
+  for(frame_id_t i=i_b; i<static_cast<frame_id_t>(i_e); ++i)
   {
     from_map[i] = camera_sptr(new camera_d());
   }
-  for(size_t j=j_b; j<j_e; ++j)
+  for(frame_id_t j=j_b; j<static_cast<frame_id_t>(j_e); ++j)
   {
     to_map[j] = camera_sptr(new camera_d());
   }
@@ -186,7 +186,7 @@ IMPLEMENT_TEST(sync_landmark_map)
   size_t N(63);
 
   landmark_map::map_landmark_t from_map, to_map;
-  for(size_t i=0; i<N; ++i)
+  for(frame_id_t i=0; i<static_cast<frame_id_t>(N); ++i)
   {
     from_map[i] = landmark_sptr(new landmark_d());
     to_map[i] = landmark_sptr(new landmark_d());
@@ -207,11 +207,11 @@ IMPLEMENT_TEST(disjoint_landmark_maps)
          overlap=50-25;
 
   landmark_map::map_landmark_t from_map, to_map;
-  for(size_t i=i_b; i<i_e; ++i)
+  for(frame_id_t i=i_b; i<static_cast<frame_id_t>(i_e); ++i)
   {
     from_map[i] = landmark_sptr(new landmark_d());
   }
-  for(size_t j=j_b; j<j_e; ++j)
+  for(frame_id_t j=j_b; j<static_cast<frame_id_t>(j_e); ++j)
   {
     to_map[j] = landmark_sptr(new landmark_d());
   }
