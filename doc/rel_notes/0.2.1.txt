@@ -2,6 +2,10 @@ MAPTK v0.2.1 Release Notes
 ==========================
 
 Minor patch release since v0.2.0 containing bug fixes and small improvements.
+The primary contributions of this release are proper handling of input and
+output file names in the SBA tool (output file names for each frame now match
+input file names), and improved Doxygen documentation.  This release documents
+all files and classes that were previously missing documentation.
 
 
 Updates since v0.2.0
@@ -18,7 +22,12 @@ Tools
  * Added support in SBA tool to handle a sparse set of POS files (missing POS
    files for frames).
 
- * Improved error reprting when checking configuration in SBA tool.
+ * Improved error reporting when checking configuration in SBA tool.
+
+Documentation
+
+ * Added missing Doxygen documentation across all libraries by ensuring that
+   every file and every class has a documentation string.
 
 
 Fixes since v0.2.0
@@ -38,3 +47,8 @@ Tools
 
  * SBA tool now outputs POS and KRTD files that have same filename stem as the
    source frames they are associated with.
+
+Documentation
+
+ * Fixed most Doxygen warnings due to improper syntax in documentation
+   comments.
