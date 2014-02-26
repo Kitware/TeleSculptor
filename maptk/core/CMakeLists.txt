@@ -44,6 +44,7 @@ set(maptk_core_headers_public
 
   algo/algorithm.h
   algo/algorithm.txx
+  algo/analyze_tracks.h
   algo/bundle_adjust.h
   algo/convert_image.h
   algo/detect_features.h
@@ -90,6 +91,7 @@ set(maptk_core_sources
   exceptions/io.cxx
 
   algo/algorithm.cxx
+  algo/analyze_tracks.cxx
   algo/bundle_adjust.cxx
   algo/convert_image.cxx
   algo/detect_features.cxx

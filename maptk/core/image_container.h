@@ -20,6 +20,7 @@
 namespace maptk
 {
 
+
 /// An abstract representation of an image container.
 /**
  * This class provides an interface for passing image data
@@ -56,8 +57,13 @@ public:
 
 };
 
+
 /// Shared pointer for base image_container type
 typedef boost::shared_ptr<image_container> image_container_sptr;
+
+
+/// List of image_container shared pointers
+typedef std::vector<image_container_sptr> image_container_sptr_list;
 
 
 /// This concrete image container is simply a wrapper around an image
