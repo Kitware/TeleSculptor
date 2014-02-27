@@ -14,7 +14,7 @@
 
 /**
  * \file
- * \brief Header for OpenCV draw_tracks algorithm
+ * \brief Header for OCV draw_tracks algorithm
  */
 
 namespace maptk
