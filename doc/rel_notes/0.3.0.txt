@@ -33,6 +33,8 @@ Core Library
 
  * Added algorithm definition for similarity transformation estimation.
 
+ * Added several helper functions to track_set class.
+
 VXL Library
 
  * Added implementation of triangulation of landmarks algorithm using vpgl.
