@@ -66,6 +66,7 @@ static maptk::config_block_sptr default_config()
 static bool check_config( maptk::config_block_sptr config )
 {
   if( !config->has_value( "track_file" ) ||
+      !bfs::exists( maptk::path_t( config->get_value<std::string>( "track_file" ) ) ) ||
       !maptk::algo::analyze_tracks::check_nested_algo_configuration( "analyze_tracks", config ) )
   {
     return false;
