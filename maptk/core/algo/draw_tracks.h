@@ -29,9 +29,8 @@ namespace maptk
 namespace algo
 {
 
-/// An abstract base class for algorithms which output various human readable
-/// statistics about track sets, to aid with both debugging and algorithm
-/// tuning (either manual or automatic).
+/// An abstract base class for algorithms which draw tracks on top of
+/// images in various ways, for analyzing results.
 class MAPTK_CORE_EXPORT draw_tracks
   : public algorithm_def<draw_tracks>
 {

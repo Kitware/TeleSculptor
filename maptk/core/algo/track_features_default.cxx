@@ -37,11 +37,7 @@ namespace algo
 /// Default Constructor
 track_features_default
 ::track_features_default()
-: stitching_enabled_(false),
-  stitching_percent_match_req_(0.4),
-  stitching_new_shot_length_(2),
-  stitching_max_search_length_(5),
-  next_track_id_(0)
+: next_track_id_(0)
 {
 }
 
@@ -72,26 +68,8 @@ track_features_default
   // - Feature Matcher algorithm
   match_features::get_nested_algo_configuration("feature_matcher", config, matcher_);
 
-  // Frame stitching parameters
-  config->set_value("stitching_enabled", stitching_enabled_,
-                    "Should frame stitching be enabled? This option will attempt to "
-                    "bridge the gap between frames which don't meet certain criteria "
-                    "(percentage of feature points tracked) and will instead attempt "
-                    "to match features on the current frame against past frames to "
-                    "meet this criteria. This is useful when there can be bad frames.");
-
-  config->set_value("stitching_percent_match_req", stitching_percent_match_req_,
-                    "The required percentage of features needed to be matched for a "
-                    "stitch to be considered successful (value must be between 0.0 and "
-                    "1.0).");
-
-  config->set_value("stitching_new_shot_length", stitching_new_shot_length_,
-                    "Number of frames for a new shot to be considered valid before "
-                    "attempting to stitch to prior shots.");
-
-  config->set_value("stitching_max_search_length", stitching_max_search_length_,
-                    "Maximum number of frames to search in the past for matching to "
-                    "the end of the last shot.");
+  // - Loop closure algorithm
+  close_loops::get_nested_algo_configuration("loop_closer", config, stitcher_);
 
   return config;
 }
@@ -121,16 +99,9 @@ track_features_default
   match_features::set_nested_algo_configuration("feature_matcher", config, mf);
   matcher_ = mf;
 
-  // Settings for frame stitching
-  stitching_enabled_ = config->get_value<bool>("stitching_enabled");
-
-  if( stitching_enabled_ )
-  {
-    stitching_percent_match_req_ = config->get_value<double>("stitching_percent_match_req");
-    stitching_max_search_length_ = config->get_value<unsigned>("stitching_max_search_length");
-    stitching_new_shot_length_ = config->get_value<unsigned>("stitching_new_shot_length");
-    stitching_new_shot_length_ = ( stitching_new_shot_length_ ? stitching_new_shot_length_ : 1 );
-  }
+  close_loops_sptr cl;
+  close_loops::set_nested_algo_configuration("loop_closer", config, cl);
+  stitcher_ = cl;
 }
 
 
@@ -144,6 +115,8 @@ track_features_default
     extract_descriptors::check_nested_algo_configuration("descriptor_extractor", config)
     &&
     match_features::check_nested_algo_configuration("feature_matcher", config)
+    &&
+    close_loops::check_nested_algo_configuration("loop_closer", config)
   );
 }
 
@@ -156,7 +129,7 @@ track_features_default
         image_container_sptr image_data) const
 {
   // verify that all dependent algorithms have been initialized
-  if( !detector_ || !extractor_ || !matcher_ )
+  if( !detector_ || !extractor_ || !matcher_ || !stitcher_ )
   {
     return track_set_sptr();
   }
@@ -222,100 +195,7 @@ track_features_default
     all_tracks.back()->set_id(this->next_track_id_++);
   }
 
-  return track_stitching(frame_number, track_set_sptr(new simple_track_set(all_tracks)));
-}
-
-
-/// Functor to help remove tracks from vector
-bool track_id_in_set( track_sptr trk_ptr, std::set<track_id_t>* set_ptr )
-{
-  return set_ptr->find( trk_ptr->id() ) != set_ptr->end();
-}
-
-
-/// Handle track stitching if enabled
-track_set_sptr
-track_features_default
-::track_stitching( frame_id_t frame_number, track_set_sptr input ) const
-{
-  // check if enabled and possible
-  if( !stitching_enabled_ || frame_number <= stitching_new_shot_length_ )
-  {
-    return input;
-  }
-
-  // check if we should attempt to stitch together past frames
-  std::vector< track_sptr > all_tracks = input->tracks();
-  frame_id_t frame_to_stitch = frame_number - stitching_new_shot_length_ + 1;
-  double pt = input->percentage_tracked( frame_to_stitch - 1, frame_to_stitch );
-  bool stitch_required = ( pt < stitching_percent_match_req_ );
-
-  // confirm that the new valid shot criteria length is satisfied
-  frame_id_t frame_to_test = frame_to_stitch + 1;
-  while( stitch_required && frame_to_test <= frame_number )
-  {
-    pt = input->percentage_tracked( frame_to_test - 1, frame_to_test );
-    stitch_required = ( pt >= stitching_percent_match_req_ );
-  }
-
-  // determine if a stitch can be attempted
-  if( !stitch_required )
-  {
-    return input;
-  }
-
-  // attempt to stitch start of shot frame against past n frames
-  frame_to_test = frame_to_stitch - 2;
-  frame_id_t last_frame_to_test = 0;
-
-  if( frame_to_test > stitching_max_search_length_ )
-  {
-    last_frame_to_test = frame_to_test - stitching_max_search_length_;
-  }
-
-  track_set_sptr stitch_frame_set = input->active_tracks( frame_to_stitch );
-
-  for( ; frame_to_test > last_frame_to_test; frame_to_test-- )
-  {
-    track_set_sptr test_frame_set = input->active_tracks( frame_to_test );
-
-    // run matcher alg
-    match_set_sptr mset = matcher_->match(test_frame_set->frame_features( frame_to_test ),
-                                          test_frame_set->frame_descriptors( frame_to_test ),
-                                          stitch_frame_set->frame_features( frame_to_stitch ),
-                                          stitch_frame_set->frame_descriptors( frame_to_stitch ));
-
-    // test matcher results
-    unsigned total_features = test_frame_set->size() + stitch_frame_set->size();
-
-    if( 2*mset->size() >= static_cast<unsigned>(stitching_percent_match_req_*total_features) )
-    {
-      // modify track history and exit
-      std::vector<track_sptr> test_frame_trks = test_frame_set->tracks();
-      std::vector<track_sptr> stitch_frame_trks = stitch_frame_set->tracks();
-      std::vector<match> matches = mset->matches();
-      std::set<track_id_t> to_remove;
-
-      for( unsigned i = 0; i < matches.size(); i++ )
-      {
-        if( test_frame_trks[ matches[i].first ]->append( *stitch_frame_trks[ matches[i].second ] ) )
-        {
-          to_remove.insert( stitch_frame_trks[ matches[i].second ]->id() );
-        }
-      }
-
-      if( !to_remove.empty() )
-      {
-        std::remove_if( all_tracks.begin(), all_tracks.end(),
-                        boost::bind( track_id_in_set, _1, &to_remove ) );
-      }
-
-      return track_set_sptr( new simple_track_set( all_tracks ) );
-    }
-  }
-
-  // stitching has failed
-  return input;
+  return stitcher_->stitch(frame_number, track_set_sptr(new simple_track_set(all_tracks)));
 }
 
 

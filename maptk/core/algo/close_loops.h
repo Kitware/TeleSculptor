@@ -29,9 +29,12 @@ namespace maptk
 namespace algo
 {
 
-/// An abstract base class for algorithms which output various human readable
-/// statistics about track sets, to aid with both debugging and algorithm
-/// tuning (either manual or automatic).
+/// \brief An abstract base class for algorithms which attempt to find
+/// more feature track matches over a longer period of time compared with
+/// looking only at the previous frame.
+///
+/// Similarly to track_features, this class is designed to be called
+/// in an online fashion.
 class MAPTK_CORE_EXPORT close_loops
   : public algorithm_def<close_loops>
 {
@@ -40,7 +43,8 @@ public:
   /// Return the name of this algorithm.
   std::string type_name() const { return "close_loops"; }
 
-  /// Attempt to find more track matches to aid in loop closure.
+  /// Attempt to find more track matches to aid in loop closure
+  /// and stitch them together in the output track set.
   /**
    * \param [in] frame_number the frame number of the current frame
    * \param [in] input the input track set to stitch
