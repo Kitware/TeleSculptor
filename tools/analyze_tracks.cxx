@@ -50,14 +50,8 @@ static maptk::config_block_sptr default_config()
                      "Path to an optional file to write text outputs to. If this file "
                      "exists, it will be overwritten." );
 
-  //maptk::algo::image_io::get_nested_algo_configuration(
-  //  "image_reader", config, maptk::algo::image_io_sptr() );
-
   maptk::algo::analyze_tracks::get_nested_algo_configuration(
     "track_analyzer", config, maptk::algo::analyze_tracks_sptr() );
-
-  //maptk::algo::draw_tracks::get_nested_algo_configuration(
-  //  "draw_tracks", config, maptk::algo::draw_tracks_sptr() );
 
   return config;
 }
@@ -79,12 +73,20 @@ static bool check_config( maptk::config_block_sptr config )
   }
 
   if( config->has_value( "image_list_file" ) &&
-      ( !bfs::exists( maptk::path_t( config->get_value<std::string>( "image_list_file" ) ) ) ||
-        !maptk::algo::image_io::check_nested_algo_configuration( "image_reader", config ) ||
-        !maptk::algo::image_io::check_nested_algo_configuration( "draw_tracks", config ) ) )
+      !config->get_value<std::string>( "image_list_file" ).empty() )
   {
-    std::cerr << "Unable to configure draw tracks" << std::endl;
-    return false;
+    if( !bfs::exists( maptk::path_t( config->get_value<std::string>( "image_list_file" ) ) ) )
+    {
+      std::cerr << "Cannot find image list file" << std::endl;
+      return false;
+    }
+    else if( !bfs::exists( maptk::path_t( config->get_value<std::string>( "image_list_file" ) ) ) ||
+             !maptk::algo::image_io::check_nested_algo_configuration( "image_reader", config ) ||
+             !maptk::algo::image_io::check_nested_algo_configuration( "draw_tracks", config ) )
+    {
+      std::cerr << "Unable to configure draw tracks" << std::endl;
+      return false;
+    }
   }
 
   return true;
