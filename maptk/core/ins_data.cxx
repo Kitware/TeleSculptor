@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief core ins_data implementation
+ */
+
 #include "ins_data.h"
 
 #include <vector>
@@ -79,6 +84,7 @@ std::istream& operator>>(std::istream& s, ins_data& d)
   // set the data to the defaults
   d = ins_data();
 
+  /// \cond DoxygenSuppress
 #define PARSE_FIELD(num, name) \
   if(tokens.size() > num) \
   { \
@@ -86,6 +92,7 @@ std::istream& operator>>(std::istream& s, ins_data& d)
     ss.str(tokens[num]); \
     ss >> d.name; \
   }
+  /// \endcond
 
   unsigned int base=0;
   // some POS files do not have the source name

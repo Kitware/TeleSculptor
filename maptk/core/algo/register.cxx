@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief core algorithms registration implementation
+ */
+
 #include <maptk/core/algo/register.h>
 #include <maptk/core/algo/track_features_default.h>
 #include <maptk/core/algo/match_features_homography.h>

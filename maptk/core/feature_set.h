@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief core feature_set class interface
+ */
+
 #ifndef MAPTK_FEATURE_SET_H_
 #define MAPTK_FEATURE_SET_H_
 
@@ -17,10 +22,11 @@ namespace maptk
 {
 
 /// An abstract ordered collection of 2D image feature points.
-///
-/// The base class of feature_set is abstract and provides a
-/// double precision interface.  The templated derived class
-/// can store values in either single or double precision.
+/**
+ * The base class of feature_set is abstract and provides a
+ * double precision interface.  The templated derived class
+ * can store values in either single or double precision.
+ */
 class feature_set
 {
 public:
@@ -34,6 +40,7 @@ public:
   virtual std::vector<feature_sptr> features() const = 0;
 };
 
+/// Shared pointer for base feature_set type
 typedef boost::shared_ptr<feature_set> feature_set_sptr;
 
 

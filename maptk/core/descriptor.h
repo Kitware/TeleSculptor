@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief core descriptor interface and template implementations
+ */
+
 #ifndef MAPTK_DESCRIPTOR_H_
 #define MAPTK_DESCRIPTOR_H_
 
@@ -17,6 +22,7 @@
 namespace maptk
 {
 
+/// Convenience typedef for a byte
 typedef unsigned char byte;
 
 /// A representation of a feature descriptor used in matching.
@@ -33,17 +39,22 @@ public:
   virtual std::size_t num_bytes() const = 0;
 
   /// Return the descriptor as a vector of bytes
-  /// This should always work,
-  /// even if the underlying type is not bytes
+  /**
+   * This should always work,
+   * even if the underlying type is not bytes
+   */
   virtual std::vector<byte> as_bytes() const = 0;
 
   /// Return the descriptor as a vector of doubles
-  /// Return an empty vector if this makes no sense
-  /// for the underlying type.
+  /**
+   * Return an empty vector if this makes no sense
+   * for the underlying type.
+   */
   virtual std::vector<double> as_double() const = 0;
 
 };
 
+/// Shared pointer for base descriptor type
 typedef boost::shared_ptr<descriptor> descriptor_sptr;
 
 
@@ -104,6 +115,7 @@ public:
   const T* raw_data() const { return data_; }
 
 protected:
+  /// data array
   T data_[N];
 };
 
@@ -132,7 +144,9 @@ public:
   const T* raw_data() const { return data_; }
 
 protected:
+  /// data array
   T* data_;
+  /// length of data array
   size_t length_;
 };
 

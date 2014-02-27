@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief extract_descriptors algorithm definition
+ */
+
 #ifndef MAPTK_ALGO_EXTRACT_DESCRIPTORS_H_
 #define MAPTK_ALGO_EXTRACT_DESCRIPTORS_H_
 
@@ -28,9 +33,11 @@ public:
   std::string type_name() const { return "extract_descriptors"; }
 
   /// Extract from the image a descriptor corresoponding to each feature
-  /// \param image_data contains the image data to process
-  /// \param features the feature locations at which descriptors are extracted
-  /// \returns a set of feature descriptors
+  /**
+   * \param image_data contains the image data to process
+   * \param features the feature locations at which descriptors are extracted
+   * \returns a set of feature descriptors
+   */
   virtual descriptor_set_sptr
   extract(image_container_sptr image_data,
           feature_set_sptr features) const = 0;
@@ -38,6 +45,7 @@ public:
 };
 
 
+/// Shared pointer for base extract_descriptors algorithm definition class
 typedef boost::shared_ptr<extract_descriptors> extract_descriptors_sptr;
 
 

@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief Sparse Bungle Adjustment utility
+ */
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -387,7 +392,7 @@ static int maptk_main(int argc, char const* argv[])
 
   typedef std::map<maptk::frame_id_t, maptk::ins_data> ins_map_t;
   ins_map_t ins_map;
-  std::map<maptk::frame_id_t, maptk::camera_sptr> cameras;
+  maptk::camera_map::map_camera_t cameras;
   // if POS files are available, use them to initialize the cameras
   if( config->get_value<std::string>("input_pos_files") != "" )
   {

@@ -49,6 +49,7 @@ public:
    * magnitude of the vector is the angle of rotation (in radians).
    * This representation is closely related to the tangent space on
    * the manifold of the group of rotations.
+   * \param rvec Rodrigues vector to construct from.
    */
   explicit rotation_<T>(const vector_<3,T>& rvec);
 
@@ -61,8 +62,9 @@ public:
   /// Constructor - from a matrix
   /**
    * requires orthonormal matrix with +1 determinant
+   * \param rot orthonormal matrix to construct from
    */
-  explicit rotation_<T>(const matrix_<3,3,T>& mat);
+  explicit rotation_<T>(const matrix_<3,3,T>& rot);
 
   /// Convert to a 3x3 matrix
   operator matrix_<3,3,T>() const;
@@ -106,6 +108,7 @@ public:
   /**
    * \note for a large number of vectors, it is more efficient to
    *       create a rotation matrix and use matrix multiplcation
+   * \param rhs right-hand side vector to operate against
    */
   vector_<3,T> operator*(const vector_<3,T>& rhs) const;
 
@@ -127,7 +130,9 @@ protected:
 };
 
 
+/// Double-precision rotation_ type
 typedef rotation_<double> rotation_d;
+/// Single-precision rotation_ type
 typedef rotation_<float> rotation_f;
 
 

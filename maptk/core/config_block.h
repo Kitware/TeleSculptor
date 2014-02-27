@@ -134,6 +134,11 @@ class MAPTK_CORE_EXPORT config_block
      *
      * \param key The index of the configuration value to set.
      * \param value The value to set for the \p key.
+     * \param descr Description of the key. If this is set, we will override
+     *              any existing description for the given key. If a
+     *              description for the given key already exists and nothing
+     *              was provided for this parameter, the existing description
+     *              is maintained.
      */
     template <typename T>
     void set_value(config_block_key_t const& key,

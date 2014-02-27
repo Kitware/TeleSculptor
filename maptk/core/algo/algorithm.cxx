@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief base algorithm function implementations
+ */
+
 #include "algorithm.h"
 
 namespace maptk

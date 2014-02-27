@@ -4,6 +4,10 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief OCV estimate_homography algorithm implementation
+ */
 
 #include <maptk/ocv/estimate_homography.h>
 #include <maptk/ocv/matrix.h>

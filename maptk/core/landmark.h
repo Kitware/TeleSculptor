@@ -63,6 +63,10 @@ public:
 };
 
 /// output stream operator for a base class landmark
+/**
+ * \param s output stream
+ * \param m landmark to stream
+ */
 MAPTK_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const landmark& m);
 
 
@@ -76,6 +80,10 @@ public:
   landmark_<T>();
 
   /// Constructor for a landmark
+  /**
+   * \param loc 3D location of the landmark
+   * \param scale optional scale of the landmark (default of 1)
+   */
   landmark_<T>(const vector_3_<T>& loc, T scale=1);
 
   /// Create a clone of this landmark object
@@ -103,6 +111,9 @@ public:
   virtual covariance_3d covar() const { return static_cast<covariance_3d>(covar_); }
 
   // Set the landmark position in image space
+  /**
+   * \param loc new location of this landmark
+   */
   void set_loc(const vector_3_<T>& loc) { loc_ = loc; }
   /// Set the scale of the landmark
   void set_scale(T scale) { scale_ = scale; }

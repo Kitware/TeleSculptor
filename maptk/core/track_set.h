@@ -31,6 +31,7 @@ namespace maptk
 {
 
 class track_set;
+/// Shared pointer for base track_set type
 typedef boost::shared_ptr<track_set> track_set_sptr;
 
 /// A collection of 2D feature point tracks

@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief core match_features_homography algorithm implementation
+ */
+
 #include <maptk/core/algo/match_features_homography.h>
 #include <maptk/core/exceptions/algorithm.h>
 #include <maptk/core/match_set.h>

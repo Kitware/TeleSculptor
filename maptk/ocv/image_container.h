@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief OCV image_container inteface
+ */
+
 #ifndef MAPTK_OCV_IMAGE_CONTAINER_H_
 #define MAPTK_OCV_IMAGE_CONTAINER_H_
 
@@ -41,8 +46,10 @@ public:
   : data_(other.data_) {}
 
   /// The size of the image data in bytes
-  /// This size includes all allocated image memory,
-  /// which could be larger than width*height*depth.
+  /**
+   * This size includes all allocated image memory,
+   * which could be larger than width*height*depth.
+   */
   virtual size_t size() const;
 
   /// The width of the image in pixels
@@ -67,7 +74,7 @@ public:
   static cv::Mat maptk_to_ocv(const image& img);
 
 protected:
-
+  /// image data
   cv::Mat data_;
 };
 
@@ -77,6 +84,8 @@ protected:
  * If \a img is actually an maptk::ocv::image_container then
  * return the underlying cv::Mat.  Otherwise, convert the image data
  * to cv:Mat by shallow copy (if possible) or deep copy as a last resort.
+ *
+ * \param img Image container to convert to cv::mat
  */
 MAPTK_OCV_EXPORT cv::Mat image_container_to_ocv_matrix(const maptk::image_container& img);
 
