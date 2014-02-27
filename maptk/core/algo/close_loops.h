@@ -49,8 +49,8 @@ public:
    * \returns an updated set a tracks after the stitching operation
    */
   virtual track_set_sptr
-  track_stitching( frame_id_t frame_number,
-                   track_set_sptr input ) const;
+  stitch( frame_id_t frame_number,
+          track_set_sptr input ) const;
 
 };
 
