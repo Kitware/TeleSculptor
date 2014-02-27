@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief Header for \link maptk::rotation_ rotation_<T> \endlink class
+ */
+
 #ifndef MAPTK_ROTATION_H_
 #define MAPTK_ROTATION_H_
 
@@ -11,12 +16,6 @@
 
 #include "matrix.h"
 #include "vector.h"
-
-
-/**
- * \file
- * \brief Header for \link maptk::rotation_ rotation_<T> \endlink class
- */
 
 
 namespace maptk

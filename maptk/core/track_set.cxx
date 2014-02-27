@@ -4,16 +4,14 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
-
-#include <maptk/core/track_set.h>
-#include <boost/foreach.hpp>
-
-
 /**
  * \file
  * \brief Implementation of \link maptk::track_set track_set \endlink
  *        member functions
  */
+
+#include <maptk/core/track_set.h>
+#include <boost/foreach.hpp>
 
 
 namespace maptk

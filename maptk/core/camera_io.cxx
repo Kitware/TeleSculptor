@@ -4,6 +4,13 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief Implementation of file IO functions for a \ref maptk::camera
+ *
+ * File format is the KRTD file.
+ */
+
 #include "camera_io.h"
 
 #include <fstream>
@@ -13,13 +20,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 
-
-/**
- * \file
- * \brief Implementation of file IO functions for a \ref maptk::camera
- *
- * File format is the KRTD file.
- */
 
 namespace maptk
 {

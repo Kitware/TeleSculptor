@@ -79,6 +79,8 @@ types.
                an image
 - \ref algo::match_features : match features between two images
 - \ref algo::estimate_homography : estimate a homography from feature matches
+- \ref algo::estimate_similarity_transform : estimate a similarity
+               transformation from corresponding point sets.
 - \ref algo::track_features : combine sequences of feature matches over time
                into tracks
 - \ref algo::geo_map : convert geographic coordinates between Lat-Long and UTM
@@ -87,7 +89,7 @@ types.
 
 
 \subsection sec-core-algorithm-impls Algorithm Implementations
-- \ref algo::simple_track_features : converts frame-to-frame feature matching
+- \ref algo::track_features_default : converts frame-to-frame feature matching
                into tracks
          - Implements \ref algo::track_features.
          - Requires instances of \ref algo::detect_features,

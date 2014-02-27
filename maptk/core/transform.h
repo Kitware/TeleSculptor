@@ -4,20 +4,18 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief Header for maptk::transform functions
+ */
+
 #ifndef MAPTK_TRANSFORM_H_
 #define MAPTK_TRANSFORM_H_
-
 
 #include "similarity.h"
 #include "covariance.h"
 #include "camera_map.h"
 #include "landmark_map.h"
-
-
-/**
- * \file
- * \brief Header for maptk::transform functions
- */
 
 
 namespace maptk

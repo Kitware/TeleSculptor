@@ -4,19 +4,19 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
-#ifndef MAPTK_LANDMARK_MAP_IO_H_
-#define MAPTK_LANDMARK_MAP_IO_H_
-
-#include "core_config.h"
-
-#include "landmark_map.h"
-
 /**
  * \file
  * \brief File IO functions for a \ref maptk::landmark_map
  *
  * Uses the PLY file format
  */
+
+#ifndef MAPTK_LANDMARK_MAP_IO_H_
+#define MAPTK_LANDMARK_MAP_IO_H_
+
+#include "core_config.h"
+
+#include "landmark_map.h"
 
 namespace maptk
 {

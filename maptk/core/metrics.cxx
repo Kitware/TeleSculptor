@@ -4,14 +4,14 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
-#include "metrics.h"
-#include <boost/foreach.hpp>
-
-
 /**
  * \file
  * \brief Implementation of evaluation metric functions.
  */
+
+#include "metrics.h"
+#include <boost/foreach.hpp>
+
 
 namespace maptk
 {

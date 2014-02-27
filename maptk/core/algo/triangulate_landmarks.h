@@ -4,6 +4,12 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief Header defining abstract \link maptk::algo::triangulate_landmarks
+ *        triangulate landmarks \endlink algorithm
+ */
+
 #ifndef MAPTK_ALGO_TRIANGULATE_LANDMARKS_H_
 #define MAPTK_ALGO_TRIANGULATE_LANDMARKS_H_
 
@@ -11,13 +17,6 @@
 #include <maptk/core/track_set.h>
 #include <maptk/core/camera_map.h>
 #include <maptk/core/landmark_map.h>
-
-
-/**
- * \file
- * \brief Header defining abstract \link maptk::algo::triangulate_landmarks
- *        triangulate landmarks \endlink algorithm
- */
 
 
 namespace maptk

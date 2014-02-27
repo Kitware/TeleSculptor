@@ -4,13 +4,13 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
-#ifndef MAPTK_LANDMARK_MAP_H_
-#define MAPTK_LANDMARK_MAP_H_
-
 /**
  * \file
  * \brief Header file for a map from IDs to landmarks
  */
+
+#ifndef MAPTK_LANDMARK_MAP_H_
+#define MAPTK_LANDMARK_MAP_H_
 
 #include "types.h"
 #include "landmark.h"

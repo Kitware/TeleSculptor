@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief Header for \link maptk::config_block configuration \endlink object
+ */
+
 #ifndef MAPTK_CORE_CONFIG_H
 #define MAPTK_CORE_CONFIG_H
 
@@ -26,10 +31,6 @@
 #include "types.h"
 #include "exceptions/config_block.h"
 
-/**
- * \file
- * \brief Header for \link maptk::config_block configuration \endlink object
- */
 
 namespace maptk
 {

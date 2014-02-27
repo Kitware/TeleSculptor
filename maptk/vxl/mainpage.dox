@@ -35,6 +35,9 @@ The MAPTK vxl library provides various components by building on
 - \ref vxl::estimate_homography : estimate a homography with
                <a href="http://public.kitware.com/vxl/doc/development/contrib/rpl/rrel/html/classrrel__homography2d__est.html">
                rrel_homography2d_est</a>
+- \ref vxl::estimate_similarity_transform : estimate a siminarity transformation with
+               <a href="http://public.kitware.com/vxl/doc/development/core/vgl/html/classvgl__compute__similarity__3d.html">
+               vgl_compute_similarity_3d</a>
 - \ref vxl::bundle_adjust : optimize cameras and landmarks using
                <a href="http://public.kitware.com/vxl/doc/development/core/vpgl/html/classvpgl__bundle__adjust.html">
                vpgl_bundle_adjust</a>

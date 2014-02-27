@@ -4,14 +4,14 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
-#include "similarity.h"
-#include <cmath>
-
 /**
  * \file
  * \brief Implementation of \link maptk::similarity_ similarity_<T> \endlink
  *        for \c T = { \c float, \c double }
  */
+
+#include "similarity.h"
+#include <cmath>
 
 
 namespace maptk
@@ -106,6 +106,7 @@ std::istream&  operator>>(std::istream& s, similarity_<T>& t)
 }
 
 
+/// \cond DoxygenSuppress
 #define INSTANTIATE_SIMILARITY(T) \
 template class MAPTK_CORE_EXPORT similarity_<T>; \
 template MAPTK_CORE_EXPORT std::ostream&  operator<<(std::ostream& s, const similarity_<T>& t); \
@@ -115,4 +116,7 @@ INSTANTIATE_SIMILARITY(double);
 INSTANTIATE_SIMILARITY(float);
 
 #undef INSTANTIATE_SIMILARITY
+/// \endcond
+
+
 } // end namespace maptk

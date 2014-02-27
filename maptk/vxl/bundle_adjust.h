@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief Header for VXL bundle adjustment algorithm
+ */
+
 #ifndef MAPTK_VXL_BUNDLE_ADJUST_H_
 #define MAPTK_VXL_BUNDLE_ADJUST_H_
 
@@ -11,11 +16,6 @@
 
 #include <maptk/core/algo/bundle_adjust.h>
 #include <boost/scoped_ptr.hpp>
-
-/**
- * \file
- * \brief Header for VXL bundle adjustment algorithm
- */
 
 namespace maptk
 {

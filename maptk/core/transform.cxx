@@ -4,14 +4,14 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
-#include "transform.h"
-#include <boost/foreach.hpp>
-
 /**
  * \file
  * \brief Implementation of maptk::transform functions to apply
  * similarity transformations
  */
+
+#include "transform.h"
+#include <boost/foreach.hpp>
 
 
 namespace maptk
@@ -79,6 +79,7 @@ landmark_map_sptr transform(landmark_map_sptr landmarks,
 }
 
 
+/// \cond DoxygenSuppress
 #define INSTANTIATE_TRANSFORM(T) \
 template MAPTK_CORE_EXPORT covariance_<3,T> transform(const covariance_<3,T>& covar, \
                                                       const similarity_<T>& xform);
@@ -87,4 +88,7 @@ INSTANTIATE_TRANSFORM(double);
 INSTANTIATE_TRANSFORM(float);
 
 #undef INSTANTIATE_TRANSFORM
+/// \endcond
+
+
 } // end namespace maptk

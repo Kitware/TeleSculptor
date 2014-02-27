@@ -4,7 +4,14 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief track_feature algorithm instantiation
+ */
+
 #include <maptk/core/algo/algorithm.txx>
 #include <maptk/core/algo/track_features.h>
 
+/// \cond DoxygenSuppress
 INSTANTIATE_ALGORITHM_DEF(maptk::algo::track_features);
+/// \endcond

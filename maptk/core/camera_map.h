@@ -4,13 +4,13 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
-#ifndef MAPTK_CAMERA_MAP_H_
-#define MAPTK_CAMERA_MAP_H_
-
 /**
  * \file
  * \brief Header file for a map from frame IDs to cameras
  */
+
+#ifndef MAPTK_CAMERA_MAP_H_
+#define MAPTK_CAMERA_MAP_H_
 
 #include "types.h"
 #include "camera.h"

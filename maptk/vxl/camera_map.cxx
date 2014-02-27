@@ -4,7 +4,6 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
-
 /**
  * \file
  * \brief Implementation of map from frame IDs to vpgl cameras

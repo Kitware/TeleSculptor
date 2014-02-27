@@ -4,6 +4,12 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief Header defining the \link maptk::algo::track_features_default
+ *        track_features_default \endlink algorithm
+ */
+
 #ifndef MAPTK_ALGO_TRACK_FEATURES_DEFAULT_H_
 #define MAPTK_ALGO_TRACK_FEATURES_DEFAULT_H_
 
@@ -19,12 +25,6 @@
 #include <maptk/core/image_container.h>
 #include <maptk/core/track_set.h>
 
-
-/**
- * \file
- * \brief Header defining the \link maptk::algo::track_features_default
- *        track_features_default \endlink algorithm
- */
 
 namespace maptk
 {
@@ -48,10 +48,38 @@ public:
   std::string impl_name() const { return "default"; }
 
   /// Get this algorithm's \link maptk::config_block configuration block \endlink
+  /**
+   * This base virtual function implementation returns an empty configuration
+   * block whose name is set to \c this->type_name.
+   *
+   * \returns \c config_block containing the configuration for this algorithm
+   *          and any nested components.
+   */
   virtual config_block_sptr get_configuration() const;
+
   /// Set this algorithm's properties via a config block
+  /**
+   * \throws no_such_configuration_value_exception
+   *    Thrown if an expected configuration value is not present.
+   * \throws algorithm_configuration_exception
+   *    Thrown when the algorithm is given an invalid \c config_block or is'
+   *    otherwise unable to configure itself.
+   *
+   * \param config  The \c config_block instance containing the configuration
+   *                parameters for this algorithm
+   */
   virtual void set_configuration(config_block_sptr config);
+
   /// Check that the algorithm's currently configuration is valid
+  /**
+   * This checks solely within the provided \c config_block and not against
+   * the current state of the instance. This isn't static for inheritence
+   * reasons.
+   *
+   * \param config  The config block to check configuration of.
+   *
+   * \returns true if the configuration check passed and false if it didn't.
+   */
   virtual bool check_configuration(config_block_sptr config) const;
 
   /// Extend a previous set of tracks using the current frame

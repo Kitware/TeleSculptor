@@ -4,6 +4,12 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief Header for \link maptk::similarity_ similarity_<T> \endlink class
+ *        for similarity transformations
+ */
+
 #ifndef MAPTK_SIMILARITY_H_
 #define MAPTK_SIMILARITY_H_
 
@@ -12,13 +18,6 @@
 #include "matrix.h"
 #include "vector.h"
 #include "rotation.h"
-
-
-/**
- * \file
- * \brief Header for \link maptk::similarity_ similarity_<T> \endlink class
- *        for similarity transformations
- */
 
 
 namespace maptk
@@ -62,6 +61,7 @@ public:
   /**
    * requires a matrix which represents a similarity tranformation
    * in homogeneous coordinates
+   * \param mat Transform in matrix form to initialize from.
    */
   explicit similarity_<T>(const matrix_<4,4,T>& mat);
 
@@ -86,12 +86,16 @@ public:
   }
 
   /// Compose two similarities
+  /**
+   * \param rhs other similarity to compose with.
+   */
   similarity_<T> operator*(const similarity_<T>& rhs) const;
 
   /// Transform a vector
   /**
    * \note for a large number of vectors, it is more efficient to
    *       create a transform matrix and use matrix multiplcation
+   * \param rhs vector to transform.
    */
   vector_<3,T> operator*(const vector_<3,T>& rhs) const;
 
@@ -119,8 +123,10 @@ protected:
 };
 
 
+/// \cond DoxygenSuppress
 typedef similarity_<double> similarity_d;
 typedef similarity_<float> similarity_f;
+/// \endcond
 
 
 /// output stream operator for a similarity transformation

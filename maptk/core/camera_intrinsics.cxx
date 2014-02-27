@@ -4,15 +4,14 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
-#include "camera_intrinsics.h"
-
-
 /**
  * \file
  * \brief Implementation of \link maptk::camera_intrinsics_
  *        camera_intrinsics_<T> \endlink class
  *        for \c T = { \c float, \c double }
  */
+
+#include "camera_intrinsics.h"
 
 
 namespace maptk

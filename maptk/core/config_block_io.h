@@ -4,6 +4,13 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief IO Operation utilities for \c maptk::config
+ *
+ * \todo Describe format here.
+ */
+
 #ifndef MAPTK_CORE_CONFIG_IO_H
 #define MAPTK_CORE_CONFIG_IO_H
 
@@ -11,13 +18,6 @@
 
 #include "config_block.h"
 #include "types.h"
-
-/**
- * \file
- * \brief IO Operation utilities for \c maptk::config
- *
- * \todo Describe format here.
- */
 
 namespace maptk
 {

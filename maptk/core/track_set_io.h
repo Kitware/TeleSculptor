@@ -4,6 +4,13 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief File IO functions for a \ref maptk::track_set
+ *
+ * \todo Describe format here.
+ */
+
 #ifndef MAPTK_TRACK_SET_IO_H_
 #define MAPTK_TRACK_SET_IO_H_
 
@@ -11,12 +18,6 @@
 
 #include "track_set.h"
 
-/**
- * \file
- * \brief File IO functions for a \ref maptk::track_set
- *
- * \todo Describe format here.
- */
 
 namespace maptk
 {

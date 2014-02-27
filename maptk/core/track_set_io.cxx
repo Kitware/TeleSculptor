@@ -4,6 +4,13 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief Implementation of file IO functions for a \ref maptk::track_set
+ *
+ * \todo Describe format here.
+ */
+
 #include "track_set_io.h"
 
 #include <fstream>
@@ -17,13 +24,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 
-
-/**
- * \file
- * \brief Implementation of file IO functions for a \ref maptk::track_set
- *
- * \todo Describe format here.
- */
 
 namespace maptk
 {

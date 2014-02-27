@@ -4,6 +4,12 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief Implementation of \link maptk::algo::track_features_default
+ *        track_features_default \endlink
+ */
+
 #include <maptk/core/algo/track_features_default.h>
 #include <maptk/core/algo/algorithm.txx>
 #include <maptk/core/exceptions/algorithm.h>
@@ -18,12 +24,6 @@
 #include <boost/foreach.hpp>
 #include <boost/iterator/counting_iterator.hpp>
 #include <boost/algorithm/string/join.hpp>
-
-/**
- * \file
- * \brief Implementation of \link maptk::algo::track_features_default
-          track_features_default \endlink
- */
 
 
 namespace maptk

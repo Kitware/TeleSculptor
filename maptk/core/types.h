@@ -4,6 +4,11 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
+/**
+ * \file
+ * \brief Shared type declarations for the maptk/core module.
+ */
+
 #ifndef MAPTK_CORE_TYPES_H
 #define MAPTK_CORE_TYPES_H
 
@@ -12,10 +17,6 @@
 
 #include <boost/filesystem/path.hpp>
 
-/**
- * \file
- * \brief Shared type declarations for the maptk/core module.
- */
 
 namespace maptk
 {
