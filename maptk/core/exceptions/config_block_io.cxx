@@ -34,7 +34,7 @@ file_not_found_exception
   : config_block_io_exception(file_path, reason)
 {
   std::ostringstream sstr;
-  sstr << "Could not file file at location \'" << m_file_path.c_str() << "\': "
+  sstr << "Could not find file at location \'" << m_file_path.c_str() << "\': "
           << m_reason;
   m_what = sstr.str();
 }
