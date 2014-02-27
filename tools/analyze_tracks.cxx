@@ -15,6 +15,7 @@
 #include <maptk/core/track_set_io.h>
 #include <maptk/core/algo/image_io.h>
 #include <maptk/core/algo/analyze_tracks.h>
+#include <maptk/core/algo/draw_tracks.h>
 #include <maptk/core/image_container.h>
 #include <maptk/core/config_block.h>
 #include <maptk/core/config_block_io.h>
@@ -54,6 +55,9 @@ static maptk::config_block_sptr default_config()
   maptk::algo::analyze_tracks::get_nested_algo_configuration(
     "analyze_tracks", config, maptk::algo::analyze_tracks_sptr() );
 
+  maptk::algo::draw_tracks::get_nested_algo_configuration(
+    "draw_tracks", config, maptk::algo::draw_tracks_sptr() );
+
   return config;
 }
 
@@ -68,7 +72,8 @@ static bool check_config( maptk::config_block_sptr config )
 
   if( config->has_value( "image_list_file" ) &&
       ( !bfs::exists( maptk::path_t( config->get_value<std::string>( "image_list_file" ) ) ) ||
-        !maptk::algo::image_io::check_nested_algo_configuration( "image_reader", config ) ) )
+        !maptk::algo::image_io::check_nested_algo_configuration( "image_reader", config ) ||
+        !maptk::algo::image_io::check_nested_algo_configuration( "draw_tracks", config ) ) )
   {
     return false;
   }
@@ -129,6 +134,7 @@ static int maptk_main(int argc, char const* argv[])
 
   algo::image_io_sptr image_reader;
   algo::analyze_tracks_sptr analyze_tracks;
+  algo::draw_tracks_sptr draw_tracks;
 
   // If -c/--config given, read in confgi file, merge in with default just generated
   if( vm.count( "config" ) )
@@ -147,6 +153,9 @@ static int maptk_main(int argc, char const* argv[])
   {
     algo::image_io::set_nested_algo_configuration( "image_reader", config, image_reader );
     algo::image_io::get_nested_algo_configuration( "image_reader", config, image_reader );
+
+    algo::draw_tracks::set_nested_algo_configuration( "draw_tracks", config, draw_tracks );
+    algo::draw_tracks::get_nested_algo_configuration( "draw_tracks", config, draw_tracks );
   }
 
   algo::analyze_tracks::set_nested_algo_configuration( "analyze_tracks", config, analyze_tracks );
@@ -230,7 +239,7 @@ static int maptk_main(int argc, char const* argv[])
       images.push_back( image );
     }
 
-    analyze_tracks->write_images( tracks, images );
+    draw_tracks->draw( tracks, images );
   }
 
   return EXIT_SUCCESS;

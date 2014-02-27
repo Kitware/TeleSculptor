@@ -57,15 +57,6 @@ public:
   print_info(track_set_sptr track_set,
              stream_t& stream = std::cout) const;
 
-  /// Write features tracks on top of the input images.
-  /**
-   * \param [in] track_set the tracks to analyze
-   * \param [in] image_data a list of images the tracks were computed on
-   */
-  virtual void
-  write_images(track_set_sptr track_set,
-               image_container_sptr_list image_data) const;
-
 private:
 
   /// private implementation class
