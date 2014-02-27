@@ -119,11 +119,14 @@ void
 draw_tracks
 ::set_configuration(config_block_sptr in_config)
 {
-  d_->draw_dual_display = in_config->get_value<bool>( "draw_dual_display" );
-  d_->draw_track_id = in_config->get_value<bool>( "draw_track_id" );
-  d_->draw_untracked_features = in_config->get_value<bool>( "draw_untracked_features" );
-  d_->draw_feature_lines = in_config->get_value<bool>( "draw_feature_lines" );
-  d_->pattern = boost::format( in_config->get_value<std::string>( "pattern" ) );
+  config_block_sptr config = this->get_configuration();
+  config->merge_config( in_config );
+
+  d_->draw_dual_display = config->get_value<bool>( "draw_dual_display" );
+  d_->draw_track_id = config->get_value<bool>( "draw_track_id" );
+  d_->draw_untracked_features = config->get_value<bool>( "draw_untracked_features" );
+  d_->draw_feature_lines = config->get_value<bool>( "draw_feature_lines" );
+  d_->pattern = boost::format( config->get_value<std::string>( "pattern" ) );
 }
 
 

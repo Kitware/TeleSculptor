@@ -108,9 +108,12 @@ void
 analyze_tracks
 ::set_configuration(config_block_sptr in_config)
 {
-  d_->output_summary = in_config->get_value<bool>( "output_summary" );
-  d_->output_pt_matrix = in_config->get_value<bool>( "output_pt_matrix" );
-  d_->pt_matrix_cols = in_config->get_value<unsigned>( "pt_matrix_cols" );
+  config_block_sptr config = this->get_configuration();
+  config->merge_config( in_config );
+
+  d_->output_summary = config->get_value<bool>( "output_summary" );
+  d_->output_pt_matrix = config->get_value<bool>( "output_pt_matrix" );
+  d_->pt_matrix_cols = config->get_value<unsigned>( "pt_matrix_cols" );
 }
 
 
@@ -145,7 +148,7 @@ analyze_tracks
   }
 
   // Generate matrix
-  cv::Mat_<double> data( last_frame - first_frame + 1, d_->pt_matrix_cols + 2 );
+  cv::Mat_<double> data( total_frames, d_->pt_matrix_cols + 2 );
 
   for( unsigned fid = first_frame; fid <= last_frame; fid++ )
   {
