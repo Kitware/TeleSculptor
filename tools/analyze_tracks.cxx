@@ -44,19 +44,20 @@ static maptk::config_block_sptr default_config()
                      "generated from some prior processing." );
   config->set_value( "image_list_file", "",
                      "Path to an optional input file containing new-line separated "
-                     "paths to sequential image files for the given tracks." );
+                     "paths to sequential image files for the given tracks. This "
+                     "file is required for draw tracks output." );
   config->set_value( "output_file", "",
-                     "Path to an optional file to write outputs to. If this file "
+                     "Path to an optional file to write text outputs to. If this file "
                      "exists, it will be overwritten." );
 
-  maptk::algo::image_io::get_nested_algo_configuration(
-    "image_reader", config, maptk::algo::image_io_sptr() );
+  //maptk::algo::image_io::get_nested_algo_configuration(
+  //  "image_reader", config, maptk::algo::image_io_sptr() );
 
   maptk::algo::analyze_tracks::get_nested_algo_configuration(
     "analyze_tracks", config, maptk::algo::analyze_tracks_sptr() );
 
-  maptk::algo::draw_tracks::get_nested_algo_configuration(
-    "draw_tracks", config, maptk::algo::draw_tracks_sptr() );
+  //maptk::algo::draw_tracks::get_nested_algo_configuration(
+  //  "draw_tracks", config, maptk::algo::draw_tracks_sptr() );
 
   return config;
 }
@@ -163,7 +164,7 @@ static int maptk_main(int argc, char const* argv[])
   bool valid_config = check_config( config );
 
   // Output a config file if specified
-  if( vm.count("output-config") )
+  if( vm.count( "output-config" ) )
   {
     write_config_file( config, vm[ "output-config" ].as<maptk::path_t>() );
 
