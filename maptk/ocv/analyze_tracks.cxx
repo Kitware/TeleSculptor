@@ -6,10 +6,10 @@
 
 /**
  * \file
- * \brief Implementation of VXL analyze tracks algorithm
+ * \brief Implementation of OpenCV analyze tracks algorithm
  */
 
-#include <maptk/vxl/analyze_tracks.h>
+#include <maptk/ocv/analyze_tracks.h>
 
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
@@ -23,7 +23,7 @@
 namespace maptk
 {
 
-namespace vxl
+namespace ocv
 {
 
 
@@ -132,6 +132,7 @@ analyze_tracks
   {
     stream << "Percent of Features Tracked Matrix" << std::endl;
     stream << "----------------------------------" << std::endl;
+    stream << "[FrameID] [NumTrks] [%TrkFromLast]" << std::endl;
     stream << std::endl;
   }
 
@@ -188,6 +189,6 @@ analyze_tracks
 }
 
 
-} // end namespace vxl
+} // end namespace ocv
 
 } // end namespace maptk

@@ -4,27 +4,27 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
-#ifndef MAPTK_VXL_ANALYZE_TRACKS_H_
-#define MAPTK_VXL_ANALYZE_TRACKS_H_
+#ifndef MAPTK_OCV_ANALYZE_TRACKS_H_
+#define MAPTK_OCV_ANALYZE_TRACKS_H_
 
-#include <maptk/vxl/vxl_config.h>
+#include <maptk/ocv/ocv_config.h>
 
 #include <maptk/core/algo/analyze_tracks.h>
 #include <boost/scoped_ptr.hpp>
 
 /**
  * \file
- * \brief Header for VXL analyze_tracks algorithm
+ * \brief Header for OpenCV analyze_tracks algorithm
  */
 
 namespace maptk
 {
 
-namespace vxl
+namespace ocv
 {
 
 /// A class for outputting various information about feature tracks
-class MAPTK_VXL_EXPORT analyze_tracks
+class MAPTK_OCV_EXPORT analyze_tracks
 : public algo::algorithm_impl<analyze_tracks, algo::analyze_tracks>
 {
 public:
@@ -39,7 +39,7 @@ public:
   virtual ~analyze_tracks();
 
   /// Return the name of this implementation
-  std::string impl_name() const { return "vxl"; }
+  std::string impl_name() const { return "ocv"; }
 
   /// Get this algorithm's \link maptk::config_block configuration block \endlink
   virtual config_block_sptr get_configuration() const;
@@ -74,9 +74,9 @@ private:
 };
 
 
-} // end namespace vxl
+} // end namespace ocv
 
 } // end namespace maptk
 
 
-#endif // MAPTK_VXL_TRIANGULATE_LANDMARKS_H_
+#endif // MAPTK_OCV_ANALYZE_TRACKS_H_

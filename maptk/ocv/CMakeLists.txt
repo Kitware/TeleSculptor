@@ -1,6 +1,7 @@
 # maptk/ocv
 
 set(maptk_ocv_headers_public
+  analyze_tracks.h
   descriptor_set.h
   detect_features.h
   estimate_homography.h
@@ -18,6 +19,7 @@ set(maptk_ocv_headers_public
   )
 
 set(maptk_ocv_sources
+  analyze_tracks.cxx
   descriptor_set.cxx
   detect_features.cxx
   estimate_homography.cxx
