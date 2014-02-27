@@ -54,7 +54,7 @@ static maptk::config_block_sptr default_config()
   //  "image_reader", config, maptk::algo::image_io_sptr() );
 
   maptk::algo::analyze_tracks::get_nested_algo_configuration(
-    "analyze_tracks", config, maptk::algo::analyze_tracks_sptr() );
+    "track_analyzer", config, maptk::algo::analyze_tracks_sptr() );
 
   //maptk::algo::draw_tracks::get_nested_algo_configuration(
   //  "draw_tracks", config, maptk::algo::draw_tracks_sptr() );
@@ -66,9 +66,15 @@ static maptk::config_block_sptr default_config()
 static bool check_config( maptk::config_block_sptr config )
 {
   if( !config->has_value( "track_file" ) ||
-      !bfs::exists( maptk::path_t( config->get_value<std::string>( "track_file" ) ) ) ||
-      !maptk::algo::analyze_tracks::check_nested_algo_configuration( "analyze_tracks", config ) )
+      !bfs::exists( maptk::path_t( config->get_value<std::string>( "track_file" ) ) ) )
   {
+    std::cerr << "A valid track file must be specified!" << std::endl;
+    return false;
+  }
+
+  if( !maptk::algo::analyze_tracks::check_nested_algo_configuration( "track_analyzer", config ) )
+  {
+    std::cerr << "Invalid analyze_tracks config" << std::endl;
     return false;
   }
 
@@ -77,6 +83,7 @@ static bool check_config( maptk::config_block_sptr config )
         !maptk::algo::image_io::check_nested_algo_configuration( "image_reader", config ) ||
         !maptk::algo::image_io::check_nested_algo_configuration( "draw_tracks", config ) ) )
   {
+    std::cerr << "Unable to configure draw tracks" << std::endl;
     return false;
   }
 
@@ -159,8 +166,8 @@ static int maptk_main(int argc, char const* argv[])
     algo::draw_tracks::get_nested_algo_configuration( "draw_tracks", config, draw_tracks );
   }
 
-  algo::analyze_tracks::set_nested_algo_configuration( "analyze_tracks", config, analyze_tracks );
-  algo::analyze_tracks::get_nested_algo_configuration( "analyze_tracks", config, analyze_tracks );
+  algo::analyze_tracks::set_nested_algo_configuration( "track_analyzer", config, analyze_tracks );
+  algo::analyze_tracks::get_nested_algo_configuration( "track_analyzer", config, analyze_tracks );
 
   bool valid_config = check_config( config );
 
