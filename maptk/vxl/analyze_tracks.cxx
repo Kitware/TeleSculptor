@@ -9,11 +9,11 @@
  * \brief Implementation of VXL analyze tracks algorithm
  */
 
-
 #include <maptk/vxl/analyze_tracks.h>
 
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/format.hpp>
 
 #include <set>
 #include <fstream>
@@ -36,7 +36,8 @@ public:
   priv()
   : output_sum_props(true),
     output_pt_matrix(true),
-    pt_matrix_cols(5)
+    pt_matrix_cols(5),
+    image_pattern("feature_image_%1%.png")
   {
   }
 
@@ -51,10 +52,13 @@ public:
   {
   }
 
-  /// Parameters
+  /// Text output parameters
   bool output_sum_props;
   bool output_pt_matrix;
   unsigned pt_matrix_cols;
+
+  /// Image output parameters
+  boost::format image_pattern;
 };
 
 
@@ -114,9 +118,46 @@ analyze_tracks
 ::print_info(track_set_sptr track_set,
              stream_t& stream) const
 {
+  // Constants
   const unsigned num_tracks = track_set->size();
   const frame_id_t first_frame = track_set->first_frame();
   const frame_id_t last_frame = track_set->last_frame();
+  const frame_id_t total_frames = last_frame - first_frame + 1;
+
+  // Counters
+  double summed_pt = 0.0;
+
+  // Output percent tracked matrix
+  if( d_->output_pt_matrix )
+  {
+    stream << "Percent of Features Tracked Matrix" << std::endl;
+    stream << "----------------------------------" << std::endl;
+    stream << std::endl;
+  }
+
+  for( unsigned fid = first_frame; fid <= last_frame; fid++ )
+  {
+    std::string fid_str = "Frame" + boost::lexical_cast<std::string>( fid );
+
+    while( fid_str.size() < 12 )
+    {
+      fid_str = fid_str + " ";
+    }
+    for( unsigned c = 1; c <= d_->pt_matrix_cols; c++ )
+    {
+      stream << " ";
+      if( fid < first_frame + c )
+      {
+        stream << "----";
+      }
+      else
+      {
+        double ptracked = track_set->percentage_tracked( fid-c, fid );
+        stream << std::setprecision(3) << ptracked;
+      }
+    }
+    stream << std::endl;
+  }
 
   // Output number of tracks in stream
   if( d_->output_sum_props )
@@ -127,36 +168,8 @@ analyze_tracks
     stream << "Largest Track ID: " << num_tracks << std::endl;
     stream << "Smallest Frame ID: " << first_frame << std::endl;
     stream << "Largest Frame ID: " << last_frame << std::endl;
+    stream << "Averaged %Tracked: " << summed_pt / total_frames << std::endl;
     stream << std::endl;
-  }
-
-  // Output percent tracked matrix
-  if( d_->output_pt_matrix )
-  {
-    stream << "Percent of Features Tracked Matrix" << std::endl;
-    stream << "----------------------------------" << std::endl;
-    stream << std::endl;
-
-    for( unsigned fid = first_frame; fid <= last_frame; fid++ )
-    {
-      stream << "Frame" << boost::lexical_cast<std::string>( fid );
-
-      for( unsigned c = 1; c <= d_->pt_matrix_cols; c++ )
-      {
-        stream << " ";
-
-        if( fid < first_frame + c )
-        {
-          stream << "----";
-        }
-        else
-        {
-          stream << std::setprecision(3) << track_set->percentage_tracked( fid-c, fid );
-        }
-      }
-
-      stream << std::endl;
-    }
   }
 }
 
@@ -167,7 +180,11 @@ analyze_tracks
 ::write_images(track_set_sptr track_set,
                image_container_sptr_list image_data) const
 {
+  // Validate inputs
+  asds
 
+  // Generate output images
+  image_container_sptr_list::iterator p
 }
 
 
