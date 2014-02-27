@@ -474,7 +474,12 @@ static int maptk_main(int argc, char const* argv[])
       }
 
       cameras     = maptk::initialize_cameras_with_ins(ins_map, base_camera, local_cs);
-      pos_cameras = maptk::initialize_cameras_with_ins(ins_map, base_camera, local_cs);
+      // Creating duplicate cameras structure
+      BOOST_FOREACH(maptk::camera_map::map_camera_t::value_type &v, cameras)
+      {
+        pos_cameras[v.first] = v.second->clone();
+      }
+
       maptk::camera_map_sptr cam_map(new maptk::simple_camera_map(cameras));
       // triangulate to provide initial point locations
       triangulator->triangulate(cam_map, tracks, lm_map);
