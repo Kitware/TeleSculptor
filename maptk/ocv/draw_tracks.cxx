@@ -6,7 +6,7 @@
 
 /**
  * \file
- * \brief Implementation of OpenCV draw tracks algorithm
+ * \brief Implementation of OCV draw tracks algorithm
  */
 
 #include <maptk/ocv/draw_tracks.h>
