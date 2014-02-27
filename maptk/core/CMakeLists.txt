@@ -46,8 +46,10 @@ set(maptk_core_headers_public
   algo/algorithm.txx
   algo/analyze_tracks.h
   algo/bundle_adjust.h
+  algo/close_loops.h
   algo/convert_image.h
   algo/detect_features.h
+  algo/draw_tracks.h
   algo/estimate_homography.h
   algo/estimate_similarity_transform.h
   algo/extract_descriptors.h
@@ -93,8 +95,10 @@ set(maptk_core_sources
   algo/algorithm.cxx
   algo/analyze_tracks.cxx
   algo/bundle_adjust.cxx
+  algo/close_loops.cxx
   algo/convert_image.cxx
   algo/detect_features.cxx
+  algo/draw_tracks.cxx
   algo/estimate_homography.cxx
   algo/estimate_similarity_transform.cxx
   algo/extract_descriptors.cxx
