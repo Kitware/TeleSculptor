@@ -37,8 +37,6 @@ class MAPTK_CORE_EXPORT draw_tracks
 {
 public:
 
-  typedef std::ostream stream_t;
-
   /// Return the name of this algorithm.
   std::string type_name() const { return "draw_tracks"; }
 

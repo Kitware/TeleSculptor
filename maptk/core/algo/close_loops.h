@@ -37,8 +37,6 @@ class MAPTK_CORE_EXPORT close_loops
 {
 public:
 
-  typedef std::ostream stream_t;
-
   /// Return the name of this algorithm.
   std::string type_name() const { return "close_loops"; }
 
