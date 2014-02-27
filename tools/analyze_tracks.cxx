@@ -40,14 +40,14 @@ static maptk::config_block_sptr default_config()
     maptk::config_block::empty_config( "analyze_tracks_tool" );
 
   config->set_value( "track_file", "",
-                     "Path an input file containing all features tracks from "
-                     "some prior operation" );
+                     "Path to a required input file containing all features tracks "
+                     "generated from some prior processing." );
   config->set_value( "image_list_file", "",
-                     "Path an input file containing new-line separated paths "
-                     "to sequential image files for the given tracks." );
+                     "Path to an optional input file containing new-line separated "
+                     "paths to sequential image files for the given tracks." );
   config->set_value( "output_file", "",
-                     "Path to a file to write outputs to. If this file exists, "
-                     "it will be overwritten." );
+                     "Path to an optional file to write outputs to. If this file "
+                     "exists, it will be overwritten." );
 
   maptk::algo::image_io::get_nested_algo_configuration(
     "image_reader", config, maptk::algo::image_io_sptr() );
@@ -103,7 +103,7 @@ static int maptk_main(int argc, char const* argv[])
   try
   {
     boost::program_options::store(
-      boost::program_options::parse_command_line(argc, argv, opt_desc), vm);
+      boost::program_options::parse_command_line(argc, argv, opt_desc), vm );
   }
   catch( boost::program_options::unknown_option const& e )
   {
@@ -125,7 +125,6 @@ static int maptk_main(int argc, char const* argv[])
   //
   // If -o/--output-config given, output config result and notify of current (in)validity
   // Else error if provided config not valid.
-
   namespace algo = maptk::algo;
   namespace bfs = boost::filesystem;
 
