@@ -141,6 +141,7 @@ analyze_tracks
   // Output percent tracked matrix
   if( d_->output_pt_matrix )
   {
+    stream << std::endl;
     stream << "        Percent of Features Tracked Matrix         " << std::endl;
     stream << "---------------------------------------------------" << std::endl;
     stream << "(FrameID) (NumTrks) (%TrkF-1) (%TrkF-2) (%TrkF-...)" << std::endl;
@@ -177,6 +178,7 @@ analyze_tracks
   // Output number of tracks in stream
   if( d_->output_summary )
   {
+    stream << std::endl;
     stream << "Track Set Properties" << std::endl;
     stream << "--------------------" << std::endl;
     stream << std::endl;
