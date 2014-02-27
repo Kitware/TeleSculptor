@@ -52,7 +52,7 @@ public:
    */
   virtual track_set_sptr
   stitch( frame_id_t frame_number,
-          track_set_sptr input ) const;
+          track_set_sptr input ) const = 0;
 
 };
 
