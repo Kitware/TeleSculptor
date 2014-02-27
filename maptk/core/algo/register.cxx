@@ -12,7 +12,9 @@
 #include <maptk/core/algo/register.h>
 #include <maptk/core/algo/track_features_default.h>
 #include <maptk/core/algo/match_features_homography.h>
+#include <maptk/core/algo/close_loops_stitcher_only.h>
 #include <maptk/core/algo/convert_image.h>
+
 
 namespace maptk
 {
@@ -23,9 +25,10 @@ namespace algo
 /// register all algorithms in this module
 void register_algorithms()
 {
-  track_features_default::register_self();
-  match_features_homography::register_self();
+  close_loops_stitcher_only::register_self();
   convert_image_default::register_self();
+  match_features_homography::register_self();
+  track_features_default::register_self();
 }
 
 
