@@ -298,7 +298,7 @@ static int maptk_main(int argc, char const* argv[])
   namespace algo = maptk::algo;
 
   // Set up top level configuration w/ defaults where applicable.
-  maptk::config_block_sptr config = default_config();
+  maptk::config_block_sptr config = maptk::config_block::empty_config();
   algo::bundle_adjust_sptr bundle_adjuster;
   algo::triangulate_landmarks_sptr triangulator;
   algo::geo_map_sptr geo_mapper;
@@ -315,13 +315,9 @@ static int maptk_main(int argc, char const* argv[])
   //print_config(config);
 
   algo::bundle_adjust::set_nested_algo_configuration("bundle_adjuster", config, bundle_adjuster);
-  algo::bundle_adjust::get_nested_algo_configuration("bundle_adjuster", config, bundle_adjuster);
   algo::triangulate_landmarks::set_nested_algo_configuration("triangulator", config, triangulator);
-  algo::triangulate_landmarks::get_nested_algo_configuration("triangulator", config, triangulator);
   algo::geo_map::set_nested_algo_configuration("geo_mapper", config, geo_mapper);
-  algo::geo_map::get_nested_algo_configuration("geo_mapper", config, geo_mapper);
   algo::estimate_similarity_transform::set_nested_algo_configuration("st_estimator", config, st_estimator);
-  algo::estimate_similarity_transform::get_nested_algo_configuration("st_estimator", config, st_estimator);
 
   //std::cerr << "[DEBUG] Config AFTER set:" << std::endl;
   //print_config(config);
@@ -330,6 +326,14 @@ static int maptk_main(int argc, char const* argv[])
 
   if(vm.count("output-config"))
   {
+    maptk::config_block_sptr dflt_config = default_config();
+    dflt_config->merge_config(config);
+    config = dflt_config;
+    algo::bundle_adjust::get_nested_algo_configuration("bundle_adjuster", config, bundle_adjuster);
+    algo::triangulate_landmarks::get_nested_algo_configuration("triangulator", config, triangulator);
+    algo::geo_map::get_nested_algo_configuration("geo_mapper", config, geo_mapper);
+    algo::estimate_similarity_transform::get_nested_algo_configuration("st_estimator", config, st_estimator);
+
     //std::cerr << "[DEBUG] Given config output target: "
     //          << vm["output-config"].as<maptk::path_t>() << std::endl;
     write_config_file(config, vm["output-config"].as<maptk::path_t>());

@@ -123,7 +123,7 @@ algorithm_def<Self>
     config->subblock_view(name + config_block::block_sep + nested_algo->impl_name())
           ->merge_config(nested_algo->get_configuration());
   }
-  else
+  else if (!config->has_value(name + config_block::block_sep + "type"))
   {
     config->set_value(name + config_block::block_sep + "type",
                       "",
