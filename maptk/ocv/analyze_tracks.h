@@ -23,7 +23,7 @@ namespace maptk
 namespace ocv
 {
 
-/// A class for outputting various information about feature tracks
+/// A class for outputting various debug info about feature tracks
 class MAPTK_OCV_EXPORT analyze_tracks
 : public algo::algorithm_impl<analyze_tracks, algo::analyze_tracks>
 {

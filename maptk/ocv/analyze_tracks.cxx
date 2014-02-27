@@ -10,6 +10,8 @@
  */
 
 #include <maptk/ocv/analyze_tracks.h>
+#include <maptk/ocv/ocv_algo_tools.h>
+#include <maptk/ocv/image_container.h>
 
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
@@ -182,10 +184,46 @@ analyze_tracks
                image_container_sptr_list image_data) const
 {
   // Validate inputs
-  asds
+  if( image_data.size() < track_set->last_frame() )
+  {
+    std::cerr << "Error: not enough imagery to display all tracks" << std::endl;
+  }
 
   // Generate output images
-  image_container_sptr_list::iterator p
+  frame_id_t fid = 0;
+
+  BOOST_FOREACH( image_container_sptr ctr_sptr, image_data )
+  {
+    // Paint active tracks on the input image
+    cv::Mat img = ocv::image_container::maptk_to_ocv( ctr_sptr->get_image() );
+
+    // Draw points on input image
+    BOOST_FOREACH( track_sptr trk, track_set->active_tracks( fid )->tracks() )
+    {
+      track::track_state ts = *( trk->find( fid ) );
+
+      if( !ts.feat )
+      {
+        continue;
+      }
+
+      cv::Scalar color( 255, 0, 0 );
+      cv::Point loc( ts.feat->loc()[0], ts.feat->loc()[1] );
+      cv::Point txt_offset( -1, 1 );
+      std::string fid_str = boost::lexical_cast<std::string>( fid );
+
+      if( trk->size() == 1 )
+      {
+        color = cv::Scalar( 0, 0, 255 );
+      }
+
+      cv::circle( img, loc, 1, color, 1 );
+      cv::putText( img, fid_str, loc + txt_offset, cv::FONT_HERSHEY_SIMPLEX, 3, color );
+    }
+
+    // Output image
+    std::string ofn = boost::str( d_->image_pattern % fid );
+  }
 }
 
 
