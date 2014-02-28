@@ -164,6 +164,7 @@ close_loops_bad_frames_only
   {
     pt = input->percentage_tracked( frame_to_test - 1, frame_to_test );
     stitch_required = ( pt >= bf_detection_percent_match_req_ );
+    frame_to_test++;
   }
 
   // determine if a stitch can be attempted
