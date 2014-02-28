@@ -128,6 +128,8 @@ close_loops_bad_frames_only
 {
   return (
     match_features::check_nested_algo_configuration("feature_matcher", config)
+    &&
+    std::abs( config->get_value<double>("bf_detection_percent_match_req") ) <= 1.0
   );
 }
 

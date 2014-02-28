@@ -21,7 +21,6 @@
 #include <string>
 #include <vector>
 
-#include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 #include <boost/iterator/counting_iterator.hpp>
 #include <boost/algorithm/string/join.hpp>
