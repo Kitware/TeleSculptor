@@ -237,8 +237,8 @@ draw_tracks
     {
       cv::Mat unioned_image( img.rows, img.cols + last_img.cols, img.type(), cv::Scalar(0) );
 
-      cv::Mat left( unioned_image, cv::Rect( 0, 0, img.rows, img.cols ) );
-      cv::Mat right( unioned_image, cv::Rect( 0, last_img.cols, img.rows, img.cols + last_img.cols) );
+      cv::Mat left( unioned_image, cv::Rect( 0, 0, last_img.cols, last_img.rows ) );
+      cv::Mat right( unioned_image, cv::Rect( last_img.cols, 0, img.cols, img.rows ) );
 
       last_img.copyTo( left );
       img.copyTo( right );
