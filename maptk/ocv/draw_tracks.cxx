@@ -43,7 +43,7 @@ public:
   : draw_dual_display(true),
     draw_track_id(true),
     draw_untracked_features(true),
-    draw_feature_lines(true),
+    draw_match_lines(false),
     pattern("feature_tracks_%1%.png")
   {
   }
@@ -63,7 +63,7 @@ public:
   bool draw_dual_display;
   bool draw_track_id;
   bool draw_untracked_features;
-  bool draw_feature_lines;
+  bool draw_match_lines;
   boost::format pattern;
 };
 
@@ -105,7 +105,7 @@ draw_tracks
                      "Draw track ids next to each feature point." );
   config->set_value( "draw_untracked_features", d_->draw_untracked_features,
                      "Draw untracked feature points in red." );
-  config->set_value( "draw_feature_lines", d_->draw_feature_lines,
+  config->set_value( "draw_match_lines", d_->draw_match_lines,
                      "Draw lines between tracked features on adj frames." );
   config->set_value( "pattern", "feature_tracks_%1%.png",
                      "The output pattern for drawn images." );
@@ -125,7 +125,7 @@ draw_tracks
   d_->draw_dual_display = config->get_value<bool>( "draw_dual_display" );
   d_->draw_track_id = config->get_value<bool>( "draw_track_id" );
   d_->draw_untracked_features = config->get_value<bool>( "draw_untracked_features" );
-  d_->draw_feature_lines = config->get_value<bool>( "draw_feature_lines" );
+  d_->draw_match_lines = config->get_value<bool>( "draw_match_lines" );
   d_->pattern = boost::format( config->get_value<std::string>( "pattern" ) );
 }
 
@@ -179,7 +179,7 @@ draw_tracks
     // Colors to use
     const cv::Scalar blue( 255, 0, 0 );
     const cv::Scalar red( 0, 0, 255 );
-    const cv::Scalar yellow( 0, 255, 255 );
+    const cv::Scalar green( 0, 255, 0 );
 
     // Draw points on input image
     BOOST_FOREACH( track_sptr trk, track_set->active_tracks( fid )->tracks() )
@@ -193,9 +193,9 @@ draw_tracks
 
       // Handle drawing the feature point on the image
       cv::Scalar color = blue;
-      cv::Point loc( ts.feat->loc()[1], ts.feat->loc()[0] );
-      cv::Point txt_offset( -1, 1 );
-      std::string fid_str = boost::lexical_cast<std::string>( fid );
+      cv::Point loc( ts.feat->loc()[0], ts.feat->loc()[1] );
+      cv::Point txt_offset( 2, -2 );
+      std::string tid_str = boost::lexical_cast<std::string>( trk->id() );
 
       if( trk->size() == 1 )
       {
@@ -203,28 +203,28 @@ draw_tracks
       }
       else if( trk->first_frame() == fid )
       {
-        color = yellow;
+        color = green;
       }
 
-      if( !d_->draw_untracked_features || trk->size() > 1 )
+      if( d_->draw_untracked_features || trk->size() > 1 )
       {
-        cv::circle( img, loc, 1, color, 1 );
+        cv::circle( img, loc, 1, color, 3 );
       }
 
       if( d_->draw_track_id && trk->size() > 1 )
       {
-        cv::putText( img, fid_str, loc + txt_offset, cv::FONT_HERSHEY_SIMPLEX, 3, color );
+        cv::putText( img, tid_str, loc + txt_offset, cv::FONT_HERSHEY_COMPLEX_SMALL, 0.5, color );
       }
 
       // Generate feature match line from the last image to this one
-      if( d_->draw_feature_lines && trk->size() > 1 && fid > 0 )
+      if( d_->draw_match_lines && trk->size() > 1 && fid > 0 )
       {
         track::history_const_itr itr = trk->find( fid-1 );
 
         if( itr != trk->end() && itr->feat )
         {
-          cv::Point current_loc = loc + cv::Point( 0, img.cols );
-          cv::Point prior_loc( itr->feat->loc()[1], itr->feat->loc()[0] );
+          cv::Point current_loc = loc + cv::Point( img.cols, 0 );
+          cv::Point prior_loc( itr->feat->loc()[0], itr->feat->loc()[1] );
           lines.push_back( std::make_pair( prior_loc, current_loc ) );
         }
       }
@@ -240,7 +240,10 @@ draw_tracks
       cv::Mat left( unioned_image, cv::Rect( 0, 0, last_img.cols, last_img.rows ) );
       cv::Mat right( unioned_image, cv::Rect( last_img.cols, 0, img.cols, img.rows ) );
 
-      last_img.copyTo( left );
+      if( fid > 0 )
+      {
+        last_img.copyTo( left );
+      }
       img.copyTo( right );
 
       for( unsigned i = 0; i < lines.size(); i++ )
@@ -257,6 +260,7 @@ draw_tracks
 
     // Store last variables
     last_img = img;
+    fid++;
   }
 }
 

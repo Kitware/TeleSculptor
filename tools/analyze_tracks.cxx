@@ -260,6 +260,7 @@ static int maptk_main(int argc, char const* argv[])
     draw_tracks->draw( tracks, images );
   }
 
+  std::cout << std::endl;
   return EXIT_SUCCESS;
 }
 
