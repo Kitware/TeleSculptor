@@ -107,7 +107,7 @@ draw_tracks
                     "Draw untracked feature points in red.");
   config->set_value("draw_feature_lines", d_->draw_feature_lines,
                     "Draw lines between tracked features on adj frames.");
-  config->set_value("pattern", d_->pattern,
+  config->set_value("pattern", "feature_tracks_%1%.png",
                     "The output pattern for drawn images.");
 
   return config;

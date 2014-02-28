@@ -152,7 +152,7 @@ static int maptk_main(int argc, char const* argv[])
   }
 
   // Load all input images if they are specified
-  bool use_images = config->has_value( "image_file_list" ) &&
+  bool use_images = config->has_value( "image_list_file" ) &&
                     !config->get_value<std::string>( "image_list_file" ).empty();
 
   bool output_to_file = config->has_value( "output_file" ) &&
@@ -195,34 +195,43 @@ static int maptk_main(int argc, char const* argv[])
   }
 
   // Load tracks
+  std::cout << std::endl << "Loading track set file..." << std::endl;
+
   std::string track_file = config->get_value<std::string>( "track_file" );
   maptk::track_set_sptr tracks;
   tracks = maptk::read_track_file( track_file );
 
   // Generate statistics if enabled
-  if( output_to_file )
+  if( analyze_tracks )
   {
-    std::string output_file = config->get_value<std::string>( "output_file" );
-    std::ofstream ofs( output_file.c_str() );
+    std::cout << std::endl << "Generating track statistics..." << std::endl;
 
-    if( !ofs )
+    if( output_to_file )
     {
-      std::cerr << "Error: Could not open file " << output_file << " for writing." << std::endl;
-      return EXIT_FAILURE;
+      std::string output_file = config->get_value<std::string>( "output_file" );
+      std::ofstream ofs( output_file.c_str() );
+
+      if( !ofs )
+      {
+        std::cerr << "Error: Could not open file " << output_file << " for writing." << std::endl;
+        return EXIT_FAILURE;
+      }
+
+      analyze_tracks->print_info( tracks, ofs );
+
+      ofs.close();
     }
-
-    analyze_tracks->print_info( tracks, ofs );
-
-    ofs.close();
-  }
-  else
-  {
-    analyze_tracks->print_info( tracks, std::cout );
+    else
+    {
+      analyze_tracks->print_info( tracks, std::cout );
+    }
   }
 
   // Read and process input images if set
   if( use_images )
   {
+    std::cout << std::endl << "Generating feature images..." << std::endl;
+
     maptk::image_container_sptr_list images;
 
     std::string image_list_file = config->get_value<std::string>( "image_list_file" );
