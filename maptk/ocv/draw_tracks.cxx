@@ -180,6 +180,7 @@ draw_tracks
     const cv::Scalar blue( 255, 0, 0 );
     const cv::Scalar red( 0, 0, 255 );
     const cv::Scalar green( 0, 255, 0 );
+    const cv::Scalar purple( 240, 32, 160 );
 
     // Draw points on input image
     BOOST_FOREACH( track_sptr trk, track_set->active_tracks( fid )->tracks() )
@@ -204,6 +205,10 @@ draw_tracks
       else if( trk->first_frame() == fid )
       {
         color = green;
+      }
+      else if( trk->last_frame() == fid )
+      {
+        color = purple;
       }
 
       if( d_->draw_untracked_features || trk->size() > 1 )
