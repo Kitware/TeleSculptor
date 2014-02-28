@@ -98,17 +98,17 @@ draw_tracks
 {
   config_block_sptr config = maptk::algo::draw_tracks::get_configuration();
 
-  config->set_value("draw_dual_display", d_->draw_dual_display,
-                    "Draw the last image on the left, and the current image "
-                    "on the right (for every frame).");
-  config->set_value("draw_track_id", d_->draw_track_id,
-                    "Draw track ids next to each feature point.");
-  config->set_value("draw_untracked_features", d_->draw_untracked_features,
-                    "Draw untracked feature points in red.");
-  config->set_value("draw_feature_lines", d_->draw_feature_lines,
-                    "Draw lines between tracked features on adj frames.");
-  config->set_value("pattern", "feature_tracks_%1%.png",
-                    "The output pattern for drawn images.");
+  config->set_value( "draw_dual_display", d_->draw_dual_display,
+                     "Draw the last image on the left, and the current image "
+                     "on the right (for every frame)." );
+  config->set_value( "draw_track_id", d_->draw_track_id,
+                     "Draw track ids next to each feature point." );
+  config->set_value( "draw_untracked_features", d_->draw_untracked_features,
+                     "Draw untracked feature points in red." );
+  config->set_value( "draw_feature_lines", d_->draw_feature_lines,
+                     "Draw lines between tracked features on adj frames." );
+  config->set_value( "pattern", "feature_tracks_%1%.png",
+                     "The output pattern for drawn images." );
 
   return config;
 }
