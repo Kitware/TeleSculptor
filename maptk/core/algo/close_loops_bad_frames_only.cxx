@@ -37,8 +37,8 @@ namespace algo
 /// Default Constructor
 close_loops_bad_frames_only
 ::close_loops_bad_frames_only()
-: bf_detection_enabled_(false),
-  bf_detection_percent_match_req_(0.4),
+: bf_detection_enabled_(true),
+  bf_detection_percent_match_req_(0.2),
   bf_detection_new_shot_length_(2),
   bf_detection_max_search_length_(5)
 {
