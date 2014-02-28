@@ -94,6 +94,10 @@ Tools
  * Added configuration options for both SBA and pos2krtd tools to specify a
    rotational offset for input POS file (INS data) via a quaternion.
 
+ * Added an analyze_tracks tool which serves two purposes: drawing feature
+   point tracks on input imagery, in addition to outputting various statistics
+   about feature tracks.
+
 
 Fixes since v0.2.1
 ------------------
