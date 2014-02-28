@@ -132,6 +132,12 @@ analyze_tracks
 ::print_info(track_set_sptr track_set,
              stream_t& stream) const
 {
+  // Early exist case
+  if( !d_->output_pt_matrix || d_->output_summary )
+  {
+    return;
+  }
+
   // Constants
   const unsigned num_tracks = track_set->size();
   const frame_id_t first_frame = track_set->first_frame();
