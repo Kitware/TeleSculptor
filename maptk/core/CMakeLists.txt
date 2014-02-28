@@ -47,7 +47,7 @@ set(maptk_core_headers_public
   algo/analyze_tracks.h
   algo/bundle_adjust.h
   algo/close_loops.h
-  algo/close_loops_stitcher_only.h
+  algo/close_loops_bad_frames_only.h
   algo/convert_image.h
   algo/detect_features.h
   algo/draw_tracks.h
@@ -97,7 +97,7 @@ set(maptk_core_sources
   algo/analyze_tracks.cxx
   algo/bundle_adjust.cxx
   algo/close_loops.cxx
-  algo/close_loops_stitcher_only.cxx
+  algo/close_loops_bad_frames_only.cxx
   algo/convert_image.cxx
   algo/detect_features.cxx
   algo/draw_tracks.cxx

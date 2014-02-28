@@ -6,12 +6,12 @@
 
 /**
  * \file
- * \brief Header defining the \link maptk::algo::close_loops_stitcher_only
- *        close_loops_stitcher_only \endlink algorithm
+ * \brief Header defining the \link maptk::algo::close_loops_bad_frames_only
+ *        close_loops_bad_frames_only \endlink algorithm
  */
 
-#ifndef MAPTK_ALGO_CLOSE_LOOPS_STITCHER_ONLY_H_
-#define MAPTK_ALGO_CLOSE_LOOPS_STITCHER_ONLY_H_
+#ifndef MAPTK_ALGO_CLOSE_LOOPS_BAD_FRAMES_ONLY_H_
+#define MAPTK_ALGO_CLOSE_LOOPS_BAD_FRAMES_ONLY_H_
 
 #include <maptk/core/core_config.h>
 
@@ -32,22 +32,22 @@ namespace algo
 
 /// A basic close_loops implementation which aims at simply stitching
 /// over periods of "bad frames" in the input data.
-class MAPTK_CORE_EXPORT close_loops_stitcher_only
-  : public algo::algorithm_impl<close_loops_stitcher_only, close_loops>
+class MAPTK_CORE_EXPORT close_loops_bad_frames_only
+  : public algo::algorithm_impl<close_loops_bad_frames_only, close_loops>
 {
 public:
 
   /// Default Constructor
-  close_loops_stitcher_only();
+  close_loops_bad_frames_only();
 
   /// Copy Constructor
-  close_loops_stitcher_only(const close_loops_stitcher_only&);
+  close_loops_bad_frames_only(const close_loops_bad_frames_only&);
 
   /// Destructor
-  virtual ~close_loops_stitcher_only() {}
+  virtual ~close_loops_bad_frames_only() {}
 
   /// Return the name of this implementation
-  std::string impl_name() const { return "shot_stitcher_only"; }
+  std::string impl_name() const { return "bad_frames_only"; }
 
   /// Get this algorithm's \link maptk::config_block configuration block \endlink
   /**
@@ -119,4 +119,4 @@ protected:
 } // end namespace maptk
 
 
-#endif // MAPTK_ALGO_CLOSE_LOOPS_STITCHER_ONLY_H_
+#endif // MAPTK_ALGO_CLOSE_LOOPS_BAD_FRAMES_ONLY_H_

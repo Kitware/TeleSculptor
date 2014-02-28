@@ -6,11 +6,11 @@
 
 /**
  * \file
- * \brief Implementation of \link maptk::algo::close_loops_stitcher_only
- *        close_loops_stitcher_only \endlink
+ * \brief Implementation of \link maptk::algo::close_loops_bad_frames_only
+ *        close_loops_bad_frames_only \endlink
  */
 
-#include <maptk/core/algo/close_loops_stitcher_only.h>
+#include <maptk/core/algo/close_loops_bad_frames_only.h>
 #include <maptk/core/algo/algorithm.txx>
 #include <maptk/core/exceptions/algorithm.h>
 
@@ -35,8 +35,8 @@ namespace algo
 
 
 /// Default Constructor
-close_loops_stitcher_only
-::close_loops_stitcher_only()
+close_loops_bad_frames_only
+::close_loops_bad_frames_only()
 : stitching_enabled_(false),
   stitching_percent_match_req_(0.4),
   stitching_new_shot_length_(2),
@@ -46,8 +46,8 @@ close_loops_stitcher_only
 
 
 /// Copy Constructor
-close_loops_stitcher_only
-::close_loops_stitcher_only(const close_loops_stitcher_only& other)
+close_loops_bad_frames_only
+::close_loops_bad_frames_only(const close_loops_bad_frames_only& other)
 : stitching_enabled_(other.stitching_enabled_),
   stitching_percent_match_req_(other.stitching_percent_match_req_),
   stitching_new_shot_length_(other.stitching_new_shot_length_),
@@ -58,7 +58,7 @@ close_loops_stitcher_only
 
 /// Get this alg's \link maptk::config_block configuration block \endlink
 config_block_sptr
-close_loops_stitcher_only
+close_loops_bad_frames_only
 ::get_configuration() const
 {
   // get base config from base class
@@ -95,7 +95,7 @@ close_loops_stitcher_only
 
 /// Set this algo's properties via a config block
 void
-close_loops_stitcher_only
+close_loops_bad_frames_only
 ::set_configuration(config_block_sptr in_config)
 {
   // Starting with our generated config_block to ensure that assumed values are present
@@ -123,7 +123,7 @@ close_loops_stitcher_only
 
 
 bool
-close_loops_stitcher_only
+close_loops_bad_frames_only
 ::check_configuration(config_block_sptr config) const
 {
   return (
@@ -141,7 +141,7 @@ bool track_id_in_set( track_sptr trk_ptr, std::set<track_id_t>* set_ptr )
 
 /// Handle track stitching if enabled
 track_set_sptr
-close_loops_stitcher_only
+close_loops_bad_frames_only
 ::stitch( frame_id_t frame_number, track_set_sptr input ) const
 {
   // check if enabled and possible
