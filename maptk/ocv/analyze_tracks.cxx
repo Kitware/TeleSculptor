@@ -133,7 +133,7 @@ analyze_tracks
              stream_t& stream) const
 {
   // Early exist case
-  if( !d_->output_pt_matrix || d_->output_summary )
+  if( !d_->output_pt_matrix && !d_->output_summary )
   {
     return;
   }
