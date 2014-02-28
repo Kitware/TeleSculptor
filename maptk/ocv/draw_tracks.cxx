@@ -40,10 +40,11 @@ public:
 
   /// Constructor
   priv()
-  : draw_dual_display(true),
+  : display_type(DUAL_WINDOW),
     draw_track_id(true),
     draw_untracked_features(true),
     draw_match_lines(false),
+    draw_shift_lines(false),
     pattern("feature_tracks_%1%.png")
   {
   }
@@ -60,10 +61,11 @@ public:
   }
 
   /// Parameters
-  bool draw_dual_display;
+  enum { SINGLE_WINDOW, DUAL_WINDOW, TRI_WINDOW } display_type;
   bool draw_track_id;
   bool draw_untracked_features;
   bool draw_match_lines;
+  bool draw_shift_lines;
   boost::format pattern;
 };
 
