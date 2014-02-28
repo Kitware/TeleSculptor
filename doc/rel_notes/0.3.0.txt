@@ -46,6 +46,10 @@ Core Library
  * Added additional error robustness to INS I/O operations (specifically the
    input stream and reading operations).
 
+ * Added a new close_loops base class for current and future loop closure work.
+   Currently it just contains 1 simple implementation aimed at stitching over
+   bad frames in the input data.
+
 VCL Library
 
  * Added implementation of GPU feature detector.
