@@ -80,11 +80,10 @@ static bool check_config( maptk::config_block_sptr config )
       std::cerr << "Cannot find image list file" << std::endl;
       return false;
     }
-    else if( !bfs::exists( maptk::path_t( config->get_value<std::string>( "image_list_file" ) ) ) ||
-             !maptk::algo::image_io::check_nested_algo_configuration( "image_reader", config ) ||
-             !maptk::algo::image_io::check_nested_algo_configuration( "draw_tracks", config ) )
+    else if( !maptk::algo::image_io::check_nested_algo_configuration( "image_reader", config ) ||
+             !maptk::algo::image_io::check_nested_algo_configuration( "track_drawer", config ) )
     {
-      std::cerr << "Unable to configure draw tracks" << std::endl;
+      std::cerr << "Unable to configure track drawer" << std::endl;
       return false;
     }
   }
@@ -164,8 +163,8 @@ static int maptk_main(int argc, char const* argv[])
     algo::image_io::set_nested_algo_configuration( "image_reader", config, image_reader );
     algo::image_io::get_nested_algo_configuration( "image_reader", config, image_reader );
 
-    algo::draw_tracks::set_nested_algo_configuration( "draw_tracks", config, draw_tracks );
-    algo::draw_tracks::get_nested_algo_configuration( "draw_tracks", config, draw_tracks );
+    algo::draw_tracks::set_nested_algo_configuration( "track_drawer", config, draw_tracks );
+    algo::draw_tracks::get_nested_algo_configuration( "track_drawer", config, draw_tracks );
   }
 
   algo::analyze_tracks::set_nested_algo_configuration( "track_analyzer", config, analyze_tracks );
