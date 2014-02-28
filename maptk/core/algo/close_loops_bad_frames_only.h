@@ -96,17 +96,17 @@ public:
 
 protected:
 
-  /// Is frame stitching enabled?
-  bool stitching_enabled_;
+  /// Is bad frame detection enabled?
+  bool bf_detection_enabled_;
 
   /// Stitching percent feature match required
-  double stitching_percent_match_req_;
+  double bf_detection_percent_match_req_;
 
   /// Stitching required new valid shot size in frames
-  unsigned stitching_new_shot_length_;
+  unsigned bf_detection_new_shot_length_;
 
-  /// Max search length for stitching in frames
-  unsigned stitching_max_search_length_;
+  /// Max search length for bad frame detection in frames
+  unsigned bf_detection_max_search_length_;
 
   /// The feature matching algorithm to use
   match_features_sptr matcher_;

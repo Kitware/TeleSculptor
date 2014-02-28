@@ -37,10 +37,10 @@ namespace algo
 /// Default Constructor
 close_loops_bad_frames_only
 ::close_loops_bad_frames_only()
-: stitching_enabled_(false),
-  stitching_percent_match_req_(0.4),
-  stitching_new_shot_length_(2),
-  stitching_max_search_length_(5)
+: bf_detection_enabled_(false),
+  bf_detection_percent_match_req_(0.4),
+  bf_detection_new_shot_length_(2),
+  bf_detection_max_search_length_(5)
 {
 }
 
@@ -48,10 +48,10 @@ close_loops_bad_frames_only
 /// Copy Constructor
 close_loops_bad_frames_only
 ::close_loops_bad_frames_only(const close_loops_bad_frames_only& other)
-: stitching_enabled_(other.stitching_enabled_),
-  stitching_percent_match_req_(other.stitching_percent_match_req_),
-  stitching_new_shot_length_(other.stitching_new_shot_length_),
-  stitching_max_search_length_(other.stitching_max_search_length_)
+: bf_detection_enabled_(other.bf_detection_enabled_),
+  bf_detection_percent_match_req_(other.bf_detection_percent_match_req_),
+  bf_detection_new_shot_length_(other.bf_detection_new_shot_length_),
+  bf_detection_max_search_length_(other.bf_detection_max_search_length_)
 {
 }
 
@@ -68,24 +68,24 @@ close_loops_bad_frames_only
   // - Feature Matcher algorithm
   match_features::get_nested_algo_configuration("feature_matcher", config, matcher_);
 
-  // Frame stitching parameters
-  config->set_value("stitching_enabled", stitching_enabled_,
-                    "Should frame stitching be enabled? This option will attempt to "
+  // Bad frame detection parameters
+  config->set_value("bf_detection_enabled", bf_detection_enabled_,
+                    "Should bad frame detection be enabled? This option will attempt to "
                     "bridge the gap between frames which don't meet certain criteria "
                     "(percentage of feature points tracked) and will instead attempt "
                     "to match features on the current frame against past frames to "
                     "meet this criteria. This is useful when there can be bad frames.");
 
-  config->set_value("stitching_percent_match_req", stitching_percent_match_req_,
+  config->set_value("bf_detection_percent_match_req", bf_detection_percent_match_req_,
                     "The required percentage of features needed to be matched for a "
                     "stitch to be considered successful (value must be between 0.0 and "
                     "1.0).");
 
-  config->set_value("stitching_new_shot_length", stitching_new_shot_length_,
+  config->set_value("bf_detection_new_shot_length", bf_detection_new_shot_length_,
                     "Number of frames for a new shot to be considered valid before "
                     "attempting to stitch to prior shots.");
 
-  config->set_value("stitching_max_search_length", stitching_max_search_length_,
+  config->set_value("bf_detection_max_search_length", bf_detection_max_search_length_,
                     "Maximum number of frames to search in the past for matching to "
                     "the end of the last shot.");
 
@@ -109,15 +109,15 @@ close_loops_bad_frames_only
   match_features::set_nested_algo_configuration("feature_matcher", config, mf);
   matcher_ = mf;
 
-  // Settings for frame stitching
-  stitching_enabled_ = config->get_value<bool>("stitching_enabled");
+  // Settings for bad frame detection
+  bf_detection_enabled_ = config->get_value<bool>("bf_detection_enabled");
 
-  if( stitching_enabled_ )
+  if( bf_detection_enabled_ )
   {
-    stitching_percent_match_req_ = config->get_value<double>("stitching_percent_match_req");
-    stitching_max_search_length_ = config->get_value<unsigned>("stitching_max_search_length");
-    stitching_new_shot_length_ = config->get_value<unsigned>("stitching_new_shot_length");
-    stitching_new_shot_length_ = ( stitching_new_shot_length_ ? stitching_new_shot_length_ : 1 );
+    bf_detection_percent_match_req_ = config->get_value<double>("bf_detection_percent_match_req");
+    bf_detection_max_search_length_ = config->get_value<unsigned>("bf_detection_max_search_length");
+    bf_detection_new_shot_length_ = config->get_value<unsigned>("bf_detection_new_shot_length");
+    bf_detection_new_shot_length_ = ( bf_detection_new_shot_length_ ? bf_detection_new_shot_length_ : 1 );
   }
 }
 
@@ -139,29 +139,29 @@ bool track_id_in_set( track_sptr trk_ptr, std::set<track_id_t>* set_ptr )
 }
 
 
-/// Handle track stitching if enabled
+/// Handle track bad frame detection if enabled
 track_set_sptr
 close_loops_bad_frames_only
 ::stitch( frame_id_t frame_number, track_set_sptr input ) const
 {
   // check if enabled and possible
-  if( !stitching_enabled_ || frame_number <= stitching_new_shot_length_ )
+  if( !bf_detection_enabled_ || frame_number <= bf_detection_new_shot_length_ )
   {
     return input;
   }
 
   // check if we should attempt to stitch together past frames
   std::vector< track_sptr > all_tracks = input->tracks();
-  frame_id_t frame_to_stitch = frame_number - stitching_new_shot_length_ + 1;
+  frame_id_t frame_to_stitch = frame_number - bf_detection_new_shot_length_ + 1;
   double pt = input->percentage_tracked( frame_to_stitch - 1, frame_to_stitch );
-  bool stitch_required = ( pt < stitching_percent_match_req_ );
+  bool stitch_required = ( pt < bf_detection_percent_match_req_ );
 
   // confirm that the new valid shot criteria length is satisfied
   frame_id_t frame_to_test = frame_to_stitch + 1;
   while( stitch_required && frame_to_test <= frame_number )
   {
     pt = input->percentage_tracked( frame_to_test - 1, frame_to_test );
-    stitch_required = ( pt >= stitching_percent_match_req_ );
+    stitch_required = ( pt >= bf_detection_percent_match_req_ );
   }
 
   // determine if a stitch can be attempted
@@ -174,9 +174,9 @@ close_loops_bad_frames_only
   frame_to_test = frame_to_stitch - 2;
   frame_id_t last_frame_to_test = 0;
 
-  if( frame_to_test > stitching_max_search_length_ )
+  if( frame_to_test > bf_detection_max_search_length_ )
   {
-    last_frame_to_test = frame_to_test - stitching_max_search_length_;
+    last_frame_to_test = frame_to_test - bf_detection_max_search_length_;
   }
 
   track_set_sptr stitch_frame_set = input->active_tracks( frame_to_stitch );
@@ -194,7 +194,7 @@ close_loops_bad_frames_only
     // test matcher results
     unsigned total_features = test_frame_set->size() + stitch_frame_set->size();
 
-    if( 2*mset->size() >= static_cast<unsigned>(stitching_percent_match_req_*total_features) )
+    if( 2*mset->size() >= static_cast<unsigned>(bf_detection_percent_match_req_*total_features) )
     {
       // modify track history and exit
       std::vector<track_sptr> test_frame_trks = test_frame_set->tracks();
@@ -220,7 +220,7 @@ close_loops_bad_frames_only
     }
   }
 
-  // stitching has failed
+  // bad frame detection has failed
   return input;
 }
 
