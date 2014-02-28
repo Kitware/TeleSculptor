@@ -32,22 +32,22 @@ convert_image
 }
 
 /// Default Constructor
-default_convert_image
-::default_convert_image()
+convert_image_default
+::convert_image_default()
 {
 
 }
 
 /// Copy Constructor
-default_convert_image
-::default_convert_image(const default_convert_image& other)
+convert_image_default
+::convert_image_default(const convert_image_default& other)
 {
 
 }
 
 /// Default image converter ( does nothing )
 image_container_sptr
-default_convert_image
+convert_image_default
 ::convert(image_container_sptr img) const
 {
   return img;

@@ -41,7 +41,7 @@ descriptor_set
 }
 
 
-
+/// Convert a descriptor set to a VisCL descriptor set must be <int,4>
 viscl::buffer
 descriptors_to_viscl(const maptk::descriptor_set& desc_set)
 {

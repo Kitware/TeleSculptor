@@ -24,10 +24,8 @@ feature_set
 {
   std::vector<feature_sptr> features;
 
+  int numkpts = size();
   viscl::cl_queue_t queue = viscl::manager::inst()->create_queue();
-  int buf[1];
-  queue->enqueueReadBuffer(*data_.numfeat_().get(), CL_TRUE, 0, data_.numfeat_.mem_size(), buf);
-  int numkpts = buf[0];
 
   std::vector<cl_int2> kpts;
   kpts.resize(numkpts);

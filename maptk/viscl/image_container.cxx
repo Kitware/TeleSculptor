@@ -86,29 +86,35 @@ viscl_image_container
                           (void *)img.first_pixel()));
   }
 
-  //Convert color image to a grey scale image and upload it.
-  unsigned char *grey = new unsigned char [img.width() * img.height()];
-  for (unsigned int j = 0; j < img.height(); j++)
+  if (img.depth() == 3)
   {
-    for (unsigned int i = 0; i < img.width(); i++)
+    //Convert color image to a grey scale image and upload it.
+    unsigned char *grey = new unsigned char [img.width() * img.height()];
+    for (unsigned int j = 0; j < img.height(); j++)
     {
-      double value = 0.2125 * img(i,j,0) + 0.7154 * img(i,j,0) + 0.0721 * img(i,j,0);
-      grey[j * img.width() + i] = static_cast<unsigned char>(value);
+      for (unsigned int i = 0; i < img.width(); i++)
+      {
+        double value = 0.2125 * img(i,j,0) + 0.7154 * img(i,j,1) + 0.0721 * img(i,j,2);
+        grey[j * img.width() + i] = static_cast<unsigned char>(value);
+      }
     }
+
+    viscl::image image = viscl::image(boost::make_shared<cl::Image2D>(
+                                        viscl::manager::inst()->get_context(),
+                                        CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
+                                        img_fmt,
+                                        img.width(),
+                                        img.height(),
+                                        0,
+                                        grey));
+
+    delete [] grey;
+
+    return image;
   }
 
-  viscl::image image = viscl::image(boost::make_shared<cl::Image2D>(
-                                      viscl::manager::inst()->get_context(),
-                                      CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
-                                      img_fmt,
-                                      img.width(),
-                                      img.height(),
-                                      0,
-                                      grey));
-
-  delete [] grey;
-
-  return image;
+  //TODO: Throw exception
+  return viscl::image();
 }
 
 

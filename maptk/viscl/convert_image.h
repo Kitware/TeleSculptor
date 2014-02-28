@@ -18,6 +18,7 @@ namespace maptk
 namespace vcl
 {
 
+/// Class to convert an image to a viscl base image
 class MAPTK_VISCL_EXPORT convert_image
   : public algo::algorithm_impl<convert_image, algo::convert_image>
 {

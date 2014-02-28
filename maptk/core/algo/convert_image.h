@@ -42,15 +42,16 @@ public:
 
 typedef boost::shared_ptr<convert_image> convert_image_sptr;
 
-class MAPTK_CORE_EXPORT default_convert_image
-  : public algorithm_impl<default_convert_image, convert_image>
+/// A class for bypassing image conversion
+class MAPTK_CORE_EXPORT convert_image_default
+  : public algorithm_impl<convert_image_default, convert_image>
 {
 public:
    /// Default Constructor
-  default_convert_image();
+  convert_image_default();
 
   /// Copy Constructor
-  default_convert_image(const default_convert_image&);
+  convert_image_default(const convert_image_default&);
 
   /// Return the name of this implementation
   std::string impl_name() const { return "default"; }

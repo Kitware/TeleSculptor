@@ -25,7 +25,7 @@ void register_algorithms()
 {
   track_features_default::register_self();
   match_features_homography::register_self();
-  default_convert_image::register_self();
+  convert_image_default::register_self();
 }
 
 

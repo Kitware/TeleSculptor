@@ -26,16 +26,17 @@ class match_features::priv
 {
 public:
   /// Constructor
-  priv()
+  priv() : search_radius(200)
   {
   }
 
   // Copy Constructor
-  priv(const priv& other)
+  priv(const priv& other) : search_radius(other.search_radius)
   {
   }
 
   viscl::track_descr_match matcher;
+  unsigned int search_radius;
 };
 
 
@@ -67,7 +68,8 @@ match_features
 ::get_configuration() const
 {
   config_block_sptr config = algorithm::get_configuration();
-  config->set_value("search_box_radius", "200", "Maximum pixel radius to search for kpt match.");
+  config->set_value("search_box_radius", d_->search_radius,
+                    "Maximum pixel radius to search for kpt match.");
   return config;
 }
 
@@ -76,7 +78,8 @@ void
 match_features
 ::set_configuration(config_block_sptr config)
 {
-  unsigned int sbr = config->get_value<unsigned int>("search_box_radius", 200);
+  unsigned int sbr = config->get_value<unsigned int>("search_box_radius",
+                                                     d_->search_radius);
   d_->matcher.set_search_box_radius(sbr);
 }
 

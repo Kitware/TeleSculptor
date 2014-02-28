@@ -30,7 +30,8 @@ public:
   }
 
   /// Copy Constructor
-  priv(const priv& other)
+  priv(const priv& other) : max_kpts(other.max_kpts),
+                            thresh(other.thresh), sigma(other.sigma)
   {
   }
 
@@ -69,9 +70,9 @@ detect_features
 ::get_configuration() const
 {
   config_block_sptr config = algorithm::get_configuration();
-  config->set_value("max_keypoints", "5000", "Maximum number of features to detect on an image.");
-  config->set_value("thresh", "0.003", "Threshold on the determinant of Hessian for keypoint candidates.");
-  config->set_value("sigma", "2.0", "Smoothing scale.");
+  config->set_value("max_keypoints", d_->max_kpts, "Maximum number of features to detect on an image.");
+  config->set_value("thresh", d_->thresh, "Threshold on the determinant of Hessian for keypoint candidates.");
+  config->set_value("sigma", d_->sigma, "Smoothing scale.");
   return config;
 }
 
@@ -80,9 +81,9 @@ void
 detect_features
 ::set_configuration(config_block_sptr config)
 {
-  d_->max_kpts = config->get_value<unsigned int>("max_keypoints", 5000);
-  d_->thresh = config->get_value<float>("thresh", 0.003f);
-  d_->sigma = config->get_value<float>("sigma", 2.0f);
+  d_->max_kpts = config->get_value<unsigned int>("max_keypoints", d_->max_kpts);
+  d_->thresh = config->get_value<float>("thresh", d_->thresh);
+  d_->sigma = config->get_value<float>("sigma", d_->sigma);
 }
 
 /// Check that the algorithm's configuration config_block is valid
