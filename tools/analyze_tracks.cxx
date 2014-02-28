@@ -184,7 +184,7 @@ static int maptk_main(int argc, char const* argv[])
     }
     else
     {
-      std::cerr << "WARNING: Configuration deemed not valid." << std::endl;
+      std::cerr << "WARNING: Configuration deemed not valid for running." << std::endl;
     }
     return EXIT_SUCCESS;
   }
