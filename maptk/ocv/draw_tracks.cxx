@@ -44,7 +44,7 @@ public:
     draw_track_id(true),
     draw_untracked_features(true),
     draw_match_lines(false),
-    draw_shift_lines(false),
+    draw_shift_lines(true),
     pattern("feature_tracks_%1%.png")
   {
   }
@@ -61,7 +61,7 @@ public:
   }
 
   /// Parameters
-  enum { SINGLE_WINDOW, DUAL_WINDOW, TRI_WINDOW } display_type;
+  enum {SINGLE_WINDOW, DUAL_WINDOW, TRI_WINDOW} display_type;
   bool draw_track_id;
   bool draw_untracked_features;
   bool draw_match_lines;
@@ -100,7 +100,7 @@ draw_tracks
 {
   config_block_sptr config = maptk::algo::draw_tracks::get_configuration();
 
-  config->set_value( "draw_dual_display", d_->draw_dual_display,
+  config->set_value( "display_type", "dual_window",
                      "Draw the last image on the left, and the current image "
                      "on the right (for every frame)." );
   config->set_value( "draw_track_id", d_->draw_track_id,
@@ -109,6 +109,9 @@ draw_tracks
                      "Draw untracked feature points in red." );
   config->set_value( "draw_match_lines", d_->draw_match_lines,
                      "Draw lines between tracked features on adj frames." );
+  config->set_value( "draw_shift_lines", d_->draw_shift_lines,
+                     "Draw lines showing the movement of the feature in the image "
+                     "plane from the last frame to the current one." );
   config->set_value( "pattern", "feature_tracks_%1%.png",
                      "The output pattern for drawn images." );
 
@@ -124,10 +127,29 @@ draw_tracks
   config_block_sptr config = this->get_configuration();
   config->merge_config( in_config );
 
-  d_->draw_dual_display = config->get_value<bool>( "draw_dual_display" );
+  std::string display_type_str = config->get_value<std::string>( "display_type" );
+
+  if( display_type_str == "single_window" )
+  {
+    d_->display_type = priv::SINGLE_WINDOW;
+  }
+  else if( display_type_str == "dual_window" )
+  {
+    d_->display_type = priv::DUAL_WINDOW;
+  }
+  else if( display_type_str == "tri_window" )
+  {
+    d_->display_type = priv::TRI_WINDOW;
+  }
+  else
+  {
+    std::cerr << "Invalid display type: " << display_type_str << std::endl;
+  }
+
   d_->draw_track_id = config->get_value<bool>( "draw_track_id" );
   d_->draw_untracked_features = config->get_value<bool>( "draw_untracked_features" );
   d_->draw_match_lines = config->get_value<bool>( "draw_match_lines" );
+  d_->draw_shift_lines = config->get_value<bool>( "draw_shift_lines" );
   d_->pattern = boost::format( config->get_value<std::string>( "pattern" ) );
 }
 
@@ -137,7 +159,16 @@ bool
 draw_tracks
 ::check_configuration(config_block_sptr config) const
 {
-  return true;
+  std::string display_type_str = config->get_value<std::string>( "display_type" );
+
+  if( display_type_str == "single_window" ||
+      display_type_str == "dual_window" ||
+      display_type_str == "tri_window" )
+  {
+    return true;
+  }
+
+  return false;
 }
 
 
@@ -156,7 +187,8 @@ draw_tracks
   // Generate output images
   frame_id_t fid = 0;
 
-  cv::Mat last_img;
+  cv::Mat prior_images[2];
+  std::vector< std::pair< cv::Point, cv::Point > > prior_lines;
 
   BOOST_FOREACH( image_container_sptr ctr_sptr, image_data )
   {
@@ -169,20 +201,18 @@ draw_tracks
       cv::cvtColor( img, img, CV_GRAY2BGR );
     }
 
-    // Seed last image with this one
-    if( !fid )
-    {
-      last_img = img;
-    }
-
     // List of lines to draw on final image
-    std::vector< std::pair< cv::Point, cv::Point > > lines;
+    std::vector< std::pair< cv::Point, cv::Point > > cur_to_sec_lines;
+    std::vector< std::pair< cv::Point, cv::Point > > cur_to_thr_lines;
 
     // Colors to use
     const cv::Scalar blue( 255, 0, 0 );
     const cv::Scalar red( 0, 0, 255 );
     const cv::Scalar green( 0, 255, 0 );
     const cv::Scalar purple( 240, 32, 160 );
+
+    // Adjustment added to bring a point to a seperate window
+    const cv::Point pt_adj( img.cols, 0 );
 
     // Draw points on input image
     BOOST_FOREACH( track_sptr trk, track_set->active_tracks( fid )->tracks() )
@@ -224,15 +254,38 @@ draw_tracks
       }
 
       // Generate feature match line from the last image to this one
-      if( d_->draw_match_lines && trk->size() > 1 && fid > 0 )
+      if( trk->size() > 1 && fid > 0 )
       {
         track::history_const_itr itr = trk->find( fid-1 );
 
         if( itr != trk->end() && itr->feat )
         {
-          cv::Point current_loc = loc + cv::Point( img.cols, 0 );
           cv::Point prior_loc( itr->feat->loc()[0], itr->feat->loc()[1] );
-          lines.push_back( std::make_pair( prior_loc, current_loc ) );
+
+          if( d_->draw_match_lines )
+          {
+            cur_to_sec_lines.push_back( std::make_pair( prior_loc, loc ) );
+          }
+
+          if( d_->draw_shift_lines )
+          {
+            cv::line( img, prior_loc, loc, blue );
+          }
+        }
+
+        if( fid > 1 )
+        {
+          track::history_const_itr itr2 = trk->find( fid-2 );
+
+          if( itr2 != trk->end() && itr2->feat && itr == trk->end() )
+          {
+            cv::Point prior_loc( itr2->feat->loc()[0], itr2->feat->loc()[1] );
+
+            if( d_->draw_match_lines )
+            {
+              cur_to_thr_lines.push_back( std::make_pair( prior_loc, loc ) );
+            }
+          }
         }
       }
     }
@@ -240,22 +293,54 @@ draw_tracks
     // Output image
     std::string ofn = boost::str( d_->pattern % fid );
 
-    if( d_->draw_dual_display )
+    if( d_->display_type == priv::TRI_WINDOW )
     {
-      cv::Mat unioned_image( img.rows, img.cols + last_img.cols, img.type(), cv::Scalar(0) );
+      cv::Mat unioned_image( img.rows, 3*img.cols, img.type(), cv::Scalar(0) );
 
-      cv::Mat left( unioned_image, cv::Rect( 0, 0, last_img.cols, last_img.rows ) );
-      cv::Mat right( unioned_image, cv::Rect( last_img.cols, 0, img.cols, img.rows ) );
+      cv::Mat left( unioned_image, cv::Rect( 0, 0, img.cols, img.rows ) );
+      cv::Mat middle( unioned_image, cv::Rect( img.cols, 0, img.cols, img.rows ) );
+      cv::Mat right( unioned_image, cv::Rect( 2*img.cols, 0, img.cols, img.rows ) );
 
+      if( fid > 1 )
+      {
+        prior_images[2].copyTo( left );
+      }
       if( fid > 0 )
       {
-        last_img.copyTo( left );
+        prior_images[1].copyTo( middle );
       }
       img.copyTo( right );
 
-      for( unsigned i = 0; i < lines.size(); i++ )
+      for( unsigned i = 0; i < cur_to_sec_lines.size(); i++ )
       {
-        cv::line( unioned_image, lines[i].first, lines[i].second, blue );
+        cv::line( unioned_image, cur_to_sec_lines[i].first + pt_adj,
+                  cur_to_sec_lines[i].second + 2*pt_adj, blue );
+      }
+      for( unsigned i = 0; i < cur_to_thr_lines.size(); i++ )
+      {
+        cv::line( unioned_image, cur_to_thr_lines[i].first,
+                  cur_to_thr_lines[i].second + 2*pt_adj, blue );
+      }
+
+      cv::imwrite( ofn.c_str(), unioned_image );
+    }
+    else if( d_->display_type == priv::DUAL_WINDOW )
+    {
+      cv::Mat unioned_image( img.rows, 2*img.cols, img.type(), cv::Scalar(0) );
+
+      cv::Mat left( unioned_image, cv::Rect( 0, 0, img.cols, img.rows ) );
+      cv::Mat right( unioned_image, cv::Rect( img.cols, 0, img.cols, img.rows ) );
+
+      if( fid > 0 )
+      {
+        prior_images[1].copyTo( left );
+      }
+      img.copyTo( right );
+
+      for( unsigned i = 0; i < cur_to_sec_lines.size(); i++ )
+      {
+        cv::line( unioned_image, cur_to_sec_lines[i].first,
+                  cur_to_sec_lines[i].second + pt_adj, blue );
       }
 
       cv::imwrite( ofn.c_str(), unioned_image );
@@ -266,7 +351,9 @@ draw_tracks
     }
 
     // Store last variables
-    last_img = img;
+    prior_images[2] = prior_images[1];
+    prior_images[1] = img;
+    prior_lines = cur_to_sec_lines;
     fid++;
   }
 }
