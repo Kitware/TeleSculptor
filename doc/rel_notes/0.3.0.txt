@@ -35,6 +35,26 @@ Core Library
 
  * Added several helper functions to track_set class.
 
+ * Added a convert_image algorithm so that an image conversion between different
+   formats can be pre-computed.  This is important for non trivial image
+   conversions (e.g. sending image to GPU) to prevent them from occuring
+   multiple times on the same image.
+
+VCL Library
+
+ * Added implementation of GPU feature detector.
+
+ * Added implementation of GPU descriptor extractor (BRIEF descriptor).
+
+ * Added implementation of GPU feature matcher using a local search box.
+
+ * Added implementation of convert_image to upload to the GPU.
+
+ * Current tracking implementation is not as optimized as it could be.
+   The tracker does not maintain pointers to the GPU data structures from the
+   previous frame; therefore, the features and descriptors are re-uploaded to
+   the GPU at each frame.  This will be optimized in a future release.
+
 VXL Library
 
  * Added implementation of triangulation of landmarks algorithm using vpgl.

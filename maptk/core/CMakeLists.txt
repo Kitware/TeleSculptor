@@ -45,6 +45,7 @@ set(maptk_core_headers_public
   algo/algorithm.h
   algo/algorithm.txx
   algo/bundle_adjust.h
+  algo/convert_image.h
   algo/detect_features.h
   algo/estimate_homography.h
   algo/estimate_similarity_transform.h
@@ -90,6 +91,7 @@ set(maptk_core_sources
 
   algo/algorithm.cxx
   algo/bundle_adjust.cxx
+  algo/convert_image.cxx
   algo/detect_features.cxx
   algo/estimate_homography.cxx
   algo/estimate_similarity_transform.cxx
