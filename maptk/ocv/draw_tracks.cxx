@@ -303,11 +303,11 @@ draw_tracks
 
       if( fid > 1 )
       {
-        prior_images[2].copyTo( left );
+        prior_images[1].copyTo( left );
       }
       if( fid > 0 )
       {
-        prior_images[1].copyTo( middle );
+        prior_images[0].copyTo( middle );
       }
       img.copyTo( right );
 
@@ -333,7 +333,7 @@ draw_tracks
 
       if( fid > 0 )
       {
-        prior_images[1].copyTo( left );
+        prior_images[0].copyTo( left );
       }
       img.copyTo( right );
 
@@ -351,8 +351,8 @@ draw_tracks
     }
 
     // Store last variables
-    prior_images[2] = prior_images[1];
-    prior_images[1] = img;
+    prior_images[1] = prior_images[0];
+    prior_images[0] = img;
     prior_lines = cur_to_sec_lines;
     fid++;
   }
