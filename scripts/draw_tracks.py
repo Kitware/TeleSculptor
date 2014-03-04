@@ -72,13 +72,17 @@ def load_tracks(filename):
 
 
 def main():
-    usage = "usage: %prog [options] track_file"
+    usage = "usage: %prog [options] track_file [output_file]"
     description = "Read a feature track file and plot the tracks"
     parser = OptionParser(usage=usage, description=description)
 
     (options, args) = parser.parse_args()
 
     track_filename = args[0]
+
+    output_filename = None
+    if len(args) >= 2:
+        output_filename = args[1]
 
     tracks = load_tracks(track_filename)
 
@@ -97,6 +101,9 @@ def main():
         ax.add_patch(patch)
 
     plt.show()
+
+    if output_file:
+        plt.save(output_filename)
 
 
 if __name__ == "__main__":
