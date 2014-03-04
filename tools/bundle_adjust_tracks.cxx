@@ -31,6 +31,7 @@
 #include <maptk/core/algo/geo_map.h>
 #include <maptk/core/config_block.h>
 #include <maptk/core/config_block_io.h>
+#include <maptk/core/transform.h>
 #include <maptk/core/types.h>
 
 #include <boost/foreach.hpp>
@@ -160,7 +161,7 @@ static bool check_config(maptk::config_block_sptr config)
   {
     MAPTK_CONFIG_FAIL("Failed config check in geo_mapper algorithm.");
   }
-  if (!(    !config->has_value("st_estimator:type")
+  if (!(   !config->has_value("st_estimator:type")
         || (config->get_value<std::string>("st_estimator:type") == "")
         || maptk::algo::estimate_similarity_transform::check_nested_algo_configuration("st_estimator", config)
        ))
@@ -528,6 +529,30 @@ static int maptk_main(int argc, char const* argv[])
                                              tracks->tracks());
   std::cout << "final reprojection RMSE: " << end_rmse << std::endl;
 
+
+  //
+  // Adjust cameras/landmarks based on input cameras/reference points
+  //
+  // If we were given POS files / reference points as input, compute a
+  // similarity transform from the refined cameras to the POS file / reference
+  // point cameras (via map structures). Then, apply the estimated transform to
+  // the refined camera positions and landmarks.
+  //
+  if (orig_cam_map->size() > 0 && st_estimator)
+  {
+    std::cout << "Estimating and applying similarity transform to refined "
+              << "cameras (from POS files)" << std::endl;
+    maptk::similarity_d sim_transform = st_estimator->estimate_transform(cam_map, orig_cam_map);
+    std::cout << "--> Estimated Transformation:" << std::endl
+              << sim_transform << std::endl;
+    // apply to cameras
+    std::cout << "--> Applying to cameras..." << std::endl;
+    cam_map = maptk::transform(cam_map, sim_transform);
+    // apply to landmarks
+    std::cout << "--> Applying to landmarks..." << std::endl;
+    lm_map = maptk::transform(lm_map, sim_transform);
+  }
+
   //
   // Write the output PLY file
   //
@@ -543,21 +568,6 @@ static int maptk_main(int argc, char const* argv[])
   if( config->has_value("output_pos_dir") )
   {
     bfs::path pos_dir = config->get_value<std::string>("output_pos_dir");
-
-    // If we were given POS files as input, compute a similarity transform from
-    // the refined cameras to the POS file cameras (via map structures). Then,
-    // apply the estimated transform to the refined camera positions.
-    if (orig_cam_map->size() > 0 && st_estimator)
-    {
-      std::cerr << "Estimating and applying similarity transform to refined "
-                << "cameras (from POS files)" << std::endl;
-      maptk::similarity_d sim_transform = st_estimator->estimate_transform(cam_map, orig_cam_map);
-      BOOST_FOREACH(maptk::camera_map::map_camera_t::value_type p, cam_map->cameras())
-      {
-        p.second->transform(sim_transform);
-      }
-    }
-
     // update ins_map with refined data. Its ok if ins map is empty.
     maptk::update_ins_from_cameras(cam_map->cameras(), local_cs, ins_map);
     BOOST_FOREACH(const ins_map_t::value_type& p, ins_map)
