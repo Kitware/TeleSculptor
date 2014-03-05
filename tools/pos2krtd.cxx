@@ -277,7 +277,7 @@ static int maptk_main(int argc, char const* argv[])
      "Configuration file for the tool.")
     ("output-config,o",
      bpo::value<maptk::path_t>(),
-     "Output a configuration.This may be seeded with"
+     "Output a configuration. This may be seeded with"
      " a configuration file from -c/--config.");
   bpo::variables_map vm;
   // try to parse the command-line

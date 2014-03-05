@@ -430,7 +430,8 @@ static int maptk_main(int argc, char const* argv[])
   typedef std::map<maptk::frame_id_t, maptk::ins_data> ins_map_t;
   ins_map_t ins_map;
   maptk::camera_map::map_camera_t cameras, pos_cameras;
-  maptk::rotation_d ins_rot_offset = config->get_value<maptk::rotation_d>("ins:rotation_offset");
+  maptk::rotation_d ins_rot_offset = config->get_value<maptk::rotation_d>("ins:rotation_offset",
+                                                                          maptk::rotation_d());
   // if POS files are available, use them to initialize the cameras
   if( config->get_value<std::string>("input_pos_files") != "" )
   {
@@ -479,7 +480,7 @@ static int maptk_main(int argc, char const* argv[])
                   << std::endl;
       }
 
-      cameras = maptk::initialize_cameras_with_ins(ins_map, base_camera, local_cs
+      cameras = maptk::initialize_cameras_with_ins(ins_map, base_camera, local_cs,
                                                    ins_rot_offset);
       // Creating duplicate cameras structure
       BOOST_FOREACH(maptk::camera_map::map_camera_t::value_type &v, cameras)
