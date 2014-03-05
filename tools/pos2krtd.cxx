@@ -40,8 +40,7 @@ void usage(int const& argc, char const* argv[],
            bpo::options_description const& opt_desc,
            bpo::variables_map const& vm)
 {
-    std::cerr << "Common Usage: " << argv[0] << " -i file.pos -o file.krtd" << std::endl
-              << "            : " << argv[0] << " -i pos_dir -o output_dir" << std::endl
+    std::cerr << "Usage: " << argv[0] << " -c config_file [-o output_config_file]" << std::endl
               << std::endl
               << "If multiple POS files are to be converted into KRTD " << std::endl
               << "files, it is recomended to use the directory arguments " << std::endl
