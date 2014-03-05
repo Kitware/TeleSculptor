@@ -40,6 +40,12 @@ Core Library
    conversions (e.g. sending image to GPU) to prevent them from occuring
    multiple times on the same image.
 
+ * Added ability to add rotational offset when converting INS data into
+   cameras.
+
+ * Added additional error robustness to INS I/O operations (specifically the
+   input stream and reading operations).
+
 VCL Library
 
  * Added implementation of GPU feature detector.
@@ -78,6 +84,11 @@ Tools
    the input POS files.
 
  * Added optional file output to draw_tracks plot generation script.
+
+ * pos2krtd utility now uses a configuration file.
+
+ * Added configuration options for both SBA and pos2krtd tools to specify a
+   rotational offset for input POS file (INS data) via a quaternion.
 
 
 Fixes since v0.2.1
