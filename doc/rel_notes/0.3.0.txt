@@ -82,3 +82,9 @@ Tools
 
 Fixes since v0.2.1
 ------------------
+
+Core Library
+
+ * Fixed a bug in interpretation of yaw-pitch-roll in the rotation class.
+   It previously differed from that used in the POS file format by a 180
+   degree rotation about the local Y axis.
