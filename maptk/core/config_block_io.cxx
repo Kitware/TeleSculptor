@@ -202,11 +202,21 @@ config_block_grammar<Iterator>
 {
 }
 
+/// Return a string repeated \c n times.
+config_block_description_t operator*(config_block_description_t const& s, size_t n)
+{
+  config_block_description_t r;
+  r.reserve(s.size() * n);
+  for (size_t i=0; i<n; ++i)
+  {
+    r += s;
+  }
+  return r;
+}
+
 /// Helper method to write out a comment to a configuration file ostream
 /**
- * Assumptions:
- *  - If a block starts with a space, we assume its preformatted and don't
- *    token compress.
+ * Makes sure there is no trailing white-space printed to file.
  */
 void write_cb_comment(std::ostream & ofile, config_block_description_t const& comment)
 {
@@ -227,9 +237,19 @@ void write_cb_comment(std::ostream & ofile, config_block_description_t const& co
   {
     cbd_t cur_block = blocks.front();
     blocks.pop_front();
-    cbd_t line_buffer = "";
+
+    // Comment lines always start with the comment token
+    cbd_t line_buffer = comment_token;
+
+    // Counter of additional spaces to place in front of the next non-empty
+    // word added to the line buffer. There is always at least one space
+    // between words.
+    size_t spaces = 1;
 
     std::list<cbd_t> words;
+    // Not using token-compress in case there is purposeful use of multiple
+    // adjacent spaces, like in bullited lists. This, however, leaves open
+    // the appearance of empty-string words in the loop, which are handled.
     //boost::algorithm::split(words, cur_block, boost::is_any_of(" "), boost::token_compress_on);
     boost::algorithm::split(words, cur_block, boost::is_any_of(" "));
     while (words.size() > 0)
@@ -237,19 +257,23 @@ void write_cb_comment(std::ostream & ofile, config_block_description_t const& co
       cbd_t cur_word = words.front();
       words.pop_front();
 
-      if (line_buffer.size() > 0)
+      // word is an empty string, meaning an intentional space was encountered.
+      if (cur_word.size() == 0)
       {
-        if ((line_buffer.size() + space_token.size() + cur_word.size()) > line_width)
-        {
-          ofile << line_buffer << "\n";
-          line_buffer = comment_token;
-        }
-        line_buffer = line_buffer + space_token + cur_word;
+        ++spaces;
       }
       else
       {
-        // Nothing in buffer. Start with comment token.
-        line_buffer = comment_token + space_token + cur_word;
+        if ((line_buffer.size() + spaces + cur_word.size()) > line_width)
+        {
+          ofile << line_buffer << "\n";
+          line_buffer = comment_token;
+          // On a line split, it makes sense to me that leading spaces are
+          // treated as trailing white-space, which should not be output.
+          spaces = 1;
+        }
+        line_buffer += (space_token * spaces) + cur_word;
+        spaces = 1;
       }
     }
 

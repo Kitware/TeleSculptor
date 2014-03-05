@@ -66,14 +66,16 @@ default_config()
                     "\n"
                     "If multiple POS files are to be converted into KRTD "
                     "files, it is recommended to use the directory arguemnts "
-                    "in order for the application to create a unitied local "
+                    "in order for the application to create a unified local "
                     "coordinate system.");
   config->set_value("output", "",
                     "Output file or directory where output files will be "
                     "placed. If a directory, output files will mirror the "
                     "filename stem of input files. The output file mode will "
                     "be interpreted the same as the file mode of the input "
-                    "parameter. I.e. if a file was provided for input, output "
+                    "parameter.\n"
+                    "\n"
+                    "I.e. if a file was provided for input, output "
                     "should point to a file path to output to. If input was a "
                     "directory, output will be treated like a directory.");
 
@@ -317,8 +319,8 @@ static int maptk_main(int argc, char const* argv[])
 
   if (vm.count("output-config"))
   {
-    maptk::write_config_file(config,
-                             vm["output-config"].as<maptk::path_t>());
+    maptk::path_t output_path = vm["output-config"].as<maptk::path_t>();
+    maptk::write_config_file(config, output_path);
 
     if (config_is_valid)
     {
