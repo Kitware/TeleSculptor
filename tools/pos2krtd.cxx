@@ -20,6 +20,7 @@
 #include <maptk/core/camera_io.h>
 #include <maptk/core/config_block.h>
 #include <maptk/core/config_block_io.h>
+#include <maptk/core/exceptions.h>
 #include <maptk/core/local_geo_cs.h>
 #include <maptk/core/types.h>
 
@@ -169,9 +170,9 @@ bool convert_ins2camera(const maptk::ins_data& ins,
 {
   if( cs.utm_origin_zone() < 0 )
   {
-    std::cout << "lat: "<<ins.lat<<" lon: "<<ins.lon<<std::endl;
+    std::cerr << "lat: "<<ins.lat<<" lon: "<<ins.lon<<std::endl;
     cs.set_utm_origin_zone(cs.geo_map_algo()->latlon_zone(ins.lat, ins.lon));
-    std::cout << "using zone "<< cs.utm_origin_zone() <<std::endl;
+    std::cerr << "using zone "<< cs.utm_origin_zone() <<std::endl;
   }
 
   cs.update_camera(ins, cam, ins_rot_offset);
@@ -207,18 +208,39 @@ bool convert_pos2krtd_dir(const maptk::path_t& pos_dir,
   bfs::directory_iterator it(pos_dir), eod;
   std::map<maptk::frame_id_t, maptk::ins_data> ins_map;
   std::vector<std::string> krtd_filenames;
+
+  std::cerr << "Loading POS files" << std::endl;
   BOOST_FOREACH(maptk::path_t const &p, std::make_pair(it, eod))
   {
-    maptk::path_t krtd_filename = krtd_dir / (basename(p) + ".krtd");
-    std::cout << "processing "<< p <<" --> " << krtd_filename<< std::endl;
-    maptk::frame_id_t frame = static_cast<maptk::frame_id_t>(krtd_filenames.size());
-    ins_map[frame] = maptk::read_pos_file(p.string());
-    krtd_filenames.push_back(krtd_filename.string());
+    try
+    {
+      maptk::ins_data ins = maptk::read_pos_file(p.string());
+
+      maptk::path_t krtd_filename = krtd_dir / (basename(p) + ".krtd");
+      //std::cerr << "Loading " << p << std::endl;
+      maptk::frame_id_t frame = static_cast<maptk::frame_id_t>(krtd_filenames.size());
+      ins_map[frame] = ins;
+      krtd_filenames.push_back(krtd_filename.string());
+    }
+    catch (maptk::invalid_file const& e)
+    {
+      std::cerr << "-> Skipping invalid file: " << p << std::endl;
+    }
   }
 
+  if (ins_map.size() == 0)
+  {
+    std::cerr << "WARNING: No valid input files found in directory. "
+              << "Nothing to do."
+              << std::endl;
+    return false;
+  }
+
+  std::cerr << "Initializing cameras" << std::endl;
   std::map<maptk::frame_id_t, maptk::camera_sptr> cam_map;
   cam_map = maptk::initialize_cameras_with_ins(ins_map, base_camera, cs, ins_rot_offset);
 
+  std::cerr << "Writing KRTD files" << std::endl;
   typedef std::map<maptk::frame_id_t, maptk::camera_sptr>::value_type cam_map_val_t;
   BOOST_FOREACH(cam_map_val_t const &p, cam_map)
   {
@@ -227,7 +249,7 @@ bool convert_pos2krtd_dir(const maptk::path_t& pos_dir,
   }
 
   maptk::vector_3d origin = cs.utm_origin();
-  std::cout << "using local UTM origin at "<<origin[0] <<", "<<origin[1]
+  std::cerr << "using local UTM origin at "<<origin[0] <<", "<<origin[1]
             <<", zone "<<cs.utm_origin_zone() <<std::endl;
   return true;
 }
@@ -328,7 +350,7 @@ static int maptk_main(int argc, char const* argv[])
 
   if( bfs::is_directory(input) )
   {
-    std::cout << "processing "<<input<<" as a directory of POS files" << std::endl;
+    std::cerr << "processing "<<input<<" as a directory of POS files" << std::endl;
     if( !bfs::exists(output) )
     {
       if( !bfs::create_directory(output) )

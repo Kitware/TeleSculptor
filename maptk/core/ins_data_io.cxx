@@ -53,7 +53,14 @@ read_pos_file(path_t const& file_path)
 
   // Read the file
   ins_data ins;
-  input_stream >> ins;
+  try
+  {
+    input_stream >> ins;
+  }
+  catch (invalid_data const& e)
+  {
+    throw invalid_file(file_path, e.what());
+  }
   return ins;
 }
 

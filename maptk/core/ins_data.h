@@ -100,6 +100,8 @@ MAPTK_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const ins_data& d);
 
 /// input stream operator for a INS data
 /**
+ * \throws invalid_data When given stream contains data unsuitable for creating
+ *                      an ins_data object.
  * \param s input stream
  * \param d ins_data to stream into
  */

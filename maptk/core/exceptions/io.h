@@ -86,6 +86,42 @@ public:
 };
 
 
+/// Exception for an encounter with an invalid file by some metric.
+class MAPTK_CORE_EXPORT invalid_file
+  : public io_exception
+{
+public:
+  /// Constructor
+  /*
+   * \param file    The file that has been deemed invalid
+   * \param reason  The reason for invalidity.
+   */
+  invalid_file(path_t file, std::string reason) MAPTK_NOTHROW;
+  /// Destructor
+  virtual ~invalid_file() MAPTK_NOTHROW;
+
+  /// Path to the invalid file location
+  path_t m_path;
+  /// Reason the file is invalid
+  std::string m_reason;
+};
+
+
+/// Exception for an encounter with invalid data by some metric
+class MAPTK_CORE_EXPORT invalid_data
+  : public io_exception
+{
+public:
+  /// Constructor
+  invalid_data(std::string reason) MAPTK_NOTHROW;
+  /// Destructor
+  virtual ~invalid_data() MAPTK_NOTHROW;
+
+  /// Reason the data is invalid
+  std::string m_reason;
+};
+
+
 } // end maptk namespace
 
 #endif // MAPTK_CORE_EXCEPTIONS_IO_H

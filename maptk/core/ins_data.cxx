@@ -15,6 +15,8 @@
 #include <sstream>
 #include <iomanip>
 
+#include <maptk/core/exceptions/io.h>
+
 namespace maptk
 {
 
@@ -96,7 +98,15 @@ std::istream& operator>>(std::istream& s, ins_data& d)
 
   unsigned int base=0;
   // some POS files do not have the source name
-  if( tokens.size() == 15 )
+  if( tokens.size() < 14 || tokens.size() > 15)
+  {
+    std::ostringstream ss;
+    ss << "Too few fields found in the given data stream "
+       << "(discovered " << tokens.size() << " field(s), expected "
+       << "14 or 15).";
+    throw invalid_data(ss.str());
+  }
+  else if( tokens.size() == 15 )
   {
     PARSE_FIELD(0, source_name);
     base = 1;
