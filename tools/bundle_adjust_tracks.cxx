@@ -389,7 +389,7 @@ static int maptk_main(int argc, char const* argv[])
     image_files.push_back(line);
   }
   // Since input tracks were generated over these frames, we can assume that
-  // the frames are "in order" in that tracking followed this list in this gived
+  // the frames are "in order" in that tracking followed this list in this given
   // order. As this is a single list, we assume that there are no gaps (same
   // assumptions as makde in tracking).
   // Creating forward and revese mappings for frame to file stem-name.
