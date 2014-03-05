@@ -40,8 +40,7 @@ public:
 
   /// Constructor
   priv()
-  : display_type(DUAL_WINDOW),
-    draw_track_id(true),
+  : draw_track_ids(true),
     draw_untracked_features(true),
     draw_match_lines(false),
     draw_shift_lines(true),
@@ -61,11 +60,11 @@ public:
   }
 
   /// Parameters
-  enum {SINGLE_WINDOW, DUAL_WINDOW, TRI_WINDOW} display_type;
-  bool draw_track_id;
+  bool draw_track_ids;
   bool draw_untracked_features;
   bool draw_match_lines;
   bool draw_shift_lines;
+  std::vector<unsigned> past_frames_to_show;
   boost::format pattern;
 };
 
@@ -100,18 +99,22 @@ draw_tracks
 {
   config_block_sptr config = maptk::algo::draw_tracks::get_configuration();
 
-  config->set_value( "display_type", "dual_window",
-                     "Draw the last image on the left, and the current image "
-                     "on the right (for every frame)." );
-  config->set_value( "draw_track_id", d_->draw_track_id,
+  config->set_value( "draw_track_ids", d_->draw_track_ids,
                      "Draw track ids next to each feature point." );
   config->set_value( "draw_untracked_features", d_->draw_untracked_features,
                      "Draw untracked feature points in red." );
   config->set_value( "draw_match_lines", d_->draw_match_lines,
-                     "Draw lines between tracked features on adj frames." );
+                     "Draw lines between tracked features on the current frame "
+                     "to any past frames." );
   config->set_value( "draw_shift_lines", d_->draw_shift_lines,
                      "Draw lines showing the movement of the feature in the image "
                      "plane from the last frame to the current one." );
+  config->set_value( "past_frames_to_show", "",
+                     "A comma seperated list of past frames to show. For example: "
+                     "a value of \"2, 1\" will cause the GUI to generate a window "
+                     "3 frames wide, with the first frame being 2 frames behind the "
+                     "current frame, the second 1 frame behind, and the third being "
+                     "the current frame." );
   config->set_value( "pattern", "feature_tracks_%1%.png",
                      "The output pattern for drawn images." );
 
@@ -127,26 +130,22 @@ draw_tracks
   config_block_sptr config = this->get_configuration();
   config->merge_config( in_config );
 
-  std::string display_type_str = config->get_value<std::string>( "display_type" );
+  std::string past_frames_str = config->get_value<std::string>( "past_frames_to_show" );
 
-  if( display_type_str == "single_window" )
+  std::stringstream ss( past_frames_str );
+
+  unsigned next_int;
+  while( ss >> next_int )
   {
-    d_->display_type = priv::SINGLE_WINDOW;
-  }
-  else if( display_type_str == "dual_window" )
-  {
-    d_->display_type = priv::DUAL_WINDOW;
-  }
-  else if( display_type_str == "tri_window" )
-  {
-    d_->display_type = priv::TRI_WINDOW;
-  }
-  else
-  {
-    std::cerr << "Invalid display type: " << display_type_str << std::endl;
+    d_->past_frames_to_show.push_back( next_int );
+
+    if( ss.peek() == ',' )
+    {
+      ss.ignore();
+    }
   }
 
-  d_->draw_track_id = config->get_value<bool>( "draw_track_id" );
+  d_->draw_track_ids = config->get_value<bool>( "draw_track_ids" );
   d_->draw_untracked_features = config->get_value<bool>( "draw_untracked_features" );
   d_->draw_match_lines = config->get_value<bool>( "draw_match_lines" );
   d_->draw_shift_lines = config->get_value<bool>( "draw_shift_lines" );
@@ -159,16 +158,7 @@ bool
 draw_tracks
 ::check_configuration(config_block_sptr config) const
 {
-  std::string display_type_str = config->get_value<std::string>( "display_type" );
-
-  if( display_type_str == "single_window" ||
-      display_type_str == "dual_window" ||
-      display_type_str == "tri_window" )
-  {
-    return true;
-  }
-
-  return false;
+  return true;
 }
 
 
@@ -178,18 +168,30 @@ draw_tracks
 ::draw(track_set_sptr track_set,
        image_container_sptr_list image_data) const
 {
+  typedef std::vector< std::pair< cv::Point, cv::Point > > line_vec_t;
+
   // Validate inputs
   if( image_data.size() < track_set->last_frame() )
   {
     std::cerr << "Error: not enough imagery to display all tracks" << std::endl;
   }
 
+  // The total number of past frames we are showing
+  const unsigned past_frames = d_->past_frames_to_show.size();
+
   // Generate output images
   frame_id_t fid = 0;
 
-  cv::Mat prior_images[2];
-  std::vector< std::pair< cv::Point, cv::Point > > prior_lines;
+  // The few last images with features drawn on them
+  std::vector< cv::Mat > prior_images( past_frames );
 
+  // Colors to use
+  const cv::Scalar blue( 255, 0, 0 );
+  const cv::Scalar red( 0, 0, 255 );
+  const cv::Scalar green( 0, 255, 0 );
+  const cv::Scalar purple( 240, 32, 160 );
+
+  // Iterate over all images
   BOOST_FOREACH( image_container_sptr ctr_sptr, image_data )
   {
     // Paint active tracks on the input image
@@ -202,14 +204,7 @@ draw_tracks
     }
 
     // List of lines to draw on final image
-    std::vector< std::pair< cv::Point, cv::Point > > cur_to_sec_lines;
-    std::vector< std::pair< cv::Point, cv::Point > > cur_to_thr_lines;
-
-    // Colors to use
-    const cv::Scalar blue( 255, 0, 0 );
-    const cv::Scalar red( 0, 0, 255 );
-    const cv::Scalar green( 0, 255, 0 );
-    const cv::Scalar purple( 240, 32, 160 );
+    std::vector< line_vec_t > lines( past_frames );
 
     // Adjustment added to bring a point to a seperate window
     const cv::Point pt_adj( img.cols, 0 );
@@ -248,13 +243,13 @@ draw_tracks
         cv::circle( img, loc, 1, color, 3 );
       }
 
-      if( d_->draw_track_id && trk->size() > 1 )
+      if( d_->draw_track_ids && trk->size() > 1 )
       {
         cv::putText( img, tid_str, loc + txt_offset, cv::FONT_HERSHEY_COMPLEX_SMALL, 0.5, color );
       }
 
-      // Generate feature match line from the last image to this one
-      if( trk->size() > 1 && fid > 0 )
+      // Generate and draw shift lines on the video
+      if( d_->draw_shift_lines && trk->size() > 1 && fid > 0 )
       {
         track::history_const_itr itr = trk->find( fid-1 );
 
@@ -262,17 +257,17 @@ draw_tracks
         {
           cv::Point prior_loc( itr->feat->loc()[0], itr->feat->loc()[1] );
 
-          if( d_->draw_match_lines )
-          {
-            cur_to_sec_lines.push_back( std::make_pair( prior_loc, loc ) );
-          }
-
           if( d_->draw_shift_lines )
           {
             cv::line( img, prior_loc, loc, blue );
           }
         }
+      }
 
+      // Generate and store match lines for later use
+      if( d_->draw_match_lines )
+      {
+        for( unsigned i = 0;
         if( fid > 1 )
         {
           track::history_const_itr itr2 = trk->find( fid-2 );

@@ -18,8 +18,10 @@
 
 #include <set>
 #include <fstream>
+#include <sstream>
 #include <iostream>
 #include <iomanip>
+#include <vector>
 
 namespace maptk
 {
@@ -36,8 +38,7 @@ public:
   /// Constructor
   priv()
   : output_summary(true),
-    output_pt_matrix(true),
-    pt_matrix_cols(5)
+    output_pt_matrix(true)
   {
   }
 
@@ -55,7 +56,7 @@ public:
   /// Text output parameters
   bool output_summary;
   bool output_pt_matrix;
-  unsigned pt_matrix_cols;
+  std::vector<int> frames_to_compare;
 };
 
 
@@ -93,11 +94,13 @@ analyze_tracks
                     "Output a summary descriptor of high-level properties.");
   config->set_value("output_pt_matrix", d_->output_pt_matrix,
                     "Output a matrix showing details about the percentage of "
-                    "features tracked for every frame, from each frame to the "
-                    "last n frames before said frame.");
-  config->set_value("pt_matrix_cols", d_->pt_matrix_cols,
-                    "The number comparison frames for each frame to compute the "
-                    "percent of features tracked statistics for.");
+                    "features tracked for every frame, from each frame to "
+                    "some list of frames in the past.");
+  config->set_value("frames_to_compare", "1, 5, 10, 50",
+                    "A comma seperated list of frame difference intervals we want "
+                    "to use for the pt matrix. For example, if \"1, 4\" the pt "
+                    "matrix will contain comparisons between the current frame and "
+                    "last frame in addition to four frames ago.");
 
   return config;
 }
@@ -113,7 +116,22 @@ analyze_tracks
 
   d_->output_summary = config->get_value<bool>( "output_summary" );
   d_->output_pt_matrix = config->get_value<bool>( "output_pt_matrix" );
-  d_->pt_matrix_cols = config->get_value<unsigned>( "pt_matrix_cols" );
+
+  std::string ftc = config->get_value<std::string>( "frames_to_compare" );
+
+  std::stringstream ss(ftc);
+
+  int next_int;
+
+  while (ss >> next_int)
+  {
+    d_->frames_to_compare.push_back(next_int);
+
+    if (ss.peek() == ',')
+    {
+      ss.ignore();
+    }
+  }
 }
 
 
@@ -150,27 +168,36 @@ analyze_tracks
     stream << std::endl;
     stream << "        Percent of Features Tracked Matrix         " << std::endl;
     stream << "---------------------------------------------------" << std::endl;
-    stream << "(FrameID) (NumTrks) (%TrkF-1) (%TrkF-2) (%TrkF-...)" << std::endl;
+    stream << "(FrameID) (NumTrks) (%TrkFromID " << std::endl;
+
+    for( unsigned i = 0; i < d_->frames_to_compare.size(); i++ )
+    {
+      stream << " -" << d_->frames_to_compare[i];
+    }
+
+    stream << ")" << std::endl;
     stream << std::endl;
   }
 
   // Generate matrix
-  cv::Mat_<double> data( total_frames, d_->pt_matrix_cols + 2 );
+  cv::Mat_<double> data( total_frames, d_->frames_to_compare.size() + 2 );
 
-  for( unsigned fid = first_frame; fid <= last_frame; fid++ )
+  for( frame_id_t fid = first_frame; fid <= last_frame; fid++ )
   {
     data.at<double>( fid, 0 ) = fid;
     data.at<double>( fid, 1 ) = track_set->active_tracks( fid )->size();
 
-    for( unsigned c = 1; c <= d_->pt_matrix_cols; c++ )
+    for( unsigned i = 0; i < d_->frames_to_compare.size(); i++ )
     {
-      if( fid < first_frame + c )
+      int adj = d_->frames_to_compare[ i ];
+
+      if( fid < first_frame + adj )
       {
-        data.at<double>( fid, c+1 ) = -1.0;
+        data.at<double>( fid, i+2 ) = -1.0;
       }
       else
       {
-        data.at<double>( fid, c+1 ) = track_set->percentage_tracked( fid-c, fid );
+        data.at<double>( fid, i+2 ) = track_set->percentage_tracked( fid-adj, fid );
       }
     }
   }
