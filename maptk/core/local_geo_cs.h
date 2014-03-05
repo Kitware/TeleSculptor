@@ -18,6 +18,7 @@
 #include "algo/geo_map.h"
 #include "camera.h"
 #include "ins_data.h"
+#include "rotation.h"
 
 namespace maptk
 {
@@ -50,7 +51,13 @@ public:
   algo::geo_map_sptr geo_map_algo() const { return geo_map_algo_; }
 
   /// Use the pose data provided by INS to update camera pose
-  void update_camera(const ins_data& ins, camera_d& cam) const;
+  /**
+   * \param ins_data    INS data packet to update the camera with
+   * \param cam         The camera to be updated.
+   * \param rot_offset  A rotation offset to apply to INS yaw pitch roll data
+   */
+  void update_camera(const ins_data& ins, camera_d& cam,
+                     rotation_d const& rot_offset = rotation_d()) const;
 
   /// Use the camera pose to update an INS data structure
   void update_ins_data(const camera_d& cam, ins_data& ins) const;
@@ -73,6 +80,8 @@ private:
  * \param [in]     base_camera is the camera to reposition at each INS pose.
  * \param [in,out] lgcs is the local geographic coordinate system used to map
  *                 lat/long to a local UTM coordinate system
+ * \param [in]     Rotation offset to apply to INS yaw/pitch/roll data before
+ *                 updating a camera's rotation.
  * \returns a mapping from frame number to camera
  * \note The \c lgcs object is updated only if it does not contain a valid
  *       utm_origin_zone().  If updated, the computed local origin
@@ -83,7 +92,8 @@ MAPTK_CORE_EXPORT
 std::map<frame_id_t, camera_sptr>
 initialize_cameras_with_ins(const std::map<frame_id_t, ins_data>& ins_map,
                             const camera_d& base_camera,
-                            local_geo_cs& lgcs);
+                            local_geo_cs& lgcs,
+                            rotation_d const& rot_offset = rotation_d());
 
 
 /// Update a sequence of ins_data from a sequence of cameras and local_geo_cs
