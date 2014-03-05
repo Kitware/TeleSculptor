@@ -75,9 +75,10 @@ rotation_<T>
 {
   using std::sin;
   using std::cos;
-  const double pi_over_2 = boost::math::constants::pi<double>() / 2.0;
-  const double half_x = 0.5 * static_cast<double>(roll);
-  const double half_y = 0.5 * static_cast<double>(pitch);
+  const double pi = boost::math::constants::pi<double>();
+  const double pi_over_2 = pi / 2.0;
+  const double half_x = 0.5 * static_cast<double>(-roll);
+  const double half_y = 0.5 * static_cast<double>(pitch + pi);
   const double half_z = 0.5 * static_cast<double>(yaw + pi_over_2);
   rotation_<T> Rx(vector_4_<T>(T(sin(half_x)), 0, 0, T(cos(half_x))));
   rotation_<T> Ry(vector_4_<T>(0, T(sin(half_y)), 0, T(cos(half_y))));
@@ -220,17 +221,10 @@ rotation_<T>
 ::get_yaw_pitch_roll(T& yaw, T& pitch, T& roll) const
 {
   matrix_<3,3,T> rotM(*this);
-  T xy = T(std::sqrt(double(rotM(1,2)*rotM(1,2)) + rotM(2,2)*rotM(2,2)));
-  yaw   = T(std::atan2(double(-rotM(0,1)),double(rotM(0,0))));
-  pitch = T(std::atan2(double(rotM(0,2)),double(xy)));
-  roll  = T(std::atan2(double(-rotM(1,2)),double(rotM(2,2))));
-  // correct for 90 degree yaw offset
-  const T pi = boost::math::constants::pi<T>();
-  yaw -= pi / 2;
-  if (yaw <= -pi)
-  {
-    yaw += 2 * pi;
-  }
+  T cos_p = T(std::sqrt(double(rotM(1,2)*rotM(1,2)) + rotM(2,2)*rotM(2,2)));
+  yaw   = T(std::atan2(double(rotM(0,0)),double(rotM(0,1))));
+  pitch = T(std::atan2(double(-rotM(0,2)),double(cos_p)));
+  roll  = T(std::atan2(double(-rotM(1,2)),double(-rotM(2,2))));
 }
 
 
