@@ -26,10 +26,12 @@
 #include <maptk/core/camera_io.h>
 #include <maptk/core/metrics.h>
 #include <maptk/core/algo/bundle_adjust.h>
+#include <maptk/core/algo/estimate_similarity_transform.h>
 #include <maptk/core/algo/triangulate_landmarks.h>
 #include <maptk/core/algo/geo_map.h>
 #include <maptk/core/config_block.h>
 #include <maptk/core/config_block_io.h>
+#include <maptk/core/transform.h>
 #include <maptk/core/types.h>
 
 #include <boost/foreach.hpp>
@@ -103,6 +105,8 @@ static maptk::config_block_sptr default_config()
                                                              algo::triangulate_landmarks_sptr());
   algo::geo_map::get_nested_algo_configuration("geo_mapper", config,
                                                algo::geo_map_sptr());
+  algo::estimate_similarity_transform::get_nested_algo_configuration("st_estimator", config,
+                                                                     algo::estimate_similarity_transform_sptr());
 
   return config;
 }
@@ -112,53 +116,60 @@ static bool check_config(maptk::config_block_sptr config)
 {
   bool config_valid = true;
 
-#define MAPTK_WARN(msg) \
+#define MAPTK_CONFIG_FAIL(msg) \
   std::cerr << "Config Check Fail: " << msg << std::endl; \
   config_valid = false
 
   if (!config->has_value("input_track_file"))
   {
-    MAPTK_WARN("Not given a tracks file path");
+    MAPTK_CONFIG_FAIL("Not given a tracks file path");
   }
   else if (!bfs::exists(config->get_value<std::string>("input_track_file")))
   {
-    MAPTK_WARN("Given tracks file path doesn't point to an existing file.");
+    MAPTK_CONFIG_FAIL("Given tracks file path doesn't point to an existing file.");
   }
 
   if (!config->has_value("image_list_file"))
   {
-    MAPTK_WARN("Not given an image list file");
+    MAPTK_CONFIG_FAIL("Not given an image list file");
   }
   else if (!bfs::exists(config->get_value<std::string>("image_list_file")))
   {
-    MAPTK_WARN("Given image list file path doesn't point to an existing file.");
+    MAPTK_CONFIG_FAIL("Given image list file path doesn't point to an existing file.");
   }
 
   if (! config->has_value("input_pos_files"))
   {
-    MAPTK_WARN("No POS file specification given. This should either be an empty "
+    MAPTK_CONFIG_FAIL("No POS file specification given. This should either be an empty "
          "string or the path to a directory/file list of POS files.");
   }
   else if (config->get_value<std::string>("input_pos_files") != ""
            && !bfs::exists(config->get_value<std::string>("input_pos_files")))
   {
-    MAPTK_WARN("POS input path given, but doesn't point to an existing location.");
+    MAPTK_CONFIG_FAIL("POS input path given, but doesn't point to an existing location.");
   }
 
   if (!maptk::algo::bundle_adjust::check_nested_algo_configuration("bundle_adjuster", config))
   {
-    MAPTK_WARN("Failed config check in bundle_adjuster algorithm.");
+    MAPTK_CONFIG_FAIL("Failed config check in bundle_adjuster algorithm.");
   }
   if (!maptk::algo::triangulate_landmarks::check_nested_algo_configuration("triangulator", config))
   {
-    MAPTK_WARN("Failed config check in triangulator algorithm.");
+    MAPTK_CONFIG_FAIL("Failed config check in triangulator algorithm.");
   }
   if (!maptk::algo::geo_map::check_nested_algo_configuration("geo_mapper", config))
   {
-    MAPTK_WARN("Failed config check in geo_mapper algorithm.");
+    MAPTK_CONFIG_FAIL("Failed config check in geo_mapper algorithm.");
+  }
+  if (!(   !config->has_value("st_estimator:type")
+        || (config->get_value<std::string>("st_estimator:type") == "")
+        || maptk::algo::estimate_similarity_transform::check_nested_algo_configuration("st_estimator", config)
+       ))
+  {
+    MAPTK_CONFIG_FAIL("Failed config check in st_estimator algorithm.");
   }
 
-#undef MAPTK_WARN
+#undef MAPTK_CONFIG_FAIL
 
   return config_valid;
 }
@@ -288,10 +299,11 @@ static int maptk_main(int argc, char const* argv[])
   namespace algo = maptk::algo;
 
   // Set up top level configuration w/ defaults where applicable.
-  maptk::config_block_sptr config = default_config();
+  maptk::config_block_sptr config = maptk::config_block::empty_config();
   algo::bundle_adjust_sptr bundle_adjuster;
   algo::triangulate_landmarks_sptr triangulator;
   algo::geo_map_sptr geo_mapper;
+  algo::estimate_similarity_transform_sptr st_estimator;
 
   // If -c/--config given, read in confg file, merge in with default just generated
   if(vm.count("config"))
@@ -304,11 +316,9 @@ static int maptk_main(int argc, char const* argv[])
   //print_config(config);
 
   algo::bundle_adjust::set_nested_algo_configuration("bundle_adjuster", config, bundle_adjuster);
-  algo::bundle_adjust::get_nested_algo_configuration("bundle_adjuster", config, bundle_adjuster);
   algo::triangulate_landmarks::set_nested_algo_configuration("triangulator", config, triangulator);
-  algo::triangulate_landmarks::get_nested_algo_configuration("triangulator", config, triangulator);
   algo::geo_map::set_nested_algo_configuration("geo_mapper", config, geo_mapper);
-  algo::geo_map::get_nested_algo_configuration("geo_mapper", config, geo_mapper);
+  algo::estimate_similarity_transform::set_nested_algo_configuration("st_estimator", config, st_estimator);
 
   //std::cerr << "[DEBUG] Config AFTER set:" << std::endl;
   //print_config(config);
@@ -317,6 +327,14 @@ static int maptk_main(int argc, char const* argv[])
 
   if(vm.count("output-config"))
   {
+    maptk::config_block_sptr dflt_config = default_config();
+    dflt_config->merge_config(config);
+    config = dflt_config;
+    algo::bundle_adjust::get_nested_algo_configuration("bundle_adjuster", config, bundle_adjuster);
+    algo::triangulate_landmarks::get_nested_algo_configuration("triangulator", config, triangulator);
+    algo::geo_map::get_nested_algo_configuration("geo_mapper", config, geo_mapper);
+    algo::estimate_similarity_transform::get_nested_algo_configuration("st_estimator", config, st_estimator);
+
     //std::cerr << "[DEBUG] Given config output target: "
     //          << vm["output-config"].as<maptk::path_t>() << std::endl;
     write_config_file(config, vm["output-config"].as<maptk::path_t>());
@@ -337,7 +355,9 @@ static int maptk_main(int argc, char const* argv[])
     return EXIT_FAILURE;
   }
 
+  //
   // Read the track file
+  //
   std::string track_file = config->get_value<std::string>("input_track_file");
   std::cout << "loading track file: " << track_file <<std::endl;
   maptk::track_set_sptr tracks = maptk::read_track_file(track_file);
@@ -350,7 +370,12 @@ static int maptk_main(int argc, char const* argv[])
     std::cout << "filtered down to "<<tracks->size()<<" long tracks"<<std::endl;
   }
 
+  //
   // Read in image list file
+  //
+  // Also creating helper structures (i.e. frameID-to-filename and vise versa
+  // maps).
+  //
   std::string image_list_file = config->get_value<std::string>("image_list_file");
   std::ifstream image_list_ifs(image_list_file.c_str());
   if (!image_list_ifs)
@@ -364,7 +389,8 @@ static int maptk_main(int argc, char const* argv[])
     image_files.push_back(line);
   }
   // Since input tracks were generated over these frames, we can assume that
-  // the frames are "in order" and that there are no missing frame (same
+  // the frames are "in order" in that tracking followed this list in this given
+  // order. As this is a single list, we assume that there are no gaps (same
   // assumptions as makde in tracking).
   // Creating forward and revese mappings for frame to file stem-name.
   std::vector<std::string> frame2filename;  // valid since we are assuming no frame gaps
@@ -376,11 +402,15 @@ static int maptk_main(int argc, char const* argv[])
     frame2filename.push_back(i_file_stem);
   }
 
+  //
   // Create the local coordinate system
+  //
   maptk::local_geo_cs local_cs(geo_mapper);
   maptk::camera_d base_camera = base_camera_from_config(config->subblock("base_camera"));
 
+  //
   // Initialize all landmarks to the origin
+  //
   std::set<maptk::track_id_t> track_ids = tracks->all_track_ids();
   maptk::landmark_map::map_landmark_t landmarks;
   BOOST_FOREACH(const maptk::track_id_t& tid, track_ids)
@@ -390,9 +420,12 @@ static int maptk_main(int argc, char const* argv[])
   }
   maptk::landmark_map_sptr lm_map(new maptk::simple_landmark_map(landmarks));
 
+  //
+  // Initialize cameras
+  //
   typedef std::map<maptk::frame_id_t, maptk::ins_data> ins_map_t;
   ins_map_t ins_map;
-  maptk::camera_map::map_camera_t cameras;
+  maptk::camera_map::map_camera_t cameras, pos_cameras;
   // if POS files are available, use them to initialize the cameras
   if( config->get_value<std::string>("input_pos_files") != "" )
   {
@@ -419,6 +452,8 @@ static int maptk_main(int argc, char const* argv[])
     }
 
     std::cout << "loading POS files" <<std::endl;
+    // Associating POS file to frame ID based on whether its filename stem is
+    // the same as an image in the given image list (map created above).
     BOOST_FOREACH(maptk::path_t const& fpath, files)
     {
       std::string pos_file_stem = fpath.stem().string();
@@ -427,9 +462,9 @@ static int maptk_main(int argc, char const* argv[])
         ins_map[filename2frame[pos_file_stem]] = maptk::read_pos_file(fpath);
       }
     }
+    // Warn if the POS file set is sparse compared to input frames
     if (!ins_map.empty())
     {
-      // Warn if the POS file set is sparse compared to input frames
       // TODO: generated interpolated cameras for missing POS files.
       if (filename2frame.size() != ins_map.size())
       {
@@ -439,7 +474,13 @@ static int maptk_main(int argc, char const* argv[])
                   << std::endl;
       }
 
-      cameras = maptk::initialize_cameras_with_ins(ins_map, base_camera, local_cs);
+      cameras     = maptk::initialize_cameras_with_ins(ins_map, base_camera, local_cs);
+      // Creating duplicate cameras structure
+      BOOST_FOREACH(maptk::camera_map::map_camera_t::value_type &v, cameras)
+      {
+        pos_cameras[v.first] = v.second->clone();
+      }
+
       maptk::camera_map_sptr cam_map(new maptk::simple_camera_map(cameras));
       // triangulate to provide initial point locations
       triangulator->triangulate(cam_map, tracks, lm_map);
@@ -462,7 +503,8 @@ static int maptk_main(int argc, char const* argv[])
     }
   }
 
-  maptk::camera_map_sptr cam_map(new maptk::simple_camera_map(cameras));
+  maptk::camera_map_sptr cam_map(new maptk::simple_camera_map(cameras)),
+                         orig_cam_map(new maptk::simple_camera_map(pos_cameras));
 
   std::cout << "initialized "<<cam_map->size()<<" cameras"<<std::endl;
   unsigned int cam_samp_rate = config->get_value<unsigned int>("camera_sample_rate");
@@ -472,7 +514,9 @@ static int maptk_main(int argc, char const* argv[])
     std::cout << "subsampled down to "<<cam_map->size()<<" cameras"<<std::endl;
   }
 
+  //
   // Run bundle adjustment
+  //
   double init_rmse = maptk::reprojection_rmse(cam_map->cameras(),
                                               lm_map->landmarks(),
                                               tracks->tracks());
@@ -485,14 +529,42 @@ static int maptk_main(int argc, char const* argv[])
                                              tracks->tracks());
   std::cout << "final reprojection RMSE: " << end_rmse << std::endl;
 
+
+  //
+  // Adjust cameras/landmarks based on input cameras/reference points
+  //
+  // If we were given POS files / reference points as input, compute a
+  // similarity transform from the refined cameras to the POS file / reference
+  // point cameras (via map structures). Then, apply the estimated transform to
+  // the refined camera positions and landmarks.
+  //
+  if (orig_cam_map->size() > 0 && st_estimator)
+  {
+    std::cout << "Estimating and applying similarity transform to refined "
+              << "cameras (from POS files)" << std::endl;
+    maptk::similarity_d sim_transform = st_estimator->estimate_transform(cam_map, orig_cam_map);
+    std::cout << "--> Estimated Transformation:" << std::endl
+              << sim_transform << std::endl;
+    // apply to cameras
+    std::cout << "--> Applying to cameras..." << std::endl;
+    cam_map = maptk::transform(cam_map, sim_transform);
+    // apply to landmarks
+    std::cout << "--> Applying to landmarks..." << std::endl;
+    lm_map = maptk::transform(lm_map, sim_transform);
+  }
+
+  //
   // Write the output PLY file
+  //
   if( config->has_value("output_ply_file") )
   {
     std::string ply_file = config->get_value<std::string>("output_ply_file");
     write_ply_file(lm_map, ply_file);
   }
 
+  //
   // Write the output POS files
+  //
   if( config->has_value("output_pos_dir") )
   {
     bfs::path pos_dir = config->get_value<std::string>("output_pos_dir");
@@ -505,7 +577,9 @@ static int maptk_main(int argc, char const* argv[])
     }
   }
 
+  //
   // Write the output KRTD files
+  //
   if( config->has_value("output_krtd_dir") )
   {
     bfs::path krtd_dir = config->get_value<std::string>("output_krtd_dir");

@@ -102,7 +102,13 @@ static int maptk_main(int argc, char const* argv[])
 
   if( argc != 3 )
   {
-    std::cerr << "Usage: "<<argv[0] <<" file.pos file.krtd"<<std::endl;
+    std::cerr << "Usage: " << argv[0] << " file.pos file.krtd" << std::endl
+              << "     : " << argv[0] << " pos_dir output_dir" << std::endl
+              << std::endl
+              << "If multiple POS files are to be converted into KRTD " << std::endl
+              << "files, it is recomended to use the directory arguments " << std::endl
+              << "in order for the application to create a unified local " << std::endl
+              << "coordinate system." << std::endl;
     return EXIT_FAILURE;
   }
 

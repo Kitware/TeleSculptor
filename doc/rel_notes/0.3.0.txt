@@ -73,6 +73,12 @@ Tools
  * When loading POS files in the bundle_adjust_tracks tools, triangulate to
    compute initial landmark positions.
 
+ * Added the use of similarity transform estimation to SBA tool when POS files
+   are input, transforming both cameras and landmarks back into the space of
+   the input POS files.
+
+ * Added optional file output to draw_tracks plot generation script.
+
 
 Fixes since v0.2.1
 ------------------
