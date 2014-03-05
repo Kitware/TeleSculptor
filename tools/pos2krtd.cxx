@@ -62,7 +62,12 @@ default_config()
 
   // general options
   config->set_value("input", "",
-                    "Input file or directory of input files.");
+                    "Input file or directory of input files.\n"
+                    "\n"
+                    "If multiple POS files are to be converted into KRTD "
+                    "files, it is recommended to use the directory arguemnts "
+                    "in order for the application to create a unitied local "
+                    "coordinate system.");
   config->set_value("output", "",
                     "Output file or directory where output files will be "
                     "placed. If a directory, output files will mirror the "
