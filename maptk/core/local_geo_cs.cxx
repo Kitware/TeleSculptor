@@ -37,15 +37,20 @@ local_geo_cs
 /// Use the pose data provided by INS to update camera pose
 void
 local_geo_cs
-::update_camera(const ins_data& ins, camera_d& cam) const
+::update_camera(const ins_data& ins, camera_d& cam,
+                rotation_d const& rot_offset) const
 {
   if( !geo_map_algo_ )
   {
     return;
   }
-  cam.set_rotation(rotation_d(ins.yaw * deg2rad,
-                              ins.pitch * deg2rad,
-                              ins.roll * deg2rad));
+
+  // Apply offset rotation specifically on the lhs of the INS
+  cam.set_rotation(rot_offset * rotation_d(ins.yaw * deg2rad,
+                                           ins.pitch * deg2rad,
+                                           ins.roll * deg2rad));
+
+  // TODO: Possibly add a positional offset optional parameter, also.
   double x,y;
   int zone;
   bool is_north_hemi;
@@ -80,7 +85,8 @@ local_geo_cs
 std::map<frame_id_t, camera_sptr>
 initialize_cameras_with_ins(const std::map<frame_id_t, ins_data>& ins_map,
                             const camera_d& base_camera,
-                            local_geo_cs& lgcs)
+                            local_geo_cs& lgcs,
+                            rotation_d const& rot_offset)
 {
   std::map<frame_id_t, camera_sptr> cam_map;
   maptk::vector_3d mean(0,0,0);
@@ -105,7 +111,7 @@ initialize_cameras_with_ins(const std::map<frame_id_t, ins_data>& ins_map,
   BOOST_FOREACH(ins_map_val_t const &p, ins_map)
   {
     const ins_data& ins = p.second;
-    lgcs.update_camera(ins, active_cam);
+    lgcs.update_camera(ins, active_cam, rot_offset);
     mean += active_cam.center();
     cam_map[p.first] = camera_sptr(new camera_d(active_cam));
   }

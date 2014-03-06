@@ -29,6 +29,9 @@ namespace maptk
  *    Thrown when the file could not be found on the file system.
  * \throws file_not_read_exception
  *    Thrown when the file could not be read or parsed for whatever reason.
+ * \throws invalid_file
+ *    Thrown when the data in the file is not sufficient to create an ins_data
+ *    object for return.
  * \throws boost::filesystem::filesystem_error
  *    Boost exception thrown if something goes wrong with the underlying file
  *    read.
