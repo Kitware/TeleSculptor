@@ -16,6 +16,7 @@
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/format.hpp>
+#include <boost/circular_buffer.hpp>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -37,6 +38,10 @@ namespace ocv
 typedef std::vector< std::pair< cv::Point, cv::Point > > line_vec_t;
 
 
+/// Helper typedef for storing past frame id offsets
+typedef std::vector< frame_id_t > fid_offset_vec_t;
+
+
 /// Private implementation class
 class draw_tracks::priv
 {
@@ -44,16 +49,16 @@ public:
 
   /// Constructor
   priv()
-  : draw_track_ids(true),
-    draw_untracked_features(true),
-    draw_match_lines(false),
-    draw_shift_lines(true),
-    pattern("feature_tracks_%1%.png")
+  : draw_track_ids( true ),
+    draw_untracked_features( true ),
+    draw_match_lines( false ),
+    draw_shift_lines( false ),
+    pattern( "feature_tracks_%1%.png" )
   {
   }
 
   /// Copy Constructor
-  priv(const priv& other)
+  priv( const priv& other )
   {
     *this = other;
   }
@@ -68,23 +73,26 @@ public:
   bool draw_untracked_features;
   bool draw_match_lines;
   bool draw_shift_lines;
-  std::vector<unsigned> past_frames_to_show;
+  fid_offset_vec_t past_frames_to_show;
   boost::format pattern;
+
+  /// Internal variables
+  boost::circular_buffer< cv::Mat > buffer;
 };
 
 
 /// Constructor
 draw_tracks
 ::draw_tracks()
-: d_(new priv)
+: d_( new priv )
 {
 }
 
 
 /// Copy constructor
 draw_tracks
-::draw_tracks(const draw_tracks& other)
-: d_(new priv(*other.d_))
+::draw_tracks( const draw_tracks& other )
+: d_( new priv( *other.d_ ) )
 {
 }
 
@@ -130,7 +138,7 @@ draw_tracks
 /// Set this algorithm's properties via a config block
 void
 draw_tracks
-::set_configuration(config_block_sptr in_config)
+::set_configuration( config_block_sptr in_config )
 {
   config_block_sptr config = this->get_configuration();
   config->merge_config( in_config );
@@ -156,6 +164,8 @@ draw_tracks
   d_->draw_match_lines = config->get_value<bool>( "draw_match_lines" );
   d_->draw_shift_lines = config->get_value<bool>( "draw_shift_lines" );
   d_->pattern = boost::format( config->get_value<std::string>( "pattern" ) );
+
+  d_->buffer.set_capacity( d_->past_frames_to_show.size() );
 }
 
 
@@ -168,36 +178,63 @@ draw_tracks
 }
 
 
-/// Helper functor for creating valid match lines for a given track
-void generate_match_lines( const track_sptr trk,
-                           const std::vector<unsigned>& ids_to_match,
-                           std::vector<line_vec_t>& out )
+/// Helper function to subtract a value from all elements in a vec
+void subtract_from_all( fid_offset_vec_t& offsets, unsigned value )
 {
-  std::assert( ids_to_match.size() == out.size() );
-
-  std::vector<unsigned> ids_to_match = d_->past_frames_to_show;
-
-  for( unsigned i = 0; i < d_->past_frames_to_show.size(); i++ )
+  for( unsigned i = 0; i < offsets.size(); i++ )
   {
-    geerate_match_lines( ids_to_match
+    offsets[i] -= value;
+  }
+}
 
-    if( i )
-    {
-      ids_to_match.pop_back();
-    }
+
+/// Helper function for creating valid match lines for a given track
+void generate_match_lines( const track_sptr trk,
+                           const frame_id_t frame_id,
+                           const fid_offset_vec_t& frame_offsets,
+                           const cv::Point& image_offset,
+                           line_vec_t& line_list )
+{
+  if( frame_offsets.empty() )
+  {
+    return;
   }
 
-  if( fid > 1 )
+  track::history_const_itr frame_itr = trk->find( frame_id );
+
+  if( frame_itr == trk->end() || !frame_itr->feat )
   {
-    track::history_const_itr itr2 = trk->find( fid-2 );
+    return;
+  }
 
-    if( itr2 != trk->end() && itr2->feat && itr == trk->end() )
+  const cv::Point frame_loc( frame_itr->feat->loc()[0], frame_itr->feat->loc()[1] );
+
+  fid_offset_vec_t rem_offsets = frame_offsets;
+
+  for( unsigned i = 0; i < frame_offsets.size(); i++ )
+  {
+    const unsigned offset_to_test = rem_offsets.back();
+    rem_offsets.pop_back();
+
+    if( offset_to_test && frame_id >= offset_to_test )
     {
-      cv::Point prior_loc( itr2->feat->loc()[0], itr2->feat->loc()[1] );
+      const frame_id_t test_frame_id = frame_id - offset_to_test;
+      track::history_const_itr test_itr = trk->find( test_frame_id );
 
-      if( d_->draw_match_lines )
+      if( test_itr != trk->end() && test_itr->feat )
       {
-        cur_to_thr_lines.push_back( std::make_pair( prior_loc, loc ) );
+        // add line
+        cv::Point test_loc( test_itr->feat->loc()[0], test_itr->feat->loc()[1] );
+        cv::Point frame_offset = static_cast<int>( frame_offsets.size() ) * image_offset;
+        cv::Point test_offset = static_cast<int>( frame_offsets.size() - i - 1 ) * image_offset;
+        line_list.push_back( std::make_pair( frame_loc + frame_offset, test_loc + test_offset ) );
+
+        // call this function recursively to pick up anymore lines
+        subtract_from_all( rem_offsets, offset_to_test );
+        generate_match_lines( trk, test_frame_id, rem_offsets, image_offset, line_list );
+
+        // break out of loop
+        return;
       }
     }
   }
@@ -218,6 +255,9 @@ draw_tracks
 
   // The total number of past frames we are showing
   const unsigned past_frames = d_->past_frames_to_show.size();
+
+  // The total number of output frames to display
+  const unsigned display_frames = past_frames + 1;
 
   // Generate output images
   frame_id_t fid = 0;
@@ -243,8 +283,8 @@ draw_tracks
       cv::cvtColor( img, img, CV_GRAY2BGR );
     }
 
-    // List of lines to draw on final image
-    std::vector< line_vec_t > lines( past_frames );
+    // List of match lines to draw on final image
+    line_vec_t lines;
 
     // Adjustment added to bring a point to a seperate window
     const cv::Point pt_adj( img.cols, 0 );
@@ -307,74 +347,43 @@ draw_tracks
       // Generate and store match lines for later use
       if( d_->draw_match_lines )
       {
-        generate_match_lines( trk, lines );
+        generate_match_lines( trk, fid, d_->past_frames_to_show, pt_adj, lines );
       }
     }
 
-    // Output image
+    // Fully generate and output the image
     std::string ofn = boost::str( d_->pattern % fid );
 
-    if( d_->display_type == priv::TRI_WINDOW )
+    cv::Mat output_image( img.rows, display_frames*img.cols, img.type(), cv::Scalar(0) );
+
+    for( unsigned i = 0; i < past_frames; i++ )
     {
-      cv::Mat unioned_image( img.rows, 3*img.cols, img.type(), cv::Scalar(0) );
+      cv::Mat region( output_image, cv::Rect( i*img.cols, 0, img.cols, img.rows ) );
 
-      cv::Mat left( unioned_image, cv::Rect( 0, 0, img.cols, img.rows ) );
-      cv::Mat middle( unioned_image, cv::Rect( img.cols, 0, img.cols, img.rows ) );
-      cv::Mat right( unioned_image, cv::Rect( 2*img.cols, 0, img.cols, img.rows ) );
-
-      if( fid > 1 )
+      if( d_->buffer.size() >= d_->past_frames_to_show[i] &&
+          d_->past_frames_to_show[i] != 0 )
       {
-        prior_images[1].copyTo( left );
+        d_->buffer[ d_->buffer.size()-d_->past_frames_to_show[i] ].copyTo( region );
       }
-      if( fid > 0 )
-      {
-        prior_images[0].copyTo( middle );
-      }
-      img.copyTo( right );
-
-      for( unsigned i = 0; i < cur_to_sec_lines.size(); i++ )
-      {
-        cv::line( unioned_image, cur_to_sec_lines[i].first + pt_adj,
-                  cur_to_sec_lines[i].second + 2*pt_adj, blue );
-      }
-      for( unsigned i = 0; i < cur_to_thr_lines.size(); i++ )
-      {
-        cv::line( unioned_image, cur_to_thr_lines[i].first,
-                  cur_to_thr_lines[i].second + 2*pt_adj, blue );
-      }
-
-      cv::imwrite( ofn.c_str(), unioned_image );
-    }
-    else if( d_->display_type == priv::DUAL_WINDOW )
-    {
-      cv::Mat unioned_image( img.rows, 2*img.cols, img.type(), cv::Scalar(0) );
-
-      cv::Mat left( unioned_image, cv::Rect( 0, 0, img.cols, img.rows ) );
-      cv::Mat right( unioned_image, cv::Rect( img.cols, 0, img.cols, img.rows ) );
-
-      if( fid > 0 )
-      {
-        prior_images[0].copyTo( left );
-      }
-      img.copyTo( right );
-
-      for( unsigned i = 0; i < cur_to_sec_lines.size(); i++ )
-      {
-        cv::line( unioned_image, cur_to_sec_lines[i].first,
-                  cur_to_sec_lines[i].second + pt_adj, blue );
-      }
-
-      cv::imwrite( ofn.c_str(), unioned_image );
-    }
-    else
-    {
-      cv::imwrite( ofn.c_str(), img );
     }
 
-    // Store last variables
-    prior_images[1] = prior_images[0];
-    prior_images[0] = img;
-    prior_lines = cur_to_sec_lines;
+    cv::Mat region( output_image, cv::Rect( past_frames*img.cols, 0, img.cols, img.rows ) );
+    img.copyTo( region );
+
+    for( unsigned i = 0; i < lines.size(); i++ )
+    {
+      cv::line( output_image, lines[i].first, lines[i].second, blue );
+    }
+
+    cv::imwrite( ofn.c_str(), output_image );
+
+    // Store last image with all features and shift lines already drawn on it
+    if( d_->buffer.capacity() > 0 )
+    {
+      d_->buffer.push_back( img );
+    }
+
+    // Increase frame id counter
     fid++;
   }
 }
