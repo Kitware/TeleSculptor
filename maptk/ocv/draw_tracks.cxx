@@ -26,6 +26,7 @@
 #include <fstream>
 #include <iostream>
 #include <iomanip>
+#include <algorithm>
 
 namespace maptk
 {
@@ -165,7 +166,11 @@ draw_tracks
   d_->draw_shift_lines = config->get_value<bool>( "draw_shift_lines" );
   d_->pattern = boost::format( config->get_value<std::string>( "pattern" ) );
 
-  d_->buffer.set_capacity( d_->past_frames_to_show.size() );
+  if( !d_->past_frames_to_show.empty() )
+  {
+    d_->buffer.set_capacity( *max_element( d_->past_frames_to_show.begin(),
+                                           d_->past_frames_to_show.end()) );
+  }
 }
 
 
