@@ -282,11 +282,40 @@ std::istream&  operator>>(std::istream& s, rotation_<T>& r)
 }
 
 
+/// Generate a rotation vector that, when applied to A N times, produces B.
+template <typename T>
+rotation_<T>
+interpolate_rotation(rotation_<T> const& A, rotation_<T> const& B, double f)
+{
+  // rotation from A -> B
+  rotation_<T> C = A.inverse() * B;
+  // Reduce the angle of rotation by the fraction provided
+  return A * rotation_<T>(C.angle() * f, C.axis());
+}
+
+
+/// Generate N evenly interpolated rotations inbetween \c A and \c B.
+template <typename T>
+void
+interpolated_rotations(rotation_<T> const& A, rotation_<T> const& B, size_t n, std::vector< rotation_<T> > & interp_rots)
+{
+  interp_rots.reserve(interp_rots.capacity() + n);
+  double denom = n + 1;
+  for (double i=1; i<denom; ++i)
+  {
+    interp_rots.push_back(interpolate_rotation<T>(A, B, i / denom));
+  }
+}
+
+
 /// \cond DoxygenSuppress
 #define INSTANTIATE_ROTATION(T) \
 template class MAPTK_CORE_EXPORT rotation_<T>; \
 template MAPTK_CORE_EXPORT std::ostream&  operator<<(std::ostream& s, const rotation_<T>& r); \
-template MAPTK_CORE_EXPORT std::istream&  operator>>(std::istream& s, rotation_<T>& r)
+template MAPTK_CORE_EXPORT std::istream&  operator>>(std::istream& s, rotation_<T>& r); \
+template MAPTK_CORE_EXPORT rotation_<T> interpolate_rotation(rotation_<T> const& A, rotation_<T> const& B, double f); \
+template MAPTK_CORE_EXPORT void \
+interpolated_rotations(rotation_<T> const& A, rotation_<T> const& B, size_t n, std::vector< rotation_<T> > & interp_rots)
 
 INSTANTIATE_ROTATION(double);
 INSTANTIATE_ROTATION(float);

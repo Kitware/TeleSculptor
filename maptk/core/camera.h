@@ -212,6 +212,20 @@ template <typename T>
 MAPTK_CORE_EXPORT std::istream& operator>>(std::istream& s, camera_<T>& c);
 
 
+/// Genrated an interpolated camera between \c A and \c B by a given fraction \c f
+/**
+ * \c f should be 0 < \c f < 1. A value outside this range is valid, but \c f
+ * must not be 0.
+ *
+ * \param A Camera to interpolate from.
+ * \param B Camera to interpolate to.
+ * \param f Decimal fraction in between A and B for the returned camera to represent.
+ */
+template <typename T>
+MAPTK_CORE_EXPORT
+camera_<T> interpolate_camera(camera_<T> const& A, camera_<T> const& B, T f);
+
+
 } // end namespace maptk
 
 

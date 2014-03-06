@@ -11,6 +11,8 @@
 
 #include <test_common.h>
 
+#include <iostream>
+#include <boost/math/constants/constants.hpp>
 #include <maptk/core/camera.h>
 
 #define TEST_ARGS ()
@@ -69,4 +71,30 @@ IMPLEMENT_TEST(projection)
 
   TEST_NEAR("camera projection = matrix multiplication",
              (cam.project(test_pt) - proj_pt).magnitude(), 0.0, 1e-12);
+}
+
+
+IMPLEMENT_TEST(interpolation)
+{
+  using namespace maptk;
+  using namespace std;
+
+  camera_d a(vector_3d(-1, -1, -1),
+             rotation_d(vector_4d(0, 0, 0, 1))),  // no rotation
+           b(vector_3d(3, 3, 3),
+             rotation_d(vector_4d(0, 1, 0, 0))),  // flipped over y-axis
+           c;
+  c = interpolate_camera(a, b, 0.5);
+  double pi = boost::math::constants::pi<double>();
+
+  cerr << "c.center  : " << c.center() << endl;
+  TEST_NEAR("c.center.x", c.center().x(), 1, 1e-16);
+  TEST_NEAR("c.center.y", c.center().y(), 1, 1e-16);
+  TEST_NEAR("c.center.z", c.center().z(), 1, 1e-16);
+
+  cerr << "c.rotation: " << c.rotation().axis() << ' ' << c.rotation().angle() << endl;
+  TEST_NEAR("c.rotation.axis.x", c.rotation().axis().x(), 0, 1e-16);
+  TEST_NEAR("c.rotation.axis.x", c.rotation().axis().x(), 0, 1e-16);
+  TEST_NEAR("c.rotation.axis.x", c.rotation().axis().x(), 0, 1e-16);
+  TEST_NEAR("c.rotation.angle" , c.rotation().angle()   , pi / 2, 1e-16);
 }

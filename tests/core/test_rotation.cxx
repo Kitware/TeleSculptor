@@ -11,7 +11,14 @@
 
 #include <test_common.h>
 
+#include <iostream>
+#include <vector>
+
 #include <maptk/core/rotation.h>
+
+#include <boost/foreach.hpp>
+#include <boost/math/constants/constants.hpp>
+
 
 #define TEST_ARGS ()
 
@@ -192,4 +199,51 @@ IMPLEMENT_TEST(compose)
   TEST_NEAR("Matrix multiplication matches quaternion composition",
             (quat_comp_rot - mat_comp_rot).frobenius_norm(),
             0.0, 1e-14);
+}
+
+
+IMPLEMENT_TEST(interpolation)
+{
+  using namespace maptk;
+
+  rotation_d x(vector_4d(0, 0, 0, 1)),
+             y(vector_4d(0, 1, 0, 0)),
+             z;
+  z = interpolate_rotation(x, y, 0.5);
+  double pi = boost::math::constants::pi<double>();
+
+  using namespace std;
+  cerr << "x: " << x.axis() << " " << x.angle() << endl
+       << "y: " << y.axis() << " " << y.angle() << endl
+       << "z: " << z.axis() << " " << z.angle() << endl;
+
+  TEST_NEAR("z-axis 0", z.axis()[0], y.axis()[0], 1e-16);
+  TEST_NEAR("z-axis 1", z.axis()[1], y.axis()[1], 1e-16);
+  TEST_NEAR("z-axis 2", z.axis()[2], y.axis()[2], 1e-16);
+  TEST_NEAR("z-angle", z.angle(), pi / 2, 1e-16);
+}
+
+
+IMPLEMENT_TEST(multiple_interpolations)
+{
+  using namespace maptk;
+  using namespace std;
+
+  rotation_d x(vector_4d(0, 0, 0, 1)),
+             y(vector_4d(0, 1, 0, 0));
+  vector<rotation_d> rots;
+
+  rots.push_back(x);
+  interpolated_rotations(x, y, 3, rots);
+  rots.push_back(y);
+
+  cerr << "Vector size: " << rots.size() << endl;
+  BOOST_FOREACH(rotation_d rot, rots)
+  {
+    cerr << "\t" << rot << endl;
+  }
+
+  cerr << "t .25 : " << interpolate_rotation(x, y, 0.25) << endl;
+  cerr << "t .50 : " << interpolate_rotation(x, y, 0.50) << endl;
+  cerr << "t .75 : " << interpolate_rotation(x, y, 0.75) << endl;
 }

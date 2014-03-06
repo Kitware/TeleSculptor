@@ -131,11 +131,41 @@ std::istream&  operator>>(std::istream& s, camera_<T>& k)
 }
 
 
+/// Genrated an interpolated camera between \c A and \c B by a given fraction \c f
+template <typename T>
+camera_<T> interpolate_camera(camera_<T> const& A, camera_<T> const& B, T f)
+{
+  T f1 = 1.0 - f;
+
+  // interpolate intrinsics
+  camera_intrinsics_<T> k1 = A.get_intrinsics(),
+                        k2 = B.get_intrinsics(),
+                        k;
+
+  T focal_len = f1*k1.focal_length() + f*k2.focal_length();
+  vector_<2,T> principle_point = f1*k1.principal_point() + f*k2.principal_point();
+  T aspect_ratio = f1*k1.aspect_ratio() + f*k2.aspect_ratio();
+  T skew = f1*k1.skew() + f*k2.skew();
+  k = camera_intrinsics_<T>(focal_len, principle_point, aspect_ratio, skew);
+
+  // interpolate center
+  vector_3_<T> c = f1*A.get_center() + f*B.get_center();
+
+  // interpolate rotation
+  rotation_<T> R = interpolate_rotation(A.get_rotation(), B.get_rotation(), f);
+
+  return camera_<T>(c, R, k);
+}
+
+
 /// \cond DoxygenSuppress
 #define INSTANTIATE_CAMERA(T) \
 template class MAPTK_CORE_EXPORT camera_<T>; \
 template MAPTK_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const camera_<T>& c); \
-template MAPTK_CORE_EXPORT std::istream& operator>>(std::istream& s, camera_<T>& c)
+template MAPTK_CORE_EXPORT std::istream& operator>>(std::istream& s, camera_<T>& c); \
+template MAPTK_CORE_EXPORT camera_<T> interpolate_camera(camera_<T> const& A, \
+                                                         camera_<T> const& B, \
+                                                         T f)
 
 INSTANTIATE_CAMERA(double);
 INSTANTIATE_CAMERA(float);
