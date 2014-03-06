@@ -120,6 +120,7 @@ analyze_tracks
   std::string ftc = config->get_value<std::string>( "frames_to_compare" );
 
   std::stringstream ss(ftc);
+  d_->frames_to_compare.clear();
 
   int next_int;
 

@@ -33,6 +33,10 @@ namespace ocv
 {
 
 
+/// Helper typedef for storing match lines between frames
+typedef std::vector< std::pair< cv::Point, cv::Point > > line_vec_t;
+
+
 /// Private implementation class
 class draw_tracks::priv
 {
@@ -108,7 +112,8 @@ draw_tracks
                      "to any past frames." );
   config->set_value( "draw_shift_lines", d_->draw_shift_lines,
                      "Draw lines showing the movement of the feature in the image "
-                     "plane from the last frame to the current one." );
+                     "plane from the last frame to the current one drawn on every "
+                     "single image individually." );
   config->set_value( "past_frames_to_show", "",
                      "A comma seperated list of past frames to show. For example: "
                      "a value of \"2, 1\" will cause the GUI to generate a window "
@@ -133,6 +138,7 @@ draw_tracks
   std::string past_frames_str = config->get_value<std::string>( "past_frames_to_show" );
 
   std::stringstream ss( past_frames_str );
+  d_->past_frames_to_show.clear();
 
   unsigned next_int;
   while( ss >> next_int )
@@ -162,14 +168,48 @@ draw_tracks
 }
 
 
+/// Helper functor for creating valid match lines for a given track
+void generate_match_lines( const track_sptr trk,
+                           const std::vector<unsigned>& ids_to_match,
+                           std::vector<line_vec_t>& out )
+{
+  std::assert( ids_to_match.size() == out.size() );
+
+  std::vector<unsigned> ids_to_match = d_->past_frames_to_show;
+
+  for( unsigned i = 0; i < d_->past_frames_to_show.size(); i++ )
+  {
+    geerate_match_lines( ids_to_match
+
+    if( i )
+    {
+      ids_to_match.pop_back();
+    }
+  }
+
+  if( fid > 1 )
+  {
+    track::history_const_itr itr2 = trk->find( fid-2 );
+
+    if( itr2 != trk->end() && itr2->feat && itr == trk->end() )
+    {
+      cv::Point prior_loc( itr2->feat->loc()[0], itr2->feat->loc()[1] );
+
+      if( d_->draw_match_lines )
+      {
+        cur_to_thr_lines.push_back( std::make_pair( prior_loc, loc ) );
+      }
+    }
+  }
+}
+
+
 /// Output images with tracked features drawn on them
 void
 draw_tracks
 ::draw(track_set_sptr track_set,
        image_container_sptr_list image_data) const
 {
-  typedef std::vector< std::pair< cv::Point, cv::Point > > line_vec_t;
-
   // Validate inputs
   if( image_data.size() < track_set->last_frame() )
   {
@@ -259,7 +299,7 @@ draw_tracks
 
           if( d_->draw_shift_lines )
           {
-            cv::line( img, prior_loc, loc, blue );
+            cv::line( img, prior_loc, loc, color );
           }
         }
       }
@@ -267,21 +307,7 @@ draw_tracks
       // Generate and store match lines for later use
       if( d_->draw_match_lines )
       {
-        for( unsigned i = 0;
-        if( fid > 1 )
-        {
-          track::history_const_itr itr2 = trk->find( fid-2 );
-
-          if( itr2 != trk->end() && itr2->feat && itr == trk->end() )
-          {
-            cv::Point prior_loc( itr2->feat->loc()[0], itr2->feat->loc()[1] );
-
-            if( d_->draw_match_lines )
-            {
-              cur_to_thr_lines.push_back( std::make_pair( prior_loc, loc ) );
-            }
-          }
-        }
+        generate_match_lines( trk, lines );
       }
     }
 
