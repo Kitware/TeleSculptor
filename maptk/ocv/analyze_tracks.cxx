@@ -169,7 +169,7 @@ analyze_tracks
     stream << std::endl;
     stream << "        Percent of Features Tracked Matrix         " << std::endl;
     stream << "---------------------------------------------------" << std::endl;
-    stream << "(FrameID) (NumTrks) (%TrkFromID " << std::endl;
+    stream << "(FrameID) (NumTrks) (%TrkFromID ";
 
     for( unsigned i = 0; i < d_->frames_to_compare.size(); i++ )
     {
