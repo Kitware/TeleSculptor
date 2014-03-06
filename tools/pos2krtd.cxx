@@ -135,13 +135,13 @@ check_config(maptk::config_block_sptr config)
            output = config->get_value<path_t>("output");
     if (bfs::exists(output))
     {
-      if (bfs::is_directory(input) and !bfs::is_directory(output))
+      if (bfs::is_directory(input) && !bfs::is_directory(output))
       {
         MAPTK_CHECK_FAIL("Output given exists but is not a directory! "
                          "Input was a directory, so output must also be a "
                          "directory.");
       }
-      else if (!bfs::is_directory(input) and bfs::is_directory(output))
+      else if (!bfs::is_directory(input) && bfs::is_directory(output))
       {
         MAPTK_CHECK_FAIL("Input was a file, but given output path is a "
                          "directory!");
