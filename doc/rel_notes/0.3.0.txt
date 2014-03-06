@@ -1,6 +1,13 @@
 MAPTK v0.3.0 Release Notes
 ==========================
 
+This is a minor release of MAPTK that provides both new functionality and fixes
+over the previous v0.2.1 release.  The primary contributions of this release
+are initial GPU feature tracking via VisCL, local loop closure (shot stitching)
+across bad frames, triangulation to initialize SBA, estimation and application
+of similarity transformation to align SBA cameras with POS cameras, and
+additional analysis tools for visualizing and computing statistics on tracks.
+
 
 Updates since v0.2.1
 --------------------
@@ -36,7 +43,7 @@ Core Library
  * Added several helper functions to track_set class.
 
  * Added a convert_image algorithm so that an image conversion between different
-   formats can be pre-computed.  This is important for non trivial image
+   formats can be pre-computed.  This is important for non-trivial image
    conversions (e.g. sending image to GPU) to prevent them from occuring
    multiple times on the same image.
 
@@ -74,7 +81,7 @@ VXL Library
 
 Tests
 
- * Factored out some reuseable test functions into common header files.
+ * Factored out some reusable test functions into common header files.
 
  * Added tests for VXL similarity transform estimation
 
