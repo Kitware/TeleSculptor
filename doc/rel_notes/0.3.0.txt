@@ -46,6 +46,10 @@ Core Library
  * Added additional error robustness to INS I/O operations (specifically the
    input stream and reading operations).
 
+ * Added a new close_loops base class for current and future loop closure work.
+   Currently it just contains 1 simple implementation aimed at stitching over
+   bad frames in the input data.
+
 VCL Library
 
  * Added implementation of GPU feature detector.
@@ -89,6 +93,10 @@ Tools
 
  * Added configuration options for both SBA and pos2krtd tools to specify a
    rotational offset for input POS file (INS data) via a quaternion.
+
+ * Added an analyze_tracks tool which serves two purposes: drawing feature
+   point tracks on input imagery, in addition to outputting various statistics
+   about feature tracks.
 
 
 Fixes since v0.2.1

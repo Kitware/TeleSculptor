@@ -32,6 +32,7 @@ namespace maptk
 namespace algo
 {
 
+
 /// Default Constructor
 track_features_default
 ::track_features_default()
@@ -46,6 +47,7 @@ track_features_default
 : next_track_id_(other.next_track_id_)
 {
 }
+
 
 /// Get this alg's \link maptk::config_block configuration block \endlink
 config_block_sptr
@@ -65,8 +67,12 @@ track_features_default
   // - Feature Matcher algorithm
   match_features::get_nested_algo_configuration("feature_matcher", config, matcher_);
 
+  // - Loop closure algorithm
+  close_loops::get_nested_algo_configuration("loop_closer", config, closer_);
+
   return config;
 }
+
 
 /// Set this algo's properties via a config block
 void
@@ -91,7 +97,12 @@ track_features_default
   match_features_sptr mf;
   match_features::set_nested_algo_configuration("feature_matcher", config, mf);
   matcher_ = mf;
+
+  close_loops_sptr cl;
+  close_loops::set_nested_algo_configuration("loop_closer", config, cl);
+  closer_ = cl;
 }
+
 
 bool
 track_features_default
@@ -103,6 +114,8 @@ track_features_default
     extract_descriptors::check_nested_algo_configuration("descriptor_extractor", config)
     &&
     match_features::check_nested_algo_configuration("feature_matcher", config)
+    &&
+    close_loops::check_nested_algo_configuration("loop_closer", config)
   );
 }
 
@@ -115,7 +128,7 @@ track_features_default
         image_container_sptr image_data) const
 {
   // verify that all dependent algorithms have been initialized
-  if( !detector_ || !extractor_ || !matcher_ )
+  if( !detector_ || !extractor_ || !matcher_ || !closer_ )
   {
     return track_set_sptr();
   }
@@ -181,7 +194,7 @@ track_features_default
     all_tracks.back()->set_id(this->next_track_id_++);
   }
 
-  return track_set_sptr(new simple_track_set(all_tracks));
+  return closer_->stitch(frame_number, track_set_sptr(new simple_track_set(all_tracks)));
 }
 
 

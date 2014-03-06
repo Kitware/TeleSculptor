@@ -81,6 +81,26 @@ track_set
 }
 
 
+/// Return the first (smallest) frame number containing tracks
+frame_id_t
+track_set
+::first_frame() const
+{
+  frame_id_t first_frame = 0;
+  const std::vector<track_sptr> all_tracks = this->tracks();
+
+  BOOST_FOREACH(track_sptr t, all_tracks)
+  {
+    if( t->first_frame() < first_frame )
+    {
+      first_frame = t->first_frame();
+    }
+  }
+
+  return first_frame;
+}
+
+
 /// Return all tracks active on a frame.
 track_set_sptr
 track_set

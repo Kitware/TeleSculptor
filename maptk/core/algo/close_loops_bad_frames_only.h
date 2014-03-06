@@ -1,27 +1,24 @@
 /*ckwg +5
- * Copyright 2013-2014 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
 /**
  * \file
- * \brief Header defining the \link maptk::algo::track_features_default
- *        track_features_default \endlink algorithm
+ * \brief Header defining the \link maptk::algo::close_loops_bad_frames_only
+ *        close_loops_bad_frames_only \endlink algorithm
  */
 
-#ifndef MAPTK_ALGO_TRACK_FEATURES_DEFAULT_H_
-#define MAPTK_ALGO_TRACK_FEATURES_DEFAULT_H_
+#ifndef MAPTK_ALGO_CLOSE_LOOPS_BAD_FRAMES_ONLY_H_
+#define MAPTK_ALGO_CLOSE_LOOPS_BAD_FRAMES_ONLY_H_
 
 #include <maptk/core/core_config.h>
 
 #include <boost/shared_ptr.hpp>
 
 #include <maptk/core/algo/algorithm.h>
-#include <maptk/core/algo/detect_features.h>
-#include <maptk/core/algo/extract_descriptors.h>
 #include <maptk/core/algo/match_features.h>
-#include <maptk/core/algo/track_features.h>
 #include <maptk/core/algo/close_loops.h>
 #include <maptk/core/image_container.h>
 #include <maptk/core/track_set.h>
@@ -33,20 +30,29 @@ namespace maptk
 namespace algo
 {
 
-/// A basic feature tracker
-class MAPTK_CORE_EXPORT track_features_default
-  : public algo::algorithm_impl<track_features_default, track_features>
+/// Attempts to stitch over incomplete or bad input frames.
+/**
+ * This class attempts to only make short term loop closures
+ * due to bad or incomplete. It operates on the principle
+ * that when a bad frame occurs, there is generally a lower
+ * percentage of feature tracks.
+ */
+class MAPTK_CORE_EXPORT close_loops_bad_frames_only
+  : public algo::algorithm_impl<close_loops_bad_frames_only, close_loops>
 {
 public:
 
   /// Default Constructor
-  track_features_default();
+  close_loops_bad_frames_only();
 
   /// Copy Constructor
-  track_features_default(const track_features_default&);
+  close_loops_bad_frames_only(const close_loops_bad_frames_only&);
+
+  /// Destructor
+  virtual ~close_loops_bad_frames_only() {}
 
   /// Return the name of this implementation
-  std::string impl_name() const { return "default"; }
+  std::string impl_name() const { return "bad_frames_only"; }
 
   /// Get this algorithm's \link maptk::config_block configuration block \endlink
   /**
@@ -83,35 +89,32 @@ public:
    */
   virtual bool check_configuration(config_block_sptr config) const;
 
-  /// Extend a previous set of tracks using the current frame
+  /// Perform basic shot stitching for bad frame detection
   /**
-   * \param [in] prev_tracks the tracks from previous tracking steps
    * \param [in] frame_number the frame number of the current frame
-   * \param [in] image_data the image pixels for the current frame
-   * \returns an updated set a tracks including the current frame
+   * \param [in] input the input track set to stitch
+   * \returns an updated set a tracks after the stitching operation
    */
   virtual track_set_sptr
-  track(track_set_sptr prev_tracks,
-        unsigned int frame_number,
-        image_container_sptr image_data) const;
+  stitch( frame_id_t frame_number,
+          track_set_sptr input ) const;
 
+protected:
 
-private:
+  /// Is bad frame detection enabled?
+  bool bf_detection_enabled_;
 
-  /// The feature detector algorithm to use
-  detect_features_sptr detector_;
+  /// Stitching percent feature match required
+  double bf_detection_percent_match_req_;
 
-  /// The descriptor extractor algorithm to use
-  extract_descriptors_sptr extractor_;
+  /// Stitching required new valid shot size in frames
+  unsigned bf_detection_new_shot_length_;
+
+  /// Max search length for bad frame detection in frames
+  unsigned bf_detection_max_search_length_;
 
   /// The feature matching algorithm to use
   match_features_sptr matcher_;
-
-  /// The loop closure algorithm to use
-  close_loops_sptr closer_;
-
-  /// The ID to use for the next created track
-  mutable unsigned long next_track_id_;
 
 };
 
@@ -121,4 +124,4 @@ private:
 } // end namespace maptk
 
 
-#endif // MAPTK_ALGO_TRACK_FEATURES_H_
+#endif // MAPTK_ALGO_CLOSE_LOOPS_BAD_FRAMES_ONLY_H_

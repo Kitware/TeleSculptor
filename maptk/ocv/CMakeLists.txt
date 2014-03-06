@@ -1,8 +1,10 @@
 # maptk/ocv
 
 set(maptk_ocv_headers_public
+  analyze_tracks.h
   descriptor_set.h
   detect_features.h
+  draw_tracks.h
   estimate_homography.h
   extract_descriptors.h
   feature_set.h
@@ -18,8 +20,10 @@ set(maptk_ocv_headers_public
   )
 
 set(maptk_ocv_sources
+  analyze_tracks.cxx
   descriptor_set.cxx
   detect_features.cxx
+  draw_tracks.cxx
   estimate_homography.cxx
   extract_descriptors.cxx
   feature_set.cxx

@@ -15,6 +15,9 @@
 #include <maptk/ocv/estimate_homography.h>
 #include <maptk/ocv/extract_descriptors.h>
 #include <maptk/ocv/match_features.h>
+#include <maptk/ocv/draw_tracks.h>
+#include <maptk/ocv/analyze_tracks.h>
+
 #include <opencv2/nonfree/nonfree.hpp>
 
 namespace maptk
@@ -27,10 +30,12 @@ namespace ocv
 void register_algorithms()
 {
   cv::initModule_nonfree();
-  ocv::image_io::register_self();
+  ocv::analyze_tracks::register_self();
   ocv::detect_features::register_self();
+  ocv::draw_tracks::register_self();
   ocv::estimate_homography::register_self();
   ocv::extract_descriptors::register_self();
+  ocv::image_io::register_self();
   ocv::match_features::register_self();
 }
 
