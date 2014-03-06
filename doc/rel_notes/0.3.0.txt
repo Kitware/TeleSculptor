@@ -1,6 +1,13 @@
 MAPTK v0.3.0 Release Notes
 ==========================
 
+This is a minor release of MAPTK that provides both new functionality and fixes
+over the previous v0.2.1 release.  The primary contributions of this release
+are initial GPU feature tracking via VisCL, local loop closure (shot stitching)
+across bad frames, triangulation to initialize SBA, estimation and application
+of similarity transformation to align SBA cameras with POS cameras, and
+additional analysis tools for visualizing and computing statistics on tracks.
+
 
 Updates since v0.2.1
 --------------------
