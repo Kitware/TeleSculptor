@@ -36,7 +36,7 @@ Core Library
  * Added several helper functions to track_set class.
 
  * Added a convert_image algorithm so that an image conversion between different
-   formats can be pre-computed.  This is important for non trivial image
+   formats can be pre-computed.  This is important for non-trivial image
    conversions (e.g. sending image to GPU) to prevent them from occuring
    multiple times on the same image.
 
@@ -74,7 +74,7 @@ VXL Library
 
 Tests
 
- * Factored out some reuseable test functions into common header files.
+ * Factored out some reusable test functions into common header files.
 
  * Added tests for VXL similarity transform estimation
 
