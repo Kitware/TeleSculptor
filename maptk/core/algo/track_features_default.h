@@ -108,7 +108,7 @@ private:
   match_features_sptr matcher_;
 
   /// The loop closure algorithm to use
-  close_loops_sptr stitcher_;
+  close_loops_sptr closer_;
 
   /// The ID to use for the next created track
   mutable unsigned long next_track_id_;

@@ -30,8 +30,13 @@ namespace maptk
 namespace algo
 {
 
-/// A basic close_loops implementation which aims at simply stitching
-/// over periods of "bad frames" in the input data.
+/// Attempts to stitch over incomplete or bad input frames.
+/**
+ * This class attempts to only make short term loop closures
+ * due to bad or incomplete. It operates on the principle
+ * that when a bad frame occurs, there is generally a lower
+ * percentage of feature tracks.
+ */
 class MAPTK_CORE_EXPORT close_loops_bad_frames_only
   : public algo::algorithm_impl<close_loops_bad_frames_only, close_loops>
 {

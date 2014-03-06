@@ -111,14 +111,10 @@ close_loops_bad_frames_only
 
   // Settings for bad frame detection
   bf_detection_enabled_ = config->get_value<bool>("bf_detection_enabled");
-
-  if( bf_detection_enabled_ )
-  {
-    bf_detection_percent_match_req_ = config->get_value<double>("bf_detection_percent_match_req");
-    bf_detection_max_search_length_ = config->get_value<unsigned>("bf_detection_max_search_length");
-    bf_detection_new_shot_length_ = config->get_value<unsigned>("bf_detection_new_shot_length");
-    bf_detection_new_shot_length_ = ( bf_detection_new_shot_length_ ? bf_detection_new_shot_length_ : 1 );
-  }
+  bf_detection_percent_match_req_ = config->get_value<double>("bf_detection_percent_match_req");
+  bf_detection_max_search_length_ = config->get_value<unsigned>("bf_detection_max_search_length");
+  bf_detection_new_shot_length_ = config->get_value<unsigned>("bf_detection_new_shot_length");
+  bf_detection_new_shot_length_ = ( bf_detection_new_shot_length_ ? bf_detection_new_shot_length_ : 1 );
 }
 
 

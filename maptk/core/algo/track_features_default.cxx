@@ -68,7 +68,7 @@ track_features_default
   match_features::get_nested_algo_configuration("feature_matcher", config, matcher_);
 
   // - Loop closure algorithm
-  close_loops::get_nested_algo_configuration("loop_closer", config, stitcher_);
+  close_loops::get_nested_algo_configuration("loop_closer", config, closer_);
 
   return config;
 }
@@ -100,7 +100,7 @@ track_features_default
 
   close_loops_sptr cl;
   close_loops::set_nested_algo_configuration("loop_closer", config, cl);
-  stitcher_ = cl;
+  closer_ = cl;
 }
 
 
@@ -128,7 +128,7 @@ track_features_default
         image_container_sptr image_data) const
 {
   // verify that all dependent algorithms have been initialized
-  if( !detector_ || !extractor_ || !matcher_ || !stitcher_ )
+  if( !detector_ || !extractor_ || !matcher_ || !closer_ )
   {
     return track_set_sptr();
   }
@@ -194,7 +194,7 @@ track_features_default
     all_tracks.back()->set_id(this->next_track_id_++);
   }
 
-  return stitcher_->stitch(frame_number, track_set_sptr(new simple_track_set(all_tracks)));
+  return closer_->stitch(frame_number, track_set_sptr(new simple_track_set(all_tracks)));
 }
 
 

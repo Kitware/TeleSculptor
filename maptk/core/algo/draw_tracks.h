@@ -19,8 +19,8 @@
 
 /**
  * \file
- * \brief Header defining abstract \link maptk::algo::draw_tracks track
- *        drawr \endlink algorithm
+ * \brief Header defining an abstract \link maptk::algo::draw_tracks track
+ *        drawing \endlink algorithm
  */
 
 namespace maptk
