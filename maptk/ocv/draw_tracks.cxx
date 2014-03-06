@@ -168,8 +168,8 @@ draw_tracks
 
   if( !d_->past_frames_to_show.empty() )
   {
-    d_->buffer.set_capacity( *max_element( d_->past_frames_to_show.begin(),
-                                           d_->past_frames_to_show.end()) );
+    d_->buffer.set_capacity( *std::max_element( d_->past_frames_to_show.begin(),
+                                                d_->past_frames_to_show.end()) );
   }
 }
 
