@@ -212,7 +212,8 @@ void generate_match_lines( const track_sptr trk,
     return;
   }
 
-  const cv::Point frame_loc( frame_itr->feat->loc()[0], frame_itr->feat->loc()[1] );
+  const cv::Point frame_loc( static_cast<int>(frame_itr->feat->loc()[0]),
+                             static_cast<int>(frame_itr->feat->loc()[1]) );
 
   fid_offset_vec_t rem_offsets = frame_offsets;
 
@@ -229,7 +230,8 @@ void generate_match_lines( const track_sptr trk,
       if( test_itr != trk->end() && test_itr->feat )
       {
         // add line
-        cv::Point test_loc( test_itr->feat->loc()[0], test_itr->feat->loc()[1] );
+        cv::Point test_loc( static_cast<int>(test_itr->feat->loc()[0]),
+                            static_cast<int>(test_itr->feat->loc()[1]) );
         cv::Point frame_offset = static_cast<int>( frame_offsets.size() ) * image_offset;
         cv::Point test_offset = static_cast<int>( frame_offsets.size() - i - 1 ) * image_offset;
         line_list.push_back( std::make_pair( frame_loc + frame_offset, test_loc + test_offset ) );
@@ -259,7 +261,7 @@ draw_tracks
   }
 
   // The total number of past frames we are showing
-  const unsigned past_frames = d_->past_frames_to_show.size();
+  const unsigned past_frames = static_cast<unsigned>(d_->past_frames_to_show.size());
 
   // The total number of output frames to display
   const unsigned display_frames = past_frames + 1;
@@ -306,7 +308,8 @@ draw_tracks
 
       // Handle drawing the feature point on the image
       cv::Scalar color = blue;
-      cv::Point loc( ts.feat->loc()[0], ts.feat->loc()[1] );
+      cv::Point loc( static_cast<int>(ts.feat->loc()[0]),
+                     static_cast<int>(ts.feat->loc()[1]) );
       cv::Point txt_offset( 2, -2 );
       std::string tid_str = boost::lexical_cast<std::string>( trk->id() );
 
@@ -340,7 +343,8 @@ draw_tracks
 
         if( itr != trk->end() && itr->feat )
         {
-          cv::Point prior_loc( itr->feat->loc()[0], itr->feat->loc()[1] );
+          cv::Point prior_loc( static_cast<int>(itr->feat->loc()[0]),
+                               static_cast<int>(itr->feat->loc()[1]) );
 
           if( d_->draw_shift_lines )
           {

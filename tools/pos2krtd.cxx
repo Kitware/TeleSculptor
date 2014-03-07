@@ -228,7 +228,7 @@ bool convert_pos2krtd_dir(const maptk::path_t& pos_dir,
       ins_map[frame] = ins;
       krtd_filenames.push_back(krtd_filename.string());
     }
-    catch (maptk::invalid_file const& e)
+    catch (maptk::invalid_file const& /*e*/)
     {
       std::cerr << "-> Skipping invalid file: " << p << std::endl;
     }
@@ -287,7 +287,9 @@ static int maptk_main(int argc, char const* argv[])
   }
   catch (bpo::unknown_option const& e)
   {
-    std::cerr << "Usage: " << argv[0] << " file.pos file.krtd" << std::endl
+    std::cerr << e.what() << std::endl
+              << std::endl
+              << "Usage: " << argv[0] << " file.pos file.krtd" << std::endl
               << "     : " << argv[0] << " pos_dir output_dir" << std::endl
               << std::endl
               << "If multiple POS files are to be converted into KRTD " << std::endl

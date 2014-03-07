@@ -191,7 +191,7 @@ close_loops_bad_frames_only
                                           stitch_frame_set->frame_descriptors( frame_to_stitch ));
 
     // test matcher results
-    unsigned total_features = test_frame_set->size() + stitch_frame_set->size();
+    unsigned total_features = static_cast<unsigned>(test_frame_set->size() + stitch_frame_set->size());
 
     if( 2*mset->size() >= static_cast<unsigned>(bf_detection_percent_match_req_*total_features) )
     {
