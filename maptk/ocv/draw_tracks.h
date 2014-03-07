@@ -48,7 +48,7 @@ public:
   /// Check that the algorithm's currently configuration is valid
   virtual bool check_configuration(config_block_sptr config) const;
 
-  /// Write features tracks on top of the input images.
+  /// Draw feature tracks on top of the input images.
   /**
    * \param [in] track_set the tracks to analyze
    * \param [in] image_data a list of images the tracks were computed on
