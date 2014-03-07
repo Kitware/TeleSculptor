@@ -206,21 +206,21 @@ IMPLEMENT_TEST(interpolation)
 {
   using namespace maptk;
 
-  rotation_d x(vector_4d(0, 0, 0, 1)),
-             y(vector_4d(0, 1, 0, 0)),
+  double pi = boost::math::constants::pi<double>();
+  rotation_d x(0, vector_3d(1, 0, 0)),
+             y(pi / 2, vector_3d(0, 1, 0)),
              z;
   z = interpolate_rotation(x, y, 0.5);
-  double pi = boost::math::constants::pi<double>();
 
   using namespace std;
   cerr << "x: " << x.axis() << " " << x.angle() << endl
        << "y: " << y.axis() << " " << y.angle() << endl
        << "z: " << z.axis() << " " << z.angle() << endl;
 
-  TEST_NEAR("z-axis 0", z.axis()[0], y.axis()[0], 1e-16);
-  TEST_NEAR("z-axis 1", z.axis()[1], y.axis()[1], 1e-16);
-  TEST_NEAR("z-axis 2", z.axis()[2], y.axis()[2], 1e-16);
-  TEST_NEAR("z-angle", z.angle(), pi / 2, 1e-16);
+  TEST_NEAR("z-axis 0", z.axis()[0], 0, 1e-15);
+  TEST_NEAR("z-axis 1", z.axis()[1], 1, 1e-15);
+  TEST_NEAR("z-axis 2", z.axis()[2], 0, 1e-15);
+  TEST_NEAR("z-angle",  z.angle(), pi / 4, 1e-15);
 }
 
 
@@ -229,8 +229,9 @@ IMPLEMENT_TEST(multiple_interpolations)
   using namespace maptk;
   using namespace std;
 
-  rotation_d x(vector_4d(0, 0, 0, 1)),
-             y(vector_4d(0, 1, 0, 0));
+  double pi = boost::math::constants::pi<double>();
+  rotation_d x(0, vector_3d(1, 0, 0)),
+             y(pi / 2, vector_3d(0, 1, 0));
   vector<rotation_d> rots;
 
   rots.push_back(x);
@@ -240,10 +241,28 @@ IMPLEMENT_TEST(multiple_interpolations)
   cerr << "Vector size: " << rots.size() << endl;
   BOOST_FOREACH(rotation_d rot, rots)
   {
-    cerr << "\t" << rot << endl;
+    cerr << "\t" << rot.axis() << ' ' << rot.angle() << endl;
   }
 
-  cerr << "t .25 : " << interpolate_rotation(x, y, 0.25) << endl;
-  cerr << "t .50 : " << interpolate_rotation(x, y, 0.50) << endl;
-  cerr << "t .75 : " << interpolate_rotation(x, y, 0.75) << endl;
+  rotation_d i1 = rots[1],
+             i2 = rots[2],
+             i3 = rots[3];
+  cerr << "i1 .25 : " << i1.axis() << ' ' << i1.angle() << endl;
+  cerr << "i2 .50 : " << i2.axis() << ' ' << i2.angle() << endl;
+  cerr << "i3 .75 : " << i3.axis() << ' ' << i3.angle() << endl;
+
+  TEST_NEAR("i1 axis x", i1.axis().x(), 0, 1e-15);
+  TEST_NEAR("i1 axis y", i1.axis().y(), 1, 1e-15);
+  TEST_NEAR("i1 axis z", i1.axis().z(), 0, 1e-15);
+  TEST_NEAR("i1 andgle", i1.angle(), pi / 8, 1e-15);
+
+  TEST_NEAR("i2 axis x", i2.axis().x(), 0, 1e-15);
+  TEST_NEAR("i2 axis y", i2.axis().y(), 1, 1e-15);
+  TEST_NEAR("i2 axis z", i2.axis().z(), 0, 1e-15);
+  TEST_NEAR("i2 andgle", i2.angle(), pi / 4, 1e-15);
+
+  TEST_NEAR("i3 axis x", i3.axis().x(), 0, 1e-15);
+  TEST_NEAR("i3 axis y", i3.axis().y(), 1, 1e-15);
+  TEST_NEAR("i3 axis z", i3.axis().z(), 0, 1e-15);
+  TEST_NEAR("i3 andgle", i3.angle(), (3*pi) / 8, 1e-15);
 }

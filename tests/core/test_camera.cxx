@@ -79,22 +79,26 @@ IMPLEMENT_TEST(interpolation)
   using namespace maptk;
   using namespace std;
 
+  double pi = boost::math::constants::pi<double>();
   camera_d a(vector_3d(-1, -1, -1),
              rotation_d(vector_4d(0, 0, 0, 1))),  // no rotation
            b(vector_3d(3, 3, 3),
-             rotation_d(vector_4d(0, 1, 0, 0))),  // flipped over y-axis
+             rotation_d(-pi / 2, vector_3d(0, 0, 1))),  // flipped over z-axis 90 degrees
            c;
   c = interpolate_camera(a, b, 0.5);
-  double pi = boost::math::constants::pi<double>();
+
+  cerr << "a.rotation: " << a.rotation().axis() << ' '  << a.rotation().angle() << endl;
+  cerr << "b.rotation: " << b.rotation().axis() << ' '  << b.rotation().angle() << endl;
 
   cerr << "c.center  : " << c.center() << endl;
   TEST_NEAR("c.center.x", c.center().x(), 1, 1e-16);
   TEST_NEAR("c.center.y", c.center().y(), 1, 1e-16);
   TEST_NEAR("c.center.z", c.center().z(), 1, 1e-16);
 
-  cerr << "c.rotation: " << c.rotation().axis() << ' ' << c.rotation().angle() << endl;
-  TEST_NEAR("c.rotation.axis.x", c.rotation().axis().x(), 0, 1e-16);
-  TEST_NEAR("c.rotation.axis.x", c.rotation().axis().x(), 0, 1e-16);
-  TEST_NEAR("c.rotation.axis.x", c.rotation().axis().x(), 0, 1e-16);
-  TEST_NEAR("c.rotation.angle" , c.rotation().angle()   , pi / 2, 1e-16);
+  cerr << "c.rotation (aa): " << c.rotation().axis() << ' ' << c.rotation().angle() << endl;
+  cerr << "c.rotation  (q): " << c.rotation() << endl;
+  TEST_NEAR("c.rotation.axis.x", c.rotation().axis().x(),  0, 1e-15);
+  TEST_NEAR("c.rotation.axis.y", c.rotation().axis().y(),  0, 1e-15);
+  TEST_NEAR("c.rotation.axis.z", c.rotation().axis().z(), -1, 1e-15);
+  TEST_NEAR("c.rotation.angle" , c.rotation().angle()   , pi / 4, 1e-15);
 }

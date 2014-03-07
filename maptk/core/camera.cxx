@@ -131,7 +131,7 @@ std::istream&  operator>>(std::istream& s, camera_<T>& k)
 }
 
 
-/// Genrated an interpolated camera between \c A and \c B by a given fraction \c f
+/// Generate an interpolated camera between \c A and \c B by a given fraction \c f
 template <typename T>
 camera_<T> interpolate_camera(camera_<T> const& A, camera_<T> const& B, T f)
 {
