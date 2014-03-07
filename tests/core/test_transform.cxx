@@ -9,6 +9,7 @@
 
 #include <maptk/core/transform.h>
 #include <maptk/core/metrics.h>
+#include <maptk/core/projected_track_set.h>
 
 #define TEST_ARGS ()
 
@@ -37,7 +38,7 @@ IMPLEMENT_TEST(cameras_landmarks)
   camera_map_sptr cameras = testing::camera_seq();
 
   // create tracks from the projections
-  track_set_sptr tracks = testing::projected_tracks(landmarks, cameras);
+  track_set_sptr tracks = projected_tracks(landmarks, cameras);
 
   double rmse = reprojection_rmse(cameras->cameras(),
                                   landmarks->landmarks(),

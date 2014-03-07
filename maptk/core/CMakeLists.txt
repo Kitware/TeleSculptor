@@ -25,6 +25,7 @@ set(maptk_core_headers_public
   match_set.h
   matrix.h
   metrics.h
+  projected_track_set.h
   rotation.h
   registrar.h
   similarity.h
@@ -80,6 +81,7 @@ set(maptk_core_sources
   local_geo_cs.cxx
   matrix.cxx
   metrics.cxx
+  projected_track_set.cxx
   rotation.cxx
   similarity.cxx
   track.cxx
