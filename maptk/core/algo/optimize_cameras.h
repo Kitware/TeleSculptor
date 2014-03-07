@@ -32,7 +32,7 @@ class MAPTK_CORE_EXPORT optimize_cameras
 {
 public:
   /// Return the name of this algorithm definition
-  std::string type_name() { return "optimize_cameras"; }
+  std::string type_name() const { return "optimize_cameras"; }
 
   /// Optimize camera parameters given sets of landmarks and tracks
   /**
@@ -49,6 +49,10 @@ public:
            landmark_map_sptr landmarks) const = 0;
 
 };
+
+
+/// Type definition for shared pointer to an optimize cameras algorithm
+typedef boost::shared_ptr<optimize_cameras> optimize_cameras_sptr;
 
 
 }
