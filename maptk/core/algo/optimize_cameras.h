@@ -34,7 +34,7 @@ public:
   /// Return the name of this algorithm definition
   std::string type_name() { return "optimize_cameras"; }
 
-  /// Optimize camera orientation + location given sets of landmarks and tracks
+  /// Optimize camera parameters given sets of landmarks and tracks
   /**
    * We only optimize cameras that have associating tracks and landmarks in
    * the given maps.
