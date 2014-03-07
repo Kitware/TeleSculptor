@@ -239,6 +239,7 @@ IMPLEMENT_TEST(multiple_interpolations)
   rots.push_back(y);
 
   cerr << "Vector size: " << rots.size() << endl;
+  TEST_EQUAL("vector size", rots.size(), 5);
   BOOST_FOREACH(rotation_d rot, rots)
   {
     cerr << "\t" << rot.axis() << ' ' << rot.angle() << endl;

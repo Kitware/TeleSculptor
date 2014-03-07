@@ -167,10 +167,10 @@ interpolated_cameras(camera_<T> const& A,
                      std::vector< camera_<T> > & interp_cams)
 {
   interp_cams.reserve(interp_cams.capacity() + n);
-  double denom = n + 1;
-  for (double i=1; i < denom; ++i)
+  size_t denom = n + 1;
+  for (size_t i=1; i < denom; ++i)
   {
-    interp_cams.push_back(interpolate_camera<T>(A, B, i / denom));
+    interp_cams.push_back(interpolate_camera<T>(A, B, static_cast<T>(i) / denom));
   }
 }
 

@@ -300,10 +300,10 @@ void
 interpolated_rotations(rotation_<T> const& A, rotation_<T> const& B, size_t n, std::vector< rotation_<T> > & interp_rots)
 {
   interp_rots.reserve(interp_rots.capacity() + n);
-  double denom = n + 1;
-  for (double i=1; i<denom; ++i)
+  size_t denom = n + 1;
+  for (size_t i=1; i<denom; ++i)
   {
-    interp_rots.push_back(interpolate_rotation<T>(A, B, i / denom));
+    interp_rots.push_back(interpolate_rotation<T>(A, B, static_cast<T>(i) / denom));
   }
 }
 
