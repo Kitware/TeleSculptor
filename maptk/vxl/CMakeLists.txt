@@ -10,6 +10,7 @@ set(maptk_vxl_headers_public
   estimate_similarity_transform.h
   image_container.h
   image_io.h
+  optimize_cameras.h
   register.h
   triangulate_landmarks.h
   vil_image_memory.h
@@ -24,6 +25,7 @@ set(maptk_vxl_sources
   estimate_similarity_transform.cxx
   image_container.cxx
   image_io.cxx
+  optimize_cameras.cxx
   register.cxx
   triangulate_landmarks.cxx
   vil_image_memory.cxx
