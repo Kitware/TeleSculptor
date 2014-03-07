@@ -31,7 +31,7 @@ namespace maptk
  * \throws file_write_exception
  *    Thrown when something prevents output of the file.
  * \throws boost::filesystem::filesystem:error
- *    Thrown when an underlying boost::filesystem call failes for system
+ *    Thrown when an underlying boost::filesystem call fails for system
  *    reasons.
  *
  * \param landmarks The \c landmark_map object to output.
@@ -41,6 +41,21 @@ void
 MAPTK_CORE_EXPORT
 write_ply_file(landmark_map_sptr const& landmarks,
                path_t const& file_path);
+
+
+/// Load a given \c landmark_map object from the specified PLY file path
+/**
+ * \throws file_read_exception
+ *    Thrown when something prevents input of the file.
+ * \throws boost::filesystem::filesystem:error
+ *    Thrown when an underlying boost::filesystem call fails for system
+ *    reasons.
+ *
+ * \param file_path The path to output the file to.
+ */
+landmark_map_sptr
+MAPTK_CORE_EXPORT
+read_ply_file(path_t const& file_path);
 
 }
 

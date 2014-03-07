@@ -15,6 +15,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <sstream>
 
 #include <maptk/core/exceptions.h>
 
@@ -84,5 +85,57 @@ write_ply_file(landmark_map_sptr const& landmarks,
   }
   ofile.close();
 }
+
+
+/// Load a given \c landmark_map object from the specified PLY file path
+landmark_map_sptr
+read_ply_file(path_t const& file_path)
+{
+  namespace bfs = boost::filesystem;
+
+  if(!bfs::exists(file_path))
+  {
+    throw file_not_found_exception(file_path, "Cannot find file.");
+  }
+
+  landmark_map::map_landmark_t landmarks;
+
+  // open input file and read the tracks
+  std::ifstream ifile(file_path.c_str());
+
+  if(!ifile)
+  {
+    throw file_not_read_exception(file_path, "Cannot read file.");
+  }
+
+  bool parsed_header = false;
+  std::string line;
+
+  while(std::getline(ifile, line))
+  {
+    if(!parsed_header || line.empty())
+    {
+      if(line == "end_header")
+      {
+        parsed_header = true;
+      }
+      continue;
+    }
+
+    std::istringstream iss(line);
+
+    double x,y,z;
+    landmark_id_t id;
+
+    iss >> x >> y >> z >> id;
+
+    landmarks[id] = landmark_sptr(new landmark_d(vector_3d(x,y,z)));
+  }
+
+  ifile.close();
+
+  return landmark_map_sptr(new simple_landmark_map(landmarks));
+}
+
 
 }
