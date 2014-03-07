@@ -158,7 +158,7 @@ analyze_tracks
   }
 
   // Constants
-  const unsigned num_tracks = track_set->size();
+  const unsigned num_tracks = static_cast<unsigned>(track_set->size());
   const frame_id_t first_frame = track_set->first_frame();
   const frame_id_t last_frame = track_set->last_frame();
   const frame_id_t total_frames = last_frame - first_frame + 1;
@@ -181,12 +181,12 @@ analyze_tracks
   }
 
   // Generate matrix
-  cv::Mat_<double> data( total_frames, d_->frames_to_compare.size() + 2 );
+  cv::Mat_<double> data( total_frames, static_cast<int>(d_->frames_to_compare.size()) + 2 );
 
   for( frame_id_t fid = first_frame; fid <= last_frame; fid++ )
   {
     data.at<double>( fid, 0 ) = fid;
-    data.at<double>( fid, 1 ) = track_set->active_tracks( fid )->size();
+    data.at<double>( fid, 1 ) = static_cast<double>(track_set->active_tracks( fid )->size());
 
     for( unsigned i = 0; i < d_->frames_to_compare.size(); i++ )
     {
