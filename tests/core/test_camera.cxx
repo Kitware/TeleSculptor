@@ -12,6 +12,7 @@
 #include <test_common.h>
 
 #include <iostream>
+#include <boost/foreach.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <maptk/core/camera.h>
 
@@ -101,4 +102,35 @@ IMPLEMENT_TEST(interpolation)
   TEST_NEAR("c.rotation.axis.y", c.rotation().axis().y(),  0, 1e-15);
   TEST_NEAR("c.rotation.axis.z", c.rotation().axis().z(), -1, 1e-15);
   TEST_NEAR("c.rotation.angle" , c.rotation().angle()   , pi / 4, 1e-15);
+}
+
+
+IMPLEMENT_TEST(multiple_interpolations)
+{
+  using namespace maptk;
+  using namespace std;
+
+  double pi = boost::math::constants::pi<double>();
+  camera_d a(vector_3d(-1, -1, -1),
+             rotation_d(vector_4d(0, 0, 0, 1))),        // no rotation
+           b(vector_3d(3, 3, 3),
+             rotation_d(-pi / 2, vector_3d(0, 0, 1)));  // flipped over z-axis 90 degrees
+  vector<camera_d> cams;
+
+  cams.push_back(a);
+  interpolated_cameras(a, b, 3, cams);
+  cams.push_back(b);
+
+  cerr << "Vector size: " << cams.size() << endl;
+  BOOST_FOREACH(camera_d cam, cams)
+  {
+    cerr << "\t" << cam.center() << " :: " << cam.rotation().axis() << " " << cam.rotation().angle() << endl;
+  }
+
+  camera_d i1 = cams[1],
+           i2 = cams[2],
+           i3 = cams[3];
+  cerr << "i1 .25 c : " << i1.center() << " :: " << i1.rotation().axis() << ' ' << i1.rotation().angle() << endl;
+  cerr << "i2 .25 c : " << i2.center() << " :: " << i2.rotation().axis() << ' ' << i2.rotation().angle() << endl;
+  cerr << "i3 .25 c : " << i3.center() << " :: " << i3.rotation().axis() << ' ' << i3.rotation().angle() << endl;
 }

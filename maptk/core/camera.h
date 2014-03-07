@@ -16,6 +16,7 @@
 #include "core_config.h"
 
 #include <iostream>
+#include <vector>
 
 #include "camera_intrinsics.h"
 #include "covariance.h"
@@ -224,6 +225,18 @@ MAPTK_CORE_EXPORT std::istream& operator>>(std::istream& s, camera_<T>& c);
 template <typename T>
 MAPTK_CORE_EXPORT
 camera_<T> interpolate_camera(camera_<T> const& A, camera_<T> const& B, T f);
+
+
+/// Generate N evenly interpolated cameras in between \c A and \c B
+/**
+ * \c n must be >= 1.
+ */
+template <typename T>
+MAPTK_CORE_EXPORT
+void interpolated_cameras(camera_<T> const& A,
+                          camera_<T> const& B,
+                          size_t n,
+                          std::vector< camera_<T> > & interp_cams);
 
 
 } // end namespace maptk

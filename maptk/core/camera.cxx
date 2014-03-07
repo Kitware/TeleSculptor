@@ -158,6 +158,23 @@ camera_<T> interpolate_camera(camera_<T> const& A, camera_<T> const& B, T f)
 }
 
 
+/// Generate N evenly interpolated cameras in between \c A and \c B
+template <typename T>
+void
+interpolated_cameras(camera_<T> const& A,
+                     camera_<T> const& B,
+                     size_t n,
+                     std::vector< camera_<T> > & interp_cams)
+{
+  interp_cams.reserve(interp_cams.capacity() + n);
+  double denom = n + 1;
+  for (double i=1; i < denom; ++i)
+  {
+    interp_cams.push_back(interpolate_camera<T>(A, B, i / denom));
+  }
+}
+
+
 /// \cond DoxygenSuppress
 #define INSTANTIATE_CAMERA(T) \
 template class MAPTK_CORE_EXPORT camera_<T>; \
@@ -165,7 +182,11 @@ template MAPTK_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const camer
 template MAPTK_CORE_EXPORT std::istream& operator>>(std::istream& s, camera_<T>& c); \
 template MAPTK_CORE_EXPORT camera_<T> interpolate_camera(camera_<T> const& A, \
                                                          camera_<T> const& B, \
-                                                         T f)
+                                                         T f); \
+template MAPTK_CORE_EXPORT void interpolated_cameras(camera_<T> const& A, \
+                                                     camera_<T> const& B, \
+                                                     size_t n, \
+                                                     std::vector< camera_<T> > & interp_cams)
 
 INSTANTIATE_CAMERA(double);
 INSTANTIATE_CAMERA(float);
