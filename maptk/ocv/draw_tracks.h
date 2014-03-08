@@ -23,7 +23,7 @@ namespace maptk
 namespace ocv
 {
 
-/// A class for outputting various debug info about feature tracks
+/// A class for drawing various information about feature tracks
 class MAPTK_OCV_EXPORT draw_tracks
 : public algo::algorithm_impl<draw_tracks, algo::draw_tracks>
 {
@@ -48,14 +48,36 @@ public:
   /// Check that the algorithm's currently configuration is valid
   virtual bool check_configuration(config_block_sptr config) const;
 
-  /// Draw feature tracks on top of the input images.
+  /// Draw features tracks on top of the input images.
   /**
-   * \param [in] track_set the tracks to analyze
-   * \param [in] image_data a list of images the tracks were computed on
+   * This process can either be called in an offline fashion, where all
+   * tracks and images are provided to the function on the first call,
+   * or in an online fashion where only new images should be provided
+   * on sequential calls.
+   *
+   * \param [in] track_set the latest tracks to draw
+   * \param [in] image_data a list of new images the tracks were computed over
+   * \param returns a pointer to the last image generated
    */
-  virtual void
+  virtual image_container_sptr
   draw(track_set_sptr track_set,
-       image_container_sptr_list image_data) const;
+       image_container_sptr_list image_data);
+
+  /// Draw features tracks on top of the input images.
+  /**
+   * This function additionally consumes a second track set for which can
+   * optionally be used to display additional information to provide a
+   * comparison between the two track sets.
+   *
+   * \param [in] track_set the main tracks to draw
+   * \param [in] comparison_set the comparison track set
+   * \param [in] image_data a list of new images the tracks were computed over
+   * \param returns a pointer to the last image generated
+   */
+  virtual image_container_sptr
+  draw(track_set_sptr track_set,
+       track_set_sptr comparison_set,
+       image_container_sptr_list image_data);
 
 private:
 

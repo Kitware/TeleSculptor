@@ -10,9 +10,11 @@
  *        member functions
  */
 
-#include <maptk/core/track_set.h>
+#include "track_set.h"
+
 #include <boost/foreach.hpp>
 
+#include <algorithm>
 
 namespace maptk
 {
@@ -100,6 +102,23 @@ track_set
   return first_frame;
 }
 
+
+/// Return the track in the set with the specified id.
+track_sptr const
+track_set
+::get_track(track_id_t tid) const
+{
+  typedef std::vector<track_sptr>::const_iterator citr;
+  const std::vector<track_sptr> all_tracks = this->tracks();
+  citr itr = std::find_if( all_tracks.begin(), all_tracks.end(), );
+
+  if( itr != all_tracks.end() )
+  {
+    return *itr;
+  }
+
+  return track_sptr();
+}
 
 /// Return all tracks active on a frame.
 track_set_sptr
