@@ -202,6 +202,13 @@ void subtract_from_all( fid_offset_vec_t& offsets, unsigned value )
 }
 
 
+/// Helper function to convert a track state to an OpenCV point
+cv::Point state_to_cv_point( const track::track_state& ts )
+{
+  return cv::Point( static_cast<int>(ts.feat->loc()[0]),
+                    static_cast<int>(ts.feat->loc()[1]) );
+}
+
 /// Helper function for creating valid match lines for a given track
 void generate_match_lines( const track_sptr trk,
                            const frame_id_t frame_id,
@@ -239,8 +246,7 @@ void generate_match_lines( const track_sptr trk,
       if( test_itr != trk->end() && test_itr->feat )
       {
         // add line
-        cv::Point test_loc( static_cast<int>(test_itr->feat->loc()[0]),
-                            static_cast<int>(test_itr->feat->loc()[1]) );
+        cv::Point test_loc = state_to_cv_point( *test_itr );
         cv::Point frame_offset = static_cast<int>( frame_offsets.size() ) * image_offset;
         cv::Point test_offset = static_cast<int>( frame_offsets.size() - i - 1 ) * image_offset;
         line_list.push_back( std::make_pair( frame_loc + frame_offset, test_loc + test_offset ) );
@@ -302,6 +308,7 @@ draw_tracks
   const cv::Scalar red( 0, 0, 255 );
   const cv::Scalar green( 0, 255, 0 );
   const cv::Scalar purple( 240, 32, 160 );
+  const cv::Scalar orange( 0, 69, 255 );
 
   // Iterate over all images
   BOOST_FOREACH( image_container_sptr ctr_sptr, image_data )
@@ -333,8 +340,7 @@ draw_tracks
 
       // Handle drawing the feature point on the image
       cv::Scalar color = blue;
-      cv::Point loc( static_cast<int>(ts.feat->loc()[0]),
-                     static_cast<int>(ts.feat->loc()[1]) );
+      cv::Point loc = state_to_cv_point( ts );
       cv::Point txt_offset( 2, -2 );
       std::string tid_str = boost::lexical_cast<std::string>( trk->id() );
 
@@ -368,8 +374,7 @@ draw_tracks
 
         if( itr != trk->end() && itr->feat )
         {
-          cv::Point prior_loc( static_cast<int>(itr->feat->loc()[0]),
-                               static_cast<int>(itr->feat->loc()[1]) );
+          cv::Point prior_loc = state_to_cv_point( *itr );
           cv::line( img, prior_loc, loc, color );
         }
       }
@@ -391,8 +396,7 @@ draw_tracks
 
           if( itr != comparison_trk->end() && itr->feat )
           {
-            cv::Point other_loc( static_cast<int>(itr->feat->loc()[0]),
-                                 static_cast<int>(itr->feat->loc()[1]) );
+            cv::Point other_loc = state_to_cv_point( *itr );
             cv::line( img, other_loc, loc, red, 2 );
           }
         }
