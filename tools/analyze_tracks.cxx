@@ -253,8 +253,6 @@ static int maptk_main(int argc, char const* argv[])
   // Read and process input images if set
   if( use_images )
   {
-    std::cout << std::endl << "Generating feature images..." << std::endl;
-
     std::vector<maptk::path_t> image_paths;
     std::string image_list_file = config->get_value<std::string>( "image_list_file" );
     std::ifstream ifs( image_list_file.c_str() );
@@ -312,6 +310,8 @@ static int maptk_main(int argc, char const* argv[])
     }
 
     // Read images one by one, this is more memory efficient than loading them all
+    std::cout << std::endl << "Generating feature images..." << std::endl;
+
     for( unsigned i = 0; i < image_paths.size(); i++ )
     {
       if( !bfs::exists( image_paths[i] ) )
