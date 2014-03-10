@@ -2,9 +2,11 @@ MAPTK v0.4.0 Release Notes
 ==========================
 
 
-Updated since v0.3.0
+Updates since v0.3.0
 --------------------
 
 Core Library
 
   * Added interpolation functions for rotations and for cameras.
+
+  * Added camera optimization algorithm definition.

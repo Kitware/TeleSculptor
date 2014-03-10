@@ -58,6 +58,7 @@ set(maptk_core_headers_public
   algo/geo_map.h
   algo/match_features.h
   algo/match_features_homography.h
+  algo/optimize_cameras.h
   algo/register.h
   algo/track_features.h
   algo/track_features_default.h
@@ -108,6 +109,7 @@ set(maptk_core_sources
   algo/image_io.cxx
   algo/match_features.cxx
   algo/match_features_homography.cxx
+  algo/optimize_cameras.cxx
   algo/register.cxx
   algo/track_features.cxx
   algo/track_features_default.cxx
