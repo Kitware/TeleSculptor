@@ -49,6 +49,11 @@ read_krtd_files(std::vector<path_t> const& img_files, path_t const& dir)
     }
   }
 
+  if( cameras.empty() )
+  {
+    return camera_map_sptr();
+  }
+
   return camera_map_sptr( new simple_camera_map( cameras ) );
 }
 
