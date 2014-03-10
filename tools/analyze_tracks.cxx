@@ -255,11 +255,8 @@ static int maptk_main(int argc, char const* argv[])
   {
     std::cout << std::endl << "Generating feature images..." << std::endl;
 
-    maptk::image_container_sptr_list images;
     std::vector<maptk::path_t> valid_image_paths;
-
     std::string image_list_file = config->get_value<std::string>( "image_list_file" );
-
     std::ifstream ifs( image_list_file.c_str() );
 
     if( !ifs )
@@ -276,9 +273,6 @@ static int maptk_main(int argc, char const* argv[])
         throw maptk::path_not_exists( line );
       }
 
-      maptk::image_container_sptr image = image_reader->load( line );
-
-      images.push_back( image );
       valid_image_paths.push_back( line );
     }
 
@@ -322,14 +316,23 @@ static int maptk_main(int argc, char const* argv[])
       comparison_tracks = projected_tracks( landmarks, cameras );
     }
 
-    // Draw tracks on images
-    if( !comparison_tracks || comparison_tracks->empty() )
+    // Read images one by one, this is more memory efficient than loading them all
+    for( unsigned i = 0; i < valid_image_paths.size(); i++ )
     {
-      draw_tracks->draw( tracks, images );
-    }
-    else
-    {
-      draw_tracks->draw( tracks, comparison_tracks, images );
+      maptk::image_container_sptr_list images;
+
+      maptk::image_container_sptr image = image_reader->load( valid_image_paths[i].string() );
+      images.push_back( image );
+
+      // Draw tracks on images
+      if( !comparison_tracks || comparison_tracks->empty() )
+      {
+        draw_tracks->draw( tracks, images );
+      }
+      else
+      {
+        draw_tracks->draw( tracks, comparison_tracks, images );
+      }
     }
   }
 
