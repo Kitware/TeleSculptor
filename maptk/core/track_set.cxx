@@ -17,12 +17,22 @@
 namespace maptk
 {
 
+
 /// Return the number of tracks in the set
 size_t
 track_set
 ::size() const
 {
   return this->tracks().size();
+}
+
+
+/// Return whether or not there are any tracks in the set
+bool
+track_set
+::empty() const
+{
+  return this->tracks().empty();
 }
 
 

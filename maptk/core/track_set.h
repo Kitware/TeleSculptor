@@ -43,6 +43,9 @@ public:
   /// Return the number of tracks in the set
   virtual size_t size() const;
 
+  /// Return whether or not there are any tracks in the set
+  virtual bool empty() const;
+
   /// Return a vector of track shared pointers
   virtual std::vector<track_sptr> tracks() const = 0;
 
