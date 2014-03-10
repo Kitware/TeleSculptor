@@ -123,7 +123,7 @@ draw_tracks
   config->set_value( "draw_track_ids", d_->draw_track_ids,
                      "Draw track ids next to each feature point." );
   config->set_value( "draw_untracked_features", d_->draw_untracked_features,
-                     "Draw untracked feature points in red." );
+                     "Draw untracked feature points in error_color." );
   config->set_value( "draw_match_lines", d_->draw_match_lines,
                      "Draw lines between tracked features on the current frame "
                      "to any past frames." );
@@ -324,11 +324,11 @@ draw_tracks
   frame_id_t fid = d_->cur_frame_id;
 
   // Colors to use
-  const cv::Scalar blue( 255, 0, 0 );
-  const cv::Scalar red( 0, 0, 255 );
-  const cv::Scalar green( 0, 255, 0 );
-  const cv::Scalar purple( 240, 32, 160 );
-  const cv::Scalar orange( 0, 69, 255 );
+  const cv::Scalar default_color( 255, 0, 0 );
+  const cv::Scalar new_color( 0, 255, 0 );
+  const cv::Scalar terminated_color( 240, 32, 160 );
+  const cv::Scalar untracked_color( 0, 69, 255 );
+  const cv::Scalar error_color( 0, 0, 255 );
 
   // Iterate over all images
   BOOST_FOREACH( image_container_sptr ctr_sptr, image_data )
@@ -365,22 +365,22 @@ draw_tracks
       }
 
       // Handle drawing the feature point on the image
-      cv::Scalar color = blue;
+      cv::Scalar color = default_color;
       cv::Point loc = state_to_cv_point( ts );
       cv::Point txt_offset( 2, -2 );
       std::string tid_str = boost::lexical_cast<std::string>( trk->id() );
 
       if( trk->size() == 1 )
       {
-        color = orange;
+        color = untracked_color;
       }
       else if( trk->first_frame() == fid )
       {
-        color = green;
+        color = new_color;
       }
       else if( trk->last_frame() == fid )
       {
-        color = purple;
+        color = terminated_color;
       }
 
       if( d_->draw_untracked_features || trk->size() > 1 )
@@ -423,7 +423,7 @@ draw_tracks
           if( itr != comparison_trk->end() && itr->feat )
           {
             cv::Point other_loc = state_to_cv_point( *itr );
-            cv::line( img, other_loc, loc, red, 2 );
+            cv::line( img, other_loc, loc, error_color, 2 );
             comparison_track_found = true;
           }
         }
@@ -454,7 +454,7 @@ draw_tracks
 
     for( unsigned i = 0; i < lines.size(); i++ )
     {
-      cv::line( output_image, lines[i].first, lines[i].second, blue );
+      cv::line( output_image, lines[i].first, lines[i].second, default_color );
     }
 
     if( write_image_to_disk )
