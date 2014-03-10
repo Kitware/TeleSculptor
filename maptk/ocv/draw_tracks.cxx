@@ -209,6 +209,7 @@ cv::Point state_to_cv_point( const track::track_state& ts )
                     static_cast<int>(ts.feat->loc()[1]) );
 }
 
+
 /// Helper function for creating valid match lines for a given track
 void generate_match_lines( const track_sptr trk,
                            const frame_id_t frame_id,
