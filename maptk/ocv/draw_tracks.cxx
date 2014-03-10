@@ -55,6 +55,7 @@ public:
     draw_match_lines( false ),
     draw_shift_lines( false ),
     draw_comparison_lines( true ),
+    write_images_to_disk( true ),
     pattern( "feature_tracks_%1%.png" ),
     cur_frame_id( 0 )
   {
@@ -78,6 +79,7 @@ public:
   bool draw_shift_lines;
   bool draw_comparison_lines;
   fid_offset_vec_t past_frames_to_show;
+  bool write_images_to_disk;
   boost::format pattern;
 
   /// Internal variables
@@ -137,8 +139,10 @@ draw_tracks
                      "3 frames wide, with the first frame being 2 frames behind the "
                      "current frame, the second 1 frame behind, and the third being "
                      "the current frame." );
+  config->set_value( "write_images_to_disk", "true",
+                     "Should images be written out to disk?" );
   config->set_value( "pattern", "feature_tracks_%1%.png",
-                     "The output pattern for drawn images." );
+                     "The output pattern for writing images to disk." );
 
   return config;
 }
@@ -173,6 +177,7 @@ draw_tracks
   d_->draw_match_lines = config->get_value<bool>( "draw_match_lines" );
   d_->draw_shift_lines = config->get_value<bool>( "draw_shift_lines" );
   d_->draw_comparison_lines = config->get_value<bool>( "draw_comparison_lines" );
+  d_->write_images_to_disk = config->get_value<bool>( "write_images_to_disk" );
   d_->pattern = boost::format( config->get_value<std::string>( "pattern" ) );
 
   if( !d_->past_frames_to_show.empty() )
@@ -292,11 +297,14 @@ draw_tracks
     std::cerr << "Warning: not enough imagery to display all tracks" << std::endl;
   }
 
+  // Has a valid comparison track set been provided?
+  const bool comparison_set_provided = comparison_set && !comparison_set->empty();
+
   // The output image
   cv::Mat output_image;
 
   // The total number of past frames we are showing
-  const unsigned past_frames = static_cast<unsigned>(d_->past_frames_to_show.size());
+  const unsigned past_frames = static_cast<unsigned>( d_->past_frames_to_show.size() );
 
   // The total number of output frames to display
   const unsigned display_frames = past_frames + 1;
@@ -314,6 +322,9 @@ draw_tracks
   // Iterate over all images
   BOOST_FOREACH( image_container_sptr ctr_sptr, image_data )
   {
+    // Should the current frame be written to disk?
+    bool write_image_to_disk = d_->write_images_to_disk;
+
     // Paint active tracks on the input image
     cv::Mat img = ocv::image_container::maptk_to_ocv( ctr_sptr->get_image() );
 
@@ -328,6 +339,9 @@ draw_tracks
 
     // Adjustment added to bring a point to a seperate window
     const cv::Point pt_adj( img.cols, 0 );
+
+    // Has at least one comparison track been found for this frame?
+    bool comparison_track_found = false;
 
     // Draw points on input image
     BOOST_FOREACH( track_sptr trk, track_set->active_tracks( fid )->tracks() )
@@ -387,7 +401,7 @@ draw_tracks
       }
 
       // Generate comparison lines
-      if( d_->draw_comparison_lines && comparison_set )
+      if( d_->draw_comparison_lines && comparison_set_provided )
       {
         track_sptr comparison_trk = comparison_set->get_track( trk->id() );
 
@@ -399,10 +413,14 @@ draw_tracks
           {
             cv::Point other_loc = state_to_cv_point( *itr );
             cv::line( img, other_loc, loc, red, 2 );
+            comparison_track_found = true;
           }
         }
       }
     }
+
+    // Update write image flag
+    write_image_to_disk &= ( !comparison_set_provided || comparison_track_found );
 
     // Fully generate and output the image
     std::string ofn = boost::str( d_->pattern % fid );
@@ -428,7 +446,10 @@ draw_tracks
       cv::line( output_image, lines[i].first, lines[i].second, blue );
     }
 
-    cv::imwrite( ofn.c_str(), output_image );
+    if( write_image_to_disk )
+    {
+      cv::imwrite( ofn.c_str(), output_image );
+    }
 
     // Store last image with all features and shift lines already drawn on it
     if( d_->buffer.capacity() > 0 )
