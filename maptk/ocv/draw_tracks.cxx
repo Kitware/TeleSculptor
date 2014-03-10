@@ -346,7 +346,7 @@ draw_tracks
 
       if( trk->size() == 1 )
       {
-        color = red;
+        color = orange;
       }
       else if( trk->first_frame() == fid )
       {
