@@ -17,7 +17,7 @@ namespace maptk
 {
 
 
-/// Create tracks by projecting the landmarks into the cameras.
+/// Use the cameras to project the landmarks back into their images.
 track_set_sptr
 projected_tracks(landmark_map_sptr landmarks, camera_map_sptr cameras)
 {

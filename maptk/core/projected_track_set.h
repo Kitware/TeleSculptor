@@ -25,7 +25,12 @@ namespace maptk
 {
 
 
-/// Create tracks by projecting the landmarks into the cameras
+/// Use the cameras to project the landmarks back into their images.
+/**
+ * \param landmarks input landmark locations
+ * \param cameras input camera map
+ * \return track set generated via the projection
+ */
 track_set_sptr
 MAPTK_CORE_EXPORT
 projected_tracks(landmark_map_sptr landmarks, camera_map_sptr cameras);
