@@ -22,6 +22,20 @@ namespace maptk
 
 
 /// Load a camera map from krtd files stored in a directory.
+/**
+ * This function assumes that krtd files stored in the directory have the
+ * same names as those in an image file list, only with a .krtd extension
+ * instead of an image extension.
+ *
+ * \throws invalid_data
+ *   Unable to find any camera krtd files in the given directory
+ * \throw path_not_exists
+ *   The specified directory does not exist
+ *
+ * \param img_files a list of image files
+ * \param dir directory path containing krtd files for the given images
+ * \return a new camera map created after parsing all krtd files
+ */
 camera_map_sptr
 MAPTK_CORE_EXPORT
 read_krtd_files(std::vector<path_t> const& img_files, path_t const& dir);

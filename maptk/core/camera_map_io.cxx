@@ -19,12 +19,13 @@ namespace maptk
 {
 
 
+/// Load a camera map from krtd files stored in a directory.
 camera_map_sptr
 read_krtd_files(std::vector<path_t> const& img_files, path_t const& dir)
 {
-  if( !boost::filesystem::exists(dir) )
+  if( !boost::filesystem::exists( dir ) )
   {
-    return camera_map_sptr();
+    throw path_not_exists( dir );
   }
 
   std::vector<path_t> files_to_read;
@@ -52,7 +53,7 @@ read_krtd_files(std::vector<path_t> const& img_files, path_t const& dir)
 
   if( cameras.empty() )
   {
-    return camera_map_sptr();
+    throw invalid_data( "No krtd files found" );
   }
 
   return camera_map_sptr( new simple_camera_map( cameras ) );
