@@ -13,6 +13,7 @@
 #define MAPTK_ROTATION_H_
 
 #include <iostream>
+#include <vector>
 
 #include "matrix.h"
 #include "vector.h"
@@ -142,6 +143,43 @@ MAPTK_CORE_EXPORT std::ostream&  operator<<(std::ostream& s, const rotation_<T>&
 /// input stream operator for a rotation
 template <typename T>
 MAPTK_CORE_EXPORT std::istream&  operator>>(std::istream& s, rotation_<T>& r);
+
+
+// Generate an interpolated rotation between \c A and \c B by a given fraction
+/**
+ * \c f must be 0 < \c f < 1
+ *
+ * TODO: Have this raise an exception when f is not within the valid range.
+ *
+ * \param A Rotation we are interpolating from.
+ * \param B Rotation we are interpolation towards.
+ * \param f Fractional value describing the
+ * \returns A rotation in between A and B to a degree proportional to the given
+ *          fraction.
+ */
+template <typename T>
+MAPTK_CORE_EXPORT
+rotation_<T>
+interpolate_rotation(rotation_<T> const& A, rotation_<T> const& B, double f);
+
+
+/// Generate N evenly interpolated rotations inbetween \c A and \c B.
+/**
+ * \c n must be >= 1.
+ *
+ * \param[in]   A           Rotation we are interpolating from.
+ * \param[in]   B           Rotation we are interpolating towards,
+ * \paran[in]   n           Number of even interpolations in between A and B to generate.
+ * \param[out]  interp_rots Interpolated rotations are added to this vector in
+ *                          in order of generation in the A -> B direction.
+ *
+ * \returns A vector of \c n evenly interpolated rotations in order between A
+ *          and B.
+ */
+template <typename T>
+MAPTK_CORE_EXPORT
+void
+interpolated_rotations(rotation_<T> const& A, rotation_<T> const& B, size_t n, std::vector< rotation_<T> > & interp_rots);
 
 
 } // end namespace maptk

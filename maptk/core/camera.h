@@ -16,6 +16,7 @@
 #include "core_config.h"
 
 #include <iostream>
+#include <vector>
 
 #include "camera_intrinsics.h"
 #include "covariance.h"
@@ -210,6 +211,32 @@ MAPTK_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const camera_<T>& c)
  */
 template <typename T>
 MAPTK_CORE_EXPORT std::istream& operator>>(std::istream& s, camera_<T>& c);
+
+
+/// Generate an interpolated camera between \c A and \c B by a given fraction \c f
+/**
+ * \c f should be 0 < \c f < 1. A value outside this range is valid, but \c f
+ * must not be 0.
+ *
+ * \param A Camera to interpolate from.
+ * \param B Camera to interpolate to.
+ * \param f Decimal fraction in between A and B for the returned camera to represent.
+ */
+template <typename T>
+MAPTK_CORE_EXPORT
+camera_<T> interpolate_camera(camera_<T> const& A, camera_<T> const& B, T f);
+
+
+/// Generate N evenly interpolated cameras in between \c A and \c B
+/**
+ * \c n must be >= 1.
+ */
+template <typename T>
+MAPTK_CORE_EXPORT
+void interpolated_cameras(camera_<T> const& A,
+                          camera_<T> const& B,
+                          size_t n,
+                          std::vector< camera_<T> > & interp_cams);
 
 
 } // end namespace maptk
