@@ -14,8 +14,6 @@
 
 #include <boost/foreach.hpp>
 
-#include <algorithm>
-
 namespace maptk
 {
 
@@ -108,13 +106,14 @@ track_sptr const
 track_set
 ::get_track(track_id_t tid) const
 {
-  typedef std::vector<track_sptr>::const_iterator citr;
   const std::vector<track_sptr> all_tracks = this->tracks();
-  citr itr = std::find_if( all_tracks.begin(), all_tracks.end(), );
 
-  if( itr != all_tracks.end() )
+  BOOST_FOREACH(track_sptr t, all_tracks)
   {
-    return *itr;
+    if( t->id() == tid )
+    {
+      return t;
+    }
   }
 
   return track_sptr();
