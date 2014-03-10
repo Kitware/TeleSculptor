@@ -22,6 +22,8 @@ namespace maptk
 const double rad2deg = 180.0 / boost::math::constants::pi<double>();
 /// scale factor converting degrees to radians
 const double deg2rad = boost::math::constants::pi<double>() / 180.0;
+/// scale factor convertint feet into meters
+const double foot2meter = 0.3048;
 
 
 /// Constructor
@@ -56,7 +58,8 @@ local_geo_cs
   bool is_north_hemi;
   geo_map_algo_->latlon_to_utm(ins.lat, ins.lon,
                                x, y, zone, is_north_hemi, utm_origin_zone_);
-  cam.set_center(vector_3d(x, y, ins.alt) - utm_origin_);
+  // INS DATA altitude currently in feet. Converting to meters.
+  cam.set_center(vector_3d(x, y, ins.alt * foot2meter) - utm_origin_);
 }
 
 
@@ -76,7 +79,8 @@ local_geo_cs
   vector_3d c = cam.get_center() + utm_origin_;
   geo_map_algo_->utm_to_latlon(c.x(), c.y(), utm_origin_zone_, true,
                                ins.lat, ins.lon);
-  ins.alt = c.z();
+  // camera Z in meters while INS data altitude represented in feet
+  ins.alt = c.z() / foot2meter;
   ins.source_name = "MAPTK";
 }
 
