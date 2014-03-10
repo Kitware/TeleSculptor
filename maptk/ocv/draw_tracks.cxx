@@ -308,11 +308,6 @@ draw_tracks
     return image_container_sptr();
   }
 
-  if( d_->cur_frame_id + image_data.size() < track_set->last_frame() )
-  {
-    std::cerr << "Warning: not enough imagery to display all tracks" << std::endl;
-  }
-
   // Has a valid comparison track set been provided?
   const bool comparison_set_provided = comparison_set && !comparison_set->empty();
 
