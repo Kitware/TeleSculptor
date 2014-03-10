@@ -1,0 +1,14 @@
+MAPTK v0.3.1 Release Notes
+==========================
+
+
+Updates since v0.3.0
+--------------------
+
+
+Fixes since v0.3.0
+------------------
+
+Core Library
+
+ * Added feet-meter conversions in camera and INS data update functions.
