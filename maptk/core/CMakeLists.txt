@@ -5,6 +5,7 @@ set(maptk_core_headers_public
   camera_intrinsics.h
   camera_io.h
   camera_map.h
+  camera_map_io.h
   config_block.h
   config_block_io.h
   core_config.h
@@ -70,6 +71,7 @@ set(maptk_core_sources
   camera.cxx
   camera_intrinsics.cxx
   camera_io.cxx
+  camera_map_io.cxx
   config_block.cxx
   config_block_io.cxx
   feature.cxx
