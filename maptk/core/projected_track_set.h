@@ -14,12 +14,11 @@
 #define MAPTK_PROJECTED_TRACK_SET_H_
 
 #include "core_config.h"
-
-#include <boost/shared_ptr.hpp>
-
 #include "track_set.h"
 #include "camera_map.h"
 #include "landmark_map.h"
+
+#include <boost/shared_ptr.hpp>
 
 namespace maptk
 {
