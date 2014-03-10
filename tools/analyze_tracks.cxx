@@ -14,6 +14,7 @@
 
 #include <maptk/core/landmark_map.h>
 #include <maptk/core/camera.h>
+#include <maptk/core/camera_map_io.h>
 #include <maptk/core/track_set_io.h>
 #include <maptk/core/landmark_map_io.h>
 #include <maptk/core/camera_io.h>
@@ -61,8 +62,8 @@ static maptk::config_block_sptr default_config()
   config->set_value( "comparison_landmark_file", "",
                      "Path to an optional landmark ply file, which can be used along "
                      "with a camera file to generate a comparison track set." );
-  config->set_value( "comparison_camera_file", "",
-                     "Path to an optional camera file, which can be used alongside "
+  config->set_value( "comparison_camera_dir", "",
+                     "Path to an optional camera directory, which can be used alongside "
                      "a landmark ply file to generate a comparison track set." );
 
   maptk::algo::analyze_tracks::get_nested_algo_configuration(
@@ -104,7 +105,7 @@ static bool check_config( maptk::config_block_sptr config )
   }
 
   if( config->has_value( "comparison_landmark_file" ) !=
-      config->has_value( "comparison_camera_file" ) )
+      config->has_value( "comparison_camera_dir" ) )
   {
     std::cerr << "Both a landmark and camera file must be specified to use either." << std::endl;
     return false;
@@ -223,34 +224,6 @@ static int maptk_main(int argc, char const* argv[])
   std::string track_file = config->get_value<std::string>( "track_file" );
   tracks = maptk::read_track_file( track_file );
 
-  // Load comparison tracks if enabled
-  maptk::track_set_sptr comparison_tracks;
-
-  if( config->has_value( "comparison_track_file" ) )
-  {
-    track_file = config->get_value<std::string>( "comparison_track_file" );
-
-    if( !track_file.empty() )
-    {
-      std::cout << std::endl << "Loading comparison track set file..." << std::endl;
-      comparison_tracks = maptk::read_track_file( track_file );
-    }
-  }
-  else if( config->has_value( "comparison_landmark_file" ) &&
-           config->has_value( "comparison_camera_file" ) )
-  {
-    std::string landmark_file = config->get_value<std::string>( "comparison_landmark_file" );
-    std::string camera_file = config->get_value<std::string>( "comparison_camera_file" );
-
-    if( !landmark_file.empty() && !camera_file.empty() )
-    {
-      std::cout << std::endl << "Loading comparison track set file..." << std::endl;
-      maptk::landmark_map_sptr landmarks = maptk::read_ply_file( landmark_file );
-      maptk::camera_map_sptr cameras;
-      comparison_tracks = projected_tracks( landmarks, cameras );
-    }
-  }
-
   // Generate statistics if enabled
   if( analyze_tracks )
   {
@@ -283,6 +256,7 @@ static int maptk_main(int argc, char const* argv[])
     std::cout << std::endl << "Generating feature images..." << std::endl;
 
     maptk::image_container_sptr_list images;
+    std::vector<maptk::path_t> valid_image_paths;
 
     std::string image_list_file = config->get_value<std::string>( "image_list_file" );
 
@@ -305,8 +279,38 @@ static int maptk_main(int argc, char const* argv[])
       maptk::image_container_sptr image = image_reader->load( line );
 
       images.push_back( image );
+      valid_image_paths.push_back( line );
     }
 
+    // Load comparison tracks if enabled
+    maptk::track_set_sptr comparison_tracks;
+
+    if( config->has_value( "comparison_track_file" ) )
+    {
+      track_file = config->get_value<std::string>( "comparison_track_file" );
+
+      if( !track_file.empty() )
+      {
+        std::cout << std::endl << "Loading comparison track set file..." << std::endl;
+        comparison_tracks = maptk::read_track_file( track_file );
+      }
+    }
+    else if( config->has_value( "comparison_landmark_file" ) &&
+             config->has_value( "comparison_camera_dir" ) )
+    {
+      std::string landmark_file = config->get_value<std::string>( "comparison_landmark_file" );
+      std::string camera_dir = config->get_value<std::string>( "comparison_camera_dir" );
+
+      if( !landmark_file.empty() && !camera_dir.empty() )
+      {
+        std::cout << std::endl << "Loading comparison track set file..." << std::endl;
+        maptk::landmark_map_sptr landmarks = maptk::read_ply_file( landmark_file );
+        maptk::camera_map_sptr cameras = maptk::read_krtd_files( valid_image_paths, camera_dir );
+        comparison_tracks = projected_tracks( landmarks, cameras );
+      }
+    }
+
+    // Draw tracks on images
     if( comparison_tracks->size() == 0 )
     {
       draw_tracks->draw( tracks, images );
