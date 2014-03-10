@@ -311,7 +311,7 @@ static int maptk_main(int argc, char const* argv[])
     }
 
     // Draw tracks on images
-    if( comparison_tracks->size() == 0 )
+    if( !comparison_tracks || comparison_tracks->size() == 0 )
     {
       draw_tracks->draw( tracks, images );
     }
