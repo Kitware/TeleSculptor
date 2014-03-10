@@ -15,6 +15,12 @@ VXL Library
 
   * Added VXL implementation of camera optimization
 
+OpenCV Library
+
+  * Added more options to the draw_track class, including the ability
+    to compare computed features tracks and landmarks projected onto
+    the image using camera krtd files.
+
 Tests
 
   * Added tests for VXL camera optimization implementation
