@@ -55,6 +55,7 @@ public:
     draw_match_lines( false ),
     draw_shift_lines( false ),
     draw_comparison_lines( true ),
+    swap_comparison_set( false ),
     write_images_to_disk( true ),
     pattern( "feature_tracks_%1%.png" ),
     cur_frame_id( 0 )
@@ -78,6 +79,7 @@ public:
   bool draw_match_lines;
   bool draw_shift_lines;
   bool draw_comparison_lines;
+  bool swap_comparison_set;
   fid_offset_vec_t past_frames_to_show;
   bool write_images_to_disk;
   boost::format pattern;
@@ -133,6 +135,10 @@ draw_tracks
                      "If more than 1 track set is input to this class, should we "
                      "draw comparison lines between tracks with the same ids in "
                      "both input sets?" );
+  config->set_value( "swap_comparison_set", d_->swap_comparison_set,
+                     "If we are using a comparison track set, swap it and the input "
+                     "track set, so that the comparison set becomes the main set "
+                     "being displayed." );
   config->set_value( "past_frames_to_show", "",
                      "A comma seperated list of past frames to show. For example: "
                      "a value of \"2, 1\" will cause the GUI to generate a window "
@@ -177,6 +183,7 @@ draw_tracks
   d_->draw_match_lines = config->get_value<bool>( "draw_match_lines" );
   d_->draw_shift_lines = config->get_value<bool>( "draw_shift_lines" );
   d_->draw_comparison_lines = config->get_value<bool>( "draw_comparison_lines" );
+  d_->swap_comparison_set = config->get_value<bool>( "swap_comparison_set" );
   d_->write_images_to_disk = config->get_value<bool>( "write_images_to_disk" );
   d_->pattern = boost::format( config->get_value<std::string>( "pattern" ) );
 
@@ -281,10 +288,19 @@ draw_tracks
 /// Output images with tracked features drawn on them
 image_container_sptr
 draw_tracks
-::draw(track_set_sptr track_set,
-       track_set_sptr comparison_set,
+::draw(track_set_sptr input_track_set,
+       track_set_sptr input_comparison_set,
        image_container_sptr_list image_data)
 {
+  // Perform swap of inputs if settings enabled
+  track_set_sptr track_set = input_track_set;
+  track_set_sptr comparison_set = input_comparison_set;
+
+  if( d_->swap_comparison_set )
+  {
+    std::swap( track_set, comparison_set );
+  }
+
   // Validate inputs
   if( image_data.empty() )
   {
