@@ -285,29 +285,26 @@ static int maptk_main(int argc, char const* argv[])
     // Load comparison tracks if enabled
     maptk::track_set_sptr comparison_tracks;
 
-    if( config->has_value( "comparison_track_file" ) )
+    if( config->has_value( "comparison_track_file" ) &&
+        !config->get_value<std::string>( "comparison_track_file" ).empty() )
     {
       track_file = config->get_value<std::string>( "comparison_track_file" );
 
-      if( !track_file.empty() )
-      {
-        std::cout << std::endl << "Loading comparison track set file..." << std::endl;
-        comparison_tracks = maptk::read_track_file( track_file );
-      }
+      std::cout << std::endl << "Loading comparison track set file..." << std::endl;
+      comparison_tracks = maptk::read_track_file( track_file );
     }
     else if( config->has_value( "comparison_landmark_file" ) &&
-             config->has_value( "comparison_camera_dir" ) )
+             !config->get_value<std::string>( "comparison_landmark_file" ).empty() &&
+             config->has_value( "comparison_camera_dir" ) &&
+             !config->get_value<std::string>( "comparison_camera_dir" ).empty() )
     {
       std::string landmark_file = config->get_value<std::string>( "comparison_landmark_file" );
       std::string camera_dir = config->get_value<std::string>( "comparison_camera_dir" );
 
-      if( !landmark_file.empty() && !camera_dir.empty() )
-      {
-        std::cout << std::endl << "Loading comparison track set file..." << std::endl;
-        maptk::landmark_map_sptr landmarks = maptk::read_ply_file( landmark_file );
-        maptk::camera_map_sptr cameras = maptk::read_krtd_files( valid_image_paths, camera_dir );
-        comparison_tracks = projected_tracks( landmarks, cameras );
-      }
+      std::cout << std::endl << "Loading comparison track set file..." << std::endl;
+      maptk::landmark_map_sptr landmarks = maptk::read_ply_file( landmark_file );
+      maptk::camera_map_sptr cameras = maptk::read_krtd_files( valid_image_paths, camera_dir );
+      comparison_tracks = projected_tracks( landmarks, cameras );
     }
 
     // Draw tracks on images
