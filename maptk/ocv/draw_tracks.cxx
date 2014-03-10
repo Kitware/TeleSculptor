@@ -370,7 +370,6 @@ draw_tracks
         {
           cv::Point prior_loc( static_cast<int>(itr->feat->loc()[0]),
                                static_cast<int>(itr->feat->loc()[1]) );
-
           cv::line( img, prior_loc, loc, color );
         }
       }
@@ -392,7 +391,8 @@ draw_tracks
 
           if( itr != comparison_trk->end() && itr->feat )
           {
-            cv::Point other_loc( itr->feat->loc()[0], itr->feat->loc()[1] );
+            cv::Point other_loc( static_cast<int>(itr->feat->loc()[0]),
+                                 static_cast<int>(itr->feat->loc()[1]) );
             cv::line( img, other_loc, loc, red );
           }
         }
