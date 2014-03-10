@@ -384,23 +384,6 @@ draw_tracks
         color = terminated_color;
       }
 
-      if( d_->draw_track_ids && trk->size() > 1 )
-      {
-        cv::putText( img, tid_str, loc + txt_offset, cv::FONT_HERSHEY_COMPLEX_SMALL, 0.5, color );
-      }
-
-      // Generate and draw shift lines on the video
-      if( d_->draw_shift_lines && trk->size() > 1 && fid > 0 )
-      {
-        track::history_const_itr itr = trk->find( fid-1 );
-
-        if( itr != trk->end() && itr->feat )
-        {
-          cv::Point prior_loc = state_to_cv_point( *itr );
-          cv::line( img, prior_loc, loc, color );
-        }
-      }
-
       // Generate and store match lines for later use
       if( d_->draw_match_lines )
       {
@@ -427,6 +410,23 @@ draw_tracks
         {
           color = uncompared_color;
         }
+      }
+
+      // Generate and draw shift lines on the video
+      if( d_->draw_shift_lines && trk->size() > 1 && fid > 0 )
+      {
+        track::history_const_itr itr = trk->find( fid-1 );
+
+        if( itr != trk->end() && itr->feat )
+        {
+          cv::Point prior_loc = state_to_cv_point( *itr );
+          cv::line( img, prior_loc, loc, color );
+        }
+      }
+
+      if( d_->draw_track_ids && trk->size() > 1 )
+      {
+        cv::putText( img, tid_str, loc + txt_offset, cv::FONT_HERSHEY_COMPLEX_SMALL, 0.5, color );
       }
 
       if( d_->draw_untracked_features || trk->size() > 1 )
