@@ -300,7 +300,6 @@ draw_tracks
   // Colors to use
   const cv::Scalar blue( 255, 0, 0 );
   const cv::Scalar red( 0, 0, 255 );
-  const cv::Scalar orange( 0, 135, 255 );
   const cv::Scalar green( 0, 255, 0 );
   const cv::Scalar purple( 240, 32, 160 );
 
@@ -394,7 +393,7 @@ draw_tracks
           {
             cv::Point other_loc( static_cast<int>(itr->feat->loc()[0]),
                                  static_cast<int>(itr->feat->loc()[1]) );
-            cv::line( img, other_loc, loc, orange, 2 );
+            cv::line( img, other_loc, loc, red, 2 );
           }
         }
       }
