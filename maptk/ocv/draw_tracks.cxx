@@ -329,6 +329,7 @@ draw_tracks
   const cv::Scalar terminated_color( 240, 32, 160 );
   const cv::Scalar untracked_color( 0, 69, 255 );
   const cv::Scalar error_color( 0, 0, 255 );
+  const cv::Scalar uncompared_color( 240, 32, 160 );
 
   // Iterate over all images
   BOOST_FOREACH( image_container_sptr ctr_sptr, image_data )
@@ -383,11 +384,6 @@ draw_tracks
         color = terminated_color;
       }
 
-      if( d_->draw_untracked_features || trk->size() > 1 )
-      {
-        cv::circle( img, loc, 1, color, 3 );
-      }
-
       if( d_->draw_track_ids && trk->size() > 1 )
       {
         cv::putText( img, tid_str, loc + txt_offset, cv::FONT_HERSHEY_COMPLEX_SMALL, 0.5, color );
@@ -427,6 +423,15 @@ draw_tracks
             comparison_track_found = true;
           }
         }
+        else
+        {
+          color = uncompared_color;
+        }
+      }
+
+      if( d_->draw_untracked_features || trk->size() > 1 )
+      {
+        cv::circle( img, loc, 1, color, 3 );
       }
     }
 
