@@ -28,11 +28,11 @@ namespace vxl
 
 
 // Data stored for every detected checkpoint
-typedef std::pair< frame_id_t, homography_collection_sptr > checkpoint_data_t;
+typedef std::pair< frame_id_t, homography_collection_sptr > checkpoint_entry_t;
 
 
 // Buffer type for detected checkpoints
-typedef boost::circular_buffer< checkpoint_data_t > checkpoint_buffer_t;
+typedef boost::circular_buffer< checkpoint_entry_t > checkpoint_buffer_t;
 
 
 // Private implementation class
