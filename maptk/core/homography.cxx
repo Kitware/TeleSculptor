@@ -27,6 +27,15 @@ f2f_homography
 
 
 f2f_homography
+::f2f_homography( const f2f_homography& h )
+: homography(h),
+  from_id_(h.from_id()),
+  to_id_(h.to_id())
+{
+}
+
+
+f2f_homography
 ::~f2f_homography()
 {
 }
