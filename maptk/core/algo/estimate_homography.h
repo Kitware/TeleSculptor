@@ -35,6 +35,7 @@ class MAPTK_CORE_EXPORT estimate_homography
   : public algorithm_def<estimate_homography>
 {
 public:
+
   /// Return the name of this algorithm
   std::string type_name() const { return "estimate_homography"; }
 
