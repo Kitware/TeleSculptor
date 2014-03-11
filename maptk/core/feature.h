@@ -6,7 +6,7 @@
 
 /**
  * \file
- * \brief core feature iterface
+ * \brief core feature interface
  */
 
 #ifndef MAPTK_FEATURE_H_
