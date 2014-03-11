@@ -210,7 +210,13 @@ filter_tracks(maptk::track_set_sptr tracks, size_t min_length)
 }
 
 
-/// subsample a every Nth camera, where N is specfied by factor
+/// Subsample a every Nth camera, where N is specfied by factor
+/**
+ * Uses camera frame numbers to determine subsample. This is fine when we
+ * assume the cameras given are sequential and always start with frame 0,
+ * but will behave in possibly undesired ways when not given structured in
+ * other ways.
+ */
 maptk::camera_map_sptr
 subsample_cameras(maptk::camera_map_sptr cameras, unsigned factor)
 {

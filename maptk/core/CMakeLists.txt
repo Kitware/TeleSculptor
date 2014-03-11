@@ -54,6 +54,7 @@ set(maptk_core_headers_public
   algo/estimate_homography.h
   algo/estimate_similarity_transform.h
   algo/extract_descriptors.h
+  algo/hierarchical_bundle_adjust.h
   algo/image_io.h
   algo/geo_map.h
   algo/match_features.h
@@ -107,6 +108,7 @@ set(maptk_core_sources
   algo/extract_descriptors.cxx
   algo/geo_map.cxx
   algo/image_io.cxx
+  algo/hierarchical_bundle_adjust.cxx
   algo/match_features.cxx
   algo/match_features_homography.cxx
   algo/optimize_cameras.cxx
