@@ -108,6 +108,8 @@ protected:
   /// Internal estimate homography class
   maptk::algo::estimate_homography_sptr h_estimator_;
 
+private:
+
   /// Class for storing other internal variables
   class priv;
   boost::scoped_ptr<priv> d_;

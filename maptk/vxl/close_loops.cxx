@@ -17,6 +17,7 @@
 
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
+#include <boost/circular_buffer.hpp>
 
 
 namespace maptk
@@ -26,21 +27,29 @@ namespace vxl
 {
 
 
-/// Private implementation class
+// Data stored for every detected checkpoint
+typedef std::pair< frame_id_t, homography_collection_sptr > checkpoint_data_t;
+
+
+// Buffer type for detected checkpoints
+typedef boost::circular_buffer< checkpoint_data_t > checkpoint_buffer_t;
+
+
+// Private implementation class
 class close_loops::priv
 {
 public:
 
   priv()
   : long_term_closure_enabled_( true ),
-    max_search_distance_( 10000 ),
-    checkpoint_percent_overlap_( 0.60 )
+    max_search_frames_( 10000 ),
+    checkpoint_percent_overlap_( 0.40 )
   {
   }
 
   priv( const priv& other )
   : long_term_closure_enabled_( other.long_term_closure_enabled_ ),
-    max_search_distance_( other.max_search_distance_ ),
+    max_search_frames_( other.max_search_frames_ ),
     checkpoint_percent_overlap_( other.checkpoint_percent_overlap_ )
   {
   }
@@ -53,14 +62,16 @@ public:
   bool long_term_closure_enabled_;
 
   /// Maximum past search distance in terms of number of frames.
-  unsigned max_search_distance_;
+  unsigned max_search_frames_;
 
   /// Term which controls when we make new loop closure checkpoints.
   double checkpoint_percent_overlap_;
+
+  /// Buffer storing past homographies for checkpoint frames
+  checkpoint_buffer_t buffer_;
 };
 
 
-/// Default Constructor
 close_loops
 ::close_loops()
 : d_( new priv() )
@@ -68,7 +79,6 @@ close_loops
 }
 
 
-/// Copy Constructor
 close_loops
 ::close_loops( const close_loops& other )
 : close_loops_bad_frames_only( other ),
@@ -77,13 +87,12 @@ close_loops
 }
 
 
-/// Destructor
 close_loops
 ::~close_loops()
 {
 }
 
-/// Get this alg's \link maptk::config_block configuration block \endlink
+
 config_block_sptr
 close_loops
 ::get_configuration() const
@@ -99,7 +108,7 @@ close_loops
   // Loop closure parameters
   config->set_value("long_term_closure_enabled", d_->long_term_closure_enabled_,
                     "Is long term loop closure enabled?");
-  config->set_value("max_search_distance", d_->max_search_distance_,
+  config->set_value("max_search_frames", d_->max_search_frames_,
                     "Maximum past search distance in terms of number of frames.");
   config->set_value("checkpoint_percent_overlap", d_->checkpoint_percent_overlap_,
                     "Term which controls when we make new loop closure checkpoints.");
@@ -108,7 +117,6 @@ close_loops
 }
 
 
-/// Set this algo's properties via a config block
 void
 close_loops
 ::set_configuration( config_block_sptr in_config )
@@ -127,8 +135,11 @@ close_loops
 
   // Settings for bad frame detection
   d_->long_term_closure_enabled_ = config->get_value<bool>( "long_term_closure_enabled" );
-  d_->max_search_distance_ = config->get_value<unsigned>( "max_search_distance" );
+  d_->max_search_frames_ = config->get_value<unsigned>( "max_search_frames" );
   d_->checkpoint_percent_overlap_ = config->get_value<double>( "checkpoint_percent_overlap" );
+
+  // Set buffer capacity
+  d_->buffer_.set_capacity( d_->max_search_frames_ );
 }
 
 
@@ -140,6 +151,26 @@ close_loops
 }
 
 
+// Compute overlap between the two frames
+double
+compute_percent_overlap( const f2f_homography& homog,
+                         const unsigned ni,
+                         const unsigned nj )
+{
+  return 0.0;
+}
+
+
+// Compute new homographies for the current frame
+homography_collection_sptr
+compute_new_homographies( frame_id_t frame_number,
+                          track_set_sptr input )
+{
+  return homography_collection_sptr();
+}
+
+
+// Perform stitch operation
 track_set_sptr
 close_loops
 ::stitch( frame_id_t frame_number,
@@ -151,7 +182,8 @@ close_loops
     close_loops_bad_frames_only::stitch( frame_number, image, input );
 
   // Compute new homographies for this frame
-  // []
+  homography_collection_sptr new_homographies =
+    compute_new_homographies( frame_number, updated_set );
 
   // Determine if this is a new checkpoint frame
   // []
