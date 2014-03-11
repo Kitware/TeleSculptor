@@ -6,53 +6,54 @@
 
 /**
  * \file
- * \brief Header defining the \link maptk::algo::close_loops_bad_frames_only
- *        close_loops_bad_frames_only \endlink algorithm
+ * \brief Header defining the vxl \link maptk::vxl::close_loops
+ *        close_loops \endlink algorithm
  */
 
-#ifndef MAPTK_ALGO_CLOSE_LOOPS_BAD_FRAMES_ONLY_H_
-#define MAPTK_ALGO_CLOSE_LOOPS_BAD_FRAMES_ONLY_H_
+#ifndef MAPTK_VXL_CLOSE_LOOPS_H_
+#define MAPTK_VXL_CLOSE_LOOPS_H_
 
 #include <maptk/core/core_config.h>
+#include <maptk/core/image_container.h>
+#include <maptk/core/track_set.h>
+#include <maptk/core/homography.h>
 
-#include <boost/shared_ptr.hpp>
+#include <boost/scoped_ptr.hpp>
 
 #include <maptk/core/algo/algorithm.h>
 #include <maptk/core/algo/match_features.h>
-#include <maptk/core/algo/close_loops.h>
-#include <maptk/core/image_container.h>
-#include <maptk/core/track_set.h>
+#include <maptk/core/algo/close_loops_bad_frames_only.h>
+#include <maptk/core/algo/estimate_homography.h>
 
 
 namespace maptk
 {
 
-namespace algo
+namespace vxl
 {
 
-/// Attempts to stitch over incomplete or bad input frames.
+/// Attempts to stitch tracks over a long period of time.
 /**
- * This class attempts to only make short term loop closures
- * due to bad or incomplete. It operates on the principle
- * that when a bad frame occurs, there is generally a lower
- * percentage of feature tracks.
+ * This class attempts to make longer-term loop closures by utilizing a
+ * variety of techniques, one of which involves using homographies to
+ * estimate potential match locations in the past.
  */
-class MAPTK_CORE_EXPORT close_loops_bad_frames_only
-  : public algo::algorithm_impl<close_loops_bad_frames_only, close_loops>
+class MAPTK_CORE_EXPORT close_loops
+  : public maptk::algo::close_loops_bad_frames_only
 {
 public:
 
   /// Default Constructor
-  close_loops_bad_frames_only();
+  close_loops();
 
   /// Copy Constructor
-  close_loops_bad_frames_only(const close_loops_bad_frames_only&);
+  close_loops(const close_loops&);
 
   /// Destructor
-  virtual ~close_loops_bad_frames_only() {}
+  virtual ~close_loops();
 
   /// Return the name of this implementation
-  virtual std::string impl_name() const { return "bad_frames_only"; }
+  virtual std::string impl_name() const { return "vxl"; }
 
   /// Get this algorithm's \link maptk::config_block configuration block \endlink
   /**
@@ -101,27 +102,19 @@ public:
 
 protected:
 
-  /// Is bad frame detection enabled?
-  bool bf_detection_enabled_;
+  /// Internal estimate homography class
+  maptk::algo::estimate_homography_sptr h_estimator_;
 
-  /// Stitching percent feature match required
-  double bf_detection_percent_match_req_;
-
-  /// Stitching required new valid shot size in frames
-  unsigned bf_detection_new_shot_length_;
-
-  /// Max search length for bad frame detection in frames
-  unsigned bf_detection_max_search_length_;
-
-  /// The feature matching algorithm to use
-  match_features_sptr matcher_;
+  /// Class for storing other internal variables
+  class priv;
+  boost::scoped_ptr<priv> d_;
 
 };
 
 
-} // end namespace algo
+} // end namespace vxl
 
 } // end namespace maptk
 
 
-#endif // MAPTK_ALGO_CLOSE_LOOPS_BAD_FRAMES_ONLY_H_
+#endif // MAPTK_VXL_CLOSE_LOOPS_H_

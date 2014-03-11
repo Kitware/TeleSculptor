@@ -6,6 +6,7 @@ set(maptk_vxl_headers_public
   bundle_adjust.h
   camera.h
   camera_map.h
+  close_loops.h
   estimate_homography.h
   estimate_similarity_transform.h
   image_container.h
@@ -21,6 +22,7 @@ set(maptk_vxl_sources
   bundle_adjust.cxx
   camera.cxx
   camera_map.cxx
+  close_loops.cxx
   estimate_homography.cxx
   estimate_similarity_transform.cxx
   image_container.cxx
