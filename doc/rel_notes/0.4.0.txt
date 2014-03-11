@@ -10,3 +10,13 @@ Core Library
   * Added interpolation functions for rotations and for cameras.
 
   * Added camera optimization algorithm definition.
+
+VXL Library
+
+  * Added VXL implementation of camera optimization
+
+Tests
+
+  * Added tests for VXL camera optimization implementation
+
+  * Added methods for vector and matrix aproximate equality
