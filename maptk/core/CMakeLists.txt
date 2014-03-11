@@ -44,6 +44,7 @@ set(maptk_core_headers_public
   exceptions/config_block.h
   exceptions/config_block_io.h
   exceptions/io.h
+  exceptions/math.h
 
   algo/algorithm.h
   algo/algorithm.txx
@@ -100,6 +101,7 @@ set(maptk_core_sources
   exceptions/config_block.cxx
   exceptions/config_block_io.cxx
   exceptions/io.cxx
+  exceptions/math.cxx
 
   algo/algorithm.cxx
   algo/analyze_tracks.cxx

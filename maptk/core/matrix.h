@@ -23,6 +23,7 @@
 
 #include "vector.h"
 #include "vector_cmath.h"
+#include "exceptions.h"
 
 
 namespace maptk
@@ -512,7 +513,6 @@ matrix_<M,O,T> operator*(const matrix_<M,N,T>& a, const matrix_<N,O,T>& b)
   return out;
 }
 
-
 /// Compute the determinant of a 2x2 square matrix
 template <typename T>
 inline
@@ -533,6 +533,46 @@ T determinant(const matrix_<3,3,T>& m)
        + d[2]*(d[3]*d[7] - d[4]*d[6]);
 }
 
+/// Compute the inverse of a 2x2 square matrix
+template <typename T>
+matrix_<2,2,T> inverse(const matrix_<2,2,T>& m)
+{
+  T det = determinant(m);
+  if (det==0)
+  {
+    throw non_invertible_matrix();
+  }
+  det = T(1)/det;
+  T d[4];
+  d[0] = m(1,1)*det;
+  d[1] = -m(0,1)*det;
+  d[2] = -m(1,0)*det;
+  d[3] = m(0,0)*det;
+  return matrix_<2,2,T>(d);
+}
+
+/// Compute the inverse of a 3x3 square matrix
+template <typename T>
+matrix_<3,3,T> inverse(const matrix_<3,3,T>& m)
+{
+  T det = determinant(m);
+  if (det==0)
+  {
+    throw non_invertible_matrix();
+  }
+  det = T(1)/det;
+  T d[9];
+  d[0] = (m(1,1)*m(2,2)-m(1,2)*m(2,1))*det;
+  d[1] = (m(2,1)*m(0,2)-m(2,2)*m(0,1))*det;
+  d[2] = (m(0,1)*m(1,2)-m(0,2)*m(1,1))*det;
+  d[3] = (m(1,2)*m(2,0)-m(1,0)*m(2,2))*det;
+  d[4] = (m(0,0)*m(2,2)-m(0,2)*m(2,0))*det;
+  d[5] = (m(1,0)*m(0,2)-m(1,2)*m(0,0))*det;
+  d[6] = (m(1,0)*m(2,1)-m(1,1)*m(2,0))*det;
+  d[7] = (m(0,1)*m(2,0)-m(0,0)*m(2,1))*det;
+  d[8] = (m(0,0)*m(1,1)-m(0,1)*m(1,0))*det;
+  return matrix_<3,3,T>(d);
+}
 
 /// output stream operator for a matrix
 /**
