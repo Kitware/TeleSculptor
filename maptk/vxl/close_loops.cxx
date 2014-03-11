@@ -142,10 +142,13 @@ close_loops
 
 track_set_sptr
 close_loops
-::stitch( frame_id_t frame_number, track_set_sptr input ) const
+::stitch( frame_id_t frame_number,
+          image_container_sptr image,
+          track_set_sptr input ) const
 {
   // Perform bad frame detection for this frame (if enabled)
-  track_set_sptr updated_set = close_loops_bad_frames_only::stitch( frame_number, input );
+  track_set_sptr updated_set =
+    close_loops_bad_frames_only::stitch( frame_number, image, input );
 
   // Compute new homographies for this frame
   // []

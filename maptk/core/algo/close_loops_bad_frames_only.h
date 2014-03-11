@@ -92,11 +92,13 @@ public:
   /// Perform basic shot stitching for bad frame detection
   /**
    * \param [in] frame_number the frame number of the current frame
+   * \param [in] image image data for the current frame
    * \param [in] input the input track set to stitch
    * \returns an updated set a tracks after the stitching operation
    */
   virtual track_set_sptr
   stitch( frame_id_t frame_number,
+          image_container_sptr image,
           track_set_sptr input ) const;
 
 protected:

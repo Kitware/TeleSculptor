@@ -194,7 +194,10 @@ track_features_default
     all_tracks.back()->set_id(this->next_track_id_++);
   }
 
-  return closer_->stitch(frame_number, track_set_sptr(new simple_track_set(all_tracks)));
+  track_set_sptr stitched_tracks = closer_->stitch(frame_number,
+    image_data, track_set_sptr(new simple_track_set(all_tracks)));
+
+  return stitched_tracks;
 }
 
 
