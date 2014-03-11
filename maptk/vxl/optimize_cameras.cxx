@@ -17,6 +17,7 @@
 
 #include <boost/foreach.hpp>
 
+#include <maptk/core/exceptions.h>
 #include <maptk/vxl/camera.h>
 #include <maptk/vxl/camera_map.h>
 
@@ -41,8 +42,7 @@ optimize_cameras
 {
   if (!cameras || !tracks || !landmarks)
   {
-    // TODO: raise exception here
-    return;
+    throw invalid_value("One or more input data pieces are Null!");
   }
   typedef maptk::camera_map::map_camera_t map_camera_t;
   typedef maptk::vxl::camera_map::map_vcam_t map_vcam_t;
