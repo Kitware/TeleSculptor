@@ -52,10 +52,10 @@ public:
   /// Is long term loop closure enabled?
   bool long_term_closure_enabled_;
 
-  /// Maximum past search distance in terms of number of frames
+  /// Maximum past search distance in terms of number of frames.
   unsigned max_search_distance_;
 
-  /// Term which controls when we make new loop closure checkpoints
+  /// Term which controls when we make new loop closure checkpoints.
   double checkpoint_percent_overlap_;
 };
 
@@ -97,12 +97,12 @@ close_loops
     ( "homography_estimator", config, h_estimator_ );
 
   // Loop closure parameters
-  /*config->set_value("bf_detection_enabled", bf_detection_enabled_,
-                    "Should bad frame detection be enabled? This option will attempt to "
-                    "bridge the gap between frames which don't meet certain criteria "
-                    "(percentage of feature points tracked) and will instead attempt "
-                    "to match features on the current frame against past frames to "
-                    "meet this criteria. This is useful when there can be bad frames.");*/
+  config->set_value("long_term_closure_enabled", d_->long_term_closure_enabled_,
+                    "Is long term loop closure enabled?");
+  config->set_value("max_search_distance", d_->max_search_distance_,
+                    "Maximum past search distance in terms of number of frames.");
+  config->set_value("checkpoint_percent_overlap", d_->checkpoint_percent_overlap_,
+                    "Term which controls when we make new loop closure checkpoints.");
 
   return config;
 }
@@ -122,11 +122,13 @@ close_loops
   // assigning to instance property.
   maptk::algo::estimate_homography_sptr hest;
   maptk::algo::estimate_homography::set_nested_algo_configuration
-    ("homography_estimator", config, hest);
+    ( "homography_estimator", config, hest );
   h_estimator_ = hest;
 
   // Settings for bad frame detection
-  //bf_detection_enabled_ = config->get_value<bool>("bf_detection_enabled");
+  d_->long_term_closure_enabled_ = config->get_value<bool>( "long_term_closure_enabled" );
+  d_->max_search_distance_ = config->get_value<unsigned>( "max_search_distance" );
+  d_->checkpoint_percent_overlap_ = config->get_value<double>( "checkpoint_percent_overlap" );
 }
 
 
@@ -142,7 +144,27 @@ track_set_sptr
 close_loops
 ::stitch( frame_id_t frame_number, track_set_sptr input ) const
 {
-  return close_loops_bad_frames_only::stitch( frame_number, input );
+  // Perform bad frame detection for this frame (if enabled)
+  track_set_sptr updated_set = close_loops_bad_frames_only::stitch( frame_number, input );
+
+  // Compute new homographies for this frame
+  // []
+
+  // Determine if this is a new checkpoint frame
+  // []
+
+  // If this is a new checkpoint
+  if( 0 )
+  {
+    // Add homography info to buffer
+    // []
+  }
+
+  // Perform matching to any past checkpoints we want to test
+  // []
+
+  // Return updated track set
+  return updated_set;
 }
 
 

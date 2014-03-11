@@ -36,7 +36,8 @@ namespace vxl
 /**
  * This class attempts to make longer-term loop closures by utilizing a
  * variety of techniques, one of which involves using homographies to
- * estimate potential match locations in the past.
+ * estimate potential match locations in the past, followed up by additional
+ * filtering.
  */
 class MAPTK_CORE_EXPORT close_loops
   : public maptk::algo::close_loops_bad_frames_only
@@ -47,7 +48,7 @@ public:
   close_loops();
 
   /// Copy Constructor
-  close_loops(const close_loops&);
+  close_loops( const close_loops& );
 
   /// Destructor
   virtual ~close_loops();
@@ -76,7 +77,7 @@ public:
    * \param config  The \c config_block instance containing the configuration
    *                parameters for this algorithm
    */
-  virtual void set_configuration(config_block_sptr config);
+  virtual void set_configuration( config_block_sptr config );
 
   /// Check that the algorithm's currently configuration is valid
   /**
@@ -88,7 +89,7 @@ public:
    *
    * \returns true if the configuration check passed and false if it didn't.
    */
-  virtual bool check_configuration(config_block_sptr config) const;
+  virtual bool check_configuration( config_block_sptr config ) const;
 
   /// Perform basic shot stitching for bad frame detection
   /**
