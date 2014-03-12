@@ -25,10 +25,10 @@ namespace maptk
 {
 
 
-/// A raw homography transformation.
+/// A raw homography transformation matrix.
 typedef matrix_3x3d homography;
 
-/// A smart pointer to a raw homography.
+/// A smart pointer to a raw homography transformation matrix.
 typedef boost::shared_ptr< homography > homography_sptr;
 
 
@@ -70,11 +70,37 @@ protected:
 /// A smart pointer to a frame homography.
 typedef boost::shared_ptr< f2f_homography > f2f_homography_sptr;
 
-/// A set of frame to frame homographies for several individual frames.
-typedef std::map< frame_id_t, f2f_homography_sptr > f2f_homography_set;
 
-/// A smart pointer to a f2f homography set.
-typedef boost::shared_ptr< f2f_homography_set > f2f_homography_set_sptr;
+/// A homography between a frame and some arbitrary coordinate space.
+class MAPTK_CORE_EXPORT f2w_homography : public homography
+{
+public:
+
+  /// Construct a frame to frame homography.
+  explicit f2w_homography( const homography& h,
+                           const frame_id_t frame_id );
+
+  /// Copy Constructor.
+  f2w_homography( const f2w_homography& h );
+
+  /// Destructor.
+  virtual ~f2w_homography();
+
+  /// Return the inverse of this homography.
+  virtual f2w_homography inverse() const;
+
+  /// The frame identifier that this homography maps from.
+  virtual frame_id_t frame_id() const;
+
+protected:
+
+  /// From frame identifier.
+  frame_id_t frame_id_;
+
+};
+
+/// A smart pointer to a frame homography.
+typedef boost::shared_ptr< f2w_homography > f2w_homography_sptr;
 
 
 /// A point for use with multiplying with homography matrices.
@@ -111,8 +137,8 @@ public:
   /// Construct a homography collection from different types of homographies.
   homography_collection( f2f_homography_sptr cur_to_last = f2f_homography_sptr(),
                          f2f_homography_sptr cur_to_ref = f2f_homography_sptr(),
-                         f2f_homography_sptr ref_to_wld = f2f_homography_sptr(),
-                         f2f_homography_sptr cur_to_wld = f2f_homography_sptr() );
+                         f2w_homography_sptr ref_to_wld = f2w_homography_sptr(),
+                         f2w_homography_sptr cur_to_wld = f2w_homography_sptr() );
 
   /// Destructor.
   virtual ~homography_collection();
@@ -122,9 +148,9 @@ public:
   /// Return a homography to some reference frame.
   f2f_homography_sptr current_to_reference() const;
   /// Return an arbitrary reference to world homography.
-  f2f_homography_sptr reference_to_world() const;
+  f2w_homography_sptr reference_to_world() const;
   /// Return a homography to some reference frame.
-  f2f_homography_sptr current_to_world() const;
+  f2w_homography_sptr current_to_world() const;
 
   /// Is the current to last homography valid?
   bool has_current_to_last() const;
@@ -142,9 +168,9 @@ protected:
   /// The actual current to reference homography.
   f2f_homography_sptr current_to_reference_;
   /// The actual reference to world homography.
-  f2f_homography_sptr reference_to_world_;
+  f2w_homography_sptr reference_to_world_;
   /// The actual current to world homography.
-  f2f_homography_sptr current_to_world_;
+  f2w_homography_sptr current_to_world_;
 
 };
 

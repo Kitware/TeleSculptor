@@ -65,11 +65,50 @@ f2f_homography
 }
 
 
+f2w_homography
+::f2w_homography( const homography& h,
+                  const frame_id_t frame_id )
+: homography(h),
+  frame_id_(frame_id)
+{
+}
+
+
+f2w_homography
+::f2w_homography( const f2w_homography& h )
+: homography(h),
+  frame_id_(h.frame_id())
+{
+}
+
+
+f2w_homography
+::~f2w_homography()
+{
+}
+
+
+f2w_homography
+f2w_homography
+::inverse() const
+{
+  return f2w_homography( maptk::inverse( *this ), frame_id_ );
+}
+
+
+frame_id_t
+f2w_homography
+::frame_id() const
+{
+  return frame_id_;
+}
+
+
 homography_collection
 ::homography_collection( f2f_homography_sptr cur_to_last,
                          f2f_homography_sptr cur_to_ref,
-                         f2f_homography_sptr ref_to_wld,
-                         f2f_homography_sptr cur_to_wld )
+                         f2w_homography_sptr ref_to_wld,
+                         f2w_homography_sptr cur_to_wld )
 : current_to_last_( cur_to_last ),
   current_to_reference_( cur_to_ref ),
   reference_to_world_( ref_to_wld ),
@@ -79,8 +118,7 @@ homography_collection
   {
     homography h = (*reference_to_world_) * (*current_to_reference_);
     frame_id_t from = current_to_reference_->from_id();
-    frame_id_t to = static_cast<frame_id_t>( 0 );
-    current_to_world_ = f2f_homography_sptr( new f2f_homography( h, from, to ) );
+    current_to_world_ = f2w_homography_sptr( new f2w_homography( h, from ) );
   }
 }
 
@@ -107,7 +145,7 @@ homography_collection
 }
 
 
-f2f_homography_sptr
+f2w_homography_sptr
 homography_collection
 ::reference_to_world() const
 {
@@ -115,7 +153,7 @@ homography_collection
 }
 
 
-f2f_homography_sptr
+f2w_homography_sptr
 homography_collection
 ::current_to_world() const
 {
@@ -191,7 +229,8 @@ operator*( const homography& h, const homography_point& p )
     throw point_maps_to_infinity();
   }
 
-  return homography_point( out_pt(0,0) / out_pt(2,0), out_pt(1,0) / out_pt(2,0) );
+  return homography_point( out_pt(0,0) / out_pt(2,0),
+                           out_pt(1,0) / out_pt(2,0) );
 }
 
 } // end namespace maptk
