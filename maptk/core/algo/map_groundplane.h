@@ -56,8 +56,8 @@ public:
    * \param return estimated homographies
    */
   virtual homography_collection_sptr
-  transform( frame_id_t frame_number,
-             track_set_sptr tracks ) const = 0;
+  measure( frame_id_t frame_number,
+           track_set_sptr tracks ) const = 0;
 
 };
 

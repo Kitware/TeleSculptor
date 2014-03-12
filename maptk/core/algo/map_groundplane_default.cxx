@@ -32,6 +32,9 @@ namespace algo
 // Extra data stored for every active track
 struct extra_track_info
 {
+  // Track ID for the given track this struct extends
+  track_id_t tid;
+
   // Location of this track in the reference frame
   homography_point ref_loc;
 
@@ -44,14 +47,11 @@ struct extra_track_info
   // The number of times we haven't seen this track as active
   unsigned missed_count;
 
-  // Pointer to the track object this class extends
-  track_sptr trk;
-
   // Constructor.
   extra_track_info()
   : ref_loc( 0.0, 0.0 ),
     ref_loc_valid( false ),
-    is_good( true ),
+    is_good( false ),
     missed_count( 0 )
   {}
 };
@@ -70,12 +70,16 @@ class map_groundplane_default::priv
 public:
 
   priv()
-  : some_double( 0.0 )
+  : use_backproject_error( false ),
+    backproject_threshold_sqr( 16.0 ),
+    forget_track_threshold( 10 )
   {
   }
 
   priv( const priv& other )
-  : some_double( other.some_double )
+  : use_backproject_error( other.use_backproject_error ),
+    backproject_threshold_sqr( other.backproject_threshold_sqr ),
+    forget_track_threshold( other.forget_track_threshold )
   {
   }
 
@@ -83,14 +87,20 @@ public:
   {
   }
 
-  /// Some double
-  double some_double;
+  /// Should we remove extra points if the backproject error is high?
+  bool use_backproject_error;
+
+  /// Backprojection threshold in terms of L2 distance (number of pixels)
+  double backproject_threshold_sqr;
+
+  /// After how many frames should we forget all info about a track?
+  unsigned forget_track_threshold;
 
   /// Buffer storing track extensions
-  track_ext_buffer_t buffer_;
+  track_ext_buffer_t buffer;
 
   /// Pointer to homography estimator
-  estimator_sptr h_estimator_;
+  estimator_sptr h_estimator;
 };
 
 
@@ -124,7 +134,7 @@ map_groundplane_default
   // Sub-algorithm implementation name + sub_config block
   // - Homography estimator algorithm
   estimate_homography::get_nested_algo_configuration
-    ( "homography_estimator", config, d_->h_estimator_ );
+    ( "homography_estimator", config, d_->h_estimator );
 
   return config;
 }
@@ -142,7 +152,7 @@ map_groundplane_default
   // Setting nested algorithm instances via setter methods instead of directly
   // assigning to instance property.
   estimate_homography::set_nested_algo_configuration
-    ( "homography_estimator", config, d_->h_estimator_ );
+    ( "homography_estimator", config, d_->h_estimator );
 }
 
 
@@ -151,17 +161,54 @@ map_groundplane_default
 ::check_configuration(config_block_sptr config) const
 {
   return
+  (
     estimate_homography::check_nested_algo_configuration
-      ( "homography_estimator", config );
+      ( "homography_estimator", config )
+  );
+}
+
+
+// Helper function for sorting etis
+bool compare_eti( const extra_track_info& c1, const extra_track_info& c2 )
+{
+  return c1.tid < c2.tid;
+}
+
+
+// Helper function for finding an ati for a given track
+bool compare_eti_to_track( const track_sptr& c1, const extra_track_info& c2 )
+{
+  return c1->id() == c2.tid;
 }
 
 
 homography_collection_sptr
 map_groundplane_default
-::transform( frame_id_t frame_number,
-             track_set_sptr tracks ) const
+::measure( frame_id_t frame_number,
+           track_set_sptr tracks ) const
 {
+  // Get active tracks for the current frame
+  track_set_sptr active_tracks = tracks->active_tracks( frame_number );
 
+  // Process new tracks, add to list, and remove old tracks.
+  std::vector< track_sptr > new_tracks;
+
+  for( unsigned i = 0; i < active_tracks->size(); i++ )
+  {
+
+  }
+
+  // Ensure that the vector is still sorted. Chances are it still is and
+  // this is a simple scan of the vector.
+  std::sort( d_->buffer.begin(), d_->buffer.end(), compare_eti );
+
+  // Compute homography if possible
+  // []
+
+  // Update reference locations for existing tracks using homography
+  // []
+
+  return homography_collection_sptr();
 }
 
 } // end namespace algo

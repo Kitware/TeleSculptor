@@ -99,8 +99,8 @@ public:
    * \param return estimated transformations
    */
   virtual homography_collection_sptr
-  transform( frame_id_t frame_number,
-             track_set_sptr tracks ) const;
+  measure( frame_id_t frame_number,
+           track_set_sptr tracks ) const;
 
 private:
 

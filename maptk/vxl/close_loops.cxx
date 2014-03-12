@@ -190,7 +190,7 @@ close_loops
 
   // Compute new homographies for this frame
   homography_collection_sptr new_homographies =
-    d_->mapper_->transform( frame_number, updated_set );
+    d_->mapper_->measure( frame_number, updated_set );
 
   // Write out homographies if enabled
   if( !d_->homography_filename_.empty() )
