@@ -16,14 +16,11 @@
 #include <maptk/core/core_config.h>
 #include <maptk/core/image_container.h>
 #include <maptk/core/track_set.h>
-#include <maptk/core/homography.h>
 
 #include <boost/scoped_ptr.hpp>
 
 #include <maptk/core/algo/algorithm.h>
-#include <maptk/core/algo/match_features.h>
 #include <maptk/core/algo/close_loops_bad_frames_only.h>
-#include <maptk/core/algo/estimate_homography.h>
 
 
 namespace maptk
@@ -43,9 +40,6 @@ class MAPTK_CORE_EXPORT close_loops
   : public maptk::algo::close_loops_bad_frames_only
 {
 public:
-
-  /// Internal homography estimator type
-  typedef maptk::algo::estimate_homography_sptr estimator_sptr;
 
   /// Default Constructor
   close_loops();
@@ -105,11 +99,6 @@ public:
   stitch( frame_id_t frame_number,
           image_container_sptr image,
           track_set_sptr input ) const;
-
-protected:
-
-  /// Internal estimate homography class
-  estimator_sptr h_estimator_;
 
 private:
 

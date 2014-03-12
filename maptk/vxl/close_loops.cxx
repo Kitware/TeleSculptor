@@ -11,7 +11,7 @@
  */
 
 #include <maptk/vxl/close_loops.h>
-#include <maptk/core/algo/estimate_homography.h>
+#include <maptk/core/algo/map_groundplane.h>
 
 #include <algorithm>
 #include <string>
@@ -28,44 +28,12 @@ namespace maptk
 namespace vxl
 {
 
-// Data stored for every detected checkpoint
-typedef std::pair< frame_id_t, homography_collection_sptr > checkpoint_entry_t;
 
+// Data stored for every detected checkpoint
+typedef homography_collection_sptr checkpoint_entry_t;
 
 // Buffer type for detected checkpoints
 typedef boost::circular_buffer< checkpoint_entry_t > checkpoint_buffer_t;
-
-
-// Data stored for every active track
-struct extra_track_info
-{
-  // Location of this track in the reference frame
-  homography_point ref_loc;
-
-  // Is the ref loc valid?
-  bool ref_loc_valid;
-
-  // Should this point be used in homography regression?
-  bool is_good;
-
-  // Pointer to the track object this class extends
-  track_sptr trk;
-
-  // The number of times we haven't seen this track as active
-  unsigned missed_count;
-
-  // Constructor.
-  extra_track_info()
-  : ref_loc( 0.0, 0.0 ),
-    ref_loc_valid( false ),
-    is_good( true ),
-    missed_count( 0 )
-  {}
-};
-
-
-// Buffer type for the extra track info
-typedef std::vector< extra_track_info > ext_track_buffer_t;
 
 
 /// Private implementation class
@@ -75,7 +43,7 @@ public:
 
   priv()
   : long_term_closure_enabled_( true ),
-    max_search_frames_( 10000 ),
+    max_checkpoint_frames_( 10000 ),
     checkpoint_percent_overlap_( 0.40 ),
     homography_filename_( "" )
   {
@@ -83,7 +51,7 @@ public:
 
   priv( const priv& other )
   : long_term_closure_enabled_( other.long_term_closure_enabled_ ),
-    max_search_frames_( other.max_search_frames_ ),
+    max_checkpoint_frames_( other.max_checkpoint_frames_ ),
     checkpoint_percent_overlap_( other.checkpoint_percent_overlap_ ),
     homography_filename_( other.homography_filename_ )
   {
@@ -97,7 +65,7 @@ public:
   bool long_term_closure_enabled_;
 
   /// Maximum past search distance in terms of number of frames.
-  unsigned max_search_frames_;
+  unsigned max_checkpoint_frames_;
 
   /// Term which controls when we make new loop closure checkpoints.
   double checkpoint_percent_overlap_;
@@ -108,22 +76,9 @@ public:
   /// Buffer storing past homographies for checkpoint frames
   checkpoint_buffer_t buffer_;
 
-  /// Previous frame active track info
-  ext_track_buffer_t track_info_;
+  /// Groundplane mapper
+  maptk::algo::map_groundplane_sptr mapper_;
 
-  /// Pointer to homography estimator
-  estimator_sptr h_estimator_;
-
-  /// Compute all homographies for the current frame
-  homography_collection_sptr generate_homographies(
-    frame_id_t frame_number,
-    track_set_sptr all_tracks );
-
-  /// Update checkmarks, returns true if this frame is a new one.
-  bool update_checkmarks(
-    frame_id_t frame_number,
-    track_set_sptr all_tracks,
-    homography_collection_sptr hc );
 };
 
 
@@ -157,13 +112,12 @@ close_loops
 
   // Sub-algorithm implementation name + sub_config block
   // - Homography estimator algorithm
-  maptk::algo::estimate_homography::get_nested_algo_configuration
-    ( "homography_estimator", config, h_estimator_ );
+  maptk::algo::map_groundplane::get_nested_algo_configuration( "mapper", config, d_->mapper_ );
 
   // Loop closure parameters
   config->set_value("long_term_closure_enabled", d_->long_term_closure_enabled_,
                     "Is long term loop closure enabled?");
-  config->set_value("max_search_frames", d_->max_search_frames_,
+  config->set_value("max_checkpoint_frames", d_->max_checkpoint_frames_,
                     "Maximum past search distance in terms of number of frames.");
   config->set_value("checkpoint_percent_overlap", d_->checkpoint_percent_overlap_,
                     "Term which controls when we make new loop closure checkpoints.");
@@ -185,19 +139,18 @@ close_loops
 
   // Setting nested algorithm instances via setter methods instead of directly
   // assigning to instance property.
-  maptk::algo::estimate_homography_sptr hest;
-  maptk::algo::estimate_homography::set_nested_algo_configuration
-    ( "homography_estimator", config, hest );
-  h_estimator_ = hest;
+  maptk::algo::map_groundplane_sptr mp;
+  maptk::algo::map_groundplane::set_nested_algo_configuration( "mapper", config, mp );
+  d_->mapper_ = mp;
 
   // Settings for bad frame detection
   d_->long_term_closure_enabled_ = config->get_value<bool>( "long_term_closure_enabled" );
-  d_->max_search_frames_ = config->get_value<unsigned>( "max_search_frames" );
+  d_->max_checkpoint_frames_ = config->get_value<unsigned>( "max_checkpoint_frames" );
   d_->checkpoint_percent_overlap_ = config->get_value<double>( "checkpoint_percent_overlap" );
   d_->homography_filename_ = config->get_value<double>( "homography_filename" );
 
   // Set buffer capacity
-  d_->buffer_.set_capacity( d_->max_search_frames_ );
+  d_->buffer_.set_capacity( d_->max_checkpoint_frames_ );
 }
 
 
@@ -205,7 +158,12 @@ bool
 close_loops
 ::check_configuration( config_block_sptr config ) const
 {
-  return close_loops_bad_frames_only::check_configuration( config );
+  return
+  (
+    close_loops_bad_frames_only::check_configuration( config )
+    &&
+    maptk::algo::map_groundplane::check_nested_algo_configuration( "mapper", config )
+  );
 }
 
 
@@ -216,15 +174,6 @@ compute_percent_overlap( const f2f_homography& homog,
                          const unsigned image_rows )
 {
   return 0.0;
-}
-
-
-// Compute new homographies for the current frame
-homography_collection_sptr
-compute_new_homographies( frame_id_t frame_number,
-                          track_set_sptr input )
-{
-  return homography_collection_sptr();
 }
 
 
@@ -241,7 +190,7 @@ close_loops
 
   // Compute new homographies for this frame
   homography_collection_sptr new_homographies =
-    d_->generate_homographies( frame_number, updated_set, h_estimator_ );
+    d_->mapper_->transform( frame_number, updated_set );
 
   // Write out homographies if enabled
   if( !d_->homography_filename_.empty() )
@@ -252,8 +201,7 @@ close_loops
   }
 
   // Determine if this is a new checkpoint frame
-  const bool is_checkmark =
-    d_->update_checkmarks( frame_number, updated_set, new_homographies );
+  // []
 
   // Perform matching to any past checkpoints we want to test
   // []

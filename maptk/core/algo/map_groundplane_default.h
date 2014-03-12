@@ -46,7 +46,10 @@ public:
   map_groundplane_default();
 
   /// Copy Constructor
-  map_groundplane_default(const map_groundplane_default&);
+  map_groundplane_default( const map_groundplane_default& );
+
+  /// Default Destructor
+  ~map_groundplane_default();
 
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "default"; }
@@ -72,7 +75,7 @@ public:
    * \param config  The \c config_block instance containing the configuration
    *                parameters for this algorithm
    */
-  virtual void set_configuration(config_block_sptr config);
+  virtual void set_configuration( config_block_sptr config );
 
   /// Check that the algorithm's currently configuration is valid
   /**
@@ -84,7 +87,7 @@ public:
    *
    * \returns true if the configuration check passed and false if it didn't.
    */
-  virtual bool check_configuration(config_block_sptr config) const;
+  virtual bool check_configuration( config_block_sptr config ) const;
 
   /// Estimate the transformation which maps some image to the groundplane.
   /**
@@ -101,7 +104,7 @@ public:
 
 private:
 
-  /// Internal variables
+  /// Class storing internal variables
   class priv;
   boost::scoped_ptr<priv> d_;
 };
