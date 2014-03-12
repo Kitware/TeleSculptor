@@ -63,6 +63,7 @@ set(maptk_core_headers_public
   algo/hierarchical_bundle_adjust.h
   algo/image_io.h
   algo/map_groundplane.h
+  algo/map_groundplane_default.h
   algo/match_features.h
   algo/match_features_homography.h
   algo/optimize_cameras.h
