@@ -158,7 +158,7 @@ typedef std::map< frame_id_t, homography_collection > homography_collection_set;
 typedef boost::shared_ptr< homography_collection_set > homography_collection_set_sptr;
 
 
-/// Custom homography multiplication operator.
+/// Custom homography point multiplication operator.
 inline homography_point operator*( const homography& h, const homography_point& p );
 
 
