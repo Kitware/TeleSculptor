@@ -23,6 +23,7 @@
 
 #include <maptk/core/algo/optimize_cameras.h>
 #include <maptk/core/camera.h>
+#include <maptk/core/metrics.h>
 #include <maptk/core/exceptions.h>
 #include <maptk/core/types.h>
 
@@ -41,19 +42,18 @@ namespace // anonymous
  * Subsamples based off camera order index where the first camera in the map
  * has index 0 and the last has index n-1.
  */
-camera_map_sptr
-subsample_cameras(camera_map_sptr cameras, unsigned n)
+camera_map::map_camera_t
+subsample_cameras(camera_map::map_camera_t const& cameras, unsigned n)
 {
   // if sub-sample is 1, no sub-sampling occurs, just return a copy
   if (n == 1)
   {
-    return camera_map_sptr(new simple_camera_map(cameras->cameras()));
+    return cameras;
   }
 
-  camera_map::map_camera_t cams = cameras->cameras();
   camera_map::map_camera_t subsample;
   unsigned int i = 0;
-  BOOST_FOREACH(camera_map::map_camera_t::value_type const& p, cams)
+  BOOST_FOREACH(camera_map::map_camera_t::value_type const& p, cameras)
   {
     if (i % n == 0)
     {
@@ -61,7 +61,7 @@ subsample_cameras(camera_map_sptr cameras, unsigned n)
     }
     ++i;
   }
-  return camera_map_sptr(new simple_camera_map(subsample));
+  return subsample;
 }
 
 } // end anonymous namespace
@@ -125,7 +125,9 @@ hierarchical_bundle_adjust
                     "then be filled in by iterations of interpolation.");
 
   config->set_value("interpolation_rate", d_->interpolation_rate,
-                    "Number of cameras to fill in each iteration");
+                    "Number of cameras to fill in each iteration. When this "
+                    "is set to 0, we will interpolate all missing cameras "
+                    "at the first moment possible.");
 
   maptk::algo::bundle_adjust::get_nested_algo_configuration(
       "sba_impl", config, d_->sba
@@ -146,13 +148,6 @@ hierarchical_bundle_adjust
   d_->initial_sub_sample = config->get_value<unsigned int>("initial_sub_sample", d_->initial_sub_sample);
   d_->interpolation_rate = config->get_value<unsigned int>("interpolation_rate", d_->interpolation_rate);
 
-  // If interpolation rate is 0, then that means that all intermediate frames
-  // should be interpolated on the first step. Due to how the algorithm
-  // functions, set var to unsigned int max.
-  if (d_->interpolation_rate == 0)
-  {
-    d_->interpolation_rate = std::numeric_limits<unsigned int>::max();
-  }
 
   maptk::algo::bundle_adjust::set_nested_algo_configuration(
       "sba_impl", config, d_->sba
@@ -207,7 +202,7 @@ hierarchical_bundle_adjust
 /// Optimize the camera and landmark parameters given a set of tracks
 /**
  * Making naive assuptions:
- *  - cameras we are given are in sequence (no previous sub-sampling)
+ *  - cameras we are given are in sequence (no previous sub-sampling and no frame gaps)
  *  - given camera map evenly interpolates with the current configuration
  *  - Assuming that all frames we interpolate have tracks/landmarks with which
  *    to optimize that camera over.
@@ -218,11 +213,33 @@ hierarchical_bundle_adjust
            landmark_map_sptr & landmarks,
            track_set_sptr tracks) const
 {
+  using namespace std;
+
   //frame_id_t orig_max_frame = cameras->cameras().rbegin()->first;
+  cerr << "Cameras given to hsba: " << cameras->size() << endl;
   size_t num_orig_cams = cameras->size();
 
-  // sub-sample cameras
-  camera_map_sptr active_cam_map = subsample_cameras(cameras, d_->initial_sub_sample);
+  // If interpolation rate is 0, then that means that all intermediate frames
+  // should be interpolated on the first step. Due to how the algorithm
+  // functions, set var to unsigned int max.
+  unsigned int ir = d_->interpolation_rate;
+  if (ir == 0)
+  {
+    ir = std::numeric_limits<unsigned int>::max();
+  }
+  cerr << "Interpolation rate: " << ir << endl;
+
+  // Sub-sample cameras
+  // Always adding the last camera (if not already in there) to the sub-
+  // sampling in order to remove the complexity of interpolating into empty
+  // space (constant operation).
+  unsigned int ssr = d_->initial_sub_sample;
+  camera_map::map_camera_t input_cams = cameras->cameras(),
+                           acm;
+  acm = subsample_cameras(input_cams, ssr);
+  acm[input_cams.rbegin()->first] = input_cams.rbegin()->second;
+  camera_map_sptr active_cam_map(new simple_camera_map(acm));
+  cerr << "Subsampled cameras: " << active_cam_map->size() << endl;
 
   // need to have at least 2 cameras
   if (active_cam_map->size() < 2)
@@ -230,66 +247,104 @@ hierarchical_bundle_adjust
     throw invalid_value("Camera map given is of insufficient length.");
   }
 
+  cerr << "Entering loop..." << endl;
   bool done = false;
   do
   {
+    cerr << "----------" << endl;
+
+    cerr << "SBA optimizing active cameras (" << active_cam_map->size() << " cams)" << endl;
+    // updated active_cam_map and landmarks
     d_->sba->optimize(active_cam_map, landmarks, tracks);
+
+    double rmse = reprojection_rmse(active_cam_map->cameras(),
+                                    landmarks->landmarks(),
+                                    tracks->tracks());
+    cerr << "--> SBA iteration RMSE: " << rmse << endl;
 
     // If we've just completed SBA with all original frames in the new map,
     // then we're done.
+    cerr << "completion check: " << active_cam_map->size() << " == " << num_orig_cams << " --> ";
     if (active_cam_map->size() == num_orig_cams)
     {
+      cerr << "yup" << endl;
       done = true;
     }
 
     // perform interpolation between frames that have gaps in between them
     else
     {
-      // Inserting interpolated cameras into separate map to be merged after
-      // while loop
-      camera_map::map_camera_t interped_cams,
-                               c_map = active_cam_map->cameras();
-      camera_map::map_camera_t::const_iterator it = c_map.begin();
+      cerr << "nope" << endl;
 
-      // pre-allocation of variables
-      size_t jump;
+      camera_map::map_camera_t
+        // separated interpolated camera storage
+        interped_cams,
+        // concrete map of active cameras
+        ac_map = active_cam_map->cameras();
+
+      // pre-allocation of variables for performance
+      size_t interval, jump,
+             ir_l; // local interpolation rate as gaps available may be less than global rate
       double f;
       frame_id_t cur_frm, next_frm;
       camera_sptr cur_cam, next_cam;
 
       // Iterate through frames and cameras, interpolating across gaps when found
       // ASSUMING even interpolation for now
-      while (it != c_map.end())
+      camera_map::map_camera_t::const_iterator it = ac_map.begin();
+      while (it != ac_map.end())
       {
         cur_frm = it->first;
         cur_cam = it->second;
         ++it;
 
         // If we're not at the end of the active camera sequence
-        if (it != c_map.end())
+        if (it != ac_map.end())
         {
           next_frm = it->first;
           next_cam = it->second;
+          cerr << "Interpolating cam between frames " << cur_frm << " and " << next_frm << endl;
 
-          // assuming even interpolation, this will divide evenly
-          jump = (next_frm - cur_frm) / (d_->interpolation_rate + 1);
-          for (; cur_frm + jump < next_frm; jump += jump)
+          // this specific gap's interpolation rate -- gap may be smaller than ir
+          ir_l = min(ir, next_frm - cur_frm - 1);
+
+          // Integral interval of each interpolation between cur and next frames
+          // -> assuming even interpolation, this will divide evenly
+          interval = (next_frm - cur_frm) / (ir_l + 1);
+
+          for (jump = interval; cur_frm + jump < next_frm; jump += interval)
           {
             f = static_cast<double>(jump) / (next_frm - cur_frm);
+            cerr << "-> frm = " << (cur_frm + jump) << ", f = " << f << endl;
             interped_cams[cur_frm + jump] = interpolate_camera(cur_cam, next_cam, f);
           }
         }
-        // This should add every camera that was in the previous iteration,
-        // makeing interped_cams the new master map after this loop.
-        interped_cams[cur_frm] = cur_cam;
+      }
+
+      // Optimize new camers
+      cerr << "optimizing new interpolated cameras (" << interped_cams.size() << " cams)" << endl;
+      camera_map_sptr interped_cams_p(new simple_camera_map(interped_cams));
+      cerr << "\t- pre-optimization RMSE : " << reprojection_rmse(interped_cams_p->cameras(),
+                                                                  landmarks->landmarks(),
+                                                                  tracks->tracks()) << endl;
+      d_->camera_optimizer->optimize(interped_cams_p, tracks, landmarks);
+      cerr << "\t- post-optimization RMSE: " << reprojection_rmse(interped_cams_p->cameras(),
+                                                                  landmarks->landmarks(),
+                                                                  tracks->tracks()) << endl;
+
+      // adding optimized interpolated cameras to the map of existing cameras
+      BOOST_FOREACH(camera_map::map_camera_t::value_type const& p, interped_cams_p->cameras())
+      {
+        ac_map[p.first] = p.second;
       }
 
       // Create a new active_cams_map to include interpolated cameras
-      active_cam_map = camera_map_sptr(new simple_camera_map(interped_cams));
-
-      // Optimize new camers
-      // TODO: QUESTION: Should this be done on pre or post merged cameras???
-      d_->camera_optimizer->optimize(active_cam_map, tracks, landmarks);
+      active_cam_map = camera_map_sptr(new simple_camera_map(ac_map));
+      cerr << "Re-assiging new active cam map (" << active_cam_map->size() << " cams)" << endl
+           << "\t- reprojection RMSE of combined map: "
+           << reprojection_rmse(active_cam_map->cameras(),
+                                landmarks->landmarks(),
+                                tracks->tracks()) << endl;
     }
   } while (!done);
 
