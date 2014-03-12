@@ -18,8 +18,8 @@
 namespace maptk
 {
 
+/// The base class for all maptk/core exceptions
 /**
- * \brief The base class for all maptk/core exceptions
  * \ingroup exceptions
  */
 class MAPTK_CORE_EXPORT maptk_core_base_exception
@@ -41,6 +41,23 @@ class MAPTK_CORE_EXPORT maptk_core_base_exception
     std::string m_what;
 };
 
-}
+/// Exception for incorrect input values
+/**
+ * \ingroup exceptions
+ */
+class MAPTK_CORE_EXPORT invalid_value
+  : public maptk_core_base_exception
+{
+public:
+  /// Constructor
+  invalid_value(std::string reason) MAPTK_NOTHROW;
+  /// Destructor
+  virtual ~invalid_value() MAPTK_NOTHROW;
+protected:
+  /// Reason for invalidity
+  std::string m_reason;
+};
+
+} // end namespace maptk
 
 #endif // MAPTK_CORE_EXCEPTIONS_BASE_H

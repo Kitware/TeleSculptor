@@ -32,4 +32,16 @@ maptk_core_base_exception
   return this->m_what.c_str();
 }
 
+invalid_value
+::invalid_value(std::string reason) MAPTK_NOTHROW
+  : m_reason(reason)
+{
+  m_what = "Invalid value(s): " + reason;
 }
+
+invalid_value
+::~invalid_value() MAPTK_NOTHROW
+{
+}
+
+} // end namespace maptk
