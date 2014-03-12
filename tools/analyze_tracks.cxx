@@ -325,14 +325,7 @@ static int maptk_main(int argc, char const* argv[])
       images.push_back( image );
 
       // Draw tracks on images
-      if( !comparison_tracks || comparison_tracks->empty() )
-      {
-        draw_tracks->draw( tracks, images );
-      }
-      else
-      {
-        draw_tracks->draw( tracks, comparison_tracks, images );
-      }
+      draw_tracks->draw( tracks, images, comparison_tracks );
     }
   }
 

@@ -279,26 +279,17 @@ void generate_match_lines( const track_sptr trk,
 /// Output images with tracked features drawn on them
 image_container_sptr
 draw_tracks
-::draw(track_set_sptr track_set,
-       image_container_sptr_list image_data)
-{
-  return this->draw( track_set, track_set_sptr(), image_data );
-}
-
-/// Output images with tracked features drawn on them
-image_container_sptr
-draw_tracks
-::draw(track_set_sptr input_track_set,
-       track_set_sptr input_comparison_set,
-       image_container_sptr_list image_data)
+::draw( track_set_sptr input_display_set,
+        image_container_sptr_list image_data,
+        track_set_sptr input_comparison_set )
 {
   // Perform swap of inputs if settings enabled
-  track_set_sptr track_set = input_track_set;
+  track_set_sptr display_set = input_display_set;
   track_set_sptr comparison_set = input_comparison_set;
 
   if( d_->swap_comparison_set )
   {
-    std::swap( track_set, comparison_set );
+    std::swap( display_set, comparison_set );
   }
 
   // Validate inputs
@@ -356,7 +347,7 @@ draw_tracks
     bool comparison_track_found = false;
 
     // Draw points on input image
-    BOOST_FOREACH( track_sptr trk, track_set->active_tracks( fid )->tracks() )
+    BOOST_FOREACH( track_sptr trk, display_set->active_tracks( fid )->tracks() )
     {
       track::track_state ts = *( trk->find( fid ) );
 
