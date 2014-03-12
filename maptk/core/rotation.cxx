@@ -285,7 +285,7 @@ std::istream&  operator>>(std::istream& s, rotation_<T>& r)
 /// Generate a rotation vector that, when applied to A N times, produces B.
 template <typename T>
 rotation_<T>
-interpolate_rotation(rotation_<T> const& A, rotation_<T> const& B, double f)
+interpolate_rotation(rotation_<T> const& A, rotation_<T> const& B, T f)
 {
   // rotation from A -> B
   rotation_<T> C = A.inverse() * B;
@@ -313,7 +313,7 @@ interpolated_rotations(rotation_<T> const& A, rotation_<T> const& B, size_t n, s
 template class MAPTK_CORE_EXPORT rotation_<T>; \
 template MAPTK_CORE_EXPORT std::ostream&  operator<<(std::ostream& s, const rotation_<T>& r); \
 template MAPTK_CORE_EXPORT std::istream&  operator>>(std::istream& s, rotation_<T>& r); \
-template MAPTK_CORE_EXPORT rotation_<T> interpolate_rotation(rotation_<T> const& A, rotation_<T> const& B, double f); \
+template MAPTK_CORE_EXPORT rotation_<T> interpolate_rotation(rotation_<T> const& A, rotation_<T> const& B, T f); \
 template MAPTK_CORE_EXPORT void \
 interpolated_rotations(rotation_<T> const& A, rotation_<T> const& B, size_t n, std::vector< rotation_<T> > & interp_rots)
 
