@@ -45,6 +45,9 @@ write_ply_file(landmark_map_sptr const& landmarks,
 
 /// Load a given \c landmark_map object from the specified PLY file path
 /**
+ * This function does not read all ply files, only ply files which have
+ * been output by the landmark write ply function.
+ *
  * \throws file_read_exception
  *    Thrown when something prevents input of the file.
  * \throws boost::filesystem::filesystem:error
