@@ -209,7 +209,7 @@ homography_collection
   {
     return current_to_world_->frame_id();
   }
-  return 0;
+  throw invalid_data( "Collection is empty." );
 }
 
 
