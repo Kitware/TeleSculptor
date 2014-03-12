@@ -29,6 +29,7 @@ namespace maptk
 namespace algo
 {
 
+
 /// An abstract base class for algorithms which draw tracks on top of
 /// images in various ways, for analyzing results.
 class MAPTK_CORE_EXPORT draw_tracks
@@ -39,18 +40,31 @@ public:
   /// Return the name of this algorithm.
   std::string type_name() const { return "draw_tracks"; }
 
-  /// Write features tracks on top of the input images.
+  /// Draw features tracks on top of the input images.
   /**
-   * \param [in] track_set the tracks to draw
-   * \param [in] image_data a list of images the tracks were computed on
+   * This process can either be called in an offline fashion, where all
+   * tracks and images are provided to the function on the first call,
+   * or in an online fashion where only new images are provided on
+   * sequential calls. This function can additionally consumes a second
+   * track set for which can optionally be used to display additional
+   * information to provide a comparison between the two track sets.
+   *
+   * \param [in] display_set the main track set to draw
+   * \param [in] image_data a list of images the tracks were computed over
+   * \param [in] comparison_set optional comparison track set
+   * \param returns a pointer to the last image generated
    */
-  virtual void
-  draw(track_set_sptr track_set,
-       image_container_sptr_list image_data) const = 0;
+  virtual image_container_sptr
+  draw(track_set_sptr display_set,
+       image_container_sptr_list image_data,
+       track_set_sptr comparison_set = track_set_sptr()) = 0;
 
 };
 
+
+/// A smart pointer to a draw_tracks instance.
 typedef boost::shared_ptr<draw_tracks> draw_tracks_sptr;
+
 
 } // end namespace algo
 

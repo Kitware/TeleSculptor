@@ -10,12 +10,13 @@
  *        member functions
  */
 
-#include <maptk/core/track_set.h>
-#include <boost/foreach.hpp>
+#include "track_set.h"
 
+#include <boost/foreach.hpp>
 
 namespace maptk
 {
+
 
 /// Return the number of tracks in the set
 size_t
@@ -23,6 +24,15 @@ track_set
 ::size() const
 {
   return this->tracks().size();
+}
+
+
+/// Return whether or not there are any tracks in the set
+bool
+track_set
+::empty() const
+{
+  return this->tracks().empty();
 }
 
 
@@ -100,6 +110,24 @@ track_set
   return first_frame;
 }
 
+
+/// Return the track in the set with the specified id.
+track_sptr const
+track_set
+::get_track(track_id_t tid) const
+{
+  const std::vector<track_sptr> all_tracks = this->tracks();
+
+  BOOST_FOREACH(track_sptr t, all_tracks)
+  {
+    if( t->id() == tid )
+    {
+      return t;
+    }
+  }
+
+  return track_sptr();
+}
 
 /// Return all tracks active on a frame.
 track_set_sptr

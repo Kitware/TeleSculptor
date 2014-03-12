@@ -12,6 +12,7 @@
 #include <test_common.h>
 #include <test_scene.h>
 
+#include <maptk/core/projected_track_set.h>
 #include <maptk/core/metrics.h>
 #include <maptk/vxl/register.h>
 #include <maptk/vxl/bundle_adjust.h>
@@ -62,7 +63,7 @@ IMPLEMENT_TEST(from_solution)
   camera_map_sptr cameras = testing::camera_seq();
 
   // create tracks from the projections
-  track_set_sptr tracks = testing::projected_tracks(landmarks, cameras);
+  track_set_sptr tracks = projected_tracks(landmarks, cameras);
 
   double init_rmse = reprojection_rmse(cameras->cameras(),
                                        landmarks->landmarks(),
@@ -99,7 +100,7 @@ IMPLEMENT_TEST(noisy_landmarks)
   camera_map_sptr cameras = testing::camera_seq();
 
   // create tracks from the projections
-  track_set_sptr tracks = testing::projected_tracks(landmarks, cameras);
+  track_set_sptr tracks = projected_tracks(landmarks, cameras);
 
   // add Gaussian noise to the landmark positions
   landmark_map_sptr landmarks0 = testing::noisy_landmarks(landmarks, 0.1);
@@ -140,7 +141,7 @@ IMPLEMENT_TEST(noisy_landmarks_noisy_cameras)
   camera_map_sptr cameras = testing::camera_seq();
 
   // create tracks from the projections
-  track_set_sptr tracks = testing::projected_tracks(landmarks, cameras);
+  track_set_sptr tracks = projected_tracks(landmarks, cameras);
 
   // add Gaussian noise to the landmark positions
   landmark_map_sptr landmarks0 = testing::noisy_landmarks(landmarks, 0.1);
@@ -184,7 +185,7 @@ IMPLEMENT_TEST(zero_landmarks)
   camera_map_sptr cameras = testing::camera_seq();
 
   // create tracks from the projections
-  track_set_sptr tracks = testing::projected_tracks(landmarks, cameras);
+  track_set_sptr tracks = projected_tracks(landmarks, cameras);
 
   // initialize all landmarks to the origin
   landmark_id_t num_landmarks = static_cast<landmark_id_t>(landmarks->size());
@@ -226,7 +227,7 @@ IMPLEMENT_TEST(zero_landmarks_same_cameras)
   camera_map_sptr cameras = testing::camera_seq();
 
   // create tracks from the projections
-  track_set_sptr tracks = testing::projected_tracks(landmarks, cameras);
+  track_set_sptr tracks = projected_tracks(landmarks, cameras);
 
   // initialize all landmarks to the origin
   landmark_id_t num_landmarks = static_cast<landmark_id_t>(landmarks->size());
@@ -273,7 +274,7 @@ IMPLEMENT_TEST(subset_cameras)
   camera_map_sptr cameras = testing::camera_seq();
 
   // create tracks from the projections
-  track_set_sptr tracks = testing::projected_tracks(landmarks, cameras);
+  track_set_sptr tracks = projected_tracks(landmarks, cameras);
 
   // add Gaussian noise to the landmark positions
   landmark_map_sptr landmarks0 = testing::noisy_landmarks(landmarks, 0.1);
@@ -332,7 +333,7 @@ IMPLEMENT_TEST(subset_landmarks)
   camera_map_sptr cameras = testing::camera_seq();
 
   // create tracks from the projections
-  track_set_sptr tracks = testing::projected_tracks(landmarks, cameras);
+  track_set_sptr tracks = projected_tracks(landmarks, cameras);
 
   // add Gaussian noise to the landmark positions
   landmark_map_sptr landmarks0 = testing::noisy_landmarks(landmarks, 0.1);
@@ -385,7 +386,7 @@ IMPLEMENT_TEST(subset_tracks)
   camera_map_sptr cameras = testing::camera_seq();
 
   // create tracks from the projections
-  track_set_sptr tracks = testing::projected_tracks(landmarks, cameras);
+  track_set_sptr tracks = projected_tracks(landmarks, cameras);
 
   // add Gaussian noise to the landmark positions
   landmark_map_sptr landmarks0 = testing::noisy_landmarks(landmarks, 0.1);
@@ -433,7 +434,7 @@ IMPLEMENT_TEST(noisy_tracks)
   camera_map_sptr cameras = testing::camera_seq();
 
   // create tracks from the projections
-  track_set_sptr tracks = testing::projected_tracks(landmarks, cameras);
+  track_set_sptr tracks = projected_tracks(landmarks, cameras);
 
   // add Gaussian noise to the landmark positions
   landmark_map_sptr landmarks0 = testing::noisy_landmarks(landmarks, 0.1);

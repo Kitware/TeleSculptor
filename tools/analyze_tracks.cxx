@@ -12,19 +12,26 @@
 
 #include <maptk/modules.h>
 
+#include <maptk/core/landmark_map.h>
+#include <maptk/core/camera.h>
+#include <maptk/core/camera_map_io.h>
 #include <maptk/core/track_set_io.h>
-#include <maptk/core/algo/image_io.h>
-#include <maptk/core/algo/analyze_tracks.h>
-#include <maptk/core/algo/draw_tracks.h>
+#include <maptk/core/landmark_map_io.h>
+#include <maptk/core/camera_io.h>
+#include <maptk/core/projected_track_set.h>
 #include <maptk/core/image_container.h>
 #include <maptk/core/config_block.h>
 #include <maptk/core/config_block_io.h>
 #include <maptk/core/exceptions.h>
 #include <maptk/core/types.h>
 
-#include <boost/foreach.hpp>
+#include <maptk/core/algo/image_io.h>
+#include <maptk/core/algo/analyze_tracks.h>
+#include <maptk/core/algo/draw_tracks.h>
 
+#include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
+
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
 #include <boost/program_options/value_semantic.hpp>
@@ -49,6 +56,15 @@ static maptk::config_block_sptr default_config()
   config->set_value( "output_file", "",
                      "Path to an optional file to write text outputs to. If this file "
                      "exists, it will be overwritten." );
+  config->set_value( "comparison_track_file", "",
+                     "Path to an optional second track input file containing tracks "
+                     "which we want to compare against the first set." );
+  config->set_value( "comparison_landmark_file", "",
+                     "Path to an optional landmark ply file, which can be used along "
+                     "with a camera file to generate a comparison track set." );
+  config->set_value( "comparison_camera_dir", "",
+                     "Path to an optional camera directory, which can be used alongside "
+                     "a landmark ply file to generate a comparison track set." );
 
   maptk::algo::analyze_tracks::get_nested_algo_configuration(
     "track_analyzer", config, maptk::algo::analyze_tracks_sptr() );
@@ -86,6 +102,13 @@ static bool check_config( maptk::config_block_sptr config )
       std::cerr << "Unable to configure track drawer" << std::endl;
       return false;
     }
+  }
+
+  if( config->has_value( "comparison_landmark_file" ) !=
+      config->has_value( "comparison_camera_dir" ) )
+  {
+    std::cerr << "Both a landmark and camera file must be specified to use either." << std::endl;
+    return false;
   }
 
   return true;
@@ -194,11 +217,11 @@ static int maptk_main(int argc, char const* argv[])
     return EXIT_FAILURE;
   }
 
-  // Load tracks
-  std::cout << std::endl << "Loading track set file..." << std::endl;
-
-  std::string track_file = config->get_value<std::string>( "track_file" );
+  // Load main track set
   maptk::track_set_sptr tracks;
+
+  std::cout << std::endl << "Loading main track set file..." << std::endl;
+  std::string track_file = config->get_value<std::string>( "track_file" );
   tracks = maptk::read_track_file( track_file );
 
   // Generate statistics if enabled
@@ -230,12 +253,8 @@ static int maptk_main(int argc, char const* argv[])
   // Read and process input images if set
   if( use_images )
   {
-    std::cout << std::endl << "Generating feature images..." << std::endl;
-
-    maptk::image_container_sptr_list images;
-
+    std::vector<maptk::path_t> image_paths;
     std::string image_list_file = config->get_value<std::string>( "image_list_file" );
-
     std::ifstream ifs( image_list_file.c_str() );
 
     if( !ifs )
@@ -247,17 +266,67 @@ static int maptk_main(int argc, char const* argv[])
     // Creating input image list, checking file existance, and loading the image
     for( std::string line; std::getline(ifs,line); )
     {
-      if( !bfs::exists( line ) )
-      {
-        throw maptk::path_not_exists( line );
-      }
-
-      maptk::image_container_sptr image = image_reader->load( line );
-
-      images.push_back( image );
+      image_paths.push_back( line );
     }
 
-    draw_tracks->draw( tracks, images );
+    // Load comparison tracks if enabled
+    maptk::track_set_sptr comparison_tracks;
+
+    if( config->has_value( "comparison_track_file" ) &&
+        !config->get_value<std::string>( "comparison_track_file" ).empty() )
+    {
+      track_file = config->get_value<std::string>( "comparison_track_file" );
+
+      std::cout << std::endl << "Loading comparison track set file..." << std::endl;
+
+      comparison_tracks = maptk::read_track_file( track_file );
+    }
+    else if( config->has_value( "comparison_landmark_file" ) &&
+             !config->get_value<std::string>( "comparison_landmark_file" ).empty() &&
+             config->has_value( "comparison_camera_dir" ) &&
+             !config->get_value<std::string>( "comparison_camera_dir" ).empty() )
+    {
+      std::string landmark_file = config->get_value<std::string>( "comparison_landmark_file" );
+      std::string camera_dir = config->get_value<std::string>( "comparison_camera_dir" );
+
+      std::cout << std::endl << "Loading comparison track set file..." << std::endl;
+
+      maptk::landmark_map_sptr landmarks = maptk::read_ply_file( landmark_file );
+      maptk::camera_map_sptr cameras = maptk::read_krtd_files( image_paths, camera_dir );
+
+      if( !cameras )
+      {
+        std::cerr << "Unable to load any camera files." << std::endl;
+        return EXIT_FAILURE;
+      }
+
+      if( !landmarks )
+      {
+        std::cerr << "Unable to load landmark file." << std::endl;
+        return EXIT_FAILURE;
+      }
+
+      comparison_tracks = projected_tracks( landmarks, cameras );
+    }
+
+    // Read images one by one, this is more memory efficient than loading them all
+    std::cout << std::endl << "Generating feature images..." << std::endl;
+
+    for( unsigned i = 0; i < image_paths.size(); i++ )
+    {
+      if( !bfs::exists( image_paths[i] ) )
+      {
+        throw maptk::path_not_exists( image_paths[i] );
+      }
+
+      maptk::image_container_sptr_list images;
+
+      maptk::image_container_sptr image = image_reader->load( image_paths[i].string() );
+      images.push_back( image );
+
+      // Draw tracks on images
+      draw_tracks->draw( tracks, images, comparison_tracks );
+    }
   }
 
   std::cout << std::endl;

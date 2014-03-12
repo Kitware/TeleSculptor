@@ -23,7 +23,7 @@ namespace maptk
 namespace ocv
 {
 
-/// A class for outputting various debug info about feature tracks
+/// A class for drawing various information about feature tracks
 class MAPTK_OCV_EXPORT draw_tracks
 : public algo::algorithm_impl<draw_tracks, algo::draw_tracks>
 {
@@ -48,14 +48,24 @@ public:
   /// Check that the algorithm's currently configuration is valid
   virtual bool check_configuration(config_block_sptr config) const;
 
-  /// Write features tracks on top of the input images.
+  /// Draw features tracks on top of the input images.
   /**
-   * \param [in] track_set the tracks to analyze
-   * \param [in] image_data a list of images the tracks were computed on
+   * This process can either be called in an offline fashion, where all
+   * tracks and images are provided to the function on the first call,
+   * or in an online fashion where only new images are provided on
+   * sequential calls. This function can additionally consumes a second
+   * track set for which can optionally be used to display additional
+   * information to provide a comparison between the two track sets.
+   *
+   * \param [in] display_set the main track set to draw
+   * \param [in] image_data a list of images the tracks were computed over
+   * \param [in] comparison_set optional comparison track set
+   * \param returns a pointer to the last image generated
    */
-  virtual void
-  draw(track_set_sptr track_set,
-       image_container_sptr_list image_data) const;
+  virtual image_container_sptr
+  draw(track_set_sptr display_set,
+       image_container_sptr_list image_data,
+       track_set_sptr comparison_set = track_set_sptr());
 
 private:
 

@@ -43,6 +43,9 @@ public:
   /// Return the number of tracks in the set
   virtual size_t size() const;
 
+  /// Return whether or not there are any tracks in the set
+  virtual bool empty() const;
+
   /// Return a vector of track shared pointers
   virtual std::vector<track_sptr> tracks() const = 0;
 
@@ -57,6 +60,16 @@ public:
 
   /// Return the last (largest) frame number containing tracks
   virtual frame_id_t last_frame() const;
+
+  /// Return the track in this set with the specified id.
+  /**
+   * An empty pointer will be returned if the track cannot be found.
+   *
+   * \param [in] tid track identifier for the desired track.
+   *
+   * \returns a pointer to the track with the given id.
+   */
+  virtual track_sptr const get_track(track_id_t tid) const;
 
   /// Return all tracks active on a frame.
   /**

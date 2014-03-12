@@ -14,6 +14,7 @@
 #include <maptk/core/camera_map.h>
 #include <maptk/core/landmark_map.h>
 #include <maptk/core/track_set.h>
+#include <maptk/core/projected_track_set.h>
 #include <maptk/vxl/optimize_cameras.h>
 
 #include <boost/foreach.hpp>
@@ -107,8 +108,8 @@ IMPLEMENT_TEST(no_noise)
 
   landmark_map_sptr landmarks = testing::cube_corners(2.0);
   camera_map_sptr working_cam_map(new simple_camera_map(original_cams));
-  track_set_sptr tracks = testing::projected_tracks(landmarks,
-                                                    working_cam_map);
+  track_set_sptr tracks = maptk::projected_tracks(landmarks,
+                                                  working_cam_map);
 
   vxl::optimize_cameras optimizer;
   optimizer.optimize(working_cam_map, tracks, landmarks);
@@ -165,7 +166,7 @@ IMPLEMENT_TEST(noisy_cameras)
 
   landmark_map_sptr landmarks = testing::cube_corners(2.0);
   camera_map_sptr working_cam_map(new simple_camera_map(original_cams));
-  track_set_sptr tracks = testing::projected_tracks(landmarks, working_cam_map);
+  track_set_sptr tracks = maptk::projected_tracks(landmarks, working_cam_map);
 
   working_cam_map = testing::noisy_cameras(working_cam_map, 0.1, 0.1);
 
