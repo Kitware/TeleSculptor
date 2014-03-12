@@ -68,7 +68,7 @@ struct extra_track_info
 typedef std::vector< extra_track_info > ext_track_buffer_t;
 
 
-// Private implementation class
+/// Private implementation class
 class close_loops::priv
 {
 public:
@@ -111,11 +111,13 @@ public:
   /// Previous frame active track info
   ext_track_buffer_t track_info_;
 
+  /// Pointer to homography estimator
+  estimator_sptr h_estimator_;
+
   /// Compute all homographies for the current frame
   homography_collection_sptr generate_homographies(
     frame_id_t frame_number,
-    track_set_sptr all_tracks,
-    estimator_sptr h_estimator );
+    track_set_sptr all_tracks );
 
   /// Update checkmarks, returns true if this frame is a new one.
   bool update_checkmarks(
