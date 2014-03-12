@@ -39,6 +39,8 @@ public:
    * We only optimize cameras that have associating tracks and landmarks in
    * the given maps.
    *
+   * \throws invalid_value When one or more of the given pointer is Null.
+   *
    * \param[in,out] cameras   Cameras to optimize.
    * \param[in]     tracks    The tracks to use as constraints.
    * \param[in]     landmarks The landmarks the cameras are viewing.
@@ -49,6 +51,10 @@ public:
            landmark_map_sptr landmarks) const = 0;
 
 };
+
+
+/// Type definition for shared pointer to an optimize cameras algorithm
+typedef boost::shared_ptr<optimize_cameras> optimize_cameras_sptr;
 
 
 }

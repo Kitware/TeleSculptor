@@ -138,13 +138,17 @@ noisy_cameras(maptk::camera_map_sptr cameras,
 {
   using namespace maptk;
 
-  camera_map::map_camera_t cam_map = cameras->cameras();
-  BOOST_FOREACH(camera_map::map_camera_t::value_type& p, cam_map)
+  camera_map::map_camera_t cam_map;
+  BOOST_FOREACH(camera_map::map_camera_t::value_type const& p, cameras->cameras())
   {
-    camera_d& cam = dynamic_cast<camera_d&>(*p.second);
+    camera_sptr c = p.second->clone();
+
+    camera_d& cam = dynamic_cast<camera_d&>(*c);
     cam.set_center(cam.get_center() + random_point3d(pos_stdev));
     rotation_d rand_rot(random_point3d(rot_stdev));
     cam.set_rotation(cam.get_rotation() * rand_rot);
+
+    cam_map[p.first] = c;
   }
   return camera_map_sptr(new simple_camera_map(cam_map));
 }

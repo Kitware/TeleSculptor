@@ -15,6 +15,7 @@
 #include <maptk/vxl/estimate_homography.h>
 #include <maptk/vxl/estimate_similarity_transform.h>
 #include <maptk/vxl/image_io.h>
+#include <maptk/vxl/optimize_cameras.h>
 #include <maptk/vxl/triangulate_landmarks.h>
 
 namespace maptk
@@ -30,6 +31,7 @@ void register_algorithms()
   vxl::estimate_homography::register_self();
   vxl::estimate_similarity_transform::register_self();
   vxl::image_io::register_self();
+  vxl::optimize_cameras::register_self();
   vxl::triangulate_landmarks::register_self();
 }
 
