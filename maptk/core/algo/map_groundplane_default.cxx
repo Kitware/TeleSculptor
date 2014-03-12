@@ -60,6 +60,9 @@ struct extra_track_info
 // Buffer type for the extra track info
 typedef std::vector< extra_track_info > track_ext_buffer_t;
 
+// Pointer to a track info buffer
+typedef boost::shared_ptr< track_ext_buffer_t > track_ext_buffer_sptr;
+
 // Internal homography estimator type
 typedef maptk::algo::estimate_homography_sptr estimator_sptr;
 
@@ -72,14 +75,16 @@ public:
   priv()
   : use_backproject_error( false ),
     backproject_threshold_sqr( 16.0 ),
-    forget_track_threshold( 10 )
+    forget_track_threshold( 10 ),
+    min_track_length( 2 )
   {
   }
 
   priv( const priv& other )
   : use_backproject_error( other.use_backproject_error ),
     backproject_threshold_sqr( other.backproject_threshold_sqr ),
-    forget_track_threshold( other.forget_track_threshold )
+    forget_track_threshold( other.forget_track_threshold ),
+    min_track_length( other.min_track_length )
   {
   }
 
@@ -96,8 +101,11 @@ public:
   /// After how many frames should we forget all info about a track?
   unsigned forget_track_threshold;
 
+  /// Minimum track length to use for homography regression
+  unsigned min_track_length;
+
   /// Buffer storing track extensions
-  track_ext_buffer_t buffer;
+  track_ext_buffer_sptr buffer;
 
   /// Pointer to homography estimator
   estimator_sptr h_estimator;
@@ -169,18 +177,21 @@ map_groundplane_default
 
 
 // Helper function for sorting etis
-bool compare_eti( const extra_track_info& c1, const extra_track_info& c2 )
+bool
+compare_eti( const extra_track_info& c1, const extra_track_info& c2 )
 {
   return c1.tid < c2.tid;
 }
 
 
-// Helper function for finding an ati for a given track
-bool compare_eti_to_track( const track_sptr& c1, const extra_track_info& c2 )
+// Find a track in a given buffer
+track_ext_buffer_t::iterator
+find_track( const track_sptr& trk, track_ext_buffer_sptr& buffer )
 {
-  return c1->id() == c2.tid;
+  extra_track_info eti;
+  eti.tid = trk->id();
+  return std::lower_bound( buffer->begin(), buffer->end(), eti, compare_eti );
 }
-
 
 homography_collection_sptr
 map_groundplane_default
@@ -188,19 +199,28 @@ map_groundplane_default
            track_set_sptr tracks ) const
 {
   // Get active tracks for the current frame
-  track_set_sptr active_tracks = tracks->active_tracks( frame_number );
+  std::vector< track_sptr > active_tracks = tracks->active_tracks( frame_number )->tracks();
 
   // Process new tracks, add to list, and remove old tracks.
   std::vector< track_sptr > new_tracks;
 
-  for( unsigned i = 0; i < active_tracks->size(); i++ )
+  BOOST_FOREACH( track_sptr trk, active_tracks )
   {
+    track_ext_buffer_t::iterator p = find_track( trk, d_->buffer );
 
+    if( p != d_->buffer->end() )
+    {
+
+    }
+    else
+    {
+
+    }
   }
 
   // Ensure that the vector is still sorted. Chances are it still is and
-  // this is a simple scan of the vector.
-  std::sort( d_->buffer.begin(), d_->buffer.end(), compare_eti );
+  // this is a simple linear scan of the vector to ensure this.
+  std::sort( d_->buffer->begin(), d_->buffer->end(), compare_eti );
 
   // Compute homography if possible
   // []
