@@ -88,11 +88,11 @@ public:
   /// Destructor.
   virtual ~homography_point() {}
 
-  /// Return x value;
-  double x() const;
+  /// Return x value.
+  virtual double x() const;
 
   /// Return y value.
-  double y() const;
+  virtual double y() const;
 
 private:
 
