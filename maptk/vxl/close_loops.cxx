@@ -161,11 +161,11 @@ close_loops
 }
 
 
-// Compute overlap between the two frames
+// Compute overlap between the two frames of the specified size
 double
 compute_percent_overlap( const f2f_homography& homog,
-                         const unsigned ni,
-                         const unsigned nj )
+                         const unsigned image_cols,
+                         const unsigned image_rows )
 {
   return 0.0;
 }
@@ -194,6 +194,14 @@ close_loops
   // Compute new homographies for this frame
   homography_collection_sptr new_homographies =
     compute_new_homographies( frame_number, updated_set );
+
+  // Write out homographies if enabled
+  if( !d_->homography_filename_.empty() )
+  {
+    std::ofstream fout( d_->homography_filename_.c_str(), std::ios::app );
+    fout << *(new_homographies->current_to_world()) << std::endl << std::endl;
+    fout.close();
+  }
 
   // Determine if this is a new checkpoint frame
   // []
