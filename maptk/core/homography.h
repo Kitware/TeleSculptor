@@ -161,6 +161,9 @@ public:
   /// Is the current to world homography valid?
   bool has_current_to_world() const;
 
+  /// What is the frame id for the frame described by this collection?
+  frame_id_t frame_id() const;
+
 protected:
 
   /// The actual current to last homography.

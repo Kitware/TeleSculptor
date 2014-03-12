@@ -193,6 +193,26 @@ homography_collection
 }
 
 
+frame_id_t
+homography_collection
+::frame_id() const
+{
+  if( current_to_reference_ )
+  {
+    return current_to_reference_->from_id();
+  }
+  else if( current_to_last_ )
+  {
+    return current_to_last_->from_id();
+  }
+  else if( current_to_world_ )
+  {
+    return current_to_world_->frame_id();
+  }
+  return 0;
+}
+
+
 homography_point
 ::homography_point( const double x, const double y )
  : x_(x),
