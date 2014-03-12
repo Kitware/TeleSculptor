@@ -135,7 +135,7 @@ std::istream&  operator>>(std::istream& s, camera_<T>& k)
 template <typename T>
 camera_<T> interpolate_camera(camera_<T> const& A, camera_<T> const& B, T f)
 {
-  T f1 = 1.0 - f;
+  T f1 = static_cast<T>(1.0) - f;
 
   // interpolate intrinsics
   camera_intrinsics_<T> k1 = A.get_intrinsics(),

@@ -160,7 +160,7 @@ MAPTK_CORE_EXPORT std::istream&  operator>>(std::istream& s, rotation_<T>& r);
 template <typename T>
 MAPTK_CORE_EXPORT
 rotation_<T>
-interpolate_rotation(rotation_<T> const& A, rotation_<T> const& B, double f);
+interpolate_rotation(rotation_<T> const& A, rotation_<T> const& B, T f);
 
 
 /// Generate N evenly interpolated rotations inbetween \c A and \c B.
