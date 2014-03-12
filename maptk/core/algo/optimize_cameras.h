@@ -32,7 +32,7 @@ class MAPTK_CORE_EXPORT optimize_cameras
 {
 public:
   /// Return the name of this algorithm definition
-  std::string type_name() { return "optimize_cameras"; }
+  std::string type_name() const { return "optimize_cameras"; }
 
   /// Optimize camera parameters given sets of landmarks and tracks
   /**
