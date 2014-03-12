@@ -6,8 +6,8 @@
 
 /**
  * \file
- * \brief Implementation of \link maptk::algo::close_loops_bad_frames_only
- *        close_loops_bad_frames_only \endlink
+ * \brief Implementation of \link maptk::vxl::close_loops
+ *        close_loops \endlink
  */
 
 #include <maptk/vxl/close_loops.h>
@@ -51,11 +51,15 @@ struct extra_track_info
   // Pointer to the track object this class extends
   track_sptr trk;
 
+  // The number of times we haven't seen this track as active
+  unsigned missed_count;
+
   // Constructor.
   extra_track_info()
   : ref_loc( 0.0, 0.0 ),
     ref_loc_valid( false ),
-    is_good( true )
+    is_good( true ),
+    missed_count( 0 )
   {}
 };
 
@@ -106,6 +110,18 @@ public:
 
   /// Previous frame active track info
   ext_track_buffer_t track_info_;
+
+  /// Compute all homographies for the current frame
+  homography_collection_sptr generate_homographies(
+    frame_id_t frame_number,
+    track_set_sptr all_tracks,
+    estimator_sptr h_estimator );
+
+  /// Update checkmarks, returns true if this frame is a new one.
+  bool update_checkmarks(
+    frame_id_t frame_number,
+    track_set_sptr all_tracks,
+    homography_collection_sptr hc );
 };
 
 
@@ -223,7 +239,7 @@ close_loops
 
   // Compute new homographies for this frame
   homography_collection_sptr new_homographies =
-    compute_new_homographies( frame_number, updated_set );
+    d_->generate_homographies( frame_number, updated_set, h_estimator_ );
 
   // Write out homographies if enabled
   if( !d_->homography_filename_.empty() )
@@ -234,14 +250,8 @@ close_loops
   }
 
   // Determine if this is a new checkpoint frame
-  // []
-
-  // If this is a new checkpoint
-  if( 0 )
-  {
-    // Add homography info to buffer
-    // []
-  }
+  const bool is_checkmark =
+    d_->update_checkmarks( frame_number, updated_set, new_homographies );
 
   // Perform matching to any past checkpoints we want to test
   // []

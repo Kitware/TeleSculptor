@@ -44,6 +44,9 @@ class MAPTK_CORE_EXPORT close_loops
 {
 public:
 
+  /// Internal homography estimator type
+  typedef maptk::algo::estimate_homography_sptr estimator_sptr;
+
   /// Default Constructor
   close_loops();
 
@@ -106,7 +109,7 @@ public:
 protected:
 
   /// Internal estimate homography class
-  maptk::algo::estimate_homography_sptr h_estimator_;
+  estimator_sptr h_estimator_;
 
 private:
 
