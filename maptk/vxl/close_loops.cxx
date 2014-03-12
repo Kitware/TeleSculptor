@@ -28,7 +28,6 @@ namespace maptk
 namespace vxl
 {
 
-
 // Data stored for every detected checkpoint
 typedef std::pair< frame_id_t, homography_collection_sptr > checkpoint_entry_t;
 
@@ -40,12 +39,29 @@ typedef boost::circular_buffer< checkpoint_entry_t > checkpoint_buffer_t;
 // Data stored for every active track
 struct extra_track_info
 {
+  // Location of this track in the reference frame
+  homography_point ref_loc;
+
+  // Is the ref loc valid?
+  bool ref_loc_valid;
+
   // Should this point be used in homography regression?
   bool is_good;
 
   // Pointer to the track object this class extends
   track_sptr trk;
+
+  // Constructor.
+  extra_track_info()
+  : ref_loc( 0.0, 0.0 ),
+    ref_loc_valid( false ),
+    is_good( true )
+  {}
 };
+
+
+// Buffer type for the extra track info
+typedef std::vector< extra_track_info > ext_track_buffer_t;
 
 
 // Private implementation class
@@ -89,7 +105,7 @@ public:
   checkpoint_buffer_t buffer_;
 
   /// Previous frame active track info
-  std::vector< extra_track_info > track_info_;
+  ext_track_buffer_t track_info_;
 };
 
 

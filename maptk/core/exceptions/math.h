@@ -44,6 +44,18 @@ public:
 };
 
 
+/// Exception for when a matrix is non-invertible
+class MAPTK_CORE_EXPORT point_maps_to_infinity
+  : public math_exception
+{
+public:
+  /// Constructor
+  point_maps_to_infinity() MAPTK_NOTHROW;
+  /// Destructor
+  virtual ~point_maps_to_infinity() MAPTK_NOTHROW;
+};
+
+
 } // end maptk namespace
 
 #endif // MAPTK_CORE_EXCEPTIONS_MATH_H

@@ -28,7 +28,6 @@ namespace maptk
 /// A raw homography transformation.
 typedef matrix_3x3d homography;
 
-
 /// A smart pointer to a raw homography.
 typedef boost::shared_ptr< homography > homography_sptr;
 
@@ -68,17 +67,40 @@ protected:
 
 };
 
-
 /// A smart pointer to a frame homography.
 typedef boost::shared_ptr< f2f_homography > f2f_homography_sptr;
-
 
 /// A set of frame to frame homographies for several individual frames.
 typedef std::map< frame_id_t, f2f_homography_sptr > f2f_homography_set;
 
-
 /// A smart pointer to a f2f homography set.
 typedef boost::shared_ptr< f2f_homography_set > f2f_homography_set_sptr;
+
+
+/// A point for use with multiplying with homography matrices.
+class MAPTK_CORE_EXPORT homography_point
+{
+public:
+
+  /// Constructor.
+  homography_point( const double x, const double y );
+
+  /// Destructor.
+  virtual ~homography_point() {}
+
+  /// Return x value;
+  double x() const;
+
+  /// Return y value.
+  double y() const;
+
+private:
+
+  double x_, y_;
+};
+
+/// A smart pointer to a homography point.
+typedef boost::shared_ptr< homography_point > homography_point_sptr;
 
 
 /// A collection of homography-related data useful for each individual frame.
@@ -126,17 +148,18 @@ protected:
 
 };
 
-
 /// A pointer to a homography collection class.
 typedef boost::shared_ptr< homography_collection> homography_collection_sptr;
-
 
 /// A set of homography collections for several individual frames.
 typedef std::map< frame_id_t, homography_collection > homography_collection_set;
 
-
 /// A pointer to a homography_collection_set.
 typedef boost::shared_ptr< homography_collection_set > homography_collection_set_sptr;
+
+
+/// Custom homography multiplication operator.
+inline homography_point operator*( const homography& h, const homography_point& p );
 
 
 } // end namespace maptk

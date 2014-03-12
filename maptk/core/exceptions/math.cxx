@@ -30,11 +30,23 @@ math_exception
 non_invertible_matrix
 ::non_invertible_matrix() MAPTK_NOTHROW
 {
-  m_what = "A matrix was found to be invertible";
+  m_what = "A matrix was found to be non-invertible";
 }
 
 non_invertible_matrix
 ::~non_invertible_matrix() MAPTK_NOTHROW
+{
+}
+
+
+point_maps_to_infinity
+::point_maps_to_infinity() MAPTK_NOTHROW
+{
+  m_what = "A point mapped to infinity";
+}
+
+point_maps_to_infinity
+::~point_maps_to_infinity() MAPTK_NOTHROW
 {
 }
 
