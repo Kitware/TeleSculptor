@@ -14,6 +14,8 @@
 #include <maptk/core/algo/estimate_homography.h>
 
 #include <algorithm>
+#include <string>
+#include <fstream>
 
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
@@ -43,14 +45,16 @@ public:
   priv()
   : long_term_closure_enabled_( true ),
     max_search_frames_( 10000 ),
-    checkpoint_percent_overlap_( 0.40 )
+    checkpoint_percent_overlap_( 0.40 ),
+    homography_filename_( "" )
   {
   }
 
   priv( const priv& other )
   : long_term_closure_enabled_( other.long_term_closure_enabled_ ),
     max_search_frames_( other.max_search_frames_ ),
-    checkpoint_percent_overlap_( other.checkpoint_percent_overlap_ )
+    checkpoint_percent_overlap_( other.checkpoint_percent_overlap_ ),
+    homography_filename_( other.homography_filename_ )
   {
   }
 
@@ -66,6 +70,9 @@ public:
 
   /// Term which controls when we make new loop closure checkpoints.
   double checkpoint_percent_overlap_;
+
+  /// Output filename for homographies
+  std::string homography_filename_;
 
   /// Buffer storing past homographies for checkpoint frames
   checkpoint_buffer_t buffer_;
@@ -112,6 +119,8 @@ close_loops
                     "Maximum past search distance in terms of number of frames.");
   config->set_value("checkpoint_percent_overlap", d_->checkpoint_percent_overlap_,
                     "Term which controls when we make new loop closure checkpoints.");
+  config->set_value("homography_filename", d_->homography_filename_,
+                    "Optional output location for a homography text file.");
 
   return config;
 }
@@ -137,6 +146,7 @@ close_loops
   d_->long_term_closure_enabled_ = config->get_value<bool>( "long_term_closure_enabled" );
   d_->max_search_frames_ = config->get_value<unsigned>( "max_search_frames" );
   d_->checkpoint_percent_overlap_ = config->get_value<double>( "checkpoint_percent_overlap" );
+  d_->homography_filename_ = config->get_value<double>( "homography_filename" );
 
   // Set buffer capacity
   d_->buffer_.set_capacity( d_->max_search_frames_ );

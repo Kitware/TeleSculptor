@@ -81,7 +81,7 @@ typedef std::map< frame_id_t, f2f_homography_sptr > f2f_homography_set;
 typedef boost::shared_ptr< f2f_homography_set > f2f_homography_set_sptr;
 
 
-/// A collection of homography-related data for each individual frame.
+/// A collection of homography-related data useful for each individual frame.
 class homography_collection
 {
 public:
@@ -89,7 +89,8 @@ public:
   /// Construct a homography collection from different types of homographies.
   homography_collection( f2f_homography_sptr cur_to_last = f2f_homography_sptr(),
                          f2f_homography_sptr cur_to_ref = f2f_homography_sptr(),
-                         f2f_homography_sptr ref_to_wld = f2f_homography_sptr() );
+                         f2f_homography_sptr ref_to_wld = f2f_homography_sptr(),
+                         f2f_homography_sptr cur_to_wld = f2f_homography_sptr() );
 
   /// Destructor.
   virtual ~homography_collection();
@@ -100,6 +101,8 @@ public:
   f2f_homography_sptr current_to_reference() const;
   /// Return an arbitrary reference to world homography.
   f2f_homography_sptr reference_to_world() const;
+  /// Return a homography to some reference frame.
+  f2f_homography_sptr current_to_world();
 
   /// Is the current to last homography valid?
   bool has_current_to_last() const;
@@ -107,13 +110,8 @@ public:
   bool has_current_to_reference() const;
   /// Is the reference to world homography valid?
   bool has_reference_to_world() const;
-
-  /// Set the current to last homography.
-  void set_current_to_last( f2f_homography_sptr h );
-  /// Set the current to reference homography.
-  void set_current_to_reference( f2f_homography_sptr h );
-  /// Set the current to world homography.
-  void set_reference_to_world( f2f_homography_sptr h );
+  /// Is the current to world homography valid?
+  bool has_current_to_world() const;
 
 protected:
 
@@ -123,6 +121,9 @@ protected:
   f2f_homography_sptr current_to_reference_;
   /// The actual reference to world homography.
   f2f_homography_sptr reference_to_world_;
+  /// The actual current to world homography.
+  f2f_homography_sptr current_to_world_;
+
 };
 
 

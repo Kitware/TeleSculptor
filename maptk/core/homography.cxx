@@ -68,10 +68,12 @@ f2f_homography
 homography_collection
 ::homography_collection( f2f_homography_sptr cur_to_last,
                          f2f_homography_sptr cur_to_ref,
-                         f2f_homography_sptr ref_to_wld )
+                         f2f_homography_sptr ref_to_wld,
+                         f2f_homography_sptr cur_to_wld )
 : current_to_last_( cur_to_last ),
   current_to_reference_( cur_to_ref ),
-  reference_to_world_( ref_to_wld )
+  reference_to_world_( ref_to_wld ),
+  current_to_world_( cur_to_wld )
 {
 }
 
@@ -106,6 +108,22 @@ homography_collection
 }
 
 
+f2f_homography_sptr
+homography_collection
+::current_to_world()
+{
+  if( !current_to_world_ && current_to_reference_ && reference_to_world_ )
+  {
+    homography h = (*reference_to_world_) * (*current_to_reference_);
+    frame_id_t from = current_to_reference_->from_id();
+    frame_id_t to = static_cast<frame_id_t>( 0) ;
+    current_to_world_ = f2f_homography_sptr( new f2f_homography( h, from, to ) );
+  }
+
+  return current_to_world_;
+}
+
+
 bool
 homography_collection
 ::has_current_to_last() const
@@ -113,12 +131,14 @@ homography_collection
   return current_to_last_;
 }
 
+
 bool
 homography_collection
 ::has_current_to_reference() const
 {
   return current_to_reference_;
 }
+
 
 bool
 homography_collection
@@ -128,25 +148,11 @@ homography_collection
 }
 
 
-void
+bool
 homography_collection
-::set_current_to_last( f2f_homography_sptr h )
+::has_current_to_world() const
 {
-  current_to_last_ = h;
-}
-
-void
-homography_collection
-::set_current_to_reference( f2f_homography_sptr h )
-{
-  current_to_reference_ = h;
-}
-
-void
-homography_collection
-::set_reference_to_world( f2f_homography_sptr h )
-{
-  reference_to_world_ = h;
+  return current_to_world_ || ( current_to_reference_ && reference_to_world_ );
 }
 
 
