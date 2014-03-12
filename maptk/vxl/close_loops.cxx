@@ -37,6 +37,17 @@ typedef std::pair< frame_id_t, homography_collection_sptr > checkpoint_entry_t;
 typedef boost::circular_buffer< checkpoint_entry_t > checkpoint_buffer_t;
 
 
+// Data stored for every active track
+struct extra_track_info
+{
+  // Should this point be used in homography regression?
+  bool is_good;
+
+  // Pointer to the track object this class extends
+  track_sptr trk;
+};
+
+
 // Private implementation class
 class close_loops::priv
 {
@@ -76,6 +87,9 @@ public:
 
   /// Buffer storing past homographies for checkpoint frames
   checkpoint_buffer_t buffer_;
+
+  /// Previous frame active track info
+  std::vector< extra_track_info > track_info_;
 };
 
 

@@ -34,7 +34,7 @@ typedef boost::shared_ptr< homography > homography_sptr;
 
 
 /// A homography between two arbitrary frames.
-class f2f_homography : public homography
+class MAPTK_CORE_EXPORT f2f_homography : public homography
 {
 public:
 
@@ -82,7 +82,7 @@ typedef boost::shared_ptr< f2f_homography_set > f2f_homography_set_sptr;
 
 
 /// A collection of homography-related data useful for each individual frame.
-class homography_collection
+class MAPTK_CORE_EXPORT homography_collection
 {
 public:
 
@@ -102,7 +102,7 @@ public:
   /// Return an arbitrary reference to world homography.
   f2f_homography_sptr reference_to_world() const;
   /// Return a homography to some reference frame.
-  f2f_homography_sptr current_to_world();
+  f2f_homography_sptr current_to_world() const;
 
   /// Is the current to last homography valid?
   bool has_current_to_last() const;
