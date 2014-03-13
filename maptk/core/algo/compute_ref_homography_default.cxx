@@ -76,7 +76,7 @@ public:
   : use_backproject_error( false ),
     backproject_threshold_sqr( 16.0 ),
     forget_track_threshold( 10 ),
-    min_track_length( 2 )
+    min_track_length( 1 )
   {
   }
 
@@ -109,6 +109,9 @@ public:
 
   /// Pointer to homography estimator
   estimator_sptr h_estimator;
+
+  /// Last known transformation
+  f2f_homography_sptr last_homog;
 };
 
 
@@ -141,8 +144,17 @@ compute_ref_homography_default
 
   // Sub-algorithm implementation name + sub_config block
   // - Homography estimator algorithm
-  estimate_homography::get_nested_algo_configuration
-    ( "homography_estimator", config, d_->h_estimator );
+  estimate_homography::get_nested_algo_configuration( "estimator", config, d_->h_estimator );
+
+  // Other parameters
+  config->set_value("use_backproject_error", d_->use_backproject_error,
+                    "Should we remove extra points if the backproject error is high?");
+  config->set_value("backproject_threshold", d_->backproject_threshold_sqr,
+                    "Backprojection threshold in terms of L2 distance (number of pixels)");
+  config->set_value("forget_track_threshold", d_->forget_track_threshold,
+                    "After how many frames should we forget all info about a track?");
+  config->set_value("min_track_length", d_->min_track_length,
+                    "Minimum track length to use for homography regression");
 
   return config;
 }
@@ -159,8 +171,17 @@ compute_ref_homography_default
 
   // Setting nested algorithm instances via setter methods instead of directly
   // assigning to instance property.
-  estimate_homography::set_nested_algo_configuration
-    ( "homography_estimator", config, d_->h_estimator );
+  estimate_homography::set_nested_algo_configuration( "estimator", config, d_->h_estimator );
+
+  // Read other parameters
+  d_->use_backproject_error = config->get_value<bool>("use_backproject_error");
+  d_->backproject_threshold_sqr = config->get_value<double>("backproject_threshold");
+  d_->forget_track_threshold = config->get_value<unsigned>("forget_track_threshold");
+  d_->min_track_length = config->get_value<unsigned>("min_track_length");
+
+  // Square the threshold ahead of time for efficiency
+  d_->backproject_threshold_sqr = d_->backproject_threshold_sqr *
+                                  d_->backproject_threshold_sqr;
 }
 
 
@@ -170,8 +191,7 @@ compute_ref_homography_default
 {
   return
   (
-    estimate_homography::check_nested_algo_configuration
-      ( "homography_estimator", config )
+    estimate_homography::check_nested_algo_configuration( "estimator", config )
   );
 }
 
@@ -200,6 +220,17 @@ compute_ref_homography_default
 {
   // Get active tracks for the current frame
   std::vector< track_sptr > active_tracks = tracks->active_tracks( frame_number )->tracks();
+
+  // This either is the first frame, or a new reference frame
+  if( !d_->buffer )
+  {
+    d_->buffer = track_ext_buffer_sptr( new track_ext_buffer_t() );
+
+    homography identity;
+    identity.set_identity();
+
+    d_->last_homog = f2f_homography_sptr( new f2f_homography( identity, frame_number, frame_number ) );
+  }
 
   // Process new tracks, add to list, and remove old tracks.
   std::vector< track_sptr > new_tracks;
