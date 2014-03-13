@@ -58,6 +58,18 @@ f2f_homography
 }
 
 
+f2f_homography&
+f2f_homography
+::normalize()
+{
+  if( (*this)(2,2) != 0 )
+  {
+    (*this) /= (*this)(2,2);
+  }
+  return *this;
+}
+
+
 frame_id_t
 f2f_homography
 ::from_id() const

@@ -367,12 +367,31 @@ compute_ref_homography_default
   }
 
   // Check homography output
-  if( h(2,2) == 0 )
+  try
+  {
+    using namespace std;
+
+    // Invertible test
+    f2f_homography inverse = output->inverse();
+
+    // Check for valid values
+    for( unsigned i = 0; i < 3; i++ )
+    {
+      for( unsigned j = 0; j < 3; j++ )
+      {
+        if( !isfinite( (*output)(i,j) ) || !isfinite( inverse(i,j) ) )
+        {
+          bad_homog = true;
+        }
+      }
+    }
+  }
+  catch( ... )
   {
     bad_homog = true;
   }
 
-  // If the homography is bad, output identity
+  // If the homography is bad, output an identity
   if( bad_homog )
   {
     output = f2f_homography_sptr( new f2f_homography( frame_number ) );
@@ -381,6 +400,7 @@ compute_ref_homography_default
   else
   {
     output = f2f_homography_sptr( new f2f_homography( h, frame_number, earliest_ref ) );
+    output->normalize();
   }
 
   // Update reference locations for existing tracks using new homography

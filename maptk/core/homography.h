@@ -61,6 +61,9 @@ public:
   /// The frame identifier that this homography maps to.
   virtual frame_id_t to_id() const;
 
+  /// Normalize the internal homography matrix.
+  virtual f2f_homography& normalize();
+
 protected:
 
   /// From frame identifier.
