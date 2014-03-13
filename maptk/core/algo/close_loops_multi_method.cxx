@@ -70,6 +70,9 @@ close_loops_multi_method
   // Get base config from base class
   config_block_sptr config = algorithm::get_configuration();
 
+  // Internal parameters
+  config->set_value( "count", count_, "Number of close loops methods we want to use." );
+
   // Sub-algorithm implementation name + sub_config block
   std::vector< std::string > method_ids = method_names( count_ );
 
@@ -77,9 +80,6 @@ close_loops_multi_method
   {
     close_loops::get_nested_algo_configuration( method_ids[i], config, methods_[i] );
   }
-
-  // Internal parameters
-  config->set_value( "count", count_, "Number of close loops methods we want to use." );
 
   return config;
 }
