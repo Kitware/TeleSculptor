@@ -374,7 +374,7 @@ compute_ref_homography_default
     // Invertible test
     f2f_homography inverse = output->inverse();
 
-    // Check for valid values
+    // Check for invalid values
     for( unsigned i = 0; i < 3; i++ )
     {
       for( unsigned j = 0; j < 3; j++ )
@@ -382,11 +382,12 @@ compute_ref_homography_default
         if( !isfinite( (*output)(i,j) ) || !isfinite( inverse(i,j) ) )
         {
           bad_homog = true;
+          break;
         }
       }
     }
   }
-  catch( ... )
+  catch(...)
   {
     bad_homog = true;
   }
@@ -403,14 +404,25 @@ compute_ref_homography_default
     output->normalize();
   }
 
-  // Update reference locations for existing tracks using new homography
   BOOST_FOREACH( track_info_t& ti, *new_buffer )
   {
+    // Update reference locations for existing tracks using new homography
     if( !ti.ref_loc_valid )
     {
       ti.ref_loc = (*output) * ti.ref_loc;
       ti.ref_loc_valid = true;
       ti.ref_id = output->to_id();
+    }
+    // Set is good flag
+    else if( ti.active && !bad_homog )
+    {
+      homography_point warped; // = (*output) * ti.trk->feat->loc();
+      double dist_sqr = ( warped - ti.ref_loc ).magnitude_sqr();
+
+      if( dist_sqr > d_->backproject_threshold_sqr )
+      {
+        ti.is_good = false;
+      }
     }
   }
 
