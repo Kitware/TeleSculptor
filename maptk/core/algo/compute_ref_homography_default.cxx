@@ -12,6 +12,8 @@
 
 #include "compute_ref_homography_default.h"
 
+#include <maptk/core/matrix.h>
+
 #include <maptk/core/algo/estimate_homography.h>
 
 #include <algorithm>
@@ -353,7 +355,6 @@ compute_ref_homography_default
   // Compute homography if possible
   bool bad_homog = false;
 
-  f2f_homography_sptr output; // homography with frame info
   homography h; // raw homography transform
 
   if( pts_ref.size() > 3 && pts_cur.size() > 3 )
@@ -372,14 +373,14 @@ compute_ref_homography_default
     using namespace std;
 
     // Invertible test
-    f2f_homography inverse = output->inverse();
+    homography inverse = maptk::inverse( h );
 
     // Check for invalid values
     for( unsigned i = 0; i < 3; i++ )
     {
       for( unsigned j = 0; j < 3; j++ )
       {
-        if( !isfinite( (*output)(i,j) ) || !isfinite( inverse(i,j) ) )
+        if( !isfinite( h(i,j) ) || !isfinite( inverse(i,j) ) )
         {
           bad_homog = true;
           break;
@@ -393,6 +394,8 @@ compute_ref_homography_default
   }
 
   // If the homography is bad, output an identity
+  f2f_homography_sptr output;
+
   if( bad_homog )
   {
     output = f2f_homography_sptr( new f2f_homography( frame_number ) );
