@@ -105,14 +105,6 @@ f2w_homography
 }
 
 
-f2w_homography
-f2w_homography
-::inverse() const
-{
-  return f2w_homography( maptk::inverse( *this ), frame_id_ );
-}
-
-
 frame_id_t
 f2w_homography
 ::frame_id() const

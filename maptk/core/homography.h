@@ -93,9 +93,6 @@ public:
   /// Destructor.
   virtual ~f2w_homography();
 
-  /// Return the inverse of this homography.
-  virtual f2w_homography inverse() const;
-
   /// The frame identifier that this homography maps from.
   virtual frame_id_t frame_id() const;
 
