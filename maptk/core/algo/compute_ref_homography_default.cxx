@@ -86,7 +86,7 @@ public:
   priv()
   : use_backproject_error( false ),
     backproject_threshold_sqr( 16.0 ),
-    forget_track_threshold( 10 ),
+    forget_track_threshold( 5 ),
     min_track_length( 1 ),
     inlier_scale( 2.0 ),
     frames_since_reset( 0 ),
