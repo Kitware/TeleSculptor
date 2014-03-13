@@ -11,6 +11,7 @@
  */
 
 #include <maptk/vxl/close_loops.h>
+#include <maptk/vxl/compute_homography_overlap.h>
 #include <maptk/core/algo/compute_ref_homography.h>
 
 #include <algorithm>
@@ -180,16 +181,6 @@ close_loops
     &&
     maptk::algo::match_features::check_nested_algo_configuration( "feature_matcher", config )
   );
-}
-
-
-// Compute overlap between the two frames of the specified size
-double
-compute_percent_overlap( const f2f_homography& homog,
-                         const unsigned image_cols,
-                         const unsigned image_rows )
-{
-  return 0.0;
 }
 
 

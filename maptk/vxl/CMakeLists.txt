@@ -7,6 +7,7 @@ set(maptk_vxl_headers_public
   camera.h
   camera_map.h
   close_loops.h
+  compute_homography_overlap.h
   estimate_homography.h
   estimate_similarity_transform.h
   image_container.h
@@ -23,6 +24,7 @@ set(maptk_vxl_sources
   camera.cxx
   camera_map.cxx
   close_loops.cxx
+  compute_homography_overlap.cxx
   estimate_homography.cxx
   estimate_similarity_transform.cxx
   image_container.cxx
