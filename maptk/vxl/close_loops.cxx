@@ -156,7 +156,7 @@ close_loops
   d_->long_term_closure_enabled_ = config->get_value<bool>( "long_term_closure_enabled" );
   d_->max_checkpoint_frames_ = config->get_value<unsigned>( "max_checkpoint_frames" );
   d_->checkpoint_percent_overlap_ = config->get_value<double>( "checkpoint_percent_overlap" );
-  d_->homography_filename_ = config->get_value<double>( "homography_filename" );
+  d_->homography_filename_ = config->get_value<std::string>( "homography_filename" );
 
   // Set buffer capacity
   d_->buffer_.set_capacity( d_->max_checkpoint_frames_ );

@@ -58,7 +58,8 @@ close_loops_multi_method
 
 close_loops_multi_method
 ::close_loops_multi_method(const close_loops_multi_method& other)
-: count_( other.count_ )
+: count_( other.count_ ),
+  methods_( other.methods_.size() )
 {
 }
 
@@ -87,8 +88,13 @@ close_loops_multi_method
 
 void
 close_loops_multi_method
-::set_configuration(config_block_sptr config)
+::set_configuration( config_block_sptr in_config )
 {
+  // Starting with our generated config_block to ensure that assumed values are present
+  // An alternative is to check for key presence before performing a get_value() call.
+  config_block_sptr config = this->get_configuration();
+  config->merge_config( in_config );
+
   // Parse count parameter
   count_ = config->get_value<unsigned>( "count" );
   methods_.resize( count_ );
