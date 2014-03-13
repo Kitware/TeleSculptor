@@ -79,6 +79,9 @@ public:
   /// Reference frame homography computer
   maptk::algo::compute_ref_homography_sptr ref_computer_;
 
+  /// The feature matching algorithm to use
+  maptk::algo::match_features_sptr matcher_;
+
 };
 
 
@@ -91,8 +94,7 @@ close_loops
 
 close_loops
 ::close_loops( const close_loops& other )
-: close_loops_bad_frames_only( other ),
-  d_( new priv( *other.d_ ) )
+: d_( new priv( *other.d_ ) )
 {
 }
 
@@ -108,11 +110,14 @@ close_loops
 ::get_configuration() const
 {
   // get base config from base class
-  config_block_sptr config = close_loops_bad_frames_only::get_configuration();
+  config_block_sptr config = algorithm::get_configuration();
 
   // Sub-algorithm implementation name + sub_config block
   // - Homography estimator algorithm
   maptk::algo::compute_ref_homography::get_nested_algo_configuration( "ref_computer", config, d_->ref_computer_ );
+
+  // - Feature Matcher algorithm
+  maptk::algo::match_features::get_nested_algo_configuration( "feature_matcher", config, d_->matcher_ );
 
   // Loop closure parameters
   config->set_value("long_term_closure_enabled", d_->long_term_closure_enabled_,
@@ -143,6 +148,10 @@ close_loops
   maptk::algo::compute_ref_homography::set_nested_algo_configuration( "ref_computer", config, rc );
   d_->ref_computer_ = rc;
 
+  maptk::algo::match_features_sptr mf;
+  maptk::algo::match_features::set_nested_algo_configuration( "feature_matcher", config, mf );
+  d_->matcher_ = mf;
+
   // Settings for bad frame detection
   d_->long_term_closure_enabled_ = config->get_value<bool>( "long_term_closure_enabled" );
   d_->max_checkpoint_frames_ = config->get_value<unsigned>( "max_checkpoint_frames" );
@@ -160,9 +169,9 @@ close_loops
 {
   return
   (
-    close_loops_bad_frames_only::check_configuration( config )
-    &&
     maptk::algo::compute_ref_homography::check_nested_algo_configuration( "ref_computer", config )
+    &&
+    maptk::algo::match_features::check_nested_algo_configuration( "feature_matcher", config )
   );
 }
 
@@ -184,9 +193,7 @@ close_loops
           image_container_sptr image,
           track_set_sptr input ) const
 {
-  // Perform bad frame detection for this frame (if enabled)
-  track_set_sptr updated_set =
-    close_loops_bad_frames_only::stitch( frame_number, image, input );
+  track_set_sptr updated_set = input;
 
   // Compute new homographies for this frame
   f2f_homography_sptr new_homography =

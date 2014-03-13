@@ -37,7 +37,7 @@ namespace vxl
  * filtering.
  */
 class MAPTK_CORE_EXPORT close_loops
-  : public maptk::algo::close_loops_bad_frames_only
+  : public algo::algorithm_impl<vxl::close_loops, algo::close_loops>
 {
 public:
 
