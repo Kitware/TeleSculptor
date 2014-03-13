@@ -31,13 +31,15 @@ namespace vxl
 {
 
 
-
+// Does a given point occur inside a polygram?
 bool does_intersect( const std::vector< vgl_point_2d<double> >& poly, const vgl_point_2d<double>& pt )
 {
   vgl_polygon<double> pol( &poly[0], poly.size() );
   return pol.contains( pt );
 }
 
+
+// Compute intersection points
 void intersecting_points( const unsigned ni, const unsigned nj,
                           const std::vector< vgl_point_2d<double> >& opoly,
                           std::vector< vgl_point_2d<double> >& output )
@@ -77,31 +79,44 @@ void intersecting_points( const unsigned ni, const unsigned nj,
   }
 }
 
+
+// Return area of a set of points
 double convex_area( const std::vector< vgl_point_2d<double> >& poly )
 {
   return vgl_area( vgl_convex_hull( poly ) );
 }
 
+
+// Compare two points, used for sorting.
 bool compare_poly_pts( const vgl_point_2d<double>& p1, const vgl_point_2d<double>& p2 )
 {
   if( p1.x() < p2.x() )
+  {
     return true;
+  }
   else if( p1.x() > p2.x() )
+  {
     return false;
+  }
 
   return ( p1.y() < p2.y() );
 }
 
-void remove_duplicates( std::vector< vgl_point_2d<double> >& poly )
+
+// Remove duplicates from the array while sorting it
+void
+sort_and_remove_duplicates( std::vector< vgl_point_2d<double> >& poly )
 {
   if( poly.size() == 0 )
+  {
     return;
+  }
 
   std::sort( poly.begin(), poly.end(), compare_poly_pts );
 
   std::vector< vgl_point_2d<double> > filtered;
-
   filtered.push_back( poly[0] );
+
   for( unsigned i = 1; i < poly.size(); i++ )
   {
     if( poly[i] != poly[i-1] )
@@ -117,12 +132,13 @@ void remove_duplicates( std::vector< vgl_point_2d<double> >& poly )
 }
 
 
+// Calculate percent overlap.
 double
 overlap( const vnl_double_3x3 h, const unsigned ni, const unsigned nj )
 {
   std::vector< vgl_point_2d<double> > polygon_points;
 
-  // 1. Warp corner points to current image
+  // 1. Warp corner points to reference system [an image from (0,0) to (ni,nj)].
   std::vector< vgl_point_2d<double> > img1_pts;
   img1_pts.push_back( vgl_point_2d<double>( 0, 0 ) );
   img1_pts.push_back( vgl_point_2d<double>( ni, 0 ) );
@@ -145,7 +161,7 @@ overlap( const vnl_double_3x3 h, const unsigned ni, const unsigned nj )
     }
   }
 
-  // 2. Calculate intersection points of the input image with each other
+  // 2. Calculate intersection points between the two images
   for( unsigned i = 0; i < 4; i++ )
   {
     if( does_intersect( img1_pts, img2_pts[i] ) )
@@ -159,9 +175,10 @@ overlap( const vnl_double_3x3 h, const unsigned ni, const unsigned nj )
   }
 
   intersecting_points( ni, nj, img2_pts, polygon_points );
+  sort_and_remove_duplicates( polygon_points );
 
-  remove_duplicates( polygon_points );
-
+  // Early exit case, if only 2 intersection points two frames are
+  // co-linear on a single border only.
   if( polygon_points.size() < 3 )
   {
     return 0.0;
@@ -169,7 +186,7 @@ overlap( const vnl_double_3x3 h, const unsigned ni, const unsigned nj )
 
   // 3. Compute triangulized area
   double intersection_area = convex_area( polygon_points );
-  double frame_area = ni * nj;
+  double frame_area = static_cast<double>( ni * nj );
 
   // 4. Return area overlap
   return ( frame_area > 0 ? intersection_area / frame_area : 0 );
