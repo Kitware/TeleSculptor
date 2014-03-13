@@ -76,8 +76,8 @@ public:
   /// Buffer storing past homographies for checkpoint frames
   checkpoint_buffer_t buffer_;
 
-  /// Groundplane mapper
-  maptk::algo::compute_ref_homography_sptr mapper_;
+  /// Reference frame homography computer
+  maptk::algo::compute_ref_homography_sptr ref_computer_;
 
 };
 
@@ -112,7 +112,7 @@ close_loops
 
   // Sub-algorithm implementation name + sub_config block
   // - Homography estimator algorithm
-  maptk::algo::compute_ref_homography::get_nested_algo_configuration( "mapper", config, d_->mapper_ );
+  maptk::algo::compute_ref_homography::get_nested_algo_configuration( "ref_computer", config, d_->ref_computer_ );
 
   // Loop closure parameters
   config->set_value("long_term_closure_enabled", d_->long_term_closure_enabled_,
@@ -139,9 +139,9 @@ close_loops
 
   // Setting nested algorithm instances via setter methods instead of directly
   // assigning to instance property.
-  maptk::algo::compute_ref_homography_sptr mp;
-  maptk::algo::compute_ref_homography::set_nested_algo_configuration( "mapper", config, mp );
-  d_->mapper_ = mp;
+  maptk::algo::compute_ref_homography_sptr rc;
+  maptk::algo::compute_ref_homography::set_nested_algo_configuration( "ref_computer", config, rc );
+  d_->ref_computer_ = rc;
 
   // Settings for bad frame detection
   d_->long_term_closure_enabled_ = config->get_value<bool>( "long_term_closure_enabled" );
@@ -162,7 +162,7 @@ close_loops
   (
     close_loops_bad_frames_only::check_configuration( config )
     &&
-    maptk::algo::compute_ref_homography::check_nested_algo_configuration( "mapper", config )
+    maptk::algo::compute_ref_homography::check_nested_algo_configuration( "ref_computer", config )
   );
 }
 
@@ -190,7 +190,7 @@ close_loops
 
   // Compute new homographies for this frame
   f2f_homography_sptr new_homography =
-    d_->mapper_->estimate( frame_number, updated_set );
+    d_->ref_computer_->estimate( frame_number, updated_set );
 
   // Write out homographies if enabled
   if( !d_->homography_filename_.empty() )
