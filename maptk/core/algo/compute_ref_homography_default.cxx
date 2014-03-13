@@ -414,14 +414,19 @@ compute_ref_homography_default
       ti.ref_id = output->to_id();
     }
     // Set is good flag
-    else if( ti.active && !bad_homog )
+    else if( ti.active && !bad_homog && d_->use_backproject_error )
     {
-      homography_point warped; // = (*output) * ti.trk->feat->loc();
-      double dist_sqr = ( warped - ti.ref_loc ).magnitude_sqr();
+      track::history_const_itr itr = ti.trk->find( frame_number );
 
-      if( dist_sqr > d_->backproject_threshold_sqr )
+      if( itr != ti.trk->end() && itr->feat )
       {
-        ti.is_good = false;
+        homography_point warped = (*output) * itr->feat->loc();
+        double dist_sqr = ( warped - ti.ref_loc ).magnitude_sqr();
+
+        if( dist_sqr > d_->backproject_threshold_sqr )
+        {
+          ti.is_good = false;
+        }
       }
     }
   }
