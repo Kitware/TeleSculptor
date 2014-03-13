@@ -29,7 +29,7 @@ namespace algo
 {
 
 
-/// Default impl for mapping each image in a sequence to some groundplane
+/// Default impl class for mapping each image to some reference image.
 /**
  * This class differs from estimate_homographies in that estimate_homographies
  * simply performs a homography regression from matching feature points. This
@@ -89,18 +89,18 @@ public:
    */
   virtual bool check_configuration( config_block_sptr config ) const;
 
-  /// Estimate the transformation which maps some image to the groundplane.
+  /// Estimate the transformation which maps some frame to a reference frame
   /**
    * Similarly to track_features, this class was designed to be called in
    * an online fashion for each sequential frame.
    *
    * \param [in]   frame_number frame identifier for the current frame
    * \param [in]   tracks the set of all tracked features from the image
-   * \param return estimated transformations
+   * \param return estimated homography
    */
-  virtual homography_collection_sptr
-  measure( frame_id_t frame_number,
-           track_set_sptr tracks ) const;
+  virtual f2f_homography_sptr
+  estimate( frame_id_t frame_number,
+            track_set_sptr tracks ) const;
 
 private:
 

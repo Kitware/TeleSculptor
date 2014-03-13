@@ -189,14 +189,14 @@ close_loops
     close_loops_bad_frames_only::stitch( frame_number, image, input );
 
   // Compute new homographies for this frame
-  homography_collection_sptr new_homographies =
-    d_->mapper_->measure( frame_number, updated_set );
+  f2f_homography_sptr new_homography =
+    d_->mapper_->estimate( frame_number, updated_set );
 
   // Write out homographies if enabled
   if( !d_->homography_filename_.empty() )
   {
     std::ofstream fout( d_->homography_filename_.c_str(), std::ios::app );
-    fout << *(new_homographies->current_to_world()) << std::endl << std::endl;
+    fout << *(new_homography) << std::endl << std::endl;
     fout.close();
   }
 

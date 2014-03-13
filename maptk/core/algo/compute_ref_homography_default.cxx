@@ -193,10 +193,10 @@ find_track( const track_sptr& trk, track_ext_buffer_sptr& buffer )
   return std::lower_bound( buffer->begin(), buffer->end(), eti, compare_eti );
 }
 
-homography_collection_sptr
+f2f_homography_sptr
 compute_ref_homography_default
-::measure( frame_id_t frame_number,
-           track_set_sptr tracks ) const
+::estimate( frame_id_t frame_number,
+            track_set_sptr tracks ) const
 {
   // Get active tracks for the current frame
   std::vector< track_sptr > active_tracks = tracks->active_tracks( frame_number )->tracks();
@@ -228,7 +228,7 @@ compute_ref_homography_default
   // Update reference locations for existing tracks using homography
   // []
 
-  return homography_collection_sptr();
+  return f2f_homography_sptr();
 }
 
 } // end namespace algo
