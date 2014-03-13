@@ -160,6 +160,13 @@ close_loops
 
   // Set buffer capacity
   d_->buffer_.set_capacity( d_->max_checkpoint_frames_ );
+
+  // Touch and reset output file
+  if( !d_->homography_filename_.empty() )
+  {
+    std::ofstream fout( d_->homography_filename_.c_str() );
+    fout.close();
+  }
 }
 
 
