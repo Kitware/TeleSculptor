@@ -14,6 +14,7 @@
 
 #include "core_config.h"
 #include "matrix.h"
+#include "vector.h"
 
 #include <iostream>
 #include <map>
@@ -36,6 +37,9 @@ typedef boost::shared_ptr< homography > homography_sptr;
 class MAPTK_CORE_EXPORT f2f_homography : public homography
 {
 public:
+
+  /// Construct an identity homography for the given frame.
+  explicit f2f_homography( const frame_id_t frame_id );
 
   /// Construct a frame to frame homography.
   explicit f2f_homography( const homography& h,
@@ -76,6 +80,9 @@ class MAPTK_CORE_EXPORT f2w_homography : public homography
 {
 public:
 
+  /// Construct an identity homography for the given frame.
+  explicit f2w_homography( const frame_id_t frame_id );
+
   /// Construct a frame to frame homography.
   explicit f2w_homography( const homography& h,
                            const frame_id_t frame_id );
@@ -104,25 +111,31 @@ typedef boost::shared_ptr< f2w_homography > f2w_homography_sptr;
 
 
 /// A point for use with multiplying with homography matrices.
-class MAPTK_CORE_EXPORT homography_point
+class MAPTK_CORE_EXPORT homography_point : public vector_2d
 {
 public:
 
-  /// Constructor.
-  homography_point( const double x, const double y );
+  /// Default initialize to (0,0).
+  homography_point();
+
+  /// Construct from independent double values.
+  homography_point( const double i, const double j );
+
+  /// Construct from a vector object.
+  homography_point( const vector_2d& v );
 
   /// Destructor.
   virtual ~homography_point() {}
 
   /// Return x value.
-  virtual double x() const;
+  virtual double i() const;
 
   /// Return y value.
-  virtual double y() const;
+  virtual double j() const;
 
-private:
+  /// Return a vector for the point.
+  virtual vector_2d loc() const;
 
-  double x_, y_;
 };
 
 /// A smart pointer to a homography point.
@@ -188,7 +201,7 @@ typedef boost::shared_ptr< homography_collection_set > homography_collection_set
 
 
 /// Custom homography point multiplication operator.
-inline homography_point operator*( const homography& h, const homography_point& p );
+homography_point operator*( const homography& h, const homography_point& p );
 
 
 } // end namespace maptk

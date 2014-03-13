@@ -16,21 +16,30 @@ namespace maptk
 
 
 f2f_homography
+::f2f_homography( const frame_id_t frame_id )
+: from_id_( frame_id ),
+  to_id_( frame_id )
+{
+  this->set_identity();
+}
+
+
+f2f_homography
 ::f2f_homography( const homography& h,
                   const frame_id_t from_id,
                   const frame_id_t to_id )
-: homography(h),
-  from_id_(from_id),
-  to_id_(to_id)
+: homography( h ),
+  from_id_( from_id ),
+  to_id_( to_id )
 {
 }
 
 
 f2f_homography
 ::f2f_homography( const f2f_homography& h )
-: homography(h),
-  from_id_(h.from_id()),
-  to_id_(h.to_id())
+: homography( h ),
+  from_id_( h.from_id() ),
+  to_id_( h.to_id() )
 {
 }
 
@@ -66,18 +75,26 @@ f2f_homography
 
 
 f2w_homography
+::f2w_homography( const frame_id_t frame_id )
+: frame_id_( frame_id )
+{
+  this->set_identity();
+}
+
+
+f2w_homography
 ::f2w_homography( const homography& h,
                   const frame_id_t frame_id )
-: homography(h),
-  frame_id_(frame_id)
+: homography( h ),
+  frame_id_( frame_id )
 {
 }
 
 
 f2w_homography
 ::f2w_homography( const f2w_homography& h )
-: homography(h),
-  frame_id_(h.frame_id())
+: homography( h ),
+  frame_id_( h.frame_id() )
 {
 }
 
@@ -214,43 +231,66 @@ homography_collection
 
 
 homography_point
-::homography_point( const double x, const double y )
- : x_(x),
-   y_(y)
+::homography_point()
+{
+  data_[0] = 0;
+  data_[1] = 0;
+}
+
+
+homography_point
+::homography_point( const double i, const double j )
+{
+  data_[0] = i;
+  data_[1] = j;
+}
+
+
+homography_point
+::homography_point( const vector_2d& v )
+ : vector_2d( v )
 {
 }
 
 
 double
 homography_point
-::x() const
+::i() const
 {
-  return x_;
+  return data_[0];
 }
 
 
 double
 homography_point
-::y() const
+::j() const
 {
-  return y_;
+  return data_[1];
 }
 
 
-inline homography_point
+vector_2d
+homography_point
+::loc() const
+{
+  return (*this);
+}
+
+
+homography_point
 operator*( const homography& h, const homography_point& p )
 {
   matrix_<3,1,double> mat_pt;
   mat_pt(0,0) = p.x(), mat_pt(1,0) = p.y(), mat_pt(2,0) = 1;
 
   matrix_<3,1,double> out_pt = h * mat_pt;
-  if( !out_pt(2,0) )
+
+  if( out_pt(2,0) == 0 )
   {
     throw point_maps_to_infinity();
   }
 
-  return homography_point( out_pt(0,0) / out_pt(2,0),
-                           out_pt(1,0) / out_pt(2,0) );
+  return homography_point( out_pt(0,0) / out_pt(2,0), out_pt(1,0) / out_pt(2,0) );
 }
 
 } // end namespace maptk
