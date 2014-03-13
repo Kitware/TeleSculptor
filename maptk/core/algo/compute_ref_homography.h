@@ -57,7 +57,7 @@ public:
    */
   virtual f2f_homography_sptr
   estimate( frame_id_t frame_number,
-           track_set_sptr tracks ) const = 0;
+            track_set_sptr tracks ) const = 0;
 
 };
 
