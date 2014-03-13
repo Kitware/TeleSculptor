@@ -210,7 +210,7 @@ close_loops
   if( !d_->homography_filename_.empty() )
   {
     std::ofstream fout( d_->homography_filename_.c_str(), std::ios::app );
-    fout << *(new_homography) << std::endl << std::endl;
+    fout << *(new_homography) << std::endl;
     fout.close();
   }
 
