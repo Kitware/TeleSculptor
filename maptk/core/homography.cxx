@@ -252,10 +252,8 @@ homography_point
 homography_point
 operator*( const homography& h, const homography_point& p )
 {
-  matrix_<3,1,double> mat_pt;
-  mat_pt(0,0) = p.x(), mat_pt(1,0) = p.y(), mat_pt(2,0) = 1;
-
-  matrix_<3,1,double> out_pt = h * mat_pt;
+  double vals[3] = { p.x(), p.y(), 1.0 };
+  matrix_<3,1,double> out_pt = h * matrix_<3,1,double>( vals );
 
   if( out_pt(2,0) == 0 )
   {

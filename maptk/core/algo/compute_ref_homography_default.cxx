@@ -48,13 +48,13 @@ struct track_info_t
   // Does this point satisfy all required backprojection properties?
   bool is_good;
 
-  // The number of times we haven't seen this track as active
+  // The number of times we haven't seen this track in the active set
   unsigned missed_count;
 
   // On the current frame was this track updated?
   bool active;
 
-  // Pointer to the track object
+  // Pointer to the latest instance of the track containing the above id
   track_sptr trk;
 
   // Constructor.
