@@ -360,7 +360,7 @@ compute_ref_homography_default
   if( pts_ref.size() > 3 && pts_cur.size() > 3 )
   {
     std::vector<bool> inliers;
-    h = d_->h_estimator->estimate( pts_ref, pts_cur, inliers, d_->inlier_scale );
+    h = d_->h_estimator->estimate( pts_cur, pts_ref, inliers, d_->inlier_scale );
   }
   else
   {
