@@ -6,11 +6,11 @@
 
 /**
  * \file
- * \brief map_groundplane algorithm definition
+ * \brief compute_ref_homography algorithm definition
  */
 
-#ifndef MAPTK_ALGO_MAP_GROUNDPLANE_H_
-#define MAPTK_ALGO_MAP_GROUNDPLANE_H_
+#ifndef MAPTK_ALGO_COMPUTE_REF_HOMOGRAPHY_H_
+#define MAPTK_ALGO_COMPUTE_REF_HOMOGRAPHY_H_
 
 #include <maptk/core/core_config.h>
 
@@ -38,13 +38,13 @@ namespace algo
  * feature tracks, which can transform each image back to the same coordinate
  * space derived from some initial refrerence image.
  */
-class MAPTK_CORE_EXPORT map_groundplane
-  : public algorithm_def<map_groundplane>
+class MAPTK_CORE_EXPORT compute_ref_homography
+  : public algorithm_def<compute_ref_homography>
 {
 public:
 
   /// Return the name of this algorithm
-  std::string type_name() const { return "map_groundplane"; }
+  std::string type_name() const { return "compute_ref_homography"; }
 
   /// Estimate the transformation which maps some image to the groundplane.
   /**
@@ -62,8 +62,8 @@ public:
 };
 
 
-/// Shared pointer type of base map_groundplane algorithm definition class
-typedef boost::shared_ptr<map_groundplane> map_groundplane_sptr;
+/// Shared pointer type of base compute_ref_homography algorithm definition class
+typedef boost::shared_ptr<compute_ref_homography> compute_ref_homography_sptr;
 
 
 } // end namespace algo
@@ -71,4 +71,4 @@ typedef boost::shared_ptr<map_groundplane> map_groundplane_sptr;
 } // end namespace maptk
 
 
-#endif // MAPTK_ALGO_MAP_GROUNDPLANE_H_
+#endif // MAPTK_COMPUTE_REF_HOMOGRAPHY_H_

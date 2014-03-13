@@ -5,6 +5,6 @@
  */
 
 #include <maptk/core/algo/algorithm.txx>
-#include <maptk/core/algo/map_groundplane.h>
+#include <maptk/core/algo/compute_ref_homography.h>
 
-INSTANTIATE_ALGORITHM_DEF(maptk::algo::map_groundplane);
+INSTANTIATE_ALGORITHM_DEF(maptk::algo::compute_ref_homography);

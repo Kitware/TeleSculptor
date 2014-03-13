@@ -53,6 +53,8 @@ set(maptk_core_headers_public
   algo/bundle_adjust.h
   algo/close_loops.h
   algo/close_loops_bad_frames_only.h
+  algo/compute_ref_homography.h
+  algo/compute_ref_homography_default.h
   algo/convert_image.h
   algo/detect_features.h
   algo/draw_tracks.h
@@ -62,8 +64,6 @@ set(maptk_core_headers_public
   algo/geo_map.h
   algo/hierarchical_bundle_adjust.h
   algo/image_io.h
-  algo/map_groundplane.h
-  algo/map_groundplane_default.h
   algo/match_features.h
   algo/match_features_homography.h
   algo/optimize_cameras.h
@@ -112,6 +112,8 @@ set(maptk_core_sources
   algo/bundle_adjust.cxx
   algo/close_loops.cxx
   algo/close_loops_bad_frames_only.cxx
+  algo/compute_ref_homography.cxx
+  algo/compute_ref_homography_default.cxx
   algo/convert_image.cxx
   algo/detect_features.cxx
   algo/draw_tracks.cxx

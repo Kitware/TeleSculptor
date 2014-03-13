@@ -11,7 +11,7 @@
  */
 
 #include <maptk/vxl/close_loops.h>
-#include <maptk/core/algo/map_groundplane.h>
+#include <maptk/core/algo/compute_ref_homography.h>
 
 #include <algorithm>
 #include <string>
@@ -77,7 +77,7 @@ public:
   checkpoint_buffer_t buffer_;
 
   /// Groundplane mapper
-  maptk::algo::map_groundplane_sptr mapper_;
+  maptk::algo::compute_ref_homography_sptr mapper_;
 
 };
 
@@ -112,7 +112,7 @@ close_loops
 
   // Sub-algorithm implementation name + sub_config block
   // - Homography estimator algorithm
-  maptk::algo::map_groundplane::get_nested_algo_configuration( "mapper", config, d_->mapper_ );
+  maptk::algo::compute_ref_homography::get_nested_algo_configuration( "mapper", config, d_->mapper_ );
 
   // Loop closure parameters
   config->set_value("long_term_closure_enabled", d_->long_term_closure_enabled_,
@@ -139,8 +139,8 @@ close_loops
 
   // Setting nested algorithm instances via setter methods instead of directly
   // assigning to instance property.
-  maptk::algo::map_groundplane_sptr mp;
-  maptk::algo::map_groundplane::set_nested_algo_configuration( "mapper", config, mp );
+  maptk::algo::compute_ref_homography_sptr mp;
+  maptk::algo::compute_ref_homography::set_nested_algo_configuration( "mapper", config, mp );
   d_->mapper_ = mp;
 
   // Settings for bad frame detection
@@ -162,7 +162,7 @@ close_loops
   (
     close_loops_bad_frames_only::check_configuration( config )
     &&
-    maptk::algo::map_groundplane::check_nested_algo_configuration( "mapper", config )
+    maptk::algo::compute_ref_homography::check_nested_algo_configuration( "mapper", config )
   );
 }
 

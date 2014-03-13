@@ -6,11 +6,11 @@
 
 /**
  * \file
- * \brief Implementation of \link maptk::algo::map_groundplane_default
- *        map_groundplane_default \endlink
+ * \brief Implementation of \link maptk::algo::compute_ref_homography_default
+ *        compute_ref_homography_default \endlink
  */
 
-#include "map_groundplane_default.h"
+#include "compute_ref_homography_default.h"
 
 #include <maptk/core/algo/estimate_homography.h>
 
@@ -68,7 +68,7 @@ typedef maptk::algo::estimate_homography_sptr estimator_sptr;
 
 
 // Private implementation class
-class map_groundplane_default::priv
+class compute_ref_homography_default::priv
 {
 public:
 
@@ -112,28 +112,28 @@ public:
 };
 
 
-map_groundplane_default
-::map_groundplane_default()
+compute_ref_homography_default
+::compute_ref_homography_default()
 : d_( new priv() )
 {
 }
 
 
-map_groundplane_default
-::map_groundplane_default( const map_groundplane_default& other )
+compute_ref_homography_default
+::compute_ref_homography_default( const compute_ref_homography_default& other )
 : d_( new priv( *other.d_ ) )
 {
 }
 
 
-map_groundplane_default
-::~map_groundplane_default()
+compute_ref_homography_default
+::~compute_ref_homography_default()
 {
 }
 
 
 config_block_sptr
-map_groundplane_default
+compute_ref_homography_default
 ::get_configuration() const
 {
   // get base config from base class
@@ -149,7 +149,7 @@ map_groundplane_default
 
 
 void
-map_groundplane_default
+compute_ref_homography_default
 ::set_configuration( config_block_sptr in_config )
 {
   // Starting with our generated config_block to ensure that assumed values are present
@@ -165,7 +165,7 @@ map_groundplane_default
 
 
 bool
-map_groundplane_default
+compute_ref_homography_default
 ::check_configuration(config_block_sptr config) const
 {
   return
@@ -194,7 +194,7 @@ find_track( const track_sptr& trk, track_ext_buffer_sptr& buffer )
 }
 
 homography_collection_sptr
-map_groundplane_default
+compute_ref_homography_default
 ::measure( frame_id_t frame_number,
            track_set_sptr tracks ) const
 {

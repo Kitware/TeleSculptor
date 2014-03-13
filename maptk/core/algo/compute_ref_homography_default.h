@@ -6,18 +6,18 @@
 
 /**
  * \file
- * \brief map_groundplane algorithm definition
+ * \brief compute_ref_homography algorithm definition
  */
 
-#ifndef MAPTK_ALGO_MAP_GROUNDPLANE_DEFAULT_H_
-#define MAPTK_ALGO_MAP_GROUNDPLANE_DEFAULT_H_
+#ifndef MAPTK_ALGO_COMPUTE_REF_HOMOGRAPHY_DEFAULT_H_
+#define MAPTK_ALGO_COMPUTE_REF_HOMOGRAPHY_DEFAULT_H_
 
 #include <maptk/core/core_config.h>
 
 #include <boost/scoped_ptr.hpp>
 
 #include <maptk/core/algo/algorithm.h>
-#include <maptk/core/algo/map_groundplane.h>
+#include <maptk/core/algo/compute_ref_homography.h>
 #include <maptk/core/track_set.h>
 #include <maptk/core/image_container.h>
 #include <maptk/core/homography.h>
@@ -37,19 +37,19 @@ namespace algo
  * feature tracks, which can transform each image back to the same coordinate
  * space derived from some initial refrerence image.
  */
-class MAPTK_CORE_EXPORT map_groundplane_default
-  : public algo::algorithm_impl<map_groundplane_default, map_groundplane>
+class MAPTK_CORE_EXPORT compute_ref_homography_default
+  : public algo::algorithm_impl<compute_ref_homography_default, compute_ref_homography>
 {
 public:
 
   /// Default Constructor
-  map_groundplane_default();
+  compute_ref_homography_default();
 
   /// Copy Constructor
-  map_groundplane_default( const map_groundplane_default& );
+  compute_ref_homography_default( const compute_ref_homography_default& );
 
   /// Default Destructor
-  ~map_groundplane_default();
+  ~compute_ref_homography_default();
 
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "default"; }
@@ -110,8 +110,8 @@ private:
 };
 
 
-/// Shared pointer type of base map_groundplane algorithm definition class
-typedef boost::shared_ptr<map_groundplane> map_groundplane_sptr;
+/// Shared pointer type of base compute_ref_homography algorithm definition class
+typedef boost::shared_ptr<compute_ref_homography> compute_ref_homography_sptr;
 
 
 } // end namespace algo
@@ -119,4 +119,4 @@ typedef boost::shared_ptr<map_groundplane> map_groundplane_sptr;
 } // end namespace maptk
 
 
-#endif // MAPTK_ALGO_MAP_GROUNDPLANE_DEFAULT_H_
+#endif // MAPTK_ALGO_COMPUTE_REF_HOMOGRAPHY_DEFAULT_H_
