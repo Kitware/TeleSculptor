@@ -53,6 +53,7 @@ set(maptk_core_headers_public
   algo/bundle_adjust.h
   algo/close_loops.h
   algo/close_loops_bad_frames_only.h
+  algo/close_loops_multi_method.h
   algo/compute_ref_homography.h
   algo/compute_ref_homography_default.h
   algo/convert_image.h
@@ -112,6 +113,7 @@ set(maptk_core_sources
   algo/bundle_adjust.cxx
   algo/close_loops.cxx
   algo/close_loops_bad_frames_only.cxx
+  algo/close_loops_multi_method.cxx
   algo/compute_ref_homography.cxx
   algo/compute_ref_homography_default.cxx
   algo/convert_image.cxx
