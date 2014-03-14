@@ -64,6 +64,9 @@ public:
   /// Normalize the internal homography matrix.
   virtual f2f_homography& normalize();
 
+  /// Custom f2f_homography multiplication operator.
+  virtual f2f_homography operator*( const f2f_homography& other );
+
 protected:
 
   /// From frame identifier.
@@ -133,9 +136,6 @@ public:
   /// Return y value.
   virtual double j() const;
 
-  /// Return a vector for the point.
-  virtual vector_2d loc() const;
-
 };
 
 /// A smart pointer to a homography point.
@@ -158,19 +158,25 @@ public:
 
   /// Return a homography to the last frame.
   f2f_homography_sptr current_to_last() const;
+
   /// Return a homography to some reference frame.
   f2f_homography_sptr current_to_reference() const;
+
   /// Return an arbitrary reference to world homography.
   f2w_homography_sptr reference_to_world() const;
+
   /// Return a homography to some reference frame.
   f2w_homography_sptr current_to_world() const;
 
   /// Is the current to last homography valid?
   bool has_current_to_last() const;
+
   /// Is the current to reference homography valid?
   bool has_current_to_reference() const;
+
   /// Is the reference to world homography valid?
   bool has_reference_to_world() const;
+
   /// Is the current to world homography valid?
   bool has_current_to_world() const;
 
@@ -178,10 +184,13 @@ protected:
 
   /// The actual current to last homography.
   f2f_homography_sptr current_to_last_;
+
   /// The actual current to reference homography.
   f2f_homography_sptr current_to_reference_;
+
   /// The actual reference to world homography.
   f2w_homography_sptr reference_to_world_;
+
   /// The actual current to world homography.
   f2w_homography_sptr current_to_world_;
 

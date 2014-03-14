@@ -14,6 +14,7 @@
 #include <maptk/vxl/compute_homography_overlap.h>
 #include <maptk/core/algo/compute_ref_homography.h>
 
+#include <iostream>
 #include <algorithm>
 #include <string>
 #include <fstream>
@@ -35,13 +36,27 @@ class checkpoint_entry_t
 {
 public:
 
+  // Constructor
+  checkpoint_entry_t()
+  : fid( 0 ),
+    src_to_ref( new f2f_homography( fid ) )
+  {
+  }
+
+  // Construcotr
+  checkpoint_entry_t( frame_id_t id, f2f_homography_sptr h )
+  : fid( id ),
+    src_to_ref( h )
+  {
+  }
+
   // Frame ID of checkpoint
   frame_id_t fid;
 
   // Source to ref homography
   f2f_homography_sptr src_to_ref;
-
 };
+
 
 // Buffer type for detected checkpoints
 typedef boost::circular_buffer< checkpoint_entry_t > checkpoint_buffer_t;
@@ -95,7 +110,6 @@ public:
 
   /// The feature matching algorithm to use
   maptk::algo::match_features_sptr matcher_;
-
 };
 
 
@@ -197,6 +211,35 @@ close_loops
 }
 
 
+// Functor to help remove tracks from vector
+bool
+track_id_in_set( track_sptr trk_ptr, std::set<track_id_t>* set_ptr )
+{
+  return set_ptr->find( trk_ptr->id() ) != set_ptr->end();
+}
+
+
+// If possible convert a src1 to ref and src2 to ref homography to a src2 to src1 homography
+bool
+convert( const f2f_homography_sptr& src1_to_ref,
+         const f2f_homography_sptr& src2_to_ref,
+         f2f_homography& src2_to_src1 )
+{
+  try
+  {
+    src2_to_src1 = src1_to_ref->inverse() * (*src2_to_ref);
+    return true;
+  }
+  catch(...)
+  {
+    std::cerr << "Warn: Invalid homography received" << std::endl;
+  }
+
+  src2_to_src1 = *src2_to_ref;
+  return false;
+}
+
+
 // Perform stitch operation
 track_set_sptr
 close_loops
@@ -204,22 +247,33 @@ close_loops
           image_container_sptr image,
           track_set_sptr input ) const
 {
-  track_set_sptr updated_set = input;
+  const size_t width = image->width();
+  const size_t height = image->height();
 
   // Compute new homographies for this frame
-  f2f_homography_sptr new_homography =
-    d_->ref_computer_->estimate( frame_number, updated_set );
+  f2f_homography_sptr homog = d_->ref_computer_->estimate( frame_number, input );
 
   // Write out homographies if enabled
   if( !d_->homography_filename_.empty() )
   {
     std::ofstream fout( d_->homography_filename_.c_str(), std::ios::app );
-    fout << *(new_homography) << std::endl;
+    fout << *homog << std::endl;
     fout.close();
   }
 
-  // Determine if this is a new checkpoint frame
+  // Determine if this is a new checkpoint frame. Either the buffer is empty
+  // and this is a new frame, this is a homography for a new reference frame,
+  // or the overlap with the last checkpoint was less than a specified amount.
+  //bool is_new_checkpoint = false;
+  f2f_homography tmp( frame_number );
 
+  if( d_->buffer_.empty() ||
+      !convert( d_->buffer_.back().src_to_ref, homog, tmp ) ||
+      overlap( vnl_double_3x3( tmp.data() ), width, height ) < d_->checkpoint_percent_overlap_ )
+  {
+    d_->buffer_.push_back( checkpoint_entry_t( frame_number, homog ) );
+    //is_new_checkpoint = true;
+  }
 
   // Perform matching to any past checkpoints we want to test
   enum { initial, non_intersection, reintersection } scan_state;
@@ -230,19 +284,98 @@ close_loops
 
   for( buffer_ritr itr = d_->buffer_.rbegin(); itr != d_->buffer_.rend(); itr++ )
   {
-    if( scan_state == initial )
-    {
+    bool transform_valid = convert( itr->src_to_ref, homog, tmp );
+    double po = 0.0;
 
+    if( transform_valid )
+    {
+      po = overlap( vnl_double_3x3( tmp.data() ), image->width(), image->height() );
     }
-    else
-    {
-      // Determine if this checkpoint possibly intersects with our current frame.
 
+    if( scan_state == reintersection )
+    {
+      if( !transform_valid || !po )
+      {
+        break;
+      }
+
+      if( po > best_frame_intersection )
+      {
+        best_frame_to_test = itr;
+        best_frame_intersection = po;
+      }
+    }
+    else if( scan_state == initial )
+    {
+      if( !transform_valid || !po )
+      {
+        scan_state = non_intersection;
+      }
+    }
+    else if( scan_state == non_intersection && transform_valid && po > 0 )
+    {
+      best_frame_to_test = itr;
+      best_frame_intersection = po;
     }
   }
 
-  // Return updated track set
-  return updated_set;
+  // Perform matching operation to target frame if possible
+  if( best_frame_to_test != d_->buffer_.rend() )
+  {
+    const frame_id_t prior_frame = best_frame_to_test->fid;
+
+    // Get all tracks on target frame
+    track_set_sptr prior_set = input->active_tracks( prior_frame );
+
+    // Get all tracks on the current frame
+    track_set_sptr current_set = input->active_tracks( frame_number );
+
+    // Perform matching operation
+    match_set_sptr mset = d_->matcher_->match(
+      current_set->frame_features( frame_number ),
+      current_set->frame_descriptors( frame_number ),
+      prior_set->frame_features( prior_frame ),
+      prior_set->frame_descriptors( prior_frame ) );
+
+    // Test matcher results
+    //unsigned total_features = prior_set->size() + current_set->size();
+
+    if( 1 ) // If matches are good
+    {
+      // Get all tracks, we will modify this
+      std::vector< track_sptr > all_tracks = input->tracks();
+
+      // Get all tracks on the past frame
+      std::vector< track_sptr > prior_trks = prior_set->tracks();
+
+      // Get all tracks on the current frame
+      std::vector< track_sptr > current_trks = current_set->tracks();
+
+      // Get all matches
+      std::vector<match> matches = mset->matches();
+      std::set<track_id_t> to_remove;
+
+      for( unsigned i = 0; i < matches.size(); i++ )
+      {
+        if( prior_trks[ matches[i].first ]->append( *current_trks[ matches[i].second ] ) )
+        {
+          to_remove.insert( current_trks[ matches[i].second ]->id() );
+        }
+      }
+
+      if( !to_remove.empty() )
+      {
+        std::remove_if( all_tracks.begin(), all_tracks.end(),
+                        boost::bind( track_id_in_set, _1, &to_remove ) );
+      }
+
+      // Return updated set
+      return track_set_sptr( new simple_track_set( all_tracks ) );
+    }
+  }
+
+  // Return input set
+  return input;
 }
 
 

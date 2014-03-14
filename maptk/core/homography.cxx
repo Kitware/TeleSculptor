@@ -86,6 +86,19 @@ f2f_homography
 }
 
 
+f2f_homography
+f2f_homography
+::operator*( const f2f_homography& other )
+{
+  if( this->from_id() != other.to_id() )
+  {
+    throw invalid_matrix_operation( "Frame homography identifiers do not match" );
+  }
+
+  return f2f_homography( (*this) * other, other.from_id(), this->to_id() );
+}
+
+
 f2w_homography
 ::f2w_homography( const frame_id_t frame_id )
 : frame_id_( frame_id )
@@ -253,14 +266,6 @@ homography_point
 }
 
 
-vector_2d
-homography_point
-::loc() const
-{
-  return (*this);
-}
-
-
 homography_point
 operator*( const homography& h, const homography_point& p )
 {
@@ -274,5 +279,6 @@ operator*( const homography& h, const homography_point& p )
 
   return homography_point( out_pt(0,0) / out_pt(2,0), out_pt(1,0) / out_pt(2,0) );
 }
+
 
 } // end namespace maptk

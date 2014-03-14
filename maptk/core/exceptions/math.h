@@ -44,7 +44,7 @@ public:
 };
 
 
-/// Exception for when a matrix is non-invertible
+/// Exception for when some point maps to infinity
 class MAPTK_CORE_EXPORT point_maps_to_infinity
   : public math_exception
 {
@@ -53,6 +53,24 @@ public:
   point_maps_to_infinity() MAPTK_NOTHROW;
   /// Destructor
   virtual ~point_maps_to_infinity() MAPTK_NOTHROW;
+};
+
+
+/// We cannot perfom some operation on a matrix
+class MAPTK_CORE_EXPORT invalid_matrix_operation
+  : public math_exception
+{
+public:
+  /// Constructor
+  /*
+   * \param reason  The reason for invalidity.
+   */
+  invalid_matrix_operation(std::string reason) MAPTK_NOTHROW;
+  /// Destructor
+  virtual ~invalid_matrix_operation() MAPTK_NOTHROW;
+
+  /// Reason the operation is invalid
+  std::string m_reason;
 };
 
 

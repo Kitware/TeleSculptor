@@ -134,11 +134,21 @@ sort_and_remove_duplicates( std::vector< vgl_point_2d<double> >& poly )
 
 // Calculate percent overlap.
 double
-overlap( const vnl_double_3x3 h, const unsigned ni, const unsigned nj )
+overlap( const vnl_double_3x3& h, const unsigned ni, const unsigned nj )
 {
-  std::vector< vgl_point_2d<double> > polygon_points;
+  // Early exit cases
+  if( !ni || !nj )
+  {
+    return 0.0;
+  }
+  else if( h.is_identity() )
+  {
+    return 1.0;
+  }
 
   // 1. Warp corner points to reference system [an image from (0,0) to (ni,nj)].
+  std::vector< vgl_point_2d<double> > polygon_points;
+
   std::vector< vgl_point_2d<double> > img1_pts;
   img1_pts.push_back( vgl_point_2d<double>( 0, 0 ) );
   img1_pts.push_back( vgl_point_2d<double>( ni, 0 ) );

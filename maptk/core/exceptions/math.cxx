@@ -51,4 +51,16 @@ point_maps_to_infinity
 }
 
 
+invalid_matrix_operation
+::invalid_matrix_operation(std::string reason) MAPTK_NOTHROW
+{
+  m_what = "Invalid operation: " + reason;
+}
+
+invalid_matrix_operation
+::~invalid_matrix_operation() MAPTK_NOTHROW
+{
+}
+
+
 } // end maptk namespace
