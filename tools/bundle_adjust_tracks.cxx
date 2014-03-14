@@ -111,8 +111,9 @@ static maptk::config_block_sptr default_config()
                     "This is almost always zero in any real camera.");
 
   config->set_value("ins:rotation_offset", "0 0 0 1",
-                    "A quaternion used to offset rotation data from POS files when "
-                    "updating cameras.");
+                    "A quaternion used to offset rotation data from POS files "
+                    "when updating cameras. This option is only relevent if a "
+                    "value is give to the input_pos_files option.");
 
   algo::bundle_adjust::get_nested_algo_configuration("bundle_adjuster", config,
                                                      algo::bundle_adjust_sptr());
@@ -188,21 +189,7 @@ static bool check_config(maptk::config_block_sptr config)
   }
   if (config->has_value("st_estimator:type") && config->get_value<std::string>("st_estimator:type") != "")
   {
-    if (maptk::algo::estimate_similarity_transform::check_nested_algo_configuration("st_estimator", config))
-    {
-      // When an st_estimator is activated to transform results back into the
-      // reference coordinate system, either input pos files or a file or
-      // reference points may be used. When both are provided, we don't know
-      // which to use over the other, this failing the check.
-      if (has_input_pos_files && has_input_ref_pt_list)
-      {
-        MAPTK_CONFIG_FAIL("Provided both input POS files as well as a "
-                          "reference points list. Don't know which one to "
-                          "use. Please provide only one of these mutually "
-                          "exclusive options.");
-      }
-    }
-    else
+    if (!maptk::algo::estimate_similarity_transform::check_nested_algo_configuration("st_estimator", config))
     {
       MAPTK_CONFIG_FAIL("Failed config check in st_estimator algorithm.");
     }
@@ -589,9 +576,16 @@ static int maptk_main(int argc, char const* argv[])
   //
   typedef std::map<maptk::frame_id_t, maptk::ins_data> ins_map_t;
   ins_map_t ins_map;
-  maptk::camera_map::map_camera_t cameras, pos_cameras;
+  maptk::camera_map::map_camera_t cameras;
+
+  // Vars that are used/populated when POS files are given.
+  maptk::camera_map::map_camera_t pos_cameras;
   maptk::rotation_d ins_rot_offset = config->get_value<maptk::rotation_d>("ins:rotation_offset",
                                                                           maptk::rotation_d());
+  // Vars that are used/populated if reference points file given.
+  maptk::landmark_map_sptr reference_landmarks(new maptk::simple_landmark_map());
+  maptk::track_set_sptr reference_tracks(new maptk::simple_track_set());
+
   // if POS files are available, use them to initialize the cameras
   if( config->get_value<std::string>("input_pos_files", "") != "" )
   {
@@ -673,6 +667,14 @@ static int maptk_main(int argc, char const* argv[])
     }
   }
 
+  if (config->get_value<std::string>("input_reference_points_file", "") != "")
+  {
+    maptk::path_t ref_file = config->get_value<maptk::path_t>("input_reference_points_file");
+
+    // Load up landmarks and assocaited tracks from file, (re)initializing local coordinate system object
+    load_reference_file(ref_file, local_cs, reference_landmarks, reference_tracks);
+  }
+
   maptk::camera_map_sptr cam_map(new maptk::simple_camera_map(cameras)),
                          orig_cam_map(new maptk::simple_camera_map(pos_cameras));
 
@@ -681,7 +683,32 @@ static int maptk_main(int argc, char const* argv[])
   if(cam_samp_rate > 1)
   {
     boost::timer::auto_cpu_timer t("Tool-level sub-sampling: %t sec CPU, %w sec wall\n");
-    cam_map = subsample_cameras(cam_map, cam_samp_rate);
+
+    maptk::camera_map_sptr subsampled_cams = subsample_cameras(cam_map, cam_samp_rate);
+
+    // If we were given reference landmarks and tracks, make sure to include
+    // the cameras for frames reference track states land on. Required for
+    // sba-space landmark triangulation and correlation later.
+    if (reference_tracks->size() > 0)
+    {
+      maptk::camera_map::map_camera_t cams = cam_map->cameras(),
+                                      sub_cams = subsampled_cams->cameras();
+      // for each track state in each reference track, make sure that the
+      // state's frame's camera is in the sub-sampled set of cameras
+      BOOST_FOREACH(maptk::track_sptr const t, reference_tracks->tracks())
+      {
+        for (maptk::track::history_const_itr tsit = t->begin(); tsit != t->end(); ++tsit)
+        {
+          if (cams.count(tsit->frame_id) > 0)
+          {
+            sub_cams.insert(*cams.find(tsit->frame_id));
+          }
+        }
+      }
+      subsampled_cams = maptk::camera_map_sptr(new maptk::simple_camera_map(sub_cams));
+    }
+
+    cam_map = subsampled_cams;
     std::cout << "subsampled down to "<<cam_map->size()<<" cameras"<<std::endl;
   }
 
@@ -710,48 +737,46 @@ static int maptk_main(int argc, char const* argv[])
   //
   // If we were given POS files / reference points as input, compute a
   // similarity transform from the refined cameras to the POS file / reference
-  // point cameras (via map structures). Then, apply the estimated transform to
-  // the refined camera positions and landmarks.
-  //
-  // TODO: Be able to either use input POS files, or reference points. We
-  //       should error at the configuration stage if both are provided.
+  // point structures. Then, apply the estimated transform to the refined
+  // camera positions and landmarks.
   //
   if (st_estimator)
   {
-    boost::timer::auto_cpu_timer t_1("st estimation and application: %t sec CPU, %w sec wall\n");
+    boost::timer::auto_cpu_timer t_1("st estimation and application: %t sec "
+                                     "CPU, %w sec wall\n");
 
     // initialize identity transform
     maptk::similarity_d sim_transform;
 
-    // Initialized cameras from POS files
-    if (orig_cam_map->size() > 0)
+    // Prioritize use of reference landmarks/tracks over use of POS files for
+    // transformation out of SBA-space.
+    if (reference_landmarks->size() > 0 && reference_tracks->size() > 0)
     {
-      boost::timer::auto_cpu_timer t_2("similarity transform estimation from POS cams: %t sec CPU, %w sec wall\n");
+      boost::timer::auto_cpu_timer t_2("similarity transform estimation from "
+                                       "ref file: %t sec CPU, %w sec wall\n");
+
+      // Generate corresponding landmarks in SBA-space based on transformed
+      //    cameras and reference landmarks/tracks via triangulation.
+      maptk::landmark_map_sptr sba_space_landmarks(new maptk::simple_landmark_map(reference_landmarks->landmarks()));
+      triangulator->triangulate(cam_map, reference_tracks, sba_space_landmarks);
+
+      double post_tri_rmse = maptk::reprojection_rmse(cam_map->cameras(),
+                                                      sba_space_landmarks->landmarks(),
+                                                      reference_tracks->tracks());
+      std::cerr << "Post reference triangulation RMSE: " << post_tri_rmse << std::endl;
+
+      // Estimate ST from sba-space to reference space.
+      sim_transform = st_estimator->estimate_transform(sba_space_landmarks, reference_landmarks);
+    }
+    else if (pos_cameras.size() > 0)
+    {
+      boost::timer::auto_cpu_timer t_2("similarity transform estimation from "
+                                       "POS cams: %t sec CPU, %w sec wall\n");
 
       std::cout << "Estimating and applying similarity transform to refined "
                 << "cameras (from POS files)" << std::endl;
       sim_transform = st_estimator->estimate_transform(cam_map, orig_cam_map);
 
-    }
-    // Given file of reference points.
-    else if (config->get_value<std::string>("input_reference_points_file", "") != "")
-    {
-      boost::timer::auto_cpu_timer t_2("similarity transform estimation from ref file: %t sec CPU, %w sec wall\n");
-
-      maptk::path_t ref_file = config->get_value<maptk::path_t>("input_reference_points_file");
-
-      // Load up landmarks and assocaited tracks from file, (re)initializing local coordinate system object
-      maptk::landmark_map_sptr ref_landmarks;
-      maptk::track_set_sptr ref_tracks;
-      load_reference_file(ref_file, local_cs, ref_landmarks, ref_tracks);
-
-      // Generate corresponding landmarks in SBA-space based on transformed
-      //    cameras and reference landmarks/tracks via triangulation.
-      maptk::landmark_map_sptr sba_space_landmarks(new maptk::simple_landmark_map(ref_landmarks->landmarks()));
-      triangulator->triangulate(cam_map, ref_tracks, sba_space_landmarks);
-
-      // Estimate ST from sba-space to reference space.
-      sim_transform = st_estimator->estimate_transform(sba_space_landmarks, ref_landmarks);
     }
 
     std::cerr << "--> Estimated Transformation:" << std::endl
