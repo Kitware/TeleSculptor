@@ -95,7 +95,9 @@ f2f_homography
     throw invalid_matrix_operation( "Frame homography identifiers do not match" );
   }
 
-  return f2f_homography( (*this) * other, other.from_id(), to_id_ );
+  return f2f_homography( static_cast<homography>(*this) *
+                         static_cast<homography>(other),
+                         other.from_id(), to_id_ );
 }
 
 
