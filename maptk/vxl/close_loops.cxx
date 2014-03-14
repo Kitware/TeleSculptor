@@ -31,10 +31,23 @@ namespace vxl
 
 
 // Data stored for every detected checkpoint
-typedef homography_collection_sptr checkpoint_entry_t;
+class checkpoint_entry_t
+{
+public:
+
+  // Frame ID of checkpoint
+  frame_id_t fid;
+
+  // Source to ref homography
+  f2f_homography_sptr src_to_ref;
+
+};
 
 // Buffer type for detected checkpoints
 typedef boost::circular_buffer< checkpoint_entry_t > checkpoint_buffer_t;
+
+// Buffer reverse iterator
+typedef checkpoint_buffer_t::reverse_iterator buffer_ritr;
 
 
 /// Private implementation class
@@ -65,7 +78,7 @@ public:
   /// Is long term loop closure enabled?
   bool long_term_closure_enabled_;
 
-  /// Maximum past search distance in terms of number of frames.
+  /// Maximum past search distance in terms of number of checkpoints.
   unsigned max_checkpoint_frames_;
 
   /// Term which controls when we make new loop closure checkpoints.
@@ -124,7 +137,7 @@ close_loops
   config->set_value("long_term_closure_enabled", d_->long_term_closure_enabled_,
                     "Is long term loop closure enabled?");
   config->set_value("max_checkpoint_frames", d_->max_checkpoint_frames_,
-                    "Maximum past search distance in terms of number of frames.");
+                    "Maximum past search distance in terms of number of checkpoints.");
   config->set_value("checkpoint_percent_overlap", d_->checkpoint_percent_overlap_,
                     "Term which controls when we make new loop closure checkpoints.");
   config->set_value("homography_filename", d_->homography_filename_,
@@ -206,10 +219,27 @@ close_loops
   }
 
   // Determine if this is a new checkpoint frame
-  // []
+
 
   // Perform matching to any past checkpoints we want to test
-  // []
+  enum { initial, non_intersection, reintersection } scan_state;
+
+  buffer_ritr best_frame_to_test = d_->buffer_.rend();
+  double best_frame_intersection = 0.0;
+  scan_state = initial;
+
+  for( buffer_ritr itr = d_->buffer_.rbegin(); itr != d_->buffer_.rend(); itr++ )
+  {
+    if( scan_state == initial )
+    {
+
+    }
+    else
+    {
+      // Determine if this checkpoint possibly intersects with our current frame.
+
+    }
+  }
 
   // Return updated track set
   return updated_set;
