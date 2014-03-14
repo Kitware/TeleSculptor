@@ -357,9 +357,7 @@ close_loops
 
       for( unsigned i = 0; i < matches.size(); i++ )
       {
-        if( prior_trks[ matches[i].first ]->size() &&
-            current_trks[ matches[i].second ]->size() &&
-            prior_trks[ matches[i].first ]->append( *current_trks[ matches[i].second ] ) )
+        if( prior_trks[ matches[i].second ]->append( *current_trks[ matches[i].first ] ) )
         {
           to_remove.insert( current_trks[ matches[i].second ]->id() );
         }
