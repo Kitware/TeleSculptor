@@ -10,6 +10,7 @@
  */
 
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <sstream>
 #include <exception>
@@ -18,25 +19,25 @@
 
 #include <maptk/modules.h>
 
-#include <maptk/core/track_set.h>
-#include <maptk/core/track_set_io.h>
-#include <maptk/core/local_geo_cs.h>
-#include <maptk/core/ins_data_io.h>
-#include <maptk/core/landmark_map_io.h>
-#include <maptk/core/camera_io.h>
-#include <maptk/core/metrics.h>
 #include <maptk/core/algo/bundle_adjust.h>
 #include <maptk/core/algo/estimate_similarity_transform.h>
 #include <maptk/core/algo/triangulate_landmarks.h>
 #include <maptk/core/algo/geo_map.h>
+#include <maptk/core/camera_io.h>
 #include <maptk/core/config_block.h>
 #include <maptk/core/config_block_io.h>
+#include <maptk/core/exceptions.h>
+#include <maptk/core/ins_data_io.h>
+#include <maptk/core/landmark_map_io.h>
+#include <maptk/core/local_geo_cs.h>
+#include <maptk/core/metrics.h>
+#include <maptk/core/track_set.h>
+#include <maptk/core/track_set_io.h>
 #include <maptk/core/transform.h>
 #include <maptk/core/types.h>
 
-#include <boost/foreach.hpp>
-
 #include <boost/filesystem.hpp>
+#include <boost/foreach.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
 #include <boost/program_options/value_semantic.hpp>
@@ -64,7 +65,16 @@ static maptk::config_block_sptr default_config()
   config->set_value("input_pos_files", "",
                     "A directory containing the input POS files, or a text file"
                     "containing a newline-separated list of POS files. "
-                    "This is optional, leave blank to ignore.");
+                    "This is optional, leave blank to ignore. This is "
+                    "mutually exclusive with the input_reference_points "
+                    "option when using an st_estimator.");
+
+  config->set_value("input_reference_points_file", "",
+                    "File containing reference points to use for reprojection "
+                    "or results into the original coordinate system. This "
+                    "option is mutually exclusive with input_pos_files "
+                    "when using an st_estimator. When not using an "
+                    "st_estimator this option is ignored.");
 
   config->set_value("output_ply_file", "output/landmarks.ply",
                     "Path to the output PLY file in which to write "
@@ -143,15 +153,25 @@ static bool check_config(maptk::config_block_sptr config)
     MAPTK_CONFIG_FAIL("Given image list file path doesn't point to an existing file.");
   }
 
-  if (! config->has_value("input_pos_files"))
+  bool has_input_pos_files=false,
+       has_input_ref_pt_list=false;
+  if (config->get_value<std::string>("input_pos_files", "") != "")
   {
-    MAPTK_CONFIG_FAIL("No POS file specification given. This should either be an empty "
-         "string or the path to a directory/file list of POS files.");
+    if(!bfs::exists(config->get_value<std::string>("input_pos_files")))
+    {
+      MAPTK_CONFIG_FAIL("POS input path given, but doesn't point to an existing location.");
+    }
+    else // valid pos file list or path
+      has_input_pos_files = true;
   }
-  else if (config->get_value<std::string>("input_pos_files") != ""
-           && !bfs::exists(config->get_value<std::string>("input_pos_files")))
+  if (config->get_value<std::string>("input_reference_points_file", "") != "")
   {
-    MAPTK_CONFIG_FAIL("POS input path given, but doesn't point to an existing location.");
+    if (!bfs::exists(config->get_value<std::string>("input_reference_points_file")))
+    {
+      MAPTK_CONFIG_FAIL("Path given for input reference points file does not exist.");
+    }
+    else // valid ref pts file
+      has_input_ref_pt_list = true;
   }
 
   if (!maptk::algo::bundle_adjust::check_nested_algo_configuration("bundle_adjuster", config))
@@ -166,12 +186,33 @@ static bool check_config(maptk::config_block_sptr config)
   {
     MAPTK_CONFIG_FAIL("Failed config check in geo_mapper algorithm.");
   }
+  if (config->has_value("st_estimator:type") && config->get_value<std::string>("st_estimator:type") != "")
+  {
+    if (maptk::algo::estimate_similarity_transform::check_nested_algo_configuration("st_estimator", config))
+    {
+      // When an st_estimator is activated to transform results back into the
+      // reference coordinate system, either input pos files or a file or
+      // reference points may be used. When both are provided, we don't know
+      // which to use over the other, this failing the check.
+      if (has_input_pos_files && has_input_ref_pt_list)
+      {
+        MAPTK_CONFIG_FAIL("Provided both input POS files as well as a "
+                          "reference points list. Don't know which one to "
+                          "use. Please provide only one of these mutually "
+                          "exclusive options.");
+      }
+    }
+    else
+    {
+      MAPTK_CONFIG_FAIL("Failed config check in st_estimator algorithm.");
+    }
+  }
+
   if (!(   !config->has_value("st_estimator:type")
         || (config->get_value<std::string>("st_estimator:type") == "")
         || maptk::algo::estimate_similarity_transform::check_nested_algo_configuration("st_estimator", config)
        ))
   {
-    MAPTK_CONFIG_FAIL("Failed config check in st_estimator algorithm.");
   }
 
 #undef MAPTK_CONFIG_FAIL
@@ -248,6 +289,116 @@ files_in_dir(const bfs::path& dir)
   }
   std::sort(files.begin(), files.end());
   return files;
+}
+
+
+/// Load landmarks and tracks from reference points file.
+/**
+ * Initializes and uses a local_geo_cs object given to transform reference
+ * landmarks into a local coordinate system. The newly initialize lgcs is
+ * passed back up by reference. Previous initialization of the given lgcs
+ * is overwritten.
+ */
+void
+load_reference_file(maptk::path_t const& reference_file,
+                    maptk::local_geo_cs & lgcs,
+                    maptk::landmark_map_sptr & ref_landmarks,
+                    maptk::track_set_sptr & ref_track_set)
+{
+  using namespace maptk;
+  using namespace std;
+
+  // Read in file, creating a landmark map and a vector of tracks, associated
+  // via IDs
+  std::ifstream input_stream(reference_file.c_str(), std::fstream::in);
+  if (!input_stream)
+  {
+    throw file_not_found_exception(reference_file, "Could not open reference points file!");
+  }
+
+  // pre-allocated vars for loop
+  landmark_id_t cur_id = 1;
+  frame_id_t frm;
+  vector_2d feat_loc;
+  vector_3d vec(0,0,0);
+  double x, y;
+  int zone;
+  bool northp;
+  // used to stream file lines into data types
+  std::istringstream ss;
+
+  landmark_map::map_landmark_t reference_lms;
+  std::vector<track_sptr> reference_tracks;
+
+  // Resetting lgcs' logical initialization
+  lgcs.set_utm_origin(vec);
+  lgcs.set_utm_origin_zone(-1);
+  // Mean position of all landmarks.
+  vector_3d mean(0,0,0);
+
+  // TODO: put in try-catch around >>'s in case we have an ill-formatted file,
+  // or there's a parse error
+  cerr << "[load_reference_file] Reading from file: " << reference_file << endl;
+  for (std::string line; std::getline(input_stream, line);)
+  {
+    ss.clear();
+    ss.str(line);
+
+    // input landmarks are given in lon/lat/alt format (ignoring alt for now)
+    ss >> vec;
+
+    // When this is called the first time, setzone is given a -1, which is the
+    // default for the function.
+    lgcs.geo_map_algo()->latlon_to_utm(vec.y(), vec.x(), x, y, zone, northp,
+                                       lgcs.utm_origin_zone());
+    vec[0] = x; vec[1] = y; vec[2] = 0;
+    mean += vec;
+
+    // Use the zone of the first input landmark as the base zone from which we
+    // interpret all other geo-positions with respect to.
+    if (lgcs.utm_origin_zone() == -1)
+    {
+      cerr << "[load_reference_file] lgcs zone: " << zone << endl;
+      lgcs.set_utm_origin_zone(zone);
+    }
+
+    cerr << "[load_reference_file] landmark " << cur_id << " position :: " << std::setprecision(12) << vec << endl;
+    reference_lms[cur_id] = landmark_sptr(new landmark_d(vec));
+
+    // while there's still input left, read in track states
+    cerr << "[] track:" << endl;
+    track_sptr lm_track(new track());
+    lm_track->set_id(static_cast<track_id_t>(cur_id));
+    while (ss.peek() != std::char_traits<char>::eof())
+    {
+      ss >> frm;
+      ss >> feat_loc;
+      lm_track->append(track::track_state(frm, feature_sptr(new feature_d(feat_loc)), descriptor_sptr()));
+      cerr << "[]\t- " << frm << " :: " << feat_loc << endl;
+    }
+    reference_tracks.push_back(lm_track);
+
+    ++cur_id;
+  }
+
+  // Initialize lgcs center
+  mean /= reference_lms.size();
+  lgcs.set_utm_origin(mean);
+  cerr << "[load_reference_file] mean position: " << mean << endl;
+
+  // Scan through reference landmarks, adjusting their location by the lgcs
+  // origin.
+  cerr << "[load_reference_file] transforming lm locations..." << endl;
+  BOOST_FOREACH(landmark_map::map_landmark_t::value_type & p, reference_lms)
+  {
+    cerr << "[load_reference_file] -- " << p.first << endl;
+    cerr << "[load_reference_file]    -> should be: " << (p.second->loc() - mean) << endl;
+    dynamic_cast<landmark_d*>(p.second.get())->set_loc(p.second->loc() - mean);
+    cerr << "[load_reference_file]    -> stored   : " << p.second->loc() << endl;
+  }
+
+  ref_landmarks = landmark_map_sptr(new simple_landmark_map(reference_lms));
+  ref_track_set = track_set_sptr(new simple_track_set(reference_tracks));
 }
 
 
@@ -442,7 +593,7 @@ static int maptk_main(int argc, char const* argv[])
   maptk::rotation_d ins_rot_offset = config->get_value<maptk::rotation_d>("ins:rotation_offset",
                                                                           maptk::rotation_d());
   // if POS files are available, use them to initialize the cameras
-  if( config->get_value<std::string>("input_pos_files") != "" )
+  if( config->get_value<std::string>("input_pos_files", "") != "" )
   {
     boost::timer::auto_cpu_timer t("Initializing cameras from POS files: %t sec CPU, %w sec wall\n");
 
@@ -483,7 +634,7 @@ static int maptk_main(int argc, char const* argv[])
     if (!ins_map.empty())
     {
       // TODO: generated interpolated cameras for missing POS files.
-      //       -> Q: Is this still a thing with the introduction of HSBA?
+      //       -> Q: Should this still a thing with the introduction of HSBA?
       if (filename2frame.size() != ins_map.size())
       {
         std::cerr << "Warning: Input POS file-set is sparse compared to input "
@@ -494,7 +645,7 @@ static int maptk_main(int argc, char const* argv[])
 
       cameras = maptk::initialize_cameras_with_ins(ins_map, base_camera, local_cs,
                                                    ins_rot_offset);
-      // Creating duplicate cameras structure
+      // Creating duplicate cameras structure signifying POS files were input
       BOOST_FOREACH(maptk::camera_map::map_camera_t::value_type &v, cameras)
       {
         pos_cameras[v.first] = v.second->clone();
@@ -562,14 +713,50 @@ static int maptk_main(int argc, char const* argv[])
   // point cameras (via map structures). Then, apply the estimated transform to
   // the refined camera positions and landmarks.
   //
-  if (orig_cam_map->size() > 0 && st_estimator)
+  // TODO: Be able to either use input POS files, or reference points. We
+  //       should error at the configuration stage if both are provided.
+  //
+  if (st_estimator)
   {
-    boost::timer::auto_cpu_timer t("similarity transform estimation: %t sec CPU, %w sec wall\n");
-    std::cout << "Estimating and applying similarity transform to refined "
-              << "cameras (from POS files)" << std::endl;
-    maptk::similarity_d sim_transform = st_estimator->estimate_transform(cam_map, orig_cam_map);
-    std::cout << "--> Estimated Transformation:" << std::endl
+    boost::timer::auto_cpu_timer t_1("st estimation and application: %t sec CPU, %w sec wall\n");
+
+    // initialize identity transform
+    maptk::similarity_d sim_transform;
+
+    // Initialized cameras from POS files
+    if (orig_cam_map->size() > 0)
+    {
+      boost::timer::auto_cpu_timer t_2("similarity transform estimation from POS cams: %t sec CPU, %w sec wall\n");
+
+      std::cout << "Estimating and applying similarity transform to refined "
+                << "cameras (from POS files)" << std::endl;
+      sim_transform = st_estimator->estimate_transform(cam_map, orig_cam_map);
+
+    }
+    // Given file of reference points.
+    else if (config->get_value<std::string>("input_reference_points_file", "") != "")
+    {
+      boost::timer::auto_cpu_timer t_2("similarity transform estimation from ref file: %t sec CPU, %w sec wall\n");
+
+      maptk::path_t ref_file = config->get_value<maptk::path_t>("input_reference_points_file");
+
+      // Load up landmarks and assocaited tracks from file, (re)initializing local coordinate system object
+      maptk::landmark_map_sptr ref_landmarks;
+      maptk::track_set_sptr ref_tracks;
+      load_reference_file(ref_file, local_cs, ref_landmarks, ref_tracks);
+
+      // Generate corresponding landmarks in SBA-space based on transformed
+      //    cameras and reference landmarks/tracks via triangulation.
+      maptk::landmark_map_sptr sba_space_landmarks(new maptk::simple_landmark_map(ref_landmarks->landmarks()));
+      triangulator->triangulate(cam_map, ref_tracks, sba_space_landmarks);
+
+      // Estimate ST from sba-space to reference space.
+      sim_transform = st_estimator->estimate_transform(sba_space_landmarks, ref_landmarks);
+    }
+
+    std::cerr << "--> Estimated Transformation:" << std::endl
               << sim_transform << std::endl;
+
     // apply to cameras
     std::cout << "--> Applying to cameras..." << std::endl;
     cam_map = maptk::transform(cam_map, sim_transform);
