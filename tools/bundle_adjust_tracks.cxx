@@ -378,10 +378,8 @@ load_reference_file(maptk::path_t const& reference_file,
   cerr << "[load_reference_file] transforming lm locations..." << endl;
   BOOST_FOREACH(landmark_map::map_landmark_t::value_type & p, reference_lms)
   {
-    cerr << "[load_reference_file] -- " << p.first << endl;
-    cerr << "[load_reference_file]    -> should be: " << (p.second->loc() - mean) << endl;
     dynamic_cast<landmark_d*>(p.second.get())->set_loc(p.second->loc() - mean);
-    cerr << "[load_reference_file]    -> stored   : " << p.second->loc() << endl;
+    cerr << "[load_reference_file] -- " << p.first << " :: " << p.second->loc() << endl;
   }
 
   ref_landmarks = landmark_map_sptr(new simple_landmark_map(reference_lms));
