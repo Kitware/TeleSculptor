@@ -359,7 +359,7 @@ close_loops
       {
         if( prior_trks[ matches[i].second ]->append( *current_trks[ matches[i].first ] ) )
         {
-          to_remove.insert( current_trks[ matches[i].second ]->id() );
+          to_remove.insert( current_trks[ matches[i].first ]->id() );
         }
       }
 
