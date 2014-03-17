@@ -34,6 +34,7 @@ namespace algo
 namespace
 {
 
+
 // Extra data stored for every active track
 struct track_info_t
 {
@@ -110,7 +111,9 @@ reset_active_flags( track_info_buffer_sptr buffer )
   }
 }
 
+
 } // end namespace anonymous
+
 
 // Private implementation class
 class compute_ref_homography_default::priv
