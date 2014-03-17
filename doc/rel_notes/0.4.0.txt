@@ -23,6 +23,13 @@ OpenCV Library
     to compare computed features tracks and landmarks projected onto
     the image using camera krtd files.
 
+Tools
+
+  * Added reference point file input option and functionality to bundle adjust
+    tool. This allows a user-generated 3D-2D point corrolation list to drive
+    post-SBA world coordinate transformation instead of, or in the absence of
+    input POS camera files.
+
 Tests
 
   * Added tests for VXL camera optimization implementation
