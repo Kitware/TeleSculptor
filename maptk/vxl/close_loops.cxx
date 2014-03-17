@@ -271,7 +271,6 @@ close_loops
   // Determine if this is a new checkpoint frame. Either the buffer is empty
   // and this is a new frame, this is a homography for a new reference frame,
   // or the overlap with the last checkpoint was less than a specified amount.
-  //bool is_new_checkpoint = false;
   f2f_homography tmp( frame_number );
 
   if( d_->buffer_.empty() ||
@@ -279,7 +278,6 @@ close_loops
       overlap( vnl_double_3x3( tmp.data() ), width, height ) < d_->checkpoint_percent_overlap_ )
   {
     d_->buffer_.push_back( checkpoint_entry_t( frame_number, homog ) );
-    //is_new_checkpoint = true;
   }
 
   // Perform matching to any past checkpoints we want to test
@@ -319,10 +317,11 @@ close_loops
         scan_state = non_intersection;
       }
     }
-    else if( scan_state == non_intersection && transform_valid && po > 0 )
+    else if( transform_valid && po > 0 )
     {
       best_frame_to_test = itr;
       best_frame_intersection = po;
+      scan_state = reintersection;
     }
   }
 
@@ -345,8 +344,6 @@ close_loops
       prior_set->frame_descriptors( prior_frame ) );
 
     // Test matcher results
-    //unsigned total_features = prior_set->size() + current_set->size();
-
     if( mset->size() > 0 ) // If matches are good
     {
       // Logging
