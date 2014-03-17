@@ -71,10 +71,20 @@ static maptk::config_block_sptr default_config()
 
   config->set_value("input_reference_points_file", "",
                     "File containing reference points to use for reprojection "
-                    "or results into the original coordinate system. This "
-                    "option is mutually exclusive with input_pos_files "
-                    "when using an st_estimator. When not using an "
-                    "st_estimator this option is ignored.");
+                    "of results into the original coordinate system. This "
+                    "option is NOT mutually exclusive with input_pos_files "
+                    "when using an st_estimator. When both are provided, "
+                    "use of the reference file is given priority over the "
+                    "POS files.\n"
+                    "\n"
+                    "Reference points file format (lm=landmark, tNsM=track N state M):\n"
+                    "\tlm1.x lm1.y lm1.z t1s1.frame t1s1.x t1s1.y t1s2.frame t1s2.x t1s2.y ...\n"
+                    "\tlm2.x lm2.y lm2.z t2s1.frame t2s1.x t2s1.y t2s2.frame t2s2.x t2s2.y ...\n"
+                    "\t...\n"
+                    "\n"
+                    "At least 4 landmarks must be given with at least 3 track "
+                    "states recorded for each for transformation estimation "
+                    "to converge.");
 
   config->set_value("output_ply_file", "output/landmarks.ply",
                     "Path to the output PLY file in which to write "
