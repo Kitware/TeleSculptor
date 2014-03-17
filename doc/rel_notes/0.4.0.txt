@@ -20,6 +20,11 @@ VXL Library
 
   * Added VXL implementation of camera optimization
 
+  * Added a VXL loop closure implementation based around using reference
+    frame homographies to estimate when we have reached the same location
+    again, and to additionally determine the most optimal frames to perform
+    feature matching between.
+
 OpenCV Library
 
   * Added more options to the draw_track class, including the ability
