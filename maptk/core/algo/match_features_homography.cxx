@@ -164,6 +164,7 @@ match_features_homography
   if( !inlier_count || inlier_count < d_->min_required_inlier_count ||
       static_cast<double>(inlier_count)/inliers.size() < d_->min_required_inlier_percent )
   {
+    std::cout << "matching criteria not met" << std::endl;
     return match_set_sptr(new simple_match_set());
   }
 

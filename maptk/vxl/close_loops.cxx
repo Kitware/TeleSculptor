@@ -347,8 +347,11 @@ close_loops
     // Test matcher results
     //unsigned total_features = prior_set->size() + current_set->size();
 
-    if( 1 ) // If matches are good
+    if( mset->size() > 0 ) // If matches are good
     {
+      // Logging
+      std::cout << "Stitching frames " << prior_frame << " and " << frame_number << std::endl;
+
       // Get all tracks, we will modify this
       std::vector< track_sptr > all_tracks = input->tracks();
 
