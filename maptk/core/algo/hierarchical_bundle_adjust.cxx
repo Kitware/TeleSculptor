@@ -48,7 +48,7 @@ subsample_cameras(camera_map::map_camera_t const& cameras, unsigned n)
 {
   boost::timer::auto_cpu_timer t("Camera sub-sampling: %t sec CPU, %w sec wall\n");
 
-  // if sub-sample is 1, no sub-sampling occurs, just return a copy
+  // if sub-sample is 1, no sub-sampling occurs, just return a copy of the map
   if (n == 1)
   {
     return cameras;
@@ -65,6 +65,14 @@ subsample_cameras(camera_map::map_camera_t const& cameras, unsigned n)
     ++i;
   }
   return subsample;
+}
+
+/// Integer interpolation -- used with indices, so can assume positive
+frame_id_t
+int_interp(frame_id_t a, frame_id_t b, double p)
+{
+  // intend for static cast acts as floor in rounding.
+  return static_cast<frame_id_t>(a*(1.0-p) + b*p + 0.5);
 }
 
 } // end anonymous namespace
@@ -288,9 +296,9 @@ hierarchical_bundle_adjust
         ac_map = active_cam_map->cameras();
 
       // pre-allocation of variables for performance
-      size_t interval, jump,
-             ir_l; // local interpolation rate as gaps available may be less than global rate
+      size_t ir_l; // local interpolation rate as gaps available may be less than global rate
       double f;
+      frame_id_t i2;
       frame_id_t cur_frm, next_frm;
       camera_sptr cur_cam, next_cam;
 
@@ -315,16 +323,24 @@ hierarchical_bundle_adjust
             // this specific gap's interpolation rate -- gap may be smaller than ir
             ir_l = min(ir, next_frm - cur_frm - 1);
 
-            // Integral interval of each interpolation between cur and next frames
-            // -> assuming even interpolation, this will divide evenly
-            interval = (next_frm - cur_frm) / (ir_l + 1);
-
-            for (jump = interval; cur_frm + jump < next_frm; jump += interval)
+            for (double i=1; i<=ir_l; ++i)
             {
-              f = static_cast<double>(jump) / (next_frm - cur_frm);
-              //cerr << "-> frm = " << (cur_frm + jump) << ", f = " << f << endl;
-              interped_cams[cur_frm + jump] = interpolate_camera(cur_cam, next_cam, f);
+              // Determine the integer associated with the interpolation step,
+              // then determine the fraction location of that integer between
+              // the two end points.
+
+              // absolute fraction, might not land on integer
+              f = i / (ir_l + 1);
+
+              // aproximate interpolation snapped to nearest integer
+              i2 = int_interp(cur_frm, next_frm, f);
+
+              // fraction position of interpoated integer
+              f = static_cast<double>(i2 - cur_frm) / (next_frm - cur_frm);
+
+              interped_cams[i2] = interpolate_camera(cur_cam, next_cam, f);
             }
+
           }
         }
       }
