@@ -229,31 +229,31 @@ homography_collection
 }
 
 
-homography_point
-::homography_point()
+homogeneous_point
+::homogeneous_point()
 {
   data_[0] = 0;
   data_[1] = 0;
 }
 
 
-homography_point
-::homography_point( const double i, const double j )
+homogeneous_point
+::homogeneous_point( const double i, const double j )
 {
   data_[0] = i;
   data_[1] = j;
 }
 
 
-homography_point
-::homography_point( const vector_2d& v )
+homogeneous_point
+::homogeneous_point( const vector_2d& v )
  : vector_2d( v )
 {
 }
 
 
 double
-homography_point
+homogeneous_point
 ::i() const
 {
   return data_[0];
@@ -261,15 +261,15 @@ homography_point
 
 
 double
-homography_point
+homogeneous_point
 ::j() const
 {
   return data_[1];
 }
 
 
-homography_point
-operator*( const homography& h, const homography_point& p )
+homogeneous_point
+operator*( const homography& h, const homogeneous_point& p )
 {
   double vals[3] = { p.x(), p.y(), 1.0 };
   matrix_<3,1,double> out_pt = h * matrix_<3,1,double>( vals );
@@ -279,7 +279,7 @@ operator*( const homography& h, const homography_point& p )
     throw point_maps_to_infinity();
   }
 
-  return homography_point( out_pt(0,0) / out_pt(2,0), out_pt(1,0) / out_pt(2,0) );
+  return homogeneous_point( out_pt(0,0) / out_pt(2,0), out_pt(1,0) / out_pt(2,0) );
 }
 
 

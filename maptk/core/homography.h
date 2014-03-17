@@ -114,21 +114,21 @@ typedef boost::shared_ptr< f2w_homography > f2w_homography_sptr;
 
 
 /// A point for use with multiplying with homography matrices.
-class MAPTK_CORE_EXPORT homography_point : public vector_2d
+class MAPTK_CORE_EXPORT homogeneous_point : public vector_2d
 {
 public:
 
   /// Default initialize to (0,0).
-  homography_point();
+  homogeneous_point();
 
   /// Construct from independent double values.
-  homography_point( const double i, const double j );
+  homogeneous_point( const double i, const double j );
 
   /// Construct from a vector object.
-  homography_point( const vector_2d& v );
+  homogeneous_point( const vector_2d& v );
 
   /// Destructor.
-  virtual ~homography_point() {}
+  virtual ~homogeneous_point() {}
 
   /// Return x value.
   virtual double i() const;
@@ -139,7 +139,7 @@ public:
 };
 
 /// A smart pointer to a homography point.
-typedef boost::shared_ptr< homography_point > homography_point_sptr;
+typedef boost::shared_ptr< homogeneous_point > homogeneous_point_sptr;
 
 
 /// A collection of homography-related data useful for each individual frame.
@@ -207,7 +207,7 @@ typedef boost::shared_ptr< homography_collection_set > homography_collection_set
 
 
 /// Custom homography point multiplication operator.
-homography_point operator*( const homography& h, const homography_point& p );
+homogeneous_point operator*( const homography& h, const homogeneous_point& p );
 
 
 } // end namespace maptk

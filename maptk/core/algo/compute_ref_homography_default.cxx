@@ -42,7 +42,7 @@ struct track_info_t
   track_id_t tid;
 
   // Location of this track in the reference frame
-  homography_point ref_loc;
+  homogeneous_point ref_loc;
 
   // Is the ref loc valid?
   bool ref_loc_valid;
@@ -325,7 +325,7 @@ compute_ref_homography_default
       track_info_t new_entry;
 
       new_entry.tid = trk->id();
-      new_entry.ref_loc = homography_point( itr->feat->loc() );
+      new_entry.ref_loc = homogeneous_point( itr->feat->loc() );
       new_entry.active = false; // don't want to use this track on this frame
       new_entry.trk = trk;
 
@@ -429,7 +429,7 @@ compute_ref_homography_default
 
       if( itr != ti.trk->end() && itr->feat )
       {
-        homography_point warped = (*output) * itr->feat->loc();
+        homogeneous_point warped = (*output) * itr->feat->loc();
         double dist_sqr = ( warped - ti.ref_loc ).magnitude_sqr();
 
         if( dist_sqr > d_->backproject_threshold_sqr )
