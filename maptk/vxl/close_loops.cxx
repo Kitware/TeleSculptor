@@ -73,7 +73,7 @@ public:
   priv()
   : enabled_( true ),
     max_checkpoint_frames_( 10000 ),
-    checkpoint_percent_overlap_( 0.40 ),
+    checkpoint_percent_overlap_( 0.70 ),
     homography_filename_( "" )
   {
   }
@@ -153,7 +153,9 @@ close_loops
   config->set_value("max_checkpoint_frames", d_->max_checkpoint_frames_,
                     "Maximum past search distance in terms of number of checkpoints.");
   config->set_value("checkpoint_percent_overlap", d_->checkpoint_percent_overlap_,
-                    "Term which controls when we make new loop closure checkpoints.");
+                    "Term which controls when we make new loop closure checkpoints. "
+                    "Everytime the percentage of tracked features drops below this "
+                    "threshold, we generate a new checkpoint.");
   config->set_value("homography_filename", d_->homography_filename_,
                     "Optional output location for a homography text file.");
 
