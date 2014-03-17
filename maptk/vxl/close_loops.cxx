@@ -30,6 +30,9 @@ namespace maptk
 namespace vxl
 {
 
+namespace
+{
+
 
 // Data stored for every detected checkpoint
 class checkpoint_entry_t
@@ -63,6 +66,38 @@ typedef boost::circular_buffer< checkpoint_entry_t > checkpoint_buffer_t;
 
 // Buffer reverse iterator
 typedef checkpoint_buffer_t::reverse_iterator buffer_ritr;
+
+
+// Functor to help remove tracks from vector
+bool
+track_id_in_set( track_sptr trk_ptr, std::set<track_id_t>* set_ptr )
+{
+  return set_ptr->find( trk_ptr->id() ) != set_ptr->end();
+}
+
+
+// If possible convert a src1 to ref and src2 to ref homography to a src2 to src1 homography
+bool
+convert( const f2f_homography_sptr& src1_to_ref,
+         const f2f_homography_sptr& src2_to_ref,
+         f2f_homography& src2_to_src1 )
+{
+  try
+  {
+    src2_to_src1 = src1_to_ref->inverse() * (*src2_to_ref);
+    return true;
+  }
+  catch(...)
+  {
+    std::cerr << "Warn: Invalid homography received" << std::endl;
+  }
+
+  src2_to_src1 = *src2_to_ref;
+  return false;
+}
+
+
+} // end namespace anonymous
 
 
 /// Private implementation class
@@ -210,35 +245,6 @@ close_loops
     &&
     maptk::algo::match_features::check_nested_algo_configuration( "feature_matcher", config )
   );
-}
-
-
-// Functor to help remove tracks from vector
-bool
-track_id_in_set( track_sptr trk_ptr, std::set<track_id_t>* set_ptr )
-{
-  return set_ptr->find( trk_ptr->id() ) != set_ptr->end();
-}
-
-
-// If possible convert a src1 to ref and src2 to ref homography to a src2 to src1 homography
-bool
-convert( const f2f_homography_sptr& src1_to_ref,
-         const f2f_homography_sptr& src2_to_ref,
-         f2f_homography& src2_to_src1 )
-{
-  try
-  {
-    src2_to_src1 = src1_to_ref->inverse() * (*src2_to_ref);
-    return true;
-  }
-  catch(...)
-  {
-    std::cerr << "Warn: Invalid homography received" << std::endl;
-  }
-
-  src2_to_src1 = *src2_to_ref;
-  return false;
 }
 
 
