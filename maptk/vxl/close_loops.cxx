@@ -71,7 +71,7 @@ class close_loops::priv
 public:
 
   priv()
-  : long_term_closure_enabled_( true ),
+  : enabled_( true ),
     max_checkpoint_frames_( 10000 ),
     checkpoint_percent_overlap_( 0.40 ),
     homography_filename_( "" )
@@ -79,7 +79,7 @@ public:
   }
 
   priv( const priv& other )
-  : long_term_closure_enabled_( other.long_term_closure_enabled_ ),
+  : enabled_( other.enabled_ ),
     max_checkpoint_frames_( other.max_checkpoint_frames_ ),
     checkpoint_percent_overlap_( other.checkpoint_percent_overlap_ ),
     homography_filename_( other.homography_filename_ )
@@ -91,7 +91,7 @@ public:
   }
 
   /// Is long term loop closure enabled?
-  bool long_term_closure_enabled_;
+  bool enabled_;
 
   /// Maximum past search distance in terms of number of checkpoints.
   unsigned max_checkpoint_frames_;
@@ -148,7 +148,7 @@ close_loops
   maptk::algo::match_features::get_nested_algo_configuration( "feature_matcher", config, d_->matcher_ );
 
   // Loop closure parameters
-  config->set_value("long_term_closure_enabled", d_->long_term_closure_enabled_,
+  config->set_value("enabled", d_->enabled_,
                     "Is long term loop closure enabled?");
   config->set_value("max_checkpoint_frames", d_->max_checkpoint_frames_,
                     "Maximum past search distance in terms of number of checkpoints.");
@@ -181,7 +181,7 @@ close_loops
   d_->matcher_ = mf;
 
   // Settings for bad frame detection
-  d_->long_term_closure_enabled_ = config->get_value<bool>( "long_term_closure_enabled" );
+  d_->enabled_ = config->get_value<bool>( "enabled" );
   d_->max_checkpoint_frames_ = config->get_value<unsigned>( "max_checkpoint_frames" );
   d_->checkpoint_percent_overlap_ = config->get_value<double>( "checkpoint_percent_overlap" );
   d_->homography_filename_ = config->get_value<std::string>( "homography_filename" );
@@ -247,6 +247,11 @@ close_loops
           image_container_sptr image,
           track_set_sptr input ) const
 {
+  if( !d_->enabled_ )
+  {
+    return input;
+  }
+
   const size_t width = image->width();
   const size_t height = image->height();
 
