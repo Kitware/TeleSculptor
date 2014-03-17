@@ -49,7 +49,11 @@ public:
   /// Estimate the transformation which maps some frame to a reference frame
   /**
    * Similarly to track_features, this class was designed to be called in
-   * an online fashion for each sequential frame.
+   * an online fashion for each sequential frame. The output homography
+   * will contain a transformation mapping points from the current frame
+   * (with frame_id frame_number) to the earliest possible reference frame
+   * via post multiplying points on the current frame with the computed
+   * homography.
    *
    * \param [in]   frame_number frame identifier for the current frame
    * \param [in]   tracks the set of all tracked features from the image
