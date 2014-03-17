@@ -31,6 +31,8 @@ namespace maptk
 namespace algo
 {
 
+namespace
+{
 
 // Extra data stored for every active track
 struct track_info_t
@@ -79,6 +81,36 @@ typedef boost::shared_ptr< track_info_buffer_t > track_info_buffer_sptr;
 // Internal homography estimator type
 typedef maptk::algo::estimate_homography_sptr estimator_sptr;
 
+
+// Helper function for sorting tis
+bool
+compare_ti( const track_info_t& c1, const track_info_t& c2 )
+{
+  return ( c1.tid < c2.tid );
+}
+
+
+// Find a track in a given buffer
+track_info_buffer_t::iterator
+find_track( const track_sptr& trk, track_info_buffer_sptr& buffer )
+{
+  track_info_t ti;
+  ti.tid = trk->id();
+  return std::lower_bound( buffer->begin(), buffer->end(), ti, compare_ti );
+}
+
+
+// Reset all is found flags
+void
+reset_active_flags( track_info_buffer_sptr buffer )
+{
+  BOOST_FOREACH( track_info_t& ti, *buffer )
+  {
+    ti.active = false;
+  }
+}
+
+} // end namespace anonymous
 
 // Private implementation class
 class compute_ref_homography_default::priv
@@ -223,35 +255,6 @@ compute_ref_homography_default
   (
     estimate_homography::check_nested_algo_configuration( "estimator", config )
   );
-}
-
-
-// Helper function for sorting tis
-bool
-compare_ti( const track_info_t& c1, const track_info_t& c2 )
-{
-  return ( c1.tid < c2.tid );
-}
-
-
-// Find a track in a given buffer
-track_info_buffer_t::iterator
-find_track( const track_sptr& trk, track_info_buffer_sptr& buffer )
-{
-  track_info_t ti;
-  ti.tid = trk->id();
-  return std::lower_bound( buffer->begin(), buffer->end(), ti, compare_ti );
-}
-
-
-// Reset all is found flags
-void
-reset_active_flags( track_info_buffer_sptr buffer )
-{
-  BOOST_FOREACH( track_info_t& ti, *buffer )
-  {
-    ti.active = false;
-  }
 }
 
 
