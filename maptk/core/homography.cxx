@@ -272,14 +272,14 @@ homogeneous_point
 operator*( const homography& h, const homogeneous_point& p )
 {
   double vals[3] = { p.x(), p.y(), 1.0 };
-  matrix_<3,1,double> out_pt = h * matrix_<3,1,double>( vals );
+  vector_3d out_pt = h * vector_3d( vals );
 
-  if( out_pt(2,0) == 0 )
+  if( out_pt[2] == 0 )
   {
     throw point_maps_to_infinity();
   }
 
-  return homogeneous_point( out_pt(0,0) / out_pt(2,0), out_pt(1,0) / out_pt(2,0) );
+  return homogeneous_point( out_pt[0] / out_pt[2], out_pt[1] / out_pt[2] );
 }
 
 
