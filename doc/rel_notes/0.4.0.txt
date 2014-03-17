@@ -11,6 +11,8 @@ Core Library
 
   * Added camera optimization algorithm definition.
 
+  * Added hierarchical SBA algorithm definition and generic implementation.
+
 VXL Library
 
   * Added VXL implementation of camera optimization
