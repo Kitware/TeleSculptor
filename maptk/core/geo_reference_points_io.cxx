@@ -63,7 +63,7 @@ void load_reference_file(path_t const& reference_file,
   // TODO: put in try-catch around >>'s in case we have an ill-formatted file,
   // or there's a parse error
   cerr << "[load_reference_file] Reading from file: " << reference_file << endl;
-  cerr << "[load_reference_file] Reading landmarks and tracks...
+  cerr << "[load_reference_file] Reading landmarks and tracks..." << endl;
   for (std::string line; std::getline(input_stream, line);)
   {
     ss.clear();
