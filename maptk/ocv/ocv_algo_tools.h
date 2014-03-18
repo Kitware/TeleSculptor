@@ -17,7 +17,7 @@
 #include <iostream>
 
 #include <maptk/core/config_block.h>
-#include <maptk/core/exceptions/config_block.h>
+#include <maptk/core/exceptions.h>
 #include <maptk/core/types.h>
 
 #include <maptk/ocv/ocv_config.h>
@@ -76,10 +76,17 @@ cv::Ptr<algo_t> create_ocv_algo(std::string const& impl_name)
               << std::endl;
   }
 
-  // if the create call returned something empty or errored, a will still empty.
+  // if the create call returned something empty or errored, fall back to
+  // trying the top-level cv::Algorithm constructor.
   if (a.empty())
   {
     a = cv::Algorithm::create<algo_t>(impl_name);
+  }
+  else if (!a->info())
+  {
+    throw algorithm_exception("OpenCV", impl_name, "OCV failed to construct "
+        "underlying algorithm info object of " + impl_name + " algorithm, "
+        "returning an invalid algorithm object. Cannot proceed.");
   }
   return a;
 }
