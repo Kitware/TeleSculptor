@@ -83,9 +83,10 @@ static maptk::config_block_sptr default_config()
                     "\tlm2.x lm2.y lm2.z t2s1.frame t2s1.x t2s1.y t2s2.frame t2s2.x t2s2.y ...\n"
                     "\t...\n"
                     "\n"
-                    "At least 3 landmarks must be given with at least 3 track "
-                    "states recorded for each for transformation estimation "
-                    "to converge.\n"
+                    "At least 3 landmarks must be given, with at least 2 "
+                    "track states recorded for each landmark, for "
+                    "transformation estimation to converge, however more of "
+                    "each is recommended.\n"
                     "\n"
                     "Landmark z position, or altitude, should be provided in meters.");
 

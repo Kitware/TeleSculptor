@@ -63,6 +63,7 @@ void load_reference_file(path_t const& reference_file,
   // TODO: put in try-catch around >>'s in case we have an ill-formatted file,
   // or there's a parse error
   cerr << "[load_reference_file] Reading from file: " << reference_file << endl;
+  cerr << "[load_reference_file] Reading landmarks and tracks...
   for (std::string line; std::getline(input_stream, line);)
   {
     ss.clear();
@@ -82,15 +83,15 @@ void load_reference_file(path_t const& reference_file,
     // interpret all other geo-positions with respect to.
     if (lgcs.utm_origin_zone() == -1)
     {
-      cerr << "[load_reference_file] lgcs zone: " << zone << endl;
+      cerr << "[load_reference_file] - lgcs origin zone: " << zone << endl;
       lgcs.set_utm_origin_zone(zone);
     }
 
-    cerr << "[load_reference_file] landmark " << cur_id << " position :: " << std::setprecision(12) << vec << endl;
+    //cerr << "[load_reference_file] landmark " << cur_id << " position :: " << std::setprecision(12) << vec << endl;
     reference_lms[cur_id] = landmark_sptr(new landmark_d(vec));
 
     // while there's still input left, read in track states
-    cerr << "[] track:" << endl;
+    //cerr << "[] track:" << endl;
     track_sptr lm_track(new track());
     lm_track->set_id(static_cast<track_id_t>(cur_id));
     while (ss.peek() != std::char_traits<char>::eof())
@@ -98,7 +99,7 @@ void load_reference_file(path_t const& reference_file,
       ss >> frm;
       ss >> feat_loc;
       lm_track->append(track::track_state(frm, feature_sptr(new feature_d(feat_loc)), descriptor_sptr()));
-      cerr << "[]\t- " << frm << " :: " << feat_loc << endl;
+      //cerr << "[]\t- " << frm << " :: " << feat_loc << endl;
     }
     reference_tracks.push_back(lm_track);
 
@@ -108,15 +109,15 @@ void load_reference_file(path_t const& reference_file,
   // Initialize lgcs center
   mean /= reference_lms.size();
   lgcs.set_utm_origin(mean);
-  cerr << "[load_reference_file] mean position: " << mean << endl;
+  cerr << "[load_reference_file] mean position (lgcs origin): " << mean << endl;
 
   // Scan through reference landmarks, adjusting their location by the lgcs
   // origin.
-  cerr << "[load_reference_file] transforming lm locations..." << endl;
+  cerr << "[load_reference_file] transforming lm geographic locations to local system..." << endl;
   BOOST_FOREACH(landmark_map::map_landmark_t::value_type & p, reference_lms)
   {
     dynamic_cast<landmark_d*>(p.second.get())->set_loc(p.second->loc() - mean);
-    cerr << "[load_reference_file] -- " << p.first << " :: " << p.second->loc() << endl;
+    //cerr << "[load_reference_file] -- " << p.first << " :: " << p.second->loc() << endl;
   }
 
   ref_landmarks = landmark_map_sptr(new simple_landmark_map(reference_lms));

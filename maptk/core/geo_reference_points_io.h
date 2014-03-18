@@ -37,8 +37,9 @@ namespace maptk
  *    lm2.x lm2.y lm2.z t2s1.frame t2s1.x t2s1.y t2s2.frame t2s2.x t2s2.y ...
  *    ...
  *
- * At least 4 landmarks must be given with at least 3 track states recorded
- * for each for transformation to converge.
+ * At least 3 landmarks must be given, with at least 2 track states recorded
+ * for each landmark, for transformation to converge, however more of each is
+ * recommended.
  *
  * Landmark Z position, or altitude, should be given in meters.
  *

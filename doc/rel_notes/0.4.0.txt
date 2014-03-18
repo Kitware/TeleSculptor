@@ -13,6 +13,9 @@ Core Library
 
   * Added hierarchical SBA algorithm definition and generic implementation.
 
+  * Added method for loading landmark and track structures from a geographic
+    reference point file.
+
 VXL Library
 
   * Added VXL implementation of camera optimization
