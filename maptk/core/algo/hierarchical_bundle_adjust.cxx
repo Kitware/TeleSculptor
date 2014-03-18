@@ -40,8 +40,11 @@ namespace // anonymous
 
 /// subsample a every Nth camera
 /**
- * Subsamples based off camera order index where the first camera in the map
- * has index 0 and the last has index n-1.
+ * Subsamples are chosen based on camera order index instead of frame nubmer,
+ * as cameras given may not be in sequential order.
+ *
+ * The first camera in the map is given index 0 and the last given index
+ * (cameras.size() - 1).
  */
 camera_map::map_camera_t
 subsample_cameras(camera_map::map_camera_t const& cameras, unsigned n)
@@ -348,16 +351,16 @@ hierarchical_bundle_adjust
       // Optimize new camers
       cerr << "optimizing new interpolated cameras (" << interped_cams.size() << " cams)" << endl;
       camera_map_sptr interped_cams_p(new simple_camera_map(interped_cams));
+      cerr << "\t- pre-optimization RMSE : " << reprojection_rmse(interped_cams_p->cameras(),
+                                                                  landmarks->landmarks(),
+                                                                  tracks->tracks()) << endl;
       { // scope block
         boost::timer::auto_cpu_timer t("\t- cameras optimization: %t sec CPU, %w sec wall\n");
-        cerr << "\t- pre-optimization RMSE : " << reprojection_rmse(interped_cams_p->cameras(),
-                                                                    landmarks->landmarks(),
-                                                                    tracks->tracks()) << endl;
         d_->camera_optimizer->optimize(interped_cams_p, tracks, landmarks);
-        cerr << "\t- post-optimization RMSE: " << reprojection_rmse(interped_cams_p->cameras(),
-                                                                    landmarks->landmarks(),
-                                                                    tracks->tracks()) << endl;
       }
+      cerr << "\t- post-optimization RMSE: " << reprojection_rmse(interped_cams_p->cameras(),
+                                                                  landmarks->landmarks(),
+                                                                  tracks->tracks()) << endl;
 
       // adding optimized interpolated cameras to the map of existing cameras
       BOOST_FOREACH(camera_map::map_camera_t::value_type const& p, interped_cams_p->cameras())
