@@ -71,7 +71,7 @@ static maptk::config_block_sptr default_config()
 
   config->set_value("input_reference_points_file", "",
                     "File containing reference points to use for reprojection "
-                    "of results into the original coordinate system. This "
+                    "of results into the geographic coordinate system. This "
                     "option is NOT mutually exclusive with input_pos_files "
                     "when using an st_estimator. When both are provided, "
                     "use of the reference file is given priority over the "
@@ -84,7 +84,9 @@ static maptk::config_block_sptr default_config()
                     "\n"
                     "At least 4 landmarks must be given with at least 3 track "
                     "states recorded for each for transformation estimation "
-                    "to converge.");
+                    "to converge.\n"
+                    "\n"
+                    "Landmark z position, or altitude, should be provided in meters.");
 
   config->set_value("output_ply_file", "output/landmarks.ply",
                     "Path to the output PLY file in which to write "
@@ -203,13 +205,6 @@ static bool check_config(maptk::config_block_sptr config)
     {
       MAPTK_CONFIG_FAIL("Failed config check in st_estimator algorithm.");
     }
-  }
-
-  if (!(   !config->has_value("st_estimator:type")
-        || (config->get_value<std::string>("st_estimator:type") == "")
-        || maptk::algo::estimate_similarity_transform::check_nested_algo_configuration("st_estimator", config)
-       ))
-  {
   }
 
 #undef MAPTK_CONFIG_FAIL
@@ -348,7 +343,7 @@ load_reference_file(maptk::path_t const& reference_file,
     // default for the function.
     lgcs.geo_map_algo()->latlon_to_utm(vec.y(), vec.x(), x, y, zone, northp,
                                        lgcs.utm_origin_zone());
-    vec[0] = x; vec[1] = y; vec[2] = 0;
+    vec[0] = x; vec[1] = y; vec[2] = vec.z();
     mean += vec;
 
     // Use the zone of the first input landmark as the base zone from which we
@@ -636,7 +631,6 @@ static int maptk_main(int argc, char const* argv[])
     if (!ins_map.empty())
     {
       // TODO: generated interpolated cameras for missing POS files.
-      //       -> Q: Should this still a thing with the introduction of HSBA?
       if (filename2frame.size() != ins_map.size())
       {
         std::cerr << "Warning: Input POS file-set is sparse compared to input "
