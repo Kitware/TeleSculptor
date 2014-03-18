@@ -199,7 +199,7 @@ IMPLEMENT_TEST(reprojection_3pts)
   using namespace std;
   using namespace maptk;
 
-  cerr << "Constructing 4 original, random points (std dev: 1.0)" << endl;
+  cerr << "Constructing 3 original, random points (std dev: 1.0)" << endl;
   vector<vector_3d> original_points;
   cerr << "Random points:" << endl;
   for (int i=0; i < 3; ++i)

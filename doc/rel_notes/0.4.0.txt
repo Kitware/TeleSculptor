@@ -26,3 +26,12 @@ Tests
   * Added tests for VXL camera optimization implementation
 
   * Added methods for vector and matrix aproximate equality
+
+
+Fixes since v0.3.0
+------------------
+
+VXL Library
+
+  * Changed underlying VXL function used in similarity transformation
+    estimation algorithm to improve algorithm accuracy.
