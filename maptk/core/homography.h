@@ -77,7 +77,7 @@ protected:
 
 };
 
-/// A smart pointer to a frame homography.
+/// A smart pointer to a frame to frame homography.
 typedef boost::shared_ptr< f2f_homography > f2f_homography_sptr;
 
 
@@ -109,7 +109,7 @@ protected:
 
 };
 
-/// A smart pointer to a frame homography.
+/// A smart pointer to a frame to world homography.
 typedef boost::shared_ptr< f2w_homography > f2w_homography_sptr;
 
 
