@@ -13,13 +13,14 @@
 #include <maptk/core/exceptions/algorithm.h>
 #include <maptk/core/rotation.h>
 
+#include <iostream>
 #include <sstream>
 
 #include <vcl_vector.h>
-#include <vgl/algo/vgl_compute_similarity_3d.h>
-#include <vgl/vgl_point_3d.h>
-#include <vgl/vgl_vector_3d.h>
+#include <vpgl/algo/vpgl_ortho_procrustes.h>
+#include <vnl/vnl_matrix.h>
 #include <vnl/vnl_quaternion.h>
+#include <vnl/vnl_vector_fixed.h>
 
 
 namespace maptk
@@ -43,11 +44,10 @@ estimate_similarity_transform
     throw algorithm_exception(this->type_name(), this->impl_name(),
                               sstr.str());
   }
-  // TODO: Determine why there is a deficiency with 3 correspondences
-  else if (from.size() < 4)
+  else if (from.size() < 3)
   {
     std::ostringstream sstr;
-    sstr << "At least 4 or more point pairs must be give in order to estimate "
+    sstr << "At least 3 or more point pairs must be give in order to estimate "
          << "the similarity transformation. Given: " << from.size();
     throw algorithm_exception(this->type_name(), this->impl_name(), sstr.str());
   }
@@ -67,31 +67,45 @@ estimate_similarity_transform
   //    raise exception
   // }
 
-  vgl_compute_similarity_3d<double> v_estimator;
-
-  // Add point pairs to estimator object
-  std::vector<vector_3d>::const_iterator from_iter, to_iter;
-  for (from_iter = from.begin(), to_iter = to.begin();
-       (from_iter != from.end()) && (to_iter != to.end());
-       ++from_iter, ++to_iter)
+  // Convert given point correspondences into corresponding matrices of size
+  // 3xN. Already checked for size congruency above.
+  vnl_matrix<double> from_mat(3, from.size()),
+                     to_mat(3, to.size());
+  // using the same loop for both vectors as they are the same size.
+  for (unsigned i = 0; i < from.size(); ++i)
   {
-    v_estimator.add_points(
-        vgl_point_3d<double>(from_iter->x(), from_iter->y(), from_iter->z()),
-        vgl_point_3d<double>(to_iter->x(), to_iter->y(), to_iter->z())
-    );
+    from_mat(0,i) = from[i].x();
+    from_mat(1,i) = from[i].y();
+    from_mat(2,i) = from[i].z();
+    to_mat(0,i) = to[i].x();
+    to_mat(1,i) = to[i].y();
+    to_mat(2,i) = to[i].z();
   }
 
-  // Θ(N), where N = pts.size()
-  v_estimator.estimate();
+  vpgl_ortho_procrustes op(to_mat, from_mat);
+  if (!op.compute_ok())
+  {
+    // TODO: Do some exception handling here
+    std::cerr << "ERROR: Invalid vpgl_ortho_procrustes construction" << std::endl;
+    return similarity_d();
+  }
 
-  // extract components
-  vnl_quaternion<double> const& v_quat = v_estimator.rotation().as_quaternion();
-  vgl_vector_3d<double> const& v_trans = v_estimator.translation();
+  // Computation happend when a result property is requested
+  vnl_quaternion<double> const& v_quat = op.R().as_quaternion();
+  vnl_vector_fixed<double, 3> const& v_trans = op.t();
 
-  rotation_d const m_rot(vector_4d(v_quat.x(), v_quat.y(), v_quat.z(), v_quat.r()));
-  vector_3d const m_trans(v_trans.x(), v_trans.y(), v_trans.z());
+  if (!op.compute_ok())
+  {
+    // TODO: Do some exception handling here.
+    std::cerr << "ERROR: vpgl_ortho_procrustes failed computation" << std::endl;
+    return similarity_d();
+  }
 
-  return similarity_d(v_estimator.scale(), m_rot, m_trans);
+  rotation_d m_rot(vector_4d(v_quat.x(), v_quat.y(), v_quat.z(), v_quat.r()));
+  vector_3d m_trans(v_trans[0], v_trans[1], v_trans[2]);
+  m_trans *= op.s();
+
+  return similarity_d(op.s(), m_rot, m_trans);
 }
 
 
