@@ -227,6 +227,14 @@ MAPTK_CORE_EXPORT
 camera_<T> interpolate_camera(camera_<T> const& A, camera_<T> const& B, T f);
 
 
+/// Genreate an interpolated camera from sptrs
+/**
+ * \relatesalso interpolate_camera
+ */
+MAPTK_CORE_EXPORT
+camera_sptr interpolate_camera(camera_sptr A, camera_sptr B, double f);
+
+
 /// Generate N evenly interpolated cameras in between \c A and \c B
 /**
  * \c n must be >= 1.

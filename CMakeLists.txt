@@ -54,7 +54,7 @@ set(maptk_export_name maptk_exports)
 if(WIN32)
   set(Boost_USE_STATIC_LIBS TRUE)
 endif()
-find_package(Boost 1.46.1 REQUIRED COMPONENTS system filesystem program_options)
+find_package(Boost 1.46.1 REQUIRED COMPONENTS system filesystem program_options timer)
 add_definitions(-DBOOST_ALL_NO_LIB)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 

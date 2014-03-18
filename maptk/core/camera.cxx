@@ -13,6 +13,8 @@
 #include "camera.h"
 #include <iomanip>
 #include "transform.h"
+#include <typeinfo>
+#include "exceptions/base.h"
 
 
 namespace maptk
@@ -143,10 +145,10 @@ camera_<T> interpolate_camera(camera_<T> const& A, camera_<T> const& B, T f)
                         k;
 
   T focal_len = f1*k1.focal_length() + f*k2.focal_length();
-  vector_<2,T> principle_point = f1*k1.principal_point() + f*k2.principal_point();
+  vector_<2,T> principal_point = f1*k1.principal_point() + f*k2.principal_point();
   T aspect_ratio = f1*k1.aspect_ratio() + f*k2.aspect_ratio();
   T skew = f1*k1.skew() + f*k2.skew();
-  k = camera_intrinsics_<T>(focal_len, principle_point, aspect_ratio, skew);
+  k = camera_intrinsics_<T>(focal_len, principal_point, aspect_ratio, skew);
 
   // interpolate center
   vector_3_<T> c = f1*A.get_center() + f*B.get_center();
@@ -155,6 +157,31 @@ camera_<T> interpolate_camera(camera_<T> const& A, camera_<T> const& B, T f)
   rotation_<T> R = interpolate_rotation(A.get_rotation(), B.get_rotation(), f);
 
   return camera_<T>(c, R, k);
+}
+
+
+/// Genreate an interpolated camera from sptrs
+camera_sptr interpolate_camera(camera_sptr A, camera_sptr B, double f)
+{
+  double f1 = 1.0 - f;
+
+  // interpolate intrinsics
+  camera_intrinsics_d k1 = A->intrinsics(),
+                      k2 = B->intrinsics(),
+                      k;
+  double focal_len = f1*k1.focal_length() + f*k2.focal_length();
+  vector_2d principal_point = f1*k1.principal_point() + f*k2.principal_point();
+  double aspect_ratio = f1*k1.aspect_ratio() + f*k2.aspect_ratio();
+  double skew = f1*k1.skew() + f*k2.skew();
+  k = camera_intrinsics_d(focal_len, principal_point, aspect_ratio, skew);
+
+  // interpolate center
+  vector_3d c = f1*A->center() + f*B->center();
+
+  // interpolate rotation
+  rotation_d R = interpolate_rotation(A->rotation(), B->rotation(), f);
+
+  return camera_sptr(new camera_d(c, R, k));
 }
 
 

@@ -41,6 +41,7 @@
 #include <boost/program_options/parsers.hpp>
 #include <boost/program_options/value_semantic.hpp>
 #include <boost/program_options/variables_map.hpp>
+#include <boost/timer/timer.hpp>
 
 
 namespace bfs = boost::filesystem;
@@ -210,7 +211,14 @@ filter_tracks(maptk::track_set_sptr tracks, size_t min_length)
 }
 
 
-/// subsample a every Nth camera, where N is specfied by factor
+/// Subsample a every Nth camera, where N is specfied by factor
+/**
+ * Uses camera frame numbers to determine subsample. This is fine when we
+ * assume the cameras given are sequential and always start with frame 0.
+ * This will behave in possibly undesired ways when the given cameras are not in
+ * sequential frame order, or the first camera's frame is not a multiple of
+ * \c factor.
+ */
 maptk::camera_map_sptr
 subsample_cameras(maptk::camera_map_sptr cameras, unsigned factor)
 {
@@ -370,6 +378,7 @@ static int maptk_main(int argc, char const* argv[])
   size_t min_track_len = config->get_value<size_t>("min_track_length");
   if( min_track_len > 1 )
   {
+    boost::timer::auto_cpu_timer t("track filtering: %t sec CPU, %w sec wall\n");
     tracks = filter_tracks(tracks, min_track_len);
     std::cout << "filtered down to "<<tracks->size()<<" long tracks"<<std::endl;
   }
@@ -435,6 +444,8 @@ static int maptk_main(int argc, char const* argv[])
   // if POS files are available, use them to initialize the cameras
   if( config->get_value<std::string>("input_pos_files") != "" )
   {
+    boost::timer::auto_cpu_timer t("Initializing cameras from POS files: %t sec CPU, %w sec wall\n");
+
     std::string pos_files = config->get_value<std::string>("input_pos_files");
     std::vector<bfs::path> files;
     if( bfs::is_directory(pos_files) )
@@ -472,6 +483,7 @@ static int maptk_main(int argc, char const* argv[])
     if (!ins_map.empty())
     {
       // TODO: generated interpolated cameras for missing POS files.
+      //       -> Q: Is this still a thing with the introduction of HSBA?
       if (filename2frame.size() != ins_map.size())
       {
         std::cerr << "Warning: Input POS file-set is sparse compared to input "
@@ -517,6 +529,7 @@ static int maptk_main(int argc, char const* argv[])
   unsigned int cam_samp_rate = config->get_value<unsigned int>("camera_sample_rate");
   if(cam_samp_rate > 1)
   {
+    boost::timer::auto_cpu_timer t("Tool-level sub-sampling: %t sec CPU, %w sec wall\n");
     cam_map = subsample_cameras(cam_map, cam_samp_rate);
     std::cout << "subsampled down to "<<cam_map->size()<<" cameras"<<std::endl;
   }
@@ -524,17 +537,21 @@ static int maptk_main(int argc, char const* argv[])
   //
   // Run bundle adjustment
   //
-  double init_rmse = maptk::reprojection_rmse(cam_map->cameras(),
-                                              lm_map->landmarks(),
-                                              tracks->tracks());
-  std::cout << "initial reprojection RMSE: " << init_rmse << std::endl;
+  { // scope block
+    boost::timer::auto_cpu_timer t("Tool-level SBA algorithm: %t sec CPU, %w sec wall\n");
 
-  bundle_adjuster->optimize(cam_map, lm_map, tracks);
+    double init_rmse = maptk::reprojection_rmse(cam_map->cameras(),
+                                                lm_map->landmarks(),
+                                                tracks->tracks());
+    std::cout << "initial reprojection RMSE: " << init_rmse << std::endl;
 
-  double end_rmse = maptk::reprojection_rmse(cam_map->cameras(),
-                                             lm_map->landmarks(),
-                                             tracks->tracks());
-  std::cout << "final reprojection RMSE: " << end_rmse << std::endl;
+    bundle_adjuster->optimize(cam_map, lm_map, tracks);
+
+    double end_rmse = maptk::reprojection_rmse(cam_map->cameras(),
+                                               lm_map->landmarks(),
+                                               tracks->tracks());
+    std::cout << "final reprojection RMSE: " << end_rmse << std::endl;
+  }
 
 
   //
@@ -547,6 +564,7 @@ static int maptk_main(int argc, char const* argv[])
   //
   if (orig_cam_map->size() > 0 && st_estimator)
   {
+    boost::timer::auto_cpu_timer t("similarity transform estimation: %t sec CPU, %w sec wall\n");
     std::cout << "Estimating and applying similarity transform to refined "
               << "cameras (from POS files)" << std::endl;
     maptk::similarity_d sim_transform = st_estimator->estimate_transform(cam_map, orig_cam_map);
@@ -565,6 +583,7 @@ static int maptk_main(int argc, char const* argv[])
   //
   if( config->has_value("output_ply_file") )
   {
+    boost::timer::auto_cpu_timer t("writing output PLY file: %t sec CPU, %w sec wall\n");
     std::string ply_file = config->get_value<std::string>("output_ply_file");
     write_ply_file(lm_map, ply_file);
   }
@@ -574,6 +593,7 @@ static int maptk_main(int argc, char const* argv[])
   //
   if( config->has_value("output_pos_dir") )
   {
+    boost::timer::auto_cpu_timer t("writing output POS file(s): %t sec CPU, %w sec wall\n");
     bfs::path pos_dir = config->get_value<std::string>("output_pos_dir");
     // update ins_map with refined data. Its ok if ins map is empty.
     maptk::update_ins_from_cameras(cam_map->cameras(), local_cs, ins_map);
@@ -589,6 +609,7 @@ static int maptk_main(int argc, char const* argv[])
   //
   if( config->has_value("output_krtd_dir") )
   {
+    boost::timer::auto_cpu_timer t("writing output KRTD file(s): %t sec CPU, %w sec wall\n");
     bfs::path krtd_dir = config->get_value<std::string>("output_krtd_dir");
     typedef maptk::camera_map::map_camera_t::value_type cam_map_val_t;
     BOOST_FOREACH(const cam_map_val_t& p, cam_map->cameras())

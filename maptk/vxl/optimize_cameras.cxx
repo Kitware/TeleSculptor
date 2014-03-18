@@ -24,6 +24,8 @@
 #include <vcl_vector.h>
 #include <vgl/vgl_homg_point_3d.h>
 #include <vgl/vgl_point_2d.h>
+#include <vnl/algo/vnl_levenberg_marquardt.h>
+#include <vnl/vnl_double_3.h>
 #include <vpgl/algo/vpgl_optimize_camera.h>
 
 
@@ -32,6 +34,37 @@ namespace maptk
 
 namespace vxl
 {
+
+namespace // anonymous
+{
+
+/// Reproduction of vpgl_optimize_camera::opt_orient_pos(...), but without
+/// trace statement.
+vpgl_perspective_camera<double>
+maptk_opt_orient_pos(vpgl_perspective_camera<double> const& camera,
+                     vcl_vector<vgl_homg_point_3d<double> > const& world_points,
+                     vcl_vector<vgl_point_2d<double> > const& image_points)
+{
+  const vpgl_calibration_matrix<double>& K = camera.get_calibration();
+  vgl_point_3d<double> c = camera.get_camera_center();
+  const vgl_rotation_3d<double>& R = camera.get_rotation();
+
+  // compute the Rodrigues vector from the rotation
+  vnl_double_3 w = R.as_rodrigues();
+
+  vpgl_orientation_position_lsqr lsqr_func(K,world_points,image_points);
+  vnl_levenberg_marquardt lm(lsqr_func);
+  vnl_vector<double> params(6);
+  params[0]=w[0];  params[1]=w[1];  params[2]=w[2];
+  params[3]=c.x();  params[4]=c.y();  params[5]=c.z();
+  lm.minimize(params);
+  vnl_double_3 w_min(params[0],params[1],params[2]);
+  vgl_homg_point_3d<double> c_min(params[3], params[4], params[5]);
+
+  return vpgl_perspective_camera<double>(K, c_min, vgl_rotation_3d<double>(w_min) );
+}
+
+}
 
 
 void
@@ -104,10 +137,12 @@ optimize_cameras
       pts_3d.push_back(vgl_homg_point_3d<double>(tmp_3d.x(), tmp_3d.y(), tmp_3d.z()));
     }
 
+    //optimized_cameras[p.first] =
+    //  vpgl_camera_to_maptk(vpgl_optimize_camera::opt_orient_pos(p.second,
+    //                                                            pts_3d,
+    //                                                            pts_2d));
     optimized_cameras[p.first] =
-      vpgl_camera_to_maptk(vpgl_optimize_camera::opt_orient_pos(p.second,
-                                                                pts_3d,
-                                                                pts_2d));
+      vpgl_camera_to_maptk(maptk_opt_orient_pos(p.second, pts_3d, pts_2d));
   }
 
   cameras = camera_map_sptr(new simple_camera_map(optimized_cameras));
