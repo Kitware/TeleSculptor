@@ -17,9 +17,6 @@
 #include <sstream>
 
 #include <vcl_vector.h>
-//#include <vgl/algo/vgl_compute_similarity_3d.h>
-#include <vgl/vgl_point_3d.h>
-#include <vgl/vgl_vector_3d.h>
 #include <vpgl/algo/vpgl_ortho_procrustes.h>
 #include <vnl/vnl_matrix.h>
 #include <vnl/vnl_quaternion.h>
@@ -47,7 +44,6 @@ estimate_similarity_transform
     throw algorithm_exception(this->type_name(), this->impl_name(),
                               sstr.str());
   }
-  // TODO: Determine why there is a deficiency with 3 correspondences
   else if (from.size() < 3)
   {
     std::ostringstream sstr;

@@ -42,16 +42,13 @@ public:
 
   /// Estimate the similarity transform between two corresponding point sets
   /**
-   *
-   * Complexity: Θ(n), where n = from.size() (from and to must be of equal
-   * length).
-   *
    * \param from List of length N of 3D points in the from space.
    * \param to   List of length N of 3D points in the to space.
    * \throws algorithm_exception When the from and to points sets are
    *                             misaligned, insufficient or degenerate.
    * \returns An estimated similarity transform mapping 3D points in the
-   *          \c from space to points in the \c to space.
+   *          \c from space to points in the \c to space (i.e. transforms
+   *          \c from into \c to).
    */
   virtual similarity_d
   estimate_transform(std::vector<vector_3d> const& from,
