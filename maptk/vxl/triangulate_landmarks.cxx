@@ -118,6 +118,9 @@ triangulate_landmarks
     track_map[t->id()] = t;
   }
 
+  // the set of landmark ids which failed to triangulation
+  std::set<landmark_id_t> failed_landmarks;
+
   map_landmark_t triangulated_lms;
   BOOST_FOREACH(const map_landmark_t::value_type& p, lms)
   {
@@ -159,10 +162,29 @@ triangulate_landmarks
       vgl_point_3d<double> pt3d(lm_loc.x(), lm_loc.y(), lm_loc.z());
       double error = vpgl_triangulate_points::triangulate(lm_image_pts,
                                                           lm_cams, pt3d);
-      landmark_d* lm = new landmark_d(vector_3d(pt3d.x(), pt3d.y(), pt3d.z()));
-      lm->set_covar(covariance_3d(error));
-      triangulated_lms[p.first] = landmark_sptr(lm);
+      bool bad_triangulation = false;
+      vgl_homg_point_3d<double> hpt3d(pt3d);
+      BOOST_FOREACH(vpgl_perspective_camera<double> const& cam, lm_cams)
+      {
+        if(cam.is_behind_camera(hpt3d))
+        {
+          bad_triangulation = true;
+          failed_landmarks.insert(p.first);
+          break;
+        }
+      }
+      if( !bad_triangulation )
+      {
+        landmark_d* lm = new landmark_d(vector_3d(pt3d.x(), pt3d.y(), pt3d.z()));
+        lm->set_covar(covariance_3d(error));
+        triangulated_lms[p.first] = landmark_sptr(lm);
+      }
     }
+  }
+  if( !failed_landmarks.empty() )
+  {
+    std::cerr << "failed to triangulate " << failed_landmarks.size()
+              << " of " << lms.size() << " landmarks" << std::endl;
   }
   landmarks = landmark_map_sptr(new simple_landmark_map(triangulated_lms));
 }
