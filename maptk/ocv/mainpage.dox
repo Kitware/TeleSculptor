@@ -47,8 +47,7 @@ The MAPTK ocv library provides various components by building on
 - \ref ocv::match_features : match features with
                <a href="http://docs.opencv.org/modules/features2d/doc/common_interfaces_of_descriptor_matchers.html#descriptormatcher">
                cv::DescriptorMatcher</a>
-- \ref ocv::estimate_homography : estimate a homography with
-               <a href="http://docs.opencv.org/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html#findhomography">
-               cv::findHomography()</a>
+- \ref ocv::draw_tracks : draw tracks on top of input imagery
+- \ref ocv::analyze_tracks : output various statistics about input feature tracks
 */
 }
