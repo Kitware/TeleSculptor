@@ -86,7 +86,7 @@ estimate_similarity_transform
     to_mat(2,i) = to[i].z();
   }
 
-  vpgl_ortho_procrustes op(from_mat, to_mat);
+  vpgl_ortho_procrustes op(to_mat, from_mat);
   if (!op.compute_ok())
   {
     // TODO: Do some exception handling here
@@ -105,8 +105,9 @@ estimate_similarity_transform
     return similarity_d();
   }
 
-  rotation_d const m_rot(vector_4d(v_quat.x(), v_quat.y(), v_quat.z(), v_quat.r()));
-  vector_3d const m_trans(v_trans[0], v_trans[1], v_trans[2]);
+  rotation_d m_rot(vector_4d(v_quat.x(), v_quat.y(), v_quat.z(), v_quat.r()));
+  vector_3d m_trans(v_trans[0], v_trans[1], v_trans[2]);
+  m_trans *= op.s();
 
   return similarity_d(op.s(), m_rot, m_trans);
 }

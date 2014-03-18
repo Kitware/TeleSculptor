@@ -115,6 +115,29 @@ IMPLEMENT_TEST(reprojection_100pts)
   TEST_NEAR("Crafted and estimated similarity transforms match",
             (matrix_4x4d(m_sim) - matrix_4x4d(e_sim)).frobenius_norm(),
             0.0, 1e-14);
+
+  cerr << "Constructing crafted similarity transformation WITH ZERO TRANSLATION" << endl;
+  m_sim = similarity_d(5.623,
+                       rotation_d(vector_3d(-1.4, 0.23, 1.7)),
+                       vector_3d(0, 0, 0));
+
+  cerr << "Transforming original points by crafted transformation" << endl;
+  transformed_points.clear();
+  BOOST_FOREACH(vector_3d o_vec, original_points)
+  {
+    transformed_points.push_back(m_sim * o_vec);
+  }
+
+  cerr << "Estimating similarity transformation between point sets" << endl;
+  e_sim = est_ST.estimate_transform(original_points, transformed_points);
+
+  cerr << "Original Transform : " << m_sim << endl
+       << "Estimated Transform: " << e_sim << endl
+       << "Euclidian norm     : " << (matrix_4x4d(m_sim) - matrix_4x4d(e_sim)).frobenius_norm() << endl;
+
+  TEST_NEAR("Crafted and estimated similarity transforms match",
+            (matrix_4x4d(m_sim) - matrix_4x4d(e_sim)).frobenius_norm(),
+            0.0, 1e-14);
 }
 
 
