@@ -48,10 +48,10 @@ estimate_similarity_transform
                               sstr.str());
   }
   // TODO: Determine why there is a deficiency with 3 correspondences
-  else if (from.size() < 4)
+  else if (from.size() < 3)
   {
     std::ostringstream sstr;
-    sstr << "At least 4 or more point pairs must be give in order to estimate "
+    sstr << "At least 3 or more point pairs must be give in order to estimate "
          << "the similarity transformation. Given: " << from.size();
     throw algorithm_exception(this->type_name(), this->impl_name(), sstr.str());
   }

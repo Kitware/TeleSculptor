@@ -187,6 +187,54 @@ IMPLEMENT_TEST(reprojection_4pts)
             0.0, 1e-12);
 }
 
+
+IMPLEMENT_TEST(reprojection_3pts)
+{
+  // Process:
+  //  1) generated points
+  //  2) make up similarity transform and transform points
+  //  3) generate similarity transform via estimation between two points sets
+  //  4) check difference between crafted and estimated similarity transforms
+
+  using namespace std;
+  using namespace maptk;
+
+  cerr << "Constructing 4 original, random points (std dev: 1.0)" << endl;
+  vector<vector_3d> original_points;
+  cerr << "Random points:" << endl;
+  for (int i=0; i < 3; ++i)
+  {
+    original_points.push_back(testing::random_point3d(1.0));
+    cerr << "\t" << original_points.back() << endl;
+  }
+
+  cerr << "Constructing crafted similarity transformation" << endl;
+  similarity_d m_sim(5.623,
+                     rotation_d(vector_3d(-1.4, 0.23, 1.7)),
+                     vector_3d(2.24, 1.51, 4.23));
+
+  cerr << "Transforming original points by crafted transformation" << endl;
+  vector<vector_3d> transformed_points;
+  BOOST_FOREACH(vector_3d o_vec, original_points)
+  {
+    transformed_points.push_back(m_sim * o_vec);
+  }
+
+  cerr << "Estimating similarity transformation between point sets" << endl;
+  vxl::estimate_similarity_transform est_ST;
+  similarity_d e_sim = est_ST.estimate_transform(original_points,
+                                                 transformed_points);
+
+  cerr << "Original Transform : " << m_sim << endl
+       << "Estimated Transform: " << e_sim << endl
+       << "Euclidian norm     : " << (matrix_4x4d(m_sim) - matrix_4x4d(e_sim)).frobenius_norm() << endl;
+
+  TEST_NEAR("Crafted and estimated similarity transforms match",
+            (matrix_4x4d(m_sim) - matrix_4x4d(e_sim)).frobenius_norm(),
+            0.0, 1e-12);
+}
+
+
 IMPLEMENT_TEST(reprojection_100pts_noisy)
 {
   // Process:
