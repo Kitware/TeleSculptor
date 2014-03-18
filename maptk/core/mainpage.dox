@@ -114,6 +114,10 @@ types.
                missing or bad input frames
          - Implements \ref algo::close_loops,
          - Requires instances of \ref algo::match_features
+- \ref algo::compute_ref_homography_default : estimate a homography between
+               the current frame and some reference frame
+         - Implements \ref algo::compute_ref_homography,
+         - Requires instances of \ref algo::estimate_homography
 
 */
 }
