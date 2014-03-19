@@ -15,6 +15,7 @@ set(maptk_core_headers_public
   exceptions.h
   feature.h
   feature_set.h
+  geo_reference_points_io.h
   image.h
   image_container.h
   ins_data.h
@@ -76,6 +77,7 @@ set(maptk_core_sources
   config_block.cxx
   config_block_io.cxx
   feature.cxx
+  geo_reference_points_io.cxx
   image.cxx
   ins_data.cxx
   ins_data_io.cxx

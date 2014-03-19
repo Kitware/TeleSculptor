@@ -13,6 +13,9 @@ Core Library
 
   * Added hierarchical SBA algorithm definition and generic implementation.
 
+  * Added method for loading landmark and track structures from a geographic
+    reference point file.
+
 VXL Library
 
   * Added VXL implementation of camera optimization
@@ -22,6 +25,13 @@ OpenCV Library
   * Added more options to the draw_track class, including the ability
     to compare computed features tracks and landmarks projected onto
     the image using camera krtd files.
+
+Tools
+
+  * Added reference point file input option and functionality to bundle adjust
+    tool. This allows a user-generated 3D-2D point corrolation list to drive
+    post-SBA world coordinate transformation instead of, or in the absence of
+    input POS camera files.
 
 Tests
 
