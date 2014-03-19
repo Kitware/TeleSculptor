@@ -6,12 +6,12 @@
 
 /**
  * \file
- * \brief Header defining the vxl \link maptk::vxl::close_loops
+ * \brief Header defining the vxl \link maptk::vxl::close_loops_homography_guided
  *        close_loops \endlink algorithm
  */
 
-#ifndef MAPTK_VXL_CLOSE_LOOPS_H_
-#define MAPTK_VXL_CLOSE_LOOPS_H_
+#ifndef MAPTK_VXL_CLOSE_LOOPS_HOMOGRAPHY_GUIDED_H_
+#define MAPTK_VXL_CLOSE_LOOPS_HOMOGRAPHY_GUIDED_H_
 
 #include <maptk/core/core_config.h>
 #include <maptk/core/image_container.h>
@@ -36,22 +36,22 @@ namespace vxl
  * estimate potential match locations in the past, followed up by additional
  * filtering.
  */
-class MAPTK_CORE_EXPORT close_loops
-  : public algo::algorithm_impl<vxl::close_loops, algo::close_loops>
+class MAPTK_CORE_EXPORT close_loops_homography_guided
+  : public algo::algorithm_impl<vxl::close_loops_homography_guided, algo::close_loops>
 {
 public:
 
   /// Default Constructor
-  close_loops();
+  close_loops_homography_guided();
 
   /// Copy Constructor
-  close_loops( const close_loops& );
+  close_loops_homography_guided( const close_loops_homography_guided& );
 
   /// Destructor
-  virtual ~close_loops();
+  virtual ~close_loops_homography_guided();
 
   /// Return the name of this implementation
-  virtual std::string impl_name() const { return "vxl"; }
+  virtual std::string impl_name() const { return "vxl_homography_guided"; }
 
   /// Get this algorithm's \link maptk::config_block configuration block \endlink
   /**
@@ -114,4 +114,4 @@ private:
 } // end namespace maptk
 
 
-#endif // MAPTK_VXL_CLOSE_LOOPS_H_
+#endif // MAPTK_VXL_CLOSE_LOOPS_HOMOGRAPHY_GUIDED_H_

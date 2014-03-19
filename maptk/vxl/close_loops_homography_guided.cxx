@@ -6,11 +6,11 @@
 
 /**
  * \file
- * \brief Implementation of \link maptk::vxl::close_loops
+ * \brief Implementation of \link maptk::vxl::close_loops_homography_guided
  *        close_loops \endlink
  */
 
-#include <maptk/vxl/close_loops.h>
+#include <maptk/vxl/close_loops_homography_guided.h>
 #include <maptk/vxl/compute_homography_overlap.h>
 #include <maptk/core/algo/compute_ref_homography.h>
 
@@ -101,7 +101,7 @@ convert( const f2f_homography_sptr& src1_to_ref,
 
 
 /// Private implementation class
-class close_loops::priv
+class close_loops_homography_guided::priv
 {
 public:
 
@@ -148,28 +148,28 @@ public:
 };
 
 
-close_loops
-::close_loops()
+close_loops_homography_guided
+::close_loops_homography_guided()
 : d_( new priv() )
 {
 }
 
 
-close_loops
-::close_loops( const close_loops& other )
+close_loops_homography_guided
+::close_loops_homography_guided( const close_loops_homography_guided& other )
 : d_( new priv( *other.d_ ) )
 {
 }
 
 
-close_loops
-::~close_loops()
+close_loops_homography_guided
+::~close_loops_homography_guided()
 {
 }
 
 
 config_block_sptr
-close_loops
+close_loops_homography_guided
 ::get_configuration() const
 {
   // get base config from base class
@@ -199,7 +199,7 @@ close_loops
 
 
 void
-close_loops
+close_loops_homography_guided
 ::set_configuration( config_block_sptr in_config )
 {
   // Starting with our generated config_block to ensure that assumed values are present
@@ -236,7 +236,7 @@ close_loops
 
 
 bool
-close_loops
+close_loops_homography_guided
 ::check_configuration( config_block_sptr config ) const
 {
   return
@@ -250,7 +250,7 @@ close_loops
 
 // Perform stitch operation
 track_set_sptr
-close_loops
+close_loops_homography_guided
 ::stitch( frame_id_t frame_number,
           image_container_sptr image,
           track_set_sptr input ) const

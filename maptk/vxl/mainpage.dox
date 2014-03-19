@@ -41,6 +41,6 @@ The MAPTK vxl library provides various components by building on
 - \ref vxl::bundle_adjust : optimize cameras and landmarks using
                <a href="http://public.kitware.com/vxl/doc/development/core/vpgl/html/classvpgl__bundle__adjust.html">
                vpgl_bundle_adjust</a>
-- \ref vxl::close_loops : stitch feature tracks together when the same location is visited again
+- \ref vxl::close_loops_homography_guided : stitch feature tracks together when the same location is visited again
 */
 }
