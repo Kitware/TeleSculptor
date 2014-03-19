@@ -137,7 +137,7 @@ IMPLEMENT_TEST(reprojection_100pts)
 
   TEST_NEAR("Crafted and estimated similarity transforms match",
             (matrix_4x4d(m_sim) - matrix_4x4d(e_sim)).frobenius_norm(),
-            0.0, 1e-14);
+            0.0, 1e-13);
 }
 
 
