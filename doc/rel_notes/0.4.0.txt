@@ -25,7 +25,7 @@ Core Library
   * Modified the match_features_homography class to optionally not output
     any matches if certain criteria are met. This is disabled by default.
 
-  * Added a new math exceptions for matrix related operations.
+  * Added new math exceptions for matrix related operations.
 
 VXL Library
 
