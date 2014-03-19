@@ -47,3 +47,6 @@ VXL Library
 
   * Changed underlying VXL function used in similarity transformation
     estimation algorithm to improve algorithm accuracy.
+
+  * Remove landmarks that triangulate behind any of the cameras.
+    These erroneous triangulations were causing large SBA errors.
