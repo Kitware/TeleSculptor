@@ -14,6 +14,7 @@ The MAPTK core library provides various components
                definite matrix of type T to represent a covariance matrix
 - \link rotation_ rotation_<T> \endlink : a representation of 3D rotation
                with conversion to various formats (matrix, quaternion, etc.)
+- \link homography homography \endlink : a 3x3 homogeneous transformation matrix
 
 \subsection sec-core-image Image Structures
 - \ref image : a representation of an 8-bit image with memory that could be
@@ -86,6 +87,12 @@ types.
 - \ref algo::geo_map : convert geographic coordinates between Lat-Long and UTM
 - \ref algo::bundle_adjust : optimize collections of cameras and landmarks to
                minimize reprojection error relative to observed tracks.
+- \ref algo::close_loops : close loops by stitching corresponding feature tracks
+               together
+- \ref algo::analyze_tracks : output various statistics about feature track sets
+- \ref algo::draw_tracks : draw feature tracks on top of input images
+- \ref algo::compute_ref_homography : estimate homography transformations between
+               each input frame and some past reference frame
 
 
 \subsection sec-core-algorithm-impls Algorithm Implementations
@@ -99,6 +106,18 @@ types.
          - Implements \ref algo::match_features,
          - Requires instances of \ref algo::match_features and
                \ref algo::estimate_homography.
+- \ref algo::close_loops_multi_method : run multiple different close loops
+               implementations together
+         - Implements \ref algo::close_loops,
+         - Requires instances of \ref algo::close_loops
+- \ref algo::close_loops_bad_frames_only : stitch feature tracks together over
+               missing or bad input frames
+         - Implements \ref algo::close_loops,
+         - Requires instances of \ref algo::match_features
+- \ref algo::compute_ref_homography_default : estimate a homography between
+               the current frame and some reference frame
+         - Implements \ref algo::compute_ref_homography,
+         - Requires instances of \ref algo::estimate_homography
 
 */
 }

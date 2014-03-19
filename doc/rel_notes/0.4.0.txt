@@ -16,9 +16,28 @@ Core Library
   * Added method for loading landmark and track structures from a geographic
     reference point file.
 
+  * Added a few homography classes for storing transformations between
+    two frames or two arbitrary coordinate systems.
+
+  * Added a class to estimate an arbitrary current to reference frame
+    homography for a given sequence of input data.
+
+  * Modified the match_features_homography class to optionally not output
+    any matches if certain criteria are met. This is disabled by default.
+
+  * Added new math exceptions for matrix related operations.
+
+  * Added a loop closure implementation which allows the execution of
+    multiple close loops methods with different settings at the same time.
+
 VXL Library
 
   * Added VXL implementation of camera optimization
+
+  * Added a VXL loop closure implementation based around using reference
+    frame homographies to estimate when we have reached the same location
+    again, and to additionally determine the most optimal frames to perform
+    feature matching between.
 
 OpenCV Library
 

@@ -37,10 +37,10 @@ namespace algo
 /// Default Constructor
 close_loops_bad_frames_only
 ::close_loops_bad_frames_only()
-: bf_detection_enabled_(true),
-  bf_detection_percent_match_req_(0.35),
-  bf_detection_new_shot_length_(2),
-  bf_detection_max_search_length_(5)
+: enabled_(true),
+  percent_match_req_(0.35),
+  new_shot_length_(2),
+  max_search_length_(5)
 {
 }
 
@@ -48,10 +48,10 @@ close_loops_bad_frames_only
 /// Copy Constructor
 close_loops_bad_frames_only
 ::close_loops_bad_frames_only(const close_loops_bad_frames_only& other)
-: bf_detection_enabled_(other.bf_detection_enabled_),
-  bf_detection_percent_match_req_(other.bf_detection_percent_match_req_),
-  bf_detection_new_shot_length_(other.bf_detection_new_shot_length_),
-  bf_detection_max_search_length_(other.bf_detection_max_search_length_)
+: enabled_(other.enabled_),
+  percent_match_req_(other.percent_match_req_),
+  new_shot_length_(other.new_shot_length_),
+  max_search_length_(other.max_search_length_)
 {
 }
 
@@ -69,23 +69,23 @@ close_loops_bad_frames_only
   match_features::get_nested_algo_configuration("feature_matcher", config, matcher_);
 
   // Bad frame detection parameters
-  config->set_value("bf_detection_enabled", bf_detection_enabled_,
+  config->set_value("enabled", enabled_,
                     "Should bad frame detection be enabled? This option will attempt to "
                     "bridge the gap between frames which don't meet certain criteria "
                     "(percentage of feature points tracked) and will instead attempt "
                     "to match features on the current frame against past frames to "
                     "meet this criteria. This is useful when there can be bad frames.");
 
-  config->set_value("bf_detection_percent_match_req", bf_detection_percent_match_req_,
+  config->set_value("percent_match_req", percent_match_req_,
                     "The required percentage of features needed to be matched for a "
                     "stitch to be considered successful (value must be between 0.0 and "
                     "1.0).");
 
-  config->set_value("bf_detection_new_shot_length", bf_detection_new_shot_length_,
+  config->set_value("new_shot_length", new_shot_length_,
                     "Number of frames for a new shot to be considered valid before "
                     "attempting to stitch to prior shots.");
 
-  config->set_value("bf_detection_max_search_length", bf_detection_max_search_length_,
+  config->set_value("max_search_length", max_search_length_,
                     "Maximum number of frames to search in the past for matching to "
                     "the end of the last shot.");
 
@@ -110,11 +110,11 @@ close_loops_bad_frames_only
   matcher_ = mf;
 
   // Settings for bad frame detection
-  bf_detection_enabled_ = config->get_value<bool>("bf_detection_enabled");
-  bf_detection_percent_match_req_ = config->get_value<double>("bf_detection_percent_match_req");
-  bf_detection_max_search_length_ = config->get_value<unsigned>("bf_detection_max_search_length");
-  bf_detection_new_shot_length_ = config->get_value<unsigned>("bf_detection_new_shot_length");
-  bf_detection_new_shot_length_ = ( bf_detection_new_shot_length_ ? bf_detection_new_shot_length_ : 1 );
+  enabled_ = config->get_value<bool>("enabled");
+  percent_match_req_ = config->get_value<double>("percent_match_req");
+  max_search_length_ = config->get_value<unsigned>("max_search_length");
+  new_shot_length_ = config->get_value<unsigned>("new_shot_length");
+  new_shot_length_ = ( new_shot_length_ ? new_shot_length_ : 1 );
 }
 
 
@@ -125,7 +125,7 @@ close_loops_bad_frames_only
   return (
     match_features::check_nested_algo_configuration("feature_matcher", config)
     &&
-    std::abs( config->get_value<double>("bf_detection_percent_match_req") ) <= 1.0
+    std::abs( config->get_value<double>("percent_match_req") ) <= 1.0
   );
 }
 
@@ -140,26 +140,26 @@ bool track_id_in_set( track_sptr trk_ptr, std::set<track_id_t>* set_ptr )
 /// Handle track bad frame detection if enabled
 track_set_sptr
 close_loops_bad_frames_only
-::stitch( frame_id_t frame_number, track_set_sptr input ) const
+::stitch( frame_id_t frame_number, image_container_sptr, track_set_sptr input ) const
 {
   // check if enabled and possible
-  if( !bf_detection_enabled_ || frame_number <= bf_detection_new_shot_length_ )
+  if( !enabled_ || frame_number <= new_shot_length_ )
   {
     return input;
   }
 
   // check if we should attempt to stitch together past frames
   std::vector< track_sptr > all_tracks = input->tracks();
-  frame_id_t frame_to_stitch = frame_number - bf_detection_new_shot_length_ + 1;
+  frame_id_t frame_to_stitch = frame_number - new_shot_length_ + 1;
   double pt = input->percentage_tracked( frame_to_stitch - 1, frame_to_stitch );
-  bool stitch_required = ( pt < bf_detection_percent_match_req_ );
+  bool stitch_required = ( pt < percent_match_req_ );
 
   // confirm that the new valid shot criteria length is satisfied
   frame_id_t frame_to_test = frame_to_stitch + 1;
   while( stitch_required && frame_to_test <= frame_number )
   {
     pt = input->percentage_tracked( frame_to_test - 1, frame_to_test );
-    stitch_required = ( pt >= bf_detection_percent_match_req_ );
+    stitch_required = ( pt >= percent_match_req_ );
     frame_to_test++;
   }
 
@@ -173,9 +173,9 @@ close_loops_bad_frames_only
   frame_to_test = frame_to_stitch - 2;
   frame_id_t last_frame_to_test = 0;
 
-  if( frame_to_test > bf_detection_max_search_length_ )
+  if( frame_to_test > max_search_length_ )
   {
-    last_frame_to_test = frame_to_test - bf_detection_max_search_length_;
+    last_frame_to_test = frame_to_test - max_search_length_;
   }
 
   track_set_sptr stitch_frame_set = input->active_tracks( frame_to_stitch );
@@ -193,7 +193,7 @@ close_loops_bad_frames_only
     // test matcher results
     unsigned total_features = static_cast<unsigned>(test_frame_set->size() + stitch_frame_set->size());
 
-    if( 2*mset->size() >= static_cast<unsigned>(bf_detection_percent_match_req_*total_features) )
+    if( 2*mset->size() >= static_cast<unsigned>(percent_match_req_*total_features) )
     {
       // modify track history and exit
       std::vector<track_sptr> test_frame_trks = test_frame_set->tracks();

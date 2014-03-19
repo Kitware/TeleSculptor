@@ -31,17 +31,27 @@ class match_features_homography::priv
 public:
   /// Constructor
   priv()
-  : inlier_scale(2.0)
+  : inlier_scale(2.0),
+    min_required_inlier_count(0),
+    min_required_inlier_percent(0.0)
   {
   }
 
   priv(const priv& other)
-  : inlier_scale(other.inlier_scale)
+  : inlier_scale(other.inlier_scale),
+    min_required_inlier_count(other.min_required_inlier_count),
+    min_required_inlier_percent(other.min_required_inlier_percent)
   {
   }
 
   // the scale of inlier points
   double inlier_scale;
+
+  // min inlier count required to make any matches
+  int min_required_inlier_count;
+
+  // min inlier percent required to make any matches
+  double min_required_inlier_percent;
 };
 
 
@@ -77,6 +87,13 @@ match_features_homography
   config->set_value("inlier_scale", d_->inlier_scale,
                     "The acceptable error distance (in pixels) between warped "
                     "and measured points to be considered an inlier match.");
+  config->set_value("min_required_inlier_count", d_->min_required_inlier_count,
+                    "The minimum required inlier point count. If there are less "
+                    "than this many inliers, no matches will be output.");
+  config->set_value("min_required_inlier_percent", d_->min_required_inlier_percent,
+                    "The minimum required percentage of inlier points. If the "
+                    "percentage of points considered inliers is less than this "
+                    "amount, no matches will be output.");
 
   // nested algorithm configurations
   estimate_homography::get_nested_algo_configuration("homography_estimator",
@@ -102,7 +119,11 @@ match_features_homography
                                                      config, h_estimator_);
   match_features::set_nested_algo_configuration("feature_matcher", config,
                                                 matcher_);
+
+  // Other parameters
   d_->inlier_scale = config->get_value<double>("inlier_scale");
+  d_->min_required_inlier_count = config->get_value<int>("min_required_inlier_count");
+  d_->min_required_inlier_percent = config->get_value<double>("min_required_inlier_percent");
 }
 
 bool
@@ -136,9 +157,17 @@ match_features_homography
   matrix_3x3d H = h_estimator_->estimate(feat1, feat2, init_matches,
                                          inliers, d_->inlier_scale);
   (void) H; // H not yet used, avoid compiler warning
-  std::cout << "inlier ratio: "<< std::count(inliers.begin(), inliers.end(), true)
-            << "/"<<inliers.size() << std::endl;
+  int inlier_count = std::count(inliers.begin(), inliers.end(), true);
+  std::cout << "inlier ratio: " << inlier_count << "/" << inliers.size() << std::endl;
 
+  // verify matching criteria are met
+  if( !inlier_count || inlier_count < d_->min_required_inlier_count ||
+      static_cast<double>(inlier_count)/inliers.size() < d_->min_required_inlier_percent )
+  {
+    return match_set_sptr(new simple_match_set());
+  }
+
+  // return correct matches (inliers)
   std::vector<maptk::match> m = init_matches->matches();
   std::vector<maptk::match> inlier_m;
   for( unsigned int i=0; i<inliers.size(); ++i )

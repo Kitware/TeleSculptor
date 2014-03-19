@@ -6,53 +6,52 @@
 
 /**
  * \file
- * \brief Header defining the \link maptk::algo::close_loops_bad_frames_only
- *        close_loops_bad_frames_only \endlink algorithm
+ * \brief Header defining the vxl \link maptk::vxl::close_loops_homography_guided
+ *        close_loops \endlink algorithm
  */
 
-#ifndef MAPTK_ALGO_CLOSE_LOOPS_BAD_FRAMES_ONLY_H_
-#define MAPTK_ALGO_CLOSE_LOOPS_BAD_FRAMES_ONLY_H_
+#ifndef MAPTK_VXL_CLOSE_LOOPS_HOMOGRAPHY_GUIDED_H_
+#define MAPTK_VXL_CLOSE_LOOPS_HOMOGRAPHY_GUIDED_H_
 
 #include <maptk/core/core_config.h>
-
-#include <boost/shared_ptr.hpp>
-
-#include <maptk/core/algo/algorithm.h>
-#include <maptk/core/algo/match_features.h>
-#include <maptk/core/algo/close_loops.h>
 #include <maptk/core/image_container.h>
 #include <maptk/core/track_set.h>
+
+#include <boost/scoped_ptr.hpp>
+
+#include <maptk/core/algo/algorithm.h>
+#include <maptk/core/algo/close_loops_bad_frames_only.h>
 
 
 namespace maptk
 {
 
-namespace algo
+namespace vxl
 {
 
-/// Attempts to stitch over incomplete or bad input frames.
+/// Attempts to stitch tracks over a long period of time.
 /**
- * This class attempts to only make short term loop closures
- * due to bad or incomplete. It operates on the principle
- * that when a bad frame occurs, there is generally a lower
- * percentage of feature tracks.
+ * This class attempts to make longer-term loop closures by utilizing a
+ * variety of techniques, one of which involves using homographies to
+ * estimate potential match locations in the past, followed up by additional
+ * filtering.
  */
-class MAPTK_CORE_EXPORT close_loops_bad_frames_only
-  : public algo::algorithm_impl<close_loops_bad_frames_only, close_loops>
+class MAPTK_CORE_EXPORT close_loops_homography_guided
+  : public algo::algorithm_impl<vxl::close_loops_homography_guided, algo::close_loops>
 {
 public:
 
   /// Default Constructor
-  close_loops_bad_frames_only();
+  close_loops_homography_guided();
 
   /// Copy Constructor
-  close_loops_bad_frames_only(const close_loops_bad_frames_only&);
+  close_loops_homography_guided( const close_loops_homography_guided& );
 
   /// Destructor
-  virtual ~close_loops_bad_frames_only() {}
+  virtual ~close_loops_homography_guided();
 
   /// Return the name of this implementation
-  virtual std::string impl_name() const { return "bad_frames_only"; }
+  virtual std::string impl_name() const { return "vxl_homography_guided"; }
 
   /// Get this algorithm's \link maptk::config_block configuration block \endlink
   /**
@@ -75,7 +74,7 @@ public:
    * \param config  The \c config_block instance containing the configuration
    *                parameters for this algorithm
    */
-  virtual void set_configuration(config_block_sptr config);
+  virtual void set_configuration( config_block_sptr config );
 
   /// Check that the algorithm's currently configuration is valid
   /**
@@ -87,9 +86,9 @@ public:
    *
    * \returns true if the configuration check passed and false if it didn't.
    */
-  virtual bool check_configuration(config_block_sptr config) const;
+  virtual bool check_configuration( config_block_sptr config ) const;
 
-  /// Perform basic shot stitching for bad frame detection
+  /// Perform loop closure operation.
   /**
    * \param [in] frame_number the frame number of the current frame
    * \param [in] image image data for the current frame
@@ -101,29 +100,18 @@ public:
           image_container_sptr image,
           track_set_sptr input ) const;
 
-protected:
+private:
 
-  /// Is bad frame detection enabled?
-  bool enabled_;
-
-  /// Stitching percent feature match required
-  double percent_match_req_;
-
-  /// Stitching required new valid shot size in frames
-  unsigned new_shot_length_;
-
-  /// Max search length for bad frame detection in frames
-  unsigned max_search_length_;
-
-  /// The feature matching algorithm to use
-  match_features_sptr matcher_;
+  /// Class for storing other internal variables
+  class priv;
+  boost::scoped_ptr<priv> d_;
 
 };
 
 
-} // end namespace algo
+} // end namespace vxl
 
 } // end namespace maptk
 
 
-#endif // MAPTK_ALGO_CLOSE_LOOPS_BAD_FRAMES_ONLY_H_
+#endif // MAPTK_VXL_CLOSE_LOOPS_HOMOGRAPHY_GUIDED_H_

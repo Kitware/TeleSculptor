@@ -22,6 +22,7 @@
 #include <maptk/core/feature_set.h>
 #include <maptk/core/match_set.h>
 #include <maptk/core/matrix.h>
+#include <maptk/core/homography.h>
 
 namespace maptk
 {
@@ -34,6 +35,7 @@ class MAPTK_CORE_EXPORT estimate_homography
   : public algorithm_def<estimate_homography>
 {
 public:
+
   /// Return the name of this algorithm
   std::string type_name() const { return "estimate_homography"; }
 
@@ -46,7 +48,7 @@ public:
    *                      this pair is an inlier to the homography estimate
    * \param [in]  inlier_scale error distance tolerated for matches to be inliers
    */
-  virtual matrix_3x3d
+  virtual homography
   estimate(feature_set_sptr feat1,
            feature_set_sptr feat2,
            match_set_sptr matches,
@@ -61,7 +63,7 @@ public:
    *                      this pair is an inlier to the homography estimate
    * \param [in]  inlier_scale error distance tolerated for matches to be inliers
    */
-  virtual matrix_3x3d
+  virtual homography
   estimate(const std::vector<vector_2d>& pts1,
            const std::vector<vector_2d>& pts2,
            std::vector<bool>& inliers,

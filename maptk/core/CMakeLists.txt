@@ -16,6 +16,7 @@ set(maptk_core_headers_public
   feature.h
   feature_set.h
   geo_reference_points_io.h
+  homography.h
   image.h
   image_container.h
   ins_data.h
@@ -44,6 +45,7 @@ set(maptk_core_headers_public
   exceptions/config_block.h
   exceptions/config_block_io.h
   exceptions/io.h
+  exceptions/math.h
 
   algo/algorithm.h
   algo/algorithm.txx
@@ -51,15 +53,18 @@ set(maptk_core_headers_public
   algo/bundle_adjust.h
   algo/close_loops.h
   algo/close_loops_bad_frames_only.h
+  algo/close_loops_multi_method.h
+  algo/compute_ref_homography.h
+  algo/compute_ref_homography_default.h
   algo/convert_image.h
   algo/detect_features.h
   algo/draw_tracks.h
   algo/estimate_homography.h
   algo/estimate_similarity_transform.h
   algo/extract_descriptors.h
+  algo/geo_map.h
   algo/hierarchical_bundle_adjust.h
   algo/image_io.h
-  algo/geo_map.h
   algo/match_features.h
   algo/match_features_homography.h
   algo/optimize_cameras.h
@@ -78,6 +83,7 @@ set(maptk_core_sources
   config_block_io.cxx
   feature.cxx
   geo_reference_points_io.cxx
+  homography.cxx
   image.cxx
   ins_data.cxx
   ins_data_io.cxx
@@ -100,12 +106,16 @@ set(maptk_core_sources
   exceptions/config_block.cxx
   exceptions/config_block_io.cxx
   exceptions/io.cxx
+  exceptions/math.cxx
 
   algo/algorithm.cxx
   algo/analyze_tracks.cxx
   algo/bundle_adjust.cxx
   algo/close_loops.cxx
   algo/close_loops_bad_frames_only.cxx
+  algo/close_loops_multi_method.cxx
+  algo/compute_ref_homography.cxx
+  algo/compute_ref_homography_default.cxx
   algo/convert_image.cxx
   algo/detect_features.cxx
   algo/draw_tracks.cxx
@@ -113,8 +123,8 @@ set(maptk_core_sources
   algo/estimate_similarity_transform.cxx
   algo/extract_descriptors.cxx
   algo/geo_map.cxx
-  algo/image_io.cxx
   algo/hierarchical_bundle_adjust.cxx
+  algo/image_io.cxx
   algo/match_features.cxx
   algo/match_features_homography.cxx
   algo/optimize_cameras.cxx

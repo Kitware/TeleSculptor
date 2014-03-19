@@ -25,7 +25,7 @@ namespace algo
 {
 
 /// Estimate a homography matrix from corresponding features
-matrix_3x3d
+homography
 estimate_homography
 ::estimate(feature_set_sptr feat1,
            feature_set_sptr feat2,
