@@ -160,31 +160,6 @@ camera_<T> interpolate_camera(camera_<T> const& A, camera_<T> const& B, T f)
 }
 
 
-/// Genreate an interpolated camera from sptrs
-camera_sptr interpolate_camera(camera_sptr A, camera_sptr B, double f)
-{
-  double f1 = 1.0 - f;
-
-  // interpolate intrinsics
-  camera_intrinsics_d k1 = A->intrinsics(),
-                      k2 = B->intrinsics(),
-                      k;
-  double focal_len = f1*k1.focal_length() + f*k2.focal_length();
-  vector_2d principal_point = f1*k1.principal_point() + f*k2.principal_point();
-  double aspect_ratio = f1*k1.aspect_ratio() + f*k2.aspect_ratio();
-  double skew = f1*k1.skew() + f*k2.skew();
-  k = camera_intrinsics_d(focal_len, principal_point, aspect_ratio, skew);
-
-  // interpolate center
-  vector_3d c = f1*A->center() + f*B->center();
-
-  // interpolate rotation
-  rotation_d R = interpolate_rotation(A->rotation(), B->rotation(), f);
-
-  return camera_sptr(new camera_d(c, R, k));
-}
-
-
 /// Generate N evenly interpolated cameras in between \c A and \c B
 template <typename T>
 void
@@ -220,5 +195,31 @@ INSTANTIATE_CAMERA(float);
 
 #undef INSTANTIATE_CAMERA
 /// \endcond
+
+
+/// Genreate an interpolated camera from sptrs
+camera_sptr interpolate_camera(camera_sptr A, camera_sptr B, double f)
+{
+  double f1 = 1.0 - f;
+
+  // interpolate intrinsics
+  camera_intrinsics_d k1 = A->intrinsics(),
+                      k2 = B->intrinsics(),
+                      k;
+  double focal_len = f1*k1.focal_length() + f*k2.focal_length();
+  vector_2d principal_point = f1*k1.principal_point() + f*k2.principal_point();
+  double aspect_ratio = f1*k1.aspect_ratio() + f*k2.aspect_ratio();
+  double skew = f1*k1.skew() + f*k2.skew();
+  k = camera_intrinsics_d(focal_len, principal_point, aspect_ratio, skew);
+
+  // interpolate center
+  vector_3d c = f1*A->center() + f*B->center();
+
+  // interpolate rotation
+  rotation_d R = interpolate_rotation(A->rotation(), B->rotation(), f);
+
+  return camera_sptr(new camera_<double>(c, R, k));
+}
+
 
 } // end namespace maptk

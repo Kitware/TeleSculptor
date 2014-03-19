@@ -107,7 +107,7 @@ void load_reference_file(path_t const& reference_file,
   }
 
   // Initialize lgcs center
-  mean /= reference_lms.size();
+  mean /= static_cast<double>(reference_lms.size());
   lgcs.set_utm_origin(mean);
   cerr << "[load_reference_file] mean position (lgcs origin): " << mean << endl;
 

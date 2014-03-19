@@ -230,6 +230,10 @@ camera_<T> interpolate_camera(camera_<T> const& A, camera_<T> const& B, T f);
 /// Genreate an interpolated camera from sptrs
 /**
  * \relatesalso interpolate_camera
+ *
+ * TODO: Deprecate this function by replacing its use with a tiered dynamic
+ * cast to either camera_<double> or camera_<float>, using the one that
+ * doesn't produce a NULL pointer.
  */
 MAPTK_CORE_EXPORT
 camera_sptr interpolate_camera(camera_sptr A, camera_sptr B, double f);

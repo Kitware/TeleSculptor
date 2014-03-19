@@ -69,8 +69,8 @@ estimate_similarity_transform
 
   // Convert given point correspondences into corresponding matrices of size
   // 3xN. Already checked for size congruency above.
-  vnl_matrix<double> from_mat(3, from.size()),
-                     to_mat(3, to.size());
+  vnl_matrix<double> from_mat(3, static_cast<unsigned int>(from.size())),
+                     to_mat(3, static_cast<unsigned int>(to.size()));
   // using the same loop for both vectors as they are the same size.
   for (unsigned i = 0; i < from.size(); ++i)
   {
