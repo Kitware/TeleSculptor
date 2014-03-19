@@ -27,6 +27,9 @@ Core Library
 
   * Added new math exceptions for matrix related operations.
 
+  * Added a loop closure implementation which allows the execution of
+    multiple close loops methods with different settings at the same time.
+
 VXL Library
 
   * Added VXL implementation of camera optimization
