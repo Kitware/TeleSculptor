@@ -378,8 +378,10 @@ close_loops_homography_guided
 
       if( !to_remove.empty() )
       {
-        std::remove_if( all_tracks.begin(), all_tracks.end(),
-                        boost::bind( track_id_in_set, _1, &to_remove ) );
+        all_tracks.erase(
+          std::remove_if( all_tracks.begin(), all_tracks.end(), boost::bind( track_id_in_set, _1, &to_remove ) ),
+          all_tracks.end()
+        );
       }
 
       // Return updated set
