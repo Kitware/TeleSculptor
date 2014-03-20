@@ -21,6 +21,7 @@
 #include <set>
 #include <vector>
 #include <limits>
+#include <cmath>
 
 #include <boost/foreach.hpp>
 
