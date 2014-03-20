@@ -168,16 +168,12 @@ static bool check_config(maptk::config_block_sptr config)
     MAPTK_CONFIG_FAIL("Given image list file path doesn't point to an existing file.");
   }
 
-  bool has_input_pos_files=false,
-       has_input_ref_pt_list=false;
   if (config->get_value<std::string>("input_pos_files", "") != "")
   {
     if(!bfs::exists(config->get_value<std::string>("input_pos_files")))
     {
       MAPTK_CONFIG_FAIL("POS input path given, but doesn't point to an existing location.");
     }
-    else // valid pos file list or path
-      has_input_pos_files = true;
   }
   if (config->get_value<std::string>("input_reference_points_file", "") != "")
   {
@@ -185,8 +181,6 @@ static bool check_config(maptk::config_block_sptr config)
     {
       MAPTK_CONFIG_FAIL("Path given for input reference points file does not exist.");
     }
-    else // valid ref pts file
-      has_input_ref_pt_list = true;
   }
 
   if (!maptk::algo::bundle_adjust::check_nested_algo_configuration("bundle_adjuster", config))
