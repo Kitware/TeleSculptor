@@ -23,6 +23,7 @@
 #include <limits>
 #include <cmath>
 
+#include <boost/math/special_functions/fpclassify.hpp>
 #include <boost/foreach.hpp>
 
 
@@ -387,7 +388,7 @@ compute_ref_homography_default
     {
       for( unsigned j = 0; j < 3; j++ )
       {
-        if( !isfinite( h(i,j) ) || !isfinite( inverse(i,j) ) )
+        if( !boost::math::isfinite( h(i,j) ) || !boost::math::isfinite( inverse(i,j) ) )
         {
           bad_homog = true;
           break;
