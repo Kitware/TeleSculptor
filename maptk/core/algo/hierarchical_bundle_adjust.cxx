@@ -23,6 +23,7 @@
 #include <boost/timer/timer.hpp>
 
 #include <maptk/core/algo/optimize_cameras.h>
+#include <maptk/core/algo/triangulate_landmarks.h>
 #include <maptk/core/camera.h>
 #include <maptk/core/metrics.h>
 #include <maptk/core/exceptions.h>
@@ -88,6 +89,7 @@ public:
   priv()
     : initial_sub_sample(1)
     , interpolation_rate(0)
+    , rmse_reporting_enabled(false)
   {
   }
 
@@ -99,9 +101,11 @@ public:
 
   unsigned int initial_sub_sample;
   unsigned int interpolation_rate;
+  bool rmse_reporting_enabled;
 
   bundle_adjust_sptr sba;
   optimize_cameras_sptr camera_optimizer;
+  triangulate_landmarks_sptr lm_triangulator;
 };
 
 
@@ -143,11 +147,19 @@ hierarchical_bundle_adjust
                     "is set to 0, we will interpolate all missing cameras "
                     "at the first moment possible.");
 
+  config->set_value("enable_rmse_reporting", d_->rmse_reporting_enabled,
+                    "Enable the reporting of RMSE statistics at various "
+                    "stages of this algorithm. Constant calculating of RMSE "
+                    "may effect run time of the algorithm.");
+
   maptk::algo::bundle_adjust::get_nested_algo_configuration(
       "sba_impl", config, d_->sba
       );
   maptk::algo::optimize_cameras::get_nested_algo_configuration(
       "camera_optimizer", config, d_->camera_optimizer
+      );
+  maptk::algo::triangulate_landmarks::get_nested_algo_configuration(
+      "lm_triangulator", config, d_->lm_triangulator
       );
 
   return config;
@@ -161,12 +173,16 @@ hierarchical_bundle_adjust
 {
   d_->initial_sub_sample = config->get_value<unsigned int>("initial_sub_sample", d_->initial_sub_sample);
   d_->interpolation_rate = config->get_value<unsigned int>("interpolation_rate", d_->interpolation_rate);
+  d_->rmse_reporting_enabled = config->get_value<bool>("enable_rmse_reporting", d_->rmse_reporting_enabled);
 
   maptk::algo::bundle_adjust::set_nested_algo_configuration(
       "sba_impl", config, d_->sba
       );
   maptk::algo::optimize_cameras::set_nested_algo_configuration(
       "camera_optimizer", config, d_->camera_optimizer
+      );
+  maptk::algo::triangulate_landmarks::set_nested_algo_configuration(
+      "lm_triangulator", config, d_->lm_triangulator
       );
 }
 
@@ -201,12 +217,30 @@ hierarchical_bundle_adjust
   {
     MAPTK_HSBA_CHECK_FAIL("sba_impl configuration invalid.");
   }
-  if (!maptk::algo::optimize_cameras::check_nested_algo_configuration("camera_optimizer", config))
+
+  if (config->get_value<std::string>("camera_optimizer:type", "") == "")
+  {
+    std::cerr << "HSBA per-iteration camera optimization disabled" << std::endl;
+  }
+  else if (!maptk::algo::optimize_cameras::check_nested_algo_configuration("camera_optimizer", config))
   {
     MAPTK_HSBA_CHECK_FAIL("camera_optimizer configuration invalid.");
   }
 
+  if (config->get_value<std::string>("lm_triangulator:type", "") == "")
+  {
+    std::cerr << "HSBA per-iteration LM Triangulation disabled" << std::endl;
+  }
+  else if (!maptk::algo::triangulate_landmarks::check_nested_algo_configuration("lm_triangulator", config))
+  {
+    std::cerr << "lm_triangulator type: \"" << config->get_value<std::string>("lm_triangulator:type") << "\"" << std::endl;
+    MAPTK_HSBA_CHECK_FAIL("lm_triangulator configuration invalid.");
+  }
+
 #undef MAPTK_HSBA_CHECK_FAIL
+
+  // camera optimizer and lm trinagulator are optional. If not set, poitners
+  // will be 0.
 
   return valid;
 }
@@ -295,7 +329,7 @@ hierarchical_bundle_adjust
       camera_map::map_camera_t
         // separated interpolated camera storage
         interped_cams,
-        // concrete map of active cameras
+        // concrete map of current active cameras
         ac_map = active_cam_map->cameras();
 
       // pre-allocation of variables for performance
@@ -347,34 +381,80 @@ hierarchical_bundle_adjust
           }
         }
       }
+      camera_map_sptr interped_cams_p(new simple_camera_map(interped_cams));
 
       // Optimize new camers
-      cerr << "optimizing new interpolated cameras (" << interped_cams.size() << " cams)" << endl;
-      camera_map_sptr interped_cams_p(new simple_camera_map(interped_cams));
-      cerr << "\t- pre-optimization RMSE : " << reprojection_rmse(interped_cams_p->cameras(),
-                                                                  landmarks->landmarks(),
-                                                                  tracks->tracks()) << endl;
-      { // scope block
-        boost::timer::auto_cpu_timer t("\t- cameras optimization: %t sec CPU, %w sec wall\n");
-        d_->camera_optimizer->optimize(interped_cams_p, tracks, landmarks);
-      }
-      cerr << "\t- post-optimization RMSE: " << reprojection_rmse(interped_cams_p->cameras(),
-                                                                  landmarks->landmarks(),
-                                                                  tracks->tracks()) << endl;
+      if (d_->camera_optimizer)
+      {
+        cerr << "Optimizing new interpolated cameras (" << interped_cams.size() << " cams)" << endl;
+        if (d_->rmse_reporting_enabled)
+        {
+          cerr << "\t- pre-optimization RMSE : "
+               << reprojection_rmse(interped_cams_p->cameras(),
+                                    landmarks->landmarks(),
+                                    tracks->tracks())
+               << endl;
+        }
 
+        { // scope block
+          boost::timer::auto_cpu_timer t("\t- cameras optimization: %t sec CPU, %w sec wall\n");
+          d_->camera_optimizer->optimize(interped_cams_p, tracks, landmarks);
+        }
+
+        if (d_->rmse_reporting_enabled)
+        {
+          cerr << "\t- post-optimization RMSE: "
+               << reprojection_rmse(interped_cams_p->cameras(),
+                                    landmarks->landmarks(),
+                                    tracks->tracks())
+               << endl;
+        }
+      }
       // adding optimized interpolated cameras to the map of existing cameras
       BOOST_FOREACH(camera_map::map_camera_t::value_type const& p, interped_cams_p->cameras())
       {
         ac_map[p.first] = p.second;
       }
-
-      // Create a new active_cams_map to include interpolated cameras
+      // Create new sptr of modified ac_map
+      cerr << "Re-assiging new active cam map sptr (" << active_cam_map->size() << " cams)" << endl;
       active_cam_map = camera_map_sptr(new simple_camera_map(ac_map));
-      cerr << "Re-assiging new active cam map (" << active_cam_map->size() << " cams)" << endl
-           << "\t- reprojection RMSE of combined map: "
-           << reprojection_rmse(active_cam_map->cameras(),
-                                landmarks->landmarks(),
-                                tracks->tracks()) << endl;
+      if (d_->rmse_reporting_enabled)
+      {
+        cerr << "\t- reprojection RMSE of combined map: "
+             << reprojection_rmse(active_cam_map->cameras(),
+                                  landmarks->landmarks(),
+                                  tracks->tracks())
+             << endl;
+      }
+
+      // LM triangulation
+      if (d_->lm_triangulator)
+      {
+        cerr << "Triangulating landmarks after interpolating cameras" << endl;
+        if (d_->rmse_reporting_enabled)
+        {
+          cerr << "\t- pre-triangulation RMSE : "
+               << reprojection_rmse(active_cam_map->cameras(),
+                                    landmarks->landmarks(),
+                                    tracks->tracks())
+               << endl;
+        }
+
+        { // scoped block
+          boost::timer::auto_cpu_timer t("\t- lm triangulation: %t sec CPU, %w sec wall\n");
+          d_->lm_triangulator->triangulate(active_cam_map, tracks, landmarks);
+        }
+
+        if (d_->rmse_reporting_enabled)
+        {
+          cerr << "\t- post-triangulation RMSE: "
+               << reprojection_rmse(active_cam_map->cameras(),
+                                    landmarks->landmarks(),
+                                    tracks->tracks())
+               << endl;
+        }
+      }
+
     }
   } while (!done);
 
