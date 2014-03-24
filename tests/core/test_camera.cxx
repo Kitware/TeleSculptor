@@ -177,26 +177,15 @@ IMPLEMENT_TEST(x_axis_interpolation_cross)
              rotation_d(vector_4d(0, 0, 0, 1)));
   vector<camera_d> cams;
 
-  //rotation_d a_r = a.rotation(),
-  //           b_r = b.rotation(),
-  //           c_r;
-  //c_r = a_r.inverse() * b_r;
-  //cerr << "a->b rotation axis angle: " << c_r.axis() << " " << c_r.angle() << endl;
-  //TEST_NEAR("a->b angle under pi", c_r.angle(), pi / 2, 1e-15);
-  //c_r = b_r.inverse() * a_r;
-  //cerr << "b->a rotation axis angle: " << c_r.axis() << " " << c_r.angle() << endl;
-  //TEST_NEAR("b->a angle under pi", c_r.angle(), pi / 2, 1e-15);
-
-  //a = read_krtd_file("/home/purg/dev/MAP-TK/source/000005_028599_028599_20130626T152146.974326_S.krtd");
-  //b = read_krtd_file("/home/purg/dev/MAP-TK/source/000005_028649_028649_20130626T152150.307458_S.krtd");
-  //c_r = a.rotation().inverse() * b.rotation();
-  //cerr << "a rotation axis : " << a.rotation().axis() << endl;
-  //cerr << "a rotation angle: " << a.rotation().angle() << endl;
-  //cerr << "b rotation axis : " << b.rotation().axis() << endl;
-  //cerr << "b rotation angle: " << b.rotation().angle() << endl;
-  //cerr << "krtd cams rotation axis : " << c_r.axis() << endl;
-  //cerr << "krtd cams rotation angle: " << c_r.angle() << endl;
-  //TEST_EQUAL("krtd angle rot angle", (c_r.angle() < pi) && (-pi < c_r.angle()), true);
+  rotation_d a_r = a.rotation(),
+             b_r = b.rotation(),
+             c_r;
+  c_r = a_r.inverse() * b_r;
+  cerr << "a->b rotation axis angle: " << c_r.axis() << " " << c_r.angle() << endl;
+  TEST_NEAR("a->b angle under pi", c_r.angle(), pi / 2, 1e-15);
+  c_r = b_r.inverse() * a_r;
+  cerr << "b->a rotation axis angle: " << c_r.axis() << " " << c_r.angle() << endl;
+  TEST_NEAR("b->a angle under pi", c_r.angle(), pi / 2, 1e-15);
 
   cams.push_back(a);
   interpolated_cameras(a, b, 2, cams);
@@ -230,4 +219,9 @@ IMPLEMENT_TEST(x_axis_interpolation_cross)
 }
 
 
-// Full test case for above sub-test
+// TODO: Full test case for above sub-test would be to create a fill,
+// connected ring of cameras looking at a point, and checking that the
+// rotation angle returned by the getter function of the rotation between each
+// cameras is less than pi. It would be even more detailed to do this for
+// camera rings along each major axis plane, as well as for a stare-point that
+// is not at along the axis of rotation for the camera circle.
