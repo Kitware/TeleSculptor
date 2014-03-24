@@ -16,6 +16,8 @@
 #include <boost/math/constants/constants.hpp>
 #include <maptk/core/camera.h>
 
+#include <maptk/core/camera_io.h>
+
 #define TEST_ARGS ()
 
 DECLARE_TEST_MAP();
@@ -159,3 +161,73 @@ IMPLEMENT_TEST(multiple_interpolations)
   TEST_NEAR("i3 r.axis.z", i3.rotation().axis().z(), -1, 1e-15);
   TEST_NEAR("i3 r.angle",  i3.rotation().angle(), 3*pi / 8, 1e-15);
 }
+
+
+IMPLEMENT_TEST(x_axis_interpolation_cross)
+{
+  using namespace maptk;
+  using namespace std;
+
+  double pi = boost::math::constants::pi<double>();
+  camera_d a(vector_3d(-1, -1, -1),
+             rotation_d(pi / 4, vector_3d(0, 0, 1))),   // no rotation
+           b(vector_3d(0, 0, 0),
+             rotation_d(-pi / 4, vector_3d(0, 0, 1))),  // rotated around z-axis 90 degrees
+           c(vector_3d(1, 1, 1),
+             rotation_d(vector_4d(0, 0, 0, 1)));
+  vector<camera_d> cams;
+
+  //rotation_d a_r = a.rotation(),
+  //           b_r = b.rotation(),
+  //           c_r;
+  //c_r = a_r.inverse() * b_r;
+  //cerr << "a->b rotation axis angle: " << c_r.axis() << " " << c_r.angle() << endl;
+  //TEST_NEAR("a->b angle under pi", c_r.angle(), pi / 2, 1e-15);
+  //c_r = b_r.inverse() * a_r;
+  //cerr << "b->a rotation axis angle: " << c_r.axis() << " " << c_r.angle() << endl;
+  //TEST_NEAR("b->a angle under pi", c_r.angle(), pi / 2, 1e-15);
+
+  //a = read_krtd_file("/home/purg/dev/MAP-TK/source/000005_028599_028599_20130626T152146.974326_S.krtd");
+  //b = read_krtd_file("/home/purg/dev/MAP-TK/source/000005_028649_028649_20130626T152150.307458_S.krtd");
+  //c_r = a.rotation().inverse() * b.rotation();
+  //cerr << "a rotation axis : " << a.rotation().axis() << endl;
+  //cerr << "a rotation angle: " << a.rotation().angle() << endl;
+  //cerr << "b rotation axis : " << b.rotation().axis() << endl;
+  //cerr << "b rotation angle: " << b.rotation().angle() << endl;
+  //cerr << "krtd cams rotation axis : " << c_r.axis() << endl;
+  //cerr << "krtd cams rotation angle: " << c_r.angle() << endl;
+  //TEST_EQUAL("krtd angle rot angle", (c_r.angle() < pi) && (-pi < c_r.angle()), true);
+
+  cams.push_back(a);
+  interpolated_cameras(a, b, 2, cams);
+  cams.push_back(b);
+
+  cerr << "Vector size: " << cams.size() << endl;
+  TEST_EQUAL("vector size", cams.size(), 4);
+  BOOST_FOREACH(camera_d cam, cams)
+  {
+    cerr << "\t" << cam.center() << " :: " << cam.rotation().axis() << " " << cam.rotation().angle() << endl;
+  }
+
+  camera_d i1 = cams[1],
+           i2 = cams[2];
+
+  TEST_NEAR("i1 center.x", i1.center().x(), -2.0/3.0, 1e-15);
+  TEST_NEAR("i1 center.y", i1.center().y(), -2.0/3.0, 1e-15);
+  TEST_NEAR("i1 center.z", i1.center().z(), -2.0/3.0, 1e-15);
+  TEST_NEAR("i1 r.axis.x", i1.rotation().axis().x(), 0, 1e-15);
+  TEST_NEAR("i1 r.axis.y", i1.rotation().axis().y(), 0, 1e-15);
+  TEST_NEAR("i1 r.axis.z", i1.rotation().axis().z(), 1, 1e-15);
+  TEST_NEAR("i1 r.angle",  i1.rotation().angle(), pi / 12, 1e-15);
+
+  TEST_NEAR("i2 center.x", i2.center().x(), -1.0/3.0, 1e-15);
+  TEST_NEAR("i2 center.y", i2.center().y(), -1.0/3.0, 1e-15);
+  TEST_NEAR("i2 center.z", i2.center().z(), -1.0/3.0, 1e-15);
+  TEST_NEAR("i2 r.axis.x", i2.rotation().axis().x(), 0, 1e-15);
+  TEST_NEAR("i2 r.axis.y", i2.rotation().axis().y(), 0, 1e-15);
+  TEST_NEAR("i2 r.axis.z", i2.rotation().axis().z(), -1, 1e-15);
+  TEST_NEAR("i2 r.angle",  i2.rotation().angle(), pi / 12, 1e-15);
+}
+
+
+// Full test case for above sub-test
