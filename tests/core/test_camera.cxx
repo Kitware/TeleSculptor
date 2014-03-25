@@ -163,65 +163,10 @@ IMPLEMENT_TEST(multiple_interpolations)
 }
 
 
-IMPLEMENT_TEST(x_axis_interpolation_cross)
-{
-  using namespace maptk;
-  using namespace std;
-
-  double pi = boost::math::constants::pi<double>();
-  camera_d a(vector_3d(-1, -1, -1),
-             rotation_d(pi / 4, vector_3d(0, 0, 1))),   // no rotation
-           b(vector_3d(0, 0, 0),
-             rotation_d(-pi / 4, vector_3d(0, 0, 1))),  // rotated around z-axis 90 degrees
-           c(vector_3d(1, 1, 1),
-             rotation_d(vector_4d(0, 0, 0, 1)));
-  vector<camera_d> cams;
-
-  rotation_d a_r = a.rotation(),
-             b_r = b.rotation(),
-             c_r;
-  c_r = a_r.inverse() * b_r;
-  cerr << "a->b rotation axis angle: " << c_r.axis() << " " << c_r.angle() << endl;
-  TEST_NEAR("a->b angle under pi", c_r.angle(), pi / 2, 1e-15);
-  c_r = b_r.inverse() * a_r;
-  cerr << "b->a rotation axis angle: " << c_r.axis() << " " << c_r.angle() << endl;
-  TEST_NEAR("b->a angle under pi", c_r.angle(), pi / 2, 1e-15);
-
-  cams.push_back(a);
-  interpolated_cameras(a, b, 2, cams);
-  cams.push_back(b);
-
-  cerr << "Vector size: " << cams.size() << endl;
-  TEST_EQUAL("vector size", cams.size(), 4);
-  BOOST_FOREACH(camera_d cam, cams)
-  {
-    cerr << "\t" << cam.center() << " :: " << cam.rotation().axis() << " " << cam.rotation().angle() << endl;
-  }
-
-  camera_d i1 = cams[1],
-           i2 = cams[2];
-
-  TEST_NEAR("i1 center.x", i1.center().x(), -2.0/3.0, 1e-15);
-  TEST_NEAR("i1 center.y", i1.center().y(), -2.0/3.0, 1e-15);
-  TEST_NEAR("i1 center.z", i1.center().z(), -2.0/3.0, 1e-15);
-  TEST_NEAR("i1 r.axis.x", i1.rotation().axis().x(), 0, 1e-15);
-  TEST_NEAR("i1 r.axis.y", i1.rotation().axis().y(), 0, 1e-15);
-  TEST_NEAR("i1 r.axis.z", i1.rotation().axis().z(), 1, 1e-15);
-  TEST_NEAR("i1 r.angle",  i1.rotation().angle(), pi / 12, 1e-15);
-
-  TEST_NEAR("i2 center.x", i2.center().x(), -1.0/3.0, 1e-15);
-  TEST_NEAR("i2 center.y", i2.center().y(), -1.0/3.0, 1e-15);
-  TEST_NEAR("i2 center.z", i2.center().z(), -1.0/3.0, 1e-15);
-  TEST_NEAR("i2 r.axis.x", i2.rotation().axis().x(), 0, 1e-15);
-  TEST_NEAR("i2 r.axis.y", i2.rotation().axis().y(), 0, 1e-15);
-  TEST_NEAR("i2 r.axis.z", i2.rotation().axis().z(), -1, 1e-15);
-  TEST_NEAR("i2 r.angle",  i2.rotation().angle(), pi / 12, 1e-15);
-}
-
-
-// TODO: Full test case for above sub-test would be to create a fill,
-// connected ring of cameras looking at a point, and checking that the
-// rotation angle returned by the getter function of the rotation between each
-// cameras is less than pi. It would be even more detailed to do this for
-// camera rings along each major axis plane, as well as for a stare-point that
-// is not at along the axis of rotation for the camera circle.
+// TODO: Full test case for camera interpolation would be to create a full,
+// connected ring of cameras looking at a point (or even multiple loops), and
+// checking that the rotation angle returned by the getter function of the
+// rotation between each cameras is less than pi. It would be even more
+// detailed to do this for camera rings along each major axis plane, as well
+// as for a stare-point that is not at along the axis of rotation for the
+// camera ring.
