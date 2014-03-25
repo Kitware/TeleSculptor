@@ -282,6 +282,11 @@ bundle_adjust
   std::vector<std::vector<bool> >
       mask(active_vcams.size(),
            std::vector<bool>(active_world_pts.size(), false));
+  // Analogous 2D matrix of the track state (feature) location for a given
+  // camera/landmark pair
+  std::vector<std::vector<feature_sptr> >
+      feature_mask(active_vcams.size(),
+                   std::vector<feature_sptr>(active_world_pts.size(), feature_sptr()));
   // compact location vector
   std::vector<vgl_point_2d<double> > image_pts;
 
@@ -290,31 +295,24 @@ bundle_adjust
     {
       const frame_id_t c_idx = cam_id_reverse_map[p.first];
       std::vector<bool>& mask_row = mask[c_idx];
+      std::vector<feature_sptr> fmask_row = feature_mask[c_idx];
       BOOST_FOREACH(const track_id_t& lm_idx, p.second)
       {
         mask_row[lm_id_reverse_map[lm_idx]] = true;
+        fmask_row[lm_id_reverse_map[lm_idx]] = tracks->get_track(lm_idx)->find(p.first)->feat;
       }
     }
-    // Populate the vector of observations in the correct order
+    // Populate the vector of observations in the correct order using mask
+    // matrices
+    vector_2d t_loc;
     for (unsigned int i=0; i<active_vcams.size(); ++i)
     {
-      const frame_id_t f_id = cam_id_index[i];
       for (unsigned int j=0; j<active_world_pts.size(); ++j)
       {
         if(mask[i][j])
         {
-          const track_id_t t_id = lm_id_index[j];
-          track_sptr t;
-          BOOST_FOREACH(t, trks)
-          {
-            if(t->id() == t_id)
-            {
-              break;
-            }
-          }
-          track::history_const_itr tsi = t->find(f_id);
-          vector_2d loc(tsi->feat->loc());
-          image_pts.push_back(vgl_point_2d<double>(loc.x(), loc.y()));
+          t_loc = feature_mask[i][j]->loc();
+          image_pts.push_back(vgl_point_2d<double>(t_loc.x(), t_loc.y()));
         }
       }
     }
