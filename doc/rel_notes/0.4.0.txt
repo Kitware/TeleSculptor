@@ -39,6 +39,10 @@ VXL Library
     again, and to additionally determine the most optimal frames to perform
     feature matching between.
 
+  * Optimized data organization and manipulation in SBA algorithm
+    implementation to make to make code surrounding underlying VXL
+    vpgl_bundle_adjust call faster.
+
 OpenCV Library
 
   * Added more options to the draw_track class, including the ability
