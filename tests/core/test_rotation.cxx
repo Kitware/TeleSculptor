@@ -75,6 +75,9 @@ IMPLEMENT_TEST(convert_rodrigues)
 
   vector_3d rvec(2,-1,0.5);
   rotation_d rot3(rvec);
+  using namespace std;
+  cerr << "rvec magnitude: " << rvec.magnitude() << endl;
+  cerr << "rot3 magnitude: " << rot3.rodrigues().magnitude() << endl;
   TEST_NEAR("Rodrigues convert to and from rotation is same",
             (rot3.rodrigues() - rvec).magnitude(), 0.0, 1e-14);
 

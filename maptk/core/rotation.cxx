@@ -195,7 +195,19 @@ rotation_<T>
 {
   const double i = vector_3_<T>(q_.x(), q_.y(), q_.z()).magnitude();
   const double r = q_.w();
-  return static_cast<T>(2.0 * std::atan2(i, r));
+  T a = static_cast<T>(2.0 * std::atan2(i, r));
+  const T pi = boost::math::constants::pi<T>();
+  // make sure computed angle lies within a sensible range,
+  // i.e. -pi/2 < a < pi/2
+  if (a >= pi)
+  {
+    a -= pi * 2.0;
+  }
+  if (a <= -pi)
+  {
+    a += pi * 2.0;
+  }
+  return a;
 }
 
 

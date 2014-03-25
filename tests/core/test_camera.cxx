@@ -16,6 +16,8 @@
 #include <boost/math/constants/constants.hpp>
 #include <maptk/core/camera.h>
 
+#include <maptk/core/camera_io.h>
+
 #define TEST_ARGS ()
 
 DECLARE_TEST_MAP();
@@ -159,3 +161,12 @@ IMPLEMENT_TEST(multiple_interpolations)
   TEST_NEAR("i3 r.axis.z", i3.rotation().axis().z(), -1, 1e-15);
   TEST_NEAR("i3 r.angle",  i3.rotation().angle(), 3*pi / 8, 1e-15);
 }
+
+
+// TODO: Full test case for camera interpolation would be to create a full,
+// connected ring of cameras looking at a point (or even multiple loops), and
+// checking that the rotation angle returned by the getter function of the
+// rotation between each cameras is less than pi. It would be even more
+// detailed to do this for camera rings along each major axis plane, as well
+// as for a stare-point that is not at along the axis of rotation for the
+// camera ring.

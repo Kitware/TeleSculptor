@@ -62,6 +62,12 @@ Tests
 Fixes since v0.3.0
 ------------------
 
+Core Library
+
+  * Added constraint to rotation object's angle function so it returns the
+    smallest angle between the rotation origin and the rotation position being
+    represented.
+
 VXL Library
 
   * Changed underlying VXL function used in similarity transformation
