@@ -239,7 +239,7 @@ hierarchical_bundle_adjust
 
 #undef MAPTK_HSBA_CHECK_FAIL
 
-  // camera optimizer and lm trinagulator are optional. If not set, poitners
+  // camera optimizer and lm triangulator are optional. If not set, pointers
   // will be 0.
 
   return valid;
