@@ -262,7 +262,7 @@ bundle_adjust
   std::map<frame_id_t, frame_id_t> cam_id_reverse_map;
   std::vector<vpgl_perspective_camera<double> > active_vcams;
 
-  MAPTK_SBA_TIMED("Creating index mappings...",
+  MAPTK_SBA_TIMED("Creating index mappings",
     BOOST_FOREACH(const track_id_t& id, lm_ids)
     {
       lm_id_reverse_map[id] = static_cast<track_id_t>(lm_id_index.size());
@@ -295,7 +295,7 @@ bundle_adjust
     {
       const frame_id_t c_idx = cam_id_reverse_map[p.first];
       std::vector<bool>& mask_row = mask[c_idx];
-      std::vector<feature_sptr> fmask_row = feature_mask[c_idx];
+      std::vector<feature_sptr>& fmask_row = feature_mask[c_idx];
       BOOST_FOREACH(const track_id_t& lm_idx, p.second)
       {
         mask_row[lm_id_reverse_map[lm_idx]] = true;
