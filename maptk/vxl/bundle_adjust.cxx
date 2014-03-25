@@ -212,6 +212,7 @@ bundle_adjust
     if (d_->verbose) \
     { \
       cpu_times elapsed = t.elapsed(); \
+      /* convert nanosecond to seconds */ \
       double secs = static_cast<double>(elapsed.system + elapsed.user) * 0.000000001; \
       std::cerr << "--> " << secs << " s CPU" << std::endl; \
     } \
@@ -222,37 +223,54 @@ bundle_adjust
   map_landmark_t lms = landmarks->landmarks();
   std::vector<track_sptr> trks = tracks->tracks();
 
-  // find the set of all frame numbers containing a camera and track data
+  //
+  // Find the set of all frame numbers containing a camera and track data
+  //
+
+  // convidience set of all lm IDs that the active cameras view
   std::set<track_id_t> lm_ids;
-  typedef std::map<frame_id_t, std::set<track_id_t> > id_map_t;
-  id_map_t id_map;
-  BOOST_FOREACH(const map_vcam_t::value_type& p, vcams)
-  {
-    const frame_id_t& frame = p.first;
-    track_set_sptr ftracks = tracks->active_tracks(static_cast<int>(frame));
-    if (! ftracks || ftracks->size() == 0)
+
+  // Nested relation of frame number to a map of track IDs to feature of the
+  // track on that frame
+  typedef std::map<track_id_t, feature_sptr> super_map_inner_t;
+  typedef std::map<frame_id_t, super_map_inner_t> super_map_t;
+  super_map_t frame2track2feature_map;
+
+  MAPTK_SBA_TIMED("Constructing id-map and super-map",
+    BOOST_FOREACH(const map_vcam_t::value_type& p, vcams)
     {
-      continue;
-    }
-    std::set<track_id_t> frame_lm_ids;
-    BOOST_FOREACH(const track_sptr& t, ftracks->tracks())
-    {
-      const track_id_t id = t->id();
-      // make sure the track id has an associated landmark
-      if( lms.find(id) != lms.end() )
+      const frame_id_t& frame = p.first;
+      track_set_sptr ftracks = tracks->active_tracks(static_cast<int>(frame));
+      if (! ftracks || ftracks->size() == 0)
       {
-        frame_lm_ids.insert(id);
-        lm_ids.insert(id);
+        continue;
+      }
+      super_map_inner_t frame_lm2feature_map;
+
+      BOOST_FOREACH(const track_sptr& t, ftracks->tracks())
+      {
+        const track_id_t id = t->id();
+        // make sure the track id has an associated landmark
+
+        if( lms.find(id) != lms.end() )
+        {
+          frame_lm2feature_map[id] = t->find(frame)->feat;
+          lm_ids.insert(id);
+        }
+      }
+
+      if( !frame_lm2feature_map.empty() )
+      {
+        frame2track2feature_map[frame] = frame_lm2feature_map;
       }
     }
-    if( !frame_lm_ids.empty() )
-    {
-      id_map[frame] = frame_lm_ids;
-    }
-  }
+  );
 
-  // create a compact set of data to optimize,
+  //
+  // Create a compact set of data to optimize,
   // with mapping back to original indices
+  //
+
   // -> landmark mappings
   std::vector<track_id_t> lm_id_index;
   std::map<track_id_t, frame_id_t> lm_id_reverse_map;
@@ -270,7 +288,7 @@ bundle_adjust
       vector_3d pt = lms[id]->loc();
       active_world_pts.push_back(vgl_point_3d<double>(pt.x(), pt.y(), pt.z()));
     }
-    BOOST_FOREACH(const id_map_t::value_type& p, id_map)
+    BOOST_FOREACH(const super_map_t::value_type& p, frame2track2feature_map)
     {
       cam_id_reverse_map[p.first] = static_cast<frame_id_t>(cam_id_index.size());
       cam_id_index.push_back(p.first);
@@ -291,15 +309,19 @@ bundle_adjust
   std::vector<vgl_point_2d<double> > image_pts;
 
   MAPTK_SBA_TIMED("Creating masks and point vector",
-    BOOST_FOREACH(const id_map_t::value_type& p, id_map)
+    BOOST_FOREACH(const super_map_t::value_type& p, frame2track2feature_map)
     {
+      // p.first  -> frame ID
+      // p.second -> super_map_inner_t
       const frame_id_t c_idx = cam_id_reverse_map[p.first];
       std::vector<bool>& mask_row = mask[c_idx];
       std::vector<feature_sptr>& fmask_row = feature_mask[c_idx];
-      BOOST_FOREACH(const track_id_t& lm_idx, p.second)
+      BOOST_FOREACH(const super_map_inner_t::value_type& q, p.second)
       {
-        mask_row[lm_id_reverse_map[lm_idx]] = true;
-        fmask_row[lm_id_reverse_map[lm_idx]] = tracks->get_track(lm_idx)->find(p.first)->feat;
+        // q.first  -> lm ID
+        // q.second -> feature_sptr
+        mask_row[lm_id_reverse_map[q.first]] = true;
+        fmask_row[lm_id_reverse_map[q.first]] = q.second;
       }
     }
     // Populate the vector of observations in the correct order using mask
@@ -346,6 +368,8 @@ bundle_adjust
     cameras = camera_map_sptr(new camera_map(vcams));
     landmarks = landmark_map_sptr(new simple_landmark_map(lms));
   );
+
+#undef MAPTK_SBA_TIMED
 }
 
 
