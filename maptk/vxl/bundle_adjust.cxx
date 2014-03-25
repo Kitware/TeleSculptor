@@ -12,8 +12,14 @@
 #include <maptk/vxl/bundle_adjust.h>
 #include <maptk/vxl/camera_map.h>
 #include <boost/foreach.hpp>
+#include <boost/timer/timer.hpp>
+#include <iostream>
 #include <set>
 #include <vpgl/algo/vpgl_bundle_adjust.h>
+
+using boost::timer::cpu_times;
+using boost::timer::nanosecond_type;
+
 
 namespace maptk
 {
@@ -194,6 +200,23 @@ bundle_adjust
   typedef vxl::camera_map::map_vcam_t map_vcam_t;
   typedef maptk::landmark_map::map_landmark_t map_landmark_t;
 
+#define MAPTK_SBA_TIMED(msg, code) \
+  do \
+  { \
+    boost::timer::cpu_timer t; \
+    if (d_->verbose) \
+    { \
+      std::cerr << msg << " ... " << std::endl; \
+    } \
+    code \
+    if (d_->verbose) \
+    { \
+      cpu_times elapsed = t.elapsed(); \
+      double secs = static_cast<double>(elapsed.system + elapsed.user) * 0.000000001; \
+      std::cerr << "--> " << secs << " s CPU" << std::endl; \
+    } \
+  } while(false)
+
   // extract data from containers
   map_vcam_t vcams = camera_map_to_vpgl(*cameras);
   map_landmark_t lms = landmarks->landmarks();
@@ -230,89 +253,101 @@ bundle_adjust
 
   // create a compact set of data to optimize,
   // with mapping back to original indices
+  // -> landmark mappings
   std::vector<track_id_t> lm_id_index;
   std::map<track_id_t, frame_id_t> lm_id_reverse_map;
   std::vector<vgl_point_3d<double> > active_world_pts;
-  BOOST_FOREACH(const track_id_t& id, lm_ids)
-  {
-    lm_id_reverse_map[id] = static_cast<track_id_t>(lm_id_index.size());
-    lm_id_index.push_back(id);
-    vector_3d pt = lms[id]->loc();
-    active_world_pts.push_back(vgl_point_3d<double>(pt.x(), pt.y(), pt.z()));
-  }
+  // -> camera mappings
   std::vector<frame_id_t> cam_id_index;
   std::map<frame_id_t, frame_id_t> cam_id_reverse_map;
   std::vector<vpgl_perspective_camera<double> > active_vcams;
-  BOOST_FOREACH(const id_map_t::value_type& p, id_map)
-  {
-    cam_id_reverse_map[p.first] = static_cast<frame_id_t>(cam_id_index.size());
-    cam_id_index.push_back(p.first);
-    active_vcams.push_back(vcams[p.first]);
-  }
+
+  MAPTK_SBA_TIMED("Creating index mappings...",
+    BOOST_FOREACH(const track_id_t& id, lm_ids)
+    {
+      lm_id_reverse_map[id] = static_cast<track_id_t>(lm_id_index.size());
+      lm_id_index.push_back(id);
+      vector_3d pt = lms[id]->loc();
+      active_world_pts.push_back(vgl_point_3d<double>(pt.x(), pt.y(), pt.z()));
+    }
+    BOOST_FOREACH(const id_map_t::value_type& p, id_map)
+    {
+      cam_id_reverse_map[p.first] = static_cast<frame_id_t>(cam_id_index.size());
+      cam_id_index.push_back(p.first);
+      active_vcams.push_back(vcams[p.first]);
+    }
+  );
 
   // Construct the camera/landmark visibility matrix
   std::vector<std::vector<bool> >
       mask(active_vcams.size(),
            std::vector<bool>(active_world_pts.size(), false));
-  BOOST_FOREACH(const id_map_t::value_type& p, id_map)
-  {
-    const frame_id_t c_idx = cam_id_reverse_map[p.first];
-    std::vector<bool>& mask_row = mask[c_idx];
-    BOOST_FOREACH(const track_id_t& lm_idx, p.second)
-    {
-      mask_row[lm_id_reverse_map[lm_idx]] = true;
-    }
-  }
-
-  // Populate the vector of observations in the correct order
+  // compact location vector
   std::vector<vgl_point_2d<double> > image_pts;
-  for (unsigned int i=0; i<active_vcams.size(); ++i)
-  {
-    const frame_id_t f_id = cam_id_index[i];
-    for (unsigned int j=0; j<active_world_pts.size(); ++j)
+
+  MAPTK_SBA_TIMED("Creating masks and point vector",
+    BOOST_FOREACH(const id_map_t::value_type& p, id_map)
     {
-      if(mask[i][j])
+      const frame_id_t c_idx = cam_id_reverse_map[p.first];
+      std::vector<bool>& mask_row = mask[c_idx];
+      BOOST_FOREACH(const track_id_t& lm_idx, p.second)
       {
-        const track_id_t t_id = lm_id_index[j];
-        track_sptr t;
-        BOOST_FOREACH(t, trks)
-        {
-          if(t->id() == t_id)
-          {
-            break;
-          }
-        }
-        track::history_const_itr tsi = t->find(f_id);
-        vector_2d loc(tsi->feat->loc());
-        image_pts.push_back(vgl_point_2d<double>(loc.x(), loc.y()));
+        mask_row[lm_id_reverse_map[lm_idx]] = true;
       }
     }
-  }
+    // Populate the vector of observations in the correct order
+    for (unsigned int i=0; i<active_vcams.size(); ++i)
+    {
+      const frame_id_t f_id = cam_id_index[i];
+      for (unsigned int j=0; j<active_world_pts.size(); ++j)
+      {
+        if(mask[i][j])
+        {
+          const track_id_t t_id = lm_id_index[j];
+          track_sptr t;
+          BOOST_FOREACH(t, trks)
+          {
+            if(t->id() == t_id)
+            {
+              break;
+            }
+          }
+          track::history_const_itr tsi = t->find(f_id);
+          vector_2d loc(tsi->feat->loc());
+          image_pts.push_back(vgl_point_2d<double>(loc.x(), loc.y()));
+        }
+      }
+    }
+  );
 
   // Run the vpgl bundle adjustment on the selected data
-  d_->ba.optimize(active_vcams, active_world_pts, image_pts, mask);
+  MAPTK_SBA_TIMED("VXL bundle optimization",
+    d_->ba.optimize(active_vcams, active_world_pts, image_pts, mask);
+  );
 
   // map optimized results back into maptk structures
-  for(unsigned int i=0; i<active_vcams.size(); ++i)
-  {
-    vcams[cam_id_index[i]] = active_vcams[i];
-  }
-  for(unsigned int i=0; i<active_world_pts.size(); ++i)
-  {
-    const vgl_point_3d<double>& pt = active_world_pts[i];
-    vector_3d loc(pt.x(), pt.y(), pt.z());
-    landmark_sptr lm = lms[lm_id_index[i]];
-    if( landmark_d* lmd = dynamic_cast<landmark_d*>(lm.get()) )
+  MAPTK_SBA_TIMED("Mapping optimized results back to MAPTK structures",
+    for(unsigned int i=0; i<active_vcams.size(); ++i)
     {
-      lmd->set_loc(loc);
+      vcams[cam_id_index[i]] = active_vcams[i];
     }
-    else if( landmark_f* lmf = dynamic_cast<landmark_f*>(lm.get()) )
+    for(unsigned int i=0; i<active_world_pts.size(); ++i)
     {
-      lmf->set_loc(vector_3f(loc));
+      const vgl_point_3d<double>& pt = active_world_pts[i];
+      vector_3d loc(pt.x(), pt.y(), pt.z());
+      landmark_sptr lm = lms[lm_id_index[i]];
+      if( landmark_d* lmd = dynamic_cast<landmark_d*>(lm.get()) )
+      {
+        lmd->set_loc(loc);
+      }
+      else if( landmark_f* lmf = dynamic_cast<landmark_f*>(lm.get()) )
+      {
+        lmf->set_loc(vector_3f(loc));
+      }
     }
-  }
-  cameras = camera_map_sptr(new camera_map(vcams));
-  landmarks = landmark_map_sptr(new simple_landmark_map(lms));
+    cameras = camera_map_sptr(new camera_map(vcams));
+    landmarks = landmark_map_sptr(new simple_landmark_map(lms));
+  );
 }
 
 
