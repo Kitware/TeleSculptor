@@ -288,14 +288,8 @@ static int maptk_main(int argc, char const* argv[])
   catch (bpo::unknown_option const& e)
   {
     std::cerr << e.what() << std::endl
-              << std::endl
-              << "Usage: " << argv[0] << " file.pos file.krtd" << std::endl
-              << "     : " << argv[0] << " pos_dir output_dir" << std::endl
-              << std::endl
-              << "If multiple POS files are to be converted into KRTD " << std::endl
-              << "files, it is recomended to use the directory arguments " << std::endl
-              << "in order for the application to create a unified local " << std::endl
-              << "coordinate system." << std::endl;
+              << std::endl;
+    usage(argc, argv, opt_desc, vm);
     return EXIT_FAILURE;
   }
   bpo::notify(vm);
