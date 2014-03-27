@@ -1,6 +1,14 @@
 MAPTK v0.4.0 Release Notes
 ==========================
 
+This is a minor release of MAPTK that provides both new functionality and fixes
+over the previous v0.3.1 release.  The primary contributions of this release
+are an implementation of homography-guided loop closure for closing long-term
+loops, handling of reference point files to provide geographic localization
+in the absence of POS file input, and implementation of hierarchical SBA to
+bootstrap large SBA problems by first running SBA over subsampled cameras
+then interpolating and running a larger SBA problem.
+
 
 Updates since v0.3.1
 --------------------
