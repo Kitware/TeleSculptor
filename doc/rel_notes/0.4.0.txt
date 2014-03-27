@@ -7,60 +7,60 @@ Updates since v0.3.1
 
 Core Library
 
-  * Added interpolation functions for rotations and for cameras.
+ * Added interpolation functions for rotations and for cameras.
 
-  * Added camera optimization algorithm definition.
+ * Added camera optimization algorithm definition.
 
-  * Added hierarchical SBA algorithm definition and generic implementation.
+ * Added hierarchical SBA algorithm definition and generic implementation.
 
-  * Added method for loading landmark and track structures from a geographic
-    reference point file.
+ * Added method for loading landmark and track structures from a geographic
+   reference point file.
 
-  * Added a few homography classes for storing transformations between
-    two frames or two arbitrary coordinate systems.
+ * Added a few homography classes for storing transformations between
+   two frames or two arbitrary coordinate systems.
 
-  * Added a class to estimate an arbitrary current to reference frame
-    homography for a given sequence of input data.
+ * Added a class to estimate an arbitrary current to reference frame
+   homography for a given sequence of input data.
 
-  * Modified the match_features_homography class to optionally not output
-    any matches if certain criteria are met. This is disabled by default.
+ * Modified the match_features_homography class to optionally not output
+   any matches if certain criteria are met. This is disabled by default.
 
-  * Added new math exceptions for matrix related operations.
+ * Added new math exceptions for matrix related operations.
 
-  * Added a loop closure implementation which allows the execution of
-    multiple close loops methods with different settings at the same time.
+ * Added a loop closure implementation which allows the execution of
+   multiple close loops methods with different settings at the same time.
 
 VXL Library
 
-  * Added VXL implementation of camera optimization
+ * Added VXL implementation of camera optimization
 
-  * Added a VXL loop closure implementation based around using reference
-    frame homographies to estimate when we have reached the same location
-    again, and to additionally determine the most optimal frames to perform
-    feature matching between.
+ * Added a VXL loop closure implementation based around using reference
+   frame homographies to estimate when we have reached the same location
+   again, and to additionally determine the most optimal frames to perform
+   feature matching between.
 
-  * Optimized data organization and manipulation in SBA algorithm
-    implementation to make to make code surrounding underlying VXL
-    vpgl_bundle_adjust call faster.
+ * Optimized data organization and manipulation in SBA algorithm
+   implementation to make to make code surrounding underlying VXL
+   vpgl_bundle_adjust call faster.
 
 OpenCV Library
 
-  * Added more options to the draw_track class, including the ability
-    to compare computed features tracks and landmarks projected onto
-    the image using camera krtd files.
+ * Added more options to the draw_track class, including the ability
+   to compare computed features tracks and landmarks projected onto
+   the image using camera krtd files.
 
 Tools
 
-  * Added reference point file input option and functionality to bundle adjust
-    tool. This allows a user-generated 3D-2D point correlation list to drive
-    post-SBA world coordinate transformation instead of, or in the absence of
-    input POS camera files.
+ * Added reference point file input option and functionality to bundle adjust
+   tool. This allows a user-generated 3D-2D point correlation list to drive
+   post-SBA world coordinate transformation instead of, or in the absence of
+   input POS camera files.
 
 Tests
 
-  * Added tests for VXL camera optimization implementation
+ * Added tests for VXL camera optimization implementation
 
-  * Added methods for vector and matrix approximate equality
+ * Added methods for vector and matrix approximate equality
 
 
 Fixes since v0.3.1
@@ -68,14 +68,14 @@ Fixes since v0.3.1
 
 Core Library
 
-  * Added constraint to rotation object's angle function so it returns the
-    smallest angle between the rotation origin and the rotation position being
-    represented.
+ * Added constraint to rotation object's angle function so it returns the
+   smallest angle between the rotation origin and the rotation position being
+   represented.
 
 VXL Library
 
-  * Changed underlying VXL function used in similarity transformation
-    estimation algorithm to improve algorithm accuracy.
+ * Changed underlying VXL function used in similarity transformation
+   estimation algorithm to improve algorithm accuracy.
 
-  * Remove landmarks that triangulate behind any of the cameras.
-    These erroneous triangulations were causing large SBA errors.
+ * Remove landmarks that triangulate behind any of the cameras.
+   These erroneous triangulations were causing large SBA errors.
