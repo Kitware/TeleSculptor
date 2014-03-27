@@ -2,7 +2,7 @@ MAPTK v0.4.0 Release Notes
 ==========================
 
 
-Updates since v0.3.0
+Updates since v0.3.1
 --------------------
 
 Core Library
@@ -63,7 +63,7 @@ Tests
   * Added methods for vector and matrix aproximate equality
 
 
-Fixes since v0.3.0
+Fixes since v0.3.1
 ------------------
 
 Core Library
