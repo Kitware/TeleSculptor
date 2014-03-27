@@ -52,7 +52,7 @@ OpenCV Library
 Tools
 
   * Added reference point file input option and functionality to bundle adjust
-    tool. This allows a user-generated 3D-2D point corrolation list to drive
+    tool. This allows a user-generated 3D-2D point correlation list to drive
     post-SBA world coordinate transformation instead of, or in the absence of
     input POS camera files.
 
@@ -60,7 +60,7 @@ Tests
 
   * Added tests for VXL camera optimization implementation
 
-  * Added methods for vector and matrix aproximate equality
+  * Added methods for vector and matrix approximate equality
 
 
 Fixes since v0.3.1
