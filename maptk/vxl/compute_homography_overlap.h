@@ -13,6 +13,8 @@
 #define MAPTK_VXL_COMPUTE_HOMOGRAPHY_OVERLAP_H_
 
 
+#include <maptk/vxl/vxl_config.h>
+
 #include <vnl/vnl_double_3x3.h>
 
 
@@ -29,6 +31,7 @@ namespace vxl
  * transformation between these 2 images (in some reference coordinate
  * system). The overlap is returned as a percentage.
  */
+MAPTK_VXL_EXPORT
 double
 overlap( const vnl_double_3x3& h, const unsigned ni, const unsigned nj );
 

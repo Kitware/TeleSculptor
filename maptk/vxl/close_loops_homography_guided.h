@@ -13,11 +13,12 @@
 #ifndef MAPTK_VXL_CLOSE_LOOPS_HOMOGRAPHY_GUIDED_H_
 #define MAPTK_VXL_CLOSE_LOOPS_HOMOGRAPHY_GUIDED_H_
 
-#include <maptk/core/core_config.h>
-#include <maptk/core/image_container.h>
-#include <maptk/core/track_set.h>
+#include <maptk/vxl/vxl_config.h>
 
 #include <boost/scoped_ptr.hpp>
+
+#include <maptk/core/image_container.h>
+#include <maptk/core/track_set.h>
 
 #include <maptk/core/algo/algorithm.h>
 #include <maptk/core/algo/close_loops_bad_frames_only.h>
@@ -36,7 +37,7 @@ namespace vxl
  * estimate potential match locations in the past, followed up by additional
  * filtering.
  */
-class MAPTK_CORE_EXPORT close_loops_homography_guided
+class MAPTK_VXL_EXPORT close_loops_homography_guided
   : public algo::algorithm_impl<vxl::close_loops_homography_guided, algo::close_loops>
 {
 public:
