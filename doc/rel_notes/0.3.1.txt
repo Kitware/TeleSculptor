@@ -12,3 +12,8 @@ Fixes since v0.3.0
 Core Library
 
  * Added feet-meter conversions in camera and INS data update functions.
+
+Tools
+
+ * Fixed erronious reporting of an out-of-date usage message. Now reports
+   currect current usage.
