@@ -197,15 +197,16 @@ rotation_<T>
   const double r = q_.w();
   T a = static_cast<T>(2.0 * std::atan2(i, r));
   const T pi = boost::math::constants::pi<T>();
+  const T two_pi = T(2) * boost::math::constants::pi<T>();
   // make sure computed angle lies within a sensible range,
   // i.e. -pi/2 < a < pi/2
   if (a >= pi)
   {
-    a -= pi * 2.0;
+    a -= two_pi;
   }
   if (a <= -pi)
   {
-    a += pi * 2.0;
+    a += two_pi;
   }
   return a;
 }

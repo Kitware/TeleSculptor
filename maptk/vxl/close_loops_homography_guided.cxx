@@ -260,8 +260,8 @@ close_loops_homography_guided
     return input;
   }
 
-  const size_t width = image->width();
-  const size_t height = image->height();
+  const unsigned int width = static_cast<unsigned int>(image->width());
+  const unsigned int height = static_cast<unsigned int>(image->height());
 
   // Compute new homographies for this frame
   f2f_homography_sptr homog = d_->ref_computer_->estimate( frame_number, input );

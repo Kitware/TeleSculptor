@@ -157,7 +157,7 @@ match_features_homography
   matrix_3x3d H = h_estimator_->estimate(feat1, feat2, init_matches,
                                          inliers, d_->inlier_scale);
   (void) H; // H not yet used, avoid compiler warning
-  int inlier_count = std::count(inliers.begin(), inliers.end(), true);
+  int inlier_count = static_cast<int>(std::count(inliers.begin(), inliers.end(), true));
   std::cout << "inlier ratio: " << inlier_count << "/" << inliers.size() << std::endl;
 
   // verify matching criteria are met
