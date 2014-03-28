@@ -300,7 +300,7 @@ close_loops_homography_guided
 
     if( transform_valid )
     {
-      po = overlap( vnl_double_3x3( tmp.data() ), image->width(), image->height() );
+      po = overlap( vnl_double_3x3( tmp.data() ), width, height );
     }
 
     if( scan_state == reintersection )
