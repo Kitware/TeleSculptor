@@ -46,7 +46,7 @@ public:
   {
   }
 
-  // Construcotr
+  // Constructor
   checkpoint_entry_t( frame_id_t id, f2f_homography_sptr h )
   : fid( id ),
     src_to_ref( h )
