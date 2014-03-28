@@ -37,7 +37,7 @@ namespace
 // Does a given point occur inside a polygon?
 bool does_intersect( const std::vector< vgl_point_2d<double> >& poly, const vgl_point_2d<double>& pt )
 {
-  vgl_polygon<double> pol( &poly[0], poly.size() );
+  vgl_polygon<double> pol( &poly[0], static_cast<int>(poly.size()) );
   return pol.contains( pt );
 }
 
