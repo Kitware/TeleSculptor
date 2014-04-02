@@ -9,6 +9,9 @@ in the absence of POS file input, and implementation of hierarchical SBA to
 bootstrap large SBA problems by first running SBA over subsampled cameras
 then interpolating and running a larger SBA problem.
 
+The other key change in this release is that MAPTK has been re-licensed
+to a 3-clause BSD license.
+
 
 Updates since v0.3.1
 --------------------
