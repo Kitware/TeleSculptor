@@ -1,6 +1,63 @@
 ============================================
-                 MAP-TK
+                 MAP-Tk
 Motion-imagery Aerial Photogrammetry Toolkit
 ============================================
 
-This project contains the source code for MAP-TK.
+This project contains the source code for MAP-Tk.
+
+
+Overview of Directories
+====================
+
+* cmake  -- contains CMake helper scripts
+* doc  -- contains release notes and other documentation
+* maptk  -- contains the MAP-Tk code base
+* maptk/core
+* maptk/core/algo
+* maptk/ocv
+* maptk/proj
+* maptk/viscl
+* maptk/vxl
+* scripts
+* scripts/blender
+* tests
+* tools
+* tools/config
+
+
+Building MAP-Tk
+===============
+
+Dependencies
+------------
+
+* Required
+* Optional
+
+Running CMake
+-------------
+
+CMake Options
+-------------
+
+Building Doxygen Documentation
+------------------------------
+
+
+Running MAP-Tk Tools
+====================
+
+Summary of MAP-Tk Tools
+-----------------------
+
+* maptk_track_featues
+* maptk_bundle_adjust_tracks
+* maptk_pos2krtd
+
+Constructing Configuration Files
+--------------------------------
+
+Run tool with -o option.
+Edit the config file.
+Run tool again with -c config -o config
+Repeat until configuration is complete
