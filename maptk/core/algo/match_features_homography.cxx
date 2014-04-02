@@ -55,7 +55,7 @@ class match_features_homography::priv
 public:
   /// Constructor
   priv()
-  : inlier_scale(2.0),
+  : inlier_scale(10.0),
     min_required_inlier_count(0),
     min_required_inlier_percent(0.0)
   {
