@@ -83,6 +83,9 @@ Core Library
    smallest angle between the rotation origin and the rotation position being
    represented.
 
+ * Fixed a bug in the interpretation of yaw-pitch-roll in POS files. The pitch
+   angle was negated.
+
 VXL Library
 
  * Changed underlying VXL function used in similarity transformation
