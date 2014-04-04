@@ -99,15 +99,18 @@ rotation_<T>
 {
   using std::sin;
   using std::cos;
-  const double pi = boost::math::constants::pi<double>();
-  const double pi_over_2 = pi / 2.0;
+  // compute the rotation from North-East-Down (NED) coordinates to
+  // East-North-Up coordinates (ENU). It is a 180 degree rotation about
+  // the axis [1/sqrt(2), 1/sqrt(2), 0]
+  const double inv_root_two = 1.0/boost::math::constants::root_two<double>();
+  const rotation_<T> Rned2enu(vector_4_<T>(inv_root_two, inv_root_two, 0, 0));
   const double half_x = 0.5 * static_cast<double>(-roll);
-  const double half_y = 0.5 * static_cast<double>(pitch + pi);
-  const double half_z = 0.5 * static_cast<double>(yaw + pi_over_2);
+  const double half_y = 0.5 * static_cast<double>(-pitch);
+  const double half_z = 0.5 * static_cast<double>(-yaw);
   rotation_<T> Rx(vector_4_<T>(T(sin(half_x)), 0, 0, T(cos(half_x))));
   rotation_<T> Ry(vector_4_<T>(0, T(sin(half_y)), 0, T(cos(half_y))));
   rotation_<T> Rz(vector_4_<T>(0, 0, T(sin(half_z)), T(cos(half_z))));
-  *this = Rx * Ry * Rz;
+  *this = Rx * Ry * Rz * Rned2enu;
 }
 
 
@@ -260,7 +263,7 @@ rotation_<T>
   matrix_<3,3,T> rotM(*this);
   T cos_p = T(std::sqrt(double(rotM(1,2)*rotM(1,2)) + rotM(2,2)*rotM(2,2)));
   yaw   = T(std::atan2(double(rotM(0,0)),double(rotM(0,1))));
-  pitch = T(std::atan2(double(-rotM(0,2)),double(cos_p)));
+  pitch = T(std::atan2(double(rotM(0,2)),double(cos_p)));
   roll  = T(std::atan2(double(-rotM(1,2)),double(-rotM(2,2))));
 }
 
