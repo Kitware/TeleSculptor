@@ -102,7 +102,8 @@ rotation_<T>
   // compute the rotation from North-East-Down (NED) coordinates to
   // East-North-Up coordinates (ENU). It is a 180 degree rotation about
   // the axis [1/sqrt(2), 1/sqrt(2), 0]
-  const double inv_root_two = 1.0/boost::math::constants::root_two<double>();
+  const double root_two = boost::math::constants::root_two<double>();
+  const T inv_root_two = static_cast<T>(1.0/root_two);
   const rotation_<T> Rned2enu(vector_4_<T>(inv_root_two, inv_root_two, 0, 0));
   const double half_x = 0.5 * static_cast<double>(-roll);
   const double half_y = 0.5 * static_cast<double>(-pitch);
