@@ -59,6 +59,7 @@ set(maptk_core_headers_public
   algo/convert_image.h
   algo/detect_features.h
   algo/draw_tracks.h
+  algo/estimate_essential_matrix.h
   algo/estimate_homography.h
   algo/estimate_similarity_transform.h
   algo/extract_descriptors.h
@@ -119,6 +120,7 @@ set(maptk_core_sources
   algo/convert_image.cxx
   algo/detect_features.cxx
   algo/draw_tracks.cxx
+  algo/estimate_essential_matrix.cxx
   algo/estimate_homography.cxx
   algo/estimate_similarity_transform.cxx
   algo/extract_descriptors.cxx
