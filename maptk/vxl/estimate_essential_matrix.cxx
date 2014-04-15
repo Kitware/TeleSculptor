@@ -35,6 +35,7 @@
  */
 
 #include <maptk/vxl/estimate_essential_matrix.h>
+#include <maptk/vxl/camera.h>
 #include <maptk/core/feature.h>
 #include <vpgl/algo/vpgl_em_compute_5_point.h>
 #include <vgl/vgl_point_2d.h>
@@ -52,14 +53,12 @@ estimate_essential_matrix
 ::estimate(feature_set_sptr feat1,
            feature_set_sptr feat2,
            match_set_sptr matches,
-           const camera_intrinsics_d &ci) const
+           const camera_intrinsics_d &cal1,
+           const camera_intrinsics_d &cal2) const
 {
-  vpgl_calibration_matrix<double> cal;
-  cal.set_focal_length(ci.focal_length());
-  cal.set_principal_point(vgl_point_2d<double>(ci.principal_point()[0], ci.principal_point()[1]));
-  cal.set_x_scale(ci.aspect_ratio());
-  cal.set_y_scale(1.0);
-  cal.set_skew(ci.skew());
+  vpgl_calibration_matrix<double> vcal1, vcal2;
+  maptk_to_vpgl_calibration(cal1, vcal1);
+  maptk_to_vpgl_calibration(cal2, vcal2);
 
   vcl_vector<vgl_point_2d<double> > right_points, left_points;
   for (unsigned int i = 0; i < matches->size(); i++)
@@ -72,7 +71,7 @@ estimate_essential_matrix
 
   vpgl_em_compute_5_point_ransac<double> em;
   vpgl_essential_matrix<double> best_em;
-  em.compute(right_points, cal, left_points, cal, best_em);
+  em.compute(right_points, vcal1, left_points, vcal2, best_em);
 
   return matrix_3x3d(best_em.get_matrix().data_block());
 }

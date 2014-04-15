@@ -36,6 +36,30 @@
 #include <maptk/core/algo/estimate_essential_matrix.h>
 #include <maptk/core/algo/algorithm.txx>
 
+
 /// \cond DoxygenSuppress
 INSTANTIATE_ALGORITHM_DEF(maptk::algo::estimate_essential_matrix);
 /// \endcond
+
+
+namespace maptk
+{
+
+namespace algo
+{
+
+/// Estimate an essential matrix from corresponding features
+matrix_3x3d
+estimate_essential_matrix
+::estimate(feature_set_sptr feat1,
+           feature_set_sptr feat2,
+           match_set_sptr matches,
+           const camera_intrinsics_d &cal) const
+{
+  return this->estimate(feat1, feat2, matches, cal, cal);
+}
+
+
+} // end namespace algo
+
+} // end namespace maptk

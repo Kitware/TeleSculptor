@@ -63,18 +63,19 @@ public:
 
   /// Estimate an essential matrix from corresponding features
   /**
-   * Assumes both images are using the same calibration matrix (i.e. focal length)
    * \param [in]  feat1 the set of all features from the first image
    * \param [in]  feat2 the set of all features from the second image
    * \param [in]  matches the set of correspondences between \a feat1 and \a feat2
-   * \param [in]  focal length of camera
+   * \param [in]  cal1 the intrinsic parameters of the first camera
+   * \param [in]  cal2 the intrinsic parameters of the second camera
    */
+  virtual
   matrix_3x3d
   estimate(feature_set_sptr feat1,
            feature_set_sptr feat2,
            match_set_sptr matches,
-           const camera_intrinsics_d &cal) const;
-
+           const camera_intrinsics_d &cal1,
+           const camera_intrinsics_d &cal2) const;
 };
 
 
