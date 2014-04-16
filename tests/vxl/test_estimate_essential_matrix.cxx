@@ -133,8 +133,9 @@ IMPLEMENT_TEST(ideal_points)
   using namespace maptk;
   vxl::estimate_essential_matrix est_e;
 
-  // create landmarks at the corners of a cube
-  landmark_map_sptr landmarks = testing::cube_corners(2.0);
+  // create landmarks at the random locations
+  landmark_map_sptr landmarks = testing::init_landmarks(100);
+  landmarks = testing::noisy_landmarks(landmarks, 1.0);
 
   // create a camera sequence (elliptical path)
   camera_map_sptr cameras = testing::camera_seq();
