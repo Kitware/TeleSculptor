@@ -37,6 +37,7 @@
 
 #include <maptk/vxl/bundle_adjust.h>
 #include <maptk/vxl/close_loops_homography_guided.h>
+#include <maptk/vxl/estimate_essential_matrix.h>
 #include <maptk/vxl/estimate_homography.h>
 #include <maptk/vxl/estimate_similarity_transform.h>
 #include <maptk/vxl/image_io.h>
@@ -54,6 +55,7 @@ void register_algorithms()
 {
   vxl::bundle_adjust::register_self();
   vxl::close_loops_homography_guided::register_self();
+  vxl::estimate_essential_matrix::register_self();
   vxl::estimate_homography::register_self();
   vxl::estimate_similarity_transform::register_self();
   vxl::image_io::register_self();
