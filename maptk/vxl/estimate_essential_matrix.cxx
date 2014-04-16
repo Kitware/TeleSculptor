@@ -92,8 +92,8 @@ estimate_essential_matrix
     vector_3d v2(p2.x(), p2.y(), 1.0);
     vector_3d l1 = F * v1;
     vector_3d l2 = Ft * v2;
-    double s1 = 1.0 / sqrt(l1.x()*l1.x() + l1.y()+l1.y());
-    double s2 = 1.0 / sqrt(l2.x()*l2.x() + l2.y()+l2.y());
+    double s1 = 1.0 / sqrt(l1.x()*l1.x() + l1.y()*l1.y());
+    double s2 = 1.0 / sqrt(l2.x()*l2.x() + l2.y()*l2.y());
     // sum of point to epipolar line distance in both images
     double d = inner_product(v1, l2) * (s1 + s2);
     inliers[i] = d < inlier_scale;
