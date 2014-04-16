@@ -34,6 +34,7 @@
  * \brief vxl estimate essential matrix implementation
  */
 
+#include <boost/foreach.hpp>
 #include <maptk/vxl/estimate_essential_matrix.h>
 #include <maptk/vxl/camera.h>
 #include <maptk/core/feature.h>
@@ -50,23 +51,25 @@ namespace vxl
 /// Estimate an essential matrix from corresponding points
 matrix_3x3d
 estimate_essential_matrix
-::estimate(feature_set_sptr feat1,
-           feature_set_sptr feat2,
-           match_set_sptr matches,
+::estimate(const std::vector<vector_2d>& pts1,
+           const std::vector<vector_2d>& pts2,
            const camera_intrinsics_d &cal1,
-           const camera_intrinsics_d &cal2) const
+           const camera_intrinsics_d &cal2,
+           std::vector<bool>& inliers,
+           double inlier_scale) const
 {
   vpgl_calibration_matrix<double> vcal1, vcal2;
   maptk_to_vpgl_calibration(cal1, vcal1);
   maptk_to_vpgl_calibration(cal2, vcal2);
 
   vcl_vector<vgl_point_2d<double> > right_points, left_points;
-  for (unsigned int i = 0; i < matches->size(); i++)
+  BOOST_FOREACH(const vector_2d& v, pts1)
   {
-    const feature_sptr f1 = feat1->features()[matches->matches()[i].first];
-    const feature_sptr f2 = feat2->features()[matches->matches()[i].second];
-    right_points.push_back(vgl_point_2d<double>(f1->loc().x(), f1->loc().y()));
-    left_points.push_back(vgl_point_2d<double>(f2->loc().x(), f2->loc().y()));
+    right_points.push_back(vgl_point_2d<double>(v.x(), v.y()));
+  }
+  BOOST_FOREACH(const vector_2d& v, pts2)
+  {
+    left_points.push_back(vgl_point_2d<double>(v.x(), v.y()));
   }
 
   vpgl_em_compute_5_point_ransac<double> em;

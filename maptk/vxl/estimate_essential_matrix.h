@@ -61,21 +61,24 @@ public:
   virtual bool check_configuration(config_block_sptr /*config*/) const { return true; }
   /// \endcond
 
-  /// Estimate an essential matrix from corresponding features
+  /// Estimate an essential matrix from corresponding points
   /**
-   * \param [in]  feat1 the set of all features from the first image
-   * \param [in]  feat2 the set of all features from the second image
-   * \param [in]  matches the set of correspondences between \a feat1 and \a feat2
+   * \param [in]  pts1 the vector or corresponding points from the first image
+   * \param [in]  pts2 the vector of corresponding points from the second image
    * \param [in]  cal1 the intrinsic parameters of the first camera
    * \param [in]  cal2 the intrinsic parameters of the second camera
+   * \param [out] inliers for each point pa:wir, the value is true if
+   *                      this pair is an inlier to the estimate
+   * \param [in]  inlier_scale error distance tolerated for matches to be inliers
    */
   virtual
   matrix_3x3d
-  estimate(feature_set_sptr feat1,
-           feature_set_sptr feat2,
-           match_set_sptr matches,
+  estimate(const std::vector<vector_2d>& pts1,
+           const std::vector<vector_2d>& pts2,
            const camera_intrinsics_d &cal1,
-           const camera_intrinsics_d &cal2) const;
+           const camera_intrinsics_d &cal2,
+           std::vector<bool>& inliers,
+           double inlier_scale = 1.0) const;
 };
 
 
