@@ -598,6 +598,28 @@ matrix_<3,3,T> inverse(const matrix_<3,3,T>& m)
   return matrix_<3,3,T>(d);
 }
 
+/// Compute the cross_product 3x3 matrix from a 3D vector
+/**
+ * Produces a matrix such that
+ * \code
+ *   cross_product(v1) * v2 == cross_product(v1, v2)
+ * \endcode
+ */
+template <typename T>
+matrix_<3,3,T> cross_product(const vector_<3,T>& v)
+{
+  matrix_<3,3,T> x;
+  x(0,0) = x(1,1) = x(2,2) = T(0);
+  x(0,1) = -v[2];
+  x(1,0) =  v[2];
+  x(2,0) = -v[1];
+  x(0,2) =  v[1];
+  x(1,2) = -v[0];
+  x(2,1) =  v[0];
+  return x;
+}
+
+
 /// output stream operator for a matrix
 /**
  * \param s an output stream
