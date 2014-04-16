@@ -186,3 +186,69 @@ IMPLEMENT_TEST(ideal_points)
   std::cout << "num inliers "<<num_inliers<<std::endl;
   TEST_EQUAL("All points are inliers", num_inliers, pts1.size());
 }
+
+
+// test essential matrix estimation with noisy points
+IMPLEMENT_TEST(noisy_points)
+{
+  using namespace maptk;
+  vxl::estimate_essential_matrix est_e;
+
+  // create landmarks at the random locations
+  landmark_map_sptr landmarks = testing::init_landmarks(100);
+  landmarks = testing::noisy_landmarks(landmarks, 1.0);
+
+  // create a camera sequence (elliptical path)
+  camera_map_sptr cameras = testing::camera_seq();
+
+  // create tracks from the projections
+  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+
+  // add random noise to track image locations
+  tracks = testing::noisy_tracks(tracks, 0.5);
+
+  const frame_id_t frame1 = 0;
+  const frame_id_t frame2 = 10;
+
+  camera_map::map_camera_t cams = cameras->cameras();
+  camera_sptr cam1 = cams[frame1];
+  camera_sptr cam2 = cams[frame2];
+  camera_intrinsics_d cal1 = cam1->intrinsics();
+  camera_intrinsics_d cal2 = cam2->intrinsics();
+
+  // compute the true essential matrix from the cameras
+  matrix_3x3d true_E = essential_matrix_from_cameras(*cam1, *cam2);
+
+  // extract coresponding image points
+  std::vector<track_sptr> trks = tracks->tracks();
+  std::vector<vector_2d> pts1, pts2;
+  for(unsigned int i=0; i<trks.size(); ++i)
+  {
+    pts1.push_back(trks[i]->find(frame1)->feat->loc());
+    pts2.push_back(trks[i]->find(frame2)->feat->loc());
+  }
+
+  // print the epipolar distances using this essential matrix
+  matrix_3x3d F = essential_matrix_to_fundamental(true_E, cal1, cal2);
+  print_epipolar_distances(F, pts1, pts2);
+
+  // compute the essential matrix from the corresponding points
+  std::vector<bool> inliers;
+  matrix_3x3d E = est_e.estimate(pts1, pts2, cal1, cal2, inliers, 1.5);
+  E /= E.frobenius_norm();
+  if (E(0,0) < 0)
+  {
+    E *= -1;
+  }
+
+  // compare true and computed essential matrices
+  std::cout << "true E = "<<true_E<<std::endl;
+  std::cout << "Estimated E = "<< E <<std::endl;
+  TEST_NEAR("Essential Matrix Estimate", E, true_E, 0.01);
+
+  unsigned num_inliers = static_cast<unsigned>(std::count(inliers.begin(),
+                                                          inliers.end(), true));
+  std::cout << "num inliers "<<num_inliers<<std::endl;
+  bool enough_inliers = num_inliers > pts1.size() / 3;
+  TEST_EQUAL("Enough inliers", enough_inliers, true);
+}
