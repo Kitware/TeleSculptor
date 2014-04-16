@@ -72,11 +72,34 @@ estimate_essential_matrix
     left_points.push_back(vgl_point_2d<double>(v.x(), v.y()));
   }
 
-  vpgl_em_compute_5_point_ransac<double> em;
+  double sq_scale = inlier_scale * inlier_scale;
+  vpgl_em_compute_5_point_ransac<double> em(512, sq_scale, false);
   vpgl_essential_matrix<double> best_em;
   em.compute(right_points, vcal1, left_points, vcal2, best_em);
 
-  return matrix_3x3d(best_em.get_matrix().data_block());
+  matrix_3x3d E(best_em.get_matrix().data_block());
+  matrix_3x3d K1_invt = inverse(matrix_3x3d(cal1).transpose());
+  matrix_3x3d K2_inv = inverse(matrix_3x3d(cal2));
+  matrix_3x3d F = K1_invt * E * K2_inv;
+  matrix_3x3d Ft = F.transpose();
+
+  inliers.resize(pts1.size());
+  for(unsigned i=0; i<pts1.size(); ++i)
+  {
+    const vector_2d& p1 = pts1[i];
+    const vector_2d& p2 = pts2[i];
+    vector_3d v1(p1.x(), p1.y(), 1.0);
+    vector_3d v2(p2.x(), p2.y(), 1.0);
+    vector_3d l1 = Ft * v1;
+    vector_3d l2 = F * v2;
+    double s1 = 1.0 / sqrt(l1.x()*l1.x() + l1.y()+l1.y());
+    double s2 = 1.0 / sqrt(l2.x()*l2.x() + l2.y()+l2.y());
+    // sum of point to epipolar line distance in both images
+    double d = inner_product(v1, l2) * (s1 + s2);
+    inliers[i] = d < inlier_scale;
+  }
+
+  return E;
 }
 
 
