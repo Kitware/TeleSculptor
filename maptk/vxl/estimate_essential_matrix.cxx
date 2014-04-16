@@ -96,7 +96,7 @@ estimate_essential_matrix
     double s2 = 1.0 / sqrt(l2.x()*l2.x() + l2.y()*l2.y());
     // sum of point to epipolar line distance in both images
     double d = inner_product(v1, l2) * (s1 + s2);
-    inliers[i] = d < inlier_scale;
+    inliers[i] = std::fabs(d) < inlier_scale;
   }
 
   return E;
