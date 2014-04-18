@@ -40,6 +40,7 @@
 
 #include <maptk/core/algo/estimate_essential_matrix.h>
 #include <maptk/core/camera_intrinsics.h>
+#include <boost/scoped_ptr.hpp>
 
 namespace maptk
 {
@@ -52,14 +53,24 @@ class MAPTK_VXL_EXPORT estimate_essential_matrix
   : public algo::algorithm_impl<estimate_essential_matrix, algo::estimate_essential_matrix>
 {
 public:
+  /// Constructor
+  estimate_essential_matrix();
+
+  /// Destructor
+  virtual ~estimate_essential_matrix();
+
+  /// Copy Constructor
+  estimate_essential_matrix(const estimate_essential_matrix& other);
+
   /// Return the name of this implementation
   std::string impl_name() const { return "vxl"; }
 
-  // No configuration yet for this class.
-  /// \cond DoxygenSuppress
-  virtual void set_configuration(config_block_sptr /*config*/) {}
-  virtual bool check_configuration(config_block_sptr /*config*/) const { return true; }
-  /// \endcond
+  /// Get this algorithm's \link maptk::config_block configuration block \endlink
+  virtual config_block_sptr get_configuration() const;
+  /// Set this algorithm's properties via a config block
+  virtual void set_configuration(config_block_sptr config);
+  /// Check that the algorithm's currently configuration is valid
+  virtual bool check_configuration(config_block_sptr config) const;
 
   /// Estimate an essential matrix from corresponding points
   /**
@@ -79,6 +90,11 @@ public:
            const camera_intrinsics_d &cal2,
            std::vector<bool>& inliers,
            double inlier_scale = 1.0) const;
+
+private:
+  /// private implementation class
+  class priv;
+  boost::scoped_ptr<priv> d_;
 };
 
 
