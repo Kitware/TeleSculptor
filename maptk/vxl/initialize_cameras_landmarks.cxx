@@ -247,10 +247,13 @@ initialize_cameras_landmarks
              landmark_map_sptr& landmarks,
              track_set_sptr tracks) const
 {
-  if( !cameras || !landmarks || !tracks || !d_->e_estimator )
+  if( !cameras || !landmarks || !tracks )
   {
-    // TODO throw an exception for missing input data
-    return;
+    throw invalid_value("Some required input data is NULL.");
+  }
+  if( !d_->e_estimator )
+  {
+    throw invalid_value("Essential matrix estimator not initialized.");
   }
   typedef maptk::camera_map::map_camera_t map_cam_t;
   typedef maptk::landmark_map::map_landmark_t map_landmark_t;
