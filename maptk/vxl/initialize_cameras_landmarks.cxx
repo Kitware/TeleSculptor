@@ -102,7 +102,8 @@ initialize_cameras_landmarks::priv
   {
     throw invalid_value("Camera for last frame not provided.");
   }
-  camera_intrinsics_d cal_right = ci->second->intrinsics();
+  camera_sptr prev_cam = ci->second;
+  camera_intrinsics_d cal_right = prev_cam->intrinsics();
   const camera_intrinsics_d& cal_left = base_camera.get_intrinsics();
   std::vector<bool> inliers;
   matrix_3x3d E = e_estimator->estimate(pts_right, pts_left,
@@ -128,6 +129,12 @@ initialize_cameras_landmarks::priv
   camera_d cam;
   vpgl_camera_to_maptk(vcam, cam);
   cam.set_intrinsics(base_camera.get_intrinsics());
+
+  // adjust pose relative to the previous camera
+  vector_3d new_t = cam.get_rotation() * prev_cam->translation()
+                  + cam.translation();
+  cam.set_rotation(cam.get_rotation() * prev_cam->rotation());
+  cam.set_translation(new_t);
 
   return camera_sptr(new camera_d(cam));
 }
