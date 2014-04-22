@@ -38,6 +38,7 @@
 #include <maptk/core/transform.h>
 #include <maptk/vxl/register.h>
 #include <maptk/vxl/estimate_essential_matrix.h>
+#include <maptk/vxl/estimate_similarity_transform.h>
 #include <maptk/vxl/initialize_cameras_landmarks.h>
 
 #include <boost/foreach.hpp>
@@ -84,6 +85,7 @@ void configure_algo(maptk::vxl::initialize_cameras_landmarks& algo,
   cfg->set_value("base_camera:skew", K.skew());
   cfg->set_value("essential_mat_estimator:type", "vxl");
   cfg->set_value("essential_mat_estimator:vxl:num_ransac_samples", 10);
+  cfg->set_value("lm_triangulator:type", "vxl");
   algo.set_configuration(cfg);
 
   if(!algo.check_configuration(cfg))
@@ -120,24 +122,66 @@ IMPLEMENT_TEST(ideal_points)
   camera_map::map_camera_t orig_cams = cameras->cameras();
   camera_map::map_camera_t new_cams = new_cameras->cameras();
 
-  vector_3d t0 = orig_cams[0]->translation();
-  vector_3d c0 = orig_cams[0]->center();
-  vector_3d c1 = orig_cams[1]->center();
-  rotation_d R0 = orig_cams[0]->rotation();
-  similarity_d global_sim((c1-c0).magnitude(), R0.inverse(), R0.inverse()*-t0);
+  typedef algo::estimate_similarity_transform_sptr est_sim_sptr;
+  est_sim_sptr est_sim(new vxl::estimate_similarity_transform());
+  similarity_d global_sim = est_sim->estimate_transform(new_cameras, cameras);
   std::cout << "similarity = "<<global_sim<<std::endl;
 
 
   BOOST_FOREACH(camera_map::map_camera_t::value_type p, orig_cams)
   {
     camera_sptr new_cam_t = transform(new_cams[p.first], global_sim);
-    rotation_d est_R = new_cam_t->rotation();
-    TEST_NEAR("rotation angle", p.second->rotation().quaternion(),
-              est_R.quaternion(), 1e-8);
+    rotation_d dR = new_cam_t->rotation().inverse() * p.second->rotation();
+    TEST_NEAR("rotation difference magnitude", dR.angle(), 0.0, 1e-8);
+
+    double dt = (p.second->center() - new_cam_t->center()).magnitude();
+    TEST_NEAR("camera center difference", dt, 0.0, 1e-8);
+  }
+}
 
 
-    std::cout << "orig: "<<p.second->center() << std::endl;
-    std::cout << "soln: "<<new_cam_t->center() <<std::endl;
-    std::cout << std::endl;
+// test initialization with noisy points
+IMPLEMENT_TEST(noisy_points)
+{
+  using namespace maptk;
+  vxl::initialize_cameras_landmarks init;
+
+  // create landmarks at the random locations
+  landmark_map_sptr landmarks = testing::init_landmarks(100);
+  landmarks = testing::noisy_landmarks(landmarks, 1.0);
+
+  // create a camera sequence (elliptical path)
+  camera_map_sptr cameras = testing::camera_seq();
+
+  // create tracks from the projections
+  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+
+  // add random noise to track image locations
+  tracks = testing::noisy_tracks(tracks, 0.5);
+
+  camera_intrinsics_d K = cameras->cameras()[0]->intrinsics();
+  configure_algo(init, K);
+
+  camera_map_sptr new_cameras(new simple_camera_map());
+  landmark_map_sptr new_landmarks(new simple_landmark_map());
+  init.initialize(new_cameras, new_landmarks, tracks);
+
+  camera_map::map_camera_t orig_cams = cameras->cameras();
+  camera_map::map_camera_t new_cams = new_cameras->cameras();
+
+  typedef algo::estimate_similarity_transform_sptr est_sim_sptr;
+  est_sim_sptr est_sim(new vxl::estimate_similarity_transform());
+  similarity_d global_sim = est_sim->estimate_transform(new_cameras, cameras);
+  std::cout << "similarity = "<<global_sim<<std::endl;
+
+
+  BOOST_FOREACH(camera_map::map_camera_t::value_type p, orig_cams)
+  {
+    camera_sptr new_cam_t = transform(new_cams[p.first], global_sim);
+    rotation_d dR = new_cam_t->rotation().inverse() * p.second->rotation();
+    TEST_NEAR("rotation difference magnitude", dR.angle(), 0.0, 0.1);
+
+    double dt = (p.second->center() - new_cam_t->center()).magnitude();
+    TEST_NEAR("camera center difference", dt, 0.0, 0.1);
   }
 }

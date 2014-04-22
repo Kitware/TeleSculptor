@@ -34,6 +34,7 @@
  */
 
 #include <maptk/core/algo/estimate_essential_matrix.h>
+#include <maptk/core/algo/triangulate_landmarks.h>
 #include <maptk/core/exceptions.h>
 #include <maptk/vxl/initialize_cameras_landmarks.h>
 #include <maptk/vxl/camera_map.h>
@@ -74,9 +75,20 @@ public:
                           const std::vector<track_sptr>& trks,
                           const landmark_map::map_landmark_t& lms) const;
 
+  /// Triangulate all provided tracks with at least two cameras
+  void triangulate(landmark_map::map_landmark_t& lms,
+                   const camera_map::map_camera_t& cams,
+                   const std::vector<track_sptr>& trks) const;
+
+  /// Estimate the translation scale using a 2d-3d correspondence
+  double estimate_t_scale(const vector_3d& KRp,
+                          const vector_3d& Kt,
+                          const vector_2d& pt2d) const;
+
   bool verbose;
   camera_d base_camera;
   algo::estimate_essential_matrix_sptr e_estimator;
+  algo::triangulate_landmarks_sptr lm_triangulator;
 };
 
 
@@ -88,12 +100,23 @@ initialize_cameras_landmarks::priv
               const std::vector<track_sptr>& trks,
               const landmark_map::map_landmark_t& lms) const
 {
-  // extract coresponding image points
+  typedef landmark_map::map_landmark_t lm_map_t;
+  // extract coresponding image points and landmarks
   std::vector<vector_2d> pts_right, pts_left;
+  std::vector<landmark_sptr> pts_lm;
   for(unsigned int i=0; i<trks.size(); ++i)
   {
     pts_right.push_back(trks[i]->find(last_frame)->feat->loc());
     pts_left.push_back(trks[i]->find(frame)->feat->loc());
+    lm_map_t::const_iterator li = lms.find(trks[i]->id());
+    if( li != lms.end() )
+    {
+      pts_lm.push_back(li->second);
+    }
+    else
+    {
+      pts_lm.push_back(landmark_sptr());
+    }
   }
 
   // compute the essential matrix from the corresponding points
@@ -112,7 +135,10 @@ initialize_cameras_landmarks::priv
 
   unsigned num_inliers = static_cast<unsigned>(std::count(inliers.begin(),
                                                           inliers.end(), true));
-  std::cout << "E matrix num inliers = "<<num_inliers<<std::endl;
+  if( this->verbose )
+  {
+    std::cout << "E matrix num inliers = "<<num_inliers<<std::endl;
+  }
 
   // get the first inlier index
   unsigned int inlier_idx = 0;
@@ -128,15 +154,107 @@ initialize_cameras_landmarks::priv
   extract_left_camera(vE, vleft_pt, vright_pt, vcam);
   camera_d cam;
   vpgl_camera_to_maptk(vcam, cam);
-  cam.set_intrinsics(base_camera.get_intrinsics());
+  cam.set_intrinsics(cal_left);
+
+  // compute the scale from existing landmark locations (if available)
+  matrix_3x3d prev_R(prev_cam->rotation());
+  vector_3d prev_t = prev_cam->translation();
+  matrix_3x3d K(cam.get_intrinsics());
+  matrix_3x3d KR = K * matrix_3x3d(cam.get_rotation());
+  vector_3d Kt = K * cam.get_translation();
+  std::vector<double> scales;
+  scales.reserve(num_inliers);
+  for(unsigned int i=0; i<inliers.size(); ++i)
+  {
+    if( !inliers[i] || !pts_lm[i] )
+    {
+      continue;
+    }
+    vector_3d pt3d = prev_R * pts_lm[i]->loc() + prev_t;
+    const vector_2d& pt2d = pts_left[i];
+    scales.push_back(estimate_t_scale(KR*pt3d, Kt, pt2d));
+  }
+  // find the median scale
+  double median_scale = 1.0;
+  if( !scales.empty() )
+  {
+    size_t n = scales.size() / 2;
+    std::nth_element(scales.begin(), scales.begin()+n, scales.end());
+    median_scale = scales[n];
+  }
+  if( this->verbose )
+  {
+    std::cout << " median scale = "<< median_scale<<std::endl;
+    if( !scales.empty() )
+    {
+      std::sort(scales.begin(), scales.end());
+      std::cout << "    min scale = " << scales.front() << '\n'
+                << "    max scale = " << scales.back() << std::endl;
+    }
+  }
 
   // adjust pose relative to the previous camera
   vector_3d new_t = cam.get_rotation() * prev_cam->translation()
-                  + cam.translation();
+                  + median_scale * cam.translation();
   cam.set_rotation(cam.get_rotation() * prev_cam->rotation());
   cam.set_translation(new_t);
 
   return camera_sptr(new camera_d(cam));
+}
+
+
+/// Triangulate all provided tracks with at least two cameras
+void
+initialize_cameras_landmarks::priv
+::triangulate(landmark_map::map_landmark_t& lms,
+              const camera_map::map_camera_t& cams,
+              const std::vector<track_sptr>& trks) const
+{
+  typedef landmark_map::map_landmark_t lm_map_t;
+  lm_map_t init_lms;
+  BOOST_FOREACH(const track_sptr& t, trks)
+  {
+    const track_id_t& tid = t->id();
+    lm_map_t::const_iterator li = lms.find(tid);
+    if( li == lms.end() )
+    {
+      landmark_sptr lm(new landmark_d(vector_3d(0,0,0)));
+      init_lms[static_cast<landmark_id_t>(tid)] = lm;
+    }
+    else
+    {
+      init_lms.insert(*li);
+    }
+  }
+
+  landmark_map_sptr lm_map(new simple_landmark_map(init_lms));
+  camera_map_sptr cam_map(new simple_camera_map(cams));
+  track_set_sptr tracks(new simple_track_set(trks));
+  this->lm_triangulator->triangulate(cam_map, tracks, lm_map);
+
+  BOOST_FOREACH(const lm_map_t::value_type& p, lm_map->landmarks())
+  {
+    lms[p.first] = p.second;
+  }
+}
+
+
+/// Estimate the translation scale using a 2d-3d correspondence
+double
+initialize_cameras_landmarks::priv
+::estimate_t_scale(const vector_3d& KRp,
+                   const vector_3d& Kt,
+                   const vector_2d& pt2d) const
+{
+  vector_3d a = KRp;
+  vector_3d b = Kt;
+  a.x() = pt2d.x() * a.z() - a.x();
+  b.x() = pt2d.x() * b.z() - b.x();
+  a.y() = pt2d.y() * a.z() - a.y();
+  b.y() = pt2d.y() * b.z() - b.y();
+  double cx = a.x()*b.z() - a.z()*b.x();
+  double cy = a.y()*b.z() - a.z()*b.y();
+  return (a.x()*cx + a.y()*cy) / -(b.x()*cx + b.y()*cy);
 }
 
 
@@ -197,6 +315,9 @@ initialize_cameras_landmarks
   algo::estimate_essential_matrix
       ::get_nested_algo_configuration("essential_mat_estimator",
                                       config, d_->e_estimator);
+  algo::triangulate_landmarks
+      ::get_nested_algo_configuration("lm_triangulator",
+                                      config, d_->lm_triangulator);
   return config;
 }
 
@@ -212,6 +333,9 @@ initialize_cameras_landmarks
   algo::estimate_essential_matrix
       ::set_nested_algo_configuration("essential_mat_estimator",
                                       config, d_->e_estimator);
+  algo::triangulate_landmarks
+      ::set_nested_algo_configuration("lm_triangulator",
+                                      config, d_->lm_triangulator);
 
   d_->verbose = config->get_value<bool>("verbose",
                                         d_->verbose);
@@ -236,7 +360,9 @@ initialize_cameras_landmarks
 {
   return algo::estimate_essential_matrix
              ::check_nested_algo_configuration("essential_mat_estimator",
-                                               config);
+                                               config)
+      && algo::triangulate_landmarks
+             ::check_nested_algo_configuration("lm_triangulator", config);
 }
 
 
@@ -254,6 +380,10 @@ initialize_cameras_landmarks
   if( !d_->e_estimator )
   {
     throw invalid_value("Essential matrix estimator not initialized.");
+  }
+  if( !d_->lm_triangulator )
+  {
+    throw invalid_value("Landmark triangulator not initialized.");
   }
   typedef maptk::camera_map::map_camera_t map_cam_t;
   typedef maptk::landmark_map::map_landmark_t map_landmark_t;
@@ -320,6 +450,14 @@ initialize_cameras_landmarks
     }
 
     cams[f] = d_->init_camera(f, last_frame, cams, trks, flms);
+
+    // triangulate (or re-triangulate) points seen by the new camera
+    d_->triangulate(lms, cams, trks);
+
+    if(d_->verbose)
+    {
+      std::cout << "frame "<<f<<" - num landmarks = "<< lms.size() << std::endl;
+    }
 
     last_frame = f;
   }
