@@ -205,3 +205,121 @@ IMPLEMENT_TEST(noisy_points)
     TEST_NEAR("landmark location difference", dt, 0.0, 0.1);
   }
 }
+
+
+// test initialization with subsets of cameras and landmarks
+IMPLEMENT_TEST(subset_init)
+{
+  using namespace maptk;
+  vxl::initialize_cameras_landmarks init;
+
+  // create landmarks at the random locations
+  landmark_map_sptr landmarks = testing::init_landmarks(100);
+  landmarks = testing::noisy_landmarks(landmarks, 1.0);
+
+  // create a camera sequence (elliptical path)
+  camera_map_sptr cameras = testing::camera_seq();
+
+  // create tracks from the projections
+  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+
+  camera_intrinsics_d K = cameras->cameras()[0]->intrinsics();
+  configure_algo(init, K);
+
+  // mark every 3rd camera for initialization
+  camera_map::map_camera_t cams_to_init;
+  for(int i=0; i<cameras->size(); ++i)
+  {
+    if( i%3 == 0 )
+    {
+      cams_to_init[i] = camera_sptr();
+    }
+  }
+  camera_map_sptr new_cameras(new simple_camera_map(cams_to_init));
+
+  // mark every 5rd landmark for initialization
+  landmark_map::map_landmark_t lms_to_init;
+  for(int i=0; i<landmarks->size(); ++i)
+  {
+    if( i%5 == 0 )
+    {
+      lms_to_init[i] = landmark_sptr();
+    }
+  }
+  landmark_map_sptr new_landmarks(new simple_landmark_map(lms_to_init));
+
+  init.initialize(new_cameras, new_landmarks, tracks);
+
+  // test that we only initialized the requested objects
+  BOOST_FOREACH(camera_map::map_camera_t::value_type p, new_cameras->cameras())
+  {
+    TEST_EQUAL("Camera initialized", bool(p.second), true);
+    TEST_EQUAL("Expected camera id", p.first % 3, 0);
+  }
+  BOOST_FOREACH(landmark_map::map_landmark_t::value_type p, new_landmarks->landmarks())
+  {
+    TEST_EQUAL("Landmark initialized", bool(p.second), true);
+    TEST_EQUAL("Expected landmark id", p.first % 5, 0);
+  }
+
+  // calling this again should do nothing
+  camera_map_sptr before_cameras = new_cameras;
+  landmark_map_sptr before_landmarks = new_landmarks;
+  init.initialize(new_cameras, new_landmarks, tracks);
+  TEST_EQUAL("Initialization No-Op on cameras", before_cameras, new_cameras);
+  TEST_EQUAL("Initialization No-Op on landmarks", before_landmarks, new_landmarks);
+
+  // add the rest of the cameras
+  cams_to_init = new_cameras->cameras();
+  for(int i=0; i<cameras->size(); ++i)
+  {
+    if( cams_to_init.find(i) == cams_to_init.end() )
+    {
+      cams_to_init[i] = camera_sptr();
+    }
+  }
+  new_cameras = camera_map_sptr(new simple_camera_map(cams_to_init));
+
+  // add the rest of the landmarks
+  lms_to_init = new_landmarks->landmarks();
+  for(int i=0; i<landmarks->size(); ++i)
+  {
+    if( lms_to_init.find(i) == lms_to_init.end() )
+    {
+      lms_to_init[i] = landmark_sptr();
+    }
+  }
+  new_landmarks = landmark_map_sptr(new simple_landmark_map(lms_to_init));
+
+  // initialize the rest
+  init.initialize(new_cameras, new_landmarks, tracks);
+
+  camera_map::map_camera_t orig_cams = cameras->cameras();
+  camera_map::map_camera_t new_cams = new_cameras->cameras();
+
+  typedef algo::estimate_similarity_transform_sptr est_sim_sptr;
+  est_sim_sptr est_sim(new vxl::estimate_similarity_transform());
+  similarity_d global_sim = est_sim->estimate_transform(new_cameras, cameras);
+  std::cout << "similarity = "<<global_sim<<std::endl;
+
+
+  BOOST_FOREACH(camera_map::map_camera_t::value_type p, orig_cams)
+  {
+    camera_sptr new_cam_t = transform(new_cams[p.first], global_sim);
+    rotation_d dR = new_cam_t->rotation().inverse() * p.second->rotation();
+    TEST_NEAR("rotation difference magnitude", dR.angle(), 0.0, 1e-8);
+
+    double dt = (p.second->center() - new_cam_t->center()).magnitude();
+    TEST_NEAR("camera center difference", dt, 0.0, 1e-8);
+  }
+
+  landmark_map::map_landmark_t orig_lms = landmarks->landmarks();
+  landmark_map::map_landmark_t new_lms = new_landmarks->landmarks();
+  BOOST_FOREACH(landmark_map::map_landmark_t::value_type p, orig_lms)
+  {
+    landmark_sptr new_lm_tr = transform(new_lms[p.first], global_sim);
+
+    double dt = (p.second->loc() - new_lm_tr->loc()).magnitude();
+    TEST_NEAR("landmark location difference", dt, 0.0, 1e-8);
+  }
+}
