@@ -137,6 +137,16 @@ IMPLEMENT_TEST(ideal_points)
     double dt = (p.second->center() - new_cam_t->center()).magnitude();
     TEST_NEAR("camera center difference", dt, 0.0, 1e-8);
   }
+
+  landmark_map::map_landmark_t orig_lms = landmarks->landmarks();
+  landmark_map::map_landmark_t new_lms = new_landmarks->landmarks();
+  BOOST_FOREACH(landmark_map::map_landmark_t::value_type p, orig_lms)
+  {
+    landmark_sptr new_lm_tr = transform(new_lms[p.first], global_sim);
+
+    double dt = (p.second->loc() - new_lm_tr->loc()).magnitude();
+    TEST_NEAR("landmark location difference", dt, 0.0, 1e-8);
+  }
 }
 
 
@@ -183,5 +193,15 @@ IMPLEMENT_TEST(noisy_points)
 
     double dt = (p.second->center() - new_cam_t->center()).magnitude();
     TEST_NEAR("camera center difference", dt, 0.0, 0.1);
+  }
+
+  landmark_map::map_landmark_t orig_lms = landmarks->landmarks();
+  landmark_map::map_landmark_t new_lms = new_landmarks->landmarks();
+  BOOST_FOREACH(landmark_map::map_landmark_t::value_type p, orig_lms)
+  {
+    landmark_sptr new_lm_tr = transform(new_lms[p.first], global_sim);
+
+    double dt = (p.second->loc() - new_lm_tr->loc()).magnitude();
+    TEST_NEAR("landmark location difference", dt, 0.0, 0.1);
   }
 }
