@@ -538,15 +538,36 @@ initialize_cameras_landmarks
     cams[f] = camera_sptr(new camera_d(d_->base_camera));
   }
 
-  frame_id_t last_frame = cams.rbegin()->first;
+  frame_id_t other_frame = cams.rbegin()->first;
   while( !new_frame_ids.empty() )
   {
     frame_id_t f = new_frame_ids.front();
     new_frame_ids.pop_front();
+
+    // get the closest frame number with an exisiting camera
+    map_cam_t::const_iterator ci = cams.lower_bound(f);
+    if( ci == cams.end() )
+    {
+      other_frame = cams.rbegin()->first;
+    }
+    else
+    {
+      other_frame = ci->first;
+      if (ci != cams.begin() &&
+          (other_frame-f) >= (f-(--ci)->first))
+      {
+        other_frame = ci->first;
+      }
+    }
+    if(d_->verbose)
+    {
+      std::cout << f << " uses reference "<< other_frame <<std::endl;
+    }
+
     // get the subset of tracks that have features on frame f
     track_set_sptr ftracks = tracks->active_tracks(static_cast<int>(f));
     // get the subset of tracks that also  have features on the last frame
-    ftracks = ftracks->active_tracks(static_cast<int>(last_frame));
+    ftracks = ftracks->active_tracks(static_cast<int>(other_frame));
 
     // find existing landmarks for these tracks
     map_landmark_t flms;
@@ -560,7 +581,7 @@ initialize_cameras_landmarks
       }
     }
 
-    cams[f] = d_->init_camera(f, last_frame, cams, trks, flms);
+    cams[f] = d_->init_camera(f, other_frame, cams, trks, flms);
 
     // triangulate (or re-triangulate) points seen by the new camera
     d_->retriangulate(lms, cams, trks, new_lm_ids);
@@ -569,8 +590,6 @@ initialize_cameras_landmarks
     {
       std::cout << "frame "<<f<<" - num landmarks = "<< lms.size() << std::endl;
     }
-
-    last_frame = f;
   }
 
   cameras = camera_map_sptr(new simple_camera_map(cams));
