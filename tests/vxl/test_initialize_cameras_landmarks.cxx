@@ -115,8 +115,8 @@ IMPLEMENT_TEST(ideal_points)
   camera_intrinsics_d K = cameras->cameras()[0]->intrinsics();
   configure_algo(init, K);
 
-  camera_map_sptr new_cameras(new simple_camera_map());
-  landmark_map_sptr new_landmarks(new simple_landmark_map());
+  camera_map_sptr new_cameras;
+  landmark_map_sptr new_landmarks;
   init.initialize(new_cameras, new_landmarks, tracks);
 
   camera_map::map_camera_t orig_cams = cameras->cameras();
@@ -162,8 +162,8 @@ IMPLEMENT_TEST(noisy_points)
   camera_intrinsics_d K = cameras->cameras()[0]->intrinsics();
   configure_algo(init, K);
 
-  camera_map_sptr new_cameras(new simple_camera_map());
-  landmark_map_sptr new_landmarks(new simple_landmark_map());
+  camera_map_sptr new_cameras;
+  landmark_map_sptr new_landmarks;
   init.initialize(new_cameras, new_landmarks, tracks);
 
   camera_map::map_camera_t orig_cams = cameras->cameras();

@@ -59,12 +59,14 @@ public:
   /// Constructor
   priv()
   : verbose(false),
+    retriangulate_all(false),
     base_camera()
   {
   }
 
   priv(const priv& other)
   : verbose(other.verbose),
+    retriangulate_all(other.retriangulate_all),
     base_camera(other.base_camera)
   {
   }
@@ -75,10 +77,11 @@ public:
                           const std::vector<track_sptr>& trks,
                           const landmark_map::map_landmark_t& lms) const;
 
-  /// Triangulate all provided tracks with at least two cameras
-  void triangulate(landmark_map::map_landmark_t& lms,
-                   const camera_map::map_camera_t& cams,
-                   const std::vector<track_sptr>& trks) const;
+  /// Re-triangulate all landmarks for provided tracks
+  void retriangulate(landmark_map::map_landmark_t& lms,
+                     const camera_map::map_camera_t& cams,
+                     const std::vector<track_sptr>& trks,
+                     const std::set<landmark_id_t>& new_lm_ids) const;
 
   /// Estimate the translation scale using a 2d-3d correspondence
   double estimate_t_scale(const vector_3d& KRp,
@@ -86,6 +89,7 @@ public:
                           const vector_2d& pt2d) const;
 
   bool verbose;
+  bool retriangulate_all;
   camera_d base_camera;
   algo::estimate_essential_matrix_sptr e_estimator;
   algo::triangulate_landmarks_sptr lm_triangulator;
@@ -203,18 +207,24 @@ initialize_cameras_landmarks::priv
 }
 
 
-/// Triangulate all provided tracks with at least two cameras
+/// Re-triangulate all landmarks for provided tracks
 void
 initialize_cameras_landmarks::priv
-::triangulate(landmark_map::map_landmark_t& lms,
-              const camera_map::map_camera_t& cams,
-              const std::vector<track_sptr>& trks) const
+::retriangulate(landmark_map::map_landmark_t& lms,
+                const camera_map::map_camera_t& cams,
+                const std::vector<track_sptr>& trks,
+                const std::set<landmark_id_t>& new_lm_ids) const
 {
   typedef landmark_map::map_landmark_t lm_map_t;
   lm_map_t init_lms;
   BOOST_FOREACH(const track_sptr& t, trks)
   {
     const track_id_t& tid = t->id();
+    if( !this->retriangulate_all &&
+        new_lm_ids.find(tid) == new_lm_ids.end() )
+    {
+      continue;
+    }
     lm_map_t::const_iterator li = lms.find(tid);
     if( li == lms.end() )
     {
@@ -296,6 +306,11 @@ initialize_cameras_landmarks
                     "If true, write status messages to the terminal showing "
                     "debugging information");
 
+  config->set_value("retriangulate_all", d_->retriangulate_all,
+                    "If true, re-triangulate all landmarks observed by a newly "
+                    "initialized camera.  Otherwise, only triangulate or "
+                    "re-triangulate landmarks that are marked for initialization.");
+
   config->set_value("base_camera:focal_length", K.focal_length(),
                     "focal length of the base camera model");
 
@@ -340,6 +355,9 @@ initialize_cameras_landmarks
   d_->verbose = config->get_value<bool>("verbose",
                                         d_->verbose);
 
+  d_->retriangulate_all = config->get_value<bool>("retriangulate_all",
+                                                  d_->retriangulate_all);
+
   config_block_sptr bc = config->subblock("base_camera");
   camera_intrinsics_d K2(bc->get_value<double>("focal_length",
                                                K.focal_length()),
@@ -365,6 +383,90 @@ initialize_cameras_landmarks
              ::check_nested_algo_configuration("lm_triangulator", config);
 }
 
+namespace
+{
+
+/// Extract valid cameras and cameras to initialize.
+/**
+ * If \a cameras is NULL then return empty cam_map and frame_ids unchanged.
+ * If not NULL, return frame_ids containing IDs of all NULL cameras and
+ * return cam_map containing all valid cameras.
+ * \param [in]     cameras the camera map object to extract from
+ * \param [in,out] frame_ids the set of all frames (input),
+ *                           the set of frame to initialize (output)
+ * \param [out]    cam_map the extract map of valid camera
+ */
+void extract_cameras(const camera_map_sptr& cameras,
+                     std::set<frame_id_t>& frame_ids,
+                     camera_map::map_camera_t& cam_map)
+{
+  cam_map.clear();
+  if( !cameras )
+  {
+    return;
+  }
+
+  typedef camera_map::map_camera_t map_cam_t;
+  map_cam_t all_cams = cameras->cameras();
+
+  // Find the set of all cameras that need to be initialized
+  std::set<frame_id_t> new_frames;
+  BOOST_FOREACH(const map_cam_t::value_type& p, all_cams)
+  {
+    if(p.second)
+    {
+      cam_map.insert(p);
+    }
+    else if( frame_ids.count(p.first) )
+    {
+      new_frames.insert(p.first);
+    }
+  }
+  frame_ids = new_frames;
+}
+
+
+/// Extract valid landmarks and landmarks to initialize.
+/**
+ * If \a landmarks is NULL then return empty lm_map and track_ids unchanged.
+ * If not NULL, return track_ids containing IDs of all NULL landmark and
+ * return lm_map containing all valid landmarks.
+ * \param [in]     landmarks the landmark map object to extract from
+ * \param [in,out] track_ids the set of all tracks (input),
+ *                           the set of landmarks to initialize (output)
+ * \param [out]    lm_map the extract map of valid landmarks
+ */
+void extract_landmarks(const landmark_map_sptr& landmarks,
+                       std::set<track_id_t>& track_ids,
+                       landmark_map::map_landmark_t& lm_map)
+{
+  lm_map.clear();
+  if( !landmarks )
+  {
+    return;
+  }
+
+  typedef landmark_map::map_landmark_t map_landmark_t;
+  map_landmark_t all_lms = landmarks->landmarks();
+
+  // Find the set of all landmarks that need to be initialized
+  std::set<track_id_t> new_landmarks;
+  BOOST_FOREACH(const map_landmark_t::value_type& p, all_lms)
+  {
+    if(p.second)
+    {
+      lm_map.insert(p);
+    }
+    else if( track_ids.count(p.first) )
+    {
+      new_landmarks.insert(p.first);
+    }
+  }
+  track_ids = new_landmarks;
+}
+
+} // end anonymous namespace
+
 
 /// Initialize the camera and landmark parameters given a set of tracks
 void
@@ -373,7 +475,7 @@ initialize_cameras_landmarks
              landmark_map_sptr& landmarks,
              track_set_sptr tracks) const
 {
-  if( !cameras || !landmarks || !tracks )
+  if( !tracks )
   {
     throw invalid_value("Some required input data is NULL.");
   }
@@ -388,35 +490,44 @@ initialize_cameras_landmarks
   typedef maptk::camera_map::map_camera_t map_cam_t;
   typedef maptk::landmark_map::map_landmark_t map_landmark_t;
 
-  // extract data from containers
-  map_cam_t cams = cameras->cameras();
-  map_landmark_t lms = landmarks->landmarks();
+  // Extract the existing cameras and camera ids to be initialized
+  std::set<frame_id_t> frame_ids = tracks->all_frame_ids();
+  map_cam_t cams;
+  extract_cameras(cameras, frame_ids, cams);
+  std::deque<frame_id_t> new_frame_ids(frame_ids.begin(), frame_ids.end());
+
+  // Extract the existing landmarks and landmark ids to be initialized
+  std::set<track_id_t> track_ids = tracks->all_track_ids();
+  map_landmark_t lms;
+  extract_landmarks(landmarks, track_ids, lms);
+  std::set<landmark_id_t> new_lm_ids(track_ids.begin(), track_ids.end());
+
   std::vector<track_sptr> trks = tracks->tracks();
 
-  //
-  // Find the set of all frame numbers containing a camera and track data
-  //
-
-  // find the set of all frame IDs covered by these tracks
-  std::set<frame_id_t> track_frame_ids = tracks->all_frame_ids();
-
-  // find the set of all track IDs in this track set
-  std::set<track_id_t> track_lm_ids = tracks->all_track_ids();
-
-  std::set<frame_id_t> cam_frame_ids;
-  std::deque<frame_id_t> new_frame_ids;
-  BOOST_FOREACH(const map_cam_t::value_type& p, cams)
+  if(new_frame_ids.empty() && new_lm_ids.empty())
   {
-    cam_frame_ids.insert(p.first);
-  }
-  std::set_difference(track_frame_ids.begin(), track_frame_ids.end(),
-                      cam_frame_ids.begin(), cam_frame_ids.end(),
-                      std::back_inserter(new_frame_ids));
-
-  if(new_frame_ids.empty())
-  {
-    // no new frames to initialize cameras on
+    //nothing to initialize
     return;
+  }
+
+  // initialize landmarks if there are already at least two cameras
+  if(cams.size() > 2 && !new_lm_ids.empty())
+  {
+    map_landmark_t init_lms;
+    BOOST_FOREACH(const landmark_id_t& lmid, new_lm_ids)
+    {
+      landmark_sptr lm(new landmark_d(vector_3d(0,0,0)));
+      init_lms[static_cast<landmark_id_t>(lmid)] = lm;
+    }
+
+    landmark_map_sptr lm_map(new simple_landmark_map(init_lms));
+    camera_map_sptr cam_map(new simple_camera_map(cams));
+    d_->lm_triangulator->triangulate(cam_map, tracks, lm_map);
+
+    BOOST_FOREACH(const map_landmark_t::value_type& p, lm_map->landmarks())
+    {
+      lms[p.first] = p.second;
+    }
   }
 
   if(cams.empty())
@@ -452,7 +563,7 @@ initialize_cameras_landmarks
     cams[f] = d_->init_camera(f, last_frame, cams, trks, flms);
 
     // triangulate (or re-triangulate) points seen by the new camera
-    d_->triangulate(lms, cams, trks);
+    d_->retriangulate(lms, cams, trks, new_lm_ids);
 
     if(d_->verbose)
     {
@@ -463,6 +574,7 @@ initialize_cameras_landmarks
   }
 
   cameras = camera_map_sptr(new simple_camera_map(cams));
+  landmarks = landmark_map_sptr(new simple_landmark_map(lms));
 }
 
 
