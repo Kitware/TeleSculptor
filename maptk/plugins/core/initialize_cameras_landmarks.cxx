@@ -163,7 +163,8 @@ initialize_cameras_landmarks::priv
                                                           inliers.end(), true));
   if( this->verbose )
   {
-    std::cout << "E matrix num inliers = "<<num_inliers<<std::endl;
+    std::cout << "E matrix num inliers = " << num_inliers
+              << "/" << inliers.size() << std::endl;
   }
 
   // get the first inlier index
