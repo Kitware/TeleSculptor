@@ -40,6 +40,7 @@
 #include <boost/foreach.hpp>
 
 #include <maptk/algo/estimate_essential_matrix.h>
+#include <maptk/algo/optimize_cameras.h>
 #include <maptk/algo/triangulate_landmarks.h>
 #include <maptk/plugins/core/triangulate_landmarks.h>
 #include <maptk/exceptions.h>
@@ -113,6 +114,7 @@ public:
   bool retriangulate_all;
   camera_d base_camera;
   algo::estimate_essential_matrix_sptr e_estimator;
+  algo::optimize_cameras_sptr camera_optimizer;
   algo::triangulate_landmarks_sptr lm_triangulator;
 };
 
@@ -222,7 +224,21 @@ initialize_cameras_landmarks::priv
   cam.set_rotation(cam.get_rotation() * prev_cam->rotation());
   cam.set_translation(new_t);
 
-  return camera_sptr(new camera_d(cam));
+  camera_sptr new_cam_sptr(new camera_d(cam));
+
+  // optionally optimize the new camera
+  if( this->camera_optimizer )
+  {
+    camera_map::map_camera_t opt_cam_map;
+    opt_cam_map[frame] = new_cam_sptr;
+    camera_map_sptr opt_cams(new simple_camera_map(opt_cam_map));
+    landmark_map_sptr landmarks(new simple_landmark_map(lms));
+    track_set_sptr tracks(new simple_track_set(trks));
+    this->camera_optimizer->optimize(opt_cams, tracks, landmarks);
+    new_cam_sptr = opt_cams->cameras()[frame];
+  }
+
+  return new_cam_sptr;
 }
 
 
@@ -403,6 +419,9 @@ initialize_cameras_landmarks
   algo::estimate_essential_matrix
       ::get_nested_algo_configuration("essential_mat_estimator",
                                       config, d_->e_estimator);
+  algo::optimize_cameras
+      ::get_nested_algo_configuration("camera_optimizer",
+                                      config, d_->camera_optimizer);
   algo::triangulate_landmarks
       ::get_nested_algo_configuration("lm_triangulator",
                                       config, d_->lm_triangulator);
@@ -421,6 +440,9 @@ initialize_cameras_landmarks
   algo::estimate_essential_matrix
       ::set_nested_algo_configuration("essential_mat_estimator",
                                       config, d_->e_estimator);
+  algo::optimize_cameras
+      ::set_nested_algo_configuration("camera_optimizer",
+                                      config, d_->camera_optimizer);
   algo::triangulate_landmarks
       ::set_nested_algo_configuration("lm_triangulator",
                                       config, d_->lm_triangulator);
@@ -449,6 +471,12 @@ bool
 initialize_cameras_landmarks
 ::check_configuration(config_block_sptr config) const
 {
+  if (config->get_value<std::string>("camera_optimizer", "") != ""
+      && !algo::optimize_cameras
+              ::check_nested_algo_configuration("camera_optimizer", config))
+  {
+    return false;
+  }
   return algo::estimate_essential_matrix
              ::check_nested_algo_configuration("essential_mat_estimator",
                                                config)
