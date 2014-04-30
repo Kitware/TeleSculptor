@@ -566,6 +566,32 @@ void extract_landmarks(const landmark_map_sptr& landmarks,
   track_ids = new_landmarks;
 }
 
+
+/// Find the closest frame number with an existing camera
+frame_id_t
+find_closest_camera(const frame_id_t& frame,
+                    const camera_map::map_camera_t& cams)
+{
+  typedef maptk::camera_map::map_camera_t map_cam_t;
+  frame_id_t other_frame = cams.rbegin()->first;
+  map_cam_t::const_iterator ci = cams.lower_bound(frame);
+  if( ci == cams.end() )
+  {
+    other_frame = cams.rbegin()->first;
+  }
+  else
+  {
+    other_frame = ci->first;
+    if (ci != cams.begin() &&
+        (other_frame-frame) >= (frame-(--ci)->first))
+    {
+      other_frame = ci->first;
+    }
+  }
+  return other_frame;
+}
+
+
 } // end anonymous namespace
 
 
@@ -639,30 +665,16 @@ initialize_cameras_landmarks
     cams[f] = camera_sptr(new camera_d(d_->base_camera));
   }
 
-  frame_id_t other_frame = cams.rbegin()->first;
   while( !new_frame_ids.empty() )
   {
     frame_id_t f = new_frame_ids.front();
     new_frame_ids.pop_front();
 
     // get the closest frame number with an existing camera
-    map_cam_t::const_iterator ci = cams.lower_bound(f);
-    if( ci == cams.end() )
-    {
-      other_frame = cams.rbegin()->first;
-    }
-    else
-    {
-      other_frame = ci->first;
-      if (ci != cams.begin() &&
-          (other_frame-f) >= (f-(--ci)->first))
-      {
-        other_frame = ci->first;
-      }
-    }
+    frame_id_t other_frame = find_closest_camera(f, cams);
     if(d_->verbose)
     {
-      std::cout << f << " uses reference "<< other_frame <<std::endl;
+      std::cout <<"frame "<< f <<" uses reference "<< other_frame <<std::endl;
     }
 
     // get the subset of tracks that have features on frame f
