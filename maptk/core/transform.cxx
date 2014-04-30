@@ -103,6 +103,54 @@ landmark_map_sptr transform(landmark_map_sptr landmarks,
 }
 
 
+/// Estimate a canonical coordinate transform for landmarks and cameras
+maptk::similarity_d
+canonical_transform(maptk::camera_map_sptr cameras,
+                    maptk::landmark_map_sptr landmarks)
+{
+  using namespace maptk;
+  // find the centroid and scale of all the landmarks
+  typedef landmark_map::map_landmark_t lm_map_t;
+  vector_3d center(0,0,0);
+  double s=0.0;
+  BOOST_FOREACH(const lm_map_t::value_type& p, landmarks->landmarks())
+  {
+    vector_3d c = p.second->loc();
+    center += c;
+    s += inner_product(c,c);
+  }
+  center /= landmarks->size();
+  s /= landmarks->size();
+  s -= inner_product(center,center);
+  s = 1.0/std::sqrt(s);
+
+  // find the average look direction and average up direction
+  vector_3d cam_center(0,0,0);
+  vector_3d cam_up(0,0,0);
+  typedef camera_map::map_camera_t cam_map_t;
+  BOOST_FOREACH(const cam_map_t::value_type& p, cameras->cameras())
+  {
+    cam_center += p.second->center();
+    cam_up += p.second->rotation().inverse() * vector_3d(0,1,0);
+  }
+  cam_center /= cameras->size();
+  cam_center -= center;
+  cam_center = normalized(cam_center);
+  cam_up /= cameras->size();
+  cam_up = normalized(-cam_up);
+  vector_3d cam_x = normalized(cross_product(cam_up, cam_center));
+  vector_3d cam_y = normalized(cross_product(cam_center, cam_x));
+  matrix_3x3d rot;
+  rot.set_column(0, cam_x);
+  rot.set_column(1, cam_y);
+  rot.set_column(2, cam_center);
+  rotation_d R(rot);
+  R = R.inverse();
+
+  return similarity_d(s, R, R*(-s*center));
+}
+
+
 /// \cond DoxygenSuppress
 #define INSTANTIATE_TRANSFORM(T) \
 template MAPTK_CORE_EXPORT covariance_<3,T> transform(const covariance_<3,T>& covar, \
