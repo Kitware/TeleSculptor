@@ -633,7 +633,7 @@ initialize_cameras_landmarks
 
   if(cams.empty())
   {
-    // first frame, initilze to base camera
+    // first frame, initialize to base camera
     frame_id_t f = new_frame_ids.front();
     new_frame_ids.pop_front();
     cams[f] = camera_sptr(new camera_d(d_->base_camera));
@@ -645,7 +645,7 @@ initialize_cameras_landmarks
     frame_id_t f = new_frame_ids.front();
     new_frame_ids.pop_front();
 
-    // get the closest frame number with an exisiting camera
+    // get the closest frame number with an existing camera
     map_cam_t::const_iterator ci = cams.lower_bound(f);
     if( ci == cams.end() )
     {
