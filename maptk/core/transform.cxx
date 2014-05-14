@@ -136,7 +136,6 @@ canonical_transform(maptk::camera_map_sptr cameras,
   cam_center /= cameras->size();
   cam_center -= center;
   cam_center = normalized(cam_center);
-  cam_up /= cameras->size();
   cam_up = normalized(-cam_up);
   vector_3d cam_x = normalized(cross_product(cam_up, cam_center));
   vector_3d cam_y = normalized(cross_product(cam_center, cam_x));
