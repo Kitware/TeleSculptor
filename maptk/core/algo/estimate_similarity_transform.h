@@ -61,7 +61,7 @@ class MAPTK_CORE_EXPORT estimate_similarity_transform
 {
 public:
   /// Name of this algo definition
-  std::string type_name() const { return "estimate_similarity_transform"; }
+  virtual std::string type_name() const { return "estimate_similarity_transform"; }
 
   /// Estimate the similarity transform between two corresponding point sets
   /**

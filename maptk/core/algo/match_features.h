@@ -54,7 +54,7 @@ class MAPTK_CORE_EXPORT match_features
 {
 public:
   /// Return the name of this algorithm
-  std::string type_name() const { return "match_features"; }
+  virtual std::string type_name() const { return "match_features"; }
 
   /// Match one set of features and corresponding descriptors to another
   /**

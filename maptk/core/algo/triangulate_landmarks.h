@@ -55,7 +55,7 @@ class MAPTK_CORE_EXPORT triangulate_landmarks
 {
 public:
   /// Return the name of this algorithm
-  std::string type_name() const { return "triangulate_landmarks"; }
+  virtual std::string type_name() const { return "triangulate_landmarks"; }
 
   /// Triangulate the landmark locations given sets of cameras and tracks
   /**

@@ -62,7 +62,7 @@ public:
   typedef std::ostream stream_t;
 
   /// Return the name of this algorithm.
-  std::string type_name() const { return "analyze_tracks"; }
+  virtual std::string type_name() const { return "analyze_tracks"; }
 
   /// Output various information about the tracks stored in the input set.
   /**

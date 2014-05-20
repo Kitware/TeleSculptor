@@ -56,7 +56,7 @@ class MAPTK_CORE_EXPORT image_io
 {
 public:
   /// Return the name of this algorithm
-  std::string type_name() const { return "image_io"; }
+  virtual std::string type_name() const { return "image_io"; }
 
   /// Load image image from the file
   /**
