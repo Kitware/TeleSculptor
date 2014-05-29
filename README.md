@@ -3,7 +3,34 @@ Motion-imagery Aerial Photogrammetry Toolkit
 
 --------------------------------------------
 
-This project contains the source code for MAP-Tk.
+MAP-Tk is an open source C++ collection of libraries and tools for making
+measurements from aerial video.  Initial capability focuses on estimating
+the camera flight trajectory and a sparse 3D point cloud of the scene.
+These products are jointly optimized via sparse bundle adjustment and are
+geo-localized if given additional control points or GPS metadata.
+
+This project has similar goals as projects like
+[Bundler](http://www.cs.cornell.edu/~snavely/bundler/) and
+[VisualSFM](http://ccwu.me/vsfm/).  However, the focus here in on efficiently
+processing aerial video rather than community photo collections.
+Special attention has been given to the case where the variation in depth of
+the 3D scene is small compared to distance to the camera.  In these cases,
+planar homographies can be used to assist feature tracking, stabilize the
+video, and aid in solving loop closure problems.
+
+The MAP-Tk software architecture is highly modular and provides an algorithm
+abstraction layer that allows seamless interchange and run-time selection of
+algorithms from various other open source projects like OpenCV, VXL,  VisCL,
+and PROJ4.  The core library is light-weight with minimal dependencies
+(C++ standard library plus some Boost components).  The tools are written
+to depend only on the MAP-Tk core library.  Additional capabilites are
+provided in add-on modules that use 3rd party libraries to implement various
+abstract algorithm interfaces defined in the core.
+
+While the initial software implementation relies on batch post-processing
+of aerial video.  Our intent is to move to an online video stream processing
+framework and optimize the algorithms to real-time performance for use
+onboard unmanned aerial vehicles.
 
 
 Overview of Directories
