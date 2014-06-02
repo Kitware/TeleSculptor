@@ -164,19 +164,34 @@ algorithm_def<Self>
                                 config_block_sptr config,
                                 base_sptr &nested_algo)
 {
-  if(config->has_value(name + config_block::block_sep + "type"))
-  {
+  std::string const key( name + config_block::block_sep + "type" );
+  std::string iname;
 
-    std::string iname = config->get_value<std::string>(name
-                                                       + config_block::block_sep
-                                                       + "type");
+  if(config->has_value( key ) )
+  {
+    iname = config->get_value<std::string>( key );
     if(algorithm_def<Self>::has_impl_name(iname))
     {
+      // \todo add log message
+      std::cerr << "DEBUG - configuring \"" << name << "\" with config type \""
+                << iname << "\"\n";
+
       nested_algo = algorithm_def<Self>::create(iname);
       nested_algo->set_configuration(
         config->subblock_view(name + config_block::block_sep + iname)
       );
     }
+    else
+    {
+      // \todo add log message, is this an error?
+      std::cerr << "WARNING - impl name:\"" << iname << "\" not supported, from key \""
+                << key << "\"\n";
+    }
+  }
+  else
+  {
+    /// \todo add log message
+    std::cerr << "WARNING - config key: \"" << name << config_block::block_sep <<  "type\" not found\n";
   }
 }
 
@@ -190,13 +205,20 @@ algorithm_def<Self>
 {
   if(!config->has_value(name + config_block::block_sep + "type"))
   {
+    // \todo add log message DEBUG
+    std::cerr << "DEBUG - config block does not contain \""
+              << name << config_block::block_sep << "type\"\n";
     return false;
   }
   std::string iname = config->get_value<std::string>(name + config_block::block_sep + "type");
   if(!algorithm_def<Self>::has_impl_name(iname))
   {
+    // \todo add log message DEBUG
+    std::cerr << "DEBUG - algorithm does not have implementation name \"" << iname
+          << "\"\n";
     return false;
   }
+
   // retursively check the configuration of the sub-algorithm
   return registrar<Self>::find(iname)->check_configuration(
     config->subblock_view(name + config_block::block_sep + iname)
