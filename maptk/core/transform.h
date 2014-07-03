@@ -97,6 +97,7 @@ landmark_map_sptr transform(landmark_map_sptr landmarks,
  * \note This assumes most cameras are viewing from the same side of
  *       3D landmarks and have similar up directions.
  */
+MAPTK_CORE_EXPORT
 similarity_d
 canonical_transform(camera_map_sptr cameras,
                     landmark_map_sptr landmarks);
