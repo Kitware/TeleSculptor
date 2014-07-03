@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013 by Kitware, Inc.
+ * Copyright 2013-2014 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,9 +53,15 @@
 
 // Visibility macros
 #cmakedefine MAPTK_HAVE_GCC_VISIBILITY
+#cmakedefine BUILD_SHARED_LIBS
+
 #if defined(_WIN32) || defined(_WIN64)
 # define MAPTK_EXPORT __declspec(dllexport)
-# define MAPTK_IMPORT __declspec(dllimport)
+# if defined(BUILD_SHARED_LIBS)
+#   define MAPTK_IMPORT __declspec(dllimport)
+# else
+#   define MAPTK_IMPORT
+# endif
 # define MAPTK_NO_EXPORT
 #elif defined(MAPTK_HAVE_GCC_VISIBILITY)
 # define MAPTK_EXPORT __attribute__((__visibility__("default")))

@@ -5,6 +5,7 @@ check_cxx_compiler_flag(-fvisibility=hidden MAPTK_HAVE_GCC_VISIBILITY)
 maptk_configure_file(config.h
   "${CMAKE_CURRENT_SOURCE_DIR}/config.h.in"
   "${CMAKE_CURRENT_BINARY_DIR}/config.h"
+  BUILD_SHARED_LIBS
   MAPTK_HAVE_GCC_VISIBILITY
   )
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/config.h"
