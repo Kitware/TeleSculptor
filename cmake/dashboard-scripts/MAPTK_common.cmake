@@ -124,7 +124,6 @@ endif()
 
 # Selecting Git source to use
 if(NOT DEFINED dashboard_git_url)
-  # TODO: When this project goes public, this will probably need to be changed.
   set(dashboard_git_url "https://github.com/Kitware/maptk.git")
 endif()
 if(NOT DEFINED dashboard_git_branch)
