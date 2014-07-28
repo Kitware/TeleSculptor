@@ -21,6 +21,14 @@ Build System
  * Updated the dashboard_git_url in the dashboard scripts to point to the
    new public git URL on GitHub.
 
+Core Library
+
+ * Added "virtual" keyword to algo type_name() and impl_name() methods in
+   derived classes.  The keyword is not required here, but makes it more
+   apparent that these are virtual methods.
+
+ * Made destructor for compute_ref_homography_default class virtual.
+
 
 Fixes since v0.4.0
 ------------------
