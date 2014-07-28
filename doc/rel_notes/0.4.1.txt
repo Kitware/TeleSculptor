@@ -14,6 +14,8 @@ Documentation
 
  * Added a more detailed project description to README.md
 
+ * Added a class index to the Doxygen output
+
 Build System
 
  * Updated the dashboard_git_url in the dashboard scripts to point to the
