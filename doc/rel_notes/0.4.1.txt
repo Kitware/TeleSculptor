@@ -1,0 +1,34 @@
+MAPTK v0.4.1 Release Notes
+==========================
+
+This release provides patches to the MAPTK v0.4.0 release to address issues.
+MAPTK v0.4.1 is primarily a bug fix release with very minimal new functionality.
+
+
+Updates since v0.4.0
+--------------------
+
+Documentation
+
+ * Renamed README to README.md to allow GitHub to pick up on markdown formatting
+
+ * Added a more detailed project description to README.md
+
+Build System
+
+ * Updated the dashboard_git_url in the dashboard scripts to point to the
+   new public git URL on GitHub.
+
+
+Fixes since v0.4.0
+------------------
+
+Build System
+
+ * Added missing include directory path in CMake for PROJ
+
+ * Fixed the find module procedure for PROJ to work with
+   newer versions of CMake
+
+ * Fixed the issue with building statically on Windows by applying
+   __declspec(dllimport) only in the shared build case.
