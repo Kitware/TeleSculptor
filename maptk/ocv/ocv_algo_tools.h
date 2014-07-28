@@ -176,7 +176,10 @@ void set_nested_ocv_algo_configuration(std::string const& name,
   {
     // if the current algo ptr is empty (NULL) or has a type differing from the
     // configured type, create a new algo instance.
-    if (algo.empty() || algo->info()->name() != impl_name)
+
+    if (algo.empty()
+        || algo->info() == 0
+        || algo->info()->name() != impl_name)
     {
       algo = helper_::create_ocv_algo<algo_t>(impl_name);
     }

@@ -80,6 +80,7 @@ endif()
 
 if(MAPTK_ENABLE_PROJ)
   find_package(PROJ)
+  include_directories(${PROJ_INCLUDE_DIR})
 endif()
 
 # this is where the libraries source code lives
