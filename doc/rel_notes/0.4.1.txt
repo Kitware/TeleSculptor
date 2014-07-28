@@ -40,6 +40,8 @@ Core Library
 
  * Made destructor for compute_ref_homography_default class virtual
 
+ * Added additional logging to std::cerr about algorithm configuration.
+
 
 Fixes since v0.4.0
 ------------------
