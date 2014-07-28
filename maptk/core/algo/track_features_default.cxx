@@ -180,7 +180,10 @@ track_features_default
        new_tracks.push_back(track_sptr(new maptk::track(ts)));
        new_tracks.back()->set_id(this->next_track_id_++);
     }
-    return track_set_sptr(new simple_track_set(new_tracks));
+    // call loop closure on the first frame to establish this
+    // frame as the first frame for loop closing purposes
+    return closer_->stitch(frame_number, image_data,
+                           track_set_sptr(new simple_track_set(new_tracks)));
   }
 
   // match features to from the previous to the current frame
