@@ -34,3 +34,9 @@ Build System
 
  * Fixed the issue with building statically on Windows by applying
    __declspec(dllimport) only in the shared build case.
+
+OpenCV Library
+
+ * Fixed crash caused by a NULL info structure returned by
+   cv::Algorithm::info().  Must check that the info object is not NULL
+   before calling its name() method.
