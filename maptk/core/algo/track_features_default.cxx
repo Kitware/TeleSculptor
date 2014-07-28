@@ -154,6 +154,8 @@ track_features_default
   // verify that all dependent algorithms have been initialized
   if( !detector_ || !extractor_ || !matcher_ || !closer_ )
   {
+    // Return an empty vector, but it would be nice to know that there
+    // has been an error initializing components.
     return track_set_sptr();
   }
 

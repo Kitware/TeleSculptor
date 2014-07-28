@@ -174,6 +174,10 @@ public:
 
   /// Helper function for properly setting a nested algorithm's configuration
   /**
+   * If the value for the config parameter "type" is supported by the
+   * concrete algorithm class, then a new algorithm object is created,
+   * configured and returned via the \c nested_algo pointer.
+   *
    * The nested algorithm will not be set if the implementation switch (as
    * defined in the \c get_nested_algo_configuration) is not present or set to
    * an invalid value relative to the registered names for this
@@ -211,6 +215,7 @@ public:
 /// An intermediate templated base class for algorithm implementations
 /**
  *  Uses a variation of the curiously recurring template pattern to
+ *  Uses a variation of the curiously recurring template pattern (CRTP) to
  *  implement the clone() and register_self() functions for the derived class.
  *  Each algorithm implementation should be declared as shown below
  *  \code

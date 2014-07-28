@@ -287,7 +287,7 @@ close_loops_homography_guided
   const unsigned int width = static_cast<unsigned int>(image->width());
   const unsigned int height = static_cast<unsigned int>(image->height());
 
-  // Compute new homographies for this frame
+  // Compute new homographies for this frame (current_to_ref)
   f2f_homography_sptr homog = d_->ref_computer_->estimate( frame_number, input );
 
   // Write out homographies if enabled
