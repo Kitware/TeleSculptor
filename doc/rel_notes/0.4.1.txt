@@ -35,6 +35,12 @@ Build System
  * Fixed the issue with building statically on Windows by applying
    __declspec(dllimport) only in the shared build case.
 
+Core Library
+
+ * Call loop closure on the first frame in the default tracker to fix
+   off-by-one bug in the loop closure reference frame and resulting
+   homography file.
+
 OpenCV Library
 
  * Fixed crash caused by a NULL info structure returned by
