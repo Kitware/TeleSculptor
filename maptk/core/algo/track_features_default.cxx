@@ -154,6 +154,9 @@ track_features_default
   // verify that all dependent algorithms have been initialized
   if( !detector_ || !extractor_ || !matcher_ || !closer_ )
   {
+    // Something did not initialize, return an empty vector
+    /// \todo Convert to log message
+    std::cerr << "ERROR - not all dependent algorithms have been initialized.\n"
     return track_set_sptr();
   }
 
