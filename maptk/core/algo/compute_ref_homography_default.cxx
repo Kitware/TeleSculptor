@@ -430,11 +430,13 @@ compute_ref_homography_default
 
   if( bad_homog )
   {
+    // Start of new shot. Both frames the same and identity transform.
     output = f2f_homography_sptr( new f2f_homography( frame_number ) );
     d_->frames_since_reset = 0;
   }
   else
   {
+    // extend current shot
     output = f2f_homography_sptr( new f2f_homography( h, frame_number, earliest_ref ) );
     output->normalize();
   }

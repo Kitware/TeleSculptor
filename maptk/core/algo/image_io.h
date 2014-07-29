@@ -51,6 +51,10 @@ namespace algo
 {
 
 /// An abstract base class for reading and writing images
+/**
+ * This class represents an abstract interface for reading and writing
+ * images.
+ */
 class MAPTK_CORE_EXPORT image_io
   : public algorithm_def<image_io>
 {
@@ -60,13 +64,10 @@ public:
 
   /// Load image image from the file
   /**
-   * \throws maptk::path_not_exists {
-   *    Thrown when the given path does not exist.
-   *    }
-   * \throws maptk::path_not_a_file {
-   *    Thrown when the given path does not point to a file (i.e. it points to
-   *    a directory).
-   *    }
+   * \throws maptk::path_not_exists Thrown when the given path does not exist.
+   *
+   * \throws maptk::path_not_a_file Thrown when the given path does
+   *    not point to a file (i.e. it points to a directory).
    *
    * \param filename the path to the file the load
    * \returns an image container refering to the loaded image
@@ -77,14 +78,12 @@ public:
   /**
    * Image file format is based on file extension.
    *
-   * \throws maptk::path_not_exists {
-   *    Thrown when the expected containing directory of the given path does
-   *    not exist.
-   *    }
-   * \throws maptk::path_not_a_directory {
-   *    Thrown when the expected containing directory of the given path is
-   *    not actually a directory.
-   *    }
+   * \throws maptk::path_not_exists Thrown when the expected
+   *    containing directory of the given path does not exist.
+   *
+   * \throws maptk::path_not_a_directory Thrown when the expected
+   *    containing directory of the given path is not actually a
+   *    directory.
    *
    * \param filename the path to the file to save
    * \param data the image container refering to the image to write
@@ -94,12 +93,19 @@ public:
 private:
   /// Implementation specific load functionality.
   /**
+   * Concrete implementations of image_io class must provide an
+   * implementation for this method.
+   *
    * \param filename the path to the file the load
    * \returns an image container refering to the loaded image
    */
   virtual image_container_sptr load_(std::string const& filename) const = 0;
+
   /// Implementation specific save functionality.
   /**
+   * Concrete implementations of image_io class must provide an
+   * implementation for this method.
+   *
    * \param filename the path to the file to save
    * \param data the image container refering to the image to write
    */

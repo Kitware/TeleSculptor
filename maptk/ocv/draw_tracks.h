@@ -84,7 +84,7 @@ public:
    * \param [in] display_set the main track set to draw
    * \param [in] image_data a list of images the tracks were computed over
    * \param [in] comparison_set optional comparison track set
-   * \param returns a pointer to the last image generated
+   * \returns a pointer to the last image generated
    */
   virtual image_container_sptr
   draw(track_set_sptr display_set,

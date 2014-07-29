@@ -120,7 +120,7 @@ public:
    *
    * \param [in]   frame_number frame identifier for the current frame
    * \param [in]   tracks the set of all tracked features from the image
-   * \param return estimated homography
+   * \return estimated homography
    */
   virtual f2f_homography_sptr
   estimate( frame_id_t frame_number,
