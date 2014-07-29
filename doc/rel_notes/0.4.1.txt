@@ -16,10 +16,17 @@ Documentation
 
  * Added a class index to the Doxygen output
 
+ * Added more detail to inline Doxygen documentation, fixed some
+   control words
+
 Build System
 
  * Updated the dashboard_git_url in the dashboard scripts to point to the
    new public git URL on GitHub.
+
+Core Library
+ * Added log message for error condition in track_features_default.cxx
+   where dependent algorithm were not all initialized.
 
 
 Fixes since v0.4.0
