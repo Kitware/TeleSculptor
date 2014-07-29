@@ -55,7 +55,7 @@ class MAPTK_VXL_EXPORT optimize_cameras
   : public algo::algorithm_impl<optimize_cameras, algo::optimize_cameras>
 {
 public:
-  std::string impl_name() const { return "vxl"; }
+  virtual std::string impl_name() const { return "vxl"; }
 
   /// \cond DoxygenSuppress
   virtual void set_configuration(config_block_sptr /*config*/) { }

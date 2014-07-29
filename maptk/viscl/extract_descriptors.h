@@ -56,7 +56,7 @@ public:
   extract_descriptors(const extract_descriptors& other);
 
   /// Return the name of this implementation
-  std::string impl_name() const { return "viscl"; }
+  virtual std::string impl_name() const { return "viscl"; }
 
   // No configuration for this class yet TODO: eventually descriptor size
   virtual void set_configuration(config_block_sptr /*config*/) { }

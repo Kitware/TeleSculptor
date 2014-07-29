@@ -51,7 +51,7 @@ class MAPTK_OCV_EXPORT estimate_homography
 {
 public:
   /// Return the name of this implementation
-  std::string impl_name() const { return "ocv"; }
+  virtual std::string impl_name() const { return "ocv"; }
 
   // No configuration yet for this class
   /// \cond DoxygenSuppress
