@@ -214,7 +214,6 @@ public:
 
 /// An intermediate templated base class for algorithm implementations
 /**
- *  Uses a variation of the curiously recurring template pattern to
  *  Uses a variation of the curiously recurring template pattern (CRTP) to
  *  implement the clone() and register_self() functions for the derived class.
  *  Each algorithm implementation should be declared as shown below
