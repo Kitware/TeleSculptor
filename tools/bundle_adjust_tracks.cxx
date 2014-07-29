@@ -89,18 +89,34 @@ static maptk::config_block_sptr default_config()
 
   config->set_value("input_pos_files", "",
                     "A directory containing the input POS files, or a text file"
-                    "containing a newline-separated list of POS files. "
-                    "This is optional, leave blank to ignore. This is "
-                    "mutually exclusive with the input_reference_points "
-                    "option when using an st_estimator.");
+                    "containing a newline-separated list of POS files.\n"
+                    "\n"
+                    "This is optional, leave blank to ignore.\n"
+                    "\n"
+                    "This is mutually exclusive with the input_krtd_files "
+                    "option for system initialization, and shadowed by the "
+                    "input_reference_points option when using an "
+                    "st_estimator.");
+
+  config->set_value("input_krtd_files", "",
+                    "A directory containing input KRTD camera files, or a text "
+                    "file containing a newline-separated list of KRTD files.\n"
+                    "\n"
+                    "This is optional, leave blank to ignore.\n"
+                    "\n"
+                    "This is mutually exclusive with input_pos_files option "
+                    "for system initialization, and shadowed by the "
+                    "input_reference_points_file when using an st_estimator.");
 
   config->set_value("input_reference_points_file", "",
                     "File containing reference points to use for reprojection "
-                    "of results into the geographic coordinate system. This "
-                    "option is NOT mutually exclusive with input_pos_files "
-                    "when using an st_estimator. When both are provided, "
-                    "use of the reference file is given priority over the "
-                    "POS files.\n"
+                    "of results into the geographic coordinate system.\n"
+                    "\n"
+                    "This option is NOT mutually exclusive with input_*_files "
+                    "options when using an st_estimator. When both this and "
+                    "another input files option are specified, use of the "
+                    "reference file is given priority over the input "
+                    "cameras.\n"
                     "\n"
                     "Reference points file format (lm=landmark, tNsM=track N state M):\n"
                     "\tlm1.x lm1.y lm1.z t1s1.frame t1s1.x t1s1.y t1s2.frame t1s2.x t1s2.y ...\n"
@@ -192,12 +208,28 @@ static bool check_config(maptk::config_block_sptr config)
     MAPTK_CONFIG_FAIL("Given image list file path doesn't point to an existing file.");
   }
 
+  // Checking input cameras and reference points file existance.
+  bool input_pos = false,
+       input_krtd = false;
   if (config->get_value<std::string>("input_pos_files", "") != "")
   {
-    if(!bfs::exists(config->get_value<std::string>("input_pos_files")))
+    input_pos = true;
+    if (!bfs::exists(config->get_value<std::string>("input_pos_files")))
     {
       MAPTK_CONFIG_FAIL("POS input path given, but doesn't point to an existing location.");
     }
+  }
+  if (config->get_value<std::string>("input_krtd_files", "") != "")
+  {
+    input_krtd = true;
+    if (!bfs::exists(config->get_value<std::string>("input_krtd_files")))
+    {
+      MAPTK_CONFIG_FAIL("KRTD input path given, but does not point to an existing location.");
+    }
+  }
+  if (input_pos && input_krtd)
+  {
+    MAPTK_CONFIG_FAIL("Both input POS and KRTD cameras were given. Don't know which to use!");
   }
   if (config->get_value<std::string>("input_reference_points_file", "") != "")
   {
@@ -301,6 +333,176 @@ files_in_dir(const bfs::path& dir)
   }
   std::sort(files.begin(), files.end());
   return files;
+}
+
+
+// Load input POS cameras from file, matching against the given image filename
+// map. Returns false if a failure occurred.
+bool
+load_input_cameras_pos(maptk::config_block_sptr config,
+                       std::map<std::string, maptk::frame_id_t> const& filename2frame,
+                       maptk::camera_map::map_camera_t & input_cameras)
+{
+  boost::timer::auto_cpu_timer t("Initializing cameras from POS files: %t sec CPU, %w sec wall\n");
+
+  std::string pos_files = config->get_value<std::string>("input_pos_files");
+  std::vector<bfs::path> files;
+  if( bfs::is_directory(pos_files) )
+  {
+    files = files_in_dir(pos_files);
+  }
+  else
+  {
+    std::ifstream ifs(pos_files.c_str());
+    if (!ifs)
+    {
+      std::cerr << "Error: Could not open POS file list "
+                << "\"" <<pos_files << "\""
+                << std::endl;
+      return false;
+    }
+    for (std::string line; std::getline(ifs,line); )
+    {
+      files.push_back(line);
+    }
+  }
+
+  std::cout << "loading POS files" <<std::endl;
+  // Associating POS file to frame ID based on whether its filename stem is
+  // the same as an image in the given image list (map created above).
+  std::map<maptk::frame_id_t, maptk::ins_data> ins_map;
+  BOOST_FOREACH(maptk::path_t const& fpath, files)
+  {
+    std::string pos_file_stem = fpath.stem().string();
+    if (filename2frame.count(pos_file_stem))
+    {
+      ins_map[filename2frame[pos_file_stem]] = maptk::read_pos_file(fpath);
+    }
+  }
+  // Warn if the POS file set is sparse compared to input frames
+  if (!ins_map.empty())
+  {
+    // TODO: generated interpolated cameras for missing POS files.
+    if (filename2frame.size() != ins_map.size())
+    {
+      std::cerr << "Warning: Input POS file-set is sparse compared to input "
+                << "imagery! (not as many input POS files as there were input "
+                << "images)"
+                << std::endl;
+    }
+
+    maptk::rotation_d ins_rot_offset = config->get_value<maptk::rotation_d>("ins:rotation_offset",
+                                                                            maptk::rotation_d());
+    input_cameras = maptk::initialize_cameras_with_ins(ins_map, base_camera,
+                                                       local_cs,
+                                                       ins_rot_offset);
+  }
+  else
+  {
+    std::cerr << "ERROR: No POS files from input set match input image "
+              << "frames. Check POS files!"
+              << std::endl;
+    return false;
+  }
+
+  return true;
+}
+
+
+// Load input KRTD cameras from file, matching against the given image
+// filename map. Returns false if failure occurred.
+bool
+load_input_cameras_krtd(maptk::config_block_sptr config,
+                        std::map<std::string, maptk::frame_id_t> const& filename2frame,
+                        maptk::camera_map::map_camera_t & input_cameras)
+{
+  boost::timer::auto_cpu_timer t("Initializing cameras from KRTD files: %t sec CPU, %w sec wall\n");
+
+  // Collect files
+  std::string krtd_files = config->get_value<std::string>("input_krtd_files");
+  std::vector<bfs::path> files;
+  if (bfs::is_directory(krtd_files))
+  {
+    files = files_in_dir(krtd_files);
+  }
+  else
+  {
+    std::ifstream ifs(krtd_files.c_str());
+    if (!ifs)
+    {
+      std::error << "ERROR: Could not open KRTD file list "
+                 << "\"" << krtd_files << "\""
+                 << std::endl;
+      return false;
+    }
+    for (std::string line; std::getline(ifs, line); )
+    {
+      files.push_back(line);
+    }
+  }
+
+  // Associating KRTD files to the frame ID of a matching input image based
+  // on file stem naming.
+  std::cout << "loading KRTD input camera files" << std::endl;
+  maptk::camera_map::map_camera_t krtd_cams;
+  BOOST_FOREACH(maptk::path_t const& fpath, files)
+  {
+    std::string krtd_file_stem = fpath.stem().string();
+    if (filename2frame.count(krtd_file_stem))
+    {
+      krtd_cams[filename2frame[krtd_file_stem]] = camera_sptr(new maptk::read_krtd_file(fpath));
+    }
+  }
+
+  // if krtd_map is empty, then there were no input krtd files that matched
+  // input imagery.
+  if (krtd_cams.empty())
+  {
+    std::cerr << "ERROR: No KRTD files from input set match input image "
+              << "frames. Check KRTD input files!"
+              << std::endl;
+    return false;
+  }
+  else
+  {
+    // Warning if loaded KRTD camera set is sparse compared to input imagery
+    if (filename2frame.size() != krtd_cams.size())
+    {
+      std::cerr << "WARNING: Input KRTD camera set is sparse compared to input "
+                << "imagery! (there wasn't a matching KRTD input file for "
+                << "every input image file)"
+                << std::endl;
+    }
+    input_cameras = maptk::camera_map_sptr(new maptk::simple_camera_map(krtd_cams));
+  }
+  return true;
+}
+
+
+
+// Helper function to load input cameras based on configuration and a map of
+// filename stems to the file's frame number.
+//
+// Assumes that input camera filename stems are congruent to the input image
+// filename stems.
+//
+// Returns false if a failure occurred.
+bool
+load_input_cameras(maptk::config_block_sptr config,
+                   std::map<std::string, maptk::frame_id_t> const& filename2frame,
+                   maptk::camera_map::map_camera_t & input_cameras)
+{
+  // Configuration check ensures validity and mutual exclusivity of these
+  // options.
+  if (config->get_value<std::string>("input_pos_files", "") != "")
+  {
+    return load_input_cameras_pos(config, filename2frame, input_cameras);
+  }
+  else if (config->get_value<std::string>("input_krtd_files", "") != "")
+  {
+    return load_input_cameras_krtd(config, filename2frame, input_cameras);
+  }
+  return true;
 }
 
 
@@ -487,91 +689,34 @@ static int maptk_main(int argc, char const* argv[])
   maptk::landmark_map_sptr lm_map(new maptk::simple_landmark_map(landmarks));
 
   //
-  // Initialize cameras
+  // Initialize input and main cameras
   //
-  typedef std::map<maptk::frame_id_t, maptk::ins_data> ins_map_t;
-  ins_map_t ins_map;
-  maptk::camera_map::map_camera_t cameras;
 
-  // Vars that are used/populated when POS files are given.
-  maptk::camera_map::map_camera_t pos_cameras;
-  maptk::rotation_d ins_rot_offset = config->get_value<maptk::rotation_d>("ins:rotation_offset",
-                                                                          maptk::rotation_d());
-  // Vars that are used/populated if reference points file given.
-  maptk::landmark_map_sptr reference_landmarks(new maptk::simple_landmark_map());
-  maptk::track_set_sptr reference_tracks(new maptk::simple_track_set());
-
-  // if POS files are available, use them to initialize the cameras
-  if( config->get_value<std::string>("input_pos_files", "") != "" )
+  // Initialize input camera map based on which input files were given, if any.
+  // If input_cameras is empty after this method, then there were no input
+  // camera files.
+  maptk::camera_map::map_camera_t input_cameras;
+  if (!load_input_cameras(config, filename2frame, input_cameras))
   {
-    boost::timer::auto_cpu_timer t("Initializing cameras from POS files: %t sec CPU, %w sec wall\n");
-
-    std::string pos_files = config->get_value<std::string>("input_pos_files");
-    std::vector<bfs::path> files;
-    if( bfs::is_directory(pos_files) )
-    {
-      files = files_in_dir(pos_files);
-    }
-    else
-    {
-      std::ifstream ifs(pos_files.c_str());
-      if (!ifs)
-      {
-        std::cerr << "Error: Could not open POS file list "
-                  << "\"" <<pos_files << "\""
-                  << std::endl;
-        return EXIT_FAILURE;
-      }
-      for (std::string line; std::getline(ifs,line); )
-      {
-        files.push_back(line);
-      }
-    }
-
-    std::cout << "loading POS files" <<std::endl;
-    // Associating POS file to frame ID based on whether its filename stem is
-    // the same as an image in the given image list (map created above).
-    BOOST_FOREACH(maptk::path_t const& fpath, files)
-    {
-      std::string pos_file_stem = fpath.stem().string();
-      if (filename2frame.count(pos_file_stem))
-      {
-        ins_map[filename2frame[pos_file_stem]] = maptk::read_pos_file(fpath);
-      }
-    }
-    // Warn if the POS file set is sparse compared to input frames
-    if (!ins_map.empty())
-    {
-      // TODO: generated interpolated cameras for missing POS files.
-      if (filename2frame.size() != ins_map.size())
-      {
-        std::cerr << "Warning: Input POS file-set is sparse compared to input "
-                  << "imagery! (not as many input POS files as there were input "
-                  << "images)"
-                  << std::endl;
-      }
-
-      cameras = maptk::initialize_cameras_with_ins(ins_map, base_camera, local_cs,
-                                                   ins_rot_offset);
-      // Creating duplicate cameras structure signifying POS files were input
-      BOOST_FOREACH(maptk::camera_map::map_camera_t::value_type &v, cameras)
-      {
-        pos_cameras[v.first] = v.second->clone();
-      }
-
-      maptk::camera_map_sptr cam_map(new maptk::simple_camera_map(cameras));
-      // triangulate to provide initial point locations
-      triangulator->triangulate(cam_map, tracks, lm_map);
-    }
-    else
-    {
-      std::cerr << "ERROR: No POS files from input set match input image "
-                << "frames. Check POS files!"
-                << std::endl;
-      return EXIT_FAILURE;
-    }
+    std::cerr << "ERROR: Failed to load input cameras." << std::endl;
+    return EXIT_FAILURE;
   }
-  // if no POS files, then initialize all cameras to a fixed location
+
+  // Copy input cameras into main camera map
+  //
+  // If there were no input cameras, initialize fixed location cameras to main
+  // camera map.
+  maptk::camera_map::map_camera_t cameras;
+  if (input_cameras.size() != 0)
+  {
+    BOOST_FOREACH(maptk::camera_map::map_camera_t::value_type &v, input_cameras)
+    {
+      cameras[v.first] = v.second->clone();
+    }
+    // Triangulate initial landmarks based on cameras and tracks
+    maptk::camera_map_sptr in_cams(new maptk::simple_camera_map(input_cameras));
+    triangulator->triangulate(in_cams, tracks, lm_map);
+  }
   else
   {
     std::set<maptk::frame_id_t> frames = tracks->all_frame_ids();
@@ -581,18 +726,28 @@ static int maptk_main(int argc, char const* argv[])
     }
   }
 
+  // Initialize primary camera map (pre-subsampling)
+  maptk::camera_map_sptr cam_map(new maptk::simple_camera_map(cameras)),
+                         orig_cam_map(new maptk::simple_camera_map(input_cameras));
+  std::cout << "initialized "<<cam_map->size()<<" cameras"<<std::endl;
+
+  //
+  // Load reference points file if we were given one
+  //
+  maptk::landmark_map_sptr reference_landmarks(new maptk::simple_landmark_map());
+  maptk::track_set_sptr reference_tracks(new maptk::simple_track_set());
   if (config->get_value<std::string>("input_reference_points_file", "") != "")
   {
     maptk::path_t ref_file = config->get_value<maptk::path_t>("input_reference_points_file");
 
-    // Load up landmarks and assocaited tracks from file, (re)initializing local coordinate system object
+    // Load up landmarks and assocaited tracks from file, (re)initializing
+    // local coordinate system object to the reference.
     maptk::load_reference_file(ref_file, local_cs, reference_landmarks, reference_tracks);
   }
 
-  maptk::camera_map_sptr cam_map(new maptk::simple_camera_map(cameras)),
-                         orig_cam_map(new maptk::simple_camera_map(pos_cameras));
-
-  std::cout << "initialized "<<cam_map->size()<<" cameras"<<std::endl;
+  //
+  // Cut down input cameras if a sub-sample rate was specified
+  //
   unsigned int cam_samp_rate = config->get_value<unsigned int>("camera_sample_rate");
   if(cam_samp_rate > 1)
   {
@@ -654,6 +809,9 @@ static int maptk_main(int argc, char const* argv[])
   // point structures. Then, apply the estimated transform to the refined
   // camera positions and landmarks.
   //
+  // The effect of this is to put the refined cameras and landmarks into the
+  // same coordinate system as the input cameras / reference points.
+  //
   if (st_estimator)
   {
     boost::timer::auto_cpu_timer t_1("st estimation and application: %t sec "
@@ -682,10 +840,10 @@ static int maptk_main(int argc, char const* argv[])
       // Estimate ST from sba-space to reference space.
       sim_transform = st_estimator->estimate_transform(sba_space_landmarks, reference_landmarks);
     }
-    else if (pos_cameras.size() > 0)
+    else if (orig_cam_map->size() > 0)
     {
       boost::timer::auto_cpu_timer t_2("similarity transform estimation from "
-                                       "POS cams: %t sec CPU, %w sec wall\n");
+                                       "input cams: %t sec CPU, %w sec wall\n");
 
       std::cout << "Estimating and applying similarity transform to refined "
                 << "cameras (from POS files)" << std::endl;
@@ -726,7 +884,9 @@ static int maptk_main(int argc, char const* argv[])
   {
     boost::timer::auto_cpu_timer t("writing output POS file(s): %t sec CPU, %w sec wall\n");
     bfs::path pos_dir = config->get_value<std::string>("output_pos_dir");
-    // update ins_map with refined data. Its ok if ins map is empty.
+    // Create INS data from adjusted cameras for POS file output.
+    typedef std::map<maptk::frame_id_t, maptk::ins_data> ins_map_t;
+    ins_map_t ins_map;
     maptk::update_ins_from_cameras(cam_map->cameras(), local_cs, ins_map);
     BOOST_FOREACH(const ins_map_t::value_type& p, ins_map)
     {
