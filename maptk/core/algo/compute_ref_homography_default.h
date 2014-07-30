@@ -73,7 +73,7 @@ public:
   compute_ref_homography_default( const compute_ref_homography_default& );
 
   /// Default Destructor
-  ~compute_ref_homography_default();
+  virtual ~compute_ref_homography_default();
 
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "default"; }

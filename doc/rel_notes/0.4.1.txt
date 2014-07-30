@@ -25,8 +25,15 @@ Build System
    new public git URL on GitHub.
 
 Core Library
+
  * Added log message for error condition in track_features_default.cxx
    where dependent algorithm were not all initialized.
+
+ * Added "virtual" keyword to algo type_name() and impl_name() methods in
+   derived classes.  The keyword is not required here, but makes it more
+   apparent that these are virtual methods.
+
+ * Made destructor for compute_ref_homography_default class virtual.
 
 
 Fixes since v0.4.0

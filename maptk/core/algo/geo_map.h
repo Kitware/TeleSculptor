@@ -56,7 +56,7 @@ public:
   geo_map() {}
 
   /// Return the name of this algorithm
-  std::string type_name() const { return "geo_map"; }
+  virtual std::string type_name() const { return "geo_map"; }
 
   /// Convert UTM coordinate into latitude and longitude.
   /**

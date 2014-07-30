@@ -64,7 +64,7 @@ public:
   virtual ~match_features_homography();
 
   /// Return the name of this implementation
-  std::string impl_name() const { return "homography_guided"; }
+  virtual std::string impl_name() const { return "homography_guided"; }
 
   /// Get this alg's \link maptk::config_block configuration block \endlink
   virtual config_block_sptr get_configuration() const;

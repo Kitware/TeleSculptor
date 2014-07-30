@@ -54,7 +54,7 @@ class MAPTK_CORE_EXPORT detect_features
 {
 public:
   /// Return the name of this algorithm
-  std::string type_name() const { return "detect_features"; }
+  virtual std::string type_name() const { return "detect_features"; }
 
   /// Extract a set of image features from the provided image
   /**
