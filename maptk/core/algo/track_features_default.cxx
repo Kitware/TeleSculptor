@@ -156,7 +156,7 @@ track_features_default
   {
     // Something did not initialize, return an empty vector
     /// \todo Convert to log message
-    std::cerr << "ERROR - not all dependent algorithms have been initialized.\n"
+    std::cerr << "ERROR - not all dependent algorithms have been initialized.\n";
     return track_set_sptr();
   }
 
