@@ -52,7 +52,7 @@ class MAPTK_VXL_EXPORT estimate_homography
 {
 public:
   /// Return the name of this implementation
-  std::string impl_name() const { return "vxl"; }
+  virtual std::string impl_name() const { return "vxl"; }
 
   // No configuration yet for this class.
   /// \cond DoxygenSuppress

@@ -61,7 +61,7 @@ class MAPTK_CORE_EXPORT estimate_homography
 public:
 
   /// Return the name of this algorithm
-  std::string type_name() const { return "estimate_homography"; }
+  virtual std::string type_name() const { return "estimate_homography"; }
 
   /// Estimate a homography matrix from corresponding features
   /**

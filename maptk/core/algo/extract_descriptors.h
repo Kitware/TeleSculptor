@@ -54,7 +54,7 @@ class MAPTK_CORE_EXPORT extract_descriptors
 {
 public:
   /// Return the name of this algorithm
-  std::string type_name() const { return "extract_descriptors"; }
+  virtual std::string type_name() const { return "extract_descriptors"; }
 
   /// Extract from the image a descriptor corresoponding to each feature
   /**

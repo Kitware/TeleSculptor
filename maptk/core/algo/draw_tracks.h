@@ -62,7 +62,7 @@ class MAPTK_CORE_EXPORT draw_tracks
 public:
 
   /// Return the name of this algorithm.
-  std::string type_name() const { return "draw_tracks"; }
+  virtual std::string type_name() const { return "draw_tracks"; }
 
   /// Draw features tracks on top of the input images.
   /**

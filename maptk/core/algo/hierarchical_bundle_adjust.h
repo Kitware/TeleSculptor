@@ -65,7 +65,7 @@ public:
   virtual ~hierarchical_bundle_adjust() MAPTK_NOTHROW;
 
   /// Return the name of this implementation
-  std::string impl_name() const { return "hierarchical"; }
+  virtual std::string impl_name() const { return "hierarchical"; }
 
   /// Get this algorithm's \link maptk::config_block configuration block \endlink
   virtual config_block_sptr get_configuration() const;

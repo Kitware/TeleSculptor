@@ -55,7 +55,7 @@ public:
   geo_map() {}
 
   /// Return the name of this implementation
-  std::string impl_name() const { return "proj"; }
+  virtual std::string impl_name() const { return "proj"; }
 
   // No configuration for this class yet
   /// \cond DoxygenSuppress
