@@ -52,7 +52,7 @@ class MAPTK_CORE_EXPORT convert_image
 {
 public:
   /// Return the name of this algorithm
-  std::string type_name() const { return "convert_image"; }
+  virtual std::string type_name() const { return "convert_image"; }
 
   /// Set this algorithm's properties via a config block
   virtual void set_configuration(config_block_sptr config);
@@ -78,7 +78,7 @@ public:
   convert_image_default(const convert_image_default&);
 
   /// Return the name of this implementation
-  std::string impl_name() const { return "default"; }
+  virtual std::string impl_name() const { return "default"; }
 
   /// Default image converter ( does nothing )
   /**

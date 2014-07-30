@@ -56,7 +56,7 @@ class MAPTK_VXL_EXPORT estimate_similarity_transform
 {
 public:
   /// Name of this implementation
-  std::string impl_name() const { return "vxl"; }
+  virtual std::string impl_name() const { return "vxl"; }
 
   // No custom configuration at this time
   /// \cond Doxygen Suppress

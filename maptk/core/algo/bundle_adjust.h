@@ -55,7 +55,7 @@ class MAPTK_CORE_EXPORT bundle_adjust
 {
 public:
   /// Return the name of this algorithm
-  std::string type_name() const { return "bundle_adjust"; }
+  virtual std::string type_name() const { return "bundle_adjust"; }
 
   /// Optimize the camera and landmark parameters given a set of tracks
   /**

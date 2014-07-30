@@ -70,7 +70,7 @@ public:
   track_features_default(const track_features_default&);
 
   /// Return the name of this implementation
-  std::string impl_name() const { return "default"; }
+  virtual std::string impl_name() const { return "default"; }
 
   /// Get this algorithm's \link maptk::config_block configuration block \endlink
   /**

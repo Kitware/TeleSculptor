@@ -55,7 +55,7 @@ public:
   convert_image(const convert_image &);
 
   /// Return the name of this implementation
-  std::string impl_name() const { return "viscl"; }
+  virtual std::string impl_name() const { return "viscl"; }
 
   /// Image convert to viscl underlying type
   /**

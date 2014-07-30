@@ -62,7 +62,7 @@ public:
   extract_descriptors(const extract_descriptors& other);
 
   /// Return the name of this implementation
-  std::string impl_name() const { return "ocv"; }
+  virtual std::string impl_name() const { return "ocv"; }
 
   /// Get this algorithm's \link maptk::config_block configuration block \endlink
   virtual config_block_sptr get_configuration() const;

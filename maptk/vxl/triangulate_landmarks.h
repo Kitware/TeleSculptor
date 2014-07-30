@@ -63,7 +63,7 @@ public:
   triangulate_landmarks(const triangulate_landmarks& other);
 
   /// Return the name of this implementation
-  std::string impl_name() const { return "vxl"; }
+  virtual std::string impl_name() const { return "vxl"; }
 
   /// Get this algorithm's \link maptk::config_block configuration block \endlink
   virtual config_block_sptr get_configuration() const;
