@@ -337,15 +337,19 @@ files_in_dir(const bfs::path& dir)
 
 
 // Load input POS cameras from file, matching against the given image filename
-// map. Returns false if a failure occurred.
+// map, and updated local_cs and input_cameras structures.
+//
+// Returns false if a failure occurred
 bool
-load_input_cameras_pos(maptk::config_block_sptr config,
+load_input_cameras_pos(std::string pos_files,
                        std::map<std::string, maptk::frame_id_t> const& filename2frame,
+                       maptk::camera_d const& base_camera,
+                       maptk::rotation_d const& ins_rot_offset,
+                       maptk::local_geo_cs & local_cs,
                        maptk::camera_map::map_camera_t & input_cameras)
 {
   boost::timer::auto_cpu_timer t("Initializing cameras from POS files: %t sec CPU, %w sec wall\n");
 
-  std::string pos_files = config->get_value<std::string>("input_pos_files");
   std::vector<bfs::path> files;
   if( bfs::is_directory(pos_files) )
   {
@@ -371,12 +375,14 @@ load_input_cameras_pos(maptk::config_block_sptr config,
   // Associating POS file to frame ID based on whether its filename stem is
   // the same as an image in the given image list (map created above).
   std::map<maptk::frame_id_t, maptk::ins_data> ins_map;
+  std::map<std::string, maptk::frame_id_t>::const_iterator it;
   BOOST_FOREACH(maptk::path_t const& fpath, files)
   {
     std::string pos_file_stem = fpath.stem().string();
-    if (filename2frame.count(pos_file_stem))
+    it = filename2frame.find(pos_file_stem);
+    if (it != filename2frame.end())
     {
-      ins_map[filename2frame[pos_file_stem]] = maptk::read_pos_file(fpath);
+      ins_map[it->second] = maptk::read_pos_file(fpath);
     }
   }
   // Warn if the POS file set is sparse compared to input frames
@@ -391,8 +397,6 @@ load_input_cameras_pos(maptk::config_block_sptr config,
                 << std::endl;
     }
 
-    maptk::rotation_d ins_rot_offset = config->get_value<maptk::rotation_d>("ins:rotation_offset",
-                                                                            maptk::rotation_d());
     input_cameras = maptk::initialize_cameras_with_ins(ins_map, base_camera,
                                                        local_cs,
                                                        ins_rot_offset);
@@ -412,14 +416,13 @@ load_input_cameras_pos(maptk::config_block_sptr config,
 // Load input KRTD cameras from file, matching against the given image
 // filename map. Returns false if failure occurred.
 bool
-load_input_cameras_krtd(maptk::config_block_sptr config,
+load_input_cameras_krtd(std::string krtd_files,
                         std::map<std::string, maptk::frame_id_t> const& filename2frame,
                         maptk::camera_map::map_camera_t & input_cameras)
 {
   boost::timer::auto_cpu_timer t("Initializing cameras from KRTD files: %t sec CPU, %w sec wall\n");
 
   // Collect files
-  std::string krtd_files = config->get_value<std::string>("input_krtd_files");
   std::vector<bfs::path> files;
   if (bfs::is_directory(krtd_files))
   {
@@ -430,9 +433,9 @@ load_input_cameras_krtd(maptk::config_block_sptr config,
     std::ifstream ifs(krtd_files.c_str());
     if (!ifs)
     {
-      std::error << "ERROR: Could not open KRTD file list "
-                 << "\"" << krtd_files << "\""
-                 << std::endl;
+      std::cerr << "ERROR: Could not open KRTD file list "
+                << "\"" << krtd_files << "\""
+                << std::endl;
       return false;
     }
     for (std::string line; std::getline(ifs, line); )
@@ -445,12 +448,15 @@ load_input_cameras_krtd(maptk::config_block_sptr config,
   // on file stem naming.
   std::cout << "loading KRTD input camera files" << std::endl;
   maptk::camera_map::map_camera_t krtd_cams;
+  std::map<std::string, maptk::frame_id_t>::const_iterator it;
   BOOST_FOREACH(maptk::path_t const& fpath, files)
   {
     std::string krtd_file_stem = fpath.stem().string();
-    if (filename2frame.count(krtd_file_stem))
+    it = filename2frame.find(krtd_file_stem);
+    if (it != filename2frame.end())
     {
-      krtd_cams[filename2frame[krtd_file_stem]] = camera_sptr(new maptk::read_krtd_file(fpath));
+      maptk::camera_sptr cam(new maptk::camera_d(maptk::read_krtd_file(fpath)));
+      krtd_cams[it->second] = cam;
     }
   }
 
@@ -473,34 +479,7 @@ load_input_cameras_krtd(maptk::config_block_sptr config,
                 << "every input image file)"
                 << std::endl;
     }
-    input_cameras = maptk::camera_map_sptr(new maptk::simple_camera_map(krtd_cams));
-  }
-  return true;
-}
-
-
-
-// Helper function to load input cameras based on configuration and a map of
-// filename stems to the file's frame number.
-//
-// Assumes that input camera filename stems are congruent to the input image
-// filename stems.
-//
-// Returns false if a failure occurred.
-bool
-load_input_cameras(maptk::config_block_sptr config,
-                   std::map<std::string, maptk::frame_id_t> const& filename2frame,
-                   maptk::camera_map::map_camera_t & input_cameras)
-{
-  // Configuration check ensures validity and mutual exclusivity of these
-  // options.
-  if (config->get_value<std::string>("input_pos_files", "") != "")
-  {
-    return load_input_cameras_pos(config, filename2frame, input_cameras);
-  }
-  else if (config->get_value<std::string>("input_krtd_files", "") != "")
-  {
-    return load_input_cameras_krtd(config, filename2frame, input_cameras);
+    input_cameras = krtd_cams;
   }
   return true;
 }
@@ -695,11 +674,28 @@ static int maptk_main(int argc, char const* argv[])
   // Initialize input camera map based on which input files were given, if any.
   // If input_cameras is empty after this method, then there were no input
   // camera files.
+  //
+  // Config check above ensures validity + mutual exclusivity of these options
   maptk::camera_map::map_camera_t input_cameras;
-  if (!load_input_cameras(config, filename2frame, input_cameras))
+  if (config->get_value<std::string>("input_pos_files", "") != "")
   {
-    std::cerr << "ERROR: Failed to load input cameras." << std::endl;
-    return EXIT_FAILURE;
+    std::string pos_files = config->get_value<std::string>("input_pos_files");
+    maptk::rotation_d ins_rot_offset = config->get_value<maptk::rotation_d>("ins:rotation_offset", maptk::rotation_d());
+    if (!load_input_cameras_pos(pos_files, filename2frame, base_camera,
+                                ins_rot_offset, local_cs, input_cameras))
+    {
+      std::cerr << "ERROR: Failed to load input POS cameras." << std::endl;
+      return EXIT_FAILURE;
+    }
+  }
+  else if (config->get_value<std::string>("input_krtd_files", "") != "")
+  {
+    std::string krtd_files = config->get_value<std::string>("input_krtd_files");
+    if (!load_input_cameras_krtd(krtd_files, filename2frame, input_cameras))
+    {
+      std::cerr << "ERROR: Failed to load input KRTD cameras." << std::endl;
+      return EXIT_FAILURE;
+    }
   }
 
   // Copy input cameras into main camera map
