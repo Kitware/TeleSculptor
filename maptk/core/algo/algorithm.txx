@@ -191,7 +191,7 @@ algorithm_def<Self>
   else
   {
     /// \todo add log message
-    std::cerr << "WARNING - config key: \"" << name << config_block::block_sep <<  "type\" not found\n";
+    std::cerr << "WARNING - config key: \"" << key <<  "\" not found\n";
   }
 }
 
