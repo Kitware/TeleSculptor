@@ -139,19 +139,17 @@ algorithm_def<Self>
     + boost::algorithm::join(algorithm_def<Self>::registered_names(), "\n\t- ")
     ;
 
+  std::string const key( name + config_block::block_sep + "type" );
+
   if(nested_algo)
   {
-    config->set_value(name + config_block::block_sep + "type",
-                      nested_algo->impl_name(),
-                      type_comment);
+    config->set_value( key, nested_algo->impl_name(), type_comment);
     config->subblock_view(name + config_block::block_sep + nested_algo->impl_name())
           ->merge_config(nested_algo->get_configuration());
   }
-  else if (!config->has_value(name + config_block::block_sep + "type"))
+  else if (!config->has_value( key ))
   {
-    config->set_value(name + config_block::block_sep + "type",
-                      "",
-                      type_comment);
+    config->set_value( key, "", type_comment);
   }
 }
 
