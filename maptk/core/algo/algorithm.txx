@@ -170,9 +170,11 @@ algorithm_def<Self>
     iname = config->get_value<std::string>( key );
     if(algorithm_def<Self>::has_impl_name(iname))
     {
+#ifndef NDEBUG
       // \todo add log message
       std::cerr << "DEBUG - configuring \"" << name << "\" with algorithm type \""
                 << iname << "\"\n";
+#endif
 
       nested_algo = algorithm_def<Self>::create(iname);
       nested_algo->set_configuration(
@@ -181,15 +183,19 @@ algorithm_def<Self>
     }
     else
     {
+#ifndef NDEBUG
       // \todo add log message, is this an error?
       std::cerr << "WARNING - impl name:\"" << iname << "\" not supported, from key \""
                 << key << "\"\n";
+#endif
     }
   }
   else
   {
+#ifndef NDEBUG
     /// \todo add log message
     std::cerr << "WARNING - config key: \"" << key <<  "\" not found\n";
+#endif
   }
 }
 
@@ -203,17 +209,22 @@ algorithm_def<Self>
 {
   if(!config->has_value(name + config_block::block_sep + "type"))
   {
+#ifndef NDEBUG
     // \todo add log message DEBUG
     std::cerr << "DEBUG - config block does not contain \""
-              << name << config_block::block_sep << "type\"\n";
+              << name << config_block::block_sep << "type\"" << std::endl;
+#endif
+
     return false;
   }
   std::string iname = config->get_value<std::string>(name + config_block::block_sep + "type");
   if(!algorithm_def<Self>::has_impl_name(iname))
   {
+#ifndef NDEBUG
     // \todo add log message DEBUG
     std::cerr << "DEBUG - algorithm does not have implementation name \"" << iname
-          << "\"\n";
+              << "\"" << std::endl;
+#endif
     return false;
   }
 
