@@ -173,7 +173,7 @@ algorithm_def<Self>
     if(algorithm_def<Self>::has_impl_name(iname))
     {
       // \todo add log message
-      std::cerr << "DEBUG - configuring \"" << name << "\" with config type \""
+      std::cerr << "DEBUG - configuring \"" << name << "\" with algorithm type \""
                 << iname << "\"\n";
 
       nested_algo = algorithm_def<Self>::create(iname);
