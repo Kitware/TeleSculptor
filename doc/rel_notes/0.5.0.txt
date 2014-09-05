@@ -16,6 +16,12 @@ Core Library
  * Added a function to create a cross-product matrix (3x3, skew symmetric) from
    a 3D vector.
 
+ * Added a function, canonical_tranform(), to estimate a canonical similarity
+   transformation given a collection of cameras and landmarks.  The
+   transformation aligns the mean of landmarks with the origin, scales to give
+   the landmark distribution unit variance, and aligns the orientation with the
+   average camera look direction.
+
 VXL Library
 
  * Added concrete implementaiton of essential matrix estimation using the
@@ -27,6 +33,13 @@ VXL Library
 Tests
 
  * Added various unit tests for VXL estimate_essential_matrix.
+
+Tools
+
+ * Updated the bundle adjustment tool to apply the canonical similarity
+   transform in the absence of any other global coordinate constraints.
+   This fixes the coordinates after guage-free optimization to allow results
+   to be more easily compared.
 
 
 Fixes since v0.4.1
