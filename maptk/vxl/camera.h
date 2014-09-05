@@ -66,6 +66,20 @@ void maptk_to_vpgl_camera(const camera_<T>& mcam,
                           vpgl_perspective_camera<T>& vcam);
 
 
+/// Convert a vpgl_calibration_matrix to a maptk::camera_intrinsics_
+template <typename T>
+MAPTK_VXL_EXPORT
+void vpgl_calibration_to_maptk(const vpgl_calibration_matrix<T>& vcal,
+                               camera_intrinsics_<T>& mcal);
+
+/// Convert a maptk::camera_intrinsics_ to a vpgl_calibration_matrix
+template <typename T>
+MAPTK_VXL_EXPORT
+void maptk_to_vpgl_calibration(const camera_intrinsics_<T>& mcal,
+                               vpgl_calibration_matrix<T>& vcal);
+
+
+
 } // end namespace vxl
 
 } // end namespace maptk

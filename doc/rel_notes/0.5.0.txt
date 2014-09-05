@@ -4,8 +4,29 @@ MAPTK v0.5.0 Release Notes
 This is a minor release of MAPTK that provides both new functionality and fixes
 over the previous v0.4.1 release.
 
+
 Updates since v0.4.1
 --------------------
+
+Core Library
+
+ * Added abstract algorithm for essential matrix estimation from feature matches
+   and known camera intrinsics.
+
+ * Added a function to create a cross-product matrix (3x3, skew symmetric) from
+   a 3D vector.
+
+VXL Library
+
+ * Added concrete implementaiton of essential matrix estimation using the
+   vpgl_em_compute_5_point_ransac class in VXL.
+
+ * Refactored maptk <--> VXL camera conversion functions to expose conversion
+   functions for the camera calibration matrices (camera intrinsics).
+
+Tests
+
+ * Added various unit tests for VXL estimate_essential_matrix.
 
 
 Fixes since v0.4.1
