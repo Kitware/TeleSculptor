@@ -24,6 +24,9 @@ Build System
  * Updated the dashboard_git_url in the dashboard scripts to point to the
    new public git URL on GitHub.
 
+ * Updated CTEST_DROP_SITE to support both a public dashboard and a private
+   dashboard at Kitware for testing unrelease changes.
+
 Core Library
 
  * Added log message for error condition in track_features_default.cxx
