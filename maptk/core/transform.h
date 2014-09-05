@@ -88,6 +88,20 @@ MAPTK_CORE_EXPORT
 landmark_map_sptr transform(landmark_map_sptr landmarks,
                             const similarity_d& xform);
 
+
+/// Estimate a canonical coordinate transform for landmarks and cameras
+/**
+ * Center landmarks about the origin with unit average scale,
+ * orient the average camera principal axis to the -Z axis and
+ * the average camera up vector to Y axis.
+ * \note This assumes most cameras are viewing from the same side of
+ *       3D landmarks and have similar up directions.
+ */
+MAPTK_CORE_EXPORT
+similarity_d
+canonical_transform(camera_map_sptr cameras,
+                    landmark_map_sptr landmarks);
+
 } // end namespace maptk
 
 

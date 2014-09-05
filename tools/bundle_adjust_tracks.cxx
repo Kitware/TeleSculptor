@@ -692,6 +692,11 @@ static int maptk_main(int argc, char const* argv[])
       sim_transform = st_estimator->estimate_transform(cam_map, orig_cam_map);
 
     }
+    else
+    {
+      // In the absence of other information, use a canonical transformation
+      sim_transform = canonical_transform(cam_map, lm_map);
+    }
 
     std::cerr << "--> Estimated Transformation:" << std::endl
               << sim_transform << std::endl;
