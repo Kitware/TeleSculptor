@@ -22,6 +22,8 @@ Core Library
    the landmark distribution unit variance, and aligns the orientation with the
    average camera look direction.
 
+ * Added abstract algorithm for camera and landmark initialization from tracks.
+
 VXL Library
 
  * Added concrete implementaiton of essential matrix estimation using the
@@ -30,9 +32,15 @@ VXL Library
  * Refactored maptk <--> VXL camera conversion functions to expose conversion
    functions for the camera calibration matrices (camera intrinsics).
 
+ * Added concrete implementation of camera and landmark initialization using
+   the essential matrix estimation algorithm and additional VXL functions
+   for extracting camera information from essential matrices
+
 Tests
 
  * Added various unit tests for VXL estimate_essential_matrix.
+
+ * Added various unit tests for VXL initialize_cameras_landmarks.
 
 Tools
 
@@ -40,6 +48,9 @@ Tools
    transform in the absence of any other global coordinate constraints.
    This fixes the coordinates after guage-free optimization to allow results
    to be more easily compared.
+
+ * Updated the bundle adjustment tool to apply a camera and landmark
+   initialization algorithm before running bundle adjustment.
 
 
 Fixes since v0.4.1
