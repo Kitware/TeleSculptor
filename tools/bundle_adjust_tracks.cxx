@@ -336,6 +336,34 @@ files_in_dir(const bfs::path& dir)
 }
 
 
+/// Return a list of file paths either from a directory of files or from a
+/// list of file paths
+///
+/// Returns false if we were given a file list and the file could not be
+/// opened. Otherwise returns true.
+bool
+resolve_files(maptk::path_t const &p, std::vector<maptk::path_t> &files)
+{
+  if (bfs::is_directory(p))
+  {
+    files = files_in_dir(p);
+  }
+  else
+  {
+    std::ifstream ifs(p.string().c_str());
+    if (!ifs)
+    {
+      return false;
+    }
+    for (std::string line; std::getline(ifs, line);)
+    {
+      files.push_back(line);
+    }
+  }
+  return true;
+}
+
+
 // Load input POS cameras from file, matching against the given image filename
 // map, and updated local_cs and input_cameras structures.
 //
@@ -350,24 +378,10 @@ load_input_cameras_pos(maptk::config_block_sptr config,
 
   std::string pos_files = config->get_value<std::string>("input_pos_files");
   std::vector<bfs::path> files;
-  if( bfs::is_directory(pos_files) )
+  if (!resolve_files(pos_files, files))
   {
-    files = files_in_dir(pos_files);
-  }
-  else
-  {
-    std::ifstream ifs(pos_files.c_str());
-    if (!ifs)
-    {
-      std::cerr << "Error: Could not open POS file list "
-                << "\"" <<pos_files << "\""
-                << std::endl;
-      return false;
-    }
-    for (std::string line; std::getline(ifs,line); )
-    {
-      files.push_back(line);
-    }
+    std::cerr << "ERROR: Could not open POS file list." << std::endl;
+    return false;
   }
 
   std::cerr << "loading POS files" <<std::endl;
@@ -427,24 +441,10 @@ load_input_cameras_krtd(maptk::config_block_sptr config,
   // Collect files
   std::string krtd_files = config->get_value<std::string>("input_krtd_files");
   std::vector<bfs::path> files;
-  if (bfs::is_directory(krtd_files))
+  if (!resolve_files(krtd_files, files))
   {
-    files = files_in_dir(krtd_files);
-  }
-  else
-  {
-    std::ifstream ifs(krtd_files.c_str());
-    if (!ifs)
-    {
-      std::cerr << "ERROR: Could not open KRTD file list "
-                << "\"" << krtd_files << "\""
-                << std::endl;
-      return false;
-    }
-    for (std::string line; std::getline(ifs, line); )
-    {
-      files.push_back(line);
-    }
+    std::cerr << "ERROR: Could not open KRTD file list." << std::endl;
+    return false;
   }
 
   // Associating KRTD files to the frame ID of a matching input image based
@@ -501,31 +501,18 @@ bool load_input_cameras(maptk::config_block_sptr config,
                         maptk::local_geo_cs & local_cs,
                         maptk::camera_map::map_camera_t & input_cameras)
 {
-  // load function
-  bool (*load)(maptk::config_block_sptr,
-               std::map<std::string, maptk::frame_id_t> const&,
-               maptk::local_geo_cs &,
-               maptk::camera_map::map_camera_t &) = 0;
   // configuration check assured mutual exclusivity
   if (config->get_value<std::string>("input_pos_files", "") != "")
   {
-    load = &load_input_cameras_pos;
+    return load_input_cameras_pos(config, filename2frame, local_cs, input_cameras);
   }
   else if (config->get_value<std::string>("input_krtd_files", "") != "")
   {
-    load = &load_input_cameras_krtd;
+    return load_input_cameras_krtd(config, filename2frame, local_cs, input_cameras);
   }
 
-  if (load)
-  {
-    // input specified, call function
-    return load(config, filename2frame, local_cs, input_cameras);
-  }
-  else
-  {
-    // No input specified
-    return true;
-  }
+  // No input specified
+  return true;
 }
 
 
