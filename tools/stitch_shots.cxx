@@ -336,12 +336,6 @@ static int maptk_main(int argc, char const* argv[])
     LOG_ERROR("No output homography file path specified!");
     return EXIT_FAILURE;
   }
-  std::ofstream homog_output_stream(vm["output_homog_file"].as<std::string>().c_str());
-  if (!homog_output_stream)
-  {
-    LOG_ERROR("Could not open output homog file: " << vm["output_homog_file"].as<std::string>());
-    return EXIT_FAILURE;
-  }
 
   LOG_DEBUG("Loading images");
   std::vector<std::string> input_img_files(vm["input_img_files"].as< std::vector<std::string> >());
@@ -362,27 +356,47 @@ static int maptk_main(int argc, char const* argv[])
     return EXIT_FAILURE;
   }
 
-  LOG_DEBUG("Generating features over input frames");
+  // Make sure we can open for writting the given homography file path
+  std::string homog_output_path(vm["output_homog_file"].as<std::string>());
+  std::ofstream homog_output_stream(homog_output_path.c_str());
+  if (!homog_output_stream)
+  {
+    LOG_ERROR("Could not open output homog file: " << vm["output_homog_file"].as<std::string>());
+    return EXIT_FAILURE;
+  }
+
+  LOG_DEBUG("Generating features over input frames...");
   maptk::feature_set_sptr i1_features = feature_detector->detect(i1_image),
                           i2_features = feature_detector->detect(i2_image);
-  LOG_DEBUG("Generating descriptors over input frames");
+  LOG_DEBUG("Generating descriptors over input frames...");
   maptk::descriptor_set_sptr i1_descriptors = descriptor_extractor->extract(i1_image, i1_features),
                              i2_descriptors = descriptor_extractor->extract(i2_image, i2_features);
+  LOG_DEBUG("-- Img1 features / descriptors: " << i1_descriptors->size());
+  LOG_DEBUG("-- Img2 features / descriptors: " << i2_descriptors->size());
 
-  LOG_DEBUG("Matching features");
+  LOG_DEBUG("Matching features...");
   maptk::match_set_sptr matches = feature_matcher->match(i1_features, i1_descriptors,
                                                          i2_features, i2_descriptors);
+  LOG_DEBUG("-- Number of matches: " << matches->size());
 
-  LOG_DEBUG("Estimating homography");
+  LOG_DEBUG("Estimating homography...");
   std::vector<bool> inliers;
   maptk::homography homog = homog_estimator->estimate(i1_features, i2_features,
                                                       matches, inliers);
+  size_t inlier_count = 0;
+  BOOST_FOREACH(bool b, inliers)
+  {
+    if (b)
+      ++inlier_count;
+  }
+  LOG_DEBUG("-- Inliers: " << inlier_count << " / " << inliers.size());
 
-  LOG_DEBUG("Writing homography file");
+  LOG_DEBUG("Writing homography file...");
   maptk::homography identity;
   identity.set_identity();
   homog_output_stream << identity << "\n" << homog;
   homog_output_stream.close();
+  LOG_DEBUG("-- '" << homog_output_path << "' finished writing");
 
   return EXIT_SUCCESS;
 }
