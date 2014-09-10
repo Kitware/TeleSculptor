@@ -52,6 +52,9 @@ Build System
  * Fixed the issue with building statically on Windows by applying
    __declspec(dllimport) only in the shared build case.
 
+ * Fixed CMake config file configuration. Added missing build directory
+   reference in build config, and fixed pathing in install config.
+
 Core Library
 
  * Call loop closure on the first frame in the default tracker to fix
