@@ -113,7 +113,7 @@ set(MAPTK_CONFIG_FILE "${MAPTK_BINARY_DIR}/maptk-config.cmake")
 maptk_configure_file(maptk-config
   "${MAPTK_SOURCE_DIR}/cmake/maptk-config.cmake.in"
   "${MAPTK_CONFIG_FILE}"
-  MAPTK_SOURCE_DIR
+  MAPTK_SOURCE_DIR MAPTK_BINARY_DIR
   )
 maptk_export_targets("${MAPTK_BINARY_DIR}/maptk-config-targets.cmake")
 
