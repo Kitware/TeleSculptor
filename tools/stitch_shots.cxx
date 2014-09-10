@@ -125,17 +125,30 @@ static maptk::config_block_sptr default_config()
 
   // Default algorithm types
   config->set_value("image_reader:type", "vxl");
+
   config->set_value("image_converter:type", "default");
-  config->set_value("descriptor_extractor:type", "ocv");
-  config->set_value("descriptor_extractor:ocv:extractor:type", "Feature2D.SURF");
+
   config->set_value("feature_detector:type", "ocv");
   config->set_value("feature_detector:ocv:detector:type", "Feature2D.SURF");
-  config->set_value("feature_matcher:type", "ocv");
-  config->set_value("feature_matcher:ocv:matcher:type", "DescriptorMatcher.FlannBasedMatcher");
-  config->set_value("homog_estimator:type", "ocv");
-  // TODO: homography generation algo thingy
+  config->set_value("feature_detector:ocv:detector:Feature2D.SURF:hessianThreshold", 250);
+  //config->set_value("feature_detector:ocv:detector:Feature2D.SURF:nOctaveLayers", 4);
+  //config->set_value("feature_detector:ocv:detector:Feature2D.SURF:upright", true);
 
-  // expand algo config if any
+  config->set_value("descriptor_extractor:type", "ocv");
+  config->set_value("descriptor_extractor:ocv:extractor:type", "Feature2D.SURF");
+  config->set_value("descriptor_extractor:ocv:extractor:Feature2D.SURF:hessianThreshold", 250);
+  //config->set_value("descriptor_extractor:ocv:extractor:Feature2D.SURF:nOctaveLayers", 4);
+  //config->set_value("descriptor_extractor:ocv:extractor:Feature2D.SURF:upright", true);
+
+  config->set_value("feature_matcher:type", "ocv");
+  //config->set_value("feature_matcher:type", "homography_guided");
+  //config->set_value("feature_matcher:homography_guided:feature_matcher:type", "ocv");
+  //config->set_value("feature_matcher:homography_guided:feature_matcher:ocv:matcher:type", "DescriptorMatcher.FlannBasedMatcher");
+  //config->set_value("feature_matcher:homography_guided:homography_estimator:type", "vxl");
+
+  config->set_value("homog_estimator:type", "vxl");
+
+  // expand algo config from defaults above if any
 #define get_default(type, name) \
   maptk::algo::type::get_nested_algo_configuration( #name, config, maptk::algo::type##_sptr() );
 
@@ -375,14 +388,19 @@ static int maptk_main(int argc, char const* argv[])
   LOG_DEBUG("-- Img2 features / descriptors: " << i2_descriptors->size());
 
   LOG_DEBUG("Matching features...");
-  maptk::match_set_sptr matches = feature_matcher->match(i1_features, i1_descriptors,
-                                                         i2_features, i2_descriptors);
+  // matching from frame 2 to 1 explicitly. see below.
+  maptk::match_set_sptr matches = feature_matcher->match(i2_features, i2_descriptors,
+                                                         i1_features, i1_descriptors);
   LOG_DEBUG("-- Number of matches: " << matches->size());
 
+  // Because we computed matches from frames 2 to 1, this homography describes
+  // the transformation from image2 space to image1 space, which is warping
+  // tool usually want.
   LOG_DEBUG("Estimating homography...");
   std::vector<bool> inliers;
-  maptk::homography homog = homog_estimator->estimate(i1_features, i2_features,
+  maptk::homography homog = homog_estimator->estimate(i2_features, i1_features,
                                                       matches, inliers);
+  // Reporting inlier count
   size_t inlier_count = 0;
   BOOST_FOREACH(bool b, inliers)
   {
@@ -394,7 +412,7 @@ static int maptk_main(int argc, char const* argv[])
   LOG_DEBUG("Writing homography file...");
   maptk::homography identity;
   identity.set_identity();
-  homog_output_stream << identity << "\n" << homog;
+  homog_output_stream << identity << std::endl << homog << std::endl;
   homog_output_stream.close();
   LOG_DEBUG("-- '" << homog_output_path << "' finished writing");
 
