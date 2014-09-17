@@ -8,31 +8,26 @@ get_property(maptk_libs GLOBAL PROPERTY maptk_libraries)
 maptk_add_executable(maptk_track_features track_features.cxx)
 target_link_libraries(maptk_track_features
   LINK_PRIVATE
-    ${maptk_libs}
-  )
+    ${maptk_libs})
 
 maptk_add_executable(maptk_pos2krtd pos2krtd.cxx)
 target_link_libraries(maptk_pos2krtd
   LINK_PRIVATE
     ${maptk_libs}
     ${Boost_SYSTEM_LIBRARY}
-    ${Boost_FILESYSTEM_LIBRARY}
-  )
+    ${Boost_FILESYSTEM_LIBRARY})
 
 maptk_add_executable(maptk_bundle_adjust_tracks bundle_adjust_tracks.cxx)
 target_link_libraries(maptk_bundle_adjust_tracks
   LINK_PRIVATE
-    ${maptk_libs}
-  )
+    ${maptk_libs})
 
 maptk_add_executable(maptk_analyze_tracks analyze_tracks.cxx)
 target_link_libraries(maptk_analyze_tracks
   LINK_PRIVATE
-    ${maptk_libs}
-  )
+    ${maptk_libs})
 
 maptk_add_executable(maptk_stitch_shots stitch_shots.cxx)
 target_link_libraries(maptk_stitch_shots
   LINK_PRIVATE
-    ${maptk_libs}
-  )
+    ${maptk_libs})
