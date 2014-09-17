@@ -217,7 +217,7 @@ static int maptk_main(int argc, char const* argv[])
      "Output a configuration file with default values. This may be seeded with "
      "a configuration file from -c/--config.")
     ("inlier-scale,i",
-     bpo::value<double>()->value_name("DOUBLE")->default_value(10.0),
+     bpo::value<double>()->value_name("DOUBLE")->default_value(1.0),
      "Error distance tolerated for matches to be considered inliers during homography estimation.")
     ;
   // input file positional collector
@@ -350,7 +350,7 @@ static int maptk_main(int argc, char const* argv[])
     return EXIT_FAILURE;
   }
 
-  LOG_DEBUG("Loading images");
+  LOG_INFO("Loading images...");
   std::vector<std::string> input_img_files(vm["input_img_files"].as< std::vector<std::string> >());
   maptk::image_container_sptr i1_image, i2_image;
   try
@@ -378,25 +378,25 @@ static int maptk_main(int argc, char const* argv[])
     return EXIT_FAILURE;
   }
 
-  LOG_DEBUG("Generating features over input frames...");
+  LOG_INFO("Generating features over input frames...");
   maptk::feature_set_sptr i1_features = feature_detector->detect(i1_image),
                           i2_features = feature_detector->detect(i2_image);
-  LOG_DEBUG("Generating descriptors over input frames...");
+  LOG_INFO("Generating descriptors over input frames...");
   maptk::descriptor_set_sptr i1_descriptors = descriptor_extractor->extract(i1_image, i1_features),
                              i2_descriptors = descriptor_extractor->extract(i2_image, i2_features);
-  LOG_DEBUG("-- Img1 features / descriptors: " << i1_descriptors->size());
-  LOG_DEBUG("-- Img2 features / descriptors: " << i2_descriptors->size());
+  LOG_INFO("-- Img1 features / descriptors: " << i1_descriptors->size());
+  LOG_INFO("-- Img2 features / descriptors: " << i2_descriptors->size());
 
-  LOG_DEBUG("Matching features...");
+  LOG_INFO("Matching features...");
   // matching from frame 2 to 1 explicitly. see below.
   maptk::match_set_sptr matches = feature_matcher->match(i2_features, i2_descriptors,
                                                          i1_features, i1_descriptors);
-  LOG_DEBUG("-- Number of matches: " << matches->size());
+  LOG_INFO("-- Number of matches: " << matches->size());
 
   // Because we computed matches from frames 2 to 1, this homography describes
   // the transformation from image2 space to image1 space, which is warping
   // tool usually want.
-  LOG_DEBUG("Estimating homography...");
+  LOG_INFO("Estimating homography...");
   std::vector<bool> inliers;
   maptk::homography homog = homog_estimator->estimate(i2_features, i1_features,
                                                       matches, inliers);
@@ -407,14 +407,14 @@ static int maptk_main(int argc, char const* argv[])
     if (b)
       ++inlier_count;
   }
-  LOG_DEBUG("-- Inliers: " << inlier_count << " / " << inliers.size());
+  LOG_INFO("-- Inliers: " << inlier_count << " / " << inliers.size());
 
-  LOG_DEBUG("Writing homography file...");
+  LOG_INFO("Writing homography file...");
   maptk::homography identity;
   identity.set_identity();
   homog_output_stream << identity << std::endl << homog << std::endl;
   homog_output_stream.close();
-  LOG_DEBUG("-- '" << homog_output_path << "' finished writing");
+  LOG_INFO("-- '" << homog_output_path << "' finished writing");
 
   return EXIT_SUCCESS;
 }
