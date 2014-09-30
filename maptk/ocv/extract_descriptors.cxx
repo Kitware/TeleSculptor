@@ -53,14 +53,28 @@ class extract_descriptors::priv
 public:
   /// Constructor
   priv()
-  : extractor(cv::DescriptorExtractor::create("ORB"))
+  : extractor(default_extractor())
   {
   }
 
   /// Copy constructor
   priv(const priv& other)
-  : extractor(cv::DescriptorExtractor::create("ORB"))
+  : extractor(default_extractor())
   {
+  }
+
+  /// create the default descriptor extractor
+  static cv::Ptr<cv::DescriptorExtractor> default_extractor()
+  {
+    cv::Ptr<cv::DescriptorExtractor> ext;
+    // try the SURF detector first
+    ext = cv::DescriptorExtractor::create("SURF");
+    if( !ext )
+    {
+      // if SURF is not available (nonfree not built) use ORB
+      ext = cv::DescriptorExtractor::create("ORB");
+    }
+    return ext;
   }
 
   /// the descriptor extractor algorithm
