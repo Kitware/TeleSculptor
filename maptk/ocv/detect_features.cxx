@@ -40,7 +40,6 @@
 #include <maptk/ocv/image_container.h>
 #include <maptk/ocv/ocv_algo_tools.h>
 #include <opencv2/features2d/features2d.hpp>
-#include <opencv2/nonfree/nonfree.hpp>
 
 
 namespace maptk
