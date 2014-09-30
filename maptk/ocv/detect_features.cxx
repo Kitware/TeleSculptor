@@ -40,7 +40,6 @@
 #include <maptk/ocv/image_container.h>
 #include <maptk/ocv/ocv_algo_tools.h>
 #include <opencv2/features2d/features2d.hpp>
-#include <opencv2/nonfree/nonfree.hpp>
 
 
 namespace maptk
@@ -56,13 +55,27 @@ class detect_features::priv
 public:
   /// Constructor
   priv()
-  : detector(cv::FeatureDetector::create("SURF"))
+  : detector(default_detector())
   {
   }
 
   priv(const priv& other)
-  : detector(cv::FeatureDetector::create("SURF"))
+  : detector(default_detector())
   {
+  }
+
+  /// create the default feature detector
+  static cv::Ptr<cv::FeatureDetector> default_detector()
+  {
+    cv::Ptr<cv::FeatureDetector> det;
+    // try the SURF detector first
+    det = cv::FeatureDetector::create("SURF");
+    if( !det )
+    {
+      // if SURF is not available (nonfree not built) use ORB
+      det = cv::FeatureDetector::create("ORB");
+    }
+    return det;
   }
 
   /// the feature detector algorithm

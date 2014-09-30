@@ -66,3 +66,7 @@ OpenCV Library
  * Fixed crash caused by a NULL info structure returned by
    cv::Algorithm::info().  Must check that the info object is not NULL
    before calling its name() method.
+
+ * Fixed compatibity with OpenCV when compiled without the nonfree module.
+   If nonfree is available, SURF is used by default.  If nonfree is not
+   available, ORB is used by default.
