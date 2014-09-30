@@ -42,7 +42,11 @@
 #include <maptk/ocv/draw_tracks.h>
 #include <maptk/ocv/analyze_tracks.h>
 
+#include <opencv2/opencv_modules.hpp>
+#ifdef HAVE_OPENCV_NONFREE
 #include <opencv2/nonfree/nonfree.hpp>
+#endif
+
 
 namespace maptk
 {
@@ -53,7 +57,9 @@ namespace ocv
 /// register all algorithms in this module
 void register_algorithms()
 {
+#ifdef HAVE_OPENCV_NONFREE
   cv::initModule_nonfree();
+#endif
   ocv::analyze_tracks::register_self();
   ocv::detect_features::register_self();
   ocv::draw_tracks::register_self();
