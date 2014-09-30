@@ -56,9 +56,28 @@ image_io
 {
   LOG_DEBUG( "maptk::vxl::image_io::load",
              "Loading image from file: " << filename );
-  // If this loads in a boolean image, true-value regions are represented in
-  // the vxl_byte image as 1's.
-  vil_image_view<vxl_byte> img = vil_convert_cast(vxl_byte(), vil_load(filename.c_str()) );
+
+  vil_image_resource_sptr img_rsc = vil_load_image_resource(filename.c_str());
+  vil_image_view<vxl_byte> img;
+  switch (img_rsc->pixel_format())
+  {
+  case VIL_PIXEL_FORMAT_BOOL:
+    // If a boolean image, true-value pixls are represented in the
+    // vxl_byte image as 1's.
+    img = vil_convert_cast(vxl_byte(), img_rsc->get_view());
+    break;
+  case VIL_PIXEL_FORMAT_UINT_16:
+    {
+      vil_image_view<vxl_uint_16> img16 = img_rsc->get_view();
+      vxl_uint_16 minv = 0, maxv = 2048;
+      vil_convert_stretch_range_limited(img16, img, minv, maxv);
+    }
+    break;
+  default:
+    img = img_rsc->get_view();
+  }
+  return image_container_sptr(new vxl::image_container(img));
+
   LOG_DEBUG( "maptk::vxl::image_io::load",
              "Image stats (" << filename << "):" << std::endl <<
              "\tni: " << img.ni() << std::endl <<
