@@ -42,6 +42,7 @@
 #include <maptk/ocv/draw_tracks.h>
 #include <maptk/ocv/analyze_tracks.h>
 
+#include <opencv2/opencv_modules.hpp>
 #ifdef HAVE_OPENCV_NONFREE
 #include <opencv2/nonfree/nonfree.hpp>
 #endif
