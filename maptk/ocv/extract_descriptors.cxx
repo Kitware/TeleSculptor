@@ -53,13 +53,13 @@ class extract_descriptors::priv
 public:
   /// Constructor
   priv()
-  : extractor(cv::DescriptorExtractor::create("SURF"))
+  : extractor(cv::DescriptorExtractor::create("ORB"))
   {
   }
 
   /// Copy constructor
   priv(const priv& other)
-  : extractor(cv::DescriptorExtractor::create("SURF"))
+  : extractor(cv::DescriptorExtractor::create("ORB"))
   {
   }
 

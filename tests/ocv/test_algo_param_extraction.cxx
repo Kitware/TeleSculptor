@@ -84,14 +84,14 @@ using namespace maptk;
 
 IMPLEMENT_TEST(detect_features_opencv)
 {
-  // Tests our ability to construct an OpenCV algorithm, specifically GridSURF,
+  // Tests our ability to construct an OpenCV algorithm, specifically GridORB,
   // and access the underlying nested algorithm.
   //
   // NOTE: cv::Algorithm::getAlgorithm() returns a cv::Algorithm, and thats it.
 
   cerr << "Creating algo in a variety of ways" << endl;
-  cv::Ptr<cv::FeatureDetector> fd_fd = cv::FeatureDetector::create("GridSURF");
-  cv::Ptr<cv::Algorithm>     algo_fd = cv::FeatureDetector::create("GridSURF");
+  cv::Ptr<cv::FeatureDetector> fd_fd = cv::FeatureDetector::create("GridORB");
+  cv::Ptr<cv::Algorithm>     algo_fd = cv::FeatureDetector::create("GridORB");
 
   cerr << "- fd-fd           constructed" << endl;
   cv::Ptr<cv::Algorithm> nested1 = fd_fd->getAlgorithm("detector");
@@ -212,7 +212,7 @@ IMPLEMENT_TEST(detect_features_subclass_type_label)
   algo::detect_features_sptr df = algo::detect_features::create("ocv");
   cerr << "[] Creating empty config except for a detector type" << endl;
   config_block_sptr new_config = config_block::empty_config();
-  new_config->set_value("detector:type", "SURF");
+  new_config->set_value("detector:type", "ORB");
   cerr << "[] pre-set configuration:" << endl;
   print_config(new_config);
   cerr << "[] config check result: " << df->check_configuration(new_config) << endl;
@@ -232,7 +232,7 @@ IMPLEMENT_TEST(detect_features_general_type_label)
   algo::detect_features_sptr df = algo::detect_features::create("ocv");
   cerr << "[] Creating empty config except for a detector type" << endl;
   config_block_sptr new_config = config_block::empty_config();
-  new_config->set_value("detector:type", "Feature2D.SURF");
+  new_config->set_value("detector:type", "Feature2D.ORB");
   cerr << "[] pre-set configuration:" << endl;
   print_config(new_config);
   cerr << "[] config check result: " << df->check_configuration(new_config) << endl;
