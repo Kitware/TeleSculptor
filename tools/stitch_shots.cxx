@@ -108,8 +108,8 @@ static void print_usage(std::string const &prog_name,
 }
 
 
-// Macro allowing for other macro calls on standard stitcher algorithms.
-// Call must be two take two arguments: (algo_type, algo_name)
+// Shortcut macro for arbitrarilly acting over the tool's algorithm elements.
+// ``call`` macro must be two take two arguments: (algo_type, algo_name)
 #define stitcher_algos(call)                       \
   call(image_io,            image_reader);         \
   call(convert_image,       image_converter);      \
@@ -131,20 +131,12 @@ static maptk::config_block_sptr default_config()
   config->set_value("feature_detector:type", "ocv");
   config->set_value("feature_detector:ocv:detector:type", "Feature2D.SURF");
   config->set_value("feature_detector:ocv:detector:Feature2D.SURF:hessianThreshold", 250);
-  //config->set_value("feature_detector:ocv:detector:Feature2D.SURF:nOctaveLayers", 4);
-  //config->set_value("feature_detector:ocv:detector:Feature2D.SURF:upright", true);
 
   config->set_value("descriptor_extractor:type", "ocv");
   config->set_value("descriptor_extractor:ocv:extractor:type", "Feature2D.SURF");
   config->set_value("descriptor_extractor:ocv:extractor:Feature2D.SURF:hessianThreshold", 250);
-  //config->set_value("descriptor_extractor:ocv:extractor:Feature2D.SURF:nOctaveLayers", 4);
-  //config->set_value("descriptor_extractor:ocv:extractor:Feature2D.SURF:upright", true);
 
   config->set_value("feature_matcher:type", "ocv");
-  //config->set_value("feature_matcher:type", "homography_guided");
-  //config->set_value("feature_matcher:homography_guided:feature_matcher:type", "ocv");
-  //config->set_value("feature_matcher:homography_guided:feature_matcher:ocv:matcher:type", "DescriptorMatcher.FlannBasedMatcher");
-  //config->set_value("feature_matcher:homography_guided:homography_estimator:type", "vxl");
 
   config->set_value("homog_estimator:type", "vxl");
 
