@@ -24,21 +24,21 @@ Documentation
 Build System
 
  * Updated the dashboard_git_url in the dashboard scripts to point to the
-   new public git URL on GitHub.
+   new public Git URL on GitHub
 
  * Updated CTEST_DROP_SITE to support both a public dashboard and a private
-   dashboard at Kitware for testing unrelease changes.
+   dashboard at Kitware for testing unreleased changes
 
 Core Library
 
- * Added log message for error condition in track_features_default.cxx
-   where dependent algorithm were not all initialized.
+ * Added a log message for an error condition in track_features_default.cxx
+   where dependent algorithms were not all initialized
 
  * Added "virtual" keyword to algo type_name() and impl_name() methods in
    derived classes.  The keyword is not required here, but makes it more
    apparent that these are virtual methods.
 
- * Made destructor for compute_ref_homography_default class virtual.
+ * Made destructor for compute_ref_homography_default class virtual
 
 
 Fixes since v0.4.0
@@ -52,16 +52,16 @@ Build System
    newer versions of CMake
 
  * Fixed the issue with building statically on Windows by applying
-   __declspec(dllimport) only in the shared build case.
+   __declspec(dllimport) only in the shared build case
 
  * Fixed CMake config file configuration. Added missing build directory
-   reference in build config, and fixed pathing in install config.
+   reference in build config, and fixed pathing in install config
 
 Core Library
 
  * Call loop closure on the first frame in the default tracker to fix
    off-by-one bug in the loop closure reference frame and resulting
-   homography file.
+   homography file
 
 OpenCV Library
 
@@ -69,6 +69,6 @@ OpenCV Library
    cv::Algorithm::info().  Must check that the info object is not NULL
    before calling its name() method.
 
- * Fixed compatibity with OpenCV when compiled without the nonfree module.
+ * Fixed compatibility with OpenCV when compiled without the nonfree module.
    If nonfree is available, SURF is used by default.  If nonfree is not
    available, ORB is used by default.
