@@ -12,6 +12,8 @@ Documentation
 
  * Renamed README to README.md to allow GitHub to pick up on markdown formatting
 
+ * Added acknowledgements section to README.md thanking AFRL for their support
+
  * Added a more detailed project description to README.md
 
  * Added a class index to the Doxygen output
