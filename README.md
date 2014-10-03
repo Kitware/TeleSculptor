@@ -207,3 +207,9 @@ is complete and valid, run the tool one final time as
 An easier way to get started is to use the sample configuration files for each
 tool that are provided in the `tools/config` directory.  These examples use
 recommended default settings that are known to produce useful results.
+
+Acknowledgements
+----------------
+The authors would like to thank AFRL/Sensors Directorate for their support
+of this work via SBIR Contract FA8650-13-M-1694.
+This document is approved for public release via 88ABW-2014-2119.
