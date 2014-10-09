@@ -31,6 +31,8 @@ else()
   option(BUILD_SHARED_LIBS    "Build shared libraries."                       OFF)
 endif()
 
+set(MAPTK_LIB_SUFFIX "" CACHE STRING "String suffix appended to the library directory we install into")
+
 option(MAPTK_ENABLE_OPENCV  "Enable OpenCV-dependent code"                    OFF)
 option(MAPTK_ENABLE_VXL     "Enable VXL-dependent code"                       OFF)
 option(MAPTK_ENABLE_VISCL   "Enable VisCL dependent code (for OpenCL on GPU)" OFF)
@@ -118,7 +120,7 @@ maptk_configure_file(maptk-config
 maptk_export_targets("${MAPTK_BINARY_DIR}/maptk-config-targets.cmake")
 
 # Configure install-tree CMake config file and export associated targets file
-set(cmake_install_dir lib/cmake/maptk)
+set(cmake_install_dir lib${MAPTK_LIB_SUFFIX}/cmake/maptk)
 set(MAPTK_CONFIG_INSTALL_FILE "${MAPTK_BINARY_DIR}/maptk-config-install.cmake")
 maptk_configure_file(maptk-install-config
   "${MAPTK_SOURCE_DIR}/cmake/maptk-config-install.cmake.in"
