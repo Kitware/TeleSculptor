@@ -8,6 +8,11 @@ over the previous v0.4.1 release.
 Updates since v0.4.1
 --------------------
 
+Build System
+
+ * Added option for library suffix string, allowing for installation under
+   platform specific subdirectories (i.e. .../lib64/ vs .../lib/).
+
 Core Library
 
  * Added abstract algorithm for essential matrix estimation from feature matches
