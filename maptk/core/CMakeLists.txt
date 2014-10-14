@@ -66,6 +66,7 @@ set(maptk_core_headers_public
   algo/geo_map.h
   algo/hierarchical_bundle_adjust.h
   algo/image_io.h
+  algo/initialize_cameras_landmarks.h
   algo/match_features.h
   algo/match_features_homography.h
   algo/optimize_cameras.h
@@ -127,6 +128,7 @@ set(maptk_core_sources
   algo/geo_map.cxx
   algo/hierarchical_bundle_adjust.cxx
   algo/image_io.cxx
+  algo/initialize_cameras_landmarks.cxx
   algo/match_features.cxx
   algo/match_features_homography.cxx
   algo/optimize_cameras.cxx
