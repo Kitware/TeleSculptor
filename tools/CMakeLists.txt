@@ -27,7 +27,7 @@ target_link_libraries(maptk_analyze_tracks
   LINK_PRIVATE
     ${maptk_libs})
 
-maptk_add_executable(maptk_stitch_shots stitch_shots.cxx)
-target_link_libraries(maptk_stitch_shots
+maptk_add_executable(maptk_estimate_homography estimate_homography.cxx)
+target_link_libraries(maptk_estimate_homography
   LINK_PRIVATE
     ${maptk_libs})

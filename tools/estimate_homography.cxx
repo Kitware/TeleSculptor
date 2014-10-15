@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2014 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,7 @@
 
 /**
  * \file
- * \brief Feature tracker utility
+ * \brief Image homography estimation utility
  */
 
 #include <fstream>
@@ -110,7 +110,7 @@ static void print_usage(std::string const &prog_name,
 
 // Shortcut macro for arbitrarilly acting over the tool's algorithm elements.
 // ``call`` macro must be two take two arguments: (algo_type, algo_name)
-#define stitcher_algos(call)                       \
+#define tool_algos(call)                       \
   call(image_io,            image_reader);         \
   call(convert_image,       image_converter);      \
   call(detect_features,     feature_detector);     \
@@ -121,7 +121,7 @@ static void print_usage(std::string const &prog_name,
 
 static maptk::config_block_sptr default_config()
 {
-  maptk::config_block_sptr config = maptk::config_block::empty_config("stitcher_tool");
+  maptk::config_block_sptr config = maptk::config_block::empty_config("homography_estimation_tool");
 
   // Default algorithm types
   config->set_value("image_reader:type", "vxl");
@@ -144,7 +144,7 @@ static maptk::config_block_sptr default_config()
 #define get_default(type, name) \
   maptk::algo::type::get_nested_algo_configuration( #name, config, maptk::algo::type##_sptr() );
 
-  stitcher_algos(get_default);
+  tool_algos(get_default);
 
 #undef get_default
 
@@ -166,7 +166,7 @@ static bool check_config(maptk::config_block_sptr config)
     MAPTK_CONFIG_FAIL("Configuration for algorithm " << #name << " was invalid."); \
   }
 
-  stitcher_algos(check_algo_config);
+  tool_algos(check_algo_config);
 
 #undef check_algo_config
 
@@ -191,14 +191,16 @@ static int maptk_main(int argc, char const* argv[])
     ("help,h", "output help message and exit")
     ("config,c",
      bpo::value<maptk::path_t>()->value_name("PATH"),
-     "Optional custom configuration file for the tool.")
+     "Optional custom configuration file for the tool. Defaults are set such "
+     "that this is not required.")
     ("output-config,o",
      bpo::value<maptk::path_t>()->value_name("PATH"),
-     "Output a configuration file with default values. This may be seeded with "
-     "a configuration file from -c/--config.")
+     "Output a configuration file with default values. This may be seeded "
+     "with a configuration file from -c/--config.")
     ("inlier-scale,i",
      bpo::value<double>()->value_name("DOUBLE")->default_value(1.0),
-     "Error distance tolerated for matches to be considered inliers during homography estimation.")
+     "Error distance tolerated for matches to be considered inliers during "
+     "homography estimation.")
     ;
   // input file positional collector
   bpo::options_description opt_desc_pos;
@@ -267,7 +269,7 @@ static int maptk_main(int argc, char const* argv[])
 #define define_algo(type, name) \
   algo::type##_sptr name
 
-  stitcher_algos(define_algo);
+  tool_algos(define_algo);
 
 #undef define_algo
 
@@ -282,7 +284,7 @@ static int maptk_main(int argc, char const* argv[])
   algo::type::set_nested_algo_configuration( #name, config, name ); \
   algo::type::get_nested_algo_configuration( #name, config, name )
 
-  stitcher_algos(sa);
+  tool_algos(sa);
 
 #undef sa
 
