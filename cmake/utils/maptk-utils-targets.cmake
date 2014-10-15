@@ -12,6 +12,12 @@
 #   component
 #     If set, the target will not be installed under this component (the
 #     default is 'runtime').
+#
+#   library_subdir
+#     If set, library targets will be placed into the directory with this
+#     as a suffix. This is necessary due to the way some systems use
+#     CMAKE_BUILD_TYPE as a directory in the output path.
+#
 include(CMakeParseArguments)
 
 # Global collection variables
@@ -130,9 +136,9 @@ function(maptk_add_library name)
   add_library("${name}" ${ARGN})
   set_target_properties("${name}"
     PROPERTIES
-      ARCHIVE_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/lib${MAPTK_LIB_SUFFIX}"
-      LIBRARY_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/lib${MAPTK_LIB_SUFFIX}"
-      RUNTIME_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/bin"
+      ARCHIVE_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/lib${library_subdir}"
+      LIBRARY_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/lib${library_subdir}"
+      RUNTIME_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/bin${library_subdir}"
       VERSION                  ${MAPTK_VERSION}
       SOVERSION                0
       DEFINE_SYMBOL            MAKE_${upper_name}_LIB
@@ -146,9 +152,9 @@ function(maptk_add_library name)
     string(TOUPPER "${config}" upper_config)
     set_target_properties("${name}"
       PROPERTIES
-        "ARCHIVE_OUTPUT_DIRECTORY_${upper_config}" "${MAPTK_BINARY_DIR}/lib${MAPTK_LIB_SUFFIX}/${config}"
-        "LIBRARY_OUTPUT_DIRECTORY_${upper_config}" "${MAPTK_BINARY_DIR}/lib${MAPTK_LIB_SUFFIX}/${config}"
-        "RUNTIME_OUTPUT_DIRECTORY_${upper_config}" "${MAPTK_BINARY_DIR}/bin/${config}"
+        "ARCHIVE_OUTPUT_DIRECTORY_${upper_config}" "${MAPTK_BINARY_DIR}/lib/${config}${library_subdir}"
+        "LIBRARY_OUTPUT_DIRECTORY_${upper_config}" "${MAPTK_BINARY_DIR}/lib/${config}${library_subdir}"
+        "RUNTIME_OUTPUT_DIRECTORY_${upper_config}" "${MAPTK_BINARY_DIR}/bin/${config}${library_subdir}"
       )
   endforeach()
 
@@ -162,12 +168,14 @@ function(maptk_add_library name)
   endif()
 
   _maptk_export(${name})
+  # MATPK_LIB_SUFFIX should only apply to installation location, not the build
+  # locations that properties above this point pertain to.
   maptk_install(
     TARGETS             "${name}"
     ${exports}
-    ARCHIVE DESTINATION lib${MAPTK_LIB_SUFFIX}
-    LIBRARY DESTINATION lib${MAPTK_LIB_SUFFIX}
-    RUNTIME DESTINATION bin
+    ARCHIVE DESTINATION lib${MAPTK_LIB_SUFFIX}${library_subdir}
+    LIBRARY DESTINATION lib${MAPTK_LIB_SUFFIX}${library_subdir}
+    RUNTIME DESTINATION bin${library_subdir}
     COMPONENT           ${component}
     )
 
