@@ -67,7 +67,7 @@ namespace bpo = boost::program_options;
 #ifndef NDEBUG
 /// Display a debugging message
 # define LOG_DEBUG(msg) \
-  std::cerr << "[mss][DEBUG] " << msg << std::endl
+  std::cerr << "[meh][DEBUG] " << msg << std::endl
 /// Execute debug code
 # define DEBUG_CODE(code) code
 #else
@@ -79,17 +79,17 @@ namespace bpo = boost::program_options;
 
 /// Display an informational message
 #define LOG_INFO(msg) \
-  std::cerr << "[mss] [INFO] " << msg << std::endl
+  std::cerr << "[meh] [INFO] " << msg << std::endl
 
 /// Display a warning message
 #define LOG_WARNING(msg) \
-  std::cerr << "[mss] [WARN] " << msg << std::endl
+  std::cerr << "[meh] [WARN] " << msg << std::endl
 #define LOG_WARN(msg) \
   LOG_WARNING(msg)
 
 /// Display an error message
 #define LOG_ERROR(msg) \
-  std::cerr << "[mss][ERROR] " << msg << std::endl
+  std::cerr << "[meh][ERROR] " << msg << std::endl
 
 
 static void print_usage(std::string const &prog_name,
