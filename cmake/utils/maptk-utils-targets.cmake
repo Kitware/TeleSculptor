@@ -140,6 +140,7 @@ function(maptk_add_library name)
 
   add_dependencies("${name}"
     configure-config.h
+    configure-modules.h
     )
 
   foreach(config IN LISTS CMAKE_CONFIGURATION_TYPES)
