@@ -176,18 +176,6 @@ static bool check_config(maptk::config_block_sptr config)
 }
 
 
-#define print_config(config) \
-  do \
-  { \
-    BOOST_FOREACH( maptk::config_block_key_t key, config->available_values() ) \
-    { \
-      std::cerr << "\t" \
-           << key << " = " << config->get_value<maptk::config_block_key_t>(key) \
-           << std::endl; \
-    } \
-  } while (false)
-
-
 static int maptk_main(int argc, char const* argv[])
 {
   // register the algorithms in the various modules for dynamic look-up
@@ -303,21 +291,20 @@ static int maptk_main(int argc, char const* argv[])
 
   if (vm.count("output-config"))
   {
-    //std::cerr << "[DEBUG] Given config output target: " << vm["output-config"].as<maptk::path_t>() << std::endl;
     write_config_file(config, vm["output-config"].as<maptk::path_t>());
     if(valid_config)
     {
-      std::cerr << "INFO: Configuration file contained valid parameters and may be used for running" << std::endl;
+      LOG_INFO("Configuration file contained valid parameters and may be used for running");
     }
     else
     {
-      std::cerr << "WARNING: Configuration deemed not valid." << std::endl;
+      LOG_WARNING("Configuration deemed not valid.");
     }
     return EXIT_SUCCESS;
   }
   else if(!valid_config)
   {
-    std::cerr << "ERROR: Configuration not valid." << std::endl;
+    LOG_ERROR("Configuration not valid.");
     return EXIT_FAILURE;
   }
 
@@ -420,13 +407,13 @@ int main(int argc, char const* argv[])
   }
   catch (std::exception const& e)
   {
-    std::cerr << "Exception caught: " << e.what() << std::endl;
+    LOG_ERROR("Exception caught: " << e.what());
 
     return EXIT_FAILURE;
   }
   catch (...)
   {
-    std::cerr << "Unknown exception caught" << std::endl;
+    LOG_ERROR("Unknown exception caught");
 
     return EXIT_FAILURE;
   }
