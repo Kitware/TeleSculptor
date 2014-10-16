@@ -228,7 +228,7 @@ IMPLEMENT_TEST(subset_init)
 
   // mark every 3rd camera for initialization
   camera_map::map_camera_t cams_to_init;
-  for(int i=0; i<cameras->size(); ++i)
+  for(unsigned int i=0; i<cameras->size(); ++i)
   {
     if( i%3 == 0 )
     {
@@ -239,7 +239,7 @@ IMPLEMENT_TEST(subset_init)
 
   // mark every 5rd landmark for initialization
   landmark_map::map_landmark_t lms_to_init;
-  for(int i=0; i<landmarks->size(); ++i)
+  for(unsigned int i=0; i<landmarks->size(); ++i)
   {
     if( i%5 == 0 )
     {
@@ -271,7 +271,7 @@ IMPLEMENT_TEST(subset_init)
 
   // add the rest of the cameras
   cams_to_init = new_cameras->cameras();
-  for(int i=0; i<cameras->size(); ++i)
+  for(unsigned int i=0; i<cameras->size(); ++i)
   {
     if( cams_to_init.find(i) == cams_to_init.end() )
     {
@@ -282,7 +282,7 @@ IMPLEMENT_TEST(subset_init)
 
   // add the rest of the landmarks
   lms_to_init = new_landmarks->landmarks();
-  for(int i=0; i<landmarks->size(); ++i)
+  for(unsigned int i=0; i<landmarks->size(); ++i)
   {
     if( lms_to_init.find(i) == lms_to_init.end() )
     {
