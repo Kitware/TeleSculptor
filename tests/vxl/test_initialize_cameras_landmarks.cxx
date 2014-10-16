@@ -197,6 +197,8 @@ IMPLEMENT_TEST(noisy_points)
 
   landmark_map::map_landmark_t orig_lms = landmarks->landmarks();
   landmark_map::map_landmark_t new_lms = new_landmarks->landmarks();
+  global_sim = est_sim->estimate_transform(new_landmarks, landmarks);
+  std::cout << "similarity = "<<global_sim<<std::endl;
   BOOST_FOREACH(landmark_map::map_landmark_t::value_type p, orig_lms)
   {
     landmark_sptr new_lm_tr = transform(new_lms[p.first], global_sim);
