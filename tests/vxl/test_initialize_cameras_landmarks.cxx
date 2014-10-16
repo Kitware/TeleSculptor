@@ -167,7 +167,7 @@ IMPLEMENT_TEST(noisy_points)
   track_set_sptr tracks = projected_tracks(landmarks, cameras);
 
   // add random noise to track image locations
-  tracks = testing::noisy_tracks(tracks, 0.5);
+  tracks = testing::noisy_tracks(tracks, 0.3);
 
   camera_intrinsics_d K = cameras->cameras()[0]->intrinsics();
   configure_algo(init, K);
@@ -197,6 +197,8 @@ IMPLEMENT_TEST(noisy_points)
 
   landmark_map::map_landmark_t orig_lms = landmarks->landmarks();
   landmark_map::map_landmark_t new_lms = new_landmarks->landmarks();
+  global_sim = est_sim->estimate_transform(new_landmarks, landmarks);
+  std::cout << "similarity = "<<global_sim<<std::endl;
   BOOST_FOREACH(landmark_map::map_landmark_t::value_type p, orig_lms)
   {
     landmark_sptr new_lm_tr = transform(new_lms[p.first], global_sim);
@@ -228,7 +230,7 @@ IMPLEMENT_TEST(subset_init)
 
   // mark every 3rd camera for initialization
   camera_map::map_camera_t cams_to_init;
-  for(int i=0; i<cameras->size(); ++i)
+  for(unsigned int i=0; i<cameras->size(); ++i)
   {
     if( i%3 == 0 )
     {
@@ -239,7 +241,7 @@ IMPLEMENT_TEST(subset_init)
 
   // mark every 5rd landmark for initialization
   landmark_map::map_landmark_t lms_to_init;
-  for(int i=0; i<landmarks->size(); ++i)
+  for(unsigned int i=0; i<landmarks->size(); ++i)
   {
     if( i%5 == 0 )
     {
@@ -271,7 +273,7 @@ IMPLEMENT_TEST(subset_init)
 
   // add the rest of the cameras
   cams_to_init = new_cameras->cameras();
-  for(int i=0; i<cameras->size(); ++i)
+  for(unsigned int i=0; i<cameras->size(); ++i)
   {
     if( cams_to_init.find(i) == cams_to_init.end() )
     {
@@ -282,7 +284,7 @@ IMPLEMENT_TEST(subset_init)
 
   // add the rest of the landmarks
   lms_to_init = new_landmarks->landmarks();
-  for(int i=0; i<landmarks->size(); ++i)
+  for(unsigned int i=0; i<landmarks->size(); ++i)
   {
     if( lms_to_init.find(i) == lms_to_init.end() )
     {
