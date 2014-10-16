@@ -119,7 +119,7 @@ canonical_transform(maptk::camera_map_sptr cameras,
     center += c;
     s += inner_product(c,c);
   }
-  center /= landmarks->size();
+  center /= static_cast<double>(landmarks->size());
   s /= landmarks->size();
   s -= inner_product(center,center);
   s = 1.0/std::sqrt(s);
@@ -133,7 +133,7 @@ canonical_transform(maptk::camera_map_sptr cameras,
     cam_center += p.second->center();
     cam_up += p.second->rotation().inverse() * vector_3d(0,1,0);
   }
-  cam_center /= cameras->size();
+  cam_center /= static_cast<double>(cameras->size());
   cam_center -= center;
   cam_center = normalized(cam_center);
   cam_up = normalized(-cam_up);
