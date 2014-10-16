@@ -167,7 +167,7 @@ IMPLEMENT_TEST(noisy_points)
   track_set_sptr tracks = projected_tracks(landmarks, cameras);
 
   // add random noise to track image locations
-  tracks = testing::noisy_tracks(tracks, 0.5);
+  tracks = testing::noisy_tracks(tracks, 0.3);
 
   camera_intrinsics_d K = cameras->cameras()[0]->intrinsics();
   configure_algo(init, K);
