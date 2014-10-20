@@ -225,7 +225,7 @@ bool
 homography_collection
 ::has_current_to_last() const
 {
-  return current_to_last_;
+  return bool(current_to_last_);
 }
 
 
@@ -233,7 +233,7 @@ bool
 homography_collection
 ::has_current_to_reference() const
 {
-  return current_to_reference_;
+  return bool(current_to_reference_);
 }
 
 
@@ -241,7 +241,7 @@ bool
 homography_collection
 ::has_reference_to_world() const
 {
-  return reference_to_world_;
+  return bool(reference_to_world_);
 }
 
 
@@ -249,7 +249,7 @@ bool
 homography_collection
 ::has_current_to_world() const
 {
-  return current_to_world_;
+  return bool(current_to_world_);
 }
 
 
