@@ -41,6 +41,8 @@ Tools
    This fixes the coordinates after guage-free optimization to allow results
    to be more easily compared.
 
+ * Updated the bundle adjustment tool to optionally accept KRTD files as input.
+
 
 Fixes since v0.4.1
 ------------------
