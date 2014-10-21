@@ -1,0 +1,18 @@
+MAPTK v0.4.2 Release Notes
+==========================
+
+This release provides patches to the MAPTK v0.4.1 release to address issues.
+MAPTK v0.4.2 is primarily a bug fix release with very minimal new functionality.
+
+
+Updates since v0.4.1
+--------------------
+
+
+Fixes since v0.4.1
+------------------
+
+Core Library
+
+ * Fixed VS2013 compiler error resulting from implicit cast from shared_ptr
+   to bool.  The cast is now explicit.
