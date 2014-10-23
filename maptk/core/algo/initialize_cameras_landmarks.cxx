@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2014 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,42 +30,15 @@
 
 /**
  * \file
- * \brief VXL algorithm registration implementation
+ * \brief Instantiation of \link maptk::algo::algorithm_def algorithm_def<T>
+ *        \endlink for \link maptk::algo::initialize_cameras_landmarks
+ *        initialize_cameras_landmarks \endlink
  */
 
-#include <maptk/vxl/register.h>
-
-#include <maptk/vxl/bundle_adjust.h>
-#include <maptk/vxl/close_loops_homography_guided.h>
-#include <maptk/vxl/estimate_essential_matrix.h>
-#include <maptk/vxl/estimate_homography.h>
-#include <maptk/vxl/estimate_similarity_transform.h>
-#include <maptk/vxl/image_io.h>
-#include <maptk/vxl/initialize_cameras_landmarks.h>
-#include <maptk/vxl/optimize_cameras.h>
-#include <maptk/vxl/triangulate_landmarks.h>
-
-namespace maptk
-{
-
-namespace vxl
-{
-
-/// register all algorithms in this module
-void register_algorithms()
-{
-  vxl::bundle_adjust::register_self();
-  vxl::close_loops_homography_guided::register_self();
-  vxl::estimate_essential_matrix::register_self();
-  vxl::estimate_homography::register_self();
-  vxl::estimate_similarity_transform::register_self();
-  vxl::image_io::register_self();
-  vxl::initialize_cameras_landmarks::register_self();
-  vxl::optimize_cameras::register_self();
-  vxl::triangulate_landmarks::register_self();
-}
+#include <maptk/core/algo/initialize_cameras_landmarks.h>
+#include <maptk/core/algo/algorithm.txx>
 
 
-} // end namespace vxl
-
-} // end namespace maptk
+/// \cond DoxygenSuppress
+INSTANTIATE_ALGORITHM_DEF(maptk::algo::initialize_cameras_landmarks);
+/// \endcond

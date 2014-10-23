@@ -44,6 +44,7 @@
 #include <maptk/modules.h>
 
 #include <maptk/core/algo/bundle_adjust.h>
+#include <maptk/core/algo/initialize_cameras_landmarks.h>
 #include <maptk/core/algo/estimate_similarity_transform.h>
 #include <maptk/core/algo/triangulate_landmarks.h>
 #include <maptk/core/algo/geo_map.h>
@@ -171,6 +172,9 @@ static maptk::config_block_sptr default_config()
 
   algo::bundle_adjust::get_nested_algo_configuration("bundle_adjuster", config,
                                                      algo::bundle_adjust_sptr());
+  algo::initialize_cameras_landmarks
+      ::get_nested_algo_configuration("initializer", config,
+                                      algo::initialize_cameras_landmarks_sptr());
   algo::triangulate_landmarks::get_nested_algo_configuration("triangulator", config,
                                                              algo::triangulate_landmarks_sptr());
   algo::geo_map::get_nested_algo_configuration("geo_mapper", config,
@@ -242,6 +246,11 @@ static bool check_config(maptk::config_block_sptr config)
   if (!maptk::algo::bundle_adjust::check_nested_algo_configuration("bundle_adjuster", config))
   {
     MAPTK_CONFIG_FAIL("Failed config check in bundle_adjuster algorithm.");
+  }
+  if (!maptk::algo::initialize_cameras_landmarks
+            ::check_nested_algo_configuration("initializer", config))
+  {
+    MAPTK_CONFIG_FAIL("Failed config check in initializer algorithm.");
   }
   if (!maptk::algo::triangulate_landmarks::check_nested_algo_configuration("triangulator", config))
   {
@@ -578,6 +587,7 @@ static int maptk_main(int argc, char const* argv[])
   // Set up top level configuration w/ defaults where applicable.
   maptk::config_block_sptr config = maptk::config_block::empty_config();
   algo::bundle_adjust_sptr bundle_adjuster;
+  algo::initialize_cameras_landmarks_sptr initializer;
   algo::triangulate_landmarks_sptr triangulator;
   algo::geo_map_sptr geo_mapper;
   algo::estimate_similarity_transform_sptr st_estimator;
@@ -594,6 +604,7 @@ static int maptk_main(int argc, char const* argv[])
 
   algo::bundle_adjust::set_nested_algo_configuration("bundle_adjuster", config, bundle_adjuster);
   algo::triangulate_landmarks::set_nested_algo_configuration("triangulator", config, triangulator);
+  algo::initialize_cameras_landmarks::set_nested_algo_configuration("initializer", config, initializer);
   algo::geo_map::set_nested_algo_configuration("geo_mapper", config, geo_mapper);
   algo::estimate_similarity_transform::set_nested_algo_configuration("st_estimator", config, st_estimator);
 
@@ -609,6 +620,7 @@ static int maptk_main(int argc, char const* argv[])
     config = dflt_config;
     algo::bundle_adjust::get_nested_algo_configuration("bundle_adjuster", config, bundle_adjuster);
     algo::triangulate_landmarks::get_nested_algo_configuration("triangulator", config, triangulator);
+    algo::initialize_cameras_landmarks::get_nested_algo_configuration("initializer", config, initializer);
     algo::geo_map::get_nested_algo_configuration("geo_mapper", config, geo_mapper);
     algo::estimate_similarity_transform::get_nested_algo_configuration("st_estimator", config, st_estimator);
 
@@ -686,16 +698,10 @@ static int maptk_main(int argc, char const* argv[])
   maptk::local_geo_cs local_cs(geo_mapper);
 
   //
-  // Initialize all landmarks to the origin
+  // Initialize cameras
   //
-  std::set<maptk::track_id_t> track_ids = tracks->all_track_ids();
-  maptk::landmark_map::map_landmark_t landmarks;
-  BOOST_FOREACH(const maptk::track_id_t& tid, track_ids)
-  {
-    maptk::landmark_sptr lm(new maptk::landmark_d(maptk::vector_3d(0,0,0)));
-    landmarks[static_cast<maptk::landmark_id_t>(tid)] = lm;
-  }
-  maptk::landmark_map_sptr lm_map(new maptk::simple_landmark_map(landmarks));
+  typedef std::map<maptk::frame_id_t, maptk::ins_data> ins_map_t;
+  ins_map_t ins_map;
 
   //
   // Initialize input and main cameras
@@ -718,6 +724,8 @@ static int maptk_main(int argc, char const* argv[])
   // If there were no input cameras, initialize fixed location cameras to main
   // camera map.
   maptk::camera_map::map_camera_t cameras;
+  maptk::landmark_map_sptr lm_map;
+  maptk::camera_map_sptr input_cam_map(new maptk::simple_camera_map(input_cameras));
   if (input_cameras.size() != 0)
   {
     BOOST_FOREACH(maptk::camera_map::map_camera_t::value_type &v, input_cameras)
@@ -725,27 +733,23 @@ static int maptk_main(int argc, char const* argv[])
       cameras[v.first] = v.second->clone();
     }
     // Triangulate initial landmarks based on cameras and tracks
-    maptk::camera_map_sptr in_cams(new maptk::simple_camera_map(input_cameras));
-    triangulator->triangulate(in_cams, tracks, lm_map);
+    triangulator->triangulate(input_cam_map, tracks, lm_map);
   }
-  else
+
+
+  //
+  // Initialize cameras and landmarks
+  //
+  maptk::camera_map_sptr cam_map;
+  if(!cameras.empty())
   {
-    std::set<maptk::frame_id_t> frames = tracks->all_frame_ids();
-    maptk::camera_d base_camera = base_camera_from_config(config->subblock("base_camera"));
-    BOOST_FOREACH(const maptk::frame_id_t& fid, frames)
-    {
-      cameras[fid] = maptk::camera_sptr(new maptk::camera_d(base_camera));
-    }
+    cam_map = maptk::camera_map_sptr(new maptk::simple_camera_map(cameras));
+  }
+  {
+    boost::timer::auto_cpu_timer t("Initializing cameras and landmarks: %t sec CPU, %w sec wall\n");
+    initializer->initialize(cam_map, lm_map, tracks);
   }
 
-  // Initialize primary camera map (pre-subsampling)
-  maptk::camera_map_sptr cam_map(new maptk::simple_camera_map(cameras)),
-                         orig_cam_map(new maptk::simple_camera_map(input_cameras));
-  std::cerr << "initialized "<<cam_map->size()<<" cameras"<<std::endl;
-
-  //
-  // Load reference points file if we were given one
-  //
   maptk::landmark_map_sptr reference_landmarks(new maptk::simple_landmark_map());
   maptk::track_set_sptr reference_tracks(new maptk::simple_track_set());
   if (config->get_value<std::string>("input_reference_points_file", "") != "")
@@ -859,13 +863,13 @@ static int maptk_main(int argc, char const* argv[])
                 << "SBA-space ref landmarks)" << std::endl;
       sim_transform = st_estimator->estimate_transform(sba_space_landmarks, reference_landmarks);
     }
-    else if (orig_cam_map->size() > 0)
+    else if (input_cam_map->size() > 0)
     {
       boost::timer::auto_cpu_timer t_2("    %t sec CPU, %w sec wall\n");
 
       std::cerr << "--> Estimating transform to refined cameras "
                 << "(from input cameras)" << std::endl;
-      sim_transform = st_estimator->estimate_transform(cam_map, orig_cam_map);
+      sim_transform = st_estimator->estimate_transform(cam_map, input_cam_map);
     }
     else
     {
