@@ -698,12 +698,6 @@ static int maptk_main(int argc, char const* argv[])
   maptk::local_geo_cs local_cs(geo_mapper);
 
   //
-  // Initialize cameras
-  //
-  typedef std::map<maptk::frame_id_t, maptk::ins_data> ins_map_t;
-  ins_map_t ins_map;
-
-  //
   // Initialize input and main cameras
   //
 
@@ -735,7 +729,6 @@ static int maptk_main(int argc, char const* argv[])
     // Triangulate initial landmarks based on cameras and tracks
     triangulator->triangulate(input_cam_map, tracks, lm_map);
   }
-
 
   //
   // Initialize cameras and landmarks
