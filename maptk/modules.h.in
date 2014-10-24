@@ -64,23 +64,30 @@ namespace maptk
 
 inline void register_modules()
 {
-  algo::register_algorithms();
+  static bool modules_registered = false;
+
+  if ( ! modules_registered )
+  {
+    algo::register_algorithms();
 
 #if defined(MAPTK_HAVE_MODULE_VXL)
-  vxl::register_algorithms();
+    vxl::register_algorithms();
 #endif
 
 #if defined(MAPTK_HAVE_MODULE_OCV)
-  ocv::register_algorithms();
+    ocv::register_algorithms();
 #endif
 
 #if defined(MAPTK_HAVE_MODULE_PROJ)
-  proj::register_algorithms();
+    proj::register_algorithms();
 #endif
 
 #if defined(MAPTK_HAVE_MODULE_VISCL)
-  vcl::register_algorithms();
+    vcl::register_algorithms();
 #endif
+
+    modules_registered = true;
+  }
 }
 
 } // end namespace maptk

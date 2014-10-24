@@ -119,7 +119,7 @@ public:
     return data_[i][j];
   }
 
-  /// Return the i-th row (const)
+  /// Return the i-th row, j-th column (const)
   const T& operator()(unsigned int i, unsigned int j) const
   {
     assert(i<M);
