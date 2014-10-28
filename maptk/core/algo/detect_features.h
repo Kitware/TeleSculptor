@@ -58,11 +58,19 @@ public:
 
   /// Extract a set of image features from the provided image
   /**
+   * A given mask image should be one-channel (mask->depth() == 1). If the
+   * given mask image has more than one channel, only the first will be
+   * considered.
+   *
    * \param image_data contains the image data to process
+   * \param mask Mask image where regions of positive values (boolean true)
+   *             indicate regions to consider. Only the first channel will be
+   *             considered.
    * \returns a set of image features
    */
   virtual feature_set_sptr
-  detect(image_container_sptr image_data) const = 0;
+  detect(image_container_sptr image_data,
+         image_container_sptr mask = image_container_sptr()) const = 0;
 
 };
 

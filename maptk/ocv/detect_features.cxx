@@ -35,6 +35,7 @@
 
 #include "detect_features.h"
 
+#include <iostream>
 #include <vector>
 #include <maptk/ocv/feature_set.h>
 #include <maptk/ocv/image_container.h>
@@ -146,11 +147,28 @@ detect_features
 /// Extract a set of image features from the provided image
 feature_set_sptr
 detect_features
-::detect(image_container_sptr image_data) const
+::detect(image_container_sptr image_data, image_container_sptr mask) const
 {
-  cv::Mat img = ocv::image_container::maptk_to_ocv(image_data->get_image());
+  cv::Mat cv_img = ocv::image_container::maptk_to_ocv(image_data->get_image()),
+          cv_mask;
   std::vector<cv::KeyPoint> keypoints;
-  d_->detector->detect(img, keypoints);
+
+  // Only initialize a mask image if the given mask image container contained
+  // valid data.
+  if( mask->size() > 0 )
+  {
+    // Make sure we make a one-channel cv::Mat
+    ::maptk::image s = mask->get_image();
+    // hijacking memory of given mask image, but only telling the new image
+    // object to consider the first channel.
+    ::maptk::image i(s.memory(),
+                     static_cast< ::maptk::image::byte* >(s.memory()->data()),
+                     s.width(),  s.height(), 1 /*depth*/,
+                     s.w_step(), s.h_step(), s.d_step());
+    cv_mask = ocv::image_container::maptk_to_ocv(i);
+  }
+
+  d_->detector->detect(cv_img, keypoints, cv_mask);
   return feature_set_sptr(new feature_set(keypoints));
 }
 
