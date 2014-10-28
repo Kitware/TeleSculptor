@@ -155,7 +155,7 @@ detect_features
 
   // Only initialize a mask image if the given mask image container contained
   // valid data.
-  if( mask->size() > 0 )
+  if( mask && mask->size() > 0 )
   {
     // Make sure we make a one-channel cv::Mat
     ::maptk::image s = mask->get_image();
