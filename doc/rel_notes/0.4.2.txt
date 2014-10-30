@@ -16,3 +16,8 @@ Core Library
 
  * Fixed VS2013 compiler error resulting from implicit cast from shared_ptr
    to bool.  The cast is now explicit.
+
+ * Added singleton functionality to register_modules() function. Subsiquent
+   will act as no-ops.
+
+ * Typo fixes.
