@@ -14,7 +14,7 @@ set(MAPTK_VERSION "${MAPTK_VERSION_MAJOR}.${MAPTK_VERSION_MINOR}.${MAPTK_VERSION
 # Add the CMake directory for CMake modules
 #
 list(INSERT CMAKE_MODULE_PATH 0
-  "${MAPTK_SOURCE_DIR}/cmake"
+  "${MAPTK_SOURCE_DIR}/CMake"
   )
 
 
