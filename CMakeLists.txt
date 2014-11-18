@@ -33,7 +33,6 @@ endif()
 
 set(MAPTK_LIB_SUFFIX "" CACHE STRING "String suffix appended to the library directory we install into")
 
-option(MAPTK_ENABLE_OPENCV  "Enable OpenCV-dependent code"                    OFF)
 option(MAPTK_ENABLE_VXL     "Enable VXL-dependent code"                       OFF)
 option(MAPTK_ENABLE_VISCL   "Enable VisCL dependent code (for OpenCL on GPU)" OFF)
 option(MAPTK_ENABLE_PROJ    "Enable PROJ dependent code"                      OFF)

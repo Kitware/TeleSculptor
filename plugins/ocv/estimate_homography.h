@@ -37,7 +37,9 @@
 #define MAPTK_OCV_ESTIMATE_HOMOGRAPHY_H_
 
 #include "ocv_config.h"
-#include <maptk/core/algo/estimate_homography.h>
+
+#include <maptk/algo/estimate_homography.h>
+
 
 namespace maptk
 {

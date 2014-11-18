@@ -88,13 +88,7 @@ public:
     item_map_t &im = this->get_item_map<T>();
 
     bool new_insertion = im.insert(item_pair_t(name, item)).second;
-    if (new_insertion)
-    {
-      LOG_DEBUG("registrar::register_item",
-                "Registered \"" << name << "\" to instance. Item map now "
-                "of size: " << this->get_item_map<T>().size());
-    }
-    else
+    if (!new_insertion)
     {
       LOG_WARN("registrar::register_item",
                "Warning: duplicate registration of \"" << name << "\"");

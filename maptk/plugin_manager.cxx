@@ -15,6 +15,7 @@
 
 #include <maptk/exceptions/io.h>
 #include <maptk/logging_macros.h>
+#include <maptk/registrar.h>
 
 
 namespace bfs = boost::filesystem;
@@ -52,7 +53,7 @@ HANDLE_PLATFORM(
   typedef void* library_t;
   typedef void* function_t;
 );
-typedef int (*register_impls_func_t)(void);
+typedef int (*register_impls_func_t)(registrar&);
 
 
 static std::string const register_function_name = std::string("register_algo_impls");
@@ -109,9 +110,6 @@ public:
     {
       bfs::directory_entry const e = *dir_it;
 
-      LOG_DEBUG("plugin_manager::impl::load_modules_in_directory",
-                "Testing that file " << e.path() << " ends with " <<
-                library_suffix);
       if (boost::ends_with(e.path().string(), library_suffix))
       {
         // Check that we're looking a file
@@ -139,19 +137,20 @@ public:
    * plugis just didn't provide any algorithm implementation extensions.
    *
    * \param module_path Filesystem path to the module library file to load.
-   * \returns True of the module was able to be loaded. False if the module
-   *          could not be loaded, or after successfully finding and loading
-   *          the function, but the function returns a failure.
+   * \returns True of the module was loaded and used in some manner (i.e. still
+   *          loaded). False if the module could not be loaded there was no
+   *          successful interfacing.
    *
    * TODO: Just use exception handing instead of return codes and booleans.
    */
   bool register_from_module(path_t module_path)
   {
     LOG_DEBUG("plugin_manager::impl::register_from_module",
-              "Starting algorithm implementation registration for plugin "
-              "module file: " << module_path);
+              "Starting plug-in interfacing for module file: " << module_path);
 
-    // Load module library, returning false if it couldn't be loaded
+    //
+    // Attempting module load
+    //
     library_t library = NULL;
     std::string err_str;
     HANDLE_PLATFORM(
@@ -172,55 +171,63 @@ public:
     {
       LOG_ERROR("plugin_manager::impl::register_from_module",
                 "Failed to open module library " << module_path <<
-                " (" << err_str << ")");
-      return false;
+                " (error: " << err_str << ")");
+      return false; // TODO: Throw exception here?
     }
     LOG_DEBUG("plugin_manager::impl::register_from_module",
               "Loaded module: " << library);
 
-    // Attempt to load assumed registration function. If function not found, we
-    // assume this plugin doesn't provide any algorithm implementations and
-    // close the library. We otherwise keep it open if we are going to use
-    // things from it.
-    LOG_DEBUG("plugin_manager::impl::register_from_module",
-              "Looking for symbol: " << register_function_name.c_str());
-    function_t register_func = NULL;
-    HANDLE_PLATFORM(
-      /* Windows */
-      register_func = GetProcAddress( library, register_function_name.c_str() );
-      ,
-      /* Unix */
-      register_func = dlsym( library, register_function_name.c_str() );
-    );
-    LOG_DEBUG("plugin_manager::impl::register_from_module",
-              "register_func: " << register_func);
+    //
+    // Attempt to load each available interface here
+    //
+    bool module_used = false;
 
-    GNUC_EXTENSION register_impls_func_t const register_impls
-      = reinterpret_cast<register_impls_func_t>(register_func);
+    { // Algorithm Implementation interface
 
-    bool unload_library = false,
-         ret = true;
-    if (!register_impls)
-    {
+      // If interface function not found, we assume this plugin doesn't provide
+      // any algorithm implementations and close the library. We otherwise keep
+      // it open if we are going to use things from it.
       LOG_DEBUG("plugin_manager::impl::register_from_module",
-                "Failed to find/load registration func");
-      unload_library = true;
-    }
-    else if ( (*register_impls)() > 0 )
-    {
-      LOG_ERROR("plugin_manager::impl::register_from_module",
-                "Algorithm implementation registration failed for one or " <<
-                "more algorithms in plugin module: " << module_path);
-      ret = false;
-      unload_library = true;
-    }
-    else
-    {
+                "Looking for algorithm impl registration function: "
+                << register_function_name.c_str());
+      function_t register_func = NULL;
+      HANDLE_PLATFORM(
+        /* Windows */
+        register_func = GetProcAddress( library, register_function_name.c_str() );
+        ,
+        /* Unix */
+        register_func = dlsym( library, register_function_name.c_str() );
+      );
       LOG_DEBUG("plugin_manager::impl::register_from_module",
-                "Successfully called registration func");
-    }
+                "-> returned function address: " << register_func);
 
-    if (unload_library)
+      GNUC_EXTENSION register_impls_func_t const register_impls
+        = reinterpret_cast<register_impls_func_t>(register_func);
+
+      // Check for symbol discovery
+      if (!register_impls)
+      {
+        LOG_DEBUG("plugin_manager::impl::register_from_module",
+                  "-> Failed to find/load algorithm impl registration function");
+      }
+      // Call function, check for success
+      else if ( (*register_impls)(registrar::instance()) > 0 )
+      {
+        LOG_ERROR("plugin_manager::impl::register_from_module",
+                  "-> Algorithm implementation registration failed for one or " <<
+                  "more algorithms in plugin module: " << module_path);
+        // TODO: Throw exception here?
+      }
+      else
+      {
+        LOG_DEBUG("plugin_manager::impl::register_from_module",
+                  "-> Successfully called registration func");
+        module_used = true;
+      }
+    } // end Algorithm Implementation interface
+
+
+    if (!module_used)
     {
       HANDLE_PLATFORM(
         /* Windows */
@@ -240,7 +247,7 @@ public:
       );
     }
 
-    return ret;
+    return module_used;
   }
 
 };

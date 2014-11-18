@@ -37,9 +37,11 @@
 #define MAPTK_MAT_IMAGE_MEMORY_H_
 
 #include "ocv_config.h"
-#include <maptk/core/image.h>
 
 #include <opencv2/core/core.hpp>
+
+#include <maptk/image.h>
+
 
 namespace maptk
 {

@@ -33,7 +33,8 @@
  * \brief OCV descriptor_set implementation
  */
 
-#include <maptk/ocv/descriptor_set.h>
+#include "descriptor_set.h"
+
 
 /// This macro applies another macro to all of the types listed below.
 #define APPLY_TO_TYPES(MACRO) \

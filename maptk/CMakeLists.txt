@@ -97,6 +97,8 @@ set(maptk_public_headers
   algo/optimize_cameras.h
   algo/track_features.h
   algo/triangulate_landmarks.h
+
+  plugin_interface/algorithm_impl_pl_interface.h
   )
 
 set(maptk_sources
@@ -159,7 +161,7 @@ set(maptk_sources
 # Set module library suffix string as property on files that deal with plugin
 # module searching.
 set(plugin_sources
-  plugin_manager.cxx
+  plugin_manager.h  plugin_manager.cxx
   )
 set(plugin_src_definitions
   "LIBRARY_SUFFIX=\"${CMAKE_SHARED_MODULE_SUFFIX}\""

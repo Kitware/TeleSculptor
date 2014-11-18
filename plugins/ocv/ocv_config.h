@@ -40,10 +40,10 @@
 
 /// Define symbol visibility in maptk::ocv
 #ifndef MAPTK_OCV_EXPORT
-# ifdef MAKE_MAPTK_OCV_LIB
+# ifdef MAKE_PLUGIN_OCV
 #   define MAPTK_OCV_EXPORT MAPTK_EXPORT
 # else
-#   define MAPTK_OCV_EXPORT MAPTK_IMPORT
+#   define MAPTK_OCV_EXPORT
 # endif
 /// Marks symbols not to be exported
 # define MAPTK_OCV_NO_EXPORT MAPTK_NO_EXPORT

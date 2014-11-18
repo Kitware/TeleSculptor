@@ -34,9 +34,12 @@
  */
 
 #include "image_io.h"
+
 #include "image_container.h"
+
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+
 
 namespace maptk
 {

@@ -37,7 +37,8 @@
 #define MAPTK_OCV_DESCRIPTOR_SET_H_
 
 #include "ocv_config.h"
-#include <maptk/core/descriptor_set.h>
+
+#include <maptk/descriptor_set.h>
 
 #include <opencv2/features2d/features2d.hpp>
 

@@ -37,7 +37,9 @@
 #define MAPTK_OCV_IMAGE_IO_H_
 
 #include "ocv_config.h"
-#include <maptk/core/algo/image_io.h>
+
+#include <maptk/algo/image_io.h>
+
 
 namespace maptk
 {

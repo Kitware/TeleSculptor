@@ -33,7 +33,8 @@
  * \brief OCV feature_set implementation
  */
 
-#include <maptk/ocv/feature_set.h>
+#include "feature_set.h"
+
 
 namespace maptk
 {

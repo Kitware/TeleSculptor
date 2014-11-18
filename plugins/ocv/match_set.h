@@ -37,9 +37,11 @@
 #define MAPTK_OCV_MATCH_SET_H_
 
 #include "ocv_config.h"
-#include <maptk/core/match_set.h>
 
 #include <opencv2/features2d/features2d.hpp>
+
+#include <maptk/match_set.h>
+
 
 namespace maptk
 {

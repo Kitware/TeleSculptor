@@ -28,18 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_OCV_DRAW_TRACKS_H_
-#define MAPTK_OCV_DRAW_TRACKS_H_
-
-#include <maptk/ocv/ocv_config.h>
-
-#include <maptk/core/algo/draw_tracks.h>
-#include <boost/scoped_ptr.hpp>
-
 /**
  * \file
  * \brief Header for OCV draw_tracks algorithm
  */
+
+#ifndef MAPTK_OCV_DRAW_TRACKS_H_
+#define MAPTK_OCV_DRAW_TRACKS_H_
+
+#include "ocv_config.h"
+
+#include <boost/scoped_ptr.hpp>
+
+#include <maptk/algo/draw_tracks.h>
+
 
 namespace maptk
 {

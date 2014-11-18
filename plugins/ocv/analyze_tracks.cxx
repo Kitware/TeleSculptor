@@ -33,19 +33,20 @@
  * \brief Implementation of OpenCV analyze tracks algorithm
  */
 
-#include <maptk/ocv/analyze_tracks.h>
-#include <maptk/ocv/ocv_algo_tools.h>
+#include "analyze_tracks.h"
+#include "ocv_algo_tools.h"
 
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/format.hpp>
 
-#include <set>
 #include <fstream>
 #include <sstream>
 #include <iostream>
 #include <iomanip>
+#include <set>
 #include <vector>
+
 
 namespace maptk
 {

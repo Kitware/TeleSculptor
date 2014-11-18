@@ -37,9 +37,11 @@
 #define MAPTK_OCV_IMAGE_CONTAINER_H_
 
 #include "ocv_config.h"
-#include <maptk/core/image_container.h>
 
 #include <opencv2/core/core.hpp>
+
+#include <maptk/image_container.h>
+
 
 namespace maptk
 {

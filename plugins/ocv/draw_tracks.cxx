@@ -33,9 +33,16 @@
  * \brief Implementation of OCV draw tracks algorithm
  */
 
-#include <maptk/ocv/draw_tracks.h>
-#include <maptk/ocv/ocv_algo_tools.h>
-#include <maptk/ocv/image_container.h>
+#include "draw_tracks.h"
+
+#include "ocv_algo_tools.h"
+#include "image_container.h"
+
+#include <set>
+#include <fstream>
+#include <iostream>
+#include <iomanip>
+#include <algorithm>
 
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
@@ -46,11 +53,6 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-#include <set>
-#include <fstream>
-#include <iostream>
-#include <iomanip>
-#include <algorithm>
 
 namespace maptk
 {

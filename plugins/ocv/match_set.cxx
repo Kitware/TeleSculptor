@@ -33,8 +33,10 @@
  * \brief OCV match_set implementation
  */
 
-#include <maptk/ocv/match_set.h>
+#include "match_set.h"
+
 #include <boost/foreach.hpp>
+
 
 namespace maptk
 {

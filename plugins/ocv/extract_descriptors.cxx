@@ -33,12 +33,12 @@
  * \brief Implementation of OCV DescriptorExtractor wrapping.
  */
 
-#include <maptk/ocv/extract_descriptors.h>
-#include <maptk/ocv/image_container.h>
-#include <maptk/ocv/feature_set.h>
-#include <maptk/ocv/descriptor_set.h>
+#include "extract_descriptors.h"
 
-#include <maptk/ocv/ocv_algo_tools.h>
+#include "image_container.h"
+#include "feature_set.h"
+#include "descriptor_set.h"
+#include "ocv_algo_tools.h"
 
 
 namespace maptk

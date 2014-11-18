@@ -35,11 +35,13 @@
 
 #include "match_features.h"
 
+#include "feature_set.h"
+#include "descriptor_set.h"
+#include "match_set.h"
+#include "ocv_algo_tools.h"
+
 #include <vector>
-#include <maptk/ocv/feature_set.h>
-#include <maptk/ocv/descriptor_set.h>
-#include <maptk/ocv/match_set.h>
-#include <maptk/ocv/ocv_algo_tools.h>
+
 #include <opencv2/features2d/features2d.hpp>
 
 

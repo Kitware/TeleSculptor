@@ -34,7 +34,9 @@
  */
 
 #include "image_container.h"
+
 #include "mat_image_memory.h"
+
 
 namespace maptk
 {

@@ -37,9 +37,11 @@
 #define MAPTK_OCV_DETECT_FEATURES_H_
 
 #include "ocv_config.h"
-#include <maptk/core/algo/detect_features.h>
 
 #include <boost/scoped_ptr.hpp>
+
+#include <maptk/algo/detect_features.h>
+
 
 namespace maptk
 {

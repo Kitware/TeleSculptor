@@ -37,9 +37,11 @@
 #define MAPTK_OCV_EXTRACT_DESCRIPTORS_H_
 
 #include "ocv_config.h"
-#include <maptk/core/algo/extract_descriptors.h>
 
 #include <boost/scoped_ptr.hpp>
+
+#include <maptk/algo/extract_descriptors.h>
+
 
 namespace maptk
 {

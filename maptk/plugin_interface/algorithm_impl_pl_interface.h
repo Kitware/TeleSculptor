@@ -23,7 +23,7 @@ extern "C"
  * Remember to also use 'extern "C" ...' in plugin implementation if compiling
  * in C++ to prevent the dreaded symbol name-mangling.
  */
-int register_algo_impls(maptk::registrar &);
+int register_algo_impls(maptk::registrar &reg);
 
 
 #ifdef __cplusplus

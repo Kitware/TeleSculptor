@@ -37,16 +37,17 @@
 #ifndef MAPTK_OCV_OCV_ALGO_TOOLS_H
 #define MAPTK_OCV_OCV_ALGO_TOOLS_H
 
+#include "ocv_config.h"
+
 #include <string>
 #include <iostream>
 
-#include <maptk/core/config_block.h>
-#include <maptk/core/exceptions.h>
-#include <maptk/core/types.h>
-
-#include <maptk/ocv/ocv_config.h>
+#include <maptk/config_block.h>
+#include <maptk/exceptions.h>
+#include <maptk/types.h>
 
 #include <opencv2/core/core.hpp>
+
 
 namespace maptk
 {

@@ -33,10 +33,13 @@
  * \brief OCV estimate_homography algorithm implementation
  */
 
-#include <maptk/ocv/estimate_homography.h>
-#include <maptk/ocv/matrix.h>
+#include "estimate_homography.h"
+#include "matrix.h"
+
 #include <boost/foreach.hpp>
+
 #include <opencv2/calib3d/calib3d.hpp>
+
 
 namespace maptk
 {

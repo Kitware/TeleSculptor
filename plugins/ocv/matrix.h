@@ -36,9 +36,10 @@
 #ifndef MAPTK_OCV_MATRIX_H_
 #define MAPTK_OCV_MATRIX_H_
 
-#include <maptk/core/matrix.h>
+#include <maptk/matrix.h>
 
 #include <opencv2/opencv.hpp>
+
 
 namespace maptk
 {

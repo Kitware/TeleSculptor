@@ -37,9 +37,11 @@
 #define MAPTK_OCV_FEATURE_SET_H_
 
 #include "ocv_config.h"
-#include <maptk/core/feature_set.h>
 
 #include <opencv2/features2d/features2d.hpp>
+
+#include <maptk/feature_set.h>
+
 
 namespace maptk
 {

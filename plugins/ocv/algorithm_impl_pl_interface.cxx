@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2014 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,46 +30,58 @@
 
 /**
  * \file
- * \brief OCV algorithm register implementation
+ * \brief OpenCV plugin algorithm registration plugin interface impl
  */
 
-#include <maptk/ocv/register.h>
-#include <maptk/ocv/image_io.h>
-#include <maptk/ocv/detect_features.h>
-#include <maptk/ocv/estimate_homography.h>
-#include <maptk/ocv/extract_descriptors.h>
-#include <maptk/ocv/match_features.h>
-#include <maptk/ocv/draw_tracks.h>
-#include <maptk/ocv/analyze_tracks.h>
+#include <maptk/plugin_interface/algorithm_impl_pl_interface.h>
 
 #include <opencv2/opencv_modules.hpp>
 #ifdef HAVE_OPENCV_NONFREE
 #include <opencv2/nonfree/nonfree.hpp>
 #endif
 
+#include "analyze_tracks.h"
+#include "detect_features.h"
+#include "draw_tracks.h"
+#include "estimate_homography.h"
+#include "extract_descriptors.h"
+#include "image_io.h"
+#include "match_features.h"
+#include "ocv_config.h"
 
-namespace maptk
-{
 
-namespace ocv
+#ifdef __cplusplus
+extern "C"
 {
+#endif
 
-/// register all algorithms in this module
-void register_algorithms()
+
+MAPTK_OCV_EXPORT
+int register_algo_impls(maptk::registrar &reg)
 {
+  LOG_DEBUG("plugin::ocv::register_algo_impls",
+            "Registering OCV plugin algo implementations");
+
 #ifdef HAVE_OPENCV_NONFREE
   cv::initModule_nonfree();
 #endif
-  ocv::analyze_tracks::register_self();
-  ocv::detect_features::register_self();
-  ocv::draw_tracks::register_self();
-  ocv::estimate_homography::register_self();
-  ocv::extract_descriptors::register_self();
-  ocv::image_io::register_self();
-  ocv::match_features::register_self();
+
+  int registered
+    = maptk::ocv::analyze_tracks::register_self(reg)
+    + maptk::ocv::detect_features::register_self(reg)
+    + maptk::ocv::draw_tracks::register_self(reg)
+    + maptk::ocv::estimate_homography::register_self(reg)
+    + maptk::ocv::extract_descriptors::register_self(reg)
+    + maptk::ocv::image_io::register_self(reg)
+    + maptk::ocv::match_features::register_self(reg)
+    ;
+
+  LOG_DEBUG("plugin::ocv::register_algo_impls",
+            "Registered algorithms. Returned: " << registered);
+  return 7 - registered;
 }
 
 
-} // end namespace ocv
-
-} // end namespace maptk
+#ifdef __cplusplus
+}
+#endif

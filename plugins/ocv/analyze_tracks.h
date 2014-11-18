@@ -28,18 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_OCV_ANALYZE_TRACKS_H_
-#define MAPTK_OCV_ANALYZE_TRACKS_H_
-
-#include <maptk/ocv/ocv_config.h>
-
-#include <maptk/core/algo/analyze_tracks.h>
-#include <boost/scoped_ptr.hpp>
-
 /**
  * \file
  * \brief Header for OpenCV analyze_tracks algorithm
  */
+
+#ifndef MAPTK_OCV_ANALYZE_TRACKS_H_
+#define MAPTK_OCV_ANALYZE_TRACKS_H_
+
+#include "ocv_config.h"
+
+#include <boost/scoped_ptr.hpp>
+
+#include <maptk/algo/analyze_tracks.h>
+
 
 namespace maptk
 {
