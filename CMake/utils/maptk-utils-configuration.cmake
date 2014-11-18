@@ -56,7 +56,7 @@ function(maptk_configure_file name source dest)
             "-D__SOURCE_PATH__:PATH=${source}"
             "-D__TEMP_PATH__:PATH=${temp_file}"
             "-D__OUTPUT_PATH__:PATH=${dest}"
-            -P "${MAPTK_SOURCE_DIR}/cmake/tools/maptk-configure-helper.cmake"
+            -P "${MAPTK_SOURCE_DIR}/CMake/tools/maptk-configure-helper.cmake"
     DEPENDS
             "${source}" ${mcf_DEPENDS}
     WORKING_DIRECTORY
@@ -70,7 +70,7 @@ function(maptk_configure_file name source dest)
 
   # This passes if not defined or a false-evaluating value
   if(NOT no_configure_target)
-    add_custom_target(configure-${name} ${all}
+    add_custom_target(configure-${name}
       DEPENDS "${dest}"
       SOURCES "${source}"   # Addding source for IDE purposes
       )

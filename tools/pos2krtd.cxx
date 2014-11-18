@@ -39,14 +39,14 @@
 #include <string>
 #include <vector>
 
-#include <maptk/modules.h>
-#include <maptk/core/ins_data_io.h>
-#include <maptk/core/camera_io.h>
-#include <maptk/core/config_block.h>
-#include <maptk/core/config_block_io.h>
-#include <maptk/core/exceptions.h>
-#include <maptk/core/local_geo_cs.h>
-#include <maptk/core/types.h>
+#include <maptk/camera_io.h>
+#include <maptk/config_block.h>
+#include <maptk/config_block_io.h>
+#include <maptk/exceptions.h>
+#include <maptk/ins_data_io.h>
+#include <maptk/local_geo_cs.h>
+#include <maptk/plugin_manager.h>
+#include <maptk/types.h>
 
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
@@ -287,8 +287,8 @@ bool convert_pos2krtd_dir(const maptk::path_t& pos_dir,
 
 static int maptk_main(int argc, char const* argv[])
 {
-  // register the algorithms in the various modules for dynamic look-up
-  maptk::register_modules();
+  // register the algorithm implementations
+  maptk::plugin_manager::instance().register_plugins();
 
   //
   // CLI Options (boost)

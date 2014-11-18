@@ -30,6 +30,10 @@ define_property(GLOBAL PROPERTY maptk_libraries
   FULL_DOCS "List of static/shared libraries build by MAPTK"
   )
 
+# Default plugin library directories for a build or installation
+set(MAPTK_DEFAULT_PLUGIN_DIR_BUILD   "${MAPTK_BINARY_DIR}/lib/maptk")
+set(MAPTK_DEFAULT_PLUGIN_DIR_INSTALL "${CMAKE_INSTALL_PREFIX}/lib${MAPTK_LIB_SUFFIX}/maptk")
+
 
 #+
 # Helper function to manage export string string generation and the no_export
@@ -146,7 +150,6 @@ function(maptk_add_library name)
 
   add_dependencies("${name}"
     configure-config.h
-    configure-modules.h
     )
 
   foreach(config IN LISTS CMAKE_CONFIGURATION_TYPES)
@@ -181,6 +184,36 @@ function(maptk_add_library name)
     )
 
   set_property(GLOBAL APPEND PROPERTY maptk_libraries ${name})
+endfunction()
+
+#+
+# Add a plugin library
+#
+#   maptk_add_plugin(name symbol [args ...])
+#
+# Automatically links against the core MAPTK library and installs it into the
+# correct directory. Remaining arguments passed to this function are given to
+# the underlying add_library call, so refer to CMake documentation for
+# additional arguments.
+#
+# Library version will be set to that of the current MAPTK version.
+#
+# Additionally defines the symbol specified as the ``symbol`` argument.
+#
+# Setting library_subdir or no_export before this function
+# has no effect as they are manually specified within this function.
+#-
+function(maptk_add_plugin name symbol)
+  set(library_subdir /maptk)
+  set(no_export ON)
+  maptk_add_library(${name} MODULE ${ARGN})
+  target_link_libraries(${name} maptk)
+  set_target_properties(${name}
+    PROPERTIES
+      DEFINE_SYMBOL ${symbol}
+      PREFIX        ""
+      SUFFIX        ${CMAKE_SHARED_MODULE_SUFFIX}
+    )
 endfunction()
 
 #+

@@ -37,20 +37,19 @@
 #include <string>
 #include <vector>
 
-#include <maptk/modules.h>
+#include <maptk/algo/image_io.h>
+#include <maptk/algo/convert_image.h>
+#include <maptk/algo/detect_features.h>
+#include <maptk/algo/estimate_homography.h>
+#include <maptk/algo/extract_descriptors.h>
+#include <maptk/algo/match_features.h>
 
-#include <maptk/core/algo/image_io.h>
-#include <maptk/core/algo/convert_image.h>
-#include <maptk/core/algo/detect_features.h>
-#include <maptk/core/algo/estimate_homography.h>
-#include <maptk/core/algo/extract_descriptors.h>
-#include <maptk/core/algo/match_features.h>
-
-#include <maptk/core/config_block.h>
-#include <maptk/core/config_block_io.h>
-#include <maptk/core/image_container.h>
-#include <maptk/core/exceptions.h>
-#include <maptk/core/types.h>
+#include <maptk/config_block.h>
+#include <maptk/config_block_io.h>
+#include <maptk/image_container.h>
+#include <maptk/exceptions.h>
+#include <maptk/plugin_manager.h>
+#include <maptk/types.h>
 
 #include <boost/foreach.hpp>
 #include <boost/shared_ptr.hpp>
@@ -178,8 +177,8 @@ static bool check_config(maptk::config_block_sptr config)
 
 static int maptk_main(int argc, char const* argv[])
 {
-  // register the algorithms in the various modules for dynamic look-up
-  maptk::register_modules();
+  // register the algorithm implementations
+  maptk::plugin_manager::instance().register_plugins();
 
   //
   // define/parse CLI options

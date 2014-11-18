@@ -87,23 +87,25 @@ endif()
 
 # this is where the libraries source code lives
 add_subdirectory(maptk)
+add_subdirectory(plugins)
 
 # this is where the executables source code lives
 add_subdirectory(tools)
+
 
 ###
 # Testing
 #
 
 # The following are required to uses Dart and the Cdash dashboard
-option(MAPTK_ENABLE_TESTING "Build MAPTK testing" OFF)
-if(MAPTK_ENABLE_TESTING)
-  enable_testing()
-  include(CTest)
-  set(BUILD_TESTING ON)
-  mark_as_advanced(BUILD_TESTING)
-  add_subdirectory(tests)
-endif()
+#option(MAPTK_ENABLE_TESTING "Build MAPTK testing" OFF)
+#if(MAPTK_ENABLE_TESTING)
+#  enable_testing()
+#  include(CTest)
+#  set(BUILD_TESTING ON)
+#  mark_as_advanced(BUILD_TESTING)
+#  add_subdirectory(tests)
+#endif()
 
 
 ###
@@ -117,7 +119,7 @@ string(REPLACE ";" " " maptk_libs "${maptk_libs}")
 # Configure build-tree CMake config file and export associated targets file
 set(MAPTK_CONFIG_FILE "${MAPTK_BINARY_DIR}/maptk-config.cmake")
 maptk_configure_file(maptk-config
-  "${MAPTK_SOURCE_DIR}/cmake/maptk-config.cmake.in"
+  "${MAPTK_SOURCE_DIR}/CMake/maptk-config.cmake.in"
   "${MAPTK_CONFIG_FILE}"
   MAPTK_SOURCE_DIR MAPTK_BINARY_DIR
   maptk_libs
@@ -128,7 +130,7 @@ maptk_export_targets("${MAPTK_BINARY_DIR}/maptk-config-targets.cmake")
 set(cmake_install_dir lib${MAPTK_LIB_SUFFIX}/cmake/maptk)
 set(MAPTK_CONFIG_INSTALL_FILE "${MAPTK_BINARY_DIR}/maptk-config-install.cmake")
 maptk_configure_file(maptk-install-config
-  "${MAPTK_SOURCE_DIR}/cmake/maptk-config-install.cmake.in"
+  "${MAPTK_SOURCE_DIR}/CMake/maptk-config-install.cmake.in"
   "${MAPTK_CONFIG_INSTALL_FILE}"
   maptk_libs
   )
