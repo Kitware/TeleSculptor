@@ -65,29 +65,6 @@ public:
 
 typedef boost::shared_ptr<convert_image> convert_image_sptr;
 
-/// A class for bypassing image conversion
-class MAPTK_LIB_EXPORT convert_image_default
-  : public algorithm_impl<convert_image_default, convert_image>
-{
-public:
-   /// Default Constructor
-  convert_image_default();
-
-  /// Copy Constructor
-  convert_image_default(const convert_image_default&);
-
-  /// Return the name of this implementation
-  virtual std::string impl_name() const { return "default"; }
-
-  /// Default image converter ( does nothing )
-  /**
-   * \param [in] img image to be converted
-   * \returns the input image
-   */
-  virtual image_container_sptr convert(image_container_sptr img) const;
-};
-
-
 } // end namespace algo
 
 } // end namespace maptk

@@ -31,8 +31,6 @@
 /**
  * \file
  * \brief algorithm regstrar class
- *
- * Not exported as its used internally as an implementation detail.
  */
 
 #ifndef MAPTK_REGISTRAR_H_
@@ -41,56 +39,78 @@
 #include <string>
 #include <map>
 #include <iostream>
+
 #include <boost/shared_ptr.hpp>
 #include <boost/foreach.hpp>
+
+#include <maptk/config.h>
+#include <maptk/logging_macros.h>
+
 
 namespace maptk
 {
 
-/// A singleton class to keep a registry of objects of type T
-template <typename T>
-class registrar
+
+/// Item map types for a given template type
+#define DECL_ITEM_MAP(T) \
+  /* map type for string-to-item relationship */ \
+  typedef std::map< std::string, boost::shared_ptr<T> > item_map_t
+#define DECL_ITEM_PAIR(T) \
+  /* convenience type for item_map_t's values */ \
+  typedef typename item_map_t::value_type item_pair_t
+#define DECL_ITEM_ITR(T) \
+  /* convenience type for item_map_t's const iterator */ \
+  typedef typename item_map_t::const_iterator item_const_itr_t
+
+
+/**
+ * \brief A singleton class to keep a shared-pointer registry of objects across
+ *        multiple types
+ */
+class MAPTK_LIB_EXPORT registrar
 {
 public:
-  /// map type for string-to-item relationship
-  typedef std::map<std::string, boost::shared_ptr<T> > item_map;
-  /// convenience type for item_map's values
-  typedef typename item_map::value_type item_pair;
-  /// convenienve type for item_map's const iterator
-  typedef typename item_map::const_iterator item_const_itr;
 
   /// Access the singleton instance of this class
-  static registrar<T>& instance()
+  static registrar& instance()
   {
-    if (!instance_)
-    {
-      create_instance();
-    }
-    return *instance_;
+    static registrar instance_ = registrar();
+    return instance_;
   }
 
-  /// Register a new name and item with the registrar
-  static bool register_item(const std::string& name, boost::shared_ptr<T> item)
+  /// Register a new name and item with the registrar for a given type
+  template <typename T>
+  bool register_item(const std::string& name, boost::shared_ptr<T> item)
   {
-    item_const_itr it = instance().registry_.find(name);
-    if (it == instance().registry_.end())
+    DECL_ITEM_MAP(T);
+    DECL_ITEM_PAIR(T);
+
+    item_map_t &im = this->get_item_map<T>();
+
+    bool new_insertion = im.insert(item_pair_t(name, item)).second;
+    if (new_insertion)
     {
-      instance().registry_.insert(item_pair(name,item));
+      LOG_DEBUG("registrar::register_item",
+                "Registered \"" << name << "\" to instance. Item map now "
+                "of size: " << this->get_item_map<T>().size());
     }
     else
     {
-      std::cerr << "Warning: duplicate registration of \""
-                << name << "\"" << std::endl;
-      return false;
+      LOG_WARN("registrar::register_item",
+               "Warning: duplicate registration of \"" << name << "\"");
     }
-    return true;
+    return new_insertion;
   }
 
-  /// Return a vector of registered item names
-  static std::vector<std::string> registered_names()
+  /// Return a vector of registered item names for a given type
+  template <typename T>
+  std::vector<std::string> registered_names()
   {
+    DECL_ITEM_MAP(T);
+    DECL_ITEM_PAIR(T);
+
     std::vector<std::string> names;
-    BOOST_FOREACH(item_pair i, instance().registry_)
+    BOOST_FOREACH(item_pair_t i, this->get_item_map<T>())
     {
       names.push_back(i.first);
     }
@@ -98,39 +118,47 @@ public:
   }
 
   /// Find the item matching \a name or return NULL
-  static boost::shared_ptr<T> find(const std::string& name)
+  template <typename T>
+  boost::shared_ptr<T> find(const std::string& name)
   {
-    item_const_itr it = instance().registry_.find(name);
-    if (it == instance().registry_.end())
+    DECL_ITEM_MAP(T);
+    DECL_ITEM_ITR(T);
+
+    item_map_t &im = this->get_item_map<T>();
+    item_const_itr_t it = im.find(name);
+    if (it == im.end())
     {
       return boost::shared_ptr<T>();
     }
     return it->second;
   }
 
-private:
-  /// The registry of items
-  item_map registry_;
-
-  /// The pointer to the singleton instance
-  static registrar<T>* instance_;
-
-  /// Create the singleton instance
-  static void create_instance()
+  /// For an algorithm_def type, return the associated static item map.
+  template <typename T>
+  std::map< std::string, boost::shared_ptr<T> >& get_item_map()
   {
-    static registrar<T> inst;
-    instance_ = &inst;
+    static std::map< std::string, boost::shared_ptr<T> > ad_item_map_
+      = std::map< std::string, boost::shared_ptr<T> >();
+    return ad_item_map_;
   }
 
+private:
+
+  // TODO Move get_item_map() into private space
+
+
   /// Private constructor (this class is a singleton)
-  registrar<T>() {}
+  registrar() {}
   /// Private destructor (this class is a singleton)
-  ~registrar<T>() {}
+  ~registrar() {}
   /// Private copy constructor (this class is a singleton)
-  registrar<T>(const registrar<T>& );
+  registrar(const registrar&);
   /// Private assignment operator (this class is a singleton)
-  registrar<T>& operator=(const registrar<T>&);
+  registrar& operator=(const registrar&);
 };
+
+
+#undef DECL_MAP_TYPES
 
 
 } // end namespace maptk

@@ -1,4 +1,15 @@
 
+#ifndef _MAPTK_PLUGIN_INTERFACE_ALGORITHM_IMPL_PL_INTERFACE_H_
+#define _MAPTK_PLUGIN_INTERFACE_ALGORITHM_IMPL_PL_INTERFACE_H_
+
+#include <maptk/registrar.h>
+
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 
 /// Register algorithm implementations in this function
 /**
@@ -12,5 +23,12 @@
  * Remember to also use 'extern "C" ...' in plugin implementation if compiling
  * in C++ to prevent the dreaded symbol name-mangling.
  */
-// Or:  - Return a vector of maptk::algo::algorithm_impl::register_self function pointers?
-extern "C" int register_algo_impls(void);
+int register_algo_impls(maptk::registrar &);
+
+
+#ifdef __cplusplus
+}
+#endif
+
+
+#endif // _MAPTK_PLUGIN_INTERFACE_ALGORITHM_IMPL_PL_INTERFACE_H_

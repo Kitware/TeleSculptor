@@ -28,10 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <maptk/algo/algorithm.txx>
-#include "convert_image.h"
+/**
+ * \file
+ * \brief default convert_image implementation
+ */
 
-INSTANTIATE_ALGORITHM_DEF(maptk::algo::convert_image);
+#include "convert_image_default.h"
+
 
 namespace maptk
 {
@@ -40,20 +43,26 @@ namespace algo
 {
 
 
-/// Set this algorithm's properties via a config block
-void
-convert_image
-::set_configuration(config_block_sptr config)
+/// Default Constructor
+convert_image_default
+::convert_image_default()
 {
 
 }
 
-/// Check that the algorithm's current configuration is valid
-bool
-convert_image
-::check_configuration(config_block_sptr config) const
+/// Copy Constructor
+convert_image_default
+::convert_image_default(const convert_image_default& other)
 {
-  return true;
+
+}
+
+/// Default image converter ( does nothing )
+image_container_sptr
+convert_image_default
+::convert(image_container_sptr img) const
+{
+  return img;
 }
 
 

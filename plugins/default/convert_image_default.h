@@ -28,10 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <maptk/algo/algorithm.txx>
-#include "convert_image.h"
+/**
+ * \file
+ * \brief Default convert_image algorithm that acts as a bypass
+ */
 
-INSTANTIATE_ALGORITHM_DEF(maptk::algo::convert_image);
+#ifndef _MAPTK_PLUGINS_DEFAULT_CONVERT_IMAGE_DEFAULT_H_
+#define _MAPTK_PLUGINS_DEFAULT_CONVERT_IMAGE_DEFAULT_H_
+
+#include <maptk/algo/convert_image.h>
+
 
 namespace maptk
 {
@@ -40,23 +46,32 @@ namespace algo
 {
 
 
-/// Set this algorithm's properties via a config block
-void
-convert_image
-::set_configuration(config_block_sptr config)
+/// A class for bypassing image conversion
+class MAPTK_LIB_EXPORT convert_image_default
+  : public algorithm_impl<convert_image_default, convert_image>
 {
+public:
+   /// Default Constructor
+  convert_image_default();
 
-}
+  /// Copy Constructor
+  convert_image_default(const convert_image_default&);
 
-/// Check that the algorithm's current configuration is valid
-bool
-convert_image
-::check_configuration(config_block_sptr config) const
-{
-  return true;
-}
+  /// Return the name of this implementation
+  virtual std::string impl_name() const { return "default"; }
+
+  /// Default image converter ( does nothing )
+  /**
+   * \param [in] img image to be converted
+   * \returns the input image
+   */
+  virtual image_container_sptr convert(image_container_sptr img) const;
+};
 
 
 } // end namespace algo
 
 } // end namespace maptk
+
+
+#endif // _MAPTK_PLUGINS_DEFAULT_CONVERT_IMAGE_DEFAULT_H_

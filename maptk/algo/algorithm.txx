@@ -60,13 +60,13 @@ namespace algo
 template <typename Self>
 bool
 algorithm_def<Self>
-::register_instance(boost::shared_ptr<Self> inst)
+::register_instance(registrar &reg, boost::shared_ptr<Self> inst)
 {
   if (!inst)
   {
     return false;
   }
-  return registrar<Self>::register_item(inst->impl_name(), inst);
+  return reg.register_item<Self>(inst->impl_name(), inst);
 }
 
 
@@ -76,7 +76,7 @@ boost::shared_ptr<Self>
 algorithm_def<Self>
 ::create(const std::string& impl_name)
 {
-  boost::shared_ptr<Self> inst = registrar<Self>::find(impl_name);
+  boost::shared_ptr<Self> inst = registrar::instance().find<Self>(impl_name);
   if (!inst)
   {
     return inst;
@@ -91,7 +91,7 @@ std::vector<std::string>
 algorithm_def<Self>
 ::registered_names()
 {
-  return registrar<Self>::registered_names();
+  return registrar::instance().registered_names<Self>();
 }
 
 
@@ -119,7 +119,7 @@ algorithm_def<Self>
     // merging it with the main config_block under a subblock that is the name
     // of the impl.
     config->subblock_view(impl_name)
-          ->merge_config(registrar<Self>::find(impl_name)->get_configuration());
+          ->merge_config(registrar::instance().find<Self>(impl_name)->get_configuration());
   }
   return config;
 }
@@ -207,7 +207,7 @@ algorithm_def<Self>
     return false;
   }
   // retursively check the configuration of the sub-algorithm
-  return registrar<Self>::find(iname)->check_configuration(
+  return registrar::instance().find<Self>(iname)->check_configuration(
     config->subblock_view(name + config_block::block_sep + iname)
   );
 }
@@ -219,11 +219,7 @@ algorithm_def<Self>
 
 /// \cond DoxygenSuppress
 #define INSTANTIATE_ALGORITHM_DEF(T) \
-template class maptk::algo::algorithm_def<T>; \
-namespace maptk \
-{ \
-template<> registrar<T>* registrar<T>::instance_ = 0; \
-}
+template class maptk::algo::algorithm_def<T>;
 /// \endcond
 
 #endif // MAPTK_ALGO_ALGORITHM_TXX_

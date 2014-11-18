@@ -44,6 +44,8 @@
 #include <boost/shared_ptr.hpp>
 
 #include <maptk/config_block.h>
+#include <maptk/registrar.h>
+
 
 namespace maptk
 {
@@ -129,7 +131,7 @@ public:
   virtual std::string description() const = 0;
 
   /// Register instances of this algorithm
-  static bool register_instance(base_sptr inst);
+  static bool register_instance(registrar &reg, base_sptr inst);
 
   /// Factory method to make an instance of this algorithm by impl_name
   static base_sptr create(const std::string& impl_name);
@@ -251,9 +253,9 @@ public:
   }
 
   /// Register this algorithm implementation
-  static bool register_self()
+  static bool register_self(registrar &reg)
   {
-    return algorithm_def<Base>::register_instance(base_sptr(new Self));
+    return algorithm_def<Base>::register_instance(reg, base_sptr(new Self));
   }
 
 };
