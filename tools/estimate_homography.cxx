@@ -131,12 +131,10 @@ static maptk::config_block_sptr default_config()
   config->set_value("feature_detector:type", "ocv");
   config->set_value("feature_detector:ocv:detector:type", "Feature2D.SURF");
   config->set_value("feature_detector:ocv:detector:Feature2D.SURF:hessianThreshold", 250);
-  config->set_value("feature_detector:ocv:detector:Feature2D.SURF:upright", true);
 
   config->set_value("descriptor_extractor:type", "ocv");
   config->set_value("descriptor_extractor:ocv:extractor:type", "Feature2D.SURF");
   config->set_value("descriptor_extractor:ocv:extractor:Feature2D.SURF:hessianThreshold", 250);
-  config->set_value("descriptor_extractor:ocv:extractor:Feature2D.SURF:upright", true);
 
   config->set_value("feature_matcher:type", "ocv");
 
@@ -208,6 +206,13 @@ static int maptk_main(int argc, char const* argv[])
      "Optional boolean mask image where positive values indicate where "
      "features should be detected. This image *must* be the same size as the "
      "input images.")
+    ("mask-image2,n",
+     bpo::value< std::string >()->value_name("PATH"),
+     "Optional boolean mask image for the second input image. This mask image "
+     "should be provided in the same format as described previously. "
+     "Providing this mask causes the \"--mask-image\" mask to only apply to "
+     "the first image. This mask is only considered if \"--mask-image\" is "
+     "provided.")
     ;
   // input file positional collector
   bpo::options_description opt_desc_pos;
@@ -357,14 +362,26 @@ static int maptk_main(int argc, char const* argv[])
     return EXIT_FAILURE;
   }
 
-  // load and convert mask image if one was given
+  // load and convert mask images if they were given
   LOG_DEBUG("Before mask load");
-  maptk::image_container_sptr mask;
+  maptk::image_container_sptr mask,
+                              mask2;
   if( vm.count("mask-image") )
   {
     mask = image_converter->convert(
       image_reader->load( vm["mask-image"].as< std::string >() )
     );
+
+    if( vm.count("mask-image2") )
+    {
+      mask2 = image_converter->convert(
+          image_reader->load( vm["mask-image2"].as< std::string >() )
+      );
+    }
+    else
+    {
+      mask2 = mask;
+    }
   }
 
   // Make sure we can open for writting the given homography file path
@@ -377,10 +394,10 @@ static int maptk_main(int argc, char const* argv[])
   }
 
   LOG_INFO("Generating features over input frames...");
-  // if no mask was loaded, the value of mask at this point will be the same
-  // as the default value (uninitialized sptr)
+  // if no masks were loaded, the value of each mask at this point will be the
+  // same as the default value (uninitialized sptr)
   maptk::feature_set_sptr i1_features = feature_detector->detect(i1_image, mask),
-                          i2_features = feature_detector->detect(i2_image, mask);
+                          i2_features = feature_detector->detect(i2_image, mask2);
   LOG_INFO("Generating descriptors over input frames...");
   maptk::descriptor_set_sptr i1_descriptors = descriptor_extractor->extract(i1_image, i1_features),
                              i2_descriptors = descriptor_extractor->extract(i2_image, i2_features);

@@ -73,7 +73,8 @@ public:
     * \returns a set of image features
     */
   virtual feature_set_sptr
-  detect(image_container_sptr image_data) const;
+  detect(image_container_sptr image_data,
+         image_container_sptr mask = image_container_sptr()) const;
 
 private:
   /// private implementation class
