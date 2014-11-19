@@ -37,9 +37,12 @@
 
 #include <iostream>
 #include <vector>
+
+#include <maptk/core/exceptions/image.h>
 #include <maptk/ocv/feature_set.h>
 #include <maptk/ocv/image_container.h>
 #include <maptk/ocv/ocv_algo_tools.h>
+
 #include <opencv2/features2d/features2d.hpp>
 
 
@@ -149,18 +152,29 @@ feature_set_sptr
 detect_features
 ::detect(image_container_sptr image_data, image_container_sptr mask) const
 {
-  cv::Mat cv_img = ocv::image_container::maptk_to_ocv(image_data->get_image()),
-          cv_mask;
+  cv::Mat cv_img = ocv::image_container::maptk_to_ocv(image_data->get_image());
+  cv::Mat cv_mask;
   std::vector<cv::KeyPoint> keypoints;
 
   // Only initialize a mask image if the given mask image container contained
   // valid data.
   if( mask && mask->size() > 0 )
   {
+    if ( image_data->width() != mask->width() ||
+         image_data->height() != mask->height() )
+    {
+      throw image_size_mismatch_exception(
+          "OCV detect feature algorithm given a non-zero mask with mismatched "
+          "shape compared to imput image",
+          image_data->width(), image_data->height(),
+          mask->width(), mask->height()
+          );
+    }
+
     // Make sure we make a one-channel cv::Mat
     ::maptk::image s = mask->get_image();
     // hijacking memory of given mask image, but only telling the new image
-    // object to consider the first channel.
+    // object to consider the first channel. See function doc.
     ::maptk::image i(s.memory(),
                      static_cast< ::maptk::image::byte* >(s.memory()->data()),
                      s.width(),  s.height(), 1 /*depth*/,
