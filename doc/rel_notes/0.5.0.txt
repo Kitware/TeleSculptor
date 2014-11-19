@@ -32,6 +32,8 @@ Core Library
 
  * Added abstract algorithm for camera and landmark initialization from tracks.
 
+ * Added optional image masking support in feature detection algorithm API.
+
 VXL Library
 
  * Added concrete implementaiton of essential matrix estimation using the
@@ -43,6 +45,10 @@ VXL Library
  * Added concrete implementation of camera and landmark initialization using
    the essential matrix estimation algorithm and additional VXL functions
    for extracting camera information from essential matrices
+
+OCV Library
+
+ * Added image masking support in feature detection algorithm.
 
 Tests
 
@@ -64,7 +70,7 @@ Tools
 
  * Added an "estimate_homography" tool to compute the homography for a pair
    of images.  This is useful for testing pairwise image registration using
-   algorithms in MAPTK.
+   algorithms in MAPTK. Supports image masking for input images.
 
 
 Fixes since v0.4.1
