@@ -135,9 +135,18 @@ algorithm_def<Self>
 {
   config_block_description_t type_comment =
     "Algorithm to use for '" + name + "'.\n"
-    "Must be one of the following options:\n\t- "
-    + boost::algorithm::join(algorithm_def<Self>::registered_names(), "\n\t- ")
+    "Must be one of the following options:"
     ;
+  std::string tmp_d;
+  BOOST_FOREACH( std::string reg_name, algorithm_def<Self>::registered_names() )
+  {
+    type_comment += "\n\t- " + reg_name;
+    tmp_d = registrar<Self>::find(reg_name)->description();
+    if ( tmp_d != "" )
+    {
+      type_comment += " :: " + registrar<Self>::find(reg_name)->description();
+    }
+  }
 
   if(nested_algo)
   {

@@ -125,6 +125,9 @@ public:
   /// Returns a clone of this algorithm
   virtual base_sptr clone() const = 0;
 
+  /// Returns an optional descriptive string for an implementation
+  virtual std::string description() const = 0;
+
   /// Register instances of this algorithm
   static bool register_instance(base_sptr inst);
 
@@ -239,6 +242,12 @@ public:
   virtual base_sptr clone() const
   {
     return base_sptr(new Self(static_cast<const Self&>(*this)));
+  }
+
+  /// Return an optional descriptive string for an implementation
+  virtual std::string description() const
+  {
+    return "";
   }
 
   /// Register this algorithm implementation
