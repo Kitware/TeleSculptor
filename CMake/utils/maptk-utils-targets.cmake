@@ -192,9 +192,9 @@ endfunction()
 #   maptk_add_plugin(name symbol [args ...])
 #
 # Automatically links against the core MAPTK library and installs it into the
-# correct directory. Remaining arguments passed to this function are given to
-# the underlying add_library call, so refer to CMake documentation for
-# additional arguments.
+# correct MAPTK plugin directory. Remaining arguments passed to this function
+# are given to the underlying add_library call, so refer to CMake
+# documentation for additional arguments.
 #
 # Library version will be set to that of the current MAPTK version.
 #
@@ -260,6 +260,18 @@ function(maptk_install_headers)
       )
   endforeach()
 endfunction()
+
+#+
+#   maptk_install_plugin_headers( name header1 [header2 ...] )
+#
+# Instal MAPTK plugin public header files to the ``include/maptk/plugin/``
+# sub-directory in the configured installation location.
+#-
+function(maptk_install_plugin_headers plugin_name)
+  maptk_install_headers( ${ARGN}
+    SUBDIR "plugin/${name}"
+    )
+endfunction(maptk_install_plugin_headers)
 
 #+
 # Add files to the private header source group
