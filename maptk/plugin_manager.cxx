@@ -61,17 +61,25 @@ static std::string const register_function_name = std::string("register_algo_imp
 static std::string const library_suffix = std::string(LIBRARY_SUFFIX);
 
 
-}
+} // end anonymous namespace
 
+
+// ===========================================================================
+// PluginManager Private Implementation
+// ---------------------------------------------------------------------------
 
 class plugin_manager::impl
 {
+// Memeber Variables ---------------------------------------------------------
+public:
+  std::vector<path_t> search_paths_;
+
+// Member functions ----------------------------------------------------------
 public:
   impl()
     : search_paths_()
   {}
 
-  std::vector<path_t> search_paths_;
 
   /// Attempt loading algorithm implementations from all known search paths
   void load_from_search_paths()
@@ -89,7 +97,8 @@ public:
   /// Attempt loading algorithm implementations from all plugin modules in dir
   void load_modules_in_directory(path_t dir_path)
   {
-    // Preventing load from current directory (security)
+    // Check given path for validity
+    // Preventing load from current directory via empty string (security)
     if (dir_path.empty())
     {
       return;
@@ -103,6 +112,8 @@ public:
       throw path_not_a_directory(dir_path);
     }
 
+    // Iterate over search-path directories, attempting module load on elements
+    // that end in the configured library suffix.
     LOG_DEBUG("plugin_manager::impl::load_modules_in_directory",
               "Loading modules in directory: " << dir_path);
     bfs::directory_iterator dir_it(dir_path);
@@ -252,6 +263,10 @@ public:
 
 };
 
+
+// ===========================================================================
+// PluginManager Implementation
+// ---------------------------------------------------------------------------
 
 /// Access singleton instance of this class
 plugin_manager&

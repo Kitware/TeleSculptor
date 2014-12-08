@@ -22,7 +22,7 @@ namespace maptk
 class MAPTK_LIB_EXPORT plugin_manager
 {
 public:
-  /// Access singleton instance of this class
+  /// Get the reference to the singleton instance of this class
   static plugin_manager& instance();
 
   /// (Re)Load plugin libraries found along current search paths
@@ -35,8 +35,6 @@ public:
   void add_search_path(path_t dirpath);
 
 private:
-  static plugin_manager* instance_;
-
   class impl;
   impl *impl_;
 
