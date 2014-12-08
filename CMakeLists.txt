@@ -51,40 +51,9 @@ set(maptk_export_name maptk_exports)
 ###
 # Dependencies and Modules
 #
+include( maptk-depends )
 
-if(WIN32)
-  set(Boost_USE_STATIC_LIBS TRUE)
-  set(Boost_WIN_MODULES chrono)
-endif()
-find_package(Boost 1.50 REQUIRED COMPONENTS system filesystem program_options timer ${Boost_WIN_MODULES})
-add_definitions(-DBOOST_ALL_NO_LIB)
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
-
-if(MAPTK_ENABLE_OPENCV)
-  find_package(OpenCV REQUIRED)
-  include_directories(SYSTEM ${OpenCV_INCLUDE_DIRS})
-  # Docs say we don't need to add link_directories() call for OpenCV lib dirs
-endif()
-set(USE_OPENCV_VERSION MAPTK_ENABLE_OPENCV AND OpenCV_FOUND AND OpenCV_VERSION VERSION_GREATER "2.4")
-
-if(MAPTK_ENABLE_VXL)
-  find_package(VXL REQUIRED)
-  include_directories(SYSTEM ${VXL_VCL_INCLUDE_DIR})
-  include_directories(SYSTEM ${VXL_CORE_INCLUDE_DIR})
-  link_directories(${VXL_LIBRARY_DIR})
-endif()
-
-if(MAPTK_ENABLE_VISCL)
-  find_package(viscl REQUIRED)
-  include_directories(SYSTEM ${viscl_INCLUDE_DIR})
-endif()
-
-if(MAPTK_ENABLE_PROJ)
-  find_package(PROJ)
-  include_directories(${PROJ_INCLUDE_DIR})
-endif()
-
-# this is where the libraries source code lives
+# this is where the source code for libraries/plugins lives
 add_subdirectory(maptk)
 add_subdirectory(plugins)
 
