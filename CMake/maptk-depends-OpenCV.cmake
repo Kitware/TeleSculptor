@@ -5,7 +5,7 @@ option( MAPTK_ENABLE_OPENCV
   OFF
   )
 
-if( MAPK_ENABLE_OPENCV )
+if( MAPTK_ENABLE_OPENCV )
   find_package( OpenCV REQUIRED )
   include_directories( SYSTEM ${OpenCV_INCLUDE_DIRS} )
   # Docs say we don't need to add link_directories() call for OpenCV lib dirs

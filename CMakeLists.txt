@@ -55,7 +55,6 @@ include( maptk-depends )
 
 # this is where the source code for libraries/plugins lives
 add_subdirectory(maptk)
-add_subdirectory(plugins)
 
 # this is where the executables source code lives
 add_subdirectory(tools)

@@ -34,6 +34,9 @@ define_property(GLOBAL PROPERTY maptk_libraries
 set(MAPTK_DEFAULT_PLUGIN_DIR_BUILD   "${MAPTK_BINARY_DIR}/lib/maptk")
 set(MAPTK_DEFAULT_PLUGIN_DIR_INSTALL "${CMAKE_INSTALL_PREFIX}/lib${MAPTK_LIB_SUFFIX}/maptk")
 
+# Top-level target for plugin targets
+add_custom_target( all-plugins )
+
 
 #+
 # Helper function to manage export string string generation and the no_export
@@ -191,6 +194,8 @@ endfunction()
 #
 #   maptk_add_plugin(name symbol [args ...])
 #
+# Add a plugin library, creating a target by the name of ``plugin-<name>``
+# (base-name of output file will remain only <name>).
 # Automatically links against the core MAPTK library and installs it into the
 # correct MAPTK plugin directory. Remaining arguments passed to this function
 # are given to the underlying add_library call, so refer to CMake
@@ -206,14 +211,29 @@ endfunction()
 function(maptk_add_plugin name symbol)
   set(library_subdir /maptk)
   set(no_export ON)
-  maptk_add_library(${name} MODULE ${ARGN})
-  target_link_libraries(${name} maptk)
-  set_target_properties(${name}
+  maptk_add_library(plugin-${name} MODULE ${ARGN})
+  target_link_libraries(plugin-${name} maptk)
+  set_target_properties(plugin-${name}
     PROPERTIES
       DEFINE_SYMBOL ${symbol}
       PREFIX        ""
       SUFFIX        ${CMAKE_SHARED_MODULE_SUFFIX}
+      OUTPUT_NAME   ${name}
     )
+  add_dependencies(all-plugins plugin-${name})
+endfunction()
+
+#+
+#   maptk_plugin_link_libs( plugin_name [args ...] )
+#
+# Link libraries to a MAPTK plugin library. This method is provided because
+# the library target name is mangled underneath the hood of maptk_add_plugin.
+#
+# Remaining arguments after ``plugin_name`` are passed to the CMake function
+# ``target_link_libraries``. See the CMake documentation for further details.
+#-
+function(maptk_plugin_link_libs plugin_name)
+  target_link_libraries( plugin-${plugin_name} ${ARGN} )
 endfunction()
 
 #+
@@ -244,6 +264,8 @@ endfunction()
 #
 # A SUBDIR may be provided in order to place the header files in a
 # subdirectory under that. This path must be relative.
+#
+# Adds files to the "Header Files\Public" for IDEs.
 #-
 function(maptk_install_headers)
   set(oneValueArgs SUBDIR)
@@ -252,6 +274,7 @@ function(maptk_install_headers)
   #  FILES       ${mih_UNPARSED_ARGUMENTS}
   #  DESTINATION "include/maptk/${mih_SUBDIR}"
   #  )
+  message(STATUS "Heading install subdir: ${mih_SUBDIR}")
   foreach(header IN LISTS mih_UNPARSED_ARGUMENTS)
     get_filename_component(H_SUBDIR "${header}" PATH)
     maptk_install(
@@ -259,6 +282,10 @@ function(maptk_install_headers)
       DESTINATION "include/maptk/${mih_SUBDIR}/${H_SUBDIR}"
       )
   endforeach()
+
+  source_group("Header Files\\Public"
+    FILES ${mih_UNPARSED_ARGUMENTS}
+    )
 endfunction()
 
 #+
@@ -268,8 +295,9 @@ endfunction()
 # sub-directory in the configured installation location.
 #-
 function(maptk_install_plugin_headers plugin_name)
-  maptk_install_headers( ${ARGN}
-    SUBDIR "plugin/${name}"
+  maptk_install_headers(
+    SUBDIR "plugins/${plugin_name}"
+    ${ARGN}
     )
 endfunction(maptk_install_plugin_headers)
 
@@ -281,7 +309,7 @@ endfunction(maptk_install_plugin_headers)
 #-
 function(maptk_private_header_group)
   source_group("Header Files\\Private"
-    ${ARGN}
+    FILES ${ARGN}
     )
 endfunction()
 
@@ -293,6 +321,6 @@ endfunction()
 #-
 function(maptk_private_template_group)
   source_group("Template Files\\Private"
-    ${ARGN}
+    FILES ${ARGN}
     )
 endfunction()

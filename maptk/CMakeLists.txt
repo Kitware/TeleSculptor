@@ -181,6 +181,11 @@ maptk_add_library(
   ${maptk_sources}
   )
 target_link_libraries(maptk ${Boost_LIBRARIES})
+
+# For plug-in management
 if (NOT WIN32)
   target_link_libraries(maptk dl)
 endif()
+
+# configure plugins
+add_subdirectory(plugins)

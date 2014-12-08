@@ -1,6 +1,6 @@
 # Central location for MAPTK external dependency declaration and resolution
 
-# Globally require Boost
+message(STATUS "Entering main DEPENDS file")
 
 include( maptk-depends-Boost )
 include( maptk-depends-OpenCV )
