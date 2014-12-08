@@ -48,6 +48,7 @@
 #include <maptk/config_block_io.h>
 #include <maptk/image_container.h>
 #include <maptk/exceptions.h>
+#include <maptk/logging_macros.h>
 #include <maptk/plugin_manager.h>
 #include <maptk/types.h>
 
@@ -60,35 +61,6 @@
 
 namespace bfs = boost::filesystem;
 namespace bpo = boost::program_options;
-
-
-/// Logging / Debugging helper macros
-#ifndef NDEBUG
-/// Display a debugging message
-# define LOG_DEBUG(msg) \
-  std::cerr << "[meh][DEBUG] " << msg << std::endl
-/// Execute debug code
-# define DEBUG_CODE(code) code
-#else
-/// Display a debugging message
-# define LOG_DEBUG(msg)
-/// Execute debug code
-# define DEBUG_CODE(code)
-#endif
-
-/// Display an informational message
-#define LOG_INFO(msg) \
-  std::cerr << "[meh] [INFO] " << msg << std::endl
-
-/// Display a warning message
-#define LOG_WARNING(msg) \
-  std::cerr << "[meh] [WARN] " << msg << std::endl
-#define LOG_WARN(msg) \
-  LOG_WARNING(msg)
-
-/// Display an error message
-#define LOG_ERROR(msg) \
-  std::cerr << "[meh][ERROR] " << msg << std::endl
 
 
 static void print_usage(std::string const &prog_name,
@@ -156,7 +128,7 @@ static bool check_config(maptk::config_block_sptr config)
   bool config_valid = true;
 
 #define MAPTK_CONFIG_FAIL(msg)            \
-  LOG_WARN("Config Check Fail: " << msg); \
+  LOG_WARN("meh", "Config Check Fail: " << msg); \
   config_valid = false
 
 #define check_algo_config(type, name)                                              \
@@ -244,13 +216,13 @@ static int maptk_main(int argc, char const* argv[])
   }
   catch (bpo::unknown_option const& e)
   {
-    LOG_ERROR("Unknown option: " << e.get_option_name());
+    LOG_ERROR("meh", "Unknown option: " << e.get_option_name());
     print_usage(argv[0], opt_desc, opt_desc_pos);
     return EXIT_FAILURE;
   }
   catch (bpo::error const &e)
   {
-    LOG_ERROR("Boost Program Options error: " << e.what());
+    LOG_ERROR("meh", "Boost Program Options error: " << e.what());
     print_usage(argv[0], opt_desc, opt_desc_pos);
     return EXIT_FAILURE;
   }
@@ -307,29 +279,29 @@ static int maptk_main(int argc, char const* argv[])
     write_config_file(config, vm["output-config"].as<maptk::path_t>());
     if(valid_config)
     {
-      LOG_INFO("Configuration file contained valid parameters and may be used for running");
+      LOG_INFO("meh", "Configuration file contained valid parameters and may be used for running");
     }
     else
     {
-      LOG_WARNING("Configuration deemed not valid.");
+      LOG_WARNING("meh", "Configuration deemed not valid.");
     }
     return EXIT_SUCCESS;
   }
   else if(!valid_config)
   {
-    LOG_ERROR("Configuration not valid.");
+    LOG_ERROR("meh", "Configuration not valid.");
     return EXIT_FAILURE;
   }
 
   // Check for correct input image file-path arguments
   if (!vm.count("input_img_files"))
   {
-    LOG_ERROR("No input image files were given.");
+    LOG_ERROR("meh", "No input image files were given.");
     return EXIT_FAILURE;
   }
   else if (vm["input_img_files"].as<std::vector<std::string> >().size() != 2)
   {
-    LOG_ERROR("Require 2 input images. "
+    LOG_ERROR("meh", "Require 2 input images. "
               << vm["input_img_files"].as<std::vector<std::string> >().size()
               << " given.");
     return EXIT_FAILURE;
@@ -338,11 +310,11 @@ static int maptk_main(int argc, char const* argv[])
   // Check for output file argument for generated homography
   if (!vm.count("output_homog_file"))
   {
-    LOG_ERROR("No output homography file path specified!");
+    LOG_ERROR("meh", "No output homography file path specified!");
     return EXIT_FAILURE;
   }
 
-  LOG_INFO("Loading images...");
+  LOG_INFO("meh", "Loading images...");
   std::vector<std::string> input_img_files(vm["input_img_files"].as< std::vector<std::string> >());
   maptk::image_container_sptr i1_image, i2_image;
   try
@@ -352,12 +324,12 @@ static int maptk_main(int argc, char const* argv[])
   }
   catch (maptk::path_not_exists const &e)
   {
-    LOG_ERROR(e.what());
+    LOG_ERROR("meh", e.what());
     return EXIT_FAILURE;
   }
   catch (maptk::path_not_a_file const &e)
   {
-    LOG_ERROR(e.what());
+    LOG_ERROR("meh", e.what());
     return EXIT_FAILURE;
   }
 
@@ -388,31 +360,31 @@ static int maptk_main(int argc, char const* argv[])
   std::ofstream homog_output_stream(homog_output_path.c_str());
   if (!homog_output_stream)
   {
-    LOG_ERROR("Could not open output homog file: " << vm["output_homog_file"].as<std::string>());
+    LOG_ERROR("meh", "Could not open output homog file: " << vm["output_homog_file"].as<std::string>());
     return EXIT_FAILURE;
   }
 
-  LOG_INFO("Generating features over input frames...");
+  LOG_INFO("meh", "Generating features over input frames...");
   // if no masks were loaded, the value of each mask at this point will be the
   // same as the default value (uninitialized sptr)
   maptk::feature_set_sptr i1_features = feature_detector->detect(i1_image, mask),
                           i2_features = feature_detector->detect(i2_image, mask2);
-  LOG_INFO("Generating descriptors over input frames...");
+  LOG_INFO("meh", "Generating descriptors over input frames...");
   maptk::descriptor_set_sptr i1_descriptors = descriptor_extractor->extract(i1_image, i1_features),
                              i2_descriptors = descriptor_extractor->extract(i2_image, i2_features);
-  LOG_INFO("-- Img1 features / descriptors: " << i1_descriptors->size());
-  LOG_INFO("-- Img2 features / descriptors: " << i2_descriptors->size());
+  LOG_INFO("meh", "-- Img1 features / descriptors: " << i1_descriptors->size());
+  LOG_INFO("meh", "-- Img2 features / descriptors: " << i2_descriptors->size());
 
-  LOG_INFO("Matching features...");
+  LOG_INFO("meh", "Matching features...");
   // matching from frame 2 to 1 explicitly. see below.
   maptk::match_set_sptr matches = feature_matcher->match(i2_features, i2_descriptors,
                                                          i1_features, i1_descriptors);
-  LOG_INFO("-- Number of matches: " << matches->size());
+  LOG_INFO("meh", "-- Number of matches: " << matches->size());
 
   // Because we computed matches from frames 2 to 1, this homography describes
   // the transformation from image2 space to image1 space, which is what
   // warping tools usually want.
-  LOG_INFO("Estimating homography...");
+  LOG_INFO("meh", "Estimating homography...");
   std::vector<bool> inliers;
   maptk::homography homog = homog_estimator->estimate(i2_features, i1_features,
                                                       matches, inliers);
@@ -423,14 +395,14 @@ static int maptk_main(int argc, char const* argv[])
     if (b)
       ++inlier_count;
   }
-  LOG_INFO("-- Inliers: " << inlier_count << " / " << inliers.size());
+  LOG_INFO("meh", "-- Inliers: " << inlier_count << " / " << inliers.size());
 
-  LOG_INFO("Writing homography file...");
+  LOG_INFO("meh", "Writing homography file...");
   maptk::homography identity;
   identity.set_identity();
   homog_output_stream << identity << std::endl << homog << std::endl;
   homog_output_stream.close();
-  LOG_INFO("-- '" << homog_output_path << "' finished writing");
+  LOG_INFO("meh", "-- '" << homog_output_path << "' finished writing");
 
   return EXIT_SUCCESS;
 }
@@ -444,13 +416,13 @@ int main(int argc, char const* argv[])
   }
   catch (std::exception const& e)
   {
-    LOG_ERROR("Exception caught: " << e.what());
+    LOG_ERROR("meh", "Exception caught: " << e.what());
 
     return EXIT_FAILURE;
   }
   catch (...)
   {
-    LOG_ERROR("Unknown exception caught");
+    LOG_ERROR("meh", "Unknown exception caught");
 
     return EXIT_FAILURE;
   }

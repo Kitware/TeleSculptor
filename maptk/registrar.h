@@ -51,7 +51,7 @@ namespace maptk
 {
 
 
-/// Item map types for a given template type
+// Item map types for a given template type
 #define DECL_ITEM_MAP(T) \
   /* map type for string-to-item relationship */ \
   typedef std::map< std::string, boost::shared_ptr<T> > item_map_t
@@ -66,12 +66,20 @@ namespace maptk
 /**
  * \brief A singleton class to keep a shared-pointer registry of objects across
  *        multiple types
+ *
+ * NOTE: Do not use the static instance method ``instance()`` within plugins!
+ * When the main library is build statically, the main library and plugin
+ * libraries have unique static varaibles, and thus to not share a singleton
+ * instance. Only use the registrar passed to the C interface methods.
  */
 class MAPTK_LIB_EXPORT registrar
 {
 public:
 
   /// Access the singleton instance of this class
+  /**
+   * \returns The reference to the singleton instance.
+   */
   static registrar& instance()
   {
     static registrar instance_ = registrar();
@@ -79,12 +87,21 @@ public:
   }
 
   /// Register a new name and item with the registrar for a given type
+  /**
+   * \tparam Algorithm definition type of the given instance.
+   * \param name The string label to associate to this algorithm instance
+   * \param item Algorithm instance descending from definition type \p T to act
+   *             as the default instance for the given label.
+   * \returns True if the given label is new. False if we are overriding an
+   *          existing label-to-instance mapping.
+   */
   template <typename T>
   bool register_item(const std::string& name, boost::shared_ptr<T> item)
   {
     DECL_ITEM_MAP(T);
     DECL_ITEM_PAIR(T);
 
+    // declaring map reference so we don't copy
     item_map_t &im = this->get_item_map<T>();
 
     bool new_insertion = im.insert(item_pair_t(name, item)).second;
@@ -97,6 +114,11 @@ public:
   }
 
   /// Return a vector of registered item names for a given type
+  /**
+   * \tparam T Algorithm definition type to look up registered labels for.
+   * \returns Vector of strings that are the label names that are currently
+   *          registered for the given algorithm definition type \p T.
+   */
   template <typename T>
   std::vector<std::string> registered_names()
   {
@@ -112,6 +134,13 @@ public:
   }
 
   /// Find the item matching \a name or return NULL
+  /**
+   * \tparam T Algorithm definition type to constrain to.
+   * \param[in] name The string label of an algorithm of definition \p T to
+   *                 find in this registrar
+   * \returns Shared pointer to the instnace associated to the given label.
+   *          If no algorithm is found, an empty shared pointer is returned.
+   */
   template <typename T>
   boost::shared_ptr<T> find(const std::string& name)
   {
@@ -127,19 +156,22 @@ public:
     return it->second;
   }
 
+private:
+
   /// For an algorithm_def type, return the associated static item map.
+  /**
+   * \tparam T Algorithm definition type to get the mapping for.
+   */
   template <typename T>
   std::map< std::string, boost::shared_ptr<T> >& get_item_map()
   {
+    // Static mapping of name-to-instance for a specific algorithm type
+    // Due to the use of this class as a strict singleton, static variable
+    //  use is acceptable here.
     static std::map< std::string, boost::shared_ptr<T> > ad_item_map_
       = std::map< std::string, boost::shared_ptr<T> >();
     return ad_item_map_;
   }
-
-private:
-
-  // TODO Move get_item_map() into private space
-
 
   /// Private constructor (this class is a singleton)
   registrar() {}

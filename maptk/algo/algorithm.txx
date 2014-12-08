@@ -56,7 +56,7 @@ namespace algo
 {
 
 
-/// Register instances of this algorithm
+/// Register instances of this algorithm with a given registrar
 template <typename Self>
 bool
 algorithm_def<Self>

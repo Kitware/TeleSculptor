@@ -130,7 +130,7 @@ public:
   /// Returns an optional descriptive string for an implementation
   virtual std::string description() const = 0;
 
-  /// Register instances of this algorithm
+  /// Register instances of this algorithm with a given registrar
   static bool register_instance(registrar &reg, base_sptr inst);
 
   /// Factory method to make an instance of this algorithm by impl_name
