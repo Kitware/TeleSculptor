@@ -194,7 +194,7 @@ endfunction()
 #
 #   maptk_add_plugin(name symbol [args ...])
 #
-# Add a plugin library, creating a target by the name of ``plugin-<name>``
+# Add a plugin library, creating a target by the name of ``maptk-plugin-<name>``
 # (base-name of output file will remain only <name>).
 # Automatically links against the core MAPTK library and installs it into the
 # correct MAPTK plugin directory. Remaining arguments passed to this function
@@ -210,17 +210,17 @@ endfunction()
 #-
 function(maptk_add_plugin name symbol)
   set(library_subdir /maptk)
-  set(no_export ON)
-  maptk_add_library(plugin-${name} MODULE ${ARGN})
-  target_link_libraries(plugin-${name} maptk)
-  set_target_properties(plugin-${name}
+  #set(no_export ON)
+  maptk_add_library(maptk-plugin-${name} MODULE ${ARGN})
+  target_link_libraries(maptk-plugin-${name} maptk)
+  set_target_properties(maptk-plugin-${name}
     PROPERTIES
       DEFINE_SYMBOL ${symbol}
       PREFIX        ""
       SUFFIX        ${CMAKE_SHARED_MODULE_SUFFIX}
       OUTPUT_NAME   ${name}
     )
-  add_dependencies(all-plugins plugin-${name})
+  add_dependencies(all-plugins maptk-plugin-${name})
 endfunction()
 
 #+
@@ -233,7 +233,7 @@ endfunction()
 # ``target_link_libraries``. See the CMake documentation for further details.
 #-
 function(maptk_plugin_link_libs plugin_name)
-  target_link_libraries( plugin-${plugin_name} ${ARGN} )
+  target_link_libraries( maptk-plugin-${plugin_name} ${ARGN} )
 endfunction()
 
 #+
