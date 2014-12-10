@@ -45,7 +45,7 @@ namespace maptk
 /// Constructor - from a calibration matrix
 template <typename T>
 camera_intrinsics_<T>
-::camera_intrinsics_(const matrix_<3,3,T>& K)
+::camera_intrinsics_(const Eigen::Matrix<T,3,3>& K)
 : focal_length_(K(0,0)),
   principal_point_(K(0,2), K(1,2)),
   aspect_ratio_(K(0,0)/K(1,1))
@@ -56,9 +56,9 @@ camera_intrinsics_<T>
 /// Convert to a 3x3 calibration matrix
 template <typename T>
 camera_intrinsics_<T>
-::operator matrix_<3,3,T>() const
+::operator Eigen::Matrix<T,3,3>() const
 {
-  matrix_<3,3,T> K;
+  Eigen::Matrix<T,3,3> K;
   K(0,0) = focal_length_;
   K(0,1) = skew_;
   K(0,2) = principal_point_.x();

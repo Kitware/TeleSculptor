@@ -49,6 +49,8 @@
 #include "vector_cmath.h"
 #include "exceptions.h"
 
+#include <Eigen/Core>
+
 
 namespace maptk
 {
@@ -270,20 +272,20 @@ protected:
 
 
 /// \cond DoxygenSuppress
-typedef matrix_<2,2,double> matrix_2x2d;
-typedef matrix_<2,2,float>  matrix_2x2f;
-typedef matrix_<2,3,double> matrix_2x3d;
-typedef matrix_<2,3,float>  matrix_2x3f;
-typedef matrix_<3,2,double> matrix_3x2d;
-typedef matrix_<3,2,float>  matrix_3x2f;
-typedef matrix_<3,3,double> matrix_3x3d;
-typedef matrix_<3,3,float>  matrix_3x3f;
-typedef matrix_<3,4,double> matrix_3x4d;
-typedef matrix_<3,4,float>  matrix_3x4f;
-typedef matrix_<4,3,double> matrix_4x3d;
-typedef matrix_<4,3,float>  matrix_4x3f;
-typedef matrix_<4,4,double> matrix_4x4d;
-typedef matrix_<4,4,float>  matrix_4x4f;
+typedef Eigen::Matrix<double, 2, 2> matrix_2x2d;
+typedef Eigen::Matrix<float, 2, 2>  matrix_2x2f;
+typedef Eigen::Matrix<double, 2, 3> matrix_2x3d;
+typedef Eigen::Matrix<float, 2, 3>  matrix_2x3f;
+typedef Eigen::Matrix<double, 3, 2> matrix_3x2d;
+typedef Eigen::Matrix<float, 3, 2>  matrix_3x2f;
+typedef Eigen::Matrix<double, 3, 3> matrix_3x3d;
+typedef Eigen::Matrix<float, 3,3>   matrix_3x3f;
+typedef Eigen::Matrix<double, 3, 4> matrix_3x4d;
+typedef Eigen::Matrix<float, 3, 4>  matrix_3x4f;
+typedef Eigen::Matrix<double, 4, 3> matrix_4x3d;
+typedef Eigen::Matrix<float, 4, 3>  matrix_4x3f;
+typedef Eigen::Matrix<double, 4, 4> matrix_4x4d;
+typedef Eigen::Matrix<float, 4, 4>  matrix_4x4f;
 /// \endcond
 
 // --- Matrix-scalar operators ----------------------------------------

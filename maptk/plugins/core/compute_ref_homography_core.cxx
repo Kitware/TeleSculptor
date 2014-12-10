@@ -409,7 +409,7 @@ compute_ref_homography_core
     using namespace std;
 
     // Invertible test
-    homography inverse = maptk::inverse( h );
+    homography inverse = h.inverse();
 
     // Check for invalid values
     for( unsigned i = 0; i < 3; i++ )
@@ -472,7 +472,7 @@ compute_ref_homography_core
                                                     1.0);
         tmp_3d /= tmp_3d.z();
         vector_2d warped(tmp_3d.x(), tmp_3d.y());
-        double dist_sqr = ( warped - ti.ref_loc ).magnitude_sqr();
+        double dist_sqr = ( warped - ti.ref_loc ).squaredNorm();
 
         if( dist_sqr > d_->backproject_threshold_sqr )
         {

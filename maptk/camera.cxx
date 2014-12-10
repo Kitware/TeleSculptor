@@ -60,16 +60,16 @@ std::ostream& operator<<(std::ostream& s, const camera& c)
 template <typename T>
 void
 camera_<T>
-::look_at(const vector_3_<T>& stare_point,
-          const vector_3_<T>& up_direction)
+::look_at(const Eigen::Matrix<T,3,1>& stare_point,
+          const Eigen::Matrix<T,3,1>& up_direction)
 {
   // a unit vector in the up direction
-  const vector_3_<T> up = normalized(up_direction);
+  const Eigen::Matrix<T,3,1> up = normalized(up_direction);
   // a unit vector in the look direction (camera Z-axis)
-  const vector_3_<T> z = normalized(stare_point - get_center());
+  const Eigen::Matrix<T,3,1> z = normalized(stare_point - get_center());
 
   // the X-axis of the camera is perpendicular to up and z
-  vector_3_<T> x = cross_product(-up, z);
+  Eigen::Matrix<T,3,1> x = cross_product(-up, z);
   T x_mag = x.magnitude();
 
   // if the cross product magnitude is small then the up and z vectors are
@@ -81,7 +81,7 @@ camera_<T>
   }
 
   x /= x_mag;
-  vector_3_<T> y = normalized(cross_product(z,x));
+  Eigen::Matrix<T,3,1> y = normalized(cross_product(z,x));
 
   T r[] = { x.x(), x.y(), x.z(),
             y.x(), y.y(), y.z(),
@@ -95,12 +95,12 @@ camera_<T>
 /// Convert to a 3x4 homogeneous projection matrix
 template <typename T>
 camera_<T>
-::operator matrix_<3,4,T>() const
+::operator Eigen::Matrix<T,3,4>() const
 {
-  matrix_<3,4,T> P;
-  matrix_<3,3,T> R(this->get_rotation());
-  matrix_<3,3,T> K(this->get_intrinsics());
-  vector_<3,T>   t(this->get_translation());
+  Eigen::Matrix<T,3,4> P;
+  Eigen::Matrix<T,3,3> R(this->get_rotation());
+  Eigen::Matrix<T,3,3> K(this->get_intrinsics());
+  Eigen::Matrix<T,3,1> t(this->get_translation());
   P.update(R);
   P.set_column(3,t);
   return K * P;
@@ -109,9 +109,9 @@ camera_<T>
 
 /// Project a 3D point into a 2D image point
 template <typename T>
-vector_2_<T>
+Eigen::Matrix<T,2,1>
 camera_<T>
-::project(const vector_3_<T>& pt) const
+::project(const Eigen::Matrix<T,3,1>& pt) const
 {
   return this->intrinsics_.map(this->orientation_ * (pt - this->center_));
 }
@@ -146,7 +146,7 @@ std::ostream&  operator<<(std::ostream& s, const camera_<T>& k)
 template <typename T>
 std::istream&  operator>>(std::istream& s, camera_<T>& k)
 {
-  matrix_<3,3,T> K, R;
+  Eigen<3,3,T> K, R;
   vector_<3,T> t;
   double d;
   s >> K >> R >> t >> d;
@@ -175,7 +175,7 @@ camera_<T> interpolate_camera(camera_<T> const& A, camera_<T> const& B, T f)
   k = camera_intrinsics_<T>(focal_len, principal_point, aspect_ratio, skew);
 
   // interpolate center
-  vector_3_<T> c = f1*A.get_center() + f*B.get_center();
+  Eigen::Matrix<T,3,1> c = f1*A.get_center() + f*B.get_center();
 
   // interpolate rotation
   rotation_<T> R = interpolate_rotation(A.get_rotation(), B.get_rotation(), f);

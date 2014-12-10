@@ -76,7 +76,7 @@ reprojection_error_sqr(const camera& cam,
                        const landmark& lm,
                        const feature& f)
 {
-  return reprojection_error_vec(cam, lm, f).magnitude_sqr();
+  return reprojection_error_vec(cam, lm, f).squaredNorm();
 }
 
 

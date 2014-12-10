@@ -48,6 +48,8 @@
 
 #include "vector_cmath.h"
 
+#include <Eigen/Core>
+
 
 namespace maptk
 {
@@ -365,12 +367,12 @@ public:
 };
 
 /// \cond DoxygenSuppress
-typedef vector_2_<double> vector_2d;
-typedef vector_2_<float> vector_2f;
-typedef vector_3_<double> vector_3d;
-typedef vector_3_<float> vector_3f;
-typedef vector_4_<double> vector_4d;
-typedef vector_4_<float> vector_4f;
+typedef Eigen::Matrix<double, 2, 1> vector_2d;
+typedef Eigen::Matrix<float, 2, 1> vector_2f;
+typedef Eigen::Matrix<double, 3, 1> vector_3d;
+typedef Eigen::Matrix<float, 3, 1> vector_3f;
+typedef Eigen::Matrix<double, 4, 1> vector_4d;
+typedef Eigen::Matrix<float, 4, 1> vector_4f;
 /// \endcond
 
 

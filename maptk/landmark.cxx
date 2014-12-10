@@ -65,7 +65,7 @@ landmark_<T>
 /// Constructor for a feature
 template <typename T>
 landmark_<T>
-::landmark_(const vector_3_<T>& loc, T scale)
+::landmark_(const Eigen::Matrix<T, 3, 1>& loc, T scale)
 : loc_(loc),
   scale_(scale)
 {

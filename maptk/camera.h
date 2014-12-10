@@ -155,9 +155,9 @@ public:
   { return static_cast<camera_intrinsics_d>(intrinsics_); }
 
   /// Accessor for the camera center of projection using underlying data type
-  const vector_3_<T>& get_center() const { return center_; }
+  const Eigen::Matrix<T, 3, 1> & get_center() const { return center_; }
   /// Accessor for the translation vector using underlying data type
-  vector_3_<T> get_translation() const { return - (orientation_ * center_); }
+  Eigen::Matrix<T, 3, 1> get_translation() const { return - (orientation_ * center_); }
   /// Accessor for the covariance of camera center using underlying data type
   const covariance_<3,T>& get_center_covar() const { return center_covar_; }
   /// Accessor for the rotation using underlying data type
@@ -186,14 +186,14 @@ public:
    * \param [in] stare_point the location at which the camera is oriented to point
    * \param [in] up_direction the vector which is "up" in the world (defaults to Z-axis)
    */
-  void look_at(const vector_3_<T>& stare_point,
-               const vector_3_<T>& up_direction=vector_3_<T>(0,0,1) );
+  void look_at(const Eigen::Matrix<T, 3, 1>& stare_point,
+               const Eigen::Matrix<T, 3, 1>& up_direction=vector_3_<T>(0,0,1) );
 
   /// Convert to a 3x4 homogeneous projection matrix
-  operator matrix_<3,4,T>() const;
+  operator Eigen::Matrix<T,3,4>() const;
 
   /// Project a 3D point into a 2D image point
-  vector_2_<T> project(const vector_3_<T>& pt) const;
+  Eigen::Matrix<T, 2, 1> project(const Eigen::Matrix<T, 3, 1>& pt) const;
 
   /// Apply a similarity transformation to the camera in place
   virtual void transform(const similarity_d& xform)
@@ -204,7 +204,7 @@ public:
 
 protected:
   /// The camera center of project
-  vector_3_<T> center_;
+  Eigen::Matrix<T, 3, 1> center_;
   /// The covariance of the camera center location
   covariance_<3,T> center_covar_;
   /// The camera rotation

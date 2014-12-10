@@ -44,7 +44,7 @@ f2f_homography
 : from_id_( frame_id ),
   to_id_( frame_id )
 {
-  this->set_identity();
+  this->setIdentity();
 }
 
 
@@ -78,7 +78,7 @@ f2f_homography
 f2f_homography
 ::inverse() const
 {
-  return f2f_homography( maptk::inverse( *this ), to_id_, from_id_ );
+  return f2f_homography( this->inverse(), to_id_, from_id_ );
 }
 
 
@@ -129,7 +129,7 @@ f2w_homography
 ::f2w_homography( const frame_id_t frame_id )
 : frame_id_( frame_id )
 {
-  this->set_identity();
+  this->setIdentity();
 }
 
 

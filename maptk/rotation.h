@@ -60,10 +60,10 @@ public:
   /// Copy Constructor from another type
   template <typename U>
   explicit rotation_<T>(const rotation_<U>& other)
-  : q_(static_cast<vector_4_<T> >(other.quaternion())) {}
+  : q_(static_cast<Eigen::Matrix<T, 4, 1> >(other.quaternion())) {}
 
   /// Constructor - from a 4D quaternion vector (i,j,k,r)
-  explicit rotation_<T>(const vector_<4,T>& quaternion)
+  explicit rotation_<T>(const Eigen::Matrix<T, 4, 1>& quaternion)
   : q_(quaternion) {}
 
   /// Constructor - from a Rodrigues vector
@@ -75,10 +75,10 @@ public:
    * the manifold of the group of rotations.
    * \param rvec Rodrigues vector to construct from.
    */
-  explicit rotation_<T>(const vector_<3,T>& rvec);
+  explicit rotation_<T>(const Eigen::Matrix<T, 3, 1>& rvec);
 
   /// Constructor - from rotation angle and axis
-  rotation_<T>(T angle, const vector_<3,T>& axis);
+  rotation_<T>(T angle, const Eigen::Matrix<T, 3, 1>& axis);
 
   /// Constructor - from yaw, pitch, and roll
   rotation_<T>(const T& yaw, const T& pitch, const T& roll);
@@ -88,10 +88,10 @@ public:
    * requires orthonormal matrix with +1 determinant
    * \param rot orthonormal matrix to construct from
    */
-  explicit rotation_<T>(const matrix_<3,3,T>& rot);
+  explicit rotation_<T>(const Eigen::Matrix<T,3,3>& rot);
 
   /// Convert to a 3x3 matrix
-  operator matrix_<3,3,T>() const;
+  operator Eigen::Matrix<T,3,3>() const;
 
   /// Returns the axis of rotation
   /**
@@ -99,7 +99,7 @@ public:
    *       returns (0,0,1) in this case.
    * \sa angle()
    */
-  vector_3_<T> axis() const;
+  Eigen::Matrix<T, 3, 1> axis() const;
 
   /// Returns the angle of the rotation in radians about the axis
   /**

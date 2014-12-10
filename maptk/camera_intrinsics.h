@@ -86,7 +86,7 @@ public:
    * \note ignores values below the diagonal
    * \param K calibration matrix to construct from
    */
-  explicit camera_intrinsics_<T>(const matrix_<3,3,T>& K);
+  explicit camera_intrinsics_<T>(const Eigen::Matrix<T,3,3>& K);
 
   /// Access the focal length
   const T& focal_length() const { return focal_length_; }
@@ -107,7 +107,7 @@ public:
   void set_skew(const T& skew) { skew_ = skew; }
 
   /// Convert to a 3x3 calibration matrix
-  operator matrix_<3,3,T>() const;
+  operator Eigen::Matrix<T,3,3>() const;
 
   /// Map normalized image coordinates into actual image coordinates
   vector_2_<T> map(const vector_2_<T>& norm_pt) const;
