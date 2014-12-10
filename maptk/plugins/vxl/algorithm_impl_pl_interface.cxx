@@ -55,20 +55,29 @@ extern "C"
 MAPTK_VXL_EXPORT
 int register_algo_impls(maptk::registrar &reg)
 {
-  LOG_DEBUG( "plugin::vxl::register_algo_impls",
-             "Registering VXL plugin algo implementations" );
+  try
+  {
+    LOG_DEBUG( "plugin::vxl::register_algo_impls",
+               "Registering VXL plugin algo implementations" );
 
-  int registered
-    = maptk::vxl::bundle_adjust::register_self( reg )
-    + maptk::vxl::close_loops_homography_guided::register_self( reg )
-    + maptk::vxl::estimate_essential_matrix::register_self( reg )
-    + maptk::vxl::estimate_homography::register_self( reg )
-    + maptk::vxl::estimate_similarity_transform::register_self( reg )
-    + maptk::vxl::optimize_cameras::register_self( reg )
-    + maptk::vxl::triangulate_landmarks::register_self( reg )
-    ;
+    int registered
+      = maptk::vxl::bundle_adjust::register_self( reg )
+      + maptk::vxl::close_loops_homography_guided::register_self( reg )
+      + maptk::vxl::estimate_essential_matrix::register_self( reg )
+      + maptk::vxl::estimate_homography::register_self( reg )
+      + maptk::vxl::estimate_similarity_transform::register_self( reg )
+      + maptk::vxl::optimize_cameras::register_self( reg )
+      + maptk::vxl::triangulate_landmarks::register_self( reg )
+      ;
 
-  return 7 - registered;
+    return 7 - registered;
+  }
+  catch (...)
+  {
+    LOG_ERROR( "plugin::vxl::register_algo_impls",
+               "Exception caught during algorithm registration" );
+  }
+  return -1;
 }
 
 

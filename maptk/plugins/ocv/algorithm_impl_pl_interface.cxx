@@ -60,26 +60,35 @@ extern "C"
 MAPTK_OCV_EXPORT
 int register_algo_impls(maptk::registrar &reg)
 {
-  LOG_DEBUG("plugin::ocv::register_algo_impls",
-            "Registering OCV plugin algo implementations");
+  try
+  {
+    LOG_DEBUG("plugin::ocv::register_algo_impls",
+              "Registering OCV plugin algo implementations");
 
 #ifdef HAVE_OPENCV_NONFREE
-  cv::initModule_nonfree();
+    cv::initModule_nonfree();
 #endif
 
-  int registered
-    = maptk::ocv::analyze_tracks::register_self(reg)
-    + maptk::ocv::detect_features::register_self(reg)
-    + maptk::ocv::draw_tracks::register_self(reg)
-    + maptk::ocv::estimate_homography::register_self(reg)
-    + maptk::ocv::extract_descriptors::register_self(reg)
-    + maptk::ocv::image_io::register_self(reg)
-    + maptk::ocv::match_features::register_self(reg)
-    ;
+    int registered
+      = maptk::ocv::analyze_tracks::register_self(reg)
+      + maptk::ocv::detect_features::register_self(reg)
+      + maptk::ocv::draw_tracks::register_self(reg)
+      + maptk::ocv::estimate_homography::register_self(reg)
+      + maptk::ocv::extract_descriptors::register_self(reg)
+      + maptk::ocv::image_io::register_self(reg)
+      + maptk::ocv::match_features::register_self(reg)
+      ;
 
-  LOG_DEBUG("plugin::ocv::register_algo_impls",
-            "Registered algorithms. Returned: " << registered);
-  return 7 - registered;
+    LOG_DEBUG("plugin::ocv::register_algo_impls",
+              "Registered algorithms. Returned: " << registered);
+    return 7 - registered;
+  }
+  catch (...)
+  {
+    LOG_ERROR( "plugin::ocv::register_algo_impls",
+               "Exception caught during algorithm registration" );
+  }
+  return -1;
 }
 
 

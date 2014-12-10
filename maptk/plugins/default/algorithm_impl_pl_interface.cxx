@@ -58,22 +58,31 @@ extern "C"
 PLUGIN_DEFAULT_EXPORT
 int register_algo_impls(maptk::registrar &reg)
 {
-  LOG_DEBUG("plugin::default::register_algo_impls",
-            "Registering DEFAULT plugin algo implementations (" << &reg << ")");
+  try
+  {
+    LOG_DEBUG( "plugin::default::register_algo_impls",
+               "Registering DEFAULT plugin algo implementations (" << &reg << ")" );
 
-  int registered
-    = maptk::algo::close_loops_bad_frames_only::register_self(reg)
-    + maptk::algo::close_loops_multi_method::register_self(reg)
-    + maptk::algo::compute_ref_homography_default::register_self(reg)
-    + maptk::algo::convert_image_default::register_self(reg)
-    + maptk::algo::hierarchical_bundle_adjust::register_self(reg)
-    + maptk::algo::match_features_homography::register_self(reg)
-    + maptk::algo::track_features_default::register_self(reg)
-    ;
+    int registered
+      = maptk::algo::close_loops_bad_frames_only::register_self(reg)
+      + maptk::algo::close_loops_multi_method::register_self(reg)
+      + maptk::algo::compute_ref_homography_default::register_self(reg)
+      + maptk::algo::convert_image_default::register_self(reg)
+      + maptk::algo::hierarchical_bundle_adjust::register_self(reg)
+      + maptk::algo::match_features_homography::register_self(reg)
+      + maptk::algo::track_features_default::register_self(reg)
+      ;
 
-  LOG_DEBUG("plugin::default::register_algo_impls",
-            "Registered algorithms. Returned: " << registered);
-  return 7 - registered;
+    LOG_DEBUG( "plugin::default::register_algo_impls",
+               "Registered algorithms. Returned: " << registered );
+    return 7 - registered;
+  }
+  catch (...)
+  {
+    LOG_ERROR( "plugin::default::register_algo_impls",
+               "Exception caught during algorithm registrarion" );
+  }
+  return -1;
 }
 
 
