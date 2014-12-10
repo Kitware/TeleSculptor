@@ -72,14 +72,12 @@ viscl_image_container
   image img(width, height);
 
   cl::size_t<3> origin;
-  origin.push_back(0);
-  origin.push_back(0);
-  origin.push_back(0);
+  // Defaults are already 0 on initialization, setting is redundant
 
   cl::size_t<3> region;
-  region.push_back(width);
-  region.push_back(height);
-  region.push_back(1);
+  region[0] = width;
+  region[1] = height;
+  region[2] = 1;
 
   viscl::cl_queue_t q = viscl::manager::inst()->create_queue();
   q->enqueueReadImage(*img_cl().get(), CL_TRUE, origin, region,

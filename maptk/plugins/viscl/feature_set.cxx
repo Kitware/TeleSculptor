@@ -50,7 +50,7 @@ feature_set
 {
   std::vector<feature_sptr> features;
 
-  int numkpts = size();
+  unsigned int numkpts = size();
   viscl::cl_queue_t queue = viscl::manager::inst()->create_queue();
 
   std::vector<cl_int2> kpts;
@@ -115,8 +115,8 @@ features_to_viscl(const maptk::feature_set& features)
     kp.s[0] = static_cast<int>(f->loc()[0]);
     kp.s[1] = static_cast<int>(f->loc()[1]);
     buf[j] = kp;
-    int index = (kp.s[0] >> 1) * nj + (kp.s[1] >> 1);
-    assert(index  < size);
+    size_t index = (kp.s[0] >> 1) * nj + (kp.s[1] >> 1);
+    assert(index < size);
 
     kp_map[index] = j;
   }
