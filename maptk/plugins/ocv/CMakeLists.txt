@@ -42,7 +42,6 @@ maptk_install_plugin_headers( ocv
   )
 maptk_add_plugin( ocv
   MAKE_PLUGIN_OCV
-  #${maptk_ocv_headers_public}
   ${maptk_ocv_sources}
   )
 maptk_plugin_link_libs( ocv

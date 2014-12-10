@@ -38,9 +38,10 @@
 
 #include <maptk/config.h>
 
+
 /// Define symbol visibility in maptk::proj
 #ifndef MAPTK_PROJ_EXPORT
-# ifdef MAKE_MAPTK_PROJ_LIB
+# ifdef MAKE_PLUGIN_PROJ
 #   define MAPTK_PROJ_EXPORT MAPTK_EXPORT
 # else
 #   define MAPTK_PROJ_EXPORT MAPTK_IMPORT

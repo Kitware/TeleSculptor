@@ -30,27 +30,41 @@
 
 /**
  * \file
- * \brief PROJ algorithm registration interface
+ * \brief PROJ plugin algorithm registration interface implementation
  */
 
-#ifndef MAPTK_PROJ_REGISTER_H_
-#define MAPTK_PROJ_REGISTER_H_
+#include <maptk/logging_macros.h>
+#include <maptk/plugin_interface/algorithm_impl_pl_interface.h>
+#include <maptk/plugins/proj/geo_map.h>
 
-#include "proj_config.h"
 
-namespace maptk
+#ifdef __cplusplus
+extern "C"
 {
+#endif
 
-namespace proj
+
+MAPTK_PROJ_EXPORT
+int register_algo_impls( maptk::registrar &reg )
 {
+  try
+  {
+    LOG_DEBUG( "plugin::proj::register_algo_impls",
+               "Registering PROJ plugin algorithm implementations" );
 
-/// register all algorithms in this module
-MAPTK_PROJ_EXPORT void register_algorithms();
+    int registered
+      = maptk::proj::geo_map::register_self( reg )
+      ;
+
+    return 1 - registered;
+  }
+  catch (...)
+  {
+  }
+  return -1;
+}
 
 
-} // end namespace proj
-
-} // end namespace maptk
-
-
-#endif // MAPTK_PROJ_REGISTER_H_
+#ifdef __cplusplus
+}
+#endif

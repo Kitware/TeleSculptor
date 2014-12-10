@@ -3,24 +3,20 @@
 set(maptk_proj_headers_public
   geo_map.h
   proj_config.h
-  register.h
   )
 
 set(maptk_proj_sources
+  algorithm_impl_pl_interface.cxx
   geo_map.cxx
-  register.cxx
   )
 
-maptk_install_headers(
+maptk_install_plugin_headers( proj
   ${maptk_proj_headers_public}
-  SUBDIR proj
   )
-
-maptk_add_library(maptk_proj
-  ${maptk_proj_headers_public}
+maptk_add_plugin( proj
+  MAKE_PLUGIN_PROJ
   ${maptk_proj_sources}
   )
-target_link_libraries(maptk_proj
-  maptk_core
+maptk_plugin_link_libs( proj
   ${PROJ_LIBRARY}
   )

@@ -36,8 +36,9 @@
 #ifndef MAPTK_PROJ_GEO_MAP_H_
 #define MAPTK_PROJ_GEO_MAP_H_
 
-#include "proj_config.h"
-#include <maptk/core/algo/geo_map.h>
+#include <maptk/algo/geo_map.h>
+#include <maptk/plugins/proj/proj_config.h>
+
 
 namespace maptk
 {
