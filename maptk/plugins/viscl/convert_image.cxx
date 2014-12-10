@@ -29,7 +29,9 @@
  */
 
 #include "convert_image.h"
-#include "image_container.h"
+
+#include <maptk/plugins/viscl/image_container.h>
+
 
 namespace maptk
 {

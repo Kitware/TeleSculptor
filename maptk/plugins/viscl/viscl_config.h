@@ -35,7 +35,7 @@
 
 /// Define symbol visibility in maptk::vcl
 #ifndef MAPTK_VISCL_EXPORT
-# ifdef MAKE_MAPTK_VISCL_LIB
+# ifdef MAKE_PLUGIN_VISCL
 #   define MAPTK_VISCL_EXPORT MAPTK_EXPORT
 # else
 #   define MAPTK_VISCL_EXPORT MAPTK_IMPORT

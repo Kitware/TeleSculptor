@@ -30,7 +30,8 @@
 
 #ifndef MAPTK_VISCL_UTILS_H_
 
-#include <maptk/core/feature_set.h>
+#include <maptk/feature_set.h>
+
 
 namespace maptk
 {

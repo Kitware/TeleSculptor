@@ -1,8 +1,7 @@
-# maptk/viscl
+# Build / install plugin containing VisCL algorithm implementations + support
+# structures
 
-include_directories(SYSTEM ${viscl_OPENCL_INCLUDE_DIRS})
-
-set(maptk_viscl_headers_public
+set( maptk_viscl_headers_public
   convert_image.h
   descriptor_set.h
   detect_features.h
@@ -12,11 +11,11 @@ set(maptk_viscl_headers_public
   match_features.h
   match_set.h
   viscl_config.h
-  register.h
   utils.h
   )
 
-set(maptk_viscl_sources
+set( maptk_viscl_sources
+  algorithm_impl_pl_interface.cxx
   convert_image.cxx
   descriptor_set.cxx
   detect_features.cxx
@@ -25,19 +24,17 @@ set(maptk_viscl_sources
   image_container.cxx
   match_features.cxx
   match_set.cxx
-  register.cxx
   utils.cxx
   )
 
 # installing header files
-maptk_install_headers(
+maptk_install_plugin_headers( viscl
   ${maptk_viscl_headers_public}
-  SUBDIR viscl
   )
-
-maptk_add_library(maptk_viscl
-  ${maptk_viscl_headers_public}
+maptk_add_plugin( viscl
+  MAKE_PLUGIN_VISCL
   ${maptk_viscl_sources}
   )
-
-target_link_libraries( maptk_viscl maptk_core viscl_core viscl_tasks viscl_vxl)
+maptk_plugin_link_libs( viscl
+  viscl_core viscl_tasks viscl_vxl
+  )

@@ -31,8 +31,9 @@
 #ifndef MAPTK_VISCL_FEATURE_SET_H_
 #define MAPTK_VISCL_FEATURE_SET_H_
 
-#include <maptk/viscl/viscl_config.h>
-#include <maptk/core/feature_set.h>
+#include <maptk/feature_set.h>
+#include <maptk/plugins/viscl/viscl_config.h>
+
 #include <viscl/core/buffer.h>
 #include <viscl/core/image.h>
 

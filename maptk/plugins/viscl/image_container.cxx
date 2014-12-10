@@ -30,12 +30,13 @@
 
 #include "image_container.h"
 
-#include <viscl/core/manager.h>
 #include <vil/vil_image_view.h>
 #include <vil/vil_save.h>
 
+#include <viscl/core/manager.h>
 #include <viscl/tasks/gaussian_smooth.h>
 #include <viscl/vxl/transfer.h>
+
 
 namespace maptk
 {

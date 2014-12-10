@@ -28,7 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <maptk/viscl/descriptor_set.h>
+#include "descriptor_set.h"
+
 #include <viscl/core/manager.h>
 
 

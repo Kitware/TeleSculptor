@@ -31,12 +31,14 @@
 #include "match_features.h"
 
 #include <vector>
-#include <maptk/viscl/feature_set.h>
-#include <maptk/viscl/descriptor_set.h>
-#include <maptk/viscl/match_set.h>
+
+#include <maptk/plugins/viscl/descriptor_set.h>
+#include <maptk/plugins/viscl/feature_set.h>
+#include <maptk/plugins/viscl/match_set.h>
+#include <maptk/plugins/viscl/utils.h>
 
 #include <viscl/tasks/track_descr_match.h>
-#include "utils.h"
+
 
 namespace maptk
 {

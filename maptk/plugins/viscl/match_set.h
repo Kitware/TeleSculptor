@@ -31,10 +31,11 @@
 #ifndef MAPTK_VISCL_MATCH_SET_H_
 #define MAPTK_VISCL_MATCH_SET_H_
 
+#include <maptk/match_set.h>
+#include <maptk/plugins/viscl/viscl_config.h>
 
-#include <maptk/core/match_set.h>
-#include <maptk/viscl/viscl_config.h>
 #include <viscl/core/buffer.h>
+
 
 namespace maptk
 {

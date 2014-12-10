@@ -32,9 +32,11 @@
 #define MAPTK_VISCL_DESCRIPTOR_SET_H_
 
 
-#include <maptk/core/descriptor_set.h>
-#include <maptk/viscl/viscl_config.h>
+#include <maptk/descriptor_set.h>
+#include <maptk/plugins/viscl/viscl_config.h>
+
 #include <viscl/core/buffer.h>
+
 
 namespace maptk
 {

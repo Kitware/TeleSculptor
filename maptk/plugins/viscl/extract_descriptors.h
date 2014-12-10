@@ -31,9 +31,11 @@
 #ifndef MAPTK_VISCL_EXTRACT_DESCRIPTORS_H_
 #define MAPTK_VISCL_EXTRACT_DESCRIPTORS_H_
 
-#include <maptk/core/algo/extract_descriptors.h>
-#include <maptk/viscl/viscl_config.h>
 #include <boost/scoped_ptr.hpp>
+
+#include <maptk/algo/extract_descriptors.h>
+#include <maptk/plugins/viscl/viscl_config.h>
+
 
 namespace maptk
 {

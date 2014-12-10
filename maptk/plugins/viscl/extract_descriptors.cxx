@@ -28,12 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <maptk/viscl/extract_descriptors.h>
-#include <maptk/viscl/image_container.h>
-#include <maptk/viscl/feature_set.h>
-#include <maptk/viscl/descriptor_set.h>
+#include "extract_descriptors.h"
+
+#include <maptk/plugins/viscl/image_container.h>
+#include <maptk/plugins/viscl/feature_set.h>
+#include <maptk/plugins/viscl/descriptor_set.h>
 
 #include <viscl/tasks/BRIEF.h>
+
 
 namespace maptk
 {

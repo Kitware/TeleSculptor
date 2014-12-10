@@ -28,12 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
-#include <maptk/viscl/match_set.h>
-#include <boost/foreach.hpp>
 #include <algorithm>
 
+#include <boost/foreach.hpp>
+
+#include <maptk/plugins/viscl/match_set.h>
+
 #include <viscl/core/manager.h>
+
 
 namespace maptk
 {

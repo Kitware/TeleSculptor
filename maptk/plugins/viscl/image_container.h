@@ -31,9 +31,11 @@
 #ifndef MAPTK_VISCL_IMAGE_CONTAINER_H_
 #define MAPTK_VISCL_IMAGE_CONTAINER_H_
 
-#include <maptk/core/image_container.h>
-#include <maptk/viscl/viscl_config.h>
+#include <maptk/image_container.h>
+#include <maptk/plugins/viscl/viscl_config.h>
+
 #include <viscl/core/image.h>
+
 
 namespace maptk
 {

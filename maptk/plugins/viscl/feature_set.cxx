@@ -29,10 +29,12 @@
  */
 
 
-#include <maptk/viscl/feature_set.h>
+#include "feature_set.h"
+
+#include <maptk/plugins/viscl/utils.h>
+
 #include <viscl/core/manager.h>
 
-#include "utils.h"
 
 namespace maptk
 {

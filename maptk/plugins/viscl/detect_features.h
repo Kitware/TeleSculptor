@@ -31,9 +31,11 @@
 #ifndef MAPTK_VISCL_DETECT_FEATURES_H_
 #define MAPTK_VISCL_DETECT_FEATURES_H_
 
-#include <maptk/core/algo/detect_features.h>
-#include <maptk/viscl/viscl_config.h>
 #include <boost/scoped_ptr.hpp>
+
+#include <maptk/algo/detect_features.h>
+#include <maptk/plugins/viscl/viscl_config.h>
+
 
 namespace maptk
 {

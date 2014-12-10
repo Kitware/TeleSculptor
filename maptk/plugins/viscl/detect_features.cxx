@@ -31,8 +31,9 @@
 #include "detect_features.h"
 
 #include <vector>
-#include <maptk/viscl/feature_set.h>
-#include <maptk/viscl/image_container.h>
+
+#include <maptk/plugins/viscl/feature_set.h>
+#include <maptk/plugins/viscl/image_container.h>
 
 #include <viscl/tasks/hessian.h>
 

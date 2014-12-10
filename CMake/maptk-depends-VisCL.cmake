@@ -8,4 +8,5 @@ option( MAPTK_ENABLE_VISCL
 if( MAPTK_ENABLE_VISCL )
   find_package( viscl REQUIRED )
   include_directories( SYSTEM ${viscl_INCLUDE_DIR} )
+  include_directories( SYSTEM ${viscl_OPENCL_INCLUDE_DIRS} )
 endif( MAPTK_ENABLE_VISCL )

@@ -31,9 +31,11 @@
 #ifndef MAPTK_VISCL_MATCH_FEATURES_H_
 #define MAPTK_VISCL_MATCH_FEATURES_H_
 
-#include <maptk/core/algo/match_features.h>
-#include <maptk/viscl/viscl_config.h>
 #include <boost/scoped_ptr.hpp>
+
+#include <maptk/algo/match_features.h>
+#include <maptk/plugins/viscl/viscl_config.h>
+
 
 namespace maptk
 {
