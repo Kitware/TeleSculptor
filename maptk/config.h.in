@@ -93,8 +93,4 @@
 #endif
 
 
-/// Default plugin library location
-static maptk::path_t const MAPTK_DEFAULT_PLUGIN_DIR = maptk::path_t("@dflt_plugin_dir@");
-
-
 #endif // MAPTK_CONFIG_H

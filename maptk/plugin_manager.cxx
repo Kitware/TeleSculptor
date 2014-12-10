@@ -13,7 +13,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 
-#include <maptk/exceptions/io.h>
 #include <maptk/logging_macros.h>
 #include <maptk/registrar.h>
 
@@ -44,6 +43,11 @@ namespace // anonymous
 #endif
 
 
+// CMake boolean convertion macros
+#define ON true
+#define OFF false
+
+
 HANDLE_PLATFORM(
   /* windows */
   typedef HMODULE library_t;
@@ -60,6 +64,10 @@ static std::string const register_function_name = std::string("register_algo_imp
 // Platform specific plugin library file (set as compile definition in CMake)
 static std::string const library_suffix = std::string(LIBRARY_SUFFIX);
 
+// Default module directory locations. Values defined in CMake configuration.
+static maptk::path_t const default_plugin_dir_build = maptk::path_t(DEFAULT_PLUGIN_DIR_BUILD),
+                           default_plugin_dir_install = maptk::path_t(DEFAULT_PLUGIN_DIR_INSTALL);
+bool const use_build_plugin_dir = USE_BUILD_PLUGIN_DIR;
 
 } // end anonymous namespace
 
@@ -95,21 +103,31 @@ public:
   }
 
   /// Attempt loading algorithm implementations from all plugin modules in dir
+  /**
+   * If the given path is not a valid directory, we emit a warning message
+   * and return without doing anything else.
+   */
   void load_modules_in_directory(path_t dir_path)
   {
     // Check given path for validity
     // Preventing load from current directory via empty string (security)
     if (dir_path.empty())
     {
+      LOG_DEBUG( "plugin_manager::impl::load_modules_in_directory",
+                 "Empty directory in the search path. Ignoring." );
       return;
     }
     if (!bfs::exists(dir_path))
     {
-      throw path_not_exists(dir_path);
+      LOG_DEBUG( "plugin_manager::impl::load_modules_in_directory",
+                 "Path " << dir_path << " doesn't exist. Ignoring." );
+      return;
     }
     if (!bfs::is_directory(dir_path))
     {
-      throw path_not_a_directory(dir_path);
+      LOG_DEBUG( "plugin_manager::impl::load_modules_in_directory",
+                 "Path " << dir_path << " is not a directory. Ignoring." );
+      return;
     }
 
     // Iterate over search-path directories, attempting module load on elements
@@ -268,6 +286,28 @@ public:
 // PluginManager Implementation
 // ---------------------------------------------------------------------------
 
+/// Private constructor
+plugin_manager
+::plugin_manager()
+  : impl_(new impl())
+{
+  // craft default search paths
+  if( use_build_plugin_dir )
+  {
+    this->impl_->search_paths_.push_back( default_plugin_dir_build );
+  }
+  this->impl_->search_paths_.push_back( default_plugin_dir_install );
+}
+
+
+/// Private destructor
+plugin_manager
+::~plugin_manager()
+{
+  delete this->impl_;
+}
+
+
 /// Access singleton instance of this class
 plugin_manager&
 plugin_manager
@@ -298,21 +338,6 @@ plugin_manager
 ::add_search_path(path_t dirpath)
 {
   this->impl_->search_paths_.push_back(dirpath);
-}
-
-
-plugin_manager
-::plugin_manager()
-  : impl_(new impl())
-{
-  this->impl_->search_paths_.push_back(MAPTK_DEFAULT_PLUGIN_DIR);
-}
-
-
-plugin_manager
-::~plugin_manager()
-{
-  delete this->impl_;
 }
 
 

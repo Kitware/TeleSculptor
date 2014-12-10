@@ -30,6 +30,8 @@ public:
 
   /// Add an additional directory to search for plugins in.
   /**
+   * Directory paths that don't exist will simply be ignored.
+   *
    * \param dirpath Path to the directory to add to the plugin search path
    */
   void add_search_path(path_t dirpath);

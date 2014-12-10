@@ -2,26 +2,14 @@ include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag(-fvisibility=hidden MAPTK_HAVE_GCC_VISIBILITY)
 
 # Configure general config.h.in
-set(dflt_plugin_dir "${MAPTK_DEFAULT_PLUGIN_DIR_BUILD}")
 maptk_configure_file(config.h
   "${CMAKE_CURRENT_SOURCE_DIR}/config.h.in"
   "${CMAKE_CURRENT_BINARY_DIR}/config.h"
   BUILD_SHARED_LIBS
   MAPTK_HAVE_GCC_VISIBILITY
-  dflt_plugin_dir
   )
-
-set(dflt_plugin_dir "${MAPTK_DEFAULT_PLUGIN_DIR_INSTALL}")
-maptk_configure_file(config.install.h
-  "${CMAKE_CURRENT_SOURCE_DIR}/config.h.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/config.install.h"
-  BUILD_SHARED_LIBS
-  MAPTK_HAVE_GCC_VISIBILITY
-  dflt_plugin_dir
-  )
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/config.install.h"
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/config.h"
   DESTINATION include/maptk
-  RENAME config.h
   )
 
 
@@ -158,13 +146,20 @@ set(maptk_sources
   algo/triangulate_landmarks.cxx
   )
 
-# Set module library suffix string as property on files that deal with plugin
-# module searching.
+# Setting up configured properties on plugin manager source files
+option(MAPTK_USE_BUILD_PLUGIN_DIR
+  "Whether to add the build-tree plugin directory to the default plugin search path list"
+  ON
+  )
 set(plugin_sources
   plugin_manager.h  plugin_manager.cxx
   )
+# TODO: the dirs here may need to refer to runtime path vs. lib/archive path (because windows)
 set(plugin_src_definitions
   "LIBRARY_SUFFIX=\"${CMAKE_SHARED_MODULE_SUFFIX}\""
+  "DEFAULT_PLUGIN_DIR_BUILD=\"${MAPTK_BINARY_DIR}/lib${MAPTK_LIB_SUFFIX}/maptk\""
+  "DEFAULT_PLUGIN_DIR_INSTALL=\"${CMAKE_INSTALL_PREFIX}/lib${MAPTK_LIB_SUFFIX}/maptk\""
+  "USE_BUILD_PLUGIN_DIR=${MAPTK_USE_BUILD_PLUGIN_DIR}"
   )
 set_source_files_properties(
   ${plugin_sources}
