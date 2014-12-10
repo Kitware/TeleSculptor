@@ -46,6 +46,7 @@
 #include <maptk/algo/estimate_similarity_transform.h>
 #include <maptk/algo/triangulate_landmarks.h>
 #include <maptk/algo/geo_map.h>
+#include <maptk/algorithm_plugin_manager.h>
 #include <maptk/camera_io.h>
 #include <maptk/config_block.h>
 #include <maptk/config_block_io.h>
@@ -59,7 +60,6 @@
 #include <maptk/track_set_io.h>
 #include <maptk/transform.h>
 #include <maptk/types.h>
-#include <maptk/plugin_manager.h>
 
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
@@ -539,7 +539,7 @@ bool load_input_cameras(maptk::config_block_sptr config,
 static int maptk_main(int argc, char const* argv[])
 {
   // register the algorithm implementations
-  maptk::plugin_manager::instance().register_plugins();
+  maptk::algorithm_plugin_manager::instance().register_plugins();
 
   // define/parse CLI options
   bpo::options_description opt_desc;

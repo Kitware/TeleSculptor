@@ -38,9 +38,9 @@
 #include <string>
 #include <iostream>
 
-#include <maptk/core/config_block_io.h>
-#include <maptk/core/exceptions.h>
-#include <maptk/core/types.h>
+#include <maptk/config_block_io.h>
+#include <maptk/exceptions.h>
+#include <maptk/types.h>
 
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>

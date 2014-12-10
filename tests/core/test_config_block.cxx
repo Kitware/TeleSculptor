@@ -35,8 +35,8 @@
 
 #include <test_common.h>
 
-#include <maptk/core/config_block.h>
-#include <maptk/core/vector.h>
+#include <maptk/config_block.h>
+#include <maptk/vector.h>
 
 #define TEST_ARGS ()
 

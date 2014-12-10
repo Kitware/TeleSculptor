@@ -35,7 +35,7 @@
 
 #include <test_common.h>
 
-#include <maptk/core/camera_intrinsics.h>
+#include <maptk/camera_intrinsics.h>
 
 #define TEST_ARGS ()
 

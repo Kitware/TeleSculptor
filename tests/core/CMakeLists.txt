@@ -1,7 +1,6 @@
 project(maptk_test_core)
 
-set(test_libraries
-  maptk_core)
+set(test_libraries maptk)
 
 ##############################
 # Core tests

@@ -24,15 +24,4 @@ include_directories("${MAPTK_SOURCE_DIR}")
 include_directories("${MAPTK_BINARY_DIR}")
 
 add_subdirectory(core)
-
-if (MAPTK_ENABLE_VXL)
-  add_subdirectory(vxl)
-endif()
-
-if (MAPTK_ENABLE_OPENCV)
-  add_subdirectory(ocv)
-endif()
-
-if(MAPTK_ENABLE_PROJ)
-  add_subdirectory(proj)
-endif()
+add_subdirectory(plugins)

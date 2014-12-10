@@ -38,7 +38,7 @@
 #ifndef MAPTK_TEST_TEST_RANDOM_POINT_H_
 #define MAPTK_TEST_TEST_RANDOM_POINT_H_
 
-#include <maptk/core/vector.h>
+#include <maptk/vector.h>
 #include <boost/random.hpp>
 #include <boost/random/normal_distribution.hpp>
 

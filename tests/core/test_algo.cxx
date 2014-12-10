@@ -37,13 +37,12 @@
 
 #include <iostream>
 
-#include <maptk/core/algo/register.h>
-
-#include <maptk/core/algo/match_features_homography.h>
-#include <maptk/core/algo/track_features.h>
-#include <maptk/core/config_block.h>
-#include <maptk/core/exceptions/algorithm.h>
-#include <maptk/core/types.h>
+//#include <maptk/algo/match_features_homography.h>
+#include <maptk/algo/track_features.h>
+#include <maptk/config_block.h>
+#include <maptk/exceptions/algorithm.h>
+#include <maptk/algorithm_plugin_manager.h>
+#include <maptk/types.h>
 
 #include <boost/foreach.hpp>
 
@@ -70,12 +69,12 @@ int main(int argc, char* argv[])
 
 IMPLEMENT_TEST(track_features_before_configuration)
 {
+  // register core algorithms
+  maptk::algorithm_plugin_manager::instance().register_plugins();
+
   using namespace std;
   using namespace maptk;
   using namespace maptk::algo;
-
-  // register core algorithms
-  maptk::algo::register_algorithms();
 
   track_features_sptr track_features_impl = track_features::create("default");
 
@@ -137,7 +136,7 @@ IMPLEMENT_TEST(track_features_before_configuration)
 IMPLEMENT_TEST(track_features_check_config)
 {
   // register core algorithms
-  maptk::algo::register_algorithms();
+  maptk::algorithm_plugin_manager::instance().register_plugins();
 
   using namespace maptk;
   using namespace maptk::algo;

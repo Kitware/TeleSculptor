@@ -45,7 +45,7 @@
 #include <maptk/exceptions.h>
 #include <maptk/ins_data_io.h>
 #include <maptk/local_geo_cs.h>
-#include <maptk/plugin_manager.h>
+#include <maptk/algorithm_plugin_manager.h>
 #include <maptk/types.h>
 
 #include <boost/filesystem.hpp>
@@ -288,7 +288,7 @@ bool convert_pos2krtd_dir(const maptk::path_t& pos_dir,
 static int maptk_main(int argc, char const* argv[])
 {
   // register the algorithm implementations
-  maptk::plugin_manager::instance().register_plugins();
+  maptk::algorithm_plugin_manager::instance().register_plugins();
 
   //
   // CLI Options (boost)

@@ -1,5 +1,5 @@
 
-#include "plugin_manager.h"
+#include "algorithm_plugin_manager.h"
 
 #include <string>
 
@@ -76,7 +76,7 @@ bool const use_build_plugin_dir = USE_BUILD_PLUGIN_DIR;
 // PluginManager Private Implementation
 // ---------------------------------------------------------------------------
 
-class plugin_manager::impl
+class algorithm_plugin_manager::impl
 {
 // Memeber Variables ---------------------------------------------------------
 public:
@@ -90,15 +90,15 @@ public:
 
 
   /// Attempt loading algorithm implementations from all known search paths
-  void load_from_search_paths()
+  void load_from_search_paths( std::string name = std::string() )
   {
-    LOG_DEBUG("plugin_manager::impl::load_from_search_paths",
+    LOG_DEBUG("algorithm_plugin_manager::impl::load_from_search_paths",
               "Loading plugins in search paths");
     BOOST_FOREACH( path_t module_dir, this->search_paths_ )
     {
       // TODO: Probably going to have to do something here in regards to
       //       windows and build configuration subdirectories
-      load_modules_in_directory(module_dir);
+      load_modules_in_directory(module_dir, name);
     }
   }
 
@@ -107,39 +107,42 @@ public:
    * If the given path is not a valid directory, we emit a warning message
    * and return without doing anything else.
    */
-  void load_modules_in_directory(path_t dir_path)
+  void load_modules_in_directory(path_t dir_path, std::string name = std::string() )
   {
     // Check given path for validity
     // Preventing load from current directory via empty string (security)
     if (dir_path.empty())
     {
-      LOG_DEBUG( "plugin_manager::impl::load_modules_in_directory",
+      LOG_DEBUG( "algorithm_plugin_manager::impl::load_modules_in_directory",
                  "Empty directory in the search path. Ignoring." );
       return;
     }
     if (!bfs::exists(dir_path))
     {
-      LOG_DEBUG( "plugin_manager::impl::load_modules_in_directory",
+      LOG_DEBUG( "algorithm_plugin_manager::impl::load_modules_in_directory",
                  "Path " << dir_path << " doesn't exist. Ignoring." );
       return;
     }
     if (!bfs::is_directory(dir_path))
     {
-      LOG_DEBUG( "plugin_manager::impl::load_modules_in_directory",
+      LOG_DEBUG( "algorithm_plugin_manager::impl::load_modules_in_directory",
                  "Path " << dir_path << " is not a directory. Ignoring." );
       return;
     }
 
     // Iterate over search-path directories, attempting module load on elements
     // that end in the configured library suffix.
-    LOG_DEBUG("plugin_manager::impl::load_modules_in_directory",
+    LOG_DEBUG("algorithm_plugin_manager::impl::load_modules_in_directory",
               "Loading modules in directory: " << dir_path);
     bfs::directory_iterator dir_it(dir_path);
     while (dir_it != bfs::directory_iterator())
     {
       bfs::directory_entry const e = *dir_it;
 
-      if (boost::ends_with(e.path().string(), library_suffix))
+      // Accept this file as a module to check if it has the correct library
+      // suffix and matches a provided module name if one was provided.
+      if ( boost::ends_with(e.path().string(), library_suffix)
+           && ( name.size() == 0 || e.path().stem().string() == name ) )
       {
         // Check that we're looking a file
         if (e.status().type() == bfs::regular_file)
@@ -148,7 +151,7 @@ public:
         }
         else
         {
-          LOG_WARN("plugin_manager::impl::load_modules_in_directory",
+          LOG_WARN("algorithm_plugin_manager::impl::load_modules_in_directory",
                    "Encountered a directory entry " << e.path() <<
                    " which ends with the expected suffix, but is not" <<
                    " a file");
@@ -174,7 +177,7 @@ public:
    */
   bool register_from_module(path_t module_path)
   {
-    LOG_DEBUG("plugin_manager::impl::register_from_module",
+    LOG_DEBUG("algorithm_plugin_manager::impl::register_from_module",
               "Starting plug-in interfacing for module file: " << module_path);
 
     //
@@ -198,12 +201,12 @@ public:
 
     if (!library)
     {
-      LOG_ERROR("plugin_manager::impl::register_from_module",
+      LOG_ERROR("algorithm_plugin_manager::impl::register_from_module",
                 "Failed to open module library " << module_path <<
                 " (error: " << err_str << ")");
       return false; // TODO: Throw exception here?
     }
-    LOG_DEBUG("plugin_manager::impl::register_from_module",
+    LOG_DEBUG("algorithm_plugin_manager::impl::register_from_module",
               "Loaded module: " << library);
 
     //
@@ -216,7 +219,7 @@ public:
       // If interface function not found, we assume this plugin doesn't provide
       // any algorithm implementations and close the library. We otherwise keep
       // it open if we are going to use things from it.
-      LOG_DEBUG("plugin_manager::impl::register_from_module",
+      LOG_DEBUG("algorithm_plugin_manager::impl::register_from_module",
                 "Looking for algorithm impl registration function: "
                 << register_function_name.c_str());
       function_t register_func = NULL;
@@ -227,7 +230,7 @@ public:
         /* Unix */
         register_func = dlsym( library, register_function_name.c_str() );
       );
-      LOG_DEBUG("plugin_manager::impl::register_from_module",
+      LOG_DEBUG("algorithm_plugin_manager::impl::register_from_module",
                 "-> returned function address: " << register_func);
 
       GNUC_EXTENSION register_impls_func_t const register_impls
@@ -236,20 +239,20 @@ public:
       // Check for symbol discovery
       if (!register_impls)
       {
-        LOG_DEBUG("plugin_manager::impl::register_from_module",
+        LOG_DEBUG("algorithm_plugin_manager::impl::register_from_module",
                   "-> Failed to find/load algorithm impl registration function");
       }
       // Call function, check for success
       else if ( (*register_impls)(registrar::instance()) > 0 )
       {
-        LOG_ERROR("plugin_manager::impl::register_from_module",
+        LOG_ERROR("algorithm_plugin_manager::impl::register_from_module",
                   "-> Algorithm implementation registration failed for one or " <<
                   "more algorithms in plugin module: " << module_path);
         // TODO: Throw exception here?
       }
       else
       {
-        LOG_DEBUG("plugin_manager::impl::register_from_module",
+        LOG_DEBUG("algorithm_plugin_manager::impl::register_from_module",
                   "-> Successfully called registration func");
         module_used = true;
       }
@@ -262,14 +265,14 @@ public:
         /* Windows */
         if ( ! FreeLibrary(library) )
         {
-          LOG_WARN("plugin_manager::impl::register_from_module",
+          LOG_WARN("algorithm_plugin_manager::impl::register_from_module",
                    "Failed to free Windows module library: " << module_path);
         }
         ,
         /* Unix */
         if ( dlclose(library) )
         {
-          LOG_WARN("plugin_manager::impl::register_from_module",
+          LOG_WARN("algorithm_plugin_manager::impl::register_from_module",
                    "Failed to free Unix module library: " << module_path
                    << " (" << dlerror() << ")");
         }
@@ -287,8 +290,8 @@ public:
 // ---------------------------------------------------------------------------
 
 /// Private constructor
-plugin_manager
-::plugin_manager()
+algorithm_plugin_manager
+::algorithm_plugin_manager()
   : impl_(new impl())
 {
   // craft default search paths
@@ -301,22 +304,22 @@ plugin_manager
 
 
 /// Private destructor
-plugin_manager
-::~plugin_manager()
+algorithm_plugin_manager
+::~algorithm_plugin_manager()
 {
   delete this->impl_;
 }
 
 
 /// Access singleton instance of this class
-plugin_manager&
-plugin_manager
+algorithm_plugin_manager&
+algorithm_plugin_manager
 ::instance()
 {
-  static plugin_manager *instance_ = 0;
+  static algorithm_plugin_manager *instance_ = 0;
   if (!instance_)
   {
-    instance_ = new plugin_manager();
+    instance_ = new algorithm_plugin_manager();
   }
   return *instance_;
 }
@@ -324,17 +327,17 @@ plugin_manager
 
 /// (Re)Load plugin libraries found along current search paths
 void
-plugin_manager
-::register_plugins()
+algorithm_plugin_manager
+::register_plugins( std::string name )
 {
-  LOG_DEBUG("plugin_manager::register_plugins", "Loading plugin impls");
-  this->impl_->load_from_search_paths();
+  LOG_DEBUG("algorithm_plugin_manager::register_plugins", "Loading plugin impls");
+  this->impl_->load_from_search_paths( name );
 }
 
 
 /// Add an additional directory to search for plugins in.
 void
-plugin_manager
+algorithm_plugin_manager
 ::add_search_path(path_t dirpath)
 {
   this->impl_->search_paths_.push_back(dirpath);

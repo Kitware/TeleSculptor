@@ -30,7 +30,7 @@
 
 #include <test_common.h>
 
-#include <maptk/core/similarity.h>
+#include <maptk/similarity.h>
 
 #define TEST_ARGS ()
 

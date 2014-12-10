@@ -18,6 +18,7 @@ include_directories("${MAPTK_BINARY_DIR}")
 
 
 set(maptk_public_headers
+  algorithm_plugin_manager.h
   camera.h
   camera_intrinsics.h
   camera_io.h
@@ -44,7 +45,6 @@ set(maptk_public_headers
   match_set.h
   matrix.h
   metrics.h
-  plugin_manager.h
   projected_track_set.h
   rotation.h
   registrar.h
@@ -90,6 +90,7 @@ set(maptk_public_headers
   )
 
 set(maptk_sources
+  algorithm_plugin_manager.cxx
   camera.cxx
   camera_intrinsics.cxx
   camera_io.cxx
@@ -107,7 +108,6 @@ set(maptk_sources
   local_geo_cs.cxx
   matrix.cxx
   metrics.cxx
-  plugin_manager.cxx
   projected_track_set.cxx
   rotation.cxx
   similarity.cxx
@@ -151,8 +151,8 @@ option(MAPTK_USE_BUILD_PLUGIN_DIR
   "Whether to add the build-tree plugin directory to the default plugin search path list"
   ON
   )
-set(plugin_sources
-  plugin_manager.h  plugin_manager.cxx
+set(plugin_manager_sources
+  algorithm_plugin_manager.h  algorithm_plugin_manager.cxx
   )
 # TODO: the dirs here may need to refer to runtime path vs. lib/archive path (because windows)
 set(plugin_src_definitions
@@ -162,7 +162,7 @@ set(plugin_src_definitions
   "USE_BUILD_PLUGIN_DIR=${MAPTK_USE_BUILD_PLUGIN_DIR}"
   )
 set_source_files_properties(
-  ${plugin_sources}
+  ${plugin_manager_sources}
   PROPERTIES
     COMPILE_DEFINITIONS "${plugin_src_definitions}"
   )

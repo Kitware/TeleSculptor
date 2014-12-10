@@ -44,12 +44,12 @@
 #include <maptk/algo/extract_descriptors.h>
 #include <maptk/algo/match_features.h>
 
+#include <maptk/algorithm_plugin_manager.h>
 #include <maptk/config_block.h>
 #include <maptk/config_block_io.h>
 #include <maptk/image_container.h>
 #include <maptk/exceptions.h>
 #include <maptk/logging_macros.h>
-#include <maptk/plugin_manager.h>
 #include <maptk/types.h>
 
 #include <boost/foreach.hpp>
@@ -150,7 +150,7 @@ static bool check_config(maptk::config_block_sptr config)
 static int maptk_main(int argc, char const* argv[])
 {
   // register the algorithm implementations
-  maptk::plugin_manager::instance().register_plugins();
+  maptk::algorithm_plugin_manager::instance().register_plugins();
 
   //
   // define/parse CLI options

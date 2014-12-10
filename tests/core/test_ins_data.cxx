@@ -37,7 +37,7 @@
 
 #include <sstream>
 #include <iostream>
-#include <maptk/core/ins_data.h>
+#include <maptk/ins_data.h>
 
 #define TEST_ARGS ()
 

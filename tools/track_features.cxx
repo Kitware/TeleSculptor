@@ -43,10 +43,10 @@
 #include <maptk/algo/convert_image.h>
 #include <maptk/algo/track_features.h>
 
+#include <maptk/algorithm_plugin_manager.h>
 #include <maptk/config_block.h>
 #include <maptk/config_block_io.h>
 #include <maptk/exceptions.h>
-#include <maptk/plugin_manager.h>
 #include <maptk/track_set_io.h>
 #include <maptk/types.h>
 
@@ -143,7 +143,7 @@ static bool check_config(maptk::config_block_sptr config)
 static int maptk_main(int argc, char const* argv[])
 {
   // register the algorithm implementations
-  maptk::plugin_manager::instance().register_plugins();
+  maptk::algorithm_plugin_manager::instance().register_plugins();
 
   // define/parse CLI options
   boost::program_options::options_description opt_desc;

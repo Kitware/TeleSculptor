@@ -35,7 +35,7 @@
 
 #include <test_common.h>
 
-#include <maptk/core/image.h>
+#include <maptk/image.h>
 
 #define TEST_ARGS ()
 

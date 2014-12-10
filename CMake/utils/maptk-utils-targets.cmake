@@ -210,7 +210,7 @@ endfunction()
 #-
 function(maptk_add_plugin name symbol)
   set(library_subdir /maptk)
-  #set(no_export ON)
+  set(no_export ON)
   maptk_add_library(maptk-plugin-${name} MODULE ${ARGN})
   target_link_libraries(maptk-plugin-${name} maptk)
   set_target_properties(maptk-plugin-${name}

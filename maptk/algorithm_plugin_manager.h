@@ -4,6 +4,7 @@
  * \brief Singleton manager of plug-in stuff
  */
 
+#include <string>
 #include <vector>
 
 #include <boost/shared_ptr.hpp>
@@ -19,14 +20,19 @@ namespace maptk
 /**
  * Plugin Manager for algorithm implementation extensions
  */
-class MAPTK_LIB_EXPORT plugin_manager
+class MAPTK_LIB_EXPORT algorithm_plugin_manager
 {
 public:
   /// Get the reference to the singleton instance of this class
-  static plugin_manager& instance();
+  static algorithm_plugin_manager& instance();
 
   /// (Re)Load plugin libraries found along current search paths
-  void register_plugins();
+  /**
+   * \param name If a name is provided, we will only load plugins whose name
+   *             corresponds to the name given. If no plugins with the given
+   *             name are found, nothing is loaded.
+   */
+  void register_plugins( std::string name = std::string() );
 
   /// Add an additional directory to search for plugins in.
   /**
@@ -45,13 +51,13 @@ private:
    * The singleton instance of this class should only be accessed via the
    * ``instance()`` static method.
    */
-  plugin_manager();
+  algorithm_plugin_manager();
   /// private deconstructor (singleton)
-  virtual ~plugin_manager();
+  virtual ~algorithm_plugin_manager();
   /// private copy constructor (singleton)
-  plugin_manager(plugin_manager const&);
+  algorithm_plugin_manager(algorithm_plugin_manager const&);
   /// private assignment operator (singleton)
-  plugin_manager& operator=(plugin_manager const&);
+  algorithm_plugin_manager& operator=(algorithm_plugin_manager const&);
 };
 
 

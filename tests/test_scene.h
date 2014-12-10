@@ -41,9 +41,9 @@
 
 #include <test_random_point.h>
 
-#include <maptk/core/camera_map.h>
-#include <maptk/core/landmark_map.h>
-#include <maptk/core/track_set.h>
+#include <maptk/camera_map.h>
+#include <maptk/landmark_map.h>
+#include <maptk/track_set.h>
 #include <boost/foreach.hpp>
 
 

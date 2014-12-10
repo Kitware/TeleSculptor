@@ -36,11 +36,12 @@
 #include <test_common.h>
 #include <test_scene.h>
 
-#include <maptk/core/projected_track_set.h>
-#include <maptk/core/metrics.h>
-#include <maptk/vxl/register.h>
-#include <maptk/vxl/bundle_adjust.h>
 #include <boost/foreach.hpp>
+
+#include <maptk/metrics.h>
+#include <maptk/plugin_manager.h>
+#include <maptk/plugins/vxl/bundle_adjust.h>
+#include <maptk/projected_track_set.h>
 
 
 #define TEST_ARGS ()
@@ -52,7 +53,8 @@ main(int argc, char* argv[])
 {
   CHECK_ARGS(1);
 
-  maptk::vxl::register_algorithms();
+  // Load algorithm plugins, VXL plugin should be included
+  maptk::plugin_manager::instance().register_plugins( "vxl" );
 
   testname_t const testname = argv[1];
 
