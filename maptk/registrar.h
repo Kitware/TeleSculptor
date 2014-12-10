@@ -65,7 +65,7 @@ namespace maptk
 
 /**
  * \brief A singleton class to keep a shared-pointer registry of objects across
- *        multiple types
+ *        multiple algorithm definition types
  *
  * NOTE: Do not use the static instance method ``instance()`` within plugins!
  * When the main library is build statically, the main library and plugin
@@ -107,8 +107,9 @@ public:
     bool new_insertion = im.insert(item_pair_t(name, item)).second;
     if (!new_insertion)
     {
-      LOG_WARN("registrar::register_item",
-               "Warning: duplicate registration of \"" << name << "\"");
+      LOG_WARN( "registrar::register_item",
+                "Warning: duplicate registration of algorithm "
+                << item->type_name() << " implementation \"" << name << "\"" );
     }
     return new_insertion;
   }
