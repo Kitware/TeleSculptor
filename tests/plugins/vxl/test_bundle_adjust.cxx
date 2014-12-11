@@ -57,7 +57,7 @@ main(int argc, char* argv[])
   // VXL algorithm implementations
   // Since we're only linking to the MAPTK-VXL library, there is no symbol
   //    confliction.
-  maptk::vxl::register_algo_impls();
+  maptk::vxl::register_algorithms();
 
   testname_t const testname = argv[1];
 

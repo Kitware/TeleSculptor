@@ -49,7 +49,7 @@ main(int argc, char* argv[])
 {
   CHECK_ARGS(1);
 
-  maptk::vxl::register_algo_impls();
+  maptk::vxl::register_algorithms();
 
   testname_t const testname = argv[1];
 

@@ -58,7 +58,7 @@ main(int argc, char* argv[])
 IMPLEMENT_TEST(factory)
 {
   using namespace maptk;
-  vxl::register_algo_impls();
+  vxl::register_algorithms();
 
   typedef boost::shared_ptr<algo::image_io> image_io_sptr;
   image_io_sptr img_io = maptk::algo::image_io::create("vxl");

@@ -44,5 +44,5 @@
 MAPTK_VXL_EXPORT
 int register_algo_impls(maptk::registrar &reg)
 {
-  return maptk::vxl::register_algo_impls( reg );
+  return maptk::vxl::register_algorithms( reg );
 }

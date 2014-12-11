@@ -44,5 +44,5 @@
 PLUGIN_DEFAULT_EXPORT
 int register_algo_impls(maptk::registrar &reg)
 {
-  return maptk::defaults::register_algo_impls( reg );
+  return maptk::defaults::register_algorithms( reg );
 }

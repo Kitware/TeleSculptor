@@ -48,7 +48,7 @@ namespace vxl
 
 /// Register VXL algorithm implementations with the given or global registrar
 MAPTK_VXL_EXPORT
-int register_algo_impls( maptk::registrar &reg = maptk::registrar::instance() );
+int register_algorithms( maptk::registrar &reg = maptk::registrar::instance() );
 
 }
 

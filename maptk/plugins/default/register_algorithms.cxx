@@ -55,7 +55,7 @@ namespace defaults
 {
 
 // Register default algorithms with the given or global registrar
-int register_algo_impls(maptk::registrar &reg)
+int register_algorithms(maptk::registrar &reg)
 {
   try
   {

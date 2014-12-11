@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
 
 IMPLEMENT_TEST(track_features_before_configuration)
 {
-  // register core algorithms
+  // register algorithms from plugins
   maptk::algorithm_plugin_manager::instance().register_plugins();
 
   using namespace std;

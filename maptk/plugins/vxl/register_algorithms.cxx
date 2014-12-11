@@ -44,7 +44,6 @@
 #include <maptk/plugins/vxl/initialize_cameras_landmarks.h>
 #include <maptk/plugins/vxl/optimize_cameras.h>
 #include <maptk/plugins/vxl/triangulate_landmarks.h>
-#include <maptk/plugins/vxl/vxl_config.h>
 
 
 namespace maptk
@@ -54,7 +53,7 @@ namespace vxl
 {
 
 /// Register VXL algorithm implementations with the given or global registrar
-int register_algo_impls( maptk::registrar &reg )
+int register_algorithms( maptk::registrar &reg )
 {
   try
   {

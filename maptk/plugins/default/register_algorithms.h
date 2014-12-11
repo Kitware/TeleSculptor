@@ -48,7 +48,7 @@ namespace defaults
 
 // Register default algorithms with the given or global registrar
 PLUGIN_DEFAULT_EXPORT
-int register_algo_impls( maptk::registrar &reg = maptk::registrar::instance() );
+int register_algorithms( maptk::registrar &reg = maptk::registrar::instance() );
 
 } // end defaults namespace
 
