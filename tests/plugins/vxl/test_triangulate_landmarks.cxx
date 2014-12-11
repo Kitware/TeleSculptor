@@ -31,10 +31,10 @@
 #include <test_common.h>
 #include <test_scene.h>
 
-#include <maptk/core/projected_track_set.h>
-#include <maptk/core/metrics.h>
-#include <maptk/vxl/register.h>
-#include <maptk/vxl/triangulate_landmarks.h>
+#include <maptk/projected_track_set.h>
+#include <maptk/metrics.h>
+#include <maptk/plugins/vxl/register_algorithms.h>
+#include <maptk/plugins/vxl/triangulate_landmarks.h>
 
 #include <boost/foreach.hpp>
 
@@ -48,7 +48,7 @@ main(int argc, char* argv[])
 {
   CHECK_ARGS(1);
 
-  maptk::vxl::register_algorithms();
+  maptk::vxl::register_algo_impls();
 
   testname_t const testname = argv[1];
 

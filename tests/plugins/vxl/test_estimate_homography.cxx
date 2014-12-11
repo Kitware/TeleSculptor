@@ -36,8 +36,8 @@
 #include <test_common.h>
 #include <test_random_point.h>
 
-#include <maptk/vxl/register.h>
-#include <maptk/vxl/estimate_homography.h>
+#include <maptk/plugins/vxl/register_algorithms.h>
+#include <maptk/plugins/vxl/estimate_homography.h>
 
 
 maptk::matrix_3x3d sample_homography()
@@ -60,7 +60,7 @@ main(int argc, char* argv[])
 {
   CHECK_ARGS(1);
 
-  maptk::vxl::register_algorithms();
+  maptk::vxl::register_algo_impls();
 
   testname_t const testname = argv[1];
 

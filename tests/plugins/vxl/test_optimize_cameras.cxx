@@ -35,11 +35,11 @@
 #include <test_math.h>
 #include <test_scene.h>
 
-#include <maptk/core/camera_map.h>
-#include <maptk/core/landmark_map.h>
-#include <maptk/core/track_set.h>
-#include <maptk/core/projected_track_set.h>
-#include <maptk/vxl/optimize_cameras.h>
+#include <maptk/camera_map.h>
+#include <maptk/landmark_map.h>
+#include <maptk/track_set.h>
+#include <maptk/projected_track_set.h>
+#include <maptk/plugins/vxl/optimize_cameras.h>
 
 #include <boost/foreach.hpp>
 

@@ -7,10 +7,10 @@
 
 /// Toggle symbol export syntax when building plugin library
 #ifndef PLUGIN_DEFAULT_EXPORT
-# ifdef MAKE_PLUGIN_DEFAULT
+# ifdef MAKE_MAPTK_DEFAULT_LIB
 #   define PLUGIN_DEFAULT_EXPORT MAPTK_EXPORT
 # else
-#   define PLUGIN_DEFAULT_EXPORT
+#   define PLUGIN_DEFAULT_EXPORT MAPTK_IMPORT
 # endif
 #endif
 

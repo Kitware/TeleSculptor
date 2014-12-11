@@ -1,7 +1,6 @@
 project(maptk_test_vxl)
 
-set(test_libraries
-  maptk maptk-plugin-vxl)
+set(test_libraries maptk_vxl)
 
 ##############################
 # MAPTK VXL tests

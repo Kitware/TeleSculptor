@@ -253,7 +253,7 @@ public:
   }
 
   /// Register this algorithm implementation
-  static bool register_self(registrar &reg)
+  static bool register_self(registrar &reg = maptk::registrar::instance())
   {
     return algorithm_def<Base>::register_instance(reg, base_sptr(new Self));
   }

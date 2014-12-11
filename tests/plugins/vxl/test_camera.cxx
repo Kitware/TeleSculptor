@@ -36,7 +36,8 @@
 #include <test_common.h>
 
 #include <cstdio>
-#include <maptk/vxl/camera.h>
+
+#include <maptk/plugins/vxl/camera.h>
 
 #define TEST_ARGS ()
 

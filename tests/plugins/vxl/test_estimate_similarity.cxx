@@ -34,12 +34,12 @@
 #include <test_common.h>
 #include <test_random_point.h>
 
-#include <maptk/core/exceptions.h>
-#include <maptk/core/rotation.h>
-#include <maptk/core/similarity.h>
-#include <maptk/core/vector.h>
-#include <maptk/vxl/register.h>
-#include <maptk/vxl/estimate_similarity_transform.h>
+#include <maptk/exceptions.h>
+#include <maptk/rotation.h>
+#include <maptk/similarity.h>
+#include <maptk/vector.h>
+#include <maptk/plugins/vxl/register_algorithms.h>
+#include <maptk/plugins/vxl/estimate_similarity_transform.h>
 
 #include <boost/foreach.hpp>
 
@@ -50,7 +50,7 @@ DECLARE_TEST_MAP();
 int main(int argc, char* argv[])
 {
   CHECK_ARGS(1);
-  maptk::vxl::register_algorithms();
+  maptk::vxl::register_algo_impls();
   testname_t const testname = argv[1];
   RUN_TEST(testname);
 }

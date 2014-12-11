@@ -60,7 +60,9 @@ HANDLE_PLATFORM(
 typedef int (*register_impls_func_t)(registrar&);
 
 
-static std::string const register_function_name = std::string("register_algo_impls");
+// String name of the private interface function.
+// See source file located @ CMake/templates/cxx/plugin_shell.cxx
+static std::string const register_function_name = std::string("private_register_algo_impls");
 // Platform specific plugin library file (set as compile definition in CMake)
 static std::string const library_suffix = std::string(LIBRARY_SUFFIX);
 
@@ -94,10 +96,12 @@ public:
   {
     LOG_DEBUG("algorithm_plugin_manager::impl::load_from_search_paths",
               "Loading plugins in search paths");
+    // TODO: Want a way to hook into an environment variable / config file here
+    //       for additional search path extension
+    //       - Search order: setInCode -> EnvVar -> configFile -> defaults
+    //       - create separate default_search_paths_ member var for separate storage
     BOOST_FOREACH( path_t module_dir, this->search_paths_ )
     {
-      // TODO: Probably going to have to do something here in regards to
-      //       windows and build configuration subdirectories
       load_modules_in_directory(module_dir, name);
     }
   }

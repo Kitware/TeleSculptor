@@ -124,23 +124,35 @@ endfunction()
 #+
 # Add a library to MAPTK
 #
-#   maptk_add_library(name [args...])
+#   maptk_add_library(name [SYMBOL symbol] [args...])
 #
 # Remaining arguments passed to this function are given to the underlying
 # add_library call, so refer to CMake documentation for additional arguments.
 #
 # Library version will be set to that of the current MAPTK version.
-# Additionally defines the symbol "MAKE_<cname>_LIB" where ``cname`` is the
-# ``name`` capitolized.
+#
+# If the SYMBOL argument is not provided, we defines the symbol
+# "MAKE_<cname>_LIB" where ``cname`` is the ``name`` capitolized. Otherwise we
+# define the symbol specified
 #
 # This function will add the library to the set of targets to be exported
 # unless ``no_export`` was set.
 #-
 function(maptk_add_library name)
-  string(TOUPPER "${name}" upper_name)
-  message(STATUS "Making library \"${name}\" with defined symbol \"MAKE_${upper_name}_LIB\"")
+  set(oneValueArgs SYMBOL)
+  cmake_parse_arguments(mal "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-  add_library("${name}" ${ARGN})
+  message(STATUS "mal_SYMBOL: \"${mal_SYMBOL}\"")
+  if( mal_SYMBOL )
+    set(DEF_SYMBOL "${mal_SYMBOL}")
+  else()
+    message(STATUS "No symbol explicitly given, using default")
+    string(TOUPPER "${name}" upper_name)
+    set(DEF_SYMBOL "MAKE_${upper_name}_LIB")
+  endif()
+  message(STATUS "Making library \"${name}\" with defined symbol \"${DEF_SYMBOL}\"")
+
+  add_library("${name}" ${mal_UNPARSED_ARGUMENTS})
   set_target_properties("${name}"
     PROPERTIES
       ARCHIVE_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/lib${library_subdir}"
@@ -148,7 +160,7 @@ function(maptk_add_library name)
       RUNTIME_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/bin${library_subdir}"
       VERSION                  ${MAPTK_VERSION}
       SOVERSION                0
-      DEFINE_SYMBOL            MAKE_${upper_name}_LIB
+      DEFINE_SYMBOL            "${DEF_SYMBOL}"
     )
 
   add_dependencies("${name}"
@@ -190,50 +202,43 @@ function(maptk_add_library name)
 endfunction()
 
 #+
-# Add a plugin library
+# Generate and add a plug-in library based on another library
 #
-#   maptk_add_plugin(name symbol [args ...])
+#   maptk_create_plugin(base_lib [args ...])
 #
-# Add a plugin library, creating a target by the name of ``maptk-plugin-<name>``
-# (base-name of output file will remain only <name>).
-# Automatically links against the core MAPTK library and installs it into the
-# correct MAPTK plugin directory. Remaining arguments passed to this function
-# are given to the underlying add_library call, so refer to CMake
-# documentation for additional arguments.
+# The given base library must link against the core maptk library and provide
+# an implementation of the algorithm plugin interface class. If this has not
+# been done an error will occur at link time stating that the required class
+# symbol can not be found.
 #
-# Library version will be set to that of the current MAPTK version.
+# This generates a small MODULE library that exposes the required C interface
+# function to be picked up by the algorithm plugin manager. This library is set
+# to install into the .../maptk subdirectory.
 #
-# Additionally defines the symbol specified as the ``symbol`` argument.
+# Additional source files may be specified after the base library if the
+# registration interface implementation is separate from the base library.
 #
 # Setting library_subdir or no_export before this function
 # has no effect as they are manually specified within this function.
 #-
-function(maptk_add_plugin name symbol)
+function(maptk_create_plugin base_lib)
+  # Configure template cxx source file
+  set(shell_source "${MAPTK_UTIL_ROOT}/templates/cxx/plugin_shell.cxx")
+
+  # create module library given generated source, linked to given library
   set(library_subdir /maptk)
   set(no_export ON)
-  maptk_add_library(maptk-plugin-${name} MODULE ${ARGN})
-  target_link_libraries(maptk-plugin-${name} maptk)
-  set_target_properties(maptk-plugin-${name}
+  maptk_add_library(maptk-plugin-${base_lib}
+    SYMBOL MAKE_PRIV_PLUGIN_SHELL
+    MODULE "${shell_source}" ${ARGN})
+  target_link_libraries(maptk-plugin-${base_lib} ${base_lib} maptk)
+  set_target_properties(maptk-plugin-${base_lib}
     PROPERTIES
-      DEFINE_SYMBOL ${symbol}
       PREFIX        ""
       SUFFIX        ${CMAKE_SHARED_MODULE_SUFFIX}
-      OUTPUT_NAME   ${name}
+      OUTPUT_NAME   ${base_lib}
     )
-  add_dependencies(all-plugins maptk-plugin-${name})
-endfunction()
-
-#+
-#   maptk_plugin_link_libs( plugin_name [args ...] )
-#
-# Link libraries to a MAPTK plugin library. This method is provided because
-# the library target name is mangled underneath the hood of maptk_add_plugin.
-#
-# Remaining arguments after ``plugin_name`` are passed to the CMake function
-# ``target_link_libraries``. See the CMake documentation for further details.
-#-
-function(maptk_plugin_link_libs plugin_name)
-  target_link_libraries( maptk-plugin-${plugin_name} ${ARGN} )
+  add_dependencies(all-plugins maptk-plugin-${base_lib})
 endfunction()
 
 #+
@@ -289,7 +294,7 @@ function(maptk_install_headers)
 endfunction()
 
 #+
-#   maptk_install_plugin_headers( name header1 [header2 ...] )
+#   maptk_install_plugin_headers( plugin_name header1 [header2 ...] )
 #
 # Instal MAPTK plugin public header files to the ``include/maptk/plugin/``
 # sub-directory in the configured installation location.

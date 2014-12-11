@@ -32,14 +32,14 @@
 #include <test_math.h>
 #include <test_scene.h>
 
-#include <maptk/core/projected_track_set.h>
-#include <maptk/core/metrics.h>
-#include <maptk/core/similarity.h>
-#include <maptk/core/transform.h>
-#include <maptk/vxl/register.h>
-#include <maptk/vxl/estimate_essential_matrix.h>
-#include <maptk/vxl/estimate_similarity_transform.h>
-#include <maptk/vxl/initialize_cameras_landmarks.h>
+#include <maptk/projected_track_set.h>
+#include <maptk/metrics.h>
+#include <maptk/similarity.h>
+#include <maptk/transform.h>
+#include <maptk/plugins/vxl/register_algorithms.h>
+#include <maptk/plugins/vxl/estimate_essential_matrix.h>
+#include <maptk/plugins/vxl/estimate_similarity_transform.h>
+#include <maptk/plugins/vxl/initialize_cameras_landmarks.h>
 
 #include <boost/foreach.hpp>
 
@@ -53,7 +53,7 @@ main(int argc, char* argv[])
 {
   CHECK_ARGS(1);
 
-  maptk::vxl::register_algorithms();
+  maptk::vxl::register_algo_impls();
 
   testname_t const testname = argv[1];
 

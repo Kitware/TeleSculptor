@@ -86,7 +86,7 @@ set(maptk_public_headers
   algo/track_features.h
   algo/triangulate_landmarks.h
 
-  plugin_interface/algorithm_impl_pl_interface.h
+  plugin_interface/algorithm_plugin_interface.h
   )
 
 set(maptk_sources
@@ -146,19 +146,25 @@ set(maptk_sources
   algo/triangulate_landmarks.cxx
   )
 
+
 # Setting up configured properties on plugin manager source files
 option(MAPTK_USE_BUILD_PLUGIN_DIR
-  "Whether to add the build-tree plugin directory to the default plugin search path list"
+  "Whether to include the build-tree plugin directory to the default plugin search path list"
   ON
   )
 set(plugin_manager_sources
   algorithm_plugin_manager.h  algorithm_plugin_manager.cxx
   )
-# TODO: the dirs here may need to refer to runtime path vs. lib/archive path (because windows)
+if (WIN32) # Windows puts DLLs in the bin directory
+  set(rel_plugin_dir "bin")
+else()
+  set(rel_plugin_dir "lib${MAPTK_LIB_SUFFIX}")
+endif() # TODO: Apple Xcode specific subdir?
+# LIBRARY_SUFFIX here refers to the filename suffix, e.g. .so or .dll
 set(plugin_src_definitions
   "LIBRARY_SUFFIX=\"${CMAKE_SHARED_MODULE_SUFFIX}\""
-  "DEFAULT_PLUGIN_DIR_BUILD=\"${MAPTK_BINARY_DIR}/lib${MAPTK_LIB_SUFFIX}/maptk\""
-  "DEFAULT_PLUGIN_DIR_INSTALL=\"${CMAKE_INSTALL_PREFIX}/lib${MAPTK_LIB_SUFFIX}/maptk\""
+  "DEFAULT_PLUGIN_DIR_BUILD=\"${MAPTK_BINARY_DIR}/${rel_plugin_dir}/maptk\""
+  "DEFAULT_PLUGIN_DIR_INSTALL=\"${CMAKE_INSTALL_PREFIX}/${rel_plugin_dir}/maptk\""
   "USE_BUILD_PLUGIN_DIR=${MAPTK_USE_BUILD_PLUGIN_DIR}"
   )
 set_source_files_properties(
@@ -166,6 +172,7 @@ set_source_files_properties(
   PROPERTIES
     COMPILE_DEFINITIONS "${plugin_src_definitions}"
   )
+
 
 maptk_install_headers(
   ${maptk_public_headers}

@@ -38,7 +38,6 @@ option(MAPTK_ENABLE_VISCL   "Enable VisCL dependent code (for OpenCL on GPU)" OF
 option(MAPTK_ENABLE_PROJ    "Enable PROJ dependent code"                      OFF)
 
 
-
 ###
 # MAPTK CMake config
 #
@@ -65,14 +64,14 @@ add_subdirectory(tools)
 #
 
 # The following are required to uses Dart and the Cdash dashboard
-#option(MAPTK_ENABLE_TESTING "Build MAPTK testing" OFF)
-#if(MAPTK_ENABLE_TESTING)
-#  enable_testing()
-#  include(CTest)
-#  set(BUILD_TESTING ON)
-#  mark_as_advanced(BUILD_TESTING)
-#  add_subdirectory(tests)
-#endif()
+option(MAPTK_ENABLE_TESTING "Build MAPTK testing" OFF)
+if(MAPTK_ENABLE_TESTING)
+  enable_testing()
+  include(CTest)
+  set(BUILD_TESTING ON)
+  mark_as_advanced(BUILD_TESTING)
+  add_subdirectory(tests)
+endif()
 
 
 ###
@@ -85,21 +84,25 @@ string(REPLACE ";" " " maptk_libs "${maptk_libs}")
 
 # Configure build-tree CMake config file and export associated targets file
 set(MAPTK_CONFIG_FILE "${MAPTK_BINARY_DIR}/maptk-config.cmake")
+set(module_path "${MAPTK_SOURCE_DIR}CMake")
 maptk_configure_file(maptk-config
   "${MAPTK_SOURCE_DIR}/CMake/maptk-config.cmake.in"
   "${MAPTK_CONFIG_FILE}"
   MAPTK_SOURCE_DIR MAPTK_BINARY_DIR
   maptk_libs
+  module_path
   )
 maptk_export_targets("${MAPTK_BINARY_DIR}/maptk-config-targets.cmake")
 
 # Configure install-tree CMake config file and export associated targets file
 set(cmake_install_dir lib${MAPTK_LIB_SUFFIX}/cmake/maptk)
 set(MAPTK_CONFIG_INSTALL_FILE "${MAPTK_BINARY_DIR}/maptk-config-install.cmake")
+set(module_path "${CMAKE_INSTALL_PREFIX}/lib${MAPTK_LIB_SUFFIX}/cmake/maptk")
 maptk_configure_file(maptk-install-config
   "${MAPTK_SOURCE_DIR}/CMake/maptk-config-install.cmake.in"
   "${MAPTK_CONFIG_INSTALL_FILE}"
   maptk_libs
+  module_path
   )
 maptk_install(
   FILES       "${MAPTK_CONFIG_INSTALL_FILE}"

@@ -39,8 +39,9 @@
 #include <boost/foreach.hpp>
 
 #include <maptk/metrics.h>
-#include <maptk/plugin_manager.h>
+#include <maptk/algorithm_plugin_manager.h>
 #include <maptk/plugins/vxl/bundle_adjust.h>
+#include <maptk/plugins/vxl/register_algorithms.h>
 #include <maptk/projected_track_set.h>
 
 
@@ -53,8 +54,10 @@ main(int argc, char* argv[])
 {
   CHECK_ARGS(1);
 
-  // Load algorithm plugins, VXL plugin should be included
-  maptk::plugin_manager::instance().register_plugins( "vxl" );
+  // VXL algorithm implementations
+  // Since we're only linking to the MAPTK-VXL library, there is no symbol
+  //    confliction.
+  maptk::vxl::register_algo_impls();
 
   testname_t const testname = argv[1];
 

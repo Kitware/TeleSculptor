@@ -30,57 +30,29 @@
 
 /**
  * \file
- * \brief VXL plugin algorithm registration plugin interface impl
+ * \brief Register VXL algorithms
  */
 
-#include <maptk/logging_macros.h>
-#include <maptk/plugin_interface/algorithm_impl_pl_interface.h>
+#ifndef _MAPTK_PLUGINS_VXL_REGISTER_ALGORITHMS_H_
+#define _MAPTK_PLUGINS_VXL_REGISTER_ALGORITHMS_H_
 
-#include "bundle_adjust.h"
-#include "close_loops_homography_guided.h"
-#include "estimate_essential_matrix.h"
-#include "estimate_homography.h"
-#include "estimate_similarity_transform.h"
-#include "optimize_cameras.h"
-#include "triangulate_landmarks.h"
-#include "vxl_config.h"
+#include <maptk/plugins/vxl/vxl_config.h>
+#include <maptk/registrar.h>
 
 
-#ifdef __cplusplus
-extern "C"
+namespace maptk
 {
-#endif
 
+namespace vxl
+{
 
+/// Register VXL algorithm implementations with the given or global registrar
 MAPTK_VXL_EXPORT
-int register_algo_impls(maptk::registrar &reg)
-{
-  try
-  {
-    LOG_DEBUG( "plugin::vxl::register_algo_impls",
-               "Registering VXL plugin algo implementations" );
+int register_algo_impls( maptk::registrar &reg = maptk::registrar::instance() );
 
-    int registered
-      = maptk::vxl::bundle_adjust::register_self( reg )
-      + maptk::vxl::close_loops_homography_guided::register_self( reg )
-      + maptk::vxl::estimate_essential_matrix::register_self( reg )
-      + maptk::vxl::estimate_homography::register_self( reg )
-      + maptk::vxl::estimate_similarity_transform::register_self( reg )
-      + maptk::vxl::optimize_cameras::register_self( reg )
-      + maptk::vxl::triangulate_landmarks::register_self( reg )
-      ;
+}
 
-    return 7 - registered;
-  }
-  catch (...)
-  {
-    LOG_ERROR( "plugin::vxl::register_algo_impls",
-               "Exception caught during algorithm registration" );
-  }
-  return -1;
 }
 
 
-#ifdef __cplusplus
-}
 #endif

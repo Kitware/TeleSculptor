@@ -14,14 +14,16 @@ set(maptk_vxl_headers_public
   image_io.h
   initialize_cameras_landmarks.h
   optimize_cameras.h
+  register_algorithms.h
   triangulate_landmarks.h
   vil_image_memory.h
   vxl_config.h
   )
+maptk_install_plugin_headers( vxl
+  ${maptk_vxl_headers_public}
+  )
 
 set(maptk_vxl_sources
-  algorithm_impl_pl_interface.cxx
-
   bundle_adjust.cxx
   camera.cxx
   camera_map.cxx
@@ -34,19 +36,19 @@ set(maptk_vxl_sources
   image_io.cxx
   initialize_cameras_landmarks.cxx
   optimize_cameras.cxx
+  register_algorithms.cxx
   triangulate_landmarks.cxx
   vil_image_memory.cxx
   )
 
-# installing header files
-maptk_install_plugin_headers( vxl
-  ${maptk_vxl_headers_public}
-  )
-maptk_add_plugin( vxl
-  MAKE_PLUGIN_VXL
-  #${maptk_vxl_headers_public}
+maptk_add_library( maptk_vxl
   ${maptk_vxl_sources}
   )
-maptk_plugin_link_libs( vxl
+target_link_libraries( maptk_vxl
+  maptk
   rrel vgl_algo vil vpgl_algo
+  )
+
+maptk_create_plugin( maptk_vxl
+  algorithm_plugin_interface.cxx
   )
