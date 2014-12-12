@@ -42,6 +42,7 @@
 #include "exceptions/algorithm.h"
 #include "exceptions/config_block.h"
 #include "exceptions/config_block_io.h"
+#include "exceptions/image.h"
 #include "exceptions/io.h"
 #include "exceptions/math.h"
 
