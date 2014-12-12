@@ -42,6 +42,7 @@
 #include <maptk/plugins/vxl/camera.h>
 
 #include <vgl/vgl_point_2d.h>
+#include <Eigen/LU>
 
 #include <vpgl/algo/vpgl_em_compute_5_point.h>
 
@@ -172,8 +173,9 @@ estimate_essential_matrix
   em.compute(right_points, vcal1, left_points, vcal2, best_em);
 
   matrix_3x3d E(best_em.get_matrix().data_block());
-  matrix_3x3d K1_inv = inverse(matrix_3x3d(cal1));
-  matrix_3x3d K2_invt = inverse(matrix_3x3d(cal2).transpose());
+  E.transposeInPlace();
+  matrix_3x3d K1_inv = matrix_3x3d(cal1).inverse();
+  matrix_3x3d K2_invt = matrix_3x3d(cal2).transpose().inverse();
   matrix_3x3d F = K2_invt * E * K1_inv;
   matrix_3x3d Ft = F.transpose();
 
@@ -189,7 +191,7 @@ estimate_essential_matrix
     double s1 = 1.0 / sqrt(l1.x()*l1.x() + l1.y()*l1.y());
     double s2 = 1.0 / sqrt(l2.x()*l2.x() + l2.y()*l2.y());
     // sum of point to epipolar line distance in both images
-    double d = inner_product(v1, l2) * (s1 + s2);
+    double d = v1.dot(l2) * (s1 + s2);
     inliers[i] = std::fabs(d) < inlier_scale;
   }
 

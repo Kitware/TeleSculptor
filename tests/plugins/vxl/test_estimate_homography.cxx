@@ -42,12 +42,10 @@
 
 maptk::matrix_3x3d sample_homography()
 {
-  maptk::matrix_3x3d H(0.0);
-  H(0,0) = 2.0;
-  H(1,1) = 3.0;
-  H(2,2) = 1.0;
-  H(0,2) = -1.5;
-  H(1,2) = 5.0;
+  maptk::matrix_3x3d H;
+  H << 2.0, 0.0, -1.5,
+       0.0, 3.0, 5.0,
+       0.0, 0.0, 1.0;
   return H;
 }
 
@@ -88,7 +86,7 @@ IMPLEMENT_TEST(not_enough_points)
   std::vector<bool> inliers;
 
   matrix_3x3d H = estimator.estimate(pts1, pts2, inliers);
-  if (H != matrix_3x3d(0.0))
+  if (H != matrix_3x3d::Zero())
   {
     TEST_ERROR("Estimation with no points should produce a zero matrix");
   }
@@ -102,7 +100,7 @@ IMPLEMENT_TEST(not_enough_points)
   pts2.push_back(vector_2d(1.0, 4.0));
 
   H = estimator.estimate(pts1, pts2, inliers);
-  if (H != matrix_3x3d(0.0))
+  if (H != matrix_3x3d::Zero())
   {
     TEST_ERROR("Estimation with < 4 points should produce a zero matrix");
   }
@@ -134,7 +132,7 @@ IMPLEMENT_TEST(four_points)
   matrix_3x3d H = estimator.estimate(pts1, pts2, inliers);
   H /= H(2,2);
 
-  double H_error = (true_H - H).frobenius_norm();
+  double H_error = (true_H - H).norm();
   std::cout << "Homography estimation error: "<< H_error << std::endl;
 
   TEST_NEAR("Frobenius norm between estimated and true homography",
@@ -154,7 +152,7 @@ IMPLEMENT_TEST(ideal_points)
   std::vector<vector_2d> pts1, pts2;
   for(unsigned i=0; i<100; ++i)
   {
-    vector_2d v2 = random_point2d(1000.0) + 500.0;
+    vector_2d v2 = random_point2d(1000.0) + vector_2d(500.0,500.0);
     pts1.push_back(v2);
     vector_3d v3 = true_H * vector_3d(v2.x(), v2.y(), 1.0);
     pts2.push_back(vector_2d(v3.x()/v3.z(), v3.y()/v3.z()));
@@ -164,7 +162,7 @@ IMPLEMENT_TEST(ideal_points)
   matrix_3x3d H = estimator.estimate(pts1, pts2, inliers);
   H /= H(2,2);
 
-  double H_error = (true_H - H).frobenius_norm();
+  double H_error = (true_H - H).norm();
   std::cout << "Homography estimation error: "<< H_error << std::endl;
   TEST_NEAR("Frobenius norm between estimated and true homography",
             H_error, 0.0, 1e-8);
@@ -188,7 +186,7 @@ IMPLEMENT_TEST(noisy_points)
   std::vector<vector_2d> pts1, pts2;
   for(unsigned i=0; i<100; ++i)
   {
-    vector_2d v2 = random_point2d(1000.0) + 500.0;
+    vector_2d v2 = random_point2d(1000.0) + vector_2d(500.0,500.0);
     pts1.push_back(v2 + random_point2d(0.1));
     vector_3d v3 = true_H * vector_3d(v2.x(), v2.y(), 1.0);
     pts2.push_back(vector_2d(v3.x()/v3.z(), v3.y()/v3.z())
@@ -199,7 +197,7 @@ IMPLEMENT_TEST(noisy_points)
   matrix_3x3d H = estimator.estimate(pts1, pts2, inliers);
   H /= H(2,2);
 
-  double H_error = (true_H - H).frobenius_norm();
+  double H_error = (true_H - H).norm();
   std::cout << "Homography estimation error: "<< H_error << std::endl;
   TEST_NEAR("Frobenius norm between estimated and true homography",
             H_error, 0.0, 0.2);
@@ -227,14 +225,14 @@ IMPLEMENT_TEST(outlier_points)
   std::vector<bool> true_inliers;
   for(unsigned i=0; i<100; ++i)
   {
-    vector_2d v2 = random_point2d(1000.0) + 500.0;
+    vector_2d v2 = random_point2d(1000.0) + vector_2d(500.0,500.0);
     pts1.push_back(v2);
     vector_3d v3 = true_H * vector_3d(v2.x(), v2.y(), 1.0);
     pts2.push_back(vector_2d(v3.x()/v3.z(), v3.y()/v3.z()));
     true_inliers.push_back(true);
     if (i%3 == 0)
     {
-      pts2.back() = random_point2d(1000.0) + 500.0;
+      pts2.back() = random_point2d(1000.0) + vector_2d(500.0,500.0);
       true_inliers.back() = false;
     }
   }
@@ -243,7 +241,7 @@ IMPLEMENT_TEST(outlier_points)
   matrix_3x3d H = estimator.estimate(pts1, pts2, inliers);
   H /= H(2,2);
 
-  double H_error = (true_H - H).frobenius_norm();
+  double H_error = (true_H - H).norm();
   std::cout << "Homography estimation error: "<< H_error << std::endl;
   TEST_NEAR("Frobenius norm between estimated and true homography",
             H_error, 0.0, 1e-8);

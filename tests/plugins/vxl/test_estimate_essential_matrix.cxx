@@ -38,6 +38,7 @@
 #include <maptk/plugins/vxl/register_algorithms.h>
 
 #include <boost/foreach.hpp>
+#include <Eigen/LU>
 
 
 #define TEST_ARGS ()
@@ -79,9 +80,13 @@ essential_matrix_from_cameras(const maptk::camera& right_cam,
   vector_3d t1 = right_cam.translation();
   vector_3d t2 = left_cam.translation();
   matrix_3x3d R(R2 * R1.inverse());
-  matrix_3x3d tx = cross_product(t2 - R*t1);
+  vector_3d t(t2 - R*t1);
+  matrix_3x3d tx;
+  tx << 0.0, -t[2], t[1],
+        t[2], 0.0, -t[0],
+       -t[1], t[0], 0.0;
   matrix_3x3d E(tx * R);
-  E /= E.frobenius_norm();
+  E /= E.norm();
   if (E(0,0) < 0)
   {
     E *= -1;
@@ -97,8 +102,8 @@ essential_matrix_to_fundamental(const maptk::matrix_3x3d& E,
                                 const maptk::camera_intrinsics_d& left_cal)
 {
   using namespace maptk;
-  matrix_3x3d Kr_inv = inverse(matrix_3x3d(right_cal));
-  matrix_3x3d Kl_invt = inverse(matrix_3x3d(left_cal).transpose());
+  matrix_3x3d Kr_inv = matrix_3x3d(right_cal).inverse();
+  matrix_3x3d Kl_invt = matrix_3x3d(left_cal).transpose().inverse();
   return Kl_invt * E * Kr_inv;
 }
 
@@ -121,7 +126,7 @@ void print_epipolar_distances(const maptk::matrix_3x3d& F,
     double sr = 1.0 / sqrt(lr.x()*lr.x() + lr.y()*lr.y());
     double sl = 1.0 / sqrt(ll.x()*ll.x() + ll.y()*ll.y());
     // sum of point to epipolar line distance in both images
-    double d = inner_product(vr, ll);
+    double d = vr.dot(ll);
     std::cout <<" dist right = "<<d*sr<<"  dist left = "<<d*sl << std::endl;
   }
 }
@@ -171,7 +176,7 @@ IMPLEMENT_TEST(ideal_points)
   // compute the essential matrix from the corresponding points
   std::vector<bool> inliers;
   matrix_3x3d E = est_e.estimate(pts1, pts2, cal1, cal2, inliers, 1.5);
-  E /= E.frobenius_norm();
+  E /= E.norm();
   if (E(0,0) < 0)
   {
     E *= -1;
@@ -236,7 +241,7 @@ IMPLEMENT_TEST(noisy_points)
   // compute the essential matrix from the corresponding points
   std::vector<bool> inliers;
   matrix_3x3d E = est_e.estimate(pts1, pts2, cal1, cal2, inliers, 1.5);
-  E /= E.frobenius_norm();
+  E /= E.norm();
   if (E(0,0) < 0)
   {
     E *= -1;

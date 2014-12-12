@@ -152,7 +152,7 @@ initialize_cameras_landmarks::priv
   for(; inlier_idx < inliers.size() && !inliers[inlier_idx]; ++inlier_idx);
 
   // compute the corresponding camera rotation and translation (up to scale)
-  vpgl_essential_matrix<double> vE(vnl_double_3x3(E.data()));
+  vpgl_essential_matrix<double> vE(vnl_double_3x3(E.data()).transpose());
   vpgl_perspective_camera<double> vcam;
   vector_2d left_pt = cal_left.unmap(pts_left[inlier_idx]);
   vector_2d right_pt = cal_right.unmap(pts_right[inlier_idx]);

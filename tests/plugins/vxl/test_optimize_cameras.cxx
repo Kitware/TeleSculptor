@@ -140,7 +140,7 @@ IMPLEMENT_TEST(no_noise)
 
   vector_3d zero_3d_vec(0,0,0);
   vector_4d zero_4d_vec(0,0,0,0);
-  matrix_3x3d zero_mat(0.0);
+  matrix_3x3d zero_mat = matrix_3x3d::Zero();
   ostringstream ss;
 
   double ep = 1e-14;
@@ -199,7 +199,7 @@ IMPLEMENT_TEST(noisy_cameras)
 
   vector_3d zero_3d_vec(0,0,0);
   vector_4d zero_4d_vec(0,0,0,0);
-  matrix_3x3d zero_mat(0.0);
+  matrix_3x3d zero_mat = matrix_3x3d::Zero();
   ostringstream ss;
 
   double ep = 2e-10;
