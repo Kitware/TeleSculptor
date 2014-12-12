@@ -85,11 +85,11 @@ camera_<T>
   x /= x_mag;
   Eigen::Matrix<T,3,1> y = z.cross(x).normalized();
 
-  T r[] = { x.x(), x.y(), x.z(),
-            y.x(), y.y(), y.z(),
-            z.x(), z.y(), z.z() };
+  Eigen::Matrix<T,3,3> R;
+  R << x.x(), x.y(), x.z(),
+       y.x(), y.y(), y.z(),
+       z.x(), z.y(), z.z();
 
-  Eigen::Matrix<T,3,3> R(r);
   this->set_rotation(rotation_<T>(R));
 }
 
@@ -104,7 +104,7 @@ camera_<T>
   Eigen::Matrix<T,3,3> K(this->get_intrinsics());
   Eigen::Matrix<T,3,1> t(this->get_translation());
   P.template block<3,3>(0,0) = R;
-  P.template block<3,1>(3,0) = t;
+  P.template block<3,1>(0,3) = t;
   return K * P;
 }
 

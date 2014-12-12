@@ -68,7 +68,7 @@ similarity_<T>
   sr /= this->scale_;
   this->rot_ = rotation_<T>(sr);
   assert((Eigen::Matrix<T,3,3>(this->rot_)-sr).norm() < 1e-4);
-  this->trans_ = M.template block<3,1>(3,0);
+  this->trans_ = M.template block<3,1>(0,3);
 }
 
 
@@ -80,7 +80,7 @@ similarity_<T>
   Eigen::Matrix<T,4,4> mat = Eigen::Matrix<T,4,4>::Zero();
   mat(3,3) = 1;
   mat.template block<3,3>(0,0) = this->scale_ * Eigen::Matrix<T,3,3>(this->rot_);
-  mat.template block<3,1>(3,0) = this->trans_;
+  mat.template block<3,1>(0,3) = this->trans_;
   return mat;
 }
 
