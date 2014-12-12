@@ -106,7 +106,6 @@ set(maptk_sources
   landmark.cxx
   landmark_map_io.cxx
   local_geo_cs.cxx
-  matrix.cxx
   metrics.cxx
   projected_track_set.cxx
   rotation.cxx
@@ -115,7 +114,6 @@ set(maptk_sources
   track_set.cxx
   track_set_io.cxx
   transform.cxx
-  vector.cxx
 
   exceptions/algorithm.cxx
   exceptions/base.cxx

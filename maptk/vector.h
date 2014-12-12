@@ -30,7 +30,7 @@
 
 /**
  * \file
- * \brief Header for \link maptk::vector_ vector_<N,T> \endlink class
+ * \brief Header for Eigen fixed size column vector typedefs
  *        as well as \link maptk::vector_2_ vector_2_<T> \endlink,
  *        \link maptk::vector_3_ vector_3_<T> \endlink, and
  *        \link maptk::vector_4_ vector_4_<T> \endlink classes
@@ -43,7 +43,6 @@
 
 #include <cstring>
 #include <iostream>
-#include <cassert>
 
 #include <Eigen/Core>
 
@@ -267,21 +266,20 @@ typedef vector_4_<float>  vector_4f;
 /// \endcond
 
 
-/// output stream operator for a vector
-/**
- * \param s an output stream
- * \param v vector to stream
- */
-template <typename T, int N>
-MAPTK_LIB_EXPORT std::ostream&  operator<<(std::ostream& s, const Eigen::Matrix<T,N,1>& v);
-
 /// input stream operator for a vector
 /**
  * \param s an input stream
  * \param v vector to stream into
  */
 template <typename T, int N>
-MAPTK_LIB_EXPORT std::istream&  operator>>(std::istream& s, Eigen::Matrix<T,N,1>& v);
+std::istream& operator>>(std::istream& s, Eigen::Matrix<T,N,1>& v)
+{
+  for( int i=0; i<N; ++i)
+  {
+    s >> std::skipws >> v[i];
+  }
+  return s;
+}
 
 
 } // end namespace maptk

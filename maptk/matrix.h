@@ -30,7 +30,7 @@
 
 /**
  * \file
- * \brief Header for \link maptk::matrix_ matrix_<M,N,T> \endlink class
+ * \brief Typedefs for Eigen fixed sized matrices
  */
 
 #ifndef MAPTK_MATRIX_H_
@@ -40,10 +40,6 @@
 
 #include <iostream>
 #include <cstring>
-#include <cassert>
-
-#include "vector.h"
-#include "exceptions.h"
 
 #include <Eigen/Core>
 
@@ -69,97 +65,6 @@ typedef Eigen::Matrix<double, 4, 4> matrix_4x4d;
 typedef Eigen::Matrix<float, 4, 4>  matrix_4x4f;
 /// \endcond
 
-#if 0
-/// Compute the determinant of a 2x2 square matrix
-template <typename T>
-inline
-T determinant(const Eigen::Matrix<T,2,2>& m)
-{
-  const T* d = m.data();
-  return m[0]*d[3] - d[1]*d[2];
-}
-
-/// Compute the determinant of a 3x3 square matrix
-template <typename T>
-inline
-T determinant(const matrix_<3,3,T>& m)
-{
-  const T* d = m.data();
-  return d[0]*(d[4]*d[8] - d[5]*d[7])
-       + d[1]*(d[5]*d[6] - d[3]*d[8])
-       + d[2]*(d[3]*d[7] - d[4]*d[6]);
-}
-
-/// Compute the inverse of a 2x2 square matrix
-template <typename T>
-matrix_<2,2,T> inverse(const matrix_<2,2,T>& m)
-{
-  T det = determinant(m);
-  if (det==0)
-  {
-    throw non_invertible_matrix();
-  }
-  det = T(1)/det;
-  T d[4];
-  d[0] = m(1,1)*det;
-  d[1] = -m(0,1)*det;
-  d[2] = -m(1,0)*det;
-  d[3] = m(0,0)*det;
-  return matrix_<2,2,T>(d);
-}
-
-/// Compute the inverse of a 3x3 square matrix
-template <typename T>
-matrix_<3,3,T> inverse(const matrix_<3,3,T>& m)
-{
-  T det = determinant(m);
-  if (det==0)
-  {
-    throw non_invertible_matrix();
-  }
-  det = T(1)/det;
-  T d[9];
-  d[0] = (m(1,1)*m(2,2)-m(1,2)*m(2,1))*det;
-  d[1] = (m(2,1)*m(0,2)-m(2,2)*m(0,1))*det;
-  d[2] = (m(0,1)*m(1,2)-m(0,2)*m(1,1))*det;
-  d[3] = (m(1,2)*m(2,0)-m(1,0)*m(2,2))*det;
-  d[4] = (m(0,0)*m(2,2)-m(0,2)*m(2,0))*det;
-  d[5] = (m(1,0)*m(0,2)-m(1,2)*m(0,0))*det;
-  d[6] = (m(1,0)*m(2,1)-m(1,1)*m(2,0))*det;
-  d[7] = (m(0,1)*m(2,0)-m(0,0)*m(2,1))*det;
-  d[8] = (m(0,0)*m(1,1)-m(0,1)*m(1,0))*det;
-  return matrix_<3,3,T>(d);
-}
-
-/// Compute the cross_product 3x3 matrix from a 3D vector
-/**
- * Produces a matrix such that
- * \code
- *   cross_product(v1) * v2 == cross_product(v1, v2)
- * \endcode
- */
-template <typename T>
-matrix_<3,3,T> cross_product(const vector_<3,T>& v)
-{
-  matrix_<3,3,T> x;
-  x(0,0) = x(1,1) = x(2,2) = T(0);
-  x(0,1) = -v[2];
-  x(1,0) =  v[2];
-  x(2,0) = -v[1];
-  x(0,2) =  v[1];
-  x(1,2) = -v[0];
-  x(2,1) =  v[0];
-  return x;
-}
-
-#endif
-/// output stream operator for a matrix
-/**
- * \param s an output stream
- * \param m a matrix to stream
- */
-template <typename T, int M, int N>
-MAPTK_LIB_EXPORT std::ostream&  operator<<(std::ostream& s, const Eigen::Matrix<T,M,N>& m);
 
 /// input stream operator for a matrix
 /**
@@ -167,7 +72,17 @@ MAPTK_LIB_EXPORT std::ostream&  operator<<(std::ostream& s, const Eigen::Matrix<
  * \param m a matrix to stream into
  */
 template <typename T, int M, int N>
-MAPTK_LIB_EXPORT std::istream&  operator>>(std::istream& s, Eigen::Matrix<T,M,N>& m);
+std::istream&  operator>>(std::istream& s, Eigen::Matrix<T,M,N>& m)
+{
+  for (int i=0; i<M; ++i)
+  {
+    for (int j=0; j<N; ++j)
+    {
+      s >> std::skipws >> m(i,j);
+    }
+  }
+  return s;
+}
 
 
 } // end namespace maptk
