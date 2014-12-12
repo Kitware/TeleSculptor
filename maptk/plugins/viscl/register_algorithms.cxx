@@ -30,36 +30,40 @@
 
 /**
  * \file
- * \brief VisCL plugin algorithm registration plugin interface impl
+ * \brief VisCL algorithm registration function implementation
  */
 
-#include <maptk/logging_macros.h>
-#include <maptk/plugin_interface/algorithm_impl_pl_interface.h>
+#include "register_algorithms.h"
 
+#include <maptk/logging_macros.h>
 #include <maptk/plugins/viscl/convert_image.h>
 #include <maptk/plugins/viscl/detect_features.h>
 #include <maptk/plugins/viscl/extract_descriptors.h>
 #include <maptk/plugins/viscl/match_features.h>
-#include <maptk/plugins/viscl/viscl_config.h>
+#include <maptk/registrar.h>
 
 
-#ifdef __cplusplus
-extern "C"
+namespace maptk
 {
-#endif
 
+namespace vcl
+{
 
-MAPTK_VISCL_EXPORT
-int register_algo_impls( maptk::registrar &reg )
+/// Register VisCL algorithm implementations with the given or global registrar
+int register_algorithms( maptk::registrar &reg )
 {
   try
   {
-    int registered
+    int expected = 4,
+        registered
       = maptk::vcl::convert_image::register_self( reg )
       + maptk::vcl::detect_features::register_self( reg )
+      + maptk::vcl::extract_descriptors::register_self( reg )
       + maptk::vcl::match_features::register_self( reg )
       ;
-    return 3 - registered;
+    LOG_DEBUG( "plugins::viscl::register_algorithms",
+               "Registered " << registered << " of " << expected << " algorithms" );
+    return expected - registered;
   }
   catch (...)
   {
@@ -69,7 +73,6 @@ int register_algo_impls( maptk::registrar &reg )
   return -1;
 }
 
+} // end vcl ns
 
-#ifdef __cplusplus
-}
-#endif
+} // end maptk ns

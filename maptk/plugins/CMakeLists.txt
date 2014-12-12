@@ -19,14 +19,14 @@ if( MAPTK_PLUGIN_ENABLE_PROJ )
   add_subdirectory( proj )
 endif()
 
-##Add VisCL plugin if enabled
-#cmake_dependent_option( MAPTK_PLUGIN_ENABLE_VISCL
-#  "Enable VisCL plug-in building / installation" OFF
-#  "MAPTK_ENABLE_VISCL;viscl_FOUND" OFF
-#  )
-#if( MAPTK_PLUGIN_ENABLE_VISCL )
-#  add_subdirectory( viscl )
-#endif()
+#Add VisCL plugin if enabled
+cmake_dependent_option( MAPTK_PLUGIN_ENABLE_VISCL
+  "Enable VisCL plug-in building / installation" OFF
+  "MAPTK_ENABLE_VISCL;viscl_FOUND" OFF
+  )
+if( MAPTK_PLUGIN_ENABLE_VISCL )
+  add_subdirectory( viscl )
+endif()
 
 # Add VXL plugin if enabled
 cmake_dependent_option( MAPTK_PLUGIN_ENABLE_VXL

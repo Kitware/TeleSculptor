@@ -28,19 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_VISCL_VISCL_CONFIG_H
-#define MAPTK_VISCL_VISCL_CONFIG_H
+/**
+ * \file
+ * \brief VisCL plugin algorithm registration plugin interface impl
+ */
 
-#include <maptk/config.h>
+#include <maptk/plugins/viscl/register_algorithms.h>
+#include <maptk/plugins/viscl/viscl_config.h>
+#include <maptk/registrar.h>
 
-/// Define symbol visibility in maptk::vcl
-#ifndef MAPTK_VISCL_EXPORT
-# ifdef MAKE_MAPTK_VISCL_LIB
-#   define MAPTK_VISCL_EXPORT MAPTK_EXPORT
-# else
-#   define MAPTK_VISCL_EXPORT MAPTK_IMPORT
-# endif
-# define MAPTK_VISCL_NO_EXPORT MAPTK_NO_EXPORT
-#endif
+#define MAPTK_ALGO_REGISTER_EXPORT MAPTK_VISCL_EXPORT
+#include <maptk/plugin_interface/algorithm_plugin_interface.h>
 
-#endif
+
+MAPTK_VISCL_EXPORT
+int register_algo_impls( maptk::registrar &reg )
+{
+  return maptk::vcl::register_algorithms( reg );
+}

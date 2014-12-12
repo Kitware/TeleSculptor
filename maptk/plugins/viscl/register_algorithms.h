@@ -28,19 +28,30 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_VISCL_VISCL_CONFIG_H
-#define MAPTK_VISCL_VISCL_CONFIG_H
+/**
+ * \file
+ * \brief VisCL algorithm registration function
+ */
 
-#include <maptk/config.h>
+#ifndef _MAPTK_PLUGINS_VISCL_REGISTER_ALGORITHMS_H_
+#define _MAPTK_PLUGINS_VISCL_REGISTER_ALGORITHMS_H_
 
-/// Define symbol visibility in maptk::vcl
-#ifndef MAPTK_VISCL_EXPORT
-# ifdef MAKE_MAPTK_VISCL_LIB
-#   define MAPTK_VISCL_EXPORT MAPTK_EXPORT
-# else
-#   define MAPTK_VISCL_EXPORT MAPTK_IMPORT
-# endif
-# define MAPTK_VISCL_NO_EXPORT MAPTK_NO_EXPORT
-#endif
+#include <maptk/plugins/viscl/viscl_config.h>
+#include <maptk/registrar.h>
+
+
+namespace maptk
+{
+
+namespace vcl
+{
+
+/// Register VisCL algorithm implementations with the given or global registrar
+MAPTK_VISCL_EXPORT
+int register_algorithms( maptk::registrar &reg = maptk::registrar::instance() );
+
+} // end vcl namespace
+
+} // end maptk namespace
 
 #endif
