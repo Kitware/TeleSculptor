@@ -158,13 +158,14 @@ set(plugin_manager_sources
 if (WIN32) # Windows puts DLLs in the bin directory
   set(rel_plugin_dir "bin")
 else()
-  set(rel_plugin_dir "lib${MAPTK_LIB_SUFFIX}")
+  set(rel_plugin_dir "lib")
+  set(plugin_lib_suffix "${MAPTK_LIB_SUFFIX}")
 endif() # TODO: Apple Xcode specific subdir?
 # LIBRARY_SUFFIX here refers to the filename suffix, e.g. .so or .dll
 set(plugin_src_definitions
   "LIBRARY_SUFFIX=\"${CMAKE_SHARED_MODULE_SUFFIX}\""
   "DEFAULT_PLUGIN_DIR_BUILD=\"${MAPTK_BINARY_DIR}/${rel_plugin_dir}/maptk\""
-  "DEFAULT_PLUGIN_DIR_INSTALL=\"${CMAKE_INSTALL_PREFIX}/${rel_plugin_dir}/maptk\""
+  "DEFAULT_PLUGIN_DIR_INSTALL=\"${CMAKE_INSTALL_PREFIX}/${rel_plugin_dir}${plugin_lib_suffix}/maptk\""
   "USE_BUILD_PLUGIN_DIR=${MAPTK_USE_BUILD_PLUGIN_DIR}"
   )
 set_source_files_properties(
