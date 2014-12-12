@@ -1,0 +1,123 @@
+/// Primary namespace under which the contents of the MAPTK package are located
+namespace maptk {
+// The following text is included in the main documentation page by doxygen
+/** \mainpage maptk::core documentation
+\section sec-core-contents Contents
+The MAPTK core library provides various components
+
+\subsection sec-core-math Mathematical Structures
+- \link vector_ vector_<N,T> \endlink : a mathematical vector of
+               length N and type T
+- \link matrix_ matrix_<M,N,T> \endlink : a mathematical matrix of
+               size MxN and type T
+- \link covariance_ covariance_<N,T> \endlink : an NxN symmetric positive
+               definite matrix of type T to represent a covariance matrix
+- \link rotation_ rotation_<T> \endlink : a representation of 3D rotation
+               with conversion to various formats (matrix, quaternion, etc.)
+- \link homography homography \endlink : a 3x3 homogeneous transformation matrix
+
+\subsection sec-core-image Image Structures
+- \ref image : a representation of an 8-bit image with memory that could be
+               shared between other image representations
+
+\subsection sec-core-geometry Geometric Structures
+- \ref feature : a 2D image interest point
+- \ref landmark : a 3D location corresponding to a tracked feature
+- \ref descriptor : a vector data used to describe the appearance of a \ref feature
+- \ref track : a sequence of corresponding features and descriptors over time.
+- \ref camera : a pinhole camera object of type T with
+               \link rotation_ rotation \endlink, translation, and intrinsics
+- \link camera_intrinsics_ camera_intrinsics_<T> \endlink : pinhole camera
+               intrinics parameters focal length, principal point, skew, and
+               aspect ratio
+
+
+\subsection sec_geographic Geographic Data Structures
+- \ref ins_data : a representataion of Inertial Navigation Data (INS), such as
+               loaded from POS file.
+- \ref local_geo_cs : a representation of a local geographic coordinate system.
+               A Cartesian coordinate system in meters with an origin in UTM.
+
+
+\subsection sec-core-config Configuration Structures
+- \ref config_block : a representation of a tree of nested algorithm parameters.
+               Read from and write to a config file.
+- \ref registrar : manages registered instances of objects by name.
+               Used to create algorithms by string name.
+
+
+\subsection sec-core-containers Abstract Containers
+These abstract base classes provide APIs for objects passed between algorithms.
+Each class also comes with a concrete "simple" derived class that implements
+the interface in the trivial way, by directly storing the underlying MAPTK data
+types.  Other modules can provide alternate implementations to store data in
+other representations, or even on other devices (e.g. GPU memory).  However,
+each container must implement the function to convert to canonical MAPTK data
+types.
+- \ref image_container : holds an \ref image, default implementation is
+               \ref simple_image_container
+- \ref feature_set : holds a collection of \ref feature shared pointers,
+               default implementation is \ref simple_feature_set
+- \ref descriptor_set : holds a collection of \ref descriptor shared pointers,
+               default implementation is \ref simple_descriptor_set
+- \ref match_set : holds a collection of pairs of matching feature indices,
+               default implementation is \ref simple_match_set
+- \ref track_set : holds a collection of feature \ref track shared pointers,
+               default implementation is \ref simple_track_set
+- \ref landmark_map : hold a mapping from \ref landmark_id_t to \ref landmark
+               shared pointers, default implementation is
+               \ref simple_landmark_map
+- \ref camera_map : hold a mapping from \ref frame_id_t to \ref camera
+               shared pointers, default implementation is
+               \ref simple_camera_map
+
+
+\subsection sec-core-algorithms Abstract Algorithms
+- \ref algo::algorithm : the base class for all algorithms
+- \ref algo::image_io : read or write an image file
+- \ref algo::detect_features : detect feature points in an image
+- \ref algo::extract_descriptors : extract a descriptor for each feature from
+               an image
+- \ref algo::match_features : match features between two images
+- \ref algo::estimate_homography : estimate a homography from feature matches
+- \ref algo::estimate_similarity_transform : estimate a similarity
+               transformation from corresponding point sets.
+- \ref algo::track_features : combine sequences of feature matches over time
+               into tracks
+- \ref algo::geo_map : convert geographic coordinates between Lat-Long and UTM
+- \ref algo::bundle_adjust : optimize collections of cameras and landmarks to
+               minimize reprojection error relative to observed tracks.
+- \ref algo::close_loops : close loops by stitching corresponding feature tracks
+               together
+- \ref algo::analyze_tracks : output various statistics about feature track sets
+- \ref algo::draw_tracks : draw feature tracks on top of input images
+- \ref algo::compute_ref_homography : estimate homography transformations between
+               each input frame and some past reference frame
+
+
+\subsection sec-core-algorithm-impls Algorithm Implementations
+- \ref algo::track_features_default : converts frame-to-frame feature matching
+               into tracks
+         - Implements \ref algo::track_features.
+         - Requires instances of \ref algo::detect_features,
+               \ref algo::extract_descriptors, and \ref algo::match_features.
+- \ref algo::match_features_homography : use homography estimation within
+               feature matching
+         - Implements \ref algo::match_features,
+         - Requires instances of \ref algo::match_features and
+               \ref algo::estimate_homography.
+- \ref algo::close_loops_multi_method : run multiple different close loops
+               implementations together
+         - Implements \ref algo::close_loops,
+         - Requires instances of \ref algo::close_loops
+- \ref algo::close_loops_bad_frames_only : stitch feature tracks together over
+               missing or bad input frames
+         - Implements \ref algo::close_loops,
+         - Requires instances of \ref algo::match_features
+- \ref algo::compute_ref_homography_default : estimate a homography between
+               the current frame and some reference frame
+         - Implements \ref algo::compute_ref_homography,
+         - Requires instances of \ref algo::estimate_homography
+
+*/
+}

@@ -192,3 +192,5 @@ endif()
 
 # configure plugins
 add_subdirectory(plugins)
+
+maptk_create_doxygen( maptk "${CMAKE_CURRENT_LIST_DIR}" )
