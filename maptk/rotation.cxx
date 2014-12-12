@@ -298,8 +298,8 @@ rotation_<T>
 {
   const T& real = q_.w();
   const vector_3_<T> imag(q_.x(), q_.y(), q_.z());
-  const Eigen::Matrix<T,3,1> ixv(cross_product(imag, rhs));
-  return rhs + T(2*real)*ixv - T(2)*cross_product(ixv,imag);
+  const Eigen::Matrix<T,3,1> ixv(imag.cross(rhs));
+  return rhs + T(2*real)*ixv - T(2)*ixv.cross(imag);
 }
 
 
