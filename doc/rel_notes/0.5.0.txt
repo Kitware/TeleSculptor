@@ -16,6 +16,8 @@ Build System
  * Export a maptk_libs CMake variable containing all maptk compiled libraries.
    This makes it easier for 3rd parties to link against all maptk libraries.
 
+ * Added additional dependency specification options for file configuration.
+
 Core Library
 
  * Added abstract algorithm for essential matrix estimation from feature matches
@@ -78,3 +80,8 @@ Tools
 
 Fixes since v0.4.1
 ------------------
+
+Build system
+
+ * Fixed race condition during Doxygen documentation generation when built in a
+   parallel mode.
