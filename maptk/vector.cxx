@@ -43,11 +43,11 @@ namespace maptk
 
 
 /// output stream operator for a vector
-template <unsigned N, typename T>
-std::ostream&  operator<<(std::ostream& s, const vector_<N,T>& v)
+template <typename T, int N>
+std::ostream&  operator<<(std::ostream& s, const Eigen::Matrix<T,N,1>& v)
 {
   s << v[0];
-  for( unsigned i=1; i<N; ++i )
+  for( int i=1; i<N; ++i )
   {
     s << " " << v[i];
   }
@@ -55,10 +55,10 @@ std::ostream&  operator<<(std::ostream& s, const vector_<N,T>& v)
 }
 
 /// input stream operator for a vector
-template <unsigned N, typename T>
-std::istream&  operator>>(std::istream& s, vector_<N,T>& v)
+template <typename T, int N>
+std::istream&  operator>>(std::istream& s, Eigen::Matrix<T,N,1>& v)
 {
-  for( unsigned i=0; i<N; ++i)
+  for( int i=0; i<N; ++i)
   {
     s >> std::skipws >> v[i];
   }
@@ -68,9 +68,8 @@ std::istream&  operator>>(std::istream& s, vector_<N,T>& v)
 
 /// \cond DoxygenSuppress
 #define INSTANTIATE_VECTOR(N,T) \
-template class MAPTK_LIB_EXPORT vector_<N,T>; \
-template MAPTK_LIB_EXPORT std::ostream&  operator<<(std::ostream& s, const vector_<N,T>& v); \
-template MAPTK_LIB_EXPORT std::istream&  operator>>(std::istream& s, vector_<N,T>& v)
+template MAPTK_LIB_EXPORT std::ostream&  operator<<(std::ostream& s, const Eigen::Matrix<T,N,1>& v); \
+template MAPTK_LIB_EXPORT std::istream&  operator>>(std::istream& s, Eigen::Matrix<T,N,1>& v)
 
 INSTANTIATE_VECTOR(2, double);
 INSTANTIATE_VECTOR(2, float);

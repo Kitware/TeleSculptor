@@ -47,7 +47,7 @@ namespace
 /// helper function to covert axis/angle into quaternion
 template <typename T>
 maptk::vector_4_<T>
-quaternion_from_axis_angle(const maptk::vector_<3,T>& axis, T angle)
+quaternion_from_axis_angle(const Eigen::Matrix<T,3,1>& axis, T angle)
 {
   maptk::vector_4_<T> q;
   T a = angle / T(2);
@@ -68,9 +68,9 @@ namespace maptk
 /// Constructor - from a Rodrigues vector
 template <typename T>
 rotation_<T>
-::rotation_(const vector_<3,T>& rvec)
+::rotation_(const Eigen::Matrix<T,3,1>& rvec)
 {
-  T mag = rvec.magnitude();
+  T mag = rvec.norm();
   if (mag == T(0))
   {
     // identity rotation is a special case
@@ -78,7 +78,7 @@ rotation_<T>
   }
   else
   {
-    q_ = quaternion_from_axis_angle(rvec/mag, mag);
+    q_ = quaternion_from_axis_angle((rvec/mag).eval(), mag);
   }
 }
 
@@ -86,8 +86,8 @@ rotation_<T>
 /// Constructor - from rotation angle and axis
 template <typename T>
 rotation_<T>
-::rotation_(T angle, const vector_<3,T>& axis)
-  : q_(quaternion_from_axis_angle(normalized(axis), angle))
+::rotation_(T angle, const Eigen::Matrix<T,3,1>& axis)
+  : q_(quaternion_from_axis_angle(axis.normalized(), angle))
 {
 }
 
@@ -121,7 +121,7 @@ rotation_<T>
  */
 template <typename T>
 rotation_<T>
-::rotation_(const matrix_<3,3,T>& rot)
+::rotation_(const Eigen::Matrix<T,3,3>& rot)
 {
   // use double caclulations for more accuracy
   double d0 = rot(0,0), d1 = rot(1,1), d2 = rot(2,2);
@@ -176,13 +176,13 @@ rotation_<T>
 /// Convert to a 3x3 matrix
 template <typename T>
 rotation_<T>
-::operator matrix_<3,3,T>() const
+::operator Eigen::Matrix<T,3,3>() const
 {
   T x2 = q_.x()*q_.x(), xy = q_.x()*q_.y(), rx = q_.w()*q_.x(),
     y2 = q_.y()*q_.y(), yz = q_.y()*q_.z(), ry = q_.w()*q_.y(),
     z2 = q_.z()*q_.z(), zx = q_.z()*q_.x(), rz = q_.w()*q_.z(),
     r2 = q_.w()*q_.w();
-  matrix_<3,3,T> mat;
+  Eigen::Matrix<T,3,3> mat;
   // fill diagonal terms
   mat(0,0) = r2 + x2 - y2 - z2;
   mat(1,1) = r2 - x2 + y2 - z2;
@@ -206,7 +206,7 @@ rotation_<T>
 ::axis() const
 {
   vector_3_<T> dir(q_.x(), q_.y(), q_.z());
-  T mag = dir.magnitude();
+  T mag = dir.norm();
   if (mag == T(0))
   {
     return vector_3_<T>(0,0,1);
@@ -221,7 +221,7 @@ T
 rotation_<T>
 ::angle() const
 {
-  const double i = vector_3_<T>(q_.x(), q_.y(), q_.z()).magnitude();
+  const double i = vector_3_<T>(q_.x(), q_.y(), q_.z()).norm();
   const double r = q_.w();
   T a = static_cast<T>(2.0 * std::atan2(i, r));
   const T pi = boost::math::constants::pi<T>();
@@ -261,7 +261,7 @@ void
 rotation_<T>
 ::get_yaw_pitch_roll(T& yaw, T& pitch, T& roll) const
 {
-  matrix_<3,3,T> rotM(*this);
+  Eigen::Matrix<T,3,3> rotM(*this);
   T cos_p = T(std::sqrt(double(rotM(1,2)*rotM(1,2)) + rotM(2,2)*rotM(2,2)));
   yaw   = T(std::atan2(double(rotM(0,0)),double(rotM(0,1))));
   pitch = T(std::atan2(double(rotM(0,2)),double(cos_p)));
@@ -275,9 +275,9 @@ rotation_<T>
 rotation_<T>
 ::operator*(const rotation_<T>& rhs) const
 {
-  vector_<4,T> comp_q;
-  const vector_<4,T>& q1 = this->q_;
-  const vector_<4,T>& q2 = rhs.q_;
+  Eigen::Matrix<T,4,1> comp_q;
+  const Eigen::Matrix<T,4,1>& q1 = this->q_;
+  const Eigen::Matrix<T,4,1>& q2 = rhs.q_;
   comp_q[3] = q1[3]*q2[3] - q1[0]*q2[0] - q1[1]*q2[1] - q1[2]*q2[2];
   comp_q[0] = q1[3]*q2[0] + q1[0]*q2[3] + q1[1]*q2[2] - q1[2]*q2[1];
   comp_q[1] = q1[3]*q2[1] + q1[1]*q2[3] + q1[2]*q2[0] - q1[0]*q2[2];
@@ -292,13 +292,13 @@ rotation_<T>
  * create a rotation matrix and use matrix multiplcation
  */
 template <typename T>
-vector_<3,T>
+Eigen::Matrix<T,3,1>
 rotation_<T>
-::operator*(const vector_<3,T>& rhs) const
+::operator*(const Eigen::Matrix<T,3,1>& rhs) const
 {
   const T& real = q_.w();
   const vector_3_<T> imag(q_.x(), q_.y(), q_.z());
-  const vector_<3,T> ixv(cross_product(imag, rhs));
+  const Eigen::Matrix<T,3,1> ixv(cross_product(imag, rhs));
   return rhs + T(2*real)*ixv - T(2)*cross_product(ixv,imag);
 }
 

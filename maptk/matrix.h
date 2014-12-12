@@ -42,11 +42,7 @@
 #include <cstring>
 #include <cassert>
 
-#include <boost/integer/static_min_max.hpp>
-#include <boost/static_assert.hpp>
-
 #include "vector.h"
-#include "vector_cmath.h"
 #include "exceptions.h"
 
 #include <Eigen/Core>
@@ -54,221 +50,6 @@
 
 namespace maptk
 {
-
-/// A representation of a matrix
-template <unsigned M, unsigned N, typename T>
-class MAPTK_LIB_EXPORT matrix_
-{
-public:
-  /// a compile time constant defined to be min(M,N)
-  static unsigned const min_dim = boost::static_unsigned_min<M,N>::value;
-  /// a compile time constant defined to be max(M,N)
-  static unsigned const max_dim = boost::static_unsigned_max<M,N>::value;
-  /// a compile time constant defined to be M*N
-  static unsigned const num_elems = M*N;
-  /// typedef for vector cmath (i.e. treat the matrix as a vector)
-  typedef vector_cmath_<num_elems,T> cmath;
-
-
-  /// Constructor - does not initialize
-  matrix_<M,N,T>() {}
-
-  /// Copy Constructor
-  matrix_<M,N,T>(const matrix_<M,N,T>& other)
-  {
-    memcpy( data_[0], other.data_[0], M*N*sizeof(T) );
-  }
-
-  /// Copy Constructor from another type
-  template <typename U>
-  explicit matrix_<M,N,T>(const matrix_<M,N,U>& other)
-  {
-    const U* in = other.data();
-    T* out = this->data_;
-    for(unsigned i=0; i<num_elems; ++i, ++in, ++out)
-    {
-      *out = static_cast<T>(*in);
-    }
-  }
-
-  /// Constructor - from block of data (row-wise)
-  explicit matrix_<M,N,T>(const T* data)
-  {
-    memcpy( data_[0], data, M*N*sizeof(T) );
-  }
-
-  /// Constructor - fill with a constant value
-  explicit matrix_<M,N,T>(const T& value) { this->fill(value); }
-
-  /// Assignment operator
-  matrix_<M,N,T>& operator=(const matrix_<M,N,T>& other)
-  {
-    memcpy( data_[0], other.data_[0], M*N*sizeof(T) );
-    return *this;
-  }
-
-  /// Return the i-th row
-  T* operator[](unsigned int i) { return data_[i]; }
-
-  /// Return the i-th row (const)
-  T const* operator[](unsigned int i) const { return data_[i]; }
-
-  /// Return the i-th row, j-th column
-  T& operator()(unsigned int i, unsigned int j)
-  {
-    assert(i<M);
-    assert(j<N);
-    return data_[i][j];
-  }
-
-  /// Return the i-th row (const)
-  const T& operator()(unsigned int i, unsigned int j) const
-  {
-    assert(i<M);
-    assert(j<N);
-    return data_[i][j];
-  }
-
-  /// Return a pointer to the contiguous block of memory
-  T* data() { return data_[0]; }
-
-  /// Return a pointer to the contiguous block of memory
-  T const* data() const { return data_[0]; }
-
-  /// Fill the matrix with this value
-  matrix_<M,N,T>& fill(const T& value);
-
-  /// Fill the diagonal with this value
-  matrix_<M,N,T>& fill_diagonal(const T& value);
-
-  /// Set the diagonal to this vector
-  matrix_<M,N,T>& set_diagonal(const vector_<min_dim,T>& diag);
-
-  /// Set the matrix to the identity matrix
-  /**
-   * Extra rows or columns of a non-square matrix are set to zero
-   */
-  matrix_<M,N,T>& set_identity();
-
-  /// Return the transpose of this matrix
-  matrix_<N,M,T> transpose() const;
-
-  /// Update a sub-block of this matrix located at (top, left)
-  template <unsigned A, unsigned B>
-  matrix_<M,N,T>& update(const matrix_<A,B,T>& m,
-                         unsigned top=0, unsigned left=0)
-  {
-    BOOST_STATIC_ASSERT(A<=N);
-    BOOST_STATIC_ASSERT(B<=M);
-    assert(top + A <= M);
-    assert(left + B <= N);
-    for (unsigned int i=0; i<A; ++i)
-    {
-      for (unsigned int j=0; j<B; ++j)
-      {
-        this->data_[i+top][j+left] = m(i, j);
-      }
-    }
-    return *this;
-  }
-
-  /// Extract a sub-block of this matrix located at (top, left)
-  template <unsigned A, unsigned B>
-  void extract(matrix_<A,B,T>& m,
-               unsigned top=0, unsigned left=0) const
-  {
-    BOOST_STATIC_ASSERT(A<=N);
-    BOOST_STATIC_ASSERT(B<=M);
-    assert(top + A <= M);
-    assert(left + B <= N);
-    for (unsigned int i=0; i<A; ++i)
-    {
-      for (unsigned int j=0; j<B; ++j)
-      {
-        m(i,j) = this->data_[i+top][j+left];
-      }
-    }
-  }
-
-  /// Update a row of the matrix with the values in a vector
-  matrix_<M,N,T>& set_row(unsigned row, const vector_<N,T>& v)
-  {
-    for (unsigned int j=0; j<N; ++j)
-    {
-      this->data_[row][j] = v[j];
-    }
-    return *this;
-  }
-
-  /// Update a column of the matrix with the values in a vector
-  matrix_<M,N,T>& set_column(unsigned col, const vector_<M,T>& v)
-  {
-    for (unsigned int i=0; i<M; ++i)
-    {
-      this->data_[i][col] = v[i];
-    }
-    return *this;
-  }
-
-  /// Access a row of the matrix
-  vector_<N,T> row(unsigned r) const
-  {
-    return vector_<N,T>(this->data_[r]);
-  }
-
-  /// Access a column of the matrix
-  vector_<M,T> column(unsigned c) const
-  {
-    vector_<M,T> v;
-    for (unsigned int i=0; i<M; ++i)
-    {
-      v[i] = this->data_[i][c];
-    }
-    return v;
-  }
-
-  /// Return the Frobenius norm of the matrix (sqrt of sum of squares)
-  T frobenius_norm() const { return cmath::l2_norm( data_[0] ); }
-
-  /// Add a scalar in place
-  matrix_<M,N,T>& operator+=( T s ) { cmath::add( data_[0], s, data_[0] ); return *this; }
-
-  /// Subract a scalr in place
-  matrix_<M,N,T>& operator-=( T s ) { cmath::sub( data_[0], s, data_[0] ); return *this; }
-
-  /// Multiply a scalar in place
-  matrix_<M,N,T>& operator*=( T s ) { cmath::mul( data_[0], s, data_[0] ); return *this; }
-
-  /// Divide by a scalar in place
-  matrix_<M,N,T>& operator/=( T s ) { cmath::div( data_[0], s, data_[0] ); return *this; }
-
-  /// Add a matrix in place
-  matrix_<M,N,T>& operator+=( const matrix_<M,N,T>& m )
-  {
-    cmath::add( data_[0], m.data_[0], data_[0] );
-    return *this;
-  }
-
-  /// Subract a matrix in place
-  matrix_<M,N,T>& operator-=( const matrix_<M,N,T>& m )
-  {
-    cmath::sub( data_[0], m.data_[0], data_[0] );
-    return *this;
-  }
-
-  /// Negate operator
-  matrix_<M,N,T> operator-() const
-  {
-    matrix_<M,N,T> result;
-    cmath::sub( T(0), data_[0], result.data_[0] );
-    return result;
-  }
-
-
-protected:
-  /// matrix data
-  T data_[M][N];
-};
 
 
 /// \cond DoxygenSuppress
@@ -288,264 +69,14 @@ typedef Eigen::Matrix<double, 4, 4> matrix_4x4d;
 typedef Eigen::Matrix<float, 4, 4>  matrix_4x4f;
 /// \endcond
 
-// --- Matrix-scalar operators ----------------------------------------
-
-/// Matrix-scalar addtion operator
-/**
- * \relatesalso matrix_
- * \param m a matrix
- * \param s a scalar
- */
-template <unsigned M, unsigned N, typename T>
-inline matrix_<M,N,T> operator+( const matrix_<M,N,T>& m, const T& s )
-{
-  matrix_<M,N,T> r;
-  vector_cmath_<M*N,T>::add( m.data(), s, r.data() );
-  return r;
-}
-
-/// Scalar-matrix addition operator
-/**
- * \relatesalso matrix_
- * \param m a matrix
- * \param s a scalar
- */
-template <unsigned M, unsigned N, typename T>
-inline matrix_<M,N,T> operator+( const T& s, const matrix_<M,N,T>& m )
-{
-  matrix_<M,N,T> r;
-  vector_cmath_<M*N,T>::add( m.data(), s, r.data() );
-  return r;
-}
-
-/// Matrix-scalar subraction operator
-/**
- * \relatesalso matrix_
- * \param m a matrix
- * \param s a scalar
- */
-template <unsigned M, unsigned N, typename T>
-inline matrix_<M,N,T> operator-( const matrix_<M,N,T>& m, const T& s )
-{
-  matrix_<M,N,T> r;
-  vector_cmath_<M*N,T>::sub( m.data(), s, r.data() );
-  return r;
-}
-
-/// Scalar-matrix subraction operator
-/**
- * \relatesalso matrix_
- * \param m a matrix
- * \param s a scalar
- */
-template <unsigned M, unsigned N, typename T>
-inline matrix_<M,N,T> operator-( const T& s, const matrix_<M,N,T>& m )
-{
-  matrix_<M,N,T> r;
-  vector_cmath_<M*N,T>::sub( s, m.data(), r.data() );
-  return r;
-}
-
-/// Scalar post-multiplcation operator
-/**
- * \relatesalso matrix_
- * \param m a matrix
- * \param s a scalar
- */
-template <unsigned M, unsigned N, typename T>
-inline matrix_<M,N,T> operator*( const matrix_<M,N,T>& m, const T& s )
-{
-  matrix_<M,N,T> r;
-  vector_cmath_<M*N,T>::mul( m.data(), s, r.data() );
-  return r;
-}
-
-/// Scalar pre-multiplication operator
-/**
- * \relatesalso matrix_
- * \param m a matrix
- * \param s a scalar
- */
-template <unsigned M, unsigned N, typename T>
-inline matrix_<M,N,T> operator*( const T& s, const matrix_<M,N,T>& m )
-{
-  matrix_<M,N,T> r;
-  vector_cmath_<M*N,T>::mul( m.data(), s, r.data() );
-  return r;
-}
-
-/// Scalar division operator
-/**
- * \relatesalso matrix_
- * \param m a matrix
- * \param s a scalar
- */
-template <unsigned M, unsigned N, typename T>
-inline matrix_<M,N,T> operator/( const matrix_<M,N,T>& m, const T& s )
-{
-  matrix_<M,N,T> r;
-  vector_cmath_<M*N,T>::div( m.data(), s, r.data() );
-  return r;
-}
-
-
-// --- Matrix-matrix operators ----------------------------------------
-
-/// Addition operator
-/**
- * \relatesalso matrix_
- * \param a a matrix
- * \param b another matrix
- */
-template <unsigned M, unsigned N, typename T>
-inline matrix_<M,N,T> operator+( const matrix_<M,N,T>& a, const matrix_<M,N,T>& b )
-{
-  matrix_<M,N,T> r;
-  vector_cmath_<M*N,T>::add( a.data(), b.data(), r.data() );
-  return r;
-}
-
-/// Subraction operator
-/**
- * \relatesalso matrix_
- * \param a a matrix
- * \param b another matrix
- */
-template <unsigned M, unsigned N, typename T>
-inline matrix_<M,N,T> operator-( const matrix_<M,N,T>& a, const matrix_<M,N,T>& b )
-{
-  matrix_<M,N,T> r;
-  vector_cmath_<M*N,T>::sub( a.data(), b.data(), r.data() );
-  return r;
-}
-
-/// Element-wise product
-/**
- * \relatesalso matrix_
- * \param a a matrix
- * \param b another matrix
- */
-template <unsigned M, unsigned N, typename T>
-inline matrix_<M,N,T> element_product( const matrix_<M,N,T>& a, const matrix_<M,N,T>& b )
-{
-  matrix_<M,N,T> r;
-  vector_cmath_<M*N,T>::mul( a.data(), b.data(), r.data() );
-  return r;
-}
-
-/// Element-wise quotient
-/**
- * \relatesalso matrix_
- * \param a a matrix
- * \param b another matrix
- */
-template <unsigned M, unsigned N, typename T>
-inline matrix_<M,N,T> element_quotient( const matrix_<M,N,T>& a, const matrix_<M,N,T>& b )
-{
-  matrix_<M,N,T> r;
-  vector_cmath_<M*N,T>::div( a.data(), b.data(), r.data() );
-  return r;
-}
-
-/// Equality operator
-/**
- * \relatesalso matrix_
- * \param a a matrix
- * \param b another matrix
- */
-template <unsigned M, unsigned N, typename T>
-inline bool operator==( const matrix_<M,N,T>& a, const matrix_<M,N,T>& b )
-{
-  return vector_cmath_<M*N,T>::eq(a.data(), b.data());
-}
-
-/// Inequality operator
-/**
- * \relatesalso matrix_
- * \param a a matrix
- * \param b another matrix
- */
-template <unsigned M, unsigned N, typename T>
-inline bool operator!=( const matrix_<M,N,T>& a, const matrix_<M,N,T>& b )
-{
-  return ! vector_cmath_<M*N,T>::eq(a.data(), b.data());
-}
-
-// --- Matrix and vector multiplication -----------------------------------
-
-/// Multiply matrix_ (M x N) and vector_ (N)
-/**
- * \relatesalso vector_
- * \relatesalso matrix_
- * \param a a matrix
- * \param b a vector
- */
-template <unsigned M, unsigned N, typename T>
-inline
-vector_<M,T> operator*(const matrix_<M,N,T>& a, const vector_<N,T>& b)
-{
-  vector_<M,T> out;
-  for (unsigned i = 0; i < M; ++i)
-  {
-    T accum = a(i,0) * b[0];
-    for (unsigned k = 1; k < N; ++k)
-      accum += a(i,k) * b[k];
-    out[i] = accum;
-  }
-  return out;
-}
-
-/// Multiply vector_ (M) and matrix_ (M x N)
-/**
- * \relatesalso vector_
- * \relatesalso matrix_
- * \param a a vector
- * \param b a matrix
- */
-template <unsigned M, unsigned N, typename T>
-inline
-vector_<N,T> operator*(const vector_<M,T>& a, const matrix_<M,N,T>& b)
-{
-  vector_<N,T> out;
-  for (unsigned i = 0; i < N; ++i)
-  {
-    T accum = a[0] * b(0,i);
-    for (unsigned k = 1; k < M; ++k)
-      accum += a[k] * b(k,i);
-    out[i] = accum;
-  }
-  return out;
-}
-
-/// Multiply two matrix_ (M x N) times (N x O)
-/**
- * \relatesalso matrix_
- * \param a a matrix
- * \param b another matrix
- */
-template <unsigned M, unsigned N, unsigned O, typename T>
-inline
-matrix_<M,O,T> operator*(const matrix_<M,N,T>& a, const matrix_<N,O,T>& b)
-{
-  matrix_<M,O,T> out;
-  for (unsigned i = 0; i < M; ++i)
-    for (unsigned j = 0; j < O; ++j)
-    {
-      T accum = a(i,0) * b(0,j);
-      for (unsigned k = 1; k < N; ++k)
-        accum += a(i,k) * b(k,j);
-      out(i,j) = accum;
-    }
-  return out;
-}
-
+#if 0
 /// Compute the determinant of a 2x2 square matrix
 template <typename T>
 inline
-T determinant(const matrix_<2,2,T>& m)
+T determinant(const Eigen::Matrix<T,2,2>& m)
 {
   const T* d = m.data();
-  return d[0]*d[3] - d[1]*d[2];
+  return m[0]*d[3] - d[1]*d[2];
 }
 
 /// Compute the determinant of a 3x3 square matrix
@@ -621,22 +152,22 @@ matrix_<3,3,T> cross_product(const vector_<3,T>& v)
   return x;
 }
 
-
+#endif
 /// output stream operator for a matrix
 /**
  * \param s an output stream
  * \param m a matrix to stream
  */
-template <unsigned M, unsigned N, typename T>
-MAPTK_LIB_EXPORT std::ostream&  operator<<(std::ostream& s, const matrix_<M,N,T>& m);
+template <typename T, int M, int N>
+MAPTK_LIB_EXPORT std::ostream&  operator<<(std::ostream& s, const Eigen::Matrix<T,M,N>& m);
 
 /// input stream operator for a matrix
 /**
  * \param s an input stream
  * \param m a matrix to stream into
  */
-template <unsigned M, unsigned N, typename T>
-MAPTK_LIB_EXPORT std::istream&  operator>>(std::istream& s, matrix_<M,N,T>& m);
+template <typename T, int M, int N>
+MAPTK_LIB_EXPORT std::istream&  operator>>(std::istream& s, Eigen::Matrix<T,M,N>& m);
 
 
 } // end namespace maptk

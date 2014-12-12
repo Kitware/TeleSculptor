@@ -93,7 +93,7 @@ public:
    * Averages off diagonal elements to enforce symmetry
    * \param mat matrix to construct from.
    */
-  explicit covariance_<N,T>(const matrix_<N,N,T>& mat)
+  explicit covariance_<N,T>(const Eigen::Matrix<T,N,N>& mat)
   {
     unsigned int n=0;
     for( unsigned int j=0; j<N; ++j)
@@ -115,9 +115,9 @@ public:
 
 
   /// Extract a full matrix
-  operator matrix_<N,N,T>() const
+  operator Eigen::Matrix<T,N,N>() const
   {
-    matrix_<N,N,T> mat;
+    Eigen::Matrix<T,N,N> mat;
     unsigned int n=0;
     for( unsigned int j=0; j<N; ++j)
     {

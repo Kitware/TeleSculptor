@@ -100,7 +100,7 @@ public:
   feature_<T>();
 
   /// Constructor for a feature
-  feature_<T>(const Eigen::Matrix<T, 2, 1>& loc, T mag=0.0,
+  feature_<T>(const vector_2_<T>& loc, T mag=0.0,
               T scale=1.0, T angle=0.0);
 
   /// Access staticly available type of underlying data (double or float)
@@ -109,9 +109,9 @@ public:
   virtual const std::type_info& data_type() const { return typeid(T); }
 
   /// Accessor for the image coordinates using underlying data type
-  const Eigen::Matrix<T, 2, 1>& get_loc() const { return loc_; }
+  const vector_2_<T>& get_loc() const { return loc_; }
   /// Accessor for the image coordinates
-  virtual Eigen::Matrix<T, 2, 1> loc() const { return static_cast<vector_2d>(loc_); }
+  virtual vector_2d loc() const { return static_cast<vector_2d>(loc_); }
 
   /// Accessor for the feature magnitude using underlying data type
   T get_magnitude() const { return magnitude_; }
@@ -135,7 +135,7 @@ public:
 
 
   /// Set the feature position in image space
-  void set_loc(const Eigen::Matrix<T, 2, 1>& loc) { loc_ = loc; }
+  void set_loc(const vector_2_<T>& loc) { loc_ = loc; }
   /// Set the magnitude of the feature response
   void set_magnitude(T magnitude) { magnitude_ = magnitude; }
   /// Set the scale of the feature
@@ -148,7 +148,7 @@ public:
 protected:
 
   /// location of feature
-  Eigen::Matrix<T, 2, 1> loc_;
+  vector_2_<T> loc_;
   /// magnitude of feature
   T magnitude_;
   /// scale of feature

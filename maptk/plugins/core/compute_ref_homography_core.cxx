@@ -409,7 +409,10 @@ compute_ref_homography_core
     using namespace std;
 
     // Invertible test
-    homography inverse = h.inverse();
+    homography inverse;
+    bool inv_valid;
+    h.computeInverseWithCheck(inverse, inv_valid);
+    bad_homog = !inv_valid || bad_homog;
 
     // Check for invalid values
     for( unsigned i = 0; i < 3; i++ )
@@ -451,12 +454,7 @@ compute_ref_homography_core
     // Update reference locations for existing tracks using new homography
     if( !ti.ref_loc_valid )
     {
-      // Since location variables are in 2D, we need to convert to a 3D vector
-      // for use with homography matricies.
-      tmp_3d = (*output) * vector_3d(ti.ref_loc.x(), ti.ref_loc.y(), 1.0);
-      tmp_3d /= tmp_3d.z();
-      ti.ref_loc = vector_2d(tmp_3d.x(), tmp_3d.y());
-
+      ti.ref_loc = homography_map(*output, ti.ref_loc);
       ti.ref_loc_valid = true;
       ti.ref_id = output->to_id();
     }
@@ -467,11 +465,7 @@ compute_ref_homography_core
 
       if( itr != ti.trk->end() && itr->feat )
       {
-        tmp_3d = (*output) * vector_3d(itr->feat->loc().x(),
-                                                    itr->feat->loc().y(),
-                                                    1.0);
-        tmp_3d /= tmp_3d.z();
-        vector_2d warped(tmp_3d.x(), tmp_3d.y());
+        vector_2d warped = homography_map(*output, itr->feat->loc());
         double dist_sqr = ( warped - ti.ref_loc ).squaredNorm();
 
         if( dist_sqr > d_->backproject_threshold_sqr )

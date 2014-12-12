@@ -202,8 +202,8 @@ typedef std::map< frame_id_t, homography_collection > homography_collection_set;
 typedef boost::shared_ptr< homography_collection_set > homography_collection_set_sptr;
 
 
-/// Custom homography multiplication operator for 2D points.
-vector_2d operator*( const homography& h, const vector_2d& p );
+/// Homography mapping for 2D points.
+vector_2d homography_map( const homography& h, const vector_2d& p );
 
 
 } // end namespace maptk

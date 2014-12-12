@@ -110,13 +110,13 @@ public:
   operator Eigen::Matrix<T,3,3>() const;
 
   /// Map normalized image coordinates into actual image coordinates
-  vector_2_<T> map(const vector_2_<T>& norm_pt) const;
+  vector_2_<T> map(const Eigen::Matrix<T,2,1>& norm_pt) const;
 
   /// Map a 3D point in camera coordinates into actual image coordinates
-  vector_2_<T> map(const vector_3_<T>& norm_hpt) const;
+  vector_2_<T> map(const Eigen::Matrix<T,3,1>& norm_hpt) const;
 
   /// Unmap actual image coordinates back into normalized image coordinates
-  vector_2_<T> unmap(const vector_2_<T>& norm_pt) const;
+  vector_2_<T> unmap(const Eigen::Matrix<T,2,1>& norm_pt) const;
 
 protected:
   /// focal length of camera

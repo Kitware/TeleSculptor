@@ -67,7 +67,7 @@ feature_<T>
 /// Constructor for a feature
 template <typename T>
 feature_<T>
-::feature_(const Eigen::Matrix<T, 2, 1>& loc, T mag, T scale, T angle)
+::feature_(const vector_2_<T>& loc, T mag, T scale, T angle)
 : loc_(loc),
   magnitude_(mag),
   scale_(scale),

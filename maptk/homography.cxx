@@ -254,10 +254,9 @@ homography_collection
 
 
 vector_2d
-operator*( const homography& h, const vector_2d& p )
+homography_map( const homography& h, const vector_2d& p )
 {
-  double vals[3] = { p.x(), p.y(), 1.0 };
-  vector_3d out_pt = h * vector_3d( vals );
+  vector_3d out_pt = h * vector_3d(p[0], p[1], 1.0);
 
   if( out_pt[2] == 0 )
   {

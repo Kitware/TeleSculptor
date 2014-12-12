@@ -48,8 +48,8 @@ covariance_<3,T> transform(const covariance_<3,T>& covar,
 {
   // TODO trasform covariance parameters directly
   // instead of converting to matrix form and back
-  matrix_<3,3,T> C(covar);
-  matrix_<3,3,T> sR(xform.rotation());
+  Eigen::Matrix<T,3,3> C(covar);
+  Eigen::Matrix<T,3,3> sR(xform.rotation());
   sR /= xform.scale();
   C = sR * C * sR.transpose();
   return covariance_<3,T>(C);

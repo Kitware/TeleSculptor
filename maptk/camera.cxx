@@ -35,6 +35,7 @@
  */
 
 #include "camera.h"
+#include "matrix.h"
 #include <iomanip>
 #include "transform.h"
 #include <typeinfo>
@@ -64,13 +65,13 @@ camera_<T>
           const Eigen::Matrix<T,3,1>& up_direction)
 {
   // a unit vector in the up direction
-  const Eigen::Matrix<T,3,1> up = normalized(up_direction);
+  const Eigen::Matrix<T,3,1> up = up_direction.normalized();
   // a unit vector in the look direction (camera Z-axis)
-  const Eigen::Matrix<T,3,1> z = normalized(stare_point - get_center());
+  const Eigen::Matrix<T,3,1> z = (stare_point - get_center()).normalized();
 
   // the X-axis of the camera is perpendicular to up and z
-  Eigen::Matrix<T,3,1> x = cross_product(-up, z);
-  T x_mag = x.magnitude();
+  Eigen::Matrix<T,3,1> x = -up.cross(z);
+  T x_mag = x.norm();
 
   // if the cross product magnitude is small then the up and z vectors are
   // nearly parallel and the up direction is poorly defined.
@@ -81,13 +82,13 @@ camera_<T>
   }
 
   x /= x_mag;
-  Eigen::Matrix<T,3,1> y = normalized(cross_product(z,x));
+  Eigen::Matrix<T,3,1> y = z.cross(x).normalized();
 
   T r[] = { x.x(), x.y(), x.z(),
             y.x(), y.y(), y.z(),
             z.x(), z.y(), z.z() };
 
-  matrix_<3,3,T> R(r);
+  Eigen::Matrix<T,3,3> R(r);
   this->set_rotation(rotation_<T>(R));
 }
 
@@ -101,8 +102,8 @@ camera_<T>
   Eigen::Matrix<T,3,3> R(this->get_rotation());
   Eigen::Matrix<T,3,3> K(this->get_intrinsics());
   Eigen::Matrix<T,3,1> t(this->get_translation());
-  P.update(R);
-  P.set_column(3,t);
+  P.template block<3,3>(0,0) = R;
+  P.template block<3,1>(3,0) = t;
   return K * P;
 }
 
@@ -134,8 +135,8 @@ template <typename T>
 std::ostream&  operator<<(std::ostream& s, const camera_<T>& k)
 {
   using std::setprecision;
-  s << setprecision(12) << matrix_<3,3,T>(k.get_intrinsics()) << "\n"
-    << setprecision(12) << matrix_<3,3,T>(k.get_rotation()) << "\n"
+  s << setprecision(12) << Eigen::Matrix<T,3,3>(k.get_intrinsics()) << "\n"
+    << setprecision(12) << Eigen::Matrix<T,3,3>(k.get_rotation()) << "\n"
     << setprecision(12) << k.get_translation() << "\n\n"
     << "0\n";
   return s;
@@ -146,8 +147,8 @@ std::ostream&  operator<<(std::ostream& s, const camera_<T>& k)
 template <typename T>
 std::istream&  operator>>(std::istream& s, camera_<T>& k)
 {
-  Eigen<3,3,T> K, R;
-  vector_<3,T> t;
+  Eigen::Matrix<T,3,3> K, R;
+  Eigen::Matrix<T,3,1> t;
   double d;
   s >> K >> R >> t >> d;
   k.set_intrinsics(camera_intrinsics_<T>(K));
@@ -169,7 +170,7 @@ camera_<T> interpolate_camera(camera_<T> const& A, camera_<T> const& B, T f)
                         k;
 
   T focal_len = f1*k1.focal_length() + f*k2.focal_length();
-  vector_<2,T> principal_point = f1*k1.principal_point() + f*k2.principal_point();
+  Eigen::Matrix<T,2,1> principal_point = f1*k1.principal_point() + f*k2.principal_point();
   T aspect_ratio = f1*k1.aspect_ratio() + f*k2.aspect_ratio();
   T skew = f1*k1.skew() + f*k2.skew();
   k = camera_intrinsics_<T>(focal_len, principal_point, aspect_ratio, skew);

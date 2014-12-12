@@ -55,7 +55,6 @@ set(maptk_public_headers
   transform.h
   types.h
   vector.h
-  vector_cmath.h
 
   exceptions/algorithm.h
   exceptions/base.h

@@ -60,7 +60,7 @@ public:
   /// Copy Constructor from another type
   template <typename U>
   explicit rotation_<T>(const rotation_<U>& other)
-  : q_(static_cast<Eigen::Matrix<T, 4, 1> >(other.quaternion())) {}
+  : q_(static_cast<vector_4_<T> >(other.quaternion())) {}
 
   /// Constructor - from a 4D quaternion vector (i,j,k,r)
   explicit rotation_<T>(const Eigen::Matrix<T, 4, 1>& quaternion)
@@ -99,7 +99,7 @@ public:
    *       returns (0,0,1) in this case.
    * \sa angle()
    */
-  Eigen::Matrix<T, 3, 1> axis() const;
+  vector_3_<T> axis() const;
 
   /// Returns the angle of the rotation in radians about the axis
   /**
@@ -134,7 +134,7 @@ public:
    *       create a rotation matrix and use matrix multiplcation
    * \param rhs right-hand side vector to operate against
    */
-  vector_<3,T> operator*(const vector_<3,T>& rhs) const;
+  Eigen::Matrix<T,3,1> operator*(const Eigen::Matrix<T,3,1>& rhs) const;
 
   /// Equality operator
   inline bool operator==(const rotation_<T>& rhs) const

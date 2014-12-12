@@ -42,93 +42,16 @@ namespace maptk
 {
 
 
-/// Fill the matrix with this value
-template <unsigned M, unsigned N, typename T>
-matrix_<M,N,T>&
-matrix_<M,N,T>
-::fill(const T& value)
-{
-  T* p = data_[0];
-  unsigned int n = M*N;
-  while(n--)
-  {
-    *p++ = value;
-  }
-  return *this;
-}
-
-
-/// Fill the diagonal with this value
-template <unsigned M, unsigned N, typename T>
-matrix_<M,N,T>&
-matrix_<M,N,T>
-::fill_diagonal(const T& value)
-{
-  for (unsigned int i=0; i < min_dim; ++i)
-  {
-    this->data_[i][i] = value;
-  }
-  return *this;
-}
-
-
-/// Set the diagonal to this vector
-template <unsigned M, unsigned N, typename T>
-matrix_<M,N,T>&
-matrix_<M,N,T>
-::set_diagonal(const vector_<min_dim,T>& diag)
-{
-  for (unsigned int i=0; i < min_dim; ++i)
-  {
-    this->data_[i][i] = diag[i];
-  }
-  return *this;
-}
-
-
-/// Set the matrix to the identity matrix
-/**
- * Extra rows or columns of a non-square matrix are set to zero
- */
-template <unsigned M, unsigned N, typename T>
-matrix_<M,N,T>&
-matrix_<M,N,T>
-::set_identity()
-{
-  this->fill(T(0));
-  this->fill_diagonal(T(1));
-  return *this;
-}
-
-
-/// Return the transpose of this matrix
-template <unsigned M, unsigned N, typename T>
-matrix_<N,M,T>
-matrix_<M,N,T>
-::transpose() const
-{
-  matrix_<N,M,T> result;
-  for (unsigned int i=0; i<M; ++i)
-  {
-    for (unsigned int j=0; j<N; ++j)
-    {
-      result(j,i) = this->data_[i][j];
-    }
-  }
-  return result;
-}
-
-
 /// output stream operator for a matrix
-template <unsigned M, unsigned N, typename T>
-std::ostream&  operator<<(std::ostream& s, const matrix_<M,N,T>& m)
+template <typename T, int M, int N>
+std::ostream&  operator<<(std::ostream& s, const Eigen::Matrix<T,M,N>& m)
 {
-  for (unsigned int i=0; i<M; ++i)
+  for (int i=0; i<M; ++i)
   {
-    s << m[i][0];
-    for (unsigned int j=1; j<N; ++j)
+    s << m(i,0);
+    for (int j=1; j<N; ++j)
     {
-      s << ' ' << m[i][j];
+      s << ' ' << m(i,j);
     }
     s << '\n';
   }
@@ -136,14 +59,14 @@ std::ostream&  operator<<(std::ostream& s, const matrix_<M,N,T>& m)
 }
 
 /// input stream operator for a matrix
-template <unsigned M, unsigned N, typename T>
-std::istream&  operator>>(std::istream& s, matrix_<M,N,T>& m)
+template <typename T, int M, int N>
+std::istream&  operator>>(std::istream& s, Eigen::Matrix<T,M,N>& m)
 {
-  for (unsigned int i=0; i<M; ++i)
+  for (int i=0; i<M; ++i)
   {
-    for (unsigned int j=0; j<N; ++j)
+    for (int j=0; j<N; ++j)
     {
-      s >> std::skipws >> m[i][j];
+      s >> std::skipws >> m(i,j);
     }
   }
   return s;
@@ -152,9 +75,8 @@ std::istream&  operator>>(std::istream& s, matrix_<M,N,T>& m)
 
 /// \cond DoxygenSuppress
 #define INSTANTIATE_MATRIX(M,N,T) \
-template class MAPTK_LIB_EXPORT matrix_<M,N,T>; \
-template MAPTK_LIB_EXPORT std::ostream&  operator<<(std::ostream& s, const matrix_<M,N,T>& m); \
-template MAPTK_LIB_EXPORT std::istream&  operator>>(std::istream& s, matrix_<M,N,T>& m)
+template MAPTK_LIB_EXPORT std::ostream&  operator<<(std::ostream& s, const Eigen::Matrix<T,M,N>& m); \
+template MAPTK_LIB_EXPORT std::istream&  operator>>(std::istream& s, Eigen::Matrix<T,M,N>& m)
 
 INSTANTIATE_MATRIX(2, 2, double);
 INSTANTIATE_MATRIX(2, 2, float);
