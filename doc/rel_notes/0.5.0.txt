@@ -34,6 +34,9 @@ Core Library
 
  * Added optional image masking support in feature detection algorithm API.
 
+ * Added description field for algorithm implementations that also get passed
+   through into generated configuration files.
+
 VXL Library
 
  * Added concrete implementaiton of essential matrix estimation using the
