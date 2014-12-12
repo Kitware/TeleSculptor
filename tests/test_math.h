@@ -38,8 +38,7 @@
 
 #include <cmath>
 
-#include <maptk/matrix.h>
-#include <maptk/vector.h>
+#include <Eigen/Core>
 
 
 namespace maptk
@@ -53,27 +52,9 @@ namespace testing
 /**
  * Drop-in compatible with TEST_NEAR. Just need to include this header.
  */
-template <unsigned N, typename T>
-bool is_almost(vector_<N,T> const& a, vector_<N,T> const& b,
-               double const& epsilon)
-{
-  for (unsigned i=0; i<N; ++i)
-  {
-    if (fabs(a[i] - b[i]) > epsilon)
-    {
-      return false;
-    }
-  }
-  return true;
-}
-
-
-/// Near comparison function for vectors
-/**
- * Drop-in compatible with TEST_NEAR. Just need to include this header.
- */
-template <unsigned M, unsigned N, typename T>
-bool is_almost(matrix_<M,N,T> const& a, matrix_<M,N,T> const& b,
+template <typename T, int M, int N>
+bool is_almost(Eigen::Matrix<T,M,N> const& a,
+               Eigen::Matrix<T,M,N> const& b,
                double const& epsilon)
 {
   for (unsigned i=0; i<M; ++i)
