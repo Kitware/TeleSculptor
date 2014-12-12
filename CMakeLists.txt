@@ -84,7 +84,7 @@ string(REPLACE ";" " " maptk_libs "${maptk_libs}")
 
 # Configure build-tree CMake config file and export associated targets file
 set(MAPTK_CONFIG_FILE "${MAPTK_BINARY_DIR}/maptk-config.cmake")
-set(module_path "${MAPTK_SOURCE_DIR}CMake")
+set(module_path "${MAPTK_SOURCE_DIR}/CMake")
 maptk_configure_file(maptk-config
   "${MAPTK_SOURCE_DIR}/CMake/maptk-config.cmake.in"
   "${MAPTK_CONFIG_FILE}"

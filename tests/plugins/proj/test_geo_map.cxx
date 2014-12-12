@@ -35,8 +35,8 @@
 
 #include <test_common.h>
 
-#include <maptk/proj/register.h>
-#include <maptk/proj/geo_map.h>
+#include <maptk/plugins/proj/register_algorithms.h>
+#include <maptk/plugins/proj/geo_map.h>
 
 // test_common.h required things
 #define TEST_ARGS ()

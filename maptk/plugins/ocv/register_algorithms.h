@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2014 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,41 +30,28 @@
 
 /**
  * \file
- * \brief PROJ plugin algorithm registration interface implementation
+ * \brief OpenCV algorithm registration function
  */
 
-#include <maptk/logging_macros.h>
-#include <maptk/plugin_interface/algorithm_impl_pl_interface.h>
-#include <maptk/plugins/proj/geo_map.h>
+#ifndef _MAPTK_PLUGINS_OCV_REGISTER_ALGORITHMS_H_
+#define _MAPTK_PLUGINS_OCV_REGISTER_ALGORITHMS_H_
+
+#include <maptk/plugins/ocv/ocv_config.h>
+#include <maptk/registrar.h>
 
 
-#ifdef __cplusplus
-extern "C"
+namespace maptk
 {
-#endif
 
-
-MAPTK_PROJ_EXPORT
-int register_algo_impls( maptk::registrar &reg )
+namespace ocv
 {
-  try
-  {
-    LOG_DEBUG( "plugin::proj::register_algo_impls",
-               "Registering PROJ plugin algorithm implementations" );
 
-    int registered
-      = maptk::proj::geo_map::register_self( reg )
-      ;
+/// Register OCV algorithm implementations with the given or global registrar
+MAPTK_OCV_EXPORT
+int register_algorithms( maptk::registrar &reg = maptk::registrar::instance() );
 
-    return 1 - registered;
-  }
-  catch (...)
-  {
-  }
-  return -1;
-}
+} // end ocv ns
 
+} // end maptk ns
 
-#ifdef __cplusplus
-}
 #endif

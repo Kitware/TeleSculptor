@@ -35,7 +35,7 @@
 
 #include <test_common.h>
 
-#include <maptk/ocv/feature_set.h>
+#include <maptk/plugins/ocv/feature_set.h>
 
 
 

@@ -36,8 +36,9 @@
 #include <test_common.h>
 #include <test_random_point.h>
 
-#include <maptk/ocv/register.h>
-#include <maptk/ocv/estimate_homography.h>
+#include <maptk/plugins/ocv/register_algorithms.h>
+#include <maptk/plugins/ocv/estimate_homography.h>
+
 #include <opencv2/core/core.hpp>
 
 

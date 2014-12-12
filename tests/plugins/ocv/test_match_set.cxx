@@ -35,7 +35,7 @@
 
 #include <test_common.h>
 
-#include <maptk/ocv/match_set.h>
+#include <maptk/plugins/ocv/match_set.h>
 
 
 

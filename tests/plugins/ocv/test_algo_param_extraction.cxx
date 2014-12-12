@@ -42,14 +42,14 @@
 
 #include <opencv2/core/core.hpp>
 
-#include <maptk/core/exceptions.h>
-#include <maptk/core/types.h>
+#include <maptk/exceptions.h>
+#include <maptk/types.h>
 
-#include <maptk/ocv/detect_features.h>
-#include <maptk/ocv/extract_descriptors.h>
-#include <maptk/ocv/match_features.h>
-#include <maptk/ocv/ocv_algo_tools.h>
-#include <maptk/ocv/register.h>
+#include <maptk/plugins/ocv/detect_features.h>
+#include <maptk/plugins/ocv/extract_descriptors.h>
+#include <maptk/plugins/ocv/match_features.h>
+#include <maptk/plugins/ocv/ocv_algo_tools.h>
+#include <maptk/plugins/ocv/register_algorithms.h>
 
 #include <opencv2/features2d/features2d.hpp>
 

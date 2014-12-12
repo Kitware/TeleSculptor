@@ -17,11 +17,13 @@ set( maptk_ocv_headers_public
   matrix.h
   ocv_algo_tools.h
   ocv_config.h
+  register_algorithms.h
+  )
+maptk_install_plugin_headers( ocv
+  ${maptk_ocv_headers_public}
   )
 
 set( maptk_ocv_sources
-  algorithm_impl_pl_interface.cxx
-
   analyze_tracks.cxx
   descriptor_set.cxx
   detect_features.cxx
@@ -35,15 +37,16 @@ set( maptk_ocv_sources
   match_features.cxx
   match_set.cxx
   ocv_algo_tools.cxx
+  register_algorithms.cxx
   )
-
-maptk_install_plugin_headers( ocv
-  ${maptk_ocv_headers_public}
-  )
-maptk_add_plugin( ocv
-  MAKE_PLUGIN_OCV
+maptk_add_library( maptk_ocv
   ${maptk_ocv_sources}
   )
-maptk_plugin_link_libs( ocv
+target_link_libraries( maptk_ocv
+  maptk
   ${OpenCV_LIBS}
+  )
+
+maptk_create_plugin( maptk_ocv
+  algorithm_plugin_interface.cxx
   )

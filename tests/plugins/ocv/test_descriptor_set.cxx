@@ -35,7 +35,7 @@
 
 #include <test_common.h>
 
-#include <maptk/ocv/descriptor_set.h>
+#include <maptk/plugins/ocv/descriptor_set.h>
 
 #define TEST_ARGS ()
 

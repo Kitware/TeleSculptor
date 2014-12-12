@@ -41,7 +41,7 @@
 
 /// Define symbol visibility in maptk::proj
 #ifndef MAPTK_PROJ_EXPORT
-# ifdef MAKE_PLUGIN_PROJ
+# ifdef MAKE_MAPTK_PROJ_LIB
 #   define MAPTK_PROJ_EXPORT MAPTK_EXPORT
 # else
 #   define MAPTK_PROJ_EXPORT MAPTK_IMPORT

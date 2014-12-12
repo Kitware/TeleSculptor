@@ -30,17 +30,17 @@
 
 /**
  * \file
- * \brief OpenCV plugin algorithm registration plugin interface impl
+ * \brief OpenCV algorithm registration implementation
  */
 
-#include <maptk/logging_macros.h>
-#include <maptk/plugin_interface/algorithm_impl_pl_interface.h>
+#include "register_algorithms.h"
 
 #include <opencv2/opencv_modules.hpp>
 #ifdef HAVE_OPENCV_NONFREE
 #include <opencv2/nonfree/nonfree.hpp>
 #endif
 
+#include <maptk/logging_macros.h>
 #include <maptk/plugins/ocv/analyze_tracks.h>
 #include <maptk/plugins/ocv/detect_features.h>
 #include <maptk/plugins/ocv/draw_tracks.h>
@@ -48,28 +48,28 @@
 #include <maptk/plugins/ocv/extract_descriptors.h>
 #include <maptk/plugins/ocv/image_io.h>
 #include <maptk/plugins/ocv/match_features.h>
-#include <maptk/plugins/ocv/ocv_config.h>
 
 
-#ifdef __cplusplus
-extern "C"
+namespace maptk
 {
-#endif
 
+namespace ocv
+{
 
-MAPTK_OCV_EXPORT
-int register_algo_impls(maptk::registrar &reg)
+/// Register OCV algorithm implementations with the given or global registrar
+int register_algorithms( maptk::registrar &reg )
 {
   try
   {
-    LOG_DEBUG("plugin::ocv::register_algo_impls",
-              "Registering OCV plugin algo implementations");
+    LOG_DEBUG( "plugin::ocv::register_algo_impls",
+               "Registering OCV plugin algo implementations" );
 
 #ifdef HAVE_OPENCV_NONFREE
     cv::initModule_nonfree();
 #endif
 
-    int registered
+    int expected = 7,
+        registered
       = maptk::ocv::analyze_tracks::register_self(reg)
       + maptk::ocv::detect_features::register_self(reg)
       + maptk::ocv::draw_tracks::register_self(reg)
@@ -79,9 +79,9 @@ int register_algo_impls(maptk::registrar &reg)
       + maptk::ocv::match_features::register_self(reg)
       ;
 
-    LOG_DEBUG("plugin::ocv::register_algo_impls",
-              "Registered algorithms. Returned: " << registered);
-    return 7 - registered;
+    LOG_DEBUG( "plugin::ocv::register_algo_impls",
+               "Registered " << registered << " of " << expected << " algorithms" );
+    return expected - registered;
   }
   catch (...)
   {
@@ -91,7 +91,6 @@ int register_algo_impls(maptk::registrar &reg)
   return -1;
 }
 
+} // end ocv ns
 
-#ifdef __cplusplus
-}
-#endif
+} // end maptk ns

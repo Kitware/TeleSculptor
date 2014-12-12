@@ -142,11 +142,9 @@ function(maptk_add_library name)
   set(oneValueArgs SYMBOL)
   cmake_parse_arguments(mal "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-  message(STATUS "mal_SYMBOL: \"${mal_SYMBOL}\"")
   if( mal_SYMBOL )
     set(DEF_SYMBOL "${mal_SYMBOL}")
   else()
-    message(STATUS "No symbol explicitly given, using default")
     string(TOUPPER "${name}" upper_name)
     set(DEF_SYMBOL "MAKE_${upper_name}_LIB")
   endif()
@@ -231,7 +229,10 @@ function(maptk_create_plugin base_lib)
   maptk_add_library(maptk-plugin-${base_lib}
     SYMBOL MAKE_PRIV_PLUGIN_SHELL
     MODULE "${shell_source}" ${ARGN})
-  target_link_libraries(maptk-plugin-${base_lib} ${base_lib} maptk)
+  # Not adding link to known base MAPTK library because if the base_lib isn't
+  # linking against it, its either doing something really complex or doing
+  # something wrong (most likely the latter).
+  target_link_libraries(maptk-plugin-${base_lib} ${base_lib})
   set_target_properties(maptk-plugin-${base_lib}
     PROPERTIES
       PREFIX        ""
