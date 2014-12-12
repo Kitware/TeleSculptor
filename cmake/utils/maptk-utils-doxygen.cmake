@@ -34,12 +34,16 @@ function(maptk_create_doxygen name inputdir)
   if(MAPTK_ENABLE_DOCS)
     message(STATUS "[doxy-${name}] Creating doxygen targets")
 
-    set(doxy_project_name       "${name}")
-    set(doxy_project_source_dir "${inputdir}")
+    # Constants -- could be moved outside this function?
     set(doxy_include_path       "${MAPTK_SOURCE_DIR};${MAPTK_BINARY_DIR}")
     set(doxy_doc_output_path    "${MAPTK_BINARY_DIR}/doc")
-
     set(doxy_files_dir "${MAPTK_SOURCE_DIR}/cmake/templates/doxygen")
+
+    # current project specific variables
+    set(doxy_project_name       "${name}")
+    set(doxy_project_source_dir "${inputdir}")
+    set(doxy_project_output_dir "${doxy_doc_output_path}/${doxy_project_name}")
+    set(doxy_project_tag_file   "${doxy_project_output_dir}/${name}.tag")
 
     # Build up tag file and target dependency lists
     set(doxy_tag_files)
@@ -48,7 +52,7 @@ function(maptk_create_doxygen name inputdir)
     foreach (tag IN LISTS ARGN)
       message(STATUS "[doxy-${name}] - tag: ${tag}")
       list(APPEND doxy_tag_files
-        "${doxy_doc_output_path}/${tag}.tag=${doxy_doc_output_path}/${tag}"
+        "${doxy_doc_output_path}/${tag}/${tag}.tag=${doxy_doc_output_path}/${tag}"
         )
       list(APPEND tag_target_deps
         # Make creating a tag for a docset depend on the completion of the
@@ -61,82 +65,79 @@ function(maptk_create_doxygen name inputdir)
     message(STATUS "[doxy-${name}] tag files: '${doxy_tag_files}'")
     message(STATUS "[doxy-${name}] tag deps : '${tag_target_deps}'")
 
-    message(STATUS "[doxy-${name}] Creating directory creation target")
-    add_custom_target(doxygen-${name}-dir
-        COMMAND cmake -E make_directory "${doxy_doc_output_path}/${name}"
-        COMMENT "Creating documentation directory for ${name}"
-        )
+    # Make sure the output directory exists
+    message(STATUS "[doxy-${name}] Creating directory creation command/target")
+    add_custom_command(
+      OUTPUT "${doxy_project_output_dir}"
+      COMMAND ${CMAKE_COMMAND} -E make_directory "${doxy_project_output_dir}"
+      COMMENT "Create documentation directory for ${name}"
+      )
 
     # Configuring template files and linking known target names
     # Make sure targets get made, else this can't connect the dependency chain
-    set(no_configure_target FALSE)
+    #set(no_configure_target TRUE)
     message(STATUS "[doxy-${name}] Configuring Doxyfile.common")
     maptk_configure_file(${name}-doxyfile.common
       "${doxy_files_dir}/Doxyfile.common.in"
-      "${doxy_doc_output_path}/${name}/Doxyfile.common"
+      "${doxy_project_output_dir}/Doxyfile.common"
       doxy_project_name
       doxy_doc_output_path
       doxy_project_source_dir
       doxy_exclude_patterns
       doxy_include_path
       doxy_tag_files
+      doxy_project_tag_file
+      DEPENDS "${doxy_project_output_dir}"
       )
     message(STATUS "[doxy-${name}] Configuring Doxyfile.tag")
     maptk_configure_file(${name}-doxyfile.tag
       "${doxy_files_dir}/Doxyfile.tag.in"
-      "${doxy_doc_output_path}/${name}/Doxyfile.tag"
-      doxy_doc_output_path
-      doxy_project_name
+      "${doxy_project_output_dir}/Doxyfile.tag"
+      doxy_project_tag_file
+      DEPENDS "${doxy_project_output_dir}"
       )
     message(STATUS "[doxy-${name}] Configuring Doxyfile")
     maptk_configure_file(${name}-doxyfile
       "${doxy_files_dir}/Doxyfile.in"
-      "${doxy_doc_output_path}/${name}/Doxyfile"
-      doxy_doc_output_path
+      "${doxy_project_output_dir}/Doxyfile"
+      doxy_project_output_dir
       doxy_project_name
-      )
-    message(STATUS "[doxy-${name}] Linking configuration depencencies")
-    # TODO: There seems to be some concurrency issue here. Even when forced
-    #       into serial chain, sometimes breaks on `make -j8`
-    add_dependencies(configure-${name}-doxyfile.common
-      doxygen-${name}-dir
-      )
-    add_dependencies(configure-${name}-doxyfile.tag
-      doxygen-${name}-dir
-      )
-    add_dependencies(configure-${name}-doxyfile
-      doxygen-${name}-dir
+      DEPENDS "${doxy_project_output_dir}"
       )
 
     # Doxygen generation targets
     message(STATUS "[doxy-${name}] Creating tag generation target")
-    add_custom_target(doxygen-${name}-tag
-      DEPENDS configure-${name}-doxyfile.common
-              configure-${name}-doxyfile.tag
+    add_custom_command(
+      OUTPUT  "${doxy_project_tag_file}"
+      COMMAND "${DOXYGEN_EXECUTABLE}" "${doxy_project_output_dir}/Doxyfile.tag"
+      DEPENDS "${doxy_project_output_dir}/Doxyfile.common"
+              "${doxy_project_output_dir}/Doxyfile.tag"
               ${tag_target_deps}
-      COMMAND "${DOXYGEN_EXECUTABLE}"
-              "${doxy_doc_output_path}/${name}/Doxyfile.tag"
       WORKING_DIRECTORY
-              "${doxy_doc_output_path}/${name}"
-      COMMENT "Creating tag for ${name}."
+              "${doxy_project_output_dir}"
+      COMMENT "Creating tag file for ${name}"
       )
 
     message(STATUS "[doxy-${name}] Creating doxygen generation target")
-    add_custom_target(doxygen-${name}
-      DEPENDS configure-${name}-doxyfile.common
-              configure-${name}-doxyfile
-              doxygen-${name}-tag
-      COMMAND "${DOXYGEN_EXECUTABLE}"
-              "${doxy_doc_output_path}/${name}/Doxyfile"
+    add_custom_command(
+      OUTPUT  "${doxy_project_output_dir}/index.html"
+      COMMAND "${DOXYGEN_EXECUTABLE}" "${doxy_project_output_dir}/Doxyfile"
+      DEPENDS "${doxy_project_output_dir}/Doxyfile.common"
+              "${doxy_project_output_dir}/Doxyfile"
+              "${doxy_project_tag_file}"
       WORKING_DIRECTORY
-              "${doxy_doc_output_path}/${name}"
-      COMMENT "Creating documentation for ${name}."
+              "${doxy_project_output_dir}"
+      COMMENT "Creating documentation pages for ${name}"
+      )
+    # top-level target doxygen project generation
+    add_custom_target(doxygen-${name}
+      DEPENDS "${doxy_project_output_dir}/index.html"
       )
 
     message(STATUS "[doxy-${name}] Linking to top-level doxygen target")
     add_dependencies(doxygen
-        doxygen-${name}
-        )
+      doxygen-${name}
+      )
 
     if(MAPTK_INSTALL_DOCS)
       message(STATUS "[doxy-${name}] marking for install")
