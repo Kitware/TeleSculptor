@@ -36,7 +36,7 @@
 
 #include "similarity.h"
 #include <cmath>
-
+#include <Eigen/LU>
 
 namespace maptk
 {

@@ -36,6 +36,7 @@
 
 #include "transform.h"
 #include <boost/foreach.hpp>
+#include <Eigen/Geometry>
 
 
 namespace maptk

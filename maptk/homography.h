@@ -37,6 +37,7 @@
 #define MAPTK_HOMOGRAPHY_H_
 
 #include <maptk/config.h>
+#include <maptk/types.h>
 
 #include "matrix.h"
 #include "vector.h"

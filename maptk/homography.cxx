@@ -34,6 +34,7 @@
  */
 
 #include "homography.h"
+#include "exceptions/math.h"
 
 namespace maptk
 {

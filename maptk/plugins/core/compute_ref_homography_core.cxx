@@ -47,7 +47,7 @@
 #include <boost/math/special_functions/fpclassify.hpp>
 
 #include <maptk/algo/estimate_homography.h>
-#include <maptk/matrix.h>
+#include <Eigen/LU>
 
 
 namespace maptk

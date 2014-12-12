@@ -40,6 +40,7 @@
 #include "transform.h"
 #include <typeinfo>
 #include "exceptions/base.h"
+#include <Eigen/Geometry>
 
 
 namespace maptk
