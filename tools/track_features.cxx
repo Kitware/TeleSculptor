@@ -94,8 +94,8 @@ static maptk::config_block_sptr default_config()
 
 static bool check_config(maptk::config_block_sptr config)
 {
-  // Homographies file is invalid we it names a directory or it its parent]
-  // path either does not exist or is a file.
+  // A given homography file is invalid if it names a directory, or if its
+  // parent path either doesn't exist or names a regular file.
   bool valid_out_homogs_file = true,
        valid_out_homogs_algo = true;
   if ( config->has_value("output_homography_file")
@@ -118,7 +118,7 @@ static bool check_config(maptk::config_block_sptr config)
       valid_out_homogs_file = false;
     }
 
-    // Check that compute_ref_homography algo is correctly
+    // Check that compute_ref_homography algo is correctly configured
     valid_out_homogs_algo = maptk::algo::compute_ref_homography::check_nested_algo_configuration("output_homography_generator",
                                                                                                  config);
   }
