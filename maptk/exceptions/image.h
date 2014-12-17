@@ -33,13 +33,13 @@
  * \brief MAPTK Exceptions pertaining to image operations and manipulation
  */
 
-#ifndef MAPTK_CORE_EXCEPTIONS_IMAGE_H
-#define MAPTK_CORE_EXCEPTIONS_IMAGE_H
+#ifndef MAPTK_EXCEPTIONS_IMAGE_H
+#define MAPTK_EXCEPTIONS_IMAGE_H
 
 #include <string>
 
-#include <maptk/core/core_config.h>
-#include <maptk/core/exceptions/base.h>
+#include <maptk/config.h>
+#include <maptk/exceptions/base.h>
 
 
 namespace maptk
@@ -47,7 +47,7 @@ namespace maptk
 
 
 /// Generic image exception
-class MAPTK_CORE_EXPORT image_exception
+class MAPTK_LIB_EXPORT image_exception
   : public maptk_core_base_exception
 {
 public:
@@ -62,7 +62,7 @@ public:
 /**
  * For when image shape/size equality must be asserted.
  */
-class MAPTK_CORE_EXPORT image_size_mismatch_exception
+class MAPTK_LIB_EXPORT image_size_mismatch_exception
   : public image_exception
 {
 public:
@@ -87,4 +87,4 @@ public:
 }
 
 
-#endif // MAPTK_CORE_EXCEPTIONS_IMAGE_H
+#endif // MAPTK_EXCEPTIONS_IMAGE_H
