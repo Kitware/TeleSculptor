@@ -40,6 +40,7 @@
 #include <vector>
 
 #include <maptk/algo/image_io.h>
+#include <maptk/algo/compute_ref_homography.h>
 #include <maptk/algo/convert_image.h>
 #include <maptk/algo/track_features.h>
 

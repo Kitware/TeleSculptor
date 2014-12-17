@@ -141,10 +141,10 @@ algorithm_def<Self>
   BOOST_FOREACH( std::string reg_name, algorithm_def<Self>::registered_names() )
   {
     type_comment += "\n\t- " + reg_name;
-    tmp_d = registrar<Self>::find(reg_name)->description();
+    tmp_d = registrar::instance().find<Self>(reg_name)->description();
     if ( tmp_d != "" )
     {
-      type_comment += " :: " + registrar<Self>::find(reg_name)->description();
+      type_comment += " :: " + registrar::instance().find<Self>(reg_name)->description();
     }
   }
 

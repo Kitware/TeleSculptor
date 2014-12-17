@@ -334,7 +334,7 @@ static int maptk_main(int argc, char const* argv[])
   }
 
   // load and convert mask images if they were given
-  LOG_DEBUG("Before mask load");
+  LOG_DEBUG("meh", "Before mask load");
   maptk::image_container_sptr mask,
                               mask2;
   if( vm.count("mask-image") )
