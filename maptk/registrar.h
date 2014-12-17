@@ -104,6 +104,7 @@ public:
     // declaring map reference so we don't copy
     item_map_t &im = this->get_item_map<T>();
 
+    // std::map reminder: if named item already exists, no overwriting occurs
     bool new_insertion = im.insert(item_pair_t(name, item)).second;
     if (!new_insertion)
     {
