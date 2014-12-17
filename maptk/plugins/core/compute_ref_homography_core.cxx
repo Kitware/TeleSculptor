@@ -148,8 +148,8 @@ public:
     forget_track_threshold( 5 ),
     min_track_length( 1 ),
     inlier_scale( 2.0 ),
-    frames_since_reset( 0 ),
-    last_homog( 0 )
+    minimum_inliers( 4 ),
+    frames_since_reset( 0 )
   {
   }
 
@@ -159,8 +159,8 @@ public:
     forget_track_threshold( other.forget_track_threshold ),
     min_track_length( other.min_track_length ),
     inlier_scale( other.inlier_scale ),
-    frames_since_reset( other.frames_since_reset ),
-    last_homog( other.last_homog )
+    minimum_inliers( other.minimum_inliers ),
+    frames_since_reset( other.frames_since_reset )
   {
   }
 
@@ -183,6 +183,10 @@ public:
   /// The scale of inlier points used for homography calculation
   double inlier_scale;
 
+  /// Minimum points number of matching points between source and reference
+  /// images when computing homography
+  unsigned minimum_inliers;
+
   /// Buffer storing track extensions
   track_info_buffer_sptr buffer;
 
@@ -192,8 +196,88 @@ public:
   /// Number of frames since last new reference frame declared
   unsigned frames_since_reset;
 
-  /// Last known transformation
-  f2f_homography last_homog;
+
+  /// Estimate the homography between two corresponding points sets
+  /**
+   * Check for homography validity.
+   *
+   * Output homography describes transformation from pts_src to pts_dst.
+   *
+   * If estimate homography is deemed bad, false is returned and the
+   * homography passed to \p out_h is not modified.
+   */
+  bool compute_homography(std::vector<vector_2d> const &pts_src,
+                          std::vector<vector_2d> const &pts_dst,
+                          homography & out_h) const
+  {
+    bool is_bad_homog = false;
+    homography tmp_h;
+
+    // Make sure that we have at least the minimum number of points to match
+    // between source and destination
+    if ( pts_src.size() < this->minimum_inliers ||
+         pts_dst.size() < this->minimum_inliers )
+    {
+      is_bad_homog = true;
+    }
+    else
+    {
+      std::vector<bool> inliers;
+      tmp_h = this->h_estimator->estimate( pts_src, pts_dst, inliers, this->inlier_scale );
+
+      // Check for positive inlier count
+      unsigned inlier_count = 0;
+      BOOST_FOREACH(bool b, inliers)
+      {
+        if ( b )
+          ++inlier_count;
+      }
+      if ( inlier_count < this->minimum_inliers )
+      {
+        is_bad_homog = true;
+      }
+    }
+
+    // Checking homography output for invertability and invalid values
+    // Only need to try this if a supposed valid homog was estimated above
+    if ( !is_bad_homog )
+    {
+      try
+      {
+        // would throw if not invertable
+        homography inverse_test = maptk::inverse( tmp_h );
+
+        // Checking for non-finite values in estimated and inversed homography
+        unsigned i, j;
+        for( i = 0; i < 3; ++i )
+        {
+          for ( j = 0; j < 3; ++j )
+          {
+            if ( !boost::math::isfinite( tmp_h(i,j) ) || !boost::math::isfinite( inverse_test(i,j) ) )
+            {
+              is_bad_homog = true;
+              break;
+            }
+          }
+          if ( is_bad_homog )
+          {
+            break;
+          }
+        }
+      }
+      catch (...)
+      {
+        is_bad_homog = true;
+      }
+    }
+
+    if ( !is_bad_homog )
+    {
+      out_h = tmp_h;
+    }
+
+    return is_bad_homog;
+  }
 
 };
 
@@ -250,6 +334,11 @@ compute_ref_homography_core
                     "The acceptable error distance (in pixels) between warped "
                     "and measured points to be considered an inlier match.");
 
+  // parameterize number of matching points threshold (currently locked to >= 4)
+  config->set_value("min_matches_threshold", d_->minimum_inliers,
+                    "Minimum number of matches required between source and "
+                    "reference planes for valid homography estimation.");
+
   return config;
 }
 
@@ -273,6 +362,7 @@ compute_ref_homography_core
   d_->forget_track_threshold = config->get_value<unsigned>( "forget_track_threshold" );
   d_->min_track_length = config->get_value<unsigned>( "min_track_length" );
   d_->inlier_scale = config->get_value<double>( "inlier_scale" );
+  d_->minimum_inliers = config->get_value<int>( "min_matches_threshold" );
 
   // Square the threshold ahead of time for efficiency
   d_->backproject_threshold_sqr = d_->backproject_threshold_sqr *
@@ -304,7 +394,6 @@ compute_ref_homography_core
   if( !d_->buffer )
   {
     d_->buffer = track_info_buffer_sptr( new track_info_buffer_t() );
-    d_->last_homog = f2f_homography( frame_number );
     d_->frames_since_reset = 0;
   }
 
@@ -370,10 +459,15 @@ compute_ref_homography_core
   // Generate points to feed into homography regression
   std::vector<vector_2d> pts_ref, pts_cur;
 
+  // Accept tracks that either stretch back to the reset point, or satisfy the
+  // minimum track length parameter.
   size_t track_size_thresh = std::min( d_->min_track_length, d_->frames_since_reset + 1 );
 
+  // Collect cur/ref points from track infos that have earliest-frame references
   BOOST_FOREACH( track_info_t& ti, *new_buffer )
   {
+    // Q: Why are we requiring use of only track infos whise first frame is the reference frame?
+    // Q: .active and .ref_loc_valid may be reundent in function?
     if( ti.active && ti.is_good &&
         ti.ref_loc_valid && ti.ref_id == earliest_ref &&
         ti.trk->size() >= track_size_thresh )
@@ -389,48 +483,9 @@ compute_ref_homography_core
   }
 
   // Compute homography if possible
-  bool bad_homog = false;
 
   homography h; // raw homography transform
-
-  if( pts_ref.size() > 3 && pts_cur.size() > 3 )
-  {
-    std::vector<bool> inliers;
-    h = d_->h_estimator->estimate( pts_cur, pts_ref, inliers, d_->inlier_scale );
-  }
-  else
-  {
-    bad_homog = true;
-  }
-
-  // Check homography output
-  try
-  {
-    using namespace std;
-
-    // Invertible test
-    homography inverse;
-    bool inv_valid;
-    h.computeInverseWithCheck(inverse, inv_valid);
-    bad_homog = !inv_valid || bad_homog;
-
-    // Check for invalid values
-    for( unsigned i = 0; i < 3; i++ )
-    {
-      for( unsigned j = 0; j < 3; j++ )
-      {
-        if( !boost::math::isfinite( h(i,j) ) || !boost::math::isfinite( inverse(i,j) ) )
-        {
-          bad_homog = true;
-          break;
-        }
-      }
-    }
-  }
-  catch(...)
-  {
-    bad_homog = true;
-  }
+  bool bad_homog = d_->compute_homography(pts_cur, pts_ref, h);
 
   // If the homography is bad, output an identity
   f2f_homography_sptr output;
@@ -478,7 +533,6 @@ compute_ref_homography_core
   // Increment counter, update buffers
   d_->frames_since_reset++;
   d_->buffer = new_buffer;
-  d_->last_homog = *output;
 
   return output;
 }
