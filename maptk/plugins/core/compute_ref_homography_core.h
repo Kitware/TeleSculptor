@@ -61,6 +61,11 @@ namespace core
  * class is designed to generate different types of homographies from input
  * feature tracks, which can transform each image back to the same coordinate
  * space derived from some initial refrerence image.
+ *
+ * This implementation is state-based and is meant to be run in an online
+ * fashion, i.e. run against a track set that has been iteratively updated on
+ * successive non-regressing frames. This is ideal for when it is desired to
+ * compute reference frames on all frames in a sequence.
  */
 class PLUGIN_CORE_EXPORT compute_ref_homography_core
   : public algo::algorithm_impl<compute_ref_homography_core, algo::compute_ref_homography>
