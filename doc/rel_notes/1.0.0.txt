@@ -1,0 +1,52 @@
+MAPTK v1.0.0 Release Notes
+==========================
+
+This is a major release of MAPTK that provides both new functionality and fixes
+over the previous v0.5.0 release.
+
+
+Updates since v0.5.0
+--------------------
+
+Build System
+
+ * Revised module system into providing tools to build library and plugins for
+   dynamic loading.
+
+ * Added install rules for CMake utilities for MAPTK users to create MAPTK
+   complient plugin interface libraries.
+
+MAPTK Library / Core Plugin
+
+ * Added plugin support for loading externally defined algorithm
+   implementations.
+
+ * Refactored source file layout.
+
+ * Separated out algorithm implementations that used to be in the main MAPTK
+   library into a core libraray witha a plugin interface.
+
+OCV Plugin
+
+ * Converted module library into a library-plugin pair.
+
+PROJ Plugin
+
+ * Converted module library into a library-plugin pair.
+
+VisCL Plugin
+
+ * Converted module library into a library-plugin pair.
+
+VXL Plugin
+
+ * Converted module library into a library-plugin pair.
+
+Tests
+
+ * Refactored test code to reference correct libraries and use new plugin
+   loading and management where required.
+
+
+Fixes since v0.5.0
+------------------
