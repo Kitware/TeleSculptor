@@ -57,7 +57,7 @@
 namespace maptk
 {
 
-namespace algo
+namespace core
 {
 
 namespace // anonymous
@@ -127,9 +127,9 @@ public:
   unsigned int interpolation_rate;
   bool rmse_reporting_enabled;
 
-  bundle_adjust_sptr sba;
-  optimize_cameras_sptr camera_optimizer;
-  triangulate_landmarks_sptr lm_triangulator;
+  algo::bundle_adjust_sptr sba;
+  algo::optimize_cameras_sptr camera_optimizer;
+  algo::triangulate_landmarks_sptr lm_triangulator;
 };
 
 
@@ -487,6 +487,6 @@ hierarchical_bundle_adjust
 }
 
 
-}
+} // end core namespace
 
-}
+} // end maptk namespace

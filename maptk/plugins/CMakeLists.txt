@@ -1,5 +1,5 @@
 # Base plug-in with default implementations
-add_subdirectory( default )
+add_subdirectory( core )
 
 # Add OpenCV plugin if enabled
 cmake_dependent_option( MAPTK_PLUGIN_ENABLE_OPENCV

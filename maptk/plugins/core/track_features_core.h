@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2013-2014 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,59 +30,47 @@
 
 /**
  * \file
- * \brief compute_ref_homography algorithm definition
+ * \brief Header defining the \link maptk::algo::track_features_core
+ *        track_features_core \endlink algorithm
  */
 
-#ifndef MAPTK_ALGO_COMPUTE_REF_HOMOGRAPHY_DEFAULT_H_
-#define MAPTK_ALGO_COMPUTE_REF_HOMOGRAPHY_DEFAULT_H_
+#ifndef MAPTK_PLUGINS_CORE_TRACK_FEATURES_CORE_H_
+#define MAPTK_PLUGINS_CORE_TRACK_FEATURES_CORE_H_
 
-#include <boost/scoped_ptr.hpp>
+#include <boost/shared_ptr.hpp>
 
 #include <maptk/algo/algorithm.h>
-#include <maptk/algo/compute_ref_homography.h>
-#include <maptk/homography.h>
+#include <maptk/algo/detect_features.h>
+#include <maptk/algo/extract_descriptors.h>
+#include <maptk/algo/match_features.h>
+#include <maptk/algo/track_features.h>
+#include <maptk/algo/close_loops.h>
 #include <maptk/image_container.h>
 #include <maptk/track_set.h>
 
-#include <maptk/plugins/default/plugin_default_config.h>
+#include <maptk/plugins/core/plugin_core_config.h>
 
 
 namespace maptk
 {
 
-namespace algo
+namespace core
 {
 
-
-/// Default impl class for mapping each image to some reference image.
-/**
- * This class differs from estimate_homographies in that estimate_homographies
- * simply performs a homography regression from matching feature points. This
- * class is designed to generate different types of homographies from input
- * feature tracks, which can transform each image back to the same coordinate
- * space derived from some initial refrerence image.
- */
-class PLUGIN_DEFAULT_EXPORT compute_ref_homography_default
-  : public algo::algorithm_impl<compute_ref_homography_default, compute_ref_homography>
+/// A basic feature tracker
+class PLUGIN_CORE_EXPORT track_features_core
+  : public algo::algorithm_impl<track_features_core, algo::track_features>
 {
 public:
 
   /// Default Constructor
-  compute_ref_homography_default();
+  track_features_core();
 
   /// Copy Constructor
-  compute_ref_homography_default( const compute_ref_homography_default& );
-
-  /// Default Destructor
-  virtual ~compute_ref_homography_default();
+  track_features_core(const track_features_core&);
 
   /// Return the name of this implementation
-  virtual std::string impl_name() const { return "default"; }
-
-  virtual std::string description() const
-  {
-    return "Default online sequential-frame reference homography estimator";
-  }
+  virtual std::string impl_name() const { return "core"; }
 
   /// Get this algorithm's \link maptk::config_block configuration block \endlink
   /**
@@ -105,7 +93,7 @@ public:
    * \param config  The \c config_block instance containing the configuration
    *                parameters for this algorithm
    */
-  virtual void set_configuration( config_block_sptr config );
+  virtual void set_configuration(config_block_sptr config);
 
   /// Check that the algorithm's currently configuration is valid
   /**
@@ -117,36 +105,44 @@ public:
    *
    * \returns true if the configuration check passed and false if it didn't.
    */
-  virtual bool check_configuration( config_block_sptr config ) const;
+  virtual bool check_configuration(config_block_sptr config) const;
 
-  /// Estimate the transformation which maps some frame to a reference frame
+  /// Extend a previous set of tracks using the current frame
   /**
-   * Similarly to track_features, this class was designed to be called in
-   * an online fashion for each sequential frame.
-   *
-   * \param [in]   frame_number frame identifier for the current frame
-   * \param [in]   tracks the set of all tracked features from the image
-   * \return estimated homography
+   * \param [in] prev_tracks the tracks from previous tracking steps
+   * \param [in] frame_number the frame number of the current frame
+   * \param [in] image_data the image pixels for the current frame
+   * \returns an updated set a tracks including the current frame
    */
-  virtual f2f_homography_sptr
-  estimate( frame_id_t frame_number,
-            track_set_sptr tracks ) const;
+  virtual track_set_sptr
+  track(track_set_sptr prev_tracks,
+        unsigned int frame_number,
+        image_container_sptr image_data) const;
+
 
 private:
 
-  /// Class storing internal variables
-  class priv;
-  boost::scoped_ptr<priv> d_;
+  /// The feature detector algorithm to use
+  algo::detect_features_sptr detector_;
+
+  /// The descriptor extractor algorithm to use
+  algo::extract_descriptors_sptr extractor_;
+
+  /// The feature matching algorithm to use
+  algo::match_features_sptr matcher_;
+
+  /// The loop closure algorithm to use
+  algo::close_loops_sptr closer_;
+
+  /// The ID to use for the next created track
+  mutable unsigned long next_track_id_;
+
 };
 
 
-/// Shared pointer type of base compute_ref_homography algorithm definition class
-typedef boost::shared_ptr<compute_ref_homography> compute_ref_homography_sptr;
-
-
-} // end namespace algo
+} // end namespace core
 
 } // end namespace maptk
 
 
-#endif // MAPTK_ALGO_COMPUTE_REF_HOMOGRAPHY_DEFAULT_H_
+#endif // MAPTK_PLUGINS_CORE_TRACK_FEATURES_CORE_H_

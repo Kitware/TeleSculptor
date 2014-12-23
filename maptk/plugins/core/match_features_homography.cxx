@@ -47,7 +47,7 @@
 namespace maptk
 {
 
-namespace algo
+namespace core
 {
 
 /// Private implementation class
@@ -121,9 +121,9 @@ match_features_homography
                     "amount, no matches will be output.");
 
   // nested algorithm configurations
-  estimate_homography::get_nested_algo_configuration("homography_estimator",
+  algo::estimate_homography::get_nested_algo_configuration("homography_estimator",
                                                      config, h_estimator_);
-  match_features::get_nested_algo_configuration("feature_matcher", config,
+  algo::match_features::get_nested_algo_configuration("feature_matcher", config,
                                                 matcher_);
 
   return config;
@@ -140,9 +140,9 @@ match_features_homography
   config->merge_config(in_config);
 
   // Set nested algorithm configurations
-  estimate_homography::set_nested_algo_configuration("homography_estimator",
+  algo::estimate_homography::set_nested_algo_configuration("homography_estimator",
                                                      config, h_estimator_);
-  match_features::set_nested_algo_configuration("feature_matcher", config,
+  algo::match_features::set_nested_algo_configuration("feature_matcher", config,
                                                 matcher_);
 
   // Other parameters
@@ -156,9 +156,9 @@ match_features_homography
 ::check_configuration(config_block_sptr config) const
 {
   return (
-    estimate_homography::check_nested_algo_configuration("homography_estimator", config)
+    algo::estimate_homography::check_nested_algo_configuration("homography_estimator", config)
     &&
-    match_features::check_nested_algo_configuration("feature_matcher", config)
+    algo::match_features::check_nested_algo_configuration("feature_matcher", config)
   );
 }
 
@@ -207,6 +207,6 @@ match_features_homography
 }
 
 
-} // end namespace algo
+} // end namespace core
 
 } // end namespace maptk

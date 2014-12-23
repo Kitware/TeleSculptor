@@ -30,11 +30,11 @@
 
 /**
  * \file
- * \brief Implementation of \link maptk::algo::compute_ref_homography_default
- *        compute_ref_homography_default \endlink
+ * \brief Implementation of \link maptk::algo::compute_ref_homography_core
+ *        compute_ref_homography_core \endlink
  */
 
-#include "compute_ref_homography_default.h"
+#include "compute_ref_homography_core.h"
 
 #include <algorithm>
 #include <cmath>
@@ -53,7 +53,7 @@
 namespace maptk
 {
 
-namespace algo
+namespace core
 {
 
 namespace
@@ -104,9 +104,6 @@ typedef std::vector< track_info_t > track_info_buffer_t;
 // Pointer to a track info buffer
 typedef boost::shared_ptr< track_info_buffer_t > track_info_buffer_sptr;
 
-// Internal homography estimator type
-typedef maptk::algo::estimate_homography_sptr estimator_sptr;
-
 
 // Helper function for sorting tis
 bool
@@ -141,7 +138,7 @@ reset_active_flags( track_info_buffer_sptr buffer )
 
 
 // Private implementation class
-class compute_ref_homography_default::priv
+class compute_ref_homography_core::priv
 {
 public:
 
@@ -190,7 +187,7 @@ public:
   track_info_buffer_sptr buffer;
 
   /// Pointer to homography estimator
-  estimator_sptr h_estimator;
+  algo::estimate_homography_sptr h_estimator;
 
   /// Number of frames since last new reference frame declared
   unsigned frames_since_reset;
@@ -201,28 +198,36 @@ public:
 };
 
 
-compute_ref_homography_default
-::compute_ref_homography_default()
+compute_ref_homography_core
+::compute_ref_homography_core()
 : d_( new priv() )
 {
 }
 
 
-compute_ref_homography_default
-::compute_ref_homography_default( const compute_ref_homography_default& other )
+compute_ref_homography_core
+::compute_ref_homography_core( const compute_ref_homography_core& other )
 : d_( new priv( *other.d_ ) )
 {
 }
 
 
-compute_ref_homography_default
-::~compute_ref_homography_default()
+compute_ref_homography_core
+::~compute_ref_homography_core()
 {
 }
 
 
+std::string
+compute_ref_homography_core
+::description() const
+{
+  return "Default online sequential-frame reference homography estimator";
+}
+
+
 config_block_sptr
-compute_ref_homography_default
+compute_ref_homography_core
 ::get_configuration() const
 {
   // get base config from base class
@@ -230,7 +235,7 @@ compute_ref_homography_default
 
   // Sub-algorithm implementation name + sub_config block
   // - Homography estimator algorithm
-  estimate_homography::get_nested_algo_configuration( "estimator", config, d_->h_estimator );
+  algo::estimate_homography::get_nested_algo_configuration( "estimator", config, d_->h_estimator );
 
   // Other parameters
   config->set_value("use_backproject_error", d_->use_backproject_error,
@@ -250,7 +255,7 @@ compute_ref_homography_default
 
 
 void
-compute_ref_homography_default
+compute_ref_homography_core
 ::set_configuration( config_block_sptr in_config )
 {
   // Starting with our generated config_block to ensure that assumed values are present
@@ -260,7 +265,7 @@ compute_ref_homography_default
 
   // Setting nested algorithm instances via setter methods instead of directly
   // assigning to instance property.
-  estimate_homography::set_nested_algo_configuration( "estimator", config, d_->h_estimator );
+  algo::estimate_homography::set_nested_algo_configuration( "estimator", config, d_->h_estimator );
 
   // Read other parameters
   d_->use_backproject_error = config->get_value<bool>( "use_backproject_error" );
@@ -276,19 +281,19 @@ compute_ref_homography_default
 
 
 bool
-compute_ref_homography_default
+compute_ref_homography_core
 ::check_configuration(config_block_sptr config) const
 {
   return
   (
-    estimate_homography::check_nested_algo_configuration( "estimator", config )
+    algo::estimate_homography::check_nested_algo_configuration( "estimator", config )
   );
 }
 
 
 // Perform actual current to reference frame estimation
 f2f_homography_sptr
-compute_ref_homography_default
+compute_ref_homography_core
 ::estimate( frame_id_t frame_number,
             track_set_sptr tracks ) const
 {
@@ -475,6 +480,6 @@ compute_ref_homography_default
   return output;
 }
 
-} // end namespace algo
+} // end namespace core
 
 } // end namespace maptk

@@ -42,18 +42,18 @@
 #include <maptk/algo/match_features.h>
 #include <maptk/config_block.h>
 
-#include <maptk/plugins/default/plugin_default_config.h>
+#include <maptk/plugins/core/plugin_core_config.h>
 
 
 namespace maptk
 {
 
-namespace algo
+namespace core
 {
 
 /// Combines a feature matcher and homography estimation for constrained matching
-class PLUGIN_DEFAULT_EXPORT match_features_homography
-  : public algo::algorithm_impl<match_features_homography, match_features>
+class PLUGIN_CORE_EXPORT match_features_homography
+  : public algo::algorithm_impl<match_features_homography, algo::match_features>
 {
 public:
   /// Default Constructor
@@ -88,23 +88,23 @@ public:
         feature_set_sptr feat2, descriptor_set_sptr desc2) const;
 
   /// Set the feature matching algorithm to use
-  void set_feature_matcher(match_features_sptr alg)
+  void set_feature_matcher(algo::match_features_sptr alg)
   {
     matcher_ = alg;
   }
 
   /// Set the homography estimation algorithm to use
-  void set_homography_estimator(estimate_homography_sptr alg)
+  void set_homography_estimator(algo::estimate_homography_sptr alg)
   {
     h_estimator_ = alg;
   }
 
 private:
   /// The feature matching algorithm to use
-  match_features_sptr matcher_;
+  algo::match_features_sptr matcher_;
 
   /// The homography estimation algorithm to use
-  estimate_homography_sptr h_estimator_;
+  algo::estimate_homography_sptr h_estimator_;
 
   /// private implementation class
   class priv;

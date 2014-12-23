@@ -30,51 +30,57 @@
 
 /**
  * \file
- * \brief Header defining the \link maptk::algo::close_loops_bad_frames_only
- *        close_loops_bad_frames_only \endlink algorithm
+ * \brief compute_ref_homography algorithm definition
  */
 
-#ifndef MAPTK_ALGO_CLOSE_LOOPS_MULTI_METHOD_H_
-#define MAPTK_ALGO_CLOSE_LOOPS_MULTI_METHOD_H_
+#ifndef MAPTK_ALGO_COMPUTE_REF_HOMOGRAPHY_CORE_H_
+#define MAPTK_ALGO_COMPUTE_REF_HOMOGRAPHY_CORE_H_
 
-#include <boost/shared_ptr.hpp>
+#include <boost/scoped_ptr.hpp>
 
 #include <maptk/algo/algorithm.h>
-#include <maptk/algo/match_features.h>
-#include <maptk/algo/close_loops.h>
+#include <maptk/algo/compute_ref_homography.h>
+#include <maptk/homography.h>
 #include <maptk/image_container.h>
 #include <maptk/track_set.h>
 
-#include <maptk/plugins/default/plugin_default_config.h>
+#include <maptk/plugins/core/plugin_core_config.h>
 
 
 namespace maptk
 {
 
-namespace algo
+namespace core
 {
 
-/// Attempts to stitch over incomplete or bad input frames.
+
+/// Default impl class for mapping each image to some reference image.
 /**
- * This class can run multiple other close_loops algorithm implementations
- * in attempt to accomplish this.
+ * This class differs from estimate_homographies in that estimate_homographies
+ * simply performs a homography regression from matching feature points. This
+ * class is designed to generate different types of homographies from input
+ * feature tracks, which can transform each image back to the same coordinate
+ * space derived from some initial refrerence image.
  */
-class PLUGIN_DEFAULT_EXPORT close_loops_multi_method
-  : public algo::algorithm_impl<close_loops_multi_method, close_loops>
+class PLUGIN_CORE_EXPORT compute_ref_homography_core
+  : public algo::algorithm_impl<compute_ref_homography_core, algo::compute_ref_homography>
 {
 public:
 
   /// Default Constructor
-  close_loops_multi_method();
+  compute_ref_homography_core();
 
   /// Copy Constructor
-  close_loops_multi_method(const close_loops_multi_method&);
+  compute_ref_homography_core( const compute_ref_homography_core& );
 
-  /// Destructor
-  virtual ~close_loops_multi_method() {}
+  /// Default Destructor
+  virtual ~compute_ref_homography_core();
 
   /// Return the name of this implementation
-  virtual std::string impl_name() const { return "multi_method"; }
+  virtual std::string impl_name() const { return "core"; }
+
+  /// Return implementation description string
+  virtual std::string description() const;
 
   /// Get this algorithm's \link maptk::config_block configuration block \endlink
   /**
@@ -97,7 +103,7 @@ public:
    * \param config  The \c config_block instance containing the configuration
    *                parameters for this algorithm
    */
-  virtual void set_configuration(config_block_sptr config);
+  virtual void set_configuration( config_block_sptr config );
 
   /// Check that the algorithm's currently configuration is valid
   /**
@@ -109,34 +115,32 @@ public:
    *
    * \returns true if the configuration check passed and false if it didn't.
    */
-  virtual bool check_configuration(config_block_sptr config) const;
+  virtual bool check_configuration( config_block_sptr config ) const;
 
-  /// Run all internal loop closure algorithms.
+  /// Estimate the transformation which maps some frame to a reference frame
   /**
-   * \param [in] frame_number the frame number of the current frame
-   * \param [in] image image data for the current frame
-   * \param [in] input the input track set to stitch
-   * \returns an updated set a tracks after the stitching operation
+   * Similarly to track_features, this class was designed to be called in
+   * an online fashion for each sequential frame.
+   *
+   * \param [in]   frame_number frame identifier for the current frame
+   * \param [in]   tracks the set of all tracked features from the image
+   * \return estimated homography
    */
-  virtual track_set_sptr
-  stitch( frame_id_t frame_number,
-          image_container_sptr image,
-          track_set_sptr input ) const;
+  virtual f2f_homography_sptr
+  estimate( frame_id_t frame_number,
+            track_set_sptr tracks ) const;
 
 private:
 
-  /// Number of close loops methods we want to use.
-  unsigned count_;
-
-  /// The close loops methods to use.
-  std::vector< close_loops_sptr > methods_;
-
+  /// Class storing internal variables
+  class priv;
+  boost::scoped_ptr<priv> d_;
 };
 
 
-} // end namespace algo
+} // end namespace core
 
 } // end namespace maptk
 
 
-#endif // MAPTK_ALGO_CLOSE_LOOPS_MULTI_METHOD_H_
+#endif // MAPTK_ALGO_COMPUTE_REF_HOMOGRAPHY_CORE_H_

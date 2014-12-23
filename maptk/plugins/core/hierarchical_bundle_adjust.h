@@ -43,18 +43,18 @@
 
 #include <boost/scoped_ptr.hpp>
 
-#include <maptk/plugins/default/plugin_default_config.h>
+#include <maptk/plugins/core/plugin_core_config.h>
 
 
 namespace maptk
 {
 
-namespace algo
+namespace core
 {
 
 
-class PLUGIN_DEFAULT_EXPORT hierarchical_bundle_adjust
-  : public algorithm_impl<hierarchical_bundle_adjust, bundle_adjust>
+class PLUGIN_CORE_EXPORT hierarchical_bundle_adjust
+  : public algo::algorithm_impl<hierarchical_bundle_adjust, algo::bundle_adjust>
 {
 public:
 
@@ -91,9 +91,9 @@ private:
 typedef boost::shared_ptr<hierarchical_bundle_adjust> hierarchical_bundle_adjust_sptr;
 
 
-}
+} // end core namespace
 
-}
+} // end maptk namespace
 
 
 #endif // MAPTK_ALGO_HIERARCHICAL_BUNDLE_ADJUST_H_

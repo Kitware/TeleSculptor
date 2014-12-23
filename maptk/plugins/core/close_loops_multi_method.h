@@ -34,8 +34,8 @@
  *        close_loops_bad_frames_only \endlink algorithm
  */
 
-#ifndef MAPTK_ALGO_CLOSE_LOOPS_BAD_FRAMES_ONLY_H_
-#define MAPTK_ALGO_CLOSE_LOOPS_BAD_FRAMES_ONLY_H_
+#ifndef MAPTK_ALGO_CLOSE_LOOPS_MULTI_METHOD_H_
+#define MAPTK_ALGO_CLOSE_LOOPS_MULTI_METHOD_H_
 
 #include <boost/shared_ptr.hpp>
 
@@ -45,38 +45,39 @@
 #include <maptk/image_container.h>
 #include <maptk/track_set.h>
 
-#include <maptk/plugins/default/plugin_default_config.h>
+#include <maptk/plugins/core/plugin_core_config.h>
 
 
 namespace maptk
 {
 
-namespace algo
+namespace core
 {
 
 /// Attempts to stitch over incomplete or bad input frames.
 /**
- * This class attempts to only make short term loop closures
- * due to bad or incomplete. It operates on the principle
- * that when a bad frame occurs, there is generally a lower
- * percentage of feature tracks.
+ * This class can run multiple other close_loops algorithm implementations
+ * in attempt to accomplish this.
  */
-class PLUGIN_DEFAULT_EXPORT close_loops_bad_frames_only
-  : public algo::algorithm_impl<close_loops_bad_frames_only, close_loops>
+class PLUGIN_CORE_EXPORT close_loops_multi_method
+  : public algo::algorithm_impl<close_loops_multi_method, algo::close_loops>
 {
 public:
 
   /// Default Constructor
-  close_loops_bad_frames_only();
+  close_loops_multi_method();
 
   /// Copy Constructor
-  close_loops_bad_frames_only(const close_loops_bad_frames_only&);
+  close_loops_multi_method(const close_loops_multi_method&);
 
   /// Destructor
-  virtual ~close_loops_bad_frames_only() {}
+  virtual ~close_loops_multi_method() {}
 
   /// Return the name of this implementation
-  virtual std::string impl_name() const { return "bad_frames_only"; }
+  virtual std::string impl_name() const { return "multi_method"; }
+
+  /// Returns implementation description string
+  virtual std::string description() const;
 
   /// Get this algorithm's \link maptk::config_block configuration block \endlink
   /**
@@ -113,7 +114,7 @@ public:
    */
   virtual bool check_configuration(config_block_sptr config) const;
 
-  /// Perform basic shot stitching for bad frame detection
+  /// Run all internal loop closure algorithms.
   /**
    * \param [in] frame_number the frame number of the current frame
    * \param [in] image image data for the current frame
@@ -125,29 +126,20 @@ public:
           image_container_sptr image,
           track_set_sptr input ) const;
 
-protected:
+private:
 
-  /// Is bad frame detection enabled?
-  bool enabled_;
+  /// Number of close loops methods we want to use.
+  unsigned count_;
 
-  /// Stitching percent feature match required
-  double percent_match_req_;
-
-  /// Stitching required new valid shot size in frames
-  unsigned new_shot_length_;
-
-  /// Max search length for bad frame detection in frames
-  unsigned max_search_length_;
-
-  /// The feature matching algorithm to use
-  match_features_sptr matcher_;
+  /// The close loops methods to use.
+  std::vector< algo::close_loops_sptr > methods_;
 
 };
 
 
-} // end namespace algo
+} // end namespace core
 
 } // end namespace maptk
 
 
-#endif // MAPTK_ALGO_CLOSE_LOOPS_BAD_FRAMES_ONLY_H_
+#endif // MAPTK_ALGO_CLOSE_LOOPS_MULTI_METHOD_H_

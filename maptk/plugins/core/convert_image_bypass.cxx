@@ -30,42 +30,50 @@
 
 /**
  * \file
- * \brief default convert_image implementation
+ * \brief Pass-through convert_image implementation
  */
 
-#include "convert_image_default.h"
+#include "convert_image_bypass.h"
 
 
 namespace maptk
 {
 
-namespace algo
+namespace core
 {
 
 
 /// Default Constructor
-convert_image_default
-::convert_image_default()
+convert_image_bypass
+::convert_image_bypass()
 {
 
 }
 
 /// Copy Constructor
-convert_image_default
-::convert_image_default(const convert_image_default& other)
+convert_image_bypass
+::convert_image_bypass(const convert_image_bypass& other)
 {
 
 }
 
+/// Return descriptive string for this implementation
+std::string
+convert_image_bypass
+::description() const
+{
+  return "Performs no conversion and returns the given image container";
+}
+
 /// Default image converter ( does nothing )
 image_container_sptr
-convert_image_default
+convert_image_bypass
 ::convert(image_container_sptr img) const
 {
   return img;
 }
 
 
-} // end namespace algo
+} // end namespace core
 
 } // end namespace maptk

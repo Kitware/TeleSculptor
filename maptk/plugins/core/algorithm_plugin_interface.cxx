@@ -30,23 +30,19 @@
 
 /**
  * \file
- * \brief Default plugin export macro definition
+ * \brief Defaults plugin algorithm registration interface impl
  */
 
-#ifndef _MAPTK_PLUGIN_DEFAULT_CONFIG_H_
-#define _MAPTK_PLUGIN_DEFAULT_CONFIG_H_
+#include <maptk/plugins/core/plugin_core_config.h>
+#include <maptk/plugins/core/register_algorithms.h>
+#include <maptk/registrar.h>
 
-#include <maptk/config.h>
-
-
-/// Toggle symbol export syntax when building plugin library
-#ifndef PLUGIN_DEFAULT_EXPORT
-# ifdef MAKE_MAPTK_DEFAULT_LIB
-#   define PLUGIN_DEFAULT_EXPORT MAPTK_EXPORT
-# else
-#   define PLUGIN_DEFAULT_EXPORT MAPTK_IMPORT
-# endif
-#endif
+#define MAPTK_ALGO_REGISTER_EXPORT PLUGIN_CORE_EXPORT
+#include <maptk/plugin_interface/algorithm_plugin_interface.h>
 
 
-#endif // _MAPTK_PLUGIN_DEFAULT_CONFIG_H_
+PLUGIN_CORE_EXPORT
+int register_algo_impls(maptk::registrar &reg)
+{
+  return maptk::core::register_algorithms( reg );
+}

@@ -39,42 +39,42 @@
 
 #include <maptk/logging_macros.h>
 #include <maptk/plugin_interface/algorithm_plugin_interface_macros.h>
-#include <maptk/plugins/default/close_loops_bad_frames_only.h>
-#include <maptk/plugins/default/close_loops_multi_method.h>
-#include <maptk/plugins/default/compute_ref_homography_default.h>
-#include <maptk/plugins/default/convert_image_default.h>
-#include <maptk/plugins/default/hierarchical_bundle_adjust.h>
-#include <maptk/plugins/default/match_features_homography.h>
-#include <maptk/plugins/default/plugin_default_config.h>
-#include <maptk/plugins/default/track_features_default.h>
+#include <maptk/plugins/core/close_loops_bad_frames_only.h>
+#include <maptk/plugins/core/close_loops_multi_method.h>
+#include <maptk/plugins/core/compute_ref_homography_core.h>
+#include <maptk/plugins/core/convert_image_bypass.h>
+#include <maptk/plugins/core/hierarchical_bundle_adjust.h>
+#include <maptk/plugins/core/match_features_homography.h>
+#include <maptk/plugins/core/plugin_core_config.h>
+#include <maptk/plugins/core/track_features_core.h>
 
 
 namespace maptk
 {
 
-namespace defaults
+namespace core
 {
 
-// Register default algorithms with the given or global registrar
+// Register core algorithms with the given or global registrar
 int register_algorithms(maptk::registrar &reg)
 {
-    LOG_DEBUG( "maptk::plugins::default::register_algorithms",
+    LOG_DEBUG( "maptk::plugins::core::register_algorithms",
                "Registering DEFAULT algo implementations (" << &reg << ")" );
 
     REGISTRATION_INIT( reg );
 
-    REGISTER_TYPE( maptk::algo::close_loops_bad_frames_only );
-    REGISTER_TYPE( maptk::algo::close_loops_multi_method );
-    REGISTER_TYPE( maptk::algo::compute_ref_homography_default );
-    REGISTER_TYPE( maptk::algo::convert_image_default );
-    REGISTER_TYPE( maptk::algo::hierarchical_bundle_adjust );
-    REGISTER_TYPE( maptk::algo::match_features_homography );
-    REGISTER_TYPE( maptk::algo::track_features_default );
+    REGISTER_TYPE( maptk::core::close_loops_bad_frames_only );
+    REGISTER_TYPE( maptk::core::close_loops_multi_method );
+    REGISTER_TYPE( maptk::core::compute_ref_homography_core );
+    REGISTER_TYPE( maptk::core::convert_image_bypass );
+    REGISTER_TYPE( maptk::core::hierarchical_bundle_adjust );
+    REGISTER_TYPE( maptk::core::match_features_homography );
+    REGISTER_TYPE( maptk::core::track_features_core );
 
     REGISTRATION_SUMMARY();
     return REGISTRATION_FAILURES();
 }
 
-} // end defaults namespace
+} // end core namespace
 
 } // end maptk namespace

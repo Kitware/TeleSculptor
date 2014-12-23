@@ -30,50 +30,23 @@
 
 /**
  * \file
- * \brief Default convert_image algorithm that acts as a bypass
+ * \brief Default plugin export macro definition
  */
 
-#ifndef _MAPTK_PLUGINS_DEFAULT_CONVERT_IMAGE_DEFAULT_H_
-#define _MAPTK_PLUGINS_DEFAULT_CONVERT_IMAGE_DEFAULT_H_
+#ifndef _MAPTK_PLUGIN_CORE_CONFIG_H_
+#define _MAPTK_PLUGIN_CORE_CONFIG_H_
 
-#include <maptk/algo/convert_image.h>
-
-#include <maptk/plugins/default/plugin_default_config.h>
+#include <maptk/config.h>
 
 
-namespace maptk
-{
-
-namespace algo
-{
-
-
-/// A class for bypassing image conversion
-class PLUGIN_DEFAULT_EXPORT convert_image_default
-  : public algorithm_impl<convert_image_default, convert_image>
-{
-public:
-   /// Default Constructor
-  convert_image_default();
-
-  /// Copy Constructor
-  convert_image_default(const convert_image_default&);
-
-  /// Return the name of this implementation
-  virtual std::string impl_name() const { return "default"; }
-
-  /// Default image converter ( does nothing )
-  /**
-   * \param [in] img image to be converted
-   * \returns the input image
-   */
-  virtual image_container_sptr convert(image_container_sptr img) const;
-};
+/// Toggle symbol export syntax when building plugin library
+#ifndef PLUGIN_CORE_EXPORT
+# ifdef MAKE_MAPTK_DEFAULT_LIB
+#   define PLUGIN_CORE_EXPORT MAPTK_EXPORT
+# else
+#   define PLUGIN_CORE_EXPORT MAPTK_IMPORT
+# endif
+#endif
 
 
-} // end namespace algo
-
-} // end namespace maptk
-
-
-#endif // _MAPTK_PLUGINS_DEFAULT_CONVERT_IMAGE_DEFAULT_H_
+#endif // _MAPTK_PLUGIN_CORE_CONFIG_H_

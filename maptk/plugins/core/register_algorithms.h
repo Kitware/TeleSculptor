@@ -30,27 +30,27 @@
 
 /**
  * \file
- * \brief Register default algorithms
+ * \brief Register core algorithms
  */
 
 #ifndef _MAPTK_PLUGINS_DEFAULT_REGISTER_ALGORITHMS_H_
 #define _MAPTK_PLUGINS_DEFAULT_REGISTER_ALGORITHMS_H_
 
-#include <maptk/plugins/default/plugin_default_config.h>
+#include <maptk/plugins/core/plugin_core_config.h>
 #include <maptk/registrar.h>
 
 
 namespace maptk
 {
 
-namespace defaults
+namespace core
 {
 
-// Register default algorithms with the given or global registrar
-PLUGIN_DEFAULT_EXPORT
+// Register core algorithms with the given or global registrar
+PLUGIN_CORE_EXPORT
 int register_algorithms( maptk::registrar &reg = maptk::registrar::instance() );
 
-} // end defaults namespace
+} // end core namespace
 
 } // end maptk namespace
 

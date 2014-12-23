@@ -54,7 +54,7 @@
 namespace maptk
 {
 
-namespace algo
+namespace core
 {
 
 
@@ -86,6 +86,15 @@ close_loops_multi_method
 : count_( other.count_ ),
   methods_( other.methods_.size() )
 {
+}
+
+
+/// Returns implementation description string
+std::string
+close_loops_multi_method
+::description() const
+{
+  return "Iteratively run multiple loop closure algorithms";
 }
 
 
@@ -167,6 +176,6 @@ close_loops_multi_method
 }
 
 
-} // end namespace algo
+} // end namespace core
 
 } // end namespace maptk

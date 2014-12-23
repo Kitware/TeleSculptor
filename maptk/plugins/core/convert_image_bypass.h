@@ -30,19 +30,53 @@
 
 /**
  * \file
- * \brief Defaults plugin algorithm registration interface impl
+ * \brief Default convert_image algorithm that acts as a bypass
  */
 
-#include <maptk/plugins/default/plugin_default_config.h>
-#include <maptk/plugins/default/register_algorithms.h>
-#include <maptk/registrar.h>
+#ifndef _MAPTK_PLUGINS_DEFAULT_CONVERT_IMAGE_DEFAULT_H_
+#define _MAPTK_PLUGINS_DEFAULT_CONVERT_IMAGE_DEFAULT_H_
 
-#define MAPTK_ALGO_REGISTER_EXPORT PLUGIN_DEFAULT_EXPORT
-#include <maptk/plugin_interface/algorithm_plugin_interface.h>
+#include <maptk/algo/convert_image.h>
+
+#include <maptk/plugins/core/plugin_core_config.h>
 
 
-PLUGIN_DEFAULT_EXPORT
-int register_algo_impls(maptk::registrar &reg)
+namespace maptk
 {
-  return maptk::defaults::register_algorithms( reg );
-}
+
+namespace core
+{
+
+
+/// A class for bypassing image conversion
+class PLUGIN_CORE_EXPORT convert_image_bypass
+  : public algo::algorithm_impl<convert_image_bypass, algo::convert_image>
+{
+public:
+   /// Default Constructor
+  convert_image_bypass();
+
+  /// Copy Constructor
+  convert_image_bypass(const convert_image_bypass&);
+
+  /// Return the name of this implementation
+  virtual std::string impl_name() const { return "bypass"; }
+
+  /// Return descriptive string for this implementation
+  virtual std::string description() const;
+
+  /// Default image converter ( does nothing )
+  /**
+   * \param [in] img image to be converted
+   * \returns the input image
+   */
+  virtual image_container_sptr convert(image_container_sptr img) const;
+};
+
+
+} // end namespace core
+
+} // end namespace maptk
+
+
+#endif // _MAPTK_PLUGINS_DEFAULT_CONVERT_IMAGE_DEFAULT_H_

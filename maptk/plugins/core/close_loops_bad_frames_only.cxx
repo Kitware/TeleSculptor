@@ -55,7 +55,7 @@
 namespace maptk
 {
 
-namespace algo
+namespace core
 {
 
 
@@ -81,6 +81,15 @@ close_loops_bad_frames_only
 }
 
 
+std::string
+close_loops_bad_frames_only
+::description() const
+{
+  return "Attempts short-term loop closure based on percentage of feature "
+    "points tracked.";
+}
+
+
 /// Get this alg's \link maptk::config_block configuration block \endlink
 config_block_sptr
 close_loops_bad_frames_only
@@ -91,7 +100,7 @@ close_loops_bad_frames_only
 
   // Sub-algorithm implementation name + sub_config block
   // - Feature Matcher algorithm
-  match_features::get_nested_algo_configuration("feature_matcher", config, matcher_);
+  algo::match_features::get_nested_algo_configuration("feature_matcher", config, matcher_);
 
   // Bad frame detection parameters
   config->set_value("enabled", enabled_,
@@ -130,8 +139,8 @@ close_loops_bad_frames_only
 
   // Setting nested algorithm instances via setter methods instead of directly
   // assigning to instance property.
-  match_features_sptr mf;
-  match_features::set_nested_algo_configuration("feature_matcher", config, mf);
+  algo::match_features_sptr mf;
+  algo::match_features::set_nested_algo_configuration("feature_matcher", config, mf);
   matcher_ = mf;
 
   // Settings for bad frame detection
@@ -148,7 +157,7 @@ close_loops_bad_frames_only
 ::check_configuration(config_block_sptr config) const
 {
   return (
-    match_features::check_nested_algo_configuration("feature_matcher", config)
+    algo::match_features::check_nested_algo_configuration("feature_matcher", config)
     &&
     std::abs( config->get_value<double>("percent_match_req") ) <= 1.0
   );
@@ -251,6 +260,6 @@ close_loops_bad_frames_only
 }
 
 
-} // end namespace algo
+} // end namespace core
 
 } // end namespace maptk
