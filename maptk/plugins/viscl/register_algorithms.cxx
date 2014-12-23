@@ -36,6 +36,7 @@
 #include "register_algorithms.h"
 
 #include <maptk/logging_macros.h>
+#include <maptk/plugin_interface/algorithm_plugin_interface_macros.h>
 #include <maptk/plugins/viscl/convert_image.h>
 #include <maptk/plugins/viscl/detect_features.h>
 #include <maptk/plugins/viscl/extract_descriptors.h>
@@ -52,25 +53,18 @@ namespace vcl
 /// Register VisCL algorithm implementations with the given or global registrar
 int register_algorithms( maptk::registrar &reg )
 {
-  try
-  {
-    int expected = 4,
-        registered
-      = maptk::vcl::convert_image::register_self( reg )
-      + maptk::vcl::detect_features::register_self( reg )
-      + maptk::vcl::extract_descriptors::register_self( reg )
-      + maptk::vcl::match_features::register_self( reg )
-      ;
-    LOG_DEBUG( "plugins::viscl::register_algorithms",
-               "Registered " << registered << " of " << expected << " algorithms" );
-    return expected - registered;
-  }
-  catch (...)
-  {
-    LOG_ERROR( "plugins::viscl::register_algo_impls",
-               "Exception caught during algorithm registration" );
-  }
-  return -1;
+  LOG_DEBUG( "maptk::plugins::viscl::register_algorithms",
+             "Registering VISCL algo implementations (" << reg << ")" );
+
+  REGISTRATION_INIT( reg );
+
+  REGISTER_TYPE( maptk::vcl::convert_image );
+  REGISTER_TYPE( maptk::vcl::detect_features );
+  REGISTER_TYPE( maptk::vcl::extract_descriptors );
+  REGISTER_TYPE( maptk::vcl::match_features );
+
+  REGISTRATION_SUMMARY();
+  return REGISTRATION_FAILURES();
 }
 
 } // end vcl ns

@@ -38,6 +38,7 @@
 #include <iostream>
 
 #include <maptk/logging_macros.h>
+#include <maptk/plugin_interface/algorithm_plugin_interface_macros.h>
 #include <maptk/plugins/default/close_loops_bad_frames_only.h>
 #include <maptk/plugins/default/close_loops_multi_method.h>
 #include <maptk/plugins/default/compute_ref_homography_default.h>
@@ -57,32 +58,21 @@ namespace defaults
 // Register default algorithms with the given or global registrar
 int register_algorithms(maptk::registrar &reg)
 {
-  try
-  {
-    LOG_DEBUG( "plugin::default::register_algo_impls",
+    LOG_DEBUG( "maptk::plugins::default::register_algorithms",
                "Registering DEFAULT algo implementations (" << &reg << ")" );
 
-    int expected = 7,
-        registered
-      = maptk::algo::close_loops_bad_frames_only::register_self(reg)
-      + maptk::algo::close_loops_multi_method::register_self(reg)
-      + maptk::algo::compute_ref_homography_default::register_self(reg)
-      + maptk::algo::convert_image_default::register_self(reg)
-      + maptk::algo::hierarchical_bundle_adjust::register_self(reg)
-      + maptk::algo::match_features_homography::register_self(reg)
-      + maptk::algo::track_features_default::register_self(reg)
-      ;
+    REGISTRATION_INIT( reg );
 
-    LOG_DEBUG( "plugin::default::register_algo_impls",
-               "Registered algorithms. Succeeded: " << registered << " of " << expected);
-    return expected - registered;
-  }
-  catch (...)
-  {
-    LOG_ERROR( "plugin::default::register_algo_impls",
-               "Exception caught during algorithm registrarion" );
-  }
-  return -1;
+    REGISTER_TYPE( maptk::algo::close_loops_bad_frames_only );
+    REGISTER_TYPE( maptk::algo::close_loops_multi_method );
+    REGISTER_TYPE( maptk::algo::compute_ref_homography_default );
+    REGISTER_TYPE( maptk::algo::convert_image_default );
+    REGISTER_TYPE( maptk::algo::hierarchical_bundle_adjust );
+    REGISTER_TYPE( maptk::algo::match_features_homography );
+    REGISTER_TYPE( maptk::algo::track_features_default );
+
+    REGISTRATION_SUMMARY();
+    return REGISTRATION_FAILURES();
 }
 
 } // end defaults namespace

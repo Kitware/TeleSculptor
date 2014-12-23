@@ -131,9 +131,9 @@ endfunction()
 #
 # Library version will be set to that of the current MAPTK version.
 #
-# If the SYMBOL argument is not provided, we defines the symbol
-# "MAKE_<cname>_LIB" where ``cname`` is the ``name`` capitolized. Otherwise we
-# define the symbol specified
+# If the SYMBOL argument is not provided, we define the symbol
+# "MAKE_<cname>_LIB" where ``cname`` is the given ``name`` capitolized.
+# Otherwise we define the symbol specified.
 #
 # This function will add the library to the set of targets to be exported
 # unless ``no_export`` was set.

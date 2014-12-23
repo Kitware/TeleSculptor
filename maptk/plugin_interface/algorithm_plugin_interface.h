@@ -30,7 +30,7 @@
 
 /**
  * \file
- * \brief Private interface for plugin library generation
+ * \brief Public interface for plugin library generation
  */
 
 #ifndef _MAPTK_PLUGIN_INTERFACE_ALGORITHM_IMPL_PL_INTERFACE_H_
@@ -51,7 +51,7 @@
  * ``.register_self()`` call for each algorithm implementation to be made
  * available.
  *
- * Exceptions may be thrown in this method, but will be eated in the C
+ * Exceptions may be thrown in this method, but will be eaten in the C
  * interface, causing a generic registration error with a error log message.
  *
  * \returns The number of implementations that FAILED to register, i.e. a

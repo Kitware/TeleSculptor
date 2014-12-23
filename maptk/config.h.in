@@ -76,8 +76,8 @@
 # define MAPTK_NO_EXPORT
 #endif
 
-// Build-specific visibility macros for libraries and plugins
-// These macros should be used over the generate MAPTK_EXPORT/IMPORT macros
+// Build-specific visibility macros for core MAPTK library
+// These macros should be used over the generated MAPTK_EXPORT/IMPORT macros
 // defined above. MAPTK_NO_EXPORT defined above map be used as normal.
 #ifdef MAKE_MAPTK_LIB
 # define MAPTK_LIB_EXPORT MAPTK_EXPORT

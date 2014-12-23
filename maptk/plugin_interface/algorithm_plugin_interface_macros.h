@@ -30,57 +30,48 @@
 
 /**
  * \file
- * \brief OpenCV algorithm registration implementation
+ * \brief Algorithm definition type registration helper macros
  */
 
-#include "register_algorithms.h"
-
-#include <opencv2/opencv_modules.hpp>
-#ifdef HAVE_OPENCV_NONFREE
-#include <opencv2/nonfree/nonfree.hpp>
-#endif
+#ifndef _MAPTK_PLUGINS_INTERFACE_ALGORITHM_PLUGIN_INTERFACE_MACROS_H_
+#define _MAPTK_PLUGINS_INTERFACE_ALGORITHM_PLUGIN_INTERFACE_MACROS_H_
 
 #include <maptk/logging_macros.h>
-#include <maptk/plugin_interface/algorithm_plugin_interface_macros.h>
-#include <maptk/plugins/ocv/analyze_tracks.h>
-#include <maptk/plugins/ocv/detect_features.h>
-#include <maptk/plugins/ocv/draw_tracks.h>
-#include <maptk/plugins/ocv/estimate_homography.h>
-#include <maptk/plugins/ocv/extract_descriptors.h>
-#include <maptk/plugins/ocv/image_io.h>
-#include <maptk/plugins/ocv/match_features.h>
 
 
-namespace maptk
-{
+// Helper macros for algorithm registration
+/// Initialize required variable for algorithm type registration
+/**
+ * Side effect: Defines the integer variables ``_api_expected``,
+ * ``_api_registered`` and ``_api_registrar``. Its probably not a good idea to
+ * use these variable names in the current scope, unless expecting to
+ * reference the ones defined here.
+ *
+ * \param reg The registrar we will be registering with.
+ */
+#define REGISTRATION_INIT( reg ) \
+  int _api_expected = 0, _api_registered = 0; \
+  maptk::registrar &_api_registrar = reg
+/// Log to standard error a summary of registration results
+/**
+ * NOTE: Logging only occurs when build in debug (-DNDEBUG)
+ */
+#define REGISTRATION_SUMMARY() \
+  LOG_DEBUG( "maptk::algorithm_plugin_interface_macros::REGISTRATION_SUMMARY", \
+             "Registered " << _api_registered << " of " << _api_expected \
+             << " algorithms" \
+             << "\n\t(@" << __FILE__ << ")" )
+/// Return the number of registrations that failed (int).
+#define REGISTRATION_FAILURES() \
+  (_api_expected - _api_registered)
+/**
+ * \brief Given a maptk::algorithm_def type, attempt registration with the
+ *        given registrar
+ * \param type Algorithm definition type
+ */
+#define REGISTER_TYPE( type ) \
+  ++_api_expected; \
+  _api_registered += type::register_self( _api_registrar )
 
-namespace ocv
-{
 
-/// Register OCV algorithm implementations with the given or global registrar
-int register_algorithms( maptk::registrar &reg )
-{
-  LOG_DEBUG( "maptk::plugins::ocv::register_algorithms",
-             "Registering OCV plugin algo implementations" );
-
-#ifdef HAVE_OPENCV_NONFREE
-  cv::initModule_nonfree();
 #endif
-
-  REGISTRATION_INIT( reg );
-
-  REGISTER_TYPE( maptk::ocv::analyze_tracks );
-  REGISTER_TYPE( maptk::ocv::detect_features );
-  REGISTER_TYPE( maptk::ocv::draw_tracks );
-  REGISTER_TYPE( maptk::ocv::estimate_homography );
-  REGISTER_TYPE( maptk::ocv::extract_descriptors );
-  REGISTER_TYPE( maptk::ocv::image_io );
-  REGISTER_TYPE( maptk::ocv::match_features );
-
-  REGISTRATION_SUMMARY();
-  return REGISTRATION_FAILURES();
-}
-
-} // end ocv ns
-
-} // end maptk ns

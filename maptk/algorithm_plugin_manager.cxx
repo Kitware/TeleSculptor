@@ -78,7 +78,7 @@ namespace // anonymous
 #endif
 
 
-// CMake boolean convertion macros
+// CMake boolean conversion macros
 #define ON true
 #define OFF false
 

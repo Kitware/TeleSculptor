@@ -35,6 +35,7 @@
 
 #include "register_algorithms.h"
 
+#include <maptk/plugin_interface/algorithm_plugin_interface_macros.h>
 #include <maptk/plugins/vxl/bundle_adjust.h>
 #include <maptk/plugins/vxl/close_loops_homography_guided.h>
 #include <maptk/plugins/vxl/estimate_essential_matrix.h>
@@ -55,35 +56,23 @@ namespace vxl
 /// Register VXL algorithm implementations with the given or global registrar
 int register_algorithms( maptk::registrar &reg )
 {
-  try
-  {
-    LOG_DEBUG( "plugin::vxl::register_algo_impls",
-               "Registering VXL algo implementations" );
+  LOG_DEBUG( "plugin::vxl::register_algo_impls",
+             "Registering VXL algo implementations" );
 
-    int expected = 9,
-        registered
-      = maptk::vxl::bundle_adjust::register_self( reg )
-      + maptk::vxl::close_loops_homography_guided::register_self( reg )
-      + maptk::vxl::estimate_essential_matrix::register_self( reg )
-      + maptk::vxl::estimate_homography::register_self( reg )
-      + maptk::vxl::estimate_similarity_transform::register_self( reg )
-      + maptk::vxl::image_io::register_self( reg )
-      + maptk::vxl::initialize_cameras_landmarks::register_self( reg )
-      + maptk::vxl::optimize_cameras::register_self( reg )
-      + maptk::vxl::triangulate_landmarks::register_self( reg )
-      ;
+  REGISTRATION_INIT( reg );
 
-    LOG_DEBUG( "plugin::vxl::register_algo_impls",
-               "Registered " << registered << " of " << expected << " algorithms" );
+  REGISTER_TYPE( maptk::vxl::bundle_adjust );
+  REGISTER_TYPE( maptk::vxl::close_loops_homography_guided );
+  REGISTER_TYPE( maptk::vxl::estimate_essential_matrix );
+  REGISTER_TYPE( maptk::vxl::estimate_homography );
+  REGISTER_TYPE( maptk::vxl::estimate_similarity_transform );
+  REGISTER_TYPE( maptk::vxl::image_io );
+  REGISTER_TYPE( maptk::vxl::initialize_cameras_landmarks );
+  REGISTER_TYPE( maptk::vxl::optimize_cameras );
+  REGISTER_TYPE( maptk::vxl::triangulate_landmarks );
 
-    return expected - registered;
-  }
-  catch (...)
-  {
-    LOG_ERROR( "plugin::vxl::register_algo_impls",
-               "Exception caught during algorithm registration" );
-  }
-  return -1;
+  REGISTRATION_SUMMARY();
+  return REGISTRATION_FAILURES();
 }
 
 } // end vxl ns

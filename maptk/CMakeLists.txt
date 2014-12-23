@@ -87,6 +87,7 @@ set(maptk_public_headers
   algo/triangulate_landmarks.h
 
   plugin_interface/algorithm_plugin_interface.h
+  plugin_interface/algorithm_plugin_interface_macros.h
   )
 
 set(maptk_sources

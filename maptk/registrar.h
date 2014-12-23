@@ -68,9 +68,10 @@ namespace maptk
  *        multiple algorithm definition types
  *
  * NOTE: Do not use the static instance method ``instance()`` within plugins!
- * When the main library is build statically, the main library and plugin
- * libraries have unique static varaibles, and thus to not share a singleton
- * instance. Only use the registrar passed to the C interface methods.
+ * When the main library is built statically, the main library and plugin
+ * libraries have unique static varaible spaces, and thus to not share a
+ * singleton instance. Only use the registrar passed to the C interface
+ * methods.
  */
 class MAPTK_LIB_EXPORT registrar
 {

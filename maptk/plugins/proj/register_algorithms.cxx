@@ -36,6 +36,7 @@
 #include "register_algorithms.h"
 
 #include <maptk/logging_macros.h>
+#include <maptk/plugin_interface/algorithm_plugin_interface_macros.h>
 #include <maptk/plugins/proj/geo_map.h>
 
 
@@ -48,25 +49,15 @@ namespace proj
 /// Register PROJ algorithm implementations with the given or global registrar
 int register_algorithms( maptk::registrar &reg )
 {
-  try
-  {
-    LOG_DEBUG( "plugin::proj::register_algorithms",
-               "Registering PROJ plugin algorithm implementations" );
-    int expected = 1,
-        registered
-      = maptk::proj::geo_map::register_self( reg )
-      ;
-    LOG_DEBUG( "plugin::proj::register_algorithms",
-               "Registered " << registered << " of " << expected << " algorithms" );
-    return expected - registered;
-  }
-  catch (...)
-  {
-    LOG_ERROR( "plugin::proj::register_algorithms",
-               "Caught exception while registering PROJ algorithm "
-               "implementations." );
-  }
-  return -1;
+  LOG_DEBUG( "maptk::plugins::proj::register_algorithms",
+             "Registering PROJ plugin algorithm implementations" );
+
+  REGISTRATION_INIT( reg );
+
+  REGISTER_TYPE( maptk::proj::geo_map );
+
+  REGISTRATION_SUMMARY();
+  return REGISTRATION_FAILURES();
 }
 
 } // end proj ns
