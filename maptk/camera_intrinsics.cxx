@@ -59,13 +59,9 @@ camera_intrinsics_<T>
 ::operator Eigen::Matrix<T,3,3>() const
 {
   Eigen::Matrix<T,3,3> K;
-  K(0,0) = focal_length_;
-  K(0,1) = skew_;
-  K(0,2) = principal_point_.x();
-  K(1,1) = focal_length_ / aspect_ratio_;
-  K(1,2) = principal_point_.y();
-  K(2,2) = T(1);
-  K(1,0) = K(2,0) = K(2,1) = T(0);
+  K << focal_length_, skew_, principal_point_.x(),
+       0, focal_length_ / aspect_ratio_, principal_point_.y(),
+       0, 0, 1;
   return K;
 }
 
