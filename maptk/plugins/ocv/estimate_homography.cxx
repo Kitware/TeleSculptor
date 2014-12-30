@@ -37,9 +37,8 @@
 
 #include <boost/foreach.hpp>
 
-#include <maptk/plugins/ocv/matrix.h>
-
 #include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/core/eigen.hpp>
 
 
 namespace maptk
@@ -60,7 +59,7 @@ estimate_homography
   if (pts1.size() < 4 || pts2.size() < 4)
   {
     std::cerr << "Not enough points to estimate a homography" <<std::endl;
-    return homography(0.0);
+    return homography::Zero();
   }
 
   std::vector<cv::Point2f> points1, points2;
@@ -86,7 +85,9 @@ estimate_homography
     inliers[i] = inliers_mat.at<bool>(i);
   }
 
-  return matrix_from_ocv<3,3,double>(H);
+  matrix_3x3d H_mat;
+  cv2eigen(H, H_mat);
+  return H_mat;
 }
 
 
