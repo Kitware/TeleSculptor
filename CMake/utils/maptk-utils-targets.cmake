@@ -243,18 +243,18 @@ function(maptk_create_plugin base_lib)
   target_link_libraries(maptk-plugin-${base_lib} ${base_lib})
 
   # Adding dynamiclib option to Apple compiler
-  if( APPLE AND ( "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" ) )
-    get_target_property(cur_compile_options maptk-plugin-${base_lib} COMPILE_OPTIONS)
-    set(new_compile_options COMPILE_OPTIONS ${cur_compile_options} -dynamiclib)
-    message(STATUS "Adding ``-dynamiclib`` compiler option due to being on Apple and using Clang")
+  if( APPLE )
+    set(new_link_flags LINK_FLAGS -dynamiclib)
+    message(STATUS "Adding ``-dynamiclib`` linker option due to being on Apple")
   endif()
 
+  message(STATUS "CMake Shared Module Suffix: ${CMAKE_SHARED_MODULE_SUFFIX}")
   set_target_properties(maptk-plugin-${base_lib}
     PROPERTIES
       PREFIX        ""
       SUFFIX        ${CMAKE_SHARED_MODULE_SUFFIX}
       OUTPUT_NAME   ${base_lib}
-      ${new_compile_options}
+      ${new_link_flags}
     )
 
   add_dependencies(all-plugins maptk-plugin-${base_lib})
