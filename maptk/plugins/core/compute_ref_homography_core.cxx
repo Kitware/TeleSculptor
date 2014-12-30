@@ -563,6 +563,7 @@ compute_ref_homography_core
   // Update track infos based on homography estimation result
   //  - With a valid homography, transform the reference location of active
   //    tracks with a different reference frame than the current earliest_ref
+  unsigned int ti_reset_count = 0;
   BOOST_FOREACH( track_info_t& ti, *new_buffer )
   {
     track::history_const_itr itr = ti.trk->find( frame_number );
@@ -601,13 +602,19 @@ compute_ref_homography_core
     // active tracks to the current frame on estimation failure.
     else if ( !d_->allow_ref_frame_regression && ti.active )
     {
-      LOG_DEBUG( LOGGING_PREFIX,
-                 "Resetting tID(" << ti.tid << ") " <<
-                 "reference to frame " << frame_number );
+      ++ti_reset_count;
       ti.ref_loc = vector_2d( itr->feat->loc() );
       ti.ref_id = frame_number;
     }
   }
+  DEBUG_CODE(
+    if ( ti_reset_count )
+    {
+      LOG_DEBUG( LOGGING_PREFIX,
+                 "Resetting " << ti_reset_count <<
+                 " tracks to reference frame: " << frame_number );
+    }
+  );
 
   // Increment counter, update buffers
   d_->frames_since_reset++;
