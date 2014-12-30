@@ -76,7 +76,7 @@ IMPLEMENT_TEST(track_features_before_configuration)
   using namespace maptk;
   using namespace maptk::algo;
 
-  track_features_sptr track_features_impl = track_features::create("default");
+  track_features_sptr track_features_impl = track_features::create("core");
 
   cerr << "Contents of config_block BEFORE attempted configuration:" << endl;
   config_block_sptr tf_config = track_features_impl->get_configuration();
@@ -142,7 +142,7 @@ IMPLEMENT_TEST(track_features_check_config)
   using namespace maptk::algo;
   using namespace std;
 
-  track_features_sptr tf_impl = track_features::create("default");
+  track_features_sptr tf_impl = track_features::create("core");
 
   // Checking that exception is thrown when trying to configure with no config
   // parameters.
