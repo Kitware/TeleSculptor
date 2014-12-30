@@ -65,9 +65,10 @@ function(_maptk_compile_pic name)
         POSITION_INDEPENDENT_CODE TRUE
       )
   elseif(NOT MSVC)
+    get_target_property(cur_comp_flags "${name}" COMPILE_FLAGS)
     set_target_properties("${name}"
       PROPERTIES
-        COMPILE_FLAGS "-fPIC"
+        COMPILE_FLAGS "${cur_comp_flags} -fPIC"
       )
   endif()
 endfunction()
@@ -142,29 +143,36 @@ function(maptk_add_library name)
   set(oneValueArgs SYMBOL)
   cmake_parse_arguments(mal "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
+  add_library("${name}" ${mal_UNPARSED_ARGUMENTS})
+
+  # Add PIC property if building static
+  get_target_property(target_type "${name}" TYPE)
+  if (target_type STREQUAL "STATIC_LIBRARY")
+    _maptk_compile_pic("${name}")
+  endif()
+
+  # Determine additional compile definitions
+  get_target_property(cur_compile_definitions "${name}" COMPILE_DEFINITIONS)
+  ## Export/Import determination flag
   if( mal_SYMBOL )
-    set(DEF_SYMBOL "${mal_SYMBOL}")
+    set(new_compile_definitions ${cur_compile_definitions} "${mal_SYMBOL}")
   else()
     string(TOUPPER "${name}" upper_name)
-    set(DEF_SYMBOL "MAKE_${upper_name}_LIB")
+    set(new_compile_definitions ${cur_compile_definitions} "MAKE_${upper_name}_LIB")
   endif()
-  message(STATUS "Making library \"${name}\" with defined symbol \"${DEF_SYMBOL}\"")
+  message(STATUS "Making library \"${name}\" with definitions: ${new_compile_definitions}")
 
-  add_library("${name}" ${mal_UNPARSED_ARGUMENTS})
+  # Setting Properties
   set_target_properties("${name}"
     PROPERTIES
       ARCHIVE_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/lib${library_subdir}"
       LIBRARY_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/lib${library_subdir}"
       RUNTIME_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/bin${library_subdir}"
       VERSION                  ${MAPTK_VERSION}
-      SOVERSION                0
-      DEFINE_SYMBOL            "${DEF_SYMBOL}"
+      SOVERSION                ${MAPTK_VERSION_MAJOR}
+      COMPILE_DEFINITIONS      "${new_compile_definitions}"
     )
-
-  add_dependencies("${name}"
-    configure-config.h
-    )
-
+  # Build configuration dependent properties
   foreach(config IN LISTS CMAKE_CONFIGURATION_TYPES)
     string(TOUPPER "${config}" upper_config)
     set_target_properties("${name}"
@@ -179,10 +187,9 @@ function(maptk_add_library name)
     set(component runtime)
   endif()
 
-  get_target_property(target_type "${name}" TYPE)
-  if (target_type STREQUAL "STATIC_LIBRARY")
-    _maptk_compile_pic("${name}")
-  endif()
+  add_dependencies("${name}"
+    configure-config.h
+    )
 
   _maptk_export(${name})
   # MATPK_LIB_SUFFIX should only apply to installation location, not the build
@@ -228,17 +235,28 @@ function(maptk_create_plugin base_lib)
   set(no_export ON)
   maptk_add_library(maptk-plugin-${base_lib}
     SYMBOL MAKE_PRIV_PLUGIN_SHELL
-    MODULE "${shell_source}" ${ARGN})
+    MODULE "${shell_source}" ${ARGN}
+    )
   # Not adding link to known base MAPTK library because if the base_lib isn't
   # linking against it, its either doing something really complex or doing
   # something wrong (most likely the latter).
   target_link_libraries(maptk-plugin-${base_lib} ${base_lib})
+
+  # Adding dynamiclib option to Apple compiler
+  if( APPLE AND ( "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" ) )
+    get_target_property(cur_compile_options maptk-plugin-${base_lib} COMPILE_OPTIONS)
+    set(new_compile_options COMPILE_OPTIONS ${cur_compile_options} -dynamiclib)
+    message(STATUS "Adding ``-dynamiclib`` compiler option due to being on Apple and using Clang")
+  endif()
+
   set_target_properties(maptk-plugin-${base_lib}
     PROPERTIES
       PREFIX        ""
       SUFFIX        ${CMAKE_SHARED_MODULE_SUFFIX}
       OUTPUT_NAME   ${base_lib}
+      ${new_compile_options}
     )
+
   add_dependencies(all-plugins maptk-plugin-${base_lib})
 endfunction()
 
@@ -280,7 +298,7 @@ function(maptk_install_headers)
   #  FILES       ${mih_UNPARSED_ARGUMENTS}
   #  DESTINATION "include/maptk/${mih_SUBDIR}"
   #  )
-  message(STATUS "Heading install subdir: ${mih_SUBDIR}")
+  message(STATUS "Header install subdir: ${mih_SUBDIR}")
   foreach(header IN LISTS mih_UNPARSED_ARGUMENTS)
     get_filename_component(H_SUBDIR "${header}" PATH)
     maptk_install(

@@ -1,6 +1,5 @@
 #
-# Compiler flags specific to use with GCC
+# Compiler flags specific for use with GCC
 #
-
-maptk_check_compiler_flag(-fvisibility=hidden)
+include( maptk-flags-unix_common )
 maptk_check_compiler_flag(-Wall)

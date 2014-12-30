@@ -162,7 +162,7 @@ else()
   set(rel_plugin_dir "lib")
   set(plugin_lib_suffix "${MAPTK_LIB_SUFFIX}")
 endif() # TODO: Apple Xcode specific subdir?
-# LIBRARY_SUFFIX here refers to the filename suffix, e.g. .so or .dll
+# LIBRARY_SUFFIX here refers to the filename suffix, e.g. .so / .dylib / .dll / etc.
 set(plugin_src_definitions
   "LIBRARY_SUFFIX=\"${CMAKE_SHARED_MODULE_SUFFIX}\""
   "DEFAULT_PLUGIN_DIR_BUILD=\"${MAPTK_BINARY_DIR}/${rel_plugin_dir}/maptk\""

@@ -23,12 +23,11 @@ list(INSERT CMAKE_MODULE_PATH 0
 #
 include(CMakeDependentOption)
 
-# we can't build shared libraries on Windows so we leave it off by default;
-# we haven't set up DLL exports or anything like that
+# we can't build shared libraries on Windows so we leave it off by default
 if (WIN32)
-  option(BUILD_SHARED_LIBS    "Build shared libraries."                       ON)
+  option(BUILD_SHARED_LIBS "Build shared libraries." ON)
 else()
-  option(BUILD_SHARED_LIBS    "Build shared libraries."                       OFF)
+  option(BUILD_SHARED_LIBS "Build shared libraries." OFF)
 endif()
 
 set(MAPTK_LIB_SUFFIX "" CACHE STRING "String suffix appended to the library directory we install into")
