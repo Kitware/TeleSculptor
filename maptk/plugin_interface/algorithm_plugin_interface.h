@@ -33,8 +33,8 @@
  * \brief Public interface for plugin library generation
  */
 
-#ifndef _MAPTK_PLUGIN_INTERFACE_ALGORITHM_IMPL_PL_INTERFACE_H_
-#define _MAPTK_PLUGIN_INTERFACE_ALGORITHM_IMPL_PL_INTERFACE_H_
+#ifndef MAPTK_PLUGIN_INTERFACE_ALGORITHM_IMPL_PL_INTERFACE_H_
+#define MAPTK_PLUGIN_INTERFACE_ALGORITHM_IMPL_PL_INTERFACE_H_
 
 #include <maptk/registrar.h>
 
@@ -61,4 +61,4 @@ MAPTK_ALGO_REGISTER_EXPORT
 int register_algo_impls( maptk::registrar &reg = maptk::registrar::instance() );
 
 
-#endif // _MAPTK_PLUGIN_INTERFACE_ALGORITHM_IMPL_PL_INTERFACE_H_
+#endif // MAPTK_PLUGIN_INTERFACE_ALGORITHM_IMPL_PL_INTERFACE_H_

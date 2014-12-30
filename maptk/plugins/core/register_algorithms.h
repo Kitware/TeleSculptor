@@ -33,8 +33,8 @@
  * \brief Register core algorithms
  */
 
-#ifndef _MAPTK_PLUGINS_DEFAULT_REGISTER_ALGORITHMS_H_
-#define _MAPTK_PLUGINS_DEFAULT_REGISTER_ALGORITHMS_H_
+#ifndef MAPTK_PLUGINS_DEFAULT_REGISTER_ALGORITHMS_H_
+#define MAPTK_PLUGINS_DEFAULT_REGISTER_ALGORITHMS_H_
 
 #include <maptk/plugins/core/plugin_core_config.h>
 #include <maptk/registrar.h>
@@ -55,4 +55,4 @@ int register_algorithms( maptk::registrar &reg = maptk::registrar::instance() );
 } // end maptk namespace
 
 
-#endif
+#endif // MAPTK_PLUGINS_DEFAULT_REGISTER_ALGORITHMS_H_

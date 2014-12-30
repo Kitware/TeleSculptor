@@ -33,8 +33,8 @@
  * \brief Default plugin export macro definition
  */
 
-#ifndef _MAPTK_PLUGIN_CORE_CONFIG_H_
-#define _MAPTK_PLUGIN_CORE_CONFIG_H_
+#ifndef MAPTK_PLUGIN_CORE_CONFIG_H_
+#define MAPTK_PLUGIN_CORE_CONFIG_H_
 
 #include <maptk/config.h>
 
@@ -49,4 +49,4 @@
 #endif
 
 
-#endif // _MAPTK_PLUGIN_CORE_CONFIG_H_
+#endif // MAPTK_PLUGIN_CORE_CONFIG_H_

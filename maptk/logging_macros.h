@@ -34,8 +34,8 @@
  */
 
 
-#ifndef _MAPTK_LOGGING_MACROS_H_
-#define _MAPTK_LOGGING_MACROS_H_
+#ifndef MAPTK_LOGGING_MACROS_H_
+#define MAPTK_LOGGING_MACROS_H_
 
 
 /// Logging / Debugging helper macros
@@ -67,4 +67,4 @@
   std::cerr << "[ERROR][" << prefix << "] " << msg << std::endl
 
 
-#endif // _MAPTK_LOGGING_MACROS_H_
+#endif // MAPTK_LOGGING_MACROS_H_

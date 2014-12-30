@@ -33,45 +33,46 @@
  * \brief Algorithm definition type registration helper macros
  */
 
-#ifndef _MAPTK_PLUGINS_INTERFACE_ALGORITHM_PLUGIN_INTERFACE_MACROS_H_
-#define _MAPTK_PLUGINS_INTERFACE_ALGORITHM_PLUGIN_INTERFACE_MACROS_H_
+#ifndef MAPTK_PLUGINS_INTERFACE_ALGORITHM_PLUGIN_INTERFACE_MACROS_H_
+#define MAPTK_PLUGINS_INTERFACE_ALGORITHM_PLUGIN_INTERFACE_MACROS_H_
 
 #include <maptk/logging_macros.h>
+#include <maptk/registrar.h>
 
 
 // Helper macros for algorithm registration
 /// Initialize required variable for algorithm type registration
 /**
- * Side effect: Defines the integer variables ``_api_expected``,
- * ``_api_registered`` and ``_api_registrar``. Its probably not a good idea to
- * use these variable names in the current scope, unless expecting to
+ * Side effect: Defines the integer variables ``maptk_api_expected_``,
+ * ``maptk_api_registered_`` and ``maptk_api_registrar_``. Its probably not a good
+ * idea to use these variable names in the current scope, unless expecting to
  * reference the ones defined here.
  *
  * \param reg The registrar we will be registering with.
  */
 #define REGISTRATION_INIT( reg ) \
-  int _api_expected = 0, _api_registered = 0; \
-  maptk::registrar &_api_registrar = reg
+  unsigned int maptk_api_expected_ = 0, maptk_api_registered_ = 0; \
+  maptk::registrar &maptk_api_registrar_ = reg
 /// Log to standard error a summary of registration results
 /**
  * NOTE: Logging only occurs when build in debug (-DNDEBUG)
  */
 #define REGISTRATION_SUMMARY() \
   LOG_DEBUG( "maptk::algorithm_plugin_interface_macros::REGISTRATION_SUMMARY", \
-             "Registered " << _api_registered << " of " << _api_expected \
+             "Registered " << maptk_api_registered_ << " of " << maptk_api_expected_ \
              << " algorithms" \
              << "\n\t(@" << __FILE__ << ")" )
 /// Return the number of registrations that failed (int).
 #define REGISTRATION_FAILURES() \
-  (_api_expected - _api_registered)
+  (maptk_api_expected_ - maptk_api_registered_)
 /**
  * \brief Given a maptk::algorithm_def type, attempt registration with the
  *        given registrar
  * \param type Algorithm definition type
  */
 #define REGISTER_TYPE( type ) \
-  ++_api_expected; \
-  _api_registered += type::register_self( _api_registrar )
+  ++maptk_api_expected_; \
+  maptk_api_registered_ += type::register_self( maptk_api_registrar_ )
 
 
-#endif
+#endif // MAPTK_PLUGINS_INTERFACE_ALGORITHM_PLUGIN_INTERFACE_MACROS_H_

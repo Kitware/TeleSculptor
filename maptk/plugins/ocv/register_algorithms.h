@@ -33,8 +33,8 @@
  * \brief OpenCV algorithm registration function
  */
 
-#ifndef _MAPTK_PLUGINS_OCV_REGISTER_ALGORITHMS_H_
-#define _MAPTK_PLUGINS_OCV_REGISTER_ALGORITHMS_H_
+#ifndef MAPTK_PLUGINS_OCV_REGISTER_ALGORITHMS_H_
+#define MAPTK_PLUGINS_OCV_REGISTER_ALGORITHMS_H_
 
 #include <maptk/plugins/ocv/ocv_config.h>
 #include <maptk/registrar.h>
@@ -54,4 +54,4 @@ int register_algorithms( maptk::registrar &reg = maptk::registrar::instance() );
 
 } // end maptk ns
 
-#endif
+#endif // MAPTK_PLUGINS_OCV_REGISTER_ALGORITHMS_H_

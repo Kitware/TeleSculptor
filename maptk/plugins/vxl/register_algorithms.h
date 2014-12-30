@@ -33,8 +33,8 @@
  * \brief Register VXL algorithms
  */
 
-#ifndef _MAPTK_PLUGINS_VXL_REGISTER_ALGORITHMS_H_
-#define _MAPTK_PLUGINS_VXL_REGISTER_ALGORITHMS_H_
+#ifndef MAPTK_PLUGINS_VXL_REGISTER_ALGORITHMS_H_
+#define MAPTK_PLUGINS_VXL_REGISTER_ALGORITHMS_H_
 
 #include <maptk/plugins/vxl/vxl_config.h>
 #include <maptk/registrar.h>
@@ -55,4 +55,4 @@ int register_algorithms( maptk::registrar &reg = maptk::registrar::instance() );
 }
 
 
-#endif
+#endif  // MAPTK_PLUGINS_VXL_REGISTER_ALGORITHMS_H_
