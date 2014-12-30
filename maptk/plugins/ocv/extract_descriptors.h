@@ -33,8 +33,8 @@
  * \brief MAPTK algorithm wrapping of OCV's DescriptorExtractor
  */
 
-#ifndef MAPTK_OCV_EXTRACT_DESCRIPTORS_H_
-#define MAPTK_OCV_EXTRACT_DESCRIPTORS_H_
+#ifndef MAPTK_PLUGINS_OCV_EXTRACT_DESCRIPTORS_H_
+#define MAPTK_PLUGINS_OCV_EXTRACT_DESCRIPTORS_H_
 
 #include <boost/scoped_ptr.hpp>
 
@@ -94,4 +94,4 @@ private:
 } // end namespace maptk
 
 
-#endif // MAPTK_OCV_EXTRACT_DESCRIPTORS_H_
+#endif // MAPTK_PLUGINS_OCV_EXTRACT_DESCRIPTORS_H_

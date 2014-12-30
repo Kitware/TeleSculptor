@@ -34,8 +34,8 @@
  *        hierarchical bundle adjustment \endlink algorithm
  */
 
-#ifndef MAPTK_ALGO_HIERARCHICAL_BUNDLE_ADJUST_H_
-#define MAPTK_ALGO_HIERARCHICAL_BUNDLE_ADJUST_H_
+#ifndef MAPTK_PLUGINS_CORE_HIERARCHICAL_BUNDLE_ADJUST_H_
+#define MAPTK_PLUGINS_CORE_HIERARCHICAL_BUNDLE_ADJUST_H_
 
 #include <maptk/algo/algorithm.h>
 #include <maptk/algo/bundle_adjust.h>
@@ -96,4 +96,4 @@ typedef boost::shared_ptr<hierarchical_bundle_adjust> hierarchical_bundle_adjust
 } // end maptk namespace
 
 
-#endif // MAPTK_ALGO_HIERARCHICAL_BUNDLE_ADJUST_H_
+#endif // MAPTK_PLUGINS_CORE_HIERARCHICAL_BUNDLE_ADJUST_H_

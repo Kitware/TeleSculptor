@@ -33,8 +33,8 @@
  * \brief OCV templated mat generation function interface/implementation
  */
 
-#ifndef MAPTK_OCV_MATRIX_H_
-#define MAPTK_OCV_MATRIX_H_
+#ifndef MAPTK_PLUGINS_OCV_MATRIX_H_
+#define MAPTK_PLUGINS_OCV_MATRIX_H_
 
 #include <maptk/matrix.h>
 
@@ -71,4 +71,4 @@ matrix_from_ocv(const cv::Mat& cvm)
 } // end namespace maptk
 
 
-#endif // MAPTK_OCV_MATRIX_H_
+#endif // MAPTK_PLUGINS_OCV_MATRIX_H_

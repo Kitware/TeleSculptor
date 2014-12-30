@@ -33,8 +33,8 @@
  * \brief Shared type declarations for maptk.
  */
 
-#ifndef MAPTK_CORE_TYPES_H
-#define MAPTK_CORE_TYPES_H
+#ifndef MAPTK_TYPES_H_
+#define MAPTK_TYPES_H_
 
 #include <string>
 #include <vector>
@@ -71,4 +71,4 @@ typedef unsigned int frame_id_t;
 
 }
 
-#endif // MAPTK_CORE_TYPES_H
+#endif // MAPTK_TYPES_H_

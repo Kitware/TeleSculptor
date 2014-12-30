@@ -33,8 +33,8 @@
  * \brief VXL image_io interface
  */
 
-#ifndef MAPTK_VXL_IMAGE_IO_H_
-#define MAPTK_VXL_IMAGE_IO_H_
+#ifndef MAPTK_PLUGINS_VXL_IMAGE_IO_H_
+#define MAPTK_PLUGINS_VXL_IMAGE_IO_H_
 
 #include <maptk/algo/image_io.h>
 #include <maptk/plugins/vxl/vxl_config.h>
@@ -82,4 +82,4 @@ private:
 } // end namespace maptk
 
 
-#endif // MAPTK_VXL_IMAGE_IO_H_
+#endif // MAPTK_PLUGINS_VXL_IMAGE_IO_H_

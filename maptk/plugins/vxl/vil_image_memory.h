@@ -33,8 +33,8 @@
  * \brief VXL image memory interface
  */
 
-#ifndef MAPTK_VIL_IMAGE_MEMORY_H_
-#define MAPTK_VIL_IMAGE_MEMORY_H_
+#ifndef MAPTK_PLUGINS_VXL_VIL_IMAGE_MEMORY_H_
+#define MAPTK_PLUGINS_VXL_VIL_IMAGE_MEMORY_H_
 
 #include <maptk/image.h>
 #include <maptk/plugins/vxl/vxl_config.h>
@@ -109,4 +109,4 @@ protected:
 } // end namespace maptk
 
 
-#endif // MAPTK_VIL_IMAGE_MEMORY_H_
+#endif // MAPTK_PLUGINS_VXL_VIL_IMAGE_MEMORY_H_

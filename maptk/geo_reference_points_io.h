@@ -33,8 +33,8 @@
  * \brief Definition for functions regarding geo reference points files
  */
 
-#ifndef MAPTK_CORE_GEO_REFERENCE_POINTS_IO_H_
-#define MAPTK_CORE_GEO_REFERENCE_POINTS_IO_H_
+#ifndef MAPTK_GEO_REFERENCE_POINTS_IO_H_
+#define MAPTK_GEO_REFERENCE_POINTS_IO_H_
 
 #include <maptk/config.h>
 
@@ -79,4 +79,4 @@ load_reference_file(path_t const& reference_file,
 
 } // end namespace maptk
 
-#endif // MAPTK_CORE_GEO_REFERENCE_POINTS_IO_H_
+#endif // MAPTK_GEO_REFERENCE_POINTS_IO_H_

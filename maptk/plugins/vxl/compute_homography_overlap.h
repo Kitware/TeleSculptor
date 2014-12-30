@@ -33,8 +33,8 @@
  * \brief Header defining homography overlap helper functions
  */
 
-#ifndef MAPTK_VXL_COMPUTE_HOMOGRAPHY_OVERLAP_H_
-#define MAPTK_VXL_COMPUTE_HOMOGRAPHY_OVERLAP_H_
+#ifndef MAPTK_PLUGINS_VXL_COMPUTE_HOMOGRAPHY_OVERLAP_H_
+#define MAPTK_PLUGINS_VXL_COMPUTE_HOMOGRAPHY_OVERLAP_H_
 
 
 #include <maptk/plugins/vxl/vxl_config.h>
@@ -65,4 +65,4 @@ overlap( const vnl_double_3x3& h, const unsigned ni, const unsigned nj );
 } // end namespace maptk
 
 
-#endif // MAPTK_VXL_COMPUTE_HOMOGRAPHY_OVERLAP_H_
+#endif // MAPTK_PLUGINS_VXL_COMPUTE_HOMOGRAPHY_OVERLAP_H_

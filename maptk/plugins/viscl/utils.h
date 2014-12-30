@@ -28,7 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_VISCL_UTILS_H_
+#ifndef MAPTK_PLUGINS_VISCL_UTILS_H_
+#define MAPTK_PLUGINS_VISCL_UTILS_H_
 
 #include <maptk/feature_set.h>
 
@@ -46,4 +47,4 @@ void min_image_dimensions(const maptk::feature_set &feat, unsigned int &width, u
 
 } // end namespace maptk
 
-#endif // MAPTK_VISCL_UTILS_H_
+#endif // MAPTK_PLUGINS_VISCL_UTILS_H_

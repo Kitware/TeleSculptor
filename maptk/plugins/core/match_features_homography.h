@@ -33,8 +33,8 @@
  * \brief core match_features_homography algorithm impl interface
  */
 
-#ifndef MAPTK_ALGO_MATCH_FEATURES_HOMOGRAPHY_H_
-#define MAPTK_ALGO_MATCH_FEATURES_HOMOGRAPHY_H_
+#ifndef MAPTK_PLUGINS_CORE_MATCH_FEATURES_HOMOGRAPHY_H_
+#define MAPTK_PLUGINS_CORE_MATCH_FEATURES_HOMOGRAPHY_H_
 
 #include <boost/scoped_ptr.hpp>
 
@@ -117,4 +117,4 @@ private:
 } // end namespace maptk
 
 
-#endif // MAPTK_ALGO_MATCH_FEATURES_HOMOGRAPHY_H_
+#endif // MAPTK_PLUGINS_CORE_MATCH_FEATURES_HOMOGRAPHY_H_

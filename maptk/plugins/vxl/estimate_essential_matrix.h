@@ -33,8 +33,8 @@
  * \brief VXL essential matrix estimation algorithm (5 point alg)
  */
 
-#ifndef MAPTK_VXL_ESTIMATE_ESSENTIAL_MATRIX_H_
-#define MAPTK_VXL_ESTIMATE_ESSENTIAL_MATRIX_H_
+#ifndef MAPTK_PLUGINS_VXL_ESTIMATE_ESSENTIAL_MATRIX_H_
+#define MAPTK_PLUGINS_VXL_ESTIMATE_ESSENTIAL_MATRIX_H_
 
 #include <boost/scoped_ptr.hpp>
 
@@ -104,4 +104,4 @@ private:
 } // end namespace maptk
 
 
-#endif // MAPTK_VXL_ESTIMATE_ESSENTIAL_MATRIX_H_
+#endif // MAPTK_PLUGINS_VXL_ESTIMATE_ESSENTIAL_MATRIX_H_

@@ -33,8 +33,8 @@
  * \brief VXL version of similarity transform estimation
  */
 
-#ifndef MAPTK_VXL_ESTIMATE_SIMILARITY_TRANSFORM_H
-#define MAPTK_VXL_ESTIMATE_SIMILARITY_TRANSFORM_H
+#ifndef MAPTK_PLUGINS_VXL_ESTIMATE_SIMILARITY_TRANSFORM_H_
+#define MAPTK_PLUGINS_VXL_ESTIMATE_SIMILARITY_TRANSFORM_H_
 
 #include <maptk/algo/estimate_similarity_transform.h>
 #include <maptk/plugins/vxl/vxl_config.h>
@@ -85,4 +85,4 @@ public:
 } // end namespace maptk
 
 
-#endif // MAPTK_VXL_ESTIMATE_SIMILARITY_TRANSFORM_H
+#endif // MAPTK_PLUGINS_VXL_ESTIMATE_SIMILARITY_TRANSFORM_H_

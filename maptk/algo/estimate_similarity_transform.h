@@ -33,8 +33,8 @@
  * \brief Definition for similarity transform estimation algorithm
  */
 
-#ifndef MAPTK_CORE_ALGO_ESTIMATE_SIMILARITY_TRANSFORM_H
-#define MAPTK_CORE_ALGO_ESTIMATE_SIMILARITY_TRANSFORM_H
+#ifndef MAPTK_ALGO_ESTIMATE_SIMILARITY_TRANSFORM_H_
+#define MAPTK_ALGO_ESTIMATE_SIMILARITY_TRANSFORM_H_
 
 #include <string>
 #include <vector>
@@ -151,4 +151,4 @@ typedef boost::shared_ptr<estimate_similarity_transform> estimate_similarity_tra
 
 } // end maptk namespace
 
-#endif // MAPTK_CORE_ALGO_ESTIMATE_SIMILARITY_TRANSFORM_H
+#endif // MAPTK_ALGO_ESTIMATE_SIMILARITY_TRANSFORM_H_

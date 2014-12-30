@@ -34,8 +34,8 @@
  *        optimization \endlink algorithm
  */
 
-#ifndef MAPTK_CORE_ALGO_OPTIMIZE_CAMERAS_H_
-#define MAPTK_CORE_ALGO_OPTIMIZE_CAMERAS_H_
+#ifndef MAPTK_ALGO_OPTIMIZE_CAMERAS_H_
+#define MAPTK_ALGO_OPTIMIZE_CAMERAS_H_
 
 #include <maptk/algo/algorithm.h>
 #include <maptk/camera_map.h>
@@ -86,4 +86,4 @@ typedef boost::shared_ptr<optimize_cameras> optimize_cameras_sptr;
 }
 
 
-#endif // MAPTK_CORE_ALGO_OPTIMIZE_CAMERAS_H_
+#endif // MAPTK_ALGO_OPTIMIZE_CAMERAS_H_

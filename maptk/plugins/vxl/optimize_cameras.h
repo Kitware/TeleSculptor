@@ -33,8 +33,8 @@
 * \brief Header defining VXL algorithm implementation of camera optimization.
 */
 
-#ifndef MAPTK_VXL_OPTIMIZE_CAMERAS_H_
-#define MAPTK_VXL_OPTIMIZE_CAMERAS_H_
+#ifndef MAPTK_PLUGINS_VXL_OPTIMIZE_CAMERAS_H_
+#define MAPTK_PLUGINS_VXL_OPTIMIZE_CAMERAS_H_
 
 #include <string>
 
@@ -84,4 +84,4 @@ public:
 
 }
 
-#endif // MAPTK_VXL_OPTIMIZE_CAMERAS_H_
+#endif // MAPTK_PLUGINS_VXL_OPTIMIZE_CAMERAS_H_

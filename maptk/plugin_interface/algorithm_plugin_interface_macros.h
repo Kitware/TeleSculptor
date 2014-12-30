@@ -33,8 +33,8 @@
  * \brief Algorithm definition type registration helper macros
  */
 
-#ifndef MAPTK_PLUGINS_INTERFACE_ALGORITHM_PLUGIN_INTERFACE_MACROS_H_
-#define MAPTK_PLUGINS_INTERFACE_ALGORITHM_PLUGIN_INTERFACE_MACROS_H_
+#ifndef MAPTK_PLUGIN_INTERFACE_ALGORITHM_PLUGIN_INTERFACE_MACROS_H_
+#define MAPTK_PLUGIN_INTERFACE_ALGORITHM_PLUGIN_INTERFACE_MACROS_H_
 
 #include <maptk/logging_macros.h>
 #include <maptk/registrar.h>
@@ -75,4 +75,4 @@
   maptk_api_registered_ += type::register_self( maptk_api_registrar_ )
 
 
-#endif // MAPTK_PLUGINS_INTERFACE_ALGORITHM_PLUGIN_INTERFACE_MACROS_H_
+#endif // MAPTK_PLUGIN_INTERFACE_ALGORITHM_PLUGIN_INTERFACE_MACROS_H_

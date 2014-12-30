@@ -33,8 +33,8 @@
  * \brief Header for VXL triangulate_landmarks algorithm
  */
 
-#ifndef MAPTK_VXL_TRIANGULATE_LANDMARKS_H_
-#define MAPTK_VXL_TRIANGULATE_LANDMARKS_H_
+#ifndef MAPTK_PLUGINS_VXL_TRIANGULATE_LANDMARKS_H_
+#define MAPTK_PLUGINS_VXL_TRIANGULATE_LANDMARKS_H_
 
 #include <boost/scoped_ptr.hpp>
 
@@ -99,4 +99,4 @@ private:
 } // end namespace maptk
 
 
-#endif // MAPTK_VXL_TRIANGULATE_LANDMARKS_H_
+#endif // MAPTK_PLUGINS_VXL_TRIANGULATE_LANDMARKS_H_

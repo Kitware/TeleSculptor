@@ -33,8 +33,8 @@
  * \brief VXL homography estimation algorithm
  */
 
-#ifndef MAPTK_VXL_ESTIMATE_HOMOGRAPHY_H_
-#define MAPTK_VXL_ESTIMATE_HOMOGRAPHY_H_
+#ifndef MAPTK_PLUGINS_VXL_ESTIMATE_HOMOGRAPHY_H_
+#define MAPTK_PLUGINS_VXL_ESTIMATE_HOMOGRAPHY_H_
 
 #include <maptk/algo/estimate_homography.h>
 #include <maptk/plugins/vxl/vxl_config.h>
@@ -82,4 +82,4 @@ public:
 } // end namespace maptk
 
 
-#endif // MAPTK_VXL_ESTIMATE_HOMOGRAPHY_H_
+#endif // MAPTK_PLUGINS_VXL_ESTIMATE_HOMOGRAPHY_H_

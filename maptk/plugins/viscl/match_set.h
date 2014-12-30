@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_VISCL_MATCH_SET_H_
-#define MAPTK_VISCL_MATCH_SET_H_
+#ifndef MAPTK_PLUGINS_VISCL_MATCH_SET_H_
+#define MAPTK_PLUGINS_VISCL_MATCH_SET_H_
 
 #include <maptk/match_set.h>
 #include <maptk/plugins/viscl/viscl_config.h>
@@ -89,4 +89,4 @@ matches_to_viscl(const maptk::match_set& match_set);
 } // end namespace maptk
 
 
-#endif // MAPTK_VISCL_MATCH_SET_H_
+#endif // MAPTK_PLUGINS_VISCL_MATCH_SET_H_

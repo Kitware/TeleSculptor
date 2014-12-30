@@ -33,8 +33,8 @@
  * \brief MAPTK Exceptions pertaining to math operations
  */
 
-#ifndef MAPTK_CORE_EXCEPTIONS_MATH_H
-#define MAPTK_CORE_EXCEPTIONS_MATH_H
+#ifndef MAPTK_EXCEPTIONS_MATH_H_
+#define MAPTK_EXCEPTIONS_MATH_H_
 
 #include "base.h"
 #include <string>
@@ -100,4 +100,4 @@ public:
 
 } // end maptk namespace
 
-#endif // MAPTK_CORE_EXCEPTIONS_MATH_H
+#endif // MAPTK_EXCEPTIONS_MATH_H_

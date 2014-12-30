@@ -33,8 +33,8 @@
  * \brief OCV match_set interface
  */
 
-#ifndef MAPTK_OCV_MATCH_SET_H_
-#define MAPTK_OCV_MATCH_SET_H_
+#ifndef MAPTK_PLUGINS_OCV_MATCH_SET_H_
+#define MAPTK_PLUGINS_OCV_MATCH_SET_H_
 
 #include <opencv2/features2d/features2d.hpp>
 
@@ -87,4 +87,4 @@ matches_to_ocv_dmatch(const maptk::match_set& match_set);
 } // end namespace maptk
 
 
-#endif // MAPTK_OCV_MATCH_SET_H_
+#endif // MAPTK_PLUGINS_OCV_MATCH_SET_H_

@@ -33,8 +33,8 @@
  * \brief OCV detect_features algorithm impl interface
  */
 
-#ifndef MAPTK_OCV_DETECT_FEATURES_H_
-#define MAPTK_OCV_DETECT_FEATURES_H_
+#ifndef MAPTK_PLUGINS_OCV_DETECT_FEATURES_H_
+#define MAPTK_PLUGINS_OCV_DETECT_FEATURES_H_
 
 #include <boost/scoped_ptr.hpp>
 
@@ -100,4 +100,4 @@ private:
 } // end namespace maptk
 
 
-#endif // MAPTK_OCV_DETECT_FEATURES_H_
+#endif // MAPTK_PLUGINS_OCV_DETECT_FEATURES_H_

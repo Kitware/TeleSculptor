@@ -33,8 +33,8 @@
  * \brief Header for VXL bundle adjustment algorithm
  */
 
-#ifndef MAPTK_VXL_BUNDLE_ADJUST_H_
-#define MAPTK_VXL_BUNDLE_ADJUST_H_
+#ifndef MAPTK_PLUGINS_VXL_BUNDLE_ADJUST_H_
+#define MAPTK_PLUGINS_VXL_BUNDLE_ADJUST_H_
 
 #include <boost/scoped_ptr.hpp>
 
@@ -95,4 +95,4 @@ private:
 } // end namespace maptk
 
 
-#endif // MAPTK_VXL_BUNDLE_ADJUST_H_
+#endif // MAPTK_PLUGINS_VXL_BUNDLE_ADJUST_H_

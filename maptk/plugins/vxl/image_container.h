@@ -33,8 +33,8 @@
  * \brief VXL image container interface
  */
 
-#ifndef MAPTK_VXL_IMAGE_CONTAINER_H_
-#define MAPTK_VXL_IMAGE_CONTAINER_H_
+#ifndef MAPTK_PLUGINS_VXL_IMAGE_CONTAINER_H_
+#define MAPTK_PLUGINS_VXL_IMAGE_CONTAINER_H_
 
 #include <maptk/image_container.h>
 #include <maptk/plugins/vxl/vxl_config.h>
@@ -112,4 +112,4 @@ protected:
 } // end namespace maptk
 
 
-#endif // MAPTK_IMAGE_CONTAINER_H_
+#endif // MAPTK_PLUGINS_VXL_IMAGE_CONTAINER_H_

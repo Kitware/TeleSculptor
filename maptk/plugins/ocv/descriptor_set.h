@@ -33,8 +33,8 @@
  * \brief OCV descriptor_set interface
  */
 
-#ifndef MAPTK_OCV_DESCRIPTOR_SET_H_
-#define MAPTK_OCV_DESCRIPTOR_SET_H_
+#ifndef MAPTK_PLUGINS_OCV_DESCRIPTOR_SET_H_
+#define MAPTK_PLUGINS_OCV_DESCRIPTOR_SET_H_
 
 #include <maptk/descriptor_set.h>
 
@@ -90,4 +90,4 @@ descriptors_to_ocv_matrix(const maptk::descriptor_set& desc_set);
 } // end namespace maptk
 
 
-#endif // MAPTK_OCV_DESCRIPTOR_SET_H_
+#endif // MAPTK_PLUGINS_OCV_DESCRIPTOR_SET_H_

@@ -33,8 +33,8 @@
  * \brief MAPTK Exceptions pertaining to image operations and manipulation
  */
 
-#ifndef MAPTK_EXCEPTIONS_IMAGE_H
-#define MAPTK_EXCEPTIONS_IMAGE_H
+#ifndef MAPTK_EXCEPTIONS_IMAGE_H_
+#define MAPTK_EXCEPTIONS_IMAGE_H_
 
 #include <string>
 
@@ -87,4 +87,4 @@ public:
 }
 
 
-#endif // MAPTK_EXCEPTIONS_IMAGE_H
+#endif // MAPTK_EXCEPTIONS_IMAGE_H_

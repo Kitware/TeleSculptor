@@ -35,8 +35,8 @@
  * All exception types for maptk::core are included through this file.
  */
 
-#ifndef MAPTK_CORE_EXCEPTIONS_H
-#define MAPTK_CORE_EXCEPTIONS_H
+#ifndef MAPTK_EXCEPTIONS_H_
+#define MAPTK_EXCEPTIONS_H_
 
 #include "exceptions/base.h"
 #include "exceptions/algorithm.h"
@@ -46,4 +46,4 @@
 #include "exceptions/io.h"
 #include "exceptions/math.h"
 
-#endif // MAPTK_CORE_EXCEPTIONS_H
+#endif // MAPTK_EXCEPTIONS_H_

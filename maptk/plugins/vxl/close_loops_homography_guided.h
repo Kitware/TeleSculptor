@@ -34,8 +34,8 @@
  *        close_loops \endlink algorithm
  */
 
-#ifndef MAPTK_VXL_CLOSE_LOOPS_HOMOGRAPHY_GUIDED_H_
-#define MAPTK_VXL_CLOSE_LOOPS_HOMOGRAPHY_GUIDED_H_
+#ifndef MAPTK_PLUGINS_VXL_CLOSE_LOOPS_HOMOGRAPHY_GUIDED_H_
+#define MAPTK_PLUGINS_VXL_CLOSE_LOOPS_HOMOGRAPHY_GUIDED_H_
 
 #include <boost/scoped_ptr.hpp>
 
@@ -136,4 +136,4 @@ private:
 } // end namespace maptk
 
 
-#endif // MAPTK_VXL_CLOSE_LOOPS_HOMOGRAPHY_GUIDED_H_
+#endif // MAPTK_PLUGINS_VXL_CLOSE_LOOPS_HOMOGRAPHY_GUIDED_H_

@@ -34,8 +34,8 @@
  *        between OpenCV algorithm properties and maptk::config_block objects.
  */
 
-#ifndef MAPTK_OCV_OCV_ALGO_TOOLS_H
-#define MAPTK_OCV_OCV_ALGO_TOOLS_H
+#ifndef MAPTK_PLUGINS_OCV_OCV_ALGO_TOOLS_H_
+#define MAPTK_PLUGINS_OCV_OCV_ALGO_TOOLS_H_
 
 #include <string>
 #include <iostream>
@@ -253,4 +253,4 @@ bool check_nested_ocv_algo_configuration(std::string const& name,
 
 } // end namespace maptk
 
-#endif // MAPTK_OCV_OCV_ALGO_TOOLS_H
+#endif // MAPTK_PLUGINS_OCV_OCV_ALGO_TOOLS_H_

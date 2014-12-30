@@ -33,8 +33,8 @@
  * \brief compute_ref_homography algorithm definition
  */
 
-#ifndef MAPTK_ALGO_COMPUTE_REF_HOMOGRAPHY_CORE_H_
-#define MAPTK_ALGO_COMPUTE_REF_HOMOGRAPHY_CORE_H_
+#ifndef MAPTK_PLUGINS_CORE_COMPUTE_REF_HOMOGRAPHY_CORE_H_
+#define MAPTK_PLUGINS_CORE_COMPUTE_REF_HOMOGRAPHY_CORE_H_
 
 #include <boost/scoped_ptr.hpp>
 
@@ -143,4 +143,4 @@ private:
 } // end namespace maptk
 
 
-#endif // MAPTK_ALGO_COMPUTE_REF_HOMOGRAPHY_CORE_H_
+#endif // MAPTK_PLUGINS_CORE_COMPUTE_REF_HOMOGRAPHY_CORE_H_

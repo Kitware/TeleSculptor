@@ -48,8 +48,8 @@
  * \brief Hide the symbol from outside the library.
  */
 
-#ifndef MAPTK_CONFIG_H
-#define MAPTK_CONFIG_H
+#ifndef MAPTK_CONFIG_H_
+#define MAPTK_CONFIG_H_
 
 #include <maptk/types.h>
 
@@ -93,4 +93,4 @@
 #endif
 
 
-#endif // MAPTK_CONFIG_H
+#endif // MAPTK_CONFIG_H_

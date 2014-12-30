@@ -35,8 +35,8 @@
  * \todo Describe format here.
  */
 
-#ifndef MAPTK_CORE_CONFIG_IO_H
-#define MAPTK_CORE_CONFIG_IO_H
+#ifndef MAPTK_CONFIG_BLOCK_IO_H_
+#define MAPTK_CONFIG_BLOCK_IO_H_
 
 #include <maptk/config.h>
 
@@ -85,4 +85,4 @@ void MAPTK_LIB_EXPORT write_config_file(config_block_sptr const& config,
 
 }
 
-#endif // MAPTK_CORE_CONFIG_IO_H
+#endif // MAPTK_CONFIG_BLOCK_IO_H_

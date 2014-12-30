@@ -37,8 +37,8 @@
  * CMake.
  */
 
-#ifndef MAPTK_TEST_TEST_COMMON_H
-#define MAPTK_TEST_TEST_COMMON_H
+#ifndef MAPTK_TEST_TEST_COMMON_H_
+#define MAPTK_TEST_TEST_COMMON_H_
 
 #include <boost/function.hpp>
 
@@ -289,4 +289,4 @@ inline bool is_almost(double const &value,
     }                                                            \
   }while(false)
 
-#endif // MAPTK_TEST_TEST_COMMON_H
+#endif // MAPTK_TEST_TEST_COMMON_H_

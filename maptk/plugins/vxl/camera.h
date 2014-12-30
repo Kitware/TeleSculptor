@@ -33,8 +33,8 @@
  * \brief Header file for conversions between maptk and vpgl cameras
  */
 
-#ifndef MAPTK_VXL_CAMERA_H_
-#define MAPTK_VXL_CAMERA_H_
+#ifndef MAPTK_PLUGINS_VXL_CAMERA_H_
+#define MAPTK_PLUGINS_VXL_CAMERA_H_
 
 #include <maptk/camera.h>
 #include <maptk/plugins/vxl/vxl_config.h>
@@ -86,4 +86,4 @@ void maptk_to_vpgl_calibration(const camera_intrinsics_<T>& mcal,
 } // end namespace maptk
 
 
-#endif // MAPTK_VXL_CAMERA_H_
+#endif // MAPTK_PLUGINS_VXL_CAMERA_H_

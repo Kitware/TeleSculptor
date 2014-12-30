@@ -33,8 +33,8 @@
  * \brief OCV module configuration header
  */
 
-#ifndef MAPTK_OCV_OCV_CONFIG_H
-#define MAPTK_OCV_OCV_CONFIG_H
+#ifndef MAPTK_PLUGINS_OCV_OCV_CONFIG_H_
+#define MAPTK_PLUGINS_OCV_OCV_CONFIG_H_
 
 #include <maptk/config.h>
 
@@ -49,4 +49,4 @@
 # define MAPTK_OCV_NO_EXPORT MAPTK_NO_EXPORT
 #endif
 
-#endif
+#endif // MAPTK_PLUGINS_OCV_OCV_CONFIG_H_

@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_VISCL_DESCRIPTOR_SET_H_
-#define MAPTK_VISCL_DESCRIPTOR_SET_H_
+#ifndef MAPTK_PLUGINS_VISCL_DESCRIPTOR_SET_H_
+#define MAPTK_PLUGINS_VISCL_DESCRIPTOR_SET_H_
 
 
 #include <maptk/descriptor_set.h>
@@ -86,4 +86,4 @@ descriptors_to_viscl(const maptk::descriptor_set& desc_set);
 } // end namespace maptk
 
 
-#endif // MAPTK_VISCL_DESCRIPTOR_SET_H_
+#endif // MAPTK_PLUGINS_VISCL_DESCRIPTOR_SET_H_

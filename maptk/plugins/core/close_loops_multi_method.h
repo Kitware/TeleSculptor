@@ -34,8 +34,8 @@
  *        close_loops_bad_frames_only \endlink algorithm
  */
 
-#ifndef MAPTK_ALGO_CLOSE_LOOPS_MULTI_METHOD_H_
-#define MAPTK_ALGO_CLOSE_LOOPS_MULTI_METHOD_H_
+#ifndef MAPTK_PLUGINS_CORE_CLOSE_LOOPS_MULTI_METHOD_H_
+#define MAPTK_PLUGINS_CORE_CLOSE_LOOPS_MULTI_METHOD_H_
 
 #include <boost/shared_ptr.hpp>
 
@@ -142,4 +142,4 @@ private:
 } // end namespace maptk
 
 
-#endif // MAPTK_ALGO_CLOSE_LOOPS_MULTI_METHOD_H_
+#endif // MAPTK_PLUGINS_CORE_CLOSE_LOOPS_MULTI_METHOD_H_

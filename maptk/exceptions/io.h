@@ -33,8 +33,8 @@
  * \brief MAPTK Exceptions pertaining to IO operations
  */
 
-#ifndef MAPTK_CORE_EXCEPTIONS_IO_H
-#define MAPTK_CORE_EXCEPTIONS_IO_H
+#ifndef MAPTK_EXCEPTIONS_IO_H_
+#define MAPTK_EXCEPTIONS_IO_H_
 
 #include "base.h"
 #include <string>
@@ -148,4 +148,4 @@ public:
 
 } // end maptk namespace
 
-#endif // MAPTK_CORE_EXCEPTIONS_IO_H
+#endif // MAPTK_EXCEPTIONS_IO_H_

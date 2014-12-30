@@ -33,8 +33,8 @@
  * \brief OCV mat_image_memory interface
  */
 
-#ifndef MAPTK_MAT_IMAGE_MEMORY_H_
-#define MAPTK_MAT_IMAGE_MEMORY_H_
+#ifndef MAPTK_PLUGINS_OCV_MAT_IMAGE_MEMORY_H_
+#define MAPTK_PLUGINS_OCV_MAT_IMAGE_MEMORY_H_
 
 #include <maptk/image.h>
 
@@ -80,4 +80,4 @@ protected:
 } // end namespace maptk
 
 
-#endif // MAPTK_MAT_IMAGE_MEMORY_H_
+#endif // MAPTK_PLUGINS_OCV_MAT_IMAGE_MEMORY_H_

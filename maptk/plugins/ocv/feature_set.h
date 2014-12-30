@@ -33,8 +33,8 @@
  * \brief OCV feature_set interface
  */
 
-#ifndef MAPTK_OCV_FEATURE_SET_H_
-#define MAPTK_OCV_FEATURE_SET_H_
+#ifndef MAPTK_PLUGINS_OCV_FEATURE_SET_H_
+#define MAPTK_PLUGINS_OCV_FEATURE_SET_H_
 
 #include <opencv2/features2d/features2d.hpp>
 
@@ -88,4 +88,4 @@ features_to_ocv_keypoints(const maptk::feature_set& features);
 } // end namespace maptk
 
 
-#endif // MAPTK_OCV_FEATURE_SET_H_
+#endif // MAPTK_PLUGINS_OCV_FEATURE_SET_H_

@@ -33,8 +33,8 @@
  * \brief OpenCV image_io interface
  */
 
-#ifndef MAPTK_OCV_IMAGE_IO_H_
-#define MAPTK_OCV_IMAGE_IO_H_
+#ifndef MAPTK_PLUGINS_OCV_IMAGE_IO_H_
+#define MAPTK_PLUGINS_OCV_IMAGE_IO_H_
 
 #include <maptk/algo/image_io.h>
 
@@ -83,4 +83,4 @@ private:
 } // end namespace maptk
 
 
-#endif // MAPTK_OCV_IMAGE_IO_H_
+#endif // MAPTK_PLUGINS_OCV_IMAGE_IO_H_

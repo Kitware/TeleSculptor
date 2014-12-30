@@ -33,8 +33,8 @@
  * \brief VXL configuration header
  */
 
-#ifndef MAPTK_VXL_VXL_CONFIG_H
-#define MAPTK_VXL_VXL_CONFIG_H
+#ifndef MAPTK_PLUGINS_VXL_VXL_CONFIG_H_
+#define MAPTK_PLUGINS_VXL_VXL_CONFIG_H_
 
 #include <maptk/config.h>
 
@@ -49,4 +49,4 @@
 # define MAPTK_VXL_NO_EXPORT MAPTK_NO_EXPORT
 #endif
 
-#endif
+#endif // MAPTK_PLUGINS_VXL_VXL_CONFIG_H_

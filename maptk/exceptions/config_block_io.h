@@ -33,8 +33,8 @@
  * \brief config_block IO exceptions interface
  */
 
-#ifndef MAPTK_CORE_EXCEPTIONS_CONFIG_IO_H
-#define MAPTK_CORE_EXCEPTIONS_CONFIG_IO_H
+#ifndef MAPTK_EXCEPTIONS_CONFIG_BLOCK_IO_H_
+#define MAPTK_EXCEPTIONS_CONFIG_BLOCK_IO_H_
 
 #include "base.h"
 #include <maptk/types.h>
@@ -124,4 +124,4 @@ class MAPTK_LIB_EXPORT file_write_exception
 
 }
 
-#endif // MAPTK_CORE_EXCEPTIONS_CONFIG_IO_H
+#endif // MAPTK_EXCEPTIONS_CONFIG_BLOCK_IO_H_

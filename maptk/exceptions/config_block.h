@@ -33,8 +33,8 @@
  * \brief config_block related exceptions interface
  */
 
-#ifndef MAPTK_CORE_EXCEPTIONS_CONFIG_H
-#define MAPTK_CORE_EXCEPTIONS_CONFIG_H
+#ifndef MAPTK_EXCEPTIONS_CONFIG_BLOCK_H_
+#define MAPTK_EXCEPTIONS_CONFIG_BLOCK_H_
 
 #include "base.h"
 
@@ -187,4 +187,4 @@ class MAPTK_LIB_EXPORT unset_on_read_only_value_exception
 
 }
 
-#endif // MAPTK_CORE_EXCEPTIONS_CONFIG_H
+#endif // MAPTK_EXCEPTIONS_CONFIG_BLOCK_H_

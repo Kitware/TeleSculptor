@@ -33,8 +33,8 @@
  * \brief algorithm exceptions interfaces
  */
 
-#ifndef MAPTK_CORE_EXCEPTIONS_ALGORITHM_H
-#define MAPTK_CORE_EXCEPTIONS_ALGORITHM_H
+#ifndef MAPTK_EXCEPTIONS_ALGORITHM_H_
+#define MAPTK_EXCEPTIONS_ALGORITHM_H_
 
 #include "base.h"
 #include <string>
@@ -90,4 +90,4 @@ class MAPTK_LIB_EXPORT invalid_name_exception
 
 } // end namespace maptk
 
-#endif // MAPTK_CORE_EXCEPTIONS_ALGORITHM_H
+#endif // MAPTK_EXCEPTIONS_ALGORITHM_H_

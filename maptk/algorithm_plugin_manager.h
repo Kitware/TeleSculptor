@@ -33,6 +33,9 @@
  * \brief Singleton manager of plug-in stuff
  */
 
+#ifndef MAPTK_ALGORITHM_PLUGIN_MANAGER_H_
+#define MAPTK_ALGORITHM_PLUGIN_MANAGER_H_
+
 #include <string>
 #include <vector>
 
@@ -91,3 +94,5 @@ private:
 
 
 } // end maptk namespace
+
+#endif // MAPTK_ALGORITHM_PLUGIN_MANAGER_H_

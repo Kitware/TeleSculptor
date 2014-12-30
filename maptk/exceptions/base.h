@@ -33,8 +33,8 @@
  * \brief MAPTK base exception interface
  */
 
-#ifndef MAPTK_CORE_EXCEPTIONS_BASE_H
-#define MAPTK_CORE_EXCEPTIONS_BASE_H
+#ifndef MAPTK_EXCEPTIONS_BASE_H_
+#define MAPTK_EXCEPTIONS_BASE_H_
 
 #include <maptk/config.h>
 #include <string>
@@ -84,4 +84,4 @@ protected:
 
 } // end namespace maptk
 
-#endif // MAPTK_CORE_EXCEPTIONS_BASE_H
+#endif // MAPTK_EXCEPTIONS_BASE_H_

@@ -33,8 +33,8 @@
  * \brief Header file for a map from frame IDs to vpgl cameras
  */
 
-#ifndef MAPTK_VXL_CAMERA_MAP_H_
-#define MAPTK_VXL_CAMERA_MAP_H_
+#ifndef MAPTK_PLUGINS_VXL_CAMERA_MAP_H_
+#define MAPTK_PLUGINS_VXL_CAMERA_MAP_H_
 
 #include <map>
 
@@ -92,4 +92,4 @@ camera_map_to_vpgl(const maptk::camera_map& cam_map);
 } // end namespace maptk
 
 
-#endif // MAPTK_VXL_CAMERA_MAP_H_
+#endif // MAPTK_PLUGINS_VXL_CAMERA_MAP_H_

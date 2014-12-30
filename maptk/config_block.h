@@ -33,8 +33,8 @@
  * \brief Header for \link maptk::config_block configuration \endlink object
  */
 
-#ifndef MAPTK_CORE_CONFIG_H
-#define MAPTK_CORE_CONFIG_H
+#ifndef MAPTK_CONFIG_BLOCK_H_
+#define MAPTK_CONFIG_BLOCK_H_
 
 #include <maptk/config.h>
 
@@ -385,4 +385,4 @@ config_block
 
 }
 
-#endif // MAPTK_CORE_CONFIG_
+#endif // MAPTK_CONFIG_BLOCK_H_

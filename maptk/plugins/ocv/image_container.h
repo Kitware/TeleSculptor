@@ -33,8 +33,8 @@
  * \brief OCV image_container inteface
  */
 
-#ifndef MAPTK_OCV_IMAGE_CONTAINER_H_
-#define MAPTK_OCV_IMAGE_CONTAINER_H_
+#ifndef MAPTK_PLUGINS_OCV_IMAGE_CONTAINER_H_
+#define MAPTK_PLUGINS_OCV_IMAGE_CONTAINER_H_
 
 #include <opencv2/core/core.hpp>
 
@@ -121,4 +121,4 @@ MAPTK_OCV_EXPORT cv::Mat image_container_to_ocv_matrix(const maptk::image_contai
 } // end namespace maptk
 
 
-#endif // MAPTK_OCV_IMAGE_CONTAINER_H_
+#endif // MAPTK_PLUGINS_OCV_IMAGE_CONTAINER_H_

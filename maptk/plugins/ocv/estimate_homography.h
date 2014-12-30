@@ -33,8 +33,8 @@
  * \brief OCV estimate_homography algorithm impl interface
  */
 
-#ifndef MAPTK_OCV_ESTIMATE_HOMOGRAPHY_H_
-#define MAPTK_OCV_ESTIMATE_HOMOGRAPHY_H_
+#ifndef MAPTK_PLUGINS_OCV_ESTIMATE_HOMOGRAPHY_H_
+#define MAPTK_PLUGINS_OCV_ESTIMATE_HOMOGRAPHY_H_
 
 #include <maptk/algo/estimate_homography.h>
 
@@ -83,4 +83,4 @@ public:
 } // end namespace maptk
 
 
-#endif // MAPTK_OCV_ESTIMATE_HOMOGRAPHY_H_
+#endif // MAPTK_PLUGINS_OCV_ESTIMATE_HOMOGRAPHY_H_

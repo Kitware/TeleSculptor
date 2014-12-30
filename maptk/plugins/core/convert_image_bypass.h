@@ -33,8 +33,8 @@
  * \brief Default convert_image algorithm that acts as a bypass
  */
 
-#ifndef MAPTK_PLUGINS_DEFAULT_CONVERT_IMAGE_DEFAULT_H_
-#define MAPTK_PLUGINS_DEFAULT_CONVERT_IMAGE_DEFAULT_H_
+#ifndef MAPTK_PLUGINS_CORE_CONVERT_IMAGE_BYPASS_H_
+#define MAPTK_PLUGINS_CORE_CONVERT_IMAGE_BYPASS_H_
 
 #include <maptk/algo/convert_image.h>
 
@@ -79,4 +79,4 @@ public:
 } // end namespace maptk
 
 
-#endif // MAPTK_PLUGINS_DEFAULT_CONVERT_IMAGE_DEFAULT_H_
+#endif // MAPTK_PLUGINS_CORE_CONVERT_IMAGE_BYPASS_H_
