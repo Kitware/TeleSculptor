@@ -25,6 +25,7 @@ set( plugin_core_sources
   track_features_core.cxx
   )
 maptk_add_library( maptk_core
+  ${plugin_core_headers}
   ${plugin_core_sources}
   )
 target_link_libraries( maptk_core maptk )

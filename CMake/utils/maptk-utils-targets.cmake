@@ -9,6 +9,9 @@
 #   no_install
 #       If set, target will not be installed.
 #
+#   no_version
+#       If set, the target will not have version information added to it.
+#
 #   component
 #     If set, the target will not be installed under this component (the
 #     default is 'runtime').
@@ -162,15 +165,28 @@ function(maptk_add_library name)
   endif()
   message(STATUS "Making library \"${name}\" with definitions: ${new_compile_definitions}")
 
+  # Set version information if ``no_version`` not set
+  if( NOT no_version )
+    set(_maptk_verson_info
+      VERSION ${MAPTK_VERSION}
+      SOVERSION ${MAPTK_VERSION_MAJOR}
+      )
+  endif()
+
+  # Use RPaths on Mac OSX
+  if( APPLE )
+    set(_maptk_osx_rpath MACOSX_RPATH TRUE)
+  endif()
+
   # Setting Properties
   set_target_properties("${name}"
     PROPERTIES
       ARCHIVE_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/lib${library_subdir}"
       LIBRARY_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/lib${library_subdir}"
       RUNTIME_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/bin${library_subdir}"
-      VERSION                  ${MAPTK_VERSION}
-      SOVERSION                ${MAPTK_VERSION_MAJOR}
       COMPILE_DEFINITIONS      "${new_compile_definitions}"
+      ${_maptk_version_info}
+      ${_maptk_osx_rpath}
     )
   # Build configuration dependent properties
   foreach(config IN LISTS CMAKE_CONFIGURATION_TYPES)
@@ -233,6 +249,7 @@ function(maptk_create_plugin base_lib)
   # create module library given generated source, linked to given library
   set(library_subdir /maptk)
   set(no_export ON)
+  set(no_version ON)
   maptk_add_library(maptk-plugin-${base_lib}
     SYMBOL MAKE_PRIV_PLUGIN_SHELL
     MODULE "${shell_source}" ${ARGN}
@@ -242,19 +259,12 @@ function(maptk_create_plugin base_lib)
   # something wrong (most likely the latter).
   target_link_libraries(maptk-plugin-${base_lib} ${base_lib})
 
-  # Adding dynamiclib option to Apple compiler
-  if( APPLE )
-    set(new_link_flags LINK_FLAGS -dynamiclib)
-    message(STATUS "Adding ``-dynamiclib`` linker option due to being on Apple")
-  endif()
-
   message(STATUS "CMake Shared Module Suffix: ${CMAKE_SHARED_MODULE_SUFFIX}")
   set_target_properties(maptk-plugin-${base_lib}
     PROPERTIES
       PREFIX        ""
       SUFFIX        ${CMAKE_SHARED_MODULE_SUFFIX}
       OUTPUT_NAME   ${base_lib}
-      ${new_link_flags}
     )
 
   add_dependencies(all-plugins maptk-plugin-${base_lib})
