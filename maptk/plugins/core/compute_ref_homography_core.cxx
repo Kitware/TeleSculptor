@@ -445,12 +445,18 @@ compute_ref_homography_core
     output->normalize();
   }
 
+  vector_3d tmp_3d;
   BOOST_FOREACH( track_info_t& ti, *new_buffer )
   {
     // Update reference locations for existing tracks using new homography
     if( !ti.ref_loc_valid )
     {
-      ti.ref_loc = (*output) * ti.ref_loc;
+      // Since location variables are in 2D, we need to convert to a 3D vector
+      // for use with homography matricies.
+      tmp_3d = (*output) * vector_3d(ti.ref_loc.x(), ti.ref_loc.y(), 1.0);
+      tmp_3d /= tmp_3d.z();
+      ti.ref_loc = vector_2d(tmp_3d.x(), tmp_3d.y());
+
       ti.ref_loc_valid = true;
       ti.ref_id = output->to_id();
     }
@@ -461,7 +467,11 @@ compute_ref_homography_core
 
       if( itr != ti.trk->end() && itr->feat )
       {
-        vector_2d warped = (*output) * itr->feat->loc();
+        tmp_3d = (*output) * vector_3d(itr->feat->loc().x(),
+                                                    itr->feat->loc().y(),
+                                                    1.0);
+        tmp_3d /= tmp_3d.z();
+        vector_2d warped(tmp_3d.x(), tmp_3d.y());
         double dist_sqr = ( warped - ti.ref_loc ).magnitude_sqr();
 
         if( dist_sqr > d_->backproject_threshold_sqr )
