@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -174,7 +174,7 @@ bool track_id_in_set( track_sptr trk_ptr, std::set<track_id_t>* set_ptr )
 /// Handle track bad frame detection if enabled
 track_set_sptr
 close_loops_bad_frames_only
-::stitch( frame_id_t frame_number, image_container_sptr, track_set_sptr input ) const
+::stitch( frame_id_t frame_number, track_set_sptr input, image_container_sptr, image_container_sptr ) const
 {
   // check if enabled and possible
   if( !enabled_ || frame_number <= new_shot_length_ )

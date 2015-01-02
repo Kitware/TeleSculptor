@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -61,6 +61,10 @@ public:
    * A given mask image should be one-channel (mask->depth() == 1). If the
    * given mask image has more than one channel, only the first will be
    * considered.
+   *
+   * \throws image_size_mismatch_exception
+   *    When the given non-zero mask image does not match the size of the
+   *    dimensions of the given image data.
    *
    * \param image_data contains the image data to process
    * \param mask Mask image where regions of positive values (boolean true)

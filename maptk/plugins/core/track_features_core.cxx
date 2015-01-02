@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,6 +49,7 @@
 
 #include <maptk/algo/algorithm.h>
 #include <maptk/exceptions/algorithm.h>
+#include <maptk/exceptions/image.h>
 
 
 namespace maptk
@@ -150,7 +151,8 @@ track_set_sptr
 track_features_core
 ::track(track_set_sptr prev_tracks,
         unsigned int frame_number,
-        image_container_sptr image_data) const
+        image_container_sptr image_data,
+        image_container_sptr mask) const
 {
   // verify that all dependent algorithms have been initialized
   if( !detector_ || !extractor_ || !matcher_ || !closer_ )
@@ -161,8 +163,22 @@ track_features_core
     return track_set_sptr();
   }
 
+  // Check that the given mask, when non-zero, matches the size of the image
+  // data provided
+  if( mask && mask->size() > 0 &&
+      ( image_data->width() != mask->width() ||
+        image_data->height() != mask->height() ) )
+  {
+    throw image_size_mismatch_exception(
+        "Core track feature algorithm given a non-zero mask image that is "
+        "not the same shape as the provided image data.",
+        image_data->width(), image_data->height(),
+        mask->width(), mask->height()
+        );
+  }
+
   // detect features on the current frame
-  feature_set_sptr curr_feat = detector_->detect(image_data);
+  feature_set_sptr curr_feat = detector_->detect(image_data, mask);
 
   // extract descriptors on the current frame
   descriptor_set_sptr curr_desc = extractor_->extract(image_data, curr_feat);
@@ -186,8 +202,9 @@ track_features_core
     }
     // call loop closure on the first frame to establish this
     // frame as the first frame for loop closing purposes
-    return closer_->stitch(frame_number, image_data,
-                           track_set_sptr(new simple_track_set(new_tracks)));
+    return closer_->stitch(frame_number,
+                           track_set_sptr(new simple_track_set(new_tracks)),
+                           image_data, mask);
   }
 
   // match features to from the previous to the current frame
@@ -226,7 +243,8 @@ track_features_core
   }
 
   track_set_sptr stitched_tracks = closer_->stitch(frame_number,
-    image_data, track_set_sptr(new simple_track_set(all_tracks)));
+    track_set_sptr(new simple_track_set(all_tracks)),
+    image_data, mask);
 
   return stitched_tracks;
 }
