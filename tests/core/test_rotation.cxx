@@ -38,7 +38,7 @@
 #include <iostream>
 #include <vector>
 
-#include <maptk/core/rotation.h>
+#include <maptk/rotation.h>
 
 #include <boost/foreach.hpp>
 #include <boost/math/constants/constants.hpp>

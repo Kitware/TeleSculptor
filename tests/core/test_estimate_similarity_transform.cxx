@@ -32,16 +32,16 @@
 
 #include <vector>
 
-#include <maptk/core/algo/algorithm.h>
-#include <maptk/core/algo/estimate_similarity_transform.h>
-#include <maptk/core/camera.h>
-#include <maptk/core/camera_map.h>
-#include <maptk/core/config_block.h>
-#include <maptk/core/landmark.h>
-#include <maptk/core/landmark_map.h>
-#include <maptk/core/similarity.h>
-#include <maptk/core/types.h>
-#include <maptk/core/vector.h>
+#include <maptk/algo/algorithm.h>
+#include <maptk/algo/estimate_similarity_transform.h>
+#include <maptk/camera.h>
+#include <maptk/camera_map.h>
+#include <maptk/config_block.h>
+#include <maptk/landmark.h>
+#include <maptk/landmark_map.h>
+#include <maptk/similarity.h>
+#include <maptk/types.h>
+#include <maptk/vector.h>
 
 
 #define TEST_ARGS ()

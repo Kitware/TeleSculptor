@@ -31,9 +31,9 @@
 #include <test_common.h>
 #include <test_scene.h>
 
-#include <maptk/core/transform.h>
-#include <maptk/core/metrics.h>
-#include <maptk/core/projected_track_set.h>
+#include <maptk/transform.h>
+#include <maptk/metrics.h>
+#include <maptk/projected_track_set.h>
 
 #define TEST_ARGS ()
 

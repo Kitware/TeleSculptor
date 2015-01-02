@@ -41,26 +41,25 @@
 #include <string>
 #include <vector>
 
-#include <maptk/modules.h>
-
-#include <maptk/core/algo/bundle_adjust.h>
-#include <maptk/core/algo/initialize_cameras_landmarks.h>
-#include <maptk/core/algo/estimate_similarity_transform.h>
-#include <maptk/core/algo/triangulate_landmarks.h>
-#include <maptk/core/algo/geo_map.h>
-#include <maptk/core/camera_io.h>
-#include <maptk/core/config_block.h>
-#include <maptk/core/config_block_io.h>
-#include <maptk/core/exceptions.h>
-#include <maptk/core/geo_reference_points_io.h>
-#include <maptk/core/ins_data_io.h>
-#include <maptk/core/landmark_map_io.h>
-#include <maptk/core/local_geo_cs.h>
-#include <maptk/core/metrics.h>
-#include <maptk/core/track_set.h>
-#include <maptk/core/track_set_io.h>
-#include <maptk/core/transform.h>
-#include <maptk/core/types.h>
+#include <maptk/algo/bundle_adjust.h>
+#include <maptk/algo/initialize_cameras_landmarks.h>
+#include <maptk/algo/estimate_similarity_transform.h>
+#include <maptk/algo/triangulate_landmarks.h>
+#include <maptk/algo/geo_map.h>
+#include <maptk/algorithm_plugin_manager.h>
+#include <maptk/camera_io.h>
+#include <maptk/config_block.h>
+#include <maptk/config_block_io.h>
+#include <maptk/exceptions.h>
+#include <maptk/geo_reference_points_io.h>
+#include <maptk/ins_data_io.h>
+#include <maptk/landmark_map_io.h>
+#include <maptk/local_geo_cs.h>
+#include <maptk/metrics.h>
+#include <maptk/track_set.h>
+#include <maptk/track_set_io.h>
+#include <maptk/transform.h>
+#include <maptk/types.h>
 
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
@@ -539,8 +538,8 @@ bool load_input_cameras(maptk::config_block_sptr config,
 
 static int maptk_main(int argc, char const* argv[])
 {
-  // register the algorithms in the various modules for dynamic look-up
-  maptk::register_modules();
+  // register the algorithm implementations
+  maptk::algorithm_plugin_manager::instance().register_plugins();
 
   // define/parse CLI options
   bpo::options_description opt_desc;

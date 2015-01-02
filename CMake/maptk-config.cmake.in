@@ -1,0 +1,9 @@
+# Extend module path for MAPTK utils
+set(CMAKE_MODULE_PATH "@module_path@" ${CMAKE_MODULE_PATH})
+
+# MAPTK include directory
+set(MAPTK_INCLUDE_DIRS "@MAPTK_SOURCE_DIR@" "@MAPTK_BINARY_DIR@")
+set(MAPTK_LIBRARIES @maptk_libs@)
+
+# Export definitions for MAPTK to be used from find_package
+include("${CMAKE_CURRENT_LIST_DIR}/maptk-config-targets.cmake")

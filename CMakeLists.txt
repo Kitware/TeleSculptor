@@ -14,7 +14,7 @@ set(MAPTK_VERSION "${MAPTK_VERSION_MAJOR}.${MAPTK_VERSION_MINOR}.${MAPTK_VERSION
 # Add the CMake directory for CMake modules
 #
 list(INSERT CMAKE_MODULE_PATH 0
-  "${MAPTK_SOURCE_DIR}/cmake"
+  "${MAPTK_SOURCE_DIR}/CMake"
   )
 
 
@@ -23,21 +23,14 @@ list(INSERT CMAKE_MODULE_PATH 0
 #
 include(CMakeDependentOption)
 
-# we can't build shared libraries on Windows so we leave it off by default;
-# we haven't set up DLL exports or anything like that
+# we can't build shared libraries on Windows so we leave it off by default
 if (WIN32)
-  option(BUILD_SHARED_LIBS    "Build shared libraries."                       ON)
+  option(BUILD_SHARED_LIBS "Build shared libraries." ON)
 else()
-  option(BUILD_SHARED_LIBS    "Build shared libraries."                       OFF)
+  option(BUILD_SHARED_LIBS "Build shared libraries." OFF)
 endif()
 
 set(MAPTK_LIB_SUFFIX "" CACHE STRING "String suffix appended to the library directory we install into")
-
-option(MAPTK_ENABLE_OPENCV  "Enable OpenCV-dependent code"                    OFF)
-option(MAPTK_ENABLE_VXL     "Enable VXL-dependent code"                       OFF)
-option(MAPTK_ENABLE_VISCL   "Enable VisCL dependent code (for OpenCL on GPU)" OFF)
-option(MAPTK_ENABLE_PROJ    "Enable PROJ dependent code"                      OFF)
-
 
 
 ###
@@ -52,44 +45,14 @@ set(maptk_export_name maptk_exports)
 ###
 # Dependencies and Modules
 #
+include( maptk-depends )
 
-if(WIN32)
-  set(Boost_USE_STATIC_LIBS TRUE)
-  set(Boost_WIN_MODULES chrono)
-endif()
-find_package(Boost 1.50 REQUIRED COMPONENTS system filesystem program_options timer ${Boost_WIN_MODULES})
-add_definitions(-DBOOST_ALL_NO_LIB)
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
-
-if(MAPTK_ENABLE_OPENCV)
-  find_package(OpenCV REQUIRED)
-  include_directories(SYSTEM ${OpenCV_INCLUDE_DIRS})
-  # Docs say we don't need to add link_directories() call for OpenCV lib dirs
-endif()
-set(USE_OPENCV_VERSION MAPTK_ENABLE_OPENCV AND OpenCV_FOUND AND OpenCV_VERSION VERSION_GREATER "2.4")
-
-if(MAPTK_ENABLE_VXL)
-  find_package(VXL REQUIRED)
-  include_directories(SYSTEM ${VXL_VCL_INCLUDE_DIR})
-  include_directories(SYSTEM ${VXL_CORE_INCLUDE_DIR})
-  link_directories(${VXL_LIBRARY_DIR})
-endif()
-
-if(MAPTK_ENABLE_VISCL)
-  find_package(viscl REQUIRED)
-  include_directories(SYSTEM ${viscl_INCLUDE_DIR})
-endif()
-
-if(MAPTK_ENABLE_PROJ)
-  find_package(PROJ)
-  include_directories(${PROJ_INCLUDE_DIR})
-endif()
-
-# this is where the libraries source code lives
+# this is where the source code for libraries/plugins lives
 add_subdirectory(maptk)
 
 # this is where the executables source code lives
 add_subdirectory(tools)
+
 
 ###
 # Testing
@@ -109,6 +72,10 @@ endif()
 ###
 # Top level installation
 #
+set(maptk_cmake_install_dir "lib${MAPTK_LIB_SUFFIX}/cmake/maptk")
+
+# Install rules for CMake utilities
+include(maptk-install-utils)
 
 # Prepare space-separated list of library names for config
 get_property(maptk_libs GLOBAL PROPERTY maptk_libraries)
@@ -116,30 +83,33 @@ string(REPLACE ";" " " maptk_libs "${maptk_libs}")
 
 # Configure build-tree CMake config file and export associated targets file
 set(MAPTK_CONFIG_FILE "${MAPTK_BINARY_DIR}/maptk-config.cmake")
+set(module_path "${MAPTK_SOURCE_DIR}/CMake")
 maptk_configure_file(maptk-config
-  "${MAPTK_SOURCE_DIR}/cmake/maptk-config.cmake.in"
+  "${MAPTK_SOURCE_DIR}/CMake/maptk-config.cmake.in"
   "${MAPTK_CONFIG_FILE}"
   MAPTK_SOURCE_DIR MAPTK_BINARY_DIR
   maptk_libs
+  module_path
   )
 maptk_export_targets("${MAPTK_BINARY_DIR}/maptk-config-targets.cmake")
 
 # Configure install-tree CMake config file and export associated targets file
-set(cmake_install_dir lib${MAPTK_LIB_SUFFIX}/cmake/maptk)
 set(MAPTK_CONFIG_INSTALL_FILE "${MAPTK_BINARY_DIR}/maptk-config-install.cmake")
+set(module_path "${CMAKE_INSTALL_PREFIX}/lib${MAPTK_LIB_SUFFIX}/cmake/maptk")
 maptk_configure_file(maptk-install-config
-  "${MAPTK_SOURCE_DIR}/cmake/maptk-config-install.cmake.in"
+  "${MAPTK_SOURCE_DIR}/CMake/maptk-config-install.cmake.in"
   "${MAPTK_CONFIG_INSTALL_FILE}"
   maptk_libs
+  module_path
   )
 maptk_install(
   FILES       "${MAPTK_CONFIG_INSTALL_FILE}"
-  DESTINATION "${cmake_install_dir}"
+  DESTINATION "${maptk_cmake_install_dir}"
   RENAME      maptk-config.cmake
   )
 maptk_install(
   EXPORT      ${maptk_export_name}
-  DESTINATION "${cmake_install_dir}"
+  DESTINATION "${maptk_cmake_install_dir}"
   FILE        maptk-config-targets.cmake
   )
 

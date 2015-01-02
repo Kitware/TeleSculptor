@@ -38,8 +38,8 @@
 
 #include <cmath>
 
-#include <maptk/core/matrix.h>
-#include <maptk/core/vector.h>
+#include <maptk/matrix.h>
+#include <maptk/vector.h>
 
 
 namespace maptk

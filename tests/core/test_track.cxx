@@ -37,7 +37,7 @@
 
 #include <iostream>
 #include <vector>
-#include <maptk/core/track.h>
+#include <maptk/track.h>
 
 #define TEST_ARGS ()
 

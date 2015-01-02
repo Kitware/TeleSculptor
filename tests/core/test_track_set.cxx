@@ -33,8 +33,8 @@
 #include <iostream>
 #include <vector>
 
-#include <maptk/core/track.h>
-#include <maptk/core/track_set.h>
+#include <maptk/track.h>
+#include <maptk/track_set.h>
 
 #define TEST_ARGS ()
 

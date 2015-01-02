@@ -39,22 +39,17 @@
 #include <string>
 #include <vector>
 
-#include <maptk/modules.h>
+#include <maptk/algo/image_io.h>
+#include <maptk/algo/compute_ref_homography.h>
+#include <maptk/algo/convert_image.h>
+#include <maptk/algo/track_features.h>
 
-#include <maptk/core/track_set_io.h>
-#include <maptk/core/algo/image_io.h>
-#include <maptk/core/algo/compute_ref_homography.h>
-#include <maptk/core/algo/convert_image.h>
-#include <maptk/core/algo/detect_features.h>
-#include <maptk/core/algo/extract_descriptors.h>
-#include <maptk/core/algo/match_features.h>
-#include <maptk/core/algo/match_features_homography.h>
-#include <maptk/core/algo/track_features.h>
-
-#include <maptk/core/config_block.h>
-#include <maptk/core/config_block_io.h>
-#include <maptk/core/exceptions.h>
-#include <maptk/core/types.h>
+#include <maptk/algorithm_plugin_manager.h>
+#include <maptk/config_block.h>
+#include <maptk/config_block_io.h>
+#include <maptk/exceptions.h>
+#include <maptk/track_set_io.h>
+#include <maptk/types.h>
 
 #include <boost/foreach.hpp>
 
@@ -148,8 +143,8 @@ static bool check_config(maptk::config_block_sptr config)
 
 static int maptk_main(int argc, char const* argv[])
 {
-  // register the algorithms in the various modules for dynamic look-up
-  maptk::register_modules();
+  // register the algorithm implementations
+  maptk::algorithm_plugin_manager::instance().register_plugins();
 
   // define/parse CLI options
   boost::program_options::options_description opt_desc;

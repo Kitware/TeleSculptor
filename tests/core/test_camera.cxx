@@ -36,11 +36,12 @@
 #include <test_common.h>
 
 #include <iostream>
+
 #include <boost/foreach.hpp>
 #include <boost/math/constants/constants.hpp>
-#include <maptk/core/camera.h>
 
-#include <maptk/core/camera_io.h>
+#include <maptk/camera.h>
+#include <maptk/camera_io.h>
 
 #define TEST_ARGS ()
 

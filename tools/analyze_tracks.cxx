@@ -34,24 +34,22 @@
 #include <string>
 #include <vector>
 
-#include <maptk/modules.h>
-
-#include <maptk/core/landmark_map.h>
-#include <maptk/core/camera.h>
-#include <maptk/core/camera_map_io.h>
-#include <maptk/core/track_set_io.h>
-#include <maptk/core/landmark_map_io.h>
-#include <maptk/core/camera_io.h>
-#include <maptk/core/projected_track_set.h>
-#include <maptk/core/image_container.h>
-#include <maptk/core/config_block.h>
-#include <maptk/core/config_block_io.h>
-#include <maptk/core/exceptions.h>
-#include <maptk/core/types.h>
-
-#include <maptk/core/algo/image_io.h>
-#include <maptk/core/algo/analyze_tracks.h>
-#include <maptk/core/algo/draw_tracks.h>
+#include <maptk/algo/image_io.h>
+#include <maptk/algo/analyze_tracks.h>
+#include <maptk/algo/draw_tracks.h>
+#include <maptk/algorithm_plugin_manager.h>
+#include <maptk/camera.h>
+#include <maptk/camera_map_io.h>
+#include <maptk/landmark_map.h>
+#include <maptk/landmark_map_io.h>
+#include <maptk/camera_io.h>
+#include <maptk/projected_track_set.h>
+#include <maptk/image_container.h>
+#include <maptk/config_block.h>
+#include <maptk/config_block_io.h>
+#include <maptk/exceptions.h>
+#include <maptk/track_set_io.h>
+#include <maptk/types.h>
 
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
@@ -141,8 +139,8 @@ static bool check_config( maptk::config_block_sptr config )
 
 static int maptk_main(int argc, char const* argv[])
 {
-  // register the algorithms in the various modules for dynamic look-up
-  maptk::register_modules();
+  // register the algorithm implementations
+  maptk::algorithm_plugin_manager::instance().register_plugins();
 
   // define/parse CLI options
   boost::program_options::options_description opt_desc;
