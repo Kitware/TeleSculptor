@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -68,8 +68,16 @@ static maptk::config_block_sptr default_config()
   maptk::config_block_sptr config = maptk::config_block::empty_config("feature_tracker_tool");
 
   config->set_value("image_list_file", "",
-                    "Path an input file containing new-line separated paths "
+                    "Path to an input file containing new-line separated paths "
                     "to sequential image files.");
+  config->set_value("mask_list_file", "",
+                    "Optional path to an input file containing new-line "
+                    "separated paths to mask images. This list should be "
+                    "parallel in association to files specified in "
+                    "``image_list_file``. Mask image must be the same size as "
+                    "the image they are associated with.\n"
+                    "\n"
+                    "Leave this blank if no image masking is desired.");
   config->set_value("output_tracks_file", "",
                     "Path to a file to write output tracks to. If this "
                     "file exists, it will be overwritten.");
@@ -118,12 +126,28 @@ static bool check_config(maptk::config_block_sptr config)
                                                                                                  config);
   }
 
+  // If given an mask image list file, check that the file exists and is a file
+  bool valid_mask_list_file = true;
+  if( config->has_value("mask_list_file") && config->get_value<std::string>("mask_list_file") != "" )
+  {
+    maptk::path_t mask_list_filepath( config->get_value<std::string>("mask_list_file") );
+    valid_mask_list_file = bfs::is_regular_file( mask_list_filepath );
+  }
+
   return (
-         config->has_value("image_list_file") && bfs::exists(maptk::path_t(config->get_value<std::string>("image_list_file")))
+      // Check that image list file given and it exists
+         config->has_value("image_list_file")
+      && bfs::is_regular_file(maptk::path_t(config->get_value<std::string>("image_list_file")))
+      // See above
+      && valid_mask_list_file
+      // Check that output path given and exists in a valid directory
       && config->has_value("output_tracks_file")
+      && bfs::is_directory(bfs::absolute(config->get_value<maptk::path_t>("output_tracks_file")).parent_path())
+      // Check algorithm configuration validity
       && maptk::algo::track_features::check_nested_algo_configuration("feature_tracker", config)
       && maptk::algo::image_io::check_nested_algo_configuration("image_reader", config)
       && maptk::algo::convert_image::check_nested_algo_configuration("convert_image", config)
+      // See above
       && valid_out_homogs_file && valid_out_homogs_algo
       );
 }
@@ -240,7 +264,9 @@ static int maptk_main(int argc, char const* argv[])
   }
 
   // Attempt opening input and output files.
+  //  - filepath validity checked above
   std::string image_list_file = config->get_value<std::string>("image_list_file");
+  std::string mask_list_file = config->get_value<std::string>("mask_list_file");
   std::string output_tracks_file = config->get_value<std::string>("output_tracks_file");
 
   std::ifstream ifs(image_list_file.c_str());
@@ -257,6 +283,36 @@ static int maptk_main(int argc, char const* argv[])
     if (!bfs::exists(files[files.size()-1]))
     {
       throw maptk::path_not_exists(files[files.size()-1]);
+    }
+  }
+
+  // Create mask image list if a list file was given, else fill list with empty
+  // images. Files vector will only be populated if the use_masks bool is true
+  bool use_masks = false;
+  std::vector<maptk::path_t> mask_files;
+  if( mask_list_file != "" )
+  {
+    use_masks = true;
+    // Load file stream
+    std::ifstream mask_ifs(mask_list_file.c_str());
+    if( !mask_ifs )
+    {
+      throw maptk::path_not_exists(mask_list_file);
+    }
+    // load filepaths from file
+    for( std::string line; std::getline(mask_ifs, line); )
+    {
+      mask_files.push_back(line);
+      if( !bfs::is_regular_file( mask_files[mask_files.size()-1] ) )
+      {
+        throw maptk::path_not_exists( mask_files[mask_files.size()-1] );
+      }
+    }
+    // Check that image/mask list sizes are the same
+    if( files.size() != mask_files.size() )
+    {
+      throw maptk::invalid_value("Image and mask file lists are not congruent "
+                                 "in size.");
     }
   }
 
@@ -293,9 +349,19 @@ static int maptk_main(int argc, char const* argv[])
   for(unsigned i=0; i<files.size(); ++i)
   {
     std::cout << "processing frame "<<i<<": "<<files[i]<<std::endl;
-    maptk::image_container_sptr img = image_reader->load(files[i].string());
-    maptk::image_container_sptr converted = image_converter->convert(img);
-    tracks = feature_tracker->track(tracks, i, converted);
+
+    //maptk::image_container_sptr img = image_reader->load(files[i].string());
+    //maptk::image_container_sptr converted = image_converter->convert(img);
+
+    maptk::image_container_sptr converted_img,
+                                converted_mask;
+    converted_img = image_converter->convert( image_reader->load( files[i].string() ) );
+    if( use_masks )
+    {
+      converted_mask = image_converter->convert( image_reader->load( mask_files[i].string() ) );
+    }
+
+    tracks = feature_tracker->track(tracks, i, converted_img, converted_mask);
 
     // Compute ref homography for current frame with current track set + write to file
     // -> still doesn't take into account a full shotbreak, which would incur a track reset
