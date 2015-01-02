@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,7 +33,7 @@
  * \brief PROJ geo_map algorithm interface
  */
 
-#ifndef MAPTK_PROJ_GEO_MAP_H_
+#ifndef MAPTK_PLUGINS_PROJ_GEO_MAP_H_
 #define MAPTK_PLUGINS_PROJ_GEO_MAP_H_
 
 #include <maptk/algo/geo_map.h>
