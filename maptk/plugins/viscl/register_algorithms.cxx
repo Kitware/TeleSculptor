@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,7 +54,7 @@ namespace vcl
 int register_algorithms( maptk::registrar &reg )
 {
   LOG_DEBUG( "maptk::plugins::viscl::register_algorithms",
-             "Registering VISCL algo implementations (" << reg << ")" );
+             "Registering VISCL algo implementations" );
 
   REGISTRATION_INIT( reg );
 
