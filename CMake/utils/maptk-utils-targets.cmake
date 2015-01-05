@@ -29,8 +29,8 @@ define_property(GLOBAL PROPERTY maptk_export_targets
   FULL_DOCS "List of MAPTK targets to be exported in build and install trees."
   )
 define_property(GLOBAL PROPERTY maptk_libraries
-  BRIEF_DOCS "Libraries build as part of MAPTK"
-  FULL_DOCS "List of static/shared libraries build by MAPTK"
+  BRIEF_DOCS "Exported libraries built as part of MAPTK"
+  FULL_DOCS "List of exported static/shared libraries built by MAPTK"
   )
 
 # Default plugin library directories for a build or installation
