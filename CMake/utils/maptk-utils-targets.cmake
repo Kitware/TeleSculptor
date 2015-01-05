@@ -219,7 +219,10 @@ function(maptk_add_library name)
     COMPONENT           ${component}
     )
 
-  set_property(GLOBAL APPEND PROPERTY maptk_libraries ${name})
+  # Only add to library list if we're exporting the library
+  if(NOT no_export)
+    set_property(GLOBAL APPEND PROPERTY maptk_libraries ${name})
+  endif()
 endfunction()
 
 #+
