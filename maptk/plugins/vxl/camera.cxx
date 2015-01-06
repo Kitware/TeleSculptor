@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -65,7 +65,7 @@ vpgl_camera_to_maptk(const vpgl_perspective_camera<T>& vcam,
   mcam.set_intrinsics(mk);
 
   const vnl_quaternion<T>& vr = vcam.get_rotation().as_quaternion();
-  mcam.set_rotation(rotation_<T>(vector_4_<T>(vr.x(), vr.y(), vr.z(), vr.r())));
+  mcam.set_rotation(rotation_<T>(Eigen::Quaternion<T>(vr.r(), vr.x(), vr.y(), vr.z())));
 
   const vgl_point_3d<T>& vc = vcam.get_camera_center();
   mcam.set_center(vector_3_<T>(vc.x(), vc.y(), vc.z()));
@@ -82,7 +82,7 @@ maptk_to_vpgl_camera(const camera_<T>& mcam,
   maptk_to_vpgl_calibration(mcam.get_intrinsics(), vk);
   vcam.set_calibration(vk);
 
-  const vector_4_<T>& mr = mcam.get_rotation().quaternion();
+  const Eigen::Quaternion<T>& mr = mcam.get_rotation().quaternion();
   vcam.set_rotation(vgl_rotation_3d<T>(vnl_quaternion<T>(mr.x(), mr.y(),
                                                          mr.z(), mr.w())));
 

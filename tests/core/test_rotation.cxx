@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,7 +62,9 @@ main(int argc, char* argv[])
 IMPLEMENT_TEST(default_constructor)
 {
   maptk::rotation_d rot;
-  if (rot.quaternion() != maptk::vector_4d(0,0,0,1))
+  Eigen::Quaterniond I;
+  I.setIdentity();
+  if (rot.quaternion().coeffs() != I.coeffs())
   {
     TEST_ERROR("The default rotation is not the identity");
   }

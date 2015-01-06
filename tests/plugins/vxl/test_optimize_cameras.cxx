@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -160,7 +160,7 @@ IMPLEMENT_TEST(no_noise)
     // difference in camera rotation
     rotation_d a_r = p.second->rotation(),
                b_r = original_cams[p.first]->rotation();
-    vector_4d c_r = a_r.quaternion() - b_r.quaternion();
+    vector_4d c_r = a_r.quaternion().coeffs() - b_r.quaternion().coeffs();
     //cerr << "frm[" << p.first << "]\t:: quaternion delta :: " << c_r << endl;
     ss.str("");
     ss << "frm[" << p.first << "] quaternion delta check";
@@ -219,7 +219,7 @@ IMPLEMENT_TEST(noisy_cameras)
     // difference in camera rotation
     rotation_d a_r = p.second->rotation(),
                b_r = original_cams[p.first]->rotation();
-    vector_4d c_r = a_r.quaternion() - b_r.quaternion();
+    vector_4d c_r = a_r.quaternion().coeffs() - b_r.quaternion().coeffs();
     //cerr << "frm[" << p.first << "]\t:: quaternion delta :: " << c_r << endl;
     ss.str("");
     ss << "frm[" << p.first << "] quaternion delta check";
