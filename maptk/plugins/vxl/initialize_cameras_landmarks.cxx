@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,6 +42,7 @@
 #include <maptk/algo/estimate_essential_matrix.h>
 #include <maptk/algo/triangulate_landmarks.h>
 #include <maptk/exceptions.h>
+#include <maptk/eigen_io.h>
 #include <maptk/plugins/vxl/camera_map.h>
 #include <maptk/plugins/vxl/camera.h>
 

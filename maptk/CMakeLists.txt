@@ -29,6 +29,7 @@ set(maptk_public_headers
   covariance.h
   descriptor.h
   descriptor_set.h
+  eigen_io.h
   exceptions.h
   feature.h
   feature_set.h

@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,10 +39,6 @@
 #ifndef MAPTK_VECTOR_H_
 #define MAPTK_VECTOR_H_
 
-#include <maptk/config.h>
-
-#include <cstring>
-#include <iostream>
 
 #include <Eigen/Core>
 
@@ -229,22 +225,6 @@ typedef vector_3_<float>  vector_3f;
 typedef vector_4_<double> vector_4d;
 typedef vector_4_<float>  vector_4f;
 /// \endcond
-
-
-/// input stream operator for a vector
-/**
- * \param s an input stream
- * \param v vector to stream into
- */
-template <typename T, int N>
-std::istream& operator>>(std::istream& s, Eigen::Matrix<T,N,1>& v)
-{
-  for( int i=0; i<N; ++i)
-  {
-    s >> std::skipws >> v[i];
-  }
-  return s;
-}
 
 
 } // end namespace maptk
