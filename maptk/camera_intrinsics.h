@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,7 +63,7 @@ public:
 
   /// Constructor for camera intrinsics
   camera_intrinsics_<T>(T focal_length,
-                        const vector_2_<T>& principal_point,
+                        const Eigen::Matrix<T,2,1>& principal_point,
                         T aspect_ratio=1.0,
                         T skew=0.0)
   : focal_length_(focal_length),
@@ -76,7 +76,7 @@ public:
   template <typename U>
   explicit camera_intrinsics_<T>(const camera_intrinsics_<U>& other)
   : focal_length_(static_cast<T>(other.focal_length())),
-    principal_point_(static_cast<vector_2_<T> >(other.principal_point())),
+    principal_point_(other.principal_point().template cast<T>()),
     aspect_ratio_(static_cast<T>(other.aspect_ratio())),
     skew_(static_cast<T>(other.skew()))
   {}
@@ -91,7 +91,7 @@ public:
   /// Access the focal length
   const T& focal_length() const { return focal_length_; }
   /// Access the principal point
-  const vector_2_<T>& principal_point() const { return principal_point_; }
+  const Eigen::Matrix<T,2,1>& principal_point() const { return principal_point_; }
   /// Access the aspect ratio
   const T& aspect_ratio() const { return aspect_ratio_; }
   /// Access the skew
@@ -100,7 +100,7 @@ public:
   /// Set the focal length
   void set_focal_length(const T& focal_length) { focal_length_ = focal_length; }
   /// Set the principal point
-  void set_principal_point(const vector_2_<T>& pp) { principal_point_ = pp; }
+  void set_principal_point(const Eigen::Matrix<T,2,1>& pp) { principal_point_ = pp; }
   /// Set the aspect_ratio
   void set_aspect_ratio(const T& aspect_ratio) { aspect_ratio_ = aspect_ratio; }
   /// Set the skew
@@ -110,19 +110,19 @@ public:
   operator Eigen::Matrix<T,3,3>() const;
 
   /// Map normalized image coordinates into actual image coordinates
-  vector_2_<T> map(const Eigen::Matrix<T,2,1>& norm_pt) const;
+  Eigen::Matrix<T,2,1> map(const Eigen::Matrix<T,2,1>& norm_pt) const;
 
   /// Map a 3D point in camera coordinates into actual image coordinates
-  vector_2_<T> map(const Eigen::Matrix<T,3,1>& norm_hpt) const;
+  Eigen::Matrix<T,2,1> map(const Eigen::Matrix<T,3,1>& norm_hpt) const;
 
   /// Unmap actual image coordinates back into normalized image coordinates
-  vector_2_<T> unmap(const Eigen::Matrix<T,2,1>& norm_pt) const;
+  Eigen::Matrix<T,2,1> unmap(const Eigen::Matrix<T,2,1>& norm_pt) const;
 
 protected:
   /// focal length of camera
   T focal_length_;
   /// principal point of camera
-  vector_2_<T> principal_point_;
+  Eigen::Matrix<T,2,1> principal_point_;
   /// aspect ratio of camera
   T aspect_ratio_;
   /// skew of camera

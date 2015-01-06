@@ -391,7 +391,7 @@ bundle_adjust
       }
       else if( landmark_f* lmf = dynamic_cast<landmark_f*>(lm.get()) )
       {
-        lmf->set_loc(vector_3f(loc));
+        lmf->set_loc(loc.cast<float>());
       }
     }
     cameras = camera_map_sptr(new camera_map(vcams));

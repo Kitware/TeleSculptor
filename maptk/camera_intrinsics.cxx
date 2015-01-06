@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -68,37 +68,37 @@ camera_intrinsics_<T>
 
 /// Map normalized image coordinates into actual image coordinates
 template <typename T>
-vector_2_<T>
+Eigen::Matrix<T,2,1>
 camera_intrinsics_<T>
 ::map(const Eigen::Matrix<T,2,1>& point) const
 {
-  const vector_2_<T> pt(point);
-  const vector_2_<T>& pp = principal_point_;
-  return vector_2_<T>(pt.x() * focal_length_ + pt.y() * skew_ + pp.x(),
-                      pt.y() * focal_length_ / aspect_ratio_ + pp.y());
+  const Eigen::Matrix<T,2,1> pt(point);
+  const Eigen::Matrix<T,2,1>& pp = principal_point_;
+  return Eigen::Matrix<T,2,1>(pt.x() * focal_length_ + pt.y() * skew_ + pp.x(),
+                              pt.y() * focal_length_ / aspect_ratio_ + pp.y());
 }
 
 
 /// Map a 3D point in camera coordinates into actual image coordinates
 template <typename T>
-vector_2_<T>
+Eigen::Matrix<T,2,1>
 camera_intrinsics_<T>
 ::map(const Eigen::Matrix<T,3,1>& norm_hpt) const
 {
-  return this->map(vector_2_<T>(norm_hpt[0]/norm_hpt[2],
-                                norm_hpt[1]/norm_hpt[2]));
+  return this->map(Eigen::Matrix<T,2,1>(norm_hpt[0]/norm_hpt[2],
+                                        norm_hpt[1]/norm_hpt[2]));
 }
 
 
 /// Unmap actual image coordinates back into normalized image coordinates
 template <typename T>
-vector_2_<T>
+Eigen::Matrix<T,2,1>
 camera_intrinsics_<T>
 ::unmap(const Eigen::Matrix<T,2,1>& pt) const
 {
-  vector_2_<T> p0 = pt - principal_point_;
+  Eigen::Matrix<T,2,1> p0 = pt - principal_point_;
   T y = p0.y() * aspect_ratio_ / focal_length_;
-  return vector_2_<T>((p0.x() - y * skew_) / focal_length_, y);
+  return Eigen::Matrix<T,2,1>((p0.x() - y * skew_) / focal_length_, y);
 }
 
 

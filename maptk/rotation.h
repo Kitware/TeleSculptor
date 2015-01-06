@@ -106,7 +106,7 @@ public:
    *       returns (0,0,1) in this case.
    * \sa angle()
    */
-  vector_3_<T> axis() const;
+  Eigen::Matrix<T,3,1> axis() const;
 
   /// Returns the angle of the rotation in radians about the axis
   /**
@@ -121,7 +121,7 @@ public:
   const Eigen::Quaternion<T>& quaternion() const { return q_; }
 
   /// Return the rotation as a Rodrigues vector
-  vector_3_<T> rodrigues() const;
+  Eigen::Matrix<T,3,1> rodrigues() const;
 
   /// Convert to yaw, pitch, and roll
   void get_yaw_pitch_roll(T& yaw, T& pitch, T& roll) const;

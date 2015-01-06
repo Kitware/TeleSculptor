@@ -31,9 +31,6 @@
 /**
  * \file
  * \brief Header for Eigen fixed size column vector typedefs
- *        as well as \link maptk::vector_2_ vector_2_<T> \endlink,
- *        \link maptk::vector_3_ vector_3_<T> \endlink, and
- *        \link maptk::vector_4_ vector_4_<T> \endlink classes
  */
 
 #ifndef MAPTK_VECTOR_H_
@@ -46,184 +43,13 @@
 namespace maptk
 {
 
-/// A representation of a 2D vector.
-/**
- * This derived class exists to add convenience
- * constructors and accessors
- */
-template <typename T>
-class vector_2_ : public Eigen::Matrix<T,2,1>
-{
-public:
-  /// Default Constructor
-  vector_2_<T> () {}
-
-  /// Copy Constructor
-  vector_2_<T> (const vector_2_<T>& other)
-  : Eigen::Matrix<T,2,1>(other) {}
-
-  /// Constructor from base class
-  template<typename OtherDerived>
-  vector_2_<T> (const Eigen::MatrixBase<OtherDerived>& base)
-  : Eigen::Matrix<T,2,1>(base) {}
-
-  /// Constructor from another data type
-  template <typename U>
-  explicit vector_2_<T> (const vector_2_<U>& other)
-  : Eigen::Matrix<T,2,1>(other.template cast<T>()) {}
-
-  /// Constructor for a 2D vector
-  vector_2_<T>(const T& x, const T& y)
-  {
-    (*this)[0] = x;
-    (*this)[1] = y;
-  }
-
-  /// Assignement operator
-  template <typename OtherDerived>
-  vector_2_<T>& operator= (const Eigen::MatrixBase<OtherDerived>& other)
-  {
-    this->Eigen::Matrix<T,2,1>::operator=(other);
-    return *this;
-  }
-
-  /// Accessor for the X coordinate
-  T& x() { return (*this)[0]; }
-  /// Accessor for the X coordinate (const)
-  const T& x() const { return (*this)[0]; }
-  /// Accessor for the Y coordinate
-  T& y() { return (*this)[1]; }
-  /// Accessor for the Y coordinate (const)
-  const T& y() const { return (*this)[1]; }
-};
-
-
-/// A representation of a 3D vector.
-/**
- * This derived class exists to add convenience
- * constructors and accessors
- */
-template <typename T>
-class vector_3_ : public Eigen::Matrix<T,3,1>
-{
-public:
-  /// Default Constructor
-  vector_3_<T> () {}
-
-  /// Copy Constructor
-  vector_3_<T> (const vector_3_<T>& other)
-  : Eigen::Matrix<T,3,1>(other) {}
-
-  /// Constructor from base class
-  template <typename OtherDerived>
-  vector_3_<T> (const Eigen::MatrixBase<OtherDerived>& base)
-  : Eigen::Matrix<T,3,1>(base) {}
-
-  /// Constructor from another data type
-  template <typename U>
-  explicit vector_3_<T> (const vector_3_<U>& other)
-  : Eigen::Matrix<T,3,1>(other.template cast<T>()) {}
-
-  /// Constructor for a 3D vector
-  vector_3_<T>(const T& x, const T& y, const T& z)
-  {
-    (*this)[0] = x;
-    (*this)[1] = y;
-    (*this)[2] = z;
-  }
-
-  /// Assignement operator
-  template <typename OtherDerived>
-  vector_3_<T>& operator= (const Eigen::MatrixBase<OtherDerived>& other)
-  {
-    this->Eigen::Matrix<T,3,1>::operator=(other);
-    return *this;
-  }
-
-  /// Accessor for the X coordinate
-  T& x() { return (*this)[0]; }
-  /// Accessor for the X coordinate (const)
-  const T& x() const { return (*this)[0]; }
-  /// Accessor for the Y coordinate
-  T& y() { return (*this)[1]; }
-  /// Accessor for the Y coordinate (const)
-  const T& y() const { return (*this)[1]; }
-  /// Accessor for the Z coordinate
-  T& z() { return (*this)[2]; }
-  /// Accessor for the Z coordinate (const)
-  const T& z() const { return (*this)[2]; }
-};
-
-
-/// A representation of a 4D vector.
-/**
- * This derived class exists to add convenience
- * constructors and accessors
- */
-template <typename T>
-class vector_4_ : public Eigen::Matrix<T,4,1>
-{
-public:
-  /// Default Constructor
-  vector_4_<T> () {}
-
-  /// Copy Constructor
-  vector_4_<T> (const vector_4_<T>& other)
-  : Eigen::Matrix<T,4,1>(other) {}
-
-  /// Constructor from base class
-  template <typename OtherDerived>
-  vector_4_<T> (const Eigen::MatrixBase<OtherDerived>& base)
-  : Eigen::Matrix<T,4,1>(base) {}
-
-  /// Constructor from another data type
-  template <typename U>
-  explicit vector_4_<T> (const vector_4_<U>& other)
-  : Eigen::Matrix<T,4,1>(other.template cast<T>()) {}
-
-  /// Constructor for a 4D vector
-  vector_4_<T>(const T& x, const T& y, const T& z, const T& w)
-  {
-    (*this)[0] = x;
-    (*this)[1] = y;
-    (*this)[2] = z;
-    (*this)[3] = w;
-  }
-
-  /// Assignement operator
-  template <typename OtherDerived>
-  vector_4_<T>& operator= (const Eigen::MatrixBase<OtherDerived>& other)
-  {
-    this->Eigen::Matrix<T,4,1>::operator=(other);
-    return *this;
-  }
-
-  /// Accessor for the X coordinate
-  T& x() { return (*this)[0]; }
-  /// Accessor for the X coordinate (const)
-  const T& x() const { return (*this)[0]; }
-  /// Accessor for the Y coordinate
-  T& y() { return (*this)[1]; }
-  /// Accessor for the Y coordinate (const)
-  const T& y() const { return (*this)[1]; }
-  /// Accessor for the Z coordinate
-  T& z() { return (*this)[2]; }
-  /// Accessor for the Z coordinate (const)
-  const T& z() const { return (*this)[2]; }
-  /// Accessor for the W coordinate
-  T& w() { return (*this)[3]; }
-  /// Accessor for the W coordinate (const)
-  const T& w() const { return (*this)[3]; }
-};
-
-
 /// \cond DoxygenSuppress
-typedef vector_2_<double> vector_2d;
-typedef vector_2_<float>  vector_2f;
-typedef vector_3_<double> vector_3d;
-typedef vector_3_<float>  vector_3f;
-typedef vector_4_<double> vector_4d;
-typedef vector_4_<float>  vector_4f;
+typedef Eigen::Vector2d vector_2d;
+typedef Eigen::Vector2f vector_2f;
+typedef Eigen::Vector3d vector_3d;
+typedef Eigen::Vector3f vector_3f;
+typedef Eigen::Vector4d vector_4d;
+typedef Eigen::Vector4f vector_4f;
 /// \endcond
 
 

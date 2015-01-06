@@ -123,7 +123,7 @@ std::istream&  operator>>(std::istream& s, similarity_<T>& t)
 {
   T sc;
   rotation_<T> ro;
-  vector_3_<T> tr;
+  Eigen::Matrix<T,3,1> tr;
   s >> sc >> ro >> tr;
   t = similarity_<T>(sc, ro, tr);
   return s;

@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -67,7 +67,7 @@ public:
   explicit similarity_<T>(const similarity_<U>& other)
   : scale_(static_cast<T>(other.scale())),
     rot_(static_cast<rotation_<T> >(other.rotation())),
-    trans_(static_cast<vector_3_<T> >(other.translation())) {}
+    trans_(other.translation().template cast<T>()) {}
 
   /// Constructor - from scale, rotatation, and translation
   /**
@@ -99,7 +99,7 @@ public:
   const rotation_<T>& rotation() const { return rot_; }
 
   /// Return the translation vector
-  const vector_3_<T>& translation() const { return trans_; }
+  const Eigen::Matrix<T,3,1>& translation() const { return trans_; }
 
   /// Compute the inverse similarity
   similarity_<T> inverse() const
@@ -143,7 +143,7 @@ protected:
   /// rotation
   rotation_<T> rot_;
   /// translation
-  vector_3_<T> trans_;
+  Eigen::Matrix<T,3,1> trans_;
 };
 
 

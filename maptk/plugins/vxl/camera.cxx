@@ -68,7 +68,7 @@ vpgl_camera_to_maptk(const vpgl_perspective_camera<T>& vcam,
   mcam.set_rotation(rotation_<T>(Eigen::Quaternion<T>(vr.r(), vr.x(), vr.y(), vr.z())));
 
   const vgl_point_3d<T>& vc = vcam.get_camera_center();
-  mcam.set_center(vector_3_<T>(vc.x(), vc.y(), vc.z()));
+  mcam.set_center(Eigen::Matrix<T,3,1>(vc.x(), vc.y(), vc.z()));
 }
 
 
@@ -86,7 +86,7 @@ maptk_to_vpgl_camera(const camera_<T>& mcam,
   vcam.set_rotation(vgl_rotation_3d<T>(vnl_quaternion<T>(mr.x(), mr.y(),
                                                          mr.z(), mr.w())));
 
-  const vector_3_<T>& mc = mcam.get_center();
+  const Eigen::Matrix<T,3,1>& mc = mcam.get_center();
   vcam.set_camera_center(vgl_point_3d<T>(mc.x(), mc.y(), mc.z()));
 }
 
@@ -99,7 +99,7 @@ vpgl_calibration_to_maptk(const vpgl_calibration_matrix<T>& vcal,
 {
   vgl_point_2d<T> vpp = vcal.principal_point();
   mcal = camera_intrinsics_<T>(vcal.focal_length() * vcal.x_scale(),
-                               vector_2_<T>(vpp.x(), vpp.y()),
+                               Eigen::Matrix<T,2,1>(vpp.x(), vpp.y()),
                                vcal.x_scale() / vcal.y_scale(),
                                vcal.skew());
 }
@@ -111,7 +111,7 @@ void
 maptk_to_vpgl_calibration(const camera_intrinsics_<T>& mcal,
                           vpgl_calibration_matrix<T>& vcal)
 {
-  const vector_2_<T>& mpp = mcal.principal_point();
+  const Eigen::Matrix<T,2,1>& mpp = mcal.principal_point();
   vcal = vpgl_calibration_matrix<T>(mcal.focal_length(),
                                     vgl_point_2d<T>(mpp.x(), mpp.y()),
                                     1, T(1) / mcal.aspect_ratio(),

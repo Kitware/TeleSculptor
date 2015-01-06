@@ -119,15 +119,15 @@ rotation_<T>
 
 /// Returns the axis of rotation
 template <typename T>
-vector_3_<T>
+Eigen::Matrix<T,3,1>
 rotation_<T>
 ::axis() const
 {
-  vector_3_<T> dir(q_.x(), q_.y(), q_.z());
+  Eigen::Matrix<T,3,1> dir(q_.x(), q_.y(), q_.z());
   T mag = dir.norm();
   if (mag == T(0))
   {
-    return vector_3_<T>(0,0,1);
+    return Eigen::Matrix<T,3,1>(0,0,1);
   }
   return dir / mag;
 }
@@ -139,7 +139,7 @@ T
 rotation_<T>
 ::angle() const
 {
-  const double i = vector_3_<T>(q_.x(), q_.y(), q_.z()).norm();
+  const double i = Eigen::Matrix<T,3,1>(q_.x(), q_.y(), q_.z()).norm();
   const double r = q_.w();
   T a = static_cast<T>(2.0 * std::atan2(i, r));
   const T pi = boost::math::constants::pi<T>();
@@ -160,14 +160,14 @@ rotation_<T>
 
 /// Return the rotation as a Rodrigues vector
 template <typename T>
-vector_3_<T>
+Eigen::Matrix<T,3,1>
 rotation_<T>
 ::rodrigues() const
 {
   T angle = this->angle();
   if (angle == 0.0)
   {
-    return vector_3_<T>(0,0,0);
+    return Eigen::Matrix<T,3,1>(0,0,0);
   }
   return this->axis() * angle;
 }
@@ -224,7 +224,7 @@ std::ostream&  operator<<(std::ostream& s, const rotation_<T>& r)
 template <typename T>
 std::istream&  operator>>(std::istream& s, rotation_<T>& r)
 {
-  vector_4_<T> q;
+  Eigen::Matrix<T,4,1> q;
   s >> q;
   r = rotation_<T>(q);
   return s;
