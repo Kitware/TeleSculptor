@@ -16,6 +16,9 @@ Build System
  * Added install rules for CMake utilities for MAPTK users to create MAPTK
    complient plugin interface libraries.
 
+ * Added FindEigen3 CMake module and call it to find Eigen, which is now a
+   required dependency.
+
 MAPTK Library / Core Plugin
 
  * Added plugin support for loading externally defined algorithm
@@ -25,6 +28,22 @@ MAPTK Library / Core Plugin
 
  * Separated out algorithm implementations that used to be in the main MAPTK
    library into a core libraray witha a plugin interface.
+
+ * Added required dependency on the Eigen3 header-only library.  Going forward
+   Eigen will provide standardized linear algebra functionality so we do not
+   waste effort duplicating linear algebra code in MAP-Tk.
+
+ * Replaced maptk::matrix_<M,N,T> with Eigen::Matrix<T,M,N>
+
+ * Replaced maptk::vector_<N,T> with Eigen::Matrix<T,N,1>
+
+ * Removed vector_2_<T>, vector_3_<T>, and vector_4_<T> sub-classes
+
+ * Added missing operator>> for Eigen::Matrix<T,M,N>
+
+ * Changed internal quaternion vector in maptk::rotation_<T> to use
+   Eigen::Quaternion<T> and replaced most of the calculations with those
+   provided by Eigen::Quaternion<T> member functions.
 
 OCV Plugin
 
