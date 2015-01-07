@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
 #ifndef MAPTK_PLUGIN_INTERFACE_ALGORITHM_PLUGIN_INTERFACE_MACROS_H_
 #define MAPTK_PLUGIN_INTERFACE_ALGORITHM_PLUGIN_INTERFACE_MACROS_H_
 
-#include <maptk/logging_macros.h>
+#include <iostream>
 #include <maptk/registrar.h>
 
 
@@ -53,15 +53,22 @@
 #define REGISTRATION_INIT( reg ) \
   unsigned int maptk_api_expected_ = 0, maptk_api_registered_ = 0; \
   maptk::registrar &maptk_api_registrar_ = reg
+
+
 /// Log to standard error a summary of registration results
 /**
- * NOTE: Logging only occurs when build in debug (-DNDEBUG)
+ * NOTE: Logging only occurs when built in debug (-DNDEBUG)
  */
+#ifndef NDEBUG
 #define REGISTRATION_SUMMARY() \
-  LOG_DEBUG( "maptk::algorithm_plugin_interface_macros::REGISTRATION_SUMMARY", \
-             "Registered " << maptk_api_registered_ << " of " << maptk_api_expected_ \
-             << " algorithms" \
-             << "\n\t(@" << __FILE__ << ")" )
+  std::cerr << "[DEBUG][maptk::algorithm_plugin_interface_macros::REGISTRATION_SUMMARY] " \
+            << "Registered " << maptk_api_registered_ << " of " << maptk_api_expected_ << " algorithms" << std::endl \
+            << "\t(@" << __FILE__ << ")" << std::endl;
+#else
+#define REGISTRATION_SUMMARY()
+#endif
+
+
 /// Return the number of registrations that failed (int).
 #define REGISTRATION_FAILURES() \
   (maptk_api_expected_ - maptk_api_registered_)

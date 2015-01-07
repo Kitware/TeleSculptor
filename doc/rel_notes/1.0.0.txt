@@ -26,6 +26,9 @@ MAPTK Library / Core Plugin
  * Separated out algorithm implementations that used to be in the main MAPTK
    library into a core libraray witha a plugin interface.
 
+ * Removed use of logging helper macros from header files as logging macro
+   header is not a public header.
+
 OCV Plugin
 
  * Converted module library into a library-plugin pair.
