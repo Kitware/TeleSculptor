@@ -63,6 +63,9 @@
 namespace bfs = boost::filesystem;
 
 
+static std::string LOGGING_PREFIX = "track_features_tool";
+
+
 static maptk::config_block_sptr default_config()
 {
   maptk::config_block_sptr config = maptk::config_block::empty_config("feature_tracker_tool");
@@ -78,13 +81,19 @@ static maptk::config_block_sptr default_config()
                     "the image they are associated with.\n"
                     "\n"
                     "Leave this blank if no image masking is desired.");
+  config->set_value("invert_masks", false,
+                    "If true, all mask images will be inverted after loading. "
+                    "This is useful if mask images read in use positive "
+                    "values to indicated masked areas instead of non-masked "
+                    "areas.");
   config->set_value("output_tracks_file", "",
                     "Path to a file to write output tracks to. If this "
                     "file exists, it will be overwritten.");
   config->set_value("output_homography_file", "",
                     "Optional path to a file to write source-to-reference "
                     "homographies for each frame. Leave blank to disable this "
-                    "output.");
+                    "output. The output_homography_generator algorithm type "
+                    "only needs to be set if this is set.");
 
   maptk::algo::track_features::get_nested_algo_configuration("feature_tracker", config, maptk::algo::track_features_sptr());
   maptk::algo::image_io::get_nested_algo_configuration("image_reader", config, maptk::algo::image_io_sptr());
@@ -267,6 +276,7 @@ static int maptk_main(int argc, char const* argv[])
   //  - filepath validity checked above
   std::string image_list_file = config->get_value<std::string>("image_list_file");
   std::string mask_list_file = config->get_value<std::string>("mask_list_file");
+  bool invert_masks = config->get_value<bool>("invert_masks");
   std::string output_tracks_file = config->get_value<std::string>("output_tracks_file");
 
   std::ifstream ifs(image_list_file.c_str());
@@ -292,6 +302,9 @@ static int maptk_main(int argc, char const* argv[])
   std::vector<maptk::path_t> mask_files;
   if( mask_list_file != "" )
   {
+    LOG_DEBUG( LOGGING_PREFIX,
+               "Loading paired mask images from list file" );
+
     use_masks = true;
     // Load file stream
     std::ifstream mask_ifs(mask_list_file.c_str());
@@ -314,6 +327,8 @@ static int maptk_main(int argc, char const* argv[])
       throw maptk::invalid_value("Image and mask file lists are not congruent "
                                  "in size.");
     }
+    LOG_DEBUG( LOGGING_PREFIX,
+               "Loaded " << mask_files.size() << " mask image files." );
   }
 
   // verify that we can open the output file for writing
@@ -331,7 +346,8 @@ static int maptk_main(int argc, char const* argv[])
   // Create the output homography file stream if specified
   // Validity of file path checked during configuration file validity check.
   std::ofstream homog_ofs;
-  if ( config->has_value("output_homography_file") )
+  if ( config->has_value("output_homography_file") &&
+       config->get_value<std::string>("output_homography_file") != "" )
   {
     maptk::path_t homog_fp = config->get_value<maptk::path_t>("output_homography_file");
     homog_ofs.open( homog_fp.string().c_str() );
@@ -354,11 +370,29 @@ static int maptk_main(int argc, char const* argv[])
     //maptk::image_container_sptr converted = image_converter->convert(img);
 
     maptk::image_container_sptr converted_img,
-                                converted_mask;
+                                mask, converted_mask;
     converted_img = image_converter->convert( image_reader->load( files[i].string() ) );
     if( use_masks )
     {
-      converted_mask = image_converter->convert( image_reader->load( mask_files[i].string() ) );
+      mask = image_reader->load( mask_files[i].string() );
+
+      if( invert_masks )
+      {
+        // since this is a mask image, only traversing first channel as that's
+        // all that will ever be considered.
+        maptk::image inverted_mask_img = mask->get_image();
+        maptk::byte *cur_byte = inverted_mask_img.first_pixel();
+        for( size_t idx = 0; idx < inverted_mask_img.width() * inverted_mask_img.height(); ++idx )
+        {
+          (*cur_byte) = !(*cur_byte);
+          cur_byte++;
+        }
+      }
+
+      LOG_DEBUG( LOGGING_PREFIX,
+                 "Mask upper-left pixel: " << static_cast<int>(*(mask->get_image().first_pixel())) );
+
+      converted_mask = image_converter->convert( mask );
     }
 
     tracks = feature_tracker->track(tracks, i, converted_img, converted_mask);

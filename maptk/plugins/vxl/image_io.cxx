@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,8 +35,10 @@
 
 #include "image_io.h"
 
+#include <maptk/logging_macros.h>
 #include <maptk/plugins/vxl/image_container.h>
 
+#include <vil/vil_convert.h>
 #include <vil/vil_load.h>
 #include <vil/vil_save.h>
 
@@ -52,7 +54,18 @@ image_container_sptr
 image_io
 ::load_(const std::string& filename) const
 {
-  vil_image_view<vxl_byte> img = vil_load(filename.c_str());
+  LOG_DEBUG( "maptk::vxl::image_io::load",
+             "Loading image from file: " << filename );
+  // If this loads in a boolean image, true-value regions are represented in
+  // the vxl_byte image as 1's.
+  vil_image_view<vxl_byte> img = vil_convert_cast(vxl_byte(), vil_load(filename.c_str()) );
+  LOG_DEBUG( "maptk::vxl::image_io::load",
+             "Image stats (" << filename << "):" << std::endl <<
+             "\tni: " << img.ni() << std::endl <<
+             "\tnj: " << img.nj() << std::endl <<
+             "\tnplanes: " << img.nplanes() << std::endl <<
+             "\tsize: " << img.size()
+             );
   return image_container_sptr(new vxl::image_container(img));
 }
 

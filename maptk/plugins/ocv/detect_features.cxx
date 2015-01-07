@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -174,7 +174,7 @@ detect_features
     // Make sure we make a one-channel cv::Mat
     ::maptk::image s = mask->get_image();
     // hijacking memory of given mask image, but only telling the new image
-    // object to consider the first channel. See function doc.
+    // object to consider the first channel. See maptk::image documentation.
     ::maptk::image i(s.memory(),
                      static_cast< ::maptk::image::byte* >(s.memory()->data()),
                      s.width(),  s.height(), 1 /*depth*/,
