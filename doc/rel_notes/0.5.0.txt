@@ -45,9 +45,6 @@ Core Library
  * Added description field for algorithm implementations that also get passed
    through into generated configuration files.
 
- * Removed use of logging helper macros from header files as logging macro
-   header is not a public header.
-
 VXL Library
 
  * Added concrete implementation of essential matrix estimation using the

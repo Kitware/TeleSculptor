@@ -89,7 +89,7 @@ public:
   /// Register a new name and item with the registrar for a given type
   /**
    * Item registration follows the same semantics as item insertion with
-   * std::map instances. If the given name does not associated with an existing
+   * std::map instances. If the given name does not associate with an existing
    * entry, the name-item pair is registered and the function returns true. If
    * the name already exists in the registry for the templated type, then the
    * given item is NOT registered with the given name, i.e. no overwriting
