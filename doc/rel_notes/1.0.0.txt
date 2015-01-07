@@ -16,6 +16,9 @@ Build System
  * Added install rules for CMake utilities for MAPTK users to create MAPTK
    complient plugin interface libraries.
 
+ * Added private header CMake variables for add_library call, allowing
+   visibility of file in IDEs.
+
 MAPTK Library / Core Plugin
 
  * Added plugin support for loading externally defined algorithm
