@@ -29,8 +29,8 @@ define_property(GLOBAL PROPERTY maptk_export_targets
   FULL_DOCS "List of MAPTK targets to be exported in build and install trees."
   )
 define_property(GLOBAL PROPERTY maptk_libraries
-  BRIEF_DOCS "Libraries build as part of MAPTK"
-  FULL_DOCS "List of static/shared libraries build by MAPTK"
+  BRIEF_DOCS "Exported libraries built as part of MAPTK"
+  FULL_DOCS "List of exported static/shared libraries built by MAPTK"
   )
 
 # Default plugin library directories for a build or installation
@@ -219,7 +219,10 @@ function(maptk_add_library name)
     COMPONENT           ${component}
     )
 
-  set_property(GLOBAL APPEND PROPERTY maptk_libraries ${name})
+  # Only add to library list if we're exporting the library
+  if(NOT no_export)
+    set_property(GLOBAL APPEND PROPERTY maptk_libraries ${name})
+  endif()
 endfunction()
 
 #+
