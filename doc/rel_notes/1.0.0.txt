@@ -50,3 +50,8 @@ Tests
 
 Fixes since v0.5.0
 ------------------
+
+Build System
+
+ * Fixed addition of library to global maptk_libraries property to only happen
+   if that library is being exported.
