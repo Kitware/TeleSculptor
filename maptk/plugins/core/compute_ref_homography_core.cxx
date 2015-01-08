@@ -448,7 +448,6 @@ compute_ref_homography_core
     output->normalize();
   }
 
-  vector_3d tmp_3d;
   BOOST_FOREACH( track_info_t& ti, *new_buffer )
   {
     // Update reference locations for existing tracks using new homography
