@@ -48,6 +48,7 @@
 #include <maptk/config_block.h>
 #include <maptk/config_block_io.h>
 #include <maptk/exceptions.h>
+#include <maptk/logging_macros.h>
 #include <maptk/track_set_io.h>
 #include <maptk/types.h>
 
