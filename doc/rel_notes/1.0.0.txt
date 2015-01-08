@@ -61,3 +61,7 @@ Build System
 
  * Fixed addition of library to global maptk_libraries property to only happen
    if that library is being exported.
+
+ * Removed target generation for doxygen template file configuration which had
+   caused race-conditions in parallel builds that included documentation
+   generation.
