@@ -35,6 +35,7 @@
 
 #include "homography.h"
 #include "exceptions/math.h"
+#include <Eigen/LU>
 
 namespace maptk
 {
@@ -79,7 +80,7 @@ f2f_homography
 f2f_homography
 ::inverse() const
 {
-  return f2f_homography( this->inverse(), to_id_, from_id_ );
+  return f2f_homography( homography::inverse(), to_id_, from_id_ );
 }
 
 
