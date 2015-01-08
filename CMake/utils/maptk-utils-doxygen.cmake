@@ -74,8 +74,10 @@ function(maptk_create_doxygen name inputdir)
       )
 
     # Configuring template files and linking known target names
-    # Make sure targets get made, else this can't connect the dependency chain
-    #set(no_configure_target TRUE)
+    # Makeing sure that no targets are generated for file configuration, else
+    #   double configuration may occur during a parallel build, leading to
+    #   race-condition errors.
+    set(no_configure_target TRUE)
     message(STATUS "[doxy-${name}] Configuring Doxyfile.common")
     maptk_configure_file(${name}-doxyfile.common
       "${doxy_files_dir}/Doxyfile.common.in"
