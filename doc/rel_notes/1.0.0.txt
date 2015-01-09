@@ -32,7 +32,7 @@ MAPTK Library / Core Plugin
  * Removed use of logging helper macros from header files as logging macro
    header is not a public header.
 
- * Added optional mask image input to track features algorithm definitioan and
+ * Added optional mask image input to track features algorithm definition and
    core implementation.
 
 OCV Plugin

@@ -87,6 +87,14 @@ static maptk::config_block_sptr default_config()
                     "This is useful if mask images read in use positive "
                     "values to indicated masked areas instead of non-masked "
                     "areas.");
+  config->set_value("expect_multichannel_masks", false,
+                    "A majority of the time, mask images are a single channel, "
+                    "however it is feasibly possible that certain "
+                    "implementations may use multi-channel masks. If this is "
+                    "true we will expect multiple-channel mask images, "
+                    "warning when a single-channel mask is provided. If this "
+                    "is false we error upon seeing a multi-channel mask "
+                    "image.");
   config->set_value("output_tracks_file", "",
                     "Path to a file to write output tracks to. If this "
                     "file exists, it will be overwritten.");
@@ -278,6 +286,7 @@ static int maptk_main(int argc, char const* argv[])
   std::string image_list_file = config->get_value<std::string>("image_list_file");
   std::string mask_list_file = config->get_value<std::string>("mask_list_file");
   bool invert_masks = config->get_value<bool>("invert_masks");
+  bool expect_multichannel_masks = config->get_value<bool>("expect_multichannel_masks");
   std::string output_tracks_file = config->get_value<std::string>("output_tracks_file");
 
   std::ifstream ifs(image_list_file.c_str());
@@ -373,25 +382,35 @@ static int maptk_main(int argc, char const* argv[])
     maptk::image_container_sptr converted_img,
                                 mask, converted_mask;
     converted_img = image_converter->convert( image_reader->load( files[i].string() ) );
+
+    // Load the mask for this image if we were given a mask image list
     if( use_masks )
     {
       mask = image_reader->load( mask_files[i].string() );
 
+      // error out if we are not expecting a multi-channel mask
+      if( !expect_multichannel_masks && mask->depth() > 1 )
+      {
+        LOG_ERROR( LOGGING_PREFIX,
+                   "Encounted multi-channel mask image!" );
+        return EXIT_FAILURE;
+      }
+      else if( expect_multichannel_masks && mask->depth() == 1 )
+      {
+        LOG_WARN( LOGGING_PREFIX,
+                  "Expecting multi-channel masks but received one that was "
+                  "single-channel." );
+      }
+
       if( invert_masks )
       {
-        // since this is a mask image, only traversing first channel as that's
-        // all that will ever be considered.
-        maptk::image inverted_mask_img = mask->get_image();
-        maptk::byte *cur_byte = inverted_mask_img.first_pixel();
-        for( size_t idx = 0; idx < inverted_mask_img.width() * inverted_mask_img.height(); ++idx )
+        maptk::byte *cur_byte = mask->get_image().first_pixel();
+        for( size_t idx = 0; idx < mask->width() * mask->height() * mask->depth(); ++idx )
         {
           (*cur_byte) = !(*cur_byte);
           cur_byte++;
         }
       }
-
-      LOG_DEBUG( LOGGING_PREFIX,
-                 "Mask upper-left pixel: " << static_cast<int>(*(mask->get_image().first_pixel())) );
 
       converted_mask = image_converter->convert( mask );
     }
