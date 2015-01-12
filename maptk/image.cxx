@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -312,6 +312,49 @@ bool equal_content(const image& img1, const image& img2)
     }
   }
   return true;
+}
+
+
+/// Transform a given image into a second image given a unary function
+void transform_image( image const &in, image &out,
+                      image::byte (*op)(image::byte const &) )
+{
+  // The other image must be of the same dimensions as this image.
+  assert( in.width() == out.width() );
+  assert( in.height() == out.height() );
+  assert( in.depth() == out.depth() );
+
+  // determine which order to traverse dimensions
+  // [0] -> smalled distance between values
+  // [2] -> greatest distance between values
+  size_t side_len[3];
+  ptrdiff_t step_size[3];
+  bool wBh = in.width() < in.height(),
+       dBh = in.depth() < in.height(),
+       dBw = in.depth() < in.width();
+  size_t w_idx = (!wBh) + dBw,
+         h_idx = wBh + dBh,
+         d_idx = (!dBw) + (!dBh);
+  side_len[w_idx] = in.width();
+  side_len[h_idx] = in.height();
+  side_len[d_idx] = in.depth();
+  step_size[w_idx] = in.w_step();
+  step_size[h_idx] = in.h_step();
+  step_size[d_idx] = in.d_step();
+
+  unsigned _0, _1, _2;
+  size_t pix_idx;
+  for( _2 = 0; _2 < side_len[2]; ++_2 )
+  {
+    for( _1 = 0; _1 < side_len[1]; ++_1 )
+    {
+      for( _0 = 0; _0 < side_len[0]; ++_0 )
+      {
+        pix_idx = _0*step_size[0] + _1*step_size[1] + _2*step_size[2];
+        out.first_pixel()[pix_idx] = op( in.first_pixel()[pix_idx] );
+      }
+    }
+  }
 }
 
 

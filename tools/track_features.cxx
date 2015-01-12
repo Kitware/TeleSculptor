@@ -171,6 +171,12 @@ static bool check_config(maptk::config_block_sptr config)
 }
 
 
+static maptk::image::byte invert_mask_pixel( maptk::image::byte const &b )
+{
+  return !b;
+}
+
+
 #define print_config(config) \
   do \
   { \
@@ -404,12 +410,14 @@ static int maptk_main(int argc, char const* argv[])
 
       if( invert_masks )
       {
-        maptk::byte *cur_byte = mask->get_image().first_pixel();
-        for( size_t idx = 0; idx < mask->width() * mask->height() * mask->depth(); ++idx )
-        {
-          (*cur_byte) = !(*cur_byte);
-          cur_byte++;
-        }
+        //maptk::byte *cur_byte = mask->get_image().first_pixel();
+        //for( size_t idx = 0; idx < mask->width() * mask->height() * mask->depth(); ++idx )
+        //{
+        //  (*cur_byte) = !(*cur_byte);
+        //  cur_byte++;
+        //}
+        maptk::image mask_img( mask->get_image() );
+        maptk::transform_image( mask_img, mask_img, invert_mask_pixel );
       }
 
       converted_mask = image_converter->convert( mask );
