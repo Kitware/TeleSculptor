@@ -329,9 +329,9 @@ void transform_image( image const &in, image &out,
   // [2] -> greatest distance between values
   size_t side_len[3];
   ptrdiff_t step_size[3];
-  bool wBh = in.width() < in.height(),
-       dBh = in.depth() < in.height(),
-       dBw = in.depth() < in.width();
+  bool wBh = in.w_step() < in.h_step(),
+       dBh = in.d_step() < in.h_step(),
+       dBw = in.d_step() < in.w_step();
   size_t w_idx = (!wBh) + dBw,
          h_idx = wBh + dBh,
          d_idx = (!dBw) + (!dBh);
