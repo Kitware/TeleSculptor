@@ -181,7 +181,7 @@ track_features_core
   feature_set_sptr curr_feat = detector_->detect(image_data, mask);
 
   // extract descriptors on the current frame
-  descriptor_set_sptr curr_desc = extractor_->extract(image_data, curr_feat);
+  descriptor_set_sptr curr_desc = extractor_->extract(image_data, curr_feat, mask);
 
   std::vector<feature_sptr> vf = curr_feat->features();
   std::vector<descriptor_sptr> df = curr_desc->descriptors();
