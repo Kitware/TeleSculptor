@@ -230,7 +230,7 @@ IMPLEMENT_TEST(equal_content)
 }
 
 
-IMPLEMENT_TEST( transform_image )
+IMPLEMENT_TEST(transform_image)
 {
   // Testing that the transform image traverses pixels in memory order
   unsigned w=3, h=3, d=3;
