@@ -485,7 +485,7 @@ draw_tracks
     // Store last image with all features and shift lines already drawn on it
     if( d_->buffer.capacity() > 0 )
     {
-      d_->buffer.push_back( img );
+      d_->buffer.push_back( img.clone() );
     }
 
     // Increase frame id counter
