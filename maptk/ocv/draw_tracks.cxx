@@ -352,8 +352,8 @@ draw_tracks
     // Should the current frame be written to disk?
     bool write_image_to_disk = d_->write_images_to_disk;
 
-    // Paint active tracks on the input image
-    cv::Mat img = ocv::image_container::maptk_to_ocv( ctr_sptr->get_image() );
+    // Clone a copy of the current image (so we don't modify the original input).
+    cv::Mat img = ocv::image_container::maptk_to_ocv( ctr_sptr->get_image() ).clone();
 
     // Convert to 3 channel image if not one already
     if( img.channels() == 1 )
@@ -485,7 +485,7 @@ draw_tracks
     // Store last image with all features and shift lines already drawn on it
     if( d_->buffer.capacity() > 0 )
     {
-      d_->buffer.push_back( img.clone() );
+      d_->buffer.push_back( img );
     }
 
     // Increase frame id counter
