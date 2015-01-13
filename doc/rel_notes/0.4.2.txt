@@ -16,3 +16,8 @@ Core Library
 
  * Fixed VS2013 compiler error resulting from implicit cast from shared_ptr
    to bool.  The cast is now explicit.
+
+OpenCV Library
+
+ * Fixed memory and run-time issue with using the draw_tracks tool on color
+   imagery with the OpenCV draw_tracks implementation.
