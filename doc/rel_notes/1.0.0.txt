@@ -35,6 +35,9 @@ MAPTK Library / Core Plugin
  * Added optional mask image input to track features algorithm definition and
    core implementation.
 
+ * Added transform_image function to efficiently transform in-place an image
+   given a unary function that is operated on every pixel.
+
 OCV Plugin
 
  * Converted module library into a library-plugin pair.

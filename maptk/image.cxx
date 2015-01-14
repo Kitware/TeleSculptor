@@ -315,7 +315,7 @@ bool equal_content(const image& img1, const image& img2)
 }
 
 
-/// Transform a given image into a second image given a unary function
+/// Transform a given image in place given a unary function
 void transform_image( image &img,
                       image::byte (*op)(image::byte const &) )
 {
