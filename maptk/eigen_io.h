@@ -49,7 +49,10 @@ namespace Eigen
 {
 /// input stream operator for an Eigen matrix
 /**
- * \throws maptk::
+ * \throws maptk::invalid_data
+ *    Throws an invalid data exception when the data being read is either not
+ *    in the valid form or format, e.g. read a character where a double should
+ *    be..
  *
  * \param s an input stream
  * \param m a matrix to stream into
