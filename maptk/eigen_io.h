@@ -42,11 +42,15 @@
 
 #include <Eigen/Core>
 
+#include <maptk/exceptions/io.h>
+
 
 namespace Eigen
 {
 /// input stream operator for an Eigen matrix
 /**
+ * \throws maptk::
+ *
  * \param s an input stream
  * \param m a matrix to stream into
  */
@@ -57,7 +61,11 @@ std::istream&  operator>>(std::istream& s, Matrix<T,M,N>& m)
   {
     for (int j=0; j<N; ++j)
     {
-      s >> std::skipws >> m(i,j);
+      if( ! (s >> std::skipws >> m(i, j)) )
+      {
+        throw maptk::invalid_data( "Encountered a non-numeric value while "
+                                   "parsing an Eigen::Matrix" );
+      }
     }
   }
   return s;

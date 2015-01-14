@@ -48,7 +48,8 @@ camera_intrinsics_<T>
 ::camera_intrinsics_(const Eigen::Matrix<T,3,3>& K)
 : focal_length_(K(0,0)),
   principal_point_(K(0,2), K(1,2)),
-  aspect_ratio_(K(0,0)/K(1,1))
+  aspect_ratio_(K(0,0)/K(1,1)),
+  skew_(K(0,1))
 {
 }
 

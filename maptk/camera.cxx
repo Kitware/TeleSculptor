@@ -51,9 +51,9 @@ namespace maptk
 std::ostream& operator<<(std::ostream& s, const camera& c)
 {
   using std::setprecision;
-  s << setprecision(12) << matrix_3x3d(c.intrinsics()) << "\n"
-    << setprecision(12) << matrix_3x3d(c.rotation()) << "\n"
-    << setprecision(12) << c.translation() << "\n\n"
+  s << setprecision(12) << matrix_3x3d(c.intrinsics()) << "\n\n"
+    << setprecision(12) << matrix_3x3d(c.rotation()) << "\n\n"
+    << setprecision(12) << c.translation().transpose() << "\n\n"
     << "0\n";
   return s;
 }
@@ -137,9 +137,9 @@ template <typename T>
 std::ostream&  operator<<(std::ostream& s, const camera_<T>& k)
 {
   using std::setprecision;
-  s << setprecision(12) << Eigen::Matrix<T,3,3>(k.get_intrinsics()) << "\n"
-    << setprecision(12) << Eigen::Matrix<T,3,3>(k.get_rotation()) << "\n"
-    << setprecision(12) << k.get_translation() << "\n\n"
+  s << setprecision(12) << Eigen::Matrix<T,3,3>(k.get_intrinsics()) << "\n\n"
+    << setprecision(12) << Eigen::Matrix<T,3,3>(k.get_rotation()) << "\n\n"
+    << setprecision(12) << k.get_translation().transpose() << "\n\n"
     << "0\n";
   return s;
 }
@@ -151,7 +151,7 @@ std::istream&  operator>>(std::istream& s, camera_<T>& k)
 {
   Eigen::Matrix<T,3,3> K, R;
   Eigen::Matrix<T,3,1> t;
-  double d;
+  double d; // the trailing single 0
   s >> K >> R >> t >> d;
   k.set_intrinsics(camera_intrinsics_<T>(K));
   k.set_rotation(rotation_<T>(R));

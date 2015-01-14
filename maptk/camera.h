@@ -155,15 +155,20 @@ public:
   { return static_cast<camera_intrinsics_d>(intrinsics_); }
 
   /// Accessor for the camera center of projection using underlying data type
-  const Eigen::Matrix<T,3,1> & get_center() const { return center_; }
+  const Eigen::Matrix<T,3,1> & get_center() const
+  { return center_; }
   /// Accessor for the translation vector using underlying data type
-  Eigen::Matrix<T,3,1> get_translation() const { return - (orientation_ * center_); }
+  Eigen::Matrix<T,3,1> get_translation() const
+  { return Eigen::Matrix<T,3,1>::Zero() - (orientation_ * center_); }
   /// Accessor for the covariance of camera center using underlying data type
-  const covariance_<3,T>& get_center_covar() const { return center_covar_; }
+  const covariance_<3,T>& get_center_covar() const
+  { return center_covar_; }
   /// Accessor for the rotation using underlying data type
-  const rotation_<T>& get_rotation() const { return orientation_; }
+  const rotation_<T>& get_rotation() const
+  { return orientation_; }
   /// Accessor for the intrinsics using underlying data type
-  const camera_intrinsics_<T>& get_intrinsics() const { return intrinsics_; }
+  const camera_intrinsics_<T>& get_intrinsics() const
+  { return intrinsics_; }
 
   /// Set the camera center of projection
   void set_center(const Eigen::Matrix<T,3,1>& center) { center_ = center; }
