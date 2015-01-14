@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,7 @@
  */
 
 #include "feature.h"
+#include "eigen_io.h"
 
 
 namespace maptk
@@ -67,7 +68,7 @@ feature_<T>
 /// Constructor for a feature
 template <typename T>
 feature_<T>
-::feature_(const vector_2_<T>& loc, T mag, T scale, T angle)
+::feature_(const Eigen::Matrix<T,2,1>& loc, T mag, T scale, T angle)
 : loc_(loc),
   magnitude_(mag),
   scale_(scale),
@@ -94,7 +95,7 @@ template <typename T>
 std::istream&  operator>>(std::istream& s, feature_<T>& f)
 {
   // TODO include covariance once stream operators are defined
-  vector_2_<T> loc;
+  Eigen::Matrix<T,2,1> loc;
   T magnitude;
   T scale;
   T angle;

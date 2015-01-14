@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,45 +30,52 @@
 
 /**
  * \file
- * \brief OCV templated mat generation function interface/implementation
+ * \brief Missing istream operator for Eigen fixed sized matrices
  */
 
-#ifndef MAPTK_PLUGINS_OCV_MATRIX_H_
-#define MAPTK_PLUGINS_OCV_MATRIX_H_
-
-#include <maptk/matrix.h>
-
-#include <opencv2/opencv.hpp>
+#ifndef MAPTK_EIGEN_IO_H_
+#define MAPTK_EIGEN_IO_H_
 
 
-namespace maptk
+#include <iostream>
+#include <cstring>
+
+#include <Eigen/Core>
+
+#include <maptk/exceptions/io.h>
+
+
+namespace Eigen
 {
-
-namespace ocv
+/// input stream operator for an Eigen matrix
+/**
+ * \throws maptk::invalid_data
+ *    Throws an invalid data exception when the data being read is either not
+ *    in the valid form or format, e.g. read a character where a double should
+ *    be..
+ *
+ * \param s an input stream
+ * \param m a matrix to stream into
+ */
+template <typename T, int M, int N>
+std::istream&  operator>>(std::istream& s, Matrix<T,M,N>& m)
 {
-
-/// Convert from an OpenCV cv::Mat to a MAPTK matrix
-template <unsigned M, unsigned N, typename T>
-inline matrix_<M,N,T>
-matrix_from_ocv(const cv::Mat& cvm)
-{
-  matrix_<M,N,T> m;
-  assert(cvm.rows == M);
-  assert(cvm.cols == N);
-  for (unsigned c=0; c<N; ++c)
+  for (int i=0; i<M; ++i)
   {
-    for (unsigned r=0; r<M; ++r)
+    for (int j=0; j<N; ++j)
     {
-      m(r,c) = cvm.at<T>(r,c);
+      if( ! (s >> std::skipws >> m(i, j)) )
+      {
+        throw maptk::invalid_data( "Encountered a non-numeric value while "
+                                   "parsing an Eigen::Matrix" );
+      }
     }
   }
-  return m;
+  return s;
 }
 
-
-} // end namespace ocv
 
 } // end namespace maptk
 
 
-#endif // MAPTK_PLUGINS_OCV_MATRIX_H_
+#endif // MAPTK_EIGEN_IO_H_

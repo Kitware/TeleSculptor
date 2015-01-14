@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -107,7 +107,7 @@ public:
    * \param loc 3D location of the landmark
    * \param scale optional scale of the landmark (default of 1)
    */
-  landmark_<T>(const vector_3_<T>& loc, T scale=1);
+  landmark_<T>(const Eigen::Matrix<T,3,1>& loc, T scale=1);
 
   /// Create a clone of this landmark object
   virtual landmark_sptr clone() const
@@ -119,9 +119,9 @@ public:
   virtual const std::type_info& data_type() const { return typeid(T); }
 
   /// Accessor for the world coordinates using underlying data type
-  const vector_3_<T>& get_loc() const { return loc_; }
+  const Eigen::Matrix<T,3,1>& get_loc() const { return loc_; }
   /// Accessor for the world coordinates
-  virtual vector_3d loc() const { return static_cast<vector_3d>(loc_); }
+  virtual vector_3d loc() const { return loc_.template cast<double>(); }
 
   /// Accessor for the landmark scale using underlying data type
   T get_scale() const { return scale_; }
@@ -137,7 +137,7 @@ public:
   /**
    * \param loc new location of this landmark
    */
-  void set_loc(const vector_3_<T>& loc) { loc_ = loc; }
+  void set_loc(const Eigen::Matrix<T,3,1>& loc) { loc_ = loc; }
   /// Set the scale of the landmark
   void set_scale(T scale) { scale_ = scale; }
   /// Set the covariance matrix of the landmark location
@@ -153,7 +153,7 @@ public:
 protected:
 
   /// A vector representing the 3D position of the landmark
-  vector_3_<T> loc_;
+  Eigen::Matrix<T,3,1> loc_;
   /// The scale of the landmark in 3D
   T scale_;
   /// Covariance representing uncertainty in the estimate of 3D position

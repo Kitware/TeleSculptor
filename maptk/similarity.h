@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -67,7 +67,7 @@ public:
   explicit similarity_<T>(const similarity_<U>& other)
   : scale_(static_cast<T>(other.scale())),
     rot_(static_cast<rotation_<T> >(other.rotation())),
-    trans_(static_cast<vector_3_<T> >(other.translation())) {}
+    trans_(other.translation().template cast<T>()) {}
 
   /// Constructor - from scale, rotatation, and translation
   /**
@@ -76,7 +76,7 @@ public:
    * \param t the translation vector
    */
   similarity_<T>(const T& s, const rotation_<T>& r,
-                 const vector_<3,T>& t)
+                 const Eigen::Matrix<T,3,1>& t)
   : scale_(s),
     rot_(r),
     trans_(t) {}
@@ -87,10 +87,10 @@ public:
    * in homogeneous coordinates
    * \param mat Transform in matrix form to initialize from.
    */
-  explicit similarity_<T>(const matrix_<4,4,T>& mat);
+  explicit similarity_<T>(const Eigen::Matrix<T,4,4>& mat);
 
   /// Convert to a 4x4 matrix
-  operator matrix_<4,4,T>() const;
+  operator Eigen::Matrix<T,4,4>() const;
 
   /// Return scale factor
   const T& scale() const { return scale_; }
@@ -99,7 +99,7 @@ public:
   const rotation_<T>& rotation() const { return rot_; }
 
   /// Return the translation vector
-  const vector_3_<T>& translation() const { return trans_; }
+  const Eigen::Matrix<T,3,1>& translation() const { return trans_; }
 
   /// Compute the inverse similarity
   similarity_<T> inverse() const
@@ -121,7 +121,7 @@ public:
    *       create a transform matrix and use matrix multiplcation
    * \param rhs vector to transform.
    */
-  vector_<3,T> operator*(const vector_<3,T>& rhs) const;
+  Eigen::Matrix<T,3,1> operator*(const Eigen::Matrix<T,3,1>& rhs) const;
 
   /// Equality operator
   inline bool operator==(const similarity_<T>& rhs) const
@@ -143,7 +143,7 @@ protected:
   /// rotation
   rotation_<T> rot_;
   /// translation
-  vector_3_<T> trans_;
+  Eigen::Matrix<T,3,1> trans_;
 };
 
 

@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@
  */
 
 #include "landmark.h"
+#include "eigen_io.h"
 #include "transform.h"
 
 
@@ -65,7 +66,7 @@ landmark_<T>
 /// Constructor for a feature
 template <typename T>
 landmark_<T>
-::landmark_(const vector_3_<T>& loc, T scale)
+::landmark_(const Eigen::Matrix<T,3,1>& loc, T scale)
 : loc_(loc),
   scale_(scale)
 {
@@ -101,7 +102,7 @@ template <typename T>
 std::istream&  operator>>(std::istream& s, landmark_<T>& m)
 {
   // TODO include covariance once stream operators are defined
-  vector_3_<T> loc;
+  Eigen::Matrix<T,3,1> loc;
   T scale;
   s >> loc
     >> scale;

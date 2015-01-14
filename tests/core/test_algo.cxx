@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2011-2014 by Kitware, Inc.
+ * Copyright 2011-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,7 +37,6 @@
 
 #include <iostream>
 
-//#include <maptk/algo/match_features_homography.h>
 #include <maptk/algo/track_features.h>
 #include <maptk/config_block.h>
 #include <maptk/exceptions/algorithm.h>

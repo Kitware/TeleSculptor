@@ -29,6 +29,7 @@ set(maptk_public_headers
   covariance.h
   descriptor.h
   descriptor_set.h
+  eigen_io.h
   exceptions.h
   feature.h
   feature_set.h
@@ -55,7 +56,6 @@ set(maptk_public_headers
   transform.h
   types.h
   vector.h
-  vector_cmath.h
 
   exceptions/algorithm.h
   exceptions/base.h
@@ -111,7 +111,6 @@ set(maptk_sources
   landmark.cxx
   landmark_map_io.cxx
   local_geo_cs.cxx
-  matrix.cxx
   metrics.cxx
   projected_track_set.cxx
   rotation.cxx
@@ -120,7 +119,6 @@ set(maptk_sources
   track_set.cxx
   track_set_io.cxx
   transform.cxx
-  vector.cxx
 
   exceptions/algorithm.cxx
   exceptions/base.cxx

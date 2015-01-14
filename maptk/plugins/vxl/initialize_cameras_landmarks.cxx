@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,6 +42,7 @@
 #include <maptk/algo/estimate_essential_matrix.h>
 #include <maptk/algo/triangulate_landmarks.h>
 #include <maptk/exceptions.h>
+#include <maptk/eigen_io.h>
 #include <maptk/plugins/vxl/camera_map.h>
 #include <maptk/plugins/vxl/camera.h>
 
@@ -152,7 +153,7 @@ initialize_cameras_landmarks::priv
   for(; inlier_idx < inliers.size() && !inliers[inlier_idx]; ++inlier_idx);
 
   // compute the corresponding camera rotation and translation (up to scale)
-  vpgl_essential_matrix<double> vE(vnl_double_3x3(E.data()));
+  vpgl_essential_matrix<double> vE(vnl_double_3x3(E.data()).transpose());
   vpgl_perspective_camera<double> vcam;
   vector_2d left_pt = cal_left.unmap(pts_left[inlier_idx]);
   vector_2d right_pt = cal_right.unmap(pts_right[inlier_idx]);

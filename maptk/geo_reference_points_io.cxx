@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,8 +33,9 @@
  * \brief Implementation of functions regarding geo reference points files
  */
 
-#include "exceptions.h"
 #include "geo_reference_points_io.h"
+#include "exceptions.h"
+#include "eigen_io.h"
 
 #include <fstream>
 #include <iomanip>

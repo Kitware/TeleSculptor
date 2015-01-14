@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,7 +54,7 @@ reprojection_error_vec(const camera& cam,
   }
   else if (const camera_f* camf = dynamic_cast<const camera_f*>(&cam))
   {
-    pt = vector_2d(camf->project(vector_3f(lm.loc())));
+    pt = camf->project(lm.loc().cast<float>()).cast<double>();
   }
   return pt - f.loc();
 }

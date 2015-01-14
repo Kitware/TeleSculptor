@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -398,9 +398,8 @@ static int maptk_main(int argc, char const* argv[])
   LOG_INFO("meh", "-- Inliers: " << inlier_count << " / " << inliers.size());
 
   LOG_INFO("meh", "Writing homography file...");
-  maptk::homography identity;
-  identity.set_identity();
-  homog_output_stream << identity << std::endl << homog << std::endl;
+  homog_output_stream << maptk::homography::Identity() << std::endl
+                      << homog << std::endl;
   homog_output_stream.close();
   LOG_INFO("meh", "-- '" << homog_output_path << "' finished writing");
 

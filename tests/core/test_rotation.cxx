@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,7 +62,9 @@ main(int argc, char* argv[])
 IMPLEMENT_TEST(default_constructor)
 {
   maptk::rotation_d rot;
-  if (rot.quaternion() != maptk::vector_4d(0,0,0,1))
+  Eigen::Quaterniond I;
+  I.setIdentity();
+  if (rot.quaternion().coeffs() != I.coeffs())
   {
     TEST_ERROR("The default rotation is not the identity");
   }
@@ -73,7 +75,7 @@ IMPLEMENT_TEST(convert_matrix)
 {
   maptk::rotation_d rot;
   maptk::matrix_3x3d R = maptk::matrix_3x3d(rot);
-  maptk::matrix_3x3d I = maptk::matrix_3x3d().set_identity();
+  maptk::matrix_3x3d I = maptk::matrix_3x3d().setIdentity();
   std::cout << R << I << std::endl;
 
   if (R != I)
@@ -90,7 +92,7 @@ IMPLEMENT_TEST(convert_rodrigues)
 
   rotation_d rot;
   TEST_EQUAL("Rodrigues vector of identity is zero",
-              rot.rodrigues().magnitude(), 0.0);
+              rot.rodrigues().norm(), 0.0);
 
   rotation_d rot2(vector_3d(0,0,0));
   TEST_EQUAL("Rotation from zero Rodrigues vector is identity",
@@ -100,13 +102,13 @@ IMPLEMENT_TEST(convert_rodrigues)
   vector_3d rvec(2,-1,0.5);
   rotation_d rot3(rvec);
   using namespace std;
-  cerr << "rvec magnitude: " << rvec.magnitude() << endl;
-  cerr << "rot3 magnitude: " << rot3.rodrigues().magnitude() << endl;
+  cerr << "rvec magnitude: " << rvec.norm() << endl;
+  cerr << "rot3 magnitude: " << rot3.rodrigues().norm() << endl;
   TEST_NEAR("Rodrigues convert to and from rotation is same",
-            (rot3.rodrigues() - rvec).magnitude(), 0.0, 1e-14);
+            (rot3.rodrigues() - rvec).norm(), 0.0, 1e-14);
 
   TEST_NEAR("Rodrigues direction == rotation axis",
-            (normalized(rvec) - rot3.axis()).magnitude(), 0.0, 1e-14);
+            (rvec.normalized() - rot3.axis()).norm(), 0.0, 1e-14);
 }
 
 
@@ -115,7 +117,7 @@ IMPLEMENT_TEST(convert_axis_angle)
   using namespace maptk;
 
   double angle = 0.8;
-  vector_3d axis = normalized(vector_3d(-3,2,1));
+  vector_3d axis = vector_3d(-3,2,1).normalized();
 
   rotation_d rot(angle, axis);
 
@@ -123,7 +125,7 @@ IMPLEMENT_TEST(convert_axis_angle)
             rot.angle(), angle, 1e-14);
 
   TEST_NEAR("Axis extracted from rotation matches input",
-            (rot.axis() - axis).magnitude(), 0.0, 1e-14);
+            (rot.axis() - axis).norm(), 0.0, 1e-14);
 }
 
 
@@ -224,7 +226,7 @@ IMPLEMENT_TEST(compose)
   std::cout << "matrix composition: "<<mat_comp_rot<<std::endl;
 
   TEST_NEAR("Matrix multiplication matches quaternion composition",
-            (quat_comp_rot - mat_comp_rot).frobenius_norm(),
+            (quat_comp_rot - mat_comp_rot).norm(),
             0.0, 1e-14);
 }
 

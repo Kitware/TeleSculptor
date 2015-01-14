@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -112,7 +112,7 @@ public:
   {}
 
   /// Constructor - from camera center, rotation, and intrinsics
-  camera_<T>(const vector_3_<T>& center,
+  camera_<T>(const Eigen::Matrix<T,3,1>& center,
              const rotation_<T>& rotation,
              const camera_intrinsics_<T>& intrinsics = camera_intrinsics_<T>())
   : center_(center),
@@ -123,7 +123,7 @@ public:
   /// Copy Constructor from another type
   template <typename U>
   explicit camera_<T>(const camera_<U>& other)
-  : center_(static_cast<vector_3_<T> >(other.get_center())),
+  : center_(other.get_center().template cast<T>()),
     center_covar_(static_cast<covariance_<3,T> >(other.get_center_covar())),
     orientation_(static_cast<rotation_<T> >(get_rotation())),
     intrinsics_(static_cast<camera_intrinsics_<T> >(get_intrinsics()))
@@ -140,10 +140,10 @@ public:
 
   /// Accessor for the camera center of projection (position)
   virtual vector_3d center() const
-  { return static_cast<vector_3d>(center_); }
+  { return center_.template cast<double>(); }
   /// Accessor for the translation vector
   virtual vector_3d translation() const
-  { return static_cast<vector_3d>(get_translation()); }
+  { return get_translation().template cast<double>(); }
   /// Accessor for the covariance of camera center
   virtual covariance_3d center_covar() const
   { return static_cast<covariance_3d>(center_covar_); }
@@ -155,9 +155,9 @@ public:
   { return static_cast<camera_intrinsics_d>(intrinsics_); }
 
   /// Accessor for the camera center of projection using underlying data type
-  const vector_3_<T>& get_center() const { return center_; }
+  const Eigen::Matrix<T,3,1> & get_center() const { return center_; }
   /// Accessor for the translation vector using underlying data type
-  vector_3_<T> get_translation() const { return - (orientation_ * center_); }
+  Eigen::Matrix<T,3,1> get_translation() const { return - (orientation_ * center_); }
   /// Accessor for the covariance of camera center using underlying data type
   const covariance_<3,T>& get_center_covar() const { return center_covar_; }
   /// Accessor for the rotation using underlying data type
@@ -166,9 +166,9 @@ public:
   const camera_intrinsics_<T>& get_intrinsics() const { return intrinsics_; }
 
   /// Set the camera center of projection
-  void set_center(const vector_3_<T>& center) { center_ = center; }
+  void set_center(const Eigen::Matrix<T,3,1>& center) { center_ = center; }
   /// Set the translation vector (relative to current rotation)
-  void set_translation(const vector_3_<T>& translation)
+  void set_translation(const Eigen::Matrix<T,3,1>& translation)
   {
     center_ = - (orientation_.inverse() * translation);
   }
@@ -186,14 +186,14 @@ public:
    * \param [in] stare_point the location at which the camera is oriented to point
    * \param [in] up_direction the vector which is "up" in the world (defaults to Z-axis)
    */
-  void look_at(const vector_3_<T>& stare_point,
-               const vector_3_<T>& up_direction=vector_3_<T>(0,0,1) );
+  void look_at(const Eigen::Matrix<T, 3, 1>& stare_point,
+               const Eigen::Matrix<T, 3, 1>& up_direction=Eigen::Matrix<T,3,1>(0,0,1) );
 
   /// Convert to a 3x4 homogeneous projection matrix
-  operator matrix_<3,4,T>() const;
+  operator Eigen::Matrix<T,3,4>() const;
 
   /// Project a 3D point into a 2D image point
-  vector_2_<T> project(const vector_3_<T>& pt) const;
+  Eigen::Matrix<T, 2, 1> project(const Eigen::Matrix<T, 3, 1>& pt) const;
 
   /// Apply a similarity transformation to the camera in place
   virtual void transform(const similarity_d& xform)
@@ -204,7 +204,7 @@ public:
 
 protected:
   /// The camera center of project
-  vector_3_<T> center_;
+  Eigen::Matrix<T,3,1> center_;
   /// The covariance of the camera center location
   covariance_<3,T> center_covar_;
   /// The camera rotation

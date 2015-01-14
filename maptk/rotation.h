@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,8 +39,11 @@
 #include <iostream>
 #include <vector>
 
+#include <maptk/config.h>
+
 #include "matrix.h"
 #include "vector.h"
+#include <Eigen/Geometry>
 
 
 namespace maptk
@@ -55,15 +58,19 @@ class MAPTK_LIB_EXPORT rotation_
 {
 public:
   /// Default Constructor
-  rotation_<T>() : q_(0,0,0,1) {}
+  rotation_<T>() : q_(1,0,0,0) {}
+
+  /// Constructor - from an Eigen Quaternion
+  rotation_<T>(const Eigen::Quaternion<T>& quaternion)
+  : q_(quaternion) {}
 
   /// Copy Constructor from another type
   template <typename U>
   explicit rotation_<T>(const rotation_<U>& other)
-  : q_(static_cast<vector_4_<T> >(other.quaternion())) {}
+  : q_(static_cast<Eigen::Quaternion<T> >(other.quaternion())) {}
 
-  /// Constructor - from a 4D quaternion vector (i,j,k,r)
-  explicit rotation_<T>(const vector_<4,T>& quaternion)
+  /// Constructor - from a 4D quaternion vector (w,i,j,k)
+  explicit rotation_<T>(const Eigen::Matrix<T, 4, 1>& quaternion)
   : q_(quaternion) {}
 
   /// Constructor - from a Rodrigues vector
@@ -75,10 +82,10 @@ public:
    * the manifold of the group of rotations.
    * \param rvec Rodrigues vector to construct from.
    */
-  explicit rotation_<T>(const vector_<3,T>& rvec);
+  explicit rotation_<T>(const Eigen::Matrix<T, 3, 1>& rvec);
 
   /// Constructor - from rotation angle and axis
-  rotation_<T>(T angle, const vector_<3,T>& axis);
+  rotation_<T>(T angle, const Eigen::Matrix<T, 3, 1>& axis);
 
   /// Constructor - from yaw, pitch, and roll
   rotation_<T>(const T& yaw, const T& pitch, const T& roll);
@@ -88,10 +95,10 @@ public:
    * requires orthonormal matrix with +1 determinant
    * \param rot orthonormal matrix to construct from
    */
-  explicit rotation_<T>(const matrix_<3,3,T>& rot);
+  explicit rotation_<T>(const Eigen::Matrix<T,3,3>& rot);
 
   /// Convert to a 3x3 matrix
-  operator matrix_<3,3,T>() const;
+  operator Eigen::Matrix<T,3,3>() const;
 
   /// Returns the axis of rotation
   /**
@@ -99,7 +106,7 @@ public:
    *       returns (0,0,1) in this case.
    * \sa angle()
    */
-  vector_3_<T> axis() const;
+  Eigen::Matrix<T,3,1> axis() const;
 
   /// Returns the angle of the rotation in radians about the axis
   /**
@@ -109,12 +116,12 @@ public:
 
   /// Access the quaternion as a 4-vector
   /**
-   * The first 3 components are imaginary (i,j,k) the last is real
+   * The first component is real, the last 3 are imaginary (i,j,k)
    */
-  const vector_4_<T>& quaternion() const { return q_; }
+  const Eigen::Quaternion<T>& quaternion() const { return q_; }
 
   /// Return the rotation as a Rodrigues vector
-  vector_3_<T> rodrigues() const;
+  Eigen::Matrix<T,3,1> rodrigues() const;
 
   /// Convert to yaw, pitch, and roll
   void get_yaw_pitch_roll(T& yaw, T& pitch, T& roll) const;
@@ -122,7 +129,7 @@ public:
   /// Compute the inverse rotation
   rotation_<T> inverse() const
   {
-    return rotation_<T>(vector_4_<T>(-q_.x(), -q_.y(), -q_.z(), q_.w()));
+    return rotation_<T>(q_.inverse());
   }
 
   /// Compose two rotations
@@ -134,12 +141,12 @@ public:
    *       create a rotation matrix and use matrix multiplcation
    * \param rhs right-hand side vector to operate against
    */
-  vector_<3,T> operator*(const vector_<3,T>& rhs) const;
+  Eigen::Matrix<T,3,1> operator*(const Eigen::Matrix<T,3,1>& rhs) const;
 
   /// Equality operator
   inline bool operator==(const rotation_<T>& rhs) const
   {
-    return this->q_ == rhs.q_;
+    return this->q_.coeffs() == rhs.q_.coeffs();
   }
 
   /// Inequality operator
@@ -150,7 +157,7 @@ public:
 
 protected:
   /// rotatation stored internally as a quaternion vector
-  vector_4_<T> q_;
+  Eigen::Quaternion<T> q_;
 };
 
 

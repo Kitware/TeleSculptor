@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -64,7 +64,7 @@ IMPLEMENT_TEST(convert_matrix)
   using namespace maptk;
   similarity_d sim;
   matrix_4x4d S(sim);
-  matrix_4x4d I = matrix_4x4d().set_identity();
+  matrix_4x4d I = matrix_4x4d().setIdentity();
   std::cout << S << I << std::endl;
 
   if (S != I)
@@ -80,7 +80,7 @@ IMPLEMENT_TEST(convert_matrix)
   std::cout << "sim1: "<< sim1 <<std::endl;
   std::cout << "sim2: "<< sim2 <<std::endl;
   TEST_NEAR("Convert similarity to matrix and back",
-            (mat1 - mat2).frobenius_norm(), 0.0, 1e-14);
+            (mat1 - mat2).norm(), 0.0, 1e-14);
 
 }
 
@@ -100,7 +100,7 @@ IMPLEMENT_TEST(compose)
   std::cout << "matrix composition: "<<mat_comp_sim<<std::endl;
 
   TEST_NEAR("Matrix multiplication matches similarity composition",
-            (sim_comp_sim - mat_comp_sim).frobenius_norm(),
+            (sim_comp_sim - mat_comp_sim).norm(),
             0.0, 1e-14);
 }
 
@@ -121,5 +121,5 @@ IMPLEMENT_TEST(inverse)
   TEST_NEAR("Similarity composed with inverse does not have zero rotation",
             I.rotation().angle(), 0.0, 1e-14);
   TEST_NEAR("Similarity composed with inverse does not have zero translation",
-            I.translation().magnitude(), 0.0, 1e-14);
+            I.translation().norm(), 0.0, 1e-14);
 }

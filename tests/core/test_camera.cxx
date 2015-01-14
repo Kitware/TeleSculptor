@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -69,7 +69,7 @@ IMPLEMENT_TEST(look_at)
 
   vector_2d ifocus = cam.project(focus);
   TEST_NEAR("look_at focus projects to origin",
-            (ifocus-pp).magnitude(), 0.0, 1e-12);
+            (ifocus-pp).norm(), 0.0, 1e-12);
 
   vector_2d ifocus_up = cam.project(focus + vector_3d(0,0,2));
   vector_2d tmp = ifocus_up - pp;
@@ -98,7 +98,7 @@ IMPLEMENT_TEST(projection)
   vector_2d proj_pt(proj_hpt.x()/proj_hpt.z(), proj_hpt.y()/proj_hpt.z());
 
   TEST_NEAR("camera projection = matrix multiplication",
-             (cam.project(test_pt) - proj_pt).magnitude(), 0.0, 1e-12);
+             (cam.project(test_pt) - proj_pt).norm(), 0.0, 1e-12);
 }
 
 

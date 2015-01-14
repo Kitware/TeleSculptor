@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,10 +45,11 @@ namespace maptk
 /// Constructor - from a calibration matrix
 template <typename T>
 camera_intrinsics_<T>
-::camera_intrinsics_(const matrix_<3,3,T>& K)
+::camera_intrinsics_(const Eigen::Matrix<T,3,3>& K)
 : focal_length_(K(0,0)),
   principal_point_(K(0,2), K(1,2)),
-  aspect_ratio_(K(0,0)/K(1,1))
+  aspect_ratio_(K(0,0)/K(1,1)),
+  skew_(K(0,1))
 {
 }
 
@@ -56,52 +57,49 @@ camera_intrinsics_<T>
 /// Convert to a 3x3 calibration matrix
 template <typename T>
 camera_intrinsics_<T>
-::operator matrix_<3,3,T>() const
+::operator Eigen::Matrix<T,3,3>() const
 {
-  matrix_<3,3,T> K;
-  K(0,0) = focal_length_;
-  K(0,1) = skew_;
-  K(0,2) = principal_point_.x();
-  K(1,1) = focal_length_ / aspect_ratio_;
-  K(1,2) = principal_point_.y();
-  K(2,2) = T(1);
-  K(1,0) = K(2,0) = K(2,1) = T(0);
+  Eigen::Matrix<T,3,3> K;
+  K << focal_length_, skew_, principal_point_.x(),
+       0, focal_length_ / aspect_ratio_, principal_point_.y(),
+       0, 0, 1;
   return K;
 }
 
 
 /// Map normalized image coordinates into actual image coordinates
 template <typename T>
-vector_2_<T>
+Eigen::Matrix<T,2,1>
 camera_intrinsics_<T>
-::map(const vector_2_<T>& pt) const
+::map(const Eigen::Matrix<T,2,1>& point) const
 {
-  const vector_2_<T>& pp = principal_point_;
-  return vector_2_<T>(pt.x() * focal_length_ + pt.y() * skew_ + pp.x(),
-                      pt.y() * focal_length_ / aspect_ratio_ + pp.y());
+  const Eigen::Matrix<T,2,1> pt(point);
+  const Eigen::Matrix<T,2,1>& pp = principal_point_;
+  return Eigen::Matrix<T,2,1>(pt.x() * focal_length_ + pt.y() * skew_ + pp.x(),
+                              pt.y() * focal_length_ / aspect_ratio_ + pp.y());
 }
 
 
 /// Map a 3D point in camera coordinates into actual image coordinates
 template <typename T>
-vector_2_<T>
+Eigen::Matrix<T,2,1>
 camera_intrinsics_<T>
-::map(const vector_3_<T>& norm_hpt) const
+::map(const Eigen::Matrix<T,3,1>& norm_hpt) const
 {
-  return this->map(vector_2_<T>(norm_hpt.x()/norm_hpt.z(),
-                                norm_hpt.y()/norm_hpt.z()));
+  return this->map(Eigen::Matrix<T,2,1>(norm_hpt[0]/norm_hpt[2],
+                                        norm_hpt[1]/norm_hpt[2]));
 }
 
 
 /// Unmap actual image coordinates back into normalized image coordinates
 template <typename T>
-vector_2_<T>
+Eigen::Matrix<T,2,1>
 camera_intrinsics_<T>
-::unmap(const vector_2_<T>& pt) const
+::unmap(const Eigen::Matrix<T,2,1>& pt) const
 {
-  vector_2_<T> p0 = pt - principal_point_;
+  Eigen::Matrix<T,2,1> p0 = pt - principal_point_;
   T y = p0.y() * aspect_ratio_ / focal_length_;
-  return vector_2_<T>((p0.x() - y * skew_) / focal_length_, y);
+  return Eigen::Matrix<T,2,1>((p0.x() - y * skew_) / focal_length_, y);
 }
 
 

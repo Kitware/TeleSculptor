@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,8 @@
  */
 
 #include "homography.h"
+#include "exceptions/math.h"
+#include <Eigen/LU>
 
 namespace maptk
 {
@@ -44,7 +46,7 @@ f2f_homography
 : from_id_( frame_id ),
   to_id_( frame_id )
 {
-  this->set_identity();
+  this->setIdentity();
 }
 
 
@@ -78,7 +80,7 @@ f2f_homography
 f2f_homography
 ::inverse() const
 {
-  return f2f_homography( maptk::inverse( *this ), to_id_, from_id_ );
+  return f2f_homography( homography::inverse(), to_id_, from_id_ );
 }
 
 
@@ -129,7 +131,7 @@ f2w_homography
 ::f2w_homography( const frame_id_t frame_id )
 : frame_id_( frame_id )
 {
-  this->set_identity();
+  this->setIdentity();
 }
 
 
@@ -254,10 +256,9 @@ homography_collection
 
 
 vector_2d
-operator*( const homography& h, const vector_2d& p )
+homography_map( const homography& h, const vector_2d& p )
 {
-  double vals[3] = { p.x(), p.y(), 1.0 };
-  vector_3d out_pt = h * vector_3d( vals );
+  vector_3d out_pt = h * vector_3d(p[0], p[1], 1.0);
 
   if( out_pt[2] == 0 )
   {

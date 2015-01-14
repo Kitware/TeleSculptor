@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -76,7 +76,7 @@ reprojection_error_sqr(const camera& cam,
                        const landmark& lm,
                        const feature& f)
 {
-  return reprojection_error_vec(cam, lm, f).magnitude_sqr();
+  return reprojection_error_vec(cam, lm, f).squaredNorm();
 }
 
 
