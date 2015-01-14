@@ -266,8 +266,7 @@ MAPTK_LIB_EXPORT bool equal_content(const image& img1, const image& img2);
  * to traverse the pixels in an optimal order, i.e. in-memory-order traversal.
  *
  * \param[in] img Input image reference to transform the data of
- * \param[in] op Optional unary function which takes a const byte& and returns
- *               a byte
+ * \param[in] op Unary function which takes a const byte& and returns a byte
  */
 MAPTK_LIB_EXPORT void transform_image( image &img,
                                        image::byte(*op)(image::byte const &) );
