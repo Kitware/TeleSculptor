@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2011-2014 by Kitware, Inc.
+ * Copyright 2011-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,7 @@
 #ifndef MAPTK_TEST_TEST_COMMON_H_
 #define MAPTK_TEST_TEST_COMMON_H_
 
+#include <boost/foreach.hpp>
 #include <boost/function.hpp>
 
 #include <exception>
@@ -136,6 +137,17 @@ typedef std::string testname_t;
     }                                                         \
   }                                                           \
 
+/// Macro for displaying tests available
+#define DISPLAY_AVAILABLE_TESTS()                           \
+  do                                                        \
+  {                                                         \
+    std::cerr << "Available tests:" << std::endl;           \
+    BOOST_FOREACH( test_map_t::value_type p, __all_tests )  \
+    {                                                       \
+      std::cerr << "\t" << p.first << std::endl;            \
+    }                                                       \
+  } while (false)
+
 /// Add a CMake property to the next test declared
 /**
  * This is a hook for the CMake parsing code to set CTest test properties via
@@ -178,6 +190,10 @@ typedef std::string testname_t;
                  #numargs       \
                  " arguments"); \
                                 \
+      std::cerr << std::endl;   \
+      DISPLAY_AVAILABLE_TESTS();\
+      std::cerr << std::endl;   \
+                                \
       return EXIT_FAILURE;      \
     }                           \
   } while (false)
@@ -201,6 +217,10 @@ typedef std::string testname_t;
     if (i == __all_tests.end())                 \
     {                                           \
       TEST_ERROR("Unknown test: " << testname); \
+                                                \
+      std::cerr << std::endl;                   \
+      DISPLAY_AVAILABLE_TESTS();                \
+      std::cerr << std::endl;                   \
                                                 \
       return EXIT_FAILURE;                      \
     }                                           \

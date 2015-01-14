@@ -54,10 +54,13 @@ VXL Plugin
 
  * Converted module library into a library-plugin pair.
 
-Tests
+Test System / Tests
 
  * Refactored test code to reference correct libraries and use new plugin
    loading and management where required.
+
+ * Added automatic message generation to test executables to inform the caller
+   of available test names in that executable.
 
 Tools
 
@@ -75,3 +78,8 @@ Build System
  * Removed target generation for doxygen template file configuration which had
    caused race-conditions in parallel builds that included documentation
    generation.
+
+Test System / Tests
+
+ * Fixed CMake-side parsing of test source files during discovery mode to allow
+   extra white-space in IMPLEMENT_TEST() and TEST_PROPERTY() parameter areas.
