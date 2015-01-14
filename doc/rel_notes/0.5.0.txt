@@ -90,7 +90,7 @@ Tools
 Fixes since v0.4.2
 ------------------
 
-Build system
+Build System
 
  * Fixed race condition during Doxygen documentation generation when built in a
    parallel mode.

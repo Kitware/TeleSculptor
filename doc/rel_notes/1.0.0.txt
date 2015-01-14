@@ -19,6 +19,9 @@ Build System
  * Added FindEigen3 CMake module and call it to find Eigen, which is now a
    required dependency.
 
+ * Added private header CMake variables for add_library call, allowing
+   visibility of file in IDEs.
+
 MAPTK Library / Core Plugin
 
  * Added plugin support for loading externally defined algorithm
@@ -45,6 +48,15 @@ MAPTK Library / Core Plugin
    Eigen::Quaternion<T> and replaced most of the calculations with those
    provided by Eigen::Quaternion<T> member functions.
 
+ * Removed use of logging helper macros from header files as logging macro
+   header is not a public header.
+
+ * Added optional mask image input to track features algorithm definition and
+   core implementation.
+
+ * Added transform_image function to efficiently transform in-place an image
+   given a unary function that is operated on every pixel.
+
 OCV Plugin
 
  * Converted module library into a library-plugin pair.
@@ -61,11 +73,32 @@ VXL Plugin
 
  * Converted module library into a library-plugin pair.
 
-Tests
+Test System / Tests
 
  * Refactored test code to reference correct libraries and use new plugin
    loading and management where required.
 
+ * Added automatic message generation to test executables to inform the caller
+   of available test names in that executable.
+
+Tools
+
+ * In track features tool, Added ability to specify paired mask image files.
+
 
 Fixes since v0.5.0
 ------------------
+
+Build System
+
+ * Fixed addition of library to global maptk_libraries property to only happen
+   if that library is being exported.
+
+ * Removed target generation for doxygen template file configuration which had
+   caused race-conditions in parallel builds that included documentation
+   generation.
+
+Test System / Tests
+
+ * Fixed CMake-side parsing of test source files during discovery mode to allow
+   extra white-space in IMPLEMENT_TEST() and TEST_PROPERTY() parameter areas.

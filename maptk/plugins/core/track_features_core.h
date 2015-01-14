@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -109,15 +109,24 @@ public:
 
   /// Extend a previous set of tracks using the current frame
   /**
+   * \throws image_size_mismatch_exception
+   *    When the given non-zero mask image does not match the size of the
+   *    dimensions of the given image data.
+   *
    * \param [in] prev_tracks the tracks from previous tracking steps
    * \param [in] frame_number the frame number of the current frame
    * \param [in] image_data the image pixels for the current frame
+   * \param [in] mask Optional mask image that uses positive values to denote
+   *                  regions of the input image to consider for feature
+   *                  tracking. An empty sptr indicates no mask (default
+   *                  value).
    * \returns an updated set a tracks including the current frame
    */
   virtual track_set_sptr
   track(track_set_sptr prev_tracks,
         unsigned int frame_number,
-        image_container_sptr image_data) const;
+        image_container_sptr image_data,
+        image_container_sptr mask = image_container_sptr()) const;
 
 
 private:

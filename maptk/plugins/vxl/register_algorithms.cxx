@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@
 
 #include "register_algorithms.h"
 
+#include <maptk/logging_macros.h>
 #include <maptk/plugin_interface/algorithm_plugin_interface_macros.h>
 #include <maptk/plugins/vxl/bundle_adjust.h>
 #include <maptk/plugins/vxl/close_loops_homography_guided.h>

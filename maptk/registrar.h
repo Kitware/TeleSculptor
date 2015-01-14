@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,7 +44,6 @@
 #include <boost/foreach.hpp>
 
 #include <maptk/config.h>
-#include <maptk/logging_macros.h>
 
 
 namespace maptk
@@ -89,12 +88,21 @@ public:
 
   /// Register a new name and item with the registrar for a given type
   /**
+   * Item registration follows the same semantics as item insertion with
+   * std::map instances. If the given name does not associate with an existing
+   * entry, the name-item pair is registered and the function returns true. If
+   * the name already exists in the registry for the templated type, then the
+   * given item is NOT registered with the given name, i.e. no overwriting
+   * occurs and the existing registry is left unchanged. False is returned in
+   * this latter case.
+   *
    * \tparam Algorithm definition type of the given instance.
    * \param name The string label to associate to this algorithm instance
    * \param item Algorithm instance descending from definition type \p T to act
    *             as the default instance for the given label.
-   * \returns True if the given label is new. False if we are overriding an
-   *          existing label-to-instance mapping.
+   * \returns True if the given label is new and the item was inserted into
+   *          the registry for type \p T. False if the name provided is
+   *          already registered (registry not modified).
    */
   template <typename T>
   bool register_item(const std::string& name, boost::shared_ptr<T> item)
@@ -106,14 +114,7 @@ public:
     item_map_t &im = this->get_item_map<T>();
 
     // std::map reminder: if named item already exists, no overwriting occurs
-    bool new_insertion = im.insert(item_pair_t(name, item)).second;
-    if (!new_insertion)
-    {
-      LOG_WARN( "registrar::register_item",
-                "Warning: duplicate registration of algorithm "
-                << item->type_name() << " implementation \"" << name << "\"" );
-    }
-    return new_insertion;
+    return im.insert(item_pair_t(name, item)).second;
   }
 
   /// Return a vector of registered item names for a given type

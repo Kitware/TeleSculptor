@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -258,6 +258,18 @@ protected:
  * \param img2 second image to compare
  */
 MAPTK_LIB_EXPORT bool equal_content(const image& img1, const image& img2);
+
+
+/// Transform a given image in place given a unary function
+/**
+ * Apply a given unary function to all pixels in the image. This is guareteed
+ * to traverse the pixels in an optimal order, i.e. in-memory-order traversal.
+ *
+ * \param[in] img Input image reference to transform the data of
+ * \param[in] op Unary function which takes a const byte& and returns a byte
+ */
+MAPTK_LIB_EXPORT void transform_image( image &img,
+                                       image::byte(*op)(image::byte const &) );
 
 
 } // end namespace maptk

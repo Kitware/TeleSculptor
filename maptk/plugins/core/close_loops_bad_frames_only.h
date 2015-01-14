@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -119,14 +119,17 @@ public:
   /// Perform basic shot stitching for bad frame detection
   /**
    * \param [in] frame_number the frame number of the current frame
-   * \param [in] image image data for the current frame
    * \param [in] input the input track set to stitch
+   * \param [in] image image data for the current frame
+   * \param [in] mask Optional mask image where positive values indicate
+   *                  regions to consider in the input image.
    * \returns an updated set a tracks after the stitching operation
    */
   virtual track_set_sptr
   stitch( frame_id_t frame_number,
+          track_set_sptr input,
           image_container_sptr image,
-          track_set_sptr input ) const;
+          image_container_sptr mask = image_container_sptr() ) const;
 
 protected:
 

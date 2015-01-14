@@ -90,6 +90,10 @@ set(maptk_public_headers
   plugin_interface/algorithm_plugin_interface_macros.h
   )
 
+set(maptk_private_headers
+  logging_macros.h
+  )
+
 set(maptk_sources
   algorithm_plugin_manager.cxx
   camera.cxx
@@ -180,6 +184,7 @@ maptk_install_headers(
 maptk_add_library(
   maptk
   ${maptk_public_headers}
+  ${maptk_private_headers}
   ${maptk_sources}
   )
 target_link_libraries(maptk ${Boost_LIBRARIES})
