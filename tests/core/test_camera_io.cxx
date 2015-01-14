@@ -115,6 +115,9 @@ IMPLEMENT_TEST(output_format_test)
   std::cerr << "cam.get_center()     : " << Eigen::Matrix<double,3,1>(cam.get_center()).transpose() << std::endl;
   std::cerr << "cam.get_rotation()   : " << cam.get_rotation() << std::endl;
   std::cerr << "cam.get_translation(): " << cam.get_translation() << std::endl;
+
+  // We're expecting -0's as this is what Eigen likes to output when a zero
+  // vector is negated.
   std::stringstream ss;
   ss << cam;
   TEST_EQUAL(
@@ -128,7 +131,7 @@ IMPLEMENT_TEST(output_format_test)
       "0 1 0\n"
       "0 0 1\n"
       "\n"
-      "0 0 0\n"
+      "-0 -0 -0\n"
       "\n"
       "0\n"
       );

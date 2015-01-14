@@ -65,7 +65,7 @@ namespace // anonymous
 
 // Test invert function Eigen::Matrix derived classes
 template< typename T >
-bool test_invertibility( T base_instance )
+static bool test_numeric_invertibility( T base_instance )
 {
   // Create a few copies of the base instance for manipulation
   T invertible(base_instance),
@@ -100,7 +100,7 @@ IMPLEMENT_TEST(homography)
   TEST_LOG( "Testing basic homography functions" );
 
   TEST_EQUAL( "homography::inverse",
-              test_invertibility< maptk::homography >( maptk::homography() ),
+              test_numeric_invertibility< maptk::homography >( maptk::homography() ),
               true );
 }
 
@@ -110,8 +110,19 @@ IMPLEMENT_TEST(f2f_homography)
   TEST_LOG( "Testing Frame-to-frame homography functions" );
 
   TEST_EQUAL( "f2f_homography::inverse",
-              test_invertibility< maptk::f2f_homography >( maptk::f2f_homography(0) ),
+              test_numeric_invertibility< maptk::f2f_homography >( maptk::f2f_homography(0) ),
               true );
+
+  // testing from and to frame swapping during inversion
+  maptk::f2f_homography h( maptk::homography::Identity(),
+                           0, 10 );
+
+  TEST_EQUAL( "f2f-homog ref frame inversion - From slot",
+              h.inverse().from_id(),
+              10 );
+  TEST_EQUAL( "f2f-homog ref frame inversion - To slot",
+              h.inverse().to_id(),
+              0 );
 }
 
 
@@ -120,6 +131,6 @@ IMPLEMENT_TEST(f2w_homography)
   TEST_LOG( "Testing Frame-to-world homography functions" );
 
   TEST_EQUAL( "f2w_homography::inverse",
-              test_invertibility< maptk::f2w_homography >( maptk::f2w_homography(0) ),
+              test_numeric_invertibility< maptk::f2w_homography >( maptk::f2w_homography(0) ),
               true );
 }
