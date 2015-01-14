@@ -316,42 +316,42 @@ bool equal_content(const image& img1, const image& img2)
 
 
 /// Transform a given image into a second image given a unary function
-void transform_image( image const &in, image &out,
+void transform_image( image &img,
                       image::byte (*op)(image::byte const &) )
 {
-  // The other image must be of the same dimensions as this image.
-  assert( in.width() == out.width() );
-  assert( in.height() == out.height() );
-  assert( in.depth() == out.depth() );
-
   // determine which order to traverse dimensions
   // [0] -> smalled distance between values
   // [2] -> greatest distance between values
   size_t side_len[3];
   ptrdiff_t step_size[3];
-  bool wBh = in.w_step() < in.h_step(),
-       dBh = in.d_step() < in.h_step(),
-       dBw = in.d_step() < in.w_step();
+  bool wBh = img.w_step() < img.h_step(),
+       dBh = img.d_step() < img.h_step(),
+       dBw = img.d_step() < img.w_step();
   size_t w_idx = (!wBh) + dBw,
          h_idx = wBh + dBh,
          d_idx = (!dBw) + (!dBh);
-  side_len[w_idx] = in.width();
-  side_len[h_idx] = in.height();
-  side_len[d_idx] = in.depth();
-  step_size[w_idx] = in.w_step();
-  step_size[h_idx] = in.h_step();
-  step_size[d_idx] = in.d_step();
+  side_len[w_idx] = img.width();
+  side_len[h_idx] = img.height();
+  side_len[d_idx] = img.depth();
+  step_size[w_idx] = img.w_step();
+  step_size[h_idx] = img.h_step();
+  step_size[d_idx] = img.d_step();
 
-  unsigned _0, _1, _2;
-  size_t pix_idx;
-  for( _2 = 0; _2 < side_len[2]; ++_2 )
+  // position index with a dimension
+  unsigned i0, i1, i2;
+  // Pointers to the first pixel of the current dimension iteration
+  maptk::image::byte *d0_s, *d1_s, *d2_s;
+
+  d2_s = img.first_pixel();
+  for( i2 = 0; i2 < side_len[2]; ++i2, d2_s += step_size[2] )
   {
-    for( _1 = 0; _1 < side_len[1]; ++_1 )
+    d1_s = d2_s;
+    for( i1 = 0; i1 < side_len[1]; ++i1, d1_s += step_size[1] )
     {
-      for( _0 = 0; _0 < side_len[0]; ++_0 )
+      d0_s = d1_s;
+      for( i0 = 0; i0 < side_len[0]; ++i0, d0_s += step_size[0] )
       {
-        pix_idx = _0*step_size[0] + _1*step_size[1] + _2*step_size[2];
-        out.first_pixel()[pix_idx] = op( in.first_pixel()[pix_idx] );
+        *d0_s = op( *d0_s );
       }
     }
   }

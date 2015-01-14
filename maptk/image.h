@@ -260,22 +260,16 @@ protected:
 MAPTK_LIB_EXPORT bool equal_content(const image& img1, const image& img2);
 
 
-/// Transform a given image into a second image given a unary function
+/// Transform a given image in place given a unary function
 /**
  * Apply a given unary function to all pixels in the image. This is guareteed
- * to travers the pixels in an optimal order, i.e. in-memory-order traversal.
+ * to traverse the pixels in an optimal order, i.e. in-memory-order traversal.
  *
- * The same image may be given as input and output to transform an image in
- * place.
- *
- * We assert that the \p out image has the same dimensions as the \p in image.
- *
- * \param[in] in Input image reference to transform the data of.
- * \param[out] out Output image reference for output to be stored in.
+ * \param[in] img Input image reference to transform the data of
  * \param[in] op Optional unary function which takes a const byte& and returns
- *               a byte.
+ *               a byte
  */
-MAPTK_LIB_EXPORT void transform_image( image const &in, image &out,
+MAPTK_LIB_EXPORT void transform_image( image &img,
                                        image::byte(*op)(image::byte const &) );
 
 

@@ -47,6 +47,12 @@ namespace // anonymous
   // Helper methods for tests in this file
 
   // For use in the transform_image function
+
+  static maptk::image::byte val_zero_op( maptk::image::byte const & /*b*/ )
+  {
+    return 0;
+  }
+
   static maptk::image::byte val_incr_op_i = 0;
   static maptk::image::byte val_incr_op( maptk::image::byte const &b )
   {
@@ -239,8 +245,40 @@ IMPLEMENT_TEST(transform_image)
   // an image with traditional stepping ( w < h < d )
   {
     img = maptk::image( w, h, d , false );
+
+    // Zeroing image data
+    maptk::transform_image( img, val_zero_op );
+    TEST_EQUAL( "normal-zero (0,0,0)", (unsigned)img(0,0,0), 0 );
+    TEST_EQUAL( "normal-zero (1,0,0)", (unsigned)img(1,0,0), 0 );
+    TEST_EQUAL( "normal-zero (2,0,0)", (unsigned)img(2,0,0), 0 );
+    TEST_EQUAL( "normal-zero (0,1,0)", (unsigned)img(0,1,0), 0 );
+    TEST_EQUAL( "normal-zero (1,1,0)", (unsigned)img(1,1,0), 0 );
+    TEST_EQUAL( "normal-zero (2,1,0)", (unsigned)img(2,1,0), 0 );
+    TEST_EQUAL( "normal-zero (0,2,0)", (unsigned)img(0,2,0), 0 );
+    TEST_EQUAL( "normal-zero (1,2,0)", (unsigned)img(1,2,0), 0 );
+    TEST_EQUAL( "normal-zero (2,2,0)", (unsigned)img(2,2,0), 0 );
+    TEST_EQUAL( "normal-zero (0,0,1)", (unsigned)img(0,0,1), 0 );
+    TEST_EQUAL( "normal-zero (1,0,1)", (unsigned)img(1,0,1), 0 );
+    TEST_EQUAL( "normal-zero (2,0,1)", (unsigned)img(2,0,1), 0 );
+    TEST_EQUAL( "normal-zero (0,1,1)", (unsigned)img(0,1,1), 0 );
+    TEST_EQUAL( "normal-zero (1,1,1)", (unsigned)img(1,1,1), 0 );
+    TEST_EQUAL( "normal-zero (2,1,1)", (unsigned)img(2,1,1), 0 );
+    TEST_EQUAL( "normal-zero (0,2,1)", (unsigned)img(0,2,1), 0 );
+    TEST_EQUAL( "normal-zero (1,2,1)", (unsigned)img(1,2,1), 0 );
+    TEST_EQUAL( "normal-zero (2,2,1)", (unsigned)img(2,2,1), 0 );
+    TEST_EQUAL( "normal-zero (0,0,2)", (unsigned)img(0,0,2), 0 );
+    TEST_EQUAL( "normal-zero (1,0,2)", (unsigned)img(1,0,2), 0 );
+    TEST_EQUAL( "normal-zero (2,0,2)", (unsigned)img(2,0,2), 0 );
+    TEST_EQUAL( "normal-zero (0,1,2)", (unsigned)img(0,1,2), 0 );
+    TEST_EQUAL( "normal-zero (1,1,2)", (unsigned)img(1,1,2), 0 );
+    TEST_EQUAL( "normal-zero (2,1,2)", (unsigned)img(2,1,2), 0 );
+    TEST_EQUAL( "normal-zero (0,2,2)", (unsigned)img(0,2,2), 0 );
+    TEST_EQUAL( "normal-zero (1,2,2)", (unsigned)img(1,2,2), 0 );
+    TEST_EQUAL( "normal-zero (2,2,2)", (unsigned)img(2,2,2), 0 );
+
+    // Assinging value
     val_incr_op_i = 0;
-    maptk::transform_image( img, img, val_incr_op );
+    maptk::transform_image( img, val_incr_op );
     TEST_EQUAL( "normal (0,0,0)", (unsigned)img(0,0,0), 0 );
     TEST_EQUAL( "normal (1,0,0)", (unsigned)img(1,0,0), 1 );
     TEST_EQUAL( "normal (2,0,0)", (unsigned)img(2,0,0), 2 );
@@ -273,8 +311,38 @@ IMPLEMENT_TEST(transform_image)
   // an interleaved image ( d < w < h )
   {
     img = maptk::image( w, h, d, true );
+
+    maptk::transform_image( img, val_zero_op );
+    TEST_EQUAL( "interleaved-zero (0,0,0)", (unsigned)img(0,0,0), 0 );
+    TEST_EQUAL( "interleaved-zero (0,0,1)", (unsigned)img(0,0,1), 0 );
+    TEST_EQUAL( "interleaved-zero (0,0,2)", (unsigned)img(0,0,2), 0 );
+    TEST_EQUAL( "interleaved-zero (1,0,0)", (unsigned)img(1,0,0), 0 );
+    TEST_EQUAL( "interleaved-zero (1,0,1)", (unsigned)img(1,0,1), 0 );
+    TEST_EQUAL( "interleaved-zero (1,0,2)", (unsigned)img(1,0,2), 0 );
+    TEST_EQUAL( "interleaved-zero (2,0,0)", (unsigned)img(2,0,0), 0 );
+    TEST_EQUAL( "interleaved-zero (2,0,1)", (unsigned)img(2,0,1), 0 );
+    TEST_EQUAL( "interleaved-zero (2,0,2)", (unsigned)img(2,0,2), 0 );
+    TEST_EQUAL( "interleaved-zero (0,1,0)", (unsigned)img(0,1,0), 0 );
+    TEST_EQUAL( "interleaved-zero (0,1,1)", (unsigned)img(0,1,1), 0 );
+    TEST_EQUAL( "interleaved-zero (0,1,2)", (unsigned)img(0,1,2), 0 );
+    TEST_EQUAL( "interleaved-zero (1,1,0)", (unsigned)img(1,1,0), 0 );
+    TEST_EQUAL( "interleaved-zero (1,1,1)", (unsigned)img(1,1,1), 0 );
+    TEST_EQUAL( "interleaved-zero (1,1,2)", (unsigned)img(1,1,2), 0 );
+    TEST_EQUAL( "interleaved-zero (2,1,0)", (unsigned)img(2,1,0), 0 );
+    TEST_EQUAL( "interleaved-zero (2,1,1)", (unsigned)img(2,1,1), 0 );
+    TEST_EQUAL( "interleaved-zero (2,1,2)", (unsigned)img(2,1,2), 0 );
+    TEST_EQUAL( "interleaved-zero (0,2,0)", (unsigned)img(0,2,0), 0 );
+    TEST_EQUAL( "interleaved-zero (0,2,1)", (unsigned)img(0,2,1), 0 );
+    TEST_EQUAL( "interleaved-zero (0,2,2)", (unsigned)img(0,2,2), 0 );
+    TEST_EQUAL( "interleaved-zero (1,2,0)", (unsigned)img(1,2,0), 0 );
+    TEST_EQUAL( "interleaved-zero (1,2,1)", (unsigned)img(1,2,1), 0 );
+    TEST_EQUAL( "interleaved-zero (1,2,2)", (unsigned)img(1,2,2), 0 );
+    TEST_EQUAL( "interleaved-zero (2,2,0)", (unsigned)img(2,2,0), 0 );
+    TEST_EQUAL( "interleaved-zero (2,2,1)", (unsigned)img(2,2,1), 0 );
+    TEST_EQUAL( "interleaved-zero (2,2,2)", (unsigned)img(2,2,2), 0 );
+
     val_incr_op_i = 0;
-    maptk::transform_image( img, img, val_incr_op );
+    maptk::transform_image( img, val_incr_op );
     TEST_EQUAL( "interleaved (0,0,0)", (unsigned)img(0,0,0), 0 );
     TEST_EQUAL( "interleaved (0,0,1)", (unsigned)img(0,0,1), 1 );
     TEST_EQUAL( "interleaved (0,0,2)", (unsigned)img(0,0,2), 2 );
@@ -313,8 +381,38 @@ IMPLEMENT_TEST(transform_image)
     img = maptk::image( (maptk::image::byte*)weird_img_mem.data(),
                         w, h, d,
                         wStep, hStep, dStep );
+
+    maptk::transform_image( img, val_zero_op );
+    TEST_EQUAL( "weird-zero (0,0,0)", (unsigned)img(0,0,0), 0 );
+    TEST_EQUAL( "weird-zero (0,1,0)", (unsigned)img(0,1,0), 0 );
+    TEST_EQUAL( "weird-zero (0,2,0)", (unsigned)img(0,2,0), 0 );
+    TEST_EQUAL( "weird-zero (0,0,1)", (unsigned)img(0,0,1), 0 );
+    TEST_EQUAL( "weird-zero (0,1,1)", (unsigned)img(0,1,1), 0 );
+    TEST_EQUAL( "weird-zero (0,2,1)", (unsigned)img(0,2,1), 0 );
+    TEST_EQUAL( "weird-zero (0,0,2)", (unsigned)img(0,0,2), 0 );
+    TEST_EQUAL( "weird-zero (0,1,2)", (unsigned)img(0,1,2), 0 );
+    TEST_EQUAL( "weird-zero (0,2,2)", (unsigned)img(0,2,2), 0 );
+    TEST_EQUAL( "weird-zero (1,0,0)", (unsigned)img(1,0,0), 0 );
+    TEST_EQUAL( "weird-zero (1,1,0)", (unsigned)img(1,1,0), 0 );
+    TEST_EQUAL( "weird-zero (1,2,0)", (unsigned)img(1,2,0), 0 );
+    TEST_EQUAL( "weird-zero (1,0,1)", (unsigned)img(1,0,1), 0 );
+    TEST_EQUAL( "weird-zero (1,1,1)", (unsigned)img(1,1,1), 0 );
+    TEST_EQUAL( "weird-zero (1,2,1)", (unsigned)img(1,2,1), 0 );
+    TEST_EQUAL( "weird-zero (1,0,2)", (unsigned)img(1,0,2), 0 );
+    TEST_EQUAL( "weird-zero (1,1,2)", (unsigned)img(1,1,2), 0 );
+    TEST_EQUAL( "weird-zero (1,2,2)", (unsigned)img(1,2,2), 0 );
+    TEST_EQUAL( "weird-zero (2,0,0)", (unsigned)img(2,0,0), 0 );
+    TEST_EQUAL( "weird-zero (2,1,0)", (unsigned)img(2,1,0), 0 );
+    TEST_EQUAL( "weird-zero (2,2,0)", (unsigned)img(2,2,0), 0 );
+    TEST_EQUAL( "weird-zero (2,0,1)", (unsigned)img(2,0,1), 0 );
+    TEST_EQUAL( "weird-zero (2,1,1)", (unsigned)img(2,1,1), 0 );
+    TEST_EQUAL( "weird-zero (2,2,1)", (unsigned)img(2,2,1), 0 );
+    TEST_EQUAL( "weird-zero (2,0,2)", (unsigned)img(2,0,2), 0 );
+    TEST_EQUAL( "weird-zero (2,1,2)", (unsigned)img(2,1,2), 0 );
+    TEST_EQUAL( "weird-zero (2,2,2)", (unsigned)img(2,2,2), 0 );
+
     val_incr_op_i = 0;
-    maptk::transform_image( img, img, val_incr_op );
+    maptk::transform_image( img, val_incr_op );
     TEST_EQUAL( "weird (0,0,0)", (unsigned)img(0,0,0), 0 );
     TEST_EQUAL( "weird (0,1,0)", (unsigned)img(0,1,0), 1 );
     TEST_EQUAL( "weird (0,2,0)", (unsigned)img(0,2,0), 2 );
@@ -353,8 +451,38 @@ IMPLEMENT_TEST(transform_image)
     img = maptk::image( (maptk::image::byte*)non_con_img_mem.data(),
                         w, h, d,
                         wStep, hStep, dStep );
+
+    maptk::transform_image( img, val_zero_op );
+    TEST_EQUAL( "non-contiguous-zero (0,0,0)", (unsigned)img(0,0,0), 0 );
+    TEST_EQUAL( "non-contiguous-zero (1,0,0)", (unsigned)img(1,0,0), 0 );
+    TEST_EQUAL( "non-contiguous-zero (2,0,0)", (unsigned)img(2,0,0), 0 );
+    TEST_EQUAL( "non-contiguous-zero (0,1,0)", (unsigned)img(0,1,0), 0 );
+    TEST_EQUAL( "non-contiguous-zero (1,1,0)", (unsigned)img(1,1,0), 0 );
+    TEST_EQUAL( "non-contiguous-zero (2,1,0)", (unsigned)img(2,1,0), 0 );
+    TEST_EQUAL( "non-contiguous-zero (0,2,0)", (unsigned)img(0,2,0), 0 );
+    TEST_EQUAL( "non-contiguous-zero (1,2,0)", (unsigned)img(1,2,0), 0 );
+    TEST_EQUAL( "non-contiguous-zero (2,2,0)", (unsigned)img(2,2,0), 0 );
+    TEST_EQUAL( "non-contiguous-zero (0,0,1)", (unsigned)img(0,0,1), 0 );
+    TEST_EQUAL( "non-contiguous-zero (1,0,1)", (unsigned)img(1,0,1), 0 );
+    TEST_EQUAL( "non-contiguous-zero (2,0,1)", (unsigned)img(2,0,1), 0 );
+    TEST_EQUAL( "non-contiguous-zero (0,1,1)", (unsigned)img(0,1,1), 0 );
+    TEST_EQUAL( "non-contiguous-zero (1,1,1)", (unsigned)img(1,1,1), 0 );
+    TEST_EQUAL( "non-contiguous-zero (2,1,1)", (unsigned)img(2,1,1), 0 );
+    TEST_EQUAL( "non-contiguous-zero (0,2,1)", (unsigned)img(0,2,1), 0 );
+    TEST_EQUAL( "non-contiguous-zero (1,2,1)", (unsigned)img(1,2,1), 0 );
+    TEST_EQUAL( "non-contiguous-zero (2,2,1)", (unsigned)img(2,2,1), 0 );
+    TEST_EQUAL( "non-contiguous-zero (0,0,2)", (unsigned)img(0,0,2), 0 );
+    TEST_EQUAL( "non-contiguous-zero (1,0,2)", (unsigned)img(1,0,2), 0 );
+    TEST_EQUAL( "non-contiguous-zero (2,0,2)", (unsigned)img(2,0,2), 0 );
+    TEST_EQUAL( "non-contiguous-zero (0,1,2)", (unsigned)img(0,1,2), 0 );
+    TEST_EQUAL( "non-contiguous-zero (1,1,2)", (unsigned)img(1,1,2), 0 );
+    TEST_EQUAL( "non-contiguous-zero (2,1,2)", (unsigned)img(2,1,2), 0 );
+    TEST_EQUAL( "non-contiguous-zero (0,2,2)", (unsigned)img(0,2,2), 0 );
+    TEST_EQUAL( "non-contiguous-zero (1,2,2)", (unsigned)img(1,2,2), 0 );
+    TEST_EQUAL( "non-contiguous-zero (2,2,2)", (unsigned)img(2,2,2), 0 );
+
     val_incr_op_i = 0;
-    maptk::transform_image( img, img, val_incr_op );
+    maptk::transform_image( img, val_incr_op );
     TEST_EQUAL( "non-contiguous (0,0,0)", (unsigned)img(0,0,0), 0 );
     TEST_EQUAL( "non-contiguous (1,0,0)", (unsigned)img(1,0,0), 1 );
     TEST_EQUAL( "non-contiguous (2,0,0)", (unsigned)img(2,0,0), 2 );

@@ -410,16 +410,10 @@ static int maptk_main(int argc, char const* argv[])
 
       if( invert_masks )
       {
-        //maptk::byte *cur_byte = mask->get_image().first_pixel();
-        //for( size_t idx = 0; idx < mask->width() * mask->height() * mask->depth(); ++idx )
-        //{
-        //  (*cur_byte) = !(*cur_byte);
-        //  cur_byte++;
-        //}
         LOG_DEBUG( LOGGING_PREFIX,
                    "Inverting mask image pixels" );
         maptk::image mask_img( mask->get_image() );
-        maptk::transform_image( mask_img, mask_img, invert_mask_pixel );
+        maptk::transform_image( mask_img, invert_mask_pixel );
         LOG_DEBUG( LOGGING_PREFIX,
                    "Inverting mask image pixels -- Done" );
       }
