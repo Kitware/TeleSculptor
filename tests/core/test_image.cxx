@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,27 @@
 #define TEST_ARGS ()
 
 DECLARE_TEST_MAP();
+
+
+namespace // anonymous
+{
+  // Helper methods for tests in this file
+
+  // For use in the transform_image function
+
+  static maptk::image::byte val_zero_op( maptk::image::byte const & /*b*/ )
+  {
+    return 0;
+  }
+
+  static maptk::image::byte val_incr_op_i = 0;
+  static maptk::image::byte val_incr_op( maptk::image::byte const &b )
+  {
+    return val_incr_op_i++;
+  }
+
+}
+
 
 int
 main(int argc, char* argv[])
@@ -212,4 +233,283 @@ IMPLEMENT_TEST(equal_content)
   {
     TEST_ERROR("Images should have equal content but do not");
   }
+}
+
+
+IMPLEMENT_TEST(transform_image)
+{
+  // Testing that the transform image traverses pixels in memory order
+  unsigned w=3, h=3, d=3;
+  maptk::image img;
+
+  // an image with traditional stepping ( w < h < d )
+  {
+    img = maptk::image( w, h, d , false );
+
+    // Zeroing image data
+    maptk::transform_image( img, val_zero_op );
+    TEST_EQUAL( "normal-zero (0,0,0)", (unsigned)img(0,0,0), 0 );
+    TEST_EQUAL( "normal-zero (1,0,0)", (unsigned)img(1,0,0), 0 );
+    TEST_EQUAL( "normal-zero (2,0,0)", (unsigned)img(2,0,0), 0 );
+    TEST_EQUAL( "normal-zero (0,1,0)", (unsigned)img(0,1,0), 0 );
+    TEST_EQUAL( "normal-zero (1,1,0)", (unsigned)img(1,1,0), 0 );
+    TEST_EQUAL( "normal-zero (2,1,0)", (unsigned)img(2,1,0), 0 );
+    TEST_EQUAL( "normal-zero (0,2,0)", (unsigned)img(0,2,0), 0 );
+    TEST_EQUAL( "normal-zero (1,2,0)", (unsigned)img(1,2,0), 0 );
+    TEST_EQUAL( "normal-zero (2,2,0)", (unsigned)img(2,2,0), 0 );
+    TEST_EQUAL( "normal-zero (0,0,1)", (unsigned)img(0,0,1), 0 );
+    TEST_EQUAL( "normal-zero (1,0,1)", (unsigned)img(1,0,1), 0 );
+    TEST_EQUAL( "normal-zero (2,0,1)", (unsigned)img(2,0,1), 0 );
+    TEST_EQUAL( "normal-zero (0,1,1)", (unsigned)img(0,1,1), 0 );
+    TEST_EQUAL( "normal-zero (1,1,1)", (unsigned)img(1,1,1), 0 );
+    TEST_EQUAL( "normal-zero (2,1,1)", (unsigned)img(2,1,1), 0 );
+    TEST_EQUAL( "normal-zero (0,2,1)", (unsigned)img(0,2,1), 0 );
+    TEST_EQUAL( "normal-zero (1,2,1)", (unsigned)img(1,2,1), 0 );
+    TEST_EQUAL( "normal-zero (2,2,1)", (unsigned)img(2,2,1), 0 );
+    TEST_EQUAL( "normal-zero (0,0,2)", (unsigned)img(0,0,2), 0 );
+    TEST_EQUAL( "normal-zero (1,0,2)", (unsigned)img(1,0,2), 0 );
+    TEST_EQUAL( "normal-zero (2,0,2)", (unsigned)img(2,0,2), 0 );
+    TEST_EQUAL( "normal-zero (0,1,2)", (unsigned)img(0,1,2), 0 );
+    TEST_EQUAL( "normal-zero (1,1,2)", (unsigned)img(1,1,2), 0 );
+    TEST_EQUAL( "normal-zero (2,1,2)", (unsigned)img(2,1,2), 0 );
+    TEST_EQUAL( "normal-zero (0,2,2)", (unsigned)img(0,2,2), 0 );
+    TEST_EQUAL( "normal-zero (1,2,2)", (unsigned)img(1,2,2), 0 );
+    TEST_EQUAL( "normal-zero (2,2,2)", (unsigned)img(2,2,2), 0 );
+
+    // Assinging value
+    val_incr_op_i = 0;
+    maptk::transform_image( img, val_incr_op );
+    TEST_EQUAL( "normal (0,0,0)", (unsigned)img(0,0,0), 0 );
+    TEST_EQUAL( "normal (1,0,0)", (unsigned)img(1,0,0), 1 );
+    TEST_EQUAL( "normal (2,0,0)", (unsigned)img(2,0,0), 2 );
+    TEST_EQUAL( "normal (0,1,0)", (unsigned)img(0,1,0), 3 );
+    TEST_EQUAL( "normal (1,1,0)", (unsigned)img(1,1,0), 4 );
+    TEST_EQUAL( "normal (2,1,0)", (unsigned)img(2,1,0), 5 );
+    TEST_EQUAL( "normal (0,2,0)", (unsigned)img(0,2,0), 6 );
+    TEST_EQUAL( "normal (1,2,0)", (unsigned)img(1,2,0), 7 );
+    TEST_EQUAL( "normal (2,2,0)", (unsigned)img(2,2,0), 8 );
+    TEST_EQUAL( "normal (0,0,1)", (unsigned)img(0,0,1), 9 );
+    TEST_EQUAL( "normal (1,0,1)", (unsigned)img(1,0,1), 10 );
+    TEST_EQUAL( "normal (2,0,1)", (unsigned)img(2,0,1), 11 );
+    TEST_EQUAL( "normal (0,1,1)", (unsigned)img(0,1,1), 12 );
+    TEST_EQUAL( "normal (1,1,1)", (unsigned)img(1,1,1), 13 );
+    TEST_EQUAL( "normal (2,1,1)", (unsigned)img(2,1,1), 14 );
+    TEST_EQUAL( "normal (0,2,1)", (unsigned)img(0,2,1), 15 );
+    TEST_EQUAL( "normal (1,2,1)", (unsigned)img(1,2,1), 16 );
+    TEST_EQUAL( "normal (2,2,1)", (unsigned)img(2,2,1), 17 );
+    TEST_EQUAL( "normal (0,0,2)", (unsigned)img(0,0,2), 18 );
+    TEST_EQUAL( "normal (1,0,2)", (unsigned)img(1,0,2), 19 );
+    TEST_EQUAL( "normal (2,0,2)", (unsigned)img(2,0,2), 20 );
+    TEST_EQUAL( "normal (0,1,2)", (unsigned)img(0,1,2), 21 );
+    TEST_EQUAL( "normal (1,1,2)", (unsigned)img(1,1,2), 22 );
+    TEST_EQUAL( "normal (2,1,2)", (unsigned)img(2,1,2), 23 );
+    TEST_EQUAL( "normal (0,2,2)", (unsigned)img(0,2,2), 24 );
+    TEST_EQUAL( "normal (1,2,2)", (unsigned)img(1,2,2), 25 );
+    TEST_EQUAL( "normal (2,2,2)", (unsigned)img(2,2,2), 26 );
+  }
+
+  // an interleaved image ( d < w < h )
+  {
+    img = maptk::image( w, h, d, true );
+
+    maptk::transform_image( img, val_zero_op );
+    TEST_EQUAL( "interleaved-zero (0,0,0)", (unsigned)img(0,0,0), 0 );
+    TEST_EQUAL( "interleaved-zero (0,0,1)", (unsigned)img(0,0,1), 0 );
+    TEST_EQUAL( "interleaved-zero (0,0,2)", (unsigned)img(0,0,2), 0 );
+    TEST_EQUAL( "interleaved-zero (1,0,0)", (unsigned)img(1,0,0), 0 );
+    TEST_EQUAL( "interleaved-zero (1,0,1)", (unsigned)img(1,0,1), 0 );
+    TEST_EQUAL( "interleaved-zero (1,0,2)", (unsigned)img(1,0,2), 0 );
+    TEST_EQUAL( "interleaved-zero (2,0,0)", (unsigned)img(2,0,0), 0 );
+    TEST_EQUAL( "interleaved-zero (2,0,1)", (unsigned)img(2,0,1), 0 );
+    TEST_EQUAL( "interleaved-zero (2,0,2)", (unsigned)img(2,0,2), 0 );
+    TEST_EQUAL( "interleaved-zero (0,1,0)", (unsigned)img(0,1,0), 0 );
+    TEST_EQUAL( "interleaved-zero (0,1,1)", (unsigned)img(0,1,1), 0 );
+    TEST_EQUAL( "interleaved-zero (0,1,2)", (unsigned)img(0,1,2), 0 );
+    TEST_EQUAL( "interleaved-zero (1,1,0)", (unsigned)img(1,1,0), 0 );
+    TEST_EQUAL( "interleaved-zero (1,1,1)", (unsigned)img(1,1,1), 0 );
+    TEST_EQUAL( "interleaved-zero (1,1,2)", (unsigned)img(1,1,2), 0 );
+    TEST_EQUAL( "interleaved-zero (2,1,0)", (unsigned)img(2,1,0), 0 );
+    TEST_EQUAL( "interleaved-zero (2,1,1)", (unsigned)img(2,1,1), 0 );
+    TEST_EQUAL( "interleaved-zero (2,1,2)", (unsigned)img(2,1,2), 0 );
+    TEST_EQUAL( "interleaved-zero (0,2,0)", (unsigned)img(0,2,0), 0 );
+    TEST_EQUAL( "interleaved-zero (0,2,1)", (unsigned)img(0,2,1), 0 );
+    TEST_EQUAL( "interleaved-zero (0,2,2)", (unsigned)img(0,2,2), 0 );
+    TEST_EQUAL( "interleaved-zero (1,2,0)", (unsigned)img(1,2,0), 0 );
+    TEST_EQUAL( "interleaved-zero (1,2,1)", (unsigned)img(1,2,1), 0 );
+    TEST_EQUAL( "interleaved-zero (1,2,2)", (unsigned)img(1,2,2), 0 );
+    TEST_EQUAL( "interleaved-zero (2,2,0)", (unsigned)img(2,2,0), 0 );
+    TEST_EQUAL( "interleaved-zero (2,2,1)", (unsigned)img(2,2,1), 0 );
+    TEST_EQUAL( "interleaved-zero (2,2,2)", (unsigned)img(2,2,2), 0 );
+
+    val_incr_op_i = 0;
+    maptk::transform_image( img, val_incr_op );
+    TEST_EQUAL( "interleaved (0,0,0)", (unsigned)img(0,0,0), 0 );
+    TEST_EQUAL( "interleaved (0,0,1)", (unsigned)img(0,0,1), 1 );
+    TEST_EQUAL( "interleaved (0,0,2)", (unsigned)img(0,0,2), 2 );
+    TEST_EQUAL( "interleaved (1,0,0)", (unsigned)img(1,0,0), 3 );
+    TEST_EQUAL( "interleaved (1,0,1)", (unsigned)img(1,0,1), 4 );
+    TEST_EQUAL( "interleaved (1,0,2)", (unsigned)img(1,0,2), 5 );
+    TEST_EQUAL( "interleaved (2,0,0)", (unsigned)img(2,0,0), 6 );
+    TEST_EQUAL( "interleaved (2,0,1)", (unsigned)img(2,0,1), 7 );
+    TEST_EQUAL( "interleaved (2,0,2)", (unsigned)img(2,0,2), 8 );
+    TEST_EQUAL( "interleaved (0,1,0)", (unsigned)img(0,1,0), 9 );
+    TEST_EQUAL( "interleaved (0,1,1)", (unsigned)img(0,1,1), 10 );
+    TEST_EQUAL( "interleaved (0,1,2)", (unsigned)img(0,1,2), 11 );
+    TEST_EQUAL( "interleaved (1,1,0)", (unsigned)img(1,1,0), 12 );
+    TEST_EQUAL( "interleaved (1,1,1)", (unsigned)img(1,1,1), 13 );
+    TEST_EQUAL( "interleaved (1,1,2)", (unsigned)img(1,1,2), 14 );
+    TEST_EQUAL( "interleaved (2,1,0)", (unsigned)img(2,1,0), 15 );
+    TEST_EQUAL( "interleaved (2,1,1)", (unsigned)img(2,1,1), 16 );
+    TEST_EQUAL( "interleaved (2,1,2)", (unsigned)img(2,1,2), 17 );
+    TEST_EQUAL( "interleaved (0,2,0)", (unsigned)img(0,2,0), 18 );
+    TEST_EQUAL( "interleaved (0,2,1)", (unsigned)img(0,2,1), 19 );
+    TEST_EQUAL( "interleaved (0,2,2)", (unsigned)img(0,2,2), 20 );
+    TEST_EQUAL( "interleaved (1,2,0)", (unsigned)img(1,2,0), 21 );
+    TEST_EQUAL( "interleaved (1,2,1)", (unsigned)img(1,2,1), 22 );
+    TEST_EQUAL( "interleaved (1,2,2)", (unsigned)img(1,2,2), 23 );
+    TEST_EQUAL( "interleaved (2,2,0)", (unsigned)img(2,2,0), 24 );
+    TEST_EQUAL( "interleaved (2,2,1)", (unsigned)img(2,2,1), 25 );
+    TEST_EQUAL( "interleaved (2,2,2)", (unsigned)img(2,2,2), 26 );
+  }
+
+  // do weird format
+  {
+    ptrdiff_t hStep = 1,
+              dStep = h,
+              wStep = d*h;
+    maptk::image_memory weird_img_mem( wStep * hStep * dStep );
+    img = maptk::image( (maptk::image::byte*)weird_img_mem.data(),
+                        w, h, d,
+                        wStep, hStep, dStep );
+
+    maptk::transform_image( img, val_zero_op );
+    TEST_EQUAL( "weird-zero (0,0,0)", (unsigned)img(0,0,0), 0 );
+    TEST_EQUAL( "weird-zero (0,1,0)", (unsigned)img(0,1,0), 0 );
+    TEST_EQUAL( "weird-zero (0,2,0)", (unsigned)img(0,2,0), 0 );
+    TEST_EQUAL( "weird-zero (0,0,1)", (unsigned)img(0,0,1), 0 );
+    TEST_EQUAL( "weird-zero (0,1,1)", (unsigned)img(0,1,1), 0 );
+    TEST_EQUAL( "weird-zero (0,2,1)", (unsigned)img(0,2,1), 0 );
+    TEST_EQUAL( "weird-zero (0,0,2)", (unsigned)img(0,0,2), 0 );
+    TEST_EQUAL( "weird-zero (0,1,2)", (unsigned)img(0,1,2), 0 );
+    TEST_EQUAL( "weird-zero (0,2,2)", (unsigned)img(0,2,2), 0 );
+    TEST_EQUAL( "weird-zero (1,0,0)", (unsigned)img(1,0,0), 0 );
+    TEST_EQUAL( "weird-zero (1,1,0)", (unsigned)img(1,1,0), 0 );
+    TEST_EQUAL( "weird-zero (1,2,0)", (unsigned)img(1,2,0), 0 );
+    TEST_EQUAL( "weird-zero (1,0,1)", (unsigned)img(1,0,1), 0 );
+    TEST_EQUAL( "weird-zero (1,1,1)", (unsigned)img(1,1,1), 0 );
+    TEST_EQUAL( "weird-zero (1,2,1)", (unsigned)img(1,2,1), 0 );
+    TEST_EQUAL( "weird-zero (1,0,2)", (unsigned)img(1,0,2), 0 );
+    TEST_EQUAL( "weird-zero (1,1,2)", (unsigned)img(1,1,2), 0 );
+    TEST_EQUAL( "weird-zero (1,2,2)", (unsigned)img(1,2,2), 0 );
+    TEST_EQUAL( "weird-zero (2,0,0)", (unsigned)img(2,0,0), 0 );
+    TEST_EQUAL( "weird-zero (2,1,0)", (unsigned)img(2,1,0), 0 );
+    TEST_EQUAL( "weird-zero (2,2,0)", (unsigned)img(2,2,0), 0 );
+    TEST_EQUAL( "weird-zero (2,0,1)", (unsigned)img(2,0,1), 0 );
+    TEST_EQUAL( "weird-zero (2,1,1)", (unsigned)img(2,1,1), 0 );
+    TEST_EQUAL( "weird-zero (2,2,1)", (unsigned)img(2,2,1), 0 );
+    TEST_EQUAL( "weird-zero (2,0,2)", (unsigned)img(2,0,2), 0 );
+    TEST_EQUAL( "weird-zero (2,1,2)", (unsigned)img(2,1,2), 0 );
+    TEST_EQUAL( "weird-zero (2,2,2)", (unsigned)img(2,2,2), 0 );
+
+    val_incr_op_i = 0;
+    maptk::transform_image( img, val_incr_op );
+    TEST_EQUAL( "weird (0,0,0)", (unsigned)img(0,0,0), 0 );
+    TEST_EQUAL( "weird (0,1,0)", (unsigned)img(0,1,0), 1 );
+    TEST_EQUAL( "weird (0,2,0)", (unsigned)img(0,2,0), 2 );
+    TEST_EQUAL( "weird (0,0,1)", (unsigned)img(0,0,1), 3 );
+    TEST_EQUAL( "weird (0,1,1)", (unsigned)img(0,1,1), 4 );
+    TEST_EQUAL( "weird (0,2,1)", (unsigned)img(0,2,1), 5 );
+    TEST_EQUAL( "weird (0,0,2)", (unsigned)img(0,0,2), 6 );
+    TEST_EQUAL( "weird (0,1,2)", (unsigned)img(0,1,2), 7 );
+    TEST_EQUAL( "weird (0,2,2)", (unsigned)img(0,2,2), 8 );
+    TEST_EQUAL( "weird (1,0,0)", (unsigned)img(1,0,0), 9 );
+    TEST_EQUAL( "weird (1,1,0)", (unsigned)img(1,1,0), 10 );
+    TEST_EQUAL( "weird (1,2,0)", (unsigned)img(1,2,0), 11 );
+    TEST_EQUAL( "weird (1,0,1)", (unsigned)img(1,0,1), 12 );
+    TEST_EQUAL( "weird (1,1,1)", (unsigned)img(1,1,1), 13 );
+    TEST_EQUAL( "weird (1,2,1)", (unsigned)img(1,2,1), 14 );
+    TEST_EQUAL( "weird (1,0,2)", (unsigned)img(1,0,2), 15 );
+    TEST_EQUAL( "weird (1,1,2)", (unsigned)img(1,1,2), 16 );
+    TEST_EQUAL( "weird (1,2,2)", (unsigned)img(1,2,2), 17 );
+    TEST_EQUAL( "weird (2,0,0)", (unsigned)img(2,0,0), 18 );
+    TEST_EQUAL( "weird (2,1,0)", (unsigned)img(2,1,0), 19 );
+    TEST_EQUAL( "weird (2,2,0)", (unsigned)img(2,2,0), 20 );
+    TEST_EQUAL( "weird (2,0,1)", (unsigned)img(2,0,1), 21 );
+    TEST_EQUAL( "weird (2,1,1)", (unsigned)img(2,1,1), 22 );
+    TEST_EQUAL( "weird (2,2,1)", (unsigned)img(2,2,1), 23 );
+    TEST_EQUAL( "weird (2,0,2)", (unsigned)img(2,0,2), 24 );
+    TEST_EQUAL( "weird (2,1,2)", (unsigned)img(2,1,2), 25 );
+    TEST_EQUAL( "weird (2,2,2)", (unsigned)img(2,2,2), 26 );
+  }
+
+  // do non-contiguous format
+  {
+    ptrdiff_t wStep = 7,
+              hStep = w * wStep + 11,
+              dStep = h * hStep * 3;
+    maptk::image_memory non_con_img_mem( wStep * hStep * dStep );
+    img = maptk::image( (maptk::image::byte*)non_con_img_mem.data(),
+                        w, h, d,
+                        wStep, hStep, dStep );
+
+    maptk::transform_image( img, val_zero_op );
+    TEST_EQUAL( "non-contiguous-zero (0,0,0)", (unsigned)img(0,0,0), 0 );
+    TEST_EQUAL( "non-contiguous-zero (1,0,0)", (unsigned)img(1,0,0), 0 );
+    TEST_EQUAL( "non-contiguous-zero (2,0,0)", (unsigned)img(2,0,0), 0 );
+    TEST_EQUAL( "non-contiguous-zero (0,1,0)", (unsigned)img(0,1,0), 0 );
+    TEST_EQUAL( "non-contiguous-zero (1,1,0)", (unsigned)img(1,1,0), 0 );
+    TEST_EQUAL( "non-contiguous-zero (2,1,0)", (unsigned)img(2,1,0), 0 );
+    TEST_EQUAL( "non-contiguous-zero (0,2,0)", (unsigned)img(0,2,0), 0 );
+    TEST_EQUAL( "non-contiguous-zero (1,2,0)", (unsigned)img(1,2,0), 0 );
+    TEST_EQUAL( "non-contiguous-zero (2,2,0)", (unsigned)img(2,2,0), 0 );
+    TEST_EQUAL( "non-contiguous-zero (0,0,1)", (unsigned)img(0,0,1), 0 );
+    TEST_EQUAL( "non-contiguous-zero (1,0,1)", (unsigned)img(1,0,1), 0 );
+    TEST_EQUAL( "non-contiguous-zero (2,0,1)", (unsigned)img(2,0,1), 0 );
+    TEST_EQUAL( "non-contiguous-zero (0,1,1)", (unsigned)img(0,1,1), 0 );
+    TEST_EQUAL( "non-contiguous-zero (1,1,1)", (unsigned)img(1,1,1), 0 );
+    TEST_EQUAL( "non-contiguous-zero (2,1,1)", (unsigned)img(2,1,1), 0 );
+    TEST_EQUAL( "non-contiguous-zero (0,2,1)", (unsigned)img(0,2,1), 0 );
+    TEST_EQUAL( "non-contiguous-zero (1,2,1)", (unsigned)img(1,2,1), 0 );
+    TEST_EQUAL( "non-contiguous-zero (2,2,1)", (unsigned)img(2,2,1), 0 );
+    TEST_EQUAL( "non-contiguous-zero (0,0,2)", (unsigned)img(0,0,2), 0 );
+    TEST_EQUAL( "non-contiguous-zero (1,0,2)", (unsigned)img(1,0,2), 0 );
+    TEST_EQUAL( "non-contiguous-zero (2,0,2)", (unsigned)img(2,0,2), 0 );
+    TEST_EQUAL( "non-contiguous-zero (0,1,2)", (unsigned)img(0,1,2), 0 );
+    TEST_EQUAL( "non-contiguous-zero (1,1,2)", (unsigned)img(1,1,2), 0 );
+    TEST_EQUAL( "non-contiguous-zero (2,1,2)", (unsigned)img(2,1,2), 0 );
+    TEST_EQUAL( "non-contiguous-zero (0,2,2)", (unsigned)img(0,2,2), 0 );
+    TEST_EQUAL( "non-contiguous-zero (1,2,2)", (unsigned)img(1,2,2), 0 );
+    TEST_EQUAL( "non-contiguous-zero (2,2,2)", (unsigned)img(2,2,2), 0 );
+
+    val_incr_op_i = 0;
+    maptk::transform_image( img, val_incr_op );
+    TEST_EQUAL( "non-contiguous (0,0,0)", (unsigned)img(0,0,0), 0 );
+    TEST_EQUAL( "non-contiguous (1,0,0)", (unsigned)img(1,0,0), 1 );
+    TEST_EQUAL( "non-contiguous (2,0,0)", (unsigned)img(2,0,0), 2 );
+    TEST_EQUAL( "non-contiguous (0,1,0)", (unsigned)img(0,1,0), 3 );
+    TEST_EQUAL( "non-contiguous (1,1,0)", (unsigned)img(1,1,0), 4 );
+    TEST_EQUAL( "non-contiguous (2,1,0)", (unsigned)img(2,1,0), 5 );
+    TEST_EQUAL( "non-contiguous (0,2,0)", (unsigned)img(0,2,0), 6 );
+    TEST_EQUAL( "non-contiguous (1,2,0)", (unsigned)img(1,2,0), 7 );
+    TEST_EQUAL( "non-contiguous (2,2,0)", (unsigned)img(2,2,0), 8 );
+    TEST_EQUAL( "non-contiguous (0,0,1)", (unsigned)img(0,0,1), 9 );
+    TEST_EQUAL( "non-contiguous (1,0,1)", (unsigned)img(1,0,1), 10 );
+    TEST_EQUAL( "non-contiguous (2,0,1)", (unsigned)img(2,0,1), 11 );
+    TEST_EQUAL( "non-contiguous (0,1,1)", (unsigned)img(0,1,1), 12 );
+    TEST_EQUAL( "non-contiguous (1,1,1)", (unsigned)img(1,1,1), 13 );
+    TEST_EQUAL( "non-contiguous (2,1,1)", (unsigned)img(2,1,1), 14 );
+    TEST_EQUAL( "non-contiguous (0,2,1)", (unsigned)img(0,2,1), 15 );
+    TEST_EQUAL( "non-contiguous (1,2,1)", (unsigned)img(1,2,1), 16 );
+    TEST_EQUAL( "non-contiguous (2,2,1)", (unsigned)img(2,2,1), 17 );
+    TEST_EQUAL( "non-contiguous (0,0,2)", (unsigned)img(0,0,2), 18 );
+    TEST_EQUAL( "non-contiguous (1,0,2)", (unsigned)img(1,0,2), 19 );
+    TEST_EQUAL( "non-contiguous (2,0,2)", (unsigned)img(2,0,2), 20 );
+    TEST_EQUAL( "non-contiguous (0,1,2)", (unsigned)img(0,1,2), 21 );
+    TEST_EQUAL( "non-contiguous (1,1,2)", (unsigned)img(1,1,2), 22 );
+    TEST_EQUAL( "non-contiguous (2,1,2)", (unsigned)img(2,1,2), 23 );
+    TEST_EQUAL( "non-contiguous (0,2,2)", (unsigned)img(0,2,2), 24 );
+    TEST_EQUAL( "non-contiguous (1,2,2)", (unsigned)img(1,2,2), 25 );
+    TEST_EQUAL( "non-contiguous (2,2,2)", (unsigned)img(2,2,2), 26 );
+  }
+
 }

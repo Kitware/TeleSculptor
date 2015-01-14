@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,6 +48,7 @@
 #include <maptk/config_block.h>
 #include <maptk/config_block_io.h>
 #include <maptk/exceptions.h>
+#include <maptk/logging_macros.h>
 #include <maptk/track_set_io.h>
 #include <maptk/types.h>
 
@@ -63,20 +64,45 @@
 namespace bfs = boost::filesystem;
 
 
+static std::string LOGGING_PREFIX = "track_features_tool";
+
+
 static maptk::config_block_sptr default_config()
 {
   maptk::config_block_sptr config = maptk::config_block::empty_config("feature_tracker_tool");
 
   config->set_value("image_list_file", "",
-                    "Path an input file containing new-line separated paths "
+                    "Path to an input file containing new-line separated paths "
                     "to sequential image files.");
+  config->set_value("mask_list_file", "",
+                    "Optional path to an input file containing new-line "
+                    "separated paths to mask images. This list should be "
+                    "parallel in association to files specified in "
+                    "``image_list_file``. Mask image must be the same size as "
+                    "the image they are associated with.\n"
+                    "\n"
+                    "Leave this blank if no image masking is desired.");
+  config->set_value("invert_masks", false,
+                    "If true, all mask images will be inverted after loading. "
+                    "This is useful if mask images read in use positive "
+                    "values to indicated masked areas instead of non-masked "
+                    "areas.");
+  config->set_value("expect_multichannel_masks", false,
+                    "A majority of the time, mask images are a single channel, "
+                    "however it is feasibly possible that certain "
+                    "implementations may use multi-channel masks. If this is "
+                    "true we will expect multiple-channel mask images, "
+                    "warning when a single-channel mask is provided. If this "
+                    "is false we error upon seeing a multi-channel mask "
+                    "image.");
   config->set_value("output_tracks_file", "",
                     "Path to a file to write output tracks to. If this "
                     "file exists, it will be overwritten.");
   config->set_value("output_homography_file", "",
                     "Optional path to a file to write source-to-reference "
                     "homographies for each frame. Leave blank to disable this "
-                    "output.");
+                    "output. The output_homography_generator algorithm type "
+                    "only needs to be set if this is set.");
 
   maptk::algo::track_features::get_nested_algo_configuration("feature_tracker", config, maptk::algo::track_features_sptr());
   maptk::algo::image_io::get_nested_algo_configuration("image_reader", config, maptk::algo::image_io_sptr());
@@ -118,14 +144,36 @@ static bool check_config(maptk::config_block_sptr config)
                                                                                                  config);
   }
 
+  // If given an mask image list file, check that the file exists and is a file
+  bool valid_mask_list_file = true;
+  if( config->has_value("mask_list_file") && config->get_value<std::string>("mask_list_file") != "" )
+  {
+    maptk::path_t mask_list_filepath( config->get_value<std::string>("mask_list_file") );
+    valid_mask_list_file = bfs::is_regular_file( mask_list_filepath );
+  }
+
   return (
-         config->has_value("image_list_file") && bfs::exists(maptk::path_t(config->get_value<std::string>("image_list_file")))
+      // Check that image list file given and it exists
+         config->has_value("image_list_file")
+      && bfs::is_regular_file(maptk::path_t(config->get_value<std::string>("image_list_file")))
+      // See above
+      && valid_mask_list_file
+      // Check that output path given and exists in a valid directory
       && config->has_value("output_tracks_file")
+      && bfs::is_directory(bfs::absolute(config->get_value<maptk::path_t>("output_tracks_file")).parent_path())
+      // Check algorithm configuration validity
       && maptk::algo::track_features::check_nested_algo_configuration("feature_tracker", config)
       && maptk::algo::image_io::check_nested_algo_configuration("image_reader", config)
       && maptk::algo::convert_image::check_nested_algo_configuration("convert_image", config)
+      // See above
       && valid_out_homogs_file && valid_out_homogs_algo
       );
+}
+
+
+static maptk::image::byte invert_mask_pixel( maptk::image::byte const &b )
+{
+  return !b;
 }
 
 
@@ -240,7 +288,11 @@ static int maptk_main(int argc, char const* argv[])
   }
 
   // Attempt opening input and output files.
+  //  - filepath validity checked above
   std::string image_list_file = config->get_value<std::string>("image_list_file");
+  std::string mask_list_file = config->get_value<std::string>("mask_list_file");
+  bool invert_masks = config->get_value<bool>("invert_masks");
+  bool expect_multichannel_masks = config->get_value<bool>("expect_multichannel_masks");
   std::string output_tracks_file = config->get_value<std::string>("output_tracks_file");
 
   std::ifstream ifs(image_list_file.c_str());
@@ -260,6 +312,41 @@ static int maptk_main(int argc, char const* argv[])
     }
   }
 
+  // Create mask image list if a list file was given, else fill list with empty
+  // images. Files vector will only be populated if the use_masks bool is true
+  bool use_masks = false;
+  std::vector<maptk::path_t> mask_files;
+  if( mask_list_file != "" )
+  {
+    LOG_DEBUG( LOGGING_PREFIX,
+               "Loading paired mask images from list file" );
+
+    use_masks = true;
+    // Load file stream
+    std::ifstream mask_ifs(mask_list_file.c_str());
+    if( !mask_ifs )
+    {
+      throw maptk::path_not_exists(mask_list_file);
+    }
+    // load filepaths from file
+    for( std::string line; std::getline(mask_ifs, line); )
+    {
+      mask_files.push_back(line);
+      if( !bfs::is_regular_file( mask_files[mask_files.size()-1] ) )
+      {
+        throw maptk::path_not_exists( mask_files[mask_files.size()-1] );
+      }
+    }
+    // Check that image/mask list sizes are the same
+    if( files.size() != mask_files.size() )
+    {
+      throw maptk::invalid_value("Image and mask file lists are not congruent "
+                                 "in size.");
+    }
+    LOG_DEBUG( LOGGING_PREFIX,
+               "Loaded " << mask_files.size() << " mask image files." );
+  }
+
   // verify that we can open the output file for writing
   // so that we don't find a problem only after spending
   // hours of computation time.
@@ -275,7 +362,8 @@ static int maptk_main(int argc, char const* argv[])
   // Create the output homography file stream if specified
   // Validity of file path checked during configuration file validity check.
   std::ofstream homog_ofs;
-  if ( config->has_value("output_homography_file") )
+  if ( config->has_value("output_homography_file") &&
+       config->get_value<std::string>("output_homography_file") != "" )
   {
     maptk::path_t homog_fp = config->get_value<maptk::path_t>("output_homography_file");
     homog_ofs.open( homog_fp.string().c_str() );
@@ -293,9 +381,47 @@ static int maptk_main(int argc, char const* argv[])
   for(unsigned i=0; i<files.size(); ++i)
   {
     std::cout << "processing frame "<<i<<": "<<files[i]<<std::endl;
-    maptk::image_container_sptr img = image_reader->load(files[i].string());
-    maptk::image_container_sptr converted = image_converter->convert(img);
-    tracks = feature_tracker->track(tracks, i, converted);
+
+    //maptk::image_container_sptr img = image_reader->load(files[i].string());
+    //maptk::image_container_sptr converted = image_converter->convert(img);
+
+    maptk::image_container_sptr converted_img,
+                                mask, converted_mask;
+    converted_img = image_converter->convert( image_reader->load( files[i].string() ) );
+
+    // Load the mask for this image if we were given a mask image list
+    if( use_masks )
+    {
+      mask = image_reader->load( mask_files[i].string() );
+
+      // error out if we are not expecting a multi-channel mask
+      if( !expect_multichannel_masks && mask->depth() > 1 )
+      {
+        LOG_ERROR( LOGGING_PREFIX,
+                   "Encounted multi-channel mask image!" );
+        return EXIT_FAILURE;
+      }
+      else if( expect_multichannel_masks && mask->depth() == 1 )
+      {
+        LOG_WARN( LOGGING_PREFIX,
+                  "Expecting multi-channel masks but received one that was "
+                  "single-channel." );
+      }
+
+      if( invert_masks )
+      {
+        LOG_DEBUG( LOGGING_PREFIX,
+                   "Inverting mask image pixels" );
+        maptk::image mask_img( mask->get_image() );
+        maptk::transform_image( mask_img, invert_mask_pixel );
+        LOG_DEBUG( LOGGING_PREFIX,
+                   "Inverting mask image pixels -- Done" );
+      }
+
+      converted_mask = image_converter->convert( mask );
+    }
+
+    tracks = feature_tracker->track(tracks, i, converted_img, converted_mask);
 
     // Compute ref homography for current frame with current track set + write to file
     // -> still doesn't take into account a full shotbreak, which would incur a track reset

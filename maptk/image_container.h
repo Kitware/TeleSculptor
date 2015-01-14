@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -76,7 +76,7 @@ public:
   /// The depth (or number of channels) of the image
   virtual size_t depth() const = 0;
 
-  /// Get and in-memory image class to access the data
+  /// Get an in-memory image class to access the data
   virtual image get_image() const = 0;
 
 };
@@ -116,7 +116,7 @@ public:
   /// The depth (or number of channels) of the image
   virtual size_t depth() const { return data.depth(); }
 
-  /// Get and in-memory image class to access the data
+  /// Get an in-memory image class to access the data
   virtual image get_image() const { return data; };
 
 protected:

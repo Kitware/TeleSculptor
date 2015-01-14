@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -146,7 +146,8 @@ extract_descriptors
 descriptor_set_sptr
 extract_descriptors
 ::extract(image_container_sptr image_data,
-          feature_set_sptr features) const
+          feature_set_sptr features,
+          image_container_sptr /* image_mask */) const
 {
   if( !image_data || !features )
   {

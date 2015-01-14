@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -278,8 +278,9 @@ close_loops_homography_guided
 track_set_sptr
 close_loops_homography_guided
 ::stitch( frame_id_t frame_number,
+          track_set_sptr input,
           image_container_sptr image,
-          track_set_sptr input ) const
+          image_container_sptr mask ) const
 {
   if( !d_->enabled_ )
   {

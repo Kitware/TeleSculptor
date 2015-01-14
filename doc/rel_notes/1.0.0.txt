@@ -32,6 +32,12 @@ MAPTK Library / Core Plugin
  * Removed use of logging helper macros from header files as logging macro
    header is not a public header.
 
+ * Added optional mask image input to track features algorithm definition and
+   core implementation.
+
+ * Added transform_image function to efficiently transform in-place an image
+   given a unary function that is operated on every pixel.
+
 OCV Plugin
 
  * Converted module library into a library-plugin pair.
@@ -55,6 +61,10 @@ Test System / Tests
 
  * Added automatic message generation to test executables to inform the caller
    of available test names in that executable.
+
+Tools
+
+ * In track features tool, Added ability to specify paired mask image files.
 
 
 Fixes since v0.5.0

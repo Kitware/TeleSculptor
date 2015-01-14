@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,6 +63,9 @@ public:
 private:
   /// Implementation specific load functionality.
   /*
+   * NOTE: When loading boolean images (ppm, pbm, etc.), true-value regions are
+   * represented in the returned image as regions of 1's.
+   *
    * \param filename the path to the file the load
    * \returns an image container refering to the loaded image
    */
