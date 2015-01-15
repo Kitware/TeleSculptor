@@ -575,7 +575,7 @@ compute_ref_homography_core
     // frame, or a state without a feature (location)
     if ( itr == ti.trk->end() || !(itr->feat) )
     {
-      continue
+      continue;
     }
 
     if ( !bad_homog )
