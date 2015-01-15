@@ -204,6 +204,7 @@ typedef boost::shared_ptr< homography_collection_set > homography_collection_set
 
 
 /// Homography mapping for 2D points.
+MAPTK_LIB_EXPORT
 vector_2d homography_map( const homography& h, const vector_2d& p );
 
 
