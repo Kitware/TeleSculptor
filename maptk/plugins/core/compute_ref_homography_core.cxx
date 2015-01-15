@@ -221,8 +221,9 @@ public:
    *
    * Output homography describes transformation from pts_src to pts_dst.
    *
-   * If estimate homography is deemed bad, false is returned and the
-   * homography passed to \p out_h is not modified.
+   * If estimate homography is deemed bad, true is returned and the
+   * homography passed to \p out_h is not modified. If false is returned, the
+   * computed homography is valid and out_h is set to the estimated homography.
    */
   bool compute_homography(std::vector<vector_2d> const &pts_src,
                           std::vector<vector_2d> const &pts_dst,
@@ -267,11 +268,13 @@ public:
     // Only need to try this if a supposed valid homog was estimated above
     if ( !is_bad_homog )
     {
-      try
-      {
-        // would throw if not invertable
-        homography inverse_test = maptk::inverse( tmp_h );
+      // would throw if not invertable
+      homography inverse_test; // = maptk::inverse( tmp_h );
+      bool is_invertible;
+      tmp_h.computeInverseWithCheck( inverse_test, is_invertible );
 
+      if( is_invertible )
+      {
         // Checking for non-finite values in estimated and inversed homography
         unsigned i, j;
         for( i = 0; i < 3; ++i )
@@ -292,7 +295,7 @@ public:
           }
         }
       }
-      catch (...)
+      else
       {
         LOG_WARNING( LOGGING_PREFIX,
                      "Homography non-invertable. Bad homography." );
