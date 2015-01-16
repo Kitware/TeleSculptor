@@ -22,10 +22,11 @@ The MAP-Tk software architecture is highly modular and provides an algorithm
 abstraction layer that allows seamless interchange and run-time selection of
 algorithms from various other open source projects like OpenCV, VXL,  VisCL,
 and PROJ4.  The core library is light-weight with minimal dependencies
-(C++ standard library plus some Boost components).  The tools are written
-to depend only on the MAP-Tk core library.  Additional capabilites are
-provided in add-on modules that use 3rd party libraries to implement various
-abstract algorithm interfaces defined in the core.
+(C++ standard library plus some Boost and Eigen components).  The tools are
+written to depend only on the MAP-Tk core library.  Additional capabilites are
+provided in plugin modules that use 3rd party libraries to implement various
+abstract algorithm interfaces defined in the core.  Plugin modules may also
+implement additional versions of core MAP-Tk data structures.
 
 While the initial software implementation relies on batch post-processing
 of aerial video.  Our intent is to move to an online video stream processing
@@ -36,20 +37,21 @@ onboard unmanned aerial vehicles.
 Overview of Directories
 =======================
 
-* cmake           -- contains CMake helper scripts
-* doc             -- contains release notes and other documentation
-* maptk           -- contains the root of MAP-Tk code base
-* maptk/core      -- contains the core library source and headers
-* maptk/core/algo -- contains abstract algorithms and core implementations
-* maptk/ocv       -- contains the OpenCV module source and headers
-* maptk/proj      -- contains the PROJ4 module source and headers
-* maptk/viscl     -- contains the VisCL module source and headers
-* maptk/vxl       -- contains the VXL module source and headers
-* scripts         -- contains Python helper scripts
-* scripts/blender -- contains Python plug-ins for Blender
-* tests           -- contains testing framework and test for each module
-* tools           -- contains source for command line utilities
-* tools/config    -- contains example config files for command line utilities
+* CMake               -- contains CMake helper scripts
+* doc                 -- contains release notes and other documentation
+* maptk               -- contains the root of MAP-Tk code base
+* maptk/              -- contains the core library source and headers
+* maptk/algo          -- contains abstract algorithm definitions
+* maptk/plugins/core  -- contains core plugin source and headers
+* maptk/plugins/ocv   -- contains the OpenCV plugin source and headers
+* maptk/plugins/proj  -- contains the PROJ4 plugin source and headers
+* maptk/plugins/viscl -- contains the VisCL plugin source and headers
+* maptk/plugins/vxl   -- contains the VXL plugin source and headers
+* scripts             -- contains Python helper scripts
+* scripts/blender     -- contains Python plug-ins for Blender
+* tests               -- contains testing framework and test for each module
+* tools               -- contains source for command line utilities
+* tools/config        -- contains example config files for command line utilities
 
 
 
@@ -88,10 +90,10 @@ CMake Options
 * MAPTK_INSTALL_DOCS   -- Install Doxygen documentation (requires above enabled)
 * MAPTK_ENABLE_TESTING -- Build the unit tests
 
-* MAPTK_ENABLE_OPENCV  -- Turn on building the OpenCV add-on module
-* MAPTK_ENABLE_PROJ    -- Turn on building the PROJ.4 add-on module
-* MAPTK_ENABLE_VISCL   -- Turn on building the VisCL add-on module
-* MAPTK_ENABLE_VXL     -- Turn on building the VXL add-on module
+* MAPTK_ENABLE_OPENCV  -- Turn on building the OpenCV plugin module
+* MAPTK_ENABLE_PROJ    -- Turn on building the PROJ.4 plugin module
+* MAPTK_ENABLE_VISCL   -- Turn on building the VisCL plugin module
+* MAPTK_ENABLE_VXL     -- Turn on building the VXL plugin module
 
 
 Dependencies
@@ -130,12 +132,10 @@ functionality.  Dependencies for each module are:
 Building Doxygen Documentation
 ------------------------------
 
-If `MAPTK_ENABLE_DOCS` is enabled, and CMake is provided with a path to the
-Doxygen tool, then the HTML documentation is built as part of the normal
-build process under the target "doxygen".  Currently each module has its
-own documentation build.  Open `${MAPTK_BUILD_DIR}/docs/core/index.html`
-in your browser to view the documentation.  For other modules, replace
-"core" with the module name (e.g. "ocv", "vxl").
+If `MAPTK_ENABLE_DOCS` is enabled, and CMake finds, or is provided with, a path
+to the Doxygen tool, then the HTML documentation is built as part of the normal
+build process under the target "doxygen".  Open
+`${MAPTK_BUILD_DIR}/docs/index.html` in your browser to view the documentation.
 
 
 
@@ -163,6 +163,9 @@ are for debugging and analysis purposes.
 * maptk_analyze_tracks       -- Takes images and feature tracks and produces
                                 tracking statistics or images with tracks
                                 overlaid
+* maptk_estimate_homography  -- Estimates a homography transformation between
+                                two images, outputting a file containing the
+                                matrices.
 
 
 Running MAP-Tk Tools
