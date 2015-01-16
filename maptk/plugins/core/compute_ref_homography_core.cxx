@@ -53,7 +53,7 @@
 #include <Eigen/LU>
 
 
-#define LOGGING_PREFIX "compute_ref_homography_default"
+#define LOGGING_PREFIX "compute_ref_homography_core"
 
 
 namespace maptk
