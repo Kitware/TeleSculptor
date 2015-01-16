@@ -1,0 +1,43 @@
+namespace maptk {
+
+/// Core module namespace
+namespace core { }
+
+/** \page plugin_core Core Plugin Documentation
+\section sec-core-contents Contents
+The MAPTK Core plugin provides algorithm implementations that only depend on the MAP-Tk core.
+
+\subsection sec-core-algorithm-impls Algorithm Implementations
+- \ref core::close_loops_bad_frames_only : stitch feature tracks together over
+               missing or bad input frames
+         - Implements \ref algo::close_loops,
+         - Requires instances of \ref algo::match_features
+- \ref core::close_loops_multi_method : run multiple different close loops
+               implementations together
+         - Implements \ref algo::close_loops,
+         - Requires instances of \ref algo::close_loops
+- \ref core::compute_ref_homography_core : estimate a homography between
+               the current frame and some reference frame
+         - Implements \ref algo::compute_ref_homography,
+         - Requires instances of \ref algo::estimate_homography
+- \ref core::convert_image_bypass : pass-through option for the convert_image
+               algorithm, guarenteeing no modification to an input image.
+         - Implements \ref algo::convert_image.
+- \ref core::hierarchical_bundle_adjust : optimize camera and landmark
+               parameters given a set of feature tracks.
+         - Implements \ref algo::bundle_adjust.
+         - Requires instances of \ref algo::bundle_adjust,
+               \ref algo::optimize_cameras and \ref algo::triangulate_landmarks.
+- \ref core::match_features_homography : use homography estimation within
+               feature matching
+         - Implements \ref algo::match_features,
+         - Requires instances of \ref algo::match_features and
+               \ref algo::estimate_homography.
+- \ref core::track_features_core : converts frame-to-frame feature matching
+               into tracks
+         - Implements \ref algo::track_features.
+         - Requires instances of \ref algo::detect_features,
+               \ref algo::extract_descriptors, and \ref algo::match_features.
+
+*/
+}
