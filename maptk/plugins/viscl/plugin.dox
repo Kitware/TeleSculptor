@@ -1,0 +1,31 @@
+namespace maptk {
+
+/// VCL module namespace
+namespace vcl { }
+
+// The following text is included in the main documentation page by doxygen
+/** \page plugin_vcl VisCL Plugin Documentation
+\section sec-vcl-contents Contents
+The MAPTK vcl library provides various components by building on
+<a href="https://github.com/Kitware/VisCL">VisCL</a>.  VisCL is an experimental
+library for feature detection and tracking on a GPU using OpenCL.
+<b>VisCL is still very experimental and not recommended for production use at
+this time.</b>
+
+
+\subsection sec-vcl-containers Custom Containers
+- \ref vcl::viscl_image_container : holds an image in viscl::image format.
+- \ref vcl::feature_set : holds a collection of features stored in viscl formats.
+- \ref vcl::descriptor_set : holds a collection of descriptors stored in a
+               viscl::buffer.
+- \ref vcl::match_set : holds a collection of matches stored in a viscl::buffer.
+
+
+\subsection sec-vcl-algorithm-impls Algorithm Implementations
+- \ref vcl::convert_image : used a GPU entry point to upload an image to the GPU
+               once instead of for each algorithm that uses the image.
+- \ref vcl::detect_features : detect features on the GPU with VisCL.
+- \ref vcl::extract_descriptors : extract descriptors on the GPU with VisCL.
+- \ref vcl::match_features : track features in a local neighborhood on the GPU with VisCL.
+*/
+}
