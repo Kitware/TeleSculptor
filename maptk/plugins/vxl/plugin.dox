@@ -4,7 +4,7 @@ namespace maptk {
 namespace vxl { }
 
 // The following text is included in the main documentation page by doxygen
-/** \mainpage maptk::vxl documentation
+/** \page plugin_vxl VXL Plugin Documentation
 \section sec-vxl-contents Contents
 The MAPTK vxl library provides various components by building on
                <a href="http://vxl.sourceforge.net/">VXL</a>
