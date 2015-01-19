@@ -39,8 +39,7 @@ Overview of Directories
 
 * CMake               -- contains CMake helper scripts
 * doc                 -- contains release notes and other documentation
-* maptk               -- contains the root of MAP-Tk code base
-* maptk/              -- contains the core library source and headers
+* maptk               -- contains the core library source and headers
 * maptk/algo          -- contains abstract algorithm definitions
 * maptk/plugins/core  -- contains core plugin source and headers
 * maptk/plugins/ocv   -- contains the OpenCV plugin source and headers
@@ -108,13 +107,15 @@ Currently a complete set of functionalities in all tools requires either
 ### Required ###
 
 The only hard dependencies of MAP-Tk are on the C++ standard library and
-Boost (>= v1.50).  Currently MAP-Tk uses the following Boost components:
+[Boost](http://www.boost.org/) (>= v1.50) and
+[Eigen](http://eigen.tuxfamily.org/) (>= 3.0).
+Currently MAP-Tk uses the following Boost components:
 system, filesystem, program_options, timer.  Additionally, on Windows
 the Boost chrono component is required by Boost timer.
 
-### Optional ###
+### Optional Plugins###
 
-Each MAP-Tk add-on module brings in more dependencies for additional
+Each MAP-Tk plugin module brings in more dependencies for additional
 functionality.  Dependencies for each module are:
 
 * OpenCV - version 2.4.6 or greater
