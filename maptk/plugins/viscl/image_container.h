@@ -45,7 +45,7 @@ namespace vcl
 
 /// This image container wraps a VisCL image
 class MAPTK_VISCL_EXPORT image_container
-: public image_container
+: public maptk::image_container
 {
 public:
 
@@ -58,10 +58,10 @@ public:
   : data_(maptk_to_viscl(maptk_image)) {}
 
   /// Constructor - convert base image container to VisCL
-  explicit image_container(const image_container& image_cont);
+  explicit image_container(const maptk::image_container& image_cont);
 
   /// Copy Constructor
-  image_container(const image_container& other)
+  image_container(const maptk::vcl::image_container& other)
   : data_(other.data_) {}
 
   /// The size of the image data in bytes
@@ -107,7 +107,7 @@ protected:
  * return the underlying VisCL image.  Otherwise, convert the image data
  * and upload to the GPU.
  */
-MAPTK_VISCL_EXPORT viscl::image image_container_to_viscl(const image_container& img);
+MAPTK_VISCL_EXPORT viscl::image image_container_to_viscl(const maptk::image_container& img);
 
 
 } // end namespace vcl

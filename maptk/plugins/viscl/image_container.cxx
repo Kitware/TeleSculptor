@@ -47,7 +47,7 @@ namespace vcl
 
 /// Constructor - convert base image container to a VisCL image
 image_container
-::image_container(const image_container& image_cont)
+::image_container(const maptk::image_container& image_cont)
 : data_(image_container_to_viscl(image_cont))
 {
 }
@@ -143,7 +143,7 @@ image_container
 
 /// Extract a VisCL image from any image container
 viscl::image
-image_container_to_viscl(const image_container& img)
+image_container_to_viscl(const maptk::image_container& img)
 {
   if( const image_container* c =
           dynamic_cast<const image_container*>(&img) )
