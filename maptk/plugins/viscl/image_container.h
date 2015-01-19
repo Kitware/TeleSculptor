@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,24 +44,24 @@ namespace vcl
 {
 
 /// This image container wraps a VisCL image
-class MAPTK_VISCL_EXPORT viscl_image_container
+class MAPTK_VISCL_EXPORT image_container
 : public image_container
 {
 public:
 
   /// Constructor - from a VisCL image
-  explicit viscl_image_container(const viscl::image& d)
+  explicit image_container(const viscl::image& d)
   : data_(d) {}
 
   /// Constructor - convert maptk image to VisCL image
-  explicit viscl_image_container(const image& maptk_image)
+  explicit image_container(const image& maptk_image)
   : data_(maptk_to_viscl(maptk_image)) {}
 
   /// Constructor - convert base image container to VisCL
-  explicit viscl_image_container(const image_container& image_cont);
+  explicit image_container(const image_container& image_cont);
 
   /// Copy Constructor
-  viscl_image_container(const viscl_image_container& other)
+  image_container(const image_container& other)
   : data_(other.data_) {}
 
   /// The size of the image data in bytes
@@ -103,7 +103,7 @@ protected:
 
 /// Extract a VisCL image from any image container
 /**
- * If \a img is actually a viscl_image_container then
+ * If \a img is actually a image_container then
  * return the underlying VisCL image.  Otherwise, convert the image data
  * and upload to the GPU.
  */

@@ -14,7 +14,7 @@ this time.</b>
 
 
 \subsection sec-vcl-containers Custom Containers
-- \ref vcl::viscl_image_container : holds an image in viscl::image format.
+- \ref vcl::image_container : holds an image in viscl::image format.
 - \ref vcl::feature_set : holds a collection of features stored in viscl formats.
 - \ref vcl::descriptor_set : holds a collection of descriptors stored in a
                viscl::buffer.

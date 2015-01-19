@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,7 +58,7 @@ image_container_sptr
 convert_image
 ::convert(image_container_sptr img) const
 {
-  return boost::shared_ptr<image_container>(new viscl_image_container(*img));
+  return boost::shared_ptr<image_container>(new image_container(*img));
 }
 
 } // end namespace vcl

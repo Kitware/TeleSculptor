@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,8 +46,8 @@ namespace vcl
 
 
 /// Constructor - convert base image container to a VisCL image
-viscl_image_container
-::viscl_image_container(const image_container& image_cont)
+image_container
+::image_container(const image_container& image_cont)
 : data_(image_container_to_viscl(image_cont))
 {
 }
@@ -55,7 +55,7 @@ viscl_image_container
 
 /// The size of the image data in bytes
 size_t
-viscl_image_container
+image_container
 ::size() const
 {
   return data_.mem_size();
@@ -64,7 +64,7 @@ viscl_image_container
 
 /// Convert a VisCL image to a MAPTK image
 image
-viscl_image_container
+image_container
 ::viscl_to_maptk(const viscl::image& img_cl)
 {
   size_t width = img_cl.width();
@@ -89,7 +89,7 @@ viscl_image_container
 
 /// Convert a MAPTK image to a VisCL image
 viscl::image
-viscl_image_container
+image_container
 ::maptk_to_viscl(const image& img)
 {
   cl::ImageFormat img_fmt;
@@ -145,12 +145,12 @@ viscl_image_container
 viscl::image
 image_container_to_viscl(const image_container& img)
 {
-  if( const viscl_image_container* c =
-          dynamic_cast<const viscl_image_container*>(&img) )
+  if( const image_container* c =
+          dynamic_cast<const image_container*>(&img) )
   {
     return c->get_viscl_image();
   }
-  return viscl_image_container::maptk_to_viscl(img.get_image());
+  return image_container::maptk_to_viscl(img.get_image());
 }
 
 
