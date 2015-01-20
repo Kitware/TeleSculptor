@@ -69,6 +69,10 @@ VisCL Plugin
 
  * Converted module library into a library-plugin pair.
 
+ * Renamed viscl_image_container to vcl::image_container for consistency.
+
+ * Added missing Doxygen page for this plugin.
+
 VXL Plugin
 
  * Converted module library into a library-plugin pair.
