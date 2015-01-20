@@ -117,7 +117,7 @@ MAP-Tk provides several optional built-in plug-ins
                OpenCV algorithms and data structures.
 - \link plugin_proj PROJ plugin \endlink : provides algorithms that build on
                PROJ algorithms and data structures.
-- VisCL plugin : provides algorithms that build on
+- \link plugin_vcl VisCL plugin \endlink : provides algorithms that build on
                VisCL algorithms and data structures.
 - \link plugin_vxl VXL plugin \endlink : provides algorithms that build on
                VXL algorithms and data structures.
