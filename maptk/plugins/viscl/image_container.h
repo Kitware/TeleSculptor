@@ -103,7 +103,7 @@ protected:
 
 /// Extract a VisCL image from any image container
 /**
- * If \a img is actually a image_container then
+ * If \a img is actually a vcl::image_container then
  * return the underlying VisCL image.  Otherwise, convert the image data
  * and upload to the GPU.
  */
