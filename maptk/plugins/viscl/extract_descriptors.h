@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -71,7 +71,8 @@ public:
     */
   virtual descriptor_set_sptr
   extract(image_container_sptr image_data,
-          feature_set_sptr features) const;
+          feature_set_sptr features,
+          image_container_sptr image_mask = image_container_sptr()) const;
 
 private:
   /// private implementation class
