@@ -35,13 +35,10 @@
 
 #include <maptk/plugins/ocv/ocv_config.h>
 #include <maptk/plugins/ocv/register_algorithms.h>
+#include <maptk/plugin_interface/algorithm_plugin_interface.h>
 #include <maptk/registrar.h>
 
-#define MAPTK_ALGO_REGISTER_EXPORT MAPTK_OCV_EXPORT
-#include <maptk/plugin_interface/algorithm_plugin_interface.h>
 
-
-MAPTK_OCV_EXPORT
 int register_algo_impls(maptk::registrar &reg)
 {
   return maptk::ocv::register_algorithms( reg );

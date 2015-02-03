@@ -34,13 +34,10 @@
  */
 
 #include <maptk/plugins/proj/register_algorithms.h>
+#include <maptk/plugin_interface/algorithm_plugin_interface.h>
 #include <maptk/registrar.h>
 
-#define MAPTK_ALGO_REGISTER_EXPORT MAPTK_PROJ_EXPORT
-#include <maptk/plugin_interface/algorithm_plugin_interface.h>
 
-
-MAPTK_PROJ_EXPORT
 int register_algo_impls( maptk::registrar &reg )
 {
   return maptk::proj::register_algorithms( reg );

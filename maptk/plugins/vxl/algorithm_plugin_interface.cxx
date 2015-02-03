@@ -35,13 +35,10 @@
 
 #include <maptk/plugins/vxl/register_algorithms.h>
 #include <maptk/plugins/vxl/vxl_config.h>
+#include <maptk/plugin_interface/algorithm_plugin_interface.h>
 #include <maptk/registrar.h>
 
-#define MAPTK_ALGO_REGISTER_EXPORT MAPTK_VXL_EXPORT
-#include <maptk/plugin_interface/algorithm_plugin_interface.h>
 
-
-MAPTK_VXL_EXPORT
 int register_algo_impls(maptk::registrar &reg)
 {
   return maptk::vxl::register_algorithms( reg );

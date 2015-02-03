@@ -33,15 +33,11 @@
  * \brief Defaults plugin algorithm registration interface impl
  */
 
-#include <maptk/plugins/core/plugin_core_config.h>
 #include <maptk/plugins/core/register_algorithms.h>
+#include <maptk/plugin_interface/algorithm_plugin_interface.h>
 #include <maptk/registrar.h>
 
-#define MAPTK_ALGO_REGISTER_EXPORT PLUGIN_CORE_EXPORT
-#include <maptk/plugin_interface/algorithm_plugin_interface.h>
 
-
-PLUGIN_CORE_EXPORT
 int register_algo_impls(maptk::registrar &reg)
 {
   return maptk::core::register_algorithms( reg );
