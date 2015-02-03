@@ -47,7 +47,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 
-#include <maptk/cmake_translation_macros.h>
 #include <maptk/logging_macros.h>
 #include <maptk/registrar.h>
 

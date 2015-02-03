@@ -1,9 +1,0 @@
-#ifndef MAPTK_CMAKE_TRANSLATION_MACROS_H
-#define MAPTK_CMAKE_TRANSLATION_MACROS_H
-
-#define ON 1
-#define YES 1
-#define OFF 0
-#define NO 0
-
-#endif  // MAPTK_CMAKE_TRANSLATION_MACROS_H

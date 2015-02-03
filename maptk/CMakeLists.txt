@@ -212,7 +212,13 @@ if (CMAKE_CONFIGURATION_TYPES)
   set(config_subdir "/$<CONFIGURATION>")
 endif()
 
-message(STATUS "BUILD_SHARED_LIBS: ${BUILD_SHARED_LIBS}")
+# Convert use-build-dir switch into 1/0 value
+if (MAPTK_USE_BUILD_PLUGIN_DIR)
+  set(MAPTK_USE_BUILD_PLUGIN_DIR 1)
+else()
+  set(MAPTK_USE_BUILD_PLUGIN_DIR 0)
+endif()
+
 target_compile_definitions(maptk_apm
   PRIVATE
     # For plugin manager
