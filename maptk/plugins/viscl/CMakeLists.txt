@@ -31,6 +31,7 @@ set( maptk_viscl_sources
   utils.cxx
   )
 maptk_add_library( maptk_viscl
+  ${maptk_viscl_headers_public}
   ${maptk_viscl_sources}
   )
 target_link_libraries( maptk_viscl
