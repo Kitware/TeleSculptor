@@ -60,38 +60,38 @@ typedef boost::shared_ptr< homography > homography_sptr;
 
 
 /// A homography between two arbitrary frames.
-class MAPTK_LIB_EXPORT f2f_homography : public homography
+class f2f_homography : public homography
 {
 public:
 
   /// Construct an identity homography for the given frame.
-  explicit f2f_homography( const frame_id_t frame_id );
+  explicit MAPTK_LIB_EXPORT f2f_homography( const frame_id_t frame_id );
 
   /// Construct a frame to frame homography.
-  explicit f2f_homography( const homography& h,
+  explicit MAPTK_LIB_EXPORT f2f_homography( const homography& h,
                            const frame_id_t from_id,
                            const frame_id_t to_id );
 
   /// Copy Constructor.
-  f2f_homography( const f2f_homography& h );
+  MAPTK_LIB_EXPORT f2f_homography( const f2f_homography& h );
 
   /// Destructor.
-  virtual ~f2f_homography();
+  virtual MAPTK_LIB_EXPORT ~f2f_homography();
 
   /// Return the inverse of this homography.
-  virtual f2f_homography inverse() const;
+  virtual MAPTK_LIB_EXPORT f2f_homography inverse() const;
 
   /// The frame identifier that this homography maps from.
-  virtual frame_id_t from_id() const;
+  virtual MAPTK_LIB_EXPORT frame_id_t from_id() const;
 
   /// The frame identifier that this homography maps to.
-  virtual frame_id_t to_id() const;
+  virtual MAPTK_LIB_EXPORT frame_id_t to_id() const;
 
   /// Normalize the internal homography matrix.
-  virtual f2f_homography& normalize();
+  virtual MAPTK_LIB_EXPORT f2f_homography& normalize();
 
   /// Custom f2f_homography multiplication operator.
-  virtual f2f_homography operator*( const f2f_homography& other );
+  virtual MAPTK_LIB_EXPORT f2f_homography operator*( const f2f_homography& other );
 
 protected:
 
@@ -108,25 +108,25 @@ typedef boost::shared_ptr< f2f_homography > f2f_homography_sptr;
 
 
 /// A homography between a frame and some arbitrary coordinate space.
-class MAPTK_LIB_EXPORT f2w_homography : public homography
+class f2w_homography : public homography
 {
 public:
 
   /// Construct an identity homography for the given frame.
-  explicit f2w_homography( const frame_id_t frame_id );
+  explicit MAPTK_LIB_EXPORT f2w_homography( const frame_id_t frame_id );
 
   /// Construct a frame to frame homography.
-  explicit f2w_homography( const homography& h,
+  explicit MAPTK_LIB_EXPORT f2w_homography( const homography& h,
                            const frame_id_t frame_id );
 
   /// Copy Constructor.
-  f2w_homography( const f2w_homography& h );
+  MAPTK_LIB_EXPORT f2w_homography( const f2w_homography& h );
 
   /// Destructor.
-  virtual ~f2w_homography();
+  virtual MAPTK_LIB_EXPORT ~f2w_homography();
 
   /// The frame identifier that this homography maps from.
-  virtual frame_id_t frame_id() const;
+  virtual MAPTK_LIB_EXPORT frame_id_t frame_id() const;
 
 protected:
 
@@ -140,42 +140,42 @@ typedef boost::shared_ptr< f2w_homography > f2w_homography_sptr;
 
 
 /// A collection of homography-related data useful for each individual frame.
-class MAPTK_LIB_EXPORT homography_collection
+class homography_collection
 {
 public:
 
   /// Construct a homography collection from different types of homographies.
-  homography_collection( f2f_homography_sptr cur_to_last = f2f_homography_sptr(),
+  MAPTK_LIB_EXPORT homography_collection( f2f_homography_sptr cur_to_last = f2f_homography_sptr(),
                          f2f_homography_sptr cur_to_ref = f2f_homography_sptr(),
                          f2w_homography_sptr ref_to_wld = f2w_homography_sptr(),
                          f2w_homography_sptr cur_to_wld = f2w_homography_sptr() );
 
   /// Destructor.
-  virtual ~homography_collection();
+  virtual MAPTK_LIB_EXPORT ~homography_collection();
 
   /// Return a homography to the last frame.
-  f2f_homography_sptr current_to_last() const;
+  MAPTK_LIB_EXPORT f2f_homography_sptr current_to_last() const;
 
   /// Return a homography to some reference frame.
-  f2f_homography_sptr current_to_reference() const;
+  MAPTK_LIB_EXPORT f2f_homography_sptr current_to_reference() const;
 
   /// Return an arbitrary reference to world homography.
-  f2w_homography_sptr reference_to_world() const;
+  MAPTK_LIB_EXPORT f2w_homography_sptr reference_to_world() const;
 
   /// Return a homography to some reference frame.
-  f2w_homography_sptr current_to_world() const;
+  MAPTK_LIB_EXPORT f2w_homography_sptr current_to_world() const;
 
   /// Is the current to last homography valid?
-  bool has_current_to_last() const;
+  bool MAPTK_LIB_EXPORT has_current_to_last() const;
 
   /// Is the current to reference homography valid?
-  bool has_current_to_reference() const;
+  bool MAPTK_LIB_EXPORT has_current_to_reference() const;
 
   /// Is the reference to world homography valid?
-  bool has_reference_to_world() const;
+  bool MAPTK_LIB_EXPORT has_reference_to_world() const;
 
   /// Is the current to world homography valid?
-  bool has_current_to_world() const;
+  bool MAPTK_LIB_EXPORT has_current_to_world() const;
 
 protected:
 
