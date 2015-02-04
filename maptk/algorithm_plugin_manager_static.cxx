@@ -63,15 +63,11 @@
 namespace maptk
 {
 
-namespace //anonymous
-{
-static const char* LOGGING_PREFIX = "maptk::static_register_algorithms";
-}
-
 void static_register_algorithms()
 {
   // Only give this function content if we are building statically
 #ifndef BUILD_SHARED_LIBS
+  static const char* LOGGING_PREFIX = "maptk::static_register_algorithms";
   int tmp;
 
   tmp = core::register_algorithms( registrar::instance() );
