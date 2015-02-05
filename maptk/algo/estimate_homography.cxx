@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,7 +49,7 @@ namespace algo
 {
 
 /// Estimate a homography matrix from corresponding features
-homography
+homography_sptr
 estimate_homography
 ::estimate(feature_set_sptr feat1,
            feature_set_sptr feat2,

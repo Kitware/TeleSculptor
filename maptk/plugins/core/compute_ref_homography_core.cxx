@@ -226,10 +226,10 @@ public:
    */
   bool compute_homography(std::vector<vector_2d> const &pts_src,
                           std::vector<vector_2d> const &pts_dst,
-                          homography & out_h) const
+                          homography_sptr &out_h) const
   {
     bool is_bad_homog = false;
-    homography tmp_h;
+    homography_sptr tmp_h;
 
     // Make sure that we have at least the minimum number of points to match
     // between source and destination
@@ -267,34 +267,32 @@ public:
     // Only need to try this if a supposed valid homog was estimated above
     if ( !is_bad_homog )
     {
-      // would throw if not invertable
-      homography inverse_test; // = maptk::inverse( tmp_h );
-      bool is_invertible;
-      tmp_h.computeInverseWithCheck( inverse_test, is_invertible );
-
-      if( is_invertible )
+      try
       {
+        // Invertible test
+        Eigen::Matrix<double,3,3> h_mat = tmp_h->matrix_d();
+
+        homography_<double> inverse( h_mat );
+        inverse.invert();  // throws when non-invertible
+        Eigen::Matrix<double,3,3> i_mat = inverse.get_matrix();
+
         // Checking for non-finite values in estimated and inversed homography
         unsigned i, j;
         for( i = 0; i < 3; ++i )
         {
           for ( j = 0; j < 3; ++j )
           {
-            if ( !boost::math::isfinite( tmp_h(i,j) ) || !boost::math::isfinite( inverse_test(i,j) ) )
+            if ( !boost::math::isfinite( h_map(i,j) ) || !boost::math::isfinite( i_mat(i,j) ) )
             {
-              is_bad_homog = true;
               LOG_WARNING( LOGGING_PREFIX,
                            "Found non-finite values in estimated homography. Bad homography." );
+              is_bad_homog = true;
               break;
             }
           }
-          if ( is_bad_homog )
-          {
-            break;
-          }
         }
       }
-      else
+      catch( ... )
       {
         LOG_WARNING( LOGGING_PREFIX,
                      "Homography non-invertable. Bad homography." );
@@ -559,7 +557,7 @@ compute_ref_homography_core
     LOG_DEBUG( LOGGING_PREFIX, "estimation SUCCEEDED" );
     // extend current shot
     output = f2f_homography_sptr( new f2f_homography( h, frame_number, earliest_ref ) );
-    output->normalize();
+    output->homography()->normalize();
   }
 
   // Update track infos based on homography estimation result
@@ -591,7 +589,7 @@ compute_ref_homography_core
       // of.
       else if( d_->use_backproject_error && ti.active )
       {
-        vector_2d warped = homography_map(*output, itr->feat->loc());
+        vector_2d warped = homography_map( output->homography(), itr->feat->loc() );
         double dist_sqr = ( warped - ti.ref_loc ).squaredNorm();
 
         if( dist_sqr > d_->backproject_threshold_sqr )
