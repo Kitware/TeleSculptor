@@ -59,7 +59,7 @@ estimate_homography
   if (pts1.size() < 4 || pts2.size() < 4)
   {
     std::cerr << "Not enough points to estimate a homography" <<std::endl;
-    return homography_sptr( new homography_<double>(matrix_3x3d::Zero()) );
+    return homography_<double>::Zero();
   }
 
   std::vector<cv::Point2f> points1, points2;

@@ -132,6 +132,14 @@ homography_<T>
   return *this;
 }
 
+template <typename T>
+homography_sptr
+homography_<T>
+::Zero()
+{
+  return homography_sptr( new homography_<T>( matrix_t::Zero() ) );
+}
+
 /// Get the underlying matrix transformation
 template <typename T>
 typename homography_<T>::matrix_t&
@@ -180,7 +188,7 @@ homography_<T>
 
 
 // ===========================================================================
-// f2f_homography_<T>
+// f2f_homography
 // ---------------------------------------------------------------------------
 
 /// Construct an identity homography for the given frame
@@ -267,66 +275,50 @@ f2f_homography
 }
 
 
-//// ===========================================================================
-//// f2w_homography_<T>
-//// ---------------------------------------------------------------------------
-//
-//
-///// Construct an identity homography for the given frame.
-//template <typename T>
-//f2w_homography_<T>
-//::f2w_homography_( frame_id_t const frame_id )
-//  : homography_<T>(),
-//    frame_id_( frame_id )
-//{
-//}
-//
-///// Construct a frame to frame homography.
-//template <typename T>
-//f2w_homography_<T>
-//::f2w_homography_( homography_<T> const &h,
-//                   frame_id_t const frame_id )
-//: homography_<T>( h ),
-//  frame_id_( frame_id )
-//{
-//}
-//
-///// Copy Constructor.
-//template <typename T>
-//template <typename U>
-//f2w_homography_<T>
-//::f2w_homography_( f2w_homography_<U> const &h )
-//: homography_<T>( h ),
-//  frame_id_( h.frame_id() )
-//{
-//}
-//
-///// Create a clone of ourself as a shared pointer
-//template <typename T>
-//homography_sptr
-//f2w_homography_<T>
-//::clone() const
-//{
-//  return homography_sptr( new f2w_homography_<T>( *this ) );
-//}
-//
-///// Get a double-typed copy of the underlying matrix transformation
-//template <typename T>
-//Eigen::Matrix<double,3,3>
-//f2w_homography_<T>
-//::matrix_d() const
-//{
-//  return homography_<T>::matrix_d();
-//}
-//
-///// The frame identifier that this homography maps from.
-//template <typename T>
-//frame_id_t
-//f2w_homography_<T>
-//::frame_id() const
-//{
-//  return frame_id_;
-//}
+// ===========================================================================
+// f2w_homography
+// ---------------------------------------------------------------------------
+
+
+/// Construct an identity homography for the given frame
+f2w_homography
+::f2w_homography( frame_id_t const frame_id )
+  : h_( homography_sptr( new homography_<double>() ) ),
+    frame_id_( frame_id )
+{
+}
+
+/// Construct given an existing homography
+f2w_homography
+::f2w_homography( homography_sptr const &h, frame_id_t const frame_id )
+  : h_( h->clone() ),
+    frame_id_( frame_id )
+{
+}
+
+/// Copy Constructor
+f2w_homography
+::f2w_homography( f2w_homography const &h )
+  : h_( h.h_->clone() ),
+    frame_id_( h.frame_id_ )
+{
+}
+
+/// Get the homography transformation
+homography_sptr
+f2w_homography
+::homography() const
+{
+  return this->h_;
+}
+
+/// Get the frame identifier
+frame_id_t
+f2w_homography
+::frame_id() const
+{
+  return this->frame_id_;
+}
 
 
 // ===========================================================================
@@ -361,15 +353,15 @@ homography_map( homography_<T> const &h, Eigen::Matrix<T,2,1> const &p )
 
 template <typename T>
 Eigen::Matrix<T,2,1>
-homography_map( homography_sptr h, Eigen::Matrix<T,2,1> const &p )
+homography_map( homography_sptr const &h, Eigen::Matrix<T,2,1> const &p )
 {
-  // intentionally empty
+  // intentionally empty for C++ reasons.
 }
 
 template <>
 MAPTK_LIB_EXPORT
 Eigen::Matrix<double,2,1>
-homography_map( homography_sptr h, Eigen::Matrix<double,2,1> const &p )
+homography_map( homography_sptr const &h, Eigen::Matrix<double,2,1> const &p )
 {
   return h_map<double>( h->matrix_d(), p );
 }
@@ -377,9 +369,32 @@ homography_map( homography_sptr h, Eigen::Matrix<double,2,1> const &p )
 template <>
 MAPTK_LIB_EXPORT
 Eigen::Matrix<float,2,1>
-homography_map( homography_sptr h, Eigen::Matrix<float,2,1> const &p )
+homography_map( homography_sptr const &h, Eigen::Matrix<float,2,1> const &p )
 {
   return h_map<float>( h->matrix_f(), p );
+}
+
+std::ostream&
+operator<<( std::ostream &s, homography const &h )
+{
+  s << h.matrix_d();
+  return s;
+}
+
+template <typename T>
+std::ostream&
+operator<<( std::ostream &s, homography_<T> const &h )
+{
+  s << h.get_matrix();
+  return s;
+}
+
+std::ostream&
+operator<<( std::ostream &s, f2f_homography const &h )
+{
+  s << h.from_id() << " -> " << h.to_id() << "\n"
+    << *h.homography();
+  return s;
 }
 
 
@@ -392,7 +407,9 @@ homography_map( homography_sptr h, Eigen::Matrix<float,2,1> const &p )
 
 #define INSTANTIATE_METHODS(T) \
   template MAPTK_LIB_EXPORT Eigen::Matrix<T,2,1> homography_map( homography_<T> const &h, \
-                                                                 Eigen::Matrix<T,2,1> const &p )
+                                                                 Eigen::Matrix<T,2,1> const &p ); \
+  template MAPTK_LIB_EXPORT std::ostream& operator<<( std::ostream &, \
+                                                      homography_<T> const & )
 
 INSTANTIATE_HOMOGRAPHY(float);
 //INSTANTIATE_HOMOGRAPHY(double); // defined through use above (L:169)

@@ -55,7 +55,7 @@ namespace vxl
 
 
 /// Estimate a homography matrix from corresponding points
-homography
+homography_sptr
 estimate_homography
 ::estimate(const std::vector<vector_2d>& pts1,
            const std::vector<vector_2d>& pts2,
@@ -65,7 +65,7 @@ estimate_homography
   if (pts1.size() < 4 || pts2.size() < 4)
   {
     std::cerr << "Not enough points to estimate a homography" <<std::endl;
-    return homography::Zero();
+    return homography_<double>::Zero();
   }
 
   std::vector< vnl_vector<double> > from_pts, to_pts;
@@ -96,7 +96,7 @@ estimate_homography
   if ( ! result )
   {
     std::cerr << "MSAC failed!!" << std::endl;
-    return homography::Zero();
+    return homography_<double>::Zero();
   }
 
   // Step 2: refine the estimate using weighted least squares.  This
@@ -129,7 +129,11 @@ estimate_homography
     inliers.push_back(r < inlier_scale);
   }
 
-  return homography(m.data_block()).transpose();
+  return homography_sptr(
+      new homography_<double>(
+        Eigen::Matrix<double,3,3>( m.data_block() ).transpose()
+      )
+    );
 }
 
 

@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -68,7 +68,7 @@ public:
    *                      this pair is an inlier to the homography estimate
    * \param [in]  inlier_scale error distance tolerated for matches to be inliers
    */
-  virtual homography
+  virtual homography_sptr
   estimate(const std::vector<vector_2d>& pts1,
            const std::vector<vector_2d>& pts2,
            std::vector<bool>& inliers,

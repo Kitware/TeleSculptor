@@ -104,13 +104,13 @@ track_id_in_set( track_sptr trk_ptr, std::set<track_id_t>* set_ptr )
 
 // If possible convert a src1 to ref and src2 to ref homography to a src2 to src1 homography
 bool
-convert( const f2f_homography_sptr& src1_to_ref,
-         const f2f_homography_sptr& src2_to_ref,
-         f2f_homography& src2_to_src1 )
+convert( const f2f_homography_sptr &src1_to_ref,
+         const f2f_homography_sptr &src2_to_ref,
+         Eigen::Matrix<double,3,3> &src2_to_src1 )
 {
   try
   {
-    src2_to_src1 = src1_to_ref->inverse() * (*src2_to_ref);
+    src2_to_src1 = (src1_to_ref->inverse() * (*src2_to_ref)).homography()->matrix_d();
     return true;
   }
   catch(...)
@@ -118,7 +118,7 @@ convert( const f2f_homography_sptr& src1_to_ref,
     std::cerr << "Warn: Invalid homography received" << std::endl;
   }
 
-  src2_to_src1 = *src2_to_ref;
+  src2_to_src1 = src2_to_ref->homography()->matrix_d();
   return false;
 }
 
@@ -304,7 +304,7 @@ close_loops_homography_guided
   // Determine if this is a new checkpoint frame. Either the buffer is empty
   // and this is a new frame, this is a homography for a new reference frame,
   // or the overlap with the last checkpoint was less than a specified amount.
-  f2f_homography tmp( frame_number );
+  Eigen::Matrix<double,3,3> tmp;
 
   if( d_->buffer_.empty() ||
       !convert( d_->buffer_.back().src_to_ref, homog, tmp ) ||
