@@ -339,7 +339,7 @@ Eigen::Matrix<T,2,1>
 homography_map( homography_sptr const &h, Eigen::Matrix<T,2,1> const &p );
 
 
-/// Outputstream operator for \p homography_sptr
+/// Output stream operator for \p homography_sptr
 MAPTK_LIB_EXPORT std::ostream& operator<<( std::ostream &s, homography const &h );
 
 /// homography_<T> output stream operator

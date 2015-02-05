@@ -374,6 +374,7 @@ homography_map( homography_sptr const &h, Eigen::Matrix<float,2,1> const &p )
   return h_map<float>( h->matrix_f(), p );
 }
 
+/// Output stream operator for \p homography_sptr
 std::ostream&
 operator<<( std::ostream &s, homography const &h )
 {
@@ -381,6 +382,7 @@ operator<<( std::ostream &s, homography const &h )
   return s;
 }
 
+/// homography_<T> output stream operator
 template <typename T>
 std::ostream&
 operator<<( std::ostream &s, homography_<T> const &h )
@@ -389,6 +391,7 @@ operator<<( std::ostream &s, homography_<T> const &h )
   return s;
 }
 
+/// \p f2f_homography output stream operator
 std::ostream&
 operator<<( std::ostream &s, f2f_homography const &h )
 {
