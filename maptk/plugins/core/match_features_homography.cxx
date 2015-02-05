@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,6 +41,7 @@
 #include <boost/foreach.hpp>
 
 #include <maptk/exceptions/algorithm.h>
+#include <maptk/homography.h>
 #include <maptk/match_set.h>
 
 
@@ -179,7 +180,7 @@ match_features_homography
 
   // estimate a homography from the initial matches
   std::vector<bool> inliers;
-  matrix_3x3d H = h_estimator_->estimate(feat1, feat2, init_matches,
+  homography_sptr H = h_estimator_->estimate(feat1, feat2, init_matches,
                                          inliers, d_->inlier_scale);
   (void) H; // H not yet used, avoid compiler warning
   int inlier_count = static_cast<int>(std::count(inliers.begin(), inliers.end(), true));
