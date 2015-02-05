@@ -46,6 +46,7 @@
 #include <maptk/plugins/vxl/initialize_cameras_landmarks.h>
 #include <maptk/plugins/vxl/optimize_cameras.h>
 #include <maptk/plugins/vxl/triangulate_landmarks.h>
+#include <maptk/plugins/vxl/match_features_constrained.h>
 
 
 namespace maptk
@@ -68,6 +69,7 @@ int register_algorithms( maptk::registrar &reg )
   REGISTER_TYPE( maptk::vxl::initialize_cameras_landmarks );
   REGISTER_TYPE( maptk::vxl::optimize_cameras );
   REGISTER_TYPE( maptk::vxl::triangulate_landmarks );
+  REGISTER_TYPE( maptk::vxl::match_features_constrained );
 
   REGISTRATION_SUMMARY();
   return REGISTRATION_FAILURES();

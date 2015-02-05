@@ -13,6 +13,7 @@ set(maptk_vxl_headers_public
   image_container.h
   image_io.h
   initialize_cameras_landmarks.h
+  match_features_constrained.h
   optimize_cameras.h
   register_algorithms.h
   triangulate_landmarks.h
@@ -35,6 +36,7 @@ set(maptk_vxl_sources
   image_container.cxx
   image_io.cxx
   initialize_cameras_landmarks.cxx
+  match_features_constrained.cxx
   optimize_cameras.cxx
   register_algorithms.cxx
   triangulate_landmarks.cxx
@@ -47,7 +49,7 @@ maptk_add_library( maptk_vxl
   )
 target_link_libraries( maptk_vxl
   maptk
-  rrel vgl_algo vil vpgl_algo
+  rrel rsdl vnl vgl_algo vil vpgl_algo
   )
 
 maptk_create_plugin( maptk_vxl
