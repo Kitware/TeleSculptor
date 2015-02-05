@@ -49,7 +49,7 @@ namespace ocv
 
 
 /// Estimate a homography matrix from corresponding points
-homography
+homography_sptr
 estimate_homography
 ::estimate(const std::vector<vector_2d>& pts1,
            const std::vector<vector_2d>& pts2,
@@ -59,7 +59,7 @@ estimate_homography
   if (pts1.size() < 4 || pts2.size() < 4)
   {
     std::cerr << "Not enough points to estimate a homography" <<std::endl;
-    return homography::Zero();
+    return homography_sptr( new homography_<double>(matrix_3x3d::Zero()) );
   }
 
   std::vector<cv::Point2f> points1, points2;
@@ -76,9 +76,9 @@ estimate_homography
 
   cv::Mat inliers_mat;
   cv::Mat H = cv::findHomography( cv::Mat(points1), cv::Mat(points2),
-                                 CV_RANSAC,
-                                 inlier_scale,
-                                 inliers_mat );
+                                  CV_RANSAC,
+                                  inlier_scale,
+                                  inliers_mat );
   inliers.resize(inliers_mat.rows);
   for(unsigned i=0; i<inliers.size(); ++i)
   {
@@ -87,7 +87,7 @@ estimate_homography
 
   matrix_3x3d H_mat;
   cv2eigen(H, H_mat);
-  return H_mat;
+  return homography_sptr( new homography_<double>(H_mat) );
 }
 
 
