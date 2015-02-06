@@ -67,51 +67,37 @@ void static_register_algorithms()
 {
   // Only give this function content if we are building statically
 #ifndef BUILD_SHARED_LIBS
-  static const char* LOGGING_PREFIX = "maptk::static_register_algorithms";
+  static const char* logging_prefix = "maptk::static_register_algorithms";
   int tmp;
 
-  tmp = core::register_algorithms( registrar::instance() );
-  if( tmp )
-  {
-    LOG_WARN( LOGGING_PREFIX,
-              tmp << " algorithms failed to register from module maptk::core" );
+# define register_module(name) \
+  tmp = name::register_algorithms( registrar::instance() ); \
+  if( tmp ) \
+  { \
+    LOG_WARN( logging_prefix, \
+              tmp << " algorithms failed to register from module " \
+              << "maptk::" << #name ); \
   }
 
+  register_module( core );
+
 # if MAPTK_ENABLE_OPENCV
-  tmp = ocv::register_algorithms( registrar::instance() );
-  if( tmp )
-  {
-    LOG_WARN( LOGGING_PREFIX,
-              tmp << " algorithms failed to register from module maptk::ocv" );
-  }
+  register_module( ocv );
 # endif
 
 # if MAPTK_ENABLE_PROJ
-  tmp = proj::register_algorithms( registrar::instance() );
-  if( tmp )
-  {
-    LOG_WARN( LOGGING_PREFIX,
-              tmp << " algorithms failed to register from module maptk::proj" );
-  }
+  register_module( proj );
 # endif
 
 # if MAPTK_ENABLE_VISCL
-  tmp = vcl::register_algorithms( registrar::instance() );
-  if( tmp )
-  {
-    LOG_WARN( LOGGING_PREFIX,
-              tmp << " algorithms failed to register from module maptk::vcl" );
-  }
+  register_module( vcl );
 # endif
 
 # if MAPTK_ENABLE_VXL
-  tmp = vxl::register_algorithms( registrar::instance() );
-  if( tmp )
-  {
-    LOG_WARN( LOGGING_PREFIX,
-              tmp << " algorithms failed to register from module maptk::vxl" );
-  }
+  register_module( vxl );
 # endif
+
+# undef register_module
 
 #endif // ndef BUILD_SHARED_LIBS
 }
