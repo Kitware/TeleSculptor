@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2011-2014 by Kitware, Inc.
+ * Copyright 2011-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -67,6 +67,17 @@ config_block
 {
   // remember, config_block_sptr is a boost shared pointer
   return config_block_sptr(new config_block(name, config_block_sptr()));
+}
+
+/// Construct an empty \p config_block
+config_block
+::config_block( config_block_key_t const &name )
+  : m_parent( config_block_sptr() ),
+    m_name( name ),
+    m_store(),
+    m_descr_store(),
+    m_ro_list()
+{
 }
 
 /// Destructor
