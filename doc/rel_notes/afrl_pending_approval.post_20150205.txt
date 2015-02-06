@@ -1,0 +1,29 @@
+MAPTK Release Notes for changes pending release approval by AFRL
+================================================================
+
+This file documents release notes for changes made to MAPTK which require
+public release approval from AFRL.  After approval, the changes and
+corresponding notes below will be encorporated into a public numbered
+release version, and the content of this file will be reset.
+
+
+Updates since last public release
+---------------------------------
+
+Build System
+
+ * Simplified string logic for finding compiler flags file.
+
+Main Library
+
+ * Revised import/export logic in auto-generated plugin library code.
+
+
+Fixes since last public release
+-------------------------------
+
+Core Plugin
+
+ * Added missing header to source list
+
+ * Fixed import/export macro definition variable spelling.
