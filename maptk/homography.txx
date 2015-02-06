@@ -87,6 +87,15 @@ homography_<T>
   return this->h_.template cast<double>();
 }
 
+/// Specialization for homographies with native double type
+template <>
+Eigen::Matrix<double,3,3>
+homography_<double>
+::matrix_d() const
+{
+  return this->h_;
+}
+
 /// Get a float-typed copy of the underlying matrix transformation
 template <typename T>
 Eigen::Matrix<float,3,3>
@@ -94,6 +103,15 @@ homography_<T>
 ::matrix_f() const
 {
   return this->h_.template cast<float>();
+}
+
+/// Specialization for homographies with native float type
+template <>
+Eigen::Matrix<float,3,3>
+homography_<float>
+::matrix_f() const
+{
+  return this->h_;
 }
 
 /// Normalize homography transformation in-place
