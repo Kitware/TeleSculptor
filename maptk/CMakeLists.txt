@@ -38,6 +38,8 @@ set(maptk_public_headers
   feature_set.h
   geo_reference_points_io.h
   homography.h
+  homography_f2f.h
+  homography_f2w.h
   image.h
   image_container.h
   ins_data.h
@@ -94,6 +96,7 @@ set(maptk_public_headers
   )
 
 set(maptk_private_headers
+  homography.txx
   logging_macros.h
   )
 
@@ -107,6 +110,9 @@ set(maptk_sources
   feature.cxx
   geo_reference_points_io.cxx
   homography.cxx
+  homography-instances.cxx
+  homography_f2f.cxx
+  homography_f2w.cxx
   image.cxx
   ins_data.cxx
   ins_data_io.cxx

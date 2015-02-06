@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,21 +30,52 @@
 
 /**
  * \file
- * \brief Core Homography implementation
+ * \brief Frame to World Homography definition
  */
 
-#include "homography.h"
+#ifndef MAPTK_HOMOGRAPHY_F2W_H
+#define MAPTK_HOMOGRAPHY_F2W_H
+
+#include <maptk/config.h>
+#include <maptk/homography.h>
 
 
 namespace maptk
 {
 
-/// Output stream operator for \p homography_sptr
-std::ostream&
-operator<<( std::ostream &s, homography const &h )
+
+class MAPTK_LIB_EXPORT f2w_homography
 {
-  s << h.matrix_d();
-  return s;
-}
+public:
+  /// Construct an identity homography for the given frame
+  explicit f2w_homography( frame_id_t const frame_id );
+
+  /// Construct given an existing homography
+  /**
+   * The given homography sptr is cloned into this object so we retain a unique
+   * copy.
+   */
+  f2w_homography( homography_sptr const &h, frame_id_t const frame_id );
+
+  /// Copy Constructor
+  f2w_homography( f2w_homography const &h );
+
+  /// Get the homography transformation
+  virtual homography_sptr homography() const;
+
+  /// Get the frame identifier
+  virtual frame_id_t frame_id() const;
+
+protected:
+  /// Homography transformation
+  homography_sptr h_;
+
+  /// Frame identifier
+  frame_id_t frame_id_;
+};
+
 
 } // end maptk namespace
+
+
+#endif // MAPTK_HOMOGRAPHY_F2W_H

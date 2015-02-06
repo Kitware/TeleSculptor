@@ -30,21 +30,29 @@
 
 /**
  * \file
- * \brief Core Homography implementation
+ * \brief Core Homography template instantiation
  */
 
-#include "homography.h"
+#include "homography.txx"
 
 
 namespace maptk
 {
 
-/// Output stream operator for \p homography_sptr
-std::ostream&
-operator<<( std::ostream &s, homography const &h )
-{
-  s << h.matrix_d();
-  return s;
-}
+// ===========================================================================
+// Template class instantiation
+// ---------------------------------------------------------------------------
+/// \cond DoxygenSuppress
+#define INSTANTIATE_HOMOGRAPHY(T) \
+  template class homography_<T>; \
+  template Eigen::Matrix<T,2,1> homography_map( homography_<T> const &h, \
+                                                Eigen::Matrix<T,2,1> const &p ); \
+  template std::ostream& operator<<( std::ostream &, \
+                                     homography_<T> const & )
+
+INSTANTIATE_HOMOGRAPHY(float);
+INSTANTIATE_HOMOGRAPHY(double);
+#undef INSTANTIATE_HOMOGRAPHY
+/// \endcond
 
 } // end maptk namespace
