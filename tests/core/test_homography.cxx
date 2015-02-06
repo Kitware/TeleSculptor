@@ -36,6 +36,7 @@
 #include <test_common.h>
 
 #include <maptk/homography.h>
+#include <maptk/homography_f2f.h>
 #include <maptk/logging_macros.h>
 
 #include <Eigen/LU>
@@ -65,72 +66,60 @@ namespace // anonymous
 
 // Test invert function Eigen::Matrix derived classes
 template< typename T >
-static bool test_numeric_invertibility( T base_instance )
+static bool test_numeric_invertibility()
 {
-  // Create a few copies of the base instance for manipulation
-  T invertible(base_instance),
-    expected_result(base_instance),
-    noninvertable(base_instance),
-    ni_result(base_instance);
+  maptk::homography_<T> invertible,
+                        expected_result,
+                        noninvertable,
+                        ni_result;
 
-  invertible << 1, 1, 2,
-                3, 4, 5,
-                6, 7, 9;
-  expected_result << -0.5, -2.5,  1.5,
-                     -1.5,  1.5, -0.5,
-                      1.5,  0.5, -0.5;
-  if( ! invertible.inverse().isApprox( expected_result ) )
+  invertible.get_matrix() << 1, 1, 2,
+                             3, 4, 5,
+                             6, 7, 9;
+  expected_result.get_matrix() << -0.5, -2.5,  1.5,
+                                  -1.5,  1.5, -0.5,
+                                   1.5,  0.5, -0.5;
+  if( ! invertible.inverse().get_matrix().isApprox( expected_result.get_matrix() ) )
   {
     return false;
   }
 
-  noninvertable << 1, 2, 3,
-                   4, 5, 6,
-                   7, 8, 9;
+  noninvertable.get_matrix() << 1, 2, 3,
+                                4, 5, 6,
+                                7, 8, 9;
   bool is_invertible;
-  noninvertable.computeInverseWithCheck( ni_result, is_invertible );
+  noninvertable.get_matrix().computeInverseWithCheck( ni_result.get_matrix(), is_invertible );
   return is_invertible == false;
 }
 
 } // end anonymous namespace
 
 
-IMPLEMENT_TEST(homography)
+IMPLEMENT_TEST(homography_inversion)
 {
   TEST_LOG( "Testing basic homography functions" );
 
-  TEST_EQUAL( "homography::inverse",
-              test_numeric_invertibility< maptk::homography >( maptk::homography() ),
+  TEST_EQUAL( "homography::inverse-double",
+              test_numeric_invertibility<double>(),
+              true );
+  TEST_EQUAL( "homography::inverse-float",
+              test_numeric_invertibility<float>(),
               true );
 }
 
 
-IMPLEMENT_TEST(f2f_homography)
+IMPLEMENT_TEST(f2f_homography_inversion)
 {
   TEST_LOG( "Testing Frame-to-frame homography functions" );
 
-  TEST_EQUAL( "f2f_homography::inverse",
-              test_numeric_invertibility< maptk::f2f_homography >( maptk::f2f_homography(0) ),
-              true );
-
   // testing from and to frame swapping during inversion
-  maptk::f2f_homography h( maptk::homography::Identity(),
-                           0, 10 );
+  maptk::matrix_3x3d i( maptk::matrix_3x3d::Identity() );
+  maptk::f2f_homography h( i, 0, 10 ),
+                        h_inv(0);
+  h_inv = h.inverse();
 
   TEST_EQUAL( "f2f-homog ref frame inversion - From slot",
-              h.inverse().from_id(),
-              10 );
+              h_inv.from_id(), 10 );
   TEST_EQUAL( "f2f-homog ref frame inversion - To slot",
-              h.inverse().to_id(),
-              0 );
-}
-
-
-IMPLEMENT_TEST(f2w_homography)
-{
-  TEST_LOG( "Testing Frame-to-world homography functions" );
-
-  TEST_EQUAL( "f2w_homography::inverse",
-              test_numeric_invertibility< maptk::f2w_homography >( maptk::f2w_homography(0) ),
-              true );
+              h_inv.to_id(), 0 );
 }
