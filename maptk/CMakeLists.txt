@@ -265,6 +265,12 @@ endif()
 
 
 ###
+# C Interface
+#
+add_subdirectory(c)
+
+
+###
 # Marking source root for documentation generation
 #
 maptk_create_doxygen( maptk "${CMAKE_CURRENT_LIST_DIR}" )
