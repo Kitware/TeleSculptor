@@ -10,6 +10,9 @@ if( MAPTK_ENABLE_C_LIB )
     config.h
     config_block.h
     )
+  set(maptk_c_private_headers
+    c_utils.h
+    )
   set(maptk_c_sources
     config_block.cxx
     )
@@ -20,6 +23,7 @@ if( MAPTK_ENABLE_C_LIB )
     )
   maptk_add_library( maptk_c
     ${maptk_c_public_headers}
+    ${maptk_c_private_headers}
     ${maptk_c_sources}
     )
   target_link_libraries( maptk_c

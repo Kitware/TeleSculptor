@@ -44,6 +44,7 @@ __LIBRARY_NAME__ = "maptk_c"
 __LIBRARY_NAME_RE__ = re.compile("(?:lib)?%s.(?:so|dylib|dll).*"
                                  % __LIBRARY_NAME__)
 __LIBRARY_PATH_CACHE__ = None
+__LIBRARY_CACHE__ = None
 
 __BUILD_DIR__ = "@MAPTK_BUILD_DIRECTORY@"
 
@@ -143,7 +144,10 @@ def find_maptk_library():
     :rtype:
 
     """
-    return ctypes.CDLL(_find_maptk_library_path())
+    global __LIBRARY_CACHE__
+    if not __LIBRARY_CACHE__:
+        __LIBRARY_CACHE__ = ctypes.CDLL(_find_maptk_library_path())
+    return __LIBRARY_CACHE__
 
 
 def test():
