@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2011-2015 by Kitware, Inc.
+ * Copyright 2011-2014 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -79,9 +79,6 @@ class MAPTK_LIB_EXPORT config_block
      * \returns An empty configuration block.
      */
     static config_block_sptr empty_config(config_block_key_t const& name = config_block_key_t());
-
-    /// Construct an empty \p config_block
-    config_block( config_block_key_t const &name = config_block_key_t() );
 
     /// Destructor
     virtual ~config_block();
@@ -218,7 +215,7 @@ class MAPTK_LIB_EXPORT config_block
      */
     void merge_config(config_block_sptr const& config);
 
-    /// Return the values available in the configuration.
+    ///Return the values available in the configuration.
     /**
      * \returns All of the keys available within the block.
      */

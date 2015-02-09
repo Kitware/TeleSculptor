@@ -62,28 +62,6 @@ IMPLEMENT_TEST(block_sep_size)
   }
 }
 
-IMPLEMENT_TEST(construction)
-{
-  maptk::config_block_sptr const config1 = maptk::config_block::empty_config( "foo" );
-  maptk::config_block            config2( "bar" );
-  maptk::config_block           *config3 = new maptk::config_block( "baz" );
-
-  if( config1->get_name() != "foo" )
-  {
-    TEST_ERROR( "Basic construction FAILED with config_block::empty_config static function." );
-  }
-  if( config2.get_name() != "bar" )
-  {
-    TEST_ERROR( "Basic construction FAILED with config_block() constructor." );
-  }
-  if( config3->get_name() != "baz" )
-  {
-    TEST_ERROR( "Basic construction FAILED with config_block pointer creation." );
-  }
-
-  delete config3;
-}
-
 IMPLEMENT_TEST(has_value)
 {
   maptk::config_block_sptr const config = maptk::config_block::empty_config();
