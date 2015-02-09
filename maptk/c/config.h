@@ -5,7 +5,7 @@
 #include <maptk/config.h>
 
 
-#ifdef MAPTK_C_EXPORT
+#ifndef MAPTK_C_EXPORT
 # ifdef MAKE_MAPTK_C_LIB
 #   define MAPTK_C_EXPORT MAPTK_EXPORT
 # else

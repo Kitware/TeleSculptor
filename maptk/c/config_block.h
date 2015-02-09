@@ -50,12 +50,15 @@ extern "C"
 typedef struct config_block_s config_block_s;
 
 /// Create a new, empty \p config_block object
+MAPTK_C_EXPORT
 config_block_s* maptk_config_block_new();
 
 /// Create a new, empty \p config_block object with a name
+MAPTK_C_EXPORT
 config_block_s* maptk_config_block_new_named( char *name );
 
 /// Destroy a config block object
+MAPTK_C_EXPORT
 void maptk_config_block_destroy( config_block_s *cb );
 
 ///// Get the name of the \p config_block instance
@@ -115,7 +118,6 @@ void maptk_config_block_destroy( config_block_s *cb );
 ///// Check if a value exists for the given key
 //int maptk_config_block_has_key( config_block_s *cb,
 //                                char *key );
-
 
 
 #ifdef __cplusplus
