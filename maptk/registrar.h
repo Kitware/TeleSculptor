@@ -40,6 +40,7 @@
 #include <map>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/foreach.hpp>

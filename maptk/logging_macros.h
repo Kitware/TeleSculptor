@@ -39,6 +39,9 @@
 #ifndef MAPTK_LOGGING_MACROS_H_
 #define MAPTK_LOGGING_MACROS_H_
 
+#include <iostream>
+
+
 /// Logging / Debugging helper macros
 #ifndef NDEBUG
 /// Display a debugging message
