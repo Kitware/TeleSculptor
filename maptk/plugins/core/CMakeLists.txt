@@ -9,6 +9,7 @@ set( plugin_core_headers
   match_features_homography.h
   plugin_core_config.h
   register_algorithms.h
+  simple_feature_set_filter.h
   track_features_core.h
   )
 maptk_install_plugin_headers( core
@@ -23,6 +24,7 @@ set( plugin_core_sources
   hierarchical_bundle_adjust.cxx
   match_features_homography.cxx
   register_algorithms.cxx
+  simple_feature_set_filter.cxx
   track_features_core.cxx
   )
 maptk_add_library( maptk_core

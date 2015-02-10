@@ -84,6 +84,7 @@ set(maptk_public_headers
   algo/estimate_homography.h
   algo/estimate_similarity_transform.h
   algo/extract_descriptors.h
+  algo/feature_set_filter.h
   algo/geo_map.h
   algo/image_io.h
   algo/initialize_cameras_landmarks.h
@@ -148,6 +149,7 @@ set(maptk_sources
   algo/estimate_homography.cxx
   algo/estimate_similarity_transform.cxx
   algo/extract_descriptors.cxx
+  algo/feature_set_filter.cxx
   algo/geo_map.cxx
   algo/image_io.cxx
   algo/initialize_cameras_landmarks.cxx

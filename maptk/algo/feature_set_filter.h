@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,52 +28,50 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef MAPTK_ALGO_FEATURE_SET_FILTER_H_
+#define MAPTK_ALGO_FEATURE_SET_FILTER_H_
+
+#include <boost/shared_ptr.hpp>
+
+#include <maptk/algo/algorithm.h>
+#include <maptk/feature_set.h>
+
 /**
  * \file
- * \brief Defaults plugin algorithm registration interface impl
+ * \brief Header defining abstract \link maptk::algo::feature_set_filter
+ *       \endlink algorithm
  */
-
-#include "register_algorithms.h"
-
-#include <iostream>
-
-#include <maptk/logging_macros.h>
-#include <maptk/plugin_interface/algorithm_plugin_interface_macros.h>
-#include <maptk/plugins/core/close_loops_bad_frames_only.h>
-#include <maptk/plugins/core/close_loops_multi_method.h>
-#include <maptk/plugins/core/compute_ref_homography_core.h>
-#include <maptk/plugins/core/convert_image_bypass.h>
-#include <maptk/plugins/core/hierarchical_bundle_adjust.h>
-#include <maptk/plugins/core/match_features_homography.h>
-#include <maptk/plugins/core/plugin_core_config.h>
-#include <maptk/plugins/core/simple_feature_set_filter.h>
-#include <maptk/plugins/core/track_features_core.h>
-
 
 namespace maptk
 {
 
-namespace core
+namespace algo
 {
 
-// Register core algorithms with the given or global registrar
-int register_algorithms(maptk::registrar &reg)
+/// \brief Abstract base class for feature set filter algorithms.
+class MAPTK_LIB_EXPORT feature_set_filter
+  : public algorithm_def<feature_set_filter>
 {
-    REGISTRATION_INIT( reg );
+public:
 
-    REGISTER_TYPE( maptk::core::close_loops_bad_frames_only );
-    REGISTER_TYPE( maptk::core::close_loops_multi_method );
-    REGISTER_TYPE( maptk::core::compute_ref_homography_core );
-    REGISTER_TYPE( maptk::core::convert_image_bypass );
-    REGISTER_TYPE( maptk::core::hierarchical_bundle_adjust );
-    REGISTER_TYPE( maptk::core::match_features_homography );
-    REGISTER_TYPE( maptk::core::simple_feature_set_filter );
-    REGISTER_TYPE( maptk::core::track_features_core );
+  /// Return the name of this algorithm.
+  virtual std::string type_name() const { return "feature_set_filter"; }
 
-    REGISTRATION_SUMMARY();
-    return REGISTRATION_FAILURES();
-}
+  /// filter a feature set
+  /**
+   * \param [in] feature set to filter
+   * \returns a filtered version of the feature set
+   */
+  virtual feature_set_sptr
+  filter( feature_set_sptr input ) const = 0;
 
-} // end core namespace
+};
 
-} // end maptk namespace
+typedef boost::shared_ptr<feature_set_filter> feature_set_filter_sptr;
+
+} // end namespace algo
+
+} // end namespace maptk
+
+
+#endif // MAPTK_ALGO_FEATURE_SET_FILTER_H_
