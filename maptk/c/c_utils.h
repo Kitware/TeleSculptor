@@ -42,6 +42,8 @@
 #include <exception>
 #include <sstream>
 
+#include <maptk/logging_macros.h>
+
 
 /// Standardized try/catch for general use.
 /**
@@ -59,7 +61,7 @@
     {                                                         \
       std::ostringstream ss;                                  \
       ss << "Caught exception in C interface: " << e.what();  \
-      LOG_ERROR( log_prefix, ss.str().c_str() );              \
+      LOG_WARN( log_prefix, ss.str().c_str() );               \
     }                                                         \
   } while( 0 )
 

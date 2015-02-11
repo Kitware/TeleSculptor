@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2011-2014 by Kitware, Inc.
+ * Copyright 2011-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -203,7 +203,7 @@ class MAPTK_LIB_EXPORT config_block
 
     /// Merge the values in \p config into the current config.
     /**
-     * \note Any values currently set within \c *this will be overwritten if conficts occur.
+     * \note Any values currently set within \c *this will be overwritten if conflicts occur.
      *
      * \throws set_on_read_only_value_exception Thrown if \p key is marked as read-only.
      *

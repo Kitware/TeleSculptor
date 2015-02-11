@@ -36,6 +36,8 @@
 
 #include "config_block.h"
 
+#include <cstdlib>
+#include <cstring>
 #include <map>
 #include <sstream>
 #include <string>
@@ -78,20 +80,22 @@ public:
  * maptk::config_block_sptr is defined and points to the accessed
  * maptk::config_block.
  */
-#define ACCESS_CB(cb_p, code)                                             \
+#define ACCESS_CB(cb_p, sptr_var, code)                                   \
   do                                                                      \
   {                                                                       \
     cb_cache_t::iterator it =                                             \
       CB_SPTR_CACHE.find( reinterpret_cast<maptk::config_block*>(cb_p) ); \
     if( it != CB_SPTR_CACHE.end() )                                       \
     {                                                                     \
-      maptk::config_block_sptr cb_sptr = it->second;                      \
+      maptk::config_block_sptr sptr_var = it->second;                     \
       code                                                                \
     }                                                                     \
     else                                                                  \
     {                                                                     \
-      throw cb_cache_exception("No cached config_block by the given "     \
-                               "pointer.");                               \
+      std::ostringstream ss;                                              \
+      ss << "No cached config_block_sptr by the given pointer (ptr: "     \
+         << cb_p << ")";                                                  \
+      throw cb_cache_exception( ss.str() );                               \
     }                                                                     \
   } while( 0 )
 
@@ -99,11 +103,16 @@ public:
 } //end anonymous namespace
 
 
+// Static Constants
+char const *maptk_config_block_block_sep = maptk::config_block::block_sep.c_str();
+char const *maptk_config_block_global_value = maptk::config_block::global_value.c_str();
+
+
 /// Create a new, empty \p config_block object
-config_block_s* maptk_config_block_new()
+config_block_t* maptk_config_block_new()
 {
   STANDARD_CATCH(
-    "maptk::config_block::new",
+    "maptk::C::config_block::new",
 
     return maptk_config_block_new_named("");
 
@@ -112,24 +121,24 @@ config_block_s* maptk_config_block_new()
 }
 
 /// Create a new, empty \p config_block object with a name
-config_block_s* maptk_config_block_new_named( char const *name )
+config_block_t* maptk_config_block_new_named( char const *name )
 {
   STANDARD_CATCH(
-    "maptk::config_block::new_named",
+    "maptk::C::config_block::new_named",
 
     maptk::config_block_sptr cb_sptr = maptk::config_block::empty_config( name );
     CB_SPTR_CACHE[cb_sptr.get()] = cb_sptr;
-    return reinterpret_cast<config_block_s*>(cb_sptr.get());
+    return reinterpret_cast<config_block_t*>(cb_sptr.get());
 
   );
   return 0;
 }
 
 /// Destroy a config block object
-unsigned int maptk_config_block_destroy( config_block_s *cb )
+unsigned int maptk_config_block_destroy( config_block_t *cb )
 {
   STANDARD_CATCH(
-    "maptk::config_block::destroy",
+    "maptk::C::config_block::destroy",
 
     return CB_SPTR_CACHE.erase( reinterpret_cast<maptk::config_block*>(cb) );
 
@@ -138,30 +147,30 @@ unsigned int maptk_config_block_destroy( config_block_s *cb )
 }
 
 /// Get the name of the \p config_block instance
-char const* maptk_config_block_get_name( config_block_s *cb )
+char const* maptk_config_block_get_name( config_block_t *cb )
 {
   STANDARD_CATCH(
-    "maptk::config_block::get_name",
+    "maptk::C::config_block::get_name",
 
-    ACCESS_CB(cb,
+    ACCESS_CB(cb, cb_sptr,
       return cb_sptr->get_name().c_str();
     );
 
   );
-  return "";
+  return 0;
 }
 
 /// Get a copy of a sub-block of the configuration
-config_block_s* maptk_config_block_subblock( config_block_s *cb,
+config_block_t* maptk_config_block_subblock( config_block_t *cb,
                                              char const *key )
 {
   STANDARD_CATCH(
-    "maptk::config_block::subblock",
+    "maptk::C::config_block::subblock",
 
-    ACCESS_CB( cb,
+    ACCESS_CB( cb, cb_sptr,
       maptk::config_block_sptr sb_sptr = cb_sptr->subblock( key );
       CB_SPTR_CACHE[sb_sptr.get()] = sb_sptr;
-      return reinterpret_cast<config_block_s*>( sb_sptr.get() );
+      return reinterpret_cast<config_block_t*>( sb_sptr.get() );
     );
 
   );
@@ -169,59 +178,199 @@ config_block_s* maptk_config_block_subblock( config_block_s *cb,
 }
 
 /// Get a mutable view of a sub-block within a configuration
-config_block_s* maptk_config_block_subblock_view( config_block_s *cb,
+config_block_t* maptk_config_block_subblock_view( config_block_t *cb,
                                                   char const *key )
 {
   STANDARD_CATCH(
-    "maptk::config_block::subblock_view",
+    "maptk::C::config_block::subblock_view",
 
-    ACCESS_CB( cb,
+    ACCESS_CB( cb, cb_sptr,
       maptk::config_block_sptr sb_sptr = cb_sptr->subblock_view( key );
       CB_SPTR_CACHE[sb_sptr.get()] = sb_sptr;
-      return reinterpret_cast<config_block_s*>( sb_sptr.get() );
+      return reinterpret_cast<config_block_t*>( sb_sptr.get() );
     );
-
   );
   return 0;
 }
 
-///// Get the string value for a key
-//char* maptk_config_block_get_value( config_block_s *cb,
-//                                    char* key )
-//{
-//  return reinterpret_cast<maptk::config_block*>(cb)->get_value<std::string>( key ).c_str();
-//}
-//
-///// Get the string value for a key if it exists, else the default
-//char*  maptk_config_block_get_value_default( config_block_s *cb,
-//                                             char* key,
-//                                             char* default )
-//{
-//  return reinterpret_cast<maptk::config_block*>(cb)->get_value<std::string>(key, default).c_str();
-//}
-//
-///// Get the description string for a given key
-//char* maptk_config_block_get_description( config_block_s *cb,
-//                                          char* key )
-//{
-//  return reinterpret_cast<maptk::config_block*>(cb)->get_description( key ).c_str();
-//}
-//
-///// Set the string value for a key
-//void maptk_config_block_set_value( config_block_s *cb,
-//                                   char *key,
-//                                   char *value )
-//{
-//  reinterpret_cast<maptk::config_block*>(cb)->set_value( key, value );
-//}
-//
-///// Merge another \p config_block's entries into this \p config_block
-//void maptk_config_block_merge_config( config_block_s *cb,
-//                                      config_block_s *other )
-//{
-//  reinterpret_cast<maptk::config_block*>(cb)->merge( *reinterpret_cast<maptk::config_block*>(other) );
-//}
-//
-///// Check if a value exists for the given key
-//int maptk_config_block_has_key( config_block_s *cb,
-//                                char *key );
+/// Get the string value for a key
+char const* maptk_config_block_get_value( config_block_t *cb,
+                                          char const* key )
+{
+  STANDARD_CATCH(
+    "maptk::C::config_block::get_value",
+
+    ACCESS_CB( cb, cb_sptr,
+      return cb_sptr->get_value<std::string>( key ).c_str();
+    );
+  );
+  return 0;
+}
+
+/// Get the string value for a key if it exists, else the default
+char const*  maptk_config_block_get_value_default( config_block_t *cb,
+                                                   char const* key,
+                                                   char const* deflt )
+{
+  STANDARD_CATCH(
+    "maptk::C::config_block::get_value_default",
+
+    ACCESS_CB( cb, cb_sptr,
+      return cb_sptr->get_value<std::string>( key, deflt ).c_str();
+    );
+  );
+  return 0;
+}
+
+/// Get the description string for a given key
+char const* maptk_config_block_get_description( config_block_t *cb,
+                                                char const* key )
+{
+  STANDARD_CATCH(
+    "maptk::C::config_block::get_description",
+
+    ACCESS_CB( cb, cb_sptr,
+      return cb_sptr->get_description( key ).c_str();
+    );
+  );
+  return 0;
+}
+
+/// Set the string value for a key
+void maptk_config_block_set_value( config_block_t *cb,
+                                   char const* key,
+                                   char const* value )
+{
+  STANDARD_CATCH(
+    "maptk::C::config_block::set_value",
+
+    ACCESS_CB( cb, cb_sptr,
+      cb_sptr->set_value<std::string>( key, value );
+    );
+  );
+}
+
+/// Set a string value with an associated description
+void maptk_config_block_set_value_descr( config_block_t *cb,
+                                         char const *key,
+                                         char const *value,
+                                         char const *description )
+{
+  STANDARD_CATCH(
+    "maptk::C::config_block::set_value_descr",
+
+    ACCESS_CB( cb, cb_sptr,
+      cb_sptr->set_value<std::string>( key, value, description );
+    );
+  );
+}
+
+/// Remove a key/value pair from the configuration.
+void maptk_config_block_unset_value( config_block_t *cb,
+                                     char const *key )
+{
+  STANDARD_CATCH(
+    "maptk::C::config_block::unset_value",
+
+    ACCESS_CB( cb, cb_sptr,
+      cb_sptr->unset_value( key );
+    );
+  );
+}
+
+/// Query if a value is read-only
+bool maptk_config_block_is_read_only( config_block_t *cb,
+                                      char const *key )
+{
+  STANDARD_CATCH(
+    "maptk::C:config_block::is_read_only",
+
+    ACCESS_CB( cb, cb_sptr,
+      return cb_sptr->is_read_only( key );
+    );
+  );
+  return false;
+}
+
+/// Mark the given key as read-only
+void maptk_config_block_mark_read_only( config_block_t *cb,
+                                        char const *key )
+{
+  STANDARD_CATCH(
+    "maptk::C::config_block::mark_read_only",
+
+    ACCESS_CB( cb, cb_sptr,
+      cb_sptr->mark_read_only( key );
+    );
+  );
+}
+
+/// Merge another \p config_block's entries into this \p config_block
+void maptk_config_block_merge_config( config_block_t *cb,
+                                      config_block_t *other )
+{
+  STANDARD_CATCH(
+    "maptk::C::config_block::merge_config",
+
+    ACCESS_CB( cb, cb_sptr,
+      ACCESS_CB( other, other_sptr,
+        cb_sptr->merge_config( other_sptr );
+      );
+    );
+  );
+}
+
+/// Check if a value exists for the given key
+bool maptk_config_block_has_value( config_block_t *cb,
+                                   char const *key )
+{
+  STANDARD_CATCH(
+    "maptk::C::config_block::has_key",
+
+    ACCESS_CB( cb, cb_sptr,
+      return static_cast<int>( cb_sptr->has_value( key ) );
+    );
+  );
+  return false;
+}
+
+/// Return the values available in the configuration.
+void maptk_config_block_available_values( config_block_t *cb,
+                                          unsigned int *length,
+                                          char ***keys )
+{
+  STANDARD_CATCH(
+    "maptk::C::config_bloc::available_values",
+
+    if ( length == 0 || keys == 0 )
+    {
+      throw maptk::invalid_value("One or both provided output parameters "
+                                 "were a NULL pointer.");
+    }
+
+    ACCESS_CB( cb, cb_sptr,
+      std::vector<std::string> cb_keys = cb_sptr->available_values();
+
+      *length = cb_keys.size();
+      *keys = (char**)malloc( sizeof(char*) * (*length) );
+
+      // allocate mem + copy values
+      //
+      for( unsigned int i=0; i < (*length); i++ )
+      {
+        (*keys)[i] = (char*)malloc(sizeof(char) * cb_keys[i].length());
+        std::strcpy( (*keys)[i], cb_keys[i].c_str() );
+      }
+    );
+  );
+}
+
+/// Corresponding function to free a list of strings
+void maptk_config_block_free_key_list( unsigned int length, char **keys )
+{
+  for( unsigned int i = 0; i < length; i++ )
+  {
+    free(keys[i]);
+  }
+  free(keys);
+}
