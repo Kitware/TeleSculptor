@@ -109,7 +109,7 @@ char const *maptk_config_block_global_value = maptk::config_block::global_value.
 
 
 /// Create a new, empty \p config_block object
-config_block_t* maptk_config_block_new()
+maptk_config_block_t* maptk_config_block_new()
 {
   STANDARD_CATCH(
     "maptk::C::config_block::new",
@@ -121,21 +121,21 @@ config_block_t* maptk_config_block_new()
 }
 
 /// Create a new, empty \p config_block object with a name
-config_block_t* maptk_config_block_new_named( char const *name )
+maptk_config_block_t* maptk_config_block_new_named( char const *name )
 {
   STANDARD_CATCH(
     "maptk::C::config_block::new_named",
 
     maptk::config_block_sptr cb_sptr = maptk::config_block::empty_config( name );
     CB_SPTR_CACHE[cb_sptr.get()] = cb_sptr;
-    return reinterpret_cast<config_block_t*>(cb_sptr.get());
+    return reinterpret_cast<maptk_config_block_t*>(cb_sptr.get());
 
   );
   return 0;
 }
 
 /// Destroy a config block object
-unsigned int maptk_config_block_destroy( config_block_t *cb )
+unsigned int maptk_config_block_destroy( maptk_config_block_t *cb )
 {
   STANDARD_CATCH(
     "maptk::C::config_block::destroy",
@@ -147,7 +147,7 @@ unsigned int maptk_config_block_destroy( config_block_t *cb )
 }
 
 /// Get the name of the \p config_block instance
-char const* maptk_config_block_get_name( config_block_t *cb )
+char const* maptk_config_block_get_name( maptk_config_block_t *cb )
 {
   STANDARD_CATCH(
     "maptk::C::config_block::get_name",
@@ -161,8 +161,8 @@ char const* maptk_config_block_get_name( config_block_t *cb )
 }
 
 /// Get a copy of a sub-block of the configuration
-config_block_t* maptk_config_block_subblock( config_block_t *cb,
-                                             char const *key )
+maptk_config_block_t* maptk_config_block_subblock( maptk_config_block_t *cb,
+                                                   char const *key )
 {
   STANDARD_CATCH(
     "maptk::C::config_block::subblock",
@@ -170,7 +170,7 @@ config_block_t* maptk_config_block_subblock( config_block_t *cb,
     ACCESS_CB( cb, cb_sptr,
       maptk::config_block_sptr sb_sptr = cb_sptr->subblock( key );
       CB_SPTR_CACHE[sb_sptr.get()] = sb_sptr;
-      return reinterpret_cast<config_block_t*>( sb_sptr.get() );
+      return reinterpret_cast<maptk_config_block_t*>( sb_sptr.get() );
     );
 
   );
@@ -178,8 +178,8 @@ config_block_t* maptk_config_block_subblock( config_block_t *cb,
 }
 
 /// Get a mutable view of a sub-block within a configuration
-config_block_t* maptk_config_block_subblock_view( config_block_t *cb,
-                                                  char const *key )
+maptk_config_block_t* maptk_config_block_subblock_view( maptk_config_block_t *cb,
+                                                        char const *key )
 {
   STANDARD_CATCH(
     "maptk::C::config_block::subblock_view",
@@ -187,14 +187,14 @@ config_block_t* maptk_config_block_subblock_view( config_block_t *cb,
     ACCESS_CB( cb, cb_sptr,
       maptk::config_block_sptr sb_sptr = cb_sptr->subblock_view( key );
       CB_SPTR_CACHE[sb_sptr.get()] = sb_sptr;
-      return reinterpret_cast<config_block_t*>( sb_sptr.get() );
+      return reinterpret_cast<maptk_config_block_t*>( sb_sptr.get() );
     );
   );
   return 0;
 }
 
 /// Get the string value for a key
-char const* maptk_config_block_get_value( config_block_t *cb,
+char const* maptk_config_block_get_value( maptk_config_block_t *cb,
                                           char const* key )
 {
   STANDARD_CATCH(
@@ -208,7 +208,7 @@ char const* maptk_config_block_get_value( config_block_t *cb,
 }
 
 /// Get the string value for a key if it exists, else the default
-char const*  maptk_config_block_get_value_default( config_block_t *cb,
+char const*  maptk_config_block_get_value_default( maptk_config_block_t *cb,
                                                    char const* key,
                                                    char const* deflt )
 {
@@ -223,7 +223,7 @@ char const*  maptk_config_block_get_value_default( config_block_t *cb,
 }
 
 /// Get the description string for a given key
-char const* maptk_config_block_get_description( config_block_t *cb,
+char const* maptk_config_block_get_description( maptk_config_block_t *cb,
                                                 char const* key )
 {
   STANDARD_CATCH(
@@ -237,7 +237,7 @@ char const* maptk_config_block_get_description( config_block_t *cb,
 }
 
 /// Set the string value for a key
-void maptk_config_block_set_value( config_block_t *cb,
+void maptk_config_block_set_value( maptk_config_block_t *cb,
                                    char const* key,
                                    char const* value )
 {
@@ -251,7 +251,7 @@ void maptk_config_block_set_value( config_block_t *cb,
 }
 
 /// Set a string value with an associated description
-void maptk_config_block_set_value_descr( config_block_t *cb,
+void maptk_config_block_set_value_descr( maptk_config_block_t *cb,
                                          char const *key,
                                          char const *value,
                                          char const *description )
@@ -266,7 +266,7 @@ void maptk_config_block_set_value_descr( config_block_t *cb,
 }
 
 /// Remove a key/value pair from the configuration.
-void maptk_config_block_unset_value( config_block_t *cb,
+void maptk_config_block_unset_value( maptk_config_block_t *cb,
                                      char const *key )
 {
   STANDARD_CATCH(
@@ -279,7 +279,7 @@ void maptk_config_block_unset_value( config_block_t *cb,
 }
 
 /// Query if a value is read-only
-bool maptk_config_block_is_read_only( config_block_t *cb,
+bool maptk_config_block_is_read_only( maptk_config_block_t *cb,
                                       char const *key )
 {
   STANDARD_CATCH(
@@ -293,7 +293,7 @@ bool maptk_config_block_is_read_only( config_block_t *cb,
 }
 
 /// Mark the given key as read-only
-void maptk_config_block_mark_read_only( config_block_t *cb,
+void maptk_config_block_mark_read_only( maptk_config_block_t *cb,
                                         char const *key )
 {
   STANDARD_CATCH(
@@ -306,8 +306,8 @@ void maptk_config_block_mark_read_only( config_block_t *cb,
 }
 
 /// Merge another \p config_block's entries into this \p config_block
-void maptk_config_block_merge_config( config_block_t *cb,
-                                      config_block_t *other )
+void maptk_config_block_merge_config( maptk_config_block_t *cb,
+                                      maptk_config_block_t *other )
 {
   STANDARD_CATCH(
     "maptk::C::config_block::merge_config",
@@ -321,7 +321,7 @@ void maptk_config_block_merge_config( config_block_t *cb,
 }
 
 /// Check if a value exists for the given key
-bool maptk_config_block_has_value( config_block_t *cb,
+bool maptk_config_block_has_value( maptk_config_block_t *cb,
                                    char const *key )
 {
   STANDARD_CATCH(
@@ -335,7 +335,7 @@ bool maptk_config_block_has_value( config_block_t *cb,
 }
 
 /// Return the values available in the configuration.
-void maptk_config_block_available_values( config_block_t *cb,
+void maptk_config_block_available_values( maptk_config_block_t *cb,
                                           unsigned int *length,
                                           char ***keys )
 {

@@ -40,7 +40,7 @@ from maptk.util import MaptkObject
 
 
 # noinspection PyPep8Naming
-class _config_block_t (ctypes.Structure):
+class _maptk_config_block_t (ctypes.Structure):
     """
     Opaque structure type used in C interface.
     """
@@ -52,8 +52,8 @@ class ConfigBlock (MaptkObject):
     maptk::config_block interface class
     """
     # C API config_block_t structure + pointer
-    C_TYPE = _config_block_t
-    C_TYPE_PTR = ctypes.POINTER(_config_block_t)
+    C_TYPE = _maptk_config_block_t
+    C_TYPE_PTR = ctypes.POINTER(_maptk_config_block_t)
 
     # ConfigBlock Constants
     BLOCK_SEP = ctypes.c_char_p.in_dll(MaptkObject.MAPTK_LIB,
@@ -63,6 +63,22 @@ class ConfigBlock (MaptkObject):
 
     # Assigned later when the subclass is defined
     __FROM_PTR_SUBCLASS__ = None
+
+    @staticmethod
+    def from_pointer(cb_ptr):
+        """
+        Return a ConfigBlock instance from an existing C interface pointer.
+
+        :param cb_ptr: Existing pointer of type ConfigBlock.C_TYPE_PTR
+        :type cb_ptr: ConfigBlock.C_TYPE_PTR
+
+        :return: ConfigBlock instance wrapping the provided C interface pointer
+        :rtype: ConfigBlock
+
+        """
+        assert isinstance(cb_ptr, ConfigBlock.C_TYPE_PTR), \
+            "Required a ConfigBlock.C_TYPE_PTR instance."
+        return ConfigBlock.__FROM_PTR_SUBCLASS__(cb_ptr)
 
     def __init__(self, name=None):
         if name:

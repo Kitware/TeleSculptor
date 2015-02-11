@@ -48,7 +48,7 @@ extern "C"
 
 
 /// Structure for opaque pointers to \p config_block objects
-typedef struct config_block_s config_block_t;
+typedef struct maptk_config_block_s maptk_config_block_t;
 
 
 // Config block constants
@@ -66,7 +66,7 @@ extern char const *maptk_config_block_global_value;
  *         if construction failed.
  */
 MAPTK_C_EXPORT
-config_block_t* maptk_config_block_new();
+maptk_config_block_t* maptk_config_block_new();
 
 /// Create a new, empty \p config_block object with a name
 /**
@@ -75,7 +75,7 @@ config_block_t* maptk_config_block_new();
  *         if construction failed.
  */
 MAPTK_C_EXPORT
-config_block_t* maptk_config_block_new_named( char const *name );
+maptk_config_block_t* maptk_config_block_new_named( char const *name );
 
 /// Destroy a config block object
 /**
@@ -86,7 +86,7 @@ config_block_t* maptk_config_block_new_named( char const *name );
  * \return 1 if the given config_block was destroyed, else 0 if it was not.
  */
 MAPTK_C_EXPORT
-unsigned int maptk_config_block_destroy( config_block_t *cb );
+unsigned int maptk_config_block_destroy( maptk_config_block_t *cb );
 
 /// Get the name of the \p config_block instance
 /**
@@ -94,7 +94,7 @@ unsigned int maptk_config_block_destroy( config_block_t *cb );
  * \return String name of the given config_block.
  */
 MAPTK_C_EXPORT
-char const* maptk_config_block_get_name( config_block_t *cb );
+char const* maptk_config_block_get_name( maptk_config_block_t *cb );
 
 /// Get a subblock from the configuration.
 /**
@@ -106,8 +106,8 @@ char const* maptk_config_block_get_name( config_block_t *cb );
  * \return Pointer to a new config_block instance with copies of values.
  */
 MAPTK_C_EXPORT
-config_block_t* maptk_config_block_subblock( config_block_t *cb,
-                                             char const *key );
+maptk_config_block_t* maptk_config_block_subblock( maptk_config_block_t *cb,
+                                                   char const *key );
 
 /// Get a subblock view into the configuration.
 /**
@@ -119,8 +119,8 @@ config_block_t* maptk_config_block_subblock( config_block_t *cb,
  * \return A subblock which linkes to \p *cb.
  */
 MAPTK_C_EXPORT
-config_block_t* maptk_config_block_subblock_view( config_block_t *cb,
-                                                  char const *key );
+maptk_config_block_t* maptk_config_block_subblock_view( maptk_config_block_t *cb,
+                                                        char const *key );
 
 /// Get the string value for a key
 /**
@@ -131,7 +131,7 @@ config_block_t* maptk_config_block_subblock_view( config_block_t *cb,
  * \return The string value stored within the configuration.
  */
 MAPTK_C_EXPORT
-char const* maptk_config_block_get_value( config_block_t *cb,
+char const* maptk_config_block_get_value( maptk_config_block_t *cb,
                                           char const *key );
 
 /// Get the string value for a key if it exists, else the default
@@ -143,7 +143,7 @@ char const* maptk_config_block_get_value( config_block_t *cb,
  * \return the \p char* value stored within the configuration.
  */
 MAPTK_C_EXPORT
-char const* maptk_config_block_get_value_default( config_block_t *cb,
+char const* maptk_config_block_get_value_default( maptk_config_block_t *cb,
                                                   char const *key,
                                                   char const *deflt );
 
@@ -160,7 +160,7 @@ char const* maptk_config_block_get_value_default( config_block_t *cb,
  *          found.
  */
 MAPTK_C_EXPORT
-char const* maptk_config_block_get_description( config_block_t *cb,
+char const* maptk_config_block_get_description( maptk_config_block_t *cb,
                                                 char const *key );
 
 /// Set a string value within the configuration.
@@ -172,7 +172,7 @@ char const* maptk_config_block_get_description( config_block_t *cb,
  * \param value The value to set for the \p key.
  */
 MAPTK_C_EXPORT
-void maptk_config_block_set_value( config_block_t *cb,
+void maptk_config_block_set_value( maptk_config_block_t *cb,
                                    char const *key,
                                    char const *value );
 
@@ -197,7 +197,7 @@ void maptk_config_block_set_value( config_block_t *cb,
  *              is maintained.
  */
 MAPTK_C_EXPORT
-void maptk_config_block_set_value_descr( config_block_t *cb,
+void maptk_config_block_set_value_descr( maptk_config_block_t *cb,
                                          char const *key,
                                          char const *value,
                                          char const *description );
@@ -210,7 +210,7 @@ void maptk_config_block_set_value_descr( config_block_t *cb,
  * \param key The index of the configuration value to set.
  */
 MAPTK_C_EXPORT
-void maptk_config_block_unset_value( config_block_t *cb,
+void maptk_config_block_unset_value( maptk_config_block_t *cb,
                                      char const *key );
 
 /// Query if a value is read-only
@@ -221,7 +221,7 @@ void maptk_config_block_unset_value( config_block_t *cb,
  *          otherwise.
  */
 MAPTK_C_EXPORT
-bool maptk_config_block_is_read_only( config_block_t *cb,
+bool maptk_config_block_is_read_only( maptk_config_block_t *cb,
                                       char const *key );
 
 /// Mark the given key as read-only
@@ -233,7 +233,7 @@ bool maptk_config_block_is_read_only( config_block_t *cb,
  * \param key The key to mark as read-only.
  */
 MAPTK_C_EXPORT
-void maptk_config_block_mark_read_only( config_block_t *cb,
+void maptk_config_block_mark_read_only( maptk_config_block_t *cb,
                                         char const *key );
 
 /// Merge the values in \p other into the current config \p cb.
@@ -249,8 +249,8 @@ void maptk_config_block_mark_read_only( config_block_t *cb,
  *              pairs are to be merged into \p cb.
  */
 MAPTK_C_EXPORT
-void maptk_config_block_merge_config( config_block_t *cb,
-                                      config_block_t *other );
+void maptk_config_block_merge_config( maptk_config_block_t *cb,
+                                      maptk_config_block_t *other );
 
 /// Check if a value exists for the given key
 /**
@@ -259,7 +259,7 @@ void maptk_config_block_merge_config( config_block_t *cb,
  * \return 1 if \p cb has a value for the given \p key, else 0.
  */
 MAPTK_C_EXPORT
-bool maptk_config_block_has_value( config_block_t *cb,
+bool maptk_config_block_has_value( maptk_config_block_t *cb,
                                    char const *key );
 
 /// Return the values available in the configuration.
@@ -273,7 +273,7 @@ bool maptk_config_block_has_value( config_block_t *cb,
  * \param[out] keys Pointer to an array of char* strings.
  */
 MAPTK_C_EXPORT
-void maptk_config_block_available_values( config_block_t *cb,
+void maptk_config_block_available_values( maptk_config_block_t *cb,
                                           unsigned int *length,
                                           char ***keys );
 
