@@ -7,6 +7,7 @@ option(MAPTK_ENABLE_C_LIB
 if( MAPTK_ENABLE_C_LIB )
 
   set(maptk_c_public_headers
+    algorithm_plugin_manager.h
     config.h
     config_block.h
     )
@@ -14,6 +15,7 @@ if( MAPTK_ENABLE_C_LIB )
     c_utils.h
     )
   set(maptk_c_sources
+    algorithm_plugin_manager.cxx
     config_block.cxx
     )
 

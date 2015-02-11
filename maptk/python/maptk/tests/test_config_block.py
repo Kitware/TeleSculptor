@@ -40,7 +40,8 @@ from maptk import ConfigBlock
 import nose.tools
 
 
-class TestConfigBlock (object):
+# noinspection PyMethodMayBeStatic
+class Test_ConfigBlock (object):
     """
     Python version of test_config_block.cxx located in
     """

@@ -36,7 +36,7 @@ Interface to MAPTK config_block class.
 
 import ctypes
 
-from maptk.util import find_maptk_library
+from maptk.util import MaptkObject
 
 
 # noinspection PyPep8Naming
@@ -47,19 +47,19 @@ class _config_block_t (ctypes.Structure):
     pass
 
 
-class ConfigBlock (object):
+class ConfigBlock (MaptkObject):
     """
-    MAPTK config_block class
+    maptk::config_block interface class
     """
-    MAPTK_LIB = find_maptk_library()
-
     # C API config_block_t structure + pointer
     C_TYPE = _config_block_t
     C_TYPE_PTR = ctypes.POINTER(_config_block_t)
 
     # ConfigBlock Constants
-    BLOCK_SEP = ctypes.c_char_p.in_dll(MAPTK_LIB, "maptk_config_block_block_sep").value
-    GLOBAL_VALUE = ctypes.c_char_p.in_dll(MAPTK_LIB, "maptk_config_block_global_value").value
+    BLOCK_SEP = ctypes.c_char_p.in_dll(MaptkObject.MAPTK_LIB,
+                                       "maptk_config_block_block_sep").value
+    GLOBAL_VALUE = ctypes.c_char_p.in_dll(MaptkObject.MAPTK_LIB,
+                                          "maptk_config_block_global_value").value
 
     # Assigned later when the subclass is defined
     __FROM_PTR_SUBCLASS__ = None
