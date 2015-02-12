@@ -35,9 +35,9 @@
 
 #include "algorithm_plugin_manager.h"
 
-#include <maptk/c/c_utils.h>
-
 #include <maptk/algorithm_plugin_manager.h>
+
+#include <maptk/c/helpers/c_utils.h>
 
 
 /// (Re)Load plugin modules found along current search paths

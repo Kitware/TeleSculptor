@@ -30,41 +30,27 @@
 
 /**
  * \file
- * \brief Common C Interface Utilities
+ * \brief C++ Helper utilities for C interface of maptk::config_block
  *
- * These utilities should only be used in CXX implementation files due to
- * their use of C++ structures.
+ * Private header for use in cxx implementation files.
  */
 
-#ifndef MAPTK_C_C_UTILS_H_
-#define MAPTK_C_C_UTILS_H_
+#ifndef MAPTK_C_CONFIG_BLOCK_HELPER_H_
+#define MAPTK_C_CONFIG_BLOCK_HELPER_H_
 
-#include <exception>
-#include <sstream>
+#include <maptk/config_block.h>
 
-#include <maptk/logging_macros.h>
-
-
-/// Standardized try/catch for general use.
-/**
- * If the provided code block contains a return, make sure to provide a
- * default/failure return after the use of the STANDARD_CATCH macro.
- */
-#define STANDARD_CATCH(log_prefix, code)                      \
-  do                                                          \
-  {                                                           \
-    try                                                       \
-    {                                                         \
-      code                                                    \
-    }                                                         \
-    catch( std::exception const &e )                          \
-    {                                                         \
-      std::ostringstream ss;                                  \
-      ss << "Caught exception in C interface: " << e.what();  \
-      LOG_WARN( log_prefix, ss.str().c_str() );               \
-    }                                                         \
-  } while( 0 )
+#include <maptk/c/config_block.h>
+#include <maptk/c/helpers/c_utils.h>
 
 
+namespace maptk_c
+{
 
-#endif //MAPTK_C_C_UTILS_H_
+extern SharedPointerCache< maptk::config_block,
+                           maptk_config_block_t > CONFIG_BLOCK_SPTR_CACHE;
+
+}
+
+
+#endif //MAPTK_C_CONFIG_BLOCK_HELPER_H_

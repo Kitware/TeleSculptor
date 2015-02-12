@@ -34,22 +34,22 @@ Tests for maptk::algorithm_plugin_manager interface
 
 """
 
-from maptk import AlgorithmPluginManager
+from maptk import MaptkAlgorithmPluginManager
 
 
 # noinspection PyPep8Naming
 class Test_AlgorithmPluginManager (object):
 
     def test_load(self):
-        AlgorithmPluginManager.register_plugins()
+        MaptkAlgorithmPluginManager.register_plugins()
 
     def test_load_named(self):
-        AlgorithmPluginManager.register_plugins("maptk_core")
+        MaptkAlgorithmPluginManager.register_plugins("maptk_core")
 
     def test_add_search_path(self):
-        AlgorithmPluginManager.add_search_path("/")
+        MaptkAlgorithmPluginManager.add_search_path("/")
         self.test_load_named()
 
     def test_add_search_path_bad_dir(self):
-        AlgorithmPluginManager.add_search_path("/probably/not/a/directory/foo")
+        MaptkAlgorithmPluginManager.add_search_path("/probably/not/a/directory/foo")
         self.test_load_named()

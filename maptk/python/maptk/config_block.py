@@ -47,7 +47,7 @@ class _maptk_config_block_t (ctypes.Structure):
     pass
 
 
-class ConfigBlock (MaptkObject):
+class MaptkConfigBlock (MaptkObject):
     """
     maptk::config_block interface class
     """
@@ -76,9 +76,9 @@ class ConfigBlock (MaptkObject):
         :rtype: ConfigBlock
 
         """
-        assert isinstance(cb_ptr, ConfigBlock.C_TYPE_PTR), \
+        assert isinstance(cb_ptr, MaptkConfigBlock.C_TYPE_PTR), \
             "Required a ConfigBlock.C_TYPE_PTR instance."
-        return ConfigBlock.__FROM_PTR_SUBCLASS__(cb_ptr)
+        return MaptkConfigBlock.__FROM_PTR_SUBCLASS__(cb_ptr)
 
     def __init__(self, name=None):
         if name:
@@ -326,7 +326,7 @@ class ConfigBlock (MaptkObject):
 
 
 # noinspection PyPep8Naming
-class __cb_from_pointer (ConfigBlock):
+class __cb_from_pointer (MaptkConfigBlock):
     """
     Utility class to construct
     """
@@ -347,4 +347,4 @@ class __cb_from_pointer (ConfigBlock):
                                "from a NULL pointer (ptr = %s)." % ptr)
 
 
-ConfigBlock.__FROM_PTR_SUBCLASS__ = __cb_from_pointer
+MaptkConfigBlock.__FROM_PTR_SUBCLASS__ = __cb_from_pointer

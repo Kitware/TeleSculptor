@@ -46,61 +46,18 @@
 #include <maptk/exceptions.h>
 #include <maptk/logging_macros.h>
 
-#include <maptk/c/c_utils.h>
+#include <maptk/c/helpers/c_utils.h>
+#include <maptk/c/helpers/config_block.h>
 
 
-namespace //anonymous
+/// Definition of sptr cache
+namespace maptk_c
 {
 
-/// Since the interface to maptk::config block uses Boost shared pointers, keep
-/// a cached reference to the shared pointer upon creation of the config_block,
-/// removing the reference upon deletion.
-typedef std::map<maptk::config_block*, maptk::config_block_sptr> cb_cache_t;
-static cb_cache_t CB_SPTR_CACHE;
+SharedPointerCache< maptk::config_block,
+                    maptk_config_block_t > CONFIG_BLOCK_SPTR_CACHE;
 
-
-/// Exception for when entry not found in cache map
-class cb_cache_exception
-  : public maptk::maptk_core_base_exception
-{
-public:
-  cb_cache_exception(std::string reason)
-  {
-    this->m_what = reason;
-  }
-};
-
-
-/// Standardized access to a maptk::config_block_sptr in the cache
-/**
- * The code segment is only executed if the given config_block pointer exists
- * in the map
- *
- * Within the code segment, the variable ``cb_sptr`` of type
- * maptk::config_block_sptr is defined and points to the accessed
- * maptk::config_block.
- */
-#define ACCESS_CB(cb_p, sptr_var, code)                                   \
-  do                                                                      \
-  {                                                                       \
-    cb_cache_t::iterator it =                                             \
-      CB_SPTR_CACHE.find( reinterpret_cast<maptk::config_block*>(cb_p) ); \
-    if( it != CB_SPTR_CACHE.end() )                                       \
-    {                                                                     \
-      maptk::config_block_sptr sptr_var = it->second;                     \
-      code                                                                \
-    }                                                                     \
-    else                                                                  \
-    {                                                                     \
-      std::ostringstream ss;                                              \
-      ss << "No cached config_block_sptr by the given pointer (ptr: "     \
-         << cb_p << ")";                                                  \
-      throw cb_cache_exception( ss.str() );                               \
-    }                                                                     \
-  } while( 0 )
-
-
-} //end anonymous namespace
+}
 
 
 // Static Constants
@@ -112,7 +69,7 @@ char const *maptk_config_block_global_value = maptk::config_block::global_value.
 maptk_config_block_t* maptk_config_block_new()
 {
   STANDARD_CATCH(
-    "maptk::C::config_block::new",
+    "C::config_block::new",
 
     return maptk_config_block_new_named("");
 
@@ -124,12 +81,11 @@ maptk_config_block_t* maptk_config_block_new()
 maptk_config_block_t* maptk_config_block_new_named( char const *name )
 {
   STANDARD_CATCH(
-    "maptk::C::config_block::new_named",
+    "C::config_block::new_named",
 
     maptk::config_block_sptr cb_sptr = maptk::config_block::empty_config( name );
-    CB_SPTR_CACHE[cb_sptr.get()] = cb_sptr;
+    maptk_c::CONFIG_BLOCK_SPTR_CACHE.store( cb_sptr );
     return reinterpret_cast<maptk_config_block_t*>(cb_sptr.get());
-
   );
   return 0;
 }
@@ -138,10 +94,9 @@ maptk_config_block_t* maptk_config_block_new_named( char const *name )
 unsigned int maptk_config_block_destroy( maptk_config_block_t *cb )
 {
   STANDARD_CATCH(
-    "maptk::C::config_block::destroy",
+    "C::config_block::destroy",
 
-    return CB_SPTR_CACHE.erase( reinterpret_cast<maptk::config_block*>(cb) );
-
+    return maptk_c::CONFIG_BLOCK_SPTR_CACHE.erase( cb );
   );
   return 0;
 }
@@ -152,10 +107,8 @@ char const* maptk_config_block_get_name( maptk_config_block_t *cb )
   STANDARD_CATCH(
     "maptk::C::config_block::get_name",
 
-    ACCESS_CB(cb, cb_sptr,
-      return cb_sptr->get_name().c_str();
-    );
-
+    return maptk_c::CONFIG_BLOCK_SPTR_CACHE
+        .get( cb )->get_name().c_str();
   );
   return 0;
 }
@@ -167,12 +120,10 @@ maptk_config_block_t* maptk_config_block_subblock( maptk_config_block_t *cb,
   STANDARD_CATCH(
     "maptk::C::config_block::subblock",
 
-    ACCESS_CB( cb, cb_sptr,
-      maptk::config_block_sptr sb_sptr = cb_sptr->subblock( key );
-      CB_SPTR_CACHE[sb_sptr.get()] = sb_sptr;
-      return reinterpret_cast<maptk_config_block_t*>( sb_sptr.get() );
-    );
-
+    maptk::config_block_sptr cb_sptr = maptk_c::CONFIG_BLOCK_SPTR_CACHE.get( cb );
+    maptk::config_block_sptr sb_sptr = cb_sptr->subblock( key );
+    maptk_c::CONFIG_BLOCK_SPTR_CACHE.store( sb_sptr );
+    return reinterpret_cast<maptk_config_block_t*>( sb_sptr.get() );
   );
   return 0;
 }
@@ -184,11 +135,10 @@ maptk_config_block_t* maptk_config_block_subblock_view( maptk_config_block_t *cb
   STANDARD_CATCH(
     "maptk::C::config_block::subblock_view",
 
-    ACCESS_CB( cb, cb_sptr,
-      maptk::config_block_sptr sb_sptr = cb_sptr->subblock_view( key );
-      CB_SPTR_CACHE[sb_sptr.get()] = sb_sptr;
-      return reinterpret_cast<maptk_config_block_t*>( sb_sptr.get() );
-    );
+    maptk::config_block_sptr cb_sptr = maptk_c::CONFIG_BLOCK_SPTR_CACHE.get( cb );
+    maptk::config_block_sptr sb_sptr = cb_sptr->subblock_view( key );
+    maptk_c::CONFIG_BLOCK_SPTR_CACHE.store( sb_sptr );
+    return reinterpret_cast<maptk_config_block_t*>( sb_sptr.get() );
   );
   return 0;
 }
@@ -200,9 +150,8 @@ char const* maptk_config_block_get_value( maptk_config_block_t *cb,
   STANDARD_CATCH(
     "maptk::C::config_block::get_value",
 
-    ACCESS_CB( cb, cb_sptr,
-      return cb_sptr->get_value<std::string>( key ).c_str();
-    );
+    return maptk_c::CONFIG_BLOCK_SPTR_CACHE.get( cb )
+        ->get_value<std::string>( key ).c_str();
   );
   return 0;
 }
@@ -215,9 +164,8 @@ char const*  maptk_config_block_get_value_default( maptk_config_block_t *cb,
   STANDARD_CATCH(
     "maptk::C::config_block::get_value_default",
 
-    ACCESS_CB( cb, cb_sptr,
-      return cb_sptr->get_value<std::string>( key, deflt ).c_str();
-    );
+    return maptk_c::CONFIG_BLOCK_SPTR_CACHE.get( cb )
+        ->get_value<std::string>( key, deflt ).c_str();
   );
   return 0;
 }
@@ -229,9 +177,8 @@ char const* maptk_config_block_get_description( maptk_config_block_t *cb,
   STANDARD_CATCH(
     "maptk::C::config_block::get_description",
 
-    ACCESS_CB( cb, cb_sptr,
-      return cb_sptr->get_description( key ).c_str();
-    );
+    return maptk_c::CONFIG_BLOCK_SPTR_CACHE.get( cb )
+        ->get_description( key ).c_str();
   );
   return 0;
 }
@@ -244,9 +191,8 @@ void maptk_config_block_set_value( maptk_config_block_t *cb,
   STANDARD_CATCH(
     "maptk::C::config_block::set_value",
 
-    ACCESS_CB( cb, cb_sptr,
-      cb_sptr->set_value<std::string>( key, value );
-    );
+    maptk_c::CONFIG_BLOCK_SPTR_CACHE.get( cb )
+        ->set_value<std::string>( key, value );
   );
 }
 
@@ -259,9 +205,8 @@ void maptk_config_block_set_value_descr( maptk_config_block_t *cb,
   STANDARD_CATCH(
     "maptk::C::config_block::set_value_descr",
 
-    ACCESS_CB( cb, cb_sptr,
-      cb_sptr->set_value<std::string>( key, value, description );
-    );
+    maptk_c::CONFIG_BLOCK_SPTR_CACHE.get( cb )
+        ->set_value<std::string>( key, value, description );
   );
 }
 
@@ -272,9 +217,7 @@ void maptk_config_block_unset_value( maptk_config_block_t *cb,
   STANDARD_CATCH(
     "maptk::C::config_block::unset_value",
 
-    ACCESS_CB( cb, cb_sptr,
-      cb_sptr->unset_value( key );
-    );
+    maptk_c::CONFIG_BLOCK_SPTR_CACHE.get( cb )->unset_value( key );
   );
 }
 
@@ -285,9 +228,7 @@ bool maptk_config_block_is_read_only( maptk_config_block_t *cb,
   STANDARD_CATCH(
     "maptk::C:config_block::is_read_only",
 
-    ACCESS_CB( cb, cb_sptr,
-      return cb_sptr->is_read_only( key );
-    );
+    return maptk_c::CONFIG_BLOCK_SPTR_CACHE.get( cb )->is_read_only( key );
   );
   return false;
 }
@@ -299,9 +240,7 @@ void maptk_config_block_mark_read_only( maptk_config_block_t *cb,
   STANDARD_CATCH(
     "maptk::C::config_block::mark_read_only",
 
-    ACCESS_CB( cb, cb_sptr,
-      cb_sptr->mark_read_only( key );
-    );
+    maptk_c::CONFIG_BLOCK_SPTR_CACHE.get( cb )->mark_read_only( key );
   );
 }
 
@@ -312,11 +251,9 @@ void maptk_config_block_merge_config( maptk_config_block_t *cb,
   STANDARD_CATCH(
     "maptk::C::config_block::merge_config",
 
-    ACCESS_CB( cb, cb_sptr,
-      ACCESS_CB( other, other_sptr,
-        cb_sptr->merge_config( other_sptr );
-      );
-    );
+    maptk::config_block_sptr cb_sptr = maptk_c::CONFIG_BLOCK_SPTR_CACHE.get( cb );
+    maptk::config_block_sptr other_sptr = maptk_c::CONFIG_BLOCK_SPTR_CACHE.get( other );
+    cb_sptr->merge_config( other_sptr );
   );
 }
 
@@ -327,9 +264,7 @@ bool maptk_config_block_has_value( maptk_config_block_t *cb,
   STANDARD_CATCH(
     "maptk::C::config_block::has_key",
 
-    ACCESS_CB( cb, cb_sptr,
-      return static_cast<int>( cb_sptr->has_value( key ) );
-    );
+    return maptk_c::CONFIG_BLOCK_SPTR_CACHE.get( cb )->has_value( key );
   );
   return false;
 }
@@ -348,20 +283,19 @@ void maptk_config_block_available_values( maptk_config_block_t *cb,
                                  "were a NULL pointer.");
     }
 
-    ACCESS_CB( cb, cb_sptr,
-      std::vector<std::string> cb_keys = cb_sptr->available_values();
+    maptk::config_block_sptr cb_sptr = maptk_c::CONFIG_BLOCK_SPTR_CACHE.get( cb );
+    std::vector<std::string> cb_keys = cb_sptr->available_values();
 
-      *length = cb_keys.size();
-      *keys = (char**)malloc( sizeof(char*) * (*length) );
+    *length = cb_keys.size();
+    *keys = (char**)malloc( sizeof(char*) * (*length) );
 
-      // allocate mem + copy values
-      //
-      for( unsigned int i=0; i < (*length); i++ )
-      {
-        (*keys)[i] = (char*)malloc(sizeof(char) * cb_keys[i].length());
-        std::strcpy( (*keys)[i], cb_keys[i].c_str() );
-      }
-    );
+    // allocate mem + copy values
+    for( unsigned int i=0; i < (*length); i++ )
+    {
+      (*keys)[i] = (char*)malloc(sizeof(char) * cb_keys[i].length());
+      std::strcpy( (*keys)[i], cb_keys[i].c_str() );
+    }
+   ;
   );
 }
 

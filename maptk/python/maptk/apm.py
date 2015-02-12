@@ -38,7 +38,7 @@ import ctypes
 from maptk.util import MaptkObject
 
 
-class AlgorithmPluginManager (MaptkObject):
+class MaptkAlgorithmPluginManager (MaptkObject):
 
     @staticmethod
     def register_plugins(name=None):

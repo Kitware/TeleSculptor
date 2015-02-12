@@ -35,7 +35,7 @@ Tests for the Python interface to MAPTK class config_block.
 """
 __author__ = 'purg'
 
-from maptk import ConfigBlock
+from maptk import MaptkConfigBlock
 
 import nose.tools
 
@@ -47,28 +47,28 @@ class Test_ConfigBlock (object):
     """
 
     def test_block_set_size(self):
-        nose.tools.assert_equal(len(ConfigBlock.BLOCK_SEP), 1)
+        nose.tools.assert_equal(len(MaptkConfigBlock.BLOCK_SEP), 1)
 
     def test_construction(self):
-        cb1 = ConfigBlock()
+        cb1 = MaptkConfigBlock()
         nose.tools.assert_true(cb1._cb_p, "Received null pointer from "
-                                          "ConfigBlock construction")
-        cb2 = ConfigBlock("A Name")
+                                          "MaptkConfigBlock construction")
+        cb2 = MaptkConfigBlock("A Name")
         nose.tools.assert_true(cb2._cb_p, "Received a null pointer "
-                                          "from named ConfigBlock "
+                                          "from named MaptkConfigBlock "
                                           "construction.")
 
     def test_name_access(self):
-        cb = ConfigBlock()
+        cb = MaptkConfigBlock()
         nose.tools.assert_equal(cb.name, "",
                                 "Default constructor should have an empty "
                                 "string name.")
-        cb = ConfigBlock("FooBar")
+        cb = MaptkConfigBlock("FooBar")
         nose.tools.assert_equal(cb.name, "FooBar",
                                 "Named constructor didn't seem to retain name")
 
     def test_set_value(self):
-        cb = ConfigBlock()
+        cb = MaptkConfigBlock()
         # Basic value string
         cb.set_value('foo', 'bar')
         # Should attempt casting non-string to string
@@ -77,7 +77,7 @@ class Test_ConfigBlock (object):
         cb.set_value('baz', 'a', "This is a description")
 
     def test_has_value(self):
-        cb = ConfigBlock()
+        cb = MaptkConfigBlock()
 
         cb.set_value('foo', 'bar')
         cb.set_value('bar', 124789)
@@ -91,27 +91,27 @@ class Test_ConfigBlock (object):
         nose.tools.assert_false(cb.has_value('not a value'))
 
     def test_get_value(self):
-        cb = ConfigBlock()
+        cb = MaptkConfigBlock()
 
         cb.set_value('a', 'b')
         nose.tools.assert_equal(cb.get_value('a'), 'b')
 
     def test_get_value_nested(self):
-        cb = ConfigBlock()
+        cb = MaptkConfigBlock()
 
         k1 = 'a'
         k2 = 'b'
         v = 'c'
 
-        cb.set_value(k1 + ConfigBlock.BLOCK_SEP + k2, v)
-        nose.tools.assert_equal(cb.get_value(k1 + ConfigBlock.BLOCK_SEP + k2),
+        cb.set_value(k1 + MaptkConfigBlock.BLOCK_SEP + k2, v)
+        nose.tools.assert_equal(cb.get_value(k1 + MaptkConfigBlock.BLOCK_SEP + k2),
                                 v)
 
         sb = cb.subblock(k1)
         nose.tools.assert_equal(sb.get_value(k2), v)
 
     def test_get_value_no_exist(self):
-        cb = ConfigBlock()
+        cb = MaptkConfigBlock()
         k1 = 'a'
         k2 = 'b'
         v2 = '2'
@@ -120,7 +120,7 @@ class Test_ConfigBlock (object):
         nose.tools.assert_equal(cb.get_value(k2, v2), v2)
 
     def test_unset_value(self):
-        cb = ConfigBlock()
+        cb = MaptkConfigBlock()
 
         cb.set_value('a', '1')
         cb.set_value('b', '2')
@@ -134,7 +134,7 @@ class Test_ConfigBlock (object):
         nose.tools.assert_true(cb.has_value('b'))
 
     def test_available_keys(self):
-        cb = ConfigBlock()
+        cb = MaptkConfigBlock()
         cb.set_value("foo", 1)
         cb.set_value('bar', 'baz')
         r = cb.available_keys()
@@ -143,7 +143,7 @@ class Test_ConfigBlock (object):
                                     "Returned key list was incorrect.")
 
     def test_read_only(self):
-        cb = ConfigBlock()
+        cb = MaptkConfigBlock()
 
         cb.set_value('a', '1')
         cb.mark_read_only('a')
@@ -152,7 +152,7 @@ class Test_ConfigBlock (object):
         nose.tools.assert_equal(cb.get_value('a'), '1')
 
     def test_read_only_unset(self):
-        cb = ConfigBlock()
+        cb = MaptkConfigBlock()
         cb.set_value('a', '1')
         cb.mark_read_only('a')
         cb.unset_value('a')
@@ -160,7 +160,7 @@ class Test_ConfigBlock (object):
         nose.tools.assert_equal(cb.get_value('a'), '1')
 
     def test_subblock(self):
-        cb = ConfigBlock()
+        cb = MaptkConfigBlock()
 
         block_name = 'block'
         other_name = 'other_block'
@@ -171,9 +171,9 @@ class Test_ConfigBlock (object):
         vb = 'vb'
         vc = 'vc'
 
-        cb.set_value(block_name + ConfigBlock.BLOCK_SEP + ka, va)
-        cb.set_value(block_name + ConfigBlock.BLOCK_SEP + kb, vb)
-        cb.set_value(other_name + ConfigBlock.BLOCK_SEP + kc, vc)
+        cb.set_value(block_name + MaptkConfigBlock.BLOCK_SEP + ka, va)
+        cb.set_value(block_name + MaptkConfigBlock.BLOCK_SEP + kb, vb)
+        cb.set_value(other_name + MaptkConfigBlock.BLOCK_SEP + kc, vc)
 
         sb = cb.subblock(block_name)
 
@@ -184,19 +184,19 @@ class Test_ConfigBlock (object):
         nose.tools.assert_false(sb.has_value(kc))
 
     def test_subblock_nested(self):
-        cb = ConfigBlock()
+        cb = MaptkConfigBlock()
 
         block_name = 'block'
         other_name = 'other'
-        nestd_name = block_name + ConfigBlock.BLOCK_SEP + other_name
+        nestd_name = block_name + MaptkConfigBlock.BLOCK_SEP + other_name
 
         ka = 'ka'
         kb = 'kb'
         va = 'va'
         vb = 'vb'
 
-        cb.set_value(nestd_name + ConfigBlock.BLOCK_SEP + ka, va)
-        cb.set_value(nestd_name + ConfigBlock.BLOCK_SEP + kb, vb)
+        cb.set_value(nestd_name + MaptkConfigBlock.BLOCK_SEP + ka, va)
+        cb.set_value(nestd_name + MaptkConfigBlock.BLOCK_SEP + kb, vb)
 
         sb = cb.subblock(nestd_name)
 
@@ -206,7 +206,7 @@ class Test_ConfigBlock (object):
         nose.tools.assert_equal(sb.get_value(kb), vb)
 
     def test_subblock_match(self):
-        cb = ConfigBlock()
+        cb = MaptkConfigBlock()
 
         b_name = 'block'
         va = 'va'
@@ -217,7 +217,7 @@ class Test_ConfigBlock (object):
         nose.tools.assert_equal(len(keys), 0)
 
     def test_subblock_prefix_match(self):
-        cb = ConfigBlock()
+        cb = MaptkConfigBlock()
 
         b_name = 'block'
         ka = 'ka'
@@ -230,7 +230,7 @@ class Test_ConfigBlock (object):
         nose.tools.assert_equal(len(keys), 0)
 
     def test_subblock_view(self):
-        cb = ConfigBlock()
+        cb = MaptkConfigBlock()
 
         b_name = 'block'
         o_name = 'other_block'
@@ -241,32 +241,32 @@ class Test_ConfigBlock (object):
         vb = 'vb'
         vc = 'vc'
 
-        cb.set_value(b_name + ConfigBlock.BLOCK_SEP + ka, va)
-        cb.set_value(b_name + ConfigBlock.BLOCK_SEP + kb, vb)
-        cb.set_value(o_name + ConfigBlock.BLOCK_SEP + kc, vc)
+        cb.set_value(b_name + MaptkConfigBlock.BLOCK_SEP + ka, va)
+        cb.set_value(b_name + MaptkConfigBlock.BLOCK_SEP + kb, vb)
+        cb.set_value(o_name + MaptkConfigBlock.BLOCK_SEP + kc, vc)
         sb = cb.subblock_view(b_name)
 
         nose.tools.assert_true(sb.has_value(ka))
         nose.tools.assert_false(sb.has_value(kc))
 
-        cb.set_value(b_name + ConfigBlock.BLOCK_SEP + ka, vb)
+        cb.set_value(b_name + MaptkConfigBlock.BLOCK_SEP + ka, vb)
         nose.tools.assert_equal(sb.get_value(ka), vb)
         sb.set_value(ka, va)
-        nose.tools.assert_equal(cb.get_value(b_name + ConfigBlock.BLOCK_SEP + ka), va)
+        nose.tools.assert_equal(cb.get_value(b_name + MaptkConfigBlock.BLOCK_SEP + ka), va)
 
         sb.unset_value(kb)
-        nose.tools.assert_false(cb.has_value(b_name + ConfigBlock.BLOCK_SEP + kb))
+        nose.tools.assert_false(cb.has_value(b_name + MaptkConfigBlock.BLOCK_SEP + kb))
 
-        cb.set_value(b_name + ConfigBlock.BLOCK_SEP + kc, vc)
+        cb.set_value(b_name + MaptkConfigBlock.BLOCK_SEP + kc, vc)
         sb_keys = sb.available_keys()
         nose.tools.assert_set_equal(set(sb_keys), {ka, kc})
 
     def test_subblock_view_nested(self):
-        cb = ConfigBlock()
+        cb = MaptkConfigBlock()
 
         b_name = 'block'
         o_name = 'other_block'
-        n_name = b_name + ConfigBlock.BLOCK_SEP + o_name
+        n_name = b_name + MaptkConfigBlock.BLOCK_SEP + o_name
         ka = 'ka'
         kb = 'kb'
         kc = 'kc'
@@ -274,28 +274,28 @@ class Test_ConfigBlock (object):
         vb = 'vb'
         vc = 'vc'
 
-        cb.set_value(n_name + ConfigBlock.BLOCK_SEP + ka, va)
-        cb.set_value(n_name + ConfigBlock.BLOCK_SEP + kb, vb)
-        cb.set_value(o_name + ConfigBlock.BLOCK_SEP + kc, vc)
+        cb.set_value(n_name + MaptkConfigBlock.BLOCK_SEP + ka, va)
+        cb.set_value(n_name + MaptkConfigBlock.BLOCK_SEP + kb, vb)
+        cb.set_value(o_name + MaptkConfigBlock.BLOCK_SEP + kc, vc)
         sb = cb.subblock_view(n_name)
 
         nose.tools.assert_true(sb.has_value(ka))
         nose.tools.assert_false(sb.has_value(kc))
 
-        cb.set_value(n_name + ConfigBlock.BLOCK_SEP + ka, vb)
+        cb.set_value(n_name + MaptkConfigBlock.BLOCK_SEP + ka, vb)
         nose.tools.assert_equal(sb.get_value(ka), vb)
         sb.set_value(ka, va)
-        nose.tools.assert_equal(cb.get_value(n_name + ConfigBlock.BLOCK_SEP + ka), va)
+        nose.tools.assert_equal(cb.get_value(n_name + MaptkConfigBlock.BLOCK_SEP + ka), va)
 
         sb.unset_value(kb)
-        nose.tools.assert_false(cb.has_value(n_name + ConfigBlock.BLOCK_SEP + kb))
+        nose.tools.assert_false(cb.has_value(n_name + MaptkConfigBlock.BLOCK_SEP + kb))
 
-        cb.set_value(n_name + ConfigBlock.BLOCK_SEP + kc, vc)
+        cb.set_value(n_name + MaptkConfigBlock.BLOCK_SEP + kc, vc)
         sb_keys = sb.available_keys()
         nose.tools.assert_set_equal(set(sb_keys), {ka, kc})
 
     def test_subblock_view_match(self):
-        cb = ConfigBlock()
+        cb = MaptkConfigBlock()
         bname = 'block'
         va = 'va'
         cb.set_value(bname, va)
@@ -304,7 +304,7 @@ class Test_ConfigBlock (object):
         nose.tools.assert_equal(len(keys), 0)
 
     def test_subblock_view_prefix_match(self):
-        cb = ConfigBlock()
+        cb = MaptkConfigBlock()
         bname = 'block'
         ka = 'ka'
         va = 'va'
@@ -315,8 +315,8 @@ class Test_ConfigBlock (object):
         nose.tools.assert_equal(len(keys), 0)
 
     def test_merge_config(self):
-        cb1 = ConfigBlock()
-        cb2 = ConfigBlock()
+        cb1 = MaptkConfigBlock()
+        cb2 = MaptkConfigBlock()
         ka = 'ka'
         kb = 'kb'
         kc = 'kc'
@@ -336,7 +336,7 @@ class Test_ConfigBlock (object):
         nose.tools.assert_equal(cb1.get_value(kc), vc)
 
     def test_set_value_description(self):
-        cb = ConfigBlock()
+        cb = MaptkConfigBlock()
         bname = 'sub'
         ka = 'ka'
         kb = 'kb'
@@ -348,7 +348,7 @@ class Test_ConfigBlock (object):
         db = 'db'
 
         cb.set_value(ka, va, da)
-        cb.set_value(bname + ConfigBlock.BLOCK_SEP + kb, vb, db)
+        cb.set_value(bname + MaptkConfigBlock.BLOCK_SEP + kb, vb, db)
         cb.set_value(kc, vc)
         sb = cb.subblock('sub')
 
