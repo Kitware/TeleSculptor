@@ -30,27 +30,61 @@
 
 /**
  * \file
- * \brief C++ Helper utilities for C interface of maptk::config_block
- *
- * Private header for use in cxx implementation files.
+ * \brief C interface to maptk::image classes
  */
 
-#ifndef MAPTK_C_HELPERS_CONFIG_BLOCK_H_
-#define MAPTK_C_HELPERS_CONFIG_BLOCK_H_
+#ifndef MAPTK_C_IMAGE_H_
+#define MAPTK_C_IMAGE_H_
 
-#include <maptk/config_block.h>
-
-#include <maptk/c/config_block.h>
-#include <maptk/c/helpers/c_utils.h>
-
-
-namespace maptk_c
+#ifdef __cplusplus
+extern "C"
 {
+#endif
 
-extern SharedPointerCache< maptk::config_block,
-                           maptk_config_block_t > CONFIG_BLOCK_SPTR_CACHE;
+#include <stdbool.h>
+#include <stddef.h>
 
+#include <maptk/c/config.h>
+
+
+/// MAPTK Image opaque structure
+typedef struct maptk_image_s maptk_image_t;
+
+
+/// Create a new, empty image
+MAPTK_C_EXPORT
+maptk_image_t* maptk_image_new();
+
+
+/// Create a new image with dimensions, allocating memory
+MAPTK_C_EXPORT
+maptk_image_t* maptk_image_new_with_dim( size_t width, size_t height,
+                                         size_t depth, bool interleave );
+
+
+/// Create a new image from existing data
+MAPTK_C_EXPORT
+maptk_image_t* maptk_image_new_from_data( unsigned char const *first_pixel,
+                                          size_t width, size_t height,
+                                          size_t depth, ptrdiff_t w_step,
+                                          ptrdiff_t h_step, ptrdiff_t d_step );
+
+
+/// Create a new image from an existing image, sharing the same memory
+/**
+ * The new image will share the same memory as the old image
+ */
+MAPTK_C_EXPORT
+maptk_image_t* maptk_image_new_from_image( maptk_image_t *other_image );
+
+
+/// Destroy an image instance
+MAPTK_C_EXPORT
+void maptk_image_destroy( maptk_image_t *image );
+
+
+#ifdef __cplusplus
 }
+#endif
 
-
-#endif //MAPTK_C_HELPERS_CONFIG_BLOCK_H_
+#endif // MAPTK_C_IMAGE_H_

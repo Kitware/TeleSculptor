@@ -7,10 +7,12 @@ option(MAPTK_ENABLE_C_LIB
 if( MAPTK_ENABLE_C_LIB )
 
   set(maptk_c_public_headers
+    config.h
+
     algorithm_plugin_manager.h
     common.h
-    config.h
     config_block.h
+    image.h
     )
   set(maptk_c_private_headers
     helpers/c_utils.h
@@ -20,6 +22,7 @@ if( MAPTK_ENABLE_C_LIB )
     algorithm_plugin_manager.cxx
     common.cxx
     config_block.cxx
+    image.cxx
 
     helpers/c_utils.cxx
     )

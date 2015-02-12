@@ -61,24 +61,27 @@ class MaptkConfigBlock (MaptkObject):
     GLOBAL_VALUE = ctypes.c_char_p.in_dll(MaptkObject.MAPTK_LIB,
                                           "maptk_config_block_global_value").value
 
-    # Assigned later when the subclass is defined
-    __FROM_PTR_SUBCLASS__ = None
-
-    @staticmethod
-    def from_pointer(cb_ptr):
+    @classmethod
+    def from_c_pointer(cls, cb_ptr):
         """
         Return a ConfigBlock instance from an existing C interface pointer.
 
         :param cb_ptr: Existing pointer of type ConfigBlock.C_TYPE_PTR
-        :type cb_ptr: ConfigBlock.C_TYPE_PTR
+        :type cb_ptr: MaptkConfigBlock.C_TYPE_PTR
 
         :return: ConfigBlock instance wrapping the provided C interface pointer
-        :rtype: ConfigBlock
+        :rtype: MaptkConfigBlock
 
         """
         assert isinstance(cb_ptr, MaptkConfigBlock.C_TYPE_PTR), \
             "Required a ConfigBlock.C_TYPE_PTR instance."
-        return MaptkConfigBlock.__FROM_PTR_SUBCLASS__(cb_ptr)
+
+        # noinspection PyPep8Naming,PyMissingConstructor
+        class MaptkConfigBlock_from_c_pointer (cls):
+            def __init__(self, ptr):
+                self._cb_p = ptr
+
+        return MaptkConfigBlock_from_c_pointer(cb_ptr)
 
     def __init__(self, name=None):
         if name:
@@ -118,7 +121,9 @@ class MaptkConfigBlock (MaptkObject):
         cb_subblock = self.MAPTK_LIB.maptk_config_block_subblock
         cb_subblock.argtypes = [self.C_TYPE_PTR]
         cb_subblock.restype = self.C_TYPE_PTR
-        return self.__FROM_PTR_SUBCLASS__(cb_subblock(self._cb_p, key))
+        return MaptkConfigBlock.from_c_pointer(
+            cb_subblock(self._cb_p, key)
+        )
 
     def subblock_view(self, key):
         """
@@ -135,7 +140,9 @@ class MaptkConfigBlock (MaptkObject):
         cb_subblock_view = self.MAPTK_LIB.maptk_config_block_subblock_view
         cb_subblock_view.argtypes = [self.C_TYPE_PTR]
         cb_subblock_view.restype = self.C_TYPE_PTR
-        return self.__FROM_PTR_SUBCLASS__(cb_subblock_view(self._cb_p, key))
+        return MaptkConfigBlock.from_c_pointer(
+            cb_subblock_view(self._cb_p, key)
+        )
 
     def get_value(self, key, default=None):
         """ Get the string value for a key.
@@ -323,28 +330,3 @@ class MaptkConfigBlock (MaptkObject):
         sl_free(length, keys)
 
         return r
-
-
-# noinspection PyPep8Naming
-class __cb_from_pointer (MaptkConfigBlock):
-    """
-    Utility class to construct
-    """
-
-    # noinspection PyMissingConstructor
-    def __init__(self, ptr):
-        """
-        Purposely not calling super constructor so we can manually assign the
-        pointer value.
-
-        :type ptr: ConfigBlock.C_TYPE_PTR
-
-        """
-        if ptr:
-            self._cb_p = ptr
-        else:
-            raise RuntimeError("Attempted construction of ConfigBlock instance "
-                               "from a NULL pointer (ptr = %s)." % ptr)
-
-
-MaptkConfigBlock.__FROM_PTR_SUBCLASS__ = __cb_from_pointer
