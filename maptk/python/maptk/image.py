@@ -33,6 +33,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Interface to MAPTK image class.
 
 """
+# -*- coding: utf-8 -*-
+__author__ = 'purg'
 
 import ctypes
 
@@ -111,7 +113,29 @@ class MaptkImage (MaptkObject):
             img_new.restype = self.C_TYPE_PTR
             self._inst_ptr = img_new(width, height, depth, interleave)
 
+        if not bool(self._inst_ptr):
+            raise RuntimeError("Failed to construct MaptkImage instance")
+
     def __del__(self):
         img_destroy = self.MAPTK_LIB.maptk_image_destroy
         img_destroy.argtypes = [self.C_TYPE_PTR]
         img_destroy(self._inst_ptr)
+
+    @property
+    def c_pointer(self):
+        """
+        :return: The ctypes opaque structure pointer
+        """
+        return self._inst_ptr
+
+    def size(self):
+        """ Get the number of bytes allocated in the given image
+
+        :return: The number of bytes allocated in the given image
+        :rtype: int
+
+        """
+        img_size = self.MAPTK_LIB.maptk_image_size
+        img_size.argtypes = [self.C_TYPE_PTR]
+        img_size.restype = ctypes.c_size_t
+        return img_size(self._inst_ptr)

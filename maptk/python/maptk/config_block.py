@@ -33,6 +33,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Interface to MAPTK config_block class.
 
 """
+# -*- coding: utf-8 -*-
+__author__ = 'purg'
 
 import ctypes
 
@@ -97,6 +99,13 @@ class MaptkConfigBlock (MaptkObject):
     def __del__(self):
         # print "Destroying CB: \"%s\" %d" % (self.name, self._cb_p)
         self.MAPTK_LIB.maptk_config_block_destroy(self._cb_p)
+
+    @property
+    def c_pointer(self):
+        """
+        :return: The ctypes opaque structure pointer
+        """
+        return self._cb_p
 
     @property
     def name(self):

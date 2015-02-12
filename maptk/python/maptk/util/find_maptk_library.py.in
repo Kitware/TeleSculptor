@@ -33,6 +33,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Utility method for finding and returning the MAPTK library.
 
 """
+# -*- coding: utf-8 -*-
+__author__ = 'purg'
 
 import ctypes
 import os

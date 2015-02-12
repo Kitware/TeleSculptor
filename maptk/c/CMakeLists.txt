@@ -13,16 +13,19 @@ if( MAPTK_ENABLE_C_LIB )
     common.h
     config_block.h
     image.h
+    image_container.h
     )
   set(maptk_c_private_headers
     helpers/c_utils.h
     helpers/config_block.h
+    helpers/image_container.h
     )
   set(maptk_c_sources
     algorithm_plugin_manager.cxx
     common.cxx
     config_block.cxx
     image.cxx
+    image_container.cxx
 
     helpers/c_utils.cxx
     )

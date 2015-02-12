@@ -33,6 +33,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Interface to MAPTK algorithm_plugin_manager class.
 
 """
+# -*- coding: utf-8 -*-
+__author__ = 'purg'
 
 import ctypes
 from maptk.util import MaptkObject

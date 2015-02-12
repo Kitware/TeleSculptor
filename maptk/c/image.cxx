@@ -103,3 +103,14 @@ void maptk_image_destroy( maptk_image_t *image )
     delete reinterpret_cast<maptk::image*>( image );
   );
 };
+
+
+/// Get the number of bytes allocated in the given image
+size_t maptk_image_size( maptk_image_t *image )
+{
+  STANDARD_CATCH(
+    "C::image::size",
+    return reinterpret_cast<maptk::image*>(image)->size();
+  );
+  return 0;
+}

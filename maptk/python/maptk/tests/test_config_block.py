@@ -33,6 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Tests for the Python interface to MAPTK class config_block.
 
 """
+# -*- coding: utf-8 -*-
 __author__ = 'purg'
 
 from maptk import MaptkConfigBlock
@@ -41,7 +42,7 @@ import nose.tools
 
 
 # noinspection PyMethodMayBeStatic
-class Test_ConfigBlock (object):
+class TestMaptkConfigBlock (object):
     """
     Python version of test_config_block.cxx located in
     """

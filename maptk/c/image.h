@@ -83,6 +83,11 @@ MAPTK_C_EXPORT
 void maptk_image_destroy( maptk_image_t *image );
 
 
+/// Get the number of bytes allocated in the given image
+MAPTK_C_EXPORT
+size_t maptk_image_size( maptk_image_t *image );
+
+
 #ifdef __cplusplus
 }
 #endif

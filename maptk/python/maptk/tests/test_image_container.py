@@ -30,8 +30,40 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ==============================================================================
 
-maptk.tests module
+Test Python interface to maptk::image_container
 
 """
 # -*- coding: utf-8 -*-
 __author__ = 'purg'
+
+from maptk import (
+    MaptkImage,
+    MaptkImageContainer
+)
+
+import nose.tools
+
+
+class TestMaptkImageContainer (object):
+
+    def test_new(self):
+        image = MaptkImage()
+        img_c = MaptkImageContainer(image)
+
+        image = MaptkImage(100, 100)
+        img_c = MaptkImageContainer( image )
+
+    def test_size(self):
+        i = MaptkImage(720, 480)
+        ic = MaptkImageContainer(i)
+        nose.tools.assert_equal(ic.size(), 720 * 480)
+
+    def test_width(self):
+        i = MaptkImage(720, 480)
+        ic = MaptkImageContainer(i)
+        nose.tools.assert_equal(ic.width(), 720)
+
+    def test_height(self):
+        i = MaptkImage(720, 480)
+        ic = MaptkImageContainer(i)
+        nose.tools.assert_equal(ic.height(), 480)

@@ -33,6 +33,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Tests for maptk::algorithm_plugin_manager interface
 
 """
+# -*- coding: utf-8 -*-
+__author__ = 'purg'
 
 from maptk import MaptkAlgorithmPluginManager
 
