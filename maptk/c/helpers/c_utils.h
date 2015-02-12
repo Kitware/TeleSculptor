@@ -39,9 +39,15 @@
 #ifndef MAPTK_C_HELPERS_C_UTILS_H_
 #define MAPTK_C_HELPERS_C_UTILS_H_
 
+#include <cstdlib>
+#include <cstring>
 #include <exception>
 #include <map>
 #include <sstream>
+#include <string>
+#include <vector>
+
+#include <boost/shared_ptr.hpp>
 
 #include <maptk/exceptions/base.h>
 #include <maptk/logging_macros.h>
@@ -154,6 +160,12 @@ public:
 private:
   cache_t cache_;
 };
+
+
+/// Helper function to create a char** list of strings give a vector of strings
+void make_string_list( std::vector<std::string> const &list,
+                       unsigned int &length, char ** &strings );
+
 
 
 }

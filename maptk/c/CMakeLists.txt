@@ -20,6 +20,8 @@ if( MAPTK_ENABLE_C_LIB )
     algorithm_plugin_manager.cxx
     common.cxx
     config_block.cxx
+
+    helpers/c_utils.cxx
     )
 
   maptk_install_headers(

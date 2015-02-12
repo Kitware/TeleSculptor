@@ -285,16 +285,6 @@ void maptk_config_block_available_values( maptk_config_block_t *cb,
 
     maptk::config_block_sptr cb_sptr = maptk_c::CONFIG_BLOCK_SPTR_CACHE.get( cb );
     std::vector<std::string> cb_keys = cb_sptr->available_values();
-
-    *length = cb_keys.size();
-    *keys = (char**)malloc( sizeof(char*) * (*length) );
-
-    // allocate mem + copy values
-    for( unsigned int i=0; i < (*length); i++ )
-    {
-      (*keys)[i] = (char*)malloc(sizeof(char) * cb_keys[i].length());
-      std::strcpy( (*keys)[i], cb_keys[i].c_str() );
-    }
-   ;
+    maptk_c::make_string_list( cb_keys, *length, *keys );
   );
 }
