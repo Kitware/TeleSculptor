@@ -298,13 +298,3 @@ void maptk_config_block_available_values( maptk_config_block_t *cb,
    ;
   );
 }
-
-/// Corresponding function to free a list of strings
-void maptk_config_block_free_key_list( unsigned int length, char **keys )
-{
-  for( unsigned int i = 0; i < length; i++ )
-  {
-    free(keys[i]);
-  }
-  free(keys);
-}

@@ -277,13 +277,6 @@ void maptk_config_block_available_values( maptk_config_block_t *cb,
                                           unsigned int *length,
                                           char ***keys );
 
-/// Corresponding function to free a list of strings
-/**
- * \param keys Array of char* strings to be freed from memory.
- */
-MAPTK_C_EXPORT
-void maptk_config_block_free_key_list( unsigned int length, char **keys );
-
 
 #ifdef __cplusplus
 }

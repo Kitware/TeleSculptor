@@ -35,6 +35,11 @@
 
 #include "algorithm_plugin_manager.h"
 
+#include <cstdlib>
+#include <cstring>
+#include <string>
+#include <vector>
+
 #include <maptk/algorithm_plugin_manager.h>
 
 #include <maptk/c/helpers/c_utils.h>
@@ -44,7 +49,7 @@
 void maptk_apm_register_plugins()
 {
   STANDARD_CATCH(
-    "maptk::C::apm::register_plugins",
+    "C::apm::register_plugins",
     maptk::algorithm_plugin_manager::instance().register_plugins();
   );
 }
@@ -54,7 +59,7 @@ void maptk_apm_register_plugins()
 void maptk_apm_register_single_plugin( char const *name )
 {
   STANDARD_CATCH(
-    "maptk::C::apm::register_single_plugin",
+    "C::apm::register_single_plugin",
     maptk::algorithm_plugin_manager::instance().register_plugins( name );
   );
 }
@@ -64,7 +69,36 @@ void maptk_apm_register_single_plugin( char const *name )
 void maptk_apm_add_search_path( char const *dirpath )
 {
   STANDARD_CATCH(
-    "maptk::C::apm::add_search_path",
+    "C::apm::add_search_path",
     maptk::algorithm_plugin_manager::instance().add_search_path( dirpath );
+  );
+}
+
+
+/// Get a list of registered module name strings
+void maptk_apm_registered_module_names( unsigned int *length,
+                                        char ***names )
+{
+  STANDARD_CATCH(
+    "C::apm::registered_module_names",
+
+    if ( length == 0 || names == 0 )
+    {
+      throw maptk::invalid_value("One or both provided output parameters "
+                                 "were a NULL pointer.");
+    }
+
+    std::vector<std::string> module_names =
+        maptk::algorithm_plugin_manager::instance().registered_module_names();
+
+    *length = module_names.size();
+    *names = (char**)malloc( sizeof(char*) * (*length) );
+
+    // allocate mem + copy values
+    for( unsigned int i=0; i < (*length); i++ )
+    {
+      (*names)[i] = (char*)malloc(sizeof(char) * module_names[i].length());
+      std::strcpy( (*names)[i], module_names[i].c_str() );
+    }
   );
 }

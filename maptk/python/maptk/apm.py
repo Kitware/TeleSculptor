@@ -73,3 +73,38 @@ class MaptkAlgorithmPluginManager (MaptkObject):
         apm_add_sp = MaptkObject.MAPTK_LIB.maptk_apm_add_search_path
         apm_add_sp.argtypes = [ctypes.c_char_p]
         apm_add_sp(dirpath)
+
+    @staticmethod
+    def registered_module_names():
+        """ Get a list of registered module name strings
+
+        A module's name is defined as the filename minus the standard platform
+        module library suffix. For example, on Windows, if a module library was
+        named ``maptk_foo.dll``, the module's name would be "maptk_foo".
+        Similarly on a unix system, ``maptk_bar.so`` would have the name
+        "maptk_bar".
+
+        :return: List of registered module names
+        :rtype: list of str
+
+        """
+        apm_reg_names = MaptkObject.MAPTK_LIB.maptk_apm_registered_module_names
+        sl_free = MaptkObject.MAPTK_LIB.maptk_common_free_string_list
+
+        apm_reg_names.argtypes = [ctypes.POINTER(ctypes.c_uint),
+                                  ctypes.POINTER(ctypes.POINTER(ctypes.c_char_p))]
+        sl_free.argtypes = [ctypes.c_uint, ctypes.POINTER(ctypes.c_char_p)]
+
+        length = ctypes.c_uint(0)
+        keys = ctypes.POINTER(ctypes.c_char_p)()
+        apm_reg_names(ctypes.byref(length), ctypes.byref(keys))
+
+        # Constructing return array
+        r = []
+        for i in xrange(length.value):
+            r.append(keys[i])
+
+        # Free allocated key listing
+        sl_free(length, keys)
+
+        return r

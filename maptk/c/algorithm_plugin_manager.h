@@ -69,6 +69,27 @@ MAPTK_C_EXPORT
 void maptk_apm_add_search_path( char const *dirpath );
 
 
+/// Get a list of registered module name strings
+/**
+ * A module's name is defined as the filename minus the standard platform
+ * module library suffix. For example, on Windows, if a module library was
+ * named ``maptk_foo.dll``, the module's name would be "maptk_foo". Similarly
+ * on a unix system, ``maptk_bar.so`` would have the name "maptk_bar".
+ *
+ * We are expecting that the \p length and \p keys parameters will be passed
+ * by reference by the user as they are dereferenced within the function for
+ * value assignment.
+ *
+ * \param[out] length Pointer to an unsigned int into which we return the
+ *                    number of registered module names.
+ * \param[out] names Pointer to a string list into which we allocate and assign
+ *                   registered module names.
+ */
+MAPTK_C_EXPORT
+void maptk_apm_registered_module_names( unsigned int *length,
+                                        char ***names );
+
+
 #ifdef __cplusplus
 }
 #endif

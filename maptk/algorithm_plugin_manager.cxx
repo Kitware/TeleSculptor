@@ -35,7 +35,9 @@
 
 #include "algorithm_plugin_manager.h"
 
+#include <map>
 #include <string>
+#include <vector>
 
 #if defined(_WIN32) || defined(_WIN64)
 # include <windows.h>
@@ -116,7 +118,12 @@ class algorithm_plugin_manager::impl
 {
 // Memeber Variables ---------------------------------------------------------
 public:
-  std::vector<path_t> search_paths_;
+  /// Paths in which to search for module libraries
+  typedef std::vector<path_t> search_paths_t;
+  search_paths_t search_paths_;
+  /// module libraries already loaded, keyed on filename
+  typedef std::map< std::string, path_t > registered_modules_t;
+  registered_modules_t registered_modules_;
 
 // Member functions ----------------------------------------------------------
 public:
@@ -139,6 +146,7 @@ public:
       load_modules_in_directory(module_dir, name);
     }
   }
+
 
   /// Attempt loading algorithm implementations from all plugin modules in dir
   /**
@@ -199,6 +207,7 @@ public:
       ++dir_it;
     }
   }
+
 
   /// Find and execute algorithm impl registration call-back in the module
   /**
@@ -294,6 +303,9 @@ public:
         LOG_DEBUG("algorithm_plugin_manager::impl::register_from_module",
                   "-> Successfully called registration func");
         module_used = true;
+
+        // Adding module name to registered list
+        registered_modules_[module_path.stem().string()] = module_path;
       }
     } // end Algorithm Implementation interface
 
@@ -319,6 +331,18 @@ public:
     }
 
     return module_used;
+  }
+
+
+  /// Get the list of registered modules names
+  std::vector<std::string> registered_module_names() const
+  {
+    std::vector<std::string> r_vec;
+    BOOST_FOREACH( registered_modules_t::value_type p, registered_modules_ )
+    {
+      r_vec.push_back( p.first );
+    }
+    return r_vec;
   }
 
 };
@@ -391,6 +415,15 @@ algorithm_plugin_manager
 ::add_search_path(path_t dirpath)
 {
   this->impl_->search_paths_.push_back(dirpath);
+}
+
+
+/// Get the list currently registered module names.
+std::vector< std::string >
+algorithm_plugin_manager
+::registered_module_names() const
+{
+  return this->impl_->registered_module_names();
 }
 
 

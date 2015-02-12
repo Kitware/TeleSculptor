@@ -304,11 +304,11 @@ class MaptkConfigBlock (MaptkObject):
         Return a list of available keys in this configuration instance.
         """
         cb_ak = self.MAPTK_LIB.maptk_config_block_available_values
-        cb_ak_free = self.MAPTK_LIB.maptk_config_block_free_key_list
+        sl_free = self.MAPTK_LIB.maptk_common_free_string_list
 
         cb_ak.argtypes = [self.C_TYPE_PTR, ctypes.POINTER(ctypes.c_uint),
                           ctypes.POINTER(ctypes.POINTER(ctypes.c_char_p))]
-        cb_ak_free.argtypes = [ctypes.c_uint, ctypes.POINTER(ctypes.c_char_p)]
+        sl_free.argtypes = [ctypes.c_uint, ctypes.POINTER(ctypes.c_char_p)]
 
         length = ctypes.c_uint(0)
         keys = ctypes.POINTER(ctypes.c_char_p)()
@@ -320,7 +320,7 @@ class MaptkConfigBlock (MaptkObject):
             r.append(keys[i])
 
         # Free allocated key listing
-        cb_ak_free(length, keys)
+        sl_free(length, keys)
 
         return r
 

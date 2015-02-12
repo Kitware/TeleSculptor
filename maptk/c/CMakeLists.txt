@@ -8,14 +8,17 @@ if( MAPTK_ENABLE_C_LIB )
 
   set(maptk_c_public_headers
     algorithm_plugin_manager.h
+    common.h
     config.h
     config_block.h
     )
   set(maptk_c_private_headers
-    c_utils.h
+    helpers/c_utils.h
+    helpers/config_block.h
     )
   set(maptk_c_sources
     algorithm_plugin_manager.cxx
+    common.cxx
     config_block.cxx
     )
 

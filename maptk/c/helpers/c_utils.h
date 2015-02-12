@@ -36,8 +36,8 @@
  * their use of C++ structures.
  */
 
-#ifndef MAPTK_C_C_UTILS_H_
-#define MAPTK_C_C_UTILS_H_
+#ifndef MAPTK_C_HELPERS_C_UTILS_H_
+#define MAPTK_C_HELPERS_C_UTILS_H_
 
 #include <exception>
 #include <map>
@@ -160,4 +160,4 @@ private:
 
 
 
-#endif //MAPTK_C_C_UTILS_H_
+#endif //MAPTK_C_HELPERS_C_UTILS_H_

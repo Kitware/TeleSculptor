@@ -36,6 +36,8 @@ Tests for maptk::algorithm_plugin_manager interface
 
 from maptk import MaptkAlgorithmPluginManager
 
+import nose.tools
+
 
 # noinspection PyPep8Naming
 class Test_AlgorithmPluginManager (object):
@@ -53,3 +55,8 @@ class Test_AlgorithmPluginManager (object):
     def test_add_search_path_bad_dir(self):
         MaptkAlgorithmPluginManager.add_search_path("/probably/not/a/directory/foo")
         self.test_load_named()
+
+    def test_registered_names(self):
+        MaptkAlgorithmPluginManager.register_plugins('maptk_core')
+        nose.tools.assert_in('maptk_core',
+                             MaptkAlgorithmPluginManager.registered_module_names())
