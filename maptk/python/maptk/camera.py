@@ -40,7 +40,6 @@ import ctypes
 
 from maptk.util import (
     MaptkObject,
-    c_maptk_error_handle_p,
     propagate_exception_from_handle
 )
 
@@ -58,22 +57,54 @@ class MaptkCamera (MaptkObject):
     C_TYPE = _maptk_camera_t
     C_TYPE_PTR = ctypes.POINTER(_maptk_camera_t)
 
+    @classmethod
+    def from_krtd_file(cls, filepath):
+        """
+        :return: New MaptkCamera instance from a KRTD format file
+        :rtype: MaptkCamera
+        """
+        cam_read_krtd = cls.MAPTK_LIB.maptk_camera_read_krtd_file
+        cam_read_krtd.argtypes = [ctypes.c_char_p, cls.EH_TYPE_PTR]
+        cam_read_krtd.restype = cls.C_TYPE_PTR
+
+        eh = cls.EH_NEW()
+        c_ptr = cam_read_krtd(filepath, eh)
+        try:
+            propagate_exception_from_handle(eh)
+        finally:
+            cls.EH_DEL(eh)
+
+        return cls.from_c_pointer(c_ptr)
+
     def __del__(self):
         """ Delete instance through C API """
         if self._inst_ptr:
-            eh_new = self.MAPTK_LIB.maptk_eh_new
-            eh_new.restype = c_maptk_error_handle_p
-
-            eh_del = self.MAPTK_LIB.maptk_eh_destroy
-            eh_del.argtypes = [c_maptk_error_handle_p]
-
             cam_del = self.MAPTK_LIB.maptk_camera_destroy
-            cam_del.argtypes = [self.C_TYPE_PTR, c_maptk_error_handle_p]
+            cam_del.argtypes = [self.C_TYPE_PTR, self.EH_TYPE_PTR]
 
-            eh = eh_new()
+            eh = self.EH_NEW()
             cam_del(self._inst_ptr, eh)
 
             try:
                 propagate_exception_from_handle(eh)
             finally:
-                eh_del(eh)
+                self.EH_DEL(eh)
+
+    def write_krtd_file(self, filepath):
+        """
+        Write camera object in KRTD format to the specified file.
+
+        :param filepath: Path to the file to write to.
+        :type filepath: str
+
+        """
+        cam_write_krtd = self.MAPTK_LIB.maptk_camera_write_krtd_file
+        cam_write_krtd.argtypes = [self.C_TYPE_PTR, ctypes.c_char_p,
+                                   self.EH_TYPE_PTR]
+
+        eh = self.EH_NEW()
+        cam_write_krtd(self._inst_ptr, filepath, eh)
+        try:
+            propagate_exception_from_handle(eh)
+        finally:
+            self.EH_DEL(eh)

@@ -39,6 +39,7 @@ __author__ = 'purg'
 import abc
 
 from maptk.util import find_maptk_library
+from maptk.util.error_handle import c_maptk_error_handle_p
 
 
 class MaptkObject (object):
@@ -52,6 +53,13 @@ class MaptkObject (object):
     # C API opaque structure + pointer
     C_TYPE = None
     C_TYPE_PTR = None
+
+    # Configured common error handle constructor and destructor
+    EH_TYPE_PTR = c_maptk_error_handle_p
+    EH_NEW = MAPTK_LIB.maptk_eh_new
+    EH_NEW.restype = c_maptk_error_handle_p
+    EH_DEL = MAPTK_LIB.maptk_eh_destroy
+    EH_DEL.argtypes = [c_maptk_error_handle_p]
 
     @classmethod
     def from_c_pointer(cls, ptr):

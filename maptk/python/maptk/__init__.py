@@ -38,6 +38,7 @@ __author__ = 'purg'
 
 # Common MAPTK Components for easy access
 from .apm import MaptkAlgorithmPluginManager
+from .camera import MaptkCamera
 from .config_block import MaptkConfigBlock
 from .image import MaptkImage
 from .image_container import MaptkImageContainer

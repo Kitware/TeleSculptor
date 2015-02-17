@@ -45,8 +45,7 @@ from maptk.exceptions.config_block_io import (
     MaptkConfigBlockIoFileNotParsed,
     MaptkConfigBlockIoFileWriteException,
 )
-from maptk.util import MaptkObject, c_maptk_error_handle_p, \
-    propagate_exception_from_handle
+from maptk.util import MaptkObject, propagate_exception_from_handle
 
 
 # noinspection PyPep8Naming
@@ -89,17 +88,11 @@ class MaptkConfigBlock (MaptkObject):
         :rtype: MaptkConfigBlock
 
         """
-        eh_new = cls.MAPTK_LIB.maptk_eh_new
-        eh_destroy = cls.MAPTK_LIB.maptk_eh_destroy
         cb_read = cls.MAPTK_LIB.maptk_config_block_file_read
-
-        eh_new.restype = c_maptk_error_handle_p
-        eh_destroy.argtypes = [c_maptk_error_handle_p]
-        cb_read.argtypes = [ctypes.c_char_p,
-                            c_maptk_error_handle_p]
+        cb_read.argtypes = [ctypes.c_char_p, cls.EH_TYPE_PTR]
         cb_read.restype = cls.C_TYPE_PTR
 
-        eh = eh_new()
+        eh = cls.EH_NEW()
         cb_ptr = cb_read(str(filepath), eh)
 
         try:
@@ -110,7 +103,7 @@ class MaptkConfigBlock (MaptkObject):
                 3: MaptkConfigBlockIoFileNotParsed
             })
         finally:
-            eh_destroy(eh)
+            cls.EH_DEL(eh)
 
         return MaptkConfigBlock.from_c_pointer(cb_ptr)
 
@@ -386,16 +379,11 @@ class MaptkConfigBlock (MaptkObject):
         :param filepath: Output file path.
 
         """
-        eh_new = self.MAPTK_LIB.maptk_eh_new
-        eh_destroy = self.MAPTK_LIB.maptk_eh_destroy
         cb_write = self.MAPTK_LIB.maptk_config_block_file_write
-
-        eh_new.restype = c_maptk_error_handle_p
-        eh_destroy.argtypes = [c_maptk_error_handle_p]
         cb_write.argtypes = [self.C_TYPE_PTR, ctypes.c_char_p,
-                             c_maptk_error_handle_p]
+                             self.EH_TYPE_PTR]
 
-        eh = eh_new()
+        eh = self.EH_NEW()
         cb_write(self._inst_ptr, filepath, eh)
 
         try:
@@ -404,4 +392,4 @@ class MaptkConfigBlock (MaptkObject):
                 1: MaptkConfigBlockIoFileWriteException
             })
         finally:
-            eh_destroy(eh)
+            self.EH_NEW(eh)

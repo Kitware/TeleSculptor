@@ -61,6 +61,19 @@ void maptk_camera_destroy( maptk_camera_t *cam,
                            maptk_error_handle_t *eh );
 
 
+/// Read in a KRTD file, producing a new maptk::camera object
+MAPTK_C_EXPORT
+maptk_camera_t* maptk_camera_read_krtd_file( char const *filepath,
+                                             maptk_error_handle_t *eh );
+
+
+/// Output the given maptk_camera_t object to the specified file path
+MAPTK_C_EXPORT
+void maptk_camera_write_krtd_file( maptk_camera_t *cam,
+                                   char const *filepath,
+                                   maptk_error_handle_t *eh );
+
+
 #ifdef __cplusplus
 }
 #endif

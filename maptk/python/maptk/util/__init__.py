@@ -38,8 +38,4 @@ __author__ = 'purg'
 
 from .find_maptk_library import find_maptk_library
 from .MaptkObject import MaptkObject
-from .error_handle import (
-    c_maptk_error_handle,
-    c_maptk_error_handle_p,
-    propagate_exception_from_handle
-)
+from .error_handle import propagate_exception_from_handle

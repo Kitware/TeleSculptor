@@ -36,6 +36,7 @@
 #include "camera.h"
 
 #include <maptk/camera.h>
+#include <maptk/camera_io.h>
 
 #include <maptk/c/helpers/c_utils.h>
 #include <maptk/c/helpers/camera.h>
@@ -43,8 +44,10 @@
 
 namespace maptk_c
 {
-  SharedPointerCache< maptk::camera,
-                      maptk_camera_t > CAMERA_SPTR_CACHE;
+
+SharedPointerCache< maptk::camera,
+                    maptk_camera_t > CAMERA_SPTR_CACHE;
+
 }
 
 
@@ -55,5 +58,33 @@ void maptk_camera_destroy( maptk_camera_t *cam,
   STANDARD_CATCH(
     "C::camera::destroy", eh,
     maptk_c::CAMERA_SPTR_CACHE.erase( cam );
+  );
+}
+
+
+/// Read in a KRTD file, producing a new maptk::camera object
+maptk_camera_t* maptk_camera_read_krtd_file( char const *filepath,
+                                             maptk_error_handle_t *eh )
+{
+  STANDARD_CATCH(
+    "C::camera::read_krtd_file", eh,
+    maptk::camera_sptr c( new maptk::camera_d( maptk::read_krtd_file(filepath) ) );
+    maptk_c::CAMERA_SPTR_CACHE.store( c );
+    return reinterpret_cast<maptk_camera_t*>( c.get() );
+  );
+  return 0;
+}
+
+
+/// Output the given maptk_camera_t object to the specified file path
+void maptk_camera_write_krtd_file( maptk_camera_t *cam,
+                                   char const *filepath,
+                                   maptk_error_handle_t *eh )
+{
+  STANDARD_CATCH(
+    "C::camera::write_krtd_file", eh,
+    maptk::camera *m_cam = maptk_c::CAMERA_SPTR_CACHE.get( cam ).get();
+    maptk::write_krtd_file( *m_cam,
+                            filepath );
   );
 }

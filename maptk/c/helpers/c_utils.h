@@ -55,6 +55,25 @@
 #include <maptk/logging_macros.h>
 
 
+/// Macro allowing simpler population of an error handle
+/**
+ * Only does anything if error handle pointer is non-NULL.
+ * \p msg should be a C string (char const*)
+ */
+#define POPULATE_EH(eh_ptr, ec, msg)                                        \
+  do                                                                        \
+  {                                                                         \
+    if( eh_ptr )                                                            \
+    {                                                                       \
+      maptk_error_handle_t *PEH_eh_ptr_cast =                               \
+        reinterpret_cast<maptk_error_handle_t*>(eh_ptr);                    \
+      PEH_eh_ptr_cast->error_code = ec;                                     \
+      PEH_eh_ptr_cast->message = (char*)malloc(sizeof(char) * strlen(msg)); \
+      strcpy(PEH_eh_ptr_cast->message, msg);                                \
+    }                                                                       \
+  } while(0)
+
+
 /// Standardized try/catch for general use.
 /**
  * If the provided code block contains a return, make sure to provide a
@@ -78,15 +97,20 @@
       ss << "Caught exception in C interface: " << e.what();      \
       std::string msg = ss.str();                                 \
       LOG_DEBUG( log_prefix, msg.c_str() );                       \
-      if( eh_ptr )                                                \
-      {                                                           \
-        reinterpret_cast<maptk_error_handle_t*>(eh_ptr)           \
-            ->error_code = -1;                                    \
-        char *c_msg = (char*)malloc(sizeof(char) * msg.length()); \
-        strcpy( c_msg, msg.c_str() );                             \
-        reinterpret_cast<maptk_error_handle_t*>(eh_ptr)           \
-            ->message = c_msg;                                    \
-      }                                                           \
+      POPULATE_EH( eh_ptr, -1, msg.c_str() );                     \
+    }                                                             \
+    catch( char const* e )                                        \
+    {                                                             \
+      std::ostringstream ss;                                      \
+      ss << "Caught error message: " << e;                        \
+      LOG_DEBUG( log_prefix, ss.str().c_str() );                  \
+      POPULATE_EH( eh_ptr, -1, ss.str().c_str() );                \
+    }                                                             \
+    catch(...)                                                    \
+    {                                                             \
+      std::string msg("Caught other exception");                  \
+      LOG_DEBUG( log_prefix, msg );                               \
+      POPULATE_EH( eh_ptr, -1, msg.c_str() );                     \
     }                                                             \
   } while( 0 )
 
