@@ -10,6 +10,7 @@ if( MAPTK_ENABLE_C_LIB )
     config.h
 
     algorithm_plugin_manager.h
+    camera.h
     common.h
     config_block.h
     error_handle.h
@@ -23,6 +24,7 @@ if( MAPTK_ENABLE_C_LIB )
     )
   set(maptk_c_sources
     algorithm_plugin_manager.cxx
+    camera.cxx
     common.cxx
     config_block.cxx
     error_handle.cxx

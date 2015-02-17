@@ -41,6 +41,7 @@ from maptk.util import MaptkObject
 
 
 class MaptkAlgorithmPluginManager (MaptkObject):
+    """ Interface to singleton APM class """
 
     @staticmethod
     def register_plugins(name=None):
@@ -110,3 +111,8 @@ class MaptkAlgorithmPluginManager (MaptkObject):
         sl_free(length, keys)
 
         return r
+
+    # noinspection PyMissingConstructor
+    def __init__(self):
+        raise RuntimeError("Cannot instantiate singleton class wrapper "
+                           "MaptkAlgorithmPluginManager")

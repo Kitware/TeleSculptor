@@ -37,18 +37,8 @@ Base class for all MAPTK Python interface classes
 __author__ = 'purg'
 
 import abc
-import ctypes
 
 from maptk.util import find_maptk_library
-
-
-# noinspection PyPep8Naming
-class c_maptk_error_handle (ctypes.Structure):
-    """ Error handling structure used in C interface """
-    _fields_ = [
-        ("error_code", ctypes.c_int),
-        ("message", ctypes.c_char_p),
-    ]
 
 
 class MaptkObject (object):
@@ -59,9 +49,36 @@ class MaptkObject (object):
 
     MAPTK_LIB = find_maptk_library()
 
-    @abc.abstractproperty
+    # C API opaque structure + pointer
+    C_TYPE = None
+    C_TYPE_PTR = None
+
+    @classmethod
+    def from_c_pointer(cls, ptr):
+        # As this is a generalized method, make sure that the derived class
+        # has a C opaque structure pointer type defined.
+        if cls.C_TYPE_PTR is None:
+            raise RuntimeError("Derived class '%s' did not define C_TYPE_PTR"
+                               % cls.__name__)
+
+        assert isinstance(ptr, cls.C_TYPE_PTR), \
+            "Required a C_TYPE_PTR instance of this class (%s)" \
+            % cls.__name__
+
+        # noinspection PyPep8Naming,PyMissingConstructor
+        class _from_c_pointer (cls):
+            def __init__(self, _ptr):
+                self._inst_ptr = _ptr
+        _from_c_pointer.__name__ = "%s_from_c_pointer" % cls.__name__
+
+        return _from_c_pointer(ptr)
+
+    def __init__(self):
+        self._inst_ptr = None
+
+    @property
     def c_pointer(self):
         """
         :return: The ctypes opaque structure pointer
         """
-        return
+        return self._inst_ptr

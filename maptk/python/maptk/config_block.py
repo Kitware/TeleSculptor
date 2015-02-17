@@ -45,7 +45,8 @@ from maptk.exceptions.config_block_io import (
     MaptkConfigBlockIoFileNotParsed,
     MaptkConfigBlockIoFileWriteException,
 )
-from maptk.util import MaptkObject, c_maptk_error_handle
+from maptk.util import MaptkObject, c_maptk_error_handle_p, \
+    propagate_exception_from_handle
 
 
 # noinspection PyPep8Naming
@@ -64,33 +65,13 @@ class MaptkConfigBlock (MaptkObject):
     C_TYPE = _maptk_config_block_t
     C_TYPE_PTR = ctypes.POINTER(_maptk_config_block_t)
 
-    # ConfigBlock Constants
-    BLOCK_SEP = ctypes.c_char_p.in_dll(MaptkObject.MAPTK_LIB,
-                                       "maptk_config_block_block_sep").value
-    GLOBAL_VALUE = ctypes.c_char_p.in_dll(MaptkObject.MAPTK_LIB,
-                                          "maptk_config_block_global_value").value
-
-    @classmethod
-    def from_c_pointer(cls, cb_ptr):
-        """
-        Return a ConfigBlock instance from an existing C interface pointer.
-
-        :param cb_ptr: Existing pointer of type ConfigBlock.C_TYPE_PTR
-        :type cb_ptr: MaptkConfigBlock.C_TYPE_PTR
-
-        :return: ConfigBlock instance wrapping the provided C interface pointer
-        :rtype: MaptkConfigBlock
-
-        """
-        assert isinstance(cb_ptr, MaptkConfigBlock.C_TYPE_PTR), \
-            "Required a ConfigBlock.C_TYPE_PTR instance."
-
-        # noinspection PyPep8Naming,PyMissingConstructor
-        class MaptkConfigBlock_from_c_pointer (cls):
-            def __init__(self, ptr):
-                self._cb_p = ptr
-
-        return MaptkConfigBlock_from_c_pointer(cb_ptr)
+    # MaptkConfigBlock Constants
+    BLOCK_SEP = \
+        ctypes.c_char_p.in_dll(MaptkObject.MAPTK_LIB,
+                               "maptk_config_block_block_sep").value
+    GLOBAL_VALUE = \
+        ctypes.c_char_p.in_dll(MaptkObject.MAPTK_LIB,
+                               "maptk_config_block_global_value").value
 
     @classmethod
     def from_file(cls, filepath):
@@ -112,95 +93,88 @@ class MaptkConfigBlock (MaptkObject):
         eh_destroy = cls.MAPTK_LIB.maptk_eh_destroy
         cb_read = cls.MAPTK_LIB.maptk_config_block_file_read
 
-        eh_new.restype = ctypes.POINTER(c_maptk_error_handle)
-        eh_destroy.argtypes = [ctypes.POINTER(c_maptk_error_handle)]
-        cb_read.argtypes = [ctypes.c_char_p, ctypes.POINTER(c_maptk_error_handle)]
+        eh_new.restype = c_maptk_error_handle_p
+        eh_destroy.argtypes = [c_maptk_error_handle_p]
+        cb_read.argtypes = [ctypes.c_char_p,
+                            c_maptk_error_handle_p]
         cb_read.restype = cls.C_TYPE_PTR
 
         eh = eh_new()
         cb_ptr = cb_read(str(filepath), eh)
 
         try:
-            print "!!! Error code:", eh[0].error_code
-            if eh[0].error_code == 1:
-                raise MaptkConfigBlockIoFileNotFoundException(eh[0].message)
-            elif eh[0].error_code == 2:
-                raise MaptkConfigBlockIoFileNotReadException(eh[0].message)
-            elif eh[0].error_code == 3:
-                raise MaptkConfigBlockIoFileNotParsed(eh[0].message)
-            elif eh[0].error_code != 0:
-                raise MaptkConfigBlockIoException(eh[0].message)
+            propagate_exception_from_handle(eh, {
+                -1: MaptkConfigBlockIoException,
+                1: MaptkConfigBlockIoFileNotFoundException,
+                2: MaptkConfigBlockIoFileNotReadException,
+                3: MaptkConfigBlockIoFileNotParsed
+            })
         finally:
             eh_destroy(eh)
 
         return MaptkConfigBlock.from_c_pointer(cb_ptr)
 
     def __init__(self, name=None):
+        super(MaptkConfigBlock, self).__init__()
+
         if name:
             cb_new = self.MAPTK_LIB.maptk_config_block_new_named
             cb_new.argtypes = [ctypes.c_char_p]
             cb_new.restype = self.C_TYPE_PTR
-            self._cb_p = cb_new(str(name))
+            self._inst_ptr = cb_new(str(name))
         else:
             cb_new = self.MAPTK_LIB.maptk_config_block_new
             cb_new.restype = self.C_TYPE_PTR
-            self._cb_p = cb_new()
+            self._inst_ptr = cb_new()
 
     def __del__(self):
-        # print "Destroying CB: \"%s\" %d" % (self.name, self._cb_p)
-        self.MAPTK_LIB.maptk_config_block_destroy(self._cb_p)
-
-    @property
-    def c_pointer(self):
-        """
-        :return: The ctypes opaque structure pointer
-        """
-        return self._cb_p
+        # print "Destroying CB: \"%s\" %d" % (self.name, self._inst_ptr)
+        self.MAPTK_LIB.maptk_config_block_destroy(self._inst_ptr)
 
     @property
     def name(self):
         """
-        :return: The name assigned to this ConfigBlock instance.
+        :return: The name assigned to this MaptkConfigBlock instance.
         :rtype: str
         """
         cb_get_name = self.MAPTK_LIB.maptk_config_block_get_name
         cb_get_name.argtypes = [self.C_TYPE_PTR]
         cb_get_name.restype = ctypes.c_char_p
-        return cb_get_name(self._cb_p)
+        return cb_get_name(self._inst_ptr)
 
     def subblock(self, key):
         """
-        Get a new ConfigBlock that is deep copy of this ConfigBlock starting
-        at the given key.
+        Get a new MaptkConfigBlock that is deep copy of this MaptkConfigBlock
+        starting at the given key.
 
-        :return: New ConfigBlock
-        :rtype: ConfigBlock
+        :return: New MaptkConfigBlock
+        :rtype: MaptkConfigBlock
 
         """
         cb_subblock = self.MAPTK_LIB.maptk_config_block_subblock
         cb_subblock.argtypes = [self.C_TYPE_PTR]
         cb_subblock.restype = self.C_TYPE_PTR
         return MaptkConfigBlock.from_c_pointer(
-            cb_subblock(self._cb_p, key)
+            cb_subblock(self._inst_ptr, key)
         )
 
     def subblock_view(self, key):
         """
-        Get a new ConfigBlock that is a view into this ConfigBlock starting at
-        the given key.
+        Get a new MaptkConfigBlock that is a view into this MaptkConfigBlock
+        starting at the given key.
 
-        Modifications on the returned ConfigBlock are also reflected in this
-        instance.
+        Modifications on the returned MaptkConfigBlock are also reflected in
+        this instance.
 
-        :return: New ConfigBlock instance with this instance as its parent.
-        :rtype: ConfigBlock
+        :return: New MaptkConfigBlock instance with this instance as its parent.
+        :rtype: MaptkConfigBlock
 
         """
         cb_subblock_view = self.MAPTK_LIB.maptk_config_block_subblock_view
         cb_subblock_view.argtypes = [self.C_TYPE_PTR]
         cb_subblock_view.restype = self.C_TYPE_PTR
         return MaptkConfigBlock.from_c_pointer(
-            cb_subblock_view(self._cb_p, key)
+            cb_subblock_view(self._inst_ptr, key)
         )
 
     def get_value(self, key, default=None):
@@ -227,7 +201,7 @@ class MaptkConfigBlock (MaptkObject):
         cb_get_value = self.MAPTK_LIB.maptk_config_block_get_value
         cb_get_value.argtypes = [self.C_TYPE_PTR, ctypes.c_char_p]
         cb_get_value.restype = ctypes.c_char_p
-        r = cb_get_value(self._cb_p, key)
+        r = cb_get_value(self._inst_ptr, key)
         if r is None:
             return default
         return r
@@ -252,7 +226,7 @@ class MaptkConfigBlock (MaptkObject):
         cb_get_descr = self.MAPTK_LIB.maptk_config_block_get_description
         cb_get_descr.argtypes = [self.C_TYPE_PTR, ctypes.c_char_p]
         cb_get_descr.restype = ctypes.c_char_p
-        return cb_get_descr(self._cb_p, key)
+        return cb_get_descr(self._inst_ptr, key)
 
     def set_value(self, key, value, description=None):
         """
@@ -280,12 +254,12 @@ class MaptkConfigBlock (MaptkObject):
             cb_set_value = self.MAPTK_LIB.maptk_config_block_set_value
             cb_set_value.argtypes = [self.C_TYPE_PTR, ctypes.c_char_p,
                                      ctypes.c_char_p]
-            cb_set_value(self._cb_p, str(key), str(value))
+            cb_set_value(self._inst_ptr, str(key), str(value))
         else:
             cb_set_value = self.MAPTK_LIB.maptk_config_block_set_value_descr
             cb_set_value.argtypes = [self.C_TYPE_PTR, ctypes.c_char_p,
                                      ctypes.c_char_p, ctypes.c_char_p]
-            cb_set_value(self._cb_p, str(key), str(value), str(description))
+            cb_set_value(self._inst_ptr, str(key), str(value), str(description))
 
     def unset_value(self, key):
         """
@@ -299,7 +273,7 @@ class MaptkConfigBlock (MaptkObject):
         """
         cb_unset_value = self.MAPTK_LIB.maptk_config_block_unset_value
         cb_unset_value.argtypes = [self.C_TYPE_PTR]
-        cb_unset_value(self._cb_p, key)
+        cb_unset_value(self._inst_ptr, key)
 
     def is_read_only(self, key):
         """
@@ -316,7 +290,7 @@ class MaptkConfigBlock (MaptkObject):
         cb_is_ro = self.MAPTK_LIB.maptk_config_block_is_read_only
         cb_is_ro.argtypes = [self.C_TYPE_PTR, ctypes.c_char_p]
         cb_is_ro.restype = ctypes.c_bool
-        return cb_is_ro(self._cb_p, key)
+        return cb_is_ro(self._inst_ptr, key)
 
     def mark_read_only(self, key):
         """
@@ -331,23 +305,23 @@ class MaptkConfigBlock (MaptkObject):
         """
         cb_mark_ro = self.MAPTK_LIB.maptk_config_block_mark_read_only
         cb_mark_ro.argtypes = [self.C_TYPE_PTR, ctypes.c_char_p]
-        cb_mark_ro(self._cb_p, key)
+        cb_mark_ro(self._inst_ptr, key)
 
     def merge_config(self, other):
         """
-        Merge the values in given ConfigBlock into the this instance.
+        Merge the values in given MaptkConfigBlock into the this instance.
 
         NOTE: Any values currently set within \c *this will be overwritten if
         conflicts occur.
 
-        :param other: Other ConfigBlock instance whose key/value pairs are to be
-            merged into this instance.
-        :type other: ConfigBlock
+        :param other: Other MaptkConfigBlock instance whose key/value pairs are
+            to be merged into this instance.
+        :type other: MaptkConfigBlock
 
         """
         cb_merge = self.MAPTK_LIB.maptk_config_block_merge_config
         cb_merge.argtypes = [self.C_TYPE_PTR, self.C_TYPE_PTR]
-        cb_merge(self._cb_p, other._cb_p)
+        cb_merge(self._inst_ptr, other._inst_ptr)
 
     def has_value(self, key):
         """
@@ -363,7 +337,7 @@ class MaptkConfigBlock (MaptkObject):
         cb_has_value = self.MAPTK_LIB.maptk_config_block_has_value
         cb_has_value.argtypes = [self.C_TYPE_PTR, ctypes.c_char_p]
         cb_has_value.restype = ctypes.c_bool
-        return cb_has_value(self._cb_p, key)
+        return cb_has_value(self._inst_ptr, key)
 
     def available_keys(self):
         """
@@ -378,7 +352,7 @@ class MaptkConfigBlock (MaptkObject):
 
         length = ctypes.c_uint(0)
         keys = ctypes.POINTER(ctypes.c_char_p)()
-        cb_ak(self._cb_p, ctypes.byref(length), ctypes.byref(keys))
+        cb_ak(self._inst_ptr, ctypes.byref(length), ctypes.byref(keys))
 
         # Constructing return array
         r = []
@@ -416,18 +390,18 @@ class MaptkConfigBlock (MaptkObject):
         eh_destroy = self.MAPTK_LIB.maptk_eh_destroy
         cb_write = self.MAPTK_LIB.maptk_config_block_file_write
 
-        eh_new.restype = ctypes.POINTER(c_maptk_error_handle)
-        eh_destroy.argtypes = [ctypes.POINTER(c_maptk_error_handle)]
+        eh_new.restype = c_maptk_error_handle_p
+        eh_destroy.argtypes = [c_maptk_error_handle_p]
         cb_write.argtypes = [self.C_TYPE_PTR, ctypes.c_char_p,
-                             ctypes.POINTER(c_maptk_error_handle)]
+                             c_maptk_error_handle_p]
 
         eh = eh_new()
-        cb_write(self._cb_p, filepath, eh)
+        cb_write(self._inst_ptr, filepath, eh)
 
         try:
-            if eh[0].error_code == 1:
-                raise MaptkConfigBlockIoFileWriteException(eh[0].message)
-            elif eh[0].error_code != 0:
-                raise MaptkConfigBlockIoException(eh[0].message)
+            propagate_exception_from_handle(eh, {
+                -1: MaptkConfigBlockIoException,
+                1: MaptkConfigBlockIoFileWriteException
+            })
         finally:
             eh_destroy(eh)

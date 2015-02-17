@@ -30,16 +30,50 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ==============================================================================
 
-maptk.util module
+Interface to maptk::camera class.
 
 """
 # -*- coding: utf-8 -*-
 __author__ = 'purg'
 
-from .find_maptk_library import find_maptk_library
-from .MaptkObject import MaptkObject
-from .error_handle import (
-    c_maptk_error_handle,
+import ctypes
+
+from maptk.util import (
+    MaptkObject,
     c_maptk_error_handle_p,
     propagate_exception_from_handle
 )
+
+
+# noinspection PyPep8Naming
+class _maptk_camera_t (ctypes.Structure):
+    """ C interface opaque handle structure """
+    pass
+
+
+class MaptkCamera (MaptkObject):
+    """ maptk::camera interface class """
+
+    # C API config_block_t structure + pointer
+    C_TYPE = _maptk_camera_t
+    C_TYPE_PTR = ctypes.POINTER(_maptk_camera_t)
+
+    def __del__(self):
+        """ Delete instance through C API """
+        if self._inst_ptr:
+            eh_new = self.MAPTK_LIB.maptk_eh_new
+            eh_new.restype = c_maptk_error_handle_p
+
+            eh_del = self.MAPTK_LIB.maptk_eh_destroy
+            eh_del.argtypes = [c_maptk_error_handle_p]
+
+            cam_del = self.MAPTK_LIB.maptk_camera_destroy
+            cam_del.argtypes = [self.C_TYPE_PTR, c_maptk_error_handle_p]
+
+            eh = eh_new()
+            cam_del(self._inst_ptr, eh)
+
+            try:
+                propagate_exception_from_handle(eh)
+            finally:
+                eh_del(eh)

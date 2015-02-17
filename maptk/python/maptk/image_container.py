@@ -65,6 +65,8 @@ class MaptkImageContainer (MaptkObject):
         :type image: MaptkImage
 
         """
+        super(MaptkImageContainer, self).__init__()
+
         imgc_new = self.MAPTK_LIB.maptk_image_container_new_simple
         imgc_new.argtypes = [MaptkImage.C_TYPE_PTR]
         imgc_new.restype = self.C_TYPE_PTR
@@ -73,13 +75,6 @@ class MaptkImageContainer (MaptkObject):
         if not bool(self._inst_ptr):
             raise RuntimeError("Failed to construct new MaptkImageContainer "
                                "instance.")
-
-    @property
-    def c_pointer(self):
-        """
-        :return: The ctypes opaque structure pointer
-        """
-        return self._inst_ptr
 
     def size(self):
         """

@@ -77,7 +77,7 @@
       std::ostringstream ss;                                      \
       ss << "Caught exception in C interface: " << e.what();      \
       std::string msg = ss.str();                                 \
-      LOG_ERROR( log_prefix, msg.c_str() );                       \
+      LOG_DEBUG( log_prefix, msg.c_str() );                       \
       if( eh_ptr )                                                \
       {                                                           \
         reinterpret_cast<maptk_error_handle_t*>(eh_ptr)           \

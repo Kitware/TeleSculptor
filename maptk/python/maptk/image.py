@@ -81,19 +81,7 @@ class MaptkImage (MaptkObject):
         img_new = cls.MAPTK_LIB.maptk_image_new_from_image
         img_new.argtypes = [cls.C_TYPE_PTR]
         img_new.restype = cls.C_TYPE_PTR
-        return MaptkImage.from_c_poiter(img_new(other_image._inst_ptr))
-
-    @classmethod
-    def from_c_poiter(cls, ptr):
-        assert isinstance(ptr, MaptkImage.C_TYPE_PTR), \
-            "Required a ConfigBlock.C_TYPE_PTR instance."
-
-        # noinspection PyPep8Naming,PyMissingConstructor
-        class MaptkImage_from_c_pointer (MaptkImage):
-            def __init__(self, _ptr):
-                self._inst_ptr = _ptr
-
-        return MaptkImage_from_c_pointer(ptr)
+        return MaptkImage.from_c_pointer(img_new(other_image._inst_ptr))
 
     def __init__(self, width=None, height=None, depth=1, interleave=False):
         """ Construct an empty image of no, or defined, dimensions.
@@ -102,6 +90,8 @@ class MaptkImage (MaptkObject):
         uninitialized size.
 
         """
+        super(MaptkImage, self).__init__()
+
         if width is None or height is None:
             img_new = self.MAPTK_LIB.maptk_image_new
             img_new.restype = self.C_TYPE_PTR
@@ -120,13 +110,6 @@ class MaptkImage (MaptkObject):
         img_destroy = self.MAPTK_LIB.maptk_image_destroy
         img_destroy.argtypes = [self.C_TYPE_PTR]
         img_destroy(self._inst_ptr)
-
-    @property
-    def c_pointer(self):
-        """
-        :return: The ctypes opaque structure pointer
-        """
-        return self._inst_ptr
 
     def size(self):
         """ Get the number of bytes allocated in the given image

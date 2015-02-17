@@ -53,10 +53,10 @@ class TestMaptkConfigBlock (object):
 
     def test_construction(self):
         cb1 = MaptkConfigBlock()
-        nose.tools.assert_true(cb1._cb_p, "Received null pointer from "
+        nose.tools.assert_true(cb1._inst_ptr, "Received null pointer from "
                                           "MaptkConfigBlock construction")
         cb2 = MaptkConfigBlock("A Name")
-        nose.tools.assert_true(cb2._cb_p, "Received a null pointer "
+        nose.tools.assert_true(cb2._inst_ptr, "Received a null pointer "
                                           "from named MaptkConfigBlock "
                                           "construction.")
 
