@@ -12,6 +12,7 @@ if( MAPTK_ENABLE_C_LIB )
     algorithm_plugin_manager.h
     common.h
     config_block.h
+    error_handle.h
     image.h
     image_container.h
     )
@@ -24,6 +25,7 @@ if( MAPTK_ENABLE_C_LIB )
     algorithm_plugin_manager.cxx
     common.cxx
     config_block.cxx
+    error_handle.cxx
     image.cxx
     image_container.cxx
 

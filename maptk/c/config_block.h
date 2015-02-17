@@ -43,12 +43,19 @@ extern "C"
 #endif
 
 #include <maptk/c/config.h>
+#include <maptk/c/error_handle.h>
 
 #include <stdbool.h>
 
 
 /// Structure for opaque pointers to \p config_block objects
 typedef struct maptk_config_block_s maptk_config_block_t;
+
+/// Error handling structure
+typedef struct maptk_config_block_eh_s {
+  int error_code;
+  char const *message;
+} maptk_config_block_eh_t;
 
 
 // Config block constants
@@ -165,11 +172,13 @@ char const* maptk_config_block_get_description( maptk_config_block_t *cb,
 
 /// Set a string value within the configuration.
 /**
- * If the provided key has been marked read-only, nothing is set.
+ * If the provided key has been marked read-only, nothing is set and 1 is
+ * returned.
  *
  * \param cb Opaque pointer to a config_block instance.
  * \param key The index of the configuration value to set.
  * \param value The value to set for the \p key.
+ * \return 1 if set was successful, 0 if it was not.
  */
 MAPTK_C_EXPORT
 void maptk_config_block_set_value( maptk_config_block_t *cb,
@@ -276,6 +285,52 @@ MAPTK_C_EXPORT
 void maptk_config_block_available_values( maptk_config_block_t *cb,
                                           unsigned int *length,
                                           char ***keys );
+
+
+/// Read in a configuration file, producing a config_block object
+/**
+ * This may fail if the given filepath is not found, could not be read, or some
+ * other filesystem error. In such a case, a NULL pointer is returned and the
+ * given error handle, if non-null, will be given an error code and message.
+ *
+ * \param filepath   The path to the file to read in.
+ * \return A an object representing the contents of the read-in file.
+ */
+MAPTK_C_EXPORT
+maptk_config_block_t* maptk_config_block_file_read( char const *filepath,
+                                                    maptk_error_handle_t *eh );
+
+
+/// Read in a configuration file, producing a named config_block object
+/**
+ * This may fail if the given filepath is not found, could not be read, or some
+ * other filesystem error. In such a case, a NULL pointer is returned and the
+ * given error handle, if non-null, will be given an error code and message.
+ *
+ * \param filepath   The path to the file to read in.
+ * \param blockname  A name to give to the generated config_block.
+ * \return A object representing the contents of the read-in file.
+ */
+MAPTK_C_EXPORT
+maptk_config_block_t* maptk_config_block_file_read_with_name( char const *filepath,
+                                                              char const *blockname,
+                                                              maptk_error_handle_t *eh );
+
+
+/// Output to file the given \c config_block object to the specified file path
+/**
+ * If a file exists at the target location, it will be overwritten. If the
+ * containing directory of the given path does not exist, it will be created
+ * before the file is opened for writing.
+ *
+ * This may fail if the given filepath is not found, could not be read, or some
+ * other filesystem error. In such a case, a NULL pointer is returned and the
+ * given error handle, if non-null, will be given an error code and message.
+ */
+MAPTK_C_EXPORT
+void maptk_config_block_file_write( maptk_config_block_t *cb,
+                                    char const *filepath,
+                                    maptk_error_handle_t *eh );
 
 
 #ifdef __cplusplus

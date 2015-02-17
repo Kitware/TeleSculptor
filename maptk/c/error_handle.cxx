@@ -30,66 +30,33 @@
 
 /**
  * \file
- * \brief C interface to maptk::algorithm_plugin_manager implementation
+ * \brief C interface common error handle structure implementation
  */
 
-#include "algorithm_plugin_manager.h"
+#include "error_handle.h"
 
 #include <cstdlib>
-#include <cstring>
-#include <string>
-#include <vector>
-
-#include <maptk/algorithm_plugin_manager.h>
-
-#include <maptk/c/helpers/c_utils.h>
 
 
-/// (Re)Load plugin modules found along current search paths
-void maptk_apm_register_plugins()
+/// Return a new, empty error handle object.
+maptk_error_handle_t* maptk_eh_new()
 {
-  STANDARD_CATCH(
-    "C::apm::register_plugins", 0,
-    maptk::algorithm_plugin_manager::instance().register_plugins();
-  );
+  maptk_error_handle_t* eh = (maptk_error_handle_t*)std::malloc(sizeof(maptk_error_handle_t));
+  eh->error_code = 0;
+  eh->message = (char*)0;
+  return eh;
 }
 
 
-/// (Re)Load specific plugin module
-void maptk_apm_register_single_plugin( char const *name )
+/// Destroy the given non-null error handle structure pointer
+void maptk_eh_destroy( maptk_error_handle_t *eh )
 {
-  STANDARD_CATCH(
-    "C::apm::register_single_plugin", 0,
-    maptk::algorithm_plugin_manager::instance().register_plugins( name );
-  );
-}
-
-
-/// Add an additional directory to search for plugins in
-void maptk_apm_add_search_path( char const *dirpath )
-{
-  STANDARD_CATCH(
-    "C::apm::add_search_path", 0,
-    maptk::algorithm_plugin_manager::instance().add_search_path( dirpath );
-  );
-}
-
-
-/// Get a list of registered module name strings
-void maptk_apm_registered_module_names( unsigned int *length,
-                                        char ***names )
-{
-  STANDARD_CATCH(
-    "C::apm::registered_module_names", 0,
-
-    if ( length == 0 || names == 0 )
+  if( eh )
+  {
+    if( eh->message )
     {
-      throw maptk::invalid_value("One or both provided output parameters "
-                                 "were a NULL pointer.");
+      std::free( eh->message );
     }
-
-    std::vector<std::string> module_names =
-        maptk::algorithm_plugin_manager::instance().registered_module_names();
-    maptk_c::make_string_list( module_names, *length, *names );
-  );
+    std::free( eh );
+  }
 }

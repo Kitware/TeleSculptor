@@ -54,7 +54,7 @@ SharedPointerCache< maptk::image_container,
 maptk_image_container_t* maptk_image_container_new_simple( maptk_image_t *img )
 {
   STANDARD_CATCH(
-    "C::image_container::new_simple",
+    "C::image_container::new_simple", 0,
 
     maptk::image *maptk_img = reinterpret_cast<maptk::image*>(img);
     maptk::image_container_sptr img_sptr( new maptk::simple_image_container( *maptk_img ) );
@@ -69,7 +69,7 @@ maptk_image_container_t* maptk_image_container_new_simple( maptk_image_t *img )
 size_t maptk_image_container_size( maptk_image_container_t *img_c )
 {
   STANDARD_CATCH(
-    "C::image_container::size",
+    "C::image_container::size", 0,
     return maptk_c::IMGC_SPTR_CACHE.get( img_c )->size();
   );
   return 0;
@@ -80,7 +80,7 @@ size_t maptk_image_container_size( maptk_image_container_t *img_c )
 size_t maptk_image_container_width( maptk_image_container_t *img_c )
 {
   STANDARD_CATCH(
-    "C::image_container::width",
+    "C::image_container::width", 0,
     return maptk_c::IMGC_SPTR_CACHE.get( img_c )->width();
   );
   return 0;
@@ -91,7 +91,7 @@ size_t maptk_image_container_width( maptk_image_container_t *img_c )
 size_t maptk_image_container_height( maptk_image_container_t *img_c )
 {
   STANDARD_CATCH(
-    "C::image_container::height",
+    "C::image_container::height", 0,
     return maptk_c::IMGC_SPTR_CACHE.get( img_c )->height();
   );
   return 0;
@@ -102,7 +102,7 @@ size_t maptk_image_container_height( maptk_image_container_t *img_c )
 size_t maptk_image_container_depth( maptk_image_container_t *img_c )
 {
   STANDARD_CATCH(
-    "C::image_container::depth",
+    "C::image_container::depth", 0,
     return maptk_c::IMGC_SPTR_CACHE.get( img_c )->depth();
   );
   return 0;

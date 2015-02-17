@@ -38,7 +38,8 @@ __author__ = 'purg'
 
 import ctypes
 
-from maptk.util import MaptkObject
+from maptk.exceptions.base import MaptkBaseException
+from maptk.util import MaptkObject, c_maptk_error_handle
 
 
 # noinspection PyPep8Naming
@@ -84,6 +85,42 @@ class MaptkConfigBlock (MaptkObject):
                 self._cb_p = ptr
 
         return MaptkConfigBlock_from_c_pointer(cb_ptr)
+
+    @classmethod
+    def from_file(cls, filepath):
+        """
+        Return a new MaptkConfigBlock object based on the given configuration
+        file
+
+        :raises MaptkBaseException: Error occurred in reading from configuration
+            file path given.
+
+        :param filepath: Path to a configuration file
+        :type filepath: str
+
+        :return: New MaptkConfigBlock instance
+        :rtype: MaptkConfigBlock
+
+        """
+        eh_new = cls.MAPTK_LIB.maptk_eh_new
+        eh_destroy = cls.MAPTK_LIB.maptk_eh_destroy
+        cb_read = cls.MAPTK_LIB.maptk_config_block_file_read
+
+        eh_new.restype = ctypes.POINTER(c_maptk_error_handle)
+        eh_destroy.argtypes = [ctypes.POINTER(c_maptk_error_handle)]
+        cb_read.argtypes = [ctypes.c_char_p, ctypes.POINTER(c_maptk_error_handle)]
+        cb_read.restype = cls.C_TYPE_PTR
+
+        eh = eh_new()
+        cb_ptr = cb_read(str(filepath), eh)
+
+        try:
+            if eh[0].error_code != 0:
+                raise MaptkBaseException(eh[0].message)
+        finally:
+            eh_destroy(eh)
+
+        return MaptkConfigBlock.from_c_pointer(cb_ptr)
 
     def __init__(self, name=None):
         if name:
@@ -339,3 +376,43 @@ class MaptkConfigBlock (MaptkObject):
         sl_free(length, keys)
 
         return r
+
+    def read(self, filepath):
+        """
+        Update this configuration instance with the configuration at the given
+        filepath.
+
+        :param filepath: Path to a configuration file
+        :type filepath: str
+
+        """
+        cb = MaptkConfigBlock.from_file(filepath)
+        self.merge_config(cb)
+
+    def write(self, filepath):
+        """
+        Output this configuration to the specified file path
+
+        :raises MaptkBaseException: Error occurred in writing configuration to
+            the given file path.
+
+        :param filepath: Output file path.
+
+        """
+        eh_new = self.MAPTK_LIB.maptk_eh_new
+        eh_destroy = self.MAPTK_LIB.maptk_eh_destroy
+        cb_write = self.MAPTK_LIB.maptk_config_block_file_write
+
+        eh_new.restype = ctypes.POINTER(c_maptk_error_handle)
+        eh_destroy.argtypes = [ctypes.POINTER(c_maptk_error_handle)]
+        cb_write.argtypes = [self.C_TYPE_PTR, ctypes.c_char_p,
+                             ctypes.POINTER(c_maptk_error_handle)]
+
+        eh = eh_new()
+        cb_write(self._cb_p, filepath, eh)
+
+        try:
+            if eh[0].error_code != 0:
+                raise MaptkBaseException(eh[0].message)
+        finally:
+            eh_destroy(eh)

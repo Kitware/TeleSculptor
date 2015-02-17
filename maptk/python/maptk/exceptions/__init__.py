@@ -30,38 +30,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ==============================================================================
 
-Base class for all MAPTK Python interface classes
+MAPTK exceptions sub-module
 
 """
 # -*- coding: utf-8 -*-
 __author__ = 'purg'
-
-import abc
-import ctypes
-
-from maptk.util import find_maptk_library
-
-
-# noinspection PyPep8Naming
-class c_maptk_error_handle (ctypes.Structure):
-    """ Error handling structure used in C interface """
-    _fields_ = [
-        ("error_code", ctypes.c_int),
-        ("message", ctypes.c_char_p),
-    ]
-
-
-class MaptkObject (object):
-    """
-    Basic MAPTK python interface class.
-    """
-    __metaclass__ = abc.ABCMeta
-
-    MAPTK_LIB = find_maptk_library()
-
-    @abc.abstractproperty
-    def c_pointer(self):
-        """
-        :return: The ctypes opaque structure pointer
-        """
-        return

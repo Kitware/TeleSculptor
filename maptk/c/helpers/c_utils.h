@@ -49,6 +49,8 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include <maptk/c/error_handle.h>
+
 #include <maptk/exceptions/base.h>
 #include <maptk/logging_macros.h>
 
@@ -58,20 +60,34 @@
  * If the provided code block contains a return, make sure to provide a
  * default/failure return after the use of the STANDARD_CATCH macro in case
  * an exception is thrown within the provided code block.
+ *
+ * Assuming \c eh_ptr points to an initialized maptk_error_handle_t instance.
+ * An arbitrary catch sets a -1 error code and assignes to the message field
+ * the same thing that is printed to logging statement.
  */
-#define STANDARD_CATCH(log_prefix, code)                      \
-  do                                                          \
-  {                                                           \
-    try                                                       \
-    {                                                         \
-      code                                                    \
-    }                                                         \
-    catch( std::exception const &e )                          \
-    {                                                         \
-      std::ostringstream ss;                                  \
-      ss << "Caught exception in C interface: " << e.what();  \
-      LOG_WARN( log_prefix, ss.str().c_str() );               \
-    }                                                         \
+#define STANDARD_CATCH(log_prefix, eh_ptr, code)                  \
+  do                                                              \
+  {                                                               \
+    try                                                           \
+    {                                                             \
+      code                                                        \
+    }                                                             \
+    catch( std::exception const &e )                              \
+    {                                                             \
+      std::ostringstream ss;                                      \
+      ss << "Caught exception in C interface: " << e.what();      \
+      std::string msg = ss.str();                                 \
+      LOG_ERROR( log_prefix, msg.c_str() );                       \
+      if( eh_ptr )                                                \
+      {                                                           \
+        reinterpret_cast<maptk_error_handle_t*>(eh_ptr)           \
+            ->error_code = -1;                                    \
+        char *c_msg = (char*)malloc(sizeof(char) * msg.length()); \
+        strcpy( c_msg, msg.c_str() );                             \
+        reinterpret_cast<maptk_error_handle_t*>(eh_ptr)           \
+            ->message = c_msg;                                    \
+      }                                                           \
+    }                                                             \
   } while( 0 )
 
 

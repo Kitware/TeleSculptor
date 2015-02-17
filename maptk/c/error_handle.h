@@ -30,66 +30,42 @@
 
 /**
  * \file
- * \brief C interface to maptk::algorithm_plugin_manager implementation
+ * \brief C interface common error handle structure
  */
 
-#include "algorithm_plugin_manager.h"
+#ifndef MAPTK_C_ERROR_HANDLE_H_
+#define MAPTK_C_ERROR_HANDLE_H_
 
-#include <cstdlib>
-#include <cstring>
-#include <string>
-#include <vector>
-
-#include <maptk/algorithm_plugin_manager.h>
-
-#include <maptk/c/helpers/c_utils.h>
-
-
-/// (Re)Load plugin modules found along current search paths
-void maptk_apm_register_plugins()
+#ifdef __cplusplus
+extern "C"
 {
-  STANDARD_CATCH(
-    "C::apm::register_plugins", 0,
-    maptk::algorithm_plugin_manager::instance().register_plugins();
-  );
+#endif
+
+#include <maptk/c/config.h>
+
+
+/// Common error handle structure
+typedef struct maptk_error_handle_s {
+  int error_code;
+  char *message;
+} maptk_error_handle_t;
+
+
+/// Return a new, empty error handle object.
+/**
+ * \returns New error handle whose error code is set to 0 and message to NULL.
+ */
+MAPTK_C_EXPORT
+maptk_error_handle_t* maptk_eh_new();
+
+
+/// Destroy the given non-null error handle structure pointer
+MAPTK_C_EXPORT
+void maptk_eh_destroy( maptk_error_handle_t *eh );
+
+
+#ifdef __cplusplus
 }
+#endif
 
-
-/// (Re)Load specific plugin module
-void maptk_apm_register_single_plugin( char const *name )
-{
-  STANDARD_CATCH(
-    "C::apm::register_single_plugin", 0,
-    maptk::algorithm_plugin_manager::instance().register_plugins( name );
-  );
-}
-
-
-/// Add an additional directory to search for plugins in
-void maptk_apm_add_search_path( char const *dirpath )
-{
-  STANDARD_CATCH(
-    "C::apm::add_search_path", 0,
-    maptk::algorithm_plugin_manager::instance().add_search_path( dirpath );
-  );
-}
-
-
-/// Get a list of registered module name strings
-void maptk_apm_registered_module_names( unsigned int *length,
-                                        char ***names )
-{
-  STANDARD_CATCH(
-    "C::apm::registered_module_names", 0,
-
-    if ( length == 0 || names == 0 )
-    {
-      throw maptk::invalid_value("One or both provided output parameters "
-                                 "were a NULL pointer.");
-    }
-
-    std::vector<std::string> module_names =
-        maptk::algorithm_plugin_manager::instance().registered_module_names();
-    maptk_c::make_string_list( module_names, *length, *names );
-  );
-}
+#endif // MAPTK_C_ERROR_HANDLE_H_

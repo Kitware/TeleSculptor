@@ -37,4 +37,4 @@ maptk.util module
 __author__ = 'purg'
 
 from .find_maptk_library import find_maptk_library
-from .MaptkObject import MaptkObject
+from .MaptkObject import MaptkObject, c_maptk_error_handle

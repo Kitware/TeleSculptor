@@ -44,7 +44,7 @@
 maptk_image_t* maptk_image_new()
 {
   STANDARD_CATCH(
-    "C::image:new",
+    "C::image:new", 0,
     return reinterpret_cast<maptk_image_t*>( new maptk::image() );
   );
   return 0;
@@ -56,7 +56,7 @@ maptk_image_t* maptk_image_new_with_dim( size_t width, size_t height,
                                          size_t depth, bool interleave )
 {
   STANDARD_CATCH(
-    "C::image:new_with_dim",
+    "C::image:new_with_dim", 0,
     return reinterpret_cast<maptk_image_t*>(
         new maptk::image( width, height, depth, interleave )
       );
@@ -72,7 +72,7 @@ maptk_image_t* maptk_image_new_from_data( unsigned char const *first_pixel,
                                           ptrdiff_t h_step, ptrdiff_t d_step )
 {
   STANDARD_CATCH(
-    "C::image::new_from_data",
+    "C::image::new_from_data", 0,
     return reinterpret_cast<maptk_image_t*>(
         new maptk::image( first_pixel, width, height, depth,
                           w_step, h_step, d_step )
@@ -86,7 +86,7 @@ maptk_image_t* maptk_image_new_from_data( unsigned char const *first_pixel,
 maptk_image_t* maptk_image_new_from_image( maptk_image_t *other_image )
 {
   STANDARD_CATCH(
-    "C::image::new_from_data",
+    "C::image::new_from_data", 0,
     return reinterpret_cast<maptk_image_t*>(
         new maptk::image( *reinterpret_cast<maptk::image*>(other_image) )
       );
@@ -99,7 +99,7 @@ maptk_image_t* maptk_image_new_from_image( maptk_image_t *other_image )
 void maptk_image_destroy( maptk_image_t *image )
 {
   STANDARD_CATCH(
-    "C::image::desroy",
+    "C::image::desroy", 0,
     delete reinterpret_cast<maptk::image*>( image );
   );
 };
@@ -109,7 +109,7 @@ void maptk_image_destroy( maptk_image_t *image )
 size_t maptk_image_size( maptk_image_t *image )
 {
   STANDARD_CATCH(
-    "C::image::size",
+    "C::image::size", 0,
     return reinterpret_cast<maptk::image*>(image)->size();
   );
   return 0;
