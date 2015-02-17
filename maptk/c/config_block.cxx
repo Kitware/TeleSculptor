@@ -36,6 +36,8 @@
 
 #include "config_block.h"
 
+#include <cstdlib>
+#include <cstring>
 #include <map>
 #include <sstream>
 #include <string>
@@ -295,10 +297,30 @@ maptk_config_block_t* maptk_config_block_file_read( char const *filepath,
 {
   STANDARD_CATCH(
     "C::config_block::file_read", eh,
-
-    maptk::config_block_sptr c = maptk::read_config_file( filepath );
-    maptk_c::CONFIG_BLOCK_SPTR_CACHE.store( c );
-    return reinterpret_cast<maptk_config_block_t*>( c.get() );
+    try
+    {
+      maptk::config_block_sptr c = maptk::read_config_file( filepath );
+      maptk_c::CONFIG_BLOCK_SPTR_CACHE.store( c );
+      return reinterpret_cast<maptk_config_block_t*>( c.get() );
+    }
+    catch( maptk::file_not_found_exception const &e )
+    {
+      eh->error_code = 1;
+      eh->message = (char*)malloc(sizeof(char)*strlen(e.what()));
+      strcpy( eh->message, e.what() );
+    }
+    catch( maptk::file_not_read_exception const &e )
+    {
+      eh->error_code = 2;
+      eh->message = (char*)malloc(sizeof(char)*strlen(e.what()));
+      strcpy( eh->message, e.what() );
+    }
+    catch( maptk::file_not_parsed_exception const &e )
+    {
+      eh->error_code = 3;
+      eh->message = (char*)malloc(sizeof(char)*strlen(e.what()));
+      strcpy( eh->message, e.what() );
+    }
   );
   return 0;
 }
@@ -311,10 +333,31 @@ maptk_config_block_t* maptk_config_block_file_read_with_name( char const *filepa
 {
   STANDARD_CATCH(
     "C::config_block::file_read_with_name", eh,
-
-    maptk::config_block_sptr c = maptk::read_config_file( filepath, blockname );
-    maptk_c::CONFIG_BLOCK_SPTR_CACHE.store( c );
-    return reinterpret_cast<maptk_config_block_t*>( c.get() );
+    try
+    {
+      maptk::config_block_sptr c = maptk::read_config_file( filepath,
+                                                            blockname );
+      maptk_c::CONFIG_BLOCK_SPTR_CACHE.store( c );
+      return reinterpret_cast<maptk_config_block_t*>( c.get() );
+    }
+    catch( maptk::file_not_found_exception const &e )
+    {
+      eh->error_code = 1;
+      eh->message = (char*)malloc(sizeof(char)*strlen(e.what()));
+      strcpy( eh->message, e.what() );
+    }
+    catch( maptk::file_not_read_exception const &e )
+    {
+      eh->error_code = 2;
+      eh->message = (char*)malloc(sizeof(char)*strlen(e.what()));
+      strcpy( eh->message, e.what() );
+    }
+    catch( maptk::file_not_parsed_exception const &e )
+    {
+      eh->error_code = 3;
+      eh->message = (char*)malloc(sizeof(char)*strlen(e.what()));
+      strcpy( eh->message, e.what() );
+    }
   );
   return 0;
 }
@@ -327,7 +370,16 @@ void maptk_config_block_file_write( maptk_config_block_t *cb,
 {
   STANDARD_CATCH(
     "C::config_block::file_write", eh,
-    maptk::config_block_sptr c = maptk_c::CONFIG_BLOCK_SPTR_CACHE.get( cb );
-    maptk::write_config_file( c, filepath );
+    try
+    {
+      maptk::config_block_sptr c = maptk_c::CONFIG_BLOCK_SPTR_CACHE.get( cb );
+      maptk::write_config_file( c, filepath );
+    }
+    catch( maptk::file_write_exception const &e )
+    {
+      eh->error_code = 1;
+      eh->message = (char*)malloc(sizeof(char)*strlen(e.what()));
+      strcpy( eh->message, e.what() );
+    }
   );
 }

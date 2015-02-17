@@ -30,7 +30,7 @@
 
 /**
  * \file
- * \brief C Interface to \p config_block object definitions
+ * \brief C Interface to \p maptk::config_block class
  */
 
 #ifndef MAPTK_C_CONFIG_BLOCK_H_
@@ -293,6 +293,13 @@ void maptk_config_block_available_values( maptk_config_block_t *cb,
  * other filesystem error. In such a case, a NULL pointer is returned and the
  * given error handle, if non-null, will be given an error code and message.
  *
+ * Error Codes:
+ *  (0) Successful read
+ *  (1) File whose path was given could not be found.
+ *  (2) File whose path was given could not be read.
+ *  (3) File whose path was given could not be parsed.
+ *  (-1) Some other exception occurred
+ *
  * \param filepath   The path to the file to read in.
  * \return A an object representing the contents of the read-in file.
  */
@@ -306,6 +313,13 @@ maptk_config_block_t* maptk_config_block_file_read( char const *filepath,
  * This may fail if the given filepath is not found, could not be read, or some
  * other filesystem error. In such a case, a NULL pointer is returned and the
  * given error handle, if non-null, will be given an error code and message.
+ *
+ * Error Codes:
+ *  (0) Successful read
+ *  (1) File whose path was given could not be found.
+ *  (2) File whose path was given could not be read.
+ *  (3) File whose path was given could not be parsed.
+ *  (-1) Some other exception occurred
  *
  * \param filepath   The path to the file to read in.
  * \param blockname  A name to give to the generated config_block.
@@ -326,6 +340,11 @@ maptk_config_block_t* maptk_config_block_file_read_with_name( char const *filepa
  * This may fail if the given filepath is not found, could not be read, or some
  * other filesystem error. In such a case, a NULL pointer is returned and the
  * given error handle, if non-null, will be given an error code and message.
+ *
+ * Error Codes:
+ *  (0) Successful write.
+ *  (1) Exception occurred when writing file
+ *  (-1) Some other exception occurred
  */
 MAPTK_C_EXPORT
 void maptk_config_block_file_write( maptk_config_block_t *cb,

@@ -37,6 +37,7 @@ Tests for the Python interface to MAPTK class config_block.
 __author__ = 'purg'
 
 from maptk import MaptkConfigBlock
+from maptk.exceptions.config_block_io import *
 
 import nose.tools
 
@@ -356,3 +357,15 @@ class TestMaptkConfigBlock (object):
         nose.tools.assert_equal(cb.get_description(ka), da)
         nose.tools.assert_equal(sb.get_description(kb), db)
         nose.tools.assert_equal(cb.get_description(kc), "")
+
+    def test_read_no_file(self):
+        nose.tools.assert_raises(MaptkConfigBlockIoFileNotFoundException,
+                                 MaptkConfigBlock.from_file,
+                                 'not-a-file.foobar')
+    def test_write_fail(self):
+        cb = MaptkConfigBlock()
+        cb.set_value('foo', 'bar')
+
+        nose.tools.assert_raises(MaptkConfigBlockIoException,
+                                 cb.write,
+                                 '/not/valid')

@@ -38,7 +38,13 @@ __author__ = 'purg'
 
 import ctypes
 
-from maptk.exceptions.base import MaptkBaseException
+from maptk.exceptions.config_block_io import (
+    MaptkConfigBlockIoException,
+    MaptkConfigBlockIoFileNotFoundException,
+    MaptkConfigBlockIoFileNotReadException,
+    MaptkConfigBlockIoFileNotParsed,
+    MaptkConfigBlockIoFileWriteException,
+)
 from maptk.util import MaptkObject, c_maptk_error_handle
 
 
@@ -115,8 +121,15 @@ class MaptkConfigBlock (MaptkObject):
         cb_ptr = cb_read(str(filepath), eh)
 
         try:
-            if eh[0].error_code != 0:
-                raise MaptkBaseException(eh[0].message)
+            print "!!! Error code:", eh[0].error_code
+            if eh[0].error_code == 1:
+                raise MaptkConfigBlockIoFileNotFoundException(eh[0].message)
+            elif eh[0].error_code == 2:
+                raise MaptkConfigBlockIoFileNotReadException(eh[0].message)
+            elif eh[0].error_code == 3:
+                raise MaptkConfigBlockIoFileNotParsed(eh[0].message)
+            elif eh[0].error_code != 0:
+                raise MaptkConfigBlockIoException(eh[0].message)
         finally:
             eh_destroy(eh)
 
@@ -412,7 +425,9 @@ class MaptkConfigBlock (MaptkObject):
         cb_write(self._cb_p, filepath, eh)
 
         try:
-            if eh[0].error_code != 0:
-                raise MaptkBaseException(eh[0].message)
+            if eh[0].error_code == 1:
+                raise MaptkConfigBlockIoFileWriteException(eh[0].message)
+            elif eh[0].error_code != 0:
+                raise MaptkConfigBlockIoException(eh[0].message)
         finally:
             eh_destroy(eh)
