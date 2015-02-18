@@ -7,6 +7,7 @@ set( plugin_core_headers
   convert_image_bypass.h
   hierarchical_bundle_adjust.h
   match_features_homography.h
+  plugin_core_config.h
   register_algorithms.h
   track_features_core.h
   )

@@ -39,6 +39,7 @@ set( maptk_ocv_sources
   register_algorithms.cxx
   )
 maptk_add_library( maptk_ocv
+  ${maptk_ocv_headers_public}
   ${maptk_ocv_sources}
   )
 target_link_libraries( maptk_ocv

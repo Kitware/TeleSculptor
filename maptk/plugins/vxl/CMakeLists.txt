@@ -42,6 +42,7 @@ set(maptk_vxl_sources
   )
 
 maptk_add_library( maptk_vxl
+  ${maptk_vxl_headers_public}
   ${maptk_vxl_sources}
   )
 target_link_libraries( maptk_vxl

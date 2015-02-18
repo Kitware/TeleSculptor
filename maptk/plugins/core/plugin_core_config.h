@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,7 @@
 
 /// Toggle symbol export syntax when building plugin library
 #ifndef PLUGIN_CORE_EXPORT
-# ifdef MAKE_MAPTK_DEFAULT_LIB
+# ifdef MAKE_MAPTK_CORE_LIB
 #   define PLUGIN_CORE_EXPORT MAPTK_EXPORT
 # else
 #   define PLUGIN_CORE_EXPORT MAPTK_IMPORT

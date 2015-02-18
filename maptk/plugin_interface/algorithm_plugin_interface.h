@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,12 +39,6 @@
 #include <maptk/registrar.h>
 
 
-// This macro should be defined to the implementing library's export symbol
-#ifndef MAPTK_ALGO_REGISTER_EXPORT
-# define MAPTK_ALGO_REGISTER_EXPORT
-#endif
-
-
 /// Algorithm implementation registration interface function
 /**
  * Implementations of this method within a plugin should include a
@@ -57,7 +51,6 @@
  * \returns The number of implementations that FAILED to register, i.e. a
  *          return of 0 means registration success.
  */
-MAPTK_ALGO_REGISTER_EXPORT
 int register_algo_impls( maptk::registrar &reg = maptk::registrar::instance() );
 
 

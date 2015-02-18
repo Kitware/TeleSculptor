@@ -21,14 +21,12 @@ function(maptk_check_compiler_flag flag)
 endfunction ()
 
 # Check for platform/compiler specific flags
-set(CID "${CMAKE_CXX_COMPILER_ID}")
-message(STATUS "Compiler ID: ${CID}")
-if( CID STREQUAL "MSVC" )
-  include( maptk-flags-msvc )
-elseif( CID STREQUAL "GNU" )
-  include( maptk-flags-gnu )
-elseif( CID STREQUAL "Clang" )
-  include( maptk-flags-clang )
+string(TOLOWER ${CMAKE_CXX_COMPILER_ID} lowerCID)
+message(STATUS "Testing/Loading compiler flags from: maptk-flags-${lowerCID}")
+if( EXISTS "${CMAKE_CURRENT_LIST_DIR}/maptk-flags-${lowerCID}.cmake" )
+  include( maptk-flags-${lowerCID} )
+else()
+  message(WARNING "No flags configuration found for compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
 
 # Adding set flags via convenience structure to appropriate CMake property

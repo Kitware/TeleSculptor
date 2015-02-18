@@ -14,6 +14,7 @@ set(maptk_proj_sources
   register_algorithms.cxx
   )
 maptk_add_library( maptk_proj
+  ${maptk_proj_headers_public}
   ${maptk_proj_sources}
   )
 target_link_libraries( maptk_proj

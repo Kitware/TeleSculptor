@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,10 +34,8 @@
 
 #include <maptk/config.h>
 #include <maptk/logging_macros.h>
-#include <maptk/registrar.h>
-
-#define MAPTK_ALGO_REGISTER_EXPORT MAPTK_IMPORT
 #include <maptk/plugin_interface/algorithm_plugin_interface.h>
+#include <maptk/registrar.h>
 
 
 /**

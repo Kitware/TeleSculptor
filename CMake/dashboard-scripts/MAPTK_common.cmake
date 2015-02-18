@@ -51,7 +51,10 @@
 #   CTEST_GIT_COMMAND         = Path to the git command-line client.
 #   dashboard_git_url         = Custom git clone URL (defaults to KWSource).
 #   dashboard_git_branch      = Custom remote branch to track (defaults to
-#                               master).
+#                               master). If this is not a valid for the set
+#                               repository, the checkout script will silently
+#                               fail, leading to an error in ctest_start when
+#                               the source directory doesn't exist.
 #   dashboard_git_crlf        = Value of core.autocrlf for repository.
 #
 # The following macros will be invoked before the corresponding step if they
@@ -74,7 +77,7 @@
 #   set(ENV{CC}   /path/to/cc)  # C compiler
 #   set(ENV{CXX}  /path/to/cxx) # C++ compiler
 #   set(ENV{FC}   /path/to/fc)  # Fortran Compiler (optional)
-#   set(ENV{LD_LIBRARY_PATH /path/to/vendor/lib) # (if necessary)
+#   set(ENV{LD_LIBRARY_PATH} /path/to/vendor/lib) # (if necessary)
 #
 
 cmake_minimum_required(VERSION 2.8.2 FATAL_ERROR)
