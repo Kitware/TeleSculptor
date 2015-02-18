@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2015 by Kitware, Inc.
+ * Copyright 2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,68 +30,26 @@
 
 /**
  * \file
- * \brief Macros for symbol management in maptk
+ * \brief Header defining static-build algorithm registration function
  */
 
+
+#ifndef MAPTK_ALGORITHM_PLUGIN_MANAGER_STATIC_H
+#define MAPTK_ALGORITHM_PLUGIN_MANAGER_STATIC_H
+
+#include <maptk/registrar.h>
+
+
+namespace maptk
+{
+
+/// Register statically linked plugin algorithm implementations
 /**
- * \def MAPTK_EXPORT
- * \brief Export a symbol for outside library use.
+ * This is a no-op when libraries are dynamically linked.
  */
+void static_register_algorithms();
 
-/**
- * \def MAPTK_IMPORT
- * \brief Use a symbol from another library.
- */
-
-/**
- * \def MAPTK_NO_EXPORT
- * \brief Hide the symbol from outside the library.
- */
-
-#ifndef MAPTK_CONFIG_H_
-#define MAPTK_CONFIG_H_
-
-#include <maptk/types.h>
+}
 
 
-// Symbol visibility macros
-#cmakedefine MAPTK_HAVE_GCC_VISIBILITY
-// If the we are being build dynamic or not
-#cmakedefine BUILD_SHARED_LIBS
-
-#if defined(_WIN32) || defined(_WIN64)
-# define MAPTK_EXPORT __declspec(dllexport)
-# if defined(BUILD_SHARED_LIBS)
-#   define MAPTK_IMPORT __declspec(dllimport)
-# else
-#   define MAPTK_IMPORT
-# endif
-# define MAPTK_NO_EXPORT
-#elif defined(MAPTK_HAVE_GCC_VISIBILITY)
-# define MAPTK_EXPORT __attribute__((__visibility__("default")))
-# define MAPTK_IMPORT __attribute__((__visibility__("default")))
-# define MAPTK_NO_EXPORT __attribute__((__visibility__("hidden")))
-#else
-# define MAPTK_EXPORT
-# define MAPTK_IMPORT
-# define MAPTK_NO_EXPORT
-#endif
-
-// Build-specific visibility macros for core MAPTK library
-// These macros should be used over the generated MAPTK_EXPORT/IMPORT macros
-// defined above. MAPTK_NO_EXPORT defined above map be used as normal.
-#ifdef MAKE_MAPTK_LIB
-# define MAPTK_LIB_EXPORT MAPTK_EXPORT
-#else
-# define MAPTK_LIB_EXPORT MAPTK_IMPORT
-#endif
-
-// no-throw macro
-#if __cplusplus < 201103L
-# define MAPTK_NOTHROW throw ()
-#else
-# define MAPTK_NOTHROW noexcept
-#endif
-
-
-#endif // MAPTK_CONFIG_H_
+#endif  // MAPTK_ALGORITHM_PLUGIN_MANAGER_STATIC_H

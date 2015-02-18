@@ -32,10 +32,10 @@ define_property(GLOBAL PROPERTY maptk_libraries
   BRIEF_DOCS "Exported libraries built as part of MAPTK"
   FULL_DOCS "List of exported static/shared libraries built by MAPTK"
   )
-
-# Default plugin library directories for a build or installation
-set(MAPTK_DEFAULT_PLUGIN_DIR_BUILD   "${MAPTK_BINARY_DIR}/lib/maptk")
-set(MAPTK_DEFAULT_PLUGIN_DIR_INSTALL "${CMAKE_INSTALL_PREFIX}/lib${MAPTK_LIB_SUFFIX}/maptk")
+define_property(GLOBAL PROPERTY maptk_plugin_libraries
+  BRIEF_DOCS "Generated plugin libraries"
+  FULL_DOCS "List of generated static/shared plugin module libraries"
+  )
 
 # Top-level target for plugin targets
 add_custom_target( all-plugins )
@@ -246,31 +246,51 @@ endfunction()
 # has no effect as they are manually specified within this function.
 #-
 function(maptk_create_plugin base_lib)
-  # Configure template cxx source file
-  set(shell_source "${MAPTK_UTIL_ROOT}/templates/cxx/plugin_shell.cxx")
 
-  # create module library given generated source, linked to given library
-  set(library_subdir /maptk)
-  set(no_export ON)
-  set(no_version ON)
-  maptk_add_library(maptk-plugin-${base_lib}
-    SYMBOL MAKE_PRIV_PLUGIN_SHELL
-    MODULE "${shell_source}" ${ARGN}
-    )
-  # Not adding link to known base MAPTK library because if the base_lib isn't
-  # linking against it, its either doing something really complex or doing
-  # something wrong (most likely the latter).
-  target_link_libraries(maptk-plugin-${base_lib} ${base_lib})
+  if(BUILD_SHARED_LIBS)
+    # Creating module library for dynamic loading at runtime
 
-  message(STATUS "CMake Shared Module Suffix: ${CMAKE_SHARED_MODULE_SUFFIX}")
-  set_target_properties(maptk-plugin-${base_lib}
-    PROPERTIES
-      PREFIX        ""
-      SUFFIX        ${CMAKE_SHARED_MODULE_SUFFIX}
-      OUTPUT_NAME   ${base_lib}
-    )
+    # Configure template cxx source file
+    set(shell_source "${MAPTK_UTIL_ROOT}/templates/cxx/plugin_shell.cxx")
 
-  add_dependencies(all-plugins maptk-plugin-${base_lib})
+    # create module library given generated source, linked to given library
+    set(library_subdir /maptk)
+    set(no_export ON)
+    set(no_version ON)
+    maptk_add_library(maptk-plugin-${base_lib}
+      SYMBOL MAKE_PRIV_PLUGIN_SHELL
+      MODULE "${shell_source}" ${ARGN}
+      )
+
+    # Not adding link to known base MAPTK library because if the base_lib isn't
+    # linking against it, its either doing something really complex or doing
+    # something wrong (most likely the wrong).
+    target_link_libraries(maptk-plugin-${base_lib} ${base_lib})
+
+    message(STATUS "CMake Shared Module Suffix: ${CMAKE_SHARED_MODULE_SUFFIX}")
+    set_target_properties(maptk-plugin-${base_lib}
+      PROPERTIES
+        PREFIX        ""
+        SUFFIX        ${CMAKE_SHARED_MODULE_SUFFIX}
+        OUTPUT_NAME   ${base_lib}
+      )
+
+    add_dependencies(all-plugins maptk-plugin-${base_lib})
+
+    # Add to global collection variable
+    set_property(GLOBAL APPEND
+      PROPERTY maptk_plugin_libraries maptk-plugin-${base_lib}
+      )
+
+  else(BUILD_SHARED_LIBS)
+    # Setting plugin lib reference to the give static library for
+    # later linkage
+    set_property(GLOBAL APPEND
+      PROPERTY maptk_plugin_libraries ${base_lib}
+      )
+
+  endif(BUILD_SHARED_LIBS)
+
 endfunction()
 
 #+
@@ -311,7 +331,9 @@ function(maptk_install_headers)
   #  FILES       ${mih_UNPARSED_ARGUMENTS}
   #  DESTINATION "include/maptk/${mih_SUBDIR}"
   #  )
-  message(STATUS "Header install subdir: ${mih_SUBDIR}")
+  if( NOT "${mih_SUBDIR}" STREQUAL "" )
+    message(STATUS "Header install subdir: ${mih_SUBDIR}")
+  endif()
   foreach(header IN LISTS mih_UNPARSED_ARGUMENTS)
     get_filename_component(H_SUBDIR "${header}" PATH)
     maptk_install(

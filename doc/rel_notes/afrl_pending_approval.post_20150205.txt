@@ -1,0 +1,22 @@
+MAPTK Release Notes for changes pending release approval by AFRL
+================================================================
+
+This file documents release notes for changes made to MAPTK which require
+public release approval from AFRL.  After approval, the changes and
+corresponding notes below will be encorporated into a public numbered
+release version, and the content of this file will be reset.
+
+
+Updates since last public release
+---------------------------------
+
+Build System
+
+ * Separated out plugin management into separate library in order to allow for
+   static plugin library linking for static builds, preventing a non-
+   deterministic issue with dynamically loading static libraries causing
+   duplicated symbols.
+
+
+Fixes since last public release
+-------------------------------

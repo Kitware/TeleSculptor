@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,7 +62,9 @@ public:
   /**
    * \param name If a name is provided, we will only load plugins whose name
    *             corresponds to the name given. If no plugins with the given
-   *             name are found, nothing is loaded.
+   *             name are found, nothing is loaded. NOTE: This argument is not
+   *             used in static builds. As plugins are already baked into the
+   *             library, all are loaded.
    */
   void register_plugins( std::string name = std::string() );
 

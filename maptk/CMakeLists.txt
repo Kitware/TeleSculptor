@@ -1,6 +1,7 @@
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag(-fvisibility=hidden MAPTK_HAVE_GCC_VISIBILITY)
 
+
 # Configure general config.h.in
 maptk_configure_file(config.h
   "${CMAKE_CURRENT_SOURCE_DIR}/config.h.in"
@@ -17,8 +18,10 @@ include_directories("${MAPTK_SOURCE_DIR}")
 include_directories("${MAPTK_BINARY_DIR}")
 
 
+###
+# Setting up core library
+#
 set(maptk_public_headers
-  algorithm_plugin_manager.h
   camera.h
   camera_intrinsics.h
   camera_io.h
@@ -95,7 +98,6 @@ set(maptk_private_headers
   )
 
 set(maptk_sources
-  algorithm_plugin_manager.cxx
   camera.cxx
   camera_intrinsics.cxx
   camera_io.cxx
@@ -149,35 +151,6 @@ set(maptk_sources
   algo/triangulate_landmarks.cxx
   )
 
-
-# Setting up configured properties on plugin manager source files
-option(MAPTK_USE_BUILD_PLUGIN_DIR
-  "Whether to include the build-tree plugin directory to the default plugin search path list"
-  ON
-  )
-set(plugin_manager_sources
-  algorithm_plugin_manager.h  algorithm_plugin_manager.cxx
-  )
-if (WIN32) # Windows puts DLLs in the bin directory
-  set(rel_plugin_dir "bin")
-else()
-  set(rel_plugin_dir "lib")
-  set(plugin_lib_suffix "${MAPTK_LIB_SUFFIX}")
-endif() # TODO: Apple Xcode specific subdir?
-# LIBRARY_SUFFIX here refers to the filename suffix, e.g. .so / .dylib / .dll / etc.
-set(plugin_src_definitions
-  "LIBRARY_SUFFIX=\"${CMAKE_SHARED_MODULE_SUFFIX}\""
-  "DEFAULT_PLUGIN_DIR_BUILD=\"${MAPTK_BINARY_DIR}/${rel_plugin_dir}/maptk\""
-  "DEFAULT_PLUGIN_DIR_INSTALL=\"${CMAKE_INSTALL_PREFIX}/${rel_plugin_dir}${plugin_lib_suffix}/maptk\""
-  "USE_BUILD_PLUGIN_DIR=${MAPTK_USE_BUILD_PLUGIN_DIR}"
-  )
-set_source_files_properties(
-  ${plugin_manager_sources}
-  PROPERTIES
-    COMPILE_DEFINITIONS "${plugin_src_definitions}"
-  )
-
-
 maptk_install_headers(
   ${maptk_public_headers}
   )
@@ -189,12 +162,94 @@ maptk_add_library(
   )
 target_link_libraries(maptk ${Boost_LIBRARIES})
 
-# For plug-in management
-if (NOT WIN32)
-  target_link_libraries(maptk dl)
-endif()
 
-# configure plugins
+###
+#Cconfigure plugins
+#
 add_subdirectory(plugins)
 
+
+###
+# Build plugin management library
+#
+# This has to happen after plugin creation so as to be able to statically link
+# in plugin libraries when building static.
+#
+option(MAPTK_USE_BUILD_PLUGIN_DIR
+  "Whether to include the build-tree plugin directory to the default plugin path list"
+  ON
+  )
+
+set(maptk_apm_headers
+  algorithm_plugin_manager.h
+  )
+set(maptk_apm_headers_private
+  algorithm_plugin_manager_static.h
+  )
+set(maptk_apm_sources
+  algorithm_plugin_manager.cxx
+  algorithm_plugin_manager_static.cxx
+  )
+
+maptk_install_headers(${maptk_apm_headers})
+maptk_add_library(maptk_apm
+  ${maptk_apm_headers}
+  ${maptk_apm_headers_private}
+  ${maptk_apm_sources}
+  )
+target_link_libraries(maptk_apm maptk)
+
+# Configuring/Adding compile definitions to target
+# (so we can use generator expressions)
+if (WIN32)  # Windows puts DLLs in bin/CONFIG/
+  set(shared_lib_dir "/bin")
+else()  # Other Unix systems
+  set(shared_lib_dir "/lib")
+  set(lib_dir_suffix "${MAPTK_LIB_SUFFIX}")
+endif()
+
+if (CMAKE_CONFIGURATION_TYPES)
+  set(config_subdir "/$<CONFIGURATION>")
+endif()
+
+# Convert use-build-dir switch into 1/0 value
+if (MAPTK_USE_BUILD_PLUGIN_DIR)
+  set(MAPTK_USE_BUILD_PLUGIN_DIR 1)
+else()
+  set(MAPTK_USE_BUILD_PLUGIN_DIR 0)
+endif()
+
+target_compile_definitions(maptk_apm
+  PRIVATE
+    # For plugin manager
+    "SHARED_LIB_SUFFIX=\"${CMAKE_SHARED_MODULE_SUFFIX}\""
+    "USE_BUILD_PLUGIN_DIR=${MAPTK_USE_BUILD_PLUGIN_DIR}"
+    "DEFAULT_PLUGIN_DIR_BUILD=\"${MAPTK_BINARY_DIR}${shared_lib_dir}${config_subdir}/maptk\""
+    "DEFAULT_PLUGIN_DIR_INSTALL=\"${CMAKE_INSTALL_PREFIX}${shared_lib_dir}${lib_dir_suffix}/maptk\""
+    # For static interface
+    "MAPTK_ENABLE_OPENCV=${MAPTK_ENABLE_OPENCV}"
+    "MAPTK_ENABLE_PROJ=${MAPTK_ENABLE_PROJ}"
+    "MAPTK_ENABLE_VISCL=${MAPTK_ENABLE_VISCL}"
+    "MAPTK_ENABLE_VXL=${MAPTK_ENABLE_VXL}"
+  )
+
+if (NOT WIN32)
+  target_link_libraries(maptk_apm ${CMAKE_DL_LIBS})
+endif()
+
+# When building static core, also link in static plugin libs
+if(NOT BUILD_SHARED_LIBS)
+  message(STATUS "Static build, linking plugin libraries into APM lib")
+  get_property(plugin_static_libs
+    GLOBAL PROPERTY maptk_plugin_libraries
+    )
+  target_link_libraries(maptk_apm
+    ${plugin_static_libs}
+    )
+endif()
+
+
+###
+# Marking source root for documentation generation
+#
 maptk_create_doxygen( maptk "${CMAKE_CURRENT_LIST_DIR}" )

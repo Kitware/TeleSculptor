@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,6 +50,10 @@
 #include <maptk/logging_macros.h>
 #include <maptk/registrar.h>
 
+#ifndef BUILD_SHARED_LIBS
+# include <maptk/algorithm_plugin_manager_static.h>
+#endif
+
 
 namespace bfs = boost::filesystem;
 
@@ -78,11 +82,6 @@ namespace // anonymous
 #endif
 
 
-// CMake boolean conversion macros
-#define ON true
-#define OFF false
-
-
 HANDLE_PLATFORM(
   /* windows */
   typedef HMODULE library_t;
@@ -99,7 +98,7 @@ typedef int (*register_impls_func_t)(registrar&);
 // See source file located @ CMake/templates/cxx/plugin_shell.cxx
 static std::string const register_function_name = std::string("private_register_algo_impls");
 // Platform specific plugin library file (set as compile definition in CMake)
-static std::string const library_suffix = std::string(LIBRARY_SUFFIX);
+static std::string const shared_library_suffix = std::string(SHARED_LIB_SUFFIX);
 
 // Default module directory locations. Values defined in CMake configuration.
 static maptk::path_t const default_plugin_dir_build = maptk::path_t(DEFAULT_PLUGIN_DIR_BUILD),
@@ -180,7 +179,7 @@ public:
 
       // Accept this file as a module to check if it has the correct library
       // suffix and matches a provided module name if one was provided.
-      if ( boost::ends_with(e.path().string(), library_suffix)
+      if ( boost::ends_with(e.path().string(), shared_library_suffix)
            && ( name.size() == 0 || e.path().stem().string() == name ) )
       {
         // Check that we're looking a file
@@ -284,9 +283,10 @@ public:
       // Call function, check for success
       else if ( (*register_impls)(registrar::instance()) > 0 )
       {
-        LOG_ERROR("algorithm_plugin_manager::impl::register_from_module",
-                  "-> Algorithm implementation registration failed for one or " <<
-                  "more algorithms in plugin module: " << module_path);
+        LOG_WARN("algorithm_plugin_manager::impl::register_from_module",
+                 "-> Algorithm implementation registration failed for one or " <<
+                 "more algorithms in plugin module, possibly due to duplicate " <<
+                 "registration: " << module_path);
         // TODO: Throw exception here?
       }
       else
@@ -369,8 +369,19 @@ void
 algorithm_plugin_manager
 ::register_plugins( std::string name )
 {
-  LOG_DEBUG("algorithm_plugin_manager::register_plugins", "Loading plugin impls");
+# ifdef BUILD_SHARED_LIBS
+  // If in dynamic mode, search for libraries to dlopen for algorithm
+  // registration call-back.
+  LOG_DEBUG("algorithm_plugin_manager::register_plugins",
+            "Dynamically loading plugin impls");
   this->impl_->load_from_search_paths( name );
+# else
+  // In static mode, so call known registration functions of compiled-in
+  // modules
+  LOG_DEBUG("algorithm_plugin_manager::register_plugins",
+            "Statically loading plugin impl");
+  static_register_algorithms();
+# endif
 }
 
 
