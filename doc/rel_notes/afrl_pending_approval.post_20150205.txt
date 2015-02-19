@@ -27,6 +27,11 @@ Main Library
 Fixes since last public release
 -------------------------------
 
+Build System
+
+ * Added target property return value check so as to not add *-NOT_FOUND value
+   as a compile definition.
+
 Core Plugin
 
  * Added missing header to source list
