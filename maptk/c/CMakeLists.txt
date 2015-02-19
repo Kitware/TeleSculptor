@@ -48,7 +48,7 @@ if( MAPTK_ENABLE_C_LIB )
     ${maptk_c_sources}
     )
   target_link_libraries( maptk_c
-    maptk #maptk_apm
+    maptk maptk_apm
     )
 
 endif( MAPTK_ENABLE_C_LIB )
