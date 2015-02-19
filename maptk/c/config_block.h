@@ -93,7 +93,8 @@ maptk_config_block_t* maptk_config_block_new_named( char const *name );
  * \return 1 if the given config_block was destroyed, else 0 if it was not.
  */
 MAPTK_C_EXPORT
-unsigned int maptk_config_block_destroy( maptk_config_block_t *cb );
+void maptk_config_block_destroy( maptk_config_block_t *cb,
+                                 maptk_error_handle_t *eh );
 
 /// Get the name of the \p config_block instance
 /**

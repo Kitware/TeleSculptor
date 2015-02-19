@@ -62,7 +62,25 @@ class MaptkObject (object):
     EH_DEL.argtypes = [c_maptk_error_handle_p]
 
     @classmethod
-    def from_c_pointer(cls, ptr):
+    def from_c_pointer(cls, ptr, is_copy_of=None):
+        """
+        Create an instance of the derived class from a C API opaque pointer.
+
+        If this the C pointer given to ptr is taken form an existing Python
+        object instance, that object instance should be given to the
+        is_copy_of argument. This ensures that the underlying C reference is
+        not destroyed prematurely.
+
+        :param ptr: C API opaque structure pointer type instance
+        :type ptr: cls.C_TYPE_PTR
+
+        :param is_copy_of: Optional parent object instance when the ptr given
+            is coming from an existing python object.
+        :type ptr: cls
+
+        :return: New Python object using the given underlying C object pointer.
+
+        """
         # As this is a generalized method, make sure that the derived class
         # has a C opaque structure pointer type defined.
         if cls.C_TYPE_PTR is None:
@@ -73,16 +91,30 @@ class MaptkObject (object):
             "Required a C_TYPE_PTR instance of this class (%s)" \
             % cls.__name__
 
-        # noinspection PyPep8Naming,PyMissingConstructor
+        # noinspection PyPep8Naming,PyMissingConstructor,PyAbstractClass
         class _from_c_pointer (cls):
-            def __init__(self, _ptr):
+            def __init__(self, _ptr, _is_copy_of):
                 self._inst_ptr = _ptr
+                self._parent = _is_copy_of
+
         _from_c_pointer.__name__ = "%s_from_c_pointer" % cls.__name__
 
-        return _from_c_pointer(ptr)
+        return _from_c_pointer(ptr, is_copy_of)
 
     def __init__(self):
+        if None in (self.C_TYPE, self.C_TYPE_PTR):
+            raise RuntimeError("Derived class did not define opaque handle "
+                               "structure types.")
         self._inst_ptr = None
+
+        # When this instance is copied in python, carry a copy of the instance
+        # it was copied from to leverage Python's internal GC ref counting
+        self._parent = None
+
+    def __del__(self):
+        if self._parent is None:
+            print "!!! Destroying parent python instance"
+            self._destroy()
 
     @property
     def c_pointer(self):
@@ -90,3 +122,9 @@ class MaptkObject (object):
         :return: The ctypes opaque structure pointer
         """
         return self._inst_ptr
+
+    @abc.abstractmethod
+    def _destroy(self):
+        """ Call C API destructor for derived class """
+        raise NotImplementedError("Calling MaptkObject class abstract _destroy "
+                                  "function.")

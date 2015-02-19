@@ -30,26 +30,25 @@
 
 /**
  * \file
- * \brief maptk::camera C interface shared pointer cache declaration
+ * \brief Internal helpers for C interface of maptk::camera_map
  *
- * Private header for use in cxx implementation files.
+ * This is intended for use only in C++ implementation files.
  */
 
-#ifndef MAPTK_C_HELPERS_CAMERA_H_
-#define MAPTK_C_HELPERS_CAMERA_H_
+#ifndef MAPTK_C_HELPERS_CAMERA_MAP_H_
+#define MAPTK_C_HELPERS_CAMERA_MAP_H_
 
-#include <maptk/camera.h>
-#include <maptk/c/camera.h>
+#include <maptk/camera_map.h>
+#include <maptk/c/camera_map.h>
 #include <maptk/c/helpers/c_utils.h>
-
 
 namespace maptk_c
 {
 
-extern SharedPointerCache< maptk::camera,
-                           maptk_camera_t > CAMERA_SPTR_CACHE;
+extern SharedPointerCache< maptk::camera_map,
+                           maptk_camera_map_t > CAM_MAP_SPTR_CACHE;
 
 }
 
 
-#endif // MAPTK_C_HELPERS_CAMERA_H_
+#endif // MAPTK_C_HELPERS_CAMERA_MAP_H_

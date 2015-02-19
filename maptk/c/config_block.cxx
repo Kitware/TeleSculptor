@@ -92,14 +92,13 @@ maptk_config_block_t* maptk_config_block_new_named( char const *name )
 }
 
 /// Destroy a config block object
-unsigned int maptk_config_block_destroy( maptk_config_block_t *cb )
+void maptk_config_block_destroy( maptk_config_block_t *cb,
+                                 maptk_error_handle_t *eh )
 {
   STANDARD_CATCH(
-    "C::config_block::destroy", 0,
-
-    return maptk_c::CONFIG_BLOCK_SPTR_CACHE.erase( cb );
+    "C::config_block::destroy", eh,
+    maptk_c::CONFIG_BLOCK_SPTR_CACHE.erase( cb );
   );
-  return 0;
 }
 
 /// Get the name of the \p config_block instance

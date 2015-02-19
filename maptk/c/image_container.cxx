@@ -65,6 +65,17 @@ maptk_image_container_t* maptk_image_container_new_simple( maptk_image_t *img )
 }
 
 
+/// Destroy a maptk_image_container_t instance
+void maptk_image_container_destroy( maptk_image_container_t *img_container,
+                                    maptk_error_handle_t *eh )
+{
+  STANDARD_CATCH(
+    "C::image_container::destroy", eh,
+    maptk_c::IMGC_SPTR_CACHE.erase( img_container );
+  );
+}
+
+
 /// Get the size in bytes of an image container
 size_t maptk_image_container_size( maptk_image_container_t *img_c )
 {

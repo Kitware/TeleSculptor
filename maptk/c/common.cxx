@@ -39,7 +39,7 @@
 
 
 /// Common function for freeing string lists
-void maptk_common_free_string_list( unsigned int length,
+void maptk_common_free_string_list( size_t length,
                                     char **keys )
 {
   for( unsigned int i = 0; i < length; i++ )
@@ -47,4 +47,29 @@ void maptk_common_free_string_list( unsigned int length,
     free(keys[i]);
   }
   free(keys);
+}
+
+
+void maptk_free_pointer( void *thing )
+{
+  if( thing )
+  {
+    free(thing);
+  }
+}
+
+
+void maptk_free_double_pointer( size_t length, void **things )
+{
+  if( things )
+  {
+    for( size_t i=0; i < length; i++ )
+    {
+      if( things[i] )
+      {
+        free(things[i]);
+      }
+    }
+    free(things);
+  }
 }

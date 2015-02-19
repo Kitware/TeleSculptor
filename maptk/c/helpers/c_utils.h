@@ -81,38 +81,38 @@
  * an exception is thrown within the provided code block.
  *
  * Assuming \c eh_ptr points to an initialized maptk_error_handle_t instance.
- * An arbitrary catch sets a -1 error code and assignes to the message field
- * the same thing that is printed to logging statement.
- */
+   * An arbitrary catch sets a -1 error code and assignes to the message field
+   * the same thing that is printed to logging statement.
+   */
 #define STANDARD_CATCH(log_prefix, eh_ptr, code)                  \
-  do                                                              \
-  {                                                               \
-    try                                                           \
-    {                                                             \
-      code                                                        \
-    }                                                             \
-    catch( std::exception const &e )                              \
-    {                                                             \
-      std::ostringstream ss;                                      \
-      ss << "Caught exception in C interface: " << e.what();      \
-      std::string msg = ss.str();                                 \
-      LOG_DEBUG( log_prefix, msg.c_str() );                       \
-      POPULATE_EH( eh_ptr, -1, msg.c_str() );                     \
-    }                                                             \
-    catch( char const* e )                                        \
-    {                                                             \
-      std::ostringstream ss;                                      \
-      ss << "Caught error message: " << e;                        \
-      LOG_DEBUG( log_prefix, ss.str().c_str() );                  \
-      POPULATE_EH( eh_ptr, -1, ss.str().c_str() );                \
-    }                                                             \
-    catch(...)                                                    \
-    {                                                             \
-      std::string msg("Caught other exception");                  \
-      LOG_DEBUG( log_prefix, msg );                               \
-      POPULATE_EH( eh_ptr, -1, msg.c_str() );                     \
-    }                                                             \
-  } while( 0 )
+    do                                                              \
+    {                                                               \
+      try                                                           \
+      {                                                             \
+        code                                                        \
+      }                                                             \
+      catch( std::exception const &e )                              \
+      {                                                             \
+        std::ostringstream ss;                                      \
+        ss << "Caught exception in C interface: " << e.what();      \
+        std::string msg = ss.str();                                 \
+        LOG_DEBUG( log_prefix, msg.c_str() );                       \
+        POPULATE_EH( eh_ptr, -1, msg.c_str() );                     \
+      }                                                             \
+      catch( char const* e )                                        \
+      {                                                             \
+        std::ostringstream ss;                                      \
+        ss << "Caught error message: " << e;                        \
+        LOG_DEBUG( log_prefix, ss.str().c_str() );                  \
+        POPULATE_EH( eh_ptr, -1, ss.str().c_str() );                \
+      }                                                             \
+      catch(...)                                                    \
+      {                                                             \
+        std::string msg("Caught other exception");                  \
+        LOG_DEBUG( log_prefix, msg );                               \
+        POPULATE_EH( eh_ptr, -1, msg.c_str() );                     \
+      }                                                             \
+    } while( 0 )
 
 
 namespace maptk_c
@@ -127,6 +127,7 @@ class SharedPointerCache
 public:
   typedef boost::shared_ptr< maptk_t > sptr_t;
   typedef std::map< maptk_t*, sptr_t > cache_t;
+  typedef std::map< maptk_t*, size_t > ref_count_cache_t;
 
   /// Exception for when a given entry doesn't exist in this cache
   class NoEntryException
@@ -141,7 +142,8 @@ public:
 
   /// Constructor
   SharedPointerCache()
-    : cache_()
+    : cache_(),
+      ref_count_cache_()
   {}
 
   /// Destructor
@@ -156,6 +158,14 @@ public:
     if( cache_.count( sptr.get() ) == 0 )
     {
       cache_[sptr.get()] = sptr;
+      ref_count_cache_[sptr.get()] = 1;
+      LOG_DEBUG("SharedPointerCache::" << sptr.get(), "Adding first reference");
+    }
+    else
+    {
+      ++ref_count_cache_[sptr.get()];
+      LOG_DEBUG("SharedPointerCache::" << sptr.get(), "Adding first reference "
+                << ref_count_cache_[sptr.get()]);
     }
   }
 
@@ -183,22 +193,43 @@ public:
   }
 
   /// Erase an entry in the cache by maptk-type pointer
-  /**
-   * \returns 1 if an entry was erased and 0 if there wasn't.
-   */
-  unsigned int erase( maptk_t *ptr )
+  void erase( maptk_t *ptr )
   {
-    return cache_.erase( ptr );
+    typename cache_t::iterator c_it = cache_.find( ptr );
+    if( c_it != cache_.end() )
+    {
+      --ref_count_cache_[ptr];
+      LOG_DEBUG("SharedPointerCache::"<<ptr,
+                "Lowered ref to " << ref_count_cache_[ptr]);
+      // Only finally erase cache entry when store references reaches 0
+      if( ref_count_cache_[ptr] <= 0 )
+      {
+        LOG_DEBUG("SharedPointerCache::"<<ptr,
+                  "Zero refs, removing");
+        cache_.erase(c_it);
+        ref_count_cache_.erase(ptr);
+      }
+    }
+
+    //return cache_.erase( ptr );
   }
 
   /// Erase an entry in the cache by C Interface opaque type pointer
-  unsigned int erase( C_t *ptr )
+  void erase( C_t *ptr )
   {
     return this->erase( reinterpret_cast< maptk_t* >( ptr ) );
   }
 
 private:
+  /// Cache of shared pointers for concrete instances
   cache_t cache_;
+  /// Number of times an instance has been "stored" in this cache
+  /**
+   * This is basically cache local reference counting ensuring that the cache
+   * only actually erases a caches sptr when the number erase calls equals the
+   * number of store calls for a given instance pointer.
+   */
+  ref_count_cache_t ref_count_cache_;
 };
 
 

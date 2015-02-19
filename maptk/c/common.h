@@ -41,12 +41,17 @@ extern "C"
 {
 #endif
 
+#include <stddef.h>
+
 #include <maptk/c/config.h>
 
 
 /// Common function for freeing string lists
 MAPTK_C_EXPORT
-void maptk_common_free_string_list( unsigned int length, char **keys );
+void maptk_common_free_string_list( size_t length, char **keys );
+
+MAPTK_C_EXPORT void maptk_free_pointer( void *thing );
+MAPTK_C_EXPORT void maptk_free_double_pointer( size_t length, void **things );
 
 
 #ifdef __cplusplus

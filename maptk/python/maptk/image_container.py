@@ -40,8 +40,10 @@ import ctypes
 
 from maptk import MaptkImage
 from maptk.util import MaptkObject
+from maptk.util import propagate_exception_from_handle
 
 
+# noinspection PyPep8Naming
 class _maptk_image_container_t (ctypes.Structure):
     """
     Opaque structure type used in C interface.
@@ -53,7 +55,7 @@ class MaptkImageContainer (MaptkObject):
     """
     maptk::image_container interface class
     """
-    # C API config_block_t structure + pointer
+    # C API structure + pointer
     C_TYPE = _maptk_image_container_t
     C_TYPE_PTR = ctypes.POINTER(_maptk_image_container_t)
 
@@ -75,6 +77,16 @@ class MaptkImageContainer (MaptkObject):
         if not bool(self._inst_ptr):
             raise RuntimeError("Failed to construct new MaptkImageContainer "
                                "instance.")
+
+    def _destroy(self):
+        imgc_del = self.MAPTK_LIB.maptk_image_container_destroy
+        imgc_del.argtypes = [self.C_TYPE_PTR, self.EH_TYPE_PTR]
+        eh = self.EH_NEW()
+        try:
+            imgc_del(self._inst_ptr, eh)
+            propagate_exception_from_handle(eh)
+        finally:
+            self.EH_DEL(eh)
 
     def size(self):
         """

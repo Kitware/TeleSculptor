@@ -11,6 +11,7 @@ if( MAPTK_ENABLE_C_LIB )
 
     algorithm_plugin_manager.h
     camera.h
+    camera_map.h
     common.h
     config_block.h
     error_handle.h
@@ -19,12 +20,15 @@ if( MAPTK_ENABLE_C_LIB )
     )
   set(maptk_c_private_headers
     helpers/c_utils.h
+    helpers/camera.h
+    helpers/camera_map.h
     helpers/config_block.h
     helpers/image_container.h
     )
   set(maptk_c_sources
     algorithm_plugin_manager.cxx
     camera.cxx
+    camera_map.cxx
     common.cxx
     config_block.cxx
     error_handle.cxx

@@ -60,7 +60,7 @@ class MaptkConfigBlock (MaptkObject):
     """
     maptk::config_block interface class
     """
-    # C API config_block_t structure + pointer
+    # C API structure + pointer
     C_TYPE = _maptk_config_block_t
     C_TYPE_PTR = ctypes.POINTER(_maptk_config_block_t)
 
@@ -120,7 +120,7 @@ class MaptkConfigBlock (MaptkObject):
             cb_new.restype = self.C_TYPE_PTR
             self._inst_ptr = cb_new()
 
-    def __del__(self):
+    def _destroy(self):
         # print "Destroying CB: \"%s\" %d" % (self.name, self._inst_ptr)
         self.MAPTK_LIB.maptk_config_block_destroy(self._inst_ptr)
 

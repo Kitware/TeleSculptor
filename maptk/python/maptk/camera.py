@@ -53,7 +53,7 @@ class _maptk_camera_t (ctypes.Structure):
 class MaptkCamera (MaptkObject):
     """ maptk::camera interface class """
 
-    # C API config_block_t structure + pointer
+    # C API structure + pointer
     C_TYPE = _maptk_camera_t
     C_TYPE_PTR = ctypes.POINTER(_maptk_camera_t)
 
@@ -76,7 +76,7 @@ class MaptkCamera (MaptkObject):
 
         return cls.from_c_pointer(c_ptr)
 
-    def __del__(self):
+    def _destroy(self):
         """ Delete instance through C API """
         if self._inst_ptr:
             cam_del = self.MAPTK_LIB.maptk_camera_destroy

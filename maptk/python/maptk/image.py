@@ -41,15 +41,6 @@ import ctypes
 from maptk.util import MaptkObject
 
 
-# Decide appropriate type for ptrdiff_t based on void* size
-if ctypes.sizeof(ctypes.c_void_p) == 2:
-    c_ptrdiff_t = ctypes.c_int16
-elif ctypes.sizeof(ctypes.c_void_p) == 4:
-    c_ptrdiff_t = ctypes.c_int32
-elif ctypes.sizeof(ctypes.c_void_p) == 8:
-    c_ptrdiff_t = ctypes.c_int64
-
-
 # noinspection PyPep8Naming
 class _maptk_image_t (ctypes.Structure):
     """
@@ -62,7 +53,7 @@ class MaptkImage (MaptkObject):
     """
     maptk::image interface class
     """
-    # C API config_block_t structure + pointer
+    # C API structure + pointer
     C_TYPE = _maptk_image_t
     C_TYPE_PTR = ctypes.POINTER(_maptk_image_t)
 
@@ -106,7 +97,7 @@ class MaptkImage (MaptkObject):
         if not bool(self._inst_ptr):
             raise RuntimeError("Failed to construct MaptkImage instance")
 
-    def __del__(self):
+    def _destroy(self):
         img_destroy = self.MAPTK_LIB.maptk_image_destroy
         img_destroy.argtypes = [self.C_TYPE_PTR]
         img_destroy(self._inst_ptr)

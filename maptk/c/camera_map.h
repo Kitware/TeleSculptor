@@ -30,11 +30,11 @@
 
 /**
  * \file
- * \brief C interface to maptk::image_container class
+ * \brief C interface for maptk::camera_map
  */
 
-#ifndef MAPTK_C_IMAGE_CONTAINER_H_
-#define MAPTK_C_IMAGE_CONTAINER_H_
+#ifndef MAPTK_C_CAMERA_MAP_H_
+#define MAPTK_C_CAMERA_MAP_H_
 
 #ifdef __cplusplus
 extern "C"
@@ -43,61 +43,57 @@ extern "C"
 
 #include <stddef.h>
 
-#include <maptk/c/config.h>
+#include <maptk/c/camera.h>
 #include <maptk/c/error_handle.h>
-#include <maptk/c/image.h>
 
 
-/// MAPTK Image opaque structure
-typedef struct maptk_image_container_s maptk_image_container_t;
+/// Opaque structure for maptk::camera_map class
+typedef struct maptk_camera_map_s maptk_camera_map_t;
 
 
-/// Create a new, simple image container around an image
-MAPTK_C_EXPORT
-maptk_image_container_t* maptk_image_container_new_simple( maptk_image_t *img );
-
-
-/// Destroy a maptk_image_container_t instance
-MAPTK_C_EXPORT
-void maptk_image_container_destroy( maptk_image_container_t *img_container,
-                                    maptk_error_handle_t *eh );
-
-
-/// Get the size in bytes of an image container
+/// New, simple camera map
 /**
- * Size includes all allocated image memory, which could be larger than
- * the product of width, height and depth.
+ * Given a two parallel arrays of frame number and cameras, create a new
+ * camera map.
+ *
+ * If either array is NULL or if length is zero, the returned camera_map will
+ * be empty.
  */
 MAPTK_C_EXPORT
-size_t maptk_image_container_size( maptk_image_container_t *img_c );
+maptk_camera_map_t* maptk_camera_map_new( size_t length,
+                                          unsigned int *frame_numbers,
+                                          maptk_camera_t **cameras );
 
 
-/// Get the width of the given image in pixels
+/// Destroy the given camera_map
 MAPTK_C_EXPORT
-size_t maptk_image_container_width( maptk_image_container_t *img_c );
+void maptk_camera_map_destroy( maptk_camera_map_t *cam_map,
+                               maptk_error_handle_t *eh );
 
 
-/// Get the height of the given image in pixels
+/// Return the number of cameras in the map
 MAPTK_C_EXPORT
-size_t maptk_image_container_height( maptk_image_container_t *img_c );
+size_t maptk_camera_map_size( maptk_camera_map_t *cam_map,
+                              maptk_error_handle_t *eh );
 
 
-/// Get the depth (number of channels) of the image
+/// Set pointers to parallel arrays of frame numers and camera instances
 MAPTK_C_EXPORT
-size_t maptk_image_container_depth( maptk_image_container_t *img_c );
+void maptk_camera_map_get_map( maptk_camera_map_t *cam_map,
+                               size_t *length,
+                               unsigned int **frame_numbers,
+                               maptk_camera_t ***cameras,
+                               maptk_error_handle_t *eh );
 
-
-/// Get the in-memory image class to access data
-//MAPTK_C_EXPORT
-//maptk_image_t* maptk_image_container_get_image( maptk_image_container_t *img_c );
-//TODO: Resolve concrete-to-pointer gap
-//      Probably by creating new image as pointer sharing the memory of this
-//      IC's image data (using first pixel pointer)
-
+// TODO Free method for allocated frame/camera parallel arrays
+/// Free paired frame-to-camera mapping arrays
+//void maptk_camera_map_free_mapping_array( size_t length,
+//                                          unsigned int *frame_numbers,
+//                                          maptk_camera_t **cameras );
 
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // MAPTK_C_IMAGE_CONTAINER_H_
+#endif // MAPTK_C_CAMERA_MAP_H_
