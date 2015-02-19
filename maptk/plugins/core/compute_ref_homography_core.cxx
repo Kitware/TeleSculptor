@@ -48,7 +48,6 @@
 
 #include <maptk/algo/estimate_homography.h>
 #include <maptk/logging_macros.h>
-#include <maptk/matrix.h>
 
 #include <Eigen/LU>
 
