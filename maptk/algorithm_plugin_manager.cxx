@@ -239,7 +239,7 @@ public:
       ,
       /* unix */
       dlerror();
-      library = dlopen( module_path.string().c_str(), RTLD_LAZY );
+      library = dlopen( module_path.string().c_str(), RTLD_LAZY | RTLD_GLOBAL );
       if (!library)
       {
         err_str = std::string(dlerror());

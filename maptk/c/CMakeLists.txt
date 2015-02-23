@@ -9,6 +9,7 @@ if( MAPTK_ENABLE_C_LIB )
   set(maptk_c_public_headers
     config.h
 
+    algorithm.h
     algorithm_plugin_manager.h
     camera.h
     camera_map.h
@@ -19,6 +20,7 @@ if( MAPTK_ENABLE_C_LIB )
     image_container.h
     )
   set(maptk_c_private_headers
+    helpers/algorithm.h
     helpers/c_utils.h
     helpers/camera.h
     helpers/camera_map.h
@@ -26,6 +28,7 @@ if( MAPTK_ENABLE_C_LIB )
     helpers/image_container.h
     )
   set(maptk_c_sources
+    algorithm.cxx
     algorithm_plugin_manager.cxx
     camera.cxx
     camera_map.cxx

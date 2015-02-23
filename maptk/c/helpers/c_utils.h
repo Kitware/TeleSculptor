@@ -60,17 +60,17 @@
  * Only does anything if error handle pointer is non-NULL.
  * \p msg should be a C string (char const*)
  */
-#define POPULATE_EH(eh_ptr, ec, msg)                                        \
-  do                                                                        \
-  {                                                                         \
-    if( eh_ptr )                                                            \
-    {                                                                       \
-      maptk_error_handle_t *PEH_eh_ptr_cast =                               \
-        reinterpret_cast<maptk_error_handle_t*>(eh_ptr);                    \
-      PEH_eh_ptr_cast->error_code = ec;                                     \
-      PEH_eh_ptr_cast->message = (char*)malloc(sizeof(char) * strlen(msg)); \
-      strcpy(PEH_eh_ptr_cast->message, msg);                                \
-    }                                                                       \
+#define POPULATE_EH(eh_ptr, ec, msg)                                         \
+  do                                                                         \
+  {                                                                          \
+    if( reinterpret_cast<maptk_error_handle_t*>(eh_ptr) != NULL )            \
+    {                                                                        \
+      maptk_error_handle_t *PEH_eh_ptr_cast =                                \
+        reinterpret_cast<maptk_error_handle_t*>(eh_ptr);                     \
+      PEH_eh_ptr_cast->error_code = ec;                                      \
+      PEH_eh_ptr_cast->message = (char*)malloc(sizeof(char) * strlen(msg));  \
+      strcpy(PEH_eh_ptr_cast->message, msg);                                 \
+    }                                                                        \
   } while(0)
 
 
@@ -84,34 +84,34 @@
    * An arbitrary catch sets a -1 error code and assignes to the message field
    * the same thing that is printed to logging statement.
    */
-#define STANDARD_CATCH(log_prefix, eh_ptr, code)                  \
-    do                                                              \
-    {                                                               \
-      try                                                           \
-      {                                                             \
-        code                                                        \
-      }                                                             \
-      catch( std::exception const &e )                              \
-      {                                                             \
-        std::ostringstream ss;                                      \
-        ss << "Caught exception in C interface: " << e.what();      \
-        std::string msg = ss.str();                                 \
-        LOG_DEBUG( log_prefix, msg.c_str() );                       \
-        POPULATE_EH( eh_ptr, -1, msg.c_str() );                     \
-      }                                                             \
-      catch( char const* e )                                        \
-      {                                                             \
-        std::ostringstream ss;                                      \
-        ss << "Caught error message: " << e;                        \
-        LOG_DEBUG( log_prefix, ss.str().c_str() );                  \
-        POPULATE_EH( eh_ptr, -1, ss.str().c_str() );                \
-      }                                                             \
-      catch(...)                                                    \
-      {                                                             \
-        std::string msg("Caught other exception");                  \
-        LOG_DEBUG( log_prefix, msg );                               \
-        POPULATE_EH( eh_ptr, -1, msg.c_str() );                     \
-      }                                                             \
+#define STANDARD_CATCH(log_prefix, eh_ptr, code)                \
+    do                                                          \
+    {                                                           \
+      try                                                       \
+      {                                                         \
+        code                                                    \
+      }                                                         \
+      catch( std::exception const &e )                          \
+      {                                                         \
+        std::ostringstream ss;                                  \
+        ss << "Caught exception in C interface: " << e.what();  \
+        std::string msg = ss.str();                             \
+        LOG_DEBUG( log_prefix, msg.c_str() );                   \
+        POPULATE_EH( eh_ptr, -1, msg.c_str() );                 \
+      }                                                         \
+      catch( char const* e )                                    \
+      {                                                         \
+        std::ostringstream ss;                                  \
+        ss << "Caught error message: " << e;                    \
+        LOG_DEBUG( log_prefix, ss.str().c_str() );              \
+        POPULATE_EH( eh_ptr, -1, ss.str().c_str() );            \
+      }                                                         \
+      catch(...)                                                \
+      {                                                         \
+        std::string msg("Caught other exception");              \
+        LOG_DEBUG( log_prefix, msg );                           \
+        POPULATE_EH( eh_ptr, -1, msg.c_str() );                 \
+      }                                                         \
     } while( 0 )
 
 
@@ -134,7 +134,18 @@ public:
     : public maptk::maptk_core_base_exception
   {
   public:
-    NoEntryException( std::string reason )
+    NoEntryException( std::string const &reason )
+    {
+      this->m_what = reason;
+    }
+  };
+
+  /// Exception for when we're asked to do something with a null pointer
+  class NullPointerException
+    : public maptk::maptk_core_base_exception
+  {
+  public:
+    NullPointerException( std::string const &reason)
     {
       this->m_what = reason;
     }
@@ -153,6 +164,8 @@ public:
   /// Store a shared pointer
   void store( sptr_t sptr )
   {
+    if( sptr.get() == NULL ) throw NullPointerException("Cannot store NULL pointer");
+
     // If an sptr referencing the underlying pointer already exists in the map,
     // don't bother bashing the existing entry
     if( cache_.count( sptr.get() ) == 0 )
@@ -164,7 +177,7 @@ public:
     else
     {
       ++ref_count_cache_[sptr.get()];
-      LOG_DEBUG("SharedPointerCache::" << sptr.get(), "Adding first reference "
+      LOG_DEBUG("SharedPointerCache::" << sptr.get(), "Adding reference #"
                 << ref_count_cache_[sptr.get()]);
     }
   }
@@ -172,6 +185,8 @@ public:
   /// Access a stored shared pointer based on a supplied pointer
   sptr_t get( maptk_t *ptr ) const
   {
+    if( ptr == NULL ) throw NullPointerException("Cannot get NULL pointer");
+
     typename cache_t::const_iterator it = cache_.find( ptr );
     if( it != cache_.end() )
     {
@@ -195,6 +210,8 @@ public:
   /// Erase an entry in the cache by maptk-type pointer
   void erase( maptk_t *ptr )
   {
+    if( ptr == NULL ) throw NullPointerException("Cannot erase NULL pointer");
+
     typename cache_t::iterator c_it = cache_.find( ptr );
     if( c_it != cache_.end() )
     {

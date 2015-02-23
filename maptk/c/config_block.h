@@ -51,12 +51,6 @@ extern "C"
 /// Structure for opaque pointers to \p config_block objects
 typedef struct maptk_config_block_s maptk_config_block_t;
 
-/// Error handling structure
-typedef struct maptk_config_block_eh_s {
-  int error_code;
-  char const *message;
-} maptk_config_block_eh_t;
-
 
 // Config block constants
 /// Separator between blocks within the config

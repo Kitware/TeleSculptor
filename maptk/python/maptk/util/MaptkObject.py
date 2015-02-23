@@ -113,7 +113,6 @@ class MaptkObject (object):
 
     def __del__(self):
         if self._parent is None:
-            print "!!! Destroying parent python instance"
             self._destroy()
 
     @property
