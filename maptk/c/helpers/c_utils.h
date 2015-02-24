@@ -178,13 +178,13 @@ public:
     {
       cache_[sptr.get()] = sptr;
       ref_count_cache_[sptr.get()] = 1;
-      LOG_DEBUG(get_log_prefix(sptr.get()), "Adding first reference");
+      //LOG_DEBUG(get_log_prefix(sptr.get()), "Adding first reference");
     }
     else
     {
       ++ref_count_cache_[sptr.get()];
-      LOG_DEBUG(get_log_prefix(sptr.get()), "Adding reference #"
-                << ref_count_cache_[sptr.get()]);
+      //LOG_DEBUG(get_log_prefix(sptr.get()), "Adding reference #"
+      //          << ref_count_cache_[sptr.get()]);
     }
   }
 
@@ -232,13 +232,13 @@ public:
     if( c_it != cache_.end() )
     {
       --ref_count_cache_[ptr];
-      LOG_DEBUG(get_log_prefix(ptr),
-                "Lowered ref to " << ref_count_cache_[ptr]);
+      //LOG_DEBUG(get_log_prefix(ptr),
+      //          "Lowered ref to " << ref_count_cache_[ptr]);
       // Only finally erase cache entry when store references reaches 0
       if( ref_count_cache_[ptr] <= 0 )
       {
-        LOG_DEBUG(get_log_prefix(ptr),
-                  "Zero refs, removing");
+        //LOG_DEBUG(get_log_prefix(ptr),
+        //          "Zero refs, removing");
         cache_.erase(c_it);
         ref_count_cache_.erase(ptr);
       }

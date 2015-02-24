@@ -36,11 +36,35 @@ MAPTK convert_image algorithm interface
 # -*- coding: utf-8 -*-
 __author__ = 'purg'
 
-import ctypes
-
 from . import MaptkAlgorithm
+
+from maptk import MaptkImageContainer
+import maptk.util
 
 
 class MaptkAlgoConvertImage (MaptkAlgorithm):
 
     TYPE_NAME = 'convert_image'
+
+    def convert(self, image_container):
+        """
+        :param image_container: The image container with image data to convert
+        :type image_container: MaptkImageContainer
+
+        :return: A new MaptkImageContainer with the converted underlying data
+        :rtype: MaptkImageContainer
+
+        """
+        ci_convert = self.MAPTK_LIB['maptk_algorithm_convert_image_convert']
+        ci_convert.argtypes = [self.C_TYPE_PTR, MaptkImageContainer.C_TYPE_PTR,
+                               self.EH_TYPE_PTR]
+        ci_convert.restype = MaptkImageContainer.C_TYPE_PTR
+
+        eh = self.EH_NEW()
+        try:
+            new_ic_ptr = ci_convert(self.c_pointer, image_container.c_pointer,
+                                    eh)
+            maptk.util.propagate_exception_from_handle(eh)
+            return MaptkImageContainer.from_c_pointer(new_ic_ptr)
+        finally:
+            self.EH_DEL(eh)

@@ -260,13 +260,13 @@ class MaptkAlgorithm (MaptkObject):
         if self._inst_ptr:
             algo_impl_name = self.MAPTK_LIB.maptk_algorithm_impl_name
             algo_impl_name.argtypes = [self.C_TYPE_PTR]
-            algo_impl_name.restype = ctypes.c_char_p
+            algo_impl_name.restype = self.MST_TYPE_PTR
 
             eh = self.EH_NEW()
             try:
                 n = algo_impl_name(self._inst_ptr, eh)
                 propagate_exception_from_handle(eh)
-                return n
+                return n.contents.str
             finally:
                 self.EH_DEL(eh)
         else:

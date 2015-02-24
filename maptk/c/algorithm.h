@@ -102,6 +102,15 @@ maptk_algorithm_check_impl_configuration( maptk_algorithm_t *algo,
 
 
 /// Common methods for classes that descend from algorithm_def
+/**
+ * Since the underlying structures in the C++ library use generics at the
+ * algorithm_def level, there are a few static and member functions that become
+ * specific to the particular algorithm type, requiring there to be multiple
+ * versions of the base functions for each type.
+ *
+ * NOTE: While algorithm destruction is a common method to all algorithms, it
+ * is included in the typed interface for implementation reasons.
+ */
 #define DECLARE_COMMON_ALGO_API( type )                                         \
   /* ==================================================================== */    \
   /* Functions on types (static methods)                                  */    \
@@ -165,28 +174,7 @@ maptk_algorithm_check_impl_configuration( maptk_algorithm_t *algo,
   MAPTK_C_EXPORT                                                                \
   maptk_algorithm_t*                                                            \
   maptk_algorithm_##type##_clone( maptk_algorithm_t *algo );
-
-
-// TODO: Algorithm def's should be in separate h/cxx files
-// ===========================================================================
-// Algorithm: image_io
-// ---------------------------------------------------------------------------
-
-DECLARE_COMMON_ALGO_API( image_io );
-
-
-/// Load image from file
-MAPTK_C_EXPORT
-maptk_image_container_t* maptk_algorithm_image_io_load( maptk_algorithm_t *algo,
-                                                        char const *filename,
-                                                        maptk_error_handle_t *eh);
-
-/// Save an image to file
-MAPTK_C_EXPORT
-void maptk_algorithm_image_io_save( maptk_algorithm_t *algo,
-                                    char const *filename,
-                                    maptk_image_container_t *ic,
-                                    maptk_error_handle_t *eh );
+  // TODO: description() method
 
 
 #ifdef __cplusplus

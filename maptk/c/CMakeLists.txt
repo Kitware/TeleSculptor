@@ -18,6 +18,9 @@ if( MAPTK_ENABLE_C_LIB )
     error_handle.h
     image.h
     image_container.h
+
+    algo_def/convert_image.h
+    algo_def/image_io.h
     )
   set(maptk_c_private_headers
     helpers/algorithm.h
@@ -37,6 +40,9 @@ if( MAPTK_ENABLE_C_LIB )
     error_handle.cxx
     image.cxx
     image_container.cxx
+
+    algo_def/convert_image.cxx
+    algo_def/image_io.cxx
 
     helpers/c_utils.cxx
     )

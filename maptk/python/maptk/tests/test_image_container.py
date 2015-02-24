@@ -51,7 +51,7 @@ class TestMaptkImageContainer (object):
         img_c = MaptkImageContainer(image)
 
         image = MaptkImage(100, 100)
-        img_c = MaptkImageContainer( image )
+        img_c = MaptkImageContainer(image)
 
     def test_size(self):
         i = MaptkImage(720, 480)
