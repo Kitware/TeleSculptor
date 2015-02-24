@@ -18,6 +18,7 @@ if( MAPTK_ENABLE_C_LIB )
     error_handle.h
     image.h
     image_container.h
+    track.h
 
     algo_def/convert_image.h
     algo_def/image_io.h
@@ -29,6 +30,7 @@ if( MAPTK_ENABLE_C_LIB )
     helpers/camera_map.h
     helpers/config_block.h
     helpers/image_container.h
+    helpers/track.h
     )
   set(maptk_c_sources
     algorithm.cxx
@@ -40,6 +42,7 @@ if( MAPTK_ENABLE_C_LIB )
     error_handle.cxx
     image.cxx
     image_container.cxx
+    track.cxx
 
     algo_def/convert_image.cxx
     algo_def/image_io.cxx
