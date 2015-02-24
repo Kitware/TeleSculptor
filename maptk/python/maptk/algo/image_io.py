@@ -81,7 +81,7 @@ class MaptkAlgoImageIo (MaptkAlgorithm):
         :param filepath: The path to save the image to
         :type filepath: str
 
-        :param image_container: MaptkImageContainer contianing the image to save
+        :param image_container: MaptkImageContainer containing the image to save
         :type image_container: MaptkImageContainer
 
         """

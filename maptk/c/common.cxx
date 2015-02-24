@@ -36,6 +36,34 @@
 #include "common.h"
 
 #include <cstdlib>
+#include <cstring>
+
+
+/// Allocate a new maptk string structure
+maptk_string_t* maptk_string_new(size_t length, char const* s)
+{
+  maptk_string_t* n =
+    (maptk_string_t*)malloc(sizeof(maptk_string_t));
+  n->length = length;
+  // When length 0, this is just a 1 character string that is just the null
+  // byte.
+  n->str = (char*)malloc(sizeof(char) * (length+1));
+  n->str[length] = 0;
+
+  if( length && s )
+  {
+    strncpy( n->str, s, length );
+  }
+  return n;
+}
+
+
+/// Free an alocated string structure
+void maptk_string_free( maptk_string_t *s )
+{
+  free(s->str);
+  free(s);
+}
 
 
 /// Common function for freeing string lists

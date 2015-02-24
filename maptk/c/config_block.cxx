@@ -38,6 +38,7 @@
 
 #include <cstdlib>
 #include <cstring>
+
 #include <map>
 #include <sstream>
 #include <string>
@@ -55,8 +56,8 @@
 namespace maptk_c
 {
 
-SharedPointerCache< maptk::config_block,
-                    maptk_config_block_t > CONFIG_BLOCK_SPTR_CACHE;
+SharedPointerCache< maptk::config_block, maptk_config_block_t >
+  CONFIG_BLOCK_SPTR_CACHE( "config_block" );
 
 }
 
@@ -102,13 +103,12 @@ void maptk_config_block_destroy( maptk_config_block_t *cb,
 }
 
 /// Get the name of the \p config_block instance
-char const* maptk_config_block_get_name( maptk_config_block_t *cb )
+maptk_string_t* maptk_config_block_get_name( maptk_config_block_t *cb )
 {
   STANDARD_CATCH(
     "C::config_block::get_name", 0,
-
-    return maptk_c::CONFIG_BLOCK_SPTR_CACHE
-        .get( cb )->get_name().c_str();
+    std::string name = maptk_c::CONFIG_BLOCK_SPTR_CACHE.get( cb )->get_name();
+    return maptk_string_new(name.length(), name.c_str());
   );
   return 0;
 }
@@ -144,41 +144,44 @@ maptk_config_block_t* maptk_config_block_subblock_view( maptk_config_block_t *cb
 }
 
 /// Get the string value for a key
-char const* maptk_config_block_get_value( maptk_config_block_t *cb,
-                                          char const* key )
+maptk_string_t* maptk_config_block_get_value( maptk_config_block_t *cb,
+                                              char const* key )
 {
   STANDARD_CATCH(
     "C::config_block::get_value", 0,
 
-    return maptk_c::CONFIG_BLOCK_SPTR_CACHE.get( cb )
-        ->get_value<std::string>( key ).c_str();
+    std::string v = maptk_c::CONFIG_BLOCK_SPTR_CACHE.get( cb )
+        ->get_value<std::string>( key );
+    return maptk_string_new( v.length(), v.c_str() );
   );
   return 0;
 }
 
 /// Get the string value for a key if it exists, else the default
-char const*  maptk_config_block_get_value_default( maptk_config_block_t *cb,
-                                                   char const* key,
-                                                   char const* deflt )
+maptk_string_t*  maptk_config_block_get_value_default( maptk_config_block_t *cb,
+                                                       char const* key,
+                                                       char const* deflt )
 {
   STANDARD_CATCH(
     "C::config_block::get_value_default", 0,
 
-    return maptk_c::CONFIG_BLOCK_SPTR_CACHE.get( cb )
-        ->get_value<std::string>( key, deflt ).c_str();
+    std::string v = maptk_c::CONFIG_BLOCK_SPTR_CACHE.get( cb )
+        ->get_value<std::string>( key, deflt );
+    return maptk_string_new( v.length(), v.c_str() );
   );
   return 0;
 }
 
 /// Get the description string for a given key
-char const* maptk_config_block_get_description( maptk_config_block_t *cb,
-                                                char const* key )
+maptk_string_t* maptk_config_block_get_description( maptk_config_block_t *cb,
+                                                    char const* key )
 {
   STANDARD_CATCH(
     "C::config_block::get_description", 0,
 
-    return maptk_c::CONFIG_BLOCK_SPTR_CACHE.get( cb )
+    std::string d = maptk_c::CONFIG_BLOCK_SPTR_CACHE.get( cb )
         ->get_description( key ).c_str();
+    return maptk_string_new( d.length(), d.c_str() );
   );
   return 0;
 }

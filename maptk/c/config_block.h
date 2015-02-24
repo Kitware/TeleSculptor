@@ -42,6 +42,7 @@ extern "C"
 {
 #endif
 
+#include <maptk/c/common.h>
 #include <maptk/c/config.h>
 #include <maptk/c/error_handle.h>
 
@@ -96,7 +97,7 @@ void maptk_config_block_destroy( maptk_config_block_t *cb,
  * \return String name of the given config_block.
  */
 MAPTK_C_EXPORT
-char const* maptk_config_block_get_name( maptk_config_block_t *cb );
+maptk_string_t* maptk_config_block_get_name( maptk_config_block_t *cb );
 
 /// Get a subblock from the configuration.
 /**
@@ -133,8 +134,8 @@ maptk_config_block_t* maptk_config_block_subblock_view( maptk_config_block_t *cb
  * \return The string value stored within the configuration.
  */
 MAPTK_C_EXPORT
-char const* maptk_config_block_get_value( maptk_config_block_t *cb,
-                                          char const *key );
+maptk_string_t* maptk_config_block_get_value( maptk_config_block_t *cb,
+                                              char const *key );
 
 /// Get the string value for a key if it exists, else the default
 /**
@@ -145,9 +146,9 @@ char const* maptk_config_block_get_value( maptk_config_block_t *cb,
  * \return the \p char* value stored within the configuration.
  */
 MAPTK_C_EXPORT
-char const* maptk_config_block_get_value_default( maptk_config_block_t *cb,
-                                                  char const *key,
-                                                  char const *deflt );
+maptk_string_t* maptk_config_block_get_value_default( maptk_config_block_t *cb,
+                                                      char const *key,
+                                                      char const *deflt );
 
 /// Get the description associated to a value
 /**
@@ -162,8 +163,8 @@ char const* maptk_config_block_get_value_default( maptk_config_block_t *cb,
  *          found.
  */
 MAPTK_C_EXPORT
-char const* maptk_config_block_get_description( maptk_config_block_t *cb,
-                                                char const *key );
+maptk_string_t* maptk_config_block_get_description( maptk_config_block_t *cb,
+                                                    char const *key );
 
 /// Set a string value within the configuration.
 /**

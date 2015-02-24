@@ -152,9 +152,10 @@ public:
   };
 
   /// Constructor
-  SharedPointerCache()
+  SharedPointerCache( std::string name )
     : cache_(),
-      ref_count_cache_()
+      ref_count_cache_(),
+      name_( name )
   {}
 
   /// Destructor
@@ -164,7 +165,12 @@ public:
   /// Store a shared pointer
   void store( sptr_t sptr )
   {
-    if( sptr.get() == NULL ) throw NullPointerException("Cannot store NULL pointer");
+    if( sptr.get() == NULL )
+    {
+      std::ostringstream ss;
+      ss << get_log_prefix(sptr.get()) << " Cannot store NULL pointer";
+      throw NullPointerException(ss.str());
+    }
 
     // If an sptr referencing the underlying pointer already exists in the map,
     // don't bother bashing the existing entry
@@ -172,12 +178,12 @@ public:
     {
       cache_[sptr.get()] = sptr;
       ref_count_cache_[sptr.get()] = 1;
-      LOG_DEBUG("SharedPointerCache::" << sptr.get(), "Adding first reference");
+      LOG_DEBUG(get_log_prefix(sptr.get()), "Adding first reference");
     }
     else
     {
       ++ref_count_cache_[sptr.get()];
-      LOG_DEBUG("SharedPointerCache::" << sptr.get(), "Adding reference #"
+      LOG_DEBUG(get_log_prefix(sptr.get()), "Adding reference #"
                 << ref_count_cache_[sptr.get()]);
     }
   }
@@ -185,7 +191,12 @@ public:
   /// Access a stored shared pointer based on a supplied pointer
   sptr_t get( maptk_t *ptr ) const
   {
-    if( ptr == NULL ) throw NullPointerException("Cannot get NULL pointer");
+    if( ptr == NULL )
+    {
+      std::ostringstream ss;
+      ss << get_log_prefix(ptr) << "Cannot get NULL pointer";
+      throw NullPointerException(ss.str());
+    }
 
     typename cache_t::const_iterator it = cache_.find( ptr );
     if( it != cache_.end() )
@@ -195,8 +206,8 @@ public:
     else
     {
       std::ostringstream ss;
-      ss << "No cached shared_ptr for the given pointer "
-         << "(ptr: " << ptr << ")";
+      ss << get_log_prefix(ptr)
+         << "No cached shared_ptr for the given pointer (ptr: " << ptr << ")";
       throw NoEntryException( ss.str() );
     }
   }
@@ -210,18 +221,23 @@ public:
   /// Erase an entry in the cache by maptk-type pointer
   void erase( maptk_t *ptr )
   {
-    if( ptr == NULL ) throw NullPointerException("Cannot erase NULL pointer");
+    if( ptr == NULL )
+    {
+      std::ostringstream ss;
+      ss << get_log_prefix(ptr) << "Cannot erase NULL pointer";
+      throw NullPointerException(ss.str());
+    }
 
     typename cache_t::iterator c_it = cache_.find( ptr );
     if( c_it != cache_.end() )
     {
       --ref_count_cache_[ptr];
-      LOG_DEBUG("SharedPointerCache::"<<ptr,
+      LOG_DEBUG(get_log_prefix(ptr),
                 "Lowered ref to " << ref_count_cache_[ptr]);
       // Only finally erase cache entry when store references reaches 0
       if( ref_count_cache_[ptr] <= 0 )
       {
-        LOG_DEBUG("SharedPointerCache::"<<ptr,
+        LOG_DEBUG(get_log_prefix(ptr),
                   "Zero refs, removing");
         cache_.erase(c_it);
         ref_count_cache_.erase(ptr);
@@ -247,6 +263,16 @@ private:
    * number of store calls for a given instance pointer.
    */
   ref_count_cache_t ref_count_cache_;
+  /// Name of cache
+  std::string name_;
+
+  /// Helper method to generate logging prefix string
+  std::string get_log_prefix( maptk_t *ptr ) const
+  {
+    std::ostringstream ss;
+    ss << "SharedPointerCache::" << this->name_ << "::" << ptr;
+    return ss.str();
+  }
 };
 
 

@@ -108,6 +108,13 @@ class MaptkConfigBlock (MaptkObject):
         return MaptkConfigBlock.from_c_pointer(cb_ptr)
 
     def __init__(self, name=None):
+        """
+        Create a new, empty configuration instance.
+
+        :param name: Optional name for the configuration
+        :type name: str
+
+        """
         super(MaptkConfigBlock, self).__init__()
 
         if name:
@@ -132,8 +139,13 @@ class MaptkConfigBlock (MaptkObject):
         """
         cb_get_name = self.MAPTK_LIB.maptk_config_block_get_name
         cb_get_name.argtypes = [self.C_TYPE_PTR]
-        cb_get_name.restype = ctypes.c_char_p
-        return cb_get_name(self._inst_ptr)
+        cb_get_name.restype = self.MST_TYPE_PTR
+
+        mst = cb_get_name(self._inst_ptr)
+        s = mst.contents.str
+        self.MST_FREE(mst)
+
+        return s
 
     def subblock(self, key):
         """
@@ -193,11 +205,14 @@ class MaptkConfigBlock (MaptkObject):
         # code path than calling the C API default func.
         cb_get_value = self.MAPTK_LIB.maptk_config_block_get_value
         cb_get_value.argtypes = [self.C_TYPE_PTR, ctypes.c_char_p]
-        cb_get_value.restype = ctypes.c_char_p
-        r = cb_get_value(self._inst_ptr, key)
-        if r is None:
+        cb_get_value.restype = self.MST_TYPE_PTR
+
+        mst_ptr = cb_get_value(self._inst_ptr, key)
+        if not bool(mst_ptr):
             return default
-        return r
+        s = mst_ptr.contents.str
+        self.MST_FREE(mst_ptr)
+        return s
 
     def get_description(self, key):
         """
@@ -218,8 +233,14 @@ class MaptkConfigBlock (MaptkObject):
         """
         cb_get_descr = self.MAPTK_LIB.maptk_config_block_get_description
         cb_get_descr.argtypes = [self.C_TYPE_PTR, ctypes.c_char_p]
-        cb_get_descr.restype = ctypes.c_char_p
-        return cb_get_descr(self._inst_ptr, key)
+        cb_get_descr.restype = self.MST_TYPE_PTR
+
+        mst_ptr = cb_get_descr(self._inst_ptr, key)
+        if mst_ptr is not None:
+            s = mst_ptr.contents.str
+            self.MST_FREE(mst_ptr)
+            return s
+        return None
 
     def set_value(self, key, value, description=None):
         """

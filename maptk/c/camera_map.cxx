@@ -50,7 +50,7 @@ namespace maptk_c
 {
 
 SharedPointerCache< maptk::camera_map,
-                    maptk_camera_map_t > CAM_MAP_SPTR_CACHE;
+                    maptk_camera_map_t > CAM_MAP_SPTR_CACHE( "camera_map" );
 
 }
 

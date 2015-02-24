@@ -46,10 +46,27 @@ extern "C"
 #include <maptk/c/config.h>
 
 
+/// Simple string structure
+typedef struct {
+  size_t length;
+  char *str;
+} maptk_string_t;
+
+/// Allocate a new maptk string structure
+MAPTK_C_EXPORT
+maptk_string_t* maptk_string_new(size_t length, char const* s);
+
+/// Free an alocated string structure
+MAPTK_C_EXPORT
+void maptk_string_free( maptk_string_t *s );
+
+
 /// Common function for freeing string lists
 MAPTK_C_EXPORT
 void maptk_common_free_string_list( size_t length, char **keys );
 
+
+/// Other free functions
 MAPTK_C_EXPORT void maptk_free_pointer( void *thing );
 MAPTK_C_EXPORT void maptk_free_double_pointer( size_t length, void **things );
 

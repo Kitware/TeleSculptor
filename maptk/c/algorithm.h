@@ -43,6 +43,7 @@ extern "C"
 
 #include <stdbool.h>
 
+#include <maptk/c/common.h>
 #include <maptk/c/config.h>
 #include <maptk/c/config_block.h>
 #include <maptk/c/error_handle.h>
@@ -62,9 +63,9 @@ typedef struct maptk_algorithm_s maptk_algorithm_t;
  * \param algo Opaque pointer to algorithm instance.
  * \return String name of the algorithm type.
  */
-MAPTK_EXPORT
-char const* maptk_algorithm_type_name( maptk_algorithm_t *algo,
-                                       maptk_error_handle_t *eh );
+MAPTK_C_EXPORT
+maptk_string_t* maptk_algorithm_type_name( maptk_algorithm_t *algo,
+                                           maptk_error_handle_t *eh );
 
 
 // Return the name of this implementation
@@ -72,12 +73,32 @@ char const* maptk_algorithm_type_name( maptk_algorithm_t *algo,
  * \param algo Opaque pointer to algorithm instance.
  * \return String name of the algorithm implementation type.
  */
-MAPTK_EXPORT
-char const* maptk_algorithm_impl_name( maptk_algorithm_t *algo,
-                                       maptk_error_handle_t *eh );
+MAPTK_C_EXPORT
+maptk_string_t* maptk_algorithm_impl_name( maptk_algorithm_t *algo,
+                                           maptk_error_handle_t *eh );
 
 
-// TODO: Base level get/set/check configuration methods here
+/// Get an algorithm implementation's configuration block
+MAPTK_C_EXPORT
+maptk_config_block_t*
+maptk_algorithm_get_impl_configuration( maptk_algorithm_t *algo,
+                                        maptk_error_handle_t *eh );
+
+
+/// Set this algorithm implementation's properties via a config block
+MAPTK_C_EXPORT
+void
+maptk_algorithm_set_impl_configuration( maptk_algorithm_t *algo,
+                                        maptk_config_block_t *cb,
+                                        maptk_error_handle_t *eh );
+
+
+/// Check that the algorithm implementation's configuration is valid
+MAPTK_C_EXPORT
+bool
+maptk_algorithm_check_impl_configuration( maptk_algorithm_t *algo,
+                                          maptk_config_block_t *cb,
+                                          maptk_error_handle_t *eh );
 
 
 /// Common methods for classes that descend from algorithm_def
@@ -107,32 +128,34 @@ char const* maptk_algorithm_impl_name( maptk_algorithm_t *algo,
    * NULL may be given for \p algo, which will return a generic
    * configuration for this algorithm type.
    */                                                                           \
-  /*
   MAPTK_C_EXPORT                                                                \
   void                                                                          \
   maptk_algorithm_##type##_get_type_config( char const *name,                   \
                                             maptk_algorithm_t *algo,            \
-                                            maptk_config_block_t *cb );         \
-  */                                                                            \
+                                            maptk_config_block_t *cb, \
+                                            maptk_error_handle_t *eh );         \
   /** Set algorithm properties based on a named configuration in the config */  \
   /**
-   * This always creates a new maptk_algorithm_t instance, unless the
-   * configured type is invalid.
+   * This creates a new maptk_algorithm_t instance if the given config block
+   * \p cb has a type field for the given \p name and the type is valid, else
+   * the \p algo doesn't change (e.g. will remain a NULL pointer of that was
+   * what was passed).
+   *
+   * If given algorithm pointer is changed due to reconstruction, the
+   * original pointer is destroyed.
    */                                                                           \
-  /*
   MAPTK_C_EXPORT                                                                \
   void                                                                          \
   maptk_algorithm_##type##_set_type_config( char const *name,                   \
                                             maptk_config_block_t *cb,           \
-                                            maptk_algorithm_t **algo );         \
-  */                                                                            \
+                                            maptk_algorithm_t **algo,           \
+                                            maptk_error_handle_t *eh );         \
   /** Check the configuration with respect to this algorithm type */            \
-  /*
   MAPTK_C_EXPORT                                                                \
   bool                                                                          \
   maptk_algorithm_##type##_check_type_config( char const *name,                 \
-                                              maptk_config_block_t *cb );       \
-  */                                                                            \
+                                              maptk_config_block_t *cb,         \
+                                              maptk_error_handle_t *eh );       \
   /* ==================================================================== */    \
   /* Functions on algorithm instances                                     */    \
   /*                                                                      */    \

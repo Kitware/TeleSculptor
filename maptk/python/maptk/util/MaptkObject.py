@@ -37,9 +37,11 @@ Base class for all MAPTK Python interface classes
 __author__ = 'purg'
 
 import abc
+import ctypes
 
 from maptk.util import find_maptk_library
 from maptk.util.error_handle import c_maptk_error_handle_p
+from maptk.util.string import maptk_string_t
 
 
 class MaptkObject (object):
@@ -56,10 +58,19 @@ class MaptkObject (object):
 
     # Configured common error handle constructor and destructor
     EH_TYPE_PTR = c_maptk_error_handle_p
-    EH_NEW = MAPTK_LIB.maptk_eh_new
+    EH_NEW = MAPTK_LIB['maptk_eh_new']
     EH_NEW.restype = c_maptk_error_handle_p
-    EH_DEL = MAPTK_LIB.maptk_eh_destroy
+    EH_DEL = MAPTK_LIB['maptk_eh_destroy']
     EH_DEL.argtypes = [c_maptk_error_handle_p]
+
+    # Common string structure stuff
+    MST_TYPE = maptk_string_t
+    MST_TYPE_PTR = maptk_string_t.PTR_t
+    MST_NEW = MAPTK_LIB['maptk_string_new']
+    MST_NEW.argtypes = [ctypes.c_size_t, ctypes.c_char_p]
+    MST_NEW.restype = maptk_string_t.PTR_t
+    MST_FREE = MAPTK_LIB['maptk_string_free']
+    MST_FREE.argtypes = [maptk_string_t.PTR_t]
 
     @classmethod
     def from_c_pointer(cls, ptr, is_copy_of=None):

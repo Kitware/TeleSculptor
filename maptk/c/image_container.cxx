@@ -44,8 +44,8 @@
 namespace maptk_c
 {
 
-SharedPointerCache< maptk::image_container,
-                    maptk_image_container_t > IMGC_SPTR_CACHE;
+SharedPointerCache< maptk::image_container, maptk_image_container_t >
+  IMGC_SPTR_CACHE( "image_container" );
 
 }
 

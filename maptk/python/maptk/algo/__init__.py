@@ -39,6 +39,7 @@ __author__ = 'purg'
 import abc
 import ctypes
 
+from maptk import MaptkConfigBlock
 from maptk.util import MaptkObject, propagate_exception_from_handle
 
 
@@ -66,15 +67,56 @@ class MaptkAlgorithm (MaptkObject):
     TYPE_NAME = None
 
     @classmethod
+    def from_c_pointer(cls, ptr, is_copy_of=None, name=None):
+        """
+        Create a named algorithm instance of the derived class from a C API
+        opaque pointer.
+
+        If this the C pointer given to ptr is taken form an existing Python
+        object instance, that object instance should be given to the
+        is_copy_of argument. This ensures that the underlying C reference is
+        not destroyed prematurely.
+
+        This class-method override allows the passing of the algorithm instance
+        name.
+
+        :param name: Name of the new algorithm. This must be provided if this is
+            not a copy of another algorithm instance.
+        :type name: str
+
+        :param ptr: C API opaque structure pointer type instance
+        :type ptr: cls.C_TYPE_PTR
+
+        :param is_copy_of: Optional parent object instance when the ptr given
+            is coming from an existing python object.
+        :type ptr: cls
+
+        :return: New Python object using the given underlying C object pointer.
+
+        """
+        n = super(MaptkAlgorithm, cls).from_c_pointer(ptr, is_copy_of)
+
+        if not is_copy_of and not name:
+            raise ValueError("Empty name given.")
+        if name:
+            n._name = name
+
+        return n
+
+    @classmethod
     def type_name(cls):
         """
         :return: String name for this algorithm type.
         :rtype: str
+
+        :raises AttributeError: Class type name not correctly defined in derived
+            class
+
         """
         if cls.TYPE_NAME is None:
-            raise RuntimeError("Derived class did not define TYPE_NAME, which "
-                               "is required in order to know what to call in "
-                               "the C API.")
+            raise AttributeError("Derived class did not define TYPE_NAME, "
+                                 "which is required in order to know what to "
+                                 "call in the C API.")
 
         return cls.TYPE_NAME
 
@@ -106,7 +148,26 @@ class MaptkAlgorithm (MaptkObject):
         return r
 
     @classmethod
-    def create(cls, impl_name):
+    def create(cls, algo_name, impl_name):
+        """
+        Create a new algorithm instance of the derived type, initialized with
+        the given implementation.
+
+        :raises RuntimeError: The implementation name given does not match a
+            registered implementation name.
+
+        :param algo_name: Name to be assigned to this algorithm instance.
+        :type algo_name: str
+
+        :param impl_name: Name of the implementation. This should be one of the
+            registered implementation names (check <type>.registered_names()).
+        :type impl_name: str
+
+        :return: New instance of derived type initialized to the given
+            implementation.
+        :rtype: cls
+
+        """
         algo_create = cls.MAPTK_LIB['maptk_algorithm_%s_create'
                                     % cls.type_name()]
         algo_create.argtypes = [ctypes.c_char_p]
@@ -117,15 +178,61 @@ class MaptkAlgorithm (MaptkObject):
             raise RuntimeError("Failed to construct algorithm instance (null "
                                "pointer returned)")
 
-        return cls.from_c_pointer(inst_ptr)
+        return cls.from_c_pointer(inst_ptr, name=algo_name  )
 
-    def __init__(self):
+    def __init__(self, name):
         """
-        Construct an un-initialize algorithm of the derived type.
+        Construct an un-initialized algorithm of the derived type with the given
+        name.
+
+        The name is used for configuration purposes in order to delineate this
+        algorithm instance from others of the same type.
+
+        :raises ValueError: The given name was empty.
+        :raises AttributeError: Class type name not correctly defined in derived
+            class
+
         """
         super(MaptkAlgorithm, self).__init__()
         # Initialize to NULL pointer
         self._inst_ptr = self.C_TYPE_PTR()
+
+        # Checking that derived class has a valid typename
+        self.type_name()
+
+        if not name:
+            raise ValueError("Empty name given.")
+        self._name = name
+
+    def __nonzero__(self):
+        """ bool() operator for 2.x """
+        return bool(self.c_pointer)
+
+    def __bool__(self):
+        """ bool() operator for 3.x """
+        return bool(self.c_pointer)
+
+    @property
+    def name(self):
+        """
+        :return: The string name of this algorithm instance.
+        :rtype: str
+        """
+        return self._name
+
+    def set_name(self, new_name):
+        """
+        Reset the name of this algorithm instance.
+
+        This effects interaction with configuration.
+
+        :param new_name: The new string name to assign to this algorithm.
+        :type new_name: str
+
+        """
+        if not new_name:
+            raise ValueError("Invalid new algorithm name: '%s'" % new_name)
+        self._name = new_name
 
     def _destroy(self):
         """
@@ -145,6 +252,11 @@ class MaptkAlgorithm (MaptkObject):
                 self.EH_DEL(eh)
 
     def impl_name(self):
+        """
+        :return: String name for the current implementation, or None if this
+            algorithm is not initialized to an implementation
+        :rtype: str
+        """
         if self._inst_ptr:
             algo_impl_name = self.MAPTK_LIB.maptk_algorithm_impl_name
             algo_impl_name.argtypes = [self.C_TYPE_PTR]
@@ -160,8 +272,11 @@ class MaptkAlgorithm (MaptkObject):
         else:
             return None
 
-    def clone(self):
+    def clone(self, new_name=None):
         """
+        :param new_name: An optional new instance name for the cloned algorithm
+        :type new_name: str
+
         :return: A new copy of this algorithm
         :rtype: MaptkAlgorithm
         """
@@ -174,7 +289,101 @@ class MaptkAlgorithm (MaptkObject):
         try:
             new_ptr = algo_clone(self._inst_ptr, eh)
             propagate_exception_from_handle(eh)
-            return self.from_c_pointer(new_ptr)
+            return self.from_c_pointer(new_ptr,
+                                       name=(new_name or self.name))
+        finally:
+            self.EH_DEL(eh)
+
+    def get_config(self, cb=None):
+        """
+        Return this algorithm's current configuration.
+
+        As algorithms are named, the configuration returned will be contained
+        inside a sub-block whose name matches this algorithm's name in order
+        to separate
+
+        :param cb: An optional existing MaptkConfigBlock instance to add this
+            algorithm's configuration to.
+        :type cb: MaptkConfigBlock
+
+        :return: This named algorithm's current configuration. If a config block
+            was given to this method, the same config block is returned.
+        :rtype: maptk.MaptkConfigBlock
+
+        """
+        algo_gtc = self.MAPTK_LIB['maptk_algorithm_%s_get_type_config'
+                                  % self.type_name()]
+        algo_gtc.argtypes = [ctypes.c_char_p, self.C_TYPE_PTR,
+                             MaptkConfigBlock.C_TYPE_PTR, self.EH_TYPE_PTR]
+        algo_gtc.restype = MaptkConfigBlock.C_TYPE_PTR
+
+        if cb is None:
+            cb = MaptkConfigBlock()
+
+        # if self._inst_ptr:
+        eh = self.EH_NEW()
+        try:
+            algo_gtc(self.name, self.c_pointer, cb.c_pointer, eh)
+            propagate_exception_from_handle(eh)
+        finally:
+            self.EH_DEL(eh)
+
+        return cb
+
+    def set_config(self, cb):
+        """
+        Set this algorithm's configuration based on the given config block
+
+        If there is no configuration for this algorithm in the given block, or
+        if the recorded implementation type is invalid, this algorithm remains
+        unchanged.
+
+        NOTE: Setting an algorithm configuration with a valid implementation
+        type, the underlying instance is reset (deleted and reconstructed). This
+        is important to note for algorithms that are state-based as their states
+        would implicitly reset due to instance reconstruction.
+
+        :param cb: Configuration block to draw this algorithm's configuration
+            from.
+        :type cb: MaptkConfigBlock
+
+        """
+        algo_stc = self.MAPTK_LIB['maptk_algorithm_%s_set_type_config'
+                                  % self.type_name()]
+        algo_stc.argtypes = [ctypes.c_char_p, MaptkConfigBlock.C_TYPE_PTR,
+                             ctypes.POINTER(self.C_TYPE_PTR), self.EH_TYPE_PTR]
+
+        eh = self.EH_NEW()
+        try:
+            algo_stc(self.name, cb.c_pointer, ctypes.byref(self._inst_ptr),
+                     eh)
+            propagate_exception_from_handle(eh)
+        finally:
+            self.EH_DEL(eh)
+
+    def check_config(self, cb):
+        """
+        Check the given configuration block for valid algorithm configuration
+
+        :param cb: Configuration to check.
+        :type cb: MaptkConfigBlock
+
+        :return: True if the given configuration block contains a valid
+            configuration for this algorithm type and implementation.
+        :rtype: bool
+
+        """
+        algo_ctc = self.MAPTK_LIB['maptk_algorithm_%s_check_type_config'
+                                  % self.type_name()]
+        algo_ctc.argtypes = [ctypes.c_char_p, MaptkConfigBlock.C_TYPE_PTR,
+                             self.EH_TYPE_PTR]
+        algo_ctc.restype = ctypes.c_bool
+
+        eh = self.EH_NEW()
+        try:
+            r = algo_ctc(self.name, cb.c_pointer, eh)
+            propagate_exception_from_handle(eh)
+            return r
         finally:
             self.EH_DEL(eh)
 

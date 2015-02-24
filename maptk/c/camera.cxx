@@ -46,7 +46,7 @@ namespace maptk_c
 {
 
 SharedPointerCache< maptk::camera,
-                    maptk_camera_t > CAMERA_SPTR_CACHE;
+                    maptk_camera_t > CAMERA_SPTR_CACHE( "camera" );
 
 }
 
