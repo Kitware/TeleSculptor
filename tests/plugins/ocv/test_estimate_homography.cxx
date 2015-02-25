@@ -122,17 +122,17 @@ IMPLEMENT_TEST(four_points)
   pts1.push_back(vector_2d(0.0, 2.0));
   pts1.push_back(vector_2d(2.0, 2.0));
 
-matrix_3x3d true_H = sample_homography();
+  matrix_3x3d true_H = sample_homography();
 
-// transform pts1 to pts2 using true_H
-for(unsigned i=0; i<pts1.size(); ++i)
-{
-  vector_3d v = true_H * vector_3d(pts1[i].x(), pts1[i].y(), 1.0);
-  pts2.push_back(vector_2d(v.x()/v.z(), v.y()/v.z()));
-}
+  // transform pts1 to pts2 using true_H
+  for(unsigned i=0; i<pts1.size(); ++i)
+  {
+    vector_3d v = true_H * vector_3d(pts1[i].x(), pts1[i].y(), 1.0);
+    pts2.push_back(vector_2d(v.x()/v.z(), v.y()/v.z()));
+  }
 
-homography_sptr H = estimator.estimate(pts1, pts2, inliers);
-  H->normalize();
+  homography_sptr H = estimator.estimate(pts1, pts2, inliers);
+  H = H->normalize();
 
   double H_error = (true_H - H->matrix_d()).norm();
   std::cout << "Homography estimation error: "<< H_error << std::endl;
@@ -163,7 +163,7 @@ IMPLEMENT_TEST(ideal_points)
 
   std::vector<bool> inliers;
   homography_sptr H = estimator.estimate(pts1, pts2, inliers);
-  H->normalize();
+  H = H->normalize();
 
   double H_error = (true_H - H->matrix_d()).norm();
   std::cout << "Homography estimation error: "<< H_error << std::endl;
@@ -198,7 +198,7 @@ IMPLEMENT_TEST(noisy_points)
 
   std::vector<bool> inliers;
   homography_sptr H = estimator.estimate(pts1, pts2, inliers);
-  H->normalize();
+  H = H->normalize();
 
   double H_error = (true_H - H->matrix_d()).norm();
   std::cout << "Homography estimation error: "<< H_error << std::endl;
@@ -242,7 +242,7 @@ IMPLEMENT_TEST(outlier_points)
 
   std::vector<bool> inliers;
   homography_sptr H = estimator.estimate(pts1, pts2, inliers);
-  H->normalize();
+  H = H->normalize();
 
   double H_error = (true_H - H->matrix_d()).norm();
   std::cout << "Homography estimation error: "<< H_error << std::endl;

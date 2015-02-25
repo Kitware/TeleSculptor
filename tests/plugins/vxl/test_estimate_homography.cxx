@@ -130,7 +130,7 @@ IMPLEMENT_TEST(four_points)
   }
 
   homography_sptr H = estimator.estimate(pts1, pts2, inliers);
-  H->normalize();
+  H = H->normalize();
 
   double H_error = (true_H - H->matrix_d()).norm();
   std::cout << "Homography estimation error: "<< H_error << std::endl;
@@ -160,7 +160,7 @@ IMPLEMENT_TEST(ideal_points)
 
   std::vector<bool> inliers;
   homography_sptr H = estimator.estimate(pts1, pts2, inliers);
-  H->normalize();
+  H = H->normalize();
 
   double H_error = (true_H - H->matrix_d()).norm();
   std::cout << "Homography estimation error: "<< H_error << std::endl;
@@ -195,7 +195,7 @@ IMPLEMENT_TEST(noisy_points)
 
   std::vector<bool> inliers;
   homography_sptr H = estimator.estimate(pts1, pts2, inliers);
-  H->normalize();
+  H = H->normalize();
 
   double H_error = (true_H - H->matrix_d()).norm();
   std::cout << "Homography estimation error: "<< H_error << std::endl;
@@ -239,7 +239,7 @@ IMPLEMENT_TEST(outlier_points)
 
   std::vector<bool> inliers;
   homography_sptr H = estimator.estimate(pts1, pts2, inliers);
-  H->normalize();
+  H = H->normalize();
 
   double H_error = (true_H - H->matrix_d()).norm();
   std::cout << "Homography estimation error: "<< H_error << std::endl;

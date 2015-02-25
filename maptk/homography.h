@@ -52,7 +52,7 @@ namespace maptk
 {
 
 
-// Forward declarations of abstract homography classe
+// Forward declarations of abstract homography class
 class homography;
 // typedef for a homography shared pointer
 typedef boost::shared_ptr< homography > homography_sptr;
@@ -89,19 +89,22 @@ public:
    */
   virtual Eigen::Matrix<float,3,3> matrix_f() const = 0;
 
-  /// Normalize \p homography transformation in-place
+  /// Get a new \p homography that has been normalized
   /**
    * Normalized \p homography is one in which the lower-right corner
    * (index (2,2]) is 1.
    *
    * If this index is 0, the nothing is modified.
    *
-   * \return The reference to ourself.
+   * \return New homography transformation instance.
    */
-  virtual homography& normalize() = 0;
+  virtual homography_sptr normalize() = 0;
 
-  /// Invert \p homography transformation in-place
-  virtual homography& invert() = 0;
+  /// Get a new \p homography that has been inverted.
+  /**
+   * \return New homography transformation instance.
+   */
+  virtual homography_sptr invert() = 0;
 
 };
 
@@ -158,19 +161,23 @@ public:
   virtual Eigen::Matrix<float,3,3> matrix_f() const;
 
 
-  /// Normalize homography transformation in-place
+  /// Get a new \p homography that has been normalized
   /**
    * Normalized homography is one in which the lower-right corner (index (2,2])
    * is 1.
    *
    * If this index is 0, the nothing is modified.
    *
-   * \return The reference to ourself.
+   * \return New homography transformation instance.
    */
-  virtual homography_<T>& normalize();
+  virtual homography_sptr normalize();
 
-  /// Inverse the homography transformation returning a new transformation
-  virtual homography_<T>& invert();
+  /// Get a new \p homography that has been inverted.
+  /**
+   * \throws non_invertible_matrix When the homography matrix is non-invertible.
+   * \return New homography transformation instance.
+   */
+  virtual homography_sptr invert();
 
   // Member Functions --------------------------------------------------------
 

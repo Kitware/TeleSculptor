@@ -556,8 +556,8 @@ compute_ref_homography_core
   {
     LOG_DEBUG( LOGGING_PREFIX, "estimation SUCCEEDED" );
     // extend current shot
+    h = h->normalize();
     output = f2f_homography_sptr( new f2f_homography( h, frame_number, earliest_ref ) );
-    output->homography()->normalize();
   }
 
   // Update track infos based on homography estimation result

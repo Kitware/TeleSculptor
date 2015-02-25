@@ -116,20 +116,21 @@ homography_<float>
 
 /// Normalize homography transformation in-place
 template <typename T>
-homography_<T>&
+homography_sptr
 homography_<T>
 ::normalize()
 {
-  if( this->h_(2,2) != 0 )
+  matrix_t norm = this->get_matrix();
+  if( norm(2,2) != 0 )
   {
-    this->h_ /= this->h_(2,2);
+    norm /= norm(2,2);
   }
-  return *this;
+  return homography_sptr( new homography_<T>( norm ) );
 }
 
 /// Inverse the homography transformation returning a new transformation
 template <typename T>
-homography_<T>&
+homography_sptr
 homography_<T>
 ::invert()
 {
@@ -140,11 +141,7 @@ homography_<T>
   {
     throw non_invertible_matrix();
   }
-  else
-  {
-    this->h_ = inv;
-  }
-  return *this;
+  return homography_sptr( new homography_<T>( inv ) );
 }
 
 template <typename T>
