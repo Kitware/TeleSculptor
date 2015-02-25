@@ -185,9 +185,6 @@ private:
 };
 
 
-#undef DECL_MAP_TYPES
-
-
 } // end namespace maptk
 
 
