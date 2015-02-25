@@ -87,7 +87,9 @@ set(module_path "${MAPTK_SOURCE_DIR}/CMake")
 maptk_configure_file(maptk-config
   "${MAPTK_SOURCE_DIR}/CMake/maptk-config.cmake.in"
   "${MAPTK_CONFIG_FILE}"
-  MAPTK_SOURCE_DIR MAPTK_BINARY_DIR
+  MAPTK_SOURCE_DIR
+  MAPTK_BINARY_DIR
+  EIGEN3_INCLUDE_DIR
   maptk_libs
   module_path
   )
@@ -99,6 +101,7 @@ set(module_path "${CMAKE_INSTALL_PREFIX}/lib${MAPTK_LIB_SUFFIX}/cmake/maptk")
 maptk_configure_file(maptk-install-config
   "${MAPTK_SOURCE_DIR}/CMake/maptk-config-install.cmake.in"
   "${MAPTK_CONFIG_INSTALL_FILE}"
+  EIGEN3_INCLUDE_DIR
   maptk_libs
   module_path
   )
