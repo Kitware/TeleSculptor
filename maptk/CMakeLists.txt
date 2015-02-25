@@ -214,11 +214,19 @@ if (CMAKE_CONFIGURATION_TYPES)
 endif()
 
 # Convert use-build-dir switch into 1/0 value
-if (MAPTK_USE_BUILD_PLUGIN_DIR)
-  set(MAPTK_USE_BUILD_PLUGIN_DIR 1)
-else()
-  set(MAPTK_USE_BUILD_PLUGIN_DIR 0)
-endif()
+macro(boolize var_name)
+  if( ${var_name} )
+    set(${var_name} 1)
+  else()
+    set(${var_name} 0)
+  endif()
+endmacro()
+
+boolize(MAPTK_USE_BUILD_PLUGIN_DIR)
+boolize(MAPTK_ENABLE_OPENCV)
+boolize(MAPTK_ENABLE_PROJ)
+boolize(MAPTK_ENABLE_VISCL)
+boolize(MAPTK_ENABLE_VXL)
 
 target_compile_definitions(maptk_apm
   PRIVATE
@@ -244,6 +252,7 @@ if(NOT BUILD_SHARED_LIBS)
   get_property(plugin_static_libs
     GLOBAL PROPERTY maptk_plugin_libraries
     )
+  message(STATUS "Static build \"plugin\" libraries: ${plugin_static_libs}")
   target_link_libraries(maptk_apm
     ${plugin_static_libs}
     )
