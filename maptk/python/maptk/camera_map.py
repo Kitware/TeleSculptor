@@ -39,24 +39,11 @@ __author__ = 'purg'
 import ctypes
 
 from maptk import MaptkCamera
-from maptk.util import (
-    MaptkObject,
-    propagate_exception_from_handle
-)
-
-
-# noinspection PyPep8Naming
-class _maptk_camera_map_t (ctypes.Structure):
-    """ C interface opaque handle structure """
-    pass
+from maptk.util import MaptkObject, MaptkErrorHandle
 
 
 class MaptkCameraMap (MaptkObject):
     """ maptk::camera_map interface class """
-
-    # C API structure + pointer
-    C_TYPE = _maptk_camera_map_t
-    C_TYPE_PTR = ctypes.POINTER(_maptk_camera_map_t)
 
     def __init__(self, frame2cam_map):
         """
@@ -82,7 +69,7 @@ class MaptkCameraMap (MaptkObject):
         # noinspection PyCallingNonCallable
         c_fn_array = fn_array_t(*fn_list)
         # noinspection PyCallingNonCallable,PyProtectedMember
-        c_cam_array = cam_array_t(*(c._inst_ptr for c in cam_list))
+        c_cam_array = cam_array_t(*(c.c_pointer for c in cam_list))
 
         self._inst_ptr = cm_new(len(frame2cam_map),
                                 c_fn_array, c_cam_array)
@@ -93,13 +80,9 @@ class MaptkCameraMap (MaptkObject):
 
     def _destroy(self):
         cm_del = self.MAPTK_LIB.maptk_camera_map_destroy
-        cm_del.argtypes = [self.C_TYPE_PTR, self.EH_TYPE_PTR]
-        eh = self.EH_NEW()
-        cm_del(self._inst_ptr, eh)
-        try:
-            propagate_exception_from_handle(eh)
-        finally:
-            self.EH_DEL(eh)
+        cm_del.argtypes = [self.C_TYPE_PTR, MaptkErrorHandle.C_TYPE_PTR]
+        with MaptkErrorHandle() as eh:
+            cm_del(self, eh)
 
     def size(self):
         """
@@ -107,12 +90,7 @@ class MaptkCameraMap (MaptkObject):
         :rtype: int
         """
         cm_size = self.MAPTK_LIB.maptk_camera_map_size
-        cm_size.argtypes = [self.C_TYPE_PTR, self.EH_TYPE_PTR]
+        cm_size.argtypes = [self.C_TYPE_PTR, MaptkErrorHandle.C_TYPE_PTR]
         cm_size.restype = ctypes.c_size_t
-        eh = self.EH_NEW()
-        try:
-            s = cm_size(self._inst_ptr, eh)
-            propagate_exception_from_handle(eh)
-            return s
-        finally:
-            self.EH_DEL(eh)
+        with MaptkErrorHandle() as eh:
+            return cm_size(self, eh)

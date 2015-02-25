@@ -3,42 +3,81 @@ __author__ = 'purg'
 
 import ctypes
 
+from maptk.util.MaptkObject import MaptkObject
 from maptk.exceptions.base import MaptkBaseException
 
 
 # noinspection PyPep8Naming
-class c_maptk_error_handle (ctypes.Structure):
+class MaptkErrorHandle (MaptkObject):
     """ Error handling structure used in C interface """
-    _fields_ = [
-        ("error_code", ctypes.c_int),
-        ("message", ctypes.c_char_p),
-    ]
 
-c_maptk_error_handle_p = ctypes.POINTER(c_maptk_error_handle)
+    # noinspection PyPep8Naming
+    class C_TYPE (ctypes.Structure):
+        """
+        C Interface structure
+        """
+        _fields_ = [
+            ("error_code", ctypes.c_int),
+            ("message", ctypes.c_char_p),
+        ]
 
+    C_TYPE_PTR = ctypes.POINTER(C_TYPE)
 
-def propagate_exception_from_handle(eh_ptr, ec_exception_map=None):
-    """
-    Raise appropriate Python exception if the given error handle has a non-zero
-    error code.
+    def __init__(self):
+        """
+        Create a new error handle instance
+        """
+        super(MaptkErrorHandle, self).__init__()
 
-    By default, if a non-zero error code is observed, a generic
-    MaptkBaseException is raised with the provided error handle message.
+        eh_new = self.MAPTK_LIB['maptk_eh_new']
+        eh_new.restype = self.C_TYPE_PTR
+        self._inst_ptr = eh_new()
+        if not self._inst_ptr:
+            raise RuntimeError("Failed construct new error handle instance")
 
-    Optionally, ec_exception_map may be defined as a mapping of integers to
-    an exception class, or function that returns an exception instance, if a
-    specific exception or action should occur instead. Such an exception class
-    or function should take a single argument (the exception message).
+        self._ec_exception_map = {}
 
-    :param eh_ptr: error handle instance pointer
-    :type eh_ptr: c_maptk_error_handle_p
+    def _destroy(self):
+        eh_del = self.MAPTK_LIB['maptk_eh_destroy']
+        eh_del.argtypes = [self.C_TYPE_PTR]
+        eh_del(self._inst_ptr)
 
-    :param ec_exception_map: Optional exception handle association map
-    :type ec_exception_map: dict of (int, types.ClassType or types.FunctionType)
+    def __enter__(self):
+        return self
 
-    """
-    if eh_ptr[0].error_code != 0:
-        if ec_exception_map and ec_exception_map.has_key(eh_ptr[0].error_code):
-            raise ec_exception_map[eh_ptr[0].error_code](eh_ptr[0].message)
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is not None:
+            return False
         else:
-            raise MaptkBaseException(eh_ptr[0].message)
+            self.propagate_exception()
+        return True
+
+    def set_exception_map(self, ec_exception_map):
+        """
+        Extend the current return code to exception mapping.
+
+        :param ec_exception_map: Dictionary mapping integer return code to an
+            exception, or function returning an exception instance, that should
+            be raised.
+        :type ec_exception_map: dict of (int, BaseException or types.FunctionType)
+
+        """
+        self._ec_exception_map.update(ec_exception_map)
+
+    def propagate_exception(self):
+        """
+        Raise appropriate Python exception if our current error code is non-zero
+
+        By default, if a non-zero error code is observed, a generic
+        MaptkBaseException is raised with the provided error handle message.
+
+        If an exception map was set via set_exception_map(...) and the error
+        code matches an entry, that will be raised instead.
+
+        """
+        c_ptr = self.c_pointer
+        if c_ptr[0].error_code != 0:
+            if c_ptr[0].error_code in self._ec_exception_map:
+                raise self._ec_exception_map[c_ptr[0].error_code](c_ptr[0].message)
+            else:
+                raise MaptkBaseException(c_ptr[0].message)

@@ -38,23 +38,13 @@ __author__ = 'purg'
 
 import ctypes
 
-from maptk.util import MaptkObject, propagate_exception_from_handle
+from maptk.util import MaptkObject, MaptkErrorHandle
 
 
 class MaptkTrack (MaptkObject):
     """
     maptk::track interface class
     """
-
-    class _maptk_track_t (ctypes.Structure):
-        """
-        Opaque structure type used in C interface.
-        """
-        pass
-
-    # C API structure + pointer
-    C_TYPE = _maptk_track_t
-    C_TYPE_PTR = ctypes.POINTER(C_TYPE)
 
     def __init__(self):
         super(MaptkTrack, self).__init__()
@@ -69,14 +59,9 @@ class MaptkTrack (MaptkObject):
 
     def _destroy(self):
         t_del = self.MAPTK_LIB['maptk_track_destroy']
-        t_del.argtypes = [self.C_TYPE_PTR]
-
-        eh = self.EH_NEW()
-        try:
-            t_del(self.c_pointer, eh)
-            propagate_exception_from_handle(eh)
-        finally:
-            self.EH_DEL(eh)
+        t_del.argtypes = [self.C_TYPE_PTR, MaptkErrorHandle.C_TYPE_PTR]
+        with MaptkErrorHandle() as eh:
+            t_del(self, eh)
 
     def __len__(self):
         """
@@ -84,16 +69,10 @@ class MaptkTrack (MaptkObject):
         :rtype: int
         """
         t_size = self.MAPTK_LIB['maptk_track_size']
-        t_size.argtypes = [self.C_TYPE_PTR, self.EH_TYPE_PTR]
+        t_size.argtypes = [self.C_TYPE_PTR, MaptkErrorHandle.C_TYPE_PTR]
         t_size.restype = ctypes.c_size_t
-
-        eh = self.EH_NEW()
-        try:
-            s = t_size(self.c_pointer, eh)
-            propagate_exception_from_handle(eh)
-            return s
-        finally:
-            self.EH_DEL(eh)
+        with MaptkErrorHandle() as eh:
+            return t_size(self, eh)
 
     @property
     def size(self):
@@ -110,13 +89,7 @@ class MaptkTrack (MaptkObject):
         :rtype: bool
         """
         t_empty = self.MAPTK_LIB['maptk_track_empty']
-        t_empty.argtypes = [self.C_TYPE_PTR, self.EH_TYPE_PTR]
+        t_empty.argtypes = [self.C_TYPE_PTR, MaptkErrorHandle.C_TYPE_PTR]
         t_empty.restype = ctypes.c_bool
-
-        eh = self.EH_NEW()
-        try:
-            b = t_empty(self.c_pointer, eh)
-            propagate_exception_from_handle(eh)
-            return b
-        finally:
-            self.EH_DEL(eh)
+        with MaptkErrorHandle() as eh:
+            return t_empty(self, eh)

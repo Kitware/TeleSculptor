@@ -40,7 +40,8 @@ import abc
 import ctypes
 
 from maptk import MaptkConfigBlock
-from maptk.util import MaptkObject, propagate_exception_from_handle
+from maptk.exceptions.base import MaptkNullPointerException
+from maptk.util import MaptkObject, MaptkErrorHandle
 
 
 # noinspection PyPep8Naming
@@ -55,51 +56,49 @@ class MaptkAlgorithm (MaptkObject):
     """
     Base class for MAPTK algorithms
     """
-    __metaclass__ = abc.ABCMeta
-
-    # C API config_block_t structure + pointer
-    C_TYPE = _maptk_algorithm_t
-    C_TYPE_PTR = ctypes.POINTER(_maptk_algorithm_t)
-
     # Subclass defined type string as would be returned by
     # maptk::algo::*::type_name. This allows this base class to know how to
     # automatically call common algorithm_def level methods.
     TYPE_NAME = None
 
     @classmethod
-    def from_c_pointer(cls, ptr, is_copy_of=None, name=None):
+    def from_c_pointer(cls, ptr, shallow_copy_of=None, name=None):
         """
         Create a named algorithm instance of the derived class from a C API
         opaque pointer.
 
         If this the C pointer given to ptr is taken form an existing Python
         object instance, that object instance should be given to the
-        is_copy_of argument. This ensures that the underlying C reference is
-        not destroyed prematurely.
+        shallow_copy_of argument. This ensures that the underlying C reference
+        is not destroyed prematurely.
 
         This class-method override allows the passing of the algorithm instance
         name.
 
+        :param ptr: C API opaque structure pointer type instance
+        :type ptr: MaptkAlgorithm.C_TYPE_PTR
+
+        :param shallow_copy_of: Optional parent object instance when the ptr
+            given is coming from an existing python object.
+        :type shallow_copy_of: MaptkAlgorithm or None
+
         :param name: Name of the new algorithm. This must be provided if this is
             not a copy of another algorithm instance.
-        :type name: str
-
-        :param ptr: C API opaque structure pointer type instance
-        :type ptr: cls.C_TYPE_PTR
-
-        :param is_copy_of: Optional parent object instance when the ptr given
-            is coming from an existing python object.
-        :type ptr: cls
+        :type name: str or None
 
         :return: New Python object using the given underlying C object pointer.
+        :rtype: MaptkAlgorithm
 
         """
-        n = super(MaptkAlgorithm, cls).from_c_pointer(ptr, is_copy_of)
+        n = super(MaptkAlgorithm, cls).from_c_pointer(ptr, shallow_copy_of)
 
-        if not is_copy_of and not name:
+        if shallow_copy_of is None and not name:
             raise ValueError("Empty name given.")
+
         if name:
             n._name = name
+        elif shallow_copy_of is not None:
+            n._name = shallow_copy_of._name
 
         return n
 
@@ -175,10 +174,11 @@ class MaptkAlgorithm (MaptkObject):
 
         inst_ptr = algo_create(impl_name)
         if not bool(inst_ptr):
-            raise RuntimeError("Failed to construct algorithm instance (null "
-                               "pointer returned)")
+            raise MaptkNullPointerException(
+                "Failed to construct algorithm instance"
+            )
 
-        return cls.from_c_pointer(inst_ptr, name=algo_name  )
+        return cls.from_c_pointer(inst_ptr, name=algo_name)
 
     def __init__(self, name):
         """
@@ -241,15 +241,10 @@ class MaptkAlgorithm (MaptkObject):
         if self._inst_ptr:
             algo_destroy = self.MAPTK_LIB["maptk_algorithm_%s_destroy"
                                           % self.type_name()]
-            algo_destroy.argtypes = [self.C_TYPE_PTR]
-            algo_destroy.restype = ctypes.c_uint
-
-            eh = self.EH_NEW()
-            algo_destroy(self._inst_ptr, eh)
-            try:
-                propagate_exception_from_handle(eh)
-            finally:
-                self.EH_DEL(eh)
+            algo_destroy.argtypes = [self.C_TYPE_PTR,
+                                     MaptkErrorHandle.C_TYPE_PTR]
+            with MaptkErrorHandle() as eh:
+                algo_destroy(self, eh)
 
     def impl_name(self):
         """
@@ -259,16 +254,14 @@ class MaptkAlgorithm (MaptkObject):
         """
         if self._inst_ptr:
             algo_impl_name = self.MAPTK_LIB.maptk_algorithm_impl_name
-            algo_impl_name.argtypes = [self.C_TYPE_PTR]
+            algo_impl_name.argtypes = [self.C_TYPE_PTR,
+                                       MaptkErrorHandle.C_TYPE_PTR]
             algo_impl_name.restype = self.MST_TYPE_PTR
-
-            eh = self.EH_NEW()
-            try:
-                n = algo_impl_name(self._inst_ptr, eh)
-                propagate_exception_from_handle(eh)
-                return n.contents.str
-            finally:
-                self.EH_DEL(eh)
+            with MaptkErrorHandle() as eh:
+                s_ptr = algo_impl_name(self, eh)
+                s = s_ptr.contents.str
+                self.MST_FREE(s_ptr)
+                return s
         else:
             return None
 
@@ -282,17 +275,11 @@ class MaptkAlgorithm (MaptkObject):
         """
         algo_clone = self.MAPTK_LIB['maptk_algorithm_%s_clone'
                                     % self.type_name()]
-        algo_clone.argtypes = [self.C_TYPE_PTR]
+        algo_clone.argtypes = [self.C_TYPE_PTR, MaptkErrorHandle.C_TYPE_PTR]
         algo_clone.restype = self.C_TYPE_PTR
-
-        eh = self.EH_NEW()
-        try:
-            new_ptr = algo_clone(self._inst_ptr, eh)
-            propagate_exception_from_handle(eh)
-            return self.from_c_pointer(new_ptr,
+        with MaptkErrorHandle() as eh:
+            return self.from_c_pointer(algo_clone(self, eh),
                                        name=(new_name or self.name))
-        finally:
-            self.EH_DEL(eh)
 
     def get_config(self, cb=None):
         """
@@ -314,19 +301,15 @@ class MaptkAlgorithm (MaptkObject):
         algo_gtc = self.MAPTK_LIB['maptk_algorithm_%s_get_type_config'
                                   % self.type_name()]
         algo_gtc.argtypes = [ctypes.c_char_p, self.C_TYPE_PTR,
-                             MaptkConfigBlock.C_TYPE_PTR, self.EH_TYPE_PTR]
+                             MaptkConfigBlock.C_TYPE_PTR,
+                             MaptkErrorHandle.C_TYPE_PTR]
         algo_gtc.restype = MaptkConfigBlock.C_TYPE_PTR
 
         if cb is None:
             cb = MaptkConfigBlock()
 
-        # if self._inst_ptr:
-        eh = self.EH_NEW()
-        try:
-            algo_gtc(self.name, self.c_pointer, cb.c_pointer, eh)
-            propagate_exception_from_handle(eh)
-        finally:
-            self.EH_DEL(eh)
+        with MaptkErrorHandle() as eh:
+            algo_gtc(self.name, self, cb, eh)
 
         return cb
 
@@ -351,15 +334,10 @@ class MaptkAlgorithm (MaptkObject):
         algo_stc = self.MAPTK_LIB['maptk_algorithm_%s_set_type_config'
                                   % self.type_name()]
         algo_stc.argtypes = [ctypes.c_char_p, MaptkConfigBlock.C_TYPE_PTR,
-                             ctypes.POINTER(self.C_TYPE_PTR), self.EH_TYPE_PTR]
-
-        eh = self.EH_NEW()
-        try:
-            algo_stc(self.name, cb.c_pointer, ctypes.byref(self._inst_ptr),
-                     eh)
-            propagate_exception_from_handle(eh)
-        finally:
-            self.EH_DEL(eh)
+                             ctypes.POINTER(self.C_TYPE_PTR),
+                             MaptkErrorHandle.C_TYPE_PTR]
+        with MaptkErrorHandle() as eh:
+            algo_stc(self.name, cb, ctypes.byref(self.c_pointer), eh)
 
     def check_config(self, cb):
         """
@@ -375,17 +353,12 @@ class MaptkAlgorithm (MaptkObject):
         """
         algo_ctc = self.MAPTK_LIB['maptk_algorithm_%s_check_type_config'
                                   % self.type_name()]
-        algo_ctc.argtypes = [ctypes.c_char_p, MaptkConfigBlock.C_TYPE_PTR,
-                             self.EH_TYPE_PTR]
+        algo_ctc.argtypes = [ctypes.c_char_p,
+                             MaptkConfigBlock.C_TYPE_PTR,
+                             MaptkErrorHandle.C_TYPE_PTR]
         algo_ctc.restype = ctypes.c_bool
-
-        eh = self.EH_NEW()
-        try:
-            r = algo_ctc(self.name, cb.c_pointer, eh)
-            propagate_exception_from_handle(eh)
-            return r
-        finally:
-            self.EH_DEL(eh)
+        with MaptkErrorHandle() as eh:
+            return algo_ctc(self.name, cb, eh)
 
 
 # Convenience imports of algorithm definition types to the module level

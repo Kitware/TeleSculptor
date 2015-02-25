@@ -168,7 +168,7 @@ public:
     if( sptr.get() == NULL )
     {
       std::ostringstream ss;
-      ss << get_log_prefix(sptr.get()) << " Cannot store NULL pointer";
+      ss << get_log_prefix(sptr.get()) << ": Cannot store NULL pointer";
       throw NullPointerException(ss.str());
     }
 
@@ -194,7 +194,7 @@ public:
     if( ptr == NULL )
     {
       std::ostringstream ss;
-      ss << get_log_prefix(ptr) << "Cannot get NULL pointer";
+      ss << get_log_prefix(ptr) << ": Cannot get NULL pointer";
       throw NullPointerException(ss.str());
     }
 
@@ -206,8 +206,8 @@ public:
     else
     {
       std::ostringstream ss;
-      ss << get_log_prefix(ptr)
-         << "No cached shared_ptr for the given pointer (ptr: " << ptr << ")";
+      ss << get_log_prefix(ptr) << ": "
+         << " No cached shared_ptr for the given pointer (ptr: " << ptr << ")";
       throw NoEntryException( ss.str() );
     }
   }
@@ -224,7 +224,7 @@ public:
     if( ptr == NULL )
     {
       std::ostringstream ss;
-      ss << get_log_prefix(ptr) << "Cannot erase NULL pointer";
+      ss << get_log_prefix(ptr) << ": Cannot erase NULL pointer";
       throw NullPointerException(ss.str());
     }
 
@@ -281,9 +281,7 @@ void make_string_list( std::vector<std::string> const &list,
                        unsigned int &length, char ** &strings );
 
 
-
-}
-
+} //end maptk_c namespace
 
 
 #endif //MAPTK_C_HELPERS_C_UTILS_H_

@@ -45,3 +45,8 @@ class MaptkBaseException(Exception):
 class MaptkInvalidValue(MaptkBaseException):
     """ Exception for when an invalid value is used """
     pass
+
+
+class MaptkNullPointerException (MaptkBaseException):
+    """ When an error occurs due to use of a NULL pointer """
+    pass

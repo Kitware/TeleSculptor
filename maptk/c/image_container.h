@@ -88,12 +88,8 @@ size_t maptk_image_container_depth( maptk_image_container_t *img_c );
 
 
 /// Get the in-memory image class to access data
-//MAPTK_C_EXPORT
-//maptk_image_t* maptk_image_container_get_image( maptk_image_container_t *img_c );
-//TODO: Resolve concrete-to-pointer gap
-//      Probably by creating new image as pointer sharing the memory of this
-//      IC's image data (using first pixel pointer)
-
+MAPTK_C_EXPORT
+maptk_image_t* maptk_image_container_get_image( maptk_image_container_t *img_c );
 
 
 #ifdef __cplusplus

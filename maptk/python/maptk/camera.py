@@ -38,24 +38,11 @@ __author__ = 'purg'
 
 import ctypes
 
-from maptk.util import (
-    MaptkObject,
-    propagate_exception_from_handle
-)
-
-
-# noinspection PyPep8Naming
-class _maptk_camera_t (ctypes.Structure):
-    """ C interface opaque handle structure """
-    pass
+from maptk.util import MaptkObject, MaptkErrorHandle
 
 
 class MaptkCamera (MaptkObject):
     """ maptk::camera interface class """
-
-    # C API structure + pointer
-    C_TYPE = _maptk_camera_t
-    C_TYPE_PTR = ctypes.POINTER(_maptk_camera_t)
 
     @classmethod
     def from_krtd_file(cls, filepath):
@@ -64,31 +51,20 @@ class MaptkCamera (MaptkObject):
         :rtype: MaptkCamera
         """
         cam_read_krtd = cls.MAPTK_LIB.maptk_camera_read_krtd_file
-        cam_read_krtd.argtypes = [ctypes.c_char_p, cls.EH_TYPE_PTR]
+        cam_read_krtd.argtypes = [ctypes.c_char_p, MaptkErrorHandle.C_TYPE_PTR]
         cam_read_krtd.restype = cls.C_TYPE_PTR
 
-        eh = cls.EH_NEW()
-        c_ptr = cam_read_krtd(filepath, eh)
-        try:
-            propagate_exception_from_handle(eh)
-        finally:
-            cls.EH_DEL(eh)
-
-        return cls.from_c_pointer(c_ptr)
+        with MaptkErrorHandle() as eh:
+            return cls.from_c_pointer( cam_read_krtd(filepath, eh) )
 
     def _destroy(self):
         """ Delete instance through C API """
         if self._inst_ptr:
             cam_del = self.MAPTK_LIB.maptk_camera_destroy
-            cam_del.argtypes = [self.C_TYPE_PTR, self.EH_TYPE_PTR]
+            cam_del.argtypes = [self.C_TYPE_PTR, MaptkErrorHandle.C_TYPE_PTR]
 
-            eh = self.EH_NEW()
-            cam_del(self._inst_ptr, eh)
-
-            try:
-                propagate_exception_from_handle(eh)
-            finally:
-                self.EH_DEL(eh)
+            with MaptkErrorHandle() as eh:
+                cam_del(self, eh)
 
     def write_krtd_file(self, filepath):
         """
@@ -100,11 +76,7 @@ class MaptkCamera (MaptkObject):
         """
         cam_write_krtd = self.MAPTK_LIB.maptk_camera_write_krtd_file
         cam_write_krtd.argtypes = [self.C_TYPE_PTR, ctypes.c_char_p,
-                                   self.EH_TYPE_PTR]
+                                   MaptkErrorHandle.C_TYPE_PTR]
 
-        eh = self.EH_NEW()
-        cam_write_krtd(self._inst_ptr, filepath, eh)
-        try:
-            propagate_exception_from_handle(eh)
-        finally:
-            self.EH_DEL(eh)
+        with MaptkErrorHandle() as eh:
+            cam_write_krtd(self, filepath, eh)

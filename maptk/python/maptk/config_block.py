@@ -45,24 +45,13 @@ from maptk.exceptions.config_block_io import (
     MaptkConfigBlockIoFileNotParsed,
     MaptkConfigBlockIoFileWriteException,
 )
-from maptk.util import MaptkObject, propagate_exception_from_handle
-
-
-# noinspection PyPep8Naming
-class _maptk_config_block_t (ctypes.Structure):
-    """
-    Opaque structure type used in C interface.
-    """
-    pass
+from maptk.util import MaptkObject, MaptkErrorHandle
 
 
 class MaptkConfigBlock (MaptkObject):
     """
     maptk::config_block interface class
     """
-    # C API structure + pointer
-    C_TYPE = _maptk_config_block_t
-    C_TYPE_PTR = ctypes.POINTER(_maptk_config_block_t)
 
     # MaptkConfigBlock Constants
     BLOCK_SEP = \
@@ -89,23 +78,19 @@ class MaptkConfigBlock (MaptkObject):
 
         """
         cb_read = cls.MAPTK_LIB.maptk_config_block_file_read
-        cb_read.argtypes = [ctypes.c_char_p, cls.EH_TYPE_PTR]
+        cb_read.argtypes = [ctypes.c_char_p, MaptkErrorHandle.C_TYPE_PTR]
         cb_read.restype = cls.C_TYPE_PTR
-
-        eh = cls.EH_NEW()
-        cb_ptr = cb_read(str(filepath), eh)
-
-        try:
-            propagate_exception_from_handle(eh, {
+        with MaptkErrorHandle() as eh:
+            eh.set_exception_map({
                 -1: MaptkConfigBlockIoException,
                 1: MaptkConfigBlockIoFileNotFoundException,
                 2: MaptkConfigBlockIoFileNotReadException,
                 3: MaptkConfigBlockIoFileNotParsed
             })
-        finally:
-            cls.EH_DEL(eh)
 
-        return MaptkConfigBlock.from_c_pointer(cb_ptr)
+            return cls.from_c_pointer(
+                cb_read(filepath, eh)
+            )
 
     def __init__(self, name=None):
         """
@@ -129,7 +114,8 @@ class MaptkConfigBlock (MaptkObject):
 
     def _destroy(self):
         # print "Destroying CB: \"%s\" %d" % (self.name, self._inst_ptr)
-        self.MAPTK_LIB.maptk_config_block_destroy(self._inst_ptr)
+        if self.c_pointer:
+            self.MAPTK_LIB.maptk_config_block_destroy(self)
 
     @property
     def name(self):
@@ -141,7 +127,7 @@ class MaptkConfigBlock (MaptkObject):
         cb_get_name.argtypes = [self.C_TYPE_PTR]
         cb_get_name.restype = self.MST_TYPE_PTR
 
-        mst = cb_get_name(self._inst_ptr)
+        mst = cb_get_name(self)
         s = mst.contents.str
         self.MST_FREE(mst)
 
@@ -160,7 +146,7 @@ class MaptkConfigBlock (MaptkObject):
         cb_subblock.argtypes = [self.C_TYPE_PTR]
         cb_subblock.restype = self.C_TYPE_PTR
         return MaptkConfigBlock.from_c_pointer(
-            cb_subblock(self._inst_ptr, key)
+            cb_subblock(self, key)
         )
 
     def subblock_view(self, key):
@@ -179,7 +165,7 @@ class MaptkConfigBlock (MaptkObject):
         cb_subblock_view.argtypes = [self.C_TYPE_PTR]
         cb_subblock_view.restype = self.C_TYPE_PTR
         return MaptkConfigBlock.from_c_pointer(
-            cb_subblock_view(self._inst_ptr, key)
+            cb_subblock_view(self, key)
         )
 
     def get_value(self, key, default=None):
@@ -207,7 +193,7 @@ class MaptkConfigBlock (MaptkObject):
         cb_get_value.argtypes = [self.C_TYPE_PTR, ctypes.c_char_p]
         cb_get_value.restype = self.MST_TYPE_PTR
 
-        mst_ptr = cb_get_value(self._inst_ptr, key)
+        mst_ptr = cb_get_value(self, key)
         if not bool(mst_ptr):
             return default
         s = mst_ptr.contents.str
@@ -235,7 +221,7 @@ class MaptkConfigBlock (MaptkObject):
         cb_get_descr.argtypes = [self.C_TYPE_PTR, ctypes.c_char_p]
         cb_get_descr.restype = self.MST_TYPE_PTR
 
-        mst_ptr = cb_get_descr(self._inst_ptr, key)
+        mst_ptr = cb_get_descr(self, key)
         if mst_ptr is not None:
             s = mst_ptr.contents.str
             self.MST_FREE(mst_ptr)
@@ -268,12 +254,12 @@ class MaptkConfigBlock (MaptkObject):
             cb_set_value = self.MAPTK_LIB.maptk_config_block_set_value
             cb_set_value.argtypes = [self.C_TYPE_PTR, ctypes.c_char_p,
                                      ctypes.c_char_p]
-            cb_set_value(self._inst_ptr, str(key), str(value))
+            cb_set_value(self, str(key), str(value))
         else:
             cb_set_value = self.MAPTK_LIB.maptk_config_block_set_value_descr
             cb_set_value.argtypes = [self.C_TYPE_PTR, ctypes.c_char_p,
                                      ctypes.c_char_p, ctypes.c_char_p]
-            cb_set_value(self._inst_ptr, str(key), str(value), str(description))
+            cb_set_value(self, str(key), str(value), str(description))
 
     def unset_value(self, key):
         """
@@ -287,7 +273,7 @@ class MaptkConfigBlock (MaptkObject):
         """
         cb_unset_value = self.MAPTK_LIB.maptk_config_block_unset_value
         cb_unset_value.argtypes = [self.C_TYPE_PTR]
-        cb_unset_value(self._inst_ptr, key)
+        cb_unset_value(self, key)
 
     def is_read_only(self, key):
         """
@@ -304,7 +290,7 @@ class MaptkConfigBlock (MaptkObject):
         cb_is_ro = self.MAPTK_LIB.maptk_config_block_is_read_only
         cb_is_ro.argtypes = [self.C_TYPE_PTR, ctypes.c_char_p]
         cb_is_ro.restype = ctypes.c_bool
-        return cb_is_ro(self._inst_ptr, key)
+        return cb_is_ro(self, key)
 
     def mark_read_only(self, key):
         """
@@ -319,7 +305,7 @@ class MaptkConfigBlock (MaptkObject):
         """
         cb_mark_ro = self.MAPTK_LIB.maptk_config_block_mark_read_only
         cb_mark_ro.argtypes = [self.C_TYPE_PTR, ctypes.c_char_p]
-        cb_mark_ro(self._inst_ptr, key)
+        cb_mark_ro(self, key)
 
     def merge_config(self, other):
         """
@@ -335,7 +321,7 @@ class MaptkConfigBlock (MaptkObject):
         """
         cb_merge = self.MAPTK_LIB.maptk_config_block_merge_config
         cb_merge.argtypes = [self.C_TYPE_PTR, self.C_TYPE_PTR]
-        cb_merge(self._inst_ptr, other._inst_ptr)
+        cb_merge(self, other)
 
     def has_value(self, key):
         """
@@ -351,7 +337,7 @@ class MaptkConfigBlock (MaptkObject):
         cb_has_value = self.MAPTK_LIB.maptk_config_block_has_value
         cb_has_value.argtypes = [self.C_TYPE_PTR, ctypes.c_char_p]
         cb_has_value.restype = ctypes.c_bool
-        return cb_has_value(self._inst_ptr, key)
+        return cb_has_value(self, key)
 
     def available_keys(self):
         """
@@ -366,7 +352,7 @@ class MaptkConfigBlock (MaptkObject):
 
         length = ctypes.c_uint(0)
         keys = ctypes.POINTER(ctypes.c_char_p)()
-        cb_ak(self._inst_ptr, ctypes.byref(length), ctypes.byref(keys))
+        cb_ak(self, ctypes.byref(length), ctypes.byref(keys))
 
         # Constructing return array
         r = []
@@ -402,15 +388,11 @@ class MaptkConfigBlock (MaptkObject):
         """
         cb_write = self.MAPTK_LIB.maptk_config_block_file_write
         cb_write.argtypes = [self.C_TYPE_PTR, ctypes.c_char_p,
-                             self.EH_TYPE_PTR]
-
-        eh = self.EH_NEW()
-        cb_write(self._inst_ptr, filepath, eh)
-
-        try:
-            propagate_exception_from_handle(eh, {
+                             MaptkErrorHandle.C_TYPE_PTR]
+        with MaptkErrorHandle() as eh:
+            eh.set_exception_map({
                 -1: MaptkConfigBlockIoException,
                 1: MaptkConfigBlockIoFileWriteException
             })
-        finally:
-            self.EH_NEW(eh)
+
+            cb_write(self, filepath, eh)

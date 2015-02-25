@@ -40,24 +40,13 @@ import ctypes
 
 from maptk import MaptkImage
 from maptk.util import MaptkObject
-from maptk.util import propagate_exception_from_handle
-
-
-# noinspection PyPep8Naming
-class _maptk_image_container_t (ctypes.Structure):
-    """
-    Opaque structure type used in C interface.
-    """
-    pass
+from maptk.util import MaptkErrorHandle
 
 
 class MaptkImageContainer (MaptkObject):
     """
     maptk::image_container interface class
     """
-    # C API structure + pointer
-    C_TYPE = _maptk_image_container_t
-    C_TYPE_PTR = ctypes.POINTER(_maptk_image_container_t)
 
     def __init__(self, image):
         """
@@ -80,13 +69,9 @@ class MaptkImageContainer (MaptkObject):
 
     def _destroy(self):
         imgc_del = self.MAPTK_LIB.maptk_image_container_destroy
-        imgc_del.argtypes = [self.C_TYPE_PTR, self.EH_TYPE_PTR]
-        eh = self.EH_NEW()
-        try:
-            imgc_del(self._inst_ptr, eh)
-            propagate_exception_from_handle(eh)
-        finally:
-            self.EH_DEL(eh)
+        imgc_del.argtypes = [self.C_TYPE_PTR, MaptkErrorHandle.C_TYPE_PTR]
+        with MaptkErrorHandle() as eh:
+            imgc_del(self, eh)
 
     def size(self):
         """
@@ -102,7 +87,7 @@ class MaptkImageContainer (MaptkObject):
         ic_size = self.MAPTK_LIB.maptk_image_container_size
         ic_size.argtypes = [self.C_TYPE_PTR]
         ic_size.restype = ctypes.c_size_t
-        return ic_size(self._inst_ptr)
+        return ic_size(self)
 
     def width(self):
         """
@@ -112,7 +97,7 @@ class MaptkImageContainer (MaptkObject):
         ic_width = self.MAPTK_LIB.maptk_image_container_width
         ic_width.argtypes = [self.C_TYPE_PTR]
         ic_width.restype = ctypes.c_size_t
-        return ic_width(self._inst_ptr)
+        return ic_width(self)
 
     def height(self):
         """
@@ -122,7 +107,7 @@ class MaptkImageContainer (MaptkObject):
         ic_height = self.MAPTK_LIB.maptk_image_container_height
         ic_height.argtypes = [self.C_TYPE_PTR]
         ic_height.restype = ctypes.c_size_t
-        return ic_height(self._inst_ptr)
+        return ic_height(self)
 
     def depth(self):
         """
@@ -132,4 +117,15 @@ class MaptkImageContainer (MaptkObject):
         ic_depth = self.MAPTK_LIB.maptk_image_container_depth
         ic_depth.argtypes = [self.C_TYPE_PTR]
         ic_depth.restype = ctypes.c_size_t
-        return ic_depth(self._inst_ptr)
+        return ic_depth(self)
+
+    def get_image(self):
+        """
+        Return a new pointer the to contained image. This instance shared the
+        same internal memory as the
+        :return:
+        """
+        ic_getimg = self.MAPTK_LIB['maptk_image_container_get_image']
+        ic_getimg.argtypes = [self.C_TYPE_PTR]
+        ic_getimg.restype = MaptkImage.C_TYPE_PTR
+        return MaptkImage.from_c_pointer(ic_getimg(self))

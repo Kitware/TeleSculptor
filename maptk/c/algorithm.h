@@ -171,9 +171,13 @@ maptk_algorithm_check_impl_configuration( maptk_algorithm_t *algo,
   /* These will error if the incorrect algorithm pointer was given.       */    \
   /* -------------------------------------------------------------------- */    \
   /* Clone the given algorithm instance */                                      \
+  /**
+   * If a NULL algorithm pointer is given, a null pointer is returned.
+   */ \
   MAPTK_C_EXPORT                                                                \
   maptk_algorithm_t*                                                            \
-  maptk_algorithm_##type##_clone( maptk_algorithm_t *algo );
+  maptk_algorithm_##type##_clone( maptk_algorithm_t *algo, \
+                                  maptk_error_handle_t *eh );
   // TODO: description() method
 
 

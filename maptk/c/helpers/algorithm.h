@@ -74,8 +74,8 @@ public:
   /* Make sptr cache for specific type */                                       \
   namespace maptk_c                                                             \
   {                                                                             \
-    SharedPointerCache< maptk::algo::type, maptk_algorithm_t > \
-      ALGORITHM_##type##_SPTR_CACHE( #type );      \
+    SharedPointerCache< maptk::algo::type, maptk_algorithm_t >                  \
+      ALGORITHM_##type##_SPTR_CACHE( #type );                                   \
   }                                                                             \
   /* ==================================================================== */    \
   /* Functions on types (static methods)                                  */    \
@@ -128,20 +128,20 @@ public:
       "C::algorithm::" #type "::get_type_config", eh,                           \
       /* Checking algo ptr in order to allow getting a raw config when given
        * NULL
-       */ \
-      maptk::algo::type##_sptr algo_sptr; \
-      if( algo ) \
-      { \
-        algo_sptr = maptk_c::ALGORITHM_##type##_SPTR_CACHE.get( algo ); \
-      } \
-      else \
-      { \
-        algo_sptr = maptk::algo::type##_sptr(); \
-      } \
+       */                                                                       \
+      maptk::algo::type##_sptr algo_sptr;                                       \
+      if( algo )                                                                \
+      {                                                                         \
+        algo_sptr = maptk_c::ALGORITHM_##type##_SPTR_CACHE.get( algo );         \
+      }                                                                         \
+      else                                                                      \
+      {                                                                         \
+        algo_sptr = maptk::algo::type##_sptr();                                 \
+      }                                                                         \
       maptk::algo::type::get_nested_algo_configuration(                         \
         name,                                                                   \
         maptk_c::CONFIG_BLOCK_SPTR_CACHE.get( cb ),                             \
-        algo_sptr \
+        algo_sptr                                                               \
       );                                                                        \
     );                                                                          \
   }                                                                             \
@@ -154,33 +154,27 @@ public:
   {                                                                             \
     STANDARD_CATCH(                                                             \
       "C::algorithm::" #type "::set_type_config", eh,                           \
-      maptk::algo::type##_sptr algo_sptr;                                      \
-      LOG_DEBUG("iio::stc", "Given algo ptr: " << *algo); \
-      if( *algo ) \
-      { \
-        LOG_DEBUG("iio::stc", "Getting algo sptr from CACHE"); \
-        algo_sptr = maptk_c::ALGORITHM_##type##_SPTR_CACHE.get( *algo ); \
-      } \
+      maptk::algo::type##_sptr algo_sptr;                                       \
+      if( *algo )                                                               \
+      {                                                                         \
+        algo_sptr = maptk_c::ALGORITHM_##type##_SPTR_CACHE.get( *algo );        \
+      }                                                                         \
       maptk::algo::type *orig_ptr = algo_sptr.get();                            \
-      LOG_DEBUG("iio::stc", "Setting nested algo configuration"); \
       maptk::algo::type::set_nested_algo_configuration(                         \
         name,                                                                   \
         maptk_c::CONFIG_BLOCK_SPTR_CACHE.get( cb ),                             \
         algo_sptr                                                               \
       );                                                                        \
-      /* If underlying pointer changed, destroy the old one and register the
-       * new one.
+      /* If underlying pointer changed, destroy the old instance and register
+       * the new one.
        */                                                                       \
       if( orig_ptr != algo_sptr.get() )                                         \
       {                                                                         \
         if( orig_ptr )                                                          \
         {                                                                       \
-          LOG_DEBUG("iio::stc", "Erasing original pointer from CACHE: " \
-                    << orig_ptr); \
           maptk_c::ALGORITHM_SPTR_CACHE.erase( orig_ptr );                      \
           maptk_c::ALGORITHM_##type##_SPTR_CACHE.erase( orig_ptr );             \
         }                                                                       \
-        LOG_DEBUG("iio::stc", "Storing new pointer: " << algo_sptr.get() ); \
         maptk_c::ALGORITHM_SPTR_CACHE.store( algo_sptr );                       \
         maptk_c::ALGORITHM_##type##_SPTR_CACHE.store( algo_sptr );              \
         *algo = reinterpret_cast<maptk_algorithm_t*>( algo_sptr.get() );        \
@@ -206,21 +200,25 @@ public:
   /* Functions on algorithm instances                                     */    \
   /* -------------------------------------------------------------------- */    \
   /* Clone the given algorithm instance */                                      \
-  maptk_algorithm_t* maptk_algorithm_##type##_clone( maptk_algorithm_t *algo )  \
+  maptk_algorithm_t* maptk_algorithm_##type##_clone( maptk_algorithm_t *algo,   \
+                                                     maptk_error_handle_t *eh ) \
   {                                                                             \
     STANDARD_CATCH(                                                             \
-      "C::algorithm::" #type "::clone", NULL,                                   \
-      maptk::algo::type##_sptr new_sptr =                                       \
-        maptk_c::ALGORITHM_##type##_SPTR_CACHE.get( algo )->clone();            \
-      if( new_sptr )                                                            \
+      "C::algorithm::" #type "::clone", eh,                                     \
+      if( algo )                                                                \
       {                                                                         \
-        maptk_c::ALGORITHM_SPTR_CACHE.store( new_sptr );                        \
-        maptk_c::ALGORITHM_##type##_SPTR_CACHE.store( new_sptr );               \
-        return reinterpret_cast<maptk_algorithm_t*>(new_sptr.get());            \
-      }                                                                         \
-      else                                                                      \
-      {                                                                         \
-        throw "Failed to clone instance of type '" #type "'";                   \
+        maptk::algo::type##_sptr new_sptr =                                     \
+          maptk_c::ALGORITHM_##type##_SPTR_CACHE.get( algo )->clone();          \
+        if( new_sptr )                                                          \
+        {                                                                       \
+          maptk_c::ALGORITHM_SPTR_CACHE.store( new_sptr );                      \
+          maptk_c::ALGORITHM_##type##_SPTR_CACHE.store( new_sptr );             \
+          return reinterpret_cast<maptk_algorithm_t*>(new_sptr.get());          \
+        }                                                                       \
+        else                                                                    \
+        {                                                                       \
+          throw "Failed to clone instance of type '" #type "'";                 \
+        }                                                                       \
       }                                                                         \
     );                                                                          \
     return 0;                                                                   \

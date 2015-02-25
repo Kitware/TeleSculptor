@@ -40,28 +40,41 @@ import abc
 import ctypes
 
 from maptk.util import find_maptk_library
-from maptk.util.error_handle import c_maptk_error_handle_p
 from maptk.util.string import maptk_string_t
+
+
+class MaptkClassType (abc.ABCMeta):
+    """
+    Metaclass for Maptk object types.
+
+    Ensures that C_TYPE and C_TYPE_PTR are defined in derived classes.
+    """
+
+    def __new__(cls, name, bases, attrs):
+
+        # Create a new structure type for the class if it has not already
+        # defined one for itself
+        if 'C_TYPE' not in attrs:
+            class OpaqueStruct (ctypes.Structure):
+                pass
+            OpaqueStruct.__name__ = "%sOpaqueStruct" % name
+            attrs['C_TYPE'] = OpaqueStruct
+            attrs['C_TYPE_PTR'] = ctypes.POINTER(OpaqueStruct)
+
+        return super(MaptkClassType, cls).__new__(cls, name, bases, attrs)
 
 
 class MaptkObject (object):
     """
     Basic MAPTK python interface class.
     """
-    __metaclass__ = abc.ABCMeta
+    __metaclass__ = MaptkClassType
 
     MAPTK_LIB = find_maptk_library()
 
     # C API opaque structure + pointer
     C_TYPE = None
     C_TYPE_PTR = None
-
-    # Configured common error handle constructor and destructor
-    EH_TYPE_PTR = c_maptk_error_handle_p
-    EH_NEW = MAPTK_LIB['maptk_eh_new']
-    EH_NEW.restype = c_maptk_error_handle_p
-    EH_DEL = MAPTK_LIB['maptk_eh_destroy']
-    EH_DEL.argtypes = [c_maptk_error_handle_p]
 
     # Common string structure stuff
     MST_TYPE = maptk_string_t
@@ -73,23 +86,24 @@ class MaptkObject (object):
     MST_FREE.argtypes = [maptk_string_t.PTR_t]
 
     @classmethod
-    def from_c_pointer(cls, ptr, is_copy_of=None):
+    def from_c_pointer(cls, ptr, shallow_copy_of=None):
         """
         Create an instance of the derived class from a C API opaque pointer.
 
         If this the C pointer given to ptr is taken form an existing Python
         object instance, that object instance should be given to the
-        is_copy_of argument. This ensures that the underlying C reference is
-        not destroyed prematurely.
+        shallow_copy_of argument. This ensures that the underlying C reference
+        is not destroyed prematurely.
 
         :param ptr: C API opaque structure pointer type instance
-        :type ptr: cls.C_TYPE_PTR
+        :type ptr: MaptkAlgorithm.C_TYPE_PTR
 
-        :param is_copy_of: Optional parent object instance when the ptr given
-            is coming from an existing python object.
-        :type ptr: cls
+        :param shallow_copy_of: Optional parent object instance when the ptr
+            given is coming from an existing python object.
+        :type shallow_copy_of: MaptkObject or None
 
         :return: New Python object using the given underlying C object pointer.
+        :rtype: MaptkObject
 
         """
         # As this is a generalized method, make sure that the derived class
@@ -104,13 +118,19 @@ class MaptkObject (object):
 
         # noinspection PyPep8Naming,PyMissingConstructor,PyAbstractClass
         class _from_c_pointer (cls):
+            # Need to set from parent class in order to prevent the metaclass
+            # from creating a different opaque structure, which messes with
+            # type-checking when calling C API functions.
+            C_TYPE = cls.C_TYPE
+            C_TYPE_PTR = cls.C_TYPE_PTR
+
             def __init__(self, _ptr, _is_copy_of):
                 self._inst_ptr = _ptr
                 self._parent = _is_copy_of
 
         _from_c_pointer.__name__ = "%s_from_c_pointer" % cls.__name__
 
-        return _from_c_pointer(ptr, is_copy_of)
+        return _from_c_pointer(ptr, shallow_copy_of)
 
     def __init__(self):
         if None in (self.C_TYPE, self.C_TYPE_PTR):
@@ -125,6 +145,15 @@ class MaptkObject (object):
     def __del__(self):
         if self._parent is None:
             self._destroy()
+
+    @property
+    def _as_parameter_(self):
+        """
+        Ctypes interface attribute for passing object instance as argument to
+        C function. This basically means that when an instance of this class
+        is passed as an argument, the underlying opaque pointer is passed.
+        """
+        return self.c_pointer
 
     @property
     def c_pointer(self):

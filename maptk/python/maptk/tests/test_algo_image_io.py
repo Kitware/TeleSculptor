@@ -30,12 +30,52 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ==============================================================================
 
-maptk.util module
+Tests for maptk::algo::image_io
 
 """
 # -*- coding: utf-8 -*-
 __author__ = 'purg'
 
-from .find_maptk_library import find_maptk_library
-from .MaptkObject import MaptkObject
-from .error_handle import MaptkErrorHandle
+from maptk import (
+    MaptkAlgorithmPluginManager,
+    MaptkConfigBlock,
+)
+from maptk.algo import MaptkAlgoImageIo
+
+import nose.tools as nt
+import os
+import os.path as osp
+import tempfile
+
+
+class TestMaptkAlgoImageIo (object):
+
+    @classmethod
+    def setup_class(cls):
+        MaptkAlgorithmPluginManager.register_plugins()
+
+        cls.test_image_filepath = osp.join(osp.dirname(__file__),
+                                           "..", "..", "..", "..", "tests",
+                                           "data", 'test_kitware_logo.jpg')
+
+    def test_image_load_save_diff(self):
+        fd, tmp_filename = tempfile.mkstemp()
+
+        c = MaptkConfigBlock()
+        c.set_value('iio:type', 'vxl')
+        iio = MaptkAlgoImageIo('iio')
+        iio.set_config(c)
+
+        nt.assert_true(osp.isfile(self.test_image_filepath),
+                       "Couldn't find image file")
+        ic_orig = iio.load(self.test_image_filepath)
+        iio.save(ic_orig, tmp_filename)
+        ic_test = iio.load(tmp_filename)
+
+        nt.assert_equal(ic_orig.size(), ic_test.size())
+        nt.assert_equal(ic_orig.width(), ic_test.width())
+        nt.assert_equal(ic_orig.height(), ic_test.height())
+        nt.assert_equal(ic_orig.depth(), ic_test.depth())
+
+        os.remove(tmp_filename)
+        os.close(fd)

@@ -40,7 +40,7 @@ import ctypes
 
 from maptk import MaptkImageContainer
 from maptk.algo import MaptkAlgorithm
-from maptk.util import propagate_exception_from_handle
+from maptk.util import MaptkErrorHandle
 
 
 class MaptkAlgoImageIo (MaptkAlgorithm):
@@ -63,35 +63,27 @@ class MaptkAlgoImageIo (MaptkAlgorithm):
         """
         iio_load = self.MAPTK_LIB.maptk_algorithm_image_io_load
         iio_load.argtypes = [self.C_TYPE_PTR, ctypes.c_char_p,
-                             self.EH_TYPE_PTR]
+                             MaptkErrorHandle.C_TYPE_PTR]
         iio_load.restype = MaptkImageContainer.C_TYPE_PTR
+        with MaptkErrorHandle() as eh:
+            return MaptkImageContainer.from_c_pointer(
+                iio_load(self, filepath, eh)
+            )
 
-        eh = self.EH_NEW()
-        try:
-            ic_ptr = iio_load(self._inst_ptr, filepath, eh)
-            propagate_exception_from_handle(eh)
-            return MaptkImageContainer.from_c_pointer(ic_ptr)
-        finally:
-            self.EH_DEL(eh)
-
-    def save(self, filepath, image_container):
+    def save(self, image_container, filepath):
         """
         Save an image to the specified path
-
-        :param filepath: The path to save the image to
-        :type filepath: str
 
         :param image_container: MaptkImageContainer containing the image to save
         :type image_container: MaptkImageContainer
 
+        :param filepath: The path to save the image to
+        :type filepath: str
+
         """
         iio_save = self.MAPTK_LIB.maptk_algorithm_image_io_save
         iio_save.argtypes = [self.C_TYPE_PTR, ctypes.c_char_p,
-                             MaptkImageContainer.C_TYPE_PTR]
-
-        eh = self.EH_NEW()
-        try:
-            iio_save(self.c_pointer, filepath, image_container.c_pointer, eh)
-            propagate_exception_from_handle(eh)
-        finally:
-            self.EH_DEL(eh)
+                             MaptkImageContainer.C_TYPE_PTR,
+                             MaptkErrorHandle.C_TYPE_PTR]
+        with MaptkErrorHandle() as eh:
+            iio_save(self, filepath, image_container, eh)

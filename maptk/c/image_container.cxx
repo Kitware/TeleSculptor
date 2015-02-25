@@ -121,9 +121,15 @@ size_t maptk_image_container_depth( maptk_image_container_t *img_c )
 
 
 /// Get the in-memory image class to access data
-//maptk_image_t* maptk_image_container_get_image( maptk_image_container_t *img_c )
-//{
-//  STANDARD_CATCH(
-//    "C::image_container::get_image",
-//
-//}
+maptk_image_t* maptk_image_container_get_image( maptk_image_container_t *img_c )
+{
+  STANDARD_CATCH(
+    "C::image_container::get_image", NULL,
+    using namespace maptk_c;
+    maptk::image_container_sptr ic_sptr( IMGC_SPTR_CACHE.get( img_c ) );
+    return reinterpret_cast<maptk_image_t*>(
+      new maptk::image( ic_sptr->get_image() )
+    );
+  );
+  return 0;
+}

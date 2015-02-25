@@ -362,6 +362,7 @@ class TestMaptkConfigBlock (object):
         nose.tools.assert_raises(MaptkConfigBlockIoFileNotFoundException,
                                  MaptkConfigBlock.from_file,
                                  'not-a-file.foobar')
+
     def test_write_fail(self):
         cb = MaptkConfigBlock()
         cb.set_value('foo', 'bar')
