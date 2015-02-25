@@ -50,16 +50,9 @@ namespace maptk
 {
 
 
-// Item map types for a given template type
-#define DECL_ITEM_MAP(T) \
-  /* map type for string-to-item relationship */ \
-  typedef std::map< std::string, boost::shared_ptr<T> > item_map_t
-#define DECL_ITEM_PAIR(T) \
-  /* convenience type for item_map_t's values */ \
-  typedef typename item_map_t::value_type item_pair_t
-#define DECL_ITEM_ITR(T) \
-  /* convenience type for item_map_t's const iterator */ \
-  typedef typename item_map_t::const_iterator item_const_itr_t
+#define reg_item_map_(T) std::map< std::string, boost::shared_ptr<T> >
+#define reg_item_pair_(T) typename reg_item_map_(T)::value_type
+#define reg_item_const_itr_(T) typename reg_item_map_(T)::const_iterator
 
 
 /**
@@ -88,33 +81,30 @@ public:
 
   /// Register a new name and item with the registrar for a given type
   /**
-   * Item registration follows the same semantics as item insertion with
-   * std::map instances. If the given name does not associate with an existing
-   * entry, the name-item pair is registered and the function returns true. If
-   * the name already exists in the registry for the templated type, then the
-   * given item is NOT registered with the given name, i.e. no overwriting
-   * occurs and the existing registry is left unchanged. False is returned in
-   * this latter case.
+   * This will overwrite an existing entry if \p name already exists in the
+   * registration map for the given type \p T.
+   *
+   * A false value is returned if a NULL item pointer is given.
    *
    * \tparam Algorithm definition type of the given instance.
    * \param name The string label to associate to this algorithm instance
    * \param item Algorithm instance descending from definition type \p T to act
    *             as the default instance for the given label.
-   * \returns True if the given label is new and the item was inserted into
-   *          the registry for type \p T. False if the name provided is
-   *          already registered (registry not modified).
+   * \returns True if the given \p name / \p item pair was successfully
+   *          inserted, and false if not.
    */
   template <typename T>
   bool register_item(const std::string& name, boost::shared_ptr<T> item)
   {
-    DECL_ITEM_MAP(T);
-    DECL_ITEM_PAIR(T);
+    if( ! item )
+    {
+      return false;
+    }
 
     // declaring map reference so we don't copy
-    item_map_t &im = this->get_item_map<T>();
-
-    // std::map reminder: if named item already exists, no overwriting occurs
-    return im.insert(item_pair_t(name, item)).second;
+    reg_item_map_(T) &im = this->get_item_map<T>();
+    im[name] = item;
+    return true;
   }
 
   /// Return a vector of registered item names for a given type
@@ -126,15 +116,25 @@ public:
   template <typename T>
   std::vector<std::string> registered_names()
   {
-    DECL_ITEM_MAP(T);
-    DECL_ITEM_PAIR(T);
-
     std::vector<std::string> names;
-    BOOST_FOREACH(item_pair_t i, this->get_item_map<T>())
+    BOOST_FOREACH( reg_item_pair_(T) i, this->get_item_map<T>() )
     {
       names.push_back(i.first);
     }
     return names;
+  }
+
+  /// Check if a given algorithm label is registered for the given type
+  /**
+   * \param name The algorithm instance label to check for in the type's
+   *             registration.
+   * \returns True if the given name exists in the given type's registration and
+   *          false if not.
+   */
+  template <typename T>
+  bool is_registered( std::string name )
+  {
+    return this->get_item_map<T>().count( name ) > 0;
   }
 
   /// Find the item matching \a name or return NULL
@@ -148,11 +148,8 @@ public:
   template <typename T>
   boost::shared_ptr<T> find(const std::string& name)
   {
-    DECL_ITEM_MAP(T);
-    DECL_ITEM_ITR(T);
-
-    item_map_t &im = this->get_item_map<T>();
-    item_const_itr_t it = im.find(name);
+    reg_item_map_(T) &im = this->get_item_map<T>();
+    reg_item_const_itr_(T) it = im.find(name);
     if (it == im.end())
     {
       return boost::shared_ptr<T>();
@@ -167,13 +164,13 @@ private:
    * \tparam T Algorithm definition type to get the mapping for.
    */
   template <typename T>
-  std::map< std::string, boost::shared_ptr<T> >& get_item_map()
+  reg_item_map_(T)&
+  get_item_map()
   {
     // Static mapping of name-to-instance for a specific algorithm type
     // Due to the use of this class as a strict singleton, static variable
     //  use is acceptable here.
-    static std::map< std::string, boost::shared_ptr<T> > ad_item_map_
-      = std::map< std::string, boost::shared_ptr<T> >();
+    static reg_item_map_(T) ad_item_map_ = reg_item_map_(T)();
     return ad_item_map_;
   }
 

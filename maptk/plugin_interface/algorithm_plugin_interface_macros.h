@@ -72,6 +72,8 @@
 /// Return the number of registrations that failed (int).
 #define REGISTRATION_FAILURES() \
   (maptk_api_expected_ - maptk_api_registered_)
+
+
 /**
  * \brief Given a maptk::algorithm_def type, attempt registration with the
  *        given registrar
