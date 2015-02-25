@@ -155,12 +155,7 @@ function(maptk_add_library name)
   endif()
 
   # Determine additional compile definitions
-  get_target_property(cur_compile_definitions "${name}" COMPILE_DEFINITIONS)
-  if(NOT cur_compile_definitions)
-    # If no existing definitions present, prevent the
-    # cur_compile_definitions-NOTFOUND string from passing on.
-    set(cur_compile_definitions "")
-  endif()
+  get_property( cur_compile_definitions TARGET "${name}" PROPERTY COMPILE_DEFINITIONS )
   ## Export/Import determination flag
   if( mal_SYMBOL )
     set(new_compile_definitions ${cur_compile_definitions} "${mal_SYMBOL}")
