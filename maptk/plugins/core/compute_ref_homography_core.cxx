@@ -521,6 +521,8 @@ compute_ref_homography_core
   // Collect cur/ref points from track infos that have earliest-frame references
   BOOST_FOREACH( track_info_t& ti, *new_buffer )
   {
+    // If the track is active and have a state on the earliest ref frame,
+    // also include those points for homography estimation.
     if( ti.active && ti.is_good &&
         ti.ref_id == earliest_ref &&
         ti.trk->size() >= track_size_thresh )
@@ -533,8 +535,6 @@ compute_ref_homography_core
         pts_cur.push_back( itr->feat->loc() );
       }
     }
-    // If the track is active and have a state on the earliest ref frame,
-    // also include those points for homography estimation.
   }
   LOG_DEBUG( LOGGING_PREFIX,
              "Using " << pts_ref.size() << " points for estimation" );
