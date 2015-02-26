@@ -23,6 +23,10 @@ Main Library
 
  * Revised import/export logic in auto-generated plugin library code.
 
+Core Plugin
+
+ * Updated compute_ref_homog algorithm to allow additional constraints
+   (minimum inliers, reference frame [non]regression)
 
 Fixes since last public release
 -------------------------------
