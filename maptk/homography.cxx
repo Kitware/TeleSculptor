@@ -47,4 +47,12 @@ operator<<( std::ostream &s, homography const &h )
   return s;
 }
 
+/// Output stream operator for \p homography_sptr
+std::ostream&
+operator<<( std::ostream &s, homography_sptr h )
+{
+  s << *h;
+  return s;
+}
+
 } // end maptk namespace

@@ -98,13 +98,13 @@ public:
    *
    * \return New homography transformation instance.
    */
-  virtual homography_sptr normalize() = 0;
+  virtual homography_sptr normalize() const = 0;
 
   /// Get a new \p homography that has been inverted.
   /**
    * \return New homography transformation instance.
    */
-  virtual homography_sptr invert() = 0;
+  virtual homography_sptr inverse() const = 0;
 
 };
 
@@ -138,6 +138,12 @@ public:
   template <typename U>
   homography_<T>( homography_<U> const &other );
 
+  /// Copy constructor from sptr
+  /**
+   * \param other The other homography sptr
+   */
+  homography_<T>( homography_sptr other );
+
   // Abstract method definitions ---------------------------------------------
 
   /// Create a clone of ourself as a shared pointer
@@ -170,19 +176,16 @@ public:
    *
    * \return New homography transformation instance.
    */
-  virtual homography_sptr normalize();
+  virtual homography_sptr normalize() const;
 
   /// Get a new \p homography that has been inverted.
   /**
    * \throws non_invertible_matrix When the homography matrix is non-invertible.
    * \return New homography transformation instance.
    */
-  virtual homography_sptr invert();
+  virtual homography_sptr inverse() const;
 
   // Member Functions --------------------------------------------------------
-
-  /// Return a new homography trasnformation composed of zeros
-  static homography_sptr Zero();
 
   /// Get the underlying matrix transformation
   /**
@@ -192,9 +195,6 @@ public:
 
   /// Get a const new copy of the underlying matrix transformation.
   matrix_t const& get_matrix() const;
-
-  /// Return a new homography with the inverse transformation
-  virtual homography_<T> inverse() const;
 
   /// Custom multiplication operator that multiplies the underlying matrices
   /**
@@ -227,12 +227,15 @@ Eigen::Matrix<T,2,1>
 homography_map( homography_sptr const &h, Eigen::Matrix<T,2,1> const &p );
 
 
-/// Output stream operator for \p homography_sptr
+/// Output stream operator for \p homography base-class
 MAPTK_LIB_EXPORT std::ostream& operator<<( std::ostream &s, homography const &h );
 
 /// homography_<T> output stream operator
 template <typename T>
 MAPTK_LIB_EXPORT std::ostream& operator<<( std::ostream &s, homography_<T> const &h );
+
+/// Output stream operator for \p homography_sptr
+MAPTK_LIB_EXPORT std::ostream& operator<<( std::ostream &s, homography_sptr h );
 
 
 } // end namespace maptk

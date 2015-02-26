@@ -65,7 +65,7 @@ estimate_homography
   if (pts1.size() < 4 || pts2.size() < 4)
   {
     std::cerr << "Not enough points to estimate a homography" <<std::endl;
-    return homography_<double>::Zero();
+    return homography_sptr();
   }
 
   std::vector< vnl_vector<double> > from_pts, to_pts;
@@ -96,7 +96,7 @@ estimate_homography
   if ( ! result )
   {
     std::cerr << "MSAC failed!!" << std::endl;
-    return homography_<double>::Zero();
+    return homography_sptr();
   }
 
   // Step 2: refine the estimate using weighted least squares.  This

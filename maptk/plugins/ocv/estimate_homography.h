@@ -63,6 +63,8 @@ public:
 
   /// Estimate a homography matrix from corresponding points
   /**
+   * If estimation fails, a NULL-containing sptr is returned
+   *
    * \param [in]  pts1 the vector or corresponding points from the source image
    * \param [in]  pts2 the vector of corresponding points from the destination image
    * \param [out] inliers for each point pair, the value is true if

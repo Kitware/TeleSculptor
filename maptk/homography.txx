@@ -69,6 +69,22 @@ homography_<T>
 {
 }
 
+/// Copy constructor from sptr -- float specialization
+template <>
+homography_<float>
+::homography_( homography_sptr other )
+  : h_( other->matrix_f() )
+{
+}
+
+/// Copy constructor from sptr -- double specialization
+template <>
+homography_<double>
+::homography_( homography_sptr other )
+  : h_( other->matrix_d() )
+{
+}
+
 /// Create a clone of outself as a shared pointer
 template <typename T>
 homography_sptr
@@ -118,7 +134,7 @@ homography_<float>
 template <typename T>
 homography_sptr
 homography_<T>
-::normalize()
+::normalize() const
 {
   matrix_t norm = this->get_matrix();
   if( norm(2,2) != 0 )
@@ -132,7 +148,7 @@ homography_<T>
 template <typename T>
 homography_sptr
 homography_<T>
-::invert()
+::inverse() const
 {
   matrix_t inv;
   bool isvalid;
@@ -142,14 +158,6 @@ homography_<T>
     throw non_invertible_matrix();
   }
   return homography_sptr( new homography_<T>( inv ) );
-}
-
-template <typename T>
-homography_sptr
-homography_<T>
-::Zero()
-{
-  return homography_sptr( new homography_<T>( matrix_t::Zero() ) );
 }
 
 /// Get the underlying matrix transformation
@@ -168,25 +176,6 @@ homography_<T>
 ::get_matrix() const
 {
   return this->h_;
-}
-
-  /// Return a new homography with the inverse transformation
-template <typename T>
-homography_<T>
-homography_<T>
-::inverse() const
-{
-  matrix_t inv;
-  bool isvalid;
-  this->h_.computeInverseWithCheck( inv, isvalid );
-  if( !isvalid )
-  {
-    throw non_invertible_matrix();
-  }
-  else
-  {
-    return homography_<T>( inv );
-  }
 }
 
 /// Custom f2f_homography multiplication operator.

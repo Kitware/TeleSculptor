@@ -270,26 +270,13 @@ public:
       try
       {
         // Invertible test
-        Eigen::Matrix<double,3,3> h_mat = tmp_h->matrix_d();
-
-        homography_<double> inverse( h_mat );
-        inverse.invert();  // throws when non-invertible
-        Eigen::Matrix<double,3,3> i_mat = inverse.get_matrix();
-
-        // Checking for non-finite values in estimated and inversed homography
-        unsigned i, j;
-        for( i = 0; i < 3; ++i )
+        Eigen::Matrix<double,3,3> h_mat = tmp_h->matrix_d(),
+                                  i_mat = tmp_h->inverse()->matrix_d();
+        if( ! (h_mat.allFinite() && i_mat.allFinite()) )
         {
-          for ( j = 0; j < 3; ++j )
-          {
-            if ( !boost::math::isfinite( h_map(i,j) ) || !boost::math::isfinite( i_mat(i,j) ) )
-            {
-              LOG_WARNING( LOGGING_PREFIX,
-                           "Found non-finite values in estimated homography. Bad homography." );
-              is_bad_homog = true;
-              break;
-            }
-          }
+          LOG_WARNING( LOGGING_PREFIX,
+                       "Found non-finite values in estimated homography. Bad homography." );
+          is_bad_homog = true;
         }
       }
       catch( ... )

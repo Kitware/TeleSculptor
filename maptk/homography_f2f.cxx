@@ -107,9 +107,7 @@ f2f_homography
 f2f_homography
 ::inverse() const
 {
-  homography_sptr h_inv( this->h_->clone() );
-  h_inv->invert();
-  return f2f_homography( h_inv, this->to_id_, this->from_id_ );
+  return f2f_homography( this->h_->inverse(), this->to_id_, this->from_id_ );
 }
 
 /// Custom f2f_homography multiplication operator for \p f2f_homography

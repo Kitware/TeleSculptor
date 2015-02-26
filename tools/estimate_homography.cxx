@@ -388,6 +388,12 @@ static int maptk_main(int argc, char const* argv[])
   std::vector<bool> inliers;
   maptk::homography_sptr homog = homog_estimator->estimate(i2_features, i1_features,
                                                            matches, inliers);
+  if( ! homog )
+  {
+    LOG_ERROR( "meh", "Failed to estimate valid homography! NULL returned." );
+    return EXIT_FAILURE;
+  }
+
   // Reporting inlier count
   size_t inlier_count = 0;
   BOOST_FOREACH(bool b, inliers)

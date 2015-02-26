@@ -86,9 +86,9 @@ IMPLEMENT_TEST(not_enough_points)
   std::vector<bool> inliers;
 
   homography_sptr H = estimator.estimate(pts1, pts2, inliers);
-  if (H->matrix_d() != matrix_3x3d::Zero())
+  if ( H )
   {
-    TEST_ERROR("Estimation with no points should produce a zero matrix");
+    TEST_ERROR("Estimation with no points should produce a NULL homography");
   }
 
   pts1.push_back(vector_2d(0.0, 0.0));
@@ -100,9 +100,9 @@ IMPLEMENT_TEST(not_enough_points)
   pts2.push_back(vector_2d(1.0, 4.0));
 
   H = estimator.estimate(pts1, pts2, inliers);
-  if (H->matrix_d() != matrix_3x3d::Zero())
+  if ( H )
   {
-    TEST_ERROR("Estimation with < 4 points should produce a zero matrix");
+    TEST_ERROR("Estimation with < 4 points should produce a NULL homography");
   }
 }
 
