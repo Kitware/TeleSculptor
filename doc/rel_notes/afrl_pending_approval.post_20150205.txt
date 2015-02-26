@@ -29,8 +29,8 @@ Fixes since last public release
 
 Build System
 
- * Added target property return value check so as to not add *-NOT_FOUND value
-   as a compile definition.
+ * Changed target property getter function to one that is not currently subject
+   to a regression bug.
 
 Core Plugin
 
