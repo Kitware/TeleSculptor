@@ -45,8 +45,6 @@ namespace maptk
 /// \cond DoxygenSuppress
 #define INSTANTIATE_HOMOGRAPHY(T) \
   template class homography_<T>; \
-  template Eigen::Matrix<T,2,1> homography_map( homography_<T> const &h, \
-                                                Eigen::Matrix<T,2,1> const &p ); \
   template std::ostream& operator<<( std::ostream &, \
                                      homography_<T> const & )
 

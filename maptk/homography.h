@@ -106,6 +106,24 @@ public:
    */
   virtual homography_sptr inverse() const = 0;
 
+  /// Map a 2D double-type point using this homography
+  /**
+   * \tparam T Point vector data type
+   * \param p Point to map against this homography
+   * \return New point in the projected coordinate system.
+   */
+  virtual Eigen::Matrix<double,2,1>
+    map_d( Eigen::Matrix<double,2,1> const &p ) const = 0;
+
+  /// Map a 2D float-type point using this homography
+  /**
+   * \tparam T Point vector data type
+   * \param p Point to map against this homography
+   * \return New point in the projected coordinate system.
+   */
+  virtual Eigen::Matrix<float,2,1>
+    map_f( Eigen::Matrix<float,2,1> const &p ) const = 0;
+
 };
 
 
@@ -185,6 +203,24 @@ public:
    */
   virtual homography_sptr inverse() const;
 
+  /// Map a 2D double-type point using this homography
+  /**
+   * \tparam T Point vector data type
+   * \param p Point to map against this homography
+   * \return New point in the projected coordinate system.
+   */
+  virtual Eigen::Matrix<double,2,1>
+    map_d( Eigen::Matrix<double,2,1> const &p ) const;
+
+  /// Map a 2D float-type point using this homography
+  /**
+   * \tparam T Point vector data type
+   * \param p Point to map against this homography
+   * \return New point in the projected coordinate system.
+   */
+  virtual Eigen::Matrix<float,2,1>
+    map_f( Eigen::Matrix<float,2,1> const &p ) const;
+
   // Member Functions --------------------------------------------------------
 
   /// Get the underlying matrix transformation
@@ -195,6 +231,15 @@ public:
 
   /// Get a const new copy of the underlying matrix transformation.
   matrix_t const& get_matrix() const;
+
+  /// Map a 2D point using this homography
+  /**
+   * \tparam T Point vector data type
+   * \param p Point to map against this homography
+   * \return New point in the projected coordinate system.
+   */
+  template <typename U>
+  Eigen::Matrix<U,2,1> map( Eigen::Matrix<U,2,1> const &p ) const;
 
   /// Custom multiplication operator that multiplies the underlying matrices
   /**
@@ -213,19 +258,6 @@ protected:
 // ===========================================================================
 // Utility Functions
 // ---------------------------------------------------------------------------
-
-/// Homography mapping for 2D points.
-template <typename T>
-MAPTK_LIB_EXPORT
-Eigen::Matrix<T,2,1>
-homography_map( homography_<T> const &h, Eigen::Matrix<T,2,1> const &p );
-
-/// Homography mapping for 2D points using sptr
-template <typename T>
-MAPTK_LIB_EXPORT
-Eigen::Matrix<T,2,1>
-homography_map( homography_sptr const &h, Eigen::Matrix<T,2,1> const &p );
-
 
 /// Output stream operator for \p homography base-class
 MAPTK_LIB_EXPORT std::ostream& operator<<( std::ostream &s, homography const &h );

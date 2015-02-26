@@ -44,6 +44,25 @@ namespace maptk
 {
 
 
+namespace //anonymous
+{
+
+// base homog-point transformation logic
+template <typename T>
+Eigen::Matrix<T,2,1>
+h_map( Eigen::Matrix<T,3,3> const &h, Eigen::Matrix<T,2,1> const &p )
+{
+  Eigen::Matrix<T,3,1> out_pt = h * Eigen::Matrix<T,3,1>(p[0], p[1], 1.0);
+  if( out_pt[2] == 0 )
+  {
+    throw point_maps_to_infinity();
+  }
+  return Eigen::Matrix<T,2,1>( out_pt[0] / out_pt[2], out_pt[1] / out_pt[2] );
+}
+
+} // end anonymous namespace
+
+
 /// Construct an identity homography
 template <typename T>
 homography_<T>
@@ -160,6 +179,24 @@ homography_<T>
   return homography_sptr( new homography_<T>( inv ) );
 }
 
+/// Map a 2D double-type point using this homography
+template <typename T>
+Eigen::Matrix<double,2,1>
+homography_<T>
+::map_d( Eigen::Matrix<double,2,1> const &p ) const
+{
+  return this->map(p);
+}
+
+/// Map a 2D float-type point using this homography
+template <typename T>
+Eigen::Matrix<float,2,1>
+homography_<T>
+::map_f( Eigen::Matrix<float,2,1> const &p ) const
+{
+  return this->map(p);
+}
+
 /// Get the underlying matrix transformation
 template <typename T>
 typename homography_<T>::matrix_t&
@@ -178,6 +215,36 @@ homography_<T>
   return this->h_;
 }
 
+/// Map a 2D point using this homography -- generic version
+template <typename T>
+template <typename U>
+Eigen::Matrix<U,2,1>
+homography_<T>
+::map( Eigen::Matrix<U,2,1> const &p ) const
+{
+  return h_map<U>( this->get_matrix().template cast<U>(), p );
+}
+
+/// Map a 2D point using this homography -- float specialization
+template <>
+template <>
+Eigen::Matrix<float,2,1>
+homography_<float>
+::map( Eigen::Matrix<float,2,1> const &p ) const
+{
+  return h_map( this->get_matrix(), p );
+}
+
+/// Map a 2D point using this homography -- double specialization
+template <>
+template <>
+Eigen::Matrix<double,2,1>
+homography_<double>
+::map( Eigen::Matrix<double,2,1> const &p ) const
+{
+  return h_map( this->get_matrix(), p );
+}
+
 /// Custom f2f_homography multiplication operator.
 template <typename T>
 homography_<T>
@@ -191,56 +258,6 @@ homography_<T>
 // ===========================================================================
 // Other Functions
 // ---------------------------------------------------------------------------
-
-namespace //anonymous
-{
-
-// base homog-point transformation logic
-template <typename T>
-Eigen::Matrix<T,2,1>
-h_map( Eigen::Matrix<T,3,3> const &h, Eigen::Matrix<T,2,1> const &p )
-{
-  Eigen::Matrix<T,3,1> out_pt = h * Eigen::Matrix<T,3,1>(p[0], p[1], 1.0);
-  if( out_pt[2] == 0 )
-  {
-    throw point_maps_to_infinity();
-  }
-  return Eigen::Matrix<T,2,1>( out_pt[0] / out_pt[2], out_pt[1] / out_pt[2] );
-}
-
-} // end anonymous namespace
-
-
-template <typename T>
-Eigen::Matrix<T,2,1>
-homography_map( homography_<T> const &h, Eigen::Matrix<T,2,1> const &p )
-{
-  return h_map<T>( h.get_matrix(), p );
-}
-
-
-template <typename T>
-Eigen::Matrix<T,2,1>
-homography_map( homography_sptr const &h, Eigen::Matrix<T,2,1> const &p )
-{
-  // intentionally empty for C++ reasons.
-}
-
-template <>
-MAPTK_LIB_EXPORT
-Eigen::Matrix<double,2,1>
-homography_map( homography_sptr const &h, Eigen::Matrix<double,2,1> const &p )
-{
-  return h_map<double>( h->matrix_d(), p );
-}
-
-template <>
-MAPTK_LIB_EXPORT
-Eigen::Matrix<float,2,1>
-homography_map( homography_sptr const &h, Eigen::Matrix<float,2,1> const &p )
-{
-  return h_map<float>( h->matrix_f(), p );
-}
 
 /// homography_<T> output stream operator
 template <typename T>
