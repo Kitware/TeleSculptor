@@ -30,6 +30,11 @@ Main Library
  * Added informative debugging messages to allow for plugin implementation
    tracing.
 
+Core Plugin
+
+ * Updated compute_ref_homog algorithm to allow additional constraints
+   (minimum inliers, reference frame [non]regression)
+
 
 Fixes since last public release
 -------------------------------
