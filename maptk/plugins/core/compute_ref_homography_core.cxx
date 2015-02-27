@@ -525,7 +525,7 @@ compute_ref_homography_core
              "Using " << pts_ref.size() << " points for estimation" );
 
   // Compute homography if possible
-  homography h; // raw homography transform
+  homography_sptr h; // raw homography transform
   bool bad_homog = d_->compute_homography(pts_cur, pts_ref, h);
 
   // If the homography is bad, output an identity
