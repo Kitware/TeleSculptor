@@ -132,7 +132,7 @@ IMPLEMENT_TEST(four_points)
   homography_sptr H = estimator.estimate(pts1, pts2, inliers);
   H = H->normalize();
 
-  double H_error = (true_H - H->matrix_d()).norm();
+  double H_error = (true_H - H->matrix()).norm();
   std::cout << "Homography estimation error: "<< H_error << std::endl;
 
   TEST_NEAR("Frobenius norm between estimated and true homography",
@@ -162,7 +162,7 @@ IMPLEMENT_TEST(ideal_points)
   homography_sptr H = estimator.estimate(pts1, pts2, inliers);
   H = H->normalize();
 
-  double H_error = (true_H - H->matrix_d()).norm();
+  double H_error = (true_H - H->matrix()).norm();
   std::cout << "Homography estimation error: "<< H_error << std::endl;
   TEST_NEAR("Frobenius norm between estimated and true homography",
             H_error, 0.0, 1e-8);
@@ -197,7 +197,7 @@ IMPLEMENT_TEST(noisy_points)
   homography_sptr H = estimator.estimate(pts1, pts2, inliers);
   H = H->normalize();
 
-  double H_error = (true_H - H->matrix_d()).norm();
+  double H_error = (true_H - H->matrix()).norm();
   std::cout << "Homography estimation error: "<< H_error << std::endl;
   TEST_NEAR("Frobenius norm between estimated and true homography",
             H_error, 0.0, 0.2);
@@ -241,7 +241,7 @@ IMPLEMENT_TEST(outlier_points)
   homography_sptr H = estimator.estimate(pts1, pts2, inliers);
   H = H->normalize();
 
-  double H_error = (true_H - H->matrix_d()).norm();
+  double H_error = (true_H - H->matrix()).norm();
   std::cout << "Homography estimation error: "<< H_error << std::endl;
   TEST_NEAR("Frobenius norm between estimated and true homography",
             H_error, 0.0, 1e-8);

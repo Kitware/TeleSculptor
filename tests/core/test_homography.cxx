@@ -80,7 +80,7 @@ static bool test_numeric_invertibility()
                                   -1.5,  1.5, -0.5,
                                    1.5,  0.5, -0.5;
 
-  maptk::homography_<T> h_inverse( invertible.inverse()->matrix_d() );
+  maptk::homography_<T> h_inverse( invertible.inverse()->matrix() );
   if( ! h_inverse.get_matrix().isApprox( expected_result.get_matrix() ) )
   {
     return false;

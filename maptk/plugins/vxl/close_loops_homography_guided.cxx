@@ -110,7 +110,7 @@ convert( const f2f_homography_sptr &src1_to_ref,
 {
   try
   {
-    src2_to_src1 = (src1_to_ref->inverse() * (*src2_to_ref)).homography()->matrix_d();
+    src2_to_src1 = (src1_to_ref->inverse() * (*src2_to_ref)).homography()->matrix();
     return true;
   }
   catch(...)
@@ -118,7 +118,7 @@ convert( const f2f_homography_sptr &src1_to_ref,
     std::cerr << "Warn: Invalid homography received" << std::endl;
   }
 
-  src2_to_src1 = src2_to_ref->homography()->matrix_d();
+  src2_to_src1 = src2_to_ref->homography()->matrix();
   return false;
 }
 

@@ -270,8 +270,8 @@ public:
       try
       {
         // Invertible test
-        Eigen::Matrix<double,3,3> h_mat = tmp_h->matrix_d(),
-                                  i_mat = tmp_h->inverse()->matrix_d();
+        Eigen::Matrix<double,3,3> h_mat = tmp_h->matrix(),
+                                  i_mat = tmp_h->inverse()->matrix();
         if( ! (h_mat.allFinite() && i_mat.allFinite()) )
         {
           LOG_WARNING( LOGGING_PREFIX,
@@ -569,14 +569,14 @@ compute_ref_homography_core
       // current_frame).
       if( (ti.active && ti.ref_id != earliest_ref) || ti.ref_id == frame_number )
       {
-        ti.ref_loc = output->homography()->map_d( ti.ref_loc );
+        ti.ref_loc = output->homography()->map( ti.ref_loc );
         ti.ref_id = output->to_id();
       }
       // Test back-projection on active tracks that we did not just set ref_loc
       // of.
       else if( d_->use_backproject_error && ti.active )
       {
-        vector_2d warped = output->homography()->map_d( itr->feat->loc() );
+        vector_2d warped = output->homography()->map( itr->feat->loc() );
         double dist_sqr = ( warped - ti.ref_loc ).squaredNorm();
 
         if( dist_sqr > d_->backproject_threshold_sqr )

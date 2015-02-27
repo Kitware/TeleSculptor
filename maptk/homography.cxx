@@ -120,7 +120,7 @@ homography_<T>
 template <typename T>
 Eigen::Matrix<double,3,3>
 homography_<T>
-::matrix_d() const
+::matrix() const
 {
   return this->h_.template cast<double>();
 }
@@ -129,25 +129,7 @@ homography_<T>
 template <>
 Eigen::Matrix<double,3,3>
 homography_<double>
-::matrix_d() const
-{
-  return this->h_;
-}
-
-/// Get a float-typed copy of the underlying matrix transformation
-template <typename T>
-Eigen::Matrix<float,3,3>
-homography_<T>
-::matrix_f() const
-{
-  return this->h_.template cast<float>();
-}
-
-/// Specialization for homographies with native float type
-template <>
-Eigen::Matrix<float,3,3>
-homography_<float>
-::matrix_f() const
+::matrix() const
 {
   return this->h_;
 }
@@ -186,16 +168,7 @@ homography_<T>
 template <typename T>
 Eigen::Matrix<double,2,1>
 homography_<T>
-::map_d( Eigen::Matrix<double,2,1> const &p ) const
-{
-  return this->map(p);
-}
-
-/// Map a 2D float-type point using this homography
-template <typename T>
-Eigen::Matrix<float,2,1>
-homography_<T>
-::map_f( Eigen::Matrix<float,2,1> const &p ) const
+::map( Eigen::Matrix<double,2,1> const &p ) const
 {
   return this->map(p);
 }
@@ -276,7 +249,7 @@ operator<<( std::ostream &s, homography_<T> const &h )
 std::ostream&
 operator<<( std::ostream &s, homography const &h )
 {
-  s << h.matrix_d();
+  s << h.matrix();
   return s;
 }
 

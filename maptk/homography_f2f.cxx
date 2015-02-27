@@ -120,7 +120,7 @@ f2f_homography
     throw invalid_matrix_operation( "Homography frame identifiers do not match up" );
   }
 
-  Eigen::Matrix<double,3,3> new_h = this->h_->matrix_d() * rhs.h_->matrix_d();
+  Eigen::Matrix<double,3,3> new_h = this->h_->matrix() * rhs.h_->matrix();
   return f2f_homography( new_h, rhs.from_id(), this->to_id() );
 }
 

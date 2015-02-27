@@ -80,14 +80,7 @@ public:
    * \return A copy of the transformation matrix represented in the double
    *         type.
    */
-  virtual Eigen::Matrix<double,3,3> matrix_d() const = 0;
-
-  /// Get a float-typed copy of the underlying matrix transformation
-  /**
-   * \return A copy of the transformation matrix represented in the float
-   *         type.
-   */
-  virtual Eigen::Matrix<float,3,3> matrix_f() const = 0;
+  virtual Eigen::Matrix<double,3,3> matrix() const = 0;
 
   /// Get a new \p homography that has been normalized
   /**
@@ -113,16 +106,7 @@ public:
    * \return New point in the projected coordinate system.
    */
   virtual Eigen::Matrix<double,2,1>
-    map_d( Eigen::Matrix<double,2,1> const &p ) const = 0;
-
-  /// Map a 2D float-type point using this homography
-  /**
-   * \tparam T Point vector data type
-   * \param p Point to map against this homography
-   * \return New point in the projected coordinate system.
-   */
-  virtual Eigen::Matrix<float,2,1>
-    map_f( Eigen::Matrix<float,2,1> const &p ) const = 0;
+    map( Eigen::Matrix<double,2,1> const &p ) const = 0;
 
 };
 
@@ -182,14 +166,7 @@ public:
    * \return A copy of the transformation matrix represented in the double
    *         type.
    */
-  virtual Eigen::Matrix<double,3,3> matrix_d() const;
-
-  /// Get a float-typed copy of the underlying matrix transformation
-  /**
-   * \return A copy of the transformation matrix represented in the float
-   *         type.
-   */
-  virtual Eigen::Matrix<float,3,3> matrix_f() const;
+  virtual Eigen::Matrix<double,3,3> matrix() const;
 
   /// Get a new \p homography that has been normalized
   /**
@@ -216,16 +193,7 @@ public:
    * \return New point in the projected coordinate system.
    */
   virtual Eigen::Matrix<double,2,1>
-    map_d( Eigen::Matrix<double,2,1> const &p ) const;
-
-  /// Map a 2D float-type point using this homography
-  /**
-   * \tparam T Point vector data type
-   * \param p Point to map against this homography
-   * \return New point in the projected coordinate system.
-   */
-  virtual Eigen::Matrix<float,2,1>
-    map_f( Eigen::Matrix<float,2,1> const &p ) const;
+    map( Eigen::Matrix<double,2,1> const &p ) const;
 
   // Member Functions --------------------------------------------------------
 
