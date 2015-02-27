@@ -129,11 +129,9 @@ estimate_homography
     inliers.push_back(r < inlier_scale);
   }
 
-  return homography_sptr(
-      new homography_<double>(
-        Eigen::Matrix<double,3,3>( m.data_block() ).transpose()
-      )
-    );
+  Eigen::Matrix<double,3,3> r_mat =
+    Eigen::Matrix<double,3,3>( m.data_block() ).transpose();
+  return homography_sptr( new homography_<double>( r_mat ) );
 }
 
 

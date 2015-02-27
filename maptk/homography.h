@@ -147,20 +147,27 @@ public:
   /**
    * \param mat The 3x3 transformation matrix to use.
    */
-  homography_<T>( matrix_t const &mat );
+  template <typename U>
+  homography_<T>( Eigen::Matrix<U,3,3> const &mat )
+    : h_( mat.template cast<T>() )
+  {
+  }
 
   /// Copy constructor
   /**
    * \param other The other homography whose transformation should be copied.
    */
   template <typename U>
-  homography_<T>( homography_<U> const &other );
+  homography_<T>( homography_<U> const &other )
+    : h_( other.get_matrix().template cast<T>() )
+  {
+  }
 
   /// Copy constructor from sptr
   /**
    * \param other The other homography sptr
    */
-  homography_<T>( homography_sptr other );
+  //homography_<T>( homography_sptr other );
 
   // Abstract method definitions ---------------------------------------------
 
@@ -183,7 +190,6 @@ public:
    *         type.
    */
   virtual Eigen::Matrix<float,3,3> matrix_f() const;
-
 
   /// Get a new \p homography that has been normalized
   /**
@@ -265,9 +271,6 @@ MAPTK_LIB_EXPORT std::ostream& operator<<( std::ostream &s, homography const &h 
 /// homography_<T> output stream operator
 template <typename T>
 MAPTK_LIB_EXPORT std::ostream& operator<<( std::ostream &s, homography_<T> const &h );
-
-/// Output stream operator for \p homography_sptr
-MAPTK_LIB_EXPORT std::ostream& operator<<( std::ostream &s, homography_sptr h );
 
 
 } // end namespace maptk

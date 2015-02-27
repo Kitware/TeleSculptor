@@ -1,4 +1,5 @@
 include(CheckCXXCompilerFlag)
+
 check_cxx_compiler_flag(-fvisibility=hidden MAPTK_HAVE_GCC_VISIBILITY)
 
 
@@ -96,7 +97,6 @@ set(maptk_public_headers
   )
 
 set(maptk_private_headers
-  homography.txx
   logging_macros.h
   )
 
@@ -110,7 +110,6 @@ set(maptk_sources
   feature.cxx
   geo_reference_points_io.cxx
   homography.cxx
-  homography-instances.cxx
   homography_f2f.cxx
   homography_f2w.cxx
   image.cxx
