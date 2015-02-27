@@ -204,14 +204,6 @@ class MaptkAlgorithm (MaptkObject):
             raise ValueError("Empty name given.")
         self._name = name
 
-    def __nonzero__(self):
-        """ bool() operator for 2.x """
-        return bool(self.c_pointer)
-
-    def __bool__(self):
-        """ bool() operator for 3.x """
-        return bool(self.c_pointer)
-
     @property
     def name(self):
         """

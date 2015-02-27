@@ -146,6 +146,14 @@ class MaptkObject (object):
         if self._parent is None:
             self._destroy()
 
+    def __nonzero__(self):
+        """ bool() operator for 2.x """
+        return bool(self.c_pointer)
+
+    def __bool__(self):
+        """ bool() operator for 3.x """
+        return bool(self.c_pointer)
+
     @property
     def _as_parameter_(self):
         """

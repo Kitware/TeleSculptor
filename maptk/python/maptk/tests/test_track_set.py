@@ -30,26 +30,36 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ==============================================================================
 
-Tests for MaptkTrack interface class
+Tests for Python interface to maptk::track_set
 
 """
 # -*- coding: utf-8 -*-
 __author__ = 'purg'
 
 from maptk import MaptkTrack
+from maptk import MaptkTrackSet
 
-import nose.tools
+import nose.tools as nt
 
 
-class TestMaptkTrack (object):
+class TestMaptkTrackSet (object):
 
     def test_new(self):
-        t = MaptkTrack()
+        ts = MaptkTrackSet()
+        nt.assert_true(ts, "Invalid track set instance constructed")
 
-    def test_initial_size(self):
-        t = MaptkTrack()
-        nose.tools.assert_equal(t.size, 0)
+    def test_empty_len_size(self):
+        ts = MaptkTrackSet()
+        nt.assert_true(ts, "Invalid track set instance constructed")
+        l = len(ts)
+        s = ts.size()
+        nt.assert_equal(l, 0)
+        nt.assert_equal(l, s)
 
-    def test_initial_is_empty(self):
-        t = MaptkTrack()
-        nose.tools.assert_true(t.is_empty)
+    def test_new_nonempty(self):
+        n = 10
+        tracks = [MaptkTrack() for _ in xrange(n)]
+        ts = MaptkTrackSet(tracks)
+        nt.assert_true(ts, "Invalid track set instance constructed")
+        nt.assert_equal(len(ts), n)
+        nt.assert_equal(ts.size(), n)

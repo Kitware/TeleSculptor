@@ -19,6 +19,7 @@ if( MAPTK_ENABLE_C_LIB )
     image.h
     image_container.h
     track.h
+    track_set.h
 
     algo_def/convert_image.h
     algo_def/image_io.h
@@ -31,6 +32,7 @@ if( MAPTK_ENABLE_C_LIB )
     helpers/config_block.h
     helpers/image_container.h
     helpers/track.h
+    helpers/track_set.h
     )
   set(maptk_c_sources
     algorithm.cxx
@@ -43,6 +45,7 @@ if( MAPTK_ENABLE_C_LIB )
     image.cxx
     image_container.cxx
     track.cxx
+    track_set.cxx
 
     algo_def/convert_image.cxx
     algo_def/image_io.cxx
