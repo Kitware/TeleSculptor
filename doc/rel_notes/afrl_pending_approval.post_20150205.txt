@@ -23,6 +23,11 @@ Main Library
 
  * Revised import/export logic in auto-generated plugin library code.
 
+ * Redefined algorithm registration to allow for overwriting by label.
+
+ * Added informative debugging messages to allow for plugin implementation
+   tracing.
+
 
 Fixes since last public release
 -------------------------------
