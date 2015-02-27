@@ -36,9 +36,10 @@
 #ifndef MAPTK_REGISTRAR_H_
 #define MAPTK_REGISTRAR_H_
 
-#include <string>
-#include <map>
 #include <iostream>
+#include <map>
+#include <sstream>
+#include <string>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/foreach.hpp>
@@ -48,11 +49,6 @@
 
 namespace maptk
 {
-
-
-#define reg_item_map_(T) std::map< std::string, boost::shared_ptr<T> >
-#define reg_item_pair_(T) typename reg_item_map_(T)::value_type
-#define reg_item_const_itr_(T) typename reg_item_map_(T)::const_iterator
 
 
 /**
@@ -67,6 +63,16 @@ namespace maptk
  */
 class MAPTK_LIB_EXPORT registrar
 {
+protected:
+  template <typename T>
+  class reg_type
+  {
+  public:
+    typedef std::map< std::string, boost::shared_ptr<T> > map;
+    typedef typename map::value_type pair;
+    typedef typename map::const_iterator const_itr;
+  };
+
 public:
 
   /// Access the singleton instance of this class
@@ -101,8 +107,14 @@ public:
       return false;
     }
 
+    // For logging
+    std::ostringstream ss;
+    ss << "Registering algo implementation '" << name << "' for def type '"
+       << item->type_name() << "'";
+    this->debug_msg( ss.str() );
+
     // declaring map reference so we don't copy
-    reg_item_map_(T) &im = this->get_item_map<T>();
+    typename reg_type<T>::map &im = this->get_item_map<T>();
     im[name] = item;
     return true;
   }
@@ -117,7 +129,7 @@ public:
   std::vector<std::string> registered_names()
   {
     std::vector<std::string> names;
-    BOOST_FOREACH( reg_item_pair_(T) i, this->get_item_map<T>() )
+    BOOST_FOREACH( typename reg_type<T>::pair i, this->get_item_map<T>() )
     {
       names.push_back(i.first);
     }
@@ -148,8 +160,8 @@ public:
   template <typename T>
   boost::shared_ptr<T> find(const std::string& name)
   {
-    reg_item_map_(T) &im = this->get_item_map<T>();
-    reg_item_const_itr_(T) it = im.find(name);
+    typename reg_type<T>::map &im = this->get_item_map<T>();
+    typename reg_type<T>::const_itr it = im.find(name);
     if (it == im.end())
     {
       return boost::shared_ptr<T>();
@@ -164,13 +176,13 @@ private:
    * \tparam T Algorithm definition type to get the mapping for.
    */
   template <typename T>
-  reg_item_map_(T)&
+  typename reg_type<T>::map &
   get_item_map()
   {
     // Static mapping of name-to-instance for a specific algorithm type
     // Due to the use of this class as a strict singleton, static variable
     //  use is acceptable here.
-    static reg_item_map_(T) ad_item_map_ = reg_item_map_(T)();
+    static typename reg_type<T>::map ad_item_map_ = typename reg_type<T>::map();
     return ad_item_map_;
   }
 
@@ -182,6 +194,9 @@ private:
   registrar(const registrar&);
   /// Private assignment operator (this class is a singleton)
   registrar& operator=(const registrar&);
+
+  /// Print a message when in debug mode
+  void debug_msg( std::string msg ) const;
 };
 
 

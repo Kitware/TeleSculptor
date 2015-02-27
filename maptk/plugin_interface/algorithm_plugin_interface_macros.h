@@ -60,12 +60,12 @@
  * NOTE: Logging only occurs when built in debug (-DNDEBUG)
  */
 #ifndef NDEBUG
-#define REGISTRATION_SUMMARY() \
-  std::cerr << "[DEBUG][maptk::algorithm_plugin_interface_macros::REGISTRATION_SUMMARY] " \
-            << "Registered " << maptk_api_registered_ << " of " << maptk_api_expected_ << " algorithms" << std::endl \
-            << "\t(@" << __FILE__ << ")" << std::endl;
+# define REGISTRATION_SUMMARY() \
+    std::cerr << "[DEBUG][maptk::algorithm_plugin_interface_macros::REGISTRATION_SUMMARY] " \
+              << "Registered " << maptk_api_registered_ << " of " << maptk_api_expected_ << " algorithms" << std::endl \
+              << "\t(@" << __FILE__ << ")" << std::endl;
 #else
-#define REGISTRATION_SUMMARY()
+# define REGISTRATION_SUMMARY()
 #endif
 
 

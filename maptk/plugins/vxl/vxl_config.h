@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,7 @@
 
 /// Define symbol visibility in maptk::vxl
 #ifndef MAPTK_VXL_EXPORT
-# ifdef MAKE_PLUGIN_VXL
+# ifdef MAKE_MAPTK_VXL_LIB
 #   define MAPTK_VXL_EXPORT MAPTK_EXPORT
 # else
 #   define MAPTK_VXL_EXPORT MAPTK_IMPORT

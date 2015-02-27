@@ -257,9 +257,13 @@ function(maptk_create_plugin base_lib)
     set(library_subdir /maptk)
     set(no_export ON)
     set(no_version ON)
-    maptk_add_library(maptk-plugin-${base_lib}
-      SYMBOL MAKE_PRIV_PLUGIN_SHELL
+    maptk_add_library( maptk-plugin-${base_lib}
+      SYMBOL ${base_lib}
       MODULE "${shell_source}" ${ARGN}
+      )
+    target_compile_definitions( maptk-plugin-${base_lib}
+      PRIVATE
+        "MAPTK_PLUGIN_LIB_NAME=\"${base_lib}\""
       )
 
     # Not adding link to known base MAPTK library because if the base_lib isn't

@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,9 +58,6 @@ namespace core
 // Register core algorithms with the given or global registrar
 int register_algorithms(maptk::registrar &reg)
 {
-    LOG_DEBUG( "maptk::plugins::core::register_algorithms",
-               "Registering DEFAULT algo implementations (" << &reg << ")" );
-
     REGISTRATION_INIT( reg );
 
     REGISTER_TYPE( maptk::core::close_loops_bad_frames_only );
