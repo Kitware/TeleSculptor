@@ -57,9 +57,6 @@ namespace vxl
 /// Register VXL algorithm implementations with the given or global registrar
 int register_algorithms( maptk::registrar &reg )
 {
-  LOG_DEBUG( "plugin::vxl::register_algo_impls",
-             "Registering VXL algo implementations" );
-
   REGISTRATION_INIT( reg );
 
   REGISTER_TYPE( maptk::vxl::bundle_adjust );

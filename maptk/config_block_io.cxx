@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -439,6 +439,7 @@ void write_config_file(config_block_sptr const& config,
 
   // open output file and write each key/value to a line.
   std::ofstream ofile(file_path.c_str());
+  bool prev_had_descr = false;  // for additional spacing
   BOOST_FOREACH( config_block_key_t key, avail_keys )
   {
     // Each key may or may not have an associated description string. If there
@@ -452,6 +453,13 @@ void write_config_file(config_block_sptr const& config,
     {
       //std::cerr << "[write_config_file] Writing comment for '" << key << "'." << std::endl;
       write_cb_comment(ofile, descr);
+      prev_had_descr = true;
+    }
+    else if( prev_had_descr )
+    {
+      // Add a spacer line after a k/v with a description
+      ofile << "\n";
+      prev_had_descr = false;
     }
 
     ofile << key << " = " << config->get_value<config_block_value_t>(key) << "\n";

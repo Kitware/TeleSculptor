@@ -116,6 +116,7 @@ set(maptk_sources
   metrics.cxx
   projected_track_set.cxx
   rotation.cxx
+  registrar.cxx
   similarity.cxx
   track.cxx
   track_set.cxx

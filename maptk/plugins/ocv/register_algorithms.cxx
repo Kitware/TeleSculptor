@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -60,9 +60,6 @@ namespace ocv
 /// Register OCV algorithm implementations with the given or global registrar
 int register_algorithms( maptk::registrar &reg )
 {
-  LOG_DEBUG( "maptk::plugins::ocv::register_algorithms",
-             "Registering OCV plugin algo implementations" );
-
 #ifdef HAVE_OPENCV_NONFREE
   cv::initModule_nonfree();
 #endif
