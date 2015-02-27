@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,9 +49,6 @@ namespace proj
 /// Register PROJ algorithm implementations with the given or global registrar
 int register_algorithms( maptk::registrar &reg )
 {
-  LOG_DEBUG( "maptk::plugins::proj::register_algorithms",
-             "Registering PROJ plugin algorithm implementations" );
-
   REGISTRATION_INIT( reg );
 
   REGISTER_TYPE( maptk::proj::geo_map );

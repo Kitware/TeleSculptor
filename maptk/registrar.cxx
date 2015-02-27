@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,40 +30,24 @@
 
 /**
  * \file
- * \brief VisCL algorithm registration function implementation
+ * \brief algorithm regstrar class imlementations
  */
 
-#include "register_algorithms.h"
+#include "registrar.h"
 
 #include <maptk/logging_macros.h>
-#include <maptk/plugin_interface/algorithm_plugin_interface_macros.h>
-#include <maptk/plugins/viscl/convert_image.h>
-#include <maptk/plugins/viscl/detect_features.h>
-#include <maptk/plugins/viscl/extract_descriptors.h>
-#include <maptk/plugins/viscl/match_features.h>
-#include <maptk/registrar.h>
 
 
 namespace maptk
 {
 
-namespace vcl
+
+void
+registrar
+::debug_msg( std::string msg ) const
 {
-
-/// Register VisCL algorithm implementations with the given or global registrar
-int register_algorithms( maptk::registrar &reg )
-{
-  REGISTRATION_INIT( reg );
-
-  REGISTER_TYPE( maptk::vcl::convert_image );
-  REGISTER_TYPE( maptk::vcl::detect_features );
-  REGISTER_TYPE( maptk::vcl::extract_descriptors );
-  REGISTER_TYPE( maptk::vcl::match_features );
-
-  REGISTRATION_SUMMARY();
-  return REGISTRATION_FAILURES();
+  LOG_DEBUG( "registrar", msg );
 }
 
-} // end vcl ns
 
-} // end maptk ns
+} //end maptk namespace

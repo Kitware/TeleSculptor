@@ -53,16 +53,19 @@ int private_register_algo_impls( maptk::registrar &reg )
 {
   try
   {
+    LOG_DEBUG( "Implementation Registration",
+               "Registering algorithm implementations from module "
+               "'" MAPTK_PLUGIN_LIB_NAME "'");
     return register_algo_impls( reg );
   }
   catch( std::exception const &e )
   {
-    LOG_ERROR( "maptk::private_register_algo_impls",
+    LOG_ERROR( "private_register_algo_impls",
                "Caught exception: " << e.what() );
   }
   catch ( ... )
   {
-    LOG_ERROR( "maptk::private_register_algo_impls",
+    LOG_ERROR( "private_register_algo_impls",
                "Caught other exception." );
   }
   return -1;
