@@ -27,6 +27,11 @@ Main Library
 Fixes since last public release
 -------------------------------
 
+Build System
+
+ * Changed target property getter function to one that is not currently subject
+   to a regression bug.
+
 Core Plugin
 
  * Added missing header to source list
