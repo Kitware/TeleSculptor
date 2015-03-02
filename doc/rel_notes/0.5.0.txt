@@ -57,6 +57,8 @@ Tools
    This fixes the coordinates after guage-free optimization to allow results
    to be more easily compared.
 
+ * Updated the bundle adjustment tool to optionally accept KRTD files as input.
+
  * Updated the bundle adjustment tool to apply a camera and landmark
    initialization algorithm before running bundle adjustment.
 

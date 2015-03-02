@@ -174,8 +174,9 @@ update_ins_from_cameras(const std::map<frame_id_t, camera_sptr>& cam_map,
 {
   if( lgcs.utm_origin_zone() < 0 )
   {
-    // TODO throw an exception here
-    std::cerr << "local geo coordinates do not have an origin" <<std::endl;
+    // TODO throw an exception here?
+    std::cerr << "WARNING: local geo coordinates do not have an origin"
+              << std::endl;
     return;
   }
 
