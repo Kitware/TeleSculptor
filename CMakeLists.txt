@@ -110,12 +110,17 @@ endif()
 # Top level installation
 #
 
+# Prepare space-separated list of library names for config
+get_property(maptk_libs GLOBAL PROPERTY maptk_libraries)
+string(REPLACE ";" " " maptk_libs "${maptk_libs}")
+
 # Configure build-tree CMake config file and export associated targets file
 set(MAPTK_CONFIG_FILE "${MAPTK_BINARY_DIR}/maptk-config.cmake")
 maptk_configure_file(maptk-config
   "${MAPTK_SOURCE_DIR}/cmake/maptk-config.cmake.in"
   "${MAPTK_CONFIG_FILE}"
   MAPTK_SOURCE_DIR MAPTK_BINARY_DIR
+  maptk_libs
   )
 maptk_export_targets("${MAPTK_BINARY_DIR}/maptk-config-targets.cmake")
 
@@ -125,6 +130,7 @@ set(MAPTK_CONFIG_INSTALL_FILE "${MAPTK_BINARY_DIR}/maptk-config-install.cmake")
 maptk_configure_file(maptk-install-config
   "${MAPTK_SOURCE_DIR}/cmake/maptk-config-install.cmake.in"
   "${MAPTK_CONFIG_INSTALL_FILE}"
+  maptk_libs
   )
 maptk_install(
   FILES       "${MAPTK_CONFIG_INSTALL_FILE}"

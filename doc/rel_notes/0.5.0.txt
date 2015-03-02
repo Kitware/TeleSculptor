@@ -13,6 +13,9 @@ Build System
  * Added option for library suffix string, allowing for installation under
    platform specific subdirectories (i.e. .../lib64/ vs .../lib/).
 
+ * Export a maptk_libs CMake variable containing all maptk compiled libraries.
+   This makes it easier for 3rd parties to link against all maptk libraries.
+
 Core Library
 
  * Added abstract algorithm for essential matrix estimation from feature matches
