@@ -26,3 +26,8 @@ maptk_add_executable(maptk_analyze_tracks analyze_tracks.cxx)
 target_link_libraries(maptk_analyze_tracks
   LINK_PRIVATE
     ${maptk_libs})
+
+maptk_add_executable(maptk_estimate_homography estimate_homography.cxx)
+target_link_libraries(maptk_estimate_homography
+  LINK_PRIVATE
+    ${maptk_libs})

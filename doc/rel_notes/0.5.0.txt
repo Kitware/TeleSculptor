@@ -57,6 +57,10 @@ Tools
  * Updated the bundle adjustment tool to apply a camera and landmark
    initialization algorithm before running bundle adjustment.
 
+ * Added an "estimate_homography" tool to compute the homography for a pair
+   of images.  This is useful for testing pairwise image registration using
+   algorithms in MAPTK.
+
 
 Fixes since v0.4.1
 ------------------
