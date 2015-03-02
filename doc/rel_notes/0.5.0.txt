@@ -72,6 +72,9 @@ Tools
    of images.  This is useful for testing pairwise image registration using
    algorithms in MAPTK. Supports image masking for input images.
 
+ * Added source-to-reference homography file generation to the top level of the
+   feature tracker tool.
+
 
 Fixes since v0.4.1
 ------------------
