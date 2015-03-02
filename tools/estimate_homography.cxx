@@ -375,8 +375,8 @@ static int maptk_main(int argc, char const* argv[])
   LOG_INFO("-- Number of matches: " << matches->size());
 
   // Because we computed matches from frames 2 to 1, this homography describes
-  // the transformation from image2 space to image1 space, which is warping
-  // tool usually want.
+  // the transformation from image2 space to image1 space, which is what
+  // warping tools usually want.
   LOG_INFO("Estimating homography...");
   std::vector<bool> inliers;
   maptk::homography homog = homog_estimator->estimate(i2_features, i1_features,
