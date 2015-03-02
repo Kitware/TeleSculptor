@@ -123,8 +123,10 @@ detect_features
 /// \returns a set of image features
 feature_set_sptr
 detect_features
-::detect(image_container_sptr image_data) const
+::detect(image_container_sptr image_data, image_container_sptr mask) const
 {
+  // TODO: Do something with the given mask
+
   viscl::image img = vcl::image_container_to_viscl(*image_data);
   vcl::feature_set::type feature_data;
 

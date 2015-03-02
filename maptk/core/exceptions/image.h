@@ -28,63 +28,63 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_VISCL_DETECT_FEATURES_H_
-#define MAPTK_VISCL_DETECT_FEATURES_H_
+/**
+ * \file
+ * \brief MAPTK Exceptions pertaining to image operations and manipulation
+ */
 
-#include <maptk/core/algo/detect_features.h>
-#include <maptk/viscl/viscl_config.h>
-#include <boost/scoped_ptr.hpp>
+#ifndef MAPTK_CORE_EXCEPTIONS_IMAGE_H
+#define MAPTK_CORE_EXCEPTIONS_IMAGE_H
+
+#include <string>
+
+#include <maptk/core/core_config.h>
+#include <maptk/core/exceptions/base.h>
+
 
 namespace maptk
 {
 
-namespace vcl
-{
 
-/// An algorithm class for detecting feature points using VisCL
-class MAPTK_VISCL_EXPORT detect_features
-: public algo::algorithm_impl<detect_features, algo::detect_features>
+/// Generic image exception
+class MAPTK_CORE_EXPORT image_exception
+  : public maptk_core_base_exception
 {
 public:
   /// Constructor
-  detect_features();
-
+  image_exception() MAPTK_NOTHROW;
   /// Destructor
-  virtual ~detect_features();
-
-  /// Copy Constructor
-  detect_features(const detect_features& other);
-
-  /// Return the name of this implementation
-  virtual std::string impl_name() const { return "viscl"; }
-
-  /// Get this algorithm's \link maptk::config_block configuration block \endlink
-  virtual config_block_sptr get_configuration() const;
-
-  /// Set this algorithm's properties via a config block
-  virtual void set_configuration(config_block_sptr config);
-
-  /// Check that the algorithm's configuration config_block is valid
-  virtual bool check_configuration(config_block_sptr config) const;
-
-  /// Extract a set of image features from the provided image
-  /**
-    * \param image_data contains the image data to process
-    * \returns a set of image features
-    */
-  virtual feature_set_sptr
-  detect(image_container_sptr image_data,
-         image_container_sptr mask = image_container_sptr()) const;
-
-private:
-  /// private implementation class
-  class priv;
-  boost::scoped_ptr<priv> d_;
+  virtual ~image_exception() MAPTK_NOTHROW;
 };
 
-} // end namespace vcl
 
-} // end namespace maptk
+/// Exception for image sizing mismatch
+/**
+ * For when image shape/size equality must be asserted.
+ */
+class MAPTK_CORE_EXPORT image_size_mismatch_exception
+  : public image_exception
+{
+public:
+  /// Constructor
+  image_size_mismatch_exception(std::string message,
+                                size_t correct_w, size_t correct_h,
+                                size_t given_w, size_t given_h) MAPTK_NOTHROW;
+  /// Destructor
+  virtual ~image_size_mismatch_exception() MAPTK_NOTHROW;
+
+  /// Given error message string
+  std::string m_message;
+  /// The correct pixel width and height
+  size_t m_correct_w,
+         m_correct_h;
+  /// The incorrect, given pixel width and height
+  size_t m_given_w,
+         m_given_h;
+};
 
 
-#endif // MAPTK_VISCL_DETECT_FEATURES_H_
+}
+
+
+#endif // MAPTK_CORE_EXCEPTIONS_IMAGE_H

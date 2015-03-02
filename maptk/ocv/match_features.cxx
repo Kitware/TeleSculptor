@@ -187,10 +187,19 @@ match_features
 ::match(feature_set_sptr feat1, descriptor_set_sptr desc1,
         feature_set_sptr feat2, descriptor_set_sptr desc2) const
 {
+  // Return empty match set pointer if either of the input sets were empty
+  // pointers
   if( !desc1 || !desc2 )
   {
     return match_set_sptr();
   }
+  // Only perform matching if both pointers are valid and if both descriptor
+  // sets contain non-zero elements
+  if( !desc1->size() || !desc2->size() )
+  {
+    return match_set_sptr( new match_set() );
+  }
+
   cv::Mat d1 = descriptors_to_ocv_matrix(*desc1);
   cv::Mat d2 = descriptors_to_ocv_matrix(*desc2);
   std::vector<cv::DMatch> matches;

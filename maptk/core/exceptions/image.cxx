@@ -28,63 +28,53 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_VISCL_DETECT_FEATURES_H_
-#define MAPTK_VISCL_DETECT_FEATURES_H_
+/**
+ * \file
+ * \brief Implementation for image exceptions
+ */
 
-#include <maptk/core/algo/detect_features.h>
-#include <maptk/viscl/viscl_config.h>
-#include <boost/scoped_ptr.hpp>
+#include "image.h"
+
+#include <sstream>
+
 
 namespace maptk
 {
 
-namespace vcl
+
+image_exception
+::image_exception() MAPTK_NOTHROW
 {
+  m_what = "An image exception";
+}
 
-/// An algorithm class for detecting feature points using VisCL
-class MAPTK_VISCL_EXPORT detect_features
-: public algo::algorithm_impl<detect_features, algo::detect_features>
+image_exception
+::~image_exception() MAPTK_NOTHROW
 {
-public:
-  /// Constructor
-  detect_features();
-
-  /// Destructor
-  virtual ~detect_features();
-
-  /// Copy Constructor
-  detect_features(const detect_features& other);
-
-  /// Return the name of this implementation
-  virtual std::string impl_name() const { return "viscl"; }
-
-  /// Get this algorithm's \link maptk::config_block configuration block \endlink
-  virtual config_block_sptr get_configuration() const;
-
-  /// Set this algorithm's properties via a config block
-  virtual void set_configuration(config_block_sptr config);
-
-  /// Check that the algorithm's configuration config_block is valid
-  virtual bool check_configuration(config_block_sptr config) const;
-
-  /// Extract a set of image features from the provided image
-  /**
-    * \param image_data contains the image data to process
-    * \returns a set of image features
-    */
-  virtual feature_set_sptr
-  detect(image_container_sptr image_data,
-         image_container_sptr mask = image_container_sptr()) const;
-
-private:
-  /// private implementation class
-  class priv;
-  boost::scoped_ptr<priv> d_;
-};
-
-} // end namespace vcl
-
-} // end namespace maptk
+}
 
 
-#endif // MAPTK_VISCL_DETECT_FEATURES_H_
+image_size_mismatch_exception
+::image_size_mismatch_exception(std::string message,
+                                size_t correct_w, size_t correct_h,
+                                size_t given_w, size_t given_h) MAPTK_NOTHROW
+  : m_message(message),
+    m_correct_w(correct_w),
+    m_correct_h(correct_h),
+    m_given_w(given_w),
+    m_given_h(given_h)
+{
+  std::ostringstream ss;
+  ss << message
+     << " (given: [" << given_w << ", " << given_h << "],"
+     << " should be: [" << correct_w << ", " << correct_h << "])";
+  m_what = ss.str();
+}
+
+image_size_mismatch_exception
+::~image_size_mismatch_exception() MAPTK_NOTHROW
+{
+}
+
+
+} // end maptk namespace
