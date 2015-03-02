@@ -78,6 +78,11 @@ public:
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "default"; }
 
+  virtual std::string description() const
+  {
+    return "Default online sequential-frame reference homography estimator";
+  }
+
   /// Get this algorithm's \link maptk::config_block configuration block \endlink
   /**
    * This base virtual function implementation returns an empty configuration
