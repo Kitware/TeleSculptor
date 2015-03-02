@@ -5,7 +5,7 @@
 #---------------------------------------------------------------------------
 # configuration options related to warning and progress messages
 #---------------------------------------------------------------------------
-WARN_LOGFILE           = @doxy_doc_output_path@/@doxy_project_name@.tags.warnings
+WARN_LOGFILE           = @doxy_project_tag_file@.warnings
 #---------------------------------------------------------------------------
 # configuration options related to the HTML output
 #---------------------------------------------------------------------------

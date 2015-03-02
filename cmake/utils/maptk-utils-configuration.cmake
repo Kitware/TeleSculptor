@@ -6,6 +6,7 @@
 #   no_configure_target
 #       If defined, configuration actions do not add explicit build targets.
 #
+include(CMakeParseArguments)
 
 # Top level configuration target
 add_custom_target(configure ALL)
@@ -13,7 +14,8 @@ add_custom_target(configure ALL)
 #+
 # Configure the given sourcefile to the given destfile
 #
-#   maptk_configure_file(name sourcefile destfile [var1 [var2 ...]])
+#   maptk_configure_file( name sourcefile destfile [var1 [var2 ...]]
+#                         [DEPENDS ...] )
 #
 # Configure a sourcefile with a given name into the given destfile. Only the
 # given variables (var1, var2, etc.) will be considered for replacement during
@@ -22,16 +24,25 @@ add_custom_target(configure ALL)
 # This functions by generating custom configuration files for each call that
 # controlls the configuration. Generated files are marked for cleaning.
 #
+# If ``no_configure_target`` is NOT set, this creates a target of the form
+# ``configure-<name>`` for this configuration step.
+#
+# Additional configuration dependencies may be set with the DEPENDS and are
+# passed to the underlying ``add_custom_command``.
+#
 # The special symbols ``__OUTPUT_PATH__``, ``__TEMP_PATH__``, and
 # ``__SOURCE_PATH__`` are reserved by this method for additional configuration
 # purposes, so don't use them as configuration variables in the file you are
 # trying to configure.
 #-
 function(maptk_configure_file name source dest)
+  set(multiValueArgs DEPENDS)
+  cmake_parse_arguments(mcf "" "" "${multiValueArgs}" ${ARGN})
+
   message(STATUS "[configure-${name}] Creating configure command")
 
   set(gen_command_args)
-  foreach(arg IN LISTS ARGN)
+  foreach(arg IN LISTS mcf_UNPARSED_ARGUMENTS)
     set(gen_command_args
       ${gen_command_args}
       "-D${arg}=${${arg}}"
@@ -46,8 +57,8 @@ function(maptk_configure_file name source dest)
             "-D__TEMP_PATH__:PATH=${temp_file}"
             "-D__OUTPUT_PATH__:PATH=${dest}"
             -P "${MAPTK_SOURCE_DIR}/cmake/tools/maptk-configure-helper.cmake"
-    MAIN_DEPENDENCY
-            "${source}"
+    DEPENDS
+            "${source}" ${mcf_DEPENDS}
     WORKING_DIRECTORY
             "${CMAKE_CURRENT_BINARY_DIR}"
     COMMENT "Configuring ${name} file \"${source}\" -> \"${dest}\""
