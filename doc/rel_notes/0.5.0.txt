@@ -8,6 +8,11 @@ over the previous v0.4.1 release.
 Updates since v0.4.1
 --------------------
 
+Build System
+
+ * Export a maptk_libs CMake variable containing all maptk compiled libraries.
+   This makes it easier for 3rd parties to link against all maptk libraries.
+
 Core Library
 
  * Added abstract algorithm for essential matrix estimation from feature matches
