@@ -143,7 +143,7 @@ public:
    */
   template <typename U>
   homography_<T>( homography_<U> const &other )
-    : h_( other.get_matrix().template cast<T>() )
+    : h_( other.h_.template cast<T>() )
   {
   }
 
