@@ -47,10 +47,34 @@ class MaptkTrackSet (MaptkObject):
     maptk::track_set interface class
     """
 
+    @classmethod
+    def from_file(cls, filepath):
+        """
+        Create a new track set as read from the given filepath.
+        :param filepath: Path to a file to a track set from
+        :type filepath: str
+
+        :return: New track set as read from the given file.
+        :rtype: MaptkTrackSet
+
+        """
+        ts_new_from_file = cls.MAPTK_LIB['maptk_trackset_new_from_file']
+        ts_new_from_file.argtypes = [ctypes.c_char_p,
+                                     MaptkErrorHandle.C_TYPE_PTR]
+        ts_new_from_file.restype = cls.C_TYPE_PTR
+
+        with MaptkErrorHandle() as eh:
+            return MaptkTrackSet.from_c_pointer(ts_new_from_file(filepath, eh))
+
     def __init__(self, track_list=None):
         """
+        Create a new track set from a list of tracks.
+
+        None or an empty list may be provided to initialize an empty track set.
+
         :param track_list: List of tracks to initialize the set with
-        :type track_list: list of MaptkTrack
+        :type track_list: list of MaptkTrack or None
+
         """
         super(MaptkTrackSet, self).__init__()
 
@@ -85,3 +109,18 @@ class MaptkTrackSet (MaptkObject):
 
     def size(self):
         return len(self)
+
+    def write_tracks_file(self, filepath):
+        """
+        Write this track set to the given filepath
+
+        :param filepath: The path to the file to write to.
+        :type filepath: str
+
+        """
+        ts_write = self.MAPTK_LIB['maptk_trackset_write_track_file']
+        ts_write.argtypes = [self.C_TYPE_PTR, ctypes.c_char_p,
+                             MaptkErrorHandle.C_TYPE_PTR]
+
+        with MaptkErrorHandle() as eh:
+            ts_write(self, filepath, eh)

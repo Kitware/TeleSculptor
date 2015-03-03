@@ -41,6 +41,7 @@ from maptk import (
     MaptkConfigBlock,
 )
 from maptk.algo import MaptkAlgoImageIo
+from maptk.tests import TEST_DATA_DIR
 
 import nose.tools as nt
 import os
@@ -54,9 +55,8 @@ class TestMaptkAlgoImageIo (object):
     def setup_class(cls):
         MaptkAlgorithmPluginManager.register_plugins()
 
-        cls.test_image_filepath = osp.join(osp.dirname(__file__),
-                                           "..", "..", "..", "..", "tests",
-                                           "data", 'test_kitware_logo.jpg')
+        cls.test_image_filepath = osp.join(TEST_DATA_DIR,
+                                           'test_kitware_logo.jpg')
 
     def test_image_load_save_diff(self):
         fd, tmp_filename = tempfile.mkstemp()

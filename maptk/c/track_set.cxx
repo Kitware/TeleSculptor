@@ -39,6 +39,7 @@
 
 #include <maptk/logging_macros.h>
 #include <maptk/track_set.h>
+#include <maptk/track_set_io.h>
 
 #include <maptk/c/helpers/c_utils.h>
 #include <maptk/c/helpers/track.h>
@@ -77,6 +78,21 @@ maptk_trackset_new( size_t length, maptk_track_t **tracks )
 }
 
 
+/// Create a new track set as read from file
+maptk_trackset_t*
+maptk_trackset_new_from_file( char const *filepath,
+                              maptk_error_handle_t *eh )
+{
+  STANDARD_CATCH(
+    "C::track_set::new_from_file", eh,
+    maptk::track_set_sptr ts_sptr( maptk::read_track_file( filepath ) );
+    maptk_c::TRACK_SET_SPTR_CACHE.store( ts_sptr );
+    return reinterpret_cast<maptk_trackset_t*>( ts_sptr.get() );
+  );
+  return 0;
+}
+
+
 /// Destroy a track set instance
 void
 maptk_trackset_destroy( maptk_trackset_t *track_set,
@@ -99,4 +115,21 @@ maptk_trackset_size( maptk_trackset_t *track_set,
     return maptk_c::TRACK_SET_SPTR_CACHE.get( track_set )->size();
   );
   return 0;
+}
+
+
+/// Write track set to the given filepath
+MAPTK_C_EXPORT
+void
+maptk_trackset_write_track_file( maptk_trackset_t* ts,
+                                 char const *filepath,
+                                 maptk_error_handle_t *eh )
+{
+  STANDARD_CATCH(
+    "C::track_set::write_track_file", eh,
+    maptk::write_track_file(
+      maptk_c::TRACK_SET_SPTR_CACHE.get( ts ),
+      filepath
+    );
+  );
 }

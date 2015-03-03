@@ -64,6 +64,28 @@ maptk_trackset_t*
 maptk_trackset_new( size_t length, maptk_track_t **tracks );
 
 
+/// Create a new track set as read from file
+/**
+ * NOTE: The simple track file format currently defined does not represent
+ * all data within a track, but only the minimal subset of data needed for
+ * running sparse bundle adjustment.
+ *
+ * This function may fail if:
+ *  - The given filepath is not found
+ *  - The given file cannot be read or parsed
+ *  - Other filesystem errors
+ *
+ * \param filepath The path to the file to read in.
+ * \param eh An error handle instance
+ * \returns New track set instance containing the tracks defined in the given
+ *          file.
+ */
+MAPTK_C_EXPORT
+maptk_trackset_t*
+maptk_trackset_new_from_file( char const *filepath,
+                              maptk_error_handle_t *eh );
+
+
 /// Destroy a track set instance
 /**
  * \param track_set opaque pointer to track set instance
@@ -80,6 +102,14 @@ MAPTK_C_EXPORT
 size_t
 maptk_trackset_size( maptk_trackset_t *track_set,
                      maptk_error_handle_t *eh );
+
+
+/// Write track set to the given filepath
+MAPTK_C_EXPORT
+void
+maptk_trackset_write_track_file( maptk_trackset_t* ts,
+                                 char const *filepath,
+                                 maptk_error_handle_t *eh );
 
 
 #ifdef __cplusplus
