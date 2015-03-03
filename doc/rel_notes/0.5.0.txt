@@ -88,3 +88,6 @@ Build system
 
  * Fixed race condition during Doxygen documentation generation when built in a
    parallel mode.
+
+ * Upped min boost version from 1.48 to 1.50 to resolve windows compilation
+   error (1.50 introduced boost::program_options::typed_value::value_name).
