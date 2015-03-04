@@ -37,6 +37,7 @@ Tests for the Python interface to MAPTK class config_block.
 __author__ = 'purg'
 
 from maptk import MaptkConfigBlock
+from maptk.exceptions.config_block import *
 from maptk.exceptions.config_block_io import *
 
 import nose.tools
@@ -97,6 +98,36 @@ class TestMaptkConfigBlock (object):
 
         cb.set_value('a', 'b')
         nose.tools.assert_equal(cb.get_value('a'), 'b')
+
+    def test_get_value_bool(self):
+        cb = MaptkConfigBlock()
+
+        cb.set_value('a', 'true')
+        nose.tools.assert_true(cb.get_bool('a'))
+
+        cb.set_value('b', 'false')
+        nose.tools.assert_false(cb.get_bool('b'))
+
+        cb.set_value('a', 'yes')
+        nose.tools.assert_true(cb.get_bool('a'))
+
+        cb.set_value('b', 'no')
+        nose.tools.assert_false(cb.get_bool('b'))
+
+    def test_get_value_bool_default(self):
+        cb = MaptkConfigBlock()
+
+        nose.tools.assert_raises(
+            MaptkConfigBlockNoSuchValueException,
+            cb.get_bool, 'not-a-key'
+        )
+
+        nose.tools.assert_true(
+            cb.get_bool('not-a-key', True)
+        )
+        nose.tools.assert_false(
+            cb.get_bool('not-a-key', False)
+        )
 
     def test_get_value_nested(self):
         cb = MaptkConfigBlock()

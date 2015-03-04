@@ -38,6 +38,7 @@ __author__ = 'purg'
 
 import ctypes
 
+from maptk.exceptions.config_block import MaptkConfigBlockNoSuchValueException
 from maptk.exceptions.config_block_io import (
     MaptkConfigBlockIoException,
     MaptkConfigBlockIoFileNotFoundException,
@@ -199,6 +200,42 @@ class MaptkConfigBlock (MaptkObject):
         s = mst_ptr.contents.str
         self.MST_FREE(mst_ptr)
         return s
+
+    def get_bool(self, key, default=None):
+        """ Get the boolean value for a key
+
+        :raises MaptkConfigBlockNoSuchValueException: the given key doesn't
+            exist in the configuration and no default was provided.
+
+        :param key: The index of the configuration value to retrieve.
+        :type key: str
+
+        :param default: Optional default value that will be returned if the
+            given is not found in this configuration.
+        :type default: bool
+
+        :return: The boolean value stored within the configuration
+        :rtype: bool
+
+        """
+        cb_get_bool_argtypes = [self.C_TYPE_PTR, ctypes.c_char_p]
+        cb_get_bool_args = [self, key]
+        if default is None:
+            cb_get_bool = self.MAPTK_LIB['maptk_config_block_'
+                                         'get_value_bool']
+        else:
+            cb_get_bool = self.MAPTK_LIB['maptk_config_block_'
+                                         'get_value_default_bool']
+            cb_get_bool_argtypes.append(ctypes.c_bool)
+            cb_get_bool_args.append(default)
+        cb_get_bool_argtypes.append(MaptkErrorHandle.C_TYPE_PTR)
+        cb_get_bool.argtypes = cb_get_bool_argtypes
+        cb_get_bool.restype = ctypes.c_bool
+
+        with MaptkErrorHandle() as eh:
+            eh.set_exception_map({-1: MaptkConfigBlockNoSuchValueException})
+            cb_get_bool_args.append(eh)
+            return cb_get_bool(*cb_get_bool_args)
 
     def get_description(self, key):
         """

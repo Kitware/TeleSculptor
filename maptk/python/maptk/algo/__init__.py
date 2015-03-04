@@ -356,3 +356,4 @@ class MaptkAlgorithm (MaptkObject):
 # Convenience imports of algorithm definition types to the module level
 from .convert_image import MaptkAlgoConvertImage
 from .image_io import MaptkAlgoImageIo
+from .track_features import MaptkAlgoTrackFeatures

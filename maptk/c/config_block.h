@@ -137,6 +137,19 @@ MAPTK_C_EXPORT
 maptk_string_t* maptk_config_block_get_value( maptk_config_block_t *cb,
                                               char const *key );
 
+/// Get the boolean value for a key
+/**
+ * This may fail if the key given doesn't exist, returning a null char*.
+ *
+ * \param cb Opaque pointer to a config_block instance.
+ * \param key The index of the configuration value to retrieve.
+ * \return The boolean value stored within the configuration.
+ */
+MAPTK_C_EXPORT
+bool maptk_config_block_get_value_bool( maptk_config_block_t *cb,
+                                        char const *key,
+                                        maptk_error_handle_t *eh );
+
 /// Get the string value for a key if it exists, else the default
 /**
  * \param cb Opaque pointer to a config_block instance.
@@ -149,6 +162,20 @@ MAPTK_C_EXPORT
 maptk_string_t* maptk_config_block_get_value_default( maptk_config_block_t *cb,
                                                       char const *key,
                                                       char const *deflt );
+
+/// Get the boolean value for a key if it exists, else the default
+/**
+ * \param cb Opaque pointer to a config_block instance.
+ * \param key The index of the configuration value to retrieve.
+ * \param deflt A default value to return if the given key does not have an
+ *              associated value.
+ * \return the bool value stored within the configuration.
+ */
+MAPTK_C_EXPORT
+bool maptk_config_block_get_value_default_bool( maptk_config_block_t *cb,
+                                                char const *key,
+                                                bool deflt,
+                                                maptk_error_handle_t *eh );
 
 /// Get the description associated to a value
 /**

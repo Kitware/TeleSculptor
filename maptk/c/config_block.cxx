@@ -157,6 +157,19 @@ maptk_string_t* maptk_config_block_get_value( maptk_config_block_t *cb,
   return 0;
 }
 
+/// Get the boolean value for a key
+bool maptk_config_block_get_value_bool( maptk_config_block_t *cb,
+                                        char const *key,
+                                        maptk_error_handle_t *eh )
+{
+  STANDARD_CATCH(
+    "C::config_block:get_value_bool", eh,
+    return maptk_c::CONFIG_BLOCK_SPTR_CACHE.get( cb )
+      ->get_value<bool>( key );
+  );
+  return false;
+}
+
 /// Get the string value for a key if it exists, else the default
 maptk_string_t*  maptk_config_block_get_value_default( maptk_config_block_t *cb,
                                                        char const* key,
@@ -170,6 +183,20 @@ maptk_string_t*  maptk_config_block_get_value_default( maptk_config_block_t *cb,
     return maptk_string_new( v.length(), v.c_str() );
   );
   return 0;
+}
+
+/// Get the boolean value for a key if it exists, else the default
+bool maptk_config_block_get_value_default_bool( maptk_config_block_t *cb,
+                                                char const *key,
+                                                bool deflt,
+                                                maptk_error_handle_t *eh )
+{
+  STANDARD_CATCH(
+    "C::config_block::get_value_default_bool", eh,
+    return maptk_c::CONFIG_BLOCK_SPTR_CACHE.get( cb )
+      ->get_value<bool>( key, deflt );
+  );
+  return false;
 }
 
 /// Get the description string for a given key

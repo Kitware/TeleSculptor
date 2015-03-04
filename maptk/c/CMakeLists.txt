@@ -23,6 +23,7 @@ if( MAPTK_ENABLE_C_LIB )
 
     algo_def/convert_image.h
     algo_def/image_io.h
+    algo_def/track_features.h
     )
   set(maptk_c_private_headers
     helpers/algorithm.h
@@ -49,6 +50,7 @@ if( MAPTK_ENABLE_C_LIB )
 
     algo_def/convert_image.cxx
     algo_def/image_io.cxx
+    algo_def/track_features.cxx
 
     helpers/c_utils.cxx
     )
