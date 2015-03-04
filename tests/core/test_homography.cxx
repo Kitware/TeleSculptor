@@ -82,7 +82,7 @@ static bool test_numeric_invertibility()
                                   -1.5,  1.5, -0.5,
                                    1.5,  0.5, -0.5;
 
-  maptk::homography_<T> h_inverse( invertible.inverse()->matrix() );
+  maptk::homography_<T> h_inverse( invertible.inverse()->matrix().template cast<T>() );
   if( ! h_inverse.get_matrix().isApprox( expected_result.get_matrix() ) )
   {
     return false;
@@ -112,20 +112,20 @@ static void test_point_map()
                       0.0, 0.0, 0.0;
   EXPECT_EXCEPTION(
     maptk::point_maps_to_infinity,
-    h_0.map( test_p ),
+    h_0.map_point( test_p ),
     "Applying point to matrix with 0-value lower-right corner"
     );
   }
 
   {
-  // Where [2,2] = e, which is the aproximately-zero threshold
+  // Where [2,2] = e, which is the approximately-zero threshold
   maptk::homography_<T> h_e;
   h_e.get_matrix() << 1.0, 0.0, 1.0,
                       0.0, 1.0, 1.0,
                       0.0, 0.0,  e ;
   EXPECT_EXCEPTION(
     maptk::point_maps_to_infinity,
-    h_e.map( test_p ),
+    h_e.map_point( test_p ),
     "Applying point to matrix with e-value lower-right corner"
     );
   }
@@ -139,7 +139,7 @@ static void test_point_map()
   h_half.get_matrix() << 1.0, 0.0, 1.0,
                          0.0, 1.0, 1.0,
                          0.0, 0.0, 0.5;
-  Eigen::Matrix<T,2,1> r = h_half.map( test_p );
+  Eigen::Matrix<T,2,1> r = h_half.map_point( test_p );
   TEST_NEAR( "test_point_map::0", r[0], 4, e );
   TEST_NEAR( "test_point_map::1", r[1], 4, e );
   }
@@ -196,23 +196,13 @@ IMPLEMENT_TEST(map_point)
 
   // Float Homography
   TEST_LOG( "Calling float H with float P" );
-  pf_t rf_hf = h_f.map(p_f);
+  pf_t rf_hf = h_f.map_point(p_f);
   TEST_EQUAL( "map_point::float_H::float_p::return_float",
               rf_hf, p_f );
 
-  TEST_LOG( "Calling float H with double P" );
-  pd_t rd_hf = h_f.map(p_d);
-  TEST_EQUAL( "map_point::float_H::double_p",
-              rd_hf, p_d );
-
   // Double homography
-  TEST_LOG( "Calling double H with float P" );
-  pf_t rf_hd = h_d.map(p_f);
-  TEST_EQUAL( "map_point::double_h::float_p",
-              rf_hd, p_f );
-
   TEST_LOG( "Calling double H with double P" );
-  pd_t rd_hd = h_d.map(p_d);
+  pd_t rd_hd = h_d.map_point(p_d);
   TEST_EQUAL( "map_point::double_h::double_p",
               rd_hd, p_d );
 }

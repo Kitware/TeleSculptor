@@ -38,6 +38,7 @@
 #include <cmath>
 
 #include <maptk/exceptions/math.h>
+#include <maptk/logging_macros.h>
 
 #include <Eigen/LU>
 
@@ -51,7 +52,7 @@ namespace //anonymous
 /// Private helper method for point transformation via homography matrix
 template <typename T>
 Eigen::Matrix<T,2,1>
-h_map( Eigen::Matrix<T,3,3> const &h, Eigen::Matrix<T,2,1> const &p )
+h_map_point( Eigen::Matrix<T,3,3> const &h, Eigen::Matrix<T,2,1> const &p )
 {
   Eigen::Matrix<T,3,1> out_pt = h * Eigen::Matrix<T,3,1>(p[0], p[1], 1.0);
   if( fabs(out_pt[2]) <= Eigen::NumTraits<T>::dummy_precision() )
@@ -72,25 +73,15 @@ homography_<T>
 {
 }
 
-/// Construct from a provided transformation matrix -- float specialization
-template <>
-template <>
-homography_<float>
-::homography_( Eigen::Matrix<float,3,3> const &mat )
+/// Construct from a provided transformation matrix
+template <typename T>
+homography_<T>
+::homography_( Eigen::Matrix<T,3,3> const &mat )
   : h_( mat )
 {
 }
 
-/// Construct from a provided transformation matrix -- double specialization
-template <>
-template <>
-homography_<double>
-::homography_( Eigen::Matrix<double,3,3> const &mat )
-  : h_( mat )
-{
-}
-
-/// Copy constructor -- float specialization
+/// Conversion Copy constructor -- float specialization
 template <>
 template <>
 homography_<float>
@@ -99,7 +90,7 @@ homography_<float>
 {
 }
 
-/// Copy constructor -- double specialization
+/// Conversion Copy constructor -- double specialization
 template <>
 template <>
 homography_<double>
@@ -142,7 +133,7 @@ homography_<T>
 ::normalize() const
 {
   matrix_t norm = this->get_matrix();
-  if( abs(norm(2,2)) <= Eigen::NumTraits<T>::dummy_precision() )
+  if( fabs(norm(2,2)) >= Eigen::NumTraits<T>::dummy_precision() )
   {
     norm /= norm(2,2);
   }
@@ -171,9 +162,20 @@ Eigen::Matrix<double,2,1>
 homography_<T>
 ::map( Eigen::Matrix<double,2,1> const &p ) const
 {
-  // Explicitly refer to templated version of methon so as to not infinitely
+  // Explicitly refer to templated version of method so as to not infinitely
   // recurse.
-  return this->map<>(p);
+  //return this->map_point( p.template cast<T>() );
+  Eigen::Matrix<double,3,3> m = h_.template cast<double>();
+  return h_map_point( m, p );
+}
+
+/// Map a 2D double-type point using this homography -- double specialization
+template <>
+Eigen::Matrix<double,2,1>
+homography_<double>
+::map( Eigen::Matrix<double,2,1> const &p ) const
+{
+  return h_map_point( h_, p );
 }
 
 /// Get the underlying matrix transformation
@@ -196,32 +198,29 @@ homography_<T>
 
 /// Map a 2D point using this homography -- generic version
 template <typename T>
-template <typename U>
-Eigen::Matrix<U,2,1>
+Eigen::Matrix<T,2,1>
 homography_<T>
-::map( Eigen::Matrix<U,2,1> const &p ) const
+::map_point( Eigen::Matrix<T,2,1> const &p ) const
 {
-  return h_map<U>( this->h_.template cast<U>(), p );
+  return h_map_point<T>( h_.template cast<T>(), p );
 }
 
 /// Map a 2D point using this homography -- float specialization
 template <>
-template <>
 Eigen::Matrix<float,2,1>
 homography_<float>
-::map( Eigen::Matrix<float,2,1> const &p ) const
+::map_point( Eigen::Matrix<float,2,1> const &p ) const
 {
-  return h_map( this->get_matrix(), p );
+  return h_map_point( h_, p );
 }
 
 /// Map a 2D point using this homography -- double specialization
 template <>
-template <>
 Eigen::Matrix<double,2,1>
 homography_<double>
-::map( Eigen::Matrix<double,2,1> const &p ) const
+::map_point( Eigen::Matrix<double,2,1> const &p ) const
 {
-  return h_map( this->get_matrix(), p );
+  return h_map_point( h_, p );
 }
 
 /// Custom f2f_homography multiplication operator.
@@ -230,8 +229,7 @@ homography_<T>
 homography_<T>
 ::operator*( homography_<T> const &rhs )
 {
-  matrix_t r( this->h_ * rhs.h_ );
-  return homography_<T>( r );
+  return homography_<T>( h_ * rhs.h_ );
 }
 
 
@@ -260,15 +258,8 @@ operator<<( std::ostream &s, homography const &h )
 // Template class instantiation
 // ---------------------------------------------------------------------------
 /// \cond DoxygenSuppress
-#define INSTANTIATE_HOMOGRAPHY_MAP(T, U) \
-  template Eigen::Matrix<U,2,1> \
-    homography_<T>::map<U>( Eigen::Matrix<U,2,1> const& ) const
-
 #define INSTANTIATE_HOMOGRAPHY(T) \
   template class homography_<T>; \
-  INSTANTIATE_HOMOGRAPHY_MAP(T, float); \
-  /* Don't need to instantiate homography::map<double>() because of */ \
-  /* explicit reference in homography::map() override.              */ \
   template std::ostream& operator<<( std::ostream &, \
                                      homography_<T> const & )
 

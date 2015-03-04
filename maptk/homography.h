@@ -131,27 +131,20 @@ public:
   /**
    * \param mat The 3x3 transformation matrix to use.
    */
-  template <typename U>
-  homography_<T>( Eigen::Matrix<U,3,3> const &mat )
-    : h_( mat.template cast<T>() )
-  {
-  }
+  explicit
+  homography_<T>( matrix_t const &mat );
+  //homography_<T>( Eigen::Matrix<T,3,3> const &mat );
 
-  /// Copy constructor
+  /// Conversion Copy constructor
   /**
    * \param other The other homography whose transformation should be copied.
    */
   template <typename U>
+  explicit
   homography_<T>( homography_<U> const &other )
     : h_( other.h_.template cast<T>() )
   {
   }
-
-  /// Copy constructor from sptr
-  /**
-   * \param other The other homography sptr
-   */
-  //homography_<T>( homography_sptr other );
 
   // Abstract method definitions ---------------------------------------------
 
@@ -212,8 +205,7 @@ public:
    * \param p Point to map against this homography
    * \return New point in the projected coordinate system.
    */
-  template <typename U>
-  Eigen::Matrix<U,2,1> map( Eigen::Matrix<U,2,1> const &p ) const;
+  Eigen::Matrix<T,2,1> map_point( Eigen::Matrix<T,2,1> const &p ) const;
 
   /// Custom multiplication operator that multiplies the underlying matrices
   /**
