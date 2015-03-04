@@ -49,6 +49,9 @@ from maptk.exceptions.config_block_io import (
 from maptk.util import MaptkObject, MaptkErrorHandle
 from maptk.util.string import maptk_string_t
 
+import os
+import tempfile
+
 
 class MaptkConfigBlock (MaptkObject):
     """
@@ -436,3 +439,34 @@ class MaptkConfigBlock (MaptkObject):
             })
 
             cb_write(self, filepath, eh)
+
+    def as_dict(self):
+        """
+        Return this configuration as a dictionary mapping available keys to
+        their string values.
+
+        :return: Dictionary of keys/value pairs
+        :rtype: dict of (str, str)
+
+        """
+        d = {}
+        for k in self.available_keys():
+            d[k] = self.get_value(k)
+        return d
+
+    def as_string(self):
+        """
+        Return stringification of this configuration, which is the same as what
+        would be written to a file.
+
+        :return: String configuration block
+        :rtype: str
+
+        """
+        fd, fp = tempfile.mkstemp()
+        self.write(fp)
+        with open(fp) as written_config:
+            s = written_config.read()
+        os.close(fd)
+        os.remove(fp)
+        return s
