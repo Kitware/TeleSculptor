@@ -21,6 +21,9 @@ Build System
 
  * Added additional dependency specification options for file configuration.
 
+ * Updated minimum Boost version from 1.48 to 1.50 to support use of
+   boost::program_options::typed_value::value_name, introduced in Boost 1.50.
+
 Core Library
 
  * Added abstract algorithm for essential matrix estimation from feature matches
@@ -91,6 +94,3 @@ Build system
 
  * Fixed race condition during Doxygen documentation generation when built in a
    parallel mode.
-
- * Upped min boost version from 1.48 to 1.50 to resolve windows compilation
-   error (1.50 introduced boost::program_options::typed_value::value_name).
