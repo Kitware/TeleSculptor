@@ -1,8 +1,17 @@
 # C interface library
+include(CMakeDependentOption)
 
 option(MAPTK_ENABLE_C_LIB
   "Enable building of C interface library."
-  OFF)
+  OFF
+  )
+cmake_dependent_option( MAPTK_C_LIB_FORCE_SHARED
+  "Force C interface library to be build shared."
+  OFF  # Default value
+  "MAPTK_ENABLE_C_LIB; NOT BUILD_SHARED_LIBS"
+  OFF # State when dependency expression is false
+  )
+
 
 if( MAPTK_ENABLE_C_LIB )
 
@@ -55,11 +64,16 @@ if( MAPTK_ENABLE_C_LIB )
     helpers/c_utils.cxx
     )
 
+  if( MAPTK_C_LIB_FORCE_SHARED )
+    set(maptk_force_shared_lib SHARED)
+  endif()
+
   maptk_install_headers(
     ${maptk_c_public_headers}
     SUBDIR c
     )
   maptk_add_library( maptk_c
+    ${maptk_force_shared_lib}
     ${maptk_c_public_headers}
     ${maptk_c_private_headers}
     ${maptk_c_sources}

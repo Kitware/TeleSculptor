@@ -11,15 +11,15 @@ cmake_dependent_option( MAPTK_ENABLE_PYTHON
 cmake_dependent_option( MAPTK_PYTHON_SEARCH_BUILD_DIR
   "Include build directory in search paths when python looks for C interface library."
   ON
-  "MAPTK_ENABLE_PYTHON;BUILD_SHARED_LIBS"
+  "MAPTK_ENABLE_PYTHON;BUILD_SHARED_LIBS OR MAPTK_C_LIB_FORCE_SHARED"
   OFF
   )
 
 
 if( MAPTK_ENABLE_PYTHON )
-  if( BUILD_SHARED_LIBS )
+  if( BUILD_SHARED_LIBS OR MAPTK_C_LIB_FORCE_SHARED )
     if( MAPTK_PYTHON_SEARCH_BUILD_DIR )
-      set(MAPTK_BUILD_DIRECTORY "\"${MAPTK_BINARY_DIR}\"")
+      set(MAPTK_BUILD_DIRECTORY "${MAPTK_BINARY_DIR}")
     endif()
 
     maptk_configure_file(python-find_maptk_libraray.py
@@ -29,10 +29,10 @@ if( MAPTK_ENABLE_PYTHON )
       )
 
     #TODO: Install rules for python module and files
-  else( BUILD_SHARED_LIBS )
+  else()
     message(WARNING
       "Halting python Python bindings processing due to not building shared "
       "libraries. Python cannot load static libraries."
       )
-  endif( BUILD_SHARED_LIBS )
+  endif()
 endif( MAPTK_ENABLE_PYTHON )

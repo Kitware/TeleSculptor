@@ -62,9 +62,37 @@ SharedPointerCache< maptk::config_block, maptk_config_block_t >
 }
 
 
-// Static Constants
-char const *maptk_config_block_block_sep = maptk::config_block::block_sep.c_str();
-char const *maptk_config_block_global_value = maptk::config_block::global_value.c_str();
+// Static Constant getters
+
+/// Separator between blocks within the config
+maptk_string_t* maptk_config_block_block_sep()
+{
+  static maptk_string_t *static_bs = 0;
+  if( ! static_bs )
+  {
+    STANDARD_CATCH(
+      "C::config_block::block_sep", NULL,
+      std::string bs( maptk::config_block::block_sep );
+      static_bs = maptk_string_new( bs.size(), bs.c_str() );
+    );
+  }
+  return static_bs;
+}
+
+/// The magic group for global parameters
+maptk_string_t* maptk_config_block_global_value()
+{
+  static maptk_string_t *static_gv = 0;
+  if( ! static_gv )
+  {
+    STANDARD_CATCH(
+      "C::config_block::global_value", NULL,
+      std::string gv( maptk::config_block::global_value );
+      static_gv = maptk_string_new( gv.size(), gv.c_str() );
+    );
+  }
+  return static_gv;
+}
 
 
 /// Create a new, empty \p config_block object

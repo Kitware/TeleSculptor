@@ -47,6 +47,7 @@ from maptk.exceptions.config_block_io import (
     MaptkConfigBlockIoFileWriteException,
 )
 from maptk.util import MaptkObject, MaptkErrorHandle
+from maptk.util.string import maptk_string_t
 
 
 class MaptkConfigBlock (MaptkObject):
@@ -56,11 +57,13 @@ class MaptkConfigBlock (MaptkObject):
 
     # MaptkConfigBlock Constants
     BLOCK_SEP = \
-        ctypes.c_char_p.in_dll(MaptkObject.MAPTK_LIB,
-                               "maptk_config_block_block_sep").value
+        maptk_string_t.from_address(
+            MaptkObject.MAPTK_LIB.maptk_config_block_block_sep()
+        ).str
     GLOBAL_VALUE = \
-        ctypes.c_char_p.in_dll(MaptkObject.MAPTK_LIB,
-                               "maptk_config_block_global_value").value
+        maptk_string_t.from_address(
+            MaptkObject.MAPTK_LIB.maptk_config_block_global_value()
+        ).str
 
     @classmethod
     def from_file(cls, filepath):

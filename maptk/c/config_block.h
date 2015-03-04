@@ -53,13 +53,21 @@ extern "C"
 typedef struct maptk_config_block_s maptk_config_block_t;
 
 
-// Config block constants
+// Config block constant getters
+
 /// Separator between blocks within the config
+/**
+ * Pointer returned is cached, and the same pointer is returned every call.
+ */
 MAPTK_C_EXPORT
-extern char const *maptk_config_block_block_sep;
+maptk_string_t* maptk_config_block_block_sep();
+
 /// The magic group for global parameters
+/**
+ * Pointer returned is cached, and the same pointer is returned every call.
+ */
 MAPTK_C_EXPORT
-extern char const *maptk_config_block_global_value;
+maptk_string_t* maptk_config_block_global_value();
 
 
 /// Create a new, empty \p config_block object
