@@ -2,11 +2,7 @@ MAPTK v0.4.2 Release Notes
 ==========================
 
 This release provides patches to the MAPTK v0.4.1 release to address issues.
-MAPTK v0.4.2 is primarily a bug fix release with very minimal new functionality.
-
-
-Updates since v0.4.1
---------------------
+MAPTK v0.4.2 is a bug fix release with no new functionality.
 
 
 Fixes since v0.4.1
