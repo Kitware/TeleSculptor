@@ -2,10 +2,13 @@ MAPTK v0.5.0 Release Notes
 ==========================
 
 This is a minor release of MAPTK that provides both new functionality and fixes
-over the previous v0.4.1 release.
+over the previous v0.4.2 release.  This release adds preliminary support for
+camera initialization algorithms in the bundle adjustment tool.  It also adds
+support for image masks to suppress unwanted features in the feature tracking
+tool.  These and various other enhancements are described below.
 
 
-Updates since v0.4.1
+Updates since v0.4.2
 --------------------
 
 Build System
@@ -17,6 +20,9 @@ Build System
    This makes it easier for 3rd parties to link against all maptk libraries.
 
  * Added additional dependency specification options for file configuration.
+
+ * Updated minimum Boost version from 1.48 to 1.50 to support use of
+   boost::program_options::typed_value::value_name, introduced in Boost 1.50.
 
 Core Library
 
@@ -41,7 +47,7 @@ Core Library
 
 VXL Library
 
- * Added concrete implementaiton of essential matrix estimation using the
+ * Added concrete implementation of essential matrix estimation using the
    vpgl_em_compute_5_point_ransac class in VXL.
 
  * Refactored maptk <--> VXL camera conversion functions to expose conversion
@@ -65,7 +71,7 @@ Tools
 
  * Updated the bundle adjustment tool to apply the canonical similarity
    transform in the absence of any other global coordinate constraints.
-   This fixes the coordinates after guage-free optimization to allow results
+   This fixes the coordinates after gauge-free optimization to allow results
    to be more easily compared.
 
  * Updated the bundle adjustment tool to optionally accept KRTD files as input.
@@ -81,13 +87,10 @@ Tools
    feature tracker tool.
 
 
-Fixes since v0.4.1
+Fixes since v0.4.2
 ------------------
 
 Build system
 
  * Fixed race condition during Doxygen documentation generation when built in a
    parallel mode.
-
- * Upped min boost version from 1.48 to 1.50 to resolve windows compilation
-   error (1.50 introduced boost::program_options::typed_value::value_name).
