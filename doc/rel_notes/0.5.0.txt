@@ -5,7 +5,7 @@ This is a minor release of MAPTK that provides both new functionality and fixes
 over the previous v0.4.1 release.
 
 
-Updates since v0.4.1
+Updates since v0.4.2
 --------------------
 
 Build System
@@ -81,7 +81,7 @@ Tools
    feature tracker tool.
 
 
-Fixes since v0.4.1
+Fixes since v0.4.2
 ------------------
 
 Build system
