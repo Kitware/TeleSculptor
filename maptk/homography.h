@@ -145,6 +145,10 @@ public:
   {
   }
 
+  /// Construct from a generic homography
+  explicit
+  homography_<T>( homography const &base );
+
   // Abstract method definitions ---------------------------------------------
 
   /// Create a clone of ourself as a shared pointer

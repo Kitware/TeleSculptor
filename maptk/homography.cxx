@@ -99,6 +99,22 @@ homography_<double>
 {
 }
 
+/// Construct from a generic homography
+template <typename T>
+homography_<T>
+::homography_( homography const &base )
+  : h_( base.matrix().template cast<T>() )
+{
+}
+
+/// Construct from a generic homography -- double specialization
+template <>
+homography_<double>
+::homography_( homography const &base )
+  : h_( base.matrix() )
+{
+}
+
 /// Create a clone of outself as a shared pointer
 template <typename T>
 homography_sptr
