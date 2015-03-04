@@ -164,7 +164,6 @@ homography_<T>
 {
   // Explicitly refer to templated version of method so as to not infinitely
   // recurse.
-  //return this->map_point( p.template cast<T>() );
   Eigen::Matrix<double,3,3> m = h_.template cast<double>();
   return h_map_point( m, p );
 }

@@ -133,7 +133,6 @@ public:
    */
   explicit
   homography_<T>( matrix_t const &mat );
-  //homography_<T>( Eigen::Matrix<T,3,3> const &mat );
 
   /// Conversion Copy constructor
   /**
