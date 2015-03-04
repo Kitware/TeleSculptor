@@ -66,9 +66,9 @@ class MaptkAlgoImageIo (MaptkAlgorithm):
                              MaptkErrorHandle.C_TYPE_PTR]
         iio_load.restype = MaptkImageContainer.C_TYPE_PTR
         with MaptkErrorHandle() as eh:
-            return MaptkImageContainer.from_c_pointer(
-                iio_load(self, filepath, eh)
-            )
+            ic_ptr = iio_load(self, filepath, eh)
+        return MaptkImageContainer.from_c_pointer(ic_ptr)
+
 
     def save(self, image_container, filepath):
         """
