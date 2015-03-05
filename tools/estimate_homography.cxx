@@ -386,8 +386,14 @@ static int maptk_main(int argc, char const* argv[])
   // warping tools usually want.
   LOG_INFO("meh", "Estimating homography...");
   std::vector<bool> inliers;
-  maptk::homography homog = homog_estimator->estimate(i2_features, i1_features,
-                                                      matches, inliers);
+  maptk::homography_sptr homog = homog_estimator->estimate(i2_features, i1_features,
+                                                           matches, inliers);
+  if( ! homog )
+  {
+    LOG_ERROR( "meh", "Failed to estimate valid homography! NULL returned." );
+    return EXIT_FAILURE;
+  }
+
   // Reporting inlier count
   size_t inlier_count = 0;
   BOOST_FOREACH(bool b, inliers)
@@ -398,8 +404,8 @@ static int maptk_main(int argc, char const* argv[])
   LOG_INFO("meh", "-- Inliers: " << inlier_count << " / " << inliers.size());
 
   LOG_INFO("meh", "Writing homography file...");
-  homog_output_stream << maptk::homography::Identity() << std::endl
-                      << homog << std::endl;
+  homog_output_stream << maptk::homography_<double>() << std::endl
+                      << *homog << std::endl;
   homog_output_stream.close();
   LOG_INFO("meh", "-- '" << homog_output_path << "' finished writing");
 

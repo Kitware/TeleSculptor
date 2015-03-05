@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2015 by Kitware, Inc.
+ * Copyright 2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,45 +30,55 @@
 
 /**
  * \file
- * \brief estimate_homography algorithm definition instantiation + implementation
+ * \brief Frame to World Homography implementation
  */
 
-#include <maptk/algo/estimate_homography.h>
-#include <maptk/algo/algorithm.txx>
-#include <boost/foreach.hpp>
-
-/// \cond DoxygenSuppress
-INSTANTIATE_ALGORITHM_DEF(maptk::algo::estimate_homography);
-/// \endcond
+#include "homography_f2w.h"
 
 
 namespace maptk
 {
 
-namespace algo
-{
 
-/// Estimate a homography matrix from corresponding features
-homography_sptr
-estimate_homography
-::estimate(feature_set_sptr feat1,
-           feature_set_sptr feat2,
-           match_set_sptr matches,
-           std::vector<bool>& inliers,
-           double inlier_scale) const
+/// Construct an identity homography for the given frame
+f2w_homography
+::f2w_homography( frame_id_t const frame_id )
+  : h_( homography_sptr( new homography_<double>() ) ),
+    frame_id_( frame_id )
 {
-  std::vector<feature_sptr> vf1 = feat1->features();
-  std::vector<feature_sptr> vf2 = feat2->features();
-  std::vector<match> mset = matches->matches();
-  std::vector<vector_2d> vv1, vv2;
-  BOOST_FOREACH(match m, mset)
-  {
-    vv1.push_back(vf1[m.first]->loc());
-    vv2.push_back(vf2[m.second]->loc());
-  }
-  return this->estimate(vv1, vv2, inliers, inlier_scale);
 }
 
-} // end namespace algo
+/// Construct given an existing homography
+f2w_homography
+::f2w_homography( homography_sptr const &h, frame_id_t const frame_id )
+  : h_( h->clone() ),
+    frame_id_( frame_id )
+{
+}
 
-} // end namespace maptk
+/// Copy Constructor
+f2w_homography
+::f2w_homography( f2w_homography const &h )
+  : h_( h.h_->clone() ),
+    frame_id_( h.frame_id_ )
+{
+}
+
+/// Get the homography transformation
+homography_sptr
+f2w_homography
+::homography() const
+{
+  return this->h_;
+}
+
+/// Get the frame identifier
+frame_id_t
+f2w_homography
+::frame_id() const
+{
+  return this->frame_id_;
+}
+
+
+} // end maptk namespace

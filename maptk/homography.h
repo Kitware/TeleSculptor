@@ -30,17 +30,16 @@
 
 /**
  * \file
- * \brief core homography related classes
+ * \brief Core Homography class definition
  */
 
 #ifndef MAPTK_HOMOGRAPHY_H_
 #define MAPTK_HOMOGRAPHY_H_
 
 #include <maptk/config.h>
+#include <maptk/matrix.h>
 #include <maptk/types.h>
-
-#include "matrix.h"
-#include "vector.h"
+#include <maptk/vector.h>
 
 #include <iostream>
 #include <map>
@@ -48,164 +47,193 @@
 
 #include <boost/shared_ptr.hpp>
 
+
 namespace maptk
 {
 
 
-/// A raw homography transformation matrix.
-typedef matrix_3x3d homography;
-
-/// A smart pointer to a raw homography transformation matrix.
+// Forward declarations of abstract homography class
+class homography;
+// typedef for a homography shared pointer
 typedef boost::shared_ptr< homography > homography_sptr;
 
 
-/// A homography between two arbitrary frames.
-class MAPTK_LIB_EXPORT f2f_homography : public homography
+// ===========================================================================
+// Homography Base-class
+// ---------------------------------------------------------------------------
+
+/// Abstract base homography transformation representation class
+class homography
 {
 public:
+  /// Destructor
+  virtual ~homography() {}
 
-  /// Construct an identity homography for the given frame.
-  explicit f2f_homography( const frame_id_t frame_id );
+  /// Create a clone of this homography object, returning as smart pointer
+  /**
+   * \return A new deep clone of this homography transformation.
+   */
+  virtual homography_sptr clone() const = 0;
 
-  /// Construct a frame to frame homography.
-  explicit f2f_homography( const homography& h,
-                           const frame_id_t from_id,
-                           const frame_id_t to_id );
+  /// Get a double-typed copy of the underlying matrix transformation
+  /**
+   * \return A copy of the transformation matrix represented in the double
+   *         type.
+   */
+  virtual Eigen::Matrix<double,3,3> matrix() const = 0;
 
-  /// Copy Constructor.
-  f2f_homography( const f2f_homography& h );
+  /// Get a new \p homography that has been normalized
+  /**
+   * Normalized \p homography is one in which the lower-right corner
+   * (index (2,2]) is 1.
+   *
+   * If this index is 0, the nothing is modified.
+   *
+   * \return New homography transformation instance.
+   */
+  virtual homography_sptr normalize() const = 0;
 
-  /// Destructor.
-  virtual ~f2f_homography();
+  /// Get a new \p homography that has been inverted.
+  /**
+   * \return New homography transformation instance.
+   */
+  virtual homography_sptr inverse() const = 0;
 
-  /// Return the inverse of this homography.
-  virtual f2f_homography inverse() const;
-
-  /// The frame identifier that this homography maps from.
-  virtual frame_id_t from_id() const;
-
-  /// The frame identifier that this homography maps to.
-  virtual frame_id_t to_id() const;
-
-  /// Normalize the internal homography matrix.
-  virtual f2f_homography& normalize();
-
-  /// Custom f2f_homography multiplication operator.
-  virtual f2f_homography operator*( const f2f_homography& other );
-
-protected:
-
-  /// From frame identifier.
-  frame_id_t from_id_;
-
-  /// To frame identifier.
-  frame_id_t to_id_;
+  /// Map a 2D double-type point using this homography
+  /**
+   * \tparam T Point vector data type
+   * \param p Point to map against this homography
+   * \return New point in the projected coordinate system.
+   */
+  virtual Eigen::Matrix<double,2,1>
+    map( Eigen::Matrix<double,2,1> const &p ) const = 0;
 
 };
 
-/// A smart pointer to a frame to frame homography.
-typedef boost::shared_ptr< f2f_homography > f2f_homography_sptr;
 
+// ===========================================================================
+// Typed Homography
+// ---------------------------------------------------------------------------
 
-/// A homography between a frame and some arbitrary coordinate space.
-class MAPTK_LIB_EXPORT f2w_homography : public homography
+/// Representation of a matrix-based homography transformation
+template <typename T>
+class MAPTK_LIB_EXPORT homography_
+  : public homography
 {
 public:
+  typedef T value_type;
+  typedef Eigen::Matrix<T,3,3> matrix_t;
 
-  /// Construct an identity homography for the given frame.
-  explicit f2w_homography( const frame_id_t frame_id );
+  /// Construct an identity homography
+  homography_<T>();
 
-  /// Construct a frame to frame homography.
-  explicit f2w_homography( const homography& h,
-                           const frame_id_t frame_id );
+  /// Construct from a provided transformation matrix
+  /**
+   * \param mat The 3x3 transformation matrix to use.
+   */
+  explicit
+  homography_<T>( matrix_t const &mat );
 
-  /// Copy Constructor.
-  f2w_homography( const f2w_homography& h );
+  /// Conversion Copy constructor
+  /**
+   * \param other The other homography whose transformation should be copied.
+   */
+  template <typename U>
+  explicit
+  homography_<T>( homography_<U> const &other )
+    : h_( other.h_.template cast<T>() )
+  {
+  }
 
-  /// Destructor.
-  virtual ~f2w_homography();
+  /// Construct from a generic homography
+  explicit
+  homography_<T>( homography const &base );
 
-  /// The frame identifier that this homography maps from.
-  virtual frame_id_t frame_id() const;
+  // Abstract method definitions ---------------------------------------------
+
+  /// Create a clone of ourself as a shared pointer
+  /**
+   * \return A new clone of this homography transformation.
+   */
+  virtual homography_sptr clone() const;
+
+  /// Get a double-typed copy of the underlying matrix transformation
+  /**
+   * \return A copy of the transformation matrix represented in the double
+   *         type.
+   */
+  virtual Eigen::Matrix<double,3,3> matrix() const;
+
+  /// Get a new \p homography that has been normalized
+  /**
+   * Normalized homography is one in which the lower-right corner (index (2,2])
+   * is 1.
+   *
+   * If this index is 0, the nothing is modified.
+   *
+   * \return New homography transformation instance.
+   */
+  virtual homography_sptr normalize() const;
+
+  /// Get a new \p homography that has been inverted.
+  /**
+   * \throws non_invertible_matrix When the homography matrix is non-invertible.
+   * \return New homography transformation instance.
+   */
+  virtual homography_sptr inverse() const;
+
+  /// Map a 2D double-type point using this homography
+  /**
+   * \tparam T Point vector data type
+   * \param p Point to map against this homography
+   * \return New point in the projected coordinate system.
+   */
+  virtual Eigen::Matrix<double,2,1>
+    map( Eigen::Matrix<double,2,1> const &p ) const;
+
+  // Member Functions --------------------------------------------------------
+
+  /// Get the underlying matrix transformation
+  /**
+   * \return The reference to this homography's transformation matrix.
+   */
+  matrix_t& get_matrix();
+
+  /// Get a const new copy of the underlying matrix transformation.
+  matrix_t const& get_matrix() const;
+
+  /// Map a 2D point using this homography
+  /**
+   * \tparam T Point vector data type
+   * \param p Point to map against this homography
+   * \return New point in the projected coordinate system.
+   */
+  Eigen::Matrix<T,2,1> map_point( Eigen::Matrix<T,2,1> const &p ) const;
+
+  /// Custom multiplication operator that multiplies the underlying matrices
+  /**
+   * \param rhs Right-hand-side operand homography.
+   * \return New homography object whose transform is the result of
+   *         \p this * \p rhs.
+   */
+  virtual homography_<T> operator*( homography_<T> const &rhs );
 
 protected:
-
-  /// From frame identifier.
-  frame_id_t frame_id_;
-
+  /// homography transformation matrix
+  matrix_t h_;
 };
 
-/// A smart pointer to a frame to world homography.
-typedef boost::shared_ptr< f2w_homography > f2w_homography_sptr;
 
+// ===========================================================================
+// Utility Functions
+// ---------------------------------------------------------------------------
 
-/// A collection of homography-related data useful for each individual frame.
-class MAPTK_LIB_EXPORT homography_collection
-{
-public:
+/// Output stream operator for \p homography base-class
+MAPTK_LIB_EXPORT std::ostream& operator<<( std::ostream &s, homography const &h );
 
-  /// Construct a homography collection from different types of homographies.
-  homography_collection( f2f_homography_sptr cur_to_last = f2f_homography_sptr(),
-                         f2f_homography_sptr cur_to_ref = f2f_homography_sptr(),
-                         f2w_homography_sptr ref_to_wld = f2w_homography_sptr(),
-                         f2w_homography_sptr cur_to_wld = f2w_homography_sptr() );
-
-  /// Destructor.
-  virtual ~homography_collection();
-
-  /// Return a homography to the last frame.
-  f2f_homography_sptr current_to_last() const;
-
-  /// Return a homography to some reference frame.
-  f2f_homography_sptr current_to_reference() const;
-
-  /// Return an arbitrary reference to world homography.
-  f2w_homography_sptr reference_to_world() const;
-
-  /// Return a homography to some reference frame.
-  f2w_homography_sptr current_to_world() const;
-
-  /// Is the current to last homography valid?
-  bool has_current_to_last() const;
-
-  /// Is the current to reference homography valid?
-  bool has_current_to_reference() const;
-
-  /// Is the reference to world homography valid?
-  bool has_reference_to_world() const;
-
-  /// Is the current to world homography valid?
-  bool has_current_to_world() const;
-
-protected:
-
-  /// The actual current to last homography.
-  f2f_homography_sptr current_to_last_;
-
-  /// The actual current to reference homography.
-  f2f_homography_sptr current_to_reference_;
-
-  /// The actual reference to world homography.
-  f2w_homography_sptr reference_to_world_;
-
-  /// The actual current to world homography.
-  f2w_homography_sptr current_to_world_;
-
-};
-
-/// A pointer to a homography collection class.
-typedef boost::shared_ptr< homography_collection> homography_collection_sptr;
-
-/// A set of homography collections for several individual frames.
-typedef std::map< frame_id_t, homography_collection > homography_collection_set;
-
-/// A pointer to a homography_collection_set.
-typedef boost::shared_ptr< homography_collection_set > homography_collection_set_sptr;
-
-
-/// Homography mapping for 2D points.
-MAPTK_LIB_EXPORT
-vector_2d homography_map( const homography& h, const vector_2d& p );
+/// homography_<T> output stream operator
+template <typename T>
+MAPTK_LIB_EXPORT std::ostream& operator<<( std::ostream &s, homography_<T> const &h );
 
 
 } // end namespace maptk

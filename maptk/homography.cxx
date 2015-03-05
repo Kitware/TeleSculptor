@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,243 +30,258 @@
 
 /**
  * \file
- * \brief core homography related classes implementation
+ * \brief core homography template implementations
  */
 
 #include "homography.h"
-#include "exceptions/math.h"
+
+#include <cmath>
+
+#include <maptk/exceptions/math.h>
+#include <maptk/logging_macros.h>
+
 #include <Eigen/LU>
+
 
 namespace maptk
 {
 
-
-f2f_homography
-::f2f_homography( const frame_id_t frame_id )
-: from_id_( frame_id ),
-  to_id_( frame_id )
+namespace //anonymous
 {
-  this->setIdentity();
-}
 
-
-f2f_homography
-::f2f_homography( const homography& h,
-                  const frame_id_t from_id,
-                  const frame_id_t to_id )
-: homography( h ),
-  from_id_( from_id ),
-  to_id_( to_id )
+/// Private helper method for point transformation via homography matrix
+template <typename T>
+Eigen::Matrix<T,2,1>
+h_map_point( Eigen::Matrix<T,3,3> const &h, Eigen::Matrix<T,2,1> const &p )
 {
-}
-
-
-f2f_homography
-::f2f_homography( const f2f_homography& h )
-: homography( h ),
-  from_id_( h.from_id() ),
-  to_id_( h.to_id() )
-{
-}
-
-
-f2f_homography
-::~f2f_homography()
-{
-}
-
-
-f2f_homography
-f2f_homography
-::inverse() const
-{
-  return f2f_homography( homography::inverse(), to_id_, from_id_ );
-}
-
-
-f2f_homography&
-f2f_homography
-::normalize()
-{
-  if( (*this)(2,2) != 0 )
-  {
-    (*this) /= (*this)(2,2);
-  }
-  return *this;
-}
-
-
-frame_id_t
-f2f_homography
-::from_id() const
-{
-  return from_id_;
-}
-
-
-frame_id_t
-f2f_homography
-::to_id() const
-{
-  return to_id_;
-}
-
-
-f2f_homography
-f2f_homography
-::operator*( const f2f_homography& other )
-{
-  if( this->from_id() != other.to_id() )
-  {
-    throw invalid_matrix_operation( "Frame homography identifiers do not match" );
-  }
-
-  return f2f_homography( static_cast<homography>(*this) *
-                         static_cast<homography>(other),
-                         other.from_id(), to_id_ );
-}
-
-
-f2w_homography
-::f2w_homography( const frame_id_t frame_id )
-: frame_id_( frame_id )
-{
-  this->setIdentity();
-}
-
-
-f2w_homography
-::f2w_homography( const homography& h,
-                  const frame_id_t frame_id )
-: homography( h ),
-  frame_id_( frame_id )
-{
-}
-
-
-f2w_homography
-::f2w_homography( const f2w_homography& h )
-: homography( h ),
-  frame_id_( h.frame_id() )
-{
-}
-
-
-f2w_homography
-::~f2w_homography()
-{
-}
-
-
-frame_id_t
-f2w_homography
-::frame_id() const
-{
-  return frame_id_;
-}
-
-
-homography_collection
-::homography_collection( f2f_homography_sptr cur_to_last,
-                         f2f_homography_sptr cur_to_ref,
-                         f2w_homography_sptr ref_to_wld,
-                         f2w_homography_sptr cur_to_wld )
-: current_to_last_( cur_to_last ),
-  current_to_reference_( cur_to_ref ),
-  reference_to_world_( ref_to_wld ),
-  current_to_world_( cur_to_wld )
-{
-  if( !current_to_world_ && current_to_reference_ && reference_to_world_ )
-  {
-    homography h = (*reference_to_world_) * (*current_to_reference_);
-    frame_id_t from = current_to_reference_->from_id();
-    current_to_world_ = f2w_homography_sptr( new f2w_homography( h, from ) );
-  }
-}
-
-
-homography_collection
-::~homography_collection()
-{
-}
-
-
-f2f_homography_sptr
-homography_collection
-::current_to_last() const
-{
-  return current_to_last_;
-}
-
-
-f2f_homography_sptr
-homography_collection
-::current_to_reference() const
-{
-  return current_to_reference_;
-}
-
-
-f2w_homography_sptr
-homography_collection
-::reference_to_world() const
-{
-  return reference_to_world_;
-}
-
-
-f2w_homography_sptr
-homography_collection
-::current_to_world() const
-{
-  return current_to_world_;
-}
-
-
-bool
-homography_collection
-::has_current_to_last() const
-{
-  return static_cast<bool>(current_to_last_);
-}
-
-
-bool
-homography_collection
-::has_current_to_reference() const
-{
-  return static_cast<bool>(current_to_reference_);
-}
-
-
-bool
-homography_collection
-::has_reference_to_world() const
-{
-  return static_cast<bool>(reference_to_world_);
-}
-
-
-bool
-homography_collection
-::has_current_to_world() const
-{
-  return static_cast<bool>(current_to_world_);
-}
-
-
-vector_2d
-homography_map( const homography& h, const vector_2d& p )
-{
-  vector_3d out_pt = h * vector_3d(p[0], p[1], 1.0);
-
-  if( out_pt[2] == 0 )
+  Eigen::Matrix<T,3,1> out_pt = h * Eigen::Matrix<T,3,1>(p[0], p[1], 1.0);
+  if( fabs(out_pt[2]) <= Eigen::NumTraits<T>::dummy_precision() )
   {
     throw point_maps_to_infinity();
   }
+  return Eigen::Matrix<T,2,1>( out_pt[0] / out_pt[2], out_pt[1] / out_pt[2] );
+}
 
-  return vector_2d( out_pt[0] / out_pt[2], out_pt[1] / out_pt[2] );
+} // end anonymous namespace
+
+
+/// Construct an identity homography
+template <typename T>
+homography_<T>
+::homography_()
+  : h_( matrix_t::Identity() )
+{
+}
+
+/// Construct from a provided transformation matrix
+template <typename T>
+homography_<T>
+::homography_( Eigen::Matrix<T,3,3> const &mat )
+  : h_( mat )
+{
+}
+
+/// Conversion Copy constructor -- float specialization
+template <>
+template <>
+homography_<float>
+::homography_( homography_<float> const &other )
+  : h_( other.get_matrix() )
+{
+}
+
+/// Conversion Copy constructor -- double specialization
+template <>
+template <>
+homography_<double>
+::homography_( homography_<double> const &other )
+  : h_( other.get_matrix() )
+{
+}
+
+/// Construct from a generic homography
+template <typename T>
+homography_<T>
+::homography_( homography const &base )
+  : h_( base.matrix().template cast<T>() )
+{
+}
+
+/// Construct from a generic homography -- double specialization
+template <>
+homography_<double>
+::homography_( homography const &base )
+  : h_( base.matrix() )
+{
+}
+
+/// Create a clone of outself as a shared pointer
+template <typename T>
+homography_sptr
+homography_<T>
+::clone() const
+{
+  return homography_sptr( new homography_<T>( *this ) );
+}
+
+/// Get a double-typed copy of the underlying matrix transformation
+template <typename T>
+Eigen::Matrix<double,3,3>
+homography_<T>
+::matrix() const
+{
+  return this->h_.template cast<double>();
+}
+
+/// Specialization for homographies with native double type
+template <>
+Eigen::Matrix<double,3,3>
+homography_<double>
+::matrix() const
+{
+  return this->h_;
+}
+
+/// Normalize homography transformation in-place
+template <typename T>
+homography_sptr
+homography_<T>
+::normalize() const
+{
+  matrix_t norm = this->get_matrix();
+  if( fabs(norm(2,2)) >= Eigen::NumTraits<T>::dummy_precision() )
+  {
+    norm /= norm(2,2);
+  }
+  return homography_sptr( new homography_<T>( norm ) );
+}
+
+/// Inverse the homography transformation returning a new transformation
+template <typename T>
+homography_sptr
+homography_<T>
+::inverse() const
+{
+  matrix_t inv;
+  bool isvalid;
+  this->h_.computeInverseWithCheck( inv, isvalid );
+  if( !isvalid )
+  {
+    throw non_invertible_matrix();
+  }
+  return homography_sptr( new homography_<T>( inv ) );
+}
+
+/// Map a 2D double-type point using this homography
+template <typename T>
+Eigen::Matrix<double,2,1>
+homography_<T>
+::map( Eigen::Matrix<double,2,1> const &p ) const
+{
+  // Explicitly refer to templated version of method so as to not infinitely
+  // recurse.
+  Eigen::Matrix<double,3,3> m = h_.template cast<double>();
+  return h_map_point( m, p );
+}
+
+/// Map a 2D double-type point using this homography -- double specialization
+template <>
+Eigen::Matrix<double,2,1>
+homography_<double>
+::map( Eigen::Matrix<double,2,1> const &p ) const
+{
+  return h_map_point( h_, p );
+}
+
+/// Get the underlying matrix transformation
+template <typename T>
+typename homography_<T>::matrix_t&
+homography_<T>
+::get_matrix()
+{
+  return this->h_;
+}
+
+/// Get a const new copy of the underlying matrix transformation.
+template <typename T>
+typename homography_<T>::matrix_t const&
+homography_<T>
+::get_matrix() const
+{
+  return this->h_;
+}
+
+/// Map a 2D point using this homography -- generic version
+template <typename T>
+Eigen::Matrix<T,2,1>
+homography_<T>
+::map_point( Eigen::Matrix<T,2,1> const &p ) const
+{
+  return h_map_point<T>( h_.template cast<T>(), p );
+}
+
+/// Map a 2D point using this homography -- float specialization
+template <>
+Eigen::Matrix<float,2,1>
+homography_<float>
+::map_point( Eigen::Matrix<float,2,1> const &p ) const
+{
+  return h_map_point( h_, p );
+}
+
+/// Map a 2D point using this homography -- double specialization
+template <>
+Eigen::Matrix<double,2,1>
+homography_<double>
+::map_point( Eigen::Matrix<double,2,1> const &p ) const
+{
+  return h_map_point( h_, p );
+}
+
+/// Custom f2f_homography multiplication operator.
+template <typename T>
+homography_<T>
+homography_<T>
+::operator*( homography_<T> const &rhs )
+{
+  return homography_<T>( h_ * rhs.h_ );
 }
 
 
-} // end namespace maptk
+// ===========================================================================
+// Other Functions
+// ---------------------------------------------------------------------------
+
+/// homography_<T> output stream operator
+template <typename T>
+std::ostream&
+operator<<( std::ostream &s, homography_<T> const &h )
+{
+  s << h.get_matrix();
+  return s;
+}
+
+/// Output stream operator for \p homography instances
+std::ostream&
+operator<<( std::ostream &s, homography const &h )
+{
+  s << h.matrix();
+  return s;
+}
+
+// ===========================================================================
+// Template class instantiation
+// ---------------------------------------------------------------------------
+/// \cond DoxygenSuppress
+#define INSTANTIATE_HOMOGRAPHY(T) \
+  template class homography_<T>; \
+  template std::ostream& operator<<( std::ostream &, \
+                                     homography_<T> const & )
+
+INSTANTIATE_HOMOGRAPHY(float);
+INSTANTIATE_HOMOGRAPHY(double);
+#undef INSTANTIATE_HOMOGRAPHY
+/// \endcond
+
+
+} // end maptk namespace

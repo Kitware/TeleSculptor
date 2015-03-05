@@ -21,6 +21,11 @@ Build System
 
  * Added Eigen3 include directory path to include directories exported by MAPTK
 
+Core Library
+
+ * Revised homography structures into objects that contain, rather than
+   subclass, Eigen::Matrix.
+
 Main Library
 
  * Revised import/export logic in auto-generated plugin library code.

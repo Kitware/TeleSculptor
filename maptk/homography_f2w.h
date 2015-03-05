@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2015 by Kitware, Inc.
+ * Copyright 2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,45 +30,52 @@
 
 /**
  * \file
- * \brief estimate_homography algorithm definition instantiation + implementation
+ * \brief Frame to World Homography definition
  */
 
-#include <maptk/algo/estimate_homography.h>
-#include <maptk/algo/algorithm.txx>
-#include <boost/foreach.hpp>
+#ifndef MAPTK_HOMOGRAPHY_F2W_H
+#define MAPTK_HOMOGRAPHY_F2W_H
 
-/// \cond DoxygenSuppress
-INSTANTIATE_ALGORITHM_DEF(maptk::algo::estimate_homography);
-/// \endcond
+#include <maptk/config.h>
+#include <maptk/homography.h>
 
 
 namespace maptk
 {
 
-namespace algo
+
+class MAPTK_LIB_EXPORT f2w_homography
 {
+public:
+  /// Construct an identity homography for the given frame
+  explicit f2w_homography( frame_id_t const frame_id );
 
-/// Estimate a homography matrix from corresponding features
-homography_sptr
-estimate_homography
-::estimate(feature_set_sptr feat1,
-           feature_set_sptr feat2,
-           match_set_sptr matches,
-           std::vector<bool>& inliers,
-           double inlier_scale) const
-{
-  std::vector<feature_sptr> vf1 = feat1->features();
-  std::vector<feature_sptr> vf2 = feat2->features();
-  std::vector<match> mset = matches->matches();
-  std::vector<vector_2d> vv1, vv2;
-  BOOST_FOREACH(match m, mset)
-  {
-    vv1.push_back(vf1[m.first]->loc());
-    vv2.push_back(vf2[m.second]->loc());
-  }
-  return this->estimate(vv1, vv2, inliers, inlier_scale);
-}
+  /// Construct given an existing homography
+  /**
+   * The given homography sptr is cloned into this object so we retain a unique
+   * copy.
+   */
+  f2w_homography( homography_sptr const &h, frame_id_t const frame_id );
 
-} // end namespace algo
+  /// Copy Constructor
+  f2w_homography( f2w_homography const &h );
 
-} // end namespace maptk
+  /// Get the homography transformation
+  virtual homography_sptr homography() const;
+
+  /// Get the frame identifier
+  virtual frame_id_t frame_id() const;
+
+protected:
+  /// Homography transformation
+  homography_sptr h_;
+
+  /// Frame identifier
+  frame_id_t frame_id_;
+};
+
+
+} // end maptk namespace
+
+
+#endif // MAPTK_HOMOGRAPHY_F2W_H

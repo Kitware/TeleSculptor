@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,6 +63,8 @@ public:
 
   /// Estimate a homography matrix from corresponding features
   /**
+   * If estimation fails, a NULL-containing sptr is returned
+   *
    * \param [in]  feat1 the set of all features from the source image
    * \param [in]  feat2 the set of all features from the destination image
    * \param [in]  matches the set of correspondences between \a feat1 and \a feat2
@@ -70,7 +72,7 @@ public:
    *                      this pair is an inlier to the homography estimate
    * \param [in]  inlier_scale error distance tolerated for matches to be inliers
    */
-  virtual homography
+  virtual homography_sptr
   estimate(feature_set_sptr feat1,
            feature_set_sptr feat2,
            match_set_sptr matches,
@@ -79,13 +81,15 @@ public:
 
   /// Estimate a homography matrix from corresponding points
   /**
+   * If estimation fails, a NULL-containing sptr is returned
+   *
    * \param [in]  pts1 the vector or corresponding points from the source image
    * \param [in]  pts2 the vector of corresponding points from the destination image
    * \param [out] inliers for each point pair, the value is true if
    *                      this pair is an inlier to the homography estimate
    * \param [in]  inlier_scale error distance tolerated for matches to be inliers
    */
-  virtual homography
+  virtual homography_sptr
   estimate(const std::vector<vector_2d>& pts1,
            const std::vector<vector_2d>& pts2,
            std::vector<bool>& inliers,
