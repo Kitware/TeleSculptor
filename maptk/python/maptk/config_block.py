@@ -58,15 +58,9 @@ class MaptkConfigBlock (MaptkObject):
     maptk::config_block interface class
     """
 
-    # MaptkConfigBlock Constants
-    BLOCK_SEP = \
-        maptk_string_t.from_address(
-            MaptkObject.MAPTK_LIB.maptk_config_block_block_sep()
-        ).str
-    GLOBAL_VALUE = \
-        maptk_string_t.from_address(
-            MaptkObject.MAPTK_LIB.maptk_config_block_global_value()
-        ).str
+    # MaptkConfigBlock Constants -- initialized later in file
+    BLOCK_SEP = None
+    GLOBAL_VALUE = None
 
     @classmethod
     def from_file(cls, filepath):
@@ -470,3 +464,17 @@ class MaptkConfigBlock (MaptkObject):
         os.close(fd)
         os.remove(fp)
         return s
+
+
+def _initialize_cb_statics():
+    """ Initialize MaptkConfigBlock class variables from library """
+    MaptkObject.MAPTK_LIB.maptk_config_block_block_sep.restype = \
+        maptk_string_t.PTR_t
+    MaptkObject.MAPTK_LIB.maptk_config_block_global_value.restype = \
+        maptk_string_t.PTR_t
+    MaptkConfigBlock.BLOCK_SEP = \
+        MaptkObject.MAPTK_LIB.maptk_config_block_block_sep().contents.str
+    MaptkConfigBlock.GLOBAL_VALUE = \
+        MaptkObject.MAPTK_LIB.maptk_config_block_global_value().contents.str
+
+_initialize_cb_statics()
