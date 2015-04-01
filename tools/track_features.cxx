@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -123,14 +123,44 @@ static bool check_config(maptk::config_block_sptr config)
                                                                                                  config);
   }
 
-  return (
-         config->has_value("image_list_file") && bfs::exists(maptk::path_t(config->get_value<std::string>("image_list_file")))
-      && config->has_value("output_tracks_file")
-      && maptk::algo::track_features::check_nested_algo_configuration("feature_tracker", config)
-      && maptk::algo::image_io::check_nested_algo_configuration("image_reader", config)
-      && maptk::algo::convert_image::check_nested_algo_configuration("convert_image", config)
-      && valid_out_homogs_file && valid_out_homogs_algo
-      );
+  if (!config->has_value("image_list_file"))
+  {
+    std::cout << "Config needs value image_list_file\n";
+    return false;
+  }
+
+  std::string path = config->get_value<std::string>("image_list_file");
+  if (!bfs::exists(maptk::path_t(path)))
+  {
+    std::cout << "image_list_file path, " << path << ", does not exist\n";
+    return false;
+  }
+
+  if (!config->has_value("output_tracks_file"))
+  {
+    std::cout << "Config needs value output_tracks_file\n";
+    return false;
+  }
+
+  if (!maptk::algo::track_features::check_nested_algo_configuration("feature_tracker", config))
+  {
+    std::cout << "feature_tracker configuration check failed.\n";
+    return false;
+  }
+
+  if (!maptk::algo::image_io::check_nested_algo_configuration("image_reader", config))
+  {
+    std::cout << "image_reader configuration check failed.\n";
+    return false;
+  }
+
+  if (!maptk::algo::convert_image::check_nested_algo_configuration("convert_image", config))
+  {
+    std::cout << "feature_tracker configuration check failed.\n";
+    return false;
+  }
+
+  return true;
 }
 
 
