@@ -40,11 +40,14 @@ namespace maptk
 namespace core
 {
 
-
-bool feature_less(feature_sptr l, feature_sptr r)
+//Helper struct for the filter function
+struct feature_at_index_is_greater
 {
-  return l->magnitude() < r->magnitude();
-}
+  bool operator()(const std::pair<unsigned int, double> &l, const std::pair<unsigned int, double> &r)
+  {
+    return l.second > r.second;
+  }
+};
 
 /// Private implementation class
 class simple_feature_set_filter::priv
@@ -63,20 +66,42 @@ public:
   {
   }
 
-  void
-  filter(feature_set_sptr feat, std::vector<feature_sptr> &filtered) const
+  feature_set_sptr
+  filter(feature_set_sptr feat, std::vector<unsigned int> &ind) const
   {
-    filtered.clear();
-    std::vector<feature_sptr> sorted(feat->features().begin(), feat->features().end());
-    std::sort(sorted.begin(), sorted.end(), feature_less);
+    const std::vector<feature_sptr> &feat_vec = feat->features();
+    if (feat_vec.size() <= min_features)
+    {
+      return feat;
+    }
 
-    unsigned int cutoff = std::max(min_features, static_cast<unsigned int>(top_percent * sorted.size()));
+    //  Create a new vector with the index and magnitude for faster sorting
+    std::vector<std::pair<unsigned int, double> > indices;
+    indices.reserve(feat_vec.size());
+    for (unsigned int i = 0; i < feat_vec.size(); i++)
+    {
+      indices.push_back(std::make_pair<unsigned int, double>(i, feat_vec[i]->magnitude()));
+    }
 
-    filtered.resize(cutoff);
+    // sorting descending on feature magnitude
+    feature_at_index_is_greater comp;
+    std::sort(indices.begin(), indices.end(), comp);
+
+    // compute threshold
+    unsigned int cutoff = std::max(min_features, static_cast<unsigned int>(top_percent * indices.size()));
+
+    std::vector<feature_sptr> filtered(cutoff);
+    ind.resize(cutoff);
     for (unsigned int i = 0; i < cutoff; i++)
     {
-      filtered[i] = sorted[i];
+      unsigned int index = indices[i].first;
+      ind[i] = index;
+      filtered[i] = feat_vec[index];
     }
+
+    std::cout << "simple_feature_set_filter reduced " << feat_vec.size() << " features to " << filtered.size() << " features.\n";
+
+    return boost::make_shared<maptk::simple_feature_set>(maptk::simple_feature_set(filtered));
   }
 
   double top_percent;
@@ -145,15 +170,12 @@ simple_feature_set_filter
 }
 
 
-/// Match one set of features and corresponding descriptors to another
+/// Filter feature set
 feature_set_sptr
 simple_feature_set_filter
-::filter(feature_set_sptr feat) const
+::filter(feature_set_sptr feat, std::vector<unsigned int> &indices) const
 {
-  std::vector<feature_sptr> filtered;
-  d_->filter(feat, filtered);
-
-  return boost::make_shared<maptk::simple_feature_set>(maptk::simple_feature_set(filtered));
+  return d_->filter(feat, indices);
 }
 
 } // end namespace core

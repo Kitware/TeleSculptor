@@ -73,13 +73,16 @@ public:
   /// Check that the algorithm's configuration config_block is valid
   virtual bool check_configuration(config_block_sptr config) const;
 
+protected:
+
   /// filter a feature set
   /**
    * \param [in] feature set to filter
+   * \param [out] indices of the kept features to the original feature set
    * \returns a filtered version of the feature set
    */
   virtual feature_set_sptr
-  filter( feature_set_sptr input ) const;
+  filter(feature_set_sptr input, std::vector<unsigned int> &indices) const;
 
 private:
   /// private implementation class

@@ -32,9 +32,12 @@
 #define MAPTK_ALGO_FEATURE_SET_FILTER_H_
 
 #include <boost/shared_ptr.hpp>
+#include <utility>
+#include <vector>
 
 #include <maptk/algo/algorithm.h>
 #include <maptk/feature_set.h>
+#include <maptk/descriptor_set.h>
 
 /**
  * \file
@@ -60,10 +63,24 @@ public:
   /// filter a feature set
   /**
    * \param [in] feature set to filter
-   * \returns a filtered version of the feature set
+   * \returns a filtered version of the feature set (simple_feature_set)
    */
   virtual feature_set_sptr
-  filter( feature_set_sptr input ) const = 0;
+  filter( feature_set_sptr input ) const;
+
+  /// filter a feature_set and its coresponding descriptor_set
+  /**
+   * \param [in] feature set to filter
+   * \param [in] parallel descriptor set to filter
+   * returns a pair of the filtered features and descriptors
+   */
+  virtual std::pair<feature_set_sptr, descriptor_set_sptr>
+  filter( feature_set_sptr feat, descriptor_set_sptr descr) const;
+
+protected:
+
+  virtual feature_set_sptr
+  filter(feature_set_sptr feat, std::vector<unsigned int> &indices) const = 0;
 
 };
 

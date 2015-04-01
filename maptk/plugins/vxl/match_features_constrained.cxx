@@ -79,18 +79,23 @@ public:
     matches.clear();
 
     std::vector<rsdl_point> fixedpts;
-    for (unsigned int i = 0; i < feat2->size(); i++)
+    const std::vector<feature_sptr> &feat1_vec = feat1->features();
+    const std::vector<feature_sptr> &feat2_vec = feat2->features();
+    const std::vector<descriptor_sptr> &desc1_vec = desc1->descriptors();
+    const std::vector<descriptor_sptr> &desc2_vec = desc2->descriptors();
+
+    for (unsigned int i = 0; i < feat2_vec.size(); i++)
     {
       rsdl_point pt(3);
-      pt.set_cartesian(vnl_vector_fixed<double, 3>(feat2->features()[i]->loc().data()));
+      pt.set_cartesian(vnl_vector_fixed<double, 3>(feat2_vec[i]->loc().data()));
       fixedpts.push_back(pt);
     }
 
     rsdl_kd_tree kdtree(fixedpts);
 
-    for (unsigned int i = 0; i < feat1->size(); i++)
+    for (unsigned int i = 0; i < feat1_vec.size(); i++)
     {
-      maptk::feature_sptr f1 = feat1->features()[i];
+      maptk::feature_sptr f1 = feat1_vec[i];
 
       std::vector<rsdl_point> points;
       std::vector<int> indices;
@@ -98,18 +103,19 @@ public:
 
       query_pt.set_cartesian(vnl_vector_fixed<double, 3>(f1->loc().data()));
       kdtree.points_in_radius(query_pt, this->radius_thresh, points, indices);
+
       int closest = -1;
       double closest_dist = std::numeric_limits<double>::max();
-      vnl_vector<double> d1(desc1->descriptors()[i]->as_double().data(), desc1->descriptors()[i]->size());
+      vnl_vector<double> d1(desc1_vec[i]->as_double().data(), desc1_vec[i]->size());
 
       for (unsigned int j = 0; j < indices.size(); j++)
       {
         int index = indices[j];
-        maptk::feature_sptr f2 = feat2->features()[index];
+        maptk::feature_sptr f2 = feat2_vec[index];
         if ((scale_thresh <= 0.0  || std::max(f1->scale(),f2->scale())/std::min(f1->scale(),f2->scale()) <= scale_thresh) &&
             (angle_thresh <= 0.0  || fabs(f2->angle() - f1->angle()) <= angle_thresh))
         {
-          vnl_vector<double> d2(desc2->descriptors()[index]->as_double().data(), desc2->descriptors()[index]->size());
+          vnl_vector<double> d2(desc2_vec[index]->as_double().data(), desc2_vec[index]->size());
           double dist = (d1 - d2).squared_magnitude();
           if (dist < closest_dist)
           {
@@ -119,8 +125,13 @@ public:
         }
       }
 
-      matches.push_back(maptk::match(i, closest));
+      if (closest >= 0)
+      {
+        matches.push_back(maptk::match(i, closest));
+      }
     }
+
+    std::cout << "match_features_constrained found " << matches.size() << " matches.\n";
   }
 
   double scale_thresh;
@@ -163,11 +174,11 @@ match_features_constrained
 
   config->set_value("scale_thresh", d_->scale_thresh,
                     "Ratio threshold of scales between matching keypoints"
-                    "-1 turns scale thresholding off");
+                    " -1 turns scale thresholding off");
 
   config->set_value("angle_thresh", d_->angle_thresh,
                     "Angle difference threshold between matching keypoints"
-                    "-1 turns angle thresholding off");
+                    " -1 turns angle thresholding off");
 
   config->set_value("radius_thresh", d_->radius_thresh,
                     "Search radius for a match in pixels");

@@ -30,5 +30,48 @@
 
 #include <maptk/algo/feature_set_filter.h>
 #include <maptk/algo/algorithm.txx>
+#include <boost/make_shared.hpp>
+
+namespace maptk
+{
+
+namespace algo
+{
+
+/// Filter feature set
+feature_set_sptr
+feature_set_filter
+::filter(feature_set_sptr feat) const
+{
+  std::vector<unsigned int> indices;
+  return filter(feat, indices);
+}
+
+/// Filter feature set
+std::pair<feature_set_sptr, descriptor_set_sptr>
+feature_set_filter
+::filter( feature_set_sptr feat, descriptor_set_sptr descr) const
+{
+  std::vector<unsigned int> indices;
+  const std::vector<descriptor_sptr> &descr_vec = descr->descriptors();
+
+  feature_set_sptr filt_feat = filter(feat, indices);
+  std::vector<descriptor_sptr> filtered_descr;
+  filtered_descr.reserve(indices.size());
+
+  for (unsigned int i = 0; i < indices.size(); i++)
+  {
+    filtered_descr.push_back(descr_vec[indices[i]]);
+  }
+
+  descriptor_set_sptr filt_descr = boost::make_shared<maptk::simple_descriptor_set>(
+                                     maptk::simple_descriptor_set(filtered_descr));
+
+  return std::make_pair(filt_feat, filt_descr);
+}
+
+} // end namespace algo
+
+} // end namespace maptk
 
 INSTANTIATE_ALGORITHM_DEF(maptk::algo::feature_set_filter);

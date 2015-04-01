@@ -37,6 +37,7 @@
 #define MAPTK_PLUGINS_CORE_MATCH_FEATURES_HOMOGRAPHY_H_
 
 #include <boost/scoped_ptr.hpp>
+#include <maptk/algo/feature_set_filter.h>
 
 #include <maptk/algo/estimate_homography.h>
 #include <maptk/algo/match_features.h>
@@ -79,7 +80,7 @@ public:
   /**
    * \param [in] feat1 the first set of features to match
    * \param [in] desc1 the descriptors corresponding to \a feat1
-   * \param [in] feat2 the second set fof features to match
+   * \param [in] feat2 the second set of features to match
    * \param [in] desc2 the descriptors corresponding to \a feat2
    * \returns a set of matching indices from \a feat1 to \a feat2
    */
@@ -87,10 +88,22 @@ public:
   match(feature_set_sptr feat1, descriptor_set_sptr desc1,
         feature_set_sptr feat2, descriptor_set_sptr desc2) const;
 
-  /// Set the feature matching algorithm to use
-  void set_feature_matcher(algo::match_features_sptr alg)
+  /// Set the feature matching algorithms to use
+  void set_first_feature_matcher(algo::match_features_sptr alg)
   {
-    matcher_ = alg;
+    matcher1_ = alg;
+  }
+
+  /// Set the optional second pass feature matching algorithm to use
+  void set_second_feature_matcher(algo::match_features_sptr alg)
+  {
+    matcher2_ = alg;
+  }
+
+  /// Set the optional feature filter to use
+  void set_feature_filter(algo::feature_set_filter_sptr alg)
+  {
+    feature_filter_ = alg;
   }
 
   /// Set the homography estimation algorithm to use
@@ -100,11 +113,14 @@ public:
   }
 
 private:
-  /// The feature matching algorithm to use
-  algo::match_features_sptr matcher_;
+  /// The feature matching algorithms to use
+  algo::match_features_sptr matcher1_, matcher2_;
 
   /// The homography estimation algorithm to use
   algo::estimate_homography_sptr h_estimator_;
+
+  /// The feature set filter algorithm to use
+  algo::feature_set_filter_sptr feature_filter_;
 
   /// private implementation class
   class priv;
