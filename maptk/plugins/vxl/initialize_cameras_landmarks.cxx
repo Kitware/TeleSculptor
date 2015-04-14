@@ -318,7 +318,7 @@ initialize_cameras_landmarks
   config->set_value("base_camera:focal_length", K.focal_length(),
                     "focal length of the base camera model");
 
-  config->set_value("base_camera:principal_point", K.principal_point(),
+  config->set_value("base_camera:principal_point", K.principal_point().transpose(),
                     "The principal point of the base camera model \"x y\".\n"
                     "It is usually safe to assume this is the center of the "
                     "image.");

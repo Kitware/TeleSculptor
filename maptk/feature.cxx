@@ -45,7 +45,7 @@ namespace maptk
 std::ostream& operator<<(std::ostream& s, const feature& f)
 {
   // TODO include covariance once stream operators are defined
-  s << f.loc() << " "
+  s << f.loc().transpose() << " "
     << f.magnitude() << " "
     << f.scale() << " "
     << f.angle();
@@ -82,7 +82,7 @@ template <typename T>
 std::ostream&  operator<<(std::ostream& s, const feature_<T>& f)
 {
   // TODO include covariance once stream operators are defined
-  s << f.get_loc() << " "
+  s << f.get_loc().transpose() << " "
     << f.get_magnitude() << " "
     << f.get_scale() << " "
     << f.get_angle();
