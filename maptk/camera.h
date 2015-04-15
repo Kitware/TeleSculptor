@@ -187,7 +187,7 @@ public:
    * \param [in] up_direction the vector which is "up" in the world (defaults to Z-axis)
    */
   void look_at(const Eigen::Matrix<T, 3, 1>& stare_point,
-               const Eigen::Matrix<T, 3, 1>& up_direction=Eigen::Matrix<T,3,1>(0,0,1) );
+               const Eigen::Matrix<T, 3, 1>& up_direction=Eigen::Vector3d::UnitZ() );
 
   /// Convert to a 3x4 homogeneous projection matrix
   operator Eigen::Matrix<T,3,4>() const;
