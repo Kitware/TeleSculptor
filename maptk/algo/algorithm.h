@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,6 +57,8 @@ namespace algo
 class MAPTK_LIB_EXPORT algorithm
 {
 public:
+  virtual ~algorithm() {}
+
   /// Return the name of this algorithm
   virtual std::string type_name() const = 0;
 
@@ -123,6 +125,8 @@ class MAPTK_LIB_EXPORT algorithm_def
 public:
   /// Shared pointer type of the templated maptk::algorithm_def class
   typedef boost::shared_ptr<Self> base_sptr;
+
+  virtual ~algorithm_def() {}
 
   /// Returns a clone of this algorithm
   virtual base_sptr clone() const = 0;
@@ -239,6 +243,8 @@ class algorithm_impl
 public:
   /// shared pointer type of this impl's base maptk::algorithm_def class.
   typedef boost::shared_ptr<Base> base_sptr;
+
+  virtual ~algorithm_impl() {}
 
   /// Returns a clone of this algorithm
   virtual base_sptr clone() const
