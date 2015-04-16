@@ -380,7 +380,11 @@ draw_tracks
     // Convert to 3 channel image if not one already
     if( img.channels() == 1 )
     {
+#ifdef MAPTK_HAS_OPENCV_VER_3
+      cv::cvtColor( img, img, cv::COLOR_GRAY2BGR );
+#else
       cv::cvtColor( img, img, CV_GRAY2BGR );
+#endif
     }
 
     // List of match lines to draw on final image

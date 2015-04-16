@@ -40,6 +40,11 @@
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/core/eigen.hpp>
 
+#ifdef MAPTK_HAS_OPENCV_VER_3
+#define OPENCV_METHOD_RANSAC cv::RANSAC
+#else
+#define OPENCV_METHOD_RANSAC CV_RANSAC
+#endif
 
 namespace kwiver {
 namespace maptk {
@@ -76,7 +81,7 @@ estimate_homography
 
   cv::Mat inliers_mat;
   cv::Mat H = cv::findHomography( cv::Mat(points1), cv::Mat(points2),
-                                  CV_RANSAC,
+                                  OPENCV_METHOD_RANSAC,
                                   inlier_scale,
                                   inliers_mat );
   inliers.resize(inliers_mat.rows);
