@@ -87,11 +87,12 @@ bool check_nested_ocv_algo_configuration_helper(std::string const& name,
 template <typename algo_t>
 cv::Ptr<algo_t> create_ocv_algo(std::string const& impl_name)
 {
+  cv::Ptr<algo_t> a;
+#ifndef MAPTK_HAS_OPENCV_VER_3
   // attempt to use the given type to natively create the algorithm with
   // possible special rules contained in the subclass. If this does not
   // yeild a valid instance, attempt creating an algorithm using the base
   // cv::Algorithm creation rules.
-  cv::Ptr<algo_t> a;
   try
   {
     a = algo_t::create(impl_name);
@@ -102,9 +103,11 @@ cv::Ptr<algo_t> create_ocv_algo(std::string const& impl_name)
               << "OpenCV is silly."
               << std::endl;
   }
+#endif
 
   // if the create call returned something empty or errored, fall back to
   // trying the top-level cv::Algorithm constructor.
+  // OpenCV >= 3.0 only allows the cv::Algorithm create function.
   if (a.empty())
   {
     a = cv::Algorithm::create<algo_t>(impl_name);
@@ -190,7 +193,11 @@ void set_nested_ocv_algo_configuration(std::string const& name,
     cv::Ptr<cv::Algorithm> converted_algo(algo);
     helper_::set_nested_ocv_algo_configuration_helper(name, config,
                                                       converted_algo);
+#ifdef MAPTK_HAS_OPENCV_VER_3
+    algo = converted_algo.dynamicCast<algo_t>();
+#else
     algo = cv::Ptr<algo_t>(converted_algo);
+#endif
   }
   else
   {

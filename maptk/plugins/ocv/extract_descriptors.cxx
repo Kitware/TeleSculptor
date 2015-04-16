@@ -40,6 +40,12 @@
 #include <maptk/plugins/ocv/descriptor_set.h>
 #include <maptk/plugins/ocv/ocv_algo_tools.h>
 
+#ifdef MAPTK_HAS_OPENCV_VER_3
+#define OPENCV_DESCRIPTOR_EXTRACTOR_CREATE cv::Algorithm::create<cv::DescriptorExtractor>
+#else
+#define OPENCV_DESCRIPTOR_EXTRACTOR_CREATE cv::DescriptorExtractor::create
+#endif
+
 using namespace kwiver::vital;
 
 namespace kwiver {
@@ -69,11 +75,11 @@ public:
   {
     cv::Ptr<cv::DescriptorExtractor> ext;
     // try the SURF detector first
-    ext = cv::DescriptorExtractor::create("SURF");
+    ext = OPENCV_DESCRIPTOR_EXTRACTOR_CREATE("SURF");
     if( !ext )
     {
       // if SURF is not available (nonfree not built) use ORB
-      ext = cv::DescriptorExtractor::create("ORB");
+      ext = OPENCV_DESCRIPTOR_EXTRACTOR_CREATE("ORB");
     }
     return ext;
   }

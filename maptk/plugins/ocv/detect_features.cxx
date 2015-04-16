@@ -54,6 +54,12 @@ namespace ocv
 {
 
 
+#ifdef MAPTK_HAS_OPENCV_VER_3
+#define OPENCV_FEATURE_DETECTOR_CREATE cv::Algorithm::create<cv::FeatureDetector>
+#else
+#define OPENCV_FEATURE_DETECTOR_CREATE cv::FeatureDetector::create
+#endif
+
 /// Private implementation class
 class detect_features::priv
 {
@@ -74,11 +80,11 @@ public:
   {
     cv::Ptr<cv::FeatureDetector> det;
     // try the SURF detector first
-    det = cv::FeatureDetector::create("SURF");
+    det = OPENCV_FEATURE_DETECTOR_CREATE("SURF");
     if( !det )
     {
       // if SURF is not available (nonfree not built) use ORB
-      det = cv::FeatureDetector::create("ORB");
+      det = OPENCV_FEATURE_DETECTOR_CREATE("ORB");
     }
     return det;
   }
@@ -130,7 +136,7 @@ void
 detect_features
 ::set_configuration(vital::config_block_sptr config)
 {
-  set_nested_ocv_algo_configuration(
+  set_nested_ocv_algo_configuration<cv::FeatureDetector>(
       "detector", config, d_->detector);
 }
 
