@@ -77,6 +77,11 @@ main(int argc, char* argv[])
          << std::endl; \
   }
 
+#ifdef MAPTK_HAS_OPENCV_VER_3
+#define OPENCV_FEATURE_DETECTOR_CREATE cv::Algorithm::create<cv::FeatureDetector>
+#else
+#define OPENCV_FEATURE_DETECTOR_CREATE cv::FeatureDetector::create
+#endif
 
 using namespace std;
 using namespace kwiver::vital;
@@ -90,8 +95,8 @@ IMPLEMENT_TEST(detect_features_opencv)
   // NOTE: cv::Algorithm::getAlgorithm() returns a cv::Algorithm, and thats it.
 
   cerr << "Creating algo in a variety of ways" << endl;
-  cv::Ptr<cv::FeatureDetector> fd_fd = cv::FeatureDetector::create("GridORB");
-  cv::Ptr<cv::Algorithm>     algo_fd = cv::FeatureDetector::create("GridORB");
+  cv::Ptr<cv::FeatureDetector> fd_fd = OPENCV_FEATURE_DETECTOR_CREATE("GridORB");
+  cv::Ptr<cv::Algorithm>     algo_fd = OPENCV_FEATURE_DETECTOR_CREATE("GridORB");
 
   cerr << "- fd-fd           constructed" << endl;
   cv::Ptr<cv::Algorithm> nested1 = fd_fd->getAlgorithm("detector");
