@@ -51,6 +51,11 @@ namespace ocv
 namespace
 {
 
+#ifdef MAPTK_HAS_OPENCV_VER_3
+typedef cv::String cv_string_t;
+#else
+typedef std::string cv_string_t;
+#endif
 
 /// Extract an OCV algorithm property and insert its value into a vital::config_block
 /**
@@ -163,7 +168,8 @@ get_nested_ocv_algo_configuration(std::string const& name,
     config->set_value(name + vital::config_block::block_sep + type_token,
                       impl_name, type_descr);
 
-    vector<string> algo_params;
+
+    vector<cv_string_t> algo_params;
     algo->getParams(algo_params);
 
     VITAL_FOREACH( string pname, algo_params)
@@ -190,7 +196,7 @@ get_nested_ocv_algo_configuration(std::string const& name,
           ocv_algo_param_to_config<double>(algo, impl_name, pname, config->subblock_view(name));
           break;
         case 3: // std::string
-          ocv_algo_param_to_config<std::string>(algo, impl_name, pname, config->subblock_view(name));
+          ocv_algo_param_to_config<cv_string_t>(algo, impl_name, pname, config->subblock_view(name));
           break;
         case 6: // cv::Algorithm
           {
@@ -236,10 +242,10 @@ set_nested_ocv_algo_configuration_helper(std::string const& name,
   {
     std::string impl_name = algo->info()->name();
 
-    // scan through algo parameters, settings ones that we can encode in the vital::config_block
-    std::vector<std::string> algo_params;
+    // scan through algo parameters, settings ones that we can encode in the config_block
+    std::vector<cv_string_t> algo_params;
     algo->getParams(algo_params);
-    VITAL_FOREACH( std::string const pname, algo_params )
+    VITAL_FOREACH( cv_string_t const pname, algo_params )
     {
       int ptypeid = algo->paramType(pname);
       switch(ptypeid)
@@ -296,12 +302,12 @@ check_nested_ocv_algo_configuration_helper(std::string const& name,
 {
   std::string impl_name = algo->info()->name();
 
-  std::vector<std::string> algo_params;
+  std::vector<cv_string_t> algo_params;
   algo->getParams(algo_params);
 
   bool all_success = true;
   int ptypeid;
-  VITAL_FOREACH( std::string pname, algo_params )
+  VITAL_FOREACH( cv_string_t const pname, algo_params )
   {
     ptypeid = algo->paramType(pname);
     switch(ptypeid)
