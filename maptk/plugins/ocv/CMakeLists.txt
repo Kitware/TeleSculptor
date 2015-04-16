@@ -42,6 +42,14 @@ set( maptk_ocv_sources
   ocv_algo_tools.cxx
   register_algorithms.cxx
   )
+
+if( OpenCV_FOUND AND
+    (OpenCV_VERSION VERSION_GREATER "3.0" OR
+     OpenCV_VERSION VERSION_EQUAL "3.0") )
+  message("Found OPENCV 3.0")
+  add_definitions(-DMAPTK_HAS_OPENCV_VER_3)
+endif()
+
 kwiver_add_library( maptk_ocv
   ${maptk_ocv_headers_public}
   ${maptk_ocv_sources}
