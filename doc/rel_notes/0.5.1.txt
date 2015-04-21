@@ -1,0 +1,19 @@
+MAPTK v0.5.1 Release Notes
+==========================
+
+This release provides patches to the MAPTK v0.5.0 release to address issues.
+MAPTK v0.5.1 is primarily a bug fix release with very minimal new functionality.
+
+
+Updates since v0.5.0
+--------------------
+
+Tools
+
+ * Added more verbose output in the feature_tracker tool when configuration
+   checks fail.  Adopts the same reporting technique used in the
+   maptk_bundle_adjust_tracks tool.
+
+
+Fixes since v0.5.0
+------------------
