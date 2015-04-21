@@ -5,11 +5,11 @@ set( plugin_core_headers
   close_loops_multi_method.h
   compute_ref_homography_core.h
   convert_image_bypass.h
+  filter_features_magnitude.h
   hierarchical_bundle_adjust.h
   match_features_homography.h
   plugin_core_config.h
   register_algorithms.h
-  simple_filter_features.h
   track_features_core.h
   )
 maptk_install_plugin_headers( core
@@ -21,10 +21,10 @@ set( plugin_core_sources
   close_loops_multi_method.cxx
   compute_ref_homography_core.cxx
   convert_image_bypass.cxx
+  filter_features_magnitude.cxx
   hierarchical_bundle_adjust.cxx
   match_features_homography.cxx
   register_algorithms.cxx
-  simple_filter_features.cxx
   track_features_core.cxx
   )
 maptk_add_library( maptk_core

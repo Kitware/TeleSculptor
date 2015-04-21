@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_PLUGINS_CORE_SIMPLE_FILTER_FEATURES_H_
-#define MAPTK_PLUGINS_CORE_SIMPLE_FILTER_FEATURES_H_
+#ifndef MAPTK_PLUGINS_CORE_FILTER_FEATURES_MAGNITUDE_H_
+#define MAPTK_PLUGINS_CORE_FILTER_FEATURES_MAGNITUDE_H_
 
 
 #include <boost/scoped_ptr.hpp>
@@ -39,7 +39,7 @@
 
 /**
  * \file
- * \brief Header defining \link maptk::core::simple_filter_features
+ * \brief Header defining \link maptk::core::filter_features_magnitude
  *        \endlink algorithm
  */
 
@@ -49,22 +49,22 @@ namespace maptk
 namespace core
 {
 
-/// \brief Algorithm that filters features based on strength
-class PLUGIN_CORE_EXPORT simple_filter_features
-  : public algo::algorithm_impl<simple_filter_features, algo::filter_features>
+/// \brief Algorithm that filters features based on feature magnitude
+class PLUGIN_CORE_EXPORT filter_features_magnitude
+  : public algo::algorithm_impl<filter_features_magnitude, algo::filter_features>
 {
 public:
   /// Constructor
-  simple_filter_features();
+  filter_features_magnitude();
 
   /// Destructor
-  virtual ~simple_filter_features();
+  virtual ~filter_features_magnitude();
 
   /// Copy Constructor
-  simple_filter_features(const simple_filter_features& other);
+  filter_features_magnitude(const filter_features_magnitude& other);
 
   /// Return the name of this implementation
-  virtual std::string impl_name() const { return "core"; }
+  virtual std::string impl_name() const { return "magnitude"; }
 
   /// Get this algorithm's \link maptk::config_block configuration block \endlink
   virtual config_block_sptr get_configuration() const;
@@ -95,4 +95,4 @@ private:
 } // end namespace maptk
 
 
-#endif // MAPTK_PLUGINS_CORE_SIMPLE_FILTER_FEATURES_H_
+#endif // MAPTK_PLUGINS_CORE_FILTER_FEATURES_MAGNITUDE_H_

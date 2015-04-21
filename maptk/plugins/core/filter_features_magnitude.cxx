@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "simple_filter_features.h"
+#include "filter_features_magnitude.h"
 
 #include <algorithm>
 #include <boost/make_shared.hpp>
@@ -50,7 +50,7 @@ struct feature_at_index_is_greater
 };
 
 /// Private implementation class
-class simple_filter_features::priv
+class filter_features_magnitude::priv
 {
 public:
   /// Constructor
@@ -99,7 +99,7 @@ public:
       filtered[i] = feat_vec[index];
     }
 
-    std::cout << "simple_filter_features reduced " << feat_vec.size() << " features to " << filtered.size() << " features.\n";
+    std::cout << "filter_features_magnitude reduced " << feat_vec.size() << " features to " << filtered.size() << " features.\n";
 
     return boost::make_shared<maptk::simple_feature_set>(maptk::simple_feature_set(filtered));
   }
@@ -110,31 +110,31 @@ public:
 
 
 /// Constructor
-simple_filter_features
-::simple_filter_features()
+filter_features_magnitude
+::filter_features_magnitude()
 : d_(new priv)
 {
 }
 
 
 /// Copy Constructor
-simple_filter_features
-::simple_filter_features(const simple_filter_features& other)
+filter_features_magnitude
+::filter_features_magnitude(const filter_features_magnitude& other)
 : d_(new priv(*other.d_))
 {
 }
 
 
 /// Destructor
-simple_filter_features
-::~simple_filter_features()
+filter_features_magnitude
+::~filter_features_magnitude()
 {
 }
 
 
 /// Get this algorithm's \link maptk::config_block configuration block \endlink
 config_block_sptr
-simple_filter_features
+filter_features_magnitude
 ::get_configuration() const
 {
   // get base config from base class
@@ -153,7 +153,7 @@ simple_filter_features
 
 /// Set this algorithm's properties via a config block
 void
-simple_filter_features
+filter_features_magnitude
 ::set_configuration(config_block_sptr config)
 {
   d_->top_percent = config->get_value<double>("top_percent", d_->top_percent);
@@ -163,7 +163,7 @@ simple_filter_features
 
 /// Check that the algorithm's configuration config_block is valid
 bool
-simple_filter_features
+filter_features_magnitude
 ::check_configuration(config_block_sptr config) const
 {
   return true;
@@ -172,7 +172,7 @@ simple_filter_features
 
 /// Filter feature set
 feature_set_sptr
-simple_filter_features
+filter_features_magnitude
 ::filter(feature_set_sptr feat, std::vector<unsigned int> &indices) const
 {
   return d_->filter(feat, indices);
