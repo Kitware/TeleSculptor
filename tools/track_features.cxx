@@ -94,73 +94,74 @@ static maptk::config_block_sptr default_config()
 
 static bool check_config(maptk::config_block_sptr config)
 {
+  bool config_valid = true;
+
+#define MAPTK_CONFIG_FAIL(msg) \
+  std::cerr << "Config Check Fail: " << msg << std::endl; \
+  config_valid = false
+
   // A given homography file is invalid if it names a directory, or if its
   // parent path either doesn't exist or names a regular file.
-  bool valid_out_homogs_file = true,
-       valid_out_homogs_algo = true;
   if ( config->has_value("output_homography_file")
     && config->get_value<std::string>("output_homography_file") != "" )
   {
     maptk::path_t fp = config->get_value<maptk::path_t>("output_homography_file");
     if ( bfs::is_directory(fp) )
     {
-      std::cerr << "Error: Given output homography file is a directory! "
-                << "(Given: " << fp << ")"
-                << std::endl;
-      valid_out_homogs_file = false;
+      MAPTK_CONFIG_FAIL("Given output homography file is a directory! "
+                        << "(Given: " << fp << ")");
     }
     else if ( fp.parent_path() != "" &&
-              ( (!bfs::is_directory(fp.parent_path())) || bfs::is_regular_file(fp.parent_path()) ) )
+              ( (!bfs::is_directory(fp.parent_path())) ||
+                 bfs::is_regular_file(fp.parent_path()) ) )
     {
-      std::cerr << "Error: Given output homography file does not have a valid "
-                << "parent path! (Given: " << fp << ")"
-                << std::endl;
-      valid_out_homogs_file = false;
+      MAPTK_CONFIG_FAIL("Given output homography file does not have a valid "
+                        << "parent path! (Given: " << fp << ")");
     }
 
     // Check that compute_ref_homography algo is correctly configured
-    valid_out_homogs_algo = maptk::algo::compute_ref_homography::check_nested_algo_configuration("output_homography_generator",
-                                                                                                 config);
+    if( !maptk::algo::compute_ref_homography
+             ::check_nested_algo_configuration("output_homography_generator",
+                                               config) )
+    {
+      MAPTK_CONFIG_FAIL("output_homography_generator configuration check failed");
+    }
   }
 
   if (!config->has_value("image_list_file"))
   {
-    std::cout << "Config needs value image_list_file\n";
-    return false;
+    MAPTK_CONFIG_FAIL("Config needs value image_list_file");
   }
 
   std::string path = config->get_value<std::string>("image_list_file");
   if (!bfs::exists(maptk::path_t(path)))
   {
-    std::cout << "image_list_file path, " << path << ", does not exist\n";
-    return false;
+    MAPTK_CONFIG_FAIL("image_list_file path, " << path << ", does not exist");
   }
 
   if (!config->has_value("output_tracks_file"))
   {
-    std::cout << "Config needs value output_tracks_file\n";
-    return false;
+    MAPTK_CONFIG_FAIL("Config needs value output_tracks_file");
   }
 
   if (!maptk::algo::track_features::check_nested_algo_configuration("feature_tracker", config))
   {
-    std::cout << "feature_tracker configuration check failed.\n";
-    return false;
+    MAPTK_CONFIG_FAIL("feature_tracker configuration check failed");
   }
 
   if (!maptk::algo::image_io::check_nested_algo_configuration("image_reader", config))
   {
-    std::cout << "image_reader configuration check failed.\n";
-    return false;
+    MAPTK_CONFIG_FAIL("image_reader configuration check failed");
   }
 
   if (!maptk::algo::convert_image::check_nested_algo_configuration("convert_image", config))
   {
-    std::cout << "feature_tracker configuration check failed.\n";
-    return false;
+    MAPTK_CONFIG_FAIL("convert_image configuration check failed");
   }
 
-  return true;
+#undef MAPTK_CONFIG_FAIL
+
+  return config_valid;
 }
 
 
