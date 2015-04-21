@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_ALGO_FEATURE_SET_FILTER_H_
-#define MAPTK_ALGO_FEATURE_SET_FILTER_H_
+#ifndef MAPTK_ALGO_FILTER_FEATURES_H_
+#define MAPTK_ALGO_FILTER_FEATURES_H_
 
 #include <boost/shared_ptr.hpp>
 #include <utility>
@@ -41,7 +41,7 @@
 
 /**
  * \file
- * \brief Header defining abstract \link maptk::algo::feature_set_filter
+ * \brief Header defining abstract \link maptk::algo::filter_features
  *       \endlink algorithm
  */
 
@@ -52,13 +52,13 @@ namespace algo
 {
 
 /// \brief Abstract base class for feature set filter algorithms.
-class MAPTK_LIB_EXPORT feature_set_filter
-  : public algorithm_def<feature_set_filter>
+class MAPTK_LIB_EXPORT filter_features
+  : public algorithm_def<filter_features>
 {
 public:
 
   /// Return the name of this algorithm.
-  virtual std::string type_name() const { return "feature_set_filter"; }
+  virtual std::string type_name() const { return "filter_features"; }
 
   /// filter a feature set
   /**
@@ -84,11 +84,11 @@ protected:
 
 };
 
-typedef boost::shared_ptr<feature_set_filter> feature_set_filter_sptr;
+typedef boost::shared_ptr<filter_features> filter_features_sptr;
 
 } // end namespace algo
 
 } // end namespace maptk
 
 
-#endif // MAPTK_ALGO_FEATURE_SET_FILTER_H_
+#endif // MAPTK_ALGO_FILTER_FEATURES_H_

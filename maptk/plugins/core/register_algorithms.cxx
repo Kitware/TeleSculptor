@@ -46,7 +46,7 @@
 #include <maptk/plugins/core/hierarchical_bundle_adjust.h>
 #include <maptk/plugins/core/match_features_homography.h>
 #include <maptk/plugins/core/plugin_core_config.h>
-#include <maptk/plugins/core/simple_feature_set_filter.h>
+#include <maptk/plugins/core/simple_filter_features.h>
 #include <maptk/plugins/core/track_features_core.h>
 
 
@@ -67,7 +67,7 @@ int register_algorithms(maptk::registrar &reg)
     REGISTER_TYPE( maptk::core::convert_image_bypass );
     REGISTER_TYPE( maptk::core::hierarchical_bundle_adjust );
     REGISTER_TYPE( maptk::core::match_features_homography );
-    REGISTER_TYPE( maptk::core::simple_feature_set_filter );
+    REGISTER_TYPE( maptk::core::simple_filter_features );
     REGISTER_TYPE( maptk::core::track_features_core );
 
     REGISTRATION_SUMMARY();

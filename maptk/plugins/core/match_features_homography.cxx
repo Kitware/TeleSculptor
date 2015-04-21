@@ -129,7 +129,7 @@ match_features_homography
                                                       matcher1_);
   algo::match_features::get_nested_algo_configuration("feature_matcher2", config,
                                                       matcher2_);
-  algo::feature_set_filter::get_nested_algo_configuration("feature_set_filter", config,
+  algo::filter_features::get_nested_algo_configuration("filter_features", config,
                                                           feature_filter_);
 
   return config;
@@ -152,7 +152,7 @@ match_features_homography
                                                       matcher1_);
   algo::match_features::set_nested_algo_configuration("feature_matcher2", config,
                                                       matcher2_);
-  algo::feature_set_filter::set_nested_algo_configuration("feature_set_filter", config,
+  algo::filter_features::set_nested_algo_configuration("filter_features", config,
                                                           feature_filter_);
 
   // Other parameters
@@ -172,7 +172,7 @@ match_features_homography
     &&
     algo::match_features::check_nested_algo_configuration("feature_matcher2", config)
     &&
-    algo::feature_set_filter::check_nested_algo_configuration("feature_set_filter", config)
+    algo::filter_features::check_nested_algo_configuration("filter_features", config)
   );
 }
 
@@ -188,7 +188,7 @@ match_features_homography
     return match_set_sptr();
   }
 
-  // filter features if a feature_set_filter is set
+  // filter features if a filter_features is set
   feature_set_sptr src_feat;
   descriptor_set_sptr src_desc;
   if (feature_filter_.get())

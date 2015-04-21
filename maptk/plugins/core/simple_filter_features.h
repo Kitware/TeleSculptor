@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_PLUGINS_CORE_SIMPLE_FEATURE_SET_FILTER_H_
-#define MAPTK_PLUGINS_CORE_SIMPLE_FEATURE_SET_FILTER_H_
+#ifndef MAPTK_PLUGINS_CORE_SIMPLE_FILTER_FEATURES_H_
+#define MAPTK_PLUGINS_CORE_SIMPLE_FILTER_FEATURES_H_
 
 
 #include <boost/scoped_ptr.hpp>
 
-#include <maptk/algo/feature_set_filter.h>
+#include <maptk/algo/filter_features.h>
 #include <maptk/plugins/core/plugin_core_config.h>
 
 /**
  * \file
- * \brief Header defining \link maptk::core::simple_feature_set_filter
+ * \brief Header defining \link maptk::core::simple_filter_features
  *        \endlink algorithm
  */
 
@@ -50,18 +50,18 @@ namespace core
 {
 
 /// \brief Algorithm that filters features based on strength
-class PLUGIN_CORE_EXPORT simple_feature_set_filter
-  : public algo::algorithm_impl<simple_feature_set_filter, algo::feature_set_filter>
+class PLUGIN_CORE_EXPORT simple_filter_features
+  : public algo::algorithm_impl<simple_filter_features, algo::filter_features>
 {
 public:
   /// Constructor
-  simple_feature_set_filter();
+  simple_filter_features();
 
   /// Destructor
-  virtual ~simple_feature_set_filter();
+  virtual ~simple_filter_features();
 
   /// Copy Constructor
-  simple_feature_set_filter(const simple_feature_set_filter& other);
+  simple_filter_features(const simple_filter_features& other);
 
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "core"; }
@@ -95,4 +95,4 @@ private:
 } // end namespace maptk
 
 
-#endif // MAPTK_PLUGINS_CORE_SIMPLE_FEATURE_SET_FILTER_H_
+#endif // MAPTK_PLUGINS_CORE_SIMPLE_FILTER_FEATURES_H_

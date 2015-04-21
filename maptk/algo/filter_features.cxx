@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <maptk/algo/feature_set_filter.h>
+#include <maptk/algo/filter_features.h>
 #include <maptk/algo/algorithm.txx>
 #include <boost/make_shared.hpp>
 
@@ -40,7 +40,7 @@ namespace algo
 
 /// Filter feature set
 feature_set_sptr
-feature_set_filter
+filter_features
 ::filter(feature_set_sptr feat) const
 {
   std::vector<unsigned int> indices;
@@ -49,7 +49,7 @@ feature_set_filter
 
 /// Filter feature set
 std::pair<feature_set_sptr, descriptor_set_sptr>
-feature_set_filter
+filter_features
 ::filter( feature_set_sptr feat, descriptor_set_sptr descr) const
 {
   std::vector<unsigned int> indices;
@@ -74,4 +74,4 @@ feature_set_filter
 
 } // end namespace maptk
 
-INSTANTIATE_ALGORITHM_DEF(maptk::algo::feature_set_filter);
+INSTANTIATE_ALGORITHM_DEF(maptk::algo::filter_features);

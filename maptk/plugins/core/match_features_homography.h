@@ -37,7 +37,7 @@
 #define MAPTK_PLUGINS_CORE_MATCH_FEATURES_HOMOGRAPHY_H_
 
 #include <boost/scoped_ptr.hpp>
-#include <maptk/algo/feature_set_filter.h>
+#include <maptk/algo/filter_features.h>
 
 #include <maptk/algo/estimate_homography.h>
 #include <maptk/algo/match_features.h>
@@ -101,7 +101,7 @@ public:
   }
 
   /// Set the optional feature filter to use
-  void set_feature_filter(algo::feature_set_filter_sptr alg)
+  void set_feature_filter(algo::filter_features_sptr alg)
   {
     feature_filter_ = alg;
   }
@@ -120,7 +120,7 @@ private:
   algo::estimate_homography_sptr h_estimator_;
 
   /// The feature set filter algorithm to use
-  algo::feature_set_filter_sptr feature_filter_;
+  algo::filter_features_sptr feature_filter_;
 
   /// private implementation class
   class priv;
