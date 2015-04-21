@@ -128,15 +128,22 @@ static bool check_config(maptk::config_block_sptr config)
     }
   }
 
-  if (!config->has_value("image_list_file"))
+  if (!config->has_value("image_list_file") ||
+      config->get_value<std::string>("image_list_file") == "")
   {
     MAPTK_CONFIG_FAIL("Config needs value image_list_file");
   }
-
-  std::string path = config->get_value<std::string>("image_list_file");
-  if (!bfs::exists(maptk::path_t(path)))
+  else
   {
-    MAPTK_CONFIG_FAIL("image_list_file path, " << path << ", does not exist");
+    std::string path = config->get_value<std::string>("image_list_file");
+    if (!bfs::exists(maptk::path_t(path)))
+    {
+      MAPTK_CONFIG_FAIL("image_list_file path, " << path << ", does not exist");
+    }
+    else if (!bfs::is_regular_file(maptk::path_t(path)))
+    {
+      MAPTK_CONFIG_FAIL("image_list_file path, " << path << ", is not a regular file");
+    }
   }
 
   if (!config->has_value("output_tracks_file"))
