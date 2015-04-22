@@ -37,10 +37,10 @@ maptk.util module
 __author__ = 'purg'
 
 try:
-  from .find_maptk_library import find_maptk_library
+    from .find_maptk_library import find_maptk_library
 except ImportError:
-  raise ImportError("Failed to import library finder module, must not have "
-                    "enabled Python in CMake.")
+    raise ImportError("Failed to import library finder module, must not have "
+                      "enabled Python in CMake.")
 
 from .MaptkObject import MaptkObject
 from .error_handle import MaptkErrorHandle

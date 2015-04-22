@@ -38,33 +38,33 @@ __author__ = 'purg'
 
 import ctypes
 
-from maptk import MaptkImage
+from maptk import Image
 from maptk.util import MaptkObject
 from maptk.util import MaptkErrorHandle
 
 
-class MaptkImageContainer (MaptkObject):
+class ImageContainer (MaptkObject):
     """
     maptk::image_container interface class
     """
 
     def __init__(self, image):
         """
-        Create a simple image container from a MaptkImage instance
+        Create a simple image container from a Image instance
 
         :param image: Image to contain
-        :type image: MaptkImage
+        :type image: Image
 
         """
-        super(MaptkImageContainer, self).__init__()
+        super(ImageContainer, self).__init__()
 
         imgc_new = self.MAPTK_LIB.maptk_image_container_new_simple
-        imgc_new.argtypes = [MaptkImage.C_TYPE_PTR]
+        imgc_new.argtypes = [Image.C_TYPE_PTR]
         imgc_new.restype = self.C_TYPE_PTR
         self._inst_ptr = imgc_new(image.c_pointer)
 
         if not bool(self._inst_ptr):
-            raise RuntimeError("Failed to construct new MaptkImageContainer "
+            raise RuntimeError("Failed to construct new ImageContainer "
                                "instance.")
 
     def _destroy(self):
@@ -127,5 +127,5 @@ class MaptkImageContainer (MaptkObject):
         """
         ic_getimg = self.MAPTK_LIB['maptk_image_container_get_image']
         ic_getimg.argtypes = [self.C_TYPE_PTR]
-        ic_getimg.restype = MaptkImage.C_TYPE_PTR
-        return MaptkImage.from_c_pointer(ic_getimg(self))
+        ic_getimg.restype = Image.C_TYPE_PTR
+        return Image.from_c_pointer(ic_getimg(self))

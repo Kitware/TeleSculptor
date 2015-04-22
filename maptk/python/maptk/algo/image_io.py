@@ -38,12 +38,12 @@ __author__ = 'purg'
 
 import ctypes
 
-from maptk import MaptkImageContainer
+from maptk import ImageContainer
 from maptk.algo import MaptkAlgorithm
 from maptk.util import MaptkErrorHandle
 
 
-class MaptkAlgoImageIo (MaptkAlgorithm):
+class ImageIo (MaptkAlgorithm):
     """
     maptk::algo::image_io interface
     """
@@ -52,30 +52,29 @@ class MaptkAlgoImageIo (MaptkAlgorithm):
 
     def load(self, filepath):
         """
-        Load an image into a MaptkImageContainer
+        Load an image into a ImageContainer
 
         :param filepath: Path to the image to load
         :type filepath: str
 
-        :return: New MaptkImageContainer containing the loaded image
-        :rtype: MaptkImageContainer
+        :return: New ImageContainer containing the loaded image
+        :rtype: ImageContainer
 
         """
         iio_load = self.MAPTK_LIB.maptk_algorithm_image_io_load
         iio_load.argtypes = [self.C_TYPE_PTR, ctypes.c_char_p,
                              MaptkErrorHandle.C_TYPE_PTR]
-        iio_load.restype = MaptkImageContainer.C_TYPE_PTR
+        iio_load.restype = ImageContainer.C_TYPE_PTR
         with MaptkErrorHandle() as eh:
             ic_ptr = iio_load(self, filepath, eh)
-        return MaptkImageContainer.from_c_pointer(ic_ptr)
-
+        return ImageContainer.from_c_pointer(ic_ptr)
 
     def save(self, image_container, filepath):
         """
         Save an image to the specified path
 
-        :param image_container: MaptkImageContainer containing the image to save
-        :type image_container: MaptkImageContainer
+        :param image_container: ImageContainer containing the image to save
+        :type image_container: ImageContainer
 
         :param filepath: The path to save the image to
         :type filepath: str
@@ -83,7 +82,7 @@ class MaptkAlgoImageIo (MaptkAlgorithm):
         """
         iio_save = self.MAPTK_LIB.maptk_algorithm_image_io_save
         iio_save.argtypes = [self.C_TYPE_PTR, ctypes.c_char_p,
-                             MaptkImageContainer.C_TYPE_PTR,
+                             ImageContainer.C_TYPE_PTR,
                              MaptkErrorHandle.C_TYPE_PTR]
         with MaptkErrorHandle() as eh:
             iio_save(self, filepath, image_container, eh)

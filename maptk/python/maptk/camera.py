@@ -41,14 +41,14 @@ import ctypes
 from maptk.util import MaptkObject, MaptkErrorHandle
 
 
-class MaptkCamera (MaptkObject):
+class Camera (MaptkObject):
     """ maptk::camera interface class """
 
     @classmethod
     def from_krtd_file(cls, filepath):
         """
-        :return: New MaptkCamera instance from a KRTD format file
-        :rtype: MaptkCamera
+        :return: New Camera instance from a KRTD format file
+        :rtype: Camera
         """
         cam_read_krtd = cls.MAPTK_LIB.maptk_camera_read_krtd_file
         cam_read_krtd.argtypes = [ctypes.c_char_p, MaptkErrorHandle.C_TYPE_PTR]

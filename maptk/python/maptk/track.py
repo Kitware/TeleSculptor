@@ -41,13 +41,13 @@ import ctypes
 from maptk.util import MaptkObject, MaptkErrorHandle
 
 
-class MaptkTrack (MaptkObject):
+class Track (MaptkObject):
     """
     maptk::track interface class
     """
 
     def __init__(self):
-        super(MaptkTrack, self).__init__()
+        super(Track, self).__init__()
 
         t_new = self.MAPTK_LIB['maptk_track_new']
         t_new.restype = self.C_TYPE_PTR

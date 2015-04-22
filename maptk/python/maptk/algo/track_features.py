@@ -38,12 +38,12 @@ __author__ = 'purg'
 
 import ctypes
 
-from maptk import MaptkImageContainer, MaptkTrackSet
+from maptk import ImageContainer, TrackSet
 from maptk.algo import MaptkAlgorithm
 from maptk.util import MaptkErrorHandle
 
 
-class MaptkAlgoTrackFeatures (MaptkAlgorithm):
+class TrackFeatures (MaptkAlgorithm):
     """
     maptk::algo::track_features interface
     """
@@ -66,15 +66,15 @@ class MaptkAlgoTrackFeatures (MaptkAlgorithm):
         :return:
 
         """
-        tf_track_argtypes = [self.C_TYPE_PTR, MaptkTrackSet.C_TYPE_PTR,
-                             ctypes.c_uint, MaptkImageContainer.C_TYPE_PTR]
+        tf_track_argtypes = [self.C_TYPE_PTR, TrackSet.C_TYPE_PTR,
+                             ctypes.c_uint, ImageContainer.C_TYPE_PTR]
         tf_track_args = [self, prev_tracks, frame_num, image]
-        tf_track_restype = MaptkTrackSet.C_TYPE_PTR
+        tf_track_restype = TrackSet.C_TYPE_PTR
 
         if mask:
             tf_track = self.MAPTK_LIB['maptk_algorithm_track_features_'
                                       'track_with_mask']
-            tf_track_argtypes.append(MaptkImageContainer.C_TYPE_PTR)
+            tf_track_argtypes.append(ImageContainer.C_TYPE_PTR)
             tf_track_args.append(mask)
         else:
             tf_track = self.MAPTK_LIB['maptk_algorithm_track_features_track']
@@ -85,6 +85,6 @@ class MaptkAlgoTrackFeatures (MaptkAlgorithm):
 
         with MaptkErrorHandle() as eh:
             tf_track_args.append(eh)
-            return MaptkTrackSet.from_c_pointer(
+            return TrackSet.from_c_pointer(
                 tf_track(*tf_track_args)
             )

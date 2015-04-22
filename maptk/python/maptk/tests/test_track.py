@@ -36,7 +36,7 @@ Tests for MaptkTrack interface class
 # -*- coding: utf-8 -*-
 __author__ = 'purg'
 
-from maptk import MaptkTrack
+from maptk import Track
 
 import nose.tools
 
@@ -44,12 +44,12 @@ import nose.tools
 class TestMaptkTrack (object):
 
     def test_new(self):
-        t = MaptkTrack()
+        t = Track()
 
     def test_initial_size(self):
-        t = MaptkTrack()
+        t = Track()
         nose.tools.assert_equal(t.size, 0)
 
     def test_initial_is_empty(self):
-        t = MaptkTrack()
+        t = Track()
         nose.tools.assert_true(t.is_empty)

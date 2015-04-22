@@ -36,7 +36,7 @@ Test Python interface to maptk::image
 # -*- coding: utf-8 -*-
 __author__ = 'purg'
 
-from maptk import MaptkImage
+from maptk import Image
 
 import nose.tools
 
@@ -44,14 +44,14 @@ import nose.tools
 class TestMaptkImage (object):
 
     def test_new(self):
-        img = MaptkImage()
+        img = Image()
 
     def test_new_sized(self):
-        img = MaptkImage(720, 480)
+        img = Image(720, 480)
 
     def test_size(self):
-        img = MaptkImage()
+        img = Image()
         nose.tools.assert_equal(img.size(), 0)
 
-        img = MaptkImage(720, 480)
+        img = Image(720, 480)
         nose.tools.assert_equal(img.size(), 720*480)

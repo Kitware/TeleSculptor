@@ -40,7 +40,7 @@ from .base import MaptkBaseException
 
 
 class MaptkConfigBlockIoException (MaptkBaseException):
-    """ Base class for MaptkConfigBlock IO related exceptions """
+    """ Base class for ConfigBlock IO related exceptions """
     pass
 
 

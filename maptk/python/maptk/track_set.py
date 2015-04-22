@@ -38,11 +38,11 @@ __author__ = 'purg'
 
 import ctypes
 
-from maptk import MaptkTrack
+from maptk import Track
 from maptk.util import MaptkObject, MaptkErrorHandle
 
 
-class MaptkTrackSet (MaptkObject):
+class TrackSet (MaptkObject):
     """
     maptk::track_set interface class
     """
@@ -55,7 +55,7 @@ class MaptkTrackSet (MaptkObject):
         :type filepath: str
 
         :return: New track set as read from the given file.
-        :rtype: MaptkTrackSet
+        :rtype: TrackSet
 
         """
         ts_new_from_file = cls.MAPTK_LIB['maptk_trackset_new_from_file']
@@ -64,7 +64,7 @@ class MaptkTrackSet (MaptkObject):
         ts_new_from_file.restype = cls.C_TYPE_PTR
 
         with MaptkErrorHandle() as eh:
-            return MaptkTrackSet.from_c_pointer(ts_new_from_file(filepath, eh))
+            return TrackSet.from_c_pointer(ts_new_from_file(filepath, eh))
 
     def __init__(self, track_list=None):
         """
@@ -73,20 +73,20 @@ class MaptkTrackSet (MaptkObject):
         None or an empty list may be provided to initialize an empty track set.
 
         :param track_list: List of tracks to initialize the set with
-        :type track_list: list of MaptkTrack or None
+        :type track_list: list of Track or None
 
         """
-        super(MaptkTrackSet, self).__init__()
+        super(TrackSet, self).__init__()
 
         ts_new = self.MAPTK_LIB['maptk_trackset_new']
         ts_new.argtypes = [ctypes.c_size_t,
-                           ctypes.POINTER(MaptkTrack.C_TYPE_PTR)]
+                           ctypes.POINTER(Track.C_TYPE_PTR)]
         ts_new.restype = self.C_TYPE_PTR
 
         if track_list is None:
             track_list = []
         # noinspection PyCallingNonCallable
-        c_track_array = (MaptkTrack.C_TYPE_PTR * len(track_list))(
+        c_track_array = (Track.C_TYPE_PTR * len(track_list))(
             *(t.c_pointer for t in track_list)
         )
         self._inst_ptr = ts_new(len(track_list), c_track_array)

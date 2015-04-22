@@ -37,8 +37,8 @@ Test Python interface to maptk::image_container
 __author__ = 'purg'
 
 from maptk import (
-    MaptkImage,
-    MaptkImageContainer
+    Image,
+    ImageContainer
 )
 
 import nose.tools
@@ -47,23 +47,23 @@ import nose.tools
 class TestMaptkImageContainer (object):
 
     def test_new(self):
-        image = MaptkImage()
-        img_c = MaptkImageContainer(image)
+        image = Image()
+        img_c = ImageContainer(image)
 
-        image = MaptkImage(100, 100)
-        img_c = MaptkImageContainer(image)
+        image = Image(100, 100)
+        img_c = ImageContainer(image)
 
     def test_size(self):
-        i = MaptkImage(720, 480)
-        ic = MaptkImageContainer(i)
+        i = Image(720, 480)
+        ic = ImageContainer(i)
         nose.tools.assert_equal(ic.size(), 720 * 480)
 
     def test_width(self):
-        i = MaptkImage(720, 480)
-        ic = MaptkImageContainer(i)
+        i = Image(720, 480)
+        ic = ImageContainer(i)
         nose.tools.assert_equal(ic.width(), 720)
 
     def test_height(self):
-        i = MaptkImage(720, 480)
-        ic = MaptkImageContainer(i)
+        i = Image(720, 480)
+        ic = ImageContainer(i)
         nose.tools.assert_equal(ic.height(), 480)

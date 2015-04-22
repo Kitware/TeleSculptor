@@ -37,11 +37,11 @@ maptk module
 __author__ = 'purg'
 
 # Common MAPTK Components for easy access
-from .apm import MaptkAlgorithmPluginManager
-from .camera import MaptkCamera
-from .camera_map import MaptkCameraMap
-from .config_block import MaptkConfigBlock
-from .image import MaptkImage
-from .image_container import MaptkImageContainer
-from .track import MaptkTrack
-from .track_set import MaptkTrackSet
+from .apm import AlgorithmPluginManager
+from .camera import Camera
+from .camera_map import CameraMap
+from .config_block import ConfigBlock
+from .image import Image
+from .image_container import ImageContainer
+from .track import Track
+from .track_set import TrackSet

@@ -37,10 +37,10 @@ Tests for maptk::algo::image_io
 __author__ = 'purg'
 
 from maptk import (
-    MaptkAlgorithmPluginManager,
-    MaptkConfigBlock,
+    AlgorithmPluginManager,
+    ConfigBlock,
 )
-from maptk.algo import MaptkAlgoImageIo
+from maptk.algo import ImageIo
 from maptk.tests import TEST_DATA_DIR
 
 import nose.tools as nt
@@ -53,7 +53,7 @@ class TestMaptkAlgoImageIo (object):
 
     @classmethod
     def setup_class(cls):
-        MaptkAlgorithmPluginManager.register_plugins()
+        AlgorithmPluginManager.register_plugins()
 
         cls.test_image_filepath = osp.join(TEST_DATA_DIR,
                                            'test_kitware_logo.jpg')
@@ -61,9 +61,9 @@ class TestMaptkAlgoImageIo (object):
     def test_image_load_save_diff(self):
         fd, tmp_filename = tempfile.mkstemp()
 
-        c = MaptkConfigBlock()
+        c = ConfigBlock()
         c.set_value('iio:type', 'vxl')
-        iio = MaptkAlgoImageIo('iio')
+        iio = ImageIo('iio')
         iio.set_config(c)
 
         nt.assert_true(osp.isfile(self.test_image_filepath),

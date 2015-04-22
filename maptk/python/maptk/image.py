@@ -41,38 +41,27 @@ import ctypes
 from maptk.util import MaptkObject
 
 
-# noinspection PyPep8Naming
-class _maptk_image_t (ctypes.Structure):
-    """
-    Opaque structure type used in C interface.
-    """
-    pass
-
-
-class MaptkImage (MaptkObject):
+class Image (MaptkObject):
     """
     maptk::image interface class
     """
-    # C API structure + pointer
-    C_TYPE = _maptk_image_t
-    C_TYPE_PTR = ctypes.POINTER(_maptk_image_t)
 
     @classmethod
     def from_image(cls, other_image):
         """
-        Construct from another MaptkImage instance, sharing the same data memory
+        Construct from another Image instance, sharing the same data memory
 
         :param other_image: Other image to copy from
-        :type other_image: MaptkImage
+        :type other_image: Image
 
-        :return: New MaptkImage sharing the same data memory as the source image
-        :rtype: MaptkImage
+        :return: New Image sharing the same data memory as the source image
+        :rtype: Image
 
         """
         img_new = cls.MAPTK_LIB.maptk_image_new_from_image
         img_new.argtypes = [cls.C_TYPE_PTR]
         img_new.restype = cls.C_TYPE_PTR
-        return MaptkImage.from_c_pointer(img_new(other_image._inst_ptr))
+        return Image.from_c_pointer(img_new(other_image._inst_ptr))
 
     def __init__(self, width=None, height=None, depth=1, interleave=False):
         """ Construct an empty image of no, or defined, dimensions.
@@ -81,7 +70,7 @@ class MaptkImage (MaptkObject):
         uninitialized size.
 
         """
-        super(MaptkImage, self).__init__()
+        super(Image, self).__init__()
 
         if width is None or height is None:
             img_new = self.MAPTK_LIB.maptk_image_new
@@ -95,7 +84,7 @@ class MaptkImage (MaptkObject):
             self._inst_ptr = img_new(width, height, depth, interleave)
 
         if not bool(self._inst_ptr):
-            raise RuntimeError("Failed to construct MaptkImage instance")
+            raise RuntimeError("Failed to construct Image instance")
 
     def _destroy(self):
         img_destroy = self.MAPTK_LIB.maptk_image_destroy

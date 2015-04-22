@@ -51,8 +51,6 @@
 #ifndef MAPTK_CONFIG_H_
 #define MAPTK_CONFIG_H_
 
-//#include <maptk/types.h>
-
 
 // Symbol visibility macros
 #cmakedefine MAPTK_HAVE_GCC_VISIBILITY

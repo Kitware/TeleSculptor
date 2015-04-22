@@ -43,7 +43,7 @@ from maptk.util import find_maptk_library
 from maptk.util.string import maptk_string_t
 
 
-class MaptkClassType (abc.ABCMeta):
+class MaptkClassMeta (abc.ABCMeta):
     """
     Metaclass for Maptk object types.
 
@@ -61,14 +61,14 @@ class MaptkClassType (abc.ABCMeta):
             attrs['C_TYPE'] = OpaqueStruct
             attrs['C_TYPE_PTR'] = ctypes.POINTER(OpaqueStruct)
 
-        return super(MaptkClassType, cls).__new__(cls, name, bases, attrs)
+        return super(MaptkClassMeta, cls).__new__(cls, name, bases, attrs)
 
 
 class MaptkObject (object):
     """
     Basic MAPTK python interface class.
     """
-    __metaclass__ = MaptkClassType
+    __metaclass__ = MaptkClassMeta
 
     MAPTK_LIB = find_maptk_library()
 

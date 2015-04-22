@@ -38,24 +38,24 @@ __author__ = 'purg'
 
 import ctypes
 
-from maptk import MaptkCamera
+from maptk import Camera
 from maptk.util import MaptkObject, MaptkErrorHandle
 
 
-class MaptkCameraMap (MaptkObject):
+class CameraMap (MaptkObject):
     """ maptk::camera_map interface class """
 
     def __init__(self, frame2cam_map):
         """
         :param frame2cam_map: Association of frame number to camera instance
-        :type frame2cam_map: dict of (int, maptk.MaptkCamera)
+        :type frame2cam_map: dict of (int, maptk.Camera)
 
         """
-        super(MaptkCameraMap, self).__init__()
+        super(CameraMap, self).__init__()
 
         cm_new = self.MAPTK_LIB.maptk_camera_map_new
         cm_new.argtypes = [ctypes.c_size_t, ctypes.POINTER(ctypes.c_uint),
-                           ctypes.POINTER(MaptkCamera.C_TYPE_PTR)]
+                           ctypes.POINTER(Camera.C_TYPE_PTR)]
         cm_new.restype = self.C_TYPE_PTR
 
         # Construct input frame and camera arrays
@@ -65,7 +65,7 @@ class MaptkCameraMap (MaptkObject):
             fn_list.append(fn)
             cam_list.append(c)
         fn_array_t = ctypes.c_uint * len(frame2cam_map)
-        cam_array_t = MaptkCamera.C_TYPE_PTR * len(frame2cam_map)
+        cam_array_t = Camera.C_TYPE_PTR * len(frame2cam_map)
         # noinspection PyCallingNonCallable
         c_fn_array = fn_array_t(*fn_list)
         # noinspection PyCallingNonCallable,PyProtectedMember
@@ -75,7 +75,7 @@ class MaptkCameraMap (MaptkObject):
                                 c_fn_array, c_cam_array)
 
         if not self._inst_ptr:
-            raise RuntimeError("Failed to construct a valid MaptkCameraMap "
+            raise RuntimeError("Failed to construct a valid CameraMap "
                                "instance")
 
     def _destroy(self):

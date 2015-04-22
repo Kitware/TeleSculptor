@@ -53,7 +53,7 @@ DECLARE_COMMON_ALGO_API( convert_image );
 /// Convert image base type
 /**
  * Returns new image container with a converted underlying representation
- * based on the implementation convigured.
+ * based on the implementation configured.
  *
  * \param algo Opaque pointer to algorithm instance.
  * \param ic Image container with the image data to convert.

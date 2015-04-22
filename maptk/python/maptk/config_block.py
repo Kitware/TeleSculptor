@@ -53,19 +53,19 @@ import os
 import tempfile
 
 
-class MaptkConfigBlock (MaptkObject):
+class ConfigBlock (MaptkObject):
     """
     maptk::config_block interface class
     """
 
-    # MaptkConfigBlock Constants -- initialized later in file
+    # ConfigBlock Constants -- initialized later in file
     BLOCK_SEP = None
     GLOBAL_VALUE = None
 
     @classmethod
     def from_file(cls, filepath):
         """
-        Return a new MaptkConfigBlock object based on the given configuration
+        Return a new ConfigBlock object based on the given configuration
         file
 
         :raises MaptkBaseException: Error occurred in reading from configuration
@@ -74,8 +74,8 @@ class MaptkConfigBlock (MaptkObject):
         :param filepath: Path to a configuration file
         :type filepath: str
 
-        :return: New MaptkConfigBlock instance
-        :rtype: MaptkConfigBlock
+        :return: New ConfigBlock instance
+        :rtype: ConfigBlock
 
         """
         cb_read = cls.MAPTK_LIB.maptk_config_block_file_read
@@ -101,7 +101,7 @@ class MaptkConfigBlock (MaptkObject):
         :type name: str
 
         """
-        super(MaptkConfigBlock, self).__init__()
+        super(ConfigBlock, self).__init__()
 
         if name:
             cb_new = self.MAPTK_LIB.maptk_config_block_new_named
@@ -121,7 +121,7 @@ class MaptkConfigBlock (MaptkObject):
     @property
     def name(self):
         """
-        :return: The name assigned to this MaptkConfigBlock instance.
+        :return: The name assigned to this ConfigBlock instance.
         :rtype: str
         """
         cb_get_name = self.MAPTK_LIB.maptk_config_block_get_name
@@ -136,36 +136,36 @@ class MaptkConfigBlock (MaptkObject):
 
     def subblock(self, key):
         """
-        Get a new MaptkConfigBlock that is deep copy of this MaptkConfigBlock
+        Get a new ConfigBlock that is deep copy of this ConfigBlock
         starting at the given key.
 
-        :return: New MaptkConfigBlock
-        :rtype: MaptkConfigBlock
+        :return: New ConfigBlock
+        :rtype: ConfigBlock
 
         """
         cb_subblock = self.MAPTK_LIB.maptk_config_block_subblock
         cb_subblock.argtypes = [self.C_TYPE_PTR]
         cb_subblock.restype = self.C_TYPE_PTR
-        return MaptkConfigBlock.from_c_pointer(
+        return ConfigBlock.from_c_pointer(
             cb_subblock(self, key)
         )
 
     def subblock_view(self, key):
         """
-        Get a new MaptkConfigBlock that is a view into this MaptkConfigBlock
+        Get a new ConfigBlock that is a view into this ConfigBlock
         starting at the given key.
 
-        Modifications on the returned MaptkConfigBlock are also reflected in
+        Modifications on the returned ConfigBlock are also reflected in
         this instance.
 
-        :return: New MaptkConfigBlock instance with this instance as its parent.
-        :rtype: MaptkConfigBlock
+        :return: New ConfigBlock instance with this instance as its parent.
+        :rtype: ConfigBlock
 
         """
         cb_subblock_view = self.MAPTK_LIB.maptk_config_block_subblock_view
         cb_subblock_view.argtypes = [self.C_TYPE_PTR]
         cb_subblock_view.restype = self.C_TYPE_PTR
-        return MaptkConfigBlock.from_c_pointer(
+        return ConfigBlock.from_c_pointer(
             cb_subblock_view(self, key)
         )
 
@@ -346,14 +346,14 @@ class MaptkConfigBlock (MaptkObject):
 
     def merge_config(self, other):
         """
-        Merge the values in given MaptkConfigBlock into the this instance.
+        Merge the values in given ConfigBlock into the this instance.
 
         NOTE: Any values currently set within \c *this will be overwritten if
         conflicts occur.
 
-        :param other: Other MaptkConfigBlock instance whose key/value pairs are
+        :param other: Other ConfigBlock instance whose key/value pairs are
             to be merged into this instance.
-        :type other: MaptkConfigBlock
+        :type other: ConfigBlock
 
         """
         cb_merge = self.MAPTK_LIB.maptk_config_block_merge_config
@@ -410,7 +410,7 @@ class MaptkConfigBlock (MaptkObject):
         :type filepath: str
 
         """
-        cb = MaptkConfigBlock.from_file(filepath)
+        cb = ConfigBlock.from_file(filepath)
         self.merge_config(cb)
 
     def write(self, filepath):
@@ -467,14 +467,14 @@ class MaptkConfigBlock (MaptkObject):
 
 
 def _initialize_cb_statics():
-    """ Initialize MaptkConfigBlock class variables from library """
+    """ Initialize ConfigBlock class variables from library """
     MaptkObject.MAPTK_LIB.maptk_config_block_block_sep.restype = \
         maptk_string_t.PTR_t
     MaptkObject.MAPTK_LIB.maptk_config_block_global_value.restype = \
         maptk_string_t.PTR_t
-    MaptkConfigBlock.BLOCK_SEP = \
+    ConfigBlock.BLOCK_SEP = \
         MaptkObject.MAPTK_LIB.maptk_config_block_block_sep().contents.str
-    MaptkConfigBlock.GLOBAL_VALUE = \
+    ConfigBlock.GLOBAL_VALUE = \
         MaptkObject.MAPTK_LIB.maptk_config_block_global_value().contents.str
 
 _initialize_cb_statics()

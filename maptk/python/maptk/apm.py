@@ -40,7 +40,10 @@ import ctypes
 from maptk.util import MaptkObject
 
 
-class MaptkAlgorithmPluginManager (MaptkObject):
+# This class doesn't get instantiated, so we don't care about abstract instance
+# method implementations missing.
+# noinspection PyAbstractClass
+class AlgorithmPluginManager (MaptkObject):
     """ Interface to singleton APM class """
 
     @staticmethod
@@ -115,4 +118,4 @@ class MaptkAlgorithmPluginManager (MaptkObject):
     # noinspection PyMissingConstructor
     def __init__(self):
         raise RuntimeError("Cannot instantiate singleton class wrapper "
-                           "MaptkAlgorithmPluginManager")
+                           "AlgorithmPluginManager")

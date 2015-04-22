@@ -39,12 +39,12 @@ __author__ = 'purg'
 import ctypes
 
 from maptk import (
-    MaptkAlgorithmPluginManager,
-    MaptkConfigBlock,
-    MaptkImage,
-    MaptkImageContainer,
+    AlgorithmPluginManager,
+    ConfigBlock,
+    Image,
+    ImageContainer,
 )
-from maptk.algo import MaptkAlgoConvertImage
+from maptk.algo import ConvertImage
 from maptk.exceptions.base import MaptkNullPointerException
 
 import nose.tools as nt
@@ -62,11 +62,11 @@ class TestMaptkAlgoConvertImage (object):
 
     @classmethod
     def setup_class(cls):
-        MaptkAlgorithmPluginManager.register_plugins()
+        AlgorithmPluginManager.register_plugins()
 
     def test_from_c_ptr_null(self):
-        ci = MaptkAlgoConvertImage.from_c_pointer(
-            MaptkAlgoConvertImage.C_TYPE_PTR(),
+        ci = ConvertImage.from_c_pointer(
+            ConvertImage.C_TYPE_PTR(),
             name='ci'
         )
         nt.assert_false(ci.c_pointer)
@@ -74,68 +74,68 @@ class TestMaptkAlgoConvertImage (object):
     def test_from_c_ptr_no_name(self):
         nt.assert_raises(
             ValueError,
-            MaptkAlgoConvertImage.from_c_pointer,
-            MaptkAlgoConvertImage.C_TYPE_PTR(),
+            ConvertImage.from_c_pointer,
+            ConvertImage.C_TYPE_PTR(),
         )
 
     def test_from_c_ptr_copy(self):
-        ci = MaptkAlgoConvertImage('ci')
-        ci_new = MaptkAlgoConvertImage.from_c_pointer(ci.c_pointer, ci)
+        ci = ConvertImage('ci')
+        ci_new = ConvertImage.from_c_pointer(ci.c_pointer, ci)
         nt.assert_is(ci.c_pointer, ci_new.c_pointer)
         nt.assert_equal(ci_new.name, ci.name)
 
     def test_registered_names(self):
-        nt.assert_in('bypass', MaptkAlgoConvertImage.registered_names())
+        nt.assert_in('bypass', ConvertImage.registered_names())
 
     def test_create(self):
-        ci = MaptkAlgoConvertImage.create('ci', 'bypass')
+        ci = ConvertImage.create('ci', 'bypass')
         nt.assert_equal(ci.impl_name(), 'bypass')
 
     def test_create_invalid(self):
         nt.assert_raises(
             MaptkNullPointerException,
-            MaptkAlgoConvertImage.create,
+            ConvertImage.create,
             'ci', 'notAnImpl'
         )
 
     def test_new(self):
-        ci = MaptkAlgoConvertImage('ci')
+        ci = ConvertImage('ci')
         nt.assert_false(ci)
         nt.assert_false(ci.c_pointer)
 
     def test_typename(self):
-        ci = MaptkAlgoConvertImage('ci')
+        ci = ConvertImage('ci')
         nt.assert_equal(ci.type_name(), "convert_image")
 
     def test_name(self):
         name = 'algo_name'
-        ci = MaptkAlgoConvertImage(name)
+        ci = ConvertImage(name)
         nt.assert_equal(ci.name, name)
 
     def test_set_name(self):
         algo_name = 'ci'
         other_name = "other_name"
 
-        ci = MaptkAlgoConvertImage(algo_name)
+        ci = ConvertImage(algo_name)
         nt.assert_equal(ci.name, algo_name)
         ci.set_name(other_name)
         nt.assert_not_equal(ci.name, algo_name)
         nt.assert_equal(ci.name, other_name)
 
     def test_impl_name(self):
-        ci_empty = MaptkAlgoConvertImage('ci')
+        ci_empty = ConvertImage('ci')
         nt.assert_is_none(ci_empty.impl_name())
-        ci_bypass = MaptkAlgoConvertImage.create('ci', 'bypass')
+        ci_bypass = ConvertImage.create('ci', 'bypass')
         nt.assert_equal(ci_bypass.impl_name(), 'bypass')
 
     def test_clone_empty(self):
-        ci_empty = MaptkAlgoConvertImage('ci')
+        ci_empty = ConvertImage('ci')
         ci_empty2 = ci_empty.clone()
         nt.assert_false(ci_empty)
         nt.assert_false(ci_empty2)
 
     def test_clone(self):
-        ci1 = MaptkAlgoConvertImage.create('ci', 'bypass')
+        ci1 = ConvertImage.create('ci', 'bypass')
         ci2 = ci1.clone()
         nt.assert_true(ci1)
         nt.assert_true(ci2)
@@ -144,29 +144,29 @@ class TestMaptkAlgoConvertImage (object):
                                     mem_address(ci2.c_pointer))
 
     def test_get_conf(self):
-        ci = MaptkAlgoConvertImage('ci')
+        ci = ConvertImage('ci')
         c = ci.get_config()
         nt.assert_list_equal(c.available_keys(), ['ci:type'])
         nt.assert_equal(c.get_value('ci:type'), '')
 
-        ci = MaptkAlgoConvertImage.create('ci', 'bypass')
+        ci = ConvertImage.create('ci', 'bypass')
         c = ci.get_config()
         nt.assert_equal(c.get_value('ci:type'), 'bypass')
 
     def test_set_conf(self):
-        ci = MaptkAlgoConvertImage('ci')
+        ci = ConvertImage('ci')
         nt.assert_false(ci)
         nt.assert_is_none(ci.impl_name())
 
-        c = MaptkConfigBlock()
+        c = ConfigBlock()
         c.set_value('ci:type', 'bypass')
         ci.set_config(c)
         nt.assert_true(ci)
         nt.assert_equal(ci.impl_name(), 'bypass')
 
     def test_check_conf(self):
-        ci = MaptkAlgoConvertImage('ci')
-        c = MaptkConfigBlock()
+        ci = ConvertImage('ci')
+        c = ConfigBlock()
         nt.assert_false(ci.check_config(c))
 
         c.set_value('ci:type', '')
@@ -179,8 +179,8 @@ class TestMaptkAlgoConvertImage (object):
         nt.assert_true(ci.check_config(c))
 
     def test_convert(self):
-        ic1 = MaptkImageContainer(MaptkImage())
-        ci = MaptkAlgoConvertImage.create('ci', 'bypass')
+        ic1 = ImageContainer(Image())
+        ci = ConvertImage.create('ci', 'bypass')
         ic2 = ci.convert(ic1)
 
         nt.assert_not_equal(ic1, ic2)
@@ -191,7 +191,7 @@ class TestMaptkAlgoConvertImage (object):
     # def test_image_load_save_diff(self):
     #     fd, filename = tempfile.mkstemp()
     #
-    #     c = MaptkConfigBlock()
+    #     c = ConfigBlock()
     #     c.set_value('iio:type', 'vxl')
-    #     iio = MaptkAlgoImageIo('iio')
+    #     iio = ImageIo('iio')
     #     iio.set_config(c)

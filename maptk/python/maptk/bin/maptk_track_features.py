@@ -43,14 +43,14 @@ import os
 import os.path
 
 from maptk import (
-    MaptkAlgorithmPluginManager,
-    MaptkConfigBlock,
-    MaptkTrackSet
+    AlgorithmPluginManager,
+    ConfigBlock,
+    TrackSet
 )
 from maptk.algo import (
-    MaptkAlgoConvertImage,
-    MaptkAlgoImageIo,
-    MaptkAlgoTrackFeatures
+    ConvertImage,
+    ImageIo,
+    TrackFeatures
 )
 
 
@@ -58,7 +58,7 @@ logging.basicConfig()
 
 
 def get_default_config():
-    c = MaptkConfigBlock("track_features")
+    c = ConfigBlock("track_features")
     c.set_value("image_list_file", "",
                 "Path to an input file containing new-line separated paths "
                 "to sequential image files")
@@ -102,12 +102,12 @@ class TrackFeaturesTool (object):
         return logging.getLogger("TrackFeaturesTool")
 
     def __init__(self):
-        MaptkAlgorithmPluginManager.register_plugins()
+        AlgorithmPluginManager.register_plugins()
 
         # Algorithms
-        self.algo_convert_img = MaptkAlgoConvertImage("convert_image")
-        self.algo_image_io = MaptkAlgoImageIo("image_reader")
-        self.algo_track_features = MaptkAlgoTrackFeatures("feature_tracker")
+        self.algo_convert_img = ConvertImage("convert_image")
+        self.algo_image_io = ImageIo("image_reader")
+        self.algo_track_features = TrackFeatures("feature_tracker")
 
         # Other tool variables
         self.image_list_filepath = None
@@ -119,9 +119,9 @@ class TrackFeaturesTool (object):
     def get_configuration(self):
         """
         :return: the current tool configuration
-        :rtype: MaptkConfigBlock
+        :rtype: ConfigBlock
         """
-        c = MaptkConfigBlock("track_features")
+        c = ConfigBlock("track_features")
         c.set_value("image_list_file",
                     self.image_list_filepath or "",
                     "Path to an input file containing new-line separated paths "
@@ -172,7 +172,7 @@ class TrackFeaturesTool (object):
         """
         Set the tool configuration
         :param config: The configuration to set
-        :type config: MaptkConfigBlock
+        :type config: ConfigBlock
         """
         self.algo_convert_img.set_config(config)
         self.algo_image_io.set_config(config)
@@ -255,7 +255,7 @@ class TrackFeaturesTool (object):
         test_f = open(self.output_tracks_filepath, 'w')
         test_f.close()
 
-        tracks = MaptkTrackSet()
+        tracks = TrackSet()
         for frame_num in xrange(len(input_filepaths)):
             input_img = self.algo_convert_img.convert(
                 self.algo_image_io.load(input_filepaths[frame_num])
@@ -302,7 +302,7 @@ def cli_main():
 
     if opts.config:
         log.info("Setting configuration file: %s", opts.config)
-        tft.set_configuration(MaptkConfigBlock.from_file(opts.config))
+        tft.set_configuration(ConfigBlock.from_file(opts.config))
 
     if opts.output_config:
         log.info("Writing output configuration file: %s", opts.output_config)

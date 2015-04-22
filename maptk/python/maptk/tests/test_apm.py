@@ -36,7 +36,7 @@ Tests for maptk::algorithm_plugin_manager interface
 # -*- coding: utf-8 -*-
 __author__ = 'purg'
 
-from maptk import MaptkAlgorithmPluginManager
+from maptk import AlgorithmPluginManager
 
 import nose.tools
 
@@ -45,20 +45,20 @@ import nose.tools
 class Test_AlgorithmPluginManager (object):
 
     def test_load(self):
-        MaptkAlgorithmPluginManager.register_plugins()
+        AlgorithmPluginManager.register_plugins()
 
     def test_load_named(self):
-        MaptkAlgorithmPluginManager.register_plugins("maptk_core")
+        AlgorithmPluginManager.register_plugins("maptk_core")
 
     def test_add_search_path(self):
-        MaptkAlgorithmPluginManager.add_search_path("/")
+        AlgorithmPluginManager.add_search_path("/")
         self.test_load_named()
 
     def test_add_search_path_bad_dir(self):
-        MaptkAlgorithmPluginManager.add_search_path("/probably/not/a/directory/foo")
+        AlgorithmPluginManager.add_search_path("/probably/not/a/directory/foo")
         self.test_load_named()
 
     def test_registered_names(self):
-        MaptkAlgorithmPluginManager.register_plugins('maptk_core')
+        AlgorithmPluginManager.register_plugins('maptk_core')
         nose.tools.assert_in('maptk_core',
-                             MaptkAlgorithmPluginManager.registered_module_names())
+                             AlgorithmPluginManager.registered_module_names())

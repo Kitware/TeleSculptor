@@ -31,7 +31,7 @@ if( MAPTK_ENABLE_PYTHON )
     #TODO: Install rules for python module and files
   else()
     message(WARNING
-      "Halting python Python bindings processing due to not building shared "
+      "Halting Python bindings processing due to not building shared "
       "libraries. Python cannot load static libraries."
       )
   endif()

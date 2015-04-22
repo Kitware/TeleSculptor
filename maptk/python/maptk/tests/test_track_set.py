@@ -36,8 +36,8 @@ Tests for Python interface to maptk::track_set
 # -*- coding: utf-8 -*-
 __author__ = 'purg'
 
-from maptk import MaptkTrack
-from maptk import MaptkTrackSet
+from maptk import Track
+from maptk import TrackSet
 
 import nose.tools as nt
 
@@ -45,11 +45,11 @@ import nose.tools as nt
 class TestMaptkTrackSet (object):
 
     def test_new(self):
-        ts = MaptkTrackSet()
+        ts = TrackSet()
         nt.assert_true(ts, "Invalid track set instance constructed")
 
     def test_empty_len_size(self):
-        ts = MaptkTrackSet()
+        ts = TrackSet()
         nt.assert_true(ts, "Invalid track set instance constructed")
         l = len(ts)
         s = ts.size()
@@ -58,8 +58,8 @@ class TestMaptkTrackSet (object):
 
     def test_new_nonempty(self):
         n = 10
-        tracks = [MaptkTrack() for _ in xrange(n)]
-        ts = MaptkTrackSet(tracks)
+        tracks = [Track() for _ in xrange(n)]
+        ts = TrackSet(tracks)
         nt.assert_true(ts, "Invalid track set instance constructed")
         nt.assert_equal(len(ts), n)
         nt.assert_equal(ts.size(), n)

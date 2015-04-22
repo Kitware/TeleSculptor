@@ -48,6 +48,7 @@ __LIBRARY_NAME_RE__ = re.compile("(?:lib)?%s.(?:so|dylib|dll).*"
 __LIBRARY_PATH_CACHE__ = None
 __LIBRARY_CACHE__ = None
 
+# TODO: Replace with environment variable set by cannonical setup script
 __BUILD_DIR__ = "@MAPTK_BUILD_DIRECTORY@"
 
 
