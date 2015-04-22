@@ -52,7 +52,30 @@ namespace maptk
 namespace core
 {
 
-/// Combines a feature matcher and homography estimation for constrained matching
+/// Combines a feature matchers, homography estimation, and filtering
+/**
+ *  This is a meta-algorithm for feature matching that combines one or more
+ *  other feature matchers with homography estimation and feature filtering.
+ *  The algorithm applies another configurable feature matcher algorithm and
+ *  then applies a homography estimation algorithm to the resulting matches.
+ *  Outliers to the fit homography are discarded from the set of matches.
+ *
+ *  If a second matcher algorithm is provided, this algorithm will warp the
+ *  feature locations by the estimated homography before applying the second
+ *  matching algorithm to the aligned points.  This approach is useful for
+ *  finding weak matches that were missed by the first matcher but are
+ *  easier to detect once approximate location is known.  A good choice for
+ *  the second matcher is vxl::match_features_constrained.
+ *
+ *  If a filter_features algorithm is provided, this will be run on the
+ *  input features \b before running the first matcher.  The second matcher
+ *  will then run on the \b original unfilter features.  This allows, for
+ *  example, a slower but more robust feature matcher to run on a subset
+ *  of the strongest feature points in order to quickly establish an
+ *  and estimated homography.  Then a second, fast matcher can pick up
+ *  the additional weak matches using the constraint that the location
+ *  in the image is now known approximately.
+ */
 class PLUGIN_CORE_EXPORT match_features_homography
   : public algo::algorithm_impl<match_features_homography, algo::match_features>
 {
