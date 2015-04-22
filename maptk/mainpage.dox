@@ -96,6 +96,7 @@ types.
                transformation from corresponding point sets.
 - \ref algo::extract_descriptors : extract a descriptor for each feature from
                an image
+- \ref algo::filter_features : filter the a set features to make a reduced set
 - \ref algo::geo_map : convert geographic coordinates between Lat-Long and UTM
 - \ref algo::image_io : read or write an image file
 - \ref algo::initialize_cameras_landmarks : initialize cameras and landmarks

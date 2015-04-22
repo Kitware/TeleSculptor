@@ -42,7 +42,7 @@
 /**
  * \file
  * \brief Header defining abstract \link maptk::algo::filter_features
- *       \endlink algorithm
+ *        filter features \endlink algorithm
  */
 
 namespace maptk
@@ -60,30 +60,43 @@ public:
   /// Return the name of this algorithm.
   virtual std::string type_name() const { return "filter_features"; }
 
-  /// filter a feature set
+  /// Filter a feature set and return a subset of the features
   /**
-   * \param [in] feature set to filter
+   * The default implementation call the pure virtual function
+   * filter(feature_set_sptr feat, std::vector<unsigned int> &indices) const
+   * \param [in] input The feature set to filter
    * \returns a filtered version of the feature set (simple_feature_set)
    */
   virtual feature_set_sptr
   filter( feature_set_sptr input ) const;
 
-  /// filter a feature_set and its coresponding descriptor_set
+  /// Filter a feature_set and its coresponding descriptor_set
   /**
-   * \param [in] feature set to filter
-   * \param [in] parallel descriptor set to filter
-   * returns a pair of the filtered features and descriptors
+   * The default implementation calls
+   * filter(feature_set_sptr feat, std::vector<unsigned int> &indices) const
+   * using with \p feat and then uses the resulting \p indices to construct
+   * a simple_descriptor_set with the corresponding descriptors.
+   * \param [in] feat The feature set to filter
+   * \param [in] descr The parallel descriptor set to filter
+   * \returns a pair of the filtered features and descriptors
    */
   virtual std::pair<feature_set_sptr, descriptor_set_sptr>
   filter( feature_set_sptr feat, descriptor_set_sptr descr) const;
 
 protected:
 
+  /// Filter a feature set and return a new feature set with a subset of features
+  /**
+   * \param [in] feat The input feature set
+   * \param [in,out] indices The indices into \p feat of the features retained
+   * \return a new feature set containing the subset of features noted by \p indices
+   */
   virtual feature_set_sptr
   filter(feature_set_sptr feat, std::vector<unsigned int> &indices) const = 0;
 
 };
 
+/// type definition for shared pointer to a filter_features algorithm
 typedef boost::shared_ptr<filter_features> filter_features_sptr;
 
 } // end namespace algo

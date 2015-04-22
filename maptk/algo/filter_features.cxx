@@ -28,6 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * \file
+ * \brief Instantiation of \link maptk::algo::algorithm_def algorithm_def<T>
+ *        \endlink for \link maptk::algo::filter_features
+ *        filter_features \endlink
+ */
+
+
 #include <maptk/algo/filter_features.h>
 #include <maptk/algo/algorithm.txx>
 #include <boost/make_shared.hpp>
@@ -38,7 +46,7 @@ namespace maptk
 namespace algo
 {
 
-/// Filter feature set
+
 feature_set_sptr
 filter_features
 ::filter(feature_set_sptr feat) const
@@ -47,7 +55,7 @@ filter_features
   return filter(feat, indices);
 }
 
-/// Filter feature set
+
 std::pair<feature_set_sptr, descriptor_set_sptr>
 filter_features
 ::filter( feature_set_sptr feat, descriptor_set_sptr descr) const
