@@ -46,7 +46,7 @@ import nose.tools
 # noinspection PyMethodMayBeStatic
 class TestMaptkConfigBlock (object):
     """
-    Python version of test_config_block.cxx located in
+    Python version of test_config_block.cxx
     """
 
     def test_block_set_size(self):
@@ -55,11 +55,11 @@ class TestMaptkConfigBlock (object):
     def test_construction(self):
         cb1 = ConfigBlock()
         nose.tools.assert_true(cb1._inst_ptr, "Received null pointer from "
-                                          "ConfigBlock construction")
+                                              "ConfigBlock construction")
         cb2 = ConfigBlock("A Name")
         nose.tools.assert_true(cb2._inst_ptr, "Received a null pointer "
-                                          "from named ConfigBlock "
-                                          "construction.")
+                                              "from named ConfigBlock "
+                                              "construction.")
 
     def test_name_access(self):
         cb = ConfigBlock()
@@ -103,30 +103,30 @@ class TestMaptkConfigBlock (object):
         cb = ConfigBlock()
 
         cb.set_value('a', 'true')
-        nose.tools.assert_true(cb.get_bool('a'))
+        nose.tools.assert_true(cb.get_value_bool('a'))
 
         cb.set_value('b', 'false')
-        nose.tools.assert_false(cb.get_bool('b'))
+        nose.tools.assert_false(cb.get_value_bool('b'))
 
         cb.set_value('a', 'yes')
-        nose.tools.assert_true(cb.get_bool('a'))
+        nose.tools.assert_true(cb.get_value_bool('a'))
 
         cb.set_value('b', 'no')
-        nose.tools.assert_false(cb.get_bool('b'))
+        nose.tools.assert_false(cb.get_value_bool('b'))
 
     def test_get_value_bool_default(self):
         cb = ConfigBlock()
 
         nose.tools.assert_raises(
             MaptkConfigBlockNoSuchValueException,
-            cb.get_bool, 'not-a-key'
+            cb.get_value_bool, 'not-a-key'
         )
 
         nose.tools.assert_true(
-            cb.get_bool('not-a-key', True)
+            cb.get_value_bool('not-a-key', True)
         )
         nose.tools.assert_false(
-            cb.get_bool('not-a-key', False)
+            cb.get_value_bool('not-a-key', False)
         )
 
     def test_get_value_nested(self):

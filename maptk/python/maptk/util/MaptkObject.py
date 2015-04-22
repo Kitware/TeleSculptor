@@ -90,7 +90,7 @@ class MaptkObject (object):
         """
         Create an instance of the derived class from a C API opaque pointer.
 
-        If this the C pointer given to ptr is taken form an existing Python
+        If this the C pointer given to ptr is taken from an existing Python
         object instance, that object instance should be given to the
         shallow_copy_of argument. This ensures that the underlying C reference
         is not destroyed prematurely.
@@ -116,6 +116,9 @@ class MaptkObject (object):
             "Required a C_TYPE_PTR instance of this class (%s)" \
             % cls.__name__
 
+        # Custom child class of calling type in order to bypass constructor of
+        # calling type. Since we already have the underlying instance, we
+        # fundamentally don't want to "construct" again.
         # noinspection PyPep8Naming,PyMissingConstructor,PyAbstractClass
         class _from_c_pointer (cls):
             # Need to set from parent class in order to prevent the metaclass
@@ -128,6 +131,8 @@ class MaptkObject (object):
                 self._inst_ptr = _ptr
                 self._parent = _is_copy_of
 
+        # TODO: Can we just make this the same name as the parent class?
+        #       Or would that cause issues.
         _from_c_pointer.__name__ = "%s_from_c_pointer" % cls.__name__
 
         return _from_c_pointer(ptr, shallow_copy_of)

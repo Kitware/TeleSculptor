@@ -121,9 +121,12 @@ class ImageContainer (MaptkObject):
 
     def get_image(self):
         """
-        Return a new pointer the to contained image. This instance shared the
-        same internal memory as the
-        :return:
+        Return a new pointer the to contained image. This instance shares the
+        same internal memory as the contained image.
+
+        :return: New ImageContainer instance
+        :rtype: ImageContainer
+
         """
         ic_getimg = self.MAPTK_LIB['maptk_image_container_get_image']
         ic_getimg.argtypes = [self.C_TYPE_PTR]

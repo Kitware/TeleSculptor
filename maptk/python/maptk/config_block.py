@@ -201,7 +201,7 @@ class ConfigBlock (MaptkObject):
         self.MST_FREE(mst_ptr)
         return s
 
-    def get_bool(self, key, default=None):
+    def get_value_bool(self, key, default=None):
         """ Get the boolean value for a key
 
         :raises MaptkConfigBlockNoSuchValueException: the given key doesn't

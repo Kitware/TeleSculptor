@@ -188,9 +188,9 @@ class TrackFeaturesTool (object):
                                                    self.mask_list_filepath)
         if self.mask_list_filepath:
             self.mask_list_filepath = abspath(self.mask_list_filepath)
-        self.invert_masks = config.get_bool('invert_masks', self.invert_masks)
+        self.invert_masks = config.get_value_bool('invert_masks', self.invert_masks)
         self.expect_multichannel_masks = \
-            config.get_bool('expect_multichannel_masks',
+            config.get_value_bool('expect_multichannel_masks',
                             self.expect_multichannel_masks)
         self.output_tracks_filepath = \
             config.get_value('output_tracks_file', self.output_tracks_filepath)
