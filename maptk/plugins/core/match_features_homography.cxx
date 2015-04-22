@@ -165,14 +165,27 @@ bool
 match_features_homography
 ::check_configuration(config_block_sptr config) const
 {
+  bool config_valid = true;
+  // this algorithm is optional
+  if (config->has_value("filter_features") &&
+      config->get_value<std::string>("filter_features") != "" &&
+      !algo::filter_features::check_nested_algo_configuration("filter_features", config))
+  {
+    config_valid = false;
+  }
+  // this algorithm is optional
+  if (config->has_value("feature_matcher2") &&
+      config->get_value<std::string>("feature_matcher2") != "" &&
+      !algo::match_features::check_nested_algo_configuration("feature_matcher2", config))
+  {
+    config_valid = false;
+  }
   return (
     algo::estimate_homography::check_nested_algo_configuration("homography_estimator", config)
     &&
     algo::match_features::check_nested_algo_configuration("feature_matcher1", config)
     &&
-    algo::match_features::check_nested_algo_configuration("feature_matcher2", config)
-    &&
-    algo::filter_features::check_nested_algo_configuration("filter_features", config)
+    config_valid
   );
 }
 
@@ -218,6 +231,22 @@ match_features_homography
       static_cast<double>(inlier_count)/inliers.size() < d_->min_required_inlier_percent )
   {
     return match_set_sptr(new simple_match_set());
+  }
+
+  if( !matcher2_ )
+  {
+    // return the subset of inlier matches
+    std::vector<maptk::match> m = init_matches->matches();
+    std::vector<maptk::match> inlier_m;
+    for( unsigned int i=0; i<inliers.size(); ++i )
+    {
+      if( inliers[i] )
+      {
+        inlier_m.push_back(m[i]);
+      }
+    }
+
+    return match_set_sptr(new simple_match_set(inlier_m));
   }
 
   //deep copy and warp the original (non filtered) points
