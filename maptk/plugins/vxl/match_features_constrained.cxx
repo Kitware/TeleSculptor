@@ -30,7 +30,7 @@
 
 /**
  * \file
- * \brief VXL match_features_location algorithm implementation
+ * \brief VXL match_features_constrained algorithm implementation
  */
 
 #include "match_features_constrained.h"

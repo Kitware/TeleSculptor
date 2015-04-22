@@ -30,7 +30,7 @@
 
 /**
  * \file
- * \brief VXL match_features_location algorithm impl interface
+ * \brief VXL match_features_constrained algorithm impl interface
  */
 
 #ifndef MAPTK_PLUGINS_VXL_MATCH_FEATURES_CONSTRAINED_H_
@@ -47,7 +47,19 @@ namespace maptk
 namespace vxl
 {
 
-/// An abstract base class for matching feature points using descriptors and pos/dir/scale constraints
+/// A match_feature algorithm that uses feature position, orientation, and scale constraints
+/**
+ *  This matching algorithm assumes that the features to be matched are already
+ *  somewhat well aligned geometrically.  The use cases are very similar images
+ *  (e.g. adjacent frames of video) and features that have been transformed
+ *  into approximate alignment by a pre-processing step
+ *  (e.g. image registration)
+ *
+ *  This algorithm first reduces the search space for each feature using a
+ *  search radius in the space of location (and optionally orientation and
+ *  scale) to find only geometrically nearby features.  It then looks at
+ *  the descriptors for the neighbors and finds the best match by appearance.
+ */
 class MAPTK_VXL_EXPORT match_features_constrained
   : public algo::algorithm_impl<match_features_constrained, algo::match_features>
 {
