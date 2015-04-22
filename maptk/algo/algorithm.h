@@ -91,7 +91,7 @@ public:
   /// Check that the algorithm's configuration config_block is valid
   /**
    * This checks solely within the provided \c config_block and not against
-   * the current state of the instance. This isn't static for inheritence
+   * the current state of the instance. This isn't static for inheritance
    * reasons.
    *
    * \param config  The config block to check configuration of.
@@ -202,7 +202,7 @@ public:
                                             config_block_sptr config,
                                             base_sptr &nested_algo);
 
-  /// Helper macro for checking that basic nested algorithm configuration is valid
+  /// Helper function for checking that basic nested algorithm configuration is valid
   /**
    * Check that the expected implementation switch exists and that its value is
    * registered implementation name.

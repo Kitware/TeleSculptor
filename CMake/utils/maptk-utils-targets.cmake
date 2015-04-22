@@ -324,7 +324,8 @@ endfunction()
 # Install MAPTK public header files to include/maptk.
 #
 # A SUBDIR may be provided in order to place the header files in a
-# subdirectory under that. This path must be relative.
+# subdirectory under that. This path will be interpreted as relative to the
+# normal header installation directory (<INSTALL>/include/maptk/...).
 #
 # Adds files to the "Header Files\Public" for IDEs.
 #-

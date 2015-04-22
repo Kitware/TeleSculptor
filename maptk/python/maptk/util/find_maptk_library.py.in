@@ -1,0 +1,204 @@
+"""
+ckwg +31
+Copyright 2015 by Kitware, Inc.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+ * Redistributions of source code must retain the above copyright notice,
+   this list of conditions and the following disclaimer.
+
+ * Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+ * Neither name of Kitware, Inc. nor the names of any contributors may be used
+   to endorse or promote products derived from this software without specific
+   prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+==============================================================================
+
+Utility method for finding and returning the MAPTK library.
+
+"""
+# -*- coding: utf-8 -*-
+__author__ = 'purg'
+
+import ctypes
+import os
+import re
+import sys
+
+
+__LIBRARY_NAME__ = "maptk_c"
+__LIBRARY_NAME_RE__ = re.compile("(?:lib)?%s.(?:so|dylib|dll).*"
+                                 % __LIBRARY_NAME__)
+__LIBRARY_PATH_CACHE__ = None
+__LIBRARY_CACHE__ = None
+
+# TODO: Replace with environment variable set by cannonical setup script
+__BUILD_DIR__ = "@MAPTK_BUILD_DIRECTORY@"
+
+
+def _system_library_dirs():
+    """
+    :return: Platform dependent relative paths to directories containing library
+        files.
+    :rtype: str
+
+    """
+    if sys.platform == "win32":
+        return ["bin"]
+    else:
+        return ["lib64", "lib"]
+
+
+def _search_up_directory(d):
+    """
+    Look for the maptk_c library in the given directory and each directory above
+    it until we hit root. We return the first matching library path, or None
+    if no matching library was found.
+
+    :param d: Starting directory path
+    :type d: str
+
+    :return: Discovered path to the maptk_c library, or None if one wasn't found
+    :rtype: str or None
+
+    """
+    # Stopping search when we see the root twice, based on ``os.path.dirname``
+    # returning the root directory when the root directory is passed to it.
+    prev_dir = None
+    while d != prev_dir:
+        hit = False
+        for l in _system_library_dirs():
+            l_dir = os.path.join(d, l)
+            if os.path.isdir(l_dir):
+                for f in os.listdir(l_dir):
+                    if __LIBRARY_NAME_RE__.match(f):
+                        return os.path.join(l_dir, f)
+                hit = True
+        if hit:
+            # Found a library directory(s), but didn't find desired library
+            return None
+        prev_dir = d
+        d = os.path.dirname(d)
+    return None
+
+
+def _system_path_separator():
+    """
+    System dependent character for element separation in PATH variable
+    :rtype: str
+    """
+    if sys.platform == 'win32':
+        return ';'
+    else:
+        return ':'
+
+
+def _find_maptk_library_path():
+    """
+    Discover the path to a MATPK C interface library based on the directory
+    structure this file is in, and then to system directories in the PATH
+    (NOT python's sys.path, the actual OS environment PATH).
+
+    :return: The string path to the MAPTK C interface library
+    :rtype: str
+
+    """
+    global __LIBRARY_PATH_CACHE__
+    if __LIBRARY_PATH_CACHE__:
+        return __LIBRARY_PATH_CACHE__
+
+    search_dirs = [os.path.dirname(os.path.abspath(__file__))]
+    search_dirs.extend(os.environ['PATH'].split(_system_path_separator()))
+    if __BUILD_DIR__:
+        search_dirs = [__BUILD_DIR__] + search_dirs
+
+    for d in search_dirs:
+        r = _search_up_directory(d)
+        if r is not None:
+            __LIBRARY_PATH_CACHE__ = r
+            return r
+
+    # No library found in any paths given at this point
+    raise RuntimeError("Failed to find a valid '%s' library!"
+                       % __LIBRARY_NAME__)
+
+
+def find_maptk_library():
+    """
+    Discover and return the ctypes-loaded MAPTK C interface library.
+
+    :return:
+    :rtype:
+
+    """
+    global __LIBRARY_CACHE__
+    if not __LIBRARY_CACHE__:
+        __LIBRARY_CACHE__ = ctypes.CDLL(_find_maptk_library_path())
+    return __LIBRARY_CACHE__
+
+
+def test():
+
+    """
+    Testing basic finding based on Linux OS
+    """
+    # Saving current state for restoration after testing
+    global __LIBRARY_NAME__, __LIBRARY_NAME_RE__, __LIBRARY_PATH_CACHE__
+    orig_values = (__LIBRARY_NAME__, __LIBRARY_NAME_RE__,
+                   __LIBRARY_PATH_CACHE__)
+
+    __LIBRARY_NAME__ = "c"
+    __LIBRARY_NAME_RE__ = re.compile("(?:lib)?%s.(?:so|dylib|dll)"
+                                     % __LIBRARY_NAME__)
+    __LIBRARY_PATH_CACHE__ = None
+
+    __test_search_up_dir__()
+    __LIBRARY_PATH_CACHE__ = None
+
+    __test_find_libraray_path__()
+    __LIBRARY_PATH_CACHE__ = None
+
+    __test_find_library__()
+    __LIBRARY_PATH_CACHE__ = None
+
+    # Restoring module state
+    __LIBRARY_NAME__ = orig_values[0]
+    __LIBRARY_NAME_RE__ = orig_values[1]
+    __LIBRARY_PATH_CACHE__ = orig_values[2]
+
+
+def __test_search_up_dir__():
+    r = _search_up_directory("/usr/local/bin/")
+    print "__test_search_up_dir__::Searching up from directory '/usr/local/bin' for pthread lib:", r
+
+
+def __test_find_libraray_path__():
+    r0 = __LIBRARY_PATH_CACHE__
+    r1 = _find_maptk_library_path()
+    r2 = __LIBRARY_PATH_CACHE__
+
+    print "__test_find_libraray_path__::PATH:", os.environ['PATH']
+    print "__test_find_libraray_path__::Cache before:", r0
+    print "__test_find_libraray_path__::Using PATH for dir bases, found:", r1
+    print "__test_find_libraray_path__::Cache after                    :", r2
+
+
+def __test_find_library__():
+    l = find_maptk_library()
+    print "__test_find_library__::Library found:", l

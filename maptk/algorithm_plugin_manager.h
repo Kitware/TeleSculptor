@@ -76,6 +76,15 @@ public:
    */
   void add_search_path(path_t dirpath);
 
+  /// Get the list currently registered module names.
+  /**
+   * A module's name is defined as the filename minus the standard platform
+   * module library suffix. For example, on Windows, if a module library was
+   * named ``maptk_foo.dll``, the module's name would be "maptk_foo". Similarly
+   * on a unix system, ``maptk_bar.so`` would have the name "maptk_bar".
+   */
+  std::vector< std::string > registered_module_names() const;
+
 private:
   class impl;
   impl *impl_;

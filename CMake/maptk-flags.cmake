@@ -14,8 +14,8 @@ define_property(GLOBAL PROPERTY MAPTK_CXX_FLAGS
 # Helper function for adding compiler flags
 function(maptk_check_compiler_flag flag)
   string(REPLACE "+" "plus" safeflag "${flag}")
-  check_cxx_compiler_flag("${flag}" "has_compiler_flag{${safeflag}}")
-  if ("has_compiler_flag{${safeflag}}")
+  check_cxx_compiler_flag("${flag}" "has_compiler_flag-${safeflag}")
+  if( ${has_compiler_flag-${safeflag}} )
     set_property(GLOBAL APPEND PROPERTY MAPTK_CXX_FLAGS "${flag}")
   endif()
 endfunction ()
