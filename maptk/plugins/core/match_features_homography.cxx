@@ -227,7 +227,7 @@ match_features_homography
   homography_<double> Hd(*H);
   for (unsigned int i = 0; i < feat1_vec.size(); i++)
   {
-    feature_<double> f(feat1_vec[i]);
+    feature_<double> f(*feat1_vec[i]);
     f.set_loc(Hd.map_point(f.get_loc()));
     warped_feat1.push_back(boost::make_shared<feature_<double> >(f));
   }

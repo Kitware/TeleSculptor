@@ -80,11 +80,11 @@ feature_<T>
 /// Constructor for a feature_ from a feature
 template <typename T>
 feature_<T>
-::feature_(feature_sptr f)
-: loc_(f->loc().cast<T>()),
-  magnitude_(static_cast<T>(f->magnitude())),
-  scale_(static_cast<T>(f->scale())),
-  angle_(static_cast<T>(f->angle()))
+::feature_(const feature& f)
+: loc_(f.loc().cast<T>()),
+  magnitude_(static_cast<T>(f.magnitude())),
+  scale_(static_cast<T>(f.scale())),
+  angle_(static_cast<T>(f.angle()))
 {
 }
 

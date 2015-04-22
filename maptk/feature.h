@@ -103,8 +103,8 @@ public:
   feature_<T>(const Eigen::Matrix<T,2,1>& loc, T mag=0.0,
               T scale=1.0, T angle=0.0);
 
-  /// Constructor for a feature_ from a feature
-  feature_<T>(feature_sptr f);
+  /// Constructor for a feature_ from a base class feature
+  explicit feature_<T>(const feature& f);
 
   /// Access staticly available type of underlying data (double or float)
   static const std::type_info& static_data_type() { return typeid(T); }
