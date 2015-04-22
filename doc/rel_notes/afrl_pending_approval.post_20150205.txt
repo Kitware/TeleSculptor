@@ -35,6 +35,10 @@ Main Library
  * Added informative debugging messages to allow for plugin implementation
    tracing.
 
+ * Added C and Python interfaces. These wrappers are currently incomplete but
+   offer an introduction into what they will look like and how they will
+   function.
+
 Core Plugin
 
  * Updated compute_ref_homog algorithm to allow additional constraints
