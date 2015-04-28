@@ -60,13 +60,13 @@ class filter_features_magnitude::priv
 public:
   /// Constructor
   priv() :
-    top_percent(0.2),
+    top_fraction(0.2),
     min_features(100)
   {
   }
 
   priv(const priv& other) :
-    top_percent(other.top_percent),
+    top_fraction(other.top_fraction),
     min_features(other.min_features)
   {
   }
@@ -93,7 +93,7 @@ public:
     std::sort(indices.begin(), indices.end(), comp);
 
     // compute threshold
-    unsigned int cutoff = std::max(min_features, static_cast<unsigned int>(top_percent * indices.size()));
+    unsigned int cutoff = std::max(min_features, static_cast<unsigned int>(top_fraction * indices.size()));
 
     std::vector<feature_sptr> filtered(cutoff);
     ind.resize(cutoff);
@@ -110,7 +110,7 @@ public:
     return boost::make_shared<maptk::simple_feature_set>(maptk::simple_feature_set(filtered));
   }
 
-  double top_percent;
+  double top_fraction;
   unsigned int min_features;
 };
 
@@ -147,8 +147,8 @@ filter_features_magnitude
   config_block_sptr config =
       maptk::algo::filter_features::get_configuration();
 
-  config->set_value("top_percent", d_->top_percent,
-                    "Percent of strongest keypoints to keep, range (0.0, 1.0]");
+  config->set_value("top_fraction", d_->top_fraction,
+                    "Fraction of strongest keypoints to keep, range (0.0, 1.0]");
 
   config->set_value("min_features", d_->min_features,
                     "minimum number of features to keep");
@@ -162,7 +162,7 @@ void
 filter_features_magnitude
 ::set_configuration(config_block_sptr config)
 {
-  d_->top_percent = config->get_value<double>("top_percent", d_->top_percent);
+  d_->top_fraction = config->get_value<double>("top_fraction", d_->top_fraction);
   d_->min_features = config->get_value<unsigned int>("min_features", d_->min_features);
 }
 
