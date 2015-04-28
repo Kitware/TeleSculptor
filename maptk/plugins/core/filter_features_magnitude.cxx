@@ -172,6 +172,13 @@ bool
 filter_features_magnitude
 ::check_configuration(config_block_sptr config) const
 {
+  double top_fraction = config->get_value<double>("top_fraction", d_->top_fraction);
+  if( top_fraction <= 0.0 || top_fraction > 1.0 )
+  {
+    LOG_ERROR(LOGGING_PREFIX,
+             "top_fraction parameter is " << top_fraction << ", needs to be in (0.0, 1.0].");
+    return false;
+  }
   return true;
 }
 
