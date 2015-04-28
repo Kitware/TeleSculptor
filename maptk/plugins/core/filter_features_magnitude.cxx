@@ -30,8 +30,13 @@
 
 #include "filter_features_magnitude.h"
 
+#include <maptk/logging_macros.h>
+
 #include <algorithm>
 #include <boost/make_shared.hpp>
+
+
+#define LOGGING_PREFIX "filter_features_magnitude"
 
 
 namespace maptk
@@ -99,7 +104,8 @@ public:
       filtered[i] = feat_vec[index];
     }
 
-    std::cout << "filter_features_magnitude reduced " << feat_vec.size() << " features to " << filtered.size() << " features.\n";
+    LOG_INFO(LOGGING_PREFIX,
+             "Reduced " << feat_vec.size() << " features to " << filtered.size() << " features.");
 
     return boost::make_shared<maptk::simple_feature_set>(maptk::simple_feature_set(filtered));
   }
