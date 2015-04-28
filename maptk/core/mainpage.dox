@@ -74,50 +74,63 @@ types.
 
 \subsection sec-core-algorithms Abstract Algorithms
 - \ref algo::algorithm : the base class for all algorithms
-- \ref algo::image_io : read or write an image file
-- \ref algo::detect_features : detect feature points in an image
-- \ref algo::extract_descriptors : extract a descriptor for each feature from
-               an image
-- \ref algo::match_features : match features between two images
-- \ref algo::estimate_homography : estimate a homography from feature matches
-- \ref algo::estimate_similarity_transform : estimate a similarity
-               transformation from corresponding point sets.
-- \ref algo::track_features : combine sequences of feature matches over time
-               into tracks
-- \ref algo::geo_map : convert geographic coordinates between Lat-Long and UTM
+- \ref algo::analyze_tracks : output various statistics about feature track sets
 - \ref algo::bundle_adjust : optimize collections of cameras and landmarks to
                minimize reprojection error relative to observed tracks.
 - \ref algo::close_loops : close loops by stitching corresponding feature tracks
                together
-- \ref algo::analyze_tracks : output various statistics about feature track sets
-- \ref algo::draw_tracks : draw feature tracks on top of input images
 - \ref algo::compute_ref_homography : estimate homography transformations between
                each input frame and some past reference frame
+- \ref algo::detect_features : detect feature points in an image
+- \ref algo::draw_tracks : draw feature tracks on top of input images
+- \ref algo::estimate_essential_matrix : estimate an essential matrix from
+               feature matches
+- \ref algo::estimate_homography : estimate a homography from feature matches
+- \ref algo::estimate_similarity_transform : estimate a similarity
+               transformation from corresponding point sets.
+- \ref algo::extract_descriptors : extract a descriptor for each feature from
+               an image
+- \ref algo::geo_map : convert geographic coordinates between Lat-Long and UTM
+- \ref algo::image_io : read or write an image file
+- \ref algo::initialize_cameras_landmarks : Estimate initial camera and
+               landmark parameters given a set of tracks
+- \ref algo::match_features : match features between two images
+- \ref algo::optimize_cameras : keeping 3D landmarks and image projections
+               fixed, optimize the camera parameters
+- \ref algo::track_features : combine sequences of feature matches over time
+               into tracks
+- \ref algo::triangulate_landmarks : triangulate a landmark 3D location from
+               fixed camera and image point locations
 
 
 \subsection sec-core-algorithm-impls Algorithm Implementations
-- \ref algo::track_features_default : converts frame-to-frame feature matching
-               into tracks
-         - Implements \ref algo::track_features.
-         - Requires instances of \ref algo::detect_features,
-               \ref algo::extract_descriptors, and \ref algo::match_features.
+- \ref algo::close_loops_bad_frames_only : stitch feature tracks together over
+               missing or bad input frames
+         - Implements \ref algo::close_loops,
+         - Requires instances of \ref algo::match_features
+- \ref algo::close_loops_multi_method : run multiple different close loops
+               implementations together
+         - Implements \ref algo::close_loops,
+         - Requires instances of \ref algo::close_loops
+- \ref algo::compute_ref_homography_default : estimate a homography between
+               the current frame and some reference frame
+         - Implements \ref algo::compute_ref_homography,
+         - Requires instances of \ref algo::estimate_homography
+- \ref algo::hierarchical_bundle_adjust : apply bundle adjustment in a temporal
+               hierarchy
+         - Implments \ref algo::bundle_adjust,
+         - Requires instances of \ref algo::bundle_adjust,
+               \ref algo::optimize_cameras, and \ref
+               algo::triangulate_landmarks
 - \ref algo::match_features_homography : use homography estimation within
                feature matching
          - Implements \ref algo::match_features,
          - Requires instances of \ref algo::match_features and
                \ref algo::estimate_homography.
-- \ref algo::close_loops_multi_method : run multiple different close loops
-               implementations together
-         - Implements \ref algo::close_loops,
-         - Requires instances of \ref algo::close_loops
-- \ref algo::close_loops_bad_frames_only : stitch feature tracks together over
-               missing or bad input frames
-         - Implements \ref algo::close_loops,
-         - Requires instances of \ref algo::match_features
-- \ref algo::compute_ref_homography_default : estimate a homography between
-               the current frame and some reference frame
-         - Implements \ref algo::compute_ref_homography,
-         - Requires instances of \ref algo::estimate_homography
-
+- \ref algo::track_features_default : converts frame-to-frame feature matching
+               into tracks
+         - Implements \ref algo::track_features.
+         - Requires instances of \ref algo::detect_features,
+               \ref algo::extract_descriptors, and \ref algo::match_features.
 */
 }
