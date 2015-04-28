@@ -75,6 +75,7 @@ public:
   filter(feature_set_sptr feat, std::vector<unsigned int> &ind) const
   {
     const std::vector<feature_sptr> &feat_vec = feat->features();
+    ind.clear();
     if (feat_vec.size() <= min_features)
     {
       return feat;
