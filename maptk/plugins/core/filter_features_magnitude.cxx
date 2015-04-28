@@ -94,12 +94,12 @@ public:
       indices.push_back(std::make_pair<unsigned int, double>(i, feat_vec[i]->magnitude()));
     }
 
-    // sorting descending on feature magnitude
-    feature_at_index_is_greater comp;
-    std::sort(indices.begin(), indices.end(), comp);
-
     // compute threshold
     unsigned int cutoff = std::max(min_features, static_cast<unsigned int>(top_fraction * indices.size()));
+
+    // partially sort on descending feature magnitude
+    std::nth_element(indices.begin(), indices.begin()+cutoff, indices.end(),
+                     feature_at_index_is_greater());
 
     std::vector<feature_sptr> filtered(cutoff);
     ind.resize(cutoff);
