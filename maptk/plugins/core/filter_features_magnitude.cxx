@@ -78,6 +78,11 @@ public:
     ind.clear();
     if (feat_vec.size() <= min_features)
     {
+      ind.resize(feat_vec.size());
+      for (unsigned int i=0; i<ind.size(); ++i)
+      {
+        ind[i] = i;
+      }
       return feat;
     }
 
