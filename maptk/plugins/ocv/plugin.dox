@@ -33,21 +33,24 @@ The MAPTK ocv library provides various components by building on
 
 
 \subsection sec-ocv-algorithm-impls Algorithm Implementations
+- \ref ocv::analyze_tracks : output various statistics about input feature tracks
+- \ref ocv::detect_features : detect features with
+               <a href="http://docs.opencv.org/modules/features2d/doc/common_interfaces_of_feature_detectors.html#featuredetector">
+               cv::FeatureDetector</a>
+- \ref ocv::draw_tracks : draw tracks on top of input imagery
+- \ref ocv::estimate_homography : estimate a homography with
+               <a href="http://docs.opencv.org/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html#cv2.findHomography">
+               cv::findHomography</a>
+- \ref ocv::extract_descriptors : extract descriptors with
+               <a href="http://docs.opencv.org/modules/features2d/doc/common_interfaces_of_descriptor_extractors.html#descriptorextractor">
+               cv::DescriptorExtractor</a>
 - \ref ocv::image_io : read and write images with
                <a href="http://docs.opencv.org/modules/highgui/doc/reading_and_writing_images_and_video.html#imread">
                cv::imread()</a> and
                <a href="http://docs.opencv.org/modules/highgui/doc/reading_and_writing_images_and_video.html#imwrite">
                cv::imwrite()</a>
-- \ref ocv::detect_features : detect features with
-               <a href="http://docs.opencv.org/modules/features2d/doc/common_interfaces_of_feature_detectors.html#featuredetector">
-               cv::FeatureDetector</a>
-- \ref ocv::extract_descriptors : extract descriptors with
-               <a href="http://docs.opencv.org/modules/features2d/doc/common_interfaces_of_descriptor_extractors.html#descriptorextractor">
-               cv::DescriptorExtractor</a>
 - \ref ocv::match_features : match features with
                <a href="http://docs.opencv.org/modules/features2d/doc/common_interfaces_of_descriptor_matchers.html#descriptormatcher">
                cv::DescriptorMatcher</a>
-- \ref ocv::draw_tracks : draw tracks on top of input imagery
-- \ref ocv::analyze_tracks : output various statistics about input feature tracks
 */
 }
