@@ -39,12 +39,17 @@
 #include <maptk/feature_set.h>
 #include <maptk/descriptor_set.h>
 #include <maptk/match_set.h>
+#include <maptk/logging_macros.h>
 
 #include <rsdl/rsdl_kd_tree.h>
 #include <vnl/vnl_vector_fixed.h>
 
 #include <limits>
 #include <boost/make_shared.hpp>
+
+
+#define LOGGING_PREFIX "match_features_constrained"
+
 
 namespace maptk
 {
@@ -131,7 +136,7 @@ public:
       }
     }
 
-    std::cout << "match_features_constrained found " << matches.size() << " matches.\n";
+    LOG_INFO( LOGGING_PREFIX, "Found " << matches.size() << " matches.");
   }
 
   double scale_thresh;
@@ -173,7 +178,7 @@ match_features_constrained
       maptk::algo::match_features::get_configuration();
 
   config->set_value("scale_thresh", d_->scale_thresh,
-                    "Ratio threshold of scales between matching keypoints"
+                    "Ratio threshold of scales between matching keypoints (>=1.0)"
                     " -1 turns scale thresholding off");
 
   config->set_value("angle_thresh", d_->angle_thresh,
@@ -203,9 +208,17 @@ bool
 match_features_constrained
 ::check_configuration(config_block_sptr config) const
 {
-  if (config->get_value<double>("radius_thresh", d_->radius_thresh) <= 0.0)
+  double radius_thresh = config->get_value<double>("radius_thresh", d_->radius_thresh);
+  if (radius_thresh <= 0.0)
   {
-    //TODO: output the error
+    LOG_ERROR( LOGGING_PREFIX, "radius_thresh should be > 0.0, is " << radius_thresh);
+    return false;
+  }
+  double scale_thresh = config->get_value<double>("scale_thresh", d_->scale_thresh);
+  if (scale_thresh < 1.0 && scale_thresh >= 0.0)
+  {
+    LOG_ERROR( LOGGING_PREFIX, "scale_thresh should be >= 1.0 (or < 0.0 to disable), is "
+                               << scale_thresh);
     return false;
   }
 
