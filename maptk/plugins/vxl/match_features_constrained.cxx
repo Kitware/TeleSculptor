@@ -232,7 +232,7 @@ match_features_constrained
 ::match(feature_set_sptr feat1, descriptor_set_sptr desc1,
         feature_set_sptr feat2, descriptor_set_sptr desc2) const
 {
-  if( !desc1 || !desc2 )
+  if( !feat1 || !feat2 || !desc1 || !desc2 )
   {
     return match_set_sptr();
   }
