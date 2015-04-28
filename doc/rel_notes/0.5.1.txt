@@ -17,3 +17,13 @@ Tools
 
 Fixes since v0.5.0
 ------------------
+
+Documentation
+
+ * Added missing algorithms on the MAP-Tk core mainpage and sorted existing
+   algorithms.
+
+ * Added missing documentation on the VXL module Doxygen main page for recently
+   added algorithms and containers and sorted the lists.
+
+  * Added missing algorithm on the OCV module Doxygen main page and sorted.
