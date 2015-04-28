@@ -18,29 +18,39 @@ The MAPTK vxl library provides various components by building on
 
 
 \subsection sec-vxl-containers Custom Containers
-- \ref vxl::image_container : holds an image in
-               <a href="http://public.kitware.com/vxl/doc/development/core/vil/html/classvil__image__view.html">
-               vil_image_view<vxl_byte></a> format
 - \ref vxl::camera_map : holds a map of cameras in
                <a href="http://public.kitware.com/vxl/doc/development/core/vpgl/html/classvpgl__perspective__camera.html">
                vpgl_perspective_camera<double></a> format
+- \ref vxl::image_container : holds an image in
+               <a href="http://public.kitware.com/vxl/doc/development/core/vil/html/classvil__image__view.html">
+               vil_image_view<vxl_byte></a> format
 
 
 \subsection sec-vxl-algorithm-impls Algorithm Implementations
-- \ref vxl::image_io : read and write images with
-               <a href="http://public.kitware.com/vxl/doc/development/core/vil/html/vil__load_8h.html">
-               vil_load()</a> and
-               <a href="http://public.kitware.com/vxl/doc/development/core/vil/html/vil__save_8h.html">
-               vil_save()</a>
+- \ref vxl::bundle_adjust : optimize cameras and landmarks using
+               <a href="http://public.kitware.com/vxl/doc/development/core/vpgl/html/classvpgl__bundle__adjust.html">
+               vpgl_bundle_adjust</a>
+- \ref vxl::close_loops_homography_guided : stitch feature tracks together when the same location is visited again
+- \ref vxl::estimate_essential_matrix : estimate an essential matrix with
+               <a href="http://public.kitware.com/vxl/doc/development/core/vpgl/html/classvpgl__em__compute__5__point__ransac.html">
+               vpgl_em_compute_5_point_ransac</a>
 - \ref vxl::estimate_homography : estimate a homography with
                <a href="http://public.kitware.com/vxl/doc/development/contrib/rpl/rrel/html/classrrel__homography2d__est.html">
                rrel_homography2d_est</a>
 - \ref vxl::estimate_similarity_transform : estimate a similarity transformation with
                <a href="http://public.kitware.com/vxl/doc/development/core/vgl/html/classvgl__compute__similarity__3d.html">
                vgl_compute_similarity_3d</a>
-- \ref vxl::bundle_adjust : optimize cameras and landmarks using
-               <a href="http://public.kitware.com/vxl/doc/development/core/vpgl/html/classvpgl__bundle__adjust.html">
-               vpgl_bundle_adjust</a>
-- \ref vxl::close_loops_homography_guided : stitch feature tracks together when the same location is visited again
+- \ref vxl::initialize_cameras_landmarks : initialize cameras and landmarks using other VXL algorithms
+- \ref vxl::image_io : read and write images with
+               <a href="http://public.kitware.com/vxl/doc/development/core/vil/html/vil__load_8h.html">
+               vil_load()</a> and
+               <a href="http://public.kitware.com/vxl/doc/development/core/vil/html/vil__save_8h.html">
+               vil_save()</a>
+- \ref vxl::optimize_cameras : optimize camera parameters using
+               <a href="http://public.kitware.com/vxl/doc/development/core/vpgl/html/classvpgl__optimize__camera.html">
+               vpgl_optimize_camera</a>
+- \ref vxl::triangulate_landmarks : triangulate landmarks using
+               <a href="http://public.kitware.com/vxl/doc/development/core/vpgl/html/classvpgl__triangulate__points.html">
+               vpgl_triangulate_points</a>
 */
 }
