@@ -76,6 +76,22 @@ public:
   {
   }
 
+  /// Compute the minimum angle between two angles in degrees
+  inline static
+  double angle_dist(double a1, double a2)
+  {
+    double d = a1 - a2;
+    if (d > 180.0)
+    {
+      d -= 360;
+    }
+    if (d < -180.0)
+    {
+      d += 360;
+    }
+    return fabs(d);
+  }
+
   void
   match(feature_set_sptr feat1, descriptor_set_sptr desc1,
         feature_set_sptr feat2, descriptor_set_sptr desc2,
@@ -118,7 +134,7 @@ public:
         int index = indices[j];
         maptk::feature_sptr f2 = feat2_vec[index];
         if ((scale_thresh <= 0.0  || std::max(f1->scale(),f2->scale())/std::min(f1->scale(),f2->scale()) <= scale_thresh) &&
-            (angle_thresh <= 0.0  || fabs(f2->angle() - f1->angle()) <= angle_thresh))
+            (angle_thresh <= 0.0  || angle_dist(f2->angle(), f1->angle()) <= angle_thresh))
         {
           vnl_vector<double> d2(desc2_vec[index]->as_double().data(), desc2_vec[index]->size());
           double dist = (d1 - d2).squared_magnitude();
