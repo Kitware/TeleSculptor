@@ -39,6 +39,7 @@
 
 #include <boost/algorithm/string/join.hpp>
 #include <boost/foreach.hpp>
+#include <boost/make_shared.hpp>
 
 #include <maptk/exceptions/algorithm.h>
 #include <maptk/homography.h>
@@ -124,8 +125,12 @@ match_features_homography
   // nested algorithm configurations
   algo::estimate_homography::get_nested_algo_configuration("homography_estimator",
                                                      config, h_estimator_);
-  algo::match_features::get_nested_algo_configuration("feature_matcher", config,
-                                                matcher_);
+  algo::match_features::get_nested_algo_configuration("feature_matcher1", config,
+                                                      matcher1_);
+  algo::match_features::get_nested_algo_configuration("feature_matcher2", config,
+                                                      matcher2_);
+  algo::filter_features::get_nested_algo_configuration("filter_features", config,
+                                                          feature_filter_);
 
   return config;
 }
@@ -143,8 +148,12 @@ match_features_homography
   // Set nested algorithm configurations
   algo::estimate_homography::set_nested_algo_configuration("homography_estimator",
                                                      config, h_estimator_);
-  algo::match_features::set_nested_algo_configuration("feature_matcher", config,
-                                                matcher_);
+  algo::match_features::set_nested_algo_configuration("feature_matcher1", config,
+                                                      matcher1_);
+  algo::match_features::set_nested_algo_configuration("feature_matcher2", config,
+                                                      matcher2_);
+  algo::filter_features::set_nested_algo_configuration("filter_features", config,
+                                                          feature_filter_);
 
   // Other parameters
   d_->inlier_scale = config->get_value<double>("inlier_scale");
@@ -156,10 +165,27 @@ bool
 match_features_homography
 ::check_configuration(config_block_sptr config) const
 {
+  bool config_valid = true;
+  // this algorithm is optional
+  if (config->has_value("filter_features") &&
+      config->get_value<std::string>("filter_features") != "" &&
+      !algo::filter_features::check_nested_algo_configuration("filter_features", config))
+  {
+    config_valid = false;
+  }
+  // this algorithm is optional
+  if (config->has_value("feature_matcher2") &&
+      config->get_value<std::string>("feature_matcher2") != "" &&
+      !algo::match_features::check_nested_algo_configuration("feature_matcher2", config))
+  {
+    config_valid = false;
+  }
   return (
     algo::estimate_homography::check_nested_algo_configuration("homography_estimator", config)
     &&
-    algo::match_features::check_nested_algo_configuration("feature_matcher", config)
+    algo::match_features::check_nested_algo_configuration("feature_matcher1", config)
+    &&
+    config_valid
   );
 }
 
@@ -170,19 +196,33 @@ match_features_homography
 ::match(feature_set_sptr feat1, descriptor_set_sptr desc1,
         feature_set_sptr feat2, descriptor_set_sptr desc2) const
 {
-  if( !matcher_ || !h_estimator_ )
+  if( !matcher1_ || !h_estimator_ )
   {
     return match_set_sptr();
   }
 
+  // filter features if a filter_features is set
+  feature_set_sptr src_feat;
+  descriptor_set_sptr src_desc;
+  if (feature_filter_.get())
+  {
+    std::pair<feature_set_sptr, descriptor_set_sptr> ret = feature_filter_->filter(feat1, desc1);
+    src_feat = ret.first;
+    src_desc = ret.second;
+  }
+  else
+  {
+    src_feat = feat1;
+    src_desc = desc1;
+  }
+
   // compute the initial matches
-  match_set_sptr init_matches = matcher_->match(feat1, desc1, feat2, desc2);
+  match_set_sptr init_matches = matcher1_->match(src_feat, src_desc, feat2, desc2);
 
   // estimate a homography from the initial matches
   std::vector<bool> inliers;
   homography_sptr H = h_estimator_->estimate(feat1, feat2, init_matches,
                                              inliers, d_->inlier_scale);
-  (void) H; // H not yet used, avoid compiler warning
   int inlier_count = static_cast<int>(std::count(inliers.begin(), inliers.end(), true));
   std::cout << "inlier ratio: " << inlier_count << "/" << inliers.size() << std::endl;
 
@@ -193,18 +233,39 @@ match_features_homography
     return match_set_sptr(new simple_match_set());
   }
 
-  // return correct matches (inliers)
-  std::vector<maptk::match> m = init_matches->matches();
-  std::vector<maptk::match> inlier_m;
-  for( unsigned int i=0; i<inliers.size(); ++i )
+  if( !matcher2_ )
   {
-    if( inliers[i] )
+    // return the subset of inlier matches
+    std::vector<maptk::match> m = init_matches->matches();
+    std::vector<maptk::match> inlier_m;
+    for( unsigned int i=0; i<inliers.size(); ++i )
     {
-      inlier_m.push_back(m[i]);
+      if( inliers[i] )
+      {
+        inlier_m.push_back(m[i]);
+      }
     }
+
+    return match_set_sptr(new simple_match_set(inlier_m));
   }
 
-  return match_set_sptr(new simple_match_set(inlier_m));
+  //deep copy and warp the original (non filtered) points
+  const std::vector<feature_sptr> &feat1_vec = feat1->features();
+  std::vector<feature_sptr> warped_feat1;
+  warped_feat1.reserve(feat1_vec.size());
+  homography_<double> Hd(*H);
+  for (unsigned int i = 0; i < feat1_vec.size(); i++)
+  {
+    feature_<double> f(*feat1_vec[i]);
+    f.set_loc(Hd.map_point(f.get_loc()));
+    warped_feat1.push_back(boost::make_shared<feature_<double> >(f));
+  }
+
+  feature_set_sptr warped_feat1_set =
+    boost::make_shared<simple_feature_set>(
+      simple_feature_set(warped_feat1));
+
+  return matcher2_->match(warped_feat1_set, desc1, feat2, desc2);
 }
 
 

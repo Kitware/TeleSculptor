@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,50 +30,56 @@
 
 /**
  * \file
- * \brief Defaults plugin algorithm registration interface impl
+ * \brief Instantiation of \link maptk::algo::algorithm_def algorithm_def<T>
+ *        \endlink for \link maptk::algo::filter_features
+ *        filter_features \endlink
  */
 
-#include "register_algorithms.h"
 
-#include <iostream>
-
-#include <maptk/logging_macros.h>
-#include <maptk/plugin_interface/algorithm_plugin_interface_macros.h>
-#include <maptk/plugins/core/close_loops_bad_frames_only.h>
-#include <maptk/plugins/core/close_loops_multi_method.h>
-#include <maptk/plugins/core/compute_ref_homography_core.h>
-#include <maptk/plugins/core/convert_image_bypass.h>
-#include <maptk/plugins/core/filter_features_magnitude.h>
-#include <maptk/plugins/core/hierarchical_bundle_adjust.h>
-#include <maptk/plugins/core/match_features_homography.h>
-#include <maptk/plugins/core/plugin_core_config.h>
-#include <maptk/plugins/core/track_features_core.h>
-
+#include <maptk/algo/filter_features.h>
+#include <maptk/algo/algorithm.txx>
+#include <boost/make_shared.hpp>
 
 namespace maptk
 {
 
-namespace core
+namespace algo
 {
 
-// Register core algorithms with the given or global registrar
-int register_algorithms(maptk::registrar &reg)
+
+feature_set_sptr
+filter_features
+::filter(feature_set_sptr feat) const
 {
-    REGISTRATION_INIT( reg );
-
-    REGISTER_TYPE( maptk::core::close_loops_bad_frames_only );
-    REGISTER_TYPE( maptk::core::close_loops_multi_method );
-    REGISTER_TYPE( maptk::core::compute_ref_homography_core );
-    REGISTER_TYPE( maptk::core::convert_image_bypass );
-    REGISTER_TYPE( maptk::core::filter_features_magnitude );
-    REGISTER_TYPE( maptk::core::hierarchical_bundle_adjust );
-    REGISTER_TYPE( maptk::core::match_features_homography );
-    REGISTER_TYPE( maptk::core::track_features_core );
-
-    REGISTRATION_SUMMARY();
-    return REGISTRATION_FAILURES();
+  std::vector<unsigned int> indices;
+  return filter(feat, indices);
 }
 
-} // end core namespace
 
-} // end maptk namespace
+std::pair<feature_set_sptr, descriptor_set_sptr>
+filter_features
+::filter( feature_set_sptr feat, descriptor_set_sptr descr) const
+{
+  std::vector<unsigned int> indices;
+  const std::vector<descriptor_sptr> &descr_vec = descr->descriptors();
+
+  feature_set_sptr filt_feat = filter(feat, indices);
+  std::vector<descriptor_sptr> filtered_descr;
+  filtered_descr.reserve(indices.size());
+
+  for (unsigned int i = 0; i < indices.size(); i++)
+  {
+    filtered_descr.push_back(descr_vec[indices[i]]);
+  }
+
+  descriptor_set_sptr filt_descr = boost::make_shared<maptk::simple_descriptor_set>(
+                                     maptk::simple_descriptor_set(filtered_descr));
+
+  return std::make_pair(filt_feat, filt_descr);
+}
+
+} // end namespace algo
+
+} // end namespace maptk
+
+INSTANTIATE_ALGORITHM_DEF(maptk::algo::filter_features);

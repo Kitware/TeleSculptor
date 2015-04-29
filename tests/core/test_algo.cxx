@@ -179,7 +179,7 @@ IMPLEMENT_TEST(track_features_check_config)
       );
   TEST_EQUAL(
       "param check 2",
-      cb->has_value("feature_matcher:homography_guided:feature_matcher:type"),
+      cb->has_value("feature_matcher:homography_guided:feature_matcher1:type"),
       true
       );
 

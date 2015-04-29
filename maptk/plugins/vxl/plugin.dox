@@ -46,6 +46,8 @@ The MAPTK vxl library provides various components by building on
                vil_load()</a> and
                <a href="http://public.kitware.com/vxl/doc/development/core/vil/html/vil__save_8h.html">
                vil_save()</a>
+- \ref vxl::match_features_constrained : match features constrained by a search
+               radius in location, orientation, and scale.
 - \ref vxl::optimize_cameras : optimize camera parameters using
                <a href="http://public.kitware.com/vxl/doc/development/core/vpgl/html/classvpgl__optimize__camera.html">
                vpgl_optimize_camera</a>
