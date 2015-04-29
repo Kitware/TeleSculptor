@@ -26,8 +26,6 @@ Core Library
  * Revised homography structures into objects that contain, rather than
    subclass, Eigen::Matrix.
 
-Main Library
-
  * Revised import/export logic in auto-generated plugin library code.
 
  * Redefined algorithm registration to allow for overwriting by label.
@@ -39,11 +37,28 @@ Main Library
    offer an introduction into what they will look like and how they will
    function.
 
+ * Added constructor from base class for feature_<T>.
+
+ * Added abstract base class for algorithm to filter a set of features
+   (filter_features).
+
 Core Plugin
 
  * Updated compute_ref_homog algorithm to allow additional constraints
    (minimum inliers, reference frame [non]regression)
 
+ * Added concrete algorithm to filter a feature set by magnitude of detector
+   response (filter_features_magnitude).
+
+ * Updated match_features_homography to allow two-pass feature matching with
+   (potentially) different matchers, a feature filter applied during the
+   first pass, and homography warping applied between the matchers.
+
+VXL Plugin
+
+ * Added a geometrically constrained feature matcher
+   (match_features_constrained) that uses a search radius on feature location
+   (and optionally scale and orientation) to limit search for matches.
 
 Fixes since last public release
 -------------------------------
