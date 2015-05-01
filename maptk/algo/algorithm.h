@@ -53,6 +53,11 @@ namespace maptk
 namespace algo
 {
 
+/// Forward declaration of algorithm
+class algorithm;
+/// Shared pointer to an algorithm
+typedef boost::shared_ptr<algorithm> algorithm_sptr;
+
 /// An abstract base class for all algorithms
 class MAPTK_LIB_EXPORT algorithm
 {
@@ -64,6 +69,9 @@ public:
 
   /// Return the name of this implementation
   virtual std::string impl_name() const = 0;
+
+  /// Returns a clone of this algorithm
+  virtual algorithm_sptr clone() const = 0;
 
   /// Get this algorithm's \link maptk::config_block configuration block \endlink
   /**
@@ -127,9 +135,6 @@ public:
   typedef boost::shared_ptr<Self> base_sptr;
 
   virtual ~algorithm_def() {}
-
-  /// Returns a clone of this algorithm
-  virtual base_sptr clone() const = 0;
 
   /// Returns an optional descriptive string for an implementation
   virtual std::string description() const = 0;
@@ -247,9 +252,9 @@ public:
   virtual ~algorithm_impl() {}
 
   /// Returns a clone of this algorithm
-  virtual base_sptr clone() const
+  virtual algorithm_sptr clone() const
   {
-    return base_sptr(new Self(static_cast<const Self&>(*this)));
+    return algorithm_sptr(new Self(static_cast<const Self&>(*this)));
   }
 
   /// Return an optional descriptive string for an implementation

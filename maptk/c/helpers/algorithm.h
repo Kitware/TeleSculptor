@@ -208,7 +208,8 @@ public:
       if( algo )                                                                \
       {                                                                         \
         maptk::algo::type##_sptr new_sptr =                                     \
-          maptk_c::ALGORITHM_##type##_SPTR_CACHE.get( algo )->clone();          \
+          boost::dynamic_pointer_cast<maptk::algo::type>(                       \
+            maptk_c::ALGORITHM_##type##_SPTR_CACHE.get( algo )->clone());       \
         if( new_sptr )                                                          \
         {                                                                       \
           maptk_c::ALGORITHM_SPTR_CACHE.store( new_sptr );                      \

@@ -81,7 +81,7 @@ algorithm_def<Self>
   {
     return inst;
   }
-  return inst->clone();
+  return boost::dynamic_pointer_cast<Self>(inst->clone());
 }
 
 
