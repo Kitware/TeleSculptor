@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,6 +48,64 @@ algorithm
 ::get_configuration() const
 {
   return config_block::empty_config(this->type_name());
+}
+
+
+algorithm_sptr
+algorithm
+::create(const std::string& type_name,
+         const std::string& impl_name)
+{
+  std::string qualified_name = type_name + ":" + impl_name;
+  algorithm_sptr inst = registrar::instance().find<algorithm>(qualified_name);
+  if (!inst)
+  {
+    return inst;
+  }
+  return inst->clone();
+}
+
+
+std::vector<std::string>
+algorithm
+::registered_names(const std::string& type_name)
+{
+  if( type_name == "" )
+  {
+    return registrar::instance().registered_names<algorithm>();
+  }
+  std::vector<std::string> type_reg_names;
+  const std::string prefix = type_name + ":";
+  BOOST_FOREACH( std::string qual_name,
+                 registrar::instance().registered_names<algorithm>() )
+  {
+    // if prefix is a prefix of qual_name, add it to the vector
+    if (qual_name.length() >= prefix.length() &&
+        std::equal(prefix.begin(), prefix.end(), qual_name.begin()))
+    {
+      type_reg_names.push_back(qual_name.substr(prefix.length()));
+    }
+  }
+  return type_reg_names;
+}
+
+
+bool
+algorithm
+::has_type_name(const std::string& type_name)
+{
+  std::vector<std::string> valid_names = algorithm::registered_names(type_name);
+  return !valid_names.empty();
+}
+
+
+bool
+algorithm
+::has_impl_name(const std::string& type_name,
+                const std::string& impl_name)
+{
+  std::vector<std::string> valid_names = algorithm::registered_names(type_name);
+  return std::find(valid_names.begin(), valid_names.end(), impl_name) != valid_names.end();
 }
 
 

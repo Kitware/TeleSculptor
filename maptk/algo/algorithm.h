@@ -73,6 +73,43 @@ public:
   /// Returns a clone of this algorithm
   virtual algorithm_sptr clone() const = 0;
 
+  /// Factory method to make an instance of an algorithm by type_name and impl_name
+  static algorithm_sptr create(const std::string& type_name,
+                               const std::string& impl_name);
+
+  /// Return a vector of the impl_name of each registered implementation for type_name
+  /**
+   * \param type_name Type name of algorithm for which to find all implementation names
+   *
+   * \note If type_name is not specified or is an empty string, this function
+   *       will return the all registered algorithms of any type.  The returned
+   *       names will be of the form "type_name:impl_name".  If type_name is
+   *       specified, the results will be of the form "impl_name".
+   */
+  static std::vector<std::string> registered_names(const std::string& type_name = "");
+
+  /// Check the given type name against registered algorithms
+  /**
+   * \param type_name Type name of algorithm to validate
+   * \returns true if the given \c type_name describes at least one valid
+   *          registered algorithm, or false if not.
+   *
+   * \note This algorithm returns false for an valid abstract type name if there
+   *       are no concrete instances registered with the plugin manager
+   */
+  static bool has_type_name(const std::string& type_name);
+
+  /// Check the given type and implementation names against registered algorithms
+  /**
+   * \param type_name Type name of algorithm to validate
+   * \param impl_name Implementation name of algorithm to validate
+   * \returns true if the given \c type_name and \c impl_name describe a valid
+   *          registered algorithm, or false if not.
+   */
+  static bool has_impl_name(const std::string& type_name,
+                            const std::string& impl_name);
+
+
   /// Get this algorithm's \link maptk::config_block configuration block \endlink
   /**
    * This base virtual function implementation returns an empty configuration
