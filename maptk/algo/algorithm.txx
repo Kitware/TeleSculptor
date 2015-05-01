@@ -66,7 +66,9 @@ algorithm_def<Self>
   {
     return false;
   }
-  return reg.register_item<Self>(inst->impl_name(), inst);
+  std::string qualified_name = inst->type_name() + ":" + inst->impl_name();
+  return reg.register_item<algorithm>(qualified_name, inst) &&
+         reg.register_item<Self>(inst->impl_name(), inst);
 }
 
 
