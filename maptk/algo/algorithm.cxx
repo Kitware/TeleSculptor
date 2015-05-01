@@ -108,6 +108,111 @@ algorithm
   return std::find(valid_names.begin(), valid_names.end(), impl_name) != valid_names.end();
 }
 
+/// Helper function for properly getting a nested algorithm's configuration
+void
+algorithm
+::get_nested_algo_configuration(std::string const& type_name,
+                                std::string const& name,
+                                config_block_sptr config,
+                                algorithm_sptr nested_algo)
+{
+  config_block_description_t type_comment =
+    "Algorithm to use for '" + name + "'.\n"
+    "Must be one of the following options:"
+    ;
+  std::string tmp_d;
+  BOOST_FOREACH( std::string reg_name, algorithm::registered_names(type_name) )
+  {
+    type_comment += "\n\t- " + reg_name;
+    std::string qualified_name = type_name + ":" + reg_name;
+    tmp_d = registrar::instance().find<algorithm>(qualified_name)->description();
+    if ( tmp_d != "" )
+    {
+      type_comment += " :: " + tmp_d;
+    }
+  }
+
+  if(nested_algo)
+  {
+    config->set_value(name + config_block::block_sep + "type",
+                      nested_algo->impl_name(),
+                      type_comment);
+    config->subblock_view(name + config_block::block_sep + nested_algo->impl_name())
+          ->merge_config(nested_algo->get_configuration());
+  }
+  else if (!config->has_value(name + config_block::block_sep + "type"))
+  {
+    config->set_value(name + config_block::block_sep + "type",
+                      "",
+                      type_comment);
+  }
+}
+
+
+/// Helper macro for properly setting a nested algorithm's configuration
+void
+algorithm
+::set_nested_algo_configuration(std::string const& type_name,
+                                std::string const& name,
+                                config_block_sptr config,
+                                algorithm_sptr &nested_algo)
+{
+  if(config->has_value(name + config_block::block_sep + "type"))
+  {
+
+    std::string iname = config->get_value<std::string>(name
+                                                       + config_block::block_sep
+                                                       + "type");
+    if(algorithm::has_impl_name(type_name, iname))
+    {
+      nested_algo = algorithm::create(type_name, iname);
+      nested_algo->set_configuration(
+        config->subblock_view(name + config_block::block_sep + iname)
+      );
+    }
+  }
+}
+
+
+/// Helper macro for checking that basic nested algorithm configuration is valid
+bool
+algorithm
+::check_nested_algo_configuration(std::string const& type_name,
+                                  std::string const& name,
+                                  config_block_sptr config)
+{
+  const std::string type_key = name + config_block::block_sep + "type";
+  if(!config->has_value(type_key))
+  {
+    std::cerr << "Configuration Failure: missing value "
+              << type_key << std::endl;
+    return false;
+  }
+  std::string iname = config->get_value<std::string>(type_key);
+  if(!algorithm::has_impl_name(type_name, iname))
+  {
+    std::cerr << "Configuration Failure: invalid option\n"
+              << "   " << type_key << " = "<< iname << "\n"
+              << "   valid options are";
+    BOOST_FOREACH( std::string reg_name, algorithm::registered_names(type_name) )
+    {
+      std::cerr << "\n      " << reg_name;
+    }
+    std::cerr << std::endl;
+    return false;
+  }
+  // retursively check the configuration of the sub-algorithm
+  std::string qualified_name = type_name + ":" + iname;
+  if( !registrar::instance().find<algorithm>(qualified_name)->check_configuration(
+          config->subblock_view(name + config_block::block_sep + iname)))
+  {
+    std::cerr << "Configuration Failure Backtrace: "
+              << name + config_block::block_sep + iname << std::endl;
+    return false;
+  }
+  return true;
+}
+
 
 } // end namespace algo
 
