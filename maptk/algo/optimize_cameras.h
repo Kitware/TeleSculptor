@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,7 +56,7 @@ class MAPTK_LIB_EXPORT optimize_cameras
 {
 public:
   /// Return the name of this algorithm definition
-  virtual std::string type_name() const { return "optimize_cameras"; }
+  static std::string static_type_name() { return "optimize_cameras"; }
 
   /// Optimize camera parameters given sets of landmarks and tracks
   /**

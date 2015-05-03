@@ -66,7 +66,7 @@ class MAPTK_LIB_EXPORT compute_ref_homography
 public:
 
   /// Return the name of this algorithm
-  virtual std::string type_name() const { return "compute_ref_homography"; }
+  static std::string static_type_name() { return "compute_ref_homography"; }
 
   /// Estimate the transformation which maps some frame to a reference frame
   /**

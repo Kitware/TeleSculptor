@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -60,7 +60,7 @@ public:
   typedef std::ostream stream_t;
 
   /// Return the name of this algorithm.
-  virtual std::string type_name() const { return "analyze_tracks"; }
+  static std::string static_type_name() { return "analyze_tracks"; }
 
   /// Output various information about the tracks stored in the input set.
   /**

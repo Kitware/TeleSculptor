@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,7 +54,7 @@ public:
   geo_map() {}
 
   /// Return the name of this algorithm
-  virtual std::string type_name() const { return "geo_map"; }
+  static std::string static_type_name() { return "geo_map"; }
 
   /// Convert UTM coordinate into latitude and longitude.
   /**

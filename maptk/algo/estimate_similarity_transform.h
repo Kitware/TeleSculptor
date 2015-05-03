@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -60,7 +60,7 @@ class MAPTK_LIB_EXPORT estimate_similarity_transform
 {
 public:
   /// Name of this algo definition
-  virtual std::string type_name() const { return "estimate_similarity_transform"; }
+  static std::string static_type_name() { return "estimate_similarity_transform"; }
 
   /// Estimate the similarity transform between two corresponding point sets
   /**

@@ -58,7 +58,7 @@ class MAPTK_LIB_EXPORT filter_features
 public:
 
   /// Return the name of this algorithm.
-  virtual std::string type_name() const { return "filter_features"; }
+  static std::string static_type_name() { return "filter_features"; }
 
   /// Filter a feature set and return a subset of the features
   /**

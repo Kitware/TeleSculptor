@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,7 +58,7 @@ class MAPTK_LIB_EXPORT estimate_essential_matrix
 {
 public:
   /// Return the name of this algorithm
-  std::string type_name() const { return "estimate_essential_matrix"; }
+  static std::string static_type_name() { return "estimate_essential_matrix"; }
 
   /// Estimate an essential matrix from corresponding features
   /**

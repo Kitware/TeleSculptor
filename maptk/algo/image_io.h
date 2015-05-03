@@ -62,7 +62,7 @@ public:
   virtual ~image_io() {}
 
   /// Return the name of this algorithm
-  virtual std::string type_name() const { return "image_io"; }
+  static std::string static_type_name() { return "image_io"; }
 
   /// Load image image from the file
   /**

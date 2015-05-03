@@ -246,6 +246,9 @@ public:
   /// Return a vector of the impl_name of each registered implementation
   static std::vector<std::string> registered_names();
 
+  /// Return the name of this algorithm.
+  virtual std::string type_name() const { return Self::static_type_name(); }
+
   /// Check the given name against registered implementation names
   /**
    * If the given name is not a valid implementation name.

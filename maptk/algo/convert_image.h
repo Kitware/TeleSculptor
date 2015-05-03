@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,7 +51,7 @@ class MAPTK_LIB_EXPORT convert_image
 {
 public:
   /// Return the name of this algorithm
-  virtual std::string type_name() const { return "convert_image"; }
+  static std::string static_type_name() { return "convert_image"; }
 
   /// Set this algorithm's properties via a config block
   virtual void set_configuration(config_block_sptr config);

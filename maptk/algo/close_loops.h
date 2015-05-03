@@ -65,7 +65,7 @@ class MAPTK_LIB_EXPORT close_loops
 public:
 
   /// Return the name of this algorithm.
-  virtual std::string type_name() const { return "close_loops"; }
+  static std::string static_type_name() { return "close_loops"; }
 
   /// Attempt to perform closure operation and stitch tracks together.
   /**
