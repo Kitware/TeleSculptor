@@ -46,6 +46,9 @@
 #include <vil/vil_save.h>
 
 
+#define LOGGING_PREFIX "maptk::vxl::image_io"
+
+
 namespace maptk
 {
 
@@ -153,6 +156,26 @@ bool
 image_io
 ::check_configuration(config_block_sptr config) const
 {
+  double auto_stretch = config->get_value<bool>("auto_stretch",
+                                                d_->auto_stretch);
+  double manual_stretch = config->get_value<bool>("manual_stretch",
+                                                  d_->manual_stretch);
+  if( auto_stretch && manual_stretch)
+  {
+    LOG_ERROR(LOGGING_PREFIX, "can not enable both manual and auto stretching");
+    return false;
+  }
+  if( manual_stretch )
+  {
+    vector_2d range = config->get_value<vector_2d>("intensity_range",
+                                        d_->intensity_range.transpose());
+    if( range[0] >= range[1] )
+    {
+      LOG_ERROR(LOGGING_PREFIX, "stretching range minimum not less than maximum"
+                <<" ("<<range[0]<<", "<<range[1]<<")");
+      return false;
+    }
+  }
   return true;
 }
 
@@ -162,7 +185,7 @@ image_container_sptr
 image_io
 ::load_(const std::string& filename) const
 {
-  LOG_DEBUG( "maptk::vxl::image_io::load",
+  LOG_DEBUG( LOGGING_PREFIX,
              "Loading image from file: " << filename );
 
   vil_image_resource_sptr img_rsc = vil_load_image_resource(filename.c_str());
@@ -213,7 +236,7 @@ image_io
     }
     else if( d_->manual_stretch )
     {
-      LOG_ERROR("maptk::vxl::image_io::load",
+      LOG_ERROR(LOGGING_PREFIX,
                 "unable to manually stretch pixel type: "
                 << img_rsc->pixel_format());
       throw image_exception();
