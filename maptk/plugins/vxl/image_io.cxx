@@ -57,15 +57,18 @@ class image_io::priv
 public:
   /// Constructor
   priv()
-  : intensity_range(0, 0)
+  : auto_stretch(false),
+    intensity_range(0, 0)
   {
   }
 
   priv(const priv& other)
-  : intensity_range(other.intensity_range)
+  : auto_stretch(other.auto_stretch),
+    intensity_range(other.intensity_range)
   {
   }
 
+  bool auto_stretch;
   vector_2d intensity_range;
 };
 
@@ -101,6 +104,12 @@ image_io
 {
   // get base config from base class
   config_block_sptr config = maptk::algo::image_io::get_configuration();
+
+  config->set_value("auto_stretch", d_->auto_stretch,
+                    "Dynamically stretch the range of the input data such that "
+                    "the minimum and maximum pixel values in the data map to "
+                    "0 and 255 in the byte image.  Warning, this can result in "
+                    "brightness and constrast varying between images.");
   config->set_value("intensity_range", d_->intensity_range,
                     "The range of intensity values (min, max) to stretch into "
                     "the byte range.  This is most useful when e.g. 12-bit "
@@ -119,6 +128,8 @@ image_io
   config_block_sptr config = this->get_configuration();
   config->merge_config(in_config);
 
+  d_->auto_stretch = config->get_value<bool>("auto_stretch",
+                                              d_->auto_stretch);
   d_->intensity_range = config->get_value<vector_2d>("intensity_range",
                                         d_->intensity_range.transpose());
 }
@@ -143,23 +154,52 @@ image_io
 
   vil_image_resource_sptr img_rsc = vil_load_image_resource(filename.c_str());
   vil_image_view<vxl_byte> img;
+
+#define DO_CASE(T)                                                     \
+  case T:                                                              \
+    {                                                                  \
+      typedef vil_pixel_format_type_of<T >::component_type pix_t;      \
+      vil_image_view<pix_t> img_pix_t = img_rsc->get_view();           \
+      if( d_->auto_stretch )                                           \
+      {                                                                \
+        vil_convert_stretch_range(img_pix_t, img);                     \
+      }                                                                \
+      else                                                             \
+      {                                                                \
+        pix_t minv = static_cast<pix_t>(d_->intensity_range[0]);       \
+        pix_t maxv = static_cast<pix_t>(d_->intensity_range[1]);       \
+        vil_convert_stretch_range_limited(img_pix_t, img, minv, maxv); \
+      }                                                                \
+    }                                                                  \
+    break;                                                             \
+
   switch (img_rsc->pixel_format())
   {
-  case VIL_PIXEL_FORMAT_BOOL:
-    // If a boolean image, true-value pixls are represented in the
-    // vxl_byte image as 1's.
-    img = vil_convert_cast(vxl_byte(), img_rsc->get_view());
-    break;
-  case VIL_PIXEL_FORMAT_UINT_16:
-    {
-      vil_image_view<vxl_uint_16> img16 = img_rsc->get_view();
-      vxl_uint_16 minv = d_->intensity_range[0], maxv = d_->intensity_range[1];
-      vil_convert_stretch_range_limited(img16, img, minv, maxv);
-    }
-    break;
+    DO_CASE(VIL_PIXEL_FORMAT_BOOL);
+    DO_CASE(VIL_PIXEL_FORMAT_BYTE);
+    DO_CASE(VIL_PIXEL_FORMAT_SBYTE);
+    DO_CASE(VIL_PIXEL_FORMAT_UINT_16);
+    DO_CASE(VIL_PIXEL_FORMAT_INT_16);
+    DO_CASE(VIL_PIXEL_FORMAT_UINT_32);
+    DO_CASE(VIL_PIXEL_FORMAT_INT_32);
+    DO_CASE(VIL_PIXEL_FORMAT_UINT_64);
+    DO_CASE(VIL_PIXEL_FORMAT_INT_64);
+    DO_CASE(VIL_PIXEL_FORMAT_FLOAT);
+    DO_CASE(VIL_PIXEL_FORMAT_DOUBLE);
+
   default:
-    img = img_rsc->get_view();
+    if( d_->auto_stretch )
+    {
+      // automatically stretch to fill the byte range using the
+      // minimum and maximum pixel values
+      img = vil_convert_stretch_range(vxl_byte(), img_rsc->get_view());
+    }
+    else
+    {
+      img = vil_convert_cast(vxl_byte(), img_rsc->get_view());
+    }
   }
+#undef DO_CASE
   return image_container_sptr(new vxl::image_container(img));
 
   LOG_DEBUG( "maptk::vxl::image_io::load",
