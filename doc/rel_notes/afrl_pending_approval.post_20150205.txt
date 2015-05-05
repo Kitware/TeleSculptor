@@ -60,8 +60,9 @@ VXL Plugin
    (match_features_constrained) that uses a search radius on feature location
    (and optionally scale and orientation) to limit search for matches.
 
- * Added handling of 12-bit input images during loading by scaling to 8-bit
-   range
+ * Added parameters to the image_io load function to allow stretching of the
+   image intensity range, either automatically or with a manually specified
+   range.  This is useful for handling 12-bit or 16-bit images, for example.
 
 
 Fixes since last public release
