@@ -197,19 +197,35 @@ algorithm_def<Self>
 ::check_nested_algo_configuration(std::string const& name,
                                   config_block_sptr config)
 {
-  if(!config->has_value(name + config_block::block_sep + "type"))
+  const std::string type_key = name + config_block::block_sep + "type";
+  if(!config->has_value(type_key))
   {
+    std::cerr << "Configuration Failure: missing value "
+              << type_key << std::endl;
     return false;
   }
-  std::string iname = config->get_value<std::string>(name + config_block::block_sep + "type");
+  std::string iname = config->get_value<std::string>(type_key);
   if(!algorithm_def<Self>::has_impl_name(iname))
   {
+    std::cerr << "Configuration Failure: invalid option\n"
+              << "   " << type_key << " = "<< iname << "\n"
+              << "   valid options are";
+    BOOST_FOREACH( std::string reg_name, algorithm_def<Self>::registered_names() )
+    {
+      std::cerr << "\n      " << reg_name;
+    }
+    std::cerr << std::endl;
     return false;
   }
   // retursively check the configuration of the sub-algorithm
-  return registrar::instance().find<Self>(iname)->check_configuration(
-    config->subblock_view(name + config_block::block_sep + iname)
-  );
+  if( !registrar::instance().find<Self>(iname)->check_configuration(
+          config->subblock_view(name + config_block::block_sep + iname)))
+  {
+    std::cerr << "Configuration Failure Backtrace: "
+              << name + config_block::block_sep + iname << std::endl;
+    return false;
+  }
+  return true;
 }
 
 } // end namespace algo

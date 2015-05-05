@@ -42,6 +42,9 @@ Core Library
  * Added abstract base class for algorithm to filter a set of features
    (filter_features).
 
+ * Added verbose output during configuration check failure to make it easy
+   to track down errors in configuration files.
+
 Core Plugin
 
  * Updated compute_ref_homog algorithm to allow additional constraints
