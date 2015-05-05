@@ -39,6 +39,7 @@
 #include <maptk/plugins/vxl/image_container.h>
 #include <maptk/eigen_io.h>
 #include <maptk/vector.h>
+#include <maptk/exceptions/image.h>
 
 #include <vil/vil_convert.h>
 #include <vil/vil_load.h>
@@ -58,17 +59,20 @@ public:
   /// Constructor
   priv()
   : auto_stretch(false),
+    manual_stretch(false),
     intensity_range(0, 0)
   {
   }
 
   priv(const priv& other)
   : auto_stretch(other.auto_stretch),
+    manual_stretch(other.manual_stretch),
     intensity_range(other.intensity_range)
   {
   }
 
   bool auto_stretch;
+  bool manual_stretch;
   vector_2d intensity_range;
 };
 
@@ -110,10 +114,17 @@ image_io
                     "the minimum and maximum pixel values in the data map to "
                     "0 and 255 in the byte image.  Warning, this can result in "
                     "brightness and constrast varying between images.");
-  config->set_value("intensity_range", d_->intensity_range,
-                    "The range of intensity values (min, max) to stretch into "
-                    "the byte range.  This is most useful when e.g. 12-bit "
-                    "data is encoded in 16-bit pixels");
+  config->set_value("manual_stretch", d_->manual_stretch,
+                    "Manually stretch the range of the input data by "
+                    "specifying the minimum and maximum values of the data "
+                    "to map to the full byte range");
+  if( d_->manual_stretch )
+  {
+    config->set_value("intensity_range", d_->intensity_range.transpose(),
+                      "The range of intensity values (min, max) to stretch into "
+                      "the byte range.  This is most useful when e.g. 12-bit "
+                      "data is encoded in 16-bit pixels");
+  }
   return config;
 }
 
@@ -130,6 +141,8 @@ image_io
 
   d_->auto_stretch = config->get_value<bool>("auto_stretch",
                                               d_->auto_stretch);
+  d_->manual_stretch = config->get_value<bool>("manual_stretch",
+                                              d_->manual_stretch);
   d_->intensity_range = config->get_value<vector_2d>("intensity_range",
                                         d_->intensity_range.transpose());
 }
@@ -164,11 +177,15 @@ image_io
       {                                                                \
         vil_convert_stretch_range(img_pix_t, img);                     \
       }                                                                \
-      else                                                             \
+      else if( d_->manual_stretch )                                    \
       {                                                                \
         pix_t minv = static_cast<pix_t>(d_->intensity_range[0]);       \
         pix_t maxv = static_cast<pix_t>(d_->intensity_range[1]);       \
         vil_convert_stretch_range_limited(img_pix_t, img, minv, maxv); \
+      }                                                                \
+      else                                                             \
+      {                                                                \
+        vil_convert_cast(img_pix_t, img);                              \
       }                                                                \
     }                                                                  \
     break;                                                             \
@@ -193,6 +210,13 @@ image_io
       // automatically stretch to fill the byte range using the
       // minimum and maximum pixel values
       img = vil_convert_stretch_range(vxl_byte(), img_rsc->get_view());
+    }
+    else if( d_->manual_stretch )
+    {
+      LOG_ERROR("maptk::vxl::image_io::load",
+                "unable to manually stretch pixel type: "
+                << img_rsc->pixel_format());
+      throw image_exception();
     }
     else
     {
