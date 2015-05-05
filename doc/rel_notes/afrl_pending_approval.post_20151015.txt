@@ -98,6 +98,10 @@ OCV Plugin
  * Images are now mapped so that the first channel of the vital::image view is
    red (RGB) rather than blue (BGR).
 
+ * Added initial support for OpenCV version 3.0.  It compiles, but there are
+   still issues with instantiating algorithms from string names.  OpenCV 2.4.X
+   continues to be supported for X >= 6 and works as it did before.
+
 SketchUp Plugin
 
  * Added a new plugin (Ruby scripts) for the SketchUp 3D Modeling software
