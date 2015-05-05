@@ -27,3 +27,7 @@ Documentation
    added algorithms and containers and sorted the lists.
 
   * Added missing algorithm on the OCV module Doxygen main page and sorted.
+
+OCV Plugin
+
+  * Flipped repective returns in width/height getter methods.
