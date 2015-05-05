@@ -248,15 +248,6 @@ image_io
   }
 #undef DO_CASE
   return image_container_sptr(new vxl::image_container(img));
-
-  LOG_DEBUG( "maptk::vxl::image_io::load",
-             "Image stats (" << filename << "):" << std::endl <<
-             "\tni: " << img.ni() << std::endl <<
-             "\tnj: " << img.nj() << std::endl <<
-             "\tnplanes: " << img.nplanes() << std::endl <<
-             "\tsize: " << img.size()
-             );
-  return image_container_sptr(new vxl::image_container(img));
 }
 
 
