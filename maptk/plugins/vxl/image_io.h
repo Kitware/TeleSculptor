@@ -39,6 +39,7 @@
 #include <maptk/algo/image_io.h>
 #include <maptk/plugins/vxl/vxl_config.h>
 
+#include <boost/scoped_ptr.hpp>
 
 namespace maptk
 {
@@ -51,14 +52,24 @@ class MAPTK_VXL_EXPORT image_io
   : public algo::algorithm_impl<image_io, algo::image_io>
 {
 public:
+  /// Constructor
+  image_io();
+
+  /// Destructor
+  virtual ~image_io();
+
+  /// Copy Constructor
+  image_io(const image_io& other);
+
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "vxl"; }
 
-  // No configuration yet for this class
-  /// \cond DoxygenSuppress
-  virtual void set_configuration(config_block_sptr /*config*/) { }
-  virtual bool check_configuration(config_block_sptr /*config*/) const { return true; }
-  /// \endcond
+  /// Get this algorithm's \link maptk::config_block configuration block \endlink
+  virtual config_block_sptr get_configuration() const;
+  /// Set this algorithm's properties via a config block
+  virtual void set_configuration(config_block_sptr config);
+  /// Check that the algorithm's currently configuration is valid
+  virtual bool check_configuration(config_block_sptr config) const;
 
 private:
   /// Implementation specific load functionality.
@@ -78,6 +89,10 @@ private:
    */
   virtual void save_(const std::string& filename,
                      image_container_sptr data) const;
+
+  /// private implementation class
+  class priv;
+  boost::scoped_ptr<priv> d_;
 };
 
 } // end namespace vxl
