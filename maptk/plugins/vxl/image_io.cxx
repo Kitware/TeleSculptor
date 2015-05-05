@@ -60,7 +60,7 @@ public:
   priv()
   : auto_stretch(false),
     manual_stretch(false),
-    intensity_range(0, 0)
+    intensity_range(0, 255)
   {
   }
 
