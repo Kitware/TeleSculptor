@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -79,10 +79,10 @@ public:
   virtual size_t size() const;
 
   /// The width of the image in pixels
-  virtual size_t width() const { return data_.rows; }
+  virtual size_t width() const { return data_.cols; }
 
   /// The height of the image in pixels
-  virtual size_t height() const { return data_.cols; }
+  virtual size_t height() const { return data_.rows; }
 
   /// The depth (or number of channels) of the image
   virtual size_t depth() const { return data_.channels(); }
