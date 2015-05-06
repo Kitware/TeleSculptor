@@ -76,7 +76,7 @@ public:
   /// Returns a clone of this algorithm
   virtual algorithm_sptr clone() const = 0;
 
-  /// Factory method to make an instance of anexceptions algorithm by type_name and impl_name
+  /// Factory method to make an instance of an algorithm by type_name and impl_name
   static algorithm_sptr create(const std::string& type_name,
                                const std::string& impl_name);
 
