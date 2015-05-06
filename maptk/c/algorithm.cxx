@@ -317,7 +317,10 @@ maptk_algorithm_clone( maptk_algorithm_t *algo,
 {
   STANDARD_CATCH(
     "C::algorithm::clone", eh,
-
+    if( algo == NULL )
+    {
+      return NULL;
+    }
     maptk::algo::algorithm_sptr clone_sptr =
       maptk_c::ALGORITHM_SPTR_CACHE.get( algo )->clone();
     maptk_c::ALGORITHM_SPTR_CACHE.store( clone_sptr );

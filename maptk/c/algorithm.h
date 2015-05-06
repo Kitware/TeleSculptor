@@ -287,6 +287,9 @@ maptk_algorithm_check_impl_configuration( maptk_algorithm_t *algo,
 
 /// Clone the given algorithm instance
 /**
+ * If a NULL pointer is given, a NULL pointer is returned, as there is nothing
+ * to clone.
+ *
  * \param algo The algorithm instance to clone.
  * \param eh Error handle instance pointer.
  * \return The new, cloned algorithm instance pointer.
