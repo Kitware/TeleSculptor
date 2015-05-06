@@ -42,10 +42,6 @@
 #include <maptk/c/helpers/track_set.h>
 
 
-/// Common API implementation
-DEFINE_COMMON_ALGO_API( track_features );
-
-
 /// Extend a previous set of tracks using the current frame
 maptk_trackset_t*
 maptk_algorithm_track_features_track( maptk_algorithm_t *algo,
@@ -54,15 +50,18 @@ maptk_algorithm_track_features_track( maptk_algorithm_t *algo,
                                       maptk_image_container_t *ic,
                                       maptk_error_handle_t *eh )
 {
-  STANDARD_CATCH(
-    "C::algorithm::track_features::track", eh,
+  ALGO_STANDARD_CATCH(
+    "C::algorithm::track_features::track", eh, algo, "track_features",
     using namespace maptk_c;
-    maptk::track_set_sptr ts_sptr =
-      ALGORITHM_track_features_SPTR_CACHE.get( algo )->track(
-        TRACK_SET_SPTR_CACHE.get( prev_tracks ),
-        frame_num,
-        IMGC_SPTR_CACHE.get( ic )
+    maptk::algo::track_features_sptr tf_sptr =
+      boost::dynamic_pointer_cast<maptk::algo::track_features>(
+        ALGORITHM_SPTR_CACHE.get( algo )
       );
+    maptk::track_set_sptr ts_sptr = tf_sptr->track(
+      TRACK_SET_SPTR_CACHE.get( prev_tracks ),
+      frame_num,
+      IMGC_SPTR_CACHE.get( ic )
+    );
     TRACK_SET_SPTR_CACHE.store( ts_sptr );
     return reinterpret_cast<maptk_trackset_t*>( ts_sptr.get() );
   );
@@ -79,16 +78,19 @@ maptk_algorithm_track_features_track_with_mask( maptk_algorithm_t *algo,
                                                 maptk_image_container_t *mask,
                                                 maptk_error_handle_t *eh )
 {
-  STANDARD_CATCH(
-    "C::algorithm::track_features::track", eh,
+  ALGO_STANDARD_CATCH(
+    "C::algorithm::track_features::track", eh, algo, "track_features",
     using namespace maptk_c;
-    maptk::track_set_sptr ts_sptr =
-      ALGORITHM_track_features_SPTR_CACHE.get( algo )->track(
-        TRACK_SET_SPTR_CACHE.get( prev_tracks ),
-        frame_num,
-        IMGC_SPTR_CACHE.get( ic ),
-        IMGC_SPTR_CACHE.get( mask )
+    maptk::algo::track_features_sptr tf_sptr =
+      boost::dynamic_pointer_cast<maptk::algo::track_features>(
+        ALGORITHM_SPTR_CACHE.get( algo )
       );
+    maptk::track_set_sptr ts_sptr = tf_sptr->track(
+      TRACK_SET_SPTR_CACHE.get( prev_tracks ),
+      frame_num,
+      IMGC_SPTR_CACHE.get( ic ),
+      IMGC_SPTR_CACHE.get( mask )
+    );
     TRACK_SET_SPTR_CACHE.store( ts_sptr );
     return reinterpret_cast<maptk_trackset_t*>( ts_sptr.get() );
   );

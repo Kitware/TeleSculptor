@@ -108,7 +108,7 @@
       }                                                         \
       catch(...)                                                \
       {                                                         \
-        std::string msg("Caught other exception");              \
+        std::string msg("Caught unknown exception");            \
         LOG_DEBUG( log_prefix, msg );                           \
         POPULATE_EH( eh_ptr, -1, msg.c_str() );                 \
       }                                                         \

@@ -46,10 +46,6 @@ extern "C"
 #include <maptk/c/image_container.h>
 
 
-/// Declare common type-specific functions
-DECLARE_COMMON_ALGO_API( image_io );
-
-
 /// Load image from file
 /**
  * \param algo Opaque pointer to algorithm instance.

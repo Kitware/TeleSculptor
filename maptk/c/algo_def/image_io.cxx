@@ -40,18 +40,17 @@
 #include <maptk/c/helpers/image_container.h>
 
 
-DEFINE_COMMON_ALGO_API( image_io );
-
-
 /// Load image from file
 maptk_image_container_t* maptk_algorithm_image_io_load( maptk_algorithm_t *algo,
                                                         char const *filename,
                                                         maptk_error_handle_t *eh )
 {
-  STANDARD_CATCH(
-    "C::algorithm::image_io::load", eh,
+  ALGO_STANDARD_CATCH(
+    "C::algorithm::image_io::load", eh, algo, "image_io",
     maptk::image_container_sptr ic_sptr =
-        maptk_c::ALGORITHM_image_io_SPTR_CACHE.get( algo )->load( filename );
+      boost::dynamic_pointer_cast<maptk::algo::image_io>(
+        maptk_c::ALGORITHM_SPTR_CACHE.get( algo )
+      )->load( filename );
     maptk_c::IMGC_SPTR_CACHE.store( ic_sptr );
     return reinterpret_cast<maptk_image_container_t*>( ic_sptr.get() );
   );
@@ -65,9 +64,11 @@ void maptk_algorithm_image_io_save( maptk_algorithm_t *algo,
                                     maptk_image_container_t *ic,
                                     maptk_error_handle_t *eh )
 {
-  STANDARD_CATCH(
-    "C::algorithm::image_io::save", eh,
+  ALGO_STANDARD_CATCH(
+    "C::algorithm::image_io::save", eh, algo, "image_io",
     maptk::image_container_sptr ic_sptr = maptk_c::IMGC_SPTR_CACHE.get(ic);
-    maptk_c::ALGORITHM_image_io_SPTR_CACHE.get( algo )->save( filename, ic_sptr );
+    boost::dynamic_pointer_cast<maptk::algo::image_io>(
+      maptk_c::ALGORITHM_SPTR_CACHE.get( algo )
+    )->save( filename, ic_sptr );
   );
 }
