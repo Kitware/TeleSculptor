@@ -43,22 +43,10 @@ from maptk.exceptions.base import MaptkNullPointerException
 from maptk.util import MaptkObject, MaptkErrorHandle
 
 
-# noinspection PyPep8Naming
-class _maptk_algorithm_t (ctypes.Structure):
-    """
-    Opaque structure type used in C interface.
-    """
-    pass
-
-
 class MaptkAlgorithm (MaptkObject):
     """
     Base class for MAPTK algorithms
     """
-    # Subclass defined type string as would be returned by
-    # maptk::algo::*::type_name. This allows this base class to know how to
-    # automatically call common algorithm_def level methods.
-    TYPE_NAME = None
 
     @classmethod
     def from_c_pointer(cls, ptr, shallow_copy_of=None, name=None):
@@ -111,29 +99,31 @@ class MaptkAlgorithm (MaptkObject):
             class
 
         """
-        if cls.TYPE_NAME is None:
-            raise AttributeError("Derived class did not define TYPE_NAME, "
-                                 "which is required in order to know what to "
-                                 "call in the C API.")
-
-        return cls.TYPE_NAME
+        raise NotImplementedError("Subclass must define type_name() class "
+                                  "method.")
 
     @classmethod
     def registered_names(cls):
         """
         :return: list of string implementation names currently registered
         """
-        algo_reg_names = cls.MAPTK_LIB['maptk_algorithm_%s_registered_names'
-                                       % cls.type_name()]
-        sl_free = cls.MAPTK_LIB.maptk_common_free_string_list
+        algo_reg_names = cls.MAPTK_LIB['maptk_algorithm_registered_names']
+        algo_reg_names.argtypes = [ctypes.c_char_p,
+                                   ctypes.POINTER(ctypes.c_uint),
+                                   ctypes.POINTER(ctypes.POINTER(ctypes.c_char_p)),
+                                   MaptkErrorHandle.C_TYPE_PTR]
 
-        algo_reg_names.argtypes = [ctypes.POINTER(ctypes.c_uint),
-                                   ctypes.POINTER(ctypes.POINTER(ctypes.c_char_p))]
+        sl_free = cls.MAPTK_LIB.maptk_common_free_string_list
         sl_free.argtypes = [ctypes.c_uint, ctypes.POINTER(ctypes.c_char_p)]
 
         length = ctypes.c_uint(0)
         names = ctypes.POINTER(ctypes.c_char_p)()
-        algo_reg_names(ctypes.byref(length), ctypes.byref(names))
+
+        with MaptkErrorHandle() as eh:
+            algo_reg_names(cls.type_name(),
+                           ctypes.byref(length),
+                           ctypes.byref(names),
+                           eh)
 
         # Constructing return array
         r = []
@@ -166,16 +156,17 @@ class MaptkAlgorithm (MaptkObject):
         :rtype: cls
 
         """
-        algo_create = cls.MAPTK_LIB['maptk_algorithm_%s_create'
-                                    % cls.type_name()]
-        algo_create.argtypes = [ctypes.c_char_p]
+        algo_create = cls.MAPTK_LIB['maptk_algorithm_create']
+        algo_create.argtypes = [ctypes.c_char_p, ctypes.c_char_p,
+                                MaptkErrorHandle.C_TYPE_PTR]
         algo_create.restype = cls.C_TYPE_PTR
 
-        inst_ptr = algo_create(impl_name)
-        if not bool(inst_ptr):
-            raise MaptkNullPointerException(
-                "Failed to construct algorithm instance"
-            )
+        with MaptkErrorHandle() as eh:
+            inst_ptr = algo_create(cls.type_name(), impl_name, eh)
+            if not bool(inst_ptr):
+                raise MaptkNullPointerException(
+                    "Failed to construct algorithm instance"
+                )
 
         return cls.from_c_pointer(inst_ptr, name=algo_name)
 
@@ -230,8 +221,7 @@ class MaptkAlgorithm (MaptkObject):
         Destroy internal instance
         """
         if self._inst_ptr:
-            algo_destroy = self.MAPTK_LIB["maptk_algorithm_%s_destroy"
-                                          % self.type_name()]
+            algo_destroy = self.MAPTK_LIB["maptk_algorithm_destroy"]
             algo_destroy.argtypes = [self.C_TYPE_PTR,
                                      MaptkErrorHandle.C_TYPE_PTR]
             with MaptkErrorHandle() as eh:
@@ -241,15 +231,34 @@ class MaptkAlgorithm (MaptkObject):
         """
         :return: String name for the current implementation, or None if this
             algorithm is not initialized to an implementation
-        :rtype: str
+        :rtype: str or None
         """
         if self._inst_ptr:
-            algo_impl_name = self.MAPTK_LIB.maptk_algorithm_impl_name
+            algo_impl_name = self.MAPTK_LIB['maptk_algorithm_impl_name']
             algo_impl_name.argtypes = [self.C_TYPE_PTR,
                                        MaptkErrorHandle.C_TYPE_PTR]
             algo_impl_name.restype = self.MST_TYPE_PTR
             with MaptkErrorHandle() as eh:
                 s_ptr = algo_impl_name(self, eh)
+                s = s_ptr.contents.str
+                self.MST_FREE(s_ptr)
+                return s
+        else:
+            return None
+
+    def description(self):
+        """
+        :return: Optional descriptive string about an implementation. An empty
+            string is returned if there is no available description. None is
+            returned if this algorithm has not been initialized yet.
+        :rtype: str or None
+        """
+        if self._inst_ptr:
+            algo_descr = self.MAPTK_LIB['maptk_algorithm_description']
+            algo_descr.argtypes = [self.C_TYPE_PTR, MaptkErrorHandle.C_TYPE_PTR]
+            algo_descr.restype = self.MST_TYPE_PTR
+            with MaptkErrorHandle() as eh:
+                s_ptr = algo_descr(self, eh)
                 s = s_ptr.contents.str
                 self.MST_FREE(s_ptr)
                 return s
@@ -264,10 +273,10 @@ class MaptkAlgorithm (MaptkObject):
         :return: A new copy of this algorithm
         :rtype: MaptkAlgorithm
         """
-        algo_clone = self.MAPTK_LIB['maptk_algorithm_%s_clone'
-                                    % self.type_name()]
+        algo_clone = self.MAPTK_LIB['maptk_algorithm_clone']
         algo_clone.argtypes = [self.C_TYPE_PTR, MaptkErrorHandle.C_TYPE_PTR]
         algo_clone.restype = self.C_TYPE_PTR
+
         with MaptkErrorHandle() as eh:
             return self.from_c_pointer(algo_clone(self, eh),
                                        name=(new_name or self.name))
@@ -289,18 +298,19 @@ class MaptkAlgorithm (MaptkObject):
         :rtype: maptk.ConfigBlock
 
         """
-        algo_gtc = self.MAPTK_LIB['maptk_algorithm_%s_get_type_config'
-                                  % self.type_name()]
-        algo_gtc.argtypes = [ctypes.c_char_p, self.C_TYPE_PTR,
-                             ConfigBlock.C_TYPE_PTR,
-                             MaptkErrorHandle.C_TYPE_PTR]
-        algo_gtc.restype = ConfigBlock.C_TYPE_PTR
+        algo_gnac = \
+            self.MAPTK_LIB['maptk_algorithm_get_nested_algo_configuration']
+        algo_gnac.argtypes = [ctypes.c_char_p, ctypes.c_char_p,
+                              ConfigBlock.C_TYPE_PTR,
+                              self.C_TYPE_PTR,
+                              MaptkErrorHandle.C_TYPE_PTR]
+        algo_gnac.restype = ConfigBlock.C_TYPE_PTR
 
         if cb is None:
             cb = ConfigBlock()
 
         with MaptkErrorHandle() as eh:
-            algo_gtc(self.name, self, cb, eh)
+            algo_gnac(self.type_name(), self.name, cb, self, eh)
 
         return cb
 
@@ -322,13 +332,15 @@ class MaptkAlgorithm (MaptkObject):
         :type cb: ConfigBlock
 
         """
-        algo_stc = self.MAPTK_LIB['maptk_algorithm_%s_set_type_config'
-                                  % self.type_name()]
-        algo_stc.argtypes = [ctypes.c_char_p, ConfigBlock.C_TYPE_PTR,
-                             ctypes.POINTER(self.C_TYPE_PTR),
-                             MaptkErrorHandle.C_TYPE_PTR]
+        algo_snac = \
+            self.MAPTK_LIB['maptk_algorithm_set_nested_algo_configuration']
+        algo_snac.argtypes = [ctypes.c_char_p, ctypes.c_char_p,
+                              ConfigBlock.C_TYPE_PTR,
+                              ctypes.POINTER(self.C_TYPE_PTR),
+                              MaptkErrorHandle.C_TYPE_PTR]
         with MaptkErrorHandle() as eh:
-            algo_stc(self.name, cb, ctypes.byref(self.c_pointer), eh)
+            algo_snac(self.type_name(), self.name, cb,
+                      ctypes.byref(self.c_pointer), eh)
 
     def check_config(self, cb):
         """
@@ -342,11 +354,11 @@ class MaptkAlgorithm (MaptkObject):
         :rtype: bool
 
         """
-        algo_ctc = self.MAPTK_LIB['maptk_algorithm_%s_check_type_config'
-                                  % self.type_name()]
-        algo_ctc.argtypes = [ctypes.c_char_p,
-                             ConfigBlock.C_TYPE_PTR,
-                             MaptkErrorHandle.C_TYPE_PTR]
-        algo_ctc.restype = ctypes.c_bool
+        algo_cnac = \
+            self.MAPTK_LIB['maptk_algorithm_check_nested_algo_configuration']
+        algo_cnac.argtypes = [ctypes.c_char_p, ctypes.c_char_p,
+                              ConfigBlock.C_TYPE_PTR,
+                              MaptkErrorHandle.C_TYPE_PTR]
+        algo_cnac.restype = ctypes.c_bool
         with MaptkErrorHandle() as eh:
-            return algo_ctc(self.name, cb, eh)
+            return algo_cnac(self.type_name(), self.name, cb, eh)

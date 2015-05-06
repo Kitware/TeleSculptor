@@ -73,6 +73,8 @@ class MaptkObject (object):
     MAPTK_LIB = find_maptk_library()
 
     # C API opaque structure + pointer
+    # - Set to None here since abstract class shouldn't have an opaque pointer.
+    # - Subclasses will still have correctly assigned types.
     C_TYPE = None
     C_TYPE_PTR = None
 
