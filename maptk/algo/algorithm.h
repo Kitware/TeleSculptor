@@ -76,7 +76,7 @@ public:
   /// Returns a clone of this algorithm
   virtual algorithm_sptr clone() const = 0;
 
-  /// Factory method to make an instance of an algorithm by type_name and impl_name
+  /// Factory method to make an instance of anexceptions algorithm by type_name and impl_name
   static algorithm_sptr create(const std::string& type_name,
                                const std::string& impl_name);
 
@@ -150,7 +150,9 @@ public:
 
   /// Helper function for properly getting a nested algorithm's configuration
   /**
-   * Adds a configurable algorithm implementation switch for this algorithm.
+   * Adds a configurable algorithm implementation parameter to the given
+   * \p config for this algorithm.
+   *
    * If the variable pointed to by \c nested_algo is a defined sptr to an
    * implementation, its \link maptk::config_block configuration \endlink
    * parameters are merged with the given
@@ -170,7 +172,7 @@ public:
   /// Helper function for properly setting a nested algorithm's configuration
   /**
    * If the value for the config parameter "type" is supported by the
-   * concrete algorithm class, then a new algorithm object is created,
+   * concrete algorithm class, then a new algorithm instance is created,
    * configured and returned via the \c nested_algo pointer.
    *
    * The nested algorithm will not be set if the implementation switch (as
@@ -178,12 +180,15 @@ public:
    * an invalid value relative to the registered names for this
    * \c type_name
    *
-   * \param type_name           The type name of the nested algorithm.
-   * \param name                An identifying name for the nested algorithm.
-   * \param[in] config          The \c config_block instance from which we will
-   *                              draw configuration needed for the nested
-   *                              algorithm instance.
-   * \param[in,out] nested_algo The nested algorithm's sptr variable.
+   * This will always create a new algorithm implementation instance in which
+   * to set parameters when the configured implementation type is valid.
+   *
+   * \param type_name        The type name of the nested algorithm.
+   * \param name             An identifying name for the nested algorithm.
+   * \param[in] config       The \c config_block instance from which we will
+   *                           draw configuration needed for the nested
+   *                           algorithm instance.
+   * \param[out] nested_algo The nested algorithm's sptr variable.
    */
   static void set_nested_algo_configuration(std::string const& type_name,
                                             std::string const& name,
@@ -203,6 +208,8 @@ public:
    * \param     type_name   The type name of the nested algorithm.
    * \param     name        An identifying name for the nested algorithm.
    * \param[in] config  The \c config_block to check.
+   * \return  True if the given confing block checks out for the given algorithm
+   *          type.
    */
   static bool check_nested_algo_configuration(std::string const& type_name,
                                               std::string const& name,
