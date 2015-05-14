@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,7 +55,7 @@ class MAPTK_LIB_EXPORT bundle_adjust
 {
 public:
   /// Return the name of this algorithm
-  virtual std::string type_name() const { return "bundle_adjust"; }
+  static std::string static_type_name() { return "bundle_adjust"; }
 
   /// Optimize the camera and landmark parameters given a set of tracks
   /**

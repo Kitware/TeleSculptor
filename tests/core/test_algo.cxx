@@ -38,6 +38,7 @@
 #include <iostream>
 
 #include <maptk/algo/track_features.h>
+#include <maptk/algo/match_features.h>
 #include <maptk/config_block.h>
 #include <maptk/exceptions/algorithm.h>
 #include <maptk/algorithm_plugin_manager.h>
@@ -65,6 +66,64 @@ int main(int argc, char* argv[])
          << key << " = " << config->get_value<config_block_key_t>(key) \
          << endl; \
   }
+
+IMPLEMENT_TEST(registered_names)
+{
+  using namespace maptk;
+  using namespace std;
+  // register algorithms from plugins
+  algorithm_plugin_manager::instance().register_plugins();
+
+  cout << "registered algorithms (type_name:impl_name)\n";
+  BOOST_FOREACH(const string& name, algo::algorithm::registered_names())
+  {
+    cout << "  " << name << endl;
+  }
+
+  vector<string> mf_names = algo::algorithm::registered_names("match_features");
+  cout << "registered \"match_features\" implementations\n";
+  BOOST_FOREACH(const string& name, mf_names)
+  {
+    cout << "  " << name << endl;
+  }
+}
+
+IMPLEMENT_TEST(create_from_name)
+{
+  using namespace maptk;
+  using namespace std;
+  // register algorithms from plugins
+  algorithm_plugin_manager::instance().register_plugins();
+
+  algo::algorithm_sptr empty = algo::algorithm::create("", "");
+  TEST_EQUAL("create empty algorithm", empty, NULL);
+
+  empty = algo::algorithm::create("match_features", "not_a_real_impl");
+  TEST_EQUAL("create invalid algorithm", empty, NULL);
+
+  TEST_EQUAL("has algorithm type",
+             algo::algorithm::has_type_name("match_features"), true);
+  TEST_EQUAL("does not have algorithm type",
+             algo::algorithm::has_type_name("not_a_real_type"), false);
+  TEST_EQUAL("has algorithm impl",
+             algo::algorithm::has_impl_name("match_features",
+                                            "homography_guided"), true);
+  TEST_EQUAL("does not have algorithm impl",
+             algo::algorithm::has_impl_name("match_features",
+                                            "not_a_real_impl"), false);
+  TEST_EQUAL("invalid type does not have algorithm impl",
+             algo::algorithm::has_impl_name("not_a_real_type",
+                                            "homography_guided"), false);
+
+  algo::algorithm_sptr valid = algo::algorithm::create("match_features", "homography_guided");
+  TEST_EQUAL("create valid algorithm", !valid, false);
+
+  algo::match_features_sptr mf = boost::dynamic_pointer_cast<algo::match_features>(valid);
+  TEST_EQUAL("create correct type", !mf, false);
+
+  TEST_EQUAL("create correct impl", mf->impl_name(), "homography_guided");
+
+}
 
 IMPLEMENT_TEST(track_features_before_configuration)
 {

@@ -57,7 +57,7 @@ class MAPTK_LIB_EXPORT track_features
 public:
 
   /// Return the name of this algorithm
-  virtual std::string type_name() const { return "track_features"; }
+  static std::string static_type_name() { return "track_features"; }
 
   /// Extend a previous set of tracks using the current frame
   /**

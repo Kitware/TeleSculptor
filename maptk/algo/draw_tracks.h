@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -60,7 +60,7 @@ class MAPTK_LIB_EXPORT draw_tracks
 public:
 
   /// Return the name of this algorithm.
-  virtual std::string type_name() const { return "draw_tracks"; }
+  static std::string static_type_name() { return "draw_tracks"; }
 
   /// Draw features tracks on top of the input images.
   /**

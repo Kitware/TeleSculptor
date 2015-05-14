@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,7 +55,7 @@ class MAPTK_LIB_EXPORT triangulate_landmarks
 {
 public:
   /// Return the name of this algorithm
-  virtual std::string type_name() const { return "triangulate_landmarks"; }
+  static std::string static_type_name() { return "triangulate_landmarks"; }
 
   /// Triangulate the landmark locations given sets of cameras and tracks
   /**

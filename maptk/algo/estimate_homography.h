@@ -59,7 +59,7 @@ class MAPTK_LIB_EXPORT estimate_homography
 public:
 
   /// Return the name of this algorithm
-  virtual std::string type_name() const { return "estimate_homography"; }
+  static std::string static_type_name() { return "estimate_homography"; }
 
   /// Estimate a homography matrix from corresponding features
   /**

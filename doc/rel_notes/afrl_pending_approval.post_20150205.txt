@@ -45,6 +45,14 @@ Core Library
  * Added verbose output during configuration check failure to make it easy
    to track down errors in configuration files.
 
+ * Moved several member functions from algorithm_def up to the algorithm
+   base class.  This provides a better polymorphic design, allowing algorithms
+   to be manipulated without knowing the algorithm type.  Functions moved up
+   include "clone" and "create" (each now returns algorithm_sptr);
+   "registered_names" and "has_impl_name" (each now takes a type_name string);
+   and the "*_nested_algo_configuration" helpers (each now takes a type_name
+   string).
+
 Core Plugin
 
  * Updated compute_ref_homog algorithm to allow additional constraints

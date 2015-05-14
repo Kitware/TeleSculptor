@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,7 +66,9 @@ algorithm_def<Self>
   {
     return false;
   }
-  return reg.register_item<Self>(inst->impl_name(), inst);
+  std::string qualified_name = inst->type_name() + ":" + inst->impl_name();
+  return reg.register_item<algorithm>(qualified_name, inst) &&
+         reg.register_item<Self>(inst->impl_name(), inst);
 }
 
 
@@ -81,7 +83,7 @@ algorithm_def<Self>
   {
     return inst;
   }
-  return inst->clone();
+  return boost::dynamic_pointer_cast<Self>(inst->clone());
 }
 
 
@@ -133,35 +135,8 @@ algorithm_def<Self>
                                 config_block_sptr config,
                                 base_sptr nested_algo)
 {
-  config_block_description_t type_comment =
-    "Algorithm to use for '" + name + "'.\n"
-    "Must be one of the following options:"
-    ;
-  std::string tmp_d;
-  BOOST_FOREACH( std::string reg_name, algorithm_def<Self>::registered_names() )
-  {
-    type_comment += "\n\t- " + reg_name;
-    tmp_d = registrar::instance().find<Self>(reg_name)->description();
-    if ( tmp_d != "" )
-    {
-      type_comment += " :: " + registrar::instance().find<Self>(reg_name)->description();
-    }
-  }
-
-  if(nested_algo)
-  {
-    config->set_value(name + config_block::block_sep + "type",
-                      nested_algo->impl_name(),
-                      type_comment);
-    config->subblock_view(name + config_block::block_sep + nested_algo->impl_name())
-          ->merge_config(nested_algo->get_configuration());
-  }
-  else if (!config->has_value(name + config_block::block_sep + "type"))
-  {
-    config->set_value(name + config_block::block_sep + "type",
-                      "",
-                      type_comment);
-  }
+  algorithm::get_nested_algo_configuration(Self::static_type_name(),
+                                           name, config, nested_algo);
 }
 
 
@@ -173,20 +148,11 @@ algorithm_def<Self>
                                 config_block_sptr config,
                                 base_sptr &nested_algo)
 {
-  if(config->has_value(name + config_block::block_sep + "type"))
-  {
-
-    std::string iname = config->get_value<std::string>(name
-                                                       + config_block::block_sep
-                                                       + "type");
-    if(algorithm_def<Self>::has_impl_name(iname))
-    {
-      nested_algo = algorithm_def<Self>::create(iname);
-      nested_algo->set_configuration(
-        config->subblock_view(name + config_block::block_sep + iname)
-      );
-    }
-  }
+  algorithm_sptr base_nested_algo =
+      boost::static_pointer_cast<algorithm>(nested_algo);
+  algorithm::set_nested_algo_configuration(Self::static_type_name(),
+                                           name, config, base_nested_algo);
+  nested_algo = boost::dynamic_pointer_cast<Self>(base_nested_algo);
 }
 
 
@@ -197,35 +163,8 @@ algorithm_def<Self>
 ::check_nested_algo_configuration(std::string const& name,
                                   config_block_sptr config)
 {
-  const std::string type_key = name + config_block::block_sep + "type";
-  if(!config->has_value(type_key))
-  {
-    std::cerr << "Configuration Failure: missing value "
-              << type_key << std::endl;
-    return false;
-  }
-  std::string iname = config->get_value<std::string>(type_key);
-  if(!algorithm_def<Self>::has_impl_name(iname))
-  {
-    std::cerr << "Configuration Failure: invalid option\n"
-              << "   " << type_key << " = "<< iname << "\n"
-              << "   valid options are";
-    BOOST_FOREACH( std::string reg_name, algorithm_def<Self>::registered_names() )
-    {
-      std::cerr << "\n      " << reg_name;
-    }
-    std::cerr << std::endl;
-    return false;
-  }
-  // retursively check the configuration of the sub-algorithm
-  if( !registrar::instance().find<Self>(iname)->check_configuration(
-          config->subblock_view(name + config_block::block_sep + iname)))
-  {
-    std::cerr << "Configuration Failure Backtrace: "
-              << name + config_block::block_sep + iname << std::endl;
-    return false;
-  }
-  return true;
+  return algorithm::check_nested_algo_configuration(Self::static_type_name(),
+                                                    name, config);
 }
 
 } // end namespace algo

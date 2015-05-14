@@ -53,6 +53,11 @@ namespace maptk
 namespace algo
 {
 
+/// Forward declaration of algorithm
+class algorithm;
+/// Shared pointer to an algorithm
+typedef boost::shared_ptr<algorithm> algorithm_sptr;
+
 /// An abstract base class for all algorithms
 class MAPTK_LIB_EXPORT algorithm
 {
@@ -64,6 +69,49 @@ public:
 
   /// Return the name of this implementation
   virtual std::string impl_name() const = 0;
+
+  /// Returns an optional descriptive string for an implementation
+  virtual std::string description() const = 0;
+
+  /// Returns a clone of this algorithm
+  virtual algorithm_sptr clone() const = 0;
+
+  /// Factory method to make an instance of an algorithm by type_name and impl_name
+  static algorithm_sptr create(const std::string& type_name,
+                               const std::string& impl_name);
+
+  /// Return a vector of the impl_name of each registered implementation for type_name
+  /**
+   * \param type_name Type name of algorithm for which to find all implementation names
+   *
+   * \note If type_name is not specified or is an empty string, this function
+   *       will return the all registered algorithms of any type.  The returned
+   *       names will be of the form "type_name:impl_name".  If type_name is
+   *       specified, the results will be of the form "impl_name".
+   */
+  static std::vector<std::string> registered_names(const std::string& type_name = "");
+
+  /// Check the given type name against registered algorithms
+  /**
+   * \param type_name Type name of algorithm to validate
+   * \returns true if the given \c type_name describes at least one valid
+   *          registered algorithm, or false if not.
+   *
+   * \note This algorithm returns false for an valid abstract type name if there
+   *       are no concrete instances registered with the plugin manager
+   */
+  static bool has_type_name(const std::string& type_name);
+
+  /// Check the given type and implementation names against registered algorithms
+  /**
+   * \param type_name Type name of algorithm to validate
+   * \param impl_name Implementation name of algorithm to validate
+   * \returns true if the given \c type_name and \c impl_name describe a valid
+   *          registered algorithm, or false if not.
+   */
+  static bool has_impl_name(const std::string& type_name,
+                            const std::string& impl_name);
+
 
   /// Get this algorithm's \link maptk::config_block configuration block \endlink
   /**
@@ -100,6 +148,67 @@ public:
    */
   virtual bool check_configuration(config_block_sptr config) const = 0;
 
+  /// Helper function for properly getting a nested algorithm's configuration
+  /**
+   * Adds a configurable algorithm implementation switch for this algorithm.
+   * If the variable pointed to by \c nested_algo is a defined sptr to an
+   * implementation, its \link maptk::config_block configuration \endlink
+   * parameters are merged with the given
+   * \link maptk::config_block config_block \endlink.
+   *
+   * \param     type_name   The type name of the nested algorithm.
+   * \param     name        An identifying name for the nested algorithm
+   * \param[in] config      The \c config_block instance in which to put the
+   *                          nested algorithm's configuration.
+   * \param[in] nested_algo The nested algorithm's sptr variable.
+   */
+  static void get_nested_algo_configuration(std::string const& type_name,
+                                            std::string const& name,
+                                            config_block_sptr config,
+                                            algorithm_sptr nested_algo);
+
+  /// Helper function for properly setting a nested algorithm's configuration
+  /**
+   * If the value for the config parameter "type" is supported by the
+   * concrete algorithm class, then a new algorithm object is created,
+   * configured and returned via the \c nested_algo pointer.
+   *
+   * The nested algorithm will not be set if the implementation switch (as
+   * defined in the \c get_nested_algo_configuration) is not present or set to
+   * an invalid value relative to the registered names for this
+   * \c type_name
+   *
+   * \param type_name           The type name of the nested algorithm.
+   * \param name                An identifying name for the nested algorithm.
+   * \param[in] config          The \c config_block instance from which we will
+   *                              draw configuration needed for the nested
+   *                              algorithm instance.
+   * \param[in,out] nested_algo The nested algorithm's sptr variable.
+   */
+  static void set_nested_algo_configuration(std::string const& type_name,
+                                            std::string const& name,
+                                            config_block_sptr config,
+                                            algorithm_sptr &nested_algo);
+
+  /// Helper function for checking that basic nested algorithm configuration is valid
+  /**
+   * Check that the expected implementation switch exists and that its value is
+   * registered implementation name.
+   *
+   * If the name is valid, we also recursively call check_configuration() on the
+   * set implementation. This is done with a fresh create so we don't have to
+   * rely on the implementation being defined in the instance this is called
+   * from.
+   *
+   * \param     type_name   The type name of the nested algorithm.
+   * \param     name        An identifying name for the nested algorithm.
+   * \param[in] config  The \c config_block to check.
+   */
+  static bool check_nested_algo_configuration(std::string const& type_name,
+                                              std::string const& name,
+                                              config_block_sptr config);
+
+
 };
 
 
@@ -128,12 +237,6 @@ public:
 
   virtual ~algorithm_def() {}
 
-  /// Returns a clone of this algorithm
-  virtual base_sptr clone() const = 0;
-
-  /// Returns an optional descriptive string for an implementation
-  virtual std::string description() const = 0;
-
   /// Register instances of this algorithm with a given registrar
   static bool register_instance(registrar &reg, base_sptr inst);
 
@@ -142,6 +245,9 @@ public:
 
   /// Return a vector of the impl_name of each registered implementation
   static std::vector<std::string> registered_names();
+
+  /// Return the name of this algorithm.
+  virtual std::string type_name() const { return Self::static_type_name(); }
 
   /// Check the given name against registered implementation names
   /**
@@ -247,9 +353,9 @@ public:
   virtual ~algorithm_impl() {}
 
   /// Returns a clone of this algorithm
-  virtual base_sptr clone() const
+  virtual algorithm_sptr clone() const
   {
-    return base_sptr(new Self(static_cast<const Self&>(*this)));
+    return algorithm_sptr(new Self(static_cast<const Self&>(*this)));
   }
 
   /// Return an optional descriptive string for an implementation
