@@ -26,9 +26,16 @@ Documentation
  * Added missing documentation on the VXL module Doxygen main page for recently
    added algorithms and containers and sorted the lists.
 
-  * Added missing algorithm on the OCV module Doxygen main page and sorted.
+ * Added missing algorithm on the OCV module Doxygen main page and sorted.
 
 OCV Module
 
-  * Flipped repective returns in width/height getter methods as they were
-    previously returning the incorrect values.
+ * Flipped repective returns in width/height getter methods as they were
+   previously returning the incorrect values.
+
+VXL Module
+
+ * Fixed a camera conversion test that was failing on some platforms.  Compare
+   the camera parameters directly instead of computing a 3x4 projection matrix
+   for each and comparing that.  Computing the matrix introduces additional
+   floating point precision error which should not be a part of this test.

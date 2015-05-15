@@ -98,9 +98,21 @@ void test_convert_camera(T eps)
   vpgl_perspective_camera<T> vcam2;
   vxl::maptk_to_vpgl_camera(mcam, vcam2);
 
-  double err = (vcam.get_matrix() - vcam2.get_matrix()).frobenius_norm();
-  std::cout << "Camera matrix difference: "<<err<<std::endl;
-  TEST_NEAR("Camera converted vpgl-->maptk-->vpgl", err, 0.0, eps);
+
+  double err = ( vcam.get_calibration().get_matrix()
+               - vcam2.get_calibration().get_matrix() ).absolute_value_max();
+  std::cout << "Camera calibration matrix difference: "<<err<<std::endl;
+  TEST_NEAR("Camera converted vpgl-->maptk-->vpgl (K)", err, 0.0, eps);
+
+  err = ( vcam.get_rotation().as_quaternion()
+        - vcam2.get_rotation().as_quaternion() ).inf_norm();
+  std::cout << "Camera rotation difference: "<<err<<std::endl;
+  TEST_NEAR("Camera converted vpgl-->maptk-->vpgl (R)", err, 0.0, eps);
+
+  err = ( vcam.get_camera_center()
+        - vcam2.get_camera_center() ).length();
+  std::cout << "Camera center difference: "<<err<<std::endl;
+  TEST_NEAR("Camera converted vpgl-->maptk-->vpgl (t)", err, 0.0, eps);
 }
 
 
