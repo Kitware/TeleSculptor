@@ -32,3 +32,10 @@ OCV Module
 
   * Flipped repective returns in width/height getter methods as they were
     previously returning the incorrect values.
+
+VXL Module
+
+ * Fixed a camera conversion test that was failing on some platforms.  Compare
+   the camera parameters directly instead of computing a 3x4 projection matrix
+   for each and comparing that.  Computing the matrix introduces additional
+   floating point precision error which should not be a part of this test.
