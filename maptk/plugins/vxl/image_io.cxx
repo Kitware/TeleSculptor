@@ -37,10 +37,16 @@
 
 #include <maptk/logging_macros.h>
 #include <maptk/plugins/vxl/image_container.h>
+#include <maptk/eigen_io.h>
+#include <maptk/vector.h>
+#include <maptk/exceptions/image.h>
 
 #include <vil/vil_convert.h>
 #include <vil/vil_load.h>
 #include <vil/vil_save.h>
+
+
+#define LOGGING_PREFIX "maptk::vxl::image_io"
 
 
 namespace maptk
@@ -49,23 +55,200 @@ namespace maptk
 namespace vxl
 {
 
+/// Private implementation class
+class image_io::priv
+{
+public:
+  /// Constructor
+  priv()
+  : auto_stretch(false),
+    manual_stretch(false),
+    intensity_range(0, 255)
+  {
+  }
+
+  priv(const priv& other)
+  : auto_stretch(other.auto_stretch),
+    manual_stretch(other.manual_stretch),
+    intensity_range(other.intensity_range)
+  {
+  }
+
+  bool auto_stretch;
+  bool manual_stretch;
+  vector_2d intensity_range;
+};
+
+
+/// Constructor
+image_io
+::image_io()
+: d_(new priv)
+{
+}
+
+
+/// Copy Constructor
+image_io
+::image_io(const image_io& other)
+: d_(new priv(*other.d_))
+{
+}
+
+
+/// Destructor
+image_io
+::~image_io()
+{
+}
+
+
+
+/// Get this algorithm's \link maptk::config_block configuration block \endlink
+config_block_sptr
+image_io
+::get_configuration() const
+{
+  // get base config from base class
+  config_block_sptr config = maptk::algo::image_io::get_configuration();
+
+  config->set_value("auto_stretch", d_->auto_stretch,
+                    "Dynamically stretch the range of the input data such that "
+                    "the minimum and maximum pixel values in the data map to "
+                    "0 and 255 in the byte image.  Warning, this can result in "
+                    "brightness and constrast varying between images.");
+  config->set_value("manual_stretch", d_->manual_stretch,
+                    "Manually stretch the range of the input data by "
+                    "specifying the minimum and maximum values of the data "
+                    "to map to the full byte range");
+  if( d_->manual_stretch )
+  {
+    config->set_value("intensity_range", d_->intensity_range.transpose(),
+                      "The range of intensity values (min, max) to stretch into "
+                      "the byte range.  This is most useful when e.g. 12-bit "
+                      "data is encoded in 16-bit pixels");
+  }
+  return config;
+}
+
+
+/// Set this algorithm's properties via a config block
+void
+image_io
+::set_configuration(config_block_sptr in_config)
+{
+  // Starting with our generated config_block to ensure that assumed values are present
+  // An alternative is to check for key presence before performing a get_value() call.
+  config_block_sptr config = this->get_configuration();
+  config->merge_config(in_config);
+
+  d_->auto_stretch = config->get_value<bool>("auto_stretch",
+                                              d_->auto_stretch);
+  d_->manual_stretch = config->get_value<bool>("manual_stretch",
+                                              d_->manual_stretch);
+  d_->intensity_range = config->get_value<vector_2d>("intensity_range",
+                                        d_->intensity_range.transpose());
+}
+
+
+/// Check that the algorithm's currently configuration is valid
+bool
+image_io
+::check_configuration(config_block_sptr config) const
+{
+  double auto_stretch = config->get_value<bool>("auto_stretch",
+                                                d_->auto_stretch);
+  double manual_stretch = config->get_value<bool>("manual_stretch",
+                                                  d_->manual_stretch);
+  if( auto_stretch && manual_stretch)
+  {
+    LOG_ERROR(LOGGING_PREFIX+"::check_configuration",
+              "can not enable both manual and auto stretching");
+    return false;
+  }
+  if( manual_stretch )
+  {
+    vector_2d range = config->get_value<vector_2d>("intensity_range",
+                                        d_->intensity_range.transpose());
+    if( range[0] >= range[1] )
+    {
+      LOG_ERROR(LOGGING_PREFIX+"::check_configuration",
+                "stretching range minimum not less than maximum"
+                <<" ("<<range[0]<<", "<<range[1]<<")");
+      return false;
+    }
+  }
+  return true;
+}
+
+
 /// Load image image from the file
 image_container_sptr
 image_io
 ::load_(const std::string& filename) const
 {
-  LOG_DEBUG( "maptk::vxl::image_io::load",
+  LOG_DEBUG( LOGGING_PREFIX+"::load_",
              "Loading image from file: " << filename );
-  // If this loads in a boolean image, true-value regions are represented in
-  // the vxl_byte image as 1's.
-  vil_image_view<vxl_byte> img = vil_convert_cast(vxl_byte(), vil_load(filename.c_str()) );
-  LOG_DEBUG( "maptk::vxl::image_io::load",
-             "Image stats (" << filename << "):" << std::endl <<
-             "\tni: " << img.ni() << std::endl <<
-             "\tnj: " << img.nj() << std::endl <<
-             "\tnplanes: " << img.nplanes() << std::endl <<
-             "\tsize: " << img.size()
-             );
+
+  vil_image_resource_sptr img_rsc = vil_load_image_resource(filename.c_str());
+  vil_image_view<vxl_byte> img;
+
+#define DO_CASE(T)                                                     \
+  case T:                                                              \
+    {                                                                  \
+      typedef vil_pixel_format_type_of<T >::component_type pix_t;      \
+      vil_image_view<pix_t> img_pix_t = img_rsc->get_view();           \
+      if( d_->auto_stretch )                                           \
+      {                                                                \
+        vil_convert_stretch_range(img_pix_t, img);                     \
+      }                                                                \
+      else if( d_->manual_stretch )                                    \
+      {                                                                \
+        pix_t minv = static_cast<pix_t>(d_->intensity_range[0]);       \
+        pix_t maxv = static_cast<pix_t>(d_->intensity_range[1]);       \
+        vil_convert_stretch_range_limited(img_pix_t, img, minv, maxv); \
+      }                                                                \
+      else                                                             \
+      {                                                                \
+        vil_convert_cast(img_pix_t, img);                              \
+      }                                                                \
+    }                                                                  \
+    break;                                                             \
+
+  switch (img_rsc->pixel_format())
+  {
+    DO_CASE(VIL_PIXEL_FORMAT_BOOL);
+    DO_CASE(VIL_PIXEL_FORMAT_BYTE);
+    DO_CASE(VIL_PIXEL_FORMAT_SBYTE);
+    DO_CASE(VIL_PIXEL_FORMAT_UINT_16);
+    DO_CASE(VIL_PIXEL_FORMAT_INT_16);
+    DO_CASE(VIL_PIXEL_FORMAT_UINT_32);
+    DO_CASE(VIL_PIXEL_FORMAT_INT_32);
+    DO_CASE(VIL_PIXEL_FORMAT_UINT_64);
+    DO_CASE(VIL_PIXEL_FORMAT_INT_64);
+    DO_CASE(VIL_PIXEL_FORMAT_FLOAT);
+    DO_CASE(VIL_PIXEL_FORMAT_DOUBLE);
+
+  default:
+    if( d_->auto_stretch )
+    {
+      // automatically stretch to fill the byte range using the
+      // minimum and maximum pixel values
+      img = vil_convert_stretch_range(vxl_byte(), img_rsc->get_view());
+    }
+    else if( d_->manual_stretch )
+    {
+      LOG_ERROR(LOGGING_PREFIX+"::load_",
+                "unable to manually stretch pixel type: "
+                << img_rsc->pixel_format());
+      throw image_exception();
+    }
+    else
+    {
+      img = vil_convert_cast(vxl_byte(), img_rsc->get_view());
+    }
+  }
+#undef DO_CASE
   return image_container_sptr(new vxl::image_container(img));
 }
 
