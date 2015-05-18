@@ -162,7 +162,7 @@ image_io
                                                   d_->manual_stretch);
   if( auto_stretch && manual_stretch)
   {
-    LOG_ERROR(LOGGING_PREFIX+"::check_configuration",
+    LOG_ERROR(LOGGING_PREFIX+std::string("::check_configuration"),
               "can not enable both manual and auto stretching");
     return false;
   }
@@ -172,7 +172,7 @@ image_io
                                         d_->intensity_range.transpose());
     if( range[0] >= range[1] )
     {
-      LOG_ERROR(LOGGING_PREFIX+"::check_configuration",
+      LOG_ERROR(LOGGING_PREFIX+std::string("::check_configuration"),
                 "stretching range minimum not less than maximum"
                 <<" ("<<range[0]<<", "<<range[1]<<")");
       return false;
@@ -187,7 +187,7 @@ image_container_sptr
 image_io
 ::load_(const std::string& filename) const
 {
-  LOG_DEBUG( LOGGING_PREFIX+"::load_",
+  LOG_DEBUG( LOGGING_PREFIX+std::string("::load_"),
              "Loading image from file: " << filename );
 
   vil_image_resource_sptr img_rsc = vil_load_image_resource(filename.c_str());
@@ -238,7 +238,7 @@ image_io
     }
     else if( d_->manual_stretch )
     {
-      LOG_ERROR(LOGGING_PREFIX+"::load_",
+      LOG_ERROR(LOGGING_PREFIX+std::string("::load_"),
                 "unable to manually stretch pixel type: "
                 << img_rsc->pixel_format());
       throw image_exception();
