@@ -1,7 +1,7 @@
-MAPTK v1.0.0 Release Notes
+MAP-Tk v1.0.0 Release Notes
 ==========================
 
-This is a major release of MAPTK that provides both new functionality and fixes
+This is a major release of MAP-Tk that provides both new functionality and fixes
 over the previous v0.5.0 release.
 
 
@@ -13,8 +13,8 @@ Build System
  * Revised module system into providing tools to build library and plugins for
    dynamic loading.
 
- * Added install rules for CMake utilities for MAPTK users to create MAPTK
-   complient plugin interface libraries.
+ * Added install rules for CMake utilities for MAP-Tk users to create MAP-Tk
+   compliant plugin interface libraries.
 
  * Added FindEigen3 CMake module and call it to find Eigen, which is now a
    required dependency.
@@ -29,7 +29,7 @@ Build System
 
  * Simplified string logic for finding compiler flags file.
 
- * Added Eigen3 include directory path to include directories exported by MAPTK
+ * Added Eigen3 include directory path to include directories exported by MAP-Tk
 
 MAP-Tk Library
 
@@ -38,8 +38,8 @@ MAP-Tk Library
 
  * Refactored source file layout.
 
- * Separated out algorithm implementations that used to be in the main MAPTK
-   library into a core libraray witha a plugin interface.
+ * Separated out algorithm implementations that used to be in the main MAP-Tk
+   library into a core library witha a plugin interface.
 
  * Added required dependency on the Eigen3 header-only library.  Going forward
    Eigen will provide standardized linear algebra functionality so we do not
@@ -75,10 +75,6 @@ MAP-Tk Library
 
  * Added informative debugging messages to allow for plugin implementation
    tracing.
-
- * Added C and Python interfaces. These wrappers are currently incomplete but
-   offer an introduction into what they will look like and how they will
-   function.
 
  * Added constructor from base class for feature_<T>.
 
@@ -139,6 +135,12 @@ VXL Plugin
    image intensity range, either automatically or with a manually specified
    range.  This is useful for handling 12-bit or 16-bit images, for example.
 
+C/Python API
+
+ * Added C and Python interfaces. These wrappers are currently incomplete but
+   offer an introduction into what they will look like and how they will
+   function.
+
 Test System / Tests
 
  * Refactored test code to reference correct libraries and use new plugin
@@ -166,9 +168,6 @@ Build System
 
  * Changed target property getter function to one that is not currently subject
    to a CMake regression bug.
-
- * Fixed compile definitions used for building static algo plugin
-   registration.
 
 Core Plugin
 
