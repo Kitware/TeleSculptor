@@ -41,6 +41,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/format.hpp>
 #include <boost/circular_buffer.hpp>
+#include <boost/filesystem.hpp>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -307,6 +308,8 @@ draw_tracks
         image_container_sptr_list image_data,
         track_set_sptr input_comparison_set )
 {
+  namespace bfs = boost::filesystem;
+
   // Perform swap of inputs if settings enabled
   track_set_sptr display_set = input_display_set;
   track_set_sptr comparison_set = input_comparison_set;
@@ -479,6 +482,18 @@ draw_tracks
 
     if( write_image_to_disk )
     {
+      // Check that the directory of the given filepath exists, creating necessary
+      // directories where needed.
+      path_t parent_dir = bfs::absolute(path_t(ofn).parent_path());
+      if(!bfs::is_directory(parent_dir))
+      {
+        if(!bfs::create_directories(parent_dir))
+        {
+          throw file_write_exception(parent_dir, "Attempted directory creation, "
+                                                 "but no directory created! No "
+                                                 "idea what happened here...");
+        }
+      }
       cv::imwrite( ofn.c_str(), output_image );
     }
 
