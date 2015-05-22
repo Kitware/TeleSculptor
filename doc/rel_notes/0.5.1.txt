@@ -33,6 +33,10 @@ OCV Module
  * Flipped repective returns in width/height getter methods as they were
    previously returning the incorrect values.
 
+ * Draw tracks algorithm would not write images into a directory that did not
+   exist and would fail silently.  Now it creates the directory first if
+   missing.
+
 VXL Module
 
  * Fixed a camera conversion test that was failing on some platforms.  Compare
