@@ -92,6 +92,9 @@ def readCamera(context, filepath, scale):
         if K[0][2] != 0.0:
             cam_ob.data.lens = K[0][0] / (2.0 * K[0][2]) \
                                * cam_ob.data.sensor_width
+            cam_ob.data.sensor_fit = 'HORIZONTAL'
+            bpy.context.scene.render.resolution_x = 2.0 * K[0][2]
+            bpy.context.scene.render.resolution_y = 2.0 * K[1][2]
 
 
 def readCameraPath(context, files, scale):
@@ -110,6 +113,9 @@ def readCameraPath(context, files, scale):
             if K[0][2] != 0.0:
                 cam_ob.data.lens = K[0][0] / (2.0 * K[0][2]) \
                                    * cam_ob.data.sensor_width
+                cam_ob.data.sensor_fit = 'HORIZONTAL'
+                bpy.context.scene.render.resolution_x = 2.0 * K[0][2]
+                bpy.context.scene.render.resolution_y = 2.0 * K[1][2]
             cam.keyframe_insert("lens", frame=fnum)
             cam_ob.keyframe_insert("location", frame=fnum)
             cam_ob.keyframe_insert("rotation_euler", frame=fnum)
