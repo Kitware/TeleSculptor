@@ -43,3 +43,10 @@ VXL Module
    the camera parameters directly instead of computing a 3x4 projection matrix
    for each and comparing that.  Computing the matrix introduces additional
    floating point precision error which should not be a part of this test.
+
+Scripts
+
+ * Fixed Blender import KRTD script to handle image aspect ratios where the
+   height is larger than width.  Focal length was being interpreted
+   incorrectly.  Also set the rendering image resolution based on the principal
+   point to get proper aspect ratio in the camera view.
