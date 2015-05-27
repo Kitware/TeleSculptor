@@ -52,7 +52,7 @@ namespace maptk
 /**
  * Plugin Manager for algorithm implementation extensions
  */
-class MAPTK_LIB_EXPORT algorithm_plugin_manager
+class MAPTK_APM_LIB_EXPORT algorithm_plugin_manager
 {
 public:
   /// Get the reference to the singleton instance of this class
