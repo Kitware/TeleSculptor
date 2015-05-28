@@ -8,15 +8,19 @@ compiler:
 
 before_install:
   # Note: This PPA provides the non-free compoenets like SIFT and SURF
-  #       that are not available through the stock Ubuntu packages
-  - sudo add-apt-repository --yes ppa:xqms/opencv-nonfree
+  #       that are not available through the stock Ubuntu packages.
+  #       Currently this is for Ubuntu 14.04 only.
+  #- sudo add-apt-repository --yes ppa:xqms/opencv-nonfree
+  #
+  # Ubuntu 12.04 only provides Boost 1.46 and 1.48, we need > 1.50
+  # so add this PPA to provide newer Boost
+  - sudo add-apt-repository --yes ppa:boost-latest/ppa
   - sudo apt-get update -qq
 
 install:
   - sudo apt-get install -y cmake libproj-dev libeigen3-dev
-  - sudo apt-get install -y libboost-timer-dev libboost-program-options-dev \
-                            libboost-filesystem-dev
-  - sudo apt-get install -y libopencv-dev libopencv-nonfree-dev
+  - sudo apt-get install -y libboost1.55-all-dev
+  - sudo apt-get install -y libopencv-dev
   - sudo apt-get install -y python3-dev python3-numpy python-dev python-numpy
   - sudo apt-get install -y libvxl1-dev
   # The Ubuntu VXL package has a bug in which it links to libgeotiff at
