@@ -24,10 +24,10 @@ install:
 script:
   - mkdir build
   - cd build
-  - cmake -DMAPTK_ENABLE_PROJ:BOOL=ON \
-          -DMAPTK_ENABLE_OPENCV:BOOL=ON \
-          -DMAPTK_ENABLE_VXL:BOOL=OFF \
-          -DMAPTK_ENABLE_TESTING:BOOL=ON \
+  - cmake -DMAPTK_ENABLE_PROJ:BOOL=ON
+          -DMAPTK_ENABLE_OPENCV:BOOL=ON
+          -DMAPTK_ENABLE_VXL:BOOL=OFF
+          -DMAPTK_ENABLE_TESTING:BOOL=ON
           ../
   - make
   - ctest
