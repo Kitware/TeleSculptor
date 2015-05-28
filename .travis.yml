@@ -7,14 +7,11 @@ compiler:
   - clang
 
 before_install:
-  # Note: This PPA provides the non-free compoenets like SIFT and SURF
-  #       that are not available through the stock Ubuntu packages.
-  #       Currently this is for Ubuntu 14.04 only.
-  #- sudo add-apt-repository --yes ppa:xqms/opencv-nonfree
-  #
   # Ubuntu 12.04 only provides Boost 1.46 and 1.48, we need > 1.50
   # so add this PPA to provide newer Boost
-  - sudo add-apt-repository --yes ppa:boost-latest/ppa
+  - sudo add-apt-repository -y ppa:boost-latest/ppa
+  # OpenCV in Ubuntu 12.04 is too old.  Get a newer version from this PPA
+  - sudo apt-add-repository -y ppa:thedsweb/yawls-opencv
   - sudo apt-get update -qq
 
 install:
