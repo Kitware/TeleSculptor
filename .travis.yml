@@ -1,0 +1,33 @@
+#Travis CI configuration for MAP-Tk
+# See http://travis-ci.org/Kitware/maptk/
+
+language: cpp
+compiler:
+  - gcc
+  - clang
+
+before_install:
+  # Note: This PPA provides the non-free compoenets like SIFT and SURF
+  #       that are not available through the stock Ubuntu packages
+  - sudo add-apt-repository --yes ppa:xqms/opencv-nonfree
+  - sudo apt-get update -qq
+
+install:
+  - sudo apt-get install -y cmake libproj-dev libeigen3-dev
+  - sudo apt-get install -y libboost-timer-dev libboost-program-options-dev \
+                            libboost-filesystem-dev
+  - sudo apt-get install -y libopencv-dev libopencv-nonfree-dev
+  - sudo apt-get install -y python3-dev python3-numpy python-dev python-numpy
+  - sudo apt-get install -y libvxl1-dev
+  # The Ubuntu VXL package has a bug in which it links to libgeotiff at
+  # the wrong location, so add a sym-link to work around.
+  - sudo ln -s /usr/lib/libgeotiff.so.2 /usr/lib/libgeotiff.so
+
+script:
+  - mkdir build
+  - cd build
+  - cmake ../ -DMAPTK_ENABLE_PROJ:BOOL=ON \
+              -DMAPTK_ENABLE_OPENCV:BOOL=ON \
+              -DMAPTK_ENABLE_VXL:BOOL=ON
+  - make
+  - ctest
