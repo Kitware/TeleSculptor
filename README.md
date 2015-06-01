@@ -138,7 +138,28 @@ to the Doxygen tool, then the HTML documentation is built as part of the normal
 build process under the target "doxygen".  Open
 `${MAPTK_BUILD_DIR}/docs/index.html` in your browser to view the documentation.
 
+Testing
+=======
+Continuous integration testing is provided by
+[CDash](http://www.cdash.org/).
+Our [MAP-Tk dashboard](https://open.cdash.org/index.php?project=MAPTK)
+hosts nightly build and test results across multiple platforms including
+Windows, Mac, and multiple flavors of Linux.
 
+Anyone can contribute a build to this dashboard using the
+[dashboard script](cmake/dashboard-scripts/MAPTK_common.cmake)
+provided.  Follow the instructions in the comments.
+
+
+[Travis CI](https://travis-ci.org/) is also used for continued integration testing.
+Travis CI is limited to a single platform (currently Ubuntu 12.04), but provides
+automated testing of all topic branches and pull requests whenever they are created.
+
+* Travis CI **master** branch: [![Build Status](https://travis-ci.org/Kitware/maptk.svg?branch=master)]
+(https://travis-ci.org/Kitware/maptk)
+
+* Travis CI **release** branch: [![Build Status](https://travis-ci.org/Kitware/maptk.svg?branch=release)]
+(https://travis-ci.org/Kitware/maptk)
 
 MAP-Tk Tools
 ============
