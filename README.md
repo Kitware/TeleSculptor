@@ -147,7 +147,7 @@ hosts nightly build and test results across multiple platforms including
 Windows, Mac, and multiple flavors of Linux.
 
 Anyone can contribute a build to this dashboard using the
-[dashboard script](cmake/dashboard-scripts/MAPTK_common.cmake)
+[dashboard script](CMake/dashboard-scripts/MAPTK_common.cmake)
 provided.  Follow the instructions in the comments.
 
 
@@ -236,5 +236,5 @@ recommended default settings that are known to produce useful results.
 Acknowledgements
 ----------------
 The authors would like to thank AFRL/Sensors Directorate for their support
-of this work via SBIR Contract FA8650-13-M-1694.
-This document is approved for public release via 88ABW-2014-2119.
+of this work via SBIR Contract FA8650-14-C-1820.
+This document is approved for public release via 88ABW-2015-2555.
