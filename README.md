@@ -147,7 +147,7 @@ hosts nightly build and test results across multiple platforms including
 Windows, Mac, and multiple flavors of Linux.
 
 Anyone can contribute a build to this dashboard using the
-[dashboard script](cmake/dashboard-scripts/MAPTK_common.cmake)
+[dashboard script](CMake/dashboard-scripts/MAPTK_common.cmake)
 provided.  Follow the instructions in the comments.
 
 
