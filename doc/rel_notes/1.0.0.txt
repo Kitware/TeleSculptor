@@ -1,7 +1,7 @@
-MAPTK v1.0.0 Release Notes
+MAP-Tk v1.0.0 Release Notes
 ==========================
 
-This is a major release of MAPTK that provides both new functionality and fixes
+This is a major release of MAP-Tk that provides both new functionality and fixes
 over the previous v0.5.0 release.
 
 
@@ -13,8 +13,8 @@ Build System
  * Revised module system into providing tools to build library and plugins for
    dynamic loading.
 
- * Added install rules for CMake utilities for MAPTK users to create MAPTK
-   complient plugin interface libraries.
+ * Added install rules for CMake utilities for MAP-Tk users to create MAP-Tk
+   compliant plugin interface libraries.
 
  * Added FindEigen3 CMake module and call it to find Eigen, which is now a
    required dependency.
@@ -22,15 +22,24 @@ Build System
  * Added private header CMake variables for add_library call, allowing
    visibility of file in IDEs.
 
-MAPTK Library / Core Plugin
+ * Separated out plugin management into separate library in order to allow for
+   static plugin library linking for static builds, preventing a non-
+   deterministic issue with dynamically loading static libraries causing
+   duplicated symbols.
+
+ * Simplified string logic for finding compiler flags file.
+
+ * Added Eigen3 include directory path to include directories exported by MAP-Tk
+
+MAP-Tk Library
 
  * Added plugin support for loading externally defined algorithm
    implementations.
 
  * Refactored source file layout.
 
- * Separated out algorithm implementations that used to be in the main MAPTK
-   library into a core libraray witha a plugin interface.
+ * Separated out algorithm implementations that used to be in the main MAP-Tk
+   library into a core library witha a plugin interface.
 
  * Added required dependency on the Eigen3 header-only library.  Going forward
    Eigen will provide standardized linear algebra functionality so we do not
@@ -57,6 +66,47 @@ MAPTK Library / Core Plugin
  * Added transform_image function to efficiently transform in-place an image
    given a unary function that is operated on every pixel.
 
+ * Revised homography structures into objects that contain, rather than
+   subclass, Eigen::Matrix.
+
+ * Revised import/export logic in auto-generated plugin library code.
+
+ * Redefined algorithm registration to allow for overwriting by label.
+
+ * Added informative debugging messages to allow for plugin implementation
+   tracing.
+
+ * Added constructor from base class for feature_<T>.
+
+ * Added abstract base class for algorithm to filter a set of features
+   (filter_features).
+
+ * Added verbose output during configuration check failure to make it easy
+   to track down errors in configuration files.
+
+ * Moved several member functions from algorithm_def up to the algorithm
+   base class.  This provides a better polymorphic design, allowing algorithms
+   to be manipulated without knowing the algorithm type.  Functions moved up
+   include "clone" and "create" (each now returns algorithm_sptr);
+   "registered_names" and "has_impl_name" (each now takes a type_name string);
+   and the "*_nested_algo_configuration" helpers (each now takes a type_name
+   string).
+
+Core Plugin
+
+ * Separated out algorithm implementations that used to be in the main MAP-Tk
+   library to create this core plugin.
+
+ * Updated compute_ref_homog algorithm to allow additional constraints
+   (minimum inliers, reference frame [non]regression)
+
+ * Added concrete algorithm to filter a feature set by magnitude of detector
+   response (filter_features_magnitude).
+
+ * Updated match_features_homography to allow two-pass feature matching with
+   (potentially) different matchers, a feature filter applied during the
+   first pass, and homography warping applied between the matchers.
+
 OCV Plugin
 
  * Converted module library into a library-plugin pair.
@@ -76,6 +126,20 @@ VisCL Plugin
 VXL Plugin
 
  * Converted module library into a library-plugin pair.
+
+ * Added a geometrically constrained feature matcher
+   (match_features_constrained) that uses a search radius on feature location
+   (and optionally scale and orientation) to limit search for matches.
+
+ * Added parameters to the image_io load function to allow stretching of the
+   image intensity range, either automatically or with a manually specified
+   range.  This is useful for handling 12-bit or 16-bit images, for example.
+
+C/Python API
+
+ * Added C and Python interfaces. These wrappers are currently incomplete but
+   offer an introduction into what they will look like and how they will
+   function.
 
 Test System / Tests
 
@@ -101,6 +165,15 @@ Build System
  * Removed target generation for doxygen template file configuration which had
    caused race-conditions in parallel builds that included documentation
    generation.
+
+ * Changed target property getter function to one that is not currently subject
+   to a CMake regression bug.
+
+Core Plugin
+
+ * Added missing header to source list
+
+ * Fixed import/export macro definition variable spelling.
 
 Test System / Tests
 
