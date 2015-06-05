@@ -107,8 +107,7 @@ Currently a complete set of functionalities in all tools requires either
 
 The only hard dependencies of MAP-Tk are on the C++ standard library and
 Boost (>= v1.50).  Currently MAP-Tk uses the following Boost components:
-system, filesystem, program_options, timer.  Additionally, on Windows
-the Boost chrono component is required by Boost timer.
+system, filesystem, program_options, timer, chrono.
 
 ### Optional ###
 
