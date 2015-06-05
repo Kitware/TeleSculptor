@@ -33,6 +33,8 @@ Documentation
 
  * Added missing algorithm on the OCV module Doxygen main page and sorted.
 
+ * Boost chrono is required by Boost timer on all platforms when linking a static Boost.
+
 OCV Module
 
  * Flipped repective returns in width/height getter methods as they were
