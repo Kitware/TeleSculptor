@@ -275,8 +275,8 @@ operator<<( std::ostream &s, homography const &h )
 /// \cond DoxygenSuppress
 #define INSTANTIATE_HOMOGRAPHY(T) \
   template class homography_<T>; \
-  template std::ostream& operator<<( std::ostream &, \
-                                     homography_<T> const & )
+  template MAPTK_LIB_EXPORT std::ostream& operator<<( std::ostream &, \
+                                                      homography_<T> const & )
 
 INSTANTIATE_HOMOGRAPHY(float);
 INSTANTIATE_HOMOGRAPHY(double);
