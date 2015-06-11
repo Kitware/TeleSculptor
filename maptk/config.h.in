@@ -84,6 +84,16 @@
 # define MAPTK_LIB_EXPORT MAPTK_IMPORT
 #endif
 
+// Build-specific visibility macros for MAPTK_APM library
+// These macros should be used over the generated MAPTK_EXPORT/IMPORT macros
+// defined above. MAPTK_NO_EXPORT defined above map be used as normal.
+#ifdef MAKE_MAPTK_APM_LIB
+# define MAPTK_APM_LIB_EXPORT MAPTK_EXPORT
+#else
+# define MAPTK_APM_LIB_EXPORT MAPTK_IMPORT
+#endif
+
+
 // no-throw macro
 #if __cplusplus < 201103L
 # define MAPTK_NOTHROW throw ()
