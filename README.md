@@ -232,8 +232,19 @@ An easier way to get started is to use the sample configuration files for each
 tool that are provided in the `tools/config` directory.  These examples use
 recommended default settings that are known to produce useful results.
 
+Getting Help
+============
+
+MAP-Tk is a component of [Kitware's](http://www.kitware.com) collection of open
+source computer vision tools known as [KWIVER](http://www.kwiver.org).
+Please join the [kwiver-users](http://public.kitware.com/mailman/listinfo/kwiver-users)
+mailing list to discuss MAP-Tk or to ask for help with using MAP-Tk.
+For less frequent announcements about MAP-Tk and other KWIVER components
+please join the [kwiver-announce](http://public.kitware.com/mailman/listinfo/kwiver-announce)
+mailing list.
+
 Acknowledgements
-----------------
+================
 The authors would like to thank AFRL/Sensors Directorate for their support
 of this work via SBIR Contract FA8650-14-C-1820.
 This document is approved for public release via 88ABW-2015-2555.
