@@ -1,6 +1,11 @@
 # Base plug-in with default implementations
 add_subdirectory( core )
 
+# Add Ceres plugin if enabled
+if( MAPTK_ENABLE_CERES )
+  add_subdirectory( ceres )
+endif()
+
 # Add OpenCV plugin if enabled
 if( MAPTK_ENABLE_OPENCV )
   add_subdirectory( ocv )
