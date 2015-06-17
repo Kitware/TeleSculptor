@@ -23,7 +23,7 @@ abstraction layer that allows seamless interchange and run-time selection of
 algorithms from various other open source projects like OpenCV, VXL,  VisCL,
 and PROJ4.  The core library is light-weight with minimal dependencies
 (C++ standard library plus some Boost and Eigen components).  The tools are
-written to depend only on the MAP-Tk core library.  Additional capabilites are
+written to depend only on the MAP-Tk core library.  Additional capabilities are
 provided in plugin modules that use 3rd party libraries to implement various
 abstract algorithm interfaces defined in the core.  Plugin modules may also
 implement additional versions of core MAP-Tk data structures.
@@ -58,7 +58,7 @@ Building MAP-Tk
 ===============
 
 MAP-Tk uses CMake (www.cmake.org) for easy cross-platform compilation. The
-minimum required version of CMake is 2.8.11, but newer version are recommended.
+minimum required version of CMake is 2.8.11, but newer versions are recommended.
 
 
 Running CMake
