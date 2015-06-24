@@ -5,6 +5,7 @@ set( maptk_ceres_headers_public
   bundle_adjust.h
   ceres_config.h
   register_algorithms.h
+  reprojection_error.h
   )
 maptk_install_plugin_headers( ceres
   ${maptk_ceres_headers_public}

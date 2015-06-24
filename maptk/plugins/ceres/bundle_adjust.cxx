@@ -42,6 +42,7 @@
 #include <boost/timer/timer.hpp>
 
 #include <maptk/eigen_io.h>
+#include <maptk/plugins/ceres/reprojection_error.h>
 
 #include <ceres/ceres.h>
 
@@ -191,6 +192,7 @@ bundle_adjust
   // Extract the camera parameters into a mutable map
   typedef std::map<frame_id_t, std::vector<double> > cam_param_map_t;
   cam_param_map_t camera_params;
+  std::vector<double> intrinsic_params(5);
   BOOST_FOREACH(const map_camera_t::value_type& c, cams)
   {
     vector_3d center = c.second->center();
@@ -198,7 +200,14 @@ bundle_adjust
     std::copy(center.data(), center.data()+3, params.begin());
     vector_3d rot = c.second->rotation().rodrigues();
     std::copy(rot.data(), rot.data()+3, params.begin()+3);
+    camera_intrinsics_d K = c.second->intrinsics();
     camera_params[c.first] = params;
+
+    intrinsic_params[0] = K.focal_length();
+    intrinsic_params[1] = K.principal_point().x();
+    intrinsic_params[2] = K.principal_point().y();
+    intrinsic_params[3] = K.aspect_ratio();
+    intrinsic_params[4] = K.skew();
   }
 
   // Add the residuals for each relevant observation
@@ -219,7 +228,12 @@ bundle_adjust
       {
         continue;
       }
-      //d_->problem.AddResidualBlock();
+      vector_2d pt = ts->feat->loc();
+      d_->problem.AddResidualBlock(reprojection_error::create(pt.x(), pt.y()),
+                                   NULL,
+                                   &intrinsic_params[0],
+                                   &cam_itr->second[0],
+                                   &lm_itr->second[0]);
     }
   }
 
@@ -242,8 +256,14 @@ bundle_adjust
   {
     vector_3d center = Eigen::Map<const vector_3d>(&cp.second[0]);
     rotation_d rot(vector_3d(Eigen::Map<const vector_3d>(&cp.second[3])));
-    cams[cp.first] = camera_sptr(new camera_d(center, rot,
-                                              cams[cp.first]->intrinsics()));
+
+    camera_intrinsics_d K = cams[cp.first]->intrinsics();
+    K.set_focal_length(intrinsic_params[0]);
+    vector_2d pp((Eigen::Map<const vector_2d>(&intrinsic_params[1])));
+    K.set_principal_point(pp);
+    K.set_aspect_ratio(intrinsic_params[3]);
+    K.set_skew(intrinsic_params[4]);
+    cams[cp.first] = camera_sptr(new camera_d(center, rot, K));
   }
 
 
