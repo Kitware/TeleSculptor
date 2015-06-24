@@ -195,11 +195,11 @@ bundle_adjust
   std::vector<double> intrinsic_params(5);
   BOOST_FOREACH(const map_camera_t::value_type& c, cams)
   {
+    vector_3d rot = c.second->rotation().rodrigues();
     vector_3d center = c.second->center();
     std::vector<double> params(6);
-    std::copy(center.data(), center.data()+3, params.begin());
-    vector_3d rot = c.second->rotation().rodrigues();
-    std::copy(rot.data(), rot.data()+3, params.begin()+3);
+    std::copy(rot.data(), rot.data()+3, params.begin());
+    std::copy(center.data(), center.data()+3, params.begin()+3);
     camera_intrinsics_d K = c.second->intrinsics();
     camera_params[c.first] = params;
 
@@ -254,8 +254,8 @@ bundle_adjust
   // Update the cameras with the optimized values
   BOOST_FOREACH(const cam_param_map_t::value_type& cp, camera_params)
   {
-    vector_3d center = Eigen::Map<const vector_3d>(&cp.second[0]);
-    rotation_d rot(vector_3d(Eigen::Map<const vector_3d>(&cp.second[3])));
+    vector_3d center = Eigen::Map<const vector_3d>(&cp.second[3]);
+    rotation_d rot(vector_3d(Eigen::Map<const vector_3d>(&cp.second[0])));
 
     camera_intrinsics_d K = cams[cp.first]->intrinsics();
     K.set_focal_length(intrinsic_params[0]);
