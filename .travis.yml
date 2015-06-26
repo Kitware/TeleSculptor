@@ -35,4 +35,6 @@ script:
           -DMAPTK_ENABLE_TESTING:BOOL=ON
           ../
   - make
-  - ctest
+  # Several tests are known to fail due to VXL bugs in the Ubuntu package.
+  # Ignore these tests for now until there is a fixed VXL.
+  - ctest -E "vxl_estimate_essential_matrix-.*points|vxl_initialize_cameras_landmarks-.*points|vxl_initialize_cameras_landmarks-subset_init"
