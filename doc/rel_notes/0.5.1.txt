@@ -23,6 +23,10 @@ Tools
 Fixes since v0.5.0
 ------------------
 
+Build System
+
+ * Fixed some CMake configuration warnings.
+
 Documentation
 
  * Added missing algorithms on the MAP-Tk core mainpage and sorted existing
