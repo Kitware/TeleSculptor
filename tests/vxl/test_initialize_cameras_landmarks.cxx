@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -132,10 +132,10 @@ IMPLEMENT_TEST(ideal_points)
   {
     camera_sptr new_cam_t = transform(new_cams[p.first], global_sim);
     rotation_d dR = new_cam_t->rotation().inverse() * p.second->rotation();
-    TEST_NEAR("rotation difference magnitude", dR.angle(), 0.0, 1e-8);
+    TEST_NEAR("rotation difference magnitude", dR.angle(), 0.0, 1e-6);
 
     double dt = (p.second->center() - new_cam_t->center()).magnitude();
-    TEST_NEAR("camera center difference", dt, 0.0, 1e-8);
+    TEST_NEAR("camera center difference", dt, 0.0, 1e-6);
   }
 
   landmark_map::map_landmark_t orig_lms = landmarks->landmarks();
@@ -145,7 +145,7 @@ IMPLEMENT_TEST(ideal_points)
     landmark_sptr new_lm_tr = transform(new_lms[p.first], global_sim);
 
     double dt = (p.second->loc() - new_lm_tr->loc()).magnitude();
-    TEST_NEAR("landmark location difference", dt, 0.0, 1e-8);
+    TEST_NEAR("landmark location difference", dt, 0.0, 1e-6);
   }
 }
 
@@ -309,10 +309,10 @@ IMPLEMENT_TEST(subset_init)
   {
     camera_sptr new_cam_t = transform(new_cams[p.first], global_sim);
     rotation_d dR = new_cam_t->rotation().inverse() * p.second->rotation();
-    TEST_NEAR("rotation difference magnitude", dR.angle(), 0.0, 1e-8);
+    TEST_NEAR("rotation difference magnitude", dR.angle(), 0.0, 1e-6);
 
     double dt = (p.second->center() - new_cam_t->center()).magnitude();
-    TEST_NEAR("camera center difference", dt, 0.0, 1e-8);
+    TEST_NEAR("camera center difference", dt, 0.0, 1e-6);
   }
 
   landmark_map::map_landmark_t orig_lms = landmarks->landmarks();
@@ -322,6 +322,6 @@ IMPLEMENT_TEST(subset_init)
     landmark_sptr new_lm_tr = transform(new_lms[p.first], global_sim);
 
     double dt = (p.second->loc() - new_lm_tr->loc()).magnitude();
-    TEST_NEAR("landmark location difference", dt, 0.0, 1e-8);
+    TEST_NEAR("landmark location difference", dt, 0.0, 1e-6);
   }
 }
