@@ -133,6 +133,11 @@ function(maptk_add_library name)
   string(TOUPPER "${name}" upper_name)
   message(STATUS "Making library \"${name}\" with defined symbol \"MAKE_${upper_name}_LIB\"")
 
+  # Use RPaths on Mac OSX
+  if( APPLE )
+    set(_maptk_osx_rpath MACOSX_RPATH TRUE)
+  endif()
+
   add_library("${name}" ${ARGN})
   set_target_properties("${name}"
     PROPERTIES
@@ -142,6 +147,7 @@ function(maptk_add_library name)
       VERSION                  ${MAPTK_VERSION}
       SOVERSION                0
       DEFINE_SYMBOL            MAKE_${upper_name}_LIB
+      ${_maptk_osx_rpath}
     )
 
   add_dependencies("${name}"
