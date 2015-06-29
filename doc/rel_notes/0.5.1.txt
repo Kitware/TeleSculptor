@@ -51,6 +51,9 @@ VXL Module
    for each and comparing that.  Computing the matrix introduces additional
    floating point precision error which should not be a part of this test.
 
+ * Loosened some tolerances on tests that were failing on some dashboard builds
+   with errors just slightly over the test tolerance.
+
 Scripts
 
  * Fixed Blender import KRTD script to handle image aspect ratios where the
