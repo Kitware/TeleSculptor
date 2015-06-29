@@ -14,7 +14,7 @@ define_property(GLOBAL PROPERTY maptk_warnings
 function(maptk_check_compiler_flag flag)
   string(REPLACE "+" "plus" safeflag "${flag}")
   check_cxx_compiler_flag("${flag}" "has_compiler_flag-${safeflag}")
-  if ("has_compiler_flag-${safeflag}")
+  if (has_compiler_flag-${safeflag})
     set_property(GLOBAL APPEND PROPERTY maptk_warnings "${flag}")
   endif()
 endfunction ()
