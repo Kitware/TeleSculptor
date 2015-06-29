@@ -138,7 +138,7 @@ IMPLEMENT_TEST(reprojection_100pts)
 
   TEST_NEAR("Crafted and estimated similarity transforms match",
             (matrix_4x4d(m_sim) - matrix_4x4d(e_sim)).norm(),
-            0.0, 1e-14);
+            0.0, 1e-12);
 
   cerr << "Constructing crafted similarity transformation WITH ZERO TRANSLATION" << endl;
   m_sim = similarity_d(5.623,
@@ -161,7 +161,7 @@ IMPLEMENT_TEST(reprojection_100pts)
 
   TEST_NEAR("Crafted and estimated similarity transforms match",
             (matrix_4x4d(m_sim) - matrix_4x4d(e_sim)).norm(),
-            0.0, 1e-13);
+            0.0, 1e-12);
 }
 
 
