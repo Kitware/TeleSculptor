@@ -53,55 +53,58 @@ using boost::timer::nanosecond_type;
 namespace maptk
 {
 
-/// Type-specific casting handling, LinearSolverType->cb_value_t specialization
-template<>
-inline
-config_block_value_t
-config_block_cast(::ceres::LinearSolverType const& value)
-{
-  return ::ceres::LinearSolverTypeToString(value);
+#define MAPTK_CERES_ENUM_HELPERS(ceres_type)                            \
+template<>                                                              \
+inline                                                                  \
+config_block_value_t                                                    \
+config_block_cast(::ceres::ceres_type const& value)                     \
+{                                                                       \
+  return ::ceres::ceres_type##ToString(value);                          \
+}                                                                       \
+                                                                        \
+template<>                                                              \
+inline                                                                  \
+::ceres::ceres_type                                                     \
+config_block_cast(config_block_value_t const& value)                    \
+{                                                                       \
+  ::ceres::ceres_type cet;                                              \
+  if(!::ceres::StringTo##ceres_type(value, &cet))                       \
+  {                                                                     \
+    throw bad_config_block_cast(value.c_str());                         \
+  }                                                                     \
+  return cet;                                                           \
+}                                                                       \
+                                                                        \
+template<>                                                              \
+std::string                                                             \
+ceres_options< ::ceres::ceres_type >()                                  \
+{                                                                       \
+  typedef ::ceres::ceres_type T;                                        \
+  std::string options_str = "\nMust be one of the following options:";  \
+  std::string opt;                                                      \
+  for (unsigned i=0; i<20; ++i)                                         \
+  {                                                                     \
+    opt = ::ceres::ceres_type##ToString(static_cast<T>(i));             \
+    if (opt == "UNKNOWN")                                               \
+    {                                                                   \
+      break;                                                            \
+    }                                                                   \
+    options_str += "\n  - " + opt;                                      \
+  }                                                                     \
+  return options_str;                                                   \
 }
 
 
-/// Type-specific casting handling, cb_value_t->LinearSolverType specialization
-template<>
-inline
-::ceres::LinearSolverType
-config_block_cast(config_block_value_t const& value)
+/// Defult implementation of string options for Ceres enums
+template <typename T>
+std::string
+ceres_options()
 {
-  ::ceres::LinearSolverType lst;
-  if(!::ceres::StringToLinearSolverType(value, &lst))
-  {
-    throw bad_config_block_cast(value.c_str());
-  }
-  return lst;
+  return std::string();
 }
 
-
-/// Type-specific casting handling, PreconditionerType->cb_value_t specialization
-template<>
-inline
-config_block_value_t
-config_block_cast(::ceres::PreconditionerType const& value)
-{
-  return ::ceres::PreconditionerTypeToString(value);
-}
-
-
-/// Type-specific casting handling, cb_value_t->PreconditionerType specialization
-template<>
-inline
-::ceres::PreconditionerType
-config_block_cast(config_block_value_t const& value)
-{
-  ::ceres::PreconditionerType pt;
-  if(!::ceres::StringToPreconditionerType(value, &pt))
-  {
-    throw bad_config_block_cast(value.c_str());
-  }
-  return pt;
-}
-
+MAPTK_CERES_ENUM_HELPERS(LinearSolverType)
+MAPTK_CERES_ENUM_HELPERS(PreconditionerType)
 
 
 namespace ceres
@@ -178,9 +181,11 @@ bundle_adjust
                     "Solver terminates if the relative change in parameters "
                     "is below this tolerance");
   config->set_value("linear_solver_type", o.linear_solver_type,
-                    "Linear solver to use.");
+                    "Linear solver to use."
+                    + ceres_options< ::ceres::LinearSolverType >());
   config->set_value("preconditioner_type", o.preconditioner_type,
-                    "Preconditioner to use.");
+                    "Preconditioner to use."
+                    + ceres_options< ::ceres::PreconditionerType >());
   return config;
 }
 
