@@ -53,6 +53,57 @@ using boost::timer::nanosecond_type;
 namespace maptk
 {
 
+/// Type-specific casting handling, LinearSolverType->cb_value_t specialization
+template<>
+inline
+config_block_value_t
+config_block_cast(::ceres::LinearSolverType const& value)
+{
+  return ::ceres::LinearSolverTypeToString(value);
+}
+
+
+/// Type-specific casting handling, cb_value_t->LinearSolverType specialization
+template<>
+inline
+::ceres::LinearSolverType
+config_block_cast(config_block_value_t const& value)
+{
+  ::ceres::LinearSolverType lst;
+  if(!::ceres::StringToLinearSolverType(value, &lst))
+  {
+    throw bad_config_block_cast(value.c_str());
+  }
+  return lst;
+}
+
+
+/// Type-specific casting handling, PreconditionerType->cb_value_t specialization
+template<>
+inline
+config_block_value_t
+config_block_cast(::ceres::PreconditionerType const& value)
+{
+  return ::ceres::PreconditionerTypeToString(value);
+}
+
+
+/// Type-specific casting handling, cb_value_t->PreconditionerType specialization
+template<>
+inline
+::ceres::PreconditionerType
+config_block_cast(config_block_value_t const& value)
+{
+  ::ceres::PreconditionerType pt;
+  if(!::ceres::StringToPreconditionerType(value, &pt))
+  {
+    throw bad_config_block_cast(value.c_str());
+  }
+  return pt;
+}
+
+
+
 namespace ceres
 {
 
@@ -109,11 +160,27 @@ config_block_sptr
 bundle_adjust
 ::get_configuration() const
 {
+  ::ceres::Solver::Options& o = d_->options;
   // get base config from base class
   config_block_sptr config = maptk::algo::bundle_adjust::get_configuration();
   config->set_value("verbose", d_->verbose,
                     "If true, write status messages to the terminal showing "
                     "optimization progress at each iteration");
+  config->set_value("max_num_iterations", o.max_num_iterations,
+                    "Maximum number of iteration of allow");
+  config->set_value("function_tolerance", o.function_tolerance,
+                    "Solver terminates if relative cost change is below this "
+                    "tolerance");
+  config->set_value("gradient_tolerance", o.gradient_tolerance,
+                    "Solver terminates if the maximum gradient is below this "
+                    "tolerance");
+  config->set_value("parameter_tolerance", o.parameter_tolerance,
+                    "Solver terminates if the relative change in parameters "
+                    "is below this tolerance");
+  config->set_value("linear_solver_type", o.linear_solver_type,
+                    "Linear solver to use.");
+  config->set_value("preconditioner_type", o.preconditioner_type,
+                    "Preconditioner to use.");
   return config;
 }
 
@@ -123,6 +190,7 @@ void
 bundle_adjust
 ::set_configuration(config_block_sptr in_config)
 {
+  ::ceres::Solver::Options& o = d_->options;
   // Starting with our generated config_block to ensure that assumed values are present
   // An alternative is to check for key presence before performing a get_value() call.
   config_block_sptr config = this->get_configuration();
@@ -130,6 +198,23 @@ bundle_adjust
 
   d_->verbose = config->get_value<bool>("verbose",
                                         d_->verbose);
+  o.minimizer_progress_to_stdout = d_->verbose;
+  o.logging_type = d_->verbose ? ::ceres::PER_MINIMIZER_ITERATION
+                               : ::ceres::SILENT;
+  o.max_num_iterations = config->get_value<int>("max_num_iterations",
+                                                o.max_num_iterations);
+  o.function_tolerance = config->get_value<double>("function_tolerance",
+                                                   o.function_tolerance);
+  o.gradient_tolerance = config->get_value<double>("gradient_tolerance",
+                                                   o.gradient_tolerance);
+  o.parameter_tolerance = config->get_value<double>("parameter_tolerance",
+                                                    o.parameter_tolerance);
+  typedef ::ceres::LinearSolverType cls_t;
+  o.linear_solver_type = config->get_value<cls_t>("linear_solver_type",
+                                                  o.linear_solver_type);
+  typedef ::ceres::PreconditionerType cpc_t;
+  o.preconditioner_type = config->get_value<cpc_t>("preconditioner_type",
+                                                   o.preconditioner_type);
 }
 
 
@@ -236,9 +321,6 @@ bundle_adjust
                                    &lm_itr->second[0]);
     }
   }
-
-  d_->options.linear_solver_type = ::ceres::DENSE_SCHUR;
-  d_->options.minimizer_progress_to_stdout = true;
 
   ::ceres::Solver::Summary summary;
   ::ceres::Solve(d_->options, &d_->problem, &summary);
