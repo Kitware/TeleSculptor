@@ -29,7 +29,10 @@ Build System
 
  * Simplified string logic for finding compiler flags file.
 
- * Added Eigen3 include directory path to include directories exported by MAP-Tk
+ * Added Eigen3 include directory path to include directories exported by
+   MAP-Tk.
+
+ * Added support for LIB_SUFFIX.
 
 MAP-Tk Library
 
