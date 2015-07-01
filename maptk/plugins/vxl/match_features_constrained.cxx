@@ -127,7 +127,8 @@ public:
 
       int closest = -1;
       double closest_dist = std::numeric_limits<double>::max();
-      vnl_vector<double> d1(desc1_vec[i]->as_double().data(), desc1_vec[i]->size());
+      vnl_vector<double> d1(desc1_vec[i]->as_double().data(),
+                            static_cast<unsigned>(desc1_vec[i]->size()));
 
       for (unsigned int j = 0; j < indices.size(); j++)
       {
@@ -136,7 +137,8 @@ public:
         if ((scale_thresh <= 0.0  || std::max(f1->scale(),f2->scale())/std::min(f1->scale(),f2->scale()) <= scale_thresh) &&
             (angle_thresh <= 0.0  || angle_dist(f2->angle(), f1->angle()) <= angle_thresh))
         {
-          vnl_vector<double> d2(desc2_vec[index]->as_double().data(), desc2_vec[index]->size());
+          vnl_vector<double> d2(desc2_vec[index]->as_double().data(),
+                                static_cast<unsigned>(desc2_vec[index]->size()));
           double dist = (d1 - d2).squared_magnitude();
           if (dist < closest_dist)
           {
