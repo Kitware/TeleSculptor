@@ -117,7 +117,6 @@ IMPLEMENT_TEST(noisy_landmarks)
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
-  cfg->set_value("g_tolerance", "1e-12");
   ba.set_configuration(cfg);
 
   // create landmarks at the corners of a cube
@@ -158,7 +157,6 @@ IMPLEMENT_TEST(noisy_landmarks_noisy_cameras)
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
-  cfg->set_value("g_tolerance", "1e-12");
   ba.set_configuration(cfg);
 
   // create landmarks at the corners of a cube
@@ -202,7 +200,6 @@ IMPLEMENT_TEST(zero_landmarks)
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
-  cfg->set_value("g_tolerance", "1e-12");
   ba.set_configuration(cfg);
 
   // create landmarks at the corners of a cube
@@ -244,7 +241,6 @@ IMPLEMENT_TEST(zero_landmarks_same_cameras)
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
-  cfg->set_value("g_tolerance", "1e-12");
   ba.set_configuration(cfg);
 
   // create landmarks at the corners of a cube
@@ -291,7 +287,6 @@ IMPLEMENT_TEST(subset_cameras)
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
-  cfg->set_value("g_tolerance", "1e-12");
   ba.set_configuration(cfg);
 
   // create landmarks at the corners of a cube
@@ -350,7 +345,6 @@ IMPLEMENT_TEST(subset_landmarks)
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
-  cfg->set_value("g_tolerance", "1e-12");
   ba.set_configuration(cfg);
 
   // create landmarks at the corners of a cube
@@ -403,7 +397,6 @@ IMPLEMENT_TEST(subset_tracks)
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
-  cfg->set_value("g_tolerance", "1e-12");
   ba.set_configuration(cfg);
 
   // create landmarks at the corners of a cube
@@ -451,7 +444,6 @@ IMPLEMENT_TEST(noisy_tracks)
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
-  cfg->set_value("g_tolerance", "1e-12");
   ba.set_configuration(cfg);
 
   // create landmarks at the corners of a cube
