@@ -41,10 +41,15 @@
 #include <boost/foreach.hpp>
 #include <boost/timer/timer.hpp>
 
+#include <maptk/logging_macros.h>
 #include <maptk/eigen_io.h>
 #include <maptk/plugins/ceres/reprojection_error.h>
 
 #include <ceres/ceres.h>
+
+
+#define LOGGING_PREFIX "maptk::ceres::bundle_adjust"
+
 
 using boost::timer::cpu_times;
 using boost::timer::nanosecond_type;
@@ -228,6 +233,12 @@ bool
 bundle_adjust
 ::check_configuration(config_block_sptr config) const
 {
+  std::string msg;
+  if( !d_->options.IsValid(&msg) )
+  {
+    LOG_ERROR(LOGGING_PREFIX+std::string("::check_configuration"), msg);
+    return false;
+  }
   return true;
 }
 
