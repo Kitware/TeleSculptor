@@ -62,7 +62,7 @@ typedef boost::shared_ptr<algorithm> algorithm_sptr;
 class MAPTK_LIB_EXPORT algorithm
 {
 public:
-  virtual ~algorithm() {}
+  virtual ~algorithm() MAPTK_DEFAULT_DTOR;
 
   /// Return the name of this algorithm
   virtual std::string type_name() const = 0;
@@ -235,7 +235,7 @@ public:
   /// Shared pointer type of the templated maptk::algorithm_def class
   typedef boost::shared_ptr<Self> base_sptr;
 
-  virtual ~algorithm_def() {}
+  virtual ~algorithm_def() MAPTK_DEFAULT_DTOR;
 
   /// Register instances of this algorithm with a given registrar
   static bool register_instance(registrar &reg, base_sptr inst);
@@ -350,7 +350,7 @@ public:
   /// shared pointer type of this impl's base maptk::algorithm_def class.
   typedef boost::shared_ptr<Base> base_sptr;
 
-  virtual ~algorithm_impl() {}
+  virtual ~algorithm_impl() MAPTK_DEFAULT_DTOR;
 
   /// Returns a clone of this algorithm
   virtual algorithm_sptr clone() const

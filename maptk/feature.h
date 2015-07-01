@@ -59,7 +59,7 @@ class feature
 {
 public:
   /// Destructor
-  virtual ~feature() {}
+  virtual ~feature() MAPTK_DEFAULT_DTOR;
 
   /// Access the type info of the underlying data (double or float)
   virtual const std::type_info& data_type() const = 0;

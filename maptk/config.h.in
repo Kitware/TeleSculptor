@@ -94,6 +94,13 @@
 #endif
 
 
+// default dtor macro
+#if __cplusplus < 201103L
+# define MAPTK_DEFAULT_DTOR {}
+#else
+# define MAPTK_DEFAULT_DTOR = default
+#endif
+
 // no-throw macro
 #if __cplusplus < 201103L
 # define MAPTK_NOTHROW throw ()

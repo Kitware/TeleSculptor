@@ -73,7 +73,7 @@ public:
   close_loops_bad_frames_only(const close_loops_bad_frames_only&);
 
   /// Destructor
-  virtual ~close_loops_bad_frames_only() {}
+  virtual ~close_loops_bad_frames_only() MAPTK_DEFAULT_DTOR;
 
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "bad_frames_only"; }
