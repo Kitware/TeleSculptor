@@ -44,6 +44,7 @@
 #include <maptk/logging_macros.h>
 #include <maptk/eigen_io.h>
 #include <maptk/plugins/ceres/reprojection_error.h>
+#include <maptk/plugins/ceres/types.h>
 
 #include <ceres/ceres.h>
 
@@ -58,22 +59,22 @@ using boost::timer::nanosecond_type;
 namespace maptk
 {
 
-#define MAPTK_CERES_ENUM_HELPERS(ceres_type)                            \
+#define MAPTK_CERES_ENUM_HELPERS(NS, ceres_type)                        \
 template<>                                                              \
 inline                                                                  \
 config_block_value_t                                                    \
-config_block_cast(::ceres::ceres_type const& value)                     \
+config_block_cast(NS::ceres_type const& value)                          \
 {                                                                       \
-  return ::ceres::ceres_type##ToString(value);                          \
+  return NS::ceres_type##ToString(value);                               \
 }                                                                       \
                                                                         \
 template<>                                                              \
 inline                                                                  \
-::ceres::ceres_type                                                     \
+NS::ceres_type                                                          \
 config_block_cast(config_block_value_t const& value)                    \
 {                                                                       \
-  ::ceres::ceres_type cet;                                              \
-  if(!::ceres::StringTo##ceres_type(value, &cet))                       \
+  NS::ceres_type cet;                                                   \
+  if(!NS::StringTo##ceres_type(value, &cet))                            \
   {                                                                     \
     throw bad_config_block_cast(value.c_str());                         \
   }                                                                     \
@@ -82,14 +83,14 @@ config_block_cast(config_block_value_t const& value)                    \
                                                                         \
 template<>                                                              \
 std::string                                                             \
-ceres_options< ::ceres::ceres_type >()                                  \
+ceres_options< NS::ceres_type >()                                       \
 {                                                                       \
-  typedef ::ceres::ceres_type T;                                        \
+  typedef NS::ceres_type T;                                             \
   std::string options_str = "\nMust be one of the following options:";  \
   std::string opt;                                                      \
   for (unsigned i=0; i<20; ++i)                                         \
   {                                                                     \
-    opt = ::ceres::ceres_type##ToString(static_cast<T>(i));             \
+    opt = NS::ceres_type##ToString(static_cast<T>(i));                  \
     if (opt == "UNKNOWN")                                               \
     {                                                                   \
       break;                                                            \
@@ -108,28 +109,32 @@ ceres_options()
   return std::string();
 }
 
-MAPTK_CERES_ENUM_HELPERS(LinearSolverType)
-MAPTK_CERES_ENUM_HELPERS(PreconditionerType)
-MAPTK_CERES_ENUM_HELPERS(TrustRegionStrategyType)
-MAPTK_CERES_ENUM_HELPERS(DoglegType)
+MAPTK_CERES_ENUM_HELPERS(::ceres, LinearSolverType)
+MAPTK_CERES_ENUM_HELPERS(::ceres, PreconditionerType)
+MAPTK_CERES_ENUM_HELPERS(::ceres, TrustRegionStrategyType)
+MAPTK_CERES_ENUM_HELPERS(::ceres, DoglegType)
+
+MAPTK_CERES_ENUM_HELPERS(ceres, LossFunctionType)
+
+#undef MAPTK_CERES_ENUM_HELPERS
 
 
 namespace ceres
 {
-
-
 /// Private implementation class
 class bundle_adjust::priv
 {
 public:
   /// Constructor
   priv()
-  : verbose(false)
+  : verbose(false),
+    loss_function_type(TRIVIAL_LOSS)
   {
   }
 
   priv(const priv& other)
-  : verbose(other.verbose)
+  : verbose(other.verbose),
+    loss_function_type(other.loss_function_type)
   {
   }
 
@@ -139,6 +144,8 @@ public:
   ::ceres::Solver::Options options;
   /// verbose output
   bool verbose;
+  /// the robust loss function type to use
+  LossFunctionType loss_function_type;
 };
 
 
@@ -201,6 +208,9 @@ bundle_adjust
   config->set_value("dogleg_type", o.dogleg_type,
                     "Dogleg strategy to use."
                     + ceres_options< ::ceres::DoglegType >());
+  config->set_value("loss_function_type", d_->loss_function_type,
+                    "Robust loss function type to use."
+                    + ceres_options< ceres::LossFunctionType >());
   return config;
 }
 
@@ -245,6 +255,9 @@ bundle_adjust
   typedef ::ceres::DoglegType cdl_t;
   o.dogleg_type = config->get_value<cdl_t>("dogleg_type",
                                            o.dogleg_type);
+  typedef ceres::LossFunctionType clf_t;
+  d_->loss_function_type = config->get_value<clf_t>("loss_function_type",
+                                                    d_->loss_function_type);
 }
 
 
@@ -331,6 +344,11 @@ bundle_adjust
     intrinsic_params[4] = K.skew();
   }
 
+  // Create the loss function to use
+  ::ceres::LossFunction* loss_func
+      = LossFunctionFactory(d_->loss_function_type);
+  bool loss_func_used = false;
+
   // Add the residuals for each relevant observation
   BOOST_FOREACH(const track_sptr& t, trks)
   {
@@ -351,11 +369,19 @@ bundle_adjust
       }
       vector_2d pt = ts->feat->loc();
       d_->problem.AddResidualBlock(reprojection_error::create(pt.x(), pt.y()),
-                                   NULL,
+                                   loss_func,
                                    &intrinsic_params[0],
                                    &cam_itr->second[0],
                                    &lm_itr->second[0]);
+      loss_func_used = true;
     }
+  }
+
+  // If the loss function was added to a residual block, ownership was
+  // transfered.  If not then we need to delete it.
+  if(loss_func && !loss_func_used)
+  {
+    delete loss_func;
   }
 
   ::ceres::Solver::Summary summary;

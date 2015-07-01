@@ -7,6 +7,9 @@ set( maptk_ceres_headers_public
   register_algorithms.h
   reprojection_error.h
   )
+set( maptk_ceres_headers_private
+  types.h
+  )
 maptk_install_plugin_headers( ceres
   ${maptk_ceres_headers_public}
   )
@@ -14,9 +17,11 @@ maptk_install_plugin_headers( ceres
 set( maptk_ceres_sources
   bundle_adjust.cxx
   register_algorithms.cxx
+  types.cxx
   )
 maptk_add_library( maptk_ceres
   ${maptk_ceres_headers_public}
+  ${maptk_ceres_headers_private}
   ${maptk_ceres_sources}
   )
 target_link_libraries( maptk_ceres
