@@ -217,7 +217,21 @@ image_io
 
   switch (img_rsc->pixel_format())
   {
-    DO_CASE(VIL_PIXEL_FORMAT_BOOL);
+    // special case for bool because manual stretching limits do not
+    // make sense and trigger compiler warnings on some platforms.
+    case VIL_PIXEL_FORMAT_BOOL:
+      {
+        vil_image_view<bool> img_bool = img_rsc->get_view();
+        if( d_->auto_stretch || d_->manual_stretch )
+        {
+          vil_convert_stretch_range(img_bool, img);
+        }
+        else
+        {
+          vil_convert_cast(img_bool, img);
+        }
+      }
+      break;
     DO_CASE(VIL_PIXEL_FORMAT_BYTE);
     DO_CASE(VIL_PIXEL_FORMAT_SBYTE);
     DO_CASE(VIL_PIXEL_FORMAT_UINT_16);
