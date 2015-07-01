@@ -241,6 +241,7 @@ IMPLEMENT_TEST(zero_landmarks_same_cameras)
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
+  cfg->set_value("max_num_iterations", 100);
   ba.set_configuration(cfg);
 
   // create landmarks at the corners of a cube
