@@ -128,13 +128,15 @@ public:
   /// Constructor
   priv()
   : verbose(false),
-    loss_function_type(TRIVIAL_LOSS)
+    loss_function_type(TRIVIAL_LOSS),
+    loss_function_scale(1.0)
   {
   }
 
   priv(const priv& other)
   : verbose(other.verbose),
-    loss_function_type(other.loss_function_type)
+    loss_function_type(other.loss_function_type),
+    loss_function_scale(other.loss_function_scale)
   {
   }
 
@@ -146,6 +148,8 @@ public:
   bool verbose;
   /// the robust loss function type to use
   LossFunctionType loss_function_type;
+  /// the scale of the loss function
+  double loss_function_scale;
 };
 
 
@@ -211,6 +215,8 @@ bundle_adjust
   config->set_value("loss_function_type", d_->loss_function_type,
                     "Robust loss function type to use."
                     + ceres_options< ceres::LossFunctionType >());
+  config->set_value("loss_function_scale", d_->loss_function_scale,
+                    "Robust loss function scale factor.");
   return config;
 }
 
@@ -258,6 +264,8 @@ bundle_adjust
   typedef ceres::LossFunctionType clf_t;
   d_->loss_function_type = config->get_value<clf_t>("loss_function_type",
                                                     d_->loss_function_type);
+  d_->loss_function_scale = config->get_value<double>("loss_function_scale",
+                                                      d_->loss_function_scale);
 }
 
 
@@ -346,7 +354,8 @@ bundle_adjust
 
   // Create the loss function to use
   ::ceres::LossFunction* loss_func
-      = LossFunctionFactory(d_->loss_function_type);
+      = LossFunctionFactory(d_->loss_function_type,
+                            d_->loss_function_scale);
   bool loss_func_used = false;
 
   // Add the residuals for each relevant observation
