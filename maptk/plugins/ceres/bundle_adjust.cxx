@@ -110,6 +110,8 @@ ceres_options()
 
 MAPTK_CERES_ENUM_HELPERS(LinearSolverType)
 MAPTK_CERES_ENUM_HELPERS(PreconditionerType)
+MAPTK_CERES_ENUM_HELPERS(TrustRegionStrategyType)
+MAPTK_CERES_ENUM_HELPERS(DoglegType)
 
 
 namespace ceres
@@ -174,6 +176,8 @@ bundle_adjust
   config->set_value("verbose", d_->verbose,
                     "If true, write status messages to the terminal showing "
                     "optimization progress at each iteration");
+  config->set_value("num_linear_solver_threads", o.num_linear_solver_threads,
+                    "Number of threads to use in the linear solver");
   config->set_value("max_num_iterations", o.max_num_iterations,
                     "Maximum number of iteration of allow");
   config->set_value("function_tolerance", o.function_tolerance,
@@ -191,6 +195,12 @@ bundle_adjust
   config->set_value("preconditioner_type", o.preconditioner_type,
                     "Preconditioner to use."
                     + ceres_options< ::ceres::PreconditionerType >());
+  config->set_value("trust_region_strategy_type", o.trust_region_strategy_type,
+                    "Trust region step compution algorithm used by Ceres."
+                    + ceres_options< ::ceres::TrustRegionStrategyType >());
+  config->set_value("dogleg_type", o.dogleg_type,
+                    "Dogleg strategy to use."
+                    + ceres_options< ::ceres::DoglegType >());
   return config;
 }
 
@@ -211,6 +221,9 @@ bundle_adjust
   o.minimizer_progress_to_stdout = d_->verbose;
   o.logging_type = d_->verbose ? ::ceres::PER_MINIMIZER_ITERATION
                                : ::ceres::SILENT;
+  o.num_linear_solver_threads
+      = config->get_value<int>("num_linear_solver_threads",
+                               o.num_linear_solver_threads);
   o.max_num_iterations = config->get_value<int>("max_num_iterations",
                                                 o.max_num_iterations);
   o.function_tolerance = config->get_value<double>("function_tolerance",
@@ -225,6 +238,13 @@ bundle_adjust
   typedef ::ceres::PreconditionerType cpc_t;
   o.preconditioner_type = config->get_value<cpc_t>("preconditioner_type",
                                                    o.preconditioner_type);
+  typedef ::ceres::TrustRegionStrategyType trs_t;
+  o.trust_region_strategy_type
+      = config->get_value<trs_t>("trust_region_strategy_type",
+                                 o.trust_region_strategy_type);
+  typedef ::ceres::DoglegType cdl_t;
+  o.dogleg_type = config->get_value<cdl_t>("dogleg_type",
+                                           o.dogleg_type);
 }
 
 
