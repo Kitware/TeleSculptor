@@ -201,6 +201,8 @@ bundle_adjust
   config->set_value("verbose", d_->verbose,
                     "If true, write status messages to the terminal showing "
                     "optimization progress at each iteration");
+  config->set_value("num_threads", o.num_threads,
+                    "Number of threads to use");
   config->set_value("num_linear_solver_threads", o.num_linear_solver_threads,
                     "Number of threads to use in the linear solver");
   config->set_value("max_num_iterations", o.max_num_iterations,
@@ -259,6 +261,7 @@ bundle_adjust
   o.minimizer_progress_to_stdout = d_->verbose;
   o.logging_type = d_->verbose ? ::ceres::PER_MINIMIZER_ITERATION
                                : ::ceres::SILENT;
+  o.num_threads = config->get_value<int>("num_threads", o.num_threads);
   o.num_linear_solver_threads
       = config->get_value<int>("num_linear_solver_threads",
                                o.num_linear_solver_threads);
