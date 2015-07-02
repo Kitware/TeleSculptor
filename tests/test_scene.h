@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2011-2014 by Kitware, Inc.
+ * Copyright 2011-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -235,6 +235,48 @@ noisy_tracks(maptk::track_set_sptr in_tracks, double stdev=1.0)
   }
   return track_set_sptr(new simple_track_set(new_tracks));
 }
+
+
+// randomly select a fraction of the track states to make outliers
+// outliers are created by adding random noise with large standard deviation
+maptk::track_set_sptr
+add_outliers_to_tracks(maptk::track_set_sptr in_tracks,
+                       double outlier_frac=0.1,
+                       double stdev=20.0)
+{
+  using namespace maptk;
+
+  std::srand(0);
+  std::vector<track_sptr> tracks = in_tracks->tracks();
+  std::vector<track_sptr> new_tracks;
+  const int rand_thresh = static_cast<int>(outlier_frac * RAND_MAX);
+  BOOST_FOREACH(const track_sptr& t, tracks)
+  {
+    track_sptr nt(new track);
+    nt->set_id(t->id());
+    std::cout << "track "<<t->id()<<":";
+    for(track::history_const_itr it=t->begin(); it!=t->end(); ++it)
+    {
+      if(std::rand() < rand_thresh)
+      {
+        vector_2d loc = it->feat->loc() + random_point2d(stdev);
+        track::track_state ts(*it);
+        ts.feat = feature_sptr(new feature_d(loc));
+        std::cout << " o";
+        nt->append(ts);
+      }
+      else
+      {
+        std::cout << " .";
+        nt->append(*it);
+      }
+    }
+    std::cout << std::endl;
+    new_tracks.push_back(nt);
+  }
+  return track_set_sptr(new simple_track_set(new_tracks));
+}
+
 
 } // end namespace testing
 
