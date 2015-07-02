@@ -10,6 +10,26 @@ release version, and the content of this file will be reset.
 Updates since last public release
 ---------------------------------
 
+Main Library
+
+ * Added a metric in metrics.h to compute the median reprojection error.
+   The median provides a more robust alternative to RMSE and is more useful
+   for characterizing error when using robust loss functions.
+
+Ceres Plugin
+
+ * Added a new plugin which uses Google Ceres Solver as a back end for
+   optimizations.
+
+ * Added an implementation of the bundle_adjust algorithm using Ceres to
+   solve the optimization problem.  This supports access to Ceres options
+   via the configuration block and currently supports selection of various
+   different solver algorithms and robust loss functions.
+
+ * Added unit tests for the Ceres implementation of bundle_adjust that
+   duplicates the same tests used for the VXL back end plus a few additional
+   tests focusing on robust estimation.
+
 C Interface
 
  * Updated algorithm related code to use new functions in algorithm C++ base
