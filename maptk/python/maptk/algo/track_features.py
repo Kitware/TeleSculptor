@@ -48,7 +48,9 @@ class TrackFeatures (MaptkAlgorithm):
     maptk::algo::track_features interface
     """
 
-    TYPE_NAME = "track_features"
+    @classmethod
+    def type_name(cls):
+        return "track_features"
 
     def track(self, prev_tracks, frame_num, image, mask=None):
         """

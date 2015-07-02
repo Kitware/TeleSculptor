@@ -117,7 +117,7 @@ algorithm
                                 algorithm_sptr nested_algo)
 {
   config_block_description_t type_comment =
-    "Algorithm to use for '" + name + "'.\n"
+    "Algorithm to use for '" + name + "', which is of type '" + type_name + "'.\n"
     "Must be one of the following options:"
     ;
   std::string tmp_d;

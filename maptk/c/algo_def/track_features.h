@@ -48,10 +48,6 @@ extern "C"
 #include <maptk/c/track_set.h>
 
 
-/// Common algorithm definition API
-DECLARE_COMMON_ALGO_API( track_features );
-
-
 /// New track set of extended tracks using the current frame
 MAPTK_C_EXPORT
 maptk_trackset_t*

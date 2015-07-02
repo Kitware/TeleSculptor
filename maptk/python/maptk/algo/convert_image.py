@@ -43,7 +43,9 @@ from maptk.util import MaptkErrorHandle
 
 class ConvertImage (MaptkAlgorithm):
 
-    TYPE_NAME = 'convert_image'
+    @classmethod
+    def type_name(cls):
+        return "convert_image"
 
     def convert(self, image_container):
         """

@@ -46,10 +46,6 @@ extern "C"
 #include <maptk/c/image_container.h>
 
 
-/// Declare common type-specific functions
-DECLARE_COMMON_ALGO_API( convert_image );
-
-
 /// Convert image base type
 /**
  * Returns new image container with a converted underlying representation

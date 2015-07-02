@@ -42,24 +42,26 @@
 #include <maptk/algo/convert_image.h>
 
 
-DEFINE_COMMON_ALGO_API( convert_image );
-
-
 /// Convert image base type
 maptk_image_container_t*
 maptk_algorithm_convert_image_convert( maptk_algorithm_t *algo,
                                        maptk_image_container_t *ic,
                                        maptk_error_handle_t *eh )
 {
-  STANDARD_CATCH(
-    "C::algorithm::convert_image::convert", eh,
+  ALGO_STANDARD_CATCH(
+    "C::algorithm::convert_image::convert", eh, algo, "convert_image",
+
     maptk::image_container_sptr ic_sptr =
       maptk_c::IMGC_SPTR_CACHE.get( ic );
     maptk::algo::convert_image_sptr ci_sptr =
-      maptk_c::ALGORITHM_convert_image_SPTR_CACHE.get( algo );
+      boost::dynamic_pointer_cast<maptk::algo::convert_image>(
+        maptk_c::ALGORITHM_SPTR_CACHE.get( algo )
+      );
     maptk::image_container_sptr new_ic_sptr = ci_sptr->convert( ic_sptr );
     maptk_c::IMGC_SPTR_CACHE.store( new_ic_sptr );
+
     return reinterpret_cast<maptk_image_container_t*>( new_ic_sptr.get() );
+
   );
   return 0;
 }

@@ -48,7 +48,9 @@ class ImageIo (MaptkAlgorithm):
     maptk::algo::image_io interface
     """
 
-    TYPE_NAME = 'image_io'
+    @classmethod
+    def type_name(cls):
+        return "image_io"
 
     def load(self, filepath):
         """

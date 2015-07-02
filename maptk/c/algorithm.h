@@ -55,30 +55,229 @@ typedef struct maptk_algorithm_s maptk_algorithm_t;
 
 
 // ===========================================================================
+// Static algorithm methods
+//
+// These methods usually require one or more of the algorithm type and
+// implementation labels.
+// ---------------------------------------------------------------------------
+
+
+/// Check the given type label against registered algorithm types
+/**
+ * Returns false if the there is no registered algorithm implementation with
+ * given type label.
+ *
+ * \param         type_name Type label string to check for.
+ * \param[in,out] eh        Error handle instance pointer.
+ * \return True if there exists a registered algorithm implementation with the
+ *         given type label. False otherwise.
+ */
+MAPTK_C_EXPORT
+bool
+maptk_algorithm_has_type_name( char const *type_name,
+                               maptk_error_handle_t *eh );
+
+
+/// Check the given type and implementation names against registered algorithms
+/**
+ * \param         type_name Type name of algorithm to validate
+ * \param         impl_name Implementation name of algorithm to validate
+ * \param[in,out] eh        Error handle instance pointer.
+ * \return True if the given \p type_name and \p impl_name describe a valid
+ *         registered algorithm, or false if not.
+ */
+MAPTK_C_EXPORT
+bool
+maptk_algorithm_has_impl_name( char const *type_name,
+                               char const *impl_name,
+                               maptk_error_handle_t *eh );
+
+
+/// Return an array of impl names of registered algorithms of the given type
+/**
+ * \note If the given \p type_name is an empty string, we return all registered
+ *       algorithms of any type, returning strings of the form
+ *       "<type_name>:<impl_name>". When a \p type_name is specified, returned
+ *       strings are simply the available implementation names.
+ *
+ * \note If there are no results for a given query, \p length will be set to 0
+ *       and \p *names will be set to NULL.
+ *
+ * \param         type_name Type name of algorithm for which to return
+ *                            available implementation names, or an empty
+ *                            string.
+ * \param[out]    length    Return pointer which will be set to the number of
+ *                            names for the given query.
+ * \param[out]    names     Return pointer which will be set to the array of
+ *                            returned strings, or NULL if there are no return
+ *                            elements.
+ * \param[in,out] eh        Error handle instance pointer.
+ */
+MAPTK_C_EXPORT
+void
+maptk_algorithm_registered_names( char const *type_name,
+                                  unsigned int *length,
+                                  char ***names,
+                                  maptk_error_handle_t *eh );
+
+
+/// Create a new algorithm instance of the requested type and implementation
+/**
+ * The given type and implementation labels must match a registered type/impl
+ * pairing.
+ *
+ * \param         type_name Label of the algorithm type
+ * \param         impl_name Label of the algorithm name
+ * \param[in,out] eh        Error handle instance pointer.
+ * \return New algorithm implementation structure with a new implementation
+ *         instance.
+ */
+MAPTK_C_EXPORT
+maptk_algorithm_t*
+maptk_algorithm_create( char const *type_name,
+                        char const *impl_name,
+                        maptk_error_handle_t *eh );
+
+
+/// Helper function for properly getting a nested algorithm's configuration
+/**
+ * Adds a configurable algorithm implementation parameter to the given
+ * \p cb for this algorithm.
+ *
+ * If the variable pointed to by \p algo is a defined \p maptk_algorithm_t
+ * instance, its configuration parameters are merged with the given
+ * \p maptk_config_block_t instance.
+ *
+ * The algorithm's \p type_name is needed so we can properly document
+ * generic parameters regardless of the value of \p algo.
+ *
+ * \param         type_name The type name of the nested algorithm.
+ * \param         name      An identifying name for the nested algorithm.
+ * \param[in,out] cb        The \p maptk_config_block_t instance in which to
+ *                            put the generic switch and nested algorithm's
+ *                            configuration.
+ * \param[in]     algo      The nested algorithm instance, or NULL if there
+ *                            isn't one.
+ * \param[in,out] eh        Error handle instance pointer.
+ */
+MAPTK_C_EXPORT
+void
+maptk_algorithm_get_nested_algo_configuration( char const *type_name,
+                                               char const *name,
+                                               maptk_config_block_t *cb,
+                                               maptk_algorithm_t *algo,
+                                               maptk_error_handle_t *eh );
+
+
+/// Helper function for properly setting a nested algorithm's configuration
+/**
+ * If the value for the config parameter \p type is supported by the concrete
+ * algorithm class, then a new algorithm instance is created, configured and
+ * returned via the \p algo pointer.
+ *
+ * The \p algo pointer will not be set/modified if the implementation type
+ * (parameter defined in \c maptk_algorithm_get_nested_algo_configuration)
+ * is not present or set to an invalid value relative to the registered names
+ * for the given \p type_name.
+ *
+ * The algorithm \p type_name must be provided so that implementation type can
+ * be correctly validated as well as for correct production of the algorithm
+ * instance.
+ *
+ * This will always create a new algorithm implementation instance in which
+ * to set parameters when the configured implementation type is valid.
+ *
+ * \param         type_name The type name of the nested algorithm
+ * \param         name      An identifying name for the nested algorithm
+ * \param[in]     cb        The \p maptk_config_block_t instance from which we
+ *                            will draw configuration needed for the nested
+ *                            algorithm instance.
+ * \param[out]    algo      The reference to the nested \p maptk_algorithm_t
+ *                            pointer.
+ * \param[in,out] eh        Error handle instance pointer.
+ */
+MAPTK_C_EXPORT
+void
+maptk_algorithm_set_nested_algo_configuration( char const *type_name,
+                                               char const *name,
+                                               maptk_config_block_t *cb,
+                                               maptk_algorithm_t **algo,
+                                               maptk_error_handle_t *eh );
+
+
+/// Helper function for checking that basic nested algorithm configuration validity
+/**
+ * Check that the expected implementation switch exists and that its value is
+ * a registered implementation name.
+ *
+ * If the name is valid, we also recursively check the configuration of
+ * the set implementation. This is done with a fresh create so we don't have to
+ * rely on the implementation being defined in the instance that is called
+ * from.
+ *
+ * \param         type_name The type name of the nested algorithm.
+ * \param         name      An identifying name for the nested algorithm.
+ * \param[in]     cb        The \p maptk_config_block_t instance to check.
+ * \param[in,out] eh        Error handle instance pointer.
+ * \return  True if the given confing block checks out for the given algorithm
+ *          type.
+ */
+MAPTK_C_EXPORT
+bool
+maptk_algorithm_check_nested_algo_configuration( char const *type_name,
+                                                 char const *name,
+                                                 maptk_config_block_t *cb,
+                                                 maptk_error_handle_t *eh );
+
+
+// ===========================================================================
 // Functions on general algorithm pointer
 // ---------------------------------------------------------------------------
 
 /// Return the name of this algorithm
 /**
- * \param algo Opaque pointer to algorithm instance.
+ * \param[in]     algo  Opaque pointer to algorithm instance.
+ * \param[in,out] eh    Error handle instance pointer
  * \return String name of the algorithm type.
  */
 MAPTK_C_EXPORT
-maptk_string_t* maptk_algorithm_type_name( maptk_algorithm_t *algo,
-                                           maptk_error_handle_t *eh );
+maptk_string_t*
+maptk_algorithm_type_name( maptk_algorithm_t *algo,
+                           maptk_error_handle_t *eh );
 
 
-// Return the name of this implementation
+/// Return the name of this implementation
 /**
- * \param algo Opaque pointer to algorithm instance.
+ * \param[in]     algo  Opaque pointer to algorithm instance.
+ * \param[in,out] eh    Error handle instance pointer
  * \return String name of the algorithm implementation type.
  */
 MAPTK_C_EXPORT
-maptk_string_t* maptk_algorithm_impl_name( maptk_algorithm_t *algo,
-                                           maptk_error_handle_t *eh );
+maptk_string_t*
+maptk_algorithm_impl_name( maptk_algorithm_t *algo,
+                           maptk_error_handle_t *eh );
+
+
+/// Return optional descriptive string about an implementation
+/**
+ * \param[in]     algo  Opaque pointer to an algorithm instance.
+ * \param[in,out] eh    Error handle instance pointer
+ * \return String description for the given algorithm, or an empty string
+ *         if there is no available description.
+ */
+MAPTK_C_EXPORT
+maptk_string_t*
+maptk_algorithm_description( maptk_algorithm_t *algo,
+                             maptk_error_handle_t *eh );
 
 
 /// Get an algorithm implementation's configuration block
+/**
+ * \param[in]     algo  Opaque pointer to an algorithm instance.
+ * \param[in,out] eh    Error handle instance pointer
+ * \return New configuration block instance that is set to the given
+ *          algorithm's current configuration.
+ */
 MAPTK_C_EXPORT
 maptk_config_block_t*
 maptk_algorithm_get_impl_configuration( maptk_algorithm_t *algo,
@@ -86,6 +285,12 @@ maptk_algorithm_get_impl_configuration( maptk_algorithm_t *algo,
 
 
 /// Set this algorithm implementation's properties via a config block
+/**
+ * \param[in]     algo  Opaque pointer to an algorithm instance.
+ * \param[in]     cb    The \p maptk_config_block_t containing the
+ *                        configuration to set the given algorithm to.
+ * \param[in,out] eh    Error handle instance pointer
+ */
 MAPTK_C_EXPORT
 void
 maptk_algorithm_set_impl_configuration( maptk_algorithm_t *algo,
@@ -94,6 +299,11 @@ maptk_algorithm_set_impl_configuration( maptk_algorithm_t *algo,
 
 
 /// Check that the algorithm implementation's configuration is valid
+/**
+ * \param[in]     algo  Opaque pointer to an algorithm instance.
+ * \param[in]     cb    The \p maptk_config_block_t instance to check.
+ * \param[in,out] eh    Error handle instance pointer
+ */
 MAPTK_C_EXPORT
 bool
 maptk_algorithm_check_impl_configuration( maptk_algorithm_t *algo,
@@ -101,84 +311,30 @@ maptk_algorithm_check_impl_configuration( maptk_algorithm_t *algo,
                                           maptk_error_handle_t *eh );
 
 
-/// Common methods for classes that descend from algorithm_def
+/// Clone the given algorithm instance
 /**
- * Since the underlying structures in the C++ library use generics at the
- * algorithm_def level, there are a few static and member functions that become
- * specific to the particular algorithm type, requiring there to be multiple
- * versions of the base functions for each type.
+ * If a NULL pointer is given, a NULL pointer is returned, as there is nothing
+ * to clone.
  *
- * NOTE: While algorithm destruction is a common method to all algorithms, it
- * is included in the typed interface for implementation reasons.
+ * \param[in]     algo  The algorithm instance to clone.
+ * \param[in,out] eh    Error handle instance pointer.
+ * \return The new, cloned algorithm instance pointer.
  */
-#define DECLARE_COMMON_ALGO_API( type )                                         \
-  /* ==================================================================== */    \
-  /* Functions on types (static methods)                                  */    \
-  /* -------------------------------------------------------------------- */    \
-  /** Create new instance of a specific algorithm implementation.
-   * Returns NULL if there is no implementation currently associated with the
-   * name.
-   */                                                                           \
-  MAPTK_C_EXPORT                                                                \
-  maptk_algorithm_t*                                                            \
-  maptk_algorithm_##type##_create( char const *impl_name );                     \
-  /* Destroy an algorithm instance of this type */                              \
-  MAPTK_C_EXPORT                                                                \
-  void                                                                          \
-  maptk_algorithm_##type##_destroy( maptk_algorithm_t *algo,                    \
-                                    maptk_error_handle_t *eh );                 \
-  /** Get a list of registered implementation names for the given type */       \
-  MAPTK_C_EXPORT                                                                \
-  void                                                                          \
-  maptk_algorithm_##type##_registered_names( unsigned int *length,              \
-                                             char ***names );                   \
-  /** Get the configuration for a named algorithm in the given config */        \
-  /**
-   * NULL may be given for \p algo, which will return a generic
-   * configuration for this algorithm type.
-   */                                                                           \
-  MAPTK_C_EXPORT                                                                \
-  void                                                                          \
-  maptk_algorithm_##type##_get_type_config( char const *name,                   \
-                                            maptk_algorithm_t *algo,            \
-                                            maptk_config_block_t *cb, \
-                                            maptk_error_handle_t *eh );         \
-  /** Set algorithm properties based on a named configuration in the config */  \
-  /**
-   * This creates a new maptk_algorithm_t instance if the given config block
-   * \p cb has a type field for the given \p name and the type is valid, else
-   * the \p algo doesn't change (e.g. will remain a NULL pointer of that was
-   * what was passed).
-   *
-   * If given algorithm pointer is changed due to reconstruction, the
-   * original pointer is destroyed.
-   */                                                                           \
-  MAPTK_C_EXPORT                                                                \
-  void                                                                          \
-  maptk_algorithm_##type##_set_type_config( char const *name,                   \
-                                            maptk_config_block_t *cb,           \
-                                            maptk_algorithm_t **algo,           \
-                                            maptk_error_handle_t *eh );         \
-  /** Check the configuration with respect to this algorithm type */            \
-  MAPTK_C_EXPORT                                                                \
-  bool                                                                          \
-  maptk_algorithm_##type##_check_type_config( char const *name,                 \
-                                              maptk_config_block_t *cb,         \
-                                              maptk_error_handle_t *eh );       \
-  /* ==================================================================== */    \
-  /* Functions on algorithm instances                                     */    \
-  /*                                                                      */    \
-  /* These will error if the incorrect algorithm pointer was given.       */    \
-  /* -------------------------------------------------------------------- */    \
-  /* Clone the given algorithm instance */                                      \
-  /**
-   * If a NULL algorithm pointer is given, a null pointer is returned.
-   */ \
-  MAPTK_C_EXPORT                                                                \
-  maptk_algorithm_t*                                                            \
-  maptk_algorithm_##type##_clone( maptk_algorithm_t *algo, \
-                                  maptk_error_handle_t *eh );
-  // TODO: description() method
+MAPTK_C_EXPORT
+maptk_algorithm_t*
+maptk_algorithm_clone( maptk_algorithm_t *algo,
+                       maptk_error_handle_t *eh );
+
+
+/// Destroy the given algorithm instance
+/**
+ * \param[in]     algo  Pointer to the algorithm instance to destroy.
+ * \param[in,out] eh    Error handle instance pointer.
+ */
+MAPTK_C_EXPORT
+void
+maptk_algorithm_destroy( maptk_algorithm_t *algo,
+                         maptk_error_handle_t *eh );
 
 
 #ifdef __cplusplus
