@@ -485,3 +485,109 @@ IMPLEMENT_TEST(noisy_tracks)
                                       tracks0->tracks());
   TEST_NEAR("RMSE after SBA", end_rmse, 0.0, track_stdev);
 }
+
+
+// add noise to landmarks and cameras and tracks before input to SBA
+// select a subset of tracks_states to make outliers (large observation noise)
+// add a small amount of noise to all track states
+// select a subset of tracks/track_states to constrain the problem
+IMPLEMENT_TEST(outlier_tracks)
+{
+  using namespace maptk;
+  ceres::bundle_adjust ba;
+  config_block_sptr cfg = ba.get_configuration();
+  cfg->set_value("verbose", "true");
+  cfg->set_value("max_num_iterations", 100);
+  ba.set_configuration(cfg);
+
+  // create landmarks at the corners of a cube
+  landmark_map_sptr landmarks = testing::cube_corners(2.0);
+
+  // create a camera sequence (elliptical path)
+  camera_map_sptr cameras = testing::camera_seq();
+
+  // create tracks from the projections
+  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+
+  // add Gaussian noise to the landmark positions
+  landmark_map_sptr landmarks0 = testing::noisy_landmarks(landmarks, 0.1);
+
+  // add Gaussian noise to the camera positions and orientations
+  camera_map_sptr cameras0 = testing::noisy_cameras(cameras, 0.1, 0.1);
+
+  // make some observations outliers
+  track_set_sptr tracks_w_outliers =
+      testing::add_outliers_to_tracks(tracks, 0.1, 20.0);
+
+  // remove some tracks/track_states and add Gaussian noise
+  const double track_stdev = 1.0;
+  track_set_sptr tracks0 = testing::noisy_tracks(
+                               testing::subset_tracks(tracks_w_outliers, 0.5),
+                               track_stdev);
+
+
+  double init_rmse = reprojection_rmse(cameras0->cameras(),
+                                       landmarks0->landmarks(),
+                                       tracks0->tracks());
+  std::cout << "initial reprojection RMSE: " << init_rmse << std::endl;
+  if (init_rmse < 10.0)
+  {
+    TEST_ERROR("Initial reprojection RMSE should be large before SBA");
+  }
+
+  double init_med_err = reprojection_median_error(cameras0->cameras(),
+                                                  landmarks0->landmarks(),
+                                                  tracks0->tracks());
+  std::cout << "initial reprojection median error: "
+            << init_med_err << std::endl;
+  if (init_med_err < 10.0)
+  {
+    TEST_ERROR("Initial reprojection median_error should be large before SBA");
+  }
+
+  // make a copy of the initial cameras and landmarks
+  landmark_map_sptr landmarks1(new simple_landmark_map(landmarks0->landmarks()));
+  camera_map_sptr cameras1(new simple_camera_map(cameras0->cameras()));
+
+  // run bundle adjustement with the default, non-robust, trivial loss function
+  ba.optimize(cameras0, landmarks0, tracks0);
+
+  double trivial_loss_rmse = reprojection_rmse(cameras0->cameras(),
+                                               landmarks0->landmarks(),
+                                               tracks0->tracks());
+  double trivial_loss_med_err = reprojection_median_error(cameras0->cameras(),
+                                                          landmarks0->landmarks(),
+                                                          tracks0->tracks());
+
+  std::cout << "Non-robust SBA mean/median reprojection error: "
+            << trivial_loss_rmse << "/" << trivial_loss_med_err << std::endl;
+  if ( trivial_loss_med_err < track_stdev )
+  {
+    TEST_ERROR("Non-robust SBA should have a large median residual");
+  }
+
+  // run bundle adjustment with a robust loss function
+  cfg->set_value("loss_function_type", "HUBER_LOSS");
+  ba.set_configuration(cfg);
+  ba.optimize(cameras1, landmarks1, tracks0);
+
+  double robust_loss_rmse = reprojection_rmse(cameras1->cameras(),
+                                               landmarks1->landmarks(),
+                                               tracks0->tracks());
+  double robust_loss_med_err = reprojection_median_error(cameras1->cameras(),
+                                                         landmarks1->landmarks(),
+                                                         tracks0->tracks());
+
+  std::cout << "Robust SBA mean/median reprojection error: "
+            << robust_loss_rmse << "/" << robust_loss_med_err << std::endl;
+  if ( trivial_loss_rmse > robust_loss_rmse )
+  {
+    TEST_ERROR("Robust SBA should increase RMSE error");
+  }
+  if ( trivial_loss_med_err <= robust_loss_med_err )
+  {
+    TEST_ERROR("Robust SBA should decrease median error");
+  }
+  TEST_NEAR("median error after robust SBA", robust_loss_med_err, 0.0, track_stdev);
+
+}
