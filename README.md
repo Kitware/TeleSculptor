@@ -125,8 +125,14 @@ functionality.  Dependencies for each module are:
            <https://github.com/Kitware/VisCL>
 * VXL    - version 1.17 or greater
            <http://vxl.sourceforge.net/>
-* Docs   - Doxygen version 1.7 or greater
-           <http://www.stack.nl/~dimitri/doxygen/>
+
+### Documentation ###
+
+Documentation generation is another optional component that brings in
+additional dependencies.  To build the documentation you need:
+
+* Doxygen version 1.7 or greater
+  <http://www.stack.nl/~dimitri/doxygen/>
 
 
 Building Doxygen Documentation
