@@ -438,7 +438,7 @@ IMPLEMENT_TEST(subset_tracks)
 
 
 // add noise to landmarks and cameras and tracks before input to SBA
-// select a subset of tracks/track_states to constrain the problem
+// select a subset of tracks/track_states and add observation noise
 IMPLEMENT_TEST(noisy_tracks)
 {
   using namespace maptk;
