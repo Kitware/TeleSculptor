@@ -91,7 +91,7 @@ public:
     indices.reserve(feat_vec.size());
     for (unsigned int i = 0; i < feat_vec.size(); i++)
     {
-      indices.push_back(std::make_pair<unsigned int, double>(i, feat_vec[i]->magnitude()));
+      indices.push_back(std::make_pair(i, feat_vec[i]->magnitude()));
     }
 
     // compute threshold
