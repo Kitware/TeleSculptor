@@ -54,7 +54,7 @@ class descriptor
 {
 public:
   /// Destructor
-  virtual ~descriptor() {}
+  virtual ~descriptor() MAPTK_DEFAULT_DTOR;
 
   /// The number of elements of the underlying type
   virtual std::size_t size() const = 0;

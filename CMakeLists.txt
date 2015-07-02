@@ -30,7 +30,11 @@ else()
   option(BUILD_SHARED_LIBS "Build shared libraries." OFF)
 endif()
 
-set(MAPTK_LIB_SUFFIX "" CACHE STRING "String suffix appended to the library directory we install into")
+# default to MAPTK_LIB_SUFFIX for backwards compatibility
+if(DEFINED MAPTK_LIB_SUFFIX)
+  message(WARNING "MAPTK_LIB_SUFFIX is deprecated. Please use LIB_SUFFIX instead.")
+endif()
+set(LIB_SUFFIX "${MAPTK_LIB_SUFFIX}" CACHE STRING "String suffix appended to the library directory we install into")
 
 
 ###
@@ -72,7 +76,7 @@ endif()
 ###
 # Top level installation
 #
-set(maptk_cmake_install_dir "lib${MAPTK_LIB_SUFFIX}/cmake/maptk")
+set(maptk_cmake_install_dir "lib${LIB_SUFFIX}/cmake/maptk")
 
 # Install rules for CMake utilities
 include(maptk-install-utils)
@@ -97,7 +101,7 @@ maptk_export_targets("${MAPTK_BINARY_DIR}/maptk-config-targets.cmake")
 
 # Configure install-tree CMake config file and export associated targets file
 set(MAPTK_CONFIG_INSTALL_FILE "${MAPTK_BINARY_DIR}/maptk-config-install.cmake")
-set(module_path "${CMAKE_INSTALL_PREFIX}/lib${MAPTK_LIB_SUFFIX}/cmake/maptk")
+set(module_path "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/cmake/maptk")
 maptk_configure_file(maptk-install-config
   "${MAPTK_SOURCE_DIR}/CMake/maptk-config-install.cmake.in"
   "${MAPTK_CONFIG_INSTALL_FILE}"

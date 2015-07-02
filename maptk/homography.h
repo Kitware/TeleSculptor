@@ -67,7 +67,7 @@ class homography
 {
 public:
   /// Destructor
-  virtual ~homography() {}
+  virtual ~homography() MAPTK_DEFAULT_DTOR;
 
   /// Create a clone of this homography object, returning as smart pointer
   /**

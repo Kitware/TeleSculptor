@@ -59,7 +59,7 @@ class MAPTK_LIB_EXPORT image_io
   : public algorithm_def<image_io>
 {
 public:
-  virtual ~image_io() {}
+  virtual ~image_io() MAPTK_DEFAULT_DTOR;
 
   /// Return the name of this algorithm
   static std::string static_type_name() { return "image_io"; }

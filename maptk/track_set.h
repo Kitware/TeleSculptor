@@ -62,7 +62,7 @@ class MAPTK_LIB_EXPORT track_set
 {
 public:
   /// Destructor
-  virtual ~track_set() {}
+  virtual ~track_set() MAPTK_DEFAULT_DTOR;
 
   /// Return the number of tracks in the set
   virtual size_t size() const;

@@ -53,7 +53,7 @@ class descriptor_set
 {
 public:
   /// Destructor
-  virtual ~descriptor_set() {}
+  virtual ~descriptor_set() MAPTK_DEFAULT_DTOR;
 
   /// Return the number of descriptors in the set
   virtual size_t size() const = 0;

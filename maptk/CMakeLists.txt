@@ -213,7 +213,7 @@ if (WIN32)  # Windows puts DLLs in bin/CONFIG/
   set(shared_lib_dir "/bin")
 else()  # Other Unix systems
   set(shared_lib_dir "/lib")
-  set(lib_dir_suffix "${MAPTK_LIB_SUFFIX}")
+  set(lib_dir_suffix "${LIB_SUFFIX}")
 endif()
 
 if (CMAKE_CONFIGURATION_TYPES)
@@ -240,7 +240,7 @@ target_compile_definitions(maptk_apm
     # For plugin manager
     "SHARED_LIB_SUFFIX=\"${CMAKE_SHARED_MODULE_SUFFIX}\""
     "USE_BUILD_PLUGIN_DIR=${MAPTK_USE_BUILD_PLUGIN_DIR}"
-    "DEFAULT_PLUGIN_DIR_BUILD=\"${MAPTK_BINARY_DIR}${shared_lib_dir}${config_subdir}/maptk\""
+    "DEFAULT_PLUGIN_DIR_BUILD=\"${MAPTK_BINARY_DIR}${shared_lib_dir}${lib_dir_suffix}${config_subdir}/maptk\""
     "DEFAULT_PLUGIN_DIR_INSTALL=\"${CMAKE_INSTALL_PREFIX}${shared_lib_dir}${lib_dir_suffix}/maptk\""
     # For static interface
     "MAPTK_ENABLE_OPENCV=${MAPTK_ENABLE_OPENCV}"

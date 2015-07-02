@@ -60,6 +60,9 @@ public:
   /// Copy Constructor
   f2w_homography( f2w_homography const &h );
 
+  /// Destructor
+  virtual ~f2w_homography() MAPTK_DEFAULT_DTOR;
+
   /// Get the homography transformation
   virtual homography_sptr homography() const;
 

@@ -71,7 +71,7 @@ public:
   close_loops_multi_method(const close_loops_multi_method&);
 
   /// Destructor
-  virtual ~close_loops_multi_method() {}
+  virtual ~close_loops_multi_method() MAPTK_DEFAULT_DTOR;
 
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "multi_method"; }

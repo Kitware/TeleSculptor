@@ -68,7 +68,7 @@ class camera
 {
 public:
   /// Destructor
-  virtual ~camera() {}
+  virtual ~camera() MAPTK_DEFAULT_DTOR;
 
   /// Create a clone of this camera object
   virtual camera_sptr clone() const = 0;
