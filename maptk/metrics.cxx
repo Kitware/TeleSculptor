@@ -101,4 +101,48 @@ reprojection_rmse(const std::map<frame_id_t, camera_sptr>& cameras,
   return std::sqrt(error_sum / num_obs);
 }
 
+
+/// Compute the median of the reprojection errors
+double
+reprojection_median_error(const std::map<frame_id_t, camera_sptr>& cameras,
+                          const std::map<landmark_id_t, landmark_sptr>& landmarks,
+                          const std::vector<track_sptr>& tracks)
+{
+  typedef std::map<landmark_id_t, landmark_sptr>::const_iterator lm_map_itr_t;
+  typedef std::map<frame_id_t, camera_sptr>::const_iterator cam_map_itr_t;
+  std::vector<double> errors;
+  BOOST_FOREACH(const track_sptr& t, tracks)
+  {
+    lm_map_itr_t lmi = landmarks.find(t->id());
+    if (lmi == landmarks.end() || !lmi->second)
+    {
+      // no landmark corresponding to this track
+      continue;
+    }
+    const landmark& lm = *lmi->second;
+    for( track::history_const_itr tsi = t->begin(); tsi != t->end(); ++tsi)
+    {
+      if (!tsi->feat)
+      {
+        // no feature for this track state.
+        continue;
+      }
+      const feature& feat = *tsi->feat;
+      cam_map_itr_t ci = cameras.find(tsi->frame_id);
+      if (ci == cameras.end() || !ci->second)
+      {
+        // no camera corresponding to this track state
+        continue;
+      }
+      const camera& cam = *ci->second;
+      errors.push_back(reprojection_error(cam, lm, feat));
+    }
+  }
+  std::nth_element(errors.begin(),
+                   errors.begin() + errors.size()/2,
+                   errors.end());
+  return errors[errors.size()/2];
+}
+
+
 } // end namespace maptk
