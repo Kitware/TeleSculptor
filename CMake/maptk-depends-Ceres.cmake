@@ -6,6 +6,6 @@ option( MAPTK_ENABLE_CERES
   )
 
 if( MAPTK_ENABLE_CERES )
-  find_package( Ceres REQUIRED )
+  find_package( Ceres 1.10.0 REQUIRED )
   include_directories( SYSTEM ${CERES_INCLUDE_DIRS} )
 endif()
