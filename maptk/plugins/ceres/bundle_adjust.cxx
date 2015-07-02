@@ -140,8 +140,6 @@ public:
   {
   }
 
-  /// the Ceres solver problem
-  ::ceres::Problem problem;
   /// the Ceres solver options
   ::ceres::Solver::Options options;
   /// verbose output
@@ -352,6 +350,9 @@ bundle_adjust
     intrinsic_params[4] = K.skew();
   }
 
+  // the Ceres solver problem
+  ::ceres::Problem problem;
+
   // Create the loss function to use
   ::ceres::LossFunction* loss_func
       = LossFunctionFactory(d_->loss_function_type,
@@ -377,11 +378,11 @@ bundle_adjust
         continue;
       }
       vector_2d pt = ts->feat->loc();
-      d_->problem.AddResidualBlock(reprojection_error::create(pt.x(), pt.y()),
-                                   loss_func,
-                                   &intrinsic_params[0],
-                                   &cam_itr->second[0],
-                                   &lm_itr->second[0]);
+      problem.AddResidualBlock(reprojection_error::create(pt.x(), pt.y()),
+                               loss_func,
+                               &intrinsic_params[0],
+                               &cam_itr->second[0],
+                               &lm_itr->second[0]);
       loss_func_used = true;
     }
   }
@@ -394,7 +395,7 @@ bundle_adjust
   }
 
   ::ceres::Solver::Summary summary;
-  ::ceres::Solve(d_->options, &d_->problem, &summary);
+  ::ceres::Solve(d_->options, &problem, &summary);
   std::cout << summary.FullReport() << "\n";
 
   // Update the landmarks with the optimized values
