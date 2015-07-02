@@ -30,7 +30,11 @@ else()
   option(BUILD_SHARED_LIBS "Build shared libraries." OFF)
 endif()
 
-set(LIB_SUFFIX "" CACHE STRING "String suffix appended to the library directory we install into")
+# default to MAPTK_LIB_SUFFIX for backwards compatibility
+if(DEFINED MAPTK_LIB_SUFFIX)
+  message(WARNING "MAPTK_LIB_SUFFIX is deprecated. Please use LIB_SUFFIX instead.")
+endif()
+set(LIB_SUFFIX "${MAPTK_LIB_SUFFIX}" CACHE STRING "String suffix appended to the library directory we install into")
 
 
 ###

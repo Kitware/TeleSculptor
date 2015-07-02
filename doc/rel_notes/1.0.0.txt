@@ -32,7 +32,9 @@ Build System
  * Added Eigen3 include directory path to include directories exported by
    MAP-Tk.
 
- * Added support for LIB_SUFFIX.
+ * Added support for LIB_SUFFIX.  This supersedes MAPTK_LIB_SUFFIX; if the old
+   variable is set, it will be used as the default value for LIB_SUFFIX, but a
+   warning will be issued.
 
 MAP-Tk Library
 
