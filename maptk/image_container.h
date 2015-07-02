@@ -58,7 +58,7 @@ class image_container
 public:
 
   /// Destructor
-  virtual ~image_container() {}
+  virtual ~image_container() MAPTK_DEFAULT_DTOR;
 
   /// The size of the image data in bytes
   /**

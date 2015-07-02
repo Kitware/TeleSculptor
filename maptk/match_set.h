@@ -36,6 +36,7 @@
 #ifndef MAPTK_MATCH_SET_H_
 #define MAPTK_MATCH_SET_H_
 
+#include <maptk/config.h>
 
 #include <vector>
 #include <boost/shared_ptr.hpp>
@@ -51,7 +52,7 @@ class match_set
 {
 public:
   /// Destructor
-  virtual ~match_set() {}
+  virtual ~match_set() MAPTK_DEFAULT_DTOR;
 
   /// Return the number of matches in the set
   virtual size_t size() const = 0;

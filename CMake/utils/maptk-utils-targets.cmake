@@ -181,8 +181,8 @@ function(maptk_add_library name)
   # Setting Properties
   set_target_properties("${name}"
     PROPERTIES
-      ARCHIVE_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/lib${library_subdir}"
-      LIBRARY_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/lib${library_subdir}"
+      ARCHIVE_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/lib${LIB_SUFFIX}${library_subdir}"
+      LIBRARY_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/lib${LIB_SUFFIX}${library_subdir}"
       RUNTIME_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/bin${library_subdir}"
       COMPILE_DEFINITIONS      "${new_compile_definitions}"
       ${_maptk_version_info}
@@ -193,8 +193,8 @@ function(maptk_add_library name)
     string(TOUPPER "${config}" upper_config)
     set_target_properties("${name}"
       PROPERTIES
-        "ARCHIVE_OUTPUT_DIRECTORY_${upper_config}" "${MAPTK_BINARY_DIR}/lib/${config}${library_subdir}"
-        "LIBRARY_OUTPUT_DIRECTORY_${upper_config}" "${MAPTK_BINARY_DIR}/lib/${config}${library_subdir}"
+        "ARCHIVE_OUTPUT_DIRECTORY_${upper_config}" "${MAPTK_BINARY_DIR}/lib${LIB_SUFFIX}/${config}${library_subdir}"
+        "LIBRARY_OUTPUT_DIRECTORY_${upper_config}" "${MAPTK_BINARY_DIR}/lib${LIB_SUFFIX}/${config}${library_subdir}"
         "RUNTIME_OUTPUT_DIRECTORY_${upper_config}" "${MAPTK_BINARY_DIR}/bin/${config}${library_subdir}"
       )
   endforeach()
@@ -213,8 +213,8 @@ function(maptk_add_library name)
   maptk_install(
     TARGETS             "${name}"
     ${exports}
-    ARCHIVE DESTINATION lib${MAPTK_LIB_SUFFIX}${library_subdir}
-    LIBRARY DESTINATION lib${MAPTK_LIB_SUFFIX}${library_subdir}
+    ARCHIVE DESTINATION lib${LIB_SUFFIX}${library_subdir}
+    LIBRARY DESTINATION lib${LIB_SUFFIX}${library_subdir}
     RUNTIME DESTINATION bin${library_subdir}
     COMPONENT           ${component}
     )

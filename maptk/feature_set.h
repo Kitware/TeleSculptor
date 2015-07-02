@@ -55,7 +55,7 @@ class feature_set
 {
 public:
   /// Destructor
-  virtual ~feature_set() {}
+  virtual ~feature_set() MAPTK_DEFAULT_DTOR;
 
   /// Return the number of features in the set
   virtual size_t size() const = 0;
