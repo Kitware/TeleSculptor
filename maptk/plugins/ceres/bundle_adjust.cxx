@@ -129,14 +129,22 @@ public:
   priv()
   : verbose(false),
     loss_function_type(TRIVIAL_LOSS),
-    loss_function_scale(1.0)
+    loss_function_scale(1.0),
+    optimize_focal_length(true),
+    optimize_aspect_ratio(false),
+    optimize_principal_point(false),
+    optimize_skew(false)
   {
   }
 
   priv(const priv& other)
   : verbose(other.verbose),
     loss_function_type(other.loss_function_type),
-    loss_function_scale(other.loss_function_scale)
+    loss_function_scale(other.loss_function_scale),
+    optimize_focal_length(other.optimize_focal_length),
+    optimize_aspect_ratio(other.optimize_aspect_ratio),
+    optimize_principal_point(other.optimize_principal_point),
+    optimize_skew(other.optimize_skew)
   {
   }
 
@@ -148,6 +156,14 @@ public:
   LossFunctionType loss_function_type;
   /// the scale of the loss function
   double loss_function_scale;
+  /// option to optimize the focal length
+  bool optimize_focal_length;
+  /// option to optimize aspect ratio
+  bool optimize_aspect_ratio;
+  /// option to optimize principal point
+  bool optimize_principal_point;
+  /// option to optimize skew
+  bool optimize_skew;
 };
 
 
@@ -215,6 +231,14 @@ bundle_adjust
                     + ceres_options< ceres::LossFunctionType >());
   config->set_value("loss_function_scale", d_->loss_function_scale,
                     "Robust loss function scale factor.");
+  config->set_value("optimize_focal_length", d_->optimize_focal_length,
+                    "Include focal length parameters in bundle adjustment.");
+  config->set_value("optimize_aspect_ratio", d_->optimize_aspect_ratio,
+                    "Include aspect ratio parameters in bundle adjustment.");
+  config->set_value("optimize_principal_point", d_->optimize_principal_point,
+                    "Include principal point parameters in bundle adjustment.");
+  config->set_value("optimize_skew", d_->optimize_skew,
+                    "Include skew parameters in bundle adjustment.");
   return config;
 }
 
@@ -264,6 +288,14 @@ bundle_adjust
                                                     d_->loss_function_type);
   d_->loss_function_scale = config->get_value<double>("loss_function_scale",
                                                       d_->loss_function_scale);
+  d_->optimize_focal_length = config->get_value<bool>("optimize_focal_length",
+                                                      d_->optimize_focal_length);
+  d_->optimize_aspect_ratio = config->get_value<bool>("optimize_aspect_ratio",
+                                                      d_->optimize_aspect_ratio);
+  d_->optimize_principal_point = config->get_value<bool>("optimize_principal_point",
+                                                         d_->optimize_principal_point);
+  d_->optimize_skew = config->get_value<bool>("optimize_skew",
+                                              d_->optimize_skew);
 }
 
 
@@ -353,6 +385,26 @@ bundle_adjust
   // the Ceres solver problem
   ::ceres::Problem problem;
 
+  // enumerate the intrinsics held constant
+  std::vector<int> constant_intrinsics;
+  if (!d_->optimize_focal_length)
+  {
+    constant_intrinsics.push_back(0);
+  }
+  if (!d_->optimize_principal_point)
+  {
+    constant_intrinsics.push_back(1);
+    constant_intrinsics.push_back(2);
+  }
+  if (!d_->optimize_aspect_ratio)
+  {
+    constant_intrinsics.push_back(3);
+  }
+  if (!d_->optimize_skew)
+  {
+    constant_intrinsics.push_back(4);
+  }
+
   // Create the loss function to use
   ::ceres::LossFunction* loss_func
       = LossFunctionFactory(d_->loss_function_type,
@@ -385,6 +437,18 @@ bundle_adjust
                                &lm_itr->second[0]);
       loss_func_used = true;
     }
+  }
+  // apply the constraints
+  if (constant_intrinsics.size() > 4)
+  {
+    // set all parameters in the block constant
+    problem.SetParameterBlockConstant(&intrinsic_params[0]);
+  }
+  else if (!constant_intrinsics.empty())
+  {
+    // set a subset of parameters in the block constant
+    problem.SetParameterization(&intrinsic_params[0],
+        new ::ceres::SubsetParameterization(5, constant_intrinsics));
   }
 
   // If the loss function was added to a residual block, ownership was
