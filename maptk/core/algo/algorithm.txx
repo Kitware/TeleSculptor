@@ -148,19 +148,17 @@ algorithm_def<Self>
     }
   }
 
+  std::string const key( name + config_block::block_sep + "type" );
+
   if(nested_algo)
   {
-    config->set_value(name + config_block::block_sep + "type",
-                      nested_algo->impl_name(),
-                      type_comment);
+    config->set_value( key, nested_algo->impl_name(), type_comment);
     config->subblock_view(name + config_block::block_sep + nested_algo->impl_name())
           ->merge_config(nested_algo->get_configuration());
   }
-  else if (!config->has_value(name + config_block::block_sep + "type"))
+  else if (!config->has_value( key ))
   {
-    config->set_value(name + config_block::block_sep + "type",
-                      "",
-                      type_comment);
+    config->set_value( key, "", type_comment);
   }
 }
 
@@ -173,19 +171,40 @@ algorithm_def<Self>
                                 config_block_sptr config,
                                 base_sptr &nested_algo)
 {
-  if(config->has_value(name + config_block::block_sep + "type"))
-  {
+  std::string const key( name + config_block::block_sep + "type" );
+  std::string iname;
 
-    std::string iname = config->get_value<std::string>(name
-                                                       + config_block::block_sep
-                                                       + "type");
+  if(config->has_value( key ) )
+  {
+    iname = config->get_value<std::string>( key );
     if(algorithm_def<Self>::has_impl_name(iname))
     {
+#ifndef NDEBUG
+      // \todo add log message
+      std::cerr << "DEBUG - configuring \"" << name << "\" with algorithm type \""
+                << iname << "\"\n";
+#endif
+
       nested_algo = algorithm_def<Self>::create(iname);
       nested_algo->set_configuration(
         config->subblock_view(name + config_block::block_sep + iname)
       );
     }
+    else
+    {
+#ifndef NDEBUG
+      // \todo add log message, is this an error?
+      std::cerr << "WARNING - impl name:\"" << iname << "\" not supported, from key \""
+                << key << "\"\n";
+#endif
+    }
+  }
+  else
+  {
+#ifndef NDEBUG
+    /// \todo add log message
+    std::cerr << "WARNING - config key: \"" << key <<  "\" not found\n";
+#endif
   }
 }
 
@@ -199,13 +218,25 @@ algorithm_def<Self>
 {
   if(!config->has_value(name + config_block::block_sep + "type"))
   {
+#ifndef NDEBUG
+    // \todo add log message DEBUG
+    std::cerr << "DEBUG - config block does not contain \""
+              << name << config_block::block_sep << "type\"" << std::endl;
+#endif
+
     return false;
   }
   std::string iname = config->get_value<std::string>(name + config_block::block_sep + "type");
   if(!algorithm_def<Self>::has_impl_name(iname))
   {
+#ifndef NDEBUG
+    // \todo add log message DEBUG
+    std::cerr << "DEBUG - algorithm does not have implementation name \"" << iname
+              << "\"" << std::endl;
+#endif
     return false;
   }
+
   // retursively check the configuration of the sub-algorithm
   return registrar<Self>::find(iname)->check_configuration(
     config->subblock_view(name + config_block::block_sep + iname)
