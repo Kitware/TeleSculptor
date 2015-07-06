@@ -652,12 +652,27 @@ static int maptk_main(int argc, char const* argv[])
   maptk::track_set_sptr tracks = maptk::read_track_file(track_file);
 
   std::cerr << "loaded "<<tracks->size()<<" tracks"<<std::endl;
+  if( tracks->size() == 0 )
+  {
+    std::cerr << "No tracks loaded."
+              << std::endl;
+    return EXIT_FAILURE;
+  }
   size_t min_track_len = config->get_value<size_t>("min_track_length");
   if( min_track_len > 1 )
   {
     boost::timer::auto_cpu_timer t("track filtering: %t sec CPU, %w sec wall\n");
     tracks = filter_tracks(tracks, min_track_len);
     std::cerr << "filtered down to "<<tracks->size()<<" long tracks"<<std::endl;
+
+    if( tracks->size() == 0 )
+    {
+      std::cerr << "All track have been filtered. "
+                << "No tracks are longer than " << min_track_len << " frames. "
+                << "Try decreasing \"min_track_len\""
+                << std::endl;
+      return EXIT_FAILURE;
+    }
   }
 
   //

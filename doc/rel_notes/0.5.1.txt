@@ -64,3 +64,9 @@ Scripts
    height is larger than width.  Focal length was being interpreted
    incorrectly.  Also set the rendering image resolution based on the principal
    point to get proper aspect ratio in the camera view.
+
+Tools
+
+ * Avoid a segfault in maptk_bundle_adjust_tracks by checking that there are
+   tracks remaining after filtering by minimum length.  Provide an informative
+   message and exit cleanly if no tracks remain.
