@@ -96,10 +96,10 @@ IMPLEMENT_TEST(create_from_name)
   algorithm_plugin_manager::instance().register_plugins();
 
   algo::algorithm_sptr empty = algo::algorithm::create("", "");
-  TEST_EQUAL("create empty algorithm", empty, NULL);
+  TEST_EQUAL("create empty algorithm", empty, 0);
 
   empty = algo::algorithm::create("match_features", "not_a_real_impl");
-  TEST_EQUAL("create invalid algorithm", empty, NULL);
+  TEST_EQUAL("create invalid algorithm", empty, 0);
 
   TEST_EQUAL("has algorithm type",
              algo::algorithm::has_type_name("match_features"), true);

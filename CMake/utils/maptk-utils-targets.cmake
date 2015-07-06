@@ -237,7 +237,8 @@ endfunction()
 #
 # This generates a small MODULE library that exposes the required C interface
 # function to be picked up by the algorithm plugin manager. This library is set
-# to install into the .../maptk subdirectory.
+# to install into the .../maptk subdirectory and adds a _plugin suffix to the
+# base library name.
 #
 # Additional source files may be specified after the base library if the
 # registration interface implementation is separate from the base library.
@@ -276,7 +277,7 @@ function(maptk_create_plugin base_lib)
       PROPERTIES
         PREFIX        ""
         SUFFIX        ${CMAKE_SHARED_MODULE_SUFFIX}
-        OUTPUT_NAME   ${base_lib}
+        OUTPUT_NAME   ${base_lib}_plugin
       )
 
     add_dependencies(all-plugins maptk-plugin-${base_lib})
