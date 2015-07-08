@@ -44,7 +44,7 @@ MAP-Tk Library
  * Refactored source file layout.
 
  * Separated out algorithm implementations that used to be in the main MAP-Tk
-   library into a core library witha a plugin interface.
+   library into a core library with a plugin interface.
 
  * Added required dependency on the Eigen3 header-only library.  Going forward
    Eigen will provide standardized linear algebra functionality so we do not
