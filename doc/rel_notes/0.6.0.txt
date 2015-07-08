@@ -1,8 +1,25 @@
 MAP-Tk v0.6.0 Release Notes
 ==========================
 
-This is a major release of MAP-Tk that provides both new functionality and fixes
-over the previous v0.5.1 release.
+This is a major release of MAP-Tk that provides both new functionality and
+fixes over the previous v0.5.1 release.  Although the API has changed
+significantly, we still consider MAP-Tk to be in "pre-release" and are
+not yet ready to increase the major version number and mark this release as
+v1.0.0.  Additional major restructuring is planned before we release v1.0.0
+with a "stable" API.
+
+The primary changes in this release are a major restructuring to provide
+true dynamically loaded plugins instead of the previous module framework,
+and a switch to Eigen3 to provide the core linear algebra data structure
+and algorithms (e.g. matrix and vector).
+
+Additionally, this release of MAP-Tk provides an options for a new two-pass
+feature matching approach, a feature filter algorithm, and a geometrically
+constrained feature matcher.  The intended use case for these is to first match
+a "strong" subset of features, estimate a homography from these matches, and
+use the homography to predict the approximate motion of the remaining features,
+then search in a local neighborhood to quickly find weaker or more ambiguous
+matches that otherwise would have been missed.
 
 
 Updates since v0.5.1
