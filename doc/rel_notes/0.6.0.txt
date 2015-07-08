@@ -1,11 +1,11 @@
-MAP-Tk v1.0.0 Release Notes
+MAP-Tk v0.6.0 Release Notes
 ==========================
 
 This is a major release of MAP-Tk that provides both new functionality and fixes
-over the previous v0.5.0 release.
+over the previous v0.5.1 release.
 
 
-Updates since v0.5.0
+Updates since v0.5.1
 --------------------
 
 Build System
@@ -159,7 +159,7 @@ Tools
  * In track features tool, Added ability to specify paired mask image files.
 
 
-Fixes since v0.5.0
+Fixes since v0.5.1
 ------------------
 
 Build System
