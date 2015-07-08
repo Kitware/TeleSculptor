@@ -10,8 +10,12 @@ Updates since v0.5.1
 
 Build System
 
- * Revised module system into providing tools to build library and plugins for
-   dynamic loading.
+ * Revised modules into plugins for dynamic loading.  Each plugin provides a
+   library for static linking and a light weight wrapper to produce a plugin
+   that is loaded at run-time.
+
+ * Provided CMake tools to make it easy to construct the plugins with minimal
+   boilerplate code.
 
  * Added install rules for CMake utilities for MAP-Tk users to create MAP-Tk
    compliant plugin interface libraries.
