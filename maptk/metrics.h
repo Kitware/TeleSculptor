@@ -97,6 +97,21 @@ reprojection_error(const camera& cam,
 }
 
 
+/// Compute a vector of all reprojection errors in the data
+/**
+ * \param [in] cameras is the map of frames/cameras used for projection
+ * \param [in] landmarks is the map ids/landmarks projected into the cameras
+ * \param [in] tracks is the set of tracks providing measurements
+ * \returns a vector containing one reprojection error for each observation
+ *          (i.e. track state) that has a corresponding camera and landmark
+ */
+MAPTK_LIB_EXPORT
+std::vector<double>
+reprojection_errors(const std::map<frame_id_t, camera_sptr>& cameras,
+                    const std::map<landmark_id_t, landmark_sptr>& landmarks,
+                    const std::vector<track_sptr>& tracks);
+
+
 /// Compute the Root-Mean-Square-Error (RMSE) of the reprojections
 /**
  * \param [in] cameras is the map of frames/cameras used for projection
@@ -110,6 +125,22 @@ double
 reprojection_rmse(const std::map<frame_id_t, camera_sptr>& cameras,
                   const std::map<landmark_id_t, landmark_sptr>& landmarks,
                   const std::vector<track_sptr>& tracks);
+
+
+/// Compute the median of the reprojection errors
+/**
+ * \param [in] cameras is the map of frames/cameras used for projection
+ * \param [in] landmarks is the map ids/landmarks projected into the cameras
+ * \param [in] tracks is the set of tracks providing measurements
+ * \returns the median reprojection error between all landmarks projected by
+ *          all cameras that have corresponding image measurements provided
+ *          by the tracks
+ */
+MAPTK_LIB_EXPORT
+double
+reprojection_median_error(const std::map<frame_id_t, camera_sptr>& cameras,
+                          const std::map<landmark_id_t, landmark_sptr>& landmarks,
+                          const std::vector<track_sptr>& tracks);
 
 
 } // end namespace maptk

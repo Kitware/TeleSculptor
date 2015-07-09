@@ -41,6 +41,7 @@ Overview of Directories
 * doc                 -- contains release notes and other documentation
 * maptk               -- contains the core library source and headers
 * maptk/algo          -- contains abstract algorithm definitions
+* maptk/plugins/ceres -- contains the Ceres Solver plugin source and headers
 * maptk/plugins/core  -- contains core plugin source and headers
 * maptk/plugins/ocv   -- contains the OpenCV plugin source and headers
 * maptk/plugins/proj  -- contains the PROJ4 plugin source and headers
@@ -89,6 +90,7 @@ CMake Options
 * MAPTK_INSTALL_DOCS   -- Install Doxygen documentation (requires above enabled)
 * MAPTK_ENABLE_TESTING -- Build the unit tests
 
+* MAPTK_ENABLE_CERES   -- Turn on building the Ceres Solver plugin module
 * MAPTK_ENABLE_OPENCV  -- Turn on building the OpenCV plugin module
 * MAPTK_ENABLE_PROJ    -- Turn on building the PROJ.4 plugin module
 * MAPTK_ENABLE_VISCL   -- Turn on building the VisCL plugin module
@@ -117,6 +119,8 @@ system, filesystem, program_options, timer, chrono.
 Each MAP-Tk plugin module brings in more dependencies for additional
 functionality.  Dependencies for each module are:
 
+* Ceres  - version 1.10.0 or greater
+           <http://ceres-solver.org/>
 * OpenCV - version 2.4.6 or greater
            <http://opencv.org/>
 * PROJ   - version 4.7
@@ -125,8 +129,14 @@ functionality.  Dependencies for each module are:
            <https://github.com/Kitware/VisCL>
 * VXL    - version 1.17 or greater
            <http://vxl.sourceforge.net/>
-* Docs   - Doxygen version 1.7 or greater
-           <http://www.stack.nl/~dimitri/doxygen/>
+
+### Documentation ###
+
+Documentation generation is another optional component that brings in
+additional dependencies.  To build the documentation you need:
+
+* Doxygen version 1.7 or greater
+  <http://www.stack.nl/~dimitri/doxygen/>
 
 
 Building Doxygen Documentation
