@@ -234,52 +234,6 @@ IMPLEMENT_TEST(zero_landmarks)
 }
 
 
-// initialize all landmarks to the origin and all cameras to same location as input to SBA
-IMPLEMENT_TEST(zero_landmarks_same_cameras)
-{
-  using namespace maptk;
-  ceres::bundle_adjust ba;
-  config_block_sptr cfg = ba.get_configuration();
-  cfg->set_value("verbose", "true");
-  cfg->set_value("max_num_iterations", 100);
-  ba.set_configuration(cfg);
-
-  // create landmarks at the corners of a cube
-  landmark_map_sptr landmarks = testing::cube_corners(2.0);
-
-  // create a camera sequence (elliptical path)
-  camera_map_sptr cameras = testing::camera_seq();
-
-  // create tracks from the projections
-  track_set_sptr tracks = projected_tracks(landmarks, cameras);
-
-  // initialize all landmarks to the origin
-  landmark_id_t num_landmarks = static_cast<landmark_id_t>(landmarks->size());
-  landmark_map_sptr landmarks0 = testing::init_landmarks(num_landmarks);
-
-  // initialize all cameras to at (0,0,1) looking at the origin
-  frame_id_t num_cameras = static_cast<frame_id_t>(cameras->size());
-  camera_map_sptr cameras0 = testing::init_cameras(num_cameras);
-
-
-  double init_rmse = reprojection_rmse(cameras0->cameras(),
-                                       landmarks0->landmarks(),
-                                       tracks->tracks());
-  std::cout << "initial reprojection RMSE: " << init_rmse << std::endl;
-  if (init_rmse < 10.0)
-  {
-    TEST_ERROR("Initial reprojection RMSE should be large before SBA");
-  }
-
-  ba.optimize(cameras0, landmarks0, tracks);
-
-  double end_rmse = reprojection_rmse(cameras0->cameras(),
-                                      landmarks0->landmarks(),
-                                      tracks->tracks());
-  TEST_NEAR("RMSE after SBA", end_rmse, 0.0, 1e-5);
-}
-
-
 // add noise to landmarks and cameras before input to SBA
 // select a subset of cameras to optimize
 IMPLEMENT_TEST(subset_cameras)
