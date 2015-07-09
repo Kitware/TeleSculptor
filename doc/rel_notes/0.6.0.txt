@@ -41,6 +41,16 @@ to predict the approximate motion of the remaining features, then search in a
 local neighborhood to quickly find weaker or more ambiguous matches that
 otherwise would have been missed.
 
+Language bindings for C and Python are also new in MAP-Tk v0.6.0.  These
+bindings are not yet complete, but offer a preview of what is to come.
+Producing Python bindings for a C++ API is challenging for a variety of
+reasons, but Python bindings for C are comparatively easy to produce.  Our
+approach is to produce C bindings for the C++ API and then build Python
+bindings on the C API.  This will also allow other language bindings to be
+built in the future more easily by using the C API.  The current set of
+bindings allows a subset of algorithms to be run, but does not allow
+introspection of the data objects.
+
 
 Updates since v0.5.1
 --------------------
