@@ -13,7 +13,17 @@ true dynamically loaded plugins instead of the previous module framework,
 and a switch to Eigen3 to provide the core linear algebra data structure
 and algorithms (e.g. matrix and vector).
 
-Additionally, this release of MAP-Tk provides an options for a new two-pass
+The new plugin framework allows new algorithms to be loaded at runtime
+without needing to recompile MAP-Tk or any tools built on top of MAP-Tk.
+The previous modules (vxl, ocv, proj, vcl) have been converted to plugins,
+and a new core plugin has been added for core algorithm implementations that
+were previously in the maptk library.  Abstract algorithm declarations are
+still the main maptk library, but concrete implementations of those algorithms
+are now all loaded through plugins.  This means you can write your own plugin,
+drop it into the plugins directory, and insert your algorithm implementations
+into a MAP-Tk pipeline with just a configuration file change.
+
+Additionally, this release of MAP-Tk provides options for a new two-pass
 feature matching approach, a feature filter algorithm, and a geometrically
 constrained feature matcher.  The intended use case for these is to first match
 a "strong" subset of features, estimate a homography from these matches, and
