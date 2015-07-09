@@ -33,13 +33,13 @@ is already available, and done very well, in Eigen.  We decided to switch
 to Eigen rather than waste time reinventing it.  Eigen is a header-only library
 and should be easy to obtain and use across platforms.
 
-Additionally, this release of MAP-Tk provides options for a new two-pass
-feature matching approach, a feature filter algorithm, and a geometrically
-constrained feature matcher.  The intended use case for these is to first match
-a "strong" subset of features, estimate a homography from these matches, and
-use the homography to predict the approximate motion of the remaining features,
-then search in a local neighborhood to quickly find weaker or more ambiguous
-matches that otherwise would have been missed.
+This release of MAP-Tk provides options for a new two-pass feature matching
+approach, a feature filter algorithm, and a geometrically constrained feature
+matcher.  The intended use case for these is to first match a "strong" subset
+of features, estimate a homography from these matches, and use the homography
+to predict the approximate motion of the remaining features, then search in a
+local neighborhood to quickly find weaker or more ambiguous matches that
+otherwise would have been missed.
 
 
 Updates since v0.5.1
