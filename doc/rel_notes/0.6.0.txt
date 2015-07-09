@@ -51,6 +51,8 @@ built in the future more easily by using the C API.  The current set of
 bindings allows a subset of algorithms to be run, but does not allow
 introspection of the data objects.
 
+Additional details about changes in this release are found below.
+
 
 Updates since v0.5.1
 --------------------
