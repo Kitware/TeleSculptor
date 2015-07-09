@@ -11,7 +11,9 @@ with a "stable" API.
 The primary changes in this release are a major restructuring to provide
 true dynamically loaded plugins instead of the previous module framework,
 and a switch to Eigen3 to provide the core linear algebra data structure
-and algorithms (e.g. matrix and vector).
+and algorithms (e.g. matrix and vector).  This release also adds a few
+new algorithms and provides a preview of new C and Python bindings, which
+are still under development.
 
 The new plugin framework allows new algorithms to be loaded at runtime
 without needing to recompile MAP-Tk or any tools built on top of MAP-Tk.
@@ -22,6 +24,14 @@ still the main maptk library, but concrete implementations of those algorithms
 are now all loaded through plugins.  This means you can write your own plugin,
 drop it into the plugins directory, and insert your algorithm implementations
 into a MAP-Tk pipeline with just a configuration file change.
+
+Eigen3 joins Boost as one of the few required dependencies in MAP-Tk v0.6.0.
+Previously MAP-Tk had its own matrix and vector classes to reduce third party
+dependencies in the main library.  As development progressed, we found
+ourselves adding more and more basic linear algebra code and reinventing what
+is already available, and done very well, in Eigen.  We decided to switch
+to Eigen rather than waste time reinventing it.  Eigen is a header-only library
+and should be easy to obtain and use across platforms.
 
 Additionally, this release of MAP-Tk provides options for a new two-pass
 feature matching approach, a feature filter algorithm, and a geometrically
