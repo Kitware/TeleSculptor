@@ -4,7 +4,7 @@ namespace maptk {
 namespace vcl { }
 
 // The following text is included in the main documentation page by doxygen
-/** \page plugin_vcl VisCL Plugin Documentation
+/** \page plugin_vcl VisCL Plugin
 \section sec-vcl-contents Contents
 The MAPTK vcl library provides various components by building on
 <a href="https://github.com/Kitware/VisCL">VisCL</a>.  VisCL is an experimental
