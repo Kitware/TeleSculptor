@@ -1,13 +1,13 @@
-/// Primary namespace under which the contents of the MAPTK package are located
+/// Primary namespace under which the contents of the MAP-Tk package are located
 namespace maptk {
 // The following text is included in the main documentation page by doxygen
 /** \mainpage Core Library
 \section sec-core-contents Contents
-The MAPTK core library provides various components
+The MAP-Tk core library provides various components
 
 \subsection sec-core-math Mathematical Structures
-Eigen3 is a required dependency of MAPTK and provides a majority of vector and
-matrix functionality in MAPTK.
+Eigen3 is a required dependency of MAP-Tk and provides a majority of vector and
+matrix functionality in MAP-Tk.
 
 - \link covariance_ covariance_<N,T> \endlink : an NxN symmetric positive
                definite matrix of type T to represent a covariance matrix
@@ -51,10 +51,10 @@ matrix functionality in MAPTK.
 \subsection sec-core-containers Abstract Containers
 These abstract base classes provide APIs for objects passed between algorithms.
 Each class also comes with a concrete "simple" derived class that implements
-the interface in the trivial way, by directly storing the underlying MAPTK data
+the interface in the trivial way, by directly storing the underlying MAP-Tk data
 types.  Other modules can provide alternate implementations to store data in
 other representations, or even on other devices (e.g. GPU memory).  However,
-each container must implement the function to convert to canonical MAPTK data
+each container must implement the function to convert to canonical MAP-Tk data
 types.
 - \ref image_container : holds an \ref image, default implementation is
                \ref simple_image_container
