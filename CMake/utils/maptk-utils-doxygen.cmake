@@ -42,6 +42,7 @@ function(maptk_create_doxygen name inputdir display_name)
     # current project specific variables
     set(doxy_project_name       "${name}")
     set(doxy_display_name       "${display_name}")
+    set(doxy_project_number     "v${MAPTK_VERSION}")
     set(doxy_project_source_dir "${inputdir}")
     set(doxy_project_output_dir "${doxy_doc_output_path}/${doxy_project_name}")
     set(doxy_project_tag_file   "${doxy_project_output_dir}/${name}.tag")
@@ -85,6 +86,7 @@ function(maptk_create_doxygen name inputdir display_name)
       "${doxy_project_output_dir}/Doxyfile.common"
       doxy_project_name
       doxy_display_name
+      doxy_project_number
       doxy_doc_output_path
       doxy_project_source_dir
       doxy_exclude_patterns
