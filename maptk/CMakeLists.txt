@@ -270,4 +270,4 @@ add_subdirectory(python)
 ###
 # Marking source root for documentation generation
 #
-maptk_create_doxygen( maptk "${CMAKE_CURRENT_LIST_DIR}" )
+maptk_create_doxygen( maptk "${CMAKE_CURRENT_LIST_DIR}" "MAP-Tk")
