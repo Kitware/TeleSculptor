@@ -4,7 +4,7 @@
 # Project related configuration options
 #---------------------------------------------------------------------------
 DOXYFILE_ENCODING      = UTF-8
-PROJECT_NAME           = @doxy_project_name@
+PROJECT_NAME           = @doxy_display_name@
 PROJECT_NUMBER         =
 OUTPUT_DIRECTORY       = @doxy_doc_output_path@/@doxy_project_name@
 CREATE_SUBDIRS         = YES
