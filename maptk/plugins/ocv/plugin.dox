@@ -4,7 +4,7 @@ namespace maptk {
 namespace ocv { }
 
 // The following text is included in the main documentation page by doxygen
-/** \page plugin_ocv OpenCV Plugin Documentation
+/** \page plugin_ocv OpenCV Plugin
 \section sec-ocv-contents Contents
 The MAPTK ocv library provides various components by building on
                <a href="http://opencv.org/">OpenCV</a>
