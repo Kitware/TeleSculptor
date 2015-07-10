@@ -1,7 +1,7 @@
 /// Primary namespace under which the contents of the MAPTK package are located
 namespace maptk {
 // The following text is included in the main documentation page by doxygen
-/** \mainpage maptk documentation
+/** \mainpage Core Library
 \section sec-core-contents Contents
 The MAPTK core library provides various components
 
