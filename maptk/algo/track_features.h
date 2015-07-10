@@ -37,11 +37,12 @@
 #ifndef MAPTK_ALGO_TRACK_FEATURES_H_
 #define MAPTK_ALGO_TRACK_FEATURES_H_
 
+#include <maptk/config.h>
 #include <boost/shared_ptr.hpp>
 
-#include <maptk/algo/algorithm.h>
-#include <maptk/image_container.h>
-#include <maptk/track_set.h>
+#include <vital/algorithm.h>
+#include <vital/image_container.h>
+#include <vital/track_set.h>
 
 
 namespace maptk
@@ -52,7 +53,7 @@ namespace algo
 
 /// An abstract base class for tracking feature points
 class MAPTK_LIB_EXPORT track_features
-  : public algorithm_def<track_features>
+  : public kwiver::vital::algorithm_def<track_features>
 {
 public:
 
@@ -65,20 +66,20 @@ public:
    *    When the given non-zero mask image does not match the size of the
    *    dimensions of the given image data.
    *
-   * \param [in] prev_tracks the tracks from previous tracking steps
-   * \param [in] frame_number the frame number of the current frame
-   * \param [in] image_data the image pixels for the current frame
-   * \param [in] mask Optional mask image that uses positive values to denote
+   * \param prev_tracks The tracks from previous tracking steps
+   * \param frame_number The frame number of the current frame
+   * \param image_data The image pixels for the current frame
+   * \param mask      Optional mask image that uses positive values to denote
    *                  regions of the input image to consider for feature
    *                  tracking. An empty sptr indicates no mask (default
    *                  value).
    * \returns an updated set a tracks including the current frame
    */
-  virtual track_set_sptr
-  track(track_set_sptr prev_tracks,
+  virtual kwiver::vital::track_set_sptr
+  track(kwiver::vital::track_set_sptr prev_tracks,
         unsigned int frame_number,
-        image_container_sptr image_data,
-        image_container_sptr mask = image_container_sptr()) const = 0;
+        kwiver::vital::image_container_sptr image_data,
+        kwiver::vital::image_container_sptr mask = kwiver::vital::image_container_sptr()) const = 0;
 
 };
 

@@ -36,14 +36,16 @@
 #ifndef MAPTK_ALGO_COMPUTE_REF_HOMOGRAPHY_H_
 #define MAPTK_ALGO_COMPUTE_REF_HOMOGRAPHY_H_
 
+#include <maptk/config.h>
+
 #include <vector>
 
 #include <boost/shared_ptr.hpp>
 
-#include <maptk/algo/algorithm.h>
-#include <maptk/track_set.h>
-#include <maptk/image_container.h>
-#include <maptk/homography_f2f.h>
+#include <vital/algorithm.h>
+#include <vital/track_set.h>
+#include <vital/image_container.h>
+#include <vital/homography_f2f.h>
 
 namespace maptk
 {
@@ -61,7 +63,7 @@ namespace algo
  * space derived from some initial refrerence image.
  */
 class MAPTK_LIB_EXPORT compute_ref_homography
-  : public algorithm_def<compute_ref_homography>
+  : public kwiver::vital::algorithm_def<compute_ref_homography>
 {
 public:
 
@@ -85,9 +87,9 @@ public:
    * \param [in]   tracks the set of all tracked features from the image
    * \return estimated homography
    */
-  virtual f2f_homography_sptr
-  estimate( frame_id_t frame_number,
-            track_set_sptr tracks ) const = 0;
+  virtual kwiver::vital::f2f_homography_sptr
+  estimate( kwiver::vital::frame_id_t frame_number,
+            kwiver::vital::track_set_sptr tracks ) const = 0;
 
 };
 

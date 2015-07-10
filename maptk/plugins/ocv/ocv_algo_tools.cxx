@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,50 +53,50 @@ namespace
 {
 
 
-/// Extract an OCV algorithm property and insert its value into a config_block
+/// Extract an OCV algorithm property and insert its value into a kwiver::config_block
 /**
  * \param param_t The type of the parameter being extracted and stored.
  * \param algo        The cv pointer to the algorithm object.
  * \param algo_name   The name given to the nested algorithm.
  * \param param_name  The name of the parameter to store
- * \param config      The \c config_block to store the parameter in.
+ * \param config      The \c kwiver::config_block to store the parameter in.
  */
 template <typename param_t>
 void ocv_algo_param_to_config(cv::Ptr<cv::Algorithm> algo,
                               std::string const& algo_name,
                               std::string const& param_name,
-                              config_block_sptr config)
+                              kwiver::config_block_sptr config)
 {
   param_t param = algo->template get<param_t>(param_name);
   std::string param_descr = algo->paramHelp(param_name);
   //DEBUG
   //std::cerr << "\tGetting '" << algo_name << "' param '" << param_name << "': " << param << std::endl;
-  config->set_value(algo_name + config_block::block_sep + param_name,
+  config->set_value(algo_name + kwiver::config_block::block_sep + param_name,
                     param, param_descr);
 }
 
 
-/// Set a configuration parameter from a config_block to the nested algo
+/// Set a configuration parameter from a kwiver::config_block to the nested algo
 /**
  * Checks if the ``algo_name:param_name`` key exists and if it can be extracted
  * as the templated type.
  *
- * If the given config_block doesn't have the expected key, we will do nothing,
+ * If the given kwiver::config_block doesn't have the expected key, we will do nothing,
  * maintaining the default value in the algorithm.
  *
  * \param param_t The type of the parameter being extracted and stored.
  * \param algo        The cv pointer to the algorithm object.
  * \param algo_name   The name given to the nested algorithm.
  * \param param_name  The name of the parameter to store
- * \param config      The \c config_block to store the parameter in.
+ * \param config      The \c kwiver::config_block to store the parameter in.
  */
 template <typename param_t>
 void config_to_ocv_algo_param(cv::Ptr<cv::Algorithm> algo,
                               std::string const& algo_name,
                               std::string const& param_name,
-                              config_block_sptr config)
+                              kwiver::config_block_sptr config)
 {
-  config_block_key_t param_key = algo_name + config_block::block_sep + param_name;
+  kwiver::config_block_key_t param_key = algo_name + kwiver::config_block::block_sep + param_name;
   if (config->has_value(param_key))
   {
     param_t param = config->get_value<param_t>(param_key);
@@ -108,24 +108,24 @@ void config_to_ocv_algo_param(cv::Ptr<cv::Algorithm> algo,
 }
 
 
-/// Check that a parameter in a nested algo exists in the config_block
+/// Check that a parameter in a nested algo exists in the kwiver::config_block
 /**
  * All open CV algorithm parameters are optional (they all have default
  * values). Because of this, we don't fail if the paramter is not in the
- * given \c config_block. We only fail if the parameter extraction from the
- * \c config_block fails.
+ * given \c kwiver::config_block. We only fail if the parameter extraction from the
+ * \c kwiver::config_block fails.
  *
  * \param param_t The type of the parameter being extracted and stored.
  * \param algo_name   The name given to the nested algorithm.
  * \param param_name  The name of the parameter to store
- * \param config      The \c config_block to store the parameter in.
+ * \param config      The \c kwiver::config_block to store the parameter in.
  */
 template <typename param_t>
 bool check_ocv_algo_param_in_config(std::string const& algo_name,
                                     std::string const& param_name,
-                                    config_block_sptr config)
+                                    kwiver::config_block_sptr config)
 {
-  config_block_key_t key = algo_name + config_block::block_sep + param_name;
+  kwiver::config_block_key_t key = algo_name + kwiver::config_block::block_sep + param_name;
   if (config->has_value(key))
   {
     try
@@ -135,7 +135,7 @@ bool check_ocv_algo_param_in_config(std::string const& algo_name,
       //DEBUG
       //std::cerr << "\tChecking '" << algo_name << "' param '" << param_name << "': " << test_val << std::endl;
     }
-    catch (config_block_exception ex)
+    catch (kwiver::config_block_exception ex)
     {
       return false;
     }
@@ -150,18 +150,18 @@ bool check_ocv_algo_param_in_config(std::string const& algo_name,
 /// Add nested OpenCV algorithm's configuration options to the given \c config
 void
 get_nested_ocv_algo_configuration(std::string const& name,
-                                  config_block_sptr config,
+                                  kwiver::config_block_sptr config,
                                   cv::Ptr<cv::Algorithm> algo)
 {
   using namespace std;
-  config_block_description_t type_descr =
+  kwiver::config_block_description_t type_descr =
     "The OpenCV cv::Algorithm type to use for '" + name + "'.";
 
   // we were given a pointer to an instantiated algorithm
   if (! algo.empty())
   {
     std::string impl_name = algo->info()->name();
-    config->set_value(name + config_block::block_sep + type_token,
+    config->set_value(name + kwiver::config_block::block_sep + type_token,
                       impl_name, type_descr);
 
     vector<string> algo_params;
@@ -201,7 +201,7 @@ get_nested_ocv_algo_configuration(std::string const& name,
             cv::Ptr<cv::Algorithm> nested_algo = algo->get<cv::Algorithm>(pname);
             get_nested_ocv_algo_configuration(
                 pname,
-                config->subblock_view(name + config_block::block_sep + impl_name),
+                config->subblock_view(name + kwiver::config_block::block_sep + impl_name),
                 nested_algo
                 );
             break;
@@ -217,7 +217,7 @@ get_nested_ocv_algo_configuration(std::string const& name,
   }
   else
   {
-    config->set_value(name + config_block::block_sep + type_token, "", type_descr);
+    config->set_value(name + kwiver::config_block::block_sep + type_token, "", type_descr);
   }
 }
 
@@ -229,7 +229,7 @@ namespace helper_
 // (Helper) Set nested OpenCV algorithm's parameters based on a given \c config
 void
 set_nested_ocv_algo_configuration_helper(std::string const& name,
-                                         config_block_sptr config,
+                                         kwiver::config_block_sptr config,
                                          cv::Ptr<cv::Algorithm> &algo)
 {
   // Only proceed if a valid algorithm was created
@@ -237,7 +237,7 @@ set_nested_ocv_algo_configuration_helper(std::string const& name,
   {
     std::string impl_name = algo->info()->name();
 
-    // scan through algo parameters, settings ones that we can encode in the config_block
+    // scan through algo parameters, settings ones that we can encode in the kwiver::config_block
     std::vector<std::string> algo_params;
     algo->getParams(algo_params);
     BOOST_FOREACH( std::string const pname, algo_params )
@@ -272,7 +272,7 @@ set_nested_ocv_algo_configuration_helper(std::string const& name,
             cv::Ptr<cv::Algorithm> nested_algo = algo->get<cv::Algorithm>(pname);
             set_nested_ocv_algo_configuration(
                 pname,
-                config->subblock_view(name + config_block::block_sep + impl_name),
+                config->subblock_view(name + kwiver::config_block::block_sep + impl_name),
                 nested_algo
                 );
             algo->set(pname, nested_algo);
@@ -292,7 +292,7 @@ set_nested_ocv_algo_configuration_helper(std::string const& name,
 /// Basic check of nested OpenCV algorithm configuration in the given \c config
 bool
 check_nested_ocv_algo_configuration_helper(std::string const& name,
-                                           config_block_sptr config,
+                                           kwiver::config_block_sptr config,
                                            cv::Ptr<cv::Algorithm> algo)
 {
   std::string impl_name = algo->info()->name();
@@ -337,7 +337,7 @@ check_nested_ocv_algo_configuration_helper(std::string const& name,
           all_success = all_success && check_nested_ocv_algo_configuration
             <cv::Algorithm>(
               pname,
-              config->subblock_view(name + config_block::block_sep + impl_name)
+              config->subblock_view(name + kwiver::config_block::block_sep + impl_name)
               );
           break;
         }

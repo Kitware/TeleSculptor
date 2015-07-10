@@ -36,7 +36,7 @@
 #ifndef MAPTK_PLUGIN_INTERFACE_ALGORITHM_IMPL_PL_INTERFACE_H_
 #define MAPTK_PLUGIN_INTERFACE_ALGORITHM_IMPL_PL_INTERFACE_H_
 
-#include <maptk/registrar.h>
+#include <vital/registrar.h>
 
 
 /// Algorithm implementation registration interface function
@@ -51,7 +51,7 @@
  * \returns The number of implementations that FAILED to register, i.e. a
  *          return of 0 means registration success.
  */
-int register_algo_impls( maptk::registrar &reg = maptk::registrar::instance() );
+int register_algo_impls( kwiver::vital::registrar &reg = kwiver::vital::registrar::instance() );
 
 
 #endif // MAPTK_PLUGIN_INTERFACE_ALGORITHM_IMPL_PL_INTERFACE_H_

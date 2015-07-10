@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
 #ifndef MAPTK_PLUGINS_VXL_CAMERA_H_
 #define MAPTK_PLUGINS_VXL_CAMERA_H_
 
-#include <maptk/camera.h>
+#include <vital/camera.h>
 #include <maptk/plugins/vxl/vxl_config.h>
 
 #include <vpgl/vpgl_perspective_camera.h>
@@ -51,19 +51,19 @@ namespace vxl
 /// Construct a camera_sptr from a vpgl_perspective_camera
 template <typename T>
 MAPTK_VXL_EXPORT
-camera_sptr vpgl_camera_to_maptk(const vpgl_perspective_camera<T>& vcam);
+kwiver::vital::camera_sptr vpgl_camera_to_maptk(const vpgl_perspective_camera<T>& vcam);
 
 
 /// Convert a vpgl_perspective_camera to a maptk::camera_
 template <typename T>
 MAPTK_VXL_EXPORT
 void vpgl_camera_to_maptk(const vpgl_perspective_camera<T>& vcam,
-                          camera_<T>& mcam);
+                          kwiver::vital::camera_<T>& mcam);
 
 /// Convert a maptk::camera_ to a vpgl_perspective_camera
 template <typename T>
 MAPTK_VXL_EXPORT
-void maptk_to_vpgl_camera(const camera_<T>& mcam,
+void maptk_to_vpgl_camera(const kwiver::vital::camera_<T>& mcam,
                           vpgl_perspective_camera<T>& vcam);
 
 
@@ -71,14 +71,13 @@ void maptk_to_vpgl_camera(const camera_<T>& mcam,
 template <typename T>
 MAPTK_VXL_EXPORT
 void vpgl_calibration_to_maptk(const vpgl_calibration_matrix<T>& vcal,
-                               camera_intrinsics_<T>& mcal);
+                               kwiver::vital::camera_intrinsics_<T>& mcal);
 
 /// Convert a maptk::camera_intrinsics_ to a vpgl_calibration_matrix
 template <typename T>
 MAPTK_VXL_EXPORT
-void maptk_to_vpgl_calibration(const camera_intrinsics_<T>& mcal,
+void maptk_to_vpgl_calibration(const kwiver::vital::camera_intrinsics_<T>& mcal,
                                vpgl_calibration_matrix<T>& vcal);
-
 
 
 } // end namespace vxl

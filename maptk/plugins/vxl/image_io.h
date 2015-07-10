@@ -49,7 +49,7 @@ namespace vxl
 
 /// A class for using VXL to read and write images
 class MAPTK_VXL_EXPORT image_io
-  : public algo::algorithm_impl<image_io, algo::image_io>
+  : public kwiver::vital::algorithm_impl<image_io, algo::image_io>
 {
 public:
   /// Constructor
@@ -64,12 +64,12 @@ public:
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "vxl"; }
 
-  /// Get this algorithm's \link maptk::config_block configuration block \endlink
-  virtual config_block_sptr get_configuration() const;
+  /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
+  virtual kwiver::config_block_sptr get_configuration() const;
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(config_block_sptr config);
+  virtual void set_configuration(kwiver::config_block_sptr config);
   /// Check that the algorithm's currently configuration is valid
-  virtual bool check_configuration(config_block_sptr config) const;
+  virtual bool check_configuration(kwiver::config_block_sptr config) const;
 
 private:
   /// Implementation specific load functionality.
@@ -80,7 +80,7 @@ private:
    * \param filename the path to the file the load
    * \returns an image container refering to the loaded image
    */
-  virtual image_container_sptr load_(const std::string& filename) const;
+  virtual kwiver::vital::image_container_sptr load_(const std::string& filename) const;
 
   /// Implementation specific save functionality.
   /**
@@ -88,7 +88,7 @@ private:
    * \param data the image container refering to the image to write
    */
   virtual void save_(const std::string& filename,
-                     image_container_sptr data) const;
+                     kwiver::vital::image_container_sptr data) const;
 
   /// private implementation class
   class priv;

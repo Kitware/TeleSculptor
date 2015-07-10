@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,9 +37,9 @@
 #ifndef MAPTK_PLUGINS_CORE_HIERARCHICAL_BUNDLE_ADJUST_H_
 #define MAPTK_PLUGINS_CORE_HIERARCHICAL_BUNDLE_ADJUST_H_
 
-#include <maptk/algo/algorithm.h>
+#include <vital/algorithm.h>
 #include <maptk/algo/bundle_adjust.h>
-#include <maptk/config_block.h>
+#include <kwiver_util/config/config_block.h>
 
 #include <boost/scoped_ptr.hpp>
 
@@ -54,7 +54,7 @@ namespace core
 
 
 class PLUGIN_CORE_EXPORT hierarchical_bundle_adjust
-  : public algo::algorithm_impl<hierarchical_bundle_adjust, algo::bundle_adjust>
+  : public kwiver::vital::algorithm_impl<hierarchical_bundle_adjust, algo::bundle_adjust>
 {
 public:
 
@@ -68,17 +68,17 @@ public:
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "hierarchical"; }
 
-  /// Get this algorithm's \link maptk::config_block configuration block \endlink
-  virtual config_block_sptr get_configuration() const;
+  /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
+  virtual kwiver::config_block_sptr get_configuration() const;
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(config_block_sptr config);
-  /// Check that the algorithm's configuration config_block is valid
-  virtual bool check_configuration(config_block_sptr config) const;
+  virtual void set_configuration(kwiver::config_block_sptr config);
+  /// Check that the algorithm's configuration kwiver::config_block is valid
+  virtual bool check_configuration(kwiver::config_block_sptr config) const;
 
   /// Optimize the camera and landmark parameters given a set of tracks
-  virtual void optimize(camera_map_sptr & cameras,
-                        landmark_map_sptr & landmarks,
-                        track_set_sptr tracks) const;
+  virtual void optimize(kwiver::vital::camera_map_sptr & cameras,
+                        kwiver::vital::landmark_map_sptr & landmarks,
+                        kwiver::vital::track_set_sptr tracks) const;
 
 private:
   // private implementation class

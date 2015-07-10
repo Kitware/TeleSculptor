@@ -36,17 +36,20 @@
 #ifndef MAPTK_ALGO_ESTIMATE_SIMILARITY_TRANSFORM_H_
 #define MAPTK_ALGO_ESTIMATE_SIMILARITY_TRANSFORM_H_
 
+#include <maptk/config.h>
+
 #include <string>
 #include <vector>
 
-#include <maptk/algo/algorithm.h>
-#include <maptk/camera.h>
-#include <maptk/camera_map.h>
-#include <maptk/config_block.h>
-#include <maptk/landmark.h>
-#include <maptk/landmark_map.h>
-#include <maptk/similarity.h>
-#include <maptk/vector.h>
+#include <vital/algorithm.h>
+#include <vital/camera.h>
+#include <vital/camera_map.h>
+#include <vital/landmark.h>
+#include <vital/landmark_map.h>
+#include <vital/similarity.h>
+#include <vital/vector.h>
+
+#include <kwiver_util/config/config_block.h>
 
 namespace maptk
 {
@@ -56,7 +59,7 @@ namespace algo
 
 /// Algorithm for estimating the similarity transform between two point sets
 class MAPTK_LIB_EXPORT estimate_similarity_transform
-  : public algorithm_def<estimate_similarity_transform>
+  : public kwiver::vital::algorithm_def<estimate_similarity_transform>
 {
 public:
   /// Name of this algo definition
@@ -71,9 +74,9 @@ public:
    * \returns An estimated similarity transform mapping 3D points in the
    *          \c from space to points in the \c to space.
    */
-  virtual similarity_d
-  estimate_transform(std::vector<vector_3d> const& from,
-                     std::vector<vector_3d> const& to) const = 0;
+  virtual kwiver::vital::similarity_d
+  estimate_transform(std::vector<kwiver::vital::vector_3d> const& from,
+                     std::vector<kwiver::vital::vector_3d> const& to) const = 0;
 
   /// Estimate the similarity transform between two corresponding sets of cameras
   /**
@@ -84,9 +87,9 @@ public:
    * \returns An estimated similarity transform mapping camera centers in the
    *          \c from space to camera centers in the \c to space.
    */
-  virtual similarity_d
-  estimate_transform(std::vector<camera_sptr> const& from,
-                     std::vector<camera_sptr> const& to) const;
+  virtual kwiver::vital::similarity_d
+  estimate_transform(std::vector<kwiver::vital::camera_sptr> const& from,
+                     std::vector<kwiver::vital::camera_sptr> const& to) const;
 
   /// Estimate the similarity transform between two corresponding sets of landmarks.
   /**
@@ -97,9 +100,9 @@ public:
    * \returns An estinated similarity transform mapping landmark locations in
    *          the \c from space to located in the \c to space.
    */
-  virtual similarity_d
-  estimate_transform(std::vector<landmark_sptr> const& from,
-                     std::vector<landmark_sptr> const& to) const;
+  virtual kwiver::vital::similarity_d
+  estimate_transform(std::vector<kwiver::vital::landmark_sptr> const& from,
+                     std::vector<kwiver::vital::landmark_sptr> const& to) const;
 
   /// Estimate the similarity transform between two corresponding camera maps
   /**
@@ -117,9 +120,9 @@ public:
    * \returns An estimated similarity transform mapping camera centers in the
    *          \c from space to camera centers in the \c to space.
    */
-  virtual similarity_d
-  estimate_transform(camera_map_sptr const from,
-                     camera_map_sptr const to) const;
+  virtual kwiver::vital::similarity_d
+  estimate_transform(kwiver::vital::camera_map_sptr const from,
+                     kwiver::vital::camera_map_sptr const to) const;
 
   /// Estimate the similarity transform between two corresponding landmark maps
   /**
@@ -137,9 +140,9 @@ public:
    * \returns An estimated similarity transform mapping landmark centers in the
    *          \c from space to camera centers in the \c to space.
    */
-  virtual similarity_d
-  estimate_transform(landmark_map_sptr const from,
-                     landmark_map_sptr const to) const;
+  virtual kwiver::vital::similarity_d
+  estimate_transform(kwiver::vital::landmark_map_sptr const from,
+                     kwiver::vital::landmark_map_sptr const to) const;
 };
 
 

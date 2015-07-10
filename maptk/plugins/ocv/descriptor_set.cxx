@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,12 +42,14 @@
     MACRO(float); \
     MACRO(double)
 
+using namespace kwiver::vital;
+
 namespace
 {
 
 /// Templated helper function to convert matrix row into a descriptor
 template <typename T>
-maptk::descriptor_sptr
+kwiver::vital::descriptor_sptr
 ocv_to_maptk_descriptor(const cv::Mat& v)
 {
   using namespace maptk;
@@ -74,7 +76,7 @@ ocv_to_maptk_descriptor(const cv::Mat& v)
 /// Templated helper function to convert descriptors into a cv::Mat
 template <typename T>
 cv::Mat
-maptk_descriptors_to_ocv(const std::vector<maptk::descriptor_sptr>& desc)
+maptk_descriptors_to_ocv(const std::vector<kwiver::vital::descriptor_sptr>& desc)
 {
   using namespace maptk;
   const unsigned int num = static_cast<unsigned int>(desc.size());
@@ -137,7 +139,7 @@ descriptor_set
 
 /// Convert any descriptor set to an OpenCV cv::Mat
 cv::Mat
-descriptors_to_ocv_matrix(const maptk::descriptor_set& desc_set)
+descriptors_to_ocv_matrix(const kwiver::vital::descriptor_set& desc_set)
 {
   // if the descriptor set already contains a cv::Mat representation
   // then return the existing matrix

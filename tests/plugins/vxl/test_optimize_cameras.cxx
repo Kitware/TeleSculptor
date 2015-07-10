@@ -35,9 +35,12 @@
 #include <test_math.h>
 #include <test_scene.h>
 
-#include <maptk/camera_map.h>
-#include <maptk/landmark_map.h>
-#include <maptk/track_set.h>
+#include <vital/camera_map.h>
+#include <vital/landmark_map.h>
+#include <vital/track_set.h>
+#include <vital/exceptions.h>
+
+
 #include <maptk/projected_track_set.h>
 #include <maptk/plugins/vxl/optimize_cameras.h>
 
@@ -55,6 +58,7 @@ int main(int argc, char* argv[])
   RUN_TEST(testname);
 }
 
+using namespace kwiver::vital;
 
 IMPLEMENT_TEST(creation)
 {
@@ -81,7 +85,7 @@ IMPLEMENT_TEST(uninitialized)
   cerr << "cam_map before: " << cam_map << endl;
 
   EXPECT_EXCEPTION(
-      invalid_value,
+    kwiver::vital::invalid_value,
       optimizer.optimize(cam_map, trk_set, lm_map),
       "Running camera optimization with null input"
       );
@@ -132,7 +136,7 @@ IMPLEMENT_TEST(no_noise)
 
   landmark_map_sptr landmarks = testing::cube_corners(2.0);
   camera_map_sptr working_cam_map(new simple_camera_map(original_cams));
-  track_set_sptr tracks = maptk::projected_tracks(landmarks,
+  track_set_sptr tracks = projected_tracks(landmarks,
                                                   working_cam_map);
 
   vxl::optimize_cameras optimizer;
@@ -190,7 +194,7 @@ IMPLEMENT_TEST(noisy_cameras)
 
   landmark_map_sptr landmarks = testing::cube_corners(2.0);
   camera_map_sptr working_cam_map(new simple_camera_map(original_cams));
-  track_set_sptr tracks = maptk::projected_tracks(landmarks, working_cam_map);
+  track_set_sptr tracks = projected_tracks(landmarks, working_cam_map);
 
   working_cam_map = testing::noisy_cameras(working_cam_map, 0.1, 0.1);
 

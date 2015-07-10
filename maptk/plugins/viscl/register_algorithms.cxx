@@ -35,13 +35,12 @@
 
 #include "register_algorithms.h"
 
-#include <maptk/logging_macros.h>
 #include <maptk/plugin_interface/algorithm_plugin_interface_macros.h>
 #include <maptk/plugins/viscl/convert_image.h>
 #include <maptk/plugins/viscl/detect_features.h>
 #include <maptk/plugins/viscl/extract_descriptors.h>
 #include <maptk/plugins/viscl/match_features.h>
-#include <maptk/registrar.h>
+#include <vital/registrar.h>
 
 
 namespace maptk
@@ -51,7 +50,7 @@ namespace vcl
 {
 
 /// Register VisCL algorithm implementations with the given or global registrar
-int register_algorithms( maptk::registrar &reg )
+int register_algorithms( kwiver::vital::registrar &reg )
 {
   REGISTRATION_INIT( reg );
 

@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@
 
 #include "feature_set.h"
 
+using namespace kwiver::vital;
 
 namespace maptk
 {
@@ -66,7 +67,7 @@ feature_set
 
 /// Convert any feature set to a vector of OpenCV cv::KeyPoints
 std::vector<cv::KeyPoint>
-features_to_ocv_keypoints(const maptk::feature_set& feat_set)
+features_to_ocv_keypoints(const kwiver::vital::feature_set& feat_set)
 {
   if( const ocv::feature_set* f =
           dynamic_cast<const ocv::feature_set*>(&feat_set) )

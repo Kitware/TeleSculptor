@@ -36,10 +36,12 @@
 #ifndef MAPTK_ALGO_EXTRACT_DESCRIPTORS_H_
 #define MAPTK_ALGO_EXTRACT_DESCRIPTORS_H_
 
-#include <maptk/algo/algorithm.h>
-#include <maptk/image_container.h>
-#include <maptk/feature_set.h>
-#include <maptk/descriptor_set.h>
+#include <maptk/config.h>
+
+#include <vital/algorithm.h>
+#include <vital/image_container.h>
+#include <vital/feature_set.h>
+#include <vital/descriptor_set.h>
 #include <boost/shared_ptr.hpp>
 
 namespace maptk
@@ -50,7 +52,7 @@ namespace algo
 
 /// An abstract base class for extracting feature descriptors
 class MAPTK_LIB_EXPORT extract_descriptors
-  : public algorithm_def<extract_descriptors>
+  : public kwiver::vital::algorithm_def<extract_descriptors>
 {
 public:
   /// Return the name of this algorithm
@@ -65,10 +67,10 @@ public:
    *                   consider.
    * \returns a set of feature descriptors
    */
-  virtual descriptor_set_sptr
-  extract(image_container_sptr image_data,
-          feature_set_sptr features,
-          image_container_sptr image_mask = image_container_sptr()) const = 0;
+  virtual kwiver::vital::descriptor_set_sptr
+  extract(kwiver::vital::image_container_sptr image_data,
+          kwiver::vital::feature_set_sptr features,
+          kwiver::vital::image_container_sptr image_mask = kwiver::vital::image_container_sptr()) const = 0;
 
 };
 

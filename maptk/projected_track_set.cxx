@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,7 @@
 namespace maptk
 {
 
+using namespace kwiver::vital;
 
 /// Use the cameras to project the landmarks back into their images.
 track_set_sptr

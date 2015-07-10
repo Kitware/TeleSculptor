@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,7 @@
 
 #include <opencv2/features2d/features2d.hpp>
 
-#include <maptk/match_set.h>
+#include <vital/match_set.h>
 
 #include <maptk/plugins/ocv/ocv_config.h>
 
@@ -52,7 +52,7 @@ namespace ocv
 
 /// A concrete match set that wraps OpenCV cv::DMatch objects
 class MAPTK_OCV_EXPORT match_set
-  : public maptk::match_set
+  : public kwiver::vital::match_set
 {
 public:
   /// Default constructor
@@ -66,7 +66,7 @@ public:
   virtual size_t size() const { return data_.size(); }
 
   /// Return a vector of matching indices
-  virtual std::vector<match> matches() const;
+  virtual std::vector<kwiver::vital::match> matches() const;
 
   /// Return the underlying OpenCV match data structures
   const std::vector<cv::DMatch>& ocv_matches() const { return data_; }
@@ -79,7 +79,7 @@ private:
 
 /// Convert any match set to a vector of OpenCV cv::DMatch
 MAPTK_OCV_EXPORT std::vector<cv::DMatch>
-matches_to_ocv_dmatch(const maptk::match_set& match_set);
+matches_to_ocv_dmatch(const kwiver::vital::match_set& match_set);
 
 
 } // end namespace ocv

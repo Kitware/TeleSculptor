@@ -36,15 +36,17 @@
 #ifndef MAPTK_ALGO_ESTIMATE_HOMOGRAPHY_H_
 #define MAPTK_ALGO_ESTIMATE_HOMOGRAPHY_H_
 
+#include <maptk/config.h>
+
 #include <vector>
 
 #include <boost/shared_ptr.hpp>
 
-#include <maptk/algo/algorithm.h>
-#include <maptk/feature_set.h>
-#include <maptk/match_set.h>
-#include <maptk/matrix.h>
-#include <maptk/homography.h>
+#include <vital/algorithm.h>
+#include <vital/feature_set.h>
+#include <vital/match_set.h>
+#include <vital/matrix.h>
+#include <vital/homography.h>
 
 namespace maptk
 {
@@ -54,7 +56,7 @@ namespace algo
 
 /// An abstract base class for estimating a homography from matching 2D points
 class MAPTK_LIB_EXPORT estimate_homography
-  : public algorithm_def<estimate_homography>
+  : public kwiver::vital::algorithm_def<estimate_homography>
 {
 public:
 
@@ -72,10 +74,10 @@ public:
    *                      this pair is an inlier to the homography estimate
    * \param [in]  inlier_scale error distance tolerated for matches to be inliers
    */
-  virtual homography_sptr
-  estimate(feature_set_sptr feat1,
-           feature_set_sptr feat2,
-           match_set_sptr matches,
+  virtual kwiver::vital::homography_sptr
+  estimate(kwiver::vital::feature_set_sptr feat1,
+           kwiver::vital::feature_set_sptr feat2,
+           kwiver::vital::match_set_sptr matches,
            std::vector<bool>& inliers,
            double inlier_scale = 1.0) const;
 
@@ -89,9 +91,9 @@ public:
    *                      this pair is an inlier to the homography estimate
    * \param [in]  inlier_scale error distance tolerated for matches to be inliers
    */
-  virtual homography_sptr
-  estimate(const std::vector<vector_2d>& pts1,
-           const std::vector<vector_2d>& pts2,
+  virtual kwiver::vital::homography_sptr
+  estimate(const std::vector<kwiver::vital::vector_2d>& pts1,
+           const std::vector<kwiver::vital::vector_2d>& pts2,
            std::vector<bool>& inliers,
            double inlier_scale = 1.0) const = 0;
 

@@ -42,13 +42,14 @@
 #include <boost/timer/timer.hpp>
 
 #include <maptk/plugins/vxl/camera_map.h>
-#include <maptk/eigen_io.h>
+#include <vital/eigen_io.h>
 
 #include <vpgl/algo/vpgl_bundle_adjust.h>
 
 using boost::timer::cpu_times;
 using boost::timer::nanosecond_type;
 
+using namespace kwiver::vital;
 
 namespace maptk
 {
@@ -124,13 +125,13 @@ bundle_adjust
 }
 
 
-/// Get this algorithm's \link maptk::config_block configuration block \endlink
-config_block_sptr
+/// Get this algorithm's \link kwiver::config_block configuration block \endlink
+kwiver::config_block_sptr
 bundle_adjust
 ::get_configuration() const
 {
   // get base config from base class
-  config_block_sptr config = maptk::algo::bundle_adjust::get_configuration();
+  kwiver::config_block_sptr config = maptk::algo::bundle_adjust::get_configuration();
   config->set_value("verbose", d_->verbose,
                     "If true, write status messages to the terminal showing "
                     "optimization progress at each iteration");
@@ -164,11 +165,11 @@ bundle_adjust
 /// Set this algorithm's properties via a config block
 void
 bundle_adjust
-::set_configuration(config_block_sptr in_config)
+::set_configuration(kwiver::config_block_sptr in_config)
 {
-  // Starting with our generated config_block to ensure that assumed values are present
+  // Starting with our generated kwiver::config_block to ensure that assumed values are present
   // An alternative is to check for key presence before performing a get_value() call.
-  config_block_sptr config = this->get_configuration();
+  kwiver::config_block_sptr config = this->get_configuration();
   config->merge_config(in_config);
 
   d_->verbose = config->get_value<bool>("verbose",
@@ -208,7 +209,7 @@ bundle_adjust
 /// Check that the algorithm's currently configuration is valid
 bool
 bundle_adjust
-::check_configuration(config_block_sptr config) const
+::check_configuration(kwiver::config_block_sptr config) const
 {
   return true;
 }
@@ -227,7 +228,7 @@ bundle_adjust
     return;
   }
   typedef vxl::camera_map::map_vcam_t map_vcam_t;
-  typedef maptk::landmark_map::map_landmark_t map_landmark_t;
+  typedef kwiver::vital::landmark_map::map_landmark_t map_landmark_t;
 
 #define MAPTK_SBA_TIMED(msg, code) \
   do \

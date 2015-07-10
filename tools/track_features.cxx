@@ -39,18 +39,19 @@
 #include <string>
 #include <vector>
 
+#include <kwiver_util/config/config_block.h>
+#include <kwiver_util/config/config_block_io.h>
+#include <kwiver_util/logger/logger.h>
+
+#include <vital/algorithm_plugin_manager.h>
+#include <vital/exceptions.h>
+#include <vital/track_set_io.h>
+#include <vital/vital_types.h>
+
 #include <maptk/algo/image_io.h>
 #include <maptk/algo/compute_ref_homography.h>
 #include <maptk/algo/convert_image.h>
 #include <maptk/algo/track_features.h>
-
-#include <maptk/algorithm_plugin_manager.h>
-#include <maptk/config_block.h>
-#include <maptk/config_block_io.h>
-#include <maptk/exceptions.h>
-#include <maptk/logging_macros.h>
-#include <maptk/track_set_io.h>
-#include <maptk/types.h>
 
 #include <boost/foreach.hpp>
 
@@ -64,12 +65,11 @@
 namespace bfs = boost::filesystem;
 
 
-static std::string LOGGING_PREFIX = "track_features_tool";
+static kwiver::logger_handle_t main_logger( kwiver::get_logger( "track_features_tool" ) );
 
-
-static maptk::config_block_sptr default_config()
+static kwiver::config_block_sptr default_config()
 {
-  maptk::config_block_sptr config = maptk::config_block::empty_config("feature_tracker_tool");
+  kwiver::config_block_sptr config = kwiver::config_block::empty_config("feature_tracker_tool");
 
   config->set_value("image_list_file", "",
                     "Path to an input file containing new-line separated paths "
@@ -113,7 +113,7 @@ static maptk::config_block_sptr default_config()
 }
 
 
-static bool check_config(maptk::config_block_sptr config)
+static bool check_config(kwiver::config_block_sptr config)
 {
   bool config_valid = true;
 
@@ -126,7 +126,7 @@ static bool check_config(maptk::config_block_sptr config)
   if ( config->has_value("output_homography_file")
     && config->get_value<std::string>("output_homography_file") != "" )
   {
-    maptk::path_t fp = config->get_value<maptk::path_t>("output_homography_file");
+    kwiver::vital::path_t fp = config->get_value<kwiver::vital::path_t>("output_homography_file");
     if ( bfs::is_directory(fp) )
     {
       MAPTK_CONFIG_FAIL("Given output homography file is a directory! "
@@ -157,11 +157,11 @@ static bool check_config(maptk::config_block_sptr config)
   else
   {
     std::string path = config->get_value<std::string>("image_list_file");
-    if (!bfs::exists(maptk::path_t(path)))
+    if (!bfs::exists(kwiver::vital::path_t(path)))
     {
       MAPTK_CONFIG_FAIL("image_list_file path, " << path << ", does not exist");
     }
-    else if (!bfs::is_regular_file(maptk::path_t(path)))
+    else if (!bfs::is_regular_file(kwiver::vital::path_t(path)))
     {
       MAPTK_CONFIG_FAIL("image_list_file path, " << path << ", is not a regular file");
     }
@@ -171,7 +171,7 @@ static bool check_config(maptk::config_block_sptr config)
   if (config->has_value("mask_list_file") && config->get_value<std::string>("mask_list_file") != "" )
   {
     std::string mask_list_file = config->get_value<std::string>("mask_list_file");
-    if (mask_list_file != "" && bfs::is_regular_file( maptk::path_t(mask_list_file) ))
+    if (mask_list_file != "" && bfs::is_regular_file( kwiver::vital::path_t(mask_list_file) ))
     {
       MAPTK_CONFIG_FAIL("mask_list_file path, " << mask_list_file << ", does not exist");
     }
@@ -183,7 +183,7 @@ static bool check_config(maptk::config_block_sptr config)
     MAPTK_CONFIG_FAIL("Config needs value output_tracks_file");
   }
   else if (!bfs::is_directory(bfs::absolute(
-               config->get_value<maptk::path_t>("output_tracks_file")).parent_path()))
+               config->get_value<kwiver::vital::path_t>("output_tracks_file")).parent_path()))
   {
     MAPTK_CONFIG_FAIL("output_tracks_file is not in a valid directory");
   }
@@ -209,7 +209,7 @@ static bool check_config(maptk::config_block_sptr config)
 }
 
 
-static maptk::image::byte invert_mask_pixel( maptk::image::byte const &b )
+static kwiver::vital::image::byte invert_mask_pixel( kwiver::vital::image::byte const &b )
 {
   return !b;
 }
@@ -218,10 +218,10 @@ static maptk::image::byte invert_mask_pixel( maptk::image::byte const &b )
 #define print_config(config) \
   do \
   { \
-    BOOST_FOREACH( maptk::config_block_key_t key, config->available_values() ) \
+    BOOST_FOREACH( kwiver::config_block_key_t key, config->available_values() ) \
     { \
       std::cerr << "\t" \
-           << key << " = " << config->get_value<maptk::config_block_key_t>(key) \
+           << key << " = " << config->get_value<kwiver::config_block_key_t>(key) \
            << std::endl; \
     } \
   } while (false)
@@ -230,17 +230,17 @@ static maptk::image::byte invert_mask_pixel( maptk::image::byte const &b )
 static int maptk_main(int argc, char const* argv[])
 {
   // register the algorithm implementations
-  maptk::algorithm_plugin_manager::instance().register_plugins();
+  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
 
   // define/parse CLI options
   boost::program_options::options_description opt_desc;
   opt_desc.add_options()
     ("help,h", "output help message and exit")
     ("config,c",
-     boost::program_options::value<maptk::path_t>(),
+     boost::program_options::value<kwiver::vital::path_t>(),
      "Configuration file for the tool.")
     ("output-config,o",
-     boost::program_options::value<maptk::path_t>(),
+     boost::program_options::value<kwiver::vital::path_t>(),
      "Output a configuration.This may be seeded with a configuration file from -c/--config.")
     ;
   boost::program_options::variables_map vm;
@@ -275,7 +275,7 @@ static int maptk_main(int argc, char const* argv[])
   namespace bfs = boost::filesystem;
 
   // Set up top level configuration w/ defaults where applicable.
-  maptk::config_block_sptr config = default_config();
+  kwiver::config_block_sptr config = default_config();
   algo::track_features_sptr feature_tracker;
   algo::image_io_sptr image_reader;
   algo::convert_image_sptr image_converter;
@@ -284,8 +284,8 @@ static int maptk_main(int argc, char const* argv[])
   // If -c/--config given, read in confg file, merge in with default just generated
   if(vm.count("config"))
   {
-    //std::cerr << "[DEBUG] Given config file: " << vm["config"].as<maptk::path_t>() << std::endl;
-    config->merge_config(maptk::read_config_file(vm["config"].as<maptk::path_t>()));
+    //std::cerr << "[DEBUG] Given config file: " << vm["config"].as<kwiver::vital::path_t>() << std::endl;
+    config->merge_config(kwiver::read_config_file(vm["config"].as<kwiver::vital::path_t>()));
   }
 
   //std::cerr << "[DEBUG] Config BEFORE set:" << std::endl;
@@ -307,8 +307,8 @@ static int maptk_main(int argc, char const* argv[])
 
   if(vm.count("output-config"))
   {
-    //std::cerr << "[DEBUG] Given config output target: " << vm["output-config"].as<maptk::path_t>() << std::endl;
-    write_config_file(config, vm["output-config"].as<maptk::path_t>());
+    //std::cerr << "[DEBUG] Given config output target: " << vm["output-config"].as<kwiver::vital::path_t>() << std::endl;
+    write_config_file(config, vm["output-config"].as<kwiver::vital::path_t>());
     if(valid_config)
     {
       std::cerr << "INFO: Configuration file contained valid parameters and may be used for running" << std::endl;
@@ -340,23 +340,23 @@ static int maptk_main(int argc, char const* argv[])
     return EXIT_FAILURE;
   }
   // Creating input image list, checking file existance
-  std::vector<maptk::path_t> files;
+  std::vector<kwiver::vital::path_t> files;
   for (std::string line; std::getline(ifs,line); )
   {
     files.push_back(line);
     if (!bfs::exists(files[files.size()-1]))
     {
-      throw maptk::path_not_exists(files[files.size()-1]);
+      throw kwiver::vital::path_not_exists(files[files.size()-1]);
     }
   }
 
   // Create mask image list if a list file was given, else fill list with empty
   // images. Files vector will only be populated if the use_masks bool is true
   bool use_masks = false;
-  std::vector<maptk::path_t> mask_files;
+  std::vector<kwiver::vital::path_t> mask_files;
   if( mask_list_file != "" )
   {
-    LOG_DEBUG( LOGGING_PREFIX,
+    LOG_DEBUG( main_logger,
                "Loading paired mask images from list file" );
 
     use_masks = true;
@@ -364,7 +364,7 @@ static int maptk_main(int argc, char const* argv[])
     std::ifstream mask_ifs(mask_list_file.c_str());
     if( !mask_ifs )
     {
-      throw maptk::path_not_exists(mask_list_file);
+      throw kwiver::vital::path_not_exists(mask_list_file);
     }
     // load filepaths from file
     for( std::string line; std::getline(mask_ifs, line); )
@@ -372,16 +372,16 @@ static int maptk_main(int argc, char const* argv[])
       mask_files.push_back(line);
       if( !bfs::is_regular_file( mask_files[mask_files.size()-1] ) )
       {
-        throw maptk::path_not_exists( mask_files[mask_files.size()-1] );
+        throw kwiver::vital::path_not_exists( mask_files[mask_files.size()-1] );
       }
     }
     // Check that image/mask list sizes are the same
     if( files.size() != mask_files.size() )
     {
-      throw maptk::invalid_value("Image and mask file lists are not congruent "
+      throw kwiver::vital::invalid_value("Image and mask file lists are not congruent "
                                  "in size.");
     }
-    LOG_DEBUG( LOGGING_PREFIX,
+    LOG_DEBUG( main_logger,
                "Loaded " << mask_files.size() << " mask image files." );
   }
 
@@ -403,7 +403,7 @@ static int maptk_main(int argc, char const* argv[])
   if ( config->has_value("output_homography_file") &&
        config->get_value<std::string>("output_homography_file") != "" )
   {
-    maptk::path_t homog_fp = config->get_value<maptk::path_t>("output_homography_file");
+    kwiver::vital::path_t homog_fp = config->get_value<kwiver::vital::path_t>("output_homography_file");
     homog_ofs.open( homog_fp.string().c_str() );
     if ( !homog_ofs )
     {
@@ -415,15 +415,15 @@ static int maptk_main(int argc, char const* argv[])
   }
 
   // Track features on each frame sequentially
-  maptk::track_set_sptr tracks;
+  kwiver::vital::track_set_sptr tracks;
   for(unsigned i=0; i<files.size(); ++i)
   {
     std::cout << "processing frame "<<i<<": "<<files[i]<<std::endl;
 
-    //maptk::image_container_sptr img = image_reader->load(files[i].string());
-    //maptk::image_container_sptr converted = image_converter->convert(img);
+    //kwiver::vital::image_container_sptr img = image_reader->load(files[i].string());
+    //kwiver::vital::image_container_sptr converted = image_converter->convert(img);
 
-    maptk::image_container_sptr converted_img,
+    kwiver::vital::image_container_sptr converted_img,
                                 mask, converted_mask;
     converted_img = image_converter->convert( image_reader->load( files[i].string() ) );
 
@@ -435,24 +435,24 @@ static int maptk_main(int argc, char const* argv[])
       // error out if we are not expecting a multi-channel mask
       if( !expect_multichannel_masks && mask->depth() > 1 )
       {
-        LOG_ERROR( LOGGING_PREFIX,
+        LOG_ERROR( main_logger,
                    "Encounted multi-channel mask image!" );
         return EXIT_FAILURE;
       }
       else if( expect_multichannel_masks && mask->depth() == 1 )
       {
-        LOG_WARN( LOGGING_PREFIX,
+        LOG_WARN( main_logger,
                   "Expecting multi-channel masks but received one that was "
                   "single-channel." );
       }
 
       if( invert_masks )
       {
-        LOG_DEBUG( LOGGING_PREFIX,
+        LOG_DEBUG( main_logger,
                    "Inverting mask image pixels" );
-        maptk::image mask_img( mask->get_image() );
-        maptk::transform_image( mask_img, invert_mask_pixel );
-        LOG_DEBUG( LOGGING_PREFIX,
+        kwiver::vital::image mask_img( mask->get_image() );
+        kwiver::vital::transform_image( mask_img, invert_mask_pixel );
+        LOG_DEBUG( main_logger,
                    "Inverting mask image pixels -- Done" );
       }
 
@@ -476,7 +476,7 @@ static int maptk_main(int argc, char const* argv[])
   }
 
   // Writing out tracks to file
-  maptk::write_track_file(tracks, output_tracks_file);
+  kwiver::vital::write_track_file(tracks, output_tracks_file);
 
   return EXIT_SUCCESS;
 }

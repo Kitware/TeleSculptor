@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,7 +34,7 @@
  */
 
 #include <maptk/algo/estimate_essential_matrix.h>
-#include <maptk/algo/algorithm.txx>
+#include <vital/algorithm.txx>
 #include <boost/foreach.hpp>
 
 
@@ -48,6 +48,8 @@ namespace maptk
 
 namespace algo
 {
+
+using namespace kwiver::vital;
 
 /// Estimate an essential matrix from corresponding features
 matrix_3x3d

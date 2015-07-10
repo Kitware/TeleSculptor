@@ -48,7 +48,7 @@ namespace vxl
 
 /// A class that uses RREL in VXL to estimate a homography from matching 2D points
 class MAPTK_VXL_EXPORT estimate_homography
-  : public algo::algorithm_impl<estimate_homography, algo::estimate_homography>
+  : public kwiver::vital::algorithm_impl<estimate_homography, algo::estimate_homography>
 {
 public:
   /// Return the name of this implementation
@@ -56,8 +56,8 @@ public:
 
   // No configuration yet for this class.
   /// \cond DoxygenSuppress
-  virtual void set_configuration(config_block_sptr /*config*/) {}
-  virtual bool check_configuration(config_block_sptr /*config*/) const { return true; }
+  virtual void set_configuration(kwiver::config_block_sptr /*config*/) {}
+  virtual bool check_configuration(kwiver::config_block_sptr /*config*/) const { return true; }
   /// \endcond
 
   /// Estimate a homography matrix from corresponding points
@@ -70,9 +70,9 @@ public:
    *                      this pair is an inlier to the homography estimate
    * \param [in]  inlier_scale error distance tolerated for matches to be inliers
    */
-  virtual homography_sptr
-  estimate(const std::vector<vector_2d>& pts1,
-           const std::vector<vector_2d>& pts2,
+  virtual kwiver::vital::homography_sptr
+  estimate(const std::vector<kwiver::vital::vector_2d>& pts1,
+           const std::vector<kwiver::vital::vector_2d>& pts2,
            std::vector<bool>& inliers,
            double inlier_scale = 1.0) const;
 

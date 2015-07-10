@@ -38,17 +38,16 @@
 
 #include <maptk/config.h>
 
-#include "camera.h"
-#include "landmark.h"
-#include "feature.h"
-#include "track.h"
+#include <vital/camera.h>
+#include <vital/landmark.h>
+#include <vital/feature.h>
+#include <vital/track.h>
 #include <vector>
 #include <map>
 #include <cmath>
 
 namespace maptk
 {
-
 
 /// Compute the reprojection error vector of lm projected by cam compared to f
 /**
@@ -58,9 +57,9 @@ namespace maptk
  * \returns the vector between the projected lm and f in image space
  */
 MAPTK_LIB_EXPORT
-vector_2d reprojection_error_vec(const camera& cam,
-                                 const landmark& lm,
-                                 const feature& f);
+kwiver::vital::vector_2d reprojection_error_vec(const kwiver::vital::camera& cam,
+                                 const kwiver::vital::landmark& lm,
+                                 const kwiver::vital::feature& f);
 
 
 /// Compute the square reprojection error of lm projected by cam compared to f
@@ -72,9 +71,9 @@ vector_2d reprojection_error_vec(const camera& cam,
  */
 inline
 double
-reprojection_error_sqr(const camera& cam,
-                       const landmark& lm,
-                       const feature& f)
+reprojection_error_sqr(const kwiver::vital::camera& cam,
+                       const kwiver::vital::landmark& lm,
+                       const kwiver::vital::feature& f)
 {
   return reprojection_error_vec(cam, lm, f).squaredNorm();
 }
@@ -89,9 +88,9 @@ reprojection_error_sqr(const camera& cam,
  */
 inline
 double
-reprojection_error(const camera& cam,
-                   const landmark& lm,
-                   const feature& f)
+reprojection_error(const kwiver::vital::camera& cam,
+                   const kwiver::vital::landmark& lm,
+                   const kwiver::vital::feature& f)
 {
   return std::sqrt(reprojection_error_sqr(cam, lm, f));
 }
@@ -107,9 +106,9 @@ reprojection_error(const camera& cam,
  */
 MAPTK_LIB_EXPORT
 double
-reprojection_rmse(const std::map<frame_id_t, camera_sptr>& cameras,
-                  const std::map<landmark_id_t, landmark_sptr>& landmarks,
-                  const std::vector<track_sptr>& tracks);
+reprojection_rmse(const std::map<kwiver::vital::frame_id_t, kwiver::vital::camera_sptr>& cameras,
+                  const std::map<kwiver::vital::landmark_id_t, kwiver::vital::landmark_sptr>& landmarks,
+                  const std::vector<kwiver::vital::track_sptr>& tracks);
 
 
 } // end namespace maptk

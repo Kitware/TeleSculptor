@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,7 @@
 /**
  * \file
  * \brief Helper utility functions for getting, setting and checking properties
- *        between OpenCV algorithm properties and maptk::config_block objects.
+ *        between OpenCV algorithm properties and kwiver::vital::config_block objects.
  */
 
 #ifndef MAPTK_PLUGINS_OCV_OCV_ALGO_TOOLS_H_
@@ -40,9 +40,9 @@
 #include <string>
 #include <iostream>
 
-#include <maptk/config_block.h>
-#include <maptk/exceptions.h>
-#include <maptk/types.h>
+#include <kwiver_util/config/config_block.h>
+#include <vital/exceptions.h>
+#include <vital/vital_types.h>
 
 #include <maptk/plugins/ocv/ocv_config.h>
 
@@ -66,13 +66,13 @@ namespace helper_
 /// Helper method for setting nested OpenCV Algorithm parameters
 MAPTK_OCV_EXPORT
 void set_nested_ocv_algo_configuration_helper(std::string const& name,
-                                              config_block_sptr config,
+                                              kwiver::config_block_sptr config,
                                               cv::Ptr<cv::Algorithm> &algo);
 
 /// Helper method for checking nested OpenCV Algorithm configurations
 MAPTK_OCV_EXPORT
 bool check_nested_ocv_algo_configuration_helper(std::string const& name,
-                                                config_block_sptr config,
+                                                kwiver::config_block_sptr config,
                                                 cv::Ptr<cv::Algorithm> algo);
 
 /// Templated helper method for creating a new OpenCV algorithm instance.
@@ -109,7 +109,7 @@ cv::Ptr<algo_t> create_ocv_algo(std::string const& impl_name)
   }
   else if (!a->info())
   {
-    throw algorithm_exception("OpenCV", impl_name, "OCV failed to construct "
+    throw kwiver::vital::algorithm_exception("OpenCV", impl_name, "OCV failed to construct "
         "underlying algorithm info object of " + impl_name + " algorithm, "
         "returning an invalid algorithm object. Cannot proceed.");
   }
@@ -142,13 +142,13 @@ cv::Ptr<cv::Algorithm> create_ocv_algo<cv::Algorithm>(std::string const& impl_na
  * algorithm that this nested algorithm belongs to.
  *
  * \param name    A \c std::string name for this nested algorithm.
- * \param config  The \c maptk::config_block to add the given algorithm's
+ * \param config  The \c kwiver::vital::config_block to add the given algorithm's
  *                options to.
  * \param algo   The cv pointer to the nested algorithm.
  */
 MAPTK_OCV_EXPORT
 void get_nested_ocv_algo_configuration(std::string const& name,
-                                       config_block_sptr config,
+                                       kwiver::config_block_sptr config,
                                        cv::Ptr<cv::Algorithm> algo);
 
 
@@ -158,20 +158,20 @@ void get_nested_ocv_algo_configuration(std::string const& name,
  * \param name    A \c std::string name for this nested algorithm. This should
  *                match the name used when \c get_nested_ocv_algo_configuration
  *                was called for this nested algorithm.
- * \param config  The \c maptk::config_block to set OpenCV property values
+ * \param config  The \c kwiver::vital::config_block to set OpenCV property values
  *                from.
  * \param algo    The cv pointer to the algorithm to set configuration
  *                options to.
  */
 template <typename algo_t>
 void set_nested_ocv_algo_configuration(std::string const& name,
-                                       config_block_sptr config,
+                                       kwiver::config_block_sptr config,
                                        cv::Ptr<algo_t> &algo)
 {
   // check that the config has a type for the nested algo, creating a new
   // instance if the given algo is NULL or not of the same type specified
   // in the config.
-  config_block_key_t type_key = name + config_block::block_sep + type_token;
+  kwiver::config_block_key_t type_key = name + kwiver::config_block::block_sep + type_token;
   std::string impl_name = config->get_value<std::string>(type_key, "");
   if (impl_name.length() > 0)
   {
@@ -215,15 +215,15 @@ void set_nested_ocv_algo_configuration(std::string const& name,
  * \param name    A \c std::string name for this nested algorithm. This should
  *                match the name used when \c get_nested_ocv_algo_configuration
  *                was called for this nested algorithm.
- * \param config  The \c maptk::config_block to check.
+ * \param config  The \c kwiver::vital::config_block to check.
  */
 template <typename algo_t>
 bool check_nested_ocv_algo_configuration(std::string const& name,
-                                         config_block_sptr config)
+                                         kwiver::config_block_sptr config)
 {
   // use default algo type and parameters if there is no type defined in config
   // or if its value is blank
-  config_block_key_t type_key = name + config_block::block_sep + type_token;
+  kwiver::config_block_key_t type_key = name + kwiver::config_block::block_sep + type_token;
   std::string impl_name = config->get_value<std::string>(type_key, "");
   if (impl_name.length() == 0)
   {

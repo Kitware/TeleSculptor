@@ -32,28 +32,30 @@
 
 #include <vector>
 
-#include <maptk/algo/algorithm.h>
-#include <maptk/algo/estimate_similarity_transform.h>
-#include <maptk/camera.h>
-#include <maptk/camera_map.h>
-#include <maptk/config_block.h>
-#include <maptk/landmark.h>
-#include <maptk/landmark_map.h>
-#include <maptk/similarity.h>
-#include <maptk/types.h>
-#include <maptk/vector.h>
+#include <kwiver_util/config/config_block.h>
 
+#include <vital/algorithm.h>
+#include <vital/camera.h>
+#include <vital/camera_map.h>
+#include <vital/landmark.h>
+#include <vital/landmark_map.h>
+#include <vital/similarity.h>
+#include <vital/vital_types.h>
+#include <vital/vector.h>
+
+#include <maptk/algo/estimate_similarity_transform.h>
 
 #define TEST_ARGS ()
 DECLARE_TEST_MAP();
 
+using namespace kwiver::vital;
 
 namespace
 {
 
 /// Dummy algo impl to test function wrappers
 class dummy_est
-  : public maptk::algo::algorithm_impl<dummy_est, maptk::algo::estimate_similarity_transform>
+  : public kwiver::vital::algorithm_impl<dummy_est, maptk::algo::estimate_similarity_transform>
 {
 public:
   dummy_est()
@@ -68,18 +70,18 @@ public:
 
   std::string impl_name() const { return "dummy_est"; }
 
-  void set_configuration(maptk::config_block_sptr config) {}
-  bool check_configuration(maptk::config_block_sptr config) const {return true;}
+  void set_configuration(kwiver::config_block_sptr config) {}
+  bool check_configuration(kwiver::config_block_sptr config) const {return true;}
 
-  maptk::similarity_d
-  estimate_transform(std::vector<maptk::vector_3d> const& from,
-                     std::vector<maptk::vector_3d> const& to) const
+  kwiver::vital::similarity_d
+  estimate_transform(std::vector<kwiver::vital::vector_3d> const& from,
+                     std::vector<kwiver::vital::vector_3d> const& to) const
   {
     TEST_EQUAL("input vector length equality", from.size() == to.size(), true);
     TEST_EQUAL("from vector size", from.size(), expected_size);
     TEST_EQUAL("to vector size", to.size(), expected_size);
 
-    return maptk::similarity_d();
+    return kwiver::vital::similarity_d();
   }
 
   size_t expected_size;

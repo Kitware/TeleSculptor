@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,7 +34,7 @@
  */
 
 #include "geo_map.h"
-#include <maptk/algo/algorithm.txx>
+#include <vital/algorithm.txx>
 
 /// \cond DoxygenSuppress
 INSTANTIATE_ALGORITHM_DEF(maptk::algo::geo_map);

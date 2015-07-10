@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,7 +47,7 @@ namespace vxl
 
 /// Constructor - convert base image container to vil
 image_container
-::image_container(const maptk::image_container& image_cont)
+::image_container(const kwiver::vital::image_container& image_cont)
 {
   const vxl::image_container* vic =
       dynamic_cast<const vxl::image_container*>(&image_cont);
@@ -80,12 +80,12 @@ image_container
 
 
 /// Convert a VXL vil_image_view to a MAPTK image
-image
+kwiver::vital::image
 image_container
 ::vxl_to_maptk(const vil_image_view<vxl_byte>& img)
 {
   vil_memory_chunk_sptr chunk = img.memory_chunk();
-  image_memory_sptr memory;
+  kwiver::vital::image_memory_sptr memory;
 
   // prevent nested wrappers when converting back and forth.
   // if this vil_image_view is already wrapping MAPTK data,
@@ -99,10 +99,10 @@ image_container
   else
   {
     // create a MAPTK wrapper around the vil memory chunk
-    memory = image_memory_sptr(new vil_image_memory(chunk));
+    memory = kwiver::vital::image_memory_sptr(new vil_image_memory(chunk));
   }
 
-  return image(memory, img.top_left_ptr(),
+  return kwiver::vital::image(memory, img.top_left_ptr(),
                img.ni(), img.nj(), img.nplanes(),
                img.istep(), img.jstep(), img.planestep());
 }
@@ -111,9 +111,9 @@ image_container
 /// Convert a MAPTK image to a VXL vil_image_view
 vil_image_view<vxl_byte>
 image_container
-::maptk_to_vxl(const image& img)
+::maptk_to_vxl(const kwiver::vital::image& img)
 {
-  image_memory_sptr memory = img.memory();
+  kwiver::vital::image_memory_sptr memory = img.memory();
   vil_memory_chunk_sptr chunk;
 
   // prevent nested wrappers when converting back and forth.

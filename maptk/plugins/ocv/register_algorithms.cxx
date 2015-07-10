@@ -40,7 +40,6 @@
 #include <opencv2/nonfree/nonfree.hpp>
 #endif
 
-#include <maptk/logging_macros.h>
 #include <maptk/plugin_interface/algorithm_plugin_interface_macros.h>
 #include <maptk/plugins/ocv/analyze_tracks.h>
 #include <maptk/plugins/ocv/detect_features.h>
@@ -58,7 +57,7 @@ namespace ocv
 {
 
 /// Register OCV algorithm implementations with the given or global registrar
-int register_algorithms( maptk::registrar &reg )
+int register_algorithms( kwiver::vital::registrar &reg )
 {
 #ifdef HAVE_OPENCV_NONFREE
   cv::initModule_nonfree();

@@ -35,6 +35,7 @@
 
 #include "camera.h"
 
+using namespace kwiver::vital;
 
 namespace maptk
 {

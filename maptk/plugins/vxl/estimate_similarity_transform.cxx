@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,8 +38,8 @@
 #include <iostream>
 #include <sstream>
 
-#include <maptk/exceptions/algorithm.h>
-#include <maptk/rotation.h>
+#include <vital/exceptions/algorithm.h>
+#include <vital/rotation.h>
 
 #include <vcl_vector.h>
 #include <vnl/vnl_matrix.h>
@@ -47,6 +47,7 @@
 #include <vnl/vnl_vector_fixed.h>
 #include <vpgl/algo/vpgl_ortho_procrustes.h>
 
+using namespace kwiver::vital;
 
 namespace maptk
 {

@@ -31,11 +31,13 @@
 #ifndef MAPTK_ALGO_ANALYZE_TRACKS_H_
 #define MAPTK_ALGO_ANALYZE_TRACKS_H_
 
-#include <boost/shared_ptr.hpp>
+#include <maptk/config.h>
 
-#include <maptk/algo/algorithm.h>
-#include <maptk/image_container.h>
-#include <maptk/track_set.h>
+#include <vital/algorithm.h>
+#include <vital/image_container.h>
+#include <vital/track_set.h>
+
+#include <boost/shared_ptr.hpp>
 
 #include <ostream>
 
@@ -53,7 +55,7 @@ namespace algo
 
 /// Abstract base class for writing out human readable track statistics.
 class MAPTK_LIB_EXPORT analyze_tracks
-  : public algorithm_def<analyze_tracks>
+  : public kwiver::vital::algorithm_def<analyze_tracks>
 {
 public:
 
@@ -68,7 +70,7 @@ public:
    * \param [in] stream an output stream to write data onto
    */
   virtual void
-  print_info(track_set_sptr track_set,
+  print_info(kwiver::vital::track_set_sptr track_set,
              stream_t& stream = std::cout) const = 0;
 
 };

@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,9 +35,9 @@
 
 #include "image_io.h"
 
-#include <maptk/algo/algorithm.txx>
-#include <maptk/exceptions/io.h>
-#include <maptk/types.h>
+#include <vital/algorithm.txx>
+#include <vital/exceptions/io.h>
+#include <vital/vital_types.h>
 
 #include <boost/filesystem.hpp>
 
@@ -53,6 +53,7 @@ namespace maptk
 namespace algo
 {
 
+using namespace kwiver::vital;
 
 image_container_sptr
 image_io

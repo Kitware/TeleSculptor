@@ -35,9 +35,6 @@
 
 #include "register_algorithms.h"
 
-#include <iostream>
-
-#include <maptk/logging_macros.h>
 #include <maptk/plugin_interface/algorithm_plugin_interface_macros.h>
 #include <maptk/plugins/core/close_loops_bad_frames_only.h>
 #include <maptk/plugins/core/close_loops_multi_method.h>
@@ -57,7 +54,7 @@ namespace core
 {
 
 // Register core algorithms with the given or global registrar
-int register_algorithms(maptk::registrar &reg)
+int register_algorithms(kwiver::vital::registrar &reg)
 {
     REGISTRATION_INIT( reg );
 

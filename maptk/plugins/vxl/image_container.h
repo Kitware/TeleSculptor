@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
 #ifndef MAPTK_PLUGINS_VXL_IMAGE_CONTAINER_H_
 #define MAPTK_PLUGINS_VXL_IMAGE_CONTAINER_H_
 
-#include <maptk/image_container.h>
+#include <vital/image_container.h>
 #include <maptk/plugins/vxl/vxl_config.h>
 
 #include <vil/vil_image_view.h>
@@ -54,7 +54,7 @@ namespace vxl
  * the image data by extending the basic image_container.
  */
 class MAPTK_VXL_EXPORT image_container
-  : public maptk::image_container
+  : public kwiver::vital::image_container
 {
 public:
 
@@ -63,11 +63,11 @@ public:
   : data_(d) {}
 
   /// Constructor - convert maptk image to vil
-  explicit image_container(const image& maptk_image)
+  explicit image_container(const kwiver::vital::image& maptk_image)
   : data_(maptk_to_vxl(maptk_image)) {}
 
   /// Constructor - convert base image container to vil
-  explicit image_container(const maptk::image_container& image_cont);
+  explicit image_container(const kwiver::vital::image_container& image_cont);
 
   /// Copy Constructor
   image_container(const maptk::vxl::image_container& other)
@@ -90,16 +90,16 @@ public:
   virtual size_t depth() const { return data_.nplanes(); }
 
   /// Get an in-memory image class to access the data
-  virtual image get_image() const { return vxl_to_maptk(data_); }
+  virtual kwiver::vital::image get_image() const { return vxl_to_maptk(data_); }
 
   /// Get image data in this container.
   vil_image_view<vxl_byte> get_vil_image_view() const { return data_; }
 
   /// Convert a VXL vil_image_view to a MAPTK image
-  static image vxl_to_maptk(const vil_image_view<vxl_byte>& img);
+  static kwiver::vital::image vxl_to_maptk(const vil_image_view<vxl_byte>& img);
 
   /// Convert a MAPTK image to a VXL vil_image_view
-  static vil_image_view<vxl_byte> maptk_to_vxl(const image& img);
+  static vil_image_view<vxl_byte> maptk_to_vxl(const kwiver::vital::image& img);
 
 protected:
   /// image data

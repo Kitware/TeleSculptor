@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,14 +45,14 @@ namespace ocv
 {
 
 /// Return a vector of matching indices
-std::vector<match>
+std::vector<kwiver::vital::match>
 match_set
 ::matches() const
 {
-  std::vector<match> m;
+  std::vector<kwiver::vital::match> m;
   BOOST_FOREACH(cv::DMatch dm, this->data_)
   {
-    m.push_back(match(dm.queryIdx, dm.trainIdx));
+    m.push_back( kwiver::vital::match(dm.queryIdx, dm.trainIdx));
   }
   return m;
 }
@@ -60,7 +60,7 @@ match_set
 
 /// Convert any match set to a vector of OpenCV cv::DMatch
 std::vector<cv::DMatch>
-matches_to_ocv_dmatch(const maptk::match_set& m_set)
+matches_to_ocv_dmatch(const kwiver::vital::match_set& m_set)
 {
   if( const ocv::match_set* m_ocv =
           dynamic_cast<const ocv::match_set*>(&m_set) )
@@ -68,8 +68,8 @@ matches_to_ocv_dmatch(const maptk::match_set& m_set)
     return m_ocv->ocv_matches();
   }
   std::vector<cv::DMatch> dm;
-  const std::vector<match> mats = m_set.matches();
-  BOOST_FOREACH(match m, mats)
+  const std::vector<kwiver::vital::match> mats = m_set.matches();
+  BOOST_FOREACH( kwiver::vital::match m, mats)
   {
     dm.push_back(cv::DMatch(m.first, m.second, FLT_MAX));
   }

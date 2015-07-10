@@ -31,13 +31,15 @@
 #ifndef MAPTK_ALGO_FILTER_FEATURES_H_
 #define MAPTK_ALGO_FILTER_FEATURES_H_
 
+#include <maptk/config.h>
+
 #include <boost/shared_ptr.hpp>
 #include <utility>
 #include <vector>
 
-#include <maptk/algo/algorithm.h>
-#include <maptk/feature_set.h>
-#include <maptk/descriptor_set.h>
+#include <vital/algorithm.h>
+#include <vital/feature_set.h>
+#include <vital/descriptor_set.h>
 
 /**
  * \file
@@ -53,7 +55,7 @@ namespace algo
 
 /// \brief Abstract base class for feature set filter algorithms.
 class MAPTK_LIB_EXPORT filter_features
-  : public algorithm_def<filter_features>
+  : public kwiver::vital::algorithm_def<filter_features>
 {
 public:
 
@@ -67,8 +69,8 @@ public:
    * \param [in] input The feature set to filter
    * \returns a filtered version of the feature set (simple_feature_set)
    */
-  virtual feature_set_sptr
-  filter( feature_set_sptr input ) const;
+  virtual kwiver::vital::feature_set_sptr
+  filter( kwiver::vital::feature_set_sptr input ) const;
 
   /// Filter a feature_set and its coresponding descriptor_set
   /**
@@ -80,8 +82,8 @@ public:
    * \param [in] descr The parallel descriptor set to filter
    * \returns a pair of the filtered features and descriptors
    */
-  virtual std::pair<feature_set_sptr, descriptor_set_sptr>
-  filter( feature_set_sptr feat, descriptor_set_sptr descr) const;
+  virtual std::pair<kwiver::vital::feature_set_sptr, kwiver::vital::descriptor_set_sptr>
+  filter( kwiver::vital::feature_set_sptr feat, kwiver::vital::descriptor_set_sptr descr) const;
 
 protected:
 
@@ -91,8 +93,8 @@ protected:
    * \param [in,out] indices The indices into \p feat of the features retained
    * \return a new feature set containing the subset of features noted by \p indices
    */
-  virtual feature_set_sptr
-  filter(feature_set_sptr feat, std::vector<unsigned int> &indices) const = 0;
+  virtual kwiver::vital::feature_set_sptr
+  filter(kwiver::vital::feature_set_sptr feat, std::vector<unsigned int> &indices) const = 0;
 
 };
 

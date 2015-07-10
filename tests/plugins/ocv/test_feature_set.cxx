@@ -53,6 +53,7 @@ main(int argc, char* argv[])
   RUN_TEST(testname);
 }
 
+using namespace kwiver::vital;
 
 IMPLEMENT_TEST(default_set)
 {

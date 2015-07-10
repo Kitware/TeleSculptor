@@ -37,10 +37,12 @@
 #ifndef MAPTK_ALGO_OPTIMIZE_CAMERAS_H_
 #define MAPTK_ALGO_OPTIMIZE_CAMERAS_H_
 
-#include <maptk/algo/algorithm.h>
-#include <maptk/camera_map.h>
-#include <maptk/landmark_map.h>
-#include <maptk/track_set.h>
+#include <maptk/config.h>
+
+#include <vital/algorithm.h>
+#include <vital/camera_map.h>
+#include <vital/landmark_map.h>
+#include <vital/track_set.h>
 
 
 namespace maptk
@@ -52,7 +54,7 @@ namespace algo
 
 /// Abstract algorithm definition base for optimizing cameras
 class MAPTK_LIB_EXPORT optimize_cameras
-  : public algorithm_def<optimize_cameras>
+  : public kwiver::vital::algorithm_def<optimize_cameras>
 {
 public:
   /// Return the name of this algorithm definition
@@ -70,9 +72,9 @@ public:
    * \param[in]     landmarks The landmarks the cameras are viewing.
    */
   virtual void
-  optimize(camera_map_sptr & cameras,
-           track_set_sptr tracks,
-           landmark_map_sptr landmarks) const = 0;
+  optimize(kwiver::vital::camera_map_sptr & cameras,
+           kwiver::vital::track_set_sptr tracks,
+           kwiver::vital::landmark_map_sptr landmarks) const = 0;
 
 };
 

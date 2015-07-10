@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,6 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-
 namespace maptk
 {
 
@@ -52,12 +51,12 @@ namespace ocv
  * \param filename the path to the file the load
  * \returns an image container refering to the loaded image
  */
-image_container_sptr
+kwiver::vital::image_container_sptr
 image_io
 ::load_(const std::string& filename) const
 {
   cv::Mat img = cv::imread(filename.c_str());
-  return image_container_sptr(new ocv::image_container(img));
+  return kwiver::vital::image_container_sptr(new ocv::image_container(img));
 }
 
 
@@ -69,7 +68,7 @@ image_io
 void
 image_io
 ::save_(const std::string& filename,
-       image_container_sptr data) const
+       kwiver::vital::image_container_sptr data) const
 {
   cv::imwrite(filename.c_str(),
               ocv::image_container::maptk_to_ocv(data->get_image()));

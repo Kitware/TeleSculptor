@@ -36,11 +36,13 @@
 #ifndef MAPTK_ALGO_DETECT_FEATURES_H_
 #define MAPTK_ALGO_DETECT_FEATURES_H_
 
+#include <maptk/config.h>
+
 #include <boost/shared_ptr.hpp>
 
-#include <maptk/algo/algorithm.h>
-#include <maptk/feature_set.h>
-#include <maptk/image_container.h>
+#include <vital/algorithm.h>
+#include <vital/feature_set.h>
+#include <vital/image_container.h>
 
 namespace maptk
 {
@@ -50,7 +52,7 @@ namespace algo
 
 /// An abstract base class for detecting feature points
 class MAPTK_LIB_EXPORT detect_features
-  : public algorithm_def<detect_features>
+  : public kwiver::vital::algorithm_def<detect_features>
 {
 public:
   /// Return the name of this algorithm
@@ -72,9 +74,9 @@ public:
    *             considered.
    * \returns a set of image features
    */
-  virtual feature_set_sptr
-  detect(image_container_sptr image_data,
-         image_container_sptr mask = image_container_sptr()) const = 0;
+  virtual kwiver::vital::feature_set_sptr
+  detect(kwiver::vital::image_container_sptr image_data,
+         kwiver::vital::image_container_sptr mask = kwiver::vital::image_container_sptr()) const = 0;
 
 };
 

@@ -31,7 +31,7 @@
 #ifndef MAPTK_PLUGINS_VISCL_IMAGE_CONTAINER_H_
 #define MAPTK_PLUGINS_VISCL_IMAGE_CONTAINER_H_
 
-#include <maptk/image_container.h>
+#include <vital/image_container.h>
 #include <maptk/plugins/viscl/viscl_config.h>
 
 #include <viscl/core/image.h>
@@ -45,7 +45,7 @@ namespace vcl
 
 /// This image container wraps a VisCL image
 class MAPTK_VISCL_EXPORT image_container
-: public maptk::image_container
+: public kwiver::vital::image_container
 {
 public:
 
@@ -54,11 +54,11 @@ public:
   : data_(d) {}
 
   /// Constructor - convert maptk image to VisCL image
-  explicit image_container(const image& maptk_image)
+  explicit image_container(const kwiver::vital::image& maptk_image)
   : data_(maptk_to_viscl(maptk_image)) {}
 
   /// Constructor - convert base image container to VisCL
-  explicit image_container(const maptk::image_container& image_cont);
+  explicit image_container(const kwiver::vital::image_container& image_cont);
 
   /// Copy Constructor
   image_container(const maptk::vcl::image_container& other)
@@ -84,16 +84,16 @@ public:
   virtual size_t depth() const { return data_.depth(); }
 
   /// Get and in-memory image class to access the data
-  virtual image get_image() const { return viscl_to_maptk(data_); }
+  virtual kwiver::vital::image get_image() const { return viscl_to_maptk(data_); }
 
   /// Access the underlying VisCL data structure
   viscl::image get_viscl_image() const { return data_; }
 
   /// Convert a VisCL image to a MAPTK image
-  static image viscl_to_maptk(const viscl::image& img);
+  static kwiver::vital::image viscl_to_maptk(const viscl::image& img);
 
   /// Convert a MAPTK image to a VisCL image
-  static viscl::image maptk_to_viscl(const image& img);
+  static viscl::image maptk_to_viscl(const kwiver::vital::image& img);
 
 protected:
 
@@ -107,7 +107,7 @@ protected:
  * return the underlying VisCL image.  Otherwise, convert the image data
  * and upload to the GPU.
  */
-MAPTK_VISCL_EXPORT viscl::image image_container_to_viscl(const maptk::image_container& img);
+MAPTK_VISCL_EXPORT viscl::image image_container_to_viscl(const kwiver::vital::image_container& img);
 
 
 } // end namespace vcl

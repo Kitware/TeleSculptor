@@ -39,14 +39,15 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <maptk/algo/algorithm.h>
+#include <vital/algorithm.h>
+#include <vital/image_container.h>
+#include <vital/track_set.h>
+
 #include <maptk/algo/detect_features.h>
 #include <maptk/algo/extract_descriptors.h>
 #include <maptk/algo/match_features.h>
 #include <maptk/algo/track_features.h>
 #include <maptk/algo/close_loops.h>
-#include <maptk/image_container.h>
-#include <maptk/track_set.h>
 
 #include <maptk/plugins/core/plugin_core_config.h>
 
@@ -59,7 +60,7 @@ namespace core
 
 /// A basic feature tracker
 class PLUGIN_CORE_EXPORT track_features_core
-  : public algo::algorithm_impl<track_features_core, algo::track_features>
+  : public kwiver::vital::algorithm_impl<track_features_core, algo::track_features>
 {
 public:
 
@@ -80,7 +81,7 @@ public:
    * \returns \c config_block containing the configuration for this algorithm
    *          and any nested components.
    */
-  virtual config_block_sptr get_configuration() const;
+  virtual kwiver::config_block_sptr get_configuration() const;
 
   /// Set this algorithm's properties via a config block
   /**
@@ -93,7 +94,7 @@ public:
    * \param config  The \c config_block instance containing the configuration
    *                parameters for this algorithm
    */
-  virtual void set_configuration(config_block_sptr config);
+  virtual void set_configuration(kwiver::config_block_sptr config);
 
   /// Check that the algorithm's currently configuration is valid
   /**
@@ -105,7 +106,7 @@ public:
    *
    * \returns true if the configuration check passed and false if it didn't.
    */
-  virtual bool check_configuration(config_block_sptr config) const;
+  virtual bool check_configuration(kwiver::config_block_sptr config) const;
 
   /// Extend a previous set of tracks using the current frame
   /**
@@ -122,11 +123,11 @@ public:
    *                  value).
    * \returns an updated set a tracks including the current frame
    */
-  virtual track_set_sptr
-  track(track_set_sptr prev_tracks,
+  virtual kwiver::vital::track_set_sptr
+  track(kwiver::vital::track_set_sptr prev_tracks,
         unsigned int frame_number,
-        image_container_sptr image_data,
-        image_container_sptr mask = image_container_sptr()) const;
+        kwiver::vital::image_container_sptr image_data,
+        kwiver::vital::image_container_sptr mask = kwiver::vital::image_container_sptr()) const;
 
 
 private:

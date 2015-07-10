@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,11 +48,13 @@
 
 #include <maptk/algo/optimize_cameras.h>
 #include <maptk/algo/triangulate_landmarks.h>
-#include <maptk/camera.h>
-#include <maptk/exceptions.h>
 #include <maptk/metrics.h>
-#include <maptk/types.h>
 
+#include <vital/camera.h>
+#include <vital/exceptions.h>
+#include <vital/vital_types.h>
+
+using namespace kwiver::vital;
 
 namespace maptk
 {
@@ -155,12 +157,12 @@ hierarchical_bundle_adjust
 }
 
 
-/// Get this algorithm's \link maptk::config_block configuration block \endlink
-config_block_sptr
+/// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
+kwiver::config_block_sptr
 hierarchical_bundle_adjust
 ::get_configuration() const
 {
-  config_block_sptr config = maptk::algo::bundle_adjust::get_configuration();
+  kwiver::config_block_sptr config = maptk::algo::bundle_adjust::get_configuration();
 
   config->set_value("initial_sub_sample", d_->initial_sub_sample,
                     "Sub-sample the given cameras by this factor. Gaps will "
@@ -193,7 +195,7 @@ hierarchical_bundle_adjust
 /// Set this algorithm's properties via a config block
 void
 hierarchical_bundle_adjust
-::set_configuration(config_block_sptr config)
+::set_configuration(kwiver::config_block_sptr config)
 {
   d_->initial_sub_sample = config->get_value<unsigned int>("initial_sub_sample", d_->initial_sub_sample);
   d_->interpolation_rate = config->get_value<unsigned int>("interpolation_rate", d_->interpolation_rate);
@@ -211,10 +213,10 @@ hierarchical_bundle_adjust
 }
 
 
-/// Check that the algorithm's configuration config_block is valid
+/// Check that the algorithm's configuration kwiver::config_block is valid
 bool
 hierarchical_bundle_adjust
-::check_configuration(config_block_sptr config) const
+::check_configuration(kwiver::config_block_sptr config) const
 {
   bool valid = true;
 
@@ -293,10 +295,10 @@ hierarchical_bundle_adjust
   // If interpolation rate is 0, then that means that all intermediate frames
   // should be interpolated on the first step. Due to how the algorithm
   // functions, set var to unsigned int max.
-  unsigned int ir = d_->interpolation_rate;
+  frame_id_t ir = d_->interpolation_rate;
   if (ir == 0)
   {
-    ir = std::numeric_limits<unsigned int>::max();
+    ir = std::numeric_limits<frame_id_t>::max();
   }
   cerr << "Interpolation rate: " << ir << endl;
 
@@ -382,9 +384,9 @@ hierarchical_bundle_adjust
             //cerr << "Interpolating cam between frames " << cur_frm << " and " << next_frm << endl;
 
             // this specific gap's interpolation rate -- gap may be smaller than ir
-            ir_l = min(ir, next_frm - cur_frm - 1);
+            ir_l = std::min(ir, next_frm - cur_frm - 1);
 
-            for (double i=1; i<=ir_l; ++i)
+            for (double i = 1; i <= ir_l; ++i)
             {
               // Determine the integer associated with the interpolation step,
               // then determine the fraction location of that integer between

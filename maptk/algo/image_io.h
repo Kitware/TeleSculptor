@@ -37,12 +37,14 @@
 #ifndef MAPTK_ALGO_IMAGE_IO_H_
 #define MAPTK_ALGO_IMAGE_IO_H_
 
+#include <maptk/config.h>
+
 #include <string>
 
 #include <boost/shared_ptr.hpp>
 
-#include <maptk/algo/algorithm.h>
-#include <maptk/image_container.h>
+#include <vital/algorithm.h>
+#include <vital/image_container.h>
 
 namespace maptk
 {
@@ -56,7 +58,7 @@ namespace algo
  * images.
  */
 class MAPTK_LIB_EXPORT image_io
-  : public algorithm_def<image_io>
+  : public kwiver::vital::algorithm_def<image_io>
 {
 public:
   virtual ~image_io() MAPTK_DEFAULT_DTOR;
@@ -66,31 +68,31 @@ public:
 
   /// Load image image from the file
   /**
-   * \throws maptk::path_not_exists Thrown when the given path does not exist.
+   * \throws kwiver::vital::path_not_exists Thrown when the given path does not exist.
    *
-   * \throws maptk::path_not_a_file Thrown when the given path does
+   * \throws kwiver::vital::path_not_a_file Thrown when the given path does
    *    not point to a file (i.e. it points to a directory).
    *
    * \param filename the path to the file the load
    * \returns an image container refering to the loaded image
    */
-  image_container_sptr load(std::string const& filename) const;
+  kwiver::vital::image_container_sptr load(std::string const& filename) const;
 
   /// Save image image to a file
   /**
    * Image file format is based on file extension.
    *
-   * \throws maptk::path_not_exists Thrown when the expected
+   * \throws kwiver::vital::path_not_exists Thrown when the expected
    *    containing directory of the given path does not exist.
    *
-   * \throws maptk::path_not_a_directory Thrown when the expected
+   * \throws kwiver::vital::path_not_a_directory Thrown when the expected
    *    containing directory of the given path is not actually a
    *    directory.
    *
    * \param filename the path to the file to save
    * \param data the image container refering to the image to write
    */
-  void save(std::string const& filename, image_container_sptr data) const;
+  void save(std::string const& filename, kwiver::vital::image_container_sptr data) const;
 
 private:
   /// Implementation specific load functionality.
@@ -101,7 +103,7 @@ private:
    * \param filename the path to the file the load
    * \returns an image container refering to the loaded image
    */
-  virtual image_container_sptr load_(std::string const& filename) const = 0;
+  virtual kwiver::vital::image_container_sptr load_(std::string const& filename) const = 0;
 
   /// Implementation specific save functionality.
   /**
@@ -112,7 +114,7 @@ private:
    * \param data the image container refering to the image to write
    */
   virtual void save_(std::string const& filename,
-                     image_container_sptr data) const = 0;
+                     kwiver::vital::image_container_sptr data) const = 0;
 };
 
 

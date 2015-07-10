@@ -37,10 +37,12 @@
 #ifndef MAPTK_ALGO_BUNDLE_ADJUST_H_
 #define MAPTK_ALGO_BUNDLE_ADJUST_H_
 
-#include <maptk/algo/algorithm.h>
-#include <maptk/track_set.h>
-#include <maptk/camera_map.h>
-#include <maptk/landmark_map.h>
+#include <maptk/config.h>
+
+#include <vital/algorithm.h>
+#include <vital/track_set.h>
+#include <vital/camera_map.h>
+#include <vital/landmark_map.h>
 
 
 namespace maptk
@@ -51,7 +53,7 @@ namespace algo
 
 /// An abstract base class for bundle adjustment using tracks
 class MAPTK_LIB_EXPORT bundle_adjust
-: public algorithm_def<bundle_adjust>
+  : public kwiver::vital::algorithm_def<bundle_adjust>
 {
 public:
   /// Return the name of this algorithm
@@ -64,9 +66,9 @@ public:
    * \param [in] tracks the tracks to use as constraints
    */
   virtual void
-  optimize(camera_map_sptr& cameras,
-           landmark_map_sptr& landmarks,
-           track_set_sptr tracks) const = 0;
+  optimize(kwiver::vital::camera_map_sptr& cameras,
+           kwiver::vital::landmark_map_sptr& landmarks,
+           kwiver::vital::track_set_sptr tracks) const = 0;
 };
 
 

@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <maptk/algo/algorithm.txx>
+#include <vital/algorithm.txx>
 #include <maptk/algo/analyze_tracks.h>
 
 INSTANTIATE_ALGORITHM_DEF(maptk::algo::analyze_tracks);

@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,7 +50,7 @@ namespace vxl
 
 /// A class for initialization of cameras and landmarks using VXL
 class MAPTK_VXL_EXPORT initialize_cameras_landmarks
-: public algo::algorithm_impl<initialize_cameras_landmarks,
+: public kwiver::vital::algorithm_impl<initialize_cameras_landmarks,
                               algo::initialize_cameras_landmarks>
 {
 public:
@@ -66,12 +66,12 @@ public:
   /// Return the name of this implementation
   std::string impl_name() const { return "vxl"; }
 
-  /// Get this algorithm's \link maptk::config_block configuration block \endlink
-  virtual config_block_sptr get_configuration() const;
+  /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
+  virtual kwiver::config_block_sptr get_configuration() const;
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(config_block_sptr config);
+  virtual void set_configuration(kwiver::config_block_sptr config);
   /// Check that the algorithm's currently configuration is valid
-  virtual bool check_configuration(config_block_sptr config) const;
+  virtual bool check_configuration(kwiver::config_block_sptr config) const;
 
   /// Initialize the camera and landmark parameters given a set of tracks
   /**
@@ -84,9 +84,9 @@ public:
    * \param [in] tracks the tracks to use as constraints
    */
   virtual void
-  initialize(camera_map_sptr& cameras,
-             landmark_map_sptr& landmarks,
-             track_set_sptr tracks) const;
+  initialize(kwiver::vital::camera_map_sptr& cameras,
+             kwiver::vital::landmark_map_sptr& landmarks,
+             kwiver::vital::track_set_sptr tracks) const;
 
 private:
   /// private implementation class

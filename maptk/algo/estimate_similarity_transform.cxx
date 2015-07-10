@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
 
 #include <boost/foreach.hpp>
 
-#include <maptk/algo/algorithm.txx>
+#include <vital/algorithm.txx>
 #include <maptk/algo/estimate_similarity_transform.h>
 
 
@@ -51,6 +51,7 @@ namespace maptk
 namespace algo
 {
 
+using namespace kwiver::vital;
 
 /// Estimate the similarity transform between two corresponding sets of cameras
 similarity_d

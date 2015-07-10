@@ -34,8 +34,8 @@
  */
 
 #include "geo_reference_points_io.h"
-#include "exceptions.h"
-#include "eigen_io.h"
+#include <vital/exceptions.h>
+#include <vital/eigen_io.h>
 
 #include <fstream>
 #include <iomanip>
@@ -50,10 +50,10 @@ namespace maptk
 
 
 /// Load landmarks and tracks from reference points file
-void load_reference_file(path_t const& reference_file,
+void load_reference_file(kwiver::vital::path_t const& reference_file,
                          local_geo_cs & lgcs,
-                         landmark_map_sptr & ref_landmarks,
-                         track_set_sptr & ref_track_set)
+                         kwiver::vital::landmark_map_sptr & ref_landmarks,
+                         kwiver::vital::track_set_sptr & ref_track_set)
 {
   using namespace std;
 
@@ -62,28 +62,28 @@ void load_reference_file(path_t const& reference_file,
   std::ifstream input_stream(reference_file.c_str(), std::fstream::in);
   if (!input_stream)
   {
-    throw file_not_found_exception(reference_file, "Could not open reference points file!");
+    throw kwiver::vital::file_not_found_exception(reference_file, "Could not open reference points file!");
   }
 
   // pre-allocated vars for loop
-  landmark_id_t cur_id = 1;
-  frame_id_t frm;
-  vector_2d feat_loc;
-  vector_3d vec(0,0,0);
+  kwiver::vital::landmark_id_t cur_id = 1;
+  kwiver::vital::frame_id_t frm;
+  kwiver::vital::vector_2d feat_loc;
+  kwiver::vital::vector_3d vec(0,0,0);
   double x, y;
   int zone;
   bool northp;
   // used to stream file lines into data types
   std::istringstream ss;
 
-  landmark_map::map_landmark_t reference_lms;
-  std::vector<track_sptr> reference_tracks;
+  kwiver::vital::landmark_map::map_landmark_t reference_lms;
+  std::vector<kwiver::vital::track_sptr> reference_tracks;
 
   // Resetting lgcs' logical initialization
   lgcs.set_utm_origin(vec);
   lgcs.set_utm_origin_zone(-1);
   // Mean position of all landmarks.
-  vector_3d mean(0,0,0);
+  kwiver::vital::vector_3d mean(0,0,0);
 
   // TODO: put in try-catch around >>'s in case we have an ill-formatted file,
   // or there's a parse error
@@ -113,17 +113,19 @@ void load_reference_file(path_t const& reference_file,
     }
 
     //cerr << "[load_reference_file] landmark " << cur_id << " position :: " << std::setprecision(12) << vec << endl;
-    reference_lms[cur_id] = landmark_sptr(new landmark_d(vec));
+    reference_lms[cur_id] = kwiver::vital::landmark_sptr(new kwiver::vital::landmark_d(vec));
 
     // while there's still input left, read in track states
     //cerr << "[] track:" << endl;
-    track_sptr lm_track(new track());
-    lm_track->set_id(static_cast<track_id_t>(cur_id));
+    kwiver::vital::track_sptr lm_track(new kwiver::vital::track());
+    lm_track->set_id(static_cast<kwiver::vital::track_id_t>(cur_id));
     while (ss.peek() != std::char_traits<char>::eof())
     {
       ss >> frm;
       ss >> feat_loc;
-      lm_track->append(track::track_state(frm, feature_sptr(new feature_d(feat_loc)), descriptor_sptr()));
+      lm_track->append(kwiver::vital::track::track_state(frm,
+                       kwiver::vital::feature_sptr(new kwiver::vital::feature_d(feat_loc)),
+                       kwiver::vital::descriptor_sptr()));
       //cerr << "[]\t- " << frm << " :: " << feat_loc << endl;
     }
     reference_tracks.push_back(lm_track);
@@ -139,14 +141,14 @@ void load_reference_file(path_t const& reference_file,
   // Scan through reference landmarks, adjusting their location by the lgcs
   // origin.
   cerr << "[load_reference_file] transforming lm geographic locations to local system..." << endl;
-  BOOST_FOREACH(landmark_map::map_landmark_t::value_type & p, reference_lms)
+  BOOST_FOREACH(kwiver::vital::landmark_map::map_landmark_t::value_type & p, reference_lms)
   {
-    dynamic_cast<landmark_d*>(p.second.get())->set_loc(p.second->loc() - mean);
+    dynamic_cast<kwiver::vital::landmark_d*>(p.second.get())->set_loc(p.second->loc() - mean);
     //cerr << "[load_reference_file] -- " << p.first << " :: " << p.second->loc() << endl;
   }
 
-  ref_landmarks = landmark_map_sptr(new simple_landmark_map(reference_lms));
-  ref_track_set = track_set_sptr(new simple_track_set(reference_tracks));
+  ref_landmarks = kwiver::vital::landmark_map_sptr(new kwiver::vital::simple_landmark_map(reference_lms));
+  ref_track_set = kwiver::vital::track_set_sptr(new kwiver::vital::simple_track_set(reference_tracks));
 }
 
 

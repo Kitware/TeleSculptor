@@ -46,6 +46,7 @@
 #include <vnl/vnl_double_3.h>
 #include <vnl/vnl_double_3x3.h>
 
+using namespace kwiver::vital;
 
 namespace maptk
 {

@@ -31,12 +31,14 @@
 #ifndef MAPTK_ALGO_CONVERT_IMAGE_H_
 #define MAPTK_ALGO_CONVERT_IMAGE_H_
 
+#include <maptk/config.h>
+
 #include <string>
 
 #include <boost/shared_ptr.hpp>
 
-#include <maptk/algo/algorithm.h>
-#include <maptk/image_container.h>
+#include <vital/algorithm.h>
+#include <vital/image_container.h>
 
 
 namespace maptk
@@ -47,19 +49,19 @@ namespace algo
 
 /// An abstract base class for converting base image type
 class MAPTK_LIB_EXPORT convert_image
-  : public algorithm_def<convert_image>
+  : public kwiver::vital::algorithm_def<convert_image>
 {
 public:
   /// Return the name of this algorithm
   static std::string static_type_name() { return "convert_image"; }
 
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(config_block_sptr config);
+  virtual void set_configuration(kwiver::config_block_sptr config);
   /// Check that the algorithm's currently configuration is valid
-  virtual bool check_configuration(config_block_sptr config) const;
+  virtual bool check_configuration(kwiver::config_block_sptr config) const;
 
   /// Convert image base type
-  virtual image_container_sptr convert(image_container_sptr img) const = 0;
+  virtual kwiver::vital::image_container_sptr convert(kwiver::vital::image_container_sptr img) const = 0;
 
 };
 

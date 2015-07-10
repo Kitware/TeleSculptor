@@ -36,10 +36,12 @@
 #ifndef MAPTK_ALGO_MATCH_FEATURES_H_
 #define MAPTK_ALGO_MATCH_FEATURES_H_
 
-#include <maptk/algo/algorithm.h>
-#include <maptk/feature_set.h>
-#include <maptk/descriptor_set.h>
-#include <maptk/match_set.h>
+#include <maptk/config.h>
+
+#include <vital/algorithm.h>
+#include <vital/feature_set.h>
+#include <vital/descriptor_set.h>
+#include <vital/match_set.h>
 #include <boost/shared_ptr.hpp>
 
 namespace maptk
@@ -50,7 +52,7 @@ namespace algo
 
 /// An abstract base class for matching feature points
 class MAPTK_LIB_EXPORT match_features
-  : public algorithm_def<match_features>
+  : public kwiver::vital::algorithm_def<match_features>
 {
 public:
   /// Return the name of this algorithm
@@ -58,15 +60,15 @@ public:
 
   /// Match one set of features and corresponding descriptors to another
   /**
-   * \param [in] feat1 the first set of features to match
-   * \param [in] desc1 the descriptors corresponding to \a feat1
-   * \param [in] feat2 the second set fof features to match
-   * \param [in] desc2 the descriptors corresponding to \a feat2
+   * \param feat1 the first set of features to match
+   * \param desc1 the descriptors corresponding to \a feat1
+   * \param feat2 the second set fof features to match
+   * \param desc2 the descriptors corresponding to \a feat2
    * \returns a set of matching indices from \a feat1 to \a feat2
    */
-  virtual match_set_sptr
-  match(feature_set_sptr feat1, descriptor_set_sptr desc1,
-        feature_set_sptr feat2, descriptor_set_sptr desc2) const = 0;
+  virtual kwiver::vital::match_set_sptr
+  match(kwiver::vital::feature_set_sptr feat1, kwiver::vital::descriptor_set_sptr desc1,
+        kwiver::vital::feature_set_sptr feat2, kwiver::vital::descriptor_set_sptr desc2) const = 0;
 
 };
 

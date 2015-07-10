@@ -32,10 +32,11 @@
 #include <test_math.h>
 #include <test_scene.h>
 
+#include <vital/similarity.h>
+#include <vital/transform.h>
+
 #include <maptk/projected_track_set.h>
 #include <maptk/metrics.h>
-#include <maptk/similarity.h>
-#include <maptk/transform.h>
 #include <maptk/plugins/vxl/register_algorithms.h>
 #include <maptk/plugins/vxl/estimate_essential_matrix.h>
 #include <maptk/plugins/vxl/estimate_similarity_transform.h>
@@ -60,6 +61,7 @@ main(int argc, char* argv[])
   RUN_TEST(testname);
 }
 
+using namespace kwiver::vital;
 
 IMPLEMENT_TEST(create)
 {
@@ -74,10 +76,10 @@ IMPLEMENT_TEST(create)
 
 // helper function to configure the algorithm
 void configure_algo(maptk::vxl::initialize_cameras_landmarks& algo,
-                    const maptk::camera_intrinsics_d& K)
+                    const kwiver::vital::camera_intrinsics_d& K)
 {
   using namespace maptk;
-  config_block_sptr cfg = algo.get_configuration();
+  kwiver::config_block_sptr cfg = algo.get_configuration();
   cfg->set_value("verbose", "true");
   cfg->set_value("base_camera:focal_length", K.focal_length());
   cfg->set_value("base_camera:principal_point", K.principal_point());

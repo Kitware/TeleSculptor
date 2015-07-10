@@ -40,6 +40,7 @@
 #include <maptk/plugins/ocv/descriptor_set.h>
 #include <maptk/plugins/ocv/ocv_algo_tools.h>
 
+using namespace kwiver::vital;
 
 namespace maptk
 {
@@ -105,13 +106,13 @@ extract_descriptors
 }
 
 
-/// Get this algorithm's \link maptk::config_block configuration block \endlink
-config_block_sptr
+/// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
+kwiver::config_block_sptr
 extract_descriptors
 ::get_configuration() const
 {
   // base configuration block
-  config_block_sptr config = algorithm::get_configuration();
+  kwiver::config_block_sptr config = algorithm::get_configuration();
 
   get_nested_ocv_algo_configuration("extractor", config, d_->extractor);
 
@@ -122,17 +123,17 @@ extract_descriptors
 /// Set this algorithm's properties via a config block
 void
 extract_descriptors
-::set_configuration(config_block_sptr config)
+::set_configuration(kwiver::config_block_sptr config)
 {
   set_nested_ocv_algo_configuration(
       "extractor", config, d_->extractor);
 }
 
 
-/// Check that the algorithm's configuration config_block is valid
+/// Check that the algorithm's configuration kwiver::config_block is valid
 bool
 extract_descriptors
-::check_configuration(config_block_sptr config) const
+::check_configuration(kwiver::config_block_sptr config) const
 {
   bool nested_ok =
     check_nested_ocv_algo_configuration<cv::DescriptorExtractor>(

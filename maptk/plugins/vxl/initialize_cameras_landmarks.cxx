@@ -39,15 +39,17 @@
 
 #include <boost/foreach.hpp>
 
+#include <vital/exceptions.h>
+#include <vital/eigen_io.h>
+
 #include <maptk/algo/estimate_essential_matrix.h>
 #include <maptk/algo/triangulate_landmarks.h>
-#include <maptk/exceptions.h>
-#include <maptk/eigen_io.h>
 #include <maptk/plugins/vxl/camera_map.h>
 #include <maptk/plugins/vxl/camera.h>
 
 #include <vpgl/vpgl_essential_matrix.h>
 
+using namespace kwiver::vital;
 
 namespace maptk
 {
@@ -295,13 +297,13 @@ initialize_cameras_landmarks
 }
 
 
-/// Get this algorithm's \link maptk::config_block configuration block \endlink
-config_block_sptr
+/// Get this algorithm's \link kwiver::config_block configuration block \endlink
+kwiver::config_block_sptr
 initialize_cameras_landmarks
 ::get_configuration() const
 {
   // get base config from base class
-  config_block_sptr config =
+  kwiver::config_block_sptr config =
       maptk::algo::initialize_cameras_landmarks::get_configuration();
 
   const camera_intrinsics_d& K = d_->base_camera.get_intrinsics();
@@ -344,7 +346,7 @@ initialize_cameras_landmarks
 /// Set this algorithm's properties via a config block
 void
 initialize_cameras_landmarks
-::set_configuration(config_block_sptr config)
+::set_configuration(kwiver::config_block_sptr config)
 {
   const camera_intrinsics_d& K = d_->base_camera.get_intrinsics();
 
@@ -362,7 +364,7 @@ initialize_cameras_landmarks
   d_->retriangulate_all = config->get_value<bool>("retriangulate_all",
                                                   d_->retriangulate_all);
 
-  config_block_sptr bc = config->subblock("base_camera");
+  kwiver::config_block_sptr bc = config->subblock("base_camera");
   camera_intrinsics_d K2(bc->get_value<double>("focal_length",
                                                K.focal_length()),
                          bc->get_value<vector_2d>("principal_point",
@@ -378,7 +380,7 @@ initialize_cameras_landmarks
 /// Check that the algorithm's currently configuration is valid
 bool
 initialize_cameras_landmarks
-::check_configuration(config_block_sptr config) const
+::check_configuration(kwiver::config_block_sptr config) const
 {
   return algo::estimate_essential_matrix
              ::check_nested_algo_configuration("essential_mat_estimator",
@@ -491,8 +493,8 @@ initialize_cameras_landmarks
   {
     throw invalid_value("Landmark triangulator not initialized.");
   }
-  typedef maptk::camera_map::map_camera_t map_cam_t;
-  typedef maptk::landmark_map::map_landmark_t map_landmark_t;
+  typedef kwiver::vital::camera_map::map_camera_t map_cam_t;
+  typedef kwiver::vital::landmark_map::map_landmark_t map_landmark_t;
 
   // Extract the existing cameras and camera ids to be initialized
   std::set<frame_id_t> frame_ids = tracks->all_frame_ids();

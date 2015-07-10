@@ -53,6 +53,7 @@ main(int argc, char* argv[])
   RUN_TEST(testname);
 }
 
+using namespace kwiver::vital;
 
 template <typename T>
 vpgl_perspective_camera<T> sample_vpgl_camera()

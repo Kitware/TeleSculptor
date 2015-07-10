@@ -37,7 +37,7 @@
 
 
 #include <maptk/algo/filter_features.h>
-#include <maptk/algo/algorithm.txx>
+#include <vital/algorithm.txx>
 #include <boost/make_shared.hpp>
 
 namespace maptk
@@ -46,6 +46,7 @@ namespace maptk
 namespace algo
 {
 
+using namespace kwiver::vital;
 
 feature_set_sptr
 filter_features
@@ -72,8 +73,8 @@ filter_features
     filtered_descr.push_back(descr_vec[indices[i]]);
   }
 
-  descriptor_set_sptr filt_descr = boost::make_shared<maptk::simple_descriptor_set>(
-                                     maptk::simple_descriptor_set(filtered_descr));
+  descriptor_set_sptr filt_descr = boost::make_shared<kwiver::vital::simple_descriptor_set>(
+                                     kwiver::vital::simple_descriptor_set(filtered_descr));
 
   return std::make_pair(filt_feat, filt_descr);
 }

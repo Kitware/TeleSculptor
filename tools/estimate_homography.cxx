@@ -37,20 +37,21 @@
 #include <string>
 #include <vector>
 
+#include <kwiver_util/config/config_block.h>
+#include <kwiver_util/config/config_block_io.h>
+#include <kwiver_util/logger/logger.h>
+
+#include <vital/algorithm_plugin_manager.h>
+#include <vital/image_container.h>
+#include <vital/exceptions.h>
+#include <vital/vital_types.h>
+
 #include <maptk/algo/image_io.h>
 #include <maptk/algo/convert_image.h>
 #include <maptk/algo/detect_features.h>
 #include <maptk/algo/estimate_homography.h>
 #include <maptk/algo/extract_descriptors.h>
 #include <maptk/algo/match_features.h>
-
-#include <maptk/algorithm_plugin_manager.h>
-#include <maptk/config_block.h>
-#include <maptk/config_block_io.h>
-#include <maptk/image_container.h>
-#include <maptk/exceptions.h>
-#include <maptk/logging_macros.h>
-#include <maptk/types.h>
 
 #include <boost/foreach.hpp>
 #include <boost/shared_ptr.hpp>
@@ -62,6 +63,8 @@
 namespace bfs = boost::filesystem;
 namespace bpo = boost::program_options;
 
+
+static kwiver::logger_handle_t main_logger( kwiver::get_logger( "estimate_homography" ) );
 
 static void print_usage(std::string const &prog_name,
                         bpo::options_description const &opt_desc,
@@ -90,9 +93,9 @@ static void print_usage(std::string const &prog_name,
   call(estimate_homography, homog_estimator)
 
 
-static maptk::config_block_sptr default_config()
+static kwiver::config_block_sptr default_config()
 {
-  maptk::config_block_sptr config = maptk::config_block::empty_config("homography_estimation_tool");
+  kwiver::config_block_sptr config = kwiver::config_block::empty_config("homography_estimation_tool");
 
   // Default algorithm types
   config->set_value("image_reader:type", "vxl");
@@ -123,12 +126,12 @@ static maptk::config_block_sptr default_config()
 }
 
 
-static bool check_config(maptk::config_block_sptr config)
+static bool check_config(kwiver::config_block_sptr config)
 {
   bool config_valid = true;
 
 #define MAPTK_CONFIG_FAIL(msg)            \
-  LOG_WARN("meh", "Config Check Fail: " << msg); \
+  LOG_WARN(main_logger, "Config Check Fail: " << msg); \
   config_valid = false
 
 #define check_algo_config(type, name)                                              \
@@ -150,7 +153,7 @@ static bool check_config(maptk::config_block_sptr config)
 static int maptk_main(int argc, char const* argv[])
 {
   // register the algorithm implementations
-  maptk::algorithm_plugin_manager::instance().register_plugins();
+  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
 
   //
   // define/parse CLI options
@@ -161,11 +164,11 @@ static int maptk_main(int argc, char const* argv[])
   opt_desc.add_options()
     ("help,h", "output help message and exit")
     ("config,c",
-     bpo::value<maptk::path_t>()->value_name("PATH"),
+     bpo::value<kwiver::vital::path_t>()->value_name("PATH"),
      "Optional custom configuration file for the tool. Defaults are set such "
      "that this is not required.")
     ("output-config,o",
-     bpo::value<maptk::path_t>()->value_name("PATH"),
+     bpo::value<kwiver::vital::path_t>()->value_name("PATH"),
      "Output a configuration file with default values. This may be seeded "
      "with a configuration file from -c/--config.")
     ("inlier-scale,i",
@@ -216,13 +219,13 @@ static int maptk_main(int argc, char const* argv[])
   }
   catch (bpo::unknown_option const& e)
   {
-    LOG_ERROR("meh", "Unknown option: " << e.get_option_name());
+    LOG_ERROR(main_logger, "Unknown option: " << e.get_option_name());
     print_usage(argv[0], opt_desc, opt_desc_pos);
     return EXIT_FAILURE;
   }
   catch (bpo::error const &e)
   {
-    LOG_ERROR("meh", "Boost Program Options error: " << e.what());
+    LOG_ERROR(main_logger, "Boost Program Options error: " << e.what());
     print_usage(argv[0], opt_desc, opt_desc_pos);
     return EXIT_FAILURE;
   }
@@ -246,7 +249,7 @@ static int maptk_main(int argc, char const* argv[])
 
   namespace algo = maptk::algo;
 
-  maptk::config_block_sptr config = default_config();
+  kwiver::config_block_sptr config = default_config();
 
   // Define algorithm variables.
 #define define_algo(type, name) \
@@ -259,7 +262,7 @@ static int maptk_main(int argc, char const* argv[])
   // If -c/--config given, read in confg file, merge onto default just generated
   if(vm.count("config"))
   {
-    config->merge_config(maptk::read_config_file(vm["config"].as<maptk::path_t>()));
+    config->merge_config(kwiver::read_config_file(vm["config"].as<kwiver::vital::path_t>()));
   }
 
   // Set current configuration to algorithms and extract refined configuration.
@@ -276,32 +279,32 @@ static int maptk_main(int argc, char const* argv[])
 
   if (vm.count("output-config"))
   {
-    write_config_file(config, vm["output-config"].as<maptk::path_t>());
+    write_config_file(config, vm["output-config"].as<kwiver::vital::path_t>());
     if(valid_config)
     {
-      LOG_INFO("meh", "Configuration file contained valid parameters and may be used for running");
+      LOG_INFO(main_logger, "Configuration file contained valid parameters and may be used for running");
     }
     else
     {
-      LOG_WARNING("meh", "Configuration deemed not valid.");
+      LOG_WARN(main_logger, "Configuration deemed not valid.");
     }
     return EXIT_SUCCESS;
   }
   else if(!valid_config)
   {
-    LOG_ERROR("meh", "Configuration not valid.");
+    LOG_ERROR(main_logger, "Configuration not valid.");
     return EXIT_FAILURE;
   }
 
   // Check for correct input image file-path arguments
   if (!vm.count("input_img_files"))
   {
-    LOG_ERROR("meh", "No input image files were given.");
+    LOG_ERROR(main_logger, "No input image files were given.");
     return EXIT_FAILURE;
   }
   else if (vm["input_img_files"].as<std::vector<std::string> >().size() != 2)
   {
-    LOG_ERROR("meh", "Require 2 input images. "
+    LOG_ERROR(main_logger, "Require 2 input images. "
               << vm["input_img_files"].as<std::vector<std::string> >().size()
               << " given.");
     return EXIT_FAILURE;
@@ -310,32 +313,32 @@ static int maptk_main(int argc, char const* argv[])
   // Check for output file argument for generated homography
   if (!vm.count("output_homog_file"))
   {
-    LOG_ERROR("meh", "No output homography file path specified!");
+    LOG_ERROR(main_logger, "No output homography file path specified!");
     return EXIT_FAILURE;
   }
 
-  LOG_INFO("meh", "Loading images...");
+  LOG_INFO(main_logger, "Loading images...");
   std::vector<std::string> input_img_files(vm["input_img_files"].as< std::vector<std::string> >());
-  maptk::image_container_sptr i1_image, i2_image;
+  kwiver::vital::image_container_sptr i1_image, i2_image;
   try
   {
     i1_image = image_converter->convert(image_reader->load(input_img_files[0]));
     i2_image = image_converter->convert(image_reader->load(input_img_files[1]));
   }
-  catch (maptk::path_not_exists const &e)
+  catch (kwiver::vital::path_not_exists const &e)
   {
-    LOG_ERROR("meh", e.what());
+    LOG_ERROR(main_logger, e.what());
     return EXIT_FAILURE;
   }
-  catch (maptk::path_not_a_file const &e)
+  catch (kwiver::vital::path_not_a_file const &e)
   {
-    LOG_ERROR("meh", e.what());
+    LOG_ERROR(main_logger, e.what());
     return EXIT_FAILURE;
   }
 
   // load and convert mask images if they were given
-  LOG_DEBUG("meh", "Before mask load");
-  maptk::image_container_sptr mask,
+  LOG_DEBUG(main_logger, "Before mask load");
+  kwiver::vital::image_container_sptr mask,
                               mask2;
   if( vm.count("mask-image") )
   {
@@ -360,37 +363,37 @@ static int maptk_main(int argc, char const* argv[])
   std::ofstream homog_output_stream(homog_output_path.c_str());
   if (!homog_output_stream)
   {
-    LOG_ERROR("meh", "Could not open output homog file: " << vm["output_homog_file"].as<std::string>());
+    LOG_ERROR(main_logger, "Could not open output homog file: " << vm["output_homog_file"].as<std::string>());
     return EXIT_FAILURE;
   }
 
-  LOG_INFO("meh", "Generating features over input frames...");
+  LOG_INFO(main_logger, "Generating features over input frames...");
   // if no masks were loaded, the value of each mask at this point will be the
   // same as the default value (uninitialized sptr)
-  maptk::feature_set_sptr i1_features = feature_detector->detect(i1_image, mask),
+  kwiver::vital::feature_set_sptr i1_features = feature_detector->detect(i1_image, mask),
                           i2_features = feature_detector->detect(i2_image, mask2);
-  LOG_INFO("meh", "Generating descriptors over input frames...");
-  maptk::descriptor_set_sptr i1_descriptors = descriptor_extractor->extract(i1_image, i1_features),
+  LOG_INFO(main_logger, "Generating descriptors over input frames...");
+  kwiver::vital::descriptor_set_sptr i1_descriptors = descriptor_extractor->extract(i1_image, i1_features),
                              i2_descriptors = descriptor_extractor->extract(i2_image, i2_features);
-  LOG_INFO("meh", "-- Img1 features / descriptors: " << i1_descriptors->size());
-  LOG_INFO("meh", "-- Img2 features / descriptors: " << i2_descriptors->size());
+  LOG_INFO(main_logger, "-- Img1 features / descriptors: " << i1_descriptors->size());
+  LOG_INFO(main_logger, "-- Img2 features / descriptors: " << i2_descriptors->size());
 
-  LOG_INFO("meh", "Matching features...");
+  LOG_INFO(main_logger, "Matching features...");
   // matching from frame 2 to 1 explicitly. see below.
-  maptk::match_set_sptr matches = feature_matcher->match(i2_features, i2_descriptors,
+  kwiver::vital::match_set_sptr matches = feature_matcher->match(i2_features, i2_descriptors,
                                                          i1_features, i1_descriptors);
-  LOG_INFO("meh", "-- Number of matches: " << matches->size());
+  LOG_INFO(main_logger, "-- Number of matches: " << matches->size());
 
   // Because we computed matches from frames 2 to 1, this homography describes
   // the transformation from image2 space to image1 space, which is what
   // warping tools usually want.
-  LOG_INFO("meh", "Estimating homography...");
+  LOG_INFO(main_logger, "Estimating homography...");
   std::vector<bool> inliers;
-  maptk::homography_sptr homog = homog_estimator->estimate(i2_features, i1_features,
+  kwiver::vital::homography_sptr homog = homog_estimator->estimate(i2_features, i1_features,
                                                            matches, inliers);
   if( ! homog )
   {
-    LOG_ERROR( "meh", "Failed to estimate valid homography! NULL returned." );
+    LOG_ERROR( main_logger, "Failed to estimate valid homography! NULL returned." );
     return EXIT_FAILURE;
   }
 
@@ -399,15 +402,17 @@ static int maptk_main(int argc, char const* argv[])
   BOOST_FOREACH(bool b, inliers)
   {
     if (b)
+    {
       ++inlier_count;
+    }
   }
-  LOG_INFO("meh", "-- Inliers: " << inlier_count << " / " << inliers.size());
+  LOG_INFO(main_logger, "-- Inliers: " << inlier_count << " / " << inliers.size());
 
-  LOG_INFO("meh", "Writing homography file...");
-  homog_output_stream << maptk::homography_<double>() << std::endl
+  LOG_INFO(main_logger, "Writing homography file...");
+  homog_output_stream << kwiver::vital::homography_<double>() << std::endl
                       << *homog << std::endl;
   homog_output_stream.close();
-  LOG_INFO("meh", "-- '" << homog_output_path << "' finished writing");
+  LOG_INFO(main_logger, "-- '" << homog_output_path << "' finished writing");
 
   return EXIT_SUCCESS;
 }
@@ -421,13 +426,13 @@ int main(int argc, char const* argv[])
   }
   catch (std::exception const& e)
   {
-    LOG_ERROR("meh", "Exception caught: " << e.what());
+    LOG_ERROR(main_logger, "Exception caught: " << e.what());
 
     return EXIT_FAILURE;
   }
   catch (...)
   {
-    LOG_ERROR("meh", "Unknown exception caught");
+    LOG_ERROR(main_logger, "Unknown exception caught");
 
     return EXIT_FAILURE;
   }

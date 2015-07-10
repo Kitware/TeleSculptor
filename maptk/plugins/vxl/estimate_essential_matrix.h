@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,8 +38,9 @@
 
 #include <boost/scoped_ptr.hpp>
 
+#include <vital/camera_intrinsics.h>
+
 #include <maptk/algo/estimate_essential_matrix.h>
-#include <maptk/camera_intrinsics.h>
 #include <maptk/plugins/vxl/vxl_config.h>
 
 
@@ -51,7 +52,7 @@ namespace vxl
 
 /// A class that uses 5 pt algorithm to estimate an initial xform between 2 pt sets
 class MAPTK_VXL_EXPORT estimate_essential_matrix
-  : public algo::algorithm_impl<estimate_essential_matrix, algo::estimate_essential_matrix>
+  : public kwiver::vital::algorithm_impl<estimate_essential_matrix, algo::estimate_essential_matrix>
 {
 public:
   /// Constructor
@@ -66,12 +67,12 @@ public:
   /// Return the name of this implementation
   std::string impl_name() const { return "vxl"; }
 
-  /// Get this algorithm's \link maptk::config_block configuration block \endlink
-  virtual config_block_sptr get_configuration() const;
+  /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
+  virtual kwiver::config_block_sptr get_configuration() const;
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(config_block_sptr config);
+  virtual void set_configuration(kwiver::config_block_sptr config);
   /// Check that the algorithm's currently configuration is valid
-  virtual bool check_configuration(config_block_sptr config) const;
+  virtual bool check_configuration(kwiver::config_block_sptr config) const;
 
   /// Estimate an essential matrix from corresponding points
   /**
@@ -84,11 +85,11 @@ public:
    * \param [in]  inlier_scale error distance tolerated for matches to be inliers
    */
   virtual
-  matrix_3x3d
-  estimate(const std::vector<vector_2d>& pts1,
-           const std::vector<vector_2d>& pts2,
-           const camera_intrinsics_d &cal1,
-           const camera_intrinsics_d &cal2,
+  kwiver::vital::matrix_3x3d
+  estimate(const std::vector<kwiver::vital::vector_2d>& pts1,
+           const std::vector<kwiver::vital::vector_2d>& pts2,
+           const kwiver::vital::camera_intrinsics_d &cal1,
+           const kwiver::vital::camera_intrinsics_d &cal2,
            std::vector<bool>& inliers,
            double inlier_scale = 1.0) const;
 

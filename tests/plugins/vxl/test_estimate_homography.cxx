@@ -39,10 +39,11 @@
 #include <maptk/plugins/vxl/register_algorithms.h>
 #include <maptk/plugins/vxl/estimate_homography.h>
 
+using namespace kwiver::vital;
 
-maptk::matrix_3x3d sample_homography()
+kwiver::vital::matrix_3x3d sample_homography()
 {
-  maptk::matrix_3x3d H;
+  kwiver::vital::matrix_3x3d H;
   H << 2.0, 0.0, -1.5,
        0.0, 3.0, 5.0,
        0.0, 0.0, 1.0;

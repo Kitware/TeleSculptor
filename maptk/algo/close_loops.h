@@ -35,9 +35,9 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <maptk/algo/algorithm.h>
-#include <maptk/image_container.h>
-#include <maptk/track_set.h>
+#include <vital/algorithm.h>
+#include <vital/image_container.h>
+#include <vital/track_set.h>
 
 #include <ostream>
 
@@ -60,7 +60,7 @@ namespace algo
  * track_features, this class is designed to be called in an online fashion.
  */
 class MAPTK_LIB_EXPORT close_loops
-  : public algorithm_def<close_loops>
+  : public kwiver::vital::algorithm_def<close_loops>
 {
 public:
 
@@ -69,18 +69,18 @@ public:
 
   /// Attempt to perform closure operation and stitch tracks together.
   /**
-   * \param [in] frame_number the frame number of the current frame
-   * \param [in] input the input track set to stitch
-   * \param [in] image image data for the current frame
-   * \param [in] mask Optional mask image where positive values indicate
+   * \param frame_number the frame number of the current frame
+   * \param input the input track set to stitch
+   * \param image image data for the current frame
+   * \param mask Optional mask image where positive values indicate
    *                  regions to consider in the input image.
    * \returns an updated set a tracks after the stitching operation
    */
-  virtual track_set_sptr
-  stitch( frame_id_t frame_number,
-          track_set_sptr input,
-          image_container_sptr image,
-          image_container_sptr mask = image_container_sptr()) const = 0;
+  virtual kwiver::vital::track_set_sptr
+  stitch( kwiver::vital::frame_id_t frame_number,
+          kwiver::vital::track_set_sptr input,
+          kwiver::vital::image_container_sptr image,
+          kwiver::vital::image_container_sptr mask = kwiver::vital::image_container_sptr()) const = 0;
 
 };
 

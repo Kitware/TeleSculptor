@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,7 @@
 #include <boost/math/constants/constants.hpp>
 #include <boost/foreach.hpp>
 
+using namespace kwiver::vital;
 
 namespace maptk
 {
@@ -100,7 +101,7 @@ local_geo_cs
   ins.yaw *= rad2deg;
   ins.pitch *= rad2deg;
   ins.roll *= rad2deg;
-  vector_3d c = cam.get_center() + utm_origin_;
+  kwiver::vital::vector_3d c = cam.get_center() + utm_origin_;
   geo_map_algo_->utm_to_latlon(c.x(), c.y(), utm_origin_zone_, true,
                                ins.lat, ins.lon);
   // camera Z in meters while INS data altitude represented in feet
@@ -117,7 +118,7 @@ initialize_cameras_with_ins(const std::map<frame_id_t, ins_data>& ins_map,
                             rotation_d const& rot_offset)
 {
   std::map<frame_id_t, camera_sptr> cam_map;
-  maptk::vector_3d mean(0,0,0);
+  kwiver::vital::vector_3d mean(0,0,0);
   camera_d active_cam(base_camera);
 
   bool update_local_origin = false;
@@ -133,7 +134,7 @@ initialize_cameras_with_ins(const std::map<frame_id_t, ins_data>& ins_map,
     lgcs.geo_map_algo()->latlon_to_utm(ins.lat, ins.lon,
                                        x, y, zone, is_north_hemi);
     lgcs.set_utm_origin_zone(zone);
-    lgcs.set_utm_origin(vector_3d(x, y, 0.0));
+    lgcs.set_utm_origin(kwiver::vital::vector_3d(x, y, 0.0));
   }
   typedef std::map<frame_id_t, ins_data>::value_type ins_map_val_t;
   BOOST_FOREACH(ins_map_val_t const &p, ins_map)

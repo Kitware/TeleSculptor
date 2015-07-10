@@ -31,11 +31,12 @@
 #ifndef MAPTK_ALGO_DRAW_TRACKS_H_
 #define MAPTK_ALGO_DRAW_TRACKS_H_
 
+#include <maptk/config.h>
 #include <boost/shared_ptr.hpp>
 
-#include <maptk/algo/algorithm.h>
-#include <maptk/image_container.h>
-#include <maptk/track_set.h>
+#include <vital/algorithm.h>
+#include <vital/image_container.h>
+#include <vital/track_set.h>
 
 #include <ostream>
 
@@ -55,7 +56,7 @@ namespace algo
 /// An abstract base class for algorithms which draw tracks on top of
 /// images in various ways, for analyzing results.
 class MAPTK_LIB_EXPORT draw_tracks
-  : public algorithm_def<draw_tracks>
+  : public kwiver::vital::algorithm_def<draw_tracks>
 {
 public:
 
@@ -71,15 +72,15 @@ public:
    * track set for which can optionally be used to display additional
    * information to provide a comparison between the two track sets.
    *
-   * \param [in] display_set the main track set to draw
-   * \param [in] image_data a list of images the tracks were computed over
-   * \param [in] comparison_set optional comparison track set
+   * \param display_set the main track set to draw
+   * \param image_data a list of images the tracks were computed over
+   * \param comparison_set optional comparison track set
    * \returns a pointer to the last image generated
    */
-  virtual image_container_sptr
-  draw(track_set_sptr display_set,
-       image_container_sptr_list image_data,
-       track_set_sptr comparison_set = track_set_sptr()) = 0;
+  virtual kwiver::vital::image_container_sptr
+  draw(kwiver::vital::track_set_sptr display_set,
+       kwiver::vital::image_container_sptr_list image_data,
+       kwiver::vital::track_set_sptr comparison_set = kwiver::vital::track_set_sptr()) = 0;
 
 };
 

@@ -34,7 +34,7 @@
  */
 
 #include <maptk/algo/estimate_homography.h>
-#include <maptk/algo/algorithm.txx>
+#include <vital/algorithm.txx>
 #include <boost/foreach.hpp>
 
 /// \cond DoxygenSuppress
@@ -47,6 +47,8 @@ namespace maptk
 
 namespace algo
 {
+
+using namespace kwiver::vital;
 
 /// Estimate a homography matrix from corresponding features
 homography_sptr

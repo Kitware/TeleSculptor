@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,18 +38,23 @@ namespace vcl
 {
 
 /// Compute image dimensions from feature set
-void min_image_dimensions(const maptk::feature_set &feat, unsigned int &width, unsigned int &height)
+void min_image_dimensions(const kwiver::vital::feature_set &feat, unsigned int &width, unsigned int &height)
 {
   width = 0;
   height = 0;
 
-  std::vector<feature_sptr> features = feat.features();
+  std::vector<kwiver::vital::feature_sptr> features = feat.features();
   for (unsigned int i = 0; i < features.size(); i++)
   {
     if (width < features[i]->loc()[0])
+    {
       width = features[i]->loc()[0];
+    }
+
     if (height < features[i]->loc()[1])
+    {
       height = features[i]->loc()[1];
+    }
   }
 }
 

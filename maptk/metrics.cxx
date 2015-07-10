@@ -40,6 +40,7 @@
 namespace maptk
 {
 
+using namespace kwiver::vital;
 
 /// Compute the reprojection error vector of lm projected by cam compared to f
 vector_2d

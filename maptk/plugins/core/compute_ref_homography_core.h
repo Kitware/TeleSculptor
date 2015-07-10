@@ -38,11 +38,11 @@
 
 #include <boost/scoped_ptr.hpp>
 
-#include <maptk/algo/algorithm.h>
+#include <vital/algorithm.h>
 #include <maptk/algo/compute_ref_homography.h>
-#include <maptk/homography.h>
-#include <maptk/image_container.h>
-#include <maptk/track_set.h>
+#include <vital/homography.h>
+#include <vital/image_container.h>
+#include <vital/track_set.h>
 
 #include <maptk/plugins/core/plugin_core_config.h>
 
@@ -68,7 +68,7 @@ namespace core
  * compute reference frames on all frames in a sequence.
  */
 class PLUGIN_CORE_EXPORT compute_ref_homography_core
-  : public algo::algorithm_impl<compute_ref_homography_core, algo::compute_ref_homography>
+  : public kwiver::vital::algorithm_impl<compute_ref_homography_core, algo::compute_ref_homography>
 {
 public:
 
@@ -95,7 +95,7 @@ public:
    * \returns \c config_block containing the configuration for this algorithm
    *          and any nested components.
    */
-  virtual config_block_sptr get_configuration() const;
+  virtual kwiver::config_block_sptr get_configuration() const;
 
   /// Set this algorithm's properties via a config block
   /**
@@ -108,7 +108,7 @@ public:
    * \param config  The \c config_block instance containing the configuration
    *                parameters for this algorithm
    */
-  virtual void set_configuration( config_block_sptr config );
+  virtual void set_configuration( kwiver::config_block_sptr config );
 
   /// Check that the algorithm's currently configuration is valid
   /**
@@ -120,20 +120,20 @@ public:
    *
    * \returns true if the configuration check passed and false if it didn't.
    */
-  virtual bool check_configuration( config_block_sptr config ) const;
+  virtual bool check_configuration( kwiver::config_block_sptr config ) const;
 
   /// Estimate the transformation which maps some frame to a reference frame
   /**
    * Similarly to track_features, this class was designed to be called in
    * an online fashion for each sequential frame.
    *
-   * \param [in]   frame_number frame identifier for the current frame
-   * \param [in]   tracks the set of all tracked features from the image
+   * \param frame_number frame identifier for the current frame
+   * \param tracks the set of all tracked features from the image
    * \return estimated homography
    */
-  virtual f2f_homography_sptr
-  estimate( frame_id_t frame_number,
-            track_set_sptr tracks ) const;
+  virtual kwiver::vital::f2f_homography_sptr
+  estimate( kwiver::vital::frame_id_t frame_number,
+            kwiver::vital::track_set_sptr tracks ) const;
 
 private:
 

@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,7 +51,7 @@ namespace ocv
 
 /// A class for drawing various information about feature tracks
 class MAPTK_OCV_EXPORT draw_tracks
-: public algo::algorithm_impl<draw_tracks, algo::draw_tracks>
+: public kwiver::vital::algorithm_impl<draw_tracks, algo::draw_tracks>
 {
 public:
 
@@ -67,12 +67,12 @@ public:
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "ocv"; }
 
-  /// Get this algorithm's \link maptk::config_block configuration block \endlink
-  virtual config_block_sptr get_configuration() const;
+  /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
+  virtual kwiver::config_block_sptr get_configuration() const;
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(config_block_sptr config);
+  virtual void set_configuration(kwiver::config_block_sptr config);
   /// Check that the algorithm's currently configuration is valid
-  virtual bool check_configuration(config_block_sptr config) const;
+  virtual bool check_configuration(kwiver::config_block_sptr config) const;
 
   /// Draw features tracks on top of the input images.
   /**
@@ -88,10 +88,10 @@ public:
    * \param [in] comparison_set optional comparison track set
    * \returns a pointer to the last image generated
    */
-  virtual image_container_sptr
-  draw(track_set_sptr display_set,
-       image_container_sptr_list image_data,
-       track_set_sptr comparison_set = track_set_sptr());
+  virtual kwiver::vital::image_container_sptr
+  draw(kwiver::vital::track_set_sptr display_set,
+       kwiver::vital::image_container_sptr_list image_data,
+       kwiver::vital::track_set_sptr comparison_set = kwiver::vital::track_set_sptr());
 
 private:
 

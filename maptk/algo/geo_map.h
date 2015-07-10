@@ -36,7 +36,9 @@
 #ifndef MAPTK_ALGO_GEO_MAP_H_
 #define MAPTK_ALGO_GEO_MAP_H_
 
-#include <maptk/algo/algorithm.h>
+#include <maptk/config.h>
+
+#include <vital/algorithm.h>
 
 namespace maptk
 {
@@ -47,7 +49,7 @@ namespace algo
 
 /// A base class for geographic conversions
 class MAPTK_LIB_EXPORT geo_map
-  : public algorithm_def<geo_map>
+  : public kwiver::vital::algorithm_def<geo_map>
 {
 public:
   /// Default Constructor
@@ -58,10 +60,10 @@ public:
 
   /// Convert UTM coordinate into latitude and longitude.
   /**
-   * \param       easting     The easting (X) UTM coordinate in meters.
-   * \param       northing    The northing (Y) UTM coordinate in meters.
-   * \param       zone        The zone of the UTM coordinate (1-60).
-   * \param       north_hemi  True if the UTM northing coordinate is in respect
+   * \param[in]   easting     The easting (X) UTM coordinate in meters.
+   * \param[in]   northing    The northing (Y) UTM coordinate in meters.
+   * \param[in]   zone        The zone of the UTM coordinate (1-60).
+   * \param[in]   north_hemi  True if the UTM northing coordinate is in respect
    *                          to the northern hemisphere.
    * \param[out]  lat         Output latitude (Y) in decimal degrees.
    * \param[out]  lon         Output longiture (X) in decimal degrees.
@@ -72,8 +74,8 @@ public:
 
   /// Convert latitude and longitude into UTM coordinates.
   /**
-   * \param       lat         The latitude (Y) coordinate in decimal degrees.
-   * \param       lon         The longitude (X) coordinate in decimal degrees.
+   * \param[in]   lat         The latitude (Y) coordinate in decimal degrees.
+   * \param[in]   lon         The longitude (X) coordinate in decimal degrees.
    * \param[out]  easting     Output easting (X) coordinate in meters.
    * \param[out]  northing    Output northing (Y) coordinate in meters.
    * \param[out]  zone        Zone of the output UTM coordinate.

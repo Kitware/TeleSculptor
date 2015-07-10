@@ -39,14 +39,15 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <maptk/algo/algorithm.h>
+#include <vital/algorithm.h>
+#include <vital/image_container.h>
+#include <vital/track_set.h>
+
 #include <maptk/algo/match_features.h>
 #include <maptk/algo/close_loops.h>
-#include <maptk/image_container.h>
-#include <maptk/track_set.h>
-
 #include <maptk/plugins/core/plugin_core_config.h>
 
+#include <kwiver_util/config/config_block.h>
 
 namespace maptk
 {
@@ -60,7 +61,7 @@ namespace core
  * in attempt to accomplish this.
  */
 class PLUGIN_CORE_EXPORT close_loops_multi_method
-  : public algo::algorithm_impl<close_loops_multi_method, algo::close_loops>
+  : public kwiver::vital::algorithm_impl<close_loops_multi_method, algo::close_loops>
 {
 public:
 
@@ -87,7 +88,7 @@ public:
    * \returns \c config_block containing the configuration for this algorithm
    *          and any nested components.
    */
-  virtual config_block_sptr get_configuration() const;
+  virtual kwiver::config_block_sptr get_configuration() const;
 
   /// Set this algorithm's properties via a config block
   /**
@@ -100,7 +101,7 @@ public:
    * \param config  The \c config_block instance containing the configuration
    *                parameters for this algorithm
    */
-  virtual void set_configuration(config_block_sptr config);
+  virtual void set_configuration(kwiver::config_block_sptr config);
 
   /// Check that the algorithm's currently configuration is valid
   /**
@@ -112,22 +113,22 @@ public:
    *
    * \returns true if the configuration check passed and false if it didn't.
    */
-  virtual bool check_configuration(config_block_sptr config) const;
+  virtual bool check_configuration(kwiver::config_block_sptr config) const;
 
   /// Run all internal loop closure algorithms.
   /**
-   * \param [in] frame_number the frame number of the current frame
-   * \param [in] image image data for the current frame
-   * \param [in] input the input track set to stitch
-   * \param [in] mask Optional mask image where positive values indicate
-   *                  regions to consider in the input image.
+   * \param frame_number the frame number of the current frame
+   * \param image image data for the current frame
+   * \param input the input track set to stitch
+   * \param mask Optional mask image where positive values indicate
+   *             regions to consider in the input image.
    * \returns an updated set a tracks after the stitching operation
    */
-  virtual track_set_sptr
-  stitch( frame_id_t frame_number,
-          track_set_sptr input,
-          image_container_sptr image,
-          image_container_sptr mask = image_container_sptr() ) const;
+  virtual kwiver::vital::track_set_sptr
+  stitch( kwiver::vital::frame_id_t frame_number,
+          kwiver::vital::track_set_sptr input,
+          kwiver::vital::image_container_sptr image,
+          kwiver::vital::image_container_sptr mask = kwiver::vital::image_container_sptr() ) const;
 
 private:
 

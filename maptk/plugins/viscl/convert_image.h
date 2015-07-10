@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,7 @@ namespace vcl
 
 /// Class to convert an image to a viscl base image
 class MAPTK_VISCL_EXPORT convert_image
-  : public algo::algorithm_impl<convert_image, algo::convert_image>
+  : public kwiver::vital::algorithm_impl<convert_image, algo::convert_image>
 {
 public:
 
@@ -62,7 +62,7 @@ public:
    * \returns the image container with underlying viscl img
    * should be used to prevent repeated image uploading to GPU
    */
-  virtual image_container_sptr convert(image_container_sptr img) const;
+  virtual kwiver::vital::image_container_sptr convert(kwiver::vital::image_container_sptr img) const;
 };
 
 

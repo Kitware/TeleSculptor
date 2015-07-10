@@ -35,10 +35,10 @@
 
 #include <maptk/plugins/core/register_algorithms.h>
 #include <maptk/plugin_interface/algorithm_plugin_interface.h>
-#include <maptk/registrar.h>
+#include <vital/registrar.h>
 
 
-int register_algo_impls(maptk::registrar &reg)
+int register_algo_impls(kwiver::vital::registrar &reg)
 {
   return maptk::core::register_algorithms( reg );
 }

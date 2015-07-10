@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,10 +38,10 @@
 
 #include <maptk/config.h>
 
-#include "landmark_map.h"
+#include <vital/landmark_map.h>
 #include "local_geo_cs.h"
-#include "track_set.h"
-#include "types.h"
+#include <vital/track_set.h>
+#include <vital/vital_types.h>
 
 
 namespace maptk
@@ -71,10 +71,10 @@ namespace maptk
  */
 MAPTK_LIB_EXPORT
 void
-load_reference_file(path_t const& reference_file,
+load_reference_file(kwiver::vital::path_t const& reference_file,
                     local_geo_cs & lgcs,
-                    landmark_map_sptr & ref_landmarks,
-                    track_set_sptr & ref_track_set);
+                    kwiver::vital::landmark_map_sptr & ref_landmarks,
+                    kwiver::vital::track_set_sptr & ref_track_set);
 
 
 } // end namespace maptk

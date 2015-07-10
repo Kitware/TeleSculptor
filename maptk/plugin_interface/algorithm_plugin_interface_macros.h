@@ -37,7 +37,7 @@
 #define MAPTK_PLUGIN_INTERFACE_ALGORITHM_PLUGIN_INTERFACE_MACROS_H_
 
 #include <iostream>
-#include <maptk/registrar.h>
+#include <vital/registrar.h>
 
 
 // Helper macros for algorithm registration
@@ -52,7 +52,7 @@
  */
 #define REGISTRATION_INIT( reg ) \
   unsigned int maptk_api_expected_ = 0, maptk_api_registered_ = 0; \
-  maptk::registrar &maptk_api_registrar_ = reg
+  kwiver::vital::registrar &maptk_api_registrar_ = reg
 
 
 /// Log to standard error a summary of registration results

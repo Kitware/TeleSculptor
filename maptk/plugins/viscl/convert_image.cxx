@@ -54,10 +54,11 @@ convert_image
 }
 
 /// Image convert to viscl underlying type
-image_container_sptr
+kwiver::vital::image_container_sptr
 convert_image
-::convert(image_container_sptr img) const
+::convert(kwiver::vital::image_container_sptr img) const
 {
+  // make new viscl image container
   return boost::shared_ptr<image_container>(new image_container(*img));
 }
 

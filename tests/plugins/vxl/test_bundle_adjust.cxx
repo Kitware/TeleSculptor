@@ -38,12 +38,12 @@
 
 #include <boost/foreach.hpp>
 
+#include <vital/algorithm_plugin_manager.h>
+
 #include <maptk/metrics.h>
-#include <maptk/algorithm_plugin_manager.h>
+#include <maptk/projected_track_set.h>
 #include <maptk/plugins/vxl/bundle_adjust.h>
 #include <maptk/plugins/vxl/register_algorithms.h>
-#include <maptk/projected_track_set.h>
-
 
 #define TEST_ARGS ()
 
@@ -64,6 +64,7 @@ main(int argc, char* argv[])
   RUN_TEST(testname);
 }
 
+using namespace kwiver::vital;
 
 IMPLEMENT_TEST(create)
 {
@@ -81,7 +82,7 @@ IMPLEMENT_TEST(from_solution)
 {
   using namespace maptk;
   vxl::bundle_adjust ba;
-  config_block_sptr cfg = ba.get_configuration();
+  kwiver::config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
   ba.set_configuration(cfg);
 
@@ -117,7 +118,7 @@ IMPLEMENT_TEST(noisy_landmarks)
 {
   using namespace maptk;
   vxl::bundle_adjust ba;
-  config_block_sptr cfg = ba.get_configuration();
+  kwiver::config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
   cfg->set_value("g_tolerance", "1e-12");
   ba.set_configuration(cfg);
@@ -158,7 +159,7 @@ IMPLEMENT_TEST(noisy_landmarks_noisy_cameras)
 {
   using namespace maptk;
   vxl::bundle_adjust ba;
-  config_block_sptr cfg = ba.get_configuration();
+  kwiver::config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
   cfg->set_value("g_tolerance", "1e-12");
   ba.set_configuration(cfg);
@@ -202,7 +203,7 @@ IMPLEMENT_TEST(zero_landmarks)
 {
   using namespace maptk;
   vxl::bundle_adjust ba;
-  config_block_sptr cfg = ba.get_configuration();
+  kwiver::config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
   cfg->set_value("g_tolerance", "1e-12");
   ba.set_configuration(cfg);
@@ -244,7 +245,7 @@ IMPLEMENT_TEST(zero_landmarks_same_cameras)
 {
   using namespace maptk;
   vxl::bundle_adjust ba;
-  config_block_sptr cfg = ba.get_configuration();
+  kwiver::config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
   cfg->set_value("g_tolerance", "1e-12");
   ba.set_configuration(cfg);
@@ -291,7 +292,7 @@ IMPLEMENT_TEST(subset_cameras)
 {
   using namespace maptk;
   vxl::bundle_adjust ba;
-  config_block_sptr cfg = ba.get_configuration();
+  kwiver::config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
   cfg->set_value("g_tolerance", "1e-12");
   ba.set_configuration(cfg);
@@ -350,7 +351,7 @@ IMPLEMENT_TEST(subset_landmarks)
 {
   using namespace maptk;
   vxl::bundle_adjust ba;
-  config_block_sptr cfg = ba.get_configuration();
+  kwiver::config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
   cfg->set_value("g_tolerance", "1e-12");
   ba.set_configuration(cfg);
@@ -403,7 +404,7 @@ IMPLEMENT_TEST(subset_tracks)
 {
   using namespace maptk;
   vxl::bundle_adjust ba;
-  config_block_sptr cfg = ba.get_configuration();
+  kwiver::config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
   cfg->set_value("g_tolerance", "1e-12");
   ba.set_configuration(cfg);
@@ -451,7 +452,7 @@ IMPLEMENT_TEST(noisy_tracks)
 {
   using namespace maptk;
   vxl::bundle_adjust ba;
-  config_block_sptr cfg = ba.get_configuration();
+  kwiver::config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
   cfg->set_value("g_tolerance", "1e-12");
   ba.set_configuration(cfg);

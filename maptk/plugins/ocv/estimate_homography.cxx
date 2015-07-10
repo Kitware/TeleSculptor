@@ -49,26 +49,26 @@ namespace ocv
 
 
 /// Estimate a homography matrix from corresponding points
-homography_sptr
+kwiver::vital::homography_sptr
 estimate_homography
-::estimate(const std::vector<vector_2d>& pts1,
-           const std::vector<vector_2d>& pts2,
+::estimate(const std::vector<kwiver::vital::vector_2d>& pts1,
+           const std::vector<kwiver::vital::vector_2d>& pts2,
            std::vector<bool>& inliers,
            double inlier_scale) const
 {
   if (pts1.size() < 4 || pts2.size() < 4)
   {
     std::cerr << "Not enough points to estimate a homography" <<std::endl;
-    return homography_sptr();
+    return kwiver::vital::homography_sptr();
   }
 
   std::vector<cv::Point2f> points1, points2;
-  BOOST_FOREACH(const vector_2d& v, pts1)
+  BOOST_FOREACH(const kwiver::vital::vector_2d& v, pts1)
   {
     points1.push_back(cv::Point2f(static_cast<float>(v.x()),
                                   static_cast<float>(v.y())));
   }
-  BOOST_FOREACH(const vector_2d& v, pts2)
+  BOOST_FOREACH(const kwiver::vital::vector_2d& v, pts2)
   {
     points2.push_back(cv::Point2f(static_cast<float>(v.x()),
                                   static_cast<float>(v.y())));
@@ -80,14 +80,14 @@ estimate_homography
                                   inlier_scale,
                                   inliers_mat );
   inliers.resize(inliers_mat.rows);
-  for(unsigned i=0; i<inliers.size(); ++i)
+  for(unsigned i = 0; i < inliers.size(); ++i)
   {
     inliers[i] = inliers_mat.at<bool>(i);
   }
 
-  matrix_3x3d H_mat;
+  kwiver::vital::matrix_3x3d H_mat;
   cv2eigen(H, H_mat);
-  return homography_sptr( new homography_<double>(H_mat) );
+  return kwiver::vital::homography_sptr( new kwiver::vital::homography_<double>(H_mat) );
 }
 
 

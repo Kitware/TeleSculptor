@@ -30,13 +30,13 @@
 
 #include "filter_features_magnitude.h"
 
-#include <maptk/logging_macros.h>
+#include <kwiver_util/logger/logger.h>
 
 #include <algorithm>
 #include <boost/make_shared.hpp>
 
 
-#define LOGGING_PREFIX "filter_features_magnitude"
+using namespace kwiver::vital;
 
 
 namespace maptk
@@ -59,15 +59,17 @@ class filter_features_magnitude::priv
 {
 public:
   /// Constructor
-  priv() :
-    top_fraction(0.2),
-    min_features(100)
+  priv()
+    : top_fraction(0.2),
+      min_features(100),
+      m_logger( kwiver::get_logger( "filter_features_magnitude" ))
   {
   }
 
-  priv(const priv& other) :
-    top_fraction(other.top_fraction),
-    min_features(other.min_features)
+  priv(const priv& other)
+    : top_fraction(other.top_fraction),
+      min_features(other.min_features),
+      m_logger( kwiver::get_logger( "filter_features_magnitude" ))
   {
   }
 
@@ -110,14 +112,15 @@ public:
       filtered[i] = feat_vec[index];
     }
 
-    LOG_INFO(LOGGING_PREFIX,
+    LOG_INFO( m_logger,
              "Reduced " << feat_vec.size() << " features to " << filtered.size() << " features.");
 
-    return boost::make_shared<maptk::simple_feature_set>(maptk::simple_feature_set(filtered));
+    return boost::make_shared<kwiver::vital::simple_feature_set>(kwiver::vital::simple_feature_set(filtered));
   }
 
   double top_fraction;
   unsigned int min_features;
+  kwiver::logger_handle_t m_logger;
 };
 
 
@@ -144,13 +147,13 @@ filter_features_magnitude
 }
 
 
-/// Get this algorithm's \link maptk::config_block configuration block \endlink
-config_block_sptr
+/// Get this algorithm's \link kwiver::config_block configuration block \endlink
+kwiver::config_block_sptr
 filter_features_magnitude
 ::get_configuration() const
 {
   // get base config from base class
-  config_block_sptr config =
+  kwiver::config_block_sptr config =
       maptk::algo::filter_features::get_configuration();
 
   config->set_value("top_fraction", d_->top_fraction,
@@ -166,22 +169,22 @@ filter_features_magnitude
 /// Set this algorithm's properties via a config block
 void
 filter_features_magnitude
-::set_configuration(config_block_sptr config)
+::set_configuration(kwiver::config_block_sptr config)
 {
   d_->top_fraction = config->get_value<double>("top_fraction", d_->top_fraction);
   d_->min_features = config->get_value<unsigned int>("min_features", d_->min_features);
 }
 
 
-/// Check that the algorithm's configuration config_block is valid
+/// Check that the algorithm's configuration kwiver::config_block is valid
 bool
 filter_features_magnitude
-::check_configuration(config_block_sptr config) const
+::check_configuration(kwiver::config_block_sptr config) const
 {
   double top_fraction = config->get_value<double>("top_fraction", d_->top_fraction);
   if( top_fraction <= 0.0 || top_fraction > 1.0 )
   {
-    LOG_ERROR(LOGGING_PREFIX,
+    LOG_ERROR( d_->m_logger,
              "top_fraction parameter is " << top_fraction << ", needs to be in (0.0, 1.0].");
     return false;
   }
@@ -190,9 +193,9 @@ filter_features_magnitude
 
 
 /// Filter feature set
-feature_set_sptr
+kwiver::vital::feature_set_sptr
 filter_features_magnitude
-::filter(feature_set_sptr feat, std::vector<unsigned int> &indices) const
+::filter(kwiver::vital::feature_set_sptr feat, std::vector<unsigned int> &indices) const
 {
   return d_->filter(feat, indices);
 }

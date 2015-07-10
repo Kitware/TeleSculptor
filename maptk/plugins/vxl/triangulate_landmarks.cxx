@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,13 +43,13 @@
 
 #include <vpgl/algo/vpgl_triangulate_points.h>
 
+using namespace kwiver::vital;
 
 namespace maptk
 {
 
 namespace vxl
 {
-
 
 /// Private implementation class
 class triangulate_landmarks::priv
@@ -91,13 +91,13 @@ triangulate_landmarks
 }
 
 
-/// Get this algorithm's \link maptk::config_block configuration block \endlink
-config_block_sptr
+/// Get this algorithm's \link kwiver::config_block configuration block \endlink
+kwiver::config_block_sptr
 triangulate_landmarks
 ::get_configuration() const
 {
   // get base config from base class
-  config_block_sptr config = maptk::algo::triangulate_landmarks::get_configuration();
+  kwiver::config_block_sptr config = maptk::algo::triangulate_landmarks::get_configuration();
   return config;
 }
 
@@ -105,7 +105,7 @@ triangulate_landmarks
 /// Set this algorithm's properties via a config block
 void
 triangulate_landmarks
-::set_configuration(config_block_sptr in_config)
+::set_configuration(kwiver::config_block_sptr in_config)
 {
 }
 
@@ -113,7 +113,7 @@ triangulate_landmarks
 /// Check that the algorithm's currently configuration is valid
 bool
 triangulate_landmarks
-::check_configuration(config_block_sptr config) const
+::check_configuration(kwiver::config_block_sptr config) const
 {
   return true;
 }
@@ -122,9 +122,9 @@ triangulate_landmarks
 /// Triangulate the landmark locations given sets of cameras and tracks
 void
 triangulate_landmarks
-::triangulate(camera_map_sptr cameras,
-              track_set_sptr tracks,
-              landmark_map_sptr& landmarks) const
+::triangulate(kwiver::vital::camera_map_sptr cameras,
+              kwiver::vital::track_set_sptr tracks,
+              kwiver::vital::landmark_map_sptr& landmarks) const
 {
   if( !cameras || !landmarks || !tracks )
   {
@@ -132,7 +132,7 @@ triangulate_landmarks
     return;
   }
   typedef vxl::camera_map::map_vcam_t map_vcam_t;
-  typedef maptk::landmark_map::map_landmark_t map_landmark_t;
+  typedef kwiver::vital::landmark_map::map_landmark_t map_landmark_t;
 
   // extract data from containers
   map_vcam_t vcams = camera_map_to_vpgl(*cameras);
@@ -180,14 +180,14 @@ triangulate_landmarks
         continue;
       }
       lm_cams.push_back(c_itr->second);
-      vector_2d pt = tsi->feat->loc();
+      kwiver::vital::vector_2d pt = tsi->feat->loc();
       lm_image_pts.push_back(vgl_point_2d<double>(pt.x(), pt.y()));
     }
 
     // if we found at least two views of this landmark, triangulate
     if (lm_cams.size() > 1)
     {
-      vector_3d lm_loc = p.second->loc();
+      kwiver::vital::vector_3d lm_loc = p.second->loc();
       vgl_point_3d<double> pt3d(lm_loc.x(), lm_loc.y(), lm_loc.z());
       double error = vpgl_triangulate_points::triangulate(lm_image_pts,
                                                           lm_cams, pt3d);
@@ -204,7 +204,7 @@ triangulate_landmarks
       }
       if( !bad_triangulation )
       {
-        landmark_d* lm = new landmark_d(vector_3d(pt3d.x(), pt3d.y(), pt3d.z()));
+        landmark_d* lm = new landmark_d(kwiver::vital::vector_3d(pt3d.x(), pt3d.y(), pt3d.z()));
         lm->set_covar(covariance_3d(error));
         triangulated_lms[p.first] = landmark_sptr(lm);
       }

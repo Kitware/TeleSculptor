@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,7 +37,7 @@
 #define MAPTK_PLUGINS_VXL_REGISTER_ALGORITHMS_H_
 
 #include <maptk/plugins/vxl/vxl_config.h>
-#include <maptk/registrar.h>
+#include <vital/registrar.h>
 
 
 namespace maptk
@@ -48,7 +48,7 @@ namespace vxl
 
 /// Register VXL algorithm implementations with the given or global registrar
 MAPTK_VXL_EXPORT
-int register_algorithms( maptk::registrar &reg = maptk::registrar::instance() );
+int register_algorithms( kwiver::vital::registrar &reg = kwiver::vital::registrar::instance() );
 
 }
 

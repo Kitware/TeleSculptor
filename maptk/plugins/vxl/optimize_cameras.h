@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,9 +38,8 @@
 
 #include <string>
 
-#include <maptk/algo/algorithm.h>
+#include <vital/algorithm.h>
 #include <maptk/algo/optimize_cameras.h>
-#include <maptk/config_block.h>
 #include <maptk/plugins/vxl/vxl_config.h>
 
 
@@ -52,14 +51,14 @@ namespace vxl
 
 
 class MAPTK_VXL_EXPORT optimize_cameras
-  : public algo::algorithm_impl<optimize_cameras, algo::optimize_cameras>
+  : public kwiver::vital::algorithm_impl<optimize_cameras, algo::optimize_cameras>
 {
 public:
   virtual std::string impl_name() const { return "vxl"; }
 
   /// \cond DoxygenSuppress
-  virtual void set_configuration(config_block_sptr /*config*/) { }
-  virtual bool check_configuration(config_block_sptr /*config*/) const { return true; }
+  virtual void set_configuration(kwiver::config_block_sptr /*config*/) { }
+  virtual bool check_configuration(kwiver::config_block_sptr /*config*/) const { return true; }
   /// \endcond
 
   /// Optimize camera parameters given sets of landmarks and tracks
@@ -74,9 +73,9 @@ public:
    * \param[in]     landmarks The landmarks the cameras are viewing.
    */
   virtual void
-  optimize(camera_map_sptr & cameras,
-           track_set_sptr tracks,
-           landmark_map_sptr landmarks) const;
+  optimize(kwiver::vital::camera_map_sptr & cameras,
+           kwiver::vital::track_set_sptr tracks,
+           kwiver::vital::landmark_map_sptr landmarks) const;
 };
 
 

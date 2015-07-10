@@ -34,10 +34,11 @@
 #include <test_common.h>
 #include <test_random_point.h>
 
-#include <maptk/exceptions.h>
-#include <maptk/rotation.h>
-#include <maptk/similarity.h>
-#include <maptk/vector.h>
+#include <vital/exceptions.h>
+#include <vital/rotation.h>
+#include <vital/similarity.h>
+#include <vital/vector.h>
+
 #include <maptk/plugins/vxl/register_algorithms.h>
 #include <maptk/plugins/vxl/estimate_similarity_transform.h>
 
@@ -55,6 +56,7 @@ int main(int argc, char* argv[])
   RUN_TEST(testname);
 }
 
+using namespace kwiver::vital;
 
 IMPLEMENT_TEST(creation)
 {

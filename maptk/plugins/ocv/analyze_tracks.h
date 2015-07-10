@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,7 +51,7 @@ namespace ocv
 
 /// A class for outputting various debug info about feature tracks
 class MAPTK_OCV_EXPORT analyze_tracks
-: public algo::algorithm_impl<analyze_tracks, algo::analyze_tracks>
+: public kwiver::vital::algorithm_impl<analyze_tracks, algo::analyze_tracks>
 {
 public:
 
@@ -68,11 +68,11 @@ public:
   virtual std::string impl_name() const { return "ocv"; }
 
   /// Get this algorithm's \link maptk::config_block configuration block \endlink
-  virtual config_block_sptr get_configuration() const;
+  virtual kwiver::config_block_sptr get_configuration() const;
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(config_block_sptr config);
+  virtual void set_configuration(kwiver::config_block_sptr config);
   /// Check that the algorithm's currently configuration is valid
-  virtual bool check_configuration(config_block_sptr config) const;
+  virtual bool check_configuration(kwiver::config_block_sptr config) const;
 
   /// Output various information about the tracks stored in the input set.
   /**
@@ -80,7 +80,7 @@ public:
    * \param [in] stream an output stream to write data onto
    */
   virtual void
-  print_info(track_set_sptr track_set,
+  print_info(kwiver::vital::track_set_sptr track_set,
              stream_t& stream = std::cout) const;
 
 private:

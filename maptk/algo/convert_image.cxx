@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <maptk/algo/algorithm.txx>
+#include <vital/algorithm.txx>
 #include "convert_image.h"
 
 INSTANTIATE_ALGORITHM_DEF(maptk::algo::convert_image);
@@ -43,7 +43,7 @@ namespace algo
 /// Set this algorithm's properties via a config block
 void
 convert_image
-::set_configuration(config_block_sptr config)
+::set_configuration(kwiver::config_block_sptr config)
 {
 
 }
@@ -51,7 +51,7 @@ convert_image
 /// Check that the algorithm's current configuration is valid
 bool
 convert_image
-::check_configuration(config_block_sptr config) const
+::check_configuration(kwiver::config_block_sptr config) const
 {
   return true;
 }

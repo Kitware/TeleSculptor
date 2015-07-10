@@ -85,22 +85,22 @@ extract_descriptors
 
 
 /// Extract from the image a descriptor corresoponding to each feature
-descriptor_set_sptr
+kwiver::vital::descriptor_set_sptr
 extract_descriptors
-::extract(image_container_sptr image_data,
-          feature_set_sptr features,
-          image_container_sptr /* image_mask */) const
+::extract(kwiver::vital::image_container_sptr image_data,
+          kwiver::vital::feature_set_sptr features,
+          kwiver::vital::image_container_sptr /* image_mask */) const
 {
   if( !image_data || !features )
   {
-    return descriptor_set_sptr();
+    return kwiver::vital::descriptor_set_sptr();
   }
 
   viscl::image img = vcl::image_container_to_viscl(*image_data);
   vcl::feature_set::type fs = vcl::features_to_viscl(*features);
   viscl::buffer descriptors;
   d_->brief.compute_descriptors(img, fs.features_, features->size(), descriptors);
-  return descriptor_set_sptr(new vcl::descriptor_set(descriptors));
+  return kwiver::vital::descriptor_set_sptr(new vcl::descriptor_set(descriptors));
 }
 
 

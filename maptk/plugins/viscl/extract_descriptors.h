@@ -45,7 +45,7 @@ namespace vcl
 
 /// An class for extracting feature descriptors using VisCL
 class MAPTK_VISCL_EXPORT extract_descriptors
-: public algo::algorithm_impl<extract_descriptors, algo::extract_descriptors>
+: public kwiver::vital::algorithm_impl<extract_descriptors, algo::extract_descriptors>
 {
 public:
   /// Default Constructor
@@ -61,18 +61,18 @@ public:
   virtual std::string impl_name() const { return "viscl"; }
 
   // No configuration for this class yet TODO: eventually descriptor size
-  virtual void set_configuration(config_block_sptr /*config*/) { }
-  virtual bool check_configuration(config_block_sptr /*config*/) const { return true; }
+  virtual void set_configuration(kwiver::config_block_sptr /*config*/) { }
+  virtual bool check_configuration(kwiver::config_block_sptr /*config*/) const { return true; }
 
   /// Extract from the image a descriptor corresoponding to each feature
   /** \param image_data contains the image data to process
     * \param features the feature locations at which descriptors are extracted
     * \returns a set of feature descriptors
     */
-  virtual descriptor_set_sptr
-  extract(image_container_sptr image_data,
-          feature_set_sptr features,
-          image_container_sptr image_mask = image_container_sptr()) const;
+  virtual kwiver::vital::descriptor_set_sptr
+  extract(kwiver::vital::image_container_sptr image_data,
+          kwiver::vital::feature_set_sptr features,
+          kwiver::vital::image_container_sptr image_mask = kwiver::vital::image_container_sptr()) const;
 
 private:
   /// private implementation class

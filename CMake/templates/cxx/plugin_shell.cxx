@@ -33,9 +33,9 @@
 #include <exception>
 
 #include <maptk/config.h>
-#include <maptk/logging_macros.h>
+#include <kwiver_util/logger/logger.h>
 #include <maptk/plugin_interface/algorithm_plugin_interface.h>
-#include <maptk/registrar.h>
+#include <vital/registrar.h>
 
 
 /**
@@ -49,24 +49,23 @@ extern "C"
 
 // Always export this function
 MAPTK_EXPORT
-int private_register_algo_impls( maptk::registrar &reg )
+int private_register_algo_impls( kwiver::vital::registrar &reg )
 {
+  kwiver::logger_handle_t m_logger( kwiver::get_logger( "Implementation Registration" ));
   try
   {
-    LOG_DEBUG( "Implementation Registration",
+    LOG_DEBUG( m_logger,
                "Registering algorithm implementations from module "
-               "'" MAPTK_PLUGIN_LIB_NAME "'");
+               "\"" MAPTK_PLUGIN_LIB_NAME "\"");
     return register_algo_impls( reg );
   }
   catch( std::exception const &e )
   {
-    LOG_ERROR( "private_register_algo_impls",
-               "Caught exception: " << e.what() );
+    LOG_ERROR( m_logger, "Caught exception: " << e.what() );
   }
   catch ( ... )
   {
-    LOG_ERROR( "private_register_algo_impls",
-               "Caught other exception." );
+    LOG_ERROR( m_logger, "Caught other exception." );
   }
   return -1;
 }

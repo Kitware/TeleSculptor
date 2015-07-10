@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,7 +50,7 @@ namespace core
 
 /// A class for bypassing image conversion
 class PLUGIN_CORE_EXPORT convert_image_bypass
-  : public algo::algorithm_impl<convert_image_bypass, algo::convert_image>
+  : public kwiver::vital::algorithm_impl<convert_image_bypass, algo::convert_image>
 {
 public:
    /// Default Constructor
@@ -70,7 +70,7 @@ public:
    * \param [in] img image to be converted
    * \returns the input image
    */
-  virtual image_container_sptr convert(image_container_sptr img) const;
+  virtual kwiver::vital::image_container_sptr convert(kwiver::vital::image_container_sptr img) const;
 };
 
 

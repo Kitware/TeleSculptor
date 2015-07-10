@@ -37,14 +37,18 @@
 
 #include <iostream>
 
+#include <kwiver_util/config/config_block.h>
+
+#include <vital/exceptions/algorithm.h>
+#include <vital/vital_types.h>
+#include <vital/algorithm_plugin_manager.h>
+
 #include <maptk/algo/track_features.h>
 #include <maptk/algo/match_features.h>
-#include <maptk/config_block.h>
-#include <maptk/exceptions/algorithm.h>
-#include <maptk/algorithm_plugin_manager.h>
-#include <maptk/types.h>
 
 #include <boost/foreach.hpp>
+
+using namespace kwiver::vital;
 
 #define TEST_ARGS ()
 DECLARE_TEST_MAP();
@@ -60,10 +64,10 @@ int main(int argc, char* argv[])
 }
 
 #define print_config(config) \
-  BOOST_FOREACH( config_block_key_t key, config->available_values() ) \
+  BOOST_FOREACH( kwiver::config_block_key_t key, config->available_values() ) \
   { \
     cerr << "\t" \
-         << key << " = " << config->get_value<config_block_key_t>(key) \
+         << key << " = " << config->get_value<kwiver::config_block_key_t>(key) \
          << endl; \
   }
 
@@ -72,15 +76,15 @@ IMPLEMENT_TEST(registered_names)
   using namespace maptk;
   using namespace std;
   // register algorithms from plugins
-  algorithm_plugin_manager::instance().register_plugins();
+  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
 
   cout << "registered algorithms (type_name:impl_name)\n";
-  BOOST_FOREACH(const string& name, algo::algorithm::registered_names())
+  BOOST_FOREACH(const string& name, kwiver::vital::algorithm::registered_names())
   {
     cout << "  " << name << endl;
   }
 
-  vector<string> mf_names = algo::algorithm::registered_names("match_features");
+  vector<string> mf_names = kwiver::vital::algorithm::registered_names("match_features");
   cout << "registered \"match_features\" implementations\n";
   BOOST_FOREACH(const string& name, mf_names)
   {
@@ -93,29 +97,29 @@ IMPLEMENT_TEST(create_from_name)
   using namespace maptk;
   using namespace std;
   // register algorithms from plugins
-  algorithm_plugin_manager::instance().register_plugins();
+  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
 
-  algo::algorithm_sptr empty = algo::algorithm::create("", "");
+  kwiver::vital::algorithm_sptr empty = kwiver::vital::algorithm::create("", "");
   TEST_EQUAL("create empty algorithm", empty, 0);
 
-  empty = algo::algorithm::create("match_features", "not_a_real_impl");
+  empty = kwiver::vital::algorithm::create("match_features", "not_a_real_impl");
   TEST_EQUAL("create invalid algorithm", empty, 0);
 
   TEST_EQUAL("has algorithm type",
-             algo::algorithm::has_type_name("match_features"), true);
+             kwiver::vital::algorithm::has_type_name("match_features"), true);
   TEST_EQUAL("does not have algorithm type",
-             algo::algorithm::has_type_name("not_a_real_type"), false);
+             kwiver::vital::algorithm::has_type_name("not_a_real_type"), false);
   TEST_EQUAL("has algorithm impl",
-             algo::algorithm::has_impl_name("match_features",
+             kwiver::vital::algorithm::has_impl_name("match_features",
                                             "homography_guided"), true);
   TEST_EQUAL("does not have algorithm impl",
-             algo::algorithm::has_impl_name("match_features",
+             kwiver::vital::algorithm::has_impl_name("match_features",
                                             "not_a_real_impl"), false);
   TEST_EQUAL("invalid type does not have algorithm impl",
-             algo::algorithm::has_impl_name("not_a_real_type",
+             kwiver::vital::algorithm::has_impl_name("not_a_real_type",
                                             "homography_guided"), false);
 
-  algo::algorithm_sptr valid = algo::algorithm::create("match_features", "homography_guided");
+  kwiver::vital::algorithm_sptr valid = kwiver::vital::algorithm::create("match_features", "homography_guided");
   TEST_EQUAL("create valid algorithm", !valid, false);
 
   algo::match_features_sptr mf = boost::dynamic_pointer_cast<algo::match_features>(valid);
@@ -128,22 +132,21 @@ IMPLEMENT_TEST(create_from_name)
 IMPLEMENT_TEST(track_features_before_configuration)
 {
   // register algorithms from plugins
-  maptk::algorithm_plugin_manager::instance().register_plugins();
+  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
 
   using namespace std;
-  using namespace maptk;
   using namespace maptk::algo;
 
   track_features_sptr track_features_impl = track_features::create("core");
 
-  cerr << "Contents of config_block BEFORE attempted configuration:" << endl;
-  config_block_sptr tf_config = track_features_impl->get_configuration();
+  cerr << "Contents of kwiver::config_block BEFORE attempted configuration:" << endl;
+  kwiver::config_block_sptr tf_config = track_features_impl->get_configuration();
   print_config(tf_config);
 
   cerr << "Setting mf algo impl" << endl;
   tf_config->set_value("feature_matcher:type", "homography_guided");
 
-  cerr << "Contents of config_block after cb set:" << endl;
+  cerr << "Contents of kwiver::config_block after cb set:" << endl;
   print_config(tf_config);
 
   cerr << "Setting modified config to tf algorithm" << endl;
@@ -156,7 +159,7 @@ IMPLEMENT_TEST(track_features_before_configuration)
   cerr << "Setting mf's mf algo type (in config)" << endl;
   tf_config->set_value("feature_matcher:homography_guided:feature_matcher:type", "homography_guided");
 
-  cerr << "Contents of config_block after set:" << endl;
+  cerr << "Contents of kwiver::config_block after set:" << endl;
   print_config(tf_config);
 
   track_features_impl->set_configuration(tf_config);
@@ -194,9 +197,8 @@ IMPLEMENT_TEST(track_features_before_configuration)
 IMPLEMENT_TEST(track_features_check_config)
 {
   // register core algorithms
-  maptk::algorithm_plugin_manager::instance().register_plugins();
+  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
 
-  using namespace maptk;
   using namespace maptk::algo;
   using namespace std;
 
@@ -204,7 +206,7 @@ IMPLEMENT_TEST(track_features_check_config)
 
   // Checking that exception is thrown when trying to configure with no config
   // parameters.
-  config_block_sptr config = config_block::empty_config("track_features_check_config");
+  kwiver::config_block_sptr config = kwiver::config_block::empty_config("track_features_check_config");
   TEST_EQUAL("empty config check", tf_impl->check_configuration(config), false);
 
   // Checking that default impl switch value is invalid (base default is
@@ -225,7 +227,7 @@ IMPLEMENT_TEST(track_features_check_config)
 
   cerr << "Config from perspective of algo with that that config:" << endl;
   tf_impl->set_configuration(config);
-  config_block_sptr cb = tf_impl->get_configuration();
+  kwiver::config_block_sptr cb = tf_impl->get_configuration();
   print_config(cb);
 
   // Checking that, even though there were nested algorithms that weren't set,

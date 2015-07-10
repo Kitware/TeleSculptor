@@ -51,7 +51,7 @@ namespace ocv
 
 /// An class for extracting feature descriptors using OpenCV
 class MAPTK_OCV_EXPORT extract_descriptors
-  : public algo::algorithm_impl<extract_descriptors, algo::extract_descriptors>
+  : public kwiver::vital::algorithm_impl<extract_descriptors, algo::extract_descriptors>
 {
 public:
   /// Default Constructor
@@ -66,12 +66,12 @@ public:
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "ocv"; }
 
-  /// Get this algorithm's \link maptk::config_block configuration block \endlink
-  virtual config_block_sptr get_configuration() const;
+  /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
+  virtual kwiver::config_block_sptr get_configuration() const;
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(config_block_sptr config);
-  /// Check that the algorithm's configuration config_block is valid
-  virtual bool check_configuration(config_block_sptr config) const;
+  virtual void set_configuration(kwiver::config_block_sptr config);
+  /// Check that the algorithm's configuration kwiver::config_block is valid
+  virtual bool check_configuration(kwiver::config_block_sptr config) const;
 
   /// Extract from the image a descriptor corresoponding to each feature
   /**
@@ -79,10 +79,10 @@ public:
    * \param features the feature locations at which descriptors are extracted
    * \returns a set of feature descriptors
    */
-  virtual descriptor_set_sptr
-  extract(image_container_sptr image_data,
-          feature_set_sptr features,
-          image_container_sptr image_mask = image_container_sptr()) const;
+  virtual kwiver::vital::descriptor_set_sptr
+  extract(kwiver::vital::image_container_sptr image_data,
+          kwiver::vital::feature_set_sptr features,
+          kwiver::vital::image_container_sptr image_mask = kwiver::vital::image_container_sptr()) const;
 
 private:
   /// private implementation class

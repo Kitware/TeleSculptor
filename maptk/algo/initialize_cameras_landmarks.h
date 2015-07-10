@@ -37,10 +37,12 @@
 #ifndef MAPTK_ALGO_INITIALIZE_CAMERAS_LANDMARKS_H_
 #define MAPTK_ALGO_INITIALIZE_CAMERAS_LANDMARKS_H_
 
-#include <maptk/algo/algorithm.h>
-#include <maptk/track_set.h>
-#include <maptk/camera_map.h>
-#include <maptk/landmark_map.h>
+#include <maptk/config.h>
+
+#include <vital/algorithm.h>
+#include <vital/track_set.h>
+#include <vital/camera_map.h>
+#include <vital/landmark_map.h>
 
 
 namespace maptk
@@ -51,7 +53,7 @@ namespace algo
 
 /// An abstract base class for initialization of cameras and landmarks
 class MAPTK_LIB_EXPORT initialize_cameras_landmarks
-: public algorithm_def<initialize_cameras_landmarks>
+: public kwiver::vital::algorithm_def<initialize_cameras_landmarks>
 {
 public:
   /// Return the name of this algorithm
@@ -68,9 +70,9 @@ public:
    * \param [in] tracks the tracks to use as constraints
    */
   virtual void
-  initialize(camera_map_sptr& cameras,
-             landmark_map_sptr& landmarks,
-             track_set_sptr tracks) const = 0;
+  initialize(kwiver::vital::camera_map_sptr& cameras,
+             kwiver::vital::landmark_map_sptr& landmarks,
+             kwiver::vital::track_set_sptr tracks) const = 0;
 };
 
 

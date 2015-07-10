@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,7 +51,7 @@ namespace ocv
 
 /// An abstract base class for matching feature points
 class MAPTK_OCV_EXPORT match_features
-  : public algo::algorithm_impl<match_features, algo::match_features>
+  : public kwiver::vital::algorithm_impl<match_features, algo::match_features>
 {
 public:
   /// Constructor
@@ -66,12 +66,12 @@ public:
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "ocv"; }
 
-  /// Get this algorithm's \link maptk::config_block configuration block \endlink
-  virtual config_block_sptr get_configuration() const;
+  /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
+  virtual kwiver::config_block_sptr get_configuration() const;
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(config_block_sptr config);
-  /// Check that the algorithm's configuration config_block is valid
-  virtual bool check_configuration(config_block_sptr config) const;
+  virtual void set_configuration(kwiver::config_block_sptr config);
+  /// Check that the algorithm's configuration kwiver::config_block is valid
+  virtual bool check_configuration(kwiver::config_block_sptr config) const;
 
   /// Match one set of features and corresponding descriptors to another
   /**
@@ -81,9 +81,9 @@ public:
    * \param [in] desc2 the descriptors corresponding to \a feat2
    * \returns a set of matching indices from \a feat1 to \a feat2
    */
-  virtual match_set_sptr
-  match(feature_set_sptr feat1, descriptor_set_sptr desc1,
-        feature_set_sptr feat2, descriptor_set_sptr desc2) const;
+  virtual kwiver::vital::match_set_sptr
+  match(kwiver::vital::feature_set_sptr feat1, kwiver::vital::descriptor_set_sptr desc1,
+        kwiver::vital::feature_set_sptr feat2, kwiver::vital::descriptor_set_sptr desc2) const;
 
 private:
   /// private implementation class

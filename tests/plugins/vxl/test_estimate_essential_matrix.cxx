@@ -57,6 +57,7 @@ main(int argc, char* argv[])
   RUN_TEST(testname);
 }
 
+using namespace kwiver::vital;
 
 IMPLEMENT_TEST(create)
 {
@@ -70,9 +71,9 @@ IMPLEMENT_TEST(create)
 
 
 // Compute the essential matrix from cameras
-maptk::matrix_3x3d
-essential_matrix_from_cameras(const maptk::camera& right_cam,
-                              const maptk::camera& left_cam)
+kwiver::vital::matrix_3x3d
+essential_matrix_from_cameras(const kwiver::vital::camera& right_cam,
+                              const kwiver::vital::camera& left_cam)
 {
   using namespace maptk;
   rotation_d R1 = right_cam.rotation();
@@ -96,10 +97,10 @@ essential_matrix_from_cameras(const maptk::camera& right_cam,
 
 
 // Convert the essential matrix to a fundamental matrix
-maptk::matrix_3x3d
-essential_matrix_to_fundamental(const maptk::matrix_3x3d& E,
-                                const maptk::camera_intrinsics_d& right_cal,
-                                const maptk::camera_intrinsics_d& left_cal)
+kwiver::vital::matrix_3x3d
+essential_matrix_to_fundamental(const kwiver::vital::matrix_3x3d& E,
+                                const kwiver::vital::camera_intrinsics_d& right_cal,
+                                const kwiver::vital::camera_intrinsics_d& left_cal)
 {
   using namespace maptk;
   matrix_3x3d Kr_inv = matrix_3x3d(right_cal).inverse();
@@ -109,9 +110,9 @@ essential_matrix_to_fundamental(const maptk::matrix_3x3d& E,
 
 
 // Print epipolar distance of pairs of points given a fundamental matrix
-void print_epipolar_distances(const maptk::matrix_3x3d& F,
-                              const std::vector<maptk::vector_2d> right_pts,
-                              const std::vector<maptk::vector_2d> left_pts)
+void print_epipolar_distances(const kwiver::vital::matrix_3x3d& F,
+                              const std::vector<kwiver::vital::vector_2d> right_pts,
+                              const std::vector<kwiver::vital::vector_2d> left_pts)
 {
   using namespace maptk;
   matrix_3x3d Ft = F.transpose();

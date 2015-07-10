@@ -37,10 +37,12 @@
 #ifndef MAPTK_ALGO_TRIANGULATE_LANDMARKS_H_
 #define MAPTK_ALGO_TRIANGULATE_LANDMARKS_H_
 
-#include <maptk/algo/algorithm.h>
-#include <maptk/track_set.h>
-#include <maptk/camera_map.h>
-#include <maptk/landmark_map.h>
+#include <maptk/config.h>
+
+#include <vital/algorithm.h>
+#include <vital/track_set.h>
+#include <vital/camera_map.h>
+#include <vital/landmark_map.h>
 
 
 namespace maptk
@@ -51,7 +53,7 @@ namespace algo
 
 /// An abstract base class for triangulating landmarks
 class MAPTK_LIB_EXPORT triangulate_landmarks
-: public algorithm_def<triangulate_landmarks>
+: public kwiver::vital::algorithm_def<triangulate_landmarks>
 {
 public:
   /// Return the name of this algorithm
@@ -67,9 +69,9 @@ public:
    * landmark map and which have support in the tracks and cameras
    */
   virtual void
-  triangulate(camera_map_sptr cameras,
-              track_set_sptr tracks,
-              landmark_map_sptr& landmarks) const = 0;
+  triangulate(kwiver::vital::camera_map_sptr cameras,
+              kwiver::vital::track_set_sptr tracks,
+              kwiver::vital::landmark_map_sptr& landmarks) const = 0;
 };
 
 

@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,6 +39,7 @@
 
 #include <maptk/plugins/vxl/camera.h>
 
+using namespace kwiver::vital;
 
 namespace maptk
 {
@@ -48,7 +49,7 @@ namespace vxl
 
 
 /// Return a map from integer IDs to camera shared pointers
-maptk::camera_map::map_camera_t
+kwiver::vital::camera_map::map_camera_t
 camera_map::cameras() const
 {
   map_camera_t maptk_cameras;
@@ -65,7 +66,7 @@ camera_map::cameras() const
 
 /// Convert any camera map to a vpgl camera map
 camera_map::map_vcam_t
-camera_map_to_vpgl(const maptk::camera_map& cam_map)
+camera_map_to_vpgl(const kwiver::vital::camera_map& cam_map)
 {
   // if the camera map already contains a vpgl representation
   // then return the existing vpgl data

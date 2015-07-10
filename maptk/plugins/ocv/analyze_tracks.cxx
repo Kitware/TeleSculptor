@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,6 +48,7 @@
 
 #include <maptk/plugins/ocv/ocv_algo_tools.h>
 
+using namespace kwiver::vital;
 
 namespace maptk
 {
@@ -110,11 +111,11 @@ analyze_tracks
 
 
 /// Get this algorithm's \link maptk::config_block configuration block \endlink
-config_block_sptr
+kwiver::config_block_sptr
 analyze_tracks
 ::get_configuration() const
 {
-  config_block_sptr config = maptk::algo::analyze_tracks::get_configuration();
+  kwiver::config_block_sptr config = maptk::algo::analyze_tracks::get_configuration();
 
   config->set_value("output_summary", d_->output_summary,
                     "Output a summary descriptor of high-level properties.");
@@ -135,9 +136,9 @@ analyze_tracks
 /// Set this algorithm's properties via a config block
 void
 analyze_tracks
-::set_configuration(config_block_sptr in_config)
+::set_configuration(kwiver::config_block_sptr in_config)
 {
-  config_block_sptr config = this->get_configuration();
+  kwiver::config_block_sptr config = this->get_configuration();
   config->merge_config( in_config );
 
   d_->output_summary = config->get_value<bool>( "output_summary" );
@@ -165,7 +166,7 @@ analyze_tracks
 /// Check that the algorithm's currently configuration is valid
 bool
 analyze_tracks
-::check_configuration(config_block_sptr config) const
+::check_configuration(kwiver::config_block_sptr config) const
 {
   return true;
 }

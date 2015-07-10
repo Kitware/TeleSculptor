@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,11 +66,11 @@ match_set
 }
 
 /// Return a vector of matching indices
-std::vector<match>
+std::vector<kwiver::vital::match>
 match_set
 ::matches() const
 {
-  std::vector<match> m;
+  std::vector<kwiver::vital::match> m;
 
   std::vector<int> viscl_matches(data_.len());
   viscl::cl_queue_t queue = viscl::manager::inst()->create_queue();
@@ -81,7 +81,7 @@ match_set
   {
     if (viscl_matches[i] > -1)
     {
-      m.push_back(match(viscl_matches[i], i));
+      m.push_back(kwiver::vital::match(viscl_matches[i], i));
     }
   }
 
@@ -90,7 +90,7 @@ match_set
 
 /// Convert any match set to VisCL matches
 viscl::buffer
-matches_to_viscl(const maptk::match_set& m_set)
+matches_to_viscl(const kwiver::vital::match_set& m_set)
 {
   if( const vcl::match_set* m_viscl =
           dynamic_cast<const vcl::match_set*>(&m_set) )
@@ -98,7 +98,7 @@ matches_to_viscl(const maptk::match_set& m_set)
     return m_viscl->viscl_matches();
   }
 
-  const std::vector<match> mats = m_set.matches();
+  const std::vector<kwiver::vital::match> mats = m_set.matches();
 
   unsigned int maxindex = 0;
   for (unsigned int i = 0; i < mats.size(); i++)

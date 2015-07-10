@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,7 @@
 
 #include <maptk/plugins/ocv/mat_image_memory.h>
 
+using namespace kwiver::vital;
 
 namespace maptk
 {
@@ -44,10 +45,9 @@ namespace maptk
 namespace ocv
 {
 
-
 /// Constructor - convert base image container to cv::Mat
 image_container
-::image_container(const maptk::image_container& image_cont)
+::image_container(const kwiver::vital::image_container& image_cont)
 {
   // testing if image_cont is an ocv image container
   const ocv::image_container* oic =
@@ -88,7 +88,7 @@ image_container
 /// Convert a MAPTK image to an OpenCV cv::Mat
 cv::Mat
 image_container
-::maptk_to_ocv(const image& img)
+::maptk_to_ocv(const kwiver::vital::image& img)
 {
   // cv::Mat is limited in the image data layouts that it supports.
   // Color channels must be interleaved (d_step==1) and the
@@ -129,7 +129,7 @@ image_container
 
 /// Extract a cv::Mat from any image container
 cv::Mat
-image_container_to_ocv_matrix(const maptk::image_container& img)
+image_container_to_ocv_matrix(const kwiver::vital::image_container& img)
 {
   if( const ocv::image_container* c =
           dynamic_cast<const ocv::image_container*>(&img) )

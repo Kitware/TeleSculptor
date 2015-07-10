@@ -51,7 +51,7 @@ namespace core
 
 /// \brief Algorithm that filters features based on feature magnitude
 class PLUGIN_CORE_EXPORT filter_features_magnitude
-  : public algo::algorithm_impl<filter_features_magnitude, algo::filter_features>
+  : public kwiver::vital::algorithm_impl<filter_features_magnitude, algo::filter_features>
 {
 public:
   /// Constructor
@@ -67,11 +67,11 @@ public:
   virtual std::string impl_name() const { return "magnitude"; }
 
   /// Get this algorithm's \link maptk::config_block configuration block \endlink
-  virtual config_block_sptr get_configuration() const;
+  virtual kwiver::config_block_sptr get_configuration() const;
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(config_block_sptr config);
+  virtual void set_configuration(kwiver::config_block_sptr config);
   /// Check that the algorithm's configuration config_block is valid
-  virtual bool check_configuration(config_block_sptr config) const;
+  virtual bool check_configuration(kwiver::config_block_sptr config) const;
 
 protected:
 
@@ -81,8 +81,8 @@ protected:
    * \param [out] indices of the kept features to the original feature set
    * \returns a filtered version of the feature set
    */
-  virtual feature_set_sptr
-  filter(feature_set_sptr input, std::vector<unsigned int> &indices) const;
+  virtual kwiver::vital::feature_set_sptr
+  filter(kwiver::vital::feature_set_sptr input, std::vector<unsigned int> &indices) const;
 
 private:
   /// private implementation class

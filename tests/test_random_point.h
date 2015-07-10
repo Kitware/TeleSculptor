@@ -38,7 +38,7 @@
 #ifndef MAPTK_TEST_TEST_RANDOM_POINT_H_
 #define MAPTK_TEST_TEST_RANDOM_POINT_H_
 
-#include <maptk/vector.h>
+#include <vital/vector.h>
 #include <boost/random.hpp>
 #include <boost/random/normal_distribution.hpp>
 
@@ -60,19 +60,19 @@ static rng_t rng;
 
 
 inline
-maptk::vector_3d random_point3d(double stdev)
+kwiver::vital::vector_3d random_point3d(double stdev)
 {
   normal_gen_t norm(rng, norm_dist_t(0.0, stdev));
-  maptk::vector_3d v(norm(), norm(), norm());
+  kwiver::vital::vector_3d v(norm(), norm(), norm());
   return v;
 }
 
 
 inline
-maptk::vector_2d random_point2d(double stdev)
+kwiver::vital::vector_2d random_point2d(double stdev)
 {
   normal_gen_t norm(rng, norm_dist_t(0.0, stdev));
-  maptk::vector_2d v(norm(), norm());
+  kwiver::vital::vector_2d v(norm(), norm());
   return v;
 }
 
