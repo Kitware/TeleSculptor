@@ -114,6 +114,8 @@ MAP-Tk provides several optional built-in plug-ins
 
 - \link plugin_core Core plugin \endlink : provides basic algorithm
                implementations that require no other dependencies
+- \link plugin_ceres Ceres plugin \endlink : provides optimization algorithm
+               implementations that make use of Ceres Solver.
 - \link plugin_ocv OpenCV plugin \endlink : provides algorithms that build on
                OpenCV algorithms and data structures.
 - \link plugin_proj PROJ plugin \endlink : provides algorithms that build on
