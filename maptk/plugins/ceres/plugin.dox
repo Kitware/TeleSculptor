@@ -1,0 +1,16 @@
+namespace maptk {
+
+/// Ceres module namespace
+namespace ceres { }
+
+// The following text is included in the main documentation page by doxygen
+/** \page plugin_ceres Ceres Plugin
+\section sec-ceres-contents Contents
+The MAP-Tk Ceres plugin provides optimization algorithms by building on
+               <a href="http://ceres-solver.org/">Ceres Solver</a>
+
+\subsection sec-ceres-algorithm-impls Algorithm Implementations
+- \ref ceres::bundle_adjust : optimize cameras and landmarks using
+               <a href="http://ceres-solver.org/">Ceres Solver</a>
+*/
+}
