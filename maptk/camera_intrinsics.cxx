@@ -41,6 +41,55 @@
 namespace maptk
 {
 
+namespace // anonymous namespace
+{
+
+/// Compute radial distortion as a scaling and offset
+/** For a point \p pt and distortion coefficients \p d compute
+ *  a scale and offset such that distortion can be applied as
+ *  \code
+ *    distorted_pt = pt * scale + offset;
+ *  \endcode
+ */
+template <typename T>
+void
+distortion_scale_offset(const Eigen::Matrix<T,2,1>& pt,
+                        const typename camera_intrinsics_<T>::vector_t& d,
+                        T& scale, Eigen::Matrix<T,2,1>& offset)
+{
+  scale = T(1);
+  offset = Eigen::Matrix<T,2,1>(T(0),T(0));
+  if(d.rows() > 0)
+  {
+    const T x2 = pt.x() * pt.x();
+    const T y2 = pt.y() * pt.y();
+    const T r2 = x2 + y2;
+    scale += r2*d[0];
+    if(d.rows() > 1)
+    {
+      const T r4 = r2*r2;
+      scale += r4*d[1];
+      if(d.rows() > 4)
+      {
+        const T r6 = r2*r4;
+        scale += r6*d[4];
+        if(d.rows() > 7)
+        {
+          scale /= T(1) + r2*d[5] + r4*d[6] + r6*d[7];
+        }
+      }
+      if(d.rows() > 3)
+      {
+        const T two_xy = 2 * pt.x() * pt.y();
+        offset = Eigen::Matrix<T,2,1>(d[2]*two_xy + d[3]*(r2 + 2*x2),
+                                      d[3]*two_xy + d[2]*(r2 + 2*y2));
+      }
+    }
+  }
+}
+
+} // end anonymous namespace
+
 
 /// Constructor - from a calibration matrix
 template <typename T>
@@ -75,44 +124,9 @@ Eigen::Matrix<T,2,1>
 camera_intrinsics_<T>
 ::map(const Eigen::Matrix<T,2,1>& point) const
 {
-  Eigen::Matrix<T,2,1> pt(point);
-  const Eigen::Matrix<T,2,1>& pp = principal_point_;
   // apply radial and tangential distortion if coefficients are provided
-  if(dist_coeffs_.rows() > 0)
-  {
-    const T x2 = pt.x() * pt.x();
-    const T y2 = pt.y() * pt.y();
-    const T xy = pt.x() * pt.y();
-    const T r2 = x2 + y2;
-    T dist = T(1) + r2*dist_coeffs_[0];
-    if(dist_coeffs_.rows() > 1)
-    {
-      const T r4 = r2*r2;
-      dist += r4*dist_coeffs_[1];
-      if(dist_coeffs_.rows() > 4)
-      {
-        const T r6 = r2*r4;
-        dist += r6*dist_coeffs_[4];
-        if(dist_coeffs_.rows() > 7)
-        {
-          dist /= T(1) + r2*dist_coeffs_[5]
-                       + r4*dist_coeffs_[6]
-                       + r6*dist_coeffs_[7];
-        }
-      }
-      // apply the radial distortion scaling
-      pt *= dist;
-
-      if(dist_coeffs_.rows() > 3)
-      {
-        const Eigen::Matrix<T,2,1>
-            tang(dist_coeffs_[2]*2*xy + dist_coeffs_[3]*(r2 + 2*x2),
-                 dist_coeffs_[3]*2*xy + dist_coeffs_[2]*(r2 + 2*y2));
-        // apply the tangential distorition offset
-        pt += tang;
-      }
-    }
-  }
+  const Eigen::Matrix<T,2,1> pt = distort(point);
+  const Eigen::Matrix<T,2,1>& pp = principal_point_;
   return Eigen::Matrix<T,2,1>(pt.x() * focal_length_ + pt.y() * skew_ + pp.x(),
                               pt.y() * focal_length_ / aspect_ratio_ + pp.y());
 }
@@ -136,8 +150,41 @@ camera_intrinsics_<T>
 ::unmap(const Eigen::Matrix<T,2,1>& pt) const
 {
   Eigen::Matrix<T,2,1> p0 = pt - principal_point_;
-  T y = p0.y() * aspect_ratio_ / focal_length_;
-  return Eigen::Matrix<T,2,1>((p0.x() - y * skew_) / focal_length_, y);
+  const T y = p0.y() * aspect_ratio_ / focal_length_;
+  const T x = (p0.x() - y * skew_) / focal_length_;
+  return undistort(Eigen::Matrix<T,2,1>(x, y));
+}
+
+
+/// Map normalized image coordinates into distorted coordinates
+template <typename T>
+Eigen::Matrix<T,2,1>
+camera_intrinsics_<T>
+::distort(const Eigen::Matrix<T,2,1>& norm_pt) const
+{
+  T scale;
+  Eigen::Matrix<T,2,1> offset;
+  distortion_scale_offset(norm_pt, dist_coeffs_, scale, offset);
+  return scale * norm_pt + offset;
+}
+
+
+/// Unnap distorted normalized coordinates into normalized coordinates
+template <typename T>
+Eigen::Matrix<T,2,1>
+camera_intrinsics_<T>
+::undistort(const Eigen::Matrix<T,2,1>& dist_pt) const
+{
+  T scale;
+  Eigen::Matrix<T,2,1> offset;
+  Eigen::Matrix<T,2,1> norm_pt = dist_pt;
+  // fixed point iteration to solve for the undistorted point
+  for(unsigned int i=0; i<5; ++i)
+  {
+    distortion_scale_offset(norm_pt, dist_coeffs_, scale, offset);
+    norm_pt = (dist_pt - offset) / scale;
+  }
+  return norm_pt;
 }
 
 

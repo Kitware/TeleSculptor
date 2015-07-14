@@ -122,13 +122,31 @@ public:
   operator Eigen::Matrix<T,3,3>() const;
 
   /// Map normalized image coordinates into actual image coordinates
+  /** This function applies both distortion (if coefficients are specifed)
+   *  and application of the calibration matrix to map into actual image
+   *  coordinates
+   */
   Eigen::Matrix<T,2,1> map(const Eigen::Matrix<T,2,1>& norm_pt) const;
 
   /// Map a 3D point in camera coordinates into actual image coordinates
   Eigen::Matrix<T,2,1> map(const Eigen::Matrix<T,3,1>& norm_hpt) const;
 
   /// Unmap actual image coordinates back into normalized image coordinates
+  /** This function applies both application of the inverse calibration matrix
+   *  and undistortion of the normalized coordinates (if distortion
+   *  coefficients are specifed).
+   */
   Eigen::Matrix<T,2,1> unmap(const Eigen::Matrix<T,2,1>& norm_pt) const;
+
+
+  /// Map normalized image coordinates into distorted coordinates
+  Eigen::Matrix<T,2,1> distort(const Eigen::Matrix<T,2,1>& norm_pt) const;
+
+  /// Unnap distorted normalized coordinates into normalized coordinates
+  /** \note applying inverse distortion is not closed form, so this function
+   *  uses an iterative solver.
+   */
+  Eigen::Matrix<T,2,1> undistort(const Eigen::Matrix<T,2,1>& dist_pt) const;
 
 protected:
   /// focal length of camera
