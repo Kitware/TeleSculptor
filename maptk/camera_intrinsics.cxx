@@ -45,11 +45,13 @@ namespace maptk
 /// Constructor - from a calibration matrix
 template <typename T>
 camera_intrinsics_<T>
-::camera_intrinsics_(const Eigen::Matrix<T,3,3>& K)
+::camera_intrinsics_(const Eigen::Matrix<T,3,3>& K,
+                     const vector_t& d)
 : focal_length_(K(0,0)),
   principal_point_(K(0,2), K(1,2)),
   aspect_ratio_(K(0,0)/K(1,1)),
-  skew_(K(0,1))
+  skew_(K(0,1)),
+  dist_coeffs_(d)
 {
 }
 
@@ -73,8 +75,44 @@ Eigen::Matrix<T,2,1>
 camera_intrinsics_<T>
 ::map(const Eigen::Matrix<T,2,1>& point) const
 {
-  const Eigen::Matrix<T,2,1> pt(point);
+  Eigen::Matrix<T,2,1> pt(point);
   const Eigen::Matrix<T,2,1>& pp = principal_point_;
+  // apply radial and tangential distortion if coefficients are provided
+  if(dist_coeffs_.rows() > 0)
+  {
+    const T x2 = pt.x() * pt.x();
+    const T y2 = pt.y() * pt.y();
+    const T xy = pt.x() * pt.y();
+    const T r2 = x2 + y2;
+    T dist = T(1) + r2*dist_coeffs_[0];
+    if(dist_coeffs_.rows() > 1)
+    {
+      const T r4 = r2*r2;
+      dist += r4*dist_coeffs_[1];
+      if(dist_coeffs_.rows() > 4)
+      {
+        const T r6 = r2*r4;
+        dist += r6*dist_coeffs_[4];
+        if(dist_coeffs_.rows() > 7)
+        {
+          dist /= T(1) + r2*dist_coeffs_[5]
+                       + r4*dist_coeffs_[6]
+                       + r6*dist_coeffs_[7];
+        }
+      }
+      // apply the radial distortion scaling
+      pt *= dist;
+
+      if(dist_coeffs_.rows() > 3)
+      {
+        const Eigen::Matrix<T,2,1>
+            tang(dist_coeffs_[2]*2*xy + dist_coeffs_[3]*(r2 + 2*x2),
+                 dist_coeffs_[3]*2*xy + dist_coeffs_[2]*(r2 + 2*y2));
+        // apply the tangential distorition offset
+        pt += tang;
+      }
+    }
+  }
   return Eigen::Matrix<T,2,1>(pt.x() * focal_length_ + pt.y() * skew_ + pp.x(),
                               pt.y() * focal_length_ / aspect_ratio_ + pp.y());
 }
