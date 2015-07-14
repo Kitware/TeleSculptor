@@ -86,3 +86,35 @@ IMPLEMENT_TEST(map)
             (mapped_from_3d - mapped_test_gt).norm(), 0.0, 1e-12);
 
 }
+
+
+IMPLEMENT_TEST(distort)
+{
+  using namespace maptk;
+  Eigen::VectorXd d(2);
+  d << 0.01 , 0.002;
+  camera_intrinsics_d K;
+  K.set_dist_coeffs(d);
+
+  vector_2d origin(0,0);
+
+  TEST_NEAR("(0,0) is not distorted",
+            K.distort(origin).norm(), 0.0, 1e-12);
+
+  TEST_NEAR("undistort origin",
+            K.undistort(origin).norm(), 0.0, 1e-12);
+
+  vector_2d test_pt(1,2);
+  vector_2d distorted_test = K.distort(test_pt);
+  std::cout << "test point: "<< test_pt.transpose() << "\n"
+            << "distorted: " << distorted_test.transpose() << std::endl;
+  double r2 = test_pt.squaredNorm();
+  vector_2d distorted_test_gt = test_pt * (1.0 + r2*d[0] + r2*r2*d[1]);
+  TEST_NEAR("distorted test point at GT location",
+            (distorted_test - distorted_test_gt).norm(), 0.0, 1e-12);
+
+  vector_2d undistorted = K.unmap(distorted_test);
+  std::cout << "undistorted: "<< undistorted.transpose() << std::endl;
+  TEST_NEAR("undistort is the inverse of distort",
+            (undistorted-test_pt).norm(), 0.0, 1e-12);
+}
