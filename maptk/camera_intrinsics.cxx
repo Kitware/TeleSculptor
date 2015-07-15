@@ -36,7 +36,7 @@
  */
 
 #include "camera_intrinsics.h"
-
+#include <Eigen/Dense>
 
 namespace maptk
 {
@@ -86,6 +86,68 @@ distortion_scale_offset(const Eigen::Matrix<T,2,1>& pt,
       }
     }
   }
+}
+
+
+template <typename T>
+T
+radial_distortion_deriv(const T r2,
+                        const typename camera_intrinsics_<T>::vector_t& d)
+{
+  T deriv = T(0);
+  if(d.rows() > 0)
+  {
+    deriv += d[0];
+    if(d.rows() > 1)
+    {
+      deriv += 2*d[1]*r2;
+      if(d.rows() > 4)
+      {
+        const T r4 = r2*r2;
+        deriv += 3*d[4]*r4;
+        if(d.rows() > 7)
+        {
+          const T r6 = r4*r2;
+          const T a1 = T(1) / (d[5]*r2 + d[6]*r4 + d[7]*r6 + T(1));
+          const T a2 = d[5] + 2*d[6]*r2 + 3*d[7]*r4;
+          deriv -= a2*a1*(d[0]*r2 + d[1]*r4 + d[4]*r6 + T(1));
+          deriv *= a1;
+        }
+      }
+    }
+  }
+  return deriv;
+}
+
+
+template <typename T>
+Eigen::Matrix<T,2,2>
+distortion_jacobian(const Eigen::Matrix<T,2,1>& pt,
+                    const typename camera_intrinsics_<T>::vector_t& d)
+{
+  const T x2 = pt.x() * pt.x();
+  const T y2 = pt.y() * pt.y();
+  const T xy = pt.x() * pt.y();
+  const T r2 = x2 + y2;
+  const T d_scale = 2*radial_distortion_deriv(r2, d);
+  T scale;
+  Eigen::Matrix<T,2,1> offset;
+  distortion_scale_offset(pt, d, scale, offset);
+  Eigen::Matrix<T,2,2> J;
+  J << d_scale * x2 + scale, d_scale * xy,
+       d_scale * xy, d_scale * y2 + scale;
+  // add tangential distortion jacobian
+  if(d.rows() > 3)
+  {
+    const T axy = 2*(d[2]*pt.x() + d[3]*pt.y());
+    const T ay = 2*d[2]*pt.y();
+    const T ax = 2*d[3]*pt.x();
+    J(0,0) += ay + 3*ax;
+    J(0,1) += axy;
+    J(1,0) += axy;
+    J(0,0) += 3*ay + ax;
+  }
+  return J;
 }
 
 } // end anonymous namespace
@@ -176,13 +238,24 @@ camera_intrinsics_<T>
 ::undistort(const Eigen::Matrix<T,2,1>& dist_pt) const
 {
   T scale;
-  Eigen::Matrix<T,2,1> offset;
+  Eigen::Matrix<T,2,1> offset, residual;
   Eigen::Matrix<T,2,1> norm_pt = dist_pt;
-  // fixed point iteration to solve for the undistorted point
-  for(unsigned int i=0; i<5; ++i)
+  // iteratively solve for the undistorted point
+  for(unsigned int i=0; i<10; ++i)
   {
     distortion_scale_offset(norm_pt, dist_coeffs_, scale, offset);
-    norm_pt = (dist_pt - offset) / scale;
+    // This is a Gauss-Newton update
+    // an alternative is a fixed point iteration as used by OpenCV:
+    //   norm_pt = (dist_pt - offset) / scale;
+    // Gauss-Newton seems to have faster convergence
+    Eigen::Matrix<T,2,2> J = distortion_jacobian(norm_pt, dist_coeffs_);
+    residual = norm_pt * scale + offset - dist_pt;
+    // check the maximum absolution residual to test convergence
+    if( residual.cwiseAbs().maxCoeff() < 1e-12 )
+    {
+      break;
+    }
+    norm_pt -= J.ldlt().solve(residual);
   }
   return norm_pt;
 }
