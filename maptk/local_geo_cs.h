@@ -39,9 +39,10 @@
 #include <maptk/config.h>
 
 #include "algo/geo_map.h"
-#include <vital/camera.h>
-#include <vital/ins_data.h>
-#include <vital/rotation.h>
+#include <maptk/ins_data.h>
+
+#include <vital/types/camera.h>
+#include <vital/types/rotation.h>
 #include <vital/vital_types.h>
 
 namespace maptk
@@ -80,11 +81,11 @@ public:
    * \param cam         The camera to be updated.
    * \param rot_offset  A rotation offset to apply to INS yaw pitch roll data
    */
-  void update_camera(const kwiver::vital::ins_data& ins, kwiver::vital::camera_d& cam,
+  void update_camera(const maptk::ins_data& ins, kwiver::vital::camera_d& cam,
                      kwiver::vital::rotation_d const& rot_offset = kwiver::vital::rotation_d()) const;
 
   /// Use the camera pose to update an INS data structure
-  void update_ins_data(const kwiver::vital::camera_d& cam, kwiver::vital::ins_data& ins) const;
+  void update_ins_data(const kwiver::vital::camera_d& cam, maptk::ins_data& ins) const;
 
 private:
   /// An algorithm provided to compute geographic transformations
@@ -114,7 +115,7 @@ private:
  */
 MAPTK_LIB_EXPORT
 std::map<kwiver::vital::frame_id_t, kwiver::vital::camera_sptr>
-initialize_cameras_with_ins(const std::map<kwiver::vital::frame_id_t, kwiver::vital::ins_data>& ins_map,
+initialize_cameras_with_ins(const std::map<kwiver::vital::frame_id_t, maptk::ins_data>& ins_map,
                             const kwiver::vital::camera_d& base_camera,
                             local_geo_cs& lgcs,
                             kwiver::vital::rotation_d const& rot_offset = kwiver::vital::rotation_d());
@@ -134,7 +135,7 @@ MAPTK_LIB_EXPORT
 void
 update_ins_from_cameras(const std::map<kwiver::vital::frame_id_t, kwiver::vital::camera_sptr>& cam_map,
                         const maptk::local_geo_cs& lgcs,
-                        std::map<kwiver::vital::frame_id_t, kwiver::vital::ins_data>& ins_map);
+                        std::map<kwiver::vital::frame_id_t, maptk::ins_data>& ins_map);
 
 
 } // end namespace maptk

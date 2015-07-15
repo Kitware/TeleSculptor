@@ -34,7 +34,7 @@
  */
 
 #include <maptk/algo/extract_descriptors.h>
-#include <vital/algorithm.txx>
+#include <vital/algo/algorithm.txx>
 
 /// \cond DoxygenSuppress
 INSTANTIATE_ALGORITHM_DEF(maptk::algo::extract_descriptors);

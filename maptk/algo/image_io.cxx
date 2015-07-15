@@ -35,7 +35,7 @@
 
 #include "image_io.h"
 
-#include <vital/algorithm.txx>
+#include <vital/algo/algorithm.txx>
 #include <vital/exceptions/io.h>
 #include <vital/vital_types.h>
 

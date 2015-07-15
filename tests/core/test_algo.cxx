@@ -37,7 +37,7 @@
 
 #include <iostream>
 
-#include <kwiver_util/config/config_block.h>
+#include <vital/config/config_block.h>
 
 #include <vital/exceptions/algorithm.h>
 #include <vital/vital_types.h>
@@ -64,10 +64,10 @@ int main(int argc, char* argv[])
 }
 
 #define print_config(config) \
-  BOOST_FOREACH( kwiver::config_block_key_t key, config->available_values() ) \
+  BOOST_FOREACH( kwiver::vital::config_block_key_t key, config->available_values() ) \
   { \
     cerr << "\t" \
-         << key << " = " << config->get_value<kwiver::config_block_key_t>(key) \
+         << key << " = " << config->get_value<kwiver::vital::config_block_key_t>(key) \
          << endl; \
   }
 
@@ -139,14 +139,14 @@ IMPLEMENT_TEST(track_features_before_configuration)
 
   track_features_sptr track_features_impl = track_features::create("core");
 
-  cerr << "Contents of kwiver::config_block BEFORE attempted configuration:" << endl;
-  kwiver::config_block_sptr tf_config = track_features_impl->get_configuration();
+  cerr << "Contents of kwiver::vital::config_block BEFORE attempted configuration:" << endl;
+  kwiver::vital::config_block_sptr tf_config = track_features_impl->get_configuration();
   print_config(tf_config);
 
   cerr << "Setting mf algo impl" << endl;
   tf_config->set_value("feature_matcher:type", "homography_guided");
 
-  cerr << "Contents of kwiver::config_block after cb set:" << endl;
+  cerr << "Contents of kwiver::vital::config_block after cb set:" << endl;
   print_config(tf_config);
 
   cerr << "Setting modified config to tf algorithm" << endl;
@@ -159,7 +159,7 @@ IMPLEMENT_TEST(track_features_before_configuration)
   cerr << "Setting mf's mf algo type (in config)" << endl;
   tf_config->set_value("feature_matcher:homography_guided:feature_matcher:type", "homography_guided");
 
-  cerr << "Contents of kwiver::config_block after set:" << endl;
+  cerr << "Contents of kwiver::vital::config_block after set:" << endl;
   print_config(tf_config);
 
   track_features_impl->set_configuration(tf_config);
@@ -206,7 +206,7 @@ IMPLEMENT_TEST(track_features_check_config)
 
   // Checking that exception is thrown when trying to configure with no config
   // parameters.
-  kwiver::config_block_sptr config = kwiver::config_block::empty_config("track_features_check_config");
+  kwiver::vital::config_block_sptr config = kwiver::vital::config_block::empty_config("track_features_check_config");
   TEST_EQUAL("empty config check", tf_impl->check_configuration(config), false);
 
   // Checking that default impl switch value is invalid (base default is
@@ -227,7 +227,7 @@ IMPLEMENT_TEST(track_features_check_config)
 
   cerr << "Config from perspective of algo with that that config:" << endl;
   tf_impl->set_configuration(config);
-  kwiver::config_block_sptr cb = tf_impl->get_configuration();
+  kwiver::vital::config_block_sptr cb = tf_impl->get_configuration();
   print_config(cb);
 
   // Checking that, even though there were nested algorithms that weren't set,

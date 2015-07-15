@@ -67,12 +67,12 @@ public:
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "ocv"; }
 
-  /// Get this algorithm's \link maptk::config_block configuration block \endlink
-  virtual kwiver::config_block_sptr get_configuration() const;
+  /// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
+  virtual kwiver::vital::config_block_sptr get_configuration() const;
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(kwiver::config_block_sptr config);
+  virtual void set_configuration(kwiver::vital::config_block_sptr config);
   /// Check that the algorithm's currently configuration is valid
-  virtual bool check_configuration(kwiver::config_block_sptr config) const;
+  virtual bool check_configuration(kwiver::vital::config_block_sptr config) const;
 
   /// Output various information about the tracks stored in the input set.
   /**

@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <vital/algorithm.txx>
+#include <vital/algo/algorithm.txx>
 #include <maptk/algo/compute_ref_homography.h>
 
 INSTANTIATE_ALGORITHM_DEF(maptk::algo::compute_ref_homography);

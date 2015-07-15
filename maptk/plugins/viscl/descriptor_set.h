@@ -32,7 +32,7 @@
 #define MAPTK_PLUGINS_VISCL_DESCRIPTOR_SET_H_
 
 
-#include <vital/descriptor_set.h>
+#include <vital/types/descriptor_set.h>
 #include <maptk/plugins/viscl/viscl_config.h>
 
 #include <viscl/core/buffer.h>

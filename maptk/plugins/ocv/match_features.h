@@ -67,11 +67,11 @@ public:
   virtual std::string impl_name() const { return "ocv"; }
 
   /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
-  virtual kwiver::config_block_sptr get_configuration() const;
+  virtual kwiver::vital::config_block_sptr get_configuration() const;
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(kwiver::config_block_sptr config);
-  /// Check that the algorithm's configuration kwiver::config_block is valid
-  virtual bool check_configuration(kwiver::config_block_sptr config) const;
+  virtual void set_configuration(kwiver::vital::config_block_sptr config);
+  /// Check that the algorithm's configuration kwiver::vital::config_block is valid
+  virtual bool check_configuration(kwiver::vital::config_block_sptr config) const;
 
   /// Match one set of features and corresponding descriptors to another
   /**

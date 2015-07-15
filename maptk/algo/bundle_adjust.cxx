@@ -35,7 +35,7 @@
  */
 
 #include <maptk/algo/bundle_adjust.h>
-#include <vital/algorithm.txx>
+#include <vital/algo/algorithm.txx>
 
 
 /// \cond DoxygenSuppress

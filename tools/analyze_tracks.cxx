@@ -34,18 +34,18 @@
 #include <string>
 #include <vector>
 
-#include <kwiver_util/config/config_block.h>
-#include <kwiver_util/config/config_block_io.h>
+#include <vital/config/config_block.h>
+#include <vital/config/config_block_io.h>
 
 #include <vital/algorithm_plugin_manager.h>
-#include <vital/camera.h>
-#include <vital/camera_map_io.h>
-#include <vital/landmark_map.h>
-#include <vital/landmark_map_io.h>
-#include <vital/camera_io.h>
-#include <vital/image_container.h>
 #include <vital/exceptions.h>
-#include <vital/track_set_io.h>
+#include <vital/io/camera_io.h>
+#include <vital/io/camera_map_io.h>
+#include <vital/io/landmark_map_io.h>
+#include <vital/io/track_set_io.h>
+#include <vital/types/camera.h>
+#include <vital/types/image_container.h>
+#include <vital/types/landmark_map.h>
 #include <vital/vital_types.h>
 
 #include <maptk/projected_track_set.h>
@@ -65,10 +65,10 @@
 namespace bfs = boost::filesystem;
 
 
-static kwiver::config_block_sptr default_config()
+static kwiver::vital::config_block_sptr default_config()
 {
-  kwiver::config_block_sptr config =
-    kwiver::config_block::empty_config( "analyze_tracks_tool" );
+  kwiver::vital::config_block_sptr config =
+    kwiver::vital::config_block::empty_config( "analyze_tracks_tool" );
 
   config->set_value( "track_file", "",
                      "Path to a required input file containing all features tracks "
@@ -97,10 +97,10 @@ static kwiver::config_block_sptr default_config()
 }
 
 
-static bool check_config( kwiver::config_block_sptr config )
+static bool check_config( kwiver::vital::config_block_sptr config )
 {
   if( !config->has_value( "track_file" ) ||
-      !bfs::exists( kwiver::path_t( config->get_value<std::string>( "track_file" ) ) ) )
+      !bfs::exists( kwiver::vital::path_t( config->get_value<std::string>( "track_file" ) ) ) )
   {
     std::cerr << "A valid track file must be specified!" << std::endl;
     return false;
@@ -115,7 +115,7 @@ static bool check_config( kwiver::config_block_sptr config )
   if( config->has_value( "image_list_file" ) &&
       !config->get_value<std::string>( "image_list_file" ).empty() )
   {
-    if( !bfs::exists( kwiver::path_t( config->get_value<std::string>( "image_list_file" ) ) ) )
+    if( !bfs::exists( kwiver::vital::path_t( config->get_value<std::string>( "image_list_file" ) ) ) )
     {
       std::cerr << "Cannot find image list file" << std::endl;
       return false;
@@ -149,10 +149,10 @@ static int maptk_main(int argc, char const* argv[])
   opt_desc.add_options()
     ( "help,h", "output help message and exit" )
     ( "config,c",
-      boost::program_options::value<kwiver::path_t>(),
+      boost::program_options::value<kwiver::vital::path_t>(),
       "Configuration file for the tool." )
     ( "output-config,o",
-      boost::program_options::value<kwiver::path_t>(),
+      boost::program_options::value<kwiver::vital::path_t>(),
       "Output a configuration.This may be seeded with a configuration file from -c/--config." )
     ;
   boost::program_options::variables_map vm;
@@ -186,7 +186,7 @@ static int maptk_main(int argc, char const* argv[])
   namespace bfs = boost::filesystem;
 
   // Set up top level configuration w/ defaults where applicable.
-  kwiver::config_block_sptr config = default_config();
+  kwiver::vital::config_block_sptr config = default_config();
 
   algo::image_io_sptr image_reader;
   algo::analyze_tracks_sptr analyze_tracks;
@@ -195,7 +195,7 @@ static int maptk_main(int argc, char const* argv[])
   // If -c/--config given, read in confgi file, merge in with default just generated
   if( vm.count( "config" ) )
   {
-    config->merge_config( kwiver::read_config_file( vm[ "config" ].as<kwiver::path_t>() ) );
+    config->merge_config( kwiver::vital::read_config_file( vm[ "config" ].as<kwiver::vital::path_t>() ) );
   }
 
   // Load all input images if they are specified
@@ -222,7 +222,7 @@ static int maptk_main(int argc, char const* argv[])
   // Output a config file if specified
   if( vm.count( "output-config" ) )
   {
-    write_config_file( config, vm[ "output-config" ].as<kwiver::path_t>() );
+    write_config_file( config, vm[ "output-config" ].as<kwiver::vital::path_t>() );
 
     if( valid_config )
     {
@@ -277,7 +277,7 @@ static int maptk_main(int argc, char const* argv[])
   // Read and process input images if set
   if( use_images )
   {
-    std::vector<kwiver::path_t> image_paths;
+    std::vector<kwiver::vital::path_t> image_paths;
     std::string image_list_file = config->get_value<std::string>( "image_list_file" );
     std::ifstream ifs( image_list_file.c_str() );
 

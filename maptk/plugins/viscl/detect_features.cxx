@@ -89,12 +89,12 @@ detect_features
 {
 }
 
-/// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
-kwiver::config_block_sptr
+/// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
+kwiver::vital::config_block_sptr
 detect_features
 ::get_configuration() const
 {
-  kwiver::config_block_sptr config = algorithm::get_configuration();
+  kwiver::vital::config_block_sptr config = algorithm::get_configuration();
   config->set_value("max_keypoints", d_->max_kpts, "Maximum number of features to detect on an image.");
   config->set_value("thresh", d_->thresh, "Threshold on the determinant of Hessian for keypoint candidates.");
   config->set_value("sigma", d_->sigma, "Smoothing scale.");
@@ -104,17 +104,17 @@ detect_features
 /// Set this algorithm's properties via a config block
 void
 detect_features
-::set_configuration(kwiver::config_block_sptr config)
+::set_configuration(kwiver::vital::config_block_sptr config)
 {
   d_->max_kpts = config->get_value<unsigned int>("max_keypoints", d_->max_kpts);
   d_->thresh = config->get_value<float>("thresh", d_->thresh);
   d_->sigma = config->get_value<float>("sigma", d_->sigma);
 }
 
-/// Check that the algorithm's configuration kwiver::config_block is valid
+/// Check that the algorithm's configuration kwiver::vital::config_block is valid
 bool
 detect_features
-::check_configuration(kwiver::config_block_sptr config) const
+::check_configuration(kwiver::vital::config_block_sptr config) const
 {
   return true;
 }

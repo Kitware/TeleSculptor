@@ -38,7 +38,7 @@
 
 #include <maptk/config.h>
 
-#include <vital/algorithm.h>
+#include <vital/algo/algorithm.h>
 
 namespace maptk
 {

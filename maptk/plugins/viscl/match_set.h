@@ -31,7 +31,7 @@
 #ifndef MAPTK_PLUGINS_VISCL_MATCH_SET_H_
 #define MAPTK_PLUGINS_VISCL_MATCH_SET_H_
 
-#include <vital/match_set.h>
+#include <vital/types/match_set.h>
 #include <maptk/plugins/viscl/viscl_config.h>
 
 #include <viscl/core/buffer.h>

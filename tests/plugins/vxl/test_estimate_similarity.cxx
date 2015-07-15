@@ -35,9 +35,9 @@
 #include <test_random_point.h>
 
 #include <vital/exceptions.h>
-#include <vital/rotation.h>
-#include <vital/similarity.h>
-#include <vital/vector.h>
+#include <vital/types/rotation.h>
+#include <vital/types/similarity.h>
+#include <vital/types/vector.h>
 
 #include <maptk/plugins/vxl/register_algorithms.h>
 #include <maptk/plugins/vxl/estimate_similarity_transform.h>

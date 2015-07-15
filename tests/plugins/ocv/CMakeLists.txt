@@ -1,7 +1,7 @@
 project(maptk_test_ocv)
 
 set(test_libraries
-  maptk_ocv)
+  maptk_ocv vital vital_apm )
 
 ##############################
 # MAPTK OpenCV tests

@@ -31,7 +31,7 @@
 #ifndef MAPTK_PLUGINS_VISCL_UTILS_H_
 #define MAPTK_PLUGINS_VISCL_UTILS_H_
 
-#include <vital/feature_set.h>
+#include <vital/types/feature_set.h>
 
 
 namespace maptk

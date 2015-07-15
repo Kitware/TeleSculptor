@@ -29,5 +29,5 @@ target_link_libraries(maptk_analyze_tracks
 
 maptk_add_executable(maptk_estimate_homography estimate_homography.cxx)
 target_link_libraries(maptk_estimate_homography
-  PRIVATE             maptk vital_apm
+  PRIVATE             maptk vital vital_apm
   )

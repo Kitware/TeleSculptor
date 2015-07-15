@@ -37,9 +37,9 @@
 #include <utility>
 #include <vector>
 
-#include <vital/algorithm.h>
-#include <vital/feature_set.h>
-#include <vital/descriptor_set.h>
+#include <vital/algo/algorithm.h>
+#include <vital/types/feature_set.h>
+#include <vital/types/descriptor_set.h>
 
 /**
  * \file

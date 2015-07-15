@@ -36,7 +36,7 @@
 
 #include <boost/foreach.hpp>
 
-#include <vital/algorithm.txx>
+#include <vital/algo/algorithm.txx>
 #include <maptk/algo/estimate_similarity_transform.h>
 
 

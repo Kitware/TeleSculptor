@@ -39,9 +39,9 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <vital/algorithm.h>
-#include <vital/image_container.h>
-#include <vital/track_set.h>
+#include <vital/algo/algorithm.h>
+#include <vital/types/image_container.h>
+#include <vital/types/track_set.h>
 
 #include <maptk/algo/detect_features.h>
 #include <maptk/algo/extract_descriptors.h>
@@ -73,7 +73,7 @@ public:
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "core"; }
 
-  /// Get this algorithm's \link maptk::config_block configuration block \endlink
+  /// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
   /**
    * This base virtual function implementation returns an empty configuration
    * block whose name is set to \c this->type_name.
@@ -81,7 +81,7 @@ public:
    * \returns \c config_block containing the configuration for this algorithm
    *          and any nested components.
    */
-  virtual kwiver::config_block_sptr get_configuration() const;
+  virtual kwiver::vital::config_block_sptr get_configuration() const;
 
   /// Set this algorithm's properties via a config block
   /**
@@ -94,7 +94,7 @@ public:
    * \param config  The \c config_block instance containing the configuration
    *                parameters for this algorithm
    */
-  virtual void set_configuration(kwiver::config_block_sptr config);
+  virtual void set_configuration(kwiver::vital::config_block_sptr config);
 
   /// Check that the algorithm's currently configuration is valid
   /**
@@ -106,7 +106,7 @@ public:
    *
    * \returns true if the configuration check passed and false if it didn't.
    */
-  virtual bool check_configuration(kwiver::config_block_sptr config) const;
+  virtual bool check_configuration(kwiver::vital::config_block_sptr config) const;
 
   /// Extend a previous set of tracks using the current frame
   /**

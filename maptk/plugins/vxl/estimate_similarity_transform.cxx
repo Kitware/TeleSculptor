@@ -39,7 +39,7 @@
 #include <sstream>
 
 #include <vital/exceptions/algorithm.h>
-#include <vital/rotation.h>
+#include <vital/types/rotation.h>
 
 #include <vcl_vector.h>
 #include <vnl/vnl_matrix.h>

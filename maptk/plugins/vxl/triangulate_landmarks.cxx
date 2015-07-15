@@ -91,13 +91,13 @@ triangulate_landmarks
 }
 
 
-/// Get this algorithm's \link kwiver::config_block configuration block \endlink
-kwiver::config_block_sptr
+/// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
+kwiver::vital::config_block_sptr
 triangulate_landmarks
 ::get_configuration() const
 {
   // get base config from base class
-  kwiver::config_block_sptr config = maptk::algo::triangulate_landmarks::get_configuration();
+  kwiver::vital::config_block_sptr config = maptk::algo::triangulate_landmarks::get_configuration();
   return config;
 }
 
@@ -105,7 +105,7 @@ triangulate_landmarks
 /// Set this algorithm's properties via a config block
 void
 triangulate_landmarks
-::set_configuration(kwiver::config_block_sptr in_config)
+::set_configuration(kwiver::vital::config_block_sptr in_config)
 {
 }
 
@@ -113,7 +113,7 @@ triangulate_landmarks
 /// Check that the algorithm's currently configuration is valid
 bool
 triangulate_landmarks
-::check_configuration(kwiver::config_block_sptr config) const
+::check_configuration(kwiver::vital::config_block_sptr config) const
 {
   return true;
 }

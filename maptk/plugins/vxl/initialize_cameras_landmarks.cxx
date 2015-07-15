@@ -40,7 +40,7 @@
 #include <boost/foreach.hpp>
 
 #include <vital/exceptions.h>
-#include <vital/eigen_io.h>
+#include <vital/io/eigen_io.h>
 
 #include <maptk/algo/estimate_essential_matrix.h>
 #include <maptk/algo/triangulate_landmarks.h>
@@ -297,13 +297,13 @@ initialize_cameras_landmarks
 }
 
 
-/// Get this algorithm's \link kwiver::config_block configuration block \endlink
-kwiver::config_block_sptr
+/// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
+kwiver::vital::config_block_sptr
 initialize_cameras_landmarks
 ::get_configuration() const
 {
   // get base config from base class
-  kwiver::config_block_sptr config =
+  kwiver::vital::config_block_sptr config =
       maptk::algo::initialize_cameras_landmarks::get_configuration();
 
   const camera_intrinsics_d& K = d_->base_camera.get_intrinsics();
@@ -346,7 +346,7 @@ initialize_cameras_landmarks
 /// Set this algorithm's properties via a config block
 void
 initialize_cameras_landmarks
-::set_configuration(kwiver::config_block_sptr config)
+::set_configuration(kwiver::vital::config_block_sptr config)
 {
   const camera_intrinsics_d& K = d_->base_camera.get_intrinsics();
 
@@ -364,7 +364,7 @@ initialize_cameras_landmarks
   d_->retriangulate_all = config->get_value<bool>("retriangulate_all",
                                                   d_->retriangulate_all);
 
-  kwiver::config_block_sptr bc = config->subblock("base_camera");
+  kwiver::vital::config_block_sptr bc = config->subblock("base_camera");
   camera_intrinsics_d K2(bc->get_value<double>("focal_length",
                                                K.focal_length()),
                          bc->get_value<vector_2d>("principal_point",
@@ -380,7 +380,7 @@ initialize_cameras_landmarks
 /// Check that the algorithm's currently configuration is valid
 bool
 initialize_cameras_landmarks
-::check_configuration(kwiver::config_block_sptr config) const
+::check_configuration(kwiver::vital::config_block_sptr config) const
 {
   return algo::estimate_essential_matrix
              ::check_nested_algo_configuration("essential_mat_estimator",

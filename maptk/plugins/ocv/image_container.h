@@ -38,7 +38,7 @@
 
 #include <opencv2/core/core.hpp>
 
-#include <vital/image_container.h>
+#include <vital/types/image_container.h>
 
 #include <maptk/plugins/ocv/ocv_config.h>
 

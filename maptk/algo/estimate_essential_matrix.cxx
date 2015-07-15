@@ -34,7 +34,7 @@
  */
 
 #include <maptk/algo/estimate_essential_matrix.h>
-#include <vital/algorithm.txx>
+#include <vital/algo/algorithm.txx>
 #include <boost/foreach.hpp>
 
 

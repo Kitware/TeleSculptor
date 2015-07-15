@@ -61,8 +61,8 @@ public:
   virtual std::string impl_name() const { return "viscl"; }
 
   // No configuration for this class yet TODO: eventually descriptor size
-  virtual void set_configuration(kwiver::config_block_sptr /*config*/) { }
-  virtual bool check_configuration(kwiver::config_block_sptr /*config*/) const { return true; }
+  virtual void set_configuration(kwiver::vital::config_block_sptr /*config*/) { }
+  virtual bool check_configuration(kwiver::vital::config_block_sptr /*config*/) const { return true; }
 
   /// Extract from the image a descriptor corresoponding to each feature
   /** \param image_data contains the image data to process

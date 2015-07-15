@@ -37,11 +37,11 @@
 
 #include <vector>
 
-#include <vital/feature_set.h>
-#include <vital/descriptor_set.h>
-#include <vital/match_set.h>
+#include <vital/types/feature_set.h>
+#include <vital/types/descriptor_set.h>
+#include <vital/types/match_set.h>
 
-#include <kwiver_util/logger/logger.h>
+#include <vital/logger/logger.h>
 
 #include <rsdl/rsdl_kd_tree.h>
 #include <vnl/vnl_vector_fixed.h>
@@ -66,7 +66,7 @@ public:
     scale_thresh(2.0),
     angle_thresh(-1.0),
     radius_thresh(200.0),
-    m_logger( kwiver::get_logger( "match_features_constrained" ) )
+    m_logger( kwiver::vital::get_logger( "match_features_constrained" ) )
   {
   }
 
@@ -74,7 +74,7 @@ public:
     scale_thresh(other.scale_thresh),
     angle_thresh(other.angle_thresh),
     radius_thresh(other.radius_thresh),
-    m_logger( kwiver::get_logger( "match_features_constrained" ) )
+    m_logger( kwiver::vital::get_logger( "match_features_constrained" ) )
   {
   }
 
@@ -163,7 +163,7 @@ public:
   double angle_thresh;
   double radius_thresh;
 
-  kwiver::logger_handle_t m_logger;
+  kwiver::vital::logger_handle_t m_logger;
 };
 
 
@@ -190,13 +190,13 @@ match_features_constrained
 }
 
 
-/// Get this algorithm's \link kwiver::config_block configuration block \endlink
-kwiver::config_block_sptr
+/// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
+kwiver::vital::config_block_sptr
 match_features_constrained
 ::get_configuration() const
 {
   // get base config from base class
-  kwiver::config_block_sptr config =
+  kwiver::vital::config_block_sptr config =
       maptk::algo::match_features::get_configuration();
 
   config->set_value("scale_thresh", d_->scale_thresh,
@@ -217,7 +217,7 @@ match_features_constrained
 /// Set this algorithm's properties via a config block
 void
 match_features_constrained
-::set_configuration(kwiver::config_block_sptr config)
+::set_configuration(kwiver::vital::config_block_sptr config)
 {
   d_->scale_thresh = config->get_value<double>("scale_thresh", d_->scale_thresh);
   d_->angle_thresh = config->get_value<double>("angle_thresh", d_->angle_thresh);
@@ -225,10 +225,10 @@ match_features_constrained
 }
 
 
-/// Check that the algorithm's configuration kwiver::config_block is valid
+/// Check that the algorithm's configuration kwiver::vital::config_block is valid
 bool
 match_features_constrained
-::check_configuration(kwiver::config_block_sptr config) const
+::check_configuration(kwiver::vital::config_block_sptr config) const
 {
   double radius_thresh = config->get_value<double>("radius_thresh", d_->radius_thresh);
   if (radius_thresh <= 0.0)

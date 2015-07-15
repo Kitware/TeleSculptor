@@ -141,12 +141,12 @@ draw_tracks
 }
 
 
-/// Get this algorithm's \link kwiver::config_block configuration block \endlink
-kwiver::config_block_sptr
+/// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
+kwiver::vital::config_block_sptr
 draw_tracks
 ::get_configuration() const
 {
-  kwiver::config_block_sptr config = maptk::algo::draw_tracks::get_configuration();
+  kwiver::vital::config_block_sptr config = maptk::algo::draw_tracks::get_configuration();
 
   config->set_value( "draw_track_ids", d_->draw_track_ids,
                      "Draw track ids next to each feature point." );
@@ -185,9 +185,9 @@ draw_tracks
 /// Set this algorithm's properties via a config block
 void
 draw_tracks
-::set_configuration( kwiver::config_block_sptr in_config )
+::set_configuration( kwiver::vital::config_block_sptr in_config )
 {
-  kwiver::config_block_sptr config = this->get_configuration();
+  kwiver::vital::config_block_sptr config = this->get_configuration();
   config->merge_config( in_config );
 
   std::string past_frames_str = config->get_value<std::string>( "past_frames_to_show" );
@@ -226,7 +226,7 @@ draw_tracks
 /// Check that the algorithm's currently configuration is valid
 bool
 draw_tracks
-::check_configuration(kwiver::config_block_sptr config) const
+::check_configuration(kwiver::vital::config_block_sptr config) const
 {
   return true;
 }

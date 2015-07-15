@@ -38,7 +38,7 @@
 
 #include <boost/foreach.hpp>
 
-#include <vital/feature.h>
+#include <vital/types/feature.h>
 #include <maptk/plugins/vxl/camera.h>
 
 #include <vgl/vgl_point_2d.h>
@@ -46,7 +46,8 @@
 
 #include <vpgl/algo/vpgl_em_compute_5_point.h>
 
-using namespace kwiver::vital;;
+using namespace kwiver::vital;
+
 namespace maptk
 {
 
@@ -100,13 +101,13 @@ estimate_essential_matrix
 
 
 
-/// Get this algorithm's \link kwiver::config_block configuration block \endlink
-kwiver::config_block_sptr
+/// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
+kwiver::vital::config_block_sptr
 estimate_essential_matrix
 ::get_configuration() const
 {
   // get base config from base class
-  kwiver::config_block_sptr config =
+  kwiver::vital::config_block_sptr config =
       maptk::algo::estimate_essential_matrix::get_configuration();
 
   config->set_value("verbose", d_->verbose,
@@ -123,7 +124,7 @@ estimate_essential_matrix
 /// Set this algorithm's properties via a config block
 void
 estimate_essential_matrix
-::set_configuration(kwiver::config_block_sptr config)
+::set_configuration(kwiver::vital::config_block_sptr config)
 {
 
   d_->verbose = config->get_value<bool>("verbose",
@@ -136,7 +137,7 @@ estimate_essential_matrix
 /// Check that the algorithm's currently configuration is valid
 bool
 estimate_essential_matrix
-::check_configuration(kwiver::config_block_sptr config) const
+::check_configuration(kwiver::vital::config_block_sptr config) const
 {
   return true;
 }

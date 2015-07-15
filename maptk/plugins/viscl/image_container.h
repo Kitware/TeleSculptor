@@ -31,7 +31,7 @@
 #ifndef MAPTK_PLUGINS_VISCL_IMAGE_CONTAINER_H_
 #define MAPTK_PLUGINS_VISCL_IMAGE_CONTAINER_H_
 
-#include <vital/image_container.h>
+#include <vital/types/image_container.h>
 #include <maptk/plugins/viscl/viscl_config.h>
 
 #include <viscl/core/image.h>

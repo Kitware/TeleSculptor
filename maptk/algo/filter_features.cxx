@@ -37,7 +37,7 @@
 
 
 #include <maptk/algo/filter_features.h>
-#include <vital/algorithm.txx>
+#include <vital/algo/algorithm.txx>
 #include <boost/make_shared.hpp>
 
 namespace maptk

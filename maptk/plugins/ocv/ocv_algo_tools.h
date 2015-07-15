@@ -40,7 +40,7 @@
 #include <string>
 #include <iostream>
 
-#include <kwiver_util/config/config_block.h>
+#include <vital/config/config_block.h>
 #include <vital/exceptions.h>
 #include <vital/vital_types.h>
 
@@ -66,13 +66,13 @@ namespace helper_
 /// Helper method for setting nested OpenCV Algorithm parameters
 MAPTK_OCV_EXPORT
 void set_nested_ocv_algo_configuration_helper(std::string const& name,
-                                              kwiver::config_block_sptr config,
+                                              kwiver::vital::config_block_sptr config,
                                               cv::Ptr<cv::Algorithm> &algo);
 
 /// Helper method for checking nested OpenCV Algorithm configurations
 MAPTK_OCV_EXPORT
 bool check_nested_ocv_algo_configuration_helper(std::string const& name,
-                                                kwiver::config_block_sptr config,
+                                                kwiver::vital::config_block_sptr config,
                                                 cv::Ptr<cv::Algorithm> algo);
 
 /// Templated helper method for creating a new OpenCV algorithm instance.
@@ -148,7 +148,7 @@ cv::Ptr<cv::Algorithm> create_ocv_algo<cv::Algorithm>(std::string const& impl_na
  */
 MAPTK_OCV_EXPORT
 void get_nested_ocv_algo_configuration(std::string const& name,
-                                       kwiver::config_block_sptr config,
+                                       kwiver::vital::config_block_sptr config,
                                        cv::Ptr<cv::Algorithm> algo);
 
 
@@ -165,13 +165,13 @@ void get_nested_ocv_algo_configuration(std::string const& name,
  */
 template <typename algo_t>
 void set_nested_ocv_algo_configuration(std::string const& name,
-                                       kwiver::config_block_sptr config,
+                                       kwiver::vital::config_block_sptr config,
                                        cv::Ptr<algo_t> &algo)
 {
   // check that the config has a type for the nested algo, creating a new
   // instance if the given algo is NULL or not of the same type specified
   // in the config.
-  kwiver::config_block_key_t type_key = name + kwiver::config_block::block_sep + type_token;
+  kwiver::vital::config_block_key_t type_key = name + kwiver::vital::config_block::block_sep + type_token;
   std::string impl_name = config->get_value<std::string>(type_key, "");
   if (impl_name.length() > 0)
   {
@@ -219,11 +219,11 @@ void set_nested_ocv_algo_configuration(std::string const& name,
  */
 template <typename algo_t>
 bool check_nested_ocv_algo_configuration(std::string const& name,
-                                         kwiver::config_block_sptr config)
+                                         kwiver::vital::config_block_sptr config)
 {
   // use default algo type and parameters if there is no type defined in config
   // or if its value is blank
-  kwiver::config_block_key_t type_key = name + kwiver::config_block::block_sep + type_token;
+  kwiver::vital::config_block_key_t type_key = name + kwiver::vital::config_block::block_sep + type_token;
   std::string impl_name = config->get_value<std::string>(type_key, "");
   if (impl_name.length() == 0)
   {

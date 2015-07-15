@@ -42,8 +42,8 @@
 #include <boost/make_shared.hpp>
 
 #include <vital/exceptions/algorithm.h>
-#include <vital/homography.h>
-#include <vital/match_set.h>
+#include <vital/types/homography.h>
+#include <vital/types/match_set.h>
 
 using namespace kwiver::vital;
 
@@ -106,12 +106,12 @@ match_features_homography
 }
 
 
-/// Get this alg's \link maptk::config_block configuration block \endlink
-kwiver::config_block_sptr
+/// Get this alg's \link kwiver::vital::config_block configuration block \endlink
+kwiver::vital::config_block_sptr
 match_features_homography
 ::get_configuration() const
 {
-  kwiver::config_block_sptr config = algorithm::get_configuration();
+  kwiver::vital::config_block_sptr config = algorithm::get_configuration();
   config->set_value("inlier_scale", d_->inlier_scale,
                     "The acceptable error distance (in pixels) between warped "
                     "and measured points to be considered an inlier match.");
@@ -139,11 +139,11 @@ match_features_homography
 
 void
 match_features_homography
-::set_configuration(kwiver::config_block_sptr in_config)
+::set_configuration(kwiver::vital::config_block_sptr in_config)
 {
   // Starting with our generated config_block to ensure that assumed values are present
   // An alternative is to check for key presence before performing a get_value() call.
-  kwiver::config_block_sptr config = this->get_configuration();
+  kwiver::vital::config_block_sptr config = this->get_configuration();
   config->merge_config(in_config);
 
   // Set nested algorithm configurations
@@ -164,7 +164,7 @@ match_features_homography
 
 bool
 match_features_homography
-::check_configuration(kwiver::config_block_sptr config) const
+::check_configuration(kwiver::vital::config_block_sptr config) const
 {
   bool config_valid = true;
   // this algorithm is optional

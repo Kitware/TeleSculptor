@@ -33,7 +33,7 @@
 #include <exception>
 
 #include <maptk/config.h>
-#include <kwiver_util/logger/logger.h>
+#include <vital/logger/logger.h>
 #include <maptk/plugin_interface/algorithm_plugin_interface.h>
 #include <vital/registrar.h>
 
@@ -51,7 +51,7 @@ extern "C"
 MAPTK_EXPORT
 int private_register_algo_impls( kwiver::vital::registrar &reg )
 {
-  kwiver::logger_handle_t m_logger( kwiver::get_logger( "Implementation Registration" ));
+  kwiver::vital::logger_handle_t m_logger( kwiver::vital::get_logger( "Implementation Registration" ));
   try
   {
     LOG_DEBUG( m_logger,

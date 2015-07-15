@@ -31,7 +31,7 @@
 /**
  * \file
  * \brief Tests involving OCV nested algorithms and their parameter
- *        interactions with kwiver::config_block objects.
+ *        interactions with kwiver::vital::config_block objects.
  */
 
 #include <test_common.h>
@@ -70,10 +70,10 @@ main(int argc, char* argv[])
 }
 
 #define print_config(config) \
-  BOOST_FOREACH( kwiver::config_block_key_t key, config->available_values() ) \
+  BOOST_FOREACH( kwiver::vital::config_block_key_t key, config->available_values() ) \
   { \
     std::cerr << "\t" \
-         << key << " = " << config->get_value<kwiver::config_block_key_t>(key) \
+         << key << " = " << config->get_value<kwiver::vital::config_block_key_t>(key) \
          << std::endl; \
   }
 
@@ -118,7 +118,7 @@ IMPLEMENT_TEST(detect_features_args_defaults)
   algo::detect_features_sptr df = algo::detect_features::create("ocv");
 
   cerr << "[] Getting default configuration:" << endl;
-  kwiver::config_block_sptr config = df->get_configuration();
+  kwiver::vital::config_block_sptr config = df->get_configuration();
 
   cerr << "[] First-time get-config:" << endl;
   print_config(config);
@@ -143,7 +143,7 @@ IMPLEMENT_TEST(detect_features_empty_configs)
   // we should pass here, allowing the use of default algorithm type and
   // parameters.
   cerr << "[] Checking empty config" << endl;
-  kwiver::config_block_sptr empty_conf = kwiver::config_block::empty_config();
+  kwiver::vital::config_block_sptr empty_conf = kwiver::vital::config_block::empty_config();
   TEST_EQUAL("empty config check test",
              df->check_configuration(empty_conf),
              true);
@@ -168,7 +168,7 @@ IMPLEMENT_TEST(algo_set_empty_pointer)
   cerr << "--- Testing setting with an empty pointer ---" << endl;
   //
   cv::Ptr<cv::Algorithm> algo_ptr;
-  kwiver::config_block_sptr new_config = kwiver::config_block::empty_config(),
+  kwiver::vital::config_block_sptr new_config = kwiver::vital::config_block::empty_config(),
                     dflt_config = algo::detect_features::create("ocv")->get_configuration();
 
 
@@ -211,7 +211,7 @@ IMPLEMENT_TEST(detect_features_subclass_type_label)
   //
   algo::detect_features_sptr df = algo::detect_features::create("ocv");
   cerr << "[] Creating empty config except for a detector type" << endl;
-  kwiver::config_block_sptr new_config = kwiver::config_block::empty_config();
+  kwiver::vital::config_block_sptr new_config = kwiver::vital::config_block::empty_config();
   new_config->set_value("detector:type", "ORB");
   cerr << "[] pre-set configuration:" << endl;
   print_config(new_config);
@@ -231,7 +231,7 @@ IMPLEMENT_TEST(detect_features_general_type_label)
   //
   algo::detect_features_sptr df = algo::detect_features::create("ocv");
   cerr << "[] Creating empty config except for a detector type" << endl;
-  kwiver::config_block_sptr new_config = kwiver::config_block::empty_config();
+  kwiver::vital::config_block_sptr new_config = kwiver::vital::config_block::empty_config();
   new_config->set_value("detector:type", "Feature2D.ORB");
   cerr << "[] pre-set configuration:" << endl;
   print_config(new_config);
@@ -248,7 +248,7 @@ IMPLEMENT_TEST(extract_descriptors_args_defaults)
   algo::extract_descriptors_sptr ed = algo::extract_descriptors::create("ocv");
 
   cerr << "[] Getting default configuration:" << endl;
-  kwiver::config_block_sptr config = ed->get_configuration();
+  kwiver::vital::config_block_sptr config = ed->get_configuration();
 
   cerr << "[] First-time get-config:" << endl;
   print_config(config);
@@ -273,7 +273,7 @@ IMPLEMENT_TEST(extract_descriptors_empty_configs)
   // we should pass here, allowing the use of default algorithm type and
   // parameters.
   cerr << "[] Checking empty config" << endl;
-  kwiver::config_block_sptr empty_conf = kwiver::config_block::empty_config();
+  kwiver::vital::config_block_sptr empty_conf = kwiver::vital::config_block::empty_config();
   TEST_EQUAL("empty config check test",
              ed->check_configuration(empty_conf),
              true);
@@ -297,7 +297,7 @@ IMPLEMENT_TEST(match_features_args_defaults)
   algo::match_features_sptr mf = algo::match_features::create("ocv");
 
   cerr << "[] Getting default configuration:" << endl;
-  kwiver::config_block_sptr config = mf->get_configuration();
+  kwiver::vital::config_block_sptr config = mf->get_configuration();
 
   cerr << "[] First-time get-config:" << endl;
   print_config(config);
@@ -322,7 +322,7 @@ IMPLEMENT_TEST(match_features_empty_configs)
   // we should pass here, allowing the use of default algorithm type and
   // parameters.
   cerr << "[] Checking empty config" << endl;
-  kwiver::config_block_sptr empty_conf = kwiver::config_block::empty_config();
+  kwiver::vital::config_block_sptr empty_conf = kwiver::vital::config_block::empty_config();
   TEST_EQUAL("empty config check test",
              mf->check_configuration(empty_conf),
              true);

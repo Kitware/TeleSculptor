@@ -39,13 +39,13 @@
 #include <string>
 #include <vector>
 
-#include <kwiver_util/config/config_block.h>
-#include <kwiver_util/config/config_block_io.h>
-#include <kwiver_util/logger/logger.h>
+#include <vital/config/config_block.h>
+#include <vital/config/config_block_io.h>
+#include <vital/logger/logger.h>
 
 #include <vital/algorithm_plugin_manager.h>
 #include <vital/exceptions.h>
-#include <vital/track_set_io.h>
+#include <vital/io/track_set_io.h>
 #include <vital/vital_types.h>
 
 #include <maptk/algo/image_io.h>
@@ -65,11 +65,11 @@
 namespace bfs = boost::filesystem;
 
 
-static kwiver::logger_handle_t main_logger( kwiver::get_logger( "track_features_tool" ) );
+static kwiver::vital::logger_handle_t main_logger( kwiver::vital::get_logger( "track_features_tool" ) );
 
-static kwiver::config_block_sptr default_config()
+static kwiver::vital::config_block_sptr default_config()
 {
-  kwiver::config_block_sptr config = kwiver::config_block::empty_config("feature_tracker_tool");
+  kwiver::vital::config_block_sptr config = kwiver::vital::config_block::empty_config("feature_tracker_tool");
 
   config->set_value("image_list_file", "",
                     "Path to an input file containing new-line separated paths "
@@ -113,7 +113,7 @@ static kwiver::config_block_sptr default_config()
 }
 
 
-static bool check_config(kwiver::config_block_sptr config)
+static bool check_config(kwiver::vital::config_block_sptr config)
 {
   bool config_valid = true;
 
@@ -218,10 +218,10 @@ static kwiver::vital::image::byte invert_mask_pixel( kwiver::vital::image::byte 
 #define print_config(config) \
   do \
   { \
-    BOOST_FOREACH( kwiver::config_block_key_t key, config->available_values() ) \
+    BOOST_FOREACH( kwiver::vital::config_block_key_t key, config->available_values() ) \
     { \
       std::cerr << "\t" \
-           << key << " = " << config->get_value<kwiver::config_block_key_t>(key) \
+           << key << " = " << config->get_value<kwiver::vital::config_block_key_t>(key) \
            << std::endl; \
     } \
   } while (false)
@@ -275,7 +275,7 @@ static int maptk_main(int argc, char const* argv[])
   namespace bfs = boost::filesystem;
 
   // Set up top level configuration w/ defaults where applicable.
-  kwiver::config_block_sptr config = default_config();
+  kwiver::vital::config_block_sptr config = default_config();
   algo::track_features_sptr feature_tracker;
   algo::image_io_sptr image_reader;
   algo::convert_image_sptr image_converter;
@@ -285,7 +285,7 @@ static int maptk_main(int argc, char const* argv[])
   if(vm.count("config"))
   {
     //std::cerr << "[DEBUG] Given config file: " << vm["config"].as<kwiver::vital::path_t>() << std::endl;
-    config->merge_config(kwiver::read_config_file(vm["config"].as<kwiver::vital::path_t>()));
+    config->merge_config(kwiver::vital::read_config_file(vm["config"].as<kwiver::vital::path_t>()));
   }
 
   //std::cerr << "[DEBUG] Config BEFORE set:" << std::endl;

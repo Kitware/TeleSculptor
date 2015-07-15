@@ -39,16 +39,16 @@
 #include <string>
 #include <vector>
 
-#include <kwiver_util/config/config_block.h>
-#include <kwiver_util/config/config_block_io.h>
+#include <vital/config/config_block.h>
+#include <vital/config/config_block_io.h>
 
-#include <vital/camera_io.h>
-#include <vital/eigen_io.h>
+#include <vital/io/camera_io.h>
+#include <vital/io/eigen_io.h>
 #include <vital/exceptions.h>
-#include <vital/ins_data_io.h>
 #include <vital/algorithm_plugin_manager.h>
 #include <vital/vital_types.h>
 
+#include <maptk/ins_data_io.h>
 #include <maptk/local_geo_cs.h>
 
 #include <boost/filesystem.hpp>
@@ -80,10 +80,10 @@ void usage(int const& argc, char const* argv[],
 
 
 // return a default configuration object
-kwiver::config_block_sptr
+kwiver::vital::config_block_sptr
 default_config()
 {
-  kwiver::config_block_sptr config = kwiver::config_block::empty_config();
+  kwiver::vital::config_block_sptr config = kwiver::vital::config_block::empty_config();
 
   // general options
   config->set_value("input", "",
@@ -128,7 +128,7 @@ default_config()
 
 /// Check configuration options
 bool
-check_config(kwiver::config_block_sptr config)
+check_config(kwiver::vital::config_block_sptr config)
 {
   bool config_valid = true;
 
@@ -180,7 +180,7 @@ check_config(kwiver::config_block_sptr config)
 
 /// create a base camera instance from config options
 kwiver::vital::camera_d
-base_camera_from_config(kwiver::config_block_sptr config)
+base_camera_from_config(kwiver::vital::config_block_sptr config)
 {
   kwiver::vital::camera_intrinsics_d K(config->get_value<double>("focal_length"),
                                        config->get_value<kwiver::vital::vector_2d>("principal_point"),
@@ -191,7 +191,7 @@ base_camera_from_config(kwiver::config_block_sptr config)
 
 
 /// Convert a INS data to a camera
-bool convert_ins2camera(const kwiver::vital::ins_data& ins,
+bool convert_ins2camera(const maptk::ins_data& ins,
                         maptk::local_geo_cs& cs,
                         kwiver::vital::camera_d& cam,
                         kwiver::vital::rotation_d const& ins_rot_offset = kwiver::vital::rotation_d())
@@ -215,8 +215,8 @@ bool convert_pos2krtd(const kwiver::vital::path_t& pos_filename,
                       kwiver::vital::camera_d base_camera,
                       kwiver::vital::rotation_d const& ins_rot_offset = kwiver::vital::rotation_d())
 {
-  kwiver::vital::ins_data ins;
-  ins = kwiver::vital::read_pos_file(pos_filename);
+  maptk::ins_data ins;
+  ins = maptk::read_pos_file(pos_filename);
   if ( !convert_ins2camera(ins, cs, base_camera, ins_rot_offset) )
   {
     return false;
@@ -234,7 +234,7 @@ bool convert_pos2krtd_dir(const kwiver::vital::path_t& pos_dir,
                           kwiver::vital::rotation_d const& ins_rot_offset = kwiver::vital::rotation_d())
 {
   bfs::directory_iterator it(pos_dir), eod;
-  std::map<kwiver::vital::frame_id_t, kwiver::vital::ins_data> ins_map;
+  std::map<kwiver::vital::frame_id_t, maptk::ins_data> ins_map;
   std::vector<std::string> krtd_filenames;
 
   std::cerr << "Loading POS files" << std::endl;
@@ -242,7 +242,7 @@ bool convert_pos2krtd_dir(const kwiver::vital::path_t& pos_dir,
   {
     try
     {
-      kwiver::vital::ins_data ins = kwiver::vital::read_pos_file(p.string());
+      maptk::ins_data ins = maptk::read_pos_file(p.string());
 
       kwiver::vital::path_t krtd_filename = krtd_dir / (basename(p) + ".krtd");
       //std::cerr << "Loading " << p << std::endl;
@@ -326,11 +326,11 @@ static int maptk_main(int argc, char const* argv[])
   //
   // Initialize from configuration
   //
-  kwiver::config_block_sptr config = default_config();
+  kwiver::vital::config_block_sptr config = default_config();
 
   if (vm.count("config"))
   {
-    config->merge_config(kwiver::read_config_file(vm["config"].as<kwiver::vital::path_t>()));
+    config->merge_config(kwiver::vital::read_config_file(vm["config"].as<kwiver::vital::path_t>()));
   }
 
   bool config_is_valid = check_config(config);
@@ -338,7 +338,7 @@ static int maptk_main(int argc, char const* argv[])
   if (vm.count("output-config"))
   {
     kwiver::vital::path_t output_path = vm["output-config"].as<kwiver::vital::path_t>();
-    kwiver::write_config_file(config, output_path);
+    kwiver::vital::write_config_file(config, output_path);
 
     if (config_is_valid)
     {

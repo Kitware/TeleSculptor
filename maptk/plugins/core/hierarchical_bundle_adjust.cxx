@@ -50,7 +50,7 @@
 #include <maptk/algo/triangulate_landmarks.h>
 #include <maptk/metrics.h>
 
-#include <vital/camera.h>
+#include <vital/types/camera.h>
 #include <vital/exceptions.h>
 #include <vital/vital_types.h>
 
@@ -158,11 +158,11 @@ hierarchical_bundle_adjust
 
 
 /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
-kwiver::config_block_sptr
+  kwiver::vital::config_block_sptr
 hierarchical_bundle_adjust
 ::get_configuration() const
 {
-  kwiver::config_block_sptr config = maptk::algo::bundle_adjust::get_configuration();
+  kwiver::vital::config_block_sptr config = maptk::algo::bundle_adjust::get_configuration();
 
   config->set_value("initial_sub_sample", d_->initial_sub_sample,
                     "Sub-sample the given cameras by this factor. Gaps will "
@@ -195,7 +195,7 @@ hierarchical_bundle_adjust
 /// Set this algorithm's properties via a config block
 void
 hierarchical_bundle_adjust
-::set_configuration(kwiver::config_block_sptr config)
+::set_configuration(kwiver::vital::config_block_sptr config)
 {
   d_->initial_sub_sample = config->get_value<unsigned int>("initial_sub_sample", d_->initial_sub_sample);
   d_->interpolation_rate = config->get_value<unsigned int>("interpolation_rate", d_->interpolation_rate);
@@ -213,10 +213,10 @@ hierarchical_bundle_adjust
 }
 
 
-/// Check that the algorithm's configuration kwiver::config_block is valid
+/// Check that the algorithm's configuration kwiver::vital::config_block is valid
 bool
 hierarchical_bundle_adjust
-::check_configuration(kwiver::config_block_sptr config) const
+::check_configuration(kwiver::vital::config_block_sptr config) const
 {
   bool valid = true;
 

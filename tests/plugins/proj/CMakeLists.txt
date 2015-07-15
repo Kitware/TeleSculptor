@@ -1,7 +1,7 @@
 project(maptk_test_proj)
 
 set(test_libraries
-  maptk_proj
+  maptk_proj vital vital_apm
   )
 
 #####################

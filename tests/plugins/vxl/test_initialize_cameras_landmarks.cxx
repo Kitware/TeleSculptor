@@ -32,8 +32,8 @@
 #include <test_math.h>
 #include <test_scene.h>
 
-#include <vital/similarity.h>
-#include <vital/transform.h>
+#include <vital/types/similarity.h>
+#include <vital/types/transform.h>
 
 #include <maptk/projected_track_set.h>
 #include <maptk/metrics.h>
@@ -79,7 +79,7 @@ void configure_algo(maptk::vxl::initialize_cameras_landmarks& algo,
                     const kwiver::vital::camera_intrinsics_d& K)
 {
   using namespace maptk;
-  kwiver::config_block_sptr cfg = algo.get_configuration();
+  kwiver::vital::config_block_sptr cfg = algo.get_configuration();
   cfg->set_value("verbose", "true");
   cfg->set_value("base_camera:focal_length", K.focal_length());
   cfg->set_value("base_camera:principal_point", K.principal_point());

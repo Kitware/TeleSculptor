@@ -37,12 +37,12 @@
 #include <string>
 #include <vector>
 
-#include <kwiver_util/config/config_block.h>
-#include <kwiver_util/config/config_block_io.h>
-#include <kwiver_util/logger/logger.h>
+#include <vital/config/config_block.h>
+#include <vital/config/config_block_io.h>
+#include <vital/logger/logger.h>
 
 #include <vital/algorithm_plugin_manager.h>
-#include <vital/image_container.h>
+#include <vital/types/image_container.h>
 #include <vital/exceptions.h>
 #include <vital/vital_types.h>
 
@@ -64,7 +64,7 @@ namespace bfs = boost::filesystem;
 namespace bpo = boost::program_options;
 
 
-static kwiver::logger_handle_t main_logger( kwiver::get_logger( "estimate_homography" ) );
+static kwiver::vital::logger_handle_t main_logger( kwiver::vital::get_logger( "estimate_homography" ) );
 
 static void print_usage(std::string const &prog_name,
                         bpo::options_description const &opt_desc,
@@ -93,9 +93,9 @@ static void print_usage(std::string const &prog_name,
   call(estimate_homography, homog_estimator)
 
 
-static kwiver::config_block_sptr default_config()
+static kwiver::vital::config_block_sptr default_config()
 {
-  kwiver::config_block_sptr config = kwiver::config_block::empty_config("homography_estimation_tool");
+  kwiver::vital::config_block_sptr config = kwiver::vital::config_block::empty_config("homography_estimation_tool");
 
   // Default algorithm types
   config->set_value("image_reader:type", "vxl");
@@ -126,7 +126,7 @@ static kwiver::config_block_sptr default_config()
 }
 
 
-static bool check_config(kwiver::config_block_sptr config)
+static bool check_config(kwiver::vital::config_block_sptr config)
 {
   bool config_valid = true;
 
@@ -249,7 +249,7 @@ static int maptk_main(int argc, char const* argv[])
 
   namespace algo = maptk::algo;
 
-  kwiver::config_block_sptr config = default_config();
+  kwiver::vital::config_block_sptr config = default_config();
 
   // Define algorithm variables.
 #define define_algo(type, name) \
@@ -262,7 +262,7 @@ static int maptk_main(int argc, char const* argv[])
   // If -c/--config given, read in confg file, merge onto default just generated
   if(vm.count("config"))
   {
-    config->merge_config(kwiver::read_config_file(vm["config"].as<kwiver::vital::path_t>()));
+    config->merge_config(kwiver::vital::read_config_file(vm["config"].as<kwiver::vital::path_t>()));
   }
 
   // Set current configuration to algorithms and extract refined configuration.

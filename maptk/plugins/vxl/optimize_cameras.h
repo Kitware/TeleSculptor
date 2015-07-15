@@ -38,7 +38,7 @@
 
 #include <string>
 
-#include <vital/algorithm.h>
+#include <vital/algo/algorithm.h>
 #include <maptk/algo/optimize_cameras.h>
 #include <maptk/plugins/vxl/vxl_config.h>
 
@@ -57,8 +57,8 @@ public:
   virtual std::string impl_name() const { return "vxl"; }
 
   /// \cond DoxygenSuppress
-  virtual void set_configuration(kwiver::config_block_sptr /*config*/) { }
-  virtual bool check_configuration(kwiver::config_block_sptr /*config*/) const { return true; }
+  virtual void set_configuration(kwiver::vital::config_block_sptr /*config*/) { }
+  virtual bool check_configuration(kwiver::vital::config_block_sptr /*config*/) const { return true; }
   /// \endcond
 
   /// Optimize camera parameters given sets of landmarks and tracks

@@ -60,8 +60,8 @@ public:
 
   // No configuration for this class yet
   /// \cond DoxygenSuppress
-  virtual void set_configuration(kwiver::config_block_sptr /*config*/) { }
-  virtual bool check_configuration(kwiver::config_block_sptr /*config*/) const { return true; }
+  virtual void set_configuration(kwiver::vital::config_block_sptr /*config*/) { }
+  virtual bool check_configuration(kwiver::vital::config_block_sptr /*config*/) const { return true; }
   /// \endcond
 
   /// Convert UTM coordinate into latitude and longitude.

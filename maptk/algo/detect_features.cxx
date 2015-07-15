@@ -34,7 +34,7 @@
  */
 
 #include <maptk/algo/detect_features.h>
-#include <vital/algorithm.txx>
+#include <vital/algo/algorithm.txx>
 
 /// \cond DoxygenSuppress
 INSTANTIATE_ALGORITHM_DEF(maptk::algo::detect_features);

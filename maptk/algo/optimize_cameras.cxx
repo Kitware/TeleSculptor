@@ -35,7 +35,7 @@
  *        optimize_cameras \endlink
  */
 
-#include <vital/algorithm.txx>
+#include <vital/algo/algorithm.txx>
 #include <maptk/algo/optimize_cameras.h>
 
 

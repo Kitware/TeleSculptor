@@ -38,7 +38,7 @@
 
 #include <map>
 
-#include <vital/camera_map.h>
+#include <vital/types/camera_map.h>
 #include <maptk/plugins/vxl/vxl_config.h>
 
 #include <vpgl/vpgl_perspective_camera.h>

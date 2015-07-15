@@ -36,7 +36,7 @@
 #ifndef MAPTK_PLUGINS_VXL_CAMERA_H_
 #define MAPTK_PLUGINS_VXL_CAMERA_H_
 
-#include <vital/camera.h>
+#include <vital/types/camera.h>
 #include <maptk/plugins/vxl/vxl_config.h>
 
 #include <vpgl/vpgl_perspective_camera.h>

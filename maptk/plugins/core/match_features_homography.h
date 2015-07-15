@@ -41,7 +41,7 @@
 
 #include <maptk/algo/estimate_homography.h>
 #include <maptk/algo/match_features.h>
-#include <kwiver_util/config/config_block.h>
+#include <vital/config/config_block.h>
 
 #include <maptk/plugins/core/plugin_core_config.h>
 
@@ -92,12 +92,12 @@ public:
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "homography_guided"; }
 
-  /// Get this alg's \link maptk::config_block configuration block \endlink
-  virtual kwiver::config_block_sptr get_configuration() const;
+  /// Get this alg's \link kwiver::vital::config_block configuration block \endlink
+  virtual kwiver::vital::config_block_sptr get_configuration() const;
   /// Set this algo's properties via a config block
-  virtual void set_configuration(kwiver::config_block_sptr config);
+  virtual void set_configuration(kwiver::vital::config_block_sptr config);
   /// Check that the algorithm's currently configuration is valid
-  virtual bool check_configuration(kwiver::config_block_sptr config) const;
+  virtual bool check_configuration(kwiver::vital::config_block_sptr config) const;
 
   /// Match one set of features and corresponding descriptors to another
   /**

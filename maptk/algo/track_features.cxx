@@ -33,7 +33,7 @@
  * \brief track_feature algorithm instantiation
  */
 
-#include <vital/algorithm.txx>
+#include <vital/algo/algorithm.txx>
 #include <maptk/algo/track_features.h>
 
 /// \cond DoxygenSuppress

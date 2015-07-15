@@ -42,10 +42,10 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <vital/algorithm.h>
-#include <vital/track_set.h>
-#include <vital/image_container.h>
-#include <vital/homography_f2f.h>
+#include <vital/algo/algorithm.h>
+#include <vital/types/track_set.h>
+#include <vital/types/image_container.h>
+#include <vital/types/homography_f2f.h>
 
 namespace maptk
 {

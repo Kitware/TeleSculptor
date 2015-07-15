@@ -37,9 +37,9 @@
 #ifndef MAPTK_PLUGINS_CORE_HIERARCHICAL_BUNDLE_ADJUST_H_
 #define MAPTK_PLUGINS_CORE_HIERARCHICAL_BUNDLE_ADJUST_H_
 
-#include <vital/algorithm.h>
+#include <vital/algo/algorithm.h>
 #include <maptk/algo/bundle_adjust.h>
-#include <kwiver_util/config/config_block.h>
+#include <vital/config/config_block.h>
 
 #include <boost/scoped_ptr.hpp>
 
@@ -69,11 +69,11 @@ public:
   virtual std::string impl_name() const { return "hierarchical"; }
 
   /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
-  virtual kwiver::config_block_sptr get_configuration() const;
+  virtual kwiver::vital::config_block_sptr get_configuration() const;
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(kwiver::config_block_sptr config);
-  /// Check that the algorithm's configuration kwiver::config_block is valid
-  virtual bool check_configuration(kwiver::config_block_sptr config) const;
+  virtual void set_configuration(kwiver::vital::config_block_sptr config);
+  /// Check that the algorithm's configuration kwiver::vital::config_block is valid
+  virtual bool check_configuration(kwiver::vital::config_block_sptr config) const;
 
   /// Optimize the camera and landmark parameters given a set of tracks
   virtual void optimize(kwiver::vital::camera_map_sptr & cameras,

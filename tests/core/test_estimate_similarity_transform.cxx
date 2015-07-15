@@ -32,16 +32,16 @@
 
 #include <vector>
 
-#include <kwiver_util/config/config_block.h>
+#include <vital/config/config_block.h>
 
-#include <vital/algorithm.h>
-#include <vital/camera.h>
-#include <vital/camera_map.h>
-#include <vital/landmark.h>
-#include <vital/landmark_map.h>
-#include <vital/similarity.h>
+#include <vital/algo/algorithm.h>
+#include <vital/types/camera.h>
+#include <vital/types/camera_map.h>
+#include <vital/types/landmark.h>
+#include <vital/types/landmark_map.h>
+#include <vital/types/similarity.h>
+#include <vital/types/vector.h>
 #include <vital/vital_types.h>
-#include <vital/vector.h>
 
 #include <maptk/algo/estimate_similarity_transform.h>
 
@@ -70,8 +70,8 @@ public:
 
   std::string impl_name() const { return "dummy_est"; }
 
-  void set_configuration(kwiver::config_block_sptr config) {}
-  bool check_configuration(kwiver::config_block_sptr config) const {return true;}
+  void set_configuration(kwiver::vital::config_block_sptr config) {}
+  bool check_configuration(kwiver::vital::config_block_sptr config) const {return true;}
 
   kwiver::vital::similarity_d
   estimate_transform(std::vector<kwiver::vital::vector_3d> const& from,

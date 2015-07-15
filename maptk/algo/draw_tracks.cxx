@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <vital/algorithm.txx>
+#include <vital/algo/algorithm.txx>
 #include <maptk/algo/draw_tracks.h>
 
 INSTANTIATE_ALGORITHM_DEF(maptk::algo::draw_tracks);

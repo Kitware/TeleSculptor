@@ -34,7 +34,7 @@
  */
 
 #include <maptk/algo/estimate_homography.h>
-#include <vital/algorithm.txx>
+#include <vital/algo/algorithm.txx>
 #include <boost/foreach.hpp>
 
 /// \cond DoxygenSuppress

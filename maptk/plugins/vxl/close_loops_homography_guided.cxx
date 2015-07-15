@@ -195,12 +195,12 @@ close_loops_homography_guided
 }
 
 
-kwiver::config_block_sptr
+kwiver::vital::config_block_sptr
 close_loops_homography_guided
 ::get_configuration() const
 {
   // get base config from base class
-  kwiver::config_block_sptr config = algorithm::get_configuration();
+  kwiver::vital::config_block_sptr config = algorithm::get_configuration();
 
   // Sub-algorithm implementation name + sub_config block
   // - Homography estimator algorithm
@@ -227,11 +227,11 @@ close_loops_homography_guided
 
 void
 close_loops_homography_guided
-::set_configuration( kwiver::config_block_sptr in_config )
+::set_configuration( kwiver::vital::config_block_sptr in_config )
 {
-  // Starting with our generated kwiver::config_block to ensure that assumed values are present
+  // Starting with our generated kwiver::vital::config_block to ensure that assumed values are present
   // An alternative is to check for key presence before performing a get_value() call.
-  kwiver::config_block_sptr config = this->get_configuration();
+  kwiver::vital::config_block_sptr config = this->get_configuration();
   config->merge_config( in_config );
 
   // Setting nested algorithm instances via setter methods instead of directly
@@ -264,7 +264,7 @@ close_loops_homography_guided
 
 bool
 close_loops_homography_guided
-::check_configuration( kwiver::config_block_sptr config ) const
+::check_configuration( kwiver::vital::config_block_sptr config ) const
 {
   return
   (

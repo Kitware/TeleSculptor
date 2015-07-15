@@ -38,7 +38,7 @@
 
 #include <opencv2/features2d/features2d.hpp>
 
-#include <vital/feature_set.h>
+#include <vital/types/feature_set.h>
 
 #include <maptk/plugins/ocv/ocv_config.h>
 

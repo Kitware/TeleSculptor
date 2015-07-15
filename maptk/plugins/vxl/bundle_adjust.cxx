@@ -42,7 +42,7 @@
 #include <boost/timer/timer.hpp>
 
 #include <maptk/plugins/vxl/camera_map.h>
-#include <vital/eigen_io.h>
+#include <vital/io/eigen_io.h>
 
 #include <vpgl/algo/vpgl_bundle_adjust.h>
 
@@ -125,13 +125,13 @@ bundle_adjust
 }
 
 
-/// Get this algorithm's \link kwiver::config_block configuration block \endlink
-kwiver::config_block_sptr
+/// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
+kwiver::vital::config_block_sptr
 bundle_adjust
 ::get_configuration() const
 {
   // get base config from base class
-  kwiver::config_block_sptr config = maptk::algo::bundle_adjust::get_configuration();
+  kwiver::vital::config_block_sptr config = maptk::algo::bundle_adjust::get_configuration();
   config->set_value("verbose", d_->verbose,
                     "If true, write status messages to the terminal showing "
                     "optimization progress at each iteration");
@@ -165,11 +165,11 @@ bundle_adjust
 /// Set this algorithm's properties via a config block
 void
 bundle_adjust
-::set_configuration(kwiver::config_block_sptr in_config)
+::set_configuration(kwiver::vital::config_block_sptr in_config)
 {
-  // Starting with our generated kwiver::config_block to ensure that assumed values are present
+  // Starting with our generated kwiver::vital::config_block to ensure that assumed values are present
   // An alternative is to check for key presence before performing a get_value() call.
-  kwiver::config_block_sptr config = this->get_configuration();
+  kwiver::vital::config_block_sptr config = this->get_configuration();
   config->merge_config(in_config);
 
   d_->verbose = config->get_value<bool>("verbose",
@@ -209,7 +209,7 @@ bundle_adjust
 /// Check that the algorithm's currently configuration is valid
 bool
 bundle_adjust
-::check_configuration(kwiver::config_block_sptr config) const
+::check_configuration(kwiver::vital::config_block_sptr config) const
 {
   return true;
 }

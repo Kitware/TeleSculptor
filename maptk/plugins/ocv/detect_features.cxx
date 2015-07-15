@@ -111,13 +111,13 @@ detect_features
 }
 
 
-/// Get this algorithm's \link kwiver::config_block configuration block \endlink
-kwiver::config_block_sptr
+/// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
+kwiver::vital::config_block_sptr
 detect_features
 ::get_configuration() const
 {
   // base configuration block
-  kwiver::config_block_sptr config = algorithm::get_configuration();
+  kwiver::vital::config_block_sptr config = algorithm::get_configuration();
 
   get_nested_ocv_algo_configuration("detector", config, d_->detector);
 
@@ -128,17 +128,17 @@ detect_features
 /// Set this algorithm's properties via a config block
 void
 detect_features
-::set_configuration(kwiver::config_block_sptr config)
+::set_configuration(kwiver::vital::config_block_sptr config)
 {
   set_nested_ocv_algo_configuration(
       "detector", config, d_->detector);
 }
 
 
-/// Check that the algorithm's configuration kwiver::config_block is valid
+/// Check that the algorithm's configuration kwiver::vital::config_block is valid
 bool
 detect_features
-::check_configuration(kwiver::config_block_sptr config) const
+::check_configuration(kwiver::vital::config_block_sptr config) const
 {
   bool nested_ok =
     check_nested_ocv_algo_configuration<cv::FeatureDetector>(

@@ -36,7 +36,7 @@
 #ifndef MAPTK_PLUGINS_OCV_DESCRIPTOR_SET_H_
 #define MAPTK_PLUGINS_OCV_DESCRIPTOR_SET_H_
 
-#include <vital/descriptor_set.h>
+#include <vital/types/descriptor_set.h>
 
 #include <maptk/plugins/ocv/ocv_config.h>
 

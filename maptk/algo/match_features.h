@@ -38,10 +38,10 @@
 
 #include <maptk/config.h>
 
-#include <vital/algorithm.h>
-#include <vital/feature_set.h>
-#include <vital/descriptor_set.h>
-#include <vital/match_set.h>
+#include <vital/algo/algorithm.h>
+#include <vital/types/feature_set.h>
+#include <vital/types/descriptor_set.h>
+#include <vital/types/match_set.h>
 #include <boost/shared_ptr.hpp>
 
 namespace maptk

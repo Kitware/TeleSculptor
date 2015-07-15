@@ -37,8 +37,8 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <vital/algorithm.h>
-#include <vital/image_container.h>
+#include <vital/algo/algorithm.h>
+#include <vital/types/image_container.h>
 
 
 namespace maptk
@@ -56,9 +56,9 @@ public:
   static std::string static_type_name() { return "convert_image"; }
 
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(kwiver::config_block_sptr config);
+  virtual void set_configuration(kwiver::vital::config_block_sptr config);
   /// Check that the algorithm's currently configuration is valid
-  virtual bool check_configuration(kwiver::config_block_sptr config) const;
+  virtual bool check_configuration(kwiver::vital::config_block_sptr config) const;
 
   /// Convert image base type
   virtual kwiver::vital::image_container_sptr convert(kwiver::vital::image_container_sptr img) const = 0;

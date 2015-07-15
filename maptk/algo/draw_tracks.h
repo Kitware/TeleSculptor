@@ -34,9 +34,9 @@
 #include <maptk/config.h>
 #include <boost/shared_ptr.hpp>
 
-#include <vital/algorithm.h>
-#include <vital/image_container.h>
-#include <vital/track_set.h>
+#include <vital/algo/algorithm.h>
+#include <vital/types/image_container.h>
+#include <vital/types/track_set.h>
 
 #include <ostream>
 

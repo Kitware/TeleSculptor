@@ -35,7 +35,7 @@
 
 #include "geo_reference_points_io.h"
 #include <vital/exceptions.h>
-#include <vital/eigen_io.h>
+#include <vital/io/eigen_io.h>
 
 #include <fstream>
 #include <iomanip>

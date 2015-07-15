@@ -36,7 +36,7 @@
  */
 
 #include <maptk/algo/triangulate_landmarks.h>
-#include <vital/algorithm.txx>
+#include <vital/algo/algorithm.txx>
 
 
 /// \cond DoxygenSuppress

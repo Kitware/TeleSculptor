@@ -88,12 +88,12 @@ match_features
 {
 }
 
-/// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
-kwiver::config_block_sptr
+/// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
+kwiver::vital::config_block_sptr
 match_features
 ::get_configuration() const
 {
-  kwiver::config_block_sptr config = algorithm::get_configuration();
+  kwiver::vital::config_block_sptr config = algorithm::get_configuration();
   config->set_value("search_box_radius", d_->search_radius,
                     "Maximum pixel radius to search for kpt match.");
   return config;
@@ -102,17 +102,17 @@ match_features
 /// Set this algorithm's properties via a config block
 void
 match_features
-::set_configuration(kwiver::config_block_sptr config)
+::set_configuration(kwiver::vital::config_block_sptr config)
 {
   unsigned int sbr = config->get_value<unsigned int>("search_box_radius",
                                                      d_->search_radius);
   d_->matcher.set_search_box_radius(sbr);
 }
 
-/// Check that the algorithm's configuration kwiver::config_block is valid
+/// Check that the algorithm's configuration kwiver::vital::config_block is valid
 bool
 match_features
-::check_configuration(kwiver::config_block_sptr config) const
+::check_configuration(kwiver::vital::config_block_sptr config) const
 {
   return true;
 }

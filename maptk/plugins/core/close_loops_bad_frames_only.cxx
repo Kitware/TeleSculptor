@@ -48,7 +48,7 @@
 #include <boost/foreach.hpp>
 #include <boost/iterator/counting_iterator.hpp>
 
-#include <vital/algorithm.h>
+#include <vital/algo/algorithm.h>
 #include <vital/exceptions/algorithm.h>
 
 
@@ -91,13 +91,13 @@ close_loops_bad_frames_only
 }
 
 
-/// Get this alg's \link maptk::config_block configuration block \endlink
-kwiver::config_block_sptr
+/// Get this alg's \link kwiver::vital::config_block configuration block \endlink
+  kwiver::vital::config_block_sptr
 close_loops_bad_frames_only
 ::get_configuration() const
 {
   // get base config from base class
-  kwiver::config_block_sptr config = algorithm::get_configuration();
+  kwiver::vital::config_block_sptr config = algorithm::get_configuration();
 
   // Sub-algorithm implementation name + sub_config block
   // - Feature Matcher algorithm
@@ -131,11 +131,11 @@ close_loops_bad_frames_only
 /// Set this algo's properties via a config block
 void
 close_loops_bad_frames_only
-::set_configuration(kwiver::config_block_sptr in_config)
+::set_configuration(kwiver::vital::config_block_sptr in_config)
 {
   // Starting with our generated config_block to ensure that assumed values are present
   // An alternative is to check for key presence before performing a get_value() call.
-  kwiver::config_block_sptr config = this->get_configuration();
+  kwiver::vital::config_block_sptr config = this->get_configuration();
   config->merge_config(in_config);
 
   // Setting nested algorithm instances via setter methods instead of directly
@@ -155,7 +155,7 @@ close_loops_bad_frames_only
 
 bool
 close_loops_bad_frames_only
-::check_configuration(kwiver::config_block_sptr config) const
+::check_configuration(kwiver::vital::config_block_sptr config) const
 {
   return (
     algo::match_features::check_nested_algo_configuration("feature_matcher", config)

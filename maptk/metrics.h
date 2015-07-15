@@ -38,10 +38,10 @@
 
 #include <maptk/config.h>
 
-#include <vital/camera.h>
-#include <vital/landmark.h>
-#include <vital/feature.h>
-#include <vital/track.h>
+#include <vital/types/camera.h>
+#include <vital/types/landmark.h>
+#include <vital/types/feature.h>
+#include <vital/types/track.h>
 #include <vector>
 #include <map>
 #include <cmath>
