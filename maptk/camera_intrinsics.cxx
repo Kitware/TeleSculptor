@@ -44,26 +44,19 @@ namespace maptk
 namespace // anonymous namespace
 {
 
-/// Compute radial distortion as a scaling and offset
-/** For a point \p pt and distortion coefficients \p d compute
- *  a scale and offset such that distortion can be applied as
- *  \code
- *    distorted_pt = pt * scale + offset;
- *  \endcode
+
+/// Compute the radial distortion scaling
+/** Distortion scaling is a function of the squared radius \p r2
+ *  and the distortion parameters \p d
  */
 template <typename T>
-void
-distortion_scale_offset(const Eigen::Matrix<T,2,1>& pt,
-                        const typename camera_intrinsics_<T>::vector_t& d,
-                        T& scale, Eigen::Matrix<T,2,1>& offset)
+T
+radial_distortion_scale(const T r2,
+                        const typename camera_intrinsics_<T>::vector_t& d)
 {
-  scale = T(1);
-  offset = Eigen::Matrix<T,2,1>(T(0),T(0));
+  T scale = T(1);
   if(d.rows() > 0)
   {
-    const T x2 = pt.x() * pt.x();
-    const T y2 = pt.y() * pt.y();
-    const T r2 = x2 + y2;
     scale += r2*d[0];
     if(d.rows() > 1)
     {
@@ -78,17 +71,40 @@ distortion_scale_offset(const Eigen::Matrix<T,2,1>& pt,
           scale /= T(1) + r2*d[5] + r4*d[6] + r6*d[7];
         }
       }
-      if(d.rows() > 3)
-      {
-        const T two_xy = 2 * pt.x() * pt.y();
-        offset = Eigen::Matrix<T,2,1>(d[2]*two_xy + d[3]*(r2 + 2*x2),
-                                      d[3]*two_xy + d[2]*(r2 + 2*y2));
-      }
     }
+  }
+  return scale;
+}
+
+
+/// Compute radial distortion as a scaling and offset
+/** For a point \p pt and distortion coefficients \p d compute
+ *  a scale and offset such that distortion can be applied as
+ *  \code
+ *    distorted_pt = pt * scale + offset;
+ *  \endcode
+ */
+template <typename T>
+void
+distortion_scale_offset(const Eigen::Matrix<T,2,1>& pt,
+                        const typename camera_intrinsics_<T>::vector_t& d,
+                        T& scale, Eigen::Matrix<T,2,1>& offset)
+{
+  const T x2 = pt.x() * pt.x();
+  const T y2 = pt.y() * pt.y();
+  const T r2 = x2 + y2;
+  scale = radial_distortion_scale(r2, d);
+  offset = Eigen::Matrix<T,2,1>(T(0),T(0));
+  if(d.rows() > 3)
+  {
+    const T two_xy = 2 * pt.x() * pt.y();
+    offset = Eigen::Matrix<T,2,1>(d[2]*two_xy + d[3]*(r2 + 2*x2),
+                                  d[3]*two_xy + d[2]*(r2 + 2*y2));
   }
 }
 
 
+/// Compute the derivative of the radial distortion as a function of \p r2
 template <typename T>
 T
 radial_distortion_deriv(const T r2,
@@ -120,6 +136,7 @@ radial_distortion_deriv(const T r2,
 }
 
 
+/// Compute the Jacobian of the distortion at a point
 template <typename T>
 Eigen::Matrix<T,2,2>
 distortion_jacobian(const Eigen::Matrix<T,2,1>& pt,
@@ -130,9 +147,7 @@ distortion_jacobian(const Eigen::Matrix<T,2,1>& pt,
   const T xy = pt.x() * pt.y();
   const T r2 = x2 + y2;
   const T d_scale = 2*radial_distortion_deriv(r2, d);
-  T scale;
-  Eigen::Matrix<T,2,1> offset;
-  distortion_scale_offset(pt, d, scale, offset);
+  const T scale = radial_distortion_scale(r2, d);
   Eigen::Matrix<T,2,2> J;
   J << d_scale * x2 + scale, d_scale * xy,
        d_scale * xy, d_scale * y2 + scale;
@@ -241,7 +256,7 @@ camera_intrinsics_<T>
   Eigen::Matrix<T,2,1> offset, residual;
   Eigen::Matrix<T,2,1> norm_pt = dist_pt;
   // iteratively solve for the undistorted point
-  for(unsigned int i=0; i<10; ++i)
+  for(unsigned int i=0; i<5; ++i)
   {
     distortion_scale_offset(norm_pt, dist_coeffs_, scale, offset);
     // This is a Gauss-Newton update
