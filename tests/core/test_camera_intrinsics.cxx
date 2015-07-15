@@ -34,6 +34,7 @@
  */
 
 #include <test_common.h>
+#include <test_random_point.h>
 
 #include <maptk/camera_intrinsics.h>
 
@@ -88,11 +89,51 @@ IMPLEMENT_TEST(map)
 }
 
 
-IMPLEMENT_TEST(distort)
+// helper function to distort a point
+maptk::vector_2d
+distort_point(const maptk::vector_2d& pt,
+           const Eigen::VectorXd& d)
 {
   using namespace maptk;
-  Eigen::VectorXd d(2);
-  d << 0.01 , 0.002;
+  const double x2 = pt.x() * pt.x();
+  const double y2 = pt.y() * pt.y();
+  const double r2 = x2 + y2;
+  const double r4 = r2*r2;
+  const double r6 = r2*r4;
+  const double two_xy = 2 * pt.x() * pt.y();
+
+  double scale = 1.0;
+  vector_2d dist_pt = pt;
+  if(d.rows() > 0)
+  {
+    scale += r2*d[0];
+    if(d.rows() > 1)
+    {
+      scale += r4*d[1];
+      if(d.rows() > 4)
+      {
+        scale += r6*d[4];
+        if(d.rows() > 7)
+        {
+          scale /= 1.0 + r2*d[5] + r4*d[6] + r6*d[7];
+        }
+      }
+    }
+  }
+  dist_pt *= scale;
+  if(d.rows() > 3)
+  {
+    dist_pt += vector_2d(d[2]*two_xy + d[3]*(r2 + 2*x2),
+                         d[3]*two_xy + d[2]*(r2 + 2*y2));
+  }
+  return dist_pt;
+}
+
+
+
+void test_distortion(const Eigen::VectorXd& d)
+{
+  using namespace maptk;
   camera_intrinsics_d K;
   K.set_dist_coeffs(d);
 
@@ -104,17 +145,67 @@ IMPLEMENT_TEST(distort)
   TEST_NEAR("undistort origin",
             K.undistort(origin).norm(), 0.0, 1e-12);
 
-  vector_2d test_pt(1,2);
-  vector_2d distorted_test = K.distort(test_pt);
-  std::cout << "test point: "<< test_pt.transpose() << "\n"
-            << "distorted: " << distorted_test.transpose() << std::endl;
-  double r2 = test_pt.squaredNorm();
-  vector_2d distorted_test_gt = test_pt * (1.0 + r2*d[0] + r2*r2*d[1]);
-  TEST_NEAR("distorted test point at GT location",
-            (distorted_test - distorted_test_gt).norm(), 0.0, 1e-12);
+  for(unsigned int i = 1; i<100; ++i)
+  {
+    vector_2d test_pt = testing::random_point2d(0.5);
+    // the distortion model is only valid within about a unit distance
+    // from the origin in normalized coordinates
+    // project distant points back onto the unit circle
+    if (test_pt.norm() > 1.0)
+    {
+      test_pt.normalize();
+    }
+    vector_2d distorted_test = K.distort(test_pt);
+    std::cout << "test point: "<< test_pt.transpose() << "\n"
+              << "distorted: " << distorted_test.transpose() << std::endl;
 
-  vector_2d undistorted = K.unmap(distorted_test);
-  std::cout << "undistorted: "<< undistorted.transpose() << std::endl;
-  TEST_NEAR("undistort is the inverse of distort",
-            (undistorted-test_pt).norm(), 0.0, 1e-12);
+    vector_2d distorted_test_gt = distort_point(test_pt, d);
+    TEST_NEAR("distorted test point at GT location",
+              (distorted_test - distorted_test_gt).norm(), 0.0, 1e-12);
+
+    vector_2d undistorted = K.undistort(distorted_test);
+    std::cout << "undistorted: "<< undistorted.transpose() << std::endl;
+    TEST_NEAR("undistort is the inverse of distort",
+              (undistorted-test_pt).norm(), 0.0, 1e-10);
+  }
+}
+
+
+IMPLEMENT_TEST(distort_r1)
+{
+  Eigen::VectorXd d(1);
+  d << -0.01;
+  test_distortion(d);
+}
+
+
+IMPLEMENT_TEST(distort_r2)
+{
+  Eigen::VectorXd d(2);
+  d << -0.03, 0.007;
+  test_distortion(d);
+}
+
+
+IMPLEMENT_TEST(distort_r3)
+{
+  Eigen::VectorXd d(5);
+  d << -0.03, 0.01, 0, 0, -0.02;
+  test_distortion(d);
+}
+
+
+IMPLEMENT_TEST(distort_tang_r3)
+{
+  Eigen::VectorXd d(5);
+  d << -0.03, 0.01, -1e-3, 5e-4, -0.02;
+  test_distortion(d);
+}
+
+
+IMPLEMENT_TEST(distort_tang_r6)
+{
+  Eigen::VectorXd d(8);
+  d << -0.03, 0.01, -1e-3, 5e-4, -0.02, 1e-4, -2e-3, 3e-4;
+  test_distortion(d);
 }
