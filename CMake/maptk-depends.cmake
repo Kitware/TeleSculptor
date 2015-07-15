@@ -1,6 +1,6 @@
 # Central location for MAPTK external dependency declaration and resolution
 
-include( maptk-depends-kwiver )
+include( maptk-depends-vital )
 include( maptk-depends-Boost )
 include( maptk-depends-Eigen )
 include( maptk-depends-OpenCV )
