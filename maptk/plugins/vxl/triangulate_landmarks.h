@@ -38,7 +38,7 @@
 
 #include <boost/scoped_ptr.hpp>
 
-#include <maptk/algo/triangulate_landmarks.h>
+#include <vital/algo/triangulate_landmarks.h>
 #include <maptk/plugins/vxl/vxl_config.h>
 
 
@@ -51,7 +51,7 @@ namespace vxl
 /// A class for triangulating landmarks from tracks and cameras using VXL
 class MAPTK_VXL_EXPORT triangulate_landmarks
 : public kwiver::vital::algorithm_impl<triangulate_landmarks,
-                                       algo::triangulate_landmarks>
+                                       kwiver::vital::algo::triangulate_landmarks>
 {
 public:
   /// Constructor

@@ -45,8 +45,8 @@
 #include <boost/circular_buffer.hpp>
 #include <boost/foreach.hpp>
 
-#include <maptk/algo/compute_ref_homography.h>
-#include <maptk/algo/match_features.h>
+#include <vital/algo/compute_ref_homography.h>
+#include <vital/algo/match_features.h>
 #include <maptk/plugins/vxl/compute_homography_overlap.h>
 
 using namespace kwiver::vital;
@@ -168,10 +168,10 @@ public:
   checkpoint_buffer_t buffer_;
 
   /// Reference frame homography computer
-  maptk::algo::compute_ref_homography_sptr ref_computer_;
+  kwiver::vital::algo::compute_ref_homography_sptr ref_computer_;
 
   /// The feature matching algorithm to use
-  maptk::algo::match_features_sptr matcher_;
+  kwiver::vital::algo::match_features_sptr matcher_;
 };
 
 
@@ -204,10 +204,10 @@ close_loops_homography_guided
 
   // Sub-algorithm implementation name + sub_config block
   // - Homography estimator algorithm
-  maptk::algo::compute_ref_homography::get_nested_algo_configuration( "ref_computer", config, d_->ref_computer_ );
+  kwiver::vital::algo::compute_ref_homography::get_nested_algo_configuration( "ref_computer", config, d_->ref_computer_ );
 
   // - Feature Matcher algorithm
-  maptk::algo::match_features::get_nested_algo_configuration( "feature_matcher", config, d_->matcher_ );
+  kwiver::vital::algo::match_features::get_nested_algo_configuration( "feature_matcher", config, d_->matcher_ );
 
   // Loop closure parameters
   config->set_value("enabled", d_->enabled_,
@@ -236,12 +236,12 @@ close_loops_homography_guided
 
   // Setting nested algorithm instances via setter methods instead of directly
   // assigning to instance property.
-  maptk::algo::compute_ref_homography_sptr rc;
-  maptk::algo::compute_ref_homography::set_nested_algo_configuration( "ref_computer", config, rc );
+  kwiver::vital::algo::compute_ref_homography_sptr rc;
+  kwiver::vital::algo::compute_ref_homography::set_nested_algo_configuration( "ref_computer", config, rc );
   d_->ref_computer_ = rc;
 
-  maptk::algo::match_features_sptr mf;
-  maptk::algo::match_features::set_nested_algo_configuration( "feature_matcher", config, mf );
+  kwiver::vital::algo::match_features_sptr mf;
+  kwiver::vital::algo::match_features::set_nested_algo_configuration( "feature_matcher", config, mf );
   d_->matcher_ = mf;
 
   // Settings for bad frame detection
@@ -268,9 +268,9 @@ close_loops_homography_guided
 {
   return
   (
-    maptk::algo::compute_ref_homography::check_nested_algo_configuration( "ref_computer", config )
+    kwiver::vital::algo::compute_ref_homography::check_nested_algo_configuration( "ref_computer", config )
     &&
-    maptk::algo::match_features::check_nested_algo_configuration( "feature_matcher", config )
+    kwiver::vital::algo::match_features::check_nested_algo_configuration( "feature_matcher", config )
   );
 }
 

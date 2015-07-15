@@ -58,8 +58,8 @@ IMPLEMENT_TEST(factory)
 {
   using namespace maptk;
   proj::register_algorithms();
-  typedef boost::shared_ptr<algo::geo_map> geo_map_sptr;
-  geo_map_sptr gmap = maptk::algo::geo_map::create("proj");
+  typedef boost::shared_ptr<kwiver::vital::algo::geo_map> geo_map_sptr;
+  geo_map_sptr gmap = kwiver::vital::algo::geo_map::create("proj");
   if (!gmap)
   {
     TEST_ERROR("Unable to create geo_map algorithm of type proj");

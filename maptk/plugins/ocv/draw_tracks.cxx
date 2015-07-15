@@ -146,7 +146,7 @@ kwiver::vital::config_block_sptr
 draw_tracks
 ::get_configuration() const
 {
-  kwiver::vital::config_block_sptr config = maptk::algo::draw_tracks::get_configuration();
+  kwiver::vital::config_block_sptr config = kwiver::vital::algo::draw_tracks::get_configuration();
 
   config->set_value( "draw_track_ids", d_->draw_track_ids,
                      "Draw track ids next to each feature point." );

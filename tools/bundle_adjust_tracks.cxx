@@ -44,24 +44,24 @@
 #include <vital/config/config_block.h>
 #include <vital/config/config_block_io.h>
 
+#include <vital/algo/bundle_adjust.h>
+#include <vital/algo/estimate_similarity_transform.h>
+#include <vital/algo/geo_map.h>
+#include <vital/algo/initialize_cameras_landmarks.h>
+#include <vital/algo/triangulate_landmarks.h>
 #include <vital/algorithm_plugin_manager.h>
+#include <vital/exceptions.h>
 #include <vital/io/camera_io.h>
 #include <vital/io/eigen_io.h>
-#include <vital/exceptions.h>
 #include <vital/io/landmark_map_io.h>
-#include <vital/types/track_set.h>
 #include <vital/io/track_set_io.h>
+#include <vital/types/track_set.h>
 #include <vital/types/transform.h>
 #include <vital/vital_types.h>
 
 #include <maptk/ins_data_io.h>
 #include <maptk/local_geo_cs.h>
 #include <maptk/geo_reference_points_io.h>
-#include <maptk/algo/bundle_adjust.h>
-#include <maptk/algo/initialize_cameras_landmarks.h>
-#include <maptk/algo/estimate_similarity_transform.h>
-#include <maptk/algo/triangulate_landmarks.h>
-#include <maptk/algo/geo_map.h>
 #include <maptk/metrics.h>
 
 #include <boost/filesystem.hpp>
@@ -79,7 +79,6 @@ namespace bpo = boost::program_options;
 
 static kwiver::vital::config_block_sptr default_config()
 {
-  using namespace maptk;
 
   kwiver::vital::config_block_sptr config = kwiver::vital::config_block::empty_config("bundle_adjust_tracks_tool");
 
@@ -172,17 +171,17 @@ static kwiver::vital::config_block_sptr default_config()
                     "when updating cameras. This option is only relevent if a "
                     "value is give to the input_pos_files option.");
 
-  algo::bundle_adjust::get_nested_algo_configuration("bundle_adjuster", config,
-                                                     algo::bundle_adjust_sptr());
-  algo::initialize_cameras_landmarks
+  kwiver::vital::algo::bundle_adjust::get_nested_algo_configuration("bundle_adjuster", config,
+                                                     kwiver::vital::algo::bundle_adjust_sptr());
+  kwiver::vital::algo::initialize_cameras_landmarks
       ::get_nested_algo_configuration("initializer", config,
-                                      algo::initialize_cameras_landmarks_sptr());
-  algo::triangulate_landmarks::get_nested_algo_configuration("triangulator", config,
-                                                             algo::triangulate_landmarks_sptr());
-  algo::geo_map::get_nested_algo_configuration("geo_mapper", config,
-                                               algo::geo_map_sptr());
-  algo::estimate_similarity_transform::get_nested_algo_configuration("st_estimator", config,
-                                                                     algo::estimate_similarity_transform_sptr());
+                                      kwiver::vital::algo::initialize_cameras_landmarks_sptr());
+  kwiver::vital::algo::triangulate_landmarks::get_nested_algo_configuration("triangulator", config,
+                        kwiver::vital::algo::triangulate_landmarks_sptr());
+  kwiver::vital::algo::geo_map::get_nested_algo_configuration("geo_mapper", config,
+                                               kwiver::vital::algo::geo_map_sptr());
+  kwiver::vital::algo::estimate_similarity_transform::get_nested_algo_configuration("st_estimator", config,
+                                                                     kwiver::vital::algo::estimate_similarity_transform_sptr());
 
   return config;
 }
@@ -245,26 +244,26 @@ static bool check_config(kwiver::vital::config_block_sptr config)
     }
   }
 
-  if (!maptk::algo::bundle_adjust::check_nested_algo_configuration("bundle_adjuster", config))
+  if (!kwiver::vital::algo::bundle_adjust::check_nested_algo_configuration("bundle_adjuster", config))
   {
     MAPTK_CONFIG_FAIL("Failed config check in bundle_adjuster algorithm.");
   }
-  if (!maptk::algo::initialize_cameras_landmarks
+  if (!kwiver::vital::algo::initialize_cameras_landmarks
             ::check_nested_algo_configuration("initializer", config))
   {
     MAPTK_CONFIG_FAIL("Failed config check in initializer algorithm.");
   }
-  if (!maptk::algo::triangulate_landmarks::check_nested_algo_configuration("triangulator", config))
+  if (!kwiver::vital::algo::triangulate_landmarks::check_nested_algo_configuration("triangulator", config))
   {
     MAPTK_CONFIG_FAIL("Failed config check in triangulator algorithm.");
   }
-  if (!maptk::algo::geo_map::check_nested_algo_configuration("geo_mapper", config))
+  if (!kwiver::vital::algo::geo_map::check_nested_algo_configuration("geo_mapper", config))
   {
     MAPTK_CONFIG_FAIL("Failed config check in geo_mapper algorithm.");
   }
   if (config->has_value("st_estimator:type") && config->get_value<std::string>("st_estimator:type") != "")
   {
-    if (!maptk::algo::estimate_similarity_transform::check_nested_algo_configuration("st_estimator", config))
+    if (!kwiver::vital::algo::estimate_similarity_transform::check_nested_algo_configuration("st_estimator", config))
     {
       MAPTK_CONFIG_FAIL("Failed config check in st_estimator algorithm.");
     }
@@ -581,15 +580,13 @@ static int maptk_main(int argc, char const* argv[])
   //   output config result and notify of current (in)validity
   // Else error if provided config not valid.
 
-  namespace algo = maptk::algo;
-
   // Set up top level configuration w/ defaults where applicable.
   kwiver::vital::config_block_sptr config = kwiver::vital::config_block::empty_config();
-  algo::bundle_adjust_sptr bundle_adjuster;
-  algo::initialize_cameras_landmarks_sptr initializer;
-  algo::triangulate_landmarks_sptr triangulator;
-  algo::geo_map_sptr geo_mapper;
-  algo::estimate_similarity_transform_sptr st_estimator;
+  kwiver::vital::algo::bundle_adjust_sptr bundle_adjuster;
+  kwiver::vital::algo::initialize_cameras_landmarks_sptr initializer;
+  kwiver::vital::algo::triangulate_landmarks_sptr triangulator;
+  kwiver::vital::algo::geo_map_sptr geo_mapper;
+  kwiver::vital::algo::estimate_similarity_transform_sptr st_estimator;
 
   // If -c/--config given, read in confg file, merge in with default just generated
   if(vm.count("config"))
@@ -601,11 +598,11 @@ static int maptk_main(int argc, char const* argv[])
   //std::cerr << "[DEBUG] Config BEFORE set:" << std::endl;
   //print_config(config);
 
-  algo::bundle_adjust::set_nested_algo_configuration("bundle_adjuster", config, bundle_adjuster);
-  algo::triangulate_landmarks::set_nested_algo_configuration("triangulator", config, triangulator);
-  algo::initialize_cameras_landmarks::set_nested_algo_configuration("initializer", config, initializer);
-  algo::geo_map::set_nested_algo_configuration("geo_mapper", config, geo_mapper);
-  algo::estimate_similarity_transform::set_nested_algo_configuration("st_estimator", config, st_estimator);
+  kwiver::vital::algo::bundle_adjust::set_nested_algo_configuration("bundle_adjuster", config, bundle_adjuster);
+  kwiver::vital::algo::triangulate_landmarks::set_nested_algo_configuration("triangulator", config, triangulator);
+  kwiver::vital::algo::initialize_cameras_landmarks::set_nested_algo_configuration("initializer", config, initializer);
+  kwiver::vital::algo::geo_map::set_nested_algo_configuration("geo_mapper", config, geo_mapper);
+  kwiver::vital::algo::estimate_similarity_transform::set_nested_algo_configuration("st_estimator", config, st_estimator);
 
   //std::cerr << "[DEBUG] Config AFTER set:" << std::endl;
   //print_config(config);
@@ -617,11 +614,11 @@ static int maptk_main(int argc, char const* argv[])
     kwiver::vital::config_block_sptr dflt_config = default_config();
     dflt_config->merge_config(config);
     config = dflt_config;
-    algo::bundle_adjust::get_nested_algo_configuration("bundle_adjuster", config, bundle_adjuster);
-    algo::triangulate_landmarks::get_nested_algo_configuration("triangulator", config, triangulator);
-    algo::initialize_cameras_landmarks::get_nested_algo_configuration("initializer", config, initializer);
-    algo::geo_map::get_nested_algo_configuration("geo_mapper", config, geo_mapper);
-    algo::estimate_similarity_transform::get_nested_algo_configuration("st_estimator", config, st_estimator);
+    kwiver::vital::algo::bundle_adjust::get_nested_algo_configuration("bundle_adjuster", config, bundle_adjuster);
+    kwiver::vital::algo::triangulate_landmarks::get_nested_algo_configuration("triangulator", config, triangulator);
+    kwiver::vital::algo::initialize_cameras_landmarks::get_nested_algo_configuration("initializer", config, initializer);
+    kwiver::vital::algo::geo_map::get_nested_algo_configuration("geo_mapper", config, geo_mapper);
+    kwiver::vital::algo::estimate_similarity_transform::get_nested_algo_configuration("st_estimator", config, st_estimator);
 
     //std::cerr << "[DEBUG] Given config output target: "
     //          << vm["output-config"].as<kwiver::vital::path_t>() << std::endl;

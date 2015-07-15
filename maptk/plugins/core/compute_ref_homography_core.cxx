@@ -46,7 +46,7 @@
 #include <boost/foreach.hpp>
 #include <boost/math/special_functions/fpclassify.hpp>
 
-#include <maptk/algo/estimate_homography.h>
+#include <vital/algo/estimate_homography.h>
 #include <vital/logger/logger.h>
 
 #include <Eigen/LU>

@@ -34,7 +34,7 @@
 
 #include <boost/scoped_ptr.hpp>
 
-#include <maptk/algo/filter_features.h>
+#include <vital/algo/filter_features.h>
 #include <maptk/plugins/core/plugin_core_config.h>
 
 /**
@@ -51,7 +51,7 @@ namespace core
 
 /// \brief Algorithm that filters features based on feature magnitude
 class PLUGIN_CORE_EXPORT filter_features_magnitude
-  : public kwiver::vital::algorithm_impl<filter_features_magnitude, algo::filter_features>
+  : public kwiver::vital::algorithm_impl<filter_features_magnitude, kwiver::vital::algo::filter_features>
 {
 public:
   /// Constructor

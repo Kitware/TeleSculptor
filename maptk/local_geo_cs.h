@@ -38,7 +38,7 @@
 
 #include <maptk/config.h>
 
-#include "algo/geo_map.h"
+#include <vital/algo/geo_map.h>
 #include <maptk/ins_data.h>
 
 #include <vital/types/camera.h>
@@ -58,7 +58,7 @@ class MAPTK_LIB_EXPORT local_geo_cs
 {
 public:
   /// Constructor
-  explicit local_geo_cs(algo::geo_map_sptr alg);
+  explicit local_geo_cs(kwiver::vital::algo::geo_map_sptr alg);
 
   /// Set the local UTM coordinate origin
   void set_utm_origin(const kwiver::vital::vector_3d& origin) { utm_origin_ = origin; }
@@ -73,7 +73,7 @@ public:
   int utm_origin_zone() const { return utm_origin_zone_; }
 
   /// Access the geographic mapping algorithm
-  algo::geo_map_sptr geo_map_algo() const { return geo_map_algo_; }
+  kwiver::vital::algo::geo_map_sptr geo_map_algo() const { return geo_map_algo_; }
 
   /// Use the pose data provided by INS to update camera pose
   /**
@@ -89,7 +89,7 @@ public:
 
 private:
   /// An algorithm provided to compute geographic transformations
-  algo::geo_map_sptr geo_map_algo_;
+  kwiver::vital::algo::geo_map_sptr geo_map_algo_;
 
   /// The local coordinates origin in UTM (easting, northing, altitude)
   kwiver::vital::vector_3d utm_origin_;

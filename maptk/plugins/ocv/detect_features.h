@@ -38,7 +38,7 @@
 
 #include <boost/scoped_ptr.hpp>
 
-#include <maptk/algo/detect_features.h>
+#include <vital/algo/detect_features.h>
 
 #include <maptk/plugins/ocv/ocv_config.h>
 
@@ -51,7 +51,7 @@ namespace ocv
 
 /// An algorithm class for detecting feature points using OpenCV
 class MAPTK_OCV_EXPORT detect_features
-  : public kwiver::vital::algorithm_impl<detect_features, algo::detect_features>
+  : public kwiver::vital::algorithm_impl<detect_features, kwiver::vital::algo::detect_features>
 {
 public:
   /// Constructor

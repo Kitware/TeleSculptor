@@ -33,7 +33,7 @@
 
 #include <boost/scoped_ptr.hpp>
 
-#include <maptk/algo/extract_descriptors.h>
+#include <vital/algo/extract_descriptors.h>
 #include <maptk/plugins/viscl/viscl_config.h>
 
 
@@ -45,7 +45,7 @@ namespace vcl
 
 /// An class for extracting feature descriptors using VisCL
 class MAPTK_VISCL_EXPORT extract_descriptors
-: public kwiver::vital::algorithm_impl<extract_descriptors, algo::extract_descriptors>
+: public kwiver::vital::algorithm_impl<extract_descriptors, kwiver::vital::algo::extract_descriptors>
 {
 public:
   /// Default Constructor

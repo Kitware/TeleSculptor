@@ -38,7 +38,7 @@
 #define MAPTK_PLUGINS_CORE_HIERARCHICAL_BUNDLE_ADJUST_H_
 
 #include <vital/algo/algorithm.h>
-#include <maptk/algo/bundle_adjust.h>
+#include <vital/algo/bundle_adjust.h>
 #include <vital/config/config_block.h>
 
 #include <boost/scoped_ptr.hpp>
@@ -54,7 +54,7 @@ namespace core
 
 
 class PLUGIN_CORE_EXPORT hierarchical_bundle_adjust
-  : public kwiver::vital::algorithm_impl<hierarchical_bundle_adjust, algo::bundle_adjust>
+  : public kwiver::vital::algorithm_impl<hierarchical_bundle_adjust, kwiver::vital::algo::bundle_adjust>
 {
 public:
 

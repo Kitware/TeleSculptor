@@ -36,7 +36,7 @@
 #ifndef MAPTK_PLUGINS_OCV_ESTIMATE_HOMOGRAPHY_H_
 #define MAPTK_PLUGINS_OCV_ESTIMATE_HOMOGRAPHY_H_
 
-#include <maptk/algo/estimate_homography.h>
+#include <vital/algo/estimate_homography.h>
 
 #include <maptk/plugins/ocv/ocv_config.h>
 
@@ -49,7 +49,7 @@ namespace ocv
 
 /// A class that using OpenCV to estimate a homography from matching 2D points
 class MAPTK_OCV_EXPORT estimate_homography
-  : public kwiver::vital::algorithm_impl<estimate_homography, algo::estimate_homography>
+  : public kwiver::vital::algorithm_impl<estimate_homography, kwiver::vital::algo::estimate_homography>
 {
 public:
   /// Return the name of this implementation

@@ -30,7 +30,7 @@
 
 /**
  * \file
- * \brief implementation of maptk::algo::hierarchical_bundle_adjust
+ * \brief implementation of kwiver::vital::algo::hierarchical_bundle_adjust
  */
 
 #include "hierarchical_bundle_adjust.h"
@@ -46,8 +46,8 @@
 #include <boost/foreach.hpp>
 #include <boost/timer/timer.hpp>
 
-#include <maptk/algo/optimize_cameras.h>
-#include <maptk/algo/triangulate_landmarks.h>
+#include <vital/algo/optimize_cameras.h>
+#include <vital/algo/triangulate_landmarks.h>
 #include <maptk/metrics.h>
 
 #include <vital/types/camera.h>
@@ -129,9 +129,9 @@ public:
   unsigned int interpolation_rate;
   bool rmse_reporting_enabled;
 
-  algo::bundle_adjust_sptr sba;
-  algo::optimize_cameras_sptr camera_optimizer;
-  algo::triangulate_landmarks_sptr lm_triangulator;
+  kwiver::vital::algo::bundle_adjust_sptr sba;
+  kwiver::vital::algo::optimize_cameras_sptr camera_optimizer;
+  kwiver::vital::algo::triangulate_landmarks_sptr lm_triangulator;
 };
 
 
@@ -162,7 +162,7 @@ hierarchical_bundle_adjust
 hierarchical_bundle_adjust
 ::get_configuration() const
 {
-  kwiver::vital::config_block_sptr config = maptk::algo::bundle_adjust::get_configuration();
+  kwiver::vital::config_block_sptr config = kwiver::vital::algo::bundle_adjust::get_configuration();
 
   config->set_value("initial_sub_sample", d_->initial_sub_sample,
                     "Sub-sample the given cameras by this factor. Gaps will "
@@ -178,13 +178,13 @@ hierarchical_bundle_adjust
                     "stages of this algorithm. Constant calculating of RMSE "
                     "may effect run time of the algorithm.");
 
-  maptk::algo::bundle_adjust::get_nested_algo_configuration(
+  kwiver::vital::algo::bundle_adjust::get_nested_algo_configuration(
       "sba_impl", config, d_->sba
       );
-  maptk::algo::optimize_cameras::get_nested_algo_configuration(
+  kwiver::vital::algo::optimize_cameras::get_nested_algo_configuration(
       "camera_optimizer", config, d_->camera_optimizer
       );
-  maptk::algo::triangulate_landmarks::get_nested_algo_configuration(
+  kwiver::vital::algo::triangulate_landmarks::get_nested_algo_configuration(
       "lm_triangulator", config, d_->lm_triangulator
       );
 
@@ -201,13 +201,13 @@ hierarchical_bundle_adjust
   d_->interpolation_rate = config->get_value<unsigned int>("interpolation_rate", d_->interpolation_rate);
   d_->rmse_reporting_enabled = config->get_value<bool>("enable_rmse_reporting", d_->rmse_reporting_enabled);
 
-  maptk::algo::bundle_adjust::set_nested_algo_configuration(
+  kwiver::vital::algo::bundle_adjust::set_nested_algo_configuration(
       "sba_impl", config, d_->sba
       );
-  maptk::algo::optimize_cameras::set_nested_algo_configuration(
+  kwiver::vital::algo::optimize_cameras::set_nested_algo_configuration(
       "camera_optimizer", config, d_->camera_optimizer
       );
-  maptk::algo::triangulate_landmarks::set_nested_algo_configuration(
+  kwiver::vital::algo::triangulate_landmarks::set_nested_algo_configuration(
       "lm_triangulator", config, d_->lm_triangulator
       );
 }
@@ -239,7 +239,7 @@ hierarchical_bundle_adjust
                           << config->get_value<long>("interpolation_rate"));
   }
 
-  if (!maptk::algo::bundle_adjust::check_nested_algo_configuration("sba_impl", config))
+  if (!kwiver::vital::algo::bundle_adjust::check_nested_algo_configuration("sba_impl", config))
   {
     MAPTK_HSBA_CHECK_FAIL("sba_impl configuration invalid.");
   }
@@ -248,7 +248,7 @@ hierarchical_bundle_adjust
   {
     std::cerr << "HSBA per-iteration camera optimization disabled" << std::endl;
   }
-  else if (!maptk::algo::optimize_cameras::check_nested_algo_configuration("camera_optimizer", config))
+  else if (!kwiver::vital::algo::optimize_cameras::check_nested_algo_configuration("camera_optimizer", config))
   {
     MAPTK_HSBA_CHECK_FAIL("camera_optimizer configuration invalid.");
   }
@@ -257,7 +257,7 @@ hierarchical_bundle_adjust
   {
     std::cerr << "HSBA per-iteration LM Triangulation disabled" << std::endl;
   }
-  else if (!maptk::algo::triangulate_landmarks::check_nested_algo_configuration("lm_triangulator", config))
+  else if (!kwiver::vital::algo::triangulate_landmarks::check_nested_algo_configuration("lm_triangulator", config))
   {
     std::cerr << "lm_triangulator type: \"" << config->get_value<std::string>("lm_triangulator:type") << "\"" << std::endl;
     MAPTK_HSBA_CHECK_FAIL("lm_triangulator configuration invalid.");

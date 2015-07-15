@@ -38,7 +38,7 @@
 
 #include <boost/scoped_ptr.hpp>
 
-#include <maptk/algo/extract_descriptors.h>
+#include <vital/algo/extract_descriptors.h>
 
 #include <maptk/plugins/ocv/ocv_config.h>
 
@@ -51,7 +51,7 @@ namespace ocv
 
 /// An class for extracting feature descriptors using OpenCV
 class MAPTK_OCV_EXPORT extract_descriptors
-  : public kwiver::vital::algorithm_impl<extract_descriptors, algo::extract_descriptors>
+  : public kwiver::vital::algorithm_impl<extract_descriptors, kwiver::vital::algo::extract_descriptors>
 {
 public:
   /// Default Constructor

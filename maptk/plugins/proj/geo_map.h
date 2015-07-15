@@ -36,7 +36,7 @@
 #ifndef MAPTK_PLUGINS_PROJ_GEO_MAP_H_
 #define MAPTK_PLUGINS_PROJ_GEO_MAP_H_
 
-#include <maptk/algo/geo_map.h>
+#include <vital/algo/geo_map.h>
 #include <maptk/plugins/proj/proj_config.h>
 
 
@@ -48,7 +48,7 @@ namespace proj
 
 /// PROJ implementation of geo_map algorithm
 class MAPTK_PROJ_EXPORT geo_map
-  : public kwiver::vital::algorithm_impl<geo_map, algo::geo_map>
+  : public kwiver::vital::algorithm_impl<geo_map, kwiver::vital::algo::geo_map>
 {
 public:
 

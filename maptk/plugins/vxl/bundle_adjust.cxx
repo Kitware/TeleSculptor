@@ -131,7 +131,7 @@ bundle_adjust
 ::get_configuration() const
 {
   // get base config from base class
-  kwiver::vital::config_block_sptr config = maptk::algo::bundle_adjust::get_configuration();
+  kwiver::vital::config_block_sptr config = kwiver::vital::algo::bundle_adjust::get_configuration();
   config->set_value("verbose", d_->verbose,
                     "If true, write status messages to the terminal showing "
                     "optimization progress at each iteration");

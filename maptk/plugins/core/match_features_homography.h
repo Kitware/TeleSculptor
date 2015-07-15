@@ -37,10 +37,10 @@
 #define MAPTK_PLUGINS_CORE_MATCH_FEATURES_HOMOGRAPHY_H_
 
 #include <boost/scoped_ptr.hpp>
-#include <maptk/algo/filter_features.h>
+#include <vital/algo/filter_features.h>
 
-#include <maptk/algo/estimate_homography.h>
-#include <maptk/algo/match_features.h>
+#include <vital/algo/estimate_homography.h>
+#include <vital/algo/match_features.h>
 #include <vital/config/config_block.h>
 
 #include <maptk/plugins/core/plugin_core_config.h>
@@ -77,7 +77,7 @@ namespace core
  *  in the image is now known approximately.
  */
 class PLUGIN_CORE_EXPORT match_features_homography
-  : public kwiver::vital::algorithm_impl<match_features_homography, algo::match_features>
+  : public kwiver::vital::algorithm_impl<match_features_homography, kwiver::vital::algo::match_features>
 {
 public:
   /// Default Constructor
@@ -112,38 +112,38 @@ public:
         kwiver::vital::feature_set_sptr feat2, kwiver::vital::descriptor_set_sptr desc2) const;
 
   /// Set the feature matching algorithms to use
-  void set_first_feature_matcher(algo::match_features_sptr alg)
+  void set_first_feature_matcher(kwiver::vital::algo::match_features_sptr alg)
   {
     matcher1_ = alg;
   }
 
   /// Set the optional second pass feature matching algorithm to use
-  void set_second_feature_matcher(algo::match_features_sptr alg)
+  void set_second_feature_matcher(kwiver::vital::algo::match_features_sptr alg)
   {
     matcher2_ = alg;
   }
 
   /// Set the optional feature filter to use
-  void set_feature_filter(algo::filter_features_sptr alg)
+  void set_feature_filter(kwiver::vital::algo::filter_features_sptr alg)
   {
     feature_filter_ = alg;
   }
 
   /// Set the homography estimation algorithm to use
-  void set_homography_estimator(algo::estimate_homography_sptr alg)
+  void set_homography_estimator(kwiver::vital::algo::estimate_homography_sptr alg)
   {
     h_estimator_ = alg;
   }
 
 private:
   /// The feature matching algorithms to use
-  algo::match_features_sptr matcher1_, matcher2_;
+  kwiver::vital::algo::match_features_sptr matcher1_, matcher2_;
 
   /// The homography estimation algorithm to use
-  algo::estimate_homography_sptr h_estimator_;
+  kwiver::vital::algo::estimate_homography_sptr h_estimator_;
 
   /// The feature set filter algorithm to use
-  algo::filter_features_sptr feature_filter_;
+  kwiver::vital::algo::filter_features_sptr feature_filter_;
 
   /// private implementation class
   class priv;

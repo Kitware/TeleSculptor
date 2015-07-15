@@ -38,7 +38,7 @@
 
 #include <boost/scoped_ptr.hpp>
 
-#include <maptk/algo/match_features.h>
+#include <vital/algo/match_features.h>
 
 #include <maptk/plugins/ocv/ocv_config.h>
 
@@ -51,7 +51,7 @@ namespace ocv
 
 /// An abstract base class for matching feature points
 class MAPTK_OCV_EXPORT match_features
-  : public kwiver::vital::algorithm_impl<match_features, algo::match_features>
+  : public kwiver::vital::algorithm_impl<match_features, kwiver::vital::algo::match_features>
 {
 public:
   /// Constructor

@@ -38,7 +38,7 @@
 
 #include <boost/scoped_ptr.hpp>
 
-#include <maptk/algo/draw_tracks.h>
+#include <vital/algo/draw_tracks.h>
 
 #include <maptk/plugins/ocv/ocv_config.h>
 
@@ -51,7 +51,7 @@ namespace ocv
 
 /// A class for drawing various information about feature tracks
 class MAPTK_OCV_EXPORT draw_tracks
-: public kwiver::vital::algorithm_impl<draw_tracks, algo::draw_tracks>
+: public kwiver::vital::algorithm_impl<draw_tracks, kwiver::vital::algo::draw_tracks>
 {
 public:
 

@@ -44,10 +44,10 @@
 #include <vital/types/image_container.h>
 #include <vital/types/track_set.h>
 
-#include <maptk/algo/detect_features.h>
-#include <maptk/algo/extract_descriptors.h>
-#include <maptk/algo/match_features.h>
-#include <maptk/algo/close_loops.h>
+#include <vital/algo/detect_features.h>
+#include <vital/algo/extract_descriptors.h>
+#include <vital/algo/match_features.h>
+#include <vital/algo/close_loops.h>
 
 #include <maptk/plugins/core/plugin_core_config.h>
 
@@ -133,16 +133,16 @@ public:
 private:
 
   /// The feature detector algorithm to use
-  algo::detect_features_sptr detector_;
+  kwiver::vital::algo::detect_features_sptr detector_;
 
   /// The descriptor extractor algorithm to use
-  algo::extract_descriptors_sptr extractor_;
+  kwiver::vital::algo::extract_descriptors_sptr extractor_;
 
   /// The feature matching algorithm to use
-  algo::match_features_sptr matcher_;
+  kwiver::vital::algo::match_features_sptr matcher_;
 
   /// The loop closure algorithm to use
-  algo::close_loops_sptr closer_;
+  kwiver::vital::algo::close_loops_sptr closer_;
 
   /// The ID to use for the next created track
   mutable unsigned long next_track_id_;

@@ -43,10 +43,11 @@
 #include <vital/types/image_container.h>
 #include <vital/types/track_set.h>
 
-#include <maptk/algo/match_features.h>
-#include <maptk/algo/close_loops.h>
-#include <maptk/plugins/core/plugin_core_config.h>
+#include <vital/algo/match_features.h>
+#include <vital/algo/close_loops.h>
 #include <vital/config/config_block.h>
+
+#include <maptk/plugins/core/plugin_core_config.h>
 
 
 namespace maptk
@@ -63,7 +64,7 @@ namespace core
  * percentage of feature tracks.
  */
 class PLUGIN_CORE_EXPORT close_loops_bad_frames_only
-  : public kwiver::vital::algorithm_impl<close_loops_bad_frames_only, algo::close_loops>
+  : public kwiver::vital::algorithm_impl<close_loops_bad_frames_only, kwiver::vital::algo::close_loops>
 {
 public:
 
@@ -147,7 +148,7 @@ protected:
   unsigned max_search_length_;
 
   /// The feature matching algorithm to use
-  algo::match_features_sptr matcher_;
+  kwiver::vital::algo::match_features_sptr matcher_;
 
 };
 

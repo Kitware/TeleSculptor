@@ -39,7 +39,7 @@
 #include <string>
 
 #include <vital/algo/algorithm.h>
-#include <maptk/algo/optimize_cameras.h>
+#include <vital/algo/optimize_cameras.h>
 #include <maptk/plugins/vxl/vxl_config.h>
 
 
@@ -51,7 +51,7 @@ namespace vxl
 
 
 class MAPTK_VXL_EXPORT optimize_cameras
-  : public kwiver::vital::algorithm_impl<optimize_cameras, algo::optimize_cameras>
+  : public kwiver::vital::algorithm_impl<optimize_cameras, kwiver::vital::algo::optimize_cameras>
 {
 public:
   virtual std::string impl_name() const { return "vxl"; }

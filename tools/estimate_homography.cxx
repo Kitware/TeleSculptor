@@ -47,11 +47,10 @@
 #include <vital/types/image_container.h>
 #include <vital/exceptions.h>
 #include <vital/vital_types.h>
-
-#include <maptk/algo/detect_features.h>
-#include <maptk/algo/estimate_homography.h>
-#include <maptk/algo/extract_descriptors.h>
-#include <maptk/algo/match_features.h>
+#include <vital/algo/detect_features.h>
+#include <vital/algo/estimate_homography.h>
+#include <vital/algo/extract_descriptors.h>
+#include <vital/algo/match_features.h>
 
 #include <boost/foreach.hpp>
 #include <boost/shared_ptr.hpp>
@@ -84,15 +83,13 @@ static void print_usage(std::string const &prog_name,
 
 // Shortcut macro for arbitrarilly acting over the tool's algorithm elements.
 // ``call`` macro must be two take two arguments: (algo_type, algo_name)
-#define tool_algos(call)                           \
-  call(detect_features,     feature_detector);     \
-  call(extract_descriptors, descriptor_extractor); \
-  call(match_features,      feature_matcher);      \
-  call(estimate_homography, homog_estimator)
-
-#define tool_algos_vital(call)                       \
-  call(image_io,            image_reader);           \
-  call(convert_image,       image_converter);
+#define tool_algos(call)                                \
+  call(detect_features,     feature_detector);          \
+  call(extract_descriptors, descriptor_extractor);      \
+  call(match_features,      feature_matcher);           \
+  call(estimate_homography, homog_estimator);           \
+  call(image_io,            image_reader);              \
+  call(convert_image,       image_converter)
 
 
 static kwiver::vital::config_block_sptr default_config()
@@ -118,16 +115,11 @@ static kwiver::vital::config_block_sptr default_config()
 
   // expand algo config from defaults above if any
 #define get_default(type, name) \
-  maptk::algo::type::get_nested_algo_configuration( #name, config, maptk::algo::type##_sptr() );
-
-#define get_default_vital(type, name) \
   kwiver::vital::algo::type::get_nested_algo_configuration( #name, config, kwiver::vital::algo::type##_sptr() );
 
   tool_algos(get_default);
-  tool_algos_vital(get_default_vital);
 
 #undef get_default
-#undef get_default_vital
 
   return config;
 }
@@ -141,23 +133,15 @@ static bool check_config(kwiver::vital::config_block_sptr config)
   LOG_WARN(main_logger, "Config Check Fail: " << msg); \
   config_valid = false
 
-#define check_algo_config(type, name)                                              \
-  if (! maptk::algo::type::check_nested_algo_configuration( #name, config ))       \
-  {                                                                                \
-    MAPTK_CONFIG_FAIL("Configuration for algorithm " << #name << " was invalid."); \
-  }
-
-#define check_algo_config_vital(type, name)                             \
+#define check_algo_config(type, name)                             \
   if (! kwiver::vital::algo::type::check_nested_algo_configuration( #name, config )) \
   {                                                                     \
     MAPTK_CONFIG_FAIL("Configuration for algorithm " << #name << " was invalid."); \
   }
 
   tool_algos(check_algo_config);
-  tool_algos_vital(check_algo_config_vital);
 
 #undef check_algo_config
-#undef check_algo_config_vital
 
 #undef MAPTK_CONFIG_FAIL
 
@@ -262,17 +246,14 @@ static int maptk_main(int argc, char const* argv[])
   // Setup algorithms and configuration
   //
 
-  namespace algo = maptk::algo;
-  namespace valgo = kwiver::vital::algo;
+  namespace algo = kwiver::vital::algo;
 
   kwiver::vital::config_block_sptr config = default_config();
 
   // Define algorithm variables.
-#define define_algo(type, name)  algo::type##_sptr name
-#define define_algo_vital(type, name)  valgo::type##_sptr name
+#define define_algo(type, name)  kwiver::vital::algo::type##_sptr name
 
   tool_algos(define_algo);
-  tool_algos_vital(define_algo_vital);
 
 #undef define_algo
 
@@ -284,8 +265,8 @@ static int maptk_main(int argc, char const* argv[])
 
   // Set current configuration to algorithms and extract refined configuration.
 #define sa(type, name)                                                       \
-  algo::type::set_nested_algo_configuration( #name, config, name ); \
-  algo::type::get_nested_algo_configuration( #name, config, name )
+  kwiver::vital::algo::type::set_nested_algo_configuration( #name, config, name ); \
+  kwiver::vital::algo::type::get_nested_algo_configuration( #name, config, name )
 
   tool_algos(sa);
 

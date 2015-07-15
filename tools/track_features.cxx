@@ -50,8 +50,7 @@
 #include <vital/algo/image_io.h>
 #include <vital/algo/convert_image.h>
 #include <vital/algo/track_features.h>
-
-#include <maptk/algo/compute_ref_homography.h>
+#include <vital/algo/compute_ref_homography.h>
 
 #include <boost/foreach.hpp>
 
@@ -104,11 +103,14 @@ static kwiver::vital::config_block_sptr default_config()
                     "output. The output_homography_generator algorithm type "
                     "only needs to be set if this is set.");
 
-  kwiver::vital::algo::track_features::get_nested_algo_configuration("feature_tracker", config, kwiver::vital::algo::track_features_sptr());
-  kwiver::vital::algo::image_io::get_nested_algo_configuration("image_reader", config, kwiver::vital::algo::image_io_sptr());
-  kwiver::vital::algo::convert_image::get_nested_algo_configuration("convert_image", config, kwiver::vital::algo::convert_image_sptr());
-  maptk::algo::compute_ref_homography::get_nested_algo_configuration("output_homography_generator",
-                                                                     config, maptk::algo::compute_ref_homography_sptr());
+  kwiver::vital::algo::track_features::get_nested_algo_configuration("feature_tracker", config,
+                                      kwiver::vital::algo::track_features_sptr());
+  kwiver::vital::algo::image_io::get_nested_algo_configuration("image_reader", config,
+                                      kwiver::vital::algo::image_io_sptr());
+  kwiver::vital::algo::convert_image::get_nested_algo_configuration("convert_image", config,
+                                      kwiver::vital::algo::convert_image_sptr());
+  kwiver::vital::algo::compute_ref_homography::get_nested_algo_configuration("output_homography_generator",
+                              config, kwiver::vital::algo::compute_ref_homography_sptr());
   return config;
 }
 
@@ -141,7 +143,7 @@ static bool check_config(kwiver::vital::config_block_sptr config)
     }
 
     // Check that compute_ref_homography algo is correctly configured
-    if( !maptk::algo::compute_ref_homography
+    if( !kwiver::vital::algo::compute_ref_homography
              ::check_nested_algo_configuration("output_homography_generator",
                                                config) )
     {
@@ -271,7 +273,6 @@ static int maptk_main(int argc, char const* argv[])
   // If -o/--output-config given, output config result and notify of current (in)validity
   // Else error if provided config not valid.
 
-  namespace algo = maptk::algo;
   namespace bfs = boost::filesystem;
 
   // Set up top level configuration w/ defaults where applicable.
@@ -279,7 +280,7 @@ static int maptk_main(int argc, char const* argv[])
   kwiver::vital::algo::track_features_sptr feature_tracker;
   kwiver::vital::algo::image_io_sptr image_reader;
   kwiver::vital::algo::convert_image_sptr image_converter;
-  algo::compute_ref_homography_sptr out_homog_generator;
+  kwiver::vital::algo::compute_ref_homography_sptr out_homog_generator;
 
   // If -c/--config given, read in confg file, merge in with default just generated
   if(vm.count("config"))
@@ -297,8 +298,8 @@ static int maptk_main(int argc, char const* argv[])
   kwiver::vital::algo::image_io::get_nested_algo_configuration("image_reader", config, image_reader);
   kwiver::vital::algo::convert_image::set_nested_algo_configuration("convert_image", config, image_converter);
   kwiver::vital::algo::convert_image::get_nested_algo_configuration("convert_image", config, image_converter);
-  algo::compute_ref_homography::set_nested_algo_configuration("output_homography_generator", config, out_homog_generator);
-  algo::compute_ref_homography::get_nested_algo_configuration("output_homography_generator", config, out_homog_generator);
+  kwiver::vital::algo::compute_ref_homography::set_nested_algo_configuration("output_homography_generator", config, out_homog_generator);
+  kwiver::vital::algo::compute_ref_homography::get_nested_algo_configuration("output_homography_generator", config, out_homog_generator);
 
   //std::cerr << "[DEBUG] Config AFTER set:" << std::endl;
   //print_config(config);

@@ -43,8 +43,7 @@
 #include <vital/vital_types.h>
 #include <vital/algorithm_plugin_manager.h>
 #include <vital/algo/track_features.h>
-
-#include <maptk/algo/match_features.h>
+#include <vital/algo/match_features.h>
 
 #include <boost/foreach.hpp>
 
@@ -122,7 +121,7 @@ IMPLEMENT_TEST(create_from_name)
   kwiver::vital::algorithm_sptr valid = kwiver::vital::algorithm::create("match_features", "homography_guided");
   TEST_EQUAL("create valid algorithm", !valid, false);
 
-  maptk::algo::match_features_sptr mf = boost::dynamic_pointer_cast<maptk::algo::match_features>(valid);
+  kwiver::vital::algo::match_features_sptr mf = boost::dynamic_pointer_cast<kwiver::vital::algo::match_features>(valid);
   TEST_EQUAL("create correct type", !mf, false);
 
   TEST_EQUAL("create correct impl", mf->impl_name(), "homography_guided");

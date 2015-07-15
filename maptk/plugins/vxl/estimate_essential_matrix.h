@@ -40,7 +40,7 @@
 
 #include <vital/types/camera_intrinsics.h>
 
-#include <maptk/algo/estimate_essential_matrix.h>
+#include <vital/algo/estimate_essential_matrix.h>
 #include <maptk/plugins/vxl/vxl_config.h>
 
 
@@ -52,7 +52,7 @@ namespace vxl
 
 /// A class that uses 5 pt algorithm to estimate an initial xform between 2 pt sets
 class MAPTK_VXL_EXPORT estimate_essential_matrix
-  : public kwiver::vital::algorithm_impl<estimate_essential_matrix, algo::estimate_essential_matrix>
+  : public kwiver::vital::algorithm_impl<estimate_essential_matrix, kwiver::vital::algo::estimate_essential_matrix>
 {
 public:
   /// Constructor

@@ -197,7 +197,7 @@ match_features_constrained
 {
   // get base config from base class
   kwiver::vital::config_block_sptr config =
-      maptk::algo::match_features::get_configuration();
+      kwiver::vital::algo::match_features::get_configuration();
 
   config->set_value("scale_thresh", d_->scale_thresh,
                     "Ratio threshold of scales between matching keypoints (>=1.0)"

@@ -43,8 +43,8 @@
 #include <vital/types/image_container.h>
 #include <vital/types/track_set.h>
 
-#include <maptk/algo/match_features.h>
-#include <maptk/algo/close_loops.h>
+#include <vital/algo/match_features.h>
+#include <vital/algo/close_loops.h>
 #include <maptk/plugins/core/plugin_core_config.h>
 
 #include <vital/config/config_block.h>
@@ -61,7 +61,7 @@ namespace core
  * in attempt to accomplish this.
  */
 class PLUGIN_CORE_EXPORT close_loops_multi_method
-  : public kwiver::vital::algorithm_impl<close_loops_multi_method, algo::close_loops>
+  : public kwiver::vital::algorithm_impl<close_loops_multi_method, kwiver::vital::algo::close_loops>
 {
 public:
 
@@ -136,7 +136,7 @@ private:
   unsigned count_;
 
   /// The close loops methods to use.
-  std::vector< algo::close_loops_sptr > methods_;
+  std::vector< kwiver::vital::algo::close_loops_sptr > methods_;
 
 };
 

@@ -38,7 +38,7 @@
 
 #include <boost/scoped_ptr.hpp>
 
-#include <maptk/algo/bundle_adjust.h>
+#include <vital/algo/bundle_adjust.h>
 #include <maptk/plugins/vxl/vxl_config.h>
 
 
@@ -50,7 +50,7 @@ namespace vxl
 
 /// A class for bundle adjustment of tracks using VXL
 class MAPTK_VXL_EXPORT bundle_adjust
-: public kwiver::vital::algorithm_impl<bundle_adjust, algo::bundle_adjust>
+: public kwiver::vital::algorithm_impl<bundle_adjust, kwiver::vital::algo::bundle_adjust>
 {
 public:
   /// Constructor

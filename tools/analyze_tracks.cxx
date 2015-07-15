@@ -48,10 +48,10 @@
 #include <vital/types/image_container.h>
 #include <vital/types/landmark_map.h>
 #include <vital/vital_types.h>
+#include <vital/algo/analyze_tracks.h>
+#include <vital/algo/draw_tracks.h>
 
 #include <maptk/projected_track_set.h>
-#include <maptk/algo/analyze_tracks.h>
-#include <maptk/algo/draw_tracks.h>
 
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
@@ -90,8 +90,8 @@ static kwiver::vital::config_block_sptr default_config()
                      "Path to an optional camera directory, which can be used alongside "
                      "a landmark ply file to generate a comparison track set." );
 
-  maptk::algo::analyze_tracks::get_nested_algo_configuration(
-    "track_analyzer", config, maptk::algo::analyze_tracks_sptr() );
+  kwiver::vital::algo::analyze_tracks::get_nested_algo_configuration(
+    "track_analyzer", config, kwiver::vital::algo::analyze_tracks_sptr() );
 
   return config;
 }
@@ -106,7 +106,7 @@ static bool check_config( kwiver::vital::config_block_sptr config )
     return false;
   }
 
-  if( !maptk::algo::analyze_tracks::check_nested_algo_configuration( "track_analyzer", config ) )
+  if( !kwiver::vital::algo::analyze_tracks::check_nested_algo_configuration( "track_analyzer", config ) )
   {
     std::cerr << "Invalid analyze_tracks config" << std::endl;
     return false;
@@ -182,15 +182,15 @@ static int maptk_main(int argc, char const* argv[])
   //
   // If -o/--output-config given, output config result and notify of current (in)validity
   // Else error if provided config not valid.
-  namespace algo = maptk::algo;
+
   namespace bfs = boost::filesystem;
 
   // Set up top level configuration w/ defaults where applicable.
   kwiver::vital::config_block_sptr config = default_config();
 
   kwiver::vital::algo::image_io_sptr image_reader;
-  algo::analyze_tracks_sptr analyze_tracks;
-  algo::draw_tracks_sptr draw_tracks;
+  kwiver::vital::algo::analyze_tracks_sptr analyze_tracks;
+  kwiver::vital::algo::draw_tracks_sptr draw_tracks;
 
   // If -c/--config given, read in confgi file, merge in with default just generated
   if( vm.count( "config" ) )
@@ -210,12 +210,12 @@ static int maptk_main(int argc, char const* argv[])
     kwiver::vital::algo::image_io::set_nested_algo_configuration( "image_reader", config, image_reader );
     kwiver::vital::algo::image_io::get_nested_algo_configuration( "image_reader", config, image_reader );
 
-    algo::draw_tracks::set_nested_algo_configuration( "track_drawer", config, draw_tracks );
-    algo::draw_tracks::get_nested_algo_configuration( "track_drawer", config, draw_tracks );
+    kwiver::vital::algo::draw_tracks::set_nested_algo_configuration( "track_drawer", config, draw_tracks );
+    kwiver::vital::algo::draw_tracks::get_nested_algo_configuration( "track_drawer", config, draw_tracks );
   }
 
-  algo::analyze_tracks::set_nested_algo_configuration( "track_analyzer", config, analyze_tracks );
-  algo::analyze_tracks::get_nested_algo_configuration( "track_analyzer", config, analyze_tracks );
+  kwiver::vital::algo::analyze_tracks::set_nested_algo_configuration( "track_analyzer", config, analyze_tracks );
+  kwiver::vital::algo::analyze_tracks::get_nested_algo_configuration( "track_analyzer", config, analyze_tracks );
 
   bool valid_config = check_config( config );
 

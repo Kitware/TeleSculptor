@@ -124,13 +124,13 @@ match_features_homography
                     "amount, no matches will be output.");
 
   // nested algorithm configurations
-  algo::estimate_homography::get_nested_algo_configuration("homography_estimator",
+  kwiver::vital::algo::estimate_homography::get_nested_algo_configuration("homography_estimator",
                                                      config, h_estimator_);
-  algo::match_features::get_nested_algo_configuration("feature_matcher1", config,
+  kwiver::vital::algo::match_features::get_nested_algo_configuration("feature_matcher1", config,
                                                       matcher1_);
-  algo::match_features::get_nested_algo_configuration("feature_matcher2", config,
+  kwiver::vital::algo::match_features::get_nested_algo_configuration("feature_matcher2", config,
                                                       matcher2_);
-  algo::filter_features::get_nested_algo_configuration("filter_features", config,
+  kwiver::vital::algo::filter_features::get_nested_algo_configuration("filter_features", config,
                                                           feature_filter_);
 
   return config;
@@ -147,13 +147,13 @@ match_features_homography
   config->merge_config(in_config);
 
   // Set nested algorithm configurations
-  algo::estimate_homography::set_nested_algo_configuration("homography_estimator",
+  kwiver::vital::algo::estimate_homography::set_nested_algo_configuration("homography_estimator",
                                                      config, h_estimator_);
-  algo::match_features::set_nested_algo_configuration("feature_matcher1", config,
+  kwiver::vital::algo::match_features::set_nested_algo_configuration("feature_matcher1", config,
                                                       matcher1_);
-  algo::match_features::set_nested_algo_configuration("feature_matcher2", config,
+  kwiver::vital::algo::match_features::set_nested_algo_configuration("feature_matcher2", config,
                                                       matcher2_);
-  algo::filter_features::set_nested_algo_configuration("filter_features", config,
+  kwiver::vital::algo::filter_features::set_nested_algo_configuration("filter_features", config,
                                                           feature_filter_);
 
   // Other parameters
@@ -170,21 +170,21 @@ match_features_homography
   // this algorithm is optional
   if (config->has_value("filter_features") &&
       config->get_value<std::string>("filter_features") != "" &&
-      !algo::filter_features::check_nested_algo_configuration("filter_features", config))
+      !kwiver::vital::algo::filter_features::check_nested_algo_configuration("filter_features", config))
   {
     config_valid = false;
   }
   // this algorithm is optional
   if (config->has_value("feature_matcher2") &&
       config->get_value<std::string>("feature_matcher2") != "" &&
-      !algo::match_features::check_nested_algo_configuration("feature_matcher2", config))
+      !kwiver::vital::algo::match_features::check_nested_algo_configuration("feature_matcher2", config))
   {
     config_valid = false;
   }
   return (
-    algo::estimate_homography::check_nested_algo_configuration("homography_estimator", config)
+    kwiver::vital::algo::estimate_homography::check_nested_algo_configuration("homography_estimator", config)
     &&
-    algo::match_features::check_nested_algo_configuration("feature_matcher1", config)
+    kwiver::vital::algo::match_features::check_nested_algo_configuration("feature_matcher1", config)
     &&
     config_valid
   );

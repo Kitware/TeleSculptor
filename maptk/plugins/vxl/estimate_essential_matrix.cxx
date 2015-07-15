@@ -108,7 +108,7 @@ estimate_essential_matrix
 {
   // get base config from base class
   kwiver::vital::config_block_sptr config =
-      maptk::algo::estimate_essential_matrix::get_configuration();
+      kwiver::vital::algo::estimate_essential_matrix::get_configuration();
 
   config->set_value("verbose", d_->verbose,
                     "If true, write status messages to the terminal showing "

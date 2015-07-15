@@ -42,7 +42,7 @@
 #include <vital/types/image_container.h>
 #include <vital/types/track_set.h>
 
-#include <maptk/algo/close_loops.h>
+#include <vital/algo/close_loops.h>
 #include <maptk/plugins/vxl/vxl_config.h>
 
 
@@ -60,7 +60,7 @@ namespace vxl
  * filtering.
  */
 class MAPTK_VXL_EXPORT close_loops_homography_guided
-  : public kwiver::vital::algorithm_impl<vxl::close_loops_homography_guided, algo::close_loops>
+  : public kwiver::vital::algorithm_impl<vxl::close_loops_homography_guided, kwiver::vital::algo::close_loops>
 {
 public:
 

@@ -38,7 +38,7 @@
 
 #include <boost/scoped_ptr.hpp>
 
-#include <maptk/algo/initialize_cameras_landmarks.h>
+#include <vital/algo/initialize_cameras_landmarks.h>
 #include <maptk/plugins/vxl/vxl_config.h>
 
 
@@ -51,7 +51,7 @@ namespace vxl
 /// A class for initialization of cameras and landmarks using VXL
 class MAPTK_VXL_EXPORT initialize_cameras_landmarks
 : public kwiver::vital::algorithm_impl<initialize_cameras_landmarks,
-                              algo::initialize_cameras_landmarks>
+                              kwiver::vital::algo::initialize_cameras_landmarks>
 {
 public:
   /// Constructor

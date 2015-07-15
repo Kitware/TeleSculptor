@@ -97,7 +97,7 @@ triangulate_landmarks
 ::get_configuration() const
 {
   // get base config from base class
-  kwiver::vital::config_block_sptr config = maptk::algo::triangulate_landmarks::get_configuration();
+  kwiver::vital::config_block_sptr config = kwiver::vital::algo::triangulate_landmarks::get_configuration();
   return config;
 }
 

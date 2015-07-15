@@ -154,7 +154,7 @@ filter_features_magnitude
 {
   // get base config from base class
   kwiver::vital::config_block_sptr config =
-      maptk::algo::filter_features::get_configuration();
+      kwiver::vital::algo::filter_features::get_configuration();
 
   config->set_value("top_fraction", d_->top_fraction,
                     "Fraction of strongest keypoints to keep, range (0.0, 1.0]");

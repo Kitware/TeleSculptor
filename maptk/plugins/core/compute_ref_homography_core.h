@@ -39,7 +39,7 @@
 #include <boost/scoped_ptr.hpp>
 
 #include <vital/algo/algorithm.h>
-#include <maptk/algo/compute_ref_homography.h>
+#include <vital/algo/compute_ref_homography.h>
 #include <vital/types/homography.h>
 #include <vital/types/image_container.h>
 #include <vital/types/track_set.h>
@@ -68,7 +68,7 @@ namespace core
  * compute reference frames on all frames in a sequence.
  */
 class PLUGIN_CORE_EXPORT compute_ref_homography_core
-  : public kwiver::vital::algorithm_impl<compute_ref_homography_core, algo::compute_ref_homography>
+  : public kwiver::vital::algorithm_impl<compute_ref_homography_core, kwiver::vital::algo::compute_ref_homography>
 {
 public:
 

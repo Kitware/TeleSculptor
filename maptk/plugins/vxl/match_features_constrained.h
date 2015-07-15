@@ -37,7 +37,7 @@
 #define MAPTK_PLUGINS_VXL_MATCH_FEATURES_CONSTRAINED_H_
 
 #include "vxl_config.h"
-#include <maptk/algo/match_features.h>
+#include <vital/algo/match_features.h>
 
 #include <boost/scoped_ptr.hpp>
 
@@ -61,7 +61,7 @@ namespace vxl
  *  the descriptors for the neighbors and finds the best match by appearance.
  */
 class MAPTK_VXL_EXPORT match_features_constrained
-  : public kwiver::vital::algorithm_impl<match_features_constrained, algo::match_features>
+  : public kwiver::vital::algorithm_impl<match_features_constrained, kwiver::vital::algo::match_features>
 {
 public:
   /// Constructor

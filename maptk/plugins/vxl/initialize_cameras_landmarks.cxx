@@ -42,8 +42,8 @@
 #include <vital/exceptions.h>
 #include <vital/io/eigen_io.h>
 
-#include <maptk/algo/estimate_essential_matrix.h>
-#include <maptk/algo/triangulate_landmarks.h>
+#include <vital/algo/estimate_essential_matrix.h>
+#include <vital/algo/triangulate_landmarks.h>
 #include <maptk/plugins/vxl/camera_map.h>
 #include <maptk/plugins/vxl/camera.h>
 
@@ -97,8 +97,8 @@ public:
   bool verbose;
   bool retriangulate_all;
   camera_d base_camera;
-  algo::estimate_essential_matrix_sptr e_estimator;
-  algo::triangulate_landmarks_sptr lm_triangulator;
+  kwiver::vital::algo::estimate_essential_matrix_sptr e_estimator;
+  kwiver::vital::algo::triangulate_landmarks_sptr lm_triangulator;
 };
 
 
@@ -304,7 +304,7 @@ initialize_cameras_landmarks
 {
   // get base config from base class
   kwiver::vital::config_block_sptr config =
-      maptk::algo::initialize_cameras_landmarks::get_configuration();
+      kwiver::vital::algo::initialize_cameras_landmarks::get_configuration();
 
   const camera_intrinsics_d& K = d_->base_camera.get_intrinsics();
 
@@ -333,10 +333,10 @@ initialize_cameras_landmarks
                     "This is almost always zero in any real camera.");
 
   // nested algorithm configurations
-  algo::estimate_essential_matrix
+  kwiver::vital::algo::estimate_essential_matrix
       ::get_nested_algo_configuration("essential_mat_estimator",
                                       config, d_->e_estimator);
-  algo::triangulate_landmarks
+  kwiver::vital::algo::triangulate_landmarks
       ::get_nested_algo_configuration("lm_triangulator",
                                       config, d_->lm_triangulator);
   return config;
@@ -351,10 +351,10 @@ initialize_cameras_landmarks
   const camera_intrinsics_d& K = d_->base_camera.get_intrinsics();
 
   // Set nested algorithm configurations
-  algo::estimate_essential_matrix
+  kwiver::vital::algo::estimate_essential_matrix
       ::set_nested_algo_configuration("essential_mat_estimator",
                                       config, d_->e_estimator);
-  algo::triangulate_landmarks
+  kwiver::vital::algo::triangulate_landmarks
       ::set_nested_algo_configuration("lm_triangulator",
                                       config, d_->lm_triangulator);
 
@@ -382,10 +382,10 @@ bool
 initialize_cameras_landmarks
 ::check_configuration(kwiver::vital::config_block_sptr config) const
 {
-  return algo::estimate_essential_matrix
+  return kwiver::vital::algo::estimate_essential_matrix
              ::check_nested_algo_configuration("essential_mat_estimator",
                                                config)
-      && algo::triangulate_landmarks
+      && kwiver::vital::algo::triangulate_landmarks
              ::check_nested_algo_configuration("lm_triangulator", config);
 }
 

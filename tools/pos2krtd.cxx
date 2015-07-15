@@ -363,7 +363,7 @@ static int maptk_main(int argc, char const* argv[])
   kwiver::vital::rotation_d ins_rot_offset = config->get_value<kwiver::vital::rotation_d>("ins:rotation_offset");
 
 
-  maptk::algo::geo_map_sptr geo_mapper = maptk::algo::geo_map::create("proj");
+  kwiver::vital::algo::geo_map_sptr geo_mapper = kwiver::vital::algo::geo_map::create("proj");
   if( !geo_mapper )
   {
     std::cerr << "No geo_map module available" << std::endl;

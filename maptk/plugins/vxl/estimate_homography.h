@@ -36,7 +36,7 @@
 #ifndef MAPTK_PLUGINS_VXL_ESTIMATE_HOMOGRAPHY_H_
 #define MAPTK_PLUGINS_VXL_ESTIMATE_HOMOGRAPHY_H_
 
-#include <maptk/algo/estimate_homography.h>
+#include <vital/algo/estimate_homography.h>
 #include <maptk/plugins/vxl/vxl_config.h>
 
 
@@ -48,7 +48,7 @@ namespace vxl
 
 /// A class that uses RREL in VXL to estimate a homography from matching 2D points
 class MAPTK_VXL_EXPORT estimate_homography
-  : public kwiver::vital::algorithm_impl<estimate_homography, algo::estimate_homography>
+  : public kwiver::vital::algorithm_impl<estimate_homography, kwiver::vital::algo::estimate_homography>
 {
 public:
   /// Return the name of this implementation

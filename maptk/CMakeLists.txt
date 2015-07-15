@@ -31,23 +31,6 @@ set(maptk_public_headers
   ins_data.h
   ins_data_io.h
 
-  algo/analyze_tracks.h
-  algo/bundle_adjust.h
-  algo/close_loops.h
-  algo/compute_ref_homography.h
-  algo/detect_features.h
-  algo/draw_tracks.h
-  algo/estimate_essential_matrix.h
-  algo/estimate_homography.h
-  algo/estimate_similarity_transform.h
-  algo/extract_descriptors.h
-  algo/filter_features.h
-  algo/geo_map.h
-  algo/initialize_cameras_landmarks.h
-  algo/match_features.h
-  algo/optimize_cameras.h
-  algo/triangulate_landmarks.h
-
   plugin_interface/algorithm_plugin_interface.h
   plugin_interface/algorithm_plugin_interface_macros.h
   )
@@ -62,22 +45,6 @@ set(maptk_sources
   ins_data.cxx
   ins_data_io.cxx
 
-  algo/analyze_tracks.cxx
-  algo/bundle_adjust.cxx
-  algo/close_loops.cxx
-  algo/compute_ref_homography.cxx
-  algo/detect_features.cxx
-  algo/draw_tracks.cxx
-  algo/estimate_essential_matrix.cxx
-  algo/estimate_homography.cxx
-  algo/estimate_similarity_transform.cxx
-  algo/extract_descriptors.cxx
-  algo/filter_features.cxx
-  algo/geo_map.cxx
-  algo/initialize_cameras_landmarks.cxx
-  algo/match_features.cxx
-  algo/optimize_cameras.cxx
-  algo/triangulate_landmarks.cxx
   )
 
 maptk_install_headers(

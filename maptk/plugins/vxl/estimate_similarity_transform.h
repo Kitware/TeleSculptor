@@ -36,7 +36,7 @@
 #ifndef MAPTK_PLUGINS_VXL_ESTIMATE_SIMILARITY_TRANSFORM_H_
 #define MAPTK_PLUGINS_VXL_ESTIMATE_SIMILARITY_TRANSFORM_H_
 
-#include <maptk/algo/estimate_similarity_transform.h>
+#include <vital/algo/estimate_similarity_transform.h>
 #include <maptk/plugins/vxl/vxl_config.h>
 #include <vital/types/vector.h>
 
@@ -51,7 +51,7 @@ namespace vxl
 /// VXL implementation of similarity transform estimation
 class MAPTK_VXL_EXPORT estimate_similarity_transform
   : public kwiver::vital::algorithm_impl<estimate_similarity_transform,
-                                         algo::estimate_similarity_transform>
+                                         kwiver::vital::algo::estimate_similarity_transform>
 {
 public:
   /// Name of this implementation

@@ -115,7 +115,7 @@ kwiver::vital::config_block_sptr
 analyze_tracks
 ::get_configuration() const
 {
-  kwiver::vital::config_block_sptr config = maptk::algo::analyze_tracks::get_configuration();
+  kwiver::vital::config_block_sptr config = kwiver::vital::algo::analyze_tracks::get_configuration();
 
   config->set_value("output_summary", d_->output_summary,
                     "Output a summary descriptor of high-level properties.");

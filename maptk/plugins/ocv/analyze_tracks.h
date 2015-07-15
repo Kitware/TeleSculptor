@@ -38,7 +38,7 @@
 
 #include <boost/scoped_ptr.hpp>
 
-#include <maptk/algo/analyze_tracks.h>
+#include <vital/algo/analyze_tracks.h>
 
 #include <maptk/plugins/ocv/ocv_config.h>
 
@@ -51,7 +51,7 @@ namespace ocv
 
 /// A class for outputting various debug info about feature tracks
 class MAPTK_OCV_EXPORT analyze_tracks
-: public kwiver::vital::algorithm_impl<analyze_tracks, algo::analyze_tracks>
+: public kwiver::vital::algorithm_impl<analyze_tracks, kwiver::vital::algo::analyze_tracks>
 {
 public:
 

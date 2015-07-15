@@ -34,7 +34,6 @@
 
 #include <vital/config/config_block.h>
 
-#include <vital/algo/algorithm.h>
 #include <vital/types/camera.h>
 #include <vital/types/camera_map.h>
 #include <vital/types/landmark.h>
@@ -43,7 +42,8 @@
 #include <vital/types/vector.h>
 #include <vital/vital_types.h>
 
-#include <maptk/algo/estimate_similarity_transform.h>
+#include <vital/algo/algorithm.h>
+#include <vital/algo/estimate_similarity_transform.h>
 
 #define TEST_ARGS ()
 DECLARE_TEST_MAP();
@@ -55,7 +55,7 @@ namespace
 
 /// Dummy algo impl to test function wrappers
 class dummy_est
-  : public kwiver::vital::algorithm_impl<dummy_est, maptk::algo::estimate_similarity_transform>
+  : public kwiver::vital::algorithm_impl<dummy_est, kwiver::vital::algo::estimate_similarity_transform>
 {
 public:
   dummy_est()
@@ -87,7 +87,7 @@ public:
   size_t expected_size;
 };
 
-}
+} // end namespace
 
 
 int
@@ -99,13 +99,12 @@ main(int argc, char *argv[])
 }
 
 
-using namespace maptk;
 using namespace std;
 
 
 IMPLEMENT_TEST(baseline)
 {
-  algo::estimate_similarity_transform_sptr est(new dummy_est());
+  kwiver::vital::algo::estimate_similarity_transform_sptr est(new dummy_est());
   vector<vector_3d> pts1, pts2;
   est->estimate_transform(pts1, pts2);
 }
@@ -121,7 +120,7 @@ IMPLEMENT_TEST(vector_of_cameras)
     to_cams.push_back(camera_sptr(new camera_d()));
   }
 
-  algo::estimate_similarity_transform_sptr est(new dummy_est(N));
+  kwiver::vital::algo::estimate_similarity_transform_sptr est(new dummy_est(N));
   est->estimate_transform(from_cams, to_cams);
 }
 
@@ -136,7 +135,7 @@ IMPLEMENT_TEST(vector_of_landmarks)
     to_lmks.push_back(landmark_sptr(new landmark_d()));
   }
 
-  algo::estimate_similarity_transform_sptr est(new dummy_est(N));
+  kwiver::vital::algo::estimate_similarity_transform_sptr est(new dummy_est(N));
   est->estimate_transform(from_lmks, to_lmks);
 }
 
@@ -154,7 +153,7 @@ IMPLEMENT_TEST(sync_camera_map)
   camera_map_sptr from_cmap(new simple_camera_map(from_map)),
                   to_cmap(new simple_camera_map(to_map));
 
-  algo::estimate_similarity_transform_sptr est(new dummy_est(N));
+  kwiver::vital::algo::estimate_similarity_transform_sptr est(new dummy_est(N));
   est->estimate_transform(from_cmap, to_cmap);
 }
 
@@ -178,7 +177,7 @@ IMPLEMENT_TEST(disjoint_camera_maps)
   camera_map_sptr from_cmap(new simple_camera_map(from_map)),
                   to_cmap(new simple_camera_map(to_map));
 
-  algo::estimate_similarity_transform_sptr est1(new dummy_est(overlap));
+  kwiver::vital::algo::estimate_similarity_transform_sptr est1(new dummy_est(overlap));
   est1->estimate_transform(from_cmap, to_cmap);
 
 
@@ -202,7 +201,7 @@ IMPLEMENT_TEST(disjoint_camera_maps)
   camera_map_sptr from_cmap2(new simple_camera_map(from_map)),
                   to_cmap2(new simple_camera_map(to_map));
 
-  algo::estimate_similarity_transform_sptr est2(new dummy_est(4));
+  kwiver::vital::algo::estimate_similarity_transform_sptr est2(new dummy_est(4));
   est2->estimate_transform(from_cmap2, to_cmap2);
 }
 
@@ -220,7 +219,7 @@ IMPLEMENT_TEST(sync_landmark_map)
   landmark_map_sptr from_cmap(new simple_landmark_map(from_map)),
                     to_cmap(new simple_landmark_map(to_map));
 
-  algo::estimate_similarity_transform_sptr est(new dummy_est(N));
+  kwiver::vital::algo::estimate_similarity_transform_sptr est(new dummy_est(N));
   est->estimate_transform(from_cmap, to_cmap);
 }
 
@@ -244,7 +243,7 @@ IMPLEMENT_TEST(disjoint_landmark_maps)
   landmark_map_sptr from_cmap(new simple_landmark_map(from_map)),
                     to_cmap(new simple_landmark_map(to_map));
 
-  algo::estimate_similarity_transform_sptr est1(new dummy_est(overlap));
+  kwiver::vital::algo::estimate_similarity_transform_sptr est1(new dummy_est(overlap));
   est1->estimate_transform(from_cmap, to_cmap);
 
 
@@ -268,6 +267,6 @@ IMPLEMENT_TEST(disjoint_landmark_maps)
   landmark_map_sptr from_cmap2(new simple_landmark_map(from_map)),
                     to_cmap2(new simple_landmark_map(to_map));
 
-  algo::estimate_similarity_transform_sptr est2(new dummy_est(4));
+  kwiver::vital::algo::estimate_similarity_transform_sptr est2(new dummy_est(4));
   est2->estimate_transform(from_cmap2, to_cmap2);
 }

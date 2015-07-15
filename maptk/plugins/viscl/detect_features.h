@@ -33,7 +33,7 @@
 
 #include <boost/scoped_ptr.hpp>
 
-#include <maptk/algo/detect_features.h>
+#include <vital/algo/detect_features.h>
 #include <maptk/plugins/viscl/viscl_config.h>
 
 
@@ -45,7 +45,7 @@ namespace vcl
 
 /// An algorithm class for detecting feature points using VisCL
 class MAPTK_VISCL_EXPORT detect_features
-: public kwiver::vital::algorithm_impl<detect_features, algo::detect_features>
+: public kwiver::vital::algorithm_impl<detect_features, kwiver::vital::algo::detect_features>
 {
 public:
   /// Constructor
