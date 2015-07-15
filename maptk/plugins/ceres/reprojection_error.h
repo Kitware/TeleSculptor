@@ -49,6 +49,67 @@ namespace maptk
 namespace ceres
 {
 
+
+/// Helper function to apply pose transformations and project a point
+/**
+ * \param [in] pose: Camera pose (extrinsics) data block
+ *             - 3 for rotation(angle axis), 3 for center
+ * \param [in] point: 3D point.
+ * \param [out] xy: projected 2D normalized image coordinate
+ */
+template <typename T>
+void project_point(const T* const pose,
+                   const T* const point,
+                   T* xy)
+{
+  // Apply external parameters (Pose)
+  const T* rotation = pose;
+  const T* center = pose + 3;
+
+  T translated_point[3];
+  translated_point[0] = point[0] - center[0];
+  translated_point[1] = point[1] - center[1];
+  translated_point[2] = point[2] - center[2];
+
+  T rotated_translated_point[3];
+  // Rotate the point according the camera rotation
+  ::ceres::AngleAxisRotatePoint(rotation,
+                                translated_point,
+                                rotated_translated_point);
+
+  // Transform the point from homogeneous to euclidean
+  xy[0] = rotated_translated_point[0] / rotated_translated_point[2];
+  xy[1] = rotated_translated_point[1] / rotated_translated_point[2];
+}
+
+
+/// Helper function to apply the intrinsic camera calibration matrix
+/**
+ * \param [in] intrinsics: [focal, principal point [x,y], aspect, skew]
+ * \param [in] xy: 2D point in normalized image coordinates
+ * \param [out] image_xy: 2D point in actual image coordinates
+ */
+template <typename T>
+void apply_intrinsic_matrix(const T* intrinsics,
+                            const T* xy,
+                            T* image_xy)
+{
+  const T& x = xy[0];
+  const T& y = xy[1];
+
+  // Apply intrinsic parameters
+  const T& focal = intrinsics[0];
+  const T& principal_point_x = intrinsics[1];
+  const T& principal_point_y = intrinsics[2];
+  const T& aspect_ratio = intrinsics[3];
+  const T& skew = intrinsics[4];
+
+  // Apply instrinsics to get the final image coordinates
+  image_xy[0] = principal_point_x + focal * x + skew * y;
+  image_xy[1] = principal_point_y + focal / aspect_ratio * y;
+}
+
+
 /// Ceres functor for perspective pinhole camera with no distortion
 /**
  *Data parameter blocks are the following <2,5,6,3>
@@ -66,61 +127,31 @@ public:
   reprojection_error(const double x, const double y)
       : x_(x), y_(y) {}
 
-  /// Indices of camera intrsic parameter block.
-  enum {
-    OFFSET_FOCAL_LENGTH = 0,
-    OFFSET_PRINCIPAL_POINT_X = 1,
-    OFFSET_PRINCIPAL_POINT_Y = 2,
-    OFFSET_ASPECT_RATIO = 3,
-    OFFSET_SKEW = 4,
-  };
-
   /// Reprojection error functor for use in Ceres
   /**
    * \param [in] intrinsics: Camera intrinsics data block
    * \param [in] pose: Camera pose (extrinsics) data block
    *             - 3 for rotation(angle axis), 3 for center
-   * \param [in] point: 3d point.
+   * \param [in] point: 3D point.
    * \param [out] residuals
    */
   template <typename T> bool operator()(const T* const intrinsics,
                                         const T* const pose,
                                         const T* const point,
-                                        T* residuals) const {
-    // Apply external parameters (Pose)
-    const T* rotation = pose;
-    const T* center = pose + 3;
+                                        T* residuals) const
+  {
+    T xy[2], image_xy[2];
 
-    T translated_point[3];
-    translated_point[0] = point[0] - center[0];
-    translated_point[1] = point[1] - center[1];
-    translated_point[2] = point[2] - center[2];
+    // Project the point into 2D
+    project_point(pose, point, xy);
 
-    T rotated_translated_point[3];
-    // Rotate the point according the camera rotation
-    ::ceres::AngleAxisRotatePoint(rotation,
-                                  translated_point,
-                                  rotated_translated_point);
-
-    // Transform the point from homogeneous to euclidean
-    const T x = rotated_translated_point[0] / rotated_translated_point[2];
-    const T y = rotated_translated_point[1] / rotated_translated_point[2];
-
-    // Apply intrinsic parameters
-    const T& focal = intrinsics[OFFSET_FOCAL_LENGTH];
-    const T& principal_point_x = intrinsics[OFFSET_PRINCIPAL_POINT_X];
-    const T& principal_point_y = intrinsics[OFFSET_PRINCIPAL_POINT_Y];
-    const T& aspect_ratio = intrinsics[OFFSET_ASPECT_RATIO];
-    const T& skew = intrinsics[OFFSET_SKEW];
-
-    // Apply instrinsics to get the final image coordinates
-    const T projected_x = principal_point_x + focal * x + skew * y;
-    const T projected_y = principal_point_y + focal / aspect_ratio * y;
+    // Apply the intrinsic calibration matrix
+    apply_intrinsic_matrix(intrinsics, xy, image_xy);
 
     // Compute the reprojection error
     // difference between the predicted and observed position
-    residuals[0] = projected_x - T(x_);
-    residuals[1] = projected_y - T(y_);
+    residuals[0] = image_xy[0] - T(x_);
+    residuals[1] = image_xy[1] - T(y_);
     return true;
   }
 
