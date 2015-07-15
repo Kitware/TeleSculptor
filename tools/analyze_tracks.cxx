@@ -38,6 +38,7 @@
 #include <vital/config/config_block_io.h>
 
 #include <vital/algorithm_plugin_manager.h>
+#include <vital/algo/image_io.h>
 #include <vital/exceptions.h>
 #include <vital/io/camera_io.h>
 #include <vital/io/camera_map_io.h>
@@ -49,7 +50,6 @@
 #include <vital/vital_types.h>
 
 #include <maptk/projected_track_set.h>
-#include <maptk/algo/image_io.h>
 #include <maptk/algo/analyze_tracks.h>
 #include <maptk/algo/draw_tracks.h>
 
@@ -120,8 +120,8 @@ static bool check_config( kwiver::vital::config_block_sptr config )
       std::cerr << "Cannot find image list file" << std::endl;
       return false;
     }
-    else if( !maptk::algo::image_io::check_nested_algo_configuration( "image_reader", config ) ||
-             !maptk::algo::image_io::check_nested_algo_configuration( "track_drawer", config ) )
+    else if( !kwiver::vital::algo::image_io::check_nested_algo_configuration( "image_reader", config ) ||
+             !kwiver::vital::algo::image_io::check_nested_algo_configuration( "track_drawer", config ) )
     {
       std::cerr << "Unable to configure track drawer" << std::endl;
       return false;
@@ -188,7 +188,7 @@ static int maptk_main(int argc, char const* argv[])
   // Set up top level configuration w/ defaults where applicable.
   kwiver::vital::config_block_sptr config = default_config();
 
-  algo::image_io_sptr image_reader;
+  kwiver::vital::algo::image_io_sptr image_reader;
   algo::analyze_tracks_sptr analyze_tracks;
   algo::draw_tracks_sptr draw_tracks;
 
@@ -207,8 +207,8 @@ static int maptk_main(int argc, char const* argv[])
 
   if( use_images )
   {
-    algo::image_io::set_nested_algo_configuration( "image_reader", config, image_reader );
-    algo::image_io::get_nested_algo_configuration( "image_reader", config, image_reader );
+    kwiver::vital::algo::image_io::set_nested_algo_configuration( "image_reader", config, image_reader );
+    kwiver::vital::algo::image_io::get_nested_algo_configuration( "image_reader", config, image_reader );
 
     algo::draw_tracks::set_nested_algo_configuration( "track_drawer", config, draw_tracks );
     algo::draw_tracks::get_nested_algo_configuration( "track_drawer", config, draw_tracks );

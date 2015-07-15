@@ -36,7 +36,7 @@
 #ifndef MAPTK_PLUGINS_VXL_IMAGE_IO_H_
 #define MAPTK_PLUGINS_VXL_IMAGE_IO_H_
 
-#include <maptk/algo/image_io.h>
+#include <vital/algo/image_io.h>
 #include <maptk/plugins/vxl/vxl_config.h>
 
 #include <boost/scoped_ptr.hpp>
@@ -49,7 +49,7 @@ namespace vxl
 
 /// A class for using VXL to read and write images
 class MAPTK_VXL_EXPORT image_io
-  : public kwiver::vital::algorithm_impl<image_io, algo::image_io>
+  : public kwiver::vital::algorithm_impl<image_io, kwiver::vital::algo::image_io>
 {
 public:
   /// Constructor

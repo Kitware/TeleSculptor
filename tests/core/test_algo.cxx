@@ -42,8 +42,8 @@
 #include <vital/exceptions/algorithm.h>
 #include <vital/vital_types.h>
 #include <vital/algorithm_plugin_manager.h>
+#include <vital/algo/track_features.h>
 
-#include <maptk/algo/track_features.h>
 #include <maptk/algo/match_features.h>
 
 #include <boost/foreach.hpp>
@@ -122,7 +122,7 @@ IMPLEMENT_TEST(create_from_name)
   kwiver::vital::algorithm_sptr valid = kwiver::vital::algorithm::create("match_features", "homography_guided");
   TEST_EQUAL("create valid algorithm", !valid, false);
 
-  algo::match_features_sptr mf = boost::dynamic_pointer_cast<algo::match_features>(valid);
+  maptk::algo::match_features_sptr mf = boost::dynamic_pointer_cast<maptk::algo::match_features>(valid);
   TEST_EQUAL("create correct type", !mf, false);
 
   TEST_EQUAL("create correct impl", mf->impl_name(), "homography_guided");
@@ -135,9 +135,8 @@ IMPLEMENT_TEST(track_features_before_configuration)
   kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
 
   using namespace std;
-  using namespace maptk::algo;
 
-  track_features_sptr track_features_impl = track_features::create("core");
+  kwiver::vital::algo::track_features_sptr track_features_impl = kwiver::vital::algo::track_features::create("core");
 
   cerr << "Contents of kwiver::vital::config_block BEFORE attempted configuration:" << endl;
   kwiver::vital::config_block_sptr tf_config = track_features_impl->get_configuration();
@@ -199,10 +198,9 @@ IMPLEMENT_TEST(track_features_check_config)
   // register core algorithms
   kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
 
-  using namespace maptk::algo;
   using namespace std;
 
-  track_features_sptr tf_impl = track_features::create("core");
+  kwiver::vital::algo::track_features_sptr tf_impl = kwiver::vital::algo::track_features::create("core");
 
   // Checking that exception is thrown when trying to configure with no config
   // parameters.

@@ -40,13 +40,13 @@
 #include <boost/shared_ptr.hpp>
 
 #include <vital/algo/algorithm.h>
+#include <vital/algo/track_features.h>
 #include <vital/types/image_container.h>
 #include <vital/types/track_set.h>
 
 #include <maptk/algo/detect_features.h>
 #include <maptk/algo/extract_descriptors.h>
 #include <maptk/algo/match_features.h>
-#include <maptk/algo/track_features.h>
 #include <maptk/algo/close_loops.h>
 
 #include <maptk/plugins/core/plugin_core_config.h>
@@ -60,7 +60,7 @@ namespace core
 
 /// A basic feature tracker
 class PLUGIN_CORE_EXPORT track_features_core
-  : public kwiver::vital::algorithm_impl<track_features_core, algo::track_features>
+  : public kwiver::vital::algorithm_impl<track_features_core, kwiver::vital::algo::track_features>
 {
 public:
 

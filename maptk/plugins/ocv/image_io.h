@@ -36,7 +36,7 @@
 #ifndef MAPTK_PLUGINS_OCV_IMAGE_IO_H_
 #define MAPTK_PLUGINS_OCV_IMAGE_IO_H_
 
-#include <maptk/algo/image_io.h>
+#include <vital/algo/image_io.h>
 
 #include <maptk/plugins/ocv/ocv_config.h>
 
@@ -49,7 +49,7 @@ namespace ocv
 
 /// A class for using OpenCV to read and write images
 class MAPTK_OCV_EXPORT image_io
-  : public kwiver::vital::algorithm_impl<image_io, algo::image_io>
+  : public kwiver::vital::algorithm_impl<image_io, kwiver::vital::algo::image_io>
 {
 public:
   /// Return the name of this implementation

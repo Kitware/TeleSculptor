@@ -31,7 +31,7 @@
 #ifndef MAPTK_PLUGINS_VISCL_CONVERT_IMAGE_H_
 #define MAPTK_PLUGINS_VISCL_CONVERT_IMAGE_H_
 
-#include <maptk/algo/convert_image.h>
+#include <vital/algo/convert_image.h>
 #include <maptk/plugins/viscl/viscl_config.h>
 
 
@@ -43,7 +43,7 @@ namespace vcl
 
 /// Class to convert an image to a viscl base image
 class MAPTK_VISCL_EXPORT convert_image
-  : public kwiver::vital::algorithm_impl<convert_image, algo::convert_image>
+  : public kwiver::vital::algorithm_impl<convert_image, kwiver::vital::algo::convert_image>
 {
 public:
 

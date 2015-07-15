@@ -36,7 +36,7 @@
 #ifndef MAPTK_PLUGINS_CORE_CONVERT_IMAGE_BYPASS_H_
 #define MAPTK_PLUGINS_CORE_CONVERT_IMAGE_BYPASS_H_
 
-#include <maptk/algo/convert_image.h>
+#include <vital/algo/convert_image.h>
 
 #include <maptk/plugins/core/plugin_core_config.h>
 
@@ -50,7 +50,7 @@ namespace core
 
 /// A class for bypassing image conversion
 class PLUGIN_CORE_EXPORT convert_image_bypass
-  : public kwiver::vital::algorithm_impl<convert_image_bypass, algo::convert_image>
+  : public kwiver::vital::algorithm_impl<convert_image_bypass, kwiver::vital::algo::convert_image>
 {
 public:
    /// Default Constructor

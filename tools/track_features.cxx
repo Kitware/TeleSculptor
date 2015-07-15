@@ -47,11 +47,11 @@
 #include <vital/exceptions.h>
 #include <vital/io/track_set_io.h>
 #include <vital/vital_types.h>
+#include <vital/algo/image_io.h>
+#include <vital/algo/convert_image.h>
+#include <vital/algo/track_features.h>
 
-#include <maptk/algo/image_io.h>
 #include <maptk/algo/compute_ref_homography.h>
-#include <maptk/algo/convert_image.h>
-#include <maptk/algo/track_features.h>
 
 #include <boost/foreach.hpp>
 
@@ -104,9 +104,9 @@ static kwiver::vital::config_block_sptr default_config()
                     "output. The output_homography_generator algorithm type "
                     "only needs to be set if this is set.");
 
-  maptk::algo::track_features::get_nested_algo_configuration("feature_tracker", config, maptk::algo::track_features_sptr());
-  maptk::algo::image_io::get_nested_algo_configuration("image_reader", config, maptk::algo::image_io_sptr());
-  maptk::algo::convert_image::get_nested_algo_configuration("convert_image", config, maptk::algo::convert_image_sptr());
+  kwiver::vital::algo::track_features::get_nested_algo_configuration("feature_tracker", config, kwiver::vital::algo::track_features_sptr());
+  kwiver::vital::algo::image_io::get_nested_algo_configuration("image_reader", config, kwiver::vital::algo::image_io_sptr());
+  kwiver::vital::algo::convert_image::get_nested_algo_configuration("convert_image", config, kwiver::vital::algo::convert_image_sptr());
   maptk::algo::compute_ref_homography::get_nested_algo_configuration("output_homography_generator",
                                                                      config, maptk::algo::compute_ref_homography_sptr());
   return config;
@@ -188,17 +188,17 @@ static bool check_config(kwiver::vital::config_block_sptr config)
     MAPTK_CONFIG_FAIL("output_tracks_file is not in a valid directory");
   }
 
-  if (!maptk::algo::track_features::check_nested_algo_configuration("feature_tracker", config))
+  if (!kwiver::vital::algo::track_features::check_nested_algo_configuration("feature_tracker", config))
   {
     MAPTK_CONFIG_FAIL("feature_tracker configuration check failed");
   }
 
-  if (!maptk::algo::image_io::check_nested_algo_configuration("image_reader", config))
+  if (!kwiver::vital::algo::image_io::check_nested_algo_configuration("image_reader", config))
   {
     MAPTK_CONFIG_FAIL("image_reader configuration check failed");
   }
 
-  if (!maptk::algo::convert_image::check_nested_algo_configuration("convert_image", config))
+  if (!kwiver::vital::algo::convert_image::check_nested_algo_configuration("convert_image", config))
   {
     MAPTK_CONFIG_FAIL("convert_image configuration check failed");
   }
@@ -276,9 +276,9 @@ static int maptk_main(int argc, char const* argv[])
 
   // Set up top level configuration w/ defaults where applicable.
   kwiver::vital::config_block_sptr config = default_config();
-  algo::track_features_sptr feature_tracker;
-  algo::image_io_sptr image_reader;
-  algo::convert_image_sptr image_converter;
+  kwiver::vital::algo::track_features_sptr feature_tracker;
+  kwiver::vital::algo::image_io_sptr image_reader;
+  kwiver::vital::algo::convert_image_sptr image_converter;
   algo::compute_ref_homography_sptr out_homog_generator;
 
   // If -c/--config given, read in confg file, merge in with default just generated
@@ -291,12 +291,12 @@ static int maptk_main(int argc, char const* argv[])
   //std::cerr << "[DEBUG] Config BEFORE set:" << std::endl;
   //print_config(config);
 
-  algo::track_features::set_nested_algo_configuration("feature_tracker", config, feature_tracker);
-  algo::track_features::get_nested_algo_configuration("feature_tracker", config, feature_tracker);
-  algo::image_io::set_nested_algo_configuration("image_reader", config, image_reader);
-  algo::image_io::get_nested_algo_configuration("image_reader", config, image_reader);
-  algo::convert_image::set_nested_algo_configuration("convert_image", config, image_converter);
-  algo::convert_image::get_nested_algo_configuration("convert_image", config, image_converter);
+  kwiver::vital::algo::track_features::set_nested_algo_configuration("feature_tracker", config, feature_tracker);
+  kwiver::vital::algo::track_features::get_nested_algo_configuration("feature_tracker", config, feature_tracker);
+  kwiver::vital::algo::image_io::set_nested_algo_configuration("image_reader", config, image_reader);
+  kwiver::vital::algo::image_io::get_nested_algo_configuration("image_reader", config, image_reader);
+  kwiver::vital::algo::convert_image::set_nested_algo_configuration("convert_image", config, image_converter);
+  kwiver::vital::algo::convert_image::get_nested_algo_configuration("convert_image", config, image_converter);
   algo::compute_ref_homography::set_nested_algo_configuration("output_homography_generator", config, out_homog_generator);
   algo::compute_ref_homography::get_nested_algo_configuration("output_homography_generator", config, out_homog_generator);
 

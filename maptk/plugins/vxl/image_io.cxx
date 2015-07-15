@@ -112,7 +112,7 @@ image_io
 ::get_configuration() const
 {
   // get base config from base class
-  kwiver::vital::config_block_sptr config = maptk::algo::image_io::get_configuration();
+  kwiver::vital::config_block_sptr config = kwiver::vital::algo::image_io::get_configuration();
 
   config->set_value("auto_stretch", d_->auto_stretch,
                     "Dynamically stretch the range of the input data such that "
