@@ -28,6 +28,8 @@ set(maptk_public_headers
   local_geo_cs.h
   projected_track_set.h
   geo_reference_points_io.h
+  ins_data.h
+  ins_data_io.h
 
   algo/analyze_tracks.h
   algo/bundle_adjust.h
@@ -60,6 +62,8 @@ set(maptk_sources
   local_geo_cs.cxx
   projected_track_set.cxx
   geo_reference_points_io.cxx
+  ins_data.cxx
+  ins_data_io.cxx
 
   algo/analyze_tracks.cxx
   algo/bundle_adjust.cxx
