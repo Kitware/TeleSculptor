@@ -115,6 +115,7 @@ MAPTK_CERES_ENUM_HELPERS(::ceres, TrustRegionStrategyType)
 MAPTK_CERES_ENUM_HELPERS(::ceres, DoglegType)
 
 MAPTK_CERES_ENUM_HELPERS(ceres, LossFunctionType)
+MAPTK_CERES_ENUM_HELPERS(ceres, LensDistortionType)
 
 #undef MAPTK_CERES_ENUM_HELPERS
 
@@ -133,7 +134,8 @@ public:
     optimize_focal_length(true),
     optimize_aspect_ratio(false),
     optimize_principal_point(false),
-    optimize_skew(false)
+    optimize_skew(false),
+    lens_distortion_type(NO_DISTORTION)
   {
   }
 
@@ -144,7 +146,8 @@ public:
     optimize_focal_length(other.optimize_focal_length),
     optimize_aspect_ratio(other.optimize_aspect_ratio),
     optimize_principal_point(other.optimize_principal_point),
-    optimize_skew(other.optimize_skew)
+    optimize_skew(other.optimize_skew),
+    lens_distortion_type(other.lens_distortion_type)
   {
   }
 
@@ -164,6 +167,8 @@ public:
   bool optimize_principal_point;
   /// option to optimize skew
   bool optimize_skew;
+  /// the lens distortion model to use
+  LensDistortionType lens_distortion_type;
 };
 
 
@@ -241,6 +246,9 @@ bundle_adjust
                     "Include principal point parameters in bundle adjustment.");
   config->set_value("optimize_skew", d_->optimize_skew,
                     "Include skew parameters in bundle adjustment.");
+  config->set_value("lens_distortion_type", d_->lens_distortion_type,
+                    "Lens distortion model to use."
+                    + ceres_options< ceres::LensDistortionType >());
   return config;
 }
 
@@ -299,6 +307,9 @@ bundle_adjust
                                                          d_->optimize_principal_point);
   d_->optimize_skew = config->get_value<bool>("optimize_skew",
                                               d_->optimize_skew);
+  typedef ceres::LensDistortionType cld_t;
+  d_->lens_distortion_type = config->get_value<cld_t>("lens_distortion_type",
+                                                      d_->lens_distortion_type);
 }
 
 

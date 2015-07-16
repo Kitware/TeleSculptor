@@ -86,6 +86,35 @@ StringToLossFunctionType(std::string value, LossFunctionType* type)
   return false;
 }
 
+
+/// Provide a string representation for a LensDisortionType value
+const char*
+LensDistortionTypeToString(LensDistortionType type)
+{
+  switch (type)
+  {
+    CASESTR(NO_DISTORTION);
+    CASESTR(POLYNOMIAL_RADIAL_DISTORTION);
+    CASESTR(POLYNOMIAL_RADIAL_TANGENTIAL_DISTORTION);
+    CASESTR(RATIONAL_RADIAL_TANGENTIAL_DISTORTION);
+    default:
+      return "UNKNOWN";
+  }
+}
+
+
+/// Parse a LensDistortionType value from a string or return false
+bool
+StringToLensDistortionType(std::string value, LensDistortionType* type)
+{
+  UpperCase(&value);
+  STRENUM(NO_DISTORTION);
+  STRENUM(POLYNOMIAL_RADIAL_DISTORTION);
+  STRENUM(POLYNOMIAL_RADIAL_TANGENTIAL_DISTORTION);
+  STRENUM(RATIONAL_RADIAL_TANGENTIAL_DISTORTION);
+  return false;
+}
+
 #undef CASESTR
 #undef STRENUM
 

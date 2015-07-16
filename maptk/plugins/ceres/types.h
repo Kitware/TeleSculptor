@@ -58,6 +58,16 @@ enum LossFunctionType
   TUKEY_LOSS
 };
 
+/// The various models for lens distortion supported in the config
+enum LensDistortionType
+{
+  NO_DISTORTION,
+  POLYNOMIAL_RADIAL_DISTORTION,
+  POLYNOMIAL_RADIAL_TANGENTIAL_DISTORTION,
+  RATIONAL_RADIAL_TANGENTIAL_DISTORTION
+};
+
+
 /// Provide a string representation for a LossFunctionType value
 MAPTK_CERES_EXPORT const char*
 LossFunctionTypeToString(LossFunctionType type);
@@ -69,6 +79,16 @@ StringToLossFunctionType(std::string value, LossFunctionType* type);
 /// Construct a LossFunction object from the specified enum type
 MAPTK_CERES_EXPORT ::ceres::LossFunction*
 LossFunctionFactory(LossFunctionType type, double scale=1.0);
+
+
+/// Provide a string representation for a LensDisortionType value
+MAPTK_CERES_EXPORT const char*
+LensDistortionTypeToString(LensDistortionType type);
+
+/// Parse a LensDistortionType value from a string or return false
+MAPTK_CERES_EXPORT bool
+StringToLensDistortionType(std::string value, LensDistortionType* type);
+
 
 
 } // end namespace ceres
