@@ -65,7 +65,7 @@ test_reprojection_error(const maptk::camera& cam,
                        const maptk::feature& f)
 {
   using namespace maptk;
-  maptk::ceres::reprojection_error rpe(f.loc().x(), f.loc().y());
+  maptk::ceres::rpe_no_distortion rpe(f.loc().x(), f.loc().y());
 
   double pose[6];
   vector_3d rot = cam.rotation().rodrigues();

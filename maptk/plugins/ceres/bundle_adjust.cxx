@@ -433,7 +433,7 @@ bundle_adjust
         continue;
       }
       vector_2d pt = ts->feat->loc();
-      problem.AddResidualBlock(reprojection_error::create(pt.x(), pt.y()),
+      problem.AddResidualBlock(rpe_no_distortion::create(pt.x(), pt.y()),
                                loss_func,
                                &intrinsic_params[0],
                                &cam_itr->second[0],
