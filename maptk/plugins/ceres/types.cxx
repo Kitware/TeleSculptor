@@ -35,6 +35,7 @@
 
 
 #include <maptk/plugins/ceres/types.h>
+#include <maptk/plugins/ceres/lens_distortion.h>
 #include <ceres/loss_function.h>
 
 
@@ -139,6 +140,23 @@ LossFunctionFactory(LossFunctionType type, double s)
       return new ::ceres::TukeyLoss(s);
     default:
       return NULL;
+  }
+}
+
+/// Return the number of distortion parameters required for each type
+unsigned int
+num_distortion_params(LensDistortionType type)
+{
+  switch(type)
+  {
+  case POLYNOMIAL_RADIAL_DISTORTION:
+    return distortion_poly_radial::num_coeffs;
+  case POLYNOMIAL_RADIAL_TANGENTIAL_DISTORTION:
+    return distortion_poly_radial_tangential::num_coeffs;
+  case RATIONAL_RADIAL_TANGENTIAL_DISTORTION:
+    return distortion_ratpoly_radial_tangential::num_coeffs;
+  default:
+    return 0;
   }
 }
 

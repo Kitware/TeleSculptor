@@ -378,7 +378,9 @@ bundle_adjust
   // Extract the camera parameters into a mutable map
   typedef std::map<frame_id_t, std::vector<double> > cam_param_map_t;
   cam_param_map_t camera_params;
-  std::vector<double> intrinsic_params(5);
+  // number of lens distortion parameters in the selected model
+  const unsigned int ndp = num_distortion_params(d_->lens_distortion_type);
+  std::vector<double> intrinsic_params(5 + ndp, 0.0);
   BOOST_FOREACH(const map_camera_t::value_type& c, cams)
   {
     vector_3d rot = c.second->rotation().rodrigues();
@@ -394,6 +396,11 @@ bundle_adjust
     intrinsic_params[2] = K.principal_point().y();
     intrinsic_params[3] = K.aspect_ratio();
     intrinsic_params[4] = K.skew();
+    const Eigen::VectorXd& d = K.dist_coeffs();
+    // copy the intersection of parameters provided in K
+    // and those that are supported by the requested model type
+    unsigned int num_dp = std::min(ndp, static_cast<unsigned int>(d.size()));
+    std::copy(d.data(), d.data()+num_dp, &intrinsic_params[5]);
   }
 
   // the Ceres solver problem
@@ -444,7 +451,8 @@ bundle_adjust
         continue;
       }
       vector_2d pt = ts->feat->loc();
-      problem.AddResidualBlock(rpe_no_distortion::create(pt.x(), pt.y()),
+      problem.AddResidualBlock(create_cost_func(d_->lens_distortion_type,
+                                                pt.x(), pt.y()),
                                loss_func,
                                &intrinsic_params[0],
                                &cam_itr->second[0],
@@ -495,6 +503,9 @@ bundle_adjust
     K.set_principal_point(pp);
     K.set_aspect_ratio(intrinsic_params[3]);
     K.set_skew(intrinsic_params[4]);
+    Eigen::VectorXd dc(ndp);
+    std::copy(&intrinsic_params[5], &intrinsic_params[5]+ndp, dc.data());
+    K.set_dist_coeffs(dc);
     cams[cp.first] = camera_sptr(new camera_d(center, rot, K));
   }
 

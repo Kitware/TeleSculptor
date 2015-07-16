@@ -89,6 +89,9 @@ LensDistortionTypeToString(LensDistortionType type);
 MAPTK_CERES_EXPORT bool
 StringToLensDistortionType(std::string value, LensDistortionType* type);
 
+/// Return the number of distortion parameters required for each type
+MAPTK_CERES_EXPORT unsigned int
+num_distortion_params(LensDistortionType type);
 
 
 } // end namespace ceres
