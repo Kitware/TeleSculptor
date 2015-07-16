@@ -135,7 +135,12 @@ public:
     optimize_aspect_ratio(false),
     optimize_principal_point(false),
     optimize_skew(false),
-    lens_distortion_type(NO_DISTORTION)
+    lens_distortion_type(NO_DISTORTION),
+    optimize_dist_k1(true),
+    optimize_dist_k2(false),
+    optimize_dist_k3(false),
+    optimize_dist_p1_p2(false),
+    optimize_dist_k4_k5_k6(false)
   {
   }
 
@@ -147,7 +152,12 @@ public:
     optimize_aspect_ratio(other.optimize_aspect_ratio),
     optimize_principal_point(other.optimize_principal_point),
     optimize_skew(other.optimize_skew),
-    lens_distortion_type(other.lens_distortion_type)
+    lens_distortion_type(other.lens_distortion_type),
+    optimize_dist_k1(other.optimize_dist_k1),
+    optimize_dist_k2(other.optimize_dist_k2),
+    optimize_dist_k3(other.optimize_dist_k3),
+    optimize_dist_p1_p2(other.optimize_dist_p1_p2),
+    optimize_dist_k4_k5_k6(other.optimize_dist_k4_k5_k6)
   {
   }
 
@@ -169,6 +179,16 @@ public:
   bool optimize_skew;
   /// the lens distortion model to use
   LensDistortionType lens_distortion_type;
+  /// option to optimize radial distortion parameter k1
+  bool optimize_dist_k1;
+  /// option to optimize radial distortion parameter k2
+  bool optimize_dist_k2;
+  /// option to optimize radial distortion parameter k3
+  bool optimize_dist_k3;
+  /// option to optimize tangential distortions parameters p1, p2
+  bool optimize_dist_p1_p2;
+  /// option to optimize radial distortion parameters k4, k5, k6
+  bool optimize_dist_k4_k5_k6;
 };
 
 
@@ -249,6 +269,21 @@ bundle_adjust
   config->set_value("lens_distortion_type", d_->lens_distortion_type,
                     "Lens distortion model to use."
                     + ceres_options< ceres::LensDistortionType >());
+  config->set_value("optimize_dist_k1", d_->optimize_dist_k1,
+                    "Include radial lens distortion parameter k1 in "
+                    "bundle adjustment.");
+  config->set_value("optimize_dist_k2", d_->optimize_dist_k2,
+                    "Include radial lens distortion parameter k2 in "
+                    "bundle adjustment.");
+  config->set_value("optimize_dist_k3", d_->optimize_dist_k3,
+                    "Include radial lens distortion parameter k3 in "
+                    "bundle adjustment.");
+  config->set_value("optimize_dist_p1_p2", d_->optimize_dist_p1_p2,
+                    "Include tangential lens distortion parameters "
+                    "p1 and p2 in bundle adjustment.");
+  config->set_value("optimize_dist_k4_k5_k6", d_->optimize_dist_k4_k5_k6,
+                    "Include radial lens distortion parameters "
+                    "k4, k5, and k6 in bundle adjustment.");
   return config;
 }
 
@@ -310,6 +345,16 @@ bundle_adjust
   typedef ceres::LensDistortionType cld_t;
   d_->lens_distortion_type = config->get_value<cld_t>("lens_distortion_type",
                                                       d_->lens_distortion_type);
+  d_->optimize_dist_k1 = config->get_value<bool>("optimize_dist_k1",
+                                                 d_->optimize_dist_k1);
+  d_->optimize_dist_k2 = config->get_value<bool>("optimize_dist_k2",
+                                                 d_->optimize_dist_k2);
+  d_->optimize_dist_k3 = config->get_value<bool>("optimize_dist_k3",
+                                                 d_->optimize_dist_k3);
+  d_->optimize_dist_p1_p2 = config->get_value<bool>("optimize_dist_p1_p2",
+                                                    d_->optimize_dist_p1_p2);
+  d_->optimize_dist_k4_k5_k6 = config->get_value<bool>("optimize_dist_k4_k5_k6",
+                                                       d_->optimize_dist_k4_k5_k6);
 }
 
 
@@ -424,6 +469,29 @@ bundle_adjust
   if (!d_->optimize_skew)
   {
     constant_intrinsics.push_back(4);
+  }
+  if (!d_->optimize_dist_k1 && ndp > 0)
+  {
+    constant_intrinsics.push_back(5);
+  }
+  if (!d_->optimize_dist_k2 && ndp > 1)
+  {
+    constant_intrinsics.push_back(6);
+  }
+  if (!d_->optimize_dist_p1_p2 && ndp > 3)
+  {
+    constant_intrinsics.push_back(7);
+    constant_intrinsics.push_back(8);
+  }
+  if (!d_->optimize_dist_k3 && ndp > 4)
+  {
+    constant_intrinsics.push_back(9);
+  }
+  if (!d_->optimize_dist_k3 && ndp > 7)
+  {
+    constant_intrinsics.push_back(10);
+    constant_intrinsics.push_back(11);
+    constant_intrinsics.push_back(12);
   }
 
   // Create the loss function to use
