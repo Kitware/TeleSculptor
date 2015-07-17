@@ -102,8 +102,10 @@ noisy_landmarks(maptk::landmark_map_sptr landmarks,
   landmark_map::map_landmark_t lm_map = landmarks->landmarks();
   BOOST_FOREACH(landmark_map::map_landmark_t::value_type& p, lm_map)
   {
-    landmark_d& lm = dynamic_cast<landmark_d&>(*p.second);
+    landmark_sptr l = p.second->clone();
+    landmark_d& lm = dynamic_cast<landmark_d&>(*l);
     lm.set_loc(lm.get_loc() + random_point3d(stdev));
+    lm_map[p.first] = l;
   }
   return landmark_map_sptr(new simple_landmark_map(lm_map));
 }
