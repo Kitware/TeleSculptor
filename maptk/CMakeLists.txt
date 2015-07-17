@@ -71,14 +71,6 @@ if (CMAKE_CONFIGURATION_TYPES)
   set(config_subdir "/$<CONFIGURATION>")
 endif()
 
-
-###
-# C Interface
-#
-### add_subdirectory(c)
-### add_subdirectory(python)
-
-
 ###
 # Marking source root for documentation generation
 #
