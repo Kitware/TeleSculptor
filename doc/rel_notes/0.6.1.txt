@@ -1,0 +1,13 @@
+MAPTK v0.6.1 Release Notes
+==========================
+
+This release provides patches to the MAPTK v0.6.0 release to address issues.
+MAPTK v0.6.1 is primarily a bug fix release with very minimal new functionality.
+
+
+Updates since v0.6.0
+--------------------
+
+
+Fixes since v0.6.0
+------------------
