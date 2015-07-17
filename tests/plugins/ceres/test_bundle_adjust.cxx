@@ -545,3 +545,273 @@ IMPLEMENT_TEST(outlier_tracks)
   TEST_NEAR("median error after robust SBA", robust_loss_med_err, 0.0, track_stdev);
 
 }
+
+
+// helper for tests using distortion models in bundle adjustment
+void test_ba_using_distortion(maptk::config_block_sptr cfg,
+                              const Eigen::VectorXd& dc,
+                              bool clear_init_distortion)
+{
+  using namespace maptk;
+  ceres::bundle_adjust ba;
+  cfg->set_value("verbose", "true");
+  ba.set_configuration(cfg);
+
+  // create landmarks at the corners of a cube
+  landmark_map_sptr landmarks = testing::cube_corners(2.0);
+
+  // The intrinsic camera parameters to use
+  camera_intrinsics_d K(1000, vector_2d(640,480));
+  K.set_dist_coeffs(dc);
+
+  // create a camera sequence (elliptical path)
+  camera_map_sptr cameras = testing::camera_seq(20,K);
+
+  // create tracks from the projections
+  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+
+  // add Gaussian noise to the landmark positions
+  landmark_map_sptr landmarks0 = testing::noisy_landmarks(landmarks, 0.1);
+
+  if( clear_init_distortion )
+  {
+    // regenerate cameras without distortion so we can try to recover it
+    K.set_dist_coeffs(Eigen::VectorXd());
+    cameras = testing::camera_seq(20,K);
+  }
+
+  // add Gaussian noise to the camera positions and orientations
+  camera_map_sptr cameras0 = testing::noisy_cameras(cameras, 0.1, 0.1);
+
+  double init_rmse = reprojection_rmse(cameras0->cameras(),
+                                       landmarks0->landmarks(),
+                                       tracks->tracks());
+  std::cout << "initial reprojection RMSE: " << init_rmse << std::endl;
+  if (init_rmse < 10.0)
+  {
+    TEST_ERROR("Initial reprojection RMSE should be large before SBA");
+  }
+
+  ba.optimize(cameras0, landmarks0, tracks);
+
+  double end_rmse = reprojection_rmse(cameras0->cameras(),
+                                      landmarks0->landmarks(),
+                                      tracks->tracks());
+  TEST_NEAR("RMSE after SBA", end_rmse, 0.0, 1e-7);
+
+  // compare actual to estimated distortion parameters
+  if( clear_init_distortion )
+  {
+    Eigen::VectorXd dc2 = cameras0->cameras()[0]->intrinsics().dist_coeffs();
+    // The estimated parameter vector can be longer and zero padded
+    if( dc2.size() > dc.size() )
+    {
+      dc2 = dc2.head(dc.size());
+    }
+    Eigen::VectorXd diff = (dc2-dc).cwiseAbs();
+    std::cout << "distortion parameters\n"
+              << "  actual:   " << dc.transpose() << "\n"
+              << "  estimated: " << dc2.transpose() << "\n"
+              << "  difference: " << diff.transpose() << std::endl;
+  }
+}
+
+
+// use 1 lens distortion coefficent in bundle adjustment
+IMPLEMENT_TEST(use_lens_distortion_1)
+{
+  using namespace maptk;
+  ceres::bundle_adjust ba;
+  config_block_sptr cfg = ba.get_configuration();
+  cfg->set_value("lens_distortion_type", "POLYNOMIAL_RADIAL_DISTORTION");
+  cfg->set_value("optimize_dist_k1", false);
+  cfg->set_value("optimize_dist_k2", false);
+
+  // The lens distortion parameters to use
+  Eigen::VectorXd dc(1);
+  dc << -0.01;
+
+  test_ba_using_distortion(cfg, dc, false);
+}
+
+
+// use 2 lens distortion coefficents in bundle adjustment
+IMPLEMENT_TEST(use_lens_distortion_2)
+{
+  using namespace maptk;
+  ceres::bundle_adjust ba;
+  config_block_sptr cfg = ba.get_configuration();
+  cfg->set_value("lens_distortion_type", "POLYNOMIAL_RADIAL_DISTORTION");
+  cfg->set_value("optimize_dist_k1", false);
+  cfg->set_value("optimize_dist_k2", false);
+
+  // The lens distortion parameters to use
+  Eigen::VectorXd dc(2);
+  dc << -0.01, 0.002;
+
+  test_ba_using_distortion(cfg, dc, false);
+}
+
+
+// use 3 lens distortion coefficents in bundle adjustment
+IMPLEMENT_TEST(use_lens_distortion_3)
+{
+  using namespace maptk;
+  ceres::bundle_adjust ba;
+  config_block_sptr cfg = ba.get_configuration();
+  cfg->set_value("lens_distortion_type",
+                 "POLYNOMIAL_RADIAL_TANGENTIAL_DISTORTION");
+  cfg->set_value("optimize_dist_k1", false);
+  cfg->set_value("optimize_dist_k2", false);
+  cfg->set_value("optimize_dist_k3", false);
+  cfg->set_value("optimize_dist_p1_p2", false);
+
+  // The lens distortion parameters to use
+  Eigen::VectorXd dc(5);
+  dc << -0.01, 0.002, 0, 0, -0.005;
+
+  test_ba_using_distortion(cfg, dc, false);
+}
+
+
+// use 5 lens distortion coefficents in bundle adjustment
+IMPLEMENT_TEST(use_lens_distortion_5)
+{
+  using namespace maptk;
+  ceres::bundle_adjust ba;
+  config_block_sptr cfg = ba.get_configuration();
+  cfg->set_value("lens_distortion_type",
+                 "POLYNOMIAL_RADIAL_TANGENTIAL_DISTORTION");
+  cfg->set_value("optimize_dist_k1", false);
+  cfg->set_value("optimize_dist_k2", false);
+  cfg->set_value("optimize_dist_k3", false);
+  cfg->set_value("optimize_dist_p1_p2", false);
+
+  // The lens distortion parameters to use
+  Eigen::VectorXd dc(5);
+  dc << -0.01, 0.002, -0.0005, 0.001, -0.005;
+
+  test_ba_using_distortion(cfg, dc, false);
+}
+
+
+// use 8 lens distortion coefficents in bundle adjustment
+IMPLEMENT_TEST(use_lens_distortion_8)
+{
+  using namespace maptk;
+  ceres::bundle_adjust ba;
+  config_block_sptr cfg = ba.get_configuration();
+  cfg->set_value("lens_distortion_type",
+                 "RATIONAL_RADIAL_TANGENTIAL_DISTORTION");
+  cfg->set_value("optimize_dist_k1", false);
+  cfg->set_value("optimize_dist_k2", false);
+  cfg->set_value("optimize_dist_k3", false);
+  cfg->set_value("optimize_dist_p1_p2", false);
+  cfg->set_value("optimize_dist_k4_k5_k6", false);
+
+  // The lens distortion parameters to use
+  Eigen::VectorXd dc(8);
+  dc << -0.01, 0.002, -0.0005, 0.001, -0.005, 0.02, 0.0007, -0.003;
+
+  test_ba_using_distortion(cfg, dc, false);
+}
+
+
+// estimate 1 lens distortion coefficent in bundle adjustment
+IMPLEMENT_TEST(est_lens_distortion_1)
+{
+  using namespace maptk;
+  ceres::bundle_adjust ba;
+  config_block_sptr cfg = ba.get_configuration();
+  cfg->set_value("lens_distortion_type", "POLYNOMIAL_RADIAL_DISTORTION");
+  cfg->set_value("optimize_dist_k1", true);
+  cfg->set_value("optimize_dist_k2", false);
+
+  // The lens distortion parameters to use
+  Eigen::VectorXd dc(1);
+  dc << -0.01;
+
+  test_ba_using_distortion(cfg, dc, true);
+}
+
+
+// estimate 2 lens distortion coefficents in bundle adjustment
+IMPLEMENT_TEST(est_lens_distortion_2)
+{
+  using namespace maptk;
+  ceres::bundle_adjust ba;
+  config_block_sptr cfg = ba.get_configuration();
+  cfg->set_value("lens_distortion_type", "POLYNOMIAL_RADIAL_DISTORTION");
+  cfg->set_value("optimize_dist_k1", true);
+  cfg->set_value("optimize_dist_k2", true);
+
+  // The lens distortion parameters to use
+  Eigen::VectorXd dc(2);
+  dc << -0.01, 0.002;
+
+  test_ba_using_distortion(cfg, dc, true);
+}
+
+
+// estimate 3 lens distortion coefficents in bundle adjustment
+IMPLEMENT_TEST(est_lens_distortion_3)
+{
+  using namespace maptk;
+  ceres::bundle_adjust ba;
+  config_block_sptr cfg = ba.get_configuration();
+  cfg->set_value("lens_distortion_type",
+                 "POLYNOMIAL_RADIAL_TANGENTIAL_DISTORTION");
+  cfg->set_value("optimize_dist_k1", true);
+  cfg->set_value("optimize_dist_k2", true);
+  cfg->set_value("optimize_dist_k3", true);
+  cfg->set_value("optimize_dist_p1_p2", false);
+
+  // The lens distortion parameters to use
+  Eigen::VectorXd dc(5);
+  dc << -0.01, 0.002, 0, 0, -0.005;
+
+  test_ba_using_distortion(cfg, dc, true);
+}
+
+
+// estimate 5 lens distortion coefficents in bundle adjustment
+IMPLEMENT_TEST(est_lens_distortion_5)
+{
+  using namespace maptk;
+  ceres::bundle_adjust ba;
+  config_block_sptr cfg = ba.get_configuration();
+  cfg->set_value("lens_distortion_type",
+                 "POLYNOMIAL_RADIAL_TANGENTIAL_DISTORTION");
+  cfg->set_value("optimize_dist_k1", true);
+  cfg->set_value("optimize_dist_k2", true);
+  cfg->set_value("optimize_dist_k3", true);
+  cfg->set_value("optimize_dist_p1_p2", true);
+
+  // The lens distortion parameters to use
+  Eigen::VectorXd dc(5);
+  dc << -0.01, 0.002, -0.0005, 0.001, -0.005;
+
+  test_ba_using_distortion(cfg, dc, true);
+}
+
+
+// estimate 8 lens distortion coefficents in bundle adjustment
+IMPLEMENT_TEST(est_lens_distortion_8)
+{
+  using namespace maptk;
+  ceres::bundle_adjust ba;
+  config_block_sptr cfg = ba.get_configuration();
+  cfg->set_value("lens_distortion_type",
+                 "RATIONAL_RADIAL_TANGENTIAL_DISTORTION");
+  cfg->set_value("optimize_dist_k1", true);
+  cfg->set_value("optimize_dist_k2", true);
+  cfg->set_value("optimize_dist_k3", true);
+  cfg->set_value("optimize_dist_p1_p2", true);
+  cfg->set_value("optimize_dist_k4_k5_k6", true);
+
+  // The lens distortion parameters to use
+  Eigen::VectorXd dc(8);
+  dc << -0.01, 0.002, -0.0005, 0.001, -0.005, 0.02, 0.0007, -0.003;
+
+  test_ba_using_distortion(cfg, dc, true);
+}

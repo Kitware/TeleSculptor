@@ -40,6 +40,7 @@
 
 #include <maptk/metrics.h>
 #include <maptk/plugins/ceres/reprojection_error.h>
+#include <maptk/plugins/ceres/types.h>
 #include <maptk/projected_track_set.h>
 
 
@@ -58,14 +59,18 @@ main(int argc, char* argv[])
 }
 
 
-/// test the reprojection error
+/// test the reprojection error of a single residual
 void
 test_reprojection_error(const maptk::camera& cam,
-                       const maptk::landmark& lm,
-                       const maptk::feature& f)
+                        const maptk::landmark& lm,
+                        const maptk::feature& f,
+                        const maptk::ceres::LensDistortionType dist_type)
 {
   using namespace maptk;
-  maptk::ceres::reprojection_error rpe(f.loc().x(), f.loc().y());
+  using namespace maptk::ceres;
+
+  ::ceres::CostFunction* cost_func =
+      create_cost_func(dist_type, f.loc().x(), f.loc().y());
 
   double pose[6];
   vector_3d rot = cam.rotation().rodrigues();
@@ -73,39 +78,42 @@ test_reprojection_error(const maptk::camera& cam,
   vector_3d center = cam.center();
   std::copy(center.data(), center.data()+3, pose+3);
 
-  double intrinsics[5];
+  unsigned int ndp = num_distortion_params(dist_type);
+  std::vector<double> intrinsics(5+ndp, 0.0);
   camera_intrinsics_d K = cam.intrinsics();
   intrinsics[0] = K.focal_length();
   intrinsics[1] = K.principal_point().x();
   intrinsics[2] = K.principal_point().y();
   intrinsics[3] = K.aspect_ratio();
   intrinsics[4] = K.skew();
+  const Eigen::VectorXd& d = K.dist_coeffs();
+  // copy the intersection of parameters provided in K
+  // and those that are supported by the requested model type
+  unsigned int num_dp = std::min(ndp, static_cast<unsigned int>(d.size()));
+  std::copy(d.data(), d.data()+num_dp, &intrinsics[5]);
 
   double point[3] = {lm.loc().x(), lm.loc().y(), lm.loc().z()};
 
+  double* parameters[3] = {&intrinsics[0], pose, point};
   vector_2d residuals;
-  rpe(intrinsics, pose, point, residuals.data());
+  cost_func->Evaluate(parameters, residuals.data(), NULL);
+  delete cost_func;
 
   TEST_NEAR("Residual near zero", residuals.norm(), 0.0, 1e-12);
 }
 
 
-
-// compare MAP-Tk camera projection to Ceres reprojection error models
-IMPLEMENT_TEST(compare_projections)
+/// test the reprojection error of all residuals
+void
+test_all_reprojection_errors(const maptk::camera_map_sptr cameras,
+                             const maptk::landmark_map_sptr landmarks,
+                             const maptk::track_set_sptr tracks,
+                             const maptk::ceres::LensDistortionType dist_type)
 {
   using namespace maptk;
 
-  // create landmarks at the corners of a cube
-  landmark_map_sptr landmarks = testing::cube_corners(2.0);
-  landmark_map::map_landmark_t lm_map = landmarks->landmarks();
-
-  // create a camera sequence (elliptical path)
-  camera_map_sptr cameras = testing::camera_seq();
   camera_map::map_camera_t cam_map = cameras->cameras();
-
-  // create tracks from the projections
-  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+  landmark_map::map_landmark_t lm_map = landmarks->landmarks();
   std::vector<track_sptr> trks = tracks->tracks();
 
   double rmse = reprojection_rmse(cam_map, lm_map, trks);
@@ -138,7 +146,127 @@ IMPLEMENT_TEST(compare_projections)
         continue;
       }
       const camera& cam = *ci->second;
-      test_reprojection_error(cam, lm, feat);
+      test_reprojection_error(cam, lm, feat, dist_type);
     }
   }
+}
+
+
+/// test reprojection error on a test scene for a particular model
+void test_reprojection_model(const Eigen::VectorXd& dc,
+                             const maptk::ceres::LensDistortionType dist_type)
+{
+  using namespace maptk;
+  using namespace maptk::ceres;
+
+  // create landmarks at the corners of a cube
+  landmark_map_sptr landmarks = testing::cube_corners(2.0);
+
+  // The intrinsic camera parameters to use
+  camera_intrinsics_d K(1000, vector_2d(640,480));
+  K.set_dist_coeffs(dc);
+
+  // create a camera sequence (elliptical path)
+  camera_map_sptr cameras = testing::camera_seq(20,K);
+
+  // create tracks from the projections
+  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+
+  test_all_reprojection_errors(cameras, landmarks, tracks,
+                               dist_type);
+}
+
+
+// compare MAP-Tk camera projection to Ceres reprojection error models
+IMPLEMENT_TEST(compare_projections_no_distortion)
+{
+  using namespace maptk::ceres;
+
+  Eigen::VectorXd dc;
+
+  std::cout << "Testing NO_DISTORTION model" << std::endl;
+  test_reprojection_model(dc, NO_DISTORTION);
+  std::cout << "Testing POLYNOMIAL_RADIAL_DISTORTION model" << std::endl;
+  test_reprojection_model(dc, POLYNOMIAL_RADIAL_DISTORTION);
+  std::cout << "Testing POLYNOMIAL_RADIAL_TANGENTIAL_DISTORTION model" << std::endl;
+  test_reprojection_model(dc, POLYNOMIAL_RADIAL_TANGENTIAL_DISTORTION);
+  std::cout << "Testing RATIONAL_RADIAL_TANGENTIAL_DISTORTION model" << std::endl;
+  test_reprojection_model(dc, RATIONAL_RADIAL_TANGENTIAL_DISTORTION);
+}
+
+
+// compare MAP-Tk camera projection to Ceres reprojection error models
+IMPLEMENT_TEST(compare_projections_distortion_1)
+{
+  using namespace maptk::ceres;
+
+  Eigen::VectorXd dc(1);
+  dc << -0.01;
+
+  std::cout << "Testing POLYNOMIAL_RADIAL_DISTORTION model" << std::endl;
+  test_reprojection_model(dc, POLYNOMIAL_RADIAL_DISTORTION);
+  std::cout << "Testing POLYNOMIAL_RADIAL_TANGENTIAL_DISTORTION model" << std::endl;
+  test_reprojection_model(dc, POLYNOMIAL_RADIAL_TANGENTIAL_DISTORTION);
+  std::cout << "Testing RATIONAL_RADIAL_TANGENTIAL_DISTORTION model" << std::endl;
+  test_reprojection_model(dc, RATIONAL_RADIAL_TANGENTIAL_DISTORTION);
+}
+
+
+// compare MAP-Tk camera projection to Ceres reprojection error models
+IMPLEMENT_TEST(compare_projections_distortion_2)
+{
+  using namespace maptk::ceres;
+
+  Eigen::VectorXd dc(2);
+  dc << -0.01, 0.002;
+
+  std::cout << "Testing POLYNOMIAL_RADIAL_DISTORTION model" << std::endl;
+  test_reprojection_model(dc, POLYNOMIAL_RADIAL_DISTORTION);
+  std::cout << "Testing POLYNOMIAL_RADIAL_TANGENTIAL_DISTORTION model" << std::endl;
+  test_reprojection_model(dc, POLYNOMIAL_RADIAL_TANGENTIAL_DISTORTION);
+  std::cout << "Testing RATIONAL_RADIAL_TANGENTIAL_DISTORTION model" << std::endl;
+  test_reprojection_model(dc, RATIONAL_RADIAL_TANGENTIAL_DISTORTION);
+}
+
+
+// compare MAP-Tk camera projection to Ceres reprojection error models
+IMPLEMENT_TEST(compare_projections_distortion_4)
+{
+  using namespace maptk::ceres;
+
+  Eigen::VectorXd dc(4);
+  dc << -0.01, 0.002, 0.001, -0.005;
+
+  std::cout << "Testing POLYNOMIAL_RADIAL_TANGENTIAL_DISTORTION model" << std::endl;
+  test_reprojection_model(dc, POLYNOMIAL_RADIAL_TANGENTIAL_DISTORTION);
+  std::cout << "Testing RATIONAL_RADIAL_TANGENTIAL_DISTORTION model" << std::endl;
+  test_reprojection_model(dc, RATIONAL_RADIAL_TANGENTIAL_DISTORTION);
+}
+
+
+// compare MAP-Tk camera projection to Ceres reprojection error models
+IMPLEMENT_TEST(compare_projections_distortion_5)
+{
+  using namespace maptk::ceres;
+
+  Eigen::VectorXd dc(5);
+  dc << -0.01, 0.002, 0.001, -0.005, -0.004;
+
+  std::cout << "Testing POLYNOMIAL_RADIAL_TANGENTIAL_DISTORTION model" << std::endl;
+  test_reprojection_model(dc, POLYNOMIAL_RADIAL_TANGENTIAL_DISTORTION);
+  std::cout << "Testing RATIONAL_RADIAL_TANGENTIAL_DISTORTION model" << std::endl;
+  test_reprojection_model(dc, RATIONAL_RADIAL_TANGENTIAL_DISTORTION);
+}
+
+
+// compare MAP-Tk camera projection to Ceres reprojection error models
+IMPLEMENT_TEST(compare_projections_distortion_8)
+{
+  using namespace maptk::ceres;
+
+  Eigen::VectorXd dc(8);
+  dc << -0.01, 0.002, 0.001, -0.005, -0.004, 0.02, -0.007, 0.0001;
+
+  std::cout << "Testing RATIONAL_RADIAL_TANGENTIAL_DISTORTION model" << std::endl;
+  test_reprojection_model(dc, RATIONAL_RADIAL_TANGENTIAL_DISTORTION);
 }

@@ -53,23 +53,29 @@ template <typename T>
 class MAPTK_LIB_EXPORT camera_intrinsics_
 {
 public:
+  /// typedef for Eigen dynamic vector of type T
+  typedef Eigen::Matrix<T, Eigen::Dynamic, 1> vector_t;
+
   /// Default Constructor
   camera_intrinsics_<T>()
   : focal_length_(T(1)),
     principal_point_(T(0), T(0)),
     aspect_ratio_(T(1)),
-    skew_(T(0))
+    skew_(T(0)),
+    dist_coeffs_()
   {}
 
   /// Constructor for camera intrinsics
   camera_intrinsics_<T>(T focal_length,
                         const Eigen::Matrix<T,2,1>& principal_point,
                         T aspect_ratio=1.0,
-                        T skew=0.0)
+                        T skew=0.0,
+                        const vector_t dist_coeffs=vector_t())
   : focal_length_(focal_length),
     principal_point_(principal_point),
     aspect_ratio_(aspect_ratio),
-    skew_(skew)
+    skew_(skew),
+    dist_coeffs_(dist_coeffs)
   {}
 
   /// Copy Constructor from another type
@@ -78,7 +84,8 @@ public:
   : focal_length_(static_cast<T>(other.focal_length())),
     principal_point_(other.principal_point().template cast<T>()),
     aspect_ratio_(static_cast<T>(other.aspect_ratio())),
-    skew_(static_cast<T>(other.skew()))
+    skew_(static_cast<T>(other.skew())),
+    dist_coeffs_(other.dist_coeffs().template cast<T>())
   {}
 
   /// Constructor - from a calibration matrix
@@ -86,7 +93,8 @@ public:
    * \note ignores values below the diagonal
    * \param K calibration matrix to construct from
    */
-  explicit camera_intrinsics_<T>(const Eigen::Matrix<T,3,3>& K);
+  explicit camera_intrinsics_<T>(const Eigen::Matrix<T,3,3>& K,
+                                 const vector_t& d=vector_t());
 
   /// Access the focal length
   const T& focal_length() const { return focal_length_; }
@@ -96,6 +104,8 @@ public:
   const T& aspect_ratio() const { return aspect_ratio_; }
   /// Access the skew
   const T& skew() const { return skew_; }
+  /// Access the distortion coefficients
+  const vector_t& dist_coeffs() const { return dist_coeffs_; }
 
   /// Set the focal length
   void set_focal_length(const T& focal_length) { focal_length_ = focal_length; }
@@ -105,18 +115,38 @@ public:
   void set_aspect_ratio(const T& aspect_ratio) { aspect_ratio_ = aspect_ratio; }
   /// Set the skew
   void set_skew(const T& skew) { skew_ = skew; }
+  /// Set the distortion coefficients
+  void set_dist_coeffs(const vector_t& d) { dist_coeffs_ = d; }
 
   /// Convert to a 3x3 calibration matrix
   operator Eigen::Matrix<T,3,3>() const;
 
   /// Map normalized image coordinates into actual image coordinates
+  /** This function applies both distortion (if coefficients are specifed)
+   *  and application of the calibration matrix to map into actual image
+   *  coordinates
+   */
   Eigen::Matrix<T,2,1> map(const Eigen::Matrix<T,2,1>& norm_pt) const;
 
   /// Map a 3D point in camera coordinates into actual image coordinates
   Eigen::Matrix<T,2,1> map(const Eigen::Matrix<T,3,1>& norm_hpt) const;
 
   /// Unmap actual image coordinates back into normalized image coordinates
+  /** This function applies both application of the inverse calibration matrix
+   *  and undistortion of the normalized coordinates (if distortion
+   *  coefficients are specifed).
+   */
   Eigen::Matrix<T,2,1> unmap(const Eigen::Matrix<T,2,1>& norm_pt) const;
+
+
+  /// Map normalized image coordinates into distorted coordinates
+  Eigen::Matrix<T,2,1> distort(const Eigen::Matrix<T,2,1>& norm_pt) const;
+
+  /// Unnap distorted normalized coordinates into normalized coordinates
+  /** \note applying inverse distortion is not closed form, so this function
+   *  uses an iterative solver.
+   */
+  Eigen::Matrix<T,2,1> undistort(const Eigen::Matrix<T,2,1>& dist_pt) const;
 
 protected:
   /// focal length of camera
@@ -127,6 +157,8 @@ protected:
   T aspect_ratio_;
   /// skew of camera
   T skew_;
+  /// Lens distortion coefficients
+  vector_t dist_coeffs_;
 };
 
 

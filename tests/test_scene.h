@@ -113,13 +113,14 @@ noisy_landmarks(maptk::landmark_map_sptr landmarks,
 
 // create a camera sequence (elliptical path)
 maptk::camera_map_sptr
-camera_seq(maptk::frame_id_t num_cams = 20)
+camera_seq(maptk::frame_id_t num_cams = 20,
+           maptk::camera_intrinsics_d K =
+               maptk::camera_intrinsics_d(1000, vector_2d(640, 480)))
 {
   using namespace maptk;
   camera_map::map_camera_t cameras;
 
   // create a camera sequence (elliptical path)
-  camera_intrinsics_d K(1000, vector_2d(640,480));
   rotation_d R; // identity
   for (frame_id_t i=0; i<num_cams; ++i)
   {
@@ -137,13 +138,14 @@ camera_seq(maptk::frame_id_t num_cams = 20)
 
 // create an initial camera sequence with all cameras at the same location
 maptk::camera_map_sptr
-init_cameras(maptk::frame_id_t num_cams = 20)
+init_cameras(maptk::frame_id_t num_cams = 20,
+             maptk::camera_intrinsics_d K =
+                 maptk::camera_intrinsics_d(1000, vector_2d(640, 480)))
 {
   using namespace maptk;
   camera_map::map_camera_t cameras;
 
   // create a camera sequence (elliptical path)
-  camera_intrinsics_d K(1000, vector_2d(640,480));
   rotation_d R; // identity
   vector_3d c(0, 0, 1);
   for (frame_id_t i=0; i<num_cams; ++i)

@@ -16,6 +16,17 @@ Main Library
    The median provides a more robust alternative to RMSE and is more useful
    for characterizing error when using robust loss functions.
 
+ * Added lens distortion to the camera_intrinsics class.  The model uses the
+   same conventions that OpenCV uses.  The distortion parameter vector
+   is compatible between OpenCV and MAP-Tk.
+
+ * Added lens undistortion functions to camera_intrinsics which use the
+   Gauss-Newton method to iteratively solve for the inverse of distortion.
+   Convergence is fast and more accurate than the implementation in OpenCV.
+
+ * Added reading and writing of lens distortion parameters to the camera
+   stream operators and, as a result, to the KRTD file io.
+
 Ceres Plugin
 
  * Added a new plugin which uses Google Ceres Solver as a back end for
@@ -29,6 +40,20 @@ Ceres Plugin
  * Added unit tests for the Ceres implementation of bundle_adjust that
    duplicates the same tests used for the VXL back end plus a few additional
    tests focusing on robust estimation.
+
+ * Added support to both use and estimate lens distortion parameters in the
+   bundle_adjust algorithm using Ceres.  Three different distortion models
+   can be selected, each adding additional parameters to the previous model.
+   Furthermore, many parameters can be locked in the optimization allowing
+   for even more fine-grained selection of model parameter subsets.
+
+ * Added unit tests for Ceres bundle adjustment covering the use and estimation
+   of lens distortion paramters.
+
+OpenCV Plugin
+
+ * Added unit tests to verify that the lens distortion functions in MAP-Tk
+   produce equal results to those routines in OpenCV.
 
 C Interface
 

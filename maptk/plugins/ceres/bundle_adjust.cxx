@@ -115,6 +115,7 @@ MAPTK_CERES_ENUM_HELPERS(::ceres, TrustRegionStrategyType)
 MAPTK_CERES_ENUM_HELPERS(::ceres, DoglegType)
 
 MAPTK_CERES_ENUM_HELPERS(ceres, LossFunctionType)
+MAPTK_CERES_ENUM_HELPERS(ceres, LensDistortionType)
 
 #undef MAPTK_CERES_ENUM_HELPERS
 
@@ -133,7 +134,13 @@ public:
     optimize_focal_length(true),
     optimize_aspect_ratio(false),
     optimize_principal_point(false),
-    optimize_skew(false)
+    optimize_skew(false),
+    lens_distortion_type(NO_DISTORTION),
+    optimize_dist_k1(true),
+    optimize_dist_k2(false),
+    optimize_dist_k3(false),
+    optimize_dist_p1_p2(false),
+    optimize_dist_k4_k5_k6(false)
   {
   }
 
@@ -144,7 +151,13 @@ public:
     optimize_focal_length(other.optimize_focal_length),
     optimize_aspect_ratio(other.optimize_aspect_ratio),
     optimize_principal_point(other.optimize_principal_point),
-    optimize_skew(other.optimize_skew)
+    optimize_skew(other.optimize_skew),
+    lens_distortion_type(other.lens_distortion_type),
+    optimize_dist_k1(other.optimize_dist_k1),
+    optimize_dist_k2(other.optimize_dist_k2),
+    optimize_dist_k3(other.optimize_dist_k3),
+    optimize_dist_p1_p2(other.optimize_dist_p1_p2),
+    optimize_dist_k4_k5_k6(other.optimize_dist_k4_k5_k6)
   {
   }
 
@@ -164,6 +177,18 @@ public:
   bool optimize_principal_point;
   /// option to optimize skew
   bool optimize_skew;
+  /// the lens distortion model to use
+  LensDistortionType lens_distortion_type;
+  /// option to optimize radial distortion parameter k1
+  bool optimize_dist_k1;
+  /// option to optimize radial distortion parameter k2
+  bool optimize_dist_k2;
+  /// option to optimize radial distortion parameter k3
+  bool optimize_dist_k3;
+  /// option to optimize tangential distortions parameters p1, p2
+  bool optimize_dist_p1_p2;
+  /// option to optimize radial distortion parameters k4, k5, k6
+  bool optimize_dist_k4_k5_k6;
 };
 
 
@@ -241,6 +266,24 @@ bundle_adjust
                     "Include principal point parameters in bundle adjustment.");
   config->set_value("optimize_skew", d_->optimize_skew,
                     "Include skew parameters in bundle adjustment.");
+  config->set_value("lens_distortion_type", d_->lens_distortion_type,
+                    "Lens distortion model to use."
+                    + ceres_options< ceres::LensDistortionType >());
+  config->set_value("optimize_dist_k1", d_->optimize_dist_k1,
+                    "Include radial lens distortion parameter k1 in "
+                    "bundle adjustment.");
+  config->set_value("optimize_dist_k2", d_->optimize_dist_k2,
+                    "Include radial lens distortion parameter k2 in "
+                    "bundle adjustment.");
+  config->set_value("optimize_dist_k3", d_->optimize_dist_k3,
+                    "Include radial lens distortion parameter k3 in "
+                    "bundle adjustment.");
+  config->set_value("optimize_dist_p1_p2", d_->optimize_dist_p1_p2,
+                    "Include tangential lens distortion parameters "
+                    "p1 and p2 in bundle adjustment.");
+  config->set_value("optimize_dist_k4_k5_k6", d_->optimize_dist_k4_k5_k6,
+                    "Include radial lens distortion parameters "
+                    "k4, k5, and k6 in bundle adjustment.");
   return config;
 }
 
@@ -299,6 +342,19 @@ bundle_adjust
                                                          d_->optimize_principal_point);
   d_->optimize_skew = config->get_value<bool>("optimize_skew",
                                               d_->optimize_skew);
+  typedef ceres::LensDistortionType cld_t;
+  d_->lens_distortion_type = config->get_value<cld_t>("lens_distortion_type",
+                                                      d_->lens_distortion_type);
+  d_->optimize_dist_k1 = config->get_value<bool>("optimize_dist_k1",
+                                                 d_->optimize_dist_k1);
+  d_->optimize_dist_k2 = config->get_value<bool>("optimize_dist_k2",
+                                                 d_->optimize_dist_k2);
+  d_->optimize_dist_k3 = config->get_value<bool>("optimize_dist_k3",
+                                                 d_->optimize_dist_k3);
+  d_->optimize_dist_p1_p2 = config->get_value<bool>("optimize_dist_p1_p2",
+                                                    d_->optimize_dist_p1_p2);
+  d_->optimize_dist_k4_k5_k6 = config->get_value<bool>("optimize_dist_k4_k5_k6",
+                                                       d_->optimize_dist_k4_k5_k6);
 }
 
 
@@ -367,7 +423,9 @@ bundle_adjust
   // Extract the camera parameters into a mutable map
   typedef std::map<frame_id_t, std::vector<double> > cam_param_map_t;
   cam_param_map_t camera_params;
-  std::vector<double> intrinsic_params(5);
+  // number of lens distortion parameters in the selected model
+  const unsigned int ndp = num_distortion_params(d_->lens_distortion_type);
+  std::vector<double> intrinsic_params(5 + ndp, 0.0);
   BOOST_FOREACH(const map_camera_t::value_type& c, cams)
   {
     vector_3d rot = c.second->rotation().rodrigues();
@@ -383,6 +441,11 @@ bundle_adjust
     intrinsic_params[2] = K.principal_point().y();
     intrinsic_params[3] = K.aspect_ratio();
     intrinsic_params[4] = K.skew();
+    const Eigen::VectorXd& d = K.dist_coeffs();
+    // copy the intersection of parameters provided in K
+    // and those that are supported by the requested model type
+    unsigned int num_dp = std::min(ndp, static_cast<unsigned int>(d.size()));
+    std::copy(d.data(), d.data()+num_dp, &intrinsic_params[5]);
   }
 
   // the Ceres solver problem
@@ -406,6 +469,29 @@ bundle_adjust
   if (!d_->optimize_skew)
   {
     constant_intrinsics.push_back(4);
+  }
+  if (!d_->optimize_dist_k1 && ndp > 0)
+  {
+    constant_intrinsics.push_back(5);
+  }
+  if (!d_->optimize_dist_k2 && ndp > 1)
+  {
+    constant_intrinsics.push_back(6);
+  }
+  if (!d_->optimize_dist_p1_p2 && ndp > 3)
+  {
+    constant_intrinsics.push_back(7);
+    constant_intrinsics.push_back(8);
+  }
+  if (!d_->optimize_dist_k3 && ndp > 4)
+  {
+    constant_intrinsics.push_back(9);
+  }
+  if (!d_->optimize_dist_k4_k5_k6 && ndp > 7)
+  {
+    constant_intrinsics.push_back(10);
+    constant_intrinsics.push_back(11);
+    constant_intrinsics.push_back(12);
   }
 
   // Create the loss function to use
@@ -433,7 +519,8 @@ bundle_adjust
         continue;
       }
       vector_2d pt = ts->feat->loc();
-      problem.AddResidualBlock(reprojection_error::create(pt.x(), pt.y()),
+      problem.AddResidualBlock(create_cost_func(d_->lens_distortion_type,
+                                                pt.x(), pt.y()),
                                loss_func,
                                &intrinsic_params[0],
                                &cam_itr->second[0],
@@ -442,7 +529,7 @@ bundle_adjust
     }
   }
   // apply the constraints
-  if (constant_intrinsics.size() > 4)
+  if (constant_intrinsics.size() > 4 + ndp)
   {
     // set all parameters in the block constant
     problem.SetParameterBlockConstant(&intrinsic_params[0]);
@@ -451,7 +538,7 @@ bundle_adjust
   {
     // set a subset of parameters in the block constant
     problem.SetParameterization(&intrinsic_params[0],
-        new ::ceres::SubsetParameterization(5, constant_intrinsics));
+        new ::ceres::SubsetParameterization(5 + ndp, constant_intrinsics));
   }
 
   // If the loss function was added to a residual block, ownership was
@@ -484,6 +571,9 @@ bundle_adjust
     K.set_principal_point(pp);
     K.set_aspect_ratio(intrinsic_params[3]);
     K.set_skew(intrinsic_params[4]);
+    Eigen::VectorXd dc(ndp);
+    std::copy(&intrinsic_params[5], &intrinsic_params[5]+ndp, dc.data());
+    K.set_dist_coeffs(dc);
     cams[cp.first] = camera_sptr(new camera_d(center, rot, K));
   }
 

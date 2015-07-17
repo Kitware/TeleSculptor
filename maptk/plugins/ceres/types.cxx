@@ -35,6 +35,7 @@
 
 
 #include <maptk/plugins/ceres/types.h>
+#include <maptk/plugins/ceres/lens_distortion.h>
 #include <ceres/loss_function.h>
 
 
@@ -86,6 +87,35 @@ StringToLossFunctionType(std::string value, LossFunctionType* type)
   return false;
 }
 
+
+/// Provide a string representation for a LensDisortionType value
+const char*
+LensDistortionTypeToString(LensDistortionType type)
+{
+  switch (type)
+  {
+    CASESTR(NO_DISTORTION);
+    CASESTR(POLYNOMIAL_RADIAL_DISTORTION);
+    CASESTR(POLYNOMIAL_RADIAL_TANGENTIAL_DISTORTION);
+    CASESTR(RATIONAL_RADIAL_TANGENTIAL_DISTORTION);
+    default:
+      return "UNKNOWN";
+  }
+}
+
+
+/// Parse a LensDistortionType value from a string or return false
+bool
+StringToLensDistortionType(std::string value, LensDistortionType* type)
+{
+  UpperCase(&value);
+  STRENUM(NO_DISTORTION);
+  STRENUM(POLYNOMIAL_RADIAL_DISTORTION);
+  STRENUM(POLYNOMIAL_RADIAL_TANGENTIAL_DISTORTION);
+  STRENUM(RATIONAL_RADIAL_TANGENTIAL_DISTORTION);
+  return false;
+}
+
 #undef CASESTR
 #undef STRENUM
 
@@ -110,6 +140,23 @@ LossFunctionFactory(LossFunctionType type, double s)
       return new ::ceres::TukeyLoss(s);
     default:
       return NULL;
+  }
+}
+
+/// Return the number of distortion parameters required for each type
+unsigned int
+num_distortion_params(LensDistortionType type)
+{
+  switch(type)
+  {
+  case POLYNOMIAL_RADIAL_DISTORTION:
+    return distortion_poly_radial::num_coeffs;
+  case POLYNOMIAL_RADIAL_TANGENTIAL_DISTORTION:
+    return distortion_poly_radial_tangential::num_coeffs;
+  case RATIONAL_RADIAL_TANGENTIAL_DISTORTION:
+    return distortion_ratpoly_radial_tangential::num_coeffs;
+  default:
+    return 0;
   }
 }
 

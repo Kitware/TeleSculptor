@@ -4,6 +4,7 @@
 set( maptk_ceres_headers_public
   bundle_adjust.h
   ceres_config.h
+  lens_distortion.h
   register_algorithms.h
   reprojection_error.h
   )

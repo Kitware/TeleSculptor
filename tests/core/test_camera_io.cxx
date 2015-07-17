@@ -135,4 +135,27 @@ IMPLEMENT_TEST(output_format_test)
       "\n"
       "0\n"
       );
+
+  Eigen::VectorXd dc(4);
+  dc << 0.1, 0.2, 0.3, 0.4;
+  maptk::camera_intrinsics_d K;
+  K.set_dist_coeffs(dc);
+  cam.set_intrinsics(K);
+  ss.str("");
+  ss << cam;
+  TEST_EQUAL(
+      "camera output string with distortion test",
+      ss.str(),
+      "1 0 0\n"
+      "0 1 0\n"
+      "0 0 1\n"
+      "\n"
+      "1 0 0\n"
+      "0 1 0\n"
+      "0 0 1\n"
+      "\n"
+      "-0 -0 -0\n"
+      "\n"
+      "0.1 0.2 0.3 0.4\n"
+      );
 }
