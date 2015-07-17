@@ -1,0 +1,70 @@
+MAPTK Release Notes for changes pending release approval by AFRL
+================================================================
+
+This file documents release notes for changes made to MAPTK which require
+public release approval from AFRL.  After approval, the changes and
+corresponding notes below will be encorporated into a public numbered
+release version, and the content of this file will be reset.
+
+
+Updates since last public release
+---------------------------------
+
+Main Library
+
+ * Added a metric in metrics.h to compute the median reprojection error.
+   The median provides a more robust alternative to RMSE and is more useful
+   for characterizing error when using robust loss functions.
+
+ * Added lens distortion to the camera_intrinsics class.  The model uses the
+   same conventions that OpenCV uses.  The distortion parameter vector
+   is compatible between OpenCV and MAP-Tk.
+
+ * Added lens undistortion functions to camera_intrinsics which use the
+   Gauss-Newton method to iteratively solve for the inverse of distortion.
+   Convergence is fast and more accurate than the implementation in OpenCV.
+
+ * Added reading and writing of lens distortion parameters to the camera
+   stream operators and, as a result, to the KRTD file io.
+
+Ceres Plugin
+
+ * Added a new plugin which uses Google Ceres Solver as a back end for
+   optimizations.
+
+ * Added an implementation of the bundle_adjust algorithm using Ceres to
+   solve the optimization problem.  This supports access to Ceres options
+   via the configuration block and currently supports selection of various
+   different solver algorithms and robust loss functions.
+
+ * Added unit tests for the Ceres implementation of bundle_adjust that
+   duplicates the same tests used for the VXL back end plus a few additional
+   tests focusing on robust estimation.
+
+ * Added support to both use and estimate lens distortion parameters in the
+   bundle_adjust algorithm using Ceres.  Three different distortion models
+   can be selected, each adding additional parameters to the previous model.
+   Furthermore, many parameters can be locked in the optimization allowing
+   for even more fine-grained selection of model parameter subsets.
+
+ * Added unit tests for Ceres bundle adjustment covering the use and estimation
+   of lens distortion paramters.
+
+OpenCV Plugin
+
+ * Added unit tests to verify that the lens distortion functions in MAP-Tk
+   produce equal results to those routines in OpenCV.
+
+C Interface
+
+ * Updated algorithm related code to use new functions in algorithm C++ base
+   class.
+
+Python Interface
+
+ * Updated algorithm related code to use new algorithm C-interface functions.
+
+
+Fixes since last public release
+-------------------------------
+

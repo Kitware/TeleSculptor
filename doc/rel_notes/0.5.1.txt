@@ -11,7 +11,15 @@ Updates since v0.5.0
 Tests
 
  * Enabled Travis CI integration by adding a .travis.yml file.  This provides
-   continuous integration testing on topic branches.
+   continuous integration testing on topic branches.  Travis CI only tests
+   on a single platform (currently Ubuntu 12.04), so it does not replace
+   nightly CDash testing across multiple platforms.  However, it does
+   automatically build topic branches and pull requests that would not be
+   tested by CDash.  CDash only tests builds of the master and release
+   branches, but does so over a wide array of platforms and build
+   configurations.  Thus, Travis CI and CDash are complementary testing
+   tools.  Travis CI can help catch some build failures before branches
+   are merged.
 
 Tools
 
@@ -29,19 +37,20 @@ Build System
 
 Documentation
 
- * Added missing algorithms on the MAP-Tk core mainpage and sorted existing
-   algorithms.
+ * Added missing algorithms on the MAP-Tk core Doxygen main page and sorted
+   existing algorithms.
 
  * Added missing documentation on the VXL module Doxygen main page for recently
    added algorithms and containers and sorted the lists.
 
- * Added missing algorithm on the OCV module Doxygen main page and sorted.
+ * Added missing algorithms on the OCV module Doxygen main page and sorted.
 
- * Boost chrono is required by Boost timer on all platforms when linking a static Boost.
+ * Boost chrono is required by Boost timer on all platforms when linking a
+   static Boost.
 
 OCV Module
 
- * Flipped repective returns in width/height getter methods as they were
+ * Swapped respective returns from width/height getter methods as they were
    previously returning the incorrect values.
 
  * Draw tracks algorithm would not write images into a directory that did not

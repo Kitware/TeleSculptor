@@ -30,10 +30,13 @@ endif()
 # If Doxygen was not found, this method does nothing as documentation cannot
 # be built, period.
 #-
-function(maptk_create_doxygen name inputdir)
+function(maptk_create_doxygen name inputdir display_name)
   if(MAPTK_ENABLE_DOCS)
     message(STATUS "[doxy-${name}] Creating doxygen targets")
 
+    if(NOT DOXYGEN_MAPTK_NUMBER)
+      set(DOXYGEN_MAPTK_NUMBER "v${MAPTK_VERSION}")
+    endif()
     # Constants -- could be moved outside this function?
     set(doxy_include_path       "${MAPTK_SOURCE_DIR};${MAPTK_BINARY_DIR}")
     set(doxy_doc_output_path    "${MAPTK_BINARY_DIR}/doc")
@@ -41,6 +44,8 @@ function(maptk_create_doxygen name inputdir)
 
     # current project specific variables
     set(doxy_project_name       "${name}")
+    set(doxy_display_name       "${display_name}")
+    set(doxy_project_number     "${DOXYGEN_MAPTK_NUMBER}")
     set(doxy_project_source_dir "${inputdir}")
     set(doxy_project_output_dir "${doxy_doc_output_path}/${doxy_project_name}")
     set(doxy_project_tag_file   "${doxy_project_output_dir}/${name}.tag")
@@ -83,6 +88,8 @@ function(maptk_create_doxygen name inputdir)
       "${doxy_files_dir}/Doxyfile.common.in"
       "${doxy_project_output_dir}/Doxyfile.common"
       doxy_project_name
+      doxy_display_name
+      doxy_project_number
       doxy_doc_output_path
       doxy_project_source_dir
       doxy_exclude_patterns

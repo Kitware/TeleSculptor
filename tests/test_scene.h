@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2011-2014 by Kitware, Inc.
+ * Copyright 2011-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -114,13 +114,14 @@ noisy_landmarks(kwiver::vital::landmark_map_sptr landmarks,
 
 // create a camera sequence (elliptical path)
 kwiver::vital::camera_map_sptr
-camera_seq(kwiver::vital::frame_id_t num_cams = 20)
+camera_seq(kwiver::vital::frame_id_t num_cams = 20,
+           kwiver::vital::camera_intrinsics_d K =
+               kwiver::vital::camera_intrinsics_d(1000, vector_2d(640, 480)))
 {
   using namespace maptk;
   camera_map::map_camera_t cameras;
 
   // create a camera sequence (elliptical path)
-  camera_intrinsics_d K(1000, vector_2d(640,480));
   rotation_d R; // identity
   for (frame_id_t i=0; i<num_cams; ++i)
   {
@@ -138,13 +139,14 @@ camera_seq(kwiver::vital::frame_id_t num_cams = 20)
 
 // create an initial camera sequence with all cameras at the same location
 kwiver::vital::camera_map_sptr
-init_cameras(kwiver::vital::frame_id_t num_cams = 20)
+init_cameras(kwiver::vital::frame_id_t num_cams = 20,
+             kwiver::vital::camera_intrinsics_d K =
+                 kwiver::vital::camera_intrinsics_d(1000, vector_2d(640, 480)))
 {
   using namespace maptk;
   camera_map::map_camera_t cameras;
 
   // create a camera sequence (elliptical path)
-  camera_intrinsics_d K(1000, vector_2d(640,480));
   rotation_d R; // identity
   vector_3d c(0, 0, 1);
   for (frame_id_t i=0; i<num_cams; ++i)
@@ -238,6 +240,48 @@ noisy_tracks(kwiver::vital::track_set_sptr in_tracks, double stdev=1.0)
   }
   return track_set_sptr(new simple_track_set(new_tracks));
 }
+
+
+// randomly select a fraction of the track states to make outliers
+// outliers are created by adding random noise with large standard deviation
+kwiver::vital::track_set_sptr
+add_outliers_to_tracks(kwiver::vital::track_set_sptr in_tracks,
+                       double outlier_frac=0.1,
+                       double stdev=20.0)
+{
+  using namespace maptk;
+
+  std::srand(0);
+  std::vector<track_sptr> tracks = in_tracks->tracks();
+  std::vector<track_sptr> new_tracks;
+  const int rand_thresh = static_cast<int>(outlier_frac * RAND_MAX);
+  BOOST_FOREACH(const track_sptr& t, tracks)
+  {
+    track_sptr nt(new track);
+    nt->set_id(t->id());
+    std::cout << "track "<<t->id()<<":";
+    for(track::history_const_itr it=t->begin(); it!=t->end(); ++it)
+    {
+      if(std::rand() < rand_thresh)
+      {
+        vector_2d loc = it->feat->loc() + random_point2d(stdev);
+        track::track_state ts(*it);
+        ts.feat = feature_sptr(new feature_d(loc));
+        std::cout << " o";
+        nt->append(ts);
+      }
+      else
+      {
+        std::cout << " .";
+        nt->append(*it);
+      }
+    }
+    std::cout << std::endl;
+    new_tracks.push_back(nt);
+  }
+  return track_set_sptr(new simple_track_set(new_tracks));
+}
+
 
 } // end namespace testing
 
