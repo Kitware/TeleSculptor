@@ -11,3 +11,10 @@ Updates since v0.6.0
 
 Fixes since v0.6.0
 ------------------
+
+Tests
+
+ * Fixed a bug in the noisy_landmarks helper function, which adds random noise
+   to landmark locations for use in unit tests.  The function previously had a
+   side effect of modifying the source landmarks in place.  This has been
+   corrected by cloning landmarks before modification.
