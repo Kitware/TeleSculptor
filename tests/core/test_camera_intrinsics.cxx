@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,15 +30,13 @@
 
 /**
  * \file
- * \brief tests comparing MAP-Tk lens distortion to OpenCV
+ * \brief core camera_intrinsics tests
  */
 
 #include <test_common.h>
 #include <test_random_point.h>
 
-#include <vital/types/camera_intrinsics.h>
-#include <opencv2/calib3d/calib3d.hpp>
-#include <opencv2/core/eigen.hpp>
+#include <maptk/camera_intrinsics.h>
 
 #define TEST_ARGS ()
 
@@ -54,26 +52,98 @@ main(int argc, char* argv[])
   RUN_TEST(testname);
 }
 
-using namespace kwiver::vital;
+
+IMPLEMENT_TEST(map)
+{
+  using namespace maptk;
+  vector_2d pp(300,400);
+  double f = 1000.0;
+  double a = 0.75;
+  double s = 0.1;
+  camera_intrinsics_d K(f, pp, a, s);
+
+  vector_2d origin = K.map(vector_2d(0,0));
+
+  TEST_NEAR("(0,0) maps to principal point",
+            (origin-pp).norm(), 0.0, 1e-12);
+
+  TEST_NEAR("principal point unmaps to (0,0)",
+            K.unmap(pp).norm(), 0.0, 1e-12);
+
+  vector_2d test_pt(1,2);
+  vector_2d mapped_test = K.map(test_pt);
+  vector_2d mapped_test_gt(test_pt.x() * f + test_pt.y() * s + pp.x(),
+                           test_pt.y() * f / a + pp.y());
+  TEST_NEAR("mapped test point at GT location",
+            (mapped_test - mapped_test_gt).norm(), 0.0, 1e-12);
+
+  vector_2d unmapped = K.unmap(mapped_test);
+  TEST_NEAR("unmap is the inverse of map",
+            (unmapped-test_pt).norm(), 0.0, 1e-12);
+
+  vector_3d homg_pt(2.5 * vector_3d(test_pt.x(), test_pt.y(), 1));
+  vector_2d mapped_from_3d = K.map(homg_pt);
+  TEST_NEAR("mapped 3D test point at GT location",
+            (mapped_from_3d - mapped_test_gt).norm(), 0.0, 1e-12);
+
+}
+
+
+// helper function to distort a point
+maptk::vector_2d
+distort_point(const maptk::vector_2d& pt,
+           const Eigen::VectorXd& d)
+{
+  using namespace maptk;
+  const double x2 = pt.x() * pt.x();
+  const double y2 = pt.y() * pt.y();
+  const double r2 = x2 + y2;
+  const double r4 = r2*r2;
+  const double r6 = r2*r4;
+  const double two_xy = 2 * pt.x() * pt.y();
+
+  double scale = 1.0;
+  vector_2d dist_pt = pt;
+  if(d.rows() > 0)
+  {
+    scale += r2*d[0];
+    if(d.rows() > 1)
+    {
+      scale += r4*d[1];
+      if(d.rows() > 4)
+      {
+        scale += r6*d[4];
+        if(d.rows() > 7)
+        {
+          scale /= 1.0 + r2*d[5] + r4*d[6] + r6*d[7];
+        }
+      }
+    }
+  }
+  dist_pt *= scale;
+  if(d.rows() > 3)
+  {
+    dist_pt += vector_2d(d[2]*two_xy + d[3]*(r2 + 2*x2),
+                         d[3]*two_xy + d[2]*(r2 + 2*y2));
+  }
+  return dist_pt;
+}
+
+
 
 void test_distortion(const Eigen::VectorXd& d)
 {
   using namespace maptk;
   camera_intrinsics_d K;
-  K.set_dist_coeffs(d.transpose());
+  K.set_dist_coeffs(d);
 
-  cv::Mat cam_mat;
-  cv::eigen2cv(matrix_3x3d(K), cam_mat);
-  int rows = d.rows() < 4 ? 4 : d.rows();
-  cv::Mat dist = cv::Mat::zeros(1, rows, CV_64F);
-  for(unsigned int i=0; i<d.rows(); ++i)
-  {
-    dist.at<double>(i) = d[i];
-  }
-  cv::Mat tvec = cv::Mat::zeros(1,3,CV_64F);
-  cv::Mat rvec = tvec;
+  vector_2d origin(0,0);
 
-  std::cout << "K = " << cam_mat << "\nd = " << dist <<std::endl;
+  TEST_NEAR("(0,0) is not distorted",
+            K.distort(origin).norm(), 0.0, 1e-12);
+
+  TEST_NEAR("undistort origin",
+            K.undistort(origin).norm(), 0.0, 1e-12);
 
   for(unsigned int i = 1; i<100; ++i)
   {
@@ -88,17 +158,15 @@ void test_distortion(const Eigen::VectorXd& d)
     vector_2d distorted_test = K.distort(test_pt);
     std::cout << "test point: "<< test_pt.transpose() << "\n"
               << "distorted: " << distorted_test.transpose() << std::endl;
-    std::vector<cv::Point3d> in_pts;
-    std::vector<cv::Point2d> out_pts;
-    in_pts.push_back(cv::Point3d(test_pt.x(), test_pt.y(), 1.0));
-    cv::projectPoints(in_pts, rvec, tvec, cam_mat, dist, out_pts);
-    vector_2d cv_distorted_test(out_pts[0].x, out_pts[0].y);
 
-    std::cout << "OpenCV distorted: " << cv_distorted_test.transpose()
-              << std::endl;
+    vector_2d distorted_test_gt = distort_point(test_pt, d);
+    TEST_NEAR("distorted test point at GT location",
+              (distorted_test - distorted_test_gt).norm(), 0.0, 1e-12);
 
-    TEST_NEAR("OpenCV and MAP-TK distortion match",
-              (distorted_test-cv_distorted_test).norm(), 0.0, 1e-10);
+    vector_2d undistorted = K.undistort(distorted_test);
+    std::cout << "undistorted: "<< undistorted.transpose() << std::endl;
+    TEST_NEAR("undistort is the inverse of distort",
+              (undistorted-test_pt).norm(), 0.0, 1e-10);
   }
 }
 

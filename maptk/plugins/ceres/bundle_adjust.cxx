@@ -487,7 +487,7 @@ bundle_adjust
   {
     constant_intrinsics.push_back(9);
   }
-  if (!d_->optimize_dist_k3 && ndp > 7)
+  if (!d_->optimize_dist_k4_k5_k6 && ndp > 7)
   {
     constant_intrinsics.push_back(10);
     constant_intrinsics.push_back(11);
