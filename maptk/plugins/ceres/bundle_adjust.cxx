@@ -529,7 +529,7 @@ bundle_adjust
     }
   }
   // apply the constraints
-  if (constant_intrinsics.size() > 4)
+  if (constant_intrinsics.size() > 4 + ndp)
   {
     // set all parameters in the block constant
     problem.SetParameterBlockConstant(&intrinsic_params[0]);
@@ -538,7 +538,7 @@ bundle_adjust
   {
     // set a subset of parameters in the block constant
     problem.SetParameterization(&intrinsic_params[0],
-        new ::ceres::SubsetParameterization(5, constant_intrinsics));
+        new ::ceres::SubsetParameterization(5 + ndp, constant_intrinsics));
   }
 
   // If the loss function was added to a residual block, ownership was
