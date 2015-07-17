@@ -1,17 +1,70 @@
-MAP-Tk v1.0.0 Release Notes
+MAP-Tk v0.6.0 Release Notes
 ==========================
 
-This is a major release of MAP-Tk that provides both new functionality and fixes
-over the previous v0.5.0 release.
+This is a major release of MAP-Tk that provides both new functionality and
+fixes over the previous v0.5.1 release.  Although the API has changed
+significantly, we still consider MAP-Tk to be in "pre-release" and are
+not yet ready to increase the major version number and mark this release as
+v1.0.0.  Additional major restructuring is planned before we release v1.0.0
+with a "stable" API.
+
+The primary changes in this release are a major restructuring to provide
+true dynamically loaded plugins instead of the previous module framework,
+and a switch to Eigen3 to provide the core linear algebra data structure
+and algorithms (e.g. matrix and vector).  This release also adds a few
+new algorithms and provides a preview of new C and Python bindings, which
+are still under development.
+
+The new plugin framework allows new algorithms to be loaded at runtime
+without needing to recompile MAP-Tk or any tools built on top of MAP-Tk.
+The previous modules (vxl, ocv, proj, vcl) have been converted to plugins,
+and a new core plugin has been added for core algorithm implementations that
+were previously in the maptk library.  Abstract algorithm declarations are
+still the main maptk library, but concrete implementations of those algorithms
+are now all loaded through plugins.  This means you can write your own plugin,
+drop it into the plugins directory, and insert your algorithm implementations
+into a MAP-Tk pipeline with just a configuration file change.
+
+Eigen3 joins Boost as one of the few required dependencies in MAP-Tk v0.6.0.
+Previously MAP-Tk had its own matrix and vector classes to reduce third party
+dependencies in the main library.  As development progressed, we found
+ourselves adding more and more basic linear algebra code and reinventing what
+is already available, and done very well, in Eigen.  We decided to switch
+to Eigen rather than waste time reinventing it.  Eigen is a header-only library
+and should be easy to obtain and use across platforms.
+
+This release of MAP-Tk provides options for a new two-pass feature matching
+approach, a feature filter algorithm, and a geometrically constrained feature
+matcher.  The intended use case for these is to first match a "strong" subset
+of features, estimate a homography from these matches, and use the homography
+to predict the approximate motion of the remaining features, then search in a
+local neighborhood to quickly find weaker or more ambiguous matches that
+otherwise would have been missed.
+
+Language bindings for C and Python are also new in MAP-Tk v0.6.0.  These
+bindings are not yet complete, but offer a preview of what is to come.
+Producing Python bindings for a C++ API is challenging for a variety of
+reasons, but Python bindings for C are comparatively easy to produce.  Our
+approach is to produce C bindings for the C++ API and then build Python
+bindings on the C API.  This will also allow other language bindings to be
+built in the future more easily by using the C API.  The current set of
+bindings allows a subset of algorithms to be run, but does not allow
+introspection of the data objects.
+
+Additional details about changes in this release are found below.
 
 
-Updates since v0.5.0
+Updates since v0.5.1
 --------------------
 
 Build System
 
- * Revised module system into providing tools to build library and plugins for
-   dynamic loading.
+ * Revised modules into plugins for dynamic loading.  Each plugin provides a
+   library for static linking and a light weight wrapper to produce a plugin
+   that is loaded at run-time.
+
+ * Provided CMake tools to make it easy to construct the plugins with minimal
+   boilerplate code.
 
  * Added install rules for CMake utilities for MAP-Tk users to create MAP-Tk
    compliant plugin interface libraries.
@@ -44,7 +97,7 @@ MAP-Tk Library
  * Refactored source file layout.
 
  * Separated out algorithm implementations that used to be in the main MAP-Tk
-   library into a core library witha a plugin interface.
+   library into a core library with a plugin interface.
 
  * Added required dependency on the Eigen3 header-only library.  Going forward
    Eigen will provide standardized linear algebra functionality so we do not
@@ -159,7 +212,7 @@ Tools
  * In track features tool, Added ability to specify paired mask image files.
 
 
-Fixes since v0.5.0
+Fixes since v0.5.1
 ------------------
 
 Build System

@@ -3,7 +3,7 @@ namespace maptk {
 /// Core module namespace
 namespace core { }
 
-/** \page plugin_core Core Plugin Documentation
+/** \page plugin_core Core Plugin
 \section sec-core-contents Contents
 The MAPTK Core plugin provides algorithm implementations that only depend on the MAP-Tk core.
 
