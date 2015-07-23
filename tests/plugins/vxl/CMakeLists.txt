@@ -1,6 +1,6 @@
 project(maptk_test_vxl)
 
-set(test_libraries maptk_vxl vital )
+set(test_libraries maptk_vxl)
 
 ##############################
 # MAPTK VXL tests

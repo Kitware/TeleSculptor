@@ -55,7 +55,7 @@ maptk_add_library(
   ${maptk_public_headers}
   ${maptk_sources}
   )
-target_link_libraries(maptk ${Boost_LIBRARIES} ${KWIVER_LIBRARIES} )
+target_link_libraries(maptk vital ${Boost_LIBRARIES} )
 
 
 ###
