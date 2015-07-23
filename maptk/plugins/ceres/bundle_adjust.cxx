@@ -41,25 +41,23 @@
 #include <boost/foreach.hpp>
 #include <boost/timer/timer.hpp>
 
-#include <maptk/logging_macros.h>
-#include <maptk/eigen_io.h>
+#include <vital/logger/logger.h>
+#include <vital/io/eigen_io.h>
 #include <maptk/plugins/ceres/reprojection_error.h>
 #include <maptk/plugins/ceres/types.h>
 
 #include <ceres/ceres.h>
 
 
-#define LOGGING_PREFIX "maptk::ceres::bundle_adjust"
-
 
 using boost::timer::cpu_times;
 using boost::timer::nanosecond_type;
-
-
-namespace maptk
-{
+using namespace kwiver::vital;
 
 #define MAPTK_CERES_ENUM_HELPERS(NS, ceres_type)                        \
+namespace kwiver {                                                      \
+namespace vital {                                                       \
+                                                                        \
 template<>                                                              \
 inline                                                                  \
 config_block_value_t                                                    \
@@ -81,6 +79,12 @@ config_block_cast(config_block_value_t const& value)                    \
   return cet;                                                           \
 }                                                                       \
                                                                         \
+}                                                                       \
+}                                                                       \
+                                                                        \
+namespace maptk {                                                       \
+namespace ceres {                                                       \
+                                                                        \
 template<>                                                              \
 std::string                                                             \
 ceres_options< NS::ceres_type >()                                       \
@@ -98,8 +102,15 @@ ceres_options< NS::ceres_type >()                                       \
     options_str += "\n  - " + opt;                                      \
   }                                                                     \
   return options_str;                                                   \
+}                                                                       \
+                                                                        \
+}                                                                       \
 }
 
+namespace maptk
+{
+namespace ceres
+{
 
 /// Defult implementation of string options for Ceres enums
 template <typename T>
@@ -109,17 +120,22 @@ ceres_options()
   return std::string();
 }
 
+}
+}
+
 MAPTK_CERES_ENUM_HELPERS(::ceres, LinearSolverType)
 MAPTK_CERES_ENUM_HELPERS(::ceres, PreconditionerType)
 MAPTK_CERES_ENUM_HELPERS(::ceres, TrustRegionStrategyType)
 MAPTK_CERES_ENUM_HELPERS(::ceres, DoglegType)
 
-MAPTK_CERES_ENUM_HELPERS(ceres, LossFunctionType)
-MAPTK_CERES_ENUM_HELPERS(ceres, LensDistortionType)
+MAPTK_CERES_ENUM_HELPERS(maptk::ceres, LossFunctionType)
+MAPTK_CERES_ENUM_HELPERS(maptk::ceres, LensDistortionType)
 
 #undef MAPTK_CERES_ENUM_HELPERS
 
 
+namespace maptk
+{
 namespace ceres
 {
 /// Private implementation class
@@ -140,7 +156,8 @@ public:
     optimize_dist_k2(false),
     optimize_dist_k3(false),
     optimize_dist_p1_p2(false),
-    optimize_dist_k4_k5_k6(false)
+    optimize_dist_k4_k5_k6(false),
+    m_logger( kwiver::vital::get_logger( "maptk::ceres::bundle_adjust" ))
   {
   }
 
@@ -157,7 +174,8 @@ public:
     optimize_dist_k2(other.optimize_dist_k2),
     optimize_dist_k3(other.optimize_dist_k3),
     optimize_dist_p1_p2(other.optimize_dist_p1_p2),
-    optimize_dist_k4_k5_k6(other.optimize_dist_k4_k5_k6)
+    optimize_dist_k4_k5_k6(other.optimize_dist_k4_k5_k6),
+    m_logger( kwiver::vital::get_logger( "maptk::ceres::bundle_adjust" ))
   {
   }
 
@@ -189,6 +207,9 @@ public:
   bool optimize_dist_p1_p2;
   /// option to optimize radial distortion parameters k4, k5, k6
   bool optimize_dist_k4_k5_k6;
+
+  /// Logger handle
+  kwiver::vital::logger_handle_t m_logger;
 };
 
 
@@ -222,7 +243,7 @@ bundle_adjust
 {
   ::ceres::Solver::Options& o = d_->options;
   // get base config from base class
-  config_block_sptr config = maptk::algo::bundle_adjust::get_configuration();
+  config_block_sptr config = kwiver::vital::algo::bundle_adjust::get_configuration();
   config->set_value("verbose", d_->verbose,
                     "If true, write status messages to the terminal showing "
                     "optimization progress at each iteration");
@@ -366,7 +387,7 @@ bundle_adjust
   std::string msg;
   if( !d_->options.IsValid(&msg) )
   {
-    LOG_ERROR(LOGGING_PREFIX+std::string("::check_configuration"), msg);
+    LOG_ERROR( d_->m_logger, msg);
     return false;
   }
   return true;
@@ -385,8 +406,8 @@ bundle_adjust
     // TODO throw an exception for missing input data
     return;
   }
-  typedef maptk::camera_map::map_camera_t map_camera_t;
-  typedef maptk::landmark_map::map_landmark_t map_landmark_t;
+  typedef camera_map::map_camera_t map_camera_t;
+  typedef landmark_map::map_landmark_t map_landmark_t;
 
 #define MAPTK_SBA_TIMED(msg, code) \
   do \

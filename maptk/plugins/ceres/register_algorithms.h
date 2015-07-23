@@ -37,7 +37,7 @@
 #define MAPTK_PLUGINS_CERES_REGISTER_ALGORITHMS_H_
 
 #include <maptk/plugins/ceres/ceres_config.h>
-#include <maptk/registrar.h>
+#include <vital/registrar.h>
 
 
 namespace maptk
@@ -48,7 +48,7 @@ namespace ceres
 
 /// Register CERES algorithm implementations with the given or global registrar
 MAPTK_CERES_EXPORT
-int register_algorithms( maptk::registrar &reg = maptk::registrar::instance() );
+int register_algorithms( kwiver::vital::registrar &reg = kwiver::vital::registrar::instance() );
 
 } // end ceres namespace
 

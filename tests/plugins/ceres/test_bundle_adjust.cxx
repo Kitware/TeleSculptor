@@ -38,12 +38,14 @@
 
 #include <boost/foreach.hpp>
 
+#include <vital/algorithm_plugin_manager.h>
+
 #include <maptk/metrics.h>
-#include <maptk/algorithm_plugin_manager.h>
 #include <maptk/plugins/ceres/bundle_adjust.h>
 #include <maptk/plugins/ceres/register_algorithms.h>
 #include <maptk/projected_track_set.h>
 
+using namespace kwiver::vital;
 
 #define TEST_ARGS ()
 
@@ -548,7 +550,7 @@ IMPLEMENT_TEST(outlier_tracks)
 
 
 // helper for tests using distortion models in bundle adjustment
-void test_ba_using_distortion(maptk::config_block_sptr cfg,
+void test_ba_using_distortion(kwiver::vital::config_block_sptr cfg,
                               const Eigen::VectorXd& dc,
                               bool clear_init_distortion)
 {

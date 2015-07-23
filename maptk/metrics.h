@@ -153,9 +153,9 @@ reprojection_median_error(const std::map<kwiver::vital::frame_id_t, kwiver::vita
  */
 MAPTK_LIB_EXPORT
 double
-reprojection_median_error(const std::map<frame_id_t, camera_sptr>& cameras,
-                          const std::map<landmark_id_t, landmark_sptr>& landmarks,
-                          const std::vector<track_sptr>& tracks);
+reprojection_median_error(const std::map<kwiver::vital::frame_id_t, kwiver::vital::camera_sptr>& cameras,
+                          const std::map<kwiver::vital::landmark_id_t, kwiver::vital::landmark_sptr>& landmarks,
+                          const std::vector<kwiver::vital::track_sptr>& tracks);
 
 
 } // end namespace maptk

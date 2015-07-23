@@ -61,13 +61,14 @@ main(int argc, char* argv[])
 
 /// test the reprojection error of a single residual
 void
-test_reprojection_error(const maptk::camera& cam,
-                        const maptk::landmark& lm,
-                        const maptk::feature& f,
+test_reprojection_error(const kwiver::vital::camera& cam,
+                        const kwiver::vital::landmark& lm,
+                        const kwiver::vital::feature& f,
                         const maptk::ceres::LensDistortionType dist_type)
 {
   using namespace maptk;
   using namespace maptk::ceres;
+  using namespace kwiver::vital;
 
   ::ceres::CostFunction* cost_func =
       create_cost_func(dist_type, f.loc().x(), f.loc().y());
@@ -105,12 +106,13 @@ test_reprojection_error(const maptk::camera& cam,
 
 /// test the reprojection error of all residuals
 void
-test_all_reprojection_errors(const maptk::camera_map_sptr cameras,
-                             const maptk::landmark_map_sptr landmarks,
-                             const maptk::track_set_sptr tracks,
+test_all_reprojection_errors(const kwiver::vital::camera_map_sptr cameras,
+                             const kwiver::vital::landmark_map_sptr landmarks,
+                             const kwiver::vital::track_set_sptr tracks,
                              const maptk::ceres::LensDistortionType dist_type)
 {
   using namespace maptk;
+  using namespace kwiver::vital;
 
   camera_map::map_camera_t cam_map = cameras->cameras();
   landmark_map::map_landmark_t lm_map = landmarks->landmarks();
@@ -158,6 +160,7 @@ void test_reprojection_model(const Eigen::VectorXd& dc,
 {
   using namespace maptk;
   using namespace maptk::ceres;
+  using namespace kwiver::vital;
 
   // create landmarks at the corners of a cube
   landmark_map_sptr landmarks = testing::cube_corners(2.0);
@@ -181,6 +184,7 @@ void test_reprojection_model(const Eigen::VectorXd& dc,
 IMPLEMENT_TEST(compare_projections_no_distortion)
 {
   using namespace maptk::ceres;
+  using namespace kwiver::vital;
 
   Eigen::VectorXd dc;
 

@@ -36,7 +36,6 @@
 #include "register_algorithms.h"
 
 
-#include <maptk/logging_macros.h>
 #include <maptk/plugin_interface/algorithm_plugin_interface_macros.h>
 #include <maptk/plugins/ceres/bundle_adjust.h>
 
@@ -48,7 +47,7 @@ namespace ceres
 {
 
 /// Register Ceres algorithm implementations with the given or global registrar
-int register_algorithms( maptk::registrar &reg )
+int register_algorithms( kwiver::vital::registrar &reg )
 {
   REGISTRATION_INIT( reg );
 

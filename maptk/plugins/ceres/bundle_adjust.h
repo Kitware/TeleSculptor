@@ -38,7 +38,7 @@
 
 #include <boost/scoped_ptr.hpp>
 
-#include <maptk/algo/bundle_adjust.h>
+#include <vital/algo/bundle_adjust.h>
 #include <maptk/plugins/ceres/ceres_config.h>
 
 
@@ -50,7 +50,7 @@ namespace ceres
 
 /// A class for bundle adjustment of tracks using Ceres
 class MAPTK_CERES_EXPORT bundle_adjust
-: public algo::algorithm_impl<bundle_adjust, algo::bundle_adjust>
+: public kwiver::vital::algorithm_impl<bundle_adjust, kwiver::vital::algo::bundle_adjust>
 {
 public:
   /// Constructor
@@ -66,11 +66,11 @@ public:
   virtual std::string impl_name() const { return "ceres"; }
 
   /// Get this algorithm's \link maptk::config_block configuration block \endlink
-  virtual config_block_sptr get_configuration() const;
+  virtual kwiver::vital::config_block_sptr get_configuration() const;
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(config_block_sptr config);
+  virtual void set_configuration(kwiver::vital::config_block_sptr config);
   /// Check that the algorithm's currently configuration is valid
-  virtual bool check_configuration(config_block_sptr config) const;
+  virtual bool check_configuration(kwiver::vital::config_block_sptr config) const;
 
   /// Optimize the camera and landmark parameters given a set of tracks
   /**
@@ -79,9 +79,9 @@ public:
    * \param [in] tracks the tracks to use as constraints
    */
   virtual void
-  optimize(camera_map_sptr& cameras,
-           landmark_map_sptr& landmarks,
-           track_set_sptr tracks) const;
+  optimize(kwiver::vital::camera_map_sptr& cameras,
+           kwiver::vital::landmark_map_sptr& landmarks,
+           kwiver::vital::track_set_sptr tracks) const;
 
 private:
   /// private implementation class

@@ -1,6 +1,6 @@
 project(maptk_test_ceres)
 
-set(test_libraries maptk_ceres)
+set(test_libraries maptk_ceres vital)
 
 ##############################
 # MAPTK Ceres tests
