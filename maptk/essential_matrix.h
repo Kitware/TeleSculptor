@@ -40,6 +40,7 @@
 #include <maptk/matrix.h>
 #include <maptk/types.h>
 #include <maptk/vector.h>
+#include <maptk/rotation.h>
 
 #include <iostream>
 #include <map>
@@ -79,7 +80,20 @@ public:
   /**
    * \return A copy of the matrix represented in the double type.
    */
-  virtual Eigen::Matrix<double,3,3> matrix() const = 0;
+  virtual matrix_3x3d matrix() const = 0;
+
+  /// Return the one of two possible 3D rotations that can parameterize E
+  virtual rotation_d rotation() const = 0;
+
+  /// Return the second possible rotation that can parameterize E
+  /**
+   *  The twisted rotation is related to the primary rotation by a 180 degree
+   *  rotation about the translation axis
+   */
+  virtual rotation_d twisted_rotation() const;
+
+  /// Return a unit translation vector (up to a sign) that parameterizes E
+  virtual vector_3d translation() const = 0;
 };
 
 
@@ -95,6 +109,7 @@ class MAPTK_LIB_EXPORT essential_matrix_
 public:
   typedef T value_type;
   typedef Eigen::Matrix<T,3,3> matrix_t;
+  typedef Eigen::Matrix<T,3,1> vector_t;
 
   /// Construct from a provided matrix by projection.
   /** Decompose and find closest essential matrix to the input \p mat.
@@ -103,6 +118,10 @@ public:
   explicit
   essential_matrix_<T>( matrix_t const &mat );
 
+  /// Construct from a rotation and translation
+  essential_matrix_<T>( rotation_<T> const &rot,
+                        vector_t const &trans );
+
   /// Conversion Copy constructor
   /**
    * \param other The other essential_matrix to be copied.
@@ -110,7 +129,8 @@ public:
   template <typename U>
   explicit
   essential_matrix_<T>( essential_matrix_<U> const &other )
-    : h_( other.h_.template cast<T>() )
+    : rot_( static_cast<rotation_<T> >(other.rot_) ),
+      trans_( other.trans_.template cast<T>() )
   {
   }
 
@@ -132,20 +152,42 @@ public:
    */
   virtual Eigen::Matrix<double,3,3> matrix() const;
 
+  /// Return the one of two possible 3D rotations that can parameterize E
+  virtual rotation_d rotation() const;
+
+  /// Return the second possible rotation that can parameterize E
+  /**
+   *  The twisted rotation is related to the primary rotation by a 180 degree
+   *  rotation about the translation axis
+   */
+  virtual rotation_d twisted_rotation() const;
+
+  /// Return a unit translation vector (up to a sign) that parameterizes E
+  virtual vector_3d translation() const;
+
   // Member Functions --------------------------------------------------------
 
-  /// Get the underlying matrix
-  /**
-   * \return The reference to the matrix
-   */
-  matrix_t& get_matrix();
+  /// Compute the matrix representation from rotatation and translation
+  matrix_t compute_matrix() const;
 
-  /// Get a const reference to the underlying matrix.
-  matrix_t const& get_matrix() const;
+  /// Compute the twisted pair rotation from the rotation and translation
+  /**
+   *  The twisted rotation is related to the primary rotation by a 180 degree
+   *  rotation about the translation axis
+   */
+  rotation_<T> compute_twisted_rotation() const;
+
+  /// Get a const reference to the underlying rotation
+  rotation_<T> const& get_rotation() const;
+
+  /// Get a const reference to the underlying translation
+  vector_t const& get_translation() const;
 
 protected:
-  /// essential_matrix transformation matrix
-  matrix_t h_;
+  /// the rotation used to parameterize the essential matrix
+  rotation_<T> rot_;
+  /// the translation used to parameterize the essential  matrix
+  vector_t trans_;
 };
 
 
@@ -160,11 +202,13 @@ typedef essential_matrix_<float> essential_matrix_f;
 // ---------------------------------------------------------------------------
 
 /// Output stream operator for \p essential_matrix base-class
-MAPTK_LIB_EXPORT std::ostream& operator<<( std::ostream &s, essential_matrix const &h );
+MAPTK_LIB_EXPORT std::ostream& operator<<( std::ostream &s,
+                                           essential_matrix const &e );
 
 /// essential_matrix_<T> output stream operator
 template <typename T>
-MAPTK_LIB_EXPORT std::ostream& operator<<( std::ostream &s, essential_matrix_<T> const &h );
+MAPTK_LIB_EXPORT std::ostream& operator<<( std::ostream &s,
+                                           essential_matrix_<T> const &e );
 
 
 } // end namespace maptk
