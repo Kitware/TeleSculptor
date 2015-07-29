@@ -143,7 +143,7 @@ estimate_essential_matrix
 
 
 /// Estimate an essential matrix from corresponding points
-matrix_3x3d
+essential_matrix_sptr
 estimate_essential_matrix
 ::estimate(const std::vector<vector_2d>& pts1,
            const std::vector<vector_2d>& pts2,
@@ -195,7 +195,7 @@ estimate_essential_matrix
     inliers[i] = std::fabs(d) < inlier_scale;
   }
 
-  return E;
+  return essential_matrix_sptr(new essential_matrix_d(E));
 }
 
 

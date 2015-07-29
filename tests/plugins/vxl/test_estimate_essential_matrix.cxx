@@ -175,7 +175,9 @@ IMPLEMENT_TEST(ideal_points)
 
   // compute the essential matrix from the corresponding points
   std::vector<bool> inliers;
-  matrix_3x3d E = est_e.estimate(pts1, pts2, cal1, cal2, inliers, 1.5);
+  essential_matrix_sptr E_sptr = est_e.estimate(pts1, pts2, cal1, cal2,
+                                                inliers, 1.5);
+  matrix_3x3d E = E_sptr->matrix();
   E /= E.norm();
   if (E(0,0) < 0)
   {
@@ -240,7 +242,9 @@ IMPLEMENT_TEST(noisy_points)
 
   // compute the essential matrix from the corresponding points
   std::vector<bool> inliers;
-  matrix_3x3d E = est_e.estimate(pts1, pts2, cal1, cal2, inliers, 1.5);
+  essential_matrix_sptr E_sptr = est_e.estimate(pts1, pts2, cal1, cal2,
+                                                inliers, 1.5);
+  matrix_3x3d E = E_sptr->matrix();
   E /= E.norm();
   if (E(0,0) < 0)
   {

@@ -137,9 +137,10 @@ initialize_cameras_landmarks::priv
   camera_intrinsics_d cal_right = prev_cam->intrinsics();
   const camera_intrinsics_d& cal_left = base_camera.get_intrinsics();
   std::vector<bool> inliers;
-  matrix_3x3d E = e_estimator->estimate(pts_right, pts_left,
-                                        cal_right, cal_left,
-                                        inliers, 2.0);
+  essential_matrix_sptr E_sptr = e_estimator->estimate(pts_right, pts_left,
+                                                       cal_right, cal_left,
+                                                       inliers, 2.0);
+  matrix_3x3d E = E_sptr->matrix();
 
   unsigned num_inliers = static_cast<unsigned>(std::count(inliers.begin(),
                                                           inliers.end(), true));
