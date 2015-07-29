@@ -15,6 +15,7 @@ maptk_discover_tests(maptk_config             test_libraries test_config_block.c
 maptk_discover_tests(maptk_config_io          test_libraries test_config_block_io.cxx
   "${maptk_test_data_directory}"
   )
+maptk_discover_tests(maptk_essential_matrix   test_libraries test_essential_matrix.cxx)
 maptk_discover_tests(maptk_est                test_libraries test_estimate_similarity_transform.cxx)
 maptk_discover_tests(maptk_homography         test_libraries test_homography.cxx)
 maptk_discover_tests(maptk_image              test_libraries test_image.cxx)
