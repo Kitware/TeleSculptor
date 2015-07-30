@@ -125,8 +125,8 @@ public:
   explicit camera_<T>(const camera_<U>& other)
   : center_(other.get_center().template cast<T>()),
     center_covar_(static_cast<covariance_<3,T> >(other.get_center_covar())),
-    orientation_(static_cast<rotation_<T> >(get_rotation())),
-    intrinsics_(static_cast<camera_intrinsics_<T> >(get_intrinsics()))
+    orientation_(static_cast<rotation_<T> >(other.get_rotation())),
+    intrinsics_(static_cast<camera_intrinsics_<T> >(other.get_intrinsics()))
   {}
 
   /// Create a clone of this camera object

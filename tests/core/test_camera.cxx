@@ -57,6 +57,22 @@ main(int argc, char* argv[])
   RUN_TEST(testname);
 }
 
+IMPLEMENT_TEST(casting)
+{
+  using namespace maptk;
+  vector_2d pp(300,400);
+  camera_intrinsics_d K(1000, pp);
+  vector_3d center(3, -4, 7);
+  rotation_d rot(vector_3d(-1, 2, 3));
+  camera_d cam_d(center, rot, K);
+
+  camera_f cam_f(cam_d);
+  TEST_EQUAL("center cast", cam_f.get_center(), center.cast<float>());
+  TEST_EQUAL("rotation cast", cam_f.get_rotation(), rotation_f(rot));
+  TEST_EQUAL("intrinsic cast", matrix_3x3f(cam_f.get_intrinsics()),
+                               matrix_3x3f(camera_intrinsics_f(K)));
+}
+
 
 IMPLEMENT_TEST(look_at)
 {
