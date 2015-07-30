@@ -127,6 +127,16 @@ camera_<T>
 }
 
 
+/// Compute the distance of the 3D point to the image plane
+template <typename T>
+T
+camera_<T>
+::depth(const Eigen::Matrix<T, 3, 1>& pt) const
+{
+  return (this->orientation_ * (pt - this->center_)).z();
+}
+
+
 /// Transform the camera by applying a similarity transformation in place
 template <typename T>
 camera_<T>&

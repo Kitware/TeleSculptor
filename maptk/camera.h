@@ -203,6 +203,12 @@ public:
   /// Project a 3D point into a 2D image point
   Eigen::Matrix<T, 2, 1> project(const Eigen::Matrix<T, 3, 1>& pt) const;
 
+  /// Compute the distance of the 3D point to the image plane
+  /**
+   *  Points with negative depth are behind the camera
+   */
+  T depth(const Eigen::Matrix<T, 3, 1>& pt) const;
+
   /// Apply a similarity transformation to the camera in place
   virtual void transform(const similarity_d& xform)
   { apply_transform(similarity_<T>(xform)); }
