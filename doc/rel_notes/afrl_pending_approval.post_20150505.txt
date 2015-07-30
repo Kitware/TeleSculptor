@@ -35,6 +35,10 @@ Main Library
    image plane.  This can also be used to check if a point is behind
    the camera by checking the sign of the depth.
 
+ * Added a new essential matrix data structure, including abstract
+   base class, and switched the essential matrix estimation algorithm
+   to use this class instead of a 3x3 matrix.
+
 Ceres Plugin
 
  * Added a new plugin which uses Google Ceres Solver as a back end for
@@ -63,10 +67,18 @@ Core Plugin
  * Added a core plugin implementation of triangulate_landmarks using the
    triangulation functions added to the main library.
 
+ * Moved the implementatation of initialize_cameras_landmarks from the VXL
+   plugin into core and updated it to use the new triangulation and essential
+   matrix functionality of the main library to remove dependence on VXL.
+
 OpenCV Plugin
 
  * Added unit tests to verify that the lens distortion functions in MAP-Tk
    produce equal results to those routines in OpenCV.
+
+VXL Plugin
+
+  * Moved the initialize_cameras_landmarks implementation to the core plugin.
 
 C Interface
 
