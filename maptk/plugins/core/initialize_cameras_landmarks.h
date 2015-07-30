@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,26 +30,26 @@
 
 /**
  * \file
- * \brief Header for VXL camera and landmark initialization algorithm
+ * \brief Header for core camera and landmark initialization algorithm
  */
 
-#ifndef MAPTK_PLUGINS_VXL_INITIALIZE_CAMERAS_LANDMARKS_H_
-#define MAPTK_PLUGINS_VXL_INITIALIZE_CAMERAS_LANDMARKS_H_
+#ifndef MAPTK_PLUGINS_CORE_INITIALIZE_CAMERAS_LANDMARKS_H_
+#define MAPTK_PLUGINS_CORE_INITIALIZE_CAMERAS_LANDMARKS_H_
 
 #include <boost/scoped_ptr.hpp>
 
 #include <maptk/algo/initialize_cameras_landmarks.h>
-#include <maptk/plugins/vxl/vxl_config.h>
+#include <maptk/plugins/core/plugin_core_config.h>
 
 
 namespace maptk
 {
 
-namespace vxl
+namespace core
 {
 
-/// A class for initialization of cameras and landmarks using VXL
-class MAPTK_VXL_EXPORT initialize_cameras_landmarks
+/// A class for initialization of cameras and landmarks
+class PLUGIN_CORE_EXPORT initialize_cameras_landmarks
 : public algo::algorithm_impl<initialize_cameras_landmarks,
                               algo::initialize_cameras_landmarks>
 {
@@ -64,7 +64,7 @@ public:
   initialize_cameras_landmarks(const initialize_cameras_landmarks& other);
 
   /// Return the name of this implementation
-  std::string impl_name() const { return "vxl"; }
+  std::string impl_name() const { return "core"; }
 
   /// Get this algorithm's \link maptk::config_block configuration block \endlink
   virtual config_block_sptr get_configuration() const;
@@ -95,9 +95,9 @@ private:
 };
 
 
-} // end namespace vxl
+} // end namespace core
 
 } // end namespace maptk
 
 
-#endif // MAPTK_PLUGINS_VXL_INITIALIZE_CAMERAS_LANDMARKS_H_
+#endif // MAPTK_PLUGINS_CORE_INITIALIZE_CAMERAS_LANDMARKS_H_

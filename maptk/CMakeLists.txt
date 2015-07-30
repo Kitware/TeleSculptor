@@ -34,6 +34,7 @@ set(maptk_public_headers
   descriptor.h
   descriptor_set.h
   eigen_io.h
+  essential_matrix.h
   exceptions.h
   feature.h
   feature_set.h
@@ -109,6 +110,7 @@ set(maptk_sources
   camera_map_io.cxx
   config_block.cxx
   config_block_io.cxx
+  essential_matrix.cxx
   feature.cxx
   geo_reference_points_io.cxx
   homography.cxx

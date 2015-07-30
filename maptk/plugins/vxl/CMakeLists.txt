@@ -12,7 +12,6 @@ set(maptk_vxl_headers_public
   estimate_similarity_transform.h
   image_container.h
   image_io.h
-  initialize_cameras_landmarks.h
   match_features_constrained.h
   optimize_cameras.h
   register_algorithms.h
@@ -35,7 +34,6 @@ set(maptk_vxl_sources
   estimate_similarity_transform.cxx
   image_container.cxx
   image_io.cxx
-  initialize_cameras_landmarks.cxx
   match_features_constrained.cxx
   optimize_cameras.cxx
   register_algorithms.cxx

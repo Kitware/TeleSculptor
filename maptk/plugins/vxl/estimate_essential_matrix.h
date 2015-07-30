@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -84,7 +84,7 @@ public:
    * \param [in]  inlier_scale error distance tolerated for matches to be inliers
    */
   virtual
-  matrix_3x3d
+  essential_matrix_sptr
   estimate(const std::vector<vector_2d>& pts1,
            const std::vector<vector_2d>& pts2,
            const camera_intrinsics_d &cal1,
