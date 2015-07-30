@@ -120,6 +120,14 @@ public:
     intrinsics_(intrinsics)
   {}
 
+  /// Constructor - from base class
+  camera_<T>(const camera& base)
+  : center_(base.center().template cast<T>()),
+    center_covar_(static_cast<covariance_<3,T> >(base.center_covar())),
+    orientation_(static_cast<rotation_<T> >(base.rotation())),
+    intrinsics_(static_cast<camera_intrinsics_<T> >(base.intrinsics()))
+  {}
+
   /// Copy Constructor from another type
   template <typename U>
   explicit camera_<T>(const camera_<U>& other)
