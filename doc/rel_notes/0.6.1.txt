@@ -12,6 +12,12 @@ Updates since v0.6.0
 Fixes since v0.6.0
 ------------------
 
+MAP-Tk Library
+
+ * Fixed a bug in the camera_<T> type casting constructor that was causing some
+   member variables to not be copied and cast.  Added a regression test to
+   catch this issue.
+
 Tests
 
  * Fixed a bug in the noisy_landmarks helper function, which adds random noise
