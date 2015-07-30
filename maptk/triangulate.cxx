@@ -50,9 +50,11 @@ triangulate_inhomog(const std::vector<camera_<T> >& cameras,
   typedef Eigen::Matrix<T,2,1> vector_2;
   typedef Eigen::Matrix<T,3,1> vector_3;
   typedef Eigen::Matrix<T,3,3> matrix_3x3;
+  typedef Eigen::Matrix<T, Eigen::Dynamic, 3> data_matrix_t;
+  typedef Eigen::Matrix<T, Eigen::Dynamic, 1> data_vector_t;
   const unsigned int num_rows = 2*points.size();
-  Eigen::Matrix<T, Eigen::Dynamic, 3> A(num_rows, 3);
-  Eigen::Matrix<T, Eigen::Dynamic, 1> b(num_rows);
+  data_matrix_t A(num_rows, 3);
+  data_vector_t b(num_rows);
   for( unsigned int i=0; i<points.size(); ++i )
   {
     // the camera
@@ -70,7 +72,8 @@ triangulate_inhomog(const std::vector<camera_<T> >& cameras,
     b[2*i  ] = t.z()*pt.x() - t.x();
     b[2*i+1] = t.z()*pt.y() - t.y();
   }
-  Eigen::JacobiSVD<Eigen::Matrix<T, Eigen::Dynamic, 3> > svd(A);
+  Eigen::JacobiSVD<data_matrix_t> svd(A, Eigen::ComputeFullU |
+                                         Eigen::ComputeFullV);
   return svd.solve(b);
 }
 
@@ -104,7 +107,7 @@ triangulate_homog(const std::vector<camera_<T> >& cameras,
     A(2*i+1, 2) = R(1,2) - pt.y() * R(2,2);
     A(2*i+1, 3) = t.y()  - pt.y() * t.z();
   }
-  Eigen::JacobiSVD<data_matrix_t > svd(A, Eigen::ComputeThinV);
+  Eigen::JacobiSVD<data_matrix_t > svd(A, Eigen::ComputeFullV);
   return svd.matrixV().col(3);
 }
 
