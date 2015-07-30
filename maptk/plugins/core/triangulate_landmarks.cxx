@@ -56,14 +56,17 @@ class triangulate_landmarks::priv
 public:
   /// Constructor
   priv()
+    : homogeneous(false)
   {
   }
 
   priv(const priv& other)
+    : homogeneous(other.homogeneous)
   {
   }
 
-  /// parameters - none yet
+  /// use the homogeneous method for triangulation
+  bool homogeneous;
 };
 
 
@@ -97,6 +100,13 @@ triangulate_landmarks
 {
   // get base config from base class
   config_block_sptr config = maptk::algo::triangulate_landmarks::get_configuration();
+
+  // Bad frame detection parameters
+  config->set_value("homogeneous", d_->homogeneous,
+                    "Use the homogeneous method for triangulating points. "
+                    "The homogeneous method can triangulate points at or near "
+                    "infinity and discard them.");
+
   return config;
 }
 
@@ -106,6 +116,13 @@ void
 triangulate_landmarks
 ::set_configuration(config_block_sptr in_config)
 {
+  // Starting with our generated config_block to ensure that assumed values are present
+  // An alternative is to check for key presence before performing a get_value() call.
+  config_block_sptr config = this->get_configuration();
+  config->merge_config(in_config);
+
+  // Settings for bad frame detection
+  d_->homogeneous = config->get_value<bool>("homogeneous", d_->homogeneous);
 }
 
 
@@ -185,8 +202,22 @@ triangulate_landmarks
     // if we found at least two views of this landmark, triangulate
     if (lm_cams.size() > 1)
     {
-      vector_3d pt3d = triangulate_inhomog(lm_cams, lm_image_pts);
       bool bad_triangulation = false;
+      vector_3d pt3d;
+      if (d_->homogeneous)
+      {
+        vector_4d pt4d = triangulate_homog(lm_cams, lm_image_pts);
+        if (std::abs(pt4d[3]) < 1e-6)
+        {
+          bad_triangulation = true;
+          failed_landmarks.insert(p.first);
+        }
+        pt3d = pt4d.segment(0,3) / pt4d[3];
+      }
+      else
+      {
+        pt3d = triangulate_inhomog(lm_cams, lm_image_pts);
+      }
       BOOST_FOREACH(camera_d const& cam, lm_cams)
       {
         if(cam.depth(pt3d) < 0.0)
