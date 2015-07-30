@@ -60,6 +60,7 @@ set(maptk_public_headers
   track_set.h
   track_set_io.h
   transform.h
+  triangulate.h
   types.h
   vector.h
 
@@ -128,6 +129,7 @@ set(maptk_sources
   track_set.cxx
   track_set_io.cxx
   transform.cxx
+  triangulate.cxx
 
   exceptions/algorithm.cxx
   exceptions/base.cxx
