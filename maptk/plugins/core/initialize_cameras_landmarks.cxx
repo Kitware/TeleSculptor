@@ -30,7 +30,7 @@
 
 /**
  * \file
- * \brief Implementation of VXL camera and landmark initialization algorithm
+ * \brief Implementation of core camera and landmark initialization algorithm
  */
 
 #include "initialize_cameras_landmarks.h"
@@ -49,7 +49,7 @@
 namespace maptk
 {
 
-namespace vxl
+namespace core
 {
 
 
@@ -662,6 +662,6 @@ initialize_cameras_landmarks
 }
 
 
-} // end namespace vxl
+} // end namespace core
 
 } // end namespace maptk
