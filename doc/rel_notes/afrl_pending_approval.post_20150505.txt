@@ -27,6 +27,14 @@ Main Library
  * Added reading and writing of lens distortion parameters to the camera
    stream operators and, as a result, to the KRTD file io.
 
+ * Added 3D triangulation algorithms using Eigen to triangulate.h
+
+ * Added a constructor from the base class for camera_<T>
+
+ * Added a function to camera_<T> to compute depth of a 3D point to the
+   image plane.  This can also be used to check if a point is behind
+   the camera by checking the sign of the depth.
+
 Ceres Plugin
 
  * Added a new plugin which uses Google Ceres Solver as a back end for
@@ -50,6 +58,11 @@ Ceres Plugin
  * Added unit tests for Ceres bundle adjustment covering the use and estimation
    of lens distortion paramters.
 
+Core Plugin
+
+ * Added a core plugin implementation of triangulate_landmarks using the
+   triangulation functions added to the main library.
+
 OpenCV Plugin
 
  * Added unit tests to verify that the lens distortion functions in MAP-Tk
@@ -64,7 +77,16 @@ Python Interface
 
  * Updated algorithm related code to use new algorithm C-interface functions.
 
+Tests
+
+ * Moved test code from vxl::triangulate_landmarks to a common header to also
+   share with tests for core::triangulate_landmarks and any other future
+   implementaitons of triangulate_landmarks.
 
 Fixes since last public release
 -------------------------------
 
+Tests
+
+  * Renamed the tests for the main library from "test_core" to "test_maptk"
+    to differentiate between tests for the "core" plugin.

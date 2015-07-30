@@ -120,6 +120,14 @@ public:
     intrinsics_(intrinsics)
   {}
 
+  /// Constructor - from base class
+  camera_<T>(const camera& base)
+  : center_(base.center().template cast<T>()),
+    center_covar_(static_cast<covariance_<3,T> >(base.center_covar())),
+    orientation_(static_cast<rotation_<T> >(base.rotation())),
+    intrinsics_(static_cast<camera_intrinsics_<T> >(base.intrinsics()))
+  {}
+
   /// Copy Constructor from another type
   template <typename U>
   explicit camera_<T>(const camera_<U>& other)
@@ -194,6 +202,12 @@ public:
 
   /// Project a 3D point into a 2D image point
   Eigen::Matrix<T, 2, 1> project(const Eigen::Matrix<T, 3, 1>& pt) const;
+
+  /// Compute the distance of the 3D point to the image plane
+  /**
+   *  Points with negative depth are behind the camera
+   */
+  T depth(const Eigen::Matrix<T, 3, 1>& pt) const;
 
   /// Apply a similarity transformation to the camera in place
   virtual void transform(const similarity_d& xform)
