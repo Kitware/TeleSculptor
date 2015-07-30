@@ -46,17 +46,37 @@ namespace maptk
 /// Triangulate a 3D point from a set of cameras and 2D image points
 /**
  *  This function computes a linear least squares solution find a 3D point
- *  that is the closest intersection of all the rays.
+ *  that is the closest intersection of all the rays using an inhomogeneous
+ *  system of equations.  This method is affine invariant but does not work
+ *  for 3D points at infinity.
  *
- *  \param cameras A vector of camera objects
- *  \param points A vector of image points corresponding to each camera
+ *  \param cameras a vector of camera objects
+ *  \param points a vector of image points corresponding to each camera
  *  \return a 3D triangulated point location
  */
 template <typename T>
 MAPTK_LIB_EXPORT
 Eigen::Matrix<T,3,1>
-triangulate(const std::vector<camera_<T> >& cameras,
-            const std::vector<Eigen::Matrix<T,2,1> >& points);
+triangulate_inhomog(const std::vector<camera_<T> >& cameras,
+                    const std::vector<Eigen::Matrix<T,2,1> >& points);
+
+
+/// Triangulate a homogeneous 3D point from a set of cameras and 2D image points
+/**
+ *  This function computes a linear least squares solution find a homogeneous
+ *  3D point that is the closest intersection of all the rays using a
+ *  homogeneous system of equations.  This method is not invariant to
+ *  tranformations but does allow for 3D points at infinity.
+ *
+ *  \param cameras a vector of camera objects
+ *  \param points a vector of image points corresponding to each camera
+ *  \return a homogeneous 3D triangulated point location
+ */
+template <typename T>
+MAPTK_LIB_EXPORT
+Eigen::Matrix<T,4,1>
+triangulate_homog(const std::vector<camera_<T> >& cameras,
+                  const std::vector<Eigen::Matrix<T,2,1> >& points);
 
 
 } // end namespace maptk

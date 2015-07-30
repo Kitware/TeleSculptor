@@ -44,13 +44,13 @@ namespace maptk
 /// Triangulate a 3D point from a set of cameras and 2D image points
 template <typename T>
 Eigen::Matrix<T,3,1>
-triangulate(const std::vector<camera_<T> >& cameras,
-            const std::vector<Eigen::Matrix<T,2,1> >& points)
+triangulate_inhomog(const std::vector<camera_<T> >& cameras,
+                    const std::vector<Eigen::Matrix<T,2,1> >& points)
 {
   typedef Eigen::Matrix<T,2,1> vector_2;
   typedef Eigen::Matrix<T,3,1> vector_3;
   typedef Eigen::Matrix<T,3,3> matrix_3x3;
-  const unsigned int num_rows = points.size();
+  const unsigned int num_rows = 2*points.size();
   Eigen::Matrix<T, Eigen::Dynamic, 3> A(num_rows, 3);
   Eigen::Matrix<T, Eigen::Dynamic, 1> b(num_rows);
   for( unsigned int i=0; i<points.size(); ++i )
@@ -75,10 +75,48 @@ triangulate(const std::vector<camera_<T> >& cameras,
 }
 
 
+/// Triangulate a homogeneous 3D point from a set of cameras and 2D image points
+template <typename T>
+Eigen::Matrix<T,4,1>
+triangulate_homog(const std::vector<camera_<T> >& cameras,
+                  const std::vector<Eigen::Matrix<T,2,1> >& points)
+{
+  typedef Eigen::Matrix<T,2,1> vector_2;
+  typedef Eigen::Matrix<T,3,1> vector_3;
+  typedef Eigen::Matrix<T,3,3> matrix_3x3;
+  typedef Eigen::Matrix<T, Eigen::Dynamic, 4> data_matrix_t;
+  const unsigned int num_rows = 2*points.size();
+  data_matrix_t A(num_rows, 4);
+  for( unsigned int i=0; i<points.size(); ++i )
+  {
+    // the camera
+    const camera_<T>& cam = cameras[i];
+    const matrix_3x3 R(cam.get_rotation());
+    const vector_3 t(cam.get_translation());
+    // the point in normalized coordinates
+    const vector_2 pt = cam.get_intrinsics().unmap(points[i]);
+    A(2*i,   0) = R(0,0) - pt.x() * R(2,0);
+    A(2*i,   1) = R(0,1) - pt.x() * R(2,1);
+    A(2*i,   2) = R(0,2) - pt.x() * R(2,2);
+    A(2*i,   3) = t.x()  - pt.x() * t.z();
+    A(2*i+1, 0) = R(1,0) - pt.y() * R(2,0);
+    A(2*i+1, 1) = R(1,1) - pt.y() * R(2,1);
+    A(2*i+1, 2) = R(1,2) - pt.y() * R(2,2);
+    A(2*i+1, 3) = t.y()  - pt.y() * t.z();
+  }
+  Eigen::JacobiSVD<data_matrix_t > svd(A, Eigen::ComputeThinV);
+  return svd.matrixV().col(3);
+}
+
+
+
 /// \cond DoxygenSuppress
 #define INSTANTIATE_TRIANGULATE(T) \
+template MAPTK_LIB_EXPORT Eigen::Matrix<T,4,1> \
+         triangulate_homog(const std::vector<camera_<T> >& cameras, \
+                           const std::vector<Eigen::Matrix<T,2,1> >& points); \
 template MAPTK_LIB_EXPORT Eigen::Matrix<T,3,1> \
-                 triangulate(const std::vector<camera_<T> >& cameras, \
+         triangulate_inhomog(const std::vector<camera_<T> >& cameras, \
                              const std::vector<Eigen::Matrix<T,2,1> >& points);
 
 INSTANTIATE_TRIANGULATE(double);
