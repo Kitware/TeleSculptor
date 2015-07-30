@@ -11,6 +11,7 @@ set( plugin_core_headers
   plugin_core_config.h
   register_algorithms.h
   track_features_core.h
+  triangulate_landmarks.h
   )
 maptk_install_plugin_headers( core
   ${plugin_core_headers}
@@ -26,6 +27,7 @@ set( plugin_core_sources
   match_features_homography.cxx
   register_algorithms.cxx
   track_features_core.cxx
+  triangulate_landmarks.cxx
   )
 maptk_add_library( maptk_core
   ${plugin_core_headers}
