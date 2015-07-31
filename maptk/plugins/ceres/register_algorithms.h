@@ -40,18 +40,18 @@
 #include <vital/registrar.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
-namespace ceres
-{
+namespace ceres {
 
 /// Register CERES algorithm implementations with the given or global registrar
 MAPTK_CERES_EXPORT
 int register_algorithms( kwiver::vital::registrar &reg = kwiver::vital::registrar::instance() );
 
-} // end ceres namespace
+} // end namespace ceres
 
-} // end maptk namespace
+} // end namespace maptk
+} // end namespace kwiver
 
 #endif // MAPTK_PLUGINS_CERES_REGISTER_ALGORITHMS_H_

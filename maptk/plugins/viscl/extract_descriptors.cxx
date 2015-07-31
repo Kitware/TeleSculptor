@@ -37,8 +37,8 @@
 #include <viscl/tasks/BRIEF.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vcl
 {
@@ -107,3 +107,4 @@ extract_descriptors
 } // end namespace vcl
 
 } // end namespace maptk
+} // end namespace kwiver

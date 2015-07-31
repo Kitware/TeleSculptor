@@ -50,7 +50,7 @@ main(int argc, char* argv[])
 {
   CHECK_ARGS(1);
 
-  maptk::vxl::register_algorithms();
+  kwiver::maptk::vxl::register_algorithms();
 
   testname_t const testname = argv[1];
 
@@ -61,7 +61,7 @@ using namespace kwiver::vital;
 
 IMPLEMENT_TEST(create)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   algo::estimate_essential_matrix_sptr est_e = algo::estimate_essential_matrix::create("vxl");
   if (!est_e)
   {
@@ -75,7 +75,7 @@ kwiver::vital::matrix_3x3d
 essential_matrix_from_cameras(const kwiver::vital::camera& right_cam,
                               const kwiver::vital::camera& left_cam)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   rotation_d R1 = right_cam.rotation();
   rotation_d R2 = left_cam.rotation();
   vector_3d t1 = right_cam.translation();
@@ -102,7 +102,7 @@ essential_matrix_to_fundamental(const kwiver::vital::matrix_3x3d& E,
                                 const kwiver::vital::camera_intrinsics_d& right_cal,
                                 const kwiver::vital::camera_intrinsics_d& left_cal)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   matrix_3x3d Kr_inv = matrix_3x3d(right_cal).inverse();
   matrix_3x3d Kl_invt = matrix_3x3d(left_cal).transpose().inverse();
   return Kl_invt * E * Kr_inv;
@@ -114,7 +114,7 @@ void print_epipolar_distances(const kwiver::vital::matrix_3x3d& F,
                               const std::vector<kwiver::vital::vector_2d> right_pts,
                               const std::vector<kwiver::vital::vector_2d> left_pts)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   matrix_3x3d Ft = F.transpose();
   for(unsigned i=0; i<right_pts.size(); ++i)
   {
@@ -136,7 +136,7 @@ void print_epipolar_distances(const kwiver::vital::matrix_3x3d& F,
 // test essential matrix estimation with ideal points
 IMPLEMENT_TEST(ideal_points)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   vxl::estimate_essential_matrix est_e;
 
   // create landmarks at the random locations
@@ -200,7 +200,7 @@ IMPLEMENT_TEST(ideal_points)
 // test essential matrix estimation with noisy points
 IMPLEMENT_TEST(noisy_points)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   vxl::estimate_essential_matrix est_e;
 
   // create landmarks at the random locations

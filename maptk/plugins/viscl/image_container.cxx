@@ -38,8 +38,8 @@
 #include <viscl/vxl/transfer.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vcl
 {
@@ -157,3 +157,4 @@ image_container_to_viscl(const kwiver::vital::image_container& img)
 } // end namespace vcl
 
 } // end namespace maptk
+} // end namespace kwiver

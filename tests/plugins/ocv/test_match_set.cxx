@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,7 +58,7 @@ using namespace kwiver::vital;
 
 IMPLEMENT_TEST(default_set)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ocv::match_set ms;
   if (ms.size() != 0)
   {
@@ -83,7 +83,7 @@ static bool dmatch_equal(const cv::DMatch& dm1, const cv::DMatch& dm2)
 
 IMPLEMENT_TEST(populated_set)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   const unsigned num_matches = 100;
   std::vector<cv::DMatch> dms;
   for (unsigned i=0; i<num_matches; ++i)

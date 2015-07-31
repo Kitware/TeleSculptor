@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,7 +57,7 @@ using namespace kwiver::vital;
 
 IMPLEMENT_TEST(factory)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ocv::register_algorithms();
   typedef boost::shared_ptr<algo::image_io> image_io_sptr;
   image_io_sptr img_io = kwiver::vital::algo::image_io::create("ocv");
@@ -74,7 +74,7 @@ IMPLEMENT_TEST(factory)
 
 IMPLEMENT_TEST(image_convert)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   kwiver::vital::image img(200,300,3);
   for( unsigned int p=0; p<img.depth(); ++p )
   {

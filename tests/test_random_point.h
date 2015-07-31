@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2011-2014 by Kitware, Inc.
+ * Copyright 2011-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,8 +42,8 @@
 #include <boost/random.hpp>
 #include <boost/random/normal_distribution.hpp>
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace testing
 {
@@ -79,5 +79,6 @@ kwiver::vital::vector_2d random_point2d(double stdev)
 } // end namespace testing
 
 } // end namespace maptk
+} // end namespace kwiver
 
 #endif // MAPTK_TEST_TEST_RANDOM_POINT_H_

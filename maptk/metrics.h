@@ -46,8 +46,8 @@
 #include <map>
 #include <cmath>
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 /// Compute the reprojection error vector of lm projected by cam compared to f
 /**
@@ -159,6 +159,7 @@ reprojection_median_error(const std::map<kwiver::vital::frame_id_t, kwiver::vita
 
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_METRICS_H_

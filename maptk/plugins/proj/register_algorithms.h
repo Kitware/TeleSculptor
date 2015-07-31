@@ -39,18 +39,16 @@
 #include <maptk/plugins/proj/proj_config.h>
 #include <vital/registrar.h>
 
-namespace maptk
-{
-
-namespace proj
-{
+namespace kwiver {
+namespace maptk {
+namespace proj {
 
 /// Register PROJ algorithm implementations with the given or global registrar
 MAPTK_PROJ_EXPORT
 int register_algorithms( kwiver::vital::registrar &reg = kwiver::vital::registrar::instance() );
 
-} // end proj ns
-
-} // end maptk ns
+} // end namespace proj
+} // end namespace maptk
+} // end namespace kwiver
 
 #endif // MAPTK_PLUGINS_PROJ_REGISTER_ALGORITHMS_H_

@@ -43,8 +43,8 @@
 #include <opencv2/core/core.hpp>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
@@ -78,6 +78,7 @@ protected:
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_OCV_MAT_IMAGE_MEMORY_H_

@@ -37,8 +37,8 @@
 
 #include <boost/foreach.hpp>
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 using namespace kwiver::vital;
 
@@ -69,3 +69,4 @@ projected_tracks(landmark_map_sptr landmarks, camera_map_sptr cameras)
 
 
 } // end namespace maptk
+} // end namespace kwiver

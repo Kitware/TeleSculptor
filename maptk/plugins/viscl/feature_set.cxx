@@ -36,8 +36,8 @@
 #include <viscl/core/manager.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vcl
 {
@@ -154,3 +154,4 @@ feature_set
 } // end namespace vcl
 
 } // end namespace maptk
+} // end namespace kwiver

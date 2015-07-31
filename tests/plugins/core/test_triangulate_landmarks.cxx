@@ -45,7 +45,7 @@ main(int argc, char* argv[])
 {
   CHECK_ARGS(1);
 
-  maptk::core::register_algorithms();
+  kwiver::maptk::core::register_algorithms();
 
   testname_t const testname = argv[1];
 
@@ -67,130 +67,130 @@ IMPLEMENT_TEST(create)
 // input to triangulation is the ideal solution, make sure it doesn't diverge
 IMPLEMENT_TEST(from_solution)
 {
-  maptk::core::triangulate_landmarks tri_lm;
-  maptk::testing::test_from_solution(tri_lm);
+  kwiver::maptk::core::triangulate_landmarks tri_lm;
+  kwiver::maptk::testing::test_from_solution(tri_lm);
 }
 
 
 // input to triangulation is the ideal solution, make sure it doesn't diverge
 IMPLEMENT_TEST(from_solution_homog)
 {
-  maptk::core::triangulate_landmarks tri_lm;
+  kwiver::maptk::core::triangulate_landmarks tri_lm;
   kwiver::vital::config_block_sptr cfg = tri_lm.get_configuration();
   cfg->set_value("homogeneous", "true");
   tri_lm.set_configuration(cfg);
-  maptk::testing::test_from_solution(tri_lm);
+  kwiver::maptk::testing::test_from_solution(tri_lm);
 }
 
 
 // add noise to landmarks before input to triangulation
 IMPLEMENT_TEST(noisy_landmarks)
 {
-  maptk::core::triangulate_landmarks tri_lm;
-  maptk::testing::test_noisy_landmarks(tri_lm);
+  kwiver::maptk::core::triangulate_landmarks tri_lm;
+  kwiver::maptk::testing::test_noisy_landmarks(tri_lm);
 }
 
 
 // add noise to landmarks before input to triangulation
 IMPLEMENT_TEST(noisy_landmarks_homog)
 {
-  maptk::core::triangulate_landmarks tri_lm;
+  kwiver::maptk::core::triangulate_landmarks tri_lm;
   kwiver::vital::config_block_sptr cfg = tri_lm.get_configuration();
   cfg->set_value("homogeneous", "true");
   tri_lm.set_configuration(cfg);
-  maptk::testing::test_noisy_landmarks(tri_lm);
+  kwiver::maptk::testing::test_noisy_landmarks(tri_lm);
 }
 
 
 // initialize all landmarks to the origin as input to triangulation
 IMPLEMENT_TEST(zero_landmarks)
 {
-  maptk::core::triangulate_landmarks tri_lm;
-  maptk::testing::test_zero_landmarks(tri_lm);
+  kwiver::maptk::core::triangulate_landmarks tri_lm;
+  kwiver::maptk::testing::test_zero_landmarks(tri_lm);
 }
 
 
 // initialize all landmarks to the origin as input to triangulation
 IMPLEMENT_TEST(zero_landmarks_homog)
 {
-  maptk::core::triangulate_landmarks tri_lm;
+  kwiver::maptk::core::triangulate_landmarks tri_lm;
   kwiver::vital::config_block_sptr cfg = tri_lm.get_configuration();
   cfg->set_value("homogeneous", "true");
   tri_lm.set_configuration(cfg);
-  maptk::testing::test_zero_landmarks(tri_lm);
+  kwiver::maptk::testing::test_zero_landmarks(tri_lm);
 }
 
 
 // select a subset of cameras to triangulation from
 IMPLEMENT_TEST(subset_cameras)
 {
-  maptk::core::triangulate_landmarks tri_lm;
-  maptk::testing::test_subset_cameras(tri_lm);
+  kwiver::maptk::core::triangulate_landmarks tri_lm;
+  kwiver::maptk::testing::test_subset_cameras(tri_lm);
 }
 
 
 // select a subset of cameras to triangulation from
 IMPLEMENT_TEST(subset_cameras_homog)
 {
-  maptk::core::triangulate_landmarks tri_lm;
+  kwiver::maptk::core::triangulate_landmarks tri_lm;
   kwiver::vital::config_block_sptr cfg = tri_lm.get_configuration();
   cfg->set_value("homogeneous", "true");
   tri_lm.set_configuration(cfg);
-  maptk::testing::test_subset_cameras(tri_lm);
+  kwiver::maptk::testing::test_subset_cameras(tri_lm);
 }
 
 
 // select a subset of landmarks to triangulate
 IMPLEMENT_TEST(subset_landmarks)
 {
-  maptk::core::triangulate_landmarks tri_lm;
-  maptk::testing::test_subset_landmarks(tri_lm);
+  kwiver::maptk::core::triangulate_landmarks tri_lm;
+  kwiver::maptk::testing::test_subset_landmarks(tri_lm);
 }
 
 
 // select a subset of landmarks to triangulate
 IMPLEMENT_TEST(subset_landmarks_homog)
 {
-  maptk::core::triangulate_landmarks tri_lm;
+  kwiver::maptk::core::triangulate_landmarks tri_lm;
   kwiver::vital::config_block_sptr cfg = tri_lm.get_configuration();
   cfg->set_value("homogeneous", "true");
   tri_lm.set_configuration(cfg);
-  maptk::testing::test_subset_landmarks(tri_lm);
+  kwiver::maptk::testing::test_subset_landmarks(tri_lm);
 }
 
 
 // select a subset of tracks/track_states to constrain the problem
 IMPLEMENT_TEST(subset_tracks)
 {
-  maptk::core::triangulate_landmarks tri_lm;
-  maptk::testing::test_subset_tracks(tri_lm);
+  kwiver::maptk::core::triangulate_landmarks tri_lm;
+  kwiver::maptk::testing::test_subset_tracks(tri_lm);
 }
 
 
 // select a subset of tracks/track_states to constrain the problem
 IMPLEMENT_TEST(subset_tracks_homog)
 {
-  maptk::core::triangulate_landmarks tri_lm;
+  kwiver::maptk::core::triangulate_landmarks tri_lm;
   kwiver::vital::config_block_sptr cfg = tri_lm.get_configuration();
   cfg->set_value("homogeneous", "true");
   tri_lm.set_configuration(cfg);
-  maptk::testing::test_subset_tracks(tri_lm);
+  kwiver::maptk::testing::test_subset_tracks(tri_lm);
 }
 
 
 // select a subset of tracks/track_states and add noise
 IMPLEMENT_TEST(noisy_tracks)
 {
-  maptk::core::triangulate_landmarks tri_lm;
-  maptk::testing::test_noisy_tracks(tri_lm);
+  kwiver::maptk::core::triangulate_landmarks tri_lm;
+  kwiver::maptk::testing::test_noisy_tracks(tri_lm);
 }
 
 // select a subset of tracks/track_states and add noise
 IMPLEMENT_TEST(noisy_tracks_homog)
 {
-  maptk::core::triangulate_landmarks tri_lm;
+  kwiver::maptk::core::triangulate_landmarks tri_lm;
   kwiver::vital::config_block_sptr cfg = tri_lm.get_configuration();
   cfg->set_value("homogeneous", "true");
   tri_lm.set_configuration(cfg);
-  maptk::testing::test_noisy_tracks(tri_lm);
+  kwiver::maptk::testing::test_noisy_tracks(tri_lm);
 }

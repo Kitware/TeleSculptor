@@ -44,8 +44,8 @@
 #include <maptk/triangulate.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
@@ -254,3 +254,4 @@ triangulate_landmarks
 } // end namespace core
 
 } // end namespace maptk
+} // end namespace kwiver

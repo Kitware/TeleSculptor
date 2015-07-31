@@ -76,7 +76,6 @@
 namespace bfs = boost::filesystem;
 namespace bpo = boost::program_options;
 
-
 static kwiver::vital::config_block_sptr default_config()
 {
 
@@ -378,7 +377,7 @@ resolve_files(kwiver::vital::path_t const &p, std::vector<kwiver::vital::path_t>
 bool
 load_input_cameras_pos(kwiver::vital::config_block_sptr config,
                        std::map<std::string, kwiver::vital::frame_id_t> const& filename2frame,
-                       maptk::local_geo_cs & local_cs,
+                       kwiver::maptk::local_geo_cs & local_cs,
                        kwiver::vital::camera_map::map_camera_t & input_cameras)
 {
   boost::timer::auto_cpu_timer t("Initializing cameras from POS files: %t sec CPU, %w sec wall\n");
@@ -394,7 +393,7 @@ load_input_cameras_pos(kwiver::vital::config_block_sptr config,
   std::cerr << "loading POS files" <<std::endl;
   // Associating POS file to frame ID based on whether its filename stem is
   // the same as an image in the given image list (map created above).
-  std::map<kwiver::vital::frame_id_t, maptk::ins_data> ins_map;
+  std::map<kwiver::vital::frame_id_t, kwiver::maptk::ins_data> ins_map;
   std::map<std::string, kwiver::vital::frame_id_t>::const_iterator it;
   BOOST_FOREACH(kwiver::vital::path_t const& fpath, files)
   {
@@ -402,7 +401,7 @@ load_input_cameras_pos(kwiver::vital::config_block_sptr config,
     it = filename2frame.find(pos_file_stem);
     if (it != filename2frame.end())
     {
-      ins_map[it->second] = maptk::read_pos_file(fpath);
+      ins_map[it->second] = kwiver::maptk::read_pos_file(fpath);
     }
   }
   // Warn if the POS file set is sparse compared to input frames
@@ -419,9 +418,9 @@ load_input_cameras_pos(kwiver::vital::config_block_sptr config,
 
     kwiver::vital::camera_d base_camera = base_camera_from_config(config->subblock("base_camera"));
     kwiver::vital::rotation_d ins_rot_offset = config->get_value<kwiver::vital::rotation_d>("ins:rotation_offset", kwiver::vital::rotation_d());
-    input_cameras = maptk::initialize_cameras_with_ins(ins_map, base_camera,
-                                                       local_cs,
-                                                       ins_rot_offset);
+    input_cameras = kwiver::maptk::initialize_cameras_with_ins(ins_map, base_camera,
+                                                               local_cs,
+                                                               ins_rot_offset);
   }
   else
   {
@@ -440,7 +439,7 @@ load_input_cameras_pos(kwiver::vital::config_block_sptr config,
 bool
 load_input_cameras_krtd(kwiver::vital::config_block_sptr config,
                         std::map<std::string, kwiver::vital::frame_id_t> const& filename2frame,
-                        maptk::local_geo_cs & local_cs,
+                        kwiver::maptk::local_geo_cs & local_cs,
                         kwiver::vital::camera_map::map_camera_t & input_cameras)
 {
   boost::timer::auto_cpu_timer t("Initializing cameras from KRTD files: %t sec CPU, %w sec wall\n");
@@ -505,7 +504,7 @@ load_input_cameras_krtd(kwiver::vital::config_block_sptr config,
 // input cameras loaded (check size of input_cameras structure).
 bool load_input_cameras(kwiver::vital::config_block_sptr config,
                         std::map<std::string, kwiver::vital::frame_id_t> const& filename2frame,
-                        maptk::local_geo_cs & local_cs,
+                        kwiver::maptk::local_geo_cs & local_cs,
                         kwiver::vital::camera_map::map_camera_t & input_cameras)
 {
   // configuration check assured mutual exclusivity
@@ -706,7 +705,7 @@ static int maptk_main(int argc, char const* argv[])
   //
   // Create the local coordinate system
   //
-  maptk::local_geo_cs local_cs(geo_mapper);
+  kwiver::maptk::local_geo_cs local_cs(geo_mapper);
 
   //
   // Initialize input and main cameras
@@ -762,7 +761,7 @@ static int maptk_main(int argc, char const* argv[])
 
     // Load up landmarks and assocaited tracks from file, (re)initializing
     // local coordinate system object to the reference.
-    maptk::load_reference_file(ref_file, local_cs, reference_landmarks, reference_tracks);
+    kwiver::maptk::load_reference_file(ref_file, local_cs, reference_landmarks, reference_tracks);
   }
 
   //
@@ -807,16 +806,16 @@ static int maptk_main(int argc, char const* argv[])
   { // scope block
     boost::timer::auto_cpu_timer t("Tool-level SBA algorithm: %t sec CPU, %w sec wall\n");
 
-    double init_rmse = maptk::reprojection_rmse(cam_map->cameras(),
-                                                lm_map->landmarks(),
-                                                tracks->tracks());
+    double init_rmse = kwiver::maptk::reprojection_rmse(cam_map->cameras(),
+                                                        lm_map->landmarks(),
+                                                        tracks->tracks());
     std::cerr << "initial reprojection RMSE: " << init_rmse << std::endl;
 
     bundle_adjuster->optimize(cam_map, lm_map, tracks);
 
-    double end_rmse = maptk::reprojection_rmse(cam_map->cameras(),
-                                               lm_map->landmarks(),
-                                               tracks->tracks());
+    double end_rmse = kwiver::maptk::reprojection_rmse(cam_map->cameras(),
+                                                       lm_map->landmarks(),
+                                                       tracks->tracks());
     std::cerr << "final reprojection RMSE: " << end_rmse << std::endl;
   }
 
@@ -857,9 +856,9 @@ static int maptk_main(int argc, char const* argv[])
       kwiver::vital::landmark_map_sptr sba_space_landmarks(new kwiver::vital::simple_landmark_map(reference_landmarks->landmarks()));
       triangulator->triangulate(cam_map, reference_tracks, sba_space_landmarks);
 
-      double post_tri_rmse = maptk::reprojection_rmse(cam_map->cameras(),
-                                                      sba_space_landmarks->landmarks(),
-                                                      reference_tracks->tracks());
+      double post_tri_rmse = kwiver::maptk::reprojection_rmse(cam_map->cameras(),
+                                                              sba_space_landmarks->landmarks(),
+                                                              reference_tracks->tracks());
       std::cerr << "--> Post-triangulation RMSE: " << post_tri_rmse << std::endl;
 
       // Estimate ST from sba-space to reference space.
@@ -912,7 +911,7 @@ static int maptk_main(int argc, char const* argv[])
 
     bfs::path pos_dir = config->get_value<std::string>("output_pos_dir");
     // Create INS data from adjusted cameras for POS file output.
-    typedef std::map<kwiver::vital::frame_id_t, maptk::ins_data> ins_map_t;
+    typedef std::map<kwiver::vital::frame_id_t, kwiver::maptk::ins_data> ins_map_t;
     ins_map_t ins_map;
     update_ins_from_cameras(cam_map->cameras(), local_cs, ins_map);
     BOOST_FOREACH(const ins_map_t::value_type& p, ins_map)

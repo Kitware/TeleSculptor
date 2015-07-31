@@ -42,8 +42,8 @@
 #include <maptk/plugins/ceres/ceres_config.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ceres
 {
@@ -93,6 +93,7 @@ private:
 } // end namespace ceres
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_CERES_BUNDLE_ADJUST_H_

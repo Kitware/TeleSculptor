@@ -49,8 +49,8 @@
 
 using namespace kwiver::vital;
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
@@ -668,3 +668,4 @@ initialize_cameras_landmarks
 } // end namespace core
 
 } // end namespace maptk
+} // end namespace kwiver

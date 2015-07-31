@@ -39,11 +39,9 @@
 #include <maptk/plugins/proj/geo_map.h>
 
 
-namespace maptk
-{
-
-namespace proj
-{
+namespace kwiver {
+namespace maptk {
+namespace proj {
 
 /// Register PROJ algorithm implementations with the given or global registrar
 int register_algorithms( kwiver::vital::registrar &reg )
@@ -56,6 +54,6 @@ int register_algorithms( kwiver::vital::registrar &reg )
   return REGISTRATION_FAILURES();
 }
 
-} // end proj ns
-
-} // end maptk namespace
+} // end namespace proj
+} // end namespace maptk
+} // end namespace kwiver

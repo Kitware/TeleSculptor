@@ -1,3 +1,4 @@
+namespace kwiver {
 namespace maptk {
 
 /// VXL module namespace
@@ -55,4 +56,5 @@ The MAPTK vxl library provides various components by building on
                <a href="http://public.kitware.com/vxl/doc/development/core/vpgl/html/classvpgl__triangulate__points.html">
                vpgl_triangulate_points</a>
 */
+}
 }

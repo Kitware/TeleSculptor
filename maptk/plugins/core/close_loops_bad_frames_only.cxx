@@ -52,8 +52,8 @@
 #include <vital/exceptions/algorithm.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
@@ -267,3 +267,4 @@ close_loops_bad_frames_only
 } // end namespace core
 
 } // end namespace maptk
+} // end namespace kwiver

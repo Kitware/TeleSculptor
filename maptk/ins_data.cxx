@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,8 +41,8 @@
 
 #include <vital/exceptions/io.h>
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 /// equality operator
 bool operator ==(const ins_data& d1, const ins_data& d2)
@@ -157,3 +157,4 @@ std::istream& operator>>(std::istream& s, ins_data& d)
 
 
 } // end namespace maptk
+} // end namespace kwiver

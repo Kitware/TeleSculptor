@@ -40,18 +40,16 @@
 #include <vital/registrar.h>
 
 
-namespace maptk
-{
-
-namespace ocv
-{
+namespace kwiver {
+namespace maptk {
+namespace ocv {
 
 /// Register OCV algorithm implementations with the given or global registrar
 MAPTK_OCV_EXPORT
 int register_algorithms( kwiver::vital::registrar &reg = kwiver::vital::registrar::instance() );
 
-} // end ocv ns
-
-} // end maptk ns
+} // end namespace ocv
+} // end namespace maptk
+} // end namespace kwiver
 
 #endif // MAPTK_PLUGINS_OCV_REGISTER_ALGORITHMS_H_

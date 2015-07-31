@@ -41,8 +41,8 @@
 #include <vital/types/vector.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vxl
 {
@@ -83,6 +83,7 @@ public:
 } // end namespace vxl
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_VXL_ESTIMATE_SIMILARITY_TRANSFORM_H_

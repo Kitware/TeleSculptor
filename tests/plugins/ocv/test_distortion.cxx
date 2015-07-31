@@ -58,7 +58,7 @@ using namespace kwiver::vital;
 
 void test_distortion(const Eigen::VectorXd& d)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   camera_intrinsics_d K;
   K.set_dist_coeffs(d.transpose());
 

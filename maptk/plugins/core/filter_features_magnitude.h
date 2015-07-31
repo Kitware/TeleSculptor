@@ -43,8 +43,8 @@
  *        \endlink algorithm
  */
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
@@ -93,6 +93,7 @@ private:
 } // end namespace core
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_CORE_FILTER_FEATURES_MAGNITUDE_H_

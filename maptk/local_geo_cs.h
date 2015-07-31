@@ -45,8 +45,8 @@
 #include <vital/types/rotation.h>
 #include <vital/vital_types.h>
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 
 /// Represents a local geo coordinate system origin expressed in UTM
@@ -139,6 +139,7 @@ update_ins_from_cameras(const std::map<kwiver::vital::frame_id_t, kwiver::vital:
 
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_LOCAL_GEO_CS_H_

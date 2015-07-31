@@ -40,8 +40,8 @@
 #include <viscl/tasks/track_descr_match.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vcl
 {
@@ -145,3 +145,4 @@ match_features
 } // end namespace vcl
 
 } // end namespace maptk
+} // end namespace kwiver

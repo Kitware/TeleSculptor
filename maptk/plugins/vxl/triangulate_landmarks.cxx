@@ -45,8 +45,8 @@
 
 using namespace kwiver::vital;
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vxl
 {
@@ -222,3 +222,4 @@ triangulate_landmarks
 } // end namespace vxl
 
 } // end namespace maptk
+} // end namespace kwiver

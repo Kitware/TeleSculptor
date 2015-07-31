@@ -37,8 +37,8 @@
 #include <viscl/core/manager.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vcl
 {
@@ -127,3 +127,4 @@ matches_to_viscl(const kwiver::vital::match_set& m_set)
 } // end namespace vcl
 
 } // end namespace maptk
+} // end namespace kwiver

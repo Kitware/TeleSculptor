@@ -53,8 +53,8 @@
 
 using namespace kwiver::vital;
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
@@ -254,3 +254,4 @@ track_features_core
 } // end namespace core
 
 } // end namespace maptk
+} // end namespace kwiver

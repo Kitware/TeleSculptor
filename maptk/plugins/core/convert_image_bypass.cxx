@@ -36,8 +36,8 @@
 #include "convert_image_bypass.h"
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
@@ -77,3 +77,4 @@ convert_image_bypass
 } // end namespace core
 
 } // end namespace maptk
+} // end namespace kwiver

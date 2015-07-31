@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,8 +44,8 @@
 #include <vital/vital_types.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 /// Read in a POS file, producing an ins_data object
 /**
@@ -87,6 +87,7 @@ MAPTK_LIB_EXPORT
 write_pos_file(maptk::ins_data const& ins,
                kwiver::vital::path_t const& file_path);
 
-}
+} // end namespace maptk
+} // end namespace kwiver
 
 #endif // MAPTK_INS_DATA_IO_H_

@@ -37,8 +37,8 @@
 #include <viscl/core/buffer.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vcl
 {
@@ -87,6 +87,7 @@ matches_to_viscl(const kwiver::vital::match_set& match_set);
 } // end namespace vcl
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_VISCL_MATCH_SET_H_

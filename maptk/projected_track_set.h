@@ -45,8 +45,8 @@
 #include <vital/types/camera_map.h>
 #include <vital/types/landmark_map.h>
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 
 /// Use the cameras to project the landmarks back into their images.
@@ -62,6 +62,7 @@ projected_tracks(kwiver::vital::landmark_map_sptr landmarks,
 
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PROJECTED_TRACK_SET_H_

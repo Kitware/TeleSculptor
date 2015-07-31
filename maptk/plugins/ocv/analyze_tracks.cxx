@@ -50,8 +50,8 @@
 
 using namespace kwiver::vital;
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
@@ -254,3 +254,4 @@ analyze_tracks
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver

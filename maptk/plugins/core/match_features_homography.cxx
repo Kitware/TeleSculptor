@@ -47,8 +47,8 @@
 
 using namespace kwiver::vital;
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
@@ -273,3 +273,4 @@ match_features_homography
 } // end namespace core
 
 } // end namespace maptk
+} // end namespace kwiver

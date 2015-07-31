@@ -39,8 +39,8 @@
 
 using namespace kwiver::vital;
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
@@ -143,3 +143,4 @@ image_container_to_ocv_matrix(const kwiver::vital::image_container& img)
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver

@@ -43,11 +43,9 @@
 #include <vital/registrar.h>
 
 
-namespace maptk
-{
-
-namespace vcl
-{
+namespace kwiver {
+namespace maptk {
+namespace vcl {
 
 /// Register VisCL algorithm implementations with the given or global registrar
 int register_algorithms( kwiver::vital::registrar &reg )
@@ -63,6 +61,6 @@ int register_algorithms( kwiver::vital::registrar &reg )
   return REGISTRATION_FAILURES();
 }
 
-} // end vcl ns
-
-} // end maptk ns
+} // end namespace vcl
+} // end namespace maptk
+} // end namespace kwiver

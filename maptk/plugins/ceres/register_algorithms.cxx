@@ -40,11 +40,9 @@
 #include <maptk/plugins/ceres/bundle_adjust.h>
 
 
-namespace maptk
-{
-
-namespace ceres
-{
+namespace kwiver {
+namespace maptk {
+namespace ceres {
 
 /// Register Ceres algorithm implementations with the given or global registrar
 int register_algorithms( kwiver::vital::registrar &reg )
@@ -57,6 +55,6 @@ int register_algorithms( kwiver::vital::registrar &reg )
   return REGISTRATION_FAILURES();
 }
 
-} // end ocv ns
-
-} // end maptk ns
+} // end namespace ceres
+} // end namespace maptk
+} // end namespace kwiver

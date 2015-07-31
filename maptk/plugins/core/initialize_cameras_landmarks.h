@@ -42,8 +42,8 @@
 #include <maptk/plugins/core/plugin_core_config.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
@@ -98,6 +98,7 @@ private:
 } // end namespace core
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_CORE_INITIALIZE_CAMERAS_LANDMARKS_H_

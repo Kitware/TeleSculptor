@@ -40,8 +40,8 @@
 #include <maptk/plugins/vxl/vxl_config.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vxl
 {
@@ -82,6 +82,7 @@ public:
 } // end namespace vxl
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_VXL_ESTIMATE_HOMOGRAPHY_H_

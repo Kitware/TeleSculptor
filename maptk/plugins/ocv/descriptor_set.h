@@ -43,8 +43,8 @@
 #include <opencv2/features2d/features2d.hpp>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
@@ -88,6 +88,7 @@ descriptors_to_ocv_matrix(const kwiver::vital::descriptor_set& desc_set);
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_OCV_DESCRIPTOR_SET_H_

@@ -49,8 +49,8 @@
 #include <maptk/plugins/core/triangulate_landmarks.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
@@ -75,6 +75,7 @@ int register_algorithms(kwiver::vital::registrar &reg)
     return REGISTRATION_FAILURES();
 }
 
-} // end core namespace
+} // end namespace core
 
-} // end maptk namespace
+} // end namespace maptk
+} // end namespace kwiver

@@ -51,8 +51,8 @@ using boost::timer::nanosecond_type;
 
 using namespace kwiver::vital;
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vxl
 {
@@ -406,3 +406,4 @@ bundle_adjust
 } // end namespace vxl
 
 } // end namespace maptk
+} // end namespace kwiver

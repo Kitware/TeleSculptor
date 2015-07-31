@@ -330,7 +330,7 @@ static int maptk_main(int argc, char const* argv[])
         return EXIT_FAILURE;
       }
 
-      comparison_tracks = maptk::projected_tracks( landmarks, cameras );
+      comparison_tracks = kwiver::maptk::projected_tracks( landmarks, cameras );
     }
 
     // Read images one by one, this is more memory efficient than loading them all

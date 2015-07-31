@@ -247,11 +247,9 @@ typedef std::string testname_t;
 // Testing helper macros/methods
 //
 
-namespace maptk
-{
-
-namespace testing
-{
+namespace kwiver {
+namespace maptk {
+namespace testing {
 
 /// Test double approximate equality to given epsilon
 /**
@@ -267,8 +265,8 @@ inline bool is_almost(double const &value,
 }
 
 } //end namespace testing
-
 } //end namespace maptk
+} //end namespace kwiver
 
 /// General equality test with message generation on inequality
 /**
@@ -300,7 +298,8 @@ inline bool is_almost(double const &value,
 #define TEST_NEAR(name, value, target, epsilon)                  \
   do                                                             \
   {                                                              \
-    if(! maptk::testing::is_almost(value, target, epsilon))      \
+    namespace kmt = kwiver::maptk::testing;                      \
+    if(! kmt::is_almost(value, target, epsilon))                 \
     {                                                            \
       TEST_ERROR("TEST_NEAR check '" << name                     \
                  << "' failed: (epsilon: " << (epsilon) << ")\n" \

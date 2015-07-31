@@ -191,8 +191,8 @@ base_camera_from_config(kwiver::vital::config_block_sptr config)
 
 
 /// Convert a INS data to a camera
-bool convert_ins2camera(const maptk::ins_data& ins,
-                        maptk::local_geo_cs& cs,
+bool convert_ins2camera(const kwiver::maptk::ins_data& ins,
+                        kwiver::maptk::local_geo_cs& cs,
                         kwiver::vital::camera_d& cam,
                         kwiver::vital::rotation_d const& ins_rot_offset = kwiver::vital::rotation_d())
 {
@@ -211,12 +211,12 @@ bool convert_ins2camera(const maptk::ins_data& ins,
 /// Convert a POS file to a KRTD file
 bool convert_pos2krtd(const kwiver::vital::path_t& pos_filename,
                       const kwiver::vital::path_t& krtd_filename,
-                      maptk::local_geo_cs& cs,
+                      kwiver::maptk::local_geo_cs& cs,
                       kwiver::vital::camera_d base_camera,
                       kwiver::vital::rotation_d const& ins_rot_offset = kwiver::vital::rotation_d())
 {
-  maptk::ins_data ins;
-  ins = maptk::read_pos_file(pos_filename);
+  kwiver::maptk::ins_data ins;
+  ins = kwiver::maptk::read_pos_file(pos_filename);
   if ( !convert_ins2camera(ins, cs, base_camera, ins_rot_offset) )
   {
     return false;
@@ -229,12 +229,12 @@ bool convert_pos2krtd(const kwiver::vital::path_t& pos_filename,
 /// Convert a directory of POS file to a directory of KRTD files
 bool convert_pos2krtd_dir(const kwiver::vital::path_t& pos_dir,
                           const kwiver::vital::path_t& krtd_dir,
-                          maptk::local_geo_cs& cs,
+                          kwiver::maptk::local_geo_cs& cs,
                           kwiver::vital::camera_d base_camera,
                           kwiver::vital::rotation_d const& ins_rot_offset = kwiver::vital::rotation_d())
 {
   bfs::directory_iterator it(pos_dir), eod;
-  std::map<kwiver::vital::frame_id_t, maptk::ins_data> ins_map;
+  std::map<kwiver::vital::frame_id_t, kwiver::maptk::ins_data> ins_map;
   std::vector<std::string> krtd_filenames;
 
   std::cerr << "Loading POS files" << std::endl;
@@ -242,7 +242,7 @@ bool convert_pos2krtd_dir(const kwiver::vital::path_t& pos_dir,
   {
     try
     {
-      maptk::ins_data ins = maptk::read_pos_file(p.string());
+      kwiver::maptk::ins_data ins = kwiver::maptk::read_pos_file(p.string());
 
       kwiver::vital::path_t krtd_filename = krtd_dir / (basename(p) + ".krtd");
       //std::cerr << "Loading " << p << std::endl;
@@ -266,7 +266,7 @@ bool convert_pos2krtd_dir(const kwiver::vital::path_t& pos_dir,
 
   std::cerr << "Initializing cameras" << std::endl;
   std::map<kwiver::vital::frame_id_t, kwiver::vital::camera_sptr> cam_map;
-  cam_map = maptk::initialize_cameras_with_ins(ins_map, base_camera, cs, ins_rot_offset);
+  cam_map = kwiver::maptk::initialize_cameras_with_ins(ins_map, base_camera, cs, ins_rot_offset);
 
   std::cerr << "Writing KRTD files" << std::endl;
   typedef std::map<kwiver::vital::frame_id_t, kwiver::vital::camera_sptr>::value_type cam_map_val_t;
@@ -370,7 +370,7 @@ static int maptk_main(int argc, char const* argv[])
     return EXIT_FAILURE;
   }
 
-  maptk::local_geo_cs local_cs(geo_mapper);
+  kwiver::maptk::local_geo_cs local_cs(geo_mapper);
 
   if( bfs::is_directory(input) )
   {

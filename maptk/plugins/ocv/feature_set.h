@@ -43,8 +43,8 @@
 #include <maptk/plugins/ocv/ocv_config.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
@@ -86,6 +86,7 @@ features_to_ocv_keypoints(const kwiver::vital::feature_set& features);
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_OCV_FEATURE_SET_H_

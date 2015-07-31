@@ -39,8 +39,8 @@
 
 using namespace kwiver::vital;
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 
 /// scale factor converting radians to degrees
@@ -198,3 +198,4 @@ update_ins_from_cameras(const std::map<frame_id_t, camera_sptr>& cam_map,
 
 
 } // end namespace maptk
+} // end namespace kwiver

@@ -42,8 +42,8 @@
 #include <boost/foreach.hpp>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
@@ -364,3 +364,4 @@ cv::Ptr<cv::Algorithm> create_ocv_algo<cv::Algorithm>(std::string const& impl_na
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver

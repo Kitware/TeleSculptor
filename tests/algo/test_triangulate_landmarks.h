@@ -48,16 +48,15 @@
 
 #include <boost/foreach.hpp>
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
+namespace testing {
 
-namespace testing
-{
 
 // input to triangulation is the ideal solution, make sure it doesn't diverge
 void test_from_solution(kwiver::vital::algo::triangulate_landmarks& tri_lm)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
 
   // create landmarks at the corners of a cube
   landmark_map_sptr landmarks = testing::cube_corners(2.0);
@@ -89,7 +88,7 @@ void test_from_solution(kwiver::vital::algo::triangulate_landmarks& tri_lm)
 // add noise to landmarks before input to triangulation
 void test_noisy_landmarks(kwiver::vital::algo::triangulate_landmarks& tri_lm)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
 
   // create landmarks at the corners of a cube
   landmark_map_sptr landmarks = testing::cube_corners(2.0);
@@ -125,7 +124,7 @@ void test_noisy_landmarks(kwiver::vital::algo::triangulate_landmarks& tri_lm)
 // initialize all landmarks to the origin as input to triangulation
 void test_zero_landmarks(kwiver::vital::algo::triangulate_landmarks& tri_lm)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
 
   // create landmarks at the corners of a cube
   landmark_map_sptr landmarks = testing::cube_corners(2.0);
@@ -162,7 +161,7 @@ void test_zero_landmarks(kwiver::vital::algo::triangulate_landmarks& tri_lm)
 // select a subset of cameras to triangulation from
 void test_subset_cameras(kwiver::vital::algo::triangulate_landmarks& tri_lm)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
 
   // create landmarks at the corners of a cube
   landmark_map_sptr landmarks = testing::cube_corners(2.0);
@@ -213,7 +212,7 @@ void test_subset_cameras(kwiver::vital::algo::triangulate_landmarks& tri_lm)
 // select a subset of landmarks to triangulate
 void test_subset_landmarks(kwiver::vital::algo::triangulate_landmarks& tri_lm)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
 
   // create landmarks at the corners of a cube
   landmark_map_sptr landmarks = testing::cube_corners(2.0);
@@ -258,7 +257,7 @@ void test_subset_landmarks(kwiver::vital::algo::triangulate_landmarks& tri_lm)
 // select a subset of tracks/track_states to constrain the problem
 void test_subset_tracks(kwiver::vital::algo::triangulate_landmarks& tri_lm)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
 
   // create landmarks at the corners of a cube
   landmark_map_sptr landmarks = testing::cube_corners(2.0);
@@ -297,7 +296,7 @@ void test_subset_tracks(kwiver::vital::algo::triangulate_landmarks& tri_lm)
 // select a subset of tracks/track_states and add noise
 void test_noisy_tracks(kwiver::vital::algo::triangulate_landmarks& tri_lm)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
 
   // create landmarks at the corners of a cube
   landmark_map_sptr landmarks = testing::cube_corners(2.0);
@@ -337,7 +336,7 @@ void test_noisy_tracks(kwiver::vital::algo::triangulate_landmarks& tri_lm)
 }
 
 } // end namespace testing
-
 } // end namespace maptk
+} // end namespace kwiver
 
 #endif // MAPTK_TEST_ALGO_TEST_TRIANGULATE_LANDMARKS_H_

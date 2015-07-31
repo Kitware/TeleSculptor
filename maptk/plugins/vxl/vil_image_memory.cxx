@@ -36,8 +36,8 @@
 #include "vil_image_memory.h"
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vxl
 {
@@ -60,3 +60,4 @@ maptk_memory_chunk
 } // end namespace vxl
 
 } // end namespace maptk
+} // end namespace kwiver

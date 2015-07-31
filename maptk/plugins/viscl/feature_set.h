@@ -38,8 +38,8 @@
 #include <viscl/core/image.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vcl
 {
@@ -99,6 +99,7 @@ features_to_viscl(const kwiver::vital::feature_set& features);
 } // end namespace vcl
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_VISCL_FEATURE_SET_H_

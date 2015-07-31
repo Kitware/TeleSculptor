@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,8 +48,8 @@
 #include <boost/foreach.hpp>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 
 /// Read in a pos file, producing an ins_data object
@@ -129,4 +129,5 @@ write_pos_file(ins_data const& ins,
   ofile.close();
 }
 
-}
+} // end namespace maptk
+} // end namespace kwiver

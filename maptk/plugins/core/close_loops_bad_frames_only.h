@@ -50,8 +50,8 @@
 #include <maptk/plugins/core/plugin_core_config.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
@@ -156,6 +156,7 @@ protected:
 } // end namespace algo
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_CORE_CLOSE_LOOPS_BAD_FRAMES_ONLY_H_

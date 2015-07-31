@@ -43,8 +43,8 @@
 #include <maptk/plugins/ocv/ocv_config.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
@@ -119,6 +119,7 @@ MAPTK_OCV_EXPORT cv::Mat image_container_to_ocv_matrix(const kwiver::vital::imag
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_OCV_IMAGE_CONTAINER_H_

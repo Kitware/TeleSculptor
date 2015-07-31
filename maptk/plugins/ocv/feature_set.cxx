@@ -37,8 +37,8 @@
 
 using namespace kwiver::vital;
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
@@ -96,3 +96,4 @@ features_to_ocv_keypoints(const kwiver::vital::feature_set& feat_set)
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver

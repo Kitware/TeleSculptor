@@ -52,7 +52,7 @@ template <typename T>
 kwiver::vital::descriptor_sptr
 ocv_to_maptk_descriptor(const cv::Mat& v)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   descriptor_array_of<T>* d = NULL;
   switch(v.cols)
   {
@@ -78,7 +78,7 @@ template <typename T>
 cv::Mat
 maptk_descriptors_to_ocv(const std::vector<kwiver::vital::descriptor_sptr>& desc)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   const unsigned int num = static_cast<unsigned int>(desc.size());
   const unsigned int dim = static_cast<unsigned int>(desc[0]->size());
   cv::Mat_<T> mat(num,dim);
@@ -102,8 +102,8 @@ maptk_descriptors_to_ocv(const std::vector<kwiver::vital::descriptor_sptr>& desc
 } // end anonymous namespace
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
@@ -169,3 +169,4 @@ descriptors_to_ocv_matrix(const kwiver::vital::descriptor_set& desc_set)
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver

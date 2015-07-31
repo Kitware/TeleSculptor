@@ -55,8 +55,8 @@
 
 using namespace kwiver::vital;
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vxl
 {
@@ -175,6 +175,7 @@ optimize_cameras
 }
 
 
-}
+} // end namespace vxl
 
-}
+} // end namespace maptk
+} // end namespace kwiver

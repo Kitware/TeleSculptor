@@ -38,8 +38,8 @@
 #include <viscl/core/buffer.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vcl
 {
@@ -84,6 +84,7 @@ descriptors_to_viscl(const kwiver::vital::descriptor_set& desc_set);
 } // end namespace vcl
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_VISCL_DESCRIPTOR_SET_H_

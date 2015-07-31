@@ -1,3 +1,4 @@
+namespace kwiver {
 namespace maptk {
 
 /// OCV module namespace
@@ -53,4 +54,5 @@ The MAPTK ocv library provides various components by building on
                <a href="http://docs.opencv.org/modules/features2d/doc/common_interfaces_of_descriptor_matchers.html#descriptormatcher">
                cv::DescriptorMatcher</a>
 */
+}
 }

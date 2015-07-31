@@ -45,8 +45,8 @@
 #include <vital/vital_types.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 
 /// Load landmarks and tracks from reference points file
@@ -79,5 +79,6 @@ load_reference_file(kwiver::vital::path_t const& reference_file,
 
 
 } // end namespace maptk
+} // end namespace kwiver
 
 #endif // MAPTK_GEO_REFERENCE_POINTS_IO_H_

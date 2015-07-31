@@ -38,8 +38,8 @@
 #include <boost/foreach.hpp>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
@@ -80,3 +80,4 @@ matches_to_ocv_dmatch(const kwiver::vital::match_set& m_set)
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver

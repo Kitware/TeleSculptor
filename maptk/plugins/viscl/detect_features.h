@@ -37,8 +37,8 @@
 #include <maptk/plugins/viscl/viscl_config.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vcl
 {
@@ -87,6 +87,7 @@ private:
 } // end namespace vcl
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_VISCL_DETECT_FEATURES_H_

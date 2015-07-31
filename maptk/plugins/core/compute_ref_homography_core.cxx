@@ -54,8 +54,8 @@
 
 using namespace kwiver::vital;
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
@@ -616,3 +616,4 @@ compute_ref_homography_core
 } // end namespace core
 
 } // end namespace maptk
+} // end namespace kwiver

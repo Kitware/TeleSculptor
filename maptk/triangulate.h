@@ -40,8 +40,8 @@
 
 #include <maptk/config.h>
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 
 /// Triangulate a 3D point from a set of cameras and 2D image points
@@ -81,6 +81,7 @@ triangulate_homog(const std::vector<kwiver::vital::camera_<T> >& cameras,
 
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_TRIANGULATE_H_

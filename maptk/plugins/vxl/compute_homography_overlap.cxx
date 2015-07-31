@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,8 +49,8 @@
 #include <vnl/vnl_double_3.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vxl
 {
@@ -237,3 +237,4 @@ overlap( const vnl_double_3x3& h, const unsigned ni, const unsigned nj )
 } // end namespace vxl
 
 } // end namespace maptk
+} // end namespace kwiver

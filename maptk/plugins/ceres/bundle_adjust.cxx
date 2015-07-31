@@ -80,7 +80,6 @@ config_block_cast(config_block_value_t const& value)                    \
 }                                                                       \
                                                                         \
 }                                                                       \
-}                                                                       \
                                                                         \
 namespace maptk {                                                       \
 namespace ceres {                                                       \
@@ -105,12 +104,12 @@ ceres_options< NS::ceres_type >()                                       \
 }                                                                       \
                                                                         \
 }                                                                       \
+}                                                                       \
 }
 
-namespace maptk
-{
-namespace ceres
-{
+namespace kwiver {
+namespace maptk {
+namespace ceres {
 
 /// Defult implementation of string options for Ceres enums
 template <typename T>
@@ -120,24 +119,25 @@ ceres_options()
   return std::string();
 }
 
-}
-}
+} // end namespace ceres
+} // end namespace maptk
+} // end namespace kwiver
 
 MAPTK_CERES_ENUM_HELPERS(::ceres, LinearSolverType)
 MAPTK_CERES_ENUM_HELPERS(::ceres, PreconditionerType)
 MAPTK_CERES_ENUM_HELPERS(::ceres, TrustRegionStrategyType)
 MAPTK_CERES_ENUM_HELPERS(::ceres, DoglegType)
 
-MAPTK_CERES_ENUM_HELPERS(maptk::ceres, LossFunctionType)
-MAPTK_CERES_ENUM_HELPERS(maptk::ceres, LensDistortionType)
+MAPTK_CERES_ENUM_HELPERS(kwiver::maptk::ceres, LossFunctionType)
+MAPTK_CERES_ENUM_HELPERS(kwiver::maptk::ceres, LensDistortionType)
 
 #undef MAPTK_CERES_ENUM_HELPERS
 
 
-namespace maptk
-{
-namespace ceres
-{
+namespace kwiver {
+namespace maptk {
+namespace ceres {
+
 /// Private implementation class
 class bundle_adjust::priv
 {
@@ -609,3 +609,4 @@ bundle_adjust
 } // end namespace ceres
 
 } // end namespace maptk
+} // end namespace kwiver

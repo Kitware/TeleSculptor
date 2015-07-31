@@ -42,8 +42,8 @@
 #include <maptk/plugins/vxl/vxl_config.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vxl
 {
@@ -97,6 +97,7 @@ private:
 } // end namespace vxl
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_VXL_TRIANGULATE_LANDMARKS_H_

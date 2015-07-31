@@ -36,8 +36,8 @@
 #include "mat_image_memory.h"
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
@@ -70,3 +70,4 @@ mat_image_memory
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver

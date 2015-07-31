@@ -48,8 +48,8 @@
 
 using namespace kwiver::vital;
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vxl
 {
@@ -139,3 +139,4 @@ estimate_homography
 } // end namespace vxl
 
 } // end namespace maptk
+} // end namespace kwiver

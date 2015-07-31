@@ -41,8 +41,8 @@
 #include <string>
 #include <ceres/ceres.h>
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ceres
 {
@@ -97,6 +97,7 @@ num_distortion_params(LensDistortionType type);
 } // end namespace ceres
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_CERES_TYPES_H_

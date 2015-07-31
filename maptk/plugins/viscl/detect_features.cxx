@@ -38,8 +38,8 @@
 #include <viscl/tasks/hessian.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vcl
 {
@@ -141,3 +141,4 @@ detect_features
 } // end namespace vcl
 
 } // end namespace maptk
+} // end namespace kwiver

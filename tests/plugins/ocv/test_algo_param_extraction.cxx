@@ -62,7 +62,7 @@ main(int argc, char* argv[])
 {
   CHECK_ARGS(1);
 
-  maptk::ocv::register_algorithms();
+  kwiver::maptk::ocv::register_algorithms();
 
   testname_t const testname = argv[1];
 
@@ -80,7 +80,7 @@ main(int argc, char* argv[])
 
 using namespace std;
 using namespace kwiver::vital;
-using namespace maptk;
+using namespace kwiver::maptk;
 
 IMPLEMENT_TEST(detect_features_opencv)
 {

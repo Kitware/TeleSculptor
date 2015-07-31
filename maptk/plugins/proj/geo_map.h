@@ -40,8 +40,8 @@
 #include <maptk/plugins/proj/proj_config.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace proj
 {
@@ -101,5 +101,6 @@ public:
 } // end namespace proj
 
 } // end namespace maptk
+} // end namespace kwiver
 
 #endif // MAPTK_PLUGINS_PROJ_GEO_MAP_H_

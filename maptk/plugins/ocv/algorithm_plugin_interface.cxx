@@ -41,5 +41,5 @@
 
 int register_algo_impls( kwiver::vital::registrar &reg )
 {
-  return maptk::ocv::register_algorithms( reg );
+  return kwiver::maptk::ocv::register_algorithms( reg );
 }

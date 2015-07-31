@@ -41,8 +41,8 @@
 #include <maptk/plugins/ocv/ocv_config.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
@@ -83,6 +83,7 @@ public:
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_OCV_ESTIMATE_HOMOGRAPHY_H_

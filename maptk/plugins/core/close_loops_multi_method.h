@@ -49,8 +49,8 @@
 
 #include <vital/config/config_block.h>
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
@@ -144,6 +144,7 @@ private:
 } // end namespace core
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_CORE_CLOSE_LOOPS_MULTI_METHOD_H_

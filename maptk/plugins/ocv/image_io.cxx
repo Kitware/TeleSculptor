@@ -40,8 +40,8 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
@@ -77,3 +77,4 @@ image_io
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver

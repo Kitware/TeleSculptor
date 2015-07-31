@@ -34,8 +34,8 @@
 #include <vital/types/feature_set.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vcl
 {
@@ -46,5 +46,6 @@ void min_image_dimensions(const kwiver::vital::feature_set &feat, unsigned int &
 } // end namespace vcl
 
 } // end namespace maptk
+} // end namespace kwiver
 
 #endif // MAPTK_PLUGINS_VISCL_UTILS_H_

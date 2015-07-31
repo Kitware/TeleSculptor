@@ -38,8 +38,8 @@
 #include <maptk/plugins/vxl/vil_image_memory.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vxl
 {
@@ -142,3 +142,4 @@ image_container
 } // end namespace vxl
 
 } // end namespace maptk
+} // end namespace kwiver

@@ -47,8 +47,8 @@
 
 using namespace kwiver::vital;
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
@@ -191,3 +191,4 @@ detect_features
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver

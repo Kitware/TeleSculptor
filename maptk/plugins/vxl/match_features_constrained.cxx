@@ -51,8 +51,8 @@
 
 using namespace kwiver::vital;
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vxl
 {
@@ -268,3 +268,4 @@ match_features_constrained
 } // end namespace vxl
 
 } // end namespace maptk
+} // end namespace kwiver

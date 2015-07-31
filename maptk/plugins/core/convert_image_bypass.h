@@ -41,8 +41,8 @@
 #include <maptk/plugins/core/plugin_core_config.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
@@ -77,6 +77,7 @@ public:
 } // end namespace core
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_CORE_CONVERT_IMAGE_BYPASS_H_

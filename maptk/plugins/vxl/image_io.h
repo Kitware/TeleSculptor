@@ -41,8 +41,8 @@
 
 #include <boost/scoped_ptr.hpp>
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vxl
 {
@@ -98,6 +98,7 @@ private:
 } // end namespace vxl
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_VXL_IMAGE_IO_H_

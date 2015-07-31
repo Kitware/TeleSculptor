@@ -41,8 +41,8 @@
 
 using namespace kwiver::vital;
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vxl
 {
@@ -101,3 +101,4 @@ camera_map_to_vpgl(const kwiver::vital::camera_map& cam_map)
 } // end namespace vxl
 
 } // end namespace maptk
+} // end namespace kwiver

@@ -41,8 +41,8 @@
 #include <opencv2/core/eigen.hpp>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
@@ -94,3 +94,4 @@ estimate_homography
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver

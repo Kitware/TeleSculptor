@@ -35,8 +35,8 @@
 #include <maptk/plugins/viscl/viscl_config.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vcl
 {
@@ -69,6 +69,7 @@ public:
 } // end namespace vcl
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_VISCL_CONVERT_IMAGE_H_

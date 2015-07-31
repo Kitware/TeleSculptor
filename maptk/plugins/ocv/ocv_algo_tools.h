@@ -49,8 +49,8 @@
 #include <opencv2/core/core.hpp>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
@@ -252,5 +252,6 @@ bool check_nested_ocv_algo_configuration(std::string const& name,
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver
 
 #endif // MAPTK_PLUGINS_OCV_OCV_ALGO_TOOLS_H_

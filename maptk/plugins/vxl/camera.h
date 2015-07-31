@@ -42,8 +42,8 @@
 #include <vpgl/vpgl_perspective_camera.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vxl
 {
@@ -83,6 +83,7 @@ void maptk_to_vpgl_calibration(const kwiver::vital::camera_intrinsics_<T>& mcal,
 } // end namespace vxl
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_VXL_CAMERA_H_

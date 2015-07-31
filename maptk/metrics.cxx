@@ -37,8 +37,8 @@
 #include <boost/foreach.hpp>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 using namespace kwiver::vital;
 
@@ -158,3 +158,4 @@ reprojection_median_error(const std::map<frame_id_t, camera_sptr>& cameras,
 
 
 } // end namespace maptk
+} // end namespace kwiver

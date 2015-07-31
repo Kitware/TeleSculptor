@@ -43,8 +43,8 @@
 #include <maptk/plugins/ocv/ocv_config.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
@@ -85,6 +85,7 @@ matches_to_ocv_dmatch(const kwiver::vital::match_set& match_set);
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_OCV_MATCH_SET_H_

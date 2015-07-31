@@ -45,8 +45,8 @@
 #include <boost/foreach.hpp>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 
 /// Load landmarks and tracks from reference points file
@@ -153,3 +153,4 @@ void load_reference_file(kwiver::vital::path_t const& reference_file,
 
 
 } // end namespace maptk
+} // end namespace kwiver

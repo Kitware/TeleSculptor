@@ -45,8 +45,8 @@
 #include <ceres/rotation.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ceres
 {
@@ -259,6 +259,7 @@ create_cost_func(LensDistortionType ldt, double x, double y)
 } // end namespace ceres
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_CERES_REPROJECTION_ERROR_H_

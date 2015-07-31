@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,8 +41,8 @@
 #include <iostream>
 #include <string>
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 /// Inertial Navigation System (INS) data
 /**
@@ -133,6 +133,7 @@ MAPTK_LIB_EXPORT std::istream& operator>>(std::istream& s, ins_data& d);
 
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_INS_DATA_H_
