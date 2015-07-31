@@ -64,7 +64,7 @@ typedef boost::shared_ptr< essential_matrix > essential_matrix_sptr;
 // ---------------------------------------------------------------------------
 
 /// Abstract base essential matrix representation class
-class essential_matrix
+class MAPTK_LIB_EXPORT essential_matrix
 {
 public:
   /// Destructor
