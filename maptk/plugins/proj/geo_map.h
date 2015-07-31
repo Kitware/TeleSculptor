@@ -48,7 +48,7 @@ namespace proj
 
 /// PROJ implementation of geo_map algorithm
 class MAPTK_PROJ_EXPORT geo_map
-  : public kwiver::vital::algorithm_impl<geo_map, kwiver::vital::algo::geo_map>
+  : public vital::algorithm_impl<geo_map, vital::algo::geo_map>
 {
 public:
 
@@ -60,8 +60,8 @@ public:
 
   // No configuration for this class yet
   /// \cond DoxygenSuppress
-  virtual void set_configuration(kwiver::vital::config_block_sptr /*config*/) { }
-  virtual bool check_configuration(kwiver::vital::config_block_sptr /*config*/) const { return true; }
+  virtual void set_configuration(vital::config_block_sptr /*config*/) { }
+  virtual bool check_configuration(vital::config_block_sptr /*config*/) const { return true; }
   /// \endcond
 
   /// Convert UTM coordinate into latitude and longitude.

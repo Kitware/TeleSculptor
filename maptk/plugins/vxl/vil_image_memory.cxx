@@ -50,7 +50,7 @@ maptk_memory_chunk
 {
   if( n != size_ )
   {
-    maptk_data_ = kwiver::vital::image_memory_sptr(new kwiver::vital::image_memory(n));
+    maptk_data_ = vital::image_memory_sptr(new vital::image_memory(n));
     size_ = n;
   }
   pixel_format_ = pixel_format;

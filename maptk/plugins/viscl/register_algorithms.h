@@ -46,7 +46,7 @@ namespace vcl {
 
 /// Register VisCL algorithm implementations with the given or global registrar
 MAPTK_VISCL_EXPORT
-int register_algorithms( kwiver::vital::registrar &reg = kwiver::vital::registrar::instance() );
+int register_algorithms( vital::registrar &reg = vital::registrar::instance() );
 
 } // end namespace vcl
 } // end namespace maptk

@@ -111,13 +111,13 @@ detect_features
 }
 
 
-/// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
-kwiver::vital::config_block_sptr
+/// Get this algorithm's \link vital::config_block configuration block \endlink
+vital::config_block_sptr
 detect_features
 ::get_configuration() const
 {
   // base configuration block
-  kwiver::vital::config_block_sptr config = algorithm::get_configuration();
+  vital::config_block_sptr config = algorithm::get_configuration();
 
   get_nested_ocv_algo_configuration("detector", config, d_->detector);
 
@@ -128,17 +128,17 @@ detect_features
 /// Set this algorithm's properties via a config block
 void
 detect_features
-::set_configuration(kwiver::vital::config_block_sptr config)
+::set_configuration(vital::config_block_sptr config)
 {
   set_nested_ocv_algo_configuration(
       "detector", config, d_->detector);
 }
 
 
-/// Check that the algorithm's configuration kwiver::vital::config_block is valid
+/// Check that the algorithm's configuration vital::config_block is valid
 bool
 detect_features
-::check_configuration(kwiver::vital::config_block_sptr config) const
+::check_configuration(vital::config_block_sptr config) const
 {
   bool nested_ok =
     check_nested_ocv_algo_configuration<cv::FeatureDetector>(
@@ -149,9 +149,9 @@ detect_features
 
 
 /// Extract a set of image features from the provided image
-kwiver::vital::feature_set_sptr
+vital::feature_set_sptr
 detect_features
-::detect(kwiver::vital::image_container_sptr image_data, kwiver::vital::image_container_sptr mask) const
+::detect(vital::image_container_sptr image_data, vital::image_container_sptr mask) const
 {
   cv::Mat cv_img = ocv::image_container::maptk_to_ocv(image_data->get_image());
   cv::Mat cv_mask;
@@ -173,11 +173,11 @@ detect_features
     }
 
     // Make sure we make a one-channel cv::Mat
-    kwiver::vital::image s = mask->get_image();
+    vital::image s = mask->get_image();
     // hijacking memory of given mask image, but only telling the new image
-    // object to consider the first channel. See kwiver::vital::image documentation.
-    kwiver::vital::image i(s.memory(),
-                     static_cast< kwiver::vital::image::byte* >(s.memory()->data()),
+    // object to consider the first channel. See vital::image documentation.
+    vital::image i(s.memory(),
+                     static_cast< vital::image::byte* >(s.memory()->data()),
                      s.width(),  s.height(), 1 /*depth*/,
                      s.w_step(), s.h_step(), s.d_step());
     cv_mask = ocv::image_container::maptk_to_ocv(i);

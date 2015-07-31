@@ -107,8 +107,8 @@ public:
   bool verbose;
   bool retriangulate_all;
   camera_d base_camera;
-  kwiver::vital::algo::estimate_essential_matrix_sptr e_estimator;
-  kwiver::vital::algo::triangulate_landmarks_sptr lm_triangulator;
+  vital::algo::estimate_essential_matrix_sptr e_estimator;
+  vital::algo::triangulate_landmarks_sptr lm_triangulator;
 };
 
 
@@ -359,14 +359,14 @@ initialize_cameras_landmarks
 }
 
 
-/// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
-kwiver::vital::config_block_sptr
+/// Get this algorithm's \link vital::config_block configuration block \endlink
+vital::config_block_sptr
 initialize_cameras_landmarks
 ::get_configuration() const
 {
   // get base config from base class
-  kwiver::vital::config_block_sptr config =
-      kwiver::vital::algo::initialize_cameras_landmarks::get_configuration();
+  vital::config_block_sptr config =
+      vital::algo::initialize_cameras_landmarks::get_configuration();
 
   const camera_intrinsics_d& K = d_->base_camera.get_intrinsics();
 
@@ -395,10 +395,10 @@ initialize_cameras_landmarks
                     "This is almost always zero in any real camera.");
 
   // nested algorithm configurations
-  kwiver::vital::algo::estimate_essential_matrix
+  vital::algo::estimate_essential_matrix
       ::get_nested_algo_configuration("essential_mat_estimator",
                                       config, d_->e_estimator);
-  kwiver::vital::algo::triangulate_landmarks
+  vital::algo::triangulate_landmarks
       ::get_nested_algo_configuration("lm_triangulator",
                                       config, d_->lm_triangulator);
   return config;
@@ -408,15 +408,15 @@ initialize_cameras_landmarks
 /// Set this algorithm's properties via a config block
 void
 initialize_cameras_landmarks
-::set_configuration(kwiver::vital::config_block_sptr config)
+::set_configuration(vital::config_block_sptr config)
 {
   const camera_intrinsics_d& K = d_->base_camera.get_intrinsics();
 
   // Set nested algorithm configurations
-  kwiver::vital::algo::estimate_essential_matrix
+  vital::algo::estimate_essential_matrix
       ::set_nested_algo_configuration("essential_mat_estimator",
                                       config, d_->e_estimator);
-  kwiver::vital::algo::triangulate_landmarks
+  vital::algo::triangulate_landmarks
       ::set_nested_algo_configuration("lm_triangulator",
                                       config, d_->lm_triangulator);
 
@@ -426,7 +426,7 @@ initialize_cameras_landmarks
   d_->retriangulate_all = config->get_value<bool>("retriangulate_all",
                                                   d_->retriangulate_all);
 
-  kwiver::vital::config_block_sptr bc = config->subblock("base_camera");
+  vital::config_block_sptr bc = config->subblock("base_camera");
   camera_intrinsics_d K2(bc->get_value<double>("focal_length",
                                                K.focal_length()),
                          bc->get_value<vector_2d>("principal_point",
@@ -442,12 +442,12 @@ initialize_cameras_landmarks
 /// Check that the algorithm's currently configuration is valid
 bool
 initialize_cameras_landmarks
-::check_configuration(kwiver::vital::config_block_sptr config) const
+::check_configuration(vital::config_block_sptr config) const
 {
-  return kwiver::vital::algo::estimate_essential_matrix
+  return vital::algo::estimate_essential_matrix
              ::check_nested_algo_configuration("essential_mat_estimator",
                                                config)
-      && kwiver::vital::algo::triangulate_landmarks
+      && vital::algo::triangulate_landmarks
              ::check_nested_algo_configuration("lm_triangulator", config);
 }
 
@@ -555,8 +555,8 @@ initialize_cameras_landmarks
   {
     throw invalid_value("Landmark triangulator not initialized.");
   }
-  typedef kwiver::vital::camera_map::map_camera_t map_cam_t;
-  typedef kwiver::vital::landmark_map::map_landmark_t map_landmark_t;
+  typedef vital::camera_map::map_camera_t map_cam_t;
+  typedef vital::landmark_map::map_landmark_t map_landmark_t;
 
   // Extract the existing cameras and camera ids to be initialized
   std::set<frame_id_t> frame_ids = tracks->all_frame_ids();

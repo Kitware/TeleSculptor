@@ -44,11 +44,11 @@ namespace vcl
 
 
 /// Return a vector of feature shared pointers
-std::vector<kwiver::vital::feature_sptr>
+std::vector<vital::feature_sptr>
 feature_set
 ::features() const
 {
-  std::vector<kwiver::vital::feature_sptr> features;
+  std::vector<vital::feature_sptr> features;
 
   unsigned int numkpts = size();
   viscl::cl_queue_t queue = viscl::manager::inst()->create_queue();
@@ -60,9 +60,9 @@ feature_set
   //These features only have locations set for them
   for (unsigned int i = 0; i < numkpts; i++)
   {
-    kwiver::vital::feature_f *f = new kwiver::vital::feature_f();
-    f->set_loc(kwiver::vital::vector_2f(kpts[i].s[0], kpts[i].s[1]));
-    features.push_back(kwiver::vital::feature_sptr(f));
+    vital::feature_f *f = new vital::feature_f();
+    f->set_loc(vital::vector_2f(kpts[i].s[0], kpts[i].s[1]));
+    features.push_back(vital::feature_sptr(f));
   }
 
   return features;
@@ -71,7 +71,7 @@ feature_set
 
 // Convert any feature set to a VisCL data (upload if needed)
 feature_set::type
-features_to_viscl(const kwiver::vital::feature_set& features)
+features_to_viscl(const vital::feature_set& features)
 {
   //if already on GPU in VisCL format, then access it
   if( const vcl::feature_set* f =
@@ -103,13 +103,13 @@ features_to_viscl(const kwiver::vital::feature_set& features)
   queue->enqueueWriteBuffer(*fs.numfeat_().get(), CL_TRUE, 0, fs.numfeat_.mem_size(), numfeat);
 
   //write features
-  std::vector<kwiver::vital::feature_sptr> feat = features.features();
+  std::vector<vital::feature_sptr> feat = features.features();
   cl_int2 *buf = new cl_int2[features.size()];
-  typedef std::vector<kwiver::vital::feature_sptr>::const_iterator feat_itr;
+  typedef std::vector<vital::feature_sptr>::const_iterator feat_itr;
   unsigned int j = 0;
   for(feat_itr it = feat.begin(); it != feat.end(); ++it, j++)
   {
-    const kwiver::vital::feature_sptr f = *it;
+    const vital::feature_sptr f = *it;
 
     cl_int2 kp;
     kp.s[0] = static_cast<int>(f->loc()[0]);

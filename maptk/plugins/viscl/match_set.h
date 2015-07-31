@@ -46,7 +46,7 @@ namespace vcl
 
 /// A concrete match set that wraps VisCL matches
 class MAPTK_VISCL_EXPORT match_set
-: public kwiver::vital::match_set
+: public vital::match_set
 {
 public:
   /// Default constructor
@@ -65,7 +65,7 @@ public:
   virtual size_t size() const;
 
   /// Return a vector of matching indices
-  virtual std::vector<kwiver::vital::match> matches() const;
+  virtual std::vector<vital::match> matches() const;
 
   /// Return the underlying VisCL match data
   const viscl::buffer& viscl_matches() const { return data_; }
@@ -81,7 +81,7 @@ private:
   * Will remove duplicate matches to a kpt from 2nd set
   */
 MAPTK_VISCL_EXPORT viscl::buffer
-matches_to_viscl(const kwiver::vital::match_set& match_set);
+matches_to_viscl(const vital::match_set& match_set);
 
 
 } // end namespace vcl

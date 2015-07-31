@@ -38,12 +38,12 @@ namespace vcl
 {
 
 /// Compute image dimensions from feature set
-void min_image_dimensions(const kwiver::vital::feature_set &feat, unsigned int &width, unsigned int &height)
+void min_image_dimensions(const vital::feature_set &feat, unsigned int &width, unsigned int &height)
 {
   width = 0;
   height = 0;
 
-  std::vector<kwiver::vital::feature_sptr> features = feat.features();
+  std::vector<vital::feature_sptr> features = feat.features();
   for (unsigned int i = 0; i < features.size(); i++)
   {
     if (width < features[i]->loc()[0])

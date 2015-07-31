@@ -63,7 +63,7 @@ public:
   : auto_stretch(false),
     manual_stretch(false),
     intensity_range(0, 255),
-    m_logger( kwiver::vital::get_logger( "maptk_vxl_image_io" ) )
+    m_logger( vital::get_logger( "maptk_vxl_image_io" ) )
   {
   }
 
@@ -78,7 +78,7 @@ public:
   bool manual_stretch;
   vector_2d intensity_range;
 
-  kwiver::vital::logger_handle_t m_logger;
+  vital::logger_handle_t m_logger;
 };
 
 
@@ -106,13 +106,13 @@ image_io
 
 
 
-/// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
-kwiver::vital::config_block_sptr
+/// Get this algorithm's \link vital::config_block configuration block \endlink
+vital::config_block_sptr
 image_io
 ::get_configuration() const
 {
   // get base config from base class
-  kwiver::vital::config_block_sptr config = kwiver::vital::algo::image_io::get_configuration();
+  vital::config_block_sptr config = vital::algo::image_io::get_configuration();
 
   config->set_value("auto_stretch", d_->auto_stretch,
                     "Dynamically stretch the range of the input data such that "
@@ -137,11 +137,11 @@ image_io
 /// Set this algorithm's properties via a config block
 void
 image_io
-::set_configuration(kwiver::vital::config_block_sptr in_config)
+::set_configuration(vital::config_block_sptr in_config)
 {
-  // Starting with our generated kwiver::vital::config_block to ensure that assumed values are present
+  // Starting with our generated vital::config_block to ensure that assumed values are present
   // An alternative is to check for key presence before performing a get_value() call.
-  kwiver::vital::config_block_sptr config = this->get_configuration();
+  vital::config_block_sptr config = this->get_configuration();
   config->merge_config(in_config);
 
   d_->auto_stretch = config->get_value<bool>("auto_stretch",
@@ -156,7 +156,7 @@ image_io
 /// Check that the algorithm's currently configuration is valid
 bool
 image_io
-::check_configuration(kwiver::vital::config_block_sptr config) const
+::check_configuration(vital::config_block_sptr config) const
 {
   double auto_stretch = config->get_value<bool>("auto_stretch",
                                                 d_->auto_stretch);

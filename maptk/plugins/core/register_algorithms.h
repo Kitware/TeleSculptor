@@ -48,7 +48,7 @@ namespace core
 
 // Register core algorithms with the given or global registrar
 PLUGIN_CORE_EXPORT
-int register_algorithms( kwiver::vital::registrar &reg = kwiver::vital::registrar::instance() );
+int register_algorithms( vital::registrar &reg = vital::registrar::instance() );
 
 } // end namespace core
 

@@ -157,7 +157,7 @@ public:
     optimize_dist_k3(false),
     optimize_dist_p1_p2(false),
     optimize_dist_k4_k5_k6(false),
-    m_logger( kwiver::vital::get_logger( "maptk::ceres::bundle_adjust" ))
+    m_logger( vital::get_logger( "maptk::ceres::bundle_adjust" ))
   {
   }
 
@@ -175,7 +175,7 @@ public:
     optimize_dist_k3(other.optimize_dist_k3),
     optimize_dist_p1_p2(other.optimize_dist_p1_p2),
     optimize_dist_k4_k5_k6(other.optimize_dist_k4_k5_k6),
-    m_logger( kwiver::vital::get_logger( "maptk::ceres::bundle_adjust" ))
+    m_logger( vital::get_logger( "maptk::ceres::bundle_adjust" ))
   {
   }
 
@@ -209,7 +209,7 @@ public:
   bool optimize_dist_k4_k5_k6;
 
   /// Logger handle
-  kwiver::vital::logger_handle_t m_logger;
+  vital::logger_handle_t m_logger;
 };
 
 
@@ -243,7 +243,7 @@ bundle_adjust
 {
   ::ceres::Solver::Options& o = d_->options;
   // get base config from base class
-  config_block_sptr config = kwiver::vital::algo::bundle_adjust::get_configuration();
+  config_block_sptr config = vital::algo::bundle_adjust::get_configuration();
   config->set_value("verbose", d_->verbose,
                     "If true, write status messages to the terminal showing "
                     "optimization progress at each iteration");

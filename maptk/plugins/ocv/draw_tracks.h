@@ -51,7 +51,7 @@ namespace ocv
 
 /// A class for drawing various information about feature tracks
 class MAPTK_OCV_EXPORT draw_tracks
-: public kwiver::vital::algorithm_impl<draw_tracks, kwiver::vital::algo::draw_tracks>
+: public vital::algorithm_impl<draw_tracks, vital::algo::draw_tracks>
 {
 public:
 
@@ -68,11 +68,11 @@ public:
   virtual std::string impl_name() const { return "ocv"; }
 
   /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
-  virtual kwiver::vital::config_block_sptr get_configuration() const;
+  virtual vital::config_block_sptr get_configuration() const;
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(kwiver::vital::config_block_sptr config);
+  virtual void set_configuration(vital::config_block_sptr config);
   /// Check that the algorithm's currently configuration is valid
-  virtual bool check_configuration(kwiver::vital::config_block_sptr config) const;
+  virtual bool check_configuration(vital::config_block_sptr config) const;
 
   /// Draw features tracks on top of the input images.
   /**
@@ -88,10 +88,10 @@ public:
    * \param [in] comparison_set optional comparison track set
    * \returns a pointer to the last image generated
    */
-  virtual kwiver::vital::image_container_sptr
-  draw(kwiver::vital::track_set_sptr display_set,
-       kwiver::vital::image_container_sptr_list image_data,
-       kwiver::vital::track_set_sptr comparison_set = kwiver::vital::track_set_sptr());
+  virtual vital::image_container_sptr
+  draw(vital::track_set_sptr display_set,
+       vital::image_container_sptr_list image_data,
+       vital::track_set_sptr comparison_set = vital::track_set_sptr());
 
 private:
 

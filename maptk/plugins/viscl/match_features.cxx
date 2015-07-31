@@ -88,12 +88,12 @@ match_features
 {
 }
 
-/// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
-kwiver::vital::config_block_sptr
+/// Get this algorithm's \link vital::config_block configuration block \endlink
+vital::config_block_sptr
 match_features
 ::get_configuration() const
 {
-  kwiver::vital::config_block_sptr config = algorithm::get_configuration();
+  vital::config_block_sptr config = algorithm::get_configuration();
   config->set_value("search_box_radius", d_->search_radius,
                     "Maximum pixel radius to search for kpt match.");
   return config;
@@ -102,30 +102,30 @@ match_features
 /// Set this algorithm's properties via a config block
 void
 match_features
-::set_configuration(kwiver::vital::config_block_sptr config)
+::set_configuration(vital::config_block_sptr config)
 {
   unsigned int sbr = config->get_value<unsigned int>("search_box_radius",
                                                      d_->search_radius);
   d_->matcher.set_search_box_radius(sbr);
 }
 
-/// Check that the algorithm's configuration kwiver::vital::config_block is valid
+/// Check that the algorithm's configuration vital::config_block is valid
 bool
 match_features
-::check_configuration(kwiver::vital::config_block_sptr config) const
+::check_configuration(vital::config_block_sptr config) const
 {
   return true;
 }
 
 /// Match one set of features and corresponding descriptors to another
-kwiver::vital::match_set_sptr
+vital::match_set_sptr
 match_features
-::match(kwiver::vital::feature_set_sptr feat1, kwiver::vital::descriptor_set_sptr desc1,
-        kwiver::vital::feature_set_sptr feat2, kwiver::vital::descriptor_set_sptr desc2) const
+::match(vital::feature_set_sptr feat1, vital::descriptor_set_sptr desc1,
+        vital::feature_set_sptr feat2, vital::descriptor_set_sptr desc2) const
 {
   if( !desc1 || !desc2 )
   {
-    return kwiver::vital::match_set_sptr();
+    return vital::match_set_sptr();
   }
 
   viscl::buffer d1 = descriptors_to_viscl(*desc1);
@@ -138,7 +138,7 @@ match_features
   viscl::buffer matches = d_->matcher.match(f1.features_, f1.kptmap_, d1,
                                             f2.features_, numkpts2, f2.kptmap_, d2);
 
-  return kwiver::vital::match_set_sptr(new match_set(matches));
+  return vital::match_set_sptr(new match_set(matches));
 }
 
 

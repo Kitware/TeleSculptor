@@ -50,7 +50,7 @@ namespace vxl
 
 /// An image memory class that shares memory with VXL using vil_memory_chunk
 class MAPTK_VXL_EXPORT vil_image_memory
-  : public kwiver::vital::image_memory
+  : public vital::image_memory
 {
 public:
   /// Constructor - allocates n bytes
@@ -79,7 +79,7 @@ class MAPTK_VXL_EXPORT maptk_memory_chunk
 {
 public:
   /// Constructor - from maptk image memory
-  maptk_memory_chunk(kwiver::vital::image_memory_sptr mem)
+  maptk_memory_chunk(vital::image_memory_sptr mem)
   : maptk_data_(mem)
   {
     size_ = maptk_data_->size();
@@ -96,11 +96,11 @@ public:
   virtual void set_size(unsigned long n, vil_pixel_format pixel_format);
 
   /// Access the underlying maptk memory
-  kwiver::vital::image_memory_sptr memory() const { return maptk_data_; }
+  vital::image_memory_sptr memory() const { return maptk_data_; }
 protected:
 
   /// The maptk image data
-  kwiver::vital::image_memory_sptr maptk_data_;
+  vital::image_memory_sptr maptk_data_;
 };
 
 

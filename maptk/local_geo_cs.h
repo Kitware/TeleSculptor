@@ -58,22 +58,22 @@ class MAPTK_LIB_EXPORT local_geo_cs
 {
 public:
   /// Constructor
-  explicit local_geo_cs(kwiver::vital::algo::geo_map_sptr alg);
+  explicit local_geo_cs(vital::algo::geo_map_sptr alg);
 
   /// Set the local UTM coordinate origin
-  void set_utm_origin(const kwiver::vital::vector_3d& origin) { utm_origin_ = origin; }
+  void set_utm_origin(const vital::vector_3d& origin) { utm_origin_ = origin; }
 
   /// Set the local UTM origin zone
   void set_utm_origin_zone(int zone) { utm_origin_zone_ = zone; }
 
   /// Access the local UTM coordinate origin
-  const kwiver::vital::vector_3d& utm_origin() const { return utm_origin_; }
+  const vital::vector_3d& utm_origin() const { return utm_origin_; }
 
   /// Access the local UTM origin zone
   int utm_origin_zone() const { return utm_origin_zone_; }
 
   /// Access the geographic mapping algorithm
-  kwiver::vital::algo::geo_map_sptr geo_map_algo() const { return geo_map_algo_; }
+  vital::algo::geo_map_sptr geo_map_algo() const { return geo_map_algo_; }
 
   /// Use the pose data provided by INS to update camera pose
   /**
@@ -81,18 +81,18 @@ public:
    * \param cam         The camera to be updated.
    * \param rot_offset  A rotation offset to apply to INS yaw pitch roll data
    */
-  void update_camera(const maptk::ins_data& ins, kwiver::vital::camera_d& cam,
-                     kwiver::vital::rotation_d const& rot_offset = kwiver::vital::rotation_d()) const;
+  void update_camera(const maptk::ins_data& ins, vital::camera_d& cam,
+                     vital::rotation_d const& rot_offset = vital::rotation_d()) const;
 
   /// Use the camera pose to update an INS data structure
-  void update_ins_data(const kwiver::vital::camera_d& cam, maptk::ins_data& ins) const;
+  void update_ins_data(const vital::camera_d& cam, maptk::ins_data& ins) const;
 
 private:
   /// An algorithm provided to compute geographic transformations
-  kwiver::vital::algo::geo_map_sptr geo_map_algo_;
+  vital::algo::geo_map_sptr geo_map_algo_;
 
   /// The local coordinates origin in UTM (easting, northing, altitude)
-  kwiver::vital::vector_3d utm_origin_;
+  vital::vector_3d utm_origin_;
 
   /// The UTM zone number containing the UTM origin
   int utm_origin_zone_;
@@ -114,11 +114,11 @@ private:
  *       at zero altitude.
  */
 MAPTK_LIB_EXPORT
-std::map<kwiver::vital::frame_id_t, kwiver::vital::camera_sptr>
-initialize_cameras_with_ins(const std::map<kwiver::vital::frame_id_t, maptk::ins_data>& ins_map,
-                            const kwiver::vital::camera_d& base_camera,
+std::map<vital::frame_id_t, vital::camera_sptr>
+initialize_cameras_with_ins(const std::map<vital::frame_id_t, maptk::ins_data>& ins_map,
+                            const vital::camera_d& base_camera,
                             local_geo_cs& lgcs,
-                            kwiver::vital::rotation_d const& rot_offset = kwiver::vital::rotation_d());
+                            vital::rotation_d const& rot_offset = vital::rotation_d());
 
 
 /// Update a sequence of ins_data from a sequence of cameras and local_geo_cs
@@ -133,9 +133,9 @@ initialize_cameras_with_ins(const std::map<kwiver::vital::frame_id_t, maptk::ins
  */
 MAPTK_LIB_EXPORT
 void
-update_ins_from_cameras(const std::map<kwiver::vital::frame_id_t, kwiver::vital::camera_sptr>& cam_map,
+update_ins_from_cameras(const std::map<vital::frame_id_t, vital::camera_sptr>& cam_map,
                         const maptk::local_geo_cs& lgcs,
-                        std::map<kwiver::vital::frame_id_t, maptk::ins_data>& ins_map);
+                        std::map<vital::frame_id_t, maptk::ins_data>& ins_map);
 
 
 } // end namespace maptk

@@ -62,14 +62,14 @@ public:
   priv()
     : top_fraction(0.2),
       min_features(100),
-      m_logger( kwiver::vital::get_logger( "filter_features_magnitude" ))
+      m_logger( vital::get_logger( "filter_features_magnitude" ))
   {
   }
 
   priv(const priv& other)
     : top_fraction(other.top_fraction),
       min_features(other.min_features),
-      m_logger( kwiver::vital::get_logger( "filter_features_magnitude" ))
+      m_logger( vital::get_logger( "filter_features_magnitude" ))
   {
   }
 
@@ -115,12 +115,12 @@ public:
     LOG_INFO( m_logger,
              "Reduced " << feat_vec.size() << " features to " << filtered.size() << " features.");
 
-    return boost::make_shared<kwiver::vital::simple_feature_set>(kwiver::vital::simple_feature_set(filtered));
+    return boost::make_shared<vital::simple_feature_set>(vital::simple_feature_set(filtered));
   }
 
   double top_fraction;
   unsigned int min_features;
-  kwiver::vital::logger_handle_t m_logger;
+  vital::logger_handle_t m_logger;
 };
 
 
@@ -147,14 +147,14 @@ filter_features_magnitude
 }
 
 
-/// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
-  kwiver::vital::config_block_sptr
+/// Get this algorithm's \link vital::config_block configuration block \endlink
+  vital::config_block_sptr
 filter_features_magnitude
 ::get_configuration() const
 {
   // get base config from base class
-  kwiver::vital::config_block_sptr config =
-      kwiver::vital::algo::filter_features::get_configuration();
+  vital::config_block_sptr config =
+      vital::algo::filter_features::get_configuration();
 
   config->set_value("top_fraction", d_->top_fraction,
                     "Fraction of strongest keypoints to keep, range (0.0, 1.0]");
@@ -169,17 +169,17 @@ filter_features_magnitude
 /// Set this algorithm's properties via a config block
 void
 filter_features_magnitude
-::set_configuration(kwiver::vital::config_block_sptr config)
+::set_configuration(vital::config_block_sptr config)
 {
   d_->top_fraction = config->get_value<double>("top_fraction", d_->top_fraction);
   d_->min_features = config->get_value<unsigned int>("min_features", d_->min_features);
 }
 
 
-/// Check that the algorithm's configuration kwiver::vital::config_block is valid
+/// Check that the algorithm's configuration vital::config_block is valid
 bool
 filter_features_magnitude
-::check_configuration(kwiver::vital::config_block_sptr config) const
+::check_configuration(vital::config_block_sptr config) const
 {
   double top_fraction = config->get_value<double>("top_fraction", d_->top_fraction);
   if( top_fraction <= 0.0 || top_fraction > 1.0 )
@@ -193,9 +193,9 @@ filter_features_magnitude
 
 
 /// Filter feature set
-kwiver::vital::feature_set_sptr
+vital::feature_set_sptr
 filter_features_magnitude
-::filter(kwiver::vital::feature_set_sptr feat, std::vector<unsigned int> &indices) const
+::filter(vital::feature_set_sptr feat, std::vector<unsigned int> &indices) const
 {
   return d_->filter(feat, indices);
 }

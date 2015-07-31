@@ -51,7 +51,7 @@ namespace ocv
 
 /// An image memory class that shares memory with OpenCV using reference counting
 class MAPTK_OCV_EXPORT mat_image_memory
-  : public kwiver::vital::image_memory
+  : public vital::image_memory
 {
 public:
   /// Constructor - allocates n bytes

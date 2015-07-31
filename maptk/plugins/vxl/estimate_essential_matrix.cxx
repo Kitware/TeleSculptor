@@ -101,14 +101,14 @@ estimate_essential_matrix
 
 
 
-/// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
-kwiver::vital::config_block_sptr
+/// Get this algorithm's \link vital::config_block configuration block \endlink
+vital::config_block_sptr
 estimate_essential_matrix
 ::get_configuration() const
 {
   // get base config from base class
-  kwiver::vital::config_block_sptr config =
-      kwiver::vital::algo::estimate_essential_matrix::get_configuration();
+  vital::config_block_sptr config =
+      vital::algo::estimate_essential_matrix::get_configuration();
 
   config->set_value("verbose", d_->verbose,
                     "If true, write status messages to the terminal showing "
@@ -124,7 +124,7 @@ estimate_essential_matrix
 /// Set this algorithm's properties via a config block
 void
 estimate_essential_matrix
-::set_configuration(kwiver::vital::config_block_sptr config)
+::set_configuration(vital::config_block_sptr config)
 {
 
   d_->verbose = config->get_value<bool>("verbose",
@@ -137,7 +137,7 @@ estimate_essential_matrix
 /// Check that the algorithm's currently configuration is valid
 bool
 estimate_essential_matrix
-::check_configuration(kwiver::vital::config_block_sptr config) const
+::check_configuration(vital::config_block_sptr config) const
 {
   return true;
 }

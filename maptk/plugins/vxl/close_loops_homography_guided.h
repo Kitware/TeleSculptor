@@ -60,7 +60,7 @@ namespace vxl
  * filtering.
  */
 class MAPTK_VXL_EXPORT close_loops_homography_guided
-  : public kwiver::vital::algorithm_impl<vxl::close_loops_homography_guided, kwiver::vital::algo::close_loops>
+  : public vital::algorithm_impl<vxl::close_loops_homography_guided, vital::algo::close_loops>
 {
 public:
 
@@ -76,32 +76,32 @@ public:
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "vxl_homography_guided"; }
 
-  /// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
+  /// Get this algorithm's \link vital::config_block configuration block \endlink
   /**
    * This base virtual function implementation returns an empty configuration
    * block whose name is set to \c this->type_name.
    *
-   * \returns \c kwiver::vital::config_block containing the configuration for this algorithm
+   * \returns \c vital::config_block containing the configuration for this algorithm
    *          and any nested components.
    */
-  virtual kwiver::vital::config_block_sptr get_configuration() const;
+  virtual vital::config_block_sptr get_configuration() const;
 
   /// Set this algorithm's properties via a config block
   /**
    * \throws no_such_configuration_value_exception
    *    Thrown if an expected configuration value is not present.
    * \throws algorithm_configuration_exception
-   *    Thrown when the algorithm is given an invalid \c kwiver::vital::config_block or is'
+   *    Thrown when the algorithm is given an invalid \c vital::config_block or is'
    *    otherwise unable to configure itself.
    *
-   * \param config  The \c kwiver::vital::config_block instance containing the configuration
+   * \param config  The \c vital::config_block instance containing the configuration
    *                parameters for this algorithm
    */
-  virtual void set_configuration( kwiver::vital::config_block_sptr config );
+  virtual void set_configuration( vital::config_block_sptr config );
 
   /// Check that the algorithm's currently configuration is valid
   /**
-   * This checks solely within the provided \c kwiver::vital::config_block and not against
+   * This checks solely within the provided \c vital::config_block and not against
    * the current state of the instance. This isn't static for inheritence
    * reasons.
    *
@@ -109,7 +109,7 @@ public:
    *
    * \returns true if the configuration check passed and false if it didn't.
    */
-  virtual bool check_configuration( kwiver::vital::config_block_sptr config ) const;
+  virtual bool check_configuration( vital::config_block_sptr config ) const;
 
   /// Perform loop closure operation.
   /**
@@ -120,11 +120,11 @@ public:
    *                  regions to consider in the input image.
    * \returns an updated set a tracks after the stitching operation
    */
-  virtual kwiver::vital::track_set_sptr
-  stitch( kwiver::vital::frame_id_t frame_number,
-          kwiver::vital::track_set_sptr input,
-          kwiver::vital::image_container_sptr image,
-          kwiver::vital::image_container_sptr mask = kwiver::vital::image_container_sptr() ) const;
+  virtual vital::track_set_sptr
+  stitch( vital::frame_id_t frame_number,
+          vital::track_set_sptr input,
+          vital::image_container_sptr image,
+          vital::image_container_sptr mask = vital::image_container_sptr() ) const;
 
 private:
 

@@ -50,8 +50,8 @@ namespace vxl
 
 /// VXL implementation of similarity transform estimation
 class MAPTK_VXL_EXPORT estimate_similarity_transform
-  : public kwiver::vital::algorithm_impl<estimate_similarity_transform,
-                                         kwiver::vital::algo::estimate_similarity_transform>
+  : public vital::algorithm_impl<estimate_similarity_transform,
+                                         vital::algo::estimate_similarity_transform>
 {
 public:
   /// Name of this implementation
@@ -59,8 +59,8 @@ public:
 
   // No custom configuration at this time
   /// \cond Doxygen Suppress
-  virtual void set_configuration(kwiver::vital::config_block_sptr /*config*/) { };
-  virtual bool check_configuration(kwiver::vital::config_block_sptr /*config*/) const { return true; }
+  virtual void set_configuration(vital::config_block_sptr /*config*/) { };
+  virtual bool check_configuration(vital::config_block_sptr /*config*/) const { return true; }
   /// \endcond
 
   /// Estimate the similarity transform between two corresponding point sets
@@ -73,9 +73,9 @@ public:
    *          \c from space to points in the \c to space (i.e. transforms
    *          \c from into \c to).
    */
-  virtual kwiver::vital::similarity_d
-  estimate_transform(std::vector<kwiver::vital::vector_3d> const& from,
-                     std::vector<kwiver::vital::vector_3d> const& to) const;
+  virtual vital::similarity_d
+  estimate_transform(std::vector<vital::vector_3d> const& from,
+                     std::vector<vital::vector_3d> const& to) const;
 
 };
 

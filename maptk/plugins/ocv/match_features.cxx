@@ -148,12 +148,12 @@ match_features
 }
 
 
-/// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
-kwiver::vital::config_block_sptr
+/// Get this algorithm's \link vital::config_block configuration block \endlink
+vital::config_block_sptr
 match_features
 ::get_configuration() const
 {
-  kwiver::vital::config_block_sptr config = algorithm::get_configuration();
+  vital::config_block_sptr config = algorithm::get_configuration();
 
   get_nested_ocv_algo_configuration("matcher", config, d_->matcher);
 
@@ -164,17 +164,17 @@ match_features
 /// Set this algorithm's properties via a config block
 void
 match_features
-::set_configuration(kwiver::vital::config_block_sptr config)
+::set_configuration(vital::config_block_sptr config)
 {
   set_nested_ocv_algo_configuration(
       "matcher", config, d_->matcher);
 }
 
 
-/// Check that the algorithm's configuration kwiver::vital::config_block is valid
+/// Check that the algorithm's configuration vital::config_block is valid
 bool
 match_features
-::check_configuration(kwiver::vital::config_block_sptr config) const
+::check_configuration(vital::config_block_sptr config) const
 {
   bool nested_ok =
     check_nested_ocv_algo_configuration<cv::DescriptorMatcher>(
@@ -185,22 +185,22 @@ match_features
 
 
 /// Match one set of features and corresponding descriptors to another
-kwiver::vital::match_set_sptr
+vital::match_set_sptr
 match_features
-::match(kwiver::vital::feature_set_sptr feat1, kwiver::vital::descriptor_set_sptr desc1,
-        kwiver::vital::feature_set_sptr feat2, kwiver::vital::descriptor_set_sptr desc2) const
+::match(vital::feature_set_sptr feat1, vital::descriptor_set_sptr desc1,
+        vital::feature_set_sptr feat2, vital::descriptor_set_sptr desc2) const
 {
   // Return empty match set pointer if either of the input sets were empty
   // pointers
   if( !desc1 || !desc2 )
   {
-    return kwiver::vital::match_set_sptr();
+    return vital::match_set_sptr();
   }
   // Only perform matching if both pointers are valid and if both descriptor
   // sets contain non-zero elements
   if( !desc1->size() || !desc2->size() )
   {
-    return kwiver::vital::match_set_sptr( new maptk::ocv::match_set() );
+    return vital::match_set_sptr( new maptk::ocv::match_set() );
   }
 
   cv::Mat d1 = descriptors_to_ocv_matrix(*desc1);
@@ -214,7 +214,7 @@ match_features
   {
     d_->simple_match(d1, d2, matches);
   }
-  return kwiver::vital::match_set_sptr(new maptk::ocv::match_set(matches));
+  return vital::match_set_sptr(new maptk::ocv::match_set(matches));
 }
 
 

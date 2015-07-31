@@ -50,8 +50,8 @@ namespace core
 
 /// A class for initialization of cameras and landmarks
 class PLUGIN_CORE_EXPORT initialize_cameras_landmarks
-: public kwiver::vital::algorithm_impl<initialize_cameras_landmarks,
-                              kwiver::vital::algo::initialize_cameras_landmarks>
+: public vital::algorithm_impl<initialize_cameras_landmarks,
+                              vital::algo::initialize_cameras_landmarks>
 {
 public:
   /// Constructor
@@ -66,12 +66,12 @@ public:
   /// Return the name of this implementation
   std::string impl_name() const { return "core"; }
 
-  /// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
-  virtual kwiver::vital::config_block_sptr get_configuration() const;
+  /// Get this algorithm's \link vital::config_block configuration block \endlink
+  virtual vital::config_block_sptr get_configuration() const;
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(kwiver::vital::config_block_sptr config);
+  virtual void set_configuration(vital::config_block_sptr config);
   /// Check that the algorithm's currently configuration is valid
-  virtual bool check_configuration(kwiver::vital::config_block_sptr config) const;
+  virtual bool check_configuration(vital::config_block_sptr config) const;
 
   /// Initialize the camera and landmark parameters given a set of tracks
   /**
@@ -84,9 +84,9 @@ public:
    * \param [in] tracks the tracks to use as constraints
    */
   virtual void
-  initialize(kwiver::vital::camera_map_sptr& cameras,
-             kwiver::vital::landmark_map_sptr& landmarks,
-             kwiver::vital::track_set_sptr tracks) const;
+  initialize(vital::camera_map_sptr& cameras,
+             vital::landmark_map_sptr& landmarks,
+             vital::track_set_sptr tracks) const;
 
 private:
   /// private implementation class

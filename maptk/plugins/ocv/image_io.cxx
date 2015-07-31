@@ -51,12 +51,12 @@ namespace ocv
  * \param filename the path to the file the load
  * \returns an image container refering to the loaded image
  */
-kwiver::vital::image_container_sptr
+vital::image_container_sptr
 image_io
 ::load_(const std::string& filename) const
 {
   cv::Mat img = cv::imread(filename.c_str());
-  return kwiver::vital::image_container_sptr(new ocv::image_container(img));
+  return vital::image_container_sptr(new ocv::image_container(img));
 }
 
 
@@ -68,7 +68,7 @@ image_io
 void
 image_io
 ::save_(const std::string& filename,
-       kwiver::vital::image_container_sptr data) const
+       vital::image_container_sptr data) const
 {
   cv::imwrite(filename.c_str(),
               ocv::image_container::maptk_to_ocv(data->get_image()));

@@ -61,7 +61,7 @@ namespace vxl
  *  the descriptors for the neighbors and finds the best match by appearance.
  */
 class MAPTK_VXL_EXPORT match_features_constrained
-  : public kwiver::vital::algorithm_impl<match_features_constrained, kwiver::vital::algo::match_features>
+  : public vital::algorithm_impl<match_features_constrained, vital::algo::match_features>
 {
 public:
   /// Constructor
@@ -76,12 +76,12 @@ public:
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "vxl_constrained"; }
 
-  /// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
-  virtual kwiver::vital::config_block_sptr get_configuration() const;
+  /// Get this algorithm's \link vital::config_block configuration block \endlink
+  virtual vital::config_block_sptr get_configuration() const;
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(kwiver::vital::config_block_sptr config);
-  /// Check that the algorithm's configuration kwiver::vital::config_block is valid
-  virtual bool check_configuration(kwiver::vital::config_block_sptr config) const;
+  virtual void set_configuration(vital::config_block_sptr config);
+  /// Check that the algorithm's configuration vital::config_block is valid
+  virtual bool check_configuration(vital::config_block_sptr config) const;
 
   /// Match one set of features and corresponding descriptors to another
   /**
@@ -91,9 +91,9 @@ public:
    * \param [in] desc2 the descriptors corresponding to \a feat2
    * \returns a set of matching indices from \a feat1 to \a feat2
    */
-  virtual kwiver::vital::match_set_sptr
-  match(kwiver::vital::feature_set_sptr feat1, kwiver::vital::descriptor_set_sptr desc1,
-        kwiver::vital::feature_set_sptr feat2, kwiver::vital::descriptor_set_sptr desc2) const;
+  virtual vital::match_set_sptr
+  match(vital::feature_set_sptr feat1, vital::descriptor_set_sptr desc1,
+        vital::feature_set_sptr feat2, vital::descriptor_set_sptr desc2) const;
 
 private:
   /// private implementation class

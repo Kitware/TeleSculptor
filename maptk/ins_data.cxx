@@ -128,7 +128,7 @@ std::istream& operator>>(std::istream& s, ins_data& d)
     ss << "Too few fields found in the given data stream "
        << "(discovered " << tokens.size() << " field(s), expected "
        << "14 or 15).";
-    throw kwiver::vital::invalid_data(ss.str());
+    throw vital::invalid_data(ss.str());
   }
   else if( tokens.size() == 15 )
   {

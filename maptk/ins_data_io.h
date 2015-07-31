@@ -65,7 +65,7 @@ namespace maptk {
  */
 ins_data
 MAPTK_LIB_EXPORT
-read_pos_file(kwiver::vital::path_t const& file_path);
+read_pos_file(vital::path_t const& file_path);
 
 /// Output the given \c ins_data object to the specified file path
 /**
@@ -85,7 +85,7 @@ read_pos_file(kwiver::vital::path_t const& file_path);
 void
 MAPTK_LIB_EXPORT
 write_pos_file(maptk::ins_data const& ins,
-               kwiver::vital::path_t const& file_path);
+               vital::path_t const& file_path);
 
 } // end namespace maptk
 } // end namespace kwiver

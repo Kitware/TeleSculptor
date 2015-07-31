@@ -61,7 +61,7 @@ namespace core
  * in attempt to accomplish this.
  */
 class PLUGIN_CORE_EXPORT close_loops_multi_method
-  : public kwiver::vital::algorithm_impl<close_loops_multi_method, kwiver::vital::algo::close_loops>
+  : public vital::algorithm_impl<close_loops_multi_method, vital::algo::close_loops>
 {
 public:
 
@@ -80,7 +80,7 @@ public:
   /// Returns implementation description string
   virtual std::string description() const;
 
-  /// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
+  /// Get this algorithm's \link vital::config_block configuration block \endlink
   /**
    * This base virtual function implementation returns an empty configuration
    * block whose name is set to \c this->type_name.
@@ -88,7 +88,7 @@ public:
    * \returns \c config_block containing the configuration for this algorithm
    *          and any nested components.
    */
-  virtual kwiver::vital::config_block_sptr get_configuration() const;
+  virtual vital::config_block_sptr get_configuration() const;
 
   /// Set this algorithm's properties via a config block
   /**
@@ -101,7 +101,7 @@ public:
    * \param config  The \c config_block instance containing the configuration
    *                parameters for this algorithm
    */
-  virtual void set_configuration(kwiver::vital::config_block_sptr config);
+  virtual void set_configuration(vital::config_block_sptr config);
 
   /// Check that the algorithm's currently configuration is valid
   /**
@@ -113,7 +113,7 @@ public:
    *
    * \returns true if the configuration check passed and false if it didn't.
    */
-  virtual bool check_configuration(kwiver::vital::config_block_sptr config) const;
+  virtual bool check_configuration(vital::config_block_sptr config) const;
 
   /// Run all internal loop closure algorithms.
   /**
@@ -124,11 +124,11 @@ public:
    *             regions to consider in the input image.
    * \returns an updated set a tracks after the stitching operation
    */
-  virtual kwiver::vital::track_set_sptr
-  stitch( kwiver::vital::frame_id_t frame_number,
-          kwiver::vital::track_set_sptr input,
-          kwiver::vital::image_container_sptr image,
-          kwiver::vital::image_container_sptr mask = kwiver::vital::image_container_sptr() ) const;
+  virtual vital::track_set_sptr
+  stitch( vital::frame_id_t frame_number,
+          vital::track_set_sptr input,
+          vital::image_container_sptr image,
+          vital::image_container_sptr mask = vital::image_container_sptr() ) const;
 
 private:
 
@@ -136,7 +136,7 @@ private:
   unsigned count_;
 
   /// The close loops methods to use.
-  std::vector< kwiver::vital::algo::close_loops_sptr > methods_;
+  std::vector< vital::algo::close_loops_sptr > methods_;
 
 };
 

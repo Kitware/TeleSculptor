@@ -55,10 +55,10 @@ namespace maptk {
  * \param cameras input camera map
  * \return track set generated via the projection
  */
-kwiver::vital::track_set_sptr
+vital::track_set_sptr
 MAPTK_LIB_EXPORT
-projected_tracks(kwiver::vital::landmark_map_sptr landmarks,
-                 kwiver::vital::camera_map_sptr cameras);
+projected_tracks(vital::landmark_map_sptr landmarks,
+                 vital::camera_map_sptr cameras);
 
 
 } // end namespace maptk

@@ -30,7 +30,7 @@
 
 /**
  * \file
- * \brief implementation of kwiver::vital::algo::hierarchical_bundle_adjust
+ * \brief implementation of vital::algo::hierarchical_bundle_adjust
  */
 
 #include "hierarchical_bundle_adjust.h"
@@ -129,9 +129,9 @@ public:
   unsigned int interpolation_rate;
   bool rmse_reporting_enabled;
 
-  kwiver::vital::algo::bundle_adjust_sptr sba;
-  kwiver::vital::algo::optimize_cameras_sptr camera_optimizer;
-  kwiver::vital::algo::triangulate_landmarks_sptr lm_triangulator;
+  vital::algo::bundle_adjust_sptr sba;
+  vital::algo::optimize_cameras_sptr camera_optimizer;
+  vital::algo::triangulate_landmarks_sptr lm_triangulator;
 };
 
 
@@ -158,11 +158,11 @@ hierarchical_bundle_adjust
 
 
 /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
-  kwiver::vital::config_block_sptr
+  vital::config_block_sptr
 hierarchical_bundle_adjust
 ::get_configuration() const
 {
-  kwiver::vital::config_block_sptr config = kwiver::vital::algo::bundle_adjust::get_configuration();
+  vital::config_block_sptr config = vital::algo::bundle_adjust::get_configuration();
 
   config->set_value("initial_sub_sample", d_->initial_sub_sample,
                     "Sub-sample the given cameras by this factor. Gaps will "
@@ -178,13 +178,13 @@ hierarchical_bundle_adjust
                     "stages of this algorithm. Constant calculating of RMSE "
                     "may effect run time of the algorithm.");
 
-  kwiver::vital::algo::bundle_adjust::get_nested_algo_configuration(
+  vital::algo::bundle_adjust::get_nested_algo_configuration(
       "sba_impl", config, d_->sba
       );
-  kwiver::vital::algo::optimize_cameras::get_nested_algo_configuration(
+  vital::algo::optimize_cameras::get_nested_algo_configuration(
       "camera_optimizer", config, d_->camera_optimizer
       );
-  kwiver::vital::algo::triangulate_landmarks::get_nested_algo_configuration(
+  vital::algo::triangulate_landmarks::get_nested_algo_configuration(
       "lm_triangulator", config, d_->lm_triangulator
       );
 
@@ -195,28 +195,28 @@ hierarchical_bundle_adjust
 /// Set this algorithm's properties via a config block
 void
 hierarchical_bundle_adjust
-::set_configuration(kwiver::vital::config_block_sptr config)
+::set_configuration(vital::config_block_sptr config)
 {
   d_->initial_sub_sample = config->get_value<unsigned int>("initial_sub_sample", d_->initial_sub_sample);
   d_->interpolation_rate = config->get_value<unsigned int>("interpolation_rate", d_->interpolation_rate);
   d_->rmse_reporting_enabled = config->get_value<bool>("enable_rmse_reporting", d_->rmse_reporting_enabled);
 
-  kwiver::vital::algo::bundle_adjust::set_nested_algo_configuration(
+  vital::algo::bundle_adjust::set_nested_algo_configuration(
       "sba_impl", config, d_->sba
       );
-  kwiver::vital::algo::optimize_cameras::set_nested_algo_configuration(
+  vital::algo::optimize_cameras::set_nested_algo_configuration(
       "camera_optimizer", config, d_->camera_optimizer
       );
-  kwiver::vital::algo::triangulate_landmarks::set_nested_algo_configuration(
+  vital::algo::triangulate_landmarks::set_nested_algo_configuration(
       "lm_triangulator", config, d_->lm_triangulator
       );
 }
 
 
-/// Check that the algorithm's configuration kwiver::vital::config_block is valid
+/// Check that the algorithm's configuration vital::config_block is valid
 bool
 hierarchical_bundle_adjust
-::check_configuration(kwiver::vital::config_block_sptr config) const
+::check_configuration(vital::config_block_sptr config) const
 {
   bool valid = true;
 
@@ -239,7 +239,7 @@ hierarchical_bundle_adjust
                           << config->get_value<long>("interpolation_rate"));
   }
 
-  if (!kwiver::vital::algo::bundle_adjust::check_nested_algo_configuration("sba_impl", config))
+  if (!vital::algo::bundle_adjust::check_nested_algo_configuration("sba_impl", config))
   {
     MAPTK_HSBA_CHECK_FAIL("sba_impl configuration invalid.");
   }
@@ -248,7 +248,7 @@ hierarchical_bundle_adjust
   {
     std::cerr << "HSBA per-iteration camera optimization disabled" << std::endl;
   }
-  else if (!kwiver::vital::algo::optimize_cameras::check_nested_algo_configuration("camera_optimizer", config))
+  else if (!vital::algo::optimize_cameras::check_nested_algo_configuration("camera_optimizer", config))
   {
     MAPTK_HSBA_CHECK_FAIL("camera_optimizer configuration invalid.");
   }
@@ -257,7 +257,7 @@ hierarchical_bundle_adjust
   {
     std::cerr << "HSBA per-iteration LM Triangulation disabled" << std::endl;
   }
-  else if (!kwiver::vital::algo::triangulate_landmarks::check_nested_algo_configuration("lm_triangulator", config))
+  else if (!vital::algo::triangulate_landmarks::check_nested_algo_configuration("lm_triangulator", config))
   {
     std::cerr << "lm_triangulator type: \"" << config->get_value<std::string>("lm_triangulator:type") << "\"" << std::endl;
     MAPTK_HSBA_CHECK_FAIL("lm_triangulator configuration invalid.");

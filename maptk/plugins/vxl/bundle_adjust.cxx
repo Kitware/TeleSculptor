@@ -125,13 +125,13 @@ bundle_adjust
 }
 
 
-/// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
-kwiver::vital::config_block_sptr
+/// Get this algorithm's \link vital::config_block configuration block \endlink
+vital::config_block_sptr
 bundle_adjust
 ::get_configuration() const
 {
   // get base config from base class
-  kwiver::vital::config_block_sptr config = kwiver::vital::algo::bundle_adjust::get_configuration();
+  vital::config_block_sptr config = vital::algo::bundle_adjust::get_configuration();
   config->set_value("verbose", d_->verbose,
                     "If true, write status messages to the terminal showing "
                     "optimization progress at each iteration");
@@ -165,11 +165,11 @@ bundle_adjust
 /// Set this algorithm's properties via a config block
 void
 bundle_adjust
-::set_configuration(kwiver::vital::config_block_sptr in_config)
+::set_configuration(vital::config_block_sptr in_config)
 {
-  // Starting with our generated kwiver::vital::config_block to ensure that assumed values are present
+  // Starting with our generated vital::config_block to ensure that assumed values are present
   // An alternative is to check for key presence before performing a get_value() call.
-  kwiver::vital::config_block_sptr config = this->get_configuration();
+  vital::config_block_sptr config = this->get_configuration();
   config->merge_config(in_config);
 
   d_->verbose = config->get_value<bool>("verbose",
@@ -209,7 +209,7 @@ bundle_adjust
 /// Check that the algorithm's currently configuration is valid
 bool
 bundle_adjust
-::check_configuration(kwiver::vital::config_block_sptr config) const
+::check_configuration(vital::config_block_sptr config) const
 {
   return true;
 }
@@ -228,7 +228,7 @@ bundle_adjust
     return;
   }
   typedef vxl::camera_map::map_vcam_t map_vcam_t;
-  typedef kwiver::vital::landmark_map::map_landmark_t map_landmark_t;
+  typedef vital::landmark_map::map_landmark_t map_landmark_t;
 
 #define MAPTK_SBA_TIMED(msg, code) \
   do \

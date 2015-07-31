@@ -40,12 +40,12 @@ namespace vcl
 {
 
 /// Return a vector of descriptor shared pointers
-std::vector<kwiver::vital::descriptor_sptr>
+std::vector<vital::descriptor_sptr>
 descriptor_set
 ::descriptors() const
 {
   using namespace maptk;
-  std::vector<kwiver::vital::descriptor_sptr> desc;
+  std::vector<vital::descriptor_sptr> desc;
 
   cl_int4 *buf = new cl_int4[data_.len()];
 
@@ -55,9 +55,9 @@ descriptor_set
 
   for (unsigned int i = 0; i < data_.len(); i++)
   {
-    kwiver::vital::descriptor_fixed<int,4> *d = new kwiver::vital::descriptor_fixed<int,4>;
+    vital::descriptor_fixed<int,4> *d = new vital::descriptor_fixed<int,4>;
     memcpy(d->raw_data(), &buf[i].s, sizeof(int)*4);
-    desc.push_back(kwiver::vital::descriptor_sptr(d));
+    desc.push_back(vital::descriptor_sptr(d));
   }
 
   delete [] buf;
@@ -68,7 +68,7 @@ descriptor_set
 
 /// Convert a descriptor set to a VisCL descriptor set must be <int,4>
 viscl::buffer
-descriptors_to_viscl(const kwiver::vital::descriptor_set& desc_set)
+descriptors_to_viscl(const vital::descriptor_set& desc_set)
 {
   if( const vcl::descriptor_set* m_viscl =
           dynamic_cast<const vcl::descriptor_set*>(&desc_set) )
@@ -79,12 +79,12 @@ descriptors_to_viscl(const kwiver::vital::descriptor_set& desc_set)
   //viscl cannot take an arbitrary descriptor so this function
   //only checks for <int,4> descriptors
   std::vector<cl_int4> viscl_descr;
-  std::vector<kwiver::vital::descriptor_sptr> descriptors = desc_set.descriptors();
+  std::vector<vital::descriptor_sptr> descriptors = desc_set.descriptors();
   for (unsigned int i = 0; i < descriptors.size(); i++)
   {
     //check if type is <int,4> if not we are done
-    if ( const kwiver::vital::descriptor_fixed<int,4> * dfixed =
-          dynamic_cast<const kwiver::vital::descriptor_fixed<int,4> *>(descriptors[i].get()) )
+    if ( const vital::descriptor_fixed<int,4> * dfixed =
+          dynamic_cast<const vital::descriptor_fixed<int,4> *>(descriptors[i].get()) )
     {
       cl_int4 d;
       memcpy(&d.s, dfixed->raw_data(), sizeof(int)*4);

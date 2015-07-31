@@ -45,7 +45,7 @@ namespace proj {
 
 /// Register PROJ algorithm implementations with the given or global registrar
 MAPTK_PROJ_EXPORT
-int register_algorithms( kwiver::vital::registrar &reg = kwiver::vital::registrar::instance() );
+int register_algorithms( vital::registrar &reg = vital::registrar::instance() );
 
 } // end namespace proj
 } // end namespace maptk

@@ -168,10 +168,10 @@ public:
   checkpoint_buffer_t buffer_;
 
   /// Reference frame homography computer
-  kwiver::vital::algo::compute_ref_homography_sptr ref_computer_;
+  vital::algo::compute_ref_homography_sptr ref_computer_;
 
   /// The feature matching algorithm to use
-  kwiver::vital::algo::match_features_sptr matcher_;
+  vital::algo::match_features_sptr matcher_;
 };
 
 
@@ -195,19 +195,19 @@ close_loops_homography_guided
 }
 
 
-kwiver::vital::config_block_sptr
+vital::config_block_sptr
 close_loops_homography_guided
 ::get_configuration() const
 {
   // get base config from base class
-  kwiver::vital::config_block_sptr config = algorithm::get_configuration();
+  vital::config_block_sptr config = algorithm::get_configuration();
 
   // Sub-algorithm implementation name + sub_config block
   // - Homography estimator algorithm
-  kwiver::vital::algo::compute_ref_homography::get_nested_algo_configuration( "ref_computer", config, d_->ref_computer_ );
+  vital::algo::compute_ref_homography::get_nested_algo_configuration( "ref_computer", config, d_->ref_computer_ );
 
   // - Feature Matcher algorithm
-  kwiver::vital::algo::match_features::get_nested_algo_configuration( "feature_matcher", config, d_->matcher_ );
+  vital::algo::match_features::get_nested_algo_configuration( "feature_matcher", config, d_->matcher_ );
 
   // Loop closure parameters
   config->set_value("enabled", d_->enabled_,
@@ -227,21 +227,21 @@ close_loops_homography_guided
 
 void
 close_loops_homography_guided
-::set_configuration( kwiver::vital::config_block_sptr in_config )
+::set_configuration( vital::config_block_sptr in_config )
 {
-  // Starting with our generated kwiver::vital::config_block to ensure that assumed values are present
+  // Starting with our generated vital::config_block to ensure that assumed values are present
   // An alternative is to check for key presence before performing a get_value() call.
-  kwiver::vital::config_block_sptr config = this->get_configuration();
+  vital::config_block_sptr config = this->get_configuration();
   config->merge_config( in_config );
 
   // Setting nested algorithm instances via setter methods instead of directly
   // assigning to instance property.
-  kwiver::vital::algo::compute_ref_homography_sptr rc;
-  kwiver::vital::algo::compute_ref_homography::set_nested_algo_configuration( "ref_computer", config, rc );
+  vital::algo::compute_ref_homography_sptr rc;
+  vital::algo::compute_ref_homography::set_nested_algo_configuration( "ref_computer", config, rc );
   d_->ref_computer_ = rc;
 
-  kwiver::vital::algo::match_features_sptr mf;
-  kwiver::vital::algo::match_features::set_nested_algo_configuration( "feature_matcher", config, mf );
+  vital::algo::match_features_sptr mf;
+  vital::algo::match_features::set_nested_algo_configuration( "feature_matcher", config, mf );
   d_->matcher_ = mf;
 
   // Settings for bad frame detection
@@ -264,13 +264,13 @@ close_loops_homography_guided
 
 bool
 close_loops_homography_guided
-::check_configuration( kwiver::vital::config_block_sptr config ) const
+::check_configuration( vital::config_block_sptr config ) const
 {
   return
   (
-    kwiver::vital::algo::compute_ref_homography::check_nested_algo_configuration( "ref_computer", config )
+    vital::algo::compute_ref_homography::check_nested_algo_configuration( "ref_computer", config )
     &&
-    kwiver::vital::algo::match_features::check_nested_algo_configuration( "feature_matcher", config )
+    vital::algo::match_features::check_nested_algo_configuration( "feature_matcher", config )
   );
 }
 

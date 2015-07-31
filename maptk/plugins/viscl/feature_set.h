@@ -51,7 +51,7 @@ namespace vcl
   * saved on the GPU so would have to be provided externally
   */
 class MAPTK_VISCL_EXPORT feature_set
-: public kwiver::vital::feature_set
+: public vital::feature_set
 {
 public:
 
@@ -76,7 +76,7 @@ public:
   virtual size_t size() const;
 
   /// Return a vector of feature shared pointers
-  virtual std::vector<kwiver::vital::feature_sptr> features() const;
+  virtual std::vector<vital::feature_sptr> features() const;
 
   /// Return the underlying VisCL features data structure
   const type& viscl_features() const { return data_; }
@@ -93,7 +93,7 @@ protected:
   * info converting from maptk feature set to viscl and back
   */
 MAPTK_VISCL_EXPORT feature_set::type
-features_to_viscl(const kwiver::vital::feature_set& features);
+features_to_viscl(const vital::feature_set& features);
 
 
 } // end namespace vcl

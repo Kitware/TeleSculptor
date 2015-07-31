@@ -110,12 +110,12 @@ analyze_tracks
 }
 
 
-/// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
-kwiver::vital::config_block_sptr
+/// Get this algorithm's \link vital::config_block configuration block \endlink
+vital::config_block_sptr
 analyze_tracks
 ::get_configuration() const
 {
-  kwiver::vital::config_block_sptr config = kwiver::vital::algo::analyze_tracks::get_configuration();
+  vital::config_block_sptr config = vital::algo::analyze_tracks::get_configuration();
 
   config->set_value("output_summary", d_->output_summary,
                     "Output a summary descriptor of high-level properties.");
@@ -136,9 +136,9 @@ analyze_tracks
 /// Set this algorithm's properties via a config block
 void
 analyze_tracks
-::set_configuration(kwiver::vital::config_block_sptr in_config)
+::set_configuration(vital::config_block_sptr in_config)
 {
-  kwiver::vital::config_block_sptr config = this->get_configuration();
+  vital::config_block_sptr config = this->get_configuration();
   config->merge_config( in_config );
 
   d_->output_summary = config->get_value<bool>( "output_summary" );
@@ -166,7 +166,7 @@ analyze_tracks
 /// Check that the algorithm's currently configuration is valid
 bool
 analyze_tracks
-::check_configuration(kwiver::vital::config_block_sptr config) const
+::check_configuration(vital::config_block_sptr config) const
 {
   return true;
 }

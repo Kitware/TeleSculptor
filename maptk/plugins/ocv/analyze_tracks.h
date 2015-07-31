@@ -51,7 +51,7 @@ namespace ocv
 
 /// A class for outputting various debug info about feature tracks
 class MAPTK_OCV_EXPORT analyze_tracks
-: public kwiver::vital::algorithm_impl<analyze_tracks, kwiver::vital::algo::analyze_tracks>
+: public vital::algorithm_impl<analyze_tracks, vital::algo::analyze_tracks>
 {
 public:
 
@@ -67,12 +67,12 @@ public:
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "ocv"; }
 
-  /// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
-  virtual kwiver::vital::config_block_sptr get_configuration() const;
+  /// Get this algorithm's \link vital::config_block configuration block \endlink
+  virtual vital::config_block_sptr get_configuration() const;
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(kwiver::vital::config_block_sptr config);
+  virtual void set_configuration(vital::config_block_sptr config);
   /// Check that the algorithm's currently configuration is valid
-  virtual bool check_configuration(kwiver::vital::config_block_sptr config) const;
+  virtual bool check_configuration(vital::config_block_sptr config) const;
 
   /// Output various information about the tracks stored in the input set.
   /**
@@ -80,7 +80,7 @@ public:
    * \param [in] stream an output stream to write data onto
    */
   virtual void
-  print_info(kwiver::vital::track_set_sptr track_set,
+  print_info(vital::track_set_sptr track_set,
              stream_t& stream = std::cout) const;
 
 private:

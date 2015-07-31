@@ -67,7 +67,7 @@ feature_set
 
 /// Convert any feature set to a vector of OpenCV cv::KeyPoints
 std::vector<cv::KeyPoint>
-features_to_ocv_keypoints(const kwiver::vital::feature_set& feat_set)
+features_to_ocv_keypoints(const vital::feature_set& feat_set)
 {
   if( const ocv::feature_set* f =
           dynamic_cast<const ocv::feature_set*>(&feat_set) )

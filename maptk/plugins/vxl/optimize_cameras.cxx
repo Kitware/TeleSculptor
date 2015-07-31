@@ -95,17 +95,17 @@ maptk_opt_orient_pos(vpgl_perspective_camera<double> const& camera,
 
 void
 optimize_cameras
-::optimize(kwiver::vital::camera_map_sptr & cameras,
-           kwiver::vital::track_set_sptr tracks,
-            kwiver::vital::landmark_map_sptr landmarks) const
+::optimize(vital::camera_map_sptr & cameras,
+           vital::track_set_sptr tracks,
+            vital::landmark_map_sptr landmarks) const
 {
   if (!cameras || !tracks || !landmarks)
   {
-    throw kwiver::vital::invalid_value("One or more input data pieces are Null!");
+    throw vital::invalid_value("One or more input data pieces are Null!");
   }
-  typedef kwiver::vital::camera_map::map_camera_t map_camera_t;
+  typedef vital::camera_map::map_camera_t map_camera_t;
   typedef maptk::vxl::camera_map::map_vcam_t map_vcam_t;
-  typedef kwiver::vital::landmark_map::map_landmark_t map_landmark_t;
+  typedef vital::landmark_map::map_landmark_t map_landmark_t;
 
   // extract data from containers
   map_vcam_t vcams = camera_map_to_vpgl(*cameras);
@@ -115,12 +115,12 @@ optimize_cameras
   // Compose a map of frame IDs to a nested map of track ID to the state on
   // that frame number. Using a pointer with the track state to ease the burden
   // on memory.
-  typedef std::map< kwiver::vital::track_id_t, kwiver::vital::track::track_state const* > inner_map_t;
-  typedef std::map< kwiver::vital::frame_id_t, inner_map_t > states_map_t;
+  typedef std::map< vital::track_id_t, vital::track::track_state const* > inner_map_t;
+  typedef std::map< vital::frame_id_t, inner_map_t > states_map_t;
 
   states_map_t states_map;
   // O( len(trks) * avg_t_len )
-  BOOST_FOREACH(kwiver::vital::track_sptr const& t, trks)
+  BOOST_FOREACH(vital::track_sptr const& t, trks)
   {
     // Only record a state if there is a corresponding landmark for the
     // track (constant-time check), the track state has a feature and thus a

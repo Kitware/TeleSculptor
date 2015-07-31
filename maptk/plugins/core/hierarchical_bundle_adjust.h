@@ -54,7 +54,7 @@ namespace core
 
 
 class PLUGIN_CORE_EXPORT hierarchical_bundle_adjust
-  : public kwiver::vital::algorithm_impl<hierarchical_bundle_adjust, kwiver::vital::algo::bundle_adjust>
+  : public vital::algorithm_impl<hierarchical_bundle_adjust, vital::algo::bundle_adjust>
 {
 public:
 
@@ -69,16 +69,16 @@ public:
   virtual std::string impl_name() const { return "hierarchical"; }
 
   /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
-  virtual kwiver::vital::config_block_sptr get_configuration() const;
+  virtual vital::config_block_sptr get_configuration() const;
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(kwiver::vital::config_block_sptr config);
-  /// Check that the algorithm's configuration kwiver::vital::config_block is valid
-  virtual bool check_configuration(kwiver::vital::config_block_sptr config) const;
+  virtual void set_configuration(vital::config_block_sptr config);
+  /// Check that the algorithm's configuration vital::config_block is valid
+  virtual bool check_configuration(vital::config_block_sptr config) const;
 
   /// Optimize the camera and landmark parameters given a set of tracks
-  virtual void optimize(kwiver::vital::camera_map_sptr & cameras,
-                        kwiver::vital::landmark_map_sptr & landmarks,
-                        kwiver::vital::track_set_sptr tracks) const;
+  virtual void optimize(vital::camera_map_sptr & cameras,
+                        vital::landmark_map_sptr & landmarks,
+                        vital::track_set_sptr tracks) const;
 
 private:
   // private implementation class

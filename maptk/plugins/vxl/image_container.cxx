@@ -47,7 +47,7 @@ namespace vxl
 
 /// Constructor - convert base image container to vil
 image_container
-::image_container(const kwiver::vital::image_container& image_cont)
+::image_container(const vital::image_container& image_cont)
 {
   const vxl::image_container* vic =
       dynamic_cast<const vxl::image_container*>(&image_cont);
@@ -80,12 +80,12 @@ image_container
 
 
 /// Convert a VXL vil_image_view to a MAPTK image
-kwiver::vital::image
+vital::image
 image_container
 ::vxl_to_maptk(const vil_image_view<vxl_byte>& img)
 {
   vil_memory_chunk_sptr chunk = img.memory_chunk();
-  kwiver::vital::image_memory_sptr memory;
+  vital::image_memory_sptr memory;
 
   // prevent nested wrappers when converting back and forth.
   // if this vil_image_view is already wrapping MAPTK data,
@@ -99,10 +99,10 @@ image_container
   else
   {
     // create a MAPTK wrapper around the vil memory chunk
-    memory = kwiver::vital::image_memory_sptr(new vil_image_memory(chunk));
+    memory = vital::image_memory_sptr(new vil_image_memory(chunk));
   }
 
-  return kwiver::vital::image(memory, img.top_left_ptr(),
+  return vital::image(memory, img.top_left_ptr(),
                img.ni(), img.nj(), img.nplanes(),
                img.istep(), img.jstep(), img.planestep());
 }
@@ -111,9 +111,9 @@ image_container
 /// Convert a MAPTK image to a VXL vil_image_view
 vil_image_view<vxl_byte>
 image_container
-::maptk_to_vxl(const kwiver::vital::image& img)
+::maptk_to_vxl(const vital::image& img)
 {
-  kwiver::vital::image_memory_sptr memory = img.memory();
+  vital::image_memory_sptr memory = img.memory();
   vil_memory_chunk_sptr chunk;
 
   // prevent nested wrappers when converting back and forth.

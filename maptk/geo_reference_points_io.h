@@ -72,10 +72,10 @@ namespace maptk {
  */
 MAPTK_LIB_EXPORT
 void
-load_reference_file(kwiver::vital::path_t const& reference_file,
+load_reference_file(vital::path_t const& reference_file,
                     local_geo_cs & lgcs,
-                    kwiver::vital::landmark_map_sptr & ref_landmarks,
-                    kwiver::vital::track_set_sptr & ref_track_set);
+                    vital::landmark_map_sptr & ref_landmarks,
+                    vital::track_set_sptr & ref_track_set);
 
 
 } // end namespace maptk

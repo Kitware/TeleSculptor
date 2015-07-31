@@ -66,7 +66,7 @@ public:
     scale_thresh(2.0),
     angle_thresh(-1.0),
     radius_thresh(200.0),
-    m_logger( kwiver::vital::get_logger( "match_features_constrained" ) )
+    m_logger( vital::get_logger( "match_features_constrained" ) )
   {
   }
 
@@ -74,7 +74,7 @@ public:
     scale_thresh(other.scale_thresh),
     angle_thresh(other.angle_thresh),
     radius_thresh(other.radius_thresh),
-    m_logger( kwiver::vital::get_logger( "match_features_constrained" ) )
+    m_logger( vital::get_logger( "match_features_constrained" ) )
   {
   }
 
@@ -97,7 +97,7 @@ public:
   void
   match(feature_set_sptr feat1, descriptor_set_sptr desc1,
         feature_set_sptr feat2, descriptor_set_sptr desc2,
-        std::vector<kwiver::vital::match> &matches) const
+        std::vector<vital::match> &matches) const
   {
     matches.clear();
 
@@ -118,7 +118,7 @@ public:
 
     for (unsigned int i = 0; i < feat1_vec.size(); i++)
     {
-      kwiver::vital::feature_sptr f1 = feat1_vec[i];
+      vital::feature_sptr f1 = feat1_vec[i];
 
       std::vector<rsdl_point> points;
       std::vector<int> indices;
@@ -135,7 +135,7 @@ public:
       for (unsigned int j = 0; j < indices.size(); j++)
       {
         int index = indices[j];
-        kwiver::vital::feature_sptr f2 = feat2_vec[index];
+        vital::feature_sptr f2 = feat2_vec[index];
         if ((scale_thresh <= 0.0  || std::max(f1->scale(),f2->scale())/std::min(f1->scale(),f2->scale()) <= scale_thresh) &&
             (angle_thresh <= 0.0  || angle_dist(f2->angle(), f1->angle()) <= angle_thresh))
         {
@@ -152,7 +152,7 @@ public:
 
       if (closest >= 0)
       {
-        matches.push_back(kwiver::vital::match(i, closest));
+        matches.push_back(vital::match(i, closest));
       }
     }
 
@@ -163,7 +163,7 @@ public:
   double angle_thresh;
   double radius_thresh;
 
-  kwiver::vital::logger_handle_t m_logger;
+  vital::logger_handle_t m_logger;
 };
 
 
@@ -190,14 +190,14 @@ match_features_constrained
 }
 
 
-/// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
-kwiver::vital::config_block_sptr
+/// Get this algorithm's \link vital::config_block configuration block \endlink
+vital::config_block_sptr
 match_features_constrained
 ::get_configuration() const
 {
   // get base config from base class
-  kwiver::vital::config_block_sptr config =
-      kwiver::vital::algo::match_features::get_configuration();
+  vital::config_block_sptr config =
+      vital::algo::match_features::get_configuration();
 
   config->set_value("scale_thresh", d_->scale_thresh,
                     "Ratio threshold of scales between matching keypoints (>=1.0)"
@@ -217,7 +217,7 @@ match_features_constrained
 /// Set this algorithm's properties via a config block
 void
 match_features_constrained
-::set_configuration(kwiver::vital::config_block_sptr config)
+::set_configuration(vital::config_block_sptr config)
 {
   d_->scale_thresh = config->get_value<double>("scale_thresh", d_->scale_thresh);
   d_->angle_thresh = config->get_value<double>("angle_thresh", d_->angle_thresh);
@@ -225,10 +225,10 @@ match_features_constrained
 }
 
 
-/// Check that the algorithm's configuration kwiver::vital::config_block is valid
+/// Check that the algorithm's configuration vital::config_block is valid
 bool
 match_features_constrained
-::check_configuration(kwiver::vital::config_block_sptr config) const
+::check_configuration(vital::config_block_sptr config) const
 {
   double radius_thresh = config->get_value<double>("radius_thresh", d_->radius_thresh);
   if (radius_thresh <= 0.0)
@@ -249,20 +249,20 @@ match_features_constrained
 
 
 /// Match one set of features and corresponding descriptors to another
-kwiver::vital::match_set_sptr
+vital::match_set_sptr
 match_features_constrained
-::match(kwiver::vital::feature_set_sptr feat1, kwiver::vital::descriptor_set_sptr desc1,
-        kwiver::vital::feature_set_sptr feat2, kwiver::vital::descriptor_set_sptr desc2) const
+::match(vital::feature_set_sptr feat1, vital::descriptor_set_sptr desc1,
+        vital::feature_set_sptr feat2, vital::descriptor_set_sptr desc2) const
 {
   if( !feat1 || !feat2 || !desc1 || !desc2 )
   {
     return match_set_sptr();
   }
 
-  std::vector<kwiver::vital::match> matches;
+  std::vector<vital::match> matches;
   d_->match(feat1, desc1, feat2, desc2, matches);
 
-  return boost::make_shared<kwiver::vital::simple_match_set>(kwiver::vital::simple_match_set(matches));
+  return boost::make_shared<vital::simple_match_set>(vital::simple_match_set(matches));
 }
 
 } // end namespace vxl

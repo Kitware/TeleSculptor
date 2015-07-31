@@ -50,8 +50,8 @@ namespace vxl
 
 /// A class for triangulating landmarks from tracks and cameras using VXL
 class MAPTK_VXL_EXPORT triangulate_landmarks
-: public kwiver::vital::algorithm_impl<triangulate_landmarks,
-                                       kwiver::vital::algo::triangulate_landmarks>
+: public vital::algorithm_impl<triangulate_landmarks,
+                                       vital::algo::triangulate_landmarks>
 {
 public:
   /// Constructor
@@ -66,12 +66,12 @@ public:
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "vxl"; }
 
-  /// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
-  virtual kwiver::vital::config_block_sptr get_configuration() const;
+  /// Get this algorithm's \link vital::config_block configuration block \endlink
+  virtual vital::config_block_sptr get_configuration() const;
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(kwiver::vital::config_block_sptr config);
+  virtual void set_configuration(vital::config_block_sptr config);
   /// Check that the algorithm's currently configuration is valid
-  virtual bool check_configuration(kwiver::vital::config_block_sptr config) const;
+  virtual bool check_configuration(vital::config_block_sptr config) const;
 
   /// Triangulate the landmark locations given sets of cameras and tracks
   /**
@@ -83,9 +83,9 @@ public:
    * landmark map and which have support in the tracks and cameras
    */
   virtual void
-  triangulate(kwiver::vital::camera_map_sptr cameras,
-              kwiver::vital::track_set_sptr tracks,
-              kwiver::vital::landmark_map_sptr& landmarks) const;
+  triangulate(vital::camera_map_sptr cameras,
+              vital::track_set_sptr tracks,
+              vital::landmark_map_sptr& landmarks) const;
 
 private:
   /// private implementation class

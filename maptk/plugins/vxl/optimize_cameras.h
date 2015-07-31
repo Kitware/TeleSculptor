@@ -51,14 +51,14 @@ namespace vxl
 
 
 class MAPTK_VXL_EXPORT optimize_cameras
-  : public kwiver::vital::algorithm_impl<optimize_cameras, kwiver::vital::algo::optimize_cameras>
+  : public vital::algorithm_impl<optimize_cameras, vital::algo::optimize_cameras>
 {
 public:
   virtual std::string impl_name() const { return "vxl"; }
 
   /// \cond DoxygenSuppress
-  virtual void set_configuration(kwiver::vital::config_block_sptr /*config*/) { }
-  virtual bool check_configuration(kwiver::vital::config_block_sptr /*config*/) const { return true; }
+  virtual void set_configuration(vital::config_block_sptr /*config*/) { }
+  virtual bool check_configuration(vital::config_block_sptr /*config*/) const { return true; }
   /// \endcond
 
   /// Optimize camera parameters given sets of landmarks and tracks
@@ -73,9 +73,9 @@ public:
    * \param[in]     landmarks The landmarks the cameras are viewing.
    */
   virtual void
-  optimize(kwiver::vital::camera_map_sptr & cameras,
-           kwiver::vital::track_set_sptr tracks,
-           kwiver::vital::landmark_map_sptr landmarks) const;
+  optimize(vital::camera_map_sptr & cameras,
+           vital::track_set_sptr tracks,
+           vital::landmark_map_sptr landmarks) const;
 };
 
 

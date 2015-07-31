@@ -156,7 +156,7 @@ public:
     frames_since_reset( 0 ),
     allow_ref_frame_regression( true ),
     min_ref_frame( 0 ),
-    m_logger( kwiver::vital::get_logger( "compute_ref_homography_core" ))
+    m_logger( vital::get_logger( "compute_ref_homography_core" ))
   {
   }
 
@@ -170,7 +170,7 @@ public:
     frames_since_reset( other.frames_since_reset ),
     allow_ref_frame_regression( other.allow_ref_frame_regression ),
     min_ref_frame( other.min_ref_frame ),
-    m_logger( kwiver::vital::get_logger( "compute_ref_homography_core" ))
+    m_logger( vital::get_logger( "compute_ref_homography_core" ))
   {
   }
 
@@ -214,7 +214,7 @@ public:
   /// estimation fails.
   frame_id_t min_ref_frame;
 
-  kwiver::vital::logger_handle_t m_logger;
+  vital::logger_handle_t m_logger;
 
   /// Estimate the homography between two corresponding points sets
   /**
@@ -330,12 +330,12 @@ compute_ref_homography_core
 }
 
 
-  kwiver::vital::config_block_sptr
+  vital::config_block_sptr
 compute_ref_homography_core
 ::get_configuration() const
 {
   // get base config from base class
-  kwiver::vital::config_block_sptr config = algorithm::get_configuration();
+  vital::config_block_sptr config = algorithm::get_configuration();
 
   // Sub-algorithm implementation name + sub_config block
   // - Homography estimator algorithm
@@ -370,11 +370,11 @@ compute_ref_homography_core
 
 void
 compute_ref_homography_core
-::set_configuration( kwiver::vital::config_block_sptr in_config )
+::set_configuration( vital::config_block_sptr in_config )
 {
   // Starting with our generated config_block to ensure that assumed values are present
   // An alternative is to check for key presence before performing a get_value() call.
-  kwiver::vital::config_block_sptr config = this->get_configuration();
+  vital::config_block_sptr config = this->get_configuration();
   config->merge_config( in_config );
 
   // Setting nested algorithm instances via setter methods instead of directly
@@ -398,7 +398,7 @@ compute_ref_homography_core
 
 bool
 compute_ref_homography_core
-::check_configuration(kwiver::vital::config_block_sptr config) const
+::check_configuration(vital::config_block_sptr config) const
 {
   return
   (

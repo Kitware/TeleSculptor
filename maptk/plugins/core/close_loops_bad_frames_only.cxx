@@ -91,13 +91,13 @@ close_loops_bad_frames_only
 }
 
 
-/// Get this alg's \link kwiver::vital::config_block configuration block \endlink
-  kwiver::vital::config_block_sptr
+/// Get this alg's \link vital::config_block configuration block \endlink
+  vital::config_block_sptr
 close_loops_bad_frames_only
 ::get_configuration() const
 {
   // get base config from base class
-  kwiver::vital::config_block_sptr config = algorithm::get_configuration();
+  vital::config_block_sptr config = algorithm::get_configuration();
 
   // Sub-algorithm implementation name + sub_config block
   // - Feature Matcher algorithm
@@ -131,11 +131,11 @@ close_loops_bad_frames_only
 /// Set this algo's properties via a config block
 void
 close_loops_bad_frames_only
-::set_configuration(kwiver::vital::config_block_sptr in_config)
+::set_configuration(vital::config_block_sptr in_config)
 {
   // Starting with our generated config_block to ensure that assumed values are present
   // An alternative is to check for key presence before performing a get_value() call.
-  kwiver::vital::config_block_sptr config = this->get_configuration();
+  vital::config_block_sptr config = this->get_configuration();
   config->merge_config(in_config);
 
   // Setting nested algorithm instances via setter methods instead of directly
@@ -155,7 +155,7 @@ close_loops_bad_frames_only
 
 bool
 close_loops_bad_frames_only
-::check_configuration(kwiver::vital::config_block_sptr config) const
+::check_configuration(vital::config_block_sptr config) const
 {
   return (
     algo::match_features::check_nested_algo_configuration("feature_matcher", config)
@@ -173,12 +173,12 @@ bool track_id_in_set( track_sptr trk_ptr, std::set<track_id_t>* set_ptr )
 
 
 /// Handle track bad frame detection if enabled
-kwiver::vital::track_set_sptr
+vital::track_set_sptr
 close_loops_bad_frames_only
-::stitch( kwiver::vital::frame_id_t frame_number,
-          kwiver::vital::track_set_sptr input,
-          kwiver::vital::image_container_sptr,
-          kwiver::vital::image_container_sptr ) const
+::stitch( vital::frame_id_t frame_number,
+          vital::track_set_sptr input,
+          vital::image_container_sptr,
+          vital::image_container_sptr ) const
 {
   // check if enabled and possible
   if( !enabled_ || frame_number <= new_shot_length_ )
@@ -187,13 +187,13 @@ close_loops_bad_frames_only
   }
 
   // check if we should attempt to stitch together past frames
-  std::vector< kwiver::vital::track_sptr > all_tracks = input->tracks();
-  kwiver::vital::frame_id_t frame_to_stitch = frame_number - new_shot_length_ + 1;
+  std::vector< vital::track_sptr > all_tracks = input->tracks();
+  vital::frame_id_t frame_to_stitch = frame_number - new_shot_length_ + 1;
   double pt = input->percentage_tracked( frame_to_stitch - 1, frame_to_stitch );
   bool stitch_required = ( pt < percent_match_req_ );
 
   // confirm that the new valid shot criteria length is satisfied
-  kwiver::vital::frame_id_t frame_to_test = frame_to_stitch + 1;
+  vital::frame_id_t frame_to_test = frame_to_stitch + 1;
   while( stitch_required && frame_to_test <= frame_number )
   {
     pt = input->percentage_tracked( frame_to_test - 1, frame_to_test );
@@ -209,21 +209,21 @@ close_loops_bad_frames_only
 
   // attempt to stitch start of shot frame against past n frames
   frame_to_test = frame_to_stitch - 2;
-  kwiver::vital::frame_id_t last_frame_to_test = 0;
+  vital::frame_id_t last_frame_to_test = 0;
 
   if( frame_to_test > max_search_length_ )
   {
     last_frame_to_test = frame_to_test - max_search_length_;
   }
 
-  kwiver::vital::track_set_sptr stitch_frame_set = input->active_tracks( frame_to_stitch );
+  vital::track_set_sptr stitch_frame_set = input->active_tracks( frame_to_stitch );
 
   for( ; frame_to_test > last_frame_to_test; frame_to_test-- )
   {
-    kwiver::vital::track_set_sptr test_frame_set = input->active_tracks( frame_to_test );
+    vital::track_set_sptr test_frame_set = input->active_tracks( frame_to_test );
 
     // run matcher alg
-    kwiver::vital::match_set_sptr mset = matcher_->match(test_frame_set->frame_features( frame_to_test ),
+    vital::match_set_sptr mset = matcher_->match(test_frame_set->frame_features( frame_to_test ),
                                           test_frame_set->frame_descriptors( frame_to_test ),
                                           stitch_frame_set->frame_features( frame_to_stitch ),
                                           stitch_frame_set->frame_descriptors( frame_to_stitch ));
@@ -234,10 +234,10 @@ close_loops_bad_frames_only
     if( 2*mset->size() >= static_cast<unsigned>(percent_match_req_*total_features) )
     {
       // modify track history and exit
-      std::vector<kwiver::vital::track_sptr> test_frame_trks = test_frame_set->tracks();
-      std::vector<kwiver::vital::track_sptr> stitch_frame_trks = stitch_frame_set->tracks();
-      std::vector<kwiver::vital::match> matches = mset->matches();
-      std::set<kwiver::vital::track_id_t> to_remove;
+      std::vector<vital::track_sptr> test_frame_trks = test_frame_set->tracks();
+      std::vector<vital::track_sptr> stitch_frame_trks = stitch_frame_set->tracks();
+      std::vector<vital::match> matches = mset->matches();
+      std::set<vital::track_id_t> to_remove;
 
       for( unsigned i = 0; i < matches.size(); i++ )
       {

@@ -60,7 +60,7 @@ namespace core
 
 /// A basic feature tracker
 class PLUGIN_CORE_EXPORT track_features_core
-  : public kwiver::vital::algorithm_impl<track_features_core, kwiver::vital::algo::track_features>
+  : public vital::algorithm_impl<track_features_core, vital::algo::track_features>
 {
 public:
 
@@ -73,7 +73,7 @@ public:
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "core"; }
 
-  /// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
+  /// Get this algorithm's \link vital::config_block configuration block \endlink
   /**
    * This base virtual function implementation returns an empty configuration
    * block whose name is set to \c this->type_name.
@@ -81,7 +81,7 @@ public:
    * \returns \c config_block containing the configuration for this algorithm
    *          and any nested components.
    */
-  virtual kwiver::vital::config_block_sptr get_configuration() const;
+  virtual vital::config_block_sptr get_configuration() const;
 
   /// Set this algorithm's properties via a config block
   /**
@@ -94,7 +94,7 @@ public:
    * \param config  The \c config_block instance containing the configuration
    *                parameters for this algorithm
    */
-  virtual void set_configuration(kwiver::vital::config_block_sptr config);
+  virtual void set_configuration(vital::config_block_sptr config);
 
   /// Check that the algorithm's currently configuration is valid
   /**
@@ -106,7 +106,7 @@ public:
    *
    * \returns true if the configuration check passed and false if it didn't.
    */
-  virtual bool check_configuration(kwiver::vital::config_block_sptr config) const;
+  virtual bool check_configuration(vital::config_block_sptr config) const;
 
   /// Extend a previous set of tracks using the current frame
   /**
@@ -123,26 +123,26 @@ public:
    *                  value).
    * \returns an updated set a tracks including the current frame
    */
-  virtual kwiver::vital::track_set_sptr
-  track(kwiver::vital::track_set_sptr prev_tracks,
+  virtual vital::track_set_sptr
+  track(vital::track_set_sptr prev_tracks,
         unsigned int frame_number,
-        kwiver::vital::image_container_sptr image_data,
-        kwiver::vital::image_container_sptr mask = kwiver::vital::image_container_sptr()) const;
+        vital::image_container_sptr image_data,
+        vital::image_container_sptr mask = vital::image_container_sptr()) const;
 
 
 private:
 
   /// The feature detector algorithm to use
-  kwiver::vital::algo::detect_features_sptr detector_;
+  vital::algo::detect_features_sptr detector_;
 
   /// The descriptor extractor algorithm to use
-  kwiver::vital::algo::extract_descriptors_sptr extractor_;
+  vital::algo::extract_descriptors_sptr extractor_;
 
   /// The feature matching algorithm to use
-  kwiver::vital::algo::match_features_sptr matcher_;
+  vital::algo::match_features_sptr matcher_;
 
   /// The loop closure algorithm to use
-  kwiver::vital::algo::close_loops_sptr closer_;
+  vital::algo::close_loops_sptr closer_;
 
   /// The ID to use for the next created track
   mutable unsigned long next_track_id_;

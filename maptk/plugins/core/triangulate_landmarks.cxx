@@ -58,20 +58,20 @@ public:
   /// Constructor
   priv()
     : homogeneous(false),
-      m_logger( kwiver::vital::get_logger( "triangulate_landmarks" ))
+      m_logger( vital::get_logger( "triangulate_landmarks" ))
   {
   }
 
   priv(const priv& other)
     : homogeneous(other.homogeneous),
-      m_logger( kwiver::vital::get_logger( "triangulate_landmarks" ))
+      m_logger( vital::get_logger( "triangulate_landmarks" ))
   {
   }
 
   /// use the homogeneous method for triangulation
   bool homogeneous;
   /// logger handle
-  kwiver::vital::logger_handle_t m_logger;
+  vital::logger_handle_t m_logger;
 };
 
 
@@ -98,14 +98,14 @@ triangulate_landmarks
 }
 
 
-/// Get this alg's \link kwiver::vital::config_block configuration block \endlink
-kwiver::vital::config_block_sptr
+/// Get this alg's \link vital::config_block configuration block \endlink
+vital::config_block_sptr
 triangulate_landmarks
 ::get_configuration() const
 {
   // get base config from base class
-  kwiver::vital::config_block_sptr config
-    = kwiver::vital::algo::triangulate_landmarks::get_configuration();
+  vital::config_block_sptr config
+    = vital::algo::triangulate_landmarks::get_configuration();
 
   // Bad frame detection parameters
   config->set_value("homogeneous", d_->homogeneous,
@@ -120,11 +120,11 @@ triangulate_landmarks
 /// Set this algorithm's properties via a config block
 void
 triangulate_landmarks
-::set_configuration(kwiver::vital::config_block_sptr in_config)
+::set_configuration(vital::config_block_sptr in_config)
 {
   // Starting with our generated config_block to ensure that assumed values are present
   // An alternative is to check for key presence before performing a get_value() call.
-  kwiver::vital::config_block_sptr config = this->get_configuration();
+  vital::config_block_sptr config = this->get_configuration();
   config->merge_config(in_config);
 
   // Settings for bad frame detection
@@ -135,7 +135,7 @@ triangulate_landmarks
 /// Check that the algorithm's currently configuration is valid
 bool
 triangulate_landmarks
-::check_configuration(kwiver::vital::config_block_sptr config) const
+::check_configuration(vital::config_block_sptr config) const
 {
   return true;
 }
@@ -144,9 +144,9 @@ triangulate_landmarks
 /// Triangulate the landmark locations given sets of cameras and tracks
 void
 triangulate_landmarks
-::triangulate(kwiver::vital::camera_map_sptr cameras,
-              kwiver::vital::track_set_sptr tracks,
-              kwiver::vital::landmark_map_sptr& landmarks) const
+::triangulate(vital::camera_map_sptr cameras,
+              vital::track_set_sptr tracks,
+              vital::landmark_map_sptr& landmarks) const
 {
   using namespace kwiver;
   if( !cameras || !landmarks || !tracks )

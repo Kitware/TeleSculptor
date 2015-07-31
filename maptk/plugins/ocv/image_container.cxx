@@ -47,7 +47,7 @@ namespace ocv
 
 /// Constructor - convert base image container to cv::Mat
 image_container
-::image_container(const kwiver::vital::image_container& image_cont)
+::image_container(const vital::image_container& image_cont)
 {
   // testing if image_cont is an ocv image container
   const ocv::image_container* oic =
@@ -88,7 +88,7 @@ image_container
 /// Convert a MAPTK image to an OpenCV cv::Mat
 cv::Mat
 image_container
-::maptk_to_ocv(const kwiver::vital::image& img)
+::maptk_to_ocv(const vital::image& img)
 {
   // cv::Mat is limited in the image data layouts that it supports.
   // Color channels must be interleaved (d_step==1) and the
@@ -129,7 +129,7 @@ image_container
 
 /// Extract a cv::Mat from any image container
 cv::Mat
-image_container_to_ocv_matrix(const kwiver::vital::image_container& img)
+image_container_to_ocv_matrix(const vital::image_container& img)
 {
   if( const ocv::image_container* c =
           dynamic_cast<const ocv::image_container*>(&img) )

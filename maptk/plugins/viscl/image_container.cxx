@@ -47,7 +47,7 @@ namespace vcl
 
 /// Constructor - convert base image container to a VisCL image
 image_container
-::image_container(const kwiver::vital::image_container& image_cont)
+::image_container(const vital::image_container& image_cont)
 : data_(image_container_to_viscl(image_cont))
 {
 }
@@ -63,13 +63,13 @@ image_container
 
 
 /// Convert a VisCL image to a MAPTK image
-kwiver::vital::image
+vital::image
 image_container
 ::viscl_to_maptk(const viscl::image& img_cl)
 {
   size_t width = img_cl.width();
   size_t height = img_cl.height();
-  kwiver::vital::image img(width, height);
+  vital::image img(width, height);
 
   cl::size_t<3> origin;
   // Defaults are already 0 on initialization, setting is redundant
@@ -90,7 +90,7 @@ image_container
 /// Convert a MAPTK image to a VisCL image
 viscl::image
 image_container
-::maptk_to_viscl(const kwiver::vital::image& img)
+::maptk_to_viscl(const vital::image& img)
 {
   cl::ImageFormat img_fmt;
   img_fmt = cl::ImageFormat(CL_INTENSITY, CL_UNORM_INT8);
@@ -143,7 +143,7 @@ image_container
 
 /// Extract a VisCL image from any image container
 viscl::image
-image_container_to_viscl(const kwiver::vital::image_container& img)
+image_container_to_viscl(const vital::image_container& img)
 {
   if( const image_container* c =
           dynamic_cast<const image_container*>(&img) )

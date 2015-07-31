@@ -55,7 +55,7 @@ namespace maptk {
 namespace ocv {
 
 /// Register OCV algorithm implementations with the given or global registrar
-int register_algorithms( kwiver::vital::registrar &reg )
+int register_algorithms( vital::registrar &reg )
 {
 #ifdef HAVE_OPENCV_NONFREE
   cv::initModule_nonfree();

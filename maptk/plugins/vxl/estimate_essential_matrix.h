@@ -52,7 +52,7 @@ namespace vxl
 
 /// A class that uses 5 pt algorithm to estimate an initial xform between 2 pt sets
 class MAPTK_VXL_EXPORT estimate_essential_matrix
-  : public kwiver::vital::algorithm_impl<estimate_essential_matrix, kwiver::vital::algo::estimate_essential_matrix>
+  : public vital::algorithm_impl<estimate_essential_matrix, vital::algo::estimate_essential_matrix>
 {
 public:
   /// Constructor
@@ -67,12 +67,12 @@ public:
   /// Return the name of this implementation
   std::string impl_name() const { return "vxl"; }
 
-  /// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
-  virtual kwiver::vital::config_block_sptr get_configuration() const;
+  /// Get this algorithm's \link vital::config_block configuration block \endlink
+  virtual vital::config_block_sptr get_configuration() const;
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(kwiver::vital::config_block_sptr config);
+  virtual void set_configuration(vital::config_block_sptr config);
   /// Check that the algorithm's currently configuration is valid
-  virtual bool check_configuration(kwiver::vital::config_block_sptr config) const;
+  virtual bool check_configuration(vital::config_block_sptr config) const;
 
   /// Estimate an essential matrix from corresponding points
   /**
@@ -85,11 +85,11 @@ public:
    * \param [in]  inlier_scale error distance tolerated for matches to be inliers
    */
   virtual
-  kwiver::vital::essential_matrix_sptr
-  estimate(const std::vector<kwiver::vital::vector_2d>& pts1,
-           const std::vector<kwiver::vital::vector_2d>& pts2,
-           const kwiver::vital::camera_intrinsics_d &cal1,
-           const kwiver::vital::camera_intrinsics_d &cal2,
+  vital::essential_matrix_sptr
+  estimate(const std::vector<vital::vector_2d>& pts1,
+           const std::vector<vital::vector_2d>& pts2,
+           const vital::camera_intrinsics_d &cal1,
+           const vital::camera_intrinsics_d &cal2,
            std::vector<bool>& inliers,
            double inlier_scale = 1.0) const;
 

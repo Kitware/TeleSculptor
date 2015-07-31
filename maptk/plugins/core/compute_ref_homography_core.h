@@ -68,7 +68,7 @@ namespace core
  * compute reference frames on all frames in a sequence.
  */
 class PLUGIN_CORE_EXPORT compute_ref_homography_core
-  : public kwiver::vital::algorithm_impl<compute_ref_homography_core, kwiver::vital::algo::compute_ref_homography>
+  : public vital::algorithm_impl<compute_ref_homography_core, vital::algo::compute_ref_homography>
 {
 public:
 
@@ -87,7 +87,7 @@ public:
   /// Return implementation description string
   virtual std::string description() const;
 
-  /// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
+  /// Get this algorithm's \link vital::config_block configuration block \endlink
   /**
    * This base virtual function implementation returns an empty configuration
    * block whose name is set to \c this->type_name.
@@ -95,7 +95,7 @@ public:
    * \returns \c config_block containing the configuration for this algorithm
    *          and any nested components.
    */
-  virtual kwiver::vital::config_block_sptr get_configuration() const;
+  virtual vital::config_block_sptr get_configuration() const;
 
   /// Set this algorithm's properties via a config block
   /**
@@ -108,7 +108,7 @@ public:
    * \param config  The \c config_block instance containing the configuration
    *                parameters for this algorithm
    */
-  virtual void set_configuration( kwiver::vital::config_block_sptr config );
+  virtual void set_configuration( vital::config_block_sptr config );
 
   /// Check that the algorithm's currently configuration is valid
   /**
@@ -120,7 +120,7 @@ public:
    *
    * \returns true if the configuration check passed and false if it didn't.
    */
-  virtual bool check_configuration( kwiver::vital::config_block_sptr config ) const;
+  virtual bool check_configuration( vital::config_block_sptr config ) const;
 
   /// Estimate the transformation which maps some frame to a reference frame
   /**
@@ -131,9 +131,9 @@ public:
    * \param tracks the set of all tracked features from the image
    * \return estimated homography
    */
-  virtual kwiver::vital::f2f_homography_sptr
-  estimate( kwiver::vital::frame_id_t frame_number,
-            kwiver::vital::track_set_sptr tracks ) const;
+  virtual vital::f2f_homography_sptr
+  estimate( vital::frame_id_t frame_number,
+            vital::track_set_sptr tracks ) const;
 
 private:
 

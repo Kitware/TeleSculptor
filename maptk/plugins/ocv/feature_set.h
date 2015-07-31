@@ -52,7 +52,7 @@ namespace ocv
 
 /// A concrete feature set that wraps OpenCV KeyPoints
 class MAPTK_OCV_EXPORT feature_set
-  : public kwiver::vital::feature_set
+  : public vital::feature_set
 {
 public:
   /// Default Constructor
@@ -66,7 +66,7 @@ public:
   virtual size_t size() const { return data_.size(); }
 
   /// Return a vector of feature shared pointers
-  virtual std::vector<kwiver::vital::feature_sptr> features() const;
+  virtual std::vector<vital::feature_sptr> features() const;
 
   /// Return the underlying OpenCV vector of cv::KeyPoints
   const std::vector<cv::KeyPoint>& ocv_keypoints() const { return data_; }
@@ -80,7 +80,7 @@ protected:
 
 /// Convert any feature set to a vector of OpenCV cv::KeyPoints
 MAPTK_OCV_EXPORT std::vector<cv::KeyPoint>
-features_to_ocv_keypoints(const kwiver::vital::feature_set& features);
+features_to_ocv_keypoints(const vital::feature_set& features);
 
 
 } // end namespace ocv

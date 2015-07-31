@@ -66,9 +66,9 @@ convert_image_bypass
 }
 
 /// Default image converter ( does nothing )
-kwiver::vital::image_container_sptr
+vital::image_container_sptr
 convert_image_bypass
-::convert(kwiver::vital::image_container_sptr img) const
+::convert(vital::image_container_sptr img) const
 {
   return img;
 }
