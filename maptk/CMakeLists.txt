@@ -23,6 +23,7 @@ include_directories("${MAPTK_BINARY_DIR}")
 # Setting up core library
 #
 set(maptk_public_headers
+  camera.h
   metrics.h
   local_geo_cs.h
   projected_track_set.h
@@ -38,6 +39,7 @@ set(maptk_public_headers
 
 
 set(maptk_sources
+  camera.cxx
   metrics.cxx
   local_geo_cs.cxx
   projected_track_set.cxx
