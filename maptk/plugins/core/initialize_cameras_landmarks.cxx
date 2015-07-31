@@ -30,7 +30,7 @@
 
 /**
  * \file
- * \brief Implementation of VXL camera and landmark initialization algorithm
+ * \brief Implementation of core camera and landmark initialization algorithm
  */
 
 #include "initialize_cameras_landmarks.h"
@@ -44,17 +44,15 @@
 
 #include <vital/algo/estimate_essential_matrix.h>
 #include <vital/algo/triangulate_landmarks.h>
-#include <maptk/plugins/vxl/camera_map.h>
-#include <maptk/plugins/vxl/camera.h>
 
-#include <vpgl/vpgl_essential_matrix.h>
+#include <maptk/triangulate.h>
 
 using namespace kwiver::vital;
 
 namespace maptk
 {
 
-namespace vxl
+namespace core
 {
 
 
@@ -93,6 +91,18 @@ public:
   double estimate_t_scale(const vector_3d& KRp,
                           const vector_3d& Kt,
                           const vector_2d& pt2d) const;
+
+  /// Compute a valid left camera from an essential matrix
+  /**
+   *  There for four valid left camera possibilities for any essential
+   *  matrix (assuming the right camera is the identity camera).
+   *  This function select the left camera such that a corresponding
+   *  pair of points triangulates in front of both cameras.
+   */
+  camera_d
+  extract_valid_left_camera(const essential_matrix_d& e,
+                            const vector_2d& left_pt,
+                            const vector_2d& right_pt) const;
 
   bool verbose;
   bool retriangulate_all;
@@ -139,9 +149,10 @@ initialize_cameras_landmarks::priv
   camera_intrinsics_d cal_right = prev_cam->intrinsics();
   const camera_intrinsics_d& cal_left = base_camera.get_intrinsics();
   std::vector<bool> inliers;
-  matrix_3x3d E = e_estimator->estimate(pts_right, pts_left,
-                                        cal_right, cal_left,
-                                        inliers, 2.0);
+  essential_matrix_sptr E_sptr = e_estimator->estimate(pts_right, pts_left,
+                                                       cal_right, cal_left,
+                                                       inliers, 2.0);
+  const essential_matrix_d E(*E_sptr);
 
   unsigned num_inliers = static_cast<unsigned>(std::count(inliers.begin(),
                                                           inliers.end(), true));
@@ -154,16 +165,13 @@ initialize_cameras_landmarks::priv
   unsigned int inlier_idx = 0;
   for(; inlier_idx < inliers.size() && !inliers[inlier_idx]; ++inlier_idx);
 
-  // compute the corresponding camera rotation and translation (up to scale)
-  vpgl_essential_matrix<double> vE(vnl_double_3x3(E.data()).transpose());
-  vpgl_perspective_camera<double> vcam;
+  // get the first inlier correspondence to
+  // disambiguate essential matrix solutions
   vector_2d left_pt = cal_left.unmap(pts_left[inlier_idx]);
   vector_2d right_pt = cal_right.unmap(pts_right[inlier_idx]);
-  vgl_point_2d<double> vleft_pt(left_pt.x(), left_pt.y());
-  vgl_point_2d<double> vright_pt(right_pt.x(), right_pt.y());
-  extract_left_camera(vE, vleft_pt, vright_pt, vcam);
-  camera_d cam;
-  vpgl_camera_to_maptk(vcam, cam);
+
+  // compute the corresponding camera rotation and translation (up to scale)
+  camera_d cam = extract_valid_left_camera(E, left_pt, right_pt);
   cam.set_intrinsics(cal_left);
 
   // compute the scale from existing landmark locations (if available)
@@ -271,6 +279,60 @@ initialize_cameras_landmarks::priv
   double cx = a.x()*b.z() - a.z()*b.x();
   double cy = a.y()*b.z() - a.z()*b.y();
   return (a.x()*cx + a.y()*cy) / -(b.x()*cx + b.y()*cy);
+}
+
+/// Compute a valid left camera from an essential matrix
+camera_d
+initialize_cameras_landmarks::priv
+::extract_valid_left_camera(const essential_matrix_d& e,
+                            const vector_2d& left_pt,
+                            const vector_2d& right_pt) const
+{
+  /// construct an identity right camera
+  const vector_3d t = e.translation();
+  rotation_d R = e.rotation();
+
+  std::vector<vector_2d> pts;
+  pts.push_back(right_pt);
+  pts.push_back(left_pt);
+
+  std::vector<camera_d> cams(2);
+  const camera_d& left_camera = cams[1];
+
+  // option 1
+  cams[1] = camera_d(R.inverse()*-t, R);
+  vector_3d pt3 = triangulate_inhomog(cams, pts);
+  if( pt3.z() > 0.0 && left_camera.depth(pt3) > 0.0 )
+  {
+    return left_camera;
+  }
+
+  // option 2, with negated translation
+  cams[1] = camera_d(R.inverse()*t, R);
+  pt3 = triangulate_inhomog(cams, pts);
+  if( pt3.z() > 0.0 && left_camera.depth(pt3) > 0.0 )
+  {
+    return left_camera;
+  }
+
+  // option 3, with the twisted pair rotation
+  R = e.twisted_rotation();
+  cams[1] = camera_d(R.inverse()*-t, R);
+  pt3 = triangulate_inhomog(cams, pts);
+  if( pt3.z() > 0.0 && left_camera.depth(pt3) > 0.0 )
+  {
+    return left_camera;
+  }
+
+  // option 4, with negated translation
+  cams[1] = camera_d(R.inverse()*t, R);
+  pt3 = triangulate_inhomog(cams, pts);
+  if( pt3.z() > 0.0 && left_camera.depth(pt3) > 0.0 )
+  {
+    return left_camera;
+  }
+  // should never get here
+  return camera_d();
 }
 
 
@@ -603,6 +665,6 @@ initialize_cameras_landmarks
 }
 
 
-} // end namespace vxl
+} // end namespace core
 
 } // end namespace maptk

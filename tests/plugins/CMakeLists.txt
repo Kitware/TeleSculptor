@@ -1,5 +1,7 @@
 # Add sets of tests based on which plug-ins are enabled
 
+add_subdirectory(core)
+
 if( MAPTK_ENABLE_CERES )
   add_subdirectory(ceres)
 endif()

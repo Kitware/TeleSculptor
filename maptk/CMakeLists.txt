@@ -30,6 +30,7 @@ set(maptk_public_headers
   geo_reference_points_io.h
   ins_data.h
   ins_data_io.h
+  triangulate.h
 
   plugin_interface/algorithm_plugin_interface.h
   plugin_interface/algorithm_plugin_interface_macros.h
@@ -44,6 +45,7 @@ set(maptk_sources
   geo_reference_points_io.cxx
   ins_data.cxx
   ins_data_io.cxx
+  triangulate.cxx
 
   )
 

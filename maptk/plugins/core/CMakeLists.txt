@@ -7,10 +7,12 @@ set( plugin_core_headers
   convert_image_bypass.h
   filter_features_magnitude.h
   hierarchical_bundle_adjust.h
+  initialize_cameras_landmarks.h
   match_features_homography.h
   plugin_core_config.h
   register_algorithms.h
   track_features_core.h
+  triangulate_landmarks.h
   )
 maptk_install_plugin_headers( core
   ${plugin_core_headers}
@@ -23,9 +25,11 @@ set( plugin_core_sources
   convert_image_bypass.cxx
   filter_features_magnitude.cxx
   hierarchical_bundle_adjust.cxx
+  initialize_cameras_landmarks.cxx
   match_features_homography.cxx
   register_algorithms.cxx
   track_features_core.cxx
+  triangulate_landmarks.cxx
   )
 maptk_add_library( maptk_core
   ${plugin_core_headers}

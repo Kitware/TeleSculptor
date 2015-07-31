@@ -85,7 +85,7 @@ public:
    * \param [in]  inlier_scale error distance tolerated for matches to be inliers
    */
   virtual
-  kwiver::vital::matrix_3x3d
+  kwiver::vital::essential_matrix_sptr
   estimate(const std::vector<kwiver::vital::vector_2d>& pts1,
            const std::vector<kwiver::vital::vector_2d>& pts2,
            const kwiver::vital::camera_intrinsics_d &cal1,

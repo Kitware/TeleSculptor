@@ -42,7 +42,6 @@
 #include <maptk/plugins/vxl/estimate_homography.h>
 #include <maptk/plugins/vxl/estimate_similarity_transform.h>
 #include <maptk/plugins/vxl/image_io.h>
-#include <maptk/plugins/vxl/initialize_cameras_landmarks.h>
 #include <maptk/plugins/vxl/optimize_cameras.h>
 #include <maptk/plugins/vxl/triangulate_landmarks.h>
 #include <maptk/plugins/vxl/match_features_constrained.h>
@@ -65,7 +64,6 @@ int register_algorithms( kwiver::vital::registrar &reg )
   REGISTER_TYPE( maptk::vxl::estimate_homography );
   REGISTER_TYPE( maptk::vxl::estimate_similarity_transform );
   REGISTER_TYPE( maptk::vxl::image_io );
-  REGISTER_TYPE( maptk::vxl::initialize_cameras_landmarks );
   REGISTER_TYPE( maptk::vxl::optimize_cameras );
   REGISTER_TYPE( maptk::vxl::triangulate_landmarks );
   REGISTER_TYPE( maptk::vxl::match_features_constrained );

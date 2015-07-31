@@ -37,10 +37,11 @@
 
 #include <maptk/projected_track_set.h>
 #include <maptk/metrics.h>
+#include <maptk/plugins/core/register_algorithms.h>
 #include <maptk/plugins/vxl/register_algorithms.h>
 #include <maptk/plugins/vxl/estimate_essential_matrix.h>
 #include <maptk/plugins/vxl/estimate_similarity_transform.h>
-#include <maptk/plugins/vxl/initialize_cameras_landmarks.h>
+#include <maptk/plugins/core/initialize_cameras_landmarks.h>
 
 #include <boost/foreach.hpp>
 
@@ -54,6 +55,7 @@ main(int argc, char* argv[])
 {
   CHECK_ARGS(1);
 
+  maptk::core::register_algorithms();
   maptk::vxl::register_algorithms();
 
   testname_t const testname = argv[1];
@@ -66,16 +68,16 @@ using namespace kwiver::vital;
 IMPLEMENT_TEST(create)
 {
   using namespace maptk;
-  algo::initialize_cameras_landmarks_sptr init = algo::initialize_cameras_landmarks::create("vxl");
+  algo::initialize_cameras_landmarks_sptr init = algo::initialize_cameras_landmarks::create("core");
   if (!init)
   {
-    TEST_ERROR("Unable to create vxl::initialize_cameras_landmarks by name");
+    TEST_ERROR("Unable to create core::initialize_cameras_landmarks by name");
   }
 }
 
 
 // helper function to configure the algorithm
-void configure_algo(maptk::vxl::initialize_cameras_landmarks& algo,
+void configure_algo(maptk::core::initialize_cameras_landmarks& algo,
                     const kwiver::vital::camera_intrinsics_d& K)
 {
   using namespace maptk;
@@ -102,7 +104,7 @@ void configure_algo(maptk::vxl::initialize_cameras_landmarks& algo,
 IMPLEMENT_TEST(ideal_points)
 {
   using namespace maptk;
-  vxl::initialize_cameras_landmarks init;
+  core::initialize_cameras_landmarks init;
 
   // create landmarks at the random locations
   landmark_map_sptr landmarks = testing::init_landmarks(100);
@@ -156,7 +158,7 @@ IMPLEMENT_TEST(ideal_points)
 IMPLEMENT_TEST(noisy_points)
 {
   using namespace maptk;
-  vxl::initialize_cameras_landmarks init;
+  core::initialize_cameras_landmarks init;
 
   // create landmarks at the random locations
   landmark_map_sptr landmarks = testing::init_landmarks(100);
@@ -215,7 +217,7 @@ IMPLEMENT_TEST(noisy_points)
 IMPLEMENT_TEST(subset_init)
 {
   using namespace maptk;
-  vxl::initialize_cameras_landmarks init;
+  core::initialize_cameras_landmarks init;
 
   // create landmarks at the random locations
   landmark_map_sptr landmarks = testing::init_landmarks(100);
