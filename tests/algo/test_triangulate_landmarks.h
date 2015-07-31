@@ -44,7 +44,7 @@
 
 #include <maptk/projected_track_set.h>
 #include <maptk/metrics.h>
-#include <maptk/algo/triangulate_landmarks.h>
+#include <vital/algo/triangulate_landmarks.h>
 
 #include <boost/foreach.hpp>
 
@@ -55,7 +55,7 @@ namespace testing
 {
 
 // input to triangulation is the ideal solution, make sure it doesn't diverge
-void test_from_solution(algo::triangulate_landmarks& tri_lm)
+void test_from_solution(kwiver::vital::algo::triangulate_landmarks& tri_lm)
 {
   using namespace maptk;
 
@@ -87,7 +87,7 @@ void test_from_solution(algo::triangulate_landmarks& tri_lm)
 
 
 // add noise to landmarks before input to triangulation
-void test_noisy_landmarks(algo::triangulate_landmarks& tri_lm)
+void test_noisy_landmarks(kwiver::vital::algo::triangulate_landmarks& tri_lm)
 {
   using namespace maptk;
 
@@ -123,7 +123,7 @@ void test_noisy_landmarks(algo::triangulate_landmarks& tri_lm)
 
 
 // initialize all landmarks to the origin as input to triangulation
-void test_zero_landmarks(algo::triangulate_landmarks& tri_lm)
+void test_zero_landmarks(kwiver::vital::algo::triangulate_landmarks& tri_lm)
 {
   using namespace maptk;
 
@@ -160,7 +160,7 @@ void test_zero_landmarks(algo::triangulate_landmarks& tri_lm)
 
 
 // select a subset of cameras to triangulation from
-void test_subset_cameras(algo::triangulate_landmarks& tri_lm)
+void test_subset_cameras(kwiver::vital::algo::triangulate_landmarks& tri_lm)
 {
   using namespace maptk;
 
@@ -211,7 +211,7 @@ void test_subset_cameras(algo::triangulate_landmarks& tri_lm)
 
 
 // select a subset of landmarks to triangulate
-void test_subset_landmarks(algo::triangulate_landmarks& tri_lm)
+void test_subset_landmarks(kwiver::vital::algo::triangulate_landmarks& tri_lm)
 {
   using namespace maptk;
 
@@ -256,7 +256,7 @@ void test_subset_landmarks(algo::triangulate_landmarks& tri_lm)
 
 
 // select a subset of tracks/track_states to constrain the problem
-void test_subset_tracks(algo::triangulate_landmarks& tri_lm)
+void test_subset_tracks(kwiver::vital::algo::triangulate_landmarks& tri_lm)
 {
   using namespace maptk;
 
@@ -295,7 +295,7 @@ void test_subset_tracks(algo::triangulate_landmarks& tri_lm)
 
 
 // select a subset of tracks/track_states and add noise
-void test_noisy_tracks(algo::triangulate_landmarks& tri_lm)
+void test_noisy_tracks(kwiver::vital::algo::triangulate_landmarks& tri_lm)
 {
   using namespace maptk;
 

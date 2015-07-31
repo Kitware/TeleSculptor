@@ -36,8 +36,9 @@
 #ifndef MAPTK_TRIANGULATE_H_
 #define MAPTK_TRIANGULATE_H_
 
-#include "camera.h"
+#include <vital/types/camera.h>
 
+#include <maptk/config.h>
 
 namespace maptk
 {
@@ -57,7 +58,7 @@ namespace maptk
 template <typename T>
 MAPTK_LIB_EXPORT
 Eigen::Matrix<T,3,1>
-triangulate_inhomog(const std::vector<camera_<T> >& cameras,
+triangulate_inhomog(const std::vector<kwiver::vital::camera_<T> >& cameras,
                     const std::vector<Eigen::Matrix<T,2,1> >& points);
 
 
@@ -75,7 +76,7 @@ triangulate_inhomog(const std::vector<camera_<T> >& cameras,
 template <typename T>
 MAPTK_LIB_EXPORT
 Eigen::Matrix<T,4,1>
-triangulate_homog(const std::vector<camera_<T> >& cameras,
+triangulate_homog(const std::vector<kwiver::vital::camera_<T> >& cameras,
                   const std::vector<Eigen::Matrix<T,2,1> >& points);
 
 

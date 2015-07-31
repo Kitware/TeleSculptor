@@ -55,7 +55,7 @@ main(int argc, char* argv[])
 
 IMPLEMENT_TEST(create)
 {
-  using namespace maptk;
+  using namespace kwiver::vital;
   algo::triangulate_landmarks_sptr tri_lm = algo::triangulate_landmarks::create("core");
   if (!tri_lm)
   {
@@ -76,7 +76,7 @@ IMPLEMENT_TEST(from_solution)
 IMPLEMENT_TEST(from_solution_homog)
 {
   maptk::core::triangulate_landmarks tri_lm;
-  maptk::config_block_sptr cfg = tri_lm.get_configuration();
+  kwiver::vital::config_block_sptr cfg = tri_lm.get_configuration();
   cfg->set_value("homogeneous", "true");
   tri_lm.set_configuration(cfg);
   maptk::testing::test_from_solution(tri_lm);
@@ -95,7 +95,7 @@ IMPLEMENT_TEST(noisy_landmarks)
 IMPLEMENT_TEST(noisy_landmarks_homog)
 {
   maptk::core::triangulate_landmarks tri_lm;
-  maptk::config_block_sptr cfg = tri_lm.get_configuration();
+  kwiver::vital::config_block_sptr cfg = tri_lm.get_configuration();
   cfg->set_value("homogeneous", "true");
   tri_lm.set_configuration(cfg);
   maptk::testing::test_noisy_landmarks(tri_lm);
@@ -114,7 +114,7 @@ IMPLEMENT_TEST(zero_landmarks)
 IMPLEMENT_TEST(zero_landmarks_homog)
 {
   maptk::core::triangulate_landmarks tri_lm;
-  maptk::config_block_sptr cfg = tri_lm.get_configuration();
+  kwiver::vital::config_block_sptr cfg = tri_lm.get_configuration();
   cfg->set_value("homogeneous", "true");
   tri_lm.set_configuration(cfg);
   maptk::testing::test_zero_landmarks(tri_lm);
@@ -133,7 +133,7 @@ IMPLEMENT_TEST(subset_cameras)
 IMPLEMENT_TEST(subset_cameras_homog)
 {
   maptk::core::triangulate_landmarks tri_lm;
-  maptk::config_block_sptr cfg = tri_lm.get_configuration();
+  kwiver::vital::config_block_sptr cfg = tri_lm.get_configuration();
   cfg->set_value("homogeneous", "true");
   tri_lm.set_configuration(cfg);
   maptk::testing::test_subset_cameras(tri_lm);
@@ -152,7 +152,7 @@ IMPLEMENT_TEST(subset_landmarks)
 IMPLEMENT_TEST(subset_landmarks_homog)
 {
   maptk::core::triangulate_landmarks tri_lm;
-  maptk::config_block_sptr cfg = tri_lm.get_configuration();
+  kwiver::vital::config_block_sptr cfg = tri_lm.get_configuration();
   cfg->set_value("homogeneous", "true");
   tri_lm.set_configuration(cfg);
   maptk::testing::test_subset_landmarks(tri_lm);
@@ -171,7 +171,7 @@ IMPLEMENT_TEST(subset_tracks)
 IMPLEMENT_TEST(subset_tracks_homog)
 {
   maptk::core::triangulate_landmarks tri_lm;
-  maptk::config_block_sptr cfg = tri_lm.get_configuration();
+  kwiver::vital::config_block_sptr cfg = tri_lm.get_configuration();
   cfg->set_value("homogeneous", "true");
   tri_lm.set_configuration(cfg);
   maptk::testing::test_subset_tracks(tri_lm);
@@ -189,7 +189,7 @@ IMPLEMENT_TEST(noisy_tracks)
 IMPLEMENT_TEST(noisy_tracks_homog)
 {
   maptk::core::triangulate_landmarks tri_lm;
-  maptk::config_block_sptr cfg = tri_lm.get_configuration();
+  kwiver::vital::config_block_sptr cfg = tri_lm.get_configuration();
   cfg->set_value("homogeneous", "true");
   tri_lm.set_configuration(cfg);
   maptk::testing::test_noisy_tracks(tri_lm);
