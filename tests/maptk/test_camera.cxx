@@ -124,7 +124,7 @@ IMPLEMENT_TEST(interpolation)
   using vital::vector_3d;
   using vital::vector_4d;
   using vital::rotation_d;
-  using vital::camera_d;
+  using maptk::camera_d;
 
   double pi = boost::math::constants::pi<double>();
   camera_d a(vector_3d(-1, -1, -1),
@@ -158,7 +158,7 @@ IMPLEMENT_TEST(multiple_interpolations)
   using vital::vector_3d;
   using vital::vector_4d;
   using vital::rotation_d;
-  using vital::camera_d;
+  using maptk::camera_d;
 
   double pi = boost::math::constants::pi<double>();
   camera_d a(vector_3d(-1, -1, -1),

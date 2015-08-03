@@ -36,9 +36,9 @@
 
 #include <vital/io/eigen_io.h>
 #include <vital/types/matrix.h>
-#include <vital/types/transform.h>
 #include <vital/exceptions/base.h>
 #include "camera.h"
+#include <maptk/transform.h>
 #include <iomanip>
 #include <typeinfo>
 #include <Eigen/Geometry>
@@ -115,19 +115,6 @@ camera_<T>
 ::depth(const Eigen::Matrix<T, 3, 1>& pt) const
 {
   return (this->orientation_ * (pt - this->center_)).z();
-}
-
-
-/// Transform the camera by applying a similarity transformation in place
-template <typename T>
-camera_<T>&
-camera_<T>
-::apply_transform(const vital::similarity_<T>& xform)
-{
-  this->center_ = xform * this->center_;
-  this->orientation_ = this->orientation_ * xform.rotation().inverse();
-  this->center_covar_ = vital::transform(this->center_covar_, xform);
-  return *this;
 }
 
 

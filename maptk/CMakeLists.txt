@@ -32,6 +32,7 @@ set(maptk_public_headers
   ins_data_io.h
   match_matrix.h
   triangulate.h
+  transform.h
 
   plugin_interface/algorithm_plugin_interface.h
   plugin_interface/algorithm_plugin_interface_macros.h
@@ -48,6 +49,7 @@ set(maptk_sources
   ins_data_io.cxx
   match_matrix.cxx
   triangulate.cxx
+  transform.cxx
 
   )
 

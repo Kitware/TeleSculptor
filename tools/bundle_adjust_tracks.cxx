@@ -56,7 +56,6 @@
 #include <vital/io/landmark_map_io.h>
 #include <vital/io/track_set_io.h>
 #include <vital/types/track_set.h>
-#include <vital/types/transform.h>
 #include <vital/vital_types.h>
 #include <kwiversys/SystemTools.hxx>
 
@@ -64,6 +63,7 @@
 #include <maptk/local_geo_cs.h>
 #include <maptk/geo_reference_points_io.h>
 #include <maptk/metrics.h>
+#include <maptk/transform.h>
 
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
@@ -892,7 +892,7 @@ static int maptk_main(int argc, char const* argv[])
     else
     {
       // In the absence of other information, use a canonical transformation
-      sim_transform = canonical_transform(cam_map, lm_map);
+      sim_transform = kwiver::maptk::canonical_transform(cam_map, lm_map);
     }
 
     std::cerr << "--> Estimated Transformation: " << sim_transform
@@ -900,10 +900,10 @@ static int maptk_main(int argc, char const* argv[])
 
     // apply to cameras
     std::cerr << "--> Applying to cameras..." << std::endl;
-    cam_map = kwiver::vital::transform(cam_map, sim_transform);
+    cam_map = kwiver::maptk::transform(cam_map, sim_transform);
     // apply to landmarks
     std::cerr << "--> Applying to landmarks..." << std::endl;
-    lm_map = kwiver::vital::transform(lm_map, sim_transform);
+    lm_map = kwiver::maptk::transform(lm_map, sim_transform);
   }
 
   //

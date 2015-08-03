@@ -168,13 +168,6 @@ public:
    */
   T depth(const Eigen::Matrix<T, 3, 1>& pt) const;
 
-  /// Apply a similarity transformation to the camera in place
-  virtual void transform(const vital::similarity_d& xform)
-  { apply_transform(vital::similarity_<T>(xform)); }
-
-  /// Transform the camera by applying a similarity transformation in place
-  camera_<T>& apply_transform(const vital::similarity_<T>& xform);
-
 protected:
   /// The camera center of project
   Eigen::Matrix<T,3,1> center_;

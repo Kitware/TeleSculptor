@@ -33,10 +33,10 @@
 #include <test_scene.h>
 
 #include <vital/types/similarity.h>
-#include <vital/types/transform.h>
 
 #include <maptk/projected_track_set.h>
 #include <maptk/metrics.h>
+#include <maptk/transform.h>
 #include <maptk/plugins/core/register_algorithms.h>
 #include <maptk/plugins/vxl/register_algorithms.h>
 #include <maptk/plugins/vxl/estimate_essential_matrix.h>
