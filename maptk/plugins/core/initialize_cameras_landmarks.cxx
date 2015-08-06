@@ -182,9 +182,8 @@ initialize_cameras_landmarks::priv
   // compute the scale from existing landmark locations (if available)
   matrix_3x3d prev_R(prev_cam->rotation());
   vector_3d prev_t = prev_cam->translation();
-  matrix_3x3d K(cam.get_intrinsics());
-  matrix_3x3d KR = K * matrix_3x3d(cam.get_rotation());
-  vector_3d Kt = K * cam.get_translation();
+  matrix_3x3d R = matrix_3x3d(cam.get_rotation());
+  vector_3d t = cam.get_translation();
   std::vector<double> scales;
   scales.reserve(num_inliers);
   for(unsigned int i=0; i<inliers.size(); ++i)
@@ -194,8 +193,8 @@ initialize_cameras_landmarks::priv
       continue;
     }
     vector_3d pt3d = prev_R * pts_lm[i]->loc() + prev_t;
-    const vector_2d& pt2d = pts_left[i];
-    scales.push_back(estimate_t_scale(KR*pt3d, Kt, pt2d));
+    const vector_2d& pt2d = cal_left.unmap(pts_left[i]);
+    scales.push_back(estimate_t_scale(R*pt3d, t, pt2d));
   }
   // find the median scale
   double median_scale = 1.0;
@@ -639,7 +638,7 @@ initialize_cameras_landmarks
 
     // get the subset of tracks that have features on frame f
     track_set_sptr ftracks = tracks->active_tracks(static_cast<int>(f));
-    // get the subset of tracks that also  have features on the last frame
+    // get the subset of tracks that also  have features on the other frame
     ftracks = ftracks->active_tracks(static_cast<int>(other_frame));
 
     // find existing landmarks for these tracks
