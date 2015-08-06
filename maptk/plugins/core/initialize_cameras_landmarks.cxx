@@ -41,6 +41,7 @@
 
 #include <maptk/algo/estimate_essential_matrix.h>
 #include <maptk/algo/triangulate_landmarks.h>
+#include <maptk/plugins/core/triangulate_landmarks.h>
 #include <maptk/exceptions.h>
 #include <maptk/eigen_io.h>
 #include <maptk/triangulate.h>
@@ -63,7 +64,8 @@ public:
     retriangulate_all(false),
     base_camera(),
     e_estimator(),
-    lm_triangulator()
+    // use the core triangulation as the default, users can change it
+    lm_triangulator(new maptk::core::triangulate_landmarks())
   {
   }
 
