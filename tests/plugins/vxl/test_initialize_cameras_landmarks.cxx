@@ -87,7 +87,8 @@ void configure_algo(maptk::core::initialize_cameras_landmarks& algo,
   cfg->set_value("base_camera:skew", K.skew());
   cfg->set_value("essential_mat_estimator:type", "vxl");
   cfg->set_value("essential_mat_estimator:vxl:num_ransac_samples", 10);
-  cfg->set_value("lm_triangulator:type", "vxl");
+  cfg->set_value("camera_optimizer:type", "vxl");
+  cfg->set_value("lm_triangulator:type", "core");
   algo.set_configuration(cfg);
 
   if(!algo.check_configuration(cfg))
