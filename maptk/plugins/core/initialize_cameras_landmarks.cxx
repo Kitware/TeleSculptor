@@ -704,7 +704,7 @@ initialize_cameras_landmarks
     }
 
     // optionally optimize the new camera
-    if( d_->camera_optimizer )
+    if( d_->camera_optimizer && flms.size() > 3)
     {
       camera_map::map_camera_t opt_cam_map;
       opt_cam_map[f] = cams[f];
