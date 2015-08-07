@@ -65,6 +65,7 @@ public:
     retriangulate_all(false),
     base_camera(),
     e_estimator(),
+    camera_optimizer(),
     // use the core triangulation as the default, users can change it
     lm_triangulator(new maptk::core::triangulate_landmarks())
   {
@@ -76,6 +77,8 @@ public:
     base_camera(other.base_camera),
     e_estimator(!other.e_estimator ? algo::estimate_essential_matrix_sptr()
                                    : other.e_estimator->clone()),
+    camera_optimizer(!other.camera_optimizer ? algo::optimize_cameras_sptr()
+                                             : other.camera_optimizer->clone()),
     lm_triangulator(!other.lm_triangulator ? algo::triangulate_landmarks_sptr()
                                            : other.lm_triangulator->clone())
   {
