@@ -62,6 +62,7 @@ public:
   /// Constructor
   priv()
   : verbose(false),
+    init_from_last(false),
     retriangulate_all(false),
     base_camera(),
     e_estimator(),
@@ -73,6 +74,7 @@ public:
 
   priv(const priv& other)
   : verbose(other.verbose),
+    init_from_last(other.init_from_last),
     retriangulate_all(other.retriangulate_all),
     base_camera(other.base_camera),
     e_estimator(!other.e_estimator ? algo::estimate_essential_matrix_sptr()
@@ -114,6 +116,7 @@ public:
                             const vector_2d& right_pt) const;
 
   bool verbose;
+  bool init_from_last;
   bool retriangulate_all;
   camera_d base_camera;
   algo::estimate_essential_matrix_sptr e_estimator;
@@ -228,19 +231,6 @@ initialize_cameras_landmarks::priv
   cam.set_translation(new_t);
 
   camera_sptr new_cam_sptr(new camera_d(cam));
-
-  // optionally optimize the new camera
-  if( this->camera_optimizer )
-  {
-    camera_map::map_camera_t opt_cam_map;
-    opt_cam_map[frame] = new_cam_sptr;
-    camera_map_sptr opt_cams(new simple_camera_map(opt_cam_map));
-    landmark_map_sptr landmarks(new simple_landmark_map(lms));
-    track_set_sptr tracks(new simple_track_set(trks));
-    this->camera_optimizer->optimize(opt_cams, tracks, landmarks);
-    new_cam_sptr = opt_cams->cameras()[frame];
-  }
-
   return new_cam_sptr;
 }
 
@@ -398,6 +388,10 @@ initialize_cameras_landmarks
                     "If true, write status messages to the terminal showing "
                     "debugging information");
 
+  config->set_value("init_from_last", d_->init_from_last,
+                    "If true, and a camera optimizer is specified, initialize "
+                    "the camera using the closest exiting camera and optimize");
+
   config->set_value("retriangulate_all", d_->retriangulate_all,
                     "If true, re-triangulate all landmarks observed by a newly "
                     "initialized camera.  Otherwise, only triangulate or "
@@ -452,6 +446,9 @@ initialize_cameras_landmarks
 
   d_->verbose = config->get_value<bool>("verbose",
                                         d_->verbose);
+
+  d_->init_from_last = config->get_value<bool>("init_from_last",
+                                               d_->init_from_last);
 
   d_->retriangulate_all = config->get_value<bool>("retriangulate_all",
                                                   d_->retriangulate_all);
@@ -697,7 +694,27 @@ initialize_cameras_landmarks
       }
     }
 
-    cams[f] = d_->init_camera(f, other_frame, cams, trks, flms);
+    if( d_->init_from_last && d_->camera_optimizer && flms.size() > 3)
+    {
+      cams[f] = cams[other_frame]->clone();
+    }
+    else
+    {
+      cams[f] = d_->init_camera(f, other_frame, cams, trks, flms);
+    }
+
+    // optionally optimize the new camera
+    if( d_->camera_optimizer )
+    {
+      camera_map::map_camera_t opt_cam_map;
+      opt_cam_map[f] = cams[f];
+      camera_map_sptr opt_cams(new simple_camera_map(opt_cam_map));
+      landmark_map_sptr landmarks(new simple_landmark_map(flms));
+      track_set_sptr tracks(new simple_track_set(trks));
+      d_->camera_optimizer->optimize(opt_cams, tracks, landmarks);
+      cams[f] = opt_cams->cameras()[f];
+    }
+
 
     // triangulate (or re-triangulate) points seen by the new camera
     d_->retriangulate(lms, cams, trks, new_lm_ids);
