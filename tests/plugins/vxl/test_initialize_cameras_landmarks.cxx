@@ -165,6 +165,38 @@ IMPLEMENT_TEST(ideal_points)
                           1e-6);
 }
 
+// test initialization with ideal points
+IMPLEMENT_TEST(ideal_points_from_last)
+{
+  using namespace maptk;
+  core::initialize_cameras_landmarks init;
+
+  // create landmarks at the random locations
+  landmark_map_sptr landmarks = testing::init_landmarks(100);
+  landmarks = testing::noisy_landmarks(landmarks, 1.0);
+
+  // create a camera sequence (elliptical path)
+  camera_map_sptr cameras = testing::camera_seq();
+
+  // create tracks from the projections
+  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+
+  config_block_sptr cfg = init.get_configuration();
+  cfg->set_value("init_from_last", "true");
+  init.set_configuration(cfg);
+  camera_intrinsics_d K = cameras->cameras()[0]->intrinsics();
+  configure_algo(init, K);
+
+  camera_map_sptr new_cameras;
+  landmark_map_sptr new_landmarks;
+  init.initialize(new_cameras, new_landmarks, tracks);
+
+  evaluate_initialization(cameras, landmarks,
+                          new_cameras, new_landmarks,
+                          1e-6);
+}
+
+
 
 // test initialization with noisy points
 IMPLEMENT_TEST(noisy_points)
@@ -196,6 +228,42 @@ IMPLEMENT_TEST(noisy_points)
                           new_cameras, new_landmarks,
                           0.2);
 }
+
+
+// test initialization with noisy points
+IMPLEMENT_TEST(noisy_points_from_last)
+{
+  using namespace maptk;
+  core::initialize_cameras_landmarks init;
+
+  // create landmarks at the random locations
+  landmark_map_sptr landmarks = testing::init_landmarks(100);
+  landmarks = testing::noisy_landmarks(landmarks, 1.0);
+
+  // create a camera sequence (elliptical path)
+  camera_map_sptr cameras = testing::camera_seq();
+
+  // create tracks from the projections
+  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+
+  // add random noise to track image locations
+  tracks = testing::noisy_tracks(tracks, 0.3);
+
+  config_block_sptr cfg = init.get_configuration();
+  cfg->set_value("init_from_last", "true");
+  init.set_configuration(cfg);
+  camera_intrinsics_d K = cameras->cameras()[0]->intrinsics();
+  configure_algo(init, K);
+
+  camera_map_sptr new_cameras;
+  landmark_map_sptr new_landmarks;
+  init.initialize(new_cameras, new_landmarks, tracks);
+
+  evaluate_initialization(cameras, landmarks,
+                          new_cameras, new_landmarks,
+                          0.2);
+}
+
 
 
 // test initialization with subsets of cameras and landmarks
