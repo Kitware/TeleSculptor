@@ -99,9 +99,15 @@ optimize_cameras
            const std::vector<feature_sptr>& features,
            const std::vector<landmark_sptr>& landmarks) const
 {
+  // remove camera intrinsics from the camera and work in normalized coordinates
+  // VXL is only optimizing rotation and translation and doesn't model distortion
+  camera_d mcamera(*camera);
+  camera_intrinsics_d k(mcamera.get_intrinsics());
+  mcamera.set_intrinsics(camera_intrinsics_d());
+
   // convert the camera
   vpgl_perspective_camera<double> vcamera;
-  maptk_to_vpgl_camera(camera_d(*camera), vcamera);
+  maptk_to_vpgl_camera(mcamera, vcamera);
 
   // For each camera in the input map, create corresponding point sets for 2D
   // and 3D coordinates of tracks and matching landmarks, respectively, for
@@ -112,12 +118,19 @@ optimize_cameras
   vector_3d tmp_3d;
   for( unsigned int i=0; i<features.size(); ++i )
   {
-    tmp_2d = features[i]->loc();
+    // unmap the points to normalized coordinates
+    tmp_2d = k.unmap(features[i]->loc());
     tmp_3d = landmarks[i]->loc();
     pts_2d.push_back(vgl_point_2d<double>(tmp_2d.x(), tmp_2d.y()));
     pts_3d.push_back(vgl_homg_point_3d<double>(tmp_3d.x(), tmp_3d.y(), tmp_3d.z()));
   }
-  camera = vpgl_camera_to_maptk(maptk_opt_orient_pos(vcamera, pts_3d, pts_2d));
+  // optimize
+  vcamera = maptk_opt_orient_pos(vcamera, pts_3d, pts_2d);
+
+  // convert back and fill in the unchanged intrinsics
+  vpgl_camera_to_maptk(vcamera, mcamera);
+  mcamera.set_intrinsics(k);
+  camera = mcamera.clone();
 }
 
 
