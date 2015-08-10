@@ -84,6 +84,9 @@ static maptk::config_block_sptr default_config()
   config->set_value("input_track_file", "",
                     "Path an input file containing feature tracks");
 
+  config->set_value("filtered_track_file", "",
+                    "Path to write a file containing filtered feature tracks");
+
   config->set_value("image_list_file", "",
                     "Path to the input image list file used to generated the "
                     "input tracks.");
@@ -664,6 +667,16 @@ static int maptk_main(int argc, char const* argv[])
     boost::timer::auto_cpu_timer t("track filtering: %t sec CPU, %w sec wall\n");
     tracks = filter_tracks(tracks, min_track_len);
     std::cerr << "filtered down to "<<tracks->size()<<" long tracks"<<std::endl;
+
+    // write out filtered tracks if output file is specified
+    if (config->has_value("filtered_track_file"))
+    {
+      std::string out_track_file = config->get_value<std::string>("filtered_track_file");
+      if( out_track_file != "" )
+      {
+        maptk::write_track_file(tracks, out_track_file);
+      }
+    }
 
     if( tracks->size() == 0 )
     {
