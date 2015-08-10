@@ -12,11 +12,27 @@ Updates since last public release
 
 Main Library
 
+ * Added a function in match_matrix.h to compute the symmetric match matrix
+   corresponding to a track set for all or a subset of the frames.
+
  * Renamed the algorithm base class clone() method to base_clone() and added
    a new clone() method at the algorithm_impl level.  These functions are
    identical except the base_clone() method returns a base class algorithm
    shared pointer and the clone() method returns a shared pointer to the
    specific algorithm intermediate base class.
+
+Tools
+
+ * Added a new tool to read in a track file and compute the match matrix.
+   The match matrix can be written out to a matrix in ASCII form.
+
+ * Added an option to the bundle adjust tool to write out an updated track
+   file corresponding to the filtered tracks used in bundle adjustment.
+
+Scripts
+
+ * Added a Python script to read the ASCII match matrix file produced by
+   the match matrix tool and plot it.
 
 
 Fixes since last public release
