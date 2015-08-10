@@ -70,7 +70,7 @@ void usage(int const& argc, char const* argv[],
 
 void
 write_match_matrix(std::ostream& os,
-                   const Eigen::MatrixXi& mm,
+                   const Eigen::SparseMatrix<unsigned int>& mm,
                    const std::vector<maptk::frame_id_t>& frames)
 {
   for( unsigned i=0; i<frames.size(); ++i )
@@ -159,7 +159,7 @@ static int maptk_main(int argc, char const* argv[])
   // compute the match matrix
   std::cout << "computing matching matrix" <<std::endl;
   std::vector<maptk::frame_id_t> frames;
-  Eigen::MatrixXi mm = maptk::match_matrix(tracks, frames);
+  Eigen::SparseMatrix<unsigned int> mm = maptk::match_matrix(tracks, frames);
 
   // write output
   if(vm.count("output-matrix"))

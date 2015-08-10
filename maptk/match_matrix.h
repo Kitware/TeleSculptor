@@ -37,6 +37,7 @@
 #define MAPTK_MATCH_MATRIX_H_
 
 #include "track_set.h"
+#include <Eigen/Sparse>
 
 
 namespace maptk
@@ -58,7 +59,7 @@ namespace maptk
  *  \return an NxN symmetric match matrix
  */
 MAPTK_LIB_EXPORT
-Eigen::MatrixXi
+Eigen::SparseMatrix<unsigned int>
 match_matrix(const track_set_sptr tracks,
                    std::vector<frame_id_t>& frames);
 

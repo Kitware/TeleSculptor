@@ -43,7 +43,7 @@ namespace maptk
 
 
 /// Compute the match matrix from a track set
-Eigen::MatrixXi
+Eigen::SparseMatrix<unsigned int>
 match_matrix(const track_set_sptr tracks,
                    std::vector<frame_id_t>& frames)
 {
@@ -55,14 +55,15 @@ match_matrix(const track_set_sptr tracks,
   }
   const size_t num_frames = frames.size();
 
-  // build a frame map for revsere lookup of matrix indices
+  // build a frame map for reverse lookup of matrix indices
   std::map<frame_id_t, unsigned int> frame_map;
   for( unsigned int i=0; i<num_frames; ++i )
   {
     frame_map[frames[i]] = i;
   }
 
-  Eigen::MatrixXi mm = Eigen::MatrixXi::Zero(num_frames, num_frames);
+  Eigen::SparseMatrix<unsigned int> mm(num_frames, num_frames);
+  mm.reserve(Eigen::VectorXi::Constant(num_frames, 10));
 
   const std::vector<track_sptr> trks = tracks->tracks();
   BOOST_FOREACH(const track_sptr& t, trks)
@@ -70,32 +71,28 @@ match_matrix(const track_set_sptr tracks,
     // get all the frames covered by this track
     std::set<frame_id_t> t_frames = t->all_frame_ids();
     // map the frames to a vector of all valid matrix indices
-    std::vector<unsigned int> t_ind;
-    t_ind.reserve(t_frames.size());
+    std::set<unsigned int> t_ind;
     BOOST_FOREACH(const frame_id_t& fid, t_frames)
     {
       std::map<frame_id_t, unsigned int>::const_iterator fmi = frame_map.find(fid);
       // only add to the vector if in the map
       if( fmi != frame_map.end() )
       {
-        t_ind.push_back(fmi->second);
+        t_ind.insert(fmi->second);
       }
     }
 
-    typedef std::vector<unsigned int>::const_iterator vitr_t;
-    for( vitr_t tfi1 = t_ind.begin(); tfi1 != t_ind.end(); ++tfi1)
+    typedef std::set<unsigned int>::const_iterator sitr_t;
+    for( sitr_t tfi1 = t_ind.begin(); tfi1 != t_ind.end(); ++tfi1)
     {
-      ++mm(*tfi1, *tfi1);
-      vitr_t tfi2 = tfi1;
-      ++tfi2;
-      for( ; tfi2 != t_ind.end(); ++tfi2)
+      for( sitr_t tfi2 = tfi1; tfi2 != t_ind.end(); ++tfi2)
       {
-        ++mm(*tfi1, *tfi2);
-        ++mm(*tfi2, *tfi1);
+        ++mm.coeffRef(*tfi1, *tfi2);
       }
     }
   }
-  return mm;
+  mm.makeCompressed();
+  return mm.selfadjointView<Eigen::Upper>();
 }
 
 
