@@ -11,6 +11,14 @@ target_link_libraries(maptk_track_features
     maptk maptk_apm
     )
 
+maptk_add_executable(maptk_match_matrix match_matrix.cxx)
+target_link_libraries(maptk_match_matrix
+  LINK_PRIVATE
+    maptk
+    ${Boost_SYSTEM_LIBRARY}
+    ${Boost_FILESYSTEM_LIBRARY}
+  )
+
 maptk_add_executable(maptk_pos2krtd pos2krtd.cxx)
 target_link_libraries(maptk_pos2krtd
   LINK_PRIVATE
