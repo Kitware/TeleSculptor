@@ -1,0 +1,23 @@
+MAPTK Release Notes for changes pending release approval by AFRL
+================================================================
+
+This file documents release notes for changes made to MAPTK which require
+public release approval from AFRL.  After approval, the changes and
+corresponding notes below will be encorporated into a public numbered
+release version, and the content of this file will be reset.
+
+
+Updates since last public release
+---------------------------------
+
+Main Library
+
+ * Renamed the algorithm base class clone() method to base_clone() and added
+   a new clone() method at the algorithm_impl level.  These functions are
+   identical except the base_clone() method returns a base class algorithm
+   shared pointer and the clone() method returns a shared pointer to the
+   specific algorithm intermediate base class.
+
+
+Fixes since last public release
+-------------------------------
