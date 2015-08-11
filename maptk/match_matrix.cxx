@@ -62,6 +62,8 @@ match_matrix(const track_set_sptr tracks,
     frame_map[frames[i]] = i;
   }
 
+  // compute an upper bound on non-zero matrix entries to
+  // pre-allocate the sparse matrix memory
   size_t max_size = 0;
   const std::vector<track_sptr> trks = tracks->tracks();
   BOOST_FOREACH(const track_sptr& t, trks)
@@ -74,6 +76,7 @@ match_matrix(const track_set_sptr tracks,
   Eigen::SparseMatrix<unsigned int> mm(num_frames, num_frames);
   mm.reserve(Eigen::VectorXi::Constant(num_frames, max_size));
 
+  // fill in the matching matrix (lower triangular part only)
   BOOST_FOREACH(const track_sptr& t, trks)
   {
     // get all the frames covered by this track
@@ -90,6 +93,7 @@ match_matrix(const track_set_sptr tracks,
       }
     }
 
+    // fill in the matrix (lower triangular part)
     typedef std::set<unsigned int>::const_iterator sitr_t;
     for( sitr_t tfi1 = t_ind.begin(); tfi1 != t_ind.end(); ++tfi1)
     {
@@ -99,7 +103,10 @@ match_matrix(const track_set_sptr tracks,
       }
     }
   }
+
+  // compress storage by removing empty entries
   mm.makeCompressed();
+  // return a symmetric view of the lower triangular matrix
   return mm.selfadjointView<Eigen::Lower>();
 }
 
