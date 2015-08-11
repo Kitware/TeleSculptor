@@ -62,10 +62,18 @@ match_matrix(const track_set_sptr tracks,
     frame_map[frames[i]] = i;
   }
 
-  Eigen::SparseMatrix<unsigned int> mm(num_frames, num_frames);
-  mm.reserve(Eigen::VectorXi::Constant(num_frames, 10));
-
+  size_t max_size = 0;
   const std::vector<track_sptr> trks = tracks->tracks();
+  BOOST_FOREACH(const track_sptr& t, trks)
+  {
+    if( t->size() > max_size )
+    {
+      max_size = t->size();
+    }
+  }
+  Eigen::SparseMatrix<unsigned int> mm(num_frames, num_frames);
+  mm.reserve(Eigen::VectorXi::Constant(num_frames, max_size));
+
   BOOST_FOREACH(const track_sptr& t, trks)
   {
     // get all the frames covered by this track
