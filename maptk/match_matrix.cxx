@@ -95,12 +95,12 @@ match_matrix(const track_set_sptr tracks,
     {
       for( sitr_t tfi2 = tfi1; tfi2 != t_ind.end(); ++tfi2)
       {
-        ++mm.coeffRef(*tfi1, *tfi2);
+        ++mm.coeffRef(*tfi2, *tfi1);
       }
     }
   }
   mm.makeCompressed();
-  return mm.selfadjointView<Eigen::Upper>();
+  return mm.selfadjointView<Eigen::Lower>();
 }
 
 
