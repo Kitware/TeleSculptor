@@ -45,6 +45,7 @@
 #include <maptk/plugins/core/triangulate_landmarks.h>
 #include <maptk/exceptions.h>
 #include <maptk/eigen_io.h>
+#include <maptk/match_matrix.h>
 #include <maptk/triangulate.h>
 
 
@@ -592,6 +593,105 @@ find_closest_camera(const frame_id_t& frame,
 }
 
 
+/// find the best pair of camera indices to start with
+void
+find_best_initial_pair(const Eigen::SparseMatrix<unsigned int>& mm,
+                       int& i, int& j)
+{
+  typedef Eigen::Matrix<unsigned int, Eigen::Dynamic, 1> vectorXu;
+  const int cols = mm.cols();
+  const vectorXu d = mm.diagonal();
+
+  // compute the maximum off-diagonal value
+  unsigned int global_max_matches = 0;
+  for( int k=0; k<cols; ++k)
+  {
+    for(Eigen::SparseMatrix<unsigned int>::InnerIterator it(mm, k); it; ++it)
+    {
+      if(it.row() > k && it.value() > global_max_matches)
+      {
+        global_max_matches = it.value();
+      }
+    }
+  }
+  const unsigned int threshold = std::max(global_max_matches / 2, 20u);
+
+  std::cout <<"global max "<<global_max_matches << std::endl;
+  std::cout <<"threshold "<<threshold << std::endl;
+  for(int x=1; x<cols; ++x)
+  {
+    unsigned int max_matches = 0;
+    int max_i = 0, max_j = 0;
+    for(int y=0; y<cols-x; ++y)
+    {
+      unsigned int matches = mm.coeff(x+y,y);
+      if( matches > max_matches )
+      {
+        max_matches = matches;
+        max_i = y;
+        max_j = x+y;
+      }
+    }
+    std::cout << "max matches at "<<x<<" is "<< max_matches << " at "<< max_i << ", "<< max_j<<std::endl;
+    if( max_matches < threshold )
+    {
+      break;
+    }
+    i = max_i;
+    j = max_j;
+  }
+}
+
+
+// find the frame in the set \p new_frame_ids that sees the most
+// landmarks in \p lms in the track set \p tracks.
+frame_id_t
+next_best_frame(const track_set_sptr tracks,
+                const maptk::landmark_map::map_landmark_t& lms,
+                const std::set<frame_id_t>& new_frame_ids)
+{
+  const std::vector<track_sptr> trks = tracks->tracks();
+  typedef std::map<frame_id_t, unsigned int> frame_map_t;
+  frame_map_t vis_count;
+  BOOST_FOREACH(const track_sptr& t, trks)
+  {
+    if( lms.find(t->id()) != lms.end() )
+    {
+      const std::set<frame_id_t> t_frames = t->all_frame_ids();
+      BOOST_FOREACH(const frame_id_t& fid, t_frames)
+      {
+        if( new_frame_ids.find(fid) == new_frame_ids.end() )
+        {
+          continue;
+        }
+        frame_map_t::iterator fmi = vis_count.find(fid);
+        if( fmi == vis_count.end() )
+        {
+          vis_count.insert(std::pair<frame_id_t, unsigned int>(fid,1));
+        }
+        else
+        {
+          ++fmi->second;
+        }
+      }
+    }
+  }
+  // find the maximum observation
+  unsigned int max_count = 0;
+  frame_id_t best_frame = 0;
+  BOOST_FOREACH(const frame_map_t::value_type& p, vis_count)
+  {
+    if(p.second > max_count)
+    {
+      max_count = p.second;
+      best_frame = p.first;
+    }
+  }
+  std::cout << "frame "<< best_frame << " sees "<< max_count << " landmarks"<<std::endl;
+  return best_frame;
+}
+
+
 } // end anonymous namespace
 
 
@@ -621,7 +721,7 @@ initialize_cameras_landmarks
   std::set<frame_id_t> frame_ids = tracks->all_frame_ids();
   map_cam_t cams;
   extract_cameras(cameras, frame_ids, cams);
-  std::deque<frame_id_t> new_frame_ids(frame_ids.begin(), frame_ids.end());
+  std::set<frame_id_t> new_frame_ids(frame_ids);
 
   // Extract the existing landmarks and landmark ids to be initialized
   std::set<track_id_t> track_ids = tracks->all_track_ids();
@@ -657,18 +757,32 @@ initialize_cameras_landmarks
     }
   }
 
+  std::vector<frame_id_t> mm_frames(frame_ids.begin(), frame_ids.end());
+  Eigen::SparseMatrix<unsigned int> mm = match_matrix(tracks, mm_frames);
+  int init_i=0,init_j=0;
+  find_best_initial_pair(mm, init_i, init_j);
+  std::cout << "using frames "<< mm_frames[init_i] << " and " << mm_frames[init_j] <<std::endl;
+
   if(cams.empty())
   {
     // first frame, initialize to base camera
-    frame_id_t f = new_frame_ids.front();
-    new_frame_ids.pop_front();
+    frame_id_t f = mm_frames[init_i];
+    new_frame_ids.erase(f);
     cams[f] = camera_sptr(new camera_d(d_->base_camera));
   }
 
   while( !new_frame_ids.empty() )
   {
-    frame_id_t f = new_frame_ids.front();
-    new_frame_ids.pop_front();
+    frame_id_t f;
+    if( cams.size() == 1 )
+    {
+      f = mm_frames[init_j];
+    }
+    else
+    {
+      f = next_best_frame(tracks, lms, new_frame_ids);
+    }
+    new_frame_ids.erase(f);
 
     // get the closest frame number with an existing camera
     frame_id_t other_frame = find_closest_camera(f, cams);
