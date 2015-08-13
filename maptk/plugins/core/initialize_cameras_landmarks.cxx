@@ -39,11 +39,13 @@
 
 #include <boost/foreach.hpp>
 
+#include <maptk/algo/bundle_adjust.h>
 #include <maptk/algo/estimate_essential_matrix.h>
 #include <maptk/algo/optimize_cameras.h>
 #include <maptk/algo/triangulate_landmarks.h>
 #include <maptk/plugins/core/triangulate_landmarks.h>
 #include <maptk/exceptions.h>
+#include <maptk/metrics.h>
 #include <maptk/eigen_io.h>
 #include <maptk/match_matrix.h>
 #include <maptk/triangulate.h>
@@ -69,7 +71,8 @@ public:
     e_estimator(),
     camera_optimizer(),
     // use the core triangulation as the default, users can change it
-    lm_triangulator(new maptk::core::triangulate_landmarks())
+    lm_triangulator(new maptk::core::triangulate_landmarks()),
+    bundle_adjuster()
   {
   }
 
@@ -83,7 +86,9 @@ public:
     camera_optimizer(!other.camera_optimizer ? algo::optimize_cameras_sptr()
                                              : other.camera_optimizer->clone()),
     lm_triangulator(!other.lm_triangulator ? algo::triangulate_landmarks_sptr()
-                                           : other.lm_triangulator->clone())
+                                           : other.lm_triangulator->clone()),
+    bundle_adjuster(!other.bundle_adjuster ? algo::bundle_adjust_sptr()
+                                           : other.bundle_adjuster->clone())
   {
   }
 
@@ -123,6 +128,7 @@ public:
   algo::estimate_essential_matrix_sptr e_estimator;
   algo::optimize_cameras_sptr camera_optimizer;
   algo::triangulate_landmarks_sptr lm_triangulator;
+  algo::bundle_adjust_sptr bundle_adjuster;
 };
 
 
@@ -423,6 +429,9 @@ initialize_cameras_landmarks
   algo::triangulate_landmarks
       ::get_nested_algo_configuration("lm_triangulator",
                                       config, d_->lm_triangulator);
+  algo::bundle_adjust
+      ::get_nested_algo_configuration("bundle_adjuster",
+                                      config, d_->bundle_adjuster);
   return config;
 }
 
@@ -444,6 +453,9 @@ initialize_cameras_landmarks
   algo::triangulate_landmarks
       ::set_nested_algo_configuration("lm_triangulator",
                                       config, d_->lm_triangulator);
+  algo::bundle_adjust
+      ::set_nested_algo_configuration("bundle_adjuster",
+                                      config, d_->bundle_adjuster);
 
   d_->verbose = config->get_value<bool>("verbose",
                                         d_->verbose);
@@ -475,6 +487,12 @@ initialize_cameras_landmarks
   if (config->get_value<std::string>("camera_optimizer", "") != ""
       && !algo::optimize_cameras
               ::check_nested_algo_configuration("camera_optimizer", config))
+  {
+    return false;
+  }
+  if (config->get_value<std::string>("bundle_adjuster", "") != ""
+      && !algo::bundle_adjust
+              ::check_nested_algo_configuration("bundle_adjuster", config))
   {
     return false;
   }
@@ -832,6 +850,21 @@ initialize_cameras_landmarks
 
     // triangulate (or re-triangulate) points seen by the new camera
     d_->retriangulate(lms, cams, trks, new_lm_ids);
+
+    if( d_->bundle_adjuster && cams.size() == 2)
+    {
+      camera_map_sptr ba_cams(new simple_camera_map(cams));
+      landmark_map_sptr ba_lms(new simple_landmark_map(lms));
+      double init_rmse = maptk::reprojection_rmse(cams, lms, trks);
+      std::cerr << "initial reprojection RMSE: " << init_rmse << std::endl;
+
+      d_->bundle_adjuster->optimize(ba_cams, ba_lms, tracks);
+      cams = ba_cams->cameras();
+      lms = ba_lms->landmarks();
+      double final_rmse = maptk::reprojection_rmse(cams, lms, trks);
+      std::cerr << "final reprojection RMSE: " << final_rmse << std::endl;
+      std::cout << "updated focal length "<<cams.begin()->second->intrinsics().focal_length() <<std::endl;
+    }
 
     if(d_->verbose)
     {
