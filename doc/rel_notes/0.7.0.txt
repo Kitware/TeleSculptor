@@ -39,11 +39,6 @@ Main Library
    base class, and switched the essential matrix estimation algorithm
    to use this class instead of a 3x3 matrix.
 
- * Moved a large number of core data types and abstract algorithms to a
-   new dependent project name VITAL.  VITAL will provide a common framework
-   for logging, configuration, and core data types to be shared across
-   KWIVER projects.
-
 Ceres Plugin
 
  * Added a new plugin which uses Google Ceres Solver as a back end for
