@@ -122,6 +122,12 @@ public:
   priv(priv const& other)
     : initial_sub_sample(other.initial_sub_sample)
     , interpolation_rate(other.interpolation_rate)
+    , sba(!other.sba ? algo::bundle_adjust_sptr()
+                     : other.sba->clone())
+    , camera_optimizer(!other.camera_optimizer ? algo::optimize_cameras_sptr()
+                                               : other.camera_optimizer->clone())
+    , lm_triangulator(!other.lm_triangulator ? algo::triangulate_landmarks_sptr()
+                                             : other.lm_triangulator->clone())
   {
   }
 

@@ -77,7 +77,8 @@ close_loops_bad_frames_only
 : enabled_(other.enabled_),
   percent_match_req_(other.percent_match_req_),
   new_shot_length_(other.new_shot_length_),
-  max_search_length_(other.max_search_length_)
+  max_search_length_(other.max_search_length_),
+  matcher_(!other.matcher_ ? algo::match_features_sptr() : other.matcher_->clone())
 {
 }
 

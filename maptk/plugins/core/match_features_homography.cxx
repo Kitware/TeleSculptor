@@ -94,7 +94,15 @@ match_features_homography
 /// Copy Constructor
 match_features_homography
 ::match_features_homography(const match_features_homography& other)
-: d_(new priv(*other.d_))
+: d_(new priv(*other.d_)),
+  matcher1_(!other.matcher1_ ? algo::match_features_sptr()
+                             : other.matcher1_->clone()),
+  matcher2_(!other.matcher2_ ? algo::match_features_sptr()
+                             : other.matcher2_->clone()),
+  h_estimator_(!other.h_estimator_ ? algo::estimate_homography_sptr()
+                                   : other.h_estimator_->clone()),
+  feature_filter_(!other.feature_filter_ ? algo::filter_features_sptr()
+                                         : other.feature_filter_->clone())
 {
 }
 

@@ -64,14 +64,20 @@ public:
   priv()
   : verbose(false),
     retriangulate_all(false),
-    base_camera()
+    base_camera(),
+    e_estimator(),
+    lm_triangulator()
   {
   }
 
   priv(const priv& other)
   : verbose(other.verbose),
     retriangulate_all(other.retriangulate_all),
-    base_camera(other.base_camera)
+    base_camera(other.base_camera),
+    e_estimator(!other.e_estimator ? algo::estimate_essential_matrix_sptr()
+                                   : other.e_estimator->clone()),
+    lm_triangulator(!other.lm_triangulator ? algo::triangulate_landmarks_sptr()
+                                           : other.lm_triangulator->clone())
   {
   }
 

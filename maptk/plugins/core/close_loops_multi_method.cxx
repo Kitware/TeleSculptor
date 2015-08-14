@@ -87,6 +87,11 @@ close_loops_multi_method
 : count_( other.count_ ),
   methods_( other.methods_.size() )
 {
+  for( unsigned int i=0; i< other.methods_.size(); ++i )
+  {
+    methods_[i] = !other.methods_[i] ? algo::close_loops_sptr()
+                                     : other.methods_[i]->clone();
+  }
 }
 
 

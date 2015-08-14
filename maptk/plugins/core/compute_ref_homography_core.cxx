@@ -167,6 +167,8 @@ public:
     min_track_length( other.min_track_length ),
     inlier_scale( other.inlier_scale ),
     minimum_inliers( other.minimum_inliers ),
+    h_estimator( !other.h_estimator ? algo::estimate_homography_sptr()
+                                    : other.h_estimator->clone() ),
     frames_since_reset( other.frames_since_reset ),
     allow_ref_frame_regression( other.allow_ref_frame_regression ),
     min_ref_frame( other.min_ref_frame ),
