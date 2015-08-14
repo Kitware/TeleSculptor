@@ -38,25 +38,25 @@
 #include <map>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 
 /// Compute the match matrix from a track set
 Eigen::SparseMatrix<unsigned int>
-match_matrix(const track_set_sptr tracks,
-                   std::vector<frame_id_t>& frames)
+match_matrix(const vital::track_set_sptr tracks,
+                   std::vector<vital::frame_id_t>& frames)
 {
   // if no frames ids specified then get all frame ids in the track set
   if( frames.empty() )
   {
-    std::set<frame_id_t> frame_ids = tracks->all_frame_ids();
-    frames = std::vector<frame_id_t>(frame_ids.begin(), frame_ids.end());
+    std::set<vital::frame_id_t> frame_ids = tracks->all_frame_ids();
+    frames = std::vector<vital::frame_id_t>(frame_ids.begin(), frame_ids.end());
   }
   const size_t num_frames = frames.size();
 
   // build a frame map for reverse lookup of matrix indices
-  std::map<frame_id_t, unsigned int> frame_map;
+  std::map<vital::frame_id_t, unsigned int> frame_map;
   for( unsigned int i=0; i<num_frames; ++i )
   {
     frame_map[frames[i]] = i;
@@ -65,8 +65,8 @@ match_matrix(const track_set_sptr tracks,
   // compute an upper bound on non-zero matrix entries to
   // pre-allocate the sparse matrix memory
   size_t max_size = 0;
-  const std::vector<track_sptr> trks = tracks->tracks();
-  BOOST_FOREACH(const track_sptr& t, trks)
+  const std::vector<vital::track_sptr> trks = tracks->tracks();
+  BOOST_FOREACH(const vital::track_sptr& t, trks)
   {
     if( t->size() > max_size )
     {
@@ -77,15 +77,15 @@ match_matrix(const track_set_sptr tracks,
   mm.reserve(Eigen::VectorXi::Constant(num_frames, max_size));
 
   // fill in the matching matrix (lower triangular part only)
-  BOOST_FOREACH(const track_sptr& t, trks)
+  BOOST_FOREACH(const vital::track_sptr& t, trks)
   {
     // get all the frames covered by this track
-    std::set<frame_id_t> t_frames = t->all_frame_ids();
+    std::set<vital::frame_id_t> t_frames = t->all_frame_ids();
     // map the frames to a vector of all valid matrix indices
     std::set<unsigned int> t_ind;
-    BOOST_FOREACH(const frame_id_t& fid, t_frames)
+    BOOST_FOREACH(const vital::frame_id_t& fid, t_frames)
     {
-      std::map<frame_id_t, unsigned int>::const_iterator fmi = frame_map.find(fid);
+      std::map<vital::frame_id_t, unsigned int>::const_iterator fmi = frame_map.find(fid);
       // only add to the vector if in the map
       if( fmi != frame_map.end() )
       {
@@ -113,3 +113,4 @@ match_matrix(const track_set_sptr tracks,
 
 
 } // end namespace maptk
+} // end namespace kwiver

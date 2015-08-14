@@ -669,7 +669,7 @@ static int maptk_main(int argc, char const* argv[])
       std::string out_track_file = config->get_value<std::string>("filtered_track_file");
       if( out_track_file != "" )
       {
-        maptk::write_track_file(tracks, out_track_file);
+        kwiver::vital::write_track_file(tracks, out_track_file);
       }
     }
 

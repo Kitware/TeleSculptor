@@ -36,12 +36,14 @@
 #ifndef MAPTK_MATCH_MATRIX_H_
 #define MAPTK_MATCH_MATRIX_H_
 
-#include "track_set.h"
+#include <maptk/config.h>
+
+#include <vital/types/track_set.h>
 #include <Eigen/Sparse>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 
 /// Compute the match matrix from a track set
@@ -60,10 +62,11 @@ namespace maptk
  */
 MAPTK_LIB_EXPORT
 Eigen::SparseMatrix<unsigned int>
-match_matrix(const track_set_sptr tracks,
-                   std::vector<frame_id_t>& frames);
+match_matrix(const vital::track_set_sptr tracks,
+                   std::vector<vital::frame_id_t>& frames);
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_MATCH_MATRIX_H_

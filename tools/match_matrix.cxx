@@ -39,10 +39,9 @@
 #include <string>
 #include <vector>
 
-#include <maptk/exceptions.h>
-#include <maptk/types.h>
 #include <maptk/match_matrix.h>
-#include <maptk/track_set_io.h>
+#include <vital/exceptions.h>
+#include <vital/io/track_set_io.h>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options/options_description.hpp>
@@ -71,7 +70,7 @@ void usage(int const& argc, char const* argv[],
 void
 write_match_matrix(std::ostream& os,
                    const Eigen::SparseMatrix<unsigned int>& mm,
-                   const std::vector<maptk::frame_id_t>& frames)
+                   const std::vector<kwiver::vital::frame_id_t>& frames)
 {
   for( unsigned i=0; i<frames.size(); ++i )
   {
@@ -84,6 +83,7 @@ write_match_matrix(std::ostream& os,
 
 static int maptk_main(int argc, char const* argv[])
 {
+  using namespace kwiver;
   //
   // CLI Options (boost)
   //
@@ -127,23 +127,23 @@ static int maptk_main(int argc, char const* argv[])
   // test the output file
   if(vm.count("output-matrix"))
   {
-    maptk::path_t outfile(vm["output-matrix"].as<std::string>());
+    vital::path_t outfile(vm["output-matrix"].as<std::string>());
 
     // If the given path is a directory, we obviously can't write to it.
     if(bfs::is_directory(outfile))
     {
-      throw maptk::file_write_exception(outfile, "Path given is a directory, "
+      throw vital::file_write_exception(outfile, "Path given is a directory, "
                                                  "can not write file.");
     }
 
     // Check that the directory of the given file path exists,
     // creating necessary directories where needed.
-    maptk::path_t parent_dir = bfs::absolute(outfile.parent_path());
+    vital::path_t parent_dir = bfs::absolute(outfile.parent_path());
     if(!bfs::is_directory(parent_dir))
     {
       if(!bfs::create_directories(parent_dir))
       {
-        throw maptk::file_write_exception(parent_dir, "Attempted directory creation, "
+        throw vital::file_write_exception(parent_dir, "Attempted directory creation, "
                                                       "but no directory created! No "
                                                       "idea what happened here...");
       }
@@ -154,17 +154,17 @@ static int maptk_main(int argc, char const* argv[])
   // load the tracks
   std::string infile = vm["input-tracks"].as<std::string>();
   std::cout << "loading: "<< infile << std::endl;
-  maptk::track_set_sptr tracks = maptk::read_track_file(infile);
+  vital::track_set_sptr tracks = vital::read_track_file(infile);
 
   // compute the match matrix
   std::cout << "computing matching matrix" <<std::endl;
-  std::vector<maptk::frame_id_t> frames;
+  std::vector<vital::frame_id_t> frames;
   Eigen::SparseMatrix<unsigned int> mm = maptk::match_matrix(tracks, frames);
 
   // write output
   if(vm.count("output-matrix"))
   {
-    maptk::path_t outfile(vm["output-matrix"].as<std::string>());
+    vital::path_t outfile(vm["output-matrix"].as<std::string>());
     std::cout << "writing to: "<< outfile << std::endl;
     std::ofstream ofs(outfile.string().c_str());
     write_match_matrix(ofs, mm, frames);
