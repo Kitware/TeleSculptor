@@ -40,8 +40,8 @@
 #include <maptk/plugins/ceres/ceres_config.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ceres
 {
@@ -173,6 +173,7 @@ public:
 } // end namespace ceres
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_CERES_LENS_DISTORTION_H_

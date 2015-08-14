@@ -48,8 +48,8 @@
 #include <boost/foreach.hpp>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace testing
 {
@@ -61,7 +61,7 @@ using namespace kwiver::vital;
 kwiver::vital::landmark_map_sptr
 cube_corners(double s, const kwiver::vital::vector_3d& c=kwiver::vital::vector_3d(0,0,0))
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
 
   // create corners of a cube
   kwiver::vital::landmark_map::map_landmark_t landmarks;
@@ -84,7 +84,7 @@ kwiver::vital::landmark_map_sptr
 init_landmarks(kwiver::vital::landmark_id_t num_lm,
                const kwiver::vital::vector_3d& c=kwiver::vital::vector_3d(0,0,0))
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
 
   kwiver::vital::landmark_map::map_landmark_t lm_map;
   for (landmark_id_t i=0; i<num_lm; ++i)
@@ -100,7 +100,7 @@ kwiver::vital::landmark_map_sptr
 noisy_landmarks(kwiver::vital::landmark_map_sptr landmarks,
                 double stdev=1.0)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
 
   landmark_map::map_landmark_t lm_map = landmarks->landmarks();
   BOOST_FOREACH(landmark_map::map_landmark_t::value_type& p, lm_map)
@@ -120,7 +120,7 @@ camera_seq(kwiver::vital::frame_id_t num_cams = 20,
            kwiver::vital::camera_intrinsics_d K =
                kwiver::vital::camera_intrinsics_d(1000, vector_2d(640, 480)))
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   camera_map::map_camera_t cameras;
 
   // create a camera sequence (elliptical path)
@@ -145,7 +145,7 @@ init_cameras(kwiver::vital::frame_id_t num_cams = 20,
              kwiver::vital::camera_intrinsics_d K =
                  kwiver::vital::camera_intrinsics_d(1000, vector_2d(640, 480)))
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   camera_map::map_camera_t cameras;
 
   // create a camera sequence (elliptical path)
@@ -167,7 +167,7 @@ kwiver::vital::camera_map_sptr
 noisy_cameras(kwiver::vital::camera_map_sptr cameras,
               double pos_stdev=1.0, double rot_stdev=1.0)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
 
   camera_map::map_camera_t cam_map;
   BOOST_FOREACH(camera_map::map_camera_t::value_type const& p, cameras->cameras())
@@ -189,7 +189,7 @@ noisy_cameras(kwiver::vital::camera_map_sptr cameras,
 kwiver::vital::track_set_sptr
 subset_tracks(kwiver::vital::track_set_sptr in_tracks, double keep_frac=0.75)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
 
   std::srand(0);
   std::vector<track_sptr> tracks = in_tracks->tracks();
@@ -223,7 +223,7 @@ subset_tracks(kwiver::vital::track_set_sptr in_tracks, double keep_frac=0.75)
 kwiver::vital::track_set_sptr
 noisy_tracks(kwiver::vital::track_set_sptr in_tracks, double stdev=1.0)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
 
   std::vector<track_sptr> tracks = in_tracks->tracks();
   std::vector<track_sptr> new_tracks;
@@ -251,7 +251,7 @@ add_outliers_to_tracks(kwiver::vital::track_set_sptr in_tracks,
                        double outlier_frac=0.1,
                        double stdev=20.0)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
 
   std::srand(0);
   std::vector<track_sptr> tracks = in_tracks->tracks();
@@ -288,5 +288,6 @@ add_outliers_to_tracks(kwiver::vital::track_set_sptr in_tracks,
 } // end namespace testing
 
 } // end namespace maptk
+} // end namespace kwiver
 
 #endif // MAPTK_TEST_TEST_SCENE_H_

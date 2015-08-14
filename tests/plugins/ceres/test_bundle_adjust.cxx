@@ -57,7 +57,7 @@ main(int argc, char* argv[])
   CHECK_ARGS(1);
 
   // Register ceres algorithm implementations
-  maptk::ceres::register_algorithms();
+  kwiver::maptk::ceres::register_algorithms();
 
   testname_t const testname = argv[1];
 
@@ -67,7 +67,7 @@ main(int argc, char* argv[])
 
 IMPLEMENT_TEST(create)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   algo::bundle_adjust_sptr ba = algo::bundle_adjust::create("ceres");
   if (!ba)
   {
@@ -79,7 +79,7 @@ IMPLEMENT_TEST(create)
 // input to SBA is the ideal solution, make sure it doesn't diverge
 IMPLEMENT_TEST(from_solution)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
@@ -115,7 +115,7 @@ IMPLEMENT_TEST(from_solution)
 // add noise to landmarks before input to SBA
 IMPLEMENT_TEST(noisy_landmarks)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
@@ -155,7 +155,7 @@ IMPLEMENT_TEST(noisy_landmarks)
 // add noise to landmarks and cameras before input to SBA
 IMPLEMENT_TEST(noisy_landmarks_noisy_cameras)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
@@ -198,7 +198,7 @@ IMPLEMENT_TEST(noisy_landmarks_noisy_cameras)
 // initialize all landmarks to the origin as input to SBA
 IMPLEMENT_TEST(zero_landmarks)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
@@ -240,7 +240,7 @@ IMPLEMENT_TEST(zero_landmarks)
 // select a subset of cameras to optimize
 IMPLEMENT_TEST(subset_cameras)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
@@ -298,7 +298,7 @@ IMPLEMENT_TEST(subset_cameras)
 // select a subset of landmarks to optimize
 IMPLEMENT_TEST(subset_landmarks)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
@@ -350,7 +350,7 @@ IMPLEMENT_TEST(subset_landmarks)
 // select a subset of tracks/track_states to constrain the problem
 IMPLEMENT_TEST(subset_tracks)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
@@ -397,7 +397,7 @@ IMPLEMENT_TEST(subset_tracks)
 // select a subset of tracks/track_states and add observation noise
 IMPLEMENT_TEST(noisy_tracks)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
@@ -449,7 +449,7 @@ IMPLEMENT_TEST(noisy_tracks)
 // select a subset of tracks/track_states to constrain the problem
 IMPLEMENT_TEST(outlier_tracks)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
@@ -554,7 +554,7 @@ void test_ba_using_distortion(kwiver::vital::config_block_sptr cfg,
                               const Eigen::VectorXd& dc,
                               bool clear_init_distortion)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   cfg->set_value("verbose", "true");
   ba.set_configuration(cfg);
@@ -622,7 +622,7 @@ void test_ba_using_distortion(kwiver::vital::config_block_sptr cfg,
 // use 1 lens distortion coefficent in bundle adjustment
 IMPLEMENT_TEST(use_lens_distortion_1)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("lens_distortion_type", "POLYNOMIAL_RADIAL_DISTORTION");
@@ -640,7 +640,7 @@ IMPLEMENT_TEST(use_lens_distortion_1)
 // use 2 lens distortion coefficents in bundle adjustment
 IMPLEMENT_TEST(use_lens_distortion_2)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("lens_distortion_type", "POLYNOMIAL_RADIAL_DISTORTION");
@@ -658,7 +658,7 @@ IMPLEMENT_TEST(use_lens_distortion_2)
 // use 3 lens distortion coefficents in bundle adjustment
 IMPLEMENT_TEST(use_lens_distortion_3)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("lens_distortion_type",
@@ -679,7 +679,7 @@ IMPLEMENT_TEST(use_lens_distortion_3)
 // use 5 lens distortion coefficents in bundle adjustment
 IMPLEMENT_TEST(use_lens_distortion_5)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("lens_distortion_type",
@@ -700,7 +700,7 @@ IMPLEMENT_TEST(use_lens_distortion_5)
 // use 8 lens distortion coefficents in bundle adjustment
 IMPLEMENT_TEST(use_lens_distortion_8)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("lens_distortion_type",
@@ -722,7 +722,7 @@ IMPLEMENT_TEST(use_lens_distortion_8)
 // estimate 1 lens distortion coefficent in bundle adjustment
 IMPLEMENT_TEST(est_lens_distortion_1)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("lens_distortion_type", "POLYNOMIAL_RADIAL_DISTORTION");
@@ -740,7 +740,7 @@ IMPLEMENT_TEST(est_lens_distortion_1)
 // estimate 2 lens distortion coefficents in bundle adjustment
 IMPLEMENT_TEST(est_lens_distortion_2)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("lens_distortion_type", "POLYNOMIAL_RADIAL_DISTORTION");
@@ -758,7 +758,7 @@ IMPLEMENT_TEST(est_lens_distortion_2)
 // estimate 3 lens distortion coefficents in bundle adjustment
 IMPLEMENT_TEST(est_lens_distortion_3)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("lens_distortion_type",
@@ -779,7 +779,7 @@ IMPLEMENT_TEST(est_lens_distortion_3)
 // estimate 5 lens distortion coefficents in bundle adjustment
 IMPLEMENT_TEST(est_lens_distortion_5)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("lens_distortion_type",
@@ -800,7 +800,7 @@ IMPLEMENT_TEST(est_lens_distortion_5)
 // estimate 8 lens distortion coefficents in bundle adjustment
 IMPLEMENT_TEST(est_lens_distortion_8)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("lens_distortion_type",

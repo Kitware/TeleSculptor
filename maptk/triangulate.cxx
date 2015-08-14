@@ -38,13 +38,13 @@
 #include <Eigen/SVD>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 /// Triangulate a 3D point from a set of cameras and 2D image points
 template <typename T>
 Eigen::Matrix<T,3,1>
-triangulate_inhomog(const std::vector<kwiver::vital::camera_<T> >& cameras,
+triangulate_inhomog(const std::vector<vital::camera_<T> >& cameras,
                     const std::vector<Eigen::Matrix<T,2,1> >& points)
 {
   typedef Eigen::Matrix<T,2,1> vector_2;
@@ -58,7 +58,7 @@ triangulate_inhomog(const std::vector<kwiver::vital::camera_<T> >& cameras,
   for( unsigned int i=0; i<points.size(); ++i )
   {
     // the camera
-    const kwiver::vital::camera_<T>& cam = cameras[i];
+    const vital::camera_<T>& cam = cameras[i];
     const matrix_3x3 R(cam.get_rotation());
     const vector_3 t(cam.get_translation());
     // the point in normalized coordinates
@@ -81,7 +81,7 @@ triangulate_inhomog(const std::vector<kwiver::vital::camera_<T> >& cameras,
 /// Triangulate a homogeneous 3D point from a set of cameras and 2D image points
 template <typename T>
 Eigen::Matrix<T,4,1>
-triangulate_homog(const std::vector<kwiver::vital::camera_<T> >& cameras,
+triangulate_homog(const std::vector<vital::camera_<T> >& cameras,
                   const std::vector<Eigen::Matrix<T,2,1> >& points)
 {
   typedef Eigen::Matrix<T,2,1> vector_2;
@@ -93,7 +93,7 @@ triangulate_homog(const std::vector<kwiver::vital::camera_<T> >& cameras,
   for( unsigned int i=0; i<points.size(); ++i )
   {
     // the camera
-    const kwiver::vital::camera_<T>& cam = cameras[i];
+    const vital::camera_<T>& cam = cameras[i];
     const matrix_3x3 R(cam.get_rotation());
     const vector_3 t(cam.get_translation());
     // the point in normalized coordinates
@@ -116,10 +116,10 @@ triangulate_homog(const std::vector<kwiver::vital::camera_<T> >& cameras,
 /// \cond DoxygenSuppress
 #define INSTANTIATE_TRIANGULATE(T) \
 template MAPTK_LIB_EXPORT Eigen::Matrix<T,4,1> \
-         triangulate_homog(const std::vector<kwiver::vital::camera_<T> >& cameras, \
+         triangulate_homog(const std::vector<vital::camera_<T> >& cameras, \
                            const std::vector<Eigen::Matrix<T,2,1> >& points); \
 template MAPTK_LIB_EXPORT Eigen::Matrix<T,3,1> \
-         triangulate_inhomog(const std::vector<kwiver::vital::camera_<T> >& cameras, \
+         triangulate_inhomog(const std::vector<vital::camera_<T> >& cameras, \
                              const std::vector<Eigen::Matrix<T,2,1> >& points);
 
 INSTANTIATE_TRIANGULATE(double);
@@ -130,3 +130,4 @@ INSTANTIATE_TRIANGULATE(float);
 
 
 } // end namespace maptk
+} // end namespace kwiver

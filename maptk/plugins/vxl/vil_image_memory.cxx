@@ -36,8 +36,8 @@
 #include "vil_image_memory.h"
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vxl
 {
@@ -50,7 +50,7 @@ maptk_memory_chunk
 {
   if( n != size_ )
   {
-    maptk_data_ = kwiver::vital::image_memory_sptr(new kwiver::vital::image_memory(n));
+    maptk_data_ = vital::image_memory_sptr(new vital::image_memory(n));
     size_ = n;
   }
   pixel_format_ = pixel_format;
@@ -60,3 +60,4 @@ maptk_memory_chunk
 } // end namespace vxl
 
 } // end namespace maptk
+} // end namespace kwiver

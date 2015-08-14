@@ -80,7 +80,6 @@ config_block_cast(config_block_value_t const& value)                    \
 }                                                                       \
                                                                         \
 }                                                                       \
-}                                                                       \
                                                                         \
 namespace maptk {                                                       \
 namespace ceres {                                                       \
@@ -105,12 +104,12 @@ ceres_options< NS::ceres_type >()                                       \
 }                                                                       \
                                                                         \
 }                                                                       \
+}                                                                       \
 }
 
-namespace maptk
-{
-namespace ceres
-{
+namespace kwiver {
+namespace maptk {
+namespace ceres {
 
 /// Defult implementation of string options for Ceres enums
 template <typename T>
@@ -120,24 +119,25 @@ ceres_options()
   return std::string();
 }
 
-}
-}
+} // end namespace ceres
+} // end namespace maptk
+} // end namespace kwiver
 
 MAPTK_CERES_ENUM_HELPERS(::ceres, LinearSolverType)
 MAPTK_CERES_ENUM_HELPERS(::ceres, PreconditionerType)
 MAPTK_CERES_ENUM_HELPERS(::ceres, TrustRegionStrategyType)
 MAPTK_CERES_ENUM_HELPERS(::ceres, DoglegType)
 
-MAPTK_CERES_ENUM_HELPERS(maptk::ceres, LossFunctionType)
-MAPTK_CERES_ENUM_HELPERS(maptk::ceres, LensDistortionType)
+MAPTK_CERES_ENUM_HELPERS(kwiver::maptk::ceres, LossFunctionType)
+MAPTK_CERES_ENUM_HELPERS(kwiver::maptk::ceres, LensDistortionType)
 
 #undef MAPTK_CERES_ENUM_HELPERS
 
 
-namespace maptk
-{
-namespace ceres
-{
+namespace kwiver {
+namespace maptk {
+namespace ceres {
+
 /// Private implementation class
 class bundle_adjust::priv
 {
@@ -157,7 +157,7 @@ public:
     optimize_dist_k3(false),
     optimize_dist_p1_p2(false),
     optimize_dist_k4_k5_k6(false),
-    m_logger( kwiver::vital::get_logger( "maptk::ceres::bundle_adjust" ))
+    m_logger( vital::get_logger( "maptk::ceres::bundle_adjust" ))
   {
   }
 
@@ -175,7 +175,7 @@ public:
     optimize_dist_k3(other.optimize_dist_k3),
     optimize_dist_p1_p2(other.optimize_dist_p1_p2),
     optimize_dist_k4_k5_k6(other.optimize_dist_k4_k5_k6),
-    m_logger( kwiver::vital::get_logger( "maptk::ceres::bundle_adjust" ))
+    m_logger( vital::get_logger( "maptk::ceres::bundle_adjust" ))
   {
   }
 
@@ -209,7 +209,7 @@ public:
   bool optimize_dist_k4_k5_k6;
 
   /// Logger handle
-  kwiver::vital::logger_handle_t m_logger;
+  vital::logger_handle_t m_logger;
 };
 
 
@@ -243,7 +243,7 @@ bundle_adjust
 {
   ::ceres::Solver::Options& o = d_->options;
   // get base config from base class
-  config_block_sptr config = kwiver::vital::algo::bundle_adjust::get_configuration();
+  config_block_sptr config = vital::algo::bundle_adjust::get_configuration();
   config->set_value("verbose", d_->verbose,
                     "If true, write status messages to the terminal showing "
                     "optimization progress at each iteration");
@@ -609,3 +609,4 @@ bundle_adjust
 } // end namespace ceres
 
 } // end namespace maptk
+} // end namespace kwiver

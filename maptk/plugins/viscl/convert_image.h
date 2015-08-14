@@ -35,15 +35,15 @@
 #include <maptk/plugins/viscl/viscl_config.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vcl
 {
 
 /// Class to convert an image to a viscl base image
 class MAPTK_VISCL_EXPORT convert_image
-  : public kwiver::vital::algorithm_impl<convert_image, kwiver::vital::algo::convert_image>
+  : public vital::algorithm_impl<convert_image, vital::algo::convert_image>
 {
 public:
 
@@ -62,13 +62,14 @@ public:
    * \returns the image container with underlying viscl img
    * should be used to prevent repeated image uploading to GPU
    */
-  virtual kwiver::vital::image_container_sptr convert(kwiver::vital::image_container_sptr img) const;
+  virtual vital::image_container_sptr convert(vital::image_container_sptr img) const;
 };
 
 
 } // end namespace vcl
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_VISCL_CONVERT_IMAGE_H_

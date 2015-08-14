@@ -38,15 +38,15 @@
 #include <viscl/core/buffer.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vcl
 {
 
 /// A concrete descriptor set that wraps VisCL descriptors.
 class MAPTK_VISCL_EXPORT descriptor_set
-: public kwiver::vital::descriptor_set
+: public vital::descriptor_set
 {
 public:
 
@@ -64,7 +64,7 @@ public:
   /**
     * Warning: These descriptors must be matched by hamming distance
     */
-  virtual std::vector<kwiver::vital::descriptor_sptr> descriptors() const;
+  virtual std::vector<vital::descriptor_sptr> descriptors() const;
 
   /// Return the native VisCL descriptors structure
   const viscl::buffer& viscl_descriptors() const { return data_; }
@@ -78,12 +78,13 @@ protected:
 
 /// Convert a descriptor set to a VisCL descriptor set must be <int,4>
 MAPTK_VISCL_EXPORT viscl::buffer
-descriptors_to_viscl(const kwiver::vital::descriptor_set& desc_set);
+descriptors_to_viscl(const vital::descriptor_set& desc_set);
 
 
 } // end namespace vcl
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_VISCL_DESCRIPTOR_SET_H_

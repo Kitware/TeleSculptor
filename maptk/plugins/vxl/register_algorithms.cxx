@@ -47,14 +47,12 @@
 #include <maptk/plugins/vxl/match_features_constrained.h>
 
 
-namespace maptk
-{
-
-namespace vxl
-{
+namespace kwiver {
+namespace maptk {
+namespace vxl {
 
 /// Register VXL algorithm implementations with the given or global registrar
-int register_algorithms( kwiver::vital::registrar &reg )
+int register_algorithms( vital::registrar &reg )
 {
   REGISTRATION_INIT( reg );
 
@@ -72,6 +70,6 @@ int register_algorithms( kwiver::vital::registrar &reg )
   return REGISTRATION_FAILURES();
 }
 
-} // end vxl ns
-
-} // end maptk ns
+} // end namespace vxl
+} // end namespace maptk
+} // end namespace kwiver

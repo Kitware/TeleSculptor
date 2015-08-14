@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -83,8 +83,8 @@ static projPJ gen_latlon_pj()
 
 }
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace proj
 {
@@ -161,3 +161,4 @@ geo_map
 } // end namespace proj
 
 } // end namespace maptk
+} // end namespace kwiver

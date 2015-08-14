@@ -45,8 +45,8 @@
 #include <vital/vital_types.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 
 /// Load landmarks and tracks from reference points file
@@ -72,12 +72,13 @@ namespace maptk
  */
 MAPTK_LIB_EXPORT
 void
-load_reference_file(kwiver::vital::path_t const& reference_file,
+load_reference_file(vital::path_t const& reference_file,
                     local_geo_cs & lgcs,
-                    kwiver::vital::landmark_map_sptr & ref_landmarks,
-                    kwiver::vital::track_set_sptr & ref_track_set);
+                    vital::landmark_map_sptr & ref_landmarks,
+                    vital::track_set_sptr & ref_track_set);
 
 
 } // end namespace maptk
+} // end namespace kwiver
 
 #endif // MAPTK_GEO_REFERENCE_POINTS_IO_H_

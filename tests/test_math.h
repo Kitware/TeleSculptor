@@ -41,11 +41,9 @@
 #include <Eigen/Core>
 
 
-namespace maptk
-{
-
-namespace testing
-{
+namespace kwiver {
+namespace maptk {
+namespace testing {
 
 
 /// Near comparison function for vectors
@@ -71,9 +69,8 @@ bool is_almost(Eigen::Matrix<T,M,N> const& a,
 }
 
 
-}
-
-}
-
+} // end namespace testing
+} // end namespace maptk
+} // end namespace kwiver
 
 #endif // MAPTK_TEST_MATH_H_

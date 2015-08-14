@@ -51,7 +51,7 @@ DECLARE_TEST_MAP();
 int main(int argc, char* argv[])
 {
   CHECK_ARGS(1);
-  maptk::vxl::register_algorithms();
+  kwiver::maptk::vxl::register_algorithms();
   testname_t const testname = argv[1];
   RUN_TEST(testname);
 }
@@ -71,7 +71,7 @@ IMPLEMENT_TEST(creation)
 
 IMPLEMENT_TEST(not_enough_points)
 {
-  maptk::vxl::estimate_similarity_transform est_ST;
+  kwiver::maptk::vxl::estimate_similarity_transform est_ST;
   std::vector<vector_3d> from, to;
   EXPECT_EXCEPTION(
     algorithm_exception,
@@ -82,7 +82,7 @@ IMPLEMENT_TEST(not_enough_points)
 
 IMPLEMENT_TEST(uneven_sets)
 {
-  maptk::vxl::estimate_similarity_transform est_ST;
+  kwiver::maptk::vxl::estimate_similarity_transform est_ST;
   std::vector<vector_3d> from, to;
   vector_3d dummy_vec(0,0,0);
 
@@ -110,7 +110,7 @@ IMPLEMENT_TEST(reprojection_100pts)
   vector<vector_3d> original_points;
   for (int i=0; i < 100; ++i)
   {
-    original_points.push_back(maptk::testing::random_point3d(1.0));
+    original_points.push_back(kwiver::maptk::testing::random_point3d(1.0));
   }
 
   cerr << "Constructing crafted similarity transformation" << endl;
@@ -126,7 +126,7 @@ IMPLEMENT_TEST(reprojection_100pts)
   }
 
   cerr << "Estimating similarity transformation between point sets" << endl;
-  maptk::vxl::estimate_similarity_transform est_ST;
+  kwiver::maptk::vxl::estimate_similarity_transform est_ST;
   similarity_d e_sim = est_ST.estimate_transform(original_points,
                                                  transformed_points);
 
@@ -176,7 +176,7 @@ IMPLEMENT_TEST(reprojection_4pts)
   cerr << "Random points:" << endl;
   for (int i=0; i < 4; ++i)
   {
-    original_points.push_back(maptk::testing::random_point3d(1.0));
+    original_points.push_back(kwiver::maptk::testing::random_point3d(1.0));
     cerr << "\t" << original_points.back() << endl;
   }
 
@@ -193,7 +193,7 @@ IMPLEMENT_TEST(reprojection_4pts)
   }
 
   cerr << "Estimating similarity transformation between point sets" << endl;
-  maptk::vxl::estimate_similarity_transform est_ST;
+  kwiver::maptk::vxl::estimate_similarity_transform est_ST;
   similarity_d e_sim = est_ST.estimate_transform(original_points,
                                                  transformed_points);
 
@@ -220,7 +220,7 @@ IMPLEMENT_TEST(reprojection_3pts)
   cerr << "Random points:" << endl;
   for (int i=0; i < 3; ++i)
   {
-    original_points.push_back(maptk::testing::random_point3d(1.0));
+    original_points.push_back(kwiver::maptk::testing::random_point3d(1.0));
     cerr << "\t" << original_points.back() << endl;
   }
 
@@ -237,7 +237,7 @@ IMPLEMENT_TEST(reprojection_3pts)
   }
 
   cerr << "Estimating similarity transformation between point sets" << endl;
-  maptk::vxl::estimate_similarity_transform est_ST;
+  kwiver::maptk::vxl::estimate_similarity_transform est_ST;
   similarity_d e_sim = est_ST.estimate_transform(original_points,
                                                  transformed_points);
 
@@ -263,7 +263,7 @@ IMPLEMENT_TEST(reprojection_100pts_noisy)
   vector<vector_3d> original_points;
   for (int i=0; i < 100; ++i)
   {
-    original_points.push_back(maptk::testing::random_point3d(1.0));
+    original_points.push_back(kwiver::maptk::testing::random_point3d(1.0));
   }
 
   cerr << "Constructing crafted similarity transformation" << endl;
@@ -275,11 +275,11 @@ IMPLEMENT_TEST(reprojection_100pts_noisy)
   vector<vector_3d> transformed_points;
   BOOST_FOREACH(vector_3d o_vec, original_points)
   {
-    transformed_points.push_back((m_sim * o_vec) + maptk::testing::random_point3d(0.01));
+    transformed_points.push_back((m_sim * o_vec) + kwiver::maptk::testing::random_point3d(0.01));
   }
 
   cerr << "Estimating similarity transformation between point sets" << endl;
-  maptk::vxl::estimate_similarity_transform est_ST;
+  kwiver::maptk::vxl::estimate_similarity_transform est_ST;
   similarity_d e_sim = est_ST.estimate_transform(original_points,
                                                  transformed_points);
 

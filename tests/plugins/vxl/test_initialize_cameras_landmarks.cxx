@@ -55,8 +55,8 @@ main(int argc, char* argv[])
 {
   CHECK_ARGS(1);
 
-  maptk::core::register_algorithms();
-  maptk::vxl::register_algorithms();
+  kwiver::maptk::core::register_algorithms();
+  kwiver::maptk::vxl::register_algorithms();
 
   testname_t const testname = argv[1];
 
@@ -67,7 +67,7 @@ using namespace kwiver::vital;
 
 IMPLEMENT_TEST(create)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   algo::initialize_cameras_landmarks_sptr init = algo::initialize_cameras_landmarks::create("core");
   if (!init)
   {
@@ -77,10 +77,10 @@ IMPLEMENT_TEST(create)
 
 
 // helper function to configure the algorithm
-void configure_algo(maptk::core::initialize_cameras_landmarks& algo,
+void configure_algo(kwiver::maptk::core::initialize_cameras_landmarks& algo,
                     const kwiver::vital::camera_intrinsics_d& K)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   kwiver::vital::config_block_sptr cfg = algo.get_configuration();
   cfg->set_value("verbose", "true");
   cfg->set_value("base_camera:focal_length", K.focal_length());
@@ -103,7 +103,7 @@ void configure_algo(maptk::core::initialize_cameras_landmarks& algo,
 // test initialization with ideal points
 IMPLEMENT_TEST(ideal_points)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   core::initialize_cameras_landmarks init;
 
   // create landmarks at the random locations
@@ -157,7 +157,7 @@ IMPLEMENT_TEST(ideal_points)
 // test initialization with noisy points
 IMPLEMENT_TEST(noisy_points)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   core::initialize_cameras_landmarks init;
 
   // create landmarks at the random locations
@@ -216,7 +216,7 @@ IMPLEMENT_TEST(noisy_points)
 // test initialization with subsets of cameras and landmarks
 IMPLEMENT_TEST(subset_init)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   core::initialize_cameras_landmarks init;
 
   // create landmarks at the random locations

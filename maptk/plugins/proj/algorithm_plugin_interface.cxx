@@ -40,5 +40,5 @@
 
 int register_algo_impls( kwiver::vital::registrar &reg )
 {
-  return maptk::proj::register_algorithms( reg );
+  return kwiver::maptk::proj::register_algorithms( reg );
 }

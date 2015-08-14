@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,7 +58,7 @@ using namespace kwiver::vital;
 template <typename T>
 vpgl_perspective_camera<T> sample_vpgl_camera()
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   vpgl_calibration_matrix<T> vk(T(4000), vgl_point_2d<T>(300,400),
                                 T(1.0), T(0.75), T(0.0001));
   vgl_rotation_3d<T> vr(T(0.7), T(0.1), T(1.3));
@@ -69,7 +69,7 @@ vpgl_perspective_camera<T> sample_vpgl_camera()
 
 IMPLEMENT_TEST(convert_camera_sptr)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   vpgl_perspective_camera<double> vcd = sample_vpgl_camera<double>();
   vpgl_perspective_camera<float> vcf = sample_vpgl_camera<float>();
 
@@ -90,7 +90,7 @@ IMPLEMENT_TEST(convert_camera_sptr)
 template <typename T>
 void test_convert_camera(T eps)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   vpgl_perspective_camera<T> vcam = sample_vpgl_camera<T>();
 
   camera_<T> mcam;
