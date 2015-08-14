@@ -62,7 +62,7 @@ algorithm
   {
     return inst;
   }
-  return inst->clone();
+  return inst->base_clone();
 }
 
 
