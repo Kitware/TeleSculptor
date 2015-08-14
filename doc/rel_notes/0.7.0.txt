@@ -1,13 +1,13 @@
-MAPTK Release Notes for changes pending release approval by AFRL
-================================================================
+MAP-Tk v0.7.0 Release Notes
+==========================
 
-This file documents release notes for changes made to MAPTK which require
-public release approval from AFRL.  After approval, the changes and
-corresponding notes below will be encorporated into a public numbered
-release version, and the content of this file will be reset.
+This is a minor release of MAP-Tk that provides both new functionality and
+fixes over the previous v0.6.0 release.  This release adds a Ceres Solver
+plugin which provides a much improved bundle adjustment backend.  It also
+adds support for lens distortion modeling.
 
 
-Updates since last public release
+Updates since v0.6.0
 ---------------------------------
 
 Main Library
@@ -100,7 +100,7 @@ Tests
    share with tests for core::triangulate_landmarks and any other future
    implementaitons of triangulate_landmarks.
 
-Fixes since last public release
+Fixes since v0.6.0
 -------------------------------
 
 Tests
