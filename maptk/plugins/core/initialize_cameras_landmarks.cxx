@@ -51,6 +51,14 @@
 #include <maptk/triangulate.h>
 
 
+namespace {
+inline bool is_power_of_two(unsigned int x)
+{
+  return ((x != 0) && ((x & (~x + 1)) == x));
+}
+}
+
+
 namespace maptk
 {
 
@@ -851,7 +859,7 @@ initialize_cameras_landmarks
     // triangulate (or re-triangulate) points seen by the new camera
     d_->retriangulate(lms, cams, trks, new_lm_ids);
 
-    if( d_->bundle_adjuster && cams.size() == 2)
+    if( d_->bundle_adjuster && cams.size() >= 2 && is_power_of_two(cams.size()) )
     {
       camera_map_sptr ba_cams(new simple_camera_map(cams));
       landmark_map_sptr ba_lms(new simple_landmark_map(lms));
