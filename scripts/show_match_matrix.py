@@ -53,10 +53,7 @@ def main():
     if ext == ".mtx" or ext == "mtx.gz":
         MM = sio.mmread(matrix_filename).toarray()
     else:
-        M = np.loadtxt(matrix_filename)
-        MM = M[1:,:]
-    print MM.shape
-    print MM.dtype
+        MM = np.loadtxt(matrix_filename)
     plt.imshow(MM)
 
     output_filename = None
