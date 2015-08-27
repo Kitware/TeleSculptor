@@ -290,9 +290,10 @@ initialize_cameras_landmarks::priv
     landmark_map::map_landmark_t lm_single;
     lm_single.insert(p);
     double rmse = maptk::reprojection_rmse(cams, lm_single, trks);
-    if( rmse > 2.0 )
+    if( rmse > 5.0 )
     {
       std::cerr << "rejecting landmark "<<p.first<<" with rmse "<< rmse <<std::endl;
+      lms.erase(p.first);
     }
     else
     {
