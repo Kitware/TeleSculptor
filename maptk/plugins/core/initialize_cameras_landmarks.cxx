@@ -287,7 +287,17 @@ initialize_cameras_landmarks::priv
 
   BOOST_FOREACH(const lm_map_t::value_type& p, lm_map->landmarks())
   {
-    lms[p.first] = p.second;
+    landmark_map::map_landmark_t lm_single;
+    lm_single.insert(p);
+    double rmse = maptk::reprojection_rmse(cams, lm_single, trks);
+    if( rmse > 2.0 )
+    {
+      std::cerr << "rejecting landmark "<<p.first<<" with rmse "<< rmse <<std::endl;
+    }
+    else
+    {
+      lms[p.first] = p.second;
+    }
   }
 }
 
