@@ -39,6 +39,8 @@
 #include <string>
 #include <vector>
 
+#include <unsupported/Eigen/SparseExtra>
+
 #include <maptk/exceptions.h>
 #include <maptk/types.h>
 #include <maptk/match_matrix.h>
@@ -166,8 +168,15 @@ static int maptk_main(int argc, char const* argv[])
   {
     maptk::path_t outfile(vm["output-matrix"].as<std::string>());
     std::cout << "writing to: "<< outfile << std::endl;
-    std::ofstream ofs(outfile.string().c_str());
-    write_match_matrix(ofs, mm, frames);
+    if( outfile.extension() == ".mtx" )
+    {
+      Eigen::saveMarket(mm, outfile.string());
+    }
+    else
+    {
+      std::ofstream ofs(outfile.string().c_str());
+      write_match_matrix(ofs, mm, frames);
+    }
   }
   else
   {
