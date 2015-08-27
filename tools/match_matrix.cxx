@@ -80,7 +80,7 @@ write_match_matrix(std::ostream& os,
     os << frames[i] << " ";
   }
   os << std::endl;
-  os << mm << std::endl;
+  os << Eigen::MatrixXd(mm) << std::endl;
 }
 
 
