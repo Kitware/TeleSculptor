@@ -56,6 +56,44 @@ inline bool is_power_of_two(unsigned int x)
 {
   return ((x != 0) && ((x & (~x + 1)) == x));
 }
+
+/// Remove bad tracks
+void
+remove_bad_tracks(maptk::landmark_map::map_landmark_t& lms,
+                  std::vector<maptk::track_sptr>& trks,
+                  const maptk::camera_map::map_camera_t& cams)
+{
+  using namespace maptk;
+  typedef landmark_map::map_landmark_t lm_map_t;
+  std::set<maptk::track_id_t> to_remove;
+  BOOST_FOREACH(const lm_map_t::value_type& p, lms)
+  {
+    landmark_map::map_landmark_t lm_single;
+    lm_single.insert(p);
+    double rmse = maptk::reprojection_rmse(cams, lm_single, trks);
+    if( rmse > 5.0 )
+    {
+      std::cerr << "remove track "<<p.first<<" with rmse "<< rmse <<std::endl;
+      to_remove.insert(p.first);
+    }
+  }
+  std::vector<maptk::track_sptr> kept_tracks;
+  BOOST_FOREACH(const track_sptr& t, trks)
+  {
+    const track_id_t& tid = t->id();
+    if( to_remove.count(tid) )
+    {
+      lms.erase(tid);
+    }
+    else
+    {
+      kept_tracks.push_back(t);
+    }
+  }
+  trks.swap(kept_tracks);
+}
+
+
 }
 
 
@@ -890,6 +928,7 @@ initialize_cameras_landmarks
       d_->bundle_adjuster->optimize(ba_cams, ba_lms, tracks);
       cams = ba_cams->cameras();
       lms = ba_lms->landmarks();
+      remove_bad_tracks(lms, trks, cams);
       double final_rmse = maptk::reprojection_rmse(cams, lms, trks);
       std::cerr << "final reprojection RMSE: " << final_rmse << std::endl;
       std::cout << "updated focal length "<<cams.begin()->second->intrinsics().focal_length() <<std::endl;
@@ -906,6 +945,7 @@ initialize_cameras_landmarks
     }
   }
 
+  remove_bad_tracks(lms, trks, cams);
   cameras = camera_map_sptr(new simple_camera_map(cams));
   landmarks = landmark_map_sptr(new simple_landmark_map(lms));
 }
