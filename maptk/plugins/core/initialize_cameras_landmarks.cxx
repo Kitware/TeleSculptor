@@ -859,6 +859,16 @@ initialize_cameras_landmarks
     // triangulate (or re-triangulate) points seen by the new camera
     d_->retriangulate(lms, cams, trks, new_lm_ids);
 
+    if(d_->verbose)
+    {
+      camera_map::map_camera_t new_cam_map;
+      new_cam_map[f] = cams[f];
+      std::vector<double> rpe = maptk::reprojection_errors(new_cam_map, lms, trks);
+      std::sort(rpe.begin(), rpe.end());
+      std::cerr << "new camera reprojections - median: "<<rpe[rpe.size()/2]
+                << " max: " << rpe.back() << std::endl;
+    }
+
     if( d_->bundle_adjuster && cams.size() >= 2 && is_power_of_two(cams.size()) )
     {
       camera_map_sptr ba_cams(new simple_camera_map(cams));
@@ -876,6 +886,11 @@ initialize_cameras_landmarks
 
     if(d_->verbose)
     {
+      camera_map_sptr ba_cams(new simple_camera_map(cams));
+      landmark_map_sptr ba_lms(new simple_landmark_map(lms));
+      double curr_rmse = maptk::reprojection_rmse(cams, lms, trks);
+      std::cerr << "current reprojection RMSE: " << curr_rmse << std::endl;
+
       std::cout << "frame "<<f<<" - num landmarks = "<< lms.size() << std::endl;
     }
   }
