@@ -39,6 +39,8 @@
 #include <string>
 #include <vector>
 
+#include <unsupported/Eigen/SparseExtra>
+
 #include <maptk/exceptions.h>
 #include <maptk/types.h>
 #include <maptk/match_matrix.h>
@@ -69,16 +71,49 @@ void usage(int const& argc, char const* argv[],
 
 
 void
-write_match_matrix(std::ostream& os,
-                   const Eigen::SparseMatrix<unsigned int>& mm,
-                   const std::vector<maptk::frame_id_t>& frames)
+write_frame_numbers(std::ostream& os,
+                    const std::vector<maptk::frame_id_t>& frames)
 {
   for( unsigned i=0; i<frames.size(); ++i )
   {
     os << frames[i] << " ";
   }
   os << std::endl;
-  os << mm << std::endl;
+}
+
+
+void
+write_match_matrix(std::ostream& os,
+                   const Eigen::SparseMatrix<unsigned int>& mm)
+{
+  // TODO write out the matrix in a more memory efficient way
+  os << Eigen::MatrixXd(mm) << std::endl;
+}
+
+
+void
+check_file_path(const maptk::path_t& fp)
+{
+  // If the given path is a directory, we obviously can't write to it.
+  if(bfs::is_directory(fp))
+  {
+    throw maptk::file_write_exception(fp, "Path given is a directory, "
+                                          "can not write file.");
+  }
+
+  // Check that the directory of the given file path exists,
+  // creating necessary directories where needed.
+  maptk::path_t parent_dir = bfs::absolute(fp.parent_path());
+  if(!bfs::is_directory(parent_dir))
+  {
+    if(!bfs::create_directories(parent_dir))
+    {
+      throw maptk::file_write_exception(parent_dir, "Attempted directory creation, "
+                                                    "but no directory created! No "
+                                                    "idea what happened here...");
+    }
+  }
+  std::ofstream ofs(fp.string().c_str());
 }
 
 
@@ -90,11 +125,13 @@ static int maptk_main(int argc, char const* argv[])
   bpo::positional_options_description pos_desc;
   pos_desc.add("input-tracks", 1);
   pos_desc.add("output-matrix", 1);
+  pos_desc.add("output-frames", 1);
 
   bpo::options_description opt_desc;
   opt_desc.add_options()
     ("input-tracks,i", "input track file")
     ("output-matrix,o", "output match matrix file")
+    ("output-frames,f", "output frame numbers file")
     ("help,h", "output help message and exit");
   bpo::variables_map vm;
   // try to parse the command-line
@@ -124,31 +161,16 @@ static int maptk_main(int argc, char const* argv[])
     return EXIT_FAILURE;
   }
 
-  // test the output file
+  // test the output files
   if(vm.count("output-matrix"))
   {
     maptk::path_t outfile(vm["output-matrix"].as<std::string>());
-
-    // If the given path is a directory, we obviously can't write to it.
-    if(bfs::is_directory(outfile))
-    {
-      throw maptk::file_write_exception(outfile, "Path given is a directory, "
-                                                 "can not write file.");
-    }
-
-    // Check that the directory of the given file path exists,
-    // creating necessary directories where needed.
-    maptk::path_t parent_dir = bfs::absolute(outfile.parent_path());
-    if(!bfs::is_directory(parent_dir))
-    {
-      if(!bfs::create_directories(parent_dir))
-      {
-        throw maptk::file_write_exception(parent_dir, "Attempted directory creation, "
-                                                      "but no directory created! No "
-                                                      "idea what happened here...");
-      }
-    }
-    std::ofstream ofs(outfile.string().c_str());
+    check_file_path(outfile);
+  }
+  if(vm.count("output-frames"))
+  {
+    maptk::path_t outfile(vm["output-frames"].as<std::string>());
+    check_file_path(outfile);
   }
 
   // load the tracks
@@ -165,13 +187,29 @@ static int maptk_main(int argc, char const* argv[])
   if(vm.count("output-matrix"))
   {
     maptk::path_t outfile(vm["output-matrix"].as<std::string>());
-    std::cout << "writing to: "<< outfile << std::endl;
-    std::ofstream ofs(outfile.string().c_str());
-    write_match_matrix(ofs, mm, frames);
+    std::cout << "writing matrix to: "<< outfile << std::endl;
+    if( outfile.extension() == ".mtx" )
+    {
+      Eigen::saveMarket(mm, outfile.string());
+    }
+    else
+    {
+      std::ofstream ofs(outfile.string().c_str());
+      write_match_matrix(ofs, mm);
+    }
   }
   else
   {
-    write_match_matrix(std::cout, mm, frames);
+    write_frame_numbers(std::cout, frames);
+    write_match_matrix(std::cout, mm);
+  }
+
+  if(vm.count("output-frames"))
+  {
+    maptk::path_t outfile(vm["output-frames"].as<std::string>());
+    std::cout << "writing frame numbers to: "<< outfile << std::endl;
+    std::ofstream ofs(outfile.string().c_str());
+    write_frame_numbers(ofs, frames);
   }
 
   return EXIT_SUCCESS;

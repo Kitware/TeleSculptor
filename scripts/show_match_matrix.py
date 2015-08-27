@@ -36,6 +36,8 @@ from optparse import OptionParser
 
 import matplotlib.pyplot as plt
 import numpy as np
+import scipy.io as sio
+import os
 
 
 def main():
@@ -45,10 +47,13 @@ def main():
 
     (options, args) = parser.parse_args()
 
-    track_filename = args[0]
+    matrix_filename = args[0]
 
-    M = np.loadtxt(track_filename)
-    MM = M[1:,:]
+    ext = os.path.splitext(matrix_filename)[1]
+    if ext == ".mtx" or ext == "mtx.gz":
+        MM = sio.mmread(matrix_filename).toarray()
+    else:
+        MM = np.loadtxt(matrix_filename)
     plt.imshow(MM)
 
     output_filename = None
