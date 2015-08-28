@@ -57,6 +57,52 @@ inline bool is_power_of_two(unsigned int x)
   return ((x != 0) && ((x & (~x + 1)) == x));
 }
 
+
+void
+depth_reverse(maptk::camera_map::map_camera_t& cams,
+              maptk::landmark_map::map_landmark_t& lms)
+{
+  using namespace maptk;
+  typedef landmark_map::map_landmark_t lm_map_t;
+  typedef camera_map::map_camera_t cam_map_t;
+  // compute the mean landmark location
+  vector_3d lc(0.0, 0.0, 0.0);
+  BOOST_FOREACH(const lm_map_t::value_type& p, lms)
+  {
+    lc += p.second->loc();
+  }
+  lc /= lms.size();
+
+  // compute the mean camera center
+  vector_3d cc(0.0, 0.0, 0.0);
+  BOOST_FOREACH(const cam_map_t::value_type& p, cams)
+  {
+    cc += p.second->center();
+  }
+  cc /= cams.size();
+
+  vector_3d axis(cc - lc);
+  axis.normalize();
+
+  // flip cameras around
+  rotation_d Ra180(vector_4d(0.0, axis.x(), axis.y(), axis.z()));
+  rotation_d Rz180(vector_4d(0.0, 0.0, 0.0, 1.0));
+  BOOST_FOREACH(cam_map_t::value_type& p, cams)
+  {
+    camera_d* flipped = new camera_d(*p.second);
+    flipped->set_center(Ra180 * flipped->center());
+    flipped->set_rotation(Rz180 * flipped->rotation() * Ra180);
+    p.second = camera_sptr(flipped);
+  }
+
+  // reset landmarks to the mean location
+  BOOST_FOREACH(lm_map_t::value_type& p, lms)
+  {
+    p.second = landmark_sptr(new landmark_d(lc));
+  }
+}
+
+
 /// detect bad tracks
 std::set<maptk::track_id_t>
 detect_bad_tracks(const maptk::camera_map::map_camera_t& cams,
@@ -933,6 +979,57 @@ initialize_cameras_landmarks
       std::sort(rpe.begin(), rpe.end());
       std::cerr << "new camera reprojections - median: "<<rpe[rpe.size()/2]
                 << " max: " << rpe.back() << std::endl;
+    }
+
+    // try multiple configurations for the first 2 cameras
+    if( d_->bundle_adjuster && cams.size() == 2 )
+    {
+      camera_map_sptr ba_cams(new simple_camera_map(cams));
+      landmark_map_sptr ba_lms(new simple_landmark_map(lms));
+      double init_rmse = maptk::reprojection_rmse(cams, lms, trks);
+      std::cerr << "initial reprojection RMSE: " << init_rmse << std::endl;
+
+      d_->bundle_adjuster->optimize(ba_cams, ba_lms, tracks);
+      map_cam_t cams1 = ba_cams->cameras();
+      map_landmark_t lms1 = ba_lms->landmarks();
+      double final_rmse1 = maptk::reprojection_rmse(cams1, lms1, trks);
+      std::cerr << "final reprojection RMSE: " << final_rmse1 << std::endl;
+
+      // reverse cameras and optimize again
+      depth_reverse(cams1, lms1);
+      camera_map_sptr ba_cams2(new simple_camera_map(cams1));
+      landmark_map_sptr ba_lms2(new simple_landmark_map(lms1));
+      d_->bundle_adjuster->optimize(ba_cams2, ba_lms2, tracks);
+      map_cam_t cams2 = ba_cams2->cameras();
+      map_landmark_t lms2 = ba_lms2->landmarks();
+      double final_rmse2 = maptk::reprojection_rmse(cams2, lms2, trks);
+      std::cerr << "flipped final reprojection RMSE: " << final_rmse2 << std::endl;
+
+      // reverse cameras and optimize again
+      depth_reverse(cams2, lms2);
+      camera_map_sptr ba_cams3(new simple_camera_map(cams2));
+      landmark_map_sptr ba_lms3(new simple_landmark_map(lms2));
+      d_->bundle_adjuster->optimize(ba_cams3, ba_lms3, tracks);
+      map_cam_t cams3 = ba_cams3->cameras();
+      map_landmark_t lms3 = ba_lms3->landmarks();
+      double final_rmse3 = maptk::reprojection_rmse(cams3, lms3, trks);
+      std::cerr << "flipped again final reprojection RMSE: " << final_rmse3 << std::endl;
+
+      if(final_rmse1 < final_rmse2 && final_rmse1 < final_rmse3)
+      {
+        cams = ba_cams->cameras();
+        lms = ba_lms->landmarks();
+      }
+      else if(final_rmse2 < final_rmse1 && final_rmse2 < final_rmse3)
+      {
+        cams = ba_cams2->cameras();
+        lms = ba_lms2->landmarks();
+      }
+      else
+      {
+        cams = ba_cams3->cameras();
+        lms = ba_lms3->landmarks();
+      }
     }
 
     if( d_->bundle_adjuster && cams.size() >= 2 && is_power_of_two(cams.size()) )
