@@ -986,7 +986,7 @@ initialize_cameras_landmarks
     }
 
     // try multiple configurations for the first 2 cameras
-    if( d_->bundle_adjuster && cams.size() == 2 )
+    if( d_->bundle_adjuster && cams.size() == 4 )
     {
       camera_map_sptr ba_cams(new simple_camera_map(cams));
       landmark_map_sptr ba_lms(new simple_landmark_map(lms));
@@ -1036,7 +1036,7 @@ initialize_cameras_landmarks
       }
     }
 
-    if( d_->bundle_adjuster && cams.size() >= 2 && is_power_of_two(cams.size()) )
+    if( d_->bundle_adjuster && cams.size() > 4 && is_power_of_two(cams.size()) )
     {
       camera_map_sptr ba_cams(new simple_camera_map(cams));
       landmark_map_sptr ba_lms(new simple_landmark_map(lms));
