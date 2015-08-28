@@ -57,11 +57,11 @@ inline bool is_power_of_two(unsigned int x)
   return ((x != 0) && ((x & (~x + 1)) == x));
 }
 
-/// Remove bad tracks
-void
-remove_bad_tracks(maptk::landmark_map::map_landmark_t& lms,
-                  std::vector<maptk::track_sptr>& trks,
-                  const maptk::camera_map::map_camera_t& cams)
+/// detect bad tracks
+std::set<maptk::track_id_t>
+detect_bad_tracks(const maptk::camera_map::map_camera_t& cams,
+                  const maptk::landmark_map::map_landmark_t& lms,
+                  const std::vector<maptk::track_sptr>& trks)
 {
   using namespace maptk;
   typedef landmark_map::map_landmark_t lm_map_t;
@@ -77,22 +77,39 @@ remove_bad_tracks(maptk::landmark_map::map_landmark_t& lms,
       to_remove.insert(p.first);
     }
   }
+  return to_remove;
+}
+
+/// remove landmarks with IDs in the set
+void
+remove_landmarks(const std::set<maptk::track_id_t>& to_remove,
+                 maptk::landmark_map::map_landmark_t& lms)
+{
+  using namespace maptk;
+  BOOST_FOREACH(const track_id_t& tid, to_remove)
+  {
+    lms.erase(tid);
+  }
+}
+
+
+/// remove landmarks with IDs in the set
+void
+remove_tracks(const std::set<maptk::track_id_t>& to_remove,
+              std::vector<maptk::track_sptr>& trks)
+{
+  using namespace maptk;
   std::vector<maptk::track_sptr> kept_tracks;
   BOOST_FOREACH(const track_sptr& t, trks)
   {
     const track_id_t& tid = t->id();
-    if( to_remove.count(tid) )
-    {
-      lms.erase(tid);
-    }
-    else
+    if( !to_remove.count(tid) )
     {
       kept_tracks.push_back(t);
     }
   }
   trks.swap(kept_tracks);
 }
-
 
 }
 
@@ -928,7 +945,12 @@ initialize_cameras_landmarks
       d_->bundle_adjuster->optimize(ba_cams, ba_lms, tracks);
       cams = ba_cams->cameras();
       lms = ba_lms->landmarks();
-      remove_bad_tracks(lms, trks, cams);
+      // detect tracks/landmarks with large error and remove them
+      std::set<track_id_t> to_remove = detect_bad_tracks(cams, lms, trks);
+      remove_landmarks(to_remove, lms);
+      std::vector<track_sptr> all_trks = tracks->tracks();
+      remove_tracks(to_remove, all_trks);
+      tracks = track_set_sptr(new simple_track_set(all_trks));
       double final_rmse = maptk::reprojection_rmse(cams, lms, trks);
       std::cerr << "final reprojection RMSE: " << final_rmse << std::endl;
       std::cout << "updated focal length "<<cams.begin()->second->intrinsics().focal_length() <<std::endl;
@@ -945,7 +967,8 @@ initialize_cameras_landmarks
     }
   }
 
-  remove_bad_tracks(lms, trks, cams);
+  std::set<track_id_t> to_remove = detect_bad_tracks(cams, lms, trks);
+  remove_landmarks(to_remove, lms);
   cameras = camera_map_sptr(new simple_camera_map(cams));
   landmarks = landmark_map_sptr(new simple_landmark_map(lms));
 }
