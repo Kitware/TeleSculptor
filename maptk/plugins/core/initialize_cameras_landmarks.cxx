@@ -950,9 +950,13 @@ initialize_cameras_landmarks
     {
       cams[f] = cams[other_frame]->clone();
     }
-    else
+    else if( trks.size() > 10 )
     {
       cams[f] = d_->init_camera(f, other_frame, cams, trks, flms);
+    }
+    else
+    {
+      break;
     }
 
     // optionally optimize the new camera
