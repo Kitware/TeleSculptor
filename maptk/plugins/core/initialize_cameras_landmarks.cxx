@@ -49,57 +49,13 @@
 #include <maptk/eigen_io.h>
 #include <maptk/match_matrix.h>
 #include <maptk/triangulate.h>
+#include <maptk/transform.h>
 
 
 namespace {
 inline bool is_power_of_two(unsigned int x)
 {
   return ((x != 0) && ((x & (~x + 1)) == x));
-}
-
-
-void
-depth_reverse(maptk::camera_map::map_camera_t& cams,
-              maptk::landmark_map::map_landmark_t& lms)
-{
-  using namespace maptk;
-  typedef landmark_map::map_landmark_t lm_map_t;
-  typedef camera_map::map_camera_t cam_map_t;
-  // compute the mean landmark location
-  vector_3d lc(0.0, 0.0, 0.0);
-  BOOST_FOREACH(const lm_map_t::value_type& p, lms)
-  {
-    lc += p.second->loc();
-  }
-  lc /= lms.size();
-
-  // compute the mean camera center
-  vector_3d cc(0.0, 0.0, 0.0);
-  BOOST_FOREACH(const cam_map_t::value_type& p, cams)
-  {
-    cc += p.second->center();
-  }
-  cc /= cams.size();
-
-  vector_3d axis(cc - lc);
-  axis.normalize();
-
-  // flip cameras around
-  rotation_d Ra180(vector_4d(0.0, axis.x(), axis.y(), axis.z()));
-  rotation_d Rz180(vector_4d(0.0, 0.0, 0.0, 1.0));
-  BOOST_FOREACH(cam_map_t::value_type& p, cams)
-  {
-    camera_d* flipped = new camera_d(*p.second);
-    flipped->set_center(Ra180 * flipped->center());
-    flipped->set_rotation(Rz180 * flipped->rotation() * Ra180);
-    p.second = camera_sptr(flipped);
-  }
-
-  // reset landmarks to the mean location
-  BOOST_FOREACH(lm_map_t::value_type& p, lms)
-  {
-    p.second = landmark_sptr(new landmark_d(lc));
-  }
 }
 
 
@@ -1028,9 +984,9 @@ initialize_cameras_landmarks
     std::cerr << "final reprojection RMSE: " << final_rmse1 << std::endl;
 
     // reverse cameras and optimize again
-    depth_reverse(cams1, lms1);
     camera_map_sptr ba_cams2(new simple_camera_map(cams1));
     landmark_map_sptr ba_lms2(new simple_landmark_map(lms1));
+    necker_reverse(ba_cams2, ba_lms2);
     d_->lm_triangulator->triangulate(ba_cams2, tracks, ba_lms2);
     init_rmse = maptk::reprojection_rmse(ba_cams2->cameras(), ba_lms2->landmarks(), trks);
     std::cerr << "flipped initial reprojection RMSE: " << init_rmse << std::endl;
