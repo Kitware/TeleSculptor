@@ -107,7 +107,8 @@ depth_reverse(maptk::camera_map::map_camera_t& cams,
 std::set<maptk::track_id_t>
 detect_bad_tracks(const maptk::camera_map::map_camera_t& cams,
                   const maptk::landmark_map::map_landmark_t& lms,
-                  const std::vector<maptk::track_sptr>& trks)
+                  const std::vector<maptk::track_sptr>& trks,
+                  double error_tol = 5.0)
 {
   using namespace maptk;
   typedef landmark_map::map_landmark_t lm_map_t;
@@ -117,7 +118,7 @@ detect_bad_tracks(const maptk::camera_map::map_camera_t& cams,
     landmark_map::map_landmark_t lm_single;
     lm_single.insert(p);
     double rmse = maptk::reprojection_rmse(cams, lm_single, trks);
-    if( rmse > 5.0 )
+    if( rmse > error_tol )
     {
       std::cerr << "remove track "<<p.first<<" with rmse "<< rmse <<std::endl;
       to_remove.insert(p.first);
@@ -386,21 +387,15 @@ initialize_cameras_landmarks::priv
   track_set_sptr tracks(new simple_track_set(trks));
   this->lm_triangulator->triangulate(cam_map, tracks, lm_map);
 
+  // detect and remove landmarks with large triangulation error
+  std::set<track_id_t> to_remove = detect_bad_tracks(cams,
+                                                     lm_map->landmarks(),
+                                                     trks, 5.0);
   BOOST_FOREACH(const lm_map_t::value_type& p, lm_map->landmarks())
   {
-    landmark_map::map_landmark_t lm_single;
-    lm_single.insert(p);
-    double rmse = maptk::reprojection_rmse(cams, lm_single, trks);
-    if( rmse > 5.0 )
-    {
-      std::cerr << "rejecting landmark "<<p.first<<" with rmse "<< rmse <<std::endl;
-      lms.erase(p.first);
-    }
-    else
-    {
-      lms[p.first] = p.second;
-    }
+    lms[p.first] = p.second;
   }
+  remove_landmarks(to_remove, lms);
 }
 
 
@@ -1047,7 +1042,7 @@ initialize_cameras_landmarks
       cams = ba_cams->cameras();
       lms = ba_lms->landmarks();
       // detect tracks/landmarks with large error and remove them
-      std::set<track_id_t> to_remove = detect_bad_tracks(cams, lms, trks);
+      std::set<track_id_t> to_remove = detect_bad_tracks(cams, lms, trks, 2.0);
       remove_landmarks(to_remove, lms);
       std::vector<track_sptr> all_trks = tracks->tracks();
       remove_tracks(to_remove, all_trks);
@@ -1068,7 +1063,7 @@ initialize_cameras_landmarks
     }
   }
 
-  std::set<track_id_t> to_remove = detect_bad_tracks(cams, lms, trks);
+  std::set<track_id_t> to_remove = detect_bad_tracks(cams, lms, trks, 2.0);
   remove_landmarks(to_remove, lms);
   cameras = camera_map_sptr(new simple_camera_map(cams));
   landmarks = landmark_map_sptr(new simple_landmark_map(lms));
