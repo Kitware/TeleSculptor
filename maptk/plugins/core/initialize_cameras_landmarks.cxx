@@ -1031,6 +1031,9 @@ initialize_cameras_landmarks
     depth_reverse(cams1, lms1);
     camera_map_sptr ba_cams2(new simple_camera_map(cams1));
     landmark_map_sptr ba_lms2(new simple_landmark_map(lms1));
+    d_->lm_triangulator->triangulate(ba_cams2, tracks, ba_lms2);
+    init_rmse = maptk::reprojection_rmse(ba_cams2->cameras(), ba_lms2->landmarks(), trks);
+    std::cerr << "flipped initial reprojection RMSE: " << init_rmse << std::endl;
     d_->bundle_adjuster->optimize(ba_cams2, ba_lms2, tracks);
     map_cam_t cams2 = ba_cams2->cameras();
     map_landmark_t lms2 = ba_lms2->landmarks();
