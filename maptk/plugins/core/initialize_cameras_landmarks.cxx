@@ -980,58 +980,7 @@ initialize_cameras_landmarks
                 << " max: " << rpe.back() << std::endl;
     }
 
-    // try multiple configurations for the first 2 cameras
-    if( d_->bundle_adjuster && cams.size() == 4 )
-    {
-      camera_map_sptr ba_cams(new simple_camera_map(cams));
-      landmark_map_sptr ba_lms(new simple_landmark_map(lms));
-      double init_rmse = maptk::reprojection_rmse(cams, lms, trks);
-      std::cerr << "initial reprojection RMSE: " << init_rmse << std::endl;
-
-      d_->bundle_adjuster->optimize(ba_cams, ba_lms, tracks);
-      map_cam_t cams1 = ba_cams->cameras();
-      map_landmark_t lms1 = ba_lms->landmarks();
-      double final_rmse1 = maptk::reprojection_rmse(cams1, lms1, trks);
-      std::cerr << "final reprojection RMSE: " << final_rmse1 << std::endl;
-
-      // reverse cameras and optimize again
-      depth_reverse(cams1, lms1);
-      camera_map_sptr ba_cams2(new simple_camera_map(cams1));
-      landmark_map_sptr ba_lms2(new simple_landmark_map(lms1));
-      d_->bundle_adjuster->optimize(ba_cams2, ba_lms2, tracks);
-      map_cam_t cams2 = ba_cams2->cameras();
-      map_landmark_t lms2 = ba_lms2->landmarks();
-      double final_rmse2 = maptk::reprojection_rmse(cams2, lms2, trks);
-      std::cerr << "flipped final reprojection RMSE: " << final_rmse2 << std::endl;
-
-      // reverse cameras and optimize again
-      depth_reverse(cams2, lms2);
-      camera_map_sptr ba_cams3(new simple_camera_map(cams2));
-      landmark_map_sptr ba_lms3(new simple_landmark_map(lms2));
-      d_->bundle_adjuster->optimize(ba_cams3, ba_lms3, tracks);
-      map_cam_t cams3 = ba_cams3->cameras();
-      map_landmark_t lms3 = ba_lms3->landmarks();
-      double final_rmse3 = maptk::reprojection_rmse(cams3, lms3, trks);
-      std::cerr << "flipped again final reprojection RMSE: " << final_rmse3 << std::endl;
-
-      if(final_rmse1 < final_rmse2 && final_rmse1 < final_rmse3)
-      {
-        cams = ba_cams->cameras();
-        lms = ba_lms->landmarks();
-      }
-      else if(final_rmse2 < final_rmse1 && final_rmse2 < final_rmse3)
-      {
-        cams = ba_cams2->cameras();
-        lms = ba_lms2->landmarks();
-      }
-      else
-      {
-        cams = ba_cams3->cameras();
-        lms = ba_lms3->landmarks();
-      }
-    }
-
-    if( d_->bundle_adjuster && cams.size() > 4 && is_power_of_two(cams.size()) )
+    if( d_->bundle_adjuster && cams.size() >= 4 && is_power_of_two(cams.size()) )
     {
       camera_map_sptr ba_cams(new simple_camera_map(cams));
       landmark_map_sptr ba_lms(new simple_landmark_map(lms));
@@ -1041,8 +990,9 @@ initialize_cameras_landmarks
       d_->bundle_adjuster->optimize(ba_cams, ba_lms, tracks);
       cams = ba_cams->cameras();
       lms = ba_lms->landmarks();
+
       // detect tracks/landmarks with large error and remove them
-      std::set<track_id_t> to_remove = detect_bad_tracks(cams, lms, trks, 2.0);
+      std::set<track_id_t> to_remove = detect_bad_tracks(cams, lms, trks, 5.0);
       remove_landmarks(to_remove, lms);
       std::vector<track_sptr> all_trks = tracks->tracks();
       remove_tracks(to_remove, all_trks);
@@ -1063,7 +1013,43 @@ initialize_cameras_landmarks
     }
   }
 
-  std::set<track_id_t> to_remove = detect_bad_tracks(cams, lms, trks, 2.0);
+  // try depth reversal at the end
+  if( d_->bundle_adjuster )
+  {
+    camera_map_sptr ba_cams(new simple_camera_map(cams));
+    landmark_map_sptr ba_lms(new simple_landmark_map(lms));
+    double init_rmse = maptk::reprojection_rmse(cams, lms, trks);
+    std::cerr << "initial reprojection RMSE: " << init_rmse << std::endl;
+
+    d_->bundle_adjuster->optimize(ba_cams, ba_lms, tracks);
+    map_cam_t cams1 = ba_cams->cameras();
+    map_landmark_t lms1 = ba_lms->landmarks();
+    double final_rmse1 = maptk::reprojection_rmse(cams1, lms1, trks);
+    std::cerr << "final reprojection RMSE: " << final_rmse1 << std::endl;
+
+    // reverse cameras and optimize again
+    depth_reverse(cams1, lms1);
+    camera_map_sptr ba_cams2(new simple_camera_map(cams1));
+    landmark_map_sptr ba_lms2(new simple_landmark_map(lms1));
+    d_->bundle_adjuster->optimize(ba_cams2, ba_lms2, tracks);
+    map_cam_t cams2 = ba_cams2->cameras();
+    map_landmark_t lms2 = ba_lms2->landmarks();
+    double final_rmse2 = maptk::reprojection_rmse(cams2, lms2, trks);
+    std::cerr << "flipped final reprojection RMSE: " << final_rmse2 << std::endl;
+
+    if(final_rmse1 < final_rmse2)
+    {
+      cams = ba_cams->cameras();
+      lms = ba_lms->landmarks();
+    }
+    else
+    {
+      cams = ba_cams2->cameras();
+      lms = ba_lms2->landmarks();
+    }
+  }
+
+  std::set<track_id_t> to_remove = detect_bad_tracks(cams, lms, trks, 1.0);
   remove_landmarks(to_remove, lms);
   cameras = camera_map_sptr(new simple_camera_map(cams));
   landmarks = landmark_map_sptr(new simple_landmark_map(lms));
