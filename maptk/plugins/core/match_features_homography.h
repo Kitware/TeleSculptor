@@ -136,6 +136,10 @@ public:
   }
 
 private:
+  /// private implementation class
+  class priv;
+  boost::scoped_ptr<priv> d_;
+
   /// The feature matching algorithms to use
   algo::match_features_sptr matcher1_, matcher2_;
 
@@ -144,10 +148,6 @@ private:
 
   /// The feature set filter algorithm to use
   algo::filter_features_sptr feature_filter_;
-
-  /// private implementation class
-  class priv;
-  boost::scoped_ptr<priv> d_;
 };
 
 
