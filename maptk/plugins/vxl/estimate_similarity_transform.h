@@ -76,6 +76,7 @@ public:
   virtual similarity_d
   estimate_transform(std::vector<vector_3d> const& from,
                      std::vector<vector_3d> const& to) const;
+  using algo::estimate_similarity_transform::estimate_transform;
 
 };
 

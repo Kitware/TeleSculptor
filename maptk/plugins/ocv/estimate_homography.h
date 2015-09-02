@@ -76,6 +76,7 @@ public:
            const std::vector<vector_2d>& pts2,
            std::vector<bool>& inliers,
            double inlier_scale = 1.0) const;
+  using algo::estimate_homography::estimate;
 
 };
 
