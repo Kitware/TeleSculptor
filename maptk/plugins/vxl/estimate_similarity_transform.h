@@ -76,6 +76,7 @@ public:
   virtual vital::similarity_d
   estimate_transform(std::vector<vital::vector_3d> const& from,
                      std::vector<vital::vector_3d> const& to) const;
+  using vital::algo::estimate_similarity_transform::estimate_transform;
 
 };
 

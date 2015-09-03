@@ -75,6 +75,7 @@ public:
            const std::vector<vital::vector_2d>& pts2,
            std::vector<bool>& inliers,
            double inlier_scale = 1.0) const;
+  using vital::algo::estimate_homography::estimate;
 
 };
 

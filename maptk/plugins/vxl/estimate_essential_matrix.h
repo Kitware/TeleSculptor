@@ -92,6 +92,7 @@ public:
            const vital::camera_intrinsics_d &cal2,
            std::vector<bool>& inliers,
            double inlier_scale = 1.0) const;
+  using vital::algo::estimate_essential_matrix::estimate;
 
 private:
   /// private implementation class
