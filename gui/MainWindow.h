@@ -43,6 +43,14 @@ public:
   explicit MainWindow();
   virtual ~MainWindow();
 
+public slots:
+  void openFile();
+  void openFile(QString const& path);
+  void openFiles(QStringList const& paths);
+
+  void loadCamera(QString const& path);
+  void loadLandmarks(QString const& path);
+
 private:
   Q_DISABLE_COPY(MainWindow)
 

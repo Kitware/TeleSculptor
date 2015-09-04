@@ -7,6 +7,8 @@ include(${VTK_USE_FILE})
 include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}
+  ${MAPTK_SOURCE_DIR}
+  ${MAPTK_BINARY_DIR}
 )
 
 set(gui_ui
@@ -37,6 +39,7 @@ maptk_add_executable(mapgui
 )
 
 target_link_libraries(mapgui
+  maptk
   vtkRenderingOpenGL
   vtkRenderingFreeTypeOpenGL
   vtkRenderingVolumeOpenGL

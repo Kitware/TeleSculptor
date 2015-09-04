@@ -30,17 +30,80 @@
 
 #include "MainWindow.h"
 
+#include <maptk/camera_io.h>
+
 #include <QApplication>
+#include <QDebug>
+#include <QFileDialog>
 
 //-----------------------------------------------------------------------------
 MainWindow::MainWindow()
 {
   // Set up UI
   this->UI.setupUi(this);
+
+  connect(this->UI.actionOpen, SIGNAL(triggered()), this, SLOT(openFile()));
   connect(this->UI.actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
 }
 
 //-----------------------------------------------------------------------------
 MainWindow::~MainWindow()
 {
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::openFile()
+{
+  auto const paths = QFileDialog::getOpenFileNames(
+    this, "Open File", QString(),
+    "All Supported Files (*.ply *.krtd);;"
+    "PLY file (*.ply);;"
+    "KRTD file (*.krtd);;"
+    "All Files (*)");
+
+  if (!paths.isEmpty())
+  {
+    this->openFiles(paths);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::openFile(QString const& path)
+{
+  auto const fi = QFileInfo(path);
+  if (fi.suffix().toLower() == "ply")
+  {
+    this->loadLandmarks(path);
+  }
+  else if (fi.suffix().toLower() == "krtd")
+  {
+    this->loadCamera(path);
+  }
+  else
+  {
+    qWarning() << "Don't know how to read file" << path
+               << "(unrecognized extension)";
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::openFiles(QStringList const& paths)
+{
+  foreach(auto const& path, paths)
+  {
+    this->openFile(path);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::loadCamera(const QString& path)
+{
+  auto const& camera = maptk::read_krtd_file(qPrintable(path));
+  // TODO
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::loadLandmarks(const QString& path)
+{
+  // TODO
 }
