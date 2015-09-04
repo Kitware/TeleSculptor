@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>MapGUI</string>
   </property>
-  <widget class="QWidget" name="centralwidget"/>
+  <widget class="QVTKWidget" name="centralwidget"/>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
@@ -54,6 +54,14 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QVTKWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">QVTKWidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
