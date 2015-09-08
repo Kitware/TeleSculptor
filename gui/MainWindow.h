@@ -54,7 +54,8 @@ public slots:
 private:
   Q_DISABLE_COPY(MainWindow)
 
-  Ui::MainWindow UI;
+  class Private;
+  QScopedPointer<Private> d;
 };
 
 #endif

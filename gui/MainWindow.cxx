@@ -31,19 +31,44 @@
 #include "MainWindow.h"
 
 #include <maptk/camera_io.h>
+#include <maptk/landmark_map_io.h>
+
+#include <vtkGlyph3D.h>
+#include <vtkNew.h>
+#include <vtkPoints.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkRenderer.h>
+#include <vtkRenderWindow.h>
+#include <vtkSphereSource.h>
 
 #include <QApplication>
 #include <QDebug>
 #include <QFileDialog>
 
 //-----------------------------------------------------------------------------
-MainWindow::MainWindow()
+class MainWindow::Private
+{
+public:
+  Ui::MainWindow UI;
+
+  vtkNew<vtkRenderer> renderer;
+  vtkNew<vtkRenderWindow> renderWindow;
+  vtkNew<vtkRenderWindowInteractor> interactor;
+};
+
+//-----------------------------------------------------------------------------
+MainWindow::MainWindow() : d(new Private)
 {
   // Set up UI
-  this->UI.setupUi(this);
+  this->d->UI.setupUi(this);
 
-  connect(this->UI.actionOpen, SIGNAL(triggered()), this, SLOT(openFile()));
-  connect(this->UI.actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
+  connect(this->d->UI.actionOpen, SIGNAL(triggered()), this, SLOT(openFile()));
+  connect(this->d->UI.actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
+
+  // Set up render pipeline
+  this->d->renderer->SetBackground(0, 0, 0);
+  this->d->renderWindow->AddRenderer(this->d->renderer.GetPointer());
+  this->d->UI.renderWidget->SetRenderWindow(this->d->renderWindow.GetPointer());
 }
 
 //-----------------------------------------------------------------------------
@@ -89,7 +114,7 @@ void MainWindow::openFile(QString const& path)
 //-----------------------------------------------------------------------------
 void MainWindow::openFiles(QStringList const& paths)
 {
-  foreach(auto const& path, paths)
+  foreach (auto const& path, paths)
   {
     this->openFile(path);
   }
@@ -105,5 +130,34 @@ void MainWindow::loadCamera(const QString& path)
 //-----------------------------------------------------------------------------
 void MainWindow::loadLandmarks(const QString& path)
 {
-  // TODO
+  auto const& landmarksPtr = maptk::read_ply_file(qPrintable(path));
+  auto const& landmarks = landmarksPtr->landmarks();
+
+  vtkNew<vtkPoints> points;
+
+  points->SetNumberOfPoints(static_cast<vtkIdType>(landmarks.size()));
+
+  for (auto i = landmarks.cbegin(); i != landmarks.cend(); ++i)
+  {
+    auto const id = i->first;
+    auto const& pos = i->second->loc();
+    points->InsertNextPoint(pos.data());
+  }
+
+  vtkNew<vtkGlyph3D> glyph;
+  vtkNew<vtkSphereSource> sphere;
+
+  vtkNew<vtkPolyData> polyData;
+  vtkNew<vtkPolyDataMapper> mapper;
+
+  sphere->SetRadius(0.01);
+
+  polyData->SetPoints(points.GetPointer());
+  glyph->SetInputData(polyData.GetPointer());
+  glyph->SetSourceConnection(sphere->GetOutputPort());
+  mapper->SetInputConnection(glyph->GetOutputPort());
+
+  vtkNew<vtkActor> actor;
+  actor->SetMapper(mapper.GetPointer());
+  this->d->renderer->AddActor(actor.GetPointer());
 }

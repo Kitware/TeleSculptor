@@ -40,10 +40,15 @@ maptk_add_executable(mapgui
 
 target_link_libraries(mapgui
   maptk
-  vtkRenderingOpenGL
+  vtkGUISupportQt
+  vtkInteractionStyle
+  vtkViewsCore
   vtkRenderingFreeTypeOpenGL
   vtkRenderingVolumeOpenGL
-  vtkGUISupportQt
+  vtkRenderingOpenGL
+  vtkRenderingCore
+  vtkCommonCore
+  vtksys
   ${QT_LIBRARIES}
 )
 
