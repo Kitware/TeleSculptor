@@ -33,13 +33,14 @@
 #include <maptk/camera_io.h>
 #include <maptk/landmark_map_io.h>
 
+#include <vtkCellArray.h>
 #include <vtkGlyph3D.h>
 #include <vtkNew.h>
 #include <vtkPoints.h>
 #include <vtkPolyDataMapper.h>
+#include <vtkProperty.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
-#include <vtkSphereSource.h>
 
 #include <QApplication>
 #include <QDebug>
@@ -134,30 +135,30 @@ void MainWindow::loadLandmarks(const QString& path)
   auto const& landmarks = landmarksPtr->landmarks();
 
   vtkNew<vtkPoints> points;
+  vtkNew<vtkCellArray> verts;
 
-  points->SetNumberOfPoints(static_cast<vtkIdType>(landmarks.size()));
+  points->Allocate(static_cast<vtkIdType>(landmarks.size()));
+  verts->Allocate(static_cast<vtkIdType>(landmarks.size()));
 
+  vtkIdType vertIndex = 0;
   for (auto i = landmarks.cbegin(); i != landmarks.cend(); ++i)
   {
     auto const id = i->first;
     auto const& pos = i->second->loc();
     points->InsertNextPoint(pos.data());
+    verts->InsertNextCell(1);
+    verts->InsertCellPoint(vertIndex++);
   }
-
-  vtkNew<vtkGlyph3D> glyph;
-  vtkNew<vtkSphereSource> sphere;
 
   vtkNew<vtkPolyData> polyData;
   vtkNew<vtkPolyDataMapper> mapper;
 
-  sphere->SetRadius(0.01);
-
   polyData->SetPoints(points.GetPointer());
-  glyph->SetInputData(polyData.GetPointer());
-  glyph->SetSourceConnection(sphere->GetOutputPort());
-  mapper->SetInputConnection(glyph->GetOutputPort());
+  polyData->SetVerts(verts.GetPointer());
+  mapper->SetInputData(polyData.GetPointer());
 
   vtkNew<vtkActor> actor;
   actor->SetMapper(mapper.GetPointer());
+  actor->GetProperty()->SetPointSize(2);
   this->d->renderer->AddActor(actor.GetPointer());
 }
