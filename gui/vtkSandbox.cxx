@@ -7,6 +7,8 @@
 // VTK includes.
 #include <vtkCamera.h>
 #include <vtkCameraActor.h>
+#include <vtkFrustumSource.h>
+#include <vtkPlanes.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
@@ -24,6 +26,8 @@
 #include <vtkConeSource.h>
 #include <vtkSphereSource.h>
 #include <vtkTransform.h>
+
+#include <vtkAppendPolyData.h>
 
 #include <vtksys/Glob.hxx>
 
@@ -111,33 +115,11 @@ int main(int argc, char** argv)
 
 
   // Now process the cameras
-  vtkPolyData* cameraPD = vtkPolyData::New();
-
-  vtkPoints* cameraPoints = vtkPoints::New();
-  cameraPoints->Allocate(files.size());
-  cameraPD->SetPoints(cameraPoints);
-  cameraPoints->FastDelete();
-
-  vtkDoubleArray* normals = vtkDoubleArray::New();
-  normals->SetNumberOfComponents(3);
-  cameraPD->GetPointData()->SetNormals(normals);
-  normals->FastDelete();
-
-  auto cone = vtkConeSource::New();
-  cone->SetHeight(10);
-  cone->SetCenter(5, 0, 0);
-
-  auto glyph = vtkGlyph3D::New();
-  glyph->SetInputData(cameraPD);
-  cameraPD->FastDelete();
-
-  glyph->SetSourceConnection(cone->GetOutputPort());
-  cone->FastDelete();
-  glyph->SetVectorModeToUseNormal();
+  vtkAppendPolyData* cameraAppend = vtkAppendPolyData::New();
 
   auto cameraMapper = vtkPolyDataMapper::New();
-  cameraMapper->SetInputConnection(glyph->GetOutputPort());
-  glyph->FastDelete();
+  cameraMapper->SetInputConnection(cameraAppend->GetOutputPort());
+  cameraAppend->FastDelete();
 
   auto cameraActor = vtkActor::New();
   cameraActor->SetMapper(cameraMapper);
@@ -145,107 +127,47 @@ int main(int argc, char** argv)
   
   renderer->AddActor(cameraActor);
   cameraActor->FastDelete();
+  cameraActor->GetProperty()->SetRepresentationToWireframe();
 
-  vtkPolyData* cameraUpPD = vtkPolyData::New();
-  cameraUpPD->SetPoints(cameraPoints);
+  auto camera = vtkCamera::New();
+  double focalLength = 1.0;
+  double farClipDistance = 5;
+  double aspectRatio = 1;
 
-  auto upCone = vtkConeSource::New();
-  upCone->SetHeight(4);
-  upCone->SetCenter(2, 0, 0);
-
-  auto upGlyph = vtkGlyph3D::New();
-  upGlyph->SetInputData(cameraUpPD);
-  cameraUpPD->FastDelete();
-
-  upGlyph->SetSourceConnection(upCone->GetOutputPort());
-  upCone->FastDelete();
-  upGlyph->SetVectorModeToUseNormal();
-
-  vtkDoubleArray* upNormals = vtkDoubleArray::New();
-  upNormals->SetNumberOfComponents(3);
-  cameraUpPD->GetPointData()->SetNormals(upNormals);
-  upNormals->FastDelete();
-
-  auto cameraUpMapper = vtkPolyDataMapper::New();
-  cameraUpMapper->SetInputConnection(upGlyph->GetOutputPort());
-  upGlyph->FastDelete();
-
-  auto cameraUpActor = vtkActor::New();
-  cameraUpActor->SetMapper(cameraUpMapper);
-  cameraUpMapper->FastDelete();
-
-  renderer->AddActor(cameraUpActor);
-  cameraUpActor->FastDelete();
-  cameraUpActor->GetProperty()->SetColor(1, 0, 0);
-  
   // loop over cameras (krtd files), and add them to the scene
-  for (int i = 0; i < files.size(); i++)
+  for (int i = 0; i < files.size(); i += 20)
     {
     auto krtdCamera = maptk::read_krtd_file(files[i]);
     auto rotationMatrix = maptk::matrix_3x3d(krtdCamera.get_rotation());
- 
-#if 0
-    // Based on D Gobbi answer(s) at
-    // http://vtk.1045678.n5.nabble.com/Question-on-manual-configuration-of-VTK-camera-td5059478.html
-    Eigen::MatrixXd modelViewA(rotationMatrix.rows(), rotationMatrix.cols()+1);
-    modelViewA << rotationMatrix, krtdCamera.get_translation();
 
-    Eigen::RowVector4d homog(0, 0, 0, 1);
-    Eigen::MatrixXd modelView(modelViewA.rows() + 1, modelViewA.cols());
-    modelView << modelViewA, homog;
-
-    auto inverseMatrix = modelView.inverse();
-    if (0)
-      {
-      auto center = inverseMatrix.col(3);
-      auto upVector = inverseMatrix.col(1);
-      auto viewVector = inverseMatrix.col(2); // like ksimek, view vector opposite of indicated
-
-      cameraPoints->InsertNextPoint(center(0), center(1), center(2));
-      normals->InsertNextTuple3(viewVector(0), viewVector(1), viewVector(2));
-      upNormals->InsertNextTuple3(upVector(0), upVector(1), upVector(2));
-      }
-    else
-      {
-      auto transform = vtkTransform::New();
-      auto matrix = vtkMatrix4x4::New();
-      for (int i = 0; i < 4; i++)
-        {
-        //auto row = inverseMatrix.row
-        for (int j = 0; j < 4; j++)
-          {
-          matrix->SetElement(i, j, inverseMatrix.row(i)(j));
-          }
-        }
-      transform->SetMatrix(matrix);
-      matrix->FastDelete();
-
-      double pos[3] = { 0.0, 0.0, 0.0 };
-      double zvec[3] = { 0.0, 0.0, 1.0 };
-      double yvec[3] = { 0.0, 1.0, 0.0 };
-
-      transform->TransformPoint(pos, pos);
-      transform->TransformVector(zvec, zvec);
-      transform->TransformVector(yvec, yvec);
-
-      cameraPoints->InsertNextPoint(pos);
-      normals->InsertNextTuple(zvec);
-      upNormals->InsertNextTuple(yvec);
-
-      transform->Delete();
-      }
-#else
     // Based on http://ksimek.github.io/2012/08/22/extrinsic/
     auto center = krtdCamera.get_center().transpose();
-    auto upVector = rotationMatrix.row(1);
-    // viewVector here is opposite of that indicated
+    // viewVector and upVector here are opposite of that indicated, or so it would seem
+    auto upVector = -rotationMatrix.row(1);
     auto viewVector = rotationMatrix.row(2);
+    auto focalPt = center + viewVector * focalLength;
 
-    cameraPoints->InsertNextPoint(center(0), center(1), center(2));
-    normals->InsertNextTuple3(viewVector(0), viewVector(1), viewVector(2));
-    upNormals->InsertNextTuple3(upVector(0), upVector(1), upVector(2));
-#endif
+    auto planes = vtkPlanes::New();
+    auto frustrum = vtkFrustumSource::New();
+    frustrum->SetPlanes(planes);
+    planes->FastDelete();
+
+    camera->SetPosition(center(0), center(1), center(2));
+    camera->SetFocalPoint(focalPt(0), focalPt(1), focalPt(2));
+    camera->SetViewUp(upVector(0), upVector(1), upVector(2));
+    camera->SetClippingRange(0.01, farClipDistance);
+
+    double planeCoeffs[24];
+    camera->GetFrustumPlanes(aspectRatio, planeCoeffs);
+    planes->SetFrustumPlanes(planeCoeffs);
+    frustrum->SetShowLines(false);
+    frustrum->Update();
+
+    cameraAppend->AddInputConnection(frustrum->GetOutputPort());
+    frustrum->FastDelete();
     }
+
+  camera->Delete();
 
   renWin->Render();
   iren->Start();
