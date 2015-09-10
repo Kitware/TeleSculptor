@@ -33,8 +33,12 @@
 #include <maptk/camera_io.h>
 #include <maptk/landmark_map_io.h>
 
+#include <vtkAppendPolyData.h>
+#include <vtkCamera.h>
 #include <vtkCellArray.h>
+#include <vtkFrustumSource.h>
 #include <vtkNew.h>
+#include <vtkPlanes.h>
 #include <vtkPoints.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
@@ -48,6 +52,32 @@
 #include <QDebug>
 #include <QFileDialog>
 
+namespace // anonymous
+{
+
+//-----------------------------------------------------------------------------
+void buildFrustum(vtkPlanes* out, maptk::vector_3d const& center,
+                  maptk::vector_3d const& view, maptk::vector_3d const& up,
+                  double fov, double aspectRatio)
+{
+  auto const depth = 15.0; // TODO make configurable or something
+  auto const& focus = center + (view * depth / view.norm());
+
+  vtkNew<vtkCamera> camera;
+
+  camera->SetPosition(center[0], center[1], center[2]);
+  camera->SetFocalPoint(focus[0], focus[1], focus[2]);
+  camera->SetViewUp(up[0], up[1], up[2]);
+//   camera->SetViewAngle(fov);
+  camera->SetClippingRange(0.01, depth);
+
+  double planeCoeffs[24];
+  camera->GetFrustumPlanes(aspectRatio, planeCoeffs);
+  out->SetFrustumPlanes(planeCoeffs);
+}
+
+} // namespace <anonymous>
+
 //-----------------------------------------------------------------------------
 class MainWindowPrivate
 {
@@ -58,6 +88,8 @@ public:
   vtkNew<vtkRenderer> renderer;
   vtkNew<vtkRenderWindow> renderWindow;
   vtkNew<vtkRenderWindowInteractor> interactor;
+
+  vtkNew<vtkAppendPolyData> cameraData;
 };
 
 QTE_IMPLEMENT_D_FUNC(MainWindow)
@@ -81,6 +113,15 @@ MainWindow::MainWindow() : d_ptr(new MainWindowPrivate)
   d->renderer->SetBackground(0, 0, 0);
   d->renderWindow->AddRenderer(d->renderer.GetPointer());
   d->UI.renderWidget->SetRenderWindow(d->renderWindow.GetPointer());
+
+  // Set up actor for camera frustums
+  vtkNew<vtkActor> cameraActor;
+  vtkNew<vtkPolyDataMapper> cameraMapper;
+  cameraMapper->SetInputConnection(d->cameraData->GetOutputPort());
+  cameraActor->SetMapper(cameraMapper.GetPointer());
+  cameraActor->GetProperty()->SetRepresentationToWireframe();
+
+  d->renderer->AddActor(cameraActor.GetPointer());
 }
 
 //-----------------------------------------------------------------------------
@@ -137,8 +178,32 @@ void MainWindow::openFiles(QStringList const& paths)
 //-----------------------------------------------------------------------------
 void MainWindow::loadCamera(const QString& path)
 {
+  QTE_D();
+
   auto const& camera = maptk::read_krtd_file(qPrintable(path));
-  // TODO
+
+  // Get camera parameters
+  auto const pixelAspect = camera.get_intrinsics().aspect_ratio();
+  auto const focalLength = camera.get_intrinsics().focal_length();
+  auto const aspect = pixelAspect; // TODO multiple by image aspect
+  auto const fov = 10.0; // FIXME need to compute from image dimensions
+
+  // Compute camera vectors from matrix
+  auto const& center = camera.get_center();
+  auto const& rotationMatrix =
+    camera.get_rotation().quaternion().toRotationMatrix();
+  auto const& up = -rotationMatrix.row(1).transpose();
+  auto const& view = rotationMatrix.row(2).transpose();
+
+  vtkNew<vtkPlanes> planes;
+  buildFrustum(planes.GetPointer(), center, view, up, fov, aspect);
+
+  vtkNew<vtkFrustumSource> frustum;
+  frustum->SetPlanes(planes.GetPointer());
+  frustum->SetShowLines(false);
+  frustum->Update();
+
+  d->cameraData->AddInputConnection(frustum->GetOutputPort());
 }
 
 //-----------------------------------------------------------------------------
