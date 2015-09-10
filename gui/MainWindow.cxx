@@ -34,47 +34,60 @@
 #include <maptk/landmark_map_io.h>
 
 #include <vtkCellArray.h>
-#include <vtkGlyph3D.h>
 #include <vtkNew.h>
 #include <vtkPoints.h>
+#include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
+
+#include <qtUiState.h>
 
 #include <QApplication>
 #include <QDebug>
 #include <QFileDialog>
 
 //-----------------------------------------------------------------------------
-class MainWindow::Private
+class MainWindowPrivate
 {
 public:
   Ui::MainWindow UI;
+  qtUiState uiState;
 
   vtkNew<vtkRenderer> renderer;
   vtkNew<vtkRenderWindow> renderWindow;
   vtkNew<vtkRenderWindowInteractor> interactor;
 };
 
-//-----------------------------------------------------------------------------
-MainWindow::MainWindow() : d(new Private)
-{
-  // Set up UI
-  this->d->UI.setupUi(this);
+QTE_IMPLEMENT_D_FUNC(MainWindow)
 
-  connect(this->d->UI.actionOpen, SIGNAL(triggered()), this, SLOT(openFile()));
-  connect(this->d->UI.actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
+//-----------------------------------------------------------------------------
+MainWindow::MainWindow() : d_ptr(new MainWindowPrivate)
+{
+  QTE_D();
+
+  // Set up UI
+  d->UI.setupUi(this);
+
+  d->uiState.mapState("Window/state", this);
+  d->uiState.mapGeometry("Window/geometry", this);
+  d->uiState.restore();
+
+  connect(d->UI.actionOpen, SIGNAL(triggered()), this, SLOT(openFile()));
+  connect(d->UI.actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
 
   // Set up render pipeline
-  this->d->renderer->SetBackground(0, 0, 0);
-  this->d->renderWindow->AddRenderer(this->d->renderer.GetPointer());
-  this->d->UI.renderWidget->SetRenderWindow(this->d->renderWindow.GetPointer());
+  d->renderer->SetBackground(0, 0, 0);
+  d->renderWindow->AddRenderer(d->renderer.GetPointer());
+  d->UI.renderWidget->SetRenderWindow(d->renderWindow.GetPointer());
 }
 
 //-----------------------------------------------------------------------------
 MainWindow::~MainWindow()
 {
+  QTE_D();
+  d->uiState.save();
 }
 
 //-----------------------------------------------------------------------------
@@ -131,6 +144,8 @@ void MainWindow::loadCamera(const QString& path)
 //-----------------------------------------------------------------------------
 void MainWindow::loadLandmarks(const QString& path)
 {
+  QTE_D();
+
   auto const& landmarksPtr = maptk::read_ply_file(qPrintable(path));
   auto const& landmarks = landmarksPtr->landmarks();
 
@@ -160,5 +175,5 @@ void MainWindow::loadLandmarks(const QString& path)
   vtkNew<vtkActor> actor;
   actor->SetMapper(mapper.GetPointer());
   actor->GetProperty()->SetPointSize(2);
-  this->d->renderer->AddActor(actor.GetPointer());
+  d->renderer->AddActor(actor.GetPointer());
 }

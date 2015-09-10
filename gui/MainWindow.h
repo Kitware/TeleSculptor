@@ -33,7 +33,11 @@
 
 #include "ui_MainWindow.h"
 
+#include <qtGlobal.h>
+
 #include <QMainWindow>
+
+class MainWindowPrivate;
 
 class MainWindow : public QMainWindow
 {
@@ -52,10 +56,10 @@ public slots:
   void loadLandmarks(QString const& path);
 
 private:
-  Q_DISABLE_COPY(MainWindow)
+  QTE_DECLARE_PRIVATE_RPTR(MainWindow)
+  QTE_DECLARE_PRIVATE(MainWindow)
 
-  class Private;
-  QScopedPointer<Private> d;
+  QTE_DISABLE_COPY(MainWindow)
 };
 
 #endif

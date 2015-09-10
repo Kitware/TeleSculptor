@@ -1,6 +1,8 @@
 find_package(Qt4 4.8 REQUIRED)
 include(${QT_USE_FILE})
 
+find_package(qtExtensions REQUIRED)
+
 find_package(VTK 6.2 REQUIRED)
 include(${VTK_USE_FILE})
 
@@ -49,6 +51,7 @@ target_link_libraries(mapgui
   vtkRenderingCore
   vtkCommonCore
   vtksys
+  qtExtensions
   ${QT_LIBRARIES}
 )
 
