@@ -270,7 +270,35 @@ void MainWindow::loadCamera(const QString& path)
   frustum->SetShowLines(false);
   frustum->Update();
 
-  d->cameraData->AddInputConnection(frustum->GetOutputPort());
+  vtkNew<vtkPolyData> frustumPD;
+  frustumPD->DeepCopy(frustum->GetOutput());
+  auto frustumPoints = frustumPD->GetPoints();
+  // Add a polygon to indicate the up direction.
+  // The bowels of the vtkFrustumSource, the far plane uses points
+  // 0, 1, 2, and 3;  2 and 3 are on the top (note, vtkFrustumSource
+  // indicates that this is atually the near plane, but appears to be
+  // wrong - need to verify); and we'll use those with
+  // the center of the far polygon to compute a point "above" the
+  // a triangle (roof) for the far representation.
+  double p0[3], p1[3], p2[3], p3[3], newPoint[3];
+  frustumPoints->GetPoint(0, p0);
+  frustumPoints->GetPoint(1, p1);
+  frustumPoints->GetPoint(2, p2);
+  frustumPoints->GetPoint(3, p3);
+  // center = (p0 + p1 + p2 + p3) / 4.0
+  // top = (p2 + p3) / 2.0
+  // newPoint = top + (top - center); half height again above the top
+  for (int i = 0; i < 3; i++)
+  {
+    newPoint[i] = p2[i] + p3[i] - (p0[i] + p1[i] + p2[i] + p3[i]) / 4.0;
+  }
+
+  vtkIdType newIndex = frustumPoints->InsertNextPoint(newPoint);
+  vtkCellArray* polys = frustumPD->GetPolys();
+  vtkIdType pts[3] = { 2, 3, newIndex };
+  polys->InsertNextCell(3, pts);
+
+  d->cameraData->AddInputData(frustumPD.GetPointer());
 }
 
 //-----------------------------------------------------------------------------
