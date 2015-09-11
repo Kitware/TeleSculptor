@@ -25,6 +25,7 @@ set(gui_moc_headers
 )
 
 set(gui_sources
+  Project.cxx
   MainWindow.cxx
   main.cxx
 )

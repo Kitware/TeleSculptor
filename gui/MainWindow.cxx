@@ -30,6 +30,8 @@
 
 #include "MainWindow.h"
 
+#include "Project.h"
+
 #include <maptk/camera_io.h>
 #include <maptk/landmark_map_io.h>
 
@@ -49,9 +51,10 @@
 
 #include <qtUiState.h>
 
-#include <QApplication>
-#include <QDebug>
-#include <QFileDialog>
+#include <QtGui/QApplication>
+#include <QtGui/QFileDialog>
+
+#include <QtCore/QDebug>
 
 namespace // anonymous
 {
@@ -181,9 +184,10 @@ void MainWindow::openFile()
 {
   auto const paths = QFileDialog::getOpenFileNames(
     this, "Open File", QString(),
-    "All Supported Files (*.ply *.krtd);;"
-    "PLY file (*.ply);;"
-    "KRTD file (*.krtd);;"
+    "All Supported Files (*.conf *.ply *.krtd);;"
+    "Project configuration file (*.conf);;"
+    "Landmark file (*.ply);;"
+    "Camera file (*.krtd);;"
     "All Files (*)");
 
   if (!paths.isEmpty())
@@ -196,7 +200,11 @@ void MainWindow::openFile()
 void MainWindow::openFile(QString const& path)
 {
   auto const fi = QFileInfo(path);
-  if (fi.suffix().toLower() == "ply")
+  if (fi.suffix().toLower() == "conf")
+  {
+    this->loadProject(path);
+  }
+  else if (fi.suffix().toLower() == "ply")
   {
     this->loadLandmarks(path);
   }
@@ -217,6 +225,24 @@ void MainWindow::openFiles(QStringList const& paths)
   foreach (auto const& path, paths)
   {
     this->openFile(path);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::loadProject(const QString& path)
+{
+  Project project;
+  if (!project.read(path))
+  {
+    qWarning() << "Failed to load project from" << path; // TODO dialog?
+    return;
+  }
+
+  this->loadLandmarks(project.landmarks);
+
+  foreach (auto const& ip, project.images)
+  {
+    // TODO
   }
 }
 

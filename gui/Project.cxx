@@ -28,39 +28,57 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_MAINWINDOW_H_
-#define MAPTK_MAINWINDOW_H_
+#include "Project.h"
 
-#include "ui_MainWindow.h"
+#include <maptk/config_block_io.h>
 
-#include <qtGlobal.h>
+#include <qtStlUtil.h>
 
-#include <QMainWindow>
+#include <QtCore/QDir>
+#include <QtCore/QFile>
+#include <QtCore/QFileInfo>
 
-class MainWindowPrivate;
-
-class MainWindow : public QMainWindow
+//-----------------------------------------------------------------------------
+bool Project::read(QString const& path)
 {
-  Q_OBJECT
+  auto const& base = QFileInfo(path).absoluteDir();
 
-public:
-  explicit MainWindow();
-  virtual ~MainWindow();
+  try
+  {
+    // Load config file
+    auto const& config = maptk::read_config_file(qPrintable(path));
 
-public slots:
-  void openFile();
-  void openFile(QString const& path);
-  void openFiles(QStringList const& paths);
+    auto const& cameraPath = config->get_value<std::string>("output_krtd_dir");
+    auto const& landmarks = config->get_value<std::string>("output_ply_file");
 
-  void loadProject(QString const& path);
-  void loadCamera(QString const& path);
-  void loadLandmarks(QString const& path);
+    this->cameraPath = base.filePath(qtString(cameraPath));
+    this->landmarks = base.filePath(qtString(landmarks));
 
-private:
-  QTE_DECLARE_PRIVATE_RPTR(MainWindow)
-  QTE_DECLARE_PRIVATE(MainWindow)
+    // Read image list
+    auto const& iflPath = config->get_value<std::string>("image_list_file");
+    QFile ifl(base.filePath(qtString(iflPath)));
+    if (!ifl.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+      // TODO set error
+      return false;
+    }
 
-  QTE_DISABLE_COPY(MainWindow)
-};
+    while (!ifl.atEnd())
+    {
+      auto const& line = ifl.readLine();
+      if (!line.isEmpty())
+      {
+        // Strip '\n' and convert to full path
+        auto const ll = line.length() - (line.endsWith('\n') ? 1 : 0);
+        this->images.append(base.filePath(QString::fromLocal8Bit(line, ll)));
+      }
+    }
 
-#endif
+    return true;
+  }
+  catch (...)
+  {
+    // TODO set error
+    return false;
+  }
+}

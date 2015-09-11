@@ -28,39 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_MAINWINDOW_H_
-#define MAPTK_MAINWINDOW_H_
+#ifndef MAPTK_PROJECT_H_
+#define MAPTK_PROJECT_H_
 
-#include "ui_MainWindow.h"
+#include <QtCore/QStringList>
 
-#include <qtGlobal.h>
-
-#include <QMainWindow>
-
-class MainWindowPrivate;
-
-class MainWindow : public QMainWindow
+struct Project
 {
-  Q_OBJECT
+  bool read(QString const& path);
 
-public:
-  explicit MainWindow();
-  virtual ~MainWindow();
+  QStringList images;
+  QString cameraPath;
 
-public slots:
-  void openFile();
-  void openFile(QString const& path);
-  void openFiles(QStringList const& paths);
-
-  void loadProject(QString const& path);
-  void loadCamera(QString const& path);
-  void loadLandmarks(QString const& path);
-
-private:
-  QTE_DECLARE_PRIVATE_RPTR(MainWindow)
-  QTE_DECLARE_PRIVATE(MainWindow)
-
-  QTE_DISABLE_COPY(MainWindow)
+  QString landmarks;
 };
 
 #endif
