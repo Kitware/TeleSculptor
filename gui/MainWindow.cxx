@@ -131,6 +131,8 @@ void buildFrustum(vtkPlanes* out, Camera const& c)
 class MainWindowPrivate
 {
 public:
+  void addCamera(CameraData const&);
+
   Ui::MainWindow UI;
   qtUiState uiState;
 
@@ -141,6 +143,54 @@ public:
 };
 
 QTE_IMPLEMENT_D_FUNC(MainWindow)
+
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::addCamera(CameraData const& cd)
+{
+  // Build frustum from camera data
+  vtkNew<vtkPlanes> planes;
+  buildFrustum(planes.GetPointer(), cd.camera);
+
+  vtkNew<vtkFrustumSource> frustum;
+  frustum->SetPlanes(planes.GetPointer());
+  frustum->SetShowLines(false);
+  frustum->Update();
+
+  // Make a copy of the frustum mesh so we can modify it
+  vtkNew<vtkPolyData> polyData;
+  polyData->DeepCopy(frustum->GetOutput());
+  auto frustumPoints = polyData->GetPoints();
+
+  // Add a polygon to indicate the up direction (the far plane uses points
+  // 0, 1, 2, and 3, with 2 and 3 on the top; we use those with the center of
+  // the far polygon to compute a point "above" the far face to form a triangle
+  // like the roof of a "house")
+  //
+  // TODO vtkFrustumSource indicates that this is actually the near plane, but
+  //      appears to be wrong - need to verify
+  maptk::vector_3d points[4];
+  frustumPoints->GetPoint(0, points[0].data());
+  frustumPoints->GetPoint(1, points[1].data());
+  frustumPoints->GetPoint(2, points[2].data());
+  frustumPoints->GetPoint(3, points[3].data());
+
+  // Compute new point:
+  //   center = (p0 + p1 + p2 + p3) / 4.0
+  //   top = (p2 + p3) / 2.0
+  //   new = top + (top - center)
+  //       = p2 + p3 - center
+  auto const center = 0.25 * (points[0] + points[1] + points[2] + points[3]);
+  auto const newPoint = maptk::vector_3d(points[2] + points[3] - center);
+
+  // Insert new point and new face
+  vtkIdType newIndex = frustumPoints->InsertNextPoint(newPoint.data());
+  vtkCellArray* polys = polyData->GetPolys();
+  vtkIdType pts[3] = { 2, 3, newIndex };
+  polys->InsertNextCell(3, pts);
+
+  // Add mesh to camera meshes
+  this->cameraData->AddInputData(polyData.GetPointer());
+}
 
 //-----------------------------------------------------------------------------
 MainWindow::MainWindow() : d_ptr(new MainWindowPrivate)
@@ -231,6 +281,8 @@ void MainWindow::openFiles(QStringList const& paths)
 //-----------------------------------------------------------------------------
 void MainWindow::loadProject(const QString& path)
 {
+  QTE_D();
+
   Project project;
   if (!project.read(path))
   {
@@ -240,9 +292,19 @@ void MainWindow::loadProject(const QString& path)
 
   this->loadLandmarks(project.landmarks);
 
+  auto const cameraDir = maptk::path_t(qPrintable(project.cameraPath));
   foreach (auto const& ip, project.images)
   {
-    // TODO
+    auto const& camera = maptk::read_krtd_file(qPrintable(ip), cameraDir);
+
+    // Build camera data
+    CameraData cd;
+    cd.imagePath = ip;
+    cd.imageDimensions = QImage(ip).size();
+    cd.camera = buildCamera(camera, cd.imageDimensions);
+
+    // Add camera to scene
+    d->addCamera(cd);
   }
 }
 
@@ -262,43 +324,8 @@ void MainWindow::loadCamera(const QString& path)
   cd.camera = buildCamera(camera, imageSize);
   cd.imageDimensions = imageSize.toSize();
 
-  vtkNew<vtkPlanes> planes;
-  buildFrustum(planes.GetPointer(), cd.camera);
-
-  vtkNew<vtkFrustumSource> frustum;
-  frustum->SetPlanes(planes.GetPointer());
-  frustum->SetShowLines(false);
-  frustum->Update();
-
-  vtkNew<vtkPolyData> frustumPD;
-  frustumPD->DeepCopy(frustum->GetOutput());
-  auto frustumPoints = frustumPD->GetPoints();
-  // Add a polygon to indicate the up direction.
-  // The bowels of the vtkFrustumSource, the far plane uses points
-  // 0, 1, 2, and 3;  2 and 3 are on the top (note, vtkFrustumSource
-  // indicates that this is atually the near plane, but appears to be
-  // wrong - need to verify); and we'll use those with
-  // the center of the far polygon to compute a point "above" the
-  // a triangle (roof) for the far representation.
-  double p0[3], p1[3], p2[3], p3[3], newPoint[3];
-  frustumPoints->GetPoint(0, p0);
-  frustumPoints->GetPoint(1, p1);
-  frustumPoints->GetPoint(2, p2);
-  frustumPoints->GetPoint(3, p3);
-  // center = (p0 + p1 + p2 + p3) / 4.0
-  // top = (p2 + p3) / 2.0
-  // newPoint = top + (top - center); half height again above the top
-  for (int i = 0; i < 3; i++)
-  {
-    newPoint[i] = p2[i] + p3[i] - (p0[i] + p1[i] + p2[i] + p3[i]) / 4.0;
-  }
-
-  vtkIdType newIndex = frustumPoints->InsertNextPoint(newPoint);
-  vtkCellArray* polys = frustumPD->GetPolys();
-  vtkIdType pts[3] = { 2, 3, newIndex };
-  polys->InsertNextCell(3, pts);
-
-  d->cameraData->AddInputData(frustumPD.GetPointer());
+  // Add camera to scene
+  d->addCamera(cd);
 }
 
 //-----------------------------------------------------------------------------
