@@ -37,6 +37,7 @@
 #include <vtkCamera.h>
 #include <vtkCellArray.h>
 #include <vtkFrustumSource.h>
+#include <vtkMath.h>
 #include <vtkNew.h>
 #include <vtkPlanes.h>
 #include <vtkPoints.h>
@@ -56,23 +57,68 @@ namespace // anonymous
 {
 
 //-----------------------------------------------------------------------------
-void buildFrustum(vtkPlanes* out, maptk::vector_3d const& center,
-                  maptk::vector_3d const& view, maptk::vector_3d const& up,
-                  double fov, double aspectRatio)
+struct Camera {
+  maptk::vector_3d center; // Camera position
+  maptk::vector_3d view; // Direction vector of camera view
+  maptk::vector_3d up; // Direction vector of camera up axis
+  double fov; // Camera field-of-view angle, in degrees
+  double aspect; // Camera aspect ratio (image width / image height)
+};
+
+//-----------------------------------------------------------------------------
+struct CameraData
+{
+  Camera camera; // Description of camera
+  QString imagePath; // Full path to camera image data
+  QSize imageDimensions; // Dimensions of image data
+};
+
+//-----------------------------------------------------------------------------
+double computeFov(double width, double length)
+{
+  return vtkMath::DegreesFromRadians(2.0 * atan(0.5 * width / length));
+}
+
+//-----------------------------------------------------------------------------
+Camera buildCamera(maptk::camera_d const& camera, QSizeF const& imageSize)
+{
+  Camera out;
+
+  // Get camera parameters
+  auto const& ci = camera.get_intrinsics();
+  auto const pixelAspect = ci.aspect_ratio();
+  auto const focalLength = ci.focal_length();
+
+  out.aspect = pixelAspect * imageSize.width() / imageSize.height();
+  out.fov = computeFov(imageSize.height(), focalLength);
+
+  // Compute camera vectors from matrix
+  auto const& rotationMatrix =
+    camera.get_rotation().quaternion().toRotationMatrix();
+
+  out.up = -rotationMatrix.row(1).transpose();
+  out.view = rotationMatrix.row(2).transpose();
+  out.center = camera.get_center();
+
+  return out;
+}
+
+//-----------------------------------------------------------------------------
+void buildFrustum(vtkPlanes* out, Camera const& c)
 {
   auto const depth = 15.0; // TODO make configurable or something
-  auto const& focus = center + (view * depth / view.norm());
+  auto const& focus = c.center + (c.view * depth / c.view.norm());
 
   vtkNew<vtkCamera> camera;
 
-  camera->SetPosition(center[0], center[1], center[2]);
+  camera->SetPosition(c.center[0], c.center[1], c.center[2]);
   camera->SetFocalPoint(focus[0], focus[1], focus[2]);
-  camera->SetViewUp(up[0], up[1], up[2]);
-//   camera->SetViewAngle(fov);
+  camera->SetViewUp(c.up[0], c.up[1], c.up[2]);
+  camera->SetViewAngle(c.fov);
   camera->SetClippingRange(0.01, depth);
 
   double planeCoeffs[24];
-  camera->GetFrustumPlanes(aspectRatio, planeCoeffs);
+  camera->GetFrustumPlanes(c.aspect, planeCoeffs);
   out->SetFrustumPlanes(planeCoeffs);
 }
 
@@ -87,7 +133,6 @@ public:
 
   vtkNew<vtkRenderer> renderer;
   vtkNew<vtkRenderWindow> renderWindow;
-  vtkNew<vtkRenderWindowInteractor> interactor;
 
   vtkNew<vtkAppendPolyData> cameraData;
 };
@@ -182,21 +227,17 @@ void MainWindow::loadCamera(const QString& path)
 
   auto const& camera = maptk::read_krtd_file(qPrintable(path));
 
-  // Get camera parameters
-  auto const pixelAspect = camera.get_intrinsics().aspect_ratio();
-  auto const focalLength = camera.get_intrinsics().focal_length();
-  auto const aspect = pixelAspect; // TODO multiple by image aspect
-  auto const fov = 10.0; // FIXME need to compute from image dimensions
+  // Guess image size
+  auto const& s = camera.get_intrinsics().principal_point() * 2.0;
+  auto const imageSize = QSizeF(s[0], s[1]);
 
-  // Compute camera vectors from matrix
-  auto const& center = camera.get_center();
-  auto const& rotationMatrix =
-    camera.get_rotation().quaternion().toRotationMatrix();
-  auto const& up = -rotationMatrix.row(1).transpose();
-  auto const& view = rotationMatrix.row(2).transpose();
+  // Build camera data
+  CameraData cd;
+  cd.camera = buildCamera(camera, imageSize);
+  cd.imageDimensions = imageSize.toSize();
 
   vtkNew<vtkPlanes> planes;
-  buildFrustum(planes.GetPointer(), center, view, up, fov, aspect);
+  buildFrustum(planes.GetPointer(), cd.camera);
 
   vtkNew<vtkFrustumSource> frustum;
   frustum->SetPlanes(planes.GetPointer());
