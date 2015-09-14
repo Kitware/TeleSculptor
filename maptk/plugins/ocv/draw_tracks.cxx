@@ -487,12 +487,12 @@ draw_tracks
     {
       // Check that the directory of the given filepath exists, creating necessary
       // directories where needed.
-      path_t parent_dir = bfs::absolute(path_t(ofn).parent_path());
+      bfs::path parent_dir = bfs::absolute(bfs::path(ofn).parent_path());
       if(!bfs::is_directory(parent_dir))
       {
         if(!bfs::create_directories(parent_dir))
         {
-          throw file_write_exception(parent_dir, "Attempted directory creation, "
+          throw file_write_exception(parent_dir.string(), "Attempted directory creation, "
                                                  "but no directory created! No "
                                                  "idea what happened here...");
         }
