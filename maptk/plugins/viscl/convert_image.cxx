@@ -59,7 +59,7 @@ convert_image
 ::convert(vital::image_container_sptr img) const
 {
   // make new viscl image container
-  return boost::shared_ptr<image_container>(new image_container(*img));
+  return std::shared_ptr<image_container>(new image_container(*img));
 }
 
 } // end namespace vcl

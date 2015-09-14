@@ -39,7 +39,6 @@
 
 #include <boost/algorithm/string/join.hpp>
 #include <boost/foreach.hpp>
-#include <boost/make_shared.hpp>
 
 #include <vital/exceptions/algorithm.h>
 #include <vital/types/homography.h>
@@ -267,11 +266,11 @@ match_features_homography
   {
     feature_<double> f(*feat1_vec[i]);
     f.set_loc(Hd.map_point(f.get_loc()));
-    warped_feat1.push_back(boost::make_shared<feature_<double> >(f));
+    warped_feat1.push_back(std::make_shared<feature_<double> >(f));
   }
 
   feature_set_sptr warped_feat1_set =
-    boost::make_shared<simple_feature_set>(
+    std::make_shared<simple_feature_set>(
       simple_feature_set(warped_feat1));
 
   return matcher2_->match(warped_feat1_set, desc1, feat2, desc2);

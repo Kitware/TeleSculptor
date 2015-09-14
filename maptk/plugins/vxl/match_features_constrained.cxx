@@ -47,7 +47,6 @@
 #include <vnl/vnl_vector_fixed.h>
 
 #include <limits>
-#include <boost/make_shared.hpp>
 
 using namespace kwiver::vital;
 
@@ -262,7 +261,7 @@ match_features_constrained
   std::vector<vital::match> matches;
   d_->match(feat1, desc1, feat2, desc2, matches);
 
-  return boost::make_shared<vital::simple_match_set>(vital::simple_match_set(matches));
+  return std::make_shared<vital::simple_match_set>(vital::simple_match_set(matches));
 }
 
 } // end namespace vxl
