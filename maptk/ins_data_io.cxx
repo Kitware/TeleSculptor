@@ -95,6 +95,7 @@ write_pos_file(ins_data const& ins,
                vital::path_t const& file_path)
 {
   namespace bfs = boost::filesystem;
+  bfs::path bfs_file_path( file_path);
 
   // If the source name is not specified, throw
   if(ins.source_name == "")
@@ -111,12 +112,12 @@ write_pos_file(ins_data const& ins,
 
   // Check that the directory of the given filepath exists, creating necessary
   // directories where needed.
-  vital::path_t parent_dir = bfs::absolute(file_path.parent_path());
+  bfs::path parent_dir = bfs::absolute(bfs_file_path.parent_path());
   if(!bfs::is_directory(parent_dir))
   {
     if(!bfs::create_directories(parent_dir))
     {
-      throw vital::file_write_exception(parent_dir, "Attempted directory creation, "
+      throw vital::file_write_exception(parent_dir.string(), "Attempted directory creation, "
                                              "but no directory created! No "
                                              "idea what happened here...");
     }

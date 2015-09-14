@@ -57,7 +57,6 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
-#include <boost/make_shared.hpp>
 
 namespace bfs = boost::filesystem;
 namespace bpo = boost::program_options;

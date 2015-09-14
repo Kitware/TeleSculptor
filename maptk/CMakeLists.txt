@@ -4,7 +4,7 @@ check_cxx_compiler_flag(-fvisibility=hidden MAPTK_HAVE_GCC_VISIBILITY)
 
 
 # Configure general config.h.in
-maptk_configure_file(config.h
+maptk_configure_file( config.h
   "${CMAKE_CURRENT_SOURCE_DIR}/config.h.in"
   "${CMAKE_CURRENT_BINARY_DIR}/config.h"
   BUILD_SHARED_LIBS
@@ -51,10 +51,10 @@ set(maptk_sources
 
   )
 
-maptk_install_headers(
+kwiver_install_headers(
   ${maptk_public_headers}
   )
-maptk_add_library(
+kwiver_add_library(
   maptk
   ${maptk_public_headers}
   ${maptk_sources}
@@ -78,4 +78,4 @@ endif()
 ###
 # Marking source root for documentation generation
 #
-maptk_create_doxygen( maptk "${CMAKE_CURRENT_LIST_DIR}" "MAP-Tk")
+kwiver_create_doxygen( maptk "${CMAKE_CURRENT_LIST_DIR}" "MAP-Tk")

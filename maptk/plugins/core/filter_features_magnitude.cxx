@@ -33,11 +33,8 @@
 #include <vital/logger/logger.h>
 
 #include <algorithm>
-#include <boost/make_shared.hpp>
-
 
 using namespace kwiver::vital;
-
 
 namespace kwiver {
 namespace maptk {
@@ -115,7 +112,7 @@ public:
     LOG_INFO( m_logger,
              "Reduced " << feat_vec.size() << " features to " << filtered.size() << " features.");
 
-    return boost::make_shared<vital::simple_feature_set>(vital::simple_feature_set(filtered));
+    return std::make_shared<vital::simple_feature_set>(vital::simple_feature_set(filtered));
   }
 
   double top_fraction;

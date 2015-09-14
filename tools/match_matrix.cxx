@@ -44,15 +44,14 @@
 #include <maptk/match_matrix.h>
 #include <vital/exceptions.h>
 #include <vital/io/track_set_io.h>
+#include <kwiversys/SystemTools.hxx>
 
-#include <boost/filesystem.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
 #include <boost/program_options/value_semantic.hpp>
 #include <boost/program_options/variables_map.hpp>
 
 namespace bpo = boost::program_options;
-namespace bfs = boost::filesystem;
 
 
 /// Report usage message to std::cerr
@@ -95,7 +94,7 @@ check_file_path(const kwiver::vital::path_t& fp)
 {
   using namespace kwiver;
   // If the given path is a directory, we obviously can't write to it.
-  if(bfs::is_directory(fp))
+  if( kwiversys::SystemTools::FileIsDirectory(fp))
   {
     throw vital::file_write_exception(fp, "Path given is a directory, "
                                           "can not write file.");
@@ -103,17 +102,18 @@ check_file_path(const kwiver::vital::path_t& fp)
 
   // Check that the directory of the given file path exists,
   // creating necessary directories where needed.
-  vital::path_t parent_dir = bfs::absolute(fp.parent_path());
-  if(!bfs::is_directory(parent_dir))
+  vital::path_t parent_dir = kwiversys::SystemTools::GetFilenamePath(
+    kwiversys::SystemTools::CollapseFullPath( fp ) );
+  if( ! kwiversys::SystemTools::FileIsDirectory(parent_dir))
   {
-    if(!bfs::create_directories(parent_dir))
+    if( ! kwiversys::SystemTools::MakeDirectory(parent_dir))
     {
       throw vital::file_write_exception(parent_dir, "Attempted directory creation, "
                                                     "but no directory created! No "
                                                     "idea what happened here...");
     }
   }
-  std::ofstream ofs(fp.string().c_str());
+  std::ofstream ofs(fp.c_str());
 }
 
 
@@ -189,13 +189,13 @@ static int maptk_main(int argc, char const* argv[])
   {
     vital::path_t outfile(vm["output-matrix"].as<std::string>());
     std::cout << "writing matrix to: "<< outfile << std::endl;
-    if( outfile.extension() == ".mtx" )
+    if( kwiversys::SystemTools::GetFilenameExtension( outfile ) == ".mtx" )
     {
-      Eigen::saveMarket(mm, outfile.string());
+      Eigen::saveMarket(mm, outfile);
     }
     else
     {
-      std::ofstream ofs(outfile.string().c_str());
+      std::ofstream ofs(outfile.c_str());
       write_match_matrix(ofs, mm);
     }
   }
@@ -209,7 +209,7 @@ static int maptk_main(int argc, char const* argv[])
   {
     vital::path_t outfile(vm["output-frames"].as<std::string>());
     std::cout << "writing frame numbers to: "<< outfile << std::endl;
-    std::ofstream ofs(outfile.string().c_str());
+    std::ofstream ofs(outfile.c_str());
     write_frame_numbers(ofs, frames);
   }
 

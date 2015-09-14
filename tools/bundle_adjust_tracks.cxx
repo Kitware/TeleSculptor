@@ -58,6 +58,7 @@
 #include <vital/types/track_set.h>
 #include <vital/types/transform.h>
 #include <vital/vital_types.h>
+#include <kwiversys/SystemTools.hxx>
 
 #include <maptk/ins_data_io.h>
 #include <maptk/local_geo_cs.h>
@@ -331,16 +332,17 @@ subsample_cameras(kwiver::vital::camera_map_sptr cameras, unsigned factor)
 
 
 // return a sorted list of files in a directory
-std::vector<bfs::path>
-files_in_dir(const bfs::path& dir)
+std::vector< kwiver::vital::path_t >
+files_in_dir(kwiver::vital::path_t const& vdir)
 {
+  bfs::path const dir = vdir;
   bfs::directory_iterator it(dir), eod;
-  std::vector<bfs::path> files;
+  std::vector< kwiver::vital::path_t > files;
   BOOST_FOREACH(bfs::path const &p, std::make_pair(it, eod))
   {
-    files.push_back(p);
+    files.push_back( p.string() );
   }
-  std::sort(files.begin(), files.end());
+  std::sort( files.begin(), files.end() );
   return files;
 }
 
@@ -351,15 +353,15 @@ files_in_dir(const bfs::path& dir)
 /// Returns false if we were given a file list and the file could not be
 /// opened. Otherwise returns true.
 bool
-resolve_files(kwiver::vital::path_t const &p, std::vector<kwiver::vital::path_t> &files)
+resolve_files(kwiver::vital::path_t const &p, std::vector< kwiver::vital::path_t > &files)
 {
-  if (bfs::is_directory(p))
+  if ( kwiversys::SystemTools::FileIsDirectory( p) )
   {
     files = files_in_dir(p);
   }
   else
   {
-    std::ifstream ifs(p.string().c_str());
+    std::ifstream ifs(p.c_str());
     if (!ifs)
     {
       return false;
@@ -386,7 +388,7 @@ load_input_cameras_pos(kwiver::vital::config_block_sptr config,
   boost::timer::auto_cpu_timer t("Initializing cameras from POS files: %t sec CPU, %w sec wall\n");
 
   std::string pos_files = config->get_value<std::string>("input_pos_files");
-  std::vector<bfs::path> files;
+  std::vector< kwiver::vital::path_t > files;
   if (!resolve_files(pos_files, files))
   {
     std::cerr << "ERROR: Could not open POS file list." << std::endl;
@@ -400,7 +402,7 @@ load_input_cameras_pos(kwiver::vital::config_block_sptr config,
   std::map<std::string, kwiver::vital::frame_id_t>::const_iterator it;
   BOOST_FOREACH(kwiver::vital::path_t const& fpath, files)
   {
-    std::string pos_file_stem = fpath.stem().string();
+    std::string pos_file_stem = kwiversys::SystemTools::GetFilenamePath( fpath );
     it = filename2frame.find(pos_file_stem);
     if (it != filename2frame.end())
     {
@@ -449,7 +451,7 @@ load_input_cameras_krtd(kwiver::vital::config_block_sptr config,
 
   // Collect files
   std::string krtd_files = config->get_value<std::string>("input_krtd_files");
-  std::vector<bfs::path> files;
+  std::vector< kwiver::vital::path_t > files;
   if (!resolve_files(krtd_files, files))
   {
     std::cerr << "ERROR: Could not open KRTD file list." << std::endl;
@@ -463,7 +465,7 @@ load_input_cameras_krtd(kwiver::vital::config_block_sptr config,
   std::map<std::string, kwiver::vital::frame_id_t>::const_iterator it;
   BOOST_FOREACH(kwiver::vital::path_t const& fpath, files)
   {
-    std::string krtd_file_stem = fpath.stem().string();
+    std::string krtd_file_stem = kwiversys::SystemTools::GetFilenamePath( fpath );
     it = filename2frame.find(krtd_file_stem);
     if (it != filename2frame.end())
     {
@@ -710,7 +712,7 @@ static int maptk_main(int argc, char const* argv[])
   std::map<std::string, kwiver::vital::frame_id_t> filename2frame;
   BOOST_FOREACH(kwiver::vital::path_t i_file, image_files)
   {
-    std::string i_file_stem = i_file.stem().string();
+    std::string i_file_stem = kwiversys::SystemTools::GetFilenamePath( i_file );
     filename2frame[i_file_stem] = static_cast<kwiver::vital::frame_id_t>(frame2filename.size());
     frame2filename.push_back(i_file_stem);
   }
@@ -930,7 +932,7 @@ static int maptk_main(int argc, char const* argv[])
     BOOST_FOREACH(const ins_map_t::value_type& p, ins_map)
     {
       bfs::path out_pos_file = pos_dir / (frame2filename[p.first] + ".pos");
-      write_pos_file(p.second, out_pos_file);
+      write_pos_file( p.second, out_pos_file.string());
     }
     if (ins_map.size() == 0)
     {
@@ -948,10 +950,10 @@ static int maptk_main(int argc, char const* argv[])
 
     bfs::path krtd_dir = config->get_value<std::string>("output_krtd_dir");
     typedef kwiver::vital::camera_map::map_camera_t::value_type cam_map_val_t;
-    BOOST_FOREACH(const cam_map_val_t& p, cam_map->cameras())
+    BOOST_FOREACH(cam_map_val_t const& p, cam_map->cameras())
     {
       bfs::path out_krtd_file = krtd_dir / (frame2filename[p.first] + ".krtd");
-      write_krtd_file(*p.second, out_krtd_file);
+      write_krtd_file( *p.second, out_krtd_file.string() );
     }
   }
 

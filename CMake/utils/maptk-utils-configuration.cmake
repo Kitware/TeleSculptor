@@ -9,7 +9,7 @@
 include(CMakeParseArguments)
 
 # Top level configuration target
-add_custom_target(configure ALL)
+add_custom_target(maptk_configure ALL)
 
 #+
 # Configure the given sourcefile to the given destfile
@@ -77,7 +77,7 @@ function(maptk_configure_file name source dest)
     source_group("Configured Files"
       FILES "${source}"
       )
-    add_dependencies(configure
+    add_dependencies(maptk_configure
       configure-${name}
       )
   endif()

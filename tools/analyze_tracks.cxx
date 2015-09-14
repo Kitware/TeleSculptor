@@ -345,7 +345,7 @@ static int maptk_main(int argc, char const* argv[])
 
       kwiver::vital::image_container_sptr_list images;
 
-      kwiver::vital::image_container_sptr image = image_reader->load( image_paths[i].string() );
+      kwiver::vital::image_container_sptr image = image_reader->load( image_paths[i] );
       images.push_back( image );
 
       // Draw tracks on images

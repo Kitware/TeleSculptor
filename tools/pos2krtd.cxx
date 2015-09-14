@@ -234,17 +234,18 @@ bool convert_pos2krtd_dir(const kwiver::vital::path_t& pos_dir,
                           kwiver::vital::rotation_d const& ins_rot_offset = kwiver::vital::rotation_d())
 {
   bfs::directory_iterator it(pos_dir), eod;
+  const bfs::path bfs_krtd_dir( krtd_dir );
   std::map<kwiver::vital::frame_id_t, kwiver::maptk::ins_data> ins_map;
   std::vector<std::string> krtd_filenames;
 
   std::cerr << "Loading POS files" << std::endl;
-  BOOST_FOREACH(kwiver::vital::path_t const &p, std::make_pair(it, eod))
+  BOOST_FOREACH(bfs::path const &p, std::make_pair(it, eod))
   {
     try
     {
       kwiver::maptk::ins_data ins = kwiver::maptk::read_pos_file(p.string());
 
-      kwiver::vital::path_t krtd_filename = krtd_dir / (basename(p) + ".krtd");
+      bfs::path krtd_filename = bfs_krtd_dir / (bfs::basename(p) + ".krtd");
       //std::cerr << "Loading " << p << std::endl;
       kwiver::vital::frame_id_t frame = static_cast<kwiver::vital::frame_id_t>(krtd_filenames.size());
       ins_map[frame] = ins;

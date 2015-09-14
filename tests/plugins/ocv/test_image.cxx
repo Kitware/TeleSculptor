@@ -59,8 +59,7 @@ IMPLEMENT_TEST(factory)
 {
   using namespace kwiver::maptk;
   ocv::register_algorithms();
-  typedef boost::shared_ptr<algo::image_io> image_io_sptr;
-  image_io_sptr img_io = kwiver::vital::algo::image_io::create("ocv");
+  algo::image_io_sptr img_io = kwiver::vital::algo::image_io::create("ocv");
   if (!img_io)
   {
     TEST_ERROR("Unable to create image_io algorithm of type ocv");
