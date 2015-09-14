@@ -55,6 +55,7 @@
 #include <QtGui/QFileDialog>
 
 #include <QtCore/QDebug>
+#include <QtCore/QTimer>
 
 namespace // anonymous
 {
@@ -136,10 +137,13 @@ public:
   Ui::MainWindow UI;
   qtUiState uiState;
 
+  QTimer slideTimer;
+
   vtkNew<vtkRenderer> renderer;
   vtkNew<vtkRenderWindow> renderWindow;
 
   vtkNew<vtkAppendPolyData> cameraData;
+  QList<CameraData> cameras;
 };
 
 QTE_IMPLEMENT_D_FUNC(MainWindow)
@@ -190,6 +194,13 @@ void MainWindowPrivate::addCamera(CameraData const& cd)
 
   // Add mesh to camera meshes
   this->cameraData->AddInputData(polyData.GetPointer());
+
+  // Add camera data to camera list
+  this->cameras.append(cd);
+
+  this->UI.playSlideshow->setEnabled(true);
+  this->UI.camera->setEnabled(true);
+  this->UI.camera->setRange(0, this->cameras.count() - 1);
 }
 
 //-----------------------------------------------------------------------------
@@ -206,6 +217,14 @@ MainWindow::MainWindow() : d_ptr(new MainWindowPrivate)
 
   connect(d->UI.actionOpen, SIGNAL(triggered()), this, SLOT(openFile()));
   connect(d->UI.actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
+
+  connect(&d->slideTimer, SIGNAL(timeout()), this, SLOT(nextSlide()));
+  connect(d->UI.playSlideshow, SIGNAL(toggled(bool)),
+          this, SLOT(setSlideshowPlaying(bool)));
+  connect(d->UI.slideDelay, SIGNAL(valueChanged(int)),
+          this, SLOT(setSlideDelay(int)));
+
+  this->setSlideDelay(d->UI.slideDelay->value());
 
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
@@ -363,4 +382,55 @@ void MainWindow::loadLandmarks(const QString& path)
   actor->SetMapper(mapper.GetPointer());
   actor->GetProperty()->SetPointSize(2);
   d->renderer->AddActor(actor.GetPointer());
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::setSlideDelay(int delayExp)
+{
+  QTE_D();
+
+  auto const de = static_cast<double>(delayExp) * 0.1;
+  d->slideTimer.setInterval(qRound(pow(10.0, de)));
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::setSlideshowPlaying(bool playing)
+{
+  QTE_D();
+  if (playing)
+  {
+    if (d->UI.camera->value() == d->UI.camera->maximum())
+    {
+      d->UI.camera->triggerAction(QAbstractSlider::SliderToMinimum);
+    }
+    d->slideTimer.start();
+  }
+  else
+  {
+    d->slideTimer.stop();
+  }
+
+  d->UI.camera->setEnabled(!playing);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::nextSlide()
+{
+  QTE_D();
+
+  if (d->UI.camera->value() == d->UI.camera->maximum())
+  {
+    if (d->UI.loopSlideshow->isChecked())
+    {
+      d->UI.camera->triggerAction(QAbstractSlider::SliderToMinimum);
+    }
+    else
+    {
+      d->UI.playSlideshow->setChecked(false);
+    }
+  }
+  else
+  {
+    d->UI.camera->triggerAction(QAbstractSlider::SliderSingleStepAdd);
+  }
 }

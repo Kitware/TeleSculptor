@@ -56,6 +56,11 @@ public slots:
   void loadCamera(QString const& path);
   void loadLandmarks(QString const& path);
 
+protected slots:
+  void setSlideDelay(int);
+  void setSlideshowPlaying(bool);
+  void nextSlide();
+
 private:
   QTE_DECLARE_PRIVATE_RPTR(MainWindow)
   QTE_DECLARE_PRIVATE(MainWindow)
