@@ -28,44 +28,38 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_MAINWINDOW_H_
-#define MAPTK_MAINWINDOW_H_
+#ifndef MAPTK_WORLDVIEW_H_
+#define MAPTK_WORLDVIEW_H_
 
-#include "ui_MainWindow.h"
+#include <QVTKWidget.h>
 
 #include <qtGlobal.h>
 
-#include <QMainWindow>
-
-class MainWindowPrivate;
-
-class MainWindow : public QMainWindow
+namespace maptk
 {
-  Q_OBJECT
 
+class camera;
+class landmark_map;
+
+}
+
+class WorldViewPrivate;
+
+class WorldView : public QVTKWidget
+{
 public:
-  explicit MainWindow(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~MainWindow();
+  explicit WorldView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  virtual ~WorldView();
 
 public slots:
-  void openFile();
-  void openFile(QString const& path);
-  void openFiles(QStringList const& paths);
-
-  void loadProject(QString const& path);
-  void loadCamera(QString const& path);
-  void loadLandmarks(QString const& path);
-
-protected slots:
-  void setSlideDelay(int);
-  void setSlideshowPlaying(bool);
-  void nextSlide();
+  void addCamera(int id, maptk::camera const& camera, QSize const& frameSize);
+  void addLandmarks(maptk::landmark_map const&);
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(MainWindow)
-  QTE_DECLARE_PRIVATE(MainWindow)
+  QTE_DECLARE_PRIVATE_RPTR(WorldView)
+  QTE_DECLARE_PRIVATE(WorldView)
 
-  QTE_DISABLE_COPY(MainWindow)
+  QTE_DISABLE_COPY(WorldView)
 };
 
 #endif

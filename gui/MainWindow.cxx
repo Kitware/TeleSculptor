@@ -35,20 +35,6 @@
 #include <maptk/camera_io.h>
 #include <maptk/landmark_map_io.h>
 
-#include <vtkAppendPolyData.h>
-#include <vtkCamera.h>
-#include <vtkCellArray.h>
-#include <vtkFrustumSource.h>
-#include <vtkMath.h>
-#include <vtkNew.h>
-#include <vtkPlanes.h>
-#include <vtkPoints.h>
-#include <vtkPolyData.h>
-#include <vtkPolyDataMapper.h>
-#include <vtkProperty.h>
-#include <vtkRenderer.h>
-#include <vtkRenderWindow.h>
-
 #include <qtUiState.h>
 
 #include <QtGui/QApplication>
@@ -61,70 +47,12 @@ namespace // anonymous
 {
 
 //-----------------------------------------------------------------------------
-struct Camera {
-  maptk::vector_3d center; // Camera position
-  maptk::vector_3d view; // Direction vector of camera view
-  maptk::vector_3d up; // Direction vector of camera up axis
-  double fov; // Camera field-of-view angle, in degrees
-  double aspect; // Camera aspect ratio (image width / image height)
-};
-
-//-----------------------------------------------------------------------------
 struct CameraData
 {
-  Camera camera; // Description of camera
+  int id;
   QString imagePath; // Full path to camera image data
   QSize imageDimensions; // Dimensions of image data
 };
-
-//-----------------------------------------------------------------------------
-double computeFov(double width, double length)
-{
-  return vtkMath::DegreesFromRadians(2.0 * atan(0.5 * width / length));
-}
-
-//-----------------------------------------------------------------------------
-Camera buildCamera(maptk::camera_d const& camera, QSizeF const& imageSize)
-{
-  Camera out;
-
-  // Get camera parameters
-  auto const& ci = camera.get_intrinsics();
-  auto const pixelAspect = ci.aspect_ratio();
-  auto const focalLength = ci.focal_length();
-
-  out.aspect = pixelAspect * imageSize.width() / imageSize.height();
-  out.fov = computeFov(imageSize.height(), focalLength);
-
-  // Compute camera vectors from matrix
-  auto const& rotationMatrix =
-    camera.get_rotation().quaternion().toRotationMatrix();
-
-  out.up = -rotationMatrix.row(1).transpose();
-  out.view = rotationMatrix.row(2).transpose();
-  out.center = camera.get_center();
-
-  return out;
-}
-
-//-----------------------------------------------------------------------------
-void buildFrustum(vtkPlanes* out, Camera const& c)
-{
-  auto const depth = 15.0; // TODO make configurable or something
-  auto const& focus = c.center + (c.view * depth / c.view.norm());
-
-  vtkNew<vtkCamera> camera;
-
-  camera->SetPosition(c.center[0], c.center[1], c.center[2]);
-  camera->SetFocalPoint(focus[0], focus[1], focus[2]);
-  camera->SetViewUp(c.up[0], c.up[1], c.up[2]);
-  camera->SetViewAngle(c.fov);
-  camera->SetClippingRange(0.01, depth);
-
-  double planeCoeffs[24];
-  camera->GetFrustumPlanes(c.aspect, planeCoeffs);
-  out->SetFrustumPlanes(planeCoeffs);
-}
 
 } // namespace <anonymous>
 
@@ -132,71 +60,25 @@ void buildFrustum(vtkPlanes* out, Camera const& c)
 class MainWindowPrivate
 {
 public:
-  void addCamera(CameraData const&);
+  void addCamera(maptk::camera const&, CameraData const&);
 
   Ui::MainWindow UI;
   qtUiState uiState;
 
   QTimer slideTimer;
 
-  vtkNew<vtkRenderer> renderer;
-  vtkNew<vtkRenderWindow> renderWindow;
-
-  vtkNew<vtkAppendPolyData> cameraData;
   QList<CameraData> cameras;
 };
 
 QTE_IMPLEMENT_D_FUNC(MainWindow)
 
 //-----------------------------------------------------------------------------
-void MainWindowPrivate::addCamera(CameraData const& cd)
+void MainWindowPrivate::addCamera(
+  maptk::camera const& camera, CameraData const& cd)
 {
-  // Build frustum from camera data
-  vtkNew<vtkPlanes> planes;
-  buildFrustum(planes.GetPointer(), cd.camera);
-
-  vtkNew<vtkFrustumSource> frustum;
-  frustum->SetPlanes(planes.GetPointer());
-  frustum->SetShowLines(false);
-  frustum->Update();
-
-  // Make a copy of the frustum mesh so we can modify it
-  vtkNew<vtkPolyData> polyData;
-  polyData->DeepCopy(frustum->GetOutput());
-  auto frustumPoints = polyData->GetPoints();
-
-  // Add a polygon to indicate the up direction (the far plane uses points
-  // 0, 1, 2, and 3, with 2 and 3 on the top; we use those with the center of
-  // the far polygon to compute a point "above" the far face to form a triangle
-  // like the roof of a "house")
-  //
-  // TODO vtkFrustumSource indicates that this is actually the near plane, but
-  //      appears to be wrong - need to verify
-  maptk::vector_3d points[4];
-  frustumPoints->GetPoint(0, points[0].data());
-  frustumPoints->GetPoint(1, points[1].data());
-  frustumPoints->GetPoint(2, points[2].data());
-  frustumPoints->GetPoint(3, points[3].data());
-
-  // Compute new point:
-  //   center = (p0 + p1 + p2 + p3) / 4.0
-  //   top = (p2 + p3) / 2.0
-  //   new = top + (top - center)
-  //       = p2 + p3 - center
-  auto const center = 0.25 * (points[0] + points[1] + points[2] + points[3]);
-  auto const newPoint = maptk::vector_3d(points[2] + points[3] - center);
-
-  // Insert new point and new face
-  vtkIdType newIndex = frustumPoints->InsertNextPoint(newPoint.data());
-  vtkCellArray* polys = polyData->GetPolys();
-  vtkIdType pts[3] = { 2, 3, newIndex };
-  polys->InsertNextCell(3, pts);
-
-  // Add mesh to camera meshes
-  this->cameraData->AddInputData(polyData.GetPointer());
-
-  // Add camera data to camera list
   this->cameras.append(cd);
+
+  this->UI.worldView->addCamera(cd.id, camera, cd.imageDimensions);
 
   this->UI.playSlideshow->setEnabled(true);
   this->UI.camera->setEnabled(true);
@@ -204,7 +86,8 @@ void MainWindowPrivate::addCamera(CameraData const& cd)
 }
 
 //-----------------------------------------------------------------------------
-MainWindow::MainWindow() : d_ptr(new MainWindowPrivate)
+MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
+  : QMainWindow(parent, flags), d_ptr(new MainWindowPrivate)
 {
   QTE_D();
 
@@ -225,20 +108,6 @@ MainWindow::MainWindow() : d_ptr(new MainWindowPrivate)
           this, SLOT(setSlideDelay(int)));
 
   this->setSlideDelay(d->UI.slideDelay->value());
-
-  // Set up render pipeline
-  d->renderer->SetBackground(0, 0, 0);
-  d->renderWindow->AddRenderer(d->renderer.GetPointer());
-  d->UI.renderWidget->SetRenderWindow(d->renderWindow.GetPointer());
-
-  // Set up actor for camera frustums
-  vtkNew<vtkActor> cameraActor;
-  vtkNew<vtkPolyDataMapper> cameraMapper;
-  cameraMapper->SetInputConnection(d->cameraData->GetOutputPort());
-  cameraActor->SetMapper(cameraMapper.GetPointer());
-  cameraActor->GetProperty()->SetRepresentationToWireframe();
-
-  d->renderer->AddActor(cameraActor.GetPointer());
 }
 
 //-----------------------------------------------------------------------------
@@ -318,12 +187,12 @@ void MainWindow::loadProject(const QString& path)
 
     // Build camera data
     CameraData cd;
+    cd.id = d->cameras.count();
     cd.imagePath = ip;
     cd.imageDimensions = QImage(ip).size();
-    cd.camera = buildCamera(camera, cd.imageDimensions);
 
     // Add camera to scene
-    d->addCamera(cd);
+    d->addCamera(camera, cd);
   }
 }
 
@@ -335,16 +204,16 @@ void MainWindow::loadCamera(const QString& path)
   auto const& camera = maptk::read_krtd_file(qPrintable(path));
 
   // Guess image size
-  auto const& s = camera.get_intrinsics().principal_point() * 2.0;
+  auto const& s = camera.intrinsics().principal_point() * 2.0;
   auto const imageSize = QSizeF(s[0], s[1]);
 
   // Build camera data
   CameraData cd;
-  cd.camera = buildCamera(camera, imageSize);
+  cd.id = d->cameras.count();
   cd.imageDimensions = imageSize.toSize();
 
   // Add camera to scene
-  d->addCamera(cd);
+  d->addCamera(camera, cd);
 }
 
 //-----------------------------------------------------------------------------
@@ -352,36 +221,8 @@ void MainWindow::loadLandmarks(const QString& path)
 {
   QTE_D();
 
-  auto const& landmarksPtr = maptk::read_ply_file(qPrintable(path));
-  auto const& landmarks = landmarksPtr->landmarks();
-
-  vtkNew<vtkPoints> points;
-  vtkNew<vtkCellArray> verts;
-
-  points->Allocate(static_cast<vtkIdType>(landmarks.size()));
-  verts->Allocate(static_cast<vtkIdType>(landmarks.size()));
-
-  vtkIdType vertIndex = 0;
-  for (auto i = landmarks.cbegin(); i != landmarks.cend(); ++i)
-  {
-    auto const id = i->first;
-    auto const& pos = i->second->loc();
-    points->InsertNextPoint(pos.data());
-    verts->InsertNextCell(1);
-    verts->InsertCellPoint(vertIndex++);
-  }
-
-  vtkNew<vtkPolyData> polyData;
-  vtkNew<vtkPolyDataMapper> mapper;
-
-  polyData->SetPoints(points.GetPointer());
-  polyData->SetVerts(verts.GetPointer());
-  mapper->SetInputData(polyData.GetPointer());
-
-  vtkNew<vtkActor> actor;
-  actor->SetMapper(mapper.GetPointer());
-  actor->GetProperty()->SetPointSize(2);
-  d->renderer->AddActor(actor.GetPointer());
+  auto const& landmarks = maptk::read_ply_file(qPrintable(path));
+  d->UI.worldView->addLandmarks(*landmarks);
 }
 
 //-----------------------------------------------------------------------------
