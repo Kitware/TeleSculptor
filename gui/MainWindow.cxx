@@ -80,7 +80,7 @@ void MainWindowPrivate::addCamera(
 
   this->UI.worldView->addCamera(cd.id, camera, cd.imageDimensions);
 
-  this->UI.playSlideshow->setEnabled(true);
+  this->UI.actionSlideshowPlay->setEnabled(true);
   this->UI.camera->setEnabled(true);
   this->UI.camera->setRange(0, this->cameras.count() - 1);
 }
@@ -94,20 +94,24 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   // Set up UI
   d->UI.setupUi(this);
 
-  d->uiState.mapState("Window/state", this);
-  d->uiState.mapGeometry("Window/geometry", this);
-  d->uiState.restore();
+  d->UI.playSlideshowButton->setDefaultAction(d->UI.actionSlideshowPlay);
+  d->UI.loopSlideshowButton->setDefaultAction(d->UI.actionSlideshowLoop);
 
   connect(d->UI.actionOpen, SIGNAL(triggered()), this, SLOT(openFile()));
   connect(d->UI.actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
 
   connect(&d->slideTimer, SIGNAL(timeout()), this, SLOT(nextSlide()));
-  connect(d->UI.playSlideshow, SIGNAL(toggled(bool)),
+  connect(d->UI.actionSlideshowPlay, SIGNAL(toggled(bool)),
           this, SLOT(setSlideshowPlaying(bool)));
   connect(d->UI.slideDelay, SIGNAL(valueChanged(int)),
           this, SLOT(setSlideDelay(int)));
 
   this->setSlideDelay(d->UI.slideDelay->value());
+
+  // Set up UI persistence and restore previous state
+  d->uiState.mapState("Window/state", this);
+  d->uiState.mapGeometry("Window/geometry", this);
+  d->uiState.restore();
 }
 
 //-----------------------------------------------------------------------------
@@ -261,13 +265,13 @@ void MainWindow::nextSlide()
 
   if (d->UI.camera->value() == d->UI.camera->maximum())
   {
-    if (d->UI.loopSlideshow->isChecked())
+    if (d->UI.actionSlideshowLoop->isChecked())
     {
       d->UI.camera->triggerAction(QAbstractSlider::SliderToMinimum);
     }
     else
     {
-      d->UI.playSlideshow->setChecked(false);
+      d->UI.actionSlideshowPlay->setChecked(false);
     }
   }
   else
