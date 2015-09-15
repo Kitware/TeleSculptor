@@ -103,6 +103,15 @@
     </layout>
    </widget>
   </widget>
+  <widget class="QDockWidget" name="cameraViewDock">
+   <property name="windowTitle">
+    <string>Camera View</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="CameraView" name="cameraView"/>
+  </widget>
   <action name="actionQuit">
    <property name="icon">
     <iconset theme="application-exit"/>
@@ -165,6 +174,12 @@
    <class>WorldView</class>
    <extends>QWidget</extends>
    <header>WorldView.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>CameraView</class>
+   <extends>QWidget</extends>
+   <header>CameraView.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

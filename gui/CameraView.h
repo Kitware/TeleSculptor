@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_WORLDVIEW_H_
-#define MAPTK_WORLDVIEW_H_
+#ifndef MAPTK_CAMERAVIEW_H_
+#define MAPTK_CAMERAVIEW_H_
 
 #include <QVTKWidget.h>
 
@@ -43,25 +43,24 @@ class landmark_map;
 
 }
 
-class WorldViewPrivate;
+class CameraViewPrivate;
 
-class WorldView : public QVTKWidget
+class CameraView : public QVTKWidget
 {
   Q_OBJECT
 
 public:
-  explicit WorldView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~WorldView();
+  explicit CameraView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  virtual ~CameraView();
 
 public slots:
-  void addCamera(int id, maptk::camera const& camera, QSize const& frameSize);
-  void addLandmarks(maptk::landmark_map const&);
+  void loadImage(QString const& path);
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(WorldView)
-  QTE_DECLARE_PRIVATE(WorldView)
+  QTE_DECLARE_PRIVATE_RPTR(CameraView)
+  QTE_DECLARE_PRIVATE(CameraView)
 
-  QTE_DISABLE_COPY(WorldView)
+  QTE_DISABLE_COPY(CameraView)
 };
 
 #endif

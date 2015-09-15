@@ -94,6 +94,10 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   // Set up UI
   d->UI.setupUi(this);
 
+  d->UI.menuView->addSeparator();
+  d->UI.menuView->addAction(d->UI.cameraViewDock->toggleViewAction());
+  d->UI.menuView->addAction(d->UI.cameraSelectorDock->toggleViewAction());
+
   d->UI.playSlideshowButton->setDefaultAction(d->UI.actionSlideshowPlay);
   d->UI.loopSlideshowButton->setDefaultAction(d->UI.actionSlideshowLoop);
 

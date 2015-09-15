@@ -28,40 +28,41 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_WORLDVIEW_H_
-#define MAPTK_WORLDVIEW_H_
+#include "CameraView.h"
 
-#include <QVTKWidget.h>
+#include <vtkNew.h>
+#include <vtkRenderer.h>
+#include <vtkRenderWindow.h>
 
-#include <qtGlobal.h>
-
-namespace maptk
+//-----------------------------------------------------------------------------
+class CameraViewPrivate
 {
-
-class camera;
-class landmark_map;
-
-}
-
-class WorldViewPrivate;
-
-class WorldView : public QVTKWidget
-{
-  Q_OBJECT
-
 public:
-  explicit WorldView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~WorldView();
-
-public slots:
-  void addCamera(int id, maptk::camera const& camera, QSize const& frameSize);
-  void addLandmarks(maptk::landmark_map const&);
-
-private:
-  QTE_DECLARE_PRIVATE_RPTR(WorldView)
-  QTE_DECLARE_PRIVATE(WorldView)
-
-  QTE_DISABLE_COPY(WorldView)
+  vtkNew<vtkRenderer> renderer;
+  vtkNew<vtkRenderWindow> renderWindow;
 };
 
-#endif
+QTE_IMPLEMENT_D_FUNC(CameraView)
+
+//-----------------------------------------------------------------------------
+CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
+  : QVTKWidget(parent, flags), d_ptr(new CameraViewPrivate)
+{
+  QTE_D();
+
+  // Set up render pipeline
+  d->renderer->SetBackground(0, 0, 0);
+  d->renderWindow->AddRenderer(d->renderer.GetPointer());
+  this->SetRenderWindow(d->renderWindow.GetPointer());
+}
+
+//-----------------------------------------------------------------------------
+CameraView::~CameraView()
+{
+}
+
+//-----------------------------------------------------------------------------
+void CameraView::loadImage(QString const& path)
+{
+  // TODO
+}

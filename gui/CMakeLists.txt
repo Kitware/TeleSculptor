@@ -21,10 +21,13 @@ set(gui_resources
 )
 
 set(gui_moc_headers
+  CameraView.h
   MainWindow.h
+  WorldView.h
 )
 
 set(gui_sources
+  CameraView.cxx
   Project.cxx
   MainWindow.cxx
   WorldView.cxx
