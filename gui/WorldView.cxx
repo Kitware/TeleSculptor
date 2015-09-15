@@ -116,6 +116,7 @@ public:
   vtkNew<vtkRenderWindow> renderWindow;
 
   vtkNew<vtkAppendPolyData> cameraData;
+  vtkNew<vtkPolyData> dummyData;
 };
 
 QTE_IMPLEMENT_D_FUNC(WorldView)
@@ -139,6 +140,10 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   cameraActor->GetProperty()->SetRepresentationToWireframe();
 
   d->renderer->AddActor(cameraActor.GetPointer());
+
+  // Add some dummy "data" to the camera data collection so VTK doesn't
+  // complain about non-optional input port connections
+  d->cameraData->AddInputData(d->dummyData.GetPointer());
 }
 
 //-----------------------------------------------------------------------------
