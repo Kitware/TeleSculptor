@@ -56,6 +56,8 @@ public:
 public slots:
   void loadImage(QString const& path);
 
+  void resetView();
+
 private:
   QTE_DECLARE_PRIVATE_RPTR(CameraView)
   QTE_DECLARE_PRIVATE(CameraView)

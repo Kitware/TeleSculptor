@@ -56,6 +56,8 @@ public slots:
   void loadCamera(QString const& path);
   void loadLandmarks(QString const& path);
 
+  void setActiveCamera(int);
+
 protected slots:
   void setSlideDelay(int);
   void setSlideshowPlaying(bool);

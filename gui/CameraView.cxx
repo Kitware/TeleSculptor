@@ -30,9 +30,16 @@
 
 #include "CameraView.h"
 
+#include <vtkCamera.h>
+#include <vtkImageActor.h>
+#include <vtkImageData.h>
+#include <vtkImageReader2.h>
+#include <vtkImageReader2Factory.h>
 #include <vtkNew.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
+
+#include <QtCore/QDebug>
 
 //-----------------------------------------------------------------------------
 class CameraViewPrivate
@@ -40,6 +47,9 @@ class CameraViewPrivate
 public:
   vtkNew<vtkRenderer> renderer;
   vtkNew<vtkRenderWindow> renderWindow;
+
+  vtkNew<vtkImageActor> imageActor;
+  vtkNew<vtkImageData> emptyImage;
 };
 
 QTE_IMPLEMENT_D_FUNC(CameraView)
@@ -50,10 +60,26 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
 {
   QTE_D();
 
+  // Set up ortho view
+  d->renderer->GetActiveCamera()->ParallelProjectionOn();
+  d->renderer->GetActiveCamera()->SetClippingRange(1.0, 3.0);
+  d->renderer->GetActiveCamera()->SetPosition(0.0, 0.0, 2.0);
+
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
   d->renderWindow->AddRenderer(d->renderer.GetPointer());
   this->SetRenderWindow(d->renderWindow.GetPointer());
+
+  // Set up frame image actor
+  d->renderer->AddViewProp(d->imageActor.GetPointer());
+  d->imageActor->SetPosition(0.0, 0.0, -0.2);
+
+  // Create "dummy" image data for use when we have no "real" image
+  d->emptyImage->SetExtent(0, 0, 0, 0, 0, 0);
+  d->emptyImage->AllocateScalars(VTK_UNSIGNED_CHAR, 1);
+  d->emptyImage->SetScalarComponentFromDouble(0, 0, 0, 0, 0.0);
+
+  this->loadImage(QString());
 }
 
 //-----------------------------------------------------------------------------
@@ -64,5 +90,59 @@ CameraView::~CameraView()
 //-----------------------------------------------------------------------------
 void CameraView::loadImage(QString const& path)
 {
-  // TODO
+  QTE_D();
+
+  if (path.isEmpty())
+  {
+    // If no path given, clear current image and replace with "empty" image
+    d->imageActor->SetInputData(d->emptyImage.GetPointer());
+  }
+  else
+  {
+    // Create a reader capable of reading the image file
+    auto const reader =
+      vtkImageReader2Factory::CreateImageReader2(qPrintable(path));
+    if (!reader)
+    {
+      qWarning() << "Failed to create image reader for image" << path;
+      return;
+    }
+
+    // Load the image
+    reader->SetFileName(qPrintable(path));
+    reader->Update();
+
+    // Set data on image actor
+    d->imageActor->SetInputData(reader->GetOutput());
+    d->imageActor->Update();
+
+    // Delete the reader
+    reader->Delete();
+  }
+
+  // On success, reset view (also triggers an update)
+  this->resetView();
+}
+
+//-----------------------------------------------------------------------------
+void CameraView::resetView()
+{
+  QTE_D();
+
+  double imageBounds[6];
+  d->imageActor->GetBounds(imageBounds);
+
+  double renderAspect[2];
+  d->renderer->GetAspect(renderAspect);
+
+  auto const w = imageBounds[1] - imageBounds[0];
+  auto const h = imageBounds[3] - imageBounds[2];
+  auto const a = w / h;
+
+  auto const s = 0.5 * h * qMax(a / renderAspect[0], 1.0);
+
+  d->renderer->ResetCamera(imageBounds);
+  d->renderer->GetActiveCamera()->SetParallelScale(s);
+
+  this->update();
 }

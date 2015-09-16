@@ -76,6 +76,11 @@ QTE_IMPLEMENT_D_FUNC(MainWindow)
 void MainWindowPrivate::addCamera(
   maptk::camera const& camera, CameraData const& cd)
 {
+  if (this->cameras.isEmpty())
+  {
+    this->UI.cameraView->loadImage(cd.imagePath);
+  }
+
   this->cameras.append(cd);
 
   this->UI.worldView->addCamera(cd.id, camera, cd.imageDimensions);
@@ -109,6 +114,9 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(setSlideshowPlaying(bool)));
   connect(d->UI.slideDelay, SIGNAL(valueChanged(int)),
           this, SLOT(setSlideDelay(int)));
+
+  connect(d->UI.camera, SIGNAL(valueChanged(int)),
+          this, SLOT(setActiveCamera(int)));
 
   this->setSlideDelay(d->UI.slideDelay->value());
 
@@ -282,4 +290,19 @@ void MainWindow::nextSlide()
   {
     d->UI.camera->triggerAction(QAbstractSlider::SliderSingleStepAdd);
   }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::setActiveCamera(int id)
+{
+  QTE_D();
+
+  if (id < 0 || id >= d->cameras.count())
+  {
+    qDebug() << "MainWindow::setActiveCamera:"
+             << " requested ID" << id << "is invalid";
+    return;
+  }
+
+  d->UI.cameraView->loadImage(d->cameras[id].imagePath);
 }
