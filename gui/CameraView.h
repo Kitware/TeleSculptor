@@ -56,6 +56,9 @@ public:
 public slots:
   void loadImage(QString const& path);
 
+  void addLandmark(int id, double x, double y);
+  void clearLandmarks();
+
   void resetView();
 
 private:

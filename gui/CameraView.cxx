@@ -31,11 +31,15 @@
 #include "CameraView.h"
 
 #include <vtkCamera.h>
+#include <vtkCellArray.h>
 #include <vtkImageActor.h>
 #include <vtkImageData.h>
 #include <vtkImageReader2.h>
 #include <vtkImageReader2Factory.h>
 #include <vtkNew.h>
+#include <vtkPolyData.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkProperty.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 
@@ -50,6 +54,11 @@ public:
 
   vtkNew<vtkImageActor> imageActor;
   vtkNew<vtkImageData> emptyImage;
+
+  vtkNew<vtkPoints> landmarkPoints;
+  vtkNew<vtkCellArray> landmarkVerts;
+
+  int imageHeight;
 };
 
 QTE_IMPLEMENT_D_FUNC(CameraView)
@@ -69,6 +78,19 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->renderer->SetBackground(0, 0, 0);
   d->renderWindow->AddRenderer(d->renderer.GetPointer());
   this->SetRenderWindow(d->renderWindow.GetPointer());
+
+  // Set up landmark actor
+  vtkNew<vtkPolyData> polyData;
+  vtkNew<vtkPolyDataMapper> mapper;
+
+  polyData->SetPoints(d->landmarkPoints.GetPointer());
+  polyData->SetVerts(d->landmarkVerts.GetPointer());
+  mapper->SetInputData(polyData.GetPointer());
+
+  vtkNew<vtkActor> actor;
+  actor->SetMapper(mapper.GetPointer());
+  actor->GetProperty()->SetPointSize(2);
+  d->renderer->AddActor(actor.GetPointer());
 
   // Set up frame image actor
   d->renderer->AddViewProp(d->imageActor.GetPointer());
@@ -96,6 +118,7 @@ void CameraView::loadImage(QString const& path)
   {
     // If no path given, clear current image and replace with "empty" image
     d->imageActor->SetInputData(d->emptyImage.GetPointer());
+    d->imageHeight = 0;
   }
   else
   {
@@ -116,12 +139,40 @@ void CameraView::loadImage(QString const& path)
     d->imageActor->SetInputData(reader->GetOutput());
     d->imageActor->Update();
 
+    double bounds[6];
+    d->imageActor->GetBounds(bounds);
+    d->imageHeight = bounds[3] + 1 - bounds[2];
+
     // Delete the reader
     reader->Delete();
   }
 
   // On success, reset view (also triggers an update)
   this->resetView();
+}
+
+//-----------------------------------------------------------------------------
+void CameraView::addLandmark(int id, double x, double y)
+{
+  QTE_D();
+
+  Q_UNUSED(id)
+
+  auto const vid = d->landmarkPoints->GetNumberOfPoints();
+
+  d->landmarkPoints->InsertNextPoint(x, d->imageHeight - y, 0.0);
+  d->landmarkVerts->InsertNextCell(1);
+  d->landmarkVerts->InsertCellPoint(vid);
+  this->update();
+}
+
+//-----------------------------------------------------------------------------
+void CameraView::clearLandmarks()
+{
+  QTE_D();
+
+  d->landmarkVerts->SetNumberOfCells(0);
+  d->landmarkPoints->SetNumberOfPoints(0);
 }
 
 //-----------------------------------------------------------------------------

@@ -50,6 +50,8 @@ namespace // anonymous
 struct CameraData
 {
   int id;
+  maptk::camera_d camera;
+
   QString imagePath; // Full path to camera image data
   QSize imageDimensions; // Dimensions of image data
 };
@@ -60,7 +62,9 @@ struct CameraData
 class MainWindowPrivate
 {
 public:
-  void addCamera(maptk::camera const&, CameraData const&);
+  MainWindowPrivate(MainWindow* q) : q_ptr(q) {}
+
+  void addCamera(CameraData const&);
 
   Ui::MainWindow UI;
   qtUiState uiState;
@@ -68,31 +72,37 @@ public:
   QTimer slideTimer;
 
   QList<CameraData> cameras;
+  maptk::landmark_map_sptr landmarks;
+
+private:
+  QTE_DECLARE_PUBLIC_PTR(MainWindow)
+  QTE_DECLARE_PUBLIC(MainWindow)
 };
 
 QTE_IMPLEMENT_D_FUNC(MainWindow)
 
 //-----------------------------------------------------------------------------
-void MainWindowPrivate::addCamera(
-  maptk::camera const& camera, CameraData const& cd)
+void MainWindowPrivate::addCamera(CameraData const& cd)
 {
-  if (this->cameras.isEmpty())
-  {
-    this->UI.cameraView->loadImage(cd.imagePath);
-  }
+  QTE_Q();
 
   this->cameras.append(cd);
 
-  this->UI.worldView->addCamera(cd.id, camera, cd.imageDimensions);
+  this->UI.worldView->addCamera(cd.id, cd.camera, cd.imageDimensions);
 
   this->UI.actionSlideshowPlay->setEnabled(true);
   this->UI.camera->setEnabled(true);
   this->UI.camera->setRange(0, this->cameras.count() - 1);
+
+  if (this->cameras.count() == 1)
+  {
+    q->setActiveCamera(0);
+  }
 }
 
 //-----------------------------------------------------------------------------
 MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
-  : QMainWindow(parent, flags), d_ptr(new MainWindowPrivate)
+  : QMainWindow(parent, flags), d_ptr(new MainWindowPrivate(this))
 {
   QTE_D();
 
@@ -176,7 +186,7 @@ void MainWindow::openFile(QString const& path)
 //-----------------------------------------------------------------------------
 void MainWindow::openFiles(QStringList const& paths)
 {
-  foreach (auto const& path, paths)
+  for (auto const& path : paths)
   {
     this->openFile(path);
   }
@@ -197,18 +207,19 @@ void MainWindow::loadProject(const QString& path)
   this->loadLandmarks(project.landmarks);
 
   auto const cameraDir = maptk::path_t(qPrintable(project.cameraPath));
-  foreach (auto const& ip, project.images)
+  for (auto const& ip : project.images)
   {
     auto const& camera = maptk::read_krtd_file(qPrintable(ip), cameraDir);
 
     // Build camera data
     CameraData cd;
     cd.id = d->cameras.count();
+    cd.camera = camera;
     cd.imagePath = ip;
     cd.imageDimensions = QImage(ip).size();
 
     // Add camera to scene
-    d->addCamera(camera, cd);
+    d->addCamera(cd);
   }
 }
 
@@ -226,10 +237,11 @@ void MainWindow::loadCamera(const QString& path)
   // Build camera data
   CameraData cd;
   cd.id = d->cameras.count();
+  cd.camera = camera;
   cd.imageDimensions = imageSize.toSize();
 
   // Add camera to scene
-  d->addCamera(camera, cd);
+  d->addCamera(cd);
 }
 
 //-----------------------------------------------------------------------------
@@ -238,7 +250,11 @@ void MainWindow::loadLandmarks(const QString& path)
   QTE_D();
 
   auto const& landmarks = maptk::read_ply_file(qPrintable(path));
-  d->UI.worldView->addLandmarks(*landmarks);
+  if (landmarks)
+  {
+    d->landmarks = landmarks;
+    d->UI.worldView->addLandmarks(*landmarks);
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -304,5 +320,23 @@ void MainWindow::setActiveCamera(int id)
     return;
   }
 
-  d->UI.cameraView->loadImage(d->cameras[id].imagePath);
+  // Show camera image
+  auto const& cd = d->cameras[id];
+  d->UI.cameraView->loadImage(cd.imagePath);
+
+  d->UI.cameraView->clearLandmarks();
+  if (d->landmarks)
+  {
+    // Map landmarks to camera space
+    for (auto const& lm : d->landmarks->landmarks())
+    {
+      auto const& pos = lm.second->loc();
+      if (cd.camera.depth(pos) > 0.0)
+      {
+        // Add projected landmark to camera view
+        auto const& ppos = cd.camera.project(pos);
+        d->UI.cameraView->addLandmark(lm.first, ppos[0], ppos[1]);
+      }
+    }
+  }
 }
