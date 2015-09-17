@@ -171,8 +171,8 @@ void CameraView::clearLandmarks()
 {
   QTE_D();
 
-  d->landmarkVerts->SetNumberOfCells(0);
-  d->landmarkPoints->SetNumberOfPoints(0);
+  d->landmarkVerts->Reset();
+  d->landmarkPoints->Reset();
 }
 
 //-----------------------------------------------------------------------------
