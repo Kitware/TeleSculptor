@@ -218,9 +218,9 @@ void WorldView::addLandmarks(maptk::landmark_map const& lm)
   verts->Allocate(static_cast<vtkIdType>(landmarks.size()));
 
   vtkIdType vertIndex = 0;
-  for (auto const& lm : landmarks)
+  foreach_iter (auto, lmi, landmarks)
   {
-    auto const& pos = lm.second->loc();
+    auto const& pos = lmi->second->loc();
     points->InsertNextPoint(pos.data());
     verts->InsertNextCell(1);
     verts->InsertCellPoint(vertIndex++);

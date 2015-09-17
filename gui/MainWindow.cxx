@@ -186,7 +186,7 @@ void MainWindow::openFile(QString const& path)
 //-----------------------------------------------------------------------------
 void MainWindow::openFiles(QStringList const& paths)
 {
-  for (auto const& path : paths)
+  foreach (auto const& path, paths)
   {
     this->openFile(path);
   }
@@ -207,7 +207,7 @@ void MainWindow::loadProject(const QString& path)
   this->loadLandmarks(project.landmarks);
 
   auto const cameraDir = maptk::path_t(qPrintable(project.cameraPath));
-  for (auto const& ip : project.images)
+  foreach (auto const& ip, project.images)
   {
     auto const& camera = maptk::read_krtd_file(qPrintable(ip), cameraDir);
 
@@ -328,14 +328,15 @@ void MainWindow::setActiveCamera(int id)
   if (d->landmarks)
   {
     // Map landmarks to camera space
-    for (auto const& lm : d->landmarks->landmarks())
+    auto const& landmarks = d->landmarks->landmarks();
+    foreach_iter (auto, lmi, landmarks)
     {
-      auto const& pos = lm.second->loc();
+      auto const& pos = lmi->second->loc();
       if (cd.camera.depth(pos) > 0.0)
       {
         // Add projected landmark to camera view
         auto const& ppos = cd.camera.project(pos);
-        d->UI.cameraView->addLandmark(lm.first, ppos[0], ppos[1]);
+        d->UI.cameraView->addLandmark(lmi->first, ppos[0], ppos[1]);
       }
     }
   }
