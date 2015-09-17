@@ -29,6 +29,7 @@
  */
 
 #include "WorldView.h"
+#include "vtkMkCamera.h"
 
 #include <maptk/camera.h>
 #include <maptk/landmark_map.h>
@@ -49,60 +50,10 @@ namespace // anonymous
 {
 
 //-----------------------------------------------------------------------------
-struct Camera {
-  maptk::vector_3d center; // Camera position
-  maptk::vector_3d view; // Direction vector of camera view
-  maptk::vector_3d up; // Direction vector of camera up axis
-  double fov; // Camera field-of-view angle, in degrees
-  double aspect; // Camera aspect ratio (image width / image height)
-};
-
-//-----------------------------------------------------------------------------
-double computeFov(double width, double length)
+void buildFrustum(vtkPlanes* out, vtkMkCamera* camera)
 {
-  return vtkMath::DegreesFromRadians(2.0 * atan(0.5 * width / length));
-}
-
-//-----------------------------------------------------------------------------
-Camera buildCamera(maptk::camera const& camera, QSizeF const& frameSize)
-{
-  Camera out;
-
-  // Get camera parameters
-  auto const& ci = camera.intrinsics();
-  auto const pixelAspect = ci.aspect_ratio();
-  auto const focalLength = ci.focal_length();
-
-  out.aspect = pixelAspect * frameSize.width() / frameSize.height();
-  out.fov = computeFov(frameSize.height(), focalLength);
-
-  // Compute camera vectors from matrix
-  auto const& rotationMatrix =
-    camera.rotation().quaternion().toRotationMatrix();
-
-  out.up = -rotationMatrix.row(1).transpose();
-  out.view = rotationMatrix.row(2).transpose();
-  out.center = camera.center();
-
-  return out;
-}
-
-//-----------------------------------------------------------------------------
-void buildFrustum(vtkPlanes* out, Camera const& c)
-{
-  auto const depth = 15.0; // TODO make configurable or something
-  auto const& focus = c.center + (c.view * depth / c.view.norm());
-
-  vtkNew<vtkCamera> camera;
-
-  camera->SetPosition(c.center[0], c.center[1], c.center[2]);
-  camera->SetFocalPoint(focus[0], focus[1], focus[2]);
-  camera->SetViewUp(c.up[0], c.up[1], c.up[2]);
-  camera->SetViewAngle(c.fov);
-  camera->SetClippingRange(0.01, depth);
-
   double planeCoeffs[24];
-  camera->GetFrustumPlanes(c.aspect, planeCoeffs);
+  camera->GetFrustumPlanes(planeCoeffs);
   out->SetFrustumPlanes(planeCoeffs);
 }
 
@@ -152,8 +103,7 @@ WorldView::~WorldView()
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::addCamera(
-  int id, maptk::camera const& camera, QSize const& frameSize)
+void WorldView::addCamera(int id, vtkMkCamera* camera)
 {
   Q_UNUSED(id)
 
@@ -161,7 +111,7 @@ void WorldView::addCamera(
 
   // Build frustum from camera data
   vtkNew<vtkPlanes> planes;
-  buildFrustum(planes.GetPointer(), buildCamera(camera, frameSize));
+  buildFrustum(planes.GetPointer(), camera);
 
   vtkNew<vtkFrustumSource> frustum;
   frustum->SetPlanes(planes.GetPointer());

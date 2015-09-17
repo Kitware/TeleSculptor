@@ -31,6 +31,7 @@
 #include "MainWindow.h"
 
 #include "Project.h"
+#include "vtkMkCamera.h"
 
 #include <maptk/camera_io.h>
 #include <maptk/landmark_map_io.h>
@@ -50,10 +51,9 @@ namespace // anonymous
 struct CameraData
 {
   int id;
-  maptk::camera_d camera;
+  vtkMkCamera* camera;
 
   QString imagePath; // Full path to camera image data
-  QSize imageDimensions; // Dimensions of image data
 };
 
 } // namespace <anonymous>
@@ -64,7 +64,15 @@ class MainWindowPrivate
 public:
   MainWindowPrivate(MainWindow* q) : q_ptr(q) {}
 
-  void addCamera(CameraData const&);
+  ~MainWindowPrivate()
+  {
+    foreach(auto camera, cameras)
+    {
+      camera.camera->Delete();
+    }
+  }
+
+  void addCamera(CameraData&, QString const&);
 
   Ui::MainWindow UI;
   qtUiState uiState;
@@ -82,13 +90,19 @@ private:
 QTE_IMPLEMENT_D_FUNC(MainWindow)
 
 //-----------------------------------------------------------------------------
-void MainWindowPrivate::addCamera(CameraData const& cd)
+void MainWindowPrivate::addCamera(CameraData& cd, QString const& cameraPath)
 {
   QTE_Q();
 
+  cd.id = this->cameras.count();
+
+  cd.camera = vtkMkCamera::New();
+  cd.camera->SetCamera(maptk::read_krtd_file(qPrintable(cameraPath)));
+  cd.camera->Update();
+
   this->cameras.append(cd);
 
-  this->UI.worldView->addCamera(cd.id, cd.camera, cd.imageDimensions);
+  this->UI.worldView->addCamera(cd.id, cd.camera);
 
   this->UI.actionSlideshowPlay->setEnabled(true);
   this->UI.camera->setEnabled(true);
@@ -206,20 +220,18 @@ void MainWindow::loadProject(const QString& path)
 
   this->loadLandmarks(project.landmarks);
 
-  auto const cameraDir = maptk::path_t(qPrintable(project.cameraPath));
   foreach (auto const& ip, project.images)
   {
-    auto const& camera = maptk::read_krtd_file(qPrintable(ip), cameraDir);
+    QFileInfo fi(ip);
+    QString cameraPath =
+      project.cameraPath + "/" + fi.completeBaseName() + ".krtd";
 
     // Build camera data
     CameraData cd;
-    cd.id = d->cameras.count();
-    cd.camera = camera;
     cd.imagePath = ip;
-    cd.imageDimensions = QImage(ip).size();
 
     // Add camera to scene
-    d->addCamera(cd);
+    d->addCamera(cd, cameraPath);
   }
 }
 
@@ -228,20 +240,8 @@ void MainWindow::loadCamera(const QString& path)
 {
   QTE_D();
 
-  auto const& camera = maptk::read_krtd_file(qPrintable(path));
-
-  // Guess image size
-  auto const& s = camera.intrinsics().principal_point() * 2.0;
-  auto const imageSize = QSizeF(s[0], s[1]);
-
-  // Build camera data
   CameraData cd;
-  cd.id = d->cameras.count();
-  cd.camera = camera;
-  cd.imageDimensions = imageSize.toSize();
-
-  // Add camera to scene
-  d->addCamera(cd);
+  d->addCamera(cd, path);
 }
 
 //-----------------------------------------------------------------------------
@@ -322,21 +322,27 @@ void MainWindow::setActiveCamera(int id)
 
   // Show camera image
   auto const& cd = d->cameras[id];
-  d->UI.cameraView->loadImage(cd.imagePath, cd.imageDimensions);
+
+  int imageDim[2];
+  cd.camera->GetImageDimensions(imageDim);
+  QSize imageDimensions(imageDim[0], imageDim[1]);
+  d->UI.cameraView->loadImage(cd.imagePath, imageDimensions);
+  cd.camera->SetImageDimensions(imageDimensions.width(),
+                                imageDimensions.height());
 
   d->UI.cameraView->clearLandmarks();
   if (d->landmarks)
   {
     // Map landmarks to camera space
+    double projectedPoint[2];
     auto const& landmarks = d->landmarks->landmarks();
     foreach_iter (auto, lmi, landmarks)
     {
-      auto const& pos = lmi->second->loc();
-      if (cd.camera.depth(pos) > 0.0)
+      if (cd.camera->ProjectPoint(lmi->second->loc(), projectedPoint))
       {
         // Add projected landmark to camera view
-        auto const& ppos = cd.camera.project(pos);
-        d->UI.cameraView->addLandmark(lmi->first, ppos[0], ppos[1]);
+        d->UI.cameraView->addLandmark(lmi->first,
+          projectedPoint[0], projectedPoint[1]);
       }
     }
   }

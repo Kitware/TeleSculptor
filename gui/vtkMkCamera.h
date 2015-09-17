@@ -28,40 +28,66 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_WORLDVIEW_H_
-#define MAPTK_WORLDVIEW_H_
+#ifndef MAPTK_VTKMKCAMERA_H_
+#define MAPTK_VTKMKCAMERA_H_
 
-#include <QVTKWidget.h>
+#include <vtkCamera.h>
 
-#include <qtGlobal.h>
+#include <maptk/camera.h>
 
-namespace maptk
+class vtkMkCamera : public vtkCamera
 {
-
-class landmark_map;
-
-}
-
-class WorldViewPrivate;
-class vtkMkCamera;
-
-class WorldView : public QVTKWidget
-{
-  Q_OBJECT
-
 public:
-  explicit WorldView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~WorldView();
+  vtkTypeMacro(vtkMkCamera, vtkCamera);
+  void PrintSelf(ostream& os, vtkIndent indent);
 
-public slots:
-  void addCamera(int id, vtkMkCamera* camera);
-  void addLandmarks(maptk::landmark_map const&);
+  static vtkMkCamera *New();
+
+  // Description:
+  // Set the internal maptk camera
+  void SetCamera(maptk::camera_d camera);
+
+  // Description:
+  // Project 3D point to 2S using the internal maptk camera
+  bool ProjectPoint(maptk::vector_3d point, double projPoint[2]);
+
+  // Description:
+  // Update self (the vtk camera) based on the maptk camera and 
+  // ImageDimensions, if set
+  bool Update();
+
+  // Description:
+  // Set/Get the dimensions (w x h) of the image which is used, with camera
+  // instrinsics, to compute aspect ratio; if unavailable, an estimate is
+  // extracted from the camera intrinsics (principal point).
+  vtkGetVector2Macro(ImageDimensions, int);
+  vtkSetVector2Macro(ImageDimensions, int);
+
+  // Description:
+  // Convenience fn which calls the superclass fn of same name using the
+  // member AspectRatio.
+  void GetFrustumPlanes(double planes[24]);
+
+  // Description:
+  // Set/Get the aspect ratio (w / h) used when getting the frustum planes
+  vtkGetMacro(AspectRatio, double);
+  vtkSetMacro(AspectRatio, double);
+
+protected:
+  vtkMkCamera();
+  ~vtkMkCamera();
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(WorldView)
-  QTE_DECLARE_PRIVATE(WorldView)
+  vtkMkCamera(const vtkMkCamera&);  // Not implemented.
+  void operator=(const vtkMkCamera&);  // Not implemented.
 
-  QTE_DISABLE_COPY(WorldView)
+  int ImageDimensions[2];
+  double AspectRatio;
+
+  maptk::camera_d MaptkCamera;
+
+  class vtkInternal;
+  vtkInternal* Internal;
 };
 
 #endif
