@@ -54,7 +54,7 @@ public:
   virtual ~CameraView();
 
 public slots:
-  void loadImage(QString const& path);
+  void loadImage(QString const& path, QSize const& dimensions);
 
   void addLandmark(int id, double x, double y);
   void clearLandmarks();

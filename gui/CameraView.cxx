@@ -58,6 +58,7 @@ public:
   vtkNew<vtkPoints> landmarkPoints;
   vtkNew<vtkCellArray> landmarkVerts;
 
+  double imageBounds[6];
   int imageHeight;
 };
 
@@ -101,7 +102,7 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->emptyImage->AllocateScalars(VTK_UNSIGNED_CHAR, 1);
   d->emptyImage->SetScalarComponentFromDouble(0, 0, 0, 0, 0.0);
 
-  this->loadImage(QString());
+  this->loadImage(QString(), QSize());
 }
 
 //-----------------------------------------------------------------------------
@@ -110,7 +111,7 @@ CameraView::~CameraView()
 }
 
 //-----------------------------------------------------------------------------
-void CameraView::loadImage(QString const& path)
+void CameraView::loadImage(QString const& path, QSize const& dimensions)
 {
   QTE_D();
 
@@ -118,7 +119,12 @@ void CameraView::loadImage(QString const& path)
   {
     // If no path given, clear current image and replace with "empty" image
     d->imageActor->SetInputData(d->emptyImage.GetPointer());
-    d->imageHeight = 0;
+
+    d->imageBounds[0] = 0.0; d->imageBounds[1] = dimensions.width() - 1;
+    d->imageBounds[2] = 0.0; d->imageBounds[3] = dimensions.height() - 1;
+    d->imageBounds[4] = 0.0; d->imageBounds[5] = 0.0;
+
+    d->imageHeight = dimensions.height();
   }
   else
   {
@@ -139,9 +145,8 @@ void CameraView::loadImage(QString const& path)
     d->imageActor->SetInputData(reader->GetOutput());
     d->imageActor->Update();
 
-    double bounds[6];
-    d->imageActor->GetBounds(bounds);
-    d->imageHeight = bounds[3] + 1 - bounds[2];
+    d->imageActor->GetBounds(d->imageBounds);
+    d->imageHeight = d->imageBounds[3] + 1 - d->imageBounds[2];
 
     // Delete the reader
     reader->Delete();
@@ -180,19 +185,16 @@ void CameraView::resetView()
 {
   QTE_D();
 
-  double imageBounds[6];
-  d->imageActor->GetBounds(imageBounds);
-
   double renderAspect[2];
   d->renderer->GetAspect(renderAspect);
 
-  auto const w = imageBounds[1] - imageBounds[0];
-  auto const h = imageBounds[3] - imageBounds[2];
+  auto const w = d->imageBounds[1] - d->imageBounds[0];
+  auto const h = d->imageBounds[3] - d->imageBounds[2];
   auto const a = w / h;
 
   auto const s = 0.5 * h * qMax(a / renderAspect[0], 1.0);
 
-  d->renderer->ResetCamera(imageBounds);
+  d->renderer->ResetCamera(d->imageBounds);
   d->renderer->GetActiveCamera()->SetParallelScale(s);
 
   this->update();

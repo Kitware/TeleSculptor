@@ -322,7 +322,7 @@ void MainWindow::setActiveCamera(int id)
 
   // Show camera image
   auto const& cd = d->cameras[id];
-  d->UI.cameraView->loadImage(cd.imagePath);
+  d->UI.cameraView->loadImage(cd.imagePath, cd.imageDimensions);
 
   d->UI.cameraView->clearLandmarks();
   if (d->landmarks)
