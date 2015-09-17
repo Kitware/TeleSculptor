@@ -134,6 +134,7 @@ void CameraView::loadImage(QString const& path, QSize const& dimensions)
     if (!reader)
     {
       qWarning() << "Failed to create image reader for image" << path;
+      this->loadImage(QString(), dimensions);
       return;
     }
 
@@ -150,6 +151,14 @@ void CameraView::loadImage(QString const& path, QSize const& dimensions)
 
     // Delete the reader
     reader->Delete();
+
+    // Test for errors
+    if (d->imageHeight < 2)
+    {
+      qWarning() << "Failed to read image" << path;
+      this->loadImage(QString(), dimensions);
+      return;
+    }
   }
 
   // On success, reset view (also triggers an update)
