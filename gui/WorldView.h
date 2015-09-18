@@ -35,15 +35,11 @@
 
 #include <qtGlobal.h>
 
-namespace maptk
-{
+namespace maptk { class landmark_map; }
 
-class landmark_map;
-
-}
+class vtkMkCamera;
 
 class WorldViewPrivate;
-class vtkMkCamera;
 
 class WorldView : public QVTKWidget
 {

@@ -334,15 +334,15 @@ void MainWindow::setActiveCamera(int id)
   if (d->landmarks)
   {
     // Map landmarks to camera space
-    double projectedPoint[2];
     auto const& landmarks = d->landmarks->landmarks();
     foreach_iter (auto, lmi, landmarks)
     {
+      double projectedPoint[2];
       if (cd.camera->ProjectPoint(lmi->second->loc(), projectedPoint))
       {
         // Add projected landmark to camera view
-        d->UI.cameraView->addLandmark(lmi->first,
-          projectedPoint[0], projectedPoint[1]);
+        d->UI.cameraView->addLandmark(
+          lmi->first, projectedPoint[0], projectedPoint[1]);
       }
     }
   }

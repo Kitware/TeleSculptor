@@ -29,6 +29,7 @@
  */
 
 #include "WorldView.h"
+
 #include "vtkMkCamera.h"
 
 #include <maptk/camera.h>

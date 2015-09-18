@@ -48,11 +48,11 @@ public:
   void SetCamera(maptk::camera_d camera);
 
   // Description:
-  // Project 3D point to 2S using the internal maptk camera
+  // Project 3D point to 2D using the internal maptk camera
   bool ProjectPoint(maptk::vector_3d point, double projPoint[2]);
 
   // Description:
-  // Update self (the vtk camera) based on the maptk camera and 
+  // Update self (the VTK camera) based on the maptk camera and
   // ImageDimensions, if set
   bool Update();
 
@@ -64,8 +64,8 @@ public:
   vtkSetVector2Macro(ImageDimensions, int);
 
   // Description:
-  // Convenience fn which calls the superclass fn of same name using the
-  // member AspectRatio.
+  // Convenience method which calls the superclass method of same name using
+  // the member AspectRatio.
   void GetFrustumPlanes(double planes[24]);
 
   // Description:

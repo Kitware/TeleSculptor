@@ -33,10 +33,10 @@
 #include <maptk/camera.h>
 #include <maptk/camera_io.h>
 
-#include <vtksys/SystemTools.hxx>
-
 #include <vtkObjectFactory.h>
 #include <vtkMath.h>
+
+#include <vtksys/SystemTools.hxx>
 
 vtkStandardNewMacro(vtkMkCamera);
 
@@ -144,7 +144,7 @@ bool vtkMkCamera::Update()
 //----------------------------------------------------------------------------
 void vtkMkCamera::GetFrustumPlanes(double planes[24])
 {
-  // Need to add timing (modfied time ) logic to determine if need to Update()
+  // Need to add timing (modfied time) logic to determine if need to Update()
   this->Superclass::GetFrustumPlanes(this->AspectRatio, planes);
 }
 
