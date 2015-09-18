@@ -39,7 +39,7 @@
 #include <vector>
 
 #include <boost/algorithm/string/join.hpp>
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
 
 
 namespace kwiver {
@@ -167,7 +167,7 @@ get_nested_ocv_algo_configuration(std::string const& name,
     vector<string> algo_params;
     algo->getParams(algo_params);
 
-    BOOST_FOREACH( string pname, algo_params)
+    VITAL_FOREACH( string pname, algo_params)
     {
       int ptypeid = algo->paramType(pname);
       switch(ptypeid)
@@ -240,7 +240,7 @@ set_nested_ocv_algo_configuration_helper(std::string const& name,
     // scan through algo parameters, settings ones that we can encode in the vital::config_block
     std::vector<std::string> algo_params;
     algo->getParams(algo_params);
-    BOOST_FOREACH( std::string const pname, algo_params )
+    VITAL_FOREACH( std::string const pname, algo_params )
     {
       int ptypeid = algo->paramType(pname);
       switch(ptypeid)
@@ -302,7 +302,7 @@ check_nested_ocv_algo_configuration_helper(std::string const& name,
 
   bool all_success = true;
   int ptypeid;
-  BOOST_FOREACH( std::string pname, algo_params )
+  VITAL_FOREACH( std::string pname, algo_params )
   {
     ptypeid = algo->paramType(pname);
     switch(ptypeid)

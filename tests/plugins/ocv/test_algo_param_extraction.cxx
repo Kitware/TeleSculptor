@@ -38,12 +38,12 @@
 
 #include <iostream>
 
-#include <boost/foreach.hpp>
 
 #include <opencv2/core/core.hpp>
 
 #include <vital/exceptions.h>
 #include <vital/vital_types.h>
+#include <vital/vital_foreach.h>
 
 #include <maptk/plugins/ocv/detect_features.h>
 #include <maptk/plugins/ocv/extract_descriptors.h>
@@ -70,7 +70,7 @@ main(int argc, char* argv[])
 }
 
 #define print_config(config) \
-  BOOST_FOREACH( kwiver::vital::config_block_key_t key, config->available_values() ) \
+  VITAL_FOREACH( kwiver::vital::config_block_key_t key, config->available_values() ) \
   { \
     std::cerr << "\t" \
          << key << " = " << config->get_value<kwiver::vital::config_block_key_t>(key) \

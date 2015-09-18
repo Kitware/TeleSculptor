@@ -36,7 +36,7 @@
 
 #include "estimate_essential_matrix.h"
 
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
 
 #include <vital/types/feature.h>
 #include <maptk/plugins/vxl/camera.h>
@@ -158,11 +158,11 @@ estimate_essential_matrix
   maptk_to_vpgl_calibration(cal2, vcal2);
 
   vcl_vector<vgl_point_2d<double> > right_points, left_points;
-  BOOST_FOREACH(const vector_2d& v, pts1)
+  VITAL_FOREACH(const vector_2d& v, pts1)
   {
     right_points.push_back(vgl_point_2d<double>(v.x(), v.y()));
   }
-  BOOST_FOREACH(const vector_2d& v, pts2)
+  VITAL_FOREACH(const vector_2d& v, pts2)
   {
     left_points.push_back(vgl_point_2d<double>(v.x(), v.y()));
   }

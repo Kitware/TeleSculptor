@@ -44,7 +44,7 @@
 #include <maptk/projected_track_set.h>
 #include <maptk/plugins/vxl/optimize_cameras.h>
 
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
 
 
 #define TEST_ARGS ()
@@ -148,7 +148,7 @@ IMPLEMENT_TEST(no_noise)
   ostringstream ss;
 
   double ep = 1e-14;
-  BOOST_FOREACH(camera_map::map_camera_t::value_type const& p,
+  VITAL_FOREACH(camera_map::map_camera_t::value_type const& p,
                 working_cam_map->cameras())
   {
     // difference in camera center
@@ -207,7 +207,7 @@ IMPLEMENT_TEST(noisy_cameras)
   ostringstream ss;
 
   double ep = 2e-10;
-  BOOST_FOREACH(camera_map::map_camera_t::value_type const& p,
+  VITAL_FOREACH(camera_map::map_camera_t::value_type const& p,
                 working_cam_map->cameras())
   {
     // difference in camera center

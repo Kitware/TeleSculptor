@@ -35,7 +35,7 @@
 
 #include "camera_map.h"
 
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
 
 #include <maptk/plugins/vxl/camera.h>
 
@@ -54,7 +54,7 @@ camera_map::cameras() const
 {
   map_camera_t maptk_cameras;
 
-  BOOST_FOREACH(const map_vcam_t::value_type& c, data_)
+  VITAL_FOREACH(const map_vcam_t::value_type& c, data_)
   {
     camera_sptr cam = vpgl_camera_to_maptk(c.second);
     maptk_cameras.insert(std::make_pair(c.first, cam));
@@ -76,7 +76,7 @@ camera_map_to_vpgl(const vital::camera_map& cam_map)
     return m->vpgl_cameras();
   }
   camera_map::map_vcam_t vmap;
-  BOOST_FOREACH(const camera_map::map_camera_t::value_type& c,
+  VITAL_FOREACH(const camera_map::map_camera_t::value_type& c,
                 cam_map.cameras())
   {
     vpgl_perspective_camera<double> vcam;

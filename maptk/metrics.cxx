@@ -34,7 +34,7 @@
  */
 
 #include "metrics.h"
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
 
 
 namespace kwiver {
@@ -70,7 +70,7 @@ reprojection_errors(const std::map<frame_id_t, camera_sptr>& cameras,
   typedef std::map<landmark_id_t, landmark_sptr>::const_iterator lm_map_itr_t;
   typedef std::map<frame_id_t, camera_sptr>::const_iterator cam_map_itr_t;
   std::vector<double> errors;
-  BOOST_FOREACH(const track_sptr& t, tracks)
+  VITAL_FOREACH(const track_sptr& t, tracks)
   {
     lm_map_itr_t lmi = landmarks.find(t->id());
     if (lmi == landmarks.end() || !lmi->second)
@@ -111,7 +111,7 @@ reprojection_rmse(const std::map<frame_id_t, camera_sptr>& cameras,
   typedef std::map<frame_id_t, camera_sptr>::const_iterator cam_map_itr_t;
   double error_sum = 0.0;
   unsigned num_obs = 0;
-  BOOST_FOREACH(const track_sptr& t, tracks)
+  VITAL_FOREACH(const track_sptr& t, tracks)
   {
     lm_map_itr_t lmi = landmarks.find(t->id());
     if (lmi == landmarks.end() || !lmi->second)

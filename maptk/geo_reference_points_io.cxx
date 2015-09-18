@@ -36,13 +36,13 @@
 #include "geo_reference_points_io.h"
 #include <vital/exceptions.h>
 #include <vital/io/eigen_io.h>
+#include <vital/vital_foreach.h>
 
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <vector>
 
-#include <boost/foreach.hpp>
 
 
 namespace kwiver {
@@ -141,7 +141,7 @@ void load_reference_file(vital::path_t const& reference_file,
   // Scan through reference landmarks, adjusting their location by the lgcs
   // origin.
   cerr << "[load_reference_file] transforming lm geographic locations to local system..." << endl;
-  BOOST_FOREACH(vital::landmark_map::map_landmark_t::value_type & p, reference_lms)
+  VITAL_FOREACH(vital::landmark_map::map_landmark_t::value_type & p, reference_lms)
   {
     dynamic_cast<vital::landmark_d*>(p.second.get())->set_loc(p.second->loc() - mean);
     //cerr << "[load_reference_file] -- " << p.first << " :: " << p.second->loc() << endl;

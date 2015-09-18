@@ -44,7 +44,7 @@
 #include <vector>
 
 #include <boost/algorithm/string/join.hpp>
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
 #include <boost/iterator/counting_iterator.hpp>
 
 #include <vital/algo/algorithm.h>
@@ -228,7 +228,7 @@ track_features_core
   std::vector<match> vm = mset->matches();
   std::set<unsigned> matched;
 
-  BOOST_FOREACH(match m, vm)
+  VITAL_FOREACH(match m, vm)
   {
     matched.insert(m.second);
     track_sptr t = active_tracks[m.first];
@@ -244,7 +244,7 @@ track_features_core
                       matched.begin(), matched.end(),
                       unmatched_insert_itr);
 
-  BOOST_FOREACH(unsigned i, unmatched)
+  VITAL_FOREACH(unsigned i, unmatched)
   {
     track::track_state ts(frame_number, vf[i], df[i]);
     all_tracks.push_back(vital::track_sptr(new vital::track(ts)));

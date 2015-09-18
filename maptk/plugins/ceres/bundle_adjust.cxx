@@ -38,7 +38,7 @@
 #include <iostream>
 #include <set>
 
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
 #include <boost/timer/timer.hpp>
 
 #include <vital/logger/logger.h>
@@ -435,7 +435,7 @@ bundle_adjust
   // Extract the landmark locations into a mutable map
   typedef std::map<track_id_t, std::vector<double> > lm_param_map_t;
   lm_param_map_t landmark_params;
-  BOOST_FOREACH(const map_landmark_t::value_type& lm, lms)
+  VITAL_FOREACH(const map_landmark_t::value_type& lm, lms)
   {
     vector_3d loc = lm.second->loc();
     landmark_params[lm.first] = std::vector<double>(loc.data(), loc.data()+3);
@@ -447,7 +447,7 @@ bundle_adjust
   // number of lens distortion parameters in the selected model
   const unsigned int ndp = num_distortion_params(d_->lens_distortion_type);
   std::vector<double> intrinsic_params(5 + ndp, 0.0);
-  BOOST_FOREACH(const map_camera_t::value_type& c, cams)
+  VITAL_FOREACH(const map_camera_t::value_type& c, cams)
   {
     vector_3d rot = c.second->rotation().rodrigues();
     vector_3d center = c.second->center();
@@ -522,7 +522,7 @@ bundle_adjust
   bool loss_func_used = false;
 
   // Add the residuals for each relevant observation
-  BOOST_FOREACH(const track_sptr& t, trks)
+  VITAL_FOREACH(const track_sptr& t, trks)
   {
     const track_id_t id = t->id();
     lm_param_map_t::iterator lm_itr = landmark_params.find(id);
@@ -574,14 +574,14 @@ bundle_adjust
   std::cout << summary.FullReport() << "\n";
 
   // Update the landmarks with the optimized values
-  BOOST_FOREACH(const lm_param_map_t::value_type& lmp, landmark_params)
+  VITAL_FOREACH(const lm_param_map_t::value_type& lmp, landmark_params)
   {
     vector_3d pos = Eigen::Map<const vector_3d>(&lmp.second[0]);
     lms[lmp.first] = landmark_sptr(new landmark_d(pos));
   }
 
   // Update the cameras with the optimized values
-  BOOST_FOREACH(const cam_param_map_t::value_type& cp, camera_params)
+  VITAL_FOREACH(const cam_param_map_t::value_type& cp, camera_params)
   {
     vector_3d center = Eigen::Map<const vector_3d>(&cp.second[3]);
     rotation_d rot(vector_3d(Eigen::Map<const vector_3d>(&cp.second[0])));

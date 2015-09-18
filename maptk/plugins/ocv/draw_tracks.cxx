@@ -41,7 +41,7 @@
 #include <iomanip>
 #include <algorithm>
 
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/format.hpp>
 #include <boost/circular_buffer.hpp>
@@ -353,7 +353,7 @@ draw_tracks
   const cv::Scalar uncompared_color( 240, 32, 160 );
 
   // Iterate over all images
-  BOOST_FOREACH( image_container_sptr ctr_sptr, image_data )
+  VITAL_FOREACH( image_container_sptr ctr_sptr, image_data )
   {
     // Should the current frame be written to disk?
     bool write_image_to_disk = d_->write_images_to_disk;
@@ -377,7 +377,7 @@ draw_tracks
     bool comparison_track_found = false;
 
     // Draw points on input image
-    BOOST_FOREACH( track_sptr trk, display_set->active_tracks( fid )->tracks() )
+    VITAL_FOREACH( track_sptr trk, display_set->active_tracks( fid )->tracks() )
     {
       track::track_state ts = *( trk->find( fid ) );
 

@@ -34,7 +34,8 @@
  */
 
 #include "match_matrix.h"
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
+
 #include <map>
 
 
@@ -66,7 +67,7 @@ match_matrix(const vital::track_set_sptr tracks,
   // pre-allocate the sparse matrix memory
   size_t max_size = 0;
   const std::vector<vital::track_sptr> trks = tracks->tracks();
-  BOOST_FOREACH(const vital::track_sptr& t, trks)
+  VITAL_FOREACH(const vital::track_sptr& t, trks)
   {
     if( t->size() > max_size )
     {
@@ -77,13 +78,13 @@ match_matrix(const vital::track_set_sptr tracks,
   mm.reserve(Eigen::VectorXi::Constant(num_frames, max_size));
 
   // fill in the matching matrix (lower triangular part only)
-  BOOST_FOREACH(const vital::track_sptr& t, trks)
+  VITAL_FOREACH(const vital::track_sptr& t, trks)
   {
     // get all the frames covered by this track
     std::set<vital::frame_id_t> t_frames = t->all_frame_ids();
     // map the frames to a vector of all valid matrix indices
     std::set<unsigned int> t_ind;
-    BOOST_FOREACH(const vital::frame_id_t& fid, t_frames)
+    VITAL_FOREACH(const vital::frame_id_t& fid, t_frames)
     {
       std::map<vital::frame_id_t, unsigned int>::const_iterator fmi = frame_map.find(fid);
       // only add to the vector if in the map

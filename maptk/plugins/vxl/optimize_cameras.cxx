@@ -39,7 +39,7 @@
 #include <vector>
 #include <utility>
 
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
 
 #include <vital/exceptions.h>
 
@@ -120,7 +120,7 @@ optimize_cameras
 
   states_map_t states_map;
   // O( len(trks) * avg_t_len )
-  BOOST_FOREACH(vital::track_sptr const& t, trks)
+  VITAL_FOREACH(vital::track_sptr const& t, trks)
   {
     // Only record a state if there is a corresponding landmark for the
     // track (constant-time check), the track state has a feature and thus a
@@ -148,13 +148,13 @@ optimize_cameras
   vcl_vector< vgl_homg_point_3d<double> > pts_3d;
   vector_2d tmp_2d;
   vector_3d tmp_3d;
-  BOOST_FOREACH(map_vcam_t::value_type const& p, vcams)
+  VITAL_FOREACH(map_vcam_t::value_type const& p, vcams)
   {
     pts_2d.clear();
     pts_3d.clear();
 
     // Construct 2d<->3d correspondences
-    BOOST_FOREACH(inner_map_t::value_type const& q, states_map[p.first])
+    VITAL_FOREACH(inner_map_t::value_type const& q, states_map[p.first])
     {
       // Already guaranteed that feat and landmark exists above.
       tmp_2d = q.second->feat->loc();

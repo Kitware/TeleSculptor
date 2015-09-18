@@ -36,8 +36,7 @@
 #include <test_common.h>
 #include <test_scene.h>
 
-#include <boost/foreach.hpp>
-
+#include <vital/vital_foreach.h>
 #include <vital/algorithm_plugin_manager.h>
 
 #include <maptk/metrics.h>
@@ -314,7 +313,7 @@ IMPLEMENT_TEST(subset_cameras)
 
   camera_map::map_camera_t cam_map = cameras0->cameras();
   camera_map::map_camera_t cam_map2;
-  BOOST_FOREACH(camera_map::map_camera_t::value_type& p, cam_map)
+  VITAL_FOREACH(camera_map::map_camera_t::value_type& p, cam_map)
   {
     /// take every third camera
     if(p.first % 3 == 0)

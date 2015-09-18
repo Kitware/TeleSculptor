@@ -37,7 +37,7 @@
 
 #include <deque>
 
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
 
 #include <vital/exceptions.h>
 #include <vital/io/eigen_io.h>
@@ -237,7 +237,7 @@ initialize_cameras_landmarks::priv
 {
   typedef landmark_map::map_landmark_t lm_map_t;
   lm_map_t init_lms;
-  BOOST_FOREACH(const track_sptr& t, trks)
+  VITAL_FOREACH(const track_sptr& t, trks)
   {
     const track_id_t& tid = t->id();
     if( !this->retriangulate_all &&
@@ -262,7 +262,7 @@ initialize_cameras_landmarks::priv
   track_set_sptr tracks(new simple_track_set(trks));
   this->lm_triangulator->triangulate(cam_map, tracks, lm_map);
 
-  BOOST_FOREACH(const lm_map_t::value_type& p, lm_map->landmarks())
+  VITAL_FOREACH(const lm_map_t::value_type& p, lm_map->landmarks())
   {
     lms[p.first] = p.second;
   }
@@ -485,7 +485,7 @@ void extract_cameras(const camera_map_sptr& cameras,
 
   // Find the set of all cameras that need to be initialized
   std::set<frame_id_t> new_frames;
-  BOOST_FOREACH(const map_cam_t::value_type& p, all_cams)
+  VITAL_FOREACH(const map_cam_t::value_type& p, all_cams)
   {
     if(p.second)
     {
@@ -525,7 +525,7 @@ void extract_landmarks(const landmark_map_sptr& landmarks,
 
   // Find the set of all landmarks that need to be initialized
   std::set<track_id_t> new_landmarks;
-  BOOST_FOREACH(const map_landmark_t::value_type& p, all_lms)
+  VITAL_FOREACH(const map_landmark_t::value_type& p, all_lms)
   {
     if(p.second)
     {
@@ -588,7 +588,7 @@ initialize_cameras_landmarks
   if(cams.size() > 2 && !new_lm_ids.empty())
   {
     map_landmark_t init_lms;
-    BOOST_FOREACH(const landmark_id_t& lmid, new_lm_ids)
+    VITAL_FOREACH(const landmark_id_t& lmid, new_lm_ids)
     {
       landmark_sptr lm(new landmark_d(vector_3d(0,0,0)));
       init_lms[static_cast<landmark_id_t>(lmid)] = lm;
@@ -598,7 +598,7 @@ initialize_cameras_landmarks
     camera_map_sptr cam_map(new simple_camera_map(cams));
     d_->lm_triangulator->triangulate(cam_map, tracks, lm_map);
 
-    BOOST_FOREACH(const map_landmark_t::value_type& p, lm_map->landmarks())
+    VITAL_FOREACH(const map_landmark_t::value_type& p, lm_map->landmarks())
     {
       lms[p.first] = p.second;
     }
@@ -646,7 +646,7 @@ initialize_cameras_landmarks
     // find existing landmarks for these tracks
     map_landmark_t flms;
     std::vector<track_sptr> trks = ftracks->tracks();
-    BOOST_FOREACH(const track_sptr& t, trks)
+    VITAL_FOREACH(const track_sptr& t, trks)
     {
       map_landmark_t::const_iterator li = lms.find(t->id());
       if( li != lms.end() )

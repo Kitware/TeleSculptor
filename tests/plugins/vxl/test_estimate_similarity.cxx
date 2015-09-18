@@ -42,7 +42,7 @@
 #include <maptk/plugins/vxl/register_algorithms.h>
 #include <maptk/plugins/vxl/estimate_similarity_transform.h>
 
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
 
 
 #define TEST_ARGS ()
@@ -120,7 +120,7 @@ IMPLEMENT_TEST(reprojection_100pts)
 
   cerr << "Transforming original points by crafted transformation" << endl;
   vector<vector_3d> transformed_points;
-  BOOST_FOREACH(vector_3d o_vec, original_points)
+  VITAL_FOREACH(vector_3d o_vec, original_points)
   {
     transformed_points.push_back(m_sim * o_vec);
   }
@@ -145,7 +145,7 @@ IMPLEMENT_TEST(reprojection_100pts)
 
   cerr << "Transforming original points by crafted transformation" << endl;
   transformed_points.clear();
-  BOOST_FOREACH(vector_3d o_vec, original_points)
+  VITAL_FOREACH(vector_3d o_vec, original_points)
   {
     transformed_points.push_back(m_sim * o_vec);
   }
@@ -187,7 +187,7 @@ IMPLEMENT_TEST(reprojection_4pts)
 
   cerr << "Transforming original points by crafted transformation" << endl;
   vector<vector_3d> transformed_points;
-  BOOST_FOREACH(vector_3d o_vec, original_points)
+  VITAL_FOREACH(vector_3d o_vec, original_points)
   {
     transformed_points.push_back(m_sim * o_vec);
   }
@@ -231,7 +231,7 @@ IMPLEMENT_TEST(reprojection_3pts)
 
   cerr << "Transforming original points by crafted transformation" << endl;
   vector<vector_3d> transformed_points;
-  BOOST_FOREACH(vector_3d o_vec, original_points)
+  VITAL_FOREACH(vector_3d o_vec, original_points)
   {
     transformed_points.push_back(m_sim * o_vec);
   }
@@ -273,7 +273,7 @@ IMPLEMENT_TEST(reprojection_100pts_noisy)
 
   cerr << "Transforming original points by crafted transformation" << endl;
   vector<vector_3d> transformed_points;
-  BOOST_FOREACH(vector_3d o_vec, original_points)
+  VITAL_FOREACH(vector_3d o_vec, original_points)
   {
     transformed_points.push_back((m_sim * o_vec) + kwiver::maptk::testing::random_point3d(0.01));
   }

@@ -35,7 +35,8 @@
 
 #include "local_geo_cs.h"
 #include <boost/math/constants/constants.hpp>
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
+
 
 using namespace kwiver::vital;
 
@@ -137,7 +138,7 @@ initialize_cameras_with_ins(const std::map<frame_id_t, ins_data>& ins_map,
     lgcs.set_utm_origin(vital::vector_3d(x, y, 0.0));
   }
   typedef std::map<frame_id_t, ins_data>::value_type ins_map_val_t;
-  BOOST_FOREACH(ins_map_val_t const &p, ins_map)
+  VITAL_FOREACH(ins_map_val_t const &p, ins_map)
   {
     const ins_data& ins = p.second;
     lgcs.update_camera(ins, active_cam, rot_offset);
@@ -156,7 +157,7 @@ initialize_cameras_with_ins(const std::map<frame_id_t, ins_data>& ins_map,
 
     // shift all cameras to the new coordinate system.
     typedef std::map<frame_id_t, camera_sptr>::value_type cam_map_val_t;
-    BOOST_FOREACH(cam_map_val_t const &p, cam_map)
+    VITAL_FOREACH(cam_map_val_t const &p, cam_map)
     {
       camera_d* cam = dynamic_cast<camera_d*>(p.second.get());
       cam->set_center(cam->get_center() - mean);
@@ -182,7 +183,7 @@ update_ins_from_cameras(const std::map<frame_id_t, camera_sptr>& cam_map,
   }
 
   typedef std::map<frame_id_t, camera_sptr>::value_type cam_map_val_t;
-  BOOST_FOREACH(cam_map_val_t const &p, cam_map)
+  VITAL_FOREACH(cam_map_val_t const &p, cam_map)
   {
     ins_data& active_ins = ins_map[p.first];
     if( camera_d* cam = dynamic_cast<camera_d*>(p.second.get()) )

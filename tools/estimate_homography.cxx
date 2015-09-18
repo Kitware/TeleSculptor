@@ -40,20 +40,19 @@
 #include <vital/config/config_block.h>
 #include <vital/config/config_block_io.h>
 #include <vital/logger/logger.h>
+#include <vital/vital_foreach.h>
+
+#include <vital/types/image_container.h>
+#include <vital/exceptions.h>
+#include <vital/vital_types.h>
 
 #include <vital/algorithm_plugin_manager.h>
 #include <vital/algo/image_io.h>
 #include <vital/algo/convert_image.h>
-#include <vital/types/image_container.h>
-#include <vital/exceptions.h>
-#include <vital/vital_types.h>
 #include <vital/algo/detect_features.h>
 #include <vital/algo/estimate_homography.h>
 #include <vital/algo/extract_descriptors.h>
 #include <vital/algo/match_features.h>
-
-#include <boost/foreach.hpp>
-#include <boost/shared_ptr.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
@@ -396,7 +395,7 @@ static int maptk_main(int argc, char const* argv[])
 
   // Reporting inlier count
   size_t inlier_count = 0;
-  BOOST_FOREACH(bool b, inliers)
+  VITAL_FOREACH(bool b, inliers)
   {
     if (b)
     {

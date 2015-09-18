@@ -46,7 +46,7 @@
 #include <maptk/metrics.h>
 #include <vital/algo/triangulate_landmarks.h>
 
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
 
 namespace kwiver {
 namespace maptk {
@@ -178,7 +178,7 @@ void test_subset_cameras(kwiver::vital::algo::triangulate_landmarks& tri_lm)
 
   camera_map::map_camera_t cam_map = cameras->cameras();
   camera_map::map_camera_t cam_map2;
-  BOOST_FOREACH(camera_map::map_camera_t::value_type& p, cam_map)
+  VITAL_FOREACH(camera_map::map_camera_t::value_type& p, cam_map)
   {
     /// take every third camera
     if(p.first % 3 == 0)

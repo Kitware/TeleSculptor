@@ -42,6 +42,7 @@
 #include <vital/config/config_block.h>
 #include <vital/config/config_block_io.h>
 #include <vital/logger/logger.h>
+#include <vital/vital_foreach.h>
 
 #include <vital/algorithm_plugin_manager.h>
 #include <vital/exceptions.h>
@@ -53,7 +54,6 @@
 #include <vital/algo/compute_ref_homography.h>
 #include <kwiversys/SystemTools.hxx>
 
-#include <boost/foreach.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options/options_description.hpp>
@@ -219,7 +219,7 @@ static kwiver::vital::image::byte invert_mask_pixel( kwiver::vital::image::byte 
 #define print_config(config) \
   do \
   { \
-    BOOST_FOREACH( kwiver::vital::config_block_key_t key, config->available_values() ) \
+    VITAL_FOREACH( kwiver::vital::config_block_key_t key, config->available_values() ) \
     { \
       std::cerr << "\t" \
            << key << " = " << config->get_value<kwiver::vital::config_block_key_t>(key) \

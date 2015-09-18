@@ -43,7 +43,7 @@
 #include <maptk/plugins/vxl/estimate_similarity_transform.h>
 #include <maptk/plugins/core/initialize_cameras_landmarks.h>
 
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
 
 
 #define TEST_ARGS ()
@@ -132,7 +132,7 @@ IMPLEMENT_TEST(ideal_points)
   std::cout << "similarity = "<<global_sim<<std::endl;
 
 
-  BOOST_FOREACH(camera_map::map_camera_t::value_type p, orig_cams)
+  VITAL_FOREACH(camera_map::map_camera_t::value_type p, orig_cams)
   {
     camera_sptr new_cam_t = transform(new_cams[p.first], global_sim);
     rotation_d dR = new_cam_t->rotation().inverse() * p.second->rotation();
@@ -144,7 +144,7 @@ IMPLEMENT_TEST(ideal_points)
 
   landmark_map::map_landmark_t orig_lms = landmarks->landmarks();
   landmark_map::map_landmark_t new_lms = new_landmarks->landmarks();
-  BOOST_FOREACH(landmark_map::map_landmark_t::value_type p, orig_lms)
+  VITAL_FOREACH(landmark_map::map_landmark_t::value_type p, orig_lms)
   {
     landmark_sptr new_lm_tr = transform(new_lms[p.first], global_sim);
 
@@ -189,7 +189,7 @@ IMPLEMENT_TEST(noisy_points)
   std::cout << "similarity = "<<global_sim<<std::endl;
 
 
-  BOOST_FOREACH(camera_map::map_camera_t::value_type p, orig_cams)
+  VITAL_FOREACH(camera_map::map_camera_t::value_type p, orig_cams)
   {
     camera_sptr new_cam_t = transform(new_cams[p.first], global_sim);
     rotation_d dR = new_cam_t->rotation().inverse() * p.second->rotation();
@@ -203,7 +203,7 @@ IMPLEMENT_TEST(noisy_points)
   landmark_map::map_landmark_t new_lms = new_landmarks->landmarks();
   global_sim = est_sim->estimate_transform(new_landmarks, landmarks);
   std::cout << "similarity = "<<global_sim<<std::endl;
-  BOOST_FOREACH(landmark_map::map_landmark_t::value_type p, orig_lms)
+  VITAL_FOREACH(landmark_map::map_landmark_t::value_type p, orig_lms)
   {
     landmark_sptr new_lm_tr = transform(new_lms[p.first], global_sim);
 
@@ -257,12 +257,12 @@ IMPLEMENT_TEST(subset_init)
   init.initialize(new_cameras, new_landmarks, tracks);
 
   // test that we only initialized the requested objects
-  BOOST_FOREACH(camera_map::map_camera_t::value_type p, new_cameras->cameras())
+  VITAL_FOREACH(camera_map::map_camera_t::value_type p, new_cameras->cameras())
   {
     TEST_EQUAL("Camera initialized", bool(p.second), true);
     TEST_EQUAL("Expected camera id", p.first % 3, 0);
   }
-  BOOST_FOREACH(landmark_map::map_landmark_t::value_type p, new_landmarks->landmarks())
+  VITAL_FOREACH(landmark_map::map_landmark_t::value_type p, new_landmarks->landmarks())
   {
     TEST_EQUAL("Landmark initialized", bool(p.second), true);
     TEST_EQUAL("Expected landmark id", p.first % 5, 0);
@@ -309,7 +309,7 @@ IMPLEMENT_TEST(subset_init)
   std::cout << "similarity = "<<global_sim<<std::endl;
 
 
-  BOOST_FOREACH(camera_map::map_camera_t::value_type p, orig_cams)
+  VITAL_FOREACH(camera_map::map_camera_t::value_type p, orig_cams)
   {
     camera_sptr new_cam_t = transform(new_cams[p.first], global_sim);
     rotation_d dR = new_cam_t->rotation().inverse() * p.second->rotation();
@@ -321,7 +321,7 @@ IMPLEMENT_TEST(subset_init)
 
   landmark_map::map_landmark_t orig_lms = landmarks->landmarks();
   landmark_map::map_landmark_t new_lms = new_landmarks->landmarks();
-  BOOST_FOREACH(landmark_map::map_landmark_t::value_type p, orig_lms)
+  VITAL_FOREACH(landmark_map::map_landmark_t::value_type p, orig_lms)
   {
     landmark_sptr new_lm_tr = transform(new_lms[p.first], global_sim);
 

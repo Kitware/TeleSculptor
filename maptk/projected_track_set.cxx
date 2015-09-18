@@ -35,7 +35,7 @@
 
 #include "projected_track_set.h"
 
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
 
 namespace kwiver {
 namespace maptk {
@@ -57,7 +57,7 @@ projected_tracks(landmark_map_sptr landmarks, camera_map_sptr cameras)
     t->set_id( l->first );
     tracks.push_back( t );
 
-    BOOST_FOREACH( const camera_map::map_camera_t::value_type& p, cam_map )
+    VITAL_FOREACH( const camera_map::map_camera_t::value_type& p, cam_map )
     {
       const camera_d& cam = dynamic_cast<const camera_d&>( *p.second );
       feature_sptr f( new feature_d( cam.project( l->second->loc() ) ) );
