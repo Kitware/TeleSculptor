@@ -40,64 +40,52 @@
 
 vtkStandardNewMacro(vtkMkCamera);
 
-class vtkMkCamera::vtkInternal
+namespace // anonymous
 {
-public:
-  vtkInternal() {}
-  ~vtkInternal() {}
-
-  void BuildCamera(maptk::camera const& camera);
-
-  vtkMkCamera* TheCamera;
-};
-
 
 //-----------------------------------------------------------------------------
-void vtkMkCamera::vtkInternal::BuildCamera(maptk::camera const& camera)
+void BuildCamera(vtkMkCamera* out, maptk::camera const& in)
 {
   // Get camera parameters
-  auto const& ci = camera.intrinsics();
+  auto const& ci = in.intrinsics();
   auto const pixelAspect = ci.aspect_ratio();
   auto const focalLength = ci.focal_length();
 
   int imageWidth, imageHeight;
-  TheCamera->GetImageDimensions(imageWidth, imageHeight);
+  out->GetImageDimensions(imageWidth, imageHeight);
 
   double aspectRatio = pixelAspect * imageWidth / imageHeight;
-  TheCamera->SetAspectRatio(aspectRatio);
+  out->SetAspectRatio(aspectRatio);
 
   double fov =
     vtkMath::DegreesFromRadians(2.0 * atan(0.5 * imageHeight / focalLength));
-  TheCamera->SetViewAngle(fov);
+  out->SetViewAngle(fov);
 
   // Compute camera vectors from matrix
-  auto const& rotationMatrix =
-    camera.rotation().quaternion().toRotationMatrix();
+  auto const& rotationMatrix = in.rotation().quaternion().toRotationMatrix();
 
   auto up = -rotationMatrix.row(1).transpose();
   auto view = rotationMatrix.row(2).transpose();
-  auto center = camera.center();
+  auto center = in.center();
 
-  TheCamera->SetPosition(center[0], center[1], center[2]);
-  TheCamera->SetViewUp(up[0], up[1], up[2]);
+  out->SetPosition(center[0], center[1], center[2]);
+  out->SetViewUp(up[0], up[1], up[2]);
 
-  auto const& focus = center + (view * TheCamera->Distance / view.norm());
-  TheCamera->SetFocalPoint(focus[0], focus[1], focus[2]);
+  auto const& focus = center + (view * out->GetDistance() / view.norm());
+  out->SetFocalPoint(focus[0], focus[1], focus[2]);
 }
+
+} // namespace <anonymous>
 
 //-----------------------------------------------------------------------------
 vtkMkCamera::vtkMkCamera()
 {
   this->ImageDimensions[0] = this->ImageDimensions[1] = -1;
-
-  this->Internal = new vtkInternal;
-  this->Internal->TheCamera = this;
 }
 
 //-----------------------------------------------------------------------------
 vtkMkCamera::~vtkMkCamera()
 {
-  delete this->Internal;
 }
 
 //-----------------------------------------------------------------------------
@@ -131,7 +119,7 @@ bool vtkMkCamera::Update()
     this->ImageDimensions[1] = s[1];
   }
 
-  this->Internal->BuildCamera(this->MaptkCamera);
+  BuildCamera(this, this->MaptkCamera);
 
   // here for now, but this is something we actually want to be a property
   // of the representation... that is, the depth (size) displayed for the camera

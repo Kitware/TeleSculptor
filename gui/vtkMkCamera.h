@@ -87,9 +87,6 @@ private:
   double AspectRatio;
 
   maptk::camera_d MaptkCamera;
-
-  class vtkInternal;
-  vtkInternal* Internal;
 };
 
 #endif
