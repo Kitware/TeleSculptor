@@ -89,22 +89,22 @@ vtkMkCamera::~vtkMkCamera()
 }
 
 //-----------------------------------------------------------------------------
-void vtkMkCamera::SetCamera(maptk::camera_d camera)
+void vtkMkCamera::SetCamera(maptk::camera_d const& camera)
 {
   this->MaptkCamera = camera;
 }
 
 //-----------------------------------------------------------------------------
-bool vtkMkCamera::ProjectPoint(maptk::vector_3d point, double projPoint[2])
+bool vtkMkCamera::ProjectPoint(maptk::vector_3d const& in, double (&out)[2])
 {
-  if (this->MaptkCamera.depth(point) < 0.0)
+  if (this->MaptkCamera.depth(in) < 0.0)
   {
     return false;
   }
 
-  auto const& ppos = this->MaptkCamera.project(point);
-  projPoint[0] = ppos[0];
-  projPoint[1] = ppos[1];
+  auto const& ppos = this->MaptkCamera.project(in);
+  out[0] = ppos[0];
+  out[1] = ppos[1];
   return true;
 }
 

@@ -36,6 +36,8 @@
 #include <maptk/camera_io.h>
 #include <maptk/landmark_map_io.h>
 
+#include <vtkSmartPointer.h>
+
 #include <qtUiState.h>
 
 #include <QtGui/QApplication>
@@ -51,7 +53,7 @@ namespace // anonymous
 struct CameraData
 {
   int id;
-  vtkMkCamera* camera;
+  vtkSmartPointer<vtkMkCamera> camera;
 
   QString imagePath; // Full path to camera image data
 };
@@ -63,14 +65,6 @@ class MainWindowPrivate
 {
 public:
   MainWindowPrivate(MainWindow* q) : q_ptr(q) {}
-
-  ~MainWindowPrivate()
-  {
-    foreach(auto camera, cameras)
-    {
-      camera.camera->Delete();
-    }
-  }
 
   void addCamera(CameraData&, QString const&);
 
@@ -96,7 +90,7 @@ void MainWindowPrivate::addCamera(CameraData& cd, QString const& cameraPath)
 
   cd.id = this->cameras.count();
 
-  cd.camera = vtkMkCamera::New();
+  cd.camera = vtkSmartPointer<vtkMkCamera>::New();
   cd.camera->SetCamera(maptk::read_krtd_file(qPrintable(cameraPath)));
   cd.camera->Update();
 

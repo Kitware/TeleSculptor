@@ -45,11 +45,11 @@ public:
 
   // Description:
   // Set the internal maptk camera
-  void SetCamera(maptk::camera_d camera);
+  void SetCamera(maptk::camera_d const& camera);
 
   // Description:
   // Project 3D point to 2D using the internal maptk camera
-  bool ProjectPoint(maptk::vector_3d point, double projPoint[2]);
+  bool ProjectPoint(maptk::vector_3d const& point, double (&projPoint)[2]);
 
   // Description:
   // Update self (the VTK camera) based on the maptk camera and
