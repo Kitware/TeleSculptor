@@ -106,7 +106,9 @@ void MainWindowPrivate::addCamera(
 
   this->UI.actionSlideshowPlay->setEnabled(true);
   this->UI.camera->setEnabled(true);
+  this->UI.cameraSpin->setEnabled(true);
   this->UI.camera->setRange(0, this->cameras.count() - 1);
+  this->UI.cameraSpin->setRange(0, this->cameras.count() - 1);
 
   if (this->cameras.count() == 1)
   {

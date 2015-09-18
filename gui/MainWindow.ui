@@ -49,7 +49,7 @@
     <number>8</number>
    </attribute>
    <widget class="QWidget" name="cameraSelectorContents">
-    <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,0,0,0">
+    <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,0,0,0,0">
      <item>
       <widget class="QSlider" name="camera">
        <property name="enabled">
@@ -57,6 +57,16 @@
        </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSpinBox" name="cameraSpin">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
      </item>
@@ -184,5 +194,38 @@
   </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>cameraSpin</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>camera</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>613</x>
+     <y>578</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>294</x>
+     <y>578</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>camera</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>cameraSpin</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>294</x>
+     <y>578</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>613</x>
+     <y>578</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
