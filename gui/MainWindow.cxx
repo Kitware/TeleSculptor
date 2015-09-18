@@ -66,7 +66,8 @@ class MainWindowPrivate
 public:
   MainWindowPrivate(MainWindow* q) : q_ptr(q) {}
 
-  void addCamera(CameraData&, QString const&);
+  void addCamera(maptk::camera_d const& camera,
+                 QString const& imagePath = QString());
 
   Ui::MainWindow UI;
   qtUiState uiState;
@@ -84,14 +85,19 @@ private:
 QTE_IMPLEMENT_D_FUNC(MainWindow)
 
 //-----------------------------------------------------------------------------
-void MainWindowPrivate::addCamera(CameraData& cd, QString const& cameraPath)
+void MainWindowPrivate::addCamera(
+  maptk::camera_d const& camera, QString const& imagePath)
 {
   QTE_Q();
 
+  CameraData cd;
+
   cd.id = this->cameras.count();
 
+  cd.imagePath = imagePath;
+
   cd.camera = vtkSmartPointer<vtkMkCamera>::New();
-  cd.camera->SetCamera(maptk::read_krtd_file(qPrintable(cameraPath)));
+  cd.camera->SetCamera(camera);
   cd.camera->Update();
 
   this->cameras.append(cd);
@@ -214,18 +220,13 @@ void MainWindow::loadProject(const QString& path)
 
   this->loadLandmarks(project.landmarks);
 
+  auto const cameraDir = maptk::path_t(qPrintable(project.cameraPath));
   foreach (auto const& ip, project.images)
   {
-    QFileInfo fi(ip);
-    QString cameraPath =
-      project.cameraPath + "/" + fi.completeBaseName() + ".krtd";
-
-    // Build camera data
-    CameraData cd;
-    cd.imagePath = ip;
+    auto const& camera = maptk::read_krtd_file(qPrintable(ip), cameraDir);
 
     // Add camera to scene
-    d->addCamera(cd, cameraPath);
+    d->addCamera(camera, ip);
   }
 }
 
@@ -234,8 +235,8 @@ void MainWindow::loadCamera(const QString& path)
 {
   QTE_D();
 
-  CameraData cd;
-  d->addCamera(cd, path);
+  auto const& camera = maptk::read_krtd_file(qPrintable(path));
+  d->addCamera(camera);
 }
 
 //-----------------------------------------------------------------------------
