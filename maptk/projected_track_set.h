@@ -37,8 +37,6 @@
 #ifndef MAPTK_PROJECTED_TRACK_SET_H_
 #define MAPTK_PROJECTED_TRACK_SET_H_
 
-#include <boost/shared_ptr.hpp>
-
 #include <maptk/config.h>
 
 #include <vital/types/track_set.h>

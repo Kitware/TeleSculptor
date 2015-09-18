@@ -37,8 +37,6 @@
 #ifndef MAPTK_PLUGINS_CORE_TRACK_FEATURES_CORE_H_
 #define MAPTK_PLUGINS_CORE_TRACK_FEATURES_CORE_H_
 
-#include <boost/shared_ptr.hpp>
-
 #include <vital/algo/algorithm.h>
 #include <vital/algo/track_features.h>
 #include <vital/types/image_container.h>

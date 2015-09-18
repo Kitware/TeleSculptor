@@ -41,9 +41,9 @@
 #include <vital/algo/bundle_adjust.h>
 #include <vital/config/config_block.h>
 
-#include <boost/scoped_ptr.hpp>
-
 #include <maptk/plugins/core/plugin_core_config.h>
+
+#include <memory>
 
 
 namespace kwiver {
@@ -83,12 +83,12 @@ public:
 private:
   // private implementation class
   class priv;
-  boost::scoped_ptr<priv> d_;
+  std::auto_ptr<priv> d_;
 };
 
 
 /// Type definition for shared pointer for hierarchical_bundle_adjust algorithm
-typedef boost::shared_ptr<hierarchical_bundle_adjust> hierarchical_bundle_adjust_sptr;
+typedef std::shared_ptr<hierarchical_bundle_adjust> hierarchical_bundle_adjust_sptr;
 
 
 } // end namespace core
