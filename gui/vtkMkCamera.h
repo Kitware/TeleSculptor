@@ -77,6 +77,8 @@ protected:
   vtkMkCamera();
   ~vtkMkCamera();
 
+  using vtkCamera::GetFrustumPlanes; // Hide overloaded virtual
+
 private:
   vtkMkCamera(const vtkMkCamera&);  // Not implemented.
   void operator=(const vtkMkCamera&);  // Not implemented.
