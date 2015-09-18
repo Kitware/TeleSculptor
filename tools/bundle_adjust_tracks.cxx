@@ -134,6 +134,10 @@ static maptk::config_block_sptr default_config()
                     "\n"
                     "Landmark z position, or altitude, should be provided in meters.");
 
+  config->set_value("initialize_unloaded_cameras", "true",
+                    "When loading a subset of cameras, should we optimize only the "
+                    "loaded cameras or also initialize and optimize the unspecified cameras");
+
   config->set_value("output_ply_file", "output/landmarks.ply",
                     "Path to the output PLY file in which to write "
                     "resulting 3D landmark points");
@@ -780,6 +784,22 @@ static int maptk_main(int argc, char const* argv[])
   {
     std::cerr << "Applying Necker reversal" << std::endl;
     necker_reverse(cam_map, lm_map);
+  }
+
+  bool init_unloaded_cams = config->get_value<bool>("initialize_unloaded_cameras", true);
+  if (init_unloaded_cams)
+  {
+    if( cam_map )
+    {
+      cameras = cam_map->cameras();
+    }
+    BOOST_FOREACH(const maptk::frame_id_t& id, tracks->all_frame_ids())
+    {
+      // if id is already in the map, do nothing.
+      // if id is not it the map add a null camera pointer
+      cameras[id];
+    }
+    cam_map = maptk::camera_map_sptr(new maptk::simple_camera_map(cameras));
   }
 
   //
