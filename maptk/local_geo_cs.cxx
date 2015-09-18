@@ -34,8 +34,16 @@
  */
 
 #include "local_geo_cs.h"
-#include <boost/math/constants/constants.hpp>
 #include <vital/vital_foreach.h>
+
+#define _USE_MATH_DEFINES
+#include <math.h>
+
+#if defined M_PIl
+#define LOCAL_PI M_PIl
+#else
+#define LOCAL_PI M_PI
+#endif
 
 
 using namespace kwiver::vital;
@@ -45,11 +53,11 @@ namespace maptk {
 
 
 /// scale factor converting radians to degrees
-const double rad2deg = 180.0 / boost::math::constants::pi<double>();
+  static const double rad2deg = static_cast<double>( 180.0 ) / LOCAL_PI;
 /// scale factor converting degrees to radians
-const double deg2rad = boost::math::constants::pi<double>() / 180.0;
+  static const double deg2rad = static_cast<double>( LOCAL_PI ) / 180.0;
 /// scale factor convertint feet into meters
-const double foot2meter = 0.3048;
+static const double foot2meter = 0.3048;
 
 
 /// Constructor
