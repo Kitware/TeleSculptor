@@ -315,15 +315,11 @@ void MainWindow::setActiveCamera(int id)
     return;
   }
 
-  // Show camera image
+  // Get camera frame image dimensions
   auto const& cd = d->cameras[id];
 
-  int imageDim[2];
-  cd.camera->GetImageDimensions(imageDim);
-  QSize imageDimensions(imageDim[0], imageDim[1]);
-  d->UI.cameraView->loadImage(cd.imagePath, imageDimensions);
-  cd.camera->SetImageDimensions(imageDimensions.width(),
-                                imageDimensions.height());
+  // Show camera image
+  d->UI.cameraView->loadImage(cd.imagePath, cd.camera);
 
   d->UI.cameraView->clearLandmarks();
   if (d->landmarks)

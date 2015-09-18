@@ -29,6 +29,7 @@
  */
 
 #include "CameraView.h"
+#include "vtkMkCamera.h"
 
 #include <vtkCamera.h>
 #include <vtkCellArray.h>
@@ -102,7 +103,7 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->emptyImage->AllocateScalars(VTK_UNSIGNED_CHAR, 1);
   d->emptyImage->SetScalarComponentFromDouble(0, 0, 0, 0, 0.0);
 
-  this->loadImage(QString(), QSize());
+  this->loadImage(QString(), 0);
 }
 
 //-----------------------------------------------------------------------------
@@ -111,20 +112,28 @@ CameraView::~CameraView()
 }
 
 //-----------------------------------------------------------------------------
-void CameraView::loadImage(QString const& path, QSize const& dimensions)
+void CameraView::loadImage(QString const& path, vtkMkCamera* camera)
 {
   QTE_D();
 
   if (path.isEmpty())
   {
+    auto imageDimensions = QSize(1, 1);
+    if (camera)
+    {
+      int w, h;
+      camera->GetImageDimensions(w, h);
+      imageDimensions = QSize(w, h);
+    }
+
     // If no path given, clear current image and replace with "empty" image
     d->imageActor->SetInputData(d->emptyImage.GetPointer());
 
-    d->imageBounds[0] = 0.0; d->imageBounds[1] = dimensions.width() - 1;
-    d->imageBounds[2] = 0.0; d->imageBounds[3] = dimensions.height() - 1;
+    d->imageBounds[0] = 0.0; d->imageBounds[1] = imageDimensions.width() - 1;
+    d->imageBounds[2] = 0.0; d->imageBounds[3] = imageDimensions.height() - 1;
     d->imageBounds[4] = 0.0; d->imageBounds[5] = 0.0;
 
-    d->imageHeight = dimensions.height();
+    d->imageHeight = imageDimensions.height();
   }
   else
   {
@@ -134,7 +143,7 @@ void CameraView::loadImage(QString const& path, QSize const& dimensions)
     if (!reader)
     {
       qWarning() << "Failed to create image reader for image" << path;
-      this->loadImage(QString(), dimensions);
+      this->loadImage(QString(), camera);
       return;
     }
 
@@ -147,7 +156,9 @@ void CameraView::loadImage(QString const& path, QSize const& dimensions)
     d->imageActor->Update();
 
     d->imageActor->GetBounds(d->imageBounds);
-    d->imageHeight = d->imageBounds[3] + 1 - d->imageBounds[2];
+    auto const w = d->imageBounds[1] + 1 - d->imageBounds[0];
+    auto const h = d->imageBounds[3] + 1 - d->imageBounds[2];
+    d->imageHeight = h;
 
     // Delete the reader
     reader->Delete();
@@ -156,8 +167,14 @@ void CameraView::loadImage(QString const& path, QSize const& dimensions)
     if (d->imageHeight < 2)
     {
       qWarning() << "Failed to read image" << path;
-      this->loadImage(QString(), dimensions);
+      this->loadImage(QString(), camera);
       return;
+    }
+
+    // If successful, update camera image dimensions
+    if (camera)
+    {
+      camera->SetImageDimensions(w, h);
     }
   }
 
