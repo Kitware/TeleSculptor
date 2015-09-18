@@ -35,7 +35,7 @@
 
 #include <qtGlobal.h>
 
-class vtkMkCamera;
+class vtkMaptkCamera;
 
 class CameraViewPrivate;
 
@@ -48,7 +48,7 @@ public:
   virtual ~CameraView();
 
 public slots:
-  void loadImage(QString const& path, vtkMkCamera* camera);
+  void loadImage(QString const& path, vtkMaptkCamera* camera);
 
   void addLandmark(int id, double x, double y);
   void clearLandmarks();

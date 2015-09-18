@@ -31,7 +31,7 @@
 #include "MainWindow.h"
 
 #include "Project.h"
-#include "vtkMkCamera.h"
+#include "vtkMaptkCamera.h"
 
 #include <maptk/camera_io.h>
 #include <maptk/landmark_map_io.h>
@@ -53,7 +53,7 @@ namespace // anonymous
 struct CameraData
 {
   int id;
-  vtkSmartPointer<vtkMkCamera> camera;
+  vtkSmartPointer<vtkMaptkCamera> camera;
 
   QString imagePath; // Full path to camera image data
 };
@@ -96,7 +96,7 @@ void MainWindowPrivate::addCamera(
 
   cd.imagePath = imagePath;
 
-  cd.camera = vtkSmartPointer<vtkMkCamera>::New();
+  cd.camera = vtkSmartPointer<vtkMaptkCamera>::New();
   cd.camera->SetCamera(camera);
   cd.camera->Update();
 

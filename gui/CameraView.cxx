@@ -29,7 +29,8 @@
  */
 
 #include "CameraView.h"
-#include "vtkMkCamera.h"
+
+#include "vtkMaptkCamera.h"
 
 #include <vtkCamera.h>
 #include <vtkCellArray.h>
@@ -112,7 +113,7 @@ CameraView::~CameraView()
 }
 
 //-----------------------------------------------------------------------------
-void CameraView::loadImage(QString const& path, vtkMkCamera* camera)
+void CameraView::loadImage(QString const& path, vtkMaptkCamera* camera)
 {
   QTE_D();
 

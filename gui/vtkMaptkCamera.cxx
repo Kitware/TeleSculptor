@@ -28,7 +28,7 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "vtkMkCamera.h"
+#include "vtkMaptkCamera.h"
 
 #include <maptk/camera.h>
 #include <maptk/camera_io.h>
@@ -38,13 +38,13 @@
 
 #include <vtksys/SystemTools.hxx>
 
-vtkStandardNewMacro(vtkMkCamera);
+vtkStandardNewMacro(vtkMaptkCamera);
 
 namespace // anonymous
 {
 
 //-----------------------------------------------------------------------------
-void BuildCamera(vtkMkCamera* out, maptk::camera const& in)
+void BuildCamera(vtkMaptkCamera* out, maptk::camera const& in)
 {
   // Get camera parameters
   auto const& ci = in.intrinsics();
@@ -78,24 +78,24 @@ void BuildCamera(vtkMkCamera* out, maptk::camera const& in)
 } // namespace <anonymous>
 
 //-----------------------------------------------------------------------------
-vtkMkCamera::vtkMkCamera()
+vtkMaptkCamera::vtkMaptkCamera()
 {
   this->ImageDimensions[0] = this->ImageDimensions[1] = -1;
 }
 
 //-----------------------------------------------------------------------------
-vtkMkCamera::~vtkMkCamera()
+vtkMaptkCamera::~vtkMaptkCamera()
 {
 }
 
 //-----------------------------------------------------------------------------
-void vtkMkCamera::SetCamera(maptk::camera_d const& camera)
+void vtkMaptkCamera::SetCamera(maptk::camera_d const& camera)
 {
   this->MaptkCamera = camera;
 }
 
 //-----------------------------------------------------------------------------
-bool vtkMkCamera::ProjectPoint(maptk::vector_3d const& in, double (&out)[2])
+bool vtkMaptkCamera::ProjectPoint(maptk::vector_3d const& in, double (&out)[2])
 {
   if (this->MaptkCamera.depth(in) < 0.0)
   {
@@ -109,7 +109,7 @@ bool vtkMkCamera::ProjectPoint(maptk::vector_3d const& in, double (&out)[2])
 }
 
 //-----------------------------------------------------------------------------
-bool vtkMkCamera::Update()
+bool vtkMaptkCamera::Update()
 {
   if (this->ImageDimensions[0] == -1 || this->ImageDimensions[1] == -1)
   {
@@ -130,14 +130,14 @@ bool vtkMkCamera::Update()
 }
 
 //----------------------------------------------------------------------------
-void vtkMkCamera::GetFrustumPlanes(double planes[24])
+void vtkMaptkCamera::GetFrustumPlanes(double planes[24])
 {
   // Need to add timing (modfied time) logic to determine if need to Update()
   this->Superclass::GetFrustumPlanes(this->AspectRatio, planes);
 }
 
 //----------------------------------------------------------------------------
-void vtkMkCamera::PrintSelf(ostream& os, vtkIndent indent)
+void vtkMaptkCamera::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os, indent);
 }

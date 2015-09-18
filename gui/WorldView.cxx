@@ -30,7 +30,7 @@
 
 #include "WorldView.h"
 
-#include "vtkMkCamera.h"
+#include "vtkMaptkCamera.h"
 
 #include <maptk/camera.h>
 #include <maptk/landmark_map.h>
@@ -51,7 +51,7 @@ namespace // anonymous
 {
 
 //-----------------------------------------------------------------------------
-void buildFrustum(vtkPlanes* out, vtkMkCamera* camera)
+void buildFrustum(vtkPlanes* out, vtkMaptkCamera* camera)
 {
   double planeCoeffs[24];
   camera->GetFrustumPlanes(planeCoeffs);
@@ -104,7 +104,7 @@ WorldView::~WorldView()
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::addCamera(int id, vtkMkCamera* camera)
+void WorldView::addCamera(int id, vtkMaptkCamera* camera)
 {
   Q_UNUSED(id)
 

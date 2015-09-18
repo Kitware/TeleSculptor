@@ -28,20 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_VTKMKCAMERA_H_
-#define MAPTK_VTKMKCAMERA_H_
+#ifndef MAPTK_VTKMAPTKCAMERA_H_
+#define MAPTK_VTKMAPTKCAMERA_H_
 
 #include <vtkCamera.h>
 
 #include <maptk/camera.h>
 
-class vtkMkCamera : public vtkCamera
+class vtkMaptkCamera : public vtkCamera
 {
 public:
-  vtkTypeMacro(vtkMkCamera, vtkCamera);
+  vtkTypeMacro(vtkMaptkCamera, vtkCamera);
   void PrintSelf(ostream& os, vtkIndent indent);
 
-  static vtkMkCamera *New();
+  static vtkMaptkCamera *New();
 
   // Description:
   // Set the internal maptk camera
@@ -74,14 +74,14 @@ public:
   vtkSetMacro(AspectRatio, double);
 
 protected:
-  vtkMkCamera();
-  ~vtkMkCamera();
+  vtkMaptkCamera();
+  ~vtkMaptkCamera();
 
   using vtkCamera::GetFrustumPlanes; // Hide overloaded virtual
 
 private:
-  vtkMkCamera(const vtkMkCamera&);  // Not implemented.
-  void operator=(const vtkMkCamera&);  // Not implemented.
+  vtkMaptkCamera(const vtkMaptkCamera&); // Not implemented.
+  void operator=(const vtkMaptkCamera&); // Not implemented.
 
   int ImageDimensions[2];
   double AspectRatio;

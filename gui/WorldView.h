@@ -37,7 +37,7 @@
 
 namespace maptk { class landmark_map; }
 
-class vtkMkCamera;
+class vtkMaptkCamera;
 
 class WorldViewPrivate;
 
@@ -50,7 +50,7 @@ public:
   virtual ~WorldView();
 
 public slots:
-  void addCamera(int id, vtkMkCamera* camera);
+  void addCamera(int id, vtkMaptkCamera* camera);
   void addLandmarks(maptk::landmark_map const&);
 
 private:
