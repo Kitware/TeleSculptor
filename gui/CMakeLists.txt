@@ -60,21 +60,3 @@ target_link_libraries(mapgui
   qtExtensions
   ${QT_LIBRARIES}
 )
-
-maptk_add_executable(sandbox
-  vtkSandbox.cxx
-)
-
-target_link_libraries(sandbox
-  ${Boost_SYSTEM_LIBRARY}
-  ${Boost_FILESYSTEM_LIBRARY}
-  maptk
-  vtkRenderingFreeTypeOpenGL
-  vtkRenderingOpenGL
-  vtkRenderingVolumeOpenGL
-  vtkInteractionStyle
-  vtkViewsCore
-  vtksys
-  vtkCommonCore
-  vtkRenderingCore
-)
