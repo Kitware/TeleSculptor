@@ -38,6 +38,7 @@
 #include <vtkImageData.h>
 #include <vtkImageReader2.h>
 #include <vtkImageReader2Factory.h>
+#include <vtkInteractorStyleRubberBand2D.h>
 #include <vtkNew.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
@@ -81,6 +82,10 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->renderer->SetBackground(0, 0, 0);
   d->renderWindow->AddRenderer(d->renderer.GetPointer());
   this->SetRenderWindow(d->renderWindow.GetPointer());
+
+  // Set interactor
+  vtkNew<vtkInteractorStyleRubberBand2D> is;
+  d->renderWindow->GetInteractor()->SetInteractorStyle(is.GetPointer());
 
   // Set up landmark actor
   vtkNew<vtkPolyData> polyData;
