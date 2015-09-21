@@ -32,7 +32,7 @@ set( plugin_core_sources
   track_features_core.cxx
   triangulate_landmarks.cxx
   )
-kwiver_add_library( maptk_core
+maptk_add_library( maptk_core
   ${plugin_core_headers}
   ${plugin_core_sources}
   )
