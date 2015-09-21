@@ -37,14 +37,13 @@
 #ifndef MAPTK_PLUGINS_VXL_CLOSE_LOOPS_HOMOGRAPHY_GUIDED_H_
 #define MAPTK_PLUGINS_VXL_CLOSE_LOOPS_HOMOGRAPHY_GUIDED_H_
 
-#include <boost/scoped_ptr.hpp>
-
 #include <vital/types/image_container.h>
 #include <vital/types/track_set.h>
 
 #include <vital/algo/close_loops.h>
 #include <maptk/plugins/vxl/vxl_config.h>
 
+#include <memory>
 
 namespace kwiver {
 namespace maptk {
@@ -130,7 +129,7 @@ private:
 
   /// Class for storing other internal variables
   class priv;
-  boost::scoped_ptr<priv> d_;
+  const std::unique_ptr<priv> d_;
 
 };
 

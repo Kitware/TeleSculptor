@@ -31,11 +31,10 @@
 #ifndef MAPTK_PLUGINS_CORE_FILTER_FEATURES_MAGNITUDE_H_
 #define MAPTK_PLUGINS_CORE_FILTER_FEATURES_MAGNITUDE_H_
 
-
-#include <boost/scoped_ptr.hpp>
-
 #include <vital/algo/filter_features.h>
 #include <maptk/plugins/core/plugin_core_config.h>
+
+#include <memory>
 
 /**
  * \file
@@ -88,7 +87,7 @@ protected:
 private:
   /// private implementation class
   class priv;
-  boost::scoped_ptr<priv> d_;
+  const std::unique_ptr<priv> d_;
 };
 
 } // end namespace core

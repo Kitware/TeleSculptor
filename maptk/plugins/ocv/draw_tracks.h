@@ -36,12 +36,11 @@
 #ifndef MAPTK_PLUGINS_OCV_DRAW_TRACKS_H_
 #define MAPTK_PLUGINS_OCV_DRAW_TRACKS_H_
 
-#include <boost/scoped_ptr.hpp>
-
 #include <vital/algo/draw_tracks.h>
 
 #include <maptk/plugins/ocv/ocv_config.h>
 
+#include <memory>
 
 namespace kwiver {
 namespace maptk {
@@ -97,7 +96,7 @@ private:
 
   /// private implementation class
   class priv;
-  boost::scoped_ptr<priv> d_;
+  const std::unique_ptr<priv> d_;
 };
 
 

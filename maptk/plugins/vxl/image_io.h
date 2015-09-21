@@ -39,7 +39,7 @@
 #include <vital/algo/image_io.h>
 #include <maptk/plugins/vxl/vxl_config.h>
 
-#include <boost/scoped_ptr.hpp>
+#include <memory>
 
 namespace kwiver {
 namespace maptk {
@@ -92,7 +92,7 @@ private:
 
   /// private implementation class
   class priv;
-  boost::scoped_ptr<priv> d_;
+  const std::unique_ptr<priv> d_;
 };
 
 } // end namespace vxl

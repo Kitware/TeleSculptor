@@ -36,12 +36,11 @@
 #ifndef MAPTK_PLUGINS_OCV_DETECT_FEATURES_H_
 #define MAPTK_PLUGINS_OCV_DETECT_FEATURES_H_
 
-#include <boost/scoped_ptr.hpp>
-
 #include <vital/algo/detect_features.h>
 
 #include <maptk/plugins/ocv/ocv_config.h>
 
+#include <memory>
 
 namespace kwiver {
 namespace maptk {
@@ -92,7 +91,7 @@ public:
 private:
   /// private implementation class
   class priv;
-  boost::scoped_ptr<priv> d_;
+  const std::unique_ptr<priv> d_;
 };
 
 } // end namespace ocv

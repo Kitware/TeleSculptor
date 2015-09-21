@@ -31,11 +31,10 @@
 #ifndef MAPTK_PLUGINS_VISCL_EXTRACT_DESCRIPTORS_H_
 #define MAPTK_PLUGINS_VISCL_EXTRACT_DESCRIPTORS_H_
 
-#include <boost/scoped_ptr.hpp>
-
 #include <vital/algo/extract_descriptors.h>
 #include <maptk/plugins/viscl/viscl_config.h>
 
+#include <memory>
 
 namespace kwiver {
 namespace maptk {
@@ -77,7 +76,7 @@ public:
 private:
   /// private implementation class
   class priv;
-  boost::scoped_ptr<priv> d_;
+  const std::unique_ptr<priv> d_;
 };
 
 } // end namespace vcl

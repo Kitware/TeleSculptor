@@ -36,7 +36,6 @@
 #ifndef MAPTK_PLUGINS_CORE_MATCH_FEATURES_HOMOGRAPHY_H_
 #define MAPTK_PLUGINS_CORE_MATCH_FEATURES_HOMOGRAPHY_H_
 
-#include <boost/scoped_ptr.hpp>
 #include <vital/algo/filter_features.h>
 
 #include <vital/algo/estimate_homography.h>
@@ -45,6 +44,7 @@
 
 #include <maptk/plugins/core/plugin_core_config.h>
 
+#include <memory>
 
 namespace kwiver {
 namespace maptk {
@@ -138,7 +138,7 @@ public:
 private:
   /// private implementation class
   class priv;
-  boost::scoped_ptr<priv> d_;
+  const std::unique_ptr<priv> d_;
 
   /// The feature matching algorithms to use
   vital::algo::match_features_sptr matcher1_, matcher2_;

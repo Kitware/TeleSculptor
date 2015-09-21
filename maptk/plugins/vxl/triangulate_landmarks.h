@@ -36,11 +36,10 @@
 #ifndef MAPTK_PLUGINS_VXL_TRIANGULATE_LANDMARKS_H_
 #define MAPTK_PLUGINS_VXL_TRIANGULATE_LANDMARKS_H_
 
-#include <boost/scoped_ptr.hpp>
-
 #include <vital/algo/triangulate_landmarks.h>
 #include <maptk/plugins/vxl/vxl_config.h>
 
+#include <memory>
 
 namespace kwiver {
 namespace maptk {
@@ -90,7 +89,7 @@ public:
 private:
   /// private implementation class
   class priv;
-  boost::scoped_ptr<priv> d_;
+  const std::unique_ptr<priv> d_;
 };
 
 

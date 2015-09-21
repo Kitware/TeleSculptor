@@ -36,11 +36,10 @@
 #ifndef MAPTK_PLUGINS_CERES_BUNDLE_ADJUST_H_
 #define MAPTK_PLUGINS_CERES_BUNDLE_ADJUST_H_
 
-#include <boost/scoped_ptr.hpp>
-
 #include <vital/algo/bundle_adjust.h>
 #include <maptk/plugins/ceres/ceres_config.h>
 
+#include <memory>
 
 namespace kwiver {
 namespace maptk {
@@ -86,7 +85,7 @@ public:
 private:
   /// private implementation class
   class priv;
-  boost::scoped_ptr<priv> d_;
+  const std::unique_ptr<priv> d_;
 };
 
 
