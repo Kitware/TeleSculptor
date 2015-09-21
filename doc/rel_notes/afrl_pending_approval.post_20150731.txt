@@ -34,6 +34,16 @@ Scripts
  * Added a Python script to read the ASCII match matrix file produced by
    the match matrix tool and plot it.
 
+ * Added Python modules to read and write KRTD and PLY files.
+
+ * Added a Python script to read an NVM file from VisualSfM and write out
+   KRTD camera files
+
+ * Added a Python script to read in a PLY file and set of KRTD camera files
+   and write out a homography files.  This script fits a ground plane to
+   the points in the PLY and then uses the cameras to derive homographies
+   from each frame back to the first frame as induced by the plane.
+
 
 Fixes since last public release
 -------------------------------
