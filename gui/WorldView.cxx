@@ -47,19 +47,6 @@
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 
-namespace // anonymous
-{
-
-//-----------------------------------------------------------------------------
-void buildFrustum(vtkPlanes* out, vtkMaptkCamera* camera)
-{
-  double planeCoeffs[24];
-  camera->GetFrustumPlanes(planeCoeffs);
-  out->SetFrustumPlanes(planeCoeffs);
-}
-
-} // namespace <anonymous>
-
 //-----------------------------------------------------------------------------
 class WorldViewPrivate
 {
@@ -112,7 +99,9 @@ void WorldView::addCamera(int id, vtkMaptkCamera* camera)
 
   // Build frustum from camera data
   vtkNew<vtkPlanes> planes;
-  buildFrustum(planes.GetPointer(), camera);
+  double planeCoeffs[24];
+  camera->GetFrustumPlanes(planeCoeffs);
+  planes->SetFrustumPlanes(planeCoeffs);
 
   vtkNew<vtkFrustumSource> frustum;
   frustum->SetPlanes(planes.GetPointer());
