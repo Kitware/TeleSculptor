@@ -28,7 +28,6 @@ if (WIN32)
   option(BUILD_SHARED_LIBS "Build shared libraries." ON)
 else()
   option(BUILD_SHARED_LIBS "Build shared libraries." OFF)
-  set (CMAKE_CXX_FLAGS "-std=c++0x" ) # only support g++ for now
 endif()
 
 # default to MAPTK_LIB_SUFFIX for backwards compatibility
@@ -43,8 +42,9 @@ mark_as_advanced( LIB_SUFFIX )
 #
 include( kwiver-utils )
 include( maptk-utils ) # maptk has a different approach on some of these utils
+include( vital-flags ) # use same compile flags as vital
 
-set(kwiver_export_name maptk_exports)
+set(kwiver_export_name     maptk_exports)
 
 
 ###
