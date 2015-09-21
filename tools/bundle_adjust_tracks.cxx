@@ -134,6 +134,10 @@ static maptk::config_block_sptr default_config()
                     "\n"
                     "Landmark z position, or altitude, should be provided in meters.");
 
+  config->set_value("initialize_unloaded_cameras", "true",
+                    "When loading a subset of cameras, should we optimize only the "
+                    "loaded cameras or also initialize and optimize the unspecified cameras");
+
   config->set_value("output_ply_file", "output/landmarks.ply",
                     "Path to the output PLY file in which to write "
                     "resulting 3D landmark points");
@@ -745,9 +749,6 @@ static int maptk_main(int argc, char const* argv[])
   }
 
   // Copy input cameras into main camera map
-  //
-  // If there were no input cameras, initialize fixed location cameras to main
-  // camera map.
   maptk::camera_map::map_camera_t cameras;
   maptk::landmark_map_sptr lm_map;
   maptk::camera_map_sptr input_cam_map(new maptk::simple_camera_map(input_cameras));
@@ -760,18 +761,10 @@ static int maptk_main(int argc, char const* argv[])
     // Triangulate initial landmarks based on cameras and tracks
     triangulator->triangulate(input_cam_map, tracks, lm_map);
   }
-
-  //
-  // Initialize cameras and landmarks
-  //
   maptk::camera_map_sptr cam_map;
   if(!cameras.empty())
   {
     cam_map = maptk::camera_map_sptr(new maptk::simple_camera_map(cameras));
-  }
-  {
-    boost::timer::auto_cpu_timer t("Initializing cameras and landmarks: %t sec CPU, %w sec wall\n");
-    initializer->initialize(cam_map, lm_map, tracks);
   }
 
   maptk::landmark_map_sptr reference_landmarks(new maptk::simple_landmark_map());
@@ -785,6 +778,30 @@ static int maptk_main(int argc, char const* argv[])
     maptk::load_reference_file(ref_file, local_cs, reference_landmarks, reference_tracks);
   }
 
+  // apply necker reversal if requested
+  bool necker_reverse_input = config->get_value<bool>("necker_reverse_input", false);
+  if (necker_reverse_input)
+  {
+    std::cerr << "Applying Necker reversal" << std::endl;
+    necker_reverse(cam_map, lm_map);
+  }
+
+  bool init_unloaded_cams = config->get_value<bool>("initialize_unloaded_cameras", true);
+  if (init_unloaded_cams)
+  {
+    if( cam_map )
+    {
+      cameras = cam_map->cameras();
+    }
+    BOOST_FOREACH(const maptk::frame_id_t& id, tracks->all_frame_ids())
+    {
+      // if id is already in the map, do nothing.
+      // if id is not it the map add a null camera pointer
+      cameras[id];
+    }
+    cam_map = maptk::camera_map_sptr(new maptk::simple_camera_map(cameras));
+  }
+
   //
   // Cut down input cameras if a sub-sample rate was specified
   //
@@ -792,6 +809,16 @@ static int maptk_main(int argc, char const* argv[])
   if(cam_samp_rate > 1)
   {
     boost::timer::auto_cpu_timer t("Tool-level sub-sampling: %t sec CPU, %w sec wall\n");
+
+    // If there are no cameras loaded, create a map of NULL cameras to subsample
+    if( !cam_map )
+    {
+      BOOST_FOREACH(const maptk::frame_id_t& id, tracks->all_frame_ids())
+      {
+        cameras[id] = maptk::camera_sptr();
+      }
+      cam_map = maptk::camera_map_sptr(new maptk::simple_camera_map(cameras));
+    }
 
     maptk::camera_map_sptr subsampled_cams = subsample_cameras(cam_map, cam_samp_rate);
 
@@ -821,12 +848,12 @@ static int maptk_main(int argc, char const* argv[])
     std::cerr << "subsampled down to "<<cam_map->size()<<" cameras"<<std::endl;
   }
 
-  // apply necker reversal if requested
-  bool necker_reverse_input = config->get_value<bool>("necker_reverse_input");
-  if (necker_reverse_input)
+  //
+  // Initialize cameras and landmarks
+  //
   {
-    std::cerr << "Applying Necker reversal" << std::endl;
-    necker_reverse(cam_map, lm_map);
+    boost::timer::auto_cpu_timer t("Initializing cameras and landmarks: %t sec CPU, %w sec wall\n");
+    initializer->initialize(cam_map, lm_map, tracks);
   }
 
   //

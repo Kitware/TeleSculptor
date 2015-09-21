@@ -37,6 +37,16 @@ Tools
    adjustment.  This allows an inverted solution from a previous run to
    be restarted to find the correct solution.
 
+ * Change bundle adjustment tool to allow frame subsampling to occur before
+   camera initialization.  This way one can limited the entire pipeline,
+   not just bundle adjustment, to a subset of frames.
+
+ * Added an option to the bundle adjust tool to allow initialization of
+   additional cameras beyond those that were loaded from disk.  If you have
+   a solution on a subset of frames you may wish to further optimize just
+   that subset or your may wish to use that subset to bootstrap to a
+   larger set of frames.
+
 Scripts
 
  * Added a Python script to read the ASCII match matrix file produced by
