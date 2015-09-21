@@ -14,7 +14,8 @@ set( plugin_core_headers
   track_features_core.h
   triangulate_landmarks.h
   )
-kwiver_install_plugin_headers( core
+kwiver_install_headers(
+  SUBDIR     maptk/plugins/core
   ${plugin_core_headers}
   )
 

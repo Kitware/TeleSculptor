@@ -24,7 +24,6 @@ include_directories("${MAPTK_BINARY_DIR}")
 #
 set(maptk_public_headers
   metrics.h
-
   local_geo_cs.h
   projected_track_set.h
   geo_reference_points_io.h
@@ -40,7 +39,6 @@ set(maptk_public_headers
 
 set(maptk_sources
   metrics.cxx
-
   local_geo_cs.cxx
   projected_track_set.cxx
   geo_reference_points_io.cxx
@@ -52,6 +50,7 @@ set(maptk_sources
   )
 
 kwiver_install_headers(
+  SUBDIR        maptk
   ${maptk_public_headers}
   )
 kwiver_add_library(

@@ -5,7 +5,8 @@ set(maptk_proj_headers_public
   proj_config.h
   register_algorithms.h
   )
-maptk_install_plugin_headers( proj
+kwiver_install_headers(
+  SUBDIR     maptk/plugins/proj
   ${maptk_proj_headers_public}
   )
 

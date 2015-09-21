@@ -11,7 +11,8 @@ set( maptk_ceres_headers_public
 set( maptk_ceres_headers_private
   types.h
   )
-maptk_install_plugin_headers( ceres
+kwiver_install_headers(
+  SUBDIR     maptk/plugins/ceres
   ${maptk_ceres_headers_public}
   )
 

@@ -18,7 +18,8 @@ set( maptk_ocv_headers_public
   ocv_config.h
   register_algorithms.h
   )
-maptk_install_plugin_headers( ocv
+kwiver_install_headers(
+  SUBDIR     maptk/plugins/ocv
   ${maptk_ocv_headers_public}
   )
 
