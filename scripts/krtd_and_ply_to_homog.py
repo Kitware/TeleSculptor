@@ -104,7 +104,7 @@ def main():
     homogs = []
     for f, cam in cams:
         print f
-        H = homography_from_plane(cam0, cam, plane)
+        H = homography_from_plane(cam, cam0, plane)
         homogs.append(H)
 
     write_homog_file(out_homog_file, homogs)
