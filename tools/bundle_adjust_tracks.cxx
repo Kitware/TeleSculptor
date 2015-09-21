@@ -153,6 +153,9 @@ static maptk::config_block_sptr default_config()
                     "Set to 1 to use all cameras, "
                     "2 to use every other camera, etc.");
 
+  config->set_value("necker_reverse_input", "false",
+                    "Apply a Necker reversal to the initial cameras and landmarks");
+
   config->set_value("base_camera:focal_length", "1.0",
                     "focal length of the base camera model");
 
@@ -816,6 +819,14 @@ static int maptk_main(int argc, char const* argv[])
 
     cam_map = subsampled_cams;
     std::cerr << "subsampled down to "<<cam_map->size()<<" cameras"<<std::endl;
+  }
+
+  // apply necker reversal if requested
+  bool necker_reverse_input = config->get_value<bool>("necker_reverse_input");
+  if (necker_reverse_input)
+  {
+    std::cerr << "Applying Necker reversal" << std::endl;
+    necker_reverse(cam_map, lm_map);
   }
 
   //
