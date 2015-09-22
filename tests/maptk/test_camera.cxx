@@ -56,66 +56,6 @@ main(int argc, char* argv[])
   RUN_TEST(testname);
 }
 
-IMPLEMENT_TEST(casting)
-{
-  using namespace kwiver;
-  vital::vector_2d pp(300,400);
-  vital::camera_intrinsics_d K(1000, pp);
-  vital::vector_3d center(3, -4, 7);
-  vital::rotation_d rot(vital::vector_3d(-1, 2, 3));
-  maptk::camera_d cam_d(center, rot, K);
-
-  maptk::camera_f cam_f(cam_d);
-  TEST_EQUAL("center cast", cam_f.get_center(), center.cast<float>());
-  TEST_EQUAL("rotation cast", cam_f.get_rotation(), vital::rotation_f(rot));
-  TEST_EQUAL("intrinsic cast", vital::matrix_3x3f(cam_f.get_intrinsics()),
-                               vital::matrix_3x3f(vital::camera_intrinsics_f(K)));
-}
-
-
-IMPLEMENT_TEST(look_at)
-{
-  using namespace kwiver;
-  vital::vector_2d pp(300,400);
-  vital::camera_intrinsics_d K(1000, pp);
-  vital::vector_3d focus(0, 1, -2);
-  maptk::camera_d cam(vital::vector_3d(3, -4, 7), vital::rotation_d(), K);
-  cam.look_at(focus);
-
-  vital::vector_2d ifocus = cam.project(focus);
-  TEST_NEAR("look_at focus projects to origin",
-            (ifocus-pp).norm(), 0.0, 1e-12);
-
-  vital::vector_2d ifocus_up = cam.project(focus + vital::vector_3d(0,0,2));
-  vital::vector_2d tmp = ifocus_up - pp;
-  TEST_NEAR("look_at vertical projects vertical",
-            tmp.x(), 0.0, 1e-12);
-  // "up" in image space is actually negative Y because the
-  // Y axis is inverted
-  TEST_EQUAL("look_at up projects up", tmp.y() < 0.0, true);
-}
-
-
-IMPLEMENT_TEST(projection)
-{
-  using namespace kwiver;
-  vital::vector_2d pp(300,400);
-  vital::camera_intrinsics_d K(1000, pp);
-  vital::vector_3d focus(0, 1, -2);
-  maptk::camera_d cam(vital::vector_3d(3, -4, 7), vital::rotation_d(), K);
-  cam.look_at(focus);
-
-  vital::matrix_3x4d P(cam);
-  vital::vector_3d test_pt(1,2,3);
-  vital::vector_4d test_hpt(test_pt.x(), test_pt.y(), test_pt.z(), 1.0);
-
-  vital::vector_3d proj_hpt = P * test_hpt;
-  vital::vector_2d proj_pt(proj_hpt.x()/proj_hpt.z(), proj_hpt.y()/proj_hpt.z());
-
-  TEST_NEAR("camera projection = matrix multiplication",
-             (cam.project(test_pt) - proj_pt).norm(), 0.0, 1e-12);
-}
-
 
 IMPLEMENT_TEST(interpolation)
 {
@@ -124,15 +64,15 @@ IMPLEMENT_TEST(interpolation)
   using vital::vector_3d;
   using vital::vector_4d;
   using vital::rotation_d;
-  using maptk::camera_d;
+  using vital::simple_camera;
 
   double pi = boost::math::constants::pi<double>();
-  camera_d a(vector_3d(-1, -1, -1),
-             rotation_d(vector_4d(0, 0, 0, 1))),  // no rotation
-           b(vector_3d(3, 3, 3),
-             rotation_d(-pi / 2, vector_3d(0, 0, 1))),  // rotated around z-axis 90 degrees
-           c;
-  c = interpolate_camera(a, b, 0.5);
+  simple_camera a(vector_3d(-1, -1, -1),
+                  rotation_d(vector_4d(0, 0, 0, 1))),  // no rotation
+                b(vector_3d(3, 3, 3),
+                  rotation_d(-pi / 2, vector_3d(0, 0, 1))),  // rotated around z-axis 90 degrees
+                c;
+  c = maptk::interpolate_camera(a, b, 0.5);
 
   cerr << "a.rotation: " << a.rotation().axis() << ' '  << a.rotation().angle() << endl;
   cerr << "b.rotation: " << b.rotation().axis() << ' '  << b.rotation().angle() << endl;
@@ -158,27 +98,27 @@ IMPLEMENT_TEST(multiple_interpolations)
   using vital::vector_3d;
   using vital::vector_4d;
   using vital::rotation_d;
-  using maptk::camera_d;
+  using vital::simple_camera;
 
   double pi = boost::math::constants::pi<double>();
-  camera_d a(vector_3d(-1, -1, -1),
-             rotation_d(vector_4d(0, 0, 0, 1))),        // no rotation
-           b(vector_3d(3, 3, 3),
-             rotation_d(-pi / 2, vector_3d(0, 0, 1)));  // rotated around z-axis 90 degrees
-  vector<camera_d> cams;
+  simple_camera a(vector_3d(-1, -1, -1),
+                  rotation_d(vector_4d(0, 0, 0, 1))),        // no rotation
+                b(vector_3d(3, 3, 3),
+                  rotation_d(-pi / 2, vector_3d(0, 0, 1)));  // rotated around z-axis 90 degrees
+  vector<simple_camera> cams;
 
   cams.push_back(a);
-  interpolated_cameras(a, b, 3, cams);
+  maptk::interpolated_cameras(a, b, 3, cams);
   cams.push_back(b);
 
   cerr << "Vector size: " << cams.size() << endl;
   TEST_EQUAL("vector size", cams.size(), 5);
-  BOOST_FOREACH(camera_d cam, cams)
+  BOOST_FOREACH(simple_camera cam, cams)
   {
     cerr << "\t" << cam.center() << " :: " << cam.rotation().axis() << " " << cam.rotation().angle() << endl;
   }
 
-  camera_d i1 = cams[1],
+  simple_camera i1 = cams[1],
            i2 = cams[2],
            i3 = cams[3];
   cerr << "i1 .25 c : " << i1.center() << " :: " << i1.rotation().axis() << ' ' << i1.rotation().angle() << endl;
