@@ -41,6 +41,7 @@
 #include <string>
 #include <vector>
 
+#include <vital/vital_foreach.h>
 #include <vital/config/config_block.h>
 #include <vital/config/config_block_io.h>
 
@@ -298,7 +299,7 @@ filter_tracks(kwiver::vital::track_set_sptr tracks, size_t min_length)
 {
   std::vector<kwiver::vital::track_sptr> trks = tracks->tracks();
   std::vector<kwiver::vital::track_sptr> good_trks;
-  BOOST_FOREACH(kwiver::vital::track_sptr t, trks)
+  VITAL_FOREACH(kwiver::vital::track_sptr t, trks)
   {
     if( t->size() >= min_length )
     {
@@ -322,7 +323,7 @@ subsample_cameras(kwiver::vital::camera_map_sptr cameras, unsigned factor)
 {
   kwiver::vital::camera_map::map_camera_t cams = cameras->cameras();
   kwiver::vital::camera_map::map_camera_t sub_cams;
-  BOOST_FOREACH(const kwiver::vital::camera_map::map_camera_t::value_type& p, cams)
+  VITAL_FOREACH(const kwiver::vital::camera_map::map_camera_t::value_type& p, cams)
   {
     if(p.first % factor == 0)
     {
@@ -402,7 +403,7 @@ load_input_cameras_pos(kwiver::vital::config_block_sptr config,
   // the same as an image in the given image list (map created above).
   std::map<kwiver::vital::frame_id_t, kwiver::maptk::ins_data> ins_map;
   std::map<std::string, kwiver::vital::frame_id_t>::const_iterator it;
-  BOOST_FOREACH(kwiver::vital::path_t const& fpath, files)
+  VITAL_FOREACH(kwiver::vital::path_t const& fpath, files)
   {
     std::string pos_file_stem = kwiversys::SystemTools::GetFilenamePath( fpath );
     it = filename2frame.find(pos_file_stem);
@@ -465,7 +466,7 @@ load_input_cameras_krtd(kwiver::vital::config_block_sptr config,
   std::cerr << "loading KRTD input camera files" << std::endl;
   kwiver::vital::camera_map::map_camera_t krtd_cams;
   std::map<std::string, kwiver::vital::frame_id_t>::const_iterator it;
-  BOOST_FOREACH(kwiver::vital::path_t const& fpath, files)
+  VITAL_FOREACH(kwiver::vital::path_t const& fpath, files)
   {
     std::string krtd_file_stem = kwiversys::SystemTools::GetFilenamePath( fpath );
     it = filename2frame.find(krtd_file_stem);
@@ -532,7 +533,7 @@ bool load_input_cameras(kwiver::vital::config_block_sptr config,
 #define print_config(config) \
   do \
   { \
-    BOOST_FOREACH( kwiver::vital::config_block_key_t key, config->available_values() ) \
+    VITAL_FOREACH( kwiver::vital::config_block_key_t key, config->available_values() ) \
     { \
       std::cerr << "\t" \
            << key << " = " << config->get_value<kwiver::vital::config_block_key_t>(key) \
@@ -712,7 +713,7 @@ static int maptk_main(int argc, char const* argv[])
   // Creating forward and revese mappings for frame to file stem-name.
   std::vector<std::string> frame2filename;  // valid since we are assuming no frame gaps
   std::map<std::string, kwiver::vital::frame_id_t> filename2frame;
-  BOOST_FOREACH(kwiver::vital::path_t i_file, image_files)
+  VITAL_FOREACH(kwiver::vital::path_t i_file, image_files)
   {
     std::string i_file_stem = kwiversys::SystemTools::GetFilenamePath( i_file );
     filename2frame[i_file_stem] = static_cast<kwiver::vital::frame_id_t>(frame2filename.size());
@@ -749,7 +750,7 @@ static int maptk_main(int argc, char const* argv[])
   kwiver::vital::camera_map_sptr input_cam_map(new kwiver::vital::simple_camera_map(input_cameras));
   if (input_cameras.size() != 0)
   {
-    BOOST_FOREACH(kwiver::vital::camera_map::map_camera_t::value_type &v, input_cameras)
+    VITAL_FOREACH(kwiver::vital::camera_map::map_camera_t::value_type &v, input_cameras)
     {
       cameras[v.first] = v.second->clone();
     }
@@ -800,7 +801,7 @@ static int maptk_main(int argc, char const* argv[])
                                       sub_cams = subsampled_cams->cameras();
       // for each track state in each reference track, make sure that the
       // state's frame's camera is in the sub-sampled set of cameras
-      BOOST_FOREACH(kwiver::vital::track_sptr const t, reference_tracks->tracks())
+      VITAL_FOREACH(kwiver::vital::track_sptr const t, reference_tracks->tracks())
       {
         for (kwiver::vital::track::history_const_itr tsit = t->begin(); tsit != t->end(); ++tsit)
         {
@@ -931,7 +932,7 @@ static int maptk_main(int argc, char const* argv[])
     typedef std::map<kwiver::vital::frame_id_t, kwiver::maptk::ins_data> ins_map_t;
     ins_map_t ins_map;
     update_ins_from_cameras(cam_map->cameras(), local_cs, ins_map);
-    BOOST_FOREACH(const ins_map_t::value_type& p, ins_map)
+    VITAL_FOREACH(const ins_map_t::value_type& p, ins_map)
     {
       bfs::path out_pos_file = pos_dir / (frame2filename[p.first] + ".pos");
       write_pos_file( p.second, out_pos_file.string());
@@ -952,7 +953,7 @@ static int maptk_main(int argc, char const* argv[])
 
     bfs::path krtd_dir = config->get_value<std::string>("output_krtd_dir");
     typedef kwiver::vital::camera_map::map_camera_t::value_type cam_map_val_t;
-    BOOST_FOREACH(cam_map_val_t const& p, cam_map->cameras())
+    VITAL_FOREACH(cam_map_val_t const& p, cam_map->cameras())
     {
       bfs::path out_krtd_file = krtd_dir / (frame2filename[p.first] + ".krtd");
       write_krtd_file( *p.second, out_krtd_file.string() );

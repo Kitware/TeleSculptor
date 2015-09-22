@@ -39,6 +39,7 @@
 #include <string>
 #include <vector>
 
+#include <vital/vital_foreach.h>
 #include <vital/config/config_block.h>
 #include <vital/config/config_block_io.h>
 
@@ -273,7 +274,7 @@ bool convert_pos2krtd_dir(const kwiver::vital::path_t& pos_dir,
 
   std::cerr << "Writing KRTD files" << std::endl;
   typedef std::map<kwiver::vital::frame_id_t, kwiver::vital::camera_sptr>::value_type cam_map_val_t;
-  BOOST_FOREACH(cam_map_val_t const &p, cam_map)
+  VITAL_FOREACH(cam_map_val_t const &p, cam_map)
   {
     kwiver::vital::simple_camera* cam = dynamic_cast<kwiver::vital::simple_camera*>(p.second.get());
     kwiver::vital::write_krtd_file(*cam, krtd_filenames[p.first]);
