@@ -37,8 +37,8 @@
 #define MAPTK_TRANSFORM_H_
 
 #include <maptk/config.h>
-#include <maptk/camera.h>
 
+#include <vital/types/camera.h>
 #include <vital/types/similarity.h>
 #include <vital/types/covariance.h>
 #include <vital/types/camera_map.h>

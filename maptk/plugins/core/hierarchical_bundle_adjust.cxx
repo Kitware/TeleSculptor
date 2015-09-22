@@ -49,7 +49,7 @@
 #include <vital/algo/optimize_cameras.h>
 #include <vital/algo/triangulate_landmarks.h>
 #include <maptk/metrics.h>
-#include <maptk/camera.h>
+#include <maptk/interpolate_camera.h>
 
 #include <vital/types/camera.h>
 #include <vital/exceptions.h>

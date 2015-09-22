@@ -23,13 +23,13 @@ include_directories("${MAPTK_BINARY_DIR}")
 # Setting up core library
 #
 set(maptk_public_headers
-  camera.h
   metrics.h
   local_geo_cs.h
   projected_track_set.h
   geo_reference_points_io.h
   ins_data.h
   ins_data_io.h
+  interpolate_camera.h
   match_matrix.h
   triangulate.h
   transform.h
@@ -40,13 +40,13 @@ set(maptk_public_headers
 
 
 set(maptk_sources
-  camera.cxx
   metrics.cxx
   local_geo_cs.cxx
   projected_track_set.cxx
   geo_reference_points_io.cxx
   ins_data.cxx
   ins_data_io.cxx
+  interpolate_camera.cxx
   match_matrix.cxx
   triangulate.cxx
   transform.cxx

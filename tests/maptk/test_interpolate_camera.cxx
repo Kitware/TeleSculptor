@@ -30,7 +30,7 @@
 
 /**
  * \file
- * \brief test core camera class
+ * \brief test camera interpolation
  */
 
 #include <test_common.h>
@@ -47,7 +47,7 @@
 #endif
 
 #include <vital/vital_foreach.h>
-#include <maptk/camera.h>
+#include <maptk/interpolate_camera.h>
 
 #define TEST_ARGS ()
 

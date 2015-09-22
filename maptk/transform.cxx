@@ -38,7 +38,6 @@
 #include <Eigen/Geometry>
 
 #include <vital/vital_foreach.h>
-#include <maptk/camera.h>
 
 namespace kwiver {
 namespace maptk {

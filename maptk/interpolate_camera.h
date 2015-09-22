@@ -30,83 +30,61 @@
 
 /**
  * \file
- * \brief Implementation of \link maptk::camera_ camera_<T> \endlink class
- *        for \c T = { \c float, \c double }
+ * \brief Header for \link maptk::interpolate_camera interpolate_camera \endlink
+ *        functions
  */
 
-#include <vital/io/eigen_io.h>
-#include <vital/types/matrix.h>
-#include <vital/exceptions/base.h>
-#include "camera.h"
-#include <maptk/transform.h>
-#include <iomanip>
-#include <typeinfo>
-#include <Eigen/Geometry>
+#ifndef MAPTK_INTERPOLATE_CAMERA_H_
+#define MAPTK_INTERPOLATE_CAMERA_H_
+
+
+#include <vector>
+#include <vital/types/camera.h>
+#include <maptk/config.h>
+
 
 namespace kwiver {
 namespace maptk {
 
 
 /// Generate an interpolated camera between \c A and \c B by a given fraction \c f
+/**
+ * \c f should be 0 < \c f < 1. A value outside this range is valid, but \c f
+ * must not be 0.
+ *
+ * \param A Camera to interpolate from.
+ * \param B Camera to interpolate to.
+ * \param f Decimal fraction in between A and B for the returned camera to represent.
+ */
+MAPTK_LIB_EXPORT
 vital::simple_camera
 interpolate_camera(vital::simple_camera const& A,
-                   vital::simple_camera const& B, double f)
-{
-  const double f1 = 1.0 - f;
-
-  // interpolate center
-  vital::vector_3d c = f1*A.get_center() + f*B.get_center();
-
-  // interpolate rotation
-  vital::rotation_d R = interpolate_rotation(A.get_rotation(), B.get_rotation(), f);
-
-  // interpolate intrinsics
-  vital::camera_intrinsics_sptr k1 = A.get_intrinsics(),
-                                k2 = B.get_intrinsics();
-
-  if( k1 == k2 )
-  {
-    return vital::simple_camera(c, R, k1);
-  }
-
-  double focal_len = f1*k1->focal_length() + f*k2->focal_length();
-  vital::vector_2d principal_point = f1*k1->principal_point() + f*k2->principal_point();
-  double aspect_ratio = f1*k1->aspect_ratio() + f*k2->aspect_ratio();
-  double skew = f1*k1->skew() + f*k2->skew();
-  vital::simple_camera_intrinsics k(focal_len, principal_point, aspect_ratio, skew);
-  return vital::simple_camera(c, R, k);
-}
-
-
-/// Generate N evenly interpolated cameras in between \c A and \c B
-void
-interpolated_cameras(vital::simple_camera const& A,
-                     vital::simple_camera const& B,
-                     size_t n,
-                     std::vector< vital::simple_camera > & interp_cams)
-{
-  interp_cams.reserve(interp_cams.capacity() + n);
-  size_t denom = n + 1;
-  for (size_t i=1; i < denom; ++i)
-  {
-    interp_cams.push_back(interpolate_camera(A, B, static_cast<double>(i) / denom));
-  }
-}
+                   vital::simple_camera const& B, double f);
 
 
 /// Genreate an interpolated camera from sptrs
+/**
+ * \relatesalso interpolate_camera
+ *
+ */
+MAPTK_LIB_EXPORT
 vital::camera_sptr
 interpolate_camera(vital::camera_sptr A,
-                   vital::camera_sptr B, double f)
-{
-  if( A == B )
-  {
-    return A;
-  }
-  return interpolate_camera(vital::simple_camera(*A),
-                            vital::simple_camera(*B), f).clone();
-}
+                   vital::camera_sptr B, double f);
+
+
+/// Generate N evenly interpolated cameras in between \c A and \c B
+/**
+ * \c n must be >= 1.
+ */
+MAPTK_LIB_EXPORT
+void interpolated_cameras(vital::simple_camera const& A,
+                          vital::simple_camera const& B,
+                          size_t n,
+                          std::vector< vital::simple_camera > & interp_cams);
 
 
 } // end namespace maptk
 } // end namespace kwiver
+
+#endif // MAPTK_INTERPOLATE_CAMERA_H_
