@@ -37,170 +37,14 @@
 #ifndef MAPTK_CAMERA_H_
 #define MAPTK_CAMERA_H_
 
+
+#include <vector>
+#include <vital/types/camera.h>
 #include <maptk/config.h>
 
-#include <iostream>
-#include <vector>
-
-#include <vital/types/camera.h>
-#include <vital/types/camera_intrinsics.h>
-#include <vital/types/covariance.h>
-#include <vital/types/rotation.h>
-#include <vital/types/vector.h>
-#include <vital/types/similarity.h>
-#include <boost/shared_ptr.hpp>
 
 namespace kwiver {
 namespace maptk {
-
-
-/// A representation of a camera
-/**
- * Contains camera location, orientation, and intrinsics
- */
-template <typename T>
-class MAPTK_LIB_EXPORT camera_
-  : public vital::camera
-{
-public:
-  /// Default Constructor
-  camera_<T>()
-  : center_(T(0), T(0), T(0)),
-    orientation_(),
-    intrinsics_()
-  {}
-
-  /// Constructor - from camera center, rotation, and intrinsics
-  camera_<T>(const Eigen::Matrix<T,3,1>& center,
-             const vital::rotation_<T>& rotation,
-             const vital::camera_intrinsics_<T>& intrinsics = vital::camera_intrinsics_<T>())
-  : center_(center),
-    orientation_(rotation),
-    intrinsics_(intrinsics)
-  {}
-
-  /// Constructor - from base class
-  camera_<T>(const camera& base)
-  : center_(base.center().template cast<T>()),
-    center_covar_(static_cast<vital::covariance_<3,T> >(base.center_covar())),
-    orientation_(static_cast<vital::rotation_<T> >(base.rotation())),
-    intrinsics_(static_cast<vital::camera_intrinsics_<T> >(base.intrinsics()))
-  {}
-
-  /// Copy Constructor from another type
-  template <typename U>
-  explicit camera_<T>(const camera_<U>& other)
-  : center_(other.get_center().template cast<T>()),
-    center_covar_(static_cast<vital::covariance_<3,T> >(other.get_center_covar())),
-    orientation_(static_cast<vital::rotation_<T> >(other.get_rotation())),
-    intrinsics_(static_cast<vital::camera_intrinsics_<T> >(other.get_intrinsics()))
-  {}
-
-  /// Create a clone of this camera object
-  virtual vital::camera_sptr clone() const
-  { return vital::camera_sptr(new camera_<T>(*this)); }
-
-  /// Access staticly available type of underlying data (double or float)
-  static const std::type_info& static_data_type() { return typeid(T); }
-  /// Access the type info of the underlying data (double or float)
-  virtual const std::type_info& data_type() const { return typeid(T); }
-
-  /// Accessor for the camera center of projection (position)
-  virtual vital::vector_3d center() const
-  { return center_.template cast<double>(); }
-  /// Accessor for the translation vector
-  virtual vital::vector_3d translation() const
-  { return get_translation().template cast<double>(); }
-  /// Accessor for the covariance of camera center
-  virtual vital::covariance_3d center_covar() const
-  { return static_cast<vital::covariance_3d>(center_covar_); }
-  /// Accessor for the rotation
-  virtual vital::rotation_d rotation() const
-  { return static_cast<vital::rotation_d>(orientation_); }
-  /// Accessor for the intrinsics
-  virtual vital::camera_intrinsics_d intrinsics() const
-  { return static_cast<vital::camera_intrinsics_d>(intrinsics_); }
-
-  /// Accessor for the camera center of projection using underlying data type
-  const Eigen::Matrix<T,3,1> & get_center() const { return center_; }
-  /// Accessor for the translation vector using underlying data type
-  Eigen::Matrix<T,3,1> get_translation() const { return - (orientation_ * center_); }
-  /// Accessor for the covariance of camera center using underlying data type
-  const vital::covariance_<3,T>& get_center_covar() const { return center_covar_; }
-  /// Accessor for the rotation using underlying data type
-  const vital::rotation_<T>& get_rotation() const { return orientation_; }
-  /// Accessor for the intrinsics using underlying data type
-  const vital::camera_intrinsics_<T>& get_intrinsics() const { return intrinsics_; }
-
-  /// Set the camera center of projection
-  void set_center(const Eigen::Matrix<T,3,1>& center) { center_ = center; }
-  /// Set the translation vector (relative to current rotation)
-  void set_translation(const Eigen::Matrix<T,3,1>& translation)
-  {
-    center_ = - (orientation_.inverse() * translation);
-  }
-  /// Set the covariance matrix of the feature
-  void set_center_covar(const vital::covariance_<3,T>& center_covar) { center_covar_ = center_covar; }
-  /// Set the rotation
-  void set_rotation(const vital::rotation_<T>& rotation) { orientation_ = rotation; }
-  /// Set the intrinsics
-  void set_intrinsics(const vital::camera_intrinsics_<T>& intrinsics) { intrinsics_ = intrinsics; }
-
-  /// Rotate the camera about its center such that it looks at the given point.
-  /**
-   * The camera should also be rotated about its principal axis such that
-   * the vertical image direction is closest to \c up_direction in the world.
-   * \param [in] stare_point the location at which the camera is oriented to point
-   * \param [in] up_direction the vector which is "up" in the world (defaults to Z-axis)
-   */
-  void look_at(const Eigen::Matrix<T, 3, 1>& stare_point,
-               const Eigen::Matrix<T, 3, 1>& up_direction=Eigen::Vector3d::UnitZ() );
-
-  /// Convert to a 3x4 homogeneous projection matrix
-  operator Eigen::Matrix<T,3,4>() const;
-
-  /// Project a 3D point into a 2D image point
-  Eigen::Matrix<T, 2, 1> project(const Eigen::Matrix<T, 3, 1>& pt) const;
-
-  /// Compute the distance of the 3D point to the image plane
-  /**
-   *  Points with negative depth are behind the camera
-   */
-  T depth(const Eigen::Matrix<T, 3, 1>& pt) const;
-
-protected:
-  /// The camera center of project
-  Eigen::Matrix<T,3,1> center_;
-  /// The covariance of the camera center location
-  vital::covariance_<3,T> center_covar_;
-  /// The camera rotation
-  vital::rotation_<T> orientation_;
-  /// The camera intrinics
-  vital::camera_intrinsics_<T> intrinsics_;
-};
-
-
-/// Double-precision camera type
-typedef camera_<double> camera_d;
-/// Single-precision camera type
-typedef camera_<float> camera_f;
-
-
-/// output stream operator for a camera
-/**
- * \param s output stream
- * \param c camera to stream
- */
-template <typename T>
-MAPTK_LIB_EXPORT std::ostream& operator<<(std::ostream& s, const camera_<T>& c);
-
-/// input stream operator for a camera
-/**
- * \param s input stream
- * \param c camera to stream into
- */
-template <typename T>
-MAPTK_LIB_EXPORT std::istream& operator>>(std::istream& s, camera_<T>& c);
 
 
 /// Generate an interpolated camera between \c A and \c B by a given fraction \c f
@@ -212,38 +56,35 @@ MAPTK_LIB_EXPORT std::istream& operator>>(std::istream& s, camera_<T>& c);
  * \param B Camera to interpolate to.
  * \param f Decimal fraction in between A and B for the returned camera to represent.
  */
-template <typename T>
 MAPTK_LIB_EXPORT
-camera_<T> interpolate_camera(camera_<T> const& A, camera_<T> const& B, T f);
+vital::simple_camera
+interpolate_camera(vital::simple_camera const& A,
+                   vital::simple_camera const& B, double f);
 
 
 /// Genreate an interpolated camera from sptrs
 /**
  * \relatesalso interpolate_camera
  *
- * TODO: Deprecate this function by replacing its use with a tiered dynamic
- * cast to either camera_<double> or camera_<float>, using the one that
- * doesn't produce a NULL pointer.
  */
 MAPTK_LIB_EXPORT
 vital::camera_sptr
-interpolate_camera(vital::camera_sptr A, vital::camera_sptr B, double f);
+interpolate_camera(vital::camera_sptr A,
+                   vital::camera_sptr B, double f);
 
 
 /// Generate N evenly interpolated cameras in between \c A and \c B
 /**
  * \c n must be >= 1.
  */
-template <typename T>
 MAPTK_LIB_EXPORT
-void interpolated_cameras(camera_<T> const& A,
-                          camera_<T> const& B,
+void interpolated_cameras(vital::simple_camera const& A,
+                          vital::simple_camera const& B,
                           size_t n,
-                          std::vector< camera_<T> > & interp_cams);
+                          std::vector< vital::simple_camera > & interp_cams);
 
 
-// end namespace maptk
-} // end namespace kwiver
+} // end namespace maptk
 } // end namespace kwiver
 
 #endif // MAPTK_CAMERA_H_
