@@ -54,6 +54,7 @@ using boost::timer::cpu_times;
 using boost::timer::nanosecond_type;
 using namespace kwiver::vital;
 
+
 #define MAPTK_CERES_ENUM_HELPERS(NS, ceres_type)                        \
 namespace kwiver {                                                      \
 namespace vital {                                                       \
@@ -61,7 +62,7 @@ namespace vital {                                                       \
 template<>                                                              \
 inline                                                                  \
 config_block_value_t                                                    \
-config_block_cast(NS::ceres_type const& value)                          \
+config_block_set_value_cast(NS::ceres_type const& value)                \
 {                                                                       \
   return NS::ceres_type##ToString(value);                               \
 }                                                                       \
@@ -69,12 +70,12 @@ config_block_cast(NS::ceres_type const& value)                          \
 template<>                                                              \
 inline                                                                  \
 NS::ceres_type                                                          \
-config_block_cast(config_block_value_t const& value)                    \
+config_block_get_value_cast(config_block_value_t const& value)          \
 {                                                                       \
   NS::ceres_type cet;                                                   \
   if(!NS::StringTo##ceres_type(value, &cet))                            \
   {                                                                     \
-    throw bad_config_block_cast(value.c_str());                         \
+    throw bad_config_block_cast(value);                                 \
   }                                                                     \
   return cet;                                                           \
 }                                                                       \
