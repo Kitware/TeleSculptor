@@ -131,6 +131,7 @@ MAPTK_CERES_ENUM_HELPERS(::ceres, DoglegType)
 
 MAPTK_CERES_ENUM_HELPERS(kwiver::maptk::ceres, LossFunctionType)
 MAPTK_CERES_ENUM_HELPERS(kwiver::maptk::ceres, LensDistortionType)
+MAPTK_CERES_ENUM_HELPERS(kwiver::maptk::ceres, CameraIntrinsicShareType)
 
 #undef MAPTK_CERES_ENUM_HELPERS
 
@@ -158,6 +159,7 @@ public:
     optimize_dist_k3(false),
     optimize_dist_p1_p2(false),
     optimize_dist_k4_k5_k6(false),
+    camera_intrinsic_share_type(AUTO_SHARE_INTRINSICS),
     m_logger( vital::get_logger( "maptk::ceres::bundle_adjust" ))
   {
   }
@@ -176,6 +178,7 @@ public:
     optimize_dist_k3(other.optimize_dist_k3),
     optimize_dist_p1_p2(other.optimize_dist_p1_p2),
     optimize_dist_k4_k5_k6(other.optimize_dist_k4_k5_k6),
+    camera_intrinsic_share_type(other.camera_intrinsic_share_type),
     m_logger( vital::get_logger( "maptk::ceres::bundle_adjust" ))
   {
   }
@@ -208,6 +211,8 @@ public:
   bool optimize_dist_p1_p2;
   /// option to optimize radial distortion parameters k4, k5, k6
   bool optimize_dist_k4_k5_k6;
+  /// the type of sharing of intrinsics between cameras to use
+  CameraIntrinsicShareType camera_intrinsic_share_type;
 
   /// Logger handle
   vital::logger_handle_t m_logger;
@@ -306,6 +311,12 @@ bundle_adjust
   config->set_value("optimize_dist_k4_k5_k6", d_->optimize_dist_k4_k5_k6,
                     "Include radial lens distortion parameters "
                     "k4, k5, and k6 in bundle adjustment.");
+  config->set_value("camera_intrinsic_share_type", d_->camera_intrinsic_share_type,
+                    "Determines how to share intrinsics across cameras.\n"
+                    "AUTO shares intrinsics between cameras with a common camera_intrinsic_sptr\n"
+                    "COMMON enforces that all cameras share common intrinsics\n"
+                    "UNIQUE enforces that each camera has its own intrinsics parameters."
+                    + ceres_options< ceres::CameraIntrinsicShareType >());
   return config;
 }
 
@@ -377,6 +388,10 @@ bundle_adjust
                                                     d_->optimize_dist_p1_p2);
   d_->optimize_dist_k4_k5_k6 = config->get_value<bool>("optimize_dist_k4_k5_k6",
                                                        d_->optimize_dist_k4_k5_k6);
+  typedef ceres::CameraIntrinsicShareType ccis_t;
+  d_->camera_intrinsic_share_type =
+      config->get_value<ccis_t>("camera_intrinsic_share_type",
+                                d_->camera_intrinsic_share_type);
 }
 
 
@@ -443,12 +458,18 @@ bundle_adjust
   }
 
   // Extract the camera parameters into a mutable map
+  //
   typedef std::map<frame_id_t, std::vector<double> > cam_param_map_t;
   cam_param_map_t camera_params;
+  // We need maps from both frame number and intrinsics_sptr to the
+  // index of the camera parameters.  This way we can vary how each
+  // frame maps to a set of intrinsic parameters based on config params.
   typedef std::map<camera_intrinsics_sptr, unsigned int> cam_intrin_map_t;
   cam_intrin_map_t camera_intr_map;
-  typedef std::vector<std::vector<double> > cam_intrin_vec_t;
-  cam_intrin_vec_t camera_intr_params;
+  typedef std::map<frame_id_t, unsigned int> frame_to_intrin_map_t;
+  frame_to_intrin_map_t frame_to_intr_map;
+  // vector of unique camera intrinsic parameters
+  std::vector<std::vector<double> > camera_intr_params;
   // number of lens distortion parameters in the selected model
   const unsigned int ndp = num_distortion_params(d_->lens_distortion_type);
   std::vector<double> intrinsic_params(5 + ndp, 0.0);
@@ -462,7 +483,14 @@ bundle_adjust
     camera_intrinsics_sptr K = c.second->intrinsics();
     camera_params[c.first] = params;
 
-    if( camera_intr_map.count(K) == 0 )
+    // add a new set of intrisic parameter if one of the following:
+    // - we are forcing unique intrinsics for each camera
+    // - we are forcing common intrinsics and this is the first frame
+    // - we are auto detecting shared intrinisics and this is a new sptr
+    if( d_->camera_intrinsic_share_type == FORCE_UNIQUE_INTRINSICS
+        || ( d_->camera_intrinsic_share_type == FORCE_COMMON_INTRINSICS
+             && camera_intr_params.empty() )
+        || camera_intr_map.count(K) == 0 )
     {
       intrinsic_params[0] = K->focal_length();
       intrinsic_params[1] = K->principal_point().x();
@@ -474,8 +502,21 @@ bundle_adjust
       // and those that are supported by the requested model type
       unsigned int num_dp = std::min(ndp, static_cast<unsigned int>(d.size()));
       std::copy(d.begin(), d.begin()+num_dp, &intrinsic_params[5]);
+      // update the maps with the index of this new parameter vector
       camera_intr_map[K] = camera_intr_params.size();
+      frame_to_intr_map[c.first] = camera_intr_params.size();
+      // add the parameter vector
       camera_intr_params.push_back(intrinsic_params);
+    }
+    else if( d_->camera_intrinsic_share_type == FORCE_COMMON_INTRINSICS )
+    {
+      // map to the first parameter vector
+      frame_to_intr_map[c.first] = 0;
+    }
+    else
+    {
+      // map to a previously seen parameter vector
+      frame_to_intr_map[c.first] = camera_intr_map[K];
     }
   }
 
@@ -549,7 +590,7 @@ bundle_adjust
       {
         continue;
       }
-      unsigned intr_idx = camera_intr_map[cams[ts->frame_id]->intrinsics()];
+      unsigned intr_idx = frame_to_intr_map[ts->frame_id];
       double * intr_params_ptr = &camera_intr_params[intr_idx][0];
       vector_2d pt = ts->feat->loc();
       problem.AddResidualBlock(create_cost_func(d_->lens_distortion_type,
@@ -615,7 +656,7 @@ bundle_adjust
     rotation_d rot(vector_3d(Eigen::Map<const vector_3d>(&cp.second[0])));
 
     // look-up updated intrinsics
-    unsigned int intr_idx = camera_intr_map[cams[cp.first]->intrinsics()];
+    unsigned int intr_idx = frame_to_intr_map[cp.first];
     camera_intrinsics_sptr K = updated_intr[intr_idx];
     cams[cp.first] = camera_sptr(new simple_camera(center, rot, K));
   }

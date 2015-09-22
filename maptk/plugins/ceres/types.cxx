@@ -116,6 +116,34 @@ StringToLensDistortionType(std::string value, LensDistortionType* type)
   return false;
 }
 
+
+/// Provide a string representation for a CameraIntrinsicShareType value
+MAPTK_CERES_EXPORT const char*
+CameraIntrinsicShareTypeToString(CameraIntrinsicShareType type)
+{
+  switch (type)
+  {
+    CASESTR(AUTO_SHARE_INTRINSICS);
+    CASESTR(FORCE_COMMON_INTRINSICS);
+    CASESTR(FORCE_UNIQUE_INTRINSICS);
+    default:
+      return "UNKNOWN";
+  }
+}
+
+
+/// Parse a CameraIntrinsicShareType value from a string or return false
+MAPTK_CERES_EXPORT bool
+StringToCameraIntrinsicShareType(std::string value, CameraIntrinsicShareType* type)
+{
+  UpperCase(&value);
+  STRENUM(AUTO_SHARE_INTRINSICS);
+  STRENUM(FORCE_COMMON_INTRINSICS);
+  STRENUM(FORCE_UNIQUE_INTRINSICS);
+  return false;
+}
+
+
 #undef CASESTR
 #undef STRENUM
 

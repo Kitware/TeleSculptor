@@ -67,6 +67,14 @@ enum LensDistortionType
   RATIONAL_RADIAL_TANGENTIAL_DISTORTION
 };
 
+/// The options for camera intrinsic sharing supported in the config
+enum CameraIntrinsicShareType
+{
+  AUTO_SHARE_INTRINSICS,
+  FORCE_COMMON_INTRINSICS,
+  FORCE_UNIQUE_INTRINSICS
+};
+
 
 /// Provide a string representation for a LossFunctionType value
 MAPTK_CERES_EXPORT const char*
@@ -92,6 +100,15 @@ StringToLensDistortionType(std::string value, LensDistortionType* type);
 /// Return the number of distortion parameters required for each type
 MAPTK_CERES_EXPORT unsigned int
 num_distortion_params(LensDistortionType type);
+
+
+/// Provide a string representation for a CameraIntrinsicShareType value
+MAPTK_CERES_EXPORT const char*
+CameraIntrinsicShareTypeToString(CameraIntrinsicShareType type);
+
+/// Parse a CameraIntrinsicShareType value from a string or return false
+MAPTK_CERES_EXPORT bool
+StringToCameraIntrinsicShareType(std::string value, CameraIntrinsicShareType* type);
 
 
 } // end namespace ceres
