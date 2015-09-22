@@ -826,7 +826,7 @@ static int maptk_main(int argc, char const* argv[])
   if (necker_reverse_input)
   {
     std::cerr << "Applying Necker reversal" << std::endl;
-    necker_reverse(cam_map, lm_map);
+    kwiver::maptk::necker_reverse(cam_map, lm_map);
   }
 
   //

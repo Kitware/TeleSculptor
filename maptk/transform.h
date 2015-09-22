@@ -133,8 +133,8 @@ canonical_transform(vital::camera_map_sptr cameras,
  */
 MAPTK_LIB_EXPORT
 void
-necker_reverse(camera_map_sptr& cameras,
-               landmark_map_sptr& landmarks);
+necker_reverse(vital::camera_map_sptr& cameras,
+               vital::landmark_map_sptr& landmarks);
 
 } // end namespace maptk
 } // end namespace kwiver
