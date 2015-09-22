@@ -43,10 +43,7 @@
 #include <string>
 #include <vector>
 
-#include <boost/algorithm/string/join.hpp>
 #include <boost/bind.hpp>
-#include <boost/foreach.hpp>
-#include <boost/iterator/counting_iterator.hpp>
 
 #include <vital/algo/algorithm.h>
 #include <vital/exceptions/algorithm.h>

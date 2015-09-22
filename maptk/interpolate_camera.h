@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,58 +30,61 @@
 
 /**
  * \file
- * \brief Header for core triangulation function
+ * \brief Header for \link maptk::interpolate_camera interpolate_camera \endlink
+ *        functions
  */
 
-#ifndef MAPTK_TRIANGULATE_H_
-#define MAPTK_TRIANGULATE_H_
+#ifndef MAPTK_INTERPOLATE_CAMERA_H_
+#define MAPTK_INTERPOLATE_CAMERA_H_
 
+
+#include <vector>
 #include <vital/types/camera.h>
-
 #include <maptk/config.h>
+
 
 namespace kwiver {
 namespace maptk {
 
 
-/// Triangulate a 3D point from a set of cameras and 2D image points
+/// Generate an interpolated camera between \c A and \c B by a given fraction \c f
 /**
- *  This function computes a linear least squares solution find a 3D point
- *  that is the closest intersection of all the rays using an inhomogeneous
- *  system of equations.  This method is affine invariant but does not work
- *  for 3D points at infinity.
+ * \c f should be 0 < \c f < 1. A value outside this range is valid, but \c f
+ * must not be 0.
  *
- *  \param cameras a vector of camera objects
- *  \param points a vector of image points corresponding to each camera
- *  \return a 3D triangulated point location
+ * \param A Camera to interpolate from.
+ * \param B Camera to interpolate to.
+ * \param f Decimal fraction in between A and B for the returned camera to represent.
  */
-template <typename T>
 MAPTK_LIB_EXPORT
-Eigen::Matrix<T,3,1>
-triangulate_inhomog(const std::vector<vital::simple_camera >& cameras,
-                    const std::vector<Eigen::Matrix<T,2,1> >& points);
+vital::simple_camera
+interpolate_camera(vital::simple_camera const& A,
+                   vital::simple_camera const& B, double f);
 
 
-/// Triangulate a homogeneous 3D point from a set of cameras and 2D image points
+/// Genreate an interpolated camera from sptrs
 /**
- *  This function computes a linear least squares solution find a homogeneous
- *  3D point that is the closest intersection of all the rays using a
- *  homogeneous system of equations.  This method is not invariant to
- *  tranformations but does allow for 3D points at infinity.
+ * \relatesalso interpolate_camera
  *
- *  \param cameras a vector of camera objects
- *  \param points a vector of image points corresponding to each camera
- *  \return a homogeneous 3D triangulated point location
  */
-template <typename T>
 MAPTK_LIB_EXPORT
-Eigen::Matrix<T,4,1>
-triangulate_homog(const std::vector<vital::simple_camera >& cameras,
-                  const std::vector<Eigen::Matrix<T,2,1> >& points);
+vital::camera_sptr
+interpolate_camera(vital::camera_sptr A,
+                   vital::camera_sptr B, double f);
+
+
+/// Generate N evenly interpolated cameras in between \c A and \c B
+/**
+ * \c n must be >= 1.
+ */
+MAPTK_LIB_EXPORT
+void interpolated_cameras(vital::simple_camera const& A,
+                          vital::simple_camera const& B,
+                          size_t n,
+                          std::vector< vital::simple_camera > & interp_cams);
 
 
 } // end namespace maptk
 } // end namespace kwiver
 
-
-#endif // MAPTK_TRIANGULATE_H_
+#endif // MAPTK_INTERPOLATE_CAMERA_H_

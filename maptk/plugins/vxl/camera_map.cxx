@@ -80,13 +80,9 @@ camera_map_to_vpgl(const vital::camera_map& cam_map)
                 cam_map.cameras())
   {
     vpgl_perspective_camera<double> vcam;
-    if( const camera_d* mcamd = dynamic_cast<const camera_d*>(c.second.get()) )
+    if( const simple_camera* mcam = dynamic_cast<const simple_camera*>(c.second.get()) )
     {
-      maptk_to_vpgl_camera(*mcamd, vcam);
-    }
-    else if( const camera_f* mcamf = dynamic_cast<const camera_f*>(c.second.get()) )
-    {
-      maptk_to_vpgl_camera(camera_d(*mcamf), vcam);
+      maptk_to_vpgl_camera(*mcam, vcam);
     }
     else
     {

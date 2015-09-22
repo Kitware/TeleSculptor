@@ -87,8 +87,8 @@ public:
   vital::essential_matrix_sptr
   estimate(const std::vector<vital::vector_2d>& pts1,
            const std::vector<vital::vector_2d>& pts2,
-           const vital::camera_intrinsics_d &cal1,
-           const vital::camera_intrinsics_d &cal2,
+           const vital::camera_intrinsics_sptr cal1,
+           const vital::camera_intrinsics_sptr cal2,
            std::vector<bool>& inliers,
            double inlier_scale = 1.0) const;
   using vital::algo::estimate_essential_matrix::estimate;

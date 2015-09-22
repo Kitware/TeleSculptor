@@ -455,19 +455,19 @@ bundle_adjust
     std::vector<double> params(6);
     std::copy(rot.data(), rot.data()+3, params.begin());
     std::copy(center.data(), center.data()+3, params.begin()+3);
-    camera_intrinsics_d K = c.second->intrinsics();
+    camera_intrinsics_sptr K = c.second->intrinsics();
     camera_params[c.first] = params;
 
-    intrinsic_params[0] = K.focal_length();
-    intrinsic_params[1] = K.principal_point().x();
-    intrinsic_params[2] = K.principal_point().y();
-    intrinsic_params[3] = K.aspect_ratio();
-    intrinsic_params[4] = K.skew();
-    const Eigen::VectorXd& d = K.dist_coeffs();
+    intrinsic_params[0] = K->focal_length();
+    intrinsic_params[1] = K->principal_point().x();
+    intrinsic_params[2] = K->principal_point().y();
+    intrinsic_params[3] = K->aspect_ratio();
+    intrinsic_params[4] = K->skew();
+    const std::vector<double> d = K->dist_coeffs();
     // copy the intersection of parameters provided in K
     // and those that are supported by the requested model type
     unsigned int num_dp = std::min(ndp, static_cast<unsigned int>(d.size()));
-    std::copy(d.data(), d.data()+num_dp, &intrinsic_params[5]);
+    std::copy(d.begin(), d.begin()+num_dp, &intrinsic_params[5]);
   }
 
   // the Ceres solver problem
@@ -587,7 +587,7 @@ bundle_adjust
     vector_3d center = Eigen::Map<const vector_3d>(&cp.second[3]);
     rotation_d rot(vector_3d(Eigen::Map<const vector_3d>(&cp.second[0])));
 
-    camera_intrinsics_d K = cams[cp.first]->intrinsics();
+    simple_camera_intrinsics K(*cams[cp.first]->intrinsics());
     K.set_focal_length(intrinsic_params[0]);
     vector_2d pp((Eigen::Map<const vector_2d>(&intrinsic_params[1])));
     K.set_principal_point(pp);
@@ -596,7 +596,7 @@ bundle_adjust
     Eigen::VectorXd dc(ndp);
     std::copy(&intrinsic_params[5], &intrinsic_params[5]+ndp, dc.data());
     K.set_dist_coeffs(dc);
-    cams[cp.first] = camera_sptr(new camera_d(center, rot, K));
+    cams[cp.first] = camera_sptr(new simple_camera(center, rot, K));
   }
 
 

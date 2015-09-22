@@ -43,8 +43,6 @@
 #include <string>
 #include <vector>
 
-#include <boost/bind.hpp>
-#include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 
 #include <vital/algo/algorithm.h>

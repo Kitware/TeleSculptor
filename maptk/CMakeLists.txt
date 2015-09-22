@@ -29,8 +29,10 @@ set(maptk_public_headers
   geo_reference_points_io.h
   ins_data.h
   ins_data_io.h
+  interpolate_camera.h
   match_matrix.h
   triangulate.h
+  transform.h
 
   plugin_interface/algorithm_plugin_interface.h
   plugin_interface/algorithm_plugin_interface_macros.h
@@ -44,8 +46,10 @@ set(maptk_sources
   geo_reference_points_io.cxx
   ins_data.cxx
   ins_data_io.cxx
+  interpolate_camera.cxx
   match_matrix.cxx
   triangulate.cxx
+  transform.cxx
 
   )
 

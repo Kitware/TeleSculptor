@@ -58,12 +58,12 @@ vital::camera_sptr vpgl_camera_to_maptk(const vpgl_perspective_camera<T>& vcam);
 template <typename T>
 MAPTK_VXL_EXPORT
 void vpgl_camera_to_maptk(const vpgl_perspective_camera<T>& vcam,
-                          vital::camera_<T>& mcam);
+                          vital::simple_camera& mcam);
 
 /// Convert a maptk::camera_ to a vpgl_perspective_camera
 template <typename T>
 MAPTK_VXL_EXPORT
-void maptk_to_vpgl_camera(const vital::camera_<T>& mcam,
+void maptk_to_vpgl_camera(const vital::camera& mcam,
                           vpgl_perspective_camera<T>& vcam);
 
 
@@ -71,12 +71,12 @@ void maptk_to_vpgl_camera(const vital::camera_<T>& mcam,
 template <typename T>
 MAPTK_VXL_EXPORT
 void vpgl_calibration_to_maptk(const vpgl_calibration_matrix<T>& vcal,
-                               vital::camera_intrinsics_<T>& mcal);
+                               vital::simple_camera_intrinsics& mcal);
 
 /// Convert a maptk::camera_intrinsics_ to a vpgl_calibration_matrix
 template <typename T>
 MAPTK_VXL_EXPORT
-void maptk_to_vpgl_calibration(const vital::camera_intrinsics_<T>& mcal,
+void maptk_to_vpgl_calibration(const vital::camera_intrinsics& mcal,
                                vpgl_calibration_matrix<T>& vcal);
 
 

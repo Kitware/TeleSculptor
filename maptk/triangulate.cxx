@@ -34,7 +34,6 @@
  */
 
 #include "triangulate.h"
-#include <boost/foreach.hpp>
 #include <Eigen/SVD>
 
 
@@ -44,7 +43,7 @@ namespace maptk {
 /// Triangulate a 3D point from a set of cameras and 2D image points
 template <typename T>
 Eigen::Matrix<T,3,1>
-triangulate_inhomog(const std::vector<vital::camera_<T> >& cameras,
+triangulate_inhomog(const std::vector<vital::simple_camera >& cameras,
                     const std::vector<Eigen::Matrix<T,2,1> >& points)
 {
   typedef Eigen::Matrix<T,2,1> vector_2;
@@ -58,11 +57,12 @@ triangulate_inhomog(const std::vector<vital::camera_<T> >& cameras,
   for( unsigned int i=0; i<points.size(); ++i )
   {
     // the camera
-    const vital::camera_<T>& cam = cameras[i];
-    const matrix_3x3 R(cam.get_rotation());
-    const vector_3 t(cam.get_translation());
+    const vital::simple_camera& cam = cameras[i];
+    const matrix_3x3 R(vital::matrix_3x3d(cam.get_rotation()).cast<T>());
+    const vector_3 t(cam.translation().cast<T>());
     // the point in normalized coordinates
-    const vector_2 pt = cam.get_intrinsics().unmap(points[i]);
+    const vital::vector_2d p2d = points[i].template cast<double>();
+    const vector_2 pt = cam.get_intrinsics()->unmap(p2d).template cast<T>();
     A(2*i,   0) = R(0,0) - pt.x() * R(2,0);
     A(2*i,   1) = R(0,1) - pt.x() * R(2,1);
     A(2*i,   2) = R(0,2) - pt.x() * R(2,2);
@@ -81,7 +81,7 @@ triangulate_inhomog(const std::vector<vital::camera_<T> >& cameras,
 /// Triangulate a homogeneous 3D point from a set of cameras and 2D image points
 template <typename T>
 Eigen::Matrix<T,4,1>
-triangulate_homog(const std::vector<vital::camera_<T> >& cameras,
+triangulate_homog(const std::vector<vital::simple_camera >& cameras,
                   const std::vector<Eigen::Matrix<T,2,1> >& points)
 {
   typedef Eigen::Matrix<T,2,1> vector_2;
@@ -93,11 +93,12 @@ triangulate_homog(const std::vector<vital::camera_<T> >& cameras,
   for( unsigned int i=0; i<points.size(); ++i )
   {
     // the camera
-    const vital::camera_<T>& cam = cameras[i];
-    const matrix_3x3 R(cam.get_rotation());
-    const vector_3 t(cam.get_translation());
+    const vital::simple_camera& cam = cameras[i];
+    const matrix_3x3 R(vital::matrix_3x3d(cam.get_rotation()).cast<T>());
+    const vector_3 t(cam.translation().cast<T>());
     // the point in normalized coordinates
-    const vector_2 pt = cam.get_intrinsics().unmap(points[i]);
+    const vital::vector_2d p2d = points[i].template cast<double>();
+    const vector_2 pt = cam.get_intrinsics()->unmap(p2d).template cast<T>();
     A(2*i,   0) = R(0,0) - pt.x() * R(2,0);
     A(2*i,   1) = R(0,1) - pt.x() * R(2,1);
     A(2*i,   2) = R(0,2) - pt.x() * R(2,2);
@@ -116,10 +117,10 @@ triangulate_homog(const std::vector<vital::camera_<T> >& cameras,
 /// \cond DoxygenSuppress
 #define INSTANTIATE_TRIANGULATE(T) \
 template MAPTK_LIB_EXPORT Eigen::Matrix<T,4,1> \
-         triangulate_homog(const std::vector<vital::camera_<T> >& cameras, \
+         triangulate_homog(const std::vector<vital::simple_camera >& cameras, \
                            const std::vector<Eigen::Matrix<T,2,1> >& points); \
 template MAPTK_LIB_EXPORT Eigen::Matrix<T,3,1> \
-         triangulate_inhomog(const std::vector<vital::camera_<T> >& cameras, \
+         triangulate_inhomog(const std::vector<vital::simple_camera >& cameras, \
                              const std::vector<Eigen::Matrix<T,2,1> >& points);
 
 INSTANTIATE_TRIANGULATE(double);

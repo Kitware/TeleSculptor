@@ -43,7 +43,6 @@
 
 #include <boost/bind.hpp>
 #include <boost/circular_buffer.hpp>
-#include <boost/foreach.hpp>
 
 #include <vital/algo/compute_ref_homography.h>
 #include <vital/algo/match_features.h>

@@ -185,7 +185,7 @@ triangulate_landmarks
     const vital::track& t = *t_itr->second;
 
     // extract the cameras and image points for this landmarks
-    std::vector<vital::camera_d> lm_cams;
+    std::vector<vital::simple_camera> lm_cams;
     std::vector<vital::vector_2d> lm_image_pts;
 
     for (vital::track::history_const_itr tsi = t.begin(); tsi != t.end(); ++tsi)
@@ -201,7 +201,7 @@ triangulate_landmarks
         // there is no camera for this track state.
         continue;
       }
-      lm_cams.push_back(vital::camera_d(*c_itr->second));
+      lm_cams.push_back(vital::simple_camera(*c_itr->second));
       lm_image_pts.push_back(tsi->feat->loc());
     }
 
@@ -224,7 +224,7 @@ triangulate_landmarks
       {
         pt3d = triangulate_inhomog(lm_cams, lm_image_pts);
       }
-      VITAL_FOREACH(vital::camera_d const& cam, lm_cams)
+      VITAL_FOREACH(vital::simple_camera const& cam, lm_cams)
       {
         if(cam.depth(pt3d) < 0.0)
         {

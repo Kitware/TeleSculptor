@@ -33,10 +33,10 @@
 #include <test_scene.h>
 
 #include <vital/types/similarity.h>
-#include <vital/types/transform.h>
 
 #include <maptk/projected_track_set.h>
 #include <maptk/metrics.h>
+#include <maptk/transform.h>
 #include <maptk/plugins/core/register_algorithms.h>
 #include <maptk/plugins/vxl/register_algorithms.h>
 #include <maptk/plugins/vxl/estimate_essential_matrix.h>
@@ -78,15 +78,15 @@ IMPLEMENT_TEST(create)
 
 // helper function to configure the algorithm
 void configure_algo(kwiver::maptk::core::initialize_cameras_landmarks& algo,
-                    const kwiver::vital::camera_intrinsics_d& K)
+                    const kwiver::vital::camera_intrinsics_sptr K)
 {
   using namespace kwiver::maptk;
   kwiver::vital::config_block_sptr cfg = algo.get_configuration();
   cfg->set_value("verbose", "true");
-  cfg->set_value("base_camera:focal_length", K.focal_length());
-  cfg->set_value("base_camera:principal_point", K.principal_point());
-  cfg->set_value("base_camera:aspect_ratio", K.aspect_ratio());
-  cfg->set_value("base_camera:skew", K.skew());
+  cfg->set_value("base_camera:focal_length", K->focal_length());
+  cfg->set_value("base_camera:principal_point", K->principal_point());
+  cfg->set_value("base_camera:aspect_ratio", K->aspect_ratio());
+  cfg->set_value("base_camera:skew", K->skew());
   cfg->set_value("essential_mat_estimator:type", "vxl");
   cfg->set_value("essential_mat_estimator:vxl:num_ransac_samples", 10);
   cfg->set_value("lm_triangulator:type", "vxl");
@@ -116,7 +116,7 @@ IMPLEMENT_TEST(ideal_points)
   // create tracks from the projections
   track_set_sptr tracks = projected_tracks(landmarks, cameras);
 
-  camera_intrinsics_d K = cameras->cameras()[0]->intrinsics();
+  camera_intrinsics_sptr K = cameras->cameras()[0]->intrinsics();
   configure_algo(init, K);
 
   camera_map_sptr new_cameras;
@@ -173,7 +173,7 @@ IMPLEMENT_TEST(noisy_points)
   // add random noise to track image locations
   tracks = testing::noisy_tracks(tracks, 0.3);
 
-  camera_intrinsics_d K = cameras->cameras()[0]->intrinsics();
+  camera_intrinsics_sptr K = cameras->cameras()[0]->intrinsics();
   configure_algo(init, K);
 
   camera_map_sptr new_cameras;
@@ -229,7 +229,7 @@ IMPLEMENT_TEST(subset_init)
   // create tracks from the projections
   track_set_sptr tracks = projected_tracks(landmarks, cameras);
 
-  camera_intrinsics_d K = cameras->cameras()[0]->intrinsics();
+  camera_intrinsics_sptr K = cameras->cameras()[0]->intrinsics();
   configure_algo(init, K);
 
   // mark every 3rd camera for initialization

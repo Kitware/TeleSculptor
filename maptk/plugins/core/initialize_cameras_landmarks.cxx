@@ -105,14 +105,14 @@ public:
    *  This function select the left camera such that a corresponding
    *  pair of points triangulates in front of both cameras.
    */
-  camera_d
+  vital::simple_camera
   extract_valid_left_camera(const essential_matrix_d& e,
                             const vector_2d& left_pt,
                             const vector_2d& right_pt) const;
 
   bool verbose;
   bool retriangulate_all;
-  camera_d base_camera;
+  vital::simple_camera base_camera;
   vital::algo::estimate_essential_matrix_sptr e_estimator;
   vital::algo::triangulate_landmarks_sptr lm_triangulator;
 };
@@ -152,8 +152,8 @@ initialize_cameras_landmarks::priv
     throw invalid_value("Camera for last frame not provided.");
   }
   camera_sptr prev_cam = ci->second;
-  camera_intrinsics_d cal_right = prev_cam->intrinsics();
-  const camera_intrinsics_d& cal_left = base_camera.get_intrinsics();
+  camera_intrinsics_sptr cal_right = prev_cam->intrinsics();
+  const camera_intrinsics_sptr cal_left = base_camera.get_intrinsics();
   std::vector<bool> inliers;
   essential_matrix_sptr E_sptr = e_estimator->estimate(pts_right, pts_left,
                                                        cal_right, cal_left,
@@ -173,19 +173,19 @@ initialize_cameras_landmarks::priv
 
   // get the first inlier correspondence to
   // disambiguate essential matrix solutions
-  vector_2d left_pt = cal_left.unmap(pts_left[inlier_idx]);
-  vector_2d right_pt = cal_right.unmap(pts_right[inlier_idx]);
+  vector_2d left_pt = cal_left->unmap(pts_left[inlier_idx]);
+  vector_2d right_pt = cal_right->unmap(pts_right[inlier_idx]);
 
   // compute the corresponding camera rotation and translation (up to scale)
-  camera_d cam = extract_valid_left_camera(E, left_pt, right_pt);
+  vital::simple_camera cam = extract_valid_left_camera(E, left_pt, right_pt);
   cam.set_intrinsics(cal_left);
 
   // compute the scale from existing landmark locations (if available)
   matrix_3x3d prev_R(prev_cam->rotation());
   vector_3d prev_t = prev_cam->translation();
-  matrix_3x3d K(cam.get_intrinsics());
+  matrix_3x3d K(cam.get_intrinsics()->as_matrix());
   matrix_3x3d KR = K * matrix_3x3d(cam.get_rotation());
-  vector_3d Kt = K * cam.get_translation();
+  vector_3d Kt = K * cam.translation();
   std::vector<double> scales;
   scales.reserve(num_inliers);
   for(unsigned int i=0; i<inliers.size(); ++i)
@@ -223,7 +223,7 @@ initialize_cameras_landmarks::priv
   cam.set_rotation(cam.get_rotation() * prev_cam->rotation());
   cam.set_translation(new_t);
 
-  return camera_sptr(new camera_d(cam));
+  return cam.clone();
 }
 
 
@@ -288,7 +288,7 @@ initialize_cameras_landmarks::priv
 }
 
 /// Compute a valid left camera from an essential matrix
-camera_d
+vital::simple_camera
 initialize_cameras_landmarks::priv
 ::extract_valid_left_camera(const essential_matrix_d& e,
                             const vector_2d& left_pt,
@@ -302,11 +302,11 @@ initialize_cameras_landmarks::priv
   pts.push_back(right_pt);
   pts.push_back(left_pt);
 
-  std::vector<camera_d> cams(2);
-  const camera_d& left_camera = cams[1];
+  std::vector<vital::simple_camera> cams(2);
+  const vital::simple_camera& left_camera = cams[1];
 
   // option 1
-  cams[1] = camera_d(R.inverse()*-t, R);
+  cams[1] = vital::simple_camera(R.inverse()*-t, R);
   vector_3d pt3 = triangulate_inhomog(cams, pts);
   if( pt3.z() > 0.0 && left_camera.depth(pt3) > 0.0 )
   {
@@ -314,7 +314,7 @@ initialize_cameras_landmarks::priv
   }
 
   // option 2, with negated translation
-  cams[1] = camera_d(R.inverse()*t, R);
+  cams[1] = vital::simple_camera(R.inverse()*t, R);
   pt3 = triangulate_inhomog(cams, pts);
   if( pt3.z() > 0.0 && left_camera.depth(pt3) > 0.0 )
   {
@@ -323,7 +323,7 @@ initialize_cameras_landmarks::priv
 
   // option 3, with the twisted pair rotation
   R = e.twisted_rotation();
-  cams[1] = camera_d(R.inverse()*-t, R);
+  cams[1] = vital::simple_camera(R.inverse()*-t, R);
   pt3 = triangulate_inhomog(cams, pts);
   if( pt3.z() > 0.0 && left_camera.depth(pt3) > 0.0 )
   {
@@ -331,14 +331,14 @@ initialize_cameras_landmarks::priv
   }
 
   // option 4, with negated translation
-  cams[1] = camera_d(R.inverse()*t, R);
+  cams[1] = vital::simple_camera(R.inverse()*t, R);
   pt3 = triangulate_inhomog(cams, pts);
   if( pt3.z() > 0.0 && left_camera.depth(pt3) > 0.0 )
   {
     return left_camera;
   }
   // should never get here
-  return camera_d();
+  return vital::simple_camera();
 }
 
 
@@ -374,7 +374,7 @@ initialize_cameras_landmarks
   vital::config_block_sptr config =
       vital::algo::initialize_cameras_landmarks::get_configuration();
 
-  const camera_intrinsics_d& K = d_->base_camera.get_intrinsics();
+  const camera_intrinsics_sptr K = d_->base_camera.get_intrinsics();
 
   config->set_value("verbose", d_->verbose,
                     "If true, write status messages to the terminal showing "
@@ -385,18 +385,18 @@ initialize_cameras_landmarks
                     "initialized camera.  Otherwise, only triangulate or "
                     "re-triangulate landmarks that are marked for initialization.");
 
-  config->set_value("base_camera:focal_length", K.focal_length(),
+  config->set_value("base_camera:focal_length", K->focal_length(),
                     "focal length of the base camera model");
 
-  config->set_value("base_camera:principal_point", K.principal_point().transpose(),
+  config->set_value("base_camera:principal_point", K->principal_point().transpose(),
                     "The principal point of the base camera model \"x y\".\n"
                     "It is usually safe to assume this is the center of the "
                     "image.");
 
-  config->set_value("base_camera:aspect_ratio", K.aspect_ratio(),
+  config->set_value("base_camera:aspect_ratio", K->aspect_ratio(),
                     "the pixel aspect ratio of the base camera model");
 
-  config->set_value("base_camera:skew", K.skew(),
+  config->set_value("base_camera:skew", K->skew(),
                     "The skew factor of the base camera model.\n"
                     "This is almost always zero in any real camera.");
 
@@ -416,7 +416,7 @@ void
 initialize_cameras_landmarks
 ::set_configuration(vital::config_block_sptr config)
 {
-  const camera_intrinsics_d& K = d_->base_camera.get_intrinsics();
+  const camera_intrinsics_sptr K = d_->base_camera.get_intrinsics();
 
   // Set nested algorithm configurations
   vital::algo::estimate_essential_matrix
@@ -433,15 +433,15 @@ initialize_cameras_landmarks
                                                   d_->retriangulate_all);
 
   vital::config_block_sptr bc = config->subblock("base_camera");
-  camera_intrinsics_d K2(bc->get_value<double>("focal_length",
-                                               K.focal_length()),
-                         bc->get_value<vector_2d>("principal_point",
-                                                  K.principal_point()),
-                         bc->get_value<double>("aspect_ratio",
-                                               K.aspect_ratio()),
-                         bc->get_value<double>("skew",
-                                               K.skew()));
-  d_->base_camera.set_intrinsics(K2);
+  simple_camera_intrinsics K2(bc->get_value<double>("focal_length",
+                                                    K->focal_length()),
+                              bc->get_value<vector_2d>("principal_point",
+                                                       K->principal_point()),
+                              bc->get_value<double>("aspect_ratio",
+                                                    K->aspect_ratio()),
+                              bc->get_value<double>("skew",
+                                                    K->skew()));
+  d_->base_camera.set_intrinsics(K2.clone());
 }
 
 
@@ -609,7 +609,7 @@ initialize_cameras_landmarks
     // first frame, initilze to base camera
     frame_id_t f = new_frame_ids.front();
     new_frame_ids.pop_front();
-    cams[f] = camera_sptr(new camera_d(d_->base_camera));
+    cams[f] = d_->base_camera.clone();
   }
 
   frame_id_t other_frame = cams.rbegin()->first;

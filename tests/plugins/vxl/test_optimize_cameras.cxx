@@ -171,9 +171,9 @@ IMPLEMENT_TEST(no_noise)
     TEST_NEAR(ss.str(), c_r, zero_4d_vec, ep);
 
     // difference in camera intrinsics
-    camera_intrinsics_d a_k = p.second->intrinsics(),
-                        b_k = original_cams[p.first]->intrinsics();
-    matrix_3x3d c_k = matrix_3x3d(a_k) - matrix_3x3d(b_k);
+    camera_intrinsics_sptr a_k = p.second->intrinsics(),
+                           b_k = original_cams[p.first]->intrinsics();
+    matrix_3x3d c_k = a_k->as_matrix() - b_k->as_matrix();
     //cerr << "frm[" << p.first << "]\t:: intrinsics delta :: " << c_k << endl;
     ss.str("");
     ss << "frm[" << p.first << "] intrinsics";
@@ -230,9 +230,9 @@ IMPLEMENT_TEST(noisy_cameras)
     TEST_NEAR(ss.str(), c_r, zero_4d_vec, ep);
 
     // difference in camera intrinsics
-    camera_intrinsics_d a_k = p.second->intrinsics(),
-                        b_k = original_cams[p.first]->intrinsics();
-    matrix_3x3d c_k = matrix_3x3d(a_k) - matrix_3x3d(b_k);
+    camera_intrinsics_sptr a_k = p.second->intrinsics(),
+                           b_k = original_cams[p.first]->intrinsics();
+    matrix_3x3d c_k = a_k->as_matrix() - b_k->as_matrix();
     //cerr << "frm[" << p.first << "]\t:: intrinsics delta :: " << c_k << endl;
     ss.str("");
     ss << "frm[" << p.first << "] intrinsics";

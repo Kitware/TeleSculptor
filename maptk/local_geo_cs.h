@@ -81,11 +81,11 @@ public:
    * \param cam         The camera to be updated.
    * \param rot_offset  A rotation offset to apply to INS yaw pitch roll data
    */
-  void update_camera(const maptk::ins_data& ins, vital::camera_d& cam,
+  void update_camera(const maptk::ins_data& ins, vital::simple_camera& cam,
                      vital::rotation_d const& rot_offset = vital::rotation_d()) const;
 
   /// Use the camera pose to update an INS data structure
-  void update_ins_data(const vital::camera_d& cam, maptk::ins_data& ins) const;
+  void update_ins_data(const vital::simple_camera& cam, maptk::ins_data& ins) const;
 
 private:
   /// An algorithm provided to compute geographic transformations
@@ -116,7 +116,7 @@ private:
 MAPTK_LIB_EXPORT
 std::map<vital::frame_id_t, vital::camera_sptr>
 initialize_cameras_with_ins(const std::map<vital::frame_id_t, maptk::ins_data>& ins_map,
-                            const vital::camera_d& base_camera,
+                            const vital::simple_camera& base_camera,
                             local_geo_cs& lgcs,
                             vital::rotation_d const& rot_offset = vital::rotation_d());
 

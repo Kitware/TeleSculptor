@@ -81,17 +81,17 @@ test_reprojection_error(const kwiver::vital::camera& cam,
 
   unsigned int ndp = num_distortion_params(dist_type);
   std::vector<double> intrinsics(5+ndp, 0.0);
-  camera_intrinsics_d K = cam.intrinsics();
-  intrinsics[0] = K.focal_length();
-  intrinsics[1] = K.principal_point().x();
-  intrinsics[2] = K.principal_point().y();
-  intrinsics[3] = K.aspect_ratio();
-  intrinsics[4] = K.skew();
-  const Eigen::VectorXd& d = K.dist_coeffs();
+  camera_intrinsics_sptr K = cam.intrinsics();
+  intrinsics[0] = K->focal_length();
+  intrinsics[1] = K->principal_point().x();
+  intrinsics[2] = K->principal_point().y();
+  intrinsics[3] = K->aspect_ratio();
+  intrinsics[4] = K->skew();
+  const std::vector<double> d = K->dist_coeffs();
   // copy the intersection of parameters provided in K
   // and those that are supported by the requested model type
   unsigned int num_dp = std::min(ndp, static_cast<unsigned int>(d.size()));
-  std::copy(d.data(), d.data()+num_dp, &intrinsics[5]);
+  std::copy(d.begin(), d.begin()+num_dp, &intrinsics[5]);
 
   double point[3] = {lm.loc().x(), lm.loc().y(), lm.loc().z()};
 
@@ -166,7 +166,7 @@ void test_reprojection_model(const Eigen::VectorXd& dc,
   landmark_map_sptr landmarks = testing::cube_corners(2.0);
 
   // The intrinsic camera parameters to use
-  camera_intrinsics_d K(1000, vector_2d(640,480));
+  simple_camera_intrinsics K(1000, vector_2d(640,480));
   K.set_dist_coeffs(dc);
 
   // create a camera sequence (elliptical path)

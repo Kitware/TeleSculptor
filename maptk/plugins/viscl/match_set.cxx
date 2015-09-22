@@ -30,8 +30,6 @@
 
 #include <algorithm>
 
-#include <boost/foreach.hpp>
-
 #include <maptk/plugins/viscl/match_set.h>
 
 #include <viscl/core/manager.h>

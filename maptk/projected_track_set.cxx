@@ -59,8 +59,8 @@ projected_tracks(landmark_map_sptr landmarks, camera_map_sptr cameras)
 
     VITAL_FOREACH( const camera_map::map_camera_t::value_type& p, cam_map )
     {
-      const camera_d& cam = dynamic_cast<const camera_d&>( *p.second );
-      feature_sptr f( new feature_d( cam.project( l->second->loc() ) ) );
+      const camera_sptr cam = p.second;
+      feature_sptr f( new feature_d( cam->project( l->second->loc() ) ) );
       t->append( track::track_state( p.first, f, descriptor_sptr() ) );
     }
   }

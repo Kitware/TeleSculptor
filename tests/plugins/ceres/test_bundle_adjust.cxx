@@ -562,7 +562,7 @@ void test_ba_using_distortion(kwiver::vital::config_block_sptr cfg,
   landmark_map_sptr landmarks = testing::cube_corners(2.0);
 
   // The intrinsic camera parameters to use
-  camera_intrinsics_d K(1000, vector_2d(640,480));
+  simple_camera_intrinsics K(1000, vector_2d(640,480));
   K.set_dist_coeffs(dc);
 
   // create a camera sequence (elliptical path)
@@ -603,7 +603,8 @@ void test_ba_using_distortion(kwiver::vital::config_block_sptr cfg,
   // compare actual to estimated distortion parameters
   if( clear_init_distortion )
   {
-    Eigen::VectorXd dc2 = cameras0->cameras()[0]->intrinsics().dist_coeffs();
+    std::vector<double> vdc2 = cameras0->cameras()[0]->intrinsics()->dist_coeffs();
+    Eigen::VectorXd dc2(Eigen::Map<Eigen::VectorXd>(&vdc2[0], vdc2.size()));
     // The estimated parameter vector can be longer and zero padded
     if( dc2.size() > dc.size() )
     {
