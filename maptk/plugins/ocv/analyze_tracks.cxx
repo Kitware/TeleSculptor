@@ -35,10 +35,6 @@
 
 #include "analyze_tracks.h"
 
-#include <boost/foreach.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/format.hpp>
-
 #include <fstream>
 #include <sstream>
 #include <iostream>

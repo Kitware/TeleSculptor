@@ -34,7 +34,6 @@
  */
 
 #include "triangulate.h"
-#include <boost/foreach.hpp>
 #include <Eigen/SVD>
 
 

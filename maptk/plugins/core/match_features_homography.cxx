@@ -37,9 +37,6 @@
 
 #include <iostream>
 
-#include <boost/algorithm/string/join.hpp>
-#include <boost/foreach.hpp>
-
 #include <vital/exceptions/algorithm.h>
 #include <vital/types/homography.h>
 #include <vital/types/match_set.h>

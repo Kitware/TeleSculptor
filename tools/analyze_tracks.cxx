@@ -53,7 +53,6 @@
 
 #include <maptk/projected_track_set.h>
 
-#include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 
 #include <boost/program_options/options_description.hpp>

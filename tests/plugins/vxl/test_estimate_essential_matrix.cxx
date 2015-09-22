@@ -37,7 +37,6 @@
 #include <maptk/plugins/vxl/estimate_essential_matrix.h>
 #include <maptk/plugins/vxl/register_algorithms.h>
 
-#include <boost/foreach.hpp>
 #include <Eigen/LU>
 
 
