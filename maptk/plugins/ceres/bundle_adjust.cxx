@@ -445,6 +445,10 @@ bundle_adjust
   // Extract the camera parameters into a mutable map
   typedef std::map<frame_id_t, std::vector<double> > cam_param_map_t;
   cam_param_map_t camera_params;
+  typedef std::map<camera_intrinsics_sptr, unsigned int> cam_intrin_map_t;
+  cam_intrin_map_t camera_intr_map;
+  typedef std::vector<std::vector<double> > cam_intrin_vec_t;
+  cam_intrin_vec_t camera_intr_params;
   // number of lens distortion parameters in the selected model
   const unsigned int ndp = num_distortion_params(d_->lens_distortion_type);
   std::vector<double> intrinsic_params(5 + ndp, 0.0);
@@ -458,16 +462,21 @@ bundle_adjust
     camera_intrinsics_sptr K = c.second->intrinsics();
     camera_params[c.first] = params;
 
-    intrinsic_params[0] = K->focal_length();
-    intrinsic_params[1] = K->principal_point().x();
-    intrinsic_params[2] = K->principal_point().y();
-    intrinsic_params[3] = K->aspect_ratio();
-    intrinsic_params[4] = K->skew();
-    const std::vector<double> d = K->dist_coeffs();
-    // copy the intersection of parameters provided in K
-    // and those that are supported by the requested model type
-    unsigned int num_dp = std::min(ndp, static_cast<unsigned int>(d.size()));
-    std::copy(d.begin(), d.begin()+num_dp, &intrinsic_params[5]);
+    if( camera_intr_map.count(K) == 0 )
+    {
+      intrinsic_params[0] = K->focal_length();
+      intrinsic_params[1] = K->principal_point().x();
+      intrinsic_params[2] = K->principal_point().y();
+      intrinsic_params[3] = K->aspect_ratio();
+      intrinsic_params[4] = K->skew();
+      const std::vector<double> d = K->dist_coeffs();
+      // copy the intersection of parameters provided in K
+      // and those that are supported by the requested model type
+      unsigned int num_dp = std::min(ndp, static_cast<unsigned int>(d.size()));
+      std::copy(d.begin(), d.begin()+num_dp, &intrinsic_params[5]);
+      camera_intr_map[K] = camera_intr_params.size();
+      camera_intr_params.push_back(intrinsic_params);
+    }
   }
 
   // the Ceres solver problem
@@ -540,11 +549,13 @@ bundle_adjust
       {
         continue;
       }
+      unsigned intr_idx = camera_intr_map[cams[ts->frame_id]->intrinsics()];
+      double * intr_params_ptr = &camera_intr_params[intr_idx][0];
       vector_2d pt = ts->feat->loc();
       problem.AddResidualBlock(create_cost_func(d_->lens_distortion_type,
                                                 pt.x(), pt.y()),
                                loss_func,
-                               &intrinsic_params[0],
+                               intr_params_ptr,
                                &cam_itr->second[0],
                                &lm_itr->second[0]);
       loss_func_used = true;
@@ -581,21 +592,31 @@ bundle_adjust
     lms[lmp.first] = landmark_sptr(new landmark_d(pos));
   }
 
+  // Update the camera intrinics with optimized values
+  std::vector<camera_intrinsics_sptr> updated_intr;
+  VITAL_FOREACH(const std::vector<double>& cip, camera_intr_params)
+  {
+    simple_camera_intrinsics* K = new simple_camera_intrinsics();
+    K->set_focal_length(cip[0]);
+    vector_2d pp((Eigen::Map<const vector_2d>(&cip[1])));
+    K->set_principal_point(pp);
+    K->set_aspect_ratio(cip[3]);
+    K->set_skew(cip[4]);
+    Eigen::VectorXd dc(ndp);
+    std::copy(&cip[5], &cip[5]+ndp, dc.data());
+    K->set_dist_coeffs(dc);
+    updated_intr.push_back(camera_intrinsics_sptr(K));
+  }
+
   // Update the cameras with the optimized values
   VITAL_FOREACH(const cam_param_map_t::value_type& cp, camera_params)
   {
     vector_3d center = Eigen::Map<const vector_3d>(&cp.second[3]);
     rotation_d rot(vector_3d(Eigen::Map<const vector_3d>(&cp.second[0])));
 
-    simple_camera_intrinsics K(*cams[cp.first]->intrinsics());
-    K.set_focal_length(intrinsic_params[0]);
-    vector_2d pp((Eigen::Map<const vector_2d>(&intrinsic_params[1])));
-    K.set_principal_point(pp);
-    K.set_aspect_ratio(intrinsic_params[3]);
-    K.set_skew(intrinsic_params[4]);
-    Eigen::VectorXd dc(ndp);
-    std::copy(&intrinsic_params[5], &intrinsic_params[5]+ndp, dc.data());
-    K.set_dist_coeffs(dc);
+    // look-up updated intrinsics
+    unsigned int intr_idx = camera_intr_map[cams[cp.first]->intrinsics()];
+    camera_intrinsics_sptr K = updated_intr[intr_idx];
     cams[cp.first] = camera_sptr(new simple_camera(center, rot, K));
   }
 
