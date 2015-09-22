@@ -118,6 +118,24 @@ vital::similarity_d
 canonical_transform(vital::camera_map_sptr cameras,
                     vital::landmark_map_sptr landmarks);
 
+/// Compute an approximate Necker reversal of cameras and landmarks
+/**
+ * This operation help restart bundle adjustment after falling into
+ * a common local minima that with depth reversal that is illustrated
+ * by the Necker cube phenomena.
+ *
+ * The functions finds the axis, A, connecting the mean of the camera centers
+ * and mean of the landmark locations.  It then rotates each camera 180 degrees
+ * about this axis and also 180 degrees about each cameras own principal axis.
+ * The landmarks are mirrored about the plane passing through the
+ * mean landmark location and with a normal aligning with axis A.
+ *
+ */
+MAPTK_LIB_EXPORT
+void
+necker_reverse(camera_map_sptr& cameras,
+               landmark_map_sptr& landmarks);
+
 } // end namespace maptk
 } // end namespace kwiver
 

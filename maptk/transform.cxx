@@ -201,6 +201,60 @@ canonical_transform(vital::camera_map_sptr cameras,
 }
 
 
+/// Compute an approximate Necker reversal of cameras and landmarks
+void
+necker_reverse(camera_map_sptr& cameras,
+               landmark_map_sptr& landmarks)
+{
+  typedef landmark_map::map_landmark_t lm_map_t;
+  typedef camera_map::map_camera_t cam_map_t;
+
+  cam_map_t cams = cameras->cameras();
+  lm_map_t lms = landmarks->landmarks();
+
+  // compute the mean landmark location
+  vector_3d lc(0.0, 0.0, 0.0);
+  BOOST_FOREACH(const lm_map_t::value_type& p, lms)
+  {
+    lc += p.second->loc();
+  }
+  lc /= lms.size();
+
+  // compute the mean camera center
+  vector_3d cc(0.0, 0.0, 0.0);
+  BOOST_FOREACH(const cam_map_t::value_type& p, cams)
+  {
+    cc += p.second->center();
+  }
+  cc /= cams.size();
+
+  vector_3d axis(cc - lc);
+  axis.normalize();
+
+  // flip cameras around
+  rotation_d Ra180(vector_4d(axis.x(), axis.y(), axis.z(), 0.0));
+  rotation_d Rz180(vector_4d(0.0, 0.0, 1.0, 0.0));
+  BOOST_FOREACH(cam_map_t::value_type& p, cams)
+  {
+    camera_d* flipped = new camera_d(*p.second);
+    flipped->set_center(Ra180 * (flipped->center() - cc) + cc);
+    flipped->set_rotation(Rz180 * flipped->rotation() * Ra180);
+    p.second = camera_sptr(flipped);
+  }
+
+  // reset landmarks to the mean location
+  BOOST_FOREACH(lm_map_t::value_type& p, lms)
+  {
+    vector_3d v = p.second->loc();
+    v += 2.0 * (v - lc).dot(axis) * axis;
+    p.second = landmark_sptr(new landmark_d(v));
+  }
+
+  cameras = camera_map_sptr(new simple_camera_map(cams));
+  landmarks = landmark_map_sptr(new simple_landmark_map(lms));
+}
+
+
 /// \cond DoxygenSuppress
 #define INSTANTIATE_TRANSFORM(T) \
 template MAPTK_LIB_EXPORT vital::covariance_<3,T> \
