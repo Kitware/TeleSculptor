@@ -117,8 +117,8 @@ noisy_landmarks(kwiver::vital::landmark_map_sptr landmarks,
 // create a camera sequence (elliptical path)
 kwiver::vital::camera_map_sptr
 camera_seq(kwiver::vital::frame_id_t num_cams = 20,
-           kwiver::vital::camera_intrinsics_d K =
-               kwiver::vital::camera_intrinsics_d(1000, vector_2d(640, 480)))
+           kwiver::vital::simple_camera_intrinsics K =
+               kwiver::vital::simple_camera_intrinsics(1000, vector_2d(640, 480)))
 {
   using namespace kwiver::maptk;
   camera_map::map_camera_t cameras;
@@ -130,7 +130,7 @@ camera_seq(kwiver::vital::frame_id_t num_cams = 20,
     double frac = static_cast<double>(i) / num_cams;
     double x = 4 * std::cos(2*frac);
     double y = 3 * std::sin(2*frac);
-    camera_d* cam = new camera_d(vector_3d(x,y,2+frac), R, K);
+    simple_camera* cam = new simple_camera(vector_3d(x,y,2+frac), R, K);
     // look at the origin
     cam->look_at(vector_3d(0,0,0));
     cameras[i] = camera_sptr(cam);
@@ -142,8 +142,8 @@ camera_seq(kwiver::vital::frame_id_t num_cams = 20,
 // create an initial camera sequence with all cameras at the same location
 kwiver::vital::camera_map_sptr
 init_cameras(kwiver::vital::frame_id_t num_cams = 20,
-             kwiver::vital::camera_intrinsics_d K =
-                 kwiver::vital::camera_intrinsics_d(1000, vector_2d(640, 480)))
+             kwiver::vital::simple_camera_intrinsics K =
+                 kwiver::vital::simple_camera_intrinsics(1000, vector_2d(640, 480)))
 {
   using namespace kwiver::maptk;
   camera_map::map_camera_t cameras;
@@ -153,7 +153,7 @@ init_cameras(kwiver::vital::frame_id_t num_cams = 20,
   vector_3d c(0, 0, 1);
   for (frame_id_t i=0; i<num_cams; ++i)
   {
-    camera_d* cam = new camera_d(c, R, K);
+    simple_camera* cam = new simple_camera(c, R, K);
     // look at the origin
     cam->look_at(vector_3d(0,0,0), vector_3d(0,1,0));
     cameras[i] = camera_sptr(cam);
@@ -174,7 +174,7 @@ noisy_cameras(kwiver::vital::camera_map_sptr cameras,
   {
     camera_sptr c = p.second->clone();
 
-    camera_d& cam = dynamic_cast<camera_d&>(*c);
+    simple_camera& cam = dynamic_cast<simple_camera&>(*c);
     cam.set_center(cam.get_center() + random_point3d(pos_stdev));
     rotation_d rand_rot(random_point3d(rot_stdev));
     cam.set_rotation(cam.get_rotation() * rand_rot);

@@ -99,12 +99,12 @@ essential_matrix_from_cameras(const kwiver::vital::camera& right_cam,
 // Convert the essential matrix to a fundamental matrix
 kwiver::vital::matrix_3x3d
 essential_matrix_to_fundamental(const kwiver::vital::matrix_3x3d& E,
-                                const kwiver::vital::camera_intrinsics_d& right_cal,
-                                const kwiver::vital::camera_intrinsics_d& left_cal)
+                                const kwiver::vital::camera_intrinsics_sptr right_cal,
+                                const kwiver::vital::camera_intrinsics_sptr left_cal)
 {
   using namespace kwiver::maptk;
-  matrix_3x3d Kr_inv = matrix_3x3d(right_cal).inverse();
-  matrix_3x3d Kl_invt = matrix_3x3d(left_cal).transpose().inverse();
+  matrix_3x3d Kr_inv = right_cal->as_matrix().inverse();
+  matrix_3x3d Kl_invt = left_cal->as_matrix().transpose().inverse();
   return Kl_invt * E * Kr_inv;
 }
 
@@ -155,8 +155,8 @@ IMPLEMENT_TEST(ideal_points)
   camera_map::map_camera_t cams = cameras->cameras();
   camera_sptr cam1 = cams[frame1];
   camera_sptr cam2 = cams[frame2];
-  camera_intrinsics_d cal1 = cam1->intrinsics();
-  camera_intrinsics_d cal2 = cam2->intrinsics();
+  camera_intrinsics_sptr cal1 = cam1->intrinsics();
+  camera_intrinsics_sptr cal2 = cam2->intrinsics();
 
   // compute the true essential matrix from the cameras
   matrix_3x3d true_E = essential_matrix_from_cameras(*cam1, *cam2);
@@ -222,8 +222,8 @@ IMPLEMENT_TEST(noisy_points)
   camera_map::map_camera_t cams = cameras->cameras();
   camera_sptr cam1 = cams[frame1];
   camera_sptr cam2 = cams[frame2];
-  camera_intrinsics_d cal1 = cam1->intrinsics();
-  camera_intrinsics_d cal2 = cam2->intrinsics();
+  camera_intrinsics_sptr cal1 = cam1->intrinsics();
+  camera_intrinsics_sptr cal2 = cam2->intrinsics();
 
   // compute the true essential matrix from the cameras
   matrix_3x3d true_E = essential_matrix_from_cameras(*cam1, *cam2);

@@ -49,7 +49,7 @@ template <typename T>
 camera_sptr
 vpgl_camera_to_maptk(const vpgl_perspective_camera<T>& vcam)
 {
-  camera_<T>* mcam = new camera_<T>;
+  simple_camera* mcam = new simple_camera;
   vpgl_camera_to_maptk(vcam, *mcam);
   return camera_sptr(mcam);
 }
@@ -59,35 +59,35 @@ vpgl_camera_to_maptk(const vpgl_perspective_camera<T>& vcam)
 template <typename T>
 void
 vpgl_camera_to_maptk(const vpgl_perspective_camera<T>& vcam,
-                     camera_<T>& mcam)
+                     simple_camera& mcam)
 {
-  camera_intrinsics_<T> mk;
+  simple_camera_intrinsics mk;
   vpgl_calibration_to_maptk(vcam.get_calibration(), mk);
-  mcam.set_intrinsics(mk);
+  mcam.set_intrinsics(mk.clone());
 
   const vnl_quaternion<T>& vr = vcam.get_rotation().as_quaternion();
-  mcam.set_rotation(rotation_<T>(Eigen::Quaternion<T>(vr.r(), vr.x(), vr.y(), vr.z())));
+  mcam.set_rotation(rotation_d(rotation_<T>(Eigen::Quaternion<T>(vr.r(), vr.x(), vr.y(), vr.z()))));
 
   const vgl_point_3d<T>& vc = vcam.get_camera_center();
-  mcam.set_center(Eigen::Matrix<T,3,1>(vc.x(), vc.y(), vc.z()));
+  mcam.set_center(vital::vector_3d(vc.x(), vc.y(), vc.z()));
 }
 
 
 /// Convert a maptk::camera_ to a vpgl_perspective_camera
 template <typename T>
 void
-maptk_to_vpgl_camera(const camera_<T>& mcam,
+maptk_to_vpgl_camera(const camera& mcam,
                      vpgl_perspective_camera<T>& vcam)
 {
   vpgl_calibration_matrix<T> vk;
-  maptk_to_vpgl_calibration(mcam.get_intrinsics(), vk);
+  maptk_to_vpgl_calibration(*mcam.intrinsics(), vk);
   vcam.set_calibration(vk);
 
-  const Eigen::Quaternion<T>& mr = mcam.get_rotation().quaternion();
+  const Eigen::Quaternion<double>& mr = mcam.rotation().quaternion();
   vcam.set_rotation(vgl_rotation_3d<T>(vnl_quaternion<T>(mr.x(), mr.y(),
                                                          mr.z(), mr.w())));
 
-  const Eigen::Matrix<T,3,1>& mc = mcam.get_center();
+  const vital::vector_3d& mc = mcam.center();
   vcam.set_camera_center(vgl_point_3d<T>(mc.x(), mc.y(), mc.z()));
 }
 
@@ -96,23 +96,23 @@ maptk_to_vpgl_camera(const camera_<T>& mcam,
 template <typename T>
 void
 vpgl_calibration_to_maptk(const vpgl_calibration_matrix<T>& vcal,
-                          camera_intrinsics_<T>& mcal)
+                          simple_camera_intrinsics& mcal)
 {
   vgl_point_2d<T> vpp = vcal.principal_point();
-  mcal = camera_intrinsics_<T>(vcal.focal_length() * vcal.x_scale(),
-                               Eigen::Matrix<T,2,1>(vpp.x(), vpp.y()),
-                               vcal.x_scale() / vcal.y_scale(),
-                               vcal.skew());
+  mcal = simple_camera_intrinsics(vcal.focal_length() * vcal.x_scale(),
+                                  vector_2d(vpp.x(), vpp.y()),
+                                  vcal.x_scale() / vcal.y_scale(),
+                                  vcal.skew());
 }
 
 
 /// Convert a maptk::camera_intrinsics_ to a vpgl_calibration_matrix
 template <typename T>
 void
-maptk_to_vpgl_calibration(const camera_intrinsics_<T>& mcal,
+maptk_to_vpgl_calibration(const camera_intrinsics& mcal,
                           vpgl_calibration_matrix<T>& vcal)
 {
-  const Eigen::Matrix<T,2,1>& mpp = mcal.principal_point();
+  const vector_2d& mpp = mcal.principal_point();
   vcal = vpgl_calibration_matrix<T>(mcal.focal_length(),
                                     vgl_point_2d<T>(mpp.x(), mpp.y()),
                                     1, T(1) / mcal.aspect_ratio(),
@@ -124,11 +124,11 @@ maptk_to_vpgl_calibration(const camera_intrinsics_<T>& mcal,
 /// \cond DoxygenSuppress
 #define INSTANTIATE_CAMERA(T) \
 template MAPTK_VXL_EXPORT camera_sptr vpgl_camera_to_maptk(const vpgl_perspective_camera<T>& vcam); \
-template MAPTK_VXL_EXPORT void vpgl_camera_to_maptk(const vpgl_perspective_camera<T>&, camera_<T>&); \
-template MAPTK_VXL_EXPORT void maptk_to_vpgl_camera(const camera_<T>&, vpgl_perspective_camera<T>&); \
+template MAPTK_VXL_EXPORT void vpgl_camera_to_maptk(const vpgl_perspective_camera<T>&, simple_camera&); \
+template MAPTK_VXL_EXPORT void maptk_to_vpgl_camera(const camera&, vpgl_perspective_camera<T>&); \
 template MAPTK_VXL_EXPORT void vpgl_calibration_to_maptk(const vpgl_calibration_matrix<T>& vcal, \
-                                                         camera_intrinsics_<T>& mcal); \
-template MAPTK_VXL_EXPORT void maptk_to_vpgl_calibration(const camera_intrinsics_<T>& mcal, \
+                                                         simple_camera_intrinsics& mcal); \
+template MAPTK_VXL_EXPORT void maptk_to_vpgl_calibration(const camera_intrinsics& mcal, \
                                                          vpgl_calibration_matrix<T>& vcal)
 
 INSTANTIATE_CAMERA(double);

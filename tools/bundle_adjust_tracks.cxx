@@ -279,14 +279,16 @@ static bool check_config(kwiver::vital::config_block_sptr config)
 
 
 /// create a base camera instance from config options
-kwiver::vital::camera_d
+kwiver::vital::simple_camera
 base_camera_from_config(kwiver::vital::config_block_sptr config)
 {
-  kwiver::vital::camera_intrinsics_d K(config->get_value<double>("focal_length"),
-                                       config->get_value<kwiver::vital::vector_2d>("principal_point"),
-                                       config->get_value<double>("aspect_ratio"),
-                                       config->get_value<double>("skew"));
-  return kwiver::vital::camera_d(kwiver::vital::vector_3d(0,0,-1), kwiver::vital::rotation_d(), K);
+  kwiver::vital::simple_camera_intrinsics
+      K(config->get_value<double>("focal_length"),
+        config->get_value<kwiver::vital::vector_2d>("principal_point"),
+        config->get_value<double>("aspect_ratio"),
+        config->get_value<double>("skew"));
+  return kwiver::vital::simple_camera(kwiver::vital::vector_3d(0,0,-1),
+                                      kwiver::vital::rotation_d(), K);
 }
 
 
@@ -421,7 +423,7 @@ load_input_cameras_pos(kwiver::vital::config_block_sptr config,
                 << std::endl;
     }
 
-    kwiver::vital::camera_d base_camera = base_camera_from_config(config->subblock("base_camera"));
+    kwiver::vital::simple_camera base_camera = base_camera_from_config(config->subblock("base_camera"));
     kwiver::vital::rotation_d ins_rot_offset = config->get_value<kwiver::vital::rotation_d>("ins:rotation_offset", kwiver::vital::rotation_d());
     input_cameras = kwiver::maptk::initialize_cameras_with_ins(ins_map, base_camera,
                                                                local_cs,
@@ -469,7 +471,7 @@ load_input_cameras_krtd(kwiver::vital::config_block_sptr config,
     it = filename2frame.find(krtd_file_stem);
     if (it != filename2frame.end())
     {
-      kwiver::vital::camera_sptr cam(new kwiver::vital::camera_d(kwiver::vital::read_krtd_file(fpath)));
+      kwiver::vital::camera_sptr cam = kwiver::vital::read_krtd_file(fpath);
       krtd_cams[it->second] = cam;
     }
   }

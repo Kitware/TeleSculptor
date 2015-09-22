@@ -74,15 +74,15 @@ IMPLEMENT_TEST(convert_camera_sptr)
   vpgl_perspective_camera<float> vcf = sample_vpgl_camera<float>();
 
   camera_sptr cam = vxl::vpgl_camera_to_maptk(vcd);
-  if( !cam || cam->data_type() != typeid(double) )
+  if( cam == NULL )
   {
-    TEST_ERROR("Type of converted camera does not match \"double\"");
+    TEST_ERROR("Type conversion from double camera failed");
   }
 
   cam = vxl::vpgl_camera_to_maptk(vcf);
-  if( !cam || cam->data_type() != typeid(float) )
+  if( cam == NULL )
   {
-    TEST_ERROR("Type of converted camera does not match \"float\"");
+    TEST_ERROR("Type conversion from float camera failed");
   }
 }
 
@@ -93,7 +93,7 @@ void test_convert_camera(T eps)
   using namespace kwiver::maptk;
   vpgl_perspective_camera<T> vcam = sample_vpgl_camera<T>();
 
-  camera_<T> mcam;
+  simple_camera mcam;
   vxl::vpgl_camera_to_maptk(vcam, mcam);
 
   vpgl_perspective_camera<T> vcam2;

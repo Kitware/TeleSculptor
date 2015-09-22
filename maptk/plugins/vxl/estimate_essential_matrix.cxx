@@ -148,14 +148,14 @@ essential_matrix_sptr
 estimate_essential_matrix
 ::estimate(const std::vector<vector_2d>& pts1,
            const std::vector<vector_2d>& pts2,
-           const camera_intrinsics_d &cal1,
-           const camera_intrinsics_d &cal2,
+           const camera_intrinsics_sptr cal1,
+           const camera_intrinsics_sptr cal2,
            std::vector<bool>& inliers,
            double inlier_scale) const
 {
   vpgl_calibration_matrix<double> vcal1, vcal2;
-  maptk_to_vpgl_calibration(cal1, vcal1);
-  maptk_to_vpgl_calibration(cal2, vcal2);
+  maptk_to_vpgl_calibration(*cal1, vcal1);
+  maptk_to_vpgl_calibration(*cal2, vcal2);
 
   vcl_vector<vgl_point_2d<double> > right_points, left_points;
   VITAL_FOREACH(const vector_2d& v, pts1)
@@ -175,8 +175,8 @@ estimate_essential_matrix
 
   matrix_3x3d E(best_em.get_matrix().data_block());
   E.transposeInPlace();
-  matrix_3x3d K1_inv = matrix_3x3d(cal1).inverse();
-  matrix_3x3d K2_invt = matrix_3x3d(cal2).transpose().inverse();
+  matrix_3x3d K1_inv = cal1->as_matrix().inverse();
+  matrix_3x3d K2_invt = cal2->as_matrix().transpose().inverse();
   matrix_3x3d F = K2_invt * E * K1_inv;
   matrix_3x3d Ft = F.transpose();
 
