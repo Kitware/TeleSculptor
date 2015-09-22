@@ -35,9 +35,9 @@
  */
 
 #include "transform.h"
-#include <boost/foreach.hpp>
 #include <Eigen/Geometry>
 
+#include <vital/vital_foreach.h>
 #include <maptk/camera.h>
 
 namespace kwiver {
@@ -109,7 +109,7 @@ vital::camera_map_sptr transform(vital::camera_map_sptr cameras,
                           const vital::similarity_d& xform)
 {
   vital::camera_map::map_camera_t cam_map = cameras->cameras();
-  BOOST_FOREACH(vital::camera_map::map_camera_t::value_type& p, cam_map)
+  VITAL_FOREACH(vital::camera_map::map_camera_t::value_type& p, cam_map)
   {
     p.second = transform(p.second, xform);
   }
@@ -147,7 +147,7 @@ vital::landmark_map_sptr transform(vital::landmark_map_sptr landmarks,
                             const vital::similarity_d& xform)
 {
   vital::landmark_map::map_landmark_t lm_map = landmarks->landmarks();
-  BOOST_FOREACH(vital::landmark_map::map_landmark_t::value_type& p, lm_map)
+  VITAL_FOREACH(vital::landmark_map::map_landmark_t::value_type& p, lm_map)
   {
     p.second = transform(p.second, xform);
   }
@@ -165,7 +165,7 @@ canonical_transform(vital::camera_map_sptr cameras,
   typedef vital::landmark_map::map_landmark_t lm_map_t;
   vital::vector_3d center(0,0,0);
   double s=0.0;
-  BOOST_FOREACH(const lm_map_t::value_type& p, landmarks->landmarks())
+  VITAL_FOREACH(const lm_map_t::value_type& p, landmarks->landmarks())
   {
     vital::vector_3d c = p.second->loc();
     center += c;
@@ -180,7 +180,7 @@ canonical_transform(vital::camera_map_sptr cameras,
   vital::vector_3d cam_center(0,0,0);
   vital::vector_3d cam_up(0,0,0);
   typedef vital::camera_map::map_camera_t cam_map_t;
-  BOOST_FOREACH(const cam_map_t::value_type& p, cameras->cameras())
+  VITAL_FOREACH(const cam_map_t::value_type& p, cameras->cameras())
   {
     cam_center += p.second->center();
     cam_up += p.second->rotation().inverse() * vital::vector_3d(0,1,0);
