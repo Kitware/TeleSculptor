@@ -45,22 +45,9 @@ namespace maptk {
 
 
 /// Transform the camera by applying a similarity transformation in place
-template <typename T>
 void
-transform_inplace(const vital::similarity_<T>& xform,
-                  vital::camera_<T>& cam)
-{
-  cam.set_center( xform * cam.get_center() );
-  cam.set_rotation( cam.get_rotation() * xform.rotation().inverse() );
-  cam.set_center_covar( transform(cam.get_center_covar(), xform) );
-}
-
-
-/// Transform the camera by applying a similarity transformation in place
-template <typename T>
-void
-transform_inplace(const vital::similarity_<T>& xform,
-                  maptk::camera_<T>& cam)
+transform_inplace(const vital::similarity_d& xform,
+                  vital::simple_camera& cam)
 {
   cam.set_center( xform * cam.get_center() );
   cam.set_rotation( cam.get_rotation() * xform.rotation().inverse() );
@@ -100,28 +87,16 @@ vital::camera_sptr transform(vital::camera_sptr cam,
                       const vital::similarity_d& xform)
 {
   cam = cam->clone();
-  if( vital::camera_d* vcam = dynamic_cast<vital::camera_d*>(cam.get()) )
+  if( vital::simple_camera* vcam = dynamic_cast<vital::simple_camera*>(cam.get()) )
   {
     transform_inplace(xform, *vcam);
   }
-  else if( vital::camera_f* vcam = dynamic_cast<vital::camera_f*>(cam.get()) )
-  {
-    transform_inplace(vital::similarity_f(xform), *vcam);
-  }
-  else if( maptk::camera_d* mcam = dynamic_cast<maptk::camera_d*>(cam.get()) )
-  {
-    transform_inplace(xform, *mcam);
-  }
-  else if( maptk::camera_f* mcam = dynamic_cast<maptk::camera_f*>(cam.get()) )
-  {
-    transform_inplace(vital::similarity_f(xform), *mcam);
-  }
   else
   {
-    maptk::camera_d* new_cam =
-        new maptk::camera_d( xform * cam->center(),
-                             cam->rotation() * xform.rotation().inverse(),
-                             cam->intrinsics() );
+    vital::simple_camera* new_cam =
+        new vital::simple_camera( xform * cam->center(),
+                                  cam->rotation() * xform.rotation().inverse(),
+                                  cam->intrinsics() );
     new_cam->set_center_covar( transform(cam->center_covar(), xform) );
     cam = vital::camera_sptr( new_cam );
   }
@@ -232,12 +207,6 @@ canonical_transform(vital::camera_map_sptr cameras,
 template MAPTK_LIB_EXPORT vital::covariance_<3,T> \
 transform(const vital::covariance_<3,T>& covar, \
           const vital::similarity_<T>& xform); \
-template MAPTK_LIB_EXPORT void \
-transform_inplace(const vital::similarity_<T>& xform, \
-                  vital::camera_<T>& cam); \
-template MAPTK_LIB_EXPORT void \
-transform_inplace(const vital::similarity_<T>& xform, \
-                  maptk::camera_<T>& cam); \
 template MAPTK_LIB_EXPORT void \
 transform_inplace(const vital::similarity_<T>& xform, \
                   vital::landmark_<T>& cam);

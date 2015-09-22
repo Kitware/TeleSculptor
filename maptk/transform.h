@@ -69,17 +69,9 @@ vital::covariance_<3,T> transform(const vital::covariance_<3,T>& covar,
 
 
 /// Transform the camera by applying a similarity transformation in place
-template <typename T>
 MAPTK_LIB_EXPORT
-void transform_inplace(const vital::similarity_<T>& xform,
-                       vital::camera_<T>& cam);
-
-
-/// Transform the camera by applying a similarity transformation in place
-template <typename T>
-MAPTK_LIB_EXPORT
-void transform_inplace(const vital::similarity_<T>& xform,
-                       maptk::camera_<T>& cam);
+void transform_inplace(const vital::similarity_d& xform,
+                       vital::simple_camera& cam);
 
 
 /// Transform the landmark by applying a similarity transformation in place

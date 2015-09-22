@@ -49,14 +49,7 @@ reprojection_error_vec(const camera& cam,
                        const feature& f)
 {
   vector_2d pt;
-  if (const camera_d* camd = dynamic_cast<const camera_d*>(&cam))
-  {
-    pt = camd->project(lm.loc());
-  }
-  else if (const camera_f* camf = dynamic_cast<const camera_f*>(&cam))
-  {
-    pt = camf->project(lm.loc().cast<float>()).cast<double>();
-  }
+  pt = cam.project(lm.loc());
   return pt - f.loc();
 }
 

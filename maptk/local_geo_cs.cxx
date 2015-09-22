@@ -73,7 +73,7 @@ local_geo_cs
 /// Use the pose data provided by INS to update camera pose
 void
 local_geo_cs
-::update_camera(const ins_data& ins, camera_d& cam,
+::update_camera(const ins_data& ins, simple_camera& cam,
                 rotation_d const& rot_offset) const
 {
   if( !geo_map_algo_ )
@@ -100,7 +100,7 @@ local_geo_cs
 /// Use the camera pose to update an INS data structure
 void
 local_geo_cs
-::update_ins_data(const camera_d& cam, ins_data& ins) const
+::update_ins_data(const simple_camera& cam, ins_data& ins) const
 {
   if( !geo_map_algo_ )
   {
@@ -122,13 +122,13 @@ local_geo_cs
 /// Use a sequence of ins_data objects to initialize a sequence of cameras
 std::map<frame_id_t, camera_sptr>
 initialize_cameras_with_ins(const std::map<frame_id_t, ins_data>& ins_map,
-                            const camera_d& base_camera,
+                            const simple_camera& base_camera,
                             local_geo_cs& lgcs,
                             rotation_d const& rot_offset)
 {
   std::map<frame_id_t, camera_sptr> cam_map;
   vital::vector_3d mean(0,0,0);
-  camera_d active_cam(base_camera);
+  simple_camera active_cam(base_camera);
 
   bool update_local_origin = false;
   if( lgcs.utm_origin_zone() < 0 && !ins_map.empty())
@@ -151,7 +151,7 @@ initialize_cameras_with_ins(const std::map<frame_id_t, ins_data>& ins_map,
     const ins_data& ins = p.second;
     lgcs.update_camera(ins, active_cam, rot_offset);
     mean += active_cam.center();
-    cam_map[p.first] = camera_sptr(new camera_d(active_cam));
+    cam_map[p.first] = camera_sptr(new simple_camera(active_cam));
   }
 
   if( update_local_origin )
@@ -167,7 +167,7 @@ initialize_cameras_with_ins(const std::map<frame_id_t, ins_data>& ins_map,
     typedef std::map<frame_id_t, camera_sptr>::value_type cam_map_val_t;
     VITAL_FOREACH(cam_map_val_t const &p, cam_map)
     {
-      camera_d* cam = dynamic_cast<camera_d*>(p.second.get());
+      simple_camera* cam = dynamic_cast<simple_camera*>(p.second.get());
       cam->set_center(cam->get_center() - mean);
     }
   }
@@ -194,13 +194,9 @@ update_ins_from_cameras(const std::map<frame_id_t, camera_sptr>& cam_map,
   VITAL_FOREACH(cam_map_val_t const &p, cam_map)
   {
     ins_data& active_ins = ins_map[p.first];
-    if( camera_d* cam = dynamic_cast<camera_d*>(p.second.get()) )
+    if( simple_camera* cam = dynamic_cast<simple_camera*>(p.second.get()) )
     {
       lgcs.update_ins_data(*cam, active_ins);
-    }
-    else if( camera_f* cam = dynamic_cast<camera_f*>(p.second.get()) )
-    {
-      lgcs.update_ins_data(camera_d(*cam), active_ins);
     }
   }
 }

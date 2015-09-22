@@ -58,7 +58,7 @@ namespace maptk {
 template <typename T>
 MAPTK_LIB_EXPORT
 Eigen::Matrix<T,3,1>
-triangulate_inhomog(const std::vector<vital::camera_<T> >& cameras,
+triangulate_inhomog(const std::vector<vital::simple_camera >& cameras,
                     const std::vector<Eigen::Matrix<T,2,1> >& points);
 
 
@@ -76,7 +76,7 @@ triangulate_inhomog(const std::vector<vital::camera_<T> >& cameras,
 template <typename T>
 MAPTK_LIB_EXPORT
 Eigen::Matrix<T,4,1>
-triangulate_homog(const std::vector<vital::camera_<T> >& cameras,
+triangulate_homog(const std::vector<vital::simple_camera >& cameras,
                   const std::vector<Eigen::Matrix<T,2,1> >& points);
 
 
