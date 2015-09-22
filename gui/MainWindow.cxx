@@ -30,6 +30,9 @@
 
 #include "MainWindow.h"
 
+#include "ui_MainWindow.h"
+#include "am_MainWindow.h"
+
 #include "Project.h"
 #include "vtkMaptkCamera.h"
 
@@ -70,6 +73,7 @@ public:
                  QString const& imagePath = QString());
 
   Ui::MainWindow UI;
+  Am::MainWindow AM;
   qtUiState uiState;
 
   QTimer slideTimer;
@@ -124,6 +128,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   // Set up UI
   d->UI.setupUi(this);
+  d->AM.setupActions(d->UI, this);
 
   d->UI.menuView->addSeparator();
   d->UI.menuView->addAction(d->UI.cameraViewDock->toggleViewAction());

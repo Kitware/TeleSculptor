@@ -31,8 +31,6 @@
 #ifndef MAPTK_MAINWINDOW_H_
 #define MAPTK_MAINWINDOW_H_
 
-#include "ui_MainWindow.h"
-
 #include <qtGlobal.h>
 
 #include <QMainWindow>

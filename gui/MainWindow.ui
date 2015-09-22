@@ -124,7 +124,8 @@
   </widget>
   <action name="actionQuit">
    <property name="icon">
-    <iconset theme="application-exit"/>
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/16x16/quit</normaloff>:/icons/16x16/quit</iconset>
    </property>
    <property name="text">
     <string>&amp;Quit</string>
@@ -135,7 +136,8 @@
   </action>
   <action name="actionOpen">
    <property name="icon">
-    <iconset theme="document-open"/>
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/16x16/open</normaloff>:/icons/16x16/open</iconset>
    </property>
    <property name="text">
     <string>&amp;Open...</string>
@@ -152,7 +154,8 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset theme="media-playback-start"/>
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/16x16/playback-play</normaloff>:/icons/16x16/playback-play</iconset>
    </property>
    <property name="text">
     <string>Play &amp;Slideshow</string>
@@ -169,7 +172,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="media-playlist-repeat"/>
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/16x16/playback-loop</normaloff>:/icons/16x16/playback-loop</iconset>
    </property>
    <property name="text">
     <string>&amp;Loop Slideshow</string>
@@ -193,7 +197,9 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="icons/icons.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>cameraSpin</sender>
