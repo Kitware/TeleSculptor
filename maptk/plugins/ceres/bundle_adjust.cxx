@@ -602,17 +602,20 @@ bundle_adjust
       loss_func_used = true;
     }
   }
-  // apply the constraints
-  if (constant_intrinsics.size() > 4 + ndp)
+  VITAL_FOREACH(std::vector<double>& cip, camera_intr_params)
   {
-    // set all parameters in the block constant
-    problem.SetParameterBlockConstant(&intrinsic_params[0]);
-  }
-  else if (!constant_intrinsics.empty())
-  {
-    // set a subset of parameters in the block constant
-    problem.SetParameterization(&intrinsic_params[0],
-        new ::ceres::SubsetParameterization(5 + ndp, constant_intrinsics));
+    // apply the constraints
+    if (constant_intrinsics.size() > 4 + ndp)
+    {
+      // set all parameters in the block constant
+      problem.SetParameterBlockConstant(&cip[0]);
+    }
+    else if (!constant_intrinsics.empty())
+    {
+      // set a subset of parameters in the block constant
+      problem.SetParameterization(&cip[0],
+          new ::ceres::SubsetParameterization(5 + ndp, constant_intrinsics));
+    }
   }
 
   // If the loss function was added to a residual block, ownership was
