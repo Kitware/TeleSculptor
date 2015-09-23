@@ -113,12 +113,10 @@ noisy_landmarks(kwiver::vital::landmark_map_sptr landmarks,
   return landmark_map_sptr(new simple_landmark_map(lm_map));
 }
 
-
 // create a camera sequence (elliptical path)
 kwiver::vital::camera_map_sptr
-camera_seq(kwiver::vital::frame_id_t num_cams = 20,
-           kwiver::vital::simple_camera_intrinsics K =
-               kwiver::vital::simple_camera_intrinsics(1000, vector_2d(640, 480)))
+camera_seq(kwiver::vital::frame_id_t num_cams,
+           kwiver::vital::camera_intrinsics_sptr K)
 {
   using namespace kwiver::maptk;
   camera_map::map_camera_t cameras;
@@ -139,11 +137,20 @@ camera_seq(kwiver::vital::frame_id_t num_cams = 20,
 }
 
 
+// create a camera sequence (elliptical path)
+kwiver::vital::camera_map_sptr
+camera_seq(kwiver::vital::frame_id_t num_cams = 20,
+           kwiver::vital::simple_camera_intrinsics K =
+               kwiver::vital::simple_camera_intrinsics(1000, vector_2d(640, 480)))
+{
+  return camera_seq(num_cams, K.clone());
+}
+
+
 // create an initial camera sequence with all cameras at the same location
 kwiver::vital::camera_map_sptr
-init_cameras(kwiver::vital::frame_id_t num_cams = 20,
-             kwiver::vital::simple_camera_intrinsics K =
-                 kwiver::vital::simple_camera_intrinsics(1000, vector_2d(640, 480)))
+init_cameras(kwiver::vital::frame_id_t num_cams,
+             kwiver::vital::camera_intrinsics_sptr K)
 {
   using namespace kwiver::maptk;
   camera_map::map_camera_t cameras;
@@ -159,6 +166,16 @@ init_cameras(kwiver::vital::frame_id_t num_cams = 20,
     cameras[i] = camera_sptr(cam);
   }
   return camera_map_sptr(new simple_camera_map(cameras));
+}
+
+
+// create an initial camera sequence with all cameras at the same location
+kwiver::vital::camera_map_sptr
+init_cameras(kwiver::vital::frame_id_t num_cams = 20,
+             kwiver::vital::simple_camera_intrinsics K =
+                 kwiver::vital::simple_camera_intrinsics(1000, vector_2d(640, 480)))
+{
+  return init_cameras(num_cams, K.clone());
 }
 
 
