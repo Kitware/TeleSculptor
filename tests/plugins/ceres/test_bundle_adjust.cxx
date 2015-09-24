@@ -817,3 +817,125 @@ IMPLEMENT_TEST(est_lens_distortion_8)
 
   test_ba_using_distortion(cfg, dc, true);
 }
+
+
+// helper for tests of intrinsics sharing models in bundle adjustment
+// returns the number of unique camera intrinsics objects
+// in the optimized cameras
+unsigned int
+test_ba_intrinsic_sharing(camera_map_sptr cameras,
+                          kwiver::vital::config_block_sptr cfg)
+{
+  using namespace kwiver::maptk;
+  ceres::bundle_adjust ba;
+  ba.set_configuration(cfg);
+
+  // create landmarks at the corners of a cube
+  landmark_map_sptr landmarks = testing::cube_corners(2.0);
+
+  // create tracks from the projections
+  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+
+  // add Gaussian noise to the landmark positions
+  landmark_map_sptr landmarks0 = testing::noisy_landmarks(landmarks, 0.1);
+
+  // add Gaussian noise to the camera positions and orientations
+  camera_map_sptr cameras0 = testing::noisy_cameras(cameras, 0.1, 0.1);
+
+
+  double init_rmse = reprojection_rmse(cameras0->cameras(),
+                                       landmarks0->landmarks(),
+                                       tracks->tracks());
+  std::cout << "initial reprojection RMSE: " << init_rmse << std::endl;
+  if (init_rmse < 10.0)
+  {
+    TEST_ERROR("Initial reprojection RMSE should be large before SBA");
+  }
+
+  ba.optimize(cameras0, landmarks0, tracks);
+
+  double end_rmse = reprojection_rmse(cameras0->cameras(),
+                                      landmarks0->landmarks(),
+                                      tracks->tracks());
+  TEST_NEAR("RMSE after SBA", end_rmse, 0.0, 1e-5);
+
+  std::set<camera_intrinsics_sptr> intrin_set;
+  VITAL_FOREACH(const camera_map::map_camera_t::value_type& ci,
+                cameras0->cameras())
+  {
+    intrin_set.insert(ci.second->intrinsics());
+  }
+
+  return intrin_set.size();
+}
+
+
+// test bundle adjustment with forcing unique intrinsics
+IMPLEMENT_TEST(unique_intrinsics)
+{
+  using namespace kwiver::maptk;
+  ceres::bundle_adjust ba;
+  config_block_sptr cfg = ba.get_configuration();
+  cfg->set_value("verbose", "true");
+  cfg->set_value("camera_intrinsic_share_type", "FORCE_UNIQUE_INTRINSICS");
+
+  // The intrinsic camera parameters to use
+  simple_camera_intrinsics K(1000, vector_2d(640,480));
+
+  // create a camera sequence (elliptical path)
+  camera_map_sptr cameras = testing::camera_seq(20, K);
+  unsigned int num_intrinsics = test_ba_intrinsic_sharing(cameras, cfg);
+  TEST_EQUAL("Resulting camera intrinsics are unique",
+             num_intrinsics, cameras->size());
+}
+
+
+// test bundle adjustment with forcing common intrinsics
+IMPLEMENT_TEST(common_intrinsics)
+{
+  using namespace kwiver::maptk;
+  ceres::bundle_adjust ba;
+  config_block_sptr cfg = ba.get_configuration();
+  cfg->set_value("verbose", "true");
+  cfg->set_value("camera_intrinsic_share_type", "FORCE_COMMON_INTRINSICS");
+
+  // The intrinsic camera parameters to use
+  simple_camera_intrinsics K(1000, vector_2d(640,480));
+
+  // create a camera sequence (elliptical path)
+  camera_map_sptr cameras = testing::camera_seq(20, K);
+  unsigned int num_intrinsics = test_ba_intrinsic_sharing(cameras, cfg);
+  TEST_EQUAL("Resulting camera intrinsics are unique",
+             num_intrinsics, 1);
+}
+
+
+// test bundle adjustment with multiple shared intrinics models
+IMPLEMENT_TEST(auto_share_intrinsics)
+{
+  using namespace kwiver::maptk;
+  ceres::bundle_adjust ba;
+  config_block_sptr cfg = ba.get_configuration();
+  cfg->set_value("verbose", "true");
+
+  // The intrinsic camera parameters to use
+  simple_camera_intrinsics K1(1000, vector_2d(640,480));
+  simple_camera_intrinsics K2(800, vector_2d(640,480));
+
+  // create two camera sequences (elliptical paths)
+  camera_map_sptr cameras1 = testing::camera_seq(13, K1);
+  camera_map_sptr cameras2 = testing::camera_seq(7, K2);
+
+  // combine the camera maps and offset the frame numbers
+  const unsigned int offset = cameras1->size();
+  camera_map::map_camera_t cams = cameras1->cameras();
+  VITAL_FOREACH(camera_map::map_camera_t::value_type ci, cameras2->cameras())
+  {
+    cams[ci.first + offset] = ci.second;
+  }
+
+  camera_map_sptr cameras = camera_map_sptr(new simple_camera_map(cams));
+  unsigned int num_intrinsics = test_ba_intrinsic_sharing(cameras, cfg);
+  TEST_EQUAL("Resulting camera intrinsics are unique",
+             num_intrinsics, 2);
+}
