@@ -36,6 +36,15 @@ Main Library
  * Moved some common functions like project() and depth() into the camera
    base class to allow usage without down-casting.
 
+Ceres Plugin
+
+ * Added an option to the bundle adjust algorithm to control how camera
+   intrinsics are shared across cameras.  The default auto sharing mode
+   optimizes a seperate set of intrinsics for each camera_intrinsics object
+   shared amongst the cameras.  Additional options allow forcing each camera
+   to have its own independent intrinsics and forcing all cameras share
+   one common set of intrinsics.
+
 Tools
 
  * Added a new tool to read in a track file and compute the match matrix.
