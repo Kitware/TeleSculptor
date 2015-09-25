@@ -52,6 +52,18 @@
 class CameraViewPrivate
 {
 public:
+  struct PointCloud
+  {
+    PointCloud();
+
+    void addPoint(double x, double y, double z);
+    void clear();
+
+    vtkNew<vtkPoints> points;
+    vtkNew<vtkCellArray> verts;
+    vtkNew<vtkActor> actor;
+  };
+
   void addPointActor(vtkPoints* points, vtkCellArray* verts);
 
   vtkNew<vtkRenderer> renderer;
@@ -60,11 +72,8 @@ public:
   vtkNew<vtkImageActor> imageActor;
   vtkNew<vtkImageData> emptyImage;
 
-  vtkNew<vtkPoints> featurePoints;
-  vtkNew<vtkCellArray> featureVerts;
-
-  vtkNew<vtkPoints> landmarkPoints;
-  vtkNew<vtkCellArray> landmarkVerts;
+  PointCloud featurePoints;
+  PointCloud landmarks;
 
   double imageBounds[6];
   int imageHeight;
@@ -73,19 +82,34 @@ public:
 QTE_IMPLEMENT_D_FUNC(CameraView)
 
 //-----------------------------------------------------------------------------
-void CameraViewPrivate::addPointActor(vtkPoints* points, vtkCellArray* verts)
+CameraViewPrivate::PointCloud::PointCloud()
 {
   vtkNew<vtkPolyData> polyData;
   vtkNew<vtkPolyDataMapper> mapper;
 
-  polyData->SetPoints(points);
-  polyData->SetVerts(verts);
+  polyData->SetPoints(this->points.GetPointer());
+  polyData->SetVerts(this->verts.GetPointer());
   mapper->SetInputData(polyData.GetPointer());
 
-  vtkNew<vtkActor> actor;
-  actor->SetMapper(mapper.GetPointer());
-  actor->GetProperty()->SetPointSize(2);
-  this->renderer->AddActor(actor.GetPointer());
+  this->actor->SetMapper(mapper.GetPointer());
+  this->actor->GetProperty()->SetPointSize(2);
+}
+
+//-----------------------------------------------------------------------------
+void CameraViewPrivate::PointCloud::addPoint(double x, double y, double z)
+{
+  auto const vid = this->points->GetNumberOfPoints();
+
+  this->points->InsertNextPoint(x, y, z);
+  this->verts->InsertNextCell(1);
+  this->verts->InsertCellPoint(vid);
+}
+
+//-----------------------------------------------------------------------------
+void CameraViewPrivate::PointCloud::clear()
+{
+  this->verts->Reset();
+  this->points->Reset();
 }
 
 //-----------------------------------------------------------------------------
@@ -109,10 +133,14 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->renderWindow->GetInteractor()->SetInteractorStyle(is.GetPointer());
 
   // Set up feature actor and landmark actor
-  d->addPointActor(d->featurePoints.GetPointer(),
-                   d->featureVerts.GetPointer());
-  d->addPointActor(d->landmarkPoints.GetPointer(),
-                   d->landmarkVerts.GetPointer());
+  auto const fpActor = d->featurePoints.actor.GetPointer();
+  auto const lmActor = d->landmarks.actor.GetPointer();
+
+  fpActor->GetProperty()->SetColor(0.0, 1.0, 0.0);
+  lmActor->GetProperty()->SetColor(1.0, 0.0, 1.0);
+
+  d->renderer->AddActor(fpActor);
+  d->renderer->AddActor(lmActor);
 
   // Set up frame image actor
   d->renderer->AddViewProp(d->imageActor.GetPointer());
@@ -209,11 +237,7 @@ void CameraView::addFeaturePoint(int id, double x, double y)
 
   Q_UNUSED(id)
 
-  auto const vid = d->featurePoints->GetNumberOfPoints();
-
-  d->featurePoints->InsertNextPoint(x, d->imageHeight - y, 0.0);
-  d->featureVerts->InsertNextCell(1);
-  d->featureVerts->InsertCellPoint(vid);
+  d->featurePoints.addPoint(x, d->imageHeight - y, 0.0);
   this->update();
 }
 
@@ -224,11 +248,7 @@ void CameraView::addLandmark(int id, double x, double y)
 
   Q_UNUSED(id)
 
-  auto const vid = d->landmarkPoints->GetNumberOfPoints();
-
-  d->landmarkPoints->InsertNextPoint(x, d->imageHeight - y, 0.0);
-  d->landmarkVerts->InsertNextCell(1);
-  d->landmarkVerts->InsertCellPoint(vid);
+  d->landmarks.addPoint(x, d->imageHeight - y, 0.0);
   this->update();
 }
 
@@ -236,18 +256,14 @@ void CameraView::addLandmark(int id, double x, double y)
 void CameraView::clearFeaturePoints()
 {
   QTE_D();
-
-  d->featureVerts->Reset();
-  d->featurePoints->Reset();
+  d->featurePoints.clear();
 }
 
 //-----------------------------------------------------------------------------
 void CameraView::clearLandmarks()
 {
   QTE_D();
-
-  d->landmarkVerts->Reset();
-  d->landmarkPoints->Reset();
+  d->landmarks.clear();
 }
 
 //-----------------------------------------------------------------------------
