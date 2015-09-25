@@ -52,6 +52,7 @@ public slots:
 
   void loadProject(QString const& path);
   void loadCamera(QString const& path);
+  void loadTracks(QString const& path);
   void loadLandmarks(QString const& path);
 
   void setActiveCamera(int);

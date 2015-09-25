@@ -50,9 +50,11 @@ bool Project::read(QString const& path)
 
     auto const& cameraPath = config->get_value<std::string>("output_krtd_dir");
     auto const& landmarks = config->get_value<std::string>("output_ply_file");
+    auto const& tracks = config->get_value<std::string>("input_track_file");
 
     this->cameraPath = base.filePath(qtString(cameraPath));
     this->landmarks = base.filePath(qtString(landmarks));
+    this->tracks = base.filePath(qtString(tracks));
 
     // Read image list
     auto const& iflPath = config->get_value<std::string>("image_list_file");

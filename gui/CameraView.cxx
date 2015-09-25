@@ -52,11 +52,16 @@
 class CameraViewPrivate
 {
 public:
+  void addPointActor(vtkPoints* points, vtkCellArray* verts);
+
   vtkNew<vtkRenderer> renderer;
   vtkNew<vtkRenderWindow> renderWindow;
 
   vtkNew<vtkImageActor> imageActor;
   vtkNew<vtkImageData> emptyImage;
+
+  vtkNew<vtkPoints> featurePoints;
+  vtkNew<vtkCellArray> featureVerts;
 
   vtkNew<vtkPoints> landmarkPoints;
   vtkNew<vtkCellArray> landmarkVerts;
@@ -66,6 +71,22 @@ public:
 };
 
 QTE_IMPLEMENT_D_FUNC(CameraView)
+
+//-----------------------------------------------------------------------------
+void CameraViewPrivate::addPointActor(vtkPoints* points, vtkCellArray* verts)
+{
+  vtkNew<vtkPolyData> polyData;
+  vtkNew<vtkPolyDataMapper> mapper;
+
+  polyData->SetPoints(points);
+  polyData->SetVerts(verts);
+  mapper->SetInputData(polyData.GetPointer());
+
+  vtkNew<vtkActor> actor;
+  actor->SetMapper(mapper.GetPointer());
+  actor->GetProperty()->SetPointSize(2);
+  this->renderer->AddActor(actor.GetPointer());
+}
 
 //-----------------------------------------------------------------------------
 CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
@@ -87,18 +108,11 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   vtkNew<vtkInteractorStyleRubberBand2D> is;
   d->renderWindow->GetInteractor()->SetInteractorStyle(is.GetPointer());
 
-  // Set up landmark actor
-  vtkNew<vtkPolyData> polyData;
-  vtkNew<vtkPolyDataMapper> mapper;
-
-  polyData->SetPoints(d->landmarkPoints.GetPointer());
-  polyData->SetVerts(d->landmarkVerts.GetPointer());
-  mapper->SetInputData(polyData.GetPointer());
-
-  vtkNew<vtkActor> actor;
-  actor->SetMapper(mapper.GetPointer());
-  actor->GetProperty()->SetPointSize(2);
-  d->renderer->AddActor(actor.GetPointer());
+  // Set up feature actor and landmark actor
+  d->addPointActor(d->featurePoints.GetPointer(),
+                   d->featureVerts.GetPointer());
+  d->addPointActor(d->landmarkPoints.GetPointer(),
+                   d->landmarkVerts.GetPointer());
 
   // Set up frame image actor
   d->renderer->AddViewProp(d->imageActor.GetPointer());
@@ -189,6 +203,21 @@ void CameraView::loadImage(QString const& path, vtkMaptkCamera* camera)
 }
 
 //-----------------------------------------------------------------------------
+void CameraView::addFeaturePoint(int id, double x, double y)
+{
+  QTE_D();
+
+  Q_UNUSED(id)
+
+  auto const vid = d->featurePoints->GetNumberOfPoints();
+
+  d->featurePoints->InsertNextPoint(x, d->imageHeight - y, 0.0);
+  d->featureVerts->InsertNextCell(1);
+  d->featureVerts->InsertCellPoint(vid);
+  this->update();
+}
+
+//-----------------------------------------------------------------------------
 void CameraView::addLandmark(int id, double x, double y)
 {
   QTE_D();
@@ -201,6 +230,15 @@ void CameraView::addLandmark(int id, double x, double y)
   d->landmarkVerts->InsertNextCell(1);
   d->landmarkVerts->InsertCellPoint(vid);
   this->update();
+}
+
+//-----------------------------------------------------------------------------
+void CameraView::clearFeaturePoints()
+{
+  QTE_D();
+
+  d->featureVerts->Reset();
+  d->featurePoints->Reset();
 }
 
 //-----------------------------------------------------------------------------

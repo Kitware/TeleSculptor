@@ -38,6 +38,7 @@
 
 #include <maptk/camera_io.h>
 #include <maptk/landmark_map_io.h>
+#include <maptk/track_set_io.h>
 
 #include <vtkSmartPointer.h>
 
@@ -67,10 +68,13 @@ struct CameraData
 class MainWindowPrivate
 {
 public:
-  MainWindowPrivate(MainWindow* q) : q_ptr(q) {}
+  MainWindowPrivate() : activeCameraIndex(-1) {}
 
   void addCamera(maptk::camera_d const& camera,
                  QString const& imagePath = QString());
+
+  void setActiveCamera(int);
+  void updateCameraView();
 
   Ui::MainWindow UI;
   Am::MainWindow AM;
@@ -79,11 +83,10 @@ public:
   QTimer slideTimer;
 
   QList<CameraData> cameras;
+  maptk::track_set_sptr tracks;
   maptk::landmark_map_sptr landmarks;
 
-private:
-  QTE_DECLARE_PUBLIC_PTR(MainWindow)
-  QTE_DECLARE_PUBLIC(MainWindow)
+  int activeCameraIndex;
 };
 
 QTE_IMPLEMENT_D_FUNC(MainWindow)
@@ -92,8 +95,6 @@ QTE_IMPLEMENT_D_FUNC(MainWindow)
 void MainWindowPrivate::addCamera(
   maptk::camera_d const& camera, QString const& imagePath)
 {
-  QTE_Q();
-
   CameraData cd;
 
   cd.id = this->cameras.count();
@@ -116,13 +117,71 @@ void MainWindowPrivate::addCamera(
 
   if (this->cameras.count() == 1)
   {
-    q->setActiveCamera(0);
+    this->setActiveCamera(0);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::setActiveCamera(int id)
+{
+  this->activeCameraIndex = id;
+  this->updateCameraView();
+}
+
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::updateCameraView()
+{
+  if (this->activeCameraIndex < 0)
+  {
+    this->UI.cameraView->loadImage(QString(), 0);
+    this->UI.cameraView->clearFeaturePoints();
+    this->UI.cameraView->clearLandmarks();
+    return;
+  }
+
+  auto const& cd = this->cameras[this->activeCameraIndex];
+
+  // Show camera image
+  this->UI.cameraView->loadImage(cd.imagePath, cd.camera);
+
+  // Show tracks
+  this->UI.cameraView->clearFeaturePoints();
+  if (this->tracks)
+  {
+    auto const& tracks = this->tracks->tracks();
+    foreach (auto const& track, tracks)
+    {
+      auto const& state = track->find(this->activeCameraIndex);
+      if (state != track->end() && state->feat)
+      {
+        auto const& loc = state->feat->loc();
+        this->UI.cameraView->addFeaturePoint(track->id(), loc[0], loc[1]);
+      }
+    }
+  }
+
+  // Show landmarks
+  this->UI.cameraView->clearLandmarks();
+  if (this->landmarks)
+  {
+    // Map landmarks to camera space
+    auto const& landmarks = this->landmarks->landmarks();
+    foreach_iter (auto, lmi, landmarks)
+    {
+      double projectedPoint[2];
+      if (cd.camera->ProjectPoint(lmi->second->loc(), projectedPoint))
+      {
+        // Add projected landmark to camera view
+        this->UI.cameraView->addLandmark(
+          lmi->first, projectedPoint[0], projectedPoint[1]);
+      }
+    }
   }
 }
 
 //-----------------------------------------------------------------------------
 MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
-  : QMainWindow(parent, flags), d_ptr(new MainWindowPrivate(this))
+  : QMainWindow(parent, flags), d_ptr(new MainWindowPrivate)
 {
   QTE_D();
 
@@ -169,8 +228,9 @@ void MainWindow::openFile()
 {
   auto const paths = QFileDialog::getOpenFileNames(
     this, "Open File", QString(),
-    "All Supported Files (*.conf *.ply *.krtd);;"
+    "All Supported Files (*.conf *.txt *.ply *.krtd);;"
     "Project configuration file (*.conf);;"
+    "Track file (*.txt);;"
     "Landmark file (*.ply);;"
     "Camera file (*.krtd);;"
     "All Files (*)");
@@ -188,6 +248,10 @@ void MainWindow::openFile(QString const& path)
   if (fi.suffix().toLower() == "conf")
   {
     this->loadProject(path);
+  }
+  else if (fi.suffix().toLower() == "txt")
+  {
+    this->loadTracks(path);
   }
   else if (fi.suffix().toLower() == "ply")
   {
@@ -225,6 +289,7 @@ void MainWindow::loadProject(const QString& path)
     return;
   }
 
+  this->loadTracks(project.tracks);
   this->loadLandmarks(project.landmarks);
 
   auto const cameraDir = maptk::path_t(qPrintable(project.cameraPath));
@@ -258,6 +323,26 @@ void MainWindow::loadCamera(const QString& path)
   catch (...)
   {
     qWarning() << "failed to read camera from" << path;
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::loadTracks(QString const& path)
+{
+  QTE_D();
+
+  try
+  {
+    auto const& tracks = maptk::read_track_file(qPrintable(path));
+    if (tracks)
+    {
+      d->tracks = tracks;
+      d->updateCameraView();
+    }
+  }
+  catch (...)
+  {
+    qWarning() << "failed to read tracks from" << path;
   }
 }
 
@@ -344,26 +429,5 @@ void MainWindow::setActiveCamera(int id)
     return;
   }
 
-  // Get camera frame image dimensions
-  auto const& cd = d->cameras[id];
-
-  // Show camera image
-  d->UI.cameraView->loadImage(cd.imagePath, cd.camera);
-
-  d->UI.cameraView->clearLandmarks();
-  if (d->landmarks)
-  {
-    // Map landmarks to camera space
-    auto const& landmarks = d->landmarks->landmarks();
-    foreach_iter (auto, lmi, landmarks)
-    {
-      double projectedPoint[2];
-      if (cd.camera->ProjectPoint(lmi->second->loc(), projectedPoint))
-      {
-        // Add projected landmark to camera view
-        d->UI.cameraView->addLandmark(
-          lmi->first, projectedPoint[0], projectedPoint[1]);
-      }
-    }
-  }
+  d->setActiveCamera(id);
 }

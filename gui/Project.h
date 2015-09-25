@@ -40,6 +40,7 @@ struct Project
   QStringList images;
   QString cameraPath;
 
+  QString tracks;
   QString landmarks;
 };
 
