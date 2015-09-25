@@ -44,10 +44,10 @@ namespace // anonymous
 {
 
 //-----------------------------------------------------------------------------
-void BuildCamera(vtkMaptkCamera* out, maptk::camera const& in)
+void BuildCamera(vtkMaptkCamera* out, maptk::camera const& in,
+                 maptk::camera_intrinsics_d const& ci)
 {
   // Get camera parameters
-  auto const& ci = in.intrinsics();
   auto const pixelAspect = ci.aspect_ratio();
   auto const focalLength = ci.focal_length();
 
@@ -111,15 +111,17 @@ bool vtkMaptkCamera::ProjectPoint(maptk::vector_3d const& in, double (&out)[2])
 //-----------------------------------------------------------------------------
 bool vtkMaptkCamera::Update()
 {
+  auto const& ci = this->MaptkCamera.intrinsics();
+
   if (this->ImageDimensions[0] == -1 || this->ImageDimensions[1] == -1)
   {
     // Guess image size
-    auto const& s = this->MaptkCamera.intrinsics().principal_point() * 2.0;
+    auto const& s = ci.principal_point() * 2.0;
     this->ImageDimensions[0] = s[0];
     this->ImageDimensions[1] = s[1];
   }
 
-  BuildCamera(this, this->MaptkCamera);
+  BuildCamera(this, this->MaptkCamera, ci);
 
   // here for now, but this is something we actually want to be a property
   // of the representation... that is, the depth (size) displayed for the camera
