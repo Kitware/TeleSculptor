@@ -230,10 +230,18 @@ void MainWindow::loadProject(const QString& path)
   auto const cameraDir = maptk::path_t(qPrintable(project.cameraPath));
   foreach (auto const& ip, project.images)
   {
-    auto const& camera = maptk::read_krtd_file(qPrintable(ip), cameraDir);
+    try
+    {
+      auto const& camera = maptk::read_krtd_file(qPrintable(ip), cameraDir);
 
-    // Add camera to scene
-    d->addCamera(camera, ip);
+      // Add camera to scene
+      d->addCamera(camera, ip);
+    }
+    catch (...)
+    {
+      qWarning() << "failed to read camera for" << ip
+                 << "from" << project.cameraPath;
+    }
   }
 }
 
@@ -242,8 +250,15 @@ void MainWindow::loadCamera(const QString& path)
 {
   QTE_D();
 
-  auto const& camera = maptk::read_krtd_file(qPrintable(path));
-  d->addCamera(camera);
+  try
+  {
+    auto const& camera = maptk::read_krtd_file(qPrintable(path));
+    d->addCamera(camera);
+  }
+  catch (...)
+  {
+    qWarning() << "failed to read camera from" << path;
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -251,11 +266,18 @@ void MainWindow::loadLandmarks(const QString& path)
 {
   QTE_D();
 
-  auto const& landmarks = maptk::read_ply_file(qPrintable(path));
-  if (landmarks)
+  try
   {
-    d->landmarks = landmarks;
-    d->UI.worldView->addLandmarks(*landmarks);
+    auto const& landmarks = maptk::read_ply_file(qPrintable(path));
+    if (landmarks)
+    {
+      d->landmarks = landmarks;
+      d->UI.worldView->addLandmarks(*landmarks);
+    }
+  }
+  catch (...)
+  {
+    qWarning() << "failed to read landmarks from" << path;
   }
 }
 
