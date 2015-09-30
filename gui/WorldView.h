@@ -56,6 +56,7 @@ public:
 public slots:
   void addCamera(int id, vtkMaptkCamera* camera);
   void addLandmarks(maptk::landmark_map const&);
+  void resetViewToLandmarks();
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(WorldView)

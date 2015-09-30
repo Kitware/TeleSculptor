@@ -36,7 +36,9 @@
 #include <maptk/camera.h>
 #include <maptk/landmark_map.h>
 
+#include <vtkActorCollection.h>
 #include <vtkAppendPolyData.h>
+#include <vtkBoundingBox.h>
 #include <vtkCamera.h>
 #include <vtkCellArray.h>
 #include <vtkFrustumSource.h>
@@ -56,6 +58,7 @@ public:
   vtkNew<vtkRenderWindow> renderWindow;
 
   vtkNew<vtkMaptkCameraRepresentation> camerasRep;
+  vtkNew<vtkActorCollection> landmarkActors;
 };
 
 QTE_IMPLEMENT_D_FUNC(WorldView)
@@ -141,4 +144,26 @@ void WorldView::addLandmarks(maptk::landmark_map const& lm)
   actor->SetMapper(mapper.GetPointer());
   actor->GetProperty()->SetPointSize(2);
   d->renderer->AddActor(actor.GetPointer());
+
+  d->landmarkActors->AddItem(actor.GetPointer());
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::resetViewToLandmarks()
+{
+  QTE_D();
+
+  vtkBoundingBox bbox;
+
+  d->landmarkActors->InitTraversal();
+  vtkActor* actor;
+  while ((actor = d->landmarkActors->GetNextActor()))
+  {
+    bbox.AddBounds(actor->GetBounds());
+  }
+
+  double bounds[6];
+  bbox.GetBounds(bounds);
+  d->renderer->ResetCamera(bounds);
+  d->renderWindow->Render();
 }
