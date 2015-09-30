@@ -139,6 +139,17 @@ void vtkMaptkCamera::GetFrustumPlanes(double planes[24])
 }
 
 //----------------------------------------------------------------------------
+void vtkMaptkCamera::DeepCopy(vtkMaptkCamera *source)
+{
+  this->Superclass::DeepCopy(source);
+  
+  this->ImageDimensions[0] = source->ImageDimensions[0];
+  this->ImageDimensions[1] = source->ImageDimensions[1];
+  this->AspectRatio = source->AspectRatio;
+  this->MaptkCamera = source->MaptkCamera;
+}
+
+//----------------------------------------------------------------------------
 void vtkMaptkCamera::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os, indent);

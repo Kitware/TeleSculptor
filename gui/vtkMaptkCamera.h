@@ -73,6 +73,8 @@ public:
   vtkGetMacro(AspectRatio, double);
   vtkSetMacro(AspectRatio, double);
 
+  void DeepCopy(vtkMaptkCamera *source);
+
 protected:
   vtkMaptkCamera();
   ~vtkMaptkCamera();

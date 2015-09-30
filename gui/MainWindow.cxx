@@ -125,6 +125,7 @@ void MainWindowPrivate::addCamera(
 void MainWindowPrivate::setActiveCamera(int id)
 {
   this->activeCameraIndex = id;
+  this->UI.worldView->setActiveCamera(this->cameras[id].camera);
   this->updateCameraView();
 }
 
@@ -308,6 +309,7 @@ void MainWindow::loadProject(const QString& path)
                  << "from" << project.cameraPath;
     }
   }
+  d->UI.worldView->updateCameraActors();
 }
 
 //-----------------------------------------------------------------------------
@@ -430,4 +432,5 @@ void MainWindow::setActiveCamera(int id)
   }
 
   d->setActiveCamera(id);
+  d->UI.worldView->updateCameraActors();
 }

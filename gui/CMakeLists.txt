@@ -35,6 +35,7 @@ set(gui_sources
   WorldView.cxx
   main.cxx
   vtkMaptkCamera.cxx
+  vtkMaptkCameraRepresentation.cxx
 )
 
 qt4_wrap_ui(gui_ui_sources ${gui_ui})

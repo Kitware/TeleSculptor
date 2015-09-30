@@ -31,6 +31,7 @@
 #include "WorldView.h"
 
 #include "vtkMaptkCamera.h"
+#include "vtkMaptkCameraRepresentation.h"
 
 #include <maptk/camera.h>
 #include <maptk/landmark_map.h>
@@ -54,8 +55,7 @@ public:
   vtkNew<vtkRenderer> renderer;
   vtkNew<vtkRenderWindow> renderWindow;
 
-  vtkNew<vtkAppendPolyData> cameraData;
-  vtkNew<vtkPolyData> dummyData;
+  vtkNew<vtkMaptkCameraRepresentation> camerasRep;
 };
 
 QTE_IMPLEMENT_D_FUNC(WorldView)
@@ -71,18 +71,9 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->renderWindow->AddRenderer(d->renderer.GetPointer());
   this->SetRenderWindow(d->renderWindow.GetPointer());
 
-  // Set up actor for camera frustums
-  vtkNew<vtkActor> cameraActor;
-  vtkNew<vtkPolyDataMapper> cameraMapper;
-  cameraMapper->SetInputConnection(d->cameraData->GetOutputPort());
-  cameraActor->SetMapper(cameraMapper.GetPointer());
-  cameraActor->GetProperty()->SetRepresentationToWireframe();
-
-  d->renderer->AddActor(cameraActor.GetPointer());
-
-  // Add some dummy "data" to the camera data collection so VTK doesn't
-  // complain about non-optional input port connections
-  d->cameraData->AddInputData(d->dummyData.GetPointer());
+  d->renderer->AddActor(d->camerasRep->GetNonActiveActor());
+  d->renderer->AddActor(d->camerasRep->GetActiveActor());
+  d->renderer->AddActor(d->camerasRep->GetPathActor());
 }
 
 //-----------------------------------------------------------------------------
@@ -97,51 +88,24 @@ void WorldView::addCamera(int id, vtkMaptkCamera* camera)
 
   QTE_D();
 
-  // Build frustum from camera data
-  vtkNew<vtkPlanes> planes;
-  double planeCoeffs[24];
-  camera->GetFrustumPlanes(planeCoeffs);
-  planes->SetFrustumPlanes(planeCoeffs);
+  d->camerasRep->AddCamera(camera);
+}
 
-  vtkNew<vtkFrustumSource> frustum;
-  frustum->SetPlanes(planes.GetPointer());
-  frustum->SetShowLines(false);
-  frustum->Update();
+//-----------------------------------------------------------------------------
+void WorldView::updateCameraActors()
+{
+  QTE_D();
 
-  // Make a copy of the frustum mesh so we can modify it
-  vtkNew<vtkPolyData> polyData;
-  polyData->DeepCopy(frustum->GetOutput());
-  auto frustumPoints = polyData->GetPoints();
+  d->camerasRep->Update();
+  d->renderWindow->Render();
+}
 
-  // Add a polygon to indicate the up direction (the far plane uses points
-  // 0, 1, 2, and 3, with 2 and 3 on the top; we use those with the center of
-  // the far polygon to compute a point "above" the far face to form a triangle
-  // like the roof of a "house")
-  //
-  // TODO vtkFrustumSource indicates that this is actually the near plane, but
-  //      appears to be wrong - need to verify
-  maptk::vector_3d points[4];
-  frustumPoints->GetPoint(0, points[0].data());
-  frustumPoints->GetPoint(1, points[1].data());
-  frustumPoints->GetPoint(2, points[2].data());
-  frustumPoints->GetPoint(3, points[3].data());
+//-----------------------------------------------------------------------------
+void WorldView::setActiveCamera(vtkMaptkCamera* camera)
+{
+  QTE_D();
 
-  // Compute new point:
-  //   center = (p0 + p1 + p2 + p3) / 4.0
-  //   top = (p2 + p3) / 2.0
-  //   new = top + (top - center)
-  //       = p2 + p3 - center
-  auto const center = 0.25 * (points[0] + points[1] + points[2] + points[3]);
-  auto const newPoint = maptk::vector_3d(points[2] + points[3] - center);
-
-  // Insert new point and new face
-  vtkIdType newIndex = frustumPoints->InsertNextPoint(newPoint.data());
-  vtkCellArray* polys = polyData->GetPolys();
-  vtkIdType pts[3] = { 2, 3, newIndex };
-  polys->InsertNextCell(3, pts);
-
-  // Add mesh to camera meshes
-  d->cameraData->AddInputData(polyData.GetPointer());
+  d->camerasRep->SetActiveCamera(camera);
 }
 
 //-----------------------------------------------------------------------------
