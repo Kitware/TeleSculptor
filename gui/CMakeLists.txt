@@ -16,6 +16,7 @@ include_directories(
 
 set(gui_ui
   MainWindow.ui
+  WorldView.ui
 )
 
 set(gui_resources
@@ -42,7 +43,7 @@ qt4_wrap_ui(gui_ui_sources ${gui_ui})
 qt4_wrap_cpp(gui_moc_sources ${gui_moc_headers})
 qt4_add_resources(gui_res_sources ${gui_resources})
 
-qte_amc_wrap_ui(gui_amc_sources ActionManagerDialog MainWindow.ui)
+qte_amc_wrap_ui(gui_amc_sources ActionManagerDialog ${gui_ui})
 
 maptk_add_executable(mapgui
   ${gui_sources}

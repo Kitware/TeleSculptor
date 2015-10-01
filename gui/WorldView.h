@@ -31,9 +31,9 @@
 #ifndef MAPTK_WORLDVIEW_H_
 #define MAPTK_WORLDVIEW_H_
 
-#include <QVTKWidget.h>
-
 #include <qtGlobal.h>
+
+#include <QtGui/QWidget>
 
 namespace maptk { class landmark_map; }
 
@@ -41,7 +41,7 @@ class vtkMaptkCamera;
 
 class WorldViewPrivate;
 
-class WorldView : public QVTKWidget
+class WorldView : public QWidget
 {
   Q_OBJECT
 
@@ -56,6 +56,8 @@ public:
 public slots:
   void addCamera(int id, vtkMaptkCamera* camera);
   void addLandmarks(maptk::landmark_map const&);
+
+  void resetView();
   void resetViewToLandmarks();
 
 private:

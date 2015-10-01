@@ -50,8 +50,6 @@
 #include <QtCore/QDebug>
 #include <QtCore/QTimer>
 
-#include <QShortcut>
-
 namespace // anonymous
 {
 
@@ -217,11 +215,6 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->uiState.mapState("Window/state", this);
   d->uiState.mapGeometry("Window/geometry", this);
   d->uiState.restore();
-
-  QShortcut* resetToLandmarks =
-    new QShortcut(Qt::CTRL + Qt::Key_R, d->UI.worldView, 0, 0, Qt::WidgetShortcut);
-  connect(resetToLandmarks, SIGNAL(activated()), d->UI.worldView,
-    SLOT(resetViewToLandmarks()));
 }
 
 //-----------------------------------------------------------------------------

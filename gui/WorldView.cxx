@@ -30,6 +30,9 @@
 
 #include "WorldView.h"
 
+#include "ui_WorldView.h"
+#include "am_WorldView.h"
+
 #include "vtkMaptkCamera.h"
 #include "vtkMaptkCameraRepresentation.h"
 
@@ -50,10 +53,18 @@
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 
+#include <QtGui/QMenu>
+#include <QtGui/QToolButton>
+
 //-----------------------------------------------------------------------------
 class WorldViewPrivate
 {
 public:
+  void addPopupMenu(QAction* action, QMenu* menu);
+
+  Ui::WorldView UI;
+  Am::WorldView AM;
+
   vtkNew<vtkRenderer> renderer;
   vtkNew<vtkRenderWindow> renderWindow;
 
@@ -64,15 +75,45 @@ public:
 QTE_IMPLEMENT_D_FUNC(WorldView)
 
 //-----------------------------------------------------------------------------
+void WorldViewPrivate::addPopupMenu(QAction* action, QMenu* menu)
+{
+  auto const widget = this->UI.toolBar->widgetForAction(action);
+  auto const button = qobject_cast<QToolButton*>(widget);
+
+  if (button)
+  {
+    button->setPopupMode(QToolButton::MenuButtonPopup);
+    button->setMenu(menu);
+  }
+}
+
+//-----------------------------------------------------------------------------
 WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
-  : QVTKWidget(parent, flags), d_ptr(new WorldViewPrivate)
+  : QWidget(parent, flags), d_ptr(new WorldViewPrivate)
 {
   QTE_D();
+
+  // Set up UI
+  d->UI.setupUi(this);
+  d->AM.setupActions(d->UI, this);
+
+  this->addAction(d->UI.actionViewReset);
+  this->addAction(d->UI.actionViewResetLandmarks);
+
+  auto const viewMenu = new QMenu(this);
+  viewMenu->addAction(d->UI.actionViewReset);
+  viewMenu->addAction(d->UI.actionViewResetLandmarks);
+  d->addPopupMenu(d->UI.actionViewReset, viewMenu);
+
+  connect(d->UI.actionViewReset, SIGNAL(triggered()),
+          this, SLOT(resetView()));
+  connect(d->UI.actionViewResetLandmarks, SIGNAL(triggered()),
+          this, SLOT(resetViewToLandmarks()));
 
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
   d->renderWindow->AddRenderer(d->renderer.GetPointer());
-  this->SetRenderWindow(d->renderWindow.GetPointer());
+  d->UI.renderWidget->SetRenderWindow(d->renderWindow.GetPointer());
 
   d->renderer->AddActor(d->camerasRep->GetNonActiveActor());
   d->renderer->AddActor(d->camerasRep->GetActiveActor());
@@ -149,6 +190,15 @@ void WorldView::addLandmarks(maptk::landmark_map const& lm)
 }
 
 //-----------------------------------------------------------------------------
+void WorldView::resetView()
+{
+  QTE_D();
+
+  d->renderer->ResetCamera();
+  d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
 void WorldView::resetViewToLandmarks()
 {
   QTE_D();
@@ -156,8 +206,7 @@ void WorldView::resetViewToLandmarks()
   vtkBoundingBox bbox;
 
   d->landmarkActors->InitTraversal();
-  vtkActor* actor;
-  while ((actor = d->landmarkActors->GetNextActor()))
+  while (auto const actor = d->landmarkActors->GetNextActor())
   {
     bbox.AddBounds(actor->GetBounds());
   }
@@ -165,5 +214,6 @@ void WorldView::resetViewToLandmarks()
   double bounds[6];
   bbox.GetBounds(bounds);
   d->renderer->ResetCamera(bounds);
-  d->renderWindow->Render();
+
+  d->UI.renderWidget->update();
 }
