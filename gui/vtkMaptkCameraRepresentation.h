@@ -111,7 +111,7 @@ private:
 
   double ActiveCameraRepLength;
   double NonActiveCameraRepLength;
-  double DisplaySkip;
+  int DisplaySkip;
 
   vtkCamera* ActiveCamera;
 

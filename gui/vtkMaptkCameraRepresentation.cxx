@@ -37,23 +37,22 @@
 #include <vtkActor.h>
 #include <vtkAppendPolyData.h>
 #include <vtkCellArray.h>
-#include <vtkFrustumSource.h>
 #include <vtkCollection.h>
+#include <vtkFrustumSource.h>
+#include <vtkNew.h>
 #include <vtkObjectFactory.h>
 #include <vtkPlanes.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkTubeFilter.h>
-#include <vtkNew.h>
-
 
 vtkStandardNewMacro(vtkMaptkCameraRepresentation);
 
 //-----------------------------------------------------------------------------
 vtkMaptkCameraRepresentation::vtkMaptkCameraRepresentation()
 {
-  this->ActiveCameraRepLength = 15;
-  this->NonActiveCameraRepLength = 4;
+  this->ActiveCameraRepLength = 15.0;
+  this->NonActiveCameraRepLength = 4.0;
   this->DisplaySkip = 5;
 
   this->ActiveCamera = 0;
@@ -113,7 +112,7 @@ void vtkMaptkCameraRepresentation::AddCamera(vtkCamera* camera)
 //-----------------------------------------------------------------------------
 void vtkMaptkCameraRepresentation::RemoveCamera(vtkCamera* camera)
 {
-  // If item isn't presetn, do nothing
+  // If item isn't present, do nothing
   if (!this->Cameras->IsItemPresent(camera))
   {
     return;
@@ -128,7 +127,7 @@ void vtkMaptkCameraRepresentation::RemoveCamera(vtkCamera* camera)
   this->Modified();
 }
 
-//----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 void vtkMaptkCameraRepresentation::SetActiveCamera(vtkCamera* camera)
 {
   if (this->ActiveCamera == camera)
@@ -143,7 +142,7 @@ void vtkMaptkCameraRepresentation::SetActiveCamera(vtkCamera* camera)
   this->Modified();
 }
 
-//----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 void vtkMaptkCameraRepresentation::SetPathTubeRadius(double radius)
 {
   if (this->TubeFilter->GetRadius() == radius)
@@ -154,36 +153,34 @@ void vtkMaptkCameraRepresentation::SetPathTubeRadius(double radius)
   this->TubeFilter->SetRadius(radius);
 }
 
-//----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 double vtkMaptkCameraRepresentation::GetPathTubeRadius()
 {
   return this->TubeFilter->GetRadius();
 }
 
-//----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 void vtkMaptkCameraRepresentation::Update()
 {
   // TODO - Add modified time test
 
   // Build non-active cameras representation
   this->NonActiveAppendPD->RemoveAllInputs();
-  this->Cameras->InitTraversal();
-  vtkCamera* camera;
-  int skipCount = 0;
-  while ((camera = vtkCamera::SafeDownCast(this->Cameras->GetNextItemAsObject())))
-  {
-    if (skipCount++ < this->DisplaySkip)
-    {
-      continue;
-    }
-    skipCount = 0;
 
-    if (camera != this->ActiveCamera)
+  int skipCount = 0;
+  this->Cameras->InitTraversal();
+  while (auto const camera =
+           vtkCamera::SafeDownCast(this->Cameras->GetNextItemAsObject()))
+  {
+    if (!((skipCount++) % this->DisplaySkip))
     {
-      vtkNew<vtkPolyData> polyData;
-      this->BuildCameraFrustum(camera, this->NonActiveCameraRepLength,
-                               polyData.GetPointer());
-      this->NonActiveAppendPD->AddInputData(polyData.GetPointer());
+      if (camera != this->ActiveCamera)
+      {
+        vtkNew<vtkPolyData> polyData;
+        this->BuildCameraFrustum(camera, this->NonActiveCameraRepLength,
+                                 polyData.GetPointer());
+        this->NonActiveAppendPD->AddInputData(polyData.GetPointer());
+      }
     }
   }
 
@@ -204,19 +201,18 @@ void vtkMaptkCameraRepresentation::Update()
   lines->InsertNextCell(this->Cameras->GetNumberOfItems());
 
   this->Cameras->InitTraversal();
-  skipCount = 0;
-  while ((camera = vtkCamera::SafeDownCast(this->Cameras->GetNextItemAsObject())))
+  while (auto const camera =
+           vtkCamera::SafeDownCast(this->Cameras->GetNextItemAsObject()))
   {
-    double* position = camera->GetPosition();
-    vtkIdType pointID = points->InsertNextPoint(position);
-    lines->InsertCellPoint(pointID);
+    double position[3];
+    camera->GetPosition(position);
+    lines->InsertCellPoint(points->InsertNextPoint(position));
   }
 }
 
-//----------------------------------------------------------------------------
-void vtkMaptkCameraRepresentation::BuildCameraFrustum(vtkCamera* camera,
-                                                      double farClipDistance,
-                                                      vtkPolyData* polyData)
+//-----------------------------------------------------------------------------
+void vtkMaptkCameraRepresentation::BuildCameraFrustum(
+  vtkCamera* camera, double farClipDistance, vtkPolyData* polyData)
 {
   // Build frustum from camera data
   vtkNew<vtkPlanes> planes;
@@ -245,7 +241,7 @@ void vtkMaptkCameraRepresentation::BuildCameraFrustum(vtkCamera* camera,
 
   // Make a copy of the frustum mesh so we can modify it
   polyData->DeepCopy(frustum->GetOutput());
-  auto frustumPoints = polyData->GetPoints();
+  auto const frustumPoints = polyData->GetPoints();
 
   // Add a polygon to indicate the up direction (the far plane uses points
   // 0, 1, 2, and 3, with 2 and 3 on the top; we use those with the center of
@@ -269,26 +265,24 @@ void vtkMaptkCameraRepresentation::BuildCameraFrustum(vtkCamera* camera,
   auto const newPoint = maptk::vector_3d(points[2] + points[3] - center);
 
   // Insert new point and new face
-  vtkIdType newIndex = frustumPoints->InsertNextPoint(newPoint.data());
-  vtkCellArray* polys = polyData->GetPolys();
-  vtkIdType pts[3] = {2, 3, newIndex};
-  polys->InsertNextCell(3, pts);
+  vtkIdType const newIndex = frustumPoints->InsertNextPoint(newPoint.data());
+  vtkIdType const pts[3] = {2, 3, newIndex};
+  polyData->GetPolys()->InsertNextCell(3, pts);
 }
 
-//----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 void vtkMaptkCameraRepresentation::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os, indent);
 
-  os << indent << "Number Of Cameras: " <<
-    this->Cameras->GetNumberOfItems() << endl;
-  os << indent << "ActiveCameraRepLength: " <<
-    this->ActiveCameraRepLength << endl;
-  os << indent << "NonActiveCameraRepLength: " <<
-    this->NonActiveCameraRepLength << endl;
-  os << indent << "DisplaySkip: " <<
-    this->DisplaySkip << endl;
-  os << indent << "PathTubeRadius: " <<
-    this->TubeFilter->GetRadius() << endl;
-
+  os << indent << "Number Of Cameras: "
+     << this->Cameras->GetNumberOfItems() << endl;
+  os << indent << "ActiveCameraRepLength: "
+     << this->ActiveCameraRepLength << endl;
+  os << indent << "NonActiveCameraRepLength: "
+     << this->NonActiveCameraRepLength << endl;
+  os << indent << "DisplaySkip: "
+     << this->DisplaySkip << endl;
+  os << indent << "PathTubeRadius: "
+     << this->TubeFilter->GetRadius() << endl;
 }
