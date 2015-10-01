@@ -53,6 +53,9 @@ public slots:
   void addCamera(int id, vtkMaptkCamera* camera);
   void addLandmarks(maptk::landmark_map const&);
 
+  void setCamerasVisible(bool);
+  void setLandmarksVisible(bool);
+
   void setActiveCamera(vtkMaptkCamera* camera);
 
   void resetView();

@@ -97,18 +97,24 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->UI.setupUi(this);
   d->AM.setupActions(d->UI, this);
 
-  this->addAction(d->UI.actionViewReset);
-  this->addAction(d->UI.actionViewResetLandmarks);
-
   auto const viewMenu = new QMenu(this);
   viewMenu->addAction(d->UI.actionViewReset);
   viewMenu->addAction(d->UI.actionViewResetLandmarks);
   d->addPopupMenu(d->UI.actionViewReset, viewMenu);
 
+  // Connect actions
+  this->addAction(d->UI.actionViewReset);
+  this->addAction(d->UI.actionViewResetLandmarks);
+
   connect(d->UI.actionViewReset, SIGNAL(triggered()),
           this, SLOT(resetView()));
   connect(d->UI.actionViewResetLandmarks, SIGNAL(triggered()),
           this, SLOT(resetViewToLandmarks()));
+
+  connect(d->UI.actionShowCameras, SIGNAL(toggled(bool)),
+          this, SLOT(setCamerasVisible(bool)));
+  connect(d->UI.actionShowLandmarks, SIGNAL(toggled(bool)),
+          this, SLOT(setLandmarksVisible(bool)));
 
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
@@ -186,6 +192,32 @@ void WorldView::addLandmarks(maptk::landmark_map const& lm)
   d->renderer->AddActor(actor.GetPointer());
 
   d->landmarkActors->AddItem(actor.GetPointer());
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::setCamerasVisible(bool state)
+{
+  QTE_D();
+
+  d->cameraRep->GetPathActor()->SetVisibility(state);
+  d->cameraRep->GetActiveActor()->SetVisibility(state);
+  d->cameraRep->GetNonActiveActor()->SetVisibility(state);
+
+  d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::setLandmarksVisible(bool state)
+{
+  QTE_D();
+
+  d->landmarkActors->InitTraversal();
+  while (auto const actor = d->landmarkActors->GetNextActor())
+  {
+    actor->SetVisibility(state);
+  }
+
+  d->UI.renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
