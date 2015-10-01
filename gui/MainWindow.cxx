@@ -309,6 +309,8 @@ void MainWindow::loadProject(const QString& path)
                  << "from" << project.cameraPath;
     }
   }
+
+  d->UI.worldView->resetView();
 }
 
 //-----------------------------------------------------------------------------
