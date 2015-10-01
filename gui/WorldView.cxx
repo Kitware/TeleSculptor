@@ -68,7 +68,7 @@ public:
   vtkNew<vtkRenderer> renderer;
   vtkNew<vtkRenderWindow> renderWindow;
 
-  vtkNew<vtkMaptkCameraRepresentation> camerasRep;
+  vtkNew<vtkMaptkCameraRepresentation> cameraRep;
   vtkNew<vtkActorCollection> landmarkActors;
 };
 
@@ -115,9 +115,9 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->renderWindow->AddRenderer(d->renderer.GetPointer());
   d->UI.renderWidget->SetRenderWindow(d->renderWindow.GetPointer());
 
-  d->renderer->AddActor(d->camerasRep->GetNonActiveActor());
-  d->renderer->AddActor(d->camerasRep->GetActiveActor());
-  d->renderer->AddActor(d->camerasRep->GetPathActor());
+  d->renderer->AddActor(d->cameraRep->GetNonActiveActor());
+  d->renderer->AddActor(d->cameraRep->GetActiveActor());
+  d->renderer->AddActor(d->cameraRep->GetPathActor());
 }
 
 //-----------------------------------------------------------------------------
@@ -132,16 +132,11 @@ void WorldView::addCamera(int id, vtkMaptkCamera* camera)
 
   QTE_D();
 
-  d->camerasRep->AddCamera(camera);
-}
+  d->cameraRep->AddCamera(camera);
 
-//-----------------------------------------------------------------------------
-void WorldView::updateCameraActors()
-{
-  QTE_D();
-
-  d->camerasRep->Update();
-  d->renderWindow->Render();
+  // TODO coalesce updates to camera representation
+  d->cameraRep->Update();
+  d->UI.renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -149,7 +144,11 @@ void WorldView::setActiveCamera(vtkMaptkCamera* camera)
 {
   QTE_D();
 
-  d->camerasRep->SetActiveCamera(camera);
+  d->cameraRep->SetActiveCamera(camera);
+
+  // TODO coalesce updates to camera representation
+  d->cameraRep->Update();
+  d->UI.renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
