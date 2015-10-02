@@ -44,7 +44,6 @@
 #include <vtkPlanes.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
-#include <vtkTubeFilter.h>
 
 vtkStandardNewMacro(vtkMaptkCameraRepresentation);
 
@@ -77,13 +76,8 @@ vtkMaptkCameraRepresentation::vtkMaptkCameraRepresentation()
   this->PathPolyData = vtkSmartPointer<vtkPolyData>::New();
   this->PathPolyData->SetPoints(points.GetPointer());
   this->PathPolyData->SetLines(lines.GetPointer());
-  this->TubeFilter = vtkSmartPointer<vtkTubeFilter>::New();
-  this->TubeFilter->SetInputData(this->PathPolyData.GetPointer());
-  this->TubeFilter->SetNumberOfSides(6);
-  this->TubeFilter->SetRadius(0.3);
-  this->TubeFilter->CappingOn();
   vtkNew<vtkPolyDataMapper> pathMapper;
-  pathMapper->SetInputConnection(this->TubeFilter->GetOutputPort());
+  pathMapper->SetInputData(this->PathPolyData);
   this->PathActor = vtkActor::New();
   this->PathActor->SetMapper(pathMapper.GetPointer());
 }
@@ -140,23 +134,6 @@ void vtkMaptkCameraRepresentation::SetActiveCamera(vtkCamera* camera)
 
   this->ActiveCamera = camera;
   this->Modified();
-}
-
-//-----------------------------------------------------------------------------
-void vtkMaptkCameraRepresentation::SetPathTubeRadius(double radius)
-{
-  if (this->TubeFilter->GetRadius() == radius)
-  {
-    return;
-  }
-
-  this->TubeFilter->SetRadius(radius);
-}
-
-//-----------------------------------------------------------------------------
-double vtkMaptkCameraRepresentation::GetPathTubeRadius()
-{
-  return this->TubeFilter->GetRadius();
 }
 
 //-----------------------------------------------------------------------------
@@ -283,6 +260,4 @@ void vtkMaptkCameraRepresentation::PrintSelf(ostream& os, vtkIndent indent)
      << this->NonActiveCameraRepLength << endl;
   os << indent << "DisplaySkip: "
      << this->DisplaySkip << endl;
-  os << indent << "PathTubeRadius: "
-     << this->TubeFilter->GetRadius() << endl;
 }

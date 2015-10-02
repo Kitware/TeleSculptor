@@ -76,12 +76,6 @@ public:
   vtkSetMacro(DisplaySkip, int);
 
   // Description:
-  // Get/Set the radius of the tube representation of the camera path.
-  // (default == 0.3)
-  double GetPathTubeRadius();
-  void SetPathTubeRadius(double radius);
-
-  // Description:
   // Update the inputs for each of the actors, effectively updating the actor
   // at the next render.
   void Update();
@@ -121,7 +115,6 @@ private:
   vtkSmartPointer<vtkAppendPolyData> NonActiveAppendPD;
 
   vtkSmartPointer<vtkPolyData> PathPolyData;
-  vtkSmartPointer<vtkTubeFilter> TubeFilter;
 
   vtkActor* ActiveActor;
   vtkActor* NonActiveActor;
