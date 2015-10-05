@@ -68,6 +68,8 @@ def main():
                       action="store", dest="y_trans")
     parser.add_option("-s", "--scale", type='float', default=1.0,
                       action="store", dest="scale")
+    parser.add_option("-a", "--auto-translate", default=False,
+                      action="store_true", dest="auto_trans")
 
     (options, args) = parser.parse_args()
 
@@ -76,10 +78,22 @@ def main():
 
     homogs = homography_io.load_homography_file(in_homog_file)
 
+    x, y = options.x_trans, options.y_trans
+    s = options.scale
+    if options.auto_trans:
+        x_rng, y_rng = compute_extents([H for _, H in homogs], (y,x))
+        x = -x_rng[0]
+        y = -y_rng[0]
+        print "output image size:", s * (x_rng[1] - x_rng[0]), \
+                                    s * (y_rng[1] - y_rng[0])
+
+    print "translating output by (%g, %g)" % (x,y)
+    print "scaling output by ", s
+
     trans_homogs = []
     for md, H in homogs:
-        H = translate_homog(H, options.x_trans, options.y_trans)
-        H = scale_homog(H, options.scale)
+        H = translate_homog(H, x, y)
+        H = scale_homog(H, s)
         trans_homogs.append((md,H))
 
     homography_io.write_homography_file(trans_homogs, out_homog_file)
