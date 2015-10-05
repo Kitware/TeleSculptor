@@ -63,13 +63,17 @@ def main():
     parser = OptionParser(usage=usage)
 
     parser.add_option("-x", "--x-trans", type='float', default=0.0,
-                      action="store", dest="x_trans")
+                      action="store", dest="x_trans",
+                      help="X translation, or image width if used with -a")
     parser.add_option("-y", "--y-trans", type='float', default=0.0,
-                      action="store", dest="y_trans")
+                      action="store", dest="y_trans",
+                      help="Y translation, or image height if used with -a")
     parser.add_option("-s", "--scale", type='float', default=1.0,
-                      action="store", dest="scale")
+                      action="store", dest="scale",
+                      help="scale factor")
     parser.add_option("-a", "--auto-translate", default=False,
-                      action="store_true", dest="auto_trans")
+                      action="store_true", dest="auto_trans",
+                      help="compute the translation from image bounds")
 
     (options, args) = parser.parse_args()
 
