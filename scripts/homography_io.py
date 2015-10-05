@@ -68,7 +68,7 @@ def write_homography(md, H, fout):
     """Write a single homography in ASCII KRTD format to the file object.
     """
     if md:
-        fout.write("%s\n", md)
+        fout.write("%s\n" % md)
     fout.write("%.12g %.12g %.12g\n" % tuple(H.tolist()[0]))
     fout.write("%.12g %.12g %.12g\n" % tuple(H.tolist()[1]))
     fout.write("%.12g %.12g %.12g\n\n" % tuple(H.tolist()[2]))
