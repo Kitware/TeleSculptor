@@ -310,6 +310,7 @@ void MainWindow::loadProject(const QString& path)
     }
   }
 
+  d->UI.worldView->computeCameraScale();
   d->UI.worldView->resetView();
 }
 

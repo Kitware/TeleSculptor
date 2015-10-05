@@ -62,6 +62,8 @@ class WorldViewPrivate
 public:
   void addPopupMenu(QAction* action, QMenu* menu);
 
+  double baseActiveCameraFrustumLength;
+
   Ui::WorldView UI;
   Am::WorldView AM;
 
@@ -120,6 +122,12 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->renderer->SetBackground(0, 0, 0);
   d->renderWindow->AddRenderer(d->renderer.GetPointer());
   d->UI.renderWidget->SetRenderWindow(d->renderWindow.GetPointer());
+
+  d->baseActiveCameraFrustumLength = 15;
+
+  d->cameraRep->SetActiveCameraRepLength(d->baseActiveCameraFrustumLength);
+  d->cameraRep->
+    SetNonActiveCameraRepLength(0.20 * d->baseActiveCameraFrustumLength);
 
   d->renderer->AddActor(d->cameraRep->GetNonActiveActor());
   d->renderer->AddActor(d->cameraRep->GetActiveActor());
@@ -247,4 +255,29 @@ void WorldView::resetViewToLandmarks()
   d->renderer->ResetCamera(bounds);
 
   d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::computeCameraScale()
+{
+  QTE_D();
+
+  // Compute base scale for the active camera as 10% of the diagonal of the
+  // the bounds defined by the landmarks and the camera centers.
+  vtkBoundingBox bbox;
+
+  d->landmarkActors->InitTraversal();
+  while (auto const actor = d->landmarkActors->GetNextActor())
+  {
+    bbox.AddBounds(actor->GetBounds());
+  }
+
+  bbox.AddBounds(d->cameraRep->GetPathActor()->GetBounds());
+
+  d->baseActiveCameraFrustumLength = 0.1 * bbox.GetDiagonalLength();
+
+  d->cameraRep->SetActiveCameraRepLength(d->baseActiveCameraFrustumLength);
+  d->cameraRep->
+    SetNonActiveCameraRepLength(0.20 * d->baseActiveCameraFrustumLength);
+  d->cameraRep->Update();
 }
