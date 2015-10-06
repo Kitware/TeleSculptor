@@ -215,16 +215,18 @@ bool convert_ins2camera(const maptk::ins_data& ins,
 bool convert_pos2krtd(const maptk::path_t& pos_filename,
                       const maptk::path_t& krtd_filename,
                       maptk::local_geo_cs& cs,
-                      maptk::camera_d base_camera,
+                      const maptk::camera_d& base_camera,
                       maptk::rotation_d const& ins_rot_offset = maptk::rotation_d())
 {
   maptk::ins_data ins;
+  // a local copy of the base camera to modify in place
+  maptk::camera_d local_camera(base_camera);
   ins = maptk::read_pos_file(pos_filename);
-  if ( !convert_ins2camera(ins, cs, base_camera, ins_rot_offset) )
+  if ( !convert_ins2camera(ins, cs, local_camera, ins_rot_offset) )
   {
     return false;
   }
-  maptk::write_krtd_file(base_camera, krtd_filename);
+  maptk::write_krtd_file(local_camera, krtd_filename);
   return true;
 }
 
@@ -233,7 +235,7 @@ bool convert_pos2krtd(const maptk::path_t& pos_filename,
 bool convert_pos2krtd_dir(const maptk::path_t& pos_dir,
                           const maptk::path_t& krtd_dir,
                           maptk::local_geo_cs& cs,
-                          maptk::camera_d base_camera,
+                          const maptk::camera_d& base_camera,
                           maptk::rotation_d const& ins_rot_offset = maptk::rotation_d())
 {
   bfs::directory_iterator it(pos_dir), eod;
