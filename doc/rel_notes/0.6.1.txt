@@ -12,11 +12,22 @@ Updates since v0.6.0
 Fixes since v0.6.0
 ------------------
 
+Build System
+
+ * Properly honor EIGEN3_ROOT if set when finding the Eigen package.
+   This allows CMake super builds to specify which Eigen MAP-Tk should build
+   against.
+
 MAP-Tk Library
 
  * Fixed a bug in the camera_<T> type casting constructor that was causing some
    member variables to not be copied and cast.  Added a regression test to
    catch this issue.
+
+Tools
+
+ * Fixed a compile failure on some systems due to passing the base camera by
+   value in the pos2krtd tool.
 
 Tests
 
