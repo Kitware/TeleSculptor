@@ -24,6 +24,11 @@ MAP-Tk Library
    member variables to not be copied and cast.  Added a regression test to
    catch this issue.
 
+Tools
+
+ * Fixed a compile failure on some systems due to passing the base camera by
+   value in the pos2krtd tool.
+
 Tests
 
  * Fixed a bug in the noisy_landmarks helper function, which adds random noise
