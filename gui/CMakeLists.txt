@@ -14,9 +14,14 @@ include_directories(
   ${MAPTK_BINARY_DIR}
 )
 
-set(gui_ui
+set(gui_am_ui
   MainWindow.ui
   WorldView.ui
+)
+
+set(gui_ui
+  ${gui_am_ui}
+  CameraOptions.ui
 )
 
 set(gui_resources
@@ -24,12 +29,14 @@ set(gui_resources
 )
 
 set(gui_moc_headers
+  CameraOptions.h
   CameraView.h
   MainWindow.h
   WorldView.h
 )
 
 set(gui_sources
+  CameraOptions.cxx
   CameraView.cxx
   Project.cxx
   MainWindow.cxx
@@ -43,7 +50,7 @@ qt4_wrap_ui(gui_ui_sources ${gui_ui})
 qt4_wrap_cpp(gui_moc_sources ${gui_moc_headers})
 qt4_add_resources(gui_res_sources ${gui_resources})
 
-qte_amc_wrap_ui(gui_amc_sources ActionManagerDialog ${gui_ui})
+qte_amc_wrap_ui(gui_amc_sources ActionManagerDialog ${gui_am_ui})
 
 maptk_add_executable(mapgui
   ${gui_sources}

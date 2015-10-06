@@ -33,6 +33,7 @@
 #include "ui_WorldView.h"
 #include "am_WorldView.h"
 
+#include "CameraOptions.h"
 #include "vtkMaptkCamera.h"
 #include "vtkMaptkCameraRepresentation.h"
 
@@ -55,6 +56,7 @@
 
 #include <QtGui/QMenu>
 #include <QtGui/QToolButton>
+#include <QtGui/QWidgetAction>
 
 //-----------------------------------------------------------------------------
 class WorldViewPrivate
@@ -62,7 +64,8 @@ class WorldViewPrivate
 public:
   WorldViewPrivate() : cameraRepDirty(false), cameraScaleDirty(false) {}
 
-  void addPopupMenu(QAction* action, QMenu* menu);
+  void setPopup(QAction* action, QMenu* menu);
+  void setPopup(QAction* action, QWidget* widget);
 
   void updateCameras(WorldView*);
   void updateCameraScale(WorldView*);
@@ -83,7 +86,7 @@ public:
 QTE_IMPLEMENT_D_FUNC(WorldView)
 
 //-----------------------------------------------------------------------------
-void WorldViewPrivate::addPopupMenu(QAction* action, QMenu* menu)
+void WorldViewPrivate::setPopup(QAction* action, QMenu* menu)
 {
   auto const widget = this->UI.toolBar->widgetForAction(action);
   auto const button = qobject_cast<QToolButton*>(widget);
@@ -93,6 +96,20 @@ void WorldViewPrivate::addPopupMenu(QAction* action, QMenu* menu)
     button->setPopupMode(QToolButton::MenuButtonPopup);
     button->setMenu(menu);
   }
+}
+
+//-----------------------------------------------------------------------------
+void WorldViewPrivate::setPopup(QAction* action, QWidget* widget)
+{
+  auto const parent = action->parentWidget();
+
+  auto const proxy = new QWidgetAction(parent);
+  proxy->setDefaultWidget(widget);
+
+  auto const menu = new QMenu(parent);
+  menu->addAction(proxy);
+
+  this->setPopup(action, menu);
 }
 
 //-----------------------------------------------------------------------------
@@ -128,7 +145,11 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   auto const viewMenu = new QMenu(this);
   viewMenu->addAction(d->UI.actionViewReset);
   viewMenu->addAction(d->UI.actionViewResetLandmarks);
-  d->addPopupMenu(d->UI.actionViewReset, viewMenu);
+  d->setPopup(d->UI.actionViewReset, viewMenu);
+
+  auto const cameraOptions = new CameraOptions(this);
+  cameraOptions->setRepresentation(d->cameraRep.GetPointer());
+  d->setPopup(d->UI.actionShowCameras, cameraOptions);
 
   // Connect actions
   this->addAction(d->UI.actionViewReset);
