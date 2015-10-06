@@ -20,6 +20,9 @@
       <enum>Qt::ToolButtonFollowStyle</enum>
      </property>
      <addaction name="actionViewReset"/>
+     <addaction name="separator"/>
+     <addaction name="actionShowFeaturePoints"/>
+     <addaction name="actionShowLandmarks"/>
     </widget>
    </item>
    <item>
@@ -53,6 +56,60 @@
    </property>
    <property name="shortcut">
     <string>Shift+R</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
+  </action>
+  <action name="actionShowFeaturePoints">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/22x22/feature</normaloff>:/icons/22x22/feature</iconset>
+   </property>
+   <property name="text">
+    <string>Show Feature Points</string>
+   </property>
+   <property name="iconText">
+    <string>Features</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle visibility of feature points</string>
+   </property>
+   <property name="shortcut">
+    <string>F</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
+  </action>
+  <action name="actionShowLandmarks">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/22x22/landmark</normaloff>:/icons/22x22/landmark</iconset>
+   </property>
+   <property name="text">
+    <string>Show Landmarks</string>
+   </property>
+   <property name="iconText">
+    <string>Landmarks</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle visibility of landmarks</string>
+   </property>
+   <property name="shortcut">
+    <string>L</string>
    </property>
    <property name="shortcutContext">
     <enum>Qt::WidgetWithChildrenShortcut</enum>

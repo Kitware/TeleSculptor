@@ -56,6 +56,9 @@ public slots:
   void clearFeaturePoints();
   void clearLandmarks();
 
+  void setFeaturePointsVisible(bool);
+  void setLandmarksVisible(bool);
+
   void resetView();
   void resetViewToFullExtents();
 

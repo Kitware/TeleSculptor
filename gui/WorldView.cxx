@@ -154,6 +154,8 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   // Connect actions
   this->addAction(d->UI.actionViewReset);
   this->addAction(d->UI.actionViewResetLandmarks);
+  this->addAction(d->UI.actionShowCameras);
+  this->addAction(d->UI.actionShowLandmarks);
 
   connect(d->UI.actionViewReset, SIGNAL(triggered()),
           this, SLOT(resetView()));

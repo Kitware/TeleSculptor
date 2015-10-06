@@ -84,6 +84,9 @@
    <property name="shortcut">
     <string>C</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
   </action>
   <action name="actionShowLandmarks">
    <property name="checkable">
@@ -107,6 +110,9 @@
    </property>
    <property name="shortcut">
     <string>L</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
    </property>
   </action>
  </widget>

@@ -152,10 +152,21 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   viewMenu->addAction(d->UI.actionViewResetFullExtents);
   d->addPopupMenu(d->UI.actionViewReset, viewMenu);
 
+  // Connect actions
+  this->addAction(d->UI.actionViewReset);
+  this->addAction(d->UI.actionViewResetFullExtents);
+  this->addAction(d->UI.actionShowFeaturePoints);
+  this->addAction(d->UI.actionShowLandmarks);
+
   connect(d->UI.actionViewReset, SIGNAL(triggered()),
           this, SLOT(resetView()));
   connect(d->UI.actionViewResetFullExtents, SIGNAL(triggered()),
           this, SLOT(resetViewToFullExtents()));
+
+  connect(d->UI.actionShowFeaturePoints, SIGNAL(toggled(bool)),
+          this, SLOT(setFeaturePointsVisible(bool)));
+  connect(d->UI.actionShowLandmarks, SIGNAL(toggled(bool)),
+          this, SLOT(setLandmarksVisible(bool)));
 
   // Set up ortho view
   d->renderer->GetActiveCamera()->ParallelProjectionOn();
@@ -302,6 +313,22 @@ void CameraView::clearLandmarks()
 {
   QTE_D();
   d->landmarks.clear();
+}
+
+//-----------------------------------------------------------------------------
+void CameraView::setFeaturePointsVisible(bool state)
+{
+  QTE_D();
+  d->featurePoints.actor->SetVisibility(state);
+  d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
+void CameraView::setLandmarksVisible(bool state)
+{
+  QTE_D();
+  d->landmarks.actor->SetVisibility(state);
+  d->UI.renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
