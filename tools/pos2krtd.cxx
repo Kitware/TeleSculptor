@@ -212,16 +212,18 @@ bool convert_ins2camera(const maptk::ins_data& ins,
 bool convert_pos2krtd(const kwiver::vital::path_t& pos_filename,
                       const kwiver::vital::path_t& krtd_filename,
                       maptk::local_geo_cs& cs,
-                      kwiver::vital::camera_d base_camera,
+                      const kwiver::vital::camera_d& base_camera,
                       kwiver::vital::rotation_d const& ins_rot_offset = kwiver::vital::rotation_d())
 {
   maptk::ins_data ins;
+  // a local copy of the base camera to modify in place
+  kwiver::vital::camera_d local_camera(base_camera);
   ins = maptk::read_pos_file(pos_filename);
-  if ( !convert_ins2camera(ins, cs, base_camera, ins_rot_offset) )
+  if ( !convert_ins2camera(ins, cs, local_camera, ins_rot_offset) )
   {
     return false;
   }
-  kwiver::vital::write_krtd_file(base_camera, krtd_filename);
+  kwiver::vital::write_krtd_file(local_camera, krtd_filename);
   return true;
 }
 
@@ -230,7 +232,7 @@ bool convert_pos2krtd(const kwiver::vital::path_t& pos_filename,
 bool convert_pos2krtd_dir(const kwiver::vital::path_t& pos_dir,
                           const kwiver::vital::path_t& krtd_dir,
                           maptk::local_geo_cs& cs,
-                          kwiver::vital::camera_d base_camera,
+                          const kwiver::vital::camera_d& base_camera,
                           kwiver::vital::rotation_d const& ins_rot_offset = kwiver::vital::rotation_d())
 {
   bfs::directory_iterator it(pos_dir), eod;
