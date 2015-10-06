@@ -15,6 +15,7 @@ include_directories(
 )
 
 set(gui_am_ui
+  CameraView.ui
   MainWindow.ui
   WorldView.ui
 )

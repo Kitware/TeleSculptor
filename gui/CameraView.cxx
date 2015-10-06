@@ -30,6 +30,9 @@
 
 #include "CameraView.h"
 
+#include "ui_CameraView.h"
+#include "am_CameraView.h"
+
 #include "vtkMaptkCamera.h"
 
 #include <vtkCamera.h>
@@ -45,6 +48,9 @@
 #include <vtkProperty.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
+
+#include <QtGui/QMenu>
+#include <QtGui/QToolButton>
 
 #include <QtCore/QDebug>
 
@@ -64,7 +70,10 @@ public:
     vtkNew<vtkActor> actor;
   };
 
-  void addPointActor(vtkPoints* points, vtkCellArray* verts);
+  void addPopupMenu(QAction* action, QMenu* menu);
+
+  Ui::CameraView UI;
+  Am::CameraView AM;
 
   vtkNew<vtkRenderer> renderer;
   vtkNew<vtkRenderWindow> renderWindow;
@@ -113,10 +122,40 @@ void CameraViewPrivate::PointCloud::clear()
 }
 
 //-----------------------------------------------------------------------------
+void CameraViewPrivate::addPopupMenu(QAction* action, QMenu* menu)
+{
+  auto const widget = this->UI.toolBar->widgetForAction(action);
+  auto const button = qobject_cast<QToolButton*>(widget);
+
+  if (button)
+  {
+    button->setPopupMode(QToolButton::MenuButtonPopup);
+    button->setMenu(menu);
+  }
+}
+
+//-----------------------------------------------------------------------------
 CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
-  : QVTKWidget(parent, flags), d_ptr(new CameraViewPrivate)
+  : QWidget(parent, flags), d_ptr(new CameraViewPrivate)
 {
   QTE_D();
+
+  // Set up UI
+  d->UI.setupUi(this);
+  d->AM.setupActions(d->UI, this);
+
+  this->addAction(d->UI.actionViewReset);
+  this->addAction(d->UI.actionViewResetFullExtents);
+
+  auto const viewMenu = new QMenu(this);
+  viewMenu->addAction(d->UI.actionViewReset);
+  viewMenu->addAction(d->UI.actionViewResetFullExtents);
+  d->addPopupMenu(d->UI.actionViewReset, viewMenu);
+
+  connect(d->UI.actionViewReset, SIGNAL(triggered()),
+          this, SLOT(resetView()));
+  connect(d->UI.actionViewResetFullExtents, SIGNAL(triggered()),
+          this, SLOT(resetViewToFullExtents()));
 
   // Set up ortho view
   d->renderer->GetActiveCamera()->ParallelProjectionOn();
@@ -126,7 +165,7 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
   d->renderWindow->AddRenderer(d->renderer.GetPointer());
-  this->SetRenderWindow(d->renderWindow.GetPointer());
+  d->UI.renderWidget->SetRenderWindow(d->renderWindow.GetPointer());
 
   // Set interactor
   vtkNew<vtkInteractorStyleRubberBand2D> is;
@@ -226,8 +265,7 @@ void CameraView::loadImage(QString const& path, vtkMaptkCamera* camera)
     }
   }
 
-  // On success, reset view (also triggers an update)
-  this->resetView();
+  d->UI.renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -283,5 +321,14 @@ void CameraView::resetView()
   d->renderer->ResetCamera(d->imageBounds);
   d->renderer->GetActiveCamera()->SetParallelScale(s);
 
-  this->update();
+  d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
+void CameraView::resetViewToFullExtents()
+{
+  QTE_D();
+
+  d->renderer->ResetCamera();
+  d->UI.renderWidget->update();
 }

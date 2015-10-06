@@ -116,9 +116,12 @@ void MainWindowPrivate::addCamera(
   this->UI.camera->setRange(0, this->cameras.count() - 1);
   this->UI.cameraSpin->setRange(0, this->cameras.count() - 1);
 
+  // When the first camera is added, show it immediately and reset the camera
+  // view
   if (this->cameras.count() == 1)
   {
     this->setActiveCamera(0);
+    this->UI.cameraView->resetView();
   }
 }
 

@@ -31,15 +31,15 @@
 #ifndef MAPTK_CAMERAVIEW_H_
 #define MAPTK_CAMERAVIEW_H_
 
-#include <QVTKWidget.h>
-
 #include <qtGlobal.h>
+
+#include <QtGui/QWidget>
 
 class vtkMaptkCamera;
 
 class CameraViewPrivate;
 
-class CameraView : public QVTKWidget
+class CameraView : public QWidget
 {
   Q_OBJECT
 
@@ -57,6 +57,7 @@ public slots:
   void clearLandmarks();
 
   void resetView();
+  void resetViewToFullExtents();
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(CameraView)
