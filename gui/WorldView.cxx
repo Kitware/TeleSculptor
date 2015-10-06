@@ -197,6 +197,8 @@ void WorldView::addLandmarks(maptk::landmark_map const& lm)
   vtkNew<vtkActor> actor;
   actor->SetMapper(mapper.GetPointer());
   actor->GetProperty()->SetPointSize(2);
+  actor->GetProperty()->SetColor(1.0, 0.0, 1.0);
+
   d->renderer->AddActor(actor.GetPointer());
 
   d->landmarkActors->AddItem(actor.GetPointer());
