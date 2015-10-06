@@ -118,7 +118,7 @@ void WorldViewPrivate::updateCameras(WorldView* q)
   if (!this->cameraRepDirty)
   {
     this->cameraRepDirty = true;
-    QMetaObject::invokeMethod(q, "updateCameras");
+    QMetaObject::invokeMethod(q, "updateCameras", Qt::QueuedConnection);
   }
 }
 
@@ -128,7 +128,7 @@ void WorldViewPrivate::updateCameraScale(WorldView* q)
   if (!this->cameraScaleDirty)
   {
     this->cameraScaleDirty = true;
-    QMetaObject::invokeMethod(q, "updateCameraScale");
+    QMetaObject::invokeMethod(q, "updateCameraScale", Qt::QueuedConnection);
   }
 }
 
