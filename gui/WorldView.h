@@ -61,7 +61,9 @@ public slots:
   void resetView();
   void resetViewToLandmarks();
 
-  void computeCameraScale();
+protected slots:
+  void updateCameras();
+  void updateCameraScale();
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(WorldView)

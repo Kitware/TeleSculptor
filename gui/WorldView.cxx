@@ -60,9 +60,12 @@
 class WorldViewPrivate
 {
 public:
+  WorldViewPrivate() : cameraRepDirty(false), cameraScaleDirty(false) {}
+
   void addPopupMenu(QAction* action, QMenu* menu);
 
-  double baseActiveCameraFrustumLength;
+  void updateCameras(WorldView*);
+  void updateCameraScale(WorldView*);
 
   Ui::WorldView UI;
   Am::WorldView AM;
@@ -72,6 +75,9 @@ public:
 
   vtkNew<vtkMaptkCameraRepresentation> cameraRep;
   vtkNew<vtkActorCollection> landmarkActors;
+
+  bool cameraRepDirty;
+  bool cameraScaleDirty;
 };
 
 QTE_IMPLEMENT_D_FUNC(WorldView)
@@ -86,6 +92,26 @@ void WorldViewPrivate::addPopupMenu(QAction* action, QMenu* menu)
   {
     button->setPopupMode(QToolButton::MenuButtonPopup);
     button->setMenu(menu);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void WorldViewPrivate::updateCameras(WorldView* q)
+{
+  if (!this->cameraRepDirty)
+  {
+    this->cameraRepDirty = true;
+    QMetaObject::invokeMethod(q, "updateCameras");
+  }
+}
+
+//-----------------------------------------------------------------------------
+void WorldViewPrivate::updateCameraScale(WorldView* q)
+{
+  if (!this->cameraScaleDirty)
+  {
+    this->cameraScaleDirty = true;
+    QMetaObject::invokeMethod(q, "updateCameraScale");
   }
 }
 
@@ -123,12 +149,6 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->renderWindow->AddRenderer(d->renderer.GetPointer());
   d->UI.renderWidget->SetRenderWindow(d->renderWindow.GetPointer());
 
-  d->baseActiveCameraFrustumLength = 15;
-
-  d->cameraRep->SetActiveCameraRepLength(d->baseActiveCameraFrustumLength);
-  d->cameraRep->
-    SetNonActiveCameraRepLength(0.20 * d->baseActiveCameraFrustumLength);
-
   d->renderer->AddActor(d->cameraRep->GetNonActiveActor());
   d->renderer->AddActor(d->cameraRep->GetActiveActor());
   d->renderer->AddActor(d->cameraRep->GetPathActor());
@@ -148,9 +168,8 @@ void WorldView::addCamera(int id, vtkMaptkCamera* camera)
 
   d->cameraRep->AddCamera(camera);
 
-  // TODO coalesce updates to camera representation
-  d->cameraRep->Update();
-  d->UI.renderWidget->update();
+  d->updateCameraScale(this);
+  d->updateCameras(this);
 }
 
 //-----------------------------------------------------------------------------
@@ -160,9 +179,7 @@ void WorldView::setActiveCamera(vtkMaptkCamera* camera)
 
   d->cameraRep->SetActiveCamera(camera);
 
-  // TODO coalesce updates to camera representation
-  d->cameraRep->Update();
-  d->UI.renderWidget->update();
+  d->updateCameras(this);
 }
 
 //-----------------------------------------------------------------------------
@@ -202,6 +219,8 @@ void WorldView::addLandmarks(maptk::landmark_map const& lm)
   d->renderer->AddActor(actor.GetPointer());
 
   d->landmarkActors->AddItem(actor.GetPointer());
+
+  d->updateCameraScale(this);
 }
 
 //-----------------------------------------------------------------------------
@@ -260,26 +279,44 @@ void WorldView::resetViewToLandmarks()
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::computeCameraScale()
+void WorldView::updateCameras()
 {
   QTE_D();
 
-  // Compute base scale for the active camera as 10% of the diagonal of the
-  // the bounds defined by the landmarks and the camera centers.
-  vtkBoundingBox bbox;
-
-  d->landmarkActors->InitTraversal();
-  while (auto const actor = d->landmarkActors->GetNextActor())
+  if (d->cameraRepDirty)
   {
-    bbox.AddBounds(actor->GetBounds());
+    d->cameraRep->Update();
+    d->UI.renderWidget->update();
+    d->cameraRepDirty = false;
   }
+}
 
-  bbox.AddBounds(d->cameraRep->GetPathActor()->GetBounds());
+//-----------------------------------------------------------------------------
+void WorldView::updateCameraScale()
+{
+  QTE_D();
 
-  d->baseActiveCameraFrustumLength = 0.1 * bbox.GetDiagonalLength();
+  if (d->cameraScaleDirty)
+  {
+    // Determine a base scale factor for the camera frustums... for now, using
+    // the diagonal of the extents of the landmarks and camera centers
+    vtkBoundingBox bbox;
 
-  d->cameraRep->SetActiveCameraRepLength(d->baseActiveCameraFrustumLength);
-  d->cameraRep->
-    SetNonActiveCameraRepLength(0.20 * d->baseActiveCameraFrustumLength);
-  d->cameraRep->Update();
+    // Add landmarks
+    d->landmarkActors->InitTraversal();
+    while (auto const actor = d->landmarkActors->GetNextActor())
+    {
+      bbox.AddBounds(actor->GetBounds());
+    }
+
+    // Add camera centers
+    bbox.AddBounds(d->cameraRep->GetPathActor()->GetBounds());
+
+    // Compute base scale (10% of scale factor)
+    auto const baseScale = 0.1 * bbox.GetDiagonalLength();
+
+    d->cameraRep->SetActiveCameraRepLength(baseScale);
+    d->cameraRep->SetNonActiveCameraRepLength(baseScale);
+    d->updateCameras(this);
+  }
 }
