@@ -248,8 +248,6 @@ void vtkMaptkCameraRepresentation::BuildCameraFrustum(
   vtkIdType const newIndex = frustumPoints->InsertNextPoint(newPoint.data());
   vtkIdType const pts[3] = {2, 3, newIndex};
   polyData->GetPolys()->InsertNextCell(3, pts);
-
-
 }
 
 //-----------------------------------------------------------------------------
