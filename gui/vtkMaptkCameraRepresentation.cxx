@@ -44,6 +44,7 @@
 #include <vtkPlanes.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
+#include <vtkProperty.h>
 
 vtkStandardNewMacro(vtkMaptkCameraRepresentation);
 
@@ -62,6 +63,7 @@ vtkMaptkCameraRepresentation::vtkMaptkCameraRepresentation()
   activeCameraMapper->SetInputData(this->ActivePolyData.GetPointer());
   this->ActiveActor = vtkActor::New();
   this->ActiveActor->SetMapper(activeCameraMapper.GetPointer());
+  this->ActiveActor->GetProperty()->SetRepresentationToWireframe();
 
   vtkNew<vtkPolyData> dummyPD;
   this->NonActiveAppendPD = vtkSmartPointer<vtkAppendPolyData>::New();
@@ -70,6 +72,7 @@ vtkMaptkCameraRepresentation::vtkMaptkCameraRepresentation()
   nonActiveMapper->SetInputConnection(this->NonActiveAppendPD->GetOutputPort());
   this->NonActiveActor = vtkActor::New();
   this->NonActiveActor->SetMapper(nonActiveMapper.GetPointer());
+  this->NonActiveActor->GetProperty()->SetRepresentationToWireframe();
 
   vtkNew<vtkPoints> points;
   vtkNew<vtkCellArray> lines;
@@ -245,6 +248,8 @@ void vtkMaptkCameraRepresentation::BuildCameraFrustum(
   vtkIdType const newIndex = frustumPoints->InsertNextPoint(newPoint.data());
   vtkIdType const pts[3] = {2, 3, newIndex};
   polyData->GetPolys()->InsertNextCell(3, pts);
+
+
 }
 
 //-----------------------------------------------------------------------------
