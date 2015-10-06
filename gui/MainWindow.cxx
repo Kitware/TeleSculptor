@@ -43,6 +43,7 @@
 #include <vtkSmartPointer.h>
 
 #include <qtUiState.h>
+#include <qtUiStateItem.h>
 
 #include <QtGui/QApplication>
 #include <QtGui/QFileDialog>
@@ -212,6 +213,10 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   this->setSlideDelay(d->UI.slideDelay->value());
 
   // Set up UI persistence and restore previous state
+  auto const sdItem = new qtUiState::Item<int, QSlider>(
+    d->UI.slideDelay, &QSlider::value, &QSlider::setValue);
+  d->uiState.map("SlideDelay", sdItem);
+
   d->uiState.mapState("Window/state", this);
   d->uiState.mapGeometry("Window/geometry", this);
   d->uiState.restore();
@@ -374,8 +379,24 @@ void MainWindow::setSlideDelay(int delayExp)
 {
   QTE_D();
 
+  static auto const ttFormat =
+    QString("%1 (%2)").arg(d->UI.slideDelay->toolTip());
+
   auto const de = static_cast<double>(delayExp) * 0.1;
-  d->slideTimer.setInterval(qRound(pow(10.0, de)));
+  auto const delay = qRound(pow(10.0, de));
+  d->slideTimer.setInterval(delay);
+
+  if (delay < 1000)
+  {
+    auto const fps = 1e3 / delay;
+    auto const dt = QString("%1 / sec").arg(fps, 0, 'f', 1);
+    d->UI.slideDelay->setToolTip(ttFormat.arg(dt));
+  }
+  else
+  {
+    auto const dt = QString("%1 sec").arg(delay / 1e3, 0, 'f', 1);
+    d->UI.slideDelay->setToolTip(ttFormat.arg(dt));
+  }
 }
 
 //-----------------------------------------------------------------------------
