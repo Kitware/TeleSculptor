@@ -152,6 +152,7 @@ vtkMaptkCameraRepresentation::vtkMaptkCameraRepresentation()
   this->ActiveActor = vtkActor::New();
   this->ActiveActor->SetMapper(activeCameraMapper.GetPointer());
   this->ActiveActor->GetProperty()->SetRepresentationToWireframe();
+  this->ActiveActor->GetProperty()->SetLighting(false);
 
   this->Internal->NonActiveAppendPolyData->AddInputData(
     this->Internal->DummyPolyData.GetPointer());
