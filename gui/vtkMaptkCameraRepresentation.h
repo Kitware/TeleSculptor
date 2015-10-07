@@ -97,11 +97,8 @@ protected:
   ~vtkMaptkCameraRepresentation();
 
 private:
-  vtkMaptkCameraRepresentation(const vtkMaptkCameraRepresentation&);  // Not implemented.
-  void operator=(const vtkMaptkCameraRepresentation&);  // Not implemented.
-
-  void BuildCameraFrustum(vtkCamera* camera, 
-                          double farClipDistance, vtkPolyData* polyData);
+  vtkMaptkCameraRepresentation(vtkMaptkCameraRepresentation const&) = delete;
+  void operator=(vtkMaptkCameraRepresentation const&) = delete;
 
   double ActiveCameraRepLength;
   double NonActiveCameraRepLength;
@@ -109,16 +106,12 @@ private:
 
   vtkCamera* ActiveCamera;
 
-  vtkSmartPointer<vtkCollection> Cameras;
-
-  vtkSmartPointer<vtkPolyData> ActivePolyData;
-  vtkSmartPointer<vtkAppendPolyData> NonActiveAppendPD;
-
-  vtkSmartPointer<vtkPolyData> PathPolyData;
-
   vtkActor* ActiveActor;
   vtkActor* NonActiveActor;
   vtkActor* PathActor;
+
+  class vtkInternal;
+  vtkInternal* const Internal;
 };
 
 #endif

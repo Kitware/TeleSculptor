@@ -48,150 +48,11 @@
 
 vtkStandardNewMacro(vtkMaptkCameraRepresentation);
 
-//-----------------------------------------------------------------------------
-vtkMaptkCameraRepresentation::vtkMaptkCameraRepresentation()
+namespace // anonymous
 {
-  this->ActiveCameraRepLength = 15.0;
-  this->NonActiveCameraRepLength = 4.0;
-  this->DisplaySkip = 1;
-
-  this->ActiveCamera = 0;
-  this->Cameras = vtkSmartPointer<vtkCollection>::New();
-
-  this->ActivePolyData = vtkSmartPointer<vtkPolyData>::New();
-  vtkNew<vtkPolyDataMapper> activeCameraMapper;
-  activeCameraMapper->SetInputData(this->ActivePolyData.GetPointer());
-  this->ActiveActor = vtkActor::New();
-  this->ActiveActor->SetMapper(activeCameraMapper.GetPointer());
-  this->ActiveActor->GetProperty()->SetRepresentationToWireframe();
-
-  vtkNew<vtkPolyData> dummyPD;
-  this->NonActiveAppendPD = vtkSmartPointer<vtkAppendPolyData>::New();
-  this->NonActiveAppendPD->SetInputData(dummyPD.GetPointer());
-  vtkNew<vtkPolyDataMapper> nonActiveMapper;
-  nonActiveMapper->SetInputConnection(this->NonActiveAppendPD->GetOutputPort());
-  this->NonActiveActor = vtkActor::New();
-  this->NonActiveActor->SetMapper(nonActiveMapper.GetPointer());
-  this->NonActiveActor->GetProperty()->SetRepresentationToWireframe();
-
-  vtkNew<vtkPoints> points;
-  vtkNew<vtkCellArray> lines;
-  this->PathPolyData = vtkSmartPointer<vtkPolyData>::New();
-  this->PathPolyData->SetPoints(points.GetPointer());
-  this->PathPolyData->SetLines(lines.GetPointer());
-  vtkNew<vtkPolyDataMapper> pathMapper;
-  pathMapper->SetInputData(this->PathPolyData);
-  this->PathActor = vtkActor::New();
-  this->PathActor->SetMapper(pathMapper.GetPointer());
-}
 
 //-----------------------------------------------------------------------------
-vtkMaptkCameraRepresentation::~vtkMaptkCameraRepresentation()
-{
-  this->ActiveActor->Delete();
-  this->NonActiveActor->Delete();
-  this->PathActor->Delete();
-}
-
-//-----------------------------------------------------------------------------
-void vtkMaptkCameraRepresentation::AddCamera(vtkCamera* camera)
-{
-  // Don't allow duplicate entries
-  if (this->Cameras->IsItemPresent(camera))
-  {
-    return;
-  }
-
-  this->Cameras->AddItem(camera);
-  this->Modified();
-}
-
-//-----------------------------------------------------------------------------
-void vtkMaptkCameraRepresentation::RemoveCamera(vtkCamera* camera)
-{
-  // If item isn't present, do nothing
-  if (!this->Cameras->IsItemPresent(camera))
-  {
-    return;
-  }
-
-  this->Cameras->RemoveItem(camera);
-  if (this->ActiveCamera == camera)
-  {
-    this->ActiveCamera = 0;
-  }
-
-  this->Modified();
-}
-
-//-----------------------------------------------------------------------------
-void vtkMaptkCameraRepresentation::SetActiveCamera(vtkCamera* camera)
-{
-  if (this->ActiveCamera == camera)
-  {
-    return;
-  }
-
-  // Make sure the camera is in the list
-  this->AddCamera(camera);
-
-  this->ActiveCamera = camera;
-  this->Modified();
-}
-
-//-----------------------------------------------------------------------------
-void vtkMaptkCameraRepresentation::Update()
-{
-  // TODO - Add modified time test
-
-  // Build non-active cameras representation
-  this->NonActiveAppendPD->RemoveAllInputs();
-
-  int skipCount = 0;
-  this->Cameras->InitTraversal();
-  while (auto const camera =
-           vtkCamera::SafeDownCast(this->Cameras->GetNextItemAsObject()))
-  {
-    if (!((skipCount++) % this->DisplaySkip))
-    {
-      if (camera != this->ActiveCamera)
-      {
-        vtkNew<vtkPolyData> polyData;
-        this->BuildCameraFrustum(camera, this->NonActiveCameraRepLength,
-                                 polyData.GetPointer());
-        this->NonActiveAppendPD->AddInputData(polyData.GetPointer());
-      }
-    }
-  }
-
-  // Build active camera representation
-  this->ActivePolyData->Reset();
-  if (this->ActiveCamera)
-  {
-    this->BuildCameraFrustum(this->ActiveCamera, this->ActiveCameraRepLength,
-      this->ActivePolyData.GetPointer());
-  }
-
-  // Path Actor
-  this->PathPolyData->Reset();
-  this->PathPolyData->Modified();
-  vtkPoints* points = this->PathPolyData->GetPoints();
-  points->Allocate(this->Cameras->GetNumberOfItems());
-  vtkCellArray* lines = this->PathPolyData->GetLines();
-  lines->InsertNextCell(this->Cameras->GetNumberOfItems());
-
-  this->Cameras->InitTraversal();
-  while (auto const camera =
-           vtkCamera::SafeDownCast(this->Cameras->GetNextItemAsObject()))
-  {
-    double position[3];
-    camera->GetPosition(position);
-    lines->InsertCellPoint(points->InsertNextPoint(position));
-  }
-}
-
-//-----------------------------------------------------------------------------
-void vtkMaptkCameraRepresentation::BuildCameraFrustum(
+void BuildCameraFrustum(
   vtkCamera* camera, double farClipDistance, vtkPolyData* polyData)
 {
   // Build frustum from camera data
@@ -250,13 +111,186 @@ void vtkMaptkCameraRepresentation::BuildCameraFrustum(
   polyData->GetPolys()->InsertNextCell(3, pts);
 }
 
+} // namespace <anonymous>
+
+//-----------------------------------------------------------------------------
+class vtkMaptkCameraRepresentation::vtkInternal
+{
+public:
+  vtkCamera* NextCamera();
+
+  vtkNew<vtkCollection> Cameras;
+
+  vtkNew<vtkPolyData> ActivePolyData;
+  vtkNew<vtkAppendPolyData> NonActiveAppendPolyData;
+
+  vtkNew<vtkPolyData> DummyPolyData;
+
+  vtkNew<vtkPolyData> PathPolyData;
+};
+
+//-----------------------------------------------------------------------------
+vtkCamera* vtkMaptkCameraRepresentation::vtkInternal::NextCamera()
+{
+  return vtkCamera::SafeDownCast(this->Cameras->GetNextItemAsObject());
+}
+
+//-----------------------------------------------------------------------------
+vtkMaptkCameraRepresentation::vtkMaptkCameraRepresentation()
+  : Internal(new vtkInternal)
+{
+  this->ActiveCameraRepLength = 15.0;
+  this->NonActiveCameraRepLength = 4.0;
+  this->DisplaySkip = 1;
+
+  this->ActiveCamera = 0;
+
+  // Set up camera actors and data
+  vtkNew<vtkPolyDataMapper> activeCameraMapper;
+  activeCameraMapper->SetInputData(this->Internal->ActivePolyData.GetPointer());
+
+  this->ActiveActor = vtkActor::New();
+  this->ActiveActor->SetMapper(activeCameraMapper.GetPointer());
+  this->ActiveActor->GetProperty()->SetRepresentationToWireframe();
+
+  this->Internal->NonActiveAppendPolyData->AddInputData(
+    this->Internal->DummyPolyData.GetPointer());
+
+  vtkNew<vtkPolyDataMapper> nonActiveMapper;
+  nonActiveMapper->SetInputConnection(
+    this->Internal->NonActiveAppendPolyData->GetOutputPort());
+
+  this->NonActiveActor = vtkActor::New();
+  this->NonActiveActor->SetMapper(nonActiveMapper.GetPointer());
+  this->NonActiveActor->GetProperty()->SetRepresentationToWireframe();
+
+  // Set up path actor and data
+  vtkNew<vtkPoints> points;
+  vtkNew<vtkCellArray> lines;
+
+  this->Internal->PathPolyData->SetPoints(points.GetPointer());
+  this->Internal->PathPolyData->SetLines(lines.GetPointer());
+
+  vtkNew<vtkPolyDataMapper> pathMapper;
+  pathMapper->SetInputData(this->Internal->PathPolyData.GetPointer());
+
+  this->PathActor = vtkActor::New();
+  this->PathActor->SetMapper(pathMapper.GetPointer());
+}
+
+//-----------------------------------------------------------------------------
+vtkMaptkCameraRepresentation::~vtkMaptkCameraRepresentation()
+{
+  this->ActiveActor->Delete();
+  this->NonActiveActor->Delete();
+  this->PathActor->Delete();
+}
+
+//-----------------------------------------------------------------------------
+void vtkMaptkCameraRepresentation::AddCamera(vtkCamera* camera)
+{
+  // Don't allow duplicate entries
+  if (this->Internal->Cameras->IsItemPresent(camera))
+  {
+    return;
+  }
+
+  this->Internal->Cameras->AddItem(camera);
+  this->Modified();
+}
+
+//-----------------------------------------------------------------------------
+void vtkMaptkCameraRepresentation::RemoveCamera(vtkCamera* camera)
+{
+  // If item isn't present, do nothing
+  if (!this->Internal->Cameras->IsItemPresent(camera))
+  {
+    return;
+  }
+
+  this->Internal->Cameras->RemoveItem(camera);
+  if (this->ActiveCamera == camera)
+  {
+    this->ActiveCamera = 0;
+  }
+
+  this->Modified();
+}
+
+//-----------------------------------------------------------------------------
+void vtkMaptkCameraRepresentation::SetActiveCamera(vtkCamera* camera)
+{
+  if (this->ActiveCamera == camera)
+  {
+    return;
+  }
+
+  // Make sure the camera is in the list
+  this->AddCamera(camera);
+
+  this->ActiveCamera = camera;
+  this->Modified();
+}
+
+//-----------------------------------------------------------------------------
+void vtkMaptkCameraRepresentation::Update()
+{
+  // TODO - Add modified time test
+
+  // Build non-active cameras representation
+  this->Internal->NonActiveAppendPolyData->RemoveAllInputs();
+  this->Internal->NonActiveAppendPolyData->AddInputData(
+    this->Internal->DummyPolyData.GetPointer());
+
+  int skipCount = 0;
+  this->Internal->Cameras->InitTraversal();
+  while (auto const camera = this->Internal->NextCamera())
+  {
+    if (!((skipCount++) % this->DisplaySkip))
+    {
+      if (camera != this->ActiveCamera)
+      {
+        vtkNew<vtkPolyData> polyData;
+        BuildCameraFrustum(camera, this->NonActiveCameraRepLength,
+                           polyData.GetPointer());
+        this->Internal->NonActiveAppendPolyData->AddInputData(
+          polyData.GetPointer());
+      }
+    }
+  }
+
+  // Build active camera representation
+  this->Internal->ActivePolyData->Reset();
+  if (this->ActiveCamera)
+  {
+    BuildCameraFrustum(this->ActiveCamera, this->ActiveCameraRepLength,
+                       this->Internal->ActivePolyData.GetPointer());
+  }
+
+  // Path Actor
+  this->Internal->PathPolyData->Reset();
+  this->Internal->PathPolyData->Modified();
+  vtkPoints* points = this->Internal->PathPolyData->GetPoints();
+  points->Allocate(this->Internal->Cameras->GetNumberOfItems());
+  vtkCellArray* lines = this->Internal->PathPolyData->GetLines();
+  lines->InsertNextCell(this->Internal->Cameras->GetNumberOfItems());
+
+  this->Internal->Cameras->InitTraversal();
+  while (auto const camera = this->Internal->NextCamera())
+  {
+    double position[3];
+    camera->GetPosition(position);
+    lines->InsertCellPoint(points->InsertNextPoint(position));
+  }
+}
+
 //-----------------------------------------------------------------------------
 void vtkMaptkCameraRepresentation::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os, indent);
 
   os << indent << "Number Of Cameras: "
-     << this->Cameras->GetNumberOfItems() << endl;
+     << this->Internal->Cameras->GetNumberOfItems() << endl;
   os << indent << "ActiveCameraRepLength: "
      << this->ActiveCameraRepLength << endl;
   os << indent << "NonActiveCameraRepLength: "
