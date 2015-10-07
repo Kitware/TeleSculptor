@@ -79,6 +79,8 @@ public:
   vtkNew<vtkMaptkCameraRepresentation> cameraRep;
   vtkNew<vtkActorCollection> landmarkActors;
 
+  CameraOptions* cameraOptions;
+
   bool cameraRepDirty;
   bool cameraScaleDirty;
 };
@@ -150,9 +152,11 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   viewMenu->addAction(d->UI.actionViewResetLandmarks);
   d->setPopup(d->UI.actionViewReset, viewMenu);
 
-  auto const cameraOptions = new CameraOptions(this);
-  cameraOptions->setRepresentation(d->cameraRep.GetPointer());
-  d->setPopup(d->UI.actionShowCameras, cameraOptions);
+  d->cameraOptions = new CameraOptions(d->cameraRep.GetPointer(), this);
+  d->setPopup(d->UI.actionShowCameras, d->cameraOptions);
+
+  connect(d->cameraOptions, SIGNAL(modified()),
+          d->UI.renderWidget, SLOT(update()));
 
   // Connect actions
   this->addAction(d->UI.actionViewReset);
@@ -252,12 +256,7 @@ void WorldView::addLandmarks(maptk::landmark_map const& lm)
 void WorldView::setCamerasVisible(bool state)
 {
   QTE_D();
-
-  d->cameraRep->GetPathActor()->SetVisibility(state);
-  d->cameraRep->GetActiveActor()->SetVisibility(state);
-  d->cameraRep->GetNonActiveActor()->SetVisibility(state);
-
-  d->UI.renderWidget->update();
+  d->cameraOptions->setCamerasVisible(state);
 }
 
 //-----------------------------------------------------------------------------
@@ -344,8 +343,6 @@ void WorldView::updateCameraScale()
     // Compute base scale (20% of scale factor)
     auto const baseScale = 0.2 * bbox.GetDiagonalLength();
 
-    d->cameraRep->SetActiveCameraRepLength(baseScale);
-    d->cameraRep->SetNonActiveCameraRepLength(0.2 * baseScale);
-    d->updateCameras(this);
+    d->cameraOptions->setBaseCameraScale(baseScale);
   }
 }

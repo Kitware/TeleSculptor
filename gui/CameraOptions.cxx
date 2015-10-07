@@ -34,22 +34,67 @@
 
 #include "vtkMaptkCameraRepresentation.h"
 
+#include <vtkActor.h>
+#include <vtkProperty.h>
+
+#include <qtMath.h>
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
+
+namespace // anonymous
+{
+
+//-----------------------------------------------------------------------------
+void setColor(vtkActor* actor, QColor const& color)
+{
+  auto const prop = actor->GetProperty();
+  prop->SetColor(color.redF(), color.greenF(), color.blueF());
+  prop->SetOpacity(color.alphaF());
+}
+
+//-----------------------------------------------------------------------------
+double scaleValue(qtDoubleSlider* slider)
+{
+  return qPow(10.0, slider->value());
+}
+
+}
 
 //-----------------------------------------------------------------------------
 class CameraOptionsPrivate
 {
 public:
+  CameraOptionsPrivate() : visibility(true), baseCameraScale(10.0) {}
+
+  double activeScale() const;
+  double inactiveScale() const;
+
   void mapUiState(QString const& key, QSlider* slider);
   void mapUiState(QString const& key, qtDoubleSlider* slider);
   void mapUiState(QString const& key, qtColorButton* button);
 
   Ui::CameraOptions UI;
   qtUiState uiState;
+
+  vtkMaptkCameraRepresentation* representation;
+
+  bool visibility;
+  double baseCameraScale;
 };
 
 QTE_IMPLEMENT_D_FUNC(CameraOptions)
+
+//-----------------------------------------------------------------------------
+double CameraOptionsPrivate::activeScale() const
+{
+  return this->baseCameraScale * scaleValue(this->UI.scale);
+}
+
+//-----------------------------------------------------------------------------
+double CameraOptionsPrivate::inactiveScale() const
+{
+  return this->activeScale() * scaleValue(this->UI.inactiveScale);
+}
 
 //-----------------------------------------------------------------------------
 void CameraOptionsPrivate::mapUiState(
@@ -79,7 +124,8 @@ void CameraOptionsPrivate::mapUiState(
 }
 
 //-----------------------------------------------------------------------------
-CameraOptions::CameraOptions(QWidget* parent, Qt::WindowFlags flags)
+CameraOptions::CameraOptions(vtkMaptkCameraRepresentation* rep,
+                             QWidget* parent, Qt::WindowFlags flags)
   : QWidget(parent, flags), d_ptr(new CameraOptionsPrivate)
 {
   QTE_D();
@@ -87,6 +133,14 @@ CameraOptions::CameraOptions(QWidget* parent, Qt::WindowFlags flags)
   // Set up UI
   d->UI.setupUi(this);
 
+  // Bundle inactive display modes into a group (mostly so we can have a single
+  // signal when the mode changes, rather than toggled() for both the old and
+  // new modes)
+  auto const inactiveModeGroup = new QButtonGroup(this);
+  inactiveModeGroup->addButton(d->UI.inactiveAsPoints);
+  inactiveModeGroup->addButton(d->UI.inactiveAsFrustums);
+
+  // Set up option persistence
   // TODO We may want to get a parent group from the user (of this class) that
   //      would identify which view in case of multiple views, so that we can
   //      have per-view persistence
@@ -103,9 +157,44 @@ CameraOptions::CameraOptions(QWidget* parent, Qt::WindowFlags flags)
   d->uiState.mapChecked("Inactive", d->UI.showInactive);
   d->uiState.mapChecked("Inactive/Points", d->UI.inactiveAsPoints);
   d->uiState.mapChecked("Inactive/Frustums", d->UI.inactiveAsFrustums);
-  d->uiState.mapChecked("Path", d->UI.inactiveAsFrustums);
+  d->uiState.mapChecked("Path", d->UI.showPath);
 
   d->uiState.restore();
+
+  // Set up initial representation state
+  d->representation = rep;
+
+  setColor(rep->GetPathActor(), d->UI.pathColor->color());
+  setColor(rep->GetActiveActor(), d->UI.activeColor->color());
+  setColor(rep->GetNonActiveActor(), d->UI.inactiveColor->color());
+
+  updateScale();
+
+  setPathVisible(d->UI.showPath->isChecked());
+  setInactiveVisible(d->UI.showInactive->isChecked());
+
+  // Connect signals/slots
+  connect(d->UI.pathColor, SIGNAL(colorChanged(QColor)),
+          this, SLOT(setPathColor(QColor)));
+  connect(d->UI.activeColor, SIGNAL(colorChanged(QColor)),
+          this, SLOT(setActiveColor(QColor)));
+  connect(d->UI.inactiveColor, SIGNAL(colorChanged(QColor)),
+          this, SLOT(setInactiveColor(QColor)));
+
+  connect(d->UI.scale, SIGNAL(valueChanged(double)),
+          this, SLOT(updateScale()));
+
+  connect(inactiveModeGroup, SIGNAL(buttonClicked(QAbstractButton*)),
+          this, SLOT(updateInactiveDisplayOptions()));
+  connect(d->UI.inactivePointSize, SIGNAL(valueChanged(int)),
+          this, SLOT(updateInactiveDisplayOptions()));
+  connect(d->UI.inactiveScale, SIGNAL(valueChanged(double)),
+          this, SLOT(updateInactiveDisplayOptions()));
+
+  connect(d->UI.showPath, SIGNAL(toggled(bool)),
+          this, SLOT(setPathVisible(bool)));
+  connect(d->UI.showInactive, SIGNAL(toggled(bool)),
+          this, SLOT(setInactiveVisible(bool)));
 }
 
 //-----------------------------------------------------------------------------
@@ -116,7 +205,119 @@ CameraOptions::~CameraOptions()
 }
 
 //-----------------------------------------------------------------------------
-void CameraOptions::setRepresentation(vtkMaptkCameraRepresentation* rep)
+void CameraOptions::setBaseCameraScale(double s)
 {
-  // TODO
+  QTE_D();
+
+  if (s != d->baseCameraScale)
+  {
+    d->baseCameraScale = s;
+    this->updateScale();
+  }
+}
+
+//-----------------------------------------------------------------------------
+void CameraOptions::setPathColor(QColor const& color)
+{
+  QTE_D();
+
+  setColor(d->representation->GetPathActor(), color);
+
+  emit this->modified();
+}
+
+//-----------------------------------------------------------------------------
+void CameraOptions::setActiveColor(QColor const& color)
+{
+  QTE_D();
+
+  setColor(d->representation->GetActiveActor(), color);
+
+  emit this->modified();
+}
+
+//-----------------------------------------------------------------------------
+void CameraOptions::setInactiveColor(QColor const& color)
+{
+  QTE_D();
+
+  setColor(d->representation->GetNonActiveActor(), color);
+
+  emit this->modified();
+}
+
+//-----------------------------------------------------------------------------
+void CameraOptions::setCamerasVisible(bool state)
+{
+  QTE_D();
+
+  d->visibility = state;
+
+  d->representation->GetActiveActor()->SetVisibility(state);
+  d->representation->GetNonActiveActor()->SetVisibility(
+    state && d->UI.showInactive->isChecked());
+  d->representation->GetPathActor()->SetVisibility(
+    state && d->UI.showPath->isChecked());
+
+  emit this->modified();
+}
+
+//-----------------------------------------------------------------------------
+void CameraOptions::setPathVisible(bool state)
+{
+  QTE_D();
+
+  d->representation->GetPathActor()->SetVisibility(d->visibility && state);
+
+  emit this->modified();
+}
+
+//-----------------------------------------------------------------------------
+void CameraOptions::setInactiveVisible(bool state)
+{
+  QTE_D();
+
+  d->representation->GetNonActiveActor()->SetVisibility(d->visibility && state);
+
+  emit this->modified();
+}
+
+//-----------------------------------------------------------------------------
+void CameraOptions::updateScale()
+{
+  QTE_D();
+
+  d->representation->SetActiveCameraRepLength(d->activeScale());
+
+  if (d->UI.inactiveAsFrustums->isChecked())
+  {
+    // Also update inactive scale; this will update the representation (which
+    // we don't want to do twice, because it's expensive) and emit
+    // this->modified()
+    this->updateInactiveDisplayOptions();
+  }
+  else
+  {
+    d->representation->Update();
+    emit this->modified();
+  }
+}
+
+//-----------------------------------------------------------------------------
+void CameraOptions::updateInactiveDisplayOptions()
+{
+  QTE_D();
+
+  if (d->UI.inactiveAsFrustums->isChecked())
+  {
+    // TODO set display mode to frustums
+    d->representation->SetNonActiveCameraRepLength(d->inactiveScale());
+    d->representation->Update();
+  }
+  else
+  {
+    // TODO
+  }
+
+  emit this->modified();
 }

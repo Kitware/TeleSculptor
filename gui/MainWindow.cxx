@@ -42,6 +42,7 @@
 
 #include <vtkSmartPointer.h>
 
+#include <qtMath.h>
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
 
@@ -386,7 +387,7 @@ void MainWindow::setSlideDelay(int delayExp)
     QString("%1 (%2)").arg(d->UI.slideDelay->toolTip());
 
   auto const de = static_cast<double>(delayExp) * 0.1;
-  auto const delay = qRound(pow(10.0, de));
+  auto const delay = qRound(qPow(10.0, de));
   d->slideTimer.setInterval(delay);
 
   if (delay < 1000)

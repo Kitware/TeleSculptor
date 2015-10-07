@@ -44,13 +44,28 @@ class CameraOptions : public QWidget
   Q_OBJECT
 
 public:
-  explicit CameraOptions(QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  explicit CameraOptions(vtkMaptkCameraRepresentation*,
+                         QWidget* parent = 0, Qt::WindowFlags flags = 0);
   virtual ~CameraOptions();
-
-  void setRepresentation(vtkMaptkCameraRepresentation*);
 
 signals:
   void modified();
+
+public slots:
+  void setCamerasVisible(bool);
+
+  void setBaseCameraScale(double);
+
+protected slots:
+  void setPathColor(QColor const&);
+  void setActiveColor(QColor const&);
+  void setInactiveColor(QColor const&);
+
+  void updateScale();
+  void updateInactiveDisplayOptions();
+
+  void setPathVisible(bool);
+  void setInactiveVisible(bool);
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(CameraOptions)
