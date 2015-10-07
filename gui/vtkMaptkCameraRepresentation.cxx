@@ -53,7 +53,7 @@ vtkMaptkCameraRepresentation::vtkMaptkCameraRepresentation()
 {
   this->ActiveCameraRepLength = 15.0;
   this->NonActiveCameraRepLength = 4.0;
-  this->DisplaySkip = 5;
+  this->DisplaySkip = 1;
 
   this->ActiveCamera = 0;
   this->Cameras = vtkSmartPointer<vtkCollection>::New();
