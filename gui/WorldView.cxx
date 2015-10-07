@@ -34,6 +34,7 @@
 #include "am_WorldView.h"
 
 #include "CameraOptions.h"
+#include "FeatureOptions.h"
 #include "vtkMaptkCamera.h"
 #include "vtkMaptkCameraRepresentation.h"
 
@@ -73,9 +74,11 @@ public:
   vtkNew<vtkRenderWindow> renderWindow;
 
   vtkNew<vtkMaptkCameraRepresentation> cameraRep;
-  vtkNew<vtkActorCollection> landmarkActors;
+
+  QList<vtkActor*> landmarkActors;
 
   CameraOptions* cameraOptions;
+  FeatureOptions* landmarkOptions;
 
   bool cameraRepDirty;
   bool cameraScaleDirty;
@@ -152,6 +155,12 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->setPopup(d->UI.actionShowCameras, d->cameraOptions);
 
   connect(d->cameraOptions, SIGNAL(modified()),
+          d->UI.renderWidget, SLOT(update()));
+
+  d->landmarkOptions = new FeatureOptions("WorldView/Landmarks", this);
+  d->setPopup(d->UI.actionShowLandmarks, d->landmarkOptions);
+
+  connect(d->landmarkOptions, SIGNAL(modified()),
           d->UI.renderWidget, SLOT(update()));
 
   // Connect actions
@@ -238,12 +247,11 @@ void WorldView::addLandmarks(maptk::landmark_map const& lm)
 
   vtkNew<vtkActor> actor;
   actor->SetMapper(mapper.GetPointer());
-  actor->GetProperty()->SetPointSize(2);
-  actor->GetProperty()->SetColor(1.0, 0.0, 1.0);
 
   d->renderer->AddActor(actor.GetPointer());
+  d->landmarkOptions->addActor(actor.GetPointer());
 
-  d->landmarkActors->AddItem(actor.GetPointer());
+  d->landmarkActors.append(actor.GetPointer());
 
   d->updateCameraScale(this);
 }
@@ -260,8 +268,7 @@ void WorldView::setLandmarksVisible(bool state)
 {
   QTE_D();
 
-  d->landmarkActors->InitTraversal();
-  while (auto const actor = d->landmarkActors->GetNextActor())
+  foreach (auto const actor, d->landmarkActors)
   {
     actor->SetVisibility(state);
   }
@@ -285,8 +292,7 @@ void WorldView::resetViewToLandmarks()
 
   vtkBoundingBox bbox;
 
-  d->landmarkActors->InitTraversal();
-  while (auto const actor = d->landmarkActors->GetNextActor())
+  foreach (auto const actor, d->landmarkActors)
   {
     bbox.AddBounds(actor->GetBounds());
   }
@@ -327,8 +333,7 @@ void WorldView::updateCameraScale()
     vtkBoundingBox bbox;
 
     // Add landmarks
-    d->landmarkActors->InitTraversal();
-    while (auto const actor = d->landmarkActors->GetNextActor())
+    foreach (auto const actor, d->landmarkActors)
     {
       bbox.AddBounds(actor->GetBounds());
     }

@@ -23,6 +23,7 @@ set(gui_am_ui
 set(gui_ui
   ${gui_am_ui}
   CameraOptions.ui
+  FeatureOptions.ui
 )
 
 set(gui_resources
@@ -32,6 +33,7 @@ set(gui_resources
 set(gui_moc_headers
   CameraOptions.h
   CameraView.h
+  FeatureOptions.h
   MainWindow.h
   WorldView.h
 )
@@ -39,6 +41,7 @@ set(gui_moc_headers
 set(gui_sources
   CameraOptions.cxx
   CameraView.cxx
+  FeatureOptions.cxx
   Project.cxx
   MainWindow.cxx
   WorldView.cxx
