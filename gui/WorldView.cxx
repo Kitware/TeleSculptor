@@ -41,14 +41,10 @@
 #include <maptk/landmark_map.h>
 
 #include <vtkActorCollection.h>
-#include <vtkAppendPolyData.h>
 #include <vtkBoundingBox.h>
-#include <vtkCamera.h>
 #include <vtkCellArray.h>
-#include <vtkFrustumSource.h>
-#include <vtkMath.h>
 #include <vtkNew.h>
-#include <vtkPlanes.h>
+#include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
 #include <vtkRenderer.h>
