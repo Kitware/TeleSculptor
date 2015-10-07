@@ -119,6 +119,9 @@ void WorldViewPrivate::updateCameras(WorldView* q)
   {
     this->cameraRepDirty = true;
     QMetaObject::invokeMethod(q, "updateCameras", Qt::QueuedConnection);
+
+    // If the cameras are dirty, then the camera scale must also be dirty
+    this->updateCameraScale(q);
   }
 }
 
@@ -191,7 +194,6 @@ void WorldView::addCamera(int id, vtkMaptkCamera* camera)
 
   d->cameraRep->AddCamera(camera);
 
-  d->updateCameraScale(this);
   d->updateCameras(this);
 }
 
@@ -321,6 +323,10 @@ void WorldView::updateCameraScale()
 
   if (d->cameraScaleDirty)
   {
+    // Make sure the cameras are updated so that we will get the correct bounds
+    // for them
+    this->updateCameras();
+
     // Determine a base scale factor for the camera frustums... for now, using
     // the diagonal of the extents of the landmarks and camera centers
     vtkBoundingBox bbox;
@@ -335,11 +341,11 @@ void WorldView::updateCameraScale()
     // Add camera centers
     bbox.AddBounds(d->cameraRep->GetPathActor()->GetBounds());
 
-    // Compute base scale (10% of scale factor)
-    auto const baseScale = 0.1 * bbox.GetDiagonalLength();
+    // Compute base scale (20% of scale factor)
+    auto const baseScale = 0.2 * bbox.GetDiagonalLength();
 
     d->cameraRep->SetActiveCameraRepLength(baseScale);
-    d->cameraRep->SetNonActiveCameraRepLength(baseScale);
+    d->cameraRep->SetNonActiveCameraRepLength(0.2 * baseScale);
     d->updateCameras(this);
   }
 }
