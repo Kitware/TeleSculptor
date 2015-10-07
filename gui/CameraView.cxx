@@ -33,6 +33,7 @@
 #include "ui_CameraView.h"
 #include "am_CameraView.h"
 
+#include "FeatureOptions.h"
 #include "vtkMaptkCamera.h"
 
 #include <vtkCamera.h>
@@ -51,6 +52,7 @@
 
 #include <QtGui/QMenu>
 #include <QtGui/QToolButton>
+#include <QtGui/QWidgetAction>
 
 #include <QtCore/QDebug>
 
@@ -70,7 +72,8 @@ public:
     vtkNew<vtkActor> actor;
   };
 
-  void addPopupMenu(QAction* action, QMenu* menu);
+  void setPopup(QAction* action, QMenu* menu);
+  void setPopup(QAction* action, QWidget* widget);
 
   Ui::CameraView UI;
   Am::CameraView AM;
@@ -122,7 +125,7 @@ void CameraViewPrivate::PointCloud::clear()
 }
 
 //-----------------------------------------------------------------------------
-void CameraViewPrivate::addPopupMenu(QAction* action, QMenu* menu)
+void CameraViewPrivate::setPopup(QAction* action, QMenu* menu)
 {
   auto const widget = this->UI.toolBar->widgetForAction(action);
   auto const button = qobject_cast<QToolButton*>(widget);
@@ -132,6 +135,20 @@ void CameraViewPrivate::addPopupMenu(QAction* action, QMenu* menu)
     button->setPopupMode(QToolButton::MenuButtonPopup);
     button->setMenu(menu);
   }
+}
+
+//-----------------------------------------------------------------------------
+void CameraViewPrivate::setPopup(QAction* action, QWidget* widget)
+{
+  auto const parent = action->parentWidget();
+
+  auto const proxy = new QWidgetAction(parent);
+  proxy->setDefaultWidget(widget);
+
+  auto const menu = new QMenu(parent);
+  menu->addAction(proxy);
+
+  this->setPopup(action, menu);
 }
 
 //-----------------------------------------------------------------------------
@@ -150,7 +167,27 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   auto const viewMenu = new QMenu(this);
   viewMenu->addAction(d->UI.actionViewReset);
   viewMenu->addAction(d->UI.actionViewResetFullExtents);
-  d->addPopupMenu(d->UI.actionViewReset, viewMenu);
+  d->setPopup(d->UI.actionViewReset, viewMenu);
+
+  auto const featurePointOptions =
+    new FeatureOptions("CameraView/FeaturePoints", this);
+  featurePointOptions->setDefaultColor(Qt::green);
+  featurePointOptions->addActor(d->featurePoints.actor.GetPointer());
+
+  d->setPopup(d->UI.actionShowFeaturePoints, featurePointOptions);
+
+  connect(featurePointOptions, SIGNAL(modified()),
+          d->UI.renderWidget, SLOT(update()));
+
+  auto const landmarkOptions =
+    new FeatureOptions("CameraView/Landmarks", this);
+  landmarkOptions->setDefaultColor(Qt::magenta);
+  landmarkOptions->addActor(d->landmarks.actor.GetPointer());
+
+  d->setPopup(d->UI.actionShowLandmarks, landmarkOptions);
+
+  connect(landmarkOptions, SIGNAL(modified()),
+          d->UI.renderWidget, SLOT(update()));
 
   // Connect actions
   this->addAction(d->UI.actionViewReset);
@@ -182,17 +219,10 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   vtkNew<vtkInteractorStyleRubberBand2D> is;
   d->renderWindow->GetInteractor()->SetInteractorStyle(is.GetPointer());
 
-  // Set up feature actor and landmark actor
-  auto const fpActor = d->featurePoints.actor.GetPointer();
-  auto const lmActor = d->landmarks.actor.GetPointer();
+  // Set up actors
+  d->renderer->AddActor(d->featurePoints.actor.GetPointer());
+  d->renderer->AddActor(d->landmarks.actor.GetPointer());
 
-  fpActor->GetProperty()->SetColor(0.0, 1.0, 0.0);
-  lmActor->GetProperty()->SetColor(1.0, 0.0, 1.0);
-
-  d->renderer->AddActor(fpActor);
-  d->renderer->AddActor(lmActor);
-
-  // Set up frame image actor
   d->renderer->AddViewProp(d->imageActor.GetPointer());
   d->imageActor->SetPosition(0.0, 0.0, -0.2);
 

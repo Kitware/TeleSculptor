@@ -117,6 +117,15 @@ FeatureOptions::~FeatureOptions()
 }
 
 //-----------------------------------------------------------------------------
+void FeatureOptions::setDefaultColor(QColor const& color)
+{
+  QTE_D();
+
+  d->UI.color->setColor(color);
+  d->uiState.restore();
+}
+
+//-----------------------------------------------------------------------------
 void FeatureOptions::addActor(vtkActor* actor)
 {
   QTE_D();

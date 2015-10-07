@@ -50,6 +50,8 @@ public:
 
   void addActor(vtkActor*);
 
+  void setDefaultColor(QColor const&);
+
 signals:
   void modified();
 
