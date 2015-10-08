@@ -50,14 +50,19 @@ public:
 public slots:
   void loadImage(QString const& path, vtkMaptkCamera* camera);
 
-  void addFeaturePoint(int id, double x, double y);
-  void addLandmark(int id, double x, double y);
+  void addFeaturePoint(unsigned int id, double x, double y);
+  void addLandmark(unsigned int id, double x, double y);
+  void addResidual(unsigned int id,
+                   double x1, double y1,
+                   double x2, double y2);
 
   void clearFeaturePoints();
   void clearLandmarks();
+  void clearResiduals();
 
   void setFeaturePointsVisible(bool);
   void setLandmarksVisible(bool);
+  void setResidualsVisible(bool);
 
   void resetView();
   void resetViewToFullExtents();

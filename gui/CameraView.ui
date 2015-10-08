@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
+    <width>456</width>
     <height>300</height>
    </rect>
   </property>
@@ -23,6 +23,7 @@
      <addaction name="separator"/>
      <addaction name="actionShowFeaturePoints"/>
      <addaction name="actionShowLandmarks"/>
+     <addaction name="actionShowResiduals"/>
     </widget>
    </item>
    <item>
@@ -113,6 +114,30 @@
    </property>
    <property name="shortcutContext">
     <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
+  </action>
+  <action name="actionShowResiduals">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/22x22/residual</normaloff>:/icons/22x22/residual</iconset>
+   </property>
+   <property name="text">
+    <string>Show Residuals</string>
+   </property>
+   <property name="iconText">
+    <string>Residuals</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle visibility of landmark estimation residuals</string>
+   </property>
+   <property name="shortcut">
+    <string>E</string>
    </property>
   </action>
  </widget>

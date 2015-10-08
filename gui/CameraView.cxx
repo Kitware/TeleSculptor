@@ -72,6 +72,14 @@ public:
     vtkNew<vtkActor> actor;
   };
 
+  struct SegmentCloud : PointCloud
+  {
+    SegmentCloud();
+
+    void addSegment(double x1, double y1, double z1,
+                    double x2, double y2, double z2);
+  };
+
   void setPopup(QAction* action, QMenu* menu);
   void setPopup(QAction* action, QWidget* widget);
 
@@ -86,6 +94,7 @@ public:
 
   PointCloud featurePoints;
   PointCloud landmarks;
+  SegmentCloud residuals;
 
   double imageBounds[6];
   int imageHeight;
@@ -110,9 +119,8 @@ CameraViewPrivate::PointCloud::PointCloud()
 //-----------------------------------------------------------------------------
 void CameraViewPrivate::PointCloud::addPoint(double x, double y, double z)
 {
-  auto const vid = this->points->GetNumberOfPoints();
+  auto const vid = this->points->InsertNextPoint(x, y, z);
 
-  this->points->InsertNextPoint(x, y, z);
   this->verts->InsertNextCell(1);
   this->verts->InsertCellPoint(vid);
 }
@@ -122,6 +130,30 @@ void CameraViewPrivate::PointCloud::clear()
 {
   this->verts->Reset();
   this->points->Reset();
+}
+
+//-----------------------------------------------------------------------------
+CameraViewPrivate::SegmentCloud::SegmentCloud()
+{
+  auto const mapper =
+    vtkPolyDataMapper::SafeDownCast(this->actor->GetMapper());
+  auto const polyData = mapper->GetInput();
+
+  polyData->SetLines(this->verts.GetPointer());
+  polyData->SetVerts(0);
+}
+
+//-----------------------------------------------------------------------------
+void CameraViewPrivate::SegmentCloud::addSegment(
+  double x1, double y1, double z1,
+  double x2, double y2, double z2)
+{
+  auto const vid1 = this->points->InsertNextPoint(x1, y1, z1);
+  auto const vid2 = this->points->InsertNextPoint(x2, y2, z2);
+
+  this->verts->InsertNextCell(2);
+  this->verts->InsertCellPoint(vid1);
+  this->verts->InsertCellPoint(vid2);
 }
 
 //-----------------------------------------------------------------------------
@@ -194,6 +226,7 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   this->addAction(d->UI.actionViewResetFullExtents);
   this->addAction(d->UI.actionShowFeaturePoints);
   this->addAction(d->UI.actionShowLandmarks);
+  this->addAction(d->UI.actionShowResiduals);
 
   connect(d->UI.actionViewReset, SIGNAL(triggered()),
           this, SLOT(resetView()));
@@ -204,6 +237,8 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(setFeaturePointsVisible(bool)));
   connect(d->UI.actionShowLandmarks, SIGNAL(toggled(bool)),
           this, SLOT(setLandmarksVisible(bool)));
+  connect(d->UI.actionShowResiduals, SIGNAL(toggled(bool)),
+          this, SLOT(setResidualsVisible(bool)));
 
   // Set up ortho view
   d->renderer->GetActiveCamera()->ParallelProjectionOn();
@@ -222,6 +257,7 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   // Set up actors
   d->renderer->AddActor(d->featurePoints.actor.GetPointer());
   d->renderer->AddActor(d->landmarks.actor.GetPointer());
+  d->renderer->AddActor(d->residuals.actor.GetPointer());
 
   d->renderer->AddViewProp(d->imageActor.GetPointer());
   d->imageActor->SetPosition(0.0, 0.0, -0.2);
@@ -310,7 +346,7 @@ void CameraView::loadImage(QString const& path, vtkMaptkCamera* camera)
 }
 
 //-----------------------------------------------------------------------------
-void CameraView::addFeaturePoint(int id, double x, double y)
+void CameraView::addFeaturePoint(unsigned int id, double x, double y)
 {
   QTE_D();
 
@@ -321,13 +357,27 @@ void CameraView::addFeaturePoint(int id, double x, double y)
 }
 
 //-----------------------------------------------------------------------------
-void CameraView::addLandmark(int id, double x, double y)
+void CameraView::addLandmark(unsigned int id, double x, double y)
 {
   QTE_D();
 
   Q_UNUSED(id)
 
   d->landmarks.addPoint(x, d->imageHeight - y, 0.0);
+  this->update();
+}
+
+//-----------------------------------------------------------------------------
+void CameraView::addResidual(
+  unsigned int id, double x1, double y1, double x2, double y2)
+{
+  QTE_D();
+
+  Q_UNUSED(id)
+
+  d->residuals.addSegment(x1, d->imageHeight - y1, 0.0,
+                          x2, d->imageHeight - y2, 0.0);
+
   this->update();
 }
 
@@ -346,6 +396,13 @@ void CameraView::clearLandmarks()
 }
 
 //-----------------------------------------------------------------------------
+void CameraView::clearResiduals()
+{
+  QTE_D();
+  d->residuals.clear();
+}
+
+//-----------------------------------------------------------------------------
 void CameraView::setFeaturePointsVisible(bool state)
 {
   QTE_D();
@@ -358,6 +415,14 @@ void CameraView::setLandmarksVisible(bool state)
 {
   QTE_D();
   d->landmarks.actor->SetVisibility(state);
+  d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
+void CameraView::setResidualsVisible(bool state)
+{
+  QTE_D();
+  d->residuals.actor->SetVisibility(state);
   d->UI.renderWidget->update();
 }
 

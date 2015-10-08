@@ -151,6 +151,7 @@ void MainWindowPrivate::updateCameraView()
   this->UI.cameraView->loadImage(cd.imagePath, cd.camera);
 
   // Show tracks
+  QHash<maptk::track_id_t, maptk::vector_2d> featurePoints;
   this->UI.cameraView->clearFeaturePoints();
   if (this->tracks)
   {
@@ -160,26 +161,35 @@ void MainWindowPrivate::updateCameraView()
       auto const& state = track->find(this->activeCameraIndex);
       if (state != track->end() && state->feat)
       {
+        auto const id = track->id();
         auto const& loc = state->feat->loc();
-        this->UI.cameraView->addFeaturePoint(track->id(), loc[0], loc[1]);
+        this->UI.cameraView->addFeaturePoint(id, loc[0], loc[1]);
+        featurePoints.insert(id, loc);
       }
     }
   }
 
-  // Show landmarks
+  // Show landmarks and residuals
   this->UI.cameraView->clearLandmarks();
+  this->UI.cameraView->clearResiduals();
   if (this->landmarks)
   {
     // Map landmarks to camera space
     auto const& landmarks = this->landmarks->landmarks();
     foreach_iter (auto, lmi, landmarks)
     {
-      double projectedPoint[2];
-      if (cd.camera->ProjectPoint(lmi->second->loc(), projectedPoint))
+      double pp[2];
+      if (cd.camera->ProjectPoint(lmi->second->loc(), pp))
       {
         // Add projected landmark to camera view
-        this->UI.cameraView->addLandmark(
-          lmi->first, projectedPoint[0], projectedPoint[1]);
+        auto const id = lmi->first;
+        this->UI.cameraView->addLandmark(id, pp[0], pp[1]);
+
+        if (featurePoints.contains(id))
+        {
+          auto const& fp = featurePoints[id];
+          this->UI.cameraView->addResidual(id, fp[0], fp[1], pp[0], pp[1]);
+        }
       }
     }
   }
