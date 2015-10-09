@@ -45,14 +45,6 @@ namespace // anonymous
 {
 
 //-----------------------------------------------------------------------------
-void setColor(vtkActor* actor, QColor const& color)
-{
-  auto const prop = actor->GetProperty();
-  prop->SetColor(color.redF(), color.greenF(), color.blueF());
-  prop->SetOpacity(color.alphaF());
-}
-
-//-----------------------------------------------------------------------------
 double scaleValue(qtDoubleSlider* slider)
 {
   return qPow(10.0, slider->value());
@@ -71,7 +63,6 @@ public:
 
   void mapUiState(QString const& key, QSlider* slider);
   void mapUiState(QString const& key, qtDoubleSlider* slider);
-  void mapUiState(QString const& key, qtColorButton* button);
 
   Ui::CameraOptions UI;
   qtUiState uiState;
@@ -115,15 +106,6 @@ void CameraOptionsPrivate::mapUiState(
 }
 
 //-----------------------------------------------------------------------------
-void CameraOptionsPrivate::mapUiState(
-  QString const& key, qtColorButton* button)
-{
-  auto const item = new qtUiState::Item<QColor, qtColorButton>(
-    button, &qtColorButton::color, &qtColorButton::setColor);
-  this->uiState.map(key, item);
-}
-
-//-----------------------------------------------------------------------------
 CameraOptions::CameraOptions(vtkMaptkCameraRepresentation* rep,
                              QWidget* parent, Qt::WindowFlags flags)
   : QWidget(parent, flags), d_ptr(new CameraOptionsPrivate)
@@ -146,9 +128,9 @@ CameraOptions::CameraOptions(vtkMaptkCameraRepresentation* rep,
   //      have per-view persistence
   d->uiState.setCurrentGroup("Camera");
 
-  d->mapUiState("Path/Color", d->UI.pathColor);
-  d->mapUiState("Active/Color", d->UI.activeColor);
-  d->mapUiState("Inactive/Color", d->UI.inactiveColor);
+  d->UI.pathColor->persist(d->uiState, "Path/Color");
+  d->UI.activeColor->persist(d->uiState, "Active/Color");
+  d->UI.inactiveColor->persist(d->uiState, "Inactive/Color");
 
   d->mapUiState("Scale", d->UI.scale);
   d->mapUiState("Inactive/Scale", d->UI.inactiveScale);
@@ -164,9 +146,9 @@ CameraOptions::CameraOptions(vtkMaptkCameraRepresentation* rep,
   // Set up initial representation state
   d->representation = rep;
 
-  setColor(rep->GetPathActor(), d->UI.pathColor->color());
-  setColor(rep->GetActiveActor(), d->UI.activeColor->color());
-  setColor(rep->GetNonActiveActor(), d->UI.inactiveColor->color());
+  d->UI.pathColor->addActor(rep->GetPathActor());
+  d->UI.activeColor->addActor(rep->GetActiveActor());
+  d->UI.inactiveColor->addActor(rep->GetNonActiveActor());
 
   updateScale();
 
@@ -175,11 +157,11 @@ CameraOptions::CameraOptions(vtkMaptkCameraRepresentation* rep,
 
   // Connect signals/slots
   connect(d->UI.pathColor, SIGNAL(colorChanged(QColor)),
-          this, SLOT(setPathColor(QColor)));
+          this, SIGNAL(modified()));
   connect(d->UI.activeColor, SIGNAL(colorChanged(QColor)),
-          this, SLOT(setActiveColor(QColor)));
+          this, SIGNAL(modified()));
   connect(d->UI.inactiveColor, SIGNAL(colorChanged(QColor)),
-          this, SLOT(setInactiveColor(QColor)));
+          this, SIGNAL(modified()));
 
   connect(d->UI.scale, SIGNAL(valueChanged(double)),
           this, SLOT(updateScale()));
@@ -214,36 +196,6 @@ void CameraOptions::setBaseCameraScale(double s)
     d->baseCameraScale = s;
     this->updateScale();
   }
-}
-
-//-----------------------------------------------------------------------------
-void CameraOptions::setPathColor(QColor const& color)
-{
-  QTE_D();
-
-  setColor(d->representation->GetPathActor(), color);
-
-  emit this->modified();
-}
-
-//-----------------------------------------------------------------------------
-void CameraOptions::setActiveColor(QColor const& color)
-{
-  QTE_D();
-
-  setColor(d->representation->GetActiveActor(), color);
-
-  emit this->modified();
-}
-
-//-----------------------------------------------------------------------------
-void CameraOptions::setInactiveColor(QColor const& color)
-{
-  QTE_D();
-
-  setColor(d->representation->GetNonActiveActor(), color);
-
-  emit this->modified();
 }
 
 //-----------------------------------------------------------------------------

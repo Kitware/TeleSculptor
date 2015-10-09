@@ -37,7 +37,7 @@
       </spacer>
      </item>
      <item>
-      <widget class="qtColorButton" name="activeColor">
+      <widget class="ActorColorButton" name="activeColor">
        <property name="color">
         <color>
          <red>255</red>
@@ -85,7 +85,7 @@
       </widget>
      </item>
      <item>
-      <widget class="qtColorButton" name="inactiveColor">
+      <widget class="ActorColorButton" name="inactiveColor">
        <property name="color">
         <color alpha="80">
          <red>128</red>
@@ -184,7 +184,7 @@
       </widget>
      </item>
      <item>
-      <widget class="qtColorButton" name="pathColor">
+      <widget class="ActorColorButton" name="pathColor">
        <property name="enabled">
         <bool>false</bool>
        </property>
@@ -214,6 +214,12 @@
    <class>qtDoubleSlider</class>
    <extends>QWidget</extends>
    <header>qtDoubleSlider.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ActorColorButton</class>
+   <extends>qtColorButton</extends>
+   <header>ActorColorButton.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

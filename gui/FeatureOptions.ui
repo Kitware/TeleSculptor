@@ -22,7 +22,7 @@
     </widget>
    </item>
    <item row="0" column="1">
-    <widget class="qtColorButton" name="color">
+    <widget class="ActorColorButton" name="color">
      <property name="color">
       <color>
        <red>255</red>
@@ -65,6 +65,12 @@
    <class>qtColorButton</class>
    <extends>QPushButton</extends>
    <header>qtColorButton.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ActorColorButton</class>
+   <extends>qtColorButton</extends>
+   <header>ActorColorButton.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

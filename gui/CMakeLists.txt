@@ -31,6 +31,7 @@ set(gui_resources
 )
 
 set(gui_moc_headers
+  ActorColorButton.h
   CameraOptions.h
   CameraView.h
   FeatureOptions.h
@@ -39,6 +40,7 @@ set(gui_moc_headers
 )
 
 set(gui_sources
+  ActorColorButton.cxx
   CameraOptions.cxx
   CameraView.cxx
   FeatureOptions.cxx

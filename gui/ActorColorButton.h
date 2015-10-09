@@ -28,46 +28,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_CAMERAOPTIONS_H_
-#define MAPTK_CAMERAOPTIONS_H_
+#ifndef MAPTK_ACTORCOLORBUTTON_H_
+#define MAPTK_ACTORCOLORBUTTON_H_
 
-#include <qtGlobal.h>
+#include <qtColorButton.h>
 
-#include <QtGui/QWidget>
+class qtUiState;
 
-class vtkMaptkCameraRepresentation;
+class vtkActor;
 
-class CameraOptionsPrivate;
+class ActorColorButtonPrivate;
 
-class CameraOptions : public QWidget
+class ActorColorButton : public qtColorButton
 {
   Q_OBJECT
 
 public:
-  explicit CameraOptions(vtkMaptkCameraRepresentation*,
-                         QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~CameraOptions();
+  explicit ActorColorButton(QWidget* parent = 0);
+  virtual ~ActorColorButton();
 
-signals:
-  void modified();
+  void addActor(vtkActor*);
+
+  void persist(qtUiState&, QString const&);
 
 public slots:
-  void setCamerasVisible(bool);
-
-  void setBaseCameraScale(double);
-
-protected slots:
-  void updateScale();
-  void updateInactiveDisplayOptions();
-
-  void setPathVisible(bool);
-  void setInactiveVisible(bool);
+  virtual void setColor(QColor) QTE_OVERRIDE;
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(CameraOptions)
-  QTE_DECLARE_PRIVATE(CameraOptions)
+  QTE_DECLARE_PRIVATE_RPTR(ActorColorButton)
+  QTE_DECLARE_PRIVATE(ActorColorButton)
 
-  QTE_DISABLE_COPY(CameraOptions)
+  QTE_DISABLE_COPY(ActorColorButton)
 };
 
 #endif

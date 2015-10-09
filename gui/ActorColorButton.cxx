@@ -28,9 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "FeatureOptions.h"
-
-#include "ui_FeatureOptions.h"
+#include "ActorColorButton.h"
 
 #include <vtkActor.h>
 #include <vtkProperty.h>
@@ -38,91 +36,69 @@
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
 
+namespace // anonymous
+{
+
 //-----------------------------------------------------------------------------
-class FeatureOptionsPrivate
+void setColor(vtkActor* actor, QColor const& color)
+{
+  auto const prop = actor->GetProperty();
+  prop->SetColor(color.redF(), color.greenF(), color.blueF());
+  prop->SetOpacity(color.alphaF());
+}
+
+}
+
+//-----------------------------------------------------------------------------
+class ActorColorButtonPrivate
 {
 public:
-  void mapUiState(QString const& key, QSlider* slider);
-
-  Ui::FeatureOptions UI;
-  qtUiState uiState;
-
   QList<vtkActor*> actors;
 };
 
-QTE_IMPLEMENT_D_FUNC(FeatureOptions)
+QTE_IMPLEMENT_D_FUNC(ActorColorButton)
 
 //-----------------------------------------------------------------------------
-void FeatureOptionsPrivate::mapUiState(
-  QString const& key, QSlider* slider)
+ActorColorButton::ActorColorButton(QWidget* parent)
+  : qtColorButton(parent), d_ptr(new ActorColorButtonPrivate)
 {
-  auto const item = new qtUiState::Item<int, QSlider>(
-    slider, &QSlider::value, &QSlider::setValue);
-  this->uiState.map(key, item);
 }
 
 //-----------------------------------------------------------------------------
-FeatureOptions::FeatureOptions(QString const& settingsGroup,
-                               QWidget* parent, Qt::WindowFlags flags)
-  : QWidget(parent, flags), d_ptr(new FeatureOptionsPrivate)
+ActorColorButton::~ActorColorButton()
 {
-  QTE_D();
-
-  // Set up UI
-  d->UI.setupUi(this);
-
-  // Set up option persistence
-  d->uiState.setCurrentGroup(settingsGroup);
-
-  d->UI.color->persist(d->uiState, "Color");
-
-  auto const sizeItem = new qtUiState::Item<int, QSlider>(
-    d->UI.size, &QSlider::value, &QSlider::setValue);
-  d->uiState.map("Size", sizeItem);
-
-  d->uiState.restore();
-
-  // Connect signals/slots
-  connect(d->UI.color, SIGNAL(colorChanged(QColor)), this, SIGNAL(modified()));
-  connect(d->UI.size, SIGNAL(valueChanged(int)), this, SLOT(setSize(int)));
 }
 
 //-----------------------------------------------------------------------------
-FeatureOptions::~FeatureOptions()
-{
-  QTE_D();
-  d->uiState.save();
-}
-
-//-----------------------------------------------------------------------------
-void FeatureOptions::setDefaultColor(QColor const& color)
+void ActorColorButton::addActor(vtkActor* actor)
 {
   QTE_D();
 
-  d->UI.color->setColor(color);
-  d->uiState.restore();
-}
-
-//-----------------------------------------------------------------------------
-void FeatureOptions::addActor(vtkActor* actor)
-{
-  QTE_D();
-
-  d->UI.color->addActor(actor);
-  actor->GetProperty()->SetPointSize(d->UI.size->value());
+  ::setColor(actor, this->color());
 
   d->actors.append(actor);
 }
 
 //-----------------------------------------------------------------------------
-void FeatureOptions::setSize(int size)
+void ActorColorButton::persist(qtUiState& uiState, QString const& settingsKey)
 {
-  QTE_D();
+  auto const item = new qtUiState::Item<QColor, qtColorButton>(
+    this, &qtColorButton::color, &qtColorButton::setColor);
+  uiState.map(settingsKey, item);
+}
 
-  foreach (auto const actor, d->actors)
+//-----------------------------------------------------------------------------
+void ActorColorButton::setColor(QColor newColor)
+{
+  if (newColor != this->color())
   {
-    actor->GetProperty()->SetPointSize(size);
-  }
+    QTE_D();
 
-  emit this->modified();
+    foreach (auto const actor, d->actors)
+    {
+      ::setColor(actor, newColor);
+    }
+
+    qtColorButton::setColor(newColor);
+  }
 }

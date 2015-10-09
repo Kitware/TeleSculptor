@@ -57,7 +57,6 @@ signals:
 
 protected slots:
   void setSize(int);
-  void setColor(QColor const&);
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(FeatureOptions)
