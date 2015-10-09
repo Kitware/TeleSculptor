@@ -1,14 +1,23 @@
 MAPTK Release Notes for changes pending release approval by AFRL
 ================================================================
 
-This file documents release notes for changes made to MAPTK which require
+This file documents release notes for changes made to MAP-Tk which require
 public release approval from AFRL.  After approval, the changes and
-corresponding notes below will be encorporated into a public numbered
+corresponding notes below will be incorporated into a public numbered
 release version, and the content of this file will be reset.
 
 
 Updates since last public release
 ---------------------------------
+
+Visualization Application
+
+ * Added a new graphical application that can be used to visualize input data
+   and computed results.  A 3D "world view" shows the cameras and computed
+   landmarks.  A "camera view" shows the source imagery with feature points and
+   projected landmarks for a selected camera.  A "slideshow" mode allows
+   automatic switching between cameras at regular intervals and can emulate
+   video playback.
 
 Main Library
 

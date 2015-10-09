@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,52 +28,50 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * \file
- * \brief Implementation of camera map io functions
- */
+#ifndef MAPTK_CAMERAVIEW_H_
+#define MAPTK_CAMERAVIEW_H_
 
-#include "camera_map_io.h"
-#include "camera_io.h"
-#include "exceptions.h"
+#include <qtGlobal.h>
 
-#include <boost/filesystem.hpp>
+#include <QtGui/QWidget>
 
-namespace maptk
+class vtkMaptkCamera;
+
+class CameraViewPrivate;
+
+class CameraView : public QWidget
 {
+  Q_OBJECT
 
+public:
+  explicit CameraView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  virtual ~CameraView();
 
-/// Load a camera map from krtd files stored in a directory.
-camera_map_sptr
-read_krtd_files(std::vector<path_t> const& img_files, path_t const& dir)
-{
-  if( !boost::filesystem::exists( dir ) )
-  {
-    throw path_not_exists( dir );
-  }
+public slots:
+  void loadImage(QString const& path, vtkMaptkCamera* camera);
 
-  camera_map::map_camera_t cameras;
+  void addFeaturePoint(unsigned int id, double x, double y);
+  void addLandmark(unsigned int id, double x, double y);
+  void addResidual(unsigned int id,
+                   double x1, double y1,
+                   double x2, double y2);
 
-  for( frame_id_t fid = 0; fid < img_files.size(); ++fid )
-  {
-    try
-    {
-      camera_d new_camera = read_krtd_file( img_files[fid], dir );
-      cameras[fid] = camera_sptr( new camera_d( new_camera ) );
-    }
-    catch( file_not_found_exception )
-    {
-      continue;
-    }
-  }
+  void clearFeaturePoints();
+  void clearLandmarks();
+  void clearResiduals();
 
-  if( cameras.empty() )
-  {
-    throw invalid_data( "No krtd files found" );
-  }
+  void setFeaturePointsVisible(bool);
+  void setLandmarksVisible(bool);
+  void setResidualsVisible(bool);
 
-  return camera_map_sptr( new simple_camera_map( cameras ) );
-}
+  void resetView();
+  void resetViewToFullExtents();
 
+private:
+  QTE_DECLARE_PRIVATE_RPTR(CameraView)
+  QTE_DECLARE_PRIVATE(CameraView)
 
-} // end namespace maptk
+  QTE_DISABLE_COPY(CameraView)
+};
+
+#endif

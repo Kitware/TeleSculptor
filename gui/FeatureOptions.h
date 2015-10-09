@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,52 +28,41 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * \file
- * \brief Implementation of camera map io functions
- */
+#ifndef MAPTK_FEATUREOPTIONS_H_
+#define MAPTK_FEATUREOPTIONS_H_
 
-#include "camera_map_io.h"
-#include "camera_io.h"
-#include "exceptions.h"
+#include <qtGlobal.h>
 
-#include <boost/filesystem.hpp>
+#include <QtGui/QWidget>
 
-namespace maptk
+class vtkActor;
+
+class FeatureOptionsPrivate;
+
+class FeatureOptions : public QWidget
 {
+  Q_OBJECT
 
+public:
+  explicit FeatureOptions(QString const& settingsGroup,
+                          QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  virtual ~FeatureOptions();
 
-/// Load a camera map from krtd files stored in a directory.
-camera_map_sptr
-read_krtd_files(std::vector<path_t> const& img_files, path_t const& dir)
-{
-  if( !boost::filesystem::exists( dir ) )
-  {
-    throw path_not_exists( dir );
-  }
+  void addActor(vtkActor*);
 
-  camera_map::map_camera_t cameras;
+  void setDefaultColor(QColor const&);
 
-  for( frame_id_t fid = 0; fid < img_files.size(); ++fid )
-  {
-    try
-    {
-      camera_d new_camera = read_krtd_file( img_files[fid], dir );
-      cameras[fid] = camera_sptr( new camera_d( new_camera ) );
-    }
-    catch( file_not_found_exception )
-    {
-      continue;
-    }
-  }
+signals:
+  void modified();
 
-  if( cameras.empty() )
-  {
-    throw invalid_data( "No krtd files found" );
-  }
+protected slots:
+  void setSize(int);
 
-  return camera_map_sptr( new simple_camera_map( cameras ) );
-}
+private:
+  QTE_DECLARE_PRIVATE_RPTR(FeatureOptions)
+  QTE_DECLARE_PRIVATE(FeatureOptions)
 
+  QTE_DISABLE_COPY(FeatureOptions)
+};
 
-} // end namespace maptk
+#endif

@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,52 +28,59 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * \file
- * \brief Implementation of camera map io functions
- */
+#include "Project.h"
 
-#include "camera_map_io.h"
-#include "camera_io.h"
-#include "exceptions.h"
+#include <maptk/config_block_io.h>
 
-#include <boost/filesystem.hpp>
+#include <qtStlUtil.h>
 
-namespace maptk
+#include <QtCore/QDir>
+#include <QtCore/QFile>
+#include <QtCore/QFileInfo>
+
+//-----------------------------------------------------------------------------
+bool Project::read(QString const& path)
 {
+  auto const& base = QFileInfo(path).absoluteDir();
 
-
-/// Load a camera map from krtd files stored in a directory.
-camera_map_sptr
-read_krtd_files(std::vector<path_t> const& img_files, path_t const& dir)
-{
-  if( !boost::filesystem::exists( dir ) )
+  try
   {
-    throw path_not_exists( dir );
-  }
+    // Load config file
+    auto const& config = maptk::read_config_file(qPrintable(path));
 
-  camera_map::map_camera_t cameras;
+    auto const& cameraPath = config->get_value<std::string>("output_krtd_dir");
+    auto const& landmarks = config->get_value<std::string>("output_ply_file");
+    auto const& tracks = config->get_value<std::string>("input_track_file");
 
-  for( frame_id_t fid = 0; fid < img_files.size(); ++fid )
-  {
-    try
+    this->cameraPath = base.filePath(qtString(cameraPath));
+    this->landmarks = base.filePath(qtString(landmarks));
+    this->tracks = base.filePath(qtString(tracks));
+
+    // Read image list
+    auto const& iflPath = config->get_value<std::string>("image_list_file");
+    QFile ifl(base.filePath(qtString(iflPath)));
+    if (!ifl.open(QIODevice::ReadOnly | QIODevice::Text))
     {
-      camera_d new_camera = read_krtd_file( img_files[fid], dir );
-      cameras[fid] = camera_sptr( new camera_d( new_camera ) );
+      // TODO set error
+      return false;
     }
-    catch( file_not_found_exception )
+
+    while (!ifl.atEnd())
     {
-      continue;
+      auto const& line = ifl.readLine();
+      if (!line.isEmpty())
+      {
+        // Strip '\n' and convert to full path
+        auto const ll = line.length() - (line.endsWith('\n') ? 1 : 0);
+        this->images.append(base.filePath(QString::fromLocal8Bit(line, ll)));
+      }
     }
-  }
 
-  if( cameras.empty() )
+    return true;
+  }
+  catch (...)
   {
-    throw invalid_data( "No krtd files found" );
+    // TODO set error
+    return false;
   }
-
-  return camera_map_sptr( new simple_camera_map( cameras ) );
 }
-
-
-} // end namespace maptk

@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,52 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * \file
- * \brief Implementation of camera map io functions
- */
+#include "MainWindow.h"
 
-#include "camera_map_io.h"
-#include "camera_io.h"
-#include "exceptions.h"
+#include <QApplication>
 
-#include <boost/filesystem.hpp>
-
-namespace maptk
+//-----------------------------------------------------------------------------
+int main(int argc, char** argv)
 {
+  // Set application information
+  QApplication::setApplicationName("MapGUI");
+  QApplication::setOrganizationName("Kitware");
+  QApplication::setOrganizationDomain("kitware.com");
 
+  QApplication app(argc, argv);
 
-/// Load a camera map from krtd files stored in a directory.
-camera_map_sptr
-read_krtd_files(std::vector<path_t> const& img_files, path_t const& dir)
-{
-  if( !boost::filesystem::exists( dir ) )
-  {
-    throw path_not_exists( dir );
-  }
+  MainWindow window;
+  window.show();
 
-  camera_map::map_camera_t cameras;
-
-  for( frame_id_t fid = 0; fid < img_files.size(); ++fid )
-  {
-    try
-    {
-      camera_d new_camera = read_krtd_file( img_files[fid], dir );
-      cameras[fid] = camera_sptr( new camera_d( new_camera ) );
-    }
-    catch( file_not_found_exception )
-    {
-      continue;
-    }
-  }
-
-  if( cameras.empty() )
-  {
-    throw invalid_data( "No krtd files found" );
-  }
-
-  return camera_map_sptr( new simple_camera_map( cameras ) );
+  return app.exec();
 }
-
-
-} // end namespace maptk

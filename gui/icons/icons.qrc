@@ -1,0 +1,20 @@
+<RCC>
+  <qresource prefix="icons/16x16">
+    <file alias="open">16x16/open.png</file>
+    <file alias="playback-loop">16x16/playback-loop.png</file>
+    <file alias="playback-play">16x16/playback-play.png</file>
+    <file alias="quit">16x16/quit.png</file>
+    <file alias="view-reset">16x16/view-reset.png</file>
+  </qresource>
+  <qresource prefix="icons/22x22">
+    <file alias="camera">22x22/camera.png</file>
+    <file alias="feature">22x22/feature.png</file>
+    <file alias="landmark">22x22/landmark.png</file>
+    <file alias="open">22x22/open.png</file>
+    <file alias="playback-loop">22x22/playback-loop.png</file>
+    <file alias="playback-play">22x22/playback-play.png</file>
+    <file alias="quit">22x22/quit.png</file>
+    <file alias="residual">22x22/residual.png</file>
+    <file alias="view-reset">22x22/view-reset.png</file>
+  </qresource>
+</RCC>

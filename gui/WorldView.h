@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,52 +28,48 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * \file
- * \brief Implementation of camera map io functions
- */
+#ifndef MAPTK_WORLDVIEW_H_
+#define MAPTK_WORLDVIEW_H_
 
-#include "camera_map_io.h"
-#include "camera_io.h"
-#include "exceptions.h"
+#include <qtGlobal.h>
 
-#include <boost/filesystem.hpp>
+#include <QtGui/QWidget>
 
-namespace maptk
+namespace maptk { class landmark_map; }
+
+class vtkMaptkCamera;
+
+class WorldViewPrivate;
+
+class WorldView : public QWidget
 {
+  Q_OBJECT
 
+public:
+  explicit WorldView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  virtual ~WorldView();
 
-/// Load a camera map from krtd files stored in a directory.
-camera_map_sptr
-read_krtd_files(std::vector<path_t> const& img_files, path_t const& dir)
-{
-  if( !boost::filesystem::exists( dir ) )
-  {
-    throw path_not_exists( dir );
-  }
+public slots:
+  void addCamera(int id, vtkMaptkCamera* camera);
+  void addLandmarks(maptk::landmark_map const&);
 
-  camera_map::map_camera_t cameras;
+  void setCamerasVisible(bool);
+  void setLandmarksVisible(bool);
 
-  for( frame_id_t fid = 0; fid < img_files.size(); ++fid )
-  {
-    try
-    {
-      camera_d new_camera = read_krtd_file( img_files[fid], dir );
-      cameras[fid] = camera_sptr( new camera_d( new_camera ) );
-    }
-    catch( file_not_found_exception )
-    {
-      continue;
-    }
-  }
+  void setActiveCamera(vtkMaptkCamera* camera);
 
-  if( cameras.empty() )
-  {
-    throw invalid_data( "No krtd files found" );
-  }
+  void resetView();
+  void resetViewToLandmarks();
 
-  return camera_map_sptr( new simple_camera_map( cameras ) );
-}
+protected slots:
+  void updateCameras();
+  void updateCameraScale();
 
+private:
+  QTE_DECLARE_PRIVATE_RPTR(WorldView)
+  QTE_DECLARE_PRIVATE(WorldView)
 
-} // end namespace maptk
+  QTE_DISABLE_COPY(WorldView)
+};
+
+#endif
