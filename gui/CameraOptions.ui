@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CameraOptions</class>
+ <widget class="QWidget" name="CameraOptions">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>222</width>
+    <height>193</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QFormLayout" name="formLayout">
+   <item row="0" column="0">
+    <widget class="QLabel" name="colorLabel">
+     <property name="text">
+      <string>Color</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <layout class="QHBoxLayout" name="colorLayout">
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="ActorColorButton" name="activeColor">
+       <property name="color">
+        <color>
+         <red>255</red>
+         <green>20</green>
+         <blue>144</blue>
+        </color>
+       </property>
+       <property name="alphaShown">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="scaleLabel">
+     <property name="text">
+      <string>Scale</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="qtDoubleSlider" name="scale">
+     <property name="minimum">
+      <double>-2.000000000000000</double>
+     </property>
+     <property name="maximum">
+      <double>2.000000000000000</double>
+     </property>
+     <property name="pageStep">
+      <double>0.200000000000000</double>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="2">
+    <layout class="QHBoxLayout" name="inactiveLayout" stretch="1,0">
+     <item>
+      <widget class="QCheckBox" name="showInactive">
+       <property name="text">
+        <string>Inactive Cameras</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="ActorColorButton" name="inactiveColor">
+       <property name="color">
+        <color alpha="80">
+         <red>128</red>
+         <green>144</green>
+         <blue>172</blue>
+        </color>
+       </property>
+       <property name="alphaShown">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="3" column="0" colspan="2">
+    <widget class="QWidget" name="inactiveOptions" native="true">
+     <layout class="QGridLayout" name="gridLayout_2" columnstretch="0,0,1">
+      <property name="margin">
+       <number>0</number>
+      </property>
+      <item row="0" column="0" rowspan="2">
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>68</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="0" column="1">
+       <widget class="QRadioButton" name="inactiveAsPoints">
+        <property name="text">
+         <string>Points</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QSlider" name="inactivePointSize">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>16</number>
+        </property>
+        <property name="pageStep">
+         <number>4</number>
+        </property>
+        <property name="value">
+         <number>3</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QRadioButton" name="inactiveAsFrustums">
+        <property name="text">
+         <string>Frustums</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="qtDoubleSlider" name="inactiveScale">
+        <property name="minimum">
+         <double>-2.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>0.000000000000000</double>
+        </property>
+        <property name="pageStep">
+         <double>0.200000000000000</double>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="4" column="0" colspan="2">
+    <layout class="QHBoxLayout" name="pathLayout" stretch="1,0">
+     <item>
+      <widget class="QCheckBox" name="showPath">
+       <property name="text">
+        <string>Camera Path</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="ActorColorButton" name="pathColor">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="color">
+        <color>
+         <red>224</red>
+         <green>184</green>
+         <blue>164</blue>
+        </color>
+       </property>
+       <property name="alphaShown">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>qtColorButton</class>
+   <extends>QPushButton</extends>
+   <header>qtColorButton.h</header>
+  </customwidget>
+  <customwidget>
+   <class>qtDoubleSlider</class>
+   <extends>QWidget</extends>
+   <header>qtDoubleSlider.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ActorColorButton</class>
+   <extends>qtColorButton</extends>
+   <header>ActorColorButton.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>showInactive</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>inactiveOptions</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>110</x>
+     <y>41</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>110</x>
+     <y>89</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>inactiveAsFrustums</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>inactiveScale</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>70</x>
+     <y>109</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>167</x>
+     <y>109</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>inactiveAsPoints</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>inactivePointSize</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>70</x>
+     <y>73</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>167</x>
+     <y>73</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>showPath</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>pathColor</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>79</x>
+     <y>175</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>187</x>
+     <y>175</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>showInactive</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>inactiveColor</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>79</x>
+     <y>73</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>187</x>
+     <y>73</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
