@@ -33,6 +33,7 @@
 #include "ui_CameraView.h"
 #include "am_CameraView.h"
 
+#include "ActorColorButton.h"
 #include "FeatureOptions.h"
 #include "vtkMaptkCamera.h"
 
@@ -50,11 +51,57 @@
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 
+#include <qtUiState.h>
+
+#include <QtGui/QFormLayout>
 #include <QtGui/QMenu>
 #include <QtGui/QToolButton>
 #include <QtGui/QWidgetAction>
 
 #include <QtCore/QDebug>
+
+namespace // anonymous
+{
+
+//-----------------------------------------------------------------------------
+class ActorColorOption : public QWidget
+{
+public:
+  ActorColorOption(QString const& settingsGroup, QWidget* parent);
+  virtual ~ActorColorOption();
+
+  void setDefaultColor(QColor const&);
+
+  ActorColorButton* const button;
+  qtUiState uiState;
+};
+
+//-----------------------------------------------------------------------------
+ActorColorOption::ActorColorOption(
+  QString const& settingsGroup, QWidget* parent)
+  : QWidget(parent), button(new ActorColorButton(this))
+{
+  auto const layout = new QFormLayout(this);
+  layout->addRow("Color", this->button);
+
+  this->button->persist(this->uiState, settingsGroup + "/Color");
+  this->uiState.restore();
+}
+
+//-----------------------------------------------------------------------------
+ActorColorOption::~ActorColorOption()
+{
+  this->uiState.save();
+}
+
+//-----------------------------------------------------------------------------
+void ActorColorOption::setDefaultColor(QColor const& color)
+{
+  this->button->setColor(color);
+  this->uiState.restore();
+}
+
+} // namespace <anonymous>
 
 //-----------------------------------------------------------------------------
 class CameraViewPrivate
@@ -219,6 +266,16 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->setPopup(d->UI.actionShowLandmarks, landmarkOptions);
 
   connect(landmarkOptions, SIGNAL(modified()),
+          d->UI.renderWidget, SLOT(update()));
+
+  auto const residualsOptions =
+    new ActorColorOption("CameraView/Residuals", this);
+  residualsOptions->setDefaultColor(QColor(255, 128, 0));
+  residualsOptions->button->addActor(d->residuals.actor.GetPointer());
+
+  d->setPopup(d->UI.actionShowResiduals, residualsOptions);
+
+  connect(residualsOptions->button, SIGNAL(colorChanged(QColor)),
           d->UI.renderWidget, SLOT(update()));
 
   // Connect actions
