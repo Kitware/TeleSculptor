@@ -36,9 +36,9 @@
 #include "Project.h"
 #include "vtkMaptkCamera.h"
 
-#include <maptk/camera_io.h>
-#include <maptk/landmark_map_io.h>
-#include <maptk/track_set_io.h>
+#include <vital/io/camera_io.h>
+#include <vital/io/landmark_map_io.h>
+#include <vital/io/track_set_io.h>
 
 #include <vtkSmartPointer.h>
 
@@ -72,7 +72,7 @@ class MainWindowPrivate
 public:
   MainWindowPrivate() : activeCameraIndex(-1) {}
 
-  void addCamera(maptk::camera_d const& camera,
+  void addCamera(kwiver::vital::camera_sptr const& camera,
                  QString const& imagePath = QString());
 
   void setActiveCamera(int);
@@ -85,8 +85,8 @@ public:
   QTimer slideTimer;
 
   QList<CameraData> cameras;
-  maptk::track_set_sptr tracks;
-  maptk::landmark_map_sptr landmarks;
+  kwiver::vital::track_set_sptr tracks;
+  kwiver::vital::landmark_map_sptr landmarks;
 
   int activeCameraIndex;
 };
@@ -95,7 +95,7 @@ QTE_IMPLEMENT_D_FUNC(MainWindow)
 
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::addCamera(
-  maptk::camera_d const& camera, QString const& imagePath)
+  kwiver::vital::camera_sptr const& camera, QString const& imagePath)
 {
   CameraData cd;
 
@@ -151,7 +151,7 @@ void MainWindowPrivate::updateCameraView()
   this->UI.cameraView->loadImage(cd.imagePath, cd.camera);
 
   // Show tracks
-  QHash<maptk::track_id_t, maptk::vector_2d> featurePoints;
+  QHash<kwiver::vital::track_id_t, kwiver::vital::vector_2d> featurePoints;
   this->UI.cameraView->clearFeaturePoints();
   if (this->tracks)
   {
@@ -312,12 +312,13 @@ void MainWindow::loadProject(const QString& path)
   this->loadTracks(project.tracks);
   this->loadLandmarks(project.landmarks);
 
-  auto const cameraDir = maptk::path_t(qPrintable(project.cameraPath));
+  auto const cameraDir = kwiver::vital::path_t(qPrintable(project.cameraPath));
   foreach (auto const& ip, project.images)
   {
     try
     {
-      auto const& camera = maptk::read_krtd_file(qPrintable(ip), cameraDir);
+      auto const& camera =
+        kwiver::vital::read_krtd_file(qPrintable(ip), cameraDir);
 
       // Add camera to scene
       d->addCamera(camera, ip);
@@ -339,7 +340,7 @@ void MainWindow::loadCamera(const QString& path)
 
   try
   {
-    auto const& camera = maptk::read_krtd_file(qPrintable(path));
+    auto const& camera = kwiver::vital::read_krtd_file(qPrintable(path));
     d->addCamera(camera);
   }
   catch (...)
@@ -355,7 +356,7 @@ void MainWindow::loadTracks(QString const& path)
 
   try
   {
-    auto const& tracks = maptk::read_track_file(qPrintable(path));
+    auto const& tracks = kwiver::vital::read_track_file(qPrintable(path));
     if (tracks)
     {
       d->tracks = tracks;
@@ -375,7 +376,7 @@ void MainWindow::loadLandmarks(const QString& path)
 
   try
   {
-    auto const& landmarks = maptk::read_ply_file(qPrintable(path));
+    auto const& landmarks = kwiver::vital::read_ply_file(qPrintable(path));
     if (landmarks)
     {
       d->landmarks = landmarks;

@@ -30,8 +30,7 @@
 
 #include "vtkMaptkCamera.h"
 
-#include <maptk/camera.h>
-#include <maptk/camera_io.h>
+#include <vital/io/camera_io.h>
 
 #include <vtkObjectFactory.h>
 #include <vtkMath.h>
@@ -44,12 +43,12 @@ namespace // anonymous
 {
 
 //-----------------------------------------------------------------------------
-void BuildCamera(vtkMaptkCamera* out, maptk::camera const& in,
-                 maptk::camera_intrinsics_d const& ci)
+void BuildCamera(vtkMaptkCamera* out, kwiver::vital::camera_sptr const& in,
+                 kwiver::vital::camera_intrinsics_sptr const& ci)
 {
   // Get camera parameters
-  auto const pixelAspect = ci.aspect_ratio();
-  auto const focalLength = ci.focal_length();
+  auto const pixelAspect = ci->aspect_ratio();
+  auto const focalLength = ci->focal_length();
 
   int imageWidth, imageHeight;
   out->GetImageDimensions(imageWidth, imageHeight);
@@ -62,11 +61,11 @@ void BuildCamera(vtkMaptkCamera* out, maptk::camera const& in,
   out->SetViewAngle(fov);
 
   // Compute camera vectors from matrix
-  auto const& rotationMatrix = in.rotation().quaternion().toRotationMatrix();
+  auto const& rotationMatrix = in->rotation().quaternion().toRotationMatrix();
 
   auto up = -rotationMatrix.row(1).transpose();
   auto view = rotationMatrix.row(2).transpose();
-  auto center = in.center();
+  auto center = in->center();
 
   out->SetPosition(center[0], center[1], center[2]);
   out->SetViewUp(up[0], up[1], up[2]);
@@ -89,20 +88,21 @@ vtkMaptkCamera::~vtkMaptkCamera()
 }
 
 //-----------------------------------------------------------------------------
-void vtkMaptkCamera::SetCamera(maptk::camera_d const& camera)
+void vtkMaptkCamera::SetCamera(kwiver::vital::camera_sptr const& camera)
 {
   this->MaptkCamera = camera;
 }
 
 //-----------------------------------------------------------------------------
-bool vtkMaptkCamera::ProjectPoint(maptk::vector_3d const& in, double (&out)[2])
+bool vtkMaptkCamera::ProjectPoint(kwiver::vital::vector_3d const& in,
+                                  double (&out)[2])
 {
-  if (this->MaptkCamera.depth(in) < 0.0)
+  if (this->MaptkCamera->depth(in) < 0.0)
   {
     return false;
   }
 
-  auto const& ppos = this->MaptkCamera.project(in);
+  auto const& ppos = this->MaptkCamera->project(in);
   out[0] = ppos[0];
   out[1] = ppos[1];
   return true;
@@ -111,12 +111,12 @@ bool vtkMaptkCamera::ProjectPoint(maptk::vector_3d const& in, double (&out)[2])
 //-----------------------------------------------------------------------------
 bool vtkMaptkCamera::Update()
 {
-  auto const& ci = this->MaptkCamera.intrinsics();
+  auto const& ci = this->MaptkCamera->intrinsics();
 
   if (this->ImageDimensions[0] == -1 || this->ImageDimensions[1] == -1)
   {
     // Guess image size
-    auto const& s = ci.principal_point() * 2.0;
+    auto const& s = ci->principal_point() * 2.0;
     this->ImageDimensions[0] = s[0];
     this->ImageDimensions[1] = s[1];
   }

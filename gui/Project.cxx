@@ -30,7 +30,7 @@
 
 #include "Project.h"
 
-#include <maptk/config_block_io.h>
+#include <vital/config/config_block_io.h>
 
 #include <qtStlUtil.h>
 
@@ -46,7 +46,7 @@ bool Project::read(QString const& path)
   try
   {
     // Load config file
-    auto const& config = maptk::read_config_file(qPrintable(path));
+    auto const& config = kwiver::vital::read_config_file(qPrintable(path));
 
     auto const& cameraPath = config->get_value<std::string>("output_krtd_dir");
     auto const& landmarks = config->get_value<std::string>("output_ply_file");

@@ -35,7 +35,7 @@
 
 #include <QtGui/QWidget>
 
-namespace maptk { class landmark_map; }
+namespace kwiver { namespace vital { class landmark_map; } }
 
 class vtkMaptkCamera;
 
@@ -51,7 +51,7 @@ public:
 
 public slots:
   void addCamera(int id, vtkMaptkCamera* camera);
-  void addLandmarks(maptk::landmark_map const&);
+  void addLandmarks(kwiver::vital::landmark_map const&);
 
   void setCamerasVisible(bool);
   void setLandmarksVisible(bool);

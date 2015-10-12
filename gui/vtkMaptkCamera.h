@@ -31,9 +31,9 @@
 #ifndef MAPTK_VTKMAPTKCAMERA_H_
 #define MAPTK_VTKMAPTKCAMERA_H_
 
-#include <vtkCamera.h>
+#include <vital/types/camera.h>
 
-#include <maptk/camera.h>
+#include <vtkCamera.h>
 
 class vtkMaptkCamera : public vtkCamera
 {
@@ -45,11 +45,12 @@ public:
 
   // Description:
   // Set the internal maptk camera
-  void SetCamera(maptk::camera_d const& camera);
+  void SetCamera(kwiver::vital::camera_sptr const& camera);
 
   // Description:
   // Project 3D point to 2D using the internal maptk camera
-  bool ProjectPoint(maptk::vector_3d const& point, double (&projPoint)[2]);
+  bool ProjectPoint(kwiver::vital::vector_3d const& point,
+                    double (&projPoint)[2]);
 
   // Description:
   // Update self (the VTK camera) based on the maptk camera and
@@ -88,7 +89,7 @@ private:
   int ImageDimensions[2];
   double AspectRatio;
 
-  maptk::camera_d MaptkCamera;
+  kwiver::vital::camera_sptr MaptkCamera;
 };
 
 #endif

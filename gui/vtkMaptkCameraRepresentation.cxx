@@ -32,7 +32,7 @@
 
 #include "vtkMaptkCamera.h"
 
-#include <maptk/vector.h>
+#include <vital/types/vector.h>
 
 #include <vtkActor.h>
 #include <vtkAppendPolyData.h>
@@ -47,6 +47,8 @@
 #include <vtkProperty.h>
 
 vtkStandardNewMacro(vtkMaptkCameraRepresentation);
+
+using kwiver::vital::vector_3d;
 
 namespace // anonymous
 {
@@ -91,7 +93,7 @@ void BuildCameraFrustum(
   //
   // TODO vtkFrustumSource indicates that this is actually the near plane, but
   //      appears to be wrong - need to verify
-  maptk::vector_3d points[4];
+  vector_3d points[4];
   frustumPoints->GetPoint(0, points[0].data());
   frustumPoints->GetPoint(1, points[1].data());
   frustumPoints->GetPoint(2, points[2].data());
@@ -103,7 +105,7 @@ void BuildCameraFrustum(
   //   new = top + (top - center)
   //       = p2 + p3 - center
   auto const center = 0.25 * (points[0] + points[1] + points[2] + points[3]);
-  auto const newPoint = maptk::vector_3d(points[2] + points[3] - center);
+  auto const newPoint = vector_3d(points[2] + points[3] - center);
 
   // Insert new point and new face
   vtkIdType const newIndex = frustumPoints->InsertNextPoint(newPoint.data());

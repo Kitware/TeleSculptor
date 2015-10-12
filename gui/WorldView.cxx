@@ -38,8 +38,8 @@
 #include "vtkMaptkCamera.h"
 #include "vtkMaptkCameraRepresentation.h"
 
-#include <maptk/camera.h>
-#include <maptk/landmark_map.h>
+#include <vital/types/camera.h>
+#include <vital/types/landmark_map.h>
 
 #include <vtkActorCollection.h>
 #include <vtkBoundingBox.h>
@@ -217,7 +217,7 @@ void WorldView::setActiveCamera(vtkMaptkCamera* camera)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::addLandmarks(maptk::landmark_map const& lm)
+void WorldView::addLandmarks(kwiver::vital::landmark_map const& lm)
 {
   QTE_D();
 
