@@ -60,6 +60,16 @@ add_subdirectory(tools)
 
 
 ###
+# GUI
+#
+
+option(MAPTK_ENABLE_GUI "Build MAPTK GUI" OFF)
+if(MAPTK_ENABLE_GUI)
+  add_subdirectory(gui)
+endif()
+
+
+###
 # Testing
 #
 
