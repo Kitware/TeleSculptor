@@ -184,4 +184,15 @@ View Menu
   camera. When disabled, the slideshow ends when the last camera becomes
   active.
 
+Help Menu
+---------
+
+:icon:`help-manual` MapGUI User Manual
+  Displays the user manual (i.e. this document) in the default web browser.
+
+:icon:`help` About MapGUI
+  Shows copyright and version information about the application.
+
+.. TODO icon should be the application icon
+
 .. |--| unicode:: U+02014 .. em dash

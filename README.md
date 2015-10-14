@@ -181,8 +181,8 @@ build process under the target "doxygen".  Open
 If `MAPTK_ENABLE_MANUALS` is enabled, and CMake finds, or is provided with, a
 path to the Python executable which is able to import docutils, then the user
 manuals are built as part of the normal build process under the target
-"manuals".  Open `${MAPTK_BUILD_DIR}/doc/user/gui.html` in your browser to
-view the GUI manual.
+"manuals".  The GUI manual can be viewed from inside the GUI by choosing the
+"MapGUI User Manual" action from the "Help" menu.
 
 
 Testing
