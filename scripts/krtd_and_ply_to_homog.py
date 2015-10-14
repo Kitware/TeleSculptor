@@ -42,6 +42,7 @@ import os.path
 
 from camera_io import *
 from landmark_io import *
+from homography_io import *
 
 
 def homography_from_plane(camera1, camera2, plane):
@@ -72,17 +73,6 @@ def estimate_plane(points):
     return np.hstack((N,-d))
 
 
-def write_homog_file(filename, homogs):
-    """Write a homography file
-    """
-    with open(filename, 'w') as fin:
-        for i, H in enumerate(homogs):
-            fin.write("%d %d\n" % (i,i))
-            fin.write("%.12g %.12g %.12g\n" % tuple(H.tolist()[0]))
-            fin.write("%.12g %.12g %.12g\n" % tuple(H.tolist()[1]))
-            fin.write("%.12g %.12g %.12g\n\n" % tuple(H.tolist()[2]))
-
-
 def main():
     usage = "usage: %prog [options] ply_file krtd_glob out_homogs"
     description = "Read a PLY and set of KRTDs and produce a homography file"
@@ -107,7 +97,8 @@ def main():
         H = homography_from_plane(cam, cam0, plane)
         homogs.append(H)
 
-    write_homog_file(out_homog_file, homogs)
+    homogs = [("%d %d"%i, H) for i, H in enumerate(homogs)]
+    write_homog_file(homogs, out_homog_file)
 
 
 
