@@ -61,7 +61,7 @@ Scripts
  * Added a Python script to read the ASCII match matrix file produced by
    the match matrix tool and plot it.
 
- * Added Python modules to read and write KRTD and PLY files.
+ * Added Python modules to read and write KRTD, PLY, and homography files.
 
  * Added a Python script to read an NVM file from VisualSfM and write out
    KRTD camera files
@@ -71,6 +71,11 @@ Scripts
    the points in the PLY and then uses the cameras to derive homographies
    from each frame back to the first frame as induced by the plane.
 
+ * Added a Python script to compute the extents of the output space of
+   a sequence of homographies applied to video of fixed size.
+
+ * Added a Python script to transform homographies by translating and
+   scaling the output space.
 
 Fixes since last public release
 -------------------------------
