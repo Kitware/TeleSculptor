@@ -154,10 +154,20 @@ dependencies.  To build the GUI, you need:
 ### Documentation ###
 
 Documentation generation is another optional component that brings in
-additional dependencies.  To build the documentation you need:
+additional dependencies.  To build the API documentation, you need:
 
 * Doxygen  - version 1.7 or greater
              <http://www.stack.nl/~dimitri/doxygen/>
+
+To build the user manual(s), you need:
+
+* Python   - version 2.6 or greater
+             <http://www.python.org/>
+* Docutils - version 0.11 or greater
+             <http://docutils.sourceforge.net/>
+
+(At present, only the GUI has a user manual.  Other manuals may be added in the
+future.
 
 
 Building Doxygen Documentation
@@ -167,6 +177,13 @@ If `MAPTK_ENABLE_DOCS` is enabled, and CMake finds, or is provided with, a path
 to the Doxygen tool, then the HTML documentation is built as part of the normal
 build process under the target "doxygen".  Open
 `${MAPTK_BUILD_DIR}/docs/index.html` in your browser to view the documentation.
+
+If `MAPTK_ENABLE_MANUALS` is enabled, and CMake finds, or is provided with, a
+path to the Python executable which is able to import docutils, then the user
+manuals are built as part of the normal build process under the target
+"manuals".  Open `${MAPTK_BUILD_DIR}/doc/user/gui.html` in your browser to
+view the GUI manual.
+
 
 Testing
 =======
@@ -190,6 +207,7 @@ automated testing of all topic branches and pull requests whenever they are crea
 
 * Travis CI **release** branch: [![Build Status](https://travis-ci.org/Kitware/maptk.svg?branch=release)]
 (https://travis-ci.org/Kitware/maptk)
+
 
 MAP-Tk Tools
 ============
@@ -263,6 +281,7 @@ An easier way to get started is to use the sample configuration files for each
 tool that are provided in the `tools/config` directory.  These examples use
 recommended default settings that are known to produce useful results.
 
+
 Getting Help
 ============
 
@@ -273,6 +292,7 @@ mailing list to discuss MAP-Tk or to ask for help with using MAP-Tk.
 For less frequent announcements about MAP-Tk and other KWIVER components
 please join the [kwiver-announce](http://public.kitware.com/mailman/listinfo/kwiver-announce)
 mailing list.
+
 
 Acknowledgements
 ================
