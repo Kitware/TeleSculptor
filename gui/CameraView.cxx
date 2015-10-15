@@ -170,6 +170,9 @@ void CameraViewPrivate::PointCloud::addPoint(double x, double y, double z)
 
   this->verts->InsertNextCell(1);
   this->verts->InsertCellPoint(vid);
+
+  this->points->Modified();
+  this->verts->Modified();
 }
 
 //-----------------------------------------------------------------------------
@@ -177,6 +180,9 @@ void CameraViewPrivate::PointCloud::clear()
 {
   this->verts->Reset();
   this->points->Reset();
+
+  this->points->Modified();
+  this->verts->Modified();
 }
 
 //-----------------------------------------------------------------------------
@@ -201,6 +207,9 @@ void CameraViewPrivate::SegmentCloud::addSegment(
   this->verts->InsertNextCell(2);
   this->verts->InsertCellPoint(vid1);
   this->verts->InsertCellPoint(vid2);
+
+  this->points->Modified();
+  this->verts->Modified();
 }
 
 //-----------------------------------------------------------------------------
