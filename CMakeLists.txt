@@ -70,6 +70,16 @@ endif()
 
 
 ###
+# Manuals
+#
+
+option(MAPTK_ENABLE_MANUALS "Build MAPTK user manual(s)" OFF)
+if(MAPTK_ENABLE_MANUALS)
+  add_subdirectory(doc/manuals)
+endif()
+
+
+###
 # Testing
 #
 
