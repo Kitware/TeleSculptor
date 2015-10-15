@@ -39,10 +39,15 @@
 
 #include <boost/foreach.hpp>
 
+#include <maptk/algo/bundle_adjust.h>
 #include <maptk/algo/estimate_essential_matrix.h>
+#include <maptk/algo/optimize_cameras.h>
 #include <maptk/algo/triangulate_landmarks.h>
+#include <maptk/plugins/core/triangulate_landmarks.h>
 #include <maptk/exceptions.h>
+#include <maptk/metrics.h>
 #include <maptk/eigen_io.h>
+#include <maptk/match_matrix.h>
 #include <maptk/triangulate.h>
 
 
@@ -60,21 +65,30 @@ public:
   /// Constructor
   priv()
   : verbose(false),
+    init_from_last(false),
     retriangulate_all(false),
     base_camera(),
     e_estimator(),
-    lm_triangulator()
+    camera_optimizer(),
+    // use the core triangulation as the default, users can change it
+    lm_triangulator(new maptk::core::triangulate_landmarks()),
+    bundle_adjuster()
   {
   }
 
   priv(const priv& other)
   : verbose(other.verbose),
+    init_from_last(other.init_from_last),
     retriangulate_all(other.retriangulate_all),
     base_camera(other.base_camera),
     e_estimator(!other.e_estimator ? algo::estimate_essential_matrix_sptr()
                                    : other.e_estimator->clone()),
+    camera_optimizer(!other.camera_optimizer ? algo::optimize_cameras_sptr()
+                                             : other.camera_optimizer->clone()),
     lm_triangulator(!other.lm_triangulator ? algo::triangulate_landmarks_sptr()
-                                           : other.lm_triangulator->clone())
+                                           : other.lm_triangulator->clone()),
+    bundle_adjuster(!other.bundle_adjuster ? algo::bundle_adjust_sptr()
+                                           : other.bundle_adjuster->clone())
   {
   }
 
@@ -108,10 +122,13 @@ public:
                             const vector_2d& right_pt) const;
 
   bool verbose;
+  bool init_from_last;
   bool retriangulate_all;
   camera_d base_camera;
   algo::estimate_essential_matrix_sptr e_estimator;
+  algo::optimize_cameras_sptr camera_optimizer;
   algo::triangulate_landmarks_sptr lm_triangulator;
+  algo::bundle_adjust_sptr bundle_adjuster;
 };
 
 
@@ -161,7 +178,8 @@ initialize_cameras_landmarks::priv
                                                           inliers.end(), true));
   if( this->verbose )
   {
-    std::cout << "E matrix num inliers = "<<num_inliers<<std::endl;
+    std::cout << "E matrix num inliers = " << num_inliers
+              << "/" << inliers.size() << std::endl;
   }
 
   // get the first inlier index
@@ -180,9 +198,8 @@ initialize_cameras_landmarks::priv
   // compute the scale from existing landmark locations (if available)
   matrix_3x3d prev_R(prev_cam->rotation());
   vector_3d prev_t = prev_cam->translation();
-  matrix_3x3d K(cam.get_intrinsics());
-  matrix_3x3d KR = K * matrix_3x3d(cam.get_rotation());
-  vector_3d Kt = K * cam.get_translation();
+  matrix_3x3d R = matrix_3x3d(cam.get_rotation());
+  vector_3d t = cam.get_translation();
   std::vector<double> scales;
   scales.reserve(num_inliers);
   for(unsigned int i=0; i<inliers.size(); ++i)
@@ -192,8 +209,8 @@ initialize_cameras_landmarks::priv
       continue;
     }
     vector_3d pt3d = prev_R * pts_lm[i]->loc() + prev_t;
-    const vector_2d& pt2d = pts_left[i];
-    scales.push_back(estimate_t_scale(KR*pt3d, Kt, pt2d));
+    const vector_2d& pt2d = cal_left.unmap(pts_left[i]);
+    scales.push_back(estimate_t_scale(R*pt3d, t, pt2d));
   }
   // find the median scale
   double median_scale = 1.0;
@@ -220,7 +237,8 @@ initialize_cameras_landmarks::priv
   cam.set_rotation(cam.get_rotation() * prev_cam->rotation());
   cam.set_translation(new_t);
 
-  return camera_sptr(new camera_d(cam));
+  camera_sptr new_cam_sptr(new camera_d(cam));
+  return new_cam_sptr;
 }
 
 
@@ -377,6 +395,10 @@ initialize_cameras_landmarks
                     "If true, write status messages to the terminal showing "
                     "debugging information");
 
+  config->set_value("init_from_last", d_->init_from_last,
+                    "If true, and a camera optimizer is specified, initialize "
+                    "the camera using the closest exiting camera and optimize");
+
   config->set_value("retriangulate_all", d_->retriangulate_all,
                     "If true, re-triangulate all landmarks observed by a newly "
                     "initialized camera.  Otherwise, only triangulate or "
@@ -401,9 +423,15 @@ initialize_cameras_landmarks
   algo::estimate_essential_matrix
       ::get_nested_algo_configuration("essential_mat_estimator",
                                       config, d_->e_estimator);
+  algo::optimize_cameras
+      ::get_nested_algo_configuration("camera_optimizer",
+                                      config, d_->camera_optimizer);
   algo::triangulate_landmarks
       ::get_nested_algo_configuration("lm_triangulator",
                                       config, d_->lm_triangulator);
+  algo::bundle_adjust
+      ::get_nested_algo_configuration("bundle_adjuster",
+                                      config, d_->bundle_adjuster);
   return config;
 }
 
@@ -419,12 +447,21 @@ initialize_cameras_landmarks
   algo::estimate_essential_matrix
       ::set_nested_algo_configuration("essential_mat_estimator",
                                       config, d_->e_estimator);
+  algo::optimize_cameras
+      ::set_nested_algo_configuration("camera_optimizer",
+                                      config, d_->camera_optimizer);
   algo::triangulate_landmarks
       ::set_nested_algo_configuration("lm_triangulator",
                                       config, d_->lm_triangulator);
+  algo::bundle_adjust
+      ::set_nested_algo_configuration("bundle_adjuster",
+                                      config, d_->bundle_adjuster);
 
   d_->verbose = config->get_value<bool>("verbose",
                                         d_->verbose);
+
+  d_->init_from_last = config->get_value<bool>("init_from_last",
+                                               d_->init_from_last);
 
   d_->retriangulate_all = config->get_value<bool>("retriangulate_all",
                                                   d_->retriangulate_all);
@@ -447,6 +484,18 @@ bool
 initialize_cameras_landmarks
 ::check_configuration(config_block_sptr config) const
 {
+  if (config->get_value<std::string>("camera_optimizer", "") != ""
+      && !algo::optimize_cameras
+              ::check_nested_algo_configuration("camera_optimizer", config))
+  {
+    return false;
+  }
+  if (config->get_value<std::string>("bundle_adjuster", "") != ""
+      && !algo::bundle_adjust
+              ::check_nested_algo_configuration("bundle_adjuster", config))
+  {
+    return false;
+  }
   return algo::estimate_essential_matrix
              ::check_nested_algo_configuration("essential_mat_estimator",
                                                config)
@@ -536,6 +585,131 @@ void extract_landmarks(const landmark_map_sptr& landmarks,
   track_ids = new_landmarks;
 }
 
+
+/// Find the closest frame number with an existing camera
+frame_id_t
+find_closest_camera(const frame_id_t& frame,
+                    const camera_map::map_camera_t& cams)
+{
+  typedef maptk::camera_map::map_camera_t map_cam_t;
+  frame_id_t other_frame = cams.rbegin()->first;
+  map_cam_t::const_iterator ci = cams.lower_bound(frame);
+  if( ci == cams.end() )
+  {
+    other_frame = cams.rbegin()->first;
+  }
+  else
+  {
+    other_frame = ci->first;
+    if (ci != cams.begin() &&
+        (other_frame-frame) >= (frame-(--ci)->first))
+    {
+      other_frame = ci->first;
+    }
+  }
+  return other_frame;
+}
+
+
+/// find the best pair of camera indices to start with
+void
+find_best_initial_pair(const Eigen::SparseMatrix<unsigned int>& mm,
+                       int& i, int& j)
+{
+  typedef Eigen::Matrix<unsigned int, Eigen::Dynamic, 1> vectorXu;
+  const int cols = mm.cols();
+  const vectorXu d = mm.diagonal();
+
+  // compute the maximum off-diagonal value
+  unsigned int global_max_matches = 0;
+  for( int k=0; k<cols; ++k)
+  {
+    for(Eigen::SparseMatrix<unsigned int>::InnerIterator it(mm, k); it; ++it)
+    {
+      if(it.row() > k && it.value() > global_max_matches)
+      {
+        global_max_matches = it.value();
+      }
+    }
+  }
+  const unsigned int threshold = std::max(global_max_matches / 2, 20u);
+
+  std::cout <<"global max "<<global_max_matches << std::endl;
+  std::cout <<"threshold "<<threshold << std::endl;
+  for(int x=1; x<cols; ++x)
+  {
+    unsigned int max_matches = 0;
+    int max_i = 0, max_j = 0;
+    for(int y=0; y<cols-x; ++y)
+    {
+      unsigned int matches = mm.coeff(x+y,y);
+      if( matches > max_matches )
+      {
+        max_matches = matches;
+        max_i = y;
+        max_j = x+y;
+      }
+    }
+    std::cout << "max matches at "<<x<<" is "<< max_matches << " at "<< max_i << ", "<< max_j<<std::endl;
+    if( max_matches < threshold )
+    {
+      break;
+    }
+    i = max_i;
+    j = max_j;
+  }
+}
+
+
+// find the frame in the set \p new_frame_ids that sees the most
+// landmarks in \p lms in the track set \p tracks.
+frame_id_t
+next_best_frame(const track_set_sptr tracks,
+                const maptk::landmark_map::map_landmark_t& lms,
+                const std::set<frame_id_t>& new_frame_ids)
+{
+  const std::vector<track_sptr> trks = tracks->tracks();
+  typedef std::map<frame_id_t, unsigned int> frame_map_t;
+  frame_map_t vis_count;
+  BOOST_FOREACH(const track_sptr& t, trks)
+  {
+    if( lms.find(t->id()) != lms.end() )
+    {
+      const std::set<frame_id_t> t_frames = t->all_frame_ids();
+      BOOST_FOREACH(const frame_id_t& fid, t_frames)
+      {
+        if( new_frame_ids.find(fid) == new_frame_ids.end() )
+        {
+          continue;
+        }
+        frame_map_t::iterator fmi = vis_count.find(fid);
+        if( fmi == vis_count.end() )
+        {
+          vis_count.insert(std::pair<frame_id_t, unsigned int>(fid,1));
+        }
+        else
+        {
+          ++fmi->second;
+        }
+      }
+    }
+  }
+  // find the maximum observation
+  unsigned int max_count = 0;
+  frame_id_t best_frame = 0;
+  BOOST_FOREACH(const frame_map_t::value_type& p, vis_count)
+  {
+    if(p.second > max_count)
+    {
+      max_count = p.second;
+      best_frame = p.first;
+    }
+  }
+  std::cout << "frame "<< best_frame << " sees "<< max_count << " landmarks"<<std::endl;
+  return best_frame;
+}
+
+
 } // end anonymous namespace
 
 
@@ -565,7 +739,7 @@ initialize_cameras_landmarks
   std::set<frame_id_t> frame_ids = tracks->all_frame_ids();
   map_cam_t cams;
   extract_cameras(cameras, frame_ids, cams);
-  std::deque<frame_id_t> new_frame_ids(frame_ids.begin(), frame_ids.end());
+  std::set<frame_id_t> new_frame_ids(frame_ids);
 
   // Extract the existing landmarks and landmark ids to be initialized
   std::set<track_id_t> track_ids = tracks->all_track_ids();
@@ -601,43 +775,43 @@ initialize_cameras_landmarks
     }
   }
 
+  std::vector<frame_id_t> mm_frames(frame_ids.begin(), frame_ids.end());
+  Eigen::SparseMatrix<unsigned int> mm = match_matrix(tracks, mm_frames);
+  int init_i=0,init_j=0;
+  find_best_initial_pair(mm, init_i, init_j);
+  std::cout << "using frames "<< mm_frames[init_i] << " and " << mm_frames[init_j] <<std::endl;
+
   if(cams.empty())
   {
-    // first frame, initilze to base camera
-    frame_id_t f = new_frame_ids.front();
-    new_frame_ids.pop_front();
+    // first frame, initialize to base camera
+    frame_id_t f = mm_frames[init_i];
+    new_frame_ids.erase(f);
     cams[f] = camera_sptr(new camera_d(d_->base_camera));
   }
 
-  frame_id_t other_frame = cams.rbegin()->first;
   while( !new_frame_ids.empty() )
   {
-    frame_id_t f = new_frame_ids.front();
-    new_frame_ids.pop_front();
-
-    // get the closest frame number with an exisiting camera
-    map_cam_t::const_iterator ci = cams.lower_bound(f);
-    if( ci == cams.end() )
+    frame_id_t f;
+    if( cams.size() == 1 )
     {
-      other_frame = cams.rbegin()->first;
+      f = mm_frames[init_j];
     }
     else
     {
-      other_frame = ci->first;
-      if (ci != cams.begin() &&
-          (other_frame-f) >= (f-(--ci)->first))
-      {
-        other_frame = ci->first;
-      }
+      f = next_best_frame(tracks, lms, new_frame_ids);
     }
+    new_frame_ids.erase(f);
+
+    // get the closest frame number with an existing camera
+    frame_id_t other_frame = find_closest_camera(f, cams);
     if(d_->verbose)
     {
-      std::cout << f << " uses reference "<< other_frame <<std::endl;
+      std::cout <<"frame "<< f <<" uses reference "<< other_frame <<std::endl;
     }
 
     // get the subset of tracks that have features on frame f
     track_set_sptr ftracks = tracks->active_tracks(static_cast<int>(f));
-    // get the subset of tracks that also  have features on the last frame
+    // get the subset of tracks that also  have features on the other frame
     ftracks = ftracks->active_tracks(static_cast<int>(other_frame));
 
     // find existing landmarks for these tracks
@@ -652,10 +826,45 @@ initialize_cameras_landmarks
       }
     }
 
-    cams[f] = d_->init_camera(f, other_frame, cams, trks, flms);
+    if( d_->init_from_last && d_->camera_optimizer && flms.size() > 3)
+    {
+      cams[f] = cams[other_frame]->clone();
+    }
+    else
+    {
+      cams[f] = d_->init_camera(f, other_frame, cams, trks, flms);
+    }
+
+    // optionally optimize the new camera
+    if( d_->camera_optimizer && flms.size() > 3)
+    {
+      camera_map::map_camera_t opt_cam_map;
+      opt_cam_map[f] = cams[f];
+      camera_map_sptr opt_cams(new simple_camera_map(opt_cam_map));
+      landmark_map_sptr landmarks(new simple_landmark_map(flms));
+      track_set_sptr tracks(new simple_track_set(trks));
+      d_->camera_optimizer->optimize(opt_cams, tracks, landmarks);
+      cams[f] = opt_cams->cameras()[f];
+    }
+
 
     // triangulate (or re-triangulate) points seen by the new camera
     d_->retriangulate(lms, cams, trks, new_lm_ids);
+
+    if( d_->bundle_adjuster && cams.size() == 2)
+    {
+      camera_map_sptr ba_cams(new simple_camera_map(cams));
+      landmark_map_sptr ba_lms(new simple_landmark_map(lms));
+      double init_rmse = maptk::reprojection_rmse(cams, lms, trks);
+      std::cerr << "initial reprojection RMSE: " << init_rmse << std::endl;
+
+      d_->bundle_adjuster->optimize(ba_cams, ba_lms, tracks);
+      cams = ba_cams->cameras();
+      lms = ba_lms->landmarks();
+      double final_rmse = maptk::reprojection_rmse(cams, lms, trks);
+      std::cerr << "final reprojection RMSE: " << final_rmse << std::endl;
+      std::cout << "updated focal length "<<cams.begin()->second->intrinsics().focal_length() <<std::endl;
+    }
 
     if(d_->verbose)
     {
