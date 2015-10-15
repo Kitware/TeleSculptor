@@ -61,21 +61,24 @@ public:
   virtual bool check_configuration(vital::config_block_sptr /*config*/) const { return true; }
   /// \endcond
 
-  /// Optimize camera parameters given sets of landmarks and tracks
+  using vital::algo::optimize_cameras::optimize;
+
+  /// Optimize a single camera given corresponding features and landmarks
   /**
-   * We only optimize cameras that have associating tracks and landmarks in
-   * the given maps.
+   * This function assumes that 2D features viewed by this camera have
+   * already been put into correspondence with 3D landmarks by aligning
+   * them into two parallel vectors
    *
-   * \throws invalid_value When one or more of the given pointer is Null.
-   *
-   * \param[in,out] cameras   Cameras to optimize.
-   * \param[in]     tracks    The tracks to use as constraints.
-   * \param[in]     landmarks The landmarks the cameras are viewing.
+   * \param[in,out] camera    The camera to optimize.
+   * \param[in]     features  The vector of features observed by \p camera
+   *                          to use as constraints.
+   * \param[in]     landmarks The vector of landmarks corresponding to
+   *                          \p features.
    */
   virtual void
-  optimize(vital::camera_map_sptr & cameras,
-           vital::track_set_sptr tracks,
-           vital::landmark_map_sptr landmarks) const;
+  optimize(vital::camera_sptr & camera,
+           const std::vector<vital::feature_sptr>& features,
+           const std::vector<vital::landmark_sptr>& landmarks) const;
 };
 
 

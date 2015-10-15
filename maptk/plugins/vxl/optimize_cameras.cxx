@@ -93,85 +93,46 @@ maptk_opt_orient_pos(vpgl_perspective_camera<double> const& camera,
 }
 
 
+
+/// Optimize a single camera given corresponding features and landmarks
 void
 optimize_cameras
-::optimize(vital::camera_map_sptr & cameras,
-           vital::track_set_sptr tracks,
-            vital::landmark_map_sptr landmarks) const
+::optimize(vital::camera_sptr& camera,
+           const std::vector<vital::feature_sptr>& features,
+           const std::vector<vital::landmark_sptr>& landmarks) const
 {
-  if (!cameras || !tracks || !landmarks)
-  {
-    throw vital::invalid_value("One or more input data pieces are Null!");
-  }
-  typedef vital::camera_map::map_camera_t map_camera_t;
-  typedef maptk::vxl::camera_map::map_vcam_t map_vcam_t;
-  typedef vital::landmark_map::map_landmark_t map_landmark_t;
+  // remove camera intrinsics from the camera and work in normalized coordinates
+  // VXL is only optimizing rotation and translation and doesn't model distortion
+  vital::simple_camera mcamera(*camera);
+  vital::camera_intrinsics_sptr k(camera->intrinsics());
+  mcamera.set_intrinsics(vital::camera_intrinsics_sptr(new vital::simple_camera_intrinsics()));
 
-  // extract data from containers
-  map_vcam_t vcams = camera_map_to_vpgl(*cameras);
-  map_landmark_t lms = landmarks->landmarks();
-  std::vector<track_sptr> trks = tracks->tracks();
-
-  // Compose a map of frame IDs to a nested map of track ID to the state on
-  // that frame number. Using a pointer with the track state to ease the burden
-  // on memory.
-  typedef std::map< vital::track_id_t, vital::track::track_state const* > inner_map_t;
-  typedef std::map< vital::frame_id_t, inner_map_t > states_map_t;
-
-  states_map_t states_map;
-  // O( len(trks) * avg_t_len )
-  VITAL_FOREACH(vital::track_sptr const& t, trks)
-  {
-    // Only record a state if there is a corresponding landmark for the
-    // track (constant-time check), the track state has a feature and thus a
-    // location (constant-time check), and if we have a camera on the track
-    // state's frame (constant-time check).
-    if (lms.count(t->id()))
-    {
-      for (track::history_const_itr tsi = t->begin();
-           tsi != t->end();
-           ++tsi)
-      {
-        if (tsi->feat && vcams.count(tsi->frame_id))
-        {
-          states_map[tsi->frame_id][t->id()] = &(*tsi);
-        }
-      }
-    }
-  }
+  // convert the camera
+  vpgl_perspective_camera<double> vcamera;
+  maptk_to_vpgl_camera(mcamera, vcamera);
 
   // For each camera in the input map, create corresponding point sets for 2D
   // and 3D coordinates of tracks and matching landmarks, respectively, for
   // that camera's frame.
-  map_camera_t optimized_cameras;
   vcl_vector< vgl_point_2d<double> > pts_2d;
   vcl_vector< vgl_homg_point_3d<double> > pts_3d;
   vector_2d tmp_2d;
   vector_3d tmp_3d;
-  VITAL_FOREACH(map_vcam_t::value_type const& p, vcams)
+  for( unsigned int i=0; i<features.size(); ++i )
   {
-    pts_2d.clear();
-    pts_3d.clear();
-
-    // Construct 2d<->3d correspondences
-    VITAL_FOREACH(inner_map_t::value_type const& q, states_map[p.first])
-    {
-      // Already guaranteed that feat and landmark exists above.
-      tmp_2d = q.second->feat->loc();
-      tmp_3d = lms[q.first]->loc();
-      pts_2d.push_back(vgl_point_2d<double>(tmp_2d.x(), tmp_2d.y()));
-      pts_3d.push_back(vgl_homg_point_3d<double>(tmp_3d.x(), tmp_3d.y(), tmp_3d.z()));
-    }
-
-    //optimized_cameras[p.first] =
-    //  vpgl_camera_to_maptk(vpgl_optimize_camera::opt_orient_pos(p.second,
-    //                                                            pts_3d,
-    //                                                            pts_2d));
-    optimized_cameras[p.first] =
-      vpgl_camera_to_maptk(maptk_opt_orient_pos(p.second, pts_3d, pts_2d));
+    // unmap the points to normalized coordinates
+    tmp_2d = k->unmap(features[i]->loc());
+    tmp_3d = landmarks[i]->loc();
+    pts_2d.push_back(vgl_point_2d<double>(tmp_2d.x(), tmp_2d.y()));
+    pts_3d.push_back(vgl_homg_point_3d<double>(tmp_3d.x(), tmp_3d.y(), tmp_3d.z()));
   }
+  // optimize
+  vcamera = maptk_opt_orient_pos(vcamera, pts_3d, pts_2d);
 
-  cameras = camera_map_sptr(new simple_camera_map(optimized_cameras));
+  // convert back and fill in the unchanged intrinsics
+  vpgl_camera_to_maptk(vcamera, mcamera);
+  mcamera.set_intrinsics(k);
+  camera = mcamera.clone();
 }
 
 

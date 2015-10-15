@@ -33,6 +33,11 @@ Main Library
  * Added a Necker reverse tranformation to transform.h to help get out
    of a common local minima during bundle adjustment.
 
+ * Moved some common camera parameter collection code for camera optimization
+   into the base class algorithm and changed the API such that the pure
+   virtual function operates on a single camera with vectors of corresponding
+   features and landmarks.
+
  * Changed the camera and camera_intrinsic classes to act as higher level
    containers.  Each now has an abstract base class and a "simple" concrete
    class.  The templated derived classes (e.g. camera_<T>) have been removed.
@@ -44,6 +49,19 @@ Main Library
 
  * Moved some common functions like project() and depth() into the camera
    base class to allow usage without down-casting.
+
+Core Plugin
+
+ * Updated the initialize_cameras_landmarks algorithm with many improvements
+   including optional optimization of newly added cameras, optional
+   initialization of new cameras from the last camera position, and using
+   the match matrix to guide which cameras are added next.
+
+VXL Plugin
+
+ * Updated the VXL camera optimization algorithm to use the new abstract API.
+   Code for camera parameter collection has moved to the base class to be
+   shared.
 
 Ceres Plugin
 
