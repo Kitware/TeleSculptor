@@ -68,6 +68,7 @@ maptk_configure_file(version.h
   "${CMAKE_CURRENT_SOURCE_DIR}/Version.h.in"
   "${CMAKE_CURRENT_BINARY_DIR}/Version.h"
   MAPTK_VERSION
+  MAPTK_COPYRIGHT_YEAR
 )
 
 qt4_wrap_ui(gui_ui_sources ${gui_ui})
