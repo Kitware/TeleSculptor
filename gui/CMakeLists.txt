@@ -28,6 +28,7 @@ set(gui_ui
 
 set(gui_resources
   icons/icons.qrc
+  "${CMAKE_CURRENT_BINARY_DIR}/appdata.qrc"
 )
 
 set(gui_moc_headers
@@ -50,6 +51,17 @@ set(gui_sources
   main.cxx
   vtkMaptkCamera.cxx
   vtkMaptkCameraRepresentation.cxx
+)
+
+maptk_use_appdata(
+  ACKNOWLEDGMENTS
+  BUILDINFO
+  LICENSE
+)
+
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/appdata.qrc.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/appdata.qrc"
 )
 
 maptk_configure_file(version.h
