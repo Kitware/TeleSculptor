@@ -55,6 +55,7 @@ public slots:
 
   void setCamerasVisible(bool);
   void setLandmarksVisible(bool);
+  void setGroundPlaneVisible(bool);
 
   void setActiveCamera(vtkMaptkCamera* camera);
 
@@ -63,7 +64,7 @@ public slots:
 
 protected slots:
   void updateCameras();
-  void updateCameraScale();
+  void updateScale();
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(WorldView)

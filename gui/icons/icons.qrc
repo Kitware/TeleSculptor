@@ -9,6 +9,7 @@
   <qresource prefix="icons/22x22">
     <file alias="camera">22x22/camera.png</file>
     <file alias="feature">22x22/feature.png</file>
+    <file alias="grid">22x22/grid.png</file>
     <file alias="landmark">22x22/landmark.png</file>
     <file alias="open">22x22/open.png</file>
     <file alias="playback-loop">22x22/playback-loop.png</file>

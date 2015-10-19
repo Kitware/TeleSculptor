@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
+    <width>448</width>
     <height>300</height>
    </rect>
   </property>
@@ -23,6 +23,7 @@
      <addaction name="separator"/>
      <addaction name="actionShowCameras"/>
      <addaction name="actionShowLandmarks"/>
+     <addaction name="actionShowGroundPlane"/>
     </widget>
    </item>
    <item>
@@ -110,6 +111,33 @@
    </property>
    <property name="shortcut">
     <string>L</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
+  </action>
+  <action name="actionShowGroundPlane">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/22x22/grid</normaloff>:/icons/22x22/grid</iconset>
+   </property>
+   <property name="text">
+    <string>Show Ground Plane Grid</string>
+   </property>
+   <property name="iconText">
+    <string>Ground</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle visibility of the ground plane grid</string>
+   </property>
+   <property name="shortcut">
+    <string>G</string>
    </property>
    <property name="shortcutContext">
     <enum>Qt::WidgetWithChildrenShortcut</enum>
