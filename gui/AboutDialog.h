@@ -28,25 +28,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "MainWindow.h"
+#ifndef MAPTK_ABOUTDIALOG_H_
+#define MAPTK_ABOUTDIALOG_H_
 
-#include "Version.h"
+#include <qtGlobal.h>
 
-#include <QApplication>
+#include <QtGui/QDialog>
 
-//-----------------------------------------------------------------------------
-int main(int argc, char** argv)
+class AboutDialogPrivate;
+
+class AboutDialog : public QDialog
 {
-  // Set application information
-  QApplication::setApplicationName("MapGUI");
-  QApplication::setOrganizationName("Kitware");
-  QApplication::setOrganizationDomain("kitware.com");
-  QApplication::setApplicationVersion(MAPTK_VERSION);
+  Q_OBJECT
 
-  QApplication app(argc, argv);
+public:
+  explicit AboutDialog(QWidget* parent = 0, Qt::WindowFlags f = 0);
+  virtual ~AboutDialog();
 
-  MainWindow window;
-  window.show();
+protected:
+  QTE_DECLARE_PRIVATE_RPTR(AboutDialog)
 
-  return app.exec();
-}
+private:
+  QTE_DECLARE_PRIVATE(AboutDialog)
+  Q_DISABLE_COPY(AboutDialog)
+};
+
+#endif

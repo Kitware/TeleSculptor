@@ -1,6 +1,7 @@
 <RCC>
   <qresource prefix="icons/16x16">
     <file alias="camera">16x16/camera.png</file>
+    <file alias="close">16x16/close.png</file>
     <file alias="feature">16x16/feature.png</file>
     <file alias="help">16x16/help.png</file>
     <file alias="help-manual">16x16/help-manual.png</file>
@@ -14,6 +15,7 @@
   </qresource>
   <qresource prefix="icons/22x22">
     <file alias="camera">22x22/camera.png</file>
+    <file alias="close">22x22/close.png</file>
     <file alias="feature">22x22/feature.png</file>
     <file alias="help">22x22/help.png</file>
     <file alias="help-manual">22x22/help-manual.png</file>

@@ -57,6 +57,7 @@ public slots:
 
   void setActiveCamera(int);
 
+  void showAboutDialog();
   void showUserManual();
 
 protected slots:

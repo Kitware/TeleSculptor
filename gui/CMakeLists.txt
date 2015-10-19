@@ -22,6 +22,7 @@ set(gui_am_ui
 
 set(gui_ui
   ${gui_am_ui}
+  AboutDialog.ui
   CameraOptions.ui
   FeatureOptions.ui
 )
@@ -32,6 +33,7 @@ set(gui_resources
 )
 
 set(gui_moc_headers
+  AboutDialog.h
   ActorColorButton.h
   CameraOptions.h
   CameraView.h
@@ -41,6 +43,7 @@ set(gui_moc_headers
 )
 
 set(gui_sources
+  AboutDialog.cxx
   ActorColorButton.cxx
   CameraOptions.cxx
   CameraView.cxx

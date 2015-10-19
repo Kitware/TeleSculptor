@@ -33,6 +33,7 @@
 #include "ui_MainWindow.h"
 #include "am_MainWindow.h"
 
+#include "AboutDialog.h"
 #include "Project.h"
 #include "Version.h"
 #include "vtkMaptkCamera.h"
@@ -251,6 +252,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.actionOpen, SIGNAL(triggered()), this, SLOT(openFile()));
   connect(d->UI.actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
 
+  connect(d->UI.actionAbout, SIGNAL(triggered()),
+          this, SLOT(showAboutDialog()));
   connect(d->UI.actionShowManual, SIGNAL(triggered()),
           this, SLOT(showUserManual()));
 
@@ -507,6 +510,13 @@ void MainWindow::setActiveCamera(int id)
   }
 
   d->setActiveCamera(id);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::showAboutDialog()
+{
+  AboutDialog dlg(this);
+  dlg.exec();
 }
 
 //-----------------------------------------------------------------------------
