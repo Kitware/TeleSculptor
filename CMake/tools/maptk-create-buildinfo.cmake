@@ -76,7 +76,7 @@ file(WRITE "${TEMP_DIR}/HEAD" "${SHA}")
 file(WRITE "${TEMP_DIR}/DIFF" "${LOCAL_DIFF_SHA}")
 
 # Get human-readable list of locally modified files
-git(LOCAL_CHANGED_FILES diff --name-status)
+git(LOCAL_CHANGED_FILES diff --name-status HEAD --)
 
 # Generate remaining replacement texts
 if (LOCAL_CHANGED_FILES STREQUAL "")
