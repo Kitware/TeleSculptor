@@ -153,6 +153,8 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   auto const viewMenu = new QMenu(this);
   viewMenu->addAction(d->UI.actionViewReset);
   viewMenu->addAction(d->UI.actionViewResetLandmarks);
+  viewMenu->addSeparator();
+  viewMenu->addAction(d->UI.actionViewToWorldTop);
   d->setPopup(d->UI.actionViewReset, viewMenu);
 
   d->cameraOptions = new CameraOptions(d->cameraRep.GetPointer(), this);
@@ -178,6 +180,8 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(resetView()));
   connect(d->UI.actionViewResetLandmarks, SIGNAL(triggered()),
           this, SLOT(resetViewToLandmarks()));
+  connect(d->UI.actionViewToWorldTop, SIGNAL(triggered()),
+          this, SLOT(viewToWorldTop()));
 
   connect(d->UI.actionShowCameras, SIGNAL(toggled(bool)),
           this, SLOT(setCamerasVisible(bool)));
@@ -330,6 +334,32 @@ void WorldView::resetViewToLandmarks()
   double bounds[6];
   bbox.GetBounds(bounds);
   d->renderer->ResetCamera(bounds);
+
+  d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::viewToWorldTop()
+{
+  QTE_D();
+
+  static auto const z = maptk::vector_3d(0.0, 0.0, 1.0);
+
+  // Get camera
+  auto const camera = d->renderer->GetActiveCamera();
+
+  // Get camera parameters
+  auto focus = maptk::vector_3d();
+  auto pos = maptk::vector_3d();
+  camera->GetPosition(pos.data());
+  camera->GetFocalPoint(focus.data());
+
+  // Compute new position
+  pos = focus + (z * (focus - pos).norm());
+
+  // Modify camera
+  camera->SetPosition(pos.data());
+  camera->SetViewUp(0.0, 1.0, 0.0);
 
   d->UI.renderWidget->update();
 }

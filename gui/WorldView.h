@@ -62,6 +62,8 @@ public slots:
   void resetView();
   void resetViewToLandmarks();
 
+  void viewToWorldTop();
+
 protected slots:
   void updateCameras();
   void updateScale();

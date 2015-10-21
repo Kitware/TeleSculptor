@@ -143,6 +143,17 @@
     <enum>Qt::WidgetWithChildrenShortcut</enum>
    </property>
   </action>
+  <action name="actionViewToWorldTop">
+   <property name="text">
+    <string>View to World &amp;Top</string>
+   </property>
+   <property name="toolTip">
+    <string>Resets the view rotation so that the view is looking down the Z+ axis, with the Y+ axis up</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
