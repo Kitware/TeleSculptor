@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_FEATUREOPTIONS_H_
-#define MAPTK_FEATUREOPTIONS_H_
+#ifndef MAPTK_POINTOPTIONS_H_
+#define MAPTK_POINTOPTIONS_H_
 
 #include <qtGlobal.h>
 
@@ -37,16 +37,16 @@
 
 class vtkActor;
 
-class FeatureOptionsPrivate;
+class PointOptionsPrivate;
 
-class FeatureOptions : public QWidget
+class PointOptions : public QWidget
 {
   Q_OBJECT
 
 public:
-  explicit FeatureOptions(QString const& settingsGroup,
-                          QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~FeatureOptions();
+  explicit PointOptions(QString const& settingsGroup,
+                        QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  virtual ~PointOptions();
 
   void addActor(vtkActor*);
 
@@ -59,10 +59,10 @@ protected slots:
   void setSize(int);
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(FeatureOptions)
-  QTE_DECLARE_PRIVATE(FeatureOptions)
+  QTE_DECLARE_PRIVATE_RPTR(PointOptions)
+  QTE_DECLARE_PRIVATE(PointOptions)
 
-  QTE_DISABLE_COPY(FeatureOptions)
+  QTE_DISABLE_COPY(PointOptions)
 };
 
 #endif

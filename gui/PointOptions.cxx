@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "FeatureOptions.h"
+#include "PointOptions.h"
 
-#include "ui_FeatureOptions.h"
+#include "ui_PointOptions.h"
 
 #include <vtkActor.h>
 #include <vtkProperty.h>
@@ -39,21 +39,21 @@
 #include <qtUiStateItem.h>
 
 //-----------------------------------------------------------------------------
-class FeatureOptionsPrivate
+class PointOptionsPrivate
 {
 public:
   void mapUiState(QString const& key, QSlider* slider);
 
-  Ui::FeatureOptions UI;
+  Ui::PointOptions UI;
   qtUiState uiState;
 
   QList<vtkActor*> actors;
 };
 
-QTE_IMPLEMENT_D_FUNC(FeatureOptions)
+QTE_IMPLEMENT_D_FUNC(PointOptions)
 
 //-----------------------------------------------------------------------------
-void FeatureOptionsPrivate::mapUiState(
+void PointOptionsPrivate::mapUiState(
   QString const& key, QSlider* slider)
 {
   auto const item = new qtUiState::Item<int, QSlider>(
@@ -62,9 +62,9 @@ void FeatureOptionsPrivate::mapUiState(
 }
 
 //-----------------------------------------------------------------------------
-FeatureOptions::FeatureOptions(QString const& settingsGroup,
-                               QWidget* parent, Qt::WindowFlags flags)
-  : QWidget(parent, flags), d_ptr(new FeatureOptionsPrivate)
+PointOptions::PointOptions(QString const& settingsGroup,
+                           QWidget* parent, Qt::WindowFlags flags)
+  : QWidget(parent, flags), d_ptr(new PointOptionsPrivate)
 {
   QTE_D();
 
@@ -88,14 +88,14 @@ FeatureOptions::FeatureOptions(QString const& settingsGroup,
 }
 
 //-----------------------------------------------------------------------------
-FeatureOptions::~FeatureOptions()
+PointOptions::~PointOptions()
 {
   QTE_D();
   d->uiState.save();
 }
 
 //-----------------------------------------------------------------------------
-void FeatureOptions::setDefaultColor(QColor const& color)
+void PointOptions::setDefaultColor(QColor const& color)
 {
   QTE_D();
 
@@ -104,7 +104,7 @@ void FeatureOptions::setDefaultColor(QColor const& color)
 }
 
 //-----------------------------------------------------------------------------
-void FeatureOptions::addActor(vtkActor* actor)
+void PointOptions::addActor(vtkActor* actor)
 {
   QTE_D();
 
@@ -115,7 +115,7 @@ void FeatureOptions::addActor(vtkActor* actor)
 }
 
 //-----------------------------------------------------------------------------
-void FeatureOptions::setSize(int size)
+void PointOptions::setSize(int size)
 {
   QTE_D();
 

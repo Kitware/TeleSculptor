@@ -34,7 +34,7 @@
 #include "am_WorldView.h"
 
 #include "CameraOptions.h"
-#include "FeatureOptions.h"
+#include "PointOptions.h"
 #include "vtkMaptkCamera.h"
 #include "vtkMaptkCameraRepresentation.h"
 
@@ -82,7 +82,7 @@ public:
   vtkNew<vtkActor> groundActor;
 
   CameraOptions* cameraOptions;
-  FeatureOptions* landmarkOptions;
+  PointOptions* landmarkOptions;
 
   bool cameraRepDirty;
   bool scaleDirty;
@@ -163,7 +163,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   connect(d->cameraOptions, SIGNAL(modified()),
           d->UI.renderWidget, SLOT(update()));
 
-  d->landmarkOptions = new FeatureOptions("WorldView/Landmarks", this);
+  d->landmarkOptions = new PointOptions("WorldView/Landmarks", this);
   d->setPopup(d->UI.actionShowLandmarks, d->landmarkOptions);
 
   connect(d->landmarkOptions, SIGNAL(modified()),

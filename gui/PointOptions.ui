@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>FeatureOptions</class>
- <widget class="QWidget" name="FeatureOptions">
+ <class>PointOptions</class>
+ <widget class="QWidget" name="PointOptions">
   <property name="geometry">
    <rect>
     <x>0</x>

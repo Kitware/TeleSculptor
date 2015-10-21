@@ -23,7 +23,7 @@ set(gui_am_ui
 set(gui_ui
   ${gui_am_ui}
   CameraOptions.ui
-  FeatureOptions.ui
+  PointOptions.ui
 )
 
 set(gui_resources
@@ -34,8 +34,8 @@ set(gui_moc_headers
   ActorColorButton.h
   CameraOptions.h
   CameraView.h
-  FeatureOptions.h
   MainWindow.h
+  PointOptions.h
   WorldView.h
 )
 
@@ -43,9 +43,9 @@ set(gui_sources
   ActorColorButton.cxx
   CameraOptions.cxx
   CameraView.cxx
-  FeatureOptions.cxx
-  Project.cxx
   MainWindow.cxx
+  PointOptions.cxx
+  Project.cxx
   WorldView.cxx
   main.cxx
   vtkMaptkCamera.cxx

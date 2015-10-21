@@ -34,7 +34,7 @@
 #include "am_CameraView.h"
 
 #include "ActorColorButton.h"
-#include "FeatureOptions.h"
+#include "PointOptions.h"
 #include "vtkMaptkCamera.h"
 
 #include <vtkCamera.h>
@@ -249,7 +249,7 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->setPopup(d->UI.actionViewReset, viewMenu);
 
   auto const featurePointOptions =
-    new FeatureOptions("CameraView/FeaturePoints", this);
+    new PointOptions("CameraView/FeaturePoints", this);
   featurePointOptions->setDefaultColor(Qt::green);
   featurePointOptions->addActor(d->featurePoints.actor.GetPointer());
 
@@ -259,7 +259,7 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
           d->UI.renderWidget, SLOT(update()));
 
   auto const landmarkOptions =
-    new FeatureOptions("CameraView/Landmarks", this);
+    new PointOptions("CameraView/Landmarks", this);
   landmarkOptions->setDefaultColor(Qt::magenta);
   landmarkOptions->addActor(d->landmarks.actor.GetPointer());
 
