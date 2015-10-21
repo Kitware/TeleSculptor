@@ -71,6 +71,9 @@ public slots:
   void resetView();
   void resetViewToFullExtents();
 
+protected slots:
+  void updateFeatures();
+
 private:
   QTE_DECLARE_PRIVATE_RPTR(CameraView)
   QTE_DECLARE_PRIVATE(CameraView)

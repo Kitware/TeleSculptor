@@ -137,8 +137,12 @@ public:
                     double x2, double y2, double z2);
   };
 
+  CameraViewPrivate() : featuresDirty(false) {}
+
   void setPopup(QAction* action, QMenu* menu);
   void setPopup(QAction* action, QWidget* widget);
+
+  void updateFeatures(CameraView* q);
 
   Ui::CameraView UI;
   Am::CameraView AM;
@@ -156,6 +160,8 @@ public:
 
   double imageBounds[6];
   int imageHeight;
+
+  bool featuresDirty;
 };
 
 QTE_IMPLEMENT_D_FUNC(CameraView)
@@ -238,6 +244,16 @@ void CameraViewPrivate::setPopup(QAction* action, QWidget* widget)
   menu->addAction(proxy);
 
   this->setPopup(action, menu);
+}
+
+//-----------------------------------------------------------------------------
+void CameraViewPrivate::updateFeatures(CameraView* q)
+{
+  if (!this->featuresDirty)
+  {
+    this->featuresDirty = true;
+    QMetaObject::invokeMethod(q, "updateFeatures", Qt::QueuedConnection);
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -436,8 +452,7 @@ void CameraView::addFeatureTrack(maptk::track const& track)
     d->featureRep->AddTrackPoint(id, iter->frame_id, loc[0], loc[1]);
   }
 
-  // TODO need deferred updates of features representation
-  this->update();
+  d->updateFeatures(this);
 }
 
 //-----------------------------------------------------------------------------
@@ -530,4 +545,18 @@ void CameraView::resetViewToFullExtents()
 
   d->renderer->ResetCamera();
   d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
+void CameraView::updateFeatures()
+{
+  QTE_D();
+
+  if (d->featuresDirty)
+  {
+    d->featureRep->Update();
+    this->update();
+
+    d->featuresDirty = false;
+  }
 }
