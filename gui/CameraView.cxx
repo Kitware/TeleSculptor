@@ -107,16 +107,23 @@ void ActorColorOption::setDefaultColor(QColor const& color)
 class CameraViewPrivate
 {
 public:
-  struct PointCloud
+  struct VertexCloud
   {
-    PointCloud();
+    VertexCloud();
 
-    void addPoint(double x, double y, double z);
     void clear();
 
     vtkNew<vtkPoints> points;
     vtkNew<vtkCellArray> verts;
+    vtkNew<vtkPolyData> data;
     vtkNew<vtkActor> actor;
+  };
+
+  struct PointCloud : VertexCloud
+  {
+    PointCloud();
+
+    void addPoint(double x, double y, double z);
   };
 
   struct SegmentCloud : PointCloud
@@ -150,17 +157,28 @@ public:
 QTE_IMPLEMENT_D_FUNC(CameraView)
 
 //-----------------------------------------------------------------------------
-CameraViewPrivate::PointCloud::PointCloud()
+CameraViewPrivate::VertexCloud::VertexCloud()
 {
-  vtkNew<vtkPolyData> polyData;
   vtkNew<vtkPolyDataMapper> mapper;
 
-  polyData->SetPoints(this->points.GetPointer());
-  polyData->SetVerts(this->verts.GetPointer());
-  mapper->SetInputData(polyData.GetPointer());
+  this->data->SetPoints(this->points.GetPointer());
+  mapper->SetInputData(this->data.GetPointer());
 
   this->actor->SetMapper(mapper.GetPointer());
   this->actor->GetProperty()->SetPointSize(2);
+}
+
+//-----------------------------------------------------------------------------
+void CameraViewPrivate::VertexCloud::clear()
+{
+  this->verts->Reset();
+  this->points->Reset();
+}
+
+//-----------------------------------------------------------------------------
+CameraViewPrivate::PointCloud::PointCloud()
+{
+  this->data->SetVerts(this->verts.GetPointer());
 }
 
 //-----------------------------------------------------------------------------
@@ -173,21 +191,9 @@ void CameraViewPrivate::PointCloud::addPoint(double x, double y, double z)
 }
 
 //-----------------------------------------------------------------------------
-void CameraViewPrivate::PointCloud::clear()
-{
-  this->verts->Reset();
-  this->points->Reset();
-}
-
-//-----------------------------------------------------------------------------
 CameraViewPrivate::SegmentCloud::SegmentCloud()
 {
-  auto const mapper =
-    vtkPolyDataMapper::SafeDownCast(this->actor->GetMapper());
-  auto const polyData = mapper->GetInput();
-
-  polyData->SetLines(this->verts.GetPointer());
-  polyData->SetVerts(0);
+  this->data->SetLines(this->verts.GetPointer());
 }
 
 //-----------------------------------------------------------------------------
