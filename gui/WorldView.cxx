@@ -416,5 +416,7 @@ void WorldView::updateScale()
 
     // Update camera scale
     d->cameraOptions->setBaseCameraScale(cameraScale);
+
+    d->scaleDirty = false;
   }
 }
