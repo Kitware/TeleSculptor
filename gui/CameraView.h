@@ -35,6 +35,8 @@
 
 #include <QtGui/QWidget>
 
+namespace maptk { class track; }
+
 class vtkMaptkCamera;
 
 class CameraViewPrivate;
@@ -47,20 +49,22 @@ public:
   explicit CameraView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
   virtual ~CameraView();
 
+  void addFeatureTrack(maptk::track const&);
+
 public slots:
   void loadImage(QString const& path, vtkMaptkCamera* camera);
 
-  void addFeaturePoint(unsigned int id, double x, double y);
+  void setActiveFrame(unsigned);
+
   void addLandmark(unsigned int id, double x, double y);
   void addResidual(unsigned int id,
                    double x1, double y1,
                    double x2, double y2);
 
-  void clearFeaturePoints();
   void clearLandmarks();
   void clearResiduals();
 
-  void setFeaturePointsVisible(bool);
+  void setFeaturesVisible(bool);
   void setLandmarksVisible(bool);
   void setResidualsVisible(bool);
 

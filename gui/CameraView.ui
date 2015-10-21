@@ -21,7 +21,7 @@
      </property>
      <addaction name="actionViewReset"/>
      <addaction name="separator"/>
-     <addaction name="actionShowFeaturePoints"/>
+     <addaction name="actionShowFeatures"/>
      <addaction name="actionShowLandmarks"/>
      <addaction name="actionShowResiduals"/>
     </widget>
@@ -62,7 +62,7 @@
     <enum>Qt::WidgetWithChildrenShortcut</enum>
    </property>
   </action>
-  <action name="actionShowFeaturePoints">
+  <action name="actionShowFeatures">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -74,13 +74,13 @@
      <normaloff>:/icons/22x22/feature</normaloff>:/icons/22x22/feature</iconset>
    </property>
    <property name="text">
-    <string>Show Feature Points</string>
+    <string>Show Features</string>
    </property>
    <property name="iconText">
     <string>Features</string>
    </property>
    <property name="toolTip">
-    <string>Toggle visibility of feature points</string>
+    <string>Toggle visibility of feature points/tracks</string>
    </property>
    <property name="shortcut">
     <string>F</string>

@@ -36,6 +36,9 @@
 #include "ActorColorButton.h"
 #include "PointOptions.h"
 #include "vtkMaptkCamera.h"
+#include "vtkMaptkFeatureTrackRepresentation.h"
+
+#include <maptk/track.h>
 
 #include <vtkCamera.h>
 #include <vtkCellArray.h>
@@ -146,7 +149,8 @@ public:
   vtkNew<vtkImageActor> imageActor;
   vtkNew<vtkImageData> emptyImage;
 
-  PointCloud featurePoints;
+  vtkNew<vtkMaptkFeatureTrackRepresentation> featureRep;
+
   PointCloud landmarks;
   SegmentCloud residuals;
 
@@ -254,14 +258,14 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   viewMenu->addAction(d->UI.actionViewResetFullExtents);
   d->setPopup(d->UI.actionViewReset, viewMenu);
 
-  auto const featurePointOptions =
+  auto const featureOptions =
     new PointOptions("CameraView/FeaturePoints", this);
-  featurePointOptions->setDefaultColor(Qt::green);
-  featurePointOptions->addActor(d->featurePoints.actor.GetPointer());
+  featureOptions->setDefaultColor(Qt::green);
+  featureOptions->addActor(d->featureRep->GetActivePointsActor());
 
-  d->setPopup(d->UI.actionShowFeaturePoints, featurePointOptions);
+  d->setPopup(d->UI.actionShowFeatures, featureOptions);
 
-  connect(featurePointOptions, SIGNAL(modified()),
+  connect(featureOptions, SIGNAL(modified()),
           d->UI.renderWidget, SLOT(update()));
 
   auto const landmarkOptions =
@@ -287,7 +291,7 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   // Connect actions
   this->addAction(d->UI.actionViewReset);
   this->addAction(d->UI.actionViewResetFullExtents);
-  this->addAction(d->UI.actionShowFeaturePoints);
+  this->addAction(d->UI.actionShowFeatures);
   this->addAction(d->UI.actionShowLandmarks);
   this->addAction(d->UI.actionShowResiduals);
 
@@ -296,8 +300,8 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.actionViewResetFullExtents, SIGNAL(triggered()),
           this, SLOT(resetViewToFullExtents()));
 
-  connect(d->UI.actionShowFeaturePoints, SIGNAL(toggled(bool)),
-          this, SLOT(setFeaturePointsVisible(bool)));
+  connect(d->UI.actionShowFeatures, SIGNAL(toggled(bool)),
+          this, SLOT(setFeaturesVisible(bool)));
   connect(d->UI.actionShowLandmarks, SIGNAL(toggled(bool)),
           this, SLOT(setLandmarksVisible(bool)));
   connect(d->UI.actionShowResiduals, SIGNAL(toggled(bool)),
@@ -318,7 +322,8 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->renderWindow->GetInteractor()->SetInteractorStyle(is.GetPointer());
 
   // Set up actors
-  d->renderer->AddActor(d->featurePoints.actor.GetPointer());
+  d->renderer->AddActor(d->featureRep->GetActivePointsActor());
+  // TODO feature trails actor
   d->renderer->AddActor(d->landmarks.actor.GetPointer());
   d->renderer->AddActor(d->residuals.actor.GetPointer());
 
@@ -409,13 +414,29 @@ void CameraView::loadImage(QString const& path, vtkMaptkCamera* camera)
 }
 
 //-----------------------------------------------------------------------------
-void CameraView::addFeaturePoint(unsigned int id, double x, double y)
+void CameraView::setActiveFrame(unsigned frame)
 {
   QTE_D();
 
-  Q_UNUSED(id)
+  d->featureRep->SetActiveFrame(frame);
+  this->update();
+}
 
-  d->featurePoints.addPoint(x, d->imageHeight - y, 0.0);
+//-----------------------------------------------------------------------------
+void CameraView::addFeatureTrack(maptk::track const& track)
+{
+  QTE_D();
+
+  auto const id = track.id();
+  auto const end = track.end();
+
+  for (auto iter = track.begin(); iter != end; ++iter)
+  {
+    auto const& loc = iter->feat->loc();
+    d->featureRep->AddTrackPoint(id, iter->frame_id, loc[0], loc[1]);
+  }
+
+  // TODO need deferred updates of features representation
   this->update();
 }
 
@@ -445,13 +466,6 @@ void CameraView::addResidual(
 }
 
 //-----------------------------------------------------------------------------
-void CameraView::clearFeaturePoints()
-{
-  QTE_D();
-  d->featurePoints.clear();
-}
-
-//-----------------------------------------------------------------------------
 void CameraView::clearLandmarks()
 {
   QTE_D();
@@ -466,10 +480,10 @@ void CameraView::clearResiduals()
 }
 
 //-----------------------------------------------------------------------------
-void CameraView::setFeaturePointsVisible(bool state)
+void CameraView::setFeaturesVisible(bool state)
 {
   QTE_D();
-  d->featurePoints.actor->SetVisibility(state);
+  d->featureRep->GetActivePointsActor()->SetVisibility(state);
   d->UI.renderWidget->update();
 }
 
