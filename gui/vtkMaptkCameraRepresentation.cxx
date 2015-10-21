@@ -141,7 +141,7 @@ vtkMaptkCameraRepresentation::vtkMaptkCameraRepresentation()
 {
   this->ActiveCameraRepLength = 15.0;
   this->NonActiveCameraRepLength = 4.0;
-  this->DisplaySkip = 1;
+  this->DisplayDensity = 1;
 
   this->ActiveCamera = 0;
 
@@ -247,7 +247,7 @@ void vtkMaptkCameraRepresentation::Update()
   this->Internal->Cameras->InitTraversal();
   while (auto const camera = this->Internal->NextCamera())
   {
-    if (!((skipCount++) % this->DisplaySkip))
+    if (!((skipCount++) % this->DisplayDensity))
     {
       if (camera != this->ActiveCamera)
       {
@@ -296,6 +296,6 @@ void vtkMaptkCameraRepresentation::PrintSelf(ostream& os, vtkIndent indent)
      << this->ActiveCameraRepLength << endl;
   os << indent << "NonActiveCameraRepLength: "
      << this->NonActiveCameraRepLength << endl;
-  os << indent << "DisplaySkip: "
-     << this->DisplaySkip << endl;
+  os << indent << "DisplayDensity: "
+     << this->DisplayDensity << endl;
 }
