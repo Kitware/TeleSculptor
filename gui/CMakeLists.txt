@@ -50,6 +50,7 @@ set(gui_sources
   main.cxx
   vtkMaptkCamera.cxx
   vtkMaptkCameraRepresentation.cxx
+  vtkMaptkFeatureTrackRepresentation.cxx
 )
 
 qt4_wrap_ui(gui_ui_sources ${gui_ui})
