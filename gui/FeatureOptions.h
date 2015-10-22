@@ -28,56 +28,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_CAMERAVIEW_H_
-#define MAPTK_CAMERAVIEW_H_
+#ifndef MAPTK_FEATUREOPTIONS_H_
+#define MAPTK_FEATUREOPTIONS_H_
 
-#include <qtGlobal.h>
+#include "PointOptions.h"
 
-#include <QtGui/QWidget>
+class vtkMaptkFeatureTrackRepresentation;
 
-namespace maptk { class track; }
+class FeatureOptionsPrivate;
 
-class vtkMaptkCamera;
-
-class CameraViewPrivate;
-
-class CameraView : public QWidget
+class FeatureOptions : public PointOptions
 {
   Q_OBJECT
 
 public:
-  explicit CameraView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~CameraView();
-
-  void addFeatureTrack(maptk::track const&);
+  explicit FeatureOptions(vtkMaptkFeatureTrackRepresentation*,
+                          QString const& settingsGroup,
+                          QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  virtual ~FeatureOptions();
 
 public slots:
-  void loadImage(QString const& path, vtkMaptkCamera* camera);
-
-  void setActiveFrame(unsigned);
-
-  void addLandmark(unsigned int id, double x, double y);
-  void addResidual(unsigned int id,
-                   double x1, double y1,
-                   double x2, double y2);
-
-  void clearLandmarks();
-  void clearResiduals();
-
-  void resetView();
-  void resetViewToFullExtents();
+  void setFeaturesVisible(bool);
 
 protected slots:
-  void setLandmarksVisible(bool);
-  void setResidualsVisible(bool);
-
-  void updateFeatures();
+  void setTrailsVisible(bool);
+  void setTrailsLength(int);
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(CameraView)
-  QTE_DECLARE_PRIVATE(CameraView)
+  QTE_DECLARE_PRIVATE_RPTR(FeatureOptions)
+  QTE_DECLARE_PRIVATE(FeatureOptions)
 
-  QTE_DISABLE_COPY(CameraView)
+  QTE_DISABLE_COPY(FeatureOptions)
 };
 
 #endif

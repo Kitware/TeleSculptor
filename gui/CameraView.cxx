@@ -34,7 +34,7 @@
 #include "am_CameraView.h"
 
 #include "ActorColorButton.h"
-#include "PointOptions.h"
+#include "FeatureOptions.h"
 #include "vtkMaptkCamera.h"
 #include "vtkMaptkFeatureTrackRepresentation.h"
 
@@ -292,9 +292,8 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->setPopup(d->UI.actionViewReset, viewMenu);
 
   auto const featureOptions =
-    new PointOptions("CameraView/FeaturePoints", this);
-  featureOptions->setDefaultColor(Qt::green);
-  featureOptions->addActor(d->featureRep->GetActivePointsActor());
+    new FeatureOptions(d->featureRep.GetPointer(),
+                       "CameraView/FeaturePoints", this);
 
   d->setPopup(d->UI.actionShowFeatures, featureOptions);
 
@@ -334,7 +333,7 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(resetViewToFullExtents()));
 
   connect(d->UI.actionShowFeatures, SIGNAL(toggled(bool)),
-          this, SLOT(setFeaturesVisible(bool)));
+          featureOptions, SLOT(setFeaturesVisible(bool)));
   connect(d->UI.actionShowLandmarks, SIGNAL(toggled(bool)),
           this, SLOT(setLandmarksVisible(bool)));
   connect(d->UI.actionShowResiduals, SIGNAL(toggled(bool)),
@@ -356,7 +355,7 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
 
   // Set up actors
   d->renderer->AddActor(d->featureRep->GetActivePointsActor());
-  // TODO feature trails actor
+  d->renderer->AddActor(d->featureRep->GetTrailsActor());
   d->renderer->AddActor(d->landmarks.actor.GetPointer());
   d->renderer->AddActor(d->residuals.actor.GetPointer());
 
@@ -508,14 +507,6 @@ void CameraView::clearResiduals()
 {
   QTE_D();
   d->residuals.clear();
-}
-
-//-----------------------------------------------------------------------------
-void CameraView::setFeaturesVisible(bool state)
-{
-  QTE_D();
-  d->featureRep->GetActivePointsActor()->SetVisibility(state);
-  d->UI.renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
