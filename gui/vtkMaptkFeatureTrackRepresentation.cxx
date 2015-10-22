@@ -98,17 +98,26 @@ void vtkMaptkFeatureTrackRepresentation::vtkInternal::UpdateTrails(
   auto const te = this->Tracks.cend();
   for (auto ti = this->Tracks.cbegin(); ti != te; ++ti)
   {
+    auto const track = ti->second;
+    if (track.cbegin()->first > activeFrame ||
+        (--track.cend())->first < activeFrame)
+    {
+      // Skip tracks that are not active on the active frame
+      continue;
+    }
+
+    // Build list of relevant points
     points.clear();
 
-    auto const track = ti->second;
     auto const fe = track.upper_bound(maxFrame);
     for (auto fi = track.lower_bound(minFrame); fi != fe; ++fi)
     {
       points.push_back(fi->second);
     }
 
+    // Create cell for trail (only if trail is non-empty)
     auto const n = static_cast<vtkIdType>(points.size());
-    if (n)
+    if (n > 1)
     {
       this->TrailsCells->InsertNextCell(points.size(), points.data());
     }
