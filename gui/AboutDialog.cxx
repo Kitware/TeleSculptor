@@ -9,6 +9,8 @@
 
 #include "Version.h"
 
+#include <qtSaxNodes.h>
+#include <qtSaxWriter.h>
 #include <qtUtil.h>
 
 #include <QtCore/QFile>
@@ -45,13 +47,50 @@ QString loadText(QString const& resource)
 //-----------------------------------------------------------------------------
 QString loadMarkdown(QString const& resource)
 {
-  auto markup = loadText(resource);
-  markup.replace("``", "&ldquo;");
-  markup.replace("''", "&rdquo;");
-  markup.replace("`", "&lsquo;");
-  markup.replace("'", "&rsquo;");
+  auto input = loadText(resource);
+  input.replace("``", "&ldquo;");
+  input.replace("''", "&rdquo;");
+  input.replace("`", "&lsquo;");
+  input.replace("'", "&rsquo;");
 
-  // TODO
+  QString markup;
+  qtSaxWriter out(&markup);
+  out << qtSaxElement("html") << qtSaxElement("body");
+
+  auto depth = 2;
+  foreach (auto const& block, input.split("\n\n"))
+  {
+    auto const text = block.simplified();
+    if (text.startsWith("*"))
+    {
+      if (depth < 3)
+      {
+        out << qtSaxElement("ul")
+            << qtSaxAttribute("style", "margin-left: 1.5em;"
+                                       "-qt-list-indent: 0;");
+        ++depth;
+      }
+      out << qtSaxElement("li")
+          << qtSaxAttribute("style", "margin-bottom: 1em;")
+          << text.mid(1).trimmed()
+          << qtSax::EndElement;
+    }
+    else
+    {
+      while (depth > 2)
+      {
+        out << qtSax::EndElement;
+        --depth;
+      }
+      out << qtSaxElement("p") << text << qtSax::EndElement;
+    }
+  }
+  while (depth)
+  {
+    out << qtSax::EndElement;
+    --depth;
+  }
+
   return markup;
 }
 
