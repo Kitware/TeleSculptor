@@ -210,6 +210,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
 
   d->groundActor->SetMapper(mapper.GetPointer());
   d->groundActor->GetProperty()->SetColor(0.5, 0.5, 0.5);
+  d->groundActor->GetProperty()->SetLighting(false);
   d->groundActor->GetProperty()->SetRepresentationToWireframe();
   d->renderer->AddActor(d->groundActor.GetPointer());
 }
