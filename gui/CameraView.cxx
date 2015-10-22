@@ -361,7 +361,7 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->renderer->AddActor(d->residuals.actor.GetPointer());
 
   d->renderer->AddViewProp(d->imageActor.GetPointer());
-  d->imageActor->SetPosition(0.0, 0.0, -0.2);
+  d->imageActor->SetPosition(0.0, 0.0, -0.5);
 
   // Create "dummy" image data for use when we have no "real" image
   d->emptyImage->SetExtent(0, 0, 0, 0, 0, 0);
@@ -491,7 +491,7 @@ void CameraView::addResidual(
 
   Q_UNUSED(id)
 
-  d->residuals.addSegment(x1, y1, 0.0, x2, y2, 0.0);
+  d->residuals.addSegment(x1, y1, -0.2, x2, y2, -0.2);
 
   this->update();
 }
