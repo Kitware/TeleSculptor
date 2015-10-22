@@ -42,8 +42,6 @@
 class PointOptionsPrivate
 {
 public:
-  void mapUiState(QString const& key, QSlider* slider);
-
   Ui::PointOptions UI;
   qtUiState uiState;
 
@@ -51,15 +49,6 @@ public:
 };
 
 QTE_IMPLEMENT_D_FUNC(PointOptions)
-
-//-----------------------------------------------------------------------------
-void PointOptionsPrivate::mapUiState(
-  QString const& key, QSlider* slider)
-{
-  auto const item = new qtUiState::Item<int, QSlider>(
-    slider, &QSlider::value, &QSlider::setValue);
-  this->uiState.map(key, item);
-}
 
 //-----------------------------------------------------------------------------
 PointOptions::PointOptions(QString const& settingsGroup,
