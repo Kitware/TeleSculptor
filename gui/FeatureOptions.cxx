@@ -45,6 +45,7 @@ class FeatureOptionsPrivate
 {
 public:
   void mapUiState(QString const& key, QSlider* slider);
+  void mapUiState(QString const& key, QComboBox* comboBox);
 
   Ui::FeatureOptions UI;
   qtUiState uiState;
@@ -60,6 +61,15 @@ void FeatureOptionsPrivate::mapUiState(
 {
   auto const item = new qtUiState::Item<int, QSlider>(
     slider, &QSlider::value, &QSlider::setValue);
+  this->uiState.map(key, item);
+}
+
+//-----------------------------------------------------------------------------
+void FeatureOptionsPrivate::mapUiState(
+  QString const& key, QComboBox* comboBox)
+{
+  auto const item = new qtUiState::Item<int, QComboBox>(
+    comboBox, &QComboBox::currentIndex, &QComboBox::setCurrentIndex);
   this->uiState.map(key, item);
 }
 
@@ -84,10 +94,8 @@ FeatureOptions::FeatureOptions(vtkMaptkFeatureTrackRepresentation* rep,
 
   d->uiState.mapChecked("Trails", d->UI.showTrails);
   d->UI.trailColor->persist(d->uiState, "Trails/Color");
-
-  auto const lengthItem = new qtUiState::Item<int, QSlider>(
-    d->UI.trailLength, &QSlider::value, &QSlider::setValue);
-  d->uiState.map("Trails/Length", lengthItem);
+  d->mapUiState("Trails/Length", d->UI.trailLength);
+  d->mapUiState("Trails/Style", d->UI.trailStyle);
 
   d->uiState.restore();
 
@@ -95,7 +103,8 @@ FeatureOptions::FeatureOptions(vtkMaptkFeatureTrackRepresentation* rep,
   d->representation = rep;
 
   this->setTrailsVisible(d->UI.showTrails->isChecked());
-  d->representation->SetTrailLength(d->UI.trailLength->value());
+  this->setTrailsLength(d->UI.trailLength->value());
+  this->setTrailsStyle(d->UI.trailStyle->currentIndex());
 
   d->UI.trailColor->addActor(d->representation->GetTrailsActor());
 
@@ -106,6 +115,8 @@ FeatureOptions::FeatureOptions(vtkMaptkFeatureTrackRepresentation* rep,
           this, SLOT(setTrailsVisible(bool)));
   connect(d->UI.trailLength, SIGNAL(valueChanged(int)),
           this, SLOT(setTrailsLength(int)));
+  connect(d->UI.trailStyle, SIGNAL(currentIndexChanged(int)),
+          this, SLOT(setTrailsStyle(int)));
 }
 
 //-----------------------------------------------------------------------------
@@ -143,6 +154,17 @@ void FeatureOptions::setTrailsLength(int length)
   QTE_D();
 
   d->representation->SetTrailLength(static_cast<unsigned>(length));
+
+  emit this->modified();
+}
+
+//-----------------------------------------------------------------------------
+void FeatureOptions::setTrailsStyle(int style)
+{
+  QTE_D();
+
+  d->representation->SetTrailStyle(
+    static_cast<vtkMaptkFeatureTrackRepresentation::TrailStyleEnum>(style));
 
   emit this->modified();
 }

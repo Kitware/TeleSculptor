@@ -40,6 +40,12 @@ class vtkActor;
 class vtkMaptkFeatureTrackRepresentation : public vtkObject
 {
 public:
+  enum TrailStyleEnum
+  {
+    Historic,
+    Symmetric,
+  };
+
   vtkTypeMacro(vtkMaptkFeatureTrackRepresentation, vtkObject);
   void PrintSelf(ostream& os, vtkIndent indent);
 
@@ -57,6 +63,12 @@ public:
   // "trails". (default == 2)
   void SetTrailLength(unsigned);
   vtkGetMacro(TrailLength, unsigned);
+
+  // Description:
+  // Get/Set the maximum number of adjacent feature points to display as
+  // "trails". (default == 2)
+  void SetTrailStyle(TrailStyleEnum);
+  vtkGetMacro(TrailStyle, TrailStyleEnum);
 
   // Description:
   // Update the inputs for each of the actors, effectively updating the actor
@@ -81,6 +93,7 @@ private:
 
   unsigned ActiveFrame;
   unsigned TrailLength;
+  TrailStyleEnum TrailStyle;
 
   vtkSmartPointer<vtkActor> ActivePointsActor;
   vtkSmartPointer<vtkActor> TrailsActor;

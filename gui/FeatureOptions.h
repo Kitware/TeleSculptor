@@ -53,6 +53,7 @@ public slots:
 protected slots:
   void setTrailsVisible(bool);
   void setTrailsLength(int);
+  void setTrailsStyle(int);
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(FeatureOptions)

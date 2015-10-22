@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>207</width>
-    <height>61</height>
+    <height>93</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -47,11 +47,11 @@
      <property name="enabled">
       <bool>false</bool>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,1">
+     <layout class="QGridLayout" name="gridLayout" columnstretch="0,0,1">
       <property name="margin">
        <number>0</number>
       </property>
-      <item>
+      <item row="0" column="0" rowspan="2">
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -64,14 +64,14 @@
         </property>
        </spacer>
       </item>
-      <item>
-       <widget class="QLabel" name="label">
+      <item row="0" column="1">
+       <widget class="QLabel" name="lengthLabel">
         <property name="text">
          <string>Length</string>
         </property>
        </widget>
       </item>
-      <item>
+      <item row="0" column="2">
        <widget class="QSlider" name="trailLength">
         <property name="minimum">
          <number>1</number>
@@ -88,6 +88,27 @@
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLabel" name="styleLabel">
+        <property name="text">
+         <string>Style</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QComboBox" name="trailStyle">
+        <item>
+         <property name="text">
+          <string>Historic</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Symmetric</string>
+         </property>
+        </item>
        </widget>
       </item>
      </layout>

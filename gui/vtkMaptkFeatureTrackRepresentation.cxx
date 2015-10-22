@@ -41,12 +41,15 @@
 
 vtkStandardNewMacro(vtkMaptkFeatureTrackRepresentation);
 
+typedef vtkMaptkFeatureTrackRepresentation::TrailStyleEnum TrailStyleEnum;
+
 //-----------------------------------------------------------------------------
 class vtkMaptkFeatureTrackRepresentation::vtkInternal
 {
 public:
   void UpdateActivePoints(unsigned activeFrame);
-  void UpdateTrails(unsigned activeFrame, unsigned trailLength);
+  void UpdateTrails(unsigned activeFrame, unsigned trailLength,
+                    TrailStyleEnum style);
 
   vtkNew<vtkPoints> Points;
 
@@ -85,13 +88,16 @@ void vtkMaptkFeatureTrackRepresentation::vtkInternal::UpdateActivePoints(
 
 //-----------------------------------------------------------------------------
 void vtkMaptkFeatureTrackRepresentation::vtkInternal::UpdateTrails(
-  unsigned activeFrame, unsigned trailLength)
+  unsigned activeFrame, unsigned trailLength, TrailStyleEnum style)
 {
   this->TrailsCells->Reset();
 
+  auto const symmetric =
+    (style == vtkMaptkFeatureTrackRepresentation::Symmetric);
+
   auto const minFrame =
     (trailLength > activeFrame ? 0 : activeFrame - trailLength);
-  auto const maxFrame = activeFrame + trailLength;
+  auto const maxFrame = (symmetric ? activeFrame + trailLength : activeFrame);
 
   std::vector<vtkIdType> points;
 
@@ -194,14 +200,29 @@ void vtkMaptkFeatureTrackRepresentation::SetTrailLength(unsigned length)
   }
 
   this->TrailLength = length;
-  this->Internal->UpdateTrails(this->ActiveFrame, this->TrailLength);
+  this->Internal->UpdateTrails(this->ActiveFrame,
+                               this->TrailLength, this->TrailStyle);
+}
+
+//-----------------------------------------------------------------------------
+void vtkMaptkFeatureTrackRepresentation::SetTrailStyle(TrailStyleEnum style)
+{
+  if (this->TrailStyle == style)
+  {
+    return;
+  }
+
+  this->TrailStyle = style;
+  this->Internal->UpdateTrails(this->ActiveFrame,
+                               this->TrailLength, this->TrailStyle);
 }
 
 //-----------------------------------------------------------------------------
 void vtkMaptkFeatureTrackRepresentation::Update()
 {
   this->Internal->UpdateActivePoints(this->ActiveFrame);
-  this->Internal->UpdateTrails(this->ActiveFrame, this->TrailLength);
+  this->Internal->UpdateTrails(this->ActiveFrame,
+                               this->TrailLength, this->TrailStyle);
 }
 
 //-----------------------------------------------------------------------------
