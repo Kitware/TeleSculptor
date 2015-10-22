@@ -171,7 +171,7 @@ static bool check_config(maptk::config_block_sptr config)
   if (config->has_value("mask_list_file") && config->get_value<std::string>("mask_list_file") != "" )
   {
     std::string mask_list_file = config->get_value<std::string>("mask_list_file");
-    if (mask_list_file != "" && bfs::is_regular_file( maptk::path_t(mask_list_file) ))
+    if (mask_list_file != "" && !bfs::is_regular_file( maptk::path_t(mask_list_file) ))
     {
       MAPTK_CONFIG_FAIL("mask_list_file path, " << mask_list_file << ", does not exist");
     }
