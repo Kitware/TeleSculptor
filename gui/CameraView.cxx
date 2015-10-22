@@ -47,6 +47,7 @@
 #include <vtkImageReader2.h>
 #include <vtkImageReader2Factory.h>
 #include <vtkInteractorStyleRubberBand2D.h>
+#include <vtkMatrix4x4.h>
 #include <vtkNew.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
@@ -142,6 +143,8 @@ public:
   void setPopup(QAction* action, QMenu* menu);
   void setPopup(QAction* action, QWidget* widget);
 
+  void setTransforms(int imageHeight);
+
   void updateFeatures(CameraView* q);
 
   Ui::CameraView UI;
@@ -159,7 +162,6 @@ public:
   SegmentCloud residuals;
 
   double imageBounds[6];
-  int imageHeight;
 
   bool featuresDirty;
 };
@@ -244,6 +246,21 @@ void CameraViewPrivate::setPopup(QAction* action, QWidget* widget)
   menu->addAction(proxy);
 
   this->setPopup(action, menu);
+}
+
+//-----------------------------------------------------------------------------
+void CameraViewPrivate::setTransforms(int imageHeight)
+{
+  vtkNew<vtkMatrix4x4> xf;
+
+  xf->Identity();
+  xf->SetElement(1, 1, -1.0);
+  xf->SetElement(1, 3, imageHeight);
+
+  this->featureRep->GetActivePointsActor()->SetUserMatrix(xf.GetPointer());
+  this->featureRep->GetTrailsActor()->SetUserMatrix(xf.GetPointer());
+  this->landmarks.actor->SetUserMatrix(xf.GetPointer());
+  this->residuals.actor->SetUserMatrix(xf.GetPointer());
 }
 
 //-----------------------------------------------------------------------------
@@ -381,7 +398,7 @@ void CameraView::loadImage(QString const& path, vtkMaptkCamera* camera)
     d->imageBounds[2] = 0.0; d->imageBounds[3] = imageDimensions.height() - 1;
     d->imageBounds[4] = 0.0; d->imageBounds[5] = 0.0;
 
-    d->imageHeight = imageDimensions.height();
+    d->setTransforms(imageDimensions.height());
   }
   else
   {
@@ -406,13 +423,13 @@ void CameraView::loadImage(QString const& path, vtkMaptkCamera* camera)
     d->imageActor->GetBounds(d->imageBounds);
     auto const w = d->imageBounds[1] + 1 - d->imageBounds[0];
     auto const h = d->imageBounds[3] + 1 - d->imageBounds[2];
-    d->imageHeight = h;
+    d->setTransforms(qMax(0, static_cast<int>(h)));
 
     // Delete the reader
     reader->Delete();
 
     // Test for errors
-    if (d->imageHeight < 2)
+    if (h < 2)
     {
       qWarning() << "Failed to read image" << path;
       this->loadImage(QString(), camera);
@@ -462,7 +479,7 @@ void CameraView::addLandmark(unsigned int id, double x, double y)
 
   Q_UNUSED(id)
 
-  d->landmarks.addPoint(x, d->imageHeight - y, 0.0);
+  d->landmarks.addPoint(x, y, 0.0);
   this->update();
 }
 
@@ -474,8 +491,7 @@ void CameraView::addResidual(
 
   Q_UNUSED(id)
 
-  d->residuals.addSegment(x1, d->imageHeight - y1, 0.0,
-                          x2, d->imageHeight - y2, 0.0);
+  d->residuals.addSegment(x1, y1, 0.0, x2, y2, 0.0);
 
   this->update();
 }
