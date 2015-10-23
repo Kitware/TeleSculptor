@@ -48,6 +48,9 @@ QString loadText(QString const& resource)
 QString loadMarkdown(QString const& resource)
 {
   auto input = loadText(resource);
+  input.replace("&", "&amp;");
+  input.replace("<", "&lt;");
+  input.replace(">", "&gt;");
   input.replace("``", "&ldquo;");
   input.replace("''", "&rdquo;");
   input.replace("`", "&lsquo;");
@@ -72,7 +75,7 @@ QString loadMarkdown(QString const& resource)
       }
       out << qtSaxElement("li")
           << qtSaxAttribute("style", "margin-bottom: 1em;")
-          << text.mid(1).trimmed()
+          << qtSaxText(text.mid(1).trimmed(), qtSaxText::TextWithEntities)
           << qtSax::EndElement;
     }
     else
@@ -82,7 +85,9 @@ QString loadMarkdown(QString const& resource)
         out << qtSax::EndElement;
         --depth;
       }
-      out << qtSaxElement("p") << text << qtSax::EndElement;
+      out << qtSaxElement("p")
+          << qtSaxText(text, qtSaxText::TextWithEntities)
+          << qtSax::EndElement;
     }
   }
   while (depth)
