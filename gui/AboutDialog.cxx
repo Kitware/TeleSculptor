@@ -13,7 +13,10 @@
 #include <qtSaxWriter.h>
 #include <qtUtil.h>
 
+#include <QtGui/QDesktopServices>
+
 #include <QtCore/QFile>
+#include <QtCore/QUrl>
 
 QTE_IMPLEMENT_D_FUNC(AboutDialog)
 
@@ -119,6 +122,9 @@ AboutDialog::AboutDialog(QWidget* parent, Qt::WindowFlags f)
   qtUtil::setStandardIcons(d->UI.buttonBox);
   this->setWindowTitle(QString("About %1").arg(qApp->applicationName()));
 
+  connect(d->UI.about, SIGNAL(linkActivated(QString)),
+          this, SLOT(openLink(QString)));
+
   // Fill title and copyright texts
   d->UI.title->setText(formatTitle(d->UI.title->text()));
   d->UI.copyright->setText(buildCopyrightText());
@@ -132,4 +138,10 @@ AboutDialog::AboutDialog(QWidget* parent, Qt::WindowFlags f)
 //-----------------------------------------------------------------------------
 AboutDialog::~AboutDialog()
 {
+}
+
+//-----------------------------------------------------------------------------
+void AboutDialog::openLink(QString const& uri)
+{
+  QDesktopServices::openUrl(QUrl(uri));
 }

@@ -45,6 +45,9 @@ public:
   explicit AboutDialog(QWidget* parent = 0, Qt::WindowFlags f = 0);
   virtual ~AboutDialog();
 
+protected slots:
+  void openLink(QString const&);
+
 protected:
   QTE_DECLARE_PRIVATE_RPTR(AboutDialog)
 
