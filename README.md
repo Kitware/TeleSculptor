@@ -167,7 +167,7 @@ To build the user manual(s), you need:
              <http://docutils.sourceforge.net/>
 
 (At present, only the GUI has a user manual.  Other manuals may be added in the
-future.
+future.)
 
 
 Building Doxygen Documentation
