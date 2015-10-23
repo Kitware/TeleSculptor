@@ -59,6 +59,18 @@ p { margin-top: 0px; margin-bottom: 0px; }
       <number>0</number>
      </property>
      <widget class="QLabel" name="about">
+      <property name="text">
+       <string>&lt;html&gt;&lt;body&gt;
+&lt;p&gt;
+  The MAP-Tk GUI:&lt;br/&gt;
+  Visualization tool for MAP-Tk input imagery, feature detection, camera registration, and landmark estimation
+&lt;/p&gt;
+&lt;p&gt;
+  &lt;a href=&quot;http://www.github.com/kitware/maptk&quot;&gt;http://www.github.com/kitware/maptk/&lt;/a&gt;&lt;br/&gt;
+  &lt;a href=&quot;http://www.kwiver.org/&quot;&gt;http://www.kwiver.org/&lt;/a&gt;
+&lt;/p&gt;
+&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
       <property name="textFormat">
        <enum>Qt::RichText</enum>
       </property>
