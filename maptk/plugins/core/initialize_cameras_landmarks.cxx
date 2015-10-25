@@ -937,9 +937,16 @@ initialize_cameras_landmarks
       camera_map::map_camera_t new_cam_map;
       new_cam_map[f] = cams[f];
       std::vector<double> rpe = maptk::reprojection_errors(new_cam_map, lms, trks);
-      std::sort(rpe.begin(), rpe.end());
-      std::cerr << "new camera reprojections - median: "<<rpe[rpe.size()/2]
-                << " max: " << rpe.back() << std::endl;
+      if( rpe.empty() )
+      {
+        std::cerr << "no landmark projections for new camera" << std::endl;
+      }
+      else
+      {
+        std::sort(rpe.begin(), rpe.end());
+        std::cerr << "new camera reprojections - median: "<<rpe[rpe.size()/2]
+                  << " max: " << rpe.back() << std::endl;
+      }
     }
 
     if( d_->bundle_adjuster && cams.size() >= 4 && is_power_of_two(cams.size()) )
