@@ -767,7 +767,7 @@ next_best_frame(const track_set_sptr tracks,
   // check if remaining new frames see no existing landmarks
   if( vis_count.empty() )
   {
-    std::cout << "remaining frame do not see any existing landmarks" << std::endl;
+    std::cout << "remaining frames do not see any existing landmarks" << std::endl;
     return *new_frame_ids.begin();
   }
 
