@@ -198,6 +198,23 @@
     <enum>Qt::WidgetWithChildrenShortcut</enum>
    </property>
   </action>
+  <action name="actionViewPerspective">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Perspective</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggles the view between perspective and parallel projection</string>
+   </property>
+   <property name="shortcut">
+    <string>P</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>

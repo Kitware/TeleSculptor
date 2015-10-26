@@ -193,6 +193,8 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   viewMenu->addAction(d->UI.actionViewToWorldRight);
   viewMenu->addAction(d->UI.actionViewToWorldFront);
   viewMenu->addAction(d->UI.actionViewToWorldBack);
+  viewMenu->addSeparator();
+  viewMenu->addAction(d->UI.actionViewPerspective);
   d->setPopup(d->UI.actionViewReset, viewMenu);
 
   d->cameraOptions = new CameraOptions(d->cameraRep.GetPointer(), this);
@@ -210,6 +212,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   // Connect actions
   this->addAction(d->UI.actionViewReset);
   this->addAction(d->UI.actionViewResetLandmarks);
+  this->addAction(d->UI.actionViewPerspective);
   this->addAction(d->UI.actionShowCameras);
   this->addAction(d->UI.actionShowLandmarks);
   this->addAction(d->UI.actionShowGroundPlane);
@@ -228,6 +231,8 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(viewToWorldFront()));
   connect(d->UI.actionViewToWorldBack, SIGNAL(triggered()),
           this, SLOT(viewToWorldBack()));
+  connect(d->UI.actionViewPerspective, SIGNAL(toggled(bool)),
+          this, SLOT(setPerspective(bool)));
 
   connect(d->UI.actionShowCameras, SIGNAL(toggled(bool)),
           this, SLOT(setCamerasVisible(bool)));
@@ -418,6 +423,15 @@ void WorldView::viewToWorldBack()
 {
   QTE_D();
   d->setView(0.0, +1.0, 0.0, 0.0, 0.0, +1.0);
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::setPerspective(bool perspective)
+{
+  QTE_D();
+
+  d->renderer->GetActiveCamera()->SetParallelProjection(!perspective);
+  d->UI.renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------

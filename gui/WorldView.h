@@ -57,6 +57,8 @@ public slots:
   void setLandmarksVisible(bool);
   void setGroundPlaneVisible(bool);
 
+  void setPerspective(bool);
+
   void setActiveCamera(vtkMaptkCamera* camera);
 
   void resetView();
