@@ -154,6 +154,50 @@
     <enum>Qt::WidgetWithChildrenShortcut</enum>
    </property>
   </action>
+  <action name="actionViewToWorldLeft">
+   <property name="text">
+    <string>View to World L&amp;eft</string>
+   </property>
+   <property name="toolTip">
+    <string>Resets the view rotation so that the view is looking down the X- axis, with the Z+ axis up</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
+  </action>
+  <action name="actionViewToWorldRight">
+   <property name="text">
+    <string>View to World R&amp;ight</string>
+   </property>
+   <property name="toolTip">
+    <string>Resets the view rotation so that the view is looking down the X+ axis, with the Z+ axis up</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
+  </action>
+  <action name="actionViewToWorldFront">
+   <property name="text">
+    <string>View to World &amp;Front</string>
+   </property>
+   <property name="toolTip">
+    <string>Resets the view rotation so that the view is looking down the Y- axis, with the Z+ axis up</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
+  </action>
+  <action name="actionViewToWorldBack">
+   <property name="text">
+    <string>View to World &amp;Back</string>
+   </property>
+   <property name="toolTip">
+    <string>Resets the view rotation so that the view is looking down the Y+ axis, with the Z+ axis up</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>

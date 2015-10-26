@@ -65,6 +65,10 @@ public:
   void setPopup(QAction* action, QMenu* menu);
   void setPopup(QAction* action, QWidget* widget);
 
+  void setView(maptk::vector_3d const& normal, maptk::vector_3d const& up);
+  void setView(double ni, double nj, double nk,
+               double ui, double uj, double uk);
+
   void updateCameras(WorldView*);
   void updateScale(WorldView*);
 
@@ -118,6 +122,36 @@ void WorldViewPrivate::setPopup(QAction* action, QWidget* widget)
 }
 
 //-----------------------------------------------------------------------------
+void WorldViewPrivate::setView(
+  double ni, double nj, double nk, double ui, double uj, double uk)
+{
+  this->setView(maptk::vector_3d(ni, nj, nk), maptk::vector_3d(ui, uj, uk));
+}
+
+//-----------------------------------------------------------------------------
+void WorldViewPrivate::setView(
+  maptk::vector_3d const& normal, maptk::vector_3d const& up)
+{
+  // Get camera
+  auto const camera = this->renderer->GetActiveCamera();
+
+  // Get camera parameters
+  auto focus = maptk::vector_3d();
+  auto pos = maptk::vector_3d();
+  camera->GetPosition(pos.data());
+  camera->GetFocalPoint(focus.data());
+
+  // Compute new position
+  pos = focus + (normal * (focus - pos).norm());
+
+  // Modify camera
+  camera->SetPosition(pos.data());
+  camera->SetViewUp(up.data());
+
+  this->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
 void WorldViewPrivate::updateCameras(WorldView* q)
 {
   if (!this->cameraRepDirty)
@@ -155,6 +189,10 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   viewMenu->addAction(d->UI.actionViewResetLandmarks);
   viewMenu->addSeparator();
   viewMenu->addAction(d->UI.actionViewToWorldTop);
+  viewMenu->addAction(d->UI.actionViewToWorldLeft);
+  viewMenu->addAction(d->UI.actionViewToWorldRight);
+  viewMenu->addAction(d->UI.actionViewToWorldFront);
+  viewMenu->addAction(d->UI.actionViewToWorldBack);
   d->setPopup(d->UI.actionViewReset, viewMenu);
 
   d->cameraOptions = new CameraOptions(d->cameraRep.GetPointer(), this);
@@ -182,6 +220,14 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(resetViewToLandmarks()));
   connect(d->UI.actionViewToWorldTop, SIGNAL(triggered()),
           this, SLOT(viewToWorldTop()));
+  connect(d->UI.actionViewToWorldLeft, SIGNAL(triggered()),
+          this, SLOT(viewToWorldLeft()));
+  connect(d->UI.actionViewToWorldRight, SIGNAL(triggered()),
+          this, SLOT(viewToWorldRight()));
+  connect(d->UI.actionViewToWorldFront, SIGNAL(triggered()),
+          this, SLOT(viewToWorldFront()));
+  connect(d->UI.actionViewToWorldBack, SIGNAL(triggered()),
+          this, SLOT(viewToWorldBack()));
 
   connect(d->UI.actionShowCameras, SIGNAL(toggled(bool)),
           this, SLOT(setCamerasVisible(bool)));
@@ -343,26 +389,35 @@ void WorldView::resetViewToLandmarks()
 void WorldView::viewToWorldTop()
 {
   QTE_D();
+  d->setView(0.0, 0.0, +1.0, 0.0, +1.0, 0.0);
+}
 
-  static auto const z = maptk::vector_3d(0.0, 0.0, 1.0);
+//-----------------------------------------------------------------------------
+void WorldView::viewToWorldLeft()
+{
+  QTE_D();
+  d->setView(-1.0, 0.0, 0.0, 0.0, 0.0, +1.0);
+}
 
-  // Get camera
-  auto const camera = d->renderer->GetActiveCamera();
+//-----------------------------------------------------------------------------
+void WorldView::viewToWorldRight()
+{
+  QTE_D();
+  d->setView(+1.0, 0.0, 0.0, 0.0, 0.0, +1.0);
+}
 
-  // Get camera parameters
-  auto focus = maptk::vector_3d();
-  auto pos = maptk::vector_3d();
-  camera->GetPosition(pos.data());
-  camera->GetFocalPoint(focus.data());
+//-----------------------------------------------------------------------------
+void WorldView::viewToWorldFront()
+{
+  QTE_D();
+  d->setView(0.0, -1.0, 0.0, 0.0, 0.0, +1.0);
+}
 
-  // Compute new position
-  pos = focus + (z * (focus - pos).norm());
-
-  // Modify camera
-  camera->SetPosition(pos.data());
-  camera->SetViewUp(0.0, 1.0, 0.0);
-
-  d->UI.renderWidget->update();
+//-----------------------------------------------------------------------------
+void WorldView::viewToWorldBack()
+{
+  QTE_D();
+  d->setView(0.0, +1.0, 0.0, 0.0, 0.0, +1.0);
 }
 
 //-----------------------------------------------------------------------------

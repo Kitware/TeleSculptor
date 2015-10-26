@@ -63,6 +63,10 @@ public slots:
   void resetViewToLandmarks();
 
   void viewToWorldTop();
+  void viewToWorldLeft();
+  void viewToWorldRight();
+  void viewToWorldFront();
+  void viewToWorldBack();
 
 protected slots:
   void updateCameras();
