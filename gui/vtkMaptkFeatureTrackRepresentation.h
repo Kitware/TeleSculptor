@@ -35,6 +35,8 @@
 #include <vtkCollection.h>
 #include <vtkSmartPointer.h>
 
+#include <memory>
+
 class vtkActor;
 
 class vtkMaptkFeatureTrackRepresentation : public vtkObject
@@ -99,7 +101,7 @@ private:
   vtkSmartPointer<vtkActor> TrailsActor;
 
   class vtkInternal;
-  vtkInternal* const Internal;
+  std::unique_ptr<vtkInternal> const Internal;
 };
 
 #endif

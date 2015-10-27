@@ -35,6 +35,8 @@
 #include <vtkCollection.h>
 #include <vtkSmartPointer.h>
 
+#include <memory>
+
 class vtkActor;
 
 class vtkMaptkCameraRepresentation : public vtkObject
@@ -108,7 +110,7 @@ private:
   vtkActor* PathActor;
 
   class vtkInternal;
-  vtkInternal* const Internal;
+  std::unique_ptr<vtkInternal> const Internal;
 };
 
 #endif
