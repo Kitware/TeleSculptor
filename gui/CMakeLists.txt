@@ -80,3 +80,37 @@ target_link_libraries(mapgui
   qtExtensions
   ${QT_LIBRARIES}
 )
+
+# add DESTDIR switch (Turn it on if not WIN32?)
+# do components bit (don't install hedader files)')
+
+set(gui-exe "\${DESTDIR}\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/bin/mapgui${CMAKE_EXECUTABLE_SUFFIX}")
+
+# Add expected location of VTK dlls
+list(APPEND FIXUP_DIRS "${VTK_INSTALL_PREFIX}/bin")
+
+# For now, we're assuming we're pulling qtextensions from a build directory
+# (not an install).  Also, Mac and/or Linus will need be a bit different,
+# but will be handled later (they'd likely use CMAKE_BUILD_TYPE instead
+# of CMAKE_CONFIGURATION_TYPES). For Windows really expect the dll will
+# be in Release subdirectory, and so look there unless
+# CMAKE_CONFIGURATION_TYPES indicates only "debug"
+string(TOLOWER "${CMAKE_CONFIGURATION_TYPES}" BUILD_TYPE)
+if(BUILD_TYPE STREQUAL "debug")
+  set(BINARY_DIR "Debug")
+else()
+  set(BINARY_DIR "Release")
+endif()
+list(APPEND FIXUP_DIRS "${qtExtensions_DIR}/${BUILD_TYPE}")
+
+# Location for QT dlls
+list(APPEND FIXUP_DIRS "${QT_BINARY_DIR}")
+
+set(FIXUP_LIBS "")
+
+install(CODE "
+        set(ENV{VS_UNICODE_OUTPUT} \"\")
+        include(BundleUtilities)
+        fixup_bundle(\"${gui-exe}\" \"${FIXUP_LIBS}\" \"${FIXUP_DIRS}\")
+        "
+)
