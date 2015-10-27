@@ -79,11 +79,11 @@ public:
 
   // Description:
   // Get the actor representing the active points of the feature tracks
-  vtkGetObjectMacro(ActivePointsActor, vtkActor);
+  vtkActor* GetActivePointsActor() { return this->ActivePointsActor; }
 
   // Description:
   // Get the actor representing the "trails" of the feature tracks
-  vtkGetObjectMacro(TrailsActor, vtkActor);
+  vtkActor* GetTrailsActor() { return this->TrailsActor; }
 
 protected:
   vtkMaptkFeatureTrackRepresentation();
