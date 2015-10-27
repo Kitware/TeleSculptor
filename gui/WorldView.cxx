@@ -324,6 +324,7 @@ void WorldView::addLandmarks(maptk::landmark_map const& lm)
 
   vtkNew<vtkActor> actor;
   actor->SetMapper(mapper.GetPointer());
+  actor->SetVisibility(d->UI.actionShowLandmarks->isChecked());
 
   d->renderer->AddActor(actor.GetPointer());
   d->landmarkOptions->addActor(actor.GetPointer());
