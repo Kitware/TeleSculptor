@@ -35,6 +35,7 @@
 
 #include <vtkObjectFactory.h>
 #include <vtkMath.h>
+#include <vtkMatrix4x4.h>
 
 #include <vtksys/SystemTools.hxx>
 
@@ -136,6 +137,41 @@ void vtkMaptkCamera::GetFrustumPlanes(double planes[24])
 {
   // Need to add timing (modfied time) logic to determine if need to Update()
   this->Superclass::GetFrustumPlanes(this->AspectRatio, planes);
+}
+
+//-----------------------------------------------------------------------------
+void vtkMaptkCamera::GetTransform(vtkMatrix4x4* out, double const plane[4])
+{
+  // Build camera matrix
+  auto const k = maptk::matrix_3x3d(this->MaptkCamera.intrinsics());
+  auto const r = maptk::matrix_3x3d(this->MaptkCamera.rotation());
+  auto const t = this->MaptkCamera.translation();
+
+  auto const kr = maptk::matrix_3x3d(k * r);
+  auto const kt = maptk::vector_3d(k * t);
+
+  out->SetElement(0, 0, kr(0, 0));
+  out->SetElement(0, 1, kr(0, 1));
+  out->SetElement(0, 3, kr(0, 2));
+  out->SetElement(1, 0, kr(1, 0));
+  out->SetElement(1, 1, kr(1, 1));
+  out->SetElement(1, 3, kr(1, 2));
+  out->SetElement(3, 0, kr(2, 0));
+  out->SetElement(3, 1, kr(2, 1));
+  out->SetElement(3, 3, kr(2, 2));
+
+  out->SetElement(0, 3, kt[0]);
+  out->SetElement(1, 3, kt[1]);
+  out->SetElement(3, 3, kt[2]);
+
+  // Insert plane coefficients into matrix to build plane-to-image projection
+  out->SetElement(2, 0, plane[0]);
+  out->SetElement(2, 1, plane[1]);
+  out->SetElement(2, 2, plane[2]);
+  out->SetElement(2, 3, plane[3]);
+
+  // Invert to get image-to-plane projection
+  out->Invert();
 }
 
 //-----------------------------------------------------------------------------
