@@ -35,6 +35,8 @@
 
 #include <QtGui/QWidget>
 
+class vtkImageData;
+
 namespace maptk { class track; }
 
 class vtkMaptkCamera;
@@ -52,7 +54,7 @@ public:
   void addFeatureTrack(maptk::track const&);
 
 public slots:
-  void loadImage(QString const& path, vtkMaptkCamera* camera);
+  void setImageData(vtkImageData* data, QSize const& dimensions);
 
   void setActiveFrame(unsigned);
 
