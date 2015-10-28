@@ -58,6 +58,10 @@ qt4_add_resources(gui_res_sources ${gui_resources})
 
 qte_amc_wrap_ui(gui_amc_sources ActionManagerDialog ${gui_am_ui})
 
+if (WIN32)
+  set(gui_icon_source mapgui.rc)
+endif()
+
 maptk_add_executable(mapgui
   WIN32
   ${gui_sources}
@@ -65,6 +69,7 @@ maptk_add_executable(mapgui
   ${gui_moc_sources}
   ${gui_res_sources}
   ${gui_amc_sources}
+  ${gui_icon_source}
 )
 
 target_link_libraries(mapgui
