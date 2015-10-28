@@ -74,7 +74,7 @@ void vtkMaptkFeatureTrackRepresentation::vtkInternal::UpdateActivePoints(
   auto const te = this->Tracks.cend();
   for (auto ti = this->Tracks.cbegin(); ti != te; ++ti)
   {
-    auto const track = ti->second;
+    auto const& track = ti->second;
     auto const fi = track.find(activeFrame);
     if (fi != track.cend())
     {
@@ -104,7 +104,7 @@ void vtkMaptkFeatureTrackRepresentation::vtkInternal::UpdateTrails(
   auto const te = this->Tracks.cend();
   for (auto ti = this->Tracks.cbegin(); ti != te; ++ti)
   {
-    auto const track = ti->second;
+    auto const& track = ti->second;
     if (track.cbegin()->first > activeFrame ||
         (--track.cend())->first < activeFrame)
     {
