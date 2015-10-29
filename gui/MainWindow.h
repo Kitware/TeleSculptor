@@ -57,6 +57,9 @@ public slots:
 
   void setActiveCamera(int);
 
+  void showAboutDialog();
+  void showUserManual();
+
 protected slots:
   void setSlideDelay(int);
   void setSlideshowPlaying(bool);

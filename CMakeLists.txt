@@ -8,7 +8,7 @@ set(MAPTK_VERSION_MAJOR 0)
 set(MAPTK_VERSION_MINOR 6)
 set(MAPTK_VERSION_PATCH 0)
 set(MAPTK_VERSION "${MAPTK_VERSION_MAJOR}.${MAPTK_VERSION_MINOR}.${MAPTK_VERSION_PATCH}")
-
+string(TIMESTAMP MAPTK_COPYRIGHT_YEAR "%Y")
 
 ###
 # Add the CMake directory for CMake modules
@@ -65,6 +65,16 @@ add_subdirectory(tools)
 option(MAPTK_ENABLE_GUI "Build MAPTK GUI" OFF)
 if(MAPTK_ENABLE_GUI)
   add_subdirectory(gui)
+endif()
+
+
+###
+# Manuals
+#
+
+option(MAPTK_ENABLE_MANUALS "Build MAPTK user manual(s)" OFF)
+if(MAPTK_ENABLE_MANUALS)
+  add_subdirectory(doc/manuals)
 endif()
 
 
