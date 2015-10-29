@@ -36,6 +36,7 @@
 #include "initialize_cameras_landmarks.h"
 
 #include <deque>
+#include <iterator>
 
 #include <vital/vital_foreach.h>
 
@@ -680,6 +681,29 @@ find_closest_camera(const frame_id_t& frame,
 }
 
 
+/// Find the subset of new_frames within dist frames of a camera in cams
+std::set<frame_id_t>
+find_nearby_new_frames(const std::set<frame_id_t>& new_frames,
+                       const camera_map::map_camera_t& cams,
+                       unsigned int dist)
+{
+  std::set<frame_id_t> nearby;
+  VITAL_FOREACH(camera_map::map_camera_t::value_type p, cams)
+  {
+    int f = p.first < dist ? 0 : p.first - dist;
+    for(; f < p.first + dist; ++f)
+    {
+      nearby.insert(f);
+    }
+  }
+  std::set<frame_id_t> new_nearby;
+  std::set_intersection(nearby.begin(), nearby.end(),
+                        new_frames.begin(), new_frames.end(),
+                        std::inserter(new_nearby, new_nearby.begin()));
+  return new_nearby;
+}
+
+
 /// find the best pair of camera indices to start with
 void
 find_best_initial_pair(const Eigen::SparseMatrix<unsigned int>& mm,
@@ -875,7 +899,8 @@ initialize_cameras_landmarks
     }
     else
     {
-      f = next_best_frame(tracks, lms, new_frame_ids);
+      f = next_best_frame(tracks, lms,
+                          find_nearby_new_frames(new_frame_ids, cams, 20));
     }
     new_frame_ids.erase(f);
 
