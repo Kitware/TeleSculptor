@@ -33,7 +33,9 @@
 #include "ui_MainWindow.h"
 #include "am_MainWindow.h"
 
+#include "AboutDialog.h"
 #include "Project.h"
+#include "Version.h"
 #include "vtkMaptkCamera.h"
 
 #include <maptk/camera_io.h>
@@ -50,10 +52,13 @@
 #include <qtUiStateItem.h>
 
 #include <QtGui/QApplication>
+#include <QtGui/QDesktopServices>
 #include <QtGui/QFileDialog>
+#include <QtGui/QMessageBox>
 
 #include <QtCore/QDebug>
 #include <QtCore/QTimer>
+#include <QtCore/QUrl>
 
 namespace // anonymous
 {
@@ -66,6 +71,38 @@ struct CameraData
 
   QString imagePath; // Full path to camera image data
 };
+
+//-----------------------------------------------------------------------------
+QString findUserManual()
+{
+  static auto const name = "gui.html";
+  static auto const product = "maptk";
+  static auto const version = MAPTK_VERSION;
+
+  auto const& prefix =
+    QFileInfo(QApplication::applicationFilePath()).dir().absoluteFilePath("..");
+
+  auto locations = QStringList();
+
+  // Install location
+  locations.append(QString("%1/share/doc/%2-%3").arg(prefix, product, version));
+
+  // Build location
+  locations.append(QString("%1/doc").arg(prefix));
+
+  foreach (auto const& path, locations)
+  {
+    auto const fi = QFileInfo(QString("%1/user/%2").arg(path, name));
+    if (fi.exists())
+    {
+      // Found manual
+      return fi.canonicalFilePath();
+    }
+  }
+
+  // Manual not found
+  return QString();
+}
 
 } // namespace <anonymous>
 
@@ -279,6 +316,11 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   connect(d->UI.actionOpen, SIGNAL(triggered()), this, SLOT(openFile()));
   connect(d->UI.actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
+
+  connect(d->UI.actionAbout, SIGNAL(triggered()),
+          this, SLOT(showAboutDialog()));
+  connect(d->UI.actionShowManual, SIGNAL(triggered()),
+          this, SLOT(showUserManual()));
 
   connect(&d->slideTimer, SIGNAL(timeout()), this, SLOT(nextSlide()));
   connect(d->UI.actionSlideshowPlay, SIGNAL(toggled(bool)),
@@ -538,4 +580,28 @@ void MainWindow::setActiveCamera(int id)
   }
 
   d->setActiveCamera(id);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::showAboutDialog()
+{
+  AboutDialog dlg(this);
+  dlg.exec();
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::showUserManual()
+{
+  auto const path = findUserManual();
+  if (!path.isEmpty())
+  {
+    auto const& uri = QUrl::fromLocalFile(path);
+    QDesktopServices::openUrl(uri);
+  }
+  else
+  {
+    QMessageBox::information(
+      this, "Not Found",
+      "The user manual could not be located. Please check your installation.");
+  }
 }

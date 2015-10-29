@@ -29,7 +29,7 @@
         <bool>false</bool>
        </property>
        <property name="color">
-        <color alpha="128">
+        <color>
          <red>0</red>
          <green>192</green>
          <blue>0</blue>
