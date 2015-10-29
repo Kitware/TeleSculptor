@@ -3,6 +3,7 @@
     <file alias="camera">16x16/camera.png</file>
     <file alias="close">16x16/close.png</file>
     <file alias="feature">16x16/feature.png</file>
+    <file alias="grid">16x16/grid.png</file>
     <file alias="help">16x16/help.png</file>
     <file alias="help-manual">16x16/help-manual.png</file>
     <file alias="landmark">16x16/landmark.png</file>

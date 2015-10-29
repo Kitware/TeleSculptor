@@ -2,6 +2,9 @@
   MAP-Tk GUI
 ===============================================================================
 
+.. role:: f
+   :class: math
+
 .. contents::
 
 Overview
@@ -52,7 +55,13 @@ Tool Bar
 
 :icon:`landmark` Show Landmarks
   Toggles visibility of landmarks. The associated pop-up provides additional
-  options; see `Feature Options`_.
+  options; see `Point Options`_.
+
+:icon:`grid` Show Ground Plane Grid
+  Toggles visibility of the ground plane. The ground plane is the :f:`z = 0`
+  plane in world coordinates. The grid is centered about :f:`x = y = 0`,
+  however the grid lines are otherwise strictly aesthetic and do not correspond
+  to any particular values.
 
 Camera Options
 --------------
@@ -78,8 +87,8 @@ maximum allowed value giving active and inactive camera frustums the same size.
 .. TODO remove above notice and fix documentation when we support cameras as
    points
 
-Feature Options
----------------
+Point Options
+-------------
 
 The :action:`landmark Show Landmarks` pop-up provides additional controls that
 can be used to control the display of the landmarks in the world view. (The
@@ -112,16 +121,31 @@ Tool Bar
   available via the `Reset View` button's associated pop-up menu.
 
 :icon:`feature` Show Feature Points
-  Toggles visibility of feature points. The associated pop-up provides
+  Toggles visibility of feature points / trails. The associated pop-up provides
   additional options; see `Feature Options`_.
 
 :icon:`landmark` Show Landmarks
   Toggles visibility of landmarks. The associated pop-up provides additional
-  options; see `Feature Options`_.
+  options; see `Point Options`_.
 
 :icon:`residual` Show Residuals
   Toggles visibility of the landmark estimation residuals. The associated
   pop-up allows the color of the displayed residuals to be changed.
+
+Feature Options
+---------------
+
+In addition to active feature points, which have all the options described in
+`Point Options`_, the position of feature points on adjacent frames may also be
+displayed by enabling :action:`- Trails`. For image collections where cameras
+adjacent in the camera list are also spatially similar (especially when using
+consecutive video frames as input), these may be useful as an additional means
+of visualizing camera motion.
+
+The trail color and length (number of adjacent frames to be used) may be
+changed, as well as whether to show trails only for lower-numbered frames
+("historic" mode), or for all adjacent frames ("symmetric" mode). In all cases,
+trails are displayed only for active feature points.
 
 Camera Selection
 ================
