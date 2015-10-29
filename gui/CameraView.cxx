@@ -35,6 +35,7 @@
 
 #include "ActorColorButton.h"
 #include "FeatureOptions.h"
+#include "ImageOptions.h"
 #include "vtkMaptkCamera.h"
 #include "vtkMaptkFeatureTrackRepresentation.h"
 
@@ -44,8 +45,6 @@
 #include <vtkCellArray.h>
 #include <vtkImageActor.h>
 #include <vtkImageData.h>
-#include <vtkImageReader2.h>
-#include <vtkImageReader2Factory.h>
 #include <vtkInteractorStyleRubberBand2D.h>
 #include <vtkMatrix4x4.h>
 #include <vtkNew.h>
@@ -291,6 +290,13 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   viewMenu->addAction(d->UI.actionViewResetFullExtents);
   d->setPopup(d->UI.actionViewReset, viewMenu);
 
+  auto const imageOptions = new ImageOptions("CameraView/Image", this);
+  imageOptions->addActor(d->imageActor.GetPointer());
+  d->setPopup(d->UI.actionShowFrameImage, imageOptions);
+
+  connect(imageOptions, SIGNAL(modified()),
+          d->UI.renderWidget, SLOT(update()));
+
   auto const featureOptions =
     new FeatureOptions(d->featureRep.GetPointer(),
                        "CameraView/FeaturePoints", this);
@@ -332,6 +338,8 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.actionViewResetFullExtents, SIGNAL(triggered()),
           this, SLOT(resetViewToFullExtents()));
 
+  connect(d->UI.actionShowFrameImage, SIGNAL(toggled(bool)),
+          this, SLOT(setImageVisible(bool)));
   connect(d->UI.actionShowFeatures, SIGNAL(toggled(bool)),
           featureOptions, SLOT(setFeaturesVisible(bool)));
   connect(d->UI.actionShowLandmarks, SIGNAL(toggled(bool)),
@@ -367,7 +375,7 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->emptyImage->AllocateScalars(VTK_UNSIGNED_CHAR, 1);
   d->emptyImage->SetScalarComponentFromDouble(0, 0, 0, 0, 0.0);
 
-  this->loadImage(QString(), 0);
+  this->setImageData(0, QSize(1, 1));
 }
 
 //-----------------------------------------------------------------------------
@@ -376,70 +384,31 @@ CameraView::~CameraView()
 }
 
 //-----------------------------------------------------------------------------
-void CameraView::loadImage(QString const& path, vtkMaptkCamera* camera)
+void CameraView::setImageData(vtkImageData* data, QSize const& dimensions)
 {
   QTE_D();
 
-  if (path.isEmpty())
+  if (!data)
   {
-    auto imageDimensions = QSize(1, 1);
-    if (camera)
-    {
-      int w, h;
-      camera->GetImageDimensions(w, h);
-      imageDimensions = QSize(w, h);
-    }
-
-    // If no path given, clear current image and replace with "empty" image
+    // If no image given, clear current image and replace with "empty" image
     d->imageActor->SetInputData(d->emptyImage.GetPointer());
 
-    d->imageBounds[0] = 0.0; d->imageBounds[1] = imageDimensions.width() - 1;
-    d->imageBounds[2] = 0.0; d->imageBounds[3] = imageDimensions.height() - 1;
+    d->imageBounds[0] = 0.0; d->imageBounds[1] = dimensions.width() - 1;
+    d->imageBounds[2] = 0.0; d->imageBounds[3] = dimensions.height() - 1;
     d->imageBounds[4] = 0.0; d->imageBounds[5] = 0.0;
 
-    d->setTransforms(imageDimensions.height());
+    d->setTransforms(dimensions.height());
   }
   else
   {
-    // Create a reader capable of reading the image file
-    auto const reader =
-      vtkImageReader2Factory::CreateImageReader2(qPrintable(path));
-    if (!reader)
-    {
-      qWarning() << "Failed to create image reader for image" << path;
-      this->loadImage(QString(), camera);
-      return;
-    }
-
-    // Load the image
-    reader->SetFileName(qPrintable(path));
-    reader->Update();
-
     // Set data on image actor
-    d->imageActor->SetInputData(reader->GetOutput());
+    d->imageActor->SetInputData(data);
     d->imageActor->Update();
 
     d->imageActor->GetBounds(d->imageBounds);
     auto const w = d->imageBounds[1] + 1 - d->imageBounds[0];
     auto const h = d->imageBounds[3] + 1 - d->imageBounds[2];
     d->setTransforms(qMax(0, static_cast<int>(h)));
-
-    // Delete the reader
-    reader->Delete();
-
-    // Test for errors
-    if (h < 2)
-    {
-      qWarning() << "Failed to read image" << path;
-      this->loadImage(QString(), camera);
-      return;
-    }
-
-    // If successful, update camera image dimensions
-    if (camera)
-    {
-      camera->SetImageDimensions(w, h);
-    }
   }
 
   d->UI.renderWidget->update();
@@ -510,9 +479,19 @@ void CameraView::clearResiduals()
 }
 
 //-----------------------------------------------------------------------------
+void CameraView::setImageVisible(bool state)
+{
+  QTE_D();
+
+  d->imageActor->SetVisibility(state);
+  d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
 void CameraView::setLandmarksVisible(bool state)
 {
   QTE_D();
+
   d->landmarks.actor->SetVisibility(state);
   d->UI.renderWidget->update();
 }
@@ -521,6 +500,7 @@ void CameraView::setLandmarksVisible(bool state)
 void CameraView::setResidualsVisible(bool state)
 {
   QTE_D();
+
   d->residuals.actor->SetVisibility(state);
   d->UI.renderWidget->update();
 }

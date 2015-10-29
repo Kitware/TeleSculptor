@@ -42,6 +42,9 @@
 #include <maptk/landmark_map_io.h>
 #include <maptk/track_set_io.h>
 
+#include <vtkImageData.h>
+#include <vtkImageReader2.h>
+#include <vtkImageReader2Factory.h>
 #include <vtkSmartPointer.h>
 
 #include <qtMath.h>
@@ -115,6 +118,8 @@ public:
   void setActiveCamera(int);
   void updateCameraView();
 
+  void loadImage(QString const& path, vtkMaptkCamera* camera);
+
   Ui::MainWindow UI;
   Am::MainWindow AM;
   qtUiState uiState;
@@ -176,7 +181,7 @@ void MainWindowPrivate::updateCameraView()
 {
   if (this->activeCameraIndex < 0)
   {
-    this->UI.cameraView->loadImage(QString(), 0);
+    this->loadImage(QString(), 0);
     this->UI.cameraView->setActiveFrame(static_cast<unsigned>(-1));
     this->UI.cameraView->clearLandmarks();
     return;
@@ -189,7 +194,7 @@ void MainWindowPrivate::updateCameraView()
   auto const& cd = this->cameras[this->activeCameraIndex];
 
   // Show camera image
-  this->UI.cameraView->loadImage(cd.imagePath, cd.camera);
+  this->loadImage(cd.imagePath, cd.camera);
 
   // Show landmarks
   this->UI.cameraView->clearLandmarks();
@@ -229,6 +234,68 @@ void MainWindowPrivate::updateCameraView()
         }
       }
     }
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::loadImage(QString const& path, vtkMaptkCamera* camera)
+{
+  if (path.isEmpty())
+  {
+    auto imageDimensions = QSize(1, 1);
+    if (camera)
+    {
+      int w, h;
+      camera->GetImageDimensions(w, h);
+      imageDimensions = QSize(w, h);
+    }
+
+    this->UI.cameraView->setImageData(0, imageDimensions);
+    this->UI.worldView->setImageData(0, imageDimensions);
+  }
+  else
+  {
+    // Create a reader capable of reading the image file
+    auto const reader =
+      vtkImageReader2Factory::CreateImageReader2(qPrintable(path));
+    if (!reader)
+    {
+      qWarning() << "Failed to create image reader for image" << path;
+      this->loadImage(QString(), camera);
+      return;
+    }
+
+    // Load the image
+    reader->SetFileName(qPrintable(path));
+    reader->Update();
+
+    // Get dimensions
+    auto const data = reader->GetOutput();
+    int dimensions[3];
+    data->GetDimensions(dimensions);
+
+    // Test for errors
+    if (dimensions[0] < 2 || dimensions[1] < 2)
+    {
+      qWarning() << "Failed to read image" << path;
+      this->loadImage(QString(), camera);
+    }
+    else
+    {
+      // If successful, update camera image dimensions
+      if (camera)
+      {
+        camera->SetImageDimensions(dimensions);
+      }
+
+      // Set image on views
+      auto const size = QSize(dimensions[0], dimensions[1]);
+      this->UI.cameraView->setImageData(data, size);
+      this->UI.worldView->setImageData(data, size);
+    }
+
+    // Delete the reader
+    reader->Delete();
   }
 }
 

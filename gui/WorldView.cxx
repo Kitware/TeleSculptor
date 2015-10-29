@@ -34,6 +34,7 @@
 #include "am_WorldView.h"
 
 #include "CameraOptions.h"
+#include "ImageOptions.h"
 #include "PointOptions.h"
 #include "vtkMaptkCamera.h"
 #include "vtkMaptkCameraRepresentation.h"
@@ -44,6 +45,9 @@
 #include <vtkActorCollection.h>
 #include <vtkBoundingBox.h>
 #include <vtkCellArray.h>
+#include <vtkImageActor.h>
+#include <vtkImageData.h>
+#include <vtkMatrix4x4.h>
 #include <vtkNew.h>
 #include <vtkPlaneSource.h>
 #include <vtkPolyData.h>
@@ -60,7 +64,11 @@
 class WorldViewPrivate
 {
 public:
-  WorldViewPrivate() : cameraRepDirty(false), scaleDirty(false) {}
+  WorldViewPrivate() :
+    validImage(false),
+    cameraRepDirty(false),
+    scaleDirty(false)
+    {}
 
   void setPopup(QAction* action, QMenu* menu);
   void setPopup(QAction* action, QWidget* widget);
@@ -69,6 +77,7 @@ public:
   void setView(double ni, double nj, double nk,
                double ui, double uj, double uk);
 
+  void updateImageTransform();
   void updateCameras(WorldView*);
   void updateScale(WorldView*);
 
@@ -82,11 +91,20 @@ public:
 
   QList<vtkActor*> landmarkActors;
 
+  vtkNew<vtkImageActor> imageActor;
+  vtkNew<vtkImageData> emptyImage;
+
   vtkNew<vtkPlaneSource> groundPlane;
   vtkNew<vtkActor> groundActor;
 
+  ImageOptions* imageOptions;
   CameraOptions* cameraOptions;
   PointOptions* landmarkOptions;
+
+  vtkNew<vtkMatrix4x4> imageProjection;
+  vtkNew<vtkMatrix4x4> imageLocalTransform;
+
+  bool validImage;
 
   bool cameraRepDirty;
   bool scaleDirty;
@@ -152,6 +170,19 @@ void WorldViewPrivate::setView(
 }
 
 //-----------------------------------------------------------------------------
+void WorldViewPrivate::updateImageTransform()
+{
+  vtkNew<vtkMatrix4x4> xf;
+
+  vtkMatrix4x4::Multiply4x4(
+    this->imageProjection.GetPointer(),
+    this->imageLocalTransform.GetPointer(),
+    xf.GetPointer());
+
+  this->imageActor->SetUserMatrix(xf.GetPointer());
+}
+
+//-----------------------------------------------------------------------------
 void WorldViewPrivate::updateCameras(WorldView* q)
 {
   if (!this->cameraRepDirty)
@@ -197,6 +228,13 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   viewMenu->addAction(d->UI.actionViewPerspective);
   d->setPopup(d->UI.actionViewReset, viewMenu);
 
+  d->imageOptions = new ImageOptions("WorldView/Image", this);
+  d->imageOptions->addActor(d->imageActor.GetPointer());
+  d->setPopup(d->UI.actionShowFrameImage, d->imageOptions);
+
+  connect(d->imageOptions, SIGNAL(modified()),
+          d->UI.renderWidget, SLOT(update()));
+
   d->cameraOptions = new CameraOptions(d->cameraRep.GetPointer(), this);
   d->setPopup(d->UI.actionShowCameras, d->cameraOptions);
 
@@ -234,6 +272,8 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.actionViewPerspective, SIGNAL(toggled(bool)),
           this, SLOT(setPerspective(bool)));
 
+  connect(d->UI.actionShowFrameImage, SIGNAL(toggled(bool)),
+          this, SLOT(setImageVisible(bool)));
   connect(d->UI.actionShowCameras, SIGNAL(toggled(bool)),
           this, SLOT(setCamerasVisible(bool)));
   connect(d->UI.actionShowLandmarks, SIGNAL(toggled(bool)),
@@ -250,6 +290,16 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->renderer->AddActor(d->cameraRep->GetActiveActor());
   d->renderer->AddActor(d->cameraRep->GetPathActor());
 
+  // Set up image actor and "dummy" data for use when we have no "real" image
+  d->imageActor->SetVisibility(false);
+  d->renderer->AddViewProp(d->imageActor.GetPointer());
+
+  d->emptyImage->SetExtent(0, 0, 0, 0, 0, 0);
+  d->emptyImage->AllocateScalars(VTK_UNSIGNED_CHAR, 1);
+  d->emptyImage->SetScalarComponentFromDouble(0, 0, 0, 0, 0.0);
+
+  this->setImageData(0, QSize(1, 1));
+
   // Set up ground plane grid
   d->groundPlane->SetOrigin(-10.0, -10.0, 0.0);
   d->groundPlane->SetPoint1(+10.0, -10.0, 0.0);
@@ -258,6 +308,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
 
   vtkNew<vtkPolyDataMapper> mapper;
   mapper->SetInputConnection(d->groundPlane->GetOutputPort());
+  mapper->SetResolveCoincidentTopologyToPolygonOffset();
 
   d->groundActor->SetMapper(mapper.GetPointer());
   d->groundActor->GetProperty()->SetColor(0.5, 0.5, 0.5);
@@ -286,11 +337,32 @@ void WorldView::addCamera(int id, vtkMaptkCamera* camera)
 //-----------------------------------------------------------------------------
 void WorldView::setActiveCamera(vtkMaptkCamera* camera)
 {
+  static auto const plane = maptk::vector_4d(0.0, 0.0, 1.0, 0.0);
+
   QTE_D();
+
+  camera->GetTransform(d->imageProjection.GetPointer(), plane.data());
+  d->updateImageTransform();
 
   d->cameraRep->SetActiveCamera(camera);
 
   d->updateCameras(this);
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::setImageData(vtkImageData* data, QSize const& dimensions)
+{
+  QTE_D();
+
+  d->imageLocalTransform->Identity();
+  d->imageLocalTransform->SetElement(1, 1, -1.0);
+  d->imageLocalTransform->SetElement(1, 3, dimensions.height());
+  d->updateImageTransform();
+
+  d->validImage = data;
+  d->imageActor->SetInputData(data ? data : d->emptyImage.GetPointer());
+  d->imageActor->SetVisibility(data && d->UI.actionShowFrameImage->isChecked());
+  d->UI.renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -332,6 +404,15 @@ void WorldView::addLandmarks(maptk::landmark_map const& lm)
   d->landmarkActors.append(actor.GetPointer());
 
   d->updateScale(this);
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::setImageVisible(bool state)
+{
+  QTE_D();
+
+  d->imageActor->SetVisibility(state && d->validImage);
+  d->UI.renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------

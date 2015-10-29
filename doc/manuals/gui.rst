@@ -26,10 +26,10 @@ rearranged or detached to suit user preference.
 World View
 ==========
 
-The world view provides a three dimensional view showing the computed and all
-of the cameras in a single, homogeneous coordinate space that is especially
-useful for seeing the landmarks in 3D, and seeing the spatial relations between
-cameras, and between cameras and landmarks.
+The world view provides a three dimensional view showing the computed landmarks
+and all of the cameras in a single, homogeneous coordinate space that is
+especially useful for seeing the landmarks in 3D, and seeing the spatial
+relations between cameras, and between cameras and landmarks.
 
 Landmarks are displayed as points, while cameras are displayed as frustums of
 semi-arbitrary length, with the active camera highlighted (see
@@ -37,6 +37,10 @@ semi-arbitrary length, with the active camera highlighted (see
 centers, can also be displayed.
 
 .. TODO update above when we add support for cameras as points
+
+Additionally, the world view can display a representation of the ground plane
+(i.e. the world coordinate plane :f:`z = 0`), and can display the frame image
+for the active camera projected to the same.
 
 Tool Bar
 --------
@@ -47,7 +51,24 @@ Tool Bar
 
 :icon:`blank` Zoom to Landmarks
   Resets the view extents so that all landmarks are visible. This action is
-  available via the `Reset View` button's associated pop-up menu.
+  available via the :action:`view-reset Reset View` button's associated pop-up
+  menu.
+
+:icon:`blank` View to World Top/Left/Right/Front/Back
+  Resets the view rotation to a "standard" rotation, such that the view axes
+  are parallel with the world axes. These actions are available via the
+  :action:`view-reset Reset View` button's associated pop-up menu.
+
+:icon:`blank` Perspective
+  Toggles the world view between perspective and parallel projection.
+  Perspective projection more closely models human vision and is often useful
+  for visualizing depth in the scene. Parallel projection can be useful for
+  viewing the scene in profile. This action is available via the
+  :action:`view-reset Reset View` button's associated pop-up menu.
+
+:icon:`image` Show Camera Frame Image
+  Toggles visibility of the projected camera frame image. The associated
+  pop-up allows the opacity of the same to be adjusted.
 
 :icon:`camera` Show Cameras
   Toggles visibility of cameras and related visualizations. The associated
@@ -119,6 +140,10 @@ Tool Bar
 :icon:`blank` Zoom Extents
   Resets the view extents so that the entire scene is visible. This action is
   available via the `Reset View` button's associated pop-up menu.
+
+:icon:`image` Show Camera Frame Image
+  Toggles visibility of the camera frame image. The associated pop-up allows
+  the opacity of the same to be adjusted.
 
 :icon:`feature` Show Feature Points
   Toggles visibility of feature points / trails. The associated pop-up provides
