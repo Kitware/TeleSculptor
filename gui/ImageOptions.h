@@ -28,62 +28,39 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_WORLDVIEW_H_
-#define MAPTK_WORLDVIEW_H_
+#ifndef MAPTK_IMAGEOPTIONS_H_
+#define MAPTK_IMAGEOPTIONS_H_
 
 #include <qtGlobal.h>
 
 #include <QtGui/QWidget>
 
-class vtkImageData;
+class vtkImageActor;
 
-namespace maptk { class landmark_map; }
+class ImageOptionsPrivate;
 
-class vtkMaptkCamera;
-
-class WorldViewPrivate;
-
-class WorldView : public QWidget
+class ImageOptions : public QWidget
 {
   Q_OBJECT
 
 public:
-  explicit WorldView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~WorldView();
+  explicit ImageOptions(QString const& settingsGroup,
+                        QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  virtual ~ImageOptions();
 
-public slots:
-  void addCamera(int id, vtkMaptkCamera* camera);
-  void addLandmarks(maptk::landmark_map const&);
+  void addActor(vtkImageActor*);
 
-  void setImageData(vtkImageData* data, QSize const& dimensions);
-
-  void setImageVisible(bool);
-  void setCamerasVisible(bool);
-  void setLandmarksVisible(bool);
-  void setGroundPlaneVisible(bool);
-
-  void setPerspective(bool);
-
-  void setActiveCamera(vtkMaptkCamera* camera);
-
-  void resetView();
-  void resetViewToLandmarks();
-
-  void viewToWorldTop();
-  void viewToWorldLeft();
-  void viewToWorldRight();
-  void viewToWorldFront();
-  void viewToWorldBack();
+signals:
+  void modified();
 
 protected slots:
-  void updateCameras();
-  void updateScale();
+  void setOpacity(double);
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(WorldView)
-  QTE_DECLARE_PRIVATE(WorldView)
+  QTE_DECLARE_PRIVATE_RPTR(ImageOptions)
+  QTE_DECLARE_PRIVATE(ImageOptions)
 
-  QTE_DISABLE_COPY(WorldView)
+  QTE_DISABLE_COPY(ImageOptions)
 };
 
 #endif

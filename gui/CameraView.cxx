@@ -35,6 +35,7 @@
 
 #include "ActorColorButton.h"
 #include "FeatureOptions.h"
+#include "ImageOptions.h"
 #include "vtkMaptkCamera.h"
 #include "vtkMaptkFeatureTrackRepresentation.h"
 
@@ -289,6 +290,13 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   viewMenu->addAction(d->UI.actionViewResetFullExtents);
   d->setPopup(d->UI.actionViewReset, viewMenu);
 
+  auto const imageOptions = new ImageOptions("CameraView/Image", this);
+  imageOptions->addActor(d->imageActor.GetPointer());
+  d->setPopup(d->UI.actionShowFrameImage, imageOptions);
+
+  connect(imageOptions, SIGNAL(modified()),
+          d->UI.renderWidget, SLOT(update()));
+
   auto const featureOptions =
     new FeatureOptions(d->featureRep.GetPointer(),
                        "CameraView/FeaturePoints", this);
@@ -330,6 +338,8 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.actionViewResetFullExtents, SIGNAL(triggered()),
           this, SLOT(resetViewToFullExtents()));
 
+  connect(d->UI.actionShowFrameImage, SIGNAL(toggled(bool)),
+          this, SLOT(setImageVisible(bool)));
   connect(d->UI.actionShowFeatures, SIGNAL(toggled(bool)),
           featureOptions, SLOT(setFeaturesVisible(bool)));
   connect(d->UI.actionShowLandmarks, SIGNAL(toggled(bool)),
@@ -469,9 +479,19 @@ void CameraView::clearResiduals()
 }
 
 //-----------------------------------------------------------------------------
+void CameraView::setImageVisible(bool state)
+{
+  QTE_D();
+
+  d->imageActor->SetVisibility(state);
+  d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
 void CameraView::setLandmarksVisible(bool state)
 {
   QTE_D();
+
   d->landmarks.actor->SetVisibility(state);
   d->UI.renderWidget->update();
 }
@@ -480,6 +500,7 @@ void CameraView::setLandmarksVisible(bool state)
 void CameraView::setResidualsVisible(bool state)
 {
   QTE_D();
+
   d->residuals.actor->SetVisibility(state);
   d->UI.renderWidget->update();
 }

@@ -70,6 +70,7 @@ public slots:
   void resetViewToFullExtents();
 
 protected slots:
+  void setImageVisible(bool);
   void setLandmarksVisible(bool);
   void setResidualsVisible(bool);
 

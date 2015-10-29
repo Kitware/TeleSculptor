@@ -25,6 +25,7 @@ set(gui_ui
   AboutDialog.ui
   CameraOptions.ui
   FeatureOptions.ui
+  ImageOptions.ui
   PointOptions.ui
 )
 
@@ -39,6 +40,7 @@ set(gui_moc_headers
   CameraOptions.h
   CameraView.h
   FeatureOptions.h
+  ImageOptions.h
   MainWindow.h
   PointOptions.h
   WorldView.h
@@ -50,6 +52,7 @@ set(gui_sources
   CameraOptions.cxx
   CameraView.cxx
   FeatureOptions.cxx
+  ImageOptions.cxx
   MainWindow.cxx
   PointOptions.cxx
   Project.cxx
