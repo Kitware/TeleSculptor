@@ -690,7 +690,7 @@ find_nearby_new_frames(const std::set<frame_id_t>& new_frames,
   std::set<frame_id_t> nearby;
   VITAL_FOREACH(camera_map::map_camera_t::value_type p, cams)
   {
-    int f = p.first < dist ? 0 : p.first - dist;
+    frame_id_t f = p.first < dist ? 0 : p.first - dist;
     for(; f < p.first + dist; ++f)
     {
       nearby.insert(f);
