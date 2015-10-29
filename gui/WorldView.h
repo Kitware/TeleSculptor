@@ -35,6 +35,8 @@
 
 #include <QtGui/QWidget>
 
+class vtkImageData;
+
 namespace maptk { class landmark_map; }
 
 class vtkMaptkCamera;
@@ -52,6 +54,8 @@ public:
 public slots:
   void addCamera(int id, vtkMaptkCamera* camera);
   void addLandmarks(maptk::landmark_map const&);
+
+  void setImageData(vtkImageData* data, QSize const& dimensions);
 
   void setCamerasVisible(bool);
   void setLandmarksVisible(bool);

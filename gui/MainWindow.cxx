@@ -251,6 +251,7 @@ void MainWindowPrivate::loadImage(QString const& path, vtkMaptkCamera* camera)
     }
 
     this->UI.cameraView->setImageData(0, imageDimensions);
+    this->UI.worldView->setImageData(0, imageDimensions);
   }
   else
   {
@@ -290,6 +291,7 @@ void MainWindowPrivate::loadImage(QString const& path, vtkMaptkCamera* camera)
       // Set image on views
       auto const size = QSize(dimensions[0], dimensions[1]);
       this->UI.cameraView->setImageData(data, size);
+      this->UI.worldView->setImageData(data, size);
     }
 
     // Delete the reader
