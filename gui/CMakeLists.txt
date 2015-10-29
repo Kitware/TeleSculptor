@@ -114,3 +114,7 @@ install(CODE "
         fixup_bundle(\"${gui-exe}\" \"${FIXUP_LIBS}\" \"${FIXUP_DIRS}\")
         "
 )
+
+if (WIN32)
+  include(InstallRequiredSystemLibraries)
+endif()
