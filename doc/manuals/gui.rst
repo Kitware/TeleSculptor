@@ -2,6 +2,9 @@
   MAP-Tk GUI
 ===============================================================================
 
+.. role:: f
+   :class: math
+
 .. contents::
 
 Overview
@@ -23,10 +26,10 @@ rearranged or detached to suit user preference.
 World View
 ==========
 
-The world view provides a three dimensional view showing the computed and all
-of the cameras in a single, homogeneous coordinate space that is especially
-useful for seeing the landmarks in 3D, and seeing the spatial relations between
-cameras, and between cameras and landmarks.
+The world view provides a three dimensional view showing the computed landmarks
+and all of the cameras in a single, homogeneous coordinate space that is
+especially useful for seeing the landmarks in 3D, and seeing the spatial
+relations between cameras, and between cameras and landmarks.
 
 Landmarks are displayed as points, while cameras are displayed as frustums of
 semi-arbitrary length, with the active camera highlighted (see
@@ -34,6 +37,10 @@ semi-arbitrary length, with the active camera highlighted (see
 centers, can also be displayed.
 
 .. TODO update above when we add support for cameras as points
+
+Additionally, the world view can display a representation of the ground plane
+(i.e. the world coordinate plane :f:`z = 0`), and can display the frame image
+for the active camera projected to the same.
 
 Tool Bar
 --------
@@ -44,7 +51,24 @@ Tool Bar
 
 :icon:`blank` Zoom to Landmarks
   Resets the view extents so that all landmarks are visible. This action is
-  available via the `Reset View` button's associated pop-up menu.
+  available via the :action:`view-reset Reset View` button's associated pop-up
+  menu.
+
+:icon:`blank` View to World Top/Left/Right/Front/Back
+  Resets the view rotation to a "standard" rotation, such that the view axes
+  are parallel with the world axes. These actions are available via the
+  :action:`view-reset Reset View` button's associated pop-up menu.
+
+:icon:`blank` Perspective
+  Toggles the world view between perspective and parallel projection.
+  Perspective projection more closely models human vision and is often useful
+  for visualizing depth in the scene. Parallel projection can be useful for
+  viewing the scene in profile. This action is available via the
+  :action:`view-reset Reset View` button's associated pop-up menu.
+
+:icon:`image` Show Camera Frame Image
+  Toggles visibility of the projected camera frame image. The associated
+  pop-up allows the opacity of the same to be adjusted.
 
 :icon:`camera` Show Cameras
   Toggles visibility of cameras and related visualizations. The associated
@@ -52,7 +76,13 @@ Tool Bar
 
 :icon:`landmark` Show Landmarks
   Toggles visibility of landmarks. The associated pop-up provides additional
-  options; see `Feature Options`_.
+  options; see `Point Options`_.
+
+:icon:`grid` Show Ground Plane Grid
+  Toggles visibility of the ground plane. The ground plane is the :f:`z = 0`
+  plane in world coordinates. The grid is centered about :f:`x = y = 0`,
+  however the grid lines are otherwise strictly aesthetic and do not correspond
+  to any particular values.
 
 Camera Options
 --------------
@@ -78,8 +108,8 @@ maximum allowed value giving active and inactive camera frustums the same size.
 .. TODO remove above notice and fix documentation when we support cameras as
    points
 
-Feature Options
----------------
+Point Options
+-------------
 
 The :action:`landmark Show Landmarks` pop-up provides additional controls that
 can be used to control the display of the landmarks in the world view. (The
@@ -111,17 +141,36 @@ Tool Bar
   Resets the view extents so that the entire scene is visible. This action is
   available via the `Reset View` button's associated pop-up menu.
 
+:icon:`image` Show Camera Frame Image
+  Toggles visibility of the camera frame image. The associated pop-up allows
+  the opacity of the same to be adjusted.
+
 :icon:`feature` Show Feature Points
-  Toggles visibility of feature points. The associated pop-up provides
+  Toggles visibility of feature points / trails. The associated pop-up provides
   additional options; see `Feature Options`_.
 
 :icon:`landmark` Show Landmarks
   Toggles visibility of landmarks. The associated pop-up provides additional
-  options; see `Feature Options`_.
+  options; see `Point Options`_.
 
 :icon:`residual` Show Residuals
   Toggles visibility of the landmark estimation residuals. The associated
   pop-up allows the color of the displayed residuals to be changed.
+
+Feature Options
+---------------
+
+In addition to active feature points, which have all the options described in
+`Point Options`_, the position of feature points on adjacent frames may also be
+displayed by enabling :action:`- Trails`. For image collections where cameras
+adjacent in the camera list are also spatially similar (especially when using
+consecutive video frames as input), these may be useful as an additional means
+of visualizing camera motion.
+
+The trail color and length (number of adjacent frames to be used) may be
+changed, as well as whether to show trails only for lower-numbered frames
+("historic" mode), or for all adjacent frames ("symmetric" mode). In all cases,
+trails are displayed only for active feature points.
 
 Camera Selection
 ================
@@ -183,5 +232,16 @@ View Menu
   Toggles if the slideshow should restart from the beginning after the last
   camera. When disabled, the slideshow ends when the last camera becomes
   active.
+
+Help Menu
+---------
+
+:icon:`help-manual` MapGUI User Manual
+  Displays the user manual (i.e. this document) in the default web browser.
+
+:icon:`help` About MapGUI
+  Shows copyright and version information about the application.
+
+.. TODO icon should be the application icon
 
 .. |--| unicode:: U+02014 .. em dash

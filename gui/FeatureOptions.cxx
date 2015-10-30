@@ -32,6 +32,8 @@
 
 #include "ui_FeatureOptions.h"
 
+#include "vtkMaptkFeatureTrackRepresentation.h"
+
 #include <vtkActor.h>
 #include <vtkProperty.h>
 
@@ -43,11 +45,12 @@ class FeatureOptionsPrivate
 {
 public:
   void mapUiState(QString const& key, QSlider* slider);
+  void mapUiState(QString const& key, QComboBox* comboBox);
 
   Ui::FeatureOptions UI;
   qtUiState uiState;
 
-  QList<vtkActor*> actors;
+  vtkMaptkFeatureTrackRepresentation* representation;
 };
 
 QTE_IMPLEMENT_D_FUNC(FeatureOptions)
@@ -62,29 +65,58 @@ void FeatureOptionsPrivate::mapUiState(
 }
 
 //-----------------------------------------------------------------------------
-FeatureOptions::FeatureOptions(QString const& settingsGroup,
+void FeatureOptionsPrivate::mapUiState(
+  QString const& key, QComboBox* comboBox)
+{
+  auto const item = new qtUiState::Item<int, QComboBox>(
+    comboBox, &QComboBox::currentIndex, &QComboBox::setCurrentIndex);
+  this->uiState.map(key, item);
+}
+
+//-----------------------------------------------------------------------------
+FeatureOptions::FeatureOptions(vtkMaptkFeatureTrackRepresentation* rep,
+                               QString const& settingsGroup,
                                QWidget* parent, Qt::WindowFlags flags)
-  : QWidget(parent, flags), d_ptr(new FeatureOptionsPrivate)
+  : PointOptions(settingsGroup, parent, flags),
+    d_ptr(new FeatureOptionsPrivate)
 {
   QTE_D();
 
   // Set up UI
-  d->UI.setupUi(this);
+  auto const w = new QWidget(this);
+  d->UI.setupUi(w);
+
+  auto const layout = qobject_cast<QFormLayout*>(this->layout());
+  layout->addRow(w);
 
   // Set up option persistence
   d->uiState.setCurrentGroup(settingsGroup);
 
-  d->UI.color->persist(d->uiState, "Color");
-
-  auto const sizeItem = new qtUiState::Item<int, QSlider>(
-    d->UI.size, &QSlider::value, &QSlider::setValue);
-  d->uiState.map("Size", sizeItem);
+  d->uiState.mapChecked("Trails", d->UI.showTrails);
+  d->UI.trailColor->persist(d->uiState, "Trails/Color");
+  d->mapUiState("Trails/Length", d->UI.trailLength);
+  d->mapUiState("Trails/Style", d->UI.trailStyle);
 
   d->uiState.restore();
 
+  // Set up initial representation state
+  d->representation = rep;
+
+  this->setTrailsVisible(d->UI.showTrails->isChecked());
+  this->setTrailsLength(d->UI.trailLength->value());
+  this->setTrailsStyle(d->UI.trailStyle->currentIndex());
+
+  d->UI.trailColor->addActor(d->representation->GetTrailsActor());
+
+  this->addActor(d->representation->GetActivePointsActor());
+
   // Connect signals/slots
-  connect(d->UI.color, SIGNAL(colorChanged(QColor)), this, SIGNAL(modified()));
-  connect(d->UI.size, SIGNAL(valueChanged(int)), this, SLOT(setSize(int)));
+  connect(d->UI.showTrails, SIGNAL(toggled(bool)),
+          this, SLOT(setTrailsVisible(bool)));
+  connect(d->UI.trailLength, SIGNAL(valueChanged(int)),
+          this, SLOT(setTrailsLength(int)));
+  connect(d->UI.trailStyle, SIGNAL(currentIndexChanged(int)),
+          this, SLOT(setTrailsStyle(int)));
 }
 
 //-----------------------------------------------------------------------------
@@ -95,34 +127,44 @@ FeatureOptions::~FeatureOptions()
 }
 
 //-----------------------------------------------------------------------------
-void FeatureOptions::setDefaultColor(QColor const& color)
+void FeatureOptions::setFeaturesVisible(bool state)
 {
   QTE_D();
 
-  d->UI.color->setColor(color);
-  d->uiState.restore();
+  d->representation->GetActivePointsActor()->SetVisibility(state);
+  d->representation->GetTrailsActor()->SetVisibility(
+    state && d->UI.showTrails->isChecked());
+
+  emit this->modified();
 }
 
 //-----------------------------------------------------------------------------
-void FeatureOptions::addActor(vtkActor* actor)
+void FeatureOptions::setTrailsVisible(bool state)
 {
   QTE_D();
 
-  d->UI.color->addActor(actor);
-  actor->GetProperty()->SetPointSize(d->UI.size->value());
+  d->representation->GetTrailsActor()->SetVisibility(state);
 
-  d->actors.append(actor);
+  emit this->modified();
 }
 
 //-----------------------------------------------------------------------------
-void FeatureOptions::setSize(int size)
+void FeatureOptions::setTrailsLength(int length)
 {
   QTE_D();
 
-  foreach (auto const actor, d->actors)
-  {
-    actor->GetProperty()->SetPointSize(size);
-  }
+  d->representation->SetTrailLength(static_cast<unsigned>(length));
+
+  emit this->modified();
+}
+
+//-----------------------------------------------------------------------------
+void FeatureOptions::setTrailsStyle(int style)
+{
+  QTE_D();
+
+  d->representation->SetTrailStyle(
+    static_cast<vtkMaptkFeatureTrackRepresentation::TrailStyleEnum>(style));
 
   emit this->modified();
 }

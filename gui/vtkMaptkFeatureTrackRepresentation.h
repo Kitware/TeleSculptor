@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_VTKMAPTKCAMERAREPRESENTATION_H_
-#define MAPTK_VTKMAPTKCAMERAREPRESENTATION_H_
+#ifndef MAPTK_VTKMAPTKFEATURETRACKREPRESENTATION_H_
+#define MAPTK_VTKMAPTKFEATURETRACKREPRESENTATION_H_
 
 #include <vtkCamera.h>
 #include <vtkCollection.h>
@@ -39,40 +39,38 @@
 
 class vtkActor;
 
-class vtkMaptkCameraRepresentation : public vtkObject
+class vtkMaptkFeatureTrackRepresentation : public vtkObject
 {
 public:
-  vtkTypeMacro(vtkMaptkCameraRepresentation, vtkObject);
+  enum TrailStyleEnum
+  {
+    Historic,
+    Symmetric,
+  };
+
+  vtkTypeMacro(vtkMaptkFeatureTrackRepresentation, vtkObject);
   void PrintSelf(ostream& os, vtkIndent indent);
 
-  static vtkMaptkCameraRepresentation *New();
+  static vtkMaptkFeatureTrackRepresentation *New();
 
-  void AddCamera(vtkCamera* camera);
-  void RemoveCamera(vtkCamera* camera);
-
-  // Description:
-  // Get/Set the camera to be displayed as the active camera
-  void SetActiveCamera(vtkCamera* camera);
-  vtkGetObjectMacro(ActiveCamera, vtkCamera);
+  void AddTrackPoint(unsigned trackId, unsigned frameId, double x, double y);
 
   // Description:
-  // Get/Set the distance to the far clipping plane of the active camera actor.
-  // (default == 15)
-  vtkGetMacro(ActiveCameraRepLength, double);
-  vtkSetMacro(ActiveCameraRepLength, double);
+  // Get/Set the active frame
+  void SetActiveFrame(unsigned);
+  vtkGetMacro(ActiveFrame, unsigned);
 
   // Description:
-  // Get/Set the distance to the far clipping plane of the non-active cameras
-  // actor. (default == 4)
-  vtkGetMacro(NonActiveCameraRepLength, double);
-  vtkSetMacro(NonActiveCameraRepLength, double);
+  // Get/Set the maximum number of adjacent feature points to display as
+  // "trails". (default == 2)
+  void SetTrailLength(unsigned);
+  vtkGetMacro(TrailLength, unsigned);
 
   // Description:
-  // Get/Set the "density" value for displaying cameras in the non-active
-  // camera actor. A value of 1 means to display all cameras, 2 displays every
-  // other one, N displays 1 of every N, etc... (default == 1)
-  vtkGetMacro(DisplayDensity, int);
-  vtkSetMacro(DisplayDensity, int);
+  // Get/Set the maximum number of adjacent feature points to display as
+  // "trails". (default == 2)
+  void SetTrailStyle(TrailStyleEnum);
+  vtkGetMacro(TrailStyle, TrailStyleEnum);
 
   // Description:
   // Update the inputs for each of the actors, effectively updating the actor
@@ -80,34 +78,27 @@ public:
   void Update();
 
   // Description:
-  // Get the actor representing the ActiveCamera (if any)
-  vtkGetObjectMacro(ActiveActor, vtkActor);
+  // Get the actor representing the active points of the feature tracks
+  vtkActor* GetActivePointsActor() { return this->ActivePointsActor; }
 
   // Description:
-  // Get the actor representing the non-active cameras
-  vtkGetObjectMacro(NonActiveActor, vtkActor);
-
-  // Description:
-  // Get the actor representing the "path" of the cameras
-  vtkGetObjectMacro(PathActor, vtkActor);
+  // Get the actor representing the "trails" of the feature tracks
+  vtkActor* GetTrailsActor() { return this->TrailsActor; }
 
 protected:
-  vtkMaptkCameraRepresentation();
-  ~vtkMaptkCameraRepresentation();
+  vtkMaptkFeatureTrackRepresentation();
+  ~vtkMaptkFeatureTrackRepresentation();
 
 private:
-  vtkMaptkCameraRepresentation(vtkMaptkCameraRepresentation const&) = delete;
-  void operator=(vtkMaptkCameraRepresentation const&) = delete;
+  vtkMaptkFeatureTrackRepresentation(vtkMaptkFeatureTrackRepresentation const&) = delete;
+  void operator=(vtkMaptkFeatureTrackRepresentation const&) = delete;
 
-  double ActiveCameraRepLength;
-  double NonActiveCameraRepLength;
-  int DisplayDensity;
+  unsigned ActiveFrame;
+  unsigned TrailLength;
+  TrailStyleEnum TrailStyle;
 
-  vtkCamera* ActiveCamera;
-
-  vtkActor* ActiveActor;
-  vtkActor* NonActiveActor;
-  vtkActor* PathActor;
+  vtkSmartPointer<vtkActor> ActivePointsActor;
+  vtkSmartPointer<vtkActor> TrailsActor;
 
   class vtkInternal;
   std::unique_ptr<vtkInternal> const Internal;

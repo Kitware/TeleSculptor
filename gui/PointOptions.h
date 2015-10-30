@@ -28,25 +28,41 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "MainWindow.h"
+#ifndef MAPTK_POINTOPTIONS_H_
+#define MAPTK_POINTOPTIONS_H_
 
-#include "Version.h"
+#include <qtGlobal.h>
 
-#include <QApplication>
+#include <QtGui/QWidget>
 
-//-----------------------------------------------------------------------------
-int main(int argc, char** argv)
+class vtkActor;
+
+class PointOptionsPrivate;
+
+class PointOptions : public QWidget
 {
-  // Set application information
-  QApplication::setApplicationName("MapGUI");
-  QApplication::setOrganizationName("Kitware");
-  QApplication::setOrganizationDomain("kitware.com");
-  QApplication::setApplicationVersion(MAPTK_VERSION);
+  Q_OBJECT
 
-  QApplication app(argc, argv);
+public:
+  explicit PointOptions(QString const& settingsGroup,
+                        QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  virtual ~PointOptions();
 
-  MainWindow window;
-  window.show();
+  void addActor(vtkActor*);
 
-  return app.exec();
-}
+  void setDefaultColor(QColor const&);
+
+signals:
+  void modified();
+
+protected slots:
+  void setSize(int);
+
+private:
+  QTE_DECLARE_PRIVATE_RPTR(PointOptions)
+  QTE_DECLARE_PRIVATE(PointOptions)
+
+  QTE_DISABLE_COPY(PointOptions)
+};
+
+#endif
