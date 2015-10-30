@@ -47,6 +47,7 @@
 #include <vtkProperty.h>
 
 #include <unordered_map>
+#include <unordered_set>
 
 vtkStandardNewMacro(vtkMaptkCameraRepresentation);
 
@@ -113,6 +114,33 @@ void BuildCameraFrustum(
   vtkIdType const newIndex = frustumPoints->InsertNextPoint(newPoint.data());
   vtkIdType const pts[3] = {2, 3, newIndex};
   polyData->GetPolys()->InsertNextCell(3, pts);
+}
+
+//-----------------------------------------------------------------------------
+void SetInputs(vtkAppendPolyData* apd, std::unordered_set<vtkPolyData*> inputs)
+{
+  // Walk the list of existing inputs, removing any that aren't in the new list
+  auto i = apd->GetNumberOfInputConnections(0);
+  while (i--)
+  {
+    auto const input = apd->GetInput(i);
+    auto const ii = inputs.find(input);
+    if (ii != inputs.end())
+    {
+      inputs.erase(ii);
+    }
+    else
+    {
+      apd->RemoveInputConnection(0, apd->GetInputConnection(0, i));
+    }
+  }
+
+  // Anything still in the new inputs list is missing from the existing inputs,
+  // so now we can add those
+  for (auto ii = inputs.cbegin(); ii != inputs.cend(); ++ii)
+  {
+    apd->AddInputData(*ii);
+  }
 }
 
 } // namespace <anonymous>
@@ -273,10 +301,7 @@ void vtkMaptkCameraRepresentation::Update()
 
   // (Re)build non-active cameras representation and build polydata for any
   // cameras that are missing
-  this->Internal->NonActiveAppendPolyData->RemoveAllInputs();
-  this->Internal->NonActiveAppendPolyData->AddInputData(
-    this->Internal->DummyPolyData.GetPointer());
-
+  std::unordered_set<vtkPolyData*> nonActivePolyData;
   int skipCount = 0;
   this->Internal->Cameras->InitTraversal();
   while (auto const camera = this->Internal->NextCamera())
@@ -293,10 +318,13 @@ void vtkMaptkCameraRepresentation::Update()
           pd = PolyDataPointer::New();
           BuildCameraFrustum(camera, this->NonActiveCameraRepLength, pd);
         }
-        this->Internal->NonActiveAppendPolyData->AddInputData(pd);
+        nonActivePolyData.insert(pd);
       }
     }
   }
+  nonActivePolyData.insert(this->Internal->DummyPolyData.GetPointer());
+  SetInputs(this->Internal->NonActiveAppendPolyData.GetPointer(),
+            nonActivePolyData);
 
   // (Re)build active camera representation if needed
   if (!this->ActiveCamera)
