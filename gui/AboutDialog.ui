@@ -34,6 +34,9 @@
        <height>64</height>
       </size>
      </property>
+     <property name="pixmap">
+      <pixmap resource="icons/icons.qrc">:/icons/64x64/mapgui</pixmap>
+     </property>
     </widget>
    </item>
    <item row="0" column="1" colspan="2">
@@ -153,7 +156,9 @@ p { margin-top: 0px; margin-bottom: 0px; }
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="icons/icons.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>
