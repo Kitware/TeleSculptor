@@ -267,7 +267,6 @@ void vtkMaptkCameraRepresentation::RemoveCamera(vtkCamera* camera)
   }
 
   this->Internal->Cameras->RemoveItem(camera);
-  this->Internal->CameraNonActivePolyData.erase(camera);
   this->Internal->PathNeedsUpdate = true;
   this->Modified();
 }
@@ -322,7 +321,14 @@ void vtkMaptkCameraRepresentation::Update()
       }
     }
   }
-  nonActivePolyData.insert(this->Internal->DummyPolyData.GetPointer());
+
+  if (nonActivePolyData.empty())
+  {
+    // vtkAppendPolyData complains if it has no inputs, so if there aren't any
+    // non-active cameras, add the dummy polydata
+    nonActivePolyData.insert(this->Internal->DummyPolyData.GetPointer());
+  }
+
   SetInputs(this->Internal->NonActiveAppendPolyData.GetPointer(),
             nonActivePolyData);
 
