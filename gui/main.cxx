@@ -32,6 +32,8 @@
 
 #include "Version.h"
 
+#include <qtUtil.h>
+
 #include <QApplication>
 
 //-----------------------------------------------------------------------------
@@ -44,6 +46,7 @@ int main(int argc, char** argv)
   QApplication::setApplicationVersion(MAPTK_VERSION);
 
   QApplication app(argc, argv);
+  qtUtil::setApplicationIcon("mapgui");
 
   MainWindow window;
   window.show();
