@@ -1,0 +1,40 @@
+MAPTK Release Notes for changes pending release approval by AFRL
+================================================================
+
+This file documents release notes for changes made to MAP-Tk which require
+public release approval from AFRL.  After approval, the changes and
+corresponding notes below will be incorporated into a public numbered
+release version, and the content of this file will be reset.
+
+
+Updates since last public release
+---------------------------------
+
+Visualization Application
+
+ * Added ability to visualize locations of corresponding feature points on
+   adjacent frames to the camera view. This may be helpful as an additional
+   means of visualizing camera motion when there exists a spatial correlation
+   between adjacent cameras (e.g. frames extracted from continuous-shot video).
+
+ * Added ground plane display to world view.
+
+ * Added ability to view camera frame image, projected to the ground plane, in
+   the world view.
+
+ * Added ability to toggle world view between parallel and perspective
+   projections, and to reset the rotation of the same to one of several basic
+   presets (top, left, etc.).
+
+ * The GUI user manual can now be accessed from within the GUI.
+
+Fixes since last public release
+-------------------------------
+
+Visualization Application
+
+ * Several performance bottlenecks that limited the rate at which "slideshow"
+   mode could switch frames have been identified and mitigated.
+
+ * Fixed bug where newly loaded landmarks would be visible in the world view
+   even if landmarks were disabled.
