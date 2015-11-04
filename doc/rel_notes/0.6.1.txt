@@ -18,6 +18,9 @@ Build System
    This allows CMake super builds to specify which Eigen MAP-Tk should build
    against.
 
+ * Fixed some issues with the default Visual Studio compiler flags that were
+   causing CMake to hang during VS2013 compiler tests.
+
 MAP-Tk Library
 
  * Fixed a bug in the camera_<T> type casting constructor that was causing some
