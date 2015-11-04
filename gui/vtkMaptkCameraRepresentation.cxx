@@ -46,10 +46,15 @@
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
 
+#include <unordered_map>
+#include <unordered_set>
+
 vtkStandardNewMacro(vtkMaptkCameraRepresentation);
 
 namespace // anonymous
 {
+
+typedef vtkSmartPointer<vtkPolyData> PolyDataPointer;
 
 //-----------------------------------------------------------------------------
 void BuildCameraFrustum(
@@ -111,6 +116,33 @@ void BuildCameraFrustum(
   polyData->GetPolys()->InsertNextCell(3, pts);
 }
 
+//-----------------------------------------------------------------------------
+void SetInputs(vtkAppendPolyData* apd, std::unordered_set<vtkPolyData*> inputs)
+{
+  // Walk the list of existing inputs, removing any that aren't in the new list
+  auto i = apd->GetNumberOfInputConnections(0);
+  while (i--)
+  {
+    auto const input = apd->GetInput(i);
+    auto const ii = inputs.find(input);
+    if (ii != inputs.end())
+    {
+      inputs.erase(ii);
+    }
+    else
+    {
+      apd->RemoveInputConnection(0, apd->GetInputConnection(0, i));
+    }
+  }
+
+  // Anything still in the new inputs list is missing from the existing inputs,
+  // so now we can add those
+  for (auto ii = inputs.cbegin(); ii != inputs.cend(); ++ii)
+  {
+    apd->AddInputData(*ii);
+  }
+}
+
 } // namespace <anonymous>
 
 //-----------------------------------------------------------------------------
@@ -127,6 +159,13 @@ public:
   vtkNew<vtkPolyData> DummyPolyData;
 
   vtkNew<vtkPolyData> PathPolyData;
+
+  std::unordered_map<vtkCamera*, PolyDataPointer> CameraNonActivePolyData;
+
+  vtkCamera* LastActiveCamera;
+  double LastNonActiveCameraRepLength;
+
+  bool PathNeedsUpdate;
 };
 
 //-----------------------------------------------------------------------------
@@ -141,9 +180,13 @@ vtkMaptkCameraRepresentation::vtkMaptkCameraRepresentation()
 {
   this->ActiveCameraRepLength = 15.0;
   this->NonActiveCameraRepLength = 4.0;
-  this->DisplaySkip = 1;
+  this->DisplayDensity = 1;
 
   this->ActiveCamera = 0;
+
+  this->Internal->LastActiveCamera = 0;
+  this->Internal->LastNonActiveCameraRepLength = -1.0;
+  this->Internal->PathNeedsUpdate = false;
 
   // Set up camera actors and data
   vtkNew<vtkPolyDataMapper> activeCameraMapper;
@@ -197,6 +240,7 @@ void vtkMaptkCameraRepresentation::AddCamera(vtkCamera* camera)
   }
 
   this->Internal->Cameras->AddItem(camera);
+  this->Internal->PathNeedsUpdate = true;
   this->Modified();
 }
 
@@ -209,12 +253,21 @@ void vtkMaptkCameraRepresentation::RemoveCamera(vtkCamera* camera)
     return;
   }
 
-  this->Internal->Cameras->RemoveItem(camera);
+  // Remove camera from non-active polydata collection
+  auto const pd = this->Internal->CameraNonActivePolyData.find(camera);
+  if (pd != this->Internal->CameraNonActivePolyData.end())
+  {
+    this->Internal->NonActiveAppendPolyData->RemoveInputData(pd->second);
+    this->Internal->CameraNonActivePolyData.erase(pd);
+  }
+
   if (this->ActiveCamera == camera)
   {
     this->ActiveCamera = 0;
   }
 
+  this->Internal->Cameras->RemoveItem(camera);
+  this->Internal->PathNeedsUpdate = true;
   this->Modified();
 }
 
@@ -236,52 +289,78 @@ void vtkMaptkCameraRepresentation::SetActiveCamera(vtkCamera* camera)
 //-----------------------------------------------------------------------------
 void vtkMaptkCameraRepresentation::Update()
 {
-  // TODO - Add modified time test
+  if (this->Internal->LastNonActiveCameraRepLength !=
+      this->NonActiveCameraRepLength)
+  {
+    // If the non-active camera length has changed, the old polydata's are not
+    // useful, and every camera needs to be updated
+    this->Internal->CameraNonActivePolyData.clear();
+  }
+  this->Internal->LastNonActiveCameraRepLength = this->NonActiveCameraRepLength;
 
-  // Build non-active cameras representation
-  this->Internal->NonActiveAppendPolyData->RemoveAllInputs();
-  this->Internal->NonActiveAppendPolyData->AddInputData(
-    this->Internal->DummyPolyData.GetPointer());
-
+  // (Re)build non-active cameras representation and build polydata for any
+  // cameras that are missing
+  std::unordered_set<vtkPolyData*> nonActivePolyData;
   int skipCount = 0;
   this->Internal->Cameras->InitTraversal();
   while (auto const camera = this->Internal->NextCamera())
   {
-    if (!((skipCount++) % this->DisplaySkip))
+    if (!((skipCount++) % this->DisplayDensity))
     {
       if (camera != this->ActiveCamera)
       {
-        vtkNew<vtkPolyData> polyData;
-        BuildCameraFrustum(camera, this->NonActiveCameraRepLength,
-                           polyData.GetPointer());
-        this->Internal->NonActiveAppendPolyData->AddInputData(
-          polyData.GetPointer());
+        auto& pd = this->Internal->CameraNonActivePolyData[camera];
+        if (!pd)
+        {
+          // If we don't already have polydata for this non-active camera,
+          // build it now
+          pd = PolyDataPointer::New();
+          BuildCameraFrustum(camera, this->NonActiveCameraRepLength, pd);
+        }
+        nonActivePolyData.insert(pd);
       }
     }
   }
 
-  // Build active camera representation
-  this->Internal->ActivePolyData->Reset();
-  if (this->ActiveCamera)
+  if (nonActivePolyData.empty())
   {
+    // vtkAppendPolyData complains if it has no inputs, so if there aren't any
+    // non-active cameras, add the dummy polydata
+    nonActivePolyData.insert(this->Internal->DummyPolyData.GetPointer());
+  }
+
+  SetInputs(this->Internal->NonActiveAppendPolyData.GetPointer(),
+            nonActivePolyData);
+
+  // (Re)build active camera representation if needed
+  if (!this->ActiveCamera)
+  {
+    this->Internal->ActivePolyData->Reset();
+  }
+  else if (this->ActiveCamera != this->Internal->LastActiveCamera)
+  {
+    this->Internal->ActivePolyData->Reset();
     BuildCameraFrustum(this->ActiveCamera, this->ActiveCameraRepLength,
                        this->Internal->ActivePolyData.GetPointer());
   }
 
   // Path Actor
-  this->Internal->PathPolyData->Reset();
-  this->Internal->PathPolyData->Modified();
-  vtkPoints* points = this->Internal->PathPolyData->GetPoints();
-  points->Allocate(this->Internal->Cameras->GetNumberOfItems());
-  vtkCellArray* lines = this->Internal->PathPolyData->GetLines();
-  lines->InsertNextCell(this->Internal->Cameras->GetNumberOfItems());
-
-  this->Internal->Cameras->InitTraversal();
-  while (auto const camera = this->Internal->NextCamera())
+  if (this->Internal->PathNeedsUpdate)
   {
-    double position[3];
-    camera->GetPosition(position);
-    lines->InsertCellPoint(points->InsertNextPoint(position));
+    this->Internal->PathPolyData->Reset();
+    this->Internal->PathPolyData->Modified();
+    vtkPoints* points = this->Internal->PathPolyData->GetPoints();
+    points->Allocate(this->Internal->Cameras->GetNumberOfItems());
+    vtkCellArray* lines = this->Internal->PathPolyData->GetLines();
+    lines->InsertNextCell(this->Internal->Cameras->GetNumberOfItems());
+
+    this->Internal->Cameras->InitTraversal();
+    while (auto const camera = this->Internal->NextCamera())
+    {
+      double position[3];
+      camera->GetPosition(position);
+      lines->InsertCellPoint(points->InsertNextPoint(position));
+    }
   }
 }
 
@@ -296,6 +375,6 @@ void vtkMaptkCameraRepresentation::PrintSelf(ostream& os, vtkIndent indent)
      << this->ActiveCameraRepLength << endl;
   os << indent << "NonActiveCameraRepLength: "
      << this->NonActiveCameraRepLength << endl;
-  os << indent << "DisplaySkip: "
-     << this->DisplaySkip << endl;
+  os << indent << "DisplayDensity: "
+     << this->DisplayDensity << endl;
 }

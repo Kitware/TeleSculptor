@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>AboutDialog</class>
+ <widget class="QDialog" name="AboutDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>431</width>
+    <height>282</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>About</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <widget class="QLabel" name="image">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>64</width>
+       <height>64</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>64</width>
+       <height>64</height>
+      </size>
+     </property>
+     <property name="pixmap">
+      <pixmap resource="icons/icons.qrc">:/icons/64x64/mapgui</pixmap>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1" colspan="2">
+    <widget class="QLabel" name="title">
+     <property name="text">
+      <string>&lt;html&gt;&lt;head&gt;&lt;style type=&quot;text/css&quot;&gt;
+p { margin-top: 0px; margin-bottom: 0px; }
+&lt;/style&gt;&lt;/head&gt;
+&lt;body&gt;
+&lt;p style=&quot;font-size: 14pt&quot;&gt;@APP_TITLE@&lt;/p&gt;
+&lt;p style=&quot;font-weight: bold&quot;&gt;Version @APP_VERSION@&lt;/p&gt;
+&lt;p&gt;Using Qt @QT_VERSION@&lt;/p&gt;
+&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="textInteractionFlags">
+      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="3">
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QLabel" name="about">
+      <property name="text">
+       <string>&lt;html&gt;&lt;body&gt;
+&lt;p&gt;
+  The MAP-Tk GUI:&lt;br/&gt;
+  Visualization tool for MAP-Tk input imagery, feature detection, camera registration, and landmark estimation
+&lt;/p&gt;
+&lt;p&gt;
+  &lt;a href=&quot;http://www.github.com/kitware/maptk&quot;&gt;http://www.github.com/kitware/maptk/&lt;/a&gt;&lt;br/&gt;
+  &lt;a href=&quot;http://www.kwiver.org/&quot;&gt;http://www.kwiver.org/&lt;/a&gt;
+&lt;/p&gt;
+&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="textFormat">
+       <enum>Qt::RichText</enum>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+      </property>
+      <property name="wordWrap">
+       <bool>true</bool>
+      </property>
+      <property name="margin">
+       <number>4</number>
+      </property>
+      <property name="textInteractionFlags">
+       <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+      </property>
+      <attribute name="title">
+       <string>About</string>
+      </attribute>
+     </widget>
+     <widget class="QLabel" name="acknowledgments">
+      <property name="textFormat">
+       <enum>Qt::RichText</enum>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+      </property>
+      <property name="wordWrap">
+       <bool>true</bool>
+      </property>
+      <property name="margin">
+       <number>4</number>
+      </property>
+      <property name="textInteractionFlags">
+       <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+      </property>
+      <attribute name="title">
+       <string>Acknowledgments</string>
+      </attribute>
+     </widget>
+     <widget class="QTextEdit" name="license">
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+      <attribute name="title">
+       <string>License</string>
+      </attribute>
+     </widget>
+     <widget class="QTextEdit" name="buildInfo">
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+      <attribute name="title">
+       <string>Build Information</string>
+      </attribute>
+     </widget>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="2">
+    <widget class="QLabel" name="copyright">
+     <property name="text">
+      <string>Copyright</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::RichText</enum>
+     </property>
+     <property name="textInteractionFlags">
+      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="2">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Close</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources>
+  <include location="icons/icons.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>AboutDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>248</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>AboutDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

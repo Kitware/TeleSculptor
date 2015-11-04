@@ -52,3 +52,9 @@ foreach(man gui)
 endforeach()
 
 add_custom_target(manuals ALL DEPENDS ${outputs})
+
+maptk_install(
+  DIRECTORY   "${manual_dir}"
+  DESTINATION "share/doc/maptk-${MAPTK_VERSION}"
+  COMPONENT   documentation
+)

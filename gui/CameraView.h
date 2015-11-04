@@ -35,6 +35,10 @@
 
 #include <QtGui/QWidget>
 
+class vtkImageData;
+
+namespace maptk { class track; }
+
 class vtkMaptkCamera;
 
 class CameraViewPrivate;
@@ -47,25 +51,30 @@ public:
   explicit CameraView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
   virtual ~CameraView();
 
-public slots:
-  void loadImage(QString const& path, vtkMaptkCamera* camera);
+  void addFeatureTrack(maptk::track const&);
 
-  void addFeaturePoint(unsigned int id, double x, double y);
+public slots:
+  void setImageData(vtkImageData* data, QSize const& dimensions);
+
+  void setActiveFrame(unsigned);
+
   void addLandmark(unsigned int id, double x, double y);
   void addResidual(unsigned int id,
                    double x1, double y1,
                    double x2, double y2);
 
-  void clearFeaturePoints();
   void clearLandmarks();
   void clearResiduals();
 
-  void setFeaturePointsVisible(bool);
+  void resetView();
+  void resetViewToFullExtents();
+
+protected slots:
+  void setImageVisible(bool);
   void setLandmarksVisible(bool);
   void setResidualsVisible(bool);
 
-  void resetView();
-  void resetViewToFullExtents();
+  void updateFeatures();
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(CameraView)

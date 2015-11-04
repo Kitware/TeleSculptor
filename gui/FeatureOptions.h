@@ -31,32 +31,29 @@
 #ifndef MAPTK_FEATUREOPTIONS_H_
 #define MAPTK_FEATUREOPTIONS_H_
 
-#include <qtGlobal.h>
+#include "PointOptions.h"
 
-#include <QtGui/QWidget>
-
-class vtkActor;
+class vtkMaptkFeatureTrackRepresentation;
 
 class FeatureOptionsPrivate;
 
-class FeatureOptions : public QWidget
+class FeatureOptions : public PointOptions
 {
   Q_OBJECT
 
 public:
-  explicit FeatureOptions(QString const& settingsGroup,
+  explicit FeatureOptions(vtkMaptkFeatureTrackRepresentation*,
+                          QString const& settingsGroup,
                           QWidget* parent = 0, Qt::WindowFlags flags = 0);
   virtual ~FeatureOptions();
 
-  void addActor(vtkActor*);
-
-  void setDefaultColor(QColor const&);
-
-signals:
-  void modified();
+public slots:
+  void setFeaturesVisible(bool);
 
 protected slots:
-  void setSize(int);
+  void setTrailsVisible(bool);
+  void setTrailsLength(int);
+  void setTrailsStyle(int);
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(FeatureOptions)

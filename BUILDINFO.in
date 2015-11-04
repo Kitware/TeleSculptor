@@ -1,0 +1,27 @@
+<html>
+  <head>
+    <style type="text/css">
+      dt { font-weight: bold; }
+      dd { margin-bottom: 0.5em; }
+      dl { margin-bottom: 1.5em; }
+    </style>
+  </head>
+  <body>
+    <dl>
+      <dt>Build SHA:</dt><dd>@BUILD_SHA@</dd>
+      <dt>Build Date:</dt><dd>@BUILD_DATE@</dd>
+    </dl>
+    <dl>
+      <dt>Compiler:</dt><dd>@COMPILER_NAME@ @COMPILER_VERSION@</dd>
+    </dl>
+    @BEGIN_LOCAL_CHANGES@
+    <p>
+      <b>Local Changes:</b>
+      (@LOCAL_DIFF_SHA@)
+    </p>
+    <pre style="margin-left: 1em;">
+@LOCAL_CHANGED_FILES@
+    </pre>
+    @END_LOCAL_CHANGES@
+  </body>
+</html>

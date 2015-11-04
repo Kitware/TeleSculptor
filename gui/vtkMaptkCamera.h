@@ -69,6 +69,11 @@ public:
   void GetFrustumPlanes(double planes[24]);
 
   // Description:
+  // Compute the transformation matrix that projects the camera image space
+  // onto the specified plane in world space
+  void GetTransform(vtkMatrix4x4*, double const plane[4]);
+
+  // Description:
   // Set/Get the aspect ratio (w / h) used when getting the frustum planes
   vtkGetMacro(AspectRatio, double);
   vtkSetMacro(AspectRatio, double);

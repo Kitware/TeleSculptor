@@ -28,17 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_vtkMaptkCameraRepresentation_H_
-#define MAPTK_vtkMaptkCameraRepresentation_H_
+#ifndef MAPTK_VTKMAPTKCAMERAREPRESENTATION_H_
+#define MAPTK_VTKMAPTKCAMERAREPRESENTATION_H_
 
 #include <vtkCamera.h>
 #include <vtkCollection.h>
 #include <vtkSmartPointer.h>
 
+#include <memory>
+
 class vtkActor;
-class vtkAppendPolyData;
-class vtkPolyData;
-class vtkTubeFilter;
 
 class vtkMaptkCameraRepresentation : public vtkObject
 {
@@ -69,11 +68,11 @@ public:
   vtkSetMacro(NonActiveCameraRepLength, double);
 
   // Description:
-  // Get/Set the "skip" value for displaying cameras in the non-active camera
-  // actor. A value of 0 means there is no skipping, 1 displays every other
-  // one, 2 displays 1 of every 3, etc... (default == 5)
-  vtkGetMacro(DisplaySkip, int);
-  vtkSetMacro(DisplaySkip, int);
+  // Get/Set the "density" value for displaying cameras in the non-active
+  // camera actor. A value of 1 means to display all cameras, 2 displays every
+  // other one, N displays 1 of every N, etc... (default == 1)
+  vtkGetMacro(DisplayDensity, int);
+  vtkSetMacro(DisplayDensity, int);
 
   // Description:
   // Update the inputs for each of the actors, effectively updating the actor
@@ -102,7 +101,7 @@ private:
 
   double ActiveCameraRepLength;
   double NonActiveCameraRepLength;
-  int DisplaySkip;
+  int DisplayDensity;
 
   vtkCamera* ActiveCamera;
 
@@ -111,7 +110,7 @@ private:
   vtkActor* PathActor;
 
   class vtkInternal;
-  vtkInternal* const Internal;
+  std::unique_ptr<vtkInternal> const Internal;
 };
 
 #endif

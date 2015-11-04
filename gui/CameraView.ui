@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>456</width>
+    <width>595</width>
     <height>300</height>
    </rect>
   </property>
@@ -14,6 +14,9 @@
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="margin">
+    <number>0</number>
+   </property>
    <item>
     <widget class="QToolBar" name="toolBar">
      <property name="toolButtonStyle">
@@ -21,7 +24,8 @@
      </property>
      <addaction name="actionViewReset"/>
      <addaction name="separator"/>
-     <addaction name="actionShowFeaturePoints"/>
+     <addaction name="actionShowFrameImage"/>
+     <addaction name="actionShowFeatures"/>
      <addaction name="actionShowLandmarks"/>
      <addaction name="actionShowResiduals"/>
     </widget>
@@ -62,7 +66,7 @@
     <enum>Qt::WidgetWithChildrenShortcut</enum>
    </property>
   </action>
-  <action name="actionShowFeaturePoints">
+  <action name="actionShowFeatures">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -74,13 +78,13 @@
      <normaloff>:/icons/22x22/feature</normaloff>:/icons/22x22/feature</iconset>
    </property>
    <property name="text">
-    <string>Show Feature Points</string>
+    <string>Show Features</string>
    </property>
    <property name="iconText">
     <string>Features</string>
    </property>
    <property name="toolTip">
-    <string>Toggle visibility of feature points</string>
+    <string>Toggle visibility of feature points/tracks</string>
    </property>
    <property name="shortcut">
     <string>F</string>
@@ -138,6 +142,30 @@
    </property>
    <property name="shortcut">
     <string>E</string>
+   </property>
+  </action>
+  <action name="actionShowFrameImage">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/22x22/image</normaloff>:/icons/22x22/image</iconset>
+   </property>
+   <property name="text">
+    <string>Show Camera Frame Image</string>
+   </property>
+   <property name="iconText">
+    <string>Image</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle visibility of the camera frame image (projected to the ground plane)</string>
+   </property>
+   <property name="shortcut">
+    <string>I</string>
    </property>
   </action>
  </widget>
