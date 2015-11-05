@@ -52,21 +52,13 @@ read_krtd_files(std::vector<path_t> const& img_files, path_t const& dir)
     throw path_not_exists( dir );
   }
 
-  std::vector<path_t> files_to_read;
   camera_map::map_camera_t cameras;
 
-  for( unsigned i = 0; i < img_files.size(); i++ )
-  {
-    files_to_read.push_back( dir / img_files[i].stem() );
-    std::string adj_path = files_to_read[i].string();
-    files_to_read[i] = boost::filesystem::path( adj_path.append( ".krtd" ) );
-  }
-
-  for( frame_id_t fid = 0; fid < files_to_read.size(); fid++ )
+  for( frame_id_t fid = 0; fid < img_files.size(); ++fid )
   {
     try
     {
-      camera_d new_camera = read_krtd_file( files_to_read[fid] );
+      camera_d new_camera = read_krtd_file( img_files[fid], dir );
       cameras[fid] = camera_sptr( new camera_d( new_camera ) );
     }
     catch( file_not_found_exception )

@@ -143,7 +143,11 @@ public:
   : enabled_( other.enabled_ ),
     max_checkpoint_frames_( other.max_checkpoint_frames_ ),
     checkpoint_percent_overlap_( other.checkpoint_percent_overlap_ ),
-    homography_filename_( other.homography_filename_ )
+    homography_filename_( other.homography_filename_ ),
+    ref_computer_( !other.ref_computer_ ? algo::compute_ref_homography_sptr()
+                                        : other.ref_computer_->clone() ),
+    matcher_( !other.matcher_ ? algo::match_features_sptr()
+                              : other.matcher_->clone() )
   {
   }
 

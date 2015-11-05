@@ -83,6 +83,7 @@ protected:
    */
   virtual feature_set_sptr
   filter(feature_set_sptr input, std::vector<unsigned int> &indices) const;
+  using filter_features::filter;
 
 private:
   /// private implementation class

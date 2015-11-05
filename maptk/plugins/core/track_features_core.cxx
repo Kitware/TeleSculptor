@@ -70,7 +70,15 @@ track_features_core
 /// Copy Constructor
 track_features_core
 ::track_features_core(const track_features_core& other)
-: next_track_id_(other.next_track_id_)
+: detector_(!other.detector_ ? algo::detect_features_sptr()
+                             : other.detector_->clone()),
+  extractor_(!other.extractor_ ? algo::extract_descriptors_sptr()
+                               : other.extractor_->clone()),
+  matcher_(!other.matcher_ ? algo::match_features_sptr()
+                           : other.matcher_->clone()),
+  closer_(!other.closer_ ? algo::close_loops_sptr()
+                         : other.closer_->clone()),
+  next_track_id_(other.next_track_id_)
 {
 }
 

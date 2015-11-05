@@ -59,6 +59,26 @@ add_subdirectory(tools)
 
 
 ###
+# GUI
+#
+
+option(MAPTK_ENABLE_GUI "Build MAPTK GUI" OFF)
+if(MAPTK_ENABLE_GUI)
+  add_subdirectory(gui)
+endif()
+
+
+###
+# Manuals
+#
+
+option(MAPTK_ENABLE_MANUALS "Build MAPTK user manual(s)" OFF)
+if(MAPTK_ENABLE_MANUALS)
+  add_subdirectory(doc/manuals)
+endif()
+
+
+###
 # Testing
 #
 

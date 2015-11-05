@@ -50,6 +50,7 @@ set(maptk_public_headers
   landmark_map.h
   landmark_map_io.h
   local_geo_cs.h
+  match_matrix.h
   match_set.h
   matrix.h
   metrics.h
@@ -122,6 +123,7 @@ set(maptk_sources
   landmark.cxx
   landmark_map_io.cxx
   local_geo_cs.cxx
+  match_matrix.cxx
   metrics.cxx
   projected_track_set.cxx
   rotation.cxx
