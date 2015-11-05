@@ -1,3 +1,4 @@
+namespace kwiver {
 namespace maptk {
 
 /// PROJ module namespace
@@ -13,4 +14,5 @@ The MAPTK proj library provides geographic transformations by building on
 \subsection sec-proj-algorithm-impls Algorithm Implementations
 - \ref proj::geo_map : convert geographic coordinates between Lat-Long and UTM
 */
+}
 }

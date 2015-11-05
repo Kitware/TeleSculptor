@@ -39,6 +39,7 @@
 #include <string>
 #include <vector>
 
+#include <vital/vital_foreach.h>
 #include <vital/config/config_block.h>
 #include <vital/config/config_block_io.h>
 
@@ -179,21 +180,23 @@ check_config(kwiver::vital::config_block_sptr config)
 
 
 /// create a base camera instance from config options
-kwiver::vital::camera_d
+kwiver::vital::simple_camera
 base_camera_from_config(kwiver::vital::config_block_sptr config)
 {
-  kwiver::vital::camera_intrinsics_d K(config->get_value<double>("focal_length"),
-                                       config->get_value<kwiver::vital::vector_2d>("principal_point"),
-                                       config->get_value<double>("aspect_ratio"),
-                                       config->get_value<double>("skew"));
-  return kwiver::vital::camera_d(kwiver::vital::vector_3d(0,0,-1), kwiver::vital::rotation_d(), K);
+  kwiver::vital::simple_camera_intrinsics
+      K(config->get_value<double>("focal_length"),
+        config->get_value<kwiver::vital::vector_2d>("principal_point"),
+        config->get_value<double>("aspect_ratio"),
+        config->get_value<double>("skew"));
+  return kwiver::vital::simple_camera(kwiver::vital::vector_3d(0,0,-1),
+                                      kwiver::vital::rotation_d(), K);
 }
 
 
 /// Convert a INS data to a camera
-bool convert_ins2camera(const maptk::ins_data& ins,
-                        maptk::local_geo_cs& cs,
-                        kwiver::vital::camera_d& cam,
+bool convert_ins2camera(const kwiver::maptk::ins_data& ins,
+                        kwiver::maptk::local_geo_cs& cs,
+                        kwiver::vital::simple_camera& cam,
                         kwiver::vital::rotation_d const& ins_rot_offset = kwiver::vital::rotation_d())
 {
   if( cs.utm_origin_zone() < 0 )
@@ -211,14 +214,14 @@ bool convert_ins2camera(const maptk::ins_data& ins,
 /// Convert a POS file to a KRTD file
 bool convert_pos2krtd(const kwiver::vital::path_t& pos_filename,
                       const kwiver::vital::path_t& krtd_filename,
-                      maptk::local_geo_cs& cs,
-                      const kwiver::vital::camera_d& base_camera,
+                      kwiver::maptk::local_geo_cs& cs,
+                      const kwiver::vital::simple_camera& base_camera,
                       kwiver::vital::rotation_d const& ins_rot_offset = kwiver::vital::rotation_d())
 {
-  maptk::ins_data ins;
+  kwiver::maptk::ins_data ins;
   // a local copy of the base camera to modify in place
-  kwiver::vital::camera_d local_camera(base_camera);
-  ins = maptk::read_pos_file(pos_filename);
+  kwiver::vital::simple_camera local_camera(base_camera);
+  ins = kwiver::maptk::read_pos_file(pos_filename);
   if ( !convert_ins2camera(ins, cs, local_camera, ins_rot_offset) )
   {
     return false;
@@ -231,22 +234,23 @@ bool convert_pos2krtd(const kwiver::vital::path_t& pos_filename,
 /// Convert a directory of POS file to a directory of KRTD files
 bool convert_pos2krtd_dir(const kwiver::vital::path_t& pos_dir,
                           const kwiver::vital::path_t& krtd_dir,
-                          maptk::local_geo_cs& cs,
-                          const kwiver::vital::camera_d& base_camera,
+                          kwiver::maptk::local_geo_cs& cs,
+                          const kwiver::vital::simple_camera& base_camera,
                           kwiver::vital::rotation_d const& ins_rot_offset = kwiver::vital::rotation_d())
 {
   bfs::directory_iterator it(pos_dir), eod;
-  std::map<kwiver::vital::frame_id_t, maptk::ins_data> ins_map;
+  const bfs::path bfs_krtd_dir( krtd_dir );
+  std::map<kwiver::vital::frame_id_t, kwiver::maptk::ins_data> ins_map;
   std::vector<std::string> krtd_filenames;
 
   std::cerr << "Loading POS files" << std::endl;
-  BOOST_FOREACH(kwiver::vital::path_t const &p, std::make_pair(it, eod))
+  BOOST_FOREACH(bfs::path const &p, std::make_pair(it, eod))
   {
     try
     {
-      maptk::ins_data ins = maptk::read_pos_file(p.string());
+      kwiver::maptk::ins_data ins = kwiver::maptk::read_pos_file(p.string());
 
-      kwiver::vital::path_t krtd_filename = krtd_dir / (basename(p) + ".krtd");
+      bfs::path krtd_filename = bfs_krtd_dir / (bfs::basename(p) + ".krtd");
       //std::cerr << "Loading " << p << std::endl;
       kwiver::vital::frame_id_t frame = static_cast<kwiver::vital::frame_id_t>(krtd_filenames.size());
       ins_map[frame] = ins;
@@ -268,13 +272,13 @@ bool convert_pos2krtd_dir(const kwiver::vital::path_t& pos_dir,
 
   std::cerr << "Initializing cameras" << std::endl;
   std::map<kwiver::vital::frame_id_t, kwiver::vital::camera_sptr> cam_map;
-  cam_map = maptk::initialize_cameras_with_ins(ins_map, base_camera, cs, ins_rot_offset);
+  cam_map = kwiver::maptk::initialize_cameras_with_ins(ins_map, base_camera, cs, ins_rot_offset);
 
   std::cerr << "Writing KRTD files" << std::endl;
   typedef std::map<kwiver::vital::frame_id_t, kwiver::vital::camera_sptr>::value_type cam_map_val_t;
-  BOOST_FOREACH(cam_map_val_t const &p, cam_map)
+  VITAL_FOREACH(cam_map_val_t const &p, cam_map)
   {
-    kwiver::vital::camera_d* cam = dynamic_cast<kwiver::vital::camera_d*>(p.second.get());
+    kwiver::vital::simple_camera* cam = dynamic_cast<kwiver::vital::simple_camera*>(p.second.get());
     kwiver::vital::write_krtd_file(*cam, krtd_filenames[p.first]);
   }
 
@@ -361,7 +365,7 @@ static int maptk_main(int argc, char const* argv[])
 
   kwiver::vital::path_t input = config->get_value<kwiver::vital::path_t>("input"),
                 output = config->get_value<kwiver::vital::path_t>("output");
-  kwiver::vital::camera_d base_camera = base_camera_from_config(config->subblock_view("base_camera"));
+  kwiver::vital::simple_camera base_camera = base_camera_from_config(config->subblock_view("base_camera"));
   kwiver::vital::rotation_d ins_rot_offset = config->get_value<kwiver::vital::rotation_d>("ins:rotation_offset");
 
 
@@ -372,7 +376,7 @@ static int maptk_main(int argc, char const* argv[])
     return EXIT_FAILURE;
   }
 
-  maptk::local_geo_cs local_cs(geo_mapper);
+  kwiver::maptk::local_geo_cs local_cs(geo_mapper);
 
   if( bfs::is_directory(input) )
   {

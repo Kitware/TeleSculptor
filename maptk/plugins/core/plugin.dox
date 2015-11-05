@@ -1,3 +1,4 @@
+namespace kwiver {
 namespace maptk {
 
 /// Core module namespace
@@ -40,4 +41,5 @@ The MAPTK Core plugin provides algorithm implementations that only depend on the
                \ref algo::extract_descriptors, and \ref algo::match_features.
 
 */
+}
 }

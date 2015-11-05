@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,7 +57,7 @@ using namespace kwiver::vital;
 
 IMPLEMENT_TEST(default_set)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ocv::feature_set fs;
   if (fs.size() != 0)
   {
@@ -84,7 +84,7 @@ static bool keypoints_equal(const cv::KeyPoint& kp1, const cv::KeyPoint& kp2)
 
 IMPLEMENT_TEST(populated_set)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   const unsigned num_feat = 100;
   std::vector<cv::KeyPoint> kpts;
   for (unsigned i=0; i<num_feat; ++i)

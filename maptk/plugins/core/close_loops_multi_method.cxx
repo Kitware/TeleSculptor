@@ -43,16 +43,14 @@
 #include <string>
 #include <vector>
 
-#include <boost/bind.hpp>
-#include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 
 #include <vital/algo/algorithm.h>
 #include <vital/exceptions/algorithm.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
@@ -87,6 +85,11 @@ close_loops_multi_method
 : count_( other.count_ ),
   methods_( other.methods_.size() )
 {
+  for( unsigned int i=0; i< other.methods_.size(); ++i )
+  {
+    methods_[i] = !other.methods_[i] ? algo::close_loops_sptr()
+                                     : other.methods_[i]->clone();
+  }
 }
 
 
@@ -99,12 +102,12 @@ close_loops_multi_method
 }
 
 
-  kwiver::vital::config_block_sptr
+  vital::config_block_sptr
 close_loops_multi_method
 ::get_configuration() const
 {
   // Get base config from base class
-  kwiver::vital::config_block_sptr config = algorithm::get_configuration();
+  vital::config_block_sptr config = algorithm::get_configuration();
 
   // Internal parameters
   config->set_value( "count", count_, "Number of close loops methods we want to use." );
@@ -123,11 +126,11 @@ close_loops_multi_method
 
 void
 close_loops_multi_method
-::set_configuration( kwiver::vital::config_block_sptr in_config )
+::set_configuration( vital::config_block_sptr in_config )
 {
   // Starting with our generated config_block to ensure that assumed values are present
   // An alternative is to check for key presence before performing a get_value() call.
-  kwiver::vital::config_block_sptr config = this->get_configuration();
+  vital::config_block_sptr config = this->get_configuration();
   config->merge_config( in_config );
 
   // Parse count parameter
@@ -146,7 +149,7 @@ close_loops_multi_method
 
 bool
 close_loops_multi_method
-::check_configuration( kwiver::vital::config_block_sptr config ) const
+::check_configuration( vital::config_block_sptr config ) const
 {
   std::vector<std::string> method_ids = method_names( config->get_value<unsigned>( "count" ) );
 
@@ -181,3 +184,4 @@ close_loops_multi_method
 } // end namespace core
 
 } // end namespace maptk
+} // end namespace kwiver

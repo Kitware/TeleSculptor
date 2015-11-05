@@ -37,18 +37,14 @@
 
 #include <iostream>
 
-#include <boost/algorithm/string/join.hpp>
-#include <boost/foreach.hpp>
-#include <boost/make_shared.hpp>
-
 #include <vital/exceptions/algorithm.h>
 #include <vital/types/homography.h>
 #include <vital/types/match_set.h>
 
 using namespace kwiver::vital;
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
@@ -94,7 +90,15 @@ match_features_homography
 /// Copy Constructor
 match_features_homography
 ::match_features_homography(const match_features_homography& other)
-: d_(new priv(*other.d_))
+: d_(new priv(*other.d_)),
+  matcher1_(!other.matcher1_ ? algo::match_features_sptr()
+                             : other.matcher1_->clone()),
+  matcher2_(!other.matcher2_ ? algo::match_features_sptr()
+                             : other.matcher2_->clone()),
+  h_estimator_(!other.h_estimator_ ? algo::estimate_homography_sptr()
+                                   : other.h_estimator_->clone()),
+  feature_filter_(!other.feature_filter_ ? algo::filter_features_sptr()
+                                         : other.feature_filter_->clone())
 {
 }
 
@@ -106,12 +110,12 @@ match_features_homography
 }
 
 
-/// Get this alg's \link kwiver::vital::config_block configuration block \endlink
-kwiver::vital::config_block_sptr
+/// Get this alg's \link vital::config_block configuration block \endlink
+vital::config_block_sptr
 match_features_homography
 ::get_configuration() const
 {
-  kwiver::vital::config_block_sptr config = algorithm::get_configuration();
+  vital::config_block_sptr config = algorithm::get_configuration();
   config->set_value("inlier_scale", d_->inlier_scale,
                     "The acceptable error distance (in pixels) between warped "
                     "and measured points to be considered an inlier match.");
@@ -124,13 +128,13 @@ match_features_homography
                     "amount, no matches will be output.");
 
   // nested algorithm configurations
-  kwiver::vital::algo::estimate_homography::get_nested_algo_configuration("homography_estimator",
+  vital::algo::estimate_homography::get_nested_algo_configuration("homography_estimator",
                                                      config, h_estimator_);
-  kwiver::vital::algo::match_features::get_nested_algo_configuration("feature_matcher1", config,
+  vital::algo::match_features::get_nested_algo_configuration("feature_matcher1", config,
                                                       matcher1_);
-  kwiver::vital::algo::match_features::get_nested_algo_configuration("feature_matcher2", config,
+  vital::algo::match_features::get_nested_algo_configuration("feature_matcher2", config,
                                                       matcher2_);
-  kwiver::vital::algo::filter_features::get_nested_algo_configuration("filter_features", config,
+  vital::algo::filter_features::get_nested_algo_configuration("filter_features", config,
                                                           feature_filter_);
 
   return config;
@@ -139,21 +143,21 @@ match_features_homography
 
 void
 match_features_homography
-::set_configuration(kwiver::vital::config_block_sptr in_config)
+::set_configuration(vital::config_block_sptr in_config)
 {
   // Starting with our generated config_block to ensure that assumed values are present
   // An alternative is to check for key presence before performing a get_value() call.
-  kwiver::vital::config_block_sptr config = this->get_configuration();
+  vital::config_block_sptr config = this->get_configuration();
   config->merge_config(in_config);
 
   // Set nested algorithm configurations
-  kwiver::vital::algo::estimate_homography::set_nested_algo_configuration("homography_estimator",
+  vital::algo::estimate_homography::set_nested_algo_configuration("homography_estimator",
                                                      config, h_estimator_);
-  kwiver::vital::algo::match_features::set_nested_algo_configuration("feature_matcher1", config,
+  vital::algo::match_features::set_nested_algo_configuration("feature_matcher1", config,
                                                       matcher1_);
-  kwiver::vital::algo::match_features::set_nested_algo_configuration("feature_matcher2", config,
+  vital::algo::match_features::set_nested_algo_configuration("feature_matcher2", config,
                                                       matcher2_);
-  kwiver::vital::algo::filter_features::set_nested_algo_configuration("filter_features", config,
+  vital::algo::filter_features::set_nested_algo_configuration("filter_features", config,
                                                           feature_filter_);
 
   // Other parameters
@@ -164,27 +168,27 @@ match_features_homography
 
 bool
 match_features_homography
-::check_configuration(kwiver::vital::config_block_sptr config) const
+::check_configuration(vital::config_block_sptr config) const
 {
   bool config_valid = true;
   // this algorithm is optional
   if (config->has_value("filter_features") &&
       config->get_value<std::string>("filter_features") != "" &&
-      !kwiver::vital::algo::filter_features::check_nested_algo_configuration("filter_features", config))
+      !vital::algo::filter_features::check_nested_algo_configuration("filter_features", config))
   {
     config_valid = false;
   }
   // this algorithm is optional
   if (config->has_value("feature_matcher2") &&
       config->get_value<std::string>("feature_matcher2") != "" &&
-      !kwiver::vital::algo::match_features::check_nested_algo_configuration("feature_matcher2", config))
+      !vital::algo::match_features::check_nested_algo_configuration("feature_matcher2", config))
   {
     config_valid = false;
   }
   return (
-    kwiver::vital::algo::estimate_homography::check_nested_algo_configuration("homography_estimator", config)
+    vital::algo::estimate_homography::check_nested_algo_configuration("homography_estimator", config)
     &&
-    kwiver::vital::algo::match_features::check_nested_algo_configuration("feature_matcher1", config)
+    vital::algo::match_features::check_nested_algo_configuration("feature_matcher1", config)
     &&
     config_valid
   );
@@ -237,8 +241,8 @@ match_features_homography
   if( !matcher2_ )
   {
     // return the subset of inlier matches
-    std::vector<kwiver::vital::match> m = init_matches->matches();
-    std::vector<kwiver::vital::match> inlier_m;
+    std::vector<vital::match> m = init_matches->matches();
+    std::vector<vital::match> inlier_m;
     for( unsigned int i=0; i<inliers.size(); ++i )
     {
       if( inliers[i] )
@@ -259,11 +263,11 @@ match_features_homography
   {
     feature_<double> f(*feat1_vec[i]);
     f.set_loc(Hd.map_point(f.get_loc()));
-    warped_feat1.push_back(boost::make_shared<feature_<double> >(f));
+    warped_feat1.push_back(std::make_shared<feature_<double> >(f));
   }
 
   feature_set_sptr warped_feat1_set =
-    boost::make_shared<simple_feature_set>(
+    std::make_shared<simple_feature_set>(
       simple_feature_set(warped_feat1));
 
   return matcher2_->match(warped_feat1_set, desc1, feat2, desc2);
@@ -273,3 +277,4 @@ match_features_homography
 } // end namespace core
 
 } // end namespace maptk
+} // end namespace kwiver

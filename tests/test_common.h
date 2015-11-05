@@ -40,7 +40,7 @@
 #ifndef MAPTK_TEST_TEST_COMMON_H_
 #define MAPTK_TEST_TEST_COMMON_H_
 
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
 #include <boost/function.hpp>
 
 #include <exception>
@@ -142,7 +142,7 @@ typedef std::string testname_t;
   do                                                        \
   {                                                         \
     std::cerr << "Available tests:" << std::endl;           \
-    BOOST_FOREACH( test_map_t::value_type p, __all_tests )  \
+    VITAL_FOREACH( test_map_t::value_type p, __all_tests )  \
     {                                                       \
       std::cerr << "\t" << p.first << std::endl;            \
     }                                                       \
@@ -247,11 +247,9 @@ typedef std::string testname_t;
 // Testing helper macros/methods
 //
 
-namespace maptk
-{
-
-namespace testing
-{
+namespace kwiver {
+namespace maptk {
+namespace testing {
 
 /// Test double approximate equality to given epsilon
 /**
@@ -267,8 +265,8 @@ inline bool is_almost(double const &value,
 }
 
 } //end namespace testing
-
 } //end namespace maptk
+} //end namespace kwiver
 
 /// General equality test with message generation on inequality
 /**
@@ -300,7 +298,8 @@ inline bool is_almost(double const &value,
 #define TEST_NEAR(name, value, target, epsilon)                  \
   do                                                             \
   {                                                              \
-    if(! maptk::testing::is_almost(value, target, epsilon))      \
+    namespace kmt = kwiver::maptk::testing;                      \
+    if(! kmt::is_almost(value, target, epsilon))                 \
     {                                                            \
       TEST_ERROR("TEST_NEAR check '" << name                     \
                  << "' failed: (epsilon: " << (epsilon) << ")\n" \

@@ -52,7 +52,7 @@
  */
 #define REGISTRATION_INIT( reg ) \
   unsigned int maptk_api_expected_ = 0, maptk_api_registered_ = 0; \
-  kwiver::vital::registrar &maptk_api_registrar_ = reg
+  vital::registrar &maptk_api_registrar_ = reg
 
 
 /// Log to standard error a summary of registration results

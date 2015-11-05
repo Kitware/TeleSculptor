@@ -43,15 +43,15 @@
 #include <opencv2/core/core.hpp>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
 
 /// An image memory class that shares memory with OpenCV using reference counting
 class MAPTK_OCV_EXPORT mat_image_memory
-  : public kwiver::vital::image_memory
+  : public vital::image_memory
 {
 public:
   /// Constructor - allocates n bytes
@@ -78,6 +78,7 @@ protected:
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_OCV_MAT_IMAGE_MEMORY_H_

@@ -37,15 +37,14 @@
 
 #include <set>
 
-#include <boost/foreach.hpp>
-
+#include <vital/vital_foreach.h>
 #include <vital/logger/logger.h>
 
 #include <maptk/triangulate.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
@@ -58,20 +57,20 @@ public:
   /// Constructor
   priv()
     : homogeneous(false),
-      m_logger( kwiver::vital::get_logger( "triangulate_landmarks" ))
+      m_logger( vital::get_logger( "triangulate_landmarks" ))
   {
   }
 
   priv(const priv& other)
     : homogeneous(other.homogeneous),
-      m_logger( kwiver::vital::get_logger( "triangulate_landmarks" ))
+      m_logger( vital::get_logger( "triangulate_landmarks" ))
   {
   }
 
   /// use the homogeneous method for triangulation
   bool homogeneous;
   /// logger handle
-  kwiver::vital::logger_handle_t m_logger;
+  vital::logger_handle_t m_logger;
 };
 
 
@@ -98,14 +97,14 @@ triangulate_landmarks
 }
 
 
-/// Get this alg's \link kwiver::vital::config_block configuration block \endlink
-kwiver::vital::config_block_sptr
+/// Get this alg's \link vital::config_block configuration block \endlink
+vital::config_block_sptr
 triangulate_landmarks
 ::get_configuration() const
 {
   // get base config from base class
-  kwiver::vital::config_block_sptr config
-    = kwiver::vital::algo::triangulate_landmarks::get_configuration();
+  vital::config_block_sptr config
+    = vital::algo::triangulate_landmarks::get_configuration();
 
   // Bad frame detection parameters
   config->set_value("homogeneous", d_->homogeneous,
@@ -120,11 +119,11 @@ triangulate_landmarks
 /// Set this algorithm's properties via a config block
 void
 triangulate_landmarks
-::set_configuration(kwiver::vital::config_block_sptr in_config)
+::set_configuration(vital::config_block_sptr in_config)
 {
   // Starting with our generated config_block to ensure that assumed values are present
   // An alternative is to check for key presence before performing a get_value() call.
-  kwiver::vital::config_block_sptr config = this->get_configuration();
+  vital::config_block_sptr config = this->get_configuration();
   config->merge_config(in_config);
 
   // Settings for bad frame detection
@@ -135,7 +134,7 @@ triangulate_landmarks
 /// Check that the algorithm's currently configuration is valid
 bool
 triangulate_landmarks
-::check_configuration(kwiver::vital::config_block_sptr config) const
+::check_configuration(vital::config_block_sptr config) const
 {
   return true;
 }
@@ -144,9 +143,9 @@ triangulate_landmarks
 /// Triangulate the landmark locations given sets of cameras and tracks
 void
 triangulate_landmarks
-::triangulate(kwiver::vital::camera_map_sptr cameras,
-              kwiver::vital::track_set_sptr tracks,
-              kwiver::vital::landmark_map_sptr& landmarks) const
+::triangulate(vital::camera_map_sptr cameras,
+              vital::track_set_sptr tracks,
+              vital::landmark_map_sptr& landmarks) const
 {
   using namespace kwiver;
   if( !cameras || !landmarks || !tracks )
@@ -165,7 +164,7 @@ triangulate_landmarks
   // build a track map by id
   typedef std::map<vital::track_id_t, vital::track_sptr> track_map_t;
   track_map_t track_map;
-  BOOST_FOREACH(const vital::track_sptr& t, trks)
+  VITAL_FOREACH(const vital::track_sptr& t, trks)
   {
     track_map[t->id()] = t;
   }
@@ -174,7 +173,7 @@ triangulate_landmarks
   std::set<vital::landmark_id_t> failed_landmarks;
 
   map_landmark_t triangulated_lms;
-  BOOST_FOREACH(const map_landmark_t::value_type& p, lms)
+  VITAL_FOREACH(const map_landmark_t::value_type& p, lms)
   {
     // get the corresponding track
     track_map_t::const_iterator t_itr = track_map.find(p.first);
@@ -186,7 +185,7 @@ triangulate_landmarks
     const vital::track& t = *t_itr->second;
 
     // extract the cameras and image points for this landmarks
-    std::vector<vital::camera_d> lm_cams;
+    std::vector<vital::simple_camera> lm_cams;
     std::vector<vital::vector_2d> lm_image_pts;
 
     for (vital::track::history_const_itr tsi = t.begin(); tsi != t.end(); ++tsi)
@@ -202,7 +201,7 @@ triangulate_landmarks
         // there is no camera for this track state.
         continue;
       }
-      lm_cams.push_back(vital::camera_d(*c_itr->second));
+      lm_cams.push_back(vital::simple_camera(*c_itr->second));
       lm_image_pts.push_back(tsi->feat->loc());
     }
 
@@ -225,7 +224,7 @@ triangulate_landmarks
       {
         pt3d = triangulate_inhomog(lm_cams, lm_image_pts);
       }
-      BOOST_FOREACH(vital::camera_d const& cam, lm_cams)
+      VITAL_FOREACH(vital::simple_camera const& cam, lm_cams)
       {
         if(cam.depth(pt3d) < 0.0)
         {
@@ -254,3 +253,4 @@ triangulate_landmarks
 } // end namespace core
 
 } // end namespace maptk
+} // end namespace kwiver

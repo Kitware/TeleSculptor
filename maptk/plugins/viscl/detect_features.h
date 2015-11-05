@@ -31,21 +31,20 @@
 #ifndef MAPTK_PLUGINS_VISCL_DETECT_FEATURES_H_
 #define MAPTK_PLUGINS_VISCL_DETECT_FEATURES_H_
 
-#include <boost/scoped_ptr.hpp>
-
 #include <vital/algo/detect_features.h>
 #include <maptk/plugins/viscl/viscl_config.h>
 
+#include <memory>
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vcl
 {
 
 /// An algorithm class for detecting feature points using VisCL
 class MAPTK_VISCL_EXPORT detect_features
-: public kwiver::vital::algorithm_impl<detect_features, kwiver::vital::algo::detect_features>
+: public vital::algorithm_impl<detect_features, vital::algo::detect_features>
 {
 public:
   /// Constructor
@@ -60,33 +59,34 @@ public:
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "viscl"; }
 
-  /// Get this algorithm's \link maptk::kwiver::vital::config_block configuration block \endlink
-  virtual kwiver::vital::config_block_sptr get_configuration() const;
+  /// Get this algorithm's \link maptk::vital::config_block configuration block \endlink
+  virtual vital::config_block_sptr get_configuration() const;
 
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(kwiver::vital::config_block_sptr config);
+  virtual void set_configuration(vital::config_block_sptr config);
 
-  /// Check that the algorithm's configuration kwiver::vital::config_block is valid
-  virtual bool check_configuration(kwiver::vital::config_block_sptr config) const;
+  /// Check that the algorithm's configuration vital::config_block is valid
+  virtual bool check_configuration(vital::config_block_sptr config) const;
 
   /// Extract a set of image features from the provided image
   /**
     * \param image_data contains the image data to process
     * \returns a set of image features
     */
-  virtual kwiver::vital::feature_set_sptr
-  detect(kwiver::vital::image_container_sptr image_data,
-         kwiver::vital::image_container_sptr mask = kwiver::vital::image_container_sptr()) const;
+  virtual vital::feature_set_sptr
+  detect(vital::image_container_sptr image_data,
+         vital::image_container_sptr mask = vital::image_container_sptr()) const;
 
 private:
   /// private implementation class
   class priv;
-  boost::scoped_ptr<priv> d_;
+  const std::unique_ptr<priv> d_;
 };
 
 } // end namespace vcl
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_VISCL_DETECT_FEATURES_H_

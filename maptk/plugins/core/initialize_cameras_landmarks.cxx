@@ -37,20 +37,25 @@
 
 #include <deque>
 
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
 
 #include <vital/exceptions.h>
 #include <vital/io/eigen_io.h>
 
 #include <vital/algo/estimate_essential_matrix.h>
 #include <vital/algo/triangulate_landmarks.h>
+#include <vital/algo/bundle_adjust.h>
+#include <vital/algo/optimize_cameras.h>
 
+#include <maptk/plugins/core/triangulate_landmarks.h>
+#include <maptk/metrics.h>
+#include <maptk/match_matrix.h>
 #include <maptk/triangulate.h>
 
 using namespace kwiver::vital;
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
@@ -63,15 +68,30 @@ public:
   /// Constructor
   priv()
   : verbose(false),
+    init_from_last(false),
     retriangulate_all(false),
-    base_camera()
+    base_camera(),
+    e_estimator(),
+    camera_optimizer(),
+    // use the core triangulation as the default, users can change it
+    lm_triangulator(new maptk::core::triangulate_landmarks()),
+    bundle_adjuster()
   {
   }
 
   priv(const priv& other)
   : verbose(other.verbose),
+    init_from_last(other.init_from_last),
     retriangulate_all(other.retriangulate_all),
-    base_camera(other.base_camera)
+    base_camera(other.base_camera),
+    e_estimator(!other.e_estimator ? algo::estimate_essential_matrix_sptr()
+                                   : other.e_estimator->clone()),
+    camera_optimizer(!other.camera_optimizer ? algo::optimize_cameras_sptr()
+                                             : other.camera_optimizer->clone()),
+    lm_triangulator(!other.lm_triangulator ? algo::triangulate_landmarks_sptr()
+                                           : other.lm_triangulator->clone()),
+    bundle_adjuster(!other.bundle_adjuster ? algo::bundle_adjust_sptr()
+                                           : other.bundle_adjuster->clone())
   {
   }
 
@@ -99,16 +119,19 @@ public:
    *  This function select the left camera such that a corresponding
    *  pair of points triangulates in front of both cameras.
    */
-  camera_d
+  vital::simple_camera
   extract_valid_left_camera(const essential_matrix_d& e,
                             const vector_2d& left_pt,
                             const vector_2d& right_pt) const;
 
   bool verbose;
+  bool init_from_last;
   bool retriangulate_all;
-  camera_d base_camera;
-  kwiver::vital::algo::estimate_essential_matrix_sptr e_estimator;
-  kwiver::vital::algo::triangulate_landmarks_sptr lm_triangulator;
+  vital::simple_camera base_camera;
+  vital::algo::estimate_essential_matrix_sptr e_estimator;
+  vital::algo::optimize_cameras_sptr camera_optimizer;
+  vital::algo::triangulate_landmarks_sptr lm_triangulator;
+  vital::algo::bundle_adjust_sptr bundle_adjuster;
 };
 
 
@@ -146,8 +169,8 @@ initialize_cameras_landmarks::priv
     throw invalid_value("Camera for last frame not provided.");
   }
   camera_sptr prev_cam = ci->second;
-  camera_intrinsics_d cal_right = prev_cam->intrinsics();
-  const camera_intrinsics_d& cal_left = base_camera.get_intrinsics();
+  camera_intrinsics_sptr cal_right = prev_cam->intrinsics();
+  const camera_intrinsics_sptr cal_left = base_camera.get_intrinsics();
   std::vector<bool> inliers;
   essential_matrix_sptr E_sptr = e_estimator->estimate(pts_right, pts_left,
                                                        cal_right, cal_left,
@@ -158,7 +181,8 @@ initialize_cameras_landmarks::priv
                                                           inliers.end(), true));
   if( this->verbose )
   {
-    std::cout << "E matrix num inliers = "<<num_inliers<<std::endl;
+    std::cout << "E matrix num inliers = " << num_inliers
+              << "/" << inliers.size() << std::endl;
   }
 
   // get the first inlier index
@@ -167,19 +191,18 @@ initialize_cameras_landmarks::priv
 
   // get the first inlier correspondence to
   // disambiguate essential matrix solutions
-  vector_2d left_pt = cal_left.unmap(pts_left[inlier_idx]);
-  vector_2d right_pt = cal_right.unmap(pts_right[inlier_idx]);
+  vector_2d left_pt = cal_left->unmap(pts_left[inlier_idx]);
+  vector_2d right_pt = cal_right->unmap(pts_right[inlier_idx]);
 
   // compute the corresponding camera rotation and translation (up to scale)
-  camera_d cam = extract_valid_left_camera(E, left_pt, right_pt);
+  vital::simple_camera cam = extract_valid_left_camera(E, left_pt, right_pt);
   cam.set_intrinsics(cal_left);
 
   // compute the scale from existing landmark locations (if available)
   matrix_3x3d prev_R(prev_cam->rotation());
   vector_3d prev_t = prev_cam->translation();
-  matrix_3x3d K(cam.get_intrinsics());
-  matrix_3x3d KR = K * matrix_3x3d(cam.get_rotation());
-  vector_3d Kt = K * cam.get_translation();
+  matrix_3x3d R = matrix_3x3d(cam.get_rotation());
+  vector_3d t = cam.translation();
   std::vector<double> scales;
   scales.reserve(num_inliers);
   for(unsigned int i=0; i<inliers.size(); ++i)
@@ -189,8 +212,8 @@ initialize_cameras_landmarks::priv
       continue;
     }
     vector_3d pt3d = prev_R * pts_lm[i]->loc() + prev_t;
-    const vector_2d& pt2d = pts_left[i];
-    scales.push_back(estimate_t_scale(KR*pt3d, Kt, pt2d));
+    const vector_2d& pt2d = cal_left->unmap(pts_left[i]);
+    scales.push_back(estimate_t_scale(R*pt3d, t, pt2d));
   }
   // find the median scale
   double median_scale = 1.0;
@@ -217,7 +240,7 @@ initialize_cameras_landmarks::priv
   cam.set_rotation(cam.get_rotation() * prev_cam->rotation());
   cam.set_translation(new_t);
 
-  return camera_sptr(new camera_d(cam));
+  return cam.clone();
 }
 
 
@@ -231,7 +254,7 @@ initialize_cameras_landmarks::priv
 {
   typedef landmark_map::map_landmark_t lm_map_t;
   lm_map_t init_lms;
-  BOOST_FOREACH(const track_sptr& t, trks)
+  VITAL_FOREACH(const track_sptr& t, trks)
   {
     const track_id_t& tid = t->id();
     if( !this->retriangulate_all &&
@@ -256,7 +279,7 @@ initialize_cameras_landmarks::priv
   track_set_sptr tracks(new simple_track_set(trks));
   this->lm_triangulator->triangulate(cam_map, tracks, lm_map);
 
-  BOOST_FOREACH(const lm_map_t::value_type& p, lm_map->landmarks())
+  VITAL_FOREACH(const lm_map_t::value_type& p, lm_map->landmarks())
   {
     lms[p.first] = p.second;
   }
@@ -282,7 +305,7 @@ initialize_cameras_landmarks::priv
 }
 
 /// Compute a valid left camera from an essential matrix
-camera_d
+vital::simple_camera
 initialize_cameras_landmarks::priv
 ::extract_valid_left_camera(const essential_matrix_d& e,
                             const vector_2d& left_pt,
@@ -296,11 +319,11 @@ initialize_cameras_landmarks::priv
   pts.push_back(right_pt);
   pts.push_back(left_pt);
 
-  std::vector<camera_d> cams(2);
-  const camera_d& left_camera = cams[1];
+  std::vector<vital::simple_camera> cams(2);
+  const vital::simple_camera& left_camera = cams[1];
 
   // option 1
-  cams[1] = camera_d(R.inverse()*-t, R);
+  cams[1] = vital::simple_camera(R.inverse()*-t, R);
   vector_3d pt3 = triangulate_inhomog(cams, pts);
   if( pt3.z() > 0.0 && left_camera.depth(pt3) > 0.0 )
   {
@@ -308,7 +331,7 @@ initialize_cameras_landmarks::priv
   }
 
   // option 2, with negated translation
-  cams[1] = camera_d(R.inverse()*t, R);
+  cams[1] = vital::simple_camera(R.inverse()*t, R);
   pt3 = triangulate_inhomog(cams, pts);
   if( pt3.z() > 0.0 && left_camera.depth(pt3) > 0.0 )
   {
@@ -317,7 +340,7 @@ initialize_cameras_landmarks::priv
 
   // option 3, with the twisted pair rotation
   R = e.twisted_rotation();
-  cams[1] = camera_d(R.inverse()*-t, R);
+  cams[1] = vital::simple_camera(R.inverse()*-t, R);
   pt3 = triangulate_inhomog(cams, pts);
   if( pt3.z() > 0.0 && left_camera.depth(pt3) > 0.0 )
   {
@@ -325,14 +348,14 @@ initialize_cameras_landmarks::priv
   }
 
   // option 4, with negated translation
-  cams[1] = camera_d(R.inverse()*t, R);
+  cams[1] = vital::simple_camera(R.inverse()*t, R);
   pt3 = triangulate_inhomog(cams, pts);
   if( pt3.z() > 0.0 && left_camera.depth(pt3) > 0.0 )
   {
     return left_camera;
   }
   // should never get here
-  return camera_d();
+  return vital::simple_camera();
 }
 
 
@@ -359,48 +382,58 @@ initialize_cameras_landmarks
 }
 
 
-/// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
-kwiver::vital::config_block_sptr
+/// Get this algorithm's \link vital::config_block configuration block \endlink
+vital::config_block_sptr
 initialize_cameras_landmarks
 ::get_configuration() const
 {
   // get base config from base class
-  kwiver::vital::config_block_sptr config =
-      kwiver::vital::algo::initialize_cameras_landmarks::get_configuration();
+  vital::config_block_sptr config =
+      vital::algo::initialize_cameras_landmarks::get_configuration();
 
-  const camera_intrinsics_d& K = d_->base_camera.get_intrinsics();
+  const camera_intrinsics_sptr K = d_->base_camera.get_intrinsics();
 
   config->set_value("verbose", d_->verbose,
                     "If true, write status messages to the terminal showing "
                     "debugging information");
+
+  config->set_value("init_from_last", d_->init_from_last,
+                    "If true, and a camera optimizer is specified, initialize "
+                    "the camera using the closest exiting camera and optimize");
 
   config->set_value("retriangulate_all", d_->retriangulate_all,
                     "If true, re-triangulate all landmarks observed by a newly "
                     "initialized camera.  Otherwise, only triangulate or "
                     "re-triangulate landmarks that are marked for initialization.");
 
-  config->set_value("base_camera:focal_length", K.focal_length(),
+  config->set_value("base_camera:focal_length", K->focal_length(),
                     "focal length of the base camera model");
 
-  config->set_value("base_camera:principal_point", K.principal_point().transpose(),
+  config->set_value("base_camera:principal_point", K->principal_point().transpose(),
                     "The principal point of the base camera model \"x y\".\n"
                     "It is usually safe to assume this is the center of the "
                     "image.");
 
-  config->set_value("base_camera:aspect_ratio", K.aspect_ratio(),
+  config->set_value("base_camera:aspect_ratio", K->aspect_ratio(),
                     "the pixel aspect ratio of the base camera model");
 
-  config->set_value("base_camera:skew", K.skew(),
+  config->set_value("base_camera:skew", K->skew(),
                     "The skew factor of the base camera model.\n"
                     "This is almost always zero in any real camera.");
 
   // nested algorithm configurations
-  kwiver::vital::algo::estimate_essential_matrix
+  vital::algo::estimate_essential_matrix
       ::get_nested_algo_configuration("essential_mat_estimator",
                                       config, d_->e_estimator);
-  kwiver::vital::algo::triangulate_landmarks
+  vital::algo::optimize_cameras
+      ::get_nested_algo_configuration("camera_optimizer",
+                                      config, d_->camera_optimizer);
+  vital::algo::triangulate_landmarks
       ::get_nested_algo_configuration("lm_triangulator",
                                       config, d_->lm_triangulator);
+  vital::algo::bundle_adjust
+      ::get_nested_algo_configuration("bundle_adjuster",
+                                      config, d_->bundle_adjuster);
   return config;
 }
 
@@ -408,46 +441,67 @@ initialize_cameras_landmarks
 /// Set this algorithm's properties via a config block
 void
 initialize_cameras_landmarks
-::set_configuration(kwiver::vital::config_block_sptr config)
+::set_configuration(vital::config_block_sptr config)
 {
-  const camera_intrinsics_d& K = d_->base_camera.get_intrinsics();
+  const camera_intrinsics_sptr K = d_->base_camera.get_intrinsics();
 
   // Set nested algorithm configurations
-  kwiver::vital::algo::estimate_essential_matrix
+  vital::algo::estimate_essential_matrix
       ::set_nested_algo_configuration("essential_mat_estimator",
                                       config, d_->e_estimator);
-  kwiver::vital::algo::triangulate_landmarks
+  vital::algo::optimize_cameras
+      ::set_nested_algo_configuration("camera_optimizer",
+                                      config, d_->camera_optimizer);
+  vital::algo::triangulate_landmarks
       ::set_nested_algo_configuration("lm_triangulator",
                                       config, d_->lm_triangulator);
+  vital::algo::bundle_adjust
+      ::set_nested_algo_configuration("bundle_adjuster",
+                                      config, d_->bundle_adjuster);
 
   d_->verbose = config->get_value<bool>("verbose",
                                         d_->verbose);
 
+  d_->init_from_last = config->get_value<bool>("init_from_last",
+                                               d_->init_from_last);
+
   d_->retriangulate_all = config->get_value<bool>("retriangulate_all",
                                                   d_->retriangulate_all);
 
-  kwiver::vital::config_block_sptr bc = config->subblock("base_camera");
-  camera_intrinsics_d K2(bc->get_value<double>("focal_length",
-                                               K.focal_length()),
-                         bc->get_value<vector_2d>("principal_point",
-                                                  K.principal_point()),
-                         bc->get_value<double>("aspect_ratio",
-                                               K.aspect_ratio()),
-                         bc->get_value<double>("skew",
-                                               K.skew()));
-  d_->base_camera.set_intrinsics(K2);
+  vital::config_block_sptr bc = config->subblock("base_camera");
+  simple_camera_intrinsics K2(bc->get_value<double>("focal_length",
+                                                    K->focal_length()),
+                              bc->get_value<vector_2d>("principal_point",
+                                                       K->principal_point()),
+                              bc->get_value<double>("aspect_ratio",
+                                                    K->aspect_ratio()),
+                              bc->get_value<double>("skew",
+                                                    K->skew()));
+  d_->base_camera.set_intrinsics(K2.clone());
 }
 
 
 /// Check that the algorithm's currently configuration is valid
 bool
 initialize_cameras_landmarks
-::check_configuration(kwiver::vital::config_block_sptr config) const
+::check_configuration(vital::config_block_sptr config) const
 {
-  return kwiver::vital::algo::estimate_essential_matrix
+  if (config->get_value<std::string>("camera_optimizer", "") != ""
+      && !vital::algo::optimize_cameras
+              ::check_nested_algo_configuration("camera_optimizer", config))
+  {
+    return false;
+  }
+  if (config->get_value<std::string>("bundle_adjuster", "") != ""
+      && !vital::algo::bundle_adjust
+              ::check_nested_algo_configuration("bundle_adjuster", config))
+  {
+    return false;
+  }
+  return vital::algo::estimate_essential_matrix
              ::check_nested_algo_configuration("essential_mat_estimator",
                                                config)
-      && kwiver::vital::algo::triangulate_landmarks
+      && vital::algo::triangulate_landmarks
              ::check_nested_algo_configuration("lm_triangulator", config);
 }
 
@@ -479,7 +533,7 @@ void extract_cameras(const camera_map_sptr& cameras,
 
   // Find the set of all cameras that need to be initialized
   std::set<frame_id_t> new_frames;
-  BOOST_FOREACH(const map_cam_t::value_type& p, all_cams)
+  VITAL_FOREACH(const map_cam_t::value_type& p, all_cams)
   {
     if(p.second)
     {
@@ -519,7 +573,7 @@ void extract_landmarks(const landmark_map_sptr& landmarks,
 
   // Find the set of all landmarks that need to be initialized
   std::set<track_id_t> new_landmarks;
-  BOOST_FOREACH(const map_landmark_t::value_type& p, all_lms)
+  VITAL_FOREACH(const map_landmark_t::value_type& p, all_lms)
   {
     if(p.second)
     {
@@ -532,6 +586,131 @@ void extract_landmarks(const landmark_map_sptr& landmarks,
   }
   track_ids = new_landmarks;
 }
+
+
+/// Find the closest frame number with an existing camera
+frame_id_t
+find_closest_camera(const frame_id_t& frame,
+                    const camera_map::map_camera_t& cams)
+{
+  typedef vital::camera_map::map_camera_t map_cam_t;
+  frame_id_t other_frame = cams.rbegin()->first;
+  map_cam_t::const_iterator ci = cams.lower_bound(frame);
+  if( ci == cams.end() )
+  {
+    other_frame = cams.rbegin()->first;
+  }
+  else
+  {
+    other_frame = ci->first;
+    if (ci != cams.begin() &&
+        (other_frame-frame) >= (frame-(--ci)->first))
+    {
+      other_frame = ci->first;
+    }
+  }
+  return other_frame;
+}
+
+
+/// find the best pair of camera indices to start with
+void
+find_best_initial_pair(const Eigen::SparseMatrix<unsigned int>& mm,
+                       int& i, int& j)
+{
+  typedef Eigen::Matrix<unsigned int, Eigen::Dynamic, 1> vectorXu;
+  const int cols = mm.cols();
+  const vectorXu d = mm.diagonal();
+
+  // compute the maximum off-diagonal value
+  unsigned int global_max_matches = 0;
+  for( int k=0; k<cols; ++k)
+  {
+    for(Eigen::SparseMatrix<unsigned int>::InnerIterator it(mm, k); it; ++it)
+    {
+      if(it.row() > k && it.value() > global_max_matches)
+      {
+        global_max_matches = it.value();
+      }
+    }
+  }
+  const unsigned int threshold = std::max(global_max_matches / 2, 20u);
+
+  std::cout <<"global max "<<global_max_matches << std::endl;
+  std::cout <<"threshold "<<threshold << std::endl;
+  for(int x=1; x<cols; ++x)
+  {
+    unsigned int max_matches = 0;
+    int max_i = 0, max_j = 0;
+    for(int y=0; y<cols-x; ++y)
+    {
+      unsigned int matches = mm.coeff(x+y,y);
+      if( matches > max_matches )
+      {
+        max_matches = matches;
+        max_i = y;
+        max_j = x+y;
+      }
+    }
+    std::cout << "max matches at "<<x<<" is "<< max_matches << " at "<< max_i << ", "<< max_j<<std::endl;
+    if( max_matches < threshold )
+    {
+      break;
+    }
+    i = max_i;
+    j = max_j;
+  }
+}
+
+
+// find the frame in the set \p new_frame_ids that sees the most
+// landmarks in \p lms in the track set \p tracks.
+frame_id_t
+next_best_frame(const track_set_sptr tracks,
+                const vital::landmark_map::map_landmark_t& lms,
+                const std::set<frame_id_t>& new_frame_ids)
+{
+  const std::vector<track_sptr> trks = tracks->tracks();
+  typedef std::map<frame_id_t, unsigned int> frame_map_t;
+  frame_map_t vis_count;
+  VITAL_FOREACH(const track_sptr& t, trks)
+  {
+    if( lms.find(t->id()) != lms.end() )
+    {
+      const std::set<frame_id_t> t_frames = t->all_frame_ids();
+      VITAL_FOREACH(const frame_id_t& fid, t_frames)
+      {
+        if( new_frame_ids.find(fid) == new_frame_ids.end() )
+        {
+          continue;
+        }
+        frame_map_t::iterator fmi = vis_count.find(fid);
+        if( fmi == vis_count.end() )
+        {
+          vis_count.insert(std::pair<frame_id_t, unsigned int>(fid,1));
+        }
+        else
+        {
+          ++fmi->second;
+        }
+      }
+    }
+  }
+  // find the maximum observation
+  unsigned int max_count = 0;
+  frame_id_t best_frame = 0;
+  VITAL_FOREACH(const frame_map_t::value_type& p, vis_count)
+  {
+    if(p.second > max_count)
+    {
+      max_count = p.second;
+      best_frame = p.first;
+    }
+  }
+  std::cout << "frame "<< best_frame << " sees "<< max_count << " landmarks"<<std::endl;
+  return best_frame;
+}
+
 
 } // end anonymous namespace
 
@@ -555,14 +734,14 @@ initialize_cameras_landmarks
   {
     throw invalid_value("Landmark triangulator not initialized.");
   }
-  typedef kwiver::vital::camera_map::map_camera_t map_cam_t;
-  typedef kwiver::vital::landmark_map::map_landmark_t map_landmark_t;
+  typedef vital::camera_map::map_camera_t map_cam_t;
+  typedef vital::landmark_map::map_landmark_t map_landmark_t;
 
   // Extract the existing cameras and camera ids to be initialized
   std::set<frame_id_t> frame_ids = tracks->all_frame_ids();
   map_cam_t cams;
   extract_cameras(cameras, frame_ids, cams);
-  std::deque<frame_id_t> new_frame_ids(frame_ids.begin(), frame_ids.end());
+  std::set<frame_id_t> new_frame_ids(frame_ids);
 
   // Extract the existing landmarks and landmark ids to be initialized
   std::set<track_id_t> track_ids = tracks->all_track_ids();
@@ -582,7 +761,7 @@ initialize_cameras_landmarks
   if(cams.size() > 2 && !new_lm_ids.empty())
   {
     map_landmark_t init_lms;
-    BOOST_FOREACH(const landmark_id_t& lmid, new_lm_ids)
+    VITAL_FOREACH(const landmark_id_t& lmid, new_lm_ids)
     {
       landmark_sptr lm(new landmark_d(vector_3d(0,0,0)));
       init_lms[static_cast<landmark_id_t>(lmid)] = lm;
@@ -592,55 +771,55 @@ initialize_cameras_landmarks
     camera_map_sptr cam_map(new simple_camera_map(cams));
     d_->lm_triangulator->triangulate(cam_map, tracks, lm_map);
 
-    BOOST_FOREACH(const map_landmark_t::value_type& p, lm_map->landmarks())
+    VITAL_FOREACH(const map_landmark_t::value_type& p, lm_map->landmarks())
     {
       lms[p.first] = p.second;
     }
   }
 
+  std::vector<frame_id_t> mm_frames(frame_ids.begin(), frame_ids.end());
+  Eigen::SparseMatrix<unsigned int> mm = match_matrix(tracks, mm_frames);
+  int init_i=0,init_j=0;
+  find_best_initial_pair(mm, init_i, init_j);
+  std::cout << "using frames "<< mm_frames[init_i] << " and " << mm_frames[init_j] <<std::endl;
+
   if(cams.empty())
   {
-    // first frame, initilze to base camera
-    frame_id_t f = new_frame_ids.front();
-    new_frame_ids.pop_front();
-    cams[f] = camera_sptr(new camera_d(d_->base_camera));
+    // first frame, initialize to base camera
+    frame_id_t f = mm_frames[init_i];
+    new_frame_ids.erase(f);
+    cams[f] = d_->base_camera.clone();
   }
 
-  frame_id_t other_frame = cams.rbegin()->first;
   while( !new_frame_ids.empty() )
   {
-    frame_id_t f = new_frame_ids.front();
-    new_frame_ids.pop_front();
-
-    // get the closest frame number with an exisiting camera
-    map_cam_t::const_iterator ci = cams.lower_bound(f);
-    if( ci == cams.end() )
+    frame_id_t f;
+    if( cams.size() == 1 )
     {
-      other_frame = cams.rbegin()->first;
+      f = mm_frames[init_j];
     }
     else
     {
-      other_frame = ci->first;
-      if (ci != cams.begin() &&
-          (other_frame-f) >= (f-(--ci)->first))
-      {
-        other_frame = ci->first;
-      }
+      f = next_best_frame(tracks, lms, new_frame_ids);
     }
+    new_frame_ids.erase(f);
+
+    // get the closest frame number with an existing camera
+    frame_id_t other_frame = find_closest_camera(f, cams);
     if(d_->verbose)
     {
-      std::cout << f << " uses reference "<< other_frame <<std::endl;
+      std::cout <<"frame "<< f <<" uses reference "<< other_frame <<std::endl;
     }
 
     // get the subset of tracks that have features on frame f
     track_set_sptr ftracks = tracks->active_tracks(static_cast<int>(f));
-    // get the subset of tracks that also  have features on the last frame
+    // get the subset of tracks that also  have features on the other frame
     ftracks = ftracks->active_tracks(static_cast<int>(other_frame));
 
     // find existing landmarks for these tracks
     map_landmark_t flms;
     std::vector<track_sptr> trks = ftracks->tracks();
-    BOOST_FOREACH(const track_sptr& t, trks)
+    VITAL_FOREACH(const track_sptr& t, trks)
     {
       map_landmark_t::const_iterator li = lms.find(t->id());
       if( li != lms.end() )
@@ -649,10 +828,45 @@ initialize_cameras_landmarks
       }
     }
 
-    cams[f] = d_->init_camera(f, other_frame, cams, trks, flms);
+    if( d_->init_from_last && d_->camera_optimizer && flms.size() > 3)
+    {
+      cams[f] = cams[other_frame]->clone();
+    }
+    else
+    {
+      cams[f] = d_->init_camera(f, other_frame, cams, trks, flms);
+    }
+
+    // optionally optimize the new camera
+    if( d_->camera_optimizer && flms.size() > 3)
+    {
+      camera_map::map_camera_t opt_cam_map;
+      opt_cam_map[f] = cams[f];
+      camera_map_sptr opt_cams(new simple_camera_map(opt_cam_map));
+      landmark_map_sptr landmarks(new simple_landmark_map(flms));
+      track_set_sptr tracks(new simple_track_set(trks));
+      d_->camera_optimizer->optimize(opt_cams, tracks, landmarks);
+      cams[f] = opt_cams->cameras()[f];
+    }
+
 
     // triangulate (or re-triangulate) points seen by the new camera
     d_->retriangulate(lms, cams, trks, new_lm_ids);
+
+    if( d_->bundle_adjuster && cams.size() == 2)
+    {
+      camera_map_sptr ba_cams(new simple_camera_map(cams));
+      landmark_map_sptr ba_lms(new simple_landmark_map(lms));
+      double init_rmse = maptk::reprojection_rmse(cams, lms, trks);
+      std::cerr << "initial reprojection RMSE: " << init_rmse << std::endl;
+
+      d_->bundle_adjuster->optimize(ba_cams, ba_lms, tracks);
+      cams = ba_cams->cameras();
+      lms = ba_lms->landmarks();
+      double final_rmse = maptk::reprojection_rmse(cams, lms, trks);
+      std::cerr << "final reprojection RMSE: " << final_rmse << std::endl;
+      std::cout << "updated focal length "<<cams.begin()->second->intrinsics()->focal_length() <<std::endl;
+    }
 
     if(d_->verbose)
     {
@@ -668,3 +882,4 @@ initialize_cameras_landmarks
 } // end namespace core
 
 } // end namespace maptk
+} // end namespace kwiver

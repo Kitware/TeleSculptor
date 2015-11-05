@@ -14,7 +14,8 @@ set( maptk_viscl_headers_public
   utils.h
   viscl_config.h
   )
-maptk_install_plugin_headers( viscl
+kwiver_install_headers(
+  SUBDIR     maptk/plugins/viscl
   ${maptk_viscl_headers_public}
   )
 

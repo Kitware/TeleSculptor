@@ -43,44 +43,48 @@
 #include <maptk/plugins/vxl/vxl_config.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vxl
 {
 
 
 class MAPTK_VXL_EXPORT optimize_cameras
-  : public kwiver::vital::algorithm_impl<optimize_cameras, kwiver::vital::algo::optimize_cameras>
+  : public vital::algorithm_impl<optimize_cameras, vital::algo::optimize_cameras>
 {
 public:
   virtual std::string impl_name() const { return "vxl"; }
 
   /// \cond DoxygenSuppress
-  virtual void set_configuration(kwiver::vital::config_block_sptr /*config*/) { }
-  virtual bool check_configuration(kwiver::vital::config_block_sptr /*config*/) const { return true; }
+  virtual void set_configuration(vital::config_block_sptr /*config*/) { }
+  virtual bool check_configuration(vital::config_block_sptr /*config*/) const { return true; }
   /// \endcond
 
-  /// Optimize camera parameters given sets of landmarks and tracks
+  using vital::algo::optimize_cameras::optimize;
+
+  /// Optimize a single camera given corresponding features and landmarks
   /**
-   * We only optimize cameras that have associating tracks and landmarks in
-   * the given maps.
+   * This function assumes that 2D features viewed by this camera have
+   * already been put into correspondence with 3D landmarks by aligning
+   * them into two parallel vectors
    *
-   * \throws invalid_value When one or more of the given pointer is Null.
-   *
-   * \param[in,out] cameras   Cameras to optimize.
-   * \param[in]     tracks    The tracks to use as constraints.
-   * \param[in]     landmarks The landmarks the cameras are viewing.
+   * \param[in,out] camera    The camera to optimize.
+   * \param[in]     features  The vector of features observed by \p camera
+   *                          to use as constraints.
+   * \param[in]     landmarks The vector of landmarks corresponding to
+   *                          \p features.
    */
   virtual void
-  optimize(kwiver::vital::camera_map_sptr & cameras,
-           kwiver::vital::track_set_sptr tracks,
-           kwiver::vital::landmark_map_sptr landmarks) const;
+  optimize(vital::camera_sptr & camera,
+           const std::vector<vital::feature_sptr>& features,
+           const std::vector<vital::landmark_sptr>& landmarks) const;
 };
 
 
-}
+} // end namespace vxl
 
-}
+} // end namespace maptk
+} // end namespace kwiver
 
 #endif // MAPTK_PLUGINS_VXL_OPTIMIZE_CAMERAS_H_

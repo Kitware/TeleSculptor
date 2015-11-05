@@ -58,12 +58,12 @@ using namespace kwiver::vital;
 
 void test_distortion(const Eigen::VectorXd& d)
 {
-  using namespace maptk;
-  camera_intrinsics_d K;
+  using namespace kwiver::maptk;
+  simple_camera_intrinsics K;
   K.set_dist_coeffs(d.transpose());
 
   cv::Mat cam_mat;
-  cv::eigen2cv(matrix_3x3d(K), cam_mat);
+  cv::eigen2cv(K.as_matrix(), cam_mat);
   int rows = d.rows() < 4 ? 4 : d.rows();
   cv::Mat dist = cv::Mat::zeros(1, rows, CV_64F);
   for(unsigned int i=0; i<d.rows(); ++i)

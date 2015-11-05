@@ -41,8 +41,8 @@
 #include <maptk/plugins/core/plugin_core_config.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
@@ -50,7 +50,7 @@ namespace core
 
 /// A class for bypassing image conversion
 class PLUGIN_CORE_EXPORT convert_image_bypass
-  : public kwiver::vital::algorithm_impl<convert_image_bypass, kwiver::vital::algo::convert_image>
+  : public vital::algorithm_impl<convert_image_bypass, vital::algo::convert_image>
 {
 public:
    /// Default Constructor
@@ -70,13 +70,14 @@ public:
    * \param [in] img image to be converted
    * \returns the input image
    */
-  virtual kwiver::vital::image_container_sptr convert(kwiver::vital::image_container_sptr img) const;
+  virtual vital::image_container_sptr convert(vital::image_container_sptr img) const;
 };
 
 
 } // end namespace core
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_CORE_CONVERT_IMAGE_BYPASS_H_

@@ -19,7 +19,8 @@ set(maptk_vxl_headers_public
   vil_image_memory.h
   vxl_config.h
   )
-maptk_install_plugin_headers( vxl
+kwiver_install_headers(
+  SUBDIR     maptk/plugins/vxl
   ${maptk_vxl_headers_public}
   )
 

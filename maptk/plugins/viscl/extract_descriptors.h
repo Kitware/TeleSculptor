@@ -31,21 +31,20 @@
 #ifndef MAPTK_PLUGINS_VISCL_EXTRACT_DESCRIPTORS_H_
 #define MAPTK_PLUGINS_VISCL_EXTRACT_DESCRIPTORS_H_
 
-#include <boost/scoped_ptr.hpp>
-
 #include <vital/algo/extract_descriptors.h>
 #include <maptk/plugins/viscl/viscl_config.h>
 
+#include <memory>
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vcl
 {
 
 /// An class for extracting feature descriptors using VisCL
 class MAPTK_VISCL_EXPORT extract_descriptors
-: public kwiver::vital::algorithm_impl<extract_descriptors, kwiver::vital::algo::extract_descriptors>
+: public vital::algorithm_impl<extract_descriptors, vital::algo::extract_descriptors>
 {
 public:
   /// Default Constructor
@@ -61,28 +60,29 @@ public:
   virtual std::string impl_name() const { return "viscl"; }
 
   // No configuration for this class yet TODO: eventually descriptor size
-  virtual void set_configuration(kwiver::vital::config_block_sptr /*config*/) { }
-  virtual bool check_configuration(kwiver::vital::config_block_sptr /*config*/) const { return true; }
+  virtual void set_configuration(vital::config_block_sptr /*config*/) { }
+  virtual bool check_configuration(vital::config_block_sptr /*config*/) const { return true; }
 
   /// Extract from the image a descriptor corresoponding to each feature
   /** \param image_data contains the image data to process
     * \param features the feature locations at which descriptors are extracted
     * \returns a set of feature descriptors
     */
-  virtual kwiver::vital::descriptor_set_sptr
-  extract(kwiver::vital::image_container_sptr image_data,
-          kwiver::vital::feature_set_sptr features,
-          kwiver::vital::image_container_sptr image_mask = kwiver::vital::image_container_sptr()) const;
+  virtual vital::descriptor_set_sptr
+  extract(vital::image_container_sptr image_data,
+          vital::feature_set_sptr features,
+          vital::image_container_sptr image_mask = vital::image_container_sptr()) const;
 
 private:
   /// private implementation class
   class priv;
-  boost::scoped_ptr<priv> d_;
+  const std::unique_ptr<priv> d_;
 };
 
 } // end namespace vcl
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_VISCL_EXTRACT_DESCRIPTORS_H_

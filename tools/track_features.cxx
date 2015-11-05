@@ -42,6 +42,7 @@
 #include <vital/config/config_block.h>
 #include <vital/config/config_block_io.h>
 #include <vital/logger/logger.h>
+#include <vital/vital_foreach.h>
 
 #include <vital/algorithm_plugin_manager.h>
 #include <vital/exceptions.h>
@@ -51,18 +52,17 @@
 #include <vital/algo/convert_image.h>
 #include <vital/algo/track_features.h>
 #include <vital/algo/compute_ref_homography.h>
+#include <kwiversys/SystemTools.hxx>
 
-#include <boost/foreach.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
 #include <boost/program_options/value_semantic.hpp>
 #include <boost/program_options/variables_map.hpp>
-#include <boost/make_shared.hpp>
 
 namespace bfs = boost::filesystem;
-
+typedef kwiversys::SystemTools ST;
 
 static kwiver::vital::logger_handle_t main_logger( kwiver::vital::get_logger( "track_features_tool" ) );
 
@@ -128,15 +128,14 @@ static bool check_config(kwiver::vital::config_block_sptr config)
   if ( config->has_value("output_homography_file")
     && config->get_value<std::string>("output_homography_file") != "" )
   {
-    kwiver::vital::path_t fp = config->get_value<kwiver::vital::path_t>("output_homography_file");
-    if ( bfs::is_directory(fp) )
+    kwiver::vital::config_path_t fp = config->get_value<kwiver::vital::config_path_t>("output_homography_file");
+    if ( kwiversys::SystemTools::FileIsDirectory( fp ) )
     {
       MAPTK_CONFIG_FAIL("Given output homography file is a directory! "
                         << "(Given: " << fp << ")");
     }
-    else if ( fp.parent_path() != "" &&
-              ( (!bfs::is_directory(fp.parent_path())) ||
-                 bfs::is_regular_file(fp.parent_path()) ) )
+    else if ( ST::GetFilenamePath( fp ) != "" &&
+              ! ST::FileIsDirectory(ST::GetFilenamePath( fp ) ))
     {
       MAPTK_CONFIG_FAIL("Given output homography file does not have a valid "
                         << "parent path! (Given: " << fp << ")");
@@ -220,7 +219,7 @@ static kwiver::vital::image::byte invert_mask_pixel( kwiver::vital::image::byte 
 #define print_config(config) \
   do \
   { \
-    BOOST_FOREACH( kwiver::vital::config_block_key_t key, config->available_values() ) \
+    VITAL_FOREACH( kwiver::vital::config_block_key_t key, config->available_values() ) \
     { \
       std::cerr << "\t" \
            << key << " = " << config->get_value<kwiver::vital::config_block_key_t>(key) \
@@ -405,7 +404,7 @@ static int maptk_main(int argc, char const* argv[])
        config->get_value<std::string>("output_homography_file") != "" )
   {
     kwiver::vital::path_t homog_fp = config->get_value<kwiver::vital::path_t>("output_homography_file");
-    homog_ofs.open( homog_fp.string().c_str() );
+    homog_ofs.open( homog_fp.c_str() );
     if ( !homog_ofs )
     {
       std::cerr << "Error: Could not open homography file for writing: "
@@ -426,12 +425,12 @@ static int maptk_main(int argc, char const* argv[])
 
     kwiver::vital::image_container_sptr converted_img,
                                 mask, converted_mask;
-    converted_img = image_converter->convert( image_reader->load( files[i].string() ) );
+    converted_img = image_converter->convert( image_reader->load( files[i] ) );
 
     // Load the mask for this image if we were given a mask image list
     if( use_masks )
     {
-      mask = image_reader->load( mask_files[i].string() );
+      mask = image_reader->load( mask_files[i] );
 
       // error out if we are not expecting a multi-channel mask
       if( !expect_multichannel_masks && mask->depth() > 1 )

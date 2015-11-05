@@ -354,19 +354,6 @@ function(maptk_install_headers)
 endfunction()
 
 #+
-#   maptk_install_plugin_headers( plugin_name header1 [header2 ...] )
-#
-# Instal MAPTK plugin public header files to the ``include/maptk/plugin/``
-# sub-directory in the configured installation location.
-#-
-function(maptk_install_plugin_headers plugin_name)
-  maptk_install_headers(
-    SUBDIR "plugins/${plugin_name}"
-    ${ARGN}
-    )
-endfunction(maptk_install_plugin_headers)
-
-#+
 # Add files to the private header source group
 #
 #   maptk_private_header_group(file1 [file2 ...])

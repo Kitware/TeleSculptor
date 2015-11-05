@@ -53,7 +53,6 @@
 
 #include <maptk/projected_track_set.h>
 
-#include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 
 #include <boost/program_options/options_description.hpp>
@@ -330,7 +329,7 @@ static int maptk_main(int argc, char const* argv[])
         return EXIT_FAILURE;
       }
 
-      comparison_tracks = maptk::projected_tracks( landmarks, cameras );
+      comparison_tracks = kwiver::maptk::projected_tracks( landmarks, cameras );
     }
 
     // Read images one by one, this is more memory efficient than loading them all
@@ -345,7 +344,7 @@ static int maptk_main(int argc, char const* argv[])
 
       kwiver::vital::image_container_sptr_list images;
 
-      kwiver::vital::image_container_sptr image = image_reader->load( image_paths[i].string() );
+      kwiver::vital::image_container_sptr image = image_reader->load( image_paths[i] );
       images.push_back( image );
 
       // Draw tracks on images

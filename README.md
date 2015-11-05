@@ -28,6 +28,9 @@ provided in plugin modules that use 3rd party libraries to implement various
 abstract algorithm interfaces defined in the core.  Plugin modules may also
 implement additional versions of core MAP-Tk data structures.
 
+In addition to the libraries and tools, a Qt GUI application is provided to
+assist with visualization of data and results with the help of VTK.
+
 While the initial software implementation relies on batch post-processing
 of aerial video.  Our intent is to move to an online video stream processing
 framework and optimize the algorithms to real-time performance for use
@@ -39,6 +42,8 @@ Overview of Directories
 
 * CMake               -- contains CMake helper scripts
 * doc                 -- contains release notes and other documentation
+* gui                 -- contains the visualization GUI source code and headers
+* gui/icons           -- contains the visualization GUI icon resources
 * maptk               -- contains the core library source and headers
 * maptk/algo          -- contains abstract algorithm definitions
 * maptk/plugins/ceres -- contains the Ceres Solver plugin source and headers
@@ -60,6 +65,10 @@ Building MAP-Tk
 
 MAP-Tk uses CMake (www.cmake.org) for easy cross-platform compilation. The
 minimum required version of CMake is 2.8.11, but newer versions are recommended.
+
+Currently, a compiler with at least partial C++11 support (e.g. GCC 4.4, Visual
+Studio 2010) is required to build the GUI.  This requirement may be extended to
+rest of the software in the future.
 
 
 Running CMake
@@ -108,8 +117,8 @@ Currently a complete set of functionalities in all tools requires either
 
 ### Required ###
 
-The only hard dependencies of MAP-Tk are on the C++ standard library and
-[Boost](http://www.boost.org/) (>= v1.50) and
+The only hard dependencies of MAP-Tk are on the C++ standard library,
+[Boost](http://www.boost.org/) (>= v1.50), and
 [Eigen](http://eigen.tuxfamily.org/) (>= 3.0).
 Currently MAP-Tk uses the following Boost components:
 system, filesystem, program_options, timer, chrono.
@@ -130,13 +139,35 @@ functionality.  Dependencies for each module are:
 * VXL    - version 1.17 or greater
            <http://vxl.sourceforge.net/>
 
+### GUI ###
+
+The visualization application (GUI) is optional, and has additional
+dependencies.  To build the GUI, you need:
+
+* Qt 4         - version 4.8.0 or greater (4.8.6 or greater recommended)
+                 <http://www.qt.io/>
+* qtExtensions - no versioned releases as of writing; use master branch
+                 <http://www.github.com/kitware/qtextensions>
+* VTK          - version 6.2
+                 <http://www.vtk.org/>
+
 ### Documentation ###
 
 Documentation generation is another optional component that brings in
-additional dependencies.  To build the documentation you need:
+additional dependencies.  To build the API documentation, you need:
 
-* Doxygen version 1.7 or greater
-  <http://www.stack.nl/~dimitri/doxygen/>
+* Doxygen  - version 1.7 or greater
+             <http://www.stack.nl/~dimitri/doxygen/>
+
+To build the user manual(s), you need:
+
+* Python   - version 2.6 or greater
+             <http://www.python.org/>
+* Docutils - version 0.11 or greater
+             <http://docutils.sourceforge.net/>
+
+(At present, only the GUI has a user manual.  Other manuals may be added in the
+future.
 
 
 Building Doxygen Documentation
@@ -146,6 +177,13 @@ If `MAPTK_ENABLE_DOCS` is enabled, and CMake finds, or is provided with, a path
 to the Doxygen tool, then the HTML documentation is built as part of the normal
 build process under the target "doxygen".  Open
 `${MAPTK_BUILD_DIR}/docs/index.html` in your browser to view the documentation.
+
+If `MAPTK_ENABLE_MANUALS` is enabled, and CMake finds, or is provided with, a
+path to the Python executable which is able to import docutils, then the user
+manuals are built as part of the normal build process under the target
+"manuals".  Open `${MAPTK_BUILD_DIR}/doc/user/gui.html` in your browser to
+view the GUI manual.
+
 
 Testing
 =======
@@ -169,6 +207,7 @@ automated testing of all topic branches and pull requests whenever they are crea
 
 * Travis CI **release** branch: [![Build Status](https://travis-ci.org/Kitware/maptk.svg?branch=release)]
 (https://travis-ci.org/Kitware/maptk)
+
 
 MAP-Tk Tools
 ============
@@ -242,6 +281,7 @@ An easier way to get started is to use the sample configuration files for each
 tool that are provided in the `tools/config` directory.  These examples use
 recommended default settings that are known to produce useful results.
 
+
 Getting Help
 ============
 
@@ -252,6 +292,7 @@ mailing list to discuss MAP-Tk or to ask for help with using MAP-Tk.
 For less frequent announcements about MAP-Tk and other KWIVER components
 please join the [kwiver-announce](http://public.kitware.com/mailman/listinfo/kwiver-announce)
 mailing list.
+
 
 Acknowledgements
 ================

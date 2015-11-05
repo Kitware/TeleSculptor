@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,10 +56,9 @@ int main(int argc, char** argv)
 
 IMPLEMENT_TEST(factory)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   proj::register_algorithms();
-  typedef boost::shared_ptr<kwiver::vital::algo::geo_map> geo_map_sptr;
-  geo_map_sptr gmap = kwiver::vital::algo::geo_map::create("proj");
+  kwiver::vital::algo::geo_map_sptr gmap = kwiver::vital::algo::geo_map::create("proj");
   if (!gmap)
   {
     TEST_ERROR("Unable to create geo_map algorithm of type proj");
@@ -73,7 +72,7 @@ IMPLEMENT_TEST(factory)
 
 IMPLEMENT_TEST(latlon_to_utm)
 {
-  maptk::proj::geo_map gm;
+  kwiver::maptk::proj::geo_map gm;
   double lat = -17.234908,
          lon = 24.000048,
          easting, northing;
@@ -95,7 +94,7 @@ IMPLEMENT_TEST(latlon_to_utm)
 
 IMPLEMENT_TEST(utm_to_latlon)
 {
-  maptk::proj::geo_map gm;
+  kwiver::maptk::proj::geo_map gm;
   double easting = 180954.88,
          northing = -1908018.40,
          lat, lon,
@@ -112,7 +111,7 @@ IMPLEMENT_TEST(utm_to_latlon)
 
 IMPLEMENT_TEST(backprojection)
 {
-  maptk::proj::geo_map gm;
+  kwiver::maptk::proj::geo_map gm;
   double orig_lat = -17.234908,
          orig_lon = 24.000048,
          orig_easting = 180954.88,

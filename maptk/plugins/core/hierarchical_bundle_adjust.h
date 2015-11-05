@@ -41,20 +41,20 @@
 #include <vital/algo/bundle_adjust.h>
 #include <vital/config/config_block.h>
 
-#include <boost/scoped_ptr.hpp>
-
 #include <maptk/plugins/core/plugin_core_config.h>
 
+#include <memory>
 
-namespace maptk
-{
+
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
 
 
 class PLUGIN_CORE_EXPORT hierarchical_bundle_adjust
-  : public kwiver::vital::algorithm_impl<hierarchical_bundle_adjust, kwiver::vital::algo::bundle_adjust>
+  : public vital::algorithm_impl<hierarchical_bundle_adjust, vital::algo::bundle_adjust>
 {
 public:
 
@@ -69,31 +69,32 @@ public:
   virtual std::string impl_name() const { return "hierarchical"; }
 
   /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
-  virtual kwiver::vital::config_block_sptr get_configuration() const;
+  virtual vital::config_block_sptr get_configuration() const;
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(kwiver::vital::config_block_sptr config);
-  /// Check that the algorithm's configuration kwiver::vital::config_block is valid
-  virtual bool check_configuration(kwiver::vital::config_block_sptr config) const;
+  virtual void set_configuration(vital::config_block_sptr config);
+  /// Check that the algorithm's configuration vital::config_block is valid
+  virtual bool check_configuration(vital::config_block_sptr config) const;
 
   /// Optimize the camera and landmark parameters given a set of tracks
-  virtual void optimize(kwiver::vital::camera_map_sptr & cameras,
-                        kwiver::vital::landmark_map_sptr & landmarks,
-                        kwiver::vital::track_set_sptr tracks) const;
+  virtual void optimize(vital::camera_map_sptr & cameras,
+                        vital::landmark_map_sptr & landmarks,
+                        vital::track_set_sptr tracks) const;
 
 private:
   // private implementation class
   class priv;
-  boost::scoped_ptr<priv> d_;
+  std::auto_ptr<priv> d_;
 };
 
 
 /// Type definition for shared pointer for hierarchical_bundle_adjust algorithm
-typedef boost::shared_ptr<hierarchical_bundle_adjust> hierarchical_bundle_adjust_sptr;
+typedef std::shared_ptr<hierarchical_bundle_adjust> hierarchical_bundle_adjust_sptr;
 
 
-} // end core namespace
+} // end namespace core
 
-} // end maptk namespace
+} // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_CORE_HIERARCHICAL_BUNDLE_ADJUST_H_

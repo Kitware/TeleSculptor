@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.0)
 project(MAPTK)
 
 ###
@@ -9,6 +9,7 @@ set(MAPTK_VERSION_MINOR 6)
 set(MAPTK_VERSION_PATCH 1)
 set(MAPTK_VERSION "${MAPTK_VERSION_MAJOR}.${MAPTK_VERSION_MINOR}.${MAPTK_VERSION_PATCH}")
 
+find_package( vital )
 
 ###
 # Add the CMake directory for CMake modules
@@ -16,7 +17,6 @@ set(MAPTK_VERSION "${MAPTK_VERSION_MAJOR}.${MAPTK_VERSION_MINOR}.${MAPTK_VERSION
 list(INSERT CMAKE_MODULE_PATH 0
   "${MAPTK_SOURCE_DIR}/CMake"
   )
-
 
 ###
 # Options and setup
@@ -35,15 +35,16 @@ if(DEFINED MAPTK_LIB_SUFFIX)
   message(WARNING "MAPTK_LIB_SUFFIX is deprecated. Please use LIB_SUFFIX instead.")
 endif()
 set(LIB_SUFFIX "${MAPTK_LIB_SUFFIX}" CACHE STRING "String suffix appended to the library directory we install into")
-
+mark_as_advanced( LIB_SUFFIX )
 
 ###
-# MAPTK CMake config
+# use kwiver util methods
 #
-include(maptk-utils)
-include(maptk-flags)
+include( kwiver-utils )
+include( maptk-utils ) # maptk has a different approach on some of these utils
+include( vital-flags ) # use same compile flags as vital
 
-set(maptk_export_name maptk_exports)
+set(kwiver_export_name     maptk_exports)
 
 
 ###
@@ -56,6 +57,26 @@ add_subdirectory(maptk)
 
 # this is where the executables source code lives
 add_subdirectory(tools)
+
+
+###
+# GUI
+#
+
+option(MAPTK_ENABLE_GUI "Build MAPTK GUI" OFF)
+if(MAPTK_ENABLE_GUI)
+  add_subdirectory(gui)
+endif()
+
+
+###
+# Manuals
+#
+
+option(MAPTK_ENABLE_MANUALS "Build MAPTK user manual(s)" OFF)
+if(MAPTK_ENABLE_MANUALS)
+  add_subdirectory(doc/manuals)
+endif()
 
 
 ###
@@ -76,7 +97,7 @@ endif()
 ###
 # Top level installation
 #
-set(maptk_cmake_install_dir "lib${LIB_SUFFIX}/cmake/maptk")
+set(maptk_cmake_install_dir  "lib${LIB_SUFFIX}/cmake/maptk")
 
 # Install rules for CMake utilities
 include(maptk-install-utils)
@@ -97,7 +118,7 @@ maptk_configure_file(maptk-config
   maptk_libs
   module_path
   )
-maptk_export_targets("${MAPTK_BINARY_DIR}/maptk-config-targets.cmake")
+kwiver_export_targets("${MAPTK_BINARY_DIR}/maptk-config-targets.cmake")
 
 # Configure install-tree CMake config file and export associated targets file
 set(MAPTK_CONFIG_INSTALL_FILE "${MAPTK_BINARY_DIR}/maptk-config-install.cmake")
@@ -109,13 +130,13 @@ maptk_configure_file(maptk-install-config
   maptk_libs
   module_path
   )
-maptk_install(
+kwiver_install(
   FILES       "${MAPTK_CONFIG_INSTALL_FILE}"
   DESTINATION "${maptk_cmake_install_dir}"
   RENAME      maptk-config.cmake
   )
-maptk_install(
-  EXPORT      ${maptk_export_name}
+kwiver_install(
+  EXPORT      ${kwiver_export_name}
   DESTINATION "${maptk_cmake_install_dir}"
   FILE        maptk-config-targets.cmake
   )

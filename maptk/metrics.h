@@ -46,8 +46,8 @@
 #include <map>
 #include <cmath>
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 /// Compute the reprojection error vector of lm projected by cam compared to f
 /**
@@ -57,9 +57,9 @@ namespace maptk
  * \returns the vector between the projected lm and f in image space
  */
 MAPTK_LIB_EXPORT
-kwiver::vital::vector_2d reprojection_error_vec(const kwiver::vital::camera& cam,
-                                 const kwiver::vital::landmark& lm,
-                                 const kwiver::vital::feature& f);
+vital::vector_2d reprojection_error_vec(const vital::camera& cam,
+                                 const vital::landmark& lm,
+                                 const vital::feature& f);
 
 
 /// Compute the square reprojection error of lm projected by cam compared to f
@@ -71,9 +71,9 @@ kwiver::vital::vector_2d reprojection_error_vec(const kwiver::vital::camera& cam
  */
 inline
 double
-reprojection_error_sqr(const kwiver::vital::camera& cam,
-                       const kwiver::vital::landmark& lm,
-                       const kwiver::vital::feature& f)
+reprojection_error_sqr(const vital::camera& cam,
+                       const vital::landmark& lm,
+                       const vital::feature& f)
 {
   return reprojection_error_vec(cam, lm, f).squaredNorm();
 }
@@ -88,9 +88,9 @@ reprojection_error_sqr(const kwiver::vital::camera& cam,
  */
 inline
 double
-reprojection_error(const kwiver::vital::camera& cam,
-                   const kwiver::vital::landmark& lm,
-                   const kwiver::vital::feature& f)
+reprojection_error(const vital::camera& cam,
+                   const vital::landmark& lm,
+                   const vital::feature& f)
 {
   return std::sqrt(reprojection_error_sqr(cam, lm, f));
 }
@@ -106,9 +106,9 @@ reprojection_error(const kwiver::vital::camera& cam,
  */
 MAPTK_LIB_EXPORT
 std::vector<double>
-reprojection_errors(const std::map<kwiver::vital::frame_id_t, kwiver::vital::camera_sptr>& cameras,
-                    const std::map<kwiver::vital::landmark_id_t, kwiver::vital::landmark_sptr>& landmarks,
-                    const std::vector< kwiver::vital::track_sptr>& tracks);
+reprojection_errors(const std::map<vital::frame_id_t, vital::camera_sptr>& cameras,
+                    const std::map<vital::landmark_id_t, vital::landmark_sptr>& landmarks,
+                    const std::vector< vital::track_sptr>& tracks);
 
 
 /// Compute the Root-Mean-Square-Error (RMSE) of the reprojections
@@ -121,9 +121,9 @@ reprojection_errors(const std::map<kwiver::vital::frame_id_t, kwiver::vital::cam
  */
 MAPTK_LIB_EXPORT
 double
-reprojection_rmse(const std::map<kwiver::vital::frame_id_t, kwiver::vital::camera_sptr>& cameras,
-                  const std::map<kwiver::vital::landmark_id_t, kwiver::vital::landmark_sptr>& landmarks,
-                  const std::vector<kwiver::vital::track_sptr>& tracks);
+reprojection_rmse(const std::map<vital::frame_id_t, vital::camera_sptr>& cameras,
+                  const std::map<vital::landmark_id_t, vital::landmark_sptr>& landmarks,
+                  const std::vector<vital::track_sptr>& tracks);
 
 
 /// Compute the median of the reprojection errors
@@ -137,9 +137,9 @@ reprojection_rmse(const std::map<kwiver::vital::frame_id_t, kwiver::vital::camer
  */
 MAPTK_LIB_EXPORT
 double
-reprojection_median_error(const std::map<kwiver::vital::frame_id_t, kwiver::vital::camera_sptr>& cameras,
-                          const std::map<kwiver::vital::landmark_id_t, kwiver::vital::landmark_sptr>& landmarks,
-                          const std::vector<kwiver::vital::track_sptr>& tracks);
+reprojection_median_error(const std::map<vital::frame_id_t, vital::camera_sptr>& cameras,
+                          const std::map<vital::landmark_id_t, vital::landmark_sptr>& landmarks,
+                          const std::vector<vital::track_sptr>& tracks);
 
 
 /// Compute the median of the reprojection errors
@@ -153,12 +153,13 @@ reprojection_median_error(const std::map<kwiver::vital::frame_id_t, kwiver::vita
  */
 MAPTK_LIB_EXPORT
 double
-reprojection_median_error(const std::map<kwiver::vital::frame_id_t, kwiver::vital::camera_sptr>& cameras,
-                          const std::map<kwiver::vital::landmark_id_t, kwiver::vital::landmark_sptr>& landmarks,
-                          const std::vector<kwiver::vital::track_sptr>& tracks);
+reprojection_median_error(const std::map<vital::frame_id_t, vital::camera_sptr>& cameras,
+                          const std::map<vital::landmark_id_t, vital::landmark_sptr>& landmarks,
+                          const std::vector<vital::track_sptr>& tracks);
 
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_METRICS_H_

@@ -31,11 +31,10 @@
 #ifndef MAPTK_PLUGINS_CORE_FILTER_FEATURES_MAGNITUDE_H_
 #define MAPTK_PLUGINS_CORE_FILTER_FEATURES_MAGNITUDE_H_
 
-
-#include <boost/scoped_ptr.hpp>
-
 #include <vital/algo/filter_features.h>
 #include <maptk/plugins/core/plugin_core_config.h>
+
+#include <memory>
 
 /**
  * \file
@@ -43,15 +42,15 @@
  *        \endlink algorithm
  */
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
 
 /// \brief Algorithm that filters features based on feature magnitude
 class PLUGIN_CORE_EXPORT filter_features_magnitude
-  : public kwiver::vital::algorithm_impl<filter_features_magnitude, kwiver::vital::algo::filter_features>
+  : public vital::algorithm_impl<filter_features_magnitude, vital::algo::filter_features>
 {
 public:
   /// Constructor
@@ -66,12 +65,12 @@ public:
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "magnitude"; }
 
-  /// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
-  virtual kwiver::vital::config_block_sptr get_configuration() const;
+  /// Get this algorithm's \link vital::config_block configuration block \endlink
+  virtual vital::config_block_sptr get_configuration() const;
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(kwiver::vital::config_block_sptr config);
+  virtual void set_configuration(vital::config_block_sptr config);
   /// Check that the algorithm's configuration config_block is valid
-  virtual bool check_configuration(kwiver::vital::config_block_sptr config) const;
+  virtual bool check_configuration(vital::config_block_sptr config) const;
 
 protected:
 
@@ -81,18 +80,20 @@ protected:
    * \param [out] indices of the kept features to the original feature set
    * \returns a filtered version of the feature set
    */
-  virtual kwiver::vital::feature_set_sptr
-  filter(kwiver::vital::feature_set_sptr input, std::vector<unsigned int> &indices) const;
+  virtual vital::feature_set_sptr
+  filter(vital::feature_set_sptr input, std::vector<unsigned int> &indices) const;
+  using filter_features::filter;
 
 private:
   /// private implementation class
   class priv;
-  boost::scoped_ptr<priv> d_;
+  const std::unique_ptr<priv> d_;
 };
 
 } // end namespace core
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_CORE_FILTER_FEATURES_MAGNITUDE_H_

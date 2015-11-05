@@ -34,11 +34,11 @@
  */
 
 #include "metrics.h"
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 using namespace kwiver::vital;
 
@@ -49,14 +49,7 @@ reprojection_error_vec(const camera& cam,
                        const feature& f)
 {
   vector_2d pt;
-  if (const camera_d* camd = dynamic_cast<const camera_d*>(&cam))
-  {
-    pt = camd->project(lm.loc());
-  }
-  else if (const camera_f* camf = dynamic_cast<const camera_f*>(&cam))
-  {
-    pt = camf->project(lm.loc().cast<float>()).cast<double>();
-  }
+  pt = cam.project(lm.loc());
   return pt - f.loc();
 }
 
@@ -70,7 +63,7 @@ reprojection_errors(const std::map<frame_id_t, camera_sptr>& cameras,
   typedef std::map<landmark_id_t, landmark_sptr>::const_iterator lm_map_itr_t;
   typedef std::map<frame_id_t, camera_sptr>::const_iterator cam_map_itr_t;
   std::vector<double> errors;
-  BOOST_FOREACH(const track_sptr& t, tracks)
+  VITAL_FOREACH(const track_sptr& t, tracks)
   {
     lm_map_itr_t lmi = landmarks.find(t->id());
     if (lmi == landmarks.end() || !lmi->second)
@@ -111,7 +104,7 @@ reprojection_rmse(const std::map<frame_id_t, camera_sptr>& cameras,
   typedef std::map<frame_id_t, camera_sptr>::const_iterator cam_map_itr_t;
   double error_sum = 0.0;
   unsigned num_obs = 0;
-  BOOST_FOREACH(const track_sptr& t, tracks)
+  VITAL_FOREACH(const track_sptr& t, tracks)
   {
     lm_map_itr_t lmi = landmarks.find(t->id());
     if (lmi == landmarks.end() || !lmi->second)
@@ -158,3 +151,4 @@ reprojection_median_error(const std::map<frame_id_t, camera_sptr>& cameras,
 
 
 } // end namespace maptk
+} // end namespace kwiver

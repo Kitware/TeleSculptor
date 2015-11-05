@@ -38,7 +38,7 @@
 #include <iostream>
 #include <set>
 
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
 #include <boost/timer/timer.hpp>
 
 #include <vital/logger/logger.h>
@@ -54,6 +54,7 @@ using boost::timer::cpu_times;
 using boost::timer::nanosecond_type;
 using namespace kwiver::vital;
 
+
 #define MAPTK_CERES_ENUM_HELPERS(NS, ceres_type)                        \
 namespace kwiver {                                                      \
 namespace vital {                                                       \
@@ -61,7 +62,7 @@ namespace vital {                                                       \
 template<>                                                              \
 inline                                                                  \
 config_block_value_t                                                    \
-config_block_cast(NS::ceres_type const& value)                          \
+config_block_set_value_cast(NS::ceres_type const& value)                \
 {                                                                       \
   return NS::ceres_type##ToString(value);                               \
 }                                                                       \
@@ -69,17 +70,16 @@ config_block_cast(NS::ceres_type const& value)                          \
 template<>                                                              \
 inline                                                                  \
 NS::ceres_type                                                          \
-config_block_cast(config_block_value_t const& value)                    \
+config_block_get_value_cast(config_block_value_t const& value)          \
 {                                                                       \
   NS::ceres_type cet;                                                   \
   if(!NS::StringTo##ceres_type(value, &cet))                            \
   {                                                                     \
-    throw bad_config_block_cast(value.c_str());                         \
+    throw bad_config_block_cast(value);                                 \
   }                                                                     \
   return cet;                                                           \
 }                                                                       \
                                                                         \
-}                                                                       \
 }                                                                       \
                                                                         \
 namespace maptk {                                                       \
@@ -105,12 +105,12 @@ ceres_options< NS::ceres_type >()                                       \
 }                                                                       \
                                                                         \
 }                                                                       \
+}                                                                       \
 }
 
-namespace maptk
-{
-namespace ceres
-{
+namespace kwiver {
+namespace maptk {
+namespace ceres {
 
 /// Defult implementation of string options for Ceres enums
 template <typename T>
@@ -120,24 +120,26 @@ ceres_options()
   return std::string();
 }
 
-}
-}
+} // end namespace ceres
+} // end namespace maptk
+} // end namespace kwiver
 
 MAPTK_CERES_ENUM_HELPERS(::ceres, LinearSolverType)
 MAPTK_CERES_ENUM_HELPERS(::ceres, PreconditionerType)
 MAPTK_CERES_ENUM_HELPERS(::ceres, TrustRegionStrategyType)
 MAPTK_CERES_ENUM_HELPERS(::ceres, DoglegType)
 
-MAPTK_CERES_ENUM_HELPERS(maptk::ceres, LossFunctionType)
-MAPTK_CERES_ENUM_HELPERS(maptk::ceres, LensDistortionType)
+MAPTK_CERES_ENUM_HELPERS(kwiver::maptk::ceres, LossFunctionType)
+MAPTK_CERES_ENUM_HELPERS(kwiver::maptk::ceres, LensDistortionType)
+MAPTK_CERES_ENUM_HELPERS(kwiver::maptk::ceres, CameraIntrinsicShareType)
 
 #undef MAPTK_CERES_ENUM_HELPERS
 
 
-namespace maptk
-{
-namespace ceres
-{
+namespace kwiver {
+namespace maptk {
+namespace ceres {
+
 /// Private implementation class
 class bundle_adjust::priv
 {
@@ -157,7 +159,8 @@ public:
     optimize_dist_k3(false),
     optimize_dist_p1_p2(false),
     optimize_dist_k4_k5_k6(false),
-    m_logger( kwiver::vital::get_logger( "maptk::ceres::bundle_adjust" ))
+    camera_intrinsic_share_type(AUTO_SHARE_INTRINSICS),
+    m_logger( vital::get_logger( "maptk::ceres::bundle_adjust" ))
   {
   }
 
@@ -175,7 +178,8 @@ public:
     optimize_dist_k3(other.optimize_dist_k3),
     optimize_dist_p1_p2(other.optimize_dist_p1_p2),
     optimize_dist_k4_k5_k6(other.optimize_dist_k4_k5_k6),
-    m_logger( kwiver::vital::get_logger( "maptk::ceres::bundle_adjust" ))
+    camera_intrinsic_share_type(other.camera_intrinsic_share_type),
+    m_logger( vital::get_logger( "maptk::ceres::bundle_adjust" ))
   {
   }
 
@@ -207,9 +211,11 @@ public:
   bool optimize_dist_p1_p2;
   /// option to optimize radial distortion parameters k4, k5, k6
   bool optimize_dist_k4_k5_k6;
+  /// the type of sharing of intrinsics between cameras to use
+  CameraIntrinsicShareType camera_intrinsic_share_type;
 
   /// Logger handle
-  kwiver::vital::logger_handle_t m_logger;
+  vital::logger_handle_t m_logger;
 };
 
 
@@ -243,7 +249,7 @@ bundle_adjust
 {
   ::ceres::Solver::Options& o = d_->options;
   // get base config from base class
-  config_block_sptr config = kwiver::vital::algo::bundle_adjust::get_configuration();
+  config_block_sptr config = vital::algo::bundle_adjust::get_configuration();
   config->set_value("verbose", d_->verbose,
                     "If true, write status messages to the terminal showing "
                     "optimization progress at each iteration");
@@ -305,6 +311,12 @@ bundle_adjust
   config->set_value("optimize_dist_k4_k5_k6", d_->optimize_dist_k4_k5_k6,
                     "Include radial lens distortion parameters "
                     "k4, k5, and k6 in bundle adjustment.");
+  config->set_value("camera_intrinsic_share_type", d_->camera_intrinsic_share_type,
+                    "Determines how to share intrinsics across cameras.\n"
+                    "AUTO shares intrinsics between cameras with a common camera_intrinsic_sptr\n"
+                    "COMMON enforces that all cameras share common intrinsics\n"
+                    "UNIQUE enforces that each camera has its own intrinsics parameters."
+                    + ceres_options< ceres::CameraIntrinsicShareType >());
   return config;
 }
 
@@ -376,6 +388,10 @@ bundle_adjust
                                                     d_->optimize_dist_p1_p2);
   d_->optimize_dist_k4_k5_k6 = config->get_value<bool>("optimize_dist_k4_k5_k6",
                                                        d_->optimize_dist_k4_k5_k6);
+  typedef ceres::CameraIntrinsicShareType ccis_t;
+  d_->camera_intrinsic_share_type =
+      config->get_value<ccis_t>("camera_intrinsic_share_type",
+                                d_->camera_intrinsic_share_type);
 }
 
 
@@ -435,38 +451,73 @@ bundle_adjust
   // Extract the landmark locations into a mutable map
   typedef std::map<track_id_t, std::vector<double> > lm_param_map_t;
   lm_param_map_t landmark_params;
-  BOOST_FOREACH(const map_landmark_t::value_type& lm, lms)
+  VITAL_FOREACH(const map_landmark_t::value_type& lm, lms)
   {
     vector_3d loc = lm.second->loc();
     landmark_params[lm.first] = std::vector<double>(loc.data(), loc.data()+3);
   }
 
   // Extract the camera parameters into a mutable map
+  //
   typedef std::map<frame_id_t, std::vector<double> > cam_param_map_t;
   cam_param_map_t camera_params;
+  // We need maps from both frame number and intrinsics_sptr to the
+  // index of the camera parameters.  This way we can vary how each
+  // frame maps to a set of intrinsic parameters based on config params.
+  typedef std::map<camera_intrinsics_sptr, unsigned int> cam_intrin_map_t;
+  cam_intrin_map_t camera_intr_map;
+  typedef std::map<frame_id_t, unsigned int> frame_to_intrin_map_t;
+  frame_to_intrin_map_t frame_to_intr_map;
+  // vector of unique camera intrinsic parameters
+  std::vector<std::vector<double> > camera_intr_params;
   // number of lens distortion parameters in the selected model
   const unsigned int ndp = num_distortion_params(d_->lens_distortion_type);
   std::vector<double> intrinsic_params(5 + ndp, 0.0);
-  BOOST_FOREACH(const map_camera_t::value_type& c, cams)
+  VITAL_FOREACH(const map_camera_t::value_type& c, cams)
   {
     vector_3d rot = c.second->rotation().rodrigues();
     vector_3d center = c.second->center();
     std::vector<double> params(6);
     std::copy(rot.data(), rot.data()+3, params.begin());
     std::copy(center.data(), center.data()+3, params.begin()+3);
-    camera_intrinsics_d K = c.second->intrinsics();
+    camera_intrinsics_sptr K = c.second->intrinsics();
     camera_params[c.first] = params;
 
-    intrinsic_params[0] = K.focal_length();
-    intrinsic_params[1] = K.principal_point().x();
-    intrinsic_params[2] = K.principal_point().y();
-    intrinsic_params[3] = K.aspect_ratio();
-    intrinsic_params[4] = K.skew();
-    const Eigen::VectorXd& d = K.dist_coeffs();
-    // copy the intersection of parameters provided in K
-    // and those that are supported by the requested model type
-    unsigned int num_dp = std::min(ndp, static_cast<unsigned int>(d.size()));
-    std::copy(d.data(), d.data()+num_dp, &intrinsic_params[5]);
+    // add a new set of intrisic parameter if one of the following:
+    // - we are forcing unique intrinsics for each camera
+    // - we are forcing common intrinsics and this is the first frame
+    // - we are auto detecting shared intrinisics and this is a new sptr
+    if( d_->camera_intrinsic_share_type == FORCE_UNIQUE_INTRINSICS
+        || ( d_->camera_intrinsic_share_type == FORCE_COMMON_INTRINSICS
+             && camera_intr_params.empty() )
+        || camera_intr_map.count(K) == 0 )
+    {
+      intrinsic_params[0] = K->focal_length();
+      intrinsic_params[1] = K->principal_point().x();
+      intrinsic_params[2] = K->principal_point().y();
+      intrinsic_params[3] = K->aspect_ratio();
+      intrinsic_params[4] = K->skew();
+      const std::vector<double> d = K->dist_coeffs();
+      // copy the intersection of parameters provided in K
+      // and those that are supported by the requested model type
+      unsigned int num_dp = std::min(ndp, static_cast<unsigned int>(d.size()));
+      std::copy(d.begin(), d.begin()+num_dp, &intrinsic_params[5]);
+      // update the maps with the index of this new parameter vector
+      camera_intr_map[K] = camera_intr_params.size();
+      frame_to_intr_map[c.first] = camera_intr_params.size();
+      // add the parameter vector
+      camera_intr_params.push_back(intrinsic_params);
+    }
+    else if( d_->camera_intrinsic_share_type == FORCE_COMMON_INTRINSICS )
+    {
+      // map to the first parameter vector
+      frame_to_intr_map[c.first] = 0;
+    }
+    else
+    {
+      // map to a previously seen parameter vector
+      frame_to_intr_map[c.first] = camera_intr_map[K];
+    }
   }
 
   // the Ceres solver problem
@@ -522,7 +573,7 @@ bundle_adjust
   bool loss_func_used = false;
 
   // Add the residuals for each relevant observation
-  BOOST_FOREACH(const track_sptr& t, trks)
+  VITAL_FOREACH(const track_sptr& t, trks)
   {
     const track_id_t id = t->id();
     lm_param_map_t::iterator lm_itr = landmark_params.find(id);
@@ -539,27 +590,32 @@ bundle_adjust
       {
         continue;
       }
+      unsigned intr_idx = frame_to_intr_map[ts->frame_id];
+      double * intr_params_ptr = &camera_intr_params[intr_idx][0];
       vector_2d pt = ts->feat->loc();
       problem.AddResidualBlock(create_cost_func(d_->lens_distortion_type,
                                                 pt.x(), pt.y()),
                                loss_func,
-                               &intrinsic_params[0],
+                               intr_params_ptr,
                                &cam_itr->second[0],
                                &lm_itr->second[0]);
       loss_func_used = true;
     }
   }
-  // apply the constraints
-  if (constant_intrinsics.size() > 4 + ndp)
+  VITAL_FOREACH(std::vector<double>& cip, camera_intr_params)
   {
-    // set all parameters in the block constant
-    problem.SetParameterBlockConstant(&intrinsic_params[0]);
-  }
-  else if (!constant_intrinsics.empty())
-  {
-    // set a subset of parameters in the block constant
-    problem.SetParameterization(&intrinsic_params[0],
-        new ::ceres::SubsetParameterization(5 + ndp, constant_intrinsics));
+    // apply the constraints
+    if (constant_intrinsics.size() > 4 + ndp)
+    {
+      // set all parameters in the block constant
+      problem.SetParameterBlockConstant(&cip[0]);
+    }
+    else if (!constant_intrinsics.empty())
+    {
+      // set a subset of parameters in the block constant
+      problem.SetParameterization(&cip[0],
+          new ::ceres::SubsetParameterization(5 + ndp, constant_intrinsics));
+    }
   }
 
   // If the loss function was added to a residual block, ownership was
@@ -574,28 +630,38 @@ bundle_adjust
   std::cout << summary.FullReport() << "\n";
 
   // Update the landmarks with the optimized values
-  BOOST_FOREACH(const lm_param_map_t::value_type& lmp, landmark_params)
+  VITAL_FOREACH(const lm_param_map_t::value_type& lmp, landmark_params)
   {
     vector_3d pos = Eigen::Map<const vector_3d>(&lmp.second[0]);
     lms[lmp.first] = landmark_sptr(new landmark_d(pos));
   }
 
+  // Update the camera intrinics with optimized values
+  std::vector<camera_intrinsics_sptr> updated_intr;
+  VITAL_FOREACH(const std::vector<double>& cip, camera_intr_params)
+  {
+    simple_camera_intrinsics* K = new simple_camera_intrinsics();
+    K->set_focal_length(cip[0]);
+    vector_2d pp((Eigen::Map<const vector_2d>(&cip[1])));
+    K->set_principal_point(pp);
+    K->set_aspect_ratio(cip[3]);
+    K->set_skew(cip[4]);
+    Eigen::VectorXd dc(ndp);
+    std::copy(&cip[5], &cip[5]+ndp, dc.data());
+    K->set_dist_coeffs(dc);
+    updated_intr.push_back(camera_intrinsics_sptr(K));
+  }
+
   // Update the cameras with the optimized values
-  BOOST_FOREACH(const cam_param_map_t::value_type& cp, camera_params)
+  VITAL_FOREACH(const cam_param_map_t::value_type& cp, camera_params)
   {
     vector_3d center = Eigen::Map<const vector_3d>(&cp.second[3]);
     rotation_d rot(vector_3d(Eigen::Map<const vector_3d>(&cp.second[0])));
 
-    camera_intrinsics_d K = cams[cp.first]->intrinsics();
-    K.set_focal_length(intrinsic_params[0]);
-    vector_2d pp((Eigen::Map<const vector_2d>(&intrinsic_params[1])));
-    K.set_principal_point(pp);
-    K.set_aspect_ratio(intrinsic_params[3]);
-    K.set_skew(intrinsic_params[4]);
-    Eigen::VectorXd dc(ndp);
-    std::copy(&intrinsic_params[5], &intrinsic_params[5]+ndp, dc.data());
-    K.set_dist_coeffs(dc);
-    cams[cp.first] = camera_sptr(new camera_d(center, rot, K));
+    // look-up updated intrinsics
+    unsigned int intr_idx = frame_to_intr_map[cp.first];
+    camera_intrinsics_sptr K = updated_intr[intr_idx];
+    cams[cp.first] = camera_sptr(new simple_camera(center, rot, K));
   }
 
 
@@ -609,3 +675,4 @@ bundle_adjust
 } // end namespace ceres
 
 } // end namespace maptk
+} // end namespace kwiver

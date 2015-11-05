@@ -38,7 +38,7 @@
 #include <iostream>
 #include <set>
 
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
 #include <boost/timer/timer.hpp>
 
 #include <maptk/plugins/vxl/camera_map.h>
@@ -51,8 +51,8 @@ using boost::timer::nanosecond_type;
 
 using namespace kwiver::vital;
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vxl
 {
@@ -125,13 +125,13 @@ bundle_adjust
 }
 
 
-/// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
-kwiver::vital::config_block_sptr
+/// Get this algorithm's \link vital::config_block configuration block \endlink
+vital::config_block_sptr
 bundle_adjust
 ::get_configuration() const
 {
   // get base config from base class
-  kwiver::vital::config_block_sptr config = kwiver::vital::algo::bundle_adjust::get_configuration();
+  vital::config_block_sptr config = vital::algo::bundle_adjust::get_configuration();
   config->set_value("verbose", d_->verbose,
                     "If true, write status messages to the terminal showing "
                     "optimization progress at each iteration");
@@ -165,11 +165,11 @@ bundle_adjust
 /// Set this algorithm's properties via a config block
 void
 bundle_adjust
-::set_configuration(kwiver::vital::config_block_sptr in_config)
+::set_configuration(vital::config_block_sptr in_config)
 {
-  // Starting with our generated kwiver::vital::config_block to ensure that assumed values are present
+  // Starting with our generated vital::config_block to ensure that assumed values are present
   // An alternative is to check for key presence before performing a get_value() call.
-  kwiver::vital::config_block_sptr config = this->get_configuration();
+  vital::config_block_sptr config = this->get_configuration();
   config->merge_config(in_config);
 
   d_->verbose = config->get_value<bool>("verbose",
@@ -209,7 +209,7 @@ bundle_adjust
 /// Check that the algorithm's currently configuration is valid
 bool
 bundle_adjust
-::check_configuration(kwiver::vital::config_block_sptr config) const
+::check_configuration(vital::config_block_sptr config) const
 {
   return true;
 }
@@ -228,7 +228,7 @@ bundle_adjust
     return;
   }
   typedef vxl::camera_map::map_vcam_t map_vcam_t;
-  typedef kwiver::vital::landmark_map::map_landmark_t map_landmark_t;
+  typedef vital::landmark_map::map_landmark_t map_landmark_t;
 
 #define MAPTK_SBA_TIMED(msg, code) \
   do \
@@ -267,7 +267,7 @@ bundle_adjust
   super_map_t frame2track2feature_map;
 
   MAPTK_SBA_TIMED("Constructing id-map and super-map",
-    BOOST_FOREACH(const map_vcam_t::value_type& p, vcams)
+    VITAL_FOREACH(const map_vcam_t::value_type& p, vcams)
     {
       const frame_id_t& frame = p.first;
       track_set_sptr ftracks = tracks->active_tracks(static_cast<int>(frame));
@@ -277,7 +277,7 @@ bundle_adjust
       }
       super_map_inner_t frame_lm2feature_map;
 
-      BOOST_FOREACH(const track_sptr& t, ftracks->tracks())
+      VITAL_FOREACH(const track_sptr& t, ftracks->tracks())
       {
         const track_id_t id = t->id();
         // make sure the track id has an associated landmark
@@ -311,14 +311,14 @@ bundle_adjust
   std::vector<vpgl_perspective_camera<double> > active_vcams;
 
   MAPTK_SBA_TIMED("Creating index mappings",
-    BOOST_FOREACH(const track_id_t& id, lm_ids)
+    VITAL_FOREACH(const track_id_t& id, lm_ids)
     {
       lm_id_reverse_map[id] = static_cast<track_id_t>(lm_id_index.size());
       lm_id_index.push_back(id);
       vector_3d pt = lms[id]->loc();
       active_world_pts.push_back(vgl_point_3d<double>(pt.x(), pt.y(), pt.z()));
     }
-    BOOST_FOREACH(const super_map_t::value_type& p, frame2track2feature_map)
+    VITAL_FOREACH(const super_map_t::value_type& p, frame2track2feature_map)
     {
       cam_id_reverse_map[p.first] = static_cast<frame_id_t>(cam_id_index.size());
       cam_id_index.push_back(p.first);
@@ -339,14 +339,14 @@ bundle_adjust
   std::vector<vgl_point_2d<double> > image_pts;
 
   MAPTK_SBA_TIMED("Creating masks and point vector",
-    BOOST_FOREACH(const super_map_t::value_type& p, frame2track2feature_map)
+    VITAL_FOREACH(const super_map_t::value_type& p, frame2track2feature_map)
     {
       // p.first  -> frame ID
       // p.second -> super_map_inner_t
       const frame_id_t c_idx = cam_id_reverse_map[p.first];
       std::vector<bool>& mask_row = mask[c_idx];
       std::vector<feature_sptr>& fmask_row = feature_mask[c_idx];
-      BOOST_FOREACH(const super_map_inner_t::value_type& q, p.second)
+      VITAL_FOREACH(const super_map_inner_t::value_type& q, p.second)
       {
         // q.first  -> lm ID
         // q.second -> feature_sptr
@@ -406,3 +406,4 @@ bundle_adjust
 } // end namespace vxl
 
 } // end namespace maptk
+} // end namespace kwiver

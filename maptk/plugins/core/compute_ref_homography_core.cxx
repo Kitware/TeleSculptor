@@ -42,8 +42,8 @@
 #include <limits>
 #include <set>
 #include <vector>
+#include <memory>
 
-#include <boost/foreach.hpp>
 #include <boost/math/special_functions/fpclassify.hpp>
 
 #include <vital/algo/estimate_homography.h>
@@ -54,8 +54,8 @@
 
 using namespace kwiver::vital;
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
@@ -106,7 +106,7 @@ struct track_info_t
 typedef std::vector< track_info_t > track_info_buffer_t;
 
 // Pointer to a track info buffer
-typedef boost::shared_ptr< track_info_buffer_t > track_info_buffer_sptr;
+typedef std::shared_ptr< track_info_buffer_t > track_info_buffer_sptr;
 
 
 // Helper function for sorting tis
@@ -119,7 +119,7 @@ compare_ti( const track_info_t& c1, const track_info_t& c2 )
 
 // Find a track in a given buffer
 track_info_buffer_t::iterator
-find_track( const track_sptr& trk, track_info_buffer_sptr& buffer )
+find_track( const track_sptr& trk, track_info_buffer_sptr buffer )
 {
   track_info_t ti;
   ti.tid = trk->id();
@@ -131,7 +131,7 @@ find_track( const track_sptr& trk, track_info_buffer_sptr& buffer )
 void
 reset_active_flags( track_info_buffer_sptr buffer )
 {
-  BOOST_FOREACH( track_info_t& ti, *buffer )
+  for ( track_info_t& ti : *buffer )
   {
     ti.active = false;
   }
@@ -156,7 +156,7 @@ public:
     frames_since_reset( 0 ),
     allow_ref_frame_regression( true ),
     min_ref_frame( 0 ),
-    m_logger( kwiver::vital::get_logger( "compute_ref_homography_core" ))
+    m_logger( vital::get_logger( "compute_ref_homography_core" ))
   {
   }
 
@@ -167,10 +167,12 @@ public:
     min_track_length( other.min_track_length ),
     inlier_scale( other.inlier_scale ),
     minimum_inliers( other.minimum_inliers ),
+    h_estimator( !other.h_estimator ? algo::estimate_homography_sptr()
+                                    : other.h_estimator->clone() ),
     frames_since_reset( other.frames_since_reset ),
     allow_ref_frame_regression( other.allow_ref_frame_regression ),
     min_ref_frame( other.min_ref_frame ),
-    m_logger( kwiver::vital::get_logger( "compute_ref_homography_core" ))
+    m_logger( vital::get_logger( "compute_ref_homography_core" ))
   {
   }
 
@@ -214,7 +216,7 @@ public:
   /// estimation fails.
   frame_id_t min_ref_frame;
 
-  kwiver::vital::logger_handle_t m_logger;
+  vital::logger_handle_t m_logger;
 
   /// Estimate the homography between two corresponding points sets
   /**
@@ -250,7 +252,7 @@ public:
 
       // Check for positive inlier count
       unsigned inlier_count = 0;
-      BOOST_FOREACH(bool b, inliers)
+      for (bool b : inliers)
       {
         if ( b )
         {
@@ -330,12 +332,12 @@ compute_ref_homography_core
 }
 
 
-  kwiver::vital::config_block_sptr
+  vital::config_block_sptr
 compute_ref_homography_core
 ::get_configuration() const
 {
   // get base config from base class
-  kwiver::vital::config_block_sptr config = algorithm::get_configuration();
+  vital::config_block_sptr config = algorithm::get_configuration();
 
   // Sub-algorithm implementation name + sub_config block
   // - Homography estimator algorithm
@@ -370,11 +372,11 @@ compute_ref_homography_core
 
 void
 compute_ref_homography_core
-::set_configuration( kwiver::vital::config_block_sptr in_config )
+::set_configuration( vital::config_block_sptr in_config )
 {
   // Starting with our generated config_block to ensure that assumed values are present
   // An alternative is to check for key presence before performing a get_value() call.
-  kwiver::vital::config_block_sptr config = this->get_configuration();
+  vital::config_block_sptr config = this->get_configuration();
   config->merge_config( in_config );
 
   // Setting nested algorithm instances via setter methods instead of directly
@@ -398,7 +400,7 @@ compute_ref_homography_core
 
 bool
 compute_ref_homography_core
-::check_configuration(kwiver::vital::config_block_sptr config) const
+::check_configuration(vital::config_block_sptr config) const
 {
   return
   (
@@ -432,7 +434,7 @@ compute_ref_homography_core
 
   // Flag tracks on this frame as new tracks, or "active" tracks, or tracks
   // that are not new.
-  BOOST_FOREACH( track_sptr trk, active_tracks )
+  for ( track_sptr trk : active_tracks )
   {
     track_info_buffer_t::iterator p = find_track( trk, d_->buffer );
 
@@ -457,7 +459,7 @@ compute_ref_homography_core
   // a while.
   frame_id_t earliest_ref = std::numeric_limits<frame_id_t>::max();
 
-  BOOST_FOREACH( track_info_t& ti, *(d_->buffer) )
+  for ( track_info_t& ti : *(d_->buffer) )
   {
     if( ti.active || ++ti.missed_count < d_->forget_track_threshold )
     {
@@ -476,7 +478,7 @@ compute_ref_homography_core
              "Earliest Ref: " << earliest_ref );
 
   // Add new tracks to buffer.
-  BOOST_FOREACH( track_sptr trk, new_tracks )
+  for ( track_sptr trk : new_tracks )
   {
     track::history_const_itr itr = trk->find( frame_number );
 
@@ -508,7 +510,7 @@ compute_ref_homography_core
   size_t track_size_thresh = std::min( d_->min_track_length, d_->frames_since_reset + 1 );
 
   // Collect cur/ref points from track infos that have earliest-frame references
-  BOOST_FOREACH( track_info_t& ti, *new_buffer )
+  for ( track_info_t& ti : *new_buffer )
   {
     // If the track is active and have a state on the earliest ref frame,
     // also include those points for homography estimation.
@@ -555,7 +557,7 @@ compute_ref_homography_core
   //  - With a valid homography, transform the reference location of active
   //    tracks with a different reference frame than the current earliest_ref
   unsigned int ti_reset_count = 0;
-  BOOST_FOREACH( track_info_t& ti, *new_buffer )
+  for ( track_info_t& ti : *new_buffer )
   {
     track::history_const_itr itr = ti.trk->find( frame_number );
 
@@ -616,3 +618,4 @@ compute_ref_homography_core
 } // end namespace core
 
 } // end namespace maptk
+} // end namespace kwiver

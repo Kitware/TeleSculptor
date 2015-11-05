@@ -41,7 +41,7 @@
 #include <iomanip>
 #include <algorithm>
 
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/format.hpp>
 #include <boost/circular_buffer.hpp>
@@ -56,8 +56,8 @@
 
 using namespace kwiver::vital;
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
@@ -141,12 +141,12 @@ draw_tracks
 }
 
 
-/// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
-kwiver::vital::config_block_sptr
+/// Get this algorithm's \link vital::config_block configuration block \endlink
+vital::config_block_sptr
 draw_tracks
 ::get_configuration() const
 {
-  kwiver::vital::config_block_sptr config = kwiver::vital::algo::draw_tracks::get_configuration();
+  vital::config_block_sptr config = vital::algo::draw_tracks::get_configuration();
 
   config->set_value( "draw_track_ids", d_->draw_track_ids,
                      "Draw track ids next to each feature point." );
@@ -185,9 +185,9 @@ draw_tracks
 /// Set this algorithm's properties via a config block
 void
 draw_tracks
-::set_configuration( kwiver::vital::config_block_sptr in_config )
+::set_configuration( vital::config_block_sptr in_config )
 {
-  kwiver::vital::config_block_sptr config = this->get_configuration();
+  vital::config_block_sptr config = this->get_configuration();
   config->merge_config( in_config );
 
   std::string past_frames_str = config->get_value<std::string>( "past_frames_to_show" );
@@ -226,7 +226,7 @@ draw_tracks
 /// Check that the algorithm's currently configuration is valid
 bool
 draw_tracks
-::check_configuration(kwiver::vital::config_block_sptr config) const
+::check_configuration(vital::config_block_sptr config) const
 {
   return true;
 }
@@ -353,7 +353,7 @@ draw_tracks
   const cv::Scalar uncompared_color( 240, 32, 160 );
 
   // Iterate over all images
-  BOOST_FOREACH( image_container_sptr ctr_sptr, image_data )
+  VITAL_FOREACH( image_container_sptr ctr_sptr, image_data )
   {
     // Should the current frame be written to disk?
     bool write_image_to_disk = d_->write_images_to_disk;
@@ -377,7 +377,7 @@ draw_tracks
     bool comparison_track_found = false;
 
     // Draw points on input image
-    BOOST_FOREACH( track_sptr trk, display_set->active_tracks( fid )->tracks() )
+    VITAL_FOREACH( track_sptr trk, display_set->active_tracks( fid )->tracks() )
     {
       track::track_state ts = *( trk->find( fid ) );
 
@@ -487,12 +487,12 @@ draw_tracks
     {
       // Check that the directory of the given filepath exists, creating necessary
       // directories where needed.
-      path_t parent_dir = bfs::absolute(path_t(ofn).parent_path());
+      bfs::path parent_dir = bfs::absolute(bfs::path(ofn).parent_path());
       if(!bfs::is_directory(parent_dir))
       {
         if(!bfs::create_directories(parent_dir))
         {
-          throw file_write_exception(parent_dir, "Attempted directory creation, "
+          throw file_write_exception(parent_dir.string(), "Attempted directory creation, "
                                                  "but no directory created! No "
                                                  "idea what happened here...");
         }
@@ -521,3 +521,4 @@ draw_tracks
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver

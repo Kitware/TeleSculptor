@@ -36,7 +36,6 @@
 #ifndef MAPTK_PLUGINS_CORE_MATCH_FEATURES_HOMOGRAPHY_H_
 #define MAPTK_PLUGINS_CORE_MATCH_FEATURES_HOMOGRAPHY_H_
 
-#include <boost/scoped_ptr.hpp>
 #include <vital/algo/filter_features.h>
 
 #include <vital/algo/estimate_homography.h>
@@ -45,9 +44,10 @@
 
 #include <maptk/plugins/core/plugin_core_config.h>
 
+#include <memory>
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
@@ -77,7 +77,7 @@ namespace core
  *  in the image is now known approximately.
  */
 class PLUGIN_CORE_EXPORT match_features_homography
-  : public kwiver::vital::algorithm_impl<match_features_homography, kwiver::vital::algo::match_features>
+  : public vital::algorithm_impl<match_features_homography, vital::algo::match_features>
 {
 public:
   /// Default Constructor
@@ -92,12 +92,12 @@ public:
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "homography_guided"; }
 
-  /// Get this alg's \link kwiver::vital::config_block configuration block \endlink
-  virtual kwiver::vital::config_block_sptr get_configuration() const;
+  /// Get this alg's \link vital::config_block configuration block \endlink
+  virtual vital::config_block_sptr get_configuration() const;
   /// Set this algo's properties via a config block
-  virtual void set_configuration(kwiver::vital::config_block_sptr config);
+  virtual void set_configuration(vital::config_block_sptr config);
   /// Check that the algorithm's currently configuration is valid
-  virtual bool check_configuration(kwiver::vital::config_block_sptr config) const;
+  virtual bool check_configuration(vital::config_block_sptr config) const;
 
   /// Match one set of features and corresponding descriptors to another
   /**
@@ -107,53 +107,54 @@ public:
    * \param [in] desc2 the descriptors corresponding to \a feat2
    * \returns a set of matching indices from \a feat1 to \a feat2
    */
-  virtual kwiver::vital::match_set_sptr
-  match(kwiver::vital::feature_set_sptr feat1, kwiver::vital::descriptor_set_sptr desc1,
-        kwiver::vital::feature_set_sptr feat2, kwiver::vital::descriptor_set_sptr desc2) const;
+  virtual vital::match_set_sptr
+  match(vital::feature_set_sptr feat1, vital::descriptor_set_sptr desc1,
+        vital::feature_set_sptr feat2, vital::descriptor_set_sptr desc2) const;
 
   /// Set the feature matching algorithms to use
-  void set_first_feature_matcher(kwiver::vital::algo::match_features_sptr alg)
+  void set_first_feature_matcher(vital::algo::match_features_sptr alg)
   {
     matcher1_ = alg;
   }
 
   /// Set the optional second pass feature matching algorithm to use
-  void set_second_feature_matcher(kwiver::vital::algo::match_features_sptr alg)
+  void set_second_feature_matcher(vital::algo::match_features_sptr alg)
   {
     matcher2_ = alg;
   }
 
   /// Set the optional feature filter to use
-  void set_feature_filter(kwiver::vital::algo::filter_features_sptr alg)
+  void set_feature_filter(vital::algo::filter_features_sptr alg)
   {
     feature_filter_ = alg;
   }
 
   /// Set the homography estimation algorithm to use
-  void set_homography_estimator(kwiver::vital::algo::estimate_homography_sptr alg)
+  void set_homography_estimator(vital::algo::estimate_homography_sptr alg)
   {
     h_estimator_ = alg;
   }
 
 private:
-  /// The feature matching algorithms to use
-  kwiver::vital::algo::match_features_sptr matcher1_, matcher2_;
-
-  /// The homography estimation algorithm to use
-  kwiver::vital::algo::estimate_homography_sptr h_estimator_;
-
-  /// The feature set filter algorithm to use
-  kwiver::vital::algo::filter_features_sptr feature_filter_;
-
   /// private implementation class
   class priv;
-  boost::scoped_ptr<priv> d_;
+  const std::unique_ptr<priv> d_;
+
+  /// The feature matching algorithms to use
+  vital::algo::match_features_sptr matcher1_, matcher2_;
+
+  /// The homography estimation algorithm to use
+  vital::algo::estimate_homography_sptr h_estimator_;
+
+  /// The feature set filter algorithm to use
+  vital::algo::filter_features_sptr feature_filter_;
 };
 
 
 } // end namespace algo
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_CORE_MATCH_FEATURES_HOMOGRAPHY_H_

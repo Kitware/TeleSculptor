@@ -35,26 +35,26 @@
 
 #include "camera_map.h"
 
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
 
 #include <maptk/plugins/vxl/camera.h>
 
 using namespace kwiver::vital;
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vxl
 {
 
 
 /// Return a map from integer IDs to camera shared pointers
-kwiver::vital::camera_map::map_camera_t
+vital::camera_map::map_camera_t
 camera_map::cameras() const
 {
   map_camera_t maptk_cameras;
 
-  BOOST_FOREACH(const map_vcam_t::value_type& c, data_)
+  VITAL_FOREACH(const map_vcam_t::value_type& c, data_)
   {
     camera_sptr cam = vpgl_camera_to_maptk(c.second);
     maptk_cameras.insert(std::make_pair(c.first, cam));
@@ -66,7 +66,7 @@ camera_map::cameras() const
 
 /// Convert any camera map to a vpgl camera map
 camera_map::map_vcam_t
-camera_map_to_vpgl(const kwiver::vital::camera_map& cam_map)
+camera_map_to_vpgl(const vital::camera_map& cam_map)
 {
   // if the camera map already contains a vpgl representation
   // then return the existing vpgl data
@@ -76,17 +76,13 @@ camera_map_to_vpgl(const kwiver::vital::camera_map& cam_map)
     return m->vpgl_cameras();
   }
   camera_map::map_vcam_t vmap;
-  BOOST_FOREACH(const camera_map::map_camera_t::value_type& c,
+  VITAL_FOREACH(const camera_map::map_camera_t::value_type& c,
                 cam_map.cameras())
   {
     vpgl_perspective_camera<double> vcam;
-    if( const camera_d* mcamd = dynamic_cast<const camera_d*>(c.second.get()) )
+    if( const simple_camera* mcam = dynamic_cast<const simple_camera*>(c.second.get()) )
     {
-      maptk_to_vpgl_camera(*mcamd, vcam);
-    }
-    else if( const camera_f* mcamf = dynamic_cast<const camera_f*>(c.second.get()) )
-    {
-      maptk_to_vpgl_camera(camera_d(*mcamf), vcam);
+      maptk_to_vpgl_camera(*mcam, vcam);
     }
     else
     {
@@ -101,3 +97,4 @@ camera_map_to_vpgl(const kwiver::vital::camera_map& cam_map)
 } // end namespace vxl
 
 } // end namespace maptk
+} // end namespace kwiver
