@@ -30,6 +30,10 @@
 
 #include "MainWindow.h"
 
+#include "Version.h"
+
+#include <qtUtil.h>
+
 #include <QApplication>
 
 //-----------------------------------------------------------------------------
@@ -39,8 +43,10 @@ int main(int argc, char** argv)
   QApplication::setApplicationName("MapGUI");
   QApplication::setOrganizationName("Kitware");
   QApplication::setOrganizationDomain("kitware.com");
+  QApplication::setApplicationVersion(MAPTK_VERSION);
 
   QApplication app(argc, argv);
+  qtUtil::setApplicationIcon("mapgui");
 
   MainWindow window;
   window.show();

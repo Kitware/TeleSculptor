@@ -33,13 +33,18 @@
 #include "ui_MainWindow.h"
 #include "am_MainWindow.h"
 
+#include "AboutDialog.h"
 #include "Project.h"
+#include "Version.h"
 #include "vtkMaptkCamera.h"
 
 #include <vital/io/camera_io.h>
 #include <vital/io/landmark_map_io.h>
 #include <vital/io/track_set_io.h>
 
+#include <vtkImageData.h>
+#include <vtkImageReader2.h>
+#include <vtkImageReader2Factory.h>
 #include <vtkSmartPointer.h>
 
 #include <qtMath.h>
@@ -47,10 +52,13 @@
 #include <qtUiStateItem.h>
 
 #include <QtGui/QApplication>
+#include <QtGui/QDesktopServices>
 #include <QtGui/QFileDialog>
+#include <QtGui/QMessageBox>
 
 #include <QtCore/QDebug>
 #include <QtCore/QTimer>
+#include <QtCore/QUrl>
 
 namespace // anonymous
 {
@@ -63,6 +71,38 @@ struct CameraData
 
   QString imagePath; // Full path to camera image data
 };
+
+//-----------------------------------------------------------------------------
+QString findUserManual()
+{
+  static auto const name = "gui.html";
+  static auto const product = "maptk";
+  static auto const version = MAPTK_VERSION;
+
+  auto const& prefix =
+    QFileInfo(QApplication::applicationFilePath()).dir().absoluteFilePath("..");
+
+  auto locations = QStringList();
+
+  // Install location
+  locations.append(QString("%1/share/doc/%2-%3").arg(prefix, product, version));
+
+  // Build location
+  locations.append(QString("%1/doc").arg(prefix));
+
+  foreach (auto const& path, locations)
+  {
+    auto const fi = QFileInfo(QString("%1/user/%2").arg(path, name));
+    if (fi.exists())
+    {
+      // Found manual
+      return fi.canonicalFilePath();
+    }
+  }
+
+  // Manual not found
+  return QString();
+}
 
 } // namespace <anonymous>
 
@@ -77,6 +117,8 @@ public:
 
   void setActiveCamera(int);
   void updateCameraView();
+
+  void loadImage(QString const& path, vtkMaptkCamera* camera);
 
   Ui::MainWindow UI;
   Am::MainWindow AM;
@@ -139,39 +181,23 @@ void MainWindowPrivate::updateCameraView()
 {
   if (this->activeCameraIndex < 0)
   {
-    this->UI.cameraView->loadImage(QString(), 0);
-    this->UI.cameraView->clearFeaturePoints();
+    this->loadImage(QString(), 0);
+    this->UI.cameraView->setActiveFrame(static_cast<unsigned>(-1));
     this->UI.cameraView->clearLandmarks();
     return;
   }
 
+  this->UI.cameraView->setActiveFrame(static_cast<unsigned>(activeCameraIndex));
+
+  QHash<kwiver::vital::track_id_t, kwiver::vital::vector_2d> landmarkPoints;
+
   auto const& cd = this->cameras[this->activeCameraIndex];
 
   // Show camera image
-  this->UI.cameraView->loadImage(cd.imagePath, cd.camera);
+  this->loadImage(cd.imagePath, cd.camera);
 
-  // Show tracks
-  QHash<kwiver::vital::track_id_t, kwiver::vital::vector_2d> featurePoints;
-  this->UI.cameraView->clearFeaturePoints();
-  if (this->tracks)
-  {
-    auto const& tracks = this->tracks->tracks();
-    foreach (auto const& track, tracks)
-    {
-      auto const& state = track->find(this->activeCameraIndex);
-      if (state != track->end() && state->feat)
-      {
-        auto const id = track->id();
-        auto const& loc = state->feat->loc();
-        this->UI.cameraView->addFeaturePoint(id, loc[0], loc[1]);
-        featurePoints.insert(id, loc);
-      }
-    }
-  }
-
-  // Show landmarks and residuals
+  // Show landmarks
   this->UI.cameraView->clearLandmarks();
-  this->UI.cameraView->clearResiduals();
   if (this->landmarks)
   {
     // Map landmarks to camera space
@@ -184,14 +210,92 @@ void MainWindowPrivate::updateCameraView()
         // Add projected landmark to camera view
         auto const id = lmi->first;
         this->UI.cameraView->addLandmark(id, pp[0], pp[1]);
+        landmarkPoints.insert(id, maptk::vector_2d(pp[0], pp[1]));
+      }
+    }
+  }
 
-        if (featurePoints.contains(id))
+  // Show residuals
+  this->UI.cameraView->clearResiduals();
+  if (this->tracks)
+  {
+    auto const& tracks = this->tracks->tracks();
+    foreach (auto const& track, tracks)
+    {
+      auto const& state = track->find(this->activeCameraIndex);
+      if (state != track->end() && state->feat)
+      {
+        auto const id = track->id();
+        if (landmarkPoints.contains(id))
         {
-          auto const& fp = featurePoints[id];
-          this->UI.cameraView->addResidual(id, fp[0], fp[1], pp[0], pp[1]);
+          auto const& fp = state->feat->loc();
+          auto const& lp = landmarkPoints[id];
+          this->UI.cameraView->addResidual(id, fp[0], fp[1], lp[0], lp[1]);
         }
       }
     }
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::loadImage(QString const& path, vtkMaptkCamera* camera)
+{
+  if (path.isEmpty())
+  {
+    auto imageDimensions = QSize(1, 1);
+    if (camera)
+    {
+      int w, h;
+      camera->GetImageDimensions(w, h);
+      imageDimensions = QSize(w, h);
+    }
+
+    this->UI.cameraView->setImageData(0, imageDimensions);
+    this->UI.worldView->setImageData(0, imageDimensions);
+  }
+  else
+  {
+    // Create a reader capable of reading the image file
+    auto const reader =
+      vtkImageReader2Factory::CreateImageReader2(qPrintable(path));
+    if (!reader)
+    {
+      qWarning() << "Failed to create image reader for image" << path;
+      this->loadImage(QString(), camera);
+      return;
+    }
+
+    // Load the image
+    reader->SetFileName(qPrintable(path));
+    reader->Update();
+
+    // Get dimensions
+    auto const data = reader->GetOutput();
+    int dimensions[3];
+    data->GetDimensions(dimensions);
+
+    // Test for errors
+    if (dimensions[0] < 2 || dimensions[1] < 2)
+    {
+      qWarning() << "Failed to read image" << path;
+      this->loadImage(QString(), camera);
+    }
+    else
+    {
+      // If successful, update camera image dimensions
+      if (camera)
+      {
+        camera->SetImageDimensions(dimensions);
+      }
+
+      // Set image on views
+      auto const size = QSize(dimensions[0], dimensions[1]);
+      this->UI.cameraView->setImageData(data, size);
+      this->UI.worldView->setImageData(data, size);
+    }
+
+    // Delete the reader
+    reader->Delete();
   }
 }
 
@@ -214,6 +318,11 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   connect(d->UI.actionOpen, SIGNAL(triggered()), this, SLOT(openFile()));
   connect(d->UI.actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
+
+  connect(d->UI.actionAbout, SIGNAL(triggered()),
+          this, SLOT(showAboutDialog()));
+  connect(d->UI.actionShowManual, SIGNAL(triggered()),
+          this, SLOT(showUserManual()));
 
   connect(&d->slideTimer, SIGNAL(timeout()), this, SLOT(nextSlide()));
   connect(d->UI.actionSlideshowPlay, SIGNAL(toggled(bool)),
@@ -361,6 +470,11 @@ void MainWindow::loadTracks(QString const& path)
     {
       d->tracks = tracks;
       d->updateCameraView();
+
+      foreach (auto const& track, tracks->tracks())
+      {
+        d->UI.cameraView->addFeatureTrack(*track);
+      }
     }
   }
   catch (...)
@@ -469,4 +583,28 @@ void MainWindow::setActiveCamera(int id)
   }
 
   d->setActiveCamera(id);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::showAboutDialog()
+{
+  AboutDialog dlg(this);
+  dlg.exec();
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::showUserManual()
+{
+  auto const path = findUserManual();
+  if (!path.isEmpty())
+  {
+    auto const& uri = QUrl::fromLocalFile(path);
+    QDesktopServices::openUrl(uri);
+  }
+  else
+  {
+    QMessageBox::information(
+      this, "Not Found",
+      "The user manual could not be located. Please check your installation.");
+  }
 }

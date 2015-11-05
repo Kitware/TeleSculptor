@@ -1,0 +1,7 @@
+<RCC>
+  <qresource>
+    <file alias="ACKNOWLEDGMENTS">@CMAKE_CURRENT_BINARY_DIR@/ACKNOWLEDGMENTS</file>
+    <file alias="BUILDINFO">@CMAKE_CURRENT_BINARY_DIR@/BUILDINFO</file>
+    <file alias="LICENSE">@CMAKE_CURRENT_BINARY_DIR@/LICENSE</file>
+  </qresource>
+</RCC>

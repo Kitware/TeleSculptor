@@ -22,34 +22,63 @@ set(gui_am_ui
 
 set(gui_ui
   ${gui_am_ui}
+  AboutDialog.ui
   CameraOptions.ui
   FeatureOptions.ui
+  ImageOptions.ui
+  PointOptions.ui
 )
 
 set(gui_resources
   icons/icons.qrc
+  "${CMAKE_CURRENT_BINARY_DIR}/appdata.qrc"
 )
 
 set(gui_moc_headers
+  AboutDialog.h
   ActorColorButton.h
   CameraOptions.h
   CameraView.h
   FeatureOptions.h
+  ImageOptions.h
   MainWindow.h
+  PointOptions.h
   WorldView.h
 )
 
 set(gui_sources
+  AboutDialog.cxx
   ActorColorButton.cxx
   CameraOptions.cxx
   CameraView.cxx
   FeatureOptions.cxx
-  Project.cxx
+  ImageOptions.cxx
   MainWindow.cxx
+  PointOptions.cxx
+  Project.cxx
   WorldView.cxx
   main.cxx
   vtkMaptkCamera.cxx
   vtkMaptkCameraRepresentation.cxx
+  vtkMaptkFeatureTrackRepresentation.cxx
+)
+
+maptk_use_appdata(
+  ACKNOWLEDGMENTS
+  BUILDINFO
+  LICENSE
+)
+
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/appdata.qrc.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/appdata.qrc"
+)
+
+maptk_configure_file(version.h
+  "${CMAKE_CURRENT_SOURCE_DIR}/Version.h.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/Version.h"
+  MAPTK_VERSION
+  MAPTK_COPYRIGHT_YEAR
 )
 
 qt4_wrap_ui(gui_ui_sources ${gui_ui})

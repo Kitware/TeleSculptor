@@ -34,7 +34,8 @@
 #include "am_WorldView.h"
 
 #include "CameraOptions.h"
-#include "FeatureOptions.h"
+#include "ImageOptions.h"
+#include "PointOptions.h"
 #include "vtkMaptkCamera.h"
 #include "vtkMaptkCameraRepresentation.h"
 
@@ -44,7 +45,11 @@
 #include <vtkActorCollection.h>
 #include <vtkBoundingBox.h>
 #include <vtkCellArray.h>
+#include <vtkImageActor.h>
+#include <vtkImageData.h>
+#include <vtkMatrix4x4.h>
 #include <vtkNew.h>
+#include <vtkPlaneSource.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
@@ -59,13 +64,22 @@
 class WorldViewPrivate
 {
 public:
-  WorldViewPrivate() : cameraRepDirty(false), cameraScaleDirty(false) {}
+  WorldViewPrivate() :
+    validImage(false),
+    cameraRepDirty(false),
+    scaleDirty(false)
+    {}
 
   void setPopup(QAction* action, QMenu* menu);
   void setPopup(QAction* action, QWidget* widget);
 
+  void setView(maptk::vector_3d const& normal, maptk::vector_3d const& up);
+  void setView(double ni, double nj, double nk,
+               double ui, double uj, double uk);
+
+  void updateImageTransform();
   void updateCameras(WorldView*);
-  void updateCameraScale(WorldView*);
+  void updateScale(WorldView*);
 
   Ui::WorldView UI;
   Am::WorldView AM;
@@ -77,11 +91,23 @@ public:
 
   QList<vtkActor*> landmarkActors;
 
+  vtkNew<vtkImageActor> imageActor;
+  vtkNew<vtkImageData> emptyImage;
+
+  vtkNew<vtkPlaneSource> groundPlane;
+  vtkNew<vtkActor> groundActor;
+
+  ImageOptions* imageOptions;
   CameraOptions* cameraOptions;
-  FeatureOptions* landmarkOptions;
+  PointOptions* landmarkOptions;
+
+  vtkNew<vtkMatrix4x4> imageProjection;
+  vtkNew<vtkMatrix4x4> imageLocalTransform;
+
+  bool validImage;
 
   bool cameraRepDirty;
-  bool cameraScaleDirty;
+  bool scaleDirty;
 };
 
 QTE_IMPLEMENT_D_FUNC(WorldView)
@@ -114,6 +140,49 @@ void WorldViewPrivate::setPopup(QAction* action, QWidget* widget)
 }
 
 //-----------------------------------------------------------------------------
+void WorldViewPrivate::setView(
+  double ni, double nj, double nk, double ui, double uj, double uk)
+{
+  this->setView(maptk::vector_3d(ni, nj, nk), maptk::vector_3d(ui, uj, uk));
+}
+
+//-----------------------------------------------------------------------------
+void WorldViewPrivate::setView(
+  maptk::vector_3d const& normal, maptk::vector_3d const& up)
+{
+  // Get camera
+  auto const camera = this->renderer->GetActiveCamera();
+
+  // Get camera parameters
+  auto focus = maptk::vector_3d();
+  auto pos = maptk::vector_3d();
+  camera->GetPosition(pos.data());
+  camera->GetFocalPoint(focus.data());
+
+  // Compute new position
+  pos = focus + (normal * (focus - pos).norm());
+
+  // Modify camera
+  camera->SetPosition(pos.data());
+  camera->SetViewUp(up.data());
+
+  this->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
+void WorldViewPrivate::updateImageTransform()
+{
+  vtkNew<vtkMatrix4x4> xf;
+
+  vtkMatrix4x4::Multiply4x4(
+    this->imageProjection.GetPointer(),
+    this->imageLocalTransform.GetPointer(),
+    xf.GetPointer());
+
+  this->imageActor->SetUserMatrix(xf.GetPointer());
+}
+
+//-----------------------------------------------------------------------------
 void WorldViewPrivate::updateCameras(WorldView* q)
 {
   if (!this->cameraRepDirty)
@@ -122,17 +191,17 @@ void WorldViewPrivate::updateCameras(WorldView* q)
     QMetaObject::invokeMethod(q, "updateCameras", Qt::QueuedConnection);
 
     // If the cameras are dirty, then the camera scale must also be dirty
-    this->updateCameraScale(q);
+    this->updateScale(q);
   }
 }
 
 //-----------------------------------------------------------------------------
-void WorldViewPrivate::updateCameraScale(WorldView* q)
+void WorldViewPrivate::updateScale(WorldView* q)
 {
-  if (!this->cameraScaleDirty)
+  if (!this->scaleDirty)
   {
-    this->cameraScaleDirty = true;
-    QMetaObject::invokeMethod(q, "updateCameraScale", Qt::QueuedConnection);
+    this->scaleDirty = true;
+    QMetaObject::invokeMethod(q, "updateScale", Qt::QueuedConnection);
   }
 }
 
@@ -149,7 +218,22 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   auto const viewMenu = new QMenu(this);
   viewMenu->addAction(d->UI.actionViewReset);
   viewMenu->addAction(d->UI.actionViewResetLandmarks);
+  viewMenu->addSeparator();
+  viewMenu->addAction(d->UI.actionViewToWorldTop);
+  viewMenu->addAction(d->UI.actionViewToWorldLeft);
+  viewMenu->addAction(d->UI.actionViewToWorldRight);
+  viewMenu->addAction(d->UI.actionViewToWorldFront);
+  viewMenu->addAction(d->UI.actionViewToWorldBack);
+  viewMenu->addSeparator();
+  viewMenu->addAction(d->UI.actionViewPerspective);
   d->setPopup(d->UI.actionViewReset, viewMenu);
+
+  d->imageOptions = new ImageOptions("WorldView/Image", this);
+  d->imageOptions->addActor(d->imageActor.GetPointer());
+  d->setPopup(d->UI.actionShowFrameImage, d->imageOptions);
+
+  connect(d->imageOptions, SIGNAL(modified()),
+          d->UI.renderWidget, SLOT(update()));
 
   d->cameraOptions = new CameraOptions(d->cameraRep.GetPointer(), this);
   d->setPopup(d->UI.actionShowCameras, d->cameraOptions);
@@ -157,7 +241,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   connect(d->cameraOptions, SIGNAL(modified()),
           d->UI.renderWidget, SLOT(update()));
 
-  d->landmarkOptions = new FeatureOptions("WorldView/Landmarks", this);
+  d->landmarkOptions = new PointOptions("WorldView/Landmarks", this);
   d->setPopup(d->UI.actionShowLandmarks, d->landmarkOptions);
 
   connect(d->landmarkOptions, SIGNAL(modified()),
@@ -166,18 +250,36 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   // Connect actions
   this->addAction(d->UI.actionViewReset);
   this->addAction(d->UI.actionViewResetLandmarks);
+  this->addAction(d->UI.actionViewPerspective);
   this->addAction(d->UI.actionShowCameras);
   this->addAction(d->UI.actionShowLandmarks);
+  this->addAction(d->UI.actionShowGroundPlane);
 
   connect(d->UI.actionViewReset, SIGNAL(triggered()),
           this, SLOT(resetView()));
   connect(d->UI.actionViewResetLandmarks, SIGNAL(triggered()),
           this, SLOT(resetViewToLandmarks()));
+  connect(d->UI.actionViewToWorldTop, SIGNAL(triggered()),
+          this, SLOT(viewToWorldTop()));
+  connect(d->UI.actionViewToWorldLeft, SIGNAL(triggered()),
+          this, SLOT(viewToWorldLeft()));
+  connect(d->UI.actionViewToWorldRight, SIGNAL(triggered()),
+          this, SLOT(viewToWorldRight()));
+  connect(d->UI.actionViewToWorldFront, SIGNAL(triggered()),
+          this, SLOT(viewToWorldFront()));
+  connect(d->UI.actionViewToWorldBack, SIGNAL(triggered()),
+          this, SLOT(viewToWorldBack()));
+  connect(d->UI.actionViewPerspective, SIGNAL(toggled(bool)),
+          this, SLOT(setPerspective(bool)));
 
+  connect(d->UI.actionShowFrameImage, SIGNAL(toggled(bool)),
+          this, SLOT(setImageVisible(bool)));
   connect(d->UI.actionShowCameras, SIGNAL(toggled(bool)),
           this, SLOT(setCamerasVisible(bool)));
   connect(d->UI.actionShowLandmarks, SIGNAL(toggled(bool)),
           this, SLOT(setLandmarksVisible(bool)));
+  connect(d->UI.actionShowGroundPlane, SIGNAL(toggled(bool)),
+          this, SLOT(setGroundPlaneVisible(bool)));
 
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
@@ -187,6 +289,32 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->renderer->AddActor(d->cameraRep->GetNonActiveActor());
   d->renderer->AddActor(d->cameraRep->GetActiveActor());
   d->renderer->AddActor(d->cameraRep->GetPathActor());
+
+  // Set up image actor and "dummy" data for use when we have no "real" image
+  d->imageActor->SetVisibility(false);
+  d->renderer->AddViewProp(d->imageActor.GetPointer());
+
+  d->emptyImage->SetExtent(0, 0, 0, 0, 0, 0);
+  d->emptyImage->AllocateScalars(VTK_UNSIGNED_CHAR, 1);
+  d->emptyImage->SetScalarComponentFromDouble(0, 0, 0, 0, 0.0);
+
+  this->setImageData(0, QSize(1, 1));
+
+  // Set up ground plane grid
+  d->groundPlane->SetOrigin(-10.0, -10.0, 0.0);
+  d->groundPlane->SetPoint1(+10.0, -10.0, 0.0);
+  d->groundPlane->SetPoint2(-10.0, +10.0, 0.0);
+  d->groundPlane->SetResolution(20, 20);
+
+  vtkNew<vtkPolyDataMapper> mapper;
+  mapper->SetInputConnection(d->groundPlane->GetOutputPort());
+  mapper->SetResolveCoincidentTopologyToPolygonOffset();
+
+  d->groundActor->SetMapper(mapper.GetPointer());
+  d->groundActor->GetProperty()->SetColor(0.5, 0.5, 0.5);
+  d->groundActor->GetProperty()->SetLighting(false);
+  d->groundActor->GetProperty()->SetRepresentationToWireframe();
+  d->renderer->AddActor(d->groundActor.GetPointer());
 }
 
 //-----------------------------------------------------------------------------
@@ -209,11 +337,32 @@ void WorldView::addCamera(int id, vtkMaptkCamera* camera)
 //-----------------------------------------------------------------------------
 void WorldView::setActiveCamera(vtkMaptkCamera* camera)
 {
+  static auto const plane = maptk::vector_4d(0.0, 0.0, 1.0, 0.0);
+
   QTE_D();
+
+  camera->GetTransform(d->imageProjection.GetPointer(), plane.data());
+  d->updateImageTransform();
 
   d->cameraRep->SetActiveCamera(camera);
 
   d->updateCameras(this);
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::setImageData(vtkImageData* data, QSize const& dimensions)
+{
+  QTE_D();
+
+  d->imageLocalTransform->Identity();
+  d->imageLocalTransform->SetElement(1, 1, -1.0);
+  d->imageLocalTransform->SetElement(1, 3, dimensions.height());
+  d->updateImageTransform();
+
+  d->validImage = data;
+  d->imageActor->SetInputData(data ? data : d->emptyImage.GetPointer());
+  d->imageActor->SetVisibility(data && d->UI.actionShowFrameImage->isChecked());
+  d->UI.renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -247,13 +396,23 @@ void WorldView::addLandmarks(kwiver::vital::landmark_map const& lm)
 
   vtkNew<vtkActor> actor;
   actor->SetMapper(mapper.GetPointer());
+  actor->SetVisibility(d->UI.actionShowLandmarks->isChecked());
 
   d->renderer->AddActor(actor.GetPointer());
   d->landmarkOptions->addActor(actor.GetPointer());
 
   d->landmarkActors.append(actor.GetPointer());
 
-  d->updateCameraScale(this);
+  d->updateScale(this);
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::setImageVisible(bool state)
+{
+  QTE_D();
+
+  d->imageActor->SetVisibility(state && d->validImage);
+  d->UI.renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -273,6 +432,15 @@ void WorldView::setLandmarksVisible(bool state)
     actor->SetVisibility(state);
   }
 
+  d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::setGroundPlaneVisible(bool state)
+{
+  QTE_D();
+
+  d->groundActor->SetVisibility(state);
   d->UI.renderWidget->update();
 }
 
@@ -305,6 +473,50 @@ void WorldView::resetViewToLandmarks()
 }
 
 //-----------------------------------------------------------------------------
+void WorldView::viewToWorldTop()
+{
+  QTE_D();
+  d->setView(0.0, 0.0, +1.0, 0.0, +1.0, 0.0);
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::viewToWorldLeft()
+{
+  QTE_D();
+  d->setView(-1.0, 0.0, 0.0, 0.0, 0.0, +1.0);
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::viewToWorldRight()
+{
+  QTE_D();
+  d->setView(+1.0, 0.0, 0.0, 0.0, 0.0, +1.0);
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::viewToWorldFront()
+{
+  QTE_D();
+  d->setView(0.0, -1.0, 0.0, 0.0, 0.0, +1.0);
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::viewToWorldBack()
+{
+  QTE_D();
+  d->setView(0.0, +1.0, 0.0, 0.0, 0.0, +1.0);
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::setPerspective(bool perspective)
+{
+  QTE_D();
+
+  d->renderer->GetActiveCamera()->SetParallelProjection(!perspective);
+  d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
 void WorldView::updateCameras()
 {
   QTE_D();
@@ -318,11 +530,11 @@ void WorldView::updateCameras()
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::updateCameraScale()
+void WorldView::updateScale()
 {
   QTE_D();
 
-  if (d->cameraScaleDirty)
+  if (d->scaleDirty)
   {
     // Make sure the cameras are updated so that we will get the correct bounds
     // for them
@@ -338,12 +550,25 @@ void WorldView::updateCameraScale()
       bbox.AddBounds(actor->GetBounds());
     }
 
+    // Update ground plane scale
+    auto const groundScale =
+      1.5 * qMax(qMax(qAbs(bbox.GetBound(0)), qAbs(bbox.GetBound(1))),
+                 qMax(qAbs(bbox.GetBound(2)), qAbs(bbox.GetBound(3))));
+
+    d->groundPlane->SetOrigin(-groundScale, -groundScale, 0.0);
+    d->groundPlane->SetPoint1(+groundScale, -groundScale, 0.0);
+    d->groundPlane->SetPoint2(-groundScale, +groundScale, 0.0);
+    d->groundPlane->Modified();
+
     // Add camera centers
     bbox.AddBounds(d->cameraRep->GetPathActor()->GetBounds());
 
     // Compute base scale (20% of scale factor)
-    auto const baseScale = 0.2 * bbox.GetDiagonalLength();
+    auto const cameraScale = 0.2 * bbox.GetDiagonalLength();
 
-    d->cameraOptions->setBaseCameraScale(baseScale);
+    // Update camera scale
+    d->cameraOptions->setBaseCameraScale(cameraScale);
+
+    d->scaleDirty = false;
   }
 }
