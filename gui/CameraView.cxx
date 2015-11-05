@@ -39,7 +39,7 @@
 #include "vtkMaptkCamera.h"
 #include "vtkMaptkFeatureTrackRepresentation.h"
 
-#include <maptk/track.h>
+#include <vital/types/track.h>
 
 #include <vtkCamera.h>
 #include <vtkCellArray.h>
@@ -433,7 +433,7 @@ void CameraView::setActiveFrame(unsigned frame)
 }
 
 //-----------------------------------------------------------------------------
-void CameraView::addFeatureTrack(maptk::track const& track)
+void CameraView::addFeatureTrack(kwiver::vital::track const& track)
 {
   QTE_D();
 

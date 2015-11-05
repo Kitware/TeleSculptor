@@ -37,7 +37,7 @@
 
 class vtkImageData;
 
-namespace maptk { class track; }
+namespace kwiver { namespace vital { class track; } }
 
 class vtkMaptkCamera;
 
@@ -51,7 +51,7 @@ public:
   explicit CameraView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
   virtual ~CameraView();
 
-  void addFeatureTrack(maptk::track const&);
+  void addFeatureTrack(kwiver::vital::track const&);
 
 public slots:
   void setImageData(vtkImageData* data, QSize const& dimensions);

@@ -73,7 +73,8 @@ public:
   void setPopup(QAction* action, QMenu* menu);
   void setPopup(QAction* action, QWidget* widget);
 
-  void setView(maptk::vector_3d const& normal, maptk::vector_3d const& up);
+  void setView(kwiver::vital::vector_3d const& normal,
+               kwiver::vital::vector_3d const& up);
   void setView(double ni, double nj, double nk,
                double ui, double uj, double uk);
 
@@ -143,19 +144,20 @@ void WorldViewPrivate::setPopup(QAction* action, QWidget* widget)
 void WorldViewPrivate::setView(
   double ni, double nj, double nk, double ui, double uj, double uk)
 {
-  this->setView(maptk::vector_3d(ni, nj, nk), maptk::vector_3d(ui, uj, uk));
+  this->setView(kwiver::vital::vector_3d(ni, nj, nk),
+                kwiver::vital::vector_3d(ui, uj, uk));
 }
 
 //-----------------------------------------------------------------------------
 void WorldViewPrivate::setView(
-  maptk::vector_3d const& normal, maptk::vector_3d const& up)
+  kwiver::vital::vector_3d const& normal, kwiver::vital::vector_3d const& up)
 {
   // Get camera
   auto const camera = this->renderer->GetActiveCamera();
 
   // Get camera parameters
-  auto focus = maptk::vector_3d();
-  auto pos = maptk::vector_3d();
+  auto focus = kwiver::vital::vector_3d();
+  auto pos = kwiver::vital::vector_3d();
   camera->GetPosition(pos.data());
   camera->GetFocalPoint(focus.data());
 
@@ -337,7 +339,7 @@ void WorldView::addCamera(int id, vtkMaptkCamera* camera)
 //-----------------------------------------------------------------------------
 void WorldView::setActiveCamera(vtkMaptkCamera* camera)
 {
-  static auto const plane = maptk::vector_4d(0.0, 0.0, 1.0, 0.0);
+  static auto const plane = kwiver::vital::vector_4d(0.0, 0.0, 1.0, 0.0);
 
   QTE_D();
 

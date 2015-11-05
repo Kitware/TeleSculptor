@@ -210,7 +210,7 @@ void MainWindowPrivate::updateCameraView()
         // Add projected landmark to camera view
         auto const id = lmi->first;
         this->UI.cameraView->addLandmark(id, pp[0], pp[1]);
-        landmarkPoints.insert(id, maptk::vector_2d(pp[0], pp[1]));
+        landmarkPoints.insert(id, kwiver::vital::vector_2d(pp[0], pp[1]));
       }
     }
   }

@@ -143,12 +143,12 @@ void vtkMaptkCamera::GetFrustumPlanes(double planes[24])
 void vtkMaptkCamera::GetTransform(vtkMatrix4x4* out, double const plane[4])
 {
   // Build camera matrix
-  auto const k = maptk::matrix_3x3d(this->MaptkCamera.intrinsics());
-  auto const r = maptk::matrix_3x3d(this->MaptkCamera.rotation());
-  auto const t = this->MaptkCamera.translation();
+  auto const k = this->MaptkCamera->intrinsics()->as_matrix();
+  auto const t = this->MaptkCamera->translation();
+  auto const r = kwiver::vital::matrix_3x3d(this->MaptkCamera->rotation());
 
-  auto const kr = maptk::matrix_3x3d(k * r);
-  auto const kt = maptk::vector_3d(k * t);
+  auto const kr = kwiver::vital::matrix_3x3d(k * r);
+  auto const kt = kwiver::vital::vector_3d(k * t);
 
   out->SetElement(0, 0, kr(0, 0));
   out->SetElement(0, 1, kr(0, 1));
