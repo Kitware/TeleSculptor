@@ -28,50 +28,39 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_MAINWINDOW_H_
-#define MAPTK_MAINWINDOW_H_
+#ifndef MAPTK_MATCHMATRIXWINDOW_H_
+#define MAPTK_MATCHMATRIXWINDOW_H_
 
 #include <qtGlobal.h>
 
 #include <QMainWindow>
 
-class MainWindowPrivate;
+#include <Eigen/SparseCore>
 
-class MainWindow : public QMainWindow
+class MatchMatrixWindowPrivate;
+
+class MatchMatrixWindow : public QMainWindow
 {
   Q_OBJECT
 
 public:
-  explicit MainWindow(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~MainWindow();
+  explicit MatchMatrixWindow(QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  virtual ~MatchMatrixWindow();
 
 public slots:
-  void openFile();
-  void openFile(QString const& path);
-  void openFiles(QStringList const& paths);
+  void setMatrix(Eigen::SparseMatrix<uint> const&);
 
-  void loadProject(QString const& path);
-  void loadCamera(QString const& path);
-  void loadTracks(QString const& path);
-  void loadLandmarks(QString const& path);
-
-  void setActiveCamera(int);
-
-  void showMatchMatrix();
-
-  void showAboutDialog();
-  void showUserManual();
+  void saveImage();
+  void saveImage(QString const& path);
 
 protected slots:
-  void setSlideDelay(int);
-  void setSlideshowPlaying(bool);
-  void nextSlide();
+  void updateImage();
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(MainWindow)
-  QTE_DECLARE_PRIVATE(MainWindow)
+  QTE_DECLARE_PRIVATE_RPTR(MatchMatrixWindow)
+  QTE_DECLARE_PRIVATE(MatchMatrixWindow)
 
-  QTE_DISABLE_COPY(MainWindow)
+  QTE_DISABLE_COPY(MatchMatrixWindow)
 };
 
 #endif

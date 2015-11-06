@@ -14,6 +14,7 @@
     <file alias="playback-play">16x16/playback-play.png</file>
     <file alias="quit">16x16/quit.png</file>
     <file alias="residual">16x16/residual.png</file>
+    <file alias="save">16x16/save.png</file>
     <file alias="view-reset">16x16/view-reset.png</file>
   </qresource>
   <qresource prefix="icons/22x22">
@@ -30,6 +31,7 @@
     <file alias="playback-play">22x22/playback-play.png</file>
     <file alias="quit">22x22/quit.png</file>
     <file alias="residual">22x22/residual.png</file>
+    <file alias="save">22x22/save.png</file>
     <file alias="view-reset">22x22/view-reset.png</file>
   </qresource>
   <qresource prefix="icons/32x32">
