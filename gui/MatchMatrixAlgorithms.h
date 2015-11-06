@@ -116,12 +116,26 @@ protected:
 class LogarithmicScaleAlgorithm : public AbstractScaleAlgorithm
 {
 public:
-  LogarithmicScaleAlgorithm(double maxRawValue);
+  LogarithmicScaleAlgorithm(double maxRawValue, double rangeScale = 1.0);
+
+  virtual double operator()(double rawValue) const QTE_OVERRIDE;
+
+protected:
+  double const preScale;
+  double const postScale;
+};
+
+//-----------------------------------------------------------------------------
+class ExponentialScaleAlgorithm : public AbstractScaleAlgorithm
+{
+public:
+  ExponentialScaleAlgorithm(double maxRawValue, double exponent);
 
   virtual double operator()(double rawValue) const QTE_OVERRIDE;
 
 protected:
   double const scale;
+  double const exponent;
 };
 
 //END scale algorithms

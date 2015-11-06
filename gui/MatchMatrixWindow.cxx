@@ -45,6 +45,10 @@
 
 #include <QtGui/QFileDialog>
 
+#include <cmath>
+
+using std::pow;
+
 namespace // anonymous
 {
 
@@ -70,6 +74,7 @@ enum ScaleAlgorithm
 {
   Linear,
   Logarithmic,
+  Exponential,
 };
 
 //-----------------------------------------------------------------------------
@@ -328,6 +333,7 @@ class MatchMatrixWindowPrivate
 public:
   void addGradient(GradientPreset, QString const& name);
   void persist(QString const& key, QComboBox* widget);
+  void persist(QString const& key, qtDoubleSlider* widget);
 
   Ui::MatchMatrixWindow UI;
   Am::MatchMatrixWindow AM;
@@ -355,10 +361,20 @@ void MatchMatrixWindowPrivate::addGradient(
 }
 
 //-----------------------------------------------------------------------------
-void MatchMatrixWindowPrivate::persist(QString const& key, QComboBox* widget)
+void MatchMatrixWindowPrivate::persist(
+  QString const& key, QComboBox* widget)
 {
   auto const item = new qtUiState::Item<int, QComboBox>(
     widget, &QComboBox::currentIndex, &QComboBox::setCurrentIndex);
+  this->uiState.map(key, item);
+}
+
+//-----------------------------------------------------------------------------
+void MatchMatrixWindowPrivate::persist(
+  QString const& key, qtDoubleSlider* widget)
+{
+  auto const item = new qtUiState::Item<double, qtDoubleSlider>(
+    widget, &qtDoubleSlider::value, &qtDoubleSlider::setValue);
   this->uiState.map(key, item);
 }
 
@@ -397,11 +413,15 @@ MatchMatrixWindow::MatchMatrixWindow(QWidget* parent, Qt::WindowFlags flags)
   d->persist("Orientation", d->UI.orientation);
   d->persist("Values", d->UI.values);
   d->persist("Scale", d->UI.scale);
+  d->persist("Exponent", d->UI.exponent);
+  d->persist("Range", d->UI.range);
   d->persist("Color", d->UI.color);
 
   d->uiState.mapState("Window/state", this);
   d->uiState.mapGeometry("Window/geometry", this);
   d->uiState.restore();
+
+  this->updateControls();
 
   // Set up signals/slots
   connect(d->UI.actionSaveImage, SIGNAL(triggered()), this, SLOT(saveImage()));
@@ -414,6 +434,15 @@ MatchMatrixWindow::MatchMatrixWindow(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(updateImage()));
   connect(d->UI.color, SIGNAL(currentIndexChanged(QString)),
           this, SLOT(updateImage()));
+  connect(d->UI.exponent, SIGNAL(valueChanged(double)),
+          this, SLOT(updateImage()));
+  connect(d->UI.range, SIGNAL(valueChanged(double)),
+          this, SLOT(updateImage()));
+
+  connect(d->UI.values, SIGNAL(currentIndexChanged(QString)),
+          this, SLOT(updateControls()));
+  connect(d->UI.scale, SIGNAL(currentIndexChanged(QString)),
+          this, SLOT(updateControls()));
 }
 
 //-----------------------------------------------------------------------------
@@ -447,6 +476,48 @@ void MatchMatrixWindow::saveImage(QString const& path)
 }
 
 //-----------------------------------------------------------------------------
+void MatchMatrixWindow::updateControls()
+{
+  QTE_D();
+
+  auto const showExponent = (d->UI.scale->currentIndex() == Exponential);
+  auto const showRange = (d->UI.values->currentIndex() != Absolute &&
+                          d->UI.scale->currentIndex() == Logarithmic);
+
+  auto const layout = qobject_cast<QFormLayout*>(d->UI.options->layout());
+
+  d->UI.exponent->setVisible(showExponent);
+  d->UI.exponentLabel->setVisible(showExponent);
+
+  d->UI.range->setVisible(showRange);
+  d->UI.rangeLabel->setVisible(showRange);
+
+  // Remove widgets following scale (apparently this is the only way to get
+  // QFormLayout to not include space for empty rows)
+  layout->removeWidget(d->UI.exponent);
+  layout->removeWidget(d->UI.exponentLabel);
+  layout->removeWidget(d->UI.range);
+  layout->removeWidget(d->UI.rangeLabel);
+  layout->removeWidget(d->UI.color);
+  layout->removeWidget(d->UI.colorLabel);
+
+  // Re-add interesting widgets
+  if (d->UI.scale->currentIndex() == Exponential)
+  {
+    // Show exponent
+    layout->addRow(d->UI.exponentLabel, d->UI.exponent);
+  }
+  else if (d->UI.values->currentIndex() != Absolute &&
+           d->UI.scale->currentIndex() == Logarithmic)
+  {
+    // Show range
+    layout->addRow(d->UI.rangeLabel, d->UI.range);
+  }
+
+  layout->addRow(d->UI.colorLabel, d->UI.color);
+}
+
+//-----------------------------------------------------------------------------
 void MatchMatrixWindow::updateImage()
 {
   QTE_D();
@@ -475,9 +546,23 @@ void MatchMatrixWindow::updateImage()
   auto const maxValue = valueAlgorithm->max(d->maxValue);
   switch (d->UI.scale->currentIndex())
   {
-    case Logarithmic:
-      scaleAlgorithm.reset(new LogarithmicScaleAlgorithm(maxValue));
+    case Exponential:
+      scaleAlgorithm.reset(
+        new ExponentialScaleAlgorithm(maxValue, d->UI.exponent->value()));
       break;
+
+    case Logarithmic:
+      if (d->UI.values->currentIndex() == Absolute)
+      {
+        scaleAlgorithm.reset(new LogarithmicScaleAlgorithm(maxValue));
+      }
+      else
+      {
+        auto const range = pow(d->UI.range->value(), 2.0);
+        scaleAlgorithm.reset(new LogarithmicScaleAlgorithm(maxValue, range));
+      }
+      break;
+
     default: // Linear
       scaleAlgorithm.reset(new LinearScaleAlgorithm(maxValue));
       break;

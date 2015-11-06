@@ -54,6 +54,7 @@ public slots:
   void saveImage(QString const& path);
 
 protected slots:
+  void updateControls();
   void updateImage();
 
 private:

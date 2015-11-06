@@ -33,6 +33,7 @@
 #include <cmath>
 
 using std::log;
+using std::pow;
 
 //BEGIN value algorithms
 
@@ -106,15 +107,30 @@ double LinearScaleAlgorithm::operator()(double rawValue) const
 }
 
 //-----------------------------------------------------------------------------
-LogarithmicScaleAlgorithm::LogarithmicScaleAlgorithm(double maxRawValue)
-  : scale(1.0 / log(maxRawValue + 1.0))
+LogarithmicScaleAlgorithm::LogarithmicScaleAlgorithm(
+  double maxRawValue, double rangeScale)
+  : preScale(rangeScale),
+    postScale(1.0 / log((maxRawValue * rangeScale) + 1.0))
 {
 }
 
 //-----------------------------------------------------------------------------
 double LogarithmicScaleAlgorithm::operator()(double rawValue) const
 {
-  return log(rawValue + 1.0) * this->scale;
+  return log((rawValue * this->preScale) + 1.0) * this->postScale;
+}
+
+//-----------------------------------------------------------------------------
+ExponentialScaleAlgorithm::ExponentialScaleAlgorithm(
+  double maxRawValue, double exponent)
+  : scale(1.0 / maxRawValue), exponent(exponent)
+{
+}
+
+//-----------------------------------------------------------------------------
+double ExponentialScaleAlgorithm::operator()(double rawValue) const
+{
+  return pow(rawValue * this->scale, this->exponent);
 }
 
 //END scale algorithms
