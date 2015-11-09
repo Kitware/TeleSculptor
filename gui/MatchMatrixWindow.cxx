@@ -46,6 +46,8 @@
 #include <QtGui/QFileDialog>
 #include <QtGui/QGraphicsSceneHoverEvent>
 #include <QtGui/QGraphicsPixmapItem>
+#include <QtGui/QImageWriter>
+#include <QtGui/QMessageBox>
 
 #include <cmath>
 
@@ -256,6 +258,29 @@ QImage gradientPreview(qtGradient const& gradient, int w = 64, int h = 12)
   }
 
   return image;
+}
+
+//-----------------------------------------------------------------------------
+QString supportedImageFilter()
+{
+  auto formats = QMap<QString, QString>();
+  VITAL_FOREACH(auto const& format, QImageWriter::supportedImageFormats())
+  {
+    auto const type = QString::fromLatin1(format).toLower();
+    auto const filter = QString("*.%1").arg(type);
+    formats.insert(type, filter);
+  }
+
+  formats.remove("jpg");
+  formats.remove("png");
+
+  auto filters = QString("*.jpg *.png");
+  VITAL_FOREACH (auto const& filter, formats)
+  {
+    filters += " " + filter;
+  }
+
+  return filters;
 }
 
 //END miscellaneous helpers
@@ -617,13 +642,29 @@ void MatchMatrixWindow::setMatrix(Eigen::SparseMatrix<uint> const& matrix)
 //-----------------------------------------------------------------------------
 void MatchMatrixWindow::saveImage()
 {
-  // TODO
+  auto const path = QFileDialog::getSaveFileName(
+    this, "Save Image", QString(),
+    "Supported Images (" + supportedImageFilter() + ");;"
+    "JPEG image (*.jpg *.jpeg);;"
+    "PNG image (*.png);;"
+    "All Files (*)");
+
+  if (!path.isEmpty())
+  {
+    this->saveImage(path);
+  }
 }
 
 //-----------------------------------------------------------------------------
 void MatchMatrixWindow::saveImage(QString const& path)
 {
-  // TODO
+  QTE_D();
+
+  if (!d->image.save(path))
+  {
+    static auto const msgFormat = QString("Failed to write image to \"%1\".");
+    QMessageBox::critical(this, "Error", msgFormat.arg(path));
+  }
 }
 
 //-----------------------------------------------------------------------------
