@@ -44,13 +44,20 @@
 #include <qtUiStateItem.h>
 
 #include <QtGui/QFileDialog>
+#include <QtGui/QGraphicsSceneHoverEvent>
+#include <QtGui/QGraphicsPixmapItem>
 
 #include <cmath>
 
+using std::floor;
 using std::pow;
+
+///////////////////////////////////////////////////////////////////////////////
 
 namespace // anonymous
 {
+
+//BEGIN preset enumerations
 
 //-----------------------------------------------------------------------------
 enum Orientation
@@ -92,6 +99,12 @@ enum GradientPreset
   Earth,
   Blackbody,
 };
+
+//END preset enumerations
+
+///////////////////////////////////////////////////////////////////////////////
+
+//BEGIN miscellaneous helpers
 
 //-----------------------------------------------------------------------------
 template <typename T>
@@ -245,87 +258,13 @@ QImage gradientPreview(qtGradient const& gradient, int w = 64, int h = 12)
   return image;
 }
 
-//-----------------------------------------------------------------------------
-QImage buildHorizontalImage(
-  qtGradient const& gradient,
-  Eigen::SparseMatrix<uint> const& matrix,
-  AbstractValueAlgorithm const& valueAlgorithm,
-  AbstractScaleAlgorithm const& scaleAlgorithm
-)
-{
-  auto const k = matrix.rows();
-  auto minY = k;
-  auto maxY = k;
-
-  auto image = QImage(k, k*2, QImage::Format_RGB32);
-  image.fill(gradient.at(0.0));
-
-  VITAL_FOREACH (auto it, kwiver::vital::enumerate(matrix))
-  {
-    auto const y = it.col() + k - 1 - it.row();
-    minY = qMin(minY, y);
-    maxY = qMax(maxY, y);
-
-    auto const a = scaleAlgorithm(valueAlgorithm(matrix, it));
-    auto const c = gradient.at(a);
-    image.setPixel(it.row(), y, c.rgba());
-  }
-
-  return image.copy(0, minY, k, maxY - minY + 1);
-}
-
-//-----------------------------------------------------------------------------
-QImage buildVerticalImage(
-  qtGradient const& gradient,
-  Eigen::SparseMatrix<uint> const& matrix,
-  AbstractValueAlgorithm const& valueAlgorithm,
-  AbstractScaleAlgorithm const& scaleAlgorithm
-)
-{
-  auto const k = matrix.rows();
-  auto minX = k;
-  auto maxX = k;
-
-  auto image = QImage(k*2, k, QImage::Format_RGB32);
-  image.fill(gradient.at(0.0));
-
-  VITAL_FOREACH (auto it, kwiver::vital::enumerate(matrix))
-  {
-    auto const x = it.row() + k - 1 - it.col();
-    minX = qMin(minX, x);
-    maxX = qMax(maxX, x);
-
-    auto const a = scaleAlgorithm(valueAlgorithm(matrix, it));
-    auto const c = gradient.at(a);
-    image.setPixel(x, it.col(), c.rgba());
-  }
-
-  return image.copy(minX, 0, maxX - minX + 1, k);
-}
-
-//-----------------------------------------------------------------------------
-QImage buildDiagonalImage(
-  qtGradient const& gradient,
-  Eigen::SparseMatrix<uint> const& matrix,
-  AbstractValueAlgorithm const& valueAlgorithm,
-  AbstractScaleAlgorithm const& scaleAlgorithm
-)
-{
-  auto const k = matrix.rows();
-  auto image = QImage(k, k, QImage::Format_RGB32);
-  image.fill(gradient.at(0.0));
-
-  VITAL_FOREACH (auto it, kwiver::vital::enumerate(matrix))
-  {
-    auto const a = scaleAlgorithm(valueAlgorithm(matrix, it));
-    auto const c = gradient.at(a);
-    image.setPixel(it.row(), it.col(), c.rgba());
-  }
-
-  return image;
-}
+//END miscellaneous helpers
 
 } // namespace <anonymous>
+
+///////////////////////////////////////////////////////////////////////////////
+
+//BEGIN MatchMatrixWindowPrivate
 
 //-----------------------------------------------------------------------------
 class MatchMatrixWindowPrivate
@@ -335,6 +274,19 @@ public:
   void persist(QString const& key, QComboBox* widget);
   void persist(QString const& key, qtDoubleSlider* widget);
 
+  void buildHorizontalImage(
+    qtGradient const& gradient,
+    AbstractValueAlgorithm const& valueAlgorithm,
+    AbstractScaleAlgorithm const& scaleAlgorithm);
+  void buildVerticalImage(
+    qtGradient const& gradient,
+    AbstractValueAlgorithm const& valueAlgorithm,
+    AbstractScaleAlgorithm const& scaleAlgorithm);
+  void buildDiagonalImage(
+    qtGradient const& gradient,
+    AbstractValueAlgorithm const& valueAlgorithm,
+    AbstractScaleAlgorithm const& scaleAlgorithm);
+
   Ui::MatchMatrixWindow UI;
   Am::MatchMatrixWindow AM;
   qtUiState uiState;
@@ -343,6 +295,8 @@ public:
   uint maxValue;
 
   QImage image;
+  int offset;
+
   QGraphicsScene scene;
 };
 
@@ -377,6 +331,202 @@ void MatchMatrixWindowPrivate::persist(
     widget, &qtDoubleSlider::value, &qtDoubleSlider::setValue);
   this->uiState.map(key, item);
 }
+
+//-----------------------------------------------------------------------------
+void MatchMatrixWindowPrivate::buildHorizontalImage(
+  qtGradient const& gradient,
+  AbstractValueAlgorithm const& valueAlgorithm,
+  AbstractScaleAlgorithm const& scaleAlgorithm
+)
+{
+  auto const k = this->matrix.rows();
+  auto minY = k;
+  auto maxY = k;
+
+  auto image = QImage(k, k*2, QImage::Format_RGB32);
+  image.fill(gradient.at(0.0));
+
+  VITAL_FOREACH (auto it, kwiver::vital::enumerate(this->matrix))
+  {
+    auto const y = k + it.row() - it.col(); // (2*k - 1) - (col + k - 1 - row);
+    minY = qMin(minY, y);
+    maxY = qMax(maxY, y);
+
+    auto const a = scaleAlgorithm(valueAlgorithm(this->matrix, it));
+    auto const c = gradient.at(a);
+    image.setPixel(it.row(), y, c.rgba());
+  }
+
+  this->image = image.copy(0, minY, k, maxY - minY + 1);
+  this->offset = minY;
+}
+
+//-----------------------------------------------------------------------------
+void MatchMatrixWindowPrivate::buildVerticalImage(
+  qtGradient const& gradient,
+  AbstractValueAlgorithm const& valueAlgorithm,
+  AbstractScaleAlgorithm const& scaleAlgorithm
+)
+{
+  auto const k = this->matrix.rows();
+  auto minX = k;
+  auto maxX = k;
+
+  auto image = QImage(k*2, k, QImage::Format_RGB32);
+  image.fill(gradient.at(0.0));
+
+  VITAL_FOREACH (auto it, kwiver::vital::enumerate(this->matrix))
+  {
+    auto const x = it.row() + k - 1 - it.col();
+    minX = qMin(minX, x);
+    maxX = qMax(maxX, x);
+
+    auto const a = scaleAlgorithm(valueAlgorithm(this->matrix, it));
+    auto const c = gradient.at(a);
+    image.setPixel(x, (k - 1) - it.col(), c.rgba());
+  }
+
+  this->image = image.copy(minX, 0, maxX - minX + 1, k);
+  this->offset = minX;
+}
+
+//-----------------------------------------------------------------------------
+void MatchMatrixWindowPrivate::buildDiagonalImage(
+  qtGradient const& gradient,
+  AbstractValueAlgorithm const& valueAlgorithm,
+  AbstractScaleAlgorithm const& scaleAlgorithm
+)
+{
+  auto const k = this->matrix.rows();
+  auto image = QImage(k, k, QImage::Format_RGB32);
+  image.fill(gradient.at(0.0));
+
+  VITAL_FOREACH (auto it, kwiver::vital::enumerate(this->matrix))
+  {
+    auto const a = scaleAlgorithm(valueAlgorithm(this->matrix, it));
+    auto const c = gradient.at(a);
+    image.setPixel(it.row(), (k - 1) - it.col(), c.rgba());
+  }
+
+  this->image = image;
+  this->offset = 0;
+}
+
+//END MatchMatrixWindowPrivate
+
+///////////////////////////////////////////////////////////////////////////////
+
+//BEGIN MatchMatrixImageItem
+
+//-----------------------------------------------------------------------------
+class MatchMatrixImageItem : public QGraphicsPixmapItem
+{
+public:
+  MatchMatrixImageItem(QImage const& image, MatchMatrixWindowPrivate* q);
+
+protected:
+  virtual void hoverEnterEvent(QGraphicsSceneHoverEvent* event) QTE_OVERRIDE;
+  virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) QTE_OVERRIDE;
+  virtual void hoverMoveEvent(QGraphicsSceneHoverEvent* event) QTE_OVERRIDE;
+
+  void updateStatusText(QPointF const& pos);
+
+  QTE_DECLARE_PUBLIC_PTR(MatchMatrixWindowPrivate);
+  QTE_DECLARE_PUBLIC(MatchMatrixWindowPrivate);
+};
+
+//-----------------------------------------------------------------------------
+MatchMatrixImageItem::MatchMatrixImageItem(
+  QImage const& image, MatchMatrixWindowPrivate* q)
+  : QGraphicsPixmapItem(QPixmap::fromImage(image)), q_ptr(q)
+{
+  this->setAcceptHoverEvents(true);
+}
+
+//-----------------------------------------------------------------------------
+void MatchMatrixImageItem::hoverEnterEvent(QGraphicsSceneHoverEvent* event)
+{
+  this->updateStatusText(event->pos());
+  QGraphicsItem::hoverEnterEvent(event);
+}
+
+//-----------------------------------------------------------------------------
+void MatchMatrixImageItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
+{
+  QTE_Q();
+
+  q->UI.statusBar->clearMessage();
+
+  QGraphicsItem::hoverLeaveEvent(event);
+}
+
+//-----------------------------------------------------------------------------
+void MatchMatrixImageItem::hoverMoveEvent(QGraphicsSceneHoverEvent* event)
+{
+  this->updateStatusText(event->pos());
+  QGraphicsItem::hoverMoveEvent(event);
+}
+
+//-----------------------------------------------------------------------------
+void MatchMatrixImageItem::updateStatusText(const QPointF& pos)
+{
+  QTE_Q();
+
+  auto const k = q->matrix.rows();
+  auto x = static_cast<int>(floor(pos.x()));
+  auto y = static_cast<int>(floor(pos.y()));
+
+  // Convert back to original matrix row/column
+  switch (q->UI.orientation->currentIndex())
+  {
+    case Horizontal:
+      y = k - q->offset + x - y;
+      break;
+
+    case Vertical:
+      x = q->offset + x - y;
+      y = (k - 1) - y;
+      qSwap(x, y);
+      break;
+
+    case Diagonal:
+      y = (k - 1) - y;
+      break;
+  }
+
+  // Test if we're within the data space
+  if (x < 0 || x >= k || y < 0 || y >= k)
+  {
+    q->UI.statusBar->clearMessage();
+    return;
+  }
+
+  // Show status text
+  if (x == y)
+  {
+    static auto const format =
+      QString("Frame %1 has %2 feature point(s)");
+
+    q->UI.statusBar->showMessage(format.arg(x).arg(q->matrix.coeff(x, y)));
+  }
+  else
+  {
+    static auto const format =
+      QString("Frames %1 (%3) and %2 (%4) have %5 correlated point(s)");
+
+    auto const cx = q->matrix.coeff(x, x);
+    auto const cy = q->matrix.coeff(y, y);
+    auto const cxy = q->matrix.coeff(x, y);
+
+    q->UI.statusBar->showMessage(format.arg(x).arg(y).arg(cx).arg(cy).arg(cxy));
+  }
+}
+
+//END MatchMatrixImageItem
+
+///////////////////////////////////////////////////////////////////////////////
+
+//BEGIN MatchMatrixWindow
 
 //-----------------------------------------------------------------------------
 MatchMatrixWindow::MatchMatrixWindow(QWidget* parent, Qt::WindowFlags flags)
@@ -417,6 +567,7 @@ MatchMatrixWindow::MatchMatrixWindow(QWidget* parent, Qt::WindowFlags flags)
   d->persist("Range", d->UI.range);
   d->persist("Color", d->UI.color);
 
+  d->uiState.mapChecked("Window/status", d->UI.actionShowStatusBar);
   d->uiState.mapState("Window/state", this);
   d->uiState.mapGeometry("Window/geometry", this);
   d->uiState.restore();
@@ -572,19 +723,18 @@ void MatchMatrixWindow::updateImage()
   switch (d->UI.orientation->currentIndex())
   {
     case Horizontal:
-      d->image = buildHorizontalImage(gradient, d->matrix,
-                                      *valueAlgorithm, *scaleAlgorithm);
+      d->buildHorizontalImage(gradient, *valueAlgorithm, *scaleAlgorithm);
       break;
     case Vertical:
-      d->image = buildVerticalImage(gradient, d->matrix,
-                                    *valueAlgorithm, *scaleAlgorithm);
+      d->buildVerticalImage(gradient, *valueAlgorithm, *scaleAlgorithm);
       break;
     default: // Diagonal
-      d->image = buildDiagonalImage(gradient, d->matrix,
-                                    *valueAlgorithm, *scaleAlgorithm);
+      d->buildDiagonalImage(gradient, *valueAlgorithm, *scaleAlgorithm);
       break;
   }
 
   d->scene.clear();
-  d->scene.addPixmap(QPixmap::fromImage(d->image));
+  d->scene.addItem(new MatchMatrixImageItem(d->image, d));
 }
+
+//END MatchMatrixWindow
