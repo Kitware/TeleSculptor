@@ -193,6 +193,49 @@ menu. The small slider controls the delay between slides. The slider response
 is logarithmic, with single steps in one-tenth powers of ten. The slider tool
 tip includes the current delay in human readable units.
 
+Match Matrix View
+=================
+
+The match matrix view provides a visualization of the feature point
+associations across camera frames. Pixels in the image correspond to values in
+the "match matrix" representing the number of feature points that feature
+detection has determined correspond to the same real world feature. Several
+options are provided to adjust the visualization:
+
+* Orientation controls the position of "identity" values, i.e. values that
+  compare a frame to itself rather than a distinct frame. The default,
+  "diagonal", simply maps the frame number directly to both the :f:`X` and
+  :f:`Y` axes. "Horizontal" skews the image so that the :f:`Y` values are
+  relative to the "identity" values, placing them in a horizontal line at
+  :f:`Y = 0`, with positive :f:`Y` representing "later" frames, and negative
+  :f:`Y` representing "earlier" frames. "Vertical" reverses these axes.
+
+* Values controls what values are used for each pixel. The default, "absolute",
+  uses the raw number of feature point correlations (which, for "identity"
+  values is equal to the total number of feature points on that frame).
+  "Relative (combined)" mode uses the percent of common feature points relative
+  to the total number of distinct feature points on each frame being compared.
+  The other two "relative" modes give the percent relative to the total number
+  of feature points for the frame represented by either the :f:`X` or :f:`Y`
+  axis.
+
+* Scale controls the scaling function that is applied to the values produced
+  according to the value mode. The choices are "linear", "logarithmic" and
+  "exponential", and should be self explanatory. In absolute value mode,
+  logarithmic scale uses the maximum value as the logarithm base. Otherwise,
+  the base can be adjusted with the "range" control, which applies a pre-scale
+  to the value before computing the logarithm (thereby allowing the shape of
+  the scaling curve to be adjusted). Exponential scale allows the user to
+  select the exponent.
+
+* Color provides the set of colors to which scaled values are mapped. Several
+  presets are available according to user taste. Different presets may help
+  emphasize different aspects of the data.
+
+Moving the mouse over the image will display which frames are being compared
+and the number or percentage of feature correlations in the status bar. The
+match matrix view also allows the image to be exported to a file.
+
 Data Files
 ==========
 
@@ -232,6 +275,9 @@ View Menu
   Toggles if the slideshow should restart from the beginning after the last
   camera. When disabled, the slideshow ends when the last camera becomes
   active.
+
+:icon:`blank` Match Matrix
+  Opens a new `Match Matrix View`_.
 
 Help Menu
 ---------
