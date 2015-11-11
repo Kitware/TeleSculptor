@@ -202,13 +202,13 @@ void MainWindowPrivate::updateCameraView()
   {
     // Map landmarks to camera space
     auto const& landmarks = this->landmarks->landmarks();
-    foreach_iter (auto, lmi, landmarks)
+    foreach (auto const& lm, landmarks)
     {
       double pp[2];
-      if (cd.camera->ProjectPoint(lmi->second->loc(), pp))
+      if (cd.camera->ProjectPoint(lm.second->loc(), pp))
       {
         // Add projected landmark to camera view
-        auto const id = lmi->first;
+        auto const id = lm.first;
         this->UI.cameraView->addLandmark(id, pp[0], pp[1]);
         landmarkPoints.insert(id, kwiver::vital::vector_2d(pp[0], pp[1]));
       }

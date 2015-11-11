@@ -381,9 +381,9 @@ void WorldView::addLandmarks(kwiver::vital::landmark_map const& lm)
   verts->Allocate(static_cast<vtkIdType>(landmarks.size()));
 
   vtkIdType vertIndex = 0;
-  foreach_iter (auto, lmi, landmarks)
+  foreach (auto const& lm, landmarks)
   {
-    auto const& pos = lmi->second->loc();
+    auto const& pos = lm.second->loc();
     points->InsertNextPoint(pos.data());
     verts->InsertNextCell(1);
     verts->InsertCellPoint(vertIndex++);
