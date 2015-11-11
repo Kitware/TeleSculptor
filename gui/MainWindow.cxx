@@ -145,13 +145,16 @@ void MainWindowPrivate::addCamera(
 
   cd.imagePath = imagePath;
 
-  cd.camera = vtkSmartPointer<vtkMaptkCamera>::New();
-  cd.camera->SetCamera(camera);
-  cd.camera->Update();
+  if (camera)
+  {
+    cd.camera = vtkSmartPointer<vtkMaptkCamera>::New();
+    cd.camera->SetCamera(camera);
+    cd.camera->Update();
+
+    this->UI.worldView->addCamera(cd.id, cd.camera);
+  }
 
   this->cameras.append(cd);
-
-  this->UI.worldView->addCamera(cd.id, cd.camera);
 
   this->UI.actionSlideshowPlay->setEnabled(true);
   this->UI.camera->setEnabled(true);
@@ -195,6 +198,14 @@ void MainWindowPrivate::updateCameraView()
 
   // Show camera image
   this->loadImage(cd.imagePath, cd.camera);
+
+  if (!cd.camera)
+  {
+    // Can't show landmarks or residuals with no camera
+    this->UI.cameraView->clearLandmarks();
+    this->UI.cameraView->clearResiduals();
+    return;
+  }
 
   // Show landmarks
   this->UI.cameraView->clearLandmarks();
@@ -436,6 +447,7 @@ void MainWindow::loadProject(const QString& path)
     {
       qWarning() << "failed to read camera for" << ip
                  << "from" << project.cameraPath;
+      d->addCamera(0, ip);
     }
   }
 

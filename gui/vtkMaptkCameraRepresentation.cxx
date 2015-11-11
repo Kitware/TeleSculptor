@@ -235,8 +235,8 @@ vtkMaptkCameraRepresentation::~vtkMaptkCameraRepresentation()
 //-----------------------------------------------------------------------------
 void vtkMaptkCameraRepresentation::AddCamera(vtkCamera* camera)
 {
-  // Don't allow duplicate entries
-  if (this->Internal->Cameras->IsItemPresent(camera))
+  // Don't allow null or duplicate entries
+  if (!camera || this->Internal->Cameras->IsItemPresent(camera))
   {
     return;
   }
