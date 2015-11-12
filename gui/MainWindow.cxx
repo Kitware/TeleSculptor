@@ -418,7 +418,7 @@ void MainWindow::openFiles(QStringList const& paths)
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::loadProject(const QString& path)
+void MainWindow::loadProject(QString const& path)
 {
   QTE_D();
 
@@ -455,7 +455,7 @@ void MainWindow::loadProject(const QString& path)
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::loadCamera(const QString& path)
+void MainWindow::loadCamera(QString const& path)
 {
   QTE_D();
 
@@ -496,7 +496,7 @@ void MainWindow::loadTracks(QString const& path)
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::loadLandmarks(const QString& path)
+void MainWindow::loadLandmarks(QString const& path)
 {
   QTE_D();
 
