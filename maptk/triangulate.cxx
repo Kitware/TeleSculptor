@@ -52,7 +52,7 @@ triangulate_inhomog(const std::vector<camera_<T> >& cameras,
   typedef Eigen::Matrix<T,3,3> matrix_3x3;
   typedef Eigen::Matrix<T, Eigen::Dynamic, 3> data_matrix_t;
   typedef Eigen::Matrix<T, Eigen::Dynamic, 1> data_vector_t;
-  const unsigned int num_rows = 2*points.size();
+  const unsigned int num_rows = 2*static_cast<unsigned int>(points.size());
   data_matrix_t A(num_rows, 3);
   data_vector_t b(num_rows);
   for( unsigned int i=0; i<points.size(); ++i )
@@ -88,7 +88,7 @@ triangulate_homog(const std::vector<camera_<T> >& cameras,
   typedef Eigen::Matrix<T,3,1> vector_3;
   typedef Eigen::Matrix<T,3,3> matrix_3x3;
   typedef Eigen::Matrix<T, Eigen::Dynamic, 4> data_matrix_t;
-  const unsigned int num_rows = 2*points.size();
+  const unsigned int num_rows = 2*static_cast<unsigned int>(points.size());
   data_matrix_t A(num_rows, 4);
   for( unsigned int i=0; i<points.size(); ++i )
   {

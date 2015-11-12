@@ -168,7 +168,7 @@ necker_reverse(camera_map_sptr& cameras,
   {
     lc += p.second->loc();
   }
-  lc /= lms.size();
+  lc /= static_cast<double>(lms.size());
 
   // compute the mean camera center
   vector_3d cc(0.0, 0.0, 0.0);
@@ -176,7 +176,7 @@ necker_reverse(camera_map_sptr& cameras,
   {
     cc += p.second->center();
   }
-  cc /= cams.size();
+  cc /= static_cast<double>(cams.size());
 
   vector_3d axis(cc - lc);
   axis.normalize();
