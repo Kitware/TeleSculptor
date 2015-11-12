@@ -23,9 +23,9 @@ The MAP-Tk software architecture is highly modular and provides an algorithm
 abstraction layer that allows seamless interchange and run-time selection of
 algorithms from various other open source projects like OpenCV, VXL,  VisCL,
 and PROJ4.  The core library is light-weight with minimal dependencies
-(C++ standard library plus some Boost and Eigen components).  The tools are
+(C++ standard library, Vital, Eigen, and some Boost components).  The tools are
 written to depend only on the MAP-Tk core library.  Additional capabilities are
-provided in plugin modules that use 3rd party libraries to implement various
+provided in plugin modules that use third party libraries to implement various
 abstract algorithm interfaces defined in the core.  Plugin modules may also
 implement additional versions of core MAP-Tk data structures.
 
@@ -128,7 +128,8 @@ Required
 ''''''''
 
 The only hard dependencies of MAP-Tk are on the C++ standard library,
-Boost_ (>= v1.50), and Eigen_ (>= 3.0).
+Vital_ (contemporary to the version of MAP-Tk being built), Eigen_ (>= 3.0;
+also required by Vital), and Boost_ (>= v1.50).
 Currently MAP-Tk uses the following Boost components:
 system, filesystem, program_options, timer, chrono.
 
@@ -329,6 +330,7 @@ public release via 88ABW-2015-2555.
 .. _KWIVER: http://www.kwiver.org/
 .. _Travis CI: https://travis-ci.org/
 .. _VisualSFM: http://ccwu.me/vsfm/
+.. _Vital: http://www.github.com/Kitware/Vital
 
 .. |CI:master| image:: https://travis-ci.org/Kitware/maptk.svg?branch=master
 .. |CI:release| image:: https://travis-ci.org/Kitware/maptk.svg?branch=release
