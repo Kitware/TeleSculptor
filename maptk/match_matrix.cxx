@@ -53,7 +53,7 @@ match_matrix(const track_set_sptr tracks,
     std::set<frame_id_t> frame_ids = tracks->all_frame_ids();
     frames = std::vector<frame_id_t>(frame_ids.begin(), frame_ids.end());
   }
-  const size_t num_frames = frames.size();
+  const unsigned int num_frames = static_cast<unsigned int>(frames.size());
 
   // build a frame map for reverse lookup of matrix indices
   std::map<frame_id_t, unsigned int> frame_map;
@@ -64,13 +64,13 @@ match_matrix(const track_set_sptr tracks,
 
   // compute an upper bound on non-zero matrix entries to
   // pre-allocate the sparse matrix memory
-  size_t max_size = 0;
+  unsigned int max_size = 0;
   const std::vector<track_sptr> trks = tracks->tracks();
   BOOST_FOREACH(const track_sptr& t, trks)
   {
     if( t->size() > max_size )
     {
-      max_size = t->size();
+      max_size = static_cast<unsigned int>(t->size());
     }
   }
   Eigen::SparseMatrix<unsigned int> mm(num_frames, num_frames);
