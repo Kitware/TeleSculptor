@@ -44,7 +44,9 @@
 
 #include <vtkImageData.h>
 #include <vtkImageReader2.h>
+#include <vtkImageReader2Collection.h>
 #include <vtkImageReader2Factory.h>
+#include <vtkNew.h>
 #include <vtkSmartPointer.h>
 
 #include <qtMath.h>
@@ -102,6 +104,46 @@ QString findUserManual()
 
   // Manual not found
   return QString();
+}
+
+//-----------------------------------------------------------------------------
+QSet<QString> supportedImageExtensions()
+{
+  QSet<QString> result;
+
+  auto const whitespace = QRegExp("\\s");
+
+  // Get registered readers
+  vtkNew<vtkImageReader2Collection> readers;
+  vtkImageReader2Factory::GetRegisteredReaders(readers.GetPointer());
+
+  // Extract extensions for each reader
+  readers->InitTraversal();
+  while (auto const reader = readers->GetNextItem())
+  {
+    auto const extensionList =
+      QString::fromLocal8Bit(reader->GetFileExtensions());
+    auto const& extensions =
+      extensionList.split(whitespace, QString::SkipEmptyParts);
+
+    foreach (auto const& ext, extensions)
+    {
+      result.insert(ext.mid(1).toLower());
+    }
+  }
+
+  return result;
+}
+
+//-----------------------------------------------------------------------------
+QString makeFilters(QStringList extensions)
+{
+  auto result = QStringList();
+  foreach (auto const& extension, extensions)
+  {
+    result.append("*." + extension);
+  }
+  return result.join(" ");
 }
 
 } // namespace <anonymous>
@@ -366,9 +408,12 @@ MainWindow::~MainWindow()
 //-----------------------------------------------------------------------------
 void MainWindow::openFile()
 {
+  static auto const imageFilters =
+    makeFilters(supportedImageExtensions().toList());
+
   auto const paths = QFileDialog::getOpenFileNames(
     this, "Open File", QString(),
-    "All Supported Files (*.conf *.txt *.ply *.krtd);;"
+    "All Supported Files (*.conf *.txt *.ply *.krtd " + imageFilters + ");;"
     "Project configuration file (*.conf);;"
     "Track file (*.txt);;"
     "Landmark file (*.ply);;"
@@ -384,6 +429,8 @@ void MainWindow::openFile()
 //-----------------------------------------------------------------------------
 void MainWindow::openFile(QString const& path)
 {
+  static auto const imageExtensions = supportedImageExtensions();
+
   auto const fi = QFileInfo(path);
   if (fi.suffix().toLower() == "conf")
   {
@@ -400,6 +447,10 @@ void MainWindow::openFile(QString const& path)
   else if (fi.suffix().toLower() == "krtd")
   {
     this->loadCamera(path);
+  }
+  else if (imageExtensions.contains(fi.suffix().toLower()))
+  {
+    this->loadImage(path);
   }
   else
   {
@@ -452,6 +503,13 @@ void MainWindow::loadProject(QString const& path)
   }
 
   d->UI.worldView->resetView();
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::loadImage(QString const& path)
+{
+  QTE_D();
+  d->addCamera(0, path);
 }
 
 //-----------------------------------------------------------------------------

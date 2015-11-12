@@ -51,6 +51,7 @@ public slots:
   void openFiles(QStringList const& paths);
 
   void loadProject(QString const& path);
+  void loadImage(QString const& path);
   void loadCamera(QString const& path);
   void loadTracks(QString const& path);
   void loadLandmarks(QString const& path);
