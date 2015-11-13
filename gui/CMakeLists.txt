@@ -17,6 +17,7 @@ include_directories(
 set(gui_am_ui
   CameraView.ui
   MainWindow.ui
+  MatchMatrixWindow.ui
   WorldView.ui
 )
 
@@ -42,6 +43,7 @@ set(gui_moc_headers
   FeatureOptions.h
   ImageOptions.h
   MainWindow.h
+  MatchMatrixWindow.h
   PointOptions.h
   WorldView.h
 )
@@ -54,6 +56,8 @@ set(gui_sources
   FeatureOptions.cxx
   ImageOptions.cxx
   MainWindow.cxx
+  MatchMatrixAlgorithms.cxx
+  MatchMatrixWindow.cxx
   PointOptions.cxx
   Project.cxx
   WorldView.cxx

@@ -37,6 +37,8 @@
     </property>
     <addaction name="actionSlideshowPlay"/>
     <addaction name="actionSlideshowLoop"/>
+    <addaction name="separator"/>
+    <addaction name="actionShowMatchMatrix"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -210,6 +212,20 @@
    </property>
    <property name="text">
     <string>&amp;About MapGUI</string>
+   </property>
+  </action>
+  <action name="actionShowMatchMatrix">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Match Matrix</string>
+   </property>
+   <property name="toolTip">
+    <string>Open an auxilliary window showing the feature/frame match matrix</string>
+   </property>
+   <property name="shortcut">
+    <string>M</string>
    </property>
   </action>
  </widget>

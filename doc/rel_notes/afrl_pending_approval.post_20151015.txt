@@ -17,6 +17,10 @@ Visualization Application
    means of visualizing camera motion when there exists a spatial correlation
    between adjacent cameras (e.g. frames extracted from continuous-shot video).
 
+ * Added "match matrix" view, allowing the number of corresponding feature
+   points for arbitrary frame pairs to be visualized as a "heat map" with
+   various Visualization options.
+
  * Added ground plane display to world view.
 
  * Added ability to view camera frame image, projected to the ground plane, in

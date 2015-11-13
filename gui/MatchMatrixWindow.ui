@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MatchMatrixWindow</class>
+ <widget class="QMainWindow" name="MatchMatrixWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QGraphicsView" name="view">
+   <property name="mouseTracking">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="actionSaveImage"/>
+    <addaction name="actionClose"/>
+   </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>&amp;View</string>
+    </property>
+    <addaction name="separator"/>
+    <addaction name="actionShowStatusBar"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuView"/>
+  </widget>
+  <widget class="QDockWidget" name="optionsDock">
+   <property name="windowTitle">
+    <string>Options</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="options">
+    <layout class="QFormLayout" name="formLayout">
+     <property name="fieldGrowthPolicy">
+      <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+     </property>
+     <item row="0" column="0">
+      <widget class="QLabel" name="orientationLabel">
+       <property name="text">
+        <string>Orientation</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QComboBox" name="orientation">
+       <property name="currentIndex">
+        <number>2</number>
+       </property>
+       <item>
+        <property name="text">
+         <string>Horizontal</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Vertical</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Diagonal</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="valuesLabel">
+       <property name="text">
+        <string>Values</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QComboBox" name="values">
+       <item>
+        <property name="text">
+         <string>Absolute</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Relative (X)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Relative (Y)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Relative (Combined)</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="scaleLabel">
+       <property name="text">
+        <string>Scale</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QComboBox" name="scale">
+       <item>
+        <property name="text">
+         <string>Linear</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Logarithmic</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Exponential</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="exponentLabel">
+       <property name="text">
+        <string>Exponent</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="qtDoubleSlider" name="exponent">
+       <property name="value">
+        <double>0.500000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="rangeLabel">
+       <property name="text">
+        <string>Range</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="qtDoubleSlider" name="range">
+       <property name="minimum">
+        <double>1.000000000000000</double>
+       </property>
+       <property name="maximum">
+        <double>25.000000000000000</double>
+       </property>
+       <property name="singleStep">
+        <double>0.100000000000000</double>
+       </property>
+       <property name="pageStep">
+        <double>1.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="colorLabel">
+       <property name="text">
+        <string>Color</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QComboBox" name="color">
+       <property name="iconSize">
+        <size>
+         <width>64</width>
+         <height>16</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionSaveImage">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/16x16/save</normaloff>:/icons/16x16/save</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Save Image...</string>
+   </property>
+   <property name="toolTip">
+    <string>Save the current visualization to an image file</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionClose">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/16x16/close</normaloff>:/icons/16x16/close</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Close</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+W</string>
+   </property>
+  </action>
+  <action name="actionShowStatusBar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Status Bar</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle visibility of the status bar</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>qtDoubleSlider</class>
+   <extends>QWidget</extends>
+   <header>qtDoubleSlider.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="icons/icons.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>actionClose</sender>
+   <signal>triggered()</signal>
+   <receiver>MatchMatrixWindow</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionShowStatusBar</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>statusBar</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>589</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
