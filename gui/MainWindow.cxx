@@ -255,16 +255,17 @@ void MainWindowPrivate::addFrame(
 
   this->cameras.append(cd);
 
-  this->UI.actionSlideshowPlay->setEnabled(true);
-  this->UI.camera->setEnabled(true);
-  this->UI.cameraSpin->setEnabled(true);
   this->UI.camera->setRange(0, this->cameras.count() - 1);
   this->UI.cameraSpin->setRange(0, this->cameras.count() - 1);
 
   // When the first camera is added, show it immediately and reset the camera
-  // view
+  // view, and enable slideshow controls
   if (this->cameras.count() == 1)
   {
+    this->UI.actionSlideshowPlay->setEnabled(true);
+    this->UI.camera->setEnabled(true);
+    this->UI.cameraSpin->setEnabled(true);
+
     this->setActiveCamera(0);
     this->UI.cameraView->resetView();
   }
