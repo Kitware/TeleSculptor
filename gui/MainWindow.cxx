@@ -290,7 +290,8 @@ void MainWindowPrivate::updateCameraView()
     return;
   }
 
-  this->UI.cameraView->setActiveFrame(static_cast<unsigned>(activeCameraIndex));
+  this->UI.cameraView->setActiveFrame(
+    static_cast<unsigned>(this->activeCameraIndex));
 
   QHash<kwiver::vital::track_id_t, kwiver::vital::vector_2d> landmarkPoints;
 
