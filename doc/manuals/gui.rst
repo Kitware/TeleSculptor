@@ -19,7 +19,7 @@ camera selection panel. The world view is a three dimensional view that shows
 the cameras and landmarks in the computed world coordinate system. The camera
 view shows the imagery from a single camera along with corresponding feature
 points, projected landmarks, and estimation residuals. The camera selection
-panel provides controls to select the active camera and to use the slide show
+panel provides controls to select the active camera and to use the slideshow
 mode. The camera view and camera selection panel are dockable and can be
 rearranged or detached to suit user preference.
 
@@ -181,14 +181,14 @@ which camera's imagery and feature points are displayed in the camera view. A
 spin box next to the slider shows the active camera number, and can also be
 used to select the active camera.
 
-The controls to the right of the panel control the application's slide show
-mode. Slide show mode automatically increments through the loaded cameras at a
+The controls to the right of the panel control the application's slideshow
+mode. Slideshow mode automatically increments through the loaded cameras at a
 fixed rate. This can be used to view the feature points for each camera / input
 image in sequence. Setting the delay between cameras sufficiently low can be
 used to simulate video playback for image sequences taken from a motion imagery
 source.
 
-The slide show action controls are also available via the `View <#view-menu>`_
+The slideshow action controls are also available via the `View <#view-menu>`_
 menu. The small slider controls the delay between slides. The slider response
 is logarithmic, with single steps in one-tenth powers of ten. The slider tool
 tip includes the current delay in human readable units.
@@ -231,7 +231,7 @@ View Menu
 ---------
 
 :icon:`playback-play` Play Slideshow
-  Toggles playback of the slide show.
+  Toggles playback of the slideshow.
 
 :icon:`playback-loop` Loop Slideshow
   Toggles if the slideshow should restart from the beginning after the last
