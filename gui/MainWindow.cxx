@@ -59,6 +59,7 @@
 #include <QtGui/QMessageBox>
 
 #include <QtCore/QDebug>
+#include <QtCore/QQueue>
 #include <QtCore/QTimer>
 #include <QtCore/QUrl>
 
@@ -154,8 +155,11 @@ class MainWindowPrivate
 public:
   MainWindowPrivate() : activeCameraIndex(-1) {}
 
-  void addCamera(kwiver::vital::camera_sptr const& camera,
-                 QString const& imagePath = QString());
+  void addCamera(kwiver::vital::camera_sptr const& camera);
+  void addImage(QString const& imagePath);
+
+  void addFrame(kwiver::vital::camera_sptr const& camera,
+                QString const& imagePath);
 
   void setActiveCamera(int);
   void updateCameraView();
@@ -173,12 +177,59 @@ public:
   kwiver::vital::landmark_map_sptr landmarks;
 
   int activeCameraIndex;
+
+  QQueue<int> orphanImages;
+  QQueue<int> orphanCameras;
 };
 
 QTE_IMPLEMENT_D_FUNC(MainWindow)
 
 //-----------------------------------------------------------------------------
-void MainWindowPrivate::addCamera(
+void MainWindowPrivate::addCamera(kwiver::vital::camera_sptr const& camera)
+{
+  if (this->orphanImages.isEmpty())
+  {
+    this->orphanCameras.enqueue(this->cameras.count());
+    this->addFrame(camera, QString());
+    return;
+  }
+
+  auto& cd = this->cameras[this->orphanImages.dequeue()];
+
+  cd.camera = vtkSmartPointer<vtkMaptkCamera>::New();
+  cd.camera->SetCamera(camera);
+  cd.camera->Update();
+
+  this->UI.worldView->addCamera(cd.id, cd.camera);
+  if (cd.id == this->activeCameraIndex)
+  {
+    this->UI.worldView->setActiveCamera(cd.camera);
+    this->updateCameraView();
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::addImage(QString const& imagePath)
+{
+  if (this->orphanCameras.isEmpty())
+  {
+    this->orphanImages.enqueue(this->cameras.count());
+    this->addFrame(0, imagePath);
+    return;
+  }
+
+  auto& cd = this->cameras[this->orphanCameras.dequeue()];
+
+  cd.imagePath = imagePath;
+
+  if (cd.id == this->activeCameraIndex)
+  {
+    this->updateCameraView();
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::addFrame(
   kwiver::vital::camera_sptr const& camera, QString const& imagePath)
 {
   CameraData cd;
@@ -189,11 +240,17 @@ void MainWindowPrivate::addCamera(
 
   if (camera)
   {
+    this->orphanImages.clear();
+
     cd.camera = vtkSmartPointer<vtkMaptkCamera>::New();
     cd.camera->SetCamera(camera);
     cd.camera->Update();
 
     this->UI.worldView->addCamera(cd.id, cd.camera);
+  }
+  else
+  {
+    this->orphanCameras.clear();
   }
 
   this->cameras.append(cd);
@@ -492,13 +549,13 @@ void MainWindow::loadProject(QString const& path)
         kwiver::vital::read_krtd_file(qPrintable(ip), cameraDir);
 
       // Add camera to scene
-      d->addCamera(camera, ip);
+      d->addFrame(camera, ip);
     }
     catch (...)
     {
       qWarning() << "failed to read camera for" << ip
                  << "from" << project.cameraPath;
-      d->addCamera(0, ip);
+      d->addFrame(0, ip);
     }
   }
 
@@ -509,7 +566,7 @@ void MainWindow::loadProject(QString const& path)
 void MainWindow::loadImage(QString const& path)
 {
   QTE_D();
-  d->addCamera(0, path);
+  d->addImage(path);
 }
 
 //-----------------------------------------------------------------------------
