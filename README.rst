@@ -128,8 +128,8 @@ Required
 ''''''''
 
 The only hard dependencies of MAP-Tk are on the C++ standard library,
-Vital_ (contemporary to the version of MAP-Tk being built), Eigen_ (>= 3.0;
-also required by Vital), and Boost_ (>= v1.50).
+Vital_ (contemporary to the version of MAP-Tk being built), Eigen_ (|>=| 3.0;
+also required by Vital), and Boost_ (|>=| v1.50).
 Currently MAP-Tk uses the following Boost components:
 system, filesystem, program_options, timer, chrono.
 
@@ -319,8 +319,8 @@ of this work via SBIR Contract FA8650-14-C-1820. This document is approved for
 public release via 88ABW-2015-2555.
 
 
-.. Appendix: References
-.. ====================
+.. Appendix I: References
+.. ======================
 
 .. _Boost: http://www.boost.org/
 .. _Bundler: http://www.cs.cornell.edu/~snavely/bundler/
@@ -331,6 +331,11 @@ public release via 88ABW-2015-2555.
 .. _Travis CI: https://travis-ci.org/
 .. _VisualSFM: http://ccwu.me/vsfm/
 .. _Vital: http://www.github.com/Kitware/Vital
+
+.. Appendix II: Text Substitutions
+.. ===============================
+
+.. |>=| unicode:: U+02265 .. greater or equal sign
 
 .. |CI:master| image:: https://travis-ci.org/Kitware/maptk.svg?branch=master
 .. |CI:release| image:: https://travis-ci.org/Kitware/maptk.svg?branch=release
