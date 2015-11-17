@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -64,7 +64,8 @@ IMPLEMENT_TEST(factory)
   {
     TEST_ERROR("Unable to create image_io algorithm of type ocv");
   }
-  if (typeid(*img_io.get()) != typeid(ocv::image_io))
+  algo::image_io* img_io_ptr = img_io.get();
+  if (typeid(*img_io_ptr) != typeid(ocv::image_io))
   {
     TEST_ERROR("Factory method did not construct the correct type");
   }
