@@ -337,7 +337,7 @@ function(maptk_install_headers)
   #  FILES       ${mih_UNPARSED_ARGUMENTS}
   #  DESTINATION "include/maptk/${mih_SUBDIR}"
   #  )
-  if( NOT "${mih_SUBDIR}" STREQUAL "" )
+  if( NOT ${mih_SUBDIR} STREQUAL "" )
     message(STATUS "Header install subdir: ${mih_SUBDIR}")
   endif()
   foreach(header IN LISTS mih_UNPARSED_ARGUMENTS)

@@ -63,7 +63,8 @@ IMPLEMENT_TEST(factory)
   {
     TEST_ERROR("Unable to create geo_map algorithm of type proj");
   }
-  if (typeid(*gmap.get()) != typeid(proj::geo_map))
+  algo::geo_map* gmap_ptr = gmap.get();
+  if (typeid(*gmap_ptr) != typeid(proj::geo_map))
   {
     TEST_ERROR("Factory method did not construct the correct type");
   }
