@@ -251,4 +251,32 @@ Help Menu
 
 .. TODO icon should be the application icon
 
+Glossary
+========
+
+Camera:
+  A camera in MAP-Tk refers primarily to the model which describes the
+  properties of a camera, including attributes such as focal length and world
+  position and orientation. In the GUI, cameras are represented as frustums.
+
+Feature:
+  A feature is a location that corresponds to an "interesting" point, such as
+  the corner of an object or other "notable" point. The term "feature points"
+  typically refers to features detected in imagery.
+
+Track:
+  A track is a collection of correlated features; that is, detected feature
+  points estimated to correspond to the same landmark.
+
+Landmark:
+  A landmark is an estimated world location of a "true" feature that is
+  computed from a feature track.
+
+Residual:
+  A residual, in general, is the difference between an observed value and an
+  estimated value\ [1]_. In MAP-Tk, the observed value is typically a detected
+  feature point, and the estimated value is a landmark.
+
+.. [1] https://en.wikipedia.org/wiki/Errors_and_residuals_in_statistics
+
 .. |--| unicode:: U+02014 .. em dash

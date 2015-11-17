@@ -121,3 +121,8 @@ h2, h2 a, h2 a:hover {
   background: #37c;
   border-right: 1px solid #ccc;
 }
+
+.footnote-reference {
+  font-size: 60%;
+  vertical-align: top;
+}
