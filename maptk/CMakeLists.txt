@@ -81,4 +81,4 @@ endif()
 ###
 # Marking source root for documentation generation
 #
-kwiver_create_doxygen( maptk "${CMAKE_CURRENT_LIST_DIR}" "MAP-Tk")
+kwiver_create_doxygen( maptk "${CMAKE_CURRENT_LIST_DIR}" )
