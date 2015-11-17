@@ -200,7 +200,9 @@ The most convenient way to load data is to open the configuration file
 (``.conf``) that is provided to the bundle adjustment tool. This file specifies
 the locations of all relevant data and outputs, including camera KRTD files,
 imagery, feature tracks and landmarks. It is also possible to load individual
-images, cameras (via their KRTD files), track files, and landmark files.
+images, cameras (via their KRTD files), track files, and landmark files. (Using
+the feature detection/tracking configuration file is also supported; this
+typically only provides images and, if already computed, feature tracks.)
 
 .. notice::
   When loading cameras or images individually, cameras and images are
@@ -211,7 +213,7 @@ images, cameras (via their KRTD files), track files, and landmark files.
   are loaded. In order for feature points to be correctly associated with their
   corresponding frames, the camera/image files must be loaded so that these
   automatically assigned identifies match those that were assigned by the
-  feature detection pipeline.
+  feature detection/tracking pipeline.
 
 
 Menu

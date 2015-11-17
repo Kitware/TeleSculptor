@@ -539,25 +539,41 @@ void MainWindow::loadProject(QString const& path)
     return;
   }
 
-  this->loadTracks(project.tracks);
-  this->loadLandmarks(project.landmarks);
-
-  auto const cameraDir = kwiver::vital::path_t(qPrintable(project.cameraPath));
-  foreach (auto const& ip, project.images)
+  if (!project.tracks.isEmpty())
   {
-    try
-    {
-      auto const& camera =
-        kwiver::vital::read_krtd_file(qPrintable(ip), cameraDir);
+    this->loadTracks(project.tracks);
+  }
+  if (!project.landmarks.isEmpty())
+  {
+    this->loadLandmarks(project.landmarks);
+  }
 
-      // Add camera to scene
-      d->addFrame(camera, ip);
-    }
-    catch (...)
+  if (project.cameraPath.isEmpty())
+  {
+    foreach (auto const& ip, project.images)
     {
-      qWarning() << "failed to read camera for" << ip
-                 << "from" << project.cameraPath;
-      d->addFrame(0, ip);
+      d->addImage(ip);
+    }
+  }
+  else
+  {
+    auto const cameraDir = kwiver::vital::path_t(qPrintable(project.cameraPath));
+    foreach (auto const& ip, project.images)
+    {
+      try
+      {
+        auto const& camera =
+          kwiver::vital::read_krtd_file(qPrintable(ip), cameraDir);
+
+        // Add camera to scene
+        d->addFrame(camera, ip);
+      }
+      catch (...)
+      {
+        qWarning() << "failed to read camera for" << ip
+                   << "from" << project.cameraPath;
+        d->addFrame(0, ip);
+      }
     }
   }
 

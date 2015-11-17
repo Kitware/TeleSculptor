@@ -39,6 +39,21 @@
 #include <QtCore/QFileInfo>
 
 //-----------------------------------------------------------------------------
+QString getPath(kwiver::vital::config_block_sptr const& config,
+                QDir const& base, char const* key, char const* altKey = 0)
+{
+  try
+  {
+    auto const& value = config->get_value<std::string>(key);
+    return base.filePath(qtString(value));
+  }
+  catch (...)
+  {
+    return (altKey ? getPath(config, base, altKey) : QString());
+  }
+}
+
+//-----------------------------------------------------------------------------
 bool Project::read(QString const& path)
 {
   auto const& base = QFileInfo(path).absoluteDir();
@@ -48,13 +63,10 @@ bool Project::read(QString const& path)
     // Load config file
     auto const& config = kwiver::vital::read_config_file(qPrintable(path));
 
-    auto const& cameraPath = config->get_value<std::string>("output_krtd_dir");
-    auto const& landmarks = config->get_value<std::string>("output_ply_file");
-    auto const& tracks = config->get_value<std::string>("input_track_file");
-
-    this->cameraPath = base.filePath(qtString(cameraPath));
-    this->landmarks = base.filePath(qtString(landmarks));
-    this->tracks = base.filePath(qtString(tracks));
+    this->cameraPath = getPath(config, base, "output_krtd_dir");
+    this->landmarks = getPath(config, base, "output_ply_file");
+    this->tracks =
+      getPath(config, base, "input_track_file", "output_tracks_file");
 
     // Read image list
     auto const& iflPath = config->get_value<std::string>("image_list_file");
