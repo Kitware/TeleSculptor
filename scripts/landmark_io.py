@@ -45,6 +45,7 @@ def parse_ply_header(fin):
              "short"  : np.dtype("int16"),
              "ushort" : np.dtype("uint16"),
              "int"    : np.dtype("int32"),
+             "int32"  : np.dtype("int32"),
              "uint"   : np.dtype("uint32"),
              "float"  : np.dtype("float32"),
              "double" : np.dtype("float64")}
