@@ -66,6 +66,7 @@ class WorldViewPrivate
 public:
   WorldViewPrivate() :
     validImage(false),
+    validTransform(false),
     cameraRepDirty(false),
     scaleDirty(false)
     {}
@@ -106,6 +107,7 @@ public:
   vtkNew<vtkMatrix4x4> imageLocalTransform;
 
   bool validImage;
+  bool validTransform;
 
   bool cameraRepDirty;
   bool scaleDirty;
@@ -343,8 +345,20 @@ void WorldView::setActiveCamera(vtkMaptkCamera* camera)
 
   QTE_D();
 
-  camera->GetTransform(d->imageProjection.GetPointer(), plane.data());
-  d->updateImageTransform();
+  if (camera)
+  {
+    camera->GetTransform(d->imageProjection.GetPointer(), plane.data());
+    d->updateImageTransform();
+
+    auto const showImage = d->UI.actionShowFrameImage->isChecked();
+    d->validTransform = true;
+    d->imageActor->SetVisibility(d->validImage && showImage);
+  }
+  else
+  {
+    d->validTransform = false;
+    d->imageActor->SetVisibility(false);
+  }
 
   d->cameraRep->SetActiveCamera(camera);
 
@@ -361,9 +375,10 @@ void WorldView::setImageData(vtkImageData* data, QSize const& dimensions)
   d->imageLocalTransform->SetElement(1, 3, dimensions.height());
   d->updateImageTransform();
 
+  auto const showImage = d->UI.actionShowFrameImage->isChecked();
   d->validImage = data;
   d->imageActor->SetInputData(data ? data : d->emptyImage.GetPointer());
-  d->imageActor->SetVisibility(data && d->UI.actionShowFrameImage->isChecked());
+  d->imageActor->SetVisibility(data && d->validTransform && showImage);
   d->UI.renderWidget->update();
 }
 
@@ -413,7 +428,7 @@ void WorldView::setImageVisible(bool state)
 {
   QTE_D();
 
-  d->imageActor->SetVisibility(state && d->validImage);
+  d->imageActor->SetVisibility(state && d->validImage && d->validTransform);
   d->UI.renderWidget->update();
 }
 

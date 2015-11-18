@@ -19,7 +19,7 @@ camera selection panel. The world view is a three dimensional view that shows
 the cameras and landmarks in the computed world coordinate system. The camera
 view shows the imagery from a single camera along with corresponding feature
 points, projected landmarks, and estimation residuals. The camera selection
-panel provides controls to select the active camera and to use the slide show
+panel provides controls to select the active camera and to use the slideshow
 mode. The camera view and camera selection panel are dockable and can be
 rearranged or detached to suit user preference.
 
@@ -181,14 +181,14 @@ which camera's imagery and feature points are displayed in the camera view. A
 spin box next to the slider shows the active camera number, and can also be
 used to select the active camera.
 
-The controls to the right of the panel control the application's slide show
-mode. Slide show mode automatically increments through the loaded cameras at a
+The controls to the right of the panel control the application's slideshow
+mode. Slideshow mode automatically increments through the loaded cameras at a
 fixed rate. This can be used to view the feature points for each camera / input
 image in sequence. Setting the delay between cameras sufficiently low can be
 used to simulate video playback for image sequences taken from a motion imagery
 source.
 
-The slide show action controls are also available via the `View <#view-menu>`_
+The slideshow action controls are also available via the `View <#view-menu>`_
 menu. The small slider controls the delay between slides. The slider response
 is logarithmic, with single steps in one-tenth powers of ten. The slider tool
 tip includes the current delay in human readable units.
@@ -243,14 +243,21 @@ The most convenient way to load data is to open the configuration file
 (``.conf``) that is provided to the bundle adjustment tool. This file specifies
 the locations of all relevant data and outputs, including camera KRTD files,
 imagery, feature tracks and landmarks. It is also possible to load individual
-cameras (via their KRTD files), track files, and landmark files.
+images, cameras (via their KRTD files), track files, and landmark files. (Using
+the feature detection/tracking configuration file is also supported; this
+typically only provides images and, if already computed, feature tracks.)
 
 .. notice::
-  When loading cameras individually, camera identifiers are assigned
-  sequentially based on the order in which cameras are loaded. In order for
-  feature points to be correctly associated with their corresponding cameras,
-  the cameras must be loaded so that these automatically assigned identifies
-  match those that were assigned by the feature detection pipeline.
+  When loading cameras or images individually, cameras and images are
+  associated in a first-loaded, first-matched manner. There is no way to load
+  individual camera and image files that allows for cameras without images, or
+  images without cameras, except at the end of the frame sequence. Similarly,
+  frame identifiers are assigned sequentially based on the order in which files
+  are loaded. In order for feature points to be correctly associated with their
+  corresponding frames, the camera/image files must be loaded so that these
+  automatically assigned identifies match those that were assigned by the
+  feature detection/tracking pipeline.
+
 
 Menu
 ====
@@ -269,7 +276,7 @@ View Menu
 ---------
 
 :icon:`playback-play` Play Slideshow
-  Toggles playback of the slide show.
+  Toggles playback of the slideshow.
 
 :icon:`playback-loop` Loop Slideshow
   Toggles if the slideshow should restart from the beginning after the last
@@ -289,5 +296,33 @@ Help Menu
   Shows copyright and version information about the application.
 
 .. TODO icon should be the application icon
+
+Glossary
+========
+
+Camera:
+  A camera in MAP-Tk refers primarily to the model which describes the
+  properties of a camera, including attributes such as focal length and world
+  position and orientation. In the GUI, cameras are represented as frustums.
+
+Feature:
+  A feature is a location that corresponds to an "interesting" point, such as
+  the corner of an object or other "notable" point. The term "feature points"
+  typically refers to features detected in imagery.
+
+Track:
+  A track is a collection of correlated features; that is, detected feature
+  points estimated to correspond to the same landmark.
+
+Landmark:
+  A landmark is an estimated world location of a "true" feature that is
+  computed from a feature track.
+
+Residual:
+  A residual, in general, is the difference between an observed value and an
+  estimated value\ [1]_. In MAP-Tk, the observed value is typically a detected
+  feature point, and the estimated value is a landmark.
+
+.. [1] https://en.wikipedia.org/wiki/Errors_and_residuals_in_statistics
 
 .. |--| unicode:: U+02014 .. em dash

@@ -47,7 +47,9 @@
 
 #include <vtkImageData.h>
 #include <vtkImageReader2.h>
+#include <vtkImageReader2Collection.h>
 #include <vtkImageReader2Factory.h>
+#include <vtkNew.h>
 #include <vtkSmartPointer.h>
 
 #include <qtMath.h>
@@ -60,6 +62,7 @@
 #include <QtGui/QMessageBox>
 
 #include <QtCore/QDebug>
+#include <QtCore/QQueue>
 #include <QtCore/QTimer>
 #include <QtCore/QUrl>
 
@@ -107,6 +110,46 @@ QString findUserManual()
   return QString();
 }
 
+//-----------------------------------------------------------------------------
+QSet<QString> supportedImageExtensions()
+{
+  QSet<QString> result;
+
+  auto const whitespace = QRegExp("\\s");
+
+  // Get registered readers
+  vtkNew<vtkImageReader2Collection> readers;
+  vtkImageReader2Factory::GetRegisteredReaders(readers.GetPointer());
+
+  // Extract extensions for each reader
+  readers->InitTraversal();
+  while (auto const reader = readers->GetNextItem())
+  {
+    auto const extensionList =
+      QString::fromLocal8Bit(reader->GetFileExtensions());
+    auto const& extensions =
+      extensionList.split(whitespace, QString::SkipEmptyParts);
+
+    foreach (auto const& ext, extensions)
+    {
+      result.insert(ext.mid(1).toLower());
+    }
+  }
+
+  return result;
+}
+
+//-----------------------------------------------------------------------------
+QString makeFilters(QStringList extensions)
+{
+  auto result = QStringList();
+  foreach (auto const& extension, extensions)
+  {
+    result.append("*." + extension);
+  }
+  return result.join(" ");
+}
+
 } // namespace <anonymous>
 
 //-----------------------------------------------------------------------------
@@ -115,8 +158,11 @@ class MainWindowPrivate
 public:
   MainWindowPrivate() : activeCameraIndex(-1) {}
 
-  void addCamera(kwiver::vital::camera_sptr const& camera,
-                 QString const& imagePath = QString());
+  void addCamera(kwiver::vital::camera_sptr const& camera);
+  void addImage(QString const& imagePath);
+
+  void addFrame(kwiver::vital::camera_sptr const& camera,
+                QString const& imagePath);
 
   void setActiveCamera(int);
   void updateCameraView();
@@ -134,12 +180,59 @@ public:
   kwiver::vital::landmark_map_sptr landmarks;
 
   int activeCameraIndex;
+
+  QQueue<int> orphanImages;
+  QQueue<int> orphanCameras;
 };
 
 QTE_IMPLEMENT_D_FUNC(MainWindow)
 
 //-----------------------------------------------------------------------------
-void MainWindowPrivate::addCamera(
+void MainWindowPrivate::addCamera(kwiver::vital::camera_sptr const& camera)
+{
+  if (this->orphanImages.isEmpty())
+  {
+    this->orphanCameras.enqueue(this->cameras.count());
+    this->addFrame(camera, QString());
+    return;
+  }
+
+  auto& cd = this->cameras[this->orphanImages.dequeue()];
+
+  cd.camera = vtkSmartPointer<vtkMaptkCamera>::New();
+  cd.camera->SetCamera(camera);
+  cd.camera->Update();
+
+  this->UI.worldView->addCamera(cd.id, cd.camera);
+  if (cd.id == this->activeCameraIndex)
+  {
+    this->UI.worldView->setActiveCamera(cd.camera);
+    this->updateCameraView();
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::addImage(QString const& imagePath)
+{
+  if (this->orphanCameras.isEmpty())
+  {
+    this->orphanImages.enqueue(this->cameras.count());
+    this->addFrame(0, imagePath);
+    return;
+  }
+
+  auto& cd = this->cameras[this->orphanCameras.dequeue()];
+
+  cd.imagePath = imagePath;
+
+  if (cd.id == this->activeCameraIndex)
+  {
+    this->updateCameraView();
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::addFrame(
   kwiver::vital::camera_sptr const& camera, QString const& imagePath)
 {
   CameraData cd;
@@ -148,24 +241,34 @@ void MainWindowPrivate::addCamera(
 
   cd.imagePath = imagePath;
 
-  cd.camera = vtkSmartPointer<vtkMaptkCamera>::New();
-  cd.camera->SetCamera(camera);
-  cd.camera->Update();
+  if (camera)
+  {
+    this->orphanImages.clear();
+
+    cd.camera = vtkSmartPointer<vtkMaptkCamera>::New();
+    cd.camera->SetCamera(camera);
+    cd.camera->Update();
+
+    this->UI.worldView->addCamera(cd.id, cd.camera);
+  }
+  else
+  {
+    this->orphanCameras.clear();
+  }
 
   this->cameras.append(cd);
 
-  this->UI.worldView->addCamera(cd.id, cd.camera);
-
-  this->UI.actionSlideshowPlay->setEnabled(true);
-  this->UI.camera->setEnabled(true);
-  this->UI.cameraSpin->setEnabled(true);
   this->UI.camera->setRange(0, this->cameras.count() - 1);
   this->UI.cameraSpin->setRange(0, this->cameras.count() - 1);
 
   // When the first camera is added, show it immediately and reset the camera
-  // view
+  // view, and enable slideshow controls
   if (this->cameras.count() == 1)
   {
+    this->UI.actionSlideshowPlay->setEnabled(true);
+    this->UI.camera->setEnabled(true);
+    this->UI.cameraSpin->setEnabled(true);
+
     this->setActiveCamera(0);
     this->UI.cameraView->resetView();
   }
@@ -190,7 +293,8 @@ void MainWindowPrivate::updateCameraView()
     return;
   }
 
-  this->UI.cameraView->setActiveFrame(static_cast<unsigned>(activeCameraIndex));
+  this->UI.cameraView->setActiveFrame(
+    static_cast<unsigned>(this->activeCameraIndex));
 
   QHash<kwiver::vital::track_id_t, kwiver::vital::vector_2d> landmarkPoints;
 
@@ -198,6 +302,14 @@ void MainWindowPrivate::updateCameraView()
 
   // Show camera image
   this->loadImage(cd.imagePath, cd.camera);
+
+  if (!cd.camera)
+  {
+    // Can't show landmarks or residuals with no camera
+    this->UI.cameraView->clearLandmarks();
+    this->UI.cameraView->clearResiduals();
+    return;
+  }
 
   // Show landmarks
   this->UI.cameraView->clearLandmarks();
@@ -361,9 +473,12 @@ MainWindow::~MainWindow()
 //-----------------------------------------------------------------------------
 void MainWindow::openFile()
 {
+  static auto const imageFilters =
+    makeFilters(supportedImageExtensions().toList());
+
   auto const paths = QFileDialog::getOpenFileNames(
     this, "Open File", QString(),
-    "All Supported Files (*.conf *.txt *.ply *.krtd);;"
+    "All Supported Files (*.conf *.txt *.ply *.krtd " + imageFilters + ");;"
     "Project configuration file (*.conf);;"
     "Track file (*.txt);;"
     "Landmark file (*.ply);;"
@@ -379,6 +494,8 @@ void MainWindow::openFile()
 //-----------------------------------------------------------------------------
 void MainWindow::openFile(QString const& path)
 {
+  static auto const imageExtensions = supportedImageExtensions();
+
   auto const fi = QFileInfo(path);
   if (fi.suffix().toLower() == "conf")
   {
@@ -395,6 +512,10 @@ void MainWindow::openFile(QString const& path)
   else if (fi.suffix().toLower() == "krtd")
   {
     this->loadCamera(path);
+  }
+  else if (imageExtensions.contains(fi.suffix().toLower()))
+  {
+    this->loadImage(path);
   }
   else
   {
@@ -413,7 +534,7 @@ void MainWindow::openFiles(QStringList const& paths)
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::loadProject(const QString& path)
+void MainWindow::loadProject(QString const& path)
 {
   QTE_D();
 
@@ -424,24 +545,41 @@ void MainWindow::loadProject(const QString& path)
     return;
   }
 
-  this->loadTracks(project.tracks);
-  this->loadLandmarks(project.landmarks);
-
-  auto const cameraDir = kwiver::vital::path_t(qPrintable(project.cameraPath));
-  foreach (auto const& ip, project.images)
+  if (!project.tracks.isEmpty())
   {
-    try
-    {
-      auto const& camera =
-        kwiver::vital::read_krtd_file(qPrintable(ip), cameraDir);
+    this->loadTracks(project.tracks);
+  }
+  if (!project.landmarks.isEmpty())
+  {
+    this->loadLandmarks(project.landmarks);
+  }
 
-      // Add camera to scene
-      d->addCamera(camera, ip);
-    }
-    catch (...)
+  if (project.cameraPath.isEmpty())
+  {
+    foreach (auto const& ip, project.images)
     {
-      qWarning() << "failed to read camera for" << ip
-                 << "from" << project.cameraPath;
+      d->addImage(ip);
+    }
+  }
+  else
+  {
+    auto const cameraDir = kwiver::vital::path_t(qPrintable(project.cameraPath));
+    foreach (auto const& ip, project.images)
+    {
+      try
+      {
+        auto const& camera =
+          kwiver::vital::read_krtd_file(qPrintable(ip), cameraDir);
+
+        // Add camera to scene
+        d->addFrame(camera, ip);
+      }
+      catch (...)
+      {
+        qWarning() << "failed to read camera for" << ip
+                   << "from" << project.cameraPath;
+        d->addFrame(0, ip);
+      }
     }
   }
 
@@ -449,7 +587,14 @@ void MainWindow::loadProject(const QString& path)
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::loadCamera(const QString& path)
+void MainWindow::loadImage(QString const& path)
+{
+  QTE_D();
+  d->addImage(path);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::loadCamera(QString const& path)
 {
   QTE_D();
 
@@ -492,7 +637,7 @@ void MainWindow::loadTracks(QString const& path)
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::loadLandmarks(const QString& path)
+void MainWindow::loadLandmarks(QString const& path)
 {
   QTE_D();
 
