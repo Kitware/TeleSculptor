@@ -32,6 +32,7 @@
 
 import numpy as np
 import glob
+import os
 
 
 
@@ -105,7 +106,7 @@ def write_camera_krtd(camera, fout):
 def write_camera_krtd_file(camera, filename):
     """Write a camera to a krtd file
     """
-    with open(out_file,'w') as f:
+    with open(filename,'w') as f:
         write_camera_krtd(camera, f)
 
 
@@ -117,8 +118,8 @@ def write_camera_krtd_files(camera_map, dirname):
       - strip the extenstion and add ".krtd"
       - write the camera to the file
     """
-    for fname, camera in sorted(cameras.iteritems()):
-        out_file = os.path.splitext(fname)[0] + '.krtd'
+    for fname, camera in sorted(camera_map.iteritems()):
+        out_file = os.path.splitext(os.path.basename(fname))[0] + '.krtd'
         out_file = os.path.join(dirname, out_file)
         print out_file
         write_camera_krtd_file(camera, out_file)
