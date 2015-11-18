@@ -53,7 +53,7 @@ public:
 
 public slots:
   void addCamera(int id, vtkMaptkCamera* camera);
-  void addLandmarks(kwiver::vital::landmark_map const&);
+  void setLandmarks(kwiver::vital::landmark_map const&);
 
   void setImageData(vtkImageData* data, QSize const& dimensions);
 

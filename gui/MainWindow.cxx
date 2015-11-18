@@ -647,7 +647,7 @@ void MainWindow::loadLandmarks(QString const& path)
     if (landmarks)
     {
       d->landmarks = landmarks;
-      d->UI.worldView->addLandmarks(*landmarks);
+      d->UI.worldView->setLandmarks(*landmarks);
     }
   }
   catch (...)

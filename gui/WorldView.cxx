@@ -91,7 +91,9 @@ public:
 
   vtkNew<vtkMaptkCameraRepresentation> cameraRep;
 
-  QList<vtkActor*> landmarkActors;
+  vtkNew<vtkPoints> landmarkPoints;
+  vtkNew<vtkCellArray> landmarkVerts;
+  vtkNew<vtkActor> landmarkActor;
 
   vtkNew<vtkImageActor> imageActor;
   vtkNew<vtkImageData> emptyImage;
@@ -246,6 +248,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
           d->UI.renderWidget, SLOT(update()));
 
   d->landmarkOptions = new PointOptions("WorldView/Landmarks", this);
+  d->landmarkOptions->addActor(d->landmarkActor.GetPointer());
   d->setPopup(d->UI.actionShowLandmarks, d->landmarkOptions);
 
   connect(d->landmarkOptions, SIGNAL(modified()),
@@ -304,17 +307,29 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
 
   this->setImageData(0, QSize(1, 1));
 
+  // Set up landmark actor
+  vtkNew<vtkPolyData> landmarkPolyData;
+  vtkNew<vtkPolyDataMapper> landmarkMapper;
+
+  landmarkPolyData->SetPoints(d->landmarkPoints.GetPointer());
+  landmarkPolyData->SetVerts(d->landmarkVerts.GetPointer());
+  landmarkMapper->SetInputData(landmarkPolyData.GetPointer());
+
+  d->landmarkActor->SetMapper(landmarkMapper.GetPointer());
+  d->landmarkActor->SetVisibility(d->UI.actionShowLandmarks->isChecked());
+  d->renderer->AddActor(d->landmarkActor.GetPointer());
+
   // Set up ground plane grid
   d->groundPlane->SetOrigin(-10.0, -10.0, 0.0);
   d->groundPlane->SetPoint1(+10.0, -10.0, 0.0);
   d->groundPlane->SetPoint2(-10.0, +10.0, 0.0);
   d->groundPlane->SetResolution(20, 20);
 
-  vtkNew<vtkPolyDataMapper> mapper;
-  mapper->SetInputConnection(d->groundPlane->GetOutputPort());
-  mapper->SetResolveCoincidentTopologyToPolygonOffset();
+  vtkNew<vtkPolyDataMapper> groundMapper;
+  groundMapper->SetInputConnection(d->groundPlane->GetOutputPort());
+  groundMapper->SetResolveCoincidentTopologyToPolygonOffset();
 
-  d->groundActor->SetMapper(mapper.GetPointer());
+  d->groundActor->SetMapper(groundMapper.GetPointer());
   d->groundActor->GetProperty()->SetColor(0.5, 0.5, 0.5);
   d->groundActor->GetProperty()->SetLighting(false);
   d->groundActor->GetProperty()->SetRepresentationToWireframe();
@@ -383,42 +398,28 @@ void WorldView::setImageData(vtkImageData* data, QSize const& dimensions)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::addLandmarks(kwiver::vital::landmark_map const& lm)
+void WorldView::setLandmarks(kwiver::vital::landmark_map const& lm)
 {
   QTE_D();
 
   auto const& landmarks = lm.landmarks();
 
-  vtkNew<vtkPoints> points;
-  vtkNew<vtkCellArray> verts;
-
-  points->Allocate(static_cast<vtkIdType>(landmarks.size()));
-  verts->Allocate(static_cast<vtkIdType>(landmarks.size()));
+  d->landmarkPoints->Reset();
+  d->landmarkVerts->Reset();
+  d->landmarkPoints->Allocate(static_cast<vtkIdType>(landmarks.size()));
+  d->landmarkVerts->Allocate(static_cast<vtkIdType>(landmarks.size()));
 
   vtkIdType vertIndex = 0;
   foreach_iter (auto, lmi, landmarks)
   {
     auto const& pos = lmi->second->loc();
-    points->InsertNextPoint(pos.data());
-    verts->InsertNextCell(1);
-    verts->InsertCellPoint(vertIndex++);
+    d->landmarkPoints->InsertNextPoint(pos.data());
+    d->landmarkVerts->InsertNextCell(1);
+    d->landmarkVerts->InsertCellPoint(vertIndex++);
   }
 
-  vtkNew<vtkPolyData> polyData;
-  vtkNew<vtkPolyDataMapper> mapper;
-
-  polyData->SetPoints(points.GetPointer());
-  polyData->SetVerts(verts.GetPointer());
-  mapper->SetInputData(polyData.GetPointer());
-
-  vtkNew<vtkActor> actor;
-  actor->SetMapper(mapper.GetPointer());
-  actor->SetVisibility(d->UI.actionShowLandmarks->isChecked());
-
-  d->renderer->AddActor(actor.GetPointer());
-  d->landmarkOptions->addActor(actor.GetPointer());
-
-  d->landmarkActors.append(actor.GetPointer());
+  d->landmarkPoints->Modified();
+  d->landmarkVerts->Modified();
 
   d->updateScale(this);
 }
@@ -444,11 +445,7 @@ void WorldView::setLandmarksVisible(bool state)
 {
   QTE_D();
 
-  foreach (auto const actor, d->landmarkActors)
-  {
-    actor->SetVisibility(state);
-  }
-
+  d->landmarkActor->SetVisibility(state);
   d->UI.renderWidget->update();
 }
 
@@ -476,11 +473,7 @@ void WorldView::resetViewToLandmarks()
   QTE_D();
 
   vtkBoundingBox bbox;
-
-  foreach (auto const actor, d->landmarkActors)
-  {
-    bbox.AddBounds(actor->GetBounds());
-  }
+  bbox.AddBounds(d->landmarkActor->GetBounds());
 
   double bounds[6];
   bbox.GetBounds(bounds);
@@ -562,10 +555,8 @@ void WorldView::updateScale()
     vtkBoundingBox bbox;
 
     // Add landmarks
-    foreach (auto const actor, d->landmarkActors)
-    {
-      bbox.AddBounds(actor->GetBounds());
-    }
+    d->landmarkActor->GetMapper()->Update();
+    bbox.AddBounds(d->landmarkActor->GetBounds());
 
     // Update ground plane scale
     auto const groundScale =
