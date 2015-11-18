@@ -63,6 +63,9 @@ public slots:
   void showAboutDialog();
   void showUserManual();
 
+  void applyCanonicalTransform();
+  void applyNeckerReversal();
+
 protected slots:
   void setSlideDelay(int);
   void setSlideshowPlaying(bool);

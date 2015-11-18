@@ -89,6 +89,12 @@ vtkMaptkCamera::~vtkMaptkCamera()
 }
 
 //-----------------------------------------------------------------------------
+kwiver::vital::camera_sptr vtkMaptkCamera::GetCamera() const
+{
+  return this->MaptkCamera;
+}
+
+//-----------------------------------------------------------------------------
 void vtkMaptkCamera::SetCamera(kwiver::vital::camera_sptr const& camera)
 {
   this->MaptkCamera = camera;

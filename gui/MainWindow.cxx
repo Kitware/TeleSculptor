@@ -40,6 +40,7 @@
 #include "vtkMaptkCamera.h"
 
 #include <maptk/match_matrix.h>
+#include <maptk/transform.h>
 
 #include <vital/io/camera_io.h>
 #include <vital/io/landmark_map_io.h>
@@ -164,6 +165,9 @@ public:
   void addFrame(kwiver::vital::camera_sptr const& camera,
                 QString const& imagePath);
 
+  kwiver::vital::camera_map_sptr cameraMap() const;
+  void updateCameras(kwiver::vital::camera_map_sptr const&);
+
   void setActiveCamera(int);
   void updateCameraView();
 
@@ -271,6 +275,46 @@ void MainWindowPrivate::addFrame(
 
     this->setActiveCamera(0);
     this->UI.cameraView->resetView();
+  }
+}
+
+//-----------------------------------------------------------------------------
+kwiver::vital::camera_map_sptr MainWindowPrivate::cameraMap() const
+{
+  kwiver::vital::camera_map::map_camera_t map;
+
+  auto const cameraCount = this->cameras.count();
+  for (int i = 0; i < cameraCount; ++i)
+  {
+    auto const& cd = this->cameras[i];
+    if (cd.camera)
+    {
+      map.insert(std::make_pair(static_cast<kwiver::vital::frame_id_t>(i),
+                                cd.camera->GetCamera()));
+    }
+  }
+
+  return std::make_shared<kwiver::vital::simple_camera_map>(map);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::updateCameras(
+  kwiver::vital::camera_map_sptr const& cameras)
+{
+  auto const cameraCount = this->cameras.count();
+
+  foreach (auto const& iter, cameras->cameras())
+  {
+    auto const index = static_cast<int>(iter.first);
+    if (index >= 0 && index < cameraCount)
+    {
+      auto& cd = this->cameras[index];
+      if (cd.camera)
+      {
+        cd.camera->SetCamera(iter.second);
+        cd.camera->Update();
+      }
+    }
   }
 }
 
@@ -436,6 +480,11 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   connect(d->UI.actionShowMatchMatrix, SIGNAL(triggered()),
           this, SLOT(showMatchMatrix()));
+
+  connect(d->UI.actionAlign, SIGNAL(triggered()),
+          this, SLOT(applyCanonicalTransform()));
+  connect(d->UI.actionApplyNeckerReverse, SIGNAL(triggered()),
+          this, SLOT(applyNeckerReversal()));
 
   connect(d->UI.actionAbout, SIGNAL(triggered()),
           this, SLOT(showAboutDialog()));
@@ -736,6 +785,56 @@ void MainWindow::setActiveCamera(int id)
   }
 
   d->setActiveCamera(id);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::applyCanonicalTransform()
+{
+  QTE_D();
+
+  auto cameras = d->cameraMap();
+  if (d->landmarks)
+  {
+    auto const& xf = kwiver::maptk::canonical_transform(cameras, d->landmarks);
+
+    d->landmarks = kwiver::maptk::transform(d->landmarks, xf);
+    d->UI.worldView->setLandmarks(*d->landmarks);
+
+    if (!cameras->cameras().empty())
+    {
+      cameras = kwiver::maptk::transform(cameras, xf);
+      d->updateCameras(cameras);
+    }
+
+    d->updateCameraView();
+  }
+  else
+  {
+    QMessageBox::information(
+      this, "Insufficient data", "This operation requires landmarks.");
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::applyNeckerReversal()
+{
+  QTE_D();
+
+  auto cameras = d->cameraMap();
+  if (!cameras->cameras().empty() && d->landmarks)
+  {
+    kwiver::maptk::necker_reverse(cameras, d->landmarks);
+
+    d->updateCameras(cameras);
+    d->UI.worldView->setLandmarks(*d->landmarks);
+    d->updateCameraView();
+  }
+  else
+  {
+    QMessageBox::information(
+      this, "Insufficient data",
+      "This operation requires landmarks and cameras.");
+  }
 }
 
 //-----------------------------------------------------------------------------
