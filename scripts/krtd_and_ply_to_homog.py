@@ -97,8 +97,8 @@ def main():
         H = homography_from_plane(cam, cam0, plane)
         homogs.append(H)
 
-    homogs = [("%d %d"%i, H) for i, H in enumerate(homogs)]
-    write_homog_file(homogs, out_homog_file)
+    homogs = [("%d %d"%(i,i), H) for i, H in enumerate(homogs)]
+    write_homography_file(homogs, out_homog_file)
 
 
 
