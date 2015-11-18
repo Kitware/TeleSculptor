@@ -36,6 +36,7 @@
 
 #include "transform.h"
 #include <Eigen/Geometry>
+#include <Eigen/SVD>
 
 #include <vital/vital_foreach.h>
 
@@ -164,16 +165,24 @@ canonical_transform(vital::camera_map_sptr cameras,
   typedef vital::landmark_map::map_landmark_t lm_map_t;
   vital::vector_3d center(0,0,0);
   double s=0.0;
+  vital::matrix_3x3d covar = vital::matrix_3x3d::Zero();
   VITAL_FOREACH(const lm_map_t::value_type& p, landmarks->landmarks())
   {
-    vital::vector_3d c = p.second->loc();
-    center += c;
-    s += c.dot(c);
+    vital::vector_3d pt = p.second->loc();
+    center += pt;
+    covar += pt * pt.transpose();
+    s += pt.dot(pt);
   }
-  center /= static_cast<double>(landmarks->size());
-  s /= landmarks->size();
+  const double num_lm = static_cast<double>(landmarks->size());
+  center /= num_lm;
+  covar /= num_lm;
+  covar -= center * center.transpose();
+  s /= num_lm;
   s -= center.dot(center);
   s = 1.0/std::sqrt(s);
+
+  Eigen::JacobiSVD<vital::matrix_3x3d> svd(covar, Eigen::ComputeFullV);
+  vital::vector_3d normal =  svd.matrixV().col(3);
 
   // find the average look direction and average up direction
   vital::vector_3d cam_center(0,0,0);
@@ -187,13 +196,19 @@ canonical_transform(vital::camera_map_sptr cameras,
   cam_center /= static_cast<double>(cameras->size());
   cam_center -= center;
   cam_center = cam_center.normalized();
+  // flip the plane normal if it points away from the cameras
+  if( cam_center.dot(normal) < 0.0 )
+  {
+    normal = -normal;
+  }
+
   cam_up = (-cam_up).normalized();
-  vital::vector_3d cam_x = cam_up.cross(cam_center).normalized();
-  vital::vector_3d cam_y = cam_center.cross(cam_x).normalized();
+  vital::vector_3d rot_x = cam_up.cross(normal).normalized();
+  vital::vector_3d rot_y = normal.cross(rot_x).normalized();
   vital::matrix_3x3d rot;
-  rot.col(0) = cam_x;
-  rot.col(1) = cam_y;
-  rot.col(2) = cam_center;
+  rot.col(0) = rot_x;
+  rot.col(1) = rot_y;
+  rot.col(2) = normal;
   vital::rotation_d R(rot);
   R = R.inverse();
 
