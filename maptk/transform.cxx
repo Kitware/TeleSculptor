@@ -223,24 +223,24 @@ necker_reverse(vital::camera_map_sptr& cameras,
   cam_map_t cams = cameras->cameras();
   lm_map_t lms = landmarks->landmarks();
 
-  // compute the mean landmark location
+  // compute the landmark location mean and covariance
   vital::vector_3d lc(0.0, 0.0, 0.0);
+  vital::matrix_3x3d covar = vital::matrix_3x3d::Zero();
   VITAL_FOREACH(const lm_map_t::value_type& p, lms)
   {
-    lc += p.second->loc();
+    vital::vector_3d pt = p.second->loc();
+    lc += pt;
+    covar += pt * pt.transpose();
   }
-  lc /= static_cast<double>(lms.size());
+  const double num_lm = static_cast<double>(lms.size());
+  lc /= num_lm;
+  covar /= num_lm;
+  covar -= lc * lc.transpose();
 
-  // compute the mean camera center
-  vital::vector_3d cc(0.0, 0.0, 0.0);
-  VITAL_FOREACH(const cam_map_t::value_type& p, cams)
-  {
-    cc += p.second->center();
-  }
-  cc /= static_cast<double>(cams.size());
-
-  vital::vector_3d axis(cc - lc);
-  axis.normalize();
+  // the mirroring plane will pass through the landmark centeroid (lc)
+  // and have a normal vector aligned with the smallest eigenvector of covar
+  Eigen::JacobiSVD<vital::matrix_3x3d> svd(covar, Eigen::ComputeFullV);
+  vital::vector_3d axis = svd.matrixV().col(2);
 
   // flip cameras around
   vital::rotation_d Ra180(vital::vector_4d(axis.x(), axis.y(), axis.z(), 0.0));
@@ -248,16 +248,28 @@ necker_reverse(vital::camera_map_sptr& cameras,
   VITAL_FOREACH(cam_map_t::value_type& p, cams)
   {
     vital::simple_camera* flipped = new vital::simple_camera(*p.second);
-    flipped->set_center(Ra180 * (flipped->center() - cc) + cc);
+    // extract the camera center
+    const vital::vector_3d cc = flipped->center();
+    // extract the camera principal axis
+    vital::vector_3d pa = vital::matrix_3x3d(flipped->rotation()).row(2);
+    // compute the distance from cc along pa until intersection with
+    // the mirroring plane of the points
+    const double dist = (lc - cc).dot(axis) / pa.dot(axis);
+    // compute the ground point where the principal axis
+    // intersects the mirroring plane
+    vital::vector_3d gp = cc + dist * pa;
+    // rotate the camera center 180 degrees about the mirroring plane normal
+    // axis centered at gp, also rotate the camera 180 about its principal axis
+    flipped->set_center(Ra180 * (flipped->center() - gp) + gp);
     flipped->set_rotation(Rz180 * flipped->rotation() * Ra180);
     p.second = vital::camera_sptr(flipped);
   }
 
-  // reset landmarks to the mean location
+  // mirror landmark locations about the mirroring plane
   VITAL_FOREACH(lm_map_t::value_type& p, lms)
   {
     vital::vector_3d v = p.second->loc();
-    v += 2.0 * (v - lc).dot(axis) * axis;
+    v -= 2.0 * (v - lc).dot(axis) * axis;
     p.second = vital::landmark_sptr(new vital::landmark_d(v));
   }
 
