@@ -36,6 +36,7 @@
 
 #include "transform.h"
 #include <Eigen/Geometry>
+#include <Eigen/SVD>
 
 #include <vital/vital_foreach.h>
 
@@ -164,39 +165,49 @@ canonical_transform(vital::camera_map_sptr cameras,
   typedef vital::landmark_map::map_landmark_t lm_map_t;
   vital::vector_3d center(0,0,0);
   double s=0.0;
+  vital::matrix_3x3d covar = vital::matrix_3x3d::Zero();
   VITAL_FOREACH(const lm_map_t::value_type& p, landmarks->landmarks())
   {
-    vital::vector_3d c = p.second->loc();
-    center += c;
-    s += c.dot(c);
+    vital::vector_3d pt = p.second->loc();
+    center += pt;
+    covar += pt * pt.transpose();
+    s += pt.dot(pt);
   }
-  center /= static_cast<double>(landmarks->size());
-  s /= landmarks->size();
+  const double num_lm = static_cast<double>(landmarks->size());
+  center /= num_lm;
+  covar /= num_lm;
+  covar -= center * center.transpose();
+  s /= num_lm;
   s -= center.dot(center);
   s = 1.0/std::sqrt(s);
 
-  // find the average look direction and average up direction
-  vital::vector_3d cam_center(0,0,0);
-  vital::vector_3d cam_up(0,0,0);
-  typedef vital::camera_map::map_camera_t cam_map_t;
-  VITAL_FOREACH(const cam_map_t::value_type& p, cameras->cameras())
+  Eigen::JacobiSVD<vital::matrix_3x3d> svd(covar, Eigen::ComputeFullV);
+  vital::matrix_3x3d rot = svd.matrixV();
+  // ensure that rot is a rotation (determinant 1)
+  rot.col(1) = rot.col(2).cross(rot.col(0)).normalized();
+
+  if(cameras->size() > 0)
   {
-    cam_center += p.second->center();
-    cam_up += p.second->rotation().inverse() * vital::vector_3d(0,1,0);
+    // find the average camera center and  average up direction
+    vital::vector_3d cam_center(0,0,0);
+    vital::vector_3d cam_up(0,0,0);
+    typedef vital::camera_map::map_camera_t cam_map_t;
+    VITAL_FOREACH(const cam_map_t::value_type& p, cameras->cameras())
+    {
+      cam_center += p.second->center();
+    }
+    cam_center /= static_cast<double>(cameras->size());
+    cam_center -= center;
+    cam_center = cam_center.normalized();
+    // flip the plane normal if it points away from the cameras
+    if( cam_center.dot(rot.col(2)) < 0.0 )
+    {
+      rot.col(2) = -rot.col(2);
+    }
   }
-  cam_center /= static_cast<double>(cameras->size());
-  cam_center -= center;
-  cam_center = cam_center.normalized();
-  cam_up = (-cam_up).normalized();
-  vital::vector_3d cam_x = cam_up.cross(cam_center).normalized();
-  vital::vector_3d cam_y = cam_center.cross(cam_x).normalized();
-  vital::matrix_3x3d rot;
-  rot.col(0) = cam_x;
-  rot.col(1) = cam_y;
-  rot.col(2) = cam_center;
+
   vital::rotation_d R(rot);
   R = R.inverse();
-
   return vital::similarity_d(s, R, R*(-s*center));
 }
 
@@ -212,24 +223,24 @@ necker_reverse(vital::camera_map_sptr& cameras,
   cam_map_t cams = cameras->cameras();
   lm_map_t lms = landmarks->landmarks();
 
-  // compute the mean landmark location
+  // compute the landmark location mean and covariance
   vital::vector_3d lc(0.0, 0.0, 0.0);
+  vital::matrix_3x3d covar = vital::matrix_3x3d::Zero();
   VITAL_FOREACH(const lm_map_t::value_type& p, lms)
   {
-    lc += p.second->loc();
+    vital::vector_3d pt = p.second->loc();
+    lc += pt;
+    covar += pt * pt.transpose();
   }
-  lc /= static_cast<double>(lms.size());
+  const double num_lm = static_cast<double>(lms.size());
+  lc /= num_lm;
+  covar /= num_lm;
+  covar -= lc * lc.transpose();
 
-  // compute the mean camera center
-  vital::vector_3d cc(0.0, 0.0, 0.0);
-  VITAL_FOREACH(const cam_map_t::value_type& p, cams)
-  {
-    cc += p.second->center();
-  }
-  cc /= static_cast<double>(cams.size());
-
-  vital::vector_3d axis(cc - lc);
-  axis.normalize();
+  // the mirroring plane will pass through the landmark centeroid (lc)
+  // and have a normal vector aligned with the smallest eigenvector of covar
+  Eigen::JacobiSVD<vital::matrix_3x3d> svd(covar, Eigen::ComputeFullV);
+  vital::vector_3d axis = svd.matrixV().col(2);
 
   // flip cameras around
   vital::rotation_d Ra180(vital::vector_4d(axis.x(), axis.y(), axis.z(), 0.0));
@@ -237,16 +248,28 @@ necker_reverse(vital::camera_map_sptr& cameras,
   VITAL_FOREACH(cam_map_t::value_type& p, cams)
   {
     vital::simple_camera* flipped = new vital::simple_camera(*p.second);
-    flipped->set_center(Ra180 * (flipped->center() - cc) + cc);
+    // extract the camera center
+    const vital::vector_3d cc = flipped->center();
+    // extract the camera principal axis
+    vital::vector_3d pa = vital::matrix_3x3d(flipped->rotation()).row(2);
+    // compute the distance from cc along pa until intersection with
+    // the mirroring plane of the points
+    const double dist = (lc - cc).dot(axis) / pa.dot(axis);
+    // compute the ground point where the principal axis
+    // intersects the mirroring plane
+    vital::vector_3d gp = cc + dist * pa;
+    // rotate the camera center 180 degrees about the mirroring plane normal
+    // axis centered at gp, also rotate the camera 180 about its principal axis
+    flipped->set_center(Ra180 * (flipped->center() - gp) + gp);
     flipped->set_rotation(Rz180 * flipped->rotation() * Ra180);
     p.second = vital::camera_sptr(flipped);
   }
 
-  // reset landmarks to the mean location
+  // mirror landmark locations about the mirroring plane
   VITAL_FOREACH(lm_map_t::value_type& p, lms)
   {
     vital::vector_3d v = p.second->loc();
-    v += 2.0 * (v - lc).dot(axis) * axis;
+    v -= 2.0 * (v - lc).dot(axis) * axis;
     p.second = vital::landmark_sptr(new vital::landmark_d(v));
   }
 

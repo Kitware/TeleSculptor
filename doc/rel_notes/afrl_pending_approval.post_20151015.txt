@@ -10,6 +10,16 @@ release version, and the content of this file will be reset.
 Updates since last public release
 ---------------------------------
 
+MAP-Tk Library
+ * The canonical transform function has been changed to set the orientation
+   based on the eigenvector of the landmark point cloud.  The cameras are
+   now only used to set the sign of the up vector (Z-axis).
+
+ * The Necker reversal transform was improved so that the residual error
+   is now kept low after the transform and the transform is now involutory.
+   That is, applying the reversal a second time will return to the previous
+   state.
+
 Visualization Application
 
  * Added ability to visualize locations of corresponding feature points on
