@@ -485,6 +485,7 @@ void WorldView::resetViewToLandmarks()
   double bounds[6];
   bbox.GetBounds(bounds);
   d->renderer->ResetCamera(bounds);
+  d->renderer->ResetCameraClippingRange();
 
   d->UI.renderWidget->update();
 }
@@ -587,5 +588,10 @@ void WorldView::updateScale()
     d->cameraOptions->setBaseCameraScale(cameraScale);
 
     d->scaleDirty = false;
+
+    // If we're updating the scale, it's probably because the geometry changed,
+    // which means now (but AFTER updating the camera scales!) is a good time
+    // to ensure that the clipping planes are set reasonably
+    d->renderer->ResetCameraClippingRange();
   }
 }
