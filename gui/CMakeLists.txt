@@ -46,6 +46,7 @@ set(gui_moc_headers
   MatchMatrixWindow.h
   PointOptions.h
   WorldView.h
+  tools/AbstractTool.h
 )
 
 set(gui_sources
@@ -65,6 +66,7 @@ set(gui_sources
   vtkMaptkCamera.cxx
   vtkMaptkCameraRepresentation.cxx
   vtkMaptkFeatureTrackRepresentation.cxx
+  tools/AbstractTool.cxx
 )
 
 maptk_use_appdata(
