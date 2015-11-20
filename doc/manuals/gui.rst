@@ -292,10 +292,8 @@ Help Menu
 :icon:`help-manual` MapGUI User Manual
   Displays the user manual (i.e. this document) in the default web browser.
 
-:icon:`help` About MapGUI
+:icon:`mapgui` About MapGUI
   Shows copyright and version information about the application.
-
-.. TODO icon should be the application icon
 
 Glossary
 ========

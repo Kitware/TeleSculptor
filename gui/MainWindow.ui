@@ -208,7 +208,7 @@
   <action name="actionAbout">
    <property name="icon">
     <iconset resource="icons/icons.qrc">
-     <normaloff>:/icons/16x16/help</normaloff>:/icons/16x16/help</iconset>
+     <normaloff>:/icons/16x16/mapgui</normaloff>:/icons/16x16/mapgui</iconset>
    </property>
    <property name="text">
     <string>&amp;About MapGUI</string>
