@@ -33,6 +33,8 @@
 #include "ui_MainWindow.h"
 #include "am_MainWindow.h"
 
+#include "tools/AbstractTool.h"
+
 #include "AboutDialog.h"
 #include "MatchMatrixWindow.h"
 #include "Project.h"
@@ -64,6 +66,7 @@
 
 #include <QtCore/QDebug>
 #include <QtCore/QQueue>
+#include <QtCore/QSignalMapper>
 #include <QtCore/QTimer>
 #include <QtCore/QUrl>
 
@@ -157,7 +160,9 @@ QString makeFilters(QStringList extensions)
 class MainWindowPrivate
 {
 public:
-  MainWindowPrivate() : activeCameraIndex(-1) {}
+  MainWindowPrivate() : activeTool(0), activeCameraIndex(-1) {}
+
+  void addTool(AbstractTool* tool, MainWindow* mainWindow);
 
   void addCamera(kwiver::vital::camera_sptr const& camera);
   void addImage(QString const& imagePath);
@@ -178,6 +183,9 @@ public:
   qtUiState uiState;
 
   QTimer slideTimer;
+  QSignalMapper toolDispatcher;
+
+  AbstractTool* activeTool;
 
   QList<CameraData> cameras;
   kwiver::vital::track_set_sptr tracks;
@@ -190,6 +198,19 @@ public:
 };
 
 QTE_IMPLEMENT_D_FUNC(MainWindow)
+
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::addTool(AbstractTool* tool, MainWindow* mainWindow)
+{
+  this->UI.menuCompute->addAction(tool);
+
+  this->toolDispatcher.setMapping(tool, tool);
+
+  QObject::connect(tool, SIGNAL(triggered()),
+                   &this->toolDispatcher, SLOT(map()));
+  QObject::connect(tool, SIGNAL(completed()),
+                   mainWindow, SLOT(acceptToolResults()));
+}
 
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::addCamera(kwiver::vital::camera_sptr const& camera)
@@ -485,6 +506,9 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(applyCanonicalTransform()));
   connect(d->UI.actionApplyNeckerReverse, SIGNAL(triggered()),
           this, SLOT(applyNeckerReversal()));
+
+  connect(&d->toolDispatcher, SIGNAL(mapped(QObject*)),
+          this, SLOT(executeTool(QObject*)));
 
   connect(d->UI.actionAbout, SIGNAL(triggered()),
           this, SLOT(showAboutDialog()));
@@ -785,6 +809,47 @@ void MainWindow::setActiveCamera(int id)
   }
 
   d->setActiveCamera(id);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::executeTool(QObject* object)
+{
+  QTE_D();
+
+  auto const tool = qobject_cast<AbstractTool*>(object);
+  if (tool && !d->activeTool)
+  {
+    d->activeTool = tool; // TODO d->setActiveTool(tool);
+    // TODO tool->setTracks(d->tracks);
+    tool->setCameras(d->cameraMap());
+    tool->setLandmarks(d->landmarks);
+
+    tool->execute();
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::acceptToolResults()
+{
+  QTE_D();
+
+  if (d->activeTool)
+  {
+    auto const outputs = d->activeTool->outputs();
+
+    if (outputs.testFlag(AbstractTool::Cameras))
+    {
+      d->updateCameras(d->activeTool->cameras());
+    }
+    if (outputs.testFlag(AbstractTool::Landmarks))
+    {
+      d->landmarks = d->activeTool->landmarks();
+      d->UI.worldView->setLandmarks(*d->landmarks);
+    }
+
+    d->updateCameraView();
+  }
+  d->activeTool = 0; // TODO d->setActiveTool(0);
 }
 
 //-----------------------------------------------------------------------------
