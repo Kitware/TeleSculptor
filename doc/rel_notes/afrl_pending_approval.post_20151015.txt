@@ -31,6 +31,9 @@ Visualization Application
    points for arbitrary frame pairs to be visualized as a "heat map" with
    various Visualization options.
 
+ * Added ability to load imagery directly, and without requiring that cameras
+   are loaded.
+
  * Added ground plane display to world view.
 
  * Added ability to view camera frame image, projected to the ground plane, in
@@ -52,3 +55,6 @@ Visualization Application
 
  * Fixed bug where newly loaded landmarks would be visible in the world view
    even if landmarks were disabled.
+
+ * Fixed bug that caused feature tracks to be "misaligned" if a camera could
+   not be loaded.
