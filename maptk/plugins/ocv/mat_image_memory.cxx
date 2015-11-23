@@ -52,7 +52,7 @@ mat_image_memory
   assert(m.depth() == CV_8U);
   assert(!m.allocator);
   CV_XADD(this->mat_refcount_, 1);
-  size_ = sizeof(m.data);
+  size_ = m.rows * m.step;
 }
 
 

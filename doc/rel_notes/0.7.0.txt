@@ -177,6 +177,10 @@ Tests
 Fixes since v0.6.0
 -------------------------------
 
+OpenCV Plugin
+
+  * Fixed error where the size of OCV image memory was incorrectly calculated.
+
 Tests
 
   * Renamed the tests for the main library from "test_core" to "test_maptk"
