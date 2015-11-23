@@ -43,7 +43,7 @@ namespace maptk_c
 void make_string_list( std::vector<std::string> const &list,
                        unsigned int &length, char ** &strings )
 {
-  length = list.size();
+  length = static_cast<unsigned int>(list.size());
   strings = (char**)malloc( sizeof(char*) * length );
   for( unsigned int i = 0; i < length; i++ )
   {
