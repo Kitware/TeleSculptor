@@ -52,8 +52,6 @@
     <property name="title">
      <string>&amp;Compute</string>
     </property>
-    <addaction name="actionAlign"/>
-    <addaction name="actionApplyNeckerReverse"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuCompute"/>
@@ -234,22 +232,6 @@
    </property>
    <property name="shortcut">
     <string>M</string>
-   </property>
-  </action>
-  <action name="actionApplyNeckerReverse">
-   <property name="text">
-    <string>Reverse (&amp;Necker)</string>
-   </property>
-   <property name="toolTip">
-    <string>Attempt to correct a degenerate refinement (which can occur due to the Necker cube phenomena) by rotating the cameras 180&amp;deg; about the axis formed by the mean landmark position and mean camera center and 180&amp;deg; about their principal axes, and mirroring landmarks about the plane at the mean landmark position end of the same axis</string>
-   </property>
-  </action>
-  <action name="actionAlign">
-   <property name="text">
-    <string>&amp;Align</string>
-   </property>
-   <property name="toolTip">
-    <string>Compute and apply a world transform so that the landmarks are centered about the origin with the ground plane aligned to the &lt;tt&gt;Z=0&lt;/tt&gt; plane</string>
    </property>
   </action>
  </widget>

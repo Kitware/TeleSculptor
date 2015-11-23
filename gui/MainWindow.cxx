@@ -33,7 +33,8 @@
 #include "ui_MainWindow.h"
 #include "am_MainWindow.h"
 
-#include "tools/AbstractTool.h"
+#include "tools/CanonicalTransformTool.h"
+#include "tools/NeckerReversalTool.h"
 
 #include "AboutDialog.h"
 #include "MatchMatrixWindow.h"
@@ -42,7 +43,6 @@
 #include "vtkMaptkCamera.h"
 
 #include <maptk/match_matrix.h>
-#include <maptk/transform.h>
 
 #include <vital/io/camera_io.h>
 #include <vital/io/landmark_map_io.h>
@@ -489,6 +489,9 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->UI.setupUi(this);
   d->AM.setupActions(d->UI, this);
 
+  d->addTool(new CanonicalTransformTool(this), this);
+  d->addTool(new NeckerReversalTool(this), this);
+
   d->UI.menuView->addSeparator();
   d->UI.menuView->addAction(d->UI.cameraViewDock->toggleViewAction());
   d->UI.menuView->addAction(d->UI.cameraSelectorDock->toggleViewAction());
@@ -501,11 +504,6 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   connect(d->UI.actionShowMatchMatrix, SIGNAL(triggered()),
           this, SLOT(showMatchMatrix()));
-
-  connect(d->UI.actionAlign, SIGNAL(triggered()),
-          this, SLOT(applyCanonicalTransform()));
-  connect(d->UI.actionApplyNeckerReverse, SIGNAL(triggered()),
-          this, SLOT(applyNeckerReversal()));
 
   connect(&d->toolDispatcher, SIGNAL(mapped(QObject*)),
           this, SLOT(executeTool(QObject*)));
@@ -850,56 +848,6 @@ void MainWindow::acceptToolResults()
     d->updateCameraView();
   }
   d->activeTool = 0; // TODO d->setActiveTool(0);
-}
-
-//-----------------------------------------------------------------------------
-void MainWindow::applyCanonicalTransform()
-{
-  QTE_D();
-
-  auto cameras = d->cameraMap();
-  if (d->landmarks)
-  {
-    auto const& xf = kwiver::maptk::canonical_transform(cameras, d->landmarks);
-
-    d->landmarks = kwiver::maptk::transform(d->landmarks, xf);
-    d->UI.worldView->setLandmarks(*d->landmarks);
-
-    if (!cameras->cameras().empty())
-    {
-      cameras = kwiver::maptk::transform(cameras, xf);
-      d->updateCameras(cameras);
-    }
-
-    d->updateCameraView();
-  }
-  else
-  {
-    QMessageBox::information(
-      this, "Insufficient data", "This operation requires landmarks.");
-  }
-}
-
-//-----------------------------------------------------------------------------
-void MainWindow::applyNeckerReversal()
-{
-  QTE_D();
-
-  auto cameras = d->cameraMap();
-  if (!cameras->cameras().empty() && d->landmarks)
-  {
-    kwiver::maptk::necker_reverse(cameras, d->landmarks);
-
-    d->updateCameras(cameras);
-    d->UI.worldView->setLandmarks(*d->landmarks);
-    d->updateCameraView();
-  }
-  else
-  {
-    QMessageBox::information(
-      this, "Insufficient data",
-      "This operation requires landmarks and cameras.");
-  }
 }
 
 //-----------------------------------------------------------------------------

@@ -47,6 +47,8 @@ set(gui_moc_headers
   PointOptions.h
   WorldView.h
   tools/AbstractTool.h
+  tools/CanonicalTransformTool.h
+  tools/NeckerReversalTool.h
 )
 
 set(gui_sources
@@ -67,6 +69,8 @@ set(gui_sources
   vtkMaptkCameraRepresentation.cxx
   vtkMaptkFeatureTrackRepresentation.cxx
   tools/AbstractTool.cxx
+  tools/CanonicalTransformTool.cxx
+  tools/NeckerReversalTool.cxx
 )
 
 maptk_use_appdata(

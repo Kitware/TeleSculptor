@@ -28,54 +28,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_MAINWINDOW_H_
-#define MAPTK_MAINWINDOW_H_
+#ifndef MAPTK_NECKERREVERSALTOOL_H_
+#define MAPTK_NECKERREVERSALTOOL_H_
 
-#include <qtGlobal.h>
+#include "AbstractTool.h"
 
-#include <QMainWindow>
-
-class MainWindowPrivate;
-
-class MainWindow : public QMainWindow
+class NeckerReversalTool : public AbstractTool
 {
   Q_OBJECT
 
 public:
-  explicit MainWindow(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~MainWindow();
+  explicit NeckerReversalTool(QObject* parent = 0);
+  virtual ~NeckerReversalTool();
 
-public slots:
-  void openFile();
-  void openFile(QString const& path);
-  void openFiles(QStringList const& paths);
+  virtual Outputs outputs() const QTE_OVERRIDE;
 
-  void loadProject(QString const& path);
-  void loadImage(QString const& path);
-  void loadCamera(QString const& path);
-  void loadTracks(QString const& path);
-  void loadLandmarks(QString const& path);
+  virtual bool execute(QWidget* window = 0) QTE_OVERRIDE;
 
-  void setActiveCamera(int);
-
-  void showMatchMatrix();
-
-  void showAboutDialog();
-  void showUserManual();
-
-protected slots:
-  void setSlideDelay(int);
-  void setSlideshowPlaying(bool);
-  void nextSlide();
-
-  void executeTool(QObject*);
-  void acceptToolResults();
+protected:
+  virtual void run() QTE_OVERRIDE;
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(MainWindow)
-  QTE_DECLARE_PRIVATE(MainWindow)
-
-  QTE_DISABLE_COPY(MainWindow)
+  QTE_DISABLE_COPY(NeckerReversalTool)
 };
 
 #endif

@@ -28,54 +28,52 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_MAINWINDOW_H_
-#define MAPTK_MAINWINDOW_H_
+#include "CanonicalTransformTool.h"
 
-#include <qtGlobal.h>
+#include <maptk/transform.h>
 
-#include <QMainWindow>
+#include <QtGui/QMessageBox>
 
-class MainWindowPrivate;
-
-class MainWindow : public QMainWindow
+//-----------------------------------------------------------------------------
+CanonicalTransformTool::CanonicalTransformTool(QObject* parent)
+  : AbstractTool(parent)
 {
-  Q_OBJECT
+  this->setText("&Align");
+  this->setToolTip(
+    "Compute and apply a world transform so that the landmarks are centered "
+    "about the origin with the ground plane aligned to the <tt>z=0</tt> plane");
+}
 
-public:
-  explicit MainWindow(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~MainWindow();
+//-----------------------------------------------------------------------------
+CanonicalTransformTool::~CanonicalTransformTool()
+{
+}
 
-public slots:
-  void openFile();
-  void openFile(QString const& path);
-  void openFiles(QStringList const& paths);
+//-----------------------------------------------------------------------------
+AbstractTool::Outputs CanonicalTransformTool::outputs() const
+{
+  return Cameras | Landmarks;
+}
 
-  void loadProject(QString const& path);
-  void loadImage(QString const& path);
-  void loadCamera(QString const& path);
-  void loadTracks(QString const& path);
-  void loadLandmarks(QString const& path);
+//-----------------------------------------------------------------------------
+bool CanonicalTransformTool::execute(QWidget* window)
+{
+  if (!this->hasLandmarks())
+  {
+    QMessageBox::information(
+      window, "Insufficient data", "This operation requires landmarks.");
+    return false;
+  }
 
-  void setActiveCamera(int);
+  return AbstractTool::execute(window);
+}
 
-  void showMatchMatrix();
+//-----------------------------------------------------------------------------
+void CanonicalTransformTool::run()
+{
+  auto const& xf =
+    kwiver::maptk::canonical_transform(this->cameras(), this->landmarks());
 
-  void showAboutDialog();
-  void showUserManual();
-
-protected slots:
-  void setSlideDelay(int);
-  void setSlideshowPlaying(bool);
-  void nextSlide();
-
-  void executeTool(QObject*);
-  void acceptToolResults();
-
-private:
-  QTE_DECLARE_PRIVATE_RPTR(MainWindow)
-  QTE_DECLARE_PRIVATE(MainWindow)
-
-  QTE_DISABLE_COPY(MainWindow)
-};
-
-#endif
+  this->updateCameras(kwiver::maptk::transform(this->cameras(), xf));
+  this->updateLandmarks(kwiver::maptk::transform(this->landmarks(), xf));
+}
