@@ -119,6 +119,18 @@ protected:
   /// implementation of execute() calls this method in a separate thread.
   virtual void run() = 0;
 
+  /// Test if the tool has camera data.
+  ///
+  /// \return \c true if the tool data has a non-zero number of cameras,
+  ///         otherwise \c false
+  bool hasCameras() const;
+
+  /// Test if the tool has landmark data.
+  ///
+  /// \return \c true if the tool data has a non-zero number of landmarks,
+  ///         otherwise \c false
+  bool hasLandmarks() const;
+
   /// Set the cameras produced by the tool.
   ///
   /// This sets the cameras that are produced by the tool as output. Unlike

@@ -36,15 +36,30 @@
 class AbstractToolPrivate : public QThread
 {
 public:
+  AbstractToolPrivate(AbstractTool* q) : q_ptr(q) {}
+
+  virtual void run() QTE_OVERRIDE;
+
   kwiver::vital::camera_map_sptr cameras;
   kwiver::vital::landmark_map_sptr landmarks;
+
+protected:
+  QTE_DECLARE_PUBLIC_PTR(AbstractTool)
+  QTE_DECLARE_PUBLIC(AbstractTool)
 };
 
 QTE_IMPLEMENT_D_FUNC(AbstractTool)
 
 //-----------------------------------------------------------------------------
+void AbstractToolPrivate::run()
+{
+  QTE_Q();
+  q->run();
+}
+
+//-----------------------------------------------------------------------------
 AbstractTool::AbstractTool(QObject* parent)
-  : QAction(parent), d_ptr(new AbstractToolPrivate)
+  : QAction(parent), d_ptr(new AbstractToolPrivate(this))
 {
   QTE_D();
   connect(d, SIGNAL(finished()), this, SIGNAL(completed()));
@@ -107,6 +122,29 @@ void AbstractTool::setLandmarks(landmark_map_sptr const& newLandmarks)
   {
     this->updateCameras({});
   }
+}
+
+//-----------------------------------------------------------------------------
+bool AbstractTool::execute(QWidget* window)
+{
+  QTE_D();
+
+  d->start();
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+bool AbstractTool::hasCameras() const
+{
+  QTE_D();
+  return d->cameras && d->cameras->size();
+}
+
+//-----------------------------------------------------------------------------
+bool AbstractTool::hasLandmarks() const
+{
+  QTE_D();
+  return d->landmarks && d->landmarks->size();
 }
 
 //-----------------------------------------------------------------------------
