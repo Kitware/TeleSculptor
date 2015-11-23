@@ -62,6 +62,7 @@ kwiver_add_library(
   ${maptk_public_headers}
   ${maptk_sources}
   )
+add_dependencies(maptk configure-config.h)
 target_link_libraries(maptk vital ${Boost_LIBRARIES} )
 
 
