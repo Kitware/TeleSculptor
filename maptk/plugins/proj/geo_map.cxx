@@ -112,7 +112,7 @@ geo_map
   int ret = pj_transform(pj_utm, pj_latlon, 1, 1,
                          &lon, &lat, NULL);
   assert(ret == 0);
-  ret = 0;  // suppresses unused variable warning when build as release
+  (void)ret;  // suppresses unused variable warning when build as release
 
   // lat/lon now in radians, so need to convert to degrees
   lat /= DEG_TO_RAD;
@@ -149,7 +149,7 @@ geo_map
   int ret = pj_transform(pj_latlon, pj_utm, 1, 1,
                          &easting, &northing, NULL);
   assert(ret == 0);
-  ret = 0;  // suppresses unused variable warning when build as release
+  (void)ret;  // suppresses unused variable warning when build as release
 
   // proj always returns with respect to the northern hemisphere.
   north_hemi = true;
