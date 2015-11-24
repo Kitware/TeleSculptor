@@ -181,6 +181,18 @@ To build the user manual(s), you need:
 (At present, only the GUI has a user manual.  Other manuals may be added in the
 future.)
 
+Nightly builds of the Doxygen documentation for the primary branches are here:
+
+================================= ==============
+Nightly **master** Documentation  doc:master_
+Nightly **release** Documentation doc:release_
+================================= ==============
+
+Doxygen documentation for released versions are here:
+
+================================= ==============
+MAP-Tk v0.6.0 Documentation       doc:v0.6.0_
+================================= ==============
 
 Building Doxygen Documentation
 ------------------------------
@@ -341,3 +353,7 @@ public release via 88ABW-2015-2555.
 
 .. _CI:master: https://travis-ci.org/Kitware/maptk
 .. _CI:release: https://travis-ci.org/Kitware/maptk
+
+.. _doc:master: http://www.kwiver.org/maptk/docs/nightly/master
+.. _doc:release: http://www.kwiver.org/maptk/docs/nightly/release
+.. _doc:v0.6.0: http://www.kwiver.org/maptk/docs/release/v0.6.0
