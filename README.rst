@@ -183,16 +183,16 @@ future.)
 
 Nightly builds of the Doxygen documentation for the primary branches are here:
 
-================================= ==============
-Nightly **master** Documentation  doc:master_
-Nightly **release** Documentation doc:release_
-================================= ==============
+================================= ================================================
+Nightly **master** Documentation  http://www.kwiver.org/maptk/docs/nightly/master
+Nightly **release** Documentation http://www.kwiver.org/maptk/docs/nightly/release
+================================= ================================================
 
 Doxygen documentation for released versions are here:
 
-================================= ==============
-MAP-Tk v0.6.0 Documentation       doc:v0.6.0_
-================================= ==============
+================================= ===============================================
+**MAP-Tk v0.6.0** Documentation   http://www.kwiver.org/maptk/docs/release/v0.6.0
+================================= ===============================================
 
 Building Doxygen Documentation
 ------------------------------
@@ -353,7 +353,3 @@ public release via 88ABW-2015-2555.
 
 .. _CI:master: https://travis-ci.org/Kitware/maptk
 .. _CI:release: https://travis-ci.org/Kitware/maptk
-
-.. _doc:master: http://www.kwiver.org/maptk/docs/nightly/master
-.. _doc:release: http://www.kwiver.org/maptk/docs/nightly/release
-.. _doc:v0.6.0: http://www.kwiver.org/maptk/docs/release/v0.6.0
