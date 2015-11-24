@@ -104,6 +104,7 @@ maptk_algorithm_registered_names( char const *type_name,
                                   maptk_error_handle_t *eh )
 {
   char const *prefix = "C::algorithm::registered_names";
+  (void)prefix; // silence unused variable warnings
   STANDARD_CATCH(
     prefix, eh,
 
