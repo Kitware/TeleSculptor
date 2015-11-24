@@ -445,7 +445,10 @@ bundle_adjust
     // copy the intersection of parameters provided in K
     // and those that are supported by the requested model type
     unsigned int num_dp = std::min(ndp, static_cast<unsigned int>(d.size()));
-    std::copy(d.data(), d.data()+num_dp, &intrinsic_params[5]);
+    if( num_dp > 0 )
+    {
+      std::copy(d.data(), d.data()+num_dp, &intrinsic_params[5]);
+    }
   }
 
   // the Ceres solver problem
@@ -571,9 +574,12 @@ bundle_adjust
     K.set_principal_point(pp);
     K.set_aspect_ratio(intrinsic_params[3]);
     K.set_skew(intrinsic_params[4]);
-    Eigen::VectorXd dc(ndp);
-    std::copy(&intrinsic_params[5], &intrinsic_params[5]+ndp, dc.data());
-    K.set_dist_coeffs(dc);
+    if( ndp > 0 )
+    {
+      Eigen::VectorXd dc(ndp);
+      std::copy(&intrinsic_params[5], &intrinsic_params[5]+ndp, dc.data());
+      K.set_dist_coeffs(dc);
+    }
     cams[cp.first] = camera_sptr(new camera_d(center, rot, K));
   }
 
