@@ -66,11 +66,10 @@ Building MAP-Tk
 ===============
 
 MAP-Tk uses CMake (www.cmake.org) for easy cross-platform compilation. The
-minimum required version of CMake is 2.8.11, but newer versions are recommended.
+minimum required version of CMake is 3.0, but newer versions are recommended.
 
 Currently, a compiler with at least partial C++11 support (e.g. GCC 4.4, Visual
-Studio 2010) is required to build the GUI.  This requirement may be extended to
-rest of the software in the future.
+Studio 2013) is required.
 
 
 Running CMake
