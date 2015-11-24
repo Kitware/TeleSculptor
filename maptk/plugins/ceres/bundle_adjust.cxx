@@ -501,7 +501,10 @@ bundle_adjust
       // copy the intersection of parameters provided in K
       // and those that are supported by the requested model type
       unsigned int num_dp = std::min(ndp, static_cast<unsigned int>(d.size()));
-      std::copy(d.begin(), d.begin()+num_dp, &intrinsic_params[5]);
+      if( num_dp > 0 )
+      {
+        std::copy(d.begin(), d.begin()+num_dp, &intrinsic_params[5]);
+      }
       // update the maps with the index of this new parameter vector
       camera_intr_map[K] = camera_intr_params.size();
       frame_to_intr_map[c.first] = camera_intr_params.size();
@@ -646,9 +649,12 @@ bundle_adjust
     K->set_principal_point(pp);
     K->set_aspect_ratio(cip[3]);
     K->set_skew(cip[4]);
-    Eigen::VectorXd dc(ndp);
-    std::copy(&cip[5], &cip[5]+ndp, dc.data());
-    K->set_dist_coeffs(dc);
+    if( ndp > 0 )
+    {
+      Eigen::VectorXd dc(ndp);
+      std::copy(&cip[5], &cip[5]+ndp, dc.data());
+      K->set_dist_coeffs(dc);
+    }
     updated_intr.push_back(camera_intrinsics_sptr(K));
   }
 
