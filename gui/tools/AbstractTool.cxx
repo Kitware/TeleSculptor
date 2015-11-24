@@ -40,6 +40,7 @@ public:
 
   virtual void run() QTE_OVERRIDE;
 
+  kwiver::vital::track_set_sptr tracks;
   kwiver::vital::camera_map_sptr cameras;
   kwiver::vital::landmark_map_sptr landmarks;
 
@@ -73,6 +74,13 @@ AbstractTool::~AbstractTool()
 }
 
 //-----------------------------------------------------------------------------
+kwiver::vital::track_set_sptr AbstractTool::tracks() const
+{
+  QTE_D();
+  return d->tracks;
+}
+
+//-----------------------------------------------------------------------------
 kwiver::vital::camera_map_sptr AbstractTool::cameras() const
 {
   QTE_D();
@@ -84,6 +92,25 @@ AbstractTool::landmark_map_sptr AbstractTool::landmarks() const
 {
   QTE_D();
   return d->landmarks;
+}
+
+//-----------------------------------------------------------------------------
+void AbstractTool::setTracks(track_set_sptr const& newTracks)
+{
+  if (newTracks)
+  {
+    auto copiedTracks = std::vector<kwiver::vital::track_sptr>{};
+    foreach (auto const& ti, newTracks->tracks())
+    {
+      copiedTracks.push_back(std::make_shared<kwiver::vital::track>(*ti));
+    }
+    this->updateTracks(
+      std::make_shared<kwiver::vital::simple_track_set>(copiedTracks));
+  }
+  else
+  {
+    this->updateTracks({});
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -134,6 +161,13 @@ bool AbstractTool::execute(QWidget* window)
 }
 
 //-----------------------------------------------------------------------------
+bool AbstractTool::hasTracks() const
+{
+  QTE_D();
+  return d->tracks && d->tracks->size();
+}
+
+//-----------------------------------------------------------------------------
 bool AbstractTool::hasCameras() const
 {
   QTE_D();
@@ -145,6 +179,13 @@ bool AbstractTool::hasLandmarks() const
 {
   QTE_D();
   return d->landmarks && d->landmarks->size();
+}
+
+//-----------------------------------------------------------------------------
+void AbstractTool::updateTracks(track_set_sptr const& newTracks)
+{
+  QTE_D();
+  d->tracks = newTracks;
 }
 
 //-----------------------------------------------------------------------------

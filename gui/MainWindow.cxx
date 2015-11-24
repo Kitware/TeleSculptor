@@ -818,7 +818,7 @@ void MainWindow::executeTool(QObject* object)
   if (tool && !d->activeTool)
   {
     d->activeTool = tool; // TODO d->setActiveTool(tool);
-    // TODO tool->setTracks(d->tracks);
+    tool->setTracks(d->tracks);
     tool->setCameras(d->cameraMap());
     tool->setLandmarks(d->landmarks);
 

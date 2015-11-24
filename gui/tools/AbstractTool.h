@@ -33,6 +33,7 @@
 
 #include <vital/types/camera_map.h>
 #include <vital/types/landmark_map.h>
+#include <vital/types/track_set.h>
 
 #include <qtGlobal.h>
 
@@ -45,6 +46,7 @@ class AbstractTool : public QAction
   Q_OBJECT
 
 public:
+  typedef kwiver::vital::track_set_sptr track_set_sptr;
   typedef kwiver::vital::camera_map_sptr camera_map_sptr;
   typedef kwiver::vital::landmark_map_sptr landmark_map_sptr;
 
@@ -61,6 +63,9 @@ public:
 
   /// Get the types of output produced by the tool.
   virtual Outputs outputs() const = 0;
+
+  /// Set the tracks to be used as input to the tool.
+  void setTracks(track_set_sptr const&);
 
   /// Set the cameras to be used as input to the tool.
   void setCameras(camera_map_sptr const&);
@@ -80,7 +85,18 @@ public:
   ///         \c false.
   virtual bool execute(QWidget* window = 0);
 
-//   track_set_sptr tracks() const;
+  /// Get tracks.
+  ///
+  /// This returns the new tracks resulting from the tool execution. If the
+  /// tool does not output tracks, the tracks will be a copy of the input
+  /// tracks.
+  ///
+  /// This may also be used by tool implementations to get the input tracks.
+  /// (The tracks will be a copy that can be safely modified.)
+  ///
+  /// \warning Users must not call this method while the tool is executing,
+  ///          as doing so may not be thread safe.
+  track_set_sptr tracks() const;
 
   /// Get cameras.
   ///
@@ -119,6 +135,12 @@ protected:
   /// implementation of execute() calls this method in a separate thread.
   virtual void run() = 0;
 
+  /// Test if the tool has track data.
+  ///
+  /// \return \c true if the tool data has a non-zero number of feature tracks,
+  ///         otherwise \c false
+  bool hasTracks() const;
+
   /// Test if the tool has camera data.
   ///
   /// \return \c true if the tool data has a non-zero number of cameras,
@@ -130,6 +152,12 @@ protected:
   /// \return \c true if the tool data has a non-zero number of landmarks,
   ///         otherwise \c false
   bool hasLandmarks() const;
+
+  /// Set the tracks produced by the tool.
+  ///
+  /// This sets the tracks that are produced by the tool as output. Unlike
+  /// setTracks, this does not make a deep copy of the provided tracks.
+  void updateTracks(track_set_sptr const&);
 
   /// Set the cameras produced by the tool.
   ///
