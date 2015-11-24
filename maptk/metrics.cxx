@@ -48,7 +48,7 @@ reprojection_error_vec(const camera& cam,
                        const landmark& lm,
                        const feature& f)
 {
-  vector_2d pt;
+  vector_2d pt(0.0, 0.0);
   pt = cam.project(lm.loc());
   return pt - f.loc();
 }
