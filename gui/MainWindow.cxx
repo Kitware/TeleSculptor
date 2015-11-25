@@ -1083,7 +1083,7 @@ void MainWindow::showUserManual()
   else
   {
     QMessageBox::information(
-      this, "Not Found",
+      this, "Not found",
       "The user manual could not be located. Please check your installation.");
   }
 }
