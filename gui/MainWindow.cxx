@@ -70,17 +70,12 @@
 #include <QtCore/QTimer>
 #include <QtCore/QUrl>
 
+///////////////////////////////////////////////////////////////////////////////
+
+//BEGIN miscellaneous helpers
+
 namespace // anonymous
 {
-
-//-----------------------------------------------------------------------------
-struct CameraData
-{
-  int id;
-  vtkSmartPointer<vtkMaptkCamera> camera;
-
-  QString imagePath; // Full path to camera image data
-};
 
 //-----------------------------------------------------------------------------
 QString findUserManual()
@@ -156,10 +151,26 @@ QString makeFilters(QStringList extensions)
 
 } // namespace <anonymous>
 
+//END miscellaneous helpers
+
+///////////////////////////////////////////////////////////////////////////////
+
+//BEGIN MainWindowPrivate
+
 //-----------------------------------------------------------------------------
 class MainWindowPrivate
 {
 public:
+  // Data structures
+  struct CameraData
+  {
+    int id;
+    vtkSmartPointer<vtkMaptkCamera> camera;
+
+    QString imagePath; // Full path to camera image data
+  };
+
+  // Methods
   MainWindowPrivate() : activeTool(0), activeCameraIndex(-1) {}
 
   void addTool(AbstractTool* tool, MainWindow* mainWindow);
@@ -178,6 +189,7 @@ public:
 
   void loadImage(QString const& path, vtkMaptkCamera* camera);
 
+  // Member variables
   Ui::MainWindow UI;
   Am::MainWindow AM;
   qtUiState uiState;
@@ -478,6 +490,12 @@ void MainWindowPrivate::loadImage(QString const& path, vtkMaptkCamera* camera)
     reader->Delete();
   }
 }
+
+//END MainWindowPrivate
+
+///////////////////////////////////////////////////////////////////////////////
+
+//BEGIN MainWindow
 
 //-----------------------------------------------------------------------------
 MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
@@ -891,3 +909,5 @@ void MainWindow::showUserManual()
       "The user manual could not be located. Please check your installation.");
   }
 }
+
+//END MainWindow
