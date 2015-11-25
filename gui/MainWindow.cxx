@@ -189,6 +189,8 @@ public:
 
   void loadImage(QString const& path, vtkMaptkCamera* camera);
 
+  void setActiveTool(AbstractTool* tool);
+
   // Member variables
   Ui::MainWindow UI;
   Am::MainWindow AM;
@@ -198,6 +200,7 @@ public:
   QSignalMapper toolDispatcher;
 
   AbstractTool* activeTool;
+  QList<AbstractTool*> tools;
 
   QList<CameraData> cameras;
   kwiver::vital::track_set_sptr tracks;
@@ -222,6 +225,8 @@ void MainWindowPrivate::addTool(AbstractTool* tool, MainWindow* mainWindow)
                    &this->toolDispatcher, SLOT(map()));
   QObject::connect(tool, SIGNAL(completed()),
                    mainWindow, SLOT(acceptToolResults()));
+
+  this->tools.append(tool);
 }
 
 //-----------------------------------------------------------------------------
@@ -489,6 +494,19 @@ void MainWindowPrivate::loadImage(QString const& path, vtkMaptkCamera* camera)
     // Delete the reader
     reader->Delete();
   }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::setActiveTool(AbstractTool* tool)
+{
+  this->activeTool = tool;
+
+  auto const enableTools = !tool;
+  foreach (auto const& tool, this->tools)
+  {
+    tool->setEnabled(enableTools);
+  }
+  this->UI.actionOpen->setEnabled(enableTools);
 }
 
 //END MainWindowPrivate
@@ -835,12 +853,15 @@ void MainWindow::executeTool(QObject* object)
   auto const tool = qobject_cast<AbstractTool*>(object);
   if (tool && !d->activeTool)
   {
-    d->activeTool = tool; // TODO d->setActiveTool(tool);
+    d->setActiveTool(tool);
     tool->setTracks(d->tracks);
     tool->setCameras(d->cameraMap());
     tool->setLandmarks(d->landmarks);
 
-    tool->execute();
+    if (!tool->execute())
+    {
+      d->setActiveTool(0);
+    }
   }
 }
 
@@ -865,7 +886,7 @@ void MainWindow::acceptToolResults()
 
     d->updateCameraView();
   }
-  d->activeTool = 0; // TODO d->setActiveTool(0);
+  d->setActiveTool(0);
 }
 
 //-----------------------------------------------------------------------------
