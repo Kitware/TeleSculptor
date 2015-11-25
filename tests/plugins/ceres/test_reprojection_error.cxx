@@ -90,7 +90,10 @@ test_reprojection_error(const maptk::camera& cam,
   // copy the intersection of parameters provided in K
   // and those that are supported by the requested model type
   unsigned int num_dp = std::min(ndp, static_cast<unsigned int>(d.size()));
-  std::copy(d.data(), d.data()+num_dp, &intrinsics[5]);
+  if( num_dp > 0 )
+  {
+    std::copy(d.data(), d.data()+num_dp, &intrinsics[5]);
+  }
 
   double point[3] = {lm.loc().x(), lm.loc().y(), lm.loc().z()};
 
