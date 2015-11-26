@@ -40,11 +40,11 @@ NeckerReversalTool::NeckerReversalTool(QObject* parent)
 {
   this->setText("Reverse (&Necker)");
   this->setToolTip(
-    "Attempt to correct a degenerate refinement (which can occur due to the "
-    "Necker cube phenomena) by rotating the cameras 180&deg; about the axis "
-    "formed by the mean landmark position and mean camera center and 180&deg; "
-    "about their principal axes, and mirroring landmarks about the plane at "
-    "the mean landmark position end of the same axis");
+    "<nobr>Attempt to correct a degenerate refinement (which can occur due to "
+    "the</nobr> Necker cube phenomena) by rotating the cameras 180&deg; about "
+    "the axis formed by the mean landmark position and mean camera center and "
+    "180&deg; about their principal axes, and mirroring landmarks about the "
+    "plane at the mean landmark position end of the same axis");
 }
 
 //-----------------------------------------------------------------------------

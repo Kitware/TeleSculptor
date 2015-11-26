@@ -66,8 +66,8 @@ BundleAdjustTool::BundleAdjustTool(QObject* parent)
 {
   this->setText("&Refine Solution");
   this->setToolTip(
-    "Apply bundle adjustment to the cameras and landmarks in order to refine "
-    "the quality of the 3D reconstruction");
+    "<nobr>Apply bundle adjustment to the cameras and landmarks in order to"
+    "</nobr> refine the quality of the 3D reconstruction");
 }
 
 //-----------------------------------------------------------------------------
