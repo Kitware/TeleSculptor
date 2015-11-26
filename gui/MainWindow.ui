@@ -23,7 +23,7 @@
      <height>21</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuFile">
+   <widget class="qtMenu" name="menuFile">
     <property name="title">
      <string>&amp;File</string>
     </property>
@@ -31,7 +31,7 @@
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
-   <widget class="QMenu" name="menuView">
+   <widget class="qtMenu" name="menuView">
     <property name="title">
      <string>&amp;View</string>
     </property>
@@ -40,7 +40,7 @@
     <addaction name="separator"/>
     <addaction name="actionShowMatchMatrix"/>
    </widget>
-   <widget class="QMenu" name="menuHelp">
+   <widget class="qtMenu" name="menuHelp">
     <property name="title">
      <string>&amp;Help</string>
     </property>
@@ -48,7 +48,7 @@
     <addaction name="separator"/>
     <addaction name="actionAbout"/>
    </widget>
-   <widget class="QMenu" name="menuCompute">
+   <widget class="qtMenu" name="menuCompute">
     <property name="title">
      <string>&amp;Compute</string>
     </property>
@@ -247,6 +247,11 @@
    <extends>QWidget</extends>
    <header>CameraView.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>qtMenu</class>
+   <extends>QMenu</extends>
+   <header location="global">qtMenu.h</header>
   </customwidget>
  </customwidgets>
  <resources>
