@@ -33,6 +33,7 @@
 #include "ui_MainWindow.h"
 #include "am_MainWindow.h"
 
+#include "tools/BundleAdjustTool.h"
 #include "tools/CanonicalTransformTool.h"
 #include "tools/NeckerReversalTool.h"
 
@@ -525,6 +526,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->UI.setupUi(this);
   d->AM.setupActions(d->UI, this);
 
+  d->addTool(new BundleAdjustTool(this), this);
   d->addTool(new CanonicalTransformTool(this), this);
   d->addTool(new NeckerReversalTool(this), this);
 
