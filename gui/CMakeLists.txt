@@ -109,6 +109,7 @@ maptk_add_executable(mapgui
 
 target_link_libraries(mapgui
   maptk
+  vital_apm
   vtkGUISupportQt
   vtkInteractionStyle
   vtkViewsCore

@@ -32,6 +32,8 @@
 
 #include "Version.h"
 
+#include <vital/algorithm_plugin_manager.h>
+
 #include <qtUtil.h>
 
 #include <QApplication>
@@ -47,6 +49,9 @@ int main(int argc, char** argv)
 
   QApplication app(argc, argv);
   qtUtil::setApplicationIcon("mapgui");
+
+  // Load Vital/MAP-Tk plugins
+  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
 
   MainWindow window;
   window.show();
