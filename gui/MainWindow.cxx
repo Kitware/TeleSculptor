@@ -57,6 +57,7 @@
 #include <vtkSmartPointer.h>
 
 #include <qtMath.h>
+#include <qtStlUtil.h>
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
 
@@ -77,6 +78,12 @@
 
 namespace // anonymous
 {
+
+//-----------------------------------------------------------------------------
+kwiver::vital::path_t kvPath(QString const& s)
+{
+  return stdString(s);
+}
 
 //-----------------------------------------------------------------------------
 QString findUserManual()
@@ -672,13 +679,13 @@ void MainWindow::loadProject(QString const& path)
   }
   else
   {
-    auto const cameraDir = kwiver::vital::path_t(qPrintable(project.cameraPath));
+    auto const cameraDir = kwiver::vital::path_t(kvPath(project.cameraPath));
     foreach (auto const& ip, project.images)
     {
       try
       {
         auto const& camera =
-          kwiver::vital::read_krtd_file(qPrintable(ip), cameraDir);
+          kwiver::vital::read_krtd_file(kvPath(ip), cameraDir);
 
         // Add camera to scene
         d->addFrame(camera, ip);
@@ -709,7 +716,7 @@ void MainWindow::loadCamera(QString const& path)
 
   try
   {
-    auto const& camera = kwiver::vital::read_krtd_file(qPrintable(path));
+    auto const& camera = kwiver::vital::read_krtd_file(kvPath(path));
     d->addCamera(camera);
   }
   catch (...)
@@ -725,7 +732,7 @@ void MainWindow::loadTracks(QString const& path)
 
   try
   {
-    auto const& tracks = kwiver::vital::read_track_file(qPrintable(path));
+    auto const& tracks = kwiver::vital::read_track_file(kvPath(path));
     if (tracks)
     {
       d->tracks = tracks;
@@ -752,7 +759,7 @@ void MainWindow::loadLandmarks(QString const& path)
 
   try
   {
-    auto const& landmarks = kwiver::vital::read_ply_file(qPrintable(path));
+    auto const& landmarks = kwiver::vital::read_ply_file(kvPath(path));
     if (landmarks)
     {
       d->landmarks = landmarks;
