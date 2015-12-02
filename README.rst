@@ -183,8 +183,8 @@ To build the user manual(s), you need:
 future.)
 
 
-Building Doxygen Documentation
-------------------------------
+Building Documentation
+----------------------
 
 If ``MAPTK_ENABLE_DOCS`` is enabled, and CMake finds, or is provided with, a
 path to the Doxygen tool, then the HTML documentation is built as part of the
