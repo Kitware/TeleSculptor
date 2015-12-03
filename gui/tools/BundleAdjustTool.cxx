@@ -49,6 +49,24 @@ using kwiver::vital::algo::bundle_adjust_sptr;
 namespace
 {
 static char const* const BLOCK = "bundle_adjuster";
+
+//-----------------------------------------------------------------------------
+kwiver::vital::config_block_sptr readConfig(std::string const& name)
+{
+  try
+  {
+    using kwiver::vital::read_config_file;
+
+    auto const exeDir = QDir(QApplication::applicationDirPath());
+    auto const prefix = stdString(exeDir.absoluteFilePath(".."));
+    return read_config_file(name, "maptk", MAPTK_VERSION, prefix);
+  }
+  catch (...)
+  {
+    return {};
+  }
+}
+
 }
 
 //-----------------------------------------------------------------------------
@@ -96,18 +114,22 @@ bool BundleAdjustTool::execute(QWidget* window)
   }
 
   // Load configuration
-  auto const exeDir = QDir(QApplication::applicationDirPath());
-  auto const prefix = stdString(exeDir.absoluteFilePath(".."));
-  auto const config =
-    kwiver::vital::read_config_file("bundle_adjust.conf",
-                                    "maptk", MAPTK_VERSION, prefix);
+  auto const config = readConfig("bundle_adjust.conf");
 
   // Check configuration
+  if (!config)
+  {
+    QMessageBox::critical(
+      window, "Configuration error",
+      "No configuration data was found. Please check your installation.");
+    return false;
+  }
+
   if (!bundle_adjust::check_nested_algo_configuration(BLOCK, config))
   {
     QMessageBox::critical(
       window, "Configuration error",
-      "An error was found in the algorithm configuration");
+      "An error was found in the algorithm configuration.");
     return false;
   }
 
