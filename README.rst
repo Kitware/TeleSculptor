@@ -194,8 +194,8 @@ Doxygen documentation for released versions are here:
 **MAP-Tk v0.6.0** Documentation   http://www.kwiver.org/maptk/docs/release/v0.6.0
 ================================= ===============================================
 
-Building Doxygen Documentation
-------------------------------
+Building Documentation
+----------------------
 
 If ``MAPTK_ENABLE_DOCS`` is enabled, and CMake finds, or is provided with, a
 path to the Doxygen tool, then the HTML documentation is built as part of the
