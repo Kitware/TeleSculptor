@@ -27,7 +27,15 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
+    <widget class="qtMenu" name="menuExport">
+     <property name="title">
+      <string>&amp;Export</string>
+     </property>
+     <addaction name="actionExportCameras"/>
+     <addaction name="actionExportLandmarks"/>
+    </widget>
     <addaction name="actionOpen"/>
+    <addaction name="menuExport"/>
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
@@ -232,6 +240,28 @@
    </property>
    <property name="shortcut">
     <string>M</string>
+   </property>
+  </action>
+  <action name="actionExportLandmarks">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>PLY &amp;Landmarks...</string>
+   </property>
+   <property name="toolTip">
+    <string>Export the landmarks in the current project to a PLY file</string>
+   </property>
+  </action>
+  <action name="actionExportCameras">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>KRTD &amp;Cameras...</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;nobr&gt;Export the cameras in the current project&lt;/nobr&gt; to a series of KRTD files</string>
    </property>
   </action>
  </widget>
