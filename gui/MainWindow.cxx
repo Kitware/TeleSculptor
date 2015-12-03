@@ -886,7 +886,10 @@ void MainWindow::acceptToolResults()
       d->UI.worldView->setLandmarks(*d->landmarks);
     }
 
-    d->updateCameraView();
+    if (!d->cameras.isEmpty())
+    {
+      d->setActiveCamera(d->activeCameraIndex);
+    }
   }
   d->setActiveTool(0);
 }
