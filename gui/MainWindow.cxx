@@ -346,8 +346,7 @@ kwiver::vital::camera_map_sptr MainWindowPrivate::cameraMap() const
 {
   kwiver::vital::camera_map::map_camera_t map;
 
-  auto const cameraCount = this->cameras.count();
-  for (int i = 0; i < cameraCount; ++i)
+  foreach (auto i, qtIndexRange(this->cameras.count()))
   {
     auto const& cd = this->cameras[i];
     if (cd.camera)
