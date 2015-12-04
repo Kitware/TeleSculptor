@@ -2,9 +2,47 @@ MAP-Tk v0.7.0 Release Notes
 ==========================
 
 This is a minor release of MAP-Tk that provides both new functionality and
-fixes over the previous v0.6.1 release.  This release adds a Ceres Solver
-plugin which provides a much improved bundle adjustment backend.  It also
-adds support for lens distortion modeling.
+fixes over the previous v0.6.1 release.  The highlights of this release are
+a new Ceres Solver plugin, support for lens distortion modeling, match
+matrix computation and visualization, and a prototype for a new graphical
+visualization application.  This is the last minor release of MAP-Tk that
+does not depend on the Vital project.  Starting with MAP-Tk v0.8.0 a large
+amount of MAP-Tk code will migrate to Vital to be shared across Kwiver
+projects and provide better MAP-Tk integration with Kwiver. MAP-Tk will
+then depend on Vital.
+
+Ceres provides a much improved bundle adjustment backend.  It is an order
+of magnitude faster than the VXL backend while also being more flexible
+and configurable.  For example, it handles radial distortion parameters
+and sharing of camera intrinsics between any subsets of cameras. Ceres
+will be the default bundle adjustment backend going forward.  The VXL
+backend will still be supported, but with a subset of capabilities.
+
+The lens distortion model added to the camera class follows the same
+model used by OpenCV with up to eight radial and tangential parameters.
+Additional distortion models may be added in the future.  Sharing the
+OpenCV model means that parameters estimated using OpenCV can be plugged
+directly into MAP-Tk without conversion.  Note that the OpenCV code for lens
+distortion is not actually required in MAP-Tk and lens distortion is supported
+even without the OpenCV plugin enabled.
+
+The match matrix provides a useful way to analyze and visualize the statistics
+of the feature tracking results.  The match matrix contains the number of
+features that correspond between any two images.  It is useful for guiding
+structure from motion algorithms and also provides a good visual summary
+of image connectivity and loop closure when rendered as an image.  This
+release provides tools for writing out the matrix and a Python script for
+plotting it.  Future release will add visualization directly into the GUI.
+
+The visualization application is graphical user interface (GUI) for
+visualizing MAP-Tk output.  It renders the 3D pose of cameras and
+landmarks and also shows how the landmarks project into the images and
+draws the residual vector between landmarks and corresponding feature points.
+In this release the GUI is just a preview of what is to come.  In future
+releases, the GUI will provided capabilities for running the algorithms
+directly as well as visualizing the results.
+
+Additional notes about the release are provided below.
 
 
 Updates since v0.6.1
