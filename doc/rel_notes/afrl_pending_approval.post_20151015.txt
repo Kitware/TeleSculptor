@@ -12,8 +12,9 @@ Updates since last public release
 
 Visualization Application
 
- * Added ability to execute some simple computations (for now, computing and
-   applying basic transformations) from within the GUI.
+ * Added ability to execute some computations (for now, computing and applying
+   basic transformations, applying bundle adjustment to refine the solution)
+   from within the GUI.
 
  * Added ability to visualize locations of corresponding feature points on
    adjacent frames to the camera view. This may be helpful as an additional

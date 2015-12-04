@@ -275,6 +275,10 @@ File Menu
 Compute Menu
 ------------
 
+:icon:`blank` Refine
+  Applies bundle adjustment to the cameras and landmarks in order to refine the
+  quality of the 3D reconstruction.
+
 :icon:`blank` Align
   Applies a linear transformation to the camera and landmark data so that the
   data has a standard alignment. Particularly, this attempts to orient the data
