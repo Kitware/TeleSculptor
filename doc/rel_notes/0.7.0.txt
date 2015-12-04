@@ -115,6 +115,8 @@ Visualization Application
    automatic switching between cameras at regular intervals and can emulate
    video playback.
 
+ * Added a new icon/logo for MAP-Tk to use as the icon for the GUI application.
+
 C Interface
 
  * Updated algorithm related code to use new functions in algorithm C++ base
