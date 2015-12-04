@@ -48,7 +48,7 @@ Main Library
    shared pointer and the clone() method returns a shared pointer to the
    specific algorithm intermediate base class.
 
- * Added a Necker reverse tranformation to transform.h to help get out
+ * Added a Necker reverse transformation to transform.h to help get out
    of a common local minima during bundle adjustment.
 
  * Moved some common camera parameter collection code for camera optimization
@@ -77,14 +77,14 @@ Ceres Plugin
    for even more fine-grained selection of model parameter subsets.
 
  * Added unit tests for Ceres bundle adjustment covering the use and estimation
-   of lens distortion paramters.
+   of lens distortion parameters.
 
 Core Plugin
 
  * Added a core plugin implementation of triangulate_landmarks using the
    triangulation functions added to the main library.
 
- * Moved the implementatation of initialize_cameras_landmarks from the VXL
+ * Moved the implementation of initialize_cameras_landmarks from the VXL
    plugin into core and updated it to use the new triangulation and essential
    matrix functionality of the main library to remove dependence on VXL.
 
@@ -174,7 +174,7 @@ Tests
 
  * Moved test code from vxl::triangulate_landmarks to a common header to also
    share with tests for core::triangulate_landmarks and any other future
-   implementaitons of triangulate_landmarks.
+   implementations of triangulate_landmarks.
 
 Fixes since v0.6.0
 -------------------------------
