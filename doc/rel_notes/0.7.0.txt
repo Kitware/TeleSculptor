@@ -2,12 +2,12 @@ MAP-Tk v0.7.0 Release Notes
 ==========================
 
 This is a minor release of MAP-Tk that provides both new functionality and
-fixes over the previous v0.6.0 release.  This release adds a Ceres Solver
+fixes over the previous v0.6.1 release.  This release adds a Ceres Solver
 plugin which provides a much improved bundle adjustment backend.  It also
 adds support for lens distortion modeling.
 
 
-Updates since v0.6.0
+Updates since v0.6.1
 ---------------------------------
 
 Main Library
@@ -176,7 +176,7 @@ Tests
    share with tests for core::triangulate_landmarks and any other future
    implementations of triangulate_landmarks.
 
-Fixes since v0.6.0
+Fixes since v0.6.1
 -------------------------------
 
 OpenCV Plugin
