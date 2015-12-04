@@ -202,7 +202,9 @@ canonical_transform(vital::camera_map_sptr cameras,
     // flip the plane normal if it points away from the cameras
     if( cam_center.dot(rot.col(2)) < 0.0 )
     {
+      // rotate 180 about the X-axis
       rot.col(2) = -rot.col(2);
+      rot.col(1) = -rot.col(1);
     }
   }
 
