@@ -269,6 +269,9 @@ File Menu
   Presents a dialog that allows the selection of one or more data files to be
   loaded into the session.
 
+:icon:`blank` Export
+  Provides options for exporting various data.
+
 :icon:`quit` Quit
   Exits the application.
 
