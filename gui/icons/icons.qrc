@@ -3,6 +3,7 @@
     <file alias="camera">16x16/camera.png</file>
     <file alias="feature">16x16/feature.png</file>
     <file alias="landmark">16x16/landmark.png</file>
+    <file alias="mapgui">16x16/mapgui.png</file>
     <file alias="open">16x16/open.png</file>
     <file alias="playback-loop">16x16/playback-loop.png</file>
     <file alias="playback-play">16x16/playback-play.png</file>
@@ -20,5 +21,17 @@
     <file alias="quit">22x22/quit.png</file>
     <file alias="residual">22x22/residual.png</file>
     <file alias="view-reset">22x22/view-reset.png</file>
+  </qresource>
+  <qresource prefix="icons/32x32">
+    <file alias="mapgui">32x32/mapgui.png</file>
+  </qresource>
+  <qresource prefix="icons/48x48">
+    <file alias="mapgui">48x48/mapgui.png</file>
+  </qresource>
+  <qresource prefix="icons/64x64">
+    <file alias="mapgui">64x64/mapgui.png</file>
+  </qresource>
+  <qresource prefix="icons/128x128">
+    <file alias="mapgui">128x128/mapgui.png</file>
   </qresource>
 </RCC>

@@ -30,6 +30,8 @@
 
 #include "MainWindow.h"
 
+#include <qtUtil.h>
+
 #include <QApplication>
 
 //-----------------------------------------------------------------------------
@@ -41,6 +43,7 @@ int main(int argc, char** argv)
   QApplication::setOrganizationDomain("kitware.com");
 
   QApplication app(argc, argv);
+  qtUtil::setApplicationIcon("mapgui");
 
   MainWindow window;
   window.show();
