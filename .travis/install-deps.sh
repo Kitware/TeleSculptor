@@ -1,94 +1,92 @@
 #!/bin/sh
 set -e
 
-export PATH=$HOME/deps/bin:$PATH
-HASH_DIR=$HOME/deps/hashes
+INSTALL_DIR=$HOME/deps
+export PATH=$INSTALL_DIR/bin:$PATH
+HASH_DIR=$INSTALL_DIR/hashes
 mkdir -p $HASH_DIR
 
 # check if directory is cached
-if [ ! -f "$HOME/deps/bin/cmake" ]; then
+if [ ! -f "$INSTALL_DIR/bin/cmake" ]; then
   cd /tmp
   wget --no-check-certificate https://cmake.org/files/v3.4/cmake-3.4.0-Linux-x86_64.sh
-  bash cmake-3.4.0-Linux-x86_64.sh --skip-license --prefix="$HOME/deps/"
+  bash cmake-3.4.0-Linux-x86_64.sh --skip-license --prefix="$INSTALL_DIR/"
 else
   echo 'Using cached CMake directory.';
 fi
 
-FLETCH_URL=https://github.com/Kitware/fletch.git
-FLETCH_RHASH=`git ls-remote -h $FLETCH_URL master | cut -f1`
-FLETCH_HASH_FILE=$HASH_DIR/fletch.sha
-echo "Current Fletch Hash: $FLETCH_RHASH"
-if [ -f $FLETCH_HASH_FILE ] && grep -q $FLETCH_RHASH $FLETCH_HASH_FILE ; then
-  echo "Using cached Fletch build: `cat $FLETCH_HASH_FILE`"
-else
-  if [ -f $FLETCH_HASH_FILE ]; then
-    echo "Cached Fletch build is not current: `cat $FLETCH_HASH_FILE`"
+# Build and install a repository from source only.
+# First check Git hash of code installed in the cache
+# and only build if the cache is missing or out of date
+#
+# usage: build_repo name git_url
+#
+# Optionally set name_branch before calling to use a
+# branch other than "master"
+#
+# Optionally set name_install_cmd to use an install command
+# other than "make install"
+#
+# Optionally set name_cmake_opts to include additional options
+# to pass to CMake
+build_repo ()
+{
+  NAME=$1
+  URL=$2
+  REF="${NAME}_branch"
+  BRANCH=${!REF}
+  BRANCH=${BRANCH:-"master"}
+  REF="${NAME}_cmake_opts"
+  CMAKE_OPTS=${!REF}
+  REF="${NAME}_install_cmd"
+  INSTALL_CMD=${!REF}
+  INSTALL_CMD=${INSTALL_CMD:-"make install"}
+
+  # Get the Git hash on the remote server
+  RHASH=`git ls-remote -h $URL $BRANCH | cut -f1`
+  # The file containing the hash of the cached build
+  HASH_FILE=$HASH_DIR/$NAME.sha
+  echo "Current $NAME hash:" $RHASH
+  # If we have the hash file and the hash matches
+  if [ -f $HASH_FILE ] && grep -q $RHASH $HASH_FILE ; then
+    echo "Using cached $NAME build: `cat $HASH_FILE`"
   else
-    echo "No cached Fletch build"
+    # For debugging, echo whether the hash is missing or out of date
+    if [ -f $HASH_FILE ]; then
+      echo "Cached $NAME build is not current: `cat $HASH_FILE`"
+    else
+      echo "No cached $NAME build"
+    fi
+    # checkout and build the code in the tmp directory
+    cd /tmp
+    git clone $URL -b $BRANCH $NAME/source
+    mkdir $NAME/build
+    cd $NAME/build
+    cmake ../source \
+          -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR/ \
+          -DCMAKE_BUILD_TYPE=Release \
+          $CMAKE_OPTS
+    make -j2
+    $INSTALL_CMD
+    # update the Git hash file in the cache for next time
+    echo $RHASH > $HASH_FILE
   fi
-  cd /tmp
-  git clone https://github.com/Kitware/fletch.git fletch/source
-  mkdir fletch/build
-  cd fletch/build
-  cmake ../source \
-        -DCMAKE_BUILD_TYPE=Release \
-        -Dfletch_ENABLE_Eigen=ON \
-        -Dfletch_ENABLE_Ceres=ON \
-        -Dfletch_ENABLE_SuiteSparse=ON \
-        -Dfletch_ENABLE_OpenCV=ON \
-        -Dfletch_ENABLE_VTK=ON
-  make -j2
-  cp -r install/* $HOME/deps/
-  echo $FLETCH_RHASH > $FLETCH_HASH_FILE
-fi
+}
 
 
-VITAL_URL=https://github.com/Kitware/vital.git
-VITAL_RHASH=`git ls-remote -h $VITAL_URL master | cut -f1`
-VITAL_HASH_FILE=$HASH_DIR/vital.sha
-echo "Current Vital Hash: $VITAL_RHASH"
-if [ -f $VITAL_HASH_FILE ] && grep -q $VITAL_RHASH $VITAL_HASH_FILE; then
-  echo "Using cached Vital build: `cat $VITAL_HASH_FILE`"
-else
-  if [ -f $VITAL_HASH_FILE ]; then
-    echo "Cached Vital build is not current: `cat $VITAL_HASH_FILE`"
-  else
-    echo "No cached Vital build"
-  fi
-  cd /tmp
-  git clone $VITAL_URL vital/source
-  mkdir vital/build
-  cd vital/build
-  cmake ../source \
-        -DCMAKE_INSTALL_PREFIX=$HOME/deps/ \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DVITAL_ENABLE_C_LIB=ON
-  make -j2
-  make install
-  echo $VITAL_RHASH > $VITAL_HASH_FILE
-fi
+# Build and install Fletch
+fletch_install_cmd="cp -r install/* $INSTALL_DIR/"
+fletch_cmake_opts="\
+ -Dfletch_ENABLE_Eigen=ON \
+ -Dfletch_ENABLE_Ceres=ON \
+ -Dfletch_ENABLE_SuiteSparse=ON \
+ -Dfletch_ENABLE_OpenCV=ON \
+ -Dfletch_ENABLE_VTK=ON"
+build_repo fletch https://github.com/Kitware/fletch.git
 
+# Build and install Vital
+vital_cmake_opts="-DVITAL_ENABLE_C_LIB=ON"
+build_repo vital https://github.com/Kitware/vital.git
 
-QTE_URL=https://github.com/Kitware/qtextensions.git
-QTE_RHASH=`git ls-remote -h $QTE_URL master | cut -f1`
-QTE_HASH_FILE=$HASH_DIR/qtextensions.sha
-echo "Current QtExtensions Hash: $QTE_RHASH"
-if [ -f $QTE_HASH_FILE ] && grep -q $QTE_RHASH $QTE_HASH_FILE; then
-  echo "Using cached QtExtenions build: `cat $QTE_HASH_FILE`"
-else
-  if [ -f $QTE_HASH_FILE ]; then
-    echo "Cached QtExtenions build is not current: `cat $QTE_HASH_FILE`"
-  else
-    echo "No cached QtExtenions build"
-  fi
-  cd /tmp
-  git clone $QTE_URL qtextensions/source
-  mkdir qtextensions/build
-  cd qtextensions/build
-  cmake ../source \
-        -DCMAKE_INSTALL_PREFIX=$HOME/deps/ \
-        -DCMAKE_BUILD_TYPE=Release
-  make -j2
-  make install
-  echo $QTE_RHASH > $QTE_HASH_FILE
-fi
+# Build and install QtExtensions
+build_repo qtextensions https://github.com/Kitware/qtextensions.git
