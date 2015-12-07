@@ -280,9 +280,10 @@ Compute Menu
   quality of the 3D reconstruction.
 
 :icon:`blank` Align
-  Applies a linear transformation to the camera and landmark data so that the
-  data has a standard alignment. Particularly, this attempts to orient the data
-  so that the ground plane is parallel with the :f:`z = 0` plane.
+  Applies a similarity transformation to the camera and landmark data so that
+  the data has a standard ("canonical") alignment. Particularly, this attempts
+  to orient the data so that the ground plane is parallel with the :f:`z = 0`
+  plane.
 
 :icon:`blank` Reverse (Necker)
   Transforms the cameras and landmarks in a manner intended to break the
