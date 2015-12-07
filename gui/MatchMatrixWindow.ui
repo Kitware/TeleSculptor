@@ -57,14 +57,14 @@
       <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
      </property>
      <item row="0" column="0">
-      <widget class="QLabel" name="orientationLabel">
+      <widget class="QLabel" name="layoutLabel">
        <property name="text">
-        <string>Orientation</string>
+        <string>Layout</string>
        </property>
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QComboBox" name="orientation">
+      <widget class="QComboBox" name="layout">
        <property name="currentIndex">
         <number>2</number>
        </property>
@@ -86,13 +86,34 @@
       </widget>
      </item>
      <item row="1" column="0">
+      <widget class="QLabel" name="orientationLabel">
+       <property name="text">
+        <string>Orientation</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QComboBox" name="orientation">
+       <item>
+        <property name="text">
+         <string>Matrix</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Graph</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="2" column="0">
       <widget class="QLabel" name="valuesLabel">
        <property name="text">
         <string>Values</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
+     <item row="2" column="1">
       <widget class="QComboBox" name="values">
        <item>
         <property name="text">
@@ -116,14 +137,14 @@
        </item>
       </widget>
      </item>
-     <item row="2" column="0">
+     <item row="3" column="0">
       <widget class="QLabel" name="scaleLabel">
        <property name="text">
         <string>Scale</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
+     <item row="3" column="1">
       <widget class="QComboBox" name="scale">
        <item>
         <property name="text">
@@ -142,28 +163,28 @@
        </item>
       </widget>
      </item>
-     <item row="3" column="0">
+     <item row="4" column="0">
       <widget class="QLabel" name="exponentLabel">
        <property name="text">
         <string>Exponent</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
+     <item row="4" column="1">
       <widget class="qtDoubleSlider" name="exponent">
        <property name="value">
         <double>0.500000000000000</double>
        </property>
       </widget>
      </item>
-     <item row="4" column="0">
+     <item row="5" column="0">
       <widget class="QLabel" name="rangeLabel">
        <property name="text">
         <string>Range</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="1">
+     <item row="5" column="1">
       <widget class="qtDoubleSlider" name="range">
        <property name="minimum">
         <double>1.000000000000000</double>
@@ -179,14 +200,14 @@
        </property>
       </widget>
      </item>
-     <item row="5" column="0">
+     <item row="6" column="0">
       <widget class="QLabel" name="colorLabel">
        <property name="text">
         <string>Color</string>
        </property>
       </widget>
      </item>
-     <item row="5" column="1">
+     <item row="6" column="1">
       <widget class="QComboBox" name="color">
        <property name="iconSize">
         <size>
