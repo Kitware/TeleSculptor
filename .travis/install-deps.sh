@@ -48,7 +48,7 @@ build_repo ()
   HASH_FILE=$HASH_DIR/$NAME.sha
   echo "Current $NAME hash:" $RHASH
   # If we have the hash file and the hash matches
-  if [ -f $HASH_FILE ] && grep -q $RHASH $HASH_FILE ; then
+  if [ -f $HASH_FILE ] && [ -n "$RHASH" ] && grep -q $RHASH $HASH_FILE ; then
     echo "Using cached $NAME build: `cat $HASH_FILE`"
   else
     # For debugging, echo whether the hash is missing or out of date
@@ -59,9 +59,12 @@ build_repo ()
     fi
     # checkout and build the code in the tmp directory
     cd /tmp
-    git clone $URL -b $BRANCH $NAME/source
+    git clone $URL $NAME/source
     mkdir $NAME/build
-    cd $NAME/build
+    cd $NAME/source
+    # checkout branch after clone in case $BRANCH is actually a hash
+    git checkout $BRANCH
+    cd ../build
     cmake ../source \
           -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR/ \
           -DCMAKE_BUILD_TYPE=Release \
@@ -69,6 +72,8 @@ build_repo ()
     make -j2
     $INSTALL_CMD
     # update the Git hash file in the cache for next time
+    cd ../source
+    RHASH=`git rev-parse HEAD`
     echo $RHASH > $HASH_FILE
   fi
 }
