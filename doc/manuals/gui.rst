@@ -202,13 +202,18 @@ the "match matrix" representing the number of feature points that feature
 detection has determined correspond to the same real world feature. Several
 options are provided to adjust the visualization:
 
-* Orientation controls the position of "identity" values, i.e. values that
-  compare a frame to itself rather than a distinct frame. The default,
-  "diagonal", simply maps the frame number directly to both the :f:`X` and
-  :f:`Y` axes. "Horizontal" skews the image so that the :f:`y` values are
-  relative to the "identity" values, placing them in a horizontal line at
-  :f:`y = 0`, with positive :f:`y` representing "later" frames, and negative
-  :f:`y` representing "earlier" frames. "Vertical" reverses these axes.
+* Layout controls the position of "identity" values, i.e. values that compare a
+  frame to itself rather than a distinct frame. The default, "diagonal", simply
+  maps the frame number directly to both the :f:`X` and :f:`Y` axes.
+  "Horizontal" skews the image so that the :f:`y` values are relative to the
+  "identity" values, placing them in a horizontal line at :f:`y = 0`, with
+  positive :f:`y` representing "later" frames, and negative :f:`y` representing
+  "earlier" frames. "Vertical" reverses these axes.
+
+* Orientation controls which screen direction is considered positive :f:`Y`.
+  The default, "matrix", uses down for positive :f:`Y`, as in textual value
+  tables (e.g. textual listings of matrices, spreadsheets) or images. "Graph"
+  uses up for positive :f:`Y`, as in most graphical plots.
 
 * Values controls what values are used for each pixel. The default, "absolute",
   uses the raw number of feature point correlations (which, for "identity"

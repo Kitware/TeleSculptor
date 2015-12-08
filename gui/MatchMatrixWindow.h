@@ -56,6 +56,7 @@ public slots:
 protected slots:
   void updateControls();
   void updateImage();
+  void updateImageTransform();
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(MatchMatrixWindow)
