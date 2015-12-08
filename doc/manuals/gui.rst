@@ -283,15 +283,17 @@ Compute Menu
   Applies a similarity transformation to the camera and landmark data so that
   the data has a standard ("canonical") alignment. Particularly, this attempts
   to orient the data so that the ground plane is parallel with the :f:`z = 0`
-  plane.
+  plane (with the cameras in the :f:`+Z` direction). Additionally, the
+  landmarks will be centered about the origin and scaled to an approximate
+  variance of :f:`1.0`.
 
 :icon:`blank` Reverse (Necker)
   Transforms the cameras and landmarks in a manner intended to break the
   refinement process out of a degenerate optimization (which can occur due to
-  the Necker cube phenomena\ [#nc]_), by rotating the cameras 180\ |deg| about
-  the axis formed by the mean landmark position and mean camera center and
-  180\ |deg| about their principal axes, and mirroring landmarks about the
-  plane at the mean landmark position end of the same axis.
+  the Necker cube phenomena\ [#nc]_), by computing a best fit plane to the
+  landmarks, mirroring the landmarks about said plane, and rotating the cameras
+  180\ |deg| about their respective optical axes and 180\ |deg| about the
+  best fit plane normal where each camera's optical axis intersects said plane.
 
 View Menu
 ---------

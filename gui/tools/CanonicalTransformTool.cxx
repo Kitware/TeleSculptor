@@ -41,7 +41,9 @@ CanonicalTransformTool::CanonicalTransformTool(QObject* parent)
   this->setText("&Align");
   this->setToolTip(
     "Compute and apply a world transform so that the landmarks are centered "
-    "about the origin with the ground plane aligned to the <tt>z=0</tt> plane");
+    "about the origin, scaled to unit variance, and oriented to best align "
+    "with a <tt>z=0</tt> ground plane, with the cameras above the same in the "
+    "<tt>+Z</tt> direction");
 }
 
 //-----------------------------------------------------------------------------
