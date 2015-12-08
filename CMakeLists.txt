@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.11)
-project(MAPTK)
+project(maptk)
 
 ###
 # CMake policies
@@ -167,7 +167,7 @@ endif()
 
 
 
-set(CPACK_PACKAGE_NAME              "MAPTK")
+set(CPACK_PACKAGE_NAME              "MAP-Tk")
 set(CPACK_PACKAGE_VENDOR            "Kitware, Inc.")
 set(CPACK_PACKAGE_CONTACT           "kitware@kitware.com")
 set(CPACK_MONOLITHIC_INSTALL        true)
