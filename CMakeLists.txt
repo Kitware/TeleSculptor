@@ -66,6 +66,8 @@ add_subdirectory(maptk)
 # this is where the executables source code lives
 add_subdirectory(tools)
 
+# this is where the application default configuration lives
+add_subdirectory(config)
 
 ###
 # GUI

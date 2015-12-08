@@ -68,6 +68,9 @@ protected slots:
   void setSlideshowPlaying(bool);
   void nextSlide();
 
+  void executeTool(QObject*);
+  void acceptToolResults();
+
 private:
   QTE_DECLARE_PRIVATE_RPTR(MainWindow)
   QTE_DECLARE_PRIVATE(MainWindow)

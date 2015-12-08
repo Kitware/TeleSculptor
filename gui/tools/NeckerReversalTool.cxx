@@ -28,33 +28,57 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "MainWindow.h"
+#include "NeckerReversalTool.h"
 
-#include "Version.h"
+#include <maptk/transform.h>
 
-#include <vital/algorithm_plugin_manager.h>
-
-#include <qtUtil.h>
-
-#include <QApplication>
+#include <QtGui/QMessageBox>
 
 //-----------------------------------------------------------------------------
-int main(int argc, char** argv)
+NeckerReversalTool::NeckerReversalTool(QObject* parent)
+  : AbstractTool(parent)
 {
-  // Set application information
-  QApplication::setApplicationName("MapGUI");
-  QApplication::setOrganizationName("Kitware");
-  QApplication::setOrganizationDomain("kitware.com");
-  QApplication::setApplicationVersion(MAPTK_VERSION);
+  this->setText("Reverse (&Necker)");
+  this->setToolTip(
+    "Attempt to correct a degenerate refinement (which can occur due to the "
+    "Necker cube phenomena) by computing a best fit plane to the landmarks, "
+    "mirroring the landmarks about said plane, and rotating the cameras "
+    "180&deg; about their respective optical axes and 180&deg; about the best "
+    "fit plane normal where each camera's optical axis intersects said plane.");
+}
 
-  QApplication app(argc, argv);
-  qtUtil::setApplicationIcon("mapgui");
+//-----------------------------------------------------------------------------
+NeckerReversalTool::~NeckerReversalTool()
+{
+}
 
-  // Load Vital/MAP-Tk plugins
-  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
+//-----------------------------------------------------------------------------
+AbstractTool::Outputs NeckerReversalTool::outputs() const
+{
+  return Cameras | Landmarks;
+}
 
-  MainWindow window;
-  window.show();
+//-----------------------------------------------------------------------------
+bool NeckerReversalTool::execute(QWidget* window)
+{
+  if (!this->hasLandmarks())
+  {
+    QMessageBox::information(
+      window, "Insufficient data", "This operation requires landmarks.");
+    return false;
+  }
 
-  return app.exec();
+  return AbstractTool::execute(window);
+}
+
+//-----------------------------------------------------------------------------
+void NeckerReversalTool::run()
+{
+  auto cp = this->cameras();
+  auto lp = this->landmarks();
+
+  kwiver::maptk::necker_reverse(cp, lp);
+
+  this->updateCameras(cp);
+  this->updateLandmarks(lp);
 }

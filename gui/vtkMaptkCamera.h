@@ -44,7 +44,8 @@ public:
   static vtkMaptkCamera *New();
 
   // Description:
-  // Set the internal maptk camera
+  // Set/Get the internal maptk camera
+  kwiver::vital::camera_sptr GetCamera() const;
   void SetCamera(kwiver::vital::camera_sptr const& camera);
 
   // Description:

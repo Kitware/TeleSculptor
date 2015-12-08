@@ -46,6 +46,10 @@ set(gui_moc_headers
   MatchMatrixWindow.h
   PointOptions.h
   WorldView.h
+  tools/AbstractTool.h
+  tools/BundleAdjustTool.h
+  tools/CanonicalTransformTool.h
+  tools/NeckerReversalTool.h
 )
 
 set(gui_sources
@@ -65,6 +69,10 @@ set(gui_sources
   vtkMaptkCamera.cxx
   vtkMaptkCameraRepresentation.cxx
   vtkMaptkFeatureTrackRepresentation.cxx
+  tools/AbstractTool.cxx
+  tools/BundleAdjustTool.cxx
+  tools/CanonicalTransformTool.cxx
+  tools/NeckerReversalTool.cxx
 )
 
 maptk_use_appdata(
@@ -101,6 +109,7 @@ maptk_add_executable(mapgui
 
 target_link_libraries(mapgui
   maptk
+  vital_apm
   vtkGUISupportQt
   vtkInteractionStyle
   vtkViewsCore

@@ -28,62 +28,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_WORLDVIEW_H_
-#define MAPTK_WORLDVIEW_H_
+#ifndef MAPTK_BUNDLEADJUSTTOOL_H_
+#define MAPTK_BUNDLEADJUSTTOOL_H_
 
-#include <qtGlobal.h>
+#include "AbstractTool.h"
 
-#include <QtGui/QWidget>
+class BundleAdjustToolPrivate;
 
-class vtkImageData;
-
-namespace kwiver { namespace vital { class landmark_map; } }
-
-class vtkMaptkCamera;
-
-class WorldViewPrivate;
-
-class WorldView : public QWidget
+class BundleAdjustTool : public AbstractTool
 {
   Q_OBJECT
 
 public:
-  explicit WorldView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~WorldView();
+  explicit BundleAdjustTool(QObject* parent = 0);
+  virtual ~BundleAdjustTool();
 
-public slots:
-  void addCamera(int id, vtkMaptkCamera* camera);
-  void setLandmarks(kwiver::vital::landmark_map const&);
+  virtual Outputs outputs() const QTE_OVERRIDE;
 
-  void setImageData(vtkImageData* data, QSize const& dimensions);
+  virtual bool execute(QWidget* window = 0) QTE_OVERRIDE;
 
-  void setImageVisible(bool);
-  void setCamerasVisible(bool);
-  void setLandmarksVisible(bool);
-  void setGroundPlaneVisible(bool);
-
-  void setPerspective(bool);
-
-  void setActiveCamera(vtkMaptkCamera* camera);
-
-  void resetView();
-  void resetViewToLandmarks();
-
-  void viewToWorldTop();
-  void viewToWorldLeft();
-  void viewToWorldRight();
-  void viewToWorldFront();
-  void viewToWorldBack();
-
-protected slots:
-  void updateCameras();
-  void updateScale();
+protected:
+  virtual void run() QTE_OVERRIDE;
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(WorldView)
-  QTE_DECLARE_PRIVATE(WorldView)
-
-  QTE_DISABLE_COPY(WorldView)
+  QTE_DECLARE_PRIVATE_RPTR(BundleAdjustTool)
+  QTE_DECLARE_PRIVATE(BundleAdjustTool)
+  QTE_DISABLE_COPY(BundleAdjustTool)
 };
 
 #endif

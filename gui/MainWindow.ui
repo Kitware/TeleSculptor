@@ -48,7 +48,13 @@
     <addaction name="separator"/>
     <addaction name="actionAbout"/>
    </widget>
+   <widget class="QMenu" name="menuCompute">
+    <property name="title">
+     <string>&amp;Compute</string>
+    </property>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuCompute"/>
    <addaction name="menuView"/>
    <addaction name="menuHelp"/>
   </widget>

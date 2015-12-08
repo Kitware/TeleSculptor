@@ -33,6 +33,10 @@
 #include "ui_MainWindow.h"
 #include "am_MainWindow.h"
 
+#include "tools/BundleAdjustTool.h"
+#include "tools/CanonicalTransformTool.h"
+#include "tools/NeckerReversalTool.h"
+
 #include "AboutDialog.h"
 #include "MatchMatrixWindow.h"
 #include "Project.h"
@@ -63,20 +67,16 @@
 
 #include <QtCore/QDebug>
 #include <QtCore/QQueue>
+#include <QtCore/QSignalMapper>
 #include <QtCore/QTimer>
 #include <QtCore/QUrl>
 
+///////////////////////////////////////////////////////////////////////////////
+
+//BEGIN miscellaneous helpers
+
 namespace // anonymous
 {
-
-//-----------------------------------------------------------------------------
-struct CameraData
-{
-  int id;
-  vtkSmartPointer<vtkMaptkCamera> camera;
-
-  QString imagePath; // Full path to camera image data
-};
 
 //-----------------------------------------------------------------------------
 QString findUserManual()
@@ -152,11 +152,29 @@ QString makeFilters(QStringList extensions)
 
 } // namespace <anonymous>
 
+//END miscellaneous helpers
+
+///////////////////////////////////////////////////////////////////////////////
+
+//BEGIN MainWindowPrivate
+
 //-----------------------------------------------------------------------------
 class MainWindowPrivate
 {
 public:
-  MainWindowPrivate() : activeCameraIndex(-1) {}
+  // Data structures
+  struct CameraData
+  {
+    int id;
+    vtkSmartPointer<vtkMaptkCamera> camera;
+
+    QString imagePath; // Full path to camera image data
+  };
+
+  // Methods
+  MainWindowPrivate() : activeTool(0), activeCameraIndex(-1) {}
+
+  void addTool(AbstractTool* tool, MainWindow* mainWindow);
 
   void addCamera(kwiver::vital::camera_sptr const& camera);
   void addImage(QString const& imagePath);
@@ -164,16 +182,26 @@ public:
   void addFrame(kwiver::vital::camera_sptr const& camera,
                 QString const& imagePath);
 
+  kwiver::vital::camera_map_sptr cameraMap() const;
+  void updateCameras(kwiver::vital::camera_map_sptr const&);
+
   void setActiveCamera(int);
   void updateCameraView();
 
   void loadImage(QString const& path, vtkMaptkCamera* camera);
 
+  void setActiveTool(AbstractTool* tool);
+
+  // Member variables
   Ui::MainWindow UI;
   Am::MainWindow AM;
   qtUiState uiState;
 
   QTimer slideTimer;
+  QSignalMapper toolDispatcher;
+
+  AbstractTool* activeTool;
+  QList<AbstractTool*> tools;
 
   QList<CameraData> cameras;
   kwiver::vital::track_set_sptr tracks;
@@ -186,6 +214,21 @@ public:
 };
 
 QTE_IMPLEMENT_D_FUNC(MainWindow)
+
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::addTool(AbstractTool* tool, MainWindow* mainWindow)
+{
+  this->UI.menuCompute->addAction(tool);
+
+  this->toolDispatcher.setMapping(tool, tool);
+
+  QObject::connect(tool, SIGNAL(triggered()),
+                   &this->toolDispatcher, SLOT(map()));
+  QObject::connect(tool, SIGNAL(completed()),
+                   mainWindow, SLOT(acceptToolResults()));
+
+  this->tools.append(tool);
+}
 
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::addCamera(kwiver::vital::camera_sptr const& camera)
@@ -271,6 +314,46 @@ void MainWindowPrivate::addFrame(
 
     this->setActiveCamera(0);
     this->UI.cameraView->resetView();
+  }
+}
+
+//-----------------------------------------------------------------------------
+kwiver::vital::camera_map_sptr MainWindowPrivate::cameraMap() const
+{
+  kwiver::vital::camera_map::map_camera_t map;
+
+  auto const cameraCount = this->cameras.count();
+  for (int i = 0; i < cameraCount; ++i)
+  {
+    auto const& cd = this->cameras[i];
+    if (cd.camera)
+    {
+      map.insert(std::make_pair(static_cast<kwiver::vital::frame_id_t>(i),
+                                cd.camera->GetCamera()));
+    }
+  }
+
+  return std::make_shared<kwiver::vital::simple_camera_map>(map);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::updateCameras(
+  kwiver::vital::camera_map_sptr const& cameras)
+{
+  auto const cameraCount = this->cameras.count();
+
+  foreach (auto const& iter, cameras->cameras())
+  {
+    auto const index = static_cast<int>(iter.first);
+    if (index >= 0 && index < cameraCount)
+    {
+      auto& cd = this->cameras[index];
+      if (cd.camera)
+      {
+        cd.camera->SetCamera(iter.second);
+        cd.camera->Update();
+      }
+    }
   }
 }
 
@@ -415,6 +498,25 @@ void MainWindowPrivate::loadImage(QString const& path, vtkMaptkCamera* camera)
 }
 
 //-----------------------------------------------------------------------------
+void MainWindowPrivate::setActiveTool(AbstractTool* tool)
+{
+  this->activeTool = tool;
+
+  auto const enableTools = !tool;
+  foreach (auto const& tool, this->tools)
+  {
+    tool->setEnabled(enableTools);
+  }
+  this->UI.actionOpen->setEnabled(enableTools);
+}
+
+//END MainWindowPrivate
+
+///////////////////////////////////////////////////////////////////////////////
+
+//BEGIN MainWindow
+
+//-----------------------------------------------------------------------------
 MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   : QMainWindow(parent, flags), d_ptr(new MainWindowPrivate)
 {
@@ -423,6 +525,10 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   // Set up UI
   d->UI.setupUi(this);
   d->AM.setupActions(d->UI, this);
+
+  d->addTool(new BundleAdjustTool(this), this);
+  d->addTool(new CanonicalTransformTool(this), this);
+  d->addTool(new NeckerReversalTool(this), this);
 
   d->UI.menuView->addSeparator();
   d->UI.menuView->addAction(d->UI.cameraViewDock->toggleViewAction());
@@ -436,6 +542,9 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   connect(d->UI.actionShowMatchMatrix, SIGNAL(triggered()),
           this, SLOT(showMatchMatrix()));
+
+  connect(&d->toolDispatcher, SIGNAL(mapped(QObject*)),
+          this, SLOT(executeTool(QObject*)));
 
   connect(d->UI.actionAbout, SIGNAL(triggered()),
           this, SLOT(showAboutDialog()));
@@ -647,7 +756,7 @@ void MainWindow::loadLandmarks(QString const& path)
     if (landmarks)
     {
       d->landmarks = landmarks;
-      d->UI.worldView->addLandmarks(*landmarks);
+      d->UI.worldView->setLandmarks(*landmarks);
     }
   }
   catch (...)
@@ -739,6 +848,53 @@ void MainWindow::setActiveCamera(int id)
 }
 
 //-----------------------------------------------------------------------------
+void MainWindow::executeTool(QObject* object)
+{
+  QTE_D();
+
+  auto const tool = qobject_cast<AbstractTool*>(object);
+  if (tool && !d->activeTool)
+  {
+    d->setActiveTool(tool);
+    tool->setTracks(d->tracks);
+    tool->setCameras(d->cameraMap());
+    tool->setLandmarks(d->landmarks);
+
+    if (!tool->execute())
+    {
+      d->setActiveTool(0);
+    }
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::acceptToolResults()
+{
+  QTE_D();
+
+  if (d->activeTool)
+  {
+    auto const outputs = d->activeTool->outputs();
+
+    if (outputs.testFlag(AbstractTool::Cameras))
+    {
+      d->updateCameras(d->activeTool->cameras());
+    }
+    if (outputs.testFlag(AbstractTool::Landmarks))
+    {
+      d->landmarks = d->activeTool->landmarks();
+      d->UI.worldView->setLandmarks(*d->landmarks);
+    }
+
+    if (!d->cameras.isEmpty())
+    {
+      d->setActiveCamera(d->activeCameraIndex);
+    }
+  }
+  d->setActiveTool(0);
+}
+
+//-----------------------------------------------------------------------------
 void MainWindow::showMatchMatrix()
 {
   QTE_D();
@@ -779,3 +935,5 @@ void MainWindow::showUserManual()
       "The user manual could not be located. Please check your installation.");
   }
 }
+
+//END MainWindow

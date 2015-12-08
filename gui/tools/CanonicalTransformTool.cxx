@@ -28,33 +28,54 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "MainWindow.h"
+#include "CanonicalTransformTool.h"
 
-#include "Version.h"
+#include <maptk/transform.h>
 
-#include <vital/algorithm_plugin_manager.h>
-
-#include <qtUtil.h>
-
-#include <QApplication>
+#include <QtGui/QMessageBox>
 
 //-----------------------------------------------------------------------------
-int main(int argc, char** argv)
+CanonicalTransformTool::CanonicalTransformTool(QObject* parent)
+  : AbstractTool(parent)
 {
-  // Set application information
-  QApplication::setApplicationName("MapGUI");
-  QApplication::setOrganizationName("Kitware");
-  QApplication::setOrganizationDomain("kitware.com");
-  QApplication::setApplicationVersion(MAPTK_VERSION);
+  this->setText("&Align");
+  this->setToolTip(
+    "Compute and apply a world transform so that the landmarks are centered "
+    "about the origin, scaled to unit variance, and oriented to best align "
+    "with a <tt>z=0</tt> ground plane, with the cameras above the same in the "
+    "<tt>+Z</tt> direction");
+}
 
-  QApplication app(argc, argv);
-  qtUtil::setApplicationIcon("mapgui");
+//-----------------------------------------------------------------------------
+CanonicalTransformTool::~CanonicalTransformTool()
+{
+}
 
-  // Load Vital/MAP-Tk plugins
-  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
+//-----------------------------------------------------------------------------
+AbstractTool::Outputs CanonicalTransformTool::outputs() const
+{
+  return Cameras | Landmarks;
+}
 
-  MainWindow window;
-  window.show();
+//-----------------------------------------------------------------------------
+bool CanonicalTransformTool::execute(QWidget* window)
+{
+  if (!this->hasLandmarks())
+  {
+    QMessageBox::information(
+      window, "Insufficient data", "This operation requires landmarks.");
+    return false;
+  }
 
-  return app.exec();
+  return AbstractTool::execute(window);
+}
+
+//-----------------------------------------------------------------------------
+void CanonicalTransformTool::run()
+{
+  auto const& xf =
+    kwiver::maptk::canonical_transform(this->cameras(), this->landmarks());
+
+  this->updateCameras(kwiver::maptk::transform(this->cameras(), xf));
+  this->updateLandmarks(kwiver::maptk::transform(this->landmarks(), xf));
 }

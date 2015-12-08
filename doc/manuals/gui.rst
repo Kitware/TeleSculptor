@@ -205,10 +205,10 @@ options are provided to adjust the visualization:
 * Orientation controls the position of "identity" values, i.e. values that
   compare a frame to itself rather than a distinct frame. The default,
   "diagonal", simply maps the frame number directly to both the :f:`X` and
-  :f:`Y` axes. "Horizontal" skews the image so that the :f:`Y` values are
+  :f:`Y` axes. "Horizontal" skews the image so that the :f:`y` values are
   relative to the "identity" values, placing them in a horizontal line at
-  :f:`Y = 0`, with positive :f:`Y` representing "later" frames, and negative
-  :f:`Y` representing "earlier" frames. "Vertical" reverses these axes.
+  :f:`y = 0`, with positive :f:`y` representing "later" frames, and negative
+  :f:`y` representing "earlier" frames. "Vertical" reverses these axes.
 
 * Values controls what values are used for each pixel. The default, "absolute",
   uses the raw number of feature point correlations (which, for "identity"
@@ -272,6 +272,29 @@ File Menu
 :icon:`quit` Quit
   Exits the application.
 
+Compute Menu
+------------
+
+:icon:`blank` Refine
+  Applies bundle adjustment to the cameras and landmarks in order to refine the
+  quality of the 3D reconstruction.
+
+:icon:`blank` Align
+  Applies a similarity transformation to the camera and landmark data so that
+  the data has a standard ("canonical") alignment. Particularly, this attempts
+  to orient the data so that the ground plane is parallel with the :f:`z = 0`
+  plane (with the cameras in the :f:`+Z` direction). Additionally, the
+  landmarks will be centered about the origin and scaled to an approximate
+  variance of :f:`1.0`.
+
+:icon:`blank` Reverse (Necker)
+  Transforms the cameras and landmarks in a manner intended to break the
+  refinement process out of a degenerate optimization (which can occur due to
+  the Necker cube phenomena\ [#nc]_), by computing a best fit plane to the
+  landmarks, mirroring the landmarks about said plane, and rotating the cameras
+  180\ |deg| about their respective optical axes and 180\ |deg| about the
+  best fit plane normal where each camera's optical axis intersects said plane.
+
 View Menu
 ---------
 
@@ -318,9 +341,11 @@ Landmark:
 
 Residual:
   A residual, in general, is the difference between an observed value and an
-  estimated value\ [1]_. In MAP-Tk, the observed value is typically a detected
-  feature point, and the estimated value is a landmark.
+  estimated value\ [#er]_. In MAP-Tk, the observed value is typically a
+  detected feature point, and the estimated value is a landmark.
 
-.. [1] https://en.wikipedia.org/wiki/Errors_and_residuals_in_statistics
+.. [#nc] https://en.wikipedia.org/wiki/Necker_cube
+.. [#er] https://en.wikipedia.org/wiki/Errors_and_residuals_in_statistics
 
-.. |--| unicode:: U+02014 .. em dash
+.. |--|  unicode:: U+02014 .. em dash
+.. |deg| unicode:: U+000B0 .. degree sign
