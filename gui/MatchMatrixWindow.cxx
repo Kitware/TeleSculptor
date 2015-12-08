@@ -37,9 +37,8 @@
 
 #include <vital/util/enumerate_matrix.h>
 
-#include <vital/vital_foreach.h>
-
 #include <qtGradient.h>
+#include <qtIndexRange.h>
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
 
@@ -114,7 +113,7 @@ T sparseMax(Eigen::SparseMatrix<T> const& m)
 {
   auto result = T(0);
 
-  VITAL_FOREACH (auto it, kwiver::vital::enumerate(m))
+  foreach (auto it, kwiver::vital::enumerate(m))
   {
     result = std::max(result, it.value());
   }
@@ -246,12 +245,12 @@ QImage gradientPreview(qtGradient const& gradient, int w = 64, int h = 12)
   auto image = QImage(w, h, QImage::Format_ARGB32);
   auto const s = 1.0 / (static_cast<double>(w) - 1.0);
 
-  for (int i = 0; i < w; ++i)
+  foreach (auto const i, qtIndexRange(w))
   {
     auto const a = static_cast<double>(i) * s;
     auto const c = gradient.at(a).rgba();
 
-    for (int j = 0; j < h; ++j)
+    foreach (auto const j, qtIndexRange(h))
     {
       image.setPixel(i, j, c);
     }
@@ -264,7 +263,7 @@ QImage gradientPreview(qtGradient const& gradient, int w = 64, int h = 12)
 QString supportedImageFilter()
 {
   auto formats = QMap<QString, QString>();
-  VITAL_FOREACH(auto const& format, QImageWriter::supportedImageFormats())
+  foreach (auto const& format, QImageWriter::supportedImageFormats())
   {
     auto const type = QString::fromLatin1(format).toLower();
     auto const filter = QString("*.%1").arg(type);
@@ -275,7 +274,7 @@ QString supportedImageFilter()
   formats.remove("png");
 
   auto filters = QString("*.jpg *.png");
-  VITAL_FOREACH (auto const& filter, formats)
+  foreach (auto const& filter, formats)
   {
     filters += " " + filter;
   }
@@ -371,7 +370,7 @@ void MatchMatrixWindowPrivate::buildHorizontalImage(
   auto image = QImage(k, k*2, QImage::Format_RGB32);
   image.fill(gradient.at(0.0));
 
-  VITAL_FOREACH (auto it, kwiver::vital::enumerate(this->matrix))
+  foreach (auto it, kwiver::vital::enumerate(this->matrix))
   {
     auto const y = k + it.row() - it.col(); // (2*k - 1) - (col + k - 1 - row);
     minY = qMin(minY, y);
@@ -400,7 +399,7 @@ void MatchMatrixWindowPrivate::buildVerticalImage(
   auto image = QImage(k*2, k, QImage::Format_RGB32);
   image.fill(gradient.at(0.0));
 
-  VITAL_FOREACH (auto it, kwiver::vital::enumerate(this->matrix))
+  foreach (auto it, kwiver::vital::enumerate(this->matrix))
   {
     auto const x = it.row() + k - 1 - it.col();
     minX = qMin(minX, x);
@@ -426,7 +425,7 @@ void MatchMatrixWindowPrivate::buildDiagonalImage(
   auto image = QImage(k, k, QImage::Format_RGB32);
   image.fill(gradient.at(0.0));
 
-  VITAL_FOREACH (auto it, kwiver::vital::enumerate(this->matrix))
+  foreach (auto it, kwiver::vital::enumerate(this->matrix))
   {
     auto const a = scaleAlgorithm(valueAlgorithm(this->matrix, it));
     auto const c = gradient.at(a);

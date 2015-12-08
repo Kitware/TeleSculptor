@@ -56,7 +56,10 @@
 #include <vtkNew.h>
 #include <vtkSmartPointer.h>
 
+#include <qtEnumerate.h>
+#include <qtIndexRange.h>
 #include <qtMath.h>
+#include <qtStlUtil.h>
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
 
@@ -77,6 +80,26 @@
 
 namespace // anonymous
 {
+
+//-----------------------------------------------------------------------------
+kwiver::vital::path_t kvPath(QString const& s)
+{
+  return stdString(s);
+}
+
+//-----------------------------------------------------------------------------
+QString cameraName(QString const& imagePath, int cameraIndex)
+{
+  static auto const defaultName = QString("camera%1.krtd");
+
+  if (imagePath.isEmpty())
+  {
+    return defaultName.arg(cameraIndex, 4, 10, QChar('0'));
+  }
+
+  auto const fi = QFileInfo(imagePath);
+  return fi.completeBaseName() + ".krtd";
+}
 
 //-----------------------------------------------------------------------------
 QString findUserManual()
@@ -293,6 +316,7 @@ void MainWindowPrivate::addFrame(
     cd.camera->Update();
 
     this->UI.worldView->addCamera(cd.id, cd.camera);
+    this->UI.actionExportCameras->setEnabled(true);
   }
   else
   {
@@ -322,8 +346,7 @@ kwiver::vital::camera_map_sptr MainWindowPrivate::cameraMap() const
 {
   kwiver::vital::camera_map::map_camera_t map;
 
-  auto const cameraCount = this->cameras.count();
-  for (int i = 0; i < cameraCount; ++i)
+  foreach (auto i, qtIndexRange(this->cameras.count()))
   {
     auto const& cd = this->cameras[i];
     if (cd.camera)
@@ -341,6 +364,7 @@ void MainWindowPrivate::updateCameras(
   kwiver::vital::camera_map_sptr const& cameras)
 {
   auto const cameraCount = this->cameras.count();
+  auto allowExport = false;
 
   foreach (auto const& iter, cameras->cameras())
   {
@@ -352,9 +376,13 @@ void MainWindowPrivate::updateCameras(
       {
         cd.camera->SetCamera(iter.second);
         cd.camera->Update();
+
+        allowExport = allowExport || iter.second;
       }
     }
   }
+
+  this->UI.actionExportCameras->setEnabled(allowExport);
 }
 
 //-----------------------------------------------------------------------------
@@ -540,6 +568,11 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.actionOpen, SIGNAL(triggered()), this, SLOT(openFile()));
   connect(d->UI.actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
 
+  connect(d->UI.actionExportCameras, SIGNAL(triggered()),
+          this, SLOT(saveCameras()));
+  connect(d->UI.actionExportLandmarks, SIGNAL(triggered()),
+          this, SLOT(saveLandmarks()));
+
   connect(d->UI.actionShowMatchMatrix, SIGNAL(triggered()),
           this, SLOT(showMatchMatrix()));
 
@@ -672,13 +705,13 @@ void MainWindow::loadProject(QString const& path)
   }
   else
   {
-    auto const cameraDir = kwiver::vital::path_t(qPrintable(project.cameraPath));
+    auto const cameraDir = kwiver::vital::path_t(kvPath(project.cameraPath));
     foreach (auto const& ip, project.images)
     {
       try
       {
         auto const& camera =
-          kwiver::vital::read_krtd_file(qPrintable(ip), cameraDir);
+          kwiver::vital::read_krtd_file(kvPath(ip), cameraDir);
 
         // Add camera to scene
         d->addFrame(camera, ip);
@@ -709,7 +742,7 @@ void MainWindow::loadCamera(QString const& path)
 
   try
   {
-    auto const& camera = kwiver::vital::read_krtd_file(qPrintable(path));
+    auto const& camera = kwiver::vital::read_krtd_file(kvPath(path));
     d->addCamera(camera);
   }
   catch (...)
@@ -725,7 +758,7 @@ void MainWindow::loadTracks(QString const& path)
 
   try
   {
-    auto const& tracks = kwiver::vital::read_track_file(qPrintable(path));
+    auto const& tracks = kwiver::vital::read_track_file(kvPath(path));
     if (tracks)
     {
       d->tracks = tracks;
@@ -752,16 +785,135 @@ void MainWindow::loadLandmarks(QString const& path)
 
   try
   {
-    auto const& landmarks = kwiver::vital::read_ply_file(qPrintable(path));
+    auto const& landmarks = kwiver::vital::read_ply_file(kvPath(path));
     if (landmarks)
     {
       d->landmarks = landmarks;
       d->UI.worldView->setLandmarks(*landmarks);
+
+      d->UI.actionExportLandmarks->setEnabled(
+        d->landmarks && d->landmarks->size());
     }
   }
   catch (...)
   {
     qWarning() << "failed to read landmarks from" << path;
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::saveLandmarks()
+{
+  auto const path = QFileDialog::getSaveFileName(
+    this, "Export Landmarks", QString(),
+    "Landmark file (*.ply);;"
+    "All Files (*)");
+
+  if (!path.isEmpty())
+  {
+    this->saveLandmarks(path);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::saveLandmarks(QString const& path)
+{
+  QTE_D();
+
+  try
+  {
+    kwiver::vital::write_ply_file(d->landmarks, kvPath(path));
+  }
+  catch (...)
+  {
+    auto const msg =
+      QString("An error occurred while exporting landmarks to \"%1\". "
+              "The output file may not have been written correctly.");
+    QMessageBox::critical(this, "Export error", msg.arg(path));
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::saveCameras()
+{
+  auto const path = QFileDialog::getExistingDirectory(this, "Export Cameras");
+
+  if (!path.isEmpty())
+  {
+    this->saveCameras(path);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::saveCameras(QString const& path)
+{
+  QTE_D();
+
+  auto out = QHash<QString, kwiver::vital::camera_sptr>();
+  auto willOverwrite = QStringList();
+
+  foreach (auto i, qtIndexRange(d->cameras.count()))
+  {
+    auto const& cd = d->cameras[i];
+    if (cd.camera)
+    {
+      auto const camera = cd.camera->GetCamera();
+      if (camera)
+      {
+        auto const filepath = path + "/" + cameraName(cd.imagePath, i);
+        out.insert(filepath, camera);
+
+        if (QFileInfo(filepath).exists())
+        {
+          willOverwrite.append(filepath);
+        }
+      }
+    }
+  }
+
+  if (!willOverwrite.isEmpty())
+  {
+    QMessageBox mb(QMessageBox::Warning, "Confirm overwrite",
+                   "One or more files will be overwritten by this operation. "
+                   "Do you wish to continue?", QMessageBox::Cancel, this);
+
+    mb.addButton("&Overwrite", QMessageBox::AcceptRole);
+    mb.setDetailedText("The following file(s) will be overwritten:\n  " +
+                       willOverwrite.join("  \n"));
+
+    if (mb.exec() != QDialog::Accepted)
+    {
+      // User canceled operation
+      return;
+    }
+  }
+
+  auto errors = QStringList();
+  foreach (auto const& iter, qtEnumerate(out))
+  {
+    try
+    {
+      kwiver::vital::write_krtd_file(*iter.value(), kvPath(iter.key()));
+    }
+    catch (...)
+    {
+      errors.append(iter.key());
+    }
+  }
+
+  if (!errors.isEmpty())
+  {
+    auto const msg =
+      QString("Error(s) occurred while exporting cameras to \"%1\". "
+              "One or more output files may not have been written correctly.");
+
+    QMessageBox mb(QMessageBox::Critical, "Export error", msg.arg(path),
+                   QMessageBox::Ok, this);
+
+    mb.setDetailedText("Error writing the following file(s):\n  " +
+                       errors.join("  \n"));
+
+    mb.exec();
   }
 }
 
@@ -884,6 +1036,9 @@ void MainWindow::acceptToolResults()
     {
       d->landmarks = d->activeTool->landmarks();
       d->UI.worldView->setLandmarks(*d->landmarks);
+
+      d->UI.actionExportLandmarks->setEnabled(
+        d->landmarks && d->landmarks->size());
     }
 
     if (!d->cameras.isEmpty())
@@ -931,7 +1086,7 @@ void MainWindow::showUserManual()
   else
   {
     QMessageBox::information(
-      this, "Not Found",
+      this, "Not found",
       "The user manual could not be located. Please check your installation.");
   }
 }

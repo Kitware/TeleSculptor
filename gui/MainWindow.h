@@ -56,6 +56,11 @@ public slots:
   void loadTracks(QString const& path);
   void loadLandmarks(QString const& path);
 
+  void saveCameras();
+  void saveCameras(QString const& path);
+  void saveLandmarks();
+  void saveLandmarks(QString const& path);
+
   void setActiveCamera(int);
 
   void showMatchMatrix();

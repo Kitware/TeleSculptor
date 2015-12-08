@@ -26,6 +26,9 @@ Visualization Application
    basic transformations, applying bundle adjustment to refine the solution)
    from within the GUI.
 
+ * Added ability to export cameras and landmarks to (respectively) KRTD and PLY
+   files.
+
  * Added ability to visualize locations of corresponding feature points on
    adjacent frames to the camera view. This may be helpful as an additional
    means of visualizing camera motion when there exists a spatial correlation
