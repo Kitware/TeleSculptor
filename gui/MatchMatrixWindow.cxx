@@ -669,7 +669,10 @@ void MatchMatrixWindow::saveImage(QString const& path)
 {
   QTE_D();
 
-  if (!d->image.save(path))
+  auto const flip = (d->UI.orientation->currentIndex() == Graph);
+  auto const& image = (flip ? d->image.mirrored() : d->image);
+
+  if (!image.save(path))
   {
     static auto const msgFormat = QString("Failed to write image to \"%1\".");
     QMessageBox::critical(this, "Error", msgFormat.arg(path));
