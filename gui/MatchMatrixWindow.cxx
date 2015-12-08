@@ -62,11 +62,18 @@ namespace // anonymous
 //BEGIN preset enumerations
 
 //-----------------------------------------------------------------------------
-enum Orientation
+enum Layout
 {
   Horizontal,
   Vertical,
   Diagonal,
+};
+
+//-----------------------------------------------------------------------------
+enum Orientation
+{
+  Matrix,
+  Graph,
 };
 
 //-----------------------------------------------------------------------------
@@ -373,7 +380,7 @@ void MatchMatrixWindowPrivate::buildHorizontalImage(
 
   VITAL_FOREACH (auto it, kwiver::vital::enumerate(this->matrix))
   {
-    auto const y = k + it.row() - it.col(); // (2*k - 1) - (col + k - 1 - row);
+    auto const y = it.col() + k - 1 - it.row();
     minY = qMin(minY, y);
     maxY = qMax(maxY, y);
 
@@ -408,7 +415,7 @@ void MatchMatrixWindowPrivate::buildVerticalImage(
 
     auto const a = scaleAlgorithm(valueAlgorithm(this->matrix, it));
     auto const c = gradient.at(a);
-    image.setPixel(x, (k - 1) - it.col(), c.rgba());
+    image.setPixel(x, it.col(), c.rgba());
   }
 
   this->image = image.copy(minX, 0, maxX - minX + 1, k);
@@ -430,7 +437,7 @@ void MatchMatrixWindowPrivate::buildDiagonalImage(
   {
     auto const a = scaleAlgorithm(valueAlgorithm(this->matrix, it));
     auto const c = gradient.at(a);
-    image.setPixel(it.row(), (k - 1) - it.col(), c.rgba());
+    image.setPixel(it.row(), it.col(), c.rgba());
   }
 
   this->image = image;
@@ -502,20 +509,18 @@ void MatchMatrixImageItem::updateStatusText(const QPointF& pos)
   auto y = static_cast<int>(floor(pos.y()));
 
   // Convert back to original matrix row/column
-  switch (q->UI.orientation->currentIndex())
+  switch (q->UI.layout->currentIndex())
   {
     case Horizontal:
-      y = k - q->offset + x - y;
+      y = q->offset + x + y - (k - 1);
       break;
 
     case Vertical:
-      x = q->offset + x - y;
-      y = (k - 1) - y;
+      x = q->offset + x + y - (k - 1);
       qSwap(x, y);
       break;
 
     case Diagonal:
-      y = (k - 1) - y;
       break;
   }
 
@@ -585,6 +590,7 @@ MatchMatrixWindow::MatchMatrixWindow(QWidget* parent, Qt::WindowFlags flags)
 
   // Set up UI persistence and restore previous state
   d->uiState.setCurrentGroup("MatchMatrixWindow");
+  d->persist("Layout", d->UI.layout);
   d->persist("Orientation", d->UI.orientation);
   d->persist("Values", d->UI.values);
   d->persist("Scale", d->UI.scale);
@@ -598,12 +604,15 @@ MatchMatrixWindow::MatchMatrixWindow(QWidget* parent, Qt::WindowFlags flags)
   d->uiState.restore();
 
   this->updateControls();
+  this->updateImageTransform();
 
   // Set up signals/slots
   connect(d->UI.actionSaveImage, SIGNAL(triggered()), this, SLOT(saveImage()));
 
-  connect(d->UI.orientation, SIGNAL(currentIndexChanged(QString)),
+  connect(d->UI.layout, SIGNAL(currentIndexChanged(QString)),
           this, SLOT(updateImage()));
+  connect(d->UI.orientation, SIGNAL(currentIndexChanged(QString)),
+          this, SLOT(updateImageTransform()));
   connect(d->UI.values, SIGNAL(currentIndexChanged(QString)),
           this, SLOT(updateImage()));
   connect(d->UI.scale, SIGNAL(currentIndexChanged(QString)),
@@ -660,7 +669,10 @@ void MatchMatrixWindow::saveImage(QString const& path)
 {
   QTE_D();
 
-  if (!d->image.save(path))
+  auto const flip = (d->UI.orientation->currentIndex() == Graph);
+  auto const& image = (flip ? d->image.mirrored() : d->image);
+
+  if (!image.save(path))
   {
     static auto const msgFormat = QString("Failed to write image to \"%1\".");
     QMessageBox::critical(this, "Error", msgFormat.arg(path));
@@ -761,7 +773,7 @@ void MatchMatrixWindow::updateImage()
   }
 
   // Build image
-  switch (d->UI.orientation->currentIndex())
+  switch (d->UI.layout->currentIndex())
   {
     case Horizontal:
       d->buildHorizontalImage(gradient, *valueAlgorithm, *scaleAlgorithm);
@@ -776,6 +788,15 @@ void MatchMatrixWindow::updateImage()
 
   d->scene.clear();
   d->scene.addItem(new MatchMatrixImageItem(d->image, d));
+}
+
+//-----------------------------------------------------------------------------
+void MatchMatrixWindow::updateImageTransform()
+{
+  QTE_D();
+
+  auto const s = (d->UI.orientation->currentIndex() == Graph ? -1.0 : 1.0);
+  d->UI.view->setTransform(QTransform::fromScale(1.0, s));
 }
 
 //END MatchMatrixWindow
