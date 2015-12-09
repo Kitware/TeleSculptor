@@ -59,6 +59,7 @@ qt4_add_resources(gui_res_sources ${gui_resources})
 qte_amc_wrap_ui(gui_amc_sources ActionManagerDialog ${gui_am_ui})
 
 maptk_add_executable(mapgui
+  WIN32
   ${gui_sources}
   ${gui_ui_sources}
   ${gui_moc_sources}
@@ -78,6 +79,7 @@ target_link_libraries(mapgui
   vtkCommonCore
   vtksys
   qtExtensions
+  ${QT_QTMAIN_LIBRARY}
   ${QT_LIBRARIES}
 )
 
