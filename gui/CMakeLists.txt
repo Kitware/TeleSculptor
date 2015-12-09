@@ -84,7 +84,7 @@ target_link_libraries(mapgui
 )
 
 # add DESTDIR switch (Turn it on if not WIN32?)
-# do components bit (don't install hedader files)')
+# do components bit (don't install header files)')
 
 set(gui-exe "\${DESTDIR}\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/bin/mapgui${CMAKE_EXECUTABLE_SUFFIX}")
 
@@ -92,7 +92,7 @@ set(gui-exe "\${DESTDIR}\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/bin/mapgui${CMAKE
 list(APPEND FIXUP_DIRS "${VTK_INSTALL_PREFIX}/bin")
 
 # For now, we're assuming we're pulling qtextensions from a build directory
-# (not an install).  Also, Mac and/or Linus will need be a bit different,
+# (not an install).  Also, Mac and/or Linux will need be a bit different,
 # but will be handled later (they'd likely use CMAKE_BUILD_TYPE instead
 # of CMAKE_CONFIGURATION_TYPES). For Windows really expect the dll will
 # be in Release subdirectory, and so look there unless
