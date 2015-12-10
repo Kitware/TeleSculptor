@@ -33,10 +33,24 @@
 #include "ui_PointOptions.h"
 
 #include <vtkActor.h>
+#include <vtkMapper.h>
 #include <vtkProperty.h>
 
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
+
+namespace
+{
+
+//-----------------------------------------------------------------------------
+enum ColorMode
+{
+  SolidColor,
+  TrueColor,
+  DataColor,
+};
+
+}
 
 //-----------------------------------------------------------------------------
 class PointOptionsPrivate
@@ -46,6 +60,9 @@ public:
   qtUiState uiState;
 
   QList<vtkActor*> actors;
+  QList<vtkMapper*> mappers;
+
+  QButtonGroup colorMode;
 };
 
 QTE_IMPLEMENT_D_FUNC(PointOptions)
@@ -59,6 +76,10 @@ PointOptions::PointOptions(QString const& settingsGroup,
 
   // Set up UI
   d->UI.setupUi(this);
+
+  d->colorMode.addButton(d->UI.solidColor, SolidColor);
+  d->colorMode.addButton(d->UI.trueColor, TrueColor);
+  d->colorMode.addButton(d->UI.dataColor, DataColor);
 
   // Set up option persistence
   d->uiState.setCurrentGroup(settingsGroup);
@@ -74,6 +95,9 @@ PointOptions::PointOptions(QString const& settingsGroup,
   // Connect signals/slots
   connect(d->UI.color, SIGNAL(colorChanged(QColor)), this, SIGNAL(modified()));
   connect(d->UI.size, SIGNAL(valueChanged(int)), this, SLOT(setSize(int)));
+
+  connect(&d->colorMode, SIGNAL(buttonClicked(int)),
+          this, SLOT(setColorMode(int)));
 }
 
 //-----------------------------------------------------------------------------
@@ -93,14 +117,32 @@ void PointOptions::setDefaultColor(QColor const& color)
 }
 
 //-----------------------------------------------------------------------------
-void PointOptions::addActor(vtkActor* actor)
+void PointOptions::setTrueColorAvailable(bool available)
+{
+  QTE_D();
+
+  d->UI.trueColor->setEnabled(available);
+  if (!available && d->UI.trueColor->isChecked())
+  {
+    d->UI.solidColor->setChecked(true);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void PointOptions::addActor(vtkActor* actor, vtkMapper* mapper)
 {
   QTE_D();
 
   d->UI.color->addActor(actor);
   actor->GetProperty()->SetPointSize(d->UI.size->value());
 
+  if (mapper)
+  {
+    mapper->SetScalarVisibility(!d->UI.solidColor->isChecked());
+  }
+
   d->actors.append(actor);
+  d->mappers.append(mapper);
 }
 
 //-----------------------------------------------------------------------------
@@ -111,6 +153,22 @@ void PointOptions::setSize(int size)
   foreach (auto const actor, d->actors)
   {
     actor->GetProperty()->SetPointSize(size);
+  }
+
+  emit this->modified();
+}
+
+//-----------------------------------------------------------------------------
+void PointOptions::setColorMode(int mode)
+{
+  QTE_D();
+
+  foreach (auto const mapper, d->mappers)
+  {
+    if (mapper)
+    {
+      mapper->SetScalarVisibility(mode != SolidColor);
+    }
   }
 
   emit this->modified();
