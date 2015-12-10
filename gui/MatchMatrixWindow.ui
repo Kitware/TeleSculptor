@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Match Matrix</string>
   </property>
   <widget class="QGraphicsView" name="view">
    <property name="mouseTracking">
