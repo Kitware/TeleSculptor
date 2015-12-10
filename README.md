@@ -1,9 +1,9 @@
+![MAP-Tk Logo](/gui/icons/128x128/mapgui.png)
 #                MAP-Tk                    #
 Motion-imagery Aerial Photogrammetry Toolkit
 
 --------------------------------------------
 
-![MAP-Tk Logo](/gui/icons/128x128/mapgui.png)
 MAP-Tk is an open source C++ collection of libraries and tools for making
 measurements from aerial video.  Initial capability focuses on estimating
 the camera flight trajectory and a sparse 3D point cloud of the scene.
