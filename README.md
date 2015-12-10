@@ -1,5 +1,4 @@
-![MAP-Tk Logo](/gui/icons/128x128/mapgui.png)
-#                MAP-Tk                    #
+# ![MAP-Tk Logo](/gui/icons/128x128/mapgui.png)  MAP-Tk  #
 Motion-imagery Aerial Photogrammetry Toolkit
 
 --------------------------------------------
