@@ -29,6 +29,9 @@ implement additional versions of core MAP-Tk data structures.
 
 In addition to the libraries and tools, a Qt GUI application is provided to
 assist with visualization of data and results with the help of VTK.
+The screenshot below shows the MAP-Tk GUI visualizing results of MAP-Tk
+run on a video from the [VIRAT Video Dataset](http://www.viratdata.org/).
+![MapGUI Screenshot](/doc/screenshot/mapgui_screenshot_osx.png)
 
 While the initial software implementation relies on batch post-processing
 of aerial video.  Our intent is to move to an online video stream processing
