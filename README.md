@@ -31,7 +31,9 @@ In addition to the libraries and tools, a Qt GUI application is provided to
 assist with visualization of data and results with the help of VTK.
 The screenshot below shows the MAP-Tk GUI visualizing results of MAP-Tk
 run on a video from the [VIRAT Video Dataset](http://www.viratdata.org/).
-![MapGUI Screenshot](/doc/screenshot/mapgui_screenshot_osx.png)
+![MapGUI Mac OS X Screenshot](/doc/screenshot/mapgui_screenshot_osx.png "Mac OS X")
+![MapGUI Windows Screenshot](/doc/screenshot/mapgui_screenshot_windows.png "Windows")
+![MapGUI Linux Screenshot](/doc/screenshot/mapgui_screenshot_linux.png "Linux")
 
 While the initial software implementation relies on batch post-processing
 of aerial video.  Our intent is to move to an online video stream processing
