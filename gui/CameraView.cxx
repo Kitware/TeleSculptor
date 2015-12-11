@@ -450,7 +450,8 @@ void CameraView::addFeatureTrack(kwiver::vital::track const& track)
 }
 
 //-----------------------------------------------------------------------------
-void CameraView::addLandmark(unsigned int id, double x, double y)
+void CameraView::addLandmark(
+  kwiver::vital::landmark_id_t id, double x, double y)
 {
   QTE_D();
 
@@ -462,7 +463,7 @@ void CameraView::addLandmark(unsigned int id, double x, double y)
 
 //-----------------------------------------------------------------------------
 void CameraView::addResidual(
-  unsigned int id, double x1, double y1, double x2, double y2)
+  kwiver::vital::track_id_t id, double x1, double y1, double x2, double y2)
 {
   QTE_D();
 

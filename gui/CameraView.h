@@ -31,6 +31,8 @@
 #ifndef MAPTK_CAMERAVIEW_H_
 #define MAPTK_CAMERAVIEW_H_
 
+#include <vital/vital_types.h>
+
 #include <qtGlobal.h>
 
 #include <QtGui/QWidget>
@@ -58,8 +60,8 @@ public slots:
 
   void setActiveFrame(unsigned);
 
-  void addLandmark(unsigned int id, double x, double y);
-  void addResidual(unsigned int id,
+  void addLandmark(kwiver::vital::landmark_id_t id, double x, double y);
+  void addResidual(kwiver::vital::track_id_t id,
                    double x1, double y1,
                    double x2, double y2);
 
