@@ -99,6 +99,12 @@ class MatchphotoMapTKImporter < Sketchup::Importer
     img_fps = read_in_image_fps(file_path)
 
     img_fps.each do |img_fp|
+
+      # if not a valid path, try prepending the directory of the image list file
+      if ! File.file?(img_fp)
+        img_fp = File.join(File.dirname(file_path), img_fp)
+      end
+
       krtd_fname = nil
       if guess_krtd_location_flag
         krtd_fname = guess_krtd_location(img_fp)
