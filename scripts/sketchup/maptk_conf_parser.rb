@@ -91,6 +91,21 @@ class MapTKConfImporter < Sketchup::Importer
       return nil
     end
 
+    # if not a valid path, try prepending the directory of the conf file
+    if ! File.file?(image_list_file)
+      image_list_file = File.join(File.dirname(fp), image_list_file)
+    end
+
+    # if not a valid directory, try prepending the directory of the conf file
+    if ! File.directory?(output_krtd_dir)
+      output_krtd_dir = File.join(File.dirname(fp), output_krtd_dir)
+    end
+
+    # if not a valid directory, try prepending the directory of the conf file
+    if ! File.file?(output_ply_file)
+      output_ply_file = File.join(File.dirname(fp), output_ply_file)
+    end
+
     return image_list_file, output_ply_file, output_krtd_dir
   end
 
