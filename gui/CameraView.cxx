@@ -63,8 +63,6 @@
 #include <QtGui/QToolButton>
 #include <QtGui/QWidgetAction>
 
-#include <QtCore/QDebug>
-
 namespace // anonymous
 {
 
