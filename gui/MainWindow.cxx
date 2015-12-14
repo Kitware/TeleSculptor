@@ -794,6 +794,8 @@ void MainWindow::loadLandmarks(QString const& path)
 
       d->UI.actionExportLandmarks->setEnabled(
         d->landmarks && d->landmarks->size());
+
+      d->updateCameraView();
     }
   }
   catch (...)
