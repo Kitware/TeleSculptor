@@ -11,6 +11,7 @@ Updates since last public release
 ---------------------------------
 
 MAP-Tk Library
+
  * The canonical transform function has been changed to set the orientation
    based on the eigenvector of the landmark point cloud.  The cameras are
    now only used to set the sign of the up vector (Z-axis).
@@ -40,6 +41,9 @@ Visualization Application
 
  * Added ability to load imagery directly, and without requiring that cameras
    are loaded.
+
+ * Added ability to visualize "true colors" of landmarks, if color data is
+   available.
 
  * Added ground plane display to world view.
 
