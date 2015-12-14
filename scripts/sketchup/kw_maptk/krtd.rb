@@ -68,7 +68,7 @@ class KRTD
     @_fov_y = nil
     @_up = nil
     @_target = nil
-    @_camera = nil
+    @_camera_center = nil
   end
 
   def name
@@ -96,8 +96,6 @@ class KRTD
   end
 
   def up
-    # May not be right...Currently setting it as the second column in the
-    # rotation matrix but it may be the second row and may be negated.
     if @_up == nil then
       @_up = -1 * Vector[@rotation_mat[1, 0], 
 		    @rotation_mat[1, 1], 
@@ -109,17 +107,18 @@ class KRTD
   def target
     if @_target == nil then
       @_target = Vector[0, 0, 0]
-      @_target = camera + Vector[@rotation_mat[2, 0],
-                                 @rotation_mat[2, 1],
-                                 @rotation_mat[2, 2]]
+      @_target = camera_center + Vector[@rotation_mat[2, 0],
+                                        @rotation_mat[2, 1],
+                                        @rotation_mat[2, 2]]
     end
     return @_target
   end
-  def camera
-    if @_camera == nil then
-      @_camera = -1 * @rotation_mat.transpose * @translation_vec
+
+  def camera_center
+    if @_camera_center == nil then
+      @_camera_center = -1 * @rotation_mat.transpose * @translation_vec
     end
-    return @_camera
+    return @_camera_center
   end
 
   def eye
