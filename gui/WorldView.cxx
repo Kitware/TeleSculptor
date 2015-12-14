@@ -594,11 +594,16 @@ void WorldView::updateScale()
     // Add camera centers
     bbox.AddBounds(d->cameraRep->GetPathActor()->GetBounds());
 
-    // Compute base scale (20% of scale factor)
-    auto const cameraScale = 0.2 * bbox.GetDiagonalLength();
+    // Check if we have geometry (we can still get here if a scale update was
+    // triggered by setting the active camera with only images loaded)
+    if (bbox.IsValid())
+    {
+      // Compute base scale (20% of scale factor)
+      auto const cameraScale = 0.2 * bbox.GetDiagonalLength();
 
-    // Update camera scale
-    d->cameraOptions->setBaseCameraScale(cameraScale);
+      // Update camera scale
+      d->cameraOptions->setBaseCameraScale(cameraScale);
+    }
 
     d->scaleDirty = false;
 
