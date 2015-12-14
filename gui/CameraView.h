@@ -39,6 +39,7 @@
 
 class vtkImageData;
 
+namespace kwiver { namespace vital { class landmark_map; } }
 namespace kwiver { namespace vital { class track; } }
 
 class vtkMaptkCamera;
@@ -57,6 +58,8 @@ public:
 
 public slots:
   void setImageData(vtkImageData* data, QSize const& dimensions);
+
+  void setLandmarksData(kwiver::vital::landmark_map const&);
 
   void setActiveFrame(unsigned);
 
