@@ -46,6 +46,7 @@
 #include <Eigen/LU>
 
 #include <vpgl/algo/vpgl_fm_compute_8_point.h>
+#include <vpgl/algo/vpgl_fm_compute_7_point.h>
 
 using namespace kwiver::vital;
 
@@ -62,16 +63,21 @@ class estimate_fundamental_matrix::priv
 public:
   /// Constructor
   priv()
-  : precondition(true)
+  : precondition(true),
+    method(EST_8_POINT)
   {
   }
 
   priv(const priv& other)
-  : precondition(other.precondition)
+  : precondition(other.precondition),
+    method(other.method)
   {
   }
 
+  enum method_t {EST_7_POINT, EST_8_POINT};
+
   bool precondition;
+  method_t method;
 };
 
 
@@ -112,6 +118,14 @@ estimate_fundamental_matrix
                     "If true, precondition the data before estimating the "
                     "fundamental matrix");
 
+  std::string method_name = d_->method == priv::EST_8_POINT
+                            ? "EST_8_POINT" : "EST_7_POINT";
+  config->set_value("method", method_name,
+                    "Fundamental matrix estimation method to use. "
+                    "(Note: does not include RANSAC).  Choices are\n"
+                    "  EST_7_POINT\n"
+                    "  EST_8_POINT");
+
   return config;
 }
 
@@ -124,10 +138,19 @@ estimate_fundamental_matrix
 
   d_->precondition = config->get_value<bool>("precondition",
                                              d_->precondition);
+  std::string method_name = config->get_value<std::string>("method");
+  if( method_name == "EST_7_POINT" )
+  {
+    d_->method = priv::EST_7_POINT;
+  }
+  else
+  {
+    d_->method = priv::EST_8_POINT;
+  }
 }
 
 
-/// Check that the algorithm's currently configuration is valid
+/// Check that the algorithm's current configuration is valid
 bool
 estimate_fundamental_matrix
 ::check_configuration(vital::config_block_sptr config) const
@@ -154,10 +177,26 @@ estimate_fundamental_matrix
     left_points.push_back(vgl_homg_point_2d<double>(v.x(), v.y()));
   }
 
-  vpgl_fm_compute_8_point fm_compute(d_->precondition);
-
   vpgl_fundamental_matrix<double> vfm;
-  fm_compute.compute(right_points, left_points, vfm);
+  if( d_->method == priv::EST_8_POINT )
+  {
+    vpgl_fm_compute_8_point fm_compute(d_->precondition);
+    fm_compute.compute(right_points, left_points, vfm);
+  }
+  else
+  {
+    std::vector< vpgl_fundamental_matrix<double>* > vfms;
+    vpgl_fm_compute_7_point fm_compute(d_->precondition);
+    fm_compute.compute(right_points, left_points, vfms);
+    // TODO use the multiple solutions in a RANSAC framework
+    // For now, only keep the first solution
+    vfm = *vfms[0];
+    VITAL_FOREACH(auto v, vfms)
+    {
+      delete v;
+    }
+  }
+
   matrix_3x3d F(vfm.get_matrix().data_block());
   F.transposeInPlace();
 
