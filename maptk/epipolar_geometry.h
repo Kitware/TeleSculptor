@@ -38,6 +38,8 @@
 
 #include <maptk/config.h>
 
+#include <vital/types/camera.h>
+#include <vital/types/essential_matrix.h>
 #include <vital/types/fundamental_matrix.h>
 #include <vector>
 
@@ -60,6 +62,28 @@ mark_fm_inliers(vital::fundamental_matrix const& fm,
                 std::vector<vital::vector_2d> const& pts1,
                 std::vector<vital::vector_2d> const& pts2,
                 double inlier_scale = 1.0);
+
+
+/// Compute the fundamental matrix from a pair of cameras
+MAPTK_LIB_EXPORT
+kwiver::vital::fundamental_matrix_sptr
+fundamental_matrix_from_cameras(kwiver::vital::camera const& right_cam,
+                                kwiver::vital::camera const& left_cam);
+
+
+/// Compute the essential matrix from a pair of cameras
+MAPTK_LIB_EXPORT
+kwiver::vital::essential_matrix_sptr
+essential_matrix_from_cameras(kwiver::vital::camera const& right_cam,
+                              kwiver::vital::camera const& left_cam);
+
+
+/// Convert an essential matrix to a fundamental matrix
+MAPTK_LIB_EXPORT
+kwiver::vital::fundamental_matrix_sptr
+essential_matrix_to_fundamental(kwiver::vital::essential_matrix const& E,
+                                kwiver::vital::camera_intrinsics const& right_cal,
+                                kwiver::vital::camera_intrinsics const& left_cal);
 
 } // end namespace maptk
 } // end namespace kwiver

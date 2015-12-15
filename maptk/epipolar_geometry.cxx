@@ -72,5 +72,47 @@ mark_fm_inliers(vital::fundamental_matrix const& fm,
 }
 
 
+// Compute the fundamental matrix from a pair of cameras
+kwiver::vital::fundamental_matrix_sptr
+fundamental_matrix_from_cameras(kwiver::vital::camera const& right_cam,
+                                kwiver::vital::camera const& left_cam)
+{
+  using namespace kwiver::vital;
+  essential_matrix_sptr em = essential_matrix_from_cameras(right_cam, left_cam);
+  return essential_matrix_to_fundamental(*em, *right_cam.intrinsics(),
+                                              *left_cam.intrinsics());
+}
+
+
+// Compute the essential matrix from a pair of cameras
+kwiver::vital::essential_matrix_sptr
+essential_matrix_from_cameras(kwiver::vital::camera const& right_cam,
+                              kwiver::vital::camera const& left_cam)
+{
+  using namespace kwiver::vital;
+  rotation_d R1 = right_cam.rotation();
+  rotation_d R2 = left_cam.rotation();
+  vector_3d t1 = right_cam.translation();
+  vector_3d t2 = left_cam.translation();
+  rotation_d R(R2 * R1.inverse());
+  vector_3d t(t2 - R*t1);
+  return std::make_shared<essential_matrix_d>(R,t);
+}
+
+
+/// Convert an essential matrix to a fundamental matrix
+kwiver::vital::fundamental_matrix_sptr
+essential_matrix_to_fundamental(kwiver::vital::essential_matrix const & E,
+                                kwiver::vital::camera_intrinsics const& right_cal,
+                                kwiver::vital::camera_intrinsics const& left_cal)
+{
+  using namespace kwiver::vital;
+  matrix_3x3d Kr_inv = right_cal.as_matrix().inverse();
+  matrix_3x3d Kl_invt = left_cal.as_matrix().transpose().inverse();
+  return std::make_shared<fundamental_matrix_d>( Kl_invt * E.matrix() * Kr_inv );
+}
+
+
+
 } // end namespace maptk
 } // end namespace kwiver
