@@ -36,6 +36,7 @@
 #include <QtGui/QWidget>
 
 class vtkActor;
+class vtkMapper;
 
 class PointOptionsPrivate;
 
@@ -48,15 +49,19 @@ public:
                         QWidget* parent = 0, Qt::WindowFlags flags = 0);
   virtual ~PointOptions();
 
-  void addActor(vtkActor*);
+  void addActor(vtkActor*, vtkMapper* = 0);
 
   void setDefaultColor(QColor const&);
+
+public slots:
+  void setTrueColorAvailable(bool);
 
 signals:
   void modified();
 
 protected slots:
   void setSize(int);
+  void setColorMode(int);
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(PointOptions)

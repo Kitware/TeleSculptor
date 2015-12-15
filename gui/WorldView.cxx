@@ -50,6 +50,7 @@
 #include <vtkMatrix4x4.h>
 #include <vtkNew.h>
 #include <vtkPlaneSource.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
@@ -93,6 +94,8 @@ public:
 
   vtkNew<vtkPoints> landmarkPoints;
   vtkNew<vtkCellArray> landmarkVerts;
+  vtkNew<vtkUnsignedCharArray> landmarkColors;
+  vtkNew<vtkPolyDataMapper> landmarkMapper;
   vtkNew<vtkActor> landmarkActor;
 
   vtkNew<vtkImageActor> imageActor;
@@ -248,7 +251,8 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
           d->UI.renderWidget, SLOT(update()));
 
   d->landmarkOptions = new PointOptions("WorldView/Landmarks", this);
-  d->landmarkOptions->addActor(d->landmarkActor.GetPointer());
+  d->landmarkOptions->addActor(d->landmarkActor.GetPointer(),
+                               d->landmarkMapper.GetPointer());
   d->setPopup(d->UI.actionShowLandmarks, d->landmarkOptions);
 
   connect(d->landmarkOptions, SIGNAL(modified()),
@@ -309,13 +313,15 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
 
   // Set up landmark actor
   vtkNew<vtkPolyData> landmarkPolyData;
-  vtkNew<vtkPolyDataMapper> landmarkMapper;
+
+  d->landmarkColors->SetNumberOfComponents(3);
 
   landmarkPolyData->SetPoints(d->landmarkPoints.GetPointer());
   landmarkPolyData->SetVerts(d->landmarkVerts.GetPointer());
-  landmarkMapper->SetInputData(landmarkPolyData.GetPointer());
+  landmarkPolyData->GetPointData()->SetScalars(d->landmarkColors.GetPointer());
+  d->landmarkMapper->SetInputData(landmarkPolyData.GetPointer());
 
-  d->landmarkActor->SetMapper(landmarkMapper.GetPointer());
+  d->landmarkActor->SetMapper(d->landmarkMapper.GetPointer());
   d->landmarkActor->SetVisibility(d->UI.actionShowLandmarks->isChecked());
   d->renderer->AddActor(d->landmarkActor.GetPointer());
 
@@ -403,23 +409,39 @@ void WorldView::setLandmarks(kwiver::vital::landmark_map const& lm)
   QTE_D();
 
   auto const& landmarks = lm.landmarks();
+  auto const size = static_cast<vtkIdType>(landmarks.size());
+
+  auto const defaultColor = kwiver::vital::rgb_color{};
+  auto haveColor = false;
 
   d->landmarkPoints->Reset();
   d->landmarkVerts->Reset();
-  d->landmarkPoints->Allocate(static_cast<vtkIdType>(landmarks.size()));
-  d->landmarkVerts->Allocate(static_cast<vtkIdType>(landmarks.size()));
+  d->landmarkColors->Reset();
+  d->landmarkPoints->Allocate(size);
+  d->landmarkVerts->Allocate(size);
+  d->landmarkColors->Allocate(3 * size);
 
   vtkIdType vertIndex = 0;
   foreach_iter (auto, lmi, landmarks)
   {
     auto const& pos = lmi->second->loc();
+    auto const& color = lmi->second->color();
+
     d->landmarkPoints->InsertNextPoint(pos.data());
     d->landmarkVerts->InsertNextCell(1);
     d->landmarkVerts->InsertCellPoint(vertIndex++);
+    d->landmarkColors->InsertNextValue(color.r);
+    d->landmarkColors->InsertNextValue(color.g);
+    d->landmarkColors->InsertNextValue(color.b);
+
+    haveColor = haveColor || (color != defaultColor);
   }
+
+  d->landmarkOptions->setTrueColorAvailable(haveColor);
 
   d->landmarkPoints->Modified();
   d->landmarkVerts->Modified();
+  d->landmarkColors->Modified();
 
   d->updateScale(this);
 }
@@ -572,11 +594,16 @@ void WorldView::updateScale()
     // Add camera centers
     bbox.AddBounds(d->cameraRep->GetPathActor()->GetBounds());
 
-    // Compute base scale (20% of scale factor)
-    auto const cameraScale = 0.2 * bbox.GetDiagonalLength();
+    // Check if we have geometry (we can still get here if a scale update was
+    // triggered by setting the active camera with only images loaded)
+    if (bbox.IsValid())
+    {
+      // Compute base scale (20% of scale factor)
+      auto const cameraScale = 0.2 * bbox.GetDiagonalLength();
 
-    // Update camera scale
-    d->cameraOptions->setBaseCameraScale(cameraScale);
+      // Update camera scale
+      d->cameraOptions->setBaseCameraScale(cameraScale);
+    }
 
     d->scaleDirty = false;
 

@@ -119,6 +119,12 @@ items to be changed, as well as their size. Feature items (that is, feature
 points and landmarks) are displayed as dots, with a fixed size-on-screen that
 is independent of the view.
 
+Several options for color are provided. The simplest is "solid color", which
+displays all landmarks in the same, user selected color. "True color" displays
+landmarks in the color estimated to correspond to the actual color of the point
+in the real world scene, as computed from the input imagery. (The "color by
+data" option is reserved for future use.)
+
 Camera View
 ===========
 

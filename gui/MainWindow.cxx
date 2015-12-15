@@ -790,9 +790,12 @@ void MainWindow::loadLandmarks(QString const& path)
     {
       d->landmarks = landmarks;
       d->UI.worldView->setLandmarks(*landmarks);
+      d->UI.cameraView->setLandmarksData(*landmarks);
 
       d->UI.actionExportLandmarks->setEnabled(
         d->landmarks && d->landmarks->size());
+
+      d->updateCameraView();
     }
   }
   catch (...)

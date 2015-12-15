@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>184</width>
-    <height>59</height>
+    <width>207</width>
+    <height>167</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,31 +15,13 @@
   </property>
   <layout class="QFormLayout" name="formLayout">
    <item row="0" column="0">
-    <widget class="QLabel" name="colorLabel">
-     <property name="text">
-      <string>Color</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="1">
-    <widget class="ActorColorButton" name="color">
-     <property name="color">
-      <color>
-       <red>255</red>
-       <green>255</green>
-       <blue>255</blue>
-      </color>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0">
     <widget class="QLabel" name="sizeLabel">
      <property name="text">
       <string>Size</string>
      </property>
     </widget>
    </item>
-   <item row="1" column="1">
+   <item row="0" column="1">
     <widget class="QSlider" name="size">
      <property name="minimum">
       <number>1</number>
@@ -58,6 +40,78 @@
      </property>
     </widget>
    </item>
+   <item row="1" column="0" colspan="2">
+    <layout class="QGridLayout" name="gridLayout" columnstretch="0,1,0">
+     <item row="0" column="0" colspan="2">
+      <widget class="QRadioButton" name="solidColor">
+       <property name="text">
+        <string>Solid Color</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="ActorColorButton" name="color">
+       <property name="color">
+        <color>
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
+        </color>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0" colspan="2">
+      <widget class="QRadioButton" name="trueColor">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>True Color</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0" colspan="2">
+      <widget class="QRadioButton" name="dataColor">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Color by Data</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0" rowspan="2">
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>48</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="3" column="1" colspan="2">
+      <widget class="QComboBox" name="dataField">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1" colspan="2">
+      <widget class="QComboBox" name="dataGradient">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
   </layout>
  </widget>
  <customwidgets>
@@ -74,5 +128,54 @@
   </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>solidColor</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>color</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>71</x>
+     <y>43</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>172</x>
+     <y>43</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>dataColor</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>dataField</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>71</x>
+     <y>95</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>115</x>
+     <y>121</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>dataColor</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>dataGradient</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>71</x>
+     <y>95</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>115</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
