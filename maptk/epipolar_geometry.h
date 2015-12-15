@@ -56,7 +56,7 @@ namespace maptk {
  */
 MAPTK_LIB_EXPORT
 std::vector<bool>
-mark_fm_inliers(vital::fundamental_matrix_sptr const& fm,
+mark_fm_inliers(vital::fundamental_matrix const& fm,
                 std::vector<vital::vector_2d> const& pts1,
                 std::vector<vital::vector_2d> const& pts2,
                 double inlier_scale = 1.0);

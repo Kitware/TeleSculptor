@@ -201,7 +201,7 @@ estimate_fundamental_matrix
   F.transposeInPlace();
 
   fundamental_matrix_sptr fm(new fundamental_matrix_d(F));
-  inliers = maptk::mark_fm_inliers(fm, pts1, pts2, inlier_scale);
+  inliers = maptk::mark_fm_inliers(*fm, pts1, pts2, inlier_scale);
   return fm;
 }
 

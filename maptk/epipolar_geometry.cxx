@@ -43,14 +43,14 @@ namespace maptk {
 
 /// Test corresponding points against a fundamental matrix and mark inliers
 std::vector<bool>
-mark_fm_inliers(vital::fundamental_matrix_sptr const& fm,
+mark_fm_inliers(vital::fundamental_matrix const& fm,
                 std::vector<vital::vector_2d> const& pts1,
                 std::vector<vital::vector_2d> const& pts2,
                 double inlier_scale)
 {
   using namespace kwiver::vital;
 
-  matrix_3x3d F = fm->matrix();
+  matrix_3x3d F = fm.matrix();
   matrix_3x3d Ft = F.transpose();
 
   std::vector<bool> inliers(std::min(pts1.size(), pts2.size()));
