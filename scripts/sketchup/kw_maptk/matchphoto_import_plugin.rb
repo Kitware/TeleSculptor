@@ -56,7 +56,7 @@ class MatchphotoMapTKImporter < Sketchup::Importer
   end
 
   def id
-    return "com.sketchup.importers.matchphotomaptkimporter"
+    return "com.kitware.importers.matchphotomaptkimporter"
   end
 
   def supports_options?

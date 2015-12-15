@@ -41,7 +41,7 @@ class PLYImporter < Sketchup::Importer
   end
 
   def id
-    return "com.sketchup.importers.plyimporter"
+    return "com.kitware.importers.plyimporter"
   end
 
   def supports_options?

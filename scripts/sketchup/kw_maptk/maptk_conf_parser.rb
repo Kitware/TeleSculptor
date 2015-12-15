@@ -49,7 +49,7 @@ class MapTKConfImporter < Sketchup::Importer
   end
 
   def id
-    return "com.sketchup.importers.maptkconfimporter"
+    return "com.kitware.importers.maptkconfimporter"
   end
 
   def supports_options?
