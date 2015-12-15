@@ -155,15 +155,31 @@ estimate_fundamental_matrix
 
   vpgl_fm_compute_8_point fm_compute(d_->precondition);
 
-  vpgl_fundamental_matrix<double> fm;
-  fm_compute.compute(right_points, left_points, fm);
-  matrix_3x3d F(fm.get_matrix().data_block());
+  vpgl_fundamental_matrix<double> vfm;
+  fm_compute.compute(right_points, left_points, vfm);
+  matrix_3x3d F(vfm.get_matrix().data_block());
   F.transposeInPlace();
 
+  fundamental_matrix_sptr fm(new fundamental_matrix_d(F));
+  mark_inliers(fm, pts1, pts2, inliers, inlier_scale);
+  return fm;
+}
+
+
+/// Test corresponding points against a fundamental matrix and mark inliers
+void
+estimate_fundamental_matrix
+::mark_inliers(vital::fundamental_matrix_sptr const& fm,
+               std::vector<vital::vector_2d> const& pts1,
+               std::vector<vital::vector_2d> const& pts2,
+               std::vector<bool>& inliers,
+               double inlier_scale)
+{
+  matrix_3x3d F = fm->matrix();
   matrix_3x3d Ft = F.transpose();
 
-  inliers.resize(pts1.size());
-  for(unsigned i=0; i<pts1.size(); ++i)
+  inliers.resize(std::min(pts1.size(), pts2.size()));
+  for(unsigned i=0; i<inliers.size(); ++i)
   {
     const vector_2d& p1 = pts1[i];
     const vector_2d& p2 = pts2[i];
@@ -177,8 +193,6 @@ estimate_fundamental_matrix
     double d = v1.dot(l2) * (s1 + s2);
     inliers[i] = std::fabs(d) < inlier_scale;
   }
-
-  return fundamental_matrix_sptr(new fundamental_matrix_d(F));
 }
 
 

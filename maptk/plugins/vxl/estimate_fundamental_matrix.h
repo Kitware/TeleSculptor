@@ -89,6 +89,21 @@ public:
            double inlier_scale = 1.0) const;
   using vital::algo::estimate_fundamental_matrix::estimate;
 
+  /// Test corresponding points against a fundamental matrix and mark inliers
+  /**
+   * \param [in]  fm   the fundamental matrix
+   * \param [in]  pts1 the vector or corresponding points from the first image
+   * \param [in]  pts2 the vector of corresponding points from the second image
+   * \param [out] inliers for each point pair, the value is true if
+   *                      this pair is an inlier to the estimate
+   * \param [in]  inlier_scale error distance tolerated for matches to be inliers
+   */
+  static void
+  mark_inliers(vital::fundamental_matrix_sptr const& fm,
+               std::vector<vital::vector_2d> const& pts1,
+               std::vector<vital::vector_2d> const& pts2,
+               std::vector<bool>& inliers,
+               double inlier_scale = 1.0);
 private:
   /// private implementation class
   class priv;

@@ -35,6 +35,7 @@
  */
 
 #include "estimate_essential_matrix.h"
+#include "estimate_fundamental_matrix.h"
 
 #include <vital/vital_foreach.h>
 
@@ -42,7 +43,6 @@
 #include <maptk/plugins/vxl/camera.h>
 
 #include <vgl/vgl_point_2d.h>
-#include <Eigen/LU>
 
 #include <vpgl/algo/vpgl_em_compute_5_point.h>
 
@@ -178,23 +178,9 @@ estimate_essential_matrix
   matrix_3x3d K1_inv = cal1->as_matrix().inverse();
   matrix_3x3d K2_invt = cal2->as_matrix().transpose().inverse();
   matrix_3x3d F = K2_invt * E * K1_inv;
-  matrix_3x3d Ft = F.transpose();
 
-  inliers.resize(pts1.size());
-  for(unsigned i=0; i<pts1.size(); ++i)
-  {
-    const vector_2d& p1 = pts1[i];
-    const vector_2d& p2 = pts2[i];
-    vector_3d v1(p1.x(), p1.y(), 1.0);
-    vector_3d v2(p2.x(), p2.y(), 1.0);
-    vector_3d l1 = F * v1;
-    vector_3d l2 = Ft * v2;
-    double s1 = 1.0 / sqrt(l1.x()*l1.x() + l1.y()*l1.y());
-    double s2 = 1.0 / sqrt(l2.x()*l2.x() + l2.y()*l2.y());
-    // sum of point to epipolar line distance in both images
-    double d = v1.dot(l2) * (s1 + s2);
-    inliers[i] = std::fabs(d) < inlier_scale;
-  }
+  fundamental_matrix_sptr fm(new fundamental_matrix_d(F));
+  estimate_fundamental_matrix::mark_inliers(fm, pts1, pts2, inliers, inlier_scale);
 
   return essential_matrix_sptr(new essential_matrix_d(E));
 }
