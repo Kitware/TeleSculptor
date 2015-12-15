@@ -39,7 +39,7 @@ def load_camera(file_path)
   
   krtd_ff = from_file(file_path)
   
-  cam_point3d = Geom::Point3d.new( krtd_ff.camera[0], krtd_ff.camera[1], krtd_ff.camera[2] )
+  cam_point3d = Geom::Point3d.new( krtd_ff.position[0], krtd_ff.position[1], krtd_ff.position[2] )
   target_point3d = Geom::Point3d.new( krtd_ff.target[0], krtd_ff.target[1], krtd_ff.target[2] )
   up_point3d = Geom::Vector3d.new( krtd_ff.up[0], krtd_ff.up[1], krtd_ff.up[2] )
   

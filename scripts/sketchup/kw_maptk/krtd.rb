@@ -68,7 +68,7 @@ class KRTD
     @_fov_y = nil
     @_up = nil
     @_target = nil
-    @_camera_center = nil
+    @_position = nil
   end
 
   def name
@@ -106,24 +106,20 @@ class KRTD
 
   def target
     if @_target == nil then
-      @_target = Vector[0, 0, 0]
-      @_target = camera_center + Vector[@rotation_mat[2, 0],
-                                        @rotation_mat[2, 1],
-                                        @rotation_mat[2, 2]]
+      @_target = position + Vector[@rotation_mat[2, 0],
+                                   @rotation_mat[2, 1],
+                                   @rotation_mat[2, 2]]
     end
     return @_target
   end
 
-  def camera_center
-    if @_camera_center == nil then
-      @_camera_center = -1 * @rotation_mat.transpose * @translation_vec
+  def position
+    if @_position == nil then
+      @_position = -1 * @rotation_mat.transpose * @translation_vec
     end
-    return @_camera_center
+    return @_position
   end
 
-  def eye
-    puts "To be implemented"
-  end
 end
 
 def from_file(fp)
