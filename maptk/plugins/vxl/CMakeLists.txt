@@ -8,6 +8,7 @@ set(maptk_vxl_headers_public
   close_loops_homography_guided.h
   compute_homography_overlap.h
   estimate_essential_matrix.h
+  estimate_fundamental_matrix.h
   estimate_homography.h
   estimate_similarity_transform.h
   image_container.h
@@ -31,6 +32,7 @@ set(maptk_vxl_sources
   close_loops_homography_guided.cxx
   compute_homography_overlap.cxx
   estimate_essential_matrix.cxx
+  estimate_fundamental_matrix.cxx
   estimate_homography.cxx
   estimate_similarity_transform.cxx
   image_container.cxx
