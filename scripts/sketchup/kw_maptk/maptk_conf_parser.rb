@@ -66,7 +66,7 @@ class MapTKConfImporter < Sketchup::Importer
     while (line = conf_file.gets)
       key_value = line.split("=")
       key = key_value[0].strip
-      value = key_value[1].strip
+      value = key_value[1] ? key_value[1].strip : ""
       
       case key
       when IMAGE_LIST_FILE_KW
