@@ -40,6 +40,7 @@
 
 #include <vital/types/feature.h>
 #include <maptk/plugins/vxl/camera.h>
+#include <maptk/epipolar_geometry.h>
 
 #include <vgl/vgl_point_2d.h>
 #include <Eigen/LU>
@@ -161,38 +162,8 @@ estimate_fundamental_matrix
   F.transposeInPlace();
 
   fundamental_matrix_sptr fm(new fundamental_matrix_d(F));
-  mark_inliers(fm, pts1, pts2, inliers, inlier_scale);
+  inliers = maptk::mark_fm_inliers(fm, pts1, pts2, inlier_scale);
   return fm;
-}
-
-
-/// Test corresponding points against a fundamental matrix and mark inliers
-void
-estimate_fundamental_matrix
-::mark_inliers(vital::fundamental_matrix_sptr const& fm,
-               std::vector<vital::vector_2d> const& pts1,
-               std::vector<vital::vector_2d> const& pts2,
-               std::vector<bool>& inliers,
-               double inlier_scale)
-{
-  matrix_3x3d F = fm->matrix();
-  matrix_3x3d Ft = F.transpose();
-
-  inliers.resize(std::min(pts1.size(), pts2.size()));
-  for(unsigned i=0; i<inliers.size(); ++i)
-  {
-    const vector_2d& p1 = pts1[i];
-    const vector_2d& p2 = pts2[i];
-    vector_3d v1(p1.x(), p1.y(), 1.0);
-    vector_3d v2(p2.x(), p2.y(), 1.0);
-    vector_3d l1 = F * v1;
-    vector_3d l2 = Ft * v2;
-    double s1 = 1.0 / sqrt(l1.x()*l1.x() + l1.y()*l1.y());
-    double s2 = 1.0 / sqrt(l2.x()*l2.x() + l2.y()*l2.y());
-    // sum of point to epipolar line distance in both images
-    double d = v1.dot(l2) * (s1 + s2);
-    inliers[i] = std::fabs(d) < inlier_scale;
-  }
 }
 
 

@@ -23,6 +23,7 @@ include_directories("${MAPTK_BINARY_DIR}")
 # Setting up core library
 #
 set(maptk_public_headers
+  epipolar_geometry.h
   metrics.h
   local_geo_cs.h
   projected_track_set.h
@@ -40,6 +41,7 @@ set(maptk_public_headers
 
 
 set(maptk_sources
+  epipolar_geometry.cxx
   metrics.cxx
   local_geo_cs.cxx
   projected_track_set.cxx

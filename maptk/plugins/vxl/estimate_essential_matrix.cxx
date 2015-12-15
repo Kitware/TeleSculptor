@@ -35,12 +35,12 @@
  */
 
 #include "estimate_essential_matrix.h"
-#include "estimate_fundamental_matrix.h"
 
 #include <vital/vital_foreach.h>
 
 #include <vital/types/feature.h>
 #include <maptk/plugins/vxl/camera.h>
+#include <maptk/epipolar_geometry.h>
 
 #include <vgl/vgl_point_2d.h>
 
@@ -180,7 +180,7 @@ estimate_essential_matrix
   matrix_3x3d F = K2_invt * E * K1_inv;
 
   fundamental_matrix_sptr fm(new fundamental_matrix_d(F));
-  estimate_fundamental_matrix::mark_inliers(fm, pts1, pts2, inliers, inlier_scale);
+  inliers = maptk::mark_fm_inliers(fm, pts1, pts2, inlier_scale);
 
   return essential_matrix_sptr(new essential_matrix_d(E));
 }
