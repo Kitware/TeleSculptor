@@ -128,7 +128,8 @@ def from_file(fp)
   #   The first three lines are a 3x3 matrix containing focal length 
   # information, where the first two diagonal elements are respectively the x 
   # and y focal lengths, in pixels, and the first two entries in the third 
-  # column contains the dimensions (divided by 2) of the image.
+  # column contains the principal point which is assumed to be at half of the
+  # image width and height.
   # 	The next three lines (after a blank line) contain the 3x3 rotational
   # matrix.
   #  	The next line (after another blank line) contains the 3x1 translation 
@@ -138,17 +139,17 @@ def from_file(fp)
   # point value. We're not currently doing anything with this information.
   #   See the following lines for an example of a krtd file.
   # 
-  # 	12657.4096168       0     		  360
-  #   0 				12657.4096168     240
-  #   0       			0       		1
+  #   f_x  0    pp_x
+  #   0    f_y  pp_y
+  #   0    0    1
   #
-  # 	0.869290719549 -0.490764202507 0.0590266248765
-  # 	-0.34427466669 -0.686805939408 -0.640134794765
-  # 	0.354695078598 0.536141864744 -0.7659917115
+  #   R_11 R_12 R_13
+  #   R_21 R_22 R_23
+  #   R_31 R_32 R_33
   #
-  #   0.521841450099 -0.176752729198 51.0380531174
+  #   t_x t_y t_z
   #
-  # 	0
+  #   0
   #
   krtd_file = File.new(fp, "r")
   name = fp
