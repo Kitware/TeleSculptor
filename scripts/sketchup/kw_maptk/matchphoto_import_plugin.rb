@@ -32,7 +32,7 @@
 require 'sketchup.rb'
 require_relative './krtd_importer.rb'
 
-class MatchphotoMapTKImporter < Sketchup::Importer
+class MatchphotoMaptkImporter < Sketchup::Importer
   # This method is not necessarily used by sketchup, but allows us to instantiate
   # an instance of this class for use in conjunction with other importers.
   def instantiate(krtd_prefix)
@@ -195,5 +195,5 @@ class MatchphotoMapTKImporter < Sketchup::Importer
     
 end
 
-Sketchup.register_importer(MatchphotoMapTKImporter.new)
+Sketchup.register_importer(MatchphotoMaptkImporter.new)
       

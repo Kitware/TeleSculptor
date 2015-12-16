@@ -39,9 +39,9 @@ IMAGE_LIST_FILE_KW = 'image_list_file'
 OUTPUT_PLY_FILE_KW = 'output_ply_file'
 OUTPUT_KRTD_DIR_KW = 'output_krtd_dir'
 
-class MapTKConfImporter < Sketchup::Importer
+class MaptkConfImporter < Sketchup::Importer
   def description
-    return "MapTK configuration file (*.conf)"
+    return "MAP-Tk configuration file (*.conf)"
   end
 
   def file_extension
@@ -81,13 +81,13 @@ class MapTKConfImporter < Sketchup::Importer
     # Check to ensure all of the required keywords were found and show a warning message
     # and return nil if they weren't
     if image_list_file == "" 
-      UI.messagebox('Error parsing MapTK conf file: missing image_list_file keyword')
+      UI.messagebox('Error parsing MAP-Tk conf file: missing image_list_file keyword')
       return nil
     elsif output_ply_file == ""
-      UI.messagebox('Error parsing MapTK conf file: missing output_ply_file keyword')
+      UI.messagebox('Error parsing MAP-Tk conf file: missing output_ply_file keyword')
       return nil
     elsif output_krtd_dir == ""
-      UI.messagebox('Error parsing MapTK conf file: missing output_krtd_dir keyword')
+      UI.messagebox('Error parsing MAP-Tk conf file: missing output_krtd_dir keyword')
       return nil
     end
 
@@ -123,7 +123,7 @@ class MapTKConfImporter < Sketchup::Importer
     output_krtd_dir = kwds[2]
 
     # We delgate the importing of the photos/krtd files to the matchphoto_import_plugin.
-    photo_krtd_importer = MatchphotoMapTKImporter.new
+    photo_krtd_importer = MatchphotoMaptkImporter.new
     photo_krtd_importer.instantiate(output_krtd_dir)
     status_images = photo_krtd_importer.load_file(image_list_file, 0)
     # An the ply importing to the PLYImporter plugin.
@@ -135,4 +135,4 @@ class MapTKConfImporter < Sketchup::Importer
   end
 end
 
-Sketchup.register_importer(MapTKConfImporter.new)
+Sketchup.register_importer(MaptkConfImporter.new)

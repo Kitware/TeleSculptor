@@ -30,13 +30,13 @@
 require 'sketchup.rb'
 require 'extensions.rb'
 
-ext = SketchupExtension.new('Map-TK Importer', File.join('kw_maptk', 'MapTKImporter.rb'))
+ext = SketchupExtension.new('MAP-Tk Importer', File.join('kw_maptk', 'MaptkImporter.rb'))
 
 # ext.creater = 'jonathan.owens'
 # ext.version = '1.0.0'
 # ext.copyright = 'See sourcefile (kw_maptk.rb)'
-# ext.description = 'Allows importing of Map-TK configuration files and ply files.'
+# ext.description = 'Allows importing of MAP-Tk configuration files and ply files.'
 
 Sketchup.register_extension(ext, true)
-#Sketchup.register_importer(MatchphotoMapTKImporter.new)
+#Sketchup.register_importer(MatchphotoMaptkImporter.new)
                             
