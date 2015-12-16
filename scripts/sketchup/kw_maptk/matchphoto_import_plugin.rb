@@ -136,6 +136,7 @@ class MatchphotoMapTKImporter < Sketchup::Importer
     smooth_flags = Geom::PolygonMesh::NO_SMOOTH_OR_HIDE
     img_fps = read_in_image_fps(file_path)
 
+    not_opened = Array.new
     img_fps.each do |img_fp|
 
       # if not a valid path, try prepending the directory of the image list file
@@ -151,8 +152,7 @@ class MatchphotoMapTKImporter < Sketchup::Importer
       end
 
       if not File.exists?(krtd_fname)
-        UI.messagebox("Opening the krtd file corresponding to the image " + File.basename(img_fp)\
-                      + " failed. Skipping and moving on.")
+        not_opened.push(File.basename(img_fp))
         next
       end
       new_cam = load_camera(krtd_fname)
@@ -161,6 +161,9 @@ class MatchphotoMapTKImporter < Sketchup::Importer
       cam_group.entities.add_faces_from_mesh(cam_mesh, smooth_flags, material, material)
 
       pages.add_matchphoto_page(img_fp, camera = new_cam, page_name = File.basename(img_fp))
+    end
+    if ! not_opened.empty?
+      UI.messagebox("Failed to open #{not_opened.length} krtd files")
     end
 
     if pages.length > 0
