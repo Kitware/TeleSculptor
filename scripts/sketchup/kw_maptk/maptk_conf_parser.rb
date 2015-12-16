@@ -131,8 +131,15 @@ class MaptkConfImporter < Sketchup::Importer
     status_ply = ply_importer.load_file(output_ply_file, 0)
 
     return 0
-
   end
+
+  def get_file
+    conf_file = UI.openpanel( "Open MAP-Tk Config File", "", "" )
+    if conf_file
+      load_file(conf_file, 0)
+    end
+  end
+
 end
 
 Sketchup.register_importer(MaptkConfImporter.new)
