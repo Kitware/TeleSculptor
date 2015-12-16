@@ -83,6 +83,36 @@ class MatchphotoMapTKImporter < Sketchup::Importer
     return image_fps
   end
 
+  def make_camera_mesh(camera, length=1.0)
+    zs = length
+    ys = Math.tan(camera.fov * Math::PI / 360.0) * zs
+    xs = ys * camera.aspect_ratio
+    pm = Geom::PolygonMesh.new
+    # add the pyramid
+    pm.add_point([0, 0, 0])
+    pm.add_point([xs, -ys, zs])
+    pm.add_point([xs, ys, zs])
+    pm.add_point([-xs, ys, zs])
+    pm.add_point([-xs, -ys, zs])
+    pm.add_polygon(5,4,3,2)
+    pm.add_polygon(1,2,3)
+    pm.add_polygon(1,3,4)
+    pm.add_polygon(1,4,5)
+    pm.add_polygon(1,5,2)
+    # add the up triangle
+    d = 0.2 * ys
+    xs = 0.8 * xs
+    pm.add_point([-xs, ys+d, zs])
+    pm.add_point([xs, ys+d, zs])
+    pm.add_point([0, 2*ys+d, zs])
+    pm.add_polygon(6,7,8)
+
+    x_axis = camera.up.cross(camera.target - camera.eye)
+    tr = Geom::Transformation.new(camera.eye, x_axis, camera.up)
+    pm.transform!(tr)
+    return pm
+  end
+
   def load_file(file_path, status)
     guess_krtd_location_flag = false
     @_list_fp = file_path
@@ -96,6 +126,14 @@ class MatchphotoMapTKImporter < Sketchup::Importer
     model = Sketchup.active_model
     entities = model.entities
     pages = model.pages
+    cam_layer = model.layers.add('Cameras')
+    cam_layer.page_behavior = LAYER_IS_HIDDEN_ON_NEW_PAGES
+    material = model.materials.add('camera')
+    material.alpha = 0.1
+    material.color = 'red'
+    cam_group = entities.add_group
+    cam_group.layer = cam_layer
+    smooth_flags = Geom::PolygonMesh::NO_SMOOTH_OR_HIDE
     img_fps = read_in_image_fps(file_path)
 
     img_fps.each do |img_fp|
@@ -118,6 +156,9 @@ class MatchphotoMapTKImporter < Sketchup::Importer
         next
       end
       new_cam = load_camera(krtd_fname)
+      scale = new_cam.eye.distance(Geom::Point3d.new) / 3
+      cam_mesh = make_camera_mesh(new_cam, scale)
+      cam_group.entities.add_faces_from_mesh(cam_mesh, smooth_flags, material, material)
 
       pages.add_matchphoto_page(img_fp, camera = new_cam, page_name = File.basename(img_fp))
     end
