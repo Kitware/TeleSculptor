@@ -51,14 +51,18 @@ class PLYImporter < Sketchup::Importer
   def load_file(file_path, status)
     file = File.new(file_path, "r")
     model = Sketchup.active_model
+    pt_layer = model.layers.add('MAP-Tk Landmarks')
+    pt_layer.page_behavior = LAYER_IS_HIDDEN_ON_NEW_PAGES
     entities = model.entities
+    pt_group = entities.add_group
+    pt_group.layer = pt_layer
     
     passed_end_header = false
     while (raw_line = file.gets)
       if passed_end_header == true
         string_coords = raw_line.strip.split
         pt = Geom::Point3d::new(string_coords[0].to_f, string_coords[1].to_f, string_coords[2].to_f)
-        entities.add_cpoint(pt)
+        pt_group.entities.add_cpoint(pt)
       elsif raw_line.include? "end_header"
         passed_end_header = true
         next
