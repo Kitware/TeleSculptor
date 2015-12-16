@@ -48,7 +48,7 @@ def load_camera(file_path)
   new_cam.aspect_ratio = krtd_ff.x_dim / krtd_ff.y_dim
   view.camera = new_cam
   
-  return new_cam, cam_point3d
+  return new_cam
 end
 
 

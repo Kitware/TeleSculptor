@@ -117,10 +117,7 @@ class MatchphotoMapTKImporter < Sketchup::Importer
                       + " failed. Skipping and moving on.")
         next
       end
-      new_cam, cam_center = load_camera(krtd_fname)
-      vector = Geom::Vector3d.new 0,0,1
-      vector2 = vector.normalize!
-      entities.add_circle(cam_center, vector2, 0.01)
+      new_cam = load_camera(krtd_fname)
 
       pages.add_matchphoto_page(img_fp, camera = new_cam, page_name = File.basename(img_fp))
     end
