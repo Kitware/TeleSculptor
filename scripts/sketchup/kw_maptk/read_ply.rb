@@ -61,7 +61,9 @@ class PLYImporter < Sketchup::Importer
     while (raw_line = file.gets)
       if passed_end_header == true
         string_coords = raw_line.strip.split
-        pt = Geom::Point3d::new(string_coords[0].to_f, string_coords[1].to_f, string_coords[2].to_f)
+        pt = Geom::Point3d::new(string_coords[0].to_f.m,
+                                string_coords[1].to_f.m,
+                                string_coords[2].to_f.m)
         pt_group.entities.add_cpoint(pt)
       elsif raw_line.include? "end_header"
         passed_end_header = true
