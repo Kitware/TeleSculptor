@@ -160,7 +160,8 @@ class MatchphotoMaptkImporter < Sketchup::Importer
       cam_mesh = make_camera_mesh(new_cam, scale)
       cam_group.entities.add_faces_from_mesh(cam_mesh, smooth_flags, material, material)
 
-      pages.add_matchphoto_page(img_fp, camera = new_cam, page_name = File.basename(img_fp))
+      page = pages.add_matchphoto_page(img_fp, camera = new_cam, page_name = File.basename(img_fp))
+      page.transition_time = 0
     end
     if ! not_opened.empty?
       UI.messagebox("Failed to open #{not_opened.length} krtd files")
