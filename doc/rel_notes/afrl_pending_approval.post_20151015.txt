@@ -56,6 +56,14 @@ Visualization Application
 
  * The GUI user manual can now be accessed from within the GUI.
 
+SketchUp Plugin
+
+ * Added a new plugin (Ruby scripts) for the SketchUp 3D Modeling software
+   (http://www.sketchup.com/) that allow direct import of MAP-Tk outputs by
+   loading the MAP-Tk config files or individually loading KRTD or PLY files.
+   Once loaded, the cameras are presented as "Photo Match" pages which allows
+   the user to build models aligned to images.
+
 Fixes since last public release
 -------------------------------
 
