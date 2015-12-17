@@ -192,6 +192,8 @@ Doxygen documentation for released versions are here:
 
 ================================= ===============================================
 **MAP-Tk v0.6.0** Documentation   http://www.kwiver.org/maptk/docs/release/v0.6.0
+**MAP-Tk v0.6.1** Documentation   http://www.kwiver.org/maptk/docs/release/v0.6.1
+**MAP-Tk v0.7.0** Documentation   http://www.kwiver.org/maptk/docs/release/v0.7.0
 ================================= ===============================================
 
 Building Documentation
