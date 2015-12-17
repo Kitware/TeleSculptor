@@ -99,8 +99,13 @@ target_link_libraries(mapgui
 
 set(gui-exe "\${DESTDIR}\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/bin/mapgui${CMAKE_EXECUTABLE_SUFFIX}")
 
-# Add expected location of VTK dlls
-list(APPEND FIXUP_DIRS "${VTK_INSTALL_PREFIX}/bin")
+if (WIN32)
+  # Add expected location of VTK dlls
+  list(APPEND FIXUP_DIRS "${VTK_INSTALL_PREFIX}/bin")
+else()
+  # Add expected location of VTK libraries
+  list(APPEND FIXUP_DIRS "${VTK_INSTALL_PREFIX}/lib")
+endif()
 
 # For now, we're assuming we're pulling qtextensions from a build directory
 # (not an install).  Also, Mac and/or Linux will need be a bit different,
