@@ -1,0 +1,19 @@
+MAPTK v0.7.1 Release Notes
+==========================
+
+This release provides patches to the MAPTK v0.7.0 release to address issues.
+MAPTK v0.7.1 provides bug fixes and CMake improvements to help build packages
+and installers.
+
+
+Updates since v0.7.0
+--------------------
+
+Visualization Application
+
+ * Added larger versions of the application icon and specialized icon formats
+   for Windows (.ico) and Mac (.icns).
+
+
+Fixes since v0.7.0
+------------------
