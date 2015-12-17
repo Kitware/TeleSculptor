@@ -61,9 +61,15 @@ qte_amc_wrap_ui(gui_amc_sources ActionManagerDialog ${gui_am_ui})
 if (WIN32)
   set(gui_icon_source mapgui.rc)
 endif()
+if(APPLE)
+  set(gui_icon_source icons/mapgui.icns)
+  set(MACOSX_BUNDLE_ICON_FILE mapgui.icns)
+  set_source_files_properties(icons/mapgui.icns PROPERTIES
+    MACOSX_PACKAGE_LOCATION Resources)
+endif()
 
 maptk_add_executable(mapgui
-  WIN32
+  WIN32 MACOSX_BUNDLE
   ${gui_sources}
   ${gui_ui_sources}
   ${gui_moc_sources}
