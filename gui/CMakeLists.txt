@@ -41,6 +41,7 @@ set(gui_moc_headers
   CameraOptions.h
   CameraView.h
   FeatureOptions.h
+  GradientSelector.h
   ImageOptions.h
   MainWindow.h
   MatchMatrixWindow.h
@@ -58,6 +59,7 @@ set(gui_sources
   CameraOptions.cxx
   CameraView.cxx
   FeatureOptions.cxx
+  GradientSelector.cxx
   ImageOptions.cxx
   MainWindow.cxx
   MatchMatrixAlgorithms.cxx
