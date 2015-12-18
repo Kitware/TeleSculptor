@@ -119,9 +119,10 @@ maptk_install(TARGETS mapgui
 # do components bit (don't install header files)')
 SET(plugin_dest_dir bin)
 SET(qtconf_dest_dir bin)
-set(gui-exe "\${DESTDIR}\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/bin/mapgui${CMAKE_EXECUTABLE_SUFFIX}")
+set(dest_prefix "\${DESTDIR}\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}")
+set(gui-exe "${dest_prefix}/bin/mapgui${CMAKE_EXECUTABLE_SUFFIX}")
 if(APPLE)
-  set(gui-exe "\${DESTDIR}\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/MacOS/MAP-Tk")
+  set(gui-exe "${dest_prefix}/MacOS/MAP-Tk")
   set(plugin_dest_dir lib)
   set(qtconf_dest_dir Resources)
 endif()
@@ -156,12 +157,13 @@ list(APPEND FIXUP_DIRS "${QT_BINARY_DIR}")
 install(DIRECTORY "${QT_PLUGINS_DIR}/imageformats" DESTINATION ${plugin_dest_dir}/plugins COMPONENT Runtime)
 # install a qt.conf file
 INSTALL(CODE "
-    file(WRITE \"\${CMAKE_INSTALL_PREFIX}/${qtconf_dest_dir}/qt.conf\" \"\")
+    message(INFO \"${dest_prefix}/${qtconf_dest_dir}/qt.conf\")
+    file(WRITE \"${dest_prefix}/${qtconf_dest_dir}/qt.conf\" \"\")
     " COMPONENT Runtime)
 
 install(CODE "
         file(GLOB_RECURSE QTPLUGINS
-            \"\${CMAKE_INSTALL_PREFIX}/${plugin_dest_dir}/plugins/*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
+            \"${dest_prefix}/${plugin_dest_dir}/plugins/*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
         set(BU_CHMOD_BUNDLE_ITEMS ON)
         set(ENV{VS_UNICODE_OUTPUT} \"\")
         include(${MAPTK_SOURCE_DIR}/CMake/utils/maptk-utils-bundle.cmake)
