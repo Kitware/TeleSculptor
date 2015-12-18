@@ -157,7 +157,6 @@ list(APPEND FIXUP_DIRS "${QT_BINARY_DIR}")
 install(DIRECTORY "${QT_PLUGINS_DIR}/imageformats" DESTINATION ${plugin_dest_dir}/plugins COMPONENT Runtime)
 # install a qt.conf file
 INSTALL(CODE "
-    message(INFO \"${dest_prefix}/${qtconf_dest_dir}/qt.conf\")
     file(WRITE \"${dest_prefix}/${qtconf_dest_dir}/qt.conf\" \"\")
     " COMPONENT Runtime)
 
