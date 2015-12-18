@@ -180,9 +180,6 @@ set(CPACK_PACKAGE_FILE_NAME         "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSI
 set(CPACK_PACKAGE_ICON              "${CMAKE_CURRENT_SOURCE_DIR}/gui/icons/mapgui.ico")
 
 
-set(CPACK_BUNDLE_NAME               "MAP-Tk")
-set(CPACK_BUNDLE_ICON               "${CMAKE_CURRENT_SOURCE_DIR}/gui/icons/mapgui.icns")
-
 if(MAPTK_ENABLE_GUI)
   set (CPACK_PACKAGE_EXECUTABLES "mapgui" "maptk GUI" ${CPACK_PACKAGE_EXECUTABLES})
 endif()
