@@ -71,6 +71,15 @@ add_subdirectory(tools)
 
 option(MAPTK_ENABLE_GUI "Build MAPTK GUI" OFF)
 if(MAPTK_ENABLE_GUI)
+  if(APPLE)
+    set(CMAKE_BUNDLE_LOCATION "${CMAKE_INSTALL_PREFIX}")
+    # make sure CMAKE_INSTALL_PREFIX ends in /
+    if(NOT CMAKE_INSTALL_PREFIX MATCHES "/$")
+      set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}/")
+    endif()
+    set(CMAKE_INSTALL_PREFIX
+      "${CMAKE_INSTALL_PREFIX}MAP-Tk.app/Contents")
+  endif()
   add_subdirectory(gui)
 endif()
 
@@ -184,4 +193,6 @@ if(MAPTK_ENABLE_GUI)
   set (CPACK_PACKAGE_EXECUTABLES "mapgui" "maptk GUI" ${CPACK_PACKAGE_EXECUTABLES})
 endif()
 
+set(CPACK_BINARY_DRAGNDROP ON)
+set (CPACK_SET_DESTDIR TRUE)
 include (CPack)

@@ -68,6 +68,7 @@ if(APPLE)
     MACOSX_PACKAGE_LOCATION Resources)
 endif()
 
+set(no_install ON)
 maptk_add_executable(mapgui
   WIN32 MACOSX_BUNDLE
   ${gui_sources}
@@ -77,6 +78,8 @@ maptk_add_executable(mapgui
   ${gui_amc_sources}
   ${gui_icon_source}
 )
+unset(no_install)
+
 
 target_link_libraries(mapgui
   maptk
@@ -94,10 +97,34 @@ target_link_libraries(mapgui
   ${QT_LIBRARIES}
 )
 
+if(APPLE)
+  file(STRINGS "${MAPTK_SOURCE_DIR}/LICENSE" copyright_line
+    LIMIT_COUNT 1 REGEX "Copyright")
+
+  set_target_properties(mapgui PROPERTIES
+    OUTPUT_NAME MAP-Tk
+    MACOSX_BUNDLE_NAME "MAP-Tk"
+    MACOSX_BUNDLE_INFO_STRING "MAP-Tk v${MAPTK_VERSION} GUI Application"
+    MACOSX_BUNDLE_SHORT_VERSION_STRING "${MAPTK_VERSION}"
+    MACOSX_BUNDLE_COPYRIGHT "${copyright_line}"
+    )
+endif()
+
+maptk_install(TARGETS mapgui
+  ${exports}
+  RUNTIME DESTINATION bin
+  BUNDLE DESTINATION "${CMAKE_BUNDLE_LOCATION}")
+
 # add DESTDIR switch (Turn it on if not WIN32?)
 # do components bit (don't install header files)')
-
+SET(plugin_dest_dir bin)
+SET(qtconf_dest_dir bin)
 set(gui-exe "\${DESTDIR}\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/bin/mapgui${CMAKE_EXECUTABLE_SUFFIX}")
+if(APPLE)
+  set(gui-exe "\${DESTDIR}\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/MacOS/MAP-Tk")
+  set(plugin_dest_dir lib)
+  set(qtconf_dest_dir Resources)
+endif()
 
 if (WIN32)
   # Add expected location of VTK dlls
@@ -121,15 +148,25 @@ else()
 endif()
 list(APPEND FIXUP_DIRS "${qtExtensions_DIR}/${BUILD_TYPE}")
 
-# Location for QT dlls
+# Location for QT libraries
+list(APPEND FIXUP_DIRS "${QT_BIN_DIR}")
+list(APPEND FIXUP_DIRS "${QT_LIBRARY_DIR}")
 list(APPEND FIXUP_DIRS "${QT_BINARY_DIR}")
 
-set(FIXUP_LIBS "")
+install(DIRECTORY "${QT_PLUGINS_DIR}/imageformats" DESTINATION ${plugin_dest_dir}/plugins COMPONENT Runtime)
+# install a qt.conf file
+INSTALL(CODE "
+    file(WRITE \"\${CMAKE_INSTALL_PREFIX}/${qtconf_dest_dir}/qt.conf\" \"\")
+    " COMPONENT Runtime)
 
 install(CODE "
+        file(GLOB_RECURSE QTPLUGINS
+            \"\${CMAKE_INSTALL_PREFIX}/${plugin_dest_dir}/plugins/*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
+        set(BU_CHMOD_BUNDLE_ITEMS ON)
         set(ENV{VS_UNICODE_OUTPUT} \"\")
+        include(${MAPTK_SOURCE_DIR}/CMake/utils/maptk-utils-bundle.cmake)
         include(BundleUtilities)
-        fixup_bundle(\"${gui-exe}\" \"${FIXUP_LIBS}\" \"${FIXUP_DIRS}\")
+        fixup_bundle(\"${gui-exe}\" \"\${QTPLUGINS}\" \"${FIXUP_DIRS}\")
         "
 )
 
