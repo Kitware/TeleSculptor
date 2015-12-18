@@ -184,6 +184,7 @@ function(maptk_add_library name)
       ARCHIVE_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/lib${LIB_SUFFIX}${library_subdir}"
       LIBRARY_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/lib${LIB_SUFFIX}${library_subdir}"
       RUNTIME_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/bin${library_subdir}"
+      INSTALL_NAME_DIR "@executable_path/../lib"
       COMPILE_DEFINITIONS      "${new_compile_definitions}"
       ${_maptk_version_info}
       ${_maptk_osx_rpath}
