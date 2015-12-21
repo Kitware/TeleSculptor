@@ -147,7 +147,7 @@ if(BUILD_TYPE STREQUAL "debug")
 else()
   set(BINARY_DIR "Release")
 endif()
-list(APPEND FIXUP_DIRS "${qtExtensions_DIR}/${BUILD_TYPE}")
+list(APPEND FIXUP_DIRS "${qtExtensions_DIR}/${BINARY_DIR}")
 
 # Location for QT libraries
 list(APPEND FIXUP_DIRS "${QT_BIN_DIR}")
