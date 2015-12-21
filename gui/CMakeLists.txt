@@ -141,11 +141,13 @@ endif()
 # of CMAKE_CONFIGURATION_TYPES). For Windows really expect the dll will
 # be in Release subdirectory, and so look there unless
 # CMAKE_CONFIGURATION_TYPES indicates only "debug"
-string(TOLOWER "${CMAKE_CONFIGURATION_TYPES}" BUILD_TYPE)
-if(BUILD_TYPE STREQUAL "debug")
-  set(BINARY_DIR "Debug")
-else()
-  set(BINARY_DIR "Release")
+if(CMAKE_CONFIGURATION_TYPES)
+  string(TOLOWER "${CMAKE_CONFIGURATION_TYPES}" BUILD_TYPE)
+  if(BUILD_TYPE STREQUAL "debug")
+    set(BINARY_DIR "Debug")
+  else()
+    set(BINARY_DIR "Release")
+  endif()
 endif()
 list(APPEND FIXUP_DIRS "${qtExtensions_DIR}/${BINARY_DIR}")
 
