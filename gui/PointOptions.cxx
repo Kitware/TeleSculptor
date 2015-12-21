@@ -32,12 +32,18 @@
 
 #include "ui_PointOptions.h"
 
+#include "FieldInformation.h"
+
 #include <vtkActor.h>
+#include <vtkDataSet.h>
+#include <vtkDataSetAttributes.h>
 #include <vtkMapper.h>
 #include <vtkProperty.h>
 
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
+
+QTE_IMPLEMENT_D_FUNC(PointOptions)
 
 namespace
 {
@@ -56,16 +62,59 @@ enum ColorMode
 class PointOptionsPrivate
 {
 public:
+  FieldInformation activeField() const;
+
+  void setDisplayMode(vtkMapper*, int mode);
+
   Ui::PointOptions UI;
   qtUiState uiState;
 
   QList<vtkActor*> actors;
   QList<vtkMapper*> mappers;
 
+  QHash<QString, FieldInformation> fields;
+
   QButtonGroup colorMode;
 };
 
-QTE_IMPLEMENT_D_FUNC(PointOptions)
+//-----------------------------------------------------------------------------
+FieldInformation PointOptionsPrivate::activeField() const
+{
+  return this->fields[this->UI.dataField->currentText()];
+}
+
+//-----------------------------------------------------------------------------
+void PointOptionsPrivate::setDisplayMode(vtkMapper* mapper, int mode)
+{
+  if (!mapper)
+  {
+    return;
+  }
+
+  auto const attr = mapper->GetInput()->GetAttributes(vtkDataObject::POINT);
+
+  switch (mode)
+  {
+    case TrueColor:
+      mapper->SetScalarVisibility(true);
+      attr->SetActiveScalars("truecolor");
+      break;
+
+    case DataColor:
+    {
+      auto const& fi = this->activeField();
+      mapper->SetScalarVisibility(true);
+      mapper->SetScalarRange(fi.range[0], fi.range[1]);
+      attr->SetActiveScalars(fi.name.constData());
+      // TODO set colors
+      break;
+    }
+
+    default:
+      mapper->SetScalarVisibility(false);
+      break;
+  }
+}
 
 //-----------------------------------------------------------------------------
 PointOptions::PointOptions(QString const& settingsGroup,
@@ -95,6 +144,9 @@ PointOptions::PointOptions(QString const& settingsGroup,
   // Connect signals/slots
   connect(d->UI.color, SIGNAL(colorChanged(QColor)), this, SIGNAL(modified()));
   connect(d->UI.size, SIGNAL(valueChanged(int)), this, SLOT(setSize(int)));
+
+  connect(d->UI.dataField, SIGNAL(currentIndexChanged(int)),
+          this, SLOT(setColorField(int)));
 
   connect(&d->colorMode, SIGNAL(buttonClicked(int)),
           this, SLOT(setColorMode(int)));
@@ -129,19 +181,45 @@ void PointOptions::setTrueColorAvailable(bool available)
 }
 
 //-----------------------------------------------------------------------------
-void PointOptions::addActor(vtkActor* actor, vtkMapper* mapper)
+void PointOptions::setDataFields(
+  QHash<QString, FieldInformation> const& fields)
+{
+  QTE_D();
+
+  d->fields = fields;
+  auto const haveFields = !fields.isEmpty();
+
+  d->UI.dataColor->setEnabled(haveFields);
+  if (!haveFields && d->UI.dataColor->isChecked())
+  {
+    d->UI.solidColor->setChecked(true);
+  }
+
+  d->UI.dataField->clear();
+  foreach (auto const& fieldDisplayText, fields.keys())
+  {
+    d->UI.dataField->addItem(fieldDisplayText);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void PointOptions::addActor(vtkActor* actor)
 {
   QTE_D();
 
   d->UI.color->addActor(actor);
   actor->GetProperty()->SetPointSize(d->UI.size->value());
 
-  if (mapper)
-  {
-    mapper->SetScalarVisibility(!d->UI.solidColor->isChecked());
-  }
-
   d->actors.append(actor);
+}
+
+//-----------------------------------------------------------------------------
+void PointOptions::addMapper(vtkMapper* mapper)
+{
+  QTE_D();
+
+  d->setDisplayMode(mapper, d->colorMode.checkedId());
+
   d->mappers.append(mapper);
 }
 
@@ -165,10 +243,21 @@ void PointOptions::setColorMode(int mode)
 
   foreach (auto const mapper, d->mappers)
   {
-    if (mapper)
-    {
-      mapper->SetScalarVisibility(mode != SolidColor);
-    }
+    d->setDisplayMode(mapper, mode);
+  }
+
+  emit this->modified();
+}
+
+//-----------------------------------------------------------------------------
+void PointOptions::setColorField(int index)
+{
+  QTE_D();
+
+  auto const mode = d->colorMode.checkedId();
+  foreach (auto const mapper, d->mappers)
+  {
+    d->setDisplayMode(mapper, mode);
   }
 
   emit this->modified();

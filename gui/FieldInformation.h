@@ -28,51 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_POINTOPTIONS_H_
-#define MAPTK_POINTOPTIONS_H_
+#ifndef MAPTK_FIELDINFORMATION_H_
+#define MAPTK_FIELDINFORMATION_H_
 
-#include <qtGlobal.h>
+#include <QtCore/QByteArray>
 
-#include <QtGui/QWidget>
-
-class vtkActor;
-class vtkMapper;
-
-struct FieldInformation;
-
-class PointOptionsPrivate;
-
-class PointOptions : public QWidget
+struct FieldInformation
 {
-  Q_OBJECT
-
-public:
-  explicit PointOptions(QString const& settingsGroup,
-                        QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~PointOptions();
-
-  void addActor(vtkActor*);
-  void addMapper(vtkMapper*);
-
-  void setDefaultColor(QColor const&);
-
-public slots:
-  void setTrueColorAvailable(bool);
-  void setDataFields(QHash<QString, FieldInformation> const&);
-
-signals:
-  void modified();
-
-protected slots:
-  void setSize(int);
-  void setColorMode(int);
-  void setColorField(int);
-
-private:
-  QTE_DECLARE_PRIVATE_RPTR(PointOptions)
-  QTE_DECLARE_PRIVATE(PointOptions)
-
-  QTE_DISABLE_COPY(PointOptions)
+  QByteArray name;
+  double range[2];
 };
 
 #endif

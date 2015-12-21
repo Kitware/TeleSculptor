@@ -66,6 +66,8 @@
 namespace // anonymous
 {
 
+static char const* const TrueColor = "truecolor";
+
 //-----------------------------------------------------------------------------
 struct LandmarkData
 {
@@ -206,6 +208,7 @@ void CameraViewPrivate::VertexCloud::clear()
 //-----------------------------------------------------------------------------
 CameraViewPrivate::PointCloud::PointCloud()
 {
+  this->colors->SetName(TrueColor);
   this->colors->SetNumberOfComponents(3);
 
   this->data->SetVerts(this->verts.GetPointer());
@@ -350,8 +353,8 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
 
   d->landmarkOptions = new PointOptions("CameraView/Landmarks", this);
   d->landmarkOptions->setDefaultColor(Qt::magenta);
-  d->landmarkOptions->addActor(d->landmarks.actor.GetPointer(),
-                               d->landmarks.mapper.GetPointer());
+  d->landmarkOptions->addActor(d->landmarks.actor.GetPointer());
+  d->landmarkOptions->addMapper(d->landmarks.mapper.GetPointer());
 
   d->setPopup(d->UI.actionShowLandmarks, d->landmarkOptions);
 

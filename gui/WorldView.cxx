@@ -61,6 +61,11 @@
 #include <QtGui/QToolButton>
 #include <QtGui/QWidgetAction>
 
+namespace // anonymous
+{
+static char const* const TrueColor = "truecolor";
+}
+
 //-----------------------------------------------------------------------------
 class WorldViewPrivate
 {
@@ -251,8 +256,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
           d->UI.renderWidget, SLOT(update()));
 
   d->landmarkOptions = new PointOptions("WorldView/Landmarks", this);
-  d->landmarkOptions->addActor(d->landmarkActor.GetPointer(),
-                               d->landmarkMapper.GetPointer());
+  d->landmarkOptions->addActor(d->landmarkActor.GetPointer());
   d->setPopup(d->UI.actionShowLandmarks, d->landmarkOptions);
 
   connect(d->landmarkOptions, SIGNAL(modified()),
@@ -314,16 +318,21 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   // Set up landmark actor
   vtkNew<vtkPolyData> landmarkPolyData;
 
+  auto const landmarkPointData = landmarkPolyData->GetPointData();
+
+  d->landmarkColors->SetName(TrueColor);
   d->landmarkColors->SetNumberOfComponents(3);
 
   landmarkPolyData->SetPoints(d->landmarkPoints.GetPointer());
   landmarkPolyData->SetVerts(d->landmarkVerts.GetPointer());
-  landmarkPolyData->GetPointData()->SetScalars(d->landmarkColors.GetPointer());
+  landmarkPointData->AddArray(d->landmarkColors.GetPointer());
   d->landmarkMapper->SetInputData(landmarkPolyData.GetPointer());
 
   d->landmarkActor->SetMapper(d->landmarkMapper.GetPointer());
   d->landmarkActor->SetVisibility(d->UI.actionShowLandmarks->isChecked());
   d->renderer->AddActor(d->landmarkActor.GetPointer());
+
+  d->landmarkOptions->addMapper(d->landmarkMapper.GetPointer());
 
   // Set up ground plane grid
   d->groundPlane->SetOrigin(-10.0, -10.0, 0.0);
