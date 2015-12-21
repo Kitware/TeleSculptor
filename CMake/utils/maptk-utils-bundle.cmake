@@ -8,7 +8,7 @@
 function(gp_item_default_embedded_path_override
          item default_embedded_path_var)
 
-  set(path "${default_embedded_path_var}")
+  set(path "@executable_path")
   set(overridden 0)
   if(APPLE)
     if(item MATCHES "\\.dylib$")
