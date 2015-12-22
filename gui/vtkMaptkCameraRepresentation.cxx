@@ -34,6 +34,8 @@
 
 #include <vital/types/vector.h>
 
+#include <vital/vital_foreach.h>
+
 #include <vtkActor.h>
 #include <vtkAppendPolyData.h>
 #include <vtkCellArray.h>
@@ -139,9 +141,9 @@ void SetInputs(vtkAppendPolyData* apd, std::unordered_set<vtkPolyData*> inputs)
 
   // Anything still in the new inputs list is missing from the existing inputs,
   // so now we can add those
-  for (auto ii = inputs.cbegin(); ii != inputs.cend(); ++ii)
+  VITAL_FOREACH (auto const input, inputs)
   {
-    apd->AddInputData(*ii);
+    apd->AddInputData(input);
   }
 }
 
