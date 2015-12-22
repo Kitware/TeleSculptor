@@ -75,6 +75,15 @@ add_subdirectory(config)
 
 option(MAPTK_ENABLE_GUI "Build MAPTK GUI" OFF)
 if(MAPTK_ENABLE_GUI)
+  if(APPLE)
+    set(CMAKE_BUNDLE_LOCATION "${CMAKE_INSTALL_PREFIX}")
+    # make sure CMAKE_INSTALL_PREFIX ends in /
+    if(NOT CMAKE_INSTALL_PREFIX MATCHES "/$")
+      set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}/")
+    endif()
+    set(CMAKE_INSTALL_PREFIX
+      "${CMAKE_INSTALL_PREFIX}MAP-Tk.app/Contents")
+  endif()
   add_subdirectory(gui)
 endif()
 
@@ -169,7 +178,9 @@ else()
   set(CPACK_SYSTEM_NAME "${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
 endif()
 
-set(CPACK_PACKAGE_NAME              "MAPTK")
+
+
+set(CPACK_PACKAGE_NAME              "MAP-Tk")
 set(CPACK_PACKAGE_VENDOR            "Kitware, Inc.")
 set(CPACK_PACKAGE_CONTACT           "kitware@kitware.com")
 set(CPACK_MONOLITHIC_INSTALL        true)
@@ -178,6 +189,27 @@ set(CPACK_PACKAGE_VERSION_MINOR     "${MAPTK_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH     "${MAPTK_VERSION_PATCH}")
 set(CPACK_PACKAGE_VERSION           "${MAPTK_VERSION}")
 set(CPACK_RESOURCE_FILE_LICENSE     "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
-set(CPACK_PACKAGING_INSTALL_PREFIX  "${CMAKE_INSTALL_PREFIX}")
 set(CPACK_PACKAGE_FILE_NAME         "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_SYSTEM_NAME}")
+set(CPACK_PACKAGE_ICON              "${CMAKE_CURRENT_SOURCE_DIR}/packaging\\\\maptk_install.bmp")
+set(CPACK_DMG_DS_STORE              "${CMAKE_CURRENT_SOURCE_DIR}/packaging/DS_Store")
+
+# NSIS Package options
+set(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\mapgui.exe")
+set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}/gui/icons\\\\mapgui.ico")
+set(CPACK_NSIS_MUI_UNIICON "${CMAKE_CURRENT_SOURCE_DIR}/gui/icons\\\\mapgui.ico")
+set(CPACK_NSIS_CONTACT "${CPACK_PACKAGE_CONTACT}")
+set(CPACK_NSIS_HELP_LINK "http://www.kitware.com")
+set(CPACK_NSIS_URL_INFO_ABOUT "http://www.kwiver.org")
+set(CPACK_NSIS_MENU_LINKS "http://www.kwiver.org" "KWIVER Website")
+
+if(MAPTK_ENABLE_GUI)
+  set (CPACK_PACKAGE_EXECUTABLES "mapgui" "MAP-Tk GUI" ${CPACK_PACKAGE_EXECUTABLES})
+endif()
+
+if(APPLE)
+  set(CPACK_BINARY_DRAGNDROP ON)
+  set(CPACK_BINARY_PACKAGEMAKER OFF)
+  set(CPACK_SET_DESTDIR TRUE)
+  set(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/packaging/maptk_drive.icns")
+endif()
 include (CPack)

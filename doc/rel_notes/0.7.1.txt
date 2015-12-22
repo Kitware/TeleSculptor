@@ -9,6 +9,14 @@ and installers.
 Updates since v0.7.0
 --------------------
 
+Build System
+
+ * Added support for packaging with CPack.  On Windows this will build an
+   installer executable.  On Mac OS X it will build a disk image containing
+   an application bundle.  On Linux it will create a self extracting TGZ file.
+   The focus in this release is on packaging the graphical application;
+   however, command line utilities and headers are included as well.
+
 Visualization Application
 
  * Added larger versions of the application icon and specialized icon formats

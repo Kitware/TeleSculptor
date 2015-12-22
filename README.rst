@@ -1,7 +1,7 @@
 ############################################
                    MAP-Tk
 ############################################
-
+.. image:: /gui/icons/64x64/mapgui.png
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Motion-imagery Aerial Photogrammetry Toolkit
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -31,6 +31,15 @@ implement additional versions of core MAP-Tk data structures.
 
 In addition to the libraries and tools, a Qt GUI application is provided to
 assist with visualization of data and results with the help of VTK.
+The screenshots below show the MAP-Tk GUI visualizing results of MAP-Tk
+run on a video from the `VIRAT Video Dataset`_.
+
+.. image:: /doc/screenshot/mapgui_screenshot_osx.png
+   :alt: Mac OS X Screenshot
+.. image:: /doc/screenshot/mapgui_screenshot_windows.png
+   :alt: Windows Screenshot
+.. image:: /doc/screenshot/mapgui_screenshot_linux.png
+   :alt: Linux Screenshot
 
 While the initial software implementation relies on batch post-processing
 of aerial video, our intent is to move to an online video stream processing
@@ -335,6 +344,7 @@ public release via 88ABW-2015-2555.
 .. Appendix I: References
 .. ======================
 
+.. _VIRAT Video Dataset: http://www.viratdata.org/
 .. _Boost: http://www.boost.org/
 .. _Bundler: http://www.cs.cornell.edu/~snavely/bundler/
 .. _CDash: http://www.cdash.org/
