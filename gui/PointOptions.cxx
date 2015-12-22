@@ -32,6 +32,7 @@
 
 #include "ui_PointOptions.h"
 
+#include "DataColorOptions.h"
 #include "FieldInformation.h"
 
 #include <vtkActor.h>
@@ -42,6 +43,9 @@
 
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
+
+#include <QtGui/QMenu>
+#include <QtGui/QWidgetAction>
 
 QTE_IMPLEMENT_D_FUNC(PointOptions)
 
@@ -62,12 +66,16 @@ enum ColorMode
 class PointOptionsPrivate
 {
 public:
+  void setPopup(QToolButton* button, QWidget* popup);
+
   FieldInformation activeField() const;
 
   void setDisplayMode(vtkMapper*, int mode);
 
   Ui::PointOptions UI;
   qtUiState uiState;
+
+  DataColorOptions* dataColorOptions;
 
   QList<vtkActor*> actors;
   QList<vtkMapper*> mappers;
@@ -76,6 +84,18 @@ public:
 
   QButtonGroup colorMode;
 };
+
+//-----------------------------------------------------------------------------
+void PointOptionsPrivate::setPopup(QToolButton* button, QWidget* widget)
+{
+  auto const proxy = new QWidgetAction(button);
+  proxy->setDefaultWidget(widget);
+
+  auto const menu = new QMenu(button);
+  menu->addAction(proxy);
+
+  button->setMenu(menu);
+}
 
 //-----------------------------------------------------------------------------
 FieldInformation PointOptionsPrivate::activeField() const
@@ -101,14 +121,11 @@ void PointOptionsPrivate::setDisplayMode(vtkMapper* mapper, int mode)
       break;
 
     case DataColor:
-    {
-      auto const& fi = this->activeField();
       mapper->SetScalarVisibility(true);
-      mapper->SetScalarRange(fi.range[0], fi.range[1]);
-      attr->SetActiveScalars(fi.name.constData());
-      // TODO set colors
+      mapper->SetUseLookupTableScalarRange(true);
+      mapper->SetLookupTable(this->dataColorOptions->scalarsToColors());
+      attr->SetActiveScalars(this->activeField().name.constData());
       break;
-    }
 
     default:
       mapper->SetScalarVisibility(false);
@@ -130,6 +147,10 @@ PointOptions::PointOptions(QString const& settingsGroup,
   d->colorMode.addButton(d->UI.trueColor, TrueColor);
   d->colorMode.addButton(d->UI.dataColor, DataColor);
 
+  d->dataColorOptions = new DataColorOptions(this);
+  d->setPopup(d->UI.dataColorMenu, d->dataColorOptions);
+  this->setDataColorIcon(d->dataColorOptions->icon());
+
   // Set up option persistence
   d->uiState.setCurrentGroup(settingsGroup);
 
@@ -142,14 +163,18 @@ PointOptions::PointOptions(QString const& settingsGroup,
   d->uiState.restore();
 
   // Connect signals/slots
-  connect(d->UI.color, SIGNAL(colorChanged(QColor)), this, SIGNAL(modified()));
   connect(d->UI.size, SIGNAL(valueChanged(int)), this, SLOT(setSize(int)));
+  connect(d->UI.color, SIGNAL(colorChanged(QColor)), this, SIGNAL(modified()));
+  connect(d->dataColorOptions, SIGNAL(modified()), this, SIGNAL(modified()));
 
   connect(d->UI.dataField, SIGNAL(currentIndexChanged(int)),
-          this, SLOT(setColorField(int)));
+          this, SLOT(updateActiveDataField()));
 
   connect(&d->colorMode, SIGNAL(buttonClicked(int)),
           this, SLOT(setColorMode(int)));
+
+  connect(d->dataColorOptions, SIGNAL(iconChanged(QIcon)),
+          this, SLOT(setDataColorIcon(QIcon)));
 }
 
 //-----------------------------------------------------------------------------
@@ -190,6 +215,8 @@ void PointOptions::setDataFields(
   auto const haveFields = !fields.isEmpty();
 
   d->UI.dataColor->setEnabled(haveFields);
+  d->UI.dataField->setEnabled(haveFields);
+  d->UI.dataLabel->setEnabled(haveFields);
   if (!haveFields && d->UI.dataColor->isChecked())
   {
     d->UI.solidColor->setChecked(true);
@@ -250,14 +277,35 @@ void PointOptions::setColorMode(int mode)
 }
 
 //-----------------------------------------------------------------------------
-void PointOptions::setColorField(int index)
+void PointOptions::setDataColorIcon(QIcon const& icon)
+{
+  QTE_D();
+  d->UI.dataColorMenu->setIcon(icon);
+}
+
+//-----------------------------------------------------------------------------
+void PointOptions::updateActiveDataField()
 {
   QTE_D();
 
+  auto const& fi = d->activeField();
   auto const mode = d->colorMode.checkedId();
-  foreach (auto const mapper, d->mappers)
+
+  d->dataColorOptions->setAvailableRange(fi.range[0], fi.range[1]);
+
+  if (mode == DataColor)
   {
-    d->setDisplayMode(mapper, mode);
+    foreach (auto const mapper, d->mappers)
+    {
+      if (mapper)
+      {
+        auto const attr =
+          mapper->GetInput()->GetAttributes(vtkDataObject::POINT);
+
+        attr->SetActiveScalars(fi.name.constData());
+        // TODO reset filtering
+      }
+    }
   }
 
   emit this->modified();

@@ -25,6 +25,7 @@ set(gui_ui
   ${gui_am_ui}
   AboutDialog.ui
   CameraOptions.ui
+  DataColorOptions.ui
   FeatureOptions.ui
   ImageOptions.ui
   PointOptions.ui
@@ -40,6 +41,7 @@ set(gui_moc_headers
   ActorColorButton.h
   CameraOptions.h
   CameraView.h
+  DataColorOptions.h
   FeatureOptions.h
   GradientSelector.h
   ImageOptions.h
@@ -58,6 +60,7 @@ set(gui_sources
   ActorColorButton.cxx
   CameraOptions.cxx
   CameraView.cxx
+  DataColorOptions.cxx
   FeatureOptions.cxx
   GradientSelector.cxx
   ImageOptions.cxx
