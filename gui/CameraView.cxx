@@ -494,12 +494,11 @@ void CameraView::addFeatureTrack(kwiver::vital::track const& track)
   QTE_D();
 
   auto const id = track.id();
-  auto const end = track.end();
 
-  for (auto iter = track.begin(); iter != end; ++iter)
+  foreach (auto const& state, track)
   {
-    auto const& loc = iter->feat->loc();
-    d->featureRep->AddTrackPoint(id, iter->frame_id, loc[0], loc[1]);
+    auto const& loc = state.feat->loc();
+    d->featureRep->AddTrackPoint(id, state.frame_id, loc[0], loc[1]);
   }
 
   d->updateFeatures(this);

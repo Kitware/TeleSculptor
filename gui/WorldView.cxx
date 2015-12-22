@@ -422,10 +422,10 @@ void WorldView::setLandmarks(kwiver::vital::landmark_map const& lm)
   d->landmarkColors->Allocate(3 * size);
 
   vtkIdType vertIndex = 0;
-  foreach_iter (auto, lmi, landmarks)
+  foreach (auto const& lm, landmarks)
   {
-    auto const& pos = lmi->second->loc();
-    auto const& color = lmi->second->color();
+    auto const& pos = lm.second->loc();
+    auto const& color = lm.second->color();
 
     d->landmarkPoints->InsertNextPoint(pos.data());
     d->landmarkVerts->InsertNextCell(1);
