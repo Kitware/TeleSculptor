@@ -16,3 +16,16 @@ function(gp_item_default_embedded_path_override
   endif()
 
 endfunction()
+
+# Provide an override for gp_resolved_file_type to correct
+# fix-up bundle for Unix.
+function(gp_resolved_file_type_override
+         orig_file type_val)
+  # This is an ugly hack.  For some reason fixup_bundle wants
+  # libraries to be "local" (in the same directory as the executable)
+  # and fails if they are "embedded" (same prefix).  This override
+  # works around the problem by reporting "embedded" as "local"
+  if(UNIX AND NOT APPLE AND "${type}" STREQUAL "embedded")
+    set(${type_var} "local" PARENT_SCOPE)
+  endif()
+  endfunction()
