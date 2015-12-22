@@ -110,6 +110,7 @@ function(maptk_add_executable name)
   set_target_properties(${name}
     PROPERTIES
       RUNTIME_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/bin"
+      INSTALL_RPATH "\$ORIGIN/../lib:\$ORIGIN/"
     )
 
   if(NOT component)
@@ -184,6 +185,8 @@ function(maptk_add_library name)
       ARCHIVE_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/lib${LIB_SUFFIX}${library_subdir}"
       LIBRARY_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/lib${LIB_SUFFIX}${library_subdir}"
       RUNTIME_OUTPUT_DIRECTORY "${MAPTK_BINARY_DIR}/bin${library_subdir}"
+      INSTALL_NAME_DIR "@executable_path/../lib"
+      INSTALL_RPATH "\$ORIGIN/../lib:\$ORIGIN/"
       COMPILE_DEFINITIONS      "${new_compile_definitions}"
       ${_maptk_version_info}
       ${_maptk_osx_rpath}
@@ -278,6 +281,7 @@ function(maptk_create_plugin base_lib)
         PREFIX        ""
         SUFFIX        ${CMAKE_SHARED_MODULE_SUFFIX}
         OUTPUT_NAME   ${base_lib}_plugin
+        INSTALL_RPATH "\$ORIGIN/../../lib:\$ORIGIN/"
       )
 
     add_dependencies(all-plugins maptk-plugin-${base_lib})
