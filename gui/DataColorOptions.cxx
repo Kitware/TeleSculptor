@@ -38,6 +38,8 @@
 
 #include <qtGradient.h>
 #include <qtScopedValueChange.h>
+#include <qtUiState.h>
+#include <qtUiStateItem.h>
 
 QTE_IMPLEMENT_D_FUNC(DataColorOptions)
 
@@ -46,18 +48,35 @@ class DataColorOptionsPrivate
 {
 public:
   Ui::DataColorOptions UI;
+  qtUiState uiState;
 
   vtkNew<vtkMaptkScalarsToGradient> scalarsToGradient;
 };
 
 //-----------------------------------------------------------------------------
-DataColorOptions::DataColorOptions(QWidget* parent, Qt::WindowFlags flags)
+DataColorOptions::DataColorOptions(
+  QString const& settingsGroup, QWidget* parent, Qt::WindowFlags flags)
   : QWidget(parent, flags), d_ptr(new DataColorOptionsPrivate)
 {
   QTE_D();
 
   // Set up UI
   d->UI.setupUi(this);
+
+  d->uiState.setCurrentGroup(settingsGroup + "/DataColor");
+
+  d->uiState.mapChecked("AutomaticMinimum", d->UI.autoMinimum);
+  d->uiState.mapChecked("AutomaticMaximum", d->UI.autoMaximum);
+  d->uiState.mapValue("Minimum", d->UI.minimum);
+  d->uiState.mapValue("Maximum", d->UI.maximum);
+
+  auto const gradientItem = new qtUiState::Item<int, QComboBox>(
+    d->UI.gradient, &QComboBox::currentIndex, &QComboBox::setCurrentIndex);
+  d->uiState.map("Colors", gradientItem);
+
+  d->uiState.restore();
+
+  d->scalarsToGradient->SetGradient(d->UI.gradient->currentGradient());
 
   connect(d->UI.minimum, SIGNAL(valueChanged(double)),
           this, SLOT(updateMinimum()));
@@ -75,6 +94,8 @@ DataColorOptions::DataColorOptions(QWidget* parent, Qt::WindowFlags flags)
 //-----------------------------------------------------------------------------
 DataColorOptions::~DataColorOptions()
 {
+  QTE_D();
+  d->uiState.save();
 }
 
 //-----------------------------------------------------------------------------

@@ -147,7 +147,7 @@ PointOptions::PointOptions(QString const& settingsGroup,
   d->colorMode.addButton(d->UI.trueColor, TrueColor);
   d->colorMode.addButton(d->UI.dataColor, DataColor);
 
-  d->dataColorOptions = new DataColorOptions(this);
+  d->dataColorOptions = new DataColorOptions(settingsGroup, this);
   d->setPopup(d->UI.dataColorMenu, d->dataColorOptions);
   this->setDataColorIcon(d->dataColorOptions->icon());
 
