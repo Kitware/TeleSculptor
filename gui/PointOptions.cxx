@@ -60,6 +60,14 @@ enum ColorMode
   DataColor,
 };
 
+//-----------------------------------------------------------------------------
+template <typename Container>
+Container sorted(Container c)
+{
+  qSort(c);
+  return c;
+}
+
 }
 
 //-----------------------------------------------------------------------------
@@ -223,7 +231,7 @@ void PointOptions::setDataFields(
   }
 
   d->UI.dataField->clear();
-  foreach (auto const& fieldDisplayText, fields.keys())
+  foreach (auto const& fieldDisplayText, sorted(fields.keys()))
   {
     d->UI.dataField->addItem(fieldDisplayText);
   }
