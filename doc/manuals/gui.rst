@@ -122,8 +122,9 @@ is independent of the view.
 Several options for color are provided. The simplest is "solid color", which
 displays all landmarks in the same, user selected color. "True color" displays
 landmarks in the color estimated to correspond to the actual color of the point
-in the real world scene, as computed from the input imagery. (The "color by
-data" option is reserved for future use.)
+in the real world scene, as computed from the input imagery. "Color by data"
+uses color to visualize other per-point data, such as the number of individual
+frames that contributed to ("observed") each landmark.
 
 Camera View
 ===========

@@ -28,54 +28,48 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_POINTOPTIONS_H_
-#define MAPTK_POINTOPTIONS_H_
+#ifndef MAPTK_DATACOLOROPTIONS_H_
+#define MAPTK_DATACOLOROPTIONS_H_
 
 #include <qtGlobal.h>
 
+#include <QtGui/QIcon>
 #include <QtGui/QWidget>
 
-class vtkActor;
-class vtkMapper;
+class vtkScalarsToColors;
 
-struct FieldInformation;
+class DataColorOptionsPrivate;
 
-class PointOptionsPrivate;
-
-class PointOptions : public QWidget
+class DataColorOptions : public QWidget
 {
   Q_OBJECT
 
 public:
-  explicit PointOptions(QString const& settingsGroup,
-                        QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~PointOptions();
+  explicit DataColorOptions(QString const& settingsGroup, QWidget* parent = 0,
+                            Qt::WindowFlags flags = 0);
+  virtual ~DataColorOptions();
 
-  void addActor(vtkActor*);
-  void addMapper(vtkMapper*);
+  QIcon icon();
 
-  void setDefaultColor(QColor const&);
+  vtkScalarsToColors* scalarsToColors() const;
 
 public slots:
-  void setTrueColorAvailable(bool);
-  void setDataFields(QHash<QString, FieldInformation> const&);
+  void setAvailableRange(double lower, double upper);
+  void setGradient(int);
 
 signals:
   void modified();
+  void iconChanged(QIcon);
 
 protected slots:
-  void setSize(int);
-  void setColorMode(int);
-
-  void setDataColorIcon(QIcon const&);
-
-  void updateActiveDataField();
+  void updateMinimum();
+  void updateMaximum();
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(PointOptions)
-  QTE_DECLARE_PRIVATE(PointOptions)
+  QTE_DECLARE_PRIVATE_RPTR(DataColorOptions)
+  QTE_DECLARE_PRIVATE(DataColorOptions)
 
-  QTE_DISABLE_COPY(PointOptions)
+  QTE_DISABLE_COPY(DataColorOptions)
 };
 
 #endif

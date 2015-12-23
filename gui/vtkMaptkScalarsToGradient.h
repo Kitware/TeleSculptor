@@ -28,54 +28,43 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_POINTOPTIONS_H_
-#define MAPTK_POINTOPTIONS_H_
+#ifndef MAPTK_VTKMAPTKSCALARSTOGRADIENT_H_
+#define MAPTK_VTKMAPTKSCALARSTOGRADIENT_H_
+
+#include <vtkScalarsToColors.h>
 
 #include <qtGlobal.h>
 
-#include <QtGui/QWidget>
+class qtGradient;
 
-class vtkActor;
-class vtkMapper;
+class vtkMaptkScalarsToGradientPrivate;
 
-struct FieldInformation;
-
-class PointOptionsPrivate;
-
-class PointOptions : public QWidget
+class vtkMaptkScalarsToGradient : public vtkScalarsToColors
 {
-  Q_OBJECT
-
 public:
-  explicit PointOptions(QString const& settingsGroup,
-                        QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~PointOptions();
+  vtkTypeMacro(vtkMaptkScalarsToGradient, vtkScalarsToColors);
+  static vtkMaptkScalarsToGradient *New();
 
-  void addActor(vtkActor*);
-  void addMapper(vtkMapper*);
+  void SetGradient(qtGradient const&);
 
-  void setDefaultColor(QColor const&);
+  virtual void SetRange(double min, double max);
 
-public slots:
-  void setTrueColorAvailable(bool);
-  void setDataFields(QHash<QString, FieldInformation> const&);
+  virtual void GetColor(double v, double rgb[3]);
 
-signals:
-  void modified();
+protected:
+  QTE_DECLARE_PRIVATE_PTR(vtkMaptkScalarsToGradient)
 
-protected slots:
-  void setSize(int);
-  void setColorMode(int);
+  vtkMaptkScalarsToGradient();
+  ~vtkMaptkScalarsToGradient();
 
-  void setDataColorIcon(QIcon const&);
-
-  void updateActiveDataField();
+  virtual void MapScalarsThroughTable2(
+    void* input, unsigned char* output, int inputDataType,
+    int numberOfValues, int inputIncrement, int outputFormat);
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(PointOptions)
-  QTE_DECLARE_PRIVATE(PointOptions)
-
-  QTE_DISABLE_COPY(PointOptions)
+  QTE_DECLARE_PRIVATE(vtkMaptkScalarsToGradient)
+  QTE_DISABLE_COPY(vtkMaptkScalarsToGradient)
 };
+
 
 #endif

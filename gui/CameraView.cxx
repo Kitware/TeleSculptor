@@ -35,6 +35,7 @@
 
 #include "ActorColorButton.h"
 #include "FeatureOptions.h"
+#include "FieldInformation.h"
 #include "ImageOptions.h"
 #include "vtkMaptkCamera.h"
 #include "vtkMaptkFeatureTrackRepresentation.h"
@@ -55,6 +56,8 @@
 #include <vtkProperty.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkUnsignedIntArray.h>
 
 #include <qtUiState.h>
 
@@ -63,13 +66,23 @@
 #include <QtGui/QToolButton>
 #include <QtGui/QWidgetAction>
 
+QTE_IMPLEMENT_D_FUNC(CameraView)
+
+///////////////////////////////////////////////////////////////////////////////
+
+//BEGIN miscelaneous helpers
+
 namespace // anonymous
 {
+
+static char const* const TrueColor = "truecolor";
+static char const* const Observations = "observations";
 
 //-----------------------------------------------------------------------------
 struct LandmarkData
 {
   kwiver::vital::rgb_color color;
+  unsigned observations;
 };
 
 //-----------------------------------------------------------------------------
@@ -112,6 +125,12 @@ void ActorColorOption::setDefaultColor(QColor const& color)
 
 } // namespace <anonymous>
 
+//END miscelaneous helpers
+
+///////////////////////////////////////////////////////////////////////////////
+
+//BEGIN CameraViewPrivate definition
+
 //-----------------------------------------------------------------------------
 class CameraViewPrivate
 {
@@ -134,11 +153,7 @@ public:
   {
     PointCloud();
 
-    void addPoint(double x, double y, double z, LandmarkData const& data);
-
-    void clear();
-
-    vtkNew<vtkUnsignedCharArray> colors;
+    void addPoint(double x, double y, double z);
   };
 
   struct SegmentCloud : VertexCloud
@@ -147,6 +162,18 @@ public:
 
     void addSegment(double x1, double y1, double z1,
                     double x2, double y2, double z2);
+  };
+
+  struct LandmarkCloud : PointCloud
+  {
+    LandmarkCloud();
+
+    void addPoint(double x, double y, double z, LandmarkData const& data);
+
+    void clear();
+
+    vtkNew<vtkUnsignedCharArray> colors;
+    vtkNew<vtkUnsignedIntArray> observations;
   };
 
   CameraViewPrivate() : featuresDirty(false) {}
@@ -169,7 +196,7 @@ public:
 
   vtkNew<vtkMaptkFeatureTrackRepresentation> featureRep;
 
-  PointCloud landmarks;
+  LandmarkCloud landmarks;
   SegmentCloud residuals;
 
   QHash<kwiver::vital::landmark_id_t, LandmarkData> landmarkData;
@@ -181,7 +208,11 @@ public:
   bool featuresDirty;
 };
 
-QTE_IMPLEMENT_D_FUNC(CameraView)
+//END CameraViewPrivate definition
+
+///////////////////////////////////////////////////////////////////////////////
+
+//BEGIN geometry helpers
 
 //-----------------------------------------------------------------------------
 CameraViewPrivate::VertexCloud::VertexCloud()
@@ -206,37 +237,19 @@ void CameraViewPrivate::VertexCloud::clear()
 //-----------------------------------------------------------------------------
 CameraViewPrivate::PointCloud::PointCloud()
 {
-  this->colors->SetNumberOfComponents(3);
-
   this->data->SetVerts(this->verts.GetPointer());
-  this->data->GetPointData()->SetScalars(this->colors.GetPointer());
 }
 
 //-----------------------------------------------------------------------------
-void CameraViewPrivate::PointCloud::addPoint(
-  double x, double y, double z, LandmarkData const& data)
+void CameraViewPrivate::PointCloud::addPoint(double x, double y, double z)
 {
   auto const vid = this->points->InsertNextPoint(x, y, z);
 
   this->verts->InsertNextCell(1);
   this->verts->InsertCellPoint(vid);
 
-  this->colors->InsertNextValue(data.color.r);
-  this->colors->InsertNextValue(data.color.g);
-  this->colors->InsertNextValue(data.color.b);
-
   this->points->Modified();
   this->verts->Modified();
-  this->colors->Modified();
-}
-
-//-----------------------------------------------------------------------------
-void CameraViewPrivate::PointCloud::clear()
-{
-  this->VertexCloud::clear();
-
-  this->colors->Reset();
-  this->colors->Modified();
 }
 
 //-----------------------------------------------------------------------------
@@ -261,6 +274,53 @@ void CameraViewPrivate::SegmentCloud::addSegment(
   this->points->Modified();
   this->verts->Modified();
 }
+
+//-----------------------------------------------------------------------------
+CameraViewPrivate::LandmarkCloud::LandmarkCloud()
+{
+  this->colors->SetName(TrueColor);
+  this->colors->SetNumberOfComponents(3);
+
+  this->observations->SetName(Observations);
+  this->observations->SetNumberOfComponents(1);
+
+  this->data->GetPointData()->AddArray(this->colors.GetPointer());
+  this->data->GetPointData()->AddArray(this->observations.GetPointer());
+}
+
+//-----------------------------------------------------------------------------
+void CameraViewPrivate::LandmarkCloud::clear()
+{
+  this->VertexCloud::clear();
+
+  this->colors->Reset();
+  this->observations->Reset();
+
+  this->colors->Modified();
+  this->observations->Modified();
+}
+
+//-----------------------------------------------------------------------------
+void CameraViewPrivate::LandmarkCloud::addPoint(
+  double x, double y, double z, LandmarkData const& data)
+{
+  this->PointCloud::addPoint(x, y, z);
+
+  this->colors->InsertNextValue(data.color.r);
+  this->colors->InsertNextValue(data.color.g);
+  this->colors->InsertNextValue(data.color.b);
+
+  this->observations->InsertNextValue(data.observations);
+
+  this->colors->Modified();
+  this->observations->Modified();
+}
+
+//END geometry helpers
+
+///////////////////////////////////////////////////////////////////////////////
+
+//BEGIN CameraViewPrivate implementation
 
 //-----------------------------------------------------------------------------
 void CameraViewPrivate::setPopup(QAction* action, QMenu* menu)
@@ -314,6 +374,12 @@ void CameraViewPrivate::updateFeatures(CameraView* q)
   }
 }
 
+//END CameraViewPrivate implementation
+
+///////////////////////////////////////////////////////////////////////////////
+
+//BEGIN CameraView
+
 //-----------------------------------------------------------------------------
 CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   : QWidget(parent, flags), d_ptr(new CameraViewPrivate)
@@ -350,8 +416,8 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
 
   d->landmarkOptions = new PointOptions("CameraView/Landmarks", this);
   d->landmarkOptions->setDefaultColor(Qt::magenta);
-  d->landmarkOptions->addActor(d->landmarks.actor.GetPointer(),
-                               d->landmarks.mapper.GetPointer());
+  d->landmarkOptions->addActor(d->landmarks.actor.GetPointer());
+  d->landmarkOptions->addMapper(d->landmarks.mapper.GetPointer());
 
   d->setPopup(d->UI.actionShowLandmarks, d->landmarkOptions);
 
@@ -474,18 +540,29 @@ void CameraView::setLandmarksData(kwiver::vital::landmark_map const& lm)
 
   auto const defaultColor = kwiver::vital::rgb_color{};
   auto haveColor = false;
+  auto maxObservations = unsigned{0};
 
   foreach (auto const& lmi, landmarks)
   {
     auto const& color = lmi.second->color();
-    auto const ld = LandmarkData{color};
+    auto const observations = lmi.second->observations();
+    auto const ld = LandmarkData{color, observations};
 
     d->landmarkData.insert(lmi.first, ld);
 
     haveColor = haveColor || (color != defaultColor);
+    maxObservations = qMax(maxObservations, observations);
+  }
+
+  auto fields = QHash<QString, FieldInformation>{};
+  if (maxObservations)
+  {
+    auto const upper = static_cast<double>(maxObservations);
+    fields.insert("Observations", {Observations, {0.0, upper}});
   }
 
   d->landmarkOptions->setTrueColorAvailable(haveColor);
+  d->landmarkOptions->setDataFields(fields);
 }
 
 //-----------------------------------------------------------------------------
@@ -611,3 +688,5 @@ void CameraView::updateFeatures()
     d->featuresDirty = false;
   }
 }
+
+//END CameraView
