@@ -32,12 +32,22 @@
 
 #include "ui_PointOptions.h"
 
+#include "DataColorOptions.h"
+#include "FieldInformation.h"
+
 #include <vtkActor.h>
+#include <vtkDataSet.h>
+#include <vtkDataSetAttributes.h>
 #include <vtkMapper.h>
 #include <vtkProperty.h>
 
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
+
+#include <QtGui/QMenu>
+#include <QtGui/QWidgetAction>
+
+QTE_IMPLEMENT_D_FUNC(PointOptions)
 
 namespace
 {
@@ -56,16 +66,72 @@ enum ColorMode
 class PointOptionsPrivate
 {
 public:
+  void setPopup(QToolButton* button, QWidget* popup);
+
+  FieldInformation activeField() const;
+
+  void setDisplayMode(vtkMapper*, int mode);
+
   Ui::PointOptions UI;
   qtUiState uiState;
+
+  DataColorOptions* dataColorOptions;
 
   QList<vtkActor*> actors;
   QList<vtkMapper*> mappers;
 
+  QHash<QString, FieldInformation> fields;
+
   QButtonGroup colorMode;
 };
 
-QTE_IMPLEMENT_D_FUNC(PointOptions)
+//-----------------------------------------------------------------------------
+void PointOptionsPrivate::setPopup(QToolButton* button, QWidget* widget)
+{
+  auto const proxy = new QWidgetAction(button);
+  proxy->setDefaultWidget(widget);
+
+  auto const menu = new QMenu(button);
+  menu->addAction(proxy);
+
+  button->setMenu(menu);
+}
+
+//-----------------------------------------------------------------------------
+FieldInformation PointOptionsPrivate::activeField() const
+{
+  return this->fields[this->UI.dataField->currentText()];
+}
+
+//-----------------------------------------------------------------------------
+void PointOptionsPrivate::setDisplayMode(vtkMapper* mapper, int mode)
+{
+  if (!mapper)
+  {
+    return;
+  }
+
+  auto const attr = mapper->GetInput()->GetAttributes(vtkDataObject::POINT);
+
+  switch (mode)
+  {
+    case TrueColor:
+      mapper->SetScalarVisibility(true);
+      attr->SetActiveScalars("truecolor");
+      break;
+
+    case DataColor:
+      mapper->SetScalarVisibility(true);
+      mapper->SetUseLookupTableScalarRange(true);
+      mapper->SetLookupTable(this->dataColorOptions->scalarsToColors());
+      attr->SetActiveScalars(this->activeField().name.constData());
+      break;
+
+    default:
+      mapper->SetScalarVisibility(false);
+      break;
+  }
+}
 
 //-----------------------------------------------------------------------------
 PointOptions::PointOptions(QString const& settingsGroup,
@@ -81,6 +147,10 @@ PointOptions::PointOptions(QString const& settingsGroup,
   d->colorMode.addButton(d->UI.trueColor, TrueColor);
   d->colorMode.addButton(d->UI.dataColor, DataColor);
 
+  d->dataColorOptions = new DataColorOptions(settingsGroup, this);
+  d->setPopup(d->UI.dataColorMenu, d->dataColorOptions);
+  this->setDataColorIcon(d->dataColorOptions->icon());
+
   // Set up option persistence
   d->uiState.setCurrentGroup(settingsGroup);
 
@@ -93,11 +163,18 @@ PointOptions::PointOptions(QString const& settingsGroup,
   d->uiState.restore();
 
   // Connect signals/slots
-  connect(d->UI.color, SIGNAL(colorChanged(QColor)), this, SIGNAL(modified()));
   connect(d->UI.size, SIGNAL(valueChanged(int)), this, SLOT(setSize(int)));
+  connect(d->UI.color, SIGNAL(colorChanged(QColor)), this, SIGNAL(modified()));
+  connect(d->dataColorOptions, SIGNAL(modified()), this, SIGNAL(modified()));
+
+  connect(d->UI.dataField, SIGNAL(currentIndexChanged(int)),
+          this, SLOT(updateActiveDataField()));
 
   connect(&d->colorMode, SIGNAL(buttonClicked(int)),
           this, SLOT(setColorMode(int)));
+
+  connect(d->dataColorOptions, SIGNAL(iconChanged(QIcon)),
+          this, SLOT(setDataColorIcon(QIcon)));
 }
 
 //-----------------------------------------------------------------------------
@@ -129,19 +206,47 @@ void PointOptions::setTrueColorAvailable(bool available)
 }
 
 //-----------------------------------------------------------------------------
-void PointOptions::addActor(vtkActor* actor, vtkMapper* mapper)
+void PointOptions::setDataFields(
+  QHash<QString, FieldInformation> const& fields)
+{
+  QTE_D();
+
+  d->fields = fields;
+  auto const haveFields = !fields.isEmpty();
+
+  d->UI.dataColor->setEnabled(haveFields);
+  d->UI.dataField->setEnabled(haveFields);
+  d->UI.dataLabel->setEnabled(haveFields);
+  if (!haveFields && d->UI.dataColor->isChecked())
+  {
+    d->UI.solidColor->setChecked(true);
+  }
+
+  d->UI.dataField->clear();
+  foreach (auto const& fieldDisplayText, fields.keys())
+  {
+    d->UI.dataField->addItem(fieldDisplayText);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void PointOptions::addActor(vtkActor* actor)
 {
   QTE_D();
 
   d->UI.color->addActor(actor);
   actor->GetProperty()->SetPointSize(d->UI.size->value());
 
-  if (mapper)
-  {
-    mapper->SetScalarVisibility(!d->UI.solidColor->isChecked());
-  }
-
   d->actors.append(actor);
+}
+
+//-----------------------------------------------------------------------------
+void PointOptions::addMapper(vtkMapper* mapper)
+{
+  QTE_D();
+
+  d->setDisplayMode(mapper, d->colorMode.checkedId());
+
   d->mappers.append(mapper);
 }
 
@@ -165,9 +270,41 @@ void PointOptions::setColorMode(int mode)
 
   foreach (auto const mapper, d->mappers)
   {
-    if (mapper)
+    d->setDisplayMode(mapper, mode);
+  }
+
+  emit this->modified();
+}
+
+//-----------------------------------------------------------------------------
+void PointOptions::setDataColorIcon(QIcon const& icon)
+{
+  QTE_D();
+  d->UI.dataColorMenu->setIcon(icon);
+}
+
+//-----------------------------------------------------------------------------
+void PointOptions::updateActiveDataField()
+{
+  QTE_D();
+
+  auto const& fi = d->activeField();
+  auto const mode = d->colorMode.checkedId();
+
+  d->dataColorOptions->setAvailableRange(fi.range[0], fi.range[1]);
+
+  if (mode == DataColor)
+  {
+    foreach (auto const mapper, d->mappers)
     {
-      mapper->SetScalarVisibility(mode != SolidColor);
+      if (mapper)
+      {
+        auto const attr =
+          mapper->GetInput()->GetAttributes(vtkDataObject::POINT);
+
+        attr->SetActiveScalars(fi.name.constData());
+        // TODO reset filtering
+      }
     }
   }
 

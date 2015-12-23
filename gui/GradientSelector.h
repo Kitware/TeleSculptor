@@ -28,54 +28,43 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_POINTOPTIONS_H_
-#define MAPTK_POINTOPTIONS_H_
+#ifndef MAPTK_GRADIENTSELECTOR_H_
+#define MAPTK_GRADIENTSELECTOR_H_
 
 #include <qtGlobal.h>
 
-#include <QtGui/QWidget>
+#include <QtGui/QComboBox>
 
-class vtkActor;
-class vtkMapper;
+class qtGradient;
 
-struct FieldInformation;
-
-class PointOptionsPrivate;
-
-class PointOptions : public QWidget
+class GradientSelector : public QComboBox
 {
   Q_OBJECT
 
 public:
-  explicit PointOptions(QString const& settingsGroup,
-                        QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~PointOptions();
+  enum Preset
+  {
+    Gray,
+    Royal,
+    Ember,
+    Ocean,
+    Sunset,
+    Carribean,
+    Jet,
+    Parula,
+    Viridis,
+    Earth,
+    Blackbody,
+  };
 
-  void addActor(vtkActor*);
-  void addMapper(vtkMapper*);
+  explicit GradientSelector(QWidget* parent = 0);
+  virtual ~GradientSelector();
 
-  void setDefaultColor(QColor const&);
-
-public slots:
-  void setTrueColorAvailable(bool);
-  void setDataFields(QHash<QString, FieldInformation> const&);
-
-signals:
-  void modified();
-
-protected slots:
-  void setSize(int);
-  void setColorMode(int);
-
-  void setDataColorIcon(QIcon const&);
-
-  void updateActiveDataField();
+  qtGradient currentGradient() const;
+  qtGradient gradient(Preset) const;
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(PointOptions)
-  QTE_DECLARE_PRIVATE(PointOptions)
-
-  QTE_DISABLE_COPY(PointOptions)
+  QTE_DISABLE_COPY(GradientSelector)
 };
 
 #endif

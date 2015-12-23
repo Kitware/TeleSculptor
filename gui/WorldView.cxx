@@ -34,6 +34,7 @@
 #include "am_WorldView.h"
 
 #include "CameraOptions.h"
+#include "FieldInformation.h"
 #include "ImageOptions.h"
 #include "PointOptions.h"
 #include "vtkMaptkCamera.h"
@@ -56,10 +57,18 @@
 #include <vtkProperty.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkUnsignedIntArray.h>
 
 #include <QtGui/QMenu>
 #include <QtGui/QToolButton>
 #include <QtGui/QWidgetAction>
+
+namespace // anonymous
+{
+static char const* const TrueColor = "truecolor";
+static char const* const Observations = "observations";
+}
 
 //-----------------------------------------------------------------------------
 class WorldViewPrivate
@@ -95,6 +104,7 @@ public:
   vtkNew<vtkPoints> landmarkPoints;
   vtkNew<vtkCellArray> landmarkVerts;
   vtkNew<vtkUnsignedCharArray> landmarkColors;
+  vtkNew<vtkUnsignedIntArray> landmarkObservations;
   vtkNew<vtkPolyDataMapper> landmarkMapper;
   vtkNew<vtkActor> landmarkActor;
 
@@ -251,8 +261,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
           d->UI.renderWidget, SLOT(update()));
 
   d->landmarkOptions = new PointOptions("WorldView/Landmarks", this);
-  d->landmarkOptions->addActor(d->landmarkActor.GetPointer(),
-                               d->landmarkMapper.GetPointer());
+  d->landmarkOptions->addActor(d->landmarkActor.GetPointer());
   d->setPopup(d->UI.actionShowLandmarks, d->landmarkOptions);
 
   connect(d->landmarkOptions, SIGNAL(modified()),
@@ -314,16 +323,25 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   // Set up landmark actor
   vtkNew<vtkPolyData> landmarkPolyData;
 
+  auto const landmarkPointData = landmarkPolyData->GetPointData();
+
+  d->landmarkColors->SetName(TrueColor);
   d->landmarkColors->SetNumberOfComponents(3);
+
+  d->landmarkObservations->SetName(Observations);
+  d->landmarkObservations->SetNumberOfComponents(1);
 
   landmarkPolyData->SetPoints(d->landmarkPoints.GetPointer());
   landmarkPolyData->SetVerts(d->landmarkVerts.GetPointer());
-  landmarkPolyData->GetPointData()->SetScalars(d->landmarkColors.GetPointer());
+  landmarkPointData->AddArray(d->landmarkColors.GetPointer());
+  landmarkPointData->AddArray(d->landmarkObservations.GetPointer());
   d->landmarkMapper->SetInputData(landmarkPolyData.GetPointer());
 
   d->landmarkActor->SetMapper(d->landmarkMapper.GetPointer());
   d->landmarkActor->SetVisibility(d->UI.actionShowLandmarks->isChecked());
   d->renderer->AddActor(d->landmarkActor.GetPointer());
+
+  d->landmarkOptions->addMapper(d->landmarkMapper.GetPointer());
 
   // Set up ground plane grid
   d->groundPlane->SetOrigin(-10.0, -10.0, 0.0);
@@ -413,19 +431,23 @@ void WorldView::setLandmarks(kwiver::vital::landmark_map const& lm)
 
   auto const defaultColor = kwiver::vital::rgb_color{};
   auto haveColor = false;
+  auto maxObservations = unsigned{0};
 
   d->landmarkPoints->Reset();
   d->landmarkVerts->Reset();
   d->landmarkColors->Reset();
+  d->landmarkObservations->Reset();
   d->landmarkPoints->Allocate(size);
   d->landmarkVerts->Allocate(size);
   d->landmarkColors->Allocate(3 * size);
+  d->landmarkObservations->Allocate(size);
 
   vtkIdType vertIndex = 0;
   foreach (auto const& lm, landmarks)
   {
     auto const& pos = lm.second->loc();
     auto const& color = lm.second->color();
+    auto const observations = lm.second->observations();
 
     d->landmarkPoints->InsertNextPoint(pos.data());
     d->landmarkVerts->InsertNextCell(1);
@@ -433,15 +455,26 @@ void WorldView::setLandmarks(kwiver::vital::landmark_map const& lm)
     d->landmarkColors->InsertNextValue(color.r);
     d->landmarkColors->InsertNextValue(color.g);
     d->landmarkColors->InsertNextValue(color.b);
+    d->landmarkObservations->InsertNextValue(observations);
 
     haveColor = haveColor || (color != defaultColor);
+    maxObservations = qMax(maxObservations, observations);
+  }
+
+  auto fields = QHash<QString, FieldInformation>{};
+  if (maxObservations)
+  {
+    auto const upper = static_cast<double>(maxObservations);
+    fields.insert("Observations", {Observations, {0.0, upper}});
   }
 
   d->landmarkOptions->setTrueColorAvailable(haveColor);
+  d->landmarkOptions->setDataFields(fields);
 
   d->landmarkPoints->Modified();
   d->landmarkVerts->Modified();
   d->landmarkColors->Modified();
+  d->landmarkObservations->Modified();
 
   d->updateScale(this);
 }
