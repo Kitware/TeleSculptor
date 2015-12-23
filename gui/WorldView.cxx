@@ -46,6 +46,7 @@
 #include <vtkActorCollection.h>
 #include <vtkBoundingBox.h>
 #include <vtkCellArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkImageActor.h>
 #include <vtkImageData.h>
 #include <vtkMatrix4x4.h>
@@ -60,6 +61,8 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
 
+#include <qtMath.h>
+
 #include <QtGui/QMenu>
 #include <QtGui/QToolButton>
 #include <QtGui/QWidgetAction>
@@ -67,6 +70,7 @@
 namespace // anonymous
 {
 static char const* const TrueColor = "truecolor";
+static char const* const Elevation = "elevation";
 static char const* const Observations = "observations";
 }
 
@@ -103,6 +107,7 @@ public:
 
   vtkNew<vtkPoints> landmarkPoints;
   vtkNew<vtkCellArray> landmarkVerts;
+  vtkNew<vtkDoubleArray> landmarkElevations;
   vtkNew<vtkUnsignedCharArray> landmarkColors;
   vtkNew<vtkUnsignedIntArray> landmarkObservations;
   vtkNew<vtkPolyDataMapper> landmarkMapper;
@@ -328,12 +333,16 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->landmarkColors->SetName(TrueColor);
   d->landmarkColors->SetNumberOfComponents(3);
 
+  d->landmarkElevations->SetName(Elevation);
+  d->landmarkElevations->SetNumberOfComponents(1);
+
   d->landmarkObservations->SetName(Observations);
   d->landmarkObservations->SetNumberOfComponents(1);
 
   landmarkPolyData->SetPoints(d->landmarkPoints.GetPointer());
   landmarkPolyData->SetVerts(d->landmarkVerts.GetPointer());
   landmarkPointData->AddArray(d->landmarkColors.GetPointer());
+  landmarkPointData->AddArray(d->landmarkElevations.GetPointer());
   landmarkPointData->AddArray(d->landmarkObservations.GetPointer());
   d->landmarkMapper->SetInputData(landmarkPolyData.GetPointer());
 
@@ -432,14 +441,17 @@ void WorldView::setLandmarks(kwiver::vital::landmark_map const& lm)
   auto const defaultColor = kwiver::vital::rgb_color{};
   auto haveColor = false;
   auto maxObservations = unsigned{0};
+  auto minZ = qInf(), maxZ = -qInf();
 
   d->landmarkPoints->Reset();
   d->landmarkVerts->Reset();
   d->landmarkColors->Reset();
+  d->landmarkElevations->Reset();
   d->landmarkObservations->Reset();
   d->landmarkPoints->Allocate(size);
   d->landmarkVerts->Allocate(size);
   d->landmarkColors->Allocate(3 * size);
+  d->landmarkElevations->Allocate(size);
   d->landmarkObservations->Allocate(size);
 
   vtkIdType vertIndex = 0;
@@ -455,13 +467,17 @@ void WorldView::setLandmarks(kwiver::vital::landmark_map const& lm)
     d->landmarkColors->InsertNextValue(color.r);
     d->landmarkColors->InsertNextValue(color.g);
     d->landmarkColors->InsertNextValue(color.b);
+    d->landmarkElevations->InsertNextValue(pos[2]);
     d->landmarkObservations->InsertNextValue(observations);
 
     haveColor = haveColor || (color != defaultColor);
     maxObservations = qMax(maxObservations, observations);
+    minZ = qMin(minZ, pos[2]);
+    maxZ = qMax(maxZ, pos[2]);
   }
 
   auto fields = QHash<QString, FieldInformation>{};
+  fields.insert("Elevation", {Elevation, {minZ, maxZ}});
   if (maxObservations)
   {
     auto const upper = static_cast<double>(maxObservations);

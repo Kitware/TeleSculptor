@@ -45,6 +45,7 @@
 
 #include <vtkCamera.h>
 #include <vtkCellArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkImageActor.h>
 #include <vtkImageData.h>
 #include <vtkInteractorStyleRubberBand2D.h>
@@ -59,6 +60,7 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
 
+#include <qtMath.h>
 #include <qtUiState.h>
 
 #include <QtGui/QFormLayout>
@@ -76,12 +78,14 @@ namespace // anonymous
 {
 
 static char const* const TrueColor = "truecolor";
+static char const* const Elevation = "elevation";
 static char const* const Observations = "observations";
 
 //-----------------------------------------------------------------------------
 struct LandmarkData
 {
   kwiver::vital::rgb_color color;
+  double elevation;
   unsigned observations;
 };
 
@@ -174,6 +178,7 @@ public:
 
     vtkNew<vtkUnsignedCharArray> colors;
     vtkNew<vtkUnsignedIntArray> observations;
+    vtkNew<vtkDoubleArray> elevations;
   };
 
   CameraViewPrivate() : featuresDirty(false) {}
@@ -284,8 +289,12 @@ CameraViewPrivate::LandmarkCloud::LandmarkCloud()
   this->observations->SetName(Observations);
   this->observations->SetNumberOfComponents(1);
 
+  this->elevations->SetName(Elevation);
+  this->elevations->SetNumberOfComponents(1);
+
   this->data->GetPointData()->AddArray(this->colors.GetPointer());
   this->data->GetPointData()->AddArray(this->observations.GetPointer());
+  this->data->GetPointData()->AddArray(this->elevations.GetPointer());
 }
 
 //-----------------------------------------------------------------------------
@@ -295,9 +304,11 @@ void CameraViewPrivate::LandmarkCloud::clear()
 
   this->colors->Reset();
   this->observations->Reset();
+  this->elevations->Reset();
 
   this->colors->Modified();
   this->observations->Modified();
+  this->elevations->Modified();
 }
 
 //-----------------------------------------------------------------------------
@@ -312,8 +323,11 @@ void CameraViewPrivate::LandmarkCloud::addPoint(
 
   this->observations->InsertNextValue(data.observations);
 
+  this->elevations->InsertNextValue(data.elevation);
+
   this->colors->Modified();
   this->observations->Modified();
+  this->elevations->Modified();
 }
 
 //END geometry helpers
@@ -541,20 +555,25 @@ void CameraView::setLandmarksData(kwiver::vital::landmark_map const& lm)
   auto const defaultColor = kwiver::vital::rgb_color{};
   auto haveColor = false;
   auto maxObservations = unsigned{0};
+  auto minZ = qInf(), maxZ = -qInf();
 
   foreach (auto const& lmi, landmarks)
   {
+    auto const z = lmi.second->loc()[2];
     auto const& color = lmi.second->color();
     auto const observations = lmi.second->observations();
-    auto const ld = LandmarkData{color, observations};
+    auto const ld = LandmarkData{color, z, observations};
 
     d->landmarkData.insert(lmi.first, ld);
 
     haveColor = haveColor || (color != defaultColor);
     maxObservations = qMax(maxObservations, observations);
+    minZ = qMin(minZ, z);
+    maxZ = qMax(maxZ, z);
   }
 
   auto fields = QHash<QString, FieldInformation>{};
+  fields.insert("Elevation", {Elevation, {minZ, maxZ}});
   if (maxObservations)
   {
     auto const upper = static_cast<double>(maxObservations);
