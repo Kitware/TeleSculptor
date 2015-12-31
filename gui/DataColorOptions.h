@@ -49,7 +49,7 @@ public:
                             Qt::WindowFlags flags = 0);
   virtual ~DataColorOptions();
 
-  QIcon icon();
+  QIcon icon() const;
 
   vtkScalarsToColors* scalarsToColors() const;
 

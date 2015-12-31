@@ -99,7 +99,7 @@ DataColorOptions::~DataColorOptions()
 }
 
 //-----------------------------------------------------------------------------
-QIcon DataColorOptions::icon()
+QIcon DataColorOptions::icon() const
 {
   QTE_D();
   return d->UI.gradient->itemIcon(d->UI.gradient->currentIndex());
