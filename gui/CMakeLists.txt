@@ -26,6 +26,7 @@ set(gui_ui
   AboutDialog.ui
   CameraOptions.ui
   DataColorOptions.ui
+  DataFilterOptions.ui
   FeatureOptions.ui
   ImageOptions.ui
   PointOptions.ui
@@ -42,6 +43,7 @@ set(gui_moc_headers
   CameraOptions.h
   CameraView.h
   DataColorOptions.h
+  DataFilterOptions.h
   FeatureOptions.h
   GradientSelector.h
   ImageOptions.h
@@ -61,6 +63,7 @@ set(gui_sources
   CameraOptions.cxx
   CameraView.cxx
   DataColorOptions.cxx
+  DataFilterOptions.cxx
   FeatureOptions.cxx
   GradientSelector.cxx
   ImageOptions.cxx

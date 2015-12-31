@@ -33,6 +33,7 @@
 #include "ui_PointOptions.h"
 
 #include "DataColorOptions.h"
+#include "DataFilterOptions.h"
 #include "FieldInformation.h"
 
 #include <vtkActor.h>
@@ -76,6 +77,7 @@ public:
   qtUiState uiState;
 
   DataColorOptions* dataColorOptions;
+  DataFilterOptions* dataFilterOptions;
 
   QList<vtkActor*> actors;
   QList<vtkMapper*> mappers;
@@ -151,6 +153,10 @@ PointOptions::PointOptions(QString const& settingsGroup,
   d->setPopup(d->UI.dataColorMenu, d->dataColorOptions);
   this->setDataColorIcon(d->dataColorOptions->icon());
 
+  d->dataFilterOptions = new DataFilterOptions(settingsGroup, this);
+  d->setPopup(d->UI.dataFilterMenu, d->dataFilterOptions);
+  d->UI.dataFilterMenu->setText(d->dataFilterOptions->iconText() + " ");
+
   // Set up option persistence
   d->uiState.setCurrentGroup(settingsGroup);
 
@@ -169,6 +175,8 @@ PointOptions::PointOptions(QString const& settingsGroup,
 
   connect(d->UI.dataField, SIGNAL(currentIndexChanged(int)),
           this, SLOT(updateActiveDataField()));
+  connect(d->dataFilterOptions, SIGNAL(modified()),
+          this, SLOT(updateFilters()));
 
   connect(&d->colorMode, SIGNAL(buttonClicked(int)),
           this, SLOT(setColorMode(int)));
@@ -214,9 +222,10 @@ void PointOptions::setDataFields(
   d->fields = fields;
   auto const haveFields = !fields.isEmpty();
 
-  d->UI.dataColor->setEnabled(haveFields);
   d->UI.dataField->setEnabled(haveFields);
   d->UI.dataLabel->setEnabled(haveFields);
+  d->UI.dataColor->setEnabled(haveFields);
+  d->UI.dataFilter->setEnabled(haveFields);
   if (!haveFields && d->UI.dataColor->isChecked())
   {
     d->UI.solidColor->setChecked(true);
@@ -292,6 +301,7 @@ void PointOptions::updateActiveDataField()
   auto const mode = d->colorMode.checkedId();
 
   d->dataColorOptions->setAvailableRange(fi.range[0], fi.range[1]);
+  d->dataFilterOptions->setAvailableRange(fi.range[0], fi.range[1]);
 
   if (mode == DataColor)
   {
@@ -309,4 +319,10 @@ void PointOptions::updateActiveDataField()
   }
 
   emit this->modified();
+}
+
+//-----------------------------------------------------------------------------
+void PointOptions::updateFilters()
+{
+  // TODO
 }
