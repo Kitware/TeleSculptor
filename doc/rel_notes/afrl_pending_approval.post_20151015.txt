@@ -42,8 +42,8 @@ Visualization Application
  * Added ability to load imagery directly, and without requiring that cameras
    are loaded.
 
- * Added ability to visualize landmarks by "true color" or number of
-   observations, when relevant data is available.
+ * Added ability to visualize landmarks by "true color", elevation, or number
+   of observations, when relevant data is available.
 
  * Added ground plane display to world view.
 

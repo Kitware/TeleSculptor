@@ -45,16 +45,29 @@ public:
   enum Preset
   {
     Gray,
+    Slate,
+    Wood,
     Royal,
     Ember,
     Ocean,
     Sunset,
     Carribean,
+    Sky,
+    Hyacinth,
+    Lilac,
+    // TODO divergent gradients
     Jet,
+    Terrain,
     Parula,
     Viridis,
     Earth,
+    Plasma,
     Blackbody,
+    Spring,
+    Tulip,
+    Moody,
+    Anaglyph,
+    Rainbow
   };
 
   explicit GradientSelector(QWidget* parent = 0);
