@@ -90,7 +90,7 @@ DataFilterOptions::~DataFilterOptions()
 double DataFilterOptions::minimum() const
 {
   QTE_D();
-  return qMin(d->minimum, d->UI.minimum->value());
+  return qMax(d->minimum, d->UI.minimum->value());
 }
 
 //-----------------------------------------------------------------------------
@@ -111,7 +111,7 @@ DataFilterOptions::ActiveFilters DataFilterOptions::activeFilters() const
   {
     result |= Minimum;
   }
-  if (d->UI.useMinimum->isChecked())
+  if (d->UI.useMaximum->isChecked())
   {
     result |= Maximum;
   }
