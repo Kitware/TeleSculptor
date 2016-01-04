@@ -133,11 +133,11 @@ QString DataFilterOptions::iconText() const
   }
   else if (lf)
   {
-    return QString{"> %1"}.arg(d->UI.minimum->value());
+    return QString::fromUtf8("\xe2\x89\xa5 %1").arg(d->UI.minimum->value());
   }
   else if (hf)
   {
-    return QString{"< %1"}.arg(d->UI.maximum->value());
+    return QString::fromUtf8("\xe2\x89\xa4 %1").arg(d->UI.maximum->value());
   }
 
   return "(none)";
