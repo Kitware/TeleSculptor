@@ -42,6 +42,7 @@
 #include <vtkMapper.h>
 #include <vtkProperty.h>
 
+#include <qtScopedValueChange.h>
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
 
@@ -85,6 +86,7 @@ public:
   QHash<QString, FieldInformation> fields;
 
   QButtonGroup colorMode;
+  Qt::CheckState filterState;
 };
 
 //-----------------------------------------------------------------------------
@@ -156,6 +158,7 @@ PointOptions::PointOptions(QString const& settingsGroup,
   d->dataFilterOptions = new DataFilterOptions(settingsGroup, this);
   d->setPopup(d->UI.dataFilterMenu, d->dataFilterOptions);
   d->UI.dataFilterMenu->setText(d->dataFilterOptions->iconText() + " ");
+  d->filterState = Qt::Unchecked;
 
   // Set up option persistence
   d->uiState.setCurrentGroup(settingsGroup);
@@ -176,6 +179,8 @@ PointOptions::PointOptions(QString const& settingsGroup,
   connect(d->UI.dataField, SIGNAL(currentIndexChanged(int)),
           this, SLOT(updateActiveDataField()));
   connect(d->dataFilterOptions, SIGNAL(modified()),
+          this, SLOT(updateFilters()));
+  connect(d->UI.dataFilter, SIGNAL(clicked()),
           this, SLOT(updateFilters()));
 
   connect(&d->colorMode, SIGNAL(buttonClicked(int)),
@@ -324,5 +329,31 @@ void PointOptions::updateActiveDataField()
 //-----------------------------------------------------------------------------
 void PointOptions::updateFilters()
 {
+  QTE_D();
+
+  // Ensure that check box toggles the way we want it to
+  qtScopedBlockSignals bs{d->UI.dataFilter};
+  if (d->UI.dataFilter->checkState() != d->filterState)
+  {
+    auto const newState = (d->filterState == Qt::Unchecked);
+    d->UI.dataFilter->setChecked(newState);
+    d->UI.dataFilterMenu->setEnabled(newState);
+  }
+
+  // Determine if filters are "really" enabled or not
+  auto const filters = d->dataFilterOptions->activeFilters();
+  auto const nominallyEnabled = d->UI.dataFilter->isChecked();
+  auto const actuallyEnabled = nominallyEnabled && filters;
+
+  if (nominallyEnabled)
+  {
+    d->UI.dataFilter->setCheckState(
+      actuallyEnabled ? Qt::Checked : Qt::PartiallyChecked);
+  }
+  d->filterState = d->UI.dataFilter->checkState();
+
   // TODO
+
+  // Update filter text
+  d->UI.dataFilterMenu->setText(d->dataFilterOptions->iconText() + " ");
 }

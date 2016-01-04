@@ -206,21 +206,5 @@
     </hint>
    </hints>
   </connection>
-  <connection>
-   <sender>dataFilter</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>dataFilterMenu</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>89</x>
-     <y>152</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>190</x>
-     <y>152</y>
-    </hint>
-   </hints>
-  </connection>
  </connections>
 </ui>
