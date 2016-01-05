@@ -40,16 +40,18 @@
 #include <vtkDataSet.h>
 #include <vtkDataSetAttributes.h>
 #include <vtkMapper.h>
+#include <vtkNew.h>
+#include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
+#include <vtkThresholdPoints.h>
 
+#include <qtEnumerate.h>
 #include <qtScopedValueChange.h>
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
 
 #include <QtGui/QMenu>
 #include <QtGui/QWidgetAction>
-
-QTE_IMPLEMENT_D_FUNC(PointOptions)
 
 namespace
 {
@@ -64,6 +66,12 @@ enum ColorMode
 
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
+//BEGIN PointOptionsPrivate
+
+QTE_IMPLEMENT_D_FUNC(PointOptions)
+
 //-----------------------------------------------------------------------------
 class PointOptionsPrivate
 {
@@ -74,6 +82,10 @@ public:
 
   void setDisplayMode(vtkMapper*, int mode);
 
+  void createFilters();
+  void updateFilters();
+  void removeFilters();
+
   Ui::PointOptions UI;
   qtUiState uiState;
 
@@ -82,6 +94,7 @@ public:
 
   QList<vtkActor*> actors;
   QList<vtkMapper*> mappers;
+  QHash<vtkPolyDataMapper*, vtkThresholdPoints*> filters;
 
   QHash<QString, FieldInformation> fields;
 
@@ -136,6 +149,74 @@ void PointOptionsPrivate::setDisplayMode(vtkMapper* mapper, int mode)
       break;
   }
 }
+
+//-----------------------------------------------------------------------------
+void PointOptionsPrivate::createFilters()
+{
+  foreach (auto const mapper, this->mappers)
+  {
+    auto const pdMapper = vtkPolyDataMapper::SafeDownCast(mapper);
+    if (pdMapper)
+    {
+      // Create filter
+      vtkNew<vtkThresholdPoints> filter;
+      filter->SetInputArrayToProcess(
+        0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS,
+        this->activeField().name.constData());
+
+      // Insert filter into data pipeline
+      auto const input = pdMapper->GetInput();
+      filter->SetInputData(input);
+      pdMapper->SetInputConnection(filter->GetOutputPort());
+
+      // Add to list of active filter objects
+      this->filters.insert(pdMapper, filter.GetPointer());
+    }
+  }
+}
+
+//-----------------------------------------------------------------------------
+void PointOptionsPrivate::updateFilters()
+{
+  auto const activeFilters = this->dataFilterOptions->activeFilters();
+
+  foreach (auto const filter, this->filters)
+  {
+    if (activeFilters == DataFilterOptions::Minimum)
+    {
+      filter->ThresholdByUpper(this->dataFilterOptions->minimum());
+    }
+    else if (activeFilters == DataFilterOptions::Maximum)
+    {
+      filter->ThresholdByLower(this->dataFilterOptions->maximum());
+    }
+    else
+    {
+      filter->ThresholdBetween(this->dataFilterOptions->minimum(),
+                               this->dataFilterOptions->maximum());
+    }
+    filter->Update();
+  }
+}
+
+//-----------------------------------------------------------------------------
+void PointOptionsPrivate::removeFilters()
+{
+  foreach (auto const iter, qtEnumerate(this->filters))
+  {
+    auto const mapper = iter.key();
+    auto const filter = iter.value();
+    auto const input = vtkPolyData::SafeDownCast(filter->GetInput());
+    mapper->SetInputData(input);
+  }
+  this->filters.clear();
+}
+
+//END PointOptionsPrivate
+
+///////////////////////////////////////////////////////////////////////////////
+
+//BEGIN PointOptions
 
 //-----------------------------------------------------------------------------
 PointOptions::PointOptions(QString const& settingsGroup,
@@ -318,8 +399,15 @@ void PointOptions::updateActiveDataField()
           mapper->GetInput()->GetAttributes(vtkDataObject::POINT);
 
         attr->SetActiveScalars(fi.name.constData());
-        // TODO reset filtering
       }
+    }
+
+    foreach (auto const filter, d->filters)
+    {
+      filter->SetInputArrayToProcess(
+        0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS,
+        fi.name.constData());
+      filter->Update();
     }
   }
 
@@ -352,8 +440,24 @@ void PointOptions::updateFilters()
   }
   d->filterState = d->UI.dataFilter->checkState();
 
-  // TODO
+  if (actuallyEnabled)
+  {
+    if (d->filters.isEmpty())
+    {
+      d->createFilters();
+    }
+    d->updateFilters();
+  }
+  else
+  {
+    d->removeFilters();
+  }
 
   // Update filter text
   d->UI.dataFilterMenu->setText(d->dataFilterOptions->iconText() + " ");
+
+  // Notify users that display options changed
+  emit this->modified();
 }
+
+//END PointOptions
