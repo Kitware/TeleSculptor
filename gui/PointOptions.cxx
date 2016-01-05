@@ -33,21 +33,25 @@
 #include "ui_PointOptions.h"
 
 #include "DataColorOptions.h"
+#include "DataFilterOptions.h"
 #include "FieldInformation.h"
 
 #include <vtkActor.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetAttributes.h>
 #include <vtkMapper.h>
+#include <vtkNew.h>
+#include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
+#include <vtkThresholdPoints.h>
 
+#include <qtEnumerate.h>
+#include <qtScopedValueChange.h>
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
 
 #include <QtGui/QMenu>
 #include <QtGui/QWidgetAction>
-
-QTE_IMPLEMENT_D_FUNC(PointOptions)
 
 namespace
 {
@@ -70,6 +74,12 @@ Container sorted(Container c)
 
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
+//BEGIN PointOptionsPrivate
+
+QTE_IMPLEMENT_D_FUNC(PointOptions)
+
 //-----------------------------------------------------------------------------
 class PointOptionsPrivate
 {
@@ -80,17 +90,24 @@ public:
 
   void setDisplayMode(vtkMapper*, int mode);
 
+  void createFilters();
+  void updateFilters();
+  void removeFilters();
+
   Ui::PointOptions UI;
   qtUiState uiState;
 
   DataColorOptions* dataColorOptions;
+  DataFilterOptions* dataFilterOptions;
 
   QList<vtkActor*> actors;
   QList<vtkMapper*> mappers;
+  QHash<vtkPolyDataMapper*, vtkThresholdPoints*> filters;
 
   QHash<QString, FieldInformation> fields;
 
   QButtonGroup colorMode;
+  Qt::CheckState filterState;
 };
 
 //-----------------------------------------------------------------------------
@@ -142,6 +159,74 @@ void PointOptionsPrivate::setDisplayMode(vtkMapper* mapper, int mode)
 }
 
 //-----------------------------------------------------------------------------
+void PointOptionsPrivate::createFilters()
+{
+  foreach (auto const mapper, this->mappers)
+  {
+    auto const pdMapper = vtkPolyDataMapper::SafeDownCast(mapper);
+    if (pdMapper)
+    {
+      // Create filter
+      vtkNew<vtkThresholdPoints> filter;
+      filter->SetInputArrayToProcess(
+        0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS,
+        this->activeField().name.constData());
+
+      // Insert filter into data pipeline
+      auto const input = pdMapper->GetInput();
+      filter->SetInputData(input);
+      pdMapper->SetInputConnection(filter->GetOutputPort());
+
+      // Add to list of active filter objects
+      this->filters.insert(pdMapper, filter.GetPointer());
+    }
+  }
+}
+
+//-----------------------------------------------------------------------------
+void PointOptionsPrivate::updateFilters()
+{
+  auto const activeFilters = this->dataFilterOptions->activeFilters();
+
+  foreach (auto const filter, this->filters)
+  {
+    if (activeFilters == DataFilterOptions::Minimum)
+    {
+      filter->ThresholdByUpper(this->dataFilterOptions->minimum());
+    }
+    else if (activeFilters == DataFilterOptions::Maximum)
+    {
+      filter->ThresholdByLower(this->dataFilterOptions->maximum());
+    }
+    else
+    {
+      filter->ThresholdBetween(this->dataFilterOptions->minimum(),
+                               this->dataFilterOptions->maximum());
+    }
+    filter->Update();
+  }
+}
+
+//-----------------------------------------------------------------------------
+void PointOptionsPrivate::removeFilters()
+{
+  foreach (auto const iter, qtEnumerate(this->filters))
+  {
+    auto const mapper = iter.key();
+    auto const filter = iter.value();
+    auto const input = vtkPolyData::SafeDownCast(filter->GetInput());
+    mapper->SetInputData(input);
+  }
+  this->filters.clear();
+}
+
+//END PointOptionsPrivate
+
+///////////////////////////////////////////////////////////////////////////////
+
+//BEGIN PointOptions
+
+//-----------------------------------------------------------------------------
 PointOptions::PointOptions(QString const& settingsGroup,
                            QWidget* parent, Qt::WindowFlags flags)
   : QWidget(parent, flags), d_ptr(new PointOptionsPrivate)
@@ -158,6 +243,11 @@ PointOptions::PointOptions(QString const& settingsGroup,
   d->dataColorOptions = new DataColorOptions(settingsGroup, this);
   d->setPopup(d->UI.dataColorMenu, d->dataColorOptions);
   this->setDataColorIcon(d->dataColorOptions->icon());
+
+  d->dataFilterOptions = new DataFilterOptions(settingsGroup, this);
+  d->setPopup(d->UI.dataFilterMenu, d->dataFilterOptions);
+  d->UI.dataFilterMenu->setText(d->dataFilterOptions->iconText() + " ");
+  d->filterState = Qt::Unchecked;
 
   // Set up option persistence
   d->uiState.setCurrentGroup(settingsGroup);
@@ -177,6 +267,10 @@ PointOptions::PointOptions(QString const& settingsGroup,
 
   connect(d->UI.dataField, SIGNAL(currentIndexChanged(int)),
           this, SLOT(updateActiveDataField()));
+  connect(d->dataFilterOptions, SIGNAL(modified()),
+          this, SLOT(updateFilters()));
+  connect(d->UI.dataFilter, SIGNAL(clicked()),
+          this, SLOT(updateFilters()));
 
   connect(&d->colorMode, SIGNAL(buttonClicked(int)),
           this, SLOT(setColorMode(int)));
@@ -222,9 +316,10 @@ void PointOptions::setDataFields(
   d->fields = fields;
   auto const haveFields = !fields.isEmpty();
 
-  d->UI.dataColor->setEnabled(haveFields);
   d->UI.dataField->setEnabled(haveFields);
   d->UI.dataLabel->setEnabled(haveFields);
+  d->UI.dataColor->setEnabled(haveFields);
+  d->UI.dataFilter->setEnabled(haveFields);
   if (!haveFields && d->UI.dataColor->isChecked())
   {
     d->UI.solidColor->setChecked(true);
@@ -300,6 +395,7 @@ void PointOptions::updateActiveDataField()
   auto const mode = d->colorMode.checkedId();
 
   d->dataColorOptions->setAvailableRange(fi.range[0], fi.range[1]);
+  d->dataFilterOptions->setAvailableRange(fi.range[0], fi.range[1]);
 
   if (mode == DataColor)
   {
@@ -311,10 +407,65 @@ void PointOptions::updateActiveDataField()
           mapper->GetInput()->GetAttributes(vtkDataObject::POINT);
 
         attr->SetActiveScalars(fi.name.constData());
-        // TODO reset filtering
       }
+    }
+
+    foreach (auto const filter, d->filters)
+    {
+      filter->SetInputArrayToProcess(
+        0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS,
+        fi.name.constData());
+      filter->Update();
     }
   }
 
   emit this->modified();
 }
+
+//-----------------------------------------------------------------------------
+void PointOptions::updateFilters()
+{
+  QTE_D();
+
+  // Ensure that check box toggles the way we want it to
+  qtScopedBlockSignals bs{d->UI.dataFilter};
+  if (d->UI.dataFilter->checkState() != d->filterState)
+  {
+    auto const newState = (d->filterState == Qt::Unchecked);
+    d->UI.dataFilter->setChecked(newState);
+    d->UI.dataFilterMenu->setEnabled(newState);
+  }
+
+  // Determine if filters are "really" enabled or not
+  auto const filters = d->dataFilterOptions->activeFilters();
+  auto const nominallyEnabled = d->UI.dataFilter->isChecked();
+  auto const actuallyEnabled = nominallyEnabled && filters;
+
+  if (nominallyEnabled)
+  {
+    d->UI.dataFilter->setCheckState(
+      actuallyEnabled ? Qt::Checked : Qt::PartiallyChecked);
+  }
+  d->filterState = d->UI.dataFilter->checkState();
+
+  if (actuallyEnabled)
+  {
+    if (d->filters.isEmpty())
+    {
+      d->createFilters();
+    }
+    d->updateFilters();
+  }
+  else
+  {
+    d->removeFilters();
+  }
+
+  // Update filter text
+  d->UI.dataFilterMenu->setText(d->dataFilterOptions->iconText() + " ");
+
+  // Notify users that display options changed
+  emit this->modified();
+}
+
+//END PointOptions

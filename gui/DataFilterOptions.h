@@ -28,55 +28,56 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_POINTOPTIONS_H_
-#define MAPTK_POINTOPTIONS_H_
+#ifndef MAPTK_DATAFILTEROPTIONS_H_
+#define MAPTK_DATAFILTEROPTIONS_H_
 
 #include <qtGlobal.h>
 
 #include <QtGui/QWidget>
 
-class vtkActor;
-class vtkMapper;
+class DataFilterOptionsPrivate;
 
-struct FieldInformation;
-
-class PointOptionsPrivate;
-
-class PointOptions : public QWidget
+class DataFilterOptions : public QWidget
 {
   Q_OBJECT
 
 public:
-  explicit PointOptions(QString const& settingsGroup,
-                        QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~PointOptions();
+  enum ActiveFilter
+  {
+    Minimum = 0x1,
+    Maximum = 0x2,
+  };
+  Q_DECLARE_FLAGS(ActiveFilters, ActiveFilter)
 
-  void addActor(vtkActor*);
-  void addMapper(vtkMapper*);
+  explicit DataFilterOptions(QString const& settingsGroup, QWidget* parent = 0,
+                             Qt::WindowFlags flags = 0);
+  virtual ~DataFilterOptions();
 
-  void setDefaultColor(QColor const&);
+  double minimum() const;
+  double maximum() const;
+  ActiveFilters activeFilters() const;
+
+  QString iconText() const;
 
 public slots:
-  void setTrueColorAvailable(bool);
-  void setDataFields(QHash<QString, FieldInformation> const&);
+  void setAvailableRange(double lower, double upper);
 
 signals:
   void modified();
 
 protected slots:
-  void setSize(int);
-  void setColorMode(int);
+  void resetRange();
 
-  void setDataColorIcon(QIcon const&);
-
-  void updateActiveDataField();
-  void updateFilters();
+  void updateMinimum();
+  void updateMaximum();
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(PointOptions)
-  QTE_DECLARE_PRIVATE(PointOptions)
+  QTE_DECLARE_PRIVATE_RPTR(DataFilterOptions)
+  QTE_DECLARE_PRIVATE(DataFilterOptions)
 
-  QTE_DISABLE_COPY(PointOptions)
+  QTE_DISABLE_COPY(DataFilterOptions)
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(DataFilterOptions::ActiveFilters)
 
 #endif
