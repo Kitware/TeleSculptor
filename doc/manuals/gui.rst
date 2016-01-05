@@ -126,6 +126,11 @@ in the real world scene, as computed from the input imagery. "Color by data"
 uses color to visualize other per-point data, such as the number of individual
 frames that contributed to ("observed") each landmark.
 
+In addition to coloring by data, points may be filtered (selectively displayed)
+according to their respective values of the currently selected data set.
+Filtering may exclude points above or below selected lower or upper, or that
+are not within said bounds.
+
 Camera View
 ===========
 
