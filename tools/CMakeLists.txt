@@ -12,15 +12,13 @@ target_link_libraries(maptk_track_features
 
 kwiver_add_executable(maptk_match_matrix match_matrix.cxx)
 target_link_libraries(maptk_match_matrix
-  LINK_PRIVATE
-    maptk kwiversys
+  PRIVATE             maptk kwiversys
   )
 
 kwiver_add_executable(maptk_pos2krtd pos2krtd.cxx)
 target_link_libraries(maptk_pos2krtd
   PRIVATE             maptk vital_apm
                     ${Boost_SYSTEM_LIBRARY}
-                    ##${Boost_FILESYSTEM_LIBRARY}
   )
 
 kwiver_add_executable(maptk_bundle_adjust_tracks bundle_adjust_tracks.cxx)

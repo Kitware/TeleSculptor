@@ -69,8 +69,7 @@ function (maptk_build_test name libraries)
     PROPERTIES
       RUNTIME_OUTPUT_DIRECTORY "${maptk_test_output_path}")
   target_link_libraries(test-${name}
-    LINK_PRIVATE
-      ${${libraries}})
+    PRIVATE         ${${libraries}})
   maptk_declare_test(${name})
 endfunction ()
 
