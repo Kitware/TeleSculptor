@@ -21,6 +21,11 @@ MAP-Tk Library
    That is, applying the reversal a second time will return to the previous
    state.
 
+Core Plugin
+
+ * Updated triangulate_landmarks to set the number of observations on each
+   computed landmark.
+
 Visualization Application
 
  * Added ability to execute some computations (for now, computing and applying

@@ -188,6 +188,7 @@ triangulate_landmarks
     std::vector<vital::simple_camera> lm_cams;
     std::vector<vital::vector_2d> lm_image_pts;
 
+    auto lm_observations = unsigned{0};
     for (vital::track::history_const_itr tsi = t.begin(); tsi != t.end(); ++tsi)
     {
       if (!tsi->feat)
@@ -203,6 +204,7 @@ triangulate_landmarks
       }
       lm_cams.push_back(vital::simple_camera(*c_itr->second));
       lm_image_pts.push_back(tsi->feat->loc());
+      ++lm_observations;
     }
 
     // if we found at least two views of this landmark, triangulate
@@ -236,6 +238,7 @@ triangulate_landmarks
       if( !bad_triangulation )
       {
         vital::landmark_d* lm = new vital::landmark_d(pt3d);
+        lm->set_observations(lm_observations);
         triangulated_lms[p.first] = vital::landmark_sptr(lm);
       }
     }
