@@ -36,13 +36,14 @@
 #ifndef MAPTK_PLUGINS_CORE_MATCH_FEATURES_HOMOGRAPHY_H_
 #define MAPTK_PLUGINS_CORE_MATCH_FEATURES_HOMOGRAPHY_H_
 
+#include <vital/vital_config.h>
+#include <maptk/plugins/core/maptk_core_export.h>
+
 #include <vital/algo/filter_features.h>
 
 #include <vital/algo/estimate_homography.h>
 #include <vital/algo/match_features.h>
 #include <vital/config/config_block.h>
-
-#include <maptk/plugins/core/plugin_core_config.h>
 
 #include <memory>
 
@@ -76,7 +77,7 @@ namespace core
  *  the additional weak matches using the constraint that the location
  *  in the image is now known approximately.
  */
-class PLUGIN_CORE_EXPORT match_features_homography
+class MAPTK_CORE_EXPORT match_features_homography
   : public vital::algorithm_impl<match_features_homography, vital::algo::match_features>
 {
 public:
