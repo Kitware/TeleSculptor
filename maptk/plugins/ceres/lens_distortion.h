@@ -37,7 +37,8 @@
 #define MAPTK_PLUGINS_CERES_LENS_DISTORTION_H_
 
 
-#include <maptk/plugins/ceres/ceres_config.h>
+#include <vital/vital_config.h>
+#include <maptk/plugins/ceres/maptk_ceres_export.h>
 
 
 namespace kwiver {

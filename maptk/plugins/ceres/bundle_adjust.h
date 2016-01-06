@@ -36,8 +36,10 @@
 #ifndef MAPTK_PLUGINS_CERES_BUNDLE_ADJUST_H_
 #define MAPTK_PLUGINS_CERES_BUNDLE_ADJUST_H_
 
+#include <vital/vital_config.h>
+#include <maptk/plugins/ceres/maptk_ceres_export.h>
+
 #include <vital/algo/bundle_adjust.h>
-#include <maptk/plugins/ceres/ceres_config.h>
 
 #include <memory>
 
