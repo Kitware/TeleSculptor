@@ -36,10 +36,14 @@
 #ifndef MAPTK_PLUGINS_VXL_BUNDLE_ADJUST_H_
 #define MAPTK_PLUGINS_VXL_BUNDLE_ADJUST_H_
 
+
+#include <vital/vital_config.h>
+#include <maptk/plugins/vxl/maptk_vxl_export.h>
+
 #include <vital/algo/bundle_adjust.h>
-#include <maptk/plugins/vxl/vxl_config.h>
 
 #include <memory>
+
 
 namespace kwiver {
 namespace maptk {

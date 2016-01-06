@@ -36,10 +36,14 @@
 #ifndef MAPTK_PLUGINS_VXL_MATCH_FEATURES_CONSTRAINED_H_
 #define MAPTK_PLUGINS_VXL_MATCH_FEATURES_CONSTRAINED_H_
 
-#include "vxl_config.h"
+
+#include <vital/vital_config.h>
+#include <maptk/plugins/vxl/maptk_vxl_export.h>
+
 #include <vital/algo/match_features.h>
 
 #include <memory>
+
 
 namespace kwiver {
 namespace maptk {

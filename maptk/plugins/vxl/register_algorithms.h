@@ -36,7 +36,10 @@
 #ifndef MAPTK_PLUGINS_VXL_REGISTER_ALGORITHMS_H_
 #define MAPTK_PLUGINS_VXL_REGISTER_ALGORITHMS_H_
 
-#include <maptk/plugins/vxl/vxl_config.h>
+
+#include <vital/vital_config.h>
+#include <maptk/plugins/vxl/maptk_vxl_export.h>
+
 #include <vital/registrar.h>
 
 
