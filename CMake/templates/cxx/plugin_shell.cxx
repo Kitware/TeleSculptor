@@ -32,7 +32,7 @@
 
 #include <exception>
 
-#include <maptk/config.h>
+#include <maptk/maptk_export.h>
 #include <vital/logger/logger.h>
 #include <maptk/plugin_interface/algorithm_plugin_interface.h>
 #include <vital/registrar.h>

@@ -122,7 +122,7 @@ set(maptk_cmake_install_dir  "lib${LIB_SUFFIX}/cmake/maptk")
 include(maptk-install-utils)
 
 # Prepare space-separated list of library names for config
-get_property(maptk_libs GLOBAL PROPERTY maptk_libraries)
+get_property(maptk_libs GLOBAL PROPERTY kwiver_libraries)
 string(REPLACE ";" " " maptk_libs "${maptk_libs}")
 
 # Configure build-tree CMake config file and export associated targets file

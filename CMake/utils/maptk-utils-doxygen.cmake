@@ -150,7 +150,7 @@ function(maptk_create_doxygen name inputdir display_name)
 
     if(MAPTK_INSTALL_DOCS)
       message(STATUS "[doxy-${name}] marking for install")
-      maptk_install(
+      kwiver_install(
         DIRECTORY   "${doxy_doc_output_path}/${name}/"
         DESTINATION "share/doc/maptk-${MAPTK_VERSION}/${name}"
         COMPONENT   documentation

@@ -36,7 +36,9 @@
 #ifndef MAPTK_LOCAL_GEO_CS_H_
 #define MAPTK_LOCAL_GEO_CS_H_
 
-#include <maptk/config.h>
+
+#include <vital/vital_config.h>
+#include <maptk/maptk_export.h>
 
 #include <vital/algo/geo_map.h>
 #include <maptk/ins_data.h>
@@ -54,7 +56,7 @@ namespace maptk {
  *  Provides functions to use global INS data to update local camera pose
  *  and local camera pose to update global INS data.
  */
-class MAPTK_LIB_EXPORT local_geo_cs
+class MAPTK_EXPORT local_geo_cs
 {
 public:
   /// Constructor
@@ -113,7 +115,7 @@ private:
  *       and zone are determined from the mean camera easting and northing
  *       at zero altitude.
  */
-MAPTK_LIB_EXPORT
+MAPTK_EXPORT
 std::map<vital::frame_id_t, vital::camera_sptr>
 initialize_cameras_with_ins(const std::map<vital::frame_id_t, maptk::ins_data>& ins_map,
                             const vital::simple_camera& base_camera,
@@ -131,7 +133,7 @@ initialize_cameras_with_ins(const std::map<vital::frame_id_t, maptk::ins_data>& 
  *                  a new one is created
  * \note the supplied lgcs must have a valid utm_origin_zone()
  */
-MAPTK_LIB_EXPORT
+MAPTK_EXPORT
 void
 update_ins_from_cameras(const std::map<vital::frame_id_t, vital::camera_sptr>& cam_map,
                         const maptk::local_geo_cs& lgcs,

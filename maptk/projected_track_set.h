@@ -37,7 +37,9 @@
 #ifndef MAPTK_PROJECTED_TRACK_SET_H_
 #define MAPTK_PROJECTED_TRACK_SET_H_
 
-#include <maptk/config.h>
+
+#include <vital/vital_config.h>
+#include <maptk/maptk_export.h>
 
 #include <vital/types/track_set.h>
 #include <vital/types/camera_map.h>
@@ -54,7 +56,7 @@ namespace maptk {
  * \return track set generated via the projection
  */
 vital::track_set_sptr
-MAPTK_LIB_EXPORT
+MAPTK_EXPORT
 projected_tracks(vital::landmark_map_sptr landmarks,
                  vital::camera_map_sptr cameras);
 

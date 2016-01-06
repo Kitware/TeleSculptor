@@ -116,7 +116,7 @@ if(APPLE)
 endif()
 
 set(no_install ON)
-maptk_add_executable(mapgui
+kwiver_add_executable(mapgui
   WIN32 MACOSX_BUNDLE
   ${gui_sources}
   ${gui_ui_sources}
@@ -158,7 +158,7 @@ if(APPLE)
     )
 endif()
 
-maptk_install(TARGETS mapgui
+kwiver_install(TARGETS mapgui
   ${exports}
   RUNTIME DESTINATION bin
   BUNDLE DESTINATION "${CMAKE_BUNDLE_LOCATION}")
