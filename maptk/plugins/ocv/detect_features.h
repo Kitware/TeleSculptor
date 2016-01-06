@@ -36,9 +36,11 @@
 #ifndef MAPTK_PLUGINS_OCV_DETECT_FEATURES_H_
 #define MAPTK_PLUGINS_OCV_DETECT_FEATURES_H_
 
-#include <vital/algo/detect_features.h>
 
-#include <maptk/plugins/ocv/ocv_config.h>
+#include <vital/vital_config.h>
+#include <maptk/plugins/ocv/maptk_ocv_export.h>
+
+#include <vital/algo/detect_features.h>
 
 #include <memory>
 

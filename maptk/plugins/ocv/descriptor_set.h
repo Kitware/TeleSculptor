@@ -36,9 +36,10 @@
 #ifndef MAPTK_PLUGINS_OCV_DESCRIPTOR_SET_H_
 #define MAPTK_PLUGINS_OCV_DESCRIPTOR_SET_H_
 
-#include <vital/types/descriptor_set.h>
+#include <vital/vital_config.h>
+#include <maptk/plugins/ocv/maptk_ocv_export.h>
 
-#include <maptk/plugins/ocv/ocv_config.h>
+#include <vital/types/descriptor_set.h>
 
 #include <opencv2/features2d/features2d.hpp>
 

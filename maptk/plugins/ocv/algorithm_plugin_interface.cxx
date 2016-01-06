@@ -33,7 +33,6 @@
  * \brief OpenCV plugin algorithm registration interface impl
  */
 
-#include <maptk/plugins/ocv/ocv_config.h>
 #include <maptk/plugins/ocv/register_algorithms.h>
 #include <maptk/plugin_interface/algorithm_plugin_interface.h>
 #include <vital/registrar.h>
