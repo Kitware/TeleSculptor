@@ -49,7 +49,7 @@ mark_as_advanced( LIB_SUFFIX )
 # use kwiver util methods
 #
 include( kwiver-utils )
-include( maptk-utils ) # maptk has a different approach on some of these utils
+include( maptk-utils ) # local utilities
 include( vital-flags ) # use same compile flags as vital
 
 set(kwiver_export_name     maptk_exports)
@@ -72,7 +72,6 @@ add_subdirectory(config)
 ###
 # GUI
 #
-
 option(MAPTK_ENABLE_GUI "Build MAPTK GUI" OFF)
 if(MAPTK_ENABLE_GUI)
   if(APPLE)
@@ -91,7 +90,6 @@ endif()
 ###
 # Manuals
 #
-
 option(MAPTK_ENABLE_MANUALS "Build MAPTK user manual(s)" OFF)
 if(MAPTK_ENABLE_MANUALS)
   add_subdirectory(doc/manuals)
@@ -101,7 +99,6 @@ endif()
 ###
 # Testing
 #
-
 # The following are required to uses Dart and the Cdash dashboard
 option(MAPTK_ENABLE_TESTING "Build MAPTK testing" OFF)
 if(MAPTK_ENABLE_TESTING)
@@ -128,7 +125,7 @@ string(REPLACE ";" " " maptk_libs "${maptk_libs}")
 # Configure build-tree CMake config file and export associated targets file
 set(MAPTK_CONFIG_FILE "${MAPTK_BINARY_DIR}/maptk-config.cmake")
 set(module_path "${MAPTK_SOURCE_DIR}/CMake")
-maptk_configure_file(maptk-config
+kwiver_configure_file( maptk-config
   "${MAPTK_SOURCE_DIR}/CMake/maptk-config.cmake.in"
   "${MAPTK_CONFIG_FILE}"
   MAPTK_SOURCE_DIR
@@ -142,7 +139,7 @@ kwiver_export_targets("${MAPTK_BINARY_DIR}/maptk-config-targets.cmake")
 # Configure install-tree CMake config file and export associated targets file
 set(MAPTK_CONFIG_INSTALL_FILE "${MAPTK_BINARY_DIR}/maptk-config-install.cmake")
 set(module_path "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/cmake/maptk")
-maptk_configure_file(maptk-install-config
+kwiver_configure_file( maptk-install-config
   "${MAPTK_SOURCE_DIR}/CMake/maptk-config-install.cmake.in"
   "${MAPTK_CONFIG_INSTALL_FILE}"
   EIGEN3_INCLUDE_DIR

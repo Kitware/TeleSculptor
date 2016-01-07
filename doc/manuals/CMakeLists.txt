@@ -27,7 +27,7 @@ add_custom_command(
 
 set(create_manual_script "${CMAKE_CURRENT_BINARY_DIR}/create_manual.py")
 
-maptk_configure_file(create_manual.py
+kwiver_configure_file( create_manual.py
   "${CMAKE_CURRENT_SOURCE_DIR}/create_manual.py.in"
   "${create_manual_script}"
   PYTHON_EXECUTABLE
