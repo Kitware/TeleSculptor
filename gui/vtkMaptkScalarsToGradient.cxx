@@ -40,6 +40,10 @@ vtkStandardNewMacro(vtkMaptkScalarsToGradient);
 
 QTE_IMPLEMENT_D_FUNC(vtkMaptkScalarsToGradient)
 
+#ifdef _MSC_VER
+#define __func__ __FUNCTION__
+#endif
+
 namespace // anonymous
 {
 
