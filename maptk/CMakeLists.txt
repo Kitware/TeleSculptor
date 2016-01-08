@@ -203,7 +203,7 @@ option(MAPTK_USE_BUILD_PLUGIN_DIR
   ON
   )
 
-set(EXTRA_MODULE_PATH "" CACHE STRING "Specifg an additional directory to search for modules")
+set(EXTRA_MODULE_PATH "" CACHE STRING "Specify an additional directory to search for modules")
 mark_as_advanced( EXTRA_MODULE_PATH )
 
 set(maptk_apm_headers
