@@ -1,0 +1,14 @@
+MAPTK v0.7.2 Release Notes
+==========================
+
+This release provides patches to the MAPTK v0.7.1 release to address issues.
+MAPTK v0.7.2 is a bug fix release with no new functionality.
+
+
+Fixes since v0.7.1
+------------------
+
+Tools
+
+ * Updated the sample config files so that they are compatible with the current
+   version of the code.
