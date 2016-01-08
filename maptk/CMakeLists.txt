@@ -203,6 +203,9 @@ option(MAPTK_USE_BUILD_PLUGIN_DIR
   ON
   )
 
+set(EXTRA_MODULE_PATH "" CACHE STRING "Specifg an additional directory to search for modules")
+mark_as_advanced( EXTRA_MODULE_PATH )
+
 set(maptk_apm_headers
   algorithm_plugin_manager.h
   )
@@ -251,6 +254,7 @@ target_compile_definitions(maptk_apm
     "USE_BUILD_PLUGIN_DIR=${MAPTK_USE_BUILD_PLUGIN_DIR}"
     "DEFAULT_PLUGIN_DIR_BUILD=\"${MAPTK_BINARY_DIR}/lib${LIB_SUFFIX}${config_subdir}/maptk\""
     "DEFAULT_PLUGIN_DIR_INSTALL=\"${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/maptk\""
+    "EXTRA_MODULE_PATH=\"${EXTRA_MODULE_PATH}\""
     # For static interface
     "MAPTK_ENABLE_OPENCV=${MAPTK_ENABLE_OPENCV}"
     "MAPTK_ENABLE_PROJ=${MAPTK_ENABLE_PROJ}"
