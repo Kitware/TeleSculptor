@@ -96,7 +96,7 @@ build_repo vital https://github.com/Kitware/vital.git
 # Build and install VXL
 #   For now use a fixed VXL hash known to work
 #   TODO update once VXL is clean-up up and makes a release
-vxl_branch=5cb4efcdc4d6602dcffc14cd455785a0a7394dd4
+vxl_branch=f2f0bf18a7daf1805438aad7eaf08ced331efa52
 vxl_cmake_opts="\
   -DCMAKE_CXX_STANDARD=11 \
   -DBUILD_RPL=ON \
