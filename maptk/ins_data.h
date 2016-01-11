@@ -36,10 +36,13 @@
 #ifndef MAPTK_INS_DATA_H_
 #define MAPTK_INS_DATA_H_
 
-#include <maptk/config.h>
+
+#include <vital/vital_config.h>
+#include <maptk/maptk_export.h>
 
 #include <iostream>
 #include <string>
+
 
 namespace kwiver {
 namespace maptk {
@@ -110,17 +113,17 @@ public:
 };
 
 /// equality operator
-MAPTK_LIB_EXPORT bool operator ==(const ins_data& d1, const ins_data& d2);
+MAPTK_EXPORT bool operator ==(const ins_data& d1, const ins_data& d2);
 
 /// inequality operator
-MAPTK_LIB_EXPORT bool operator !=(const ins_data& d1, const ins_data& d2);
+MAPTK_EXPORT bool operator !=(const ins_data& d1, const ins_data& d2);
 
 /// output stream operator for INS data
 /**
  * \param s output stream
  * \param d ins_data to stream
  */
-MAPTK_LIB_EXPORT std::ostream& operator<<(std::ostream& s, const ins_data& d);
+MAPTK_EXPORT std::ostream& operator<<(std::ostream& s, const ins_data& d);
 
 /// input stream operator for a INS data
 /**
@@ -129,7 +132,7 @@ MAPTK_LIB_EXPORT std::ostream& operator<<(std::ostream& s, const ins_data& d);
  * \param s input stream
  * \param d ins_data to stream into
  */
-MAPTK_LIB_EXPORT std::istream& operator>>(std::istream& s, ins_data& d);
+MAPTK_EXPORT std::istream& operator>>(std::istream& s, ins_data& d);
 
 
 } // end namespace maptk

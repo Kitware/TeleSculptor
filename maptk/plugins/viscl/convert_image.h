@@ -31,8 +31,11 @@
 #ifndef MAPTK_PLUGINS_VISCL_CONVERT_IMAGE_H_
 #define MAPTK_PLUGINS_VISCL_CONVERT_IMAGE_H_
 
+
+#include <vital/vital_config.h>
+#include <maptk/plugins/viscl/maptk_viscl_export.h>
+
 #include <vital/algo/convert_image.h>
-#include <maptk/plugins/viscl/viscl_config.h>
 
 
 namespace kwiver {

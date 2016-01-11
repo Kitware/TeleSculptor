@@ -116,10 +116,10 @@ triangulate_homog(const std::vector<vital::simple_camera >& cameras,
 
 /// \cond DoxygenSuppress
 #define INSTANTIATE_TRIANGULATE(T) \
-template MAPTK_LIB_EXPORT Eigen::Matrix<T,4,1> \
+template MAPTK_EXPORT Eigen::Matrix<T,4,1> \
          triangulate_homog(const std::vector<vital::simple_camera >& cameras, \
                            const std::vector<Eigen::Matrix<T,2,1> >& points); \
-template MAPTK_LIB_EXPORT Eigen::Matrix<T,3,1> \
+template MAPTK_EXPORT Eigen::Matrix<T,3,1> \
          triangulate_inhomog(const std::vector<vital::simple_camera >& cameras, \
                              const std::vector<Eigen::Matrix<T,2,1> >& points);
 

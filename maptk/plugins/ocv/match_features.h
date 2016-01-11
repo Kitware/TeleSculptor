@@ -36,11 +36,14 @@
 #ifndef MAPTK_PLUGINS_OCV_MATCH_FEATURES_H_
 #define MAPTK_PLUGINS_OCV_MATCH_FEATURES_H_
 
+
+#include <vital/vital_config.h>
+#include <maptk/plugins/ocv/maptk_ocv_export.h>
+
 #include <vital/algo/match_features.h>
 
-#include <maptk/plugins/ocv/ocv_config.h>
-
 #include <memory>
+
 
 namespace kwiver {
 namespace maptk {

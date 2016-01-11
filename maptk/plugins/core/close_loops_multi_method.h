@@ -37,13 +37,15 @@
 #ifndef MAPTK_PLUGINS_CORE_CLOSE_LOOPS_MULTI_METHOD_H_
 #define MAPTK_PLUGINS_CORE_CLOSE_LOOPS_MULTI_METHOD_H_
 
+#include <vital/vital_config.h>
+#include <maptk/plugins/core/maptk_core_export.h>
+
 #include <vital/algo/algorithm.h>
 #include <vital/types/image_container.h>
 #include <vital/types/track_set.h>
 
 #include <vital/algo/match_features.h>
 #include <vital/algo/close_loops.h>
-#include <maptk/plugins/core/plugin_core_config.h>
 
 #include <vital/config/config_block.h>
 
@@ -58,7 +60,7 @@ namespace core
  * This class can run multiple other close_loops algorithm implementations
  * in attempt to accomplish this.
  */
-class PLUGIN_CORE_EXPORT close_loops_multi_method
+class MAPTK_CORE_EXPORT close_loops_multi_method
   : public vital::algorithm_impl<close_loops_multi_method, vital::algo::close_loops>
 {
 public:
@@ -70,7 +72,7 @@ public:
   close_loops_multi_method(const close_loops_multi_method&);
 
   /// Destructor
-  virtual ~close_loops_multi_method() MAPTK_DEFAULT_DTOR;
+  virtual ~close_loops_multi_method() VITAL_DEFAULT_DTOR;
 
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "multi_method"; }

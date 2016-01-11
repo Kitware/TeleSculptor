@@ -36,8 +36,11 @@
 #ifndef MAPTK_PLUGINS_PROJ_GEO_MAP_H_
 #define MAPTK_PLUGINS_PROJ_GEO_MAP_H_
 
+
+#include <vital/vital_config.h>
+#include <maptk/plugins/proj/maptk_proj_export.h>
+
 #include <vital/algo/geo_map.h>
-#include <maptk/plugins/proj/proj_config.h>
 
 
 namespace kwiver {

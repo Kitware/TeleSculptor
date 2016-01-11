@@ -37,14 +37,16 @@
 #ifndef MAPTK_PLUGINS_OCV_OCV_ALGO_TOOLS_H_
 #define MAPTK_PLUGINS_OCV_OCV_ALGO_TOOLS_H_
 
+
 #include <string>
 #include <iostream>
+
+#include <vital/vital_config.h>
+#include <maptk/plugins/ocv/maptk_ocv_export.h>
 
 #include <vital/config/config_block.h>
 #include <vital/exceptions.h>
 #include <vital/vital_types.h>
-
-#include <maptk/plugins/ocv/ocv_config.h>
 
 #include <opencv2/core/core.hpp>
 

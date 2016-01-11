@@ -36,8 +36,10 @@
 #ifndef MAPTK_PLUGINS_CORE_INITIALIZE_CAMERAS_LANDMARKS_H_
 #define MAPTK_PLUGINS_CORE_INITIALIZE_CAMERAS_LANDMARKS_H_
 
+#include <vital/vital_config.h>
+#include <maptk/plugins/core/maptk_core_export.h>
+
 #include <vital/algo/initialize_cameras_landmarks.h>
-#include <maptk/plugins/core/plugin_core_config.h>
 
 #include <memory>
 
@@ -48,7 +50,7 @@ namespace core
 {
 
 /// A class for initialization of cameras and landmarks
-class PLUGIN_CORE_EXPORT initialize_cameras_landmarks
+class MAPTK_CORE_EXPORT initialize_cameras_landmarks
 : public vital::algorithm_impl<initialize_cameras_landmarks,
                               vital::algo::initialize_cameras_landmarks>
 {

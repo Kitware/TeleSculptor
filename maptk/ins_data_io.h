@@ -38,7 +38,6 @@
 #ifndef MAPTK_INS_DATA_IO_H_
 #define MAPTK_INS_DATA_IO_H_
 
-#include <maptk/config.h>
 
 #include "ins_data.h"
 #include <vital/vital_types.h>
@@ -64,7 +63,7 @@ namespace maptk {
  * \return A \c ins_data object representing the contents of the read-in file.
  */
 ins_data
-MAPTK_LIB_EXPORT
+MAPTK_EXPORT
 read_pos_file(vital::path_t const& file_path);
 
 /// Output the given \c ins_data object to the specified file path
@@ -83,7 +82,7 @@ read_pos_file(vital::path_t const& file_path);
  * \param file_path The path to output the file to.
  */
 void
-MAPTK_LIB_EXPORT
+MAPTK_EXPORT
 write_pos_file(maptk::ins_data const& ins,
                vital::path_t const& file_path);
 

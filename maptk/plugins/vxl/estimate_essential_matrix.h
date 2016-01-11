@@ -36,12 +36,16 @@
 #ifndef MAPTK_PLUGINS_VXL_ESTIMATE_ESSENTIAL_MATRIX_H_
 #define MAPTK_PLUGINS_VXL_ESTIMATE_ESSENTIAL_MATRIX_H_
 
+
+#include <vital/vital_config.h>
+#include <maptk/plugins/vxl/maptk_vxl_export.h>
+
 #include <vital/types/camera_intrinsics.h>
 
 #include <vital/algo/estimate_essential_matrix.h>
-#include <maptk/plugins/vxl/vxl_config.h>
 
 #include <memory>
+
 
 namespace kwiver {
 namespace maptk {

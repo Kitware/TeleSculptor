@@ -38,9 +38,11 @@
 #define MAPTK_INTERPOLATE_CAMERA_H_
 
 
+#include <vital/vital_config.h>
+#include <maptk/maptk_export.h>
+
 #include <vector>
 #include <vital/types/camera.h>
-#include <maptk/config.h>
 
 
 namespace kwiver {
@@ -56,7 +58,7 @@ namespace maptk {
  * \param B Camera to interpolate to.
  * \param f Decimal fraction in between A and B for the returned camera to represent.
  */
-MAPTK_LIB_EXPORT
+MAPTK_EXPORT
 vital::simple_camera
 interpolate_camera(vital::simple_camera const& A,
                    vital::simple_camera const& B, double f);
@@ -67,7 +69,7 @@ interpolate_camera(vital::simple_camera const& A,
  * \relatesalso interpolate_camera
  *
  */
-MAPTK_LIB_EXPORT
+MAPTK_EXPORT
 vital::camera_sptr
 interpolate_camera(vital::camera_sptr A,
                    vital::camera_sptr B, double f);
@@ -77,7 +79,7 @@ interpolate_camera(vital::camera_sptr A,
 /**
  * \c n must be >= 1.
  */
-MAPTK_LIB_EXPORT
+MAPTK_EXPORT
 void interpolated_cameras(vital::simple_camera const& A,
                           vital::simple_camera const& B,
                           size_t n,
