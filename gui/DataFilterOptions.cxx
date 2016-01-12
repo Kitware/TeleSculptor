@@ -41,11 +41,13 @@ QTE_IMPLEMENT_D_FUNC(DataFilterOptions)
 class DataFilterOptionsPrivate
 {
 public:
+  DataFilterOptionsPrivate() : minimum{-9999.99}, maximum{+9999.99} {}
+
   Ui::DataFilterOptions UI;
   qtUiState uiState;
 
-  double minimum = -9999.99;
-  double maximum = +9999.99;
+  double minimum;
+  double maximum;
 };
 
 //-----------------------------------------------------------------------------
