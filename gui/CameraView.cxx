@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2015-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -528,7 +528,6 @@ void CameraView::setImageData(vtkImageData* data, QSize const& dimensions)
     d->imageActor->Update();
 
     d->imageActor->GetBounds(d->imageBounds);
-    auto const w = d->imageBounds[1] + 1 - d->imageBounds[0];
     auto const h = d->imageBounds[3] + 1 - d->imageBounds[2];
     d->setTransforms(qMax(0, static_cast<int>(h)));
   }
