@@ -40,7 +40,7 @@ vtkStandardNewMacro(vtkMaptkScalarsToGradient);
 
 QTE_IMPLEMENT_D_FUNC(vtkMaptkScalarsToGradient)
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && _MSC_VER <= 1800
 #define __func__ __FUNCTION__
 #endif
 
