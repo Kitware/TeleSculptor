@@ -37,6 +37,11 @@ define_property(GLOBAL PROPERTY maptk_plugin_libraries
   FULL_DOCS "List of generated static/shared plugin module libraries"
   )
 
+define_property(GLOBAL PROPERTY maptk_bundle_paths
+  BRIEF_DOCS "Paths neede by fixup_bindle"
+  FULL_DOCS "PAths needed to resolve needed libraries used by plugins when fixing the bundle"
+  )
+
 # Top-level target for plugin targets
 add_custom_target( all-plugins )
 
@@ -248,8 +253,15 @@ endfunction()
 #
 # Setting library_subdir or no_export before this function
 # has no effect as they are manually specified within this function.
+#
+# OPTIONS:
+#  BUNDLE_PATHS a list of directories that are to be used to locate libraries that are used by this plugin.
 #-
 function(maptk_create_plugin base_lib)
+  set(options)
+  set(oneValueArgs )
+  set(multiValueArgs BUNDLE_PATHS)
+  cmake_parse_arguments(PLUGIN "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
 
   if(BUILD_SHARED_LIBS)
     # Creating module library for dynamic loading at runtime
@@ -263,7 +275,7 @@ function(maptk_create_plugin base_lib)
     set(no_version ON)
     maptk_add_library( maptk-plugin-${base_lib}
       SYMBOL ${base_lib}
-      MODULE "${shell_source}" ${ARGN}
+      MODULE "${shell_source}" ${PLUGIN_UNPARSED_ARGUMENTS}
       )
     target_compile_definitions( maptk-plugin-${base_lib}
       PRIVATE
@@ -290,6 +302,8 @@ function(maptk_create_plugin base_lib)
     set_property(GLOBAL APPEND
       PROPERTY maptk_plugin_libraries maptk-plugin-${base_lib}
       )
+    set_property(GLOBAL APPEND
+      PROPERTY maptk_bundle_paths ${PLUGIN_BUNDLE_PATHS})
 
   else(BUILD_SHARED_LIBS)
     # Setting plugin lib reference to the give static library for
