@@ -37,6 +37,10 @@ maptk_add_library( maptk_core
   )
 target_link_libraries( maptk_core maptk )
 
+get_property(libd TARGET maptk PROPERTY LOCATION)
+get_filename_component(LIBRARY_DIR ${libd} DIRECTORY)
+
 maptk_create_plugin( maptk_core
   algorithm_plugin_interface.cxx
+  BUNDLE_PATHS  ${LIBRARY_DIR}
   )

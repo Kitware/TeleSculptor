@@ -21,6 +21,10 @@ target_link_libraries( maptk_proj
   maptk
   ${PROJ_LIBRARY}
   )
+
+get_filename_component(LIBRARY_DIR ${PROJ_LIBRARY} DIRECTORY)
+
 maptk_create_plugin( maptk_proj
   algorithm_plugin_interface.cxx
+  BUNDLE_PATHS  ${LIBRARY_DIR}
   )

@@ -49,4 +49,5 @@ target_link_libraries( maptk_ocv
 
 maptk_create_plugin( maptk_ocv
   algorithm_plugin_interface.cxx
+  BUNDLE_PATHS  ${OpenCV_LIB_DIR}  # currently not exported from config
   )
