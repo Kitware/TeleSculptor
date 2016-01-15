@@ -156,20 +156,32 @@ list(APPEND FIXUP_DIRS "${QT_BIN_DIR}")
 list(APPEND FIXUP_DIRS "${QT_LIBRARY_DIR}")
 list(APPEND FIXUP_DIRS "${QT_BINARY_DIR}")
 
+get_property( maptk_plugins GLOBAL PROPERTY maptk_plugin_libraries)
+foreach( tgt ${maptk_plugins} )
+  get_property(_libd TARGET ${tgt} PROPERTY LOCATION)
+  list(APPEND plibs ${_libd})
+endforeach()
+
+get_property( bundle_path GLOBAL PROPERTY maptk_bundle_paths)
+list(APPEND FIXUP_DIRS "${bundle_path}")
+list(APPEND FIXUP_DIRS "${VTK_CMAKE_DIR}../..")
+list(REMOVE_DUPLICATES FIXUP_DIRS)
+
 install(DIRECTORY "${QT_PLUGINS_DIR}/imageformats" DESTINATION ${plugin_dest_dir}/plugins COMPONENT Runtime)
 # install a qt.conf file
 INSTALL(CODE "
     file(WRITE \"${dest_prefix}/${qtconf_dest_dir}/qt.conf\" \"\")
     " COMPONENT Runtime)
 
-install(CODE "
+INSTALL(CODE "
         file(GLOB_RECURSE QTPLUGINS
             \"${dest_prefix}/${plugin_dest_dir}/plugins/*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
         set(BU_CHMOD_BUNDLE_ITEMS ON)
         set(ENV{VS_UNICODE_OUTPUT} \"\")
         include(${MAPTK_SOURCE_DIR}/CMake/utils/maptk-utils-bundle.cmake)
         include(BundleUtilities)
-        fixup_bundle(\"${gui-exe}\" \"\${QTPLUGINS}\" \"${FIXUP_DIRS}\")
+        set(libs ${plibs} \${QTPLUGINS})
+        fixup_bundle(\"${gui-exe}\" \"\${libs}\" \"${FIXUP_DIRS}\")
         "
 )
 
