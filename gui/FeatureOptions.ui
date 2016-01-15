@@ -14,6 +14,9 @@
    <string>Form</string>
   </property>
   <layout class="QFormLayout" name="formLayout">
+   <property name="margin">
+    <number>0</number>
+   </property>
    <item row="0" column="0" colspan="2">
     <layout class="QHBoxLayout" name="trailLayout" stretch="1,0">
      <item>

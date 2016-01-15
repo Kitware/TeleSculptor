@@ -28,126 +28,156 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "DataColorOptions.h"
+#include "DataFilterOptions.h"
 
-#include "ui_DataColorOptions.h"
+#include "ui_DataFilterOptions.h"
 
-#include "vtkMaptkScalarsToGradient.h"
-
-#include <vtkNew.h>
-
-#include <qtGradient.h>
 #include <qtScopedValueChange.h>
 #include <qtUiState.h>
-#include <qtUiStateItem.h>
 
-QTE_IMPLEMENT_D_FUNC(DataColorOptions)
+QTE_IMPLEMENT_D_FUNC(DataFilterOptions)
 
 //-----------------------------------------------------------------------------
-class DataColorOptionsPrivate
+class DataFilterOptionsPrivate
 {
 public:
-  Ui::DataColorOptions UI;
+  DataFilterOptionsPrivate() : minimum{-9999.99}, maximum{+9999.99} {}
+
+  Ui::DataFilterOptions UI;
   qtUiState uiState;
 
-  vtkNew<vtkMaptkScalarsToGradient> scalarsToGradient;
+  double minimum;
+  double maximum;
 };
 
 //-----------------------------------------------------------------------------
-DataColorOptions::DataColorOptions(
+DataFilterOptions::DataFilterOptions(
   QString const& settingsGroup, QWidget* parent, Qt::WindowFlags flags)
-  : QWidget(parent, flags), d_ptr(new DataColorOptionsPrivate)
+  : QWidget(parent, flags), d_ptr(new DataFilterOptionsPrivate)
 {
   QTE_D();
 
   // Set up UI
   d->UI.setupUi(this);
 
-  d->uiState.setCurrentGroup(settingsGroup + "/DataColor");
+  d->uiState.setCurrentGroup(settingsGroup + "/DataFilter");
 
-  d->uiState.mapChecked("AutomaticMinimum", d->UI.autoMinimum);
-  d->uiState.mapChecked("AutomaticMaximum", d->UI.autoMaximum);
+  d->uiState.mapChecked("UseMinimum", d->UI.useMinimum);
+  d->uiState.mapChecked("UseMaximum", d->UI.useMaximum);
   d->uiState.mapValue("Minimum", d->UI.minimum);
   d->uiState.mapValue("Maximum", d->UI.maximum);
 
-  auto const gradientItem = new qtUiState::Item<int, QComboBox>(
-    d->UI.gradient, &QComboBox::currentIndex, &QComboBox::setCurrentIndex);
-  d->uiState.map("Colors", gradientItem);
-
   d->uiState.restore();
-
-  d->scalarsToGradient->SetGradient(d->UI.gradient->currentGradient());
 
   connect(d->UI.minimum, SIGNAL(valueChanged(double)),
           this, SLOT(updateMinimum()));
   connect(d->UI.maximum, SIGNAL(valueChanged(double)),
           this, SLOT(updateMaximum()));
-  connect(d->UI.autoMinimum, SIGNAL(toggled(bool)),
-          this, SLOT(updateMinimum()));
-  connect(d->UI.autoMaximum, SIGNAL(toggled(bool)),
-          this, SLOT(updateMaximum()));
+  connect(d->UI.useMinimum, SIGNAL(toggled(bool)),
+          this, SIGNAL(modified()));
+  connect(d->UI.useMaximum, SIGNAL(toggled(bool)),
+          this, SIGNAL(modified()));
 
-  connect(d->UI.gradient, SIGNAL(currentIndexChanged(int)),
-          this, SLOT(setGradient(int)));
+  connect(d->UI.reset, SIGNAL(clicked()), this, SLOT(resetRange()));
 }
 
 //-----------------------------------------------------------------------------
-DataColorOptions::~DataColorOptions()
+DataFilterOptions::~DataFilterOptions()
 {
   QTE_D();
   d->uiState.save();
 }
 
 //-----------------------------------------------------------------------------
-QIcon DataColorOptions::icon() const
+double DataFilterOptions::minimum() const
 {
   QTE_D();
-  return d->UI.gradient->itemIcon(d->UI.gradient->currentIndex());
+  return qMax(d->minimum, d->UI.minimum->value());
 }
 
 //-----------------------------------------------------------------------------
-vtkScalarsToColors* DataColorOptions::scalarsToColors() const
+double DataFilterOptions::maximum() const
 {
   QTE_D();
-  return d->scalarsToGradient.GetPointer();
+  return qMin(d->maximum, d->UI.maximum->value());
 }
 
 //-----------------------------------------------------------------------------
-void DataColorOptions::setAvailableRange(double lower, double upper)
+DataFilterOptions::ActiveFilters DataFilterOptions::activeFilters() const
 {
   QTE_D();
+
+  auto result = ActiveFilters{};
+
+  if (d->UI.useMinimum->isChecked())
+  {
+    result |= Minimum;
+  }
+  if (d->UI.useMaximum->isChecked())
+  {
+    result |= Maximum;
+  }
+
+  return result;
+}
+
+//-----------------------------------------------------------------------------
+QString DataFilterOptions::iconText() const
+{
+  QTE_D();
+
+  auto const lf = d->UI.useMinimum->isChecked();
+  auto const hf = d->UI.useMaximum->isChecked();
+
+  if (lf && hf)
+  {
+    return "(range)";
+  }
+  else if (lf)
+  {
+    return QString::fromUtf8("\xe2\x89\xa5 %1").arg(d->UI.minimum->value());
+  }
+  else if (hf)
+  {
+    return QString::fromUtf8("\xe2\x89\xa4 %1").arg(d->UI.maximum->value());
+  }
+
+  return "(none)";
+}
+
+//-----------------------------------------------------------------------------
+void DataFilterOptions::setAvailableRange(double lower, double upper)
+{
+  QTE_D();
+
+  d->minimum = lower;
+  d->maximum = upper;
 
   qtScopedBlockSignals bl{d->UI.minimum};
   qtScopedBlockSignals bu{d->UI.maximum};
-
-  d->UI.minimum->setRange(lower, upper);
-  d->UI.maximum->setRange(lower, upper);
 
   this->updateMinimum();
   this->updateMaximum();
 }
 
 //-----------------------------------------------------------------------------
-void DataColorOptions::setGradient(int which)
+void DataFilterOptions::resetRange()
 {
   QTE_D();
 
-  d->UI.gradient->setCurrentIndex(which);
-  d->scalarsToGradient->SetGradient(d->UI.gradient->currentGradient());
-
-  emit this->modified();
-  emit this->iconChanged(this->icon());
+  d->UI.minimum->setRange(d->minimum, d->maximum);
+  d->UI.maximum->setRange(d->minimum, d->maximum);
+  d->UI.minimum->setValue(d->minimum);
+  d->UI.maximum->setValue(d->maximum);
 }
 
 //-----------------------------------------------------------------------------
-void DataColorOptions::updateMinimum()
+void DataFilterOptions::updateMinimum()
 {
   QTE_D();
 
-  if (d->UI.autoMinimum->isChecked())
-  {
-    d->UI.minimum->setValue(d->UI.minimum->minimum());
-  }
+  auto const value = d->UI.minimum->value();
+  d->UI.minimum->setRange(qMin(d->minimum, value), qMax(d->maximum, value));
 
   auto const limit = d->UI.minimum->value();
   if (d->UI.maximum->value() < limit)
@@ -155,30 +185,22 @@ void DataColorOptions::updateMinimum()
     d->UI.maximum->setValue(limit);
   }
 
-  d->scalarsToGradient->SetRange(d->UI.minimum->value(),
-                                 d->UI.maximum->value());
-
   emit this->modified();
 }
 
 //-----------------------------------------------------------------------------
-void DataColorOptions::updateMaximum()
+void DataFilterOptions::updateMaximum()
 {
   QTE_D();
 
-  if (d->UI.autoMaximum->isChecked())
-  {
-    d->UI.maximum->setValue(d->UI.maximum->maximum());
-  }
+  auto const value = d->UI.maximum->value();
+  d->UI.maximum->setRange(qMin(d->minimum, value), qMax(d->maximum, value));
 
   auto const limit = d->UI.maximum->value();
   if (d->UI.minimum->value() > limit)
   {
     d->UI.minimum->setValue(limit);
   }
-
-  d->scalarsToGradient->SetRange(d->UI.minimum->value(),
-                                 d->UI.maximum->value());
 
   emit this->modified();
 }
