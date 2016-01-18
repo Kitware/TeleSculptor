@@ -16,7 +16,7 @@ set(MAPTK_VERSION_MINOR 7)
 set(MAPTK_VERSION_PATCH 1)
 set(MAPTK_VERSION "${MAPTK_VERSION_MAJOR}.${MAPTK_VERSION_MINOR}.${MAPTK_VERSION_PATCH}")
 
-find_package( vital )
+find_package( vital REQUIRED )
 
 ###
 # Add the CMake directory for CMake modules
