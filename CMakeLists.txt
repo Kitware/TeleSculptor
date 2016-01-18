@@ -17,7 +17,7 @@ set(MAPTK_VERSION_PATCH 1)
 set(MAPTK_VERSION "${MAPTK_VERSION_MAJOR}.${MAPTK_VERSION_MINOR}.${MAPTK_VERSION_PATCH}")
 string(TIMESTAMP MAPTK_COPYRIGHT_YEAR "%Y")
 
-find_package( vital )
+find_package( vital REQUIRED )
 
 ###
 # Add the CMake directory for CMake modules
