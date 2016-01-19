@@ -40,8 +40,8 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <functional>
 
-#include <boost/bind.hpp>
 #include <boost/circular_buffer.hpp>
 
 #include <vital/algo/compute_ref_homography.h>
@@ -410,7 +410,8 @@ close_loops_homography_guided
       if( !to_remove.empty() )
       {
         all_tracks.erase(
-          std::remove_if( all_tracks.begin(), all_tracks.end(), boost::bind( track_id_in_set, _1, &to_remove ) ),
+          std::remove_if( all_tracks.begin(), all_tracks.end(),
+                          std::bind( track_id_in_set, std::placeholders::_1, &to_remove ) ),
           all_tracks.end()
         );
       }
