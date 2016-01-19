@@ -43,12 +43,14 @@
 #include <vector>
 
 #include <vital/exceptions.h>
+#include <kwiversys/SystemTools.hxx>
 
-#include <boost/filesystem.hpp>
 
 
 namespace kwiver {
 namespace maptk {
+
+typedef kwiversys::SystemTools     ST;
 
 
 /// Read in a pos file, producing an ins_data object
@@ -56,11 +58,11 @@ ins_data
 read_pos_file(vital::path_t const& file_path)
 {
   // Check that file exists
-  if( ! boost::filesystem::exists(file_path) )
+  if( ! ST::FileExists( file_path ) )
   {
     throw vital::file_not_found_exception(file_path, "File does not exist.");
   }
-  else if ( ! boost::filesystem::is_regular_file(file_path) )
+  else if ( ST::FileIsDirectory( file_path ) )
   {
     throw vital::file_not_found_exception(file_path, "Path given doesn't point to "
                                               "a regular file!");
@@ -93,9 +95,6 @@ void
 write_pos_file(ins_data const& ins,
                vital::path_t const& file_path)
 {
-  namespace bfs = boost::filesystem;
-  bfs::path bfs_file_path( file_path);
-
   // If the source name is not specified, throw
   if(ins.source_name == "")
   {
@@ -103,7 +102,7 @@ write_pos_file(ins_data const& ins,
   }
 
   // If the given path is a directory, we obviously can't write to it.
-  if(bfs::is_directory(file_path))
+  if( ST::FileIsDirectory( file_path ) )
   {
     throw vital::file_write_exception(file_path, "Path given is a directory, "
                                           "can not write file.");
@@ -111,12 +110,12 @@ write_pos_file(ins_data const& ins,
 
   // Check that the directory of the given filepath exists, creating necessary
   // directories where needed.
-  bfs::path parent_dir = bfs::absolute(bfs_file_path.parent_path());
-  if(!bfs::is_directory(parent_dir))
+  vital::path_t parent_dir = ST::GetFilenamePath( file_path );
+  if( ! ST::FileIsDirectory( parent_dir ) )
   {
-    if(!bfs::create_directories(parent_dir))
+    if( ! ST::MakeDirectory( parent_dir ) )
     {
-      throw vital::file_write_exception(parent_dir.string(), "Attempted directory creation, "
+      throw vital::file_write_exception(parent_dir, "Attempted directory creation, "
                                              "but no directory created! No "
                                              "idea what happened here...");
     }

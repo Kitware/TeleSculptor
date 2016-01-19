@@ -55,9 +55,6 @@ namespace maptk {
  * \throws invalid_file
  *    Thrown when the data in the file is not sufficient to create an ins_data
  *    object for return.
- * \throws boost::filesystem::filesystem_error
- *    Boost exception thrown if something goes wrong with the underlying file
- *    read.
  *
  * \param file_path   The path to the file to read in.
  * \return A \c ins_data object representing the contents of the read-in file.
@@ -74,9 +71,6 @@ read_pos_file(vital::path_t const& file_path);
  *
  * \throws file_write_exception
  *    Thrown when something prevents output of the file.
- * \throws boost::filesystem::filesystem:error
- *    Thrown when an underlying boost::filesystem call failes for system
- *    reasons.
  *
  * \param ins       The \c ins_data object to output.
  * \param file_path The path to output the file to.

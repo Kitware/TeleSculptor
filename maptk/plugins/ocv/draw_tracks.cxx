@@ -42,10 +42,11 @@
 #include <algorithm>
 
 #include <vital/vital_foreach.h>
+#include <kwiversys/SystemTools.hxx>
+
 #include <boost/lexical_cast.hpp>
 #include <boost/format.hpp>
 #include <boost/circular_buffer.hpp>
-#include <boost/filesystem.hpp>
 
 #include <maptk/plugins/ocv/image_container.h>
 #include <maptk/plugins/ocv/ocv_algo_tools.h>
@@ -61,7 +62,7 @@ namespace maptk {
 
 namespace ocv
 {
-
+typedef kwiversys::SystemTools     ST;
 
 /// Helper typedef for storing match lines between frames
 typedef std::vector< std::pair< cv::Point, cv::Point > > line_vec_t;
@@ -311,8 +312,6 @@ draw_tracks
         image_container_sptr_list image_data,
         track_set_sptr input_comparison_set )
 {
-  namespace bfs = boost::filesystem;
-
   // Perform swap of inputs if settings enabled
   track_set_sptr display_set = input_display_set;
   track_set_sptr comparison_set = input_comparison_set;
@@ -487,12 +486,12 @@ draw_tracks
     {
       // Check that the directory of the given filepath exists, creating necessary
       // directories where needed.
-      bfs::path parent_dir = bfs::absolute(bfs::path(ofn).parent_path());
-      if(!bfs::is_directory(parent_dir))
+      std::string parent_dir = ST::CollapseFullPath( ST::GetFilenamePath( ofn ) );
+      if( ! ST::FileIsDirectory( parent_dir ) )
       {
-        if(!bfs::create_directories(parent_dir))
+        if( ! ST::MakeDirectory( parent_dir ) )
         {
-          throw file_write_exception(parent_dir.string(), "Attempted directory creation, "
+          throw file_write_exception(parent_dir, "Attempted directory creation, "
                                                  "but no directory created! No "
                                                  "idea what happened here...");
         }
