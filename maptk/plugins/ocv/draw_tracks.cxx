@@ -37,6 +37,7 @@
 
 #include <set>
 #include <fstream>
+#include <sstream>
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
@@ -44,7 +45,6 @@
 #include <vital/vital_foreach.h>
 #include <kwiversys/SystemTools.hxx>
 
-#include <boost/lexical_cast.hpp>
 #include <boost/format.hpp>
 #include <boost/circular_buffer.hpp>
 
@@ -389,7 +389,9 @@ draw_tracks
       cv::Scalar color = default_color;
       cv::Point loc = state_to_cv_point( ts );
       cv::Point txt_offset( 2, -2 );
-      std::string tid_str = boost::lexical_cast<std::string>( trk->id() );
+      std::stringstream str;
+      str << trk->id();
+      std::string tid_str = str.str();
 
       if( trk->size() == 1 )
       {
