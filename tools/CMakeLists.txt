@@ -28,10 +28,10 @@ target_link_libraries(maptk_bundle_adjust_tracks
 
 kwiver_add_executable(maptk_analyze_tracks analyze_tracks.cxx)
 target_link_libraries(maptk_analyze_tracks
-  PRIVATE             maptk vital_apm
+  PRIVATE             maptk vital_apm kwiversys
   )
 
 kwiver_add_executable(maptk_estimate_homography estimate_homography.cxx)
 target_link_libraries(maptk_estimate_homography
-  PRIVATE             maptk vital_apm
+  PRIVATE             maptk vital_apm kwiversys
   )
