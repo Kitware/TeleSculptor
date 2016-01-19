@@ -32,6 +32,7 @@
 #define MAPTK_MATCHMATRIXALGORITHMS_H_
 
 #include <qtGlobal.h>
+#include <vital/vital_config.h>
 
 #include <Eigen/SparseCore>
 
@@ -44,7 +45,7 @@ public:
   typedef Eigen::SparseMatrix<uint> Matrix;
   typedef Matrix::InnerIterator MatrixIterator;
 
-  virtual ~AbstractValueAlgorithm() = default;
+  virtual ~AbstractValueAlgorithm() VITAL_DEFAULT_DTOR;
 
   virtual double operator()(Matrix const&, MatrixIterator const&) const = 0;
   virtual double max(double maxRawValue) const = 0;
@@ -95,7 +96,7 @@ class RelativeXYValueAlgorithm : public AbstractRelativeValueAlgorithm
 class AbstractScaleAlgorithm
 {
 public:
-  virtual ~AbstractScaleAlgorithm() = default;
+  virtual ~AbstractScaleAlgorithm() VITAL_DEFAULT_DTOR
 
   virtual double operator()(double rawValue) const = 0;
 };
