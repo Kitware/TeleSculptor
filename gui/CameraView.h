@@ -57,6 +57,8 @@ public:
   void addFeatureTrack(kwiver::vital::track const&);
 
 public slots:
+  void setBackgroundColor(QColor const&);
+
   void setImageData(vtkImageData* data, QSize const& dimensions);
 
   void setLandmarksData(kwiver::vital::landmark_map const&);

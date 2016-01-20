@@ -506,6 +506,13 @@ CameraView::~CameraView()
 }
 
 //-----------------------------------------------------------------------------
+void CameraView::setBackgroundColor(QColor const& color)
+{
+  QTE_D();
+  d->renderer->SetBackground(color.redF(), color.greenF(), color.blueF());
+}
+
+//-----------------------------------------------------------------------------
 void CameraView::setImageData(vtkImageData* data, QSize const& dimensions)
 {
   QTE_D();

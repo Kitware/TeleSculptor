@@ -63,6 +63,8 @@ public slots:
 
   void setActiveCamera(int);
 
+  void setViewBackroundColor();
+
   void showMatchMatrix();
 
   void showAboutDialog();

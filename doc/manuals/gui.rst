@@ -329,6 +329,9 @@ View Menu
 :icon:`blank` Match Matrix
   Opens a new `Match Matrix View`_.
 
+:icon:`blank` Background Color
+  Changes the background color of the world and camera views.
+
 Help Menu
 ---------
 

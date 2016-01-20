@@ -57,6 +57,8 @@ Visualization Application
    projections, and to reset the rotation of the same to one of several basic
    presets (top, left, etc.).
 
+ * Added ability to change the background color of the views.
+
  * The GUI user manual can now be accessed from within the GUI.
 
 SketchUp Plugin
