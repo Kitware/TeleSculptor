@@ -30,10 +30,7 @@ target_link_libraries( maptk_ceres
   ceres
   )
 
-get_property(libd TARGET ceres PROPERTY LOCATION)
-get_filename_component(LIBRARY_DIR ${libd} DIRECTORY)
-
 maptk_create_plugin( maptk_ceres
   algorithm_plugin_interface.cxx
-  BUNDLE_PATHS  ${LIBRARY_DIR}
+  BUNDLE_PATHS  $<TARGET_FILE_DIR:ceres>
   )
