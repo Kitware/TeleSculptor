@@ -8,10 +8,6 @@ if(POLICY CMP0054)
   cmake_policy(SET CMP0054 NEW)
 endif()
 
-if(POLICY CMP0026)
-  cmake_policy(SET CMP0026 OLD) # TARGET PROPERTY LOCATION
-endif()
-
 ###
 # Versioning
 #
