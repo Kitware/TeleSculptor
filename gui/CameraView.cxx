@@ -510,6 +510,7 @@ void CameraView::setBackgroundColor(QColor const& color)
 {
   QTE_D();
   d->renderer->SetBackground(color.redF(), color.greenF(), color.blueF());
+  d->UI.renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
