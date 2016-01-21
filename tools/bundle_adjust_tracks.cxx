@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -412,7 +412,7 @@ load_input_cameras_pos(kwiver::vital::config_block_sptr config,
   std::map<std::string, kwiver::vital::frame_id_t>::const_iterator it;
   VITAL_FOREACH(kwiver::vital::path_t const& fpath, files)
   {
-    std::string pos_file_stem = kwiversys::SystemTools::GetFilenamePath( fpath );
+    std::string pos_file_stem = kwiversys::SystemTools::GetFilenameWithoutLastExtension( fpath );
     it = filename2frame.find(pos_file_stem);
     if (it != filename2frame.end())
     {
@@ -475,7 +475,7 @@ load_input_cameras_krtd(kwiver::vital::config_block_sptr config,
   std::map<std::string, kwiver::vital::frame_id_t>::const_iterator it;
   VITAL_FOREACH(kwiver::vital::path_t const& fpath, files)
   {
-    std::string krtd_file_stem = kwiversys::SystemTools::GetFilenamePath( fpath );
+    std::string krtd_file_stem = kwiversys::SystemTools::GetFilenameWithoutLastExtension( fpath );
     it = filename2frame.find(krtd_file_stem);
     if (it != filename2frame.end())
     {
@@ -722,7 +722,7 @@ static int maptk_main(int argc, char const* argv[])
   std::map<std::string, kwiver::vital::frame_id_t> filename2frame;
   VITAL_FOREACH(kwiver::vital::path_t i_file, image_files)
   {
-    std::string i_file_stem = kwiversys::SystemTools::GetFilenamePath( i_file );
+    std::string i_file_stem = kwiversys::SystemTools::GetFilenameWithoutLastExtension( i_file );
     filename2frame[i_file_stem] = static_cast<kwiver::vital::frame_id_t>(frame2filename.size());
     frame2filename.push_back(i_file_stem);
   }
