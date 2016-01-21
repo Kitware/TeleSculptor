@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,19 +51,22 @@
 #include <vital/algo/analyze_tracks.h>
 #include <vital/algo/draw_tracks.h>
 
+#include <kwiversys/SystemTools.hxx>
+#include <kwiversys/CommandLineArguments.hxx>
+
 #include <maptk/projected_track_set.h>
 
-#include <boost/filesystem.hpp>
-
-#include <boost/program_options/options_description.hpp>
-#include <boost/program_options/parsers.hpp>
-#include <boost/program_options/value_semantic.hpp>
-#include <boost/program_options/variables_map.hpp>
+typedef kwiversys::SystemTools     ST;
+typedef kwiversys::CommandLineArguments argT;
 
 
-namespace bfs = boost::filesystem;
+// Global options
+bool        opt_help( false );
+std::string opt_config;         // config file name
+std::string opt_out_config;     // output config file name
 
 
+// ------------------------------------------------------------------
 static kwiver::vital::config_block_sptr default_config()
 {
   kwiver::vital::config_block_sptr config =
@@ -96,10 +99,11 @@ static kwiver::vital::config_block_sptr default_config()
 }
 
 
+// ------------------------------------------------------------------
 static bool check_config( kwiver::vital::config_block_sptr config )
 {
   if( !config->has_value( "track_file" ) ||
-      !bfs::exists( kwiver::vital::path_t( config->get_value<std::string>( "track_file" ) ) ) )
+      !ST::FileExists( kwiver::vital::path_t( config->get_value<std::string>( "track_file" ) ) ) )
   {
     std::cerr << "A valid track file must be specified!" << std::endl;
     return false;
@@ -114,7 +118,7 @@ static bool check_config( kwiver::vital::config_block_sptr config )
   if( config->has_value( "image_list_file" ) &&
       !config->get_value<std::string>( "image_list_file" ).empty() )
   {
-    if( !bfs::exists( kwiver::vital::path_t( config->get_value<std::string>( "image_list_file" ) ) ) )
+    if( !ST::FileExists( kwiver::vital::path_t( config->get_value<std::string>( "image_list_file" ) ) ) )
     {
       std::cerr << "Cannot find image list file" << std::endl;
       return false;
@@ -138,42 +142,39 @@ static bool check_config( kwiver::vital::config_block_sptr config )
 }
 
 
+// ------------------------------------------------------------------
 static int maptk_main(int argc, char const* argv[])
 {
-  // register the algorithm implementations
-  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
+  kwiversys::CommandLineArguments arg;
 
-  // define/parse CLI options
-  boost::program_options::options_description opt_desc;
-  opt_desc.add_options()
-    ( "help,h", "output help message and exit" )
-    ( "config,c",
-      boost::program_options::value<kwiver::vital::path_t>(),
-      "Configuration file for the tool." )
-    ( "output-config,o",
-      boost::program_options::value<kwiver::vital::path_t>(),
-      "Output a configuration.This may be seeded with a configuration file from -c/--config." )
-    ;
-  boost::program_options::variables_map vm;
+  arg.Initialize( argc, argv );
 
-  try
+  arg.AddArgument( "--help",        argT::NO_ARGUMENT, &opt_help, "Display usage information" );
+  arg.AddArgument( "--config",      argT::SPACE_ARGUMENT, &opt_config, "Configuration file for tool" );
+  arg.AddArgument( "-c",            argT::SPACE_ARGUMENT, &opt_config, "Configuration file for tool" );
+  arg.AddArgument( "--output-config", argT::SPACE_ARGUMENT, &opt_out_config,
+                   "Output a configuration. This may be seeded with a configuration file from -c/--config." );
+  arg.AddArgument( "-o",            argT::SPACE_ARGUMENT, &opt_out_config,
+                   "Output a configuration. This may be seeded with a configuration file from -c/--config." );
+
+
+  if ( ! arg.Parse() )
   {
-    boost::program_options::store(
-      boost::program_options::parse_command_line(argc, argv, opt_desc), vm );
-  }
-  catch( boost::program_options::unknown_option const& e )
-  {
-    std::cerr << "Error: unknown option " << e.get_option_name() << std::endl;
-    return EXIT_FAILURE;
+    std::cerr << "Problem parsing arguments" << std::endl;
+    EXIT_FAILURE;
   }
 
-  boost::program_options::notify( vm );
-
-  if( vm.count( "help" ) )
+  if ( opt_help )
   {
-    std::cerr << opt_desc << std::endl;
+    std::cerr
+      << "USAGE: " << argv[0] << " [OPTS]\n\n"
+      << "Options:"
+      << arg.GetHelp() << std::endl;
     return EXIT_SUCCESS;
   }
+
+  // register the algorithm implementations
+  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
 
   // Set config to algo chain
   // Get config from algo chain after set
@@ -181,8 +182,6 @@ static int maptk_main(int argc, char const* argv[])
   //
   // If -o/--output-config given, output config result and notify of current (in)validity
   // Else error if provided config not valid.
-
-  namespace bfs = boost::filesystem;
 
   // Set up top level configuration w/ defaults where applicable.
   kwiver::vital::config_block_sptr config = default_config();
@@ -192,9 +191,9 @@ static int maptk_main(int argc, char const* argv[])
   kwiver::vital::algo::draw_tracks_sptr draw_tracks;
 
   // If -c/--config given, read in confgi file, merge in with default just generated
-  if( vm.count( "config" ) )
+  if( ! opt_config.empty() )
   {
-    config->merge_config( kwiver::vital::read_config_file( vm[ "config" ].as<kwiver::vital::path_t>() ) );
+    config->merge_config( kwiver::vital::read_config_file( opt_config ) );
   }
 
   // Load all input images if they are specified
@@ -219,9 +218,9 @@ static int maptk_main(int argc, char const* argv[])
   bool valid_config = check_config( config );
 
   // Output a config file if specified
-  if( vm.count( "output-config" ) )
+  if( ! opt_out_config.empty() )
   {
-    write_config_file( config, vm[ "output-config" ].as<kwiver::vital::path_t>() );
+    write_config_file( config, opt_out_config );
 
     if( valid_config )
     {
@@ -337,7 +336,7 @@ static int maptk_main(int argc, char const* argv[])
 
     for( unsigned i = 0; i < image_paths.size(); i++ )
     {
-      if( !bfs::exists( image_paths[i] ) )
+      if( !ST::FileExists( image_paths[i] ) )
       {
         throw kwiver::vital::path_not_exists( image_paths[i] );
       }
@@ -357,6 +356,7 @@ static int maptk_main(int argc, char const* argv[])
 }
 
 
+// ------------------------------------------------------------------
 int main( int argc, char const* argv[] )
 {
   try

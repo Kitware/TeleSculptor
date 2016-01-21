@@ -21,6 +21,9 @@ MAP-Tk Library
    That is, applying the reversal a second time will return to the previous
    state.
 
+* Removed usage of boost file_system and program_options libraries. Replaced
+  with kwiversys equivalent constructs.
+
 Visualization Application
 
  * Added ability to execute some computations (for now, computing and applying

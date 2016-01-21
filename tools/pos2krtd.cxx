@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2015 by Kitware, Inc.
+ * Copyright 2013-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,37 +49,17 @@
 #include <vital/algorithm_plugin_manager.h>
 #include <vital/vital_types.h>
 
+#include <kwiversys/SystemTools.hxx>
+#include <kwiversys/CommandLineArguments.hxx>
+#include <kwiversys/Directory.hxx>
+
 #include <maptk/ins_data_io.h>
 #include <maptk/local_geo_cs.h>
 
-#include <boost/filesystem.hpp>
-#include <boost/foreach.hpp>
-#include <boost/program_options/options_description.hpp>
-#include <boost/program_options/parsers.hpp>
-#include <boost/program_options/value_semantic.hpp>
-#include <boost/program_options/variables_map.hpp>
+typedef kwiversys::SystemTools     ST;
+typedef kwiversys::CommandLineArguments argT;
 
-namespace bpo = boost::program_options;
-namespace bfs = boost::filesystem;
-
-
-/// Report usage message to std::cerr
-void usage(int const& argc, char const* argv[],
-           bpo::options_description const& opt_desc,
-           bpo::variables_map const& vm)
-{
-    std::cerr << "Usage: " << argv[0] << " -c config_file [-o output_config_file]" << std::endl
-              << std::endl
-              << "If multiple POS files are to be converted into KRTD " << std::endl
-              << "files, it is recomended to use the directory arguments " << std::endl
-              << "in order for the application to create a unified local " << std::endl
-              << "coordinate system." << std::endl
-              << std::endl
-              << "Options:" << std::endl
-              << opt_desc << std::endl;
-}
-
-
+// ------------------------------------------------------------------
 // return a default configuration object
 kwiver::vital::config_block_sptr
 default_config()
@@ -127,14 +107,15 @@ default_config()
 }
 
 
+// ------------------------------------------------------------------
 /// Check configuration options
 bool
 check_config(kwiver::vital::config_block_sptr config)
 {
   bool config_valid = true;
 
-#define MAPTK_CHECK_FAIL(msg) \
-  std::cerr << "Config Check Fail: " << msg << std::endl; \
+#define MAPTK_CHECK_FAIL(msg)                                   \
+  std::cerr << "Config Check Fail: " << msg << std::endl;       \
   config_valid = false
 
   if (!config->has_value("input")
@@ -142,7 +123,7 @@ check_config(kwiver::vital::config_block_sptr config)
   {
     MAPTK_CHECK_FAIL("Not given an input file or directory.");
   }
-  else if (!bfs::exists(config->get_value<kwiver::vital::path_t>("input")))
+  else if ( ! ST::FileExists(config->get_value<kwiver::vital::path_t>("input")))
   {
     MAPTK_CHECK_FAIL("Path given for input doesn't exist.");
   }
@@ -157,15 +138,15 @@ check_config(kwiver::vital::config_block_sptr config)
   {
     kwiver::vital::path_t input = config->get_value<kwiver::vital::path_t>("input"),
            output = config->get_value<kwiver::vital::path_t>("output");
-    if (bfs::exists(output))
+    if ( ST::FileExists( output ) )
     {
-      if (bfs::is_directory(input) && !bfs::is_directory(output))
+      if (ST::FileIsDirectory(input) && !ST::FileIsDirectory(output))
       {
         MAPTK_CHECK_FAIL("Output given exists but is not a directory! "
                          "Input was a directory, so output must also be a "
                          "directory.");
       }
-      else if (!bfs::is_directory(input) && bfs::is_directory(output))
+      else if (!ST::FileIsDirectory(input) && ST::FileIsDirectory(output))
       {
         MAPTK_CHECK_FAIL("Input was a file, but given output path is a "
                          "directory!");
@@ -179,6 +160,7 @@ check_config(kwiver::vital::config_block_sptr config)
 }
 
 
+// ------------------------------------------------------------------
 /// create a base camera instance from config options
 kwiver::vital::simple_camera
 base_camera_from_config(kwiver::vital::config_block_sptr config)
@@ -193,6 +175,7 @@ base_camera_from_config(kwiver::vital::config_block_sptr config)
 }
 
 
+// ------------------------------------------------------------------
 /// Convert a INS data to a camera
 bool convert_ins2camera(const kwiver::maptk::ins_data& ins,
                         kwiver::maptk::local_geo_cs& cs,
@@ -211,6 +194,7 @@ bool convert_ins2camera(const kwiver::maptk::ins_data& ins,
 }
 
 
+// ------------------------------------------------------------------
 /// Convert a POS file to a KRTD file
 bool convert_pos2krtd(const kwiver::vital::path_t& pos_filename,
                       const kwiver::vital::path_t& krtd_filename,
@@ -231,6 +215,7 @@ bool convert_pos2krtd(const kwiver::vital::path_t& pos_filename,
 }
 
 
+// ------------------------------------------------------------------
 /// Convert a directory of POS file to a directory of KRTD files
 bool convert_pos2krtd_dir(const kwiver::vital::path_t& pos_dir,
                           const kwiver::vital::path_t& krtd_dir,
@@ -238,29 +223,34 @@ bool convert_pos2krtd_dir(const kwiver::vital::path_t& pos_dir,
                           const kwiver::vital::simple_camera& base_camera,
                           kwiver::vital::rotation_d const& ins_rot_offset = kwiver::vital::rotation_d())
 {
-  bfs::directory_iterator it(pos_dir), eod;
-  const bfs::path bfs_krtd_dir( krtd_dir );
-  std::map<kwiver::vital::frame_id_t, kwiver::maptk::ins_data> ins_map;
   std::vector<std::string> krtd_filenames;
+  std::map<kwiver::vital::frame_id_t, kwiver::maptk::ins_data> ins_map;
+
+  kwiversys::Directory dir;
+  dir.Load( pos_dir );
 
   std::cerr << "Loading POS files" << std::endl;
-  BOOST_FOREACH(bfs::path const &p, std::make_pair(it, eod))
+
+  unsigned long num_files = dir.GetNumberOfFiles();
+  for ( unsigned long i = 0; i < num_files; i++)
   {
+    kwiver::vital::path_t p = dir.GetFile( i );
+
     try
     {
-      kwiver::maptk::ins_data ins = kwiver::maptk::read_pos_file(p.string());
+      kwiver::maptk::ins_data ins = kwiver::maptk::read_pos_file( p );
 
-      bfs::path krtd_filename = bfs_krtd_dir / (bfs::basename(p) + ".krtd");
+      kwiver::vital::path_t krtd_filename = krtd_dir + "/" + ST::GetFilenameWithoutExtension( p ) + ".krtd";
       //std::cerr << "Loading " << p << std::endl;
       kwiver::vital::frame_id_t frame = static_cast<kwiver::vital::frame_id_t>(krtd_filenames.size());
       ins_map[frame] = ins;
-      krtd_filenames.push_back(krtd_filename.string());
+      krtd_filenames.push_back(krtd_filename);
     }
     catch (kwiver::vital::invalid_file const& /*e*/)
     {
       std::cerr << "-> Skipping invalid file: " << p << std::endl;
     }
-  }
+  } // end foreach
 
   if (ins_map.size() == 0)
   {
@@ -289,61 +279,65 @@ bool convert_pos2krtd_dir(const kwiver::vital::path_t& pos_dir,
 }
 
 
+// ------------------------------------------------------------------
 static int maptk_main(int argc, char const* argv[])
 {
-  // register the algorithm implementations
-  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
+  static bool        opt_help(false);
+  static std::string opt_config;
+  static std::string opt_out_config;
 
-  //
-  // CLI Options (boost)
-  //
-  bpo::options_description opt_desc;
-  opt_desc.add_options()
-    ("help,h", "output help message and exit")
-    ("config,c",
-     bpo::value<kwiver::vital::path_t>(),
-     "Configuration file for the tool.")
-    ("output-config,o",
-     bpo::value<kwiver::vital::path_t>(),
-     "Output a configuration. This may be seeded with"
-     " a configuration file from -c/--config.");
-  bpo::variables_map vm;
-  // try to parse the command-line
-  try
+  kwiversys::CommandLineArguments arg;
+
+  arg.Initialize( argc, argv );
+  typedef kwiversys::CommandLineArguments argT;
+
+  arg.AddArgument( "--help",        argT::NO_ARGUMENT, &opt_help, "Display usage information" );
+  arg.AddArgument( "--config",      argT::SPACE_ARGUMENT, &opt_config, "Configuration file for tool" );
+  arg.AddArgument( "-c",            argT::SPACE_ARGUMENT, &opt_config, "Configuration file for tool" );
+  arg.AddArgument( "--output-config", argT::SPACE_ARGUMENT, &opt_out_config,
+                   "Output a configuration. This may be seeded with a configuration file from -c/--config." );
+  arg.AddArgument( "-o",            argT::SPACE_ARGUMENT, &opt_out_config,
+                   "Output a configuration. This may be seeded with a configuration file from -c/--config." );
+
+    if ( ! arg.Parse() )
   {
-    bpo::store(bpo::parse_command_line(argc, argv, opt_desc), vm);
-  }
-  catch (bpo::unknown_option const& e)
-  {
-    std::cerr << e.what() << std::endl
-              << std::endl;
-    usage(argc, argv, opt_desc, vm);
+    std::cerr << "Problem parsing arguments" << std::endl;
     return EXIT_FAILURE;
   }
-  bpo::notify(vm);
 
-  if(vm.count("help"))
+  if ( opt_help )
   {
-    usage(argc, argv, opt_desc, vm);
+    std::cout
+      << "USAGE: " << argv[0] << " [OPTS]\n\n"
+      << "If multiple POS files are to be converted into KRTD " << std::endl
+      << "files, it is recomended to use the directory arguments " << std::endl
+      << "in order for the application to create a unified local " << std::endl
+      << "coordinate system." << std::endl
+      << std::endl
+      << "Options:"
+      << arg.GetHelp() << std::endl;
     return EXIT_SUCCESS;
   }
 
+
+  // register the algorithm implementations
+  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
 
   //
   // Initialize from configuration
   //
   kwiver::vital::config_block_sptr config = default_config();
 
-  if (vm.count("config"))
+  if ( ! opt_config.empty())
   {
-    config->merge_config(kwiver::vital::read_config_file(vm["config"].as<kwiver::vital::path_t>()));
+    config->merge_config( kwiver::vital::read_config_file( opt_config ) );
   }
 
   bool config_is_valid = check_config(config);
 
-  if (vm.count("output-config"))
+    if ( ! opt_out_config.empty() )
   {
-    kwiver::vital::path_t output_path = vm["output-config"].as<kwiver::vital::path_t>();
+    kwiver::vital::path_t output_path = opt_out_config;
     kwiver::vital::write_config_file(config, output_path);
 
     if (config_is_valid)
@@ -378,12 +372,12 @@ static int maptk_main(int argc, char const* argv[])
 
   kwiver::maptk::local_geo_cs local_cs(geo_mapper);
 
-  if( bfs::is_directory(input) )
+  if( ST::FileIsDirectory(input) )
   {
     std::cerr << "processing "<<input<<" as a directory of POS files" << std::endl;
-    if( !bfs::exists(output) )
+    if( ! ST::FileExists(output) )
     {
-      if( !bfs::create_directory(output) )
+      if( ! ST::MakeDirectory( output ) )
       {
         std::cerr << "Unable to create output directory: " << output << std::endl;
         return EXIT_FAILURE;
@@ -404,6 +398,7 @@ static int maptk_main(int argc, char const* argv[])
 }
 
 
+// ------------------------------------------------------------------
 int main(int argc, char const* argv[])
 {
   try
