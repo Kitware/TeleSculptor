@@ -47,17 +47,9 @@ target_link_libraries( maptk_ocv
   ${OpenCV_LIBS}
   )
 
-if(WIN32)
-  # On Windows we get the paths to the .lib files but we need
-  # paths to the .dll files which are located in the "bin"
-  # directory in parallel to the returned "lib" directories.
-  foreach( ocv_lib_path ${OpenCV_LIB_DIR} )
-    get_filename_component(ocv_bin_path "${ocv_lib_path}/../bin" ABSOLUTE)
-    list(APPEND OpenCV_bundle_paths "${ocv_bin_path}")
-  endforeach()
-else()
-  set(OpenCV_bundle_paths "${OpenCV_LIB_DIR}")
-endif()
+foreach( ocv_lib ${OpenCV_LIBS} )
+  list(APPEND OpenCV_bundle_paths $<TARGET_FILE_DIR:${ocv_lib}>)
+endforeach()
 
 maptk_create_plugin( maptk_ocv
   algorithm_plugin_interface.cxx
