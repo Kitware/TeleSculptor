@@ -549,7 +549,7 @@ void CameraView::setActiveFrame(unsigned frame)
   QTE_D();
 
   d->featureRep->SetActiveFrame(frame);
-  this->update();
+  d->UI.renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -615,7 +615,7 @@ void CameraView::addLandmark(
 
   d->landmarks.addPoint(x, y, 0.0, d->landmarkData.value(id));
 
-  this->update();
+  d->UI.renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -628,7 +628,7 @@ void CameraView::addResidual(
 
   d->residuals.addSegment(x1, y1, -0.2, x2, y2, -0.2);
 
-  this->update();
+  d->UI.renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -709,7 +709,7 @@ void CameraView::updateFeatures()
   if (d->featuresDirty)
   {
     d->featureRep->Update();
-    this->update();
+    d->UI.renderWidget->update();
 
     d->featuresDirty = false;
   }
