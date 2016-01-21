@@ -21,10 +21,18 @@ MAP-Tk Library
    That is, applying the reversal a second time will return to the previous
    state.
 
+* Applying transformations now better preserve additional data associated with
+  landmarks (e.g. color, number of observations).
+
 Core Plugin
 
  * Updated triangulate_landmarks to set the number of observations on each
    computed landmark.
+
+Ceres Plugin
+
+* Modified bundle_adjust to preserve additional data associated with landmarks
+  (e.g. color, number of observations) during optimization.
 
 Visualization Application
 

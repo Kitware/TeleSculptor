@@ -237,9 +237,10 @@ triangulate_landmarks
       }
       if( !bad_triangulation )
       {
-        vital::landmark_d* lm = new vital::landmark_d(pt3d);
+        auto lm = std::make_shared<vital::landmark_d>(*p.second);
+        lm->set_loc(pt3d);
         lm->set_observations(lm_observations);
-        triangulated_lms[p.first] = vital::landmark_sptr(lm);
+        triangulated_lms[p.first] = lm;
       }
     }
   }
