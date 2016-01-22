@@ -14,6 +14,11 @@ Build System
   plugins and dependent libraries. The resulting package will contain
   all necessary libraies other than system libraries.
 
+* Add CMake option to specify an optional single directory for the
+  algorithm plugin manager to search for plugins. This allows packages
+  to be built that have a search path established relative to the final
+  install location.
+
 Tools
 
  * Updated the sample config files so that they are compatible with the current

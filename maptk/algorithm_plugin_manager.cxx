@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -104,7 +104,8 @@ static std::string const shared_library_suffix = std::string(SHARED_LIB_SUFFIX);
 
 // Default module directory locations. Values defined in CMake configuration.
 static maptk::path_t const default_plugin_dir_build = maptk::path_t(DEFAULT_PLUGIN_DIR_BUILD),
-                           default_plugin_dir_install = maptk::path_t(DEFAULT_PLUGIN_DIR_INSTALL);
+                           default_plugin_dir_install = maptk::path_t(DEFAULT_PLUGIN_DIR_INSTALL),
+                           extra_path = maptk::path_t(EXTRA_MODULE_PATH);
 bool const use_build_plugin_dir = USE_BUILD_PLUGIN_DIR;
 
 } // end anonymous namespace
@@ -363,6 +364,11 @@ algorithm_plugin_manager
     this->impl_->search_paths_.push_back( default_plugin_dir_build );
   }
   this->impl_->search_paths_.push_back( default_plugin_dir_install );
+
+  if ( ! extra_path.empty() )
+  {
+    this->impl_->search_paths_.push_back( extra_path );
+  }
 }
 
 
