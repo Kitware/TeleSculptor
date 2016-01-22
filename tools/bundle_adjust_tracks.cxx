@@ -948,6 +948,42 @@ static int maptk_main(int argc, char const* argv[])
   }
 
   //
+  // Compute landmark colors
+  //
+  // TODO should move this to an algorithm
+  auto colored_landmarks = lm_map->landmarks();
+  VITAL_FOREACH (auto& lmi, colored_landmarks)
+  {
+    auto const tid = static_cast<kwiver::vital::track_id_t>(lmi.first);
+    auto const track = tracks->get_track(tid);
+
+    if (track)
+    {
+      int ra = 0, ga = 0, ba = 0, k = 0; // accumulators
+      VITAL_FOREACH (auto const& ts, *track)
+      {
+        auto const& color = ts.feat->color();
+        ra += color.r;
+        ga += color.g;
+        ba += color.b;
+        ++k;
+      }
+
+      if (k)
+      {
+        auto const r = static_cast<unsigned char>(ra / k);
+        auto const g = static_cast<unsigned char>(ga / k);
+        auto const b = static_cast<unsigned char>(ba / k);
+
+        auto lm = std::make_shared<kwiver::vital::landmark_d>(*lmi.second);
+        lm->set_color({r, g, b});
+        lmi.second = lm;
+      }
+    }
+  }
+  lm_map = std::make_shared<kwiver::vital::simple_landmark_map>(colored_landmarks);
+
+  //
   // Write the output PLY file
   //
   if( config->has_value("output_ply_file") )
