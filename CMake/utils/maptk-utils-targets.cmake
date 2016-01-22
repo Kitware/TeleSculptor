@@ -38,7 +38,7 @@ define_property(GLOBAL PROPERTY maptk_plugin_libraries
   )
 
 define_property(GLOBAL PROPERTY maptk_bundle_paths
-  BRIEF_DOCS "Paths needed by fixup_bindle"
+  BRIEF_DOCS "Paths needed by fixup_bundle"
   FULL_DOCS "Paths needed to resolve needed libraries used by plugins when fixing the bundle"
   )
 
