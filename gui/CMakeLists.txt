@@ -172,7 +172,7 @@ if (MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
 
   get_property( maptk_plugins GLOBAL PROPERTY maptk_plugin_libraries)
   foreach( tgt ${maptk_plugins} )
-    list(APPEND libs_genex $<TARGET_FILE:${tgt}>)
+    list(APPEND libs_genex "${dest_prefix}/lib/maptk/$<TARGET_FILE_NAME:${tgt}>")
   endforeach()
 
   get_property( bundle_path GLOBAL PROPERTY maptk_bundle_paths)
