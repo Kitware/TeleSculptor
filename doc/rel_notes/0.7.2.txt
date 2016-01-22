@@ -8,6 +8,12 @@ MAPTK v0.7.2 is a bug fix release with no new functionality.
 Fixes since v0.7.1
 ------------------
 
+Build System
+
+* Update CMake code to create packaging bundle that contains all
+  plugins and dependent libraries. The resulting package will contain
+  all necessary libraies other than system libraries.
+
 Tools
 
  * Updated the sample config files so that they are compatible with the current
