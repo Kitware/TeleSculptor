@@ -29,6 +29,11 @@ define_property(GLOBAL PROPERTY maptk_plugin_libraries
   FULL_DOCS "List of generated shared plugin module libraries"
   )
 
+define_property(GLOBAL PROPERTY maptk_bundle_paths
+  BRIEF_DOCS "Paths needed by fixup_bundle"
+  FULL_DOCS "Paths needed to resolve needed libraries used by plugins when fixing the bundle"
+  )
+
 # Top-level target for plugin targets
 add_custom_target( all-plugins )
 
@@ -88,9 +93,24 @@ function(maptk_create_plugin    base_lib)
 
   add_dependencies( all-plugins maptk-plugin-${base_lib} )
 
-  # Add to global collection variable
+  # For each library linked to the base library, add the path to the library
+  # to a list of paths to search later during fixup_bundle.
+  get_target_property(deps ${base_lib} LINK_LIBRARIES)
+  foreach( dep ${deps} )
+    if(TARGET "${dep}")
+      list(APPEND PLUGIN_BUNDLE_PATHS $<TARGET_FILE_DIR:${dep}>)
+    elseif(EXISTS "${dep}")
+      get_filename_component(dep_dir "${dep}" DIRECTORY)
+      list(APPEND PLUGIN_BUNDLE_PATHS ${dep_dir})
+    endif()
+  endforeach()
+
+  # Add to global collection variables
   set_property(GLOBAL APPEND
     PROPERTY maptk_plugin_libraries    maptk-plugin-${base_lib}
+    )
+  set_property(GLOBAL APPEND
+    PROPERTY maptk_bundle_paths ${PLUGIN_BUNDLE_PATHS}
     )
 
 endfunction()

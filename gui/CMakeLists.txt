@@ -7,6 +7,14 @@ include(${qtExtensions_USE_FILE})
 find_package(VTK 6.2 REQUIRED)
 include(${VTK_USE_FILE})
 
+#
+# This option should be set if you want to do a bundle fixup for
+# packaging.  The fixup is actually applied during install, but due to
+# unexpected behaviour, all libraries are installed in the .../bin
+# directory. This is okay for Windows and Mac, but unexpected for Linux.
+#
+option( MAPTK_FIXUP_BUNDLE_ON_PACKAGE "Perform bundle fixup when building a package. Only set when packaging." OFF )
+
 include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}
@@ -178,52 +186,80 @@ if(APPLE)
   set(qtconf_dest_dir Resources)
 endif()
 
-if (WIN32)
-  # Add expected location of VTK dlls
-  list(APPEND FIXUP_DIRS "${VTK_INSTALL_PREFIX}/bin")
-else()
-  # Add expected location of VTK libraries
-  list(APPEND FIXUP_DIRS "${VTK_INSTALL_PREFIX}/lib")
-endif()
+#
+# Do bundle fixup
+#    This could be conditional on APPLE || WIN32 also
+#
+if (MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
 
-# For now, we're assuming we're pulling qtextensions from a build directory
-# (not an install).  Also, Mac and/or Linux will need be a bit different,
-# but will be handled later (they'd likely use CMAKE_BUILD_TYPE instead
-# of CMAKE_CONFIGURATION_TYPES). For Windows really expect the dll will
-# be in Release subdirectory, and so look there unless
-# CMAKE_CONFIGURATION_TYPES indicates only "debug"
-if(CMAKE_CONFIGURATION_TYPES)
-  string(TOLOWER "${CMAKE_CONFIGURATION_TYPES}" BUILD_TYPE)
-  if(BUILD_TYPE STREQUAL "debug")
-    set(BINARY_DIR "Debug")
+  if (WIN32)
+    # Add expected location of VTK dlls
+    list(APPEND FIXUP_DIRS "${VTK_INSTALL_PREFIX}/bin")
   else()
-    set(BINARY_DIR "Release")
+    # Add expected location of VTK libraries
+    list(APPEND FIXUP_DIRS "${VTK_INSTALL_PREFIX}/lib")
   endif()
-endif()
-list(APPEND FIXUP_DIRS "${qtExtensions_DIR}/${BINARY_DIR}")
 
-# Location for QT libraries
-list(APPEND FIXUP_DIRS "${QT_BIN_DIR}")
-list(APPEND FIXUP_DIRS "${QT_LIBRARY_DIR}")
-list(APPEND FIXUP_DIRS "${QT_BINARY_DIR}")
+  # For now, we're assuming we're pulling qtextensions from a build directory
+  # (not an install).  Also, Mac and/or Linux will need be a bit different,
+  # but will be handled later (they'd likely use CMAKE_BUILD_TYPE instead
+  # of CMAKE_CONFIGURATION_TYPES). For Windows really expect the dll will
+  # be in Release subdirectory, and so look there unless
+  # CMAKE_CONFIGURATION_TYPES indicates only "debug"
+  if(CMAKE_CONFIGURATION_TYPES)
+    string(TOLOWER "${CMAKE_CONFIGURATION_TYPES}" BUILD_TYPE)
+    if(BUILD_TYPE STREQUAL "debug")
+      set(BINARY_DIR "Debug")
+    else()
+      set(BINARY_DIR "Release")
+    endif()
+  endif()
+  list(APPEND FIXUP_DIRS "${qtExtensions_DIR}/${BINARY_DIR}")
 
-install(DIRECTORY "${QT_PLUGINS_DIR}/imageformats" DESTINATION ${plugin_dest_dir}/plugins COMPONENT Runtime)
-# install a qt.conf file
-INSTALL(CODE "
+  # Location for QT libraries
+  list(APPEND FIXUP_DIRS "${QT_BIN_DIR}")
+  list(APPEND FIXUP_DIRS "${QT_LIBRARY_DIR}")
+  list(APPEND FIXUP_DIRS "${QT_BINARY_DIR}")
+
+  get_property( maptk_plugins GLOBAL PROPERTY maptk_plugin_libraries)
+  foreach( tgt ${maptk_plugins} )
+    list(APPEND libs_genex "${dest_prefix}/lib/maptk/$<TARGET_FILE_NAME:${tgt}>")
+  endforeach()
+
+  get_property( bundle_path GLOBAL PROPERTY maptk_bundle_paths)
+
+  list(APPEND FIXUP_DIRS "${VTK_CMAKE_DIR}../..")
+
+  install(DIRECTORY "${QT_PLUGINS_DIR}/imageformats" DESTINATION ${plugin_dest_dir}/plugins COMPONENT Runtime)
+  # install a qt.conf file
+  install(CODE "
     file(WRITE \"${dest_prefix}/${qtconf_dest_dir}/qt.conf\" \"\")
     " COMPONENT Runtime)
 
-install(CODE "
+  set( script_file  ${MAPTK_BINARY_DIR}/CMakeFiles/plugin-libs-$<CONFIGURATION>.cmake)
+
+  file(GENERATE OUTPUT ${script_file}
+    CONTENT "
+set(plugin_libs \"${libs_genex}\")
+set(bundle_path \"${bundle_path})\")
+          ")
+
+  install(CODE "
         file(GLOB_RECURSE QTPLUGINS
             \"${dest_prefix}/${plugin_dest_dir}/plugins/*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
         set(BU_CHMOD_BUNDLE_ITEMS ON)
         set(ENV{VS_UNICODE_OUTPUT} \"\")
         include(${MAPTK_SOURCE_DIR}/CMake/utils/maptk-utils-bundle.cmake)
+        include( ${MAPTK_BINARY_DIR}/CMakeFiles/plugin-libs-\${CMAKE_INSTALL_CONFIG_NAME}.cmake )
+        list(APPEND FIXUP_DIRS ${FIXUP_DIRS} \${bundle_path})
+        list(REMOVE_DUPLICATES FIXUP_DIRS)
+        set(libs \${plugin_libs} \${QTPLUGINS})
         include(BundleUtilities)
-        fixup_bundle(\"${gui-exe}\" \"\${QTPLUGINS}\" \"${FIXUP_DIRS}\")
-        "
-)
+        fixup_bundle(\"${gui-exe}\" \"\${libs}\" \"\${FIXUP_DIRS}\")
+        ")
 
-if (WIN32)
-  include(InstallRequiredSystemLibraries)
-endif()
+  if (WIN32)
+    include(InstallRequiredSystemLibraries)
+  endif()
+
+endif(MAPTK_FIXUP_BUNDLE_ON_PACKAGE)

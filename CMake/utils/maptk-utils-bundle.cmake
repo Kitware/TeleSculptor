@@ -7,7 +7,6 @@
 # MAP-Tk to copy libraries into lib instead of MacOS.
 function(gp_item_default_embedded_path_override
          item default_embedded_path_var)
-
   if(APPLE)
     if(item MATCHES "\\.dylib$")
       set(path "@executable_path/../lib")
@@ -25,7 +24,7 @@ function(gp_resolved_file_type_override
   # libraries to be "local" (in the same directory as the executable)
   # and fails if they are "embedded" (same prefix).  This override
   # works around the problem by reporting "embedded" as "local"
-  if(UNIX AND NOT APPLE AND "${type}" STREQUAL "embedded")
-    set(${type_var} "local" PARENT_SCOPE)
+  if(UNIX AND NOT APPLE AND "${${type_val}}" STREQUAL "embedded")
+    set(${type_val} "local" PARENT_SCOPE)
   endif()
-  endfunction()
+endfunction()
