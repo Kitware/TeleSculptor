@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,14 +35,16 @@
 
 #include "image_io.h"
 
+#include <vital/exceptions/io.h>
 #include <maptk/plugins/ocv/image_container.h>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+#include <stdexcept>
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
@@ -52,12 +54,17 @@ namespace ocv
  * \param filename the path to the file the load
  * \returns an image container refering to the loaded image
  */
-image_container_sptr
+vital::image_container_sptr
 image_io
 ::load_(const std::string& filename) const
 {
   cv::Mat img = cv::imread(filename.c_str());
-  return image_container_sptr(new ocv::image_container(img));
+  if ( ! img.data )
+  {
+    throw kwiver::vital::file_not_read_exception( filename, "OCV could not read file" );
+  }
+
+  return vital::image_container_sptr(new ocv::image_container(img));
 }
 
 
@@ -69,12 +76,25 @@ image_io
 void
 image_io
 ::save_(const std::string& filename,
-       image_container_sptr data) const
+       vital::image_container_sptr data) const
 {
-  cv::imwrite(filename.c_str(),
-              ocv::image_container::maptk_to_ocv(data->get_image()));
+  try
+  {
+    if ( ! cv::imwrite(filename.c_str(),
+		       ocv::image_container::maptk_to_ocv(data->get_image())) )
+    {
+      throw kwiver::vital::file_not_read_exception( filename, "OCV imwrite returned failure" );
+    }
+  }
+  catch ( std::runtime_error const& ex )
+  {
+    std::string msg =  "OCV imwrite exception - could not write file: ";
+    msg += ex.what();
+    throw kwiver::vital::file_not_read_exception( filename, msg );
+  }
 }
 
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver
