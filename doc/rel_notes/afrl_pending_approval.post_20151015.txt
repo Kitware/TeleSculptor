@@ -64,6 +64,14 @@ SketchUp Plugin
    Once loaded, the cameras are presented as "Photo Match" pages which allows
    the user to build models aligned to images.
 
+Tools
+
+ * The track features tool now extracts feature colors and writes them to the
+   track file.
+
+ * The bundle adjust tool now computes landmark colors from feature colors and
+   writes them to the landmark PLY.
+
 Fixes since last public release
 -------------------------------
 
