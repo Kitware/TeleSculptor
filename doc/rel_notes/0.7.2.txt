@@ -1,0 +1,16 @@
+MAPTK v0.7.2 Release Notes
+==========================
+
+This release provides patches to the MAPTK v0.7.1 release to address issues.
+MAPTK v0.7.2 is a bug fix release with no new functionality.
+
+
+Fixes since v0.7.1
+------------------
+
+Build System
+
+* Add CMake option to specify an optional single directory for the
+  algorithm plugin manager to search for plugins. This allows packages
+  to be built that have a search path established relative to the final
+  install location.
