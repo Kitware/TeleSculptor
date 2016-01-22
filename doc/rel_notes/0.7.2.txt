@@ -1,12 +1,49 @@
 MAPTK v0.7.2 Release Notes
 ==========================
 
-This release provides patches to the MAPTK v0.7.1 release to address issues.
-MAPTK v0.7.2 is a bug fix release with no new functionality.
+This release provides patches to the MAPTK v0.7.1 release to address packaging
+issues.  MAPTK v0.7.2 is a bug fix release with no new functionality beyond
+packaging support.
+
+The binaries provided with this release should address three issues with the
+last release.  First, the sample config files have been updated to match the
+current code.  Second, the plugin's dependent libraries that were missing are
+now included.  Third, the default install directory has been added to the
+plugin search path so plugins can be found.
+
+This binaries for this release are limited in that they must be installed in
+the default install location to properly find the plugins.  This issue will be
+addressed in v0.8.0 with an environment variable.  For now you must install to:
+
+Windows:   C:\Program Files\MAP-Tk 0.7.2
+Mac OS X:  /Applications/MAP-Tk.app
+Linux:     /usr/local/
+
+The issue with plugin search path only affects the command line tools.  The
+GUI does not use the plugins in this release.
 
 
 Fixes since v0.7.1
 ------------------
+
+Build System
+
+* Updated CMake code to create packaging bundle that contains all
+  plugins and dependent libraries. The resulting package will contain
+  all necessary libraries other than system libraries.  The previous
+  release was missing dependent libraries for the plugins.
+
+* Added a MAPTK_FIXUP_BUNDLE_ON_PACKAGE option that allows the user to
+  enable or disable the bundle creation that should only be done during
+  packaging.  In the last release a standard install on Linux was impossible
+  because fixup_bundle copied all the dependent libraries into the install
+  bin directory.
+
+* Added the EXTRA_MODULE_PATH CMake variable to specify an optional single
+  additional directory for the algorithm plugin manager to search for plugins.
+  This allows packages to be built that have a search path established relative
+  to the final install location.  The previous release did not contain a valid
+  search path and plugins were not found.
 
 Tools
 
