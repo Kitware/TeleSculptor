@@ -9,9 +9,9 @@ include(${VTK_USE_FILE})
 
 #
 # This option should be set if you want to do a bundle fixup for
-# packaging.  The fixup is actually applied during install, but do to
+# packaging.  The fixup is actually applied during install, but due to
 # unexpected behaviour, all libraries are installed in the .../bin
-# directory. This is o.k. for Windows and Mac, but unexpected for Linux.
+# directory. This is okay for Windows and Mac, but unexpected for Linux.
 #
 option( MAPTK_FIXUP_BUNDLE_ON_PACKAGE "Perform bundle fixup when building a package. Only set when packaging." OFF )
 
