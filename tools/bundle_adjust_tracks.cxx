@@ -356,7 +356,7 @@ files_in_dir(kwiver::vital::path_t const& vdir)
   unsigned long num_files = dir.GetNumberOfFiles();
   for ( unsigned long i = 0; i < num_files; i++)
   {
-    files.push_back( dir.GetFile( i ) );
+    files.push_back( vdir + '/' + dir.GetFile( i ) );
   }
 
   std::sort( files.begin(), files.end() );
