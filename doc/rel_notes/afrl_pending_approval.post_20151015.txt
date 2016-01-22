@@ -64,6 +64,11 @@ Visualization Application
 
  * The GUI user manual can now be accessed from within the GUI.
 
+OCV Plugin
+
+ * Images are now mapped so that the first channel of the vital::image view is
+   red (RGB) rather than blue (BGR).
+
 SketchUp Plugin
 
  * Added a new plugin (Ruby scripts) for the SketchUp 3D Modeling software
