@@ -40,5 +40,4 @@ target_link_libraries( maptk_viscl
   )
 maptk_create_plugin( maptk_viscl
   algorithm_plugin_interface.cxx
-  BUNDLE_PATHS  ${viscl_LIBRARY_DIR}
   )

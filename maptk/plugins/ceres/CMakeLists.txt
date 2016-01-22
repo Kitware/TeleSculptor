@@ -32,5 +32,4 @@ target_link_libraries( maptk_ceres
 
 maptk_create_plugin( maptk_ceres
   algorithm_plugin_interface.cxx
-  BUNDLE_PATHS  $<TARGET_FILE_DIR:ceres>
   )

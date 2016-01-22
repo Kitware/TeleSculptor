@@ -47,11 +47,6 @@ target_link_libraries( maptk_ocv
   ${OpenCV_LIBS}
   )
 
-foreach( ocv_lib ${OpenCV_LIBS} )
-  list(APPEND OpenCV_bundle_paths $<TARGET_FILE_DIR:${ocv_lib}>)
-endforeach()
-
 maptk_create_plugin( maptk_ocv
   algorithm_plugin_interface.cxx
-  BUNDLE_PATHS  ${OpenCV_bundle_paths}
   )

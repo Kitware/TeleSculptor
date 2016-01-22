@@ -52,5 +52,4 @@ target_link_libraries( maptk_vxl
 
 maptk_create_plugin( maptk_vxl
   algorithm_plugin_interface.cxx
-  BUNDLE_PATHS  ${VXL_LIBRARY_DIR}
   )

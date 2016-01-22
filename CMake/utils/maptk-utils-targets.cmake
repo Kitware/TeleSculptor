@@ -253,15 +253,8 @@ endfunction()
 #
 # Setting library_subdir or no_export before this function
 # has no effect as they are manually specified within this function.
-#
-# OPTIONS:
-#  BUNDLE_PATHS a list of directories that are to be used to locate libraries that are used by this plugin.
 #-
 function(maptk_create_plugin base_lib)
-  set(options)
-  set(oneValueArgs )
-  set(multiValueArgs BUNDLE_PATHS)
-  cmake_parse_arguments(PLUGIN "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
 
   if(BUILD_SHARED_LIBS)
     # Creating module library for dynamic loading at runtime
@@ -275,12 +268,24 @@ function(maptk_create_plugin base_lib)
     set(no_version ON)
     maptk_add_library( maptk-plugin-${base_lib}
       SYMBOL ${base_lib}
-      MODULE "${shell_source}" ${PLUGIN_UNPARSED_ARGUMENTS}
+      MODULE "${shell_source}" ${ARGN}
       )
     target_compile_definitions( maptk-plugin-${base_lib}
       PRIVATE
         "MAPTK_PLUGIN_LIB_NAME=\"${base_lib}\""
       )
+
+    # For each library linked to the base library, add the path to the library
+    # to a list of paths to search later during fixup_bundle.
+    get_target_property(deps ${base_lib} LINK_LIBRARIES)
+    foreach( dep ${deps} )
+      if(TARGET "${dep}")
+        list(APPEND PLUGIN_BUNDLE_PATHS $<TARGET_FILE_DIR:${dep}>)
+      elseif(EXISTS "${dep}")
+        get_filename_component(dep_dir "${dep}" DIRECTORY)
+        list(APPEND PLUGIN_BUNDLE_PATHS ${dep_dir})
+      endif()
+    endforeach()
 
     # Not adding link to known base MAPTK library because if the base_lib isn't
     # linking against it, its either doing something really complex or doing

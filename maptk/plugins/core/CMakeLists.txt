@@ -39,5 +39,4 @@ target_link_libraries( maptk_core maptk )
 
 maptk_create_plugin( maptk_core
   algorithm_plugin_interface.cxx
-  BUNDLE_PATHS  $<TARGET_FILE_DIR:maptk>
   )
