@@ -35,6 +35,7 @@
 
 #include "image_io.h"
 
+#include <vital/exceptions/io.h>
 #include <maptk/plugins/ocv/image_container.h>
 
 #include <opencv2/core/core.hpp>
@@ -56,6 +57,11 @@ image_io
 ::load_(const std::string& filename) const
 {
   cv::Mat img = cv::imread(filename.c_str());
+  if ( ! img.data )
+  {
+    throw kwiver::vital::file_not_read_exception( filename, "OCV could not read file" );
+  }
+
   return vital::image_container_sptr(new ocv::image_container(img));
 }
 
@@ -70,8 +76,20 @@ image_io
 ::save_(const std::string& filename,
        vital::image_container_sptr data) const
 {
-  cv::imwrite(filename.c_str(),
-              ocv::image_container::maptk_to_ocv(data->get_image()));
+  try
+  {
+    if ( ! cv::imwrite(filename.c_str(),
+		       ocv::image_container::maptk_to_ocv(data->get_image())) )
+    {
+      throw kwiver::vital::file_not_read_exception( filename, "OCV imwrite returned failure" );
+    }
+  }
+  catch ( std::runtime_error const& ex )
+  {
+    std::string msg =  "OCV imwrite exception - could not write file: ";
+    msg += ex.what();
+    throw kwiver::vital::file_not_read_exception( filename, msg );
+  }
 }
 
 } // end namespace ocv
