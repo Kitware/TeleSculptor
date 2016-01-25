@@ -42,6 +42,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <iterator>
 
 #include <vital/vital_foreach.h>
 #include <vital/algo/algorithm.h>
