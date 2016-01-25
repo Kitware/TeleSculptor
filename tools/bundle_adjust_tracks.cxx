@@ -58,6 +58,8 @@
 #include <vital/io/track_set_io.h>
 #include <vital/types/track_set.h>
 #include <vital/vital_types.h>
+#include <vital/util/cpu_timer.h>
+
 #include <kwiversys/SystemTools.hxx>
 #include <kwiversys/CommandLineArguments.hxx>
 #include <kwiversys/Directory.hxx>
@@ -67,8 +69,6 @@
 #include <maptk/geo_reference_points_io.h>
 #include <maptk/metrics.h>
 #include <maptk/transform.h>
-
-#include <boost/timer/timer.hpp>
 
 typedef kwiversys::SystemTools     ST;
 
@@ -403,7 +403,7 @@ load_input_cameras_pos(kwiver::vital::config_block_sptr config,
                        kwiver::maptk::local_geo_cs & local_cs,
                        kwiver::vital::camera_map::map_camera_t & input_cameras)
 {
-  boost::timer::auto_cpu_timer t("Initializing cameras from POS files: %t sec CPU, %w sec wall\n");
+  kwiver::vital::scoped_cpu_timer t( "Initializing cameras from POS files" );
 
   std::string pos_files = config->get_value<std::string>("input_pos_files");
   std::vector< kwiver::vital::path_t > files;
@@ -465,7 +465,7 @@ load_input_cameras_krtd(kwiver::vital::config_block_sptr config,
                         kwiver::maptk::local_geo_cs & local_cs,
                         kwiver::vital::camera_map::map_camera_t & input_cameras)
 {
-  boost::timer::auto_cpu_timer t("Initializing cameras from KRTD files: %t sec CPU, %w sec wall\n");
+  kwiver::vital::scoped_cpu_timer t( "Initializing cameras from KRTD files" );
 
   // Collect files
   std::string krtd_files = config->get_value<std::string>("input_krtd_files");
@@ -679,7 +679,7 @@ static int maptk_main(int argc, char const* argv[])
   size_t min_track_len = config->get_value<size_t>("min_track_length");
   if( min_track_len > 1 )
   {
-    boost::timer::auto_cpu_timer t("track filtering: %t sec CPU, %w sec wall\n");
+    kwiver::vital::scoped_cpu_timer t( "track filtering" );
     tracks = filter_tracks(tracks, min_track_len);
     std::cerr << "filtered down to "<<tracks->size()<<" long tracks"<<std::endl;
 
@@ -816,7 +816,7 @@ static int maptk_main(int argc, char const* argv[])
   unsigned int cam_samp_rate = config->get_value<unsigned int>("camera_sample_rate");
   if(cam_samp_rate > 1)
   {
-    boost::timer::auto_cpu_timer t("Tool-level sub-sampling: %t sec CPU, %w sec wall\n");
+    kwiver::vital::scoped_cpu_timer t( "Tool-level sub-sampling" );
 
     // If there are no cameras loaded, create a map of NULL cameras to subsample
     if( !cam_map )
@@ -860,7 +860,7 @@ static int maptk_main(int argc, char const* argv[])
   // Initialize cameras and landmarks
   //
   {
-    boost::timer::auto_cpu_timer t("Initializing cameras and landmarks: %t sec CPU, %w sec wall\n");
+    kwiver::vital::scoped_cpu_timer t( "Initializing cameras and landmarks" );
     initializer->initialize(cam_map, lm_map, tracks);
   }
 
@@ -868,7 +868,7 @@ static int maptk_main(int argc, char const* argv[])
   // Run bundle adjustment
   //
   { // scope block
-    boost::timer::auto_cpu_timer t("Tool-level SBA algorithm: %t sec CPU, %w sec wall\n");
+    kwiver::vital::scoped_cpu_timer t( "Tool-level SBA algorithm" );
 
     double init_rmse = kwiver::maptk::reprojection_rmse(cam_map->cameras(),
                                                         lm_map->landmarks(),
@@ -897,8 +897,7 @@ static int maptk_main(int argc, char const* argv[])
   //
   if (st_estimator)
   {
-    boost::timer::auto_cpu_timer t_1("--> st estimation and application: %t sec "
-                                     "CPU, %w sec wall\n");
+    kwiver::vital::scoped_cpu_timer t_1( "--> st estimation and application" );
     std::cerr << "Estimating similarity transform from post-SBA to original space"
               << std::endl;
 
@@ -909,8 +908,7 @@ static int maptk_main(int argc, char const* argv[])
     // transformation out of SBA-space.
     if (reference_landmarks->size() > 0 && reference_tracks->size() > 0)
     {
-      boost::timer::auto_cpu_timer t_2("similarity transform estimation from "
-                                       "ref file: %t sec CPU, %w sec wall\n");
+      kwiver::vital::scoped_cpu_timer t_2( "similarity transform estimation from ref file" );
       std::cerr << "--> Using reference landmarks/tracks" << std::endl;
 
       // Generate corresponding landmarks in SBA-space based on transformed
@@ -932,7 +930,7 @@ static int maptk_main(int argc, char const* argv[])
     }
     else if (input_cam_map->size() > 0)
     {
-      boost::timer::auto_cpu_timer t_2("    %t sec CPU, %w sec wall\n");
+      kwiver::vital::scoped_cpu_timer t_2( "    similarity transform estimation from camera" );
 
       std::cerr << "--> Estimating transform to refined cameras "
                 << "(from input cameras)" << std::endl;
@@ -960,7 +958,7 @@ static int maptk_main(int argc, char const* argv[])
   //
   if( config->has_value("output_ply_file") )
   {
-    boost::timer::auto_cpu_timer t("writing output PLY file: %t sec CPU, %w sec wall\n");
+    kwiver::vital::scoped_cpu_timer t( "writing output PLY file" );
     std::string ply_file = config->get_value<std::string>("output_ply_file");
     write_ply_file(lm_map, ply_file);
   }
@@ -971,7 +969,7 @@ static int maptk_main(int argc, char const* argv[])
   if( config->has_value("output_pos_dir") )
   {
     std::cerr << "Writing output POS files" << std::endl;
-    boost::timer::auto_cpu_timer t("--> %t sec CPU, %w sec wall\n");
+    kwiver::vital::scoped_cpu_timer t( "--> Writing output POS files" );
 
     kwiver::vital::path_t pos_dir = config->get_value<std::string>("output_pos_dir");
     // Create INS data from adjusted cameras for POS file output.
@@ -995,7 +993,7 @@ static int maptk_main(int argc, char const* argv[])
   if( config->has_value("output_krtd_dir") )
   {
     std::cerr << "Writing output KRTD files" << std::endl;
-    boost::timer::auto_cpu_timer t("--> %t sec CPU, %w sec wall\n");
+    kwiver::vital::scoped_cpu_timer t("--> Writing output KRTD files" );
 
     kwiver::vital::path_t krtd_dir = config->get_value<std::string>("output_krtd_dir");
     typedef kwiver::vital::camera_map::map_camera_t::value_type cam_map_val_t;
