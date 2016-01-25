@@ -140,7 +140,7 @@ static int maptk_main(int argc, char const* argv[])
   if ( ! arg.Parse() )
   {
     std::cerr << "Problem parsing arguments" << std::endl;
-    EXIT_FAILURE;
+    return EXIT_FAILURE;
   }
 
   if ( opt_help )
