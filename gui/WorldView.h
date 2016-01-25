@@ -52,6 +52,8 @@ public:
   virtual ~WorldView();
 
 public slots:
+  void setBackgroundColor(QColor const&);
+
   void addCamera(int id, vtkMaptkCamera* camera);
   void setLandmarks(kwiver::vital::landmark_map const&);
 

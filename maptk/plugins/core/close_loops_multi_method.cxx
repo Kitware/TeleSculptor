@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,8 +43,6 @@
 #include <string>
 #include <vector>
 
-#include <boost/lexical_cast.hpp>
-
 #include <vital/algo/algorithm.h>
 #include <vital/exceptions/algorithm.h>
 
@@ -65,7 +63,9 @@ method_names( unsigned count )
 
   for( unsigned i = 0; i < count; i++ )
   {
-    output.push_back( "method" + boost::lexical_cast<std::string>( i+1 ) );
+    std::stringstream str;
+    str << "method" << (i+1);
+    output.push_back( str.str() );
   }
 
   return output;

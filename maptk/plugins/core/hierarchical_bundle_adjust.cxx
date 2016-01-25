@@ -159,7 +159,7 @@ hierarchical_bundle_adjust
 
 /// Destructor
 hierarchical_bundle_adjust
-::~hierarchical_bundle_adjust() MAPTK_NOTHROW
+::~hierarchical_bundle_adjust() VITAL_NOTHROW
 {
 }
 

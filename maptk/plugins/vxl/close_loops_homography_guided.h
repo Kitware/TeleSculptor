@@ -37,11 +37,14 @@
 #ifndef MAPTK_PLUGINS_VXL_CLOSE_LOOPS_HOMOGRAPHY_GUIDED_H_
 #define MAPTK_PLUGINS_VXL_CLOSE_LOOPS_HOMOGRAPHY_GUIDED_H_
 
+
+#include <vital/vital_config.h>
+#include <maptk/plugins/vxl/maptk_vxl_export.h>
+
 #include <vital/types/image_container.h>
 #include <vital/types/track_set.h>
 
 #include <vital/algo/close_loops.h>
-#include <maptk/plugins/vxl/vxl_config.h>
 
 #include <memory>
 

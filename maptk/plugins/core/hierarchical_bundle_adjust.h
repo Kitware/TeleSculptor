@@ -37,11 +37,12 @@
 #ifndef MAPTK_PLUGINS_CORE_HIERARCHICAL_BUNDLE_ADJUST_H_
 #define MAPTK_PLUGINS_CORE_HIERARCHICAL_BUNDLE_ADJUST_H_
 
+#include <vital/vital_config.h>
+#include <maptk/plugins/core/maptk_core_export.h>
+
 #include <vital/algo/algorithm.h>
 #include <vital/algo/bundle_adjust.h>
 #include <vital/config/config_block.h>
-
-#include <maptk/plugins/core/plugin_core_config.h>
 
 #include <memory>
 
@@ -53,7 +54,7 @@ namespace core
 {
 
 
-class PLUGIN_CORE_EXPORT hierarchical_bundle_adjust
+class MAPTK_CORE_EXPORT hierarchical_bundle_adjust
   : public vital::algorithm_impl<hierarchical_bundle_adjust, vital::algo::bundle_adjust>
 {
 public:
@@ -63,7 +64,7 @@ public:
   /// Copy constructor
   hierarchical_bundle_adjust(hierarchical_bundle_adjust const& other);
   /// Destructor
-  virtual ~hierarchical_bundle_adjust() MAPTK_NOTHROW;
+  virtual ~hierarchical_bundle_adjust() VITAL_NOTHROW;
 
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "hierarchical"; }

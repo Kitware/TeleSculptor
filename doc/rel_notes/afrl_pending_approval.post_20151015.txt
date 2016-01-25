@@ -21,8 +21,11 @@ MAP-Tk Library
    That is, applying the reversal a second time will return to the previous
    state.
 
-* Applying transformations now better preserve additional data associated with
-  landmarks (e.g. color, number of observations).
+ * Removed usage of boost file_system and program_options libraries. Replaced
+   with kwiversys equivalent constructs.
+
+ * Applying transformations now better preserve additional data associated with
+   landmarks (e.g. color, number of observations).
 
 Core Plugin
 
@@ -31,8 +34,13 @@ Core Plugin
 
 Ceres Plugin
 
-* Modified bundle_adjust to preserve additional data associated with landmarks
-  (e.g. color, number of observations) during optimization.
+ * Modified bundle_adjust to preserve additional data associated with landmarks
+   (e.g. color, number of observations) during optimization.
+
+VXL Plugin
+
+ * Updated triangulate_landmarks to set the number of observations on each
+   computed landmark.
 
 Visualization Application
 
@@ -58,6 +66,9 @@ Visualization Application
  * Added ability to visualize landmarks by "true color", elevation, or number
    of observations, when relevant data is available.
 
+ * Added ability to selectively display ("filter") landmarks based on values of
+   available data (e.g. elevation, number of observations).
+
  * Added ground plane display to world view.
 
  * Added ability to view camera frame image, projected to the ground plane, in
@@ -67,7 +78,14 @@ Visualization Application
    projections, and to reset the rotation of the same to one of several basic
    presets (top, left, etc.).
 
+ * Added ability to change the background color of the views.
+
  * The GUI user manual can now be accessed from within the GUI.
+
+OCV Plugin
+
+ * Images are now mapped so that the first channel of the vital::image view is
+   red (RGB) rather than blue (BGR).
 
 SketchUp Plugin
 

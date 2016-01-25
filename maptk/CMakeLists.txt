@@ -1,26 +1,11 @@
 include(CheckCXXCompilerFlag)
 
-check_cxx_compiler_flag(-fvisibility=hidden MAPTK_HAVE_GCC_VISIBILITY)
-
-
-# Configure general config.h.in
-maptk_configure_file( config.h
-  "${CMAKE_CURRENT_SOURCE_DIR}/config.h.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/config.h"
-  BUILD_SHARED_LIBS
-  MAPTK_HAVE_GCC_VISIBILITY
-  )
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/config.h"
-  DESTINATION include/maptk
-  )
-
-
 include_directories("${MAPTK_SOURCE_DIR}")
 include_directories("${MAPTK_BINARY_DIR}")
 
 
 ###
-# Setting up core library
+# Setting up main library
 #
 set(maptk_public_headers
   metrics.h
@@ -71,8 +56,12 @@ kwiver_add_library(
   ${maptk_public_headers}
   ${maptk_sources}
   )
-add_dependencies(maptk configure-config.h)
-target_link_libraries(maptk vital ${Boost_LIBRARIES} )
+
+target_link_libraries( maptk
+  PUBLIC               vital
+                       kwiversys
+                     ${Boost_LIBRARIES} ##+ remove
+  )
 
 
 ###

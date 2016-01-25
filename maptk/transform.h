@@ -36,7 +36,9 @@
 #ifndef MAPTK_TRANSFORM_H_
 #define MAPTK_TRANSFORM_H_
 
-#include <maptk/config.h>
+
+#include <vital/vital_config.h>
+#include <maptk/maptk_export.h>
 
 #include <vital/types/camera.h>
 #include <vital/types/similarity.h>
@@ -63,44 +65,44 @@ namespace maptk {
  *  \return a 3D covariance transformed by the similarity transformation
  */
 template <typename T>
-MAPTK_LIB_EXPORT
+MAPTK_EXPORT
 vital::covariance_<3,T> transform(const vital::covariance_<3,T>& covar,
                                   const vital::similarity_<T>& xform);
 
 
 /// Transform the camera by applying a similarity transformation in place
-MAPTK_LIB_EXPORT
+MAPTK_EXPORT
 void transform_inplace(const vital::similarity_d& xform,
                        vital::simple_camera& cam);
 
 
 /// Transform the landmark by applying a similarity transformation in place
 template <typename T>
-MAPTK_LIB_EXPORT
+MAPTK_EXPORT
 void transform_inplace(const vital::similarity_<T>& xform,
                        vital::landmark_<T>& lm);
 
 
 /// construct a transformed camera by applying a similarity transformation
-MAPTK_LIB_EXPORT
+MAPTK_EXPORT
 vital::camera_sptr transform(vital::camera_sptr cam,
                              const vital::similarity_d& xform);
 
 
 /// construct a transformed map of cameras by applying a similarity transformation
-MAPTK_LIB_EXPORT
+MAPTK_EXPORT
 vital::camera_map_sptr transform(vital::camera_map_sptr cameras,
                                  const vital::similarity_d& xform);
 
 
 /// construct a transformed landmark by applying a similarity transformation
-MAPTK_LIB_EXPORT
+MAPTK_EXPORT
 vital::landmark_sptr transform(vital::landmark_sptr lm,
                                const vital::similarity_d& xform);
 
 
 /// construct a transformed map of landmarks by applying a similarity transformation
-MAPTK_LIB_EXPORT
+MAPTK_EXPORT
 vital::landmark_map_sptr transform(vital::landmark_map_sptr landmarks,
                                    const vital::similarity_d& xform);
 
@@ -113,7 +115,7 @@ vital::landmark_map_sptr transform(vital::landmark_map_sptr landmarks,
  * \note This assumes most cameras are viewing from the same side of
  *       3D landmarks and have similar up directions.
  */
-MAPTK_LIB_EXPORT
+MAPTK_EXPORT
 vital::similarity_d
 canonical_transform(vital::camera_map_sptr cameras,
                     vital::landmark_map_sptr landmarks);
@@ -131,7 +133,7 @@ canonical_transform(vital::camera_map_sptr cameras,
  * mean landmark location and with a normal aligning with axis A.
  *
  */
-MAPTK_LIB_EXPORT
+MAPTK_EXPORT
 void
 necker_reverse(vital::camera_map_sptr& cameras,
                vital::landmark_map_sptr& landmarks);

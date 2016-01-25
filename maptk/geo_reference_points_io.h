@@ -36,7 +36,9 @@
 #ifndef MAPTK_GEO_REFERENCE_POINTS_IO_H_
 #define MAPTK_GEO_REFERENCE_POINTS_IO_H_
 
-#include <maptk/config.h>
+
+#include <vital/vital_config.h>
+#include <maptk/maptk_export.h>
 
 #include "local_geo_cs.h"
 
@@ -70,7 +72,7 @@ namespace maptk {
  * Landmark Z position, or altitude, should be given in meters.
  *
  */
-MAPTK_LIB_EXPORT
+MAPTK_EXPORT
 void
 load_reference_file(vital::path_t const& reference_file,
                     local_geo_cs & lgcs,

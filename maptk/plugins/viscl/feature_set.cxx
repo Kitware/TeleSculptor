@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@
 
 #include <viscl/core/manager.h>
 
+#include <memory>
 
 namespace kwiver {
 namespace maptk {
@@ -125,7 +126,7 @@ features_to_viscl(const vital::feature_set& features)
   queue->finish();
 
   cl::ImageFormat kptimg_fmt(CL_R, CL_SIGNED_INT32);
-  fs.kptmap_ = viscl::image(boost::make_shared<cl::Image2D>(
+  fs.kptmap_ = viscl::image(std::make_shared<cl::Image2D>(
                             viscl::manager::inst()->get_context(),
                             CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
                             kptimg_fmt,

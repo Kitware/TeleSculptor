@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,26 +28,56 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * \file
- * \brief PROJ module configuration header
- */
+#ifndef MAPTK_DATAFILTEROPTIONS_H_
+#define MAPTK_DATAFILTEROPTIONS_H_
 
-#ifndef MAPTK_PLUGINS_PROJ_PROJ_CONFIG_H_
-#define MAPTK_PLUGINS_PROJ_PROJ_CONFIG_H_
+#include <qtGlobal.h>
 
-#include <maptk/config.h>
+#include <QtGui/QWidget>
 
+class DataFilterOptionsPrivate;
 
-/// Define symbol visibility in maptk::proj
-#ifndef MAPTK_PROJ_EXPORT
-# ifdef MAKE_MAPTK_PROJ_LIB
-#   define MAPTK_PROJ_EXPORT MAPTK_EXPORT
-# else
-#   define MAPTK_PROJ_EXPORT MAPTK_IMPORT
-# endif
-/// Marks symbols not to be exported
-# define MATPK_PROJ_NO_EXPORT MAPTK_NO_EXPORT
+class DataFilterOptions : public QWidget
+{
+  Q_OBJECT
+
+public:
+  enum ActiveFilter
+  {
+    Minimum = 0x1,
+    Maximum = 0x2,
+  };
+  Q_DECLARE_FLAGS(ActiveFilters, ActiveFilter)
+
+  explicit DataFilterOptions(QString const& settingsGroup, QWidget* parent = 0,
+                             Qt::WindowFlags flags = 0);
+  virtual ~DataFilterOptions();
+
+  double minimum() const;
+  double maximum() const;
+  ActiveFilters activeFilters() const;
+
+  QString iconText() const;
+
+public slots:
+  void setAvailableRange(double lower, double upper);
+
+signals:
+  void modified();
+
+protected slots:
+  void resetRange();
+
+  void updateMinimum();
+  void updateMaximum();
+
+private:
+  QTE_DECLARE_PRIVATE_RPTR(DataFilterOptions)
+  QTE_DECLARE_PRIVATE(DataFilterOptions)
+
+  QTE_DISABLE_COPY(DataFilterOptions)
+};
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(DataFilterOptions::ActiveFilters)
+
 #endif
-
-#endif // MAPTK_PLUGINS_PROJ_PROJ_CONFIG_H_

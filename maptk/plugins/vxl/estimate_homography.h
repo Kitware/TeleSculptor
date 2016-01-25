@@ -36,8 +36,11 @@
 #ifndef MAPTK_PLUGINS_VXL_ESTIMATE_HOMOGRAPHY_H_
 #define MAPTK_PLUGINS_VXL_ESTIMATE_HOMOGRAPHY_H_
 
+
+#include <vital/vital_config.h>
+#include <maptk/plugins/vxl/maptk_vxl_export.h>
+
 #include <vital/algo/estimate_homography.h>
-#include <maptk/plugins/vxl/vxl_config.h>
 
 
 namespace kwiver {

@@ -36,7 +36,10 @@
 #ifndef MAPTK_PLUGINS_CORE_REGISTER_ALGORITHMS_H_
 #define MAPTK_PLUGINS_CORE_REGISTER_ALGORITHMS_H_
 
-#include <maptk/plugins/core/plugin_core_config.h>
+
+#include <vital/vital_config.h>
+#include <maptk/plugins/core/maptk_core_export.h>
+
 #include <vital/registrar.h>
 
 
@@ -47,7 +50,7 @@ namespace core
 {
 
 // Register core algorithms with the given or global registrar
-PLUGIN_CORE_EXPORT
+MAPTK_CORE_EXPORT
 int register_algorithms( vital::registrar &reg = vital::registrar::instance() );
 
 } // end namespace core

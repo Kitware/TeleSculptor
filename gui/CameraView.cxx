@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2015-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -506,6 +506,14 @@ CameraView::~CameraView()
 }
 
 //-----------------------------------------------------------------------------
+void CameraView::setBackgroundColor(QColor const& color)
+{
+  QTE_D();
+  d->renderer->SetBackground(color.redF(), color.greenF(), color.blueF());
+  d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
 void CameraView::setImageData(vtkImageData* data, QSize const& dimensions)
 {
   QTE_D();
@@ -528,7 +536,6 @@ void CameraView::setImageData(vtkImageData* data, QSize const& dimensions)
     d->imageActor->Update();
 
     d->imageActor->GetBounds(d->imageBounds);
-    auto const w = d->imageBounds[1] + 1 - d->imageBounds[0];
     auto const h = d->imageBounds[3] + 1 - d->imageBounds[2];
     d->setTransforms(qMax(0, static_cast<int>(h)));
   }
@@ -542,7 +549,7 @@ void CameraView::setActiveFrame(unsigned frame)
   QTE_D();
 
   d->featureRep->SetActiveFrame(frame);
-  this->update();
+  d->UI.renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -608,7 +615,7 @@ void CameraView::addLandmark(
 
   d->landmarks.addPoint(x, y, 0.0, d->landmarkData.value(id));
 
-  this->update();
+  d->UI.renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -621,7 +628,7 @@ void CameraView::addResidual(
 
   d->residuals.addSegment(x1, y1, -0.2, x2, y2, -0.2);
 
-  this->update();
+  d->UI.renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -702,7 +709,7 @@ void CameraView::updateFeatures()
   if (d->featuresDirty)
   {
     d->featureRep->Update();
-    this->update();
+    d->UI.renderWidget->update();
 
     d->featuresDirty = false;
   }

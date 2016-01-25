@@ -36,10 +36,14 @@
 #ifndef MAPTK_PLUGINS_VXL_IMAGE_IO_H_
 #define MAPTK_PLUGINS_VXL_IMAGE_IO_H_
 
+
+#include <vital/vital_config.h>
+#include <maptk/plugins/vxl/maptk_vxl_export.h>
+
 #include <vital/algo/image_io.h>
-#include <maptk/plugins/vxl/vxl_config.h>
 
 #include <memory>
+
 
 namespace kwiver {
 namespace maptk {

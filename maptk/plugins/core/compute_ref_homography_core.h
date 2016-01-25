@@ -36,13 +36,14 @@
 #ifndef MAPTK_PLUGINS_CORE_COMPUTE_REF_HOMOGRAPHY_CORE_H_
 #define MAPTK_PLUGINS_CORE_COMPUTE_REF_HOMOGRAPHY_CORE_H_
 
+#include <vital/vital_config.h>
+#include <maptk/plugins/core/maptk_core_export.h>
+
 #include <vital/algo/algorithm.h>
 #include <vital/algo/compute_ref_homography.h>
 #include <vital/types/homography.h>
 #include <vital/types/image_container.h>
 #include <vital/types/track_set.h>
-
-#include <maptk/plugins/core/plugin_core_config.h>
 
 #include <memory>
 
@@ -66,7 +67,7 @@ namespace core
  * successive non-regressing frames. This is ideal for when it is desired to
  * compute reference frames on all frames in a sequence.
  */
-class PLUGIN_CORE_EXPORT compute_ref_homography_core
+class MAPTK_CORE_EXPORT compute_ref_homography_core
   : public vital::algorithm_impl<compute_ref_homography_core, vital::algo::compute_ref_homography>
 {
 public:

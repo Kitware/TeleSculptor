@@ -284,10 +284,10 @@ necker_reverse(vital::camera_map_sptr& cameras,
 
 /// \cond DoxygenSuppress
 #define INSTANTIATE_TRANSFORM(T) \
-template MAPTK_LIB_EXPORT vital::covariance_<3,T> \
+template MAPTK_EXPORT vital::covariance_<3,T> \
 transform(const vital::covariance_<3,T>& covar, \
           const vital::similarity_<T>& xform); \
-template MAPTK_LIB_EXPORT void \
+template MAPTK_EXPORT void \
 transform_inplace(const vital::similarity_<T>& xform, \
                   vital::landmark_<T>& cam);
 

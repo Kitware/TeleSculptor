@@ -70,6 +70,7 @@ protected slots:
   void setDataColorIcon(QIcon const&);
 
   void updateActiveDataField();
+  void updateFilters();
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(PointOptions)

@@ -12,11 +12,14 @@ set( maptk_viscl_headers_public
   match_set.h
   register_algorithms.h
   utils.h
-  viscl_config.h
   )
 kwiver_install_headers(
   SUBDIR     maptk/plugins/viscl
   ${maptk_viscl_headers_public}
+  )
+kwiver_install_headers(
+  ${CMAKE_CURRENT_BINARY_DIR}/maptk_viscl_export.h
+  NOPATH   SUBDIR     maptk/plugins/viscl
   )
 
 set( maptk_viscl_sources
@@ -31,7 +34,7 @@ set( maptk_viscl_sources
   register_algorithms.cxx
   utils.cxx
   )
-maptk_add_library( maptk_viscl
+kwiver_add_library( maptk_viscl
   ${maptk_viscl_headers_public}
   ${maptk_viscl_sources}
   )

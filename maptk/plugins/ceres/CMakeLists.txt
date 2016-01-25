@@ -3,7 +3,6 @@
 
 set( maptk_ceres_headers_public
   bundle_adjust.h
-  ceres_config.h
   lens_distortion.h
   register_algorithms.h
   reprojection_error.h
@@ -15,20 +14,25 @@ kwiver_install_headers(
   SUBDIR     maptk/plugins/ceres
   ${maptk_ceres_headers_public}
   )
+kwiver_install_headers(
+  ${CMAKE_CURRENT_BINARY_DIR}/maptk_ceres_export.h
+  NOPATH   SUBDIR     maptk/plugins/ceres
+  )
 
 set( maptk_ceres_sources
   bundle_adjust.cxx
   register_algorithms.cxx
   types.cxx
   )
-maptk_add_library( maptk_ceres
+kwiver_add_library( maptk_ceres
+
   ${maptk_ceres_headers_public}
   ${maptk_ceres_headers_private}
   ${maptk_ceres_sources}
   )
 target_link_libraries( maptk_ceres
-  maptk
-  ceres
+  PUBLIC               maptk
+                       ceres
   )
 
 maptk_create_plugin( maptk_ceres

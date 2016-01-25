@@ -36,8 +36,12 @@
 #ifndef MAPTK_PLUGINS_PROJ_REGISTER_ALGORITHMS_H_
 #define MAPTK_PLUGINS_PROJ_REGISTER_ALGORITHMS_H_
 
-#include <maptk/plugins/proj/proj_config.h>
+
+#include <vital/vital_config.h>
+#include <maptk/plugins/proj/maptk_proj_export.h>
+
 #include <vital/registrar.h>
+
 
 namespace kwiver {
 namespace maptk {

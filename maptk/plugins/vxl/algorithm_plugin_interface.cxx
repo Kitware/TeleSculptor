@@ -34,9 +34,7 @@
  */
 
 #include <maptk/plugins/vxl/register_algorithms.h>
-#include <maptk/plugins/vxl/vxl_config.h>
 #include <maptk/plugin_interface/algorithm_plugin_interface.h>
-#include <vital/registrar.h>
 
 
 int register_algo_impls(kwiver::vital::registrar &reg)

@@ -36,7 +36,9 @@
 #ifndef MAPTK_MATCH_MATRIX_H_
 #define MAPTK_MATCH_MATRIX_H_
 
-#include <maptk/config.h>
+
+#include <vital/vital_config.h>
+#include <maptk/maptk_export.h>
 
 #include <vital/types/track_set.h>
 #include <Eigen/Sparse>
@@ -60,7 +62,7 @@ namespace maptk {
  *                         frame ids in the track set.
  *  \return an NxN symmetric match matrix
  */
-MAPTK_LIB_EXPORT
+MAPTK_EXPORT
 Eigen::SparseMatrix<unsigned int>
 match_matrix(const vital::track_set_sptr tracks,
                    std::vector<vital::frame_id_t>& frames);

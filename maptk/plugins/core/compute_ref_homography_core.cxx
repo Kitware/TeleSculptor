@@ -44,8 +44,6 @@
 #include <vector>
 #include <memory>
 
-#include <boost/math/special_functions/fpclassify.hpp>
-
 #include <vital/algo/estimate_homography.h>
 #include <vital/logger/logger.h>
 

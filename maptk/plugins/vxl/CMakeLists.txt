@@ -17,11 +17,14 @@ set(maptk_vxl_headers_public
   register_algorithms.h
   triangulate_landmarks.h
   vil_image_memory.h
-  vxl_config.h
   )
 kwiver_install_headers(
   SUBDIR     maptk/plugins/vxl
   ${maptk_vxl_headers_public}
+  )
+kwiver_install_headers(
+  ${CMAKE_CURRENT_BINARY_DIR}/maptk_vxl_export.h
+  NOPATH   SUBDIR     maptk/plugins/vxl
   )
 
 set(maptk_vxl_sources
@@ -42,13 +45,13 @@ set(maptk_vxl_sources
   vil_image_memory.cxx
   )
 
-maptk_add_library( maptk_vxl
+kwiver_add_library( maptk_vxl
   ${maptk_vxl_headers_public}
   ${maptk_vxl_sources}
   )
 target_link_libraries( maptk_vxl
-  maptk
-  rrel rsdl vnl vgl_algo vil vpgl_algo
+  PUBLIC               maptk
+                       rrel rsdl vnl vgl_algo vil vpgl_algo
   )
 
 maptk_create_plugin( maptk_vxl

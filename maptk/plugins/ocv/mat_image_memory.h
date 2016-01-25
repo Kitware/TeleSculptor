@@ -36,9 +36,11 @@
 #ifndef MAPTK_PLUGINS_OCV_MAT_IMAGE_MEMORY_H_
 #define MAPTK_PLUGINS_OCV_MAT_IMAGE_MEMORY_H_
 
-#include <vital/types/image.h>
 
-#include <maptk/plugins/ocv/ocv_config.h>
+#include <vital/vital_config.h>
+#include <maptk/plugins/ocv/maptk_ocv_export.h>
+
+#include <vital/types/image.h>
 
 #include <opencv2/core/core.hpp>
 

@@ -36,9 +36,11 @@
 #ifndef MAPTK_PLUGINS_OCV_ESTIMATE_HOMOGRAPHY_H_
 #define MAPTK_PLUGINS_OCV_ESTIMATE_HOMOGRAPHY_H_
 
-#include <vital/algo/estimate_homography.h>
 
-#include <maptk/plugins/ocv/ocv_config.h>
+#include <vital/vital_config.h>
+#include <maptk/plugins/ocv/maptk_ocv_export.h>
+
+#include <vital/algo/estimate_homography.h>
 
 
 namespace kwiver {

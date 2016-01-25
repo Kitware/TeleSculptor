@@ -36,9 +36,11 @@
 #ifndef MAPTK_PLUGINS_OCV_IMAGE_IO_H_
 #define MAPTK_PLUGINS_OCV_IMAGE_IO_H_
 
-#include <vital/algo/image_io.h>
 
-#include <maptk/plugins/ocv/ocv_config.h>
+#include <vital/vital_config.h>
+#include <maptk/plugins/ocv/maptk_ocv_export.h>
+
+#include <vital/algo/image_io.h>
 
 
 namespace kwiver {

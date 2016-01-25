@@ -38,7 +38,6 @@
 #include <iostream>
 #include <vector>
 
-#include <boost/algorithm/string/join.hpp>
 #include <vital/vital_foreach.h>
 
 

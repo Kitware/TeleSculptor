@@ -39,7 +39,6 @@
 #include <set>
 
 #include <vital/vital_foreach.h>
-#include <boost/timer/timer.hpp>
 
 #include <vital/logger/logger.h>
 #include <vital/io/eigen_io.h>
@@ -48,10 +47,6 @@
 
 #include <ceres/ceres.h>
 
-
-
-using boost::timer::cpu_times;
-using boost::timer::nanosecond_type;
 using namespace kwiver::vital;
 
 
@@ -425,24 +420,6 @@ bundle_adjust
   typedef camera_map::map_camera_t map_camera_t;
   typedef landmark_map::map_landmark_t map_landmark_t;
 
-#define MAPTK_SBA_TIMED(msg, code) \
-  do \
-  { \
-    boost::timer::cpu_timer t; \
-    if (d_->verbose) \
-    { \
-      std::cerr << msg << " ... " << std::endl; \
-    } \
-    code \
-    if (d_->verbose) \
-    { \
-      cpu_times elapsed = t.elapsed(); \
-      /* convert nanosecond to seconds */ \
-      double secs = static_cast<double>(elapsed.system + elapsed.user) * 0.000000001; \
-      std::cerr << "--> " << secs << " s CPU" << std::endl; \
-    } \
-  } while(false)
-
   // extract data from containers
   map_camera_t cams = cameras->cameras();
   map_landmark_t lms = landmarks->landmarks();
@@ -675,8 +652,6 @@ bundle_adjust
 
   cameras = camera_map_sptr(new simple_camera_map(cams));
   landmarks = landmark_map_sptr(new simple_landmark_map(lms));
-
-#undef MAPTK_SBA_TIMED
 }
 
 
