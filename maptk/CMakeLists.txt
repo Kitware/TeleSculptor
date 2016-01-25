@@ -40,17 +40,17 @@ set(maptk_public_headers
 
 
 set(maptk_sources
-  metrics.cxx
-  local_geo_cs.cxx
-  projected_track_set.cxx
+  colorize.cxx
   geo_reference_points_io.cxx
   ins_data.cxx
   ins_data_io.cxx
   interpolate_camera.cxx
+  local_geo_cs.cxx
   match_matrix.cxx
-  triangulate.cxx
+  metrics.cxx
+  projected_track_set.cxx
   transform.cxx
-
+  triangulate.cxx
   )
 
 # Address MSVC fatal error C1128:
