@@ -204,10 +204,11 @@ triangulate_landmarks
       }
       if( !bad_triangulation )
       {
-        landmark_d* lm = new landmark_d(vital::vector_3d(pt3d.x(), pt3d.y(), pt3d.z()));
+        auto lm = std::make_shared<vital::landmark_d>();
+        lm->set_loc(vital::vector_3d(pt3d.x(), pt3d.y(), pt3d.z()));
         lm->set_covar(covariance_3d(error));
         lm->set_observations(lm_cams.size());
-        triangulated_lms[p.first] = landmark_sptr(lm);
+        triangulated_lms[p.first] = lm;
       }
     }
   }
