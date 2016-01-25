@@ -190,7 +190,7 @@ if (MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
   file(GENERATE OUTPUT ${script_file}
     CONTENT "
 set(plugin_libs \"${libs_genex}\")
-set(bundle_path \"${bundle_path})\")
+set(bundle_path \"${bundle_path}\")
           ")
 
   install(CODE "
