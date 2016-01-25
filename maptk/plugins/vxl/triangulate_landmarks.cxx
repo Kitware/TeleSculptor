@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -206,6 +206,7 @@ triangulate_landmarks
       {
         landmark_d* lm = new landmark_d(vital::vector_3d(pt3d.x(), pt3d.y(), pt3d.z()));
         lm->set_covar(covariance_3d(error));
+        lm->set_observations(lm_cams.size());
         triangulated_lms[p.first] = landmark_sptr(lm);
       }
     }
