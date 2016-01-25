@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2015-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -612,8 +612,10 @@ bundle_adjust
   // Update the landmarks with the optimized values
   VITAL_FOREACH(const lm_param_map_t::value_type& lmp, landmark_params)
   {
-    vector_3d pos = Eigen::Map<const vector_3d>(&lmp.second[0]);
-    lms[lmp.first] = landmark_sptr(new landmark_d(pos));
+    auto& lmi = lms[lmp.first];
+    auto updated_lm = std::make_shared<landmark_d>(*lmi);
+    updated_lm->set_loc(Eigen::Map<const vector_3d>(&lmp.second[0]));
+    lmi = updated_lm;
   }
 
   // Update the camera intrinics with optimized values
