@@ -951,7 +951,7 @@ static int maptk_main(int argc, char const* argv[])
   //
   // Compute landmark colors
   //
-  lm_map = kwiver::maptk::compute_landmark_colors(lm_map, tracks);
+  lm_map = kwiver::maptk::compute_landmark_colors(*lm_map, *tracks);
 
   //
   // Write the output PLY file

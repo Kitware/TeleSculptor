@@ -60,8 +60,8 @@ namespace maptk {
  */
 MAPTK_LIB_EXPORT
 vital::track_set_sptr extract_feature_colors(
-  vital::track_set_sptr tracks,
-  vital::image_container_sptr image,
+  vital::track_set const& tracks,
+  vital::image_container const& image,
   vital::frame_id_t frame_id);
 
 /// Compute colors for landmarks
@@ -75,8 +75,8 @@ vital::track_set_sptr extract_feature_colors(
  */
 MAPTK_LIB_EXPORT
 vital::landmark_map_sptr compute_landmark_colors(
-  vital::landmark_map_sptr landmarks,
-  vital::track_set_sptr tracks);
+  vital::landmark_map const& landmarks,
+  vital::track_set const& tracks);
 
 } // end namespace maptk
 } // end namespace kwiver

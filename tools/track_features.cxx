@@ -459,7 +459,10 @@ static int maptk_main(int argc, char const* argv[])
     }
 
     tracks = feature_tracker->track(tracks, i, converted_image, converted_mask);
-    tracks = kwiver::maptk::extract_feature_colors(tracks, image, i);
+    if (tracks)
+    {
+      tracks = kwiver::maptk::extract_feature_colors(*tracks, *image, i);
+    }
 
     // Compute ref homography for current frame with current track set + write to file
     // -> still doesn't take into account a full shotbreak, which would incur a track reset

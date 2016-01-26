@@ -44,18 +44,13 @@ namespace maptk {
 /// Extract feature colors from a frame image
 vital::track_set_sptr
 extract_feature_colors(
-  vital::track_set_sptr tracks,
-  vital::image_container_sptr image,
+  vital::track_set const& tracks,
+  vital::image_container const& image,
   vital::frame_id_t frame_id)
 {
-  if (!tracks)
-  {
-    return {};
-  }
+  auto const& image_data = image.get_image();
 
-  auto const& image_data = image->get_image();
-
-  auto tracks_copy = tracks->tracks();
+  auto tracks_copy = tracks.tracks();
   VITAL_FOREACH (auto& track, tracks_copy)
   {
     auto const si = track->find(frame_id);
@@ -95,13 +90,13 @@ extract_feature_colors(
 
 /// Compute colors for landmarks
 vital::landmark_map_sptr compute_landmark_colors(
-  vital::landmark_map_sptr landmarks,
-  vital::track_set_sptr tracks)
+  vital::landmark_map const& landmarks,
+  vital::track_set const& tracks)
 {
-  auto colored_landmarks = landmarks->landmarks();
+  auto colored_landmarks = landmarks.landmarks();
   auto const no_such_landmark = colored_landmarks.end();
 
-  VITAL_FOREACH (auto const track, tracks->tracks())
+  VITAL_FOREACH (auto const track, tracks.tracks())
   {
     auto const lmid = static_cast<vital::landmark_id_t>(track->id());
     auto lmi = colored_landmarks.find(lmid);
