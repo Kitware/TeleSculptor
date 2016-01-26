@@ -21,6 +21,10 @@ MAP-Tk Library
    That is, applying the reversal a second time will return to the previous
    state.
 
+ * Added a new utility module with functions to extract feature colors from
+   an input image (and apply to relevant features in a feature track set), and
+   to compute landmark colors from a feature track set with color information.
+
 Visualization Application
 
  * Added ability to execute some computations (for now, computing and applying
