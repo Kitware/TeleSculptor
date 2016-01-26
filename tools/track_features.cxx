@@ -39,6 +39,8 @@
 #include <string>
 #include <vector>
 
+#include <maptk/colorize.h>
+
 #include <vital/config/config_block.h>
 #include <vital/config/config_block_io.h>
 #include <vital/logger/logger.h>
@@ -412,14 +414,11 @@ static int maptk_main(int argc, char const* argv[])
   {
     std::cout << "processing frame "<<i<<": "<<files[i]<<std::endl;
 
-    //kwiver::vital::image_container_sptr img = image_reader->load(files[i].string());
-    //kwiver::vital::image_container_sptr converted = image_converter->convert(img);
-
-    kwiver::vital::image_container_sptr converted_img,
-                                mask, converted_mask;
-    converted_img = image_converter->convert( image_reader->load( files[i] ) );
+    auto const image = image_reader->load( files[i] );
+    auto const converted_image = image_converter->convert( image );
 
     // Load the mask for this image if we were given a mask image list
+    kwiver::vital::image_container_sptr mask, converted_mask;
     if( use_masks )
     {
       mask = image_reader->load( mask_files[i] );
@@ -442,8 +441,8 @@ static int maptk_main(int argc, char const* argv[])
       {
         LOG_DEBUG( main_logger,
                    "Inverting mask image pixels" );
-        kwiver::vital::image mask_img( mask->get_image() );
-        kwiver::vital::transform_image( mask_img, invert_mask_pixel );
+        kwiver::vital::image mask_image( mask->get_image() );
+        kwiver::vital::transform_image( mask_image, invert_mask_pixel );
         LOG_DEBUG( main_logger,
                    "Inverting mask image pixels -- Done" );
       }
@@ -451,7 +450,11 @@ static int maptk_main(int argc, char const* argv[])
       converted_mask = image_converter->convert( mask );
     }
 
-    tracks = feature_tracker->track(tracks, i, converted_img, converted_mask);
+    tracks = feature_tracker->track(tracks, i, converted_image, converted_mask);
+    if (tracks)
+    {
+      tracks = kwiver::maptk::extract_feature_colors(*tracks, *image, i);
+    }
 
     // Compute ref homography for current frame with current track set + write to file
     // -> still doesn't take into account a full shotbreak, which would incur a track reset

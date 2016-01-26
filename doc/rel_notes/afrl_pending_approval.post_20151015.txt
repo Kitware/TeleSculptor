@@ -27,6 +27,10 @@ MAP-Tk Library
  * Applying transformations now better preserve additional data associated with
    landmarks (e.g. color, number of observations).
 
+ * Added a new utility module with functions to extract feature colors from
+   an input image (and apply to relevant features in a feature track set), and
+   to compute landmark colors from a feature track set with color information.
+
 Core Plugin
 
  * Updated triangulate_landmarks to set the number of observations on each
@@ -94,6 +98,14 @@ SketchUp Plugin
    loading the MAP-Tk config files or individually loading KRTD or PLY files.
    Once loaded, the cameras are presented as "Photo Match" pages which allows
    the user to build models aligned to images.
+
+Tools
+
+ * The track features tool now extracts feature colors and writes them to the
+   track file.
+
+ * The bundle adjust tool now computes landmark colors from feature colors and
+   writes them to the landmark PLY.
 
 Fixes since last public release
 -------------------------------

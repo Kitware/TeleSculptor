@@ -62,6 +62,7 @@
 #include <kwiversys/CommandLineArguments.hxx>
 #include <kwiversys/Directory.hxx>
 
+#include <maptk/colorize.h>
 #include <maptk/ins_data_io.h>
 #include <maptk/local_geo_cs.h>
 #include <maptk/geo_reference_points_io.h>
@@ -954,6 +955,11 @@ static int maptk_main(int argc, char const* argv[])
     std::cerr << "--> Applying to landmarks..." << std::endl;
     lm_map = kwiver::maptk::transform(lm_map, sim_transform);
   }
+
+  //
+  // Compute landmark colors
+  //
+  lm_map = kwiver::maptk::compute_landmark_colors(*lm_map, *tracks);
 
   //
   // Write the output PLY file
