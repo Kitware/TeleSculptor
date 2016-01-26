@@ -18,7 +18,6 @@ target_link_libraries(maptk_match_matrix
 kwiver_add_executable(maptk_pos2krtd pos2krtd.cxx)
 target_link_libraries(maptk_pos2krtd
   PRIVATE             maptk vital_apm
-                    ${Boost_SYSTEM_LIBRARY}
   )
 
 kwiver_add_executable(maptk_bundle_adjust_tracks bundle_adjust_tracks.cxx)
