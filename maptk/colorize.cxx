@@ -99,12 +99,13 @@ vital::landmark_map_sptr compute_landmark_colors(
   vital::track_set_sptr tracks)
 {
   auto colored_landmarks = landmarks->landmarks();
-  VITAL_FOREACH (auto& lmi, colored_landmarks)
-  {
-    auto const tid = static_cast<kwiver::vital::track_id_t>(lmi.first);
-    auto const track = tracks->get_track(tid);
+  auto const no_such_landmark = colored_landmarks.end();
 
-    if (track)
+  VITAL_FOREACH (auto const track, tracks->tracks())
+  {
+    auto const lmid = static_cast<vital::landmark_id_t>(track->id());
+    auto lmi = colored_landmarks.find(lmid);
+    if (lmi != no_such_landmark)
     {
       int ra = 0, ga = 0, ba = 0, k = 0; // accumulators
       VITAL_FOREACH (auto const& ts, *track)
@@ -122,9 +123,9 @@ vital::landmark_map_sptr compute_landmark_colors(
         auto const g = static_cast<unsigned char>(ga / k);
         auto const b = static_cast<unsigned char>(ba / k);
 
-        auto lm = std::make_shared<kwiver::vital::landmark_d>(*lmi.second);
+        auto lm = std::make_shared<kwiver::vital::landmark_d>(*(lmi->second));
         lm->set_color({r, g, b});
-        lmi.second = lm;
+        lmi->second = lm;
       }
     }
   }
