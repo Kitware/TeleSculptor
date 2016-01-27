@@ -36,7 +36,7 @@
 #ifndef MAPTK_COLORIZE_H_
 #define MAPTK_COLORIZE_H_
 
-#include <maptk/config.h>
+#include <maptk/maptk_export.h>
 
 #include <vital/types/image_container.h>
 #include <vital/types/landmark_map.h>
@@ -58,7 +58,7 @@ namespace maptk {
  *  \param [in] frame_id the frame number of the image
  *  \return a track set with updated features
  */
-MAPTK_LIB_EXPORT
+MAPTK_EXPORT
 vital::track_set_sptr extract_feature_colors(
   vital::track_set const& tracks,
   vital::image_container const& image,
@@ -73,7 +73,7 @@ vital::track_set_sptr extract_feature_colors(
  *  \param [in] tracks tracks to be used for computing landmark colors
  *  \return a set of colored landmarks
  */
-MAPTK_LIB_EXPORT
+MAPTK_EXPORT
 vital::landmark_map_sptr compute_landmark_colors(
   vital::landmark_map const& landmarks,
   vital::track_set const& tracks);
