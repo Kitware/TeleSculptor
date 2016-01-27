@@ -113,7 +113,7 @@ public:
   std::string pattern;
 
   /// Internal variables
-  boost::circular_buffer< cv::Mat > buffer;
+  std::deque< cv::Mat > buffer; // managed as a circular buffer
   frame_id_t cur_frame_id;
 };
 
@@ -217,8 +217,7 @@ draw_tracks
 
   if( !d_->past_frames_to_show.empty() )
   {
-    d_->buffer.set_capacity( *std::max_element( d_->past_frames_to_show.begin(),
-                                                d_->past_frames_to_show.end()) );
+    d_->buffer.resize( *std::max_element( d_->past_frames_to_show.begin(), d_->past_frames_to_show.end()) );
   }
 }
 
@@ -508,9 +507,11 @@ draw_tracks
     }
 
     // Store last image with all features and shift lines already drawn on it
-    if( d_->buffer.capacity() > 0 )
+    // add new element to buffer
+    if( d_->buffer.max_size() > 0 )
     {
       d_->buffer.push_back( img );
+      d_->buffer.pop_front();
     }
 
     // Increase frame id counter
