@@ -252,9 +252,6 @@ close_loops_homography_guided
   d_->checkpoint_percent_overlap_ = config->get_value<double>( "checkpoint_percent_overlap" );
   d_->homography_filename_ = config->get_value<std::string>( "homography_filename" );
 
-  // Set buffer capacity
-  d_->buffer_.resize( d_->max_checkpoint_frames_ );
-
   // Touch and reset output file
   if( !d_->homography_filename_.empty() )
   {
@@ -314,7 +311,10 @@ close_loops_homography_guided
       overlap( vnl_double_3x3( tmp.data() ), width, height ) < d_->checkpoint_percent_overlap_ )
   {
     d_->buffer_.push_back( checkpoint_entry_t( frame_number, homog ) );
-    d_->buffer_.pop_front();
+    if( d_->buffer_.size() > d_->max_checkpoint_frames_ )
+    {
+      d_->buffer_.pop_front();
+    }
   }
 
   // Perform matching to any past checkpoints we want to test
