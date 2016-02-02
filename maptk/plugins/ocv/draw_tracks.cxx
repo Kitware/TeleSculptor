@@ -508,7 +508,7 @@ draw_tracks
 
     // Store last image with all features and shift lines already drawn on it
     // add new element to buffer
-    if( d_->buffer.max_size() > 0 )
+    if( d_->buffer.size() > 0 )
     {
       d_->buffer.push_back( img );
       d_->buffer.pop_front();
