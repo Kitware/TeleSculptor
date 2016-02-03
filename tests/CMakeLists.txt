@@ -2,6 +2,36 @@ project( maptk_tests )
 
 set(no_install TRUE)
 
+# ==================================================================
+###
+# Generate correct timer header based on availbility of timer
+#
+message( "VITAL_USE_STD_RANDOM: ${VITAL_USE_STD_RANDOM}" )
+
+if (VITAL_USE_STD_RANDOM)
+
+  configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/std-test_random_point.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/test_random_point.h" )
+
+else()
+  # Required Boost external dependency
+  if(WIN32)
+    set(Boost_USE_STATIC_LIBS TRUE)
+  endif()
+
+  find_package(Boost 1.50)
+  add_definitions(-DBOOST_ALL_NO_LIB)
+  include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+
+  configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/boost-test_random_point.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/test_random_point.h" )
+
+endif()
+
+
+
 if (WIN32)
   # TODO: Output to a different directory and then use $<CONFIGURATION> in the
   # working path when generator expressions are supported in test properties.
