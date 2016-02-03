@@ -60,7 +60,6 @@ kwiver_add_library(
 target_link_libraries( maptk
   PUBLIC               vital
                        kwiversys
-                     ${Boost_LIBRARIES} ##+ remove
   )
 
 

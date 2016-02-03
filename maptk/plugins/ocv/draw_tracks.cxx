@@ -41,12 +41,11 @@
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
+#include <cstdio>
+#include <deque>
 
 #include <vital/vital_foreach.h>
 #include <kwiversys/SystemTools.hxx>
-
-#include <boost/format.hpp>
-#include <boost/circular_buffer.hpp>
 
 #include <maptk/plugins/ocv/image_container.h>
 #include <maptk/plugins/ocv/ocv_algo_tools.h>
@@ -111,10 +110,10 @@ public:
   bool swap_comparison_set;
   fid_offset_vec_t past_frames_to_show;
   bool write_images_to_disk;
-  boost::format pattern;
+  std::string pattern;
 
   /// Internal variables
-  boost::circular_buffer< cv::Mat > buffer;
+  std::deque< cv::Mat > buffer; // managed as a circular buffer
   frame_id_t cur_frame_id;
 };
 
@@ -176,7 +175,7 @@ draw_tracks
                      "the current frame." );
   config->set_value( "write_images_to_disk", "true",
                      "Should images be written out to disk?" );
-  config->set_value( "pattern", "feature_tracks_%1%.png",
+  config->set_value( "pattern", "feature_tracks_%05d.png",
                      "The output pattern for writing images to disk." );
 
   return config;
@@ -214,12 +213,11 @@ draw_tracks
   d_->draw_comparison_lines = config->get_value<bool>( "draw_comparison_lines" );
   d_->swap_comparison_set = config->get_value<bool>( "swap_comparison_set" );
   d_->write_images_to_disk = config->get_value<bool>( "write_images_to_disk" );
-  d_->pattern = boost::format( config->get_value<std::string>( "pattern" ) );
+  d_->pattern = config->get_value<std::string>( "pattern" );
 
   if( !d_->past_frames_to_show.empty() )
   {
-    d_->buffer.set_capacity( *std::max_element( d_->past_frames_to_show.begin(),
-                                                d_->past_frames_to_show.end()) );
+    d_->buffer.resize( *std::max_element( d_->past_frames_to_show.begin(), d_->past_frames_to_show.end()) );
   }
 }
 
@@ -461,7 +459,14 @@ draw_tracks
     write_image_to_disk &= ( !comparison_set_provided || comparison_track_found );
 
     // Fully generate and output the image
-    std::string ofn = boost::str( d_->pattern % fid );
+    std::string ofn;
+    int max_len = d_->pattern.size() + 4096;
+    ofn.resize( max_len );
+    int num_bytes = snprintf( &ofn[0], max_len, d_->pattern.c_str(), fid );
+    if (num_bytes < max_len)
+    {
+      ofn.resize( num_bytes );
+    }
 
     output_image = cv::Mat( img.rows, display_frames*img.cols, img.type(), cv::Scalar(0) );
 
@@ -502,9 +507,11 @@ draw_tracks
     }
 
     // Store last image with all features and shift lines already drawn on it
-    if( d_->buffer.capacity() > 0 )
+    // add new element to buffer
+    if( d_->buffer.size() > 0 )
     {
       d_->buffer.push_back( img );
+      d_->buffer.pop_front();
     }
 
     // Increase frame id counter

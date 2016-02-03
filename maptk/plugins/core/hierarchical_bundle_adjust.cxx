@@ -44,7 +44,7 @@
 #include <math.h>
 
 #include <vital/vital_foreach.h>
-#include <boost/timer/timer.hpp>
+#include <vital/util/cpu_timer.h>
 
 #include <vital/algo/optimize_cameras.h>
 #include <vital/algo/triangulate_landmarks.h>
@@ -77,7 +77,7 @@ namespace // anonymous
 camera_map::map_camera_t
 subsample_cameras(camera_map::map_camera_t const& cameras, unsigned n)
 {
-  boost::timer::auto_cpu_timer t("Camera sub-sampling: %t sec CPU, %w sec wall\n");
+  kwiver::vital::scoped_cpu_timer t( "Camera sub-sampling" );
 
   // if sub-sample is 1, no sub-sampling occurs, just return a copy of the map
   if (n == 1)
@@ -336,7 +336,7 @@ hierarchical_bundle_adjust
     cerr << "SBA optimizing active cameras (" << active_cam_map->size() << " cams)" << endl;
     // updated active_cam_map and landmarks
     { // scope block
-      boost::timer::auto_cpu_timer t("inner-SBA iteration: %t sec CPU, %w sec wall\n");
+      kwiver::vital::scoped_cpu_timer t( "inner-SBA iteration" );
       d_->sba->optimize(active_cam_map, landmarks, tracks);
     }
 
@@ -376,7 +376,7 @@ hierarchical_bundle_adjust
       // ASSUMING even interpolation for now
       camera_map::map_camera_t::const_iterator it = ac_map.begin();
       { // scope block
-        boost::timer::auto_cpu_timer t("interpolating cams: %t sec CPU, %w sec wall\n");
+        kwiver::vital::scoped_cpu_timer t( "interpolating cams" );
         while (it != ac_map.end())
         {
           cur_frm = it->first;
@@ -430,7 +430,7 @@ hierarchical_bundle_adjust
         }
 
         { // scope block
-          boost::timer::auto_cpu_timer t("\t- cameras optimization: %t sec CPU, %w sec wall\n");
+          kwiver::vital::scoped_cpu_timer t( "\t- cameras optimization" );
           d_->camera_optimizer->optimize(interped_cams_p, tracks, landmarks);
         }
 
@@ -474,7 +474,7 @@ hierarchical_bundle_adjust
         }
 
         { // scoped block
-          boost::timer::auto_cpu_timer t("\t- lm triangulation: %t sec CPU, %w sec wall\n");
+          kwiver::vital::scoped_cpu_timer t( "\t- lm triangulation" );
           d_->lm_triangulator->triangulate(active_cam_map, tracks, landmarks);
         }
 

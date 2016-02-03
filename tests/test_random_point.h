@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2011-2015 by Kitware, Inc.
+ * Copyright 2011-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,8 +39,7 @@
 #define MAPTK_TEST_TEST_RANDOM_POINT_H_
 
 #include <vital/types/vector.h>
-#include <boost/random.hpp>
-#include <boost/random/normal_distribution.hpp>
+#include <random>
 
 namespace kwiver {
 namespace maptk {
@@ -49,32 +48,36 @@ namespace testing
 {
 
 /// random number generator type
-typedef boost::mt19937 rng_t;
+typedef std::mt19937 rng_t;
+
 /// normal distribution
-typedef boost::normal_distribution<> norm_dist_t;
-/// normal distribution random generator type
-typedef boost::variate_generator<rng_t&, norm_dist_t> normal_gen_t;
+typedef std::normal_distribution<> norm_dist_t;
 
 /// a global random number generator instance
 static rng_t rng;
 
 
 inline
-kwiver::vital::vector_3d random_point3d(double stdev)
+kwiver::vital::vector_3d
+random_point3d( double stdev )
 {
-  normal_gen_t norm(rng, norm_dist_t(0.0, stdev));
-  kwiver::vital::vector_3d v(norm(), norm(), norm());
+  norm_dist_t norm( 0.0, stdev );
+  kwiver::vital::vector_3d v( norm( rng ), norm( rng ), norm( rng ) );
+
   return v;
 }
 
 
 inline
-kwiver::vital::vector_2d random_point2d(double stdev)
+kwiver::vital::vector_2d
+random_point2d( double stdev )
 {
-  normal_gen_t norm(rng, norm_dist_t(0.0, stdev));
-  kwiver::vital::vector_2d v(norm(), norm());
+  norm_dist_t norm( 0.0, stdev );
+  kwiver::vital::vector_2d v( norm( rng ), norm( rng ) );
+
   return v;
 }
+
 
 } // end namespace testing
 

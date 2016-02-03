@@ -41,8 +41,7 @@
 #include <iostream>
 #include <string>
 #include <functional>
-
-#include <boost/circular_buffer.hpp>
+#include <deque>
 
 #include <vital/algo/compute_ref_homography.h>
 #include <vital/algo/match_features.h>
@@ -88,7 +87,7 @@ public:
 
 
 // Buffer type for detected checkpoints
-typedef boost::circular_buffer< checkpoint_entry_t > checkpoint_buffer_t;
+typedef std::deque< checkpoint_entry_t > checkpoint_buffer_t;
 
 // Buffer reverse iterator
 typedef checkpoint_buffer_t::reverse_iterator buffer_ritr;
@@ -253,9 +252,6 @@ close_loops_homography_guided
   d_->checkpoint_percent_overlap_ = config->get_value<double>( "checkpoint_percent_overlap" );
   d_->homography_filename_ = config->get_value<std::string>( "homography_filename" );
 
-  // Set buffer capacity
-  d_->buffer_.set_capacity( d_->max_checkpoint_frames_ );
-
   // Touch and reset output file
   if( !d_->homography_filename_.empty() )
   {
@@ -315,6 +311,10 @@ close_loops_homography_guided
       overlap( vnl_double_3x3( tmp.data() ), width, height ) < d_->checkpoint_percent_overlap_ )
   {
     d_->buffer_.push_back( checkpoint_entry_t( frame_number, homog ) );
+    if( d_->buffer_.size() > d_->max_checkpoint_frames_ )
+    {
+      d_->buffer_.pop_front();
+    }
   }
 
   // Perform matching to any past checkpoints we want to test

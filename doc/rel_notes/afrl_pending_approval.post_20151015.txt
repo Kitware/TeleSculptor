@@ -21,8 +21,8 @@ MAP-Tk Library
    That is, applying the reversal a second time will return to the previous
    state.
 
- * Removed usage of boost file_system and program_options libraries. Replaced
-   with kwiversys equivalent constructs.
+ * Removed usage of boost file_system, program_options, timer and
+   chrono libraries. Replaced with kwiversys equivalent constructs.
 
  * Applying transformations now better preserve additional data associated with
    landmarks (e.g. color, number of observations).
