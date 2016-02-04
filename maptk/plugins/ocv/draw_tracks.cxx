@@ -44,6 +44,7 @@
 #include <cstdio>
 #include <deque>
 
+#include <vital/vital_config.h>
 #include <vital/vital_foreach.h>
 #include <kwiversys/SystemTools.hxx>
 
@@ -70,6 +71,9 @@ typedef std::vector< std::pair< cv::Point, cv::Point > > line_vec_t;
 /// Helper typedef for storing past frame id offsets
 typedef std::vector< frame_id_t > fid_offset_vec_t;
 
+#if VITAL_SYSTEM_WIN_API
+#define snprintf _snprintf
+#endif
 
 /// Private implementation class
 class draw_tracks::priv
