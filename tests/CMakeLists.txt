@@ -4,17 +4,15 @@ set(no_install TRUE)
 
 # ==================================================================
 ###
-# Generate correct timer header based on availbility of timer
+# Generate correct timer header based on availbility of random
 #
-message( "VITAL_USE_STD_RANDOM: ${VITAL_USE_STD_RANDOM}" )
 
-if (VITAL_USE_STD_RANDOM)
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/test_random_point.h.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/test_random_point.h" )
 
-  configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/std-test_random_point.h.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/test_random_point.h" )
+if (NOT VITAL_USE_STD_RANDOM)
 
-else()
   # Required Boost external dependency
   if(WIN32)
     set(Boost_USE_STATIC_LIBS TRUE)
@@ -24,13 +22,7 @@ else()
   add_definitions(-DBOOST_ALL_NO_LIB)
   include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
-  configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/boost-test_random_point.h.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/test_random_point.h" )
-
 endif()
-
-
 
 if (WIN32)
   # TODO: Output to a different directory and then use $<CONFIGURATION> in the
@@ -50,6 +42,7 @@ set(maptk_test_data_directory
 
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
+include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 include_directories("${MAPTK_SOURCE_DIR}")
 include_directories("${MAPTK_BINARY_DIR}")
 
