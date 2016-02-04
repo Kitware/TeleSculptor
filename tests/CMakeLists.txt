@@ -4,12 +4,8 @@ set(no_install TRUE)
 
 # ==================================================================
 ###
-# Generate correct timer header based on availbility of random
+# Require Boost if std::random is not available
 #
-
-configure_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/test_random_point.h.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/test_random_point.h" )
 
 if (NOT VITAL_USE_STD_RANDOM)
 
@@ -42,7 +38,6 @@ set(maptk_test_data_directory
 
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
-include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 include_directories("${MAPTK_SOURCE_DIR}")
 include_directories("${MAPTK_BINARY_DIR}")
 
