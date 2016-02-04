@@ -120,6 +120,8 @@ public:
   {
   }
 
+  ~priv() { }
+
   priv(priv const& other)
     : initial_sub_sample(other.initial_sub_sample)
     , interpolation_rate(other.interpolation_rate)
