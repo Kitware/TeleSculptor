@@ -155,7 +155,7 @@ public:
     optimize_dist_p1_p2(false),
     optimize_dist_k4_k5_k6(false),
     camera_intrinsic_share_type(AUTO_SHARE_INTRINSICS),
-    m_logger( vital::get_logger( "maptk::ceres::bundle_adjust" ))
+    m_logger( vital::get_logger( "maptk.ceres.bundle_adjust" ))
   {
   }
 
@@ -174,7 +174,7 @@ public:
     optimize_dist_p1_p2(other.optimize_dist_p1_p2),
     optimize_dist_k4_k5_k6(other.optimize_dist_k4_k5_k6),
     camera_intrinsic_share_type(other.camera_intrinsic_share_type),
-    m_logger( vital::get_logger( "maptk::ceres::bundle_adjust" ))
+    m_logger( vital::get_logger( "maptk.ceres.bundle_adjust" ))
   {
   }
 
