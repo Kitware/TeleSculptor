@@ -204,12 +204,12 @@ analyze_tracks
   }
 
   // Generate matrix
-  cv::Mat_<double> data( total_frames, static_cast<int>(d_->frames_to_compare.size()) + 2 );
+  cv::Mat_<double> data( static_cast<int>(total_frames), static_cast<int>(d_->frames_to_compare.size()) + 2 );
 
   for( frame_id_t fid = first_frame; fid <= last_frame; fid++ )
   {
-    data.at<double>( fid, 0 ) = fid;
-    data.at<double>( fid, 1 ) = static_cast<double>(track_set->active_tracks( fid )->size());
+    data.at<double>( static_cast<int>(fid), 0 ) = static_cast<double>(fid);
+    data.at<double>( static_cast<int>(fid), 1 ) = static_cast<double>(track_set->active_tracks( fid )->size());
 
     for( unsigned i = 0; i < d_->frames_to_compare.size(); i++ )
     {
@@ -217,11 +217,11 @@ analyze_tracks
 
       if( fid < first_frame + adj )
       {
-        data.at<double>( fid, i+2 ) = -1.0;
+        data.at<double>( static_cast<int>(fid), i+2 ) = -1.0;
       }
       else
       {
-        data.at<double>( fid, i+2 ) = track_set->percentage_tracked( fid-adj, fid );
+        data.at<double>( static_cast<int>(fid), i+2 ) = track_set->percentage_tracked( fid-adj, fid );
       }
     }
   }

@@ -52,6 +52,10 @@ include( kwiver-utils )
 include( maptk-utils ) # local utilities
 include( vital-flags ) # use same compile flags as vital
 
+###
+# check compiler support
+include( kwiver-configcheck )
+
 set(kwiver_export_name     maptk_exports)
 
 
