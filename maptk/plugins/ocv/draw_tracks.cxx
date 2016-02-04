@@ -41,10 +41,12 @@
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
-#include <cstdio>
+#include <stdio.h> // using C99 interface to support older compilers
 #include <deque>
 
 #include <vital/vital_foreach.h>
+#include <vital/logger/logger.h>
+
 #include <kwiversys/SystemTools.hxx>
 
 #include <maptk/plugins/ocv/image_container.h>
@@ -86,7 +88,8 @@ public:
     swap_comparison_set( false ),
     write_images_to_disk( true ),
     pattern( "feature_tracks_%05d.png" ),
-    cur_frame_id( 0 )
+    cur_frame_id( 0 ),
+    m_logger( kwiver::vital::get_logger( "maptk.ocv.draw_tracks" ) )
   {
   }
 
@@ -115,6 +118,8 @@ public:
   /// Internal variables
   std::deque< cv::Mat > buffer; // managed as a circular buffer
   frame_id_t cur_frame_id;
+
+  kwiver::vital::logger_handle_t m_logger;
 };
 
 
@@ -458,12 +463,30 @@ draw_tracks
     // Update write image flag
     write_image_to_disk &= ( !comparison_set_provided || comparison_track_found );
 
-    // Fully generate and output the image
+    // Fully generate and output the image.
+    //
+    // This is one of those security problems your mother told you
+    // about.  We are taking a printf format string from the user and
+    // using it without inspection. Since we are expecting a single %d
+    // format code in the string, strange things could happen if it
+    // was a %f, for example. An alternative could be to append a 5
+    // digit frame number to the base file name and not use format
+    // specifiers.
     std::string ofn;
-    int max_len = d_->pattern.size() + 4096;
+    size_t max_len = d_->pattern.size() + 4096;
     ofn.resize( max_len );
     int num_bytes = snprintf( &ofn[0], max_len, d_->pattern.c_str(), fid );
-    if (num_bytes < max_len)
+    if (num_bytes < 0) // format conversion error
+    {
+      LOG_WARN( m_logger, "Could not format output file name: \"" <<  d_->pattern
+                << "\". Disabling writing to disk." );
+
+      // The safest thing is to disable writing since we have no idea
+      // what the file name looks like after a format conversion
+      // error.
+      write_image_to_disk = false;
+    }
+    else if (static_cast< unsigned >(num_bytes) < max_len)
     {
       ofn.resize( num_bytes );
     }
