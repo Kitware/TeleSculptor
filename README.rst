@@ -1,7 +1,7 @@
 ############################################
                    MAP-Tk
 ############################################
-
+.. image:: /gui/icons/64x64/mapgui.png
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Motion-imagery Aerial Photogrammetry Toolkit
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -23,7 +23,7 @@ The MAP-Tk software architecture is highly modular and provides an algorithm
 abstraction layer that allows seamless interchange and run-time selection of
 algorithms from various other open source projects like OpenCV, VXL,  VisCL,
 and PROJ4.  The core library is light-weight with minimal dependencies
-(C++ standard library, Vital, Eigen, and some Boost components).  The tools are
+(C++ standard library, Vital, Eigen, and some Boost header only components).  The tools are
 written to depend only on the MAP-Tk core library.  Additional capabilities are
 provided in plugin modules that use third party libraries to implement various
 abstract algorithm interfaces defined in the core.  Plugin modules may also
@@ -31,6 +31,15 @@ implement additional versions of core MAP-Tk data structures.
 
 In addition to the libraries and tools, a Qt GUI application is provided to
 assist with visualization of data and results with the help of VTK.
+The screenshots below show the MAP-Tk GUI visualizing results of MAP-Tk
+run on a video from the `VIRAT Video Dataset`_.
+
+.. image:: /doc/screenshot/mapgui_screenshot_osx.png
+   :alt: Mac OS X Screenshot
+.. image:: /doc/screenshot/mapgui_screenshot_windows.png
+   :alt: Windows Screenshot
+.. image:: /doc/screenshot/mapgui_screenshot_linux.png
+   :alt: Linux Screenshot
 
 While the initial software implementation relies on batch post-processing
 of aerial video, our intent is to move to an online video stream processing
@@ -129,8 +138,6 @@ Required
 The only hard dependencies of MAP-Tk are on the C++ standard library,
 Vital_ (contemporary to the version of MAP-Tk being built), Eigen_ (|>=| 3.0;
 also required by Vital), and Boost_ (|>=| v1.50).
-Currently MAP-Tk uses the following Boost components:
-system, filesystem, program_options, timer, chrono.
 
 Optional Plugins
 ''''''''''''''''
@@ -192,6 +199,8 @@ Doxygen documentation for released versions are here:
 
 ================================= ===============================================
 **MAP-Tk v0.6.0** Documentation   http://www.kwiver.org/maptk/docs/release/v0.6.0
+**MAP-Tk v0.6.1** Documentation   http://www.kwiver.org/maptk/docs/release/v0.6.1
+**MAP-Tk v0.7.0** Documentation   http://www.kwiver.org/maptk/docs/release/v0.7.0
 ================================= ===============================================
 
 Building Documentation
@@ -333,6 +342,7 @@ public release via 88ABW-2015-2555.
 .. Appendix I: References
 .. ======================
 
+.. _VIRAT Video Dataset: http://www.viratdata.org/
 .. _Boost: http://www.boost.org/
 .. _Bundler: http://www.cs.cornell.edu/~snavely/bundler/
 .. _CDash: http://www.cdash.org/

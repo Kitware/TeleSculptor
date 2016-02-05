@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,7 +44,6 @@
 #include <maptk/plugins/core/hierarchical_bundle_adjust.h>
 #include <maptk/plugins/core/initialize_cameras_landmarks.h>
 #include <maptk/plugins/core/match_features_homography.h>
-#include <maptk/plugins/core/plugin_core_config.h>
 #include <maptk/plugins/core/track_features_core.h>
 #include <maptk/plugins/core/triangulate_landmarks.h>
 

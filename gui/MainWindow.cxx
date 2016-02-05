@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -64,6 +64,7 @@
 #include <qtUiStateItem.h>
 
 #include <QtGui/QApplication>
+#include <QtGui/QColorDialog>
 #include <QtGui/QDesktopServices>
 #include <QtGui/QFileDialog>
 #include <QtGui/QMessageBox>
@@ -173,6 +174,35 @@ QString makeFilters(QStringList extensions)
   return result.join(" ");
 }
 
+//-----------------------------------------------------------------------------
+template <typename T>
+class StateValue : public qtUiState::AbstractItem
+{
+public:
+  StateValue(T const& defaultValue = T{}) : data{defaultValue} {}
+
+  operator T() const { return this->data; }
+
+  StateValue& operator=(T const& newValue)
+  {
+    this->data = newValue;
+    return *this;
+  }
+
+  virtual QVariant value() const QTE_OVERRIDE
+  {
+    return QVariant::fromValue(this->data);
+  }
+
+  virtual void setValue(QVariant const& newValue) QTE_OVERRIDE
+  {
+    this->data = newValue.value<T>();
+  }
+
+protected:
+  T data;
+};
+
 } // namespace <anonymous>
 
 //END miscellaneous helpers
@@ -219,6 +249,8 @@ public:
   Ui::MainWindow UI;
   Am::MainWindow AM;
   qtUiState uiState;
+
+  StateValue<QColor>* viewBackgroundColor;
 
   QTimer slideTimer;
   QSignalMapper toolDispatcher;
@@ -428,13 +460,13 @@ void MainWindowPrivate::updateCameraView()
   {
     // Map landmarks to camera space
     auto const& landmarks = this->landmarks->landmarks();
-    foreach_iter (auto, lmi, landmarks)
+    foreach (auto const& lm, landmarks)
     {
       double pp[2];
-      if (cd.camera->ProjectPoint(lmi->second->loc(), pp))
+      if (cd.camera->ProjectPoint(lm.second->loc(), pp))
       {
         // Add projected landmark to camera view
-        auto const id = lmi->first;
+        auto const id = lm.first;
         this->UI.cameraView->addLandmark(id, pp[0], pp[1]);
         landmarkPoints.insert(id, kwiver::vital::vector_2d(pp[0], pp[1]));
       }
@@ -579,6 +611,9 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   connect(&d->toolDispatcher, SIGNAL(mapped(QObject*)),
           this, SLOT(executeTool(QObject*)));
 
+  connect(d->UI.actionSetBackgroundColor, SIGNAL(triggered()),
+          this, SLOT(setViewBackroundColor()));
+
   connect(d->UI.actionAbout, SIGNAL(triggered()),
           this, SLOT(showAboutDialog()));
   connect(d->UI.actionShowManual, SIGNAL(triggered()),
@@ -600,9 +635,15 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
     d->UI.slideDelay, &QSlider::value, &QSlider::setValue);
   d->uiState.map("SlideDelay", sdItem);
 
+  d->viewBackgroundColor = new StateValue<QColor>{Qt::black},
+  d->uiState.map("ViewBackground", d->viewBackgroundColor);
+
   d->uiState.mapState("Window/state", this);
   d->uiState.mapGeometry("Window/geometry", this);
   d->uiState.restore();
+
+  d->UI.worldView->setBackgroundColor(*d->viewBackgroundColor);
+  d->UI.cameraView->setBackgroundColor(*d->viewBackgroundColor);
 }
 
 //-----------------------------------------------------------------------------
@@ -790,9 +831,12 @@ void MainWindow::loadLandmarks(QString const& path)
     {
       d->landmarks = landmarks;
       d->UI.worldView->setLandmarks(*landmarks);
+      d->UI.cameraView->setLandmarksData(*landmarks);
 
       d->UI.actionExportLandmarks->setEnabled(
         d->landmarks && d->landmarks->size());
+
+      d->updateCameraView();
     }
   }
   catch (...)
@@ -1064,6 +1108,21 @@ void MainWindow::showMatchMatrix()
     auto window = new MatchMatrixWindow();
     window->setMatrix(mm);
     window->show();
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::setViewBackroundColor()
+{
+  QTE_D();
+
+  QColorDialog dlg;
+  dlg.setCurrentColor(*d->viewBackgroundColor);
+  if (dlg.exec() == QDialog::Accepted)
+  {
+    *d->viewBackgroundColor = dlg.currentColor();
+    d->UI.worldView->setBackgroundColor(*d->viewBackgroundColor);
+    d->UI.cameraView->setBackgroundColor(*d->viewBackgroundColor);
   }
 }
 

@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,8 +32,10 @@
 #define MAPTK_PLUGINS_VISCL_DESCRIPTOR_SET_H_
 
 
+#include <vital/vital_config.h>
+#include <maptk/plugins/viscl/maptk_viscl_export.h>
+
 #include <vital/types/descriptor_set.h>
-#include <maptk/plugins/viscl/viscl_config.h>
 
 #include <viscl/core/buffer.h>
 

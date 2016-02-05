@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,9 @@
 #ifndef MAPTK_PLUGINS_CORE_CLOSE_LOOPS_BAD_FRAMES_ONLY_H_
 #define MAPTK_PLUGINS_CORE_CLOSE_LOOPS_BAD_FRAMES_ONLY_H_
 
+#include <vital/vital_config.h>
+#include <maptk/plugins/core/maptk_core_export.h>
+
 #include <vital/algo/algorithm.h>
 #include <vital/types/image_container.h>
 #include <vital/types/track_set.h>
@@ -44,8 +47,6 @@
 #include <vital/algo/match_features.h>
 #include <vital/algo/close_loops.h>
 #include <vital/config/config_block.h>
-
-#include <maptk/plugins/core/plugin_core_config.h>
 
 
 namespace kwiver {
@@ -61,7 +62,7 @@ namespace core
  * principle that when a bad frame occurs, there is generally a lower
  * percentage of feature tracks.
  */
-class PLUGIN_CORE_EXPORT close_loops_bad_frames_only
+class MAPTK_CORE_EXPORT close_loops_bad_frames_only
   : public vital::algorithm_impl<close_loops_bad_frames_only, vital::algo::close_loops>
 {
 public:
@@ -73,7 +74,7 @@ public:
   close_loops_bad_frames_only(const close_loops_bad_frames_only&);
 
   /// Destructor
-  virtual ~close_loops_bad_frames_only() MAPTK_DEFAULT_DTOR;
+  virtual ~close_loops_bad_frames_only() VITAL_DEFAULT_DTOR;
 
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "bad_frames_only"; }

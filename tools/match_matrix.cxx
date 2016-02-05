@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2015-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,30 +44,28 @@
 #include <maptk/match_matrix.h>
 #include <vital/exceptions.h>
 #include <vital/io/track_set_io.h>
+
 #include <kwiversys/SystemTools.hxx>
+#include <kwiversys/CommandLineArguments.hxx>
 
-#include <boost/program_options/options_description.hpp>
-#include <boost/program_options/parsers.hpp>
-#include <boost/program_options/value_semantic.hpp>
-#include <boost/program_options/variables_map.hpp>
-
-namespace bpo = boost::program_options;
+typedef kwiversys::CommandLineArguments argT;
+typedef kwiversys::SystemTools     ST;
 
 
 /// Report usage message to std::cerr
-void usage(int const& argc, char const* argv[],
-           bpo::options_description const& opt_desc,
-           bpo::variables_map const& vm)
+void usage( char const* argv[], argT& arg )
 {
-    std::cerr << "Usage: " << argv[0] << " track_file match_matrix_file\n"
+    std::cerr << "Usage: " << argv[0] << " [OPTS]\n"
               << "\n"
               << "Read a track file and compute the match matrix\n"
               << "\n"
               << "Options:\n"
-              << opt_desc << std::endl;
+              << arg.GetHelp()
+              << std::endl;
 }
 
 
+// ------------------------------------------------------------------
 void
 write_frame_numbers(std::ostream& os,
                     const std::vector<kwiver::vital::frame_id_t>& frames)
@@ -80,6 +78,7 @@ write_frame_numbers(std::ostream& os,
 }
 
 
+// ------------------------------------------------------------------
 void
 write_match_matrix(std::ostream& os,
                    const Eigen::SparseMatrix<unsigned int>& mm)
@@ -89,12 +88,13 @@ write_match_matrix(std::ostream& os,
 }
 
 
+// ------------------------------------------------------------------
 void
 check_file_path(const kwiver::vital::path_t& fp)
 {
   using namespace kwiver;
   // If the given path is a directory, we obviously can't write to it.
-  if( kwiversys::SystemTools::FileIsDirectory(fp))
+  if( ST::FileIsDirectory(fp))
   {
     throw vital::file_write_exception(fp, "Path given is a directory, "
                                           "can not write file.");
@@ -102,11 +102,11 @@ check_file_path(const kwiver::vital::path_t& fp)
 
   // Check that the directory of the given file path exists,
   // creating necessary directories where needed.
-  vital::path_t parent_dir = kwiversys::SystemTools::GetFilenamePath(
-    kwiversys::SystemTools::CollapseFullPath( fp ) );
-  if( ! kwiversys::SystemTools::FileIsDirectory(parent_dir))
+  vital::path_t parent_dir = ST::GetFilenamePath(
+    ST::CollapseFullPath( fp ) );
+  if( ! ST::FileIsDirectory(parent_dir))
   {
-    if( ! kwiversys::SystemTools::MakeDirectory(parent_dir))
+    if( ! ST::MakeDirectory(parent_dir))
     {
       throw vital::file_write_exception(parent_dir, "Attempted directory creation, "
                                                     "but no directory created! No "
@@ -117,65 +117,59 @@ check_file_path(const kwiver::vital::path_t& fp)
 }
 
 
+// ------------------------------------------------------------------
 static int maptk_main(int argc, char const* argv[])
 {
   using namespace kwiver;
-  //
-  // CLI Options (boost)
-  //
-  bpo::positional_options_description pos_desc;
-  pos_desc.add("input-tracks", 1);
-  pos_desc.add("output-matrix", 1);
-  pos_desc.add("output-frames", 1);
 
-  bpo::options_description opt_desc;
-  opt_desc.add_options()
-    ("input-tracks,i", "input track file")
-    ("output-matrix,o", "output match matrix file")
-    ("output-frames,f", "output frame numbers file")
-    ("help,h", "output help message and exit");
-  bpo::variables_map vm;
-  // try to parse the command-line
-  try
+  static bool        opt_help( false );
+  static std::string opt_in_tracks;
+  static std::string opt_out_matrix;
+  static std::string opt_out_frames;
+
+
+  kwiversys::CommandLineArguments arg;
+
+  arg.Initialize( argc, argv );
+
+  arg.AddArgument( "--help",           argT::NO_ARGUMENT, &opt_help, "Display usage information" );
+  arg.AddArgument( "--input-tracks",   argT::SPACE_ARGUMENT, &opt_in_tracks, "Input track file." );
+  arg.AddArgument( "--output-matrix",  argT::SPACE_ARGUMENT, &opt_out_matrix, "Output match matrix file" );
+  arg.AddArgument( "--output-frames",  argT::SPACE_ARGUMENT, &opt_out_frames, "Output frame number file" );
+
+  if ( ! arg.Parse() )
   {
-    bpo::store(bpo::command_line_parser(argc, argv).
-               options(opt_desc).positional(pos_desc).run(), vm);
-  }
-  catch (bpo::unknown_option const& e)
-  {
-    std::cerr << e.what() << std::endl
-              << std::endl;
-    usage(argc, argv, opt_desc, vm);
+    std::cerr << "Problem parsing arguments" << std::endl;
     return EXIT_FAILURE;
   }
-  bpo::notify(vm);
 
-  if(vm.count("help"))
+  if ( opt_help )
   {
-    usage(argc, argv, opt_desc, vm);
+    usage( argv, arg );
     return EXIT_SUCCESS;
   }
 
-  if(!vm.count("input-tracks"))
+  if( opt_in_tracks.empty() )
   {
-    usage(argc, argv, opt_desc, vm);
+    usage( argv, arg );
     return EXIT_FAILURE;
   }
 
   // test the output files
-  if(vm.count("output-matrix"))
+  if( ! opt_out_matrix.empty() )
   {
-    vital::path_t outfile(vm["output-matrix"].as<std::string>());
+    vital::path_t outfile( opt_out_matrix );
     check_file_path(outfile);
   }
-  if(vm.count("output-frames"))
+
+  if( ! opt_out_frames.empty() )
   {
-    vital::path_t outfile(vm["output-frames"].as<std::string>());
+    vital::path_t outfile( opt_out_frames );
     check_file_path(outfile);
   }
 
   // load the tracks
-  std::string infile = vm["input-tracks"].as<std::string>();
+  std::string infile = opt_in_tracks;
   std::cout << "loading: "<< infile << std::endl;
   vital::track_set_sptr tracks = vital::read_track_file(infile);
 
@@ -185,11 +179,11 @@ static int maptk_main(int argc, char const* argv[])
   Eigen::SparseMatrix<unsigned int> mm = maptk::match_matrix(tracks, frames);
 
   // write output
-  if(vm.count("output-matrix"))
+  if( ! opt_out_matrix.empty() )
   {
-    vital::path_t outfile(vm["output-matrix"].as<std::string>());
+    vital::path_t outfile( opt_out_matrix );
     std::cout << "writing matrix to: "<< outfile << std::endl;
-    if( kwiversys::SystemTools::GetFilenameExtension( outfile ) == ".mtx" )
+    if( ST::GetFilenameExtension( outfile ) == ".mtx" )
     {
       Eigen::saveMarket(mm, outfile);
     }
@@ -205,9 +199,9 @@ static int maptk_main(int argc, char const* argv[])
     write_match_matrix(std::cout, mm);
   }
 
-  if(vm.count("output-frames"))
+  if( ! opt_out_frames.empty() )
   {
-    vital::path_t outfile(vm["output-frames"].as<std::string>());
+    vital::path_t outfile( opt_out_frames );
     std::cout << "writing frame numbers to: "<< outfile << std::endl;
     std::ofstream ofs(outfile.c_str());
     write_frame_numbers(ofs, frames);
@@ -217,6 +211,7 @@ static int maptk_main(int argc, char const* argv[])
 }
 
 
+// ------------------------------------------------------------------
 int main(int argc, char const* argv[])
 {
   try

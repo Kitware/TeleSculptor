@@ -1,26 +1,11 @@
 include(CheckCXXCompilerFlag)
 
-check_cxx_compiler_flag(-fvisibility=hidden MAPTK_HAVE_GCC_VISIBILITY)
-
-
-# Configure general config.h.in
-maptk_configure_file( config.h
-  "${CMAKE_CURRENT_SOURCE_DIR}/config.h.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/config.h"
-  BUILD_SHARED_LIBS
-  MAPTK_HAVE_GCC_VISIBILITY
-  )
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/config.h"
-  DESTINATION include/maptk
-  )
-
-
 include_directories("${MAPTK_SOURCE_DIR}")
 include_directories("${MAPTK_BINARY_DIR}")
 
 
 ###
-# Setting up core library
+# Setting up main library
 #
 set(maptk_public_headers
   epipolar_geometry.h
@@ -41,18 +26,18 @@ set(maptk_public_headers
 
 
 set(maptk_sources
+  colorize.cxx
   epipolar_geometry.cxx
-  metrics.cxx
-  local_geo_cs.cxx
-  projected_track_set.cxx
   geo_reference_points_io.cxx
   ins_data.cxx
   ins_data_io.cxx
   interpolate_camera.cxx
+  local_geo_cs.cxx
   match_matrix.cxx
-  triangulate.cxx
+  metrics.cxx
+  projected_track_set.cxx
   transform.cxx
-
+  triangulate.cxx
   )
 
 # Address MSVC fatal error C1128:
@@ -73,8 +58,11 @@ kwiver_add_library(
   ${maptk_public_headers}
   ${maptk_sources}
   )
-add_dependencies(maptk configure-config.h)
-target_link_libraries(maptk vital ${Boost_LIBRARIES} )
+
+target_link_libraries( maptk
+  PUBLIC               vital
+                       kwiversys
+  )
 
 
 ###

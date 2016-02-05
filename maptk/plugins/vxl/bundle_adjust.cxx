@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,15 +39,12 @@
 #include <set>
 
 #include <vital/vital_foreach.h>
-#include <boost/timer/timer.hpp>
+#include <vital/util/cpu_timer.h>
 
 #include <maptk/plugins/vxl/camera_map.h>
 #include <vital/io/eigen_io.h>
 
 #include <vpgl/algo/vpgl_bundle_adjust.h>
-
-using boost::timer::cpu_times;
-using boost::timer::nanosecond_type;
 
 using namespace kwiver::vital;
 
@@ -230,22 +227,21 @@ bundle_adjust
   typedef vxl::camera_map::map_vcam_t map_vcam_t;
   typedef vital::landmark_map::map_landmark_t map_landmark_t;
 
-#define MAPTK_SBA_TIMED(msg, code) \
-  do \
-  { \
-    boost::timer::cpu_timer t; \
-    if (d_->verbose) \
-    { \
-      std::cerr << msg << " ... " << std::endl; \
-    } \
-    code \
-    if (d_->verbose) \
-    { \
-      cpu_times elapsed = t.elapsed(); \
-      /* convert nanosecond to seconds */ \
-      double secs = static_cast<double>(elapsed.system + elapsed.user) * 0.000000001; \
-      std::cerr << "--> " << secs << " s CPU" << std::endl; \
-    } \
+#define MAPTK_SBA_TIMED(msg, code)                                      \
+  do                                                                    \
+  {                                                                     \
+    kwiver::vital::cpu_timer t;                                         \
+    if (d_->verbose)                                                    \
+    {                                                                   \
+      t.start();                                                        \
+      std::cerr << msg << " ... " << std::endl;                         \
+    }                                                                   \
+    code                                                                \
+    if (d_->verbose)                                                    \
+    {                                                                   \
+      t.stop();                                                         \
+      std::cerr << "--> " << t.elapsed() << "s CPU" << std::endl;       \
+    }                                                                   \
   } while(false)
 
   // extract data from containers

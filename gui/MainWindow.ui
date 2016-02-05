@@ -47,6 +47,8 @@
     <addaction name="actionSlideshowLoop"/>
     <addaction name="separator"/>
     <addaction name="actionShowMatchMatrix"/>
+    <addaction name="separator"/>
+    <addaction name="actionSetBackgroundColor"/>
    </widget>
    <widget class="qtMenu" name="menuHelp">
     <property name="title">
@@ -262,6 +264,14 @@
    </property>
    <property name="toolTip">
     <string>&lt;nobr&gt;Export the cameras in the current project&lt;/nobr&gt; to a series of KRTD files</string>
+   </property>
+  </action>
+  <action name="actionSetBackgroundColor">
+   <property name="text">
+    <string>&amp;Background Color...</string>
+   </property>
+   <property name="toolTip">
+    <string>Change the background color of the views</string>
    </property>
   </action>
  </widget>

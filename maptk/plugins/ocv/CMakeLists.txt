@@ -15,12 +15,15 @@ set( maptk_ocv_headers_public
   match_features.h
   match_set.h
   ocv_algo_tools.h
-  ocv_config.h
   register_algorithms.h
   )
 kwiver_install_headers(
   SUBDIR     maptk/plugins/ocv
   ${maptk_ocv_headers_public}
+  )
+kwiver_install_headers(
+  ${CMAKE_CURRENT_BINARY_DIR}/maptk_ocv_export.h
+  NOPATH   SUBDIR     maptk/plugins/ocv
   )
 
 set( maptk_ocv_sources
@@ -39,13 +42,13 @@ set( maptk_ocv_sources
   ocv_algo_tools.cxx
   register_algorithms.cxx
   )
-maptk_add_library( maptk_ocv
+kwiver_add_library( maptk_ocv
   ${maptk_ocv_headers_public}
   ${maptk_ocv_sources}
   )
 target_link_libraries( maptk_ocv
-  maptk
-  ${OpenCV_LIBS}
+  PUBLIC               maptk
+                     ${OpenCV_LIBS}
   )
 
 maptk_create_plugin( maptk_ocv

@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2015-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,6 @@
 #include <set>
 
 #include <vital/vital_foreach.h>
-#include <boost/timer/timer.hpp>
 
 #include <vital/logger/logger.h>
 #include <vital/io/eigen_io.h>
@@ -48,10 +47,6 @@
 
 #include <ceres/ceres.h>
 
-
-
-using boost::timer::cpu_times;
-using boost::timer::nanosecond_type;
 using namespace kwiver::vital;
 
 
@@ -160,7 +155,7 @@ public:
     optimize_dist_p1_p2(false),
     optimize_dist_k4_k5_k6(false),
     camera_intrinsic_share_type(AUTO_SHARE_INTRINSICS),
-    m_logger( vital::get_logger( "maptk::ceres::bundle_adjust" ))
+    m_logger( vital::get_logger( "maptk.ceres.bundle_adjust" ))
   {
   }
 
@@ -179,7 +174,7 @@ public:
     optimize_dist_p1_p2(other.optimize_dist_p1_p2),
     optimize_dist_k4_k5_k6(other.optimize_dist_k4_k5_k6),
     camera_intrinsic_share_type(other.camera_intrinsic_share_type),
-    m_logger( vital::get_logger( "maptk::ceres::bundle_adjust" ))
+    m_logger( vital::get_logger( "maptk.ceres.bundle_adjust" ))
   {
   }
 
@@ -425,24 +420,6 @@ bundle_adjust
   typedef camera_map::map_camera_t map_camera_t;
   typedef landmark_map::map_landmark_t map_landmark_t;
 
-#define MAPTK_SBA_TIMED(msg, code) \
-  do \
-  { \
-    boost::timer::cpu_timer t; \
-    if (d_->verbose) \
-    { \
-      std::cerr << msg << " ... " << std::endl; \
-    } \
-    code \
-    if (d_->verbose) \
-    { \
-      cpu_times elapsed = t.elapsed(); \
-      /* convert nanosecond to seconds */ \
-      double secs = static_cast<double>(elapsed.system + elapsed.user) * 0.000000001; \
-      std::cerr << "--> " << secs << " s CPU" << std::endl; \
-    } \
-  } while(false)
-
   // extract data from containers
   map_camera_t cams = cameras->cameras();
   map_landmark_t lms = landmarks->landmarks();
@@ -635,8 +612,10 @@ bundle_adjust
   // Update the landmarks with the optimized values
   VITAL_FOREACH(const lm_param_map_t::value_type& lmp, landmark_params)
   {
-    vector_3d pos = Eigen::Map<const vector_3d>(&lmp.second[0]);
-    lms[lmp.first] = landmark_sptr(new landmark_d(pos));
+    auto& lmi = lms[lmp.first];
+    auto updated_lm = std::make_shared<landmark_d>(*lmi);
+    updated_lm->set_loc(Eigen::Map<const vector_3d>(&lmp.second[0]));
+    lmi = updated_lm;
   }
 
   // Update the camera intrinics with optimized values
@@ -673,8 +652,6 @@ bundle_adjust
 
   cameras = camera_map_sptr(new simple_camera_map(cams));
   landmarks = landmark_map_sptr(new simple_landmark_map(lms));
-
-#undef MAPTK_SBA_TIMED
 }
 
 

@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,25 +28,48 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * \file
- * \brief VXL configuration header
- */
+#ifndef MAPTK_DATACOLOROPTIONS_H_
+#define MAPTK_DATACOLOROPTIONS_H_
 
-#ifndef MAPTK_PLUGINS_VXL_VXL_CONFIG_H_
-#define MAPTK_PLUGINS_VXL_VXL_CONFIG_H_
+#include <qtGlobal.h>
 
-#include <maptk/config.h>
+#include <QtGui/QIcon>
+#include <QtGui/QWidget>
 
-/// Define symbol visibility in maptk::vxl
-#ifndef MAPTK_VXL_EXPORT
-# ifdef MAKE_MAPTK_VXL_LIB
-#   define MAPTK_VXL_EXPORT MAPTK_EXPORT
-# else
-#   define MAPTK_VXL_EXPORT MAPTK_IMPORT
-# endif
-/// Marks symbols not to be exported
-# define MAPTK_VXL_NO_EXPORT MAPTK_NO_EXPORT
+class vtkScalarsToColors;
+
+class DataColorOptionsPrivate;
+
+class DataColorOptions : public QWidget
+{
+  Q_OBJECT
+
+public:
+  explicit DataColorOptions(QString const& settingsGroup, QWidget* parent = 0,
+                            Qt::WindowFlags flags = 0);
+  virtual ~DataColorOptions();
+
+  QIcon icon() const;
+
+  vtkScalarsToColors* scalarsToColors() const;
+
+public slots:
+  void setAvailableRange(double lower, double upper);
+  void setGradient(int);
+
+signals:
+  void modified();
+  void iconChanged(QIcon);
+
+protected slots:
+  void updateMinimum();
+  void updateMaximum();
+
+private:
+  QTE_DECLARE_PRIVATE_RPTR(DataColorOptions)
+  QTE_DECLARE_PRIVATE(DataColorOptions)
+
+  QTE_DISABLE_COPY(DataColorOptions)
+};
+
 #endif
-
-#endif // MAPTK_PLUGINS_VXL_VXL_CONFIG_H_

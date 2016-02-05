@@ -9,7 +9,6 @@ set( plugin_core_headers
   hierarchical_bundle_adjust.h
   initialize_cameras_landmarks.h
   match_features_homography.h
-  plugin_core_config.h
   register_algorithms.h
   track_features_core.h
   triangulate_landmarks.h
@@ -17,6 +16,10 @@ set( plugin_core_headers
 kwiver_install_headers(
   SUBDIR     maptk/plugins/core
   ${plugin_core_headers}
+  )
+kwiver_install_headers(
+  ${CMAKE_CURRENT_BINARY_DIR}/maptk_core_export.h
+  NOPATH   SUBDIR     maptk/plugins/core
   )
 
 set( plugin_core_sources
@@ -32,11 +35,13 @@ set( plugin_core_sources
   track_features_core.cxx
   triangulate_landmarks.cxx
   )
-maptk_add_library( maptk_core
+kwiver_add_library( maptk_core
   ${plugin_core_headers}
   ${plugin_core_sources}
   )
-target_link_libraries( maptk_core maptk )
+target_link_libraries( maptk_core
+  PUBLIC               maptk
+  )
 
 maptk_create_plugin( maptk_core
   algorithm_plugin_interface.cxx

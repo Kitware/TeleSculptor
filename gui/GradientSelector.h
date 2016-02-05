@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,26 +28,56 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * \file
- * \brief PROJ module configuration header
- */
+#ifndef MAPTK_GRADIENTSELECTOR_H_
+#define MAPTK_GRADIENTSELECTOR_H_
 
-#ifndef MAPTK_PLUGINS_PROJ_PROJ_CONFIG_H_
-#define MAPTK_PLUGINS_PROJ_PROJ_CONFIG_H_
+#include <qtGlobal.h>
 
-#include <maptk/config.h>
+#include <QtGui/QComboBox>
 
+class qtGradient;
 
-/// Define symbol visibility in maptk::proj
-#ifndef MAPTK_PROJ_EXPORT
-# ifdef MAKE_MAPTK_PROJ_LIB
-#   define MAPTK_PROJ_EXPORT MAPTK_EXPORT
-# else
-#   define MAPTK_PROJ_EXPORT MAPTK_IMPORT
-# endif
-/// Marks symbols not to be exported
-# define MATPK_PROJ_NO_EXPORT MAPTK_NO_EXPORT
+class GradientSelector : public QComboBox
+{
+  Q_OBJECT
+
+public:
+  enum Preset
+  {
+    Gray,
+    Slate,
+    Wood,
+    Royal,
+    Ember,
+    Ocean,
+    Sunset,
+    Carribean,
+    Sky,
+    Hyacinth,
+    Lilac,
+    // TODO divergent gradients
+    Jet,
+    Terrain,
+    Parula,
+    Viridis,
+    Earth,
+    Plasma,
+    Blackbody,
+    Spring,
+    Tulip,
+    Moody,
+    Anaglyph,
+    Rainbow
+  };
+
+  explicit GradientSelector(QWidget* parent = 0);
+  virtual ~GradientSelector();
+
+  qtGradient currentGradient() const;
+  qtGradient gradient(Preset) const;
+
+private:
+  QTE_DISABLE_COPY(GradientSelector)
+};
+
 #endif
-
-#endif // MAPTK_PLUGINS_PROJ_PROJ_CONFIG_H_

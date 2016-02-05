@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,7 +37,8 @@
 #define MAPTK_PLUGINS_VXL_COMPUTE_HOMOGRAPHY_OVERLAP_H_
 
 
-#include <maptk/plugins/vxl/vxl_config.h>
+#include <vital/vital_config.h>
+#include <maptk/plugins/vxl/maptk_vxl_export.h>
 
 #include <vnl/vnl_double_3x3.h>
 

@@ -119,6 +119,18 @@ items to be changed, as well as their size. Feature items (that is, feature
 points and landmarks) are displayed as dots, with a fixed size-on-screen that
 is independent of the view.
 
+Several options for color are provided. The simplest is "solid color", which
+displays all landmarks in the same, user selected color. "True color" displays
+landmarks in the color estimated to correspond to the actual color of the point
+in the real world scene, as computed from the input imagery. "Color by data"
+uses color to visualize other per-point data, such as the number of individual
+frames that contributed to ("observed") each landmark.
+
+In addition to coloring by data, points may be filtered (selectively displayed)
+according to their respective values of the currently selected data set.
+Filtering may exclude points above or below selected lower or upper, or that
+are not within said bounds.
+
 Camera View
 ===========
 
@@ -316,6 +328,9 @@ View Menu
 
 :icon:`blank` Match Matrix
   Opens a new `Match Matrix View`_.
+
+:icon:`blank` Background Color
+  Changes the background color of the world and camera views.
 
 Help Menu
 ---------

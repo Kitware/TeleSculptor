@@ -2,6 +2,24 @@ project( maptk_tests )
 
 set(no_install TRUE)
 
+# ==================================================================
+###
+# Require Boost if std::random is not available
+#
+
+if (NOT VITAL_USE_STD_RANDOM)
+
+  # Required Boost external dependency
+  if(WIN32)
+    set(Boost_USE_STATIC_LIBS TRUE)
+  endif()
+
+  find_package(Boost 1.50)
+  add_definitions(-DBOOST_ALL_NO_LIB)
+  include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+
+endif()
+
 if (WIN32)
   # TODO: Output to a different directory and then use $<CONFIGURATION> in the
   # working path when generator expressions are supported in test properties.

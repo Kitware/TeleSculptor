@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,10 +36,13 @@
 #ifndef MAPTK_PLUGINS_VXL_CAMERA_MAP_H_
 #define MAPTK_PLUGINS_VXL_CAMERA_MAP_H_
 
+
 #include <map>
 
+#include <vital/vital_config.h>
+#include <maptk/plugins/vxl/maptk_vxl_export.h>
+
 #include <vital/types/camera_map.h>
-#include <maptk/plugins/vxl/vxl_config.h>
 
 #include <vpgl/vpgl_perspective_camera.h>
 

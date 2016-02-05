@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,6 @@
 #include <iostream>
 #include <vector>
 
-#include <boost/algorithm/string/join.hpp>
 #include <vital/vital_foreach.h>
 
 

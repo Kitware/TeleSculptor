@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2015 by Kitware, Inc.
+ * Copyright 2013-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,11 +42,9 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <iterator>
 
-#include <boost/algorithm/string/join.hpp>
 #include <vital/vital_foreach.h>
-#include <boost/iterator/counting_iterator.hpp>
-
 #include <vital/algo/algorithm.h>
 #include <vital/exceptions/algorithm.h>
 #include <vital/exceptions/image.h>
@@ -58,7 +56,6 @@ namespace maptk {
 
 namespace core
 {
-
 
 /// Default Constructor
 track_features_core
@@ -237,12 +234,27 @@ track_features_core
   }
 
   // find the set of unmatched active track indices
-  std::vector<unsigned> unmatched;
-  std::back_insert_iterator<std::vector<unsigned> > unmatched_insert_itr(unmatched);
-  std::set_difference(boost::counting_iterator<unsigned>(0),
-                      boost::counting_iterator<unsigned>(static_cast<unsigned int>(vf.size())),
-                      matched.begin(), matched.end(),
-                      unmatched_insert_itr);
+  std::vector< unsigned int > unmatched;
+  std::back_insert_iterator< std::vector< unsigned int > > unmatched_insert_itr(unmatched);
+
+  //
+  // Generate a sequence of numbers
+  //
+  std::vector< unsigned int > sequence( vf.size() );
+  {
+    struct one_more // generator functor
+    {
+      unsigned int _count;
+      one_more() : _count(0) {}
+      unsigned int operator()() { return _count++; }
+    };
+
+    std::generate (sequence.begin(), sequence.end(), one_more());
+  }
+
+  std::set_difference( sequence.begin(), sequence.end(),
+                       matched.begin(), matched.end(),
+                       unmatched_insert_itr );
 
   VITAL_FOREACH(unsigned i, unmatched)
   {

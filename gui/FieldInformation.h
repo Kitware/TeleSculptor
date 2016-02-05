@@ -28,25 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * \file
- * \brief Ceres plugin configuration header
- */
+#ifndef MAPTK_FIELDINFORMATION_H_
+#define MAPTK_FIELDINFORMATION_H_
 
-#ifndef MAPTK_PLUGINS_CERES_CERES_CONFIG_H_
-#define MAPTK_PLUGINS_CERES_CERES_CONFIG_H_
+#include <QtCore/QByteArray>
 
-#include <maptk/config.h>
+struct FieldInformation
+{
+  QByteArray name;
+  double range[2];
+};
 
-/// Define symbol visibility in maptk::ceres
-#ifndef MAPTK_CERES_EXPORT
-# ifdef MAKE_MAPTK_CERES_LIB
-#   define MAPTK_CERES_EXPORT MAPTK_EXPORT
-# else
-#   define MAPTK_CERES_EXPORT
-# endif
-/// Marks symbols not to be exported
-# define MAPTK_CERES_NO_EXPORT MAPTK_NO_EXPORT
 #endif
-
-#endif // MAPTK_PLUGINS_CERES_CERES_CONFIG_H_

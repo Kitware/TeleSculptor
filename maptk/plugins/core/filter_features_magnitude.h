@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2015-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,8 +31,10 @@
 #ifndef MAPTK_PLUGINS_CORE_FILTER_FEATURES_MAGNITUDE_H_
 #define MAPTK_PLUGINS_CORE_FILTER_FEATURES_MAGNITUDE_H_
 
+#include <vital/vital_config.h>
+#include <maptk/plugins/core/maptk_core_export.h>
+
 #include <vital/algo/filter_features.h>
-#include <maptk/plugins/core/plugin_core_config.h>
 
 #include <memory>
 
@@ -49,7 +51,7 @@ namespace core
 {
 
 /// \brief Algorithm that filters features based on feature magnitude
-class PLUGIN_CORE_EXPORT filter_features_magnitude
+class MAPTK_CORE_EXPORT filter_features_magnitude
   : public vital::algorithm_impl<filter_features_magnitude, vital::algo::filter_features>
 {
 public:

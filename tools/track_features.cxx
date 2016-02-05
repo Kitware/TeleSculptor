@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2015 by Kitware, Inc.
+ * Copyright 2013-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,6 +39,8 @@
 #include <string>
 #include <vector>
 
+#include <maptk/colorize.h>
+
 #include <vital/config/config_block.h>
 #include <vital/config/config_block_io.h>
 #include <vital/logger/logger.h>
@@ -52,20 +54,16 @@
 #include <vital/algo/convert_image.h>
 #include <vital/algo/track_features.h>
 #include <vital/algo/compute_ref_homography.h>
+
 #include <kwiversys/SystemTools.hxx>
+#include <kwiversys/CommandLineArguments.hxx>
 
-
-#include <boost/filesystem.hpp>
-#include <boost/program_options/options_description.hpp>
-#include <boost/program_options/parsers.hpp>
-#include <boost/program_options/value_semantic.hpp>
-#include <boost/program_options/variables_map.hpp>
-
-namespace bfs = boost::filesystem;
 typedef kwiversys::SystemTools ST;
+typedef kwiversys::CommandLineArguments argT;
 
 static kwiver::vital::logger_handle_t main_logger( kwiver::vital::get_logger( "track_features_tool" ) );
 
+// ------------------------------------------------------------------
 static kwiver::vital::config_block_sptr default_config()
 {
   kwiver::vital::config_block_sptr config = kwiver::vital::config_block::empty_config("feature_tracker_tool");
@@ -115,6 +113,7 @@ static kwiver::vital::config_block_sptr default_config()
 }
 
 
+// ------------------------------------------------------------------
 static bool check_config(kwiver::vital::config_block_sptr config)
 {
   bool config_valid = true;
@@ -135,7 +134,7 @@ static bool check_config(kwiver::vital::config_block_sptr config)
                         << "(Given: " << fp << ")");
     }
     else if ( ST::GetFilenamePath( fp ) != "" &&
-              ! ST::FileIsDirectory(ST::GetFilenamePath( fp ) ))
+              ! ST::FileIsDirectory( ST::GetFilenamePath( fp ) ))
     {
       MAPTK_CONFIG_FAIL("Given output homography file does not have a valid "
                         << "parent path! (Given: " << fp << ")");
@@ -150,7 +149,7 @@ static bool check_config(kwiver::vital::config_block_sptr config)
     }
   }
 
-  if (!config->has_value("image_list_file") ||
+  if ( ! config->has_value("image_list_file") ||
       config->get_value<std::string>("image_list_file") == "")
   {
     MAPTK_CONFIG_FAIL("Config needs value image_list_file");
@@ -158,13 +157,9 @@ static bool check_config(kwiver::vital::config_block_sptr config)
   else
   {
     std::string path = config->get_value<std::string>("image_list_file");
-    if (!bfs::exists(kwiver::vital::path_t(path)))
+    if ( ! ST::FileExists( kwiver::vital::path_t(path), true ) )
     {
-      MAPTK_CONFIG_FAIL("image_list_file path, " << path << ", does not exist");
-    }
-    else if (!bfs::is_regular_file(kwiver::vital::path_t(path)))
-    {
-      MAPTK_CONFIG_FAIL("image_list_file path, " << path << ", is not a regular file");
+      MAPTK_CONFIG_FAIL("image_list_file path, " << path << ", does not exist or is not a regular file");
     }
   }
 
@@ -172,7 +167,7 @@ static bool check_config(kwiver::vital::config_block_sptr config)
   if (config->has_value("mask_list_file") && config->get_value<std::string>("mask_list_file") != "" )
   {
     std::string mask_list_file = config->get_value<std::string>("mask_list_file");
-    if (mask_list_file != "" && !bfs::is_regular_file( kwiver::vital::path_t(mask_list_file) ))
+    if (mask_list_file != "" && ! ST::FileExists( kwiver::vital::path_t(mask_list_file), true ))
     {
       MAPTK_CONFIG_FAIL("mask_list_file path, " << mask_list_file << ", does not exist");
     }
@@ -183,8 +178,8 @@ static bool check_config(kwiver::vital::config_block_sptr config)
   {
     MAPTK_CONFIG_FAIL("Config needs value output_tracks_file");
   }
-  else if (!bfs::is_directory(bfs::absolute(
-               config->get_value<kwiver::vital::path_t>("output_tracks_file")).parent_path()))
+  else if ( ! ST::FileIsDirectory( ST::CollapseFullPath( ST::GetFilenamePath(
+              config->get_value<kwiver::vital::path_t>("output_tracks_file") ) ) ) )
   {
     MAPTK_CONFIG_FAIL("output_tracks_file is not in a valid directory");
   }
@@ -210,60 +205,62 @@ static bool check_config(kwiver::vital::config_block_sptr config)
 }
 
 
+// ------------------------------------------------------------------
 static kwiver::vital::image::byte invert_mask_pixel( kwiver::vital::image::byte const &b )
 {
   return !b;
 }
 
 
-#define print_config(config) \
-  do \
-  { \
+#define print_config(config)                                            \
+  do                                                                    \
+  {                                                                     \
     VITAL_FOREACH( kwiver::vital::config_block_key_t key, config->available_values() ) \
-    { \
-      std::cerr << "\t" \
+    {                                                                   \
+      std::cerr << "\t"                                                 \
            << key << " = " << config->get_value<kwiver::vital::config_block_key_t>(key) \
-           << std::endl; \
-    } \
+           << std::endl;                                                \
+    }                                                                   \
   } while (false)
 
 
+// ------------------------------------------------------------------
 static int maptk_main(int argc, char const* argv[])
 {
-  // register the algorithm implementations
-  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
+  static bool        opt_help(false);
+  static std::string opt_config;
+  static std::string opt_out_config;
 
-  // define/parse CLI options
-  boost::program_options::options_description opt_desc;
-  opt_desc.add_options()
-    ("help,h", "output help message and exit")
-    ("config,c",
-     boost::program_options::value<kwiver::vital::path_t>(),
-     "Configuration file for the tool.")
-    ("output-config,o",
-     boost::program_options::value<kwiver::vital::path_t>(),
-     "Output a configuration.This may be seeded with a configuration file from -c/--config.")
-    ;
-  boost::program_options::variables_map vm;
+  kwiversys::CommandLineArguments arg;
 
-  try
+  arg.Initialize( argc, argv );
+  typedef kwiversys::CommandLineArguments argT;
+
+  arg.AddArgument( "--help",        argT::NO_ARGUMENT, &opt_help, "Display usage information" );
+  arg.AddArgument( "--config",      argT::SPACE_ARGUMENT, &opt_config, "Configuration file for tool" );
+  arg.AddArgument( "-c",            argT::SPACE_ARGUMENT, &opt_config, "Configuration file for tool" );
+  arg.AddArgument( "--output-config", argT::SPACE_ARGUMENT, &opt_out_config,
+                   "Output a configuration. This may be seeded with a configuration file from -c/--config." );
+  arg.AddArgument( "-o",            argT::SPACE_ARGUMENT, &opt_out_config,
+                   "Output a configuration. This may be seeded with a configuration file from -c/--config." );
+
+    if ( ! arg.Parse() )
   {
-    boost::program_options::store(boost::program_options::parse_command_line(argc, argv, opt_desc),
-                                  vm);
-  }
-  catch (boost::program_options::unknown_option const& e)
-  {
-    std::cerr << "Error: unknown option " << e.get_option_name() << std::endl;
+    std::cerr << "Problem parsing arguments" << std::endl;
     return EXIT_FAILURE;
   }
 
-  boost::program_options::notify(vm);
-
-  if(vm.count("help"))
+  if ( opt_help )
   {
-    std::cerr << opt_desc << std::endl;
+    std::cout
+      << "USAGE: " << argv[0] << " [OPTS]\n\n"
+      << "Options:"
+      << arg.GetHelp() << std::endl;
     return EXIT_SUCCESS;
   }
+
+  // register the algorithm implementations
+  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
 
   // Set config to algo chain
   // Get config from algo chain after set
@@ -271,8 +268,6 @@ static int maptk_main(int argc, char const* argv[])
   //
   // If -o/--output-config given, output config result and notify of current (in)validity
   // Else error if provided config not valid.
-
-  namespace bfs = boost::filesystem;
 
   // Set up top level configuration w/ defaults where applicable.
   kwiver::vital::config_block_sptr config = default_config();
@@ -282,10 +277,10 @@ static int maptk_main(int argc, char const* argv[])
   kwiver::vital::algo::compute_ref_homography_sptr out_homog_generator;
 
   // If -c/--config given, read in confg file, merge in with default just generated
-  if(vm.count("config"))
+  if( ! opt_config.empty() )
   {
-    //std::cerr << "[DEBUG] Given config file: " << vm["config"].as<kwiver::vital::path_t>() << std::endl;
-    config->merge_config(kwiver::vital::read_config_file(vm["config"].as<kwiver::vital::path_t>()));
+    //std::cerr << "[DEBUG] Given config file: " << opt_config << std::endl;
+    config->merge_config(kwiver::vital::read_config_file( opt_config ) );
   }
 
   //std::cerr << "[DEBUG] Config BEFORE set:" << std::endl;
@@ -305,10 +300,10 @@ static int maptk_main(int argc, char const* argv[])
 
   bool valid_config = check_config(config);
 
-  if(vm.count("output-config"))
+  if( ! opt_out_config.empty() )
   {
-    //std::cerr << "[DEBUG] Given config output target: " << vm["output-config"].as<kwiver::vital::path_t>() << std::endl;
-    write_config_file(config, vm["output-config"].as<kwiver::vital::path_t>());
+    //std::cerr << "[DEBUG] Given config output target: " << opt_out_config << std::endl;
+    write_config_file(config, opt_out_config );
     if(valid_config)
     {
       std::cerr << "INFO: Configuration file contained valid parameters and may be used for running" << std::endl;
@@ -336,7 +331,7 @@ static int maptk_main(int argc, char const* argv[])
   std::ifstream ifs(image_list_file.c_str());
   if (!ifs)
   {
-    std::cerr << "Error: Could not open image list \""<<image_list_file<<"\""<<std::endl;
+    std::cerr << "Error: Could not open image list \"" << image_list_file << "\"" << std::endl;
     return EXIT_FAILURE;
   }
   // Creating input image list, checking file existance
@@ -344,7 +339,7 @@ static int maptk_main(int argc, char const* argv[])
   for (std::string line; std::getline(ifs,line); )
   {
     files.push_back(line);
-    if (!bfs::exists(files[files.size()-1]))
+    if ( ! ST::FileExists( files[files.size()-1], true ) )
     {
       throw kwiver::vital::path_not_exists(files[files.size()-1]);
     }
@@ -356,8 +351,7 @@ static int maptk_main(int argc, char const* argv[])
   std::vector<kwiver::vital::path_t> mask_files;
   if( mask_list_file != "" )
   {
-    LOG_DEBUG( main_logger,
-               "Loading paired mask images from list file" );
+    LOG_DEBUG( main_logger, "Loading paired mask images from list file" );
 
     use_masks = true;
     // Load file stream
@@ -370,7 +364,7 @@ static int maptk_main(int argc, char const* argv[])
     for( std::string line; std::getline(mask_ifs, line); )
     {
       mask_files.push_back(line);
-      if( !bfs::is_regular_file( mask_files[mask_files.size()-1] ) )
+      if( ! ST::FileExists( mask_files[mask_files.size()-1], true ) )
       {
         throw kwiver::vital::path_not_exists( mask_files[mask_files.size()-1] );
       }
@@ -420,14 +414,11 @@ static int maptk_main(int argc, char const* argv[])
   {
     std::cout << "processing frame "<<i<<": "<<files[i]<<std::endl;
 
-    //kwiver::vital::image_container_sptr img = image_reader->load(files[i].string());
-    //kwiver::vital::image_container_sptr converted = image_converter->convert(img);
-
-    kwiver::vital::image_container_sptr converted_img,
-                                mask, converted_mask;
-    converted_img = image_converter->convert( image_reader->load( files[i] ) );
+    auto const image = image_reader->load( files[i] );
+    auto const converted_image = image_converter->convert( image );
 
     // Load the mask for this image if we were given a mask image list
+    kwiver::vital::image_container_sptr mask, converted_mask;
     if( use_masks )
     {
       mask = image_reader->load( mask_files[i] );
@@ -450,8 +441,8 @@ static int maptk_main(int argc, char const* argv[])
       {
         LOG_DEBUG( main_logger,
                    "Inverting mask image pixels" );
-        kwiver::vital::image mask_img( mask->get_image() );
-        kwiver::vital::transform_image( mask_img, invert_mask_pixel );
+        kwiver::vital::image mask_image( mask->get_image() );
+        kwiver::vital::transform_image( mask_image, invert_mask_pixel );
         LOG_DEBUG( main_logger,
                    "Inverting mask image pixels -- Done" );
       }
@@ -459,7 +450,11 @@ static int maptk_main(int argc, char const* argv[])
       converted_mask = image_converter->convert( mask );
     }
 
-    tracks = feature_tracker->track(tracks, i, converted_img, converted_mask);
+    tracks = feature_tracker->track(tracks, i, converted_image, converted_mask);
+    if (tracks)
+    {
+      tracks = kwiver::maptk::extract_feature_colors(*tracks, *image, i);
+    }
 
     // Compute ref homography for current frame with current track set + write to file
     // -> still doesn't take into account a full shotbreak, which would incur a track reset
@@ -482,6 +477,7 @@ static int maptk_main(int argc, char const* argv[])
 }
 
 
+// ------------------------------------------------------------------
 int main(int argc, char const* argv[])
 {
   try

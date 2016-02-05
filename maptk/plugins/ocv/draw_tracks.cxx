@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,15 +37,18 @@
 
 #include <set>
 #include <fstream>
+#include <sstream>
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
+#include <stdio.h> // using C99 interface to support older compilers
+#include <deque>
 
+#include <vital/vital_config.h>
 #include <vital/vital_foreach.h>
-#include <boost/lexical_cast.hpp>
-#include <boost/format.hpp>
-#include <boost/circular_buffer.hpp>
-#include <boost/filesystem.hpp>
+#include <vital/logger/logger.h>
+
+#include <kwiversys/SystemTools.hxx>
 
 #include <maptk/plugins/ocv/image_container.h>
 #include <maptk/plugins/ocv/ocv_algo_tools.h>
@@ -61,7 +64,7 @@ namespace maptk {
 
 namespace ocv
 {
-
+typedef kwiversys::SystemTools     ST;
 
 /// Helper typedef for storing match lines between frames
 typedef std::vector< std::pair< cv::Point, cv::Point > > line_vec_t;
@@ -70,6 +73,9 @@ typedef std::vector< std::pair< cv::Point, cv::Point > > line_vec_t;
 /// Helper typedef for storing past frame id offsets
 typedef std::vector< frame_id_t > fid_offset_vec_t;
 
+#if VITAL_SYSTEM_WIN_API
+#define snprintf _snprintf
+#endif
 
 /// Private implementation class
 class draw_tracks::priv
@@ -86,7 +92,8 @@ public:
     swap_comparison_set( false ),
     write_images_to_disk( true ),
     pattern( "feature_tracks_%05d.png" ),
-    cur_frame_id( 0 )
+    cur_frame_id( 0 ),
+    m_logger( kwiver::vital::get_logger( "maptk.ocv.draw_tracks" ) )
   {
   }
 
@@ -110,11 +117,13 @@ public:
   bool swap_comparison_set;
   fid_offset_vec_t past_frames_to_show;
   bool write_images_to_disk;
-  boost::format pattern;
+  std::string pattern;
 
   /// Internal variables
-  boost::circular_buffer< cv::Mat > buffer;
+  std::deque< cv::Mat > buffer; // managed as a circular buffer
   frame_id_t cur_frame_id;
+
+  kwiver::vital::logger_handle_t m_logger;
 };
 
 
@@ -175,7 +184,7 @@ draw_tracks
                      "the current frame." );
   config->set_value( "write_images_to_disk", "true",
                      "Should images be written out to disk?" );
-  config->set_value( "pattern", "feature_tracks_%1%.png",
+  config->set_value( "pattern", "feature_tracks_%05d.png",
                      "The output pattern for writing images to disk." );
 
   return config;
@@ -213,12 +222,11 @@ draw_tracks
   d_->draw_comparison_lines = config->get_value<bool>( "draw_comparison_lines" );
   d_->swap_comparison_set = config->get_value<bool>( "swap_comparison_set" );
   d_->write_images_to_disk = config->get_value<bool>( "write_images_to_disk" );
-  d_->pattern = boost::format( config->get_value<std::string>( "pattern" ) );
+  d_->pattern = config->get_value<std::string>( "pattern" );
 
   if( !d_->past_frames_to_show.empty() )
   {
-    d_->buffer.set_capacity( *std::max_element( d_->past_frames_to_show.begin(),
-                                                d_->past_frames_to_show.end()) );
+    d_->buffer.resize( *std::max_element( d_->past_frames_to_show.begin(), d_->past_frames_to_show.end()) );
   }
 }
 
@@ -311,8 +319,6 @@ draw_tracks
         image_container_sptr_list image_data,
         track_set_sptr input_comparison_set )
 {
-  namespace bfs = boost::filesystem;
-
   // Perform swap of inputs if settings enabled
   track_set_sptr display_set = input_display_set;
   track_set_sptr comparison_set = input_comparison_set;
@@ -390,7 +396,9 @@ draw_tracks
       cv::Scalar color = default_color;
       cv::Point loc = state_to_cv_point( ts );
       cv::Point txt_offset( 2, -2 );
-      std::string tid_str = boost::lexical_cast<std::string>( trk->id() );
+      std::stringstream str;
+      str << trk->id();
+      std::string tid_str = str.str();
 
       if( trk->size() == 1 )
       {
@@ -459,8 +467,33 @@ draw_tracks
     // Update write image flag
     write_image_to_disk &= ( !comparison_set_provided || comparison_track_found );
 
-    // Fully generate and output the image
-    std::string ofn = boost::str( d_->pattern % fid );
+    // Fully generate and output the image.
+    //
+    // This is one of those security problems your mother told you
+    // about.  We are taking a printf format string from the user and
+    // using it without inspection. Since we are expecting a single %d
+    // format code in the string, strange things could happen if it
+    // was a %f, for example. An alternative could be to append a 5
+    // digit frame number to the base file name and not use format
+    // specifiers.
+    std::string ofn;
+    size_t max_len = d_->pattern.size() + 4096;
+    ofn.resize( max_len );
+    int num_bytes = snprintf( &ofn[0], max_len, d_->pattern.c_str(), fid );
+    if (num_bytes < 0) // format conversion error
+    {
+      LOG_WARN( m_logger, "Could not format output file name: \"" <<  d_->pattern
+                << "\". Disabling writing to disk." );
+
+      // The safest thing is to disable writing since we have no idea
+      // what the file name looks like after a format conversion
+      // error.
+      write_image_to_disk = false;
+    }
+    else if (static_cast< unsigned >(num_bytes) < max_len)
+    {
+      ofn.resize( num_bytes );
+    }
 
     output_image = cv::Mat( img.rows, display_frames*img.cols, img.type(), cv::Scalar(0) );
 
@@ -487,12 +520,12 @@ draw_tracks
     {
       // Check that the directory of the given filepath exists, creating necessary
       // directories where needed.
-      bfs::path parent_dir = bfs::absolute(bfs::path(ofn).parent_path());
-      if(!bfs::is_directory(parent_dir))
+      std::string parent_dir = ST::CollapseFullPath( ST::GetFilenamePath( ofn ) );
+      if( ! ST::FileIsDirectory( parent_dir ) )
       {
-        if(!bfs::create_directories(parent_dir))
+        if( ! ST::MakeDirectory( parent_dir ) )
         {
-          throw file_write_exception(parent_dir.string(), "Attempted directory creation, "
+          throw file_write_exception(parent_dir, "Attempted directory creation, "
                                                  "but no directory created! No "
                                                  "idea what happened here...");
         }
@@ -501,9 +534,11 @@ draw_tracks
     }
 
     // Store last image with all features and shift lines already drawn on it
-    if( d_->buffer.capacity() > 0 )
+    // add new element to buffer
+    if( d_->buffer.size() > 0 )
     {
       d_->buffer.push_back( img );
+      d_->buffer.pop_front();
     }
 
     // Increase frame id counter

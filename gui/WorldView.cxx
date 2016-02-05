@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,7 @@
 #include "am_WorldView.h"
 
 #include "CameraOptions.h"
+#include "FieldInformation.h"
 #include "ImageOptions.h"
 #include "PointOptions.h"
 #include "vtkMaptkCamera.h"
@@ -45,20 +46,33 @@
 #include <vtkActorCollection.h>
 #include <vtkBoundingBox.h>
 #include <vtkCellArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkImageActor.h>
 #include <vtkImageData.h>
 #include <vtkMatrix4x4.h>
 #include <vtkNew.h>
 #include <vtkPlaneSource.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkUnsignedIntArray.h>
+
+#include <qtMath.h>
 
 #include <QtGui/QMenu>
 #include <QtGui/QToolButton>
 #include <QtGui/QWidgetAction>
+
+namespace // anonymous
+{
+static char const* const TrueColor = "truecolor";
+static char const* const Elevation = "elevation";
+static char const* const Observations = "observations";
+}
 
 //-----------------------------------------------------------------------------
 class WorldViewPrivate
@@ -93,6 +107,10 @@ public:
 
   vtkNew<vtkPoints> landmarkPoints;
   vtkNew<vtkCellArray> landmarkVerts;
+  vtkNew<vtkDoubleArray> landmarkElevations;
+  vtkNew<vtkUnsignedCharArray> landmarkColors;
+  vtkNew<vtkUnsignedIntArray> landmarkObservations;
+  vtkNew<vtkPolyDataMapper> landmarkMapper;
   vtkNew<vtkActor> landmarkActor;
 
   vtkNew<vtkImageActor> imageActor;
@@ -309,15 +327,30 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
 
   // Set up landmark actor
   vtkNew<vtkPolyData> landmarkPolyData;
-  vtkNew<vtkPolyDataMapper> landmarkMapper;
+
+  auto const landmarkPointData = landmarkPolyData->GetPointData();
+
+  d->landmarkColors->SetName(TrueColor);
+  d->landmarkColors->SetNumberOfComponents(3);
+
+  d->landmarkElevations->SetName(Elevation);
+  d->landmarkElevations->SetNumberOfComponents(1);
+
+  d->landmarkObservations->SetName(Observations);
+  d->landmarkObservations->SetNumberOfComponents(1);
 
   landmarkPolyData->SetPoints(d->landmarkPoints.GetPointer());
   landmarkPolyData->SetVerts(d->landmarkVerts.GetPointer());
-  landmarkMapper->SetInputData(landmarkPolyData.GetPointer());
+  landmarkPointData->AddArray(d->landmarkColors.GetPointer());
+  landmarkPointData->AddArray(d->landmarkElevations.GetPointer());
+  landmarkPointData->AddArray(d->landmarkObservations.GetPointer());
+  d->landmarkMapper->SetInputData(landmarkPolyData.GetPointer());
 
-  d->landmarkActor->SetMapper(landmarkMapper.GetPointer());
+  d->landmarkActor->SetMapper(d->landmarkMapper.GetPointer());
   d->landmarkActor->SetVisibility(d->UI.actionShowLandmarks->isChecked());
   d->renderer->AddActor(d->landmarkActor.GetPointer());
+
+  d->landmarkOptions->addMapper(d->landmarkMapper.GetPointer());
 
   // Set up ground plane grid
   d->groundPlane->SetOrigin(-10.0, -10.0, 0.0);
@@ -339,6 +372,14 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
 //-----------------------------------------------------------------------------
 WorldView::~WorldView()
 {
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::setBackgroundColor(QColor const& color)
+{
+  QTE_D();
+  d->renderer->SetBackground(color.redF(), color.greenF(), color.blueF());
+  d->UI.renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -403,23 +444,61 @@ void WorldView::setLandmarks(kwiver::vital::landmark_map const& lm)
   QTE_D();
 
   auto const& landmarks = lm.landmarks();
+  auto const size = static_cast<vtkIdType>(landmarks.size());
+
+  auto const defaultColor = kwiver::vital::rgb_color{};
+  auto haveColor = false;
+  auto maxObservations = unsigned{0};
+  auto minZ = qInf(), maxZ = -qInf();
 
   d->landmarkPoints->Reset();
   d->landmarkVerts->Reset();
-  d->landmarkPoints->Allocate(static_cast<vtkIdType>(landmarks.size()));
-  d->landmarkVerts->Allocate(static_cast<vtkIdType>(landmarks.size()));
+  d->landmarkColors->Reset();
+  d->landmarkElevations->Reset();
+  d->landmarkObservations->Reset();
+  d->landmarkPoints->Allocate(size);
+  d->landmarkVerts->Allocate(size);
+  d->landmarkColors->Allocate(3 * size);
+  d->landmarkElevations->Allocate(size);
+  d->landmarkObservations->Allocate(size);
 
   vtkIdType vertIndex = 0;
-  foreach_iter (auto, lmi, landmarks)
+  foreach (auto const& lm, landmarks)
   {
-    auto const& pos = lmi->second->loc();
+    auto const& pos = lm.second->loc();
+    auto const& color = lm.second->color();
+    auto const observations = lm.second->observations();
+
     d->landmarkPoints->InsertNextPoint(pos.data());
     d->landmarkVerts->InsertNextCell(1);
     d->landmarkVerts->InsertCellPoint(vertIndex++);
+    d->landmarkColors->InsertNextValue(color.r);
+    d->landmarkColors->InsertNextValue(color.g);
+    d->landmarkColors->InsertNextValue(color.b);
+    d->landmarkElevations->InsertNextValue(pos[2]);
+    d->landmarkObservations->InsertNextValue(observations);
+
+    haveColor = haveColor || (color != defaultColor);
+    maxObservations = qMax(maxObservations, observations);
+    minZ = qMin(minZ, pos[2]);
+    maxZ = qMax(maxZ, pos[2]);
   }
+
+  auto fields = QHash<QString, FieldInformation>{};
+  fields.insert("Elevation", {Elevation, {minZ, maxZ}});
+  if (maxObservations)
+  {
+    auto const upper = static_cast<double>(maxObservations);
+    fields.insert("Observations", {Observations, {0.0, upper}});
+  }
+
+  d->landmarkOptions->setTrueColorAvailable(haveColor);
+  d->landmarkOptions->setDataFields(fields);
 
   d->landmarkPoints->Modified();
   d->landmarkVerts->Modified();
+  d->landmarkColors->Modified();
+  d->landmarkObservations->Modified();
 
   d->updateScale(this);
 }
@@ -572,11 +651,16 @@ void WorldView::updateScale()
     // Add camera centers
     bbox.AddBounds(d->cameraRep->GetPathActor()->GetBounds());
 
-    // Compute base scale (20% of scale factor)
-    auto const cameraScale = 0.2 * bbox.GetDiagonalLength();
+    // Check if we have geometry (we can still get here if a scale update was
+    // triggered by setting the active camera with only images loaded)
+    if (bbox.IsValid())
+    {
+      // Compute base scale (20% of scale factor)
+      auto const cameraScale = 0.2 * bbox.GetDiagonalLength();
 
-    // Update camera scale
-    d->cameraOptions->setBaseCameraScale(cameraScale);
+      // Update camera scale
+      d->cameraOptions->setBaseCameraScale(cameraScale);
+    }
 
     d->scaleDirty = false;
 

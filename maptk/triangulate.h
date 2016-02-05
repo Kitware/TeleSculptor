@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2015-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,9 +36,11 @@
 #ifndef MAPTK_TRIANGULATE_H_
 #define MAPTK_TRIANGULATE_H_
 
+#include <vital/vital_config.h>
+#include <maptk/maptk_export.h>
+
 #include <vital/types/camera.h>
 
-#include <maptk/config.h>
 
 namespace kwiver {
 namespace maptk {
@@ -56,7 +58,7 @@ namespace maptk {
  *  \return a 3D triangulated point location
  */
 template <typename T>
-MAPTK_LIB_EXPORT
+MAPTK_EXPORT
 Eigen::Matrix<T,3,1>
 triangulate_inhomog(const std::vector<vital::simple_camera >& cameras,
                     const std::vector<Eigen::Matrix<T,2,1> >& points);
@@ -74,7 +76,7 @@ triangulate_inhomog(const std::vector<vital::simple_camera >& cameras,
  *  \return a homogeneous 3D triangulated point location
  */
 template <typename T>
-MAPTK_LIB_EXPORT
+MAPTK_EXPORT
 Eigen::Matrix<T,4,1>
 triangulate_homog(const std::vector<vital::simple_camera >& cameras,
                   const std::vector<Eigen::Matrix<T,2,1> >& points);

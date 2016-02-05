@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,25 +58,20 @@
 #include <vital/io/track_set_io.h>
 #include <vital/types/track_set.h>
 #include <vital/vital_types.h>
-#include <kwiversys/SystemTools.hxx>
+#include <vital/util/cpu_timer.h>
 
+#include <kwiversys/SystemTools.hxx>
+#include <kwiversys/CommandLineArguments.hxx>
+#include <kwiversys/Directory.hxx>
+
+#include <maptk/colorize.h>
 #include <maptk/ins_data_io.h>
 #include <maptk/local_geo_cs.h>
 #include <maptk/geo_reference_points_io.h>
 #include <maptk/metrics.h>
 #include <maptk/transform.h>
 
-#include <boost/filesystem.hpp>
-#include <boost/foreach.hpp>
-#include <boost/program_options/options_description.hpp>
-#include <boost/program_options/parsers.hpp>
-#include <boost/program_options/value_semantic.hpp>
-#include <boost/program_options/variables_map.hpp>
-#include <boost/timer/timer.hpp>
-
-
-namespace bfs = boost::filesystem;
-namespace bpo = boost::program_options;
+typedef kwiversys::SystemTools     ST;
 
 static kwiver::vital::config_block_sptr default_config()
 {
@@ -198,6 +193,7 @@ static kwiver::vital::config_block_sptr default_config()
 }
 
 
+// ------------------------------------------------------------------
 static bool check_config(kwiver::vital::config_block_sptr config)
 {
   bool config_valid = true;
@@ -210,7 +206,7 @@ static bool check_config(kwiver::vital::config_block_sptr config)
   {
     MAPTK_CONFIG_FAIL("Not given a tracks file path");
   }
-  else if (!bfs::exists(config->get_value<std::string>("input_track_file")))
+  else if (! ST::FileExists( config->get_value<std::string>("input_track_file"), true ) )
   {
     MAPTK_CONFIG_FAIL("Given tracks file path doesn't point to an existing file.");
   }
@@ -219,7 +215,7 @@ static bool check_config(kwiver::vital::config_block_sptr config)
   {
     MAPTK_CONFIG_FAIL("Not given an image list file");
   }
-  else if (!bfs::exists(config->get_value<std::string>("image_list_file")))
+  else if (! ST::FileExists( config->get_value<std::string>("image_list_file"), true ) )
   {
     MAPTK_CONFIG_FAIL("Given image list file path doesn't point to an existing file.");
   }
@@ -230,7 +226,7 @@ static bool check_config(kwiver::vital::config_block_sptr config)
   if (config->get_value<std::string>("input_pos_files", "") != "")
   {
     input_pos = true;
-    if (!bfs::exists(config->get_value<std::string>("input_pos_files")))
+    if (! ST::FileExists(config->get_value<std::string>("input_pos_files")))
     {
       MAPTK_CONFIG_FAIL("POS input path given, but doesn't point to an existing location.");
     }
@@ -238,7 +234,7 @@ static bool check_config(kwiver::vital::config_block_sptr config)
   if (config->get_value<std::string>("input_krtd_files", "") != "")
   {
     input_krtd = true;
-    if (!bfs::exists(config->get_value<std::string>("input_krtd_files")))
+    if (! ST::FileExists(config->get_value<std::string>("input_krtd_files")))
     {
       MAPTK_CONFIG_FAIL("KRTD input path given, but does not point to an existing location.");
     }
@@ -249,7 +245,7 @@ static bool check_config(kwiver::vital::config_block_sptr config)
   }
   if (config->get_value<std::string>("input_reference_points_file", "") != "")
   {
-    if (!bfs::exists(config->get_value<std::string>("input_reference_points_file")))
+    if (! ST::FileExists(config->get_value<std::string>("input_reference_points_file"), true ))
     {
       MAPTK_CONFIG_FAIL("Path given for input reference points file does not exist.");
     }
@@ -286,6 +282,7 @@ static bool check_config(kwiver::vital::config_block_sptr config)
 }
 
 
+// ------------------------------------------------------------------
 /// create a base camera instance from config options
 kwiver::vital::simple_camera
 base_camera_from_config(kwiver::vital::config_block_sptr config)
@@ -300,6 +297,7 @@ base_camera_from_config(kwiver::vital::config_block_sptr config)
 }
 
 
+// ------------------------------------------------------------------
 /// filter track set by removing short tracks
 kwiver::vital::track_set_sptr
 filter_tracks(kwiver::vital::track_set_sptr tracks, size_t min_length)
@@ -317,6 +315,7 @@ filter_tracks(kwiver::vital::track_set_sptr tracks, size_t min_length)
 }
 
 
+// ------------------------------------------------------------------
 /// Subsample a every Nth camera, where N is specfied by factor
 /**
  * Uses camera frame numbers to determine subsample. This is fine when we
@@ -341,22 +340,32 @@ subsample_cameras(kwiver::vital::camera_map_sptr cameras, unsigned factor)
 }
 
 
+// ------------------------------------------------------------------
 // return a sorted list of files in a directory
 std::vector< kwiver::vital::path_t >
 files_in_dir(kwiver::vital::path_t const& vdir)
 {
-  bfs::path const dir = vdir;
-  bfs::directory_iterator it(dir), eod;
   std::vector< kwiver::vital::path_t > files;
-  BOOST_FOREACH(bfs::path const &p, std::make_pair(it, eod))
+
+  kwiversys::Directory dir;
+  if ( 0 == dir.Load( vdir ) )
   {
-    files.push_back( p.string() );
+    std::cerr << "Could not access directory \"" << vdir << std::endl;
+    return files;
   }
+
+  unsigned long num_files = dir.GetNumberOfFiles();
+  for ( unsigned long i = 0; i < num_files; i++)
+  {
+    files.push_back( vdir + '/' + dir.GetFile( i ) );
+  }
+
   std::sort( files.begin(), files.end() );
   return files;
 }
 
 
+// ------------------------------------------------------------------
 /// Return a list of file paths either from a directory of files or from a
 /// list of file paths
 ///
@@ -365,7 +374,7 @@ files_in_dir(kwiver::vital::path_t const& vdir)
 bool
 resolve_files(kwiver::vital::path_t const &p, std::vector< kwiver::vital::path_t > &files)
 {
-  if ( kwiversys::SystemTools::FileIsDirectory( p) )
+  if ( ST::FileIsDirectory( p) )
   {
     files = files_in_dir(p);
   }
@@ -395,7 +404,7 @@ load_input_cameras_pos(kwiver::vital::config_block_sptr config,
                        kwiver::maptk::local_geo_cs & local_cs,
                        kwiver::vital::camera_map::map_camera_t & input_cameras)
 {
-  boost::timer::auto_cpu_timer t("Initializing cameras from POS files: %t sec CPU, %w sec wall\n");
+  kwiver::vital::scoped_cpu_timer t( "Initializing cameras from POS files" );
 
   std::string pos_files = config->get_value<std::string>("input_pos_files");
   std::vector< kwiver::vital::path_t > files;
@@ -412,7 +421,7 @@ load_input_cameras_pos(kwiver::vital::config_block_sptr config,
   std::map<std::string, kwiver::vital::frame_id_t>::const_iterator it;
   VITAL_FOREACH(kwiver::vital::path_t const& fpath, files)
   {
-    std::string pos_file_stem = kwiversys::SystemTools::GetFilenamePath( fpath );
+    std::string pos_file_stem = ST::GetFilenameWithoutLastExtension( fpath );
     it = filename2frame.find(pos_file_stem);
     if (it != filename2frame.end())
     {
@@ -457,7 +466,7 @@ load_input_cameras_krtd(kwiver::vital::config_block_sptr config,
                         kwiver::maptk::local_geo_cs & local_cs,
                         kwiver::vital::camera_map::map_camera_t & input_cameras)
 {
-  boost::timer::auto_cpu_timer t("Initializing cameras from KRTD files: %t sec CPU, %w sec wall\n");
+  kwiver::vital::scoped_cpu_timer t( "Initializing cameras from KRTD files" );
 
   // Collect files
   std::string krtd_files = config->get_value<std::string>("input_krtd_files");
@@ -475,7 +484,7 @@ load_input_cameras_krtd(kwiver::vital::config_block_sptr config,
   std::map<std::string, kwiver::vital::frame_id_t>::const_iterator it;
   VITAL_FOREACH(kwiver::vital::path_t const& fpath, files)
   {
-    std::string krtd_file_stem = kwiversys::SystemTools::GetFilenamePath( fpath );
+    std::string krtd_file_stem = ST::GetFilenameWithoutLastExtension( fpath );
     it = filename2frame.find(krtd_file_stem);
     if (it != filename2frame.end())
     {
@@ -537,54 +546,54 @@ bool load_input_cameras(kwiver::vital::config_block_sptr config,
 }
 
 
-#define print_config(config) \
-  do \
-  { \
+#define print_config(config)                                            \
+  do                                                                    \
+  {                                                                     \
     VITAL_FOREACH( kwiver::vital::config_block_key_t key, config->available_values() ) \
-    { \
-      std::cerr << "\t" \
+    {                                                                   \
+      std::cerr << "\t"                                                 \
            << key << " = " << config->get_value<kwiver::vital::config_block_key_t>(key) \
-           << std::endl; \
-    } \
+           << std::endl;                                                \
+    }                                                                   \
   } while (false)
 
 
 static int maptk_main(int argc, char const* argv[])
 {
-  // register the algorithm implementations
-  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
+  static bool        opt_help(false);
+  static std::string opt_config;
+  static std::string opt_out_config;
 
-  // define/parse CLI options
-  bpo::options_description opt_desc;
-  opt_desc.add_options()
-    ("help,h", "output help message and exit")
-    ("config,c",
-     bpo::value<kwiver::vital::path_t>(),
-     "Configuration file for the tool.")
-    ("output-config,o",
-     bpo::value<kwiver::vital::path_t>(),
-     "Output a configuration.This may be seeded with"
-     " a configuration file from -c/--config.")
-    ;
-  bpo::variables_map vm;
+  kwiversys::CommandLineArguments arg;
 
-  try
+  arg.Initialize( argc, argv );
+  typedef kwiversys::CommandLineArguments argT;
+
+  arg.AddArgument( "--help",        argT::NO_ARGUMENT, &opt_help, "Display usage information" );
+  arg.AddArgument( "--config",      argT::SPACE_ARGUMENT, &opt_config, "Configuration file for tool" );
+  arg.AddArgument( "-c",            argT::SPACE_ARGUMENT, &opt_config, "Configuration file for tool" );
+  arg.AddArgument( "--output-config", argT::SPACE_ARGUMENT, &opt_out_config,
+                   "Output a configuration. This may be seeded with a configuration file from -c/--config." );
+  arg.AddArgument( "-o",            argT::SPACE_ARGUMENT, &opt_out_config,
+                   "Output a configuration. This may be seeded with a configuration file from -c/--config." );
+
+    if ( ! arg.Parse() )
   {
-    bpo::store(bpo::parse_command_line(argc, argv, opt_desc), vm);
-  }
-  catch (bpo::unknown_option const& e)
-  {
-    std::cerr << "Error: unknown option " << e.get_option_name() << std::endl;
+    std::cerr << "Problem parsing arguments" << std::endl;
     return EXIT_FAILURE;
   }
 
-  bpo::notify(vm);
-
-  if(vm.count("help"))
+  if ( opt_help )
   {
-    std::cerr << opt_desc << std::endl;
+    std::cout
+      << "USAGE: " << argv[0] << " [OPTS]\n\n"
+      << "Options:"
+      << arg.GetHelp() << std::endl;
     return EXIT_SUCCESS;
   }
+
+  // register the algorithm implementations
+  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
 
   // Set config to algo chain
   // Get config from algo chain after set
@@ -603,10 +612,10 @@ static int maptk_main(int argc, char const* argv[])
   kwiver::vital::algo::estimate_similarity_transform_sptr st_estimator;
 
   // If -c/--config given, read in confg file, merge in with default just generated
-  if(vm.count("config"))
+  if( ! opt_config.empty() )
   {
     //std::cerr << "[DEBUG] Given config file: " << vm["config"].as<kwiver::vital::path_t>() << std::endl;
-    config->merge_config(kwiver::vital::read_config_file(vm["config"].as<kwiver::vital::path_t>()));
+    config->merge_config(kwiver::vital::read_config_file( opt_config ) );
   }
 
   //std::cerr << "[DEBUG] Config BEFORE set:" << std::endl;
@@ -623,7 +632,7 @@ static int maptk_main(int argc, char const* argv[])
 
   bool valid_config = check_config(config);
 
-  if(vm.count("output-config"))
+  if( ! opt_out_config.empty() )
   {
     kwiver::vital::config_block_sptr dflt_config = default_config();
     dflt_config->merge_config(config);
@@ -635,8 +644,8 @@ static int maptk_main(int argc, char const* argv[])
     kwiver::vital::algo::estimate_similarity_transform::get_nested_algo_configuration("st_estimator", config, st_estimator);
 
     //std::cerr << "[DEBUG] Given config output target: "
-    //          << vm["output-config"].as<kwiver::vital::path_t>() << std::endl;
-    write_config_file(config, vm["output-config"].as<kwiver::vital::path_t>());
+    //          << opt_out_config << std::endl;
+    write_config_file(config, opt_out_config );
     if(valid_config)
     {
       std::cerr << "INFO: Configuration file contained valid parameters"
@@ -671,7 +680,7 @@ static int maptk_main(int argc, char const* argv[])
   size_t min_track_len = config->get_value<size_t>("min_track_length");
   if( min_track_len > 1 )
   {
-    boost::timer::auto_cpu_timer t("track filtering: %t sec CPU, %w sec wall\n");
+    kwiver::vital::scoped_cpu_timer t( "track filtering" );
     tracks = filter_tracks(tracks, min_track_len);
     std::cerr << "filtered down to "<<tracks->size()<<" long tracks"<<std::endl;
 
@@ -722,7 +731,7 @@ static int maptk_main(int argc, char const* argv[])
   std::map<std::string, kwiver::vital::frame_id_t> filename2frame;
   VITAL_FOREACH(kwiver::vital::path_t i_file, image_files)
   {
-    std::string i_file_stem = kwiversys::SystemTools::GetFilenamePath( i_file );
+    std::string i_file_stem = ST::GetFilenameWithoutLastExtension( i_file );
     filename2frame[i_file_stem] = static_cast<kwiver::vital::frame_id_t>(frame2filename.size());
     frame2filename.push_back(i_file_stem);
   }
@@ -808,7 +817,7 @@ static int maptk_main(int argc, char const* argv[])
   unsigned int cam_samp_rate = config->get_value<unsigned int>("camera_sample_rate");
   if(cam_samp_rate > 1)
   {
-    boost::timer::auto_cpu_timer t("Tool-level sub-sampling: %t sec CPU, %w sec wall\n");
+    kwiver::vital::scoped_cpu_timer t( "Tool-level sub-sampling" );
 
     // If there are no cameras loaded, create a map of NULL cameras to subsample
     if( !cam_map )
@@ -852,7 +861,7 @@ static int maptk_main(int argc, char const* argv[])
   // Initialize cameras and landmarks
   //
   {
-    boost::timer::auto_cpu_timer t("Initializing cameras and landmarks: %t sec CPU, %w sec wall\n");
+    kwiver::vital::scoped_cpu_timer t( "Initializing cameras and landmarks" );
     initializer->initialize(cam_map, lm_map, tracks);
   }
 
@@ -860,7 +869,7 @@ static int maptk_main(int argc, char const* argv[])
   // Run bundle adjustment
   //
   { // scope block
-    boost::timer::auto_cpu_timer t("Tool-level SBA algorithm: %t sec CPU, %w sec wall\n");
+    kwiver::vital::scoped_cpu_timer t( "Tool-level SBA algorithm" );
 
     double init_rmse = kwiver::maptk::reprojection_rmse(cam_map->cameras(),
                                                         lm_map->landmarks(),
@@ -889,8 +898,7 @@ static int maptk_main(int argc, char const* argv[])
   //
   if (st_estimator)
   {
-    boost::timer::auto_cpu_timer t_1("--> st estimation and application: %t sec "
-                                     "CPU, %w sec wall\n");
+    kwiver::vital::scoped_cpu_timer t_1( "--> st estimation and application" );
     std::cerr << "Estimating similarity transform from post-SBA to original space"
               << std::endl;
 
@@ -901,8 +909,7 @@ static int maptk_main(int argc, char const* argv[])
     // transformation out of SBA-space.
     if (reference_landmarks->size() > 0 && reference_tracks->size() > 0)
     {
-      boost::timer::auto_cpu_timer t_2("similarity transform estimation from "
-                                       "ref file: %t sec CPU, %w sec wall\n");
+      kwiver::vital::scoped_cpu_timer t_2( "similarity transform estimation from ref file" );
       std::cerr << "--> Using reference landmarks/tracks" << std::endl;
 
       // Generate corresponding landmarks in SBA-space based on transformed
@@ -924,7 +931,7 @@ static int maptk_main(int argc, char const* argv[])
     }
     else if (input_cam_map->size() > 0)
     {
-      boost::timer::auto_cpu_timer t_2("    %t sec CPU, %w sec wall\n");
+      kwiver::vital::scoped_cpu_timer t_2( "    similarity transform estimation from camera" );
 
       std::cerr << "--> Estimating transform to refined cameras "
                 << "(from input cameras)" << std::endl;
@@ -948,11 +955,16 @@ static int maptk_main(int argc, char const* argv[])
   }
 
   //
+  // Compute landmark colors
+  //
+  lm_map = kwiver::maptk::compute_landmark_colors(*lm_map, *tracks);
+
+  //
   // Write the output PLY file
   //
   if( config->has_value("output_ply_file") )
   {
-    boost::timer::auto_cpu_timer t("writing output PLY file: %t sec CPU, %w sec wall\n");
+    kwiver::vital::scoped_cpu_timer t( "writing output PLY file" );
     std::string ply_file = config->get_value<std::string>("output_ply_file");
     write_ply_file(lm_map, ply_file);
   }
@@ -963,17 +975,17 @@ static int maptk_main(int argc, char const* argv[])
   if( config->has_value("output_pos_dir") )
   {
     std::cerr << "Writing output POS files" << std::endl;
-    boost::timer::auto_cpu_timer t("--> %t sec CPU, %w sec wall\n");
+    kwiver::vital::scoped_cpu_timer t( "--> Writing output POS files" );
 
-    bfs::path pos_dir = config->get_value<std::string>("output_pos_dir");
+    kwiver::vital::path_t pos_dir = config->get_value<std::string>("output_pos_dir");
     // Create INS data from adjusted cameras for POS file output.
     typedef std::map<kwiver::vital::frame_id_t, kwiver::maptk::ins_data> ins_map_t;
     ins_map_t ins_map;
     update_ins_from_cameras(cam_map->cameras(), local_cs, ins_map);
     VITAL_FOREACH(const ins_map_t::value_type& p, ins_map)
     {
-      bfs::path out_pos_file = pos_dir / (frame2filename[p.first] + ".pos");
-      write_pos_file( p.second, out_pos_file.string());
+      kwiver::vital::path_t out_pos_file = pos_dir + "/" + frame2filename[p.first] + ".pos";
+      write_pos_file( p.second, out_pos_file);
     }
     if (ins_map.size() == 0)
     {
@@ -987,14 +999,14 @@ static int maptk_main(int argc, char const* argv[])
   if( config->has_value("output_krtd_dir") )
   {
     std::cerr << "Writing output KRTD files" << std::endl;
-    boost::timer::auto_cpu_timer t("--> %t sec CPU, %w sec wall\n");
+    kwiver::vital::scoped_cpu_timer t("--> Writing output KRTD files" );
 
-    bfs::path krtd_dir = config->get_value<std::string>("output_krtd_dir");
+    kwiver::vital::path_t krtd_dir = config->get_value<std::string>("output_krtd_dir");
     typedef kwiver::vital::camera_map::map_camera_t::value_type cam_map_val_t;
     VITAL_FOREACH(cam_map_val_t const& p, cam_map->cameras())
     {
-      bfs::path out_krtd_file = krtd_dir / (frame2filename[p.first] + ".krtd");
-      write_krtd_file( *p.second, out_krtd_file.string() );
+      kwiver::vital::path_t out_krtd_file = krtd_dir + "/" + frame2filename[p.first] + ".krtd";
+      write_krtd_file( *p.second, out_krtd_file );
     }
   }
 

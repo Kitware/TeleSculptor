@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,8 +43,6 @@
 #include <set>
 #include <vector>
 #include <memory>
-
-#include <boost/math/special_functions/fpclassify.hpp>
 
 #include <vital/algo/estimate_homography.h>
 #include <vital/logger/logger.h>

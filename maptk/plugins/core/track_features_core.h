@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2015 by Kitware, Inc.
+ * Copyright 2013-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,10 @@
 #ifndef MAPTK_PLUGINS_CORE_TRACK_FEATURES_CORE_H_
 #define MAPTK_PLUGINS_CORE_TRACK_FEATURES_CORE_H_
 
+
+#include <vital/vital_config.h>
+#include <maptk/plugins/core/maptk_core_export.h>
+
 #include <vital/algo/algorithm.h>
 #include <vital/algo/track_features.h>
 #include <vital/types/image_container.h>
@@ -47,8 +51,6 @@
 #include <vital/algo/match_features.h>
 #include <vital/algo/close_loops.h>
 
-#include <maptk/plugins/core/plugin_core_config.h>
-
 
 namespace kwiver {
 namespace maptk {
@@ -57,7 +59,7 @@ namespace core
 {
 
 /// A basic feature tracker
-class PLUGIN_CORE_EXPORT track_features_core
+class MAPTK_CORE_EXPORT track_features_core
   : public vital::algorithm_impl<track_features_core, vital::algo::track_features>
 {
 public:

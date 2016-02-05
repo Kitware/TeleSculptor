@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2015 by Kitware, Inc.
+ * Copyright 2013-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,11 +36,14 @@
 #ifndef MAPTK_PLUGINS_OCV_MATCH_FEATURES_H_
 #define MAPTK_PLUGINS_OCV_MATCH_FEATURES_H_
 
+
+#include <vital/vital_config.h>
+#include <maptk/plugins/ocv/maptk_ocv_export.h>
+
 #include <vital/algo/match_features.h>
 
-#include <maptk/plugins/ocv/ocv_config.h>
-
 #include <memory>
+
 
 namespace kwiver {
 namespace maptk {

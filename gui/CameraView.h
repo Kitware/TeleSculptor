@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,12 +31,15 @@
 #ifndef MAPTK_CAMERAVIEW_H_
 #define MAPTK_CAMERAVIEW_H_
 
+#include <vital/vital_types.h>
+
 #include <qtGlobal.h>
 
 #include <QtGui/QWidget>
 
 class vtkImageData;
 
+namespace kwiver { namespace vital { class landmark_map; } }
 namespace kwiver { namespace vital { class track; } }
 
 class vtkMaptkCamera;
@@ -54,12 +57,16 @@ public:
   void addFeatureTrack(kwiver::vital::track const&);
 
 public slots:
+  void setBackgroundColor(QColor const&);
+
   void setImageData(vtkImageData* data, QSize const& dimensions);
+
+  void setLandmarksData(kwiver::vital::landmark_map const&);
 
   void setActiveFrame(unsigned);
 
-  void addLandmark(unsigned int id, double x, double y);
-  void addResidual(unsigned int id,
+  void addLandmark(kwiver::vital::landmark_id_t id, double x, double y);
+  void addResidual(kwiver::vital::track_id_t id,
                    double x1, double y1,
                    double x2, double y2);
 

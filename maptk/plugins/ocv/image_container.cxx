@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2015 by Kitware, Inc.
+ * Copyright 2013-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -79,9 +79,9 @@ image_container
 {
   image_memory_sptr memory(new mat_image_memory(img));
 
-  return image(memory, img.data,
+  return image(memory, img.data + (img.channels() == 3 ? 2 : 0),
                img.cols, img.rows, img.channels(),
-               img.elemSize(), img.step, 1);
+               img.elemSize(), img.step, (img.channels() == 3 ? -1 : 1));
 }
 
 
@@ -91,11 +91,11 @@ image_container
 ::maptk_to_ocv(const vital::image& img)
 {
   // cv::Mat is limited in the image data layouts that it supports.
-  // Color channels must be interleaved (d_step==1) and the
+  // Color channels must be reversed and interleaved (d_step==-1) and the
   // step between columns must equal the number of channels (w_step==depth).
   // If the image does not have these properties we must allocate
   // a new cv::Mat and deep copy the data.  Otherwise, share memory.
-  if( img.d_step() == 1 &&
+  if( ( img.depth() == 1 || ( img.depth() == 3 && img.d_step() == -1 ) ) &&
       img.w_step() == static_cast<ptrdiff_t>(img.depth()) )
   {
     image_memory_sptr memory = img.memory();

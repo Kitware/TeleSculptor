@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,19 +28,43 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_PLUGINS_VISCL_VISCL_CONFIG_H_
-#define MAPTK_PLUGINS_VISCL_VISCL_CONFIG_H_
+#ifndef MAPTK_VTKMAPTKSCALARSTOGRADIENT_H_
+#define MAPTK_VTKMAPTKSCALARSTOGRADIENT_H_
 
-#include <maptk/config.h>
+#include <vtkScalarsToColors.h>
 
-/// Define symbol visibility in maptk::vcl
-#ifndef MAPTK_VISCL_EXPORT
-# ifdef MAKE_MAPTK_VISCL_LIB
-#   define MAPTK_VISCL_EXPORT MAPTK_EXPORT
-# else
-#   define MAPTK_VISCL_EXPORT MAPTK_IMPORT
-# endif
-# define MAPTK_VISCL_NO_EXPORT MAPTK_NO_EXPORT
+#include <qtGlobal.h>
+
+class qtGradient;
+
+class vtkMaptkScalarsToGradientPrivate;
+
+class vtkMaptkScalarsToGradient : public vtkScalarsToColors
+{
+public:
+  vtkTypeMacro(vtkMaptkScalarsToGradient, vtkScalarsToColors);
+  static vtkMaptkScalarsToGradient *New();
+
+  void SetGradient(qtGradient const&);
+
+  virtual void SetRange(double min, double max);
+
+  virtual void GetColor(double v, double rgb[3]);
+
+protected:
+  QTE_DECLARE_PRIVATE_PTR(vtkMaptkScalarsToGradient)
+
+  vtkMaptkScalarsToGradient();
+  ~vtkMaptkScalarsToGradient();
+
+  virtual void MapScalarsThroughTable2(
+    void* input, unsigned char* output, int inputDataType,
+    int numberOfValues, int inputIncrement, int outputFormat);
+
+private:
+  QTE_DECLARE_PRIVATE(vtkMaptkScalarsToGradient)
+  QTE_DISABLE_COPY(vtkMaptkScalarsToGradient)
+};
+
+
 #endif
-
-#endif // MAPTK_PLUGINS_VISCL_VISCL_CONFIG_H_

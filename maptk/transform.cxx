@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -132,11 +132,11 @@ vital::landmark_sptr transform(vital::landmark_sptr lm,
   }
   else
   {
-    vital::landmark_d* new_lm =
-        new vital::landmark_d( xform * lm->loc(),
-                               lm->scale() * xform.scale() );
+    auto new_lm = std::make_shared<vital::landmark_d>( *lm );
+    new_lm->set_loc( xform * lm->loc() );
+    new_lm->set_scale( lm->scale() * xform.scale() );
     new_lm->set_covar( transform(lm->covar(), xform) );
-    lm = vital::landmark_sptr( new_lm );
+    lm = new_lm;
   }
   return lm;
 }
@@ -272,7 +272,9 @@ necker_reverse(vital::camera_map_sptr& cameras,
   {
     vital::vector_3d v = p.second->loc();
     v -= 2.0 * (v - lc).dot(axis) * axis;
-    p.second = vital::landmark_sptr(new vital::landmark_d(v));
+    auto new_lm = std::make_shared<vital::landmark_d>(*p.second);
+    new_lm->set_loc(v);
+    p.second = new_lm;
   }
 
   cameras = vital::camera_map_sptr(new vital::simple_camera_map(cams));
@@ -282,10 +284,10 @@ necker_reverse(vital::camera_map_sptr& cameras,
 
 /// \cond DoxygenSuppress
 #define INSTANTIATE_TRANSFORM(T) \
-template MAPTK_LIB_EXPORT vital::covariance_<3,T> \
+template MAPTK_EXPORT vital::covariance_<3,T> \
 transform(const vital::covariance_<3,T>& covar, \
           const vital::similarity_<T>& xform); \
-template MAPTK_LIB_EXPORT void \
+template MAPTK_EXPORT void \
 transform_inplace(const vital::similarity_<T>& xform, \
                   vital::landmark_<T>& cam);
 

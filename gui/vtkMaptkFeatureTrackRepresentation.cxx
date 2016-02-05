@@ -30,6 +30,8 @@
 
 #include "vtkMaptkFeatureTrackRepresentation.h"
 
+#include <vital/vital_foreach.h>
+
 #include <vtkActor.h>
 #include <vtkCellArray.h>
 #include <vtkNew.h>
@@ -71,10 +73,9 @@ void vtkMaptkFeatureTrackRepresentation::vtkInternal::UpdateActivePoints(
 {
   this->PointsCells->Reset();
 
-  auto const te = this->Tracks.cend();
-  for (auto ti = this->Tracks.cbegin(); ti != te; ++ti)
+  VITAL_FOREACH(auto const& t, this->Tracks)
   {
-    auto const& track = ti->second;
+    auto const& track = t.second;
     auto const fi = track.find(activeFrame);
     if (fi != track.cend())
     {
@@ -101,10 +102,9 @@ void vtkMaptkFeatureTrackRepresentation::vtkInternal::UpdateTrails(
 
   std::vector<vtkIdType> points;
 
-  auto const te = this->Tracks.cend();
-  for (auto ti = this->Tracks.cbegin(); ti != te; ++ti)
+  VITAL_FOREACH (auto const& ti, this->Tracks)
   {
-    auto const& track = ti->second;
+    auto const& track = ti.second;
     if (track.cbegin()->first > activeFrame ||
         (--track.cend())->first < activeFrame)
     {

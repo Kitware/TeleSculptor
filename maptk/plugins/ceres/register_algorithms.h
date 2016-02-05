@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2015-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,9 @@
 #ifndef MAPTK_PLUGINS_CERES_REGISTER_ALGORITHMS_H_
 #define MAPTK_PLUGINS_CERES_REGISTER_ALGORITHMS_H_
 
-#include <maptk/plugins/ceres/ceres_config.h>
+#include <vital/vital_config.h>
+#include <maptk/plugins/ceres/maptk_ceres_export.h>
+
 #include <vital/registrar.h>
 
 

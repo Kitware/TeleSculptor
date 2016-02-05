@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,8 +42,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
-
-#include <boost/bind.hpp>
+#include <functional>
 
 #include <vital/algo/algorithm.h>
 #include <vital/exceptions/algorithm.h>
@@ -248,7 +247,8 @@ close_loops_bad_frames_only
       if( !to_remove.empty() )
       {
         all_tracks.erase(
-          std::remove_if( all_tracks.begin(), all_tracks.end(), boost::bind( track_id_in_set, _1, &to_remove ) ),
+          std::remove_if( all_tracks.begin(), all_tracks.end(),
+                          std::bind( track_id_in_set, std::placeholders::_1, &to_remove ) ),
           all_tracks.end()
         );
       }

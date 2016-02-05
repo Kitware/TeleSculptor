@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2015 by Kitware, Inc.
+ * Copyright 2013-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,8 +36,11 @@
 #ifndef MAPTK_PLUGINS_VXL_ESTIMATE_SIMILARITY_TRANSFORM_H_
 #define MAPTK_PLUGINS_VXL_ESTIMATE_SIMILARITY_TRANSFORM_H_
 
+
+#include <vital/vital_config.h>
+#include <maptk/plugins/vxl/maptk_vxl_export.h>
+
 #include <vital/algo/estimate_similarity_transform.h>
-#include <maptk/plugins/vxl/vxl_config.h>
 #include <vital/types/vector.h>
 
 

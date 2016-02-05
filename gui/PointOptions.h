@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,9 @@
 #include <QtGui/QWidget>
 
 class vtkActor;
+class vtkMapper;
+
+struct FieldInformation;
 
 class PointOptionsPrivate;
 
@@ -49,14 +52,25 @@ public:
   virtual ~PointOptions();
 
   void addActor(vtkActor*);
+  void addMapper(vtkMapper*);
 
   void setDefaultColor(QColor const&);
+
+public slots:
+  void setTrueColorAvailable(bool);
+  void setDataFields(QHash<QString, FieldInformation> const&);
 
 signals:
   void modified();
 
 protected slots:
   void setSize(int);
+  void setColorMode(int);
+
+  void setDataColorIcon(QIcon const&);
+
+  void updateActiveDataField();
+  void updateFilters();
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(PointOptions)
