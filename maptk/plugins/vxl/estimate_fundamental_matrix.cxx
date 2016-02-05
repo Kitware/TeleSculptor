@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,10 +31,10 @@
 
 /**
  * \file
- * \brief vxl estimate essential matrix implementation
+ * \brief vxl estimate fundamental matrix implementation
  */
 
-#include "estimate_essential_matrix.h"
+#include "estimate_fundamental_matrix.h"
 
 #include <vital/vital_foreach.h>
 
@@ -43,8 +43,10 @@
 #include <maptk/epipolar_geometry.h>
 
 #include <vgl/vgl_point_2d.h>
+#include <Eigen/LU>
 
-#include <vpgl/algo/vpgl_em_compute_5_point.h>
+#include <vpgl/algo/vpgl_fm_compute_8_point.h>
+#include <vpgl/algo/vpgl_fm_compute_7_point.h>
 
 using namespace kwiver::vital;
 
@@ -56,46 +58,48 @@ namespace vxl
 
 
 /// Private implementation class
-class estimate_essential_matrix::priv
+class estimate_fundamental_matrix::priv
 {
 public:
   /// Constructor
   priv()
-  : verbose(false),
-    num_ransac_samples(512)
+  : precondition(true),
+    method(EST_8_POINT)
   {
   }
 
   priv(const priv& other)
-  : verbose(other.verbose),
-    num_ransac_samples(other.num_ransac_samples)
+  : precondition(other.precondition),
+    method(other.method)
   {
   }
 
-  bool verbose;
-  unsigned num_ransac_samples;
+  enum method_t {EST_7_POINT, EST_8_POINT};
+
+  bool precondition;
+  method_t method;
 };
 
 
 /// Constructor
-estimate_essential_matrix
-::estimate_essential_matrix()
+estimate_fundamental_matrix
+::estimate_fundamental_matrix()
 : d_(new priv)
 {
 }
 
 
 /// Copy Constructor
-estimate_essential_matrix
-::estimate_essential_matrix(const estimate_essential_matrix& other)
+estimate_fundamental_matrix
+::estimate_fundamental_matrix(const estimate_fundamental_matrix& other)
 : d_(new priv(*other.d_))
 {
 }
 
 
 /// Destructor
-estimate_essential_matrix
-::~estimate_essential_matrix()
+estimate_fundamental_matrix
+::~estimate_fundamental_matrix()
 {
 }
 
@@ -103,19 +107,24 @@ estimate_essential_matrix
 
 /// Get this algorithm's \link vital::config_block configuration block \endlink
 vital::config_block_sptr
-estimate_essential_matrix
+estimate_fundamental_matrix
 ::get_configuration() const
 {
   // get base config from base class
   vital::config_block_sptr config =
-      vital::algo::estimate_essential_matrix::get_configuration();
+      vital::algo::estimate_fundamental_matrix::get_configuration();
 
-  config->set_value("verbose", d_->verbose,
-                    "If true, write status messages to the terminal showing "
-                    "debugging information");
+  config->set_value("precondition", d_->precondition,
+                    "If true, precondition the data before estimating the "
+                    "fundamental matrix");
 
-  config->set_value("num_ransac_samples", d_->num_ransac_samples,
-                    "The number of samples to use in RANSAC");
+  std::string method_name = d_->method == priv::EST_8_POINT
+                            ? "EST_8_POINT" : "EST_7_POINT";
+  config->set_value("method", method_name,
+                    "Fundamental matrix estimation method to use. "
+                    "(Note: does not include RANSAC).  Choices are\n"
+                    "  EST_7_POINT\n"
+                    "  EST_8_POINT");
 
   return config;
 }
@@ -123,20 +132,27 @@ estimate_essential_matrix
 
 /// Set this algorithm's properties via a config block
 void
-estimate_essential_matrix
+estimate_fundamental_matrix
 ::set_configuration(vital::config_block_sptr config)
 {
 
-  d_->verbose = config->get_value<bool>("verbose",
-                                        d_->verbose);
-  d_->num_ransac_samples = config->get_value<unsigned>("num_ransac_samples",
-                                                       d_->num_ransac_samples);
+  d_->precondition = config->get_value<bool>("precondition",
+                                             d_->precondition);
+  std::string method_name = config->get_value<std::string>("method");
+  if( method_name == "EST_7_POINT" )
+  {
+    d_->method = priv::EST_7_POINT;
+  }
+  else
+  {
+    d_->method = priv::EST_8_POINT;
+  }
 }
 
 
-/// Check that the algorithm's currently configuration is valid
+/// Check that the algorithm's current configuration is valid
 bool
-estimate_essential_matrix
+estimate_fundamental_matrix
 ::check_configuration(vital::config_block_sptr config) const
 {
   return true;
@@ -144,45 +160,49 @@ estimate_essential_matrix
 
 
 /// Estimate an essential matrix from corresponding points
-essential_matrix_sptr
-estimate_essential_matrix
+fundamental_matrix_sptr
+estimate_fundamental_matrix
 ::estimate(const std::vector<vector_2d>& pts1,
            const std::vector<vector_2d>& pts2,
-           const camera_intrinsics_sptr cal1,
-           const camera_intrinsics_sptr cal2,
            std::vector<bool>& inliers,
            double inlier_scale) const
 {
-  vpgl_calibration_matrix<double> vcal1, vcal2;
-  maptk_to_vpgl_calibration(*cal1, vcal1);
-  maptk_to_vpgl_calibration(*cal2, vcal2);
-
-  vcl_vector<vgl_point_2d<double> > right_points, left_points;
+  vcl_vector<vgl_homg_point_2d<double> > right_points, left_points;
   VITAL_FOREACH(const vector_2d& v, pts1)
   {
-    right_points.push_back(vgl_point_2d<double>(v.x(), v.y()));
+    right_points.push_back(vgl_homg_point_2d<double>(v.x(), v.y()));
   }
   VITAL_FOREACH(const vector_2d& v, pts2)
   {
-    left_points.push_back(vgl_point_2d<double>(v.x(), v.y()));
+    left_points.push_back(vgl_homg_point_2d<double>(v.x(), v.y()));
   }
 
-  double sq_scale = inlier_scale * inlier_scale;
-  vpgl_em_compute_5_point_ransac<double> em(d_->num_ransac_samples, sq_scale,
-                                            d_->verbose);
-  vpgl_essential_matrix<double> best_em;
-  em.compute(right_points, vcal1, left_points, vcal2, best_em);
+  vpgl_fundamental_matrix<double> vfm;
+  if( d_->method == priv::EST_8_POINT )
+  {
+    vpgl_fm_compute_8_point fm_compute(d_->precondition);
+    fm_compute.compute(right_points, left_points, vfm);
+  }
+  else
+  {
+    std::vector< vpgl_fundamental_matrix<double>* > vfms;
+    vpgl_fm_compute_7_point fm_compute(d_->precondition);
+    fm_compute.compute(right_points, left_points, vfms);
+    // TODO use the multiple solutions in a RANSAC framework
+    // For now, only keep the first solution
+    vfm = *vfms[0];
+    VITAL_FOREACH(auto v, vfms)
+    {
+      delete v;
+    }
+  }
 
-  matrix_3x3d E(best_em.get_matrix().data_block());
-  E.transposeInPlace();
-  matrix_3x3d K1_inv = cal1->as_matrix().inverse();
-  matrix_3x3d K2_invt = cal2->as_matrix().transpose().inverse();
-  matrix_3x3d F = K2_invt * E * K1_inv;
+  matrix_3x3d F(vfm.get_matrix().data_block());
+  F.transposeInPlace();
 
   fundamental_matrix_sptr fm(new fundamental_matrix_d(F));
   inliers = maptk::mark_fm_inliers(*fm, pts1, pts2, inlier_scale);
-
-  return essential_matrix_sptr(new essential_matrix_d(E));
+  return fm;
 }
 
 
