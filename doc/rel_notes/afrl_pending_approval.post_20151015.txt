@@ -32,6 +32,10 @@ MAP-Tk Library
    an input image (and apply to relevant features in a feature track set), and
    to compute landmark colors from a feature track set with color information.
 
+ * Refactored some helper functions into epipolar_geometry.h for converting
+   between fundamental matrices, essential matrices, and cameras, and for
+   computing inliers to a fundamental matrix within feature matches.
+
 Core Plugin
 
  * Updated triangulate_landmarks to set the number of observations on each
@@ -46,6 +50,8 @@ VXL Plugin
 
  * Updated triangulate_landmarks to set the number of observations on each
    computed landmark.
+
+ * Added an initial implementation of fundamental matrix estimation using VXL.
 
 Visualization Application
 
