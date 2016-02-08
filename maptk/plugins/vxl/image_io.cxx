@@ -70,7 +70,8 @@ public:
   priv(const priv& other)
   : auto_stretch(other.auto_stretch),
     manual_stretch(other.manual_stretch),
-    intensity_range(other.intensity_range)
+    intensity_range(other.intensity_range),
+    m_logger(other.m_logger)
   {
   }
 
