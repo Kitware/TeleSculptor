@@ -131,6 +131,7 @@ maptk_configure_file(maptk-config
   MAPTK_SOURCE_DIR
   MAPTK_BINARY_DIR
   EIGEN3_INCLUDE_DIR
+  MAPTK_VERSION
   maptk_libs
   module_path
   )
