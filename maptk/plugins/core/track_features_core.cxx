@@ -242,14 +242,12 @@ track_features_core
   //
   std::vector< unsigned int > sequence( vf.size() );
   {
-    struct one_more // generator functor
+    auto eit = sequence.end();
+    unsigned int count(0);
+    for ( auto it = sequence.begin(); it != eit; ++it)
     {
-      unsigned int _count;
-      one_more() : _count(0) {}
-      unsigned int operator()() { return _count++; }
-    };
-
-    std::generate (sequence.begin(), sequence.end(), one_more());
+      *it = count++;
+    }
   }
 
   std::set_difference( sequence.begin(), sequence.end(),
