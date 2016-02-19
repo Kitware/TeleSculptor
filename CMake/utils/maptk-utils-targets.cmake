@@ -95,15 +95,24 @@ function(maptk_create_plugin    base_lib)
 
   # For each library linked to the base library, add the path to the library
   # to a list of paths to search later during fixup_bundle.
+  # Recursively add paths for dependencies of these libraries which are targets.
   get_target_property(deps ${base_lib} LINK_LIBRARIES)
-  foreach( dep ${deps} )
-    if(TARGET "${dep}")
-      list(APPEND PLUGIN_BUNDLE_PATHS $<TARGET_FILE_DIR:${dep}>)
-    elseif(EXISTS "${dep}")
-      get_filename_component(dep_dir "${dep}" DIRECTORY)
-      list(APPEND PLUGIN_BUNDLE_PATHS ${dep_dir})
-    endif()
-  endforeach()
+  while(deps)
+    unset(rdeps)
+    foreach( dep ${deps} )
+      if(TARGET "${dep}")
+        list(APPEND PLUGIN_BUNDLE_PATHS $<TARGET_FILE_DIR:${dep}>)
+        get_target_property(recursive_deps ${dep} LINK_LIBRARIES)
+        if(recursive_deps)
+          list(APPEND rdeps ${recursive_deps})
+        endif()
+      elseif(EXISTS "${dep}")
+        get_filename_component(dep_dir "${dep}" DIRECTORY)
+        list(APPEND PLUGIN_BUNDLE_PATHS ${dep_dir})
+      endif()
+    endforeach()
+    set(deps ${rdeps})
+  endwhile()
 
   # Add to global collection variables
   set_property(GLOBAL APPEND
