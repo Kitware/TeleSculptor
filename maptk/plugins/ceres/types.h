@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2015-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,12 +37,14 @@
 #define MAPTK_PLUGINS_CERES_TYPES_H_
 
 
-#include <maptk/plugins/ceres/ceres_config.h>
+#include <vital/vital_config.h>
+#include <maptk/plugins/ceres/maptk_ceres_export.h>
+
 #include <string>
 #include <ceres/ceres.h>
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ceres
 {
@@ -65,6 +67,14 @@ enum LensDistortionType
   POLYNOMIAL_RADIAL_DISTORTION,
   POLYNOMIAL_RADIAL_TANGENTIAL_DISTORTION,
   RATIONAL_RADIAL_TANGENTIAL_DISTORTION
+};
+
+/// The options for camera intrinsic sharing supported in the config
+enum CameraIntrinsicShareType
+{
+  AUTO_SHARE_INTRINSICS,
+  FORCE_COMMON_INTRINSICS,
+  FORCE_UNIQUE_INTRINSICS
 };
 
 
@@ -94,9 +104,19 @@ MAPTK_CERES_EXPORT unsigned int
 num_distortion_params(LensDistortionType type);
 
 
+/// Provide a string representation for a CameraIntrinsicShareType value
+MAPTK_CERES_EXPORT const char*
+CameraIntrinsicShareTypeToString(CameraIntrinsicShareType type);
+
+/// Parse a CameraIntrinsicShareType value from a string or return false
+MAPTK_CERES_EXPORT bool
+StringToCameraIntrinsicShareType(std::string value, CameraIntrinsicShareType* type);
+
+
 } // end namespace ceres
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_CERES_TYPES_H_

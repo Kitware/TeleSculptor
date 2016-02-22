@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,8 +36,8 @@
 #include "mat_image_memory.h"
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
@@ -52,7 +52,7 @@ mat_image_memory
   assert(m.depth() == CV_8U);
   assert(!m.allocator);
   CV_XADD(this->mat_refcount_, 1);
-  size_ = sizeof(m.data);
+  size_ = m.rows * m.step;
 }
 
 
@@ -70,3 +70,4 @@ mat_image_memory
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver

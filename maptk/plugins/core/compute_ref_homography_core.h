@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,19 +36,19 @@
 #ifndef MAPTK_PLUGINS_CORE_COMPUTE_REF_HOMOGRAPHY_CORE_H_
 #define MAPTK_PLUGINS_CORE_COMPUTE_REF_HOMOGRAPHY_CORE_H_
 
-#include <boost/scoped_ptr.hpp>
+#include <vital/vital_config.h>
+#include <maptk/plugins/core/maptk_core_export.h>
 
-#include <maptk/algo/algorithm.h>
-#include <maptk/algo/compute_ref_homography.h>
-#include <maptk/homography.h>
-#include <maptk/image_container.h>
-#include <maptk/track_set.h>
+#include <vital/algo/algorithm.h>
+#include <vital/algo/compute_ref_homography.h>
+#include <vital/types/homography.h>
+#include <vital/types/image_container.h>
+#include <vital/types/track_set.h>
 
-#include <maptk/plugins/core/plugin_core_config.h>
+#include <memory>
 
-
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
@@ -67,8 +67,8 @@ namespace core
  * successive non-regressing frames. This is ideal for when it is desired to
  * compute reference frames on all frames in a sequence.
  */
-class PLUGIN_CORE_EXPORT compute_ref_homography_core
-  : public algo::algorithm_impl<compute_ref_homography_core, algo::compute_ref_homography>
+class MAPTK_CORE_EXPORT compute_ref_homography_core
+  : public vital::algorithm_impl<compute_ref_homography_core, vital::algo::compute_ref_homography>
 {
 public:
 
@@ -87,7 +87,7 @@ public:
   /// Return implementation description string
   virtual std::string description() const;
 
-  /// Get this algorithm's \link maptk::config_block configuration block \endlink
+  /// Get this algorithm's \link vital::config_block configuration block \endlink
   /**
    * This base virtual function implementation returns an empty configuration
    * block whose name is set to \c this->type_name.
@@ -95,7 +95,7 @@ public:
    * \returns \c config_block containing the configuration for this algorithm
    *          and any nested components.
    */
-  virtual config_block_sptr get_configuration() const;
+  virtual vital::config_block_sptr get_configuration() const;
 
   /// Set this algorithm's properties via a config block
   /**
@@ -108,7 +108,7 @@ public:
    * \param config  The \c config_block instance containing the configuration
    *                parameters for this algorithm
    */
-  virtual void set_configuration( config_block_sptr config );
+  virtual void set_configuration( vital::config_block_sptr config );
 
   /// Check that the algorithm's currently configuration is valid
   /**
@@ -120,32 +120,33 @@ public:
    *
    * \returns true if the configuration check passed and false if it didn't.
    */
-  virtual bool check_configuration( config_block_sptr config ) const;
+  virtual bool check_configuration( vital::config_block_sptr config ) const;
 
   /// Estimate the transformation which maps some frame to a reference frame
   /**
    * Similarly to track_features, this class was designed to be called in
    * an online fashion for each sequential frame.
    *
-   * \param [in]   frame_number frame identifier for the current frame
-   * \param [in]   tracks the set of all tracked features from the image
+   * \param frame_number frame identifier for the current frame
+   * \param tracks the set of all tracked features from the image
    * \return estimated homography
    */
-  virtual f2f_homography_sptr
-  estimate( frame_id_t frame_number,
-            track_set_sptr tracks ) const;
+  virtual vital::f2f_homography_sptr
+  estimate( vital::frame_id_t frame_number,
+            vital::track_set_sptr tracks ) const;
 
 private:
 
   /// Class storing internal variables
   class priv;
-  boost::scoped_ptr<priv> d_;
+  const std::unique_ptr<priv> d_;
 };
 
 
 } // end namespace core
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_CORE_COMPUTE_REF_HOMOGRAPHY_CORE_H_

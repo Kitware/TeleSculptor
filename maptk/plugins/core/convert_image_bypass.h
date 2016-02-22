@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,21 +36,22 @@
 #ifndef MAPTK_PLUGINS_CORE_CONVERT_IMAGE_BYPASS_H_
 #define MAPTK_PLUGINS_CORE_CONVERT_IMAGE_BYPASS_H_
 
-#include <maptk/algo/convert_image.h>
+#include <vital/vital_config.h>
+#include <maptk/plugins/core/maptk_core_export.h>
 
-#include <maptk/plugins/core/plugin_core_config.h>
+#include <vital/algo/convert_image.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
 
 
 /// A class for bypassing image conversion
-class PLUGIN_CORE_EXPORT convert_image_bypass
-  : public algo::algorithm_impl<convert_image_bypass, algo::convert_image>
+class MAPTK_CORE_EXPORT convert_image_bypass
+  : public vital::algorithm_impl<convert_image_bypass, vital::algo::convert_image>
 {
 public:
    /// Default Constructor
@@ -70,13 +71,14 @@ public:
    * \param [in] img image to be converted
    * \returns the input image
    */
-  virtual image_container_sptr convert(image_container_sptr img) const;
+  virtual vital::image_container_sptr convert(vital::image_container_sptr img) const;
 };
 
 
 } // end namespace core
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_CORE_CONVERT_IMAGE_BYPASS_H_

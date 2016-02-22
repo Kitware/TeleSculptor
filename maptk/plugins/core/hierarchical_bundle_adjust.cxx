@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,7 @@
 
 /**
  * \file
- * \brief implementation of maptk::algo::hierarchical_bundle_adjust
+ * \brief implementation of vital::algo::hierarchical_bundle_adjust
  */
 
 #include "hierarchical_bundle_adjust.h"
@@ -43,19 +43,22 @@
 
 #include <math.h>
 
-#include <boost/foreach.hpp>
-#include <boost/timer/timer.hpp>
+#include <vital/vital_foreach.h>
+#include <vital/util/cpu_timer.h>
 
-#include <maptk/algo/optimize_cameras.h>
-#include <maptk/algo/triangulate_landmarks.h>
-#include <maptk/camera.h>
-#include <maptk/exceptions.h>
+#include <vital/algo/optimize_cameras.h>
+#include <vital/algo/triangulate_landmarks.h>
 #include <maptk/metrics.h>
-#include <maptk/types.h>
+#include <maptk/interpolate_camera.h>
 
+#include <vital/types/camera.h>
+#include <vital/exceptions.h>
+#include <vital/vital_types.h>
 
-namespace maptk
-{
+using namespace kwiver::vital;
+
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
@@ -74,7 +77,7 @@ namespace // anonymous
 camera_map::map_camera_t
 subsample_cameras(camera_map::map_camera_t const& cameras, unsigned n)
 {
-  boost::timer::auto_cpu_timer t("Camera sub-sampling: %t sec CPU, %w sec wall\n");
+  kwiver::vital::scoped_cpu_timer t( "Camera sub-sampling" );
 
   // if sub-sample is 1, no sub-sampling occurs, just return a copy of the map
   if (n == 1)
@@ -84,7 +87,7 @@ subsample_cameras(camera_map::map_camera_t const& cameras, unsigned n)
 
   camera_map::map_camera_t subsample;
   unsigned int i = 0;
-  BOOST_FOREACH(camera_map::map_camera_t::value_type const& p, cameras)
+  VITAL_FOREACH(camera_map::map_camera_t::value_type const& p, cameras)
   {
     if (i % n == 0)
     {
@@ -117,6 +120,8 @@ public:
   {
   }
 
+  ~priv() { }
+
   priv(priv const& other)
     : initial_sub_sample(other.initial_sub_sample)
     , interpolation_rate(other.interpolation_rate)
@@ -133,9 +138,9 @@ public:
   unsigned int interpolation_rate;
   bool rmse_reporting_enabled;
 
-  algo::bundle_adjust_sptr sba;
-  algo::optimize_cameras_sptr camera_optimizer;
-  algo::triangulate_landmarks_sptr lm_triangulator;
+  vital::algo::bundle_adjust_sptr sba;
+  vital::algo::optimize_cameras_sptr camera_optimizer;
+  vital::algo::triangulate_landmarks_sptr lm_triangulator;
 };
 
 
@@ -156,17 +161,17 @@ hierarchical_bundle_adjust
 
 /// Destructor
 hierarchical_bundle_adjust
-::~hierarchical_bundle_adjust() MAPTK_NOTHROW
+::~hierarchical_bundle_adjust() VITAL_NOTHROW
 {
 }
 
 
-/// Get this algorithm's \link maptk::config_block configuration block \endlink
-config_block_sptr
+/// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
+  vital::config_block_sptr
 hierarchical_bundle_adjust
 ::get_configuration() const
 {
-  config_block_sptr config = maptk::algo::bundle_adjust::get_configuration();
+  vital::config_block_sptr config = vital::algo::bundle_adjust::get_configuration();
 
   config->set_value("initial_sub_sample", d_->initial_sub_sample,
                     "Sub-sample the given cameras by this factor. Gaps will "
@@ -182,13 +187,13 @@ hierarchical_bundle_adjust
                     "stages of this algorithm. Constant calculating of RMSE "
                     "may effect run time of the algorithm.");
 
-  maptk::algo::bundle_adjust::get_nested_algo_configuration(
+  vital::algo::bundle_adjust::get_nested_algo_configuration(
       "sba_impl", config, d_->sba
       );
-  maptk::algo::optimize_cameras::get_nested_algo_configuration(
+  vital::algo::optimize_cameras::get_nested_algo_configuration(
       "camera_optimizer", config, d_->camera_optimizer
       );
-  maptk::algo::triangulate_landmarks::get_nested_algo_configuration(
+  vital::algo::triangulate_landmarks::get_nested_algo_configuration(
       "lm_triangulator", config, d_->lm_triangulator
       );
 
@@ -199,28 +204,28 @@ hierarchical_bundle_adjust
 /// Set this algorithm's properties via a config block
 void
 hierarchical_bundle_adjust
-::set_configuration(config_block_sptr config)
+::set_configuration(vital::config_block_sptr config)
 {
   d_->initial_sub_sample = config->get_value<unsigned int>("initial_sub_sample", d_->initial_sub_sample);
   d_->interpolation_rate = config->get_value<unsigned int>("interpolation_rate", d_->interpolation_rate);
   d_->rmse_reporting_enabled = config->get_value<bool>("enable_rmse_reporting", d_->rmse_reporting_enabled);
 
-  maptk::algo::bundle_adjust::set_nested_algo_configuration(
+  vital::algo::bundle_adjust::set_nested_algo_configuration(
       "sba_impl", config, d_->sba
       );
-  maptk::algo::optimize_cameras::set_nested_algo_configuration(
+  vital::algo::optimize_cameras::set_nested_algo_configuration(
       "camera_optimizer", config, d_->camera_optimizer
       );
-  maptk::algo::triangulate_landmarks::set_nested_algo_configuration(
+  vital::algo::triangulate_landmarks::set_nested_algo_configuration(
       "lm_triangulator", config, d_->lm_triangulator
       );
 }
 
 
-/// Check that the algorithm's configuration config_block is valid
+/// Check that the algorithm's configuration vital::config_block is valid
 bool
 hierarchical_bundle_adjust
-::check_configuration(config_block_sptr config) const
+::check_configuration(vital::config_block_sptr config) const
 {
   bool valid = true;
 
@@ -243,7 +248,7 @@ hierarchical_bundle_adjust
                           << config->get_value<long>("interpolation_rate"));
   }
 
-  if (!maptk::algo::bundle_adjust::check_nested_algo_configuration("sba_impl", config))
+  if (!vital::algo::bundle_adjust::check_nested_algo_configuration("sba_impl", config))
   {
     MAPTK_HSBA_CHECK_FAIL("sba_impl configuration invalid.");
   }
@@ -252,7 +257,7 @@ hierarchical_bundle_adjust
   {
     std::cerr << "HSBA per-iteration camera optimization disabled" << std::endl;
   }
-  else if (!maptk::algo::optimize_cameras::check_nested_algo_configuration("camera_optimizer", config))
+  else if (!vital::algo::optimize_cameras::check_nested_algo_configuration("camera_optimizer", config))
   {
     MAPTK_HSBA_CHECK_FAIL("camera_optimizer configuration invalid.");
   }
@@ -261,7 +266,7 @@ hierarchical_bundle_adjust
   {
     std::cerr << "HSBA per-iteration LM Triangulation disabled" << std::endl;
   }
-  else if (!maptk::algo::triangulate_landmarks::check_nested_algo_configuration("lm_triangulator", config))
+  else if (!vital::algo::triangulate_landmarks::check_nested_algo_configuration("lm_triangulator", config))
   {
     std::cerr << "lm_triangulator type: \"" << config->get_value<std::string>("lm_triangulator:type") << "\"" << std::endl;
     MAPTK_HSBA_CHECK_FAIL("lm_triangulator configuration invalid.");
@@ -299,10 +304,10 @@ hierarchical_bundle_adjust
   // If interpolation rate is 0, then that means that all intermediate frames
   // should be interpolated on the first step. Due to how the algorithm
   // functions, set var to unsigned int max.
-  unsigned int ir = d_->interpolation_rate;
+  frame_id_t ir = d_->interpolation_rate;
   if (ir == 0)
   {
-    ir = std::numeric_limits<unsigned int>::max();
+    ir = std::numeric_limits<frame_id_t>::max();
   }
   cerr << "Interpolation rate: " << ir << endl;
 
@@ -333,7 +338,7 @@ hierarchical_bundle_adjust
     cerr << "SBA optimizing active cameras (" << active_cam_map->size() << " cams)" << endl;
     // updated active_cam_map and landmarks
     { // scope block
-      boost::timer::auto_cpu_timer t("inner-SBA iteration: %t sec CPU, %w sec wall\n");
+      kwiver::vital::scoped_cpu_timer t( "inner-SBA iteration" );
       d_->sba->optimize(active_cam_map, landmarks, tracks);
     }
 
@@ -373,7 +378,7 @@ hierarchical_bundle_adjust
       // ASSUMING even interpolation for now
       camera_map::map_camera_t::const_iterator it = ac_map.begin();
       { // scope block
-        boost::timer::auto_cpu_timer t("interpolating cams: %t sec CPU, %w sec wall\n");
+        kwiver::vital::scoped_cpu_timer t( "interpolating cams" );
         while (it != ac_map.end())
         {
           cur_frm = it->first;
@@ -388,9 +393,9 @@ hierarchical_bundle_adjust
             //cerr << "Interpolating cam between frames " << cur_frm << " and " << next_frm << endl;
 
             // this specific gap's interpolation rate -- gap may be smaller than ir
-            ir_l = min(ir, next_frm - cur_frm - 1);
+            ir_l = std::min(ir, next_frm - cur_frm - 1);
 
-            for (double i=1; i<=ir_l; ++i)
+            for (double i = 1; i <= ir_l; ++i)
             {
               // Determine the integer associated with the interpolation step,
               // then determine the fraction location of that integer between
@@ -427,7 +432,7 @@ hierarchical_bundle_adjust
         }
 
         { // scope block
-          boost::timer::auto_cpu_timer t("\t- cameras optimization: %t sec CPU, %w sec wall\n");
+          kwiver::vital::scoped_cpu_timer t( "\t- cameras optimization" );
           d_->camera_optimizer->optimize(interped_cams_p, tracks, landmarks);
         }
 
@@ -441,7 +446,7 @@ hierarchical_bundle_adjust
         }
       }
       // adding optimized interpolated cameras to the map of existing cameras
-      BOOST_FOREACH(camera_map::map_camera_t::value_type const& p, interped_cams_p->cameras())
+      VITAL_FOREACH(camera_map::map_camera_t::value_type const& p, interped_cams_p->cameras())
       {
         ac_map[p.first] = p.second;
       }
@@ -471,7 +476,7 @@ hierarchical_bundle_adjust
         }
 
         { // scoped block
-          boost::timer::auto_cpu_timer t("\t- lm triangulation: %t sec CPU, %w sec wall\n");
+          kwiver::vital::scoped_cpu_timer t( "\t- lm triangulation" );
           d_->lm_triangulator->triangulate(active_cam_map, tracks, landmarks);
         }
 
@@ -493,6 +498,7 @@ hierarchical_bundle_adjust
 }
 
 
-} // end core namespace
+} // end namespace core
 
-} // end maptk namespace
+} // end namespace maptk
+} // end namespace kwiver

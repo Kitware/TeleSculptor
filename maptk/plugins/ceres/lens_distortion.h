@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2015-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,11 +37,12 @@
 #define MAPTK_PLUGINS_CERES_LENS_DISTORTION_H_
 
 
-#include <maptk/plugins/ceres/ceres_config.h>
+#include <vital/vital_config.h>
+#include <maptk/plugins/ceres/maptk_ceres_export.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ceres
 {
@@ -173,6 +174,7 @@ public:
 } // end namespace ceres
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_CERES_LENS_DISTORTION_H_

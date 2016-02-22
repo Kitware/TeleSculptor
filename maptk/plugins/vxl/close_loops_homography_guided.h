@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,16 +37,19 @@
 #ifndef MAPTK_PLUGINS_VXL_CLOSE_LOOPS_HOMOGRAPHY_GUIDED_H_
 #define MAPTK_PLUGINS_VXL_CLOSE_LOOPS_HOMOGRAPHY_GUIDED_H_
 
-#include <boost/scoped_ptr.hpp>
 
-#include <maptk/algo/close_loops.h>
-#include <maptk/image_container.h>
-#include <maptk/plugins/vxl/vxl_config.h>
-#include <maptk/track_set.h>
+#include <vital/vital_config.h>
+#include <maptk/plugins/vxl/maptk_vxl_export.h>
 
+#include <vital/types/image_container.h>
+#include <vital/types/track_set.h>
 
-namespace maptk
-{
+#include <vital/algo/close_loops.h>
+
+#include <memory>
+
+namespace kwiver {
+namespace maptk {
 
 namespace vxl
 {
@@ -59,7 +62,7 @@ namespace vxl
  * filtering.
  */
 class MAPTK_VXL_EXPORT close_loops_homography_guided
-  : public algo::algorithm_impl<vxl::close_loops_homography_guided, algo::close_loops>
+  : public vital::algorithm_impl<vxl::close_loops_homography_guided, vital::algo::close_loops>
 {
 public:
 
@@ -75,32 +78,32 @@ public:
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "vxl_homography_guided"; }
 
-  /// Get this algorithm's \link maptk::config_block configuration block \endlink
+  /// Get this algorithm's \link vital::config_block configuration block \endlink
   /**
    * This base virtual function implementation returns an empty configuration
    * block whose name is set to \c this->type_name.
    *
-   * \returns \c config_block containing the configuration for this algorithm
+   * \returns \c vital::config_block containing the configuration for this algorithm
    *          and any nested components.
    */
-  virtual config_block_sptr get_configuration() const;
+  virtual vital::config_block_sptr get_configuration() const;
 
   /// Set this algorithm's properties via a config block
   /**
    * \throws no_such_configuration_value_exception
    *    Thrown if an expected configuration value is not present.
    * \throws algorithm_configuration_exception
-   *    Thrown when the algorithm is given an invalid \c config_block or is'
+   *    Thrown when the algorithm is given an invalid \c vital::config_block or is'
    *    otherwise unable to configure itself.
    *
-   * \param config  The \c config_block instance containing the configuration
+   * \param config  The \c vital::config_block instance containing the configuration
    *                parameters for this algorithm
    */
-  virtual void set_configuration( config_block_sptr config );
+  virtual void set_configuration( vital::config_block_sptr config );
 
   /// Check that the algorithm's currently configuration is valid
   /**
-   * This checks solely within the provided \c config_block and not against
+   * This checks solely within the provided \c vital::config_block and not against
    * the current state of the instance. This isn't static for inheritence
    * reasons.
    *
@@ -108,28 +111,28 @@ public:
    *
    * \returns true if the configuration check passed and false if it didn't.
    */
-  virtual bool check_configuration( config_block_sptr config ) const;
+  virtual bool check_configuration( vital::config_block_sptr config ) const;
 
   /// Perform loop closure operation.
   /**
-   * \param [in] frame_number the frame number of the current frame
-   * \param [in] input the input track set to stitch
-   * \param [in] image image data for the current frame
-   * \param [in] mask Optional mask image where positive values indicate
+   * \param frame_number the frame number of the current frame
+   * \param input the input track set to stitch
+   * \param image image data for the current frame
+   * \param mask Optional mask image where positive values indicate
    *                  regions to consider in the input image.
    * \returns an updated set a tracks after the stitching operation
    */
-  virtual track_set_sptr
-  stitch( frame_id_t frame_number,
-          track_set_sptr input,
-          image_container_sptr image,
-          image_container_sptr mask = image_container_sptr() ) const;
+  virtual vital::track_set_sptr
+  stitch( vital::frame_id_t frame_number,
+          vital::track_set_sptr input,
+          vital::image_container_sptr image,
+          vital::image_container_sptr mask = vital::image_container_sptr() ) const;
 
 private:
 
   /// Class for storing other internal variables
   class priv;
-  boost::scoped_ptr<priv> d_;
+  const std::unique_ptr<priv> d_;
 
 };
 
@@ -137,6 +140,7 @@ private:
 } // end namespace vxl
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_VXL_CLOSE_LOOPS_HOMOGRAPHY_GUIDED_H_

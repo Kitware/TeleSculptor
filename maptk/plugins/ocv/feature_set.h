@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,15 +36,17 @@
 #ifndef MAPTK_PLUGINS_OCV_FEATURE_SET_H_
 #define MAPTK_PLUGINS_OCV_FEATURE_SET_H_
 
+
+#include <vital/vital_config.h>
+#include <maptk/plugins/ocv/maptk_ocv_export.h>
+
 #include <opencv2/features2d/features2d.hpp>
 
-#include <maptk/feature_set.h>
-
-#include <maptk/plugins/ocv/ocv_config.h>
+#include <vital/types/feature_set.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
@@ -52,7 +54,7 @@ namespace ocv
 
 /// A concrete feature set that wraps OpenCV KeyPoints
 class MAPTK_OCV_EXPORT feature_set
-  : public maptk::feature_set
+  : public vital::feature_set
 {
 public:
   /// Default Constructor
@@ -66,7 +68,7 @@ public:
   virtual size_t size() const { return data_.size(); }
 
   /// Return a vector of feature shared pointers
-  virtual std::vector<feature_sptr> features() const;
+  virtual std::vector<vital::feature_sptr> features() const;
 
   /// Return the underlying OpenCV vector of cv::KeyPoints
   const std::vector<cv::KeyPoint>& ocv_keypoints() const { return data_; }
@@ -80,12 +82,13 @@ protected:
 
 /// Convert any feature set to a vector of OpenCV cv::KeyPoints
 MAPTK_OCV_EXPORT std::vector<cv::KeyPoint>
-features_to_ocv_keypoints(const maptk::feature_set& features);
+features_to_ocv_keypoints(const vital::feature_set& features);
 
 
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_OCV_FEATURE_SET_H_

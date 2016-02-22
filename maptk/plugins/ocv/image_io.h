@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,20 +36,22 @@
 #ifndef MAPTK_PLUGINS_OCV_IMAGE_IO_H_
 #define MAPTK_PLUGINS_OCV_IMAGE_IO_H_
 
-#include <maptk/algo/image_io.h>
 
-#include <maptk/plugins/ocv/ocv_config.h>
+#include <vital/vital_config.h>
+#include <maptk/plugins/ocv/maptk_ocv_export.h>
+
+#include <vital/algo/image_io.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
 
 /// A class for using OpenCV to read and write images
 class MAPTK_OCV_EXPORT image_io
-  : public algo::algorithm_impl<image_io, algo::image_io>
+  : public vital::algorithm_impl<image_io, vital::algo::image_io>
 {
 public:
   /// Return the name of this implementation
@@ -57,8 +59,8 @@ public:
 
   // No configuration for this class yet
   /// \cond DoxygenSuppress
-  virtual void set_configuration(config_block_sptr /*config*/) { }
-  virtual bool check_configuration(config_block_sptr /*config*/) const { return true; }
+  virtual void set_configuration(vital::config_block_sptr /*config*/) { }
+  virtual bool check_configuration(vital::config_block_sptr /*config*/) const { return true; }
   /// \endcond
 
 private:
@@ -67,7 +69,7 @@ private:
    * \param filename the path to the file the load
    * \returns an image container refering to the loaded image
    */
-  virtual image_container_sptr load_(const std::string& filename) const;
+  virtual vital::image_container_sptr load_(const std::string& filename) const;
 
   /// Implementation specific save functionality.
   /**
@@ -75,12 +77,13 @@ private:
    * \param data the image container refering to the image to write
    */
   virtual void save_(const std::string& filename,
-                     image_container_sptr data) const;
+                     vital::image_container_sptr data) const;
 };
 
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_OCV_IMAGE_IO_H_

@@ -35,11 +35,11 @@
 
 #include "register_algorithms.h"
 
-#include <maptk/logging_macros.h>
 #include <maptk/plugin_interface/algorithm_plugin_interface_macros.h>
 #include <maptk/plugins/vxl/bundle_adjust.h>
 #include <maptk/plugins/vxl/close_loops_homography_guided.h>
 #include <maptk/plugins/vxl/estimate_essential_matrix.h>
+#include <maptk/plugins/vxl/estimate_fundamental_matrix.h>
 #include <maptk/plugins/vxl/estimate_homography.h>
 #include <maptk/plugins/vxl/estimate_similarity_transform.h>
 #include <maptk/plugins/vxl/image_io.h>
@@ -48,20 +48,19 @@
 #include <maptk/plugins/vxl/match_features_constrained.h>
 
 
-namespace maptk
-{
-
-namespace vxl
-{
+namespace kwiver {
+namespace maptk {
+namespace vxl {
 
 /// Register VXL algorithm implementations with the given or global registrar
-int register_algorithms( maptk::registrar &reg )
+int register_algorithms( vital::registrar &reg )
 {
   REGISTRATION_INIT( reg );
 
   REGISTER_TYPE( maptk::vxl::bundle_adjust );
   REGISTER_TYPE( maptk::vxl::close_loops_homography_guided );
   REGISTER_TYPE( maptk::vxl::estimate_essential_matrix );
+  REGISTER_TYPE( maptk::vxl::estimate_fundamental_matrix );
   REGISTER_TYPE( maptk::vxl::estimate_homography );
   REGISTER_TYPE( maptk::vxl::estimate_similarity_transform );
   REGISTER_TYPE( maptk::vxl::image_io );
@@ -73,6 +72,6 @@ int register_algorithms( maptk::registrar &reg )
   return REGISTRATION_FAILURES();
 }
 
-} // end vxl ns
-
-} // end maptk ns
+} // end namespace vxl
+} // end namespace maptk
+} // end namespace kwiver

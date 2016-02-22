@@ -31,9 +31,9 @@
 #ifndef MAPTK_VTKMAPTKCAMERA_H_
 #define MAPTK_VTKMAPTKCAMERA_H_
 
-#include <vtkCamera.h>
+#include <vital/types/camera.h>
 
-#include <maptk/camera.h>
+#include <vtkCamera.h>
 
 class vtkMaptkCamera : public vtkCamera
 {
@@ -44,12 +44,14 @@ public:
   static vtkMaptkCamera *New();
 
   // Description:
-  // Set the internal maptk camera
-  void SetCamera(maptk::camera_d const& camera);
+  // Set/Get the internal maptk camera
+  kwiver::vital::camera_sptr GetCamera() const;
+  void SetCamera(kwiver::vital::camera_sptr const& camera);
 
   // Description:
   // Project 3D point to 2D using the internal maptk camera
-  bool ProjectPoint(maptk::vector_3d const& point, double (&projPoint)[2]);
+  bool ProjectPoint(kwiver::vital::vector_3d const& point,
+                    double (&projPoint)[2]);
 
   // Description:
   // Update self (the VTK camera) based on the maptk camera and
@@ -67,6 +69,11 @@ public:
   // Convenience method which calls the superclass method of same name using
   // the member AspectRatio.
   void GetFrustumPlanes(double planes[24]);
+
+  // Description:
+  // Compute the transformation matrix that projects the camera image space
+  // onto the specified plane in world space
+  void GetTransform(vtkMatrix4x4*, double const plane[4]);
 
   // Description:
   // Set/Get the aspect ratio (w / h) used when getting the frustum planes
@@ -88,7 +95,7 @@ private:
   int ImageDimensions[2];
   double AspectRatio;
 
-  maptk::camera_d MaptkCamera;
+  kwiver::vital::camera_sptr MaptkCamera;
 };
 
 #endif

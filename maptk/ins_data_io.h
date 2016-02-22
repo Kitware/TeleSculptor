@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,14 +38,13 @@
 #ifndef MAPTK_INS_DATA_IO_H_
 #define MAPTK_INS_DATA_IO_H_
 
-#include <maptk/config.h>
 
 #include "ins_data.h"
-#include "types.h"
+#include <vital/vital_types.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 /// Read in a POS file, producing an ins_data object
 /**
@@ -56,16 +55,13 @@ namespace maptk
  * \throws invalid_file
  *    Thrown when the data in the file is not sufficient to create an ins_data
  *    object for return.
- * \throws boost::filesystem::filesystem_error
- *    Boost exception thrown if something goes wrong with the underlying file
- *    read.
  *
  * \param file_path   The path to the file to read in.
  * \return A \c ins_data object representing the contents of the read-in file.
  */
 ins_data
-MAPTK_LIB_EXPORT
-read_pos_file(path_t const& file_path);
+MAPTK_EXPORT
+read_pos_file(vital::path_t const& file_path);
 
 /// Output the given \c ins_data object to the specified file path
 /**
@@ -75,18 +71,16 @@ read_pos_file(path_t const& file_path);
  *
  * \throws file_write_exception
  *    Thrown when something prevents output of the file.
- * \throws boost::filesystem::filesystem:error
- *    Thrown when an underlying boost::filesystem call failes for system
- *    reasons.
  *
  * \param ins       The \c ins_data object to output.
  * \param file_path The path to output the file to.
  */
 void
-MAPTK_LIB_EXPORT
-write_pos_file(ins_data const& ins,
-               path_t const& file_path);
+MAPTK_EXPORT
+write_pos_file(maptk::ins_data const& ins,
+               vital::path_t const& file_path);
 
-}
+} // end namespace maptk
+} // end namespace kwiver
 
 #endif // MAPTK_INS_DATA_IO_H_

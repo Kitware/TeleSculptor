@@ -1,42 +1,42 @@
 #Travis CI configuration for MAP-Tk
 # See http://travis-ci.org/Kitware/maptk/
 
+sudo: false
+
 language: cpp
 compiler:
   - gcc
   - clang
 
-before_install:
-  # CMake in Ubuntu 12.04 is too old. Get a newer version from this PPA
-  - sudo apt-add-repository -y ppa:smspillaz/cmake-2.8.12
-  # Ubuntu 12.04 only provides Boost 1.46 and 1.48, we need > 1.50
-  # so add this PPA to provide newer Boost
-  - sudo apt-add-repository -y ppa:boost-latest/ppa
-  # Eigen in Ubuntu 12.04 is too old.  Get a newer version from this PPA
-  - sudo apt-add-repository -y ppa:liggghts-dev/external
-  # OpenCV in Ubuntu 12.04 is too old.  Get a newer version from this PPA
-  - sudo apt-add-repository -y ppa:thedsweb/yawls-opencv
-  # VXL 1.14 in Unbuntu 12.04 is too old. Get backport of VXL 1.17 from here
-  - sudo apt-add-repository -y ppa:matt-leotta/vxl
-  - sudo apt-get update -qq
+cache:
+  directories:
+  - $HOME/deps
 
-install:
-  - sudo apt-get install -y cmake cmake-data libproj-dev libeigen3-dev
-  - sudo apt-get install -y libboost1.55-all-dev
-  - sudo apt-get install -y libopencv-dev
-  - sudo apt-get install -y python3-dev python3-numpy python-dev python-numpy
-  - sudo apt-get install -y libvxl1-dev
-  # The Ubuntu VXL package has a bug in which it links to libgeotiff at
-  # the wrong location, so add a sym-link to work around.
-  - sudo ln -s /usr/lib/libgeotiff.so.2 /usr/lib/libgeotiff.so
+before_script:
+  - bash .travis/install-deps.sh
+
+addons:
+  apt:
+    sources:
+    - boost-latest
+    packages:
+    - libproj-dev
+    - libboost1.55-all-dev
+    - libgl1-mesa-dev
+    - libxt-dev
+    - libqt4-dev
 
 script:
+  - export PATH=$HOME/deps/bin:$PATH
   - mkdir build
   - cd build
   - cmake -DMAPTK_ENABLE_PROJ:BOOL=ON
           -DMAPTK_ENABLE_OPENCV:BOOL=ON
           -DMAPTK_ENABLE_VXL:BOOL=ON
+          -DMAPTK_ENABLE_CERES:BOOL=ON
+          -DMAPTK_ENABLE_GUI:BOOL=ON
           -DMAPTK_ENABLE_TESTING:BOOL=ON
+          -DEIGEN_INCLUDE_DIR:PATH=$HOME/deps/include/eigen3
           ../
-  - make
+  - make -j2
   - ctest

@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2015 by Kitware, Inc.
+ * Copyright 2013-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,22 +42,20 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <iterator>
 
-#include <boost/algorithm/string/join.hpp>
-#include <boost/foreach.hpp>
-#include <boost/iterator/counting_iterator.hpp>
+#include <vital/vital_foreach.h>
+#include <vital/algo/algorithm.h>
+#include <vital/exceptions/algorithm.h>
+#include <vital/exceptions/image.h>
 
-#include <maptk/algo/algorithm.h>
-#include <maptk/exceptions/algorithm.h>
-#include <maptk/exceptions/image.h>
+using namespace kwiver::vital;
 
-
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
-
 
 /// Default Constructor
 track_features_core
@@ -83,13 +81,13 @@ track_features_core
 }
 
 
-/// Get this alg's \link maptk::config_block configuration block \endlink
-config_block_sptr
+/// Get this alg's \link vital::config_block configuration block \endlink
+vital::config_block_sptr
 track_features_core
 ::get_configuration() const
 {
   // get base config from base class
-  config_block_sptr config = algorithm::get_configuration();
+  vital::config_block_sptr config = algorithm::get_configuration();
 
   // Sub-algorithm implementation name + sub_config block
   // - Feature Detector algorithm
@@ -111,11 +109,11 @@ track_features_core
 /// Set this algo's properties via a config block
 void
 track_features_core
-::set_configuration(config_block_sptr in_config)
+::set_configuration(vital::config_block_sptr in_config)
 {
   // Starting with our generated config_block to ensure that assumed values are present
   // An alternative is to check for key presence before performing a get_value() call.
-  config_block_sptr config = this->get_configuration();
+  vital::config_block_sptr config = this->get_configuration();
   config->merge_config(in_config);
 
   // Setting nested algorithm instances via setter methods instead of directly
@@ -140,7 +138,7 @@ track_features_core
 
 bool
 track_features_core
-::check_configuration(config_block_sptr config) const
+::check_configuration(vital::config_block_sptr config) const
 {
   return (
     algo::detect_features::check_nested_algo_configuration("feature_detector", config)
@@ -201,11 +199,11 @@ track_features_core
     typedef std::vector<descriptor_sptr>::const_iterator desc_itr;
     feat_itr fit = vf.begin();
     desc_itr dit = df.begin();
-    std::vector<track_sptr> new_tracks;
+    std::vector<vital::track_sptr> new_tracks;
     for(; fit != vf.end() && dit != df.end(); ++fit, ++dit)
     {
        track::track_state ts(frame_number, *fit, *dit);
-       new_tracks.push_back(track_sptr(new maptk::track(ts)));
+       new_tracks.push_back(vital::track_sptr(new vital::track(ts)));
        new_tracks.back()->set_id(this->next_track_id_++);
     }
     // call loop closure on the first frame to establish this
@@ -227,7 +225,7 @@ track_features_core
   std::vector<match> vm = mset->matches();
   std::set<unsigned> matched;
 
-  BOOST_FOREACH(match m, vm)
+  VITAL_FOREACH(match m, vm)
   {
     matched.insert(m.second);
     track_sptr t = active_tracks[m.first];
@@ -236,17 +234,30 @@ track_features_core
   }
 
   // find the set of unmatched active track indices
-  std::vector<unsigned> unmatched;
-  std::back_insert_iterator<std::vector<unsigned> > unmatched_insert_itr(unmatched);
-  std::set_difference(boost::counting_iterator<unsigned>(0),
-                      boost::counting_iterator<unsigned>(static_cast<unsigned int>(vf.size())),
-                      matched.begin(), matched.end(),
-                      unmatched_insert_itr);
+  std::vector< unsigned int > unmatched;
+  std::back_insert_iterator< std::vector< unsigned int > > unmatched_insert_itr(unmatched);
 
-  BOOST_FOREACH(unsigned i, unmatched)
+  //
+  // Generate a sequence of numbers
+  //
+  std::vector< unsigned int > sequence( vf.size() );
+  {
+    auto eit = sequence.end();
+    unsigned int count(0);
+    for ( auto it = sequence.begin(); it != eit; ++it)
+    {
+      *it = count++;
+    }
+  }
+
+  std::set_difference( sequence.begin(), sequence.end(),
+                       matched.begin(), matched.end(),
+                       unmatched_insert_itr );
+
+  VITAL_FOREACH(unsigned i, unmatched)
   {
     track::track_state ts(frame_number, vf[i], df[i]);
-    all_tracks.push_back(track_sptr(new maptk::track(ts)));
+    all_tracks.push_back(vital::track_sptr(new vital::track(ts)));
     all_tracks.back()->set_id(this->next_track_id_++);
   }
 
@@ -261,3 +272,4 @@ track_features_core
 } // end namespace core
 
 } // end namespace maptk
+} // end namespace kwiver

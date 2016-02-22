@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,16 +37,16 @@
 #ifndef MAPTK_PROJECTED_TRACK_SET_H_
 #define MAPTK_PROJECTED_TRACK_SET_H_
 
-#include <boost/shared_ptr.hpp>
 
-#include <maptk/config.h>
+#include <vital/vital_config.h>
+#include <maptk/maptk_export.h>
 
-#include "track_set.h"
-#include "camera_map.h"
-#include "landmark_map.h"
+#include <vital/types/track_set.h>
+#include <vital/types/camera_map.h>
+#include <vital/types/landmark_map.h>
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 
 /// Use the cameras to project the landmarks back into their images.
@@ -55,12 +55,14 @@ namespace maptk
  * \param cameras input camera map
  * \return track set generated via the projection
  */
-track_set_sptr
-MAPTK_LIB_EXPORT
-projected_tracks(landmark_map_sptr landmarks, camera_map_sptr cameras);
+vital::track_set_sptr
+MAPTK_EXPORT
+projected_tracks(vital::landmark_map_sptr landmarks,
+                 vital::camera_map_sptr cameras);
 
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PROJECTED_TRACK_SET_H_

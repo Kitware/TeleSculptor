@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,16 +51,32 @@ public slots:
   void openFiles(QStringList const& paths);
 
   void loadProject(QString const& path);
+  void loadImage(QString const& path);
   void loadCamera(QString const& path);
   void loadTracks(QString const& path);
   void loadLandmarks(QString const& path);
 
+  void saveCameras();
+  void saveCameras(QString const& path);
+  void saveLandmarks();
+  void saveLandmarks(QString const& path);
+
   void setActiveCamera(int);
+
+  void setViewBackroundColor();
+
+  void showMatchMatrix();
+
+  void showAboutDialog();
+  void showUserManual();
 
 protected slots:
   void setSlideDelay(int);
   void setSlideshowPlaying(bool);
   void nextSlide();
+
+  void executeTool(QObject*);
+  void acceptToolResults();
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(MainWindow)

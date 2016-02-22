@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,9 +37,10 @@
 #include <viscl/tasks/gaussian_smooth.h>
 #include <viscl/vxl/transfer.h>
 
+#include <memory>
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vcl
 {
@@ -47,7 +48,7 @@ namespace vcl
 
 /// Constructor - convert base image container to a VisCL image
 image_container
-::image_container(const maptk::image_container& image_cont)
+::image_container(const vital::image_container& image_cont)
 : data_(image_container_to_viscl(image_cont))
 {
 }
@@ -63,13 +64,13 @@ image_container
 
 
 /// Convert a VisCL image to a MAPTK image
-image
+vital::image
 image_container
 ::viscl_to_maptk(const viscl::image& img_cl)
 {
   size_t width = img_cl.width();
   size_t height = img_cl.height();
-  image img(width, height);
+  vital::image img(width, height);
 
   cl::size_t<3> origin;
   // Defaults are already 0 on initialization, setting is redundant
@@ -90,7 +91,7 @@ image_container
 /// Convert a MAPTK image to a VisCL image
 viscl::image
 image_container
-::maptk_to_viscl(const image& img)
+::maptk_to_viscl(const vital::image& img)
 {
   cl::ImageFormat img_fmt;
   img_fmt = cl::ImageFormat(CL_INTENSITY, CL_UNORM_INT8);
@@ -99,7 +100,7 @@ image_container
   // it also only supports byte and float images below only byte are supported
   if( img.depth() == 1 )
   {
-    return viscl::image(boost::make_shared<cl::Image2D>(
+    return viscl::image(std::make_shared<cl::Image2D>(
                           viscl::manager::inst()->get_context(),
                           CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
                           img_fmt,
@@ -122,7 +123,7 @@ image_container
       }
     }
 
-    viscl::image image = viscl::image(boost::make_shared<cl::Image2D>(
+    viscl::image image = viscl::image(std::make_shared<cl::Image2D>(
                                         viscl::manager::inst()->get_context(),
                                         CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
                                         img_fmt,
@@ -143,7 +144,7 @@ image_container
 
 /// Extract a VisCL image from any image container
 viscl::image
-image_container_to_viscl(const maptk::image_container& img)
+image_container_to_viscl(const vital::image_container& img)
 {
   if( const image_container* c =
           dynamic_cast<const image_container*>(&img) )
@@ -157,3 +158,4 @@ image_container_to_viscl(const maptk::image_container& img)
 } // end namespace vcl
 
 } // end namespace maptk
+} // end namespace kwiver

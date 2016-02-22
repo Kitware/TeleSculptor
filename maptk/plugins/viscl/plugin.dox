@@ -1,3 +1,4 @@
+namespace kwiver {
 namespace maptk {
 
 /// VCL module namespace
@@ -28,4 +29,5 @@ this time.</b>
 - \ref vcl::extract_descriptors : extract descriptors on the GPU with VisCL.
 - \ref vcl::match_features : track features in a local neighborhood on the GPU with VisCL.
 */
+}
 }

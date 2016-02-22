@@ -35,22 +35,21 @@
 
 #include "image_io.h"
 
-#include <maptk/logging_macros.h>
+#include <vital/logger/logger.h>
+#include <vital/io/eigen_io.h>
+#include <vital/types/vector.h>
+#include <vital/exceptions/image.h>
+
 #include <maptk/plugins/vxl/image_container.h>
-#include <maptk/eigen_io.h>
-#include <maptk/vector.h>
-#include <maptk/exceptions/image.h>
 
 #include <vil/vil_convert.h>
 #include <vil/vil_load.h>
 #include <vil/vil_save.h>
 
+using namespace kwiver::vital;
 
-#define LOGGING_PREFIX "maptk::vxl::image_io"
-
-
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vxl
 {
@@ -63,20 +62,24 @@ public:
   priv()
   : auto_stretch(false),
     manual_stretch(false),
-    intensity_range(0, 255)
+    intensity_range(0, 255),
+    m_logger( vital::get_logger( "maptk_vxl_image_io" ) )
   {
   }
 
   priv(const priv& other)
   : auto_stretch(other.auto_stretch),
     manual_stretch(other.manual_stretch),
-    intensity_range(other.intensity_range)
+    intensity_range(other.intensity_range),
+    m_logger(other.m_logger)
   {
   }
 
   bool auto_stretch;
   bool manual_stretch;
   vector_2d intensity_range;
+
+  vital::logger_handle_t m_logger;
 };
 
 
@@ -104,13 +107,13 @@ image_io
 
 
 
-/// Get this algorithm's \link maptk::config_block configuration block \endlink
-config_block_sptr
+/// Get this algorithm's \link vital::config_block configuration block \endlink
+vital::config_block_sptr
 image_io
 ::get_configuration() const
 {
   // get base config from base class
-  config_block_sptr config = maptk::algo::image_io::get_configuration();
+  vital::config_block_sptr config = vital::algo::image_io::get_configuration();
 
   config->set_value("auto_stretch", d_->auto_stretch,
                     "Dynamically stretch the range of the input data such that "
@@ -135,11 +138,11 @@ image_io
 /// Set this algorithm's properties via a config block
 void
 image_io
-::set_configuration(config_block_sptr in_config)
+::set_configuration(vital::config_block_sptr in_config)
 {
-  // Starting with our generated config_block to ensure that assumed values are present
+  // Starting with our generated vital::config_block to ensure that assumed values are present
   // An alternative is to check for key presence before performing a get_value() call.
-  config_block_sptr config = this->get_configuration();
+  vital::config_block_sptr config = this->get_configuration();
   config->merge_config(in_config);
 
   d_->auto_stretch = config->get_value<bool>("auto_stretch",
@@ -154,7 +157,7 @@ image_io
 /// Check that the algorithm's currently configuration is valid
 bool
 image_io
-::check_configuration(config_block_sptr config) const
+::check_configuration(vital::config_block_sptr config) const
 {
   double auto_stretch = config->get_value<bool>("auto_stretch",
                                                 d_->auto_stretch);
@@ -162,8 +165,7 @@ image_io
                                                   d_->manual_stretch);
   if( auto_stretch && manual_stretch)
   {
-    LOG_ERROR(LOGGING_PREFIX+std::string("::check_configuration"),
-              "can not enable both manual and auto stretching");
+    LOG_ERROR( d_->m_logger, "can not enable both manual and auto stretching");
     return false;
   }
   if( manual_stretch )
@@ -172,8 +174,7 @@ image_io
                                         d_->intensity_range.transpose());
     if( range[0] >= range[1] )
     {
-      LOG_ERROR(LOGGING_PREFIX+std::string("::check_configuration"),
-                "stretching range minimum not less than maximum"
+      LOG_ERROR( d_->m_logger, "stretching range minimum not less than maximum"
                 <<" ("<<range[0]<<", "<<range[1]<<")");
       return false;
     }
@@ -187,8 +188,7 @@ image_container_sptr
 image_io
 ::load_(const std::string& filename) const
 {
-  LOG_DEBUG( LOGGING_PREFIX+std::string("::load_"),
-             "Loading image from file: " << filename );
+  LOG_DEBUG( d_->m_logger, "Loading image from file: " << filename );
 
   vil_image_resource_sptr img_rsc = vil_load_image_resource(filename.c_str());
   vil_image_view<vxl_byte> img;
@@ -252,8 +252,7 @@ image_io
     }
     else if( d_->manual_stretch )
     {
-      LOG_ERROR(LOGGING_PREFIX+std::string("::load_"),
-                "unable to manually stretch pixel type: "
+      LOG_ERROR( d_->m_logger, "Unable to manually stretch pixel type: "
                 << img_rsc->pixel_format());
       throw image_exception();
     }
@@ -280,3 +279,4 @@ image_io
 } // end namespace vxl
 
 } // end namespace maptk
+} // end namespace kwiver

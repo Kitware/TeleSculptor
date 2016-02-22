@@ -32,9 +32,10 @@
 #include <test_math.h>
 #include <test_scene.h>
 
+#include <vital/types/similarity.h>
+
 #include <maptk/projected_track_set.h>
 #include <maptk/metrics.h>
-#include <maptk/similarity.h>
 #include <maptk/transform.h>
 #include <maptk/plugins/core/register_algorithms.h>
 #include <maptk/plugins/vxl/register_algorithms.h>
@@ -42,7 +43,7 @@
 #include <maptk/plugins/vxl/estimate_similarity_transform.h>
 #include <maptk/plugins/core/initialize_cameras_landmarks.h>
 
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
 
 
 #define TEST_ARGS ()
@@ -54,18 +55,19 @@ main(int argc, char* argv[])
 {
   CHECK_ARGS(1);
 
-  maptk::core::register_algorithms();
-  maptk::vxl::register_algorithms();
+  kwiver::maptk::core::register_algorithms();
+  kwiver::maptk::vxl::register_algorithms();
 
   testname_t const testname = argv[1];
 
   RUN_TEST(testname);
 }
 
+using namespace kwiver::vital;
 
 IMPLEMENT_TEST(create)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   algo::initialize_cameras_landmarks_sptr init = algo::initialize_cameras_landmarks::create("core");
   if (!init)
   {
@@ -75,16 +77,16 @@ IMPLEMENT_TEST(create)
 
 
 // helper function to configure the algorithm
-void configure_algo(maptk::core::initialize_cameras_landmarks& algo,
-                    const maptk::camera_intrinsics_d& K)
+void configure_algo(kwiver::maptk::core::initialize_cameras_landmarks& algo,
+                    const kwiver::vital::camera_intrinsics_sptr K)
 {
-  using namespace maptk;
-  config_block_sptr cfg = algo.get_configuration();
+  using namespace kwiver::maptk;
+  kwiver::vital::config_block_sptr cfg = algo.get_configuration();
   cfg->set_value("verbose", "true");
-  cfg->set_value("base_camera:focal_length", K.focal_length());
-  cfg->set_value("base_camera:principal_point", K.principal_point());
-  cfg->set_value("base_camera:aspect_ratio", K.aspect_ratio());
-  cfg->set_value("base_camera:skew", K.skew());
+  cfg->set_value("base_camera:focal_length", K->focal_length());
+  cfg->set_value("base_camera:principal_point", K->principal_point());
+  cfg->set_value("base_camera:aspect_ratio", K->aspect_ratio());
+  cfg->set_value("base_camera:skew", K->skew());
   cfg->set_value("essential_mat_estimator:type", "vxl");
   cfg->set_value("essential_mat_estimator:vxl:num_ransac_samples", 10);
   cfg->set_value("camera_optimizer:type", "vxl");
@@ -99,37 +101,37 @@ void configure_algo(maptk::core::initialize_cameras_landmarks& algo,
 }
 
 
-void evaluate_initialization(const maptk::camera_map_sptr true_cams,
-                             const maptk::landmark_map_sptr true_landmarks,
-                             const maptk::camera_map_sptr est_cams,
-                             const maptk::landmark_map_sptr est_landmarks,
+void evaluate_initialization(const kwiver::vital::camera_map_sptr true_cams,
+                             const kwiver::vital::landmark_map_sptr true_landmarks,
+                             const kwiver::vital::camera_map_sptr est_cams,
+                             const kwiver::vital::landmark_map_sptr est_landmarks,
                              double tol)
 {
-  using namespace maptk;
+  using namespace kwiver;
 
-  typedef algo::estimate_similarity_transform_sptr est_sim_sptr;
-  est_sim_sptr est_sim(new vxl::estimate_similarity_transform());
-  similarity_d global_sim = est_sim->estimate_transform(est_cams, true_cams);
+  typedef vital::algo::estimate_similarity_transform_sptr est_sim_sptr;
+  est_sim_sptr est_sim(new maptk::vxl::estimate_similarity_transform());
+  vital::similarity_d global_sim = est_sim->estimate_transform(est_cams, true_cams);
   std::cout << "similarity = "<<global_sim<<std::endl;
 
 
-  camera_map::map_camera_t orig_cams = true_cams->cameras();
-  camera_map::map_camera_t new_cams = est_cams->cameras();
-  BOOST_FOREACH(camera_map::map_camera_t::value_type p, orig_cams)
+  vital::camera_map::map_camera_t orig_cams = true_cams->cameras();
+  vital::camera_map::map_camera_t new_cams = est_cams->cameras();
+  VITAL_FOREACH(vital::camera_map::map_camera_t::value_type p, orig_cams)
   {
-    camera_sptr new_cam_t = transform(new_cams[p.first], global_sim);
-    rotation_d dR = new_cam_t->rotation().inverse() * p.second->rotation();
+    vital::camera_sptr new_cam_t = maptk::transform(new_cams[p.first], global_sim);
+    vital::rotation_d dR = new_cam_t->rotation().inverse() * p.second->rotation();
     TEST_NEAR("rotation difference magnitude", dR.angle(), 0.0, tol);
 
     double dt = (p.second->center() - new_cam_t->center()).norm();
     TEST_NEAR("camera center difference", dt, 0.0, tol);
   }
 
-  landmark_map::map_landmark_t orig_lms = true_landmarks->landmarks();
-  landmark_map::map_landmark_t new_lms = est_landmarks->landmarks();
-  BOOST_FOREACH(landmark_map::map_landmark_t::value_type p, orig_lms)
+  vital::landmark_map::map_landmark_t orig_lms = true_landmarks->landmarks();
+  vital::landmark_map::map_landmark_t new_lms = est_landmarks->landmarks();
+  VITAL_FOREACH(landmark_map::map_landmark_t::value_type p, orig_lms)
   {
-    landmark_sptr new_lm_tr = transform(new_lms[p.first], global_sim);
+    vital::landmark_sptr new_lm_tr = maptk::transform(new_lms[p.first], global_sim);
 
     double dt = (p.second->loc() - new_lm_tr->loc()).norm();
     TEST_NEAR("landmark location difference", dt, 0.0, tol);
@@ -140,24 +142,24 @@ void evaluate_initialization(const maptk::camera_map_sptr true_cams,
 // test initialization with ideal points
 IMPLEMENT_TEST(ideal_points)
 {
-  using namespace maptk;
-  core::initialize_cameras_landmarks init;
+  using namespace kwiver;
+  maptk::core::initialize_cameras_landmarks init;
 
   // create landmarks at the random locations
-  landmark_map_sptr landmarks = testing::init_landmarks(100);
-  landmarks = testing::noisy_landmarks(landmarks, 1.0);
+  vital::landmark_map_sptr landmarks = maptk::testing::init_landmarks(100);
+  landmarks = maptk::testing::noisy_landmarks(landmarks, 1.0);
 
   // create a camera sequence (elliptical path)
-  camera_map_sptr cameras = testing::camera_seq();
+  camera_map_sptr cameras = maptk::testing::camera_seq();
 
   // create tracks from the projections
-  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+  track_set_sptr tracks = maptk::projected_tracks(landmarks, cameras);
 
-  camera_intrinsics_d K = cameras->cameras()[0]->intrinsics();
+  vital::camera_intrinsics_sptr K = cameras->cameras()[0]->intrinsics();
   configure_algo(init, K);
 
-  camera_map_sptr new_cameras;
-  landmark_map_sptr new_landmarks;
+  vital::camera_map_sptr new_cameras;
+  vital::landmark_map_sptr new_landmarks;
   init.initialize(new_cameras, new_landmarks, tracks);
 
   evaluate_initialization(cameras, landmarks,
@@ -168,27 +170,27 @@ IMPLEMENT_TEST(ideal_points)
 // test initialization with ideal points
 IMPLEMENT_TEST(ideal_points_from_last)
 {
-  using namespace maptk;
-  core::initialize_cameras_landmarks init;
+  using namespace kwiver;
+  maptk::core::initialize_cameras_landmarks init;
 
   // create landmarks at the random locations
-  landmark_map_sptr landmarks = testing::init_landmarks(100);
-  landmarks = testing::noisy_landmarks(landmarks, 1.0);
+  vital::landmark_map_sptr landmarks = maptk::testing::init_landmarks(100);
+  landmarks = maptk::testing::noisy_landmarks(landmarks, 1.0);
 
   // create a camera sequence (elliptical path)
-  camera_map_sptr cameras = testing::camera_seq();
+  vital::camera_map_sptr cameras = maptk::testing::camera_seq();
 
   // create tracks from the projections
-  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+  vital::track_set_sptr tracks = maptk::projected_tracks(landmarks, cameras);
 
-  config_block_sptr cfg = init.get_configuration();
+  vital::config_block_sptr cfg = init.get_configuration();
   cfg->set_value("init_from_last", "true");
   init.set_configuration(cfg);
-  camera_intrinsics_d K = cameras->cameras()[0]->intrinsics();
+  vital::camera_intrinsics_sptr K = cameras->cameras()[0]->intrinsics();
   configure_algo(init, K);
 
-  camera_map_sptr new_cameras;
-  landmark_map_sptr new_landmarks;
+  vital::camera_map_sptr new_cameras;
+  vital::landmark_map_sptr new_landmarks;
   init.initialize(new_cameras, new_landmarks, tracks);
 
   evaluate_initialization(cameras, landmarks,
@@ -201,27 +203,27 @@ IMPLEMENT_TEST(ideal_points_from_last)
 // test initialization with noisy points
 IMPLEMENT_TEST(noisy_points)
 {
-  using namespace maptk;
-  core::initialize_cameras_landmarks init;
+  using namespace kwiver;
+  maptk::core::initialize_cameras_landmarks init;
 
   // create landmarks at the random locations
-  landmark_map_sptr landmarks = testing::init_landmarks(100);
-  landmarks = testing::noisy_landmarks(landmarks, 1.0);
+  vital::landmark_map_sptr landmarks = maptk::testing::init_landmarks(100);
+  landmarks = maptk::testing::noisy_landmarks(landmarks, 1.0);
 
   // create a camera sequence (elliptical path)
-  camera_map_sptr cameras = testing::camera_seq();
+  vital::camera_map_sptr cameras = maptk::testing::camera_seq();
 
   // create tracks from the projections
-  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+  vital::track_set_sptr tracks = maptk::projected_tracks(landmarks, cameras);
 
   // add random noise to track image locations
-  tracks = testing::noisy_tracks(tracks, 0.3);
+  tracks = maptk::testing::noisy_tracks(tracks, 0.3);
 
-  camera_intrinsics_d K = cameras->cameras()[0]->intrinsics();
+  camera_intrinsics_sptr K = cameras->cameras()[0]->intrinsics();
   configure_algo(init, K);
 
-  camera_map_sptr new_cameras;
-  landmark_map_sptr new_landmarks;
+  vital::camera_map_sptr new_cameras;
+  vital::landmark_map_sptr new_landmarks;
   init.initialize(new_cameras, new_landmarks, tracks);
 
   evaluate_initialization(cameras, landmarks,
@@ -233,29 +235,29 @@ IMPLEMENT_TEST(noisy_points)
 // test initialization with noisy points
 IMPLEMENT_TEST(noisy_points_from_last)
 {
-  using namespace maptk;
-  core::initialize_cameras_landmarks init;
+  using namespace kwiver;
+  maptk::core::initialize_cameras_landmarks init;
 
   // create landmarks at the random locations
-  landmark_map_sptr landmarks = testing::init_landmarks(100);
-  landmarks = testing::noisy_landmarks(landmarks, 1.0);
+  vital::landmark_map_sptr landmarks = maptk::testing::init_landmarks(100);
+  landmarks = maptk::testing::noisy_landmarks(landmarks, 1.0);
 
   // create a camera sequence (elliptical path)
-  camera_map_sptr cameras = testing::camera_seq();
+  vital::camera_map_sptr cameras = maptk::testing::camera_seq();
 
   // create tracks from the projections
-  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+  vital::track_set_sptr tracks = maptk::projected_tracks(landmarks, cameras);
 
   // add random noise to track image locations
-  tracks = testing::noisy_tracks(tracks, 0.3);
+  tracks = maptk::testing::noisy_tracks(tracks, 0.3);
 
-  config_block_sptr cfg = init.get_configuration();
+  vital::config_block_sptr cfg = init.get_configuration();
   cfg->set_value("init_from_last", "true");
   init.set_configuration(cfg);
-  camera_intrinsics_d K = cameras->cameras()[0]->intrinsics();
+  vital::camera_intrinsics_sptr K = cameras->cameras()[0]->intrinsics();
   configure_algo(init, K);
 
-  camera_map_sptr new_cameras;
+  vital::camera_map_sptr new_cameras;
   landmark_map_sptr new_landmarks;
   init.initialize(new_cameras, new_landmarks, tracks);
 
@@ -269,24 +271,24 @@ IMPLEMENT_TEST(noisy_points_from_last)
 // test initialization with subsets of cameras and landmarks
 IMPLEMENT_TEST(subset_init)
 {
-  using namespace maptk;
-  core::initialize_cameras_landmarks init;
+  using namespace kwiver;
+  maptk::core::initialize_cameras_landmarks init;
 
   // create landmarks at the random locations
-  landmark_map_sptr landmarks = testing::init_landmarks(100);
-  landmarks = testing::noisy_landmarks(landmarks, 1.0);
+  vital::landmark_map_sptr landmarks = maptk::testing::init_landmarks(100);
+  landmarks = maptk::testing::noisy_landmarks(landmarks, 1.0);
 
   // create a camera sequence (elliptical path)
-  camera_map_sptr cameras = testing::camera_seq();
+  vital::camera_map_sptr cameras = maptk::testing::camera_seq();
 
   // create tracks from the projections
-  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+  vital::track_set_sptr tracks = maptk::projected_tracks(landmarks, cameras);
 
-  camera_intrinsics_d K = cameras->cameras()[0]->intrinsics();
+  vital::camera_intrinsics_sptr K = cameras->cameras()[0]->intrinsics();
   configure_algo(init, K);
 
   // mark every 3rd camera for initialization
-  camera_map::map_camera_t cams_to_init;
+  vital::camera_map::map_camera_t cams_to_init;
   for(unsigned int i=0; i<cameras->size(); ++i)
   {
     if( i%3 == 0 )
@@ -294,36 +296,36 @@ IMPLEMENT_TEST(subset_init)
       cams_to_init[i] = camera_sptr();
     }
   }
-  camera_map_sptr new_cameras(new simple_camera_map(cams_to_init));
+  vital::camera_map_sptr new_cameras(new simple_camera_map(cams_to_init));
 
   // mark every 5rd landmark for initialization
-  landmark_map::map_landmark_t lms_to_init;
+  vital::landmark_map::map_landmark_t lms_to_init;
   for(unsigned int i=0; i<landmarks->size(); ++i)
   {
     if( i%5 == 0 )
     {
-      lms_to_init[i] = landmark_sptr();
+      lms_to_init[i] = vital::landmark_sptr();
     }
   }
-  landmark_map_sptr new_landmarks(new simple_landmark_map(lms_to_init));
+  vital::landmark_map_sptr new_landmarks(new vital::simple_landmark_map(lms_to_init));
 
   init.initialize(new_cameras, new_landmarks, tracks);
 
   // test that we only initialized the requested objects
-  BOOST_FOREACH(camera_map::map_camera_t::value_type p, new_cameras->cameras())
+  VITAL_FOREACH(vital::camera_map::map_camera_t::value_type p, new_cameras->cameras())
   {
     TEST_EQUAL("Camera initialized", bool(p.second), true);
     TEST_EQUAL("Expected camera id", p.first % 3, 0);
   }
-  BOOST_FOREACH(landmark_map::map_landmark_t::value_type p, new_landmarks->landmarks())
+  VITAL_FOREACH(vital::landmark_map::map_landmark_t::value_type p, new_landmarks->landmarks())
   {
     TEST_EQUAL("Landmark initialized", bool(p.second), true);
     TEST_EQUAL("Expected landmark id", p.first % 5, 0);
   }
 
   // calling this again should do nothing
-  camera_map_sptr before_cameras = new_cameras;
-  landmark_map_sptr before_landmarks = new_landmarks;
+  vital::camera_map_sptr before_cameras = new_cameras;
+  vital::landmark_map_sptr before_landmarks = new_landmarks;
   init.initialize(new_cameras, new_landmarks, tracks);
   TEST_EQUAL("Initialization No-Op on cameras", before_cameras, new_cameras);
   TEST_EQUAL("Initialization No-Op on landmarks", before_landmarks, new_landmarks);
@@ -337,7 +339,7 @@ IMPLEMENT_TEST(subset_init)
       cams_to_init[i] = camera_sptr();
     }
   }
-  new_cameras = camera_map_sptr(new simple_camera_map(cams_to_init));
+  new_cameras = vital::camera_map_sptr(new vital::simple_camera_map(cams_to_init));
 
   // add the rest of the landmarks
   lms_to_init = new_landmarks->landmarks();
@@ -345,10 +347,10 @@ IMPLEMENT_TEST(subset_init)
   {
     if( lms_to_init.find(i) == lms_to_init.end() )
     {
-      lms_to_init[i] = landmark_sptr();
+      lms_to_init[i] = vital::landmark_sptr();
     }
   }
-  new_landmarks = landmark_map_sptr(new simple_landmark_map(lms_to_init));
+  new_landmarks = vital::landmark_map_sptr(new simple_landmark_map(lms_to_init));
 
   // initialize the rest
   init.initialize(new_cameras, new_landmarks, tracks);

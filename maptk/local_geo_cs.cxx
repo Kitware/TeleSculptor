@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,20 +34,30 @@
  */
 
 #include "local_geo_cs.h"
-#include <boost/math/constants/constants.hpp>
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
+
+#define _USE_MATH_DEFINES
+#include <math.h>
+
+#if defined M_PIl
+#define LOCAL_PI M_PIl
+#else
+#define LOCAL_PI M_PI
+#endif
 
 
-namespace maptk
-{
+using namespace kwiver::vital;
+
+namespace kwiver {
+namespace maptk {
 
 
 /// scale factor converting radians to degrees
-const double rad2deg = 180.0 / boost::math::constants::pi<double>();
+  static const double rad2deg = static_cast<double>( 180.0 ) / LOCAL_PI;
 /// scale factor converting degrees to radians
-const double deg2rad = boost::math::constants::pi<double>() / 180.0;
+  static const double deg2rad = static_cast<double>( LOCAL_PI ) / 180.0;
 /// scale factor convertint feet into meters
-const double foot2meter = 0.3048;
+static const double foot2meter = 0.3048;
 
 
 /// Constructor
@@ -63,7 +73,7 @@ local_geo_cs
 /// Use the pose data provided by INS to update camera pose
 void
 local_geo_cs
-::update_camera(const ins_data& ins, camera_d& cam,
+::update_camera(const ins_data& ins, simple_camera& cam,
                 rotation_d const& rot_offset) const
 {
   if( !geo_map_algo_ )
@@ -90,7 +100,7 @@ local_geo_cs
 /// Use the camera pose to update an INS data structure
 void
 local_geo_cs
-::update_ins_data(const camera_d& cam, ins_data& ins) const
+::update_ins_data(const simple_camera& cam, ins_data& ins) const
 {
   if( !geo_map_algo_ )
   {
@@ -100,7 +110,7 @@ local_geo_cs
   ins.yaw *= rad2deg;
   ins.pitch *= rad2deg;
   ins.roll *= rad2deg;
-  vector_3d c = cam.get_center() + utm_origin_;
+  vital::vector_3d c = cam.get_center() + utm_origin_;
   geo_map_algo_->utm_to_latlon(c.x(), c.y(), utm_origin_zone_, true,
                                ins.lat, ins.lon);
   // camera Z in meters while INS data altitude represented in feet
@@ -112,13 +122,13 @@ local_geo_cs
 /// Use a sequence of ins_data objects to initialize a sequence of cameras
 std::map<frame_id_t, camera_sptr>
 initialize_cameras_with_ins(const std::map<frame_id_t, ins_data>& ins_map,
-                            const camera_d& base_camera,
+                            const simple_camera& base_camera,
                             local_geo_cs& lgcs,
                             rotation_d const& rot_offset)
 {
   std::map<frame_id_t, camera_sptr> cam_map;
-  maptk::vector_3d mean(0,0,0);
-  camera_d active_cam(base_camera);
+  vital::vector_3d mean(0,0,0);
+  simple_camera active_cam(base_camera);
 
   bool update_local_origin = false;
   if( lgcs.utm_origin_zone() < 0 && !ins_map.empty())
@@ -133,15 +143,15 @@ initialize_cameras_with_ins(const std::map<frame_id_t, ins_data>& ins_map,
     lgcs.geo_map_algo()->latlon_to_utm(ins.lat, ins.lon,
                                        x, y, zone, is_north_hemi);
     lgcs.set_utm_origin_zone(zone);
-    lgcs.set_utm_origin(vector_3d(x, y, 0.0));
+    lgcs.set_utm_origin(vital::vector_3d(x, y, 0.0));
   }
   typedef std::map<frame_id_t, ins_data>::value_type ins_map_val_t;
-  BOOST_FOREACH(ins_map_val_t const &p, ins_map)
+  VITAL_FOREACH(ins_map_val_t const &p, ins_map)
   {
     const ins_data& ins = p.second;
     lgcs.update_camera(ins, active_cam, rot_offset);
     mean += active_cam.center();
-    cam_map[p.first] = camera_sptr(new camera_d(active_cam));
+    cam_map[p.first] = camera_sptr(new simple_camera(active_cam));
   }
 
   if( update_local_origin )
@@ -155,9 +165,9 @@ initialize_cameras_with_ins(const std::map<frame_id_t, ins_data>& ins_map,
 
     // shift all cameras to the new coordinate system.
     typedef std::map<frame_id_t, camera_sptr>::value_type cam_map_val_t;
-    BOOST_FOREACH(cam_map_val_t const &p, cam_map)
+    VITAL_FOREACH(cam_map_val_t const &p, cam_map)
     {
-      camera_d* cam = dynamic_cast<camera_d*>(p.second.get());
+      simple_camera* cam = dynamic_cast<simple_camera*>(p.second.get());
       cam->set_center(cam->get_center() - mean);
     }
   }
@@ -181,19 +191,16 @@ update_ins_from_cameras(const std::map<frame_id_t, camera_sptr>& cam_map,
   }
 
   typedef std::map<frame_id_t, camera_sptr>::value_type cam_map_val_t;
-  BOOST_FOREACH(cam_map_val_t const &p, cam_map)
+  VITAL_FOREACH(cam_map_val_t const &p, cam_map)
   {
     ins_data& active_ins = ins_map[p.first];
-    if( camera_d* cam = dynamic_cast<camera_d*>(p.second.get()) )
+    if( simple_camera* cam = dynamic_cast<simple_camera*>(p.second.get()) )
     {
       lgcs.update_ins_data(*cam, active_ins);
-    }
-    else if( camera_f* cam = dynamic_cast<camera_f*>(p.second.get()) )
-    {
-      lgcs.update_ins_data(camera_d(*cam), active_ins);
     }
   }
 }
 
 
 } // end namespace maptk
+} // end namespace kwiver

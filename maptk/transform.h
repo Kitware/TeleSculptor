@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,14 +36,19 @@
 #ifndef MAPTK_TRANSFORM_H_
 #define MAPTK_TRANSFORM_H_
 
-#include "similarity.h"
-#include "covariance.h"
-#include "camera_map.h"
-#include "landmark_map.h"
+
+#include <vital/vital_config.h>
+#include <maptk/maptk_export.h>
+
+#include <vital/types/camera.h>
+#include <vital/types/similarity.h>
+#include <vital/types/covariance.h>
+#include <vital/types/camera_map.h>
+#include <vital/types/landmark_map.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 
 /// Transform a 3D covariance matrix with a similarity transformation
@@ -60,33 +65,46 @@ namespace maptk
  *  \return a 3D covariance transformed by the similarity transformation
  */
 template <typename T>
-MAPTK_LIB_EXPORT
-covariance_<3,T> transform(const covariance_<3,T>& covar,
-                           const similarity_<T>& xform);
+MAPTK_EXPORT
+vital::covariance_<3,T> transform(const vital::covariance_<3,T>& covar,
+                                  const vital::similarity_<T>& xform);
+
+
+/// Transform the camera by applying a similarity transformation in place
+MAPTK_EXPORT
+void transform_inplace(const vital::similarity_d& xform,
+                       vital::simple_camera& cam);
+
+
+/// Transform the landmark by applying a similarity transformation in place
+template <typename T>
+MAPTK_EXPORT
+void transform_inplace(const vital::similarity_<T>& xform,
+                       vital::landmark_<T>& lm);
 
 
 /// construct a transformed camera by applying a similarity transformation
-MAPTK_LIB_EXPORT
-camera_sptr transform(camera_sptr cam,
-                      const similarity_d& xform);
+MAPTK_EXPORT
+vital::camera_sptr transform(vital::camera_sptr cam,
+                             const vital::similarity_d& xform);
 
 
 /// construct a transformed map of cameras by applying a similarity transformation
-MAPTK_LIB_EXPORT
-camera_map_sptr transform(camera_map_sptr cameras,
-                          const similarity_d& xform);
+MAPTK_EXPORT
+vital::camera_map_sptr transform(vital::camera_map_sptr cameras,
+                                 const vital::similarity_d& xform);
 
 
 /// construct a transformed landmark by applying a similarity transformation
-MAPTK_LIB_EXPORT
-landmark_sptr transform(landmark_sptr lm,
-                        const similarity_d& xform);
+MAPTK_EXPORT
+vital::landmark_sptr transform(vital::landmark_sptr lm,
+                               const vital::similarity_d& xform);
 
 
 /// construct a transformed map of landmarks by applying a similarity transformation
-MAPTK_LIB_EXPORT
-landmark_map_sptr transform(landmark_map_sptr landmarks,
-                            const similarity_d& xform);
+MAPTK_EXPORT
+vital::landmark_map_sptr transform(vital::landmark_map_sptr landmarks,
+                                   const vital::similarity_d& xform);
 
 
 /// Estimate a canonical coordinate transform for landmarks and cameras
@@ -97,10 +115,10 @@ landmark_map_sptr transform(landmark_map_sptr landmarks,
  * \note This assumes most cameras are viewing from the same side of
  *       3D landmarks and have similar up directions.
  */
-MAPTK_LIB_EXPORT
-similarity_d
-canonical_transform(camera_map_sptr cameras,
-                    landmark_map_sptr landmarks);
+MAPTK_EXPORT
+vital::similarity_d
+canonical_transform(vital::camera_map_sptr cameras,
+                    vital::landmark_map_sptr landmarks);
 
 /// Compute an approximate Necker reversal of cameras and landmarks
 /**
@@ -115,12 +133,13 @@ canonical_transform(camera_map_sptr cameras,
  * mean landmark location and with a normal aligning with axis A.
  *
  */
-MAPTK_LIB_EXPORT
+MAPTK_EXPORT
 void
-necker_reverse(camera_map_sptr& cameras,
-               landmark_map_sptr& landmarks);
+necker_reverse(vital::camera_map_sptr& cameras,
+               vital::landmark_map_sptr& landmarks);
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_TRANSFORM_H_

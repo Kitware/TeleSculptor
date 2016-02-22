@@ -45,17 +45,18 @@ main(int argc, char* argv[])
 {
   CHECK_ARGS(1);
 
-  maptk::vxl::register_algorithms();
+  kwiver::maptk::vxl::register_algorithms();
 
   testname_t const testname = argv[1];
 
   RUN_TEST(testname);
 }
 
+using namespace kwiver::vital;
 
 IMPLEMENT_TEST(create)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   algo::triangulate_landmarks_sptr tri_lm = algo::triangulate_landmarks::create("vxl");
   if (!tri_lm)
   {
@@ -67,54 +68,54 @@ IMPLEMENT_TEST(create)
 // input to triangulation is the ideal solution, make sure it doesn't diverge
 IMPLEMENT_TEST(from_solution)
 {
-  maptk::vxl::triangulate_landmarks tri_lm;
-  maptk::testing::test_from_solution(tri_lm);
+  kwiver::maptk::vxl::triangulate_landmarks tri_lm;
+  kwiver::maptk::testing::test_from_solution(tri_lm);
 }
 
 
 // add noise to landmarks before input to triangulation
 IMPLEMENT_TEST(noisy_landmarks)
 {
-  maptk::vxl::triangulate_landmarks tri_lm;
-  maptk::testing::test_noisy_landmarks(tri_lm);
+  kwiver::maptk::vxl::triangulate_landmarks tri_lm;
+  kwiver::maptk::testing::test_noisy_landmarks(tri_lm);
 }
 
 
 // initialize all landmarks to the origin as input to triangulation
 IMPLEMENT_TEST(zero_landmarks)
 {
-  maptk::vxl::triangulate_landmarks tri_lm;
-  maptk::testing::test_zero_landmarks(tri_lm);
+  kwiver::maptk::vxl::triangulate_landmarks tri_lm;
+  kwiver::maptk::testing::test_zero_landmarks(tri_lm);
 }
 
 
 // select a subset of cameras to triangulation from
 IMPLEMENT_TEST(subset_cameras)
 {
-  maptk::vxl::triangulate_landmarks tri_lm;
-  maptk::testing::test_subset_cameras(tri_lm);
+  kwiver::maptk::vxl::triangulate_landmarks tri_lm;
+  kwiver::maptk::testing::test_subset_cameras(tri_lm);
 }
 
 
 // select a subset of landmarks to triangulate
 IMPLEMENT_TEST(subset_landmarks)
 {
-  maptk::vxl::triangulate_landmarks tri_lm;
-  maptk::testing::test_subset_landmarks(tri_lm);
+  kwiver::maptk::vxl::triangulate_landmarks tri_lm;
+  kwiver::maptk::testing::test_subset_landmarks(tri_lm);
 }
 
 
 // select a subset of tracks/track_states to constrain the problem
 IMPLEMENT_TEST(subset_tracks)
 {
-  maptk::vxl::triangulate_landmarks tri_lm;
-  maptk::testing::test_subset_tracks(tri_lm);
+  kwiver::maptk::vxl::triangulate_landmarks tri_lm;
+  kwiver::maptk::testing::test_subset_tracks(tri_lm);
 }
 
 
 // select a subset of tracks/track_states and add noise
 IMPLEMENT_TEST(noisy_tracks)
 {
-  maptk::vxl::triangulate_landmarks tri_lm;
-  maptk::testing::test_noisy_tracks(tri_lm);
+  kwiver::maptk::vxl::triangulate_landmarks tri_lm;
+  kwiver::maptk::testing::test_noisy_tracks(tri_lm);
 }

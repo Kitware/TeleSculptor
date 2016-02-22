@@ -36,23 +36,22 @@
 #include "match_features_constrained.h"
 
 #include <vector>
-#include <maptk/feature_set.h>
-#include <maptk/descriptor_set.h>
-#include <maptk/match_set.h>
-#include <maptk/logging_macros.h>
+
+#include <vital/types/feature_set.h>
+#include <vital/types/descriptor_set.h>
+#include <vital/types/match_set.h>
+
+#include <vital/logger/logger.h>
 
 #include <rsdl/rsdl_kd_tree.h>
 #include <vnl/vnl_vector_fixed.h>
 
 #include <limits>
-#include <boost/make_shared.hpp>
 
+using namespace kwiver::vital;
 
-#define LOGGING_PREFIX "match_features_constrained"
-
-
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vxl
 {
@@ -65,14 +64,16 @@ public:
   priv() :
     scale_thresh(2.0),
     angle_thresh(-1.0),
-    radius_thresh(200.0)
+    radius_thresh(200.0),
+    m_logger( vital::get_logger( "match_features_constrained" ) )
   {
   }
 
   priv(const priv& other) :
     scale_thresh(other.scale_thresh),
     angle_thresh(other.angle_thresh),
-    radius_thresh(other.radius_thresh)
+    radius_thresh(other.radius_thresh),
+    m_logger( vital::get_logger( "match_features_constrained" ) )
   {
   }
 
@@ -95,7 +96,7 @@ public:
   void
   match(feature_set_sptr feat1, descriptor_set_sptr desc1,
         feature_set_sptr feat2, descriptor_set_sptr desc2,
-        std::vector<maptk::match> &matches) const
+        std::vector<vital::match> &matches) const
   {
     matches.clear();
 
@@ -116,7 +117,7 @@ public:
 
     for (unsigned int i = 0; i < feat1_vec.size(); i++)
     {
-      maptk::feature_sptr f1 = feat1_vec[i];
+      vital::feature_sptr f1 = feat1_vec[i];
 
       std::vector<rsdl_point> points;
       std::vector<int> indices;
@@ -133,7 +134,7 @@ public:
       for (unsigned int j = 0; j < indices.size(); j++)
       {
         int index = indices[j];
-        maptk::feature_sptr f2 = feat2_vec[index];
+        vital::feature_sptr f2 = feat2_vec[index];
         if ((scale_thresh <= 0.0  || std::max(f1->scale(),f2->scale())/std::min(f1->scale(),f2->scale()) <= scale_thresh) &&
             (angle_thresh <= 0.0  || angle_dist(f2->angle(), f1->angle()) <= angle_thresh))
         {
@@ -150,16 +151,18 @@ public:
 
       if (closest >= 0)
       {
-        matches.push_back(maptk::match(i, closest));
+        matches.push_back(vital::match(i, closest));
       }
     }
 
-    LOG_INFO( LOGGING_PREFIX, "Found " << matches.size() << " matches.");
+    LOG_INFO( m_logger, "Found " << matches.size() << " matches.");
   }
 
   double scale_thresh;
   double angle_thresh;
   double radius_thresh;
+
+  vital::logger_handle_t m_logger;
 };
 
 
@@ -186,14 +189,14 @@ match_features_constrained
 }
 
 
-/// Get this algorithm's \link maptk::config_block configuration block \endlink
-config_block_sptr
+/// Get this algorithm's \link vital::config_block configuration block \endlink
+vital::config_block_sptr
 match_features_constrained
 ::get_configuration() const
 {
   // get base config from base class
-  config_block_sptr config =
-      maptk::algo::match_features::get_configuration();
+  vital::config_block_sptr config =
+      vital::algo::match_features::get_configuration();
 
   config->set_value("scale_thresh", d_->scale_thresh,
                     "Ratio threshold of scales between matching keypoints (>=1.0)"
@@ -213,7 +216,7 @@ match_features_constrained
 /// Set this algorithm's properties via a config block
 void
 match_features_constrained
-::set_configuration(config_block_sptr config)
+::set_configuration(vital::config_block_sptr config)
 {
   d_->scale_thresh = config->get_value<double>("scale_thresh", d_->scale_thresh);
   d_->angle_thresh = config->get_value<double>("angle_thresh", d_->angle_thresh);
@@ -221,21 +224,21 @@ match_features_constrained
 }
 
 
-/// Check that the algorithm's configuration config_block is valid
+/// Check that the algorithm's configuration vital::config_block is valid
 bool
 match_features_constrained
-::check_configuration(config_block_sptr config) const
+::check_configuration(vital::config_block_sptr config) const
 {
   double radius_thresh = config->get_value<double>("radius_thresh", d_->radius_thresh);
   if (radius_thresh <= 0.0)
   {
-    LOG_ERROR( LOGGING_PREFIX, "radius_thresh should be > 0.0, is " << radius_thresh);
+    LOG_ERROR( d_->m_logger, "radius_thresh should be > 0.0, is " << radius_thresh);
     return false;
   }
   double scale_thresh = config->get_value<double>("scale_thresh", d_->scale_thresh);
   if (scale_thresh < 1.0 && scale_thresh >= 0.0)
   {
-    LOG_ERROR( LOGGING_PREFIX, "scale_thresh should be >= 1.0 (or < 0.0 to disable), is "
+    LOG_ERROR( d_->m_logger, "scale_thresh should be >= 1.0 (or < 0.0 to disable), is "
                                << scale_thresh);
     return false;
   }
@@ -245,22 +248,23 @@ match_features_constrained
 
 
 /// Match one set of features and corresponding descriptors to another
-match_set_sptr
+vital::match_set_sptr
 match_features_constrained
-::match(feature_set_sptr feat1, descriptor_set_sptr desc1,
-        feature_set_sptr feat2, descriptor_set_sptr desc2) const
+::match(vital::feature_set_sptr feat1, vital::descriptor_set_sptr desc1,
+        vital::feature_set_sptr feat2, vital::descriptor_set_sptr desc2) const
 {
   if( !feat1 || !feat2 || !desc1 || !desc2 )
   {
     return match_set_sptr();
   }
 
-  std::vector<maptk::match> matches;
+  std::vector<vital::match> matches;
   d_->match(feat1, desc1, feat2, desc2, matches);
 
-  return boost::make_shared<maptk::simple_match_set>(maptk::simple_match_set(matches));
+  return std::make_shared<vital::simple_match_set>(vital::simple_match_set(matches));
 }
 
 } // end namespace vxl
 
 } // end namespace maptk
+} // end namespace kwiver

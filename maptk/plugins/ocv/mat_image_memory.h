@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,22 +36,24 @@
 #ifndef MAPTK_PLUGINS_OCV_MAT_IMAGE_MEMORY_H_
 #define MAPTK_PLUGINS_OCV_MAT_IMAGE_MEMORY_H_
 
-#include <maptk/image.h>
 
-#include <maptk/plugins/ocv/ocv_config.h>
+#include <vital/vital_config.h>
+#include <maptk/plugins/ocv/maptk_ocv_export.h>
+
+#include <vital/types/image.h>
 
 #include <opencv2/core/core.hpp>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
 
 /// An image memory class that shares memory with OpenCV using reference counting
 class MAPTK_OCV_EXPORT mat_image_memory
-  : public image_memory
+  : public vital::image_memory
 {
 public:
   /// Constructor - allocates n bytes
@@ -78,6 +80,7 @@ protected:
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_OCV_MAT_IMAGE_MEMORY_H_

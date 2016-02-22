@@ -35,40 +35,40 @@
 
 #include "estimate_homography.h"
 
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
 
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/core/eigen.hpp>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
 
 
 /// Estimate a homography matrix from corresponding points
-homography_sptr
+vital::homography_sptr
 estimate_homography
-::estimate(const std::vector<vector_2d>& pts1,
-           const std::vector<vector_2d>& pts2,
+::estimate(const std::vector<vital::vector_2d>& pts1,
+           const std::vector<vital::vector_2d>& pts2,
            std::vector<bool>& inliers,
            double inlier_scale) const
 {
   if (pts1.size() < 4 || pts2.size() < 4)
   {
     std::cerr << "Not enough points to estimate a homography" <<std::endl;
-    return homography_sptr();
+    return vital::homography_sptr();
   }
 
   std::vector<cv::Point2f> points1, points2;
-  BOOST_FOREACH(const vector_2d& v, pts1)
+  VITAL_FOREACH(const vital::vector_2d& v, pts1)
   {
     points1.push_back(cv::Point2f(static_cast<float>(v.x()),
                                   static_cast<float>(v.y())));
   }
-  BOOST_FOREACH(const vector_2d& v, pts2)
+  VITAL_FOREACH(const vital::vector_2d& v, pts2)
   {
     points2.push_back(cv::Point2f(static_cast<float>(v.x()),
                                   static_cast<float>(v.y())));
@@ -80,17 +80,18 @@ estimate_homography
                                   inlier_scale,
                                   inliers_mat );
   inliers.resize(inliers_mat.rows);
-  for(unsigned i=0; i<inliers.size(); ++i)
+  for(unsigned i = 0; i < inliers.size(); ++i)
   {
     inliers[i] = inliers_mat.at<bool>(i);
   }
 
-  matrix_3x3d H_mat;
+  vital::matrix_3x3d H_mat;
   cv2eigen(H, H_mat);
-  return homography_sptr( new homography_<double>(H_mat) );
+  return vital::homography_sptr( new vital::homography_<double>(H_mat) );
 }
 
 
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver

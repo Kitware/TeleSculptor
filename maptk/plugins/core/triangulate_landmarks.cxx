@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,14 +37,14 @@
 
 #include <set>
 
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
+#include <vital/logger/logger.h>
 
 #include <maptk/triangulate.h>
-#include <maptk/logging_macros.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
@@ -56,17 +56,21 @@ class triangulate_landmarks::priv
 public:
   /// Constructor
   priv()
-    : homogeneous(false)
+    : homogeneous(false),
+      m_logger( vital::get_logger( "triangulate_landmarks" ))
   {
   }
 
   priv(const priv& other)
-    : homogeneous(other.homogeneous)
+    : homogeneous(other.homogeneous),
+      m_logger( vital::get_logger( "triangulate_landmarks" ))
   {
   }
 
   /// use the homogeneous method for triangulation
   bool homogeneous;
+  /// logger handle
+  vital::logger_handle_t m_logger;
 };
 
 
@@ -93,13 +97,14 @@ triangulate_landmarks
 }
 
 
-/// Get this algorithm's \link maptk::config_block configuration block \endlink
-config_block_sptr
+/// Get this alg's \link vital::config_block configuration block \endlink
+vital::config_block_sptr
 triangulate_landmarks
 ::get_configuration() const
 {
   // get base config from base class
-  config_block_sptr config = maptk::algo::triangulate_landmarks::get_configuration();
+  vital::config_block_sptr config
+    = vital::algo::triangulate_landmarks::get_configuration();
 
   // Bad frame detection parameters
   config->set_value("homogeneous", d_->homogeneous,
@@ -114,11 +119,11 @@ triangulate_landmarks
 /// Set this algorithm's properties via a config block
 void
 triangulate_landmarks
-::set_configuration(config_block_sptr in_config)
+::set_configuration(vital::config_block_sptr in_config)
 {
   // Starting with our generated config_block to ensure that assumed values are present
   // An alternative is to check for key presence before performing a get_value() call.
-  config_block_sptr config = this->get_configuration();
+  vital::config_block_sptr config = this->get_configuration();
   config->merge_config(in_config);
 
   // Settings for bad frame detection
@@ -129,7 +134,7 @@ triangulate_landmarks
 /// Check that the algorithm's currently configuration is valid
 bool
 triangulate_landmarks
-::check_configuration(config_block_sptr config) const
+::check_configuration(vital::config_block_sptr config) const
 {
   return true;
 }
@@ -138,36 +143,37 @@ triangulate_landmarks
 /// Triangulate the landmark locations given sets of cameras and tracks
 void
 triangulate_landmarks
-::triangulate(camera_map_sptr cameras,
-              track_set_sptr tracks,
-              landmark_map_sptr& landmarks) const
+::triangulate(vital::camera_map_sptr cameras,
+              vital::track_set_sptr tracks,
+              vital::landmark_map_sptr& landmarks) const
 {
+  using namespace kwiver;
   if( !cameras || !landmarks || !tracks )
   {
     // TODO throw an exception for missing input data
     return;
   }
-  typedef maptk::camera_map::map_camera_t map_camera_t;
-  typedef maptk::landmark_map::map_landmark_t map_landmark_t;
+  typedef vital::camera_map::map_camera_t map_camera_t;
+  typedef vital::landmark_map::map_landmark_t map_landmark_t;
 
   // extract data from containers
   map_camera_t cams = cameras->cameras();
   map_landmark_t lms = landmarks->landmarks();
-  std::vector<track_sptr> trks = tracks->tracks();
+  std::vector<vital::track_sptr> trks = tracks->tracks();
 
   // build a track map by id
-  typedef std::map<track_id_t, track_sptr> track_map_t;
+  typedef std::map<vital::track_id_t, vital::track_sptr> track_map_t;
   track_map_t track_map;
-  BOOST_FOREACH(const track_sptr& t, trks)
+  VITAL_FOREACH(const vital::track_sptr& t, trks)
   {
     track_map[t->id()] = t;
   }
 
   // the set of landmark ids which failed to triangulate
-  std::set<landmark_id_t> failed_landmarks;
+  std::set<vital::landmark_id_t> failed_landmarks;
 
   map_landmark_t triangulated_lms;
-  BOOST_FOREACH(const map_landmark_t::value_type& p, lms)
+  VITAL_FOREACH(const map_landmark_t::value_type& p, lms)
   {
     // get the corresponding track
     track_map_t::const_iterator t_itr = track_map.find(p.first);
@@ -176,13 +182,14 @@ triangulate_landmarks
       // there is no track for the provided landmark
       continue;
     }
-    const track& t = *t_itr->second;
+    const vital::track& t = *t_itr->second;
 
     // extract the cameras and image points for this landmarks
-    std::vector<camera_d> lm_cams;
-    std::vector<vector_2d> lm_image_pts;
+    std::vector<vital::simple_camera> lm_cams;
+    std::vector<vital::vector_2d> lm_image_pts;
 
-    for (track::history_const_itr tsi = t.begin(); tsi != t.end(); ++tsi)
+    auto lm_observations = unsigned{0};
+    for (vital::track::history_const_itr tsi = t.begin(); tsi != t.end(); ++tsi)
     {
       if (!tsi->feat)
       {
@@ -195,18 +202,19 @@ triangulate_landmarks
         // there is no camera for this track state.
         continue;
       }
-      lm_cams.push_back(camera_d(*c_itr->second));
+      lm_cams.push_back(vital::simple_camera(*c_itr->second));
       lm_image_pts.push_back(tsi->feat->loc());
+      ++lm_observations;
     }
 
     // if we found at least two views of this landmark, triangulate
     if (lm_cams.size() > 1)
     {
       bool bad_triangulation = false;
-      vector_3d pt3d;
+      vital::vector_3d pt3d;
       if (d_->homogeneous)
       {
-        vector_4d pt4d = triangulate_homog(lm_cams, lm_image_pts);
+        vital::vector_4d pt4d = triangulate_homog(lm_cams, lm_image_pts);
         if (std::abs(pt4d[3]) < 1e-6)
         {
           bad_triangulation = true;
@@ -218,7 +226,7 @@ triangulate_landmarks
       {
         pt3d = triangulate_inhomog(lm_cams, lm_image_pts);
       }
-      BOOST_FOREACH(camera_d const& cam, lm_cams)
+      VITAL_FOREACH(vital::simple_camera const& cam, lm_cams)
       {
         if(cam.depth(pt3d) < 0.0)
         {
@@ -229,21 +237,24 @@ triangulate_landmarks
       }
       if( !bad_triangulation )
       {
-        landmark_d* lm = new landmark_d(pt3d);
-        triangulated_lms[p.first] = landmark_sptr(lm);
+        auto lm = std::make_shared<vital::landmark_d>(*p.second);
+        lm->set_loc(pt3d);
+        lm->set_observations(lm_observations);
+        triangulated_lms[p.first] = lm;
       }
     }
   }
   if( !failed_landmarks.empty() )
   {
-    LOG_WARN( "core::triangulate_landmarks",
+    LOG_WARN( d_->m_logger,
               "failed to triangulate " << failed_landmarks.size()
               << " of " << lms.size() << " landmarks");
   }
-  landmarks = landmark_map_sptr(new simple_landmark_map(triangulated_lms));
+  landmarks = vital::landmark_map_sptr(new vital::simple_landmark_map(triangulated_lms));
 }
 
 
 } // end namespace core
 
 } // end namespace maptk
+} // end namespace kwiver

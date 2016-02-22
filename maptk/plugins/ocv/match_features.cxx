@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,9 +44,10 @@
 
 #include <opencv2/features2d/features2d.hpp>
 
+using namespace kwiver::vital;
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
@@ -147,12 +148,12 @@ match_features
 }
 
 
-/// Get this algorithm's \link maptk::config_block configuration block \endlink
-config_block_sptr
+/// Get this algorithm's \link vital::config_block configuration block \endlink
+vital::config_block_sptr
 match_features
 ::get_configuration() const
 {
-  config_block_sptr config = algorithm::get_configuration();
+  vital::config_block_sptr config = algorithm::get_configuration();
 
   get_nested_ocv_algo_configuration("matcher", config, d_->matcher);
 
@@ -163,17 +164,17 @@ match_features
 /// Set this algorithm's properties via a config block
 void
 match_features
-::set_configuration(config_block_sptr config)
+::set_configuration(vital::config_block_sptr config)
 {
   set_nested_ocv_algo_configuration(
       "matcher", config, d_->matcher);
 }
 
 
-/// Check that the algorithm's configuration config_block is valid
+/// Check that the algorithm's configuration vital::config_block is valid
 bool
 match_features
-::check_configuration(config_block_sptr config) const
+::check_configuration(vital::config_block_sptr config) const
 {
   bool nested_ok =
     check_nested_ocv_algo_configuration<cv::DescriptorMatcher>(
@@ -184,22 +185,22 @@ match_features
 
 
 /// Match one set of features and corresponding descriptors to another
-match_set_sptr
+vital::match_set_sptr
 match_features
-::match(feature_set_sptr feat1, descriptor_set_sptr desc1,
-        feature_set_sptr feat2, descriptor_set_sptr desc2) const
+::match(vital::feature_set_sptr feat1, vital::descriptor_set_sptr desc1,
+        vital::feature_set_sptr feat2, vital::descriptor_set_sptr desc2) const
 {
   // Return empty match set pointer if either of the input sets were empty
   // pointers
   if( !desc1 || !desc2 )
   {
-    return match_set_sptr();
+    return vital::match_set_sptr();
   }
   // Only perform matching if both pointers are valid and if both descriptor
   // sets contain non-zero elements
   if( !desc1->size() || !desc2->size() )
   {
-    return match_set_sptr( new match_set() );
+    return vital::match_set_sptr( new maptk::ocv::match_set() );
   }
 
   cv::Mat d1 = descriptors_to_ocv_matrix(*desc1);
@@ -213,10 +214,11 @@ match_features
   {
     d_->simple_match(d1, d2, matches);
   }
-  return match_set_sptr(new match_set(matches));
+  return vital::match_set_sptr(new maptk::ocv::match_set(matches));
 }
 
 
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver

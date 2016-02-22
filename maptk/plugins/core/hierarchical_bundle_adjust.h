@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,24 +37,25 @@
 #ifndef MAPTK_PLUGINS_CORE_HIERARCHICAL_BUNDLE_ADJUST_H_
 #define MAPTK_PLUGINS_CORE_HIERARCHICAL_BUNDLE_ADJUST_H_
 
-#include <maptk/algo/algorithm.h>
-#include <maptk/algo/bundle_adjust.h>
-#include <maptk/config_block.h>
+#include <vital/vital_config.h>
+#include <maptk/plugins/core/maptk_core_export.h>
 
-#include <boost/scoped_ptr.hpp>
+#include <vital/algo/algorithm.h>
+#include <vital/algo/bundle_adjust.h>
+#include <vital/config/config_block.h>
 
-#include <maptk/plugins/core/plugin_core_config.h>
+#include <memory>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
 
 
-class PLUGIN_CORE_EXPORT hierarchical_bundle_adjust
-  : public algo::algorithm_impl<hierarchical_bundle_adjust, algo::bundle_adjust>
+class MAPTK_CORE_EXPORT hierarchical_bundle_adjust
+  : public vital::algorithm_impl<hierarchical_bundle_adjust, vital::algo::bundle_adjust>
 {
 public:
 
@@ -63,37 +64,38 @@ public:
   /// Copy constructor
   hierarchical_bundle_adjust(hierarchical_bundle_adjust const& other);
   /// Destructor
-  virtual ~hierarchical_bundle_adjust() MAPTK_NOTHROW;
+  virtual ~hierarchical_bundle_adjust() VITAL_NOTHROW;
 
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "hierarchical"; }
 
-  /// Get this algorithm's \link maptk::config_block configuration block \endlink
-  virtual config_block_sptr get_configuration() const;
+  /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
+  virtual vital::config_block_sptr get_configuration() const;
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(config_block_sptr config);
-  /// Check that the algorithm's configuration config_block is valid
-  virtual bool check_configuration(config_block_sptr config) const;
+  virtual void set_configuration(vital::config_block_sptr config);
+  /// Check that the algorithm's configuration vital::config_block is valid
+  virtual bool check_configuration(vital::config_block_sptr config) const;
 
   /// Optimize the camera and landmark parameters given a set of tracks
-  virtual void optimize(camera_map_sptr & cameras,
-                        landmark_map_sptr & landmarks,
-                        track_set_sptr tracks) const;
+  virtual void optimize(vital::camera_map_sptr & cameras,
+                        vital::landmark_map_sptr & landmarks,
+                        vital::track_set_sptr tracks) const;
 
 private:
   // private implementation class
   class priv;
-  boost::scoped_ptr<priv> d_;
+  std::auto_ptr<priv> d_;
 };
 
 
 /// Type definition for shared pointer for hierarchical_bundle_adjust algorithm
-typedef boost::shared_ptr<hierarchical_bundle_adjust> hierarchical_bundle_adjust_sptr;
+typedef std::shared_ptr<hierarchical_bundle_adjust> hierarchical_bundle_adjust_sptr;
 
 
-} // end core namespace
+} // end namespace core
 
-} // end maptk namespace
+} // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_CORE_HIERARCHICAL_BUNDLE_ADJUST_H_

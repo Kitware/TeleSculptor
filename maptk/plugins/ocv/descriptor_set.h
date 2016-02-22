@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,22 +36,23 @@
 #ifndef MAPTK_PLUGINS_OCV_DESCRIPTOR_SET_H_
 #define MAPTK_PLUGINS_OCV_DESCRIPTOR_SET_H_
 
-#include <maptk/descriptor_set.h>
+#include <vital/vital_config.h>
+#include <maptk/plugins/ocv/maptk_ocv_export.h>
 
-#include <maptk/plugins/ocv/ocv_config.h>
+#include <vital/types/descriptor_set.h>
 
 #include <opencv2/features2d/features2d.hpp>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
 
 /// A concrete descriptor set that wraps OpenCV descriptors.
 class MAPTK_OCV_EXPORT descriptor_set
-  : public maptk::descriptor_set
+  : public vital::descriptor_set
 {
 public:
   /// Default Constructor
@@ -65,7 +66,7 @@ public:
   virtual size_t size() const { return data_.rows; }
 
   /// Return a vector of descriptor shared pointers
-  virtual std::vector<descriptor_sptr> descriptors() const;
+  virtual std::vector<vital::descriptor_sptr> descriptors() const;
 
   /// Return the native OpenCV descriptors as a matrix
   const cv::Mat& ocv_desc_matrix() const { return data_; }
@@ -82,12 +83,13 @@ protected:
  * \param desc_set descriptors to convert to cv::mat
  */
 MAPTK_OCV_EXPORT cv::Mat
-descriptors_to_ocv_matrix(const maptk::descriptor_set& desc_set);
+descriptors_to_ocv_matrix(const vital::descriptor_set& desc_set);
 
 
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_OCV_DESCRIPTOR_SET_H_

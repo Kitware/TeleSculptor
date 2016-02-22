@@ -33,8 +33,8 @@
 #include <maptk/plugins/viscl/image_container.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vcl
 {
@@ -54,13 +54,15 @@ convert_image
 }
 
 /// Image convert to viscl underlying type
-image_container_sptr
+vital::image_container_sptr
 convert_image
-::convert(image_container_sptr img) const
+::convert(vital::image_container_sptr img) const
 {
-  return boost::shared_ptr<image_container>(new image_container(*img));
+  // make new viscl image container
+  return std::shared_ptr<image_container>(new image_container(*img));
 }
 
 } // end namespace vcl
 
 } // end namespace maptk
+} // end namespace kwiver

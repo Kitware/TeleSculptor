@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,15 +31,18 @@
 #ifndef MAPTK_PLUGINS_VISCL_FEATURE_SET_H_
 #define MAPTK_PLUGINS_VISCL_FEATURE_SET_H_
 
-#include <maptk/feature_set.h>
-#include <maptk/plugins/viscl/viscl_config.h>
+
+#include <vital/vital_config.h>
+#include <maptk/plugins/viscl/maptk_viscl_export.h>
+
+#include <vital/types/feature_set.h>
 
 #include <viscl/core/buffer.h>
 #include <viscl/core/image.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vcl
 {
@@ -51,7 +54,7 @@ namespace vcl
   * saved on the GPU so would have to be provided externally
   */
 class MAPTK_VISCL_EXPORT feature_set
-: public maptk::feature_set
+: public vital::feature_set
 {
 public:
 
@@ -76,7 +79,7 @@ public:
   virtual size_t size() const;
 
   /// Return a vector of feature shared pointers
-  virtual std::vector<feature_sptr> features() const;
+  virtual std::vector<vital::feature_sptr> features() const;
 
   /// Return the underlying VisCL features data structure
   const type& viscl_features() const { return data_; }
@@ -93,12 +96,13 @@ protected:
   * info converting from maptk feature set to viscl and back
   */
 MAPTK_VISCL_EXPORT feature_set::type
-features_to_viscl(const maptk::feature_set& features);
+features_to_viscl(const vital::feature_set& features);
 
 
 } // end namespace vcl
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_VISCL_FEATURE_SET_H_

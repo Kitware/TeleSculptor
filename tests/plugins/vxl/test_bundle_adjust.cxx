@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,14 +36,13 @@
 #include <test_common.h>
 #include <test_scene.h>
 
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
+#include <vital/algorithm_plugin_manager.h>
 
 #include <maptk/metrics.h>
-#include <maptk/algorithm_plugin_manager.h>
+#include <maptk/projected_track_set.h>
 #include <maptk/plugins/vxl/bundle_adjust.h>
 #include <maptk/plugins/vxl/register_algorithms.h>
-#include <maptk/projected_track_set.h>
-
 
 #define TEST_ARGS ()
 
@@ -57,17 +56,18 @@ main(int argc, char* argv[])
   // VXL algorithm implementations
   // Since we're only linking to the MAPTK-VXL library, there is no symbol
   //    confliction.
-  maptk::vxl::register_algorithms();
+  kwiver::maptk::vxl::register_algorithms();
 
   testname_t const testname = argv[1];
 
   RUN_TEST(testname);
 }
 
+using namespace kwiver::vital;
 
 IMPLEMENT_TEST(create)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   algo::bundle_adjust_sptr ba = algo::bundle_adjust::create("vxl");
   if (!ba)
   {
@@ -79,9 +79,9 @@ IMPLEMENT_TEST(create)
 // input to SBA is the ideal solution, make sure it doesn't diverge
 IMPLEMENT_TEST(from_solution)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   vxl::bundle_adjust ba;
-  config_block_sptr cfg = ba.get_configuration();
+  kwiver::vital::config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
   ba.set_configuration(cfg);
 
@@ -115,9 +115,9 @@ IMPLEMENT_TEST(from_solution)
 // add noise to landmarks before input to SBA
 IMPLEMENT_TEST(noisy_landmarks)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   vxl::bundle_adjust ba;
-  config_block_sptr cfg = ba.get_configuration();
+  kwiver::vital::config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
   cfg->set_value("g_tolerance", "1e-12");
   ba.set_configuration(cfg);
@@ -156,9 +156,9 @@ IMPLEMENT_TEST(noisy_landmarks)
 // add noise to landmarks and cameras before input to SBA
 IMPLEMENT_TEST(noisy_landmarks_noisy_cameras)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   vxl::bundle_adjust ba;
-  config_block_sptr cfg = ba.get_configuration();
+  kwiver::vital::config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
   cfg->set_value("g_tolerance", "1e-12");
   ba.set_configuration(cfg);
@@ -200,9 +200,9 @@ IMPLEMENT_TEST(noisy_landmarks_noisy_cameras)
 // initialize all landmarks to the origin as input to SBA
 IMPLEMENT_TEST(zero_landmarks)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   vxl::bundle_adjust ba;
-  config_block_sptr cfg = ba.get_configuration();
+  kwiver::vital::config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
   cfg->set_value("g_tolerance", "1e-12");
   ba.set_configuration(cfg);
@@ -242,9 +242,9 @@ IMPLEMENT_TEST(zero_landmarks)
 // initialize all landmarks to the origin and all cameras to same location as input to SBA
 IMPLEMENT_TEST(zero_landmarks_same_cameras)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   vxl::bundle_adjust ba;
-  config_block_sptr cfg = ba.get_configuration();
+  kwiver::vital::config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
   cfg->set_value("g_tolerance", "1e-12");
   ba.set_configuration(cfg);
@@ -289,9 +289,9 @@ IMPLEMENT_TEST(zero_landmarks_same_cameras)
 // select a subset of cameras to optimize
 IMPLEMENT_TEST(subset_cameras)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   vxl::bundle_adjust ba;
-  config_block_sptr cfg = ba.get_configuration();
+  kwiver::vital::config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
   cfg->set_value("g_tolerance", "1e-12");
   ba.set_configuration(cfg);
@@ -313,7 +313,7 @@ IMPLEMENT_TEST(subset_cameras)
 
   camera_map::map_camera_t cam_map = cameras0->cameras();
   camera_map::map_camera_t cam_map2;
-  BOOST_FOREACH(camera_map::map_camera_t::value_type& p, cam_map)
+  VITAL_FOREACH(camera_map::map_camera_t::value_type& p, cam_map)
   {
     /// take every third camera
     if(p.first % 3 == 0)
@@ -348,9 +348,9 @@ IMPLEMENT_TEST(subset_cameras)
 // select a subset of landmarks to optimize
 IMPLEMENT_TEST(subset_landmarks)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   vxl::bundle_adjust ba;
-  config_block_sptr cfg = ba.get_configuration();
+  kwiver::vital::config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
   cfg->set_value("g_tolerance", "1e-12");
   ba.set_configuration(cfg);
@@ -401,9 +401,9 @@ IMPLEMENT_TEST(subset_landmarks)
 // select a subset of tracks/track_states to constrain the problem
 IMPLEMENT_TEST(subset_tracks)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   vxl::bundle_adjust ba;
-  config_block_sptr cfg = ba.get_configuration();
+  kwiver::vital::config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
   cfg->set_value("g_tolerance", "1e-12");
   ba.set_configuration(cfg);
@@ -449,9 +449,9 @@ IMPLEMENT_TEST(subset_tracks)
 // select a subset of tracks/track_states to constrain the problem
 IMPLEMENT_TEST(noisy_tracks)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   vxl::bundle_adjust ba;
-  config_block_sptr cfg = ba.get_configuration();
+  kwiver::vital::config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
   cfg->set_value("g_tolerance", "1e-12");
   ba.set_configuration(cfg);

@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,22 +36,23 @@
 #ifndef MAPTK_PLUGINS_OCV_ANALYZE_TRACKS_H_
 #define MAPTK_PLUGINS_OCV_ANALYZE_TRACKS_H_
 
-#include <boost/scoped_ptr.hpp>
 
-#include <maptk/algo/analyze_tracks.h>
+#include <vital/vital_config.h>
+#include <maptk/plugins/ocv/maptk_ocv_export.h>
 
-#include <maptk/plugins/ocv/ocv_config.h>
+#include <vital/algo/analyze_tracks.h>
 
+#include <memory>
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
 
 /// A class for outputting various debug info about feature tracks
 class MAPTK_OCV_EXPORT analyze_tracks
-: public algo::algorithm_impl<analyze_tracks, algo::analyze_tracks>
+: public vital::algorithm_impl<analyze_tracks, vital::algo::analyze_tracks>
 {
 public:
 
@@ -67,12 +68,12 @@ public:
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "ocv"; }
 
-  /// Get this algorithm's \link maptk::config_block configuration block \endlink
-  virtual config_block_sptr get_configuration() const;
+  /// Get this algorithm's \link vital::config_block configuration block \endlink
+  virtual vital::config_block_sptr get_configuration() const;
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(config_block_sptr config);
+  virtual void set_configuration(vital::config_block_sptr config);
   /// Check that the algorithm's currently configuration is valid
-  virtual bool check_configuration(config_block_sptr config) const;
+  virtual bool check_configuration(vital::config_block_sptr config) const;
 
   /// Output various information about the tracks stored in the input set.
   /**
@@ -80,20 +81,21 @@ public:
    * \param [in] stream an output stream to write data onto
    */
   virtual void
-  print_info(track_set_sptr track_set,
+  print_info(vital::track_set_sptr track_set,
              stream_t& stream = std::cout) const;
 
 private:
 
   /// private implementation class
   class priv;
-  boost::scoped_ptr<priv> d_;
+  const std::unique_ptr<priv> d_;
 };
 
 
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_OCV_ANALYZE_TRACKS_H_

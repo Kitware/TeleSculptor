@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,20 +35,21 @@
 
 #include <viscl/core/manager.h>
 
+#include <memory>
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vcl
 {
 
 
 /// Return a vector of feature shared pointers
-std::vector<feature_sptr>
+std::vector<vital::feature_sptr>
 feature_set
 ::features() const
 {
-  std::vector<feature_sptr> features;
+  std::vector<vital::feature_sptr> features;
 
   unsigned int numkpts = size();
   viscl::cl_queue_t queue = viscl::manager::inst()->create_queue();
@@ -60,9 +61,9 @@ feature_set
   //These features only have locations set for them
   for (unsigned int i = 0; i < numkpts; i++)
   {
-    feature_f *f = new feature_f();
-    f->set_loc(vector_2f(kpts[i].s[0], kpts[i].s[1]));
-    features.push_back(feature_sptr(f));
+    vital::feature_f *f = new vital::feature_f();
+    f->set_loc(vital::vector_2f(kpts[i].s[0], kpts[i].s[1]));
+    features.push_back(vital::feature_sptr(f));
   }
 
   return features;
@@ -71,7 +72,7 @@ feature_set
 
 // Convert any feature set to a VisCL data (upload if needed)
 feature_set::type
-features_to_viscl(const maptk::feature_set& features)
+features_to_viscl(const vital::feature_set& features)
 {
   //if already on GPU in VisCL format, then access it
   if( const vcl::feature_set* f =
@@ -103,13 +104,13 @@ features_to_viscl(const maptk::feature_set& features)
   queue->enqueueWriteBuffer(*fs.numfeat_().get(), CL_TRUE, 0, fs.numfeat_.mem_size(), numfeat);
 
   //write features
-  std::vector<feature_sptr> feat = features.features();
+  std::vector<vital::feature_sptr> feat = features.features();
   cl_int2 *buf = new cl_int2[features.size()];
-  typedef std::vector<feature_sptr>::const_iterator feat_itr;
+  typedef std::vector<vital::feature_sptr>::const_iterator feat_itr;
   unsigned int j = 0;
   for(feat_itr it = feat.begin(); it != feat.end(); ++it, j++)
   {
-    const feature_sptr f = *it;
+    const vital::feature_sptr f = *it;
 
     cl_int2 kp;
     kp.s[0] = static_cast<int>(f->loc()[0]);
@@ -125,7 +126,7 @@ features_to_viscl(const maptk::feature_set& features)
   queue->finish();
 
   cl::ImageFormat kptimg_fmt(CL_R, CL_SIGNED_INT32);
-  fs.kptmap_ = viscl::image(boost::make_shared<cl::Image2D>(
+  fs.kptmap_ = viscl::image(std::make_shared<cl::Image2D>(
                             viscl::manager::inst()->get_context(),
                             CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
                             kptimg_fmt,
@@ -154,3 +155,4 @@ feature_set
 } // end namespace vcl
 
 } // end namespace maptk
+} // end namespace kwiver

@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,19 +36,19 @@
 #ifndef MAPTK_METRICS_H_
 #define MAPTK_METRICS_H_
 
-#include <maptk/config.h>
+#include <vital/vital_config.h>
+#include <maptk/maptk_export.h>
 
-#include "camera.h"
-#include "landmark.h"
-#include "feature.h"
-#include "track.h"
+#include <vital/types/camera.h>
+#include <vital/types/landmark.h>
+#include <vital/types/feature.h>
+#include <vital/types/track.h>
 #include <vector>
 #include <map>
 #include <cmath>
 
-namespace maptk
-{
-
+namespace kwiver {
+namespace maptk {
 
 /// Compute the reprojection error vector of lm projected by cam compared to f
 /**
@@ -57,10 +57,10 @@ namespace maptk
  * \param [in] f is the measured feature point location
  * \returns the vector between the projected lm and f in image space
  */
-MAPTK_LIB_EXPORT
-vector_2d reprojection_error_vec(const camera& cam,
-                                 const landmark& lm,
-                                 const feature& f);
+MAPTK_EXPORT
+vital::vector_2d reprojection_error_vec(const vital::camera& cam,
+                                 const vital::landmark& lm,
+                                 const vital::feature& f);
 
 
 /// Compute the square reprojection error of lm projected by cam compared to f
@@ -72,9 +72,9 @@ vector_2d reprojection_error_vec(const camera& cam,
  */
 inline
 double
-reprojection_error_sqr(const camera& cam,
-                       const landmark& lm,
-                       const feature& f)
+reprojection_error_sqr(const vital::camera& cam,
+                       const vital::landmark& lm,
+                       const vital::feature& f)
 {
   return reprojection_error_vec(cam, lm, f).squaredNorm();
 }
@@ -89,9 +89,9 @@ reprojection_error_sqr(const camera& cam,
  */
 inline
 double
-reprojection_error(const camera& cam,
-                   const landmark& lm,
-                   const feature& f)
+reprojection_error(const vital::camera& cam,
+                   const vital::landmark& lm,
+                   const vital::feature& f)
 {
   return std::sqrt(reprojection_error_sqr(cam, lm, f));
 }
@@ -105,11 +105,11 @@ reprojection_error(const camera& cam,
  * \returns a vector containing one reprojection error for each observation
  *          (i.e. track state) that has a corresponding camera and landmark
  */
-MAPTK_LIB_EXPORT
+MAPTK_EXPORT
 std::vector<double>
-reprojection_errors(const std::map<frame_id_t, camera_sptr>& cameras,
-                    const std::map<landmark_id_t, landmark_sptr>& landmarks,
-                    const std::vector<track_sptr>& tracks);
+reprojection_errors(const std::map<vital::frame_id_t, vital::camera_sptr>& cameras,
+                    const std::map<vital::landmark_id_t, vital::landmark_sptr>& landmarks,
+                    const std::vector< vital::track_sptr>& tracks);
 
 
 /// Compute the Root-Mean-Square-Error (RMSE) of the reprojections
@@ -120,11 +120,11 @@ reprojection_errors(const std::map<frame_id_t, camera_sptr>& cameras,
  * \returns the RMSE between all landmarks projected by all cameras that have
  *          corresponding image measurements provided by the tracks
  */
-MAPTK_LIB_EXPORT
+MAPTK_EXPORT
 double
-reprojection_rmse(const std::map<frame_id_t, camera_sptr>& cameras,
-                  const std::map<landmark_id_t, landmark_sptr>& landmarks,
-                  const std::vector<track_sptr>& tracks);
+reprojection_rmse(const std::map<vital::frame_id_t, vital::camera_sptr>& cameras,
+                  const std::map<vital::landmark_id_t, vital::landmark_sptr>& landmarks,
+                  const std::vector<vital::track_sptr>& tracks);
 
 
 /// Compute the median of the reprojection errors
@@ -136,14 +136,31 @@ reprojection_rmse(const std::map<frame_id_t, camera_sptr>& cameras,
  *          all cameras that have corresponding image measurements provided
  *          by the tracks
  */
-MAPTK_LIB_EXPORT
+MAPTK_EXPORT
 double
-reprojection_median_error(const std::map<frame_id_t, camera_sptr>& cameras,
-                          const std::map<landmark_id_t, landmark_sptr>& landmarks,
-                          const std::vector<track_sptr>& tracks);
+reprojection_median_error(const std::map<vital::frame_id_t, vital::camera_sptr>& cameras,
+                          const std::map<vital::landmark_id_t, vital::landmark_sptr>& landmarks,
+                          const std::vector<vital::track_sptr>& tracks);
+
+
+/// Compute the median of the reprojection errors
+/**
+ * \param [in] cameras is the map of frames/cameras used for projection
+ * \param [in] landmarks is the map ids/landmarks projected into the cameras
+ * \param [in] tracks is the set of tracks providing measurements
+ * \returns the median reprojection error between all landmarks projected by
+ *          all cameras that have corresponding image measurements provided
+ *          by the tracks
+ */
+MAPTK_EXPORT
+double
+reprojection_median_error(const std::map<vital::frame_id_t, vital::camera_sptr>& cameras,
+                          const std::map<vital::landmark_id_t, vital::landmark_sptr>& landmarks,
+                          const std::vector<vital::track_sptr>& tracks);
 
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_METRICS_H_

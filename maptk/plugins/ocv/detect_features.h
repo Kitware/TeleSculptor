@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,22 +36,23 @@
 #ifndef MAPTK_PLUGINS_OCV_DETECT_FEATURES_H_
 #define MAPTK_PLUGINS_OCV_DETECT_FEATURES_H_
 
-#include <boost/scoped_ptr.hpp>
 
-#include <maptk/algo/detect_features.h>
+#include <vital/vital_config.h>
+#include <maptk/plugins/ocv/maptk_ocv_export.h>
 
-#include <maptk/plugins/ocv/ocv_config.h>
+#include <vital/algo/detect_features.h>
 
+#include <memory>
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
 
 /// An algorithm class for detecting feature points using OpenCV
 class MAPTK_OCV_EXPORT detect_features
-  : public algo::algorithm_impl<detect_features, algo::detect_features>
+  : public vital::algorithm_impl<detect_features, vital::algo::detect_features>
 {
 public:
   /// Constructor
@@ -66,12 +67,12 @@ public:
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "ocv"; }
 
-  /// Get this algorithm's \link maptk::config_block configuration block \endlink
-  virtual config_block_sptr get_configuration() const;
+  /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
+  virtual vital::config_block_sptr get_configuration() const;
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(config_block_sptr config);
-  /// Check that the algorithm's configuration config_block is valid
-  virtual bool check_configuration(config_block_sptr config) const;
+  virtual void set_configuration(vital::config_block_sptr config);
+  /// Check that the algorithm's configuration vital::config_block is valid
+  virtual bool check_configuration(vital::config_block_sptr config) const;
 
   /// Extract a set of image features from the provided image
   /**
@@ -85,19 +86,20 @@ public:
    *             considered.
    * \returns a set of image features
    */
-  virtual feature_set_sptr
-  detect(image_container_sptr image_data,
-         image_container_sptr mask = image_container_sptr()) const;
+  virtual vital::feature_set_sptr
+  detect(vital::image_container_sptr image_data,
+         vital::image_container_sptr mask = vital::image_container_sptr()) const;
 
 private:
   /// private implementation class
   class priv;
-  boost::scoped_ptr<priv> d_;
+  const std::unique_ptr<priv> d_;
 };
 
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_OCV_DETECT_FEATURES_H_

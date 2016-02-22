@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2015-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,22 +36,24 @@
 #ifndef MAPTK_PLUGINS_CERES_REGISTER_ALGORITHMS_H_
 #define MAPTK_PLUGINS_CERES_REGISTER_ALGORITHMS_H_
 
-#include <maptk/plugins/ceres/ceres_config.h>
-#include <maptk/registrar.h>
+#include <vital/vital_config.h>
+#include <maptk/plugins/ceres/maptk_ceres_export.h>
+
+#include <vital/registrar.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
-namespace ceres
-{
+namespace ceres {
 
 /// Register CERES algorithm implementations with the given or global registrar
 MAPTK_CERES_EXPORT
-int register_algorithms( maptk::registrar &reg = maptk::registrar::instance() );
+int register_algorithms( vital::registrar &reg = vital::registrar::instance() );
 
-} // end ceres namespace
+} // end namespace ceres
 
-} // end maptk namespace
+} // end namespace maptk
+} // end namespace kwiver
 
 #endif // MAPTK_PLUGINS_CERES_REGISTER_ALGORITHMS_H_

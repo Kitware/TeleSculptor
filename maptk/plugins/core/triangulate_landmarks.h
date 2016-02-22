@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,22 +36,25 @@
 #ifndef MAPTK_PLUGINS_CORE_TRIANGULATE_LANDMARKS_H_
 #define MAPTK_PLUGINS_CORE_TRIANGULATE_LANDMARKS_H_
 
-#include <boost/scoped_ptr.hpp>
 
-#include <maptk/algo/triangulate_landmarks.h>
-#include <maptk/plugins/core/plugin_core_config.h>
+#include <vital/vital_config.h>
+#include <maptk/plugins/core/maptk_core_export.h>
+
+#include <vital/algo/triangulate_landmarks.h>
+
+#include <memory>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
 
 /// A class for triangulating landmarks from tracks and cameras using Eigen
-class PLUGIN_CORE_EXPORT triangulate_landmarks
-: public algo::algorithm_impl<triangulate_landmarks,
-                              algo::triangulate_landmarks>
+class MAPTK_CORE_EXPORT triangulate_landmarks
+: public vital::algorithm_impl<triangulate_landmarks,
+                              vital::algo::triangulate_landmarks>
 {
 public:
   /// Constructor
@@ -66,12 +69,12 @@ public:
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "core"; }
 
-  /// Get this algorithm's \link maptk::config_block configuration block \endlink
-  virtual config_block_sptr get_configuration() const;
-  /// Set this algorithm's properties via a config block
-  virtual void set_configuration(config_block_sptr config);
+  /// Get this alg's \link vital::config_block configuration block \endlink
+  virtual vital::config_block_sptr get_configuration() const;
+  /// Set this algo's properties via a config block
+  virtual void set_configuration(vital::config_block_sptr config);
   /// Check that the algorithm's currently configuration is valid
-  virtual bool check_configuration(config_block_sptr config) const;
+  virtual bool check_configuration(vital::config_block_sptr config) const;
 
   /// Triangulate the landmark locations given sets of cameras and tracks
   /**
@@ -83,20 +86,21 @@ public:
    * landmark map and which have support in the tracks and cameras
    */
   virtual void
-  triangulate(camera_map_sptr cameras,
-              track_set_sptr tracks,
-              landmark_map_sptr& landmarks) const;
+  triangulate(vital::camera_map_sptr cameras,
+              vital::track_set_sptr tracks,
+              vital::landmark_map_sptr& landmarks) const;
 
 private:
   /// private implementation class
   class priv;
-  boost::scoped_ptr<priv> d_;
+  const std::unique_ptr<priv> d_;
 };
 
 
 } // end namespace core
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_CORE_TRIANGULATE_LANDMARKS_H_

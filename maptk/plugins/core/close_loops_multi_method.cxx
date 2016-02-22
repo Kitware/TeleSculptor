@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,20 +43,17 @@
 #include <string>
 #include <vector>
 
-#include <boost/bind.hpp>
-#include <boost/foreach.hpp>
-#include <boost/lexical_cast.hpp>
-
-#include <maptk/algo/algorithm.h>
-#include <maptk/exceptions/algorithm.h>
+#include <vital/algo/algorithm.h>
+#include <vital/exceptions/algorithm.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
 
+using namespace kwiver::vital;
 
 // Return IDs of all methods labels.
 std::vector< std::string >
@@ -66,7 +63,9 @@ method_names( unsigned count )
 
   for( unsigned i = 0; i < count; i++ )
   {
-    output.push_back( "method" + boost::lexical_cast<std::string>( i+1 ) );
+    std::stringstream str;
+    str << "method" << (i+1);
+    output.push_back( str.str() );
   }
 
   return output;
@@ -103,12 +102,12 @@ close_loops_multi_method
 }
 
 
-config_block_sptr
+  vital::config_block_sptr
 close_loops_multi_method
 ::get_configuration() const
 {
   // Get base config from base class
-  config_block_sptr config = algorithm::get_configuration();
+  vital::config_block_sptr config = algorithm::get_configuration();
 
   // Internal parameters
   config->set_value( "count", count_, "Number of close loops methods we want to use." );
@@ -127,11 +126,11 @@ close_loops_multi_method
 
 void
 close_loops_multi_method
-::set_configuration( config_block_sptr in_config )
+::set_configuration( vital::config_block_sptr in_config )
 {
   // Starting with our generated config_block to ensure that assumed values are present
   // An alternative is to check for key presence before performing a get_value() call.
-  config_block_sptr config = this->get_configuration();
+  vital::config_block_sptr config = this->get_configuration();
   config->merge_config( in_config );
 
   // Parse count parameter
@@ -150,7 +149,7 @@ close_loops_multi_method
 
 bool
 close_loops_multi_method
-::check_configuration( config_block_sptr config ) const
+::check_configuration( vital::config_block_sptr config ) const
 {
   std::vector<std::string> method_ids = method_names( config->get_value<unsigned>( "count" ) );
 
@@ -185,3 +184,4 @@ close_loops_multi_method
 } // end namespace core
 
 } // end namespace maptk
+} // end namespace kwiver

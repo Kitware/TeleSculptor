@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2015 by Kitware, Inc.
+ * Copyright 2013-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,15 +36,17 @@
 #ifndef MAPTK_PLUGINS_OCV_IMAGE_CONTAINER_H_
 #define MAPTK_PLUGINS_OCV_IMAGE_CONTAINER_H_
 
+
+#include <vital/vital_config.h>
+#include <maptk/plugins/ocv/maptk_ocv_export.h>
+
 #include <opencv2/core/core.hpp>
 
-#include <maptk/image_container.h>
-
-#include <maptk/plugins/ocv/ocv_config.h>
+#include <vital/types/image_container.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
@@ -52,7 +54,7 @@ namespace ocv
 
 /// This image container wraps a cv::Mat
 class MAPTK_OCV_EXPORT image_container
-  : public maptk::image_container
+  : public vital::image_container
 {
 public:
 
@@ -60,12 +62,12 @@ public:
   explicit image_container(const cv::Mat& d)
   : data_(d) {}
 
-  /// Constructor - convert maptk image to cv::Mat
-  explicit image_container(const image& maptk_image)
+  /// Constructor - convert kwiver image to cv::Mat
+  explicit image_container(const vital::image& maptk_image)
   : data_(maptk_to_ocv(maptk_image)) {}
 
   /// Constructor - convert base image container to cv::Mat
-  explicit image_container(const maptk::image_container& image_cont);
+  explicit image_container(const vital::image_container& image_cont);
 
   /// Copy Constructor
   image_container(const maptk::ocv::image_container& other)
@@ -88,16 +90,16 @@ public:
   virtual size_t depth() const { return data_.channels(); }
 
   /// Get and in-memory image class to access the data
-  virtual image get_image() const { return ocv_to_maptk(data_); }
+  virtual vital::image get_image() const { return ocv_to_maptk(data_); }
 
   /// Access the underlying cv::Mat data structure
   cv::Mat get_Mat() const { return data_; }
 
   /// Convert an OpenCV cv::Mat to a MAPTK image
-  static image ocv_to_maptk(const cv::Mat& img);
+  static vital::image ocv_to_maptk(const cv::Mat& img);
 
   /// Convert a MAPTK image to an OpenCV cv::Mat
-  static cv::Mat maptk_to_ocv(const image& img);
+  static cv::Mat maptk_to_ocv(const vital::image& img);
 
 protected:
   /// image data
@@ -113,12 +115,13 @@ protected:
  *
  * \param img Image container to convert to cv::mat
  */
-MAPTK_OCV_EXPORT cv::Mat image_container_to_ocv_matrix(const maptk::image_container& img);
+MAPTK_OCV_EXPORT cv::Mat image_container_to_ocv_matrix(const vital::image_container& img);
 
 
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_OCV_IMAGE_CONTAINER_H_

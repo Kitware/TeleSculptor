@@ -30,11 +30,11 @@
 
 #include "vtkMaptkCamera.h"
 
-#include <maptk/camera.h>
-#include <maptk/camera_io.h>
+#include <vital/io/camera_io.h>
 
 #include <vtkObjectFactory.h>
 #include <vtkMath.h>
+#include <vtkMatrix4x4.h>
 
 #include <vtksys/SystemTools.hxx>
 
@@ -44,12 +44,12 @@ namespace // anonymous
 {
 
 //-----------------------------------------------------------------------------
-void BuildCamera(vtkMaptkCamera* out, maptk::camera const& in,
-                 maptk::camera_intrinsics_d const& ci)
+void BuildCamera(vtkMaptkCamera* out, kwiver::vital::camera_sptr const& in,
+                 kwiver::vital::camera_intrinsics_sptr const& ci)
 {
   // Get camera parameters
-  auto const pixelAspect = ci.aspect_ratio();
-  auto const focalLength = ci.focal_length();
+  auto const pixelAspect = ci->aspect_ratio();
+  auto const focalLength = ci->focal_length();
 
   int imageWidth, imageHeight;
   out->GetImageDimensions(imageWidth, imageHeight);
@@ -62,11 +62,11 @@ void BuildCamera(vtkMaptkCamera* out, maptk::camera const& in,
   out->SetViewAngle(fov);
 
   // Compute camera vectors from matrix
-  auto const& rotationMatrix = in.rotation().quaternion().toRotationMatrix();
+  auto const& rotationMatrix = in->rotation().quaternion().toRotationMatrix();
 
   auto up = -rotationMatrix.row(1).transpose();
   auto view = rotationMatrix.row(2).transpose();
-  auto center = in.center();
+  auto center = in->center();
 
   out->SetPosition(center[0], center[1], center[2]);
   out->SetViewUp(up[0], up[1], up[2]);
@@ -89,20 +89,27 @@ vtkMaptkCamera::~vtkMaptkCamera()
 }
 
 //-----------------------------------------------------------------------------
-void vtkMaptkCamera::SetCamera(maptk::camera_d const& camera)
+kwiver::vital::camera_sptr vtkMaptkCamera::GetCamera() const
+{
+  return this->MaptkCamera;
+}
+
+//-----------------------------------------------------------------------------
+void vtkMaptkCamera::SetCamera(kwiver::vital::camera_sptr const& camera)
 {
   this->MaptkCamera = camera;
 }
 
 //-----------------------------------------------------------------------------
-bool vtkMaptkCamera::ProjectPoint(maptk::vector_3d const& in, double (&out)[2])
+bool vtkMaptkCamera::ProjectPoint(kwiver::vital::vector_3d const& in,
+                                  double (&out)[2])
 {
-  if (this->MaptkCamera.depth(in) < 0.0)
+  if (this->MaptkCamera->depth(in) < 0.0)
   {
     return false;
   }
 
-  auto const& ppos = this->MaptkCamera.project(in);
+  auto const& ppos = this->MaptkCamera->project(in);
   out[0] = ppos[0];
   out[1] = ppos[1];
   return true;
@@ -111,12 +118,12 @@ bool vtkMaptkCamera::ProjectPoint(maptk::vector_3d const& in, double (&out)[2])
 //-----------------------------------------------------------------------------
 bool vtkMaptkCamera::Update()
 {
-  auto const& ci = this->MaptkCamera.intrinsics();
+  auto const& ci = this->MaptkCamera->intrinsics();
 
   if (this->ImageDimensions[0] == -1 || this->ImageDimensions[1] == -1)
   {
     // Guess image size
-    auto const& s = ci.principal_point() * 2.0;
+    auto const& s = ci->principal_point() * 2.0;
     this->ImageDimensions[0] = s[0];
     this->ImageDimensions[1] = s[1];
   }
@@ -136,6 +143,41 @@ void vtkMaptkCamera::GetFrustumPlanes(double planes[24])
 {
   // Need to add timing (modfied time) logic to determine if need to Update()
   this->Superclass::GetFrustumPlanes(this->AspectRatio, planes);
+}
+
+//-----------------------------------------------------------------------------
+void vtkMaptkCamera::GetTransform(vtkMatrix4x4* out, double const plane[4])
+{
+  // Build camera matrix
+  auto const k = this->MaptkCamera->intrinsics()->as_matrix();
+  auto const t = this->MaptkCamera->translation();
+  auto const r = kwiver::vital::matrix_3x3d(this->MaptkCamera->rotation());
+
+  auto const kr = kwiver::vital::matrix_3x3d(k * r);
+  auto const kt = kwiver::vital::vector_3d(k * t);
+
+  out->SetElement(0, 0, kr(0, 0));
+  out->SetElement(0, 1, kr(0, 1));
+  out->SetElement(0, 3, kr(0, 2));
+  out->SetElement(1, 0, kr(1, 0));
+  out->SetElement(1, 1, kr(1, 1));
+  out->SetElement(1, 3, kr(1, 2));
+  out->SetElement(3, 0, kr(2, 0));
+  out->SetElement(3, 1, kr(2, 1));
+  out->SetElement(3, 3, kr(2, 2));
+
+  out->SetElement(0, 3, kt[0]);
+  out->SetElement(1, 3, kt[1]);
+  out->SetElement(3, 3, kt[2]);
+
+  // Insert plane coefficients into matrix to build plane-to-image projection
+  out->SetElement(2, 0, plane[0]);
+  out->SetElement(2, 1, plane[1]);
+  out->SetElement(2, 2, plane[2]);
+  out->SetElement(2, 3, plane[3]);
+
+  // Invert to get image-to-plane projection
+  out->Invert();
 }
 
 //-----------------------------------------------------------------------------

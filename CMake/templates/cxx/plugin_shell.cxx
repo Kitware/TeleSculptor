@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,10 +32,14 @@
 
 #include <exception>
 
-#include <maptk/config.h>
-#include <maptk/logging_macros.h>
+#ifndef maptk_EXPORTS
+#define maptk_EXPORTS // Force state to "building-library"
+#endif
+
+#include <maptk/maptk_export.h>
+#include <vital/logger/logger.h>
 #include <maptk/plugin_interface/algorithm_plugin_interface.h>
-#include <maptk/registrar.h>
+#include <vital/registrar.h>
 
 
 /**
@@ -48,25 +52,23 @@ extern "C"
 #endif
 
 // Always export this function
-MAPTK_EXPORT
-int private_register_algo_impls( maptk::registrar &reg )
+int MAPTK_EXPORT private_register_algo_impls( kwiver::vital::registrar &reg )
 {
+  kwiver::vital::logger_handle_t m_logger( kwiver::vital::get_logger( "Implementation Registration" ));
   try
   {
-    LOG_DEBUG( "Implementation Registration",
+    LOG_DEBUG( m_logger,
                "Registering algorithm implementations from module "
-               "'" MAPTK_PLUGIN_LIB_NAME "'");
+               "\"" MAPTK_PLUGIN_LIB_NAME "\"");
     return register_algo_impls( reg );
   }
   catch( std::exception const &e )
   {
-    LOG_ERROR( "private_register_algo_impls",
-               "Caught exception: " << e.what() );
+    LOG_ERROR( m_logger, "Caught exception: " << e.what() );
   }
   catch ( ... )
   {
-    LOG_ERROR( "private_register_algo_impls",
-               "Caught other exception." );
+    LOG_ERROR( m_logger, "Caught other exception." );
   }
   return -1;
 }

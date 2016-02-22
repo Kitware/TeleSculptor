@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,21 +36,23 @@
 #ifndef MAPTK_PLUGINS_PROJ_REGISTER_ALGORITHMS_H_
 #define MAPTK_PLUGINS_PROJ_REGISTER_ALGORITHMS_H_
 
-#include <maptk/plugins/proj/proj_config.h>
-#include <maptk/registrar.h>
 
-namespace maptk
-{
+#include <vital/vital_config.h>
+#include <maptk/plugins/proj/maptk_proj_export.h>
 
-namespace proj
-{
+#include <vital/registrar.h>
+
+
+namespace kwiver {
+namespace maptk {
+namespace proj {
 
 /// Register PROJ algorithm implementations with the given or global registrar
 MAPTK_PROJ_EXPORT
-int register_algorithms( maptk::registrar &reg = maptk::registrar::instance() );
+int register_algorithms( vital::registrar &reg = vital::registrar::instance() );
 
-} // end proj ns
-
-} // end maptk ns
+} // end namespace proj
+} // end namespace maptk
+} // end namespace kwiver
 
 #endif // MAPTK_PLUGINS_PROJ_REGISTER_ALGORITHMS_H_

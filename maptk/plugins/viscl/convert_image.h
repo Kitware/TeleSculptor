@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,19 +31,22 @@
 #ifndef MAPTK_PLUGINS_VISCL_CONVERT_IMAGE_H_
 #define MAPTK_PLUGINS_VISCL_CONVERT_IMAGE_H_
 
-#include <maptk/algo/convert_image.h>
-#include <maptk/plugins/viscl/viscl_config.h>
+
+#include <vital/vital_config.h>
+#include <maptk/plugins/viscl/maptk_viscl_export.h>
+
+#include <vital/algo/convert_image.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vcl
 {
 
 /// Class to convert an image to a viscl base image
 class MAPTK_VISCL_EXPORT convert_image
-  : public algo::algorithm_impl<convert_image, algo::convert_image>
+  : public vital::algorithm_impl<convert_image, vital::algo::convert_image>
 {
 public:
 
@@ -62,13 +65,14 @@ public:
    * \returns the image container with underlying viscl img
    * should be used to prevent repeated image uploading to GPU
    */
-  virtual image_container_sptr convert(image_container_sptr img) const;
+  virtual vital::image_container_sptr convert(vital::image_container_sptr img) const;
 };
 
 
 } // end namespace vcl
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_VISCL_CONVERT_IMAGE_H_

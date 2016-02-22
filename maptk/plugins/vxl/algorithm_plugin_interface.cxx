@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,12 +34,10 @@
  */
 
 #include <maptk/plugins/vxl/register_algorithms.h>
-#include <maptk/plugins/vxl/vxl_config.h>
 #include <maptk/plugin_interface/algorithm_plugin_interface.h>
-#include <maptk/registrar.h>
 
 
-int register_algo_impls(maptk::registrar &reg)
+int register_algo_impls(kwiver::vital::registrar &reg)
 {
-  return maptk::vxl::register_algorithms( reg );
+  return kwiver::maptk::vxl::register_algorithms( reg );
 }

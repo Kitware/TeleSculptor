@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,19 +54,20 @@ main(int argc, char* argv[])
   RUN_TEST(testname);
 }
 
+using namespace kwiver::vital;
 
 IMPLEMENT_TEST(factory)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   vxl::register_algorithms();
 
-  typedef boost::shared_ptr<algo::image_io> image_io_sptr;
-  image_io_sptr img_io = maptk::algo::image_io::create("vxl");
+  kwiver::vital::algo::image_io_sptr img_io = kwiver::vital::algo::image_io::create("vxl");
   if (!img_io)
   {
     TEST_ERROR("Unable to create image_io algorithm of type vxl");
   }
-  if (typeid(*img_io.get()) != typeid(vxl::image_io))
+  algo::image_io* img_io_ptr = img_io.get();
+  if (typeid(*img_io_ptr) != typeid(vxl::image_io))
   {
     TEST_ERROR("Factory method did not construct the correct type");
   }
@@ -75,8 +76,8 @@ IMPLEMENT_TEST(factory)
 
 IMPLEMENT_TEST(image_convert)
 {
-  using namespace maptk;
-  maptk::image img(200,300,3);
+  using namespace kwiver::maptk;
+  kwiver::vital::image img(200,300,3);
   for( unsigned int p=0; p<img.depth(); ++p )
   {
     for( unsigned int j=0; j<img.height(); ++j )
@@ -91,7 +92,7 @@ IMPLEMENT_TEST(image_convert)
   vxl::image_io io;
   io.save("test.png", c);
   image_container_sptr c2 = io.load("test.png");
-  maptk::image img2 = c2->get_image();
+  kwiver::vital::image img2 = c2->get_image();
   if( ! equal_content(img, img2) )
   {
     TEST_ERROR("Saved image is not identical to loaded image");

@@ -36,7 +36,7 @@
 #include <test_common.h>
 #include <test_scene.h>
 
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
 
 #include <maptk/metrics.h>
 #include <maptk/plugins/ceres/reprojection_error.h>
@@ -61,13 +61,14 @@ main(int argc, char* argv[])
 
 /// test the reprojection error of a single residual
 void
-test_reprojection_error(const maptk::camera& cam,
-                        const maptk::landmark& lm,
-                        const maptk::feature& f,
-                        const maptk::ceres::LensDistortionType dist_type)
+test_reprojection_error(const kwiver::vital::camera& cam,
+                        const kwiver::vital::landmark& lm,
+                        const kwiver::vital::feature& f,
+                        const kwiver::maptk::ceres::LensDistortionType dist_type)
 {
-  using namespace maptk;
-  using namespace maptk::ceres;
+  using namespace kwiver::maptk;
+  using namespace kwiver::maptk::ceres;
+  using namespace kwiver::vital;
 
   ::ceres::CostFunction* cost_func =
       create_cost_func(dist_type, f.loc().x(), f.loc().y());
@@ -80,17 +81,20 @@ test_reprojection_error(const maptk::camera& cam,
 
   unsigned int ndp = num_distortion_params(dist_type);
   std::vector<double> intrinsics(5+ndp, 0.0);
-  camera_intrinsics_d K = cam.intrinsics();
-  intrinsics[0] = K.focal_length();
-  intrinsics[1] = K.principal_point().x();
-  intrinsics[2] = K.principal_point().y();
-  intrinsics[3] = K.aspect_ratio();
-  intrinsics[4] = K.skew();
-  const Eigen::VectorXd& d = K.dist_coeffs();
+  camera_intrinsics_sptr K = cam.intrinsics();
+  intrinsics[0] = K->focal_length();
+  intrinsics[1] = K->principal_point().x();
+  intrinsics[2] = K->principal_point().y();
+  intrinsics[3] = K->aspect_ratio();
+  intrinsics[4] = K->skew();
+  const std::vector<double> d = K->dist_coeffs();
   // copy the intersection of parameters provided in K
   // and those that are supported by the requested model type
   unsigned int num_dp = std::min(ndp, static_cast<unsigned int>(d.size()));
-  std::copy(d.data(), d.data()+num_dp, &intrinsics[5]);
+  if( num_dp > 0 )
+  {
+    std::copy(d.begin(), d.begin()+num_dp, &intrinsics[5]);
+  }
 
   double point[3] = {lm.loc().x(), lm.loc().y(), lm.loc().z()};
 
@@ -105,12 +109,13 @@ test_reprojection_error(const maptk::camera& cam,
 
 /// test the reprojection error of all residuals
 void
-test_all_reprojection_errors(const maptk::camera_map_sptr cameras,
-                             const maptk::landmark_map_sptr landmarks,
-                             const maptk::track_set_sptr tracks,
-                             const maptk::ceres::LensDistortionType dist_type)
+test_all_reprojection_errors(const kwiver::vital::camera_map_sptr cameras,
+                             const kwiver::vital::landmark_map_sptr landmarks,
+                             const kwiver::vital::track_set_sptr tracks,
+                             const kwiver::maptk::ceres::LensDistortionType dist_type)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
+  using namespace kwiver::vital;
 
   camera_map::map_camera_t cam_map = cameras->cameras();
   landmark_map::map_landmark_t lm_map = landmarks->landmarks();
@@ -122,7 +127,7 @@ test_all_reprojection_errors(const maptk::camera_map_sptr cameras,
 
   typedef std::map<landmark_id_t, landmark_sptr>::const_iterator lm_map_itr_t;
   typedef std::map<frame_id_t, camera_sptr>::const_iterator cam_map_itr_t;
-  BOOST_FOREACH(const track_sptr& t, trks)
+  VITAL_FOREACH(const track_sptr& t, trks)
   {
     lm_map_itr_t lmi = lm_map.find(t->id());
     if (lmi == lm_map.end() || !lmi->second)
@@ -154,16 +159,17 @@ test_all_reprojection_errors(const maptk::camera_map_sptr cameras,
 
 /// test reprojection error on a test scene for a particular model
 void test_reprojection_model(const Eigen::VectorXd& dc,
-                             const maptk::ceres::LensDistortionType dist_type)
+                             const kwiver::maptk::ceres::LensDistortionType dist_type)
 {
-  using namespace maptk;
-  using namespace maptk::ceres;
+  using namespace kwiver::maptk;
+  using namespace kwiver::maptk::ceres;
+  using namespace kwiver::vital;
 
   // create landmarks at the corners of a cube
   landmark_map_sptr landmarks = testing::cube_corners(2.0);
 
   // The intrinsic camera parameters to use
-  camera_intrinsics_d K(1000, vector_2d(640,480));
+  simple_camera_intrinsics K(1000, vector_2d(640,480));
   K.set_dist_coeffs(dc);
 
   // create a camera sequence (elliptical path)
@@ -180,7 +186,8 @@ void test_reprojection_model(const Eigen::VectorXd& dc,
 // compare MAP-Tk camera projection to Ceres reprojection error models
 IMPLEMENT_TEST(compare_projections_no_distortion)
 {
-  using namespace maptk::ceres;
+  using namespace kwiver::maptk::ceres;
+  using namespace kwiver::vital;
 
   Eigen::VectorXd dc;
 
@@ -198,7 +205,7 @@ IMPLEMENT_TEST(compare_projections_no_distortion)
 // compare MAP-Tk camera projection to Ceres reprojection error models
 IMPLEMENT_TEST(compare_projections_distortion_1)
 {
-  using namespace maptk::ceres;
+  using namespace kwiver::maptk::ceres;
 
   Eigen::VectorXd dc(1);
   dc << -0.01;
@@ -215,7 +222,7 @@ IMPLEMENT_TEST(compare_projections_distortion_1)
 // compare MAP-Tk camera projection to Ceres reprojection error models
 IMPLEMENT_TEST(compare_projections_distortion_2)
 {
-  using namespace maptk::ceres;
+  using namespace kwiver::maptk::ceres;
 
   Eigen::VectorXd dc(2);
   dc << -0.01, 0.002;
@@ -232,7 +239,7 @@ IMPLEMENT_TEST(compare_projections_distortion_2)
 // compare MAP-Tk camera projection to Ceres reprojection error models
 IMPLEMENT_TEST(compare_projections_distortion_4)
 {
-  using namespace maptk::ceres;
+  using namespace kwiver::maptk::ceres;
 
   Eigen::VectorXd dc(4);
   dc << -0.01, 0.002, 0.001, -0.005;
@@ -247,7 +254,7 @@ IMPLEMENT_TEST(compare_projections_distortion_4)
 // compare MAP-Tk camera projection to Ceres reprojection error models
 IMPLEMENT_TEST(compare_projections_distortion_5)
 {
-  using namespace maptk::ceres;
+  using namespace kwiver::maptk::ceres;
 
   Eigen::VectorXd dc(5);
   dc << -0.01, 0.002, 0.001, -0.005, -0.004;
@@ -262,7 +269,7 @@ IMPLEMENT_TEST(compare_projections_distortion_5)
 // compare MAP-Tk camera projection to Ceres reprojection error models
 IMPLEMENT_TEST(compare_projections_distortion_8)
 {
-  using namespace maptk::ceres;
+  using namespace kwiver::maptk::ceres;
 
   Eigen::VectorXd dc(8);
   dc << -0.01, 0.002, 0.001, -0.005, -0.004, 0.02, -0.007, 0.0001;

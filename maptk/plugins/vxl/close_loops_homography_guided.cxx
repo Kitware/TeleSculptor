@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,18 +40,17 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <functional>
+#include <deque>
 
-#include <boost/bind.hpp>
-#include <boost/circular_buffer.hpp>
-#include <boost/foreach.hpp>
-
-#include <maptk/algo/compute_ref_homography.h>
-#include <maptk/algo/match_features.h>
+#include <vital/algo/compute_ref_homography.h>
+#include <vital/algo/match_features.h>
 #include <maptk/plugins/vxl/compute_homography_overlap.h>
 
+using namespace kwiver::vital;
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vxl
 {
@@ -88,7 +87,7 @@ public:
 
 
 // Buffer type for detected checkpoints
-typedef boost::circular_buffer< checkpoint_entry_t > checkpoint_buffer_t;
+typedef std::deque< checkpoint_entry_t > checkpoint_buffer_t;
 
 // Buffer reverse iterator
 typedef checkpoint_buffer_t::reverse_iterator buffer_ritr;
@@ -171,10 +170,10 @@ public:
   checkpoint_buffer_t buffer_;
 
   /// Reference frame homography computer
-  maptk::algo::compute_ref_homography_sptr ref_computer_;
+  vital::algo::compute_ref_homography_sptr ref_computer_;
 
   /// The feature matching algorithm to use
-  maptk::algo::match_features_sptr matcher_;
+  vital::algo::match_features_sptr matcher_;
 };
 
 
@@ -198,19 +197,19 @@ close_loops_homography_guided
 }
 
 
-config_block_sptr
+vital::config_block_sptr
 close_loops_homography_guided
 ::get_configuration() const
 {
   // get base config from base class
-  config_block_sptr config = algorithm::get_configuration();
+  vital::config_block_sptr config = algorithm::get_configuration();
 
   // Sub-algorithm implementation name + sub_config block
   // - Homography estimator algorithm
-  maptk::algo::compute_ref_homography::get_nested_algo_configuration( "ref_computer", config, d_->ref_computer_ );
+  vital::algo::compute_ref_homography::get_nested_algo_configuration( "ref_computer", config, d_->ref_computer_ );
 
   // - Feature Matcher algorithm
-  maptk::algo::match_features::get_nested_algo_configuration( "feature_matcher", config, d_->matcher_ );
+  vital::algo::match_features::get_nested_algo_configuration( "feature_matcher", config, d_->matcher_ );
 
   // Loop closure parameters
   config->set_value("enabled", d_->enabled_,
@@ -230,21 +229,21 @@ close_loops_homography_guided
 
 void
 close_loops_homography_guided
-::set_configuration( config_block_sptr in_config )
+::set_configuration( vital::config_block_sptr in_config )
 {
-  // Starting with our generated config_block to ensure that assumed values are present
+  // Starting with our generated vital::config_block to ensure that assumed values are present
   // An alternative is to check for key presence before performing a get_value() call.
-  config_block_sptr config = this->get_configuration();
+  vital::config_block_sptr config = this->get_configuration();
   config->merge_config( in_config );
 
   // Setting nested algorithm instances via setter methods instead of directly
   // assigning to instance property.
-  maptk::algo::compute_ref_homography_sptr rc;
-  maptk::algo::compute_ref_homography::set_nested_algo_configuration( "ref_computer", config, rc );
+  vital::algo::compute_ref_homography_sptr rc;
+  vital::algo::compute_ref_homography::set_nested_algo_configuration( "ref_computer", config, rc );
   d_->ref_computer_ = rc;
 
-  maptk::algo::match_features_sptr mf;
-  maptk::algo::match_features::set_nested_algo_configuration( "feature_matcher", config, mf );
+  vital::algo::match_features_sptr mf;
+  vital::algo::match_features::set_nested_algo_configuration( "feature_matcher", config, mf );
   d_->matcher_ = mf;
 
   // Settings for bad frame detection
@@ -252,9 +251,6 @@ close_loops_homography_guided
   d_->max_checkpoint_frames_ = config->get_value<unsigned>( "max_checkpoint_frames" );
   d_->checkpoint_percent_overlap_ = config->get_value<double>( "checkpoint_percent_overlap" );
   d_->homography_filename_ = config->get_value<std::string>( "homography_filename" );
-
-  // Set buffer capacity
-  d_->buffer_.set_capacity( d_->max_checkpoint_frames_ );
 
   // Touch and reset output file
   if( !d_->homography_filename_.empty() )
@@ -267,13 +263,13 @@ close_loops_homography_guided
 
 bool
 close_loops_homography_guided
-::check_configuration( config_block_sptr config ) const
+::check_configuration( vital::config_block_sptr config ) const
 {
   return
   (
-    maptk::algo::compute_ref_homography::check_nested_algo_configuration( "ref_computer", config )
+    vital::algo::compute_ref_homography::check_nested_algo_configuration( "ref_computer", config )
     &&
-    maptk::algo::match_features::check_nested_algo_configuration( "feature_matcher", config )
+    vital::algo::match_features::check_nested_algo_configuration( "feature_matcher", config )
   );
 }
 
@@ -315,6 +311,10 @@ close_loops_homography_guided
       overlap( vnl_double_3x3( tmp.data() ), width, height ) < d_->checkpoint_percent_overlap_ )
   {
     d_->buffer_.push_back( checkpoint_entry_t( frame_number, homog ) );
+    if( d_->buffer_.size() > d_->max_checkpoint_frames_ )
+    {
+      d_->buffer_.pop_front();
+    }
   }
 
   // Perform matching to any past checkpoints we want to test
@@ -410,7 +410,8 @@ close_loops_homography_guided
       if( !to_remove.empty() )
       {
         all_tracks.erase(
-          std::remove_if( all_tracks.begin(), all_tracks.end(), boost::bind( track_id_in_set, _1, &to_remove ) ),
+          std::remove_if( all_tracks.begin(), all_tracks.end(),
+                          std::bind( track_id_in_set, std::placeholders::_1, &to_remove ) ),
           all_tracks.end()
         );
       }
@@ -428,3 +429,4 @@ close_loops_homography_guided
 } // end namespace vxl
 
 } // end namespace maptk
+} // end namespace kwiver

@@ -1,3 +1,4 @@
+namespace kwiver {
 namespace maptk {
 
 /// Ceres module namespace
@@ -13,4 +14,5 @@ The MAP-Tk Ceres plugin provides optimization algorithms by building on
 - \ref ceres::bundle_adjust : optimize cameras and landmarks using
                <a href="http://ceres-solver.org/">Ceres Solver</a>
 */
+}
 }

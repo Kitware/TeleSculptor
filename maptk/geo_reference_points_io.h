@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,16 +36,19 @@
 #ifndef MAPTK_GEO_REFERENCE_POINTS_IO_H_
 #define MAPTK_GEO_REFERENCE_POINTS_IO_H_
 
-#include <maptk/config.h>
 
-#include "landmark_map.h"
+#include <vital/vital_config.h>
+#include <maptk/maptk_export.h>
+
 #include "local_geo_cs.h"
-#include "track_set.h"
-#include "types.h"
+
+#include <vital/types/landmark_map.h>
+#include <vital/types/track_set.h>
+#include <vital/vital_types.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 
 /// Load landmarks and tracks from reference points file
@@ -69,14 +72,15 @@ namespace maptk
  * Landmark Z position, or altitude, should be given in meters.
  *
  */
-MAPTK_LIB_EXPORT
+MAPTK_EXPORT
 void
-load_reference_file(path_t const& reference_file,
+load_reference_file(vital::path_t const& reference_file,
                     local_geo_cs & lgcs,
-                    landmark_map_sptr & ref_landmarks,
-                    track_set_sptr & ref_track_set);
+                    vital::landmark_map_sptr & ref_landmarks,
+                    vital::track_set_sptr & ref_track_set);
 
 
 } // end namespace maptk
+} // end namespace kwiver
 
 #endif // MAPTK_GEO_REFERENCE_POINTS_IO_H_

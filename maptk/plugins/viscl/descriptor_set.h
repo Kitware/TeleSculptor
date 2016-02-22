@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,21 +32,23 @@
 #define MAPTK_PLUGINS_VISCL_DESCRIPTOR_SET_H_
 
 
-#include <maptk/descriptor_set.h>
-#include <maptk/plugins/viscl/viscl_config.h>
+#include <vital/vital_config.h>
+#include <maptk/plugins/viscl/maptk_viscl_export.h>
+
+#include <vital/types/descriptor_set.h>
 
 #include <viscl/core/buffer.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vcl
 {
 
 /// A concrete descriptor set that wraps VisCL descriptors.
 class MAPTK_VISCL_EXPORT descriptor_set
-: public maptk::descriptor_set
+: public vital::descriptor_set
 {
 public:
 
@@ -64,7 +66,7 @@ public:
   /**
     * Warning: These descriptors must be matched by hamming distance
     */
-  virtual std::vector<descriptor_sptr> descriptors() const;
+  virtual std::vector<vital::descriptor_sptr> descriptors() const;
 
   /// Return the native VisCL descriptors structure
   const viscl::buffer& viscl_descriptors() const { return data_; }
@@ -78,12 +80,13 @@ protected:
 
 /// Convert a descriptor set to a VisCL descriptor set must be <int,4>
 MAPTK_VISCL_EXPORT viscl::buffer
-descriptors_to_viscl(const maptk::descriptor_set& desc_set);
+descriptors_to_viscl(const vital::descriptor_set& desc_set);
 
 
 } // end namespace vcl
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_VISCL_DESCRIPTOR_SET_H_

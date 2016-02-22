@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2015-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,12 +34,11 @@
  */
 
 #include <maptk/plugins/ceres/register_algorithms.h>
-#include <maptk/plugins/ceres/ceres_config.h>
 #include <maptk/plugin_interface/algorithm_plugin_interface.h>
-#include <maptk/registrar.h>
+#include <vital/registrar.h>
 
 
-int register_algo_impls(maptk::registrar &reg)
+int register_algo_impls(kwiver::vital::registrar &reg)
 {
-  return maptk::ceres::register_algorithms( reg );
+  return kwiver::maptk::ceres::register_algorithms( reg );
 }

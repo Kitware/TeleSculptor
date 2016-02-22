@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,23 +36,27 @@
 #ifndef MAPTK_PLUGINS_CORE_REGISTER_ALGORITHMS_H_
 #define MAPTK_PLUGINS_CORE_REGISTER_ALGORITHMS_H_
 
-#include <maptk/plugins/core/plugin_core_config.h>
-#include <maptk/registrar.h>
+
+#include <vital/vital_config.h>
+#include <maptk/plugins/core/maptk_core_export.h>
+
+#include <vital/registrar.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
 
 // Register core algorithms with the given or global registrar
-PLUGIN_CORE_EXPORT
-int register_algorithms( maptk::registrar &reg = maptk::registrar::instance() );
+MAPTK_CORE_EXPORT
+int register_algorithms( vital::registrar &reg = vital::registrar::instance() );
 
-} // end core namespace
+} // end namespace core
 
-} // end maptk namespace
+} // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_CORE_REGISTER_ALGORITHMS_H_

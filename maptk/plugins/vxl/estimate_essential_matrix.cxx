@@ -36,19 +36,20 @@
 
 #include "estimate_essential_matrix.h"
 
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
 
-#include <maptk/feature.h>
+#include <vital/types/feature.h>
 #include <maptk/plugins/vxl/camera.h>
+#include <maptk/epipolar_geometry.h>
 
 #include <vgl/vgl_point_2d.h>
-#include <Eigen/LU>
 
 #include <vpgl/algo/vpgl_em_compute_5_point.h>
 
+using namespace kwiver::vital;
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vxl
 {
@@ -100,14 +101,14 @@ estimate_essential_matrix
 
 
 
-/// Get this algorithm's \link maptk::config_block configuration block \endlink
-config_block_sptr
+/// Get this algorithm's \link vital::config_block configuration block \endlink
+vital::config_block_sptr
 estimate_essential_matrix
 ::get_configuration() const
 {
   // get base config from base class
-  config_block_sptr config =
-      maptk::algo::estimate_essential_matrix::get_configuration();
+  vital::config_block_sptr config =
+      vital::algo::estimate_essential_matrix::get_configuration();
 
   config->set_value("verbose", d_->verbose,
                     "If true, write status messages to the terminal showing "
@@ -123,7 +124,7 @@ estimate_essential_matrix
 /// Set this algorithm's properties via a config block
 void
 estimate_essential_matrix
-::set_configuration(config_block_sptr config)
+::set_configuration(vital::config_block_sptr config)
 {
 
   d_->verbose = config->get_value<bool>("verbose",
@@ -136,7 +137,7 @@ estimate_essential_matrix
 /// Check that the algorithm's currently configuration is valid
 bool
 estimate_essential_matrix
-::check_configuration(config_block_sptr config) const
+::check_configuration(vital::config_block_sptr config) const
 {
   return true;
 }
@@ -147,21 +148,21 @@ essential_matrix_sptr
 estimate_essential_matrix
 ::estimate(const std::vector<vector_2d>& pts1,
            const std::vector<vector_2d>& pts2,
-           const camera_intrinsics_d &cal1,
-           const camera_intrinsics_d &cal2,
+           const camera_intrinsics_sptr cal1,
+           const camera_intrinsics_sptr cal2,
            std::vector<bool>& inliers,
            double inlier_scale) const
 {
   vpgl_calibration_matrix<double> vcal1, vcal2;
-  maptk_to_vpgl_calibration(cal1, vcal1);
-  maptk_to_vpgl_calibration(cal2, vcal2);
+  maptk_to_vpgl_calibration(*cal1, vcal1);
+  maptk_to_vpgl_calibration(*cal2, vcal2);
 
   vcl_vector<vgl_point_2d<double> > right_points, left_points;
-  BOOST_FOREACH(const vector_2d& v, pts1)
+  VITAL_FOREACH(const vector_2d& v, pts1)
   {
     right_points.push_back(vgl_point_2d<double>(v.x(), v.y()));
   }
-  BOOST_FOREACH(const vector_2d& v, pts2)
+  VITAL_FOREACH(const vector_2d& v, pts2)
   {
     left_points.push_back(vgl_point_2d<double>(v.x(), v.y()));
   }
@@ -174,26 +175,12 @@ estimate_essential_matrix
 
   matrix_3x3d E(best_em.get_matrix().data_block());
   E.transposeInPlace();
-  matrix_3x3d K1_inv = matrix_3x3d(cal1).inverse();
-  matrix_3x3d K2_invt = matrix_3x3d(cal2).transpose().inverse();
+  matrix_3x3d K1_inv = cal1->as_matrix().inverse();
+  matrix_3x3d K2_invt = cal2->as_matrix().transpose().inverse();
   matrix_3x3d F = K2_invt * E * K1_inv;
-  matrix_3x3d Ft = F.transpose();
 
-  inliers.resize(pts1.size());
-  for(unsigned i=0; i<pts1.size(); ++i)
-  {
-    const vector_2d& p1 = pts1[i];
-    const vector_2d& p2 = pts2[i];
-    vector_3d v1(p1.x(), p1.y(), 1.0);
-    vector_3d v2(p2.x(), p2.y(), 1.0);
-    vector_3d l1 = F * v1;
-    vector_3d l2 = Ft * v2;
-    double s1 = 1.0 / sqrt(l1.x()*l1.x() + l1.y()*l1.y());
-    double s2 = 1.0 / sqrt(l2.x()*l2.x() + l2.y()*l2.y());
-    // sum of point to epipolar line distance in both images
-    double d = v1.dot(l2) * (s1 + s2);
-    inliers[i] = std::fabs(d) < inlier_scale;
-  }
+  fundamental_matrix_sptr fm(new fundamental_matrix_d(F));
+  inliers = maptk::mark_fm_inliers(*fm, pts1, pts2, inlier_scale);
 
   return essential_matrix_sptr(new essential_matrix_d(E));
 }
@@ -202,3 +189,4 @@ estimate_essential_matrix
 } // end namespace vxl
 
 } // end namespace maptk
+} // end namespace kwiver

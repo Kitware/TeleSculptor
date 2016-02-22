@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2015 by Kitware, Inc.
+ * Copyright 2013-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,20 +36,24 @@
 #ifndef MAPTK_PLUGINS_VXL_IMAGE_IO_H_
 #define MAPTK_PLUGINS_VXL_IMAGE_IO_H_
 
-#include <maptk/algo/image_io.h>
-#include <maptk/plugins/vxl/vxl_config.h>
 
-#include <boost/scoped_ptr.hpp>
+#include <vital/vital_config.h>
+#include <maptk/plugins/vxl/maptk_vxl_export.h>
 
-namespace maptk
-{
+#include <vital/algo/image_io.h>
+
+#include <memory>
+
+
+namespace kwiver {
+namespace maptk {
 
 namespace vxl
 {
 
 /// A class for using VXL to read and write images
 class MAPTK_VXL_EXPORT image_io
-  : public algo::algorithm_impl<image_io, algo::image_io>
+  : public vital::algorithm_impl<image_io, vital::algo::image_io>
 {
 public:
   /// Constructor
@@ -64,12 +68,12 @@ public:
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "vxl"; }
 
-  /// Get this algorithm's \link maptk::config_block configuration block \endlink
-  virtual config_block_sptr get_configuration() const;
+  /// Get this algorithm's \link vital::config_block configuration block \endlink
+  virtual vital::config_block_sptr get_configuration() const;
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(config_block_sptr config);
+  virtual void set_configuration(vital::config_block_sptr config);
   /// Check that the algorithm's currently configuration is valid
-  virtual bool check_configuration(config_block_sptr config) const;
+  virtual bool check_configuration(vital::config_block_sptr config) const;
 
 private:
   /// Implementation specific load functionality.
@@ -80,7 +84,7 @@ private:
    * \param filename the path to the file the load
    * \returns an image container refering to the loaded image
    */
-  virtual image_container_sptr load_(const std::string& filename) const;
+  virtual vital::image_container_sptr load_(const std::string& filename) const;
 
   /// Implementation specific save functionality.
   /**
@@ -88,16 +92,17 @@ private:
    * \param data the image container refering to the image to write
    */
   virtual void save_(const std::string& filename,
-                     image_container_sptr data) const;
+                     vital::image_container_sptr data) const;
 
   /// private implementation class
   class priv;
-  boost::scoped_ptr<priv> d_;
+  const std::unique_ptr<priv> d_;
 };
 
 } // end namespace vxl
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_VXL_IMAGE_IO_H_

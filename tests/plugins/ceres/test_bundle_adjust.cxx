@@ -36,14 +36,15 @@
 #include <test_common.h>
 #include <test_scene.h>
 
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
+#include <vital/algorithm_plugin_manager.h>
 
 #include <maptk/metrics.h>
-#include <maptk/algorithm_plugin_manager.h>
 #include <maptk/plugins/ceres/bundle_adjust.h>
 #include <maptk/plugins/ceres/register_algorithms.h>
 #include <maptk/projected_track_set.h>
 
+using namespace kwiver::vital;
 
 #define TEST_ARGS ()
 
@@ -55,7 +56,7 @@ main(int argc, char* argv[])
   CHECK_ARGS(1);
 
   // Register ceres algorithm implementations
-  maptk::ceres::register_algorithms();
+  kwiver::maptk::ceres::register_algorithms();
 
   testname_t const testname = argv[1];
 
@@ -65,7 +66,7 @@ main(int argc, char* argv[])
 
 IMPLEMENT_TEST(create)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   algo::bundle_adjust_sptr ba = algo::bundle_adjust::create("ceres");
   if (!ba)
   {
@@ -77,7 +78,7 @@ IMPLEMENT_TEST(create)
 // input to SBA is the ideal solution, make sure it doesn't diverge
 IMPLEMENT_TEST(from_solution)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
@@ -113,7 +114,7 @@ IMPLEMENT_TEST(from_solution)
 // add noise to landmarks before input to SBA
 IMPLEMENT_TEST(noisy_landmarks)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
@@ -153,7 +154,7 @@ IMPLEMENT_TEST(noisy_landmarks)
 // add noise to landmarks and cameras before input to SBA
 IMPLEMENT_TEST(noisy_landmarks_noisy_cameras)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
@@ -196,7 +197,7 @@ IMPLEMENT_TEST(noisy_landmarks_noisy_cameras)
 // initialize all landmarks to the origin as input to SBA
 IMPLEMENT_TEST(zero_landmarks)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
@@ -238,7 +239,7 @@ IMPLEMENT_TEST(zero_landmarks)
 // select a subset of cameras to optimize
 IMPLEMENT_TEST(subset_cameras)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
@@ -261,7 +262,7 @@ IMPLEMENT_TEST(subset_cameras)
 
   camera_map::map_camera_t cam_map = cameras0->cameras();
   camera_map::map_camera_t cam_map2;
-  BOOST_FOREACH(camera_map::map_camera_t::value_type& p, cam_map)
+  VITAL_FOREACH(camera_map::map_camera_t::value_type& p, cam_map)
   {
     /// take every third camera
     if(p.first % 3 == 0)
@@ -296,7 +297,7 @@ IMPLEMENT_TEST(subset_cameras)
 // select a subset of landmarks to optimize
 IMPLEMENT_TEST(subset_landmarks)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
@@ -348,7 +349,7 @@ IMPLEMENT_TEST(subset_landmarks)
 // select a subset of tracks/track_states to constrain the problem
 IMPLEMENT_TEST(subset_tracks)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
@@ -395,7 +396,7 @@ IMPLEMENT_TEST(subset_tracks)
 // select a subset of tracks/track_states and add observation noise
 IMPLEMENT_TEST(noisy_tracks)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
@@ -447,7 +448,7 @@ IMPLEMENT_TEST(noisy_tracks)
 // select a subset of tracks/track_states to constrain the problem
 IMPLEMENT_TEST(outlier_tracks)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("verbose", "true");
@@ -548,11 +549,11 @@ IMPLEMENT_TEST(outlier_tracks)
 
 
 // helper for tests using distortion models in bundle adjustment
-void test_ba_using_distortion(maptk::config_block_sptr cfg,
+void test_ba_using_distortion(kwiver::vital::config_block_sptr cfg,
                               const Eigen::VectorXd& dc,
                               bool clear_init_distortion)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   cfg->set_value("verbose", "true");
   ba.set_configuration(cfg);
@@ -561,7 +562,7 @@ void test_ba_using_distortion(maptk::config_block_sptr cfg,
   landmark_map_sptr landmarks = testing::cube_corners(2.0);
 
   // The intrinsic camera parameters to use
-  camera_intrinsics_d K(1000, vector_2d(640,480));
+  simple_camera_intrinsics K(1000, vector_2d(640,480));
   K.set_dist_coeffs(dc);
 
   // create a camera sequence (elliptical path)
@@ -602,7 +603,8 @@ void test_ba_using_distortion(maptk::config_block_sptr cfg,
   // compare actual to estimated distortion parameters
   if( clear_init_distortion )
   {
-    Eigen::VectorXd dc2 = cameras0->cameras()[0]->intrinsics().dist_coeffs();
+    std::vector<double> vdc2 = cameras0->cameras()[0]->intrinsics()->dist_coeffs();
+    Eigen::VectorXd dc2(Eigen::Map<Eigen::VectorXd>(&vdc2[0], vdc2.size()));
     // The estimated parameter vector can be longer and zero padded
     if( dc2.size() > dc.size() )
     {
@@ -620,7 +622,7 @@ void test_ba_using_distortion(maptk::config_block_sptr cfg,
 // use 1 lens distortion coefficent in bundle adjustment
 IMPLEMENT_TEST(use_lens_distortion_1)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("lens_distortion_type", "POLYNOMIAL_RADIAL_DISTORTION");
@@ -638,7 +640,7 @@ IMPLEMENT_TEST(use_lens_distortion_1)
 // use 2 lens distortion coefficents in bundle adjustment
 IMPLEMENT_TEST(use_lens_distortion_2)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("lens_distortion_type", "POLYNOMIAL_RADIAL_DISTORTION");
@@ -656,7 +658,7 @@ IMPLEMENT_TEST(use_lens_distortion_2)
 // use 3 lens distortion coefficents in bundle adjustment
 IMPLEMENT_TEST(use_lens_distortion_3)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("lens_distortion_type",
@@ -677,7 +679,7 @@ IMPLEMENT_TEST(use_lens_distortion_3)
 // use 5 lens distortion coefficents in bundle adjustment
 IMPLEMENT_TEST(use_lens_distortion_5)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("lens_distortion_type",
@@ -698,7 +700,7 @@ IMPLEMENT_TEST(use_lens_distortion_5)
 // use 8 lens distortion coefficents in bundle adjustment
 IMPLEMENT_TEST(use_lens_distortion_8)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("lens_distortion_type",
@@ -720,7 +722,7 @@ IMPLEMENT_TEST(use_lens_distortion_8)
 // estimate 1 lens distortion coefficent in bundle adjustment
 IMPLEMENT_TEST(est_lens_distortion_1)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("lens_distortion_type", "POLYNOMIAL_RADIAL_DISTORTION");
@@ -738,7 +740,7 @@ IMPLEMENT_TEST(est_lens_distortion_1)
 // estimate 2 lens distortion coefficents in bundle adjustment
 IMPLEMENT_TEST(est_lens_distortion_2)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("lens_distortion_type", "POLYNOMIAL_RADIAL_DISTORTION");
@@ -756,7 +758,7 @@ IMPLEMENT_TEST(est_lens_distortion_2)
 // estimate 3 lens distortion coefficents in bundle adjustment
 IMPLEMENT_TEST(est_lens_distortion_3)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("lens_distortion_type",
@@ -777,7 +779,7 @@ IMPLEMENT_TEST(est_lens_distortion_3)
 // estimate 5 lens distortion coefficents in bundle adjustment
 IMPLEMENT_TEST(est_lens_distortion_5)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("lens_distortion_type",
@@ -798,7 +800,7 @@ IMPLEMENT_TEST(est_lens_distortion_5)
 // estimate 8 lens distortion coefficents in bundle adjustment
 IMPLEMENT_TEST(est_lens_distortion_8)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ceres::bundle_adjust ba;
   config_block_sptr cfg = ba.get_configuration();
   cfg->set_value("lens_distortion_type",
@@ -814,4 +816,126 @@ IMPLEMENT_TEST(est_lens_distortion_8)
   dc << -0.01, 0.002, -0.0005, 0.001, -0.005, 0.02, 0.0007, -0.003;
 
   test_ba_using_distortion(cfg, dc, true);
+}
+
+
+// helper for tests of intrinsics sharing models in bundle adjustment
+// returns the number of unique camera intrinsics objects
+// in the optimized cameras
+unsigned int
+test_ba_intrinsic_sharing(camera_map_sptr cameras,
+                          kwiver::vital::config_block_sptr cfg)
+{
+  using namespace kwiver::maptk;
+  ceres::bundle_adjust ba;
+  ba.set_configuration(cfg);
+
+  // create landmarks at the corners of a cube
+  landmark_map_sptr landmarks = testing::cube_corners(2.0);
+
+  // create tracks from the projections
+  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+
+  // add Gaussian noise to the landmark positions
+  landmark_map_sptr landmarks0 = testing::noisy_landmarks(landmarks, 0.1);
+
+  // add Gaussian noise to the camera positions and orientations
+  camera_map_sptr cameras0 = testing::noisy_cameras(cameras, 0.1, 0.1);
+
+
+  double init_rmse = reprojection_rmse(cameras0->cameras(),
+                                       landmarks0->landmarks(),
+                                       tracks->tracks());
+  std::cout << "initial reprojection RMSE: " << init_rmse << std::endl;
+  if (init_rmse < 10.0)
+  {
+    TEST_ERROR("Initial reprojection RMSE should be large before SBA");
+  }
+
+  ba.optimize(cameras0, landmarks0, tracks);
+
+  double end_rmse = reprojection_rmse(cameras0->cameras(),
+                                      landmarks0->landmarks(),
+                                      tracks->tracks());
+  TEST_NEAR("RMSE after SBA", end_rmse, 0.0, 1e-5);
+
+  std::set<camera_intrinsics_sptr> intrin_set;
+  VITAL_FOREACH(const camera_map::map_camera_t::value_type& ci,
+                cameras0->cameras())
+  {
+    intrin_set.insert(ci.second->intrinsics());
+  }
+
+  return intrin_set.size();
+}
+
+
+// test bundle adjustment with forcing unique intrinsics
+IMPLEMENT_TEST(unique_intrinsics)
+{
+  using namespace kwiver::maptk;
+  ceres::bundle_adjust ba;
+  config_block_sptr cfg = ba.get_configuration();
+  cfg->set_value("verbose", "true");
+  cfg->set_value("camera_intrinsic_share_type", "FORCE_UNIQUE_INTRINSICS");
+
+  // The intrinsic camera parameters to use
+  simple_camera_intrinsics K(1000, vector_2d(640,480));
+
+  // create a camera sequence (elliptical path)
+  camera_map_sptr cameras = testing::camera_seq(20, K);
+  unsigned int num_intrinsics = test_ba_intrinsic_sharing(cameras, cfg);
+  TEST_EQUAL("Resulting camera intrinsics are unique",
+             num_intrinsics, cameras->size());
+}
+
+
+// test bundle adjustment with forcing common intrinsics
+IMPLEMENT_TEST(common_intrinsics)
+{
+  using namespace kwiver::maptk;
+  ceres::bundle_adjust ba;
+  config_block_sptr cfg = ba.get_configuration();
+  cfg->set_value("verbose", "true");
+  cfg->set_value("camera_intrinsic_share_type", "FORCE_COMMON_INTRINSICS");
+
+  // The intrinsic camera parameters to use
+  simple_camera_intrinsics K(1000, vector_2d(640,480));
+
+  // create a camera sequence (elliptical path)
+  camera_map_sptr cameras = testing::camera_seq(20, K);
+  unsigned int num_intrinsics = test_ba_intrinsic_sharing(cameras, cfg);
+  TEST_EQUAL("Resulting camera intrinsics are unique",
+             num_intrinsics, 1);
+}
+
+
+// test bundle adjustment with multiple shared intrinics models
+IMPLEMENT_TEST(auto_share_intrinsics)
+{
+  using namespace kwiver::maptk;
+  ceres::bundle_adjust ba;
+  config_block_sptr cfg = ba.get_configuration();
+  cfg->set_value("verbose", "true");
+
+  // The intrinsic camera parameters to use
+  simple_camera_intrinsics K1(1000, vector_2d(640,480));
+  simple_camera_intrinsics K2(800, vector_2d(640,480));
+
+  // create two camera sequences (elliptical paths)
+  camera_map_sptr cameras1 = testing::camera_seq(13, K1);
+  camera_map_sptr cameras2 = testing::camera_seq(7, K2);
+
+  // combine the camera maps and offset the frame numbers
+  const unsigned int offset = cameras1->size();
+  camera_map::map_camera_t cams = cameras1->cameras();
+  VITAL_FOREACH(camera_map::map_camera_t::value_type ci, cameras2->cameras())
+  {
+    cams[ci.first + offset] = ci.second;
+  }
+
+  camera_map_sptr cameras = camera_map_sptr(new simple_camera_map(cams));
+  unsigned int num_intrinsics = test_ba_intrinsic_sharing(cameras, cfg);
+  TEST_EQUAL("Resulting camera intrinsics are unique",
+             num_intrinsics, 2);
 }

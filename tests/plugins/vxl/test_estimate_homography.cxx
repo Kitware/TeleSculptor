@@ -39,10 +39,11 @@
 #include <maptk/plugins/vxl/register_algorithms.h>
 #include <maptk/plugins/vxl/estimate_homography.h>
 
+using namespace kwiver::vital;
 
-maptk::matrix_3x3d sample_homography()
+kwiver::vital::matrix_3x3d sample_homography()
 {
-  maptk::matrix_3x3d H;
+  kwiver::vital::matrix_3x3d H;
   H << 2.0, 0.0, -1.5,
        0.0, 3.0, 5.0,
        0.0, 0.0, 1.0;
@@ -58,7 +59,7 @@ main(int argc, char* argv[])
 {
   CHECK_ARGS(1);
 
-  maptk::vxl::register_algorithms();
+  kwiver::maptk::vxl::register_algorithms();
 
   testname_t const testname = argv[1];
 
@@ -68,7 +69,7 @@ main(int argc, char* argv[])
 
 IMPLEMENT_TEST(create)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   algo::estimate_homography_sptr est_H = algo::estimate_homography::create("vxl");
   if (!est_H)
   {
@@ -79,7 +80,7 @@ IMPLEMENT_TEST(create)
 
 IMPLEMENT_TEST(not_enough_points)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   vxl::estimate_homography estimator;
 
   std::vector<vector_2d> pts1, pts2;
@@ -109,7 +110,7 @@ IMPLEMENT_TEST(not_enough_points)
 
 IMPLEMENT_TEST(four_points)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   vxl::estimate_homography estimator;
 
   std::vector<vector_2d> pts1, pts2;
@@ -142,8 +143,8 @@ IMPLEMENT_TEST(four_points)
 
 IMPLEMENT_TEST(ideal_points)
 {
-  using namespace maptk;
-  using namespace maptk::testing;
+  using namespace kwiver::maptk;
+  using namespace kwiver::maptk::testing;
   vxl::estimate_homography estimator;
 
   matrix_3x3d true_H = sample_homography();
@@ -176,8 +177,8 @@ IMPLEMENT_TEST(ideal_points)
 
 IMPLEMENT_TEST(noisy_points)
 {
-  using namespace maptk;
-  using namespace maptk::testing;
+  using namespace kwiver::maptk;
+  using namespace kwiver::maptk::testing;
   vxl::estimate_homography estimator;
 
   matrix_3x3d true_H = sample_homography();
@@ -214,8 +215,8 @@ IMPLEMENT_TEST(noisy_points)
 
 IMPLEMENT_TEST(outlier_points)
 {
-  using namespace maptk;
-  using namespace maptk::testing;
+  using namespace kwiver::maptk;
+  using namespace kwiver::maptk::testing;
   vxl::estimate_homography estimator;
 
   matrix_3x3d true_H = sample_homography();

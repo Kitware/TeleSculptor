@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,10 +51,11 @@ main(int argc, char* argv[])
   RUN_TEST(testname);
 }
 
+using namespace kwiver::vital;
 
 IMPLEMENT_TEST(default_set)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   ocv::descriptor_set ds;
   if (ds.size() != 0)
   {
@@ -69,7 +70,7 @@ IMPLEMENT_TEST(default_set)
 
 IMPLEMENT_TEST(populated_set)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   const unsigned num_desc = 100;
   const unsigned dim = 128;
   cv::Mat data(num_desc, dim, CV_64F);
@@ -109,7 +110,7 @@ IMPLEMENT_TEST(populated_set)
 namespace {
 void test_conversions(const cv::Mat& data)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   static std::string type_names[] = {"ubyte", "byte", "ushort", "short",
                                      "int", "float", "double", "unknown"};
 #define CURRENT_TYPE "descriptor_set ("<< type_names[data.type()%8] \

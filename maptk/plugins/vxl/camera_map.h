@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,23 +36,26 @@
 #ifndef MAPTK_PLUGINS_VXL_CAMERA_MAP_H_
 #define MAPTK_PLUGINS_VXL_CAMERA_MAP_H_
 
+
 #include <map>
 
-#include <maptk/camera_map.h>
-#include <maptk/plugins/vxl/vxl_config.h>
+#include <vital/vital_config.h>
+#include <maptk/plugins/vxl/maptk_vxl_export.h>
+
+#include <vital/types/camera_map.h>
 
 #include <vpgl/vpgl_perspective_camera.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vxl
 {
 
 /// A concrete camera_map that wraps a map of vpgl_perspective_camera
 class MAPTK_VXL_EXPORT camera_map
-: public maptk::camera_map
+: public vital::camera_map
 {
 public:
   /// typedef for a map of frame numbers to vpgl_perspective_camera
@@ -84,12 +87,13 @@ protected:
 /// Convert any camera map to a vpgl camera map
 MAPTK_VXL_EXPORT
 camera_map::map_vcam_t
-camera_map_to_vpgl(const maptk::camera_map& cam_map);
+camera_map_to_vpgl(const vital::camera_map& cam_map);
 
 
 } // end namespace vxl
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_VXL_CAMERA_MAP_H_

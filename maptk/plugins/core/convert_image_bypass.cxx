@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,8 +36,8 @@
 #include "convert_image_bypass.h"
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
@@ -66,9 +66,9 @@ convert_image_bypass
 }
 
 /// Default image converter ( does nothing )
-image_container_sptr
+vital::image_container_sptr
 convert_image_bypass
-::convert(image_container_sptr img) const
+::convert(vital::image_container_sptr img) const
 {
   return img;
 }
@@ -77,3 +77,4 @@ convert_image_bypass
 } // end namespace core
 
 } // end namespace maptk
+} // end namespace kwiver

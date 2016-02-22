@@ -83,6 +83,16 @@ h2, h2 a, h2 a:hover {
 /*   text-shadow: 0 0.1em 0.25em #89b; */
 }
 
+.math {
+  color: #400;
+  font-family: serif;
+  background: #fcfafa;
+  border: 1px solid #f0e4e4;
+  border-radius: 0.4em;
+  padding-left: 0.2em;
+  padding-right: 0.2em;
+}
+
 .action {
   background: #f4f4f4;
   padding-left: 0.3em;
@@ -110,4 +120,9 @@ h2, h2 a, h2 a:hover {
   width: 0.8em;
   background: #37c;
   border-right: 1px solid #ccc;
+}
+
+.footnote-reference {
+  font-size: 60%;
+  vertical-align: top;
 }

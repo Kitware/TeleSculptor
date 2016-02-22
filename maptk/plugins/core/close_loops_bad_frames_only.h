@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,19 +37,20 @@
 #ifndef MAPTK_PLUGINS_CORE_CLOSE_LOOPS_BAD_FRAMES_ONLY_H_
 #define MAPTK_PLUGINS_CORE_CLOSE_LOOPS_BAD_FRAMES_ONLY_H_
 
-#include <boost/shared_ptr.hpp>
+#include <vital/vital_config.h>
+#include <maptk/plugins/core/maptk_core_export.h>
 
-#include <maptk/algo/algorithm.h>
-#include <maptk/algo/match_features.h>
-#include <maptk/algo/close_loops.h>
-#include <maptk/image_container.h>
-#include <maptk/track_set.h>
+#include <vital/algo/algorithm.h>
+#include <vital/types/image_container.h>
+#include <vital/types/track_set.h>
 
-#include <maptk/plugins/core/plugin_core_config.h>
+#include <vital/algo/match_features.h>
+#include <vital/algo/close_loops.h>
+#include <vital/config/config_block.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
@@ -61,8 +62,8 @@ namespace core
  * principle that when a bad frame occurs, there is generally a lower
  * percentage of feature tracks.
  */
-class PLUGIN_CORE_EXPORT close_loops_bad_frames_only
-  : public algo::algorithm_impl<close_loops_bad_frames_only, algo::close_loops>
+class MAPTK_CORE_EXPORT close_loops_bad_frames_only
+  : public vital::algorithm_impl<close_loops_bad_frames_only, vital::algo::close_loops>
 {
 public:
 
@@ -73,7 +74,7 @@ public:
   close_loops_bad_frames_only(const close_loops_bad_frames_only&);
 
   /// Destructor
-  virtual ~close_loops_bad_frames_only() MAPTK_DEFAULT_DTOR;
+  virtual ~close_loops_bad_frames_only() VITAL_DEFAULT_DTOR;
 
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "bad_frames_only"; }
@@ -81,7 +82,7 @@ public:
   /// Returns implementation description
   virtual std::string description() const;
 
-  /// Get this algorithm's \link maptk::config_block configuration block \endlink
+  /// Get this algorithm's \link vital::config_block configuration block \endlink
   /**
    * This base virtual function implementation returns an empty configuration
    * block whose name is set to \c this->type_name.
@@ -89,7 +90,7 @@ public:
    * \returns \c config_block containing the configuration for this algorithm
    *          and any nested components.
    */
-  virtual config_block_sptr get_configuration() const;
+  virtual vital::config_block_sptr get_configuration() const;
 
   /// Set this algorithm's properties via a config block
   /**
@@ -102,7 +103,7 @@ public:
    * \param config  The \c config_block instance containing the configuration
    *                parameters for this algorithm
    */
-  virtual void set_configuration(config_block_sptr config);
+  virtual void set_configuration(vital::config_block_sptr config);
 
   /// Check that the algorithm's currently configuration is valid
   /**
@@ -114,7 +115,7 @@ public:
    *
    * \returns true if the configuration check passed and false if it didn't.
    */
-  virtual bool check_configuration(config_block_sptr config) const;
+  virtual bool check_configuration(vital::config_block_sptr config) const;
 
   /// Perform basic shot stitching for bad frame detection
   /**
@@ -125,11 +126,11 @@ public:
    *                  regions to consider in the input image.
    * \returns an updated set a tracks after the stitching operation
    */
-  virtual track_set_sptr
-  stitch( frame_id_t frame_number,
-          track_set_sptr input,
-          image_container_sptr image,
-          image_container_sptr mask = image_container_sptr() ) const;
+  virtual vital::track_set_sptr
+  stitch( vital::frame_id_t frame_number,
+          vital::track_set_sptr input,
+          vital::image_container_sptr image,
+          vital::image_container_sptr mask = vital::image_container_sptr() ) const;
 
 protected:
 
@@ -146,7 +147,7 @@ protected:
   unsigned max_search_length_;
 
   /// The feature matching algorithm to use
-  algo::match_features_sptr matcher_;
+  vital::algo::match_features_sptr matcher_;
 
 };
 
@@ -154,6 +155,7 @@ protected:
 } // end namespace algo
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_CORE_CLOSE_LOOPS_BAD_FRAMES_ONLY_H_

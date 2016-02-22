@@ -23,23 +23,50 @@
      <height>21</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuFile">
+   <widget class="qtMenu" name="menuFile">
     <property name="title">
      <string>&amp;File</string>
     </property>
+    <widget class="qtMenu" name="menuExport">
+     <property name="title">
+      <string>&amp;Export</string>
+     </property>
+     <addaction name="actionExportCameras"/>
+     <addaction name="actionExportLandmarks"/>
+    </widget>
     <addaction name="actionOpen"/>
+    <addaction name="menuExport"/>
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
-   <widget class="QMenu" name="menuView">
+   <widget class="qtMenu" name="menuView">
     <property name="title">
      <string>&amp;View</string>
     </property>
     <addaction name="actionSlideshowPlay"/>
     <addaction name="actionSlideshowLoop"/>
+    <addaction name="separator"/>
+    <addaction name="actionShowMatchMatrix"/>
+    <addaction name="separator"/>
+    <addaction name="actionSetBackgroundColor"/>
+   </widget>
+   <widget class="qtMenu" name="menuHelp">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="actionShowManual"/>
+    <addaction name="separator"/>
+    <addaction name="actionAbout"/>
+   </widget>
+   <widget class="qtMenu" name="menuCompute">
+    <property name="title">
+     <string>&amp;Compute</string>
+    </property>
    </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuCompute"/>
    <addaction name="menuView"/>
+   <addaction name="menuHelp"/>
   </widget>
   <widget class="QDockWidget" name="cameraSelectorDock">
    <property name="windowTitle">
@@ -182,6 +209,71 @@
     <string>Toggle looping of camera list during slideshow</string>
    </property>
   </action>
+  <action name="actionShowManual">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/16x16/help-manual</normaloff>:/icons/16x16/help-manual</iconset>
+   </property>
+   <property name="text">
+    <string>MapGUI User &amp;Manual</string>
+   </property>
+   <property name="shortcut">
+    <string>F1</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/16x16/mapgui</normaloff>:/icons/16x16/mapgui</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;About MapGUI</string>
+   </property>
+  </action>
+  <action name="actionShowMatchMatrix">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Match Matrix</string>
+   </property>
+   <property name="toolTip">
+    <string>Open an auxilliary window showing the feature/frame match matrix</string>
+   </property>
+   <property name="shortcut">
+    <string>M</string>
+   </property>
+  </action>
+  <action name="actionExportLandmarks">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>PLY &amp;Landmarks...</string>
+   </property>
+   <property name="toolTip">
+    <string>Export the landmarks in the current project to a PLY file</string>
+   </property>
+  </action>
+  <action name="actionExportCameras">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>KRTD &amp;Cameras...</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;nobr&gt;Export the cameras in the current project&lt;/nobr&gt; to a series of KRTD files</string>
+   </property>
+  </action>
+  <action name="actionSetBackgroundColor">
+   <property name="text">
+    <string>&amp;Background Color...</string>
+   </property>
+   <property name="toolTip">
+    <string>Change the background color of the views</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -195,6 +287,11 @@
    <extends>QWidget</extends>
    <header>CameraView.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>qtMenu</class>
+   <extends>QMenu</extends>
+   <header location="global">qtMenu.h</header>
   </customwidget>
  </customwidgets>
  <resources>

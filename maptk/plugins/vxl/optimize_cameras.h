@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,33 +36,35 @@
 #ifndef MAPTK_PLUGINS_VXL_OPTIMIZE_CAMERAS_H_
 #define MAPTK_PLUGINS_VXL_OPTIMIZE_CAMERAS_H_
 
+
 #include <string>
 
-#include <maptk/algo/algorithm.h>
-#include <maptk/algo/optimize_cameras.h>
-#include <maptk/config_block.h>
-#include <maptk/plugins/vxl/vxl_config.h>
+#include <vital/vital_config.h>
+#include <maptk/plugins/vxl/maptk_vxl_export.h>
+
+#include <vital/algo/algorithm.h>
+#include <vital/algo/optimize_cameras.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vxl
 {
 
 
 class MAPTK_VXL_EXPORT optimize_cameras
-  : public algo::algorithm_impl<optimize_cameras, algo::optimize_cameras>
+  : public vital::algorithm_impl<optimize_cameras, vital::algo::optimize_cameras>
 {
 public:
   virtual std::string impl_name() const { return "vxl"; }
 
   /// \cond DoxygenSuppress
-  virtual void set_configuration(config_block_sptr /*config*/) { }
-  virtual bool check_configuration(config_block_sptr /*config*/) const { return true; }
+  virtual void set_configuration(vital::config_block_sptr /*config*/) { }
+  virtual bool check_configuration(vital::config_block_sptr /*config*/) const { return true; }
   /// \endcond
 
-  using algo::optimize_cameras::optimize;
+  using vital::algo::optimize_cameras::optimize;
 
   /// Optimize a single camera given corresponding features and landmarks
   /**
@@ -77,14 +79,15 @@ public:
    *                          \p features.
    */
   virtual void
-  optimize(camera_sptr & camera,
-           const std::vector<feature_sptr>& features,
-           const std::vector<landmark_sptr>& landmarks) const;
+  optimize(vital::camera_sptr & camera,
+           const std::vector<vital::feature_sptr>& features,
+           const std::vector<vital::landmark_sptr>& landmarks) const;
 };
 
 
-}
+} // end namespace vxl
 
-}
+} // end namespace maptk
+} // end namespace kwiver
 
 #endif // MAPTK_PLUGINS_VXL_OPTIMIZE_CAMERAS_H_

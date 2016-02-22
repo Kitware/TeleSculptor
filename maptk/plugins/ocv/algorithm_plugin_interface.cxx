@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,13 +33,12 @@
  * \brief OpenCV plugin algorithm registration interface impl
  */
 
-#include <maptk/plugins/ocv/ocv_config.h>
 #include <maptk/plugins/ocv/register_algorithms.h>
 #include <maptk/plugin_interface/algorithm_plugin_interface.h>
-#include <maptk/registrar.h>
+#include <vital/registrar.h>
 
 
-int register_algo_impls(maptk::registrar &reg)
+int register_algo_impls( kwiver::vital::registrar &reg )
 {
-  return maptk::ocv::register_algorithms( reg );
+  return kwiver::maptk::ocv::register_algorithms( reg );
 }

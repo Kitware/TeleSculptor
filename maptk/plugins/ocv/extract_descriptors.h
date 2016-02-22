@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2015 by Kitware, Inc.
+ * Copyright 2013-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,22 +36,23 @@
 #ifndef MAPTK_PLUGINS_OCV_EXTRACT_DESCRIPTORS_H_
 #define MAPTK_PLUGINS_OCV_EXTRACT_DESCRIPTORS_H_
 
-#include <boost/scoped_ptr.hpp>
 
-#include <maptk/algo/extract_descriptors.h>
+#include <vital/vital_config.h>
+#include <maptk/plugins/ocv/maptk_ocv_export.h>
 
-#include <maptk/plugins/ocv/ocv_config.h>
+#include <vital/algo/extract_descriptors.h>
 
+#include <memory>
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
 
 /// An class for extracting feature descriptors using OpenCV
 class MAPTK_OCV_EXPORT extract_descriptors
-  : public algo::algorithm_impl<extract_descriptors, algo::extract_descriptors>
+  : public vital::algorithm_impl<extract_descriptors, vital::algo::extract_descriptors>
 {
 public:
   /// Default Constructor
@@ -66,12 +67,12 @@ public:
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "ocv"; }
 
-  /// Get this algorithm's \link maptk::config_block configuration block \endlink
-  virtual config_block_sptr get_configuration() const;
+  /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
+  virtual vital::config_block_sptr get_configuration() const;
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(config_block_sptr config);
-  /// Check that the algorithm's configuration config_block is valid
-  virtual bool check_configuration(config_block_sptr config) const;
+  virtual void set_configuration(vital::config_block_sptr config);
+  /// Check that the algorithm's configuration vital::config_block is valid
+  virtual bool check_configuration(vital::config_block_sptr config) const;
 
   /// Extract from the image a descriptor corresoponding to each feature
   /**
@@ -79,20 +80,21 @@ public:
    * \param features the feature locations at which descriptors are extracted
    * \returns a set of feature descriptors
    */
-  virtual descriptor_set_sptr
-  extract(image_container_sptr image_data,
-          feature_set_sptr features,
-          image_container_sptr image_mask = image_container_sptr()) const;
+  virtual vital::descriptor_set_sptr
+  extract(vital::image_container_sptr image_data,
+          vital::feature_set_sptr features,
+          vital::image_container_sptr image_mask = vital::image_container_sptr()) const;
 
 private:
   /// private implementation class
   class priv;
-  boost::scoped_ptr<priv> d_;
+  const std::unique_ptr<priv> d_;
 };
 
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_OCV_EXTRACT_DESCRIPTORS_H_

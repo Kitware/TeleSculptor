@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,28 +42,29 @@
 #include <sstream>
 #include <vector>
 
-#include <maptk/exceptions.h>
-
-#include <boost/filesystem.hpp>
-#include <boost/foreach.hpp>
+#include <vital/exceptions.h>
+#include <kwiversys/SystemTools.hxx>
 
 
-namespace maptk
-{
+
+namespace kwiver {
+namespace maptk {
+
+typedef kwiversys::SystemTools     ST;
 
 
 /// Read in a pos file, producing an ins_data object
 ins_data
-read_pos_file(path_t const& file_path)
+read_pos_file(vital::path_t const& file_path)
 {
   // Check that file exists
-  if( ! boost::filesystem::exists(file_path) )
+  if( ! ST::FileExists( file_path ) )
   {
-    throw file_not_found_exception(file_path, "File does not exist.");
+    throw vital::file_not_found_exception(file_path, "File does not exist.");
   }
-  else if ( ! boost::filesystem::is_regular_file(file_path) )
+  else if ( ST::FileIsDirectory( file_path ) )
   {
-    throw file_not_found_exception(file_path, "Path given doesn't point to "
+    throw vital::file_not_found_exception(file_path, "Path given doesn't point to "
                                               "a regular file!");
   }
 
@@ -71,7 +72,7 @@ read_pos_file(path_t const& file_path)
   std::ifstream input_stream(file_path.c_str(), std::fstream::in);
   if( ! input_stream )
   {
-    throw file_not_read_exception(file_path, "Could not open file at given "
+    throw vital::file_not_read_exception(file_path, "Could not open file at given "
                                              "path.");
   }
 
@@ -81,9 +82,9 @@ read_pos_file(path_t const& file_path)
   {
     input_stream >> ins;
   }
-  catch (invalid_data const& e)
+  catch (vital::invalid_data const& e)
   {
-    throw invalid_file(file_path, e.what());
+    throw vital::invalid_file(file_path, e.what());
   }
   return ins;
 }
@@ -92,31 +93,29 @@ read_pos_file(path_t const& file_path)
 /// Output the given \c ins_data object to the specified file path
 void
 write_pos_file(ins_data const& ins,
-               path_t const& file_path)
+               vital::path_t const& file_path)
 {
-  namespace bfs = boost::filesystem;
-
   // If the source name is not specified, throw
   if(ins.source_name == "")
   {
-    throw file_write_exception(file_path, "POS source name not specified.");
+    throw vital::file_write_exception(file_path, "POS source name not specified.");
   }
 
   // If the given path is a directory, we obviously can't write to it.
-  if(bfs::is_directory(file_path))
+  if( ST::FileIsDirectory( file_path ) )
   {
-    throw file_write_exception(file_path, "Path given is a directory, "
+    throw vital::file_write_exception(file_path, "Path given is a directory, "
                                           "can not write file.");
   }
 
   // Check that the directory of the given filepath exists, creating necessary
   // directories where needed.
-  path_t parent_dir = bfs::absolute(file_path.parent_path());
-  if(!bfs::is_directory(parent_dir))
+  vital::path_t parent_dir = ST::GetFilenamePath( file_path );
+  if( ! ST::FileIsDirectory( parent_dir ) )
   {
-    if(!bfs::create_directories(parent_dir))
+    if( ! ST::MakeDirectory( parent_dir ) )
     {
-      throw file_write_exception(parent_dir, "Attempted directory creation, "
+      throw vital::file_write_exception(parent_dir, "Attempted directory creation, "
                                              "but no directory created! No "
                                              "idea what happened here...");
     }
@@ -129,4 +128,5 @@ write_pos_file(ins_data const& ins,
   ofile.close();
 }
 
-}
+} // end namespace maptk
+} // end namespace kwiver

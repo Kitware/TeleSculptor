@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2015-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,7 +37,9 @@
 #define MAPTK_PLUGINS_CERES_REPROJECTION_ERROR_H_
 
 
-#include <maptk/plugins/ceres/ceres_config.h>
+#include <vital/vital_config.h>
+#include <maptk/plugins/ceres/maptk_ceres_export.h>
+
 #include <maptk/plugins/ceres/lens_distortion.h>
 #include <maptk/plugins/ceres/types.h>
 
@@ -45,8 +47,8 @@
 #include <ceres/rotation.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ceres
 {
@@ -259,6 +261,7 @@ create_cost_func(LensDistortionType ldt, double x, double y)
 } // end namespace ceres
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_CERES_REPROJECTION_ERROR_H_

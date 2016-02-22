@@ -1,0 +1,24 @@
+MAPTK v0.7.1 Release Notes
+==========================
+
+This release provides patches to the MAPTK v0.7.0 release to add CPack
+packaging support.  MAPTK v0.7.1 provides only CMake improvements and
+installer support files to help build distributable packages and installers.
+
+
+Updates since v0.7.0
+--------------------
+
+Build System
+
+ * Added support for packaging with CPack.  On Windows this will build an
+   installer executable (using NSIS).  On Mac OS X it will build a disk image
+   containing an application bundle.  On Linux it will create a self extracting
+   TGZ file.  The focus in this release is on packaging the graphical
+   application; however, command line utilities and headers are included as
+   well.
+
+Visualization Application
+
+ * Added larger versions of the application icon and specialized icon formats
+   for Windows (.ico) and Mac (.icns).

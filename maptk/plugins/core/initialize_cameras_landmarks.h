@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,22 +36,23 @@
 #ifndef MAPTK_PLUGINS_CORE_INITIALIZE_CAMERAS_LANDMARKS_H_
 #define MAPTK_PLUGINS_CORE_INITIALIZE_CAMERAS_LANDMARKS_H_
 
-#include <boost/scoped_ptr.hpp>
+#include <vital/vital_config.h>
+#include <maptk/plugins/core/maptk_core_export.h>
 
-#include <maptk/algo/initialize_cameras_landmarks.h>
-#include <maptk/plugins/core/plugin_core_config.h>
+#include <vital/algo/initialize_cameras_landmarks.h>
 
+#include <memory>
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
 
 /// A class for initialization of cameras and landmarks
-class PLUGIN_CORE_EXPORT initialize_cameras_landmarks
-: public algo::algorithm_impl<initialize_cameras_landmarks,
-                              algo::initialize_cameras_landmarks>
+class MAPTK_CORE_EXPORT initialize_cameras_landmarks
+: public vital::algorithm_impl<initialize_cameras_landmarks,
+                              vital::algo::initialize_cameras_landmarks>
 {
 public:
   /// Constructor
@@ -66,12 +67,12 @@ public:
   /// Return the name of this implementation
   std::string impl_name() const { return "core"; }
 
-  /// Get this algorithm's \link maptk::config_block configuration block \endlink
-  virtual config_block_sptr get_configuration() const;
+  /// Get this algorithm's \link vital::config_block configuration block \endlink
+  virtual vital::config_block_sptr get_configuration() const;
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(config_block_sptr config);
+  virtual void set_configuration(vital::config_block_sptr config);
   /// Check that the algorithm's currently configuration is valid
-  virtual bool check_configuration(config_block_sptr config) const;
+  virtual bool check_configuration(vital::config_block_sptr config) const;
 
   /// Initialize the camera and landmark parameters given a set of tracks
   /**
@@ -84,20 +85,21 @@ public:
    * \param [in] tracks the tracks to use as constraints
    */
   virtual void
-  initialize(camera_map_sptr& cameras,
-             landmark_map_sptr& landmarks,
-             track_set_sptr tracks) const;
+  initialize(vital::camera_map_sptr& cameras,
+             vital::landmark_map_sptr& landmarks,
+             vital::track_set_sptr tracks) const;
 
 private:
   /// private implementation class
   class priv;
-  boost::scoped_ptr<priv> d_;
+  const std::unique_ptr<priv> d_;
 };
 
 
 } // end namespace core
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_CORE_INITIALIZE_CAMERAS_LANDMARKS_H_

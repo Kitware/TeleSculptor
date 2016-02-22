@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,13 +36,16 @@
 #ifndef MAPTK_PLUGINS_VXL_ESTIMATE_SIMILARITY_TRANSFORM_H_
 #define MAPTK_PLUGINS_VXL_ESTIMATE_SIMILARITY_TRANSFORM_H_
 
-#include <maptk/algo/estimate_similarity_transform.h>
-#include <maptk/plugins/vxl/vxl_config.h>
-#include <maptk/vector.h>
+
+#include <vital/vital_config.h>
+#include <maptk/plugins/vxl/maptk_vxl_export.h>
+
+#include <vital/algo/estimate_similarity_transform.h>
+#include <vital/types/vector.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vxl
 {
@@ -50,8 +53,8 @@ namespace vxl
 
 /// VXL implementation of similarity transform estimation
 class MAPTK_VXL_EXPORT estimate_similarity_transform
-  : public algo::algorithm_impl<estimate_similarity_transform,
-                                algo::estimate_similarity_transform>
+  : public vital::algorithm_impl<estimate_similarity_transform,
+                                         vital::algo::estimate_similarity_transform>
 {
 public:
   /// Name of this implementation
@@ -59,8 +62,8 @@ public:
 
   // No custom configuration at this time
   /// \cond Doxygen Suppress
-  virtual void set_configuration(config_block_sptr /*config*/) { };
-  virtual bool check_configuration(config_block_sptr /*config*/) const { return true; }
+  virtual void set_configuration(vital::config_block_sptr /*config*/) { };
+  virtual bool check_configuration(vital::config_block_sptr /*config*/) const { return true; }
   /// \endcond
 
   /// Estimate the similarity transform between two corresponding point sets
@@ -73,10 +76,10 @@ public:
    *          \c from space to points in the \c to space (i.e. transforms
    *          \c from into \c to).
    */
-  virtual similarity_d
-  estimate_transform(std::vector<vector_3d> const& from,
-                     std::vector<vector_3d> const& to) const;
-  using algo::estimate_similarity_transform::estimate_transform;
+  virtual vital::similarity_d
+  estimate_transform(std::vector<vital::vector_3d> const& from,
+                     std::vector<vital::vector_3d> const& to) const;
+  using vital::algo::estimate_similarity_transform::estimate_transform;
 
 };
 
@@ -84,6 +87,7 @@ public:
 } // end namespace vxl
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_VXL_ESTIMATE_SIMILARITY_TRANSFORM_H_

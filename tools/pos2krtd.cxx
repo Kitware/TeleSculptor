@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2015 by Kitware, Inc.
+ * Copyright 2013-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,51 +39,32 @@
 #include <string>
 #include <vector>
 
-#include <maptk/camera_io.h>
-#include <maptk/config_block.h>
-#include <maptk/config_block_io.h>
-#include <maptk/eigen_io.h>
-#include <maptk/exceptions.h>
+#include <vital/vital_foreach.h>
+#include <vital/config/config_block.h>
+#include <vital/config/config_block_io.h>
+
+#include <vital/io/camera_io.h>
+#include <vital/io/eigen_io.h>
+#include <vital/exceptions.h>
+#include <vital/algorithm_plugin_manager.h>
+#include <vital/vital_types.h>
+
+#include <kwiversys/SystemTools.hxx>
+#include <kwiversys/CommandLineArguments.hxx>
+#include <kwiversys/Directory.hxx>
+
 #include <maptk/ins_data_io.h>
 #include <maptk/local_geo_cs.h>
-#include <maptk/algorithm_plugin_manager.h>
-#include <maptk/types.h>
 
-#include <boost/filesystem.hpp>
-#include <boost/foreach.hpp>
-#include <boost/program_options/options_description.hpp>
-#include <boost/program_options/parsers.hpp>
-#include <boost/program_options/value_semantic.hpp>
-#include <boost/program_options/variables_map.hpp>
+typedef kwiversys::SystemTools     ST;
+typedef kwiversys::CommandLineArguments argT;
 
-namespace bpo = boost::program_options;
-namespace bfs = boost::filesystem;
-
-
-/// Report usage message to std::cerr
-void usage(int const& argc, char const* argv[],
-           bpo::options_description const& opt_desc,
-           bpo::variables_map const& vm)
-{
-    std::cerr << "Usage: " << argv[0] << " -c config_file [-o output_config_file]" << std::endl
-              << std::endl
-              << "If multiple POS files are to be converted into KRTD " << std::endl
-              << "files, it is recomended to use the directory arguments " << std::endl
-              << "in order for the application to create a unified local " << std::endl
-              << "coordinate system." << std::endl
-              << std::endl
-              << "Options:" << std::endl
-              << opt_desc << std::endl;
-}
-
-
+// ------------------------------------------------------------------
 // return a default configuration object
-maptk::config_block_sptr
+kwiver::vital::config_block_sptr
 default_config()
 {
-  using namespace maptk;
-
-  config_block_sptr config = config_block::empty_config();
+  kwiver::vital::config_block_sptr config = kwiver::vital::config_block::empty_config();
 
   // general options
   config->set_value("input", "",
@@ -126,16 +107,15 @@ default_config()
 }
 
 
+// ------------------------------------------------------------------
 /// Check configuration options
 bool
-check_config(maptk::config_block_sptr config)
+check_config(kwiver::vital::config_block_sptr config)
 {
-  using namespace maptk;
-
   bool config_valid = true;
 
-#define MAPTK_CHECK_FAIL(msg) \
-  std::cerr << "Config Check Fail: " << msg << std::endl; \
+#define MAPTK_CHECK_FAIL(msg)                                   \
+  std::cerr << "Config Check Fail: " << msg << std::endl;       \
   config_valid = false
 
   if (!config->has_value("input")
@@ -143,7 +123,7 @@ check_config(maptk::config_block_sptr config)
   {
     MAPTK_CHECK_FAIL("Not given an input file or directory.");
   }
-  else if (!bfs::exists(config->get_value<path_t>("input")))
+  else if ( ! ST::FileExists(config->get_value<kwiver::vital::path_t>("input")))
   {
     MAPTK_CHECK_FAIL("Path given for input doesn't exist.");
   }
@@ -156,17 +136,17 @@ check_config(maptk::config_block_sptr config)
   // When we have a valid input path...
   else if (config_valid)
   {
-    path_t input = config->get_value<path_t>("input"),
-           output = config->get_value<path_t>("output");
-    if (bfs::exists(output))
+    kwiver::vital::path_t input = config->get_value<kwiver::vital::path_t>("input"),
+           output = config->get_value<kwiver::vital::path_t>("output");
+    if ( ST::FileExists( output ) )
     {
-      if (bfs::is_directory(input) && !bfs::is_directory(output))
+      if (ST::FileIsDirectory(input) && !ST::FileIsDirectory(output))
       {
         MAPTK_CHECK_FAIL("Output given exists but is not a directory! "
                          "Input was a directory, so output must also be a "
                          "directory.");
       }
-      else if (!bfs::is_directory(input) && bfs::is_directory(output))
+      else if (!ST::FileIsDirectory(input) && ST::FileIsDirectory(output))
       {
         MAPTK_CHECK_FAIL("Input was a file, but given output path is a "
                          "directory!");
@@ -180,24 +160,27 @@ check_config(maptk::config_block_sptr config)
 }
 
 
+// ------------------------------------------------------------------
 /// create a base camera instance from config options
-maptk::camera_d
-base_camera_from_config(maptk::config_block_sptr config)
+kwiver::vital::simple_camera
+base_camera_from_config(kwiver::vital::config_block_sptr config)
 {
-  using namespace maptk;
-  camera_intrinsics_d K(config->get_value<double>("focal_length"),
-                        config->get_value<vector_2d>("principal_point"),
-                        config->get_value<double>("aspect_ratio"),
-                        config->get_value<double>("skew"));
-  return camera_d(vector_3d(0,0,-1), rotation_d(), K);
+  kwiver::vital::simple_camera_intrinsics
+      K(config->get_value<double>("focal_length"),
+        config->get_value<kwiver::vital::vector_2d>("principal_point"),
+        config->get_value<double>("aspect_ratio"),
+        config->get_value<double>("skew"));
+  return kwiver::vital::simple_camera(kwiver::vital::vector_3d(0,0,-1),
+                                      kwiver::vital::rotation_d(), K);
 }
 
 
+// ------------------------------------------------------------------
 /// Convert a INS data to a camera
-bool convert_ins2camera(const maptk::ins_data& ins,
-                        maptk::local_geo_cs& cs,
-                        maptk::camera_d& cam,
-                        maptk::rotation_d const& ins_rot_offset = maptk::rotation_d())
+bool convert_ins2camera(const kwiver::maptk::ins_data& ins,
+                        kwiver::maptk::local_geo_cs& cs,
+                        kwiver::vital::simple_camera& cam,
+                        kwiver::vital::rotation_d const& ins_rot_offset = kwiver::vital::rotation_d())
 {
   if( cs.utm_origin_zone() < 0 )
   {
@@ -211,55 +194,63 @@ bool convert_ins2camera(const maptk::ins_data& ins,
 }
 
 
+// ------------------------------------------------------------------
 /// Convert a POS file to a KRTD file
-bool convert_pos2krtd(const maptk::path_t& pos_filename,
-                      const maptk::path_t& krtd_filename,
-                      maptk::local_geo_cs& cs,
-                      const maptk::camera_d& base_camera,
-                      maptk::rotation_d const& ins_rot_offset = maptk::rotation_d())
+bool convert_pos2krtd(const kwiver::vital::path_t& pos_filename,
+                      const kwiver::vital::path_t& krtd_filename,
+                      kwiver::maptk::local_geo_cs& cs,
+                      const kwiver::vital::simple_camera& base_camera,
+                      kwiver::vital::rotation_d const& ins_rot_offset = kwiver::vital::rotation_d())
 {
-  maptk::ins_data ins;
+  kwiver::maptk::ins_data ins;
   // a local copy of the base camera to modify in place
-  maptk::camera_d local_camera(base_camera);
-  ins = maptk::read_pos_file(pos_filename);
+  kwiver::vital::simple_camera local_camera(base_camera);
+  ins = kwiver::maptk::read_pos_file(pos_filename);
   if ( !convert_ins2camera(ins, cs, local_camera, ins_rot_offset) )
   {
     return false;
   }
-  maptk::write_krtd_file(local_camera, krtd_filename);
+  kwiver::vital::write_krtd_file(local_camera, krtd_filename);
   return true;
 }
 
 
+// ------------------------------------------------------------------
 /// Convert a directory of POS file to a directory of KRTD files
-bool convert_pos2krtd_dir(const maptk::path_t& pos_dir,
-                          const maptk::path_t& krtd_dir,
-                          maptk::local_geo_cs& cs,
-                          const maptk::camera_d& base_camera,
-                          maptk::rotation_d const& ins_rot_offset = maptk::rotation_d())
+bool convert_pos2krtd_dir(const kwiver::vital::path_t& pos_dir,
+                          const kwiver::vital::path_t& krtd_dir,
+                          kwiver::maptk::local_geo_cs& cs,
+                          const kwiver::vital::simple_camera& base_camera,
+                          kwiver::vital::rotation_d const& ins_rot_offset = kwiver::vital::rotation_d())
 {
-  bfs::directory_iterator it(pos_dir), eod;
-  std::map<maptk::frame_id_t, maptk::ins_data> ins_map;
   std::vector<std::string> krtd_filenames;
+  std::map<kwiver::vital::frame_id_t, kwiver::maptk::ins_data> ins_map;
+
+  kwiversys::Directory dir;
+  dir.Load( pos_dir );
 
   std::cerr << "Loading POS files" << std::endl;
-  BOOST_FOREACH(maptk::path_t const &p, std::make_pair(it, eod))
+
+  unsigned long num_files = dir.GetNumberOfFiles();
+  for ( unsigned long i = 0; i < num_files; i++)
   {
+    kwiver::vital::path_t p = dir.GetFile( i );
+
     try
     {
-      maptk::ins_data ins = maptk::read_pos_file(p.string());
+      kwiver::maptk::ins_data ins = kwiver::maptk::read_pos_file( p );
 
-      maptk::path_t krtd_filename = krtd_dir / (basename(p) + ".krtd");
+      kwiver::vital::path_t krtd_filename = krtd_dir + "/" + ST::GetFilenameWithoutExtension( p ) + ".krtd";
       //std::cerr << "Loading " << p << std::endl;
-      maptk::frame_id_t frame = static_cast<maptk::frame_id_t>(krtd_filenames.size());
+      kwiver::vital::frame_id_t frame = static_cast<kwiver::vital::frame_id_t>(krtd_filenames.size());
       ins_map[frame] = ins;
-      krtd_filenames.push_back(krtd_filename.string());
+      krtd_filenames.push_back(krtd_filename);
     }
-    catch (maptk::invalid_file const& /*e*/)
+    catch (kwiver::vital::invalid_file const& /*e*/)
     {
       std::cerr << "-> Skipping invalid file: " << p << std::endl;
     }
-  }
+  } // end foreach
 
   if (ins_map.size() == 0)
   {
@@ -270,80 +261,84 @@ bool convert_pos2krtd_dir(const maptk::path_t& pos_dir,
   }
 
   std::cerr << "Initializing cameras" << std::endl;
-  std::map<maptk::frame_id_t, maptk::camera_sptr> cam_map;
-  cam_map = maptk::initialize_cameras_with_ins(ins_map, base_camera, cs, ins_rot_offset);
+  std::map<kwiver::vital::frame_id_t, kwiver::vital::camera_sptr> cam_map;
+  cam_map = kwiver::maptk::initialize_cameras_with_ins(ins_map, base_camera, cs, ins_rot_offset);
 
   std::cerr << "Writing KRTD files" << std::endl;
-  typedef std::map<maptk::frame_id_t, maptk::camera_sptr>::value_type cam_map_val_t;
-  BOOST_FOREACH(cam_map_val_t const &p, cam_map)
+  typedef std::map<kwiver::vital::frame_id_t, kwiver::vital::camera_sptr>::value_type cam_map_val_t;
+  VITAL_FOREACH(cam_map_val_t const &p, cam_map)
   {
-    maptk::camera_d* cam = dynamic_cast<maptk::camera_d*>(p.second.get());
-    maptk::write_krtd_file(*cam, krtd_filenames[p.first]);
+    kwiver::vital::simple_camera* cam = dynamic_cast<kwiver::vital::simple_camera*>(p.second.get());
+    kwiver::vital::write_krtd_file(*cam, krtd_filenames[p.first]);
   }
 
-  maptk::vector_3d origin = cs.utm_origin();
+  kwiver::vital::vector_3d origin = cs.utm_origin();
   std::cerr << "using local UTM origin at "<<origin[0] <<", "<<origin[1]
             <<", zone "<<cs.utm_origin_zone() <<std::endl;
   return true;
 }
 
 
+// ------------------------------------------------------------------
 static int maptk_main(int argc, char const* argv[])
 {
-  // register the algorithm implementations
-  maptk::algorithm_plugin_manager::instance().register_plugins();
+  static bool        opt_help(false);
+  static std::string opt_config;
+  static std::string opt_out_config;
 
-  //
-  // CLI Options (boost)
-  //
-  bpo::options_description opt_desc;
-  opt_desc.add_options()
-    ("help,h", "output help message and exit")
-    ("config,c",
-     bpo::value<maptk::path_t>(),
-     "Configuration file for the tool.")
-    ("output-config,o",
-     bpo::value<maptk::path_t>(),
-     "Output a configuration. This may be seeded with"
-     " a configuration file from -c/--config.");
-  bpo::variables_map vm;
-  // try to parse the command-line
-  try
+  kwiversys::CommandLineArguments arg;
+
+  arg.Initialize( argc, argv );
+  typedef kwiversys::CommandLineArguments argT;
+
+  arg.AddArgument( "--help",        argT::NO_ARGUMENT, &opt_help, "Display usage information" );
+  arg.AddArgument( "--config",      argT::SPACE_ARGUMENT, &opt_config, "Configuration file for tool" );
+  arg.AddArgument( "-c",            argT::SPACE_ARGUMENT, &opt_config, "Configuration file for tool" );
+  arg.AddArgument( "--output-config", argT::SPACE_ARGUMENT, &opt_out_config,
+                   "Output a configuration. This may be seeded with a configuration file from -c/--config." );
+  arg.AddArgument( "-o",            argT::SPACE_ARGUMENT, &opt_out_config,
+                   "Output a configuration. This may be seeded with a configuration file from -c/--config." );
+
+    if ( ! arg.Parse() )
   {
-    bpo::store(bpo::parse_command_line(argc, argv, opt_desc), vm);
-  }
-  catch (bpo::unknown_option const& e)
-  {
-    std::cerr << e.what() << std::endl
-              << std::endl;
-    usage(argc, argv, opt_desc, vm);
+    std::cerr << "Problem parsing arguments" << std::endl;
     return EXIT_FAILURE;
   }
-  bpo::notify(vm);
 
-  if(vm.count("help"))
+  if ( opt_help )
   {
-    usage(argc, argv, opt_desc, vm);
+    std::cout
+      << "USAGE: " << argv[0] << " [OPTS]\n\n"
+      << "If multiple POS files are to be converted into KRTD " << std::endl
+      << "files, it is recomended to use the directory arguments " << std::endl
+      << "in order for the application to create a unified local " << std::endl
+      << "coordinate system." << std::endl
+      << std::endl
+      << "Options:"
+      << arg.GetHelp() << std::endl;
     return EXIT_SUCCESS;
   }
 
 
+  // register the algorithm implementations
+  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
+
   //
   // Initialize from configuration
   //
-  maptk::config_block_sptr config = default_config();
+  kwiver::vital::config_block_sptr config = default_config();
 
-  if (vm.count("config"))
+  if ( ! opt_config.empty())
   {
-    config->merge_config(maptk::read_config_file(vm["config"].as<maptk::path_t>()));
+    config->merge_config( kwiver::vital::read_config_file( opt_config ) );
   }
 
   bool config_is_valid = check_config(config);
 
-  if (vm.count("output-config"))
+    if ( ! opt_out_config.empty() )
   {
-    maptk::path_t output_path = vm["output-config"].as<maptk::path_t>();
-    maptk::write_config_file(config, output_path);
+    kwiver::vital::path_t output_path = opt_out_config;
+    kwiver::vital::write_config_file(config, output_path);
 
     if (config_is_valid)
     {
@@ -362,27 +357,27 @@ static int maptk_main(int argc, char const* argv[])
   }
 
 
-  maptk::path_t input = config->get_value<maptk::path_t>("input"),
-                output = config->get_value<maptk::path_t>("output");
-  maptk::camera_d base_camera = base_camera_from_config(config->subblock_view("base_camera"));
-  maptk::rotation_d ins_rot_offset = config->get_value<maptk::rotation_d>("ins:rotation_offset");
+  kwiver::vital::path_t input = config->get_value<kwiver::vital::path_t>("input"),
+                output = config->get_value<kwiver::vital::path_t>("output");
+  kwiver::vital::simple_camera base_camera = base_camera_from_config(config->subblock_view("base_camera"));
+  kwiver::vital::rotation_d ins_rot_offset = config->get_value<kwiver::vital::rotation_d>("ins:rotation_offset");
 
 
-  maptk::algo::geo_map_sptr geo_mapper = maptk::algo::geo_map::create("proj");
+  kwiver::vital::algo::geo_map_sptr geo_mapper = kwiver::vital::algo::geo_map::create("proj");
   if( !geo_mapper )
   {
     std::cerr << "No geo_map module available" << std::endl;
     return EXIT_FAILURE;
   }
 
-  maptk::local_geo_cs local_cs(geo_mapper);
+  kwiver::maptk::local_geo_cs local_cs(geo_mapper);
 
-  if( bfs::is_directory(input) )
+  if( ST::FileIsDirectory(input) )
   {
     std::cerr << "processing "<<input<<" as a directory of POS files" << std::endl;
-    if( !bfs::exists(output) )
+    if( ! ST::FileExists(output) )
     {
-      if( !bfs::create_directory(output) )
+      if( ! ST::MakeDirectory( output ) )
       {
         std::cerr << "Unable to create output directory: " << output << std::endl;
         return EXIT_FAILURE;
@@ -403,6 +398,7 @@ static int maptk_main(int argc, char const* argv[])
 }
 
 
+// ------------------------------------------------------------------
 int main(int argc, char const* argv[])
 {
   try

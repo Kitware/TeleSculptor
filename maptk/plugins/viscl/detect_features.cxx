@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,8 +38,8 @@
 #include <viscl/tasks/hessian.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vcl
 {
@@ -89,12 +89,12 @@ detect_features
 {
 }
 
-/// Get this algorithm's \link maptk::config_block configuration block \endlink
-config_block_sptr
+/// Get this algorithm's \link vital::config_block configuration block \endlink
+vital::config_block_sptr
 detect_features
 ::get_configuration() const
 {
-  config_block_sptr config = algorithm::get_configuration();
+  vital::config_block_sptr config = algorithm::get_configuration();
   config->set_value("max_keypoints", d_->max_kpts, "Maximum number of features to detect on an image.");
   config->set_value("thresh", d_->thresh, "Threshold on the determinant of Hessian for keypoint candidates.");
   config->set_value("sigma", d_->sigma, "Smoothing scale.");
@@ -104,17 +104,17 @@ detect_features
 /// Set this algorithm's properties via a config block
 void
 detect_features
-::set_configuration(config_block_sptr config)
+::set_configuration(vital::config_block_sptr config)
 {
   d_->max_kpts = config->get_value<unsigned int>("max_keypoints", d_->max_kpts);
   d_->thresh = config->get_value<float>("thresh", d_->thresh);
   d_->sigma = config->get_value<float>("sigma", d_->sigma);
 }
 
-/// Check that the algorithm's configuration config_block is valid
+/// Check that the algorithm's configuration vital::config_block is valid
 bool
 detect_features
-::check_configuration(config_block_sptr config) const
+::check_configuration(vital::config_block_sptr config) const
 {
   return true;
 }
@@ -122,9 +122,9 @@ detect_features
 /// Extract a set of image features from the provided image
 /// \param image_data contains the image data to process
 /// \returns a set of image features
-feature_set_sptr
+vital::feature_set_sptr
 detect_features
-::detect(image_container_sptr image_data, image_container_sptr mask) const
+::detect(vital::image_container_sptr image_data, vital::image_container_sptr mask) const
 {
   // TODO: Do something with the given mask
 
@@ -134,10 +134,11 @@ detect_features
   d_->detector.smooth_and_detect(img, feature_data.kptmap_, feature_data.features_, feature_data.numfeat_,
                                  d_->max_kpts, d_->thresh, d_->sigma);
 
-  return feature_set_sptr(new feature_set(feature_data));
+  return vital::feature_set_sptr(new feature_set(feature_data));
 }
 
 
 } // end namespace vcl
 
 } // end namespace maptk
+} // end namespace kwiver

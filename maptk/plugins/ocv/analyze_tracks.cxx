@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,10 +35,6 @@
 
 #include "analyze_tracks.h"
 
-#include <boost/foreach.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/format.hpp>
-
 #include <fstream>
 #include <sstream>
 #include <iostream>
@@ -48,9 +44,10 @@
 
 #include <maptk/plugins/ocv/ocv_algo_tools.h>
 
+using namespace kwiver::vital;
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
@@ -109,12 +106,12 @@ analyze_tracks
 }
 
 
-/// Get this algorithm's \link maptk::config_block configuration block \endlink
-config_block_sptr
+/// Get this algorithm's \link vital::config_block configuration block \endlink
+vital::config_block_sptr
 analyze_tracks
 ::get_configuration() const
 {
-  config_block_sptr config = maptk::algo::analyze_tracks::get_configuration();
+  vital::config_block_sptr config = vital::algo::analyze_tracks::get_configuration();
 
   config->set_value("output_summary", d_->output_summary,
                     "Output a summary descriptor of high-level properties.");
@@ -135,9 +132,9 @@ analyze_tracks
 /// Set this algorithm's properties via a config block
 void
 analyze_tracks
-::set_configuration(config_block_sptr in_config)
+::set_configuration(vital::config_block_sptr in_config)
 {
-  config_block_sptr config = this->get_configuration();
+  vital::config_block_sptr config = this->get_configuration();
   config->merge_config( in_config );
 
   d_->output_summary = config->get_value<bool>( "output_summary" );
@@ -165,7 +162,7 @@ analyze_tracks
 /// Check that the algorithm's currently configuration is valid
 bool
 analyze_tracks
-::check_configuration(config_block_sptr config) const
+::check_configuration(vital::config_block_sptr config) const
 {
   return true;
 }
@@ -207,12 +204,12 @@ analyze_tracks
   }
 
   // Generate matrix
-  cv::Mat_<double> data( total_frames, static_cast<int>(d_->frames_to_compare.size()) + 2 );
+  cv::Mat_<double> data( static_cast<int>(total_frames), static_cast<int>(d_->frames_to_compare.size()) + 2 );
 
   for( frame_id_t fid = first_frame; fid <= last_frame; fid++ )
   {
-    data.at<double>( fid, 0 ) = fid;
-    data.at<double>( fid, 1 ) = static_cast<double>(track_set->active_tracks( fid )->size());
+    data.at<double>( static_cast<int>(fid), 0 ) = static_cast<double>(fid);
+    data.at<double>( static_cast<int>(fid), 1 ) = static_cast<double>(track_set->active_tracks( fid )->size());
 
     for( unsigned i = 0; i < d_->frames_to_compare.size(); i++ )
     {
@@ -220,11 +217,11 @@ analyze_tracks
 
       if( fid < first_frame + adj )
       {
-        data.at<double>( fid, i+2 ) = -1.0;
+        data.at<double>( static_cast<int>(fid), i+2 ) = -1.0;
       }
       else
       {
-        data.at<double>( fid, i+2 ) = track_set->percentage_tracked( fid-adj, fid );
+        data.at<double>( static_cast<int>(fid), i+2 ) = track_set->percentage_tracked( fid-adj, fid );
       }
     }
   }
@@ -253,3 +250,4 @@ analyze_tracks
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver

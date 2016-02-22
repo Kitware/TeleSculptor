@@ -44,20 +44,19 @@
 
 #include <maptk/projected_track_set.h>
 #include <maptk/metrics.h>
-#include <maptk/algo/triangulate_landmarks.h>
+#include <vital/algo/triangulate_landmarks.h>
 
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
+namespace testing {
 
-namespace testing
-{
 
 // input to triangulation is the ideal solution, make sure it doesn't diverge
-void test_from_solution(algo::triangulate_landmarks& tri_lm)
+void test_from_solution(kwiver::vital::algo::triangulate_landmarks& tri_lm)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
 
   // create landmarks at the corners of a cube
   landmark_map_sptr landmarks = testing::cube_corners(2.0);
@@ -87,9 +86,9 @@ void test_from_solution(algo::triangulate_landmarks& tri_lm)
 
 
 // add noise to landmarks before input to triangulation
-void test_noisy_landmarks(algo::triangulate_landmarks& tri_lm)
+void test_noisy_landmarks(kwiver::vital::algo::triangulate_landmarks& tri_lm)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
 
   // create landmarks at the corners of a cube
   landmark_map_sptr landmarks = testing::cube_corners(2.0);
@@ -123,9 +122,9 @@ void test_noisy_landmarks(algo::triangulate_landmarks& tri_lm)
 
 
 // initialize all landmarks to the origin as input to triangulation
-void test_zero_landmarks(algo::triangulate_landmarks& tri_lm)
+void test_zero_landmarks(kwiver::vital::algo::triangulate_landmarks& tri_lm)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
 
   // create landmarks at the corners of a cube
   landmark_map_sptr landmarks = testing::cube_corners(2.0);
@@ -160,9 +159,9 @@ void test_zero_landmarks(algo::triangulate_landmarks& tri_lm)
 
 
 // select a subset of cameras to triangulation from
-void test_subset_cameras(algo::triangulate_landmarks& tri_lm)
+void test_subset_cameras(kwiver::vital::algo::triangulate_landmarks& tri_lm)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
 
   // create landmarks at the corners of a cube
   landmark_map_sptr landmarks = testing::cube_corners(2.0);
@@ -179,7 +178,7 @@ void test_subset_cameras(algo::triangulate_landmarks& tri_lm)
 
   camera_map::map_camera_t cam_map = cameras->cameras();
   camera_map::map_camera_t cam_map2;
-  BOOST_FOREACH(camera_map::map_camera_t::value_type& p, cam_map)
+  VITAL_FOREACH(camera_map::map_camera_t::value_type& p, cam_map)
   {
     /// take every third camera
     if(p.first % 3 == 0)
@@ -211,9 +210,9 @@ void test_subset_cameras(algo::triangulate_landmarks& tri_lm)
 
 
 // select a subset of landmarks to triangulate
-void test_subset_landmarks(algo::triangulate_landmarks& tri_lm)
+void test_subset_landmarks(kwiver::vital::algo::triangulate_landmarks& tri_lm)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
 
   // create landmarks at the corners of a cube
   landmark_map_sptr landmarks = testing::cube_corners(2.0);
@@ -256,9 +255,9 @@ void test_subset_landmarks(algo::triangulate_landmarks& tri_lm)
 
 
 // select a subset of tracks/track_states to constrain the problem
-void test_subset_tracks(algo::triangulate_landmarks& tri_lm)
+void test_subset_tracks(kwiver::vital::algo::triangulate_landmarks& tri_lm)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
 
   // create landmarks at the corners of a cube
   landmark_map_sptr landmarks = testing::cube_corners(2.0);
@@ -295,9 +294,9 @@ void test_subset_tracks(algo::triangulate_landmarks& tri_lm)
 
 
 // select a subset of tracks/track_states and add noise
-void test_noisy_tracks(algo::triangulate_landmarks& tri_lm)
+void test_noisy_tracks(kwiver::vital::algo::triangulate_landmarks& tri_lm)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
 
   // create landmarks at the corners of a cube
   landmark_map_sptr landmarks = testing::cube_corners(2.0);
@@ -337,7 +336,7 @@ void test_noisy_tracks(algo::triangulate_landmarks& tri_lm)
 }
 
 } // end namespace testing
-
 } // end namespace maptk
+} // end namespace kwiver
 
 #endif // MAPTK_TEST_ALGO_TEST_TRIANGULATE_LANDMARKS_H_

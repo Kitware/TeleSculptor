@@ -35,13 +35,16 @@
 #include <test_math.h>
 #include <test_scene.h>
 
-#include <maptk/camera_map.h>
-#include <maptk/landmark_map.h>
-#include <maptk/track_set.h>
+#include <vital/types/camera_map.h>
+#include <vital/types/landmark_map.h>
+#include <vital/types/track_set.h>
+#include <vital/exceptions.h>
+
+
 #include <maptk/projected_track_set.h>
 #include <maptk/plugins/vxl/optimize_cameras.h>
 
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
 
 
 #define TEST_ARGS ()
@@ -50,15 +53,16 @@ DECLARE_TEST_MAP();
 int main(int argc, char* argv[])
 {
   CHECK_ARGS(1);
-  maptk::vxl::optimize_cameras::register_self();
+  kwiver::maptk::vxl::optimize_cameras::register_self();
   testname_t const testname = argv[1];
   RUN_TEST(testname);
 }
 
+using namespace kwiver::vital;
 
 IMPLEMENT_TEST(creation)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   algo::optimize_cameras_sptr cam_optimizer = algo::optimize_cameras::create("vxl");
   if (!cam_optimizer)
   {
@@ -69,7 +73,7 @@ IMPLEMENT_TEST(creation)
 
 IMPLEMENT_TEST(uninitialized)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   using namespace std;
 
   camera_map_sptr cam_map;
@@ -81,7 +85,7 @@ IMPLEMENT_TEST(uninitialized)
   cerr << "cam_map before: " << cam_map << endl;
 
   EXPECT_EXCEPTION(
-      invalid_value,
+    kwiver::vital::invalid_value,
       optimizer.optimize(cam_map, trk_set, lm_map),
       "Running camera optimization with null input"
       );
@@ -94,7 +98,7 @@ IMPLEMENT_TEST(uninitialized)
 
 IMPLEMENT_TEST(empty_input)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   using namespace std;
 
   camera_map_sptr cam_map(new simple_camera_map());
@@ -121,7 +125,7 @@ IMPLEMENT_TEST(empty_input)
 
 IMPLEMENT_TEST(no_noise)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   using namespace std;
 
   // Create cameras, landmarks and tracks.
@@ -132,7 +136,7 @@ IMPLEMENT_TEST(no_noise)
 
   landmark_map_sptr landmarks = testing::cube_corners(2.0);
   camera_map_sptr working_cam_map(new simple_camera_map(original_cams));
-  track_set_sptr tracks = maptk::projected_tracks(landmarks,
+  track_set_sptr tracks = projected_tracks(landmarks,
                                                   working_cam_map);
 
   vxl::optimize_cameras optimizer;
@@ -144,7 +148,7 @@ IMPLEMENT_TEST(no_noise)
   ostringstream ss;
 
   double ep = 1e-14;
-  BOOST_FOREACH(camera_map::map_camera_t::value_type const& p,
+  VITAL_FOREACH(camera_map::map_camera_t::value_type const& p,
                 working_cam_map->cameras())
   {
     // difference in camera center
@@ -167,9 +171,9 @@ IMPLEMENT_TEST(no_noise)
     TEST_NEAR(ss.str(), c_r, zero_4d_vec, ep);
 
     // difference in camera intrinsics
-    camera_intrinsics_d a_k = p.second->intrinsics(),
-                        b_k = original_cams[p.first]->intrinsics();
-    matrix_3x3d c_k = matrix_3x3d(a_k) - matrix_3x3d(b_k);
+    camera_intrinsics_sptr a_k = p.second->intrinsics(),
+                           b_k = original_cams[p.first]->intrinsics();
+    matrix_3x3d c_k = a_k->as_matrix() - b_k->as_matrix();
     //cerr << "frm[" << p.first << "]\t:: intrinsics delta :: " << c_k << endl;
     ss.str("");
     ss << "frm[" << p.first << "] intrinsics";
@@ -180,7 +184,7 @@ IMPLEMENT_TEST(no_noise)
 
 IMPLEMENT_TEST(noisy_cameras)
 {
-  using namespace maptk;
+  using namespace kwiver::maptk;
   using namespace std;
 
   // Same as above, but create an analogous set of cameras with noise added.
@@ -190,7 +194,7 @@ IMPLEMENT_TEST(noisy_cameras)
 
   landmark_map_sptr landmarks = testing::cube_corners(2.0);
   camera_map_sptr working_cam_map(new simple_camera_map(original_cams));
-  track_set_sptr tracks = maptk::projected_tracks(landmarks, working_cam_map);
+  track_set_sptr tracks = projected_tracks(landmarks, working_cam_map);
 
   working_cam_map = testing::noisy_cameras(working_cam_map, 0.1, 0.1);
 
@@ -203,7 +207,7 @@ IMPLEMENT_TEST(noisy_cameras)
   ostringstream ss;
 
   double ep = 2e-10;
-  BOOST_FOREACH(camera_map::map_camera_t::value_type const& p,
+  VITAL_FOREACH(camera_map::map_camera_t::value_type const& p,
                 working_cam_map->cameras())
   {
     // difference in camera center
@@ -226,9 +230,9 @@ IMPLEMENT_TEST(noisy_cameras)
     TEST_NEAR(ss.str(), c_r, zero_4d_vec, ep);
 
     // difference in camera intrinsics
-    camera_intrinsics_d a_k = p.second->intrinsics(),
-                        b_k = original_cams[p.first]->intrinsics();
-    matrix_3x3d c_k = matrix_3x3d(a_k) - matrix_3x3d(b_k);
+    camera_intrinsics_sptr a_k = p.second->intrinsics(),
+                           b_k = original_cams[p.first]->intrinsics();
+    matrix_3x3d c_k = a_k->as_matrix() - b_k->as_matrix();
     //cerr << "frm[" << p.first << "]\t:: intrinsics delta :: " << c_k << endl;
     ss.str("");
     ss << "frm[" << p.first << "] intrinsics";

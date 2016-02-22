@@ -39,9 +39,10 @@
 #include <vector>
 #include <utility>
 
-#include <boost/foreach.hpp>
+#include <vital/vital_foreach.h>
 
-#include <maptk/exceptions.h>
+#include <vital/exceptions.h>
+
 #include <maptk/plugins/vxl/camera.h>
 #include <maptk/plugins/vxl/camera_map.h>
 
@@ -52,9 +53,10 @@
 #include <vnl/vnl_double_3.h>
 #include <vpgl/algo/vpgl_optimize_camera.h>
 
+using namespace kwiver::vital;
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vxl
 {
@@ -79,7 +81,7 @@ maptk_opt_orient_pos(vpgl_perspective_camera<double> const& camera,
   vpgl_orientation_position_lsqr lsqr_func(K,world_points,image_points);
   vnl_levenberg_marquardt lm(lsqr_func);
   vnl_vector<double> params(6);
-  params[0]=w[0];  params[1]=w[1];  params[2]=w[2];
+  params[0]=w[0];   params[1]=w[1];   params[2]=w[2];
   params[3]=c.x();  params[4]=c.y();  params[5]=c.z();
   lm.minimize(params);
   vnl_double_3 w_min(params[0],params[1],params[2]);
@@ -95,15 +97,15 @@ maptk_opt_orient_pos(vpgl_perspective_camera<double> const& camera,
 /// Optimize a single camera given corresponding features and landmarks
 void
 optimize_cameras
-::optimize(camera_sptr& camera,
-           const std::vector<feature_sptr>& features,
-           const std::vector<landmark_sptr>& landmarks) const
+::optimize(vital::camera_sptr& camera,
+           const std::vector<vital::feature_sptr>& features,
+           const std::vector<vital::landmark_sptr>& landmarks) const
 {
   // remove camera intrinsics from the camera and work in normalized coordinates
   // VXL is only optimizing rotation and translation and doesn't model distortion
-  camera_d mcamera(*camera);
-  camera_intrinsics_d k(mcamera.get_intrinsics());
-  mcamera.set_intrinsics(camera_intrinsics_d());
+  vital::simple_camera mcamera(*camera);
+  vital::camera_intrinsics_sptr k(camera->intrinsics());
+  mcamera.set_intrinsics(vital::camera_intrinsics_sptr(new vital::simple_camera_intrinsics()));
 
   // convert the camera
   vpgl_perspective_camera<double> vcamera;
@@ -119,7 +121,7 @@ optimize_cameras
   for( unsigned int i=0; i<features.size(); ++i )
   {
     // unmap the points to normalized coordinates
-    tmp_2d = k.unmap(features[i]->loc());
+    tmp_2d = k->unmap(features[i]->loc());
     tmp_3d = landmarks[i]->loc();
     pts_2d.push_back(vgl_point_2d<double>(tmp_2d.x(), tmp_2d.y()));
     pts_3d.push_back(vgl_homg_point_3d<double>(tmp_3d.x(), tmp_3d.y(), tmp_3d.z()));
@@ -134,6 +136,7 @@ optimize_cameras
 }
 
 
-}
+} // end namespace vxl
 
-}
+} // end namespace maptk
+} // end namespace kwiver

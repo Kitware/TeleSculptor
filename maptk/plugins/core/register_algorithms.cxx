@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,9 +35,6 @@
 
 #include "register_algorithms.h"
 
-#include <iostream>
-
-#include <maptk/logging_macros.h>
 #include <maptk/plugin_interface/algorithm_plugin_interface_macros.h>
 #include <maptk/plugins/core/close_loops_bad_frames_only.h>
 #include <maptk/plugins/core/close_loops_multi_method.h>
@@ -47,19 +44,18 @@
 #include <maptk/plugins/core/hierarchical_bundle_adjust.h>
 #include <maptk/plugins/core/initialize_cameras_landmarks.h>
 #include <maptk/plugins/core/match_features_homography.h>
-#include <maptk/plugins/core/plugin_core_config.h>
 #include <maptk/plugins/core/track_features_core.h>
 #include <maptk/plugins/core/triangulate_landmarks.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
 
 // Register core algorithms with the given or global registrar
-int register_algorithms(maptk::registrar &reg)
+int register_algorithms(vital::registrar &reg)
 {
     REGISTRATION_INIT( reg );
 
@@ -78,6 +74,7 @@ int register_algorithms(maptk::registrar &reg)
     return REGISTRATION_FAILURES();
 }
 
-} // end core namespace
+} // end namespace core
 
-} // end maptk namespace
+} // end namespace maptk
+} // end namespace kwiver

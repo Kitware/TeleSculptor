@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2015-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,11 +31,12 @@
 #ifndef MAPTK_PLUGINS_CORE_FILTER_FEATURES_MAGNITUDE_H_
 #define MAPTK_PLUGINS_CORE_FILTER_FEATURES_MAGNITUDE_H_
 
+#include <vital/vital_config.h>
+#include <maptk/plugins/core/maptk_core_export.h>
 
-#include <boost/scoped_ptr.hpp>
+#include <vital/algo/filter_features.h>
 
-#include <maptk/algo/filter_features.h>
-#include <maptk/plugins/core/plugin_core_config.h>
+#include <memory>
 
 /**
  * \file
@@ -43,15 +44,15 @@
  *        \endlink algorithm
  */
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace core
 {
 
 /// \brief Algorithm that filters features based on feature magnitude
-class PLUGIN_CORE_EXPORT filter_features_magnitude
-  : public algo::algorithm_impl<filter_features_magnitude, algo::filter_features>
+class MAPTK_CORE_EXPORT filter_features_magnitude
+  : public vital::algorithm_impl<filter_features_magnitude, vital::algo::filter_features>
 {
 public:
   /// Constructor
@@ -66,12 +67,12 @@ public:
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "magnitude"; }
 
-  /// Get this algorithm's \link maptk::config_block configuration block \endlink
-  virtual config_block_sptr get_configuration() const;
+  /// Get this algorithm's \link vital::config_block configuration block \endlink
+  virtual vital::config_block_sptr get_configuration() const;
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(config_block_sptr config);
+  virtual void set_configuration(vital::config_block_sptr config);
   /// Check that the algorithm's configuration config_block is valid
-  virtual bool check_configuration(config_block_sptr config) const;
+  virtual bool check_configuration(vital::config_block_sptr config) const;
 
 protected:
 
@@ -81,19 +82,20 @@ protected:
    * \param [out] indices of the kept features to the original feature set
    * \returns a filtered version of the feature set
    */
-  virtual feature_set_sptr
-  filter(feature_set_sptr input, std::vector<unsigned int> &indices) const;
+  virtual vital::feature_set_sptr
+  filter(vital::feature_set_sptr input, std::vector<unsigned int> &indices) const;
   using filter_features::filter;
 
 private:
   /// private implementation class
   class priv;
-  boost::scoped_ptr<priv> d_;
+  const std::unique_ptr<priv> d_;
 };
 
 } // end namespace core
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_CORE_FILTER_FEATURES_MAGNITUDE_H_

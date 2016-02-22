@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,14 +31,17 @@
 #ifndef MAPTK_PLUGINS_VISCL_MATCH_SET_H_
 #define MAPTK_PLUGINS_VISCL_MATCH_SET_H_
 
-#include <maptk/match_set.h>
-#include <maptk/plugins/viscl/viscl_config.h>
+
+#include <vital/vital_config.h>
+#include <maptk/plugins/viscl/maptk_viscl_export.h>
+
+#include <vital/types/match_set.h>
 
 #include <viscl/core/buffer.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vcl
 {
@@ -46,7 +49,7 @@ namespace vcl
 
 /// A concrete match set that wraps VisCL matches
 class MAPTK_VISCL_EXPORT match_set
-: public maptk::match_set
+: public vital::match_set
 {
 public:
   /// Default constructor
@@ -65,7 +68,7 @@ public:
   virtual size_t size() const;
 
   /// Return a vector of matching indices
-  virtual std::vector<match> matches() const;
+  virtual std::vector<vital::match> matches() const;
 
   /// Return the underlying VisCL match data
   const viscl::buffer& viscl_matches() const { return data_; }
@@ -81,12 +84,13 @@ private:
   * Will remove duplicate matches to a kpt from 2nd set
   */
 MAPTK_VISCL_EXPORT viscl::buffer
-matches_to_viscl(const maptk::match_set& match_set);
+matches_to_viscl(const vital::match_set& match_set);
 
 
 } // end namespace vcl
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_VISCL_MATCH_SET_H_

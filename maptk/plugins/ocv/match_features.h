@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,22 +36,24 @@
 #ifndef MAPTK_PLUGINS_OCV_MATCH_FEATURES_H_
 #define MAPTK_PLUGINS_OCV_MATCH_FEATURES_H_
 
-#include <boost/scoped_ptr.hpp>
 
-#include <maptk/algo/match_features.h>
+#include <vital/vital_config.h>
+#include <maptk/plugins/ocv/maptk_ocv_export.h>
 
-#include <maptk/plugins/ocv/ocv_config.h>
+#include <vital/algo/match_features.h>
+
+#include <memory>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace ocv
 {
 
 /// An abstract base class for matching feature points
 class MAPTK_OCV_EXPORT match_features
-  : public algo::algorithm_impl<match_features, algo::match_features>
+  : public vital::algorithm_impl<match_features, vital::algo::match_features>
 {
 public:
   /// Constructor
@@ -66,12 +68,12 @@ public:
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "ocv"; }
 
-  /// Get this algorithm's \link maptk::config_block configuration block \endlink
-  virtual config_block_sptr get_configuration() const;
+  /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
+  virtual vital::config_block_sptr get_configuration() const;
   /// Set this algorithm's properties via a config block
-  virtual void set_configuration(config_block_sptr config);
-  /// Check that the algorithm's configuration config_block is valid
-  virtual bool check_configuration(config_block_sptr config) const;
+  virtual void set_configuration(vital::config_block_sptr config);
+  /// Check that the algorithm's configuration vital::config_block is valid
+  virtual bool check_configuration(vital::config_block_sptr config) const;
 
   /// Match one set of features and corresponding descriptors to another
   /**
@@ -81,19 +83,20 @@ public:
    * \param [in] desc2 the descriptors corresponding to \a feat2
    * \returns a set of matching indices from \a feat1 to \a feat2
    */
-  virtual match_set_sptr
-  match(feature_set_sptr feat1, descriptor_set_sptr desc1,
-        feature_set_sptr feat2, descriptor_set_sptr desc2) const;
+  virtual vital::match_set_sptr
+  match(vital::feature_set_sptr feat1, vital::descriptor_set_sptr desc1,
+        vital::feature_set_sptr feat2, vital::descriptor_set_sptr desc2) const;
 
 private:
   /// private implementation class
   class priv;
-  boost::scoped_ptr<priv> d_;
+  const std::unique_ptr<priv> d_;
 };
 
 } // end namespace ocv
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_PLUGINS_OCV_MATCH_FEATURES_H_

@@ -8,6 +8,7 @@ set(maptk_vxl_headers_public
   close_loops_homography_guided.h
   compute_homography_overlap.h
   estimate_essential_matrix.h
+  estimate_fundamental_matrix.h
   estimate_homography.h
   estimate_similarity_transform.h
   image_container.h
@@ -17,10 +18,14 @@ set(maptk_vxl_headers_public
   register_algorithms.h
   triangulate_landmarks.h
   vil_image_memory.h
-  vxl_config.h
   )
-maptk_install_plugin_headers( vxl
+kwiver_install_headers(
+  SUBDIR     maptk/plugins/vxl
   ${maptk_vxl_headers_public}
+  )
+kwiver_install_headers(
+  ${CMAKE_CURRENT_BINARY_DIR}/maptk_vxl_export.h
+  NOPATH   SUBDIR     maptk/plugins/vxl
   )
 
 set(maptk_vxl_sources
@@ -30,6 +35,7 @@ set(maptk_vxl_sources
   close_loops_homography_guided.cxx
   compute_homography_overlap.cxx
   estimate_essential_matrix.cxx
+  estimate_fundamental_matrix.cxx
   estimate_homography.cxx
   estimate_similarity_transform.cxx
   image_container.cxx
@@ -41,13 +47,13 @@ set(maptk_vxl_sources
   vil_image_memory.cxx
   )
 
-maptk_add_library( maptk_vxl
+kwiver_add_library( maptk_vxl
   ${maptk_vxl_headers_public}
   ${maptk_vxl_sources}
   )
 target_link_libraries( maptk_vxl
-  maptk
-  rrel rsdl vnl vgl_algo vil vpgl_algo
+  PUBLIC               maptk
+                       rrel rsdl vnl vgl_algo vil vpgl_algo
   )
 
 maptk_create_plugin( maptk_vxl

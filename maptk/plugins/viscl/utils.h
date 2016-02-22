@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,20 +31,21 @@
 #ifndef MAPTK_PLUGINS_VISCL_UTILS_H_
 #define MAPTK_PLUGINS_VISCL_UTILS_H_
 
-#include <maptk/feature_set.h>
+#include <vital/types/feature_set.h>
 
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 namespace vcl
 {
 
 /// Compute image dimensions from feature set
-void min_image_dimensions(const maptk::feature_set &feat, unsigned int &width, unsigned int &height);
+void min_image_dimensions(const vital::feature_set &feat, unsigned int &width, unsigned int &height);
 
 } // end namespace vcl
 
 } // end namespace maptk
+} // end namespace kwiver
 
 #endif // MAPTK_PLUGINS_VISCL_UTILS_H_

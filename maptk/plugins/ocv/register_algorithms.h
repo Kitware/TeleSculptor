@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,22 +36,23 @@
 #ifndef MAPTK_PLUGINS_OCV_REGISTER_ALGORITHMS_H_
 #define MAPTK_PLUGINS_OCV_REGISTER_ALGORITHMS_H_
 
-#include <maptk/plugins/ocv/ocv_config.h>
-#include <maptk/registrar.h>
+
+#include <vital/vital_config.h>
+#include <maptk/plugins/ocv/maptk_ocv_export.h>
+
+#include <vital/registrar.h>
 
 
-namespace maptk
-{
-
-namespace ocv
-{
+namespace kwiver {
+namespace maptk {
+namespace ocv {
 
 /// Register OCV algorithm implementations with the given or global registrar
 MAPTK_OCV_EXPORT
-int register_algorithms( maptk::registrar &reg = maptk::registrar::instance() );
+int register_algorithms( vital::registrar &reg = vital::registrar::instance() );
 
-} // end ocv ns
-
-} // end maptk ns
+} // end namespace ocv
+} // end namespace maptk
+} // end namespace kwiver
 
 #endif // MAPTK_PLUGINS_OCV_REGISTER_ALGORITHMS_H_

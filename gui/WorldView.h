@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,9 @@
 
 #include <QtGui/QWidget>
 
-namespace maptk { class landmark_map; }
+class vtkImageData;
+
+namespace kwiver { namespace vital { class landmark_map; } }
 
 class vtkMaptkCamera;
 
@@ -50,20 +52,34 @@ public:
   virtual ~WorldView();
 
 public slots:
-  void addCamera(int id, vtkMaptkCamera* camera);
-  void addLandmarks(maptk::landmark_map const&);
+  void setBackgroundColor(QColor const&);
 
+  void addCamera(int id, vtkMaptkCamera* camera);
+  void setLandmarks(kwiver::vital::landmark_map const&);
+
+  void setImageData(vtkImageData* data, QSize const& dimensions);
+
+  void setImageVisible(bool);
   void setCamerasVisible(bool);
   void setLandmarksVisible(bool);
+  void setGroundPlaneVisible(bool);
+
+  void setPerspective(bool);
 
   void setActiveCamera(vtkMaptkCamera* camera);
 
   void resetView();
   void resetViewToLandmarks();
 
+  void viewToWorldTop();
+  void viewToWorldLeft();
+  void viewToWorldRight();
+  void viewToWorldFront();
+  void viewToWorldBack();
+
 protected slots:
   void updateCameras();
-  void updateCameraScale();
+  void updateScale();
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(WorldView)

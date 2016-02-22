@@ -1,0 +1,129 @@
+MAPTK Release Notes for changes pending release approval by AFRL
+================================================================
+
+This file documents release notes for changes made to MAP-Tk which require
+public release approval from AFRL.  After approval, the changes and
+corresponding notes below will be incorporated into a public numbered
+release version, and the content of this file will be reset.
+
+
+Updates since last public release
+---------------------------------
+
+MAP-Tk Library
+
+ * The canonical transform function has been changed to set the orientation
+   based on the eigenvector of the landmark point cloud.  The cameras are
+   now only used to set the sign of the up vector (Z-axis).
+
+ * The Necker reversal transform was improved so that the residual error
+   is now kept low after the transform and the transform is now involutory.
+   That is, applying the reversal a second time will return to the previous
+   state.
+
+ * Removed usage of most boost libraries. Boost::random is used if
+   std::random is not available. Replaced with kwiversys equivalent
+   constructs or std lib support
+
+ * Applying transformations now better preserve additional data associated with
+   landmarks (e.g. color, number of observations).
+
+ * Added a new utility module with functions to extract feature colors from
+   an input image (and apply to relevant features in a feature track set), and
+   to compute landmark colors from a feature track set with color information.
+
+ * Refactored some helper functions into epipolar_geometry.h for converting
+   between fundamental matrices, essential matrices, and cameras, and for
+   computing inliers to a fundamental matrix within feature matches.
+
+Core Plugin
+
+ * Updated triangulate_landmarks to set the number of observations on each
+   computed landmark.
+
+Ceres Plugin
+
+ * Modified bundle_adjust to preserve additional data associated with landmarks
+   (e.g. color, number of observations) during optimization.
+
+VXL Plugin
+
+ * Updated triangulate_landmarks to set the number of observations on each
+   computed landmark.
+
+ * Added an initial implementation of fundamental matrix estimation using VXL.
+
+Visualization Application
+
+ * Added ability to execute some computations (for now, computing and applying
+   basic transformations, applying bundle adjustment to refine the solution)
+   from within the GUI.
+
+ * Added ability to export cameras and landmarks to (respectively) KRTD and PLY
+   files.
+
+ * Added ability to visualize locations of corresponding feature points on
+   adjacent frames to the camera view. This may be helpful as an additional
+   means of visualizing camera motion when there exists a spatial correlation
+   between adjacent cameras (e.g. frames extracted from continuous-shot video).
+
+ * Added "match matrix" view, allowing the number of corresponding feature
+   points for arbitrary frame pairs to be visualized as a "heat map" with
+   various Visualization options.
+
+ * Added ability to load imagery directly, and without requiring that cameras
+   are loaded.
+
+ * Added ability to visualize landmarks by "true color", elevation, or number
+   of observations, when relevant data is available.
+
+ * Added ability to selectively display ("filter") landmarks based on values of
+   available data (e.g. elevation, number of observations).
+
+ * Added ground plane display to world view.
+
+ * Added ability to view camera frame image, projected to the ground plane, in
+   the world view.
+
+ * Added ability to toggle world view between parallel and perspective
+   projections, and to reset the rotation of the same to one of several basic
+   presets (top, left, etc.).
+
+ * Added ability to change the background color of the views.
+
+ * The GUI user manual can now be accessed from within the GUI.
+
+OCV Plugin
+
+ * Images are now mapped so that the first channel of the vital::image view is
+   red (RGB) rather than blue (BGR).
+
+SketchUp Plugin
+
+ * Added a new plugin (Ruby scripts) for the SketchUp 3D Modeling software
+   (http://www.sketchup.com/) that allow direct import of MAP-Tk outputs by
+   loading the MAP-Tk config files or individually loading KRTD or PLY files.
+   Once loaded, the cameras are presented as "Photo Match" pages which allows
+   the user to build models aligned to images.
+
+Tools
+
+ * The track features tool now extracts feature colors and writes them to the
+   track file.
+
+ * The bundle adjust tool now computes landmark colors from feature colors and
+   writes them to the landmark PLY.
+
+Fixes since last public release
+-------------------------------
+
+Visualization Application
+
+ * Several performance bottlenecks that limited the rate at which "slideshow"
+   mode could switch frames have been identified and mitigated.
+
+ * Fixed bug where newly loaded landmarks would be visible in the world view
+   even if landmarks were disabled.
+
+ * Fixed bug that caused feature tracks to be "misaligned" if a camera could
+   not be loaded.
