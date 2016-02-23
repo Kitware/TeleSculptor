@@ -349,8 +349,8 @@ hierarchical_bundle_adjust
 
     // If we've just completed SBA with all original frames in the new map,
     // then we're done.
-    cerr << "completion check: " << active_cam_map->size() << " == " << num_orig_cams << " --> ";
-    if (active_cam_map->size() == num_orig_cams)
+    cerr << "completion check: " << active_cam_map->size() << " >= " << num_orig_cams << " --> ";
+    if (active_cam_map->size() >= num_orig_cams)
     {
       cerr << "yup" << endl;
       done = true;
