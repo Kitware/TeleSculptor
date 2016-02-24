@@ -416,6 +416,11 @@ hierarchical_bundle_adjust
           }
         }
       }
+      if(interped_cams.empty())
+      {
+        cerr << "No new cameras interpolated, done." << endl;
+        break;
+      }
       camera_map_sptr interped_cams_p(new simple_camera_map(interped_cams));
 
       // Optimize new camers
