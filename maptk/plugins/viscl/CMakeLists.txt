@@ -39,8 +39,10 @@ kwiver_add_library( maptk_viscl
   ${maptk_viscl_sources}
   )
 target_link_libraries( maptk_viscl
-  maptk
-  viscl_core viscl_tasks viscl_vxl
+  PUBLIC               maptk
+                       viscl_core
+                       viscl_tasks
+                       viscl_vxl
   )
 maptk_create_plugin( maptk_viscl
   algorithm_plugin_interface.cxx

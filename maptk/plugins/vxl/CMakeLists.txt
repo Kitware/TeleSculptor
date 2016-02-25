@@ -18,6 +18,7 @@ set(maptk_vxl_headers_public
   register_algorithms.h
   triangulate_landmarks.h
   vil_image_memory.h
+  vidl_ffmpeg_video_input.h
   )
 kwiver_install_headers(
   SUBDIR     maptk/plugins/vxl
@@ -45,6 +46,7 @@ set(maptk_vxl_sources
   register_algorithms.cxx
   triangulate_landmarks.cxx
   vil_image_memory.cxx
+  vidl_ffmpeg_video_input.cxx
   )
 
 kwiver_add_library( maptk_vxl
@@ -53,7 +55,12 @@ kwiver_add_library( maptk_vxl
   )
 target_link_libraries( maptk_vxl
   PUBLIC               maptk
-                       rrel rsdl vnl vgl_algo vil vpgl_algo
+                       vil vidl
+  PRIVATE              vital_klv
+                       vital_video_metadata
+                       rrel rsdl
+                       vnl vgl_algo
+                       vpgl_algo
   )
 
 maptk_create_plugin( maptk_vxl
