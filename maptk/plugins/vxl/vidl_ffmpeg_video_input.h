@@ -87,7 +87,7 @@ public:
                            kwiver::vital::timestamp& ts,
                            uint32_t timeout = 0 );
 
-  virtual std::vector< kwiver::vital::video_metadata_sptr > frame_metadata();
+  virtual kwiver::vital::video_metadata_vector frame_metadata();
 
 private:
   /// private implementation class

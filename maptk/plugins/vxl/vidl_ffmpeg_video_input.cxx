@@ -100,7 +100,7 @@ public:
   std::string video_path; // name of video we opened
 
   std::deque<uint8_t> md_buffer; // working buffer for metadata stream
-  std::vector< kwiver::vital::video_metadata_sptr > metadata_collection; // current collection
+  kwiver::vital::video_metadata_vector metadata_collection; // current collection
 
   kwiver::vital::convert_metadata converter; // metadata converter object
 
@@ -669,7 +669,7 @@ vidl_ffmpeg_video_input
 
 
 // ------------------------------------------------------------------
-std::vector< kwiver::vital::video_metadata_sptr >
+kwiver::vital::video_metadata_vector
 vidl_ffmpeg_video_input
 ::frame_metadata()
 {
