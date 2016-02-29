@@ -299,7 +299,7 @@ hierarchical_bundle_adjust
 
   //frame_id_t orig_max_frame = cameras->cameras().rbegin()->first;
   cerr << "Cameras given to hsba: " << cameras->size() << endl;
-  size_t num_orig_cams = cameras->size();
+  size_t num_orig_cams = tracks->all_frame_ids().size();
 
   // If interpolation rate is 0, then that means that all intermediate frames
   // should be interpolated on the first step. Due to how the algorithm
