@@ -103,13 +103,6 @@ configure_file(
   "${CMAKE_CURRENT_BINARY_DIR}/appdata.qrc"
 )
 
-kwiver_configure_file( version.h
-  "${CMAKE_CURRENT_SOURCE_DIR}/Version.h.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/Version.h"
-  MAPTK_VERSION
-  MAPTK_COPYRIGHT_YEAR
-)
-
 qt4_wrap_ui(gui_ui_sources ${gui_ui})
 qt4_wrap_cpp(gui_moc_sources ${gui_moc_headers})
 qt4_add_resources(gui_res_sources ${gui_resources})
