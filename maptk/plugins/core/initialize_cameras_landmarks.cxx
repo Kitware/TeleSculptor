@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -133,6 +133,7 @@ public:
   : verbose(false),
     init_from_last(false),
     retriangulate_all(false),
+    next_frame_max_distance(0),
     base_camera(),
     e_estimator(),
     camera_optimizer(),
@@ -146,6 +147,7 @@ public:
   : verbose(other.verbose),
     init_from_last(other.init_from_last),
     retriangulate_all(other.retriangulate_all),
+    next_frame_max_distance(other.next_frame_max_distance),
     base_camera(other.base_camera),
     e_estimator(!other.e_estimator ? algo::estimate_essential_matrix_sptr()
                                    : other.e_estimator->clone()),
@@ -190,6 +192,7 @@ public:
   bool verbose;
   bool init_from_last;
   bool retriangulate_all;
+  unsigned int next_frame_max_distance;
   vital::simple_camera base_camera;
   vital::algo::estimate_essential_matrix_sptr e_estimator;
   vital::algo::optimize_cameras_sptr camera_optimizer;
@@ -474,6 +477,13 @@ initialize_cameras_landmarks
                     "initialized camera.  Otherwise, only triangulate or "
                     "re-triangulate landmarks that are marked for initialization.");
 
+  config->set_value("next_frame_max_distance", d_->next_frame_max_distance,
+                    "Limit the selection of the next frame to initialize to "
+                    "within this many frames of an already initialized frame. "
+                    "If no valid frames are found, double the search range "
+                    "until a valid frame is found. "
+                    "A value of zero disables this limit");
+
   config->set_value("base_camera:focal_length", K->focal_length(),
                     "focal length of the base camera model");
 
@@ -535,6 +545,10 @@ initialize_cameras_landmarks
 
   d_->retriangulate_all = config->get_value<bool>("retriangulate_all",
                                                   d_->retriangulate_all);
+
+  d_->next_frame_max_distance =
+      config->get_value<unsigned int>("next_frame_max_distance",
+                                      d_->next_frame_max_distance);
 
   vital::config_block_sptr bc = config->subblock("base_camera");
   simple_camera_intrinsics K2(bc->get_value<double>("focal_length",
@@ -899,8 +913,22 @@ initialize_cameras_landmarks
     }
     else
     {
-      f = next_best_frame(tracks, lms,
-                          find_nearby_new_frames(new_frame_ids, cams, 20));
+      unsigned int search_range = d_->next_frame_max_distance;
+      if( search_range < 1 )
+      {
+        f = next_best_frame(tracks, lms, new_frame_ids);
+      }
+      else
+      {
+        std::set<frame_id_t> nearby;
+        const frame_id_t max_frame = tracks->last_frame();
+        while( nearby.empty() && search_range < max_frame )
+        {
+          nearby = find_nearby_new_frames(new_frame_ids, cams, search_range);
+          search_range *= 2;
+        }
+        f = next_best_frame(tracks, lms, nearby);
+      }
     }
     new_frame_ids.erase(f);
 
