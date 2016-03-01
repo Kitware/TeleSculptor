@@ -71,6 +71,7 @@
 #include <maptk/geo_reference_points_io.h>
 #include <maptk/metrics.h>
 #include <maptk/transform.h>
+#include <maptk/version.h>
 
 typedef kwiversys::SystemTools     ST;
 
@@ -617,8 +618,9 @@ static int maptk_main(int argc, char const* argv[])
   // If -c/--config given, read in confg file, merge in with default just generated
   if( ! opt_config.empty() )
   {
-    //std::cerr << "[DEBUG] Given config file: " << vm["config"].as<kwiver::vital::path_t>() << std::endl;
-    config->merge_config(kwiver::vital::read_config_file( opt_config ) );
+    const std::string prefix = kwiver::vital::get_executable_path() + "/..";
+    config->merge_config(kwiver::vital::read_config_file(opt_config, "maptk",
+                                                         MAPTK_VERSION, prefix));
   }
 
   //std::cerr << "[DEBUG] Config BEFORE set:" << std::endl;
