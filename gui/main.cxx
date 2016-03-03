@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2015-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,9 +34,11 @@
 
 #include <vital/algorithm_plugin_manager.h>
 
+#include <qtStlUtil.h>
 #include <qtUtil.h>
 
 #include <QApplication>
+#include <QtCore/QDir>
 
 //-----------------------------------------------------------------------------
 int main(int argc, char** argv)
@@ -51,6 +53,9 @@ int main(int argc, char** argv)
   qtUtil::setApplicationIcon("mapgui");
 
   // Load Vital/MAP-Tk plugins
+  auto const exeDir = QDir(QApplication::applicationDirPath());
+  auto const rel_path = stdString(exeDir.absoluteFilePath("..")) + "/lib/maptk";
+  kwiver::vital::algorithm_plugin_manager::instance().add_search_path(rel_path);
   kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
 
   MainWindow window;
