@@ -58,6 +58,8 @@
 #include <kwiversys/SystemTools.hxx>
 #include <kwiversys/CommandLineArguments.hxx>
 
+#include <maptk/version.h>
+
 typedef kwiversys::SystemTools     ST;
 typedef kwiversys::CommandLineArguments argT;
 
@@ -275,7 +277,9 @@ static int maptk_main(int argc, char const* argv[])
   // If -c/--config given, read in confg file, merge onto default just generated
   if( ! opt_config.empty() )
   {
-    config->merge_config(kwiver::vital::read_config_file( opt_config ) );
+    const std::string prefix = kwiver::vital::get_executable_path() + "/..";
+    config->merge_config(kwiver::vital::read_config_file(opt_config, "maptk",
+                                                         MAPTK_VERSION, prefix));
   }
 
   // Set current configuration to algorithms and extract refined configuration.

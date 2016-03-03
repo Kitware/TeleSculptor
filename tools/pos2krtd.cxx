@@ -56,6 +56,7 @@
 
 #include <maptk/ins_data_io.h>
 #include <maptk/local_geo_cs.h>
+#include <maptk/version.h>
 
 typedef kwiversys::SystemTools     ST;
 typedef kwiversys::CommandLineArguments argT;
@@ -333,7 +334,9 @@ static int maptk_main(int argc, char const* argv[])
 
   if ( ! opt_config.empty())
   {
-    config->merge_config( kwiver::vital::read_config_file( opt_config ) );
+    const std::string prefix = kwiver::vital::get_executable_path() + "/..";
+    config->merge_config(kwiver::vital::read_config_file(opt_config, "maptk",
+                                                         MAPTK_VERSION, prefix));
   }
 
   bool config_is_valid = check_config(config);

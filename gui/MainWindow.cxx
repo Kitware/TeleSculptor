@@ -40,10 +40,10 @@
 #include "AboutDialog.h"
 #include "MatchMatrixWindow.h"
 #include "Project.h"
-#include "Version.h"
 #include "vtkMaptkCamera.h"
 
 #include <maptk/match_matrix.h>
+#include <maptk/version.h>
 
 #include <vital/io/camera_io.h>
 #include <vital/io/landmark_map_io.h>

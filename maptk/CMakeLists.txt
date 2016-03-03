@@ -40,6 +40,13 @@ set(maptk_sources
   triangulate.cxx
   )
 
+kwiver_configure_file( version.h
+  "${CMAKE_CURRENT_SOURCE_DIR}/version.h.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/version.h"
+  MAPTK_VERSION
+  MAPTK_COPYRIGHT_YEAR
+)
+
 # Address MSVC fatal error C1128:
 # number of sections exceeded object file format limit
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")

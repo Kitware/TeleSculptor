@@ -30,7 +30,7 @@
 
 #include "MainWindow.h"
 
-#include "Version.h"
+#include <maptk/version.h>
 
 #include <vital/algorithm_plugin_manager.h>
 
