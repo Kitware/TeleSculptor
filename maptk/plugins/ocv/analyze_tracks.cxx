@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -61,7 +61,8 @@ public:
   /// Constructor
   priv()
   : output_summary(true),
-    output_pt_matrix(true)
+    output_pt_matrix(true),
+    frames_to_compare({1, 5, 10, 50})
   {
   }
 
@@ -119,7 +120,17 @@ analyze_tracks
                     "Output a matrix showing details about the percentage of "
                     "features tracked for every frame, from each frame to "
                     "some list of frames in the past.");
-  config->set_value("frames_to_compare", "1, 5, 10, 50",
+
+  std::stringstream ss;
+  if ( !d_->frames_to_compare.empty() )
+  {
+    ss << d_->frames_to_compare[0];
+    for(unsigned i=1; i < d_->frames_to_compare.size(); ++i)
+    {
+      ss << ", " << d_->frames_to_compare[i];
+    }
+  }
+  config->set_value("frames_to_compare", ss.str(),
                     "A comma seperated list of frame difference intervals we want "
                     "to use for the pt matrix. For example, if \"1, 4\" the pt "
                     "matrix will contain comparisons between the current frame and "

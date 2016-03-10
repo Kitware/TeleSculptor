@@ -176,16 +176,26 @@ draw_tracks
                      "If we are using a comparison track set, swap it and the input "
                      "track set, so that the comparison set becomes the main set "
                      "being displayed." );
-  config->set_value( "past_frames_to_show", "",
+  config->set_value( "write_images_to_disk", d_->write_images_to_disk,
+                     "Should images be written out to disk?" );
+  config->set_value( "pattern", d_->pattern,
+                     "The output pattern for writing images to disk." );
+
+  std::stringstream ss;
+  if ( !d_->past_frames_to_show.empty() )
+  {
+    ss << d_->past_frames_to_show[0];
+    for(unsigned i=1; i < d_->past_frames_to_show.size(); ++i)
+    {
+      ss << ", " << d_->past_frames_to_show[i];
+    }
+  }
+  config->set_value( "past_frames_to_show", ss.str(),
                      "A comma seperated list of past frames to show. For example: "
                      "a value of \"2, 1\" will cause the GUI to generate a window "
                      "3 frames wide, with the first frame being 2 frames behind the "
                      "current frame, the second 1 frame behind, and the third being "
                      "the current frame." );
-  config->set_value( "write_images_to_disk", "true",
-                     "Should images be written out to disk?" );
-  config->set_value( "pattern", "feature_tracks_%05d.png",
-                     "The output pattern for writing images to disk." );
 
   return config;
 }
