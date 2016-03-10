@@ -38,3 +38,9 @@ Ceres Plugin
 
 Fixes since v0.7.0
 -------------------------------
+
+OpenCV Plugin
+
+ * Fixed an issue with some parameters to draw_tracks and analyze_tracks
+   in which the get_configuration function was always returning the default
+   parameters, even after other values were set.
