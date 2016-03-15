@@ -227,25 +227,31 @@ static int maptk_main(int argc, char const* argv[])
     return EXIT_SUCCESS;
   }
 
-  // Get positional file arguments
-  int pos_argc;
-  char** pos_argv;
-
-  arg.GetUnusedArguments( &pos_argc, &pos_argv );
-
-  if ( 4 != pos_argc )
-  {
-    std::cout << "Insufficient number of files specified after options.\n\n";
-    print_usage( argv[0], arg );
-    return EXIT_FAILURE;
-  }
-
-  // Note: pos_argv[0] is the executable name
+  // only handle positional arguments if the algorithms are to be run
+  // if only writing out a config, we don't need the image files
   std::vector<std::string> input_img_files;
-  input_img_files.push_back( pos_argv[1] );
-  input_img_files.push_back( pos_argv[2] );
+  std::string homog_output_path;
+  if ( opt_out_config.empty() )
+  {
+    // Get positional file arguments
+    int pos_argc;
+    char** pos_argv;
 
-  std::string homog_output_path = pos_argv[3];
+    arg.GetUnusedArguments( &pos_argc, &pos_argv );
+
+    if ( 4 != pos_argc )
+    {
+      std::cout << "Insufficient number of files specified after options.\n\n";
+      print_usage( argv[0], arg );
+      return EXIT_FAILURE;
+    }
+
+    // Note: pos_argv[0] is the executable name
+    input_img_files.push_back( pos_argv[1] );
+    input_img_files.push_back( pos_argv[2] );
+
+    homog_output_path = pos_argv[3];
+  }
 
   // register the algorithm implementations
   std::string rel_plugin_path = kwiver::vital::get_executable_path() + "/../lib/maptk";
