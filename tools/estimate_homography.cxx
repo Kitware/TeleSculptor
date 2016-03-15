@@ -102,7 +102,7 @@ static kwiver::vital::config_block_sptr default_config()
   // Default algorithm types
   config->set_value("image_reader:type", "vxl");
 
-  config->set_value("image_converter:type", "default");
+  config->set_value("image_converter:type", "bypass");
 
   config->set_value("feature_detector:type", "ocv");
   config->set_value("feature_detector:ocv:detector:type", "Feature2D.SURF");
@@ -165,6 +165,7 @@ static int maptk_main(int argc, char const* argv[])
   static std::string opt_mask2_image;
 
   kwiversys::CommandLineArguments arg;
+  arg.StoreUnusedArguments(true);
 
   arg.Initialize( argc, argv );
 
@@ -226,26 +227,31 @@ static int maptk_main(int argc, char const* argv[])
     return EXIT_SUCCESS;
   }
 
-  // Get positional file arguments
-  int pos_argc;
-  char** pos_argv;
-
-  arg.GetRemainingArguments( &pos_argc, &pos_argv );
-
-  if ( 3 != pos_argc )
-  {
-    std::cout << "Insufficient number of files specified after options.\n\n";
-    print_usage( argv[0], arg );
-    return EXIT_FAILURE;
-  }
-
+  // only handle positional arguments if the algorithms are to be run
+  // if only writing out a config, we don't need the image files
   std::vector<std::string> input_img_files;
-  input_img_files.push_back( pos_argv[0] );
-  input_img_files.push_back( pos_argv[1] );
+  std::string homog_output_path;
+  if ( opt_out_config.empty() )
+  {
+    // Get positional file arguments
+    int pos_argc;
+    char** pos_argv;
 
-  std::string homog_output_path = pos_argv[2];
+    arg.GetUnusedArguments( &pos_argc, &pos_argv );
 
-  arg.DeleteRemainingArguments( pos_argc, &pos_argv );
+    if ( 4 != pos_argc )
+    {
+      std::cout << "Insufficient number of files specified after options.\n\n";
+      print_usage( argv[0], arg );
+      return EXIT_FAILURE;
+    }
+
+    // Note: pos_argv[0] is the executable name
+    input_img_files.push_back( pos_argv[1] );
+    input_img_files.push_back( pos_argv[2] );
+
+    homog_output_path = pos_argv[3];
+  }
 
   // register the algorithm implementations
   std::string rel_plugin_path = kwiver::vital::get_executable_path() + "/../lib/maptk";
