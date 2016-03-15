@@ -102,7 +102,7 @@ static kwiver::vital::config_block_sptr default_config()
   // Default algorithm types
   config->set_value("image_reader:type", "vxl");
 
-  config->set_value("image_converter:type", "default");
+  config->set_value("image_converter:type", "bypass");
 
   config->set_value("feature_detector:type", "ocv");
   config->set_value("feature_detector:ocv:detector:type", "Feature2D.SURF");
