@@ -165,6 +165,7 @@ static int maptk_main(int argc, char const* argv[])
   static std::string opt_mask2_image;
 
   kwiversys::CommandLineArguments arg;
+  arg.StoreUnusedArguments(true);
 
   arg.Initialize( argc, argv );
 
@@ -230,22 +231,21 @@ static int maptk_main(int argc, char const* argv[])
   int pos_argc;
   char** pos_argv;
 
-  arg.GetRemainingArguments( &pos_argc, &pos_argv );
+  arg.GetUnusedArguments( &pos_argc, &pos_argv );
 
-  if ( 3 != pos_argc )
+  if ( 4 != pos_argc )
   {
     std::cout << "Insufficient number of files specified after options.\n\n";
     print_usage( argv[0], arg );
     return EXIT_FAILURE;
   }
 
+  // Note: pos_argv[0] is the executable name
   std::vector<std::string> input_img_files;
-  input_img_files.push_back( pos_argv[0] );
   input_img_files.push_back( pos_argv[1] );
+  input_img_files.push_back( pos_argv[2] );
 
-  std::string homog_output_path = pos_argv[2];
-
-  arg.DeleteRemainingArguments( pos_argc, &pos_argv );
+  std::string homog_output_path = pos_argv[3];
 
   // register the algorithm implementations
   std::string rel_plugin_path = kwiver::vital::get_executable_path() + "/../lib/maptk";
