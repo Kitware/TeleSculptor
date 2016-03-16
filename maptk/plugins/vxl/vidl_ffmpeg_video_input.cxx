@@ -561,6 +561,8 @@ vidl_ffmpeg_video_input
   }
 
   // Set traits
+  set_trait(vital::algo::video_input_traits::HAS_TIMEOUT, false );
+
   set_trait(vital::algo::video_input_traits::HAS_EOV, true );
   set_trait(vital::algo::video_input_traits::HAS_FRAME_NUMBERS, true );
   set_trait(vital::algo::video_input_traits::HAS_FRAME_TIME, d->have_frame_time  );
@@ -587,8 +589,7 @@ vidl_ffmpeg_video_input
 // ------------------------------------------------------------------
 bool
 vidl_ffmpeg_video_input
-::next_frame( kwiver::vital::image_container_sptr& frame,
-              kwiver::vital::timestamp& ts,
+::next_frame( kwiver::vital::timestamp& ts,
               uint32_t timeout )
 {
   if (d->at_eov)
@@ -623,20 +624,6 @@ vidl_ffmpeg_video_input
     return false;
   }
 
-  // We succeed in the step if we can convert the frame to RGB.
-  vil_image_view<vxl_byte> img;
-  vidl_frame_sptr vidl_frame = d->video_stream.current_frame();
-  bool result = vidl_convert_to_view( *vidl_frame,
-                                      img,
-                                      VIDL_PIXEL_COLOR_RGB );
-
-  if ( ! result )
-  {
-    throw kwiver::vital::video_stream_exception( "could not convert image to vidl format" );
-  }
-
-  frame = vital::image_container_sptr( new vxl::image_container( img ) );
-
   // ---- Calculate time stamp ----
   // Metadata packets may not exist for each frame, so use the diff in
   // presentation time stamps to foward the first metadata time stamp.
@@ -657,14 +644,33 @@ vidl_ffmpeg_video_input
   // ---- process metadata ---
   d->metadata_collection.clear(); // erase old metadata packets
 
-  std::deque<uint8_t> curr_md = d->video_stream.current_metadata();
-  if (curr_md.size() > 0 )
+  return true;
+}
+
+
+// ------------------------------------------------------------------
+kwiver::vital::image_container_sptr
+vidl_ffmpeg_video_input
+::frame_image( )
+{
+  if (d->at_eov)
   {
-    // will manage metadata collection object.
-    d->process_metadata( curr_md );
+    return kwiver::vital::image_container_sptr();
   }
 
-  return true;
+  // We succeed in the step if we can convert the frame to RGB.
+  vil_image_view<vxl_byte> img;
+  vidl_frame_sptr vidl_frame = d->video_stream.current_frame();
+  bool result = vidl_convert_to_view( *vidl_frame,
+                                      img,
+                                      VIDL_PIXEL_COLOR_RGB );
+
+  if ( ! result )
+  {
+    throw kwiver::vital::video_stream_exception( "could not convert image to vidl format" );
+  }
+
+  return vital::image_container_sptr( new vxl::image_container( img ) );
 }
 
 
@@ -673,6 +679,23 @@ kwiver::vital::video_metadata_vector
 vidl_ffmpeg_video_input
 ::frame_metadata()
 {
+  if (d->at_eov)
+  {
+    return kwiver::vital::video_metadata_vector();
+  }
+
+  // ---- process metadata ---
+  // If the vector is empty, then try to convert metadata.
+  if ( d->metadata_collection.empty() )
+  {
+    std::deque< uint8_t > curr_md = d->video_stream.current_metadata();
+    if (curr_md.size() > 0 )
+    {
+      // will manage metadata collection object.
+      d->process_metadata( curr_md );
+    }
+  }
+
   return d->metadata_collection;
 }
 
