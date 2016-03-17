@@ -20,6 +20,13 @@ string(TIMESTAMP MAPTK_COPYRIGHT_YEAR "%Y")
 find_package( vital REQUIRED )
 
 ###
+# Check to see if fletch directory is valid from the vital config
+#
+if ( IS_DIRECTORY ${fletch_DIR} )
+  find_package( fletch NO_MODULE )
+endif()
+
+###
 # Add the CMake directory for CMake modules
 #
 list(INSERT CMAKE_MODULE_PATH 0
