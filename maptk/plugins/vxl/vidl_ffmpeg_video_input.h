@@ -38,7 +38,7 @@
 
 #include <vital/algo/video_input.h>
 
-#include <maptk/plugins/vxl/vxl_config.h>
+#include <maptk/plugins/vxl/maptk_vxl_export.h>
 
 #include <vidl/vidl_ffmpeg_istream.h>
 
