@@ -1,8 +1,38 @@
 MAP-Tk v0.8.0 Release Notes
 ==========================
 
-This is a minor release of MAP-Tk that provides both new functionality and
-fixes over the previous v0.7.2 release.
+This is a major release of MAP-Tk that provides both new functionality and
+fixes over the previous v0.7.2 release.  However, MAP-Tk is still considered
+pre-release software and subject to significant API changes.
+
+The primary change in this release is a major refactoring of MAP-Tk into
+two repositories.  There is a new repository called Vital on which MAP-Tk
+now depends.  Vital now contains core framework constructs from MAP-Tk
+while the MAP-Tk repository contains plugins, tools, the GUI application,
+and some SfM specific helper functions.  This split will allow easier
+sharing of the core framework across KWIVER projects.  Some core features
+from the Vibrant repository (better logging and config parsing) were also
+integrated into Vital, and MAP-Tk benefits from those.
+
+As part of the refactoring MAP-Tk also moved to C++11.  C++11 provides most
+of what MAP-TK relied on Boost for.  Thus, the Boost dependency has been
+removed and replaced by standard library calls where available.  For other
+uses of Boost (e.g. filesystem, program options) we now rely on KWIVERSYS.
+KWIVERSYS is code provided by Vital and original developed to support CMake.
+
+The move to C++11 means dropping support for some older compilers. Visual
+Studio 2013 and above is now required on Windows.  Some versions of GCC with
+only partial C++11 support are still supported.  In particular, GCC 4.4.7 is
+supported to allow builds on CentOS 5/6; however, GCC 4.4.7 still requires
+Boost in some areas to address standard library deficiencies.
+
+Using the new, more powerful config file parsing in Vital the default MAP-Tk
+configuration files have been broken up into smaller files which reference
+each other and use namespaces for readiblity and reuse.  The default config
+files are now installed and shared by the GUI and CLI tools.
+
+There are numerous additional changes, especially in the GUI visualization
+application.  These changes are described below.
 
 
 Updates since v0.7.2
@@ -11,7 +41,7 @@ Updates since v0.7.2
 MAP-Tk Library
 
  * Moved a large number of core data types and abstract algorithms to a
-   new dependent project name VITAL.  VITAL will provide a common framework
+   new dependent project name Vital.  Vital will provide a common framework
    for logging, configuration, and core data types to be shared across
    KWIVER projects.
 
@@ -36,9 +66,11 @@ MAP-Tk Library
    That is, applying the reversal a second time will return to the previous
    state.
 
- * Removed usage of most boost libraries. Boost::random is used if
-   std::random is not available. Replaced with kwiversys equivalent
-   constructs or std lib support
+ * Removed required dependency on Boost. Replaced Boost with equivalent
+   functions in the C++11 standard library when available.  When not available
+   kwiversys (found in Vital) provides equivalent constructs.  The exeception
+   is that the unit tests will require boost::random for some older C++0x
+   compilers without std::random.
 
  * Applying transformations now better preserve additional data associated with
    landmarks (e.g. color, number of observations).
@@ -60,7 +92,7 @@ Ceres Plugin
 
  * Added an option to the bundle adjust algorithm to control how camera
    intrinsics are shared across cameras.  The default auto sharing mode
-   optimizes a seperate set of intrinsics for each camera_intrinsics object
+   optimizes a separate set of intrinsics for each camera_intrinsics object
    shared amongst the cameras.  Additional options allow forcing each camera
    to have its own independent intrinsics and forcing all cameras share
    one common set of intrinsics.
@@ -114,6 +146,9 @@ Visualization Application
  * Added ability to change the background color of the views.
 
  * The GUI user manual can now be accessed from within the GUI.
+
+ * Added an "About" dialog including information about the version number,
+   acknowledgements, license, and build information.
 
 OCV Plugin
 
