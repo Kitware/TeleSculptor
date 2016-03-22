@@ -47,11 +47,11 @@
 #include <vital/vital_config.h>
 #include <vital/vital_foreach.h>
 #include <vital/logger/logger.h>
+#include <vital/exceptions/io.h>
 
 #include <kwiversys/SystemTools.hxx>
 
 #include <maptk/plugins/ocv/image_container.h>
-#include <maptk/plugins/ocv/ocv_algo_tools.h>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
