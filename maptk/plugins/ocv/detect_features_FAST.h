@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2016 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,59 +30,61 @@
 
 /**
  * \file
- * \brief OCV detect_features algorithm impl interface
+ * \brief OCV FAST feature detector wrapper
  */
 
-#ifndef MAPTK_PLUGINS_OCV_DETECT_FEATURES_H_
-#define MAPTK_PLUGINS_OCV_DETECT_FEATURES_H_
+#ifndef MAPTK_DETECT_FEATURES_FAST_H_
+#define MAPTK_DETECT_FEATURES_FAST_H_
+
+#include <memory>
+#include <string>
 
 #include <vital/vital_config.h>
-#include <vital/algo/detect_features.h>
 
-#include <maptk/plugins/ocv/maptk_ocv_export.h>
+#include <maptk/plugins/ocv/detect_features.h>
 
 #include <opencv2/features2d/features2d.hpp>
 
 namespace kwiver {
 namespace maptk {
-namespace ocv  {
+namespace ocv{
 
-/// OCV Specific base definition for algorithms that detect feature points
-/**
- * This extended algorithm_def provides a common implementation for the detect
- * method.
- */
-class MAPTK_OCV_EXPORT detect_features
-  : public kwiver::vital::algo::detect_features
+
+class MAPTK_OCV_EXPORT detect_features_FAST
+  : public vital::algorithm_impl<detect_features_FAST, ocv::detect_features, vital::algo::detect_features>
 {
 public:
-  /// Return the name of this algorithm
-  static std::string static_type_name() { return "detect_features_opencv"; }
+  /// Constructor
+  detect_features_FAST();
 
-  /// Extract a set of image features from the provided image
-  /**
-   * A given mask image should be one-channel (mask->depth() == 1). If the
-   * given mask image has more than one channel, only the first will be
-   * considered.
-   *
-   * \param image_data contains the image data to process
-   * \param mask Mask image where regions of positive values (boolean true)
-   *             indicate regions to consider. Only the first channel will be
-   *             considered.
-   * \returns a set of image features
-   */
-  virtual vital::feature_set_sptr
-  detect(vital::image_container_sptr image_data,
-         vital::image_container_sptr mask = vital::image_container_sptr()) const;
+  /// Copy constructor
+  detect_features_FAST(const detect_features_FAST &other);
 
-protected:
-  /// the feature detector algorithm
-  cv::Ptr<cv::FeatureDetector> detector;
+  /// Destructor
+  virtual ~detect_features_FAST();
+
+  /// Return the name of this implementation
+  virtual std::string impl_name() const { return "ocv_FAST"; }
+  /// Returns a descriptive string for this implementation
+  virtual std::string description() const {
+    return "OpenCV feature detection via the FAST algorithm";
+  }
+
+  /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
+  virtual vital::config_block_sptr get_configuration() const;
+  /// Set this algorithm's properties via a config block
+  virtual void set_configuration(vital::config_block_sptr config);
+  /// Check that the algorithm's configuration vital::config_block is valid
+  virtual bool check_configuration(vital::config_block_sptr config) const;
+
+private:
+  class priv;
+  std::unique_ptr<priv> const p_;
 };
+
 
 } // end namespace ocv
 } // end namespace maptk
 } // end namespace kwiver
 
-
-#endif // MAPTK_PLUGINS_OCV_DETECT_FEATURES_H_
+#endif //MAPTK_DETECT_FEATURES_FAST_H_

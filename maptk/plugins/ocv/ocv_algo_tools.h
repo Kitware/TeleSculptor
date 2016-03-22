@@ -41,41 +41,21 @@
 #include <string>
 #include <iostream>
 
-#include <vital/vital_config.h>
-#include <maptk/plugins/ocv/maptk_ocv_export.h>
+#include <opencv2/core/core.hpp>
 
+#include <vital/vital_config.h>
+#include <vital/vital_types.h>
 #include <vital/config/config_block.h>
 #include <vital/exceptions.h>
-#include <vital/vital_types.h>
+#include <vital/logger/logger.h>
 
-#include <opencv2/core/core.hpp>
+#include <maptk/plugins/ocv/maptk_ocv_export.h>
 
 
 namespace kwiver {
 namespace maptk {
-
-namespace ocv
-{
-
-
-/// String used to record nested algorithm implementation type
-static std::string const type_token = "type";
-
-
-namespace helper_
-{
-
-/// Helper method for setting nested OpenCV Algorithm parameters
-MAPTK_OCV_EXPORT
-void set_nested_ocv_algo_configuration_helper(std::string const& name,
-                                              vital::config_block_sptr config,
-                                              cv::Ptr<cv::Algorithm> &algo);
-
-/// Helper method for checking nested OpenCV Algorithm configurations
-MAPTK_OCV_EXPORT
-bool check_nested_ocv_algo_configuration_helper(std::string const& name,
-                                                vital::config_block_sptr config,
-                                                cv::Ptr<cv::Algorithm> algo);
+namespace ocv {
+namespace helper_ {
 
 /// Templated helper method for creating a new OpenCV algorithm instance.
 /**
@@ -85,13 +65,16 @@ bool check_nested_ocv_algo_configuration_helper(std::string const& name,
  *                specific sub-class fails.
  */
 template <typename algo_t>
-cv::Ptr<algo_t> create_ocv_algo(std::string const& impl_name)
+cv::Ptr<algo_t> create_ocv2_algo(std::string const& impl_name)
 {
+  kwiver::vital::logger_handle_t log =
+      kwiver::vital::get_logger("maptk::ocv::helpers::create_ocv2_algo");
   cv::Ptr<algo_t> a;
+
 #ifndef MAPTK_HAS_OPENCV_VER_3
   // attempt to use the given type to natively create the algorithm with
   // possible special rules contained in the subclass. If this does not
-  // yeild a valid instance, attempt creating an algorithm using the base
+  // yield a valid instance, attempt creating an algorithm using the base
   // cv::Algorithm creation rules.
   try
   {
@@ -99,15 +82,11 @@ cv::Ptr<algo_t> create_ocv_algo(std::string const& impl_name)
   }
   catch (cv::Exception const&)
   {
-    std::cerr << "[---] Ignore the above error message, it will be handled. "
-              << "OpenCV is silly."
-              << std::endl;
+    log->log_info("Caught OpenCV creation error, attempting fall-back.");
   }
-#endif
 
-  // if the create call returned something empty or errored, fall back to
-  // trying the top-level cv::Algorithm constructor.
-  // OpenCV >= 3.0 only allows the cv::Algorithm create function.
+  // if the create call returned something empty or an error occurred, fall back
+  // to trying the top-level cv::Algorithm constructor.
   if (a.empty())
   {
     a = cv::Algorithm::create<algo_t>(impl_name);
@@ -118,6 +97,10 @@ cv::Ptr<algo_t> create_ocv_algo(std::string const& impl_name)
         "underlying algorithm info object of " + impl_name + " algorithm, "
         "returning an invalid algorithm object. Cannot proceed.");
   }
+#else
+
+#endif
+
   return a;
 }
 
@@ -129,137 +112,17 @@ cv::Ptr<algo_t> create_ocv_algo(std::string const& impl_name)
  */
 template <>
 MAPTK_OCV_EXPORT
-cv::Ptr<cv::Algorithm> create_ocv_algo<cv::Algorithm>(std::string const& impl_name);
+cv::Ptr<cv::Algorithm> create_ocv2_algo<cv::Algorithm>(std::string const& impl_name)
+{
+  kwiver::vital::logger_handle_t log =
+      kwiver::vital::get_logger("maptk::ocv::helpers::create_ocv2_algo");
+  log->log_debug("Creating empty OpenCV 2.4.x algorithm instance");
+  return cv::Algorithm::create<cv::Algorithm>(impl_name);
+}
 
 
 } // end namespace helper_
-
-
-/// Add nested OpenCV algorithm's configuration options to the given \c config
-/**
- * This includes an algorithm "type" parameter that defines what specific
- * algorithm we are nesting. If the given \c algo is not defined, we only set
- * a blank "type" option. If the given algorithm is defined, we set the "type"
- * parameter to the type of the algorithm given, and fill in that algorithm's
- * options under a subblock of its name.
- *
- * The \c config_block that we are expecting is at the block level for the
- * algorithm that this nested algorithm belongs to.
- *
- * \param name    A \c std::string name for this nested algorithm.
- * \param config  The \c vital::config_block to add the given algorithm's
- *                options to.
- * \param algo   The cv pointer to the nested algorithm.
- */
-MAPTK_OCV_EXPORT
-void get_nested_ocv_algo_configuration(std::string const& name,
-                                       vital::config_block_sptr config,
-                                       cv::Ptr<cv::Algorithm> algo);
-
-
-/// Set nested OpenCV algorithm's parameters based on a given \c config
-/**
- * \tparam algo_t Type of OpenCV algorithm we are dealing with.
- * \param name    A \c std::string name for this nested algorithm. This should
- *                match the name used when \c get_nested_ocv_algo_configuration
- *                was called for this nested algorithm.
- * \param config  The \c vital::config_block to set OpenCV property values
- *                from.
- * \param algo    The cv pointer to the algorithm to set configuration
- *                options to.
- */
-template <typename algo_t>
-void set_nested_ocv_algo_configuration(std::string const& name,
-                                       vital::config_block_sptr config,
-                                       cv::Ptr<algo_t> &algo)
-{
-  // check that the config has a type for the nested algo, creating a new
-  // instance if the given algo is NULL or not of the same type specified
-  // in the config.
-  vital::config_block_key_t type_key = name + vital::config_block::block_sep + type_token;
-  std::string impl_name = config->get_value<std::string>(type_key, "");
-  if (impl_name.length() > 0)
-  {
-    // if the current algo ptr is empty (NULL) or has a type differing from the
-    // configured type, create a new algo instance.
-
-    if (algo.empty()
-        || algo->info() == 0
-        || algo->info()->name() != impl_name)
-    {
-      algo = helper_::create_ocv_algo<algo_t>(impl_name);
-    }
-
-    cv::Ptr<cv::Algorithm> converted_algo(algo);
-    helper_::set_nested_ocv_algo_configuration_helper(name, config,
-                                                      converted_algo);
-#ifdef MAPTK_HAS_OPENCV_VER_3
-    algo = converted_algo.dynamicCast<algo_t>();
-#else
-    algo = cv::Ptr<algo_t>(converted_algo);
-#endif
-  }
-  else
-  {
-    std::cerr << "[WARNING] No algorithm type set for '" << name << "'. "
-              << "Using default cv::Algorithm '" << algo->info()->name() << "'."
-              << std::endl;
-  }
-}
-
-
-/// Basic check of nested OpenCV algorithm configuration in the given \c config
-/**
- * If no algorithm type is provided in the configuration, i.e. type parameter
- * not present or blank, we assume the use of defaults, thus returning true.
- *
- * Of all nested algorithm configuration properties that can be encoded within
- * a \c config, check that they are present and that the value in the \c config
- * is castable to the nested algorithm parameter's expected type.
- *
- * We assume that what is pointed to be \c algo is an initialized OpenCV
- * algorithm class.
- *
- * \tparam algo_t Type of OpenCV algorithm we are dealing with.
- * \param name    A \c std::string name for this nested algorithm. This should
- *                match the name used when \c get_nested_ocv_algo_configuration
- *                was called for this nested algorithm.
- * \param config  The \c vital::config_block to check.
- */
-template <typename algo_t>
-bool check_nested_ocv_algo_configuration(std::string const& name,
-                                         vital::config_block_sptr config)
-{
-  // use default algo type and parameters if there is no type defined in config
-  // or if its value is blank
-  vital::config_block_key_t type_key = name + vital::config_block::block_sep + type_token;
-  std::string impl_name = config->get_value<std::string>(type_key, "");
-  if (impl_name.length() == 0)
-  {
-    // no specific algorithm type configured, default will be used
-    return true;
-  }
-
-  // Must have a non-blank type specified in the configuration by this point.
-  // Attempt to create an algorithm with the given impl_name and algo_t. If
-  // this fails, attempt to apply the given name to the base cv::Algorithm
-  // class's creation method. If they both fail, the name is invalid.
-  cv::Ptr<algo_t> algo = helper_::create_ocv_algo<algo_t>(impl_name);
-
-  // If the algo creation step returned NULL with the given type name, we
-  // assume that the name you provided was invalid for the provided algorithm
-  // class.
-  if (algo.empty())
-  {
-    return false;
-  }
-
-  return helper_::check_nested_ocv_algo_configuration_helper(name, config, algo);
-}
-
-
 } // end namespace ocv
-
 } // end namespace maptk
 } // end namespace kwiver
 

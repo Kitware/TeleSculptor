@@ -5,6 +5,7 @@ set( maptk_ocv_headers_public
   analyze_tracks.h
   descriptor_set.h
   detect_features.h
+  detect_features_FAST.h
   draw_tracks.h
   estimate_homography.h
   extract_descriptors.h
@@ -30,6 +31,7 @@ set( maptk_ocv_sources
   analyze_tracks.cxx
   descriptor_set.cxx
   detect_features.cxx
+  detect_features_FAST.cxx
   draw_tracks.cxx
   estimate_homography.cxx
   extract_descriptors.cxx
@@ -39,7 +41,6 @@ set( maptk_ocv_sources
   mat_image_memory.cxx
   match_features.cxx
   match_set.cxx
-  ocv_algo_tools.cxx
   register_algorithms.cxx
   )
 

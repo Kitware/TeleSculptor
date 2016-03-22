@@ -35,15 +35,14 @@
 
 #include "detect_features.h"
 
-#include <iostream>
 #include <vector>
 
+#include <vital/algo/algorithm.txx>
 #include <vital/exceptions/image.h>
+
 #include <maptk/plugins/ocv/feature_set.h>
 #include <maptk/plugins/ocv/image_container.h>
 #include <maptk/plugins/ocv/ocv_algo_tools.h>
-
-#include <opencv2/features2d/features2d.hpp>
 
 using namespace kwiver::vital;
 
@@ -52,106 +51,6 @@ namespace maptk {
 
 namespace ocv
 {
-
-
-#ifdef MAPTK_HAS_OPENCV_VER_3
-#define OPENCV_FEATURE_DETECTOR_CREATE cv::Algorithm::create<cv::FeatureDetector>
-#else
-#define OPENCV_FEATURE_DETECTOR_CREATE cv::FeatureDetector::create
-#endif
-
-/// Private implementation class
-class detect_features::priv
-{
-public:
-  /// Constructor
-  priv()
-  : detector(default_detector())
-  {
-  }
-
-  priv(const priv& other)
-  : detector(default_detector())
-  {
-  }
-
-  /// create the default feature detector
-  static cv::Ptr<cv::FeatureDetector> default_detector()
-  {
-    cv::Ptr<cv::FeatureDetector> det;
-    // try the SURF detector first
-    det = OPENCV_FEATURE_DETECTOR_CREATE("SURF");
-    if( !det )
-    {
-      // if SURF is not available (nonfree not built) use ORB
-      det = OPENCV_FEATURE_DETECTOR_CREATE("ORB");
-    }
-    return det;
-  }
-
-  /// the feature detector algorithm
-  cv::Ptr<cv::FeatureDetector> detector;
-};
-
-
-/// Constructor
-detect_features
-::detect_features()
-: d_(new priv)
-{
-}
-
-
-/// Copy Constructor
-detect_features
-::detect_features(const detect_features& other)
-: d_(new priv(*other.d_))
-{
-}
-
-
-/// Destructor
-detect_features
-::~detect_features()
-{
-}
-
-
-/// Get this algorithm's \link vital::config_block configuration block \endlink
-vital::config_block_sptr
-detect_features
-::get_configuration() const
-{
-  // base configuration block
-  vital::config_block_sptr config = algorithm::get_configuration();
-
-  get_nested_ocv_algo_configuration("detector", config, d_->detector);
-
-  return config;
-}
-
-
-/// Set this algorithm's properties via a config block
-void
-detect_features
-::set_configuration(vital::config_block_sptr config)
-{
-  set_nested_ocv_algo_configuration<cv::FeatureDetector>(
-      "detector", config, d_->detector);
-}
-
-
-/// Check that the algorithm's configuration vital::config_block is valid
-bool
-detect_features
-::check_configuration(vital::config_block_sptr config) const
-{
-  bool nested_ok =
-    check_nested_ocv_algo_configuration<cv::FeatureDetector>(
-        "detector", config);
-
-  return nested_ok;
-}
 
 
 /// Extract a set of image features from the provided image
@@ -172,7 +71,7 @@ detect_features
     {
       throw image_size_mismatch_exception(
           "OCV detect feature algorithm given a non-zero mask with mismatched "
-          "shape compared to imput image",
+          "shape compared to input image",
           image_data->width(), image_data->height(),
           mask->width(), mask->height()
           );
@@ -189,7 +88,7 @@ detect_features
     cv_mask = ocv::image_container::maptk_to_ocv(i);
   }
 
-  d_->detector->detect(cv_img, keypoints, cv_mask);
+  detector->detect(cv_img, keypoints, cv_mask);
   return feature_set_sptr(new feature_set(keypoints));
 }
 
@@ -198,3 +97,8 @@ detect_features
 
 } // end namespace maptk
 } // end namespace kwiver
+
+
+/// \cond DoxygenSuppress
+INSTANTIATE_ALGORITHM_DEF(kwiver::maptk::ocv::detect_features);
+/// \endcond
