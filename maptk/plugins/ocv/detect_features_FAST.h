@@ -51,7 +51,9 @@ namespace ocv{
 
 
 class MAPTK_OCV_EXPORT detect_features_FAST
-  : public vital::algorithm_impl<detect_features_FAST, ocv::detect_features, vital::algo::detect_features>
+  : public vital::algorithm_impl<detect_features_FAST,
+                                 ocv::detect_features,
+                                 vital::algo::detect_features>
 {
 public:
   /// Constructor
