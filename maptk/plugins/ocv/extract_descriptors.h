@@ -36,45 +36,23 @@
 #ifndef MAPTK_PLUGINS_OCV_EXTRACT_DESCRIPTORS_H_
 #define MAPTK_PLUGINS_OCV_EXTRACT_DESCRIPTORS_H_
 
-
 #include <vital/vital_config.h>
-#include <maptk/plugins/ocv/maptk_ocv_export.h>
-
 #include <vital/algo/extract_descriptors.h>
 
-#include <memory>
+#include <maptk/plugins/ocv/maptk_ocv_export.h>
+
+#include <opencv2/features2d/features2d.hpp>
 
 namespace kwiver {
 namespace maptk {
-
-namespace ocv
-{
+namespace ocv {
 
 /// An class for extracting feature descriptors using OpenCV
 class MAPTK_OCV_EXPORT extract_descriptors
-  : public vital::algorithm_impl<extract_descriptors, vital::algo::extract_descriptors>
+  : public vital::algo::extract_descriptors
 {
 public:
-  /// Default Constructor
-  extract_descriptors();
-
-  /// Destructor
-  virtual ~extract_descriptors();
-
-  /// Copy Constructor
-  extract_descriptors(const extract_descriptors& other);
-
-  /// Return the name of this implementation
-  virtual std::string impl_name() const { return "ocv"; }
-
-  /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
-  virtual vital::config_block_sptr get_configuration() const;
-  /// Set this algorithm's properties via a config block
-  virtual void set_configuration(vital::config_block_sptr config);
-  /// Check that the algorithm's configuration vital::config_block is valid
-  virtual bool check_configuration(vital::config_block_sptr config) const;
-
-  /// Extract from the image a descriptor corresoponding to each feature
+  /// Extract from the image a descriptor corresponding to each feature
   /**
    * \param image_data contains the image data to process
    * \param features the feature locations at which descriptors are extracted
@@ -85,14 +63,12 @@ public:
           vital::feature_set_sptr features,
           vital::image_container_sptr image_mask = vital::image_container_sptr()) const;
 
-private:
-  /// private implementation class
-  class priv;
-  const std::unique_ptr<priv> d_;
+protected:
+  /// the descriptor extractor algorithm
+  cv::Ptr<cv::DescriptorExtractor> extractor;
 };
 
 } // end namespace ocv
-
 } // end namespace maptk
 } // end namespace kwiver
 

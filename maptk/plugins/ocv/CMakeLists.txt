@@ -9,13 +9,13 @@ set( maptk_ocv_headers_public
   draw_tracks.h
   estimate_homography.h
   extract_descriptors.h
+  extract_descriptors_BRIEF.h
   feature_set.h
   image_container.h
   image_io.h
   mat_image_memory.h
   match_features.h
   match_set.h
-  ocv_algo_tools.h
   register_algorithms.h
   )
 kwiver_install_headers(
@@ -35,6 +35,7 @@ set( maptk_ocv_sources
   draw_tracks.cxx
   estimate_homography.cxx
   extract_descriptors.cxx
+  extract_descritpors_BRIEF.cxx
   feature_set.cxx
   image_container.cxx
   image_io.cxx

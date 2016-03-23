@@ -37,8 +37,6 @@
 
 #include <sstream>
 
-using namespace kwiver::vital;
-
 namespace kwiver {
 namespace maptk {
 namespace ocv {
@@ -73,7 +71,9 @@ public:
   {
 #ifndef MAPTK_HAS_OPENCV_VER_3
     // 2.4.x version constructor
-    return new cv::FastFeatureDetector(threshold, nonmaxSuppression);
+    return cv::Ptr<cv::FastFeatureDetector>(
+        new cv::FastFeatureDetector(threshold, nonmaxSuppression)
+    );
 #else
     // 3.x version constructor
     return cv::FastFeatureDetector::create(threshold, nonmaxSuppression,
@@ -167,6 +167,8 @@ detect_features_FAST
 #ifdef MAPTK_HAS_OPENCV_VER_3
   p_->neighborhood_type = config->get_value<int>( "neighborhood_type" );
 #endif
+
+  p_->update_detector_params(detector);
 }
 
 

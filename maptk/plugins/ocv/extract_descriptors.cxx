@@ -35,121 +35,19 @@
 
 #include "extract_descriptors.h"
 
+#include <vital/algo/algorithm.txx>
+
 #include <maptk/plugins/ocv/image_container.h>
 #include <maptk/plugins/ocv/feature_set.h>
 #include <maptk/plugins/ocv/descriptor_set.h>
-#include <maptk/plugins/ocv/ocv_algo_tools.h>
-
-#ifdef MAPTK_HAS_OPENCV_VER_3
-#define OPENCV_DESCRIPTOR_EXTRACTOR_CREATE cv::Algorithm::create<cv::DescriptorExtractor>
-#else
-#define OPENCV_DESCRIPTOR_EXTRACTOR_CREATE cv::DescriptorExtractor::create
-#endif
 
 using namespace kwiver::vital;
 
 namespace kwiver {
 namespace maptk {
+namespace ocv {
 
-namespace ocv
-{
-
-/// Private implementation class
-class extract_descriptors::priv
-{
-public:
-  /// Constructor
-  priv()
-  : extractor(default_extractor())
-  {
-  }
-
-  /// Copy constructor
-  priv(const priv& other)
-  : extractor(default_extractor())
-  {
-  }
-
-  /// create the default descriptor extractor
-  static cv::Ptr<cv::DescriptorExtractor> default_extractor()
-  {
-    cv::Ptr<cv::DescriptorExtractor> ext;
-    // try the SURF detector first
-    ext = OPENCV_DESCRIPTOR_EXTRACTOR_CREATE("SURF");
-    if( !ext )
-    {
-      // if SURF is not available (nonfree not built) use ORB
-      ext = OPENCV_DESCRIPTOR_EXTRACTOR_CREATE("ORB");
-    }
-    return ext;
-  }
-
-  /// the descriptor extractor algorithm
-  cv::Ptr<cv::DescriptorExtractor> extractor;
-};
-
-
-/// Constructor
-extract_descriptors
-::extract_descriptors()
-: d_(new priv)
-{
-}
-
-
-/// Copy Constructor
-extract_descriptors
-::extract_descriptors(const extract_descriptors& other)
-: d_(new priv(*other.d_))
-{
-}
-
-
-/// Destructor
-extract_descriptors
-::~extract_descriptors()
-{
-}
-
-
-/// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
-vital::config_block_sptr
-extract_descriptors
-::get_configuration() const
-{
-  // base configuration block
-  vital::config_block_sptr config = algorithm::get_configuration();
-
-  get_nested_ocv_algo_configuration("extractor", config, d_->extractor);
-
-  return config;
-}
-
-
-/// Set this algorithm's properties via a config block
-void
-extract_descriptors
-::set_configuration(vital::config_block_sptr config)
-{
-  set_nested_ocv_algo_configuration(
-      "extractor", config, d_->extractor);
-}
-
-
-/// Check that the algorithm's configuration vital::config_block is valid
-bool
-extract_descriptors
-::check_configuration(vital::config_block_sptr config) const
-{
-  bool nested_ok =
-    check_nested_ocv_algo_configuration<cv::DescriptorExtractor>(
-        "extractor", config);
-
-  return nested_ok;
-}
-
-
-/// Extract from the image a descriptor corresoponding to each feature
+/// Extract from the image a descriptor corresponding to each feature
 descriptor_set_sptr
 extract_descriptors
 ::extract(image_container_sptr image_data,
@@ -164,13 +62,16 @@ extract_descriptors
   std::vector<cv::KeyPoint> kpts = features_to_ocv_keypoints(*features);
 
   cv::Mat desc;
-  d_->extractor->compute( img, kpts, desc );
-
+  extractor->compute( img, kpts, desc );
   return descriptor_set_sptr(new ocv::descriptor_set(desc));
 }
 
 
 } // end namespace ocv
-
 } // end namespace maptk
 } // end namespace kwiver
+
+
+/// \cond DoxygenSupress
+INSTANTIATE_ALGORITHM_DEF(kwiver::maptk::ocv::extract_descriptors);
+/// \endconf

@@ -56,9 +56,6 @@ class MAPTK_OCV_EXPORT detect_features
   : public kwiver::vital::algo::detect_features
 {
 public:
-  /// Return the name of this algorithm
-  static std::string static_type_name() { return "detect_features_opencv"; }
-
   /// Extract a set of image features from the provided image
   /**
    * A given mask image should be one-channel (mask->depth() == 1). If the

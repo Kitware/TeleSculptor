@@ -42,7 +42,6 @@
 
 #include <maptk/plugins/ocv/feature_set.h>
 #include <maptk/plugins/ocv/image_container.h>
-#include <maptk/plugins/ocv/ocv_algo_tools.h>
 
 using namespace kwiver::vital;
 
