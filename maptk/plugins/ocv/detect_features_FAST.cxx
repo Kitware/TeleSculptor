@@ -35,6 +35,8 @@
 
 #include "detect_features_FAST.h"
 
+#include <sstream>
+
 using namespace kwiver::vital;
 
 namespace kwiver {
@@ -132,14 +134,39 @@ detect_features_FAST
 ::get_configuration() const
 {
   vital::config_block_sptr config = maptk::ocv::detect_features::get_configuration();
+  config->set_value( "threshold", p_->threshold,
+                     "Integer threshold on difference between intensity of the "
+                     "central pixel and pixels of a circle around this pixel" );
+  config->set_value( "nonmaxSuppression", p_->nonmaxSuppression,
+                     "if true, non-maximum suppression is applied to detected "
+                     "corners (keypoints)" );
+
+#ifdef MAPTK_HAS_OPENCV_VER_3
+  std::stringstream ss;
+  ss << "one of the three neighborhoods as defined in the paper: "
+            "TYPE_5_8=" << cv::FastFeatureDetector::TYPE_5_8 << ", "
+            "TYPE_7_12=" << cv::FastFeatureDetector::TYPE_7_12 << ", "
+            "TYPE_9_16=" << cv::FastFeatureDetector::TYPE_9_16 << ".";
+  config->set_value( "neighborhood_type", p_->neighborhood_type , ss.str());
+#endif
+
   return config;
 }
 
 
 void
 detect_features_FAST
-::set_configuration(vital::config_block_sptr config)
+::set_configuration(vital::config_block_sptr in_config)
 {
+  vital::config_block_sptr config = get_configuration();
+  config->merge_config(in_config);
+
+  p_->threshold = config->get_value<int>( "threshold" );
+  p_->nonmaxSuppression = config->get_value<bool>( "nonmaxSuppression" );
+
+#ifdef MAPTK_HAS_OPENCV_VER_3
+  p_->neighborhood_type = config->get_value<int>( "neighborhood_type" );
+#endif
 }
 
 
@@ -147,7 +174,24 @@ bool
 detect_features_FAST
 ::check_configuration(vital::config_block_sptr config) const
 {
-  return true;
+  bool valid = true;
+
+#ifdef MAPTK_HAS_OPENCV_VER_3
+  // Check that the input integer is one of the valid enum values
+  int nt = config->get_value<int>( "neighborhood_type" );
+  if( ! ( nt == cv::FastFeatureDetector::TYPE_5_8 ||
+          nt == cv::FastFeatureDetector::TYPE_7_12 ||
+          nt == cv::FastFeatureDetector::TYPE_9_16) )
+  {
+    std::stringstream ss;
+    ss << "FAST feature detector neighborhood type is not one of the valid "
+          "values (see config comment). Given " << nt;
+    m_logger->log_error(ss.str());
+    valid = false;
+  }
+#endif
+
+  return valid;
 }
 
 
