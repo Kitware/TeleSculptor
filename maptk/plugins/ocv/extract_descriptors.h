@@ -30,7 +30,7 @@
 
 /**
  * \file
- * \brief MAPTK algorithm wrapping of OCV's DescriptorExtractor
+ * \brief Extended algorithm definition for OpenCV descriptor extractor algos
  */
 
 #ifndef MAPTK_PLUGINS_OCV_EXTRACT_DESCRIPTORS_H_
@@ -47,7 +47,11 @@ namespace kwiver {
 namespace maptk {
 namespace ocv {
 
-/// An class for extracting feature descriptors using OpenCV
+/// OCV specific definition for algorithms that describe feature points
+/**
+ * This extended algorithm_def provides a common implementation for the extract
+ * method.
+ */
 class MAPTK_OCV_EXPORT extract_descriptors
   : public vital::algo::extract_descriptors
 {

@@ -30,7 +30,7 @@
 
 /**
  * \file
- * \brief OCV detect_features algorithm impl interface
+ * \brief Extended algorithm definition for OpenCV feature detector algos
  */
 
 #ifndef MAPTK_PLUGINS_OCV_DETECT_FEATURES_H_
