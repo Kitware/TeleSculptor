@@ -40,6 +40,7 @@
 #include <vital/exceptions/video.h>
 #include <vital/video_metadata/convert_metadata.h>
 #include <vital/vital_foreach.h>
+#include <vital/util/tokenize.h>
 
 #include <vital/klv/klv_data.h>
 
@@ -50,6 +51,7 @@
 
 #include <mutex>
 #include <memory>
+#include <vector>
 
 namespace kwiver {
 namespace maptk {
@@ -64,38 +66,41 @@ public:
   priv()
     : config_start_frame( -1 ),
       config_stop_after_frame( -1 ),
-      config_time_source( "pts" ),
-      have_frame( false ),
-      at_eov( false ),
-      have_frame_time( false ),
-      have_metadata( false ),
+      config_time_source( "pts, misp, klv0601, klv0104, none" ), // initialization string
+      config_time_scan_frame_limit( 100 ),
+      d_have_frame( false ),
+      d_at_eov( false ),
+      d_have_frame_time( false ),
+      d_have_metadata( false ),
       pts_of_meta_ts( 0.0 ),
       meta_ts( 0 ),
-      frame_time( 0 ),
-      frame_number( 1 )
+      d_frame_time( 0 ),
+      d_frame_number( 1 )
   { }
 
 
-  vidl_ffmpeg_istream video_stream;
-  vital::logger_handle_t logger; // for logging in priv methods
+  vidl_ffmpeg_istream d_video_stream;
+  vital::logger_handle_t d_logger; // for logging in priv methods
 
   // Configuration values
   unsigned int config_start_frame;
   unsigned int config_stop_after_frame;
-  std::string  config_time_source;
+  std::string  config_time_source; // default sources string
+  std::vector< std::string >  config_time_source_list;
+  int config_time_scan_frame_limit; // number of frames to scan looking for time
 
   // local state
-  bool have_frame;
-  bool at_eov;
-  bool have_frame_time;
-  bool have_metadata;
+  bool d_have_frame;
+  bool d_at_eov;
+  bool d_have_frame_time;
+  bool d_have_metadata;
 
   double pts_of_meta_ts;            // probably seconds
   vital::timestamp::time_t meta_ts; // time in usec
 
   // used to create timestamp output
-  vital::timestamp::time_t frame_time; // usec
-  vital::timestamp::frame_t frame_number;
+  vital::timestamp::time_t d_frame_time; // usec
+  vital::timestamp::frame_t d_frame_number;
 
   std::string video_path; // name of video we opened
 
@@ -136,7 +141,7 @@ public:
     // If we have collected enough of the stream to make a KLV packet
     while ( klv_pop_next_packet( md_buffer, klv_packet ) )
     {
-      kwiver::vital::video_metadata_sptr meta( new kwiver::vital::video_metadata );
+      auto meta = std::make_shared<kwiver::vital::video_metadata>();
 
       converter.convert( klv_packet, *(meta) );
 
@@ -144,11 +149,11 @@ public:
       if ( ! meta->empty() )
       {
         kwiver::vital::timestamp ts;
-        ts.set_frame( this->frame_number );
+        ts.set_frame( this->d_frame_number );
 
-        if ( this->have_frame_time )
+        if ( this->d_have_frame_time )
         {
-          ts.set_time_usec( this->frame_time );
+          ts.set_time_usec( this->d_frame_time );
         }
 
         meta->set_timestamp( ts );
@@ -224,54 +229,57 @@ public:
    *
    * @return \b true if timestamp has been determined.
    */
-  bool init_timestamp()
+  bool init_timestamp( std::string  time_source )
   {
     bool retval( true );
 
     meta_ts = 0.0;
-    if ( ! this->video_stream.advance() )
+    if ( ! this->d_video_stream.advance() )
     {
       return false;
     }
 
-    have_metadata = this->video_stream.has_metadata();
-
     // Determine which option has been selected to generate frame time;
-    if ( config_time_source == "pts" )
+    if ( time_source == "pts" )
     {
       retval = pts_time();
     }
-    else if ( config_time_source == "misp" )
+    else if ( time_source == "misp" )
     {
       retval = misp_time();
     }
-    else if ( config_time_source == "klv0601" )
+    else if ( time_source == "klv0601" )
     {
       retval = klv_time( kwiver::vital::video_metadata::MISB_0601 );
     }
-    else if ( config_time_source == "klv0104" )
+    else if ( time_source == "klv0104" )
     {
       retval = klv_time( kwiver::vital::video_metadata::MISB_0104 );
     }
     else // assume "none"
     {
-      have_frame_time = false;
+      d_have_frame_time = false;
     }
 
+    // If we have located a start time in the video, save the PTS for
+    // that point in the video. The video should be left positioned
+    // where the time was located. We will get the PTS of a frame and,
+    // using this pts_of_meta_ts, be able to adjust the time we got
+    // from the metadata correctly.
     if (meta_ts != 0)
     {
-      pts_of_meta_ts = video_stream.current_pts();
-      frame_time = meta_ts;
+      pts_of_meta_ts = d_video_stream.current_pts();
+      d_frame_time = meta_ts;
     }
 
     // Tried seeking to the beginning but some videos don't
     // want to seek, even to the start.  So reload the video.
     {
       std::lock_guard< std::mutex > lock( s_open_mutex );
-      video_stream.open( this->video_path ); //Calls close on current video
+      d_video_stream.open( this->video_path ); // Calls close on current video
     }
 
-    if ( ! video_stream.advance() )
+    if ( ! d_video_stream.advance() )
     {
       retval = false;
     }
@@ -286,25 +294,31 @@ public:
 // ------------------------------------------------------------------
   bool pts_time()
   {
-    LOG_DEBUG( this->logger, "Using pts for timestamp: " << video_stream.current_pts() );
-    pts_of_meta_ts = video_stream.current_pts();
+    bool retval(false);
+
+    pts_of_meta_ts = d_video_stream.current_pts();
 
     // If the pts is zero, then assume that there is no time from video source
     if ( 0.0 != pts_of_meta_ts )
     {
-      have_frame_time = false;
+      LOG_DEBUG( this->d_logger, "Using pts for timestamp: " << pts_of_meta_ts );
+      d_have_frame_time = false;
+      retval = true;
     }
 
-    return true;
+    return retval;
   }
 
 
 // ------------------------------------------------------------------
   bool misp_time()
   {
+    int frame_count( config_time_scan_frame_limit );
+    bool retval(false);
+
     do
     {
-      std::vector< unsigned char > pkt_data = video_stream.current_packet_data();
+      std::vector< unsigned char > pkt_data = d_video_stream.current_packet_data();
 
       //Check if the data packet has enough bytes for the MISPmicrosectime packet
       if ( pkt_data.size() < misp.length() + 13 )
@@ -342,32 +356,41 @@ public:
 
         convertMISPmicrosectime( MISPtime_buf, ts );
         meta_ts = ts; // in usec
-        LOG_DEBUG( this->logger, "Found MISP frame time:" << meta_ts );
+        LOG_DEBUG( this->d_logger, "Found MISP frame time:" << meta_ts );
 
-        have_frame_time = true;
+        d_have_frame_time = true;
+        retval = true;
       }
 
     }
-    while ( meta_ts == 0.0 && video_stream.advance() );
+    while ( meta_ts == 0.0 && d_video_stream.advance() && frame_count-- );
 
-    return true;
+    // if, after advancing, the PTS is still zero, then we can not establish a time reference
+    if ( 0 == d_video_stream.current_pts() )
+    {
+      d_have_frame_time = false;
+    }
+
+    return retval;
   } // misp_time
 
 
 // ------------------------------------------------------------------
   bool klv_time( std::string type )
   {
-    meta_ts = 0;
+    int frame_count( config_time_scan_frame_limit );
+    bool retval(false);
+
     do
     {
       // skip ahead until we get some metadata
-      if ( video_stream.current_metadata().empty() )
+      if ( d_video_stream.current_metadata().empty() )
       {
         continue;
       }
 
       //It might be more accurate to get the second unique timestamp instead of the first
-      std::deque< vxl_byte > curr_md = video_stream.current_metadata();
+      std::deque< vxl_byte > curr_md = d_video_stream.current_metadata();
       if (process_metadata( curr_md ) )
       {
         // A metadata collection was created
@@ -384,22 +407,28 @@ public:
             {
               if (meta->has( kwiver::vital::VITAL_META_UNIX_TIMESTAMP ) )
               {
-                // Get unix timestamp and convert to usec
-                meta_ts = meta->find( kwiver::vital::VITAL_META_UNIX_TIMESTAMP ).as_uint64() * 1e6;
+                // Get unix timestamp as usec
+                meta_ts = meta->find( kwiver::vital::VITAL_META_UNIX_TIMESTAMP ).as_uint64();
 
-                LOG_DEBUG( this->logger, "Found initial " << type << " timestamp: " << meta_ts );
+                LOG_DEBUG( this->d_logger, "Found initial " << type << " timestamp: " << meta_ts );
 
-                have_frame_time = true;
-                return true;
+                d_have_frame_time = true;
+                retval = true;
               } // has time element
             } // correct metadata type
           } // has metadata origin
         } // foreach over all metadata packets
       } // end if processed metadata collection
     }
-    while ( meta_ts == 0 && video_stream.advance() );
+    while ( meta_ts == 0 && d_video_stream.advance() && frame_count-- );
 
-    return false;
+    // if, after advancing, the PTS is still zero, then we can not establish a time reference
+    if ( 0 == d_video_stream.current_pts() )
+    {
+      d_have_frame_time = false;
+    }
+
+    return retval;
   } // klv_time
 
 }; // end of internal class.
@@ -415,7 +444,7 @@ vidl_ffmpeg_video_input
   : d( new priv() )
 {
   attach_logger( "video_input" ); // get appropriate logger
-  d->logger = this->m_logger;
+  d->d_logger = this->m_logger;
 }
 
 
@@ -425,7 +454,7 @@ vidl_ffmpeg_video_input
   : d( new priv() )
 {
   attach_logger( "video_input" ); // get appropriate logger
-  d->logger = this->m_logger;
+  d->d_logger = this->m_logger;
 
   // Copy configuration values only
   d->config_start_frame      = other.d->config_start_frame;
@@ -436,7 +465,7 @@ vidl_ffmpeg_video_input
 vidl_ffmpeg_video_input
 ::~vidl_ffmpeg_video_input()
 {
-  d->video_stream.close( );
+  d->d_video_stream.close( );
 }
 
 
@@ -449,6 +478,9 @@ vidl_ffmpeg_video_input
   // get base config from base class
   vital::config_block_sptr config = vital::algo::video_input::get_configuration();
 
+  config->set_value( "time_scan_frame_limit", d->config_time_scan_frame_limit,
+                     "Number of frames to be scanned searching input video for embedded time. " );
+
   config->set_value( "start_at_frame", d->config_start_frame,
                      "Frame number (from 1) to start processing video input. "
                      "Default is to start at the beginning of the video." );
@@ -457,10 +489,18 @@ vidl_ffmpeg_video_input
                      "Number of frames to supply. Default is all frames after start frame." );
 
   config->set_value( "time_source", d->config_time_source,
-                     "Source for frame time information. Valid options are \"none\", \"pts\", \"misp\", \"klv0601\", \"klv0104\".\n"
+                     "List of sources for frame time information. This specified the desired source for the output timestamp. "
+                     "Times taht are embedded in the metadata packets are not effected. "
+                     "The sources are tried in order until a valid time is found. "
+                     "Note that when \"none\" is found in the list, it is always succeeds and no other time "
+                     "source will be tried. So if \"none\" is to be used, it should be the only entry in the list."
+                     "The time in the output timestamp will be marked as invalid and the HAS_FRAME_TIME "
+                     "capability will be set to false. If all specified entries are tried and no valid time source is found, "
+                     "no time will be returned in the output timestamp, as if \"none\" was the specified time source. "
+                     "Valid options are \"none\", \"pts\", \"misp\", \"klv0601\", \"klv0104\".\n"
                      "Where:\n"
                      "    none - do not supply frame time\n"
-                     "    pts - presentation time stamp. Not all videos can supply this.\n"
+                     "    pts - presentation time stamp.\n"
                      "    misp - use frame embedded time stamps.\n"
                      "    klv0601 - use klv 0601 format metadata for frame time\n"
                      "    klv0104 - use klv 0104 format metadata for frame time" );
@@ -487,8 +527,9 @@ vidl_ffmpeg_video_input
   d->config_stop_after_frame = config->get_value<vital::timestamp::frame_t>(
     "stop_after_frame", d->config_stop_after_frame );
 
-  d->config_time_source = config->get_value<std::string>(
-    "time_source", d->config_time_source );
+  kwiver::vital::tokenize( config->get_value<std::string>( "time_source", d->config_time_source ),
+            d->config_time_source_list, " ,", true );
+  d->config_time_source_list.push_back( "none" );
 }
 
 
@@ -500,12 +541,25 @@ vidl_ffmpeg_video_input
   bool retcode(true); // assume success
 
   // validate time source
-  std::string source = config->get_value<std::string>( "time_source", d->config_time_source );
-  if (source != "none"
-      && source != "pts"
-      && source != "misp"
-      && source != "klv0601"
-      && source != "klv0104")
+  bool valid_src( true );
+  std::vector< std::string > time_source;
+  kwiver::vital::tokenize( config->get_value<std::string>( "time_source", d->config_time_source ),
+            time_source, " ,", true );
+
+  VITAL_FOREACH( auto source, time_source )
+  {
+    if (source != "none"
+        && source != "pts"
+        && source != "misp"
+        && source != "klv0601"
+        && source != "klv0104")
+    {
+      valid_src = false;
+      break;
+    }
+  }
+
+  if ( ! valid_src )
   {
     LOG_ERROR( m_logger, "time_source must be one of none, pts, misp, klv0601, klv0104" );
     retcode = false;
@@ -535,38 +589,53 @@ vidl_ffmpeg_video_input
   // avcodec_open2 which is called by open is not thread safe so we need to lock.
   {
     std::lock_guard< std::mutex > lock( d->s_open_mutex );
-    if( ! d->video_stream.open( video_name ) )
+    if( ! d->d_video_stream.open( video_name ) )
     {
       // Throw exception
       throw kwiver::vital::file_not_found_exception( video_name, "Open failed" );
     }
   }
 
-  d->at_eov = false;
-  d->frame_number = 1;
+  d->d_at_eov = false;
+  d->d_frame_number = 1;
 
   if ( d->config_start_frame != unsigned(-1) &&  d->config_start_frame > 1 )
   {
     // move stream to specified frame number
-    d->video_stream.seek_frame( d->config_start_frame );
+    d->d_video_stream.seek_frame( d->config_start_frame );
   }
 
-  // We already have required frame
-  d->have_frame = true;
+  // check for metadata
+  d->d_have_metadata = d->d_video_stream.has_metadata();
 
-  if( ! d->init_timestamp() )  // will call advance()
+  // We already have required frame
+  // See if we can generate a time base
+  d->d_have_frame = true;
+  bool time_found( false );
+  VITAL_FOREACH( auto time_source, d->config_time_source_list )
+  {
+    LOG_DEBUG( d->d_logger, "Looking for " << time_source << " as time source" );
+    if( d->init_timestamp( time_source ) )  // will call advance()
+    {
+      LOG_DEBUG( d->d_logger, "Found " << time_source << " as time source" );
+      time_found = true;
+      break;
+    }
+  }
+
+  if ( ! time_found )
   {
     LOG_ERROR( m_logger, "Failed to initialize the timestamp for: " << d->video_path );
     throw kwiver::vital::video_stream_exception( "could not initialize timestamp" );
   }
 
-  // Set traits
-  set_trait(vital::algo::video_input_traits::HAS_TIMEOUT, false );
+  // Set capabilities
+  set_capability(vital::algo::video_input::HAS_TIMEOUT, false );
 
-  set_trait(vital::algo::video_input_traits::HAS_EOV, true );
-  set_trait(vital::algo::video_input_traits::HAS_FRAME_NUMBERS, true );
-  set_trait(vital::algo::video_input_traits::HAS_FRAME_TIME, d->have_frame_time  );
-  set_trait(vital::algo::video_input_traits::HAS_METADATA, d->have_metadata  );
+  set_capability(vital::algo::video_input::HAS_EOV, true );
+  set_capability(vital::algo::video_input::HAS_FRAME_NUMBERS, true );
+  set_capability(vital::algo::video_input::HAS_FRAME_TIME, d->d_have_frame_time  );
+  set_capability(vital::algo::video_input::HAS_METADATA, d->d_have_metadata  );
 }
 
 
@@ -575,14 +644,14 @@ void
 vidl_ffmpeg_video_input
 ::close()
 {
-  d->video_stream.close();
+  d->d_video_stream.close();
 
-  d->have_frame = false;
-  d->at_eov = false;
-  d->have_frame_time = false;
-  d->have_metadata = false;
-  d->frame_time = 0;
-  d->frame_number = 1;
+  d->d_have_frame = false;
+  d->d_at_eov = false;
+  d->d_have_frame_time = false;
+  d->d_have_metadata = false;
+  d->d_frame_time = 0;
+  d->d_frame_number = 1;
 }
 
 
@@ -592,53 +661,53 @@ vidl_ffmpeg_video_input
 ::next_frame( kwiver::vital::timestamp& ts,
               uint32_t timeout )
 {
-  if (d->at_eov)
+  if (d->d_at_eov)
   {
     return false;
   }
 
   // is stream open?
-  if ( ! d->video_stream.is_open() )
+  if ( ! d->d_video_stream.is_open() )
   {
     throw vital::file_not_read_exception( d->video_path, "Video not open" );
   }
 
   // Sometimes we already have the frame available.
-  if ( d->have_frame )
+  if ( d->d_have_frame )
   {
-    d->have_frame = false;
+    d->d_have_frame = false;
   }
   else
   {
-    if( ! d->video_stream.advance() )
+    if( ! d->d_video_stream.advance() )
     {
-      d->at_eov = true;
+      d->d_at_eov = true;
       return false;
     }
   }
 
-  unsigned int frame_num = d->video_stream.frame_number();
+  unsigned int frame_num = d->d_video_stream.frame_number();
   if( d->config_stop_after_frame < frame_num )
   {
-    d->at_eov = true;  // logical end of file
+    d->d_at_eov = true;  // logical end of file
     return false;
   }
 
   // ---- Calculate time stamp ----
   // Metadata packets may not exist for each frame, so use the diff in
   // presentation time stamps to foward the first metadata time stamp.
-  double pts_diff = ( d->video_stream.current_pts() - d->pts_of_meta_ts ) * 1e6;
-  d->frame_time = d->meta_ts + pts_diff;
-  d->frame_number = d->video_stream.frame_number();
+  double pts_diff = ( d->d_video_stream.current_pts() - d->pts_of_meta_ts ) * 1e6;
+  d->d_frame_time = d->meta_ts + pts_diff;
+  d->d_frame_number = d->d_video_stream.frame_number();
 
   // We don't always have all components of a timestamp, so start with
   // an invalid TS and add the data we have.
   ts.set_invalid();
-  ts.set_frame( d->frame_number );
+  ts.set_frame( d->d_frame_number );
 
-  if ( d->have_frame_time )
+  if ( d->d_have_frame_time )
   {
-    ts.set_time_usec( d->frame_time );
+    ts.set_time_usec( d->d_frame_time );
   }
 
   // ---- process metadata ---
@@ -653,14 +722,14 @@ kwiver::vital::image_container_sptr
 vidl_ffmpeg_video_input
 ::frame_image( )
 {
-  if (d->at_eov)
+  if (d->d_at_eov)
   {
     return kwiver::vital::image_container_sptr();
   }
 
   // We succeed in the step if we can convert the frame to RGB.
   vil_image_view<vxl_byte> img;
-  vidl_frame_sptr vidl_frame = d->video_stream.current_frame();
+  vidl_frame_sptr vidl_frame = d->d_video_stream.current_frame();
   bool result = vidl_convert_to_view( *vidl_frame,
                                       img,
                                       VIDL_PIXEL_COLOR_RGB );
@@ -679,7 +748,7 @@ kwiver::vital::video_metadata_vector
 vidl_ffmpeg_video_input
 ::frame_metadata()
 {
-  if (d->at_eov)
+  if (d->d_at_eov)
   {
     return kwiver::vital::video_metadata_vector();
   }
@@ -688,7 +757,7 @@ vidl_ffmpeg_video_input
   // If the vector is empty, then try to convert metadata.
   if ( d->metadata_collection.empty() )
   {
-    std::deque< uint8_t > curr_md = d->video_stream.current_metadata();
+    std::deque< uint8_t > curr_md = d->d_video_stream.current_metadata();
     if (curr_md.size() > 0 )
     {
       // will manage metadata collection object.
@@ -705,7 +774,7 @@ bool
 vidl_ffmpeg_video_input
 ::end_of_video() const
 {
-  return d->at_eov;
+  return d->d_at_eov;
 }
 
 
@@ -714,7 +783,7 @@ bool
 vidl_ffmpeg_video_input
 ::good() const
 {
-  return d->video_stream.is_valid();
+  return d->d_video_stream.is_valid();
 }
 
 } } } // end namespace
