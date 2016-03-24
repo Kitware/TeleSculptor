@@ -15,6 +15,8 @@ set( maptk_ocv_headers_public
   image_io.h
   mat_image_memory.h
   match_features.h
+  match_features_bruteforce.h
+  match_features_flannbased.h
   match_set.h
   register_algorithms.h
   )
@@ -41,6 +43,8 @@ set( maptk_ocv_sources
   image_io.cxx
   mat_image_memory.cxx
   match_features.cxx
+  match_features_bruteforce.cxx
+  match_features_flannbased.cxx
   match_set.cxx
   register_algorithms.cxx
   )
