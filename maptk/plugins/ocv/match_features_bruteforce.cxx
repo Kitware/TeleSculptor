@@ -43,11 +43,6 @@ namespace ocv {
 class match_features_bruteforce::priv
 {
 public:
-  /// Parameters
-  int norm_type;
-  bool cross_check;
-  cv::Ptr<cv::BFMatcher> matcher;
-
   priv(int norm_type=cv::NORM_L2, bool cross_check=false)
       : norm_type( norm_type ),
         cross_check( cross_check ),
@@ -55,6 +50,7 @@ public:
   {
   }
 
+  /// Copy Constructor
   priv( priv const &other )
     : norm_type( other.norm_type ),
       cross_check( other.cross_check ),
@@ -73,6 +69,11 @@ public:
         new cv::BFMatcher(norm_type, cross_check)
     );
   }
+
+  /// Parameters
+  int norm_type;
+  bool cross_check;
+  cv::Ptr<cv::BFMatcher> matcher;
 
 }; // end match_features_bruteforce::priv
 
@@ -123,7 +124,7 @@ match_features_bruteforce
   : p_( new priv )
 {
   std::stringstream ss;
-  ss << type_name() << "::" << impl_name();
+  ss << type_name() << "." << impl_name();
   attach_logger( ss.str() );
 }
 
@@ -133,8 +134,14 @@ match_features_bruteforce
   : p_( new priv( *other.p_ ) )
 {
   std::stringstream ss;
-  ss << type_name() << "::" << impl_name();
+  ss << type_name() << "." << impl_name();
   attach_logger( ss.str() );
+}
+
+
+match_features_bruteforce
+::~match_features_bruteforce()
+{
 }
 
 

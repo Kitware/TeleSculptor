@@ -43,30 +43,26 @@ namespace ocv {
 class match_features_flannbased::priv
 {
 public:
-  /// Parameters
-  bool cross_check;
-  unsigned cross_check_k;
-  cv::Ptr<cv::FlannBasedMatcher> matcher;
-
-  /// Create new FLANN-based
-  priv(bool cross_check=true, unsigned cross_check_k=1)
-      : cross_check( cross_check ),
-        cross_check_k( cross_check_k ),
-        matcher( new cv::FlannBasedMatcher )
+  /// Constructor
+  priv()
+    : cross_check( true ),
+      cross_check_k( 1 ),
+      matcher( new cv::FlannBasedMatcher )
   {
   }
 
+  /// Copy Constructor
   priv( priv const &other )
-      : cross_check( other.cross_check ),
-        cross_check_k( other.cross_check_k ),
-        matcher( other.matcher->clone() )
+    : cross_check( other.cross_check ),
+      cross_check_k( other.cross_check_k ),
+      matcher( other.matcher->clone() )
   {
   }
 
   // Can't currently update parameters on BF implementation, so no update
   // function. Will need to create a new instance on each parameter update.
 
-  /// Create a new brute-force matcher instance and set our matcher param to it
+  /// Create a new flann-based matcher instance and set our matcher param to it
   void create()
   {
     // cross version compatible
@@ -111,6 +107,11 @@ public:
     }
   }
 
+  /// Parameters
+  bool cross_check;
+  unsigned cross_check_k;
+  cv::Ptr<cv::FlannBasedMatcher> matcher;
+
 }; // end match_features_flannbased::priv
 
 
@@ -119,7 +120,7 @@ match_features_flannbased
   : p_( new priv )
 {
   std::stringstream ss;
-  ss << type_name() << "::" << impl_name();
+  ss << type_name() << "." << impl_name();
   attach_logger( ss.str() );
 }
 
@@ -129,8 +130,14 @@ match_features_flannbased
   : p_( new priv( *other.p_ ) )
 {
   std::stringstream ss;
-  ss << type_name() << "::" << impl_name();
+  ss << type_name() << "." << impl_name();
   attach_logger( ss.str() );
+}
+
+
+match_features_flannbased
+::~match_features_flannbased()
+{
 }
 
 

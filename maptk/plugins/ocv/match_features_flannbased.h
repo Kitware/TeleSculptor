@@ -36,6 +36,7 @@
 #ifndef MAPTK_MATCH_FEATURES_FLANNBASED_H
 #define MAPTK_MATCH_FEATURES_FLANNBASED_H
 
+#include <memory>
 #include <vector>
 
 #include <maptk/plugins/ocv/match_features.h>
@@ -47,8 +48,8 @@ namespace ocv {
 
 /// Feature matcher implementation using OpenCV's FLANN-based feature matcher
 class match_features_flannbased
-  : public vital::algorithm_impl< match_features_flannbased,
-                                  match_features,
+  : public vital::algorithm_impl< maptk::ocv::match_features_flannbased,
+                                  maptk::ocv::match_features,
                                   vital::algo::match_features >
 {
 public:
@@ -56,12 +57,14 @@ public:
   match_features_flannbased();
   /// Copy Constructor
   match_features_flannbased(match_features_flannbased const &other);
+  /// Destructor
+  virtual ~match_features_flannbased();
 
   /// Return the name of this implementation
-  virtual std::string impl_name() const { return "ocv_brute_force"; }
+  virtual std::string impl_name() const { return "ocv_flann_based"; }
   /// Returns a descriptive string for this implementation
   virtual std::string description() const {
-    return "OpenCV brute-force feature matching algorithm";
+    return "OpenCV flann-based feature matching algorithm";
   }
 
   /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
@@ -79,7 +82,7 @@ protected:
 
 private:
   class priv;
-  std::unique_ptr<priv> p_;
+  std::unique_ptr<priv> const p_;
 };
 
 

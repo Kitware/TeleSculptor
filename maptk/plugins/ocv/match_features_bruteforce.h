@@ -37,6 +37,7 @@
 #define MAPTK_MATCH_FEATURES_BRUTEFORCE_H_
 
 #include <memory>
+#include <vector>
 
 #include <maptk/plugins/ocv/match_features.h>
 
@@ -56,6 +57,8 @@ public:
   match_features_bruteforce();
   /// Copy Constructor
   match_features_bruteforce(match_features_bruteforce const &other);
+  /// Destructor
+  virtual ~match_features_bruteforce();
 
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "ocv_brute_force"; }
@@ -79,7 +82,7 @@ protected:
 
 private:
   class priv;
-  std::unique_ptr<priv> p_;
+  std::unique_ptr<priv> const p_;
 };
 
 
