@@ -42,12 +42,13 @@
 
 #include <maptk/plugin_interface/algorithm_plugin_interface_macros.h>
 #include <maptk/plugins/ocv/analyze_tracks.h>
-#include <maptk/plugins/ocv/detect_features.h>
+#include <maptk/plugins/ocv/detect_features_FAST.h>
 #include <maptk/plugins/ocv/draw_tracks.h>
 #include <maptk/plugins/ocv/estimate_homography.h>
-#include <maptk/plugins/ocv/extract_descriptors.h>
+#include <maptk/plugins/ocv/extract_descriptors_BRIEF.h>
 #include <maptk/plugins/ocv/image_io.h>
-#include <maptk/plugins/ocv/match_features.h>
+#include <maptk/plugins/ocv/match_features_bruteforce.h>
+#include <maptk/plugins/ocv/match_features_flannbased.h>
 
 
 namespace kwiver {
@@ -64,12 +65,19 @@ int register_algorithms( vital::registrar &reg )
   REGISTRATION_INIT( reg );
 
   REGISTER_TYPE( maptk::ocv::analyze_tracks );
-  REGISTER_TYPE( maptk::ocv::detect_features );
   REGISTER_TYPE( maptk::ocv::draw_tracks );
   REGISTER_TYPE( maptk::ocv::estimate_homography );
-  REGISTER_TYPE( maptk::ocv::extract_descriptors );
   REGISTER_TYPE( maptk::ocv::image_io );
-  REGISTER_TYPE( maptk::ocv::match_features );
+
+  // OCV Algorithm based class wrappers
+  REGISTER_TYPE( maptk::ocv::detect_features_FAST );
+
+#ifndef MAPTK_HAS_OPENCV_VER_3
+  REGISTER_TYPE( maptk::ocv::extract_descriptors_BRIEF );
+#endif
+
+  REGISTER_TYPE( maptk::ocv::match_features_bruteforce );
+  REGISTER_TYPE( maptk::ocv::match_features_flannbased );
 
   REGISTRATION_SUMMARY();
   return REGISTRATION_FAILURES();
