@@ -54,7 +54,7 @@ public:
   priv( priv const &other )
     : norm_type( other.norm_type ),
       cross_check( other.cross_check ),
-      matcher( other.matcher->clone() )
+      matcher( new cv::BFMatcher(norm_type, cross_check) )
   {
   }
 

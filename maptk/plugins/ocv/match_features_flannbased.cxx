@@ -55,7 +55,7 @@ public:
   priv( priv const &other )
     : cross_check( other.cross_check ),
       cross_check_k( other.cross_check_k ),
-      matcher( other.matcher->clone() )
+      matcher( new cv::FlannBasedMatcher )
   {
   }
 

@@ -67,7 +67,7 @@ public:
   }
 
   /// Create a new FAST detector instance with the current parameter values
-  cv::Ptr<cv::FastFeatureDetector> create_new_detector() const
+  cv::Ptr<cv::FastFeatureDetector> create() const
   {
 #ifndef MAPTK_HAS_OPENCV_VER_3
     // 2.4.x version constructor
@@ -82,7 +82,7 @@ public:
   }
 
   /// Update the parameters of teh given detector with the currently set values
-  void update_detector_params(cv::Ptr<cv::FastFeatureDetector> detector) const
+  void update(cv::Ptr<cv::FastFeatureDetector> detector) const
   {
 #ifndef MAPTK_HAS_OPENCV_VER_3
     detector->set("threshold", threshold);
@@ -108,7 +108,7 @@ detect_features_FAST
   : p_(new priv)
 {
   attach_logger("maptk::ocv::detect_features_FAST");
-  detector = p_->create_new_detector();
+  detector = p_->create();
 }
 
 
@@ -118,7 +118,7 @@ detect_features_FAST
   : p_(new priv(*other.p_))
 {
   attach_logger("maptk::ocv::detect_features_FAST");
-  detector = p_->create_new_detector();
+  detector = p_->create();
 }
 
 
@@ -168,7 +168,12 @@ detect_features_FAST
   p_->neighborhood_type = config->get_value<int>( "neighborhood_type" );
 #endif
 
-  p_->update_detector_params(detector);
+#ifdef MAPTK_HAS_OPENCV_VER_3
+  p_->update( detector.dynamicCast<cv::FastFeatureDetector>() );
+#else
+  p_->update( detector );
+#endif
+
 }
 
 
