@@ -6,7 +6,7 @@ set(test_libraries
 if( OpenCV_FOUND AND
     (OpenCV_VERSION VERSION_GREATER "3.0" OR
      OpenCV_VERSION VERSION_EQUAL "3.0") )
-  message("Found OPENCV 3.0")
+  message(STATUS "Found OPENCV 3.0")
   add_definitions(-DMAPTK_HAS_OPENCV_VER_3)
 endif()
 
