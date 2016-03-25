@@ -248,9 +248,10 @@ bool convert_pos2krtd_dir(const kwiver::vital::path_t& pos_dir,
       ins_map[frame] = ins;
       krtd_filenames.push_back(krtd_filename);
     }
-    catch (kwiver::vital::invalid_file const& /*e*/)
+    catch (kwiver::vital::io_exception const& e)
     {
       std::cerr << "-> Skipping invalid file: " << p << std::endl;
+      std::cerr << "   " << e.what() << std::endl;
     }
   } // end foreach
 
