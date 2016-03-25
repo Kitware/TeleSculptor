@@ -173,7 +173,6 @@ detect_features_FAST
 #else
   p_->update( detector );
 #endif
-
 }
 
 

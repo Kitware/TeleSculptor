@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,61 +30,61 @@
 
 /**
  * \file
- * \brief OpenCV algorithm registration implementation
+ * \brief OCV MSER feature detector wrapper
  */
 
-#include "register_algorithms.h"
+#ifndef MAPTK_DETECT_FEATURES_MSER_H_
+#define MAPTK_DETECT_FEATURES_MSER_H_
 
-#include <opencv2/opencv_modules.hpp>
-#ifdef HAVE_OPENCV_NONFREE
-#include <opencv2/nonfree/nonfree.hpp>
-#endif
+#include <memory>
+#include <string>
 
-#include <maptk/plugin_interface/algorithm_plugin_interface_macros.h>
-#include <maptk/plugins/ocv/analyze_tracks.h>
-#include <maptk/plugins/ocv/detect_features_FAST.h>
-#include <maptk/plugins/ocv/detect_features_MSER.h>
-#include <maptk/plugins/ocv/draw_tracks.h>
-#include <maptk/plugins/ocv/estimate_homography.h>
-#include <maptk/plugins/ocv/extract_descriptors_BRIEF.h>
-#include <maptk/plugins/ocv/image_io.h>
-#include <maptk/plugins/ocv/match_features_bruteforce.h>
-#include <maptk/plugins/ocv/match_features_flannbased.h>
+#include <vital/vital_config.h>
 
+#include <maptk/plugins/ocv/detect_features.h>
+
+#include <opencv2/features2d/features2d.hpp>
 
 namespace kwiver {
 namespace maptk {
-namespace ocv {
+namespace ocv{
 
-/// Register OCV algorithm implementations with the given or global registrar
-int register_algorithms( vital::registrar &reg )
+
+class detect_features_MSER
+  : public vital::algorithm_impl< detect_features_MSER,
+                                  detect_features,
+                                  vital::algo::detect_features >
 {
-#ifdef HAVE_OPENCV_NONFREE
-  cv::initModule_nonfree();
-#endif
+public:
+  /// Constructor
+  detect_features_MSER();
+  /// Copy Constructor
+  detect_features_MSER(detect_features_MSER const &other);
+  /// Destructor
+  virtual ~detect_features_MSER();
 
-  REGISTRATION_INIT( reg );
+  /// Return the name of this implementation
+  virtual std::string impl_name() const { return "ocv_MSER"; }
+  /// Returns a descriptive string for this implementation
+  virtual std::string description() const {
+    return "OpenCV feature detection via the MSER algorithm";
+  }
 
-  REGISTER_TYPE( maptk::ocv::analyze_tracks );
-  REGISTER_TYPE( maptk::ocv::draw_tracks );
-  REGISTER_TYPE( maptk::ocv::estimate_homography );
-  REGISTER_TYPE( maptk::ocv::image_io );
+  /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
+  virtual vital::config_block_sptr get_configuration() const;
+  /// Set this algorithm's properties via a config block
+  virtual void set_configuration(vital::config_block_sptr config);
+  /// Check that the algorithm's configuration vital::config_block is valid
+  virtual bool check_configuration(vital::config_block_sptr config) const;
 
-  // OCV Algorithm based class wrappers
-  REGISTER_TYPE( maptk::ocv::detect_features_FAST );
-  REGISTER_TYPE( maptk::ocv::detect_features_MSER );
+private:
+  class priv;
+  std::unique_ptr<priv> p_;
+};
 
-#ifndef MAPTK_HAS_OPENCV_VER_3
-  REGISTER_TYPE( maptk::ocv::extract_descriptors_BRIEF );
-#endif
-
-  REGISTER_TYPE( maptk::ocv::match_features_bruteforce );
-  REGISTER_TYPE( maptk::ocv::match_features_flannbased );
-
-  REGISTRATION_SUMMARY();
-  return REGISTRATION_FAILURES();
-}
 
 } // end namespace ocv
 } // end namespace maptk
 } // end namespace kwiver
+
+#endif //MAPTK_DETECT_FEATURES_MSER_H_

@@ -106,6 +106,7 @@ std::vector<algorithm_sptr> get_ocv_algos()
   // Make vector of impls
   std::vector<algorithm_sptr> algo_impls;
   algo_impls.push_back( algo::detect_features::create( "ocv_FAST" ) );
+  algo_impls.push_back( algo::detect_features::create( "ocv_MSER" ) );
   algo_impls.push_back( algo::match_features::create( "ocv_brute_force" ) );
   algo_impls.push_back( algo::match_features::create( "ocv_flann_based" ) );
 #ifndef MAPTK_HAS_OPENCV_VER_3
@@ -129,20 +130,22 @@ IMPLEMENT_TEST(ocv_algo_config_defaults)
 
   VITAL_FOREACH( algorithm_sptr a, get_ocv_algos() )
   {
-    log->log_info( "Testing configuration for: "
-                   + a->type_name() + "::" + a->impl_name() );
+    LOG_INFO(log, "Testing configuration for: "
+                  << a->type_name() << "::" << a->impl_name() );
     kwiver::vital::config_block_sptr c = a->get_configuration();
-    log->log_debug("-- default config:");
+    LOG_DEBUG(log, "-- default config:");
     log_config(log->log_debug, c);
+
     // Checking and setting the config of algo. Default should always be valid
     // thus passing check.
-    log->log_debug("-- checking default config");
+    LOG_DEBUG(log, "-- checking default config");
     TEST_EQUAL(
         a->type_name() + "::" + a->impl_name() + "_check_config_pre_set",
         a->check_configuration( c ),
         true
     );
-    log->log_debug("-- Setting default config and checking again");
+
+    LOG_DEBUG(log, "-- Setting default config and checking again");
     a->set_configuration( c );
     TEST_EQUAL(
         a->type_name() + "::" + a->impl_name() + "_check_config_post_set",
@@ -169,7 +172,7 @@ IMPLEMENT_TEST(ocv_algo_empty_config)
     // Checking an empty config. Since there is literally nothing in the config,
     // we should pass here, as the default configuration should be used which
     // should pass (see test "ocv_algo_config_defaults")
-    log->log_info("Checking empty config for: "
+    LOG_INFO(log, "Checking empty config for: "
                   + a->type_name() + "::" + a->impl_name());
     kwiver::vital::config_block_sptr
         empty_conf = kwiver::vital::config_block::empty_config();
@@ -178,12 +181,12 @@ IMPLEMENT_TEST(ocv_algo_empty_config)
                true);
 
     // Should be able to set an empty config as defaults should take over.
-    log->log_info("Setting empty config");
+    LOG_INFO(log, "Setting empty config");
     a->set_configuration(empty_conf);
 
     // This should also pass as we take an empty type as a "use the default"
     // message
-    log->log_info("Checking config with '' type configuration");
+    LOG_INFO(log, "Checking config with '' type configuration");
     TEST_EQUAL("post-set config check",
                a->check_configuration(a->get_configuration()),
                true);
