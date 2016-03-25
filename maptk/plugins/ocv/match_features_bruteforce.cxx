@@ -183,8 +183,10 @@ match_features_bruteforce
 
 bool
 match_features_bruteforce
-::check_configuration(vital::config_block_sptr config) const
+::check_configuration(vital::config_block_sptr in_config) const
 {
+  vital::config_block_sptr config = get_configuration();
+  config->merge_config(in_config);
   bool valid = true;
 
   // user has the chance to input an incorret value for the norm type enum value

@@ -85,7 +85,7 @@ extract_descriptors_BRIEF
 ::extract_descriptors_BRIEF()
   : p_(new priv)
 {
-  attach_logger("maptk::ocv::extract_descriptors_BRIEF");
+  attach_logger("maptk.ocv.extract_descriptors_BRIEF");
   extractor = p_->create();
 }
 
@@ -95,7 +95,7 @@ extract_descriptors_BRIEF
 ::extract_descriptors_BRIEF(extract_descriptors_BRIEF const &other)
   : p_( new priv(*other.p_) )
 {
-  attach_logger("maptk::ocv::extract_descriptors_BRIEF");
+  attach_logger("maptk.ocv.extract_descriptors_BRIEF");
   extractor = p_->create();
 }
 
@@ -139,8 +139,10 @@ extract_descriptors_BRIEF
 
 bool
 extract_descriptors_BRIEF
-::check_configuration(vital::config_block_sptr config) const
+::check_configuration(vital::config_block_sptr in_config) const
 {
+  vital::config_block_sptr config = get_configuration();
+  config->merge_config(in_config);
   bool valid = true;
 
   // check that bytes param is one of the required 3 values

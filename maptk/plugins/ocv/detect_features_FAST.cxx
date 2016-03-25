@@ -107,7 +107,7 @@ detect_features_FAST
 ::detect_features_FAST()
   : p_(new priv)
 {
-  attach_logger("maptk::ocv::detect_features_FAST");
+  attach_logger("maptk.ocv.detect_features_FAST");
   detector = p_->create();
 }
 
@@ -117,7 +117,7 @@ detect_features_FAST
 ::detect_features_FAST(const detect_features_FAST &other)
   : p_(new priv(*other.p_))
 {
-  attach_logger("maptk::ocv::detect_features_FAST");
+  attach_logger("maptk.ocv.detect_features_FAST");
   detector = p_->create();
 }
 
@@ -179,8 +179,10 @@ detect_features_FAST
 
 bool
 detect_features_FAST
-::check_configuration(vital::config_block_sptr config) const
+::check_configuration(vital::config_block_sptr in_config) const
 {
+  vital::config_block_sptr config = get_configuration();
+  config->merge_config(in_config);
   bool valid = true;
 
 #ifdef MAPTK_HAS_OPENCV_VER_3

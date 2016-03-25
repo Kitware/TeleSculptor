@@ -172,8 +172,10 @@ match_features_flannbased
 
 bool
 match_features_flannbased
-::check_configuration(vital::config_block_sptr config) const
+::check_configuration(vital::config_block_sptr in_config) const
 {
+  vital::config_block_sptr config = get_configuration();
+  config->merge_config(in_config);
   bool valid = true;
 
   unsigned k = config->get_value<unsigned>("cross_check_k");
