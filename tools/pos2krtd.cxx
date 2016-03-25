@@ -236,7 +236,7 @@ bool convert_pos2krtd_dir(const kwiver::vital::path_t& pos_dir,
   unsigned long num_files = dir.GetNumberOfFiles();
   for ( unsigned long i = 0; i < num_files; i++)
   {
-    kwiver::vital::path_t p = dir.GetFile( i );
+    kwiver::vital::path_t p = pos_dir + "/" + dir.GetFile( i );
 
     try
     {
