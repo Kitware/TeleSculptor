@@ -42,6 +42,7 @@
 #include <vital/vital_config.h>
 
 #include <maptk/plugins/ocv/detect_features.h>
+#include <maptk/plugins/ocv/maptk_ocv_export.h>
 
 #include <opencv2/features2d/features2d.hpp>
 
@@ -50,7 +51,7 @@ namespace maptk {
 namespace ocv{
 
 
-class detect_features_MSER
+class MAPTK_OCV_EXPORT detect_features_MSER
   : public vital::algorithm_impl< detect_features_MSER,
                                   detect_features,
                                   vital::algo::detect_features >

@@ -43,6 +43,7 @@
 
 #include <maptk/plugins/ocv/detect_features.h>
 #include <maptk/plugins/ocv/extract_descriptors.h>
+#include <maptk/plugins/ocv/maptk_ocv_export.h>
 
 #include <opencv2/features2d/features2d.hpp>
 
@@ -56,7 +57,7 @@ class priv;
 }
 
 
-class detect_features_ORB
+class MAPTK_OCV_EXPORT detect_features_ORB
    : public vital::algorithm_impl< detect_features_ORB,
                                    maptk::ocv::detect_features,
                                    vital::algo::detect_features >
@@ -89,7 +90,7 @@ private:
 };
 
 
-class extract_descriptors_ORB
+class MAPTK_OCV_EXPORT extract_descriptors_ORB
    : public vital::algorithm_impl< extract_descriptors_ORB,
                                    maptk::ocv::extract_descriptors,
                                    vital::algo::extract_descriptors >

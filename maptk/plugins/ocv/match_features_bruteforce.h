@@ -39,6 +39,7 @@
 #include <memory>
 #include <vector>
 
+#include <maptk/plugins/ocv/maptk_ocv_export.h>
 #include <maptk/plugins/ocv/match_features.h>
 
 namespace kwiver {
@@ -47,7 +48,7 @@ namespace ocv {
 
 
 /// Feature matcher implementation using OpenCV's brute-force feature matcher
-class match_features_bruteforce
+class MAPTK_OCV_EXPORT match_features_bruteforce
     : public vital::algorithm_impl< match_features_bruteforce,
                                     match_features,
                                     vital::algo::match_features >
