@@ -85,7 +85,7 @@ extract_descriptors_BRIEF
 ::extract_descriptors_BRIEF()
   : p_(new priv)
 {
-  attach_logger("maptk.ocv.extract_descriptors_BRIEF");
+  attach_logger("maptk.ocv.BRIEF");
   extractor = p_->create();
 }
 
@@ -95,7 +95,7 @@ extract_descriptors_BRIEF
 ::extract_descriptors_BRIEF(extract_descriptors_BRIEF const &other)
   : p_( new priv(*other.p_) )
 {
-  attach_logger("maptk.ocv.extract_descriptors_BRIEF");
+  attach_logger("maptk.ocv.BRIEF");
   extractor = p_->create();
 }
 
@@ -132,8 +132,6 @@ extract_descriptors_BRIEF
   p_->bytes = config->get_value<int>( "bytes" );
 
   p_->update( extractor );
-
-  static_type_name();
 }
 
 
@@ -163,4 +161,4 @@ extract_descriptors_BRIEF
 } // end namespace maptk
 } // end namespace kwiver
 
-#endif
+#endif // MAPTK_HAS_OPENCV_VER_3

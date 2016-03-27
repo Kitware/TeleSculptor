@@ -11,6 +11,7 @@ set( maptk_ocv_headers_public
   estimate_homography.h
   extract_descriptors.h
   extract_descriptors_BRIEF.h
+  extract_descriptors_FREAK.h
   feature_set.h
   feature_detect_extract_BRISK.h
   feature_detect_extract_ORB.h
@@ -42,6 +43,7 @@ set( maptk_ocv_sources
   estimate_homography.cxx
   extract_descriptors.cxx
   extract_descritpors_BRIEF.cxx
+  extract_descriptors_FREAK.cxx
   feature_set.cxx
   feature_detect_extract_BRISK.cxx
   feature_detect_extract_ORB.cxx

@@ -106,6 +106,7 @@ std::vector<algorithm_sptr> get_ocv_algos()
 
 #ifndef MAPTK_HAS_OPENCV_VER_3
   algo_impls.push_back( algo::extract_descriptors::create( "ocv_BRIEF" ) );
+  algo_impls.push_back( algo::extract_descriptors::create( "ocv_FREAK" ) );
 #endif
   algo_impls.push_back( algo::extract_descriptors::create( "ocv_BRISK" ) );
   algo_impls.push_back( algo::extract_descriptors::create( "ocv_ORB" ) );
