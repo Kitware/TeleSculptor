@@ -57,6 +57,7 @@
 
 DECLARE_TEST_MAP();
 
+
 int
 main(int argc, char* argv[])
 {
@@ -69,13 +70,6 @@ main(int argc, char* argv[])
   RUN_TEST(testname);
 }
 
-#define print_config(config) \
-  VITAL_FOREACH( kwiver::vital::config_block_key_t key, config->available_values() ) \
-  { \
-    std::cerr << "\t" \
-         << key << " = " << config->get_value<kwiver::vital::config_block_key_t>(key) \
-         << std::endl; \
-  }
 
 /// Logs configuration entries given a logging function that takes a single std::string argument
 #define log_config(lfunc, config) \
@@ -107,11 +101,15 @@ std::vector<algorithm_sptr> get_ocv_algos()
   std::vector<algorithm_sptr> algo_impls;
   algo_impls.push_back( algo::detect_features::create( "ocv_FAST" ) );
   algo_impls.push_back( algo::detect_features::create( "ocv_MSER" ) );
-  algo_impls.push_back( algo::match_features::create( "ocv_brute_force" ) );
-  algo_impls.push_back( algo::match_features::create( "ocv_flann_based" ) );
+  algo_impls.push_back( algo::detect_features::create( "ocv_BRISK_detector" ) );
+
 #ifndef MAPTK_HAS_OPENCV_VER_3
   algo_impls.push_back( algo::extract_descriptors::create( "ocv_BRIEF" ) );
 #endif
+  algo_impls.push_back( algo::extract_descriptors::create( "ocv_BRISK_extractor" ) );
+
+  algo_impls.push_back( algo::match_features::create( "ocv_brute_force" ) );
+  algo_impls.push_back( algo::match_features::create( "ocv_flann_based" ) );
   // Add other/new OCV algorithms here
 
   return algo_impls;
@@ -130,22 +128,23 @@ IMPLEMENT_TEST(ocv_algo_config_defaults)
 
   VITAL_FOREACH( algorithm_sptr a, get_ocv_algos() )
   {
-    LOG_INFO(log, "Testing configuration for: "
-                  << a->type_name() << "::" << a->impl_name() );
+    LOG_INFO(log, "Testing configuration for algorithm instance @" << a.get() );
+    LOG_INFO(log, "-- Algorithm info: " << a->type_name() << "::"
+                  << a->impl_name() );
     kwiver::vital::config_block_sptr c = a->get_configuration();
-    LOG_DEBUG(log, "-- default config:");
-    log_config(log->log_debug, c);
+    LOG_INFO(log, "-- default config:");
+    log_config(log->log_info , c);
 
     // Checking and setting the config of algo. Default should always be valid
     // thus passing check.
-    LOG_DEBUG(log, "-- checking default config");
+    LOG_INFO(log, "-- checking default config");
     TEST_EQUAL(
         a->type_name() + "::" + a->impl_name() + "_check_config_pre_set",
         a->check_configuration( c ),
         true
     );
 
-    LOG_DEBUG(log, "-- Setting default config and checking again");
+    LOG_INFO(log, "-- Setting default config and checking again");
     a->set_configuration( c );
     TEST_EQUAL(
         a->type_name() + "::" + a->impl_name() + "_check_config_post_set",
@@ -172,8 +171,9 @@ IMPLEMENT_TEST(ocv_algo_empty_config)
     // Checking an empty config. Since there is literally nothing in the config,
     // we should pass here, as the default configuration should be used which
     // should pass (see test "ocv_algo_config_defaults")
-    LOG_INFO(log, "Checking empty config for: "
-                  + a->type_name() + "::" + a->impl_name());
+    LOG_INFO(log, "Checking empty config for algorithm instance @" << a.get() );
+    LOG_INFO(log, "-- Algorithm info: " << a->type_name() << "::"
+                  << a->impl_name() );
     kwiver::vital::config_block_sptr
         empty_conf = kwiver::vital::config_block::empty_config();
     TEST_EQUAL("empty config check test",
@@ -181,12 +181,11 @@ IMPLEMENT_TEST(ocv_algo_empty_config)
                true);
 
     // Should be able to set an empty config as defaults should take over.
-    LOG_INFO(log, "Setting empty config");
+    LOG_INFO(log, "-- setting empty config");
     a->set_configuration(empty_conf);
 
     // This should also pass as we take an empty type as a "use the default"
     // message
-    LOG_INFO(log, "Checking config with '' type configuration");
     TEST_EQUAL("post-set config check",
                a->check_configuration(a->get_configuration()),
                true);

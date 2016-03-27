@@ -12,6 +12,7 @@ set( maptk_ocv_headers_public
   extract_descriptors.h
   extract_descriptors_BRIEF.h
   feature_set.h
+  feature_detect_extract_BRISK.h
   image_container.h
   image_io.h
   mat_image_memory.h
@@ -41,6 +42,7 @@ set( maptk_ocv_sources
   extract_descriptors.cxx
   extract_descritpors_BRIEF.cxx
   feature_set.cxx
+  feature_detect_extract_BRISK.cxx
   image_container.cxx
   image_io.cxx
   mat_image_memory.cxx
