@@ -69,10 +69,10 @@ public:
   {
 #ifndef MAPTK_HAS_OPENCV_VER_3
     return cv::Ptr<cv::BRISK>(
-      new cv::BRISK(threshold, octaves, pattern_scale)
+      new cv::BRISK( threshold, octaves, pattern_scale );
     );
 #else
-    return cv::BRISK::create(threshold, octaves, pattern_scale);
+    return cv::BRISK::create( threshold, octaves, pattern_scale );
 #endif
   }
 
@@ -94,7 +94,6 @@ public:
     threshold = config->get_value<int>("threshold");
     octaves = config->get_value<int>("octaves");
     pattern_scale = config->get_value<float>("pattern_scale");
-    create();
   }
 
   /// Parameters
@@ -110,7 +109,7 @@ detect_features_BRISK
 ::detect_features_BRISK()
   : p_( new priv )
 {
-  attach_logger("maptk.ocv.BRIEF");
+  attach_logger("maptk.ocv.BRISK");
   detector = p_->create();
 }
 
@@ -119,7 +118,7 @@ detect_features_BRISK
 ::detect_features_BRISK(detect_features_BRISK const &other)
   : p_( new priv( *other.p_ ) )
 {
-  attach_logger("maptk.ocv.BRIEF");
+  attach_logger("maptk.ocv.BRISK");
   detector = p_->create();
 }
 
@@ -147,6 +146,7 @@ detect_features_BRISK
   config_block_sptr c = get_configuration();
   c->merge_config(config);
   p_->set_configuration(c);
+  detector = p_->create();
 }
 
 
@@ -162,7 +162,7 @@ extract_descriptors_BRISK
 ::extract_descriptors_BRISK()
   : p_( new priv )
 {
-  attach_logger("maptk.ocv.BRIEF");
+  attach_logger("maptk.ocv.BRISK");
   extractor = p_->create();
 }
 
@@ -171,7 +171,7 @@ extract_descriptors_BRISK
 ::extract_descriptors_BRISK(extract_descriptors_BRISK const &other)
    : p_( new priv( *other.p_ ) )
 {
-  attach_logger("maptk.ocv.BRIEF");
+  attach_logger("maptk.ocv.BRISK");
   extractor = p_->create();
 }
 
@@ -199,6 +199,7 @@ extract_descriptors_BRISK
   config_block_sptr c = get_configuration();
   c->merge_config(config);
   p_->set_configuration(c);
+  extractor = p_->create();
 }
 
 

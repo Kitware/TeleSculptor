@@ -30,11 +30,11 @@
 
 /**
  * \file
- * \brief OCV BRISK feature detector and extractor wrapper
+ * \brief OCV ORB feature detector and extractor wrapper
  */
 
-#ifndef MAPTK_FEATURE_DETECT_EXTRACT_BRISK_H_
-#define MAPTK_FEATURE_DETECT_EXTRACT_BRISK_H_
+#ifndef MAPTK_FEATURE_DETECT_EXTRACT_ORB_H_
+#define MAPTK_FEATURE_DETECT_EXTRACT_ORB_H_
 
 #include <memory>
 #include <string>
@@ -51,30 +51,30 @@ namespace maptk {
 namespace ocv {
 
 namespace {
-  /// Private implementation class for both uses of BRISK
-  class priv;
+/// Private implementation class for both uses of ORB
+class priv;
 }
 
 
-class detect_features_BRISK
-  : public vital::algorithm_impl< detect_features_BRISK,
-                                  maptk::ocv::detect_features,
-                                  vital::algo::detect_features >
+class detect_features_ORB
+   : public vital::algorithm_impl< detect_features_ORB,
+                                   maptk::ocv::detect_features,
+                                   vital::algo::detect_features >
 {
 public:
   /// Constructor
-  detect_features_BRISK();
+  detect_features_ORB();
   /// Copy Constructor
-  detect_features_BRISK(detect_features_BRISK const &other);
+  detect_features_ORB(detect_features_ORB const &other);
   /// Destructor
-  virtual ~detect_features_BRISK();
+  virtual ~detect_features_ORB();
 
   /// Return the name of this implementation
-  virtual std::string impl_name() const { return "ocv_BRISK"; }
+  virtual std::string impl_name() const { return "ocv_ORB"; }
   /// Returns an optional descriptive string for an implementation
   virtual std::string description() const
   {
-    return "OpenCV BRISK feature detector and extractor implementation";
+    return "OpenCV ORB feature detector and extractor implementation";
   }
 
   /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
@@ -89,25 +89,25 @@ private:
 };
 
 
-class extract_descriptors_BRISK
-  : public vital::algorithm_impl< extract_descriptors_BRISK,
-                                  maptk::ocv::extract_descriptors,
-                                  vital::algo::extract_descriptors >
+class extract_descriptors_ORB
+   : public vital::algorithm_impl< extract_descriptors_ORB,
+                                   maptk::ocv::extract_descriptors,
+                                   vital::algo::extract_descriptors >
 {
 public:
   /// Constructor
-  extract_descriptors_BRISK();
+  extract_descriptors_ORB();
   /// Copy Constructor
-  extract_descriptors_BRISK(extract_descriptors_BRISK const &other);
+  extract_descriptors_ORB(extract_descriptors_ORB const &other);
   /// Destructor
-  virtual ~extract_descriptors_BRISK();
+  virtual ~extract_descriptors_ORB();
 
   /// Return the name of this implementation
-  virtual std::string impl_name() const { return "ocv_BRISK"; }
+  virtual std::string impl_name() const { return "ocv_ORB"; }
   /// Returns an optional descriptive string for an implementation
   virtual std::string description() const
   {
-    return "OpenCV BRISK feature detector and extractor implementation";
+    return "OpenCV ORB feature detector and extractor implementation";
   }
 
   /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
@@ -126,4 +126,4 @@ private:
 } // end namespace maptk
 } // end namespace ocv
 
-#endif // MAPTK_FEATURE_DETECT_EXTRACT_BRISK_H_
+#endif // MAPTK_FEATURE_DETECT_EXTRACT_ORB_H_

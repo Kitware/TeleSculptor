@@ -101,12 +101,14 @@ std::vector<algorithm_sptr> get_ocv_algos()
   std::vector<algorithm_sptr> algo_impls;
   algo_impls.push_back( algo::detect_features::create( "ocv_FAST" ) );
   algo_impls.push_back( algo::detect_features::create( "ocv_MSER" ) );
-  algo_impls.push_back( algo::detect_features::create( "ocv_BRISK_detector" ) );
+  algo_impls.push_back( algo::detect_features::create( "ocv_BRISK" ) );
+  algo_impls.push_back( algo::detect_features::create( "ocv_ORB" ) );
 
 #ifndef MAPTK_HAS_OPENCV_VER_3
   algo_impls.push_back( algo::extract_descriptors::create( "ocv_BRIEF" ) );
 #endif
-  algo_impls.push_back( algo::extract_descriptors::create( "ocv_BRISK_extractor" ) );
+  algo_impls.push_back( algo::extract_descriptors::create( "ocv_BRISK" ) );
+  algo_impls.push_back( algo::extract_descriptors::create( "ocv_ORB" ) );
 
   algo_impls.push_back( algo::match_features::create( "ocv_brute_force" ) );
   algo_impls.push_back( algo::match_features::create( "ocv_flann_based" ) );

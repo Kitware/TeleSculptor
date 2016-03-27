@@ -48,6 +48,7 @@
 #include <maptk/plugins/ocv/estimate_homography.h>
 #include <maptk/plugins/ocv/extract_descriptors_BRIEF.h>
 #include <maptk/plugins/ocv/feature_detect_extract_BRISK.h>
+#include <maptk/plugins/ocv/feature_detect_extract_ORB.h>
 #include <maptk/plugins/ocv/image_io.h>
 #include <maptk/plugins/ocv/match_features_bruteforce.h>
 #include <maptk/plugins/ocv/match_features_flannbased.h>
@@ -75,8 +76,10 @@ int register_algorithms( vital::registrar &reg )
   REGISTER_TYPE( maptk::ocv::detect_features_FAST );
   REGISTER_TYPE( maptk::ocv::detect_features_MSER );
   REGISTER_TYPE( maptk::ocv::detect_features_BRISK );
+  REGISTER_TYPE( maptk::ocv::detect_features_ORB );
 
   REGISTER_TYPE( maptk::ocv::extract_descriptors_BRISK );
+  REGISTER_TYPE( maptk::ocv::extract_descriptors_ORB );
 #ifndef MAPTK_HAS_OPENCV_VER_3
   REGISTER_TYPE( maptk::ocv::extract_descriptors_BRIEF );
 #endif
