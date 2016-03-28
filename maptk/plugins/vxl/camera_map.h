@@ -59,7 +59,7 @@ class MAPTK_VXL_EXPORT camera_map
 {
 public:
   /// typedef for a map of frame numbers to vpgl_perspective_camera
-  typedef std::map<unsigned int, vpgl_perspective_camera<double> > map_vcam_t;
+  typedef std::map<kwiver::vital::frame_id_t, vpgl_perspective_camera<double> > map_vcam_t;
 
   /// Default Constructor
   camera_map() {}
