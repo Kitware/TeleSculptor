@@ -172,6 +172,25 @@ public:
 #endif
   }
 
+  bool check_configuration( vital::config_block_sptr const &config,
+                            logger_handle_t const &logger ) const
+  {
+    bool valid = true;
+
+    // Must be one of the enumeration values
+    int score_type = config->get_value<int>( "score_type" );
+    if( ! ( score_type == cv::ORB::HARRIS_SCORE ||
+            score_type == cv::ORB::FAST_SCORE ) )
+    {
+      LOG_ERROR( logger, "Score type not a valid enumeration value. Must be "
+        "either " << cv::ORB::HARRIS_SCORE << " for cv::ORB::HARRIS_SCORE or "
+        << cv::ORB::FAST_SCORE << " for cv::ORB::FAST_SCORE." );
+      valid = false;
+    }
+
+    return valid;
+  }
+
   /// Update algo with current parameter values
   void update_algo(cv::Ptr<cv::ORB> orb) const
   {
@@ -279,7 +298,9 @@ bool
 detect_features_ORB
 ::check_configuration(vital::config_block_sptr config) const
 {
-  return true;
+  config_block_sptr c = get_configuration();
+  c->merge_config( config );
+  return p_->check_configuration(c, m_logger);
 }
 
 
@@ -336,7 +357,9 @@ bool
 extract_descriptors_ORB
 ::check_configuration(vital::config_block_sptr config) const
 {
-  return true;
+  config_block_sptr c = get_configuration();
+  c->merge_config( config );
+  return p_->check_configuration(c, m_logger);
 }
 
 
