@@ -46,6 +46,7 @@
 #include <maptk/plugins/ocv/detect_features_FAST.h>
 #include <maptk/plugins/ocv/detect_features_GFTT.h>
 #include <maptk/plugins/ocv/detect_features_MSER.h>
+#include <maptk/plugins/ocv/detect_features_simple_blob.h>
 #include <maptk/plugins/ocv/draw_tracks.h>
 #include <maptk/plugins/ocv/estimate_homography.h>
 #include <maptk/plugins/ocv/extract_descriptors_BRIEF.h>
@@ -91,6 +92,7 @@ int register_algorithms( vital::registrar &reg )
   REGISTER_TYPE     ( maptk::ocv::detect_features_FAST );
   REGISTER_TYPE     ( maptk::ocv::detect_features_GFTT );
   REGISTER_TYPE     ( maptk::ocv::detect_features_MSER );
+  REGISTER_TYPE     ( maptk::ocv::detect_features_simple_blob );
   REGISTER_TYPE     ( maptk::ocv::detect_features_ORB );
 
   REGISTER_TYPE_OCV2( maptk::ocv::extract_descriptors_BRIEF );

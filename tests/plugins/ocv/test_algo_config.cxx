@@ -108,6 +108,7 @@ std::vector<algorithm_sptr> get_ocv_algos()
   ADD     ( algo_impls, algo::detect_features::create( "ocv_FAST" ) );
   ADD     ( algo_impls, algo::detect_features::create( "ocv_GFTT" ) );
   ADD     ( algo_impls, algo::detect_features::create( "ocv_MSER" ) );
+  ADD     ( algo_impls, algo::detect_features::create( "ocv_simple_blob" ) );
   ADD     ( algo_impls, algo::detect_features::create( "ocv_ORB" ) );
 
   ADD_OCV2( algo_impls, algo::extract_descriptors::create( "ocv_BRIEF" ) );
