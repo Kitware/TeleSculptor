@@ -83,12 +83,6 @@ main(int argc, char* argv[])
     lfunc( lcss.str() ); \
   }
 
-#ifdef MAPTK_HAS_OPENCV_VER_3
-#define OPENCV_FEATURE_DETECTOR_CREATE cv::Algorithm::create<cv::FeatureDetector>
-#else
-#define OPENCV_FEATURE_DETECTOR_CREATE cv::FeatureDetector::create
-#endif
-
 using namespace std;
 using namespace kwiver::vital;
 using namespace kwiver::maptk;
@@ -99,21 +93,35 @@ std::vector<algorithm_sptr> get_ocv_algos()
 {
   // Make vector of impls
   std::vector<algorithm_sptr> algo_impls;
-  algo_impls.push_back( algo::detect_features::create( "ocv_FAST" ) );
-  algo_impls.push_back( algo::detect_features::create( "ocv_MSER" ) );
-  algo_impls.push_back( algo::detect_features::create( "ocv_BRISK" ) );
-  algo_impls.push_back( algo::detect_features::create( "ocv_ORB" ) );
 
+#define ADD( l, a ) l.push_back( a )
 #ifndef MAPTK_HAS_OPENCV_VER_3
-  algo_impls.push_back( algo::extract_descriptors::create( "ocv_BRIEF" ) );
-  algo_impls.push_back( algo::extract_descriptors::create( "ocv_FREAK" ) );
+#define ADD_OCV2( l, a ) ADD( l, a )
+#define ADD_OCV3( l, a )
+#else
+#define ADD_OCV2( l, a )
+#define ADD_OCV3( l, a ) ADD( l, a )
 #endif
-  algo_impls.push_back( algo::extract_descriptors::create( "ocv_BRISK" ) );
-  algo_impls.push_back( algo::extract_descriptors::create( "ocv_ORB" ) );
 
-  algo_impls.push_back( algo::match_features::create( "ocv_brute_force" ) );
-  algo_impls.push_back( algo::match_features::create( "ocv_flann_based" ) );
+  ADD_OCV3( algo_impls, algo::detect_features::create( "ocv_AGAST" ) );
+  ADD     ( algo_impls, algo::detect_features::create( "ocv_BRISK" ) );
+  ADD     ( algo_impls, algo::detect_features::create( "ocv_FAST" ) );
+  ADD     ( algo_impls, algo::detect_features::create( "ocv_MSER" ) );
+  ADD     ( algo_impls, algo::detect_features::create( "ocv_ORB" ) );
+
+  ADD_OCV2( algo_impls, algo::extract_descriptors::create( "ocv_BRIEF" ) );
+  ADD     ( algo_impls, algo::extract_descriptors::create( "ocv_BRISK" ) );
+  ADD_OCV2( algo_impls, algo::extract_descriptors::create( "ocv_FREAK" ) );
+  ADD     ( algo_impls, algo::extract_descriptors::create( "ocv_ORB" ) );
+
+  ADD     ( algo_impls, algo::match_features::create( "ocv_brute_force" ) );
+  ADD     ( algo_impls, algo::match_features::create( "ocv_flann_based" ) );
+
   // Add other/new OCV algorithms here
+
+#undef ADD
+#undef ADD_OCV2
+#undef ADD_OCV3
 
   return algo_impls;
 }

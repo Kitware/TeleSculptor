@@ -42,6 +42,7 @@
 
 #include <maptk/plugin_interface/algorithm_plugin_interface_macros.h>
 #include <maptk/plugins/ocv/analyze_tracks.h>
+#include <maptk/plugins/ocv/detect_features_AGAST.h>
 #include <maptk/plugins/ocv/detect_features_FAST.h>
 #include <maptk/plugins/ocv/detect_features_MSER.h>
 #include <maptk/plugins/ocv/draw_tracks.h>
@@ -59,6 +60,16 @@ namespace kwiver {
 namespace maptk {
 namespace ocv {
 
+
+#ifndef MAPTK_HAS_OPENCV_VER_3
+  #define REGISTER_TYPE_OCV2( T ) REGISTER_TYPE( T );
+  #define REGISTER_TYPE_OCV3( T )
+#else
+  #define REGISTER_TYPE_OCV2( T )
+  #define REGISTER_TYPE_OCV3( T ) REGISTER_TYPE( T );
+#endif //MAPTK_HAS_OPENCV_VER_3
+
+
 /// Register OCV algorithm implementations with the given or global registrar
 int register_algorithms( vital::registrar &reg )
 {
@@ -74,17 +85,16 @@ int register_algorithms( vital::registrar &reg )
   REGISTER_TYPE( maptk::ocv::image_io );
 
   // OCV Algorithm based class wrappers
-  REGISTER_TYPE( maptk::ocv::detect_features_FAST );
-  REGISTER_TYPE( maptk::ocv::detect_features_MSER );
-  REGISTER_TYPE( maptk::ocv::detect_features_BRISK );
-  REGISTER_TYPE( maptk::ocv::detect_features_ORB );
+  REGISTER_TYPE_OCV3( maptk::ocv::detect_features_AGAST );
+  REGISTER_TYPE(      maptk::ocv::detect_features_BRISK );
+  REGISTER_TYPE(      maptk::ocv::detect_features_FAST );
+  REGISTER_TYPE(      maptk::ocv::detect_features_MSER );
+  REGISTER_TYPE(      maptk::ocv::detect_features_ORB );
 
-  REGISTER_TYPE( maptk::ocv::extract_descriptors_BRISK );
-  REGISTER_TYPE( maptk::ocv::extract_descriptors_ORB );
-#ifndef MAPTK_HAS_OPENCV_VER_3
-  REGISTER_TYPE( maptk::ocv::extract_descriptors_BRIEF );
-  REGISTER_TYPE( maptk::ocv::extract_descriptors_FREAK );
-#endif
+  REGISTER_TYPE_OCV2( maptk::ocv::extract_descriptors_BRIEF );
+  REGISTER_TYPE(      maptk::ocv::extract_descriptors_BRISK );
+  REGISTER_TYPE_OCV2( maptk::ocv::extract_descriptors_FREAK );
+  REGISTER_TYPE(      maptk::ocv::extract_descriptors_ORB );
 
   REGISTER_TYPE( maptk::ocv::match_features_bruteforce );
   REGISTER_TYPE( maptk::ocv::match_features_flannbased );
@@ -92,6 +102,11 @@ int register_algorithms( vital::registrar &reg )
   REGISTRATION_SUMMARY();
   return REGISTRATION_FAILURES();
 }
+
+
+#undef REGISTER_TYPE_OCV2
+#undef REGISTER_TYPE_OCV3
+
 
 } // end namespace ocv
 } // end namespace maptk

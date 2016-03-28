@@ -5,6 +5,7 @@ set( maptk_ocv_headers_public
   analyze_tracks.h
   descriptor_set.h
   detect_features.h
+  detect_features_AGAST.h
   detect_features_FAST.h
   detect_features_MSER.h
   draw_tracks.h
@@ -37,6 +38,7 @@ set( maptk_ocv_sources
   analyze_tracks.cxx
   descriptor_set.cxx
   detect_features.cxx
+  detect_features_AGAST.cxx
   detect_features_FAST.cxx
   detect_features_MSER.cxx
   draw_tracks.cxx
