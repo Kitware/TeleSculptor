@@ -84,7 +84,7 @@ public:
 private:
   // private implementation class
   class priv;
-  std::auto_ptr<priv> d_;
+  std::unique_ptr<priv> d_;
 };
 
 
