@@ -37,6 +37,8 @@
 
 #include <sstream>
 
+using namespace kwiver::vital;
+
 namespace kwiver {
 namespace maptk {
 namespace ocv {
@@ -94,6 +96,62 @@ public:
 #endif
   }
 
+  /// Update given config block with currently set parameter values
+  void update_config( config_block_sptr config ) const
+  {
+    config->set_value( "threshold", threshold,
+                       "Integer threshold on difference between intensity of "
+                       "the central pixel and pixels of a circle around this "
+                       "pixel" );
+    config->set_value( "nonmaxSuppression", nonmaxSuppression,
+                       "if true, non-maximum suppression is applied to "
+                       "detected corners (keypoints)" );
+
+#ifdef MAPTK_HAS_OPENCV_VER_3
+    std::stringstream ss;
+    ss << "one of the three neighborhoods as defined in the paper: "
+      "TYPE_5_8=" << cv::FastFeatureDetector::TYPE_5_8 << ", "
+      "TYPE_7_12=" << cv::FastFeatureDetector::TYPE_7_12 << ", "
+      "TYPE_9_16=" << cv::FastFeatureDetector::TYPE_9_16 << ".";
+    config->set_value( "neighborhood_type", neighborhood_type , ss.str());
+#endif
+  }
+
+  /// Set parameter values based on given config block
+  void set_config( config_block_sptr const &config )
+  {
+    threshold = config->get_value<int>( "threshold" );
+    nonmaxSuppression = config->get_value<bool>( "nonmaxSuppression" );
+
+#ifdef MAPTK_HAS_OPENCV_VER_3
+    neighborhood_type = config->get_value<int>( "neighborhood_type" );
+#endif
+  }
+
+  /// Check config parameter values
+  bool check_config(vital::config_block_sptr const &config,
+                    logger_handle_t const &logger) const
+  {
+    bool valid = true;
+
+#ifdef MAPTK_HAS_OPENCV_VER_3
+    // Check that the input integer is one of the valid enum values
+    int nt = config->get_value<int>( "neighborhood_type" );
+    if( ! ( nt == cv::FastFeatureDetector::TYPE_5_8 ||
+            nt == cv::FastFeatureDetector::TYPE_7_12 ||
+            nt == cv::FastFeatureDetector::TYPE_9_16) )
+    {
+      std::stringstream ss;
+      ss << "FAST feature detector neighborhood type is not one of the valid "
+        "values (see config comment). Given " << nt;
+      LOG_ERROR( logger, ss.str() );
+      valid = false;
+    }
+#endif
+
+    return valid;
+  }
+
   int threshold;
   bool nonmaxSuppression;
 #ifdef MAPTK_HAS_OPENCV_VER_3
@@ -134,22 +192,7 @@ detect_features_FAST
 ::get_configuration() const
 {
   vital::config_block_sptr config = maptk::ocv::detect_features::get_configuration();
-  config->set_value( "threshold", p_->threshold,
-                     "Integer threshold on difference between intensity of the "
-                     "central pixel and pixels of a circle around this pixel" );
-  config->set_value( "nonmaxSuppression", p_->nonmaxSuppression,
-                     "if true, non-maximum suppression is applied to detected "
-                     "corners (keypoints)" );
-
-#ifdef MAPTK_HAS_OPENCV_VER_3
-  std::stringstream ss;
-  ss << "one of the three neighborhoods as defined in the paper: "
-            "TYPE_5_8=" << cv::FastFeatureDetector::TYPE_5_8 << ", "
-            "TYPE_7_12=" << cv::FastFeatureDetector::TYPE_7_12 << ", "
-            "TYPE_9_16=" << cv::FastFeatureDetector::TYPE_9_16 << ".";
-  config->set_value( "neighborhood_type", p_->neighborhood_type , ss.str());
-#endif
-
+  p_->update_config( config );
   return config;
 }
 
@@ -159,15 +202,10 @@ detect_features_FAST
 ::set_configuration(vital::config_block_sptr in_config)
 {
   vital::config_block_sptr config = get_configuration();
-  config->merge_config(in_config);
+  config->merge_config( in_config );
+  p_->set_config( config );
 
-  p_->threshold = config->get_value<int>( "threshold" );
-  p_->nonmaxSuppression = config->get_value<bool>( "nonmaxSuppression" );
-
-#ifdef MAPTK_HAS_OPENCV_VER_3
-  p_->neighborhood_type = config->get_value<int>( "neighborhood_type" );
-#endif
-
+  // Update the wrapped algo inst with new parameters
 #ifdef MAPTK_HAS_OPENCV_VER_3
   p_->update( detector.dynamicCast<cv::FastFeatureDetector>() );
 #else
@@ -182,24 +220,7 @@ detect_features_FAST
 {
   vital::config_block_sptr config = get_configuration();
   config->merge_config(in_config);
-  bool valid = true;
-
-#ifdef MAPTK_HAS_OPENCV_VER_3
-  // Check that the input integer is one of the valid enum values
-  int nt = config->get_value<int>( "neighborhood_type" );
-  if( ! ( nt == cv::FastFeatureDetector::TYPE_5_8 ||
-          nt == cv::FastFeatureDetector::TYPE_7_12 ||
-          nt == cv::FastFeatureDetector::TYPE_9_16) )
-  {
-    std::stringstream ss;
-    ss << "FAST feature detector neighborhood type is not one of the valid "
-          "values (see config comment). Given " << nt;
-    m_logger->log_error(ss.str());
-    valid = false;
-  }
-#endif
-
-  return valid;
+  return p_->check_config( config, m_logger );
 }
 
 

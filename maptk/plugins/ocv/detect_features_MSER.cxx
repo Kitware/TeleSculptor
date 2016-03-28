@@ -100,6 +100,69 @@ public:
   // the algorithm was constructed with. So, instead of updating, we'll just
   // create a new cv::MSER instance on parameter update.
 
+  /// Update given config block with currently set parameter values
+  void update_config( config_block_sptr config ) const
+  {
+    config->set_value( "delta", delta,
+                       "Compares (size[i] - size[i-delta]) / size[i-delta]" );
+    config->set_value( "min_area", min_area,
+                       "Prune areas smaller than this" );
+    config->set_value( "max_area", max_area,
+                       "Prune areas larger than this" );
+    config->set_value( "max_variation", max_variation,
+                       "Prune areas that have similar size to its children" );
+    config->set_value( "min_diversity", min_diversity,
+                       "For color images, trace back to cut off MSER with "
+                         "diversity less than min_diversity" );
+    config->set_value( "max_evolution", max_evolution,
+                       "The color images, the evolution steps." );
+    config->set_value( "area_threshold", area_threshold,
+                       "For color images, the area threshold to cause "
+                         "re-initialization" );
+    config->set_value( "min_margin", min_margin,
+                       "For color images, ignore too-small regions." );
+    config->set_value( "edge_blur_size", edge_blur_size,
+                       "For color images, the aperture size for edge blur" );
+#ifdef MAPTK_HAS_OPENCV_VER_3
+    config->set_value( "pass2only", pass2only, "Undocumented" );
+#endif
+  }
+
+  /// Set parameter values based on given config block
+  void set_config( config_block_sptr const &c )
+  {
+    delta = c->get_value<int>("delta");
+    min_area = c->get_value<int>("min_area");
+    max_area = c->get_value<int>("max_area");
+    max_variation = c->get_value<double>("max_variation");
+    min_diversity = c->get_value<double>("min_diversity");
+    max_evolution = c->get_value<int>("max_evolution");
+    area_threshold = c->get_value<double>("area_threshold");
+    min_margin = c->get_value<double>("min_margin");
+    edge_blur_size = c->get_value<int>("edge_blur_size");
+#ifdef MAPTK_HAS_OPENCV_VER_3
+    pass2only = c->get_value<bool>("pass2only");
+#endif
+  }
+
+  /// Check config parameter values
+  bool check_config(vital::config_block_sptr const &c,
+                    logger_handle_t const &logger) const
+  {
+    bool valid = true;
+
+    // checking that area values are >= 0
+    if( c->get_value<int>("min_area") < 0 ||
+        c->get_value<int>("max_area") < 0 ||
+        c->get_value<double>("area_threshold") < 0 )
+    {
+      LOG_ERROR(logger, "Areas should be at least 0.");
+      valid = false;
+    }
+
+    return valid;
+  }
+
   /// Parameters
   int delta;
   int min_area;
@@ -145,31 +208,7 @@ detect_features_MSER
 ::get_configuration() const
 {
   config_block_sptr config = ocv::detect_features::get_configuration();
-
-  config->set_value( "delta", p_->delta,
-                     "Compares (size[i] - size[i-delta]) / size[i-delta]" );
-  config->set_value( "min_area", p_->min_area,
-                     "Prune areas smaller than this" );
-  config->set_value( "max_area", p_->max_area,
-                     "Prune areas larger than this" );
-  config->set_value( "max_variation", p_->max_variation,
-                     "Prune areas that have similar size to its children" );
-  config->set_value( "min_diversity", p_->min_diversity,
-                     "For color images, trace back to cut off MSER with "
-                     "diversity less than min_diversity" );
-  config->set_value( "max_evolution", p_->max_evolution,
-                     "The color images, the evolution steps." );
-  config->set_value( "area_threshold", p_->area_threshold,
-                     "For color images, the area threshold to cause "
-                     "re-initialization" );
-  config->set_value( "min_margin", p_->min_margin,
-                     "For color images, ignore too-small regions." );
-  config->set_value( "edge_blur_size", p_->edge_blur_size,
-                     "For color images, the aperture size for edge blur" );
-#ifdef MAPTK_HAS_OPENCV_VER_3
-  config->set_value( "pass2only", p_->pass2only, "Undocumented" );
-#endif
-
+  p_->update_config( config );
   return config;
 }
 
@@ -178,21 +217,8 @@ void detect_features_MSER
 ::set_configuration(vital::config_block_sptr config)
 {
   config_block_sptr c = get_configuration();
-  c->merge_config(config);
-
-  p_->delta = c->get_value<int>("delta");
-  p_->min_area = c->get_value<int>("min_area");
-  p_->max_area = c->get_value<int>("max_area");
-  p_->max_variation = c->get_value<double>("max_variation");
-  p_->min_diversity = c->get_value<double>("min_diversity");
-  p_->max_evolution = c->get_value<int>("max_evolution");
-  p_->area_threshold = c->get_value<double>("area_threshold");
-  p_->min_margin = c->get_value<double>("min_margin");
-  p_->edge_blur_size = c->get_value<int>("edge_blur_size");
-#ifdef MAPTK_HAS_OPENCV_VER_3
-  p_->pass2only = c->get_value<bool>("pass2only");
-#endif
-
+  c->merge_config( config );
+  p_->set_config( c );
   detector = p_->create();
 }
 
@@ -203,18 +229,7 @@ detect_features_MSER
 {
   config_block_sptr c = get_configuration();
   c->merge_config(config);
-  bool valid = true;
-
-  // checking that area values are >= 0
-  if( c->get_value<int>("min_area") < 0 ||
-      c->get_value<int>("max_area") < 0 ||
-      c->get_value<double>("area_threshold") < 0 )
-  {
-    LOG_ERROR(m_logger, "Areas should be at least 0.");
-    valid = false;
-  }
-
-  return valid;
+  return p_->check_config( c, m_logger );
 }
 
 
