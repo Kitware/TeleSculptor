@@ -30,14 +30,11 @@
 
 /**
  * \file
- * \brief OCV AGAST feature detector wrapper
+ * \brief OCV GFTT feature detector wrapper
  */
 
-// Only available in OpenCV 3.x
-#ifdef MAPTK_HAS_OPENCV_VER_3
-
-#ifndef MAPTK_DETECT_FEATURES_AGAST_H_
-#define MAPTK_DETECT_FEATURES_AGAST_H_
+#ifndef MAPTK_DETECT_FEATURES_GFTT_H_
+#define MAPTK_DETECT_FEATURES_GFTT_H_
 
 #include <memory>
 #include <string>
@@ -55,26 +52,26 @@ namespace maptk {
 namespace ocv {
 
 
-class MAPTK_OCV_EXPORT detect_features_AGAST
-  : public vital::algorithm_impl< detect_features_AGAST,
+class MAPTK_OCV_EXPORT detect_features_GFTT
+  : public vital::algorithm_impl< detect_features_GFTT,
                                   ocv::detect_features,
                                   vital::algo::detect_features >
 {
 public:
   /// Constructor
-  detect_features_AGAST();
+  detect_features_GFTT();
 
   /// Copy constructor
-  detect_features_AGAST(const detect_features_AGAST &other);
+  detect_features_GFTT(const detect_features_GFTT &other);
 
   /// Destructor
-  virtual ~detect_features_AGAST();
+  virtual ~detect_features_GFTT();
 
   /// Return the name of this implementation
-  virtual std::string impl_name() const { return "ocv_AGAST"; }
+  virtual std::string impl_name() const { return "ocv_GFTT"; }
   /// Returns a descriptive string for this implementation
   virtual std::string description() const {
-    return "OpenCV feature detection via the AGAST algorithm";
+    return "OpenCV feature detection via the GFTT algorithm";
   }
 
   /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
@@ -94,7 +91,4 @@ private:
 } // end namespace maptk
 } // end namespace ocv
 
-
-#endif //MAPTK_DETECT_FEATURES_AGAST_H_
-
-#endif //MAPTK_HAS_OPENCV_VER_3
+#endif //MAPTK_DETECT_FEATURES_GFTT_H_

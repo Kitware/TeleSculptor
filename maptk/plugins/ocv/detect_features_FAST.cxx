@@ -35,8 +35,6 @@
 
 #include "detect_features_FAST.h"
 
-#include <sstream>
-
 using namespace kwiver::vital;
 
 namespace kwiver {
@@ -83,7 +81,7 @@ public:
 #endif
   }
 
-  /// Update the parameters of teh given detector with the currently set values
+  /// Update the parameters of the given detector with the currently set values
   void update(cv::Ptr<cv::FastFeatureDetector> detector) const
   {
 #ifndef MAPTK_HAS_OPENCV_VER_3
