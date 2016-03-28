@@ -45,8 +45,6 @@
 #include <maptk/plugins/ocv/extract_descriptors.h>
 #include <maptk/plugins/ocv/maptk_ocv_export.h>
 
-#include <opencv2/features2d/features2d.hpp>
-
 namespace kwiver {
 namespace maptk {
 namespace ocv {

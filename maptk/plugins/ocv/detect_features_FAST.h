@@ -43,8 +43,6 @@
 
 #include <maptk/plugins/ocv/detect_features.h>
 
-#include <opencv2/features2d/features2d.hpp>
-
 namespace kwiver {
 namespace maptk {
 namespace ocv{
