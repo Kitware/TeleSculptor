@@ -21,7 +21,6 @@ addons:
     - boost-latest
     packages:
     - libproj-dev
-    - libboost1.55-all-dev
     - libgl1-mesa-dev
     - libxt-dev
     - libqt4-dev
