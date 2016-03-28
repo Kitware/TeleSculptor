@@ -118,11 +118,11 @@ extract_descriptors_FREAK
 
 void
 extract_descriptors_FREAK
-::set_configuration(vital::config_block_sptr in_config)
+::set_configuration(vital::config_block_sptr config)
 {
-  vital::config_block_sptr config = get_configuration();
-  config->merge_config( in_config );
-  p_->set_config( in_config );
+  vital::config_block_sptr c = get_configuration();
+  c->merge_config( config );
+  p_->set_config( c );
   p_->update_algo( extractor );
 }
 
