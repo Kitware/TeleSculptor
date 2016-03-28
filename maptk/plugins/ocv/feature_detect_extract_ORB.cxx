@@ -86,7 +86,7 @@ public:
 #ifndef MAPTK_HAS_OPENCV_VER_3
     return cv::Ptr<cv::ORB>(
        new cv::ORB( n_features, scale_factor, n_levels, edge_threshold,
-                            first_level, wta_k, score_type, patch_size );
+                            first_level, wta_k, score_type, patch_size )
     );
 #else
     return cv::ORB::create( n_features, scale_factor, n_levels, edge_threshold,

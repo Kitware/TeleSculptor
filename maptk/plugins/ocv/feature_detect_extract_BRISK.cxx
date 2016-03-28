@@ -69,7 +69,7 @@ public:
   {
 #ifndef MAPTK_HAS_OPENCV_VER_3
     return cv::Ptr<cv::BRISK>(
-      new cv::BRISK( threshold, octaves, pattern_scale );
+      new cv::BRISK( threshold, octaves, pattern_scale )
     );
 #else
     return cv::BRISK::create( threshold, octaves, pattern_scale );

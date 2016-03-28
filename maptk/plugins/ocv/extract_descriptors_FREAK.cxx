@@ -63,7 +63,7 @@ public:
   }
 
   /// Update algorithm instance with current parameter values
-  void update_algo( cv::Ptr<cv::FREAK> &freak ) const
+  void update_algo( cv::Ptr<cv::FREAK> freak ) const
   {
     freak->set( "orientationNormalized", orientation_normalized );
     freak->set( "scaleNormalized", scale_normalized );
