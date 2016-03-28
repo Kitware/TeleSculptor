@@ -51,11 +51,6 @@ namespace kwiver {
 namespace maptk {
 namespace ocv {
 
-namespace {
-/// Private implementation class for both uses of ORB
-class priv;
-}
-
 
 class MAPTK_OCV_EXPORT detect_features_ORB
    : public vital::algorithm_impl< detect_features_ORB,
@@ -86,6 +81,7 @@ public:
   virtual bool check_configuration(vital::config_block_sptr config) const;
 
 private:
+  class priv;
   std::unique_ptr<priv> const p_;
 };
 
@@ -119,6 +115,7 @@ public:
   virtual bool check_configuration(vital::config_block_sptr config) const;
 
 private:
+  class priv;
   std::unique_ptr<priv> const p_;
 };
 

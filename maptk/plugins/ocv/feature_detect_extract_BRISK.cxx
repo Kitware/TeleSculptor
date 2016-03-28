@@ -45,6 +45,9 @@ using namespace kwiver::vital;
 namespace {
 
 /// Common BRISK private implementation class
+/**
+ * TODO: Support for custom pattern configuration and constructor?
+ */
 class priv
 {
 public:
@@ -103,6 +106,19 @@ public:
 };
 
 } // end anon namespace
+
+
+/// Private implementation class for BRISK feature detection
+class detect_features_BRISK::priv
+  : public ocv::priv
+{
+};
+
+/// Private implementation class for BRISK descriptor extraction
+class extract_descriptors_BRISK::priv
+  : public ocv::priv
+{
+};
 
 
 detect_features_BRISK

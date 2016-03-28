@@ -214,6 +214,18 @@ public:
 } // end anon namespace
 
 
+class detect_features_ORB::priv
+  : public ocv::priv
+{
+};
+
+
+class extract_descriptors_ORB::priv
+  : public ocv::priv
+{
+};
+
+
 detect_features_ORB
 ::detect_features_ORB()
    : p_( new priv )
