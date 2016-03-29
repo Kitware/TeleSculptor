@@ -18,6 +18,7 @@ set( maptk_ocv_headers_public
   feature_set.h
   feature_detect_extract_BRISK.h
   feature_detect_extract_ORB.h
+  feature_detect_extract_SIFT.h
   image_container.h
   image_io.h
   mat_image_memory.h
@@ -53,6 +54,7 @@ set( maptk_ocv_sources
   feature_set.cxx
   feature_detect_extract_BRISK.cxx
   feature_detect_extract_ORB.cxx
+  feature_detect_extract_SIFT.cxx
   image_container.cxx
   image_io.cxx
   mat_image_memory.cxx

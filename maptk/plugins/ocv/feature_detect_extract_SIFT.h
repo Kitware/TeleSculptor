@@ -30,11 +30,14 @@
 
 /**
  * \file
- * \brief OCV ORB feature detector and extractor wrapper
+ * \brief OCV SIFT feature detector and extractor wrapper
  */
 
-#ifndef MAPTK_FEATURE_DETECT_EXTRACT_ORB_H_
-#define MAPTK_FEATURE_DETECT_EXTRACT_ORB_H_
+#ifndef MAPTK_FEATURE_DETECT_EXTRACT_SIFT_H_
+#define MAPTK_FEATURE_DETECT_EXTRACT_SIFT_H_
+
+#include <opencv2/opencv_modules.hpp>
+#if defined(HAVE_OPENCV_NONFREE) || defined(HAVE_OPENCV_XFEATURES2D)
 
 #include <memory>
 #include <string>
@@ -50,25 +53,25 @@ namespace maptk {
 namespace ocv {
 
 
-class MAPTK_OCV_EXPORT detect_features_ORB
-  : public vital::algorithm_impl< detect_features_ORB,
+class MAPTK_OCV_EXPORT detect_features_SIFT
+  : public vital::algorithm_impl< detect_features_SIFT,
                                   maptk::ocv::detect_features,
                                   vital::algo::detect_features >
 {
 public:
   /// Constructor
-  detect_features_ORB();
+  detect_features_SIFT();
   /// Copy Constructor
-  detect_features_ORB(detect_features_ORB const &other);
+  detect_features_SIFT(detect_features_SIFT const &other);
   /// Destructor
-  virtual ~detect_features_ORB();
+  virtual ~detect_features_SIFT();
 
   /// Return the name of this implementation
-  virtual std::string impl_name() const { return "ocv_ORB"; }
+  virtual std::string impl_name() const { return "ocv_SIFT"; }
   /// Returns an optional descriptive string for an implementation
   virtual std::string description() const
   {
-    return "OpenCV ORB feature detector and extractor implementation";
+    return "OpenCV SIFT feature detector and extractor implementation";
   }
 
   /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
@@ -84,25 +87,25 @@ private:
 };
 
 
-class MAPTK_OCV_EXPORT extract_descriptors_ORB
-  : public vital::algorithm_impl< extract_descriptors_ORB,
+class MAPTK_OCV_EXPORT extract_descriptors_SIFT
+  : public vital::algorithm_impl< extract_descriptors_SIFT,
                                   maptk::ocv::extract_descriptors,
                                   vital::algo::extract_descriptors >
 {
 public:
   /// Constructor
-  extract_descriptors_ORB();
+  extract_descriptors_SIFT();
   /// Copy Constructor
-  extract_descriptors_ORB(extract_descriptors_ORB const &other);
+  extract_descriptors_SIFT(extract_descriptors_SIFT const &other);
   /// Destructor
-  virtual ~extract_descriptors_ORB();
+  virtual ~extract_descriptors_SIFT();
 
   /// Return the name of this implementation
-  virtual std::string impl_name() const { return "ocv_ORB"; }
+  virtual std::string impl_name() const { return "ocv_SIFT"; }
   /// Returns an optional descriptive string for an implementation
   virtual std::string description() const
   {
-    return "OpenCV ORB feature detector and extractor implementation";
+    return "OpenCV SIFT feature detector and extractor implementation";
   }
 
   /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
@@ -122,4 +125,6 @@ private:
 } // end namespace maptk
 } // end namespace ocv
 
-#endif // MAPTK_FEATURE_DETECT_EXTRACT_ORB_H_
+#endif //defined(HAVE_OPENCV_NONFREE) || defined(HAVE_OPENCV_XFEATURES2D)
+
+#endif // MAPTK_FEATURE_DETECT_EXTRACT_SIFT_H_
