@@ -114,7 +114,7 @@ bool BundleAdjustTool::execute(QWidget* window)
   }
 
   // Load configuration
-  auto const config = readConfig("bundle_adjust.conf");
+  auto const config = readConfig("gui_bundle_adjust.conf");
 
   // Check configuration
   if (!config)
