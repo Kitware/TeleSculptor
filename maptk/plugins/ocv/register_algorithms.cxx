@@ -47,10 +47,12 @@
 #include <maptk/plugins/ocv/detect_features_GFTT.h>
 #include <maptk/plugins/ocv/detect_features_MSER.h>
 #include <maptk/plugins/ocv/detect_features_simple_blob.h>
+#include <maptk/plugins/ocv/detect_features_STAR.h>
 #include <maptk/plugins/ocv/draw_tracks.h>
 #include <maptk/plugins/ocv/estimate_homography.h>
 #include <maptk/plugins/ocv/extract_descriptors_BRIEF.h>
 #include <maptk/plugins/ocv/extract_descriptors_FREAK.h>
+#include <maptk/plugins/ocv/extract_descriptors_LUCID.h>
 #include <maptk/plugins/ocv/feature_detect_extract_BRISK.h>
 #include <maptk/plugins/ocv/feature_detect_extract_ORB.h>
 #include <maptk/plugins/ocv/feature_detect_extract_SIFT.h>
@@ -68,6 +70,8 @@ namespace ocv {
 /// Register OCV algorithm implementations with the given or global registrar
 int register_algorithms( vital::registrar &reg )
 {
+  vital::logger_handle_t log = vital::get_logger("ocv_register_algo");
+
 #if defined(HAVE_OPENCV_NONFREE)
   cv::initModule_nonfree();
 #endif
@@ -106,9 +110,17 @@ int register_algorithms( vital::registrar &reg )
   REGISTER_TYPE( maptk::ocv::extract_descriptors_FREAK );
 #endif
 
+#ifdef MAPTK_OCV_HAS_LUCID
+  REGISTER_TYPE( maptk::ocv::extract_descriptors_LUCID );
+#endif
+
 #ifdef MAPTK_OCV_HAS_SIFT
   REGISTER_TYPE( maptk::ocv::detect_features_SIFT );
   REGISTER_TYPE( maptk::ocv::extract_descriptors_SIFT );
+#endif
+
+#ifdef MAPTK_OCV_HAS_STAR
+  REGISTER_TYPE( maptk::ocv::detect_features_STAR );
 #endif
 
 #ifdef MAPTK_OCV_HAS_SURF

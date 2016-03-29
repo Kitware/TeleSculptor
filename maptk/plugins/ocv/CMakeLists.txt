@@ -10,11 +10,13 @@ set( maptk_ocv_headers_public
   detect_features_GFTT.h
   detect_features_MSER.h
   detect_features_simple_blob.h
+  detect_features_STAR.h
   draw_tracks.h
   estimate_homography.h
   extract_descriptors.h
   extract_descriptors_BRIEF.h
   extract_descriptors_FREAK.h
+  extract_descriptors_LUCID.h
   feature_set.h
   feature_detect_extract_BRISK.h
   feature_detect_extract_ORB.h
@@ -47,11 +49,13 @@ set( maptk_ocv_sources
   detect_features_GFTT.cxx
   detect_features_MSER.cxx
   detect_features_simple_blob.cxx
+  detect_features_STAR.cxx
   draw_tracks.cxx
   estimate_homography.cxx
   extract_descriptors.cxx
   extract_descritpors_BRIEF.cxx
   extract_descriptors_FREAK.cxx
+  extract_descriptors_LUCID.cxx
   feature_set.cxx
   feature_detect_extract_BRISK.cxx
   feature_detect_extract_ORB.cxx

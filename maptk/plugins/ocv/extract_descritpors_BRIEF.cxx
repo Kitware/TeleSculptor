@@ -38,12 +38,11 @@
 #if ! defined(MAPTK_HAS_OPENCV_VER_3) || defined(HAVE_OPENCV_XFEATURES2D)
 
 #include <sstream>
-#include <opencv2/xfeatures2d.hpp>
-
 
 #ifndef MAPTK_HAS_OPENCV_VER_3
 typedef cv::BriefDescriptorExtractor cv_BRIEF_t;
 #else
+#include <opencv2/xfeatures2d.hpp>
 typedef cv::xfeatures2d::BriefDescriptorExtractor cv_BRIEF_t;
 #endif
 

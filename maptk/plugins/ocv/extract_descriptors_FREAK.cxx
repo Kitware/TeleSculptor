@@ -87,7 +87,7 @@ public:
 
 #ifndef MAPTK_HAS_OPENCV_VER_3
   /// Update algorithm instance with current parameter values
-  void update_algo( cv::Ptr<cv_FREAK_t> freak ) const
+  void update( cv::Ptr<cv_FREAK_t> freak ) const
   {
     freak->set( "orientationNormalized", orientation_normalized );
     freak->set( "scaleNormalized", scale_normalized );
@@ -171,7 +171,7 @@ extract_descriptors_FREAK
   c->merge_config( config );
   p_->set_config( c );
 #ifndef MAPTK_HAS_OPENCV_VER_3
-  p_->update_algo( extractor );
+  p_->update( extractor );
 #else
   extractor = p_->create();
 #endif
