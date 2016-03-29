@@ -30,10 +30,10 @@
 
 /**
  * \file
- * \brief OCV LUCID descriptor extractor wrapper implementation
+ * \brief OCV LATCH descriptor extractor wrapper implementation
  */
 
-#include "extract_descriptors_LUCID.h"
+#include "extract_descriptors_LATCH.h"
 
 #ifdef HAVE_OPENCV_XFEATURES2D
 
@@ -46,73 +46,75 @@ namespace maptk {
 namespace ocv {
 
 
-class extract_descriptors_LUCID::priv
+class extract_descriptors_LATCH::priv
 {
 public:
   priv()
-    : lucid_kernel( 1 )
-    , blur_kernel( 1 )
+    : bytes( 32 )
+    , rotation_invariance( true )
+    , half_ssd_size( 3 )
   {
   }
 
   priv( priv const &other )
-    : lucid_kernel( other.lucid_kernel )
-    , blur_kernel( other.blur_kernel )
+    : bytes( other.bytes )
+    , rotation_invariance( other.rotation_invariance )
+    , half_ssd_size( other.half_ssd_size )
   {
   }
 
-  cv::Ptr<cv::xfeatures2d::LUCID> create() const
+  cv::Ptr<cv::xfeatures2d::LATCH> create() const
   {
-    return cv::xfeatures2d::LUCID::create( lucid_kernel, blur_kernel );
+    return cv::xfeatures2d::LATCH::create( bytes, rotation_invariance,
+                                           half_ssd_size );
   }
 
   void update_config( config_block_sptr config ) const
   {
-    config->set_value( "lucid_kernel", lucid_kernel,
-                       "kernel for descriptor construction, where 1=3x3, "
-                       "2=5x5, 3=7x7 and so forth" );
-    config->set_value( "blur_kernel", blur_kernel,
-                       "kernel for blurring image prior to descriptor "
-                       "construction, where 1=3x3, 2=5x5, 3=7x7 and so forth" );
+    config->set_value( "bytes", bytes, "" );
+    config->set_value( "rotation_invariance", rotation_invariance, "" );
+    config->set_value( "half_ssd_size", half_ssd_size, "" );
   }
 
   void set_config( config_block_sptr config )
   {
-    lucid_kernel = config->get_value<int>( "lucid_kernel" );
-    blur_kernel = config->get_value<int>( "blur_kernel" );
+    bytes = config->get_value<int>( "bytes" );
+    rotation_invariance = config->get_value<bool>( "rotation_invariance" );
+    half_ssd_size = config->get_value<int>( "half_ssd_size" );
   }
 
   // Parameters
-  int lucid_kernel;
-  int blur_kernel;
+  int bytes;
+  bool rotation_invariance;
+  int half_ssd_size;
 };
 
 
-extract_descriptors_LUCID
-::extract_descriptors_LUCID()
+extract_descriptors_LATCH
+::extract_descriptors_LATCH()
   : p_( new priv )
 {
-  attach_logger( "maptk.ocv.LUCID" );
+  attach_logger( "maptk.ocv.LATCH" );
   extractor = p_->create();
 }
 
 
-extract_descriptors_LUCID
-::extract_descriptors_LUCID(extract_descriptors_LUCID const &other)
+extract_descriptors_LATCH
+::extract_descriptors_LATCH(extract_descriptors_LATCH const &other)
   : p_( new priv( *other.p_ ) )
 {
-  attach_logger( "maptk.ocv.LUCID" );
+  attach_logger( "maptk.ocv.LATCH" );
   extractor = p_->create();
 }
 
 
-extract_descriptors_LUCID
-::~extract_descriptors_LUCID()
+extract_descriptors_LATCH
+::~extract_descriptors_LATCH()
 {
 }
 
 vital::config_block_sptr
-extract_descriptors_LUCID
+extract_descriptors_LATCH
 ::get_configuration() const
 {
   config_block_sptr config = ocv::extract_descriptors::get_configuration();
@@ -121,7 +123,7 @@ extract_descriptors_LUCID
 }
 
 
-void extract_descriptors_LUCID
+void extract_descriptors_LATCH
 ::set_configuration(vital::config_block_sptr config)
 {
   config_block_sptr c = get_configuration();
@@ -132,7 +134,7 @@ void extract_descriptors_LUCID
 
 
 bool
-extract_descriptors_LUCID
+extract_descriptors_LATCH
 ::check_configuration(vital::config_block_sptr config) const
 {
   return true;

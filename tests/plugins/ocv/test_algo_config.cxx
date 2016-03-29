@@ -56,6 +56,7 @@
 #include <maptk/plugins/ocv/detect_features_STAR.h>
 #include <maptk/plugins/ocv/extract_descriptors_BRIEF.h>
 #include <maptk/plugins/ocv/extract_descriptors_FREAK.h>
+#include <maptk/plugins/ocv/extract_descriptors_LATCH.h>
 #include <maptk/plugins/ocv/extract_descriptors_LUCID.h>
 #include <maptk/plugins/ocv/feature_detect_extract_SIFT.h>
 #include <maptk/plugins/ocv/feature_detect_extract_SURF.h>
@@ -129,6 +130,10 @@ std::vector<algorithm_sptr> get_ocv_algos()
 
 #ifdef MAPTK_OCV_HAS_FREAK
   ADD( algo::extract_descriptors::create( "ocv_FREAK" ) );
+#endif
+
+#ifdef MAPTK_OCV_HAS_LATCH
+  ADD( algo::extract_descriptors::create( "ocv_LATCH" ) );
 #endif
 
 #ifdef MAPTK_OCV_HAS_LUCID

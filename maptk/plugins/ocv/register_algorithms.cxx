@@ -52,6 +52,7 @@
 #include <maptk/plugins/ocv/estimate_homography.h>
 #include <maptk/plugins/ocv/extract_descriptors_BRIEF.h>
 #include <maptk/plugins/ocv/extract_descriptors_FREAK.h>
+#include <maptk/plugins/ocv/extract_descriptors_LATCH.h>
 #include <maptk/plugins/ocv/extract_descriptors_LUCID.h>
 #include <maptk/plugins/ocv/feature_detect_extract_BRISK.h>
 #include <maptk/plugins/ocv/feature_detect_extract_ORB.h>
@@ -108,6 +109,10 @@ int register_algorithms( vital::registrar &reg )
 
 #ifdef MAPTK_OCV_HAS_FREAK
   REGISTER_TYPE( maptk::ocv::extract_descriptors_FREAK );
+#endif
+
+#ifdef MAPTK_OCV_HAS_LATCH
+  REGISTER_TYPE( maptk::ocv::extract_descriptors_LATCH );
 #endif
 
 #ifdef MAPTK_OCV_HAS_LUCID

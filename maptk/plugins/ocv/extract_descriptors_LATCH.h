@@ -30,11 +30,11 @@
 
 /**
  * \file
- * \brief OCV LUCID descriptor extractor wrapper
+ * \brief OCV LATCH descriptor extractor wrapper
  */
 
-#ifndef MAPTK_EXTRACT_DESCRIPTORS_LUCID_H_
-#define MAPTK_EXTRACT_DESCRIPTORS_LUCID_H_
+#ifndef MAPTK_EXTRACT_DESCRIPTORS_LATCH_H_
+#define MAPTK_EXTRACT_DESCRIPTORS_LATCH_H_
 
 #include <opencv2/opencv_modules.hpp>
 #ifdef HAVE_OPENCV_XFEATURES2D
@@ -50,24 +50,24 @@ namespace maptk {
 namespace ocv {
 
 
-class MAPTK_OCV_EXPORT extract_descriptors_LUCID
-  : public vital::algorithm_impl< extract_descriptors_LUCID,
+class MAPTK_OCV_EXPORT extract_descriptors_LATCH
+  : public vital::algorithm_impl< extract_descriptors_LATCH,
                                   ocv::extract_descriptors,
                                   vital::algo::extract_descriptors >
 {
 public:
   /// Constructor
-  extract_descriptors_LUCID();
+  extract_descriptors_LATCH();
   /// Copy Constructor
-  extract_descriptors_LUCID( extract_descriptors_LUCID const &other );
+  extract_descriptors_LATCH( extract_descriptors_LATCH const &other );
   /// Destructor
-  virtual ~extract_descriptors_LUCID();
+  virtual ~extract_descriptors_LATCH();
 
   /// Return the name of this implementation
-  virtual std::string impl_name() const { return "ocv_LUCID"; }
+  virtual std::string impl_name() const { return "ocv_LATCH"; }
   /// Returns a descriptive string for this implementation
   virtual std::string description() const {
-    return "OpenCV feature-point descriptor extraction via the LUCID algorithm";
+    return "OpenCV feature-point descriptor extraction via the LATCH algorithm";
   }
 
   /// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
@@ -83,7 +83,7 @@ private:
 };
 
 
-#define MAPTK_OCV_HAS_LUCID
+#define MAPTK_OCV_HAS_LATCH
 
 
 } // end namespace ocv
@@ -92,4 +92,4 @@ private:
 
 #endif //HAVE_OPENCV_XFEATURES2D
 
-#endif //MAPTK_EXTRACT_DESCRIPTORS_LUCID_H_
+#endif //MAPTK_EXTRACT_DESCRIPTORS_LATCH_H_

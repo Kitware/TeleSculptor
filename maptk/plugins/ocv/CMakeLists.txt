@@ -16,6 +16,7 @@ set( maptk_ocv_headers_public
   extract_descriptors.h
   extract_descriptors_BRIEF.h
   extract_descriptors_FREAK.h
+  extract_descriptors_LATCH.h
   extract_descriptors_LUCID.h
   feature_set.h
   feature_detect_extract_BRISK.h
@@ -55,6 +56,7 @@ set( maptk_ocv_sources
   extract_descriptors.cxx
   extract_descritpors_BRIEF.cxx
   extract_descriptors_FREAK.cxx
+  extract_descriptors_LATCH.cxx
   extract_descriptors_LUCID.cxx
   feature_set.cxx
   feature_detect_extract_BRISK.cxx
