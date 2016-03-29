@@ -83,6 +83,20 @@ MAP-Tk Library
    between fundamental matrices, essential matrices, and cameras, and for
    computing inliers to a fundamental matrix within feature matches.
 
+Configuration
+
+ * The sample config files for the tools have now been refactored.  Reusable
+   default config files for each algorithm are now provided in the "config"
+   directory and example top-level config files are provided in the "examples"
+   directory, organized by data set.  The example config files include the
+   algorithm config files using the new "include" directive.  Algorithm config
+   files may include other algorithm include files.
+
+ * Config files are now installed with the application and can be found at
+   runtime anywhere on the configuration search path.  The configuration
+   search path can be extended with the KWIVER_CONFIG_PATH environment
+   variable.
+
 Core Plugin
 
  * Updated triangulate_landmarks to set the number of observations on each
