@@ -15,6 +15,7 @@ set( maptk_ocv_headers_public
   estimate_homography.h
   extract_descriptors.h
   extract_descriptors_BRIEF.h
+  extract_descriptors_DAISY.h
   extract_descriptors_FREAK.h
   extract_descriptors_LATCH.h
   extract_descriptors_LUCID.h
@@ -55,6 +56,7 @@ set( maptk_ocv_sources
   estimate_homography.cxx
   extract_descriptors.cxx
   extract_descritpors_BRIEF.cxx
+  extract_descriptors_DAISY.cxx
   extract_descriptors_FREAK.cxx
   extract_descriptors_LATCH.cxx
   extract_descriptors_LUCID.cxx

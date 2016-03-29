@@ -51,18 +51,16 @@
 #include <maptk/plugins/ocv/match_features.h>
 #include <maptk/plugins/ocv/register_algorithms.h>
 
-// Get headers of optional algos for *_HAS_* defines
+// Get headers of optional algos for ``MAPTK_OCV_HAS_*`` defines
 #include <maptk/plugins/ocv/detect_features_AGAST.h>
 #include <maptk/plugins/ocv/detect_features_STAR.h>
 #include <maptk/plugins/ocv/extract_descriptors_BRIEF.h>
+#include <maptk/plugins/ocv/extract_descriptors_DAISY.h>
 #include <maptk/plugins/ocv/extract_descriptors_FREAK.h>
 #include <maptk/plugins/ocv/extract_descriptors_LATCH.h>
 #include <maptk/plugins/ocv/extract_descriptors_LUCID.h>
 #include <maptk/plugins/ocv/feature_detect_extract_SIFT.h>
 #include <maptk/plugins/ocv/feature_detect_extract_SURF.h>
-
-#include <opencv2/opencv_modules.hpp>
-#include <opencv2/features2d/features2d.hpp>
 
 #define TEST_ARGS ()
 
@@ -126,6 +124,10 @@ std::vector<algorithm_sptr> get_ocv_algos()
 
 #ifdef MAPTK_OCV_HAS_BRIEF
   ADD( algo::extract_descriptors::create( "ocv_BRIEF" ) );
+#endif
+
+#ifdef MAPTK_OCV_HAS_DAISY
+  ADD( algo::extract_descriptors::create( "ocv_DAISY" ) );
 #endif
 
 #ifdef MAPTK_OCV_HAS_FREAK

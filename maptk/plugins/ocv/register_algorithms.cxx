@@ -51,6 +51,7 @@
 #include <maptk/plugins/ocv/draw_tracks.h>
 #include <maptk/plugins/ocv/estimate_homography.h>
 #include <maptk/plugins/ocv/extract_descriptors_BRIEF.h>
+#include <maptk/plugins/ocv/extract_descriptors_DAISY.h>
 #include <maptk/plugins/ocv/extract_descriptors_FREAK.h>
 #include <maptk/plugins/ocv/extract_descriptors_LATCH.h>
 #include <maptk/plugins/ocv/extract_descriptors_LUCID.h>
@@ -105,6 +106,10 @@ int register_algorithms( vital::registrar &reg )
 
 #ifdef MAPTK_OCV_HAS_BRIEF
   REGISTER_TYPE( maptk::ocv::extract_descriptors_BRIEF );
+#endif
+
+#ifdef MAPTK_OCV_HAS_DAISY
+  REGISTER_TYPE( maptk::ocv::extract_descriptors_DAISY );
 #endif
 
 #ifdef MAPTK_OCV_HAS_FREAK
