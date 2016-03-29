@@ -28,7 +28,7 @@ Boost in some areas to address standard library deficiencies.
 
 Using the new, more powerful config file parsing in Vital the default MAP-Tk
 configuration files have been broken up into smaller files which reference
-each other and use namespaces for readiblity and reuse.  The default config
+each other and use namespaces for readability and reuse.  The default config
 files are now installed and shared by the GUI and CLI tools.
 
 There are numerous additional changes, especially in the GUI visualization
@@ -68,7 +68,7 @@ MAP-Tk Library
 
  * Removed required dependency on Boost. Replaced Boost with equivalent
    functions in the C++11 standard library when available.  When not available
-   kwiversys (found in Vital) provides equivalent constructs.  The exeception
+   kwiversys (found in Vital) provides equivalent constructs.  The exception
    is that the unit tests will require boost::random for some older C++0x
    compilers without std::random.
 
