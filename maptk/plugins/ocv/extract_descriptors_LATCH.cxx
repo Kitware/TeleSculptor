@@ -83,6 +83,28 @@ public:
     half_ssd_size = config->get_value<int>( "half_ssd_size" );
   }
 
+  bool check_config( config_block_sptr config, logger_handle_t const &log ) const
+  {
+    bool valid = true;
+
+    // Bytes can only be one of the following values
+    int bytes = config->get_value<int>( "bytes" );
+    if( ! ( bytes == 1 ||
+            bytes == 2 ||
+            bytes == 4 ||
+            bytes == 8 ||
+            bytes == 16 ||
+            bytes == 32 ||
+            bytes == 64 ) )
+    {
+      LOG_ERROR( log, "bytes value must be one of [1, 2, 4, 8, 16, 32, 64]. "
+                      "Given: " << bytes );
+      valid = false;
+    }
+
+    return valid;
+  }
+
   // Parameters
   int bytes;
   bool rotation_invariance;
@@ -137,7 +159,9 @@ bool
 extract_descriptors_LATCH
 ::check_configuration(vital::config_block_sptr config) const
 {
-  return true;
+  config_block_sptr c = get_configuration();
+  c->merge_config( config );
+  return p_->check_config( c, m_logger );
 }
 
 
