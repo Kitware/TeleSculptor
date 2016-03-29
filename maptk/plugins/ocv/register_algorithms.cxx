@@ -65,26 +65,6 @@ namespace maptk {
 namespace ocv {
 
 
-// Macro for registering, or not, non-free types based on what OpenCV has
-#if defined(HAVE_OPENCV_NONFREE) || defined(HAVE_OPENCV_XFEATURES2D)
-  #define REGISTER_TYPE_NF( T ) REGISTER_TYPE( T )
-#else
-  #define REGISTER_TYPE_NF( T )
-#endif //nonfree/xfeatures2d check
-
-#ifndef MAPTK_HAS_OPENCV_VER_3
-  #define REGISTER_TYPE_OCV2( T ) REGISTER_TYPE( T );
-  #define REGISTER_TYPE_OCV2_NF( T ) REGISTER_TYPE_NF( T );
-  #define REGISTER_TYPE_OCV3( T )
-  #define REGISTER_TYPE_OCV3_NF( T )
-#else
-  #define REGISTER_TYPE_OCV2( T )
-  #define REGISTER_TYPE_OCV2_NF( T )
-  #define REGISTER_TYPE_OCV3( T ) REGISTER_TYPE( T );
-  #define REGISTER_TYPE_OCV3_NF( T ) REGISTER_TYPE_NF( T );
-#endif //MAPTK_HAS_OPENCV_VER_3
-
-
 /// Register OCV algorithm implementations with the given or global registrar
 int register_algorithms( vital::registrar &reg )
 {
@@ -100,25 +80,41 @@ int register_algorithms( vital::registrar &reg )
   REGISTER_TYPE( maptk::ocv::image_io );
 
   // OCV Algorithm based class wrappers
-  REGISTER_TYPE_OCV3( maptk::ocv::detect_features_AGAST );
-  REGISTER_TYPE     ( maptk::ocv::detect_features_BRISK );
-  REGISTER_TYPE     ( maptk::ocv::detect_features_FAST );
-  REGISTER_TYPE     ( maptk::ocv::detect_features_GFTT );
-  REGISTER_TYPE     ( maptk::ocv::detect_features_MSER );
-  REGISTER_TYPE     ( maptk::ocv::detect_features_ORB );
-  REGISTER_TYPE_NF  ( maptk::ocv::detect_features_SIFT );
-  REGISTER_TYPE     ( maptk::ocv::detect_features_simple_blob );
-  REGISTER_TYPE_NF  ( maptk::ocv::detect_features_SURF );
+  REGISTER_TYPE( maptk::ocv::detect_features_BRISK );
+  REGISTER_TYPE( maptk::ocv::detect_features_FAST );
+  REGISTER_TYPE( maptk::ocv::detect_features_GFTT );
+  REGISTER_TYPE( maptk::ocv::detect_features_MSER );
+  REGISTER_TYPE( maptk::ocv::detect_features_ORB );
+  REGISTER_TYPE( maptk::ocv::detect_features_simple_blob );
 
-  REGISTER_TYPE_OCV2( maptk::ocv::extract_descriptors_BRIEF );
-  REGISTER_TYPE     ( maptk::ocv::extract_descriptors_BRISK );
-  REGISTER_TYPE_OCV2( maptk::ocv::extract_descriptors_FREAK );
-  REGISTER_TYPE     ( maptk::ocv::extract_descriptors_ORB );
-  REGISTER_TYPE_NF  ( maptk::ocv::extract_descriptors_SIFT );
-  REGISTER_TYPE_NF  ( maptk::ocv::extract_descriptors_SURF );
+  REGISTER_TYPE( maptk::ocv::extract_descriptors_BRISK );
+  REGISTER_TYPE( maptk::ocv::extract_descriptors_ORB );
 
-  REGISTER_TYPE     ( maptk::ocv::match_features_bruteforce );
-  REGISTER_TYPE     ( maptk::ocv::match_features_flannbased );
+  REGISTER_TYPE( maptk::ocv::match_features_bruteforce );
+  REGISTER_TYPE( maptk::ocv::match_features_flannbased );
+
+  // Conditional algorithms
+#ifdef MAPTK_OCV_HAS_AGAST
+  REGISTER_TYPE( maptk::ocv::detect_features_AGAST );
+#endif
+
+#ifdef MAPTK_OCV_HAS_BRIEF
+  REGISTER_TYPE( maptk::ocv::extract_descriptors_BRIEF );
+#endif
+
+#ifdef MAPTK_OCV_HAS_FREAK
+  REGISTER_TYPE( maptk::ocv::extract_descriptors_FREAK );
+#endif
+
+#ifdef MAPTK_OCV_HAS_SIFT
+  REGISTER_TYPE( maptk::ocv::detect_features_SIFT );
+  REGISTER_TYPE( maptk::ocv::extract_descriptors_SIFT );
+#endif
+
+#ifdef MAPTK_OCV_HAS_SURF
+  REGISTER_TYPE( maptk::ocv::detect_features_SURF );
+  REGISTER_TYPE( maptk::ocv::extract_descriptors_SURF );
+#endif
 
   REGISTRATION_SUMMARY();
   return REGISTRATION_FAILURES();

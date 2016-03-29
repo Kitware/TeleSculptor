@@ -1,9 +1,49 @@
-//
-// Created by Paul Tunison on 3/27/16.
-//
+/*ckwg +29
+ * Copyright 2016 by Kitware, Inc.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *  * Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ *  * Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ *  * Neither name of Kitware, Inc. nor the names of any contributors may be used
+ *    to endorse or promote products derived from this software without specific
+ *    prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
-#ifndef MAPTK_HAS_OPENCV_VER_3
+/**
+ * \file
+ * \brief OCV FREAK descriptor extractor wrapper implementation
+ */
+
 #include "extract_descriptors_FREAK.h"
+
+#if ! defined(MAPTK_HAS_OPENCV_VER_3) || defined(HAVE_OPENCV_XFEATURES2D)
+
+// typedef FREAK into a common symbol
+#ifndef MAPTK_HAS_OPENCV_VER_3
+typedef cv::FREAK cv_FREAK_t;
+#else
+#include <opencv2/xfeatures2d.hpp>
+typedef cv::xfeatures2d::FREAK cv_FREAK_t;
+#endif
 
 namespace kwiver {
 namespace maptk {
@@ -32,13 +72,29 @@ public:
   }
 
   /// Create new cv::Ptr algo instance
-  cv::Ptr<cv::FREAK> create() const
+  cv::Ptr<cv_FREAK_t> create() const
   {
-    return cv::Ptr<cv::FREAK>(
-        new cv::FREAK( orientation_normalized, scale_normalized, pattern_scale,
-                       n_octaves )
+#ifndef MAPTK_HAS_OPENCV_VER_3
+    return cv::Ptr<cv_FREAK_t>(
+        new cv_FREAK_t( orientation_normalized, scale_normalized, pattern_scale,
+                        n_octaves )
     );
+#else
+    return cv_FREAK_t::create( orientation_normalized, scale_normalized,
+                               pattern_scale, n_octaves );
+#endif
   }
+
+#ifndef MAPTK_HAS_OPENCV_VER_3
+  /// Update algorithm instance with current parameter values
+  void update_algo( cv::Ptr<cv_FREAK_t> freak ) const
+  {
+    freak->set( "orientationNormalized", orientation_normalized );
+    freak->set( "scaleNormalized", scale_normalized );
+    freak->set( "patternScale", pattern_scale );
+    freak->set( "nbOctave", n_octaves );
+  }
+#endif
 
   /// Set current parameter values to the given config block
   void update_config( vital::config_block_sptr &config ) const
@@ -60,15 +116,6 @@ public:
     scale_normalized = config->get_value<bool>("scale_normalized");
     pattern_scale = config->get_value<float>("pattern_scale");
     n_octaves = config->get_value<int>("n_octaves");
-  }
-
-  /// Update algorithm instance with current parameter values
-  void update_algo( cv::Ptr<cv::FREAK> freak ) const
-  {
-    freak->set( "orientationNormalized", orientation_normalized );
-    freak->set( "scaleNormalized", scale_normalized );
-    freak->set( "patternScale", pattern_scale );
-    freak->set( "nbOctave", n_octaves );
   }
 
   /// Params
@@ -123,7 +170,11 @@ extract_descriptors_FREAK
   vital::config_block_sptr c = get_configuration();
   c->merge_config( config );
   p_->set_config( c );
+#ifndef MAPTK_HAS_OPENCV_VER_3
   p_->update_algo( extractor );
+#else
+  extractor = p_->create();
+#endif
 }
 
 
@@ -135,8 +186,8 @@ extract_descriptors_FREAK
 }
 
 
-}
-}
-}
+} // end namespace ocv
+} // end namespace maptk
+} // end namespace kwiver
 
-#endif //MAPTK_HAS_OPENCV_VER_3
+#endif //! defined(MAPTK_HAS_OPENCV_VER_3) || defined(HAVE_OPENCV_XFEATURES2D)

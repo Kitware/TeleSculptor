@@ -121,6 +121,9 @@ private:
 };
 
 
+#define MAPTK_OCV_HAS_SIFT
+
+
 } // end namespace kwiver
 } // end namespace maptk
 } // end namespace ocv

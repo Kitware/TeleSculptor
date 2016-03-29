@@ -33,10 +33,11 @@
  * \brief OCV BRIEF descriptor extractor wrapper
  */
 
-#ifndef MAPTK_HAS_OPENCV_VER_3
-
 #ifndef MAPTK_EXTRACT_DESCRIPTORS_BRIEF_H_
 #define MAPTK_EXTRACT_DESCRIPTORS_BRIEF_H_
+
+#include <opencv2/opencv_modules.hpp>
+#if ! defined(MAPTK_HAS_OPENCV_VER_3) || defined(HAVE_OPENCV_XFEATURES2D)
 
 #include <memory>
 #include <string>
@@ -89,10 +90,13 @@ private:
 };
 
 
+#define MAPTK_OCV_HAS_BRIEF
+
+
 } // end namespace ocv
 } // end namespace maptk
 } // end namespace kwiver
 
-#endif //MAPTK_EXTRACT_DESCRIPTORS_BRIEF_H_
+#endif //has OCV support
 
-#endif
+#endif //MAPTK_EXTRACT_DESCRIPTORS_BRIEF_H_

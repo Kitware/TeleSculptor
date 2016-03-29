@@ -51,6 +51,13 @@
 #include <maptk/plugins/ocv/match_features.h>
 #include <maptk/plugins/ocv/register_algorithms.h>
 
+// Get headers of optional algos for *_HAS_* defines
+#include <maptk/plugins/ocv/detect_features_AGAST.h>
+#include <maptk/plugins/ocv/extract_descriptors_BRIEF.h>
+#include <maptk/plugins/ocv/extract_descriptors_FREAK.h>
+#include <maptk/plugins/ocv/feature_detect_extract_SIFT.h>
+#include <maptk/plugins/ocv/feature_detect_extract_SURF.h>
+
 #include <opencv2/opencv_modules.hpp>
 #include <opencv2/features2d/features2d.hpp>
 
@@ -97,47 +104,42 @@ std::vector<algorithm_sptr> get_ocv_algos()
 
 #define ADD( a ) algo_impls.push_back( a )
 
-  // Macros for handling non-free type inclusion or not
-#if defined(HAVE_OPENCV_NONFREE) || defined(HAVE_OPENCV_XFEATURES2D)
-#define ADD_NF( a ) ADD( a )
-#else
-#define ADD_NF( a )
+  ADD( algo::detect_features::create( "ocv_BRISK" ) );
+  ADD( algo::detect_features::create( "ocv_FAST" ) );
+  ADD( algo::detect_features::create( "ocv_GFTT" ) );
+  ADD( algo::detect_features::create( "ocv_MSER" ) );
+  ADD( algo::detect_features::create( "ocv_ORB" ) );
+  ADD( algo::detect_features::create( "ocv_simple_blob" ) );
+
+  ADD( algo::extract_descriptors::create( "ocv_BRISK" ) );
+  ADD( algo::extract_descriptors::create( "ocv_ORB" ) );
+
+  ADD( algo::match_features::create( "ocv_brute_force" ) );
+  ADD( algo::match_features::create( "ocv_flann_based" ) );
+
+#ifdef MAPTK_OCV_HAS_AGAST
+  ADD( algo::detect_features::create( "ocv_AGAST" ) );
 #endif
 
-#ifndef MAPTK_HAS_OPENCV_VER_3
-#define ADD_OCV2( a ) ADD( a )
-#define ADD_OCV3( a )
-#else
-#define ADD_OCV2( a )
-#define ADD_OCV3( a ) ADD( a )
+#ifdef MAPTK_OCV_HAS_BRIEF
+  ADD( algo::extract_descriptors::create( "ocv_BRIEF" ) );
 #endif
 
-  ADD_OCV3( algo::detect_features::create( "ocv_AGAST" ) );
-  ADD     ( algo::detect_features::create( "ocv_BRISK" ) );
-  ADD     ( algo::detect_features::create( "ocv_FAST" ) );
-  ADD     ( algo::detect_features::create( "ocv_GFTT" ) );
-  ADD     ( algo::detect_features::create( "ocv_MSER" ) );
-  ADD     ( algo::detect_features::create( "ocv_ORB" ) );
-  ADD_NF  ( algo::detect_features::create( "ocv_SIFT" ) );
-  ADD     ( algo::detect_features::create( "ocv_simple_blob" ) );
-  ADD_NF  ( algo::detect_features::create( "ocv_SURF" ) );
+#ifdef MAPTK_OCV_HAS_FREAK
+  ADD( algo::extract_descriptors::create( "ocv_FREAK" ) );
+#endif
 
-  ADD_OCV2( algo::extract_descriptors::create( "ocv_BRIEF" ) );
-  ADD     ( algo::extract_descriptors::create( "ocv_BRISK" ) );
-  ADD_OCV2( algo::extract_descriptors::create( "ocv_FREAK" ) );
-  ADD     ( algo::extract_descriptors::create( "ocv_ORB" ) );
-  ADD_NF  ( algo::extract_descriptors::create( "ocv_SIFT" ) );
-  ADD_NF  ( algo::extract_descriptors::create( "ocv_SURF" ) );
+#ifdef MAPTK_OCV_HAS_SIFT
+  ADD( algo::detect_features::create( "ocv_SIFT" ) );
+  ADD( algo::extract_descriptors::create( "ocv_SIFT" ) );
+#endif
 
-  ADD     ( algo::match_features::create( "ocv_brute_force" ) );
-  ADD     ( algo::match_features::create( "ocv_flann_based" ) );
-
-  // Add other/new OCV algorithms here
+#ifdef MAPTK_OCV_HAS_SURF
+  ADD( algo::detect_features::create( "ocv_SURF" ) );
+  ADD( algo::extract_descriptors::create( "ocv_SURF" ) );
+#endif
 
 #undef ADD
-#undef ADD_NF
-#undef ADD_OCV2
-#undef ADD_OCV3
 
   return algo_impls;
 }

@@ -87,6 +87,9 @@ private:
 };
 
 
+#define MAPTK_OCV_HAS_AGAST
+
+
 } // end namespace kwiver
 } // end namespace maptk
 } // end namespace ocv
