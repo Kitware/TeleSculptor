@@ -120,12 +120,14 @@ std::vector<algorithm_sptr> get_ocv_algos()
   ADD     ( algo::detect_features::create( "ocv_ORB" ) );
   ADD_NF  ( algo::detect_features::create( "ocv_SIFT" ) );
   ADD     ( algo::detect_features::create( "ocv_simple_blob" ) );
+  ADD_NF  ( algo::detect_features::create( "ocv_SURF" ) );
 
   ADD_OCV2( algo::extract_descriptors::create( "ocv_BRIEF" ) );
   ADD     ( algo::extract_descriptors::create( "ocv_BRISK" ) );
   ADD_OCV2( algo::extract_descriptors::create( "ocv_FREAK" ) );
   ADD     ( algo::extract_descriptors::create( "ocv_ORB" ) );
   ADD_NF  ( algo::extract_descriptors::create( "ocv_SIFT" ) );
+  ADD_NF  ( algo::extract_descriptors::create( "ocv_SURF" ) );
 
   ADD     ( algo::match_features::create( "ocv_brute_force" ) );
   ADD     ( algo::match_features::create( "ocv_flann_based" ) );

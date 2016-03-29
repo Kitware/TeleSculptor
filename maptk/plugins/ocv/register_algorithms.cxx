@@ -54,6 +54,7 @@
 #include <maptk/plugins/ocv/feature_detect_extract_BRISK.h>
 #include <maptk/plugins/ocv/feature_detect_extract_ORB.h>
 #include <maptk/plugins/ocv/feature_detect_extract_SIFT.h>
+#include <maptk/plugins/ocv/feature_detect_extract_SURF.h>
 #include <maptk/plugins/ocv/image_io.h>
 #include <maptk/plugins/ocv/match_features_bruteforce.h>
 #include <maptk/plugins/ocv/match_features_flannbased.h>
@@ -107,12 +108,14 @@ int register_algorithms( vital::registrar &reg )
   REGISTER_TYPE     ( maptk::ocv::detect_features_ORB );
   REGISTER_TYPE_NF  ( maptk::ocv::detect_features_SIFT );
   REGISTER_TYPE     ( maptk::ocv::detect_features_simple_blob );
+  REGISTER_TYPE_NF  ( maptk::ocv::detect_features_SURF );
 
   REGISTER_TYPE_OCV2( maptk::ocv::extract_descriptors_BRIEF );
   REGISTER_TYPE     ( maptk::ocv::extract_descriptors_BRISK );
   REGISTER_TYPE_OCV2( maptk::ocv::extract_descriptors_FREAK );
   REGISTER_TYPE     ( maptk::ocv::extract_descriptors_ORB );
   REGISTER_TYPE_NF  ( maptk::ocv::extract_descriptors_SIFT );
+  REGISTER_TYPE_NF  ( maptk::ocv::extract_descriptors_SURF );
 
   REGISTER_TYPE     ( maptk::ocv::match_features_bruteforce );
   REGISTER_TYPE     ( maptk::ocv::match_features_flannbased );
