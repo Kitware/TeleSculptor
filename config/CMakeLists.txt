@@ -12,11 +12,12 @@ add_custom_target(maptk-data-config ALL DEPENDS "${out_dir}")
 
 # Add targets to copy config files
 foreach(file ${config_files})
-  get_filename_component(name ${file} NAME_WE)
-  set(target maptk-data-config-${name})
+  get_filename_component(basename ${file} NAME_WE)
+  get_filename_component(filename ${file} NAME)
+  set(target maptk-data-config-${basename})
   kwiver_configure_file(${target}
-    "${file}"
-    "${out_dir}/${file}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/${filename}"
+    "${out_dir}/${filename}"
     )
   add_dependencies(maptk-data-config configure-${target})
 endforeach()
