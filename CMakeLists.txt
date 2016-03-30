@@ -77,8 +77,11 @@ add_subdirectory(maptk)
 # this is where the executables source code lives
 add_subdirectory(tools)
 
-# this is where the application default configuration lives
+# this is where the algorithm default configuration files live
 add_subdirectory(config)
+
+# this is where configuration for example data sets lives
+add_subdirectory(examples)
 
 ###
 # GUI

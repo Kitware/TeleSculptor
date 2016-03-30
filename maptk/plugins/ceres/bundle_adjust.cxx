@@ -483,8 +483,8 @@ bundle_adjust
         std::copy(d.begin(), d.begin()+num_dp, &intrinsic_params[5]);
       }
       // update the maps with the index of this new parameter vector
-      camera_intr_map[K] = camera_intr_params.size();
-      frame_to_intr_map[c.first] = camera_intr_params.size();
+      camera_intr_map[K] = static_cast<unsigned int>(camera_intr_params.size());
+      frame_to_intr_map[c.first] = static_cast<unsigned int>(camera_intr_params.size());
       // add the parameter vector
       camera_intr_params.push_back(intrinsic_params);
     }

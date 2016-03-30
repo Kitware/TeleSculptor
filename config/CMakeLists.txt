@@ -1,6 +1,4 @@
-set(config_files
-  bundle_adjust.conf
-  )
+file(GLOB config_files *.conf)
 
 # Ensure target directory exists
 set(out_dir "${MAPTK_BINARY_DIR}/share/maptk/${MAPTK_VERSION}/config")
@@ -17,7 +15,7 @@ foreach(file ${config_files})
   get_filename_component(name ${file} NAME_WE)
   set(target maptk-data-config-${name})
   kwiver_configure_file(${target}
-    "${CMAKE_CURRENT_SOURCE_DIR}/${file}"
+    "${file}"
     "${out_dir}/${file}"
     )
   add_dependencies(maptk-data-config configure-${target})

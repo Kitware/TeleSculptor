@@ -866,7 +866,7 @@ test_ba_intrinsic_sharing(camera_map_sptr cameras,
     intrin_set.insert(ci.second->intrinsics());
   }
 
-  return intrin_set.size();
+  return static_cast<unsigned int>(intrin_set.size());
 }
 
 
@@ -927,7 +927,7 @@ IMPLEMENT_TEST(auto_share_intrinsics)
   camera_map_sptr cameras2 = testing::camera_seq(7, K2);
 
   // combine the camera maps and offset the frame numbers
-  const unsigned int offset = cameras1->size();
+  const unsigned int offset = static_cast<unsigned int>(cameras1->size());
   camera_map::map_camera_t cams = cameras1->cameras();
   VITAL_FOREACH(camera_map::map_camera_t::value_type ci, cameras2->cameras())
   {
