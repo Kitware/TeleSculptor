@@ -33,10 +33,10 @@
  * \brief OCV AGAST feature detector wrapper
  */
 
+#include "detect_features_AGAST.h"
+
 // Only available in OpenCV 3.x
 #ifdef MAPTK_HAS_OPENCV_VER_3
-
-#include "detect_features_AGAST.h"
 
 using namespace kwiver::vital;
 

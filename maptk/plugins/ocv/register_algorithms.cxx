@@ -45,6 +45,7 @@
 #include <maptk/plugins/ocv/detect_features_AGAST.h>
 #include <maptk/plugins/ocv/detect_features_FAST.h>
 #include <maptk/plugins/ocv/detect_features_GFTT.h>
+#include <maptk/plugins/ocv/detect_features_MSD.h>
 #include <maptk/plugins/ocv/detect_features_MSER.h>
 #include <maptk/plugins/ocv/detect_features_simple_blob.h>
 #include <maptk/plugins/ocv/detect_features_STAR.h>
@@ -122,6 +123,10 @@ int register_algorithms( vital::registrar &reg )
 
 #ifdef MAPTK_OCV_HAS_LUCID
   REGISTER_TYPE( maptk::ocv::extract_descriptors_LUCID );
+#endif
+
+#ifdef MAPTK_OCV_HAS_MSD
+  REGISTER_TYPE( maptk::ocv::detect_features_MSD );
 #endif
 
 #ifdef MAPTK_OCV_HAS_SIFT

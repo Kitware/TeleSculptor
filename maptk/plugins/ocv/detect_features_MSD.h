@@ -30,14 +30,15 @@
 
 /**
  * \file
- * \brief OCV AGAST feature detector wrapper
+ * \brief OCV MSD feature detector wrapper
  */
 
-#ifndef MAPTK_DETECT_FEATURES_AGAST_H_
-#define MAPTK_DETECT_FEATURES_AGAST_H_
+#ifndef MAPTK_DETECT_FEATURES_MSD_H_
+#define MAPTK_DETECT_FEATURES_MSD_H_
 
-// Only available in OpenCV 3.x
-#ifdef MAPTK_HAS_OPENCV_VER_3
+// Only available in OpenCV 3.x xfeatures2d
+#include <opencv2/opencv_modules.hpp>
+#ifdef HAVE_OPENCV_XFEATURES2D
 
 #include <memory>
 #include <string>
@@ -52,26 +53,26 @@ namespace maptk {
 namespace ocv {
 
 
-class MAPTK_OCV_EXPORT detect_features_AGAST
-  : public vital::algorithm_impl< detect_features_AGAST,
+class MAPTK_OCV_EXPORT detect_features_MSD
+  : public vital::algorithm_impl< detect_features_MSD,
                                   ocv::detect_features,
                                   vital::algo::detect_features >
 {
 public:
   /// Constructor
-  detect_features_AGAST();
+  detect_features_MSD();
 
   /// Copy constructor
-  detect_features_AGAST(const detect_features_AGAST &other);
+  detect_features_MSD(const detect_features_MSD &other);
 
   /// Destructor
-  virtual ~detect_features_AGAST();
+  virtual ~detect_features_MSD();
 
   /// Return the name of this implementation
-  virtual std::string impl_name() const { return "ocv_AGAST"; }
+  virtual std::string impl_name() const { return "ocv_MSD"; }
   /// Returns a descriptive string for this implementation
   virtual std::string description() const {
-    return "OpenCV feature detection via the AGAST algorithm";
+    return "OpenCV feature detection via the MSD algorithm";
   }
 
   /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
@@ -87,7 +88,7 @@ private:
 };
 
 
-#define MAPTK_OCV_HAS_AGAST
+#define MAPTK_OCV_HAS_MSD
 
 
 } // end namespace kwiver
@@ -95,6 +96,6 @@ private:
 } // end namespace ocv
 
 
-#endif //MAPTK_HAS_OPENCV_VER_3
+#endif //HAVE_OPENCV_XFEATURES2D
 
-#endif //MAPTK_DETECT_FEATURES_AGAST_H_
+#endif //MAPTK_DETECT_FEATURES_MSD_H_

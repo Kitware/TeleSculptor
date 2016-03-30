@@ -53,6 +53,7 @@
 
 // Get headers of optional algos for ``MAPTK_OCV_HAS_*`` defines
 #include <maptk/plugins/ocv/detect_features_AGAST.h>
+#include <maptk/plugins/ocv/detect_features_MSD.h>
 #include <maptk/plugins/ocv/detect_features_STAR.h>
 #include <maptk/plugins/ocv/extract_descriptors_BRIEF.h>
 #include <maptk/plugins/ocv/extract_descriptors_DAISY.h>
@@ -140,6 +141,10 @@ std::vector<algorithm_sptr> get_ocv_algos()
 
 #ifdef MAPTK_OCV_HAS_LUCID
   ADD( algo::extract_descriptors::create( "ocv_LUCID" ) );
+#endif
+
+#ifdef MAPTK_OCV_HAS_MSD
+  ADD( algo::detect_features::create( "ocv_MSD" ) );
 #endif
 
 #ifdef MAPTK_OCV_HAS_SIFT

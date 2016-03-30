@@ -8,6 +8,7 @@ set( maptk_ocv_headers_public
   detect_features_AGAST.h
   detect_features_FAST.h
   detect_features_GFTT.h
+  detect_features_MSD.h
   detect_features_MSER.h
   detect_features_simple_blob.h
   detect_features_STAR.h
@@ -49,6 +50,7 @@ set( maptk_ocv_sources
   detect_features_AGAST.cxx
   detect_features_FAST.cxx
   detect_features_GFTT.cxx
+  detect_features_MSD.cxx
   detect_features_MSER.cxx
   detect_features_simple_blob.cxx
   detect_features_STAR.cxx
