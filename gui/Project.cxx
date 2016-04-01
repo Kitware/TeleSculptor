@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,10 +30,13 @@
 
 #include "Project.h"
 
+#include <maptk/version.h>
+
 #include <vital/config/config_block_io.h>
 
 #include <qtStlUtil.h>
 
+#include <QtGui/QApplication>
 #include <QtCore/QDir>
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
@@ -61,7 +64,12 @@ bool Project::read(QString const& path)
   try
   {
     // Load config file
-    auto const& config = kwiver::vital::read_config_file(qPrintable(path));
+    auto const exeDir = QDir(QApplication::applicationDirPath());
+    auto const prefix = stdString(exeDir.absoluteFilePath(".."));
+    auto const& config = kwiver::vital::read_config_file(qPrintable(path),
+                                                         "maptk",
+                                                         MAPTK_VERSION,
+                                                         prefix);
 
     this->cameraPath = getPath(config, base, "output_krtd_dir");
     this->landmarks = getPath(config, base, "output_ply_file");
