@@ -29,12 +29,12 @@ kwiver_wami_set_1_  A sample from one camera of the `CLIF 2007`_ data set.  It
 =================== ===========================================================
 
 The easiest way to run these examples is to download and extract the data set
-files into the example configuration directory with the correspond name.  Then
-run ``maptk_[tool] -c maptk_[tool].conf`` from within that directory where
-``[tool]`` is replaced with one of the tool names, like ``track_features``.
-Run ``maptk_track_features`` first, followed by ``maptk_bundle_adjust_tracks``.
-The outputs are all written to the ``results`` subdirectory, for which an empty
-directory is provided as a placeholder.
+files and copy both the data and corresponding example configuration files into
+a common directory.  Then run ``maptk_[tool] -c maptk_[tool].conf`` from within
+the directory where ``[tool]`` is replaced with one of the tool names, like
+``track_features``.  Run ``maptk_track_features`` first, followed by
+``maptk_bundle_adjust_tracks``.  The outputs are all written to the ``results``
+subdirectory, for which an empty directory is provided as a placeholder.
 
 .. Appendix I: References
 .. ======================
