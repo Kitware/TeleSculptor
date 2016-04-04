@@ -90,9 +90,9 @@ private:
 #define MAPTK_OCV_HAS_AGAST
 
 
-} // end namespace kwiver
-} // end namespace maptk
 } // end namespace ocv
+} // end namespace maptk
+} // end namespace kwiver
 
 
 #endif //MAPTK_HAS_OPENCV_VER_3

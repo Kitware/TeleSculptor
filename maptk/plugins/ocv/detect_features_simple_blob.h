@@ -84,9 +84,9 @@ private:
 };
 
 
-} // end namespace kwiver
-} // end namespace maptk
 } // end namespace ocv
+} // end namespace maptk
+} // end namespace kwiver
 
 
 #endif //MAPTK_DETECT_FEATURES_SIMPLE_BLOB_H_

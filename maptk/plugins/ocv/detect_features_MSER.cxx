@@ -35,11 +35,11 @@
 
 #include "detect_features_MSER.h"
 
+using namespace kwiver::vital;
+
 namespace kwiver {
 namespace maptk {
 namespace ocv {
-
-using namespace kwiver::vital;
 
 class detect_features_MSER::priv
 {

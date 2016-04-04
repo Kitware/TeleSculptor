@@ -35,11 +35,11 @@
 
 #include "feature_detect_extract_BRISK.h"
 
+using namespace kwiver::vital;
+
 namespace kwiver {
 namespace maptk {
 namespace ocv {
-
-using namespace kwiver::vital;
 
 
 namespace {
@@ -227,6 +227,6 @@ extract_descriptors_BRISK
 }
 
 
-} // end namespace kwiver
-} // end namespace maptk
 } // end namespace ocv
+} // end namespace maptk
+} // end namespace kwiver

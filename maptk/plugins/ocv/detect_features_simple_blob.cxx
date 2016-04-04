@@ -209,6 +209,6 @@ detect_features_simple_blob
 }
 
 
-} // end namespace kwiver
-} // end namespace maptk
 } // end namespace ocv
+} // end namespace maptk
+} // end namespace kwiver

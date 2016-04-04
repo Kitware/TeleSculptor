@@ -118,8 +118,8 @@ private:
 };
 
 
-} // end namespace kwiver
-} // end namespace maptk
 } // end namespace ocv
+} // end namespace maptk
+} // end namespace kwiver
 
 #endif // MAPTK_FEATURE_DETECT_EXTRACT_ORB_H_

@@ -190,8 +190,8 @@ detect_features_MSD
 }
 
 
-} // end namespace kwiver
-} // end namespace maptk
 } // end namespace ocv
+} // end namespace maptk
+} // end namespace kwiver
 
 #endif //HAVE_OPENCV_XFEATURES2D

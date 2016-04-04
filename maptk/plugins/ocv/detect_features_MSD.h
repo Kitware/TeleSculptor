@@ -91,9 +91,9 @@ private:
 #define MAPTK_OCV_HAS_MSD
 
 
-} // end namespace kwiver
-} // end namespace maptk
 } // end namespace ocv
+} // end namespace maptk
+} // end namespace kwiver
 
 
 #endif //HAVE_OPENCV_XFEATURES2D

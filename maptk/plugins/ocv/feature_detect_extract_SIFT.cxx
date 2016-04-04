@@ -50,11 +50,11 @@ typedef cv::xfeatures2d::SIFT cv_SIFT_t;
 #endif
 
 
+using namespace kwiver::vital;
+
 namespace kwiver {
 namespace maptk {
 namespace ocv {
-
-using namespace kwiver::vital;
 
 
 namespace
@@ -288,8 +288,8 @@ extract_descriptors_SIFT
 }
 
 
-} // end namespace kwiver
-} // end namespace maptk
 } // end namespace ocv
+} // end namespace maptk
+} // end namespace kwiver
 
 #endif //defined(HAVE_OPENCV_NONFREE) || defined(HAVE_OPENCV_XFEATURES2D)
