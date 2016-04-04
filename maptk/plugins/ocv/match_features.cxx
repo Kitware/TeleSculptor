@@ -81,8 +81,3 @@ match_features
 } // end namespace ocv
 } // end namespace maptk
 } // end namespace kwiver
-
-
-/// \cond DoygenSupress
-INSTANTIATE_ALGORITHM_DEF( kwiver::maptk::ocv::match_features );
-/// \endcond

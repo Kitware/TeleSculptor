@@ -70,8 +70,3 @@ extract_descriptors
 } // end namespace ocv
 } // end namespace maptk
 } // end namespace kwiver
-
-
-/// \cond DoxygenSupress
-INSTANTIATE_ALGORITHM_DEF(kwiver::maptk::ocv::extract_descriptors);
-/// \endconf

@@ -96,8 +96,3 @@ detect_features
 
 } // end namespace maptk
 } // end namespace kwiver
-
-
-/// \cond DoxygenSuppress
-INSTANTIATE_ALGORITHM_DEF(kwiver::maptk::ocv::detect_features);
-/// \endcond
