@@ -24,11 +24,20 @@ The MAPTK Core plugin provides algorithm implementations that only depend on the
 - \ref core::convert_image_bypass : pass-through option for the convert_image
                algorithm, guarenteeing no modification to an input image.
          - Implements \ref algo::convert_image.
+- \ref core::filter_features_magnitude : filters a feature set with a magnitude
+               threshold
+         - Implements \ref algo::filter_features
 - \ref core::hierarchical_bundle_adjust : optimize camera and landmark
                parameters given a set of feature tracks.
          - Implements \ref algo::bundle_adjust.
          - Requires instances of \ref algo::bundle_adjust,
                \ref algo::optimize_cameras and \ref algo::triangulate_landmarks.
+- \ref core::initialize_cameras_landmarks : initialize cameras and landmarks
+         - Implements \ref algo::initialize_cameras_landmarks.
+         - Requires instances of \ref algo::estimate_essential_matrix
+               and \ref algo::triangulate_landmarks
+         - Optionally uses instances of \ref algo::camera_optimizer
+               and \ref algo::bundle_adjuster
 - \ref core::match_features_homography : use homography estimation within
                feature matching
          - Implements \ref algo::match_features,
@@ -39,6 +48,8 @@ The MAPTK Core plugin provides algorithm implementations that only depend on the
          - Implements \ref algo::track_features.
          - Requires instances of \ref algo::detect_features,
                \ref algo::extract_descriptors, and \ref algo::match_features.
+- \ref core::triangulate_landmarks : Linear triangulation of landmarks using Eigen
+         - Implements \ref algo::triangulate_landmarks.
 
 */
 }
