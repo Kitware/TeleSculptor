@@ -30,8 +30,7 @@
 
 /**
  * \file
- * \brief Implementation of \link maptk::algo::close_loops_multi_method
- *        close_loops_multi_method \endlink
+ * \brief Implementation of close_loops_multi_method
  */
 
 #include "close_loops_multi_method.h"

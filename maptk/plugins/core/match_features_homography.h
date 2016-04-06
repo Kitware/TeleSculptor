@@ -30,7 +30,7 @@
 
 /**
  * \file
- * \brief core match_features_homography algorithm impl interface
+ * \brief Header defining the core match_features_homography algorithm
  */
 
 #ifndef MAPTK_PLUGINS_CORE_MATCH_FEATURES_HOMOGRAPHY_H_
