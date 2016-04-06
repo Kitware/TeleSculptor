@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2015 by Kitware, Inc.
+ * Copyright 2013-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,7 @@
 
 /**
  * \file
- * \brief core match_features_homography algorithm implementation
+ * \brief Implementation of the core match_features_homography algorithm
  */
 
 #include "match_features_homography.h"

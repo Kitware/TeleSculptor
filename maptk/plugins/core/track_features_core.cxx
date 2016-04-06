@@ -30,8 +30,7 @@
 
 /**
  * \file
- * \brief Implementation of \link maptk::algo::track_features_core
- *        track_features_core \endlink
+ * \brief Implementation of track_features_core
  */
 
 #include "track_features_core.h"

@@ -30,8 +30,7 @@
 
 /**
  * \file
- * \brief Implementation of \link maptk::algo::compute_ref_homography_core
- *        compute_ref_homography_core \endlink
+ * \brief Implementation of compute_ref_homography_core
  */
 
 #include "compute_ref_homography_core.h"

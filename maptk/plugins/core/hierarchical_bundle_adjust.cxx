@@ -30,7 +30,7 @@
 
 /**
  * \file
- * \brief implementation of vital::algo::hierarchical_bundle_adjust
+ * \brief Implementation of hierarchical_bundle_adjust
  */
 
 #include "hierarchical_bundle_adjust.h"

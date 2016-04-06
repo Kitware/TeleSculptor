@@ -40,8 +40,7 @@
 
 /**
  * \file
- * \brief Header defining \link maptk::core::filter_features_magnitude
- *        \endlink algorithm
+ * \brief Header defining the filter_features_magnitude algorithm
  */
 
 namespace kwiver {

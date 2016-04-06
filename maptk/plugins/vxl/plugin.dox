@@ -38,10 +38,14 @@ The MAPTK vxl library provides various components by building on
 - \ref vxl::estimate_homography : estimate a homography with
                <a href="http://public.kitware.com/vxl/doc/development/contrib/rpl/rrel/html/classrrel__homography2d__est.html">
                rrel_homography2d_est</a>
+- \ref vxl::estimate_fundamental_matrix : estimate a fundamental matrix with
+               <a href="http://public.kitware.com/vxl/doc/development/core/vpgl/html/classvpgl__fm__compute__7__point.html">
+               vpgl_fm_compute_7_point</a> or
+               <a href="http://public.kitware.com/vxl/doc/development/core/vpgl/html/classvpgl__fm__compute__8__point.html">
+               vpgl_fm_compute_8_point</a>
 - \ref vxl::estimate_similarity_transform : estimate a similarity transformation with
                <a href="http://public.kitware.com/vxl/doc/development/core/vgl/html/classvgl__compute__similarity__3d.html">
                vgl_compute_similarity_3d</a>
-- \ref vxl::initialize_cameras_landmarks : initialize cameras and landmarks using other VXL algorithms
 - \ref vxl::image_io : read and write images with
                <a href="http://public.kitware.com/vxl/doc/development/core/vil/html/vil__load_8h.html">
                vil_load()</a> and

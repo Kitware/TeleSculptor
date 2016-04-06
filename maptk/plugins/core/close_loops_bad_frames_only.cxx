@@ -30,8 +30,7 @@
 
 /**
  * \file
- * \brief Implementation of \link maptk::algo::close_loops_bad_frames_only
- *        close_loops_bad_frames_only \endlink
+ * \brief Implementation of close_loops_bad_frames_only
  */
 
 #include "close_loops_bad_frames_only.h"

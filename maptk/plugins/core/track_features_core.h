@@ -30,8 +30,7 @@
 
 /**
  * \file
- * \brief Header defining the \link maptk::algo::track_features_core
- *        track_features_core \endlink algorithm
+ * \brief Header defining the track_features_core algorithm
  */
 
 #ifndef MAPTK_PLUGINS_CORE_TRACK_FEATURES_CORE_H_
