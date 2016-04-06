@@ -30,8 +30,7 @@
 
 /**
  * \file
- * \brief Header for \link maptk::interpolate_camera interpolate_camera \endlink
- *        functions
+ * \brief Header for camera interpolation functions
  */
 
 #ifndef MAPTK_INTERPOLATE_CAMERA_H_
