@@ -324,7 +324,8 @@ filter_tracks(kwiver::vital::track_set_sptr tracks, size_t min_length)
  * assume the cameras given are sequential and always start with frame 0.
  * This will behave in possibly undesired ways when the given cameras are not in
  * sequential frame order, or the first camera's frame is not a multiple of
- * \c factor.
+ * \c factor.  This function ensures that the first and last cameras are
+ * included
  */
 kwiver::vital::camera_map_sptr
 subsample_cameras(kwiver::vital::camera_map_sptr cameras, unsigned factor)
@@ -338,6 +339,8 @@ subsample_cameras(kwiver::vital::camera_map_sptr cameras, unsigned factor)
       sub_cams.insert(p);
     }
   }
+  // Also include the last camera
+  sub_cams.insert(*cams.rbegin());
   return kwiver::vital::camera_map_sptr(new kwiver::vital::simple_camera_map(sub_cams));
 }
 
