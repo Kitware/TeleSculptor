@@ -1073,10 +1073,13 @@ initialize_cameras_landmarks
       cams = ba_cams2->cameras();
       lms = ba_lms2->landmarks();
     }
+
+    // if using bundle adjustment, remove landmarks with large error
+    // after optimization
+    std::set<track_id_t> to_remove = detect_bad_tracks(cams, lms, trks, 1.0);
+    remove_landmarks(to_remove, lms);
   }
 
-  std::set<track_id_t> to_remove = detect_bad_tracks(cams, lms, trks, 1.0);
-  remove_landmarks(to_remove, lms);
   cameras = camera_map_sptr(new simple_camera_map(cams));
   landmarks = landmark_map_sptr(new simple_landmark_map(lms));
 }
