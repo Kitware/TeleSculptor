@@ -121,6 +121,10 @@ vital::camera_map_sptr transform(vital::camera_map_sptr cameras,
 vital::landmark_sptr transform(vital::landmark_sptr lm,
                         const vital::similarity_d& xform)
 {
+  if (!lm)
+  {
+    return vital::landmark_sptr();
+  }
   lm = lm->clone();
   if( vital::landmark_d* vlm = dynamic_cast<vital::landmark_d*>(lm.get()) )
   {
