@@ -1002,7 +1002,8 @@ initialize_cameras_landmarks
       }
     }
 
-    if( d_->bundle_adjuster && cams.size() >= 4 && is_power_of_two(cams.size()) )
+    if( d_->bundle_adjuster && cams.size() >= 4 &&
+        is_power_of_two(static_cast<unsigned int>(cams.size())) )
     {
       camera_map_sptr ba_cams(new simple_camera_map(cams));
       landmark_map_sptr ba_lms(new simple_landmark_map(lms));
