@@ -36,6 +36,7 @@ import sys
 from optparse import OptionParser
 import cv2
 import numpy as np
+import scipy.ndimage.morphology as morph
 import math
 
 import homography_io
@@ -93,15 +94,16 @@ def main():
         out_type = images[0].dtype
 
     mosaic = np.zeros(mosaic_shape[::-1] + (4,), out_type)
+    edges = np.zeros(mosaic.shape[:2], np.bool)
     for fname, img, (_, H) in zip(image_files, images, homogs):
         H = H_offset * H
         imgt = cv2.cvtColor(img, cv2.COLOR_BGR2BGRA)
-        if options.frame > 0:
-            mask = np.ones(imgt.shape[:2], dtype=np.bool)
-            fw = options.frame
-            mask[fw:-fw,fw:-fw] = False
-            imgt[mask] = (0,0,255,255)
         warped = cv2.warpPerspective(imgt, H, mosaic_shape)
+        if options.frame > 0:
+            edge_map = warped[:,:,3] > 0
+            structure = np.ones((2*options.frame+1,)*2)
+            edge_map = np.logical_xor(edge_map, morph.binary_erosion(edge_map, structure))
+            edges = np.logical_or(edges, edge_map)
         mask = np.nonzero(warped[:,:,3] == 255)
         if options.blend:
             mosaic[mask] += warped[mask]
@@ -112,6 +114,8 @@ def main():
         for i in range(4):
             mosaic[:,:,i][mask] /= mosaic[:,:,3][mask] / 255
         mosaic.astype(images[0].dtype)
+    if options.frame > 0:
+        mosaic[edges] = (0,0,255,255)
     cv2.imwrite(mosaic_filename, mosaic)
 
 
