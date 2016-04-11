@@ -47,6 +47,14 @@ def main():
     description = "warp all of the images by homography and overlay into a mosaic"
     parser = OptionParser(usage=usage, description=description)
 
+    parser.add_option("-e", "--expand", default=False,
+                      action="store_true", dest="expand",
+                      help="expand the output image to fit entire mosaic")
+
+    parser.add_option("-b", "--blend", default=False,
+                      action="store_true", dest="blend",
+                      help="blend the pixels when creating the mosaic")
+
     (options, args) = parser.parse_args()
 
     image_filename = args[0]
@@ -66,18 +74,35 @@ def main():
     images = [cv2.imread(fn) for fn in image_files]
     shapes = [img.shape[:2] for img in images]
 
-    x_rng, y_rng = compute_extents([H for _, H in homogs], shapes)
-    H_offset = np.matrix([[1, 0, -x_rng[0]], [0, 1, -y_rng[0]], [0, 0, 1]])
-    mosaic_shape = (int(math.ceil(x_rng[1] - x_rng[0])),
-                    int(math.ceil(y_rng[1] - y_rng[0])))
+    if options.expand:
+        x_rng, y_rng = compute_extents([H for _, H in homogs], shapes)
+        H_offset = np.matrix([[1, 0, -x_rng[0]], [0, 1, -y_rng[0]], [0, 0, 1]])
+        mosaic_shape = (int(math.ceil(x_rng[1] - x_rng[0])),
+                        int(math.ceil(y_rng[1] - y_rng[0])))
+    else:
+        H_offset = np.eye(3)
+        mosaic_shape = images[0].shape[1::-1]
 
-    mosaic = np.zeros(mosaic_shape[::-1] + (4,), images[0].dtype)
+    if options.blend:
+        out_type = np.int32
+    else:
+        out_type = images[0].dtype
+
+    mosaic = np.zeros(mosaic_shape[::-1] + (4,), out_type)
     for fname, img, (_, H) in zip(image_files, images, homogs):
         H = H_offset * H
         imgt = cv2.cvtColor(img, cv2.COLOR_BGR2BGRA)
         warped = cv2.warpPerspective(imgt, H, mosaic_shape)
-        mask = np.nonzero(warped[:,:,3])
-        mosaic[mask] = warped[mask]
+        mask = np.nonzero(warped[:,:,3] == 255)
+        if options.blend:
+            mosaic[mask] += warped[mask]
+        else:
+            mosaic[mask] = warped[mask]
+    if options.blend:
+        mask = np.nonzero(mosaic[:,:,3] > 255)
+        for i in range(4):
+            mosaic[:,:,i][mask] /= mosaic[:,:,3][mask] / 255
+        mosaic.astype(images[0].dtype)
     cv2.imwrite(mosaic_filename, mosaic)
 
 
