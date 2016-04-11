@@ -60,6 +60,10 @@ def main():
                       type="int", dest="frame",
                       help="draw a frame around each image")
 
+    parser.add_option("-a", "--all-frame", default=False,
+                      action="store_true", dest="all_frame",
+                      help="draw all parts of the frames, even when obscured")
+
     (options, args) = parser.parse_args()
 
     image_filename = args[0]
@@ -100,10 +104,13 @@ def main():
         imgt = cv2.cvtColor(img, cv2.COLOR_BGR2BGRA)
         warped = cv2.warpPerspective(imgt, H, mosaic_shape)
         if options.frame > 0:
-            edge_map = warped[:,:,3] > 0
+            edge_map = warped[:,:,3] == 255
             structure = np.ones((2*options.frame+1,)*2)
             edge_map = np.logical_xor(edge_map, morph.binary_erosion(edge_map, structure))
-            edges = np.logical_or(edges, edge_map)
+            if options.all_frame:
+                edges = np.logical_or(edges, edge_map)
+            else:
+                warped[edge_map] = (0,0,255,255)
         mask = np.nonzero(warped[:,:,3] == 255)
         if options.blend:
             mosaic[mask] += warped[mask]
@@ -114,7 +121,7 @@ def main():
         for i in range(4):
             mosaic[:,:,i][mask] /= mosaic[:,:,3][mask] / 255
         mosaic.astype(images[0].dtype)
-    if options.frame > 0:
+    if options.frame > 0 and options.all_frame:
         mosaic[edges] = (0,0,255,255)
     cv2.imwrite(mosaic_filename, mosaic)
 
