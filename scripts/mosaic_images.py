@@ -55,6 +55,10 @@ def main():
                       action="store_true", dest="blend",
                       help="blend the pixels when creating the mosaic")
 
+    parser.add_option("-f", "--frame-width", default=0,
+                      type="int", dest="frame",
+                      help="draw a frame around each image")
+
     (options, args) = parser.parse_args()
 
     image_filename = args[0]
@@ -92,6 +96,11 @@ def main():
     for fname, img, (_, H) in zip(image_files, images, homogs):
         H = H_offset * H
         imgt = cv2.cvtColor(img, cv2.COLOR_BGR2BGRA)
+        if options.frame > 0:
+            mask = np.ones(imgt.shape[:2], dtype=np.bool)
+            fw = options.frame
+            mask[fw:-fw,fw:-fw] = False
+            imgt[mask] = (0,0,255,255)
         warped = cv2.warpPerspective(imgt, H, mosaic_shape)
         mask = np.nonzero(warped[:,:,3] == 255)
         if options.blend:
