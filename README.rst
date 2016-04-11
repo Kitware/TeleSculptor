@@ -141,8 +141,7 @@ Required
 ''''''''
 
 The only hard dependencies of MAP-Tk are on the C++ standard library,
-Vital_ (contemporary to the version of MAP-Tk being built), and Eigen_
-(|>=| 3.0; also required by Vital).
+Vital_ (|>=| 0.1), and Eigen_ (|>=| 3.0; also required by Vital).
 
 Optional Plugins
 ''''''''''''''''
