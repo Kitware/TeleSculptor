@@ -59,8 +59,9 @@ def main():
     homogs = homography_io.load_homography_file(homog_filename)
 
     if len(homogs) != len(image_files):
-        sys.exit("Number of homographies (",len(homogs),") does not match ",
-                 "number of images (",len(image_files))
+        sys.exit("Number of homographies ("+str(len(homogs))+
+                 ") does not match number of images ("+
+                 str(len(image_files))+")")
 
     images = [cv2.imread(fn) for fn in image_files]
     shapes = [img.shape[:2] for img in images]
