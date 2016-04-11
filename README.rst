@@ -33,6 +33,8 @@ In addition to the libraries and tools, a Qt GUI application is provided to
 assist with visualization of data and results with the help of VTK.
 The screenshots below show the MAP-Tk GUI visualizing results of MAP-Tk
 run on example videos from the `VIRAT Video Dataset`_ and `CLIF 2007 Dataset`_.
+More information about this example data can be found in the
+`examples <examples>`_ directory.
 
 .. image:: /doc/screenshot/mapgui_screenshot_osx.png
    :alt: Mac OS X Screenshot
