@@ -6,6 +6,7 @@ set( maptk_ocv_headers_public
   descriptor_set.h
   detect_features.h
   draw_tracks.h
+  estimate_fundamental_matrix.h
   estimate_homography.h
   extract_descriptors.h
   feature_set.h
@@ -31,6 +32,7 @@ set( maptk_ocv_sources
   descriptor_set.cxx
   detect_features.cxx
   draw_tracks.cxx
+  estimate_fundamental_matrix.cxx
   estimate_homography.cxx
   extract_descriptors.cxx
   feature_set.cxx
