@@ -323,6 +323,8 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(setLandmarksVisible(bool)));
   connect(d->UI.actionShowGroundPlane, SIGNAL(toggled(bool)),
           this, SLOT(setGroundPlaneVisible(bool)));
+  connect(d->UI.actionDepthmapDisplay, SIGNAL(toggled(bool)),
+          this, SLOT(setDepthMapVisible(bool)));
 
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
@@ -677,6 +679,15 @@ void WorldView::setGroundPlaneVisible(bool state)
   QTE_D();
 
   d->groundActor->SetVisibility(state);
+  d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::setDepthMapVisible(bool state)
+{
+  QTE_D();
+
+  d->polyDataActor->SetVisibility(state);
   d->UI.renderWidget->update();
 }
 
