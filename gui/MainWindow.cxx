@@ -39,6 +39,7 @@
 
 #include "AboutDialog.h"
 #include "MatchMatrixWindow.h"
+#include "DepthMapView.h"
 #include "Project.h"
 #include "vtkMaptkCamera.h"
 
@@ -241,6 +242,8 @@ public:
   void setActiveCamera(int);
   void updateCameraView();
 
+  void updateDM();
+
   void loadImage(QString const& path, vtkMaptkCamera* camera);
 
   void setActiveTool(AbstractTool* tool);
@@ -423,6 +426,22 @@ void MainWindowPrivate::setActiveCamera(int id)
   this->activeCameraIndex = id;
   this->UI.worldView->setActiveCamera(this->cameras[id].camera);
   this->updateCameraView();
+  this->updateDM();
+}
+
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::updateDM() {
+  auto& cd = this->cameras[activeCameraIndex];
+
+  vtkMatrix4x4* m = cd.camera->GetModelTransformMatrix();
+
+  m->SetElement(0,3,0.0);
+  m->SetElement(1,3,0.0);
+  m->SetElement(2,3,0.0);
+
+  std::cout << *m << std::endl;
+
+  UI.worldView->setActiveDepthMap(activeCameraIndex,m);
 }
 
 //-----------------------------------------------------------------------------
@@ -599,6 +618,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   connect(d->UI.actionOpen, SIGNAL(triggered()), this, SLOT(openFile()));
   connect(d->UI.actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
+  connect(d->UI.actionOpenDepthmaps, SIGNAL(triggered()), this, SLOT(openFileDM()));
 
   connect(d->UI.actionExportCameras, SIGNAL(triggered()),
           this, SLOT(saveCameras()));
@@ -716,6 +736,20 @@ void MainWindow::openFiles(QStringList const& paths)
   }
 }
 
+void MainWindow::openFileDMP(const QString &path) {
+  QTE_D();
+
+    d->UI.worldView->addDepthMaps(path);
+
+}
+
+void MainWindow::openFileDMS(const QString &path) {
+  QTE_D();
+
+    d->UI.worldView->addDepthMapsSG(path);
+
+}
+
 //-----------------------------------------------------------------------------
 void MainWindow::loadProject(QString const& path)
 {
@@ -735,6 +769,14 @@ void MainWindow::loadProject(QString const& path)
   if (!project.landmarks.isEmpty())
   {
     this->loadLandmarks(project.landmarks);
+  }
+  if(!project.DMvtp.isEmpty())
+  {
+    this->openFileDMP(project.DMvtp);
+  }
+  if(!project.DMvts.isEmpty())
+  {
+    this->openFileDMS(project.DMvts);
   }
 
   if (project.cameraPath.isEmpty())
@@ -811,6 +853,7 @@ void MainWindow::loadTracks(QString const& path)
       }
 
       d->UI.actionShowMatchMatrix->setEnabled(!tracks->tracks().empty());
+//      d->UI.actionDepthMapView->setEnabled(!tracks->tracks().empty());
     }
   }
   catch (...)
@@ -1110,6 +1153,21 @@ void MainWindow::showMatchMatrix()
     window->show();
   }
 }
+
+//-----------------------------------------------------------------------------
+//void MainWindow::showDepthMapView()
+//{
+//  QTE_D();
+
+//  if (d->tracks)
+//  {
+//    //TODO: searching into right folder if there's a depthmap to show
+
+//    // Show window
+//    auto window = new DepthMapViewWindow();
+//    window->show();
+//  }
+//}
 
 //-----------------------------------------------------------------------------
 void MainWindow::setViewBackroundColor()

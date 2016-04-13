@@ -42,6 +42,8 @@ struct Project
 
   QString tracks;
   QString landmarks;
+  QString DMvtp;
+  QString DMvts;
 };
 
 #endif

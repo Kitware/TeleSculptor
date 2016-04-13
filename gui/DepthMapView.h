@@ -28,67 +28,40 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_MAINWINDOW_H_
-#define MAPTK_MAINWINDOW_H_
+#ifndef MAPTK_DepthMapView_H_
+#define MAPTK_DepthMapView_H_
+
+#include <vital/vital_types.h>
 
 #include <qtGlobal.h>
 
-#include <QMainWindow>
+#include <QtGui/QWidget>
 
-class MainWindowPrivate;
+class DepthMapViewPrivate;
 
-class MainWindow : public QMainWindow
+class DepthMapView : public QWidget
 {
   Q_OBJECT
 
 public:
-  explicit MainWindow(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~MainWindow();
+  explicit DepthMapView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  virtual ~DepthMapView();
 
 public slots:
-  void openFile();
-  void openFile(QString const& path);
-  void openFiles(QStringList const& paths);
+  void setBackgroundColor(QColor const&);
 
-  void openFileDMP(QString const& path);
+  void setActiveFrame(unsigned);
 
-  void openFileDMS(QString const& path);
-
-  void loadProject(QString const& path);
-  void loadImage(QString const& path);
-  void loadCamera(QString const& path);
-  void loadTracks(QString const& path);
-  void loadLandmarks(QString const& path);
-
-  void saveCameras();
-  void saveCameras(QString const& path);
-  void saveLandmarks();
-  void saveLandmarks(QString const& path);
-
-  void setActiveCamera(int);
-
-  void setViewBackroundColor();
-
-  void showMatchMatrix();
-
-//  void showDepthMapView();
-
-  void showAboutDialog();
-  void showUserManual();
+  void resetView();
+  void resetViewToFullExtents();
 
 protected slots:
-  void setSlideDelay(int);
-  void setSlideshowPlaying(bool);
-  void nextSlide();
-
-  void executeTool(QObject*);
-  void acceptToolResults();
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(MainWindow)
-  QTE_DECLARE_PRIVATE(MainWindow)
+  QTE_DECLARE_PRIVATE_RPTR(DepthMapView)
+  QTE_DECLARE_PRIVATE(DepthMapView)
 
-  QTE_DISABLE_COPY(MainWindow)
+  QTE_DISABLE_COPY(DepthMapView)
 };
 
 #endif

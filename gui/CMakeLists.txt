@@ -38,6 +38,8 @@ set(gui_ui
   FeatureOptions.ui
   ImageOptions.ui
   PointOptions.ui
+  DepthMapView.ui
+  DepthMapOptions.ui
 )
 
 set(gui_resources
@@ -56,8 +58,10 @@ set(gui_moc_headers
   GradientSelector.h
   ImageOptions.h
   MainWindow.h
+  DepthMapView.h
   MatchMatrixWindow.h
   PointOptions.h
+  DepthMapOptions.h
   WorldView.h
   tools/AbstractTool.h
   tools/BundleAdjustTool.h
@@ -77,8 +81,10 @@ set(gui_sources
   ImageOptions.cxx
   MainWindow.cxx
   MatchMatrixAlgorithms.cxx
+  DepthMapView.cxx
   MatchMatrixWindow.cxx
   PointOptions.cxx
+  DepthMapOptions.cxx
   Project.cxx
   WorldView.cxx
   main.cxx
@@ -144,6 +150,7 @@ target_link_libraries(mapgui
   vtkRenderingCore
   vtkCommonCore
   vtksys
+  ${VTK_LIBRARIES}
   qtExtensions
   ${QT_QTMAIN_LIBRARY}
   ${QT_LIBRARIES}

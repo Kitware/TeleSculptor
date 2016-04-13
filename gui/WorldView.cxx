@@ -37,6 +37,7 @@
 #include "FieldInformation.h"
 #include "ImageOptions.h"
 #include "PointOptions.h"
+#include "DepthMapOptions.h"
 #include "vtkMaptkCamera.h"
 #include "vtkMaptkCameraRepresentation.h"
 
@@ -60,6 +61,9 @@
 #include <vtkRenderWindow.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
+#include <vtkXMLPolyDataReader.h>
+#include <vtkXMLStructuredGridReader.h>
+//#include <vtkStructuredGridMapper.h>
 
 #include <qtMath.h>
 
@@ -122,9 +126,16 @@ public:
   ImageOptions* imageOptions;
   CameraOptions* cameraOptions;
   PointOptions* landmarkOptions;
+  DepthMapOptions* depthMapOptions;
 
   vtkNew<vtkMatrix4x4> imageProjection;
   vtkNew<vtkMatrix4x4> imageLocalTransform;
+
+  vtkNew<vtkActor> polyDataActor;
+  vtkNew<vtkActor> structuredGridActor;
+
+  std::map<int, std::string> dMList;
+  std::map<int, std::string> dMListSG;
 
   bool validImage;
   bool validTransform;
@@ -272,6 +283,12 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   connect(d->landmarkOptions, SIGNAL(modified()),
           d->UI.renderWidget, SLOT(update()));
 
+  d->depthMapOptions = new DepthMapOptions("WorldView/Depthmap", this);
+  d->setPopup(d->UI.actionDepthmapDisplay, d->depthMapOptions);
+
+  connect(d->depthMapOptions, SIGNAL(modified()),
+          d->UI.renderWidget, SLOT(update()));
+
   // Connect actions
   this->addAction(d->UI.actionViewReset);
   this->addAction(d->UI.actionViewResetLandmarks);
@@ -279,6 +296,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   this->addAction(d->UI.actionShowCameras);
   this->addAction(d->UI.actionShowLandmarks);
   this->addAction(d->UI.actionShowGroundPlane);
+  this->addAction(d->UI.actionDepthmapDisplay);
 
   connect(d->UI.actionViewReset, SIGNAL(triggered()),
           this, SLOT(resetView()));
@@ -367,6 +385,8 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->groundActor->GetProperty()->SetLighting(false);
   d->groundActor->GetProperty()->SetRepresentationToWireframe();
   d->renderer->AddActor(d->groundActor.GetPointer());
+
+
 }
 
 //-----------------------------------------------------------------------------
@@ -380,6 +400,129 @@ void WorldView::setBackgroundColor(QColor const& color)
   QTE_D();
   d->renderer->SetBackground(color.redF(), color.greenF(), color.blueF());
   d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::addDepthMaps(QString const& dMFileList)
+{
+  QTE_D();
+
+  d->UI.actionDepthmapDisplay->setEnabled(true);
+  d->UI.actionDepthmapDisplay->setChecked(true);
+
+  std::ifstream f(dMFileList.toStdString().c_str());
+  int frameNum;
+  std::string filename;
+
+  while(f >> frameNum >> filename){
+    d->dMList.insert(std::pair<int, std::string>(frameNum,filename));
+  }
+
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::addDepthMapsSG(QString const& dMFileList)
+{
+  QTE_D();
+
+  d->UI.actionDepthmapDisplay->setEnabled(true);
+  d->UI.actionDepthmapDisplay->setChecked(true);
+
+  std::ifstream f(dMFileList.toStdString().c_str());
+  int frameNum;
+  std::string filename;
+
+  while(f >> frameNum >> filename){
+    d->dMListSG.insert(std::pair<int, std::string>(frameNum,filename));
+  }
+
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::setActiveDepthMap(int numCam, vtkMatrix4x4* mat) {
+  QTE_D();
+
+  if(d->dMList.find(numCam) != d->dMList.end()){
+    std::string filename = d->dMList[numCam];
+
+    vtkNew<vtkXMLPolyDataReader> readerPoly;
+
+    readerPoly->SetFileName(filename.c_str());
+    readerPoly->Update();
+
+    std::vector<vtkIdType> vertices(readerPoly->GetOutput()->GetNumberOfPoints());
+    for (int i = 0; i < readerPoly->GetOutput()->GetNumberOfPoints(); ++i) {
+      vertices[i] = i;
+    }
+
+    vtkNew<vtkCellArray> cells;
+
+    cells->InsertNextCell(vertices.size(), &vertices[0]);
+
+    readerPoly->GetOutput()->SetVerts(cells.Get());
+
+    readerPoly->GetOutput()->GetPointData()->SetScalars(readerPoly->GetOutput()->GetPointData()->GetArray("Color"));
+    vtkNew<vtkPolyDataMapper> mapper;
+  //  mapper->SetInputConnection(reader->GetOutputPort());
+    mapper->SetInputData(readerPoly->GetOutput());
+    mapper->SetColorModeToDirectScalars();
+
+    vtkNew<vtkTransform> transform;
+
+    transform->SetMatrix(mat);
+
+    d->polyDataActor->SetMapper(mapper.Get());
+    d->polyDataActor->SetVisibility(true);
+    d->polyDataActor->GetProperty()->SetPointSize(2);
+    d->polyDataActor->SetUserTransform(transform.Get());
+    d->renderer->AddActor(d->polyDataActor.Get());
+
+    d->renderer->AddViewProp(d->polyDataActor.GetPointer());
+  }
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::setActiveDepthMapSG(int numCam, vtkMatrix4x4* mat) {
+  QTE_D();
+
+  if(d->dMListSG.find(numCam) != d->dMListSG.end()){
+    std::string filename = d->dMListSG[numCam];
+
+    vtkNew<vtkXMLStructuredGridReader> readerSG;
+
+    readerSG->SetFileName(filename.c_str());
+    readerSG->Update();
+//    std::vector<vtkIdType> vertices(readerSG->GetOutput()->GetNumberOfPoints());
+//    for (int i = 0; i < readerSG->GetOutput()->GetNumberOfPoints(); ++i) {
+//      vertices[i] = i;
+//    }
+
+//    vtkNew<vtkCellArray> cells;
+
+//    cells->InsertNextCell(vertices.size(), &vertices[0]);
+
+//    readerSG->GetOutput()->SetVerts(cells.Get());
+    vtkNew<vtkPolyData> p;
+
+//    readerSG->GetOutput()->GetPointData()->SetScalars(readerSG->GetOutput()->GetPointData()->GetArray("Color"));
+    p->CopyStructure(readerSG->GetOutputAsDataSet());
+    vtkNew<vtkPolyDataMapper> mapper;
+  //  mapper->SetInputConnection(reader->GetOutputPort());
+    mapper->SetInputData(p.Get());
+    mapper->SetColorModeToDirectScalars();
+
+    vtkNew<vtkTransform> transform;
+
+    transform->SetMatrix(mat);
+
+    d->structuredGridActor->SetMapper(mapper.Get());
+    d->structuredGridActor->SetVisibility(true);
+    d->structuredGridActor->GetProperty()->SetPointSize(2);
+    d->structuredGridActor->SetUserTransform(transform.Get());
+    d->renderer->AddActor(d->structuredGridActor.Get());
+
+    d->renderer->AddViewProp(d->structuredGridActor.GetPointer());
+  }
 }
 
 //-----------------------------------------------------------------------------
