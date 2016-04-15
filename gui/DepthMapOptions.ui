@@ -22,6 +22,9 @@
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
        <widget class="QRadioButton" name="radioPoints">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
          <string>Point Cloud</string>
         </property>
@@ -32,6 +35,9 @@
       </item>
       <item>
        <widget class="QRadioButton" name="radioSurfaces">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
          <string>Surfaces</string>
         </property>

@@ -439,9 +439,8 @@ void MainWindowPrivate::updateDM() {
   m->SetElement(1,3,0.0);
   m->SetElement(2,3,0.0);
 
-  std::cout << *m << std::endl;
-
   UI.worldView->setActiveDepthMap(activeCameraIndex,m);
+  UI.dMView->setDepthMap(activeCameraIndex);
 }
 
 //-----------------------------------------------------------------------------
@@ -618,7 +617,6 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   connect(d->UI.actionOpen, SIGNAL(triggered()), this, SLOT(openFile()));
   connect(d->UI.actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
-  connect(d->UI.actionOpenDepthmaps, SIGNAL(triggered()), this, SLOT(openFileDM()));
 
   connect(d->UI.actionExportCameras, SIGNAL(triggered()),
           this, SLOT(saveCameras()));
@@ -736,19 +734,23 @@ void MainWindow::openFiles(QStringList const& paths)
   }
 }
 
-void MainWindow::openFileDMP(const QString &path) {
+void MainWindow::openFileDM(const QString &path, std::string type) {
   QTE_D();
 
-    d->UI.worldView->addDepthMaps(path);
-
+  if(type == "vtp" || type == "vts") {
+    d->UI.worldView->addDepthMaps(path,type);
+  }
+  if (type == "vti") {
+    d->UI.dMView->addDepthMaps(path);
+  }
 }
 
-void MainWindow::openFileDMS(const QString &path) {
-  QTE_D();
+//void MainWindow::openFileDMS(const QString &path) {
+//  QTE_D();
 
-    d->UI.worldView->addDepthMapsSG(path);
+//    d->UI.worldView->addDepthMapsSG(path);
 
-}
+//}
 
 //-----------------------------------------------------------------------------
 void MainWindow::loadProject(QString const& path)
@@ -772,11 +774,15 @@ void MainWindow::loadProject(QString const& path)
   }
   if(!project.DMvtp.isEmpty())
   {
-    this->openFileDMP(project.DMvtp);
+    this->openFileDM(project.DMvtp,"vtp");
   }
   if(!project.DMvts.isEmpty())
   {
-    this->openFileDMS(project.DMvts);
+    this->openFileDM(project.DMvts,"vts");
+  }
+  if(!project.DMvti.isEmpty())
+  {
+    this->openFileDM(project.DMvti,"vti");
   }
 
   if (project.cameraPath.isEmpty())
@@ -1134,6 +1140,13 @@ void MainWindow::acceptToolResults()
     }
   }
   d->setActiveTool(0);
+}
+
+void MainWindow::updateDepthMap()
+{
+  QTE_D();
+
+  d->UI.worldView->setDepthMapVisible(true);
 }
 
 //-----------------------------------------------------------------------------

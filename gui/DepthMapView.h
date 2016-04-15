@@ -39,6 +39,10 @@
 
 class DepthMapViewPrivate;
 
+class vtkPolyData;
+
+class QMenu;
+
 class DepthMapView : public QWidget
 {
   Q_OBJECT
@@ -46,6 +50,11 @@ class DepthMapView : public QWidget
 public:
   explicit DepthMapView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
   virtual ~DepthMapView();
+  void addDepthMaps(QString const& dMFileList);
+  void setDepthMap(int numCam);
+
+signals:
+  void changeScalar(bool,int);
 
 public slots:
   void setBackgroundColor(QColor const&);
@@ -55,9 +64,14 @@ public slots:
   void resetView();
   void resetViewToFullExtents();
 
+  void setActiveScalar();
+
 protected slots:
 
 private:
+  QMenu* viewMenu;
+  std::vector<QAction*> actions;
+
   QTE_DECLARE_PRIVATE_RPTR(DepthMapView)
   QTE_DECLARE_PRIVATE(DepthMapView)
 

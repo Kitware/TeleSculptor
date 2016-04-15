@@ -50,9 +50,9 @@ public slots:
   void openFile(QString const& path);
   void openFiles(QStringList const& paths);
 
-  void openFileDMP(QString const& path);
+  void openFileDM(QString const& path, std::string type);
 
-  void openFileDMS(QString const& path);
+//  void openFileDMS(QString const& path);
 
   void loadProject(QString const& path);
   void loadImage(QString const& path);
@@ -83,6 +83,8 @@ protected slots:
 
   void executeTool(QObject*);
   void acceptToolResults();
+
+  void updateDepthMap();
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(MainWindow)
