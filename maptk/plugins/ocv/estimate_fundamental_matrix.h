@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2016 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,14 +33,14 @@
  * \brief OCV estimate_homography algorithm impl interface
  */
 
-#ifndef MAPTK_PLUGINS_OCV_ESTIMATE_HOMOGRAPHY_H_
-#define MAPTK_PLUGINS_OCV_ESTIMATE_HOMOGRAPHY_H_
+#ifndef MAPTK_PLUGINS_OCV_ESTIMATE_FUNDAMENTAL_MATRIX_H_
+#define MAPTK_PLUGINS_OCV_ESTIMATE_FUNDAMENTAL_MATRIX_H_
 
 
 #include <vital/vital_config.h>
 #include <maptk/plugins/ocv/maptk_ocv_export.h>
 
-#include <vital/algo/estimate_homography.h>
+#include <vital/algo/estimate_fundamental_matrix.h>
 
 
 namespace kwiver {
@@ -49,9 +49,9 @@ namespace maptk {
 namespace ocv
 {
 
-/// A class that using OpenCV to estimate a homography from matching 2D points
-class MAPTK_OCV_EXPORT estimate_homography
-  : public vital::algorithm_impl<estimate_homography, vital::algo::estimate_homography>
+/// A class that using OpenCV to estimate a fundamental matrix from matching 2D points
+class MAPTK_OCV_EXPORT estimate_fundamental_matrix
+  : public vital::algorithm_impl<estimate_fundamental_matrix, vital::algo::estimate_fundamental_matrix>
 {
 public:
   /// Return the name of this implementation
@@ -63,22 +63,22 @@ public:
   virtual bool check_configuration(vital::config_block_sptr /*config*/) const { return true; }
   /// \endcond
 
-  /// Estimate a homography matrix from corresponding points
+  /// Estimate a fundamental matrix from corresponding points
   /**
    * If estimation fails, a NULL-containing sptr is returned
    *
    * \param [in]  pts1 the vector or corresponding points from the source image
    * \param [in]  pts2 the vector of corresponding points from the destination image
    * \param [out] inliers for each point pair, the value is true if
-   *                      this pair is an inlier to the homography estimate
+   *                      this pair is an inlier to the fundamental matrix estimate
    * \param [in]  inlier_scale error distance tolerated for matches to be inliers
    */
-  virtual vital::homography_sptr
+  virtual vital::fundamental_matrix_sptr
   estimate(const std::vector<vital::vector_2d>& pts1,
            const std::vector<vital::vector_2d>& pts2,
            std::vector<bool>& inliers,
-           double inlier_scale = 1.0) const;
-  using vital::algo::estimate_homography::estimate;
+           double inlier_scale = 3.0) const;
+  using vital::algo::estimate_fundamental_matrix::estimate;
 
 };
 
@@ -89,4 +89,4 @@ public:
 } // end namespace kwiver
 
 
-#endif // MAPTK_PLUGINS_OCV_ESTIMATE_HOMOGRAPHY_H_
+#endif // MAPTK_PLUGINS_OCV_ESTIMATE_FUNDAMENTAL_MATRIX_H_
