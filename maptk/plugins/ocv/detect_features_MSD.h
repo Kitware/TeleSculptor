@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2016 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,56 +30,72 @@
 
 /**
  * \file
- * \brief Extended algorithm definition for OpenCV feature detector algos
+ * \brief OCV MSD feature detector wrapper
  */
 
-#ifndef MAPTK_PLUGINS_OCV_DETECT_FEATURES_H_
-#define MAPTK_PLUGINS_OCV_DETECT_FEATURES_H_
+#ifndef MAPTK_DETECT_FEATURES_MSD_H_
+#define MAPTK_DETECT_FEATURES_MSD_H_
+
+// Only available in OpenCV 3.x xfeatures2d
+#include <opencv2/opencv_modules.hpp>
+#ifdef HAVE_OPENCV_XFEATURES2D
+
+#include <memory>
+#include <string>
 
 #include <vital/vital_config.h>
-#include <vital/algo/detect_features.h>
 
+#include <maptk/plugins/ocv/detect_features.h>
 #include <maptk/plugins/ocv/maptk_ocv_export.h>
-
-#include <opencv2/features2d/features2d.hpp>
 
 namespace kwiver {
 namespace maptk {
-namespace ocv  {
+namespace ocv {
 
-/// OCV Specific base definition for algorithms that detect feature points
-/**
- * This extended algorithm_def provides a common implementation for the detect
- * method.
- */
-class MAPTK_OCV_EXPORT detect_features
-  : public kwiver::vital::algo::detect_features
+
+class MAPTK_OCV_EXPORT detect_features_MSD
+  : public vital::algorithm_impl< detect_features_MSD,
+                                  ocv::detect_features,
+                                  vital::algo::detect_features >
 {
 public:
-  /// Extract a set of image features from the provided image
-  /**
-   * A given mask image should be one-channel (mask->depth() == 1). If the
-   * given mask image has more than one channel, only the first will be
-   * considered.
-   *
-   * \param image_data contains the image data to process
-   * \param mask Mask image where regions of positive values (boolean true)
-   *             indicate regions to consider. Only the first channel will be
-   *             considered.
-   * \returns a set of image features
-   */
-  virtual vital::feature_set_sptr
-  detect(vital::image_container_sptr image_data,
-         vital::image_container_sptr mask = vital::image_container_sptr()) const;
+  /// Constructor
+  detect_features_MSD();
 
-protected:
-  /// the feature detector algorithm
-  cv::Ptr<cv::FeatureDetector> detector;
+  /// Copy constructor
+  detect_features_MSD(const detect_features_MSD &other);
+
+  /// Destructor
+  virtual ~detect_features_MSD();
+
+  /// Return the name of this implementation
+  virtual std::string impl_name() const { return "ocv_MSD"; }
+  /// Returns a descriptive string for this implementation
+  virtual std::string description() const {
+    return "OpenCV feature detection via the MSD algorithm";
+  }
+
+  /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
+  virtual vital::config_block_sptr get_configuration() const;
+  /// Set this algorithm's properties via a config block
+  virtual void set_configuration(vital::config_block_sptr config);
+  /// Check that the algorithm's configuration vital::config_block is valid
+  virtual bool check_configuration(vital::config_block_sptr config) const;
+
+private:
+  class priv;
+  std::unique_ptr<priv> const p_;
 };
+
+
+#define MAPTK_OCV_HAS_MSD
+
 
 } // end namespace ocv
 } // end namespace maptk
 } // end namespace kwiver
 
 
-#endif // MAPTK_PLUGINS_OCV_DETECT_FEATURES_H_
+#endif //HAVE_OPENCV_XFEATURES2D
+
+#endif //MAPTK_DETECT_FEATURES_MSD_H_

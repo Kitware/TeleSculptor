@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2016 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,65 +30,71 @@
 
 /**
  * \file
- * \brief OCV mat_image_memory interface
+ * \brief OCV AGAST feature detector wrapper
  */
 
-#ifndef MAPTK_PLUGINS_OCV_MAT_IMAGE_MEMORY_H_
-#define MAPTK_PLUGINS_OCV_MAT_IMAGE_MEMORY_H_
+#ifndef MAPTK_DETECT_FEATURES_AGAST_H_
+#define MAPTK_DETECT_FEATURES_AGAST_H_
 
+// Only available in OpenCV 3.x
+#ifdef MAPTK_HAS_OPENCV_VER_3
+
+#include <memory>
+#include <string>
 
 #include <vital/vital_config.h>
+
+#include <maptk/plugins/ocv/detect_features.h>
 #include <maptk/plugins/ocv/maptk_ocv_export.h>
-
-#include <vital/types/image.h>
-
-#include <opencv2/core/core.hpp>
-
 
 namespace kwiver {
 namespace maptk {
+namespace ocv {
 
-namespace ocv
-{
 
-/// An image memory class that shares memory with OpenCV using reference counting
-class MAPTK_OCV_EXPORT mat_image_memory
-  : public vital::image_memory
+class MAPTK_OCV_EXPORT detect_features_AGAST
+  : public vital::algorithm_impl< detect_features_AGAST,
+                                  ocv::detect_features,
+                                  vital::algo::detect_features >
 {
 public:
-  /// Constructor - allocates n bytes
-  mat_image_memory(const cv::Mat& m);
+  /// Constructor
+  detect_features_AGAST();
+
+  /// Copy constructor
+  detect_features_AGAST(const detect_features_AGAST &other);
 
   /// Destructor
-  virtual ~mat_image_memory();
+  virtual ~detect_features_AGAST();
 
-  /// Return a pointer to the allocated memory
-  virtual void* data() { return this->mat_data_; }
+  /// Return the name of this implementation
+  virtual std::string impl_name() const { return "ocv_AGAST"; }
+  /// Returns a descriptive string for this implementation
+  virtual std::string description() const {
+    return "OpenCV feature detection via the AGAST algorithm";
+  }
 
-  /// Return the OpenCV reference counter
-#ifndef MAPTK_HAS_OPENCV_VER_3
-  int* get_ref_counter() const { return this->mat_refcount_; }
-#else
-  cv::UMatData* get_umatdata() const { return this->u_; }
-#endif
+  /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
+  virtual vital::config_block_sptr get_configuration() const;
+  /// Set this algorithm's properties via a config block
+  virtual void set_configuration(vital::config_block_sptr config);
+  /// Check that the algorithm's configuration vital::config_block is valid
+  virtual bool check_configuration(vital::config_block_sptr config) const;
 
-protected:
-  /// The cv::Mat data
-  unsigned char* mat_data_;
-
-  /// The ref count shared with cv::Mat
-#ifndef MAPTK_HAS_OPENCV_VER_3
-  int* mat_refcount_;
-#else
-  cv::UMatData *u_;
-#endif
+private:
+  class priv;
+  std::unique_ptr<priv> const p_;
 };
 
 
-} // end namespace ocv
+#define MAPTK_OCV_HAS_AGAST
 
+
+} // end namespace ocv
 } // end namespace maptk
 } // end namespace kwiver
 
 
-#endif // MAPTK_PLUGINS_OCV_MAT_IMAGE_MEMORY_H_
+#endif //MAPTK_HAS_OPENCV_VER_3
+
+#endif //MAPTK_DETECT_FEATURES_AGAST_H_

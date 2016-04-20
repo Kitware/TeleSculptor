@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2015 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,52 +30,62 @@
 
 /**
  * \file
- * \brief OCV match_features algorithm implementation
+ * \brief OCV GFTT feature detector wrapper
  */
 
-#include "match_features.h"
+#ifndef MAPTK_DETECT_FEATURES_GFTT_H_
+#define MAPTK_DETECT_FEATURES_GFTT_H_
 
-#include <vector>
+#include <memory>
+#include <string>
 
-#include <maptk/plugins/ocv/descriptor_set.h>
-#include <maptk/plugins/ocv/match_set.h>
+#include <vital/vital_config.h>
 
-
-using namespace kwiver::vital;
+#include <maptk/plugins/ocv/detect_features.h>
+#include <maptk/plugins/ocv/maptk_ocv_export.h>
 
 namespace kwiver {
 namespace maptk {
-namespace ocv
+namespace ocv {
+
+
+class MAPTK_OCV_EXPORT detect_features_GFTT
+  : public vital::algorithm_impl< detect_features_GFTT,
+                                  ocv::detect_features,
+                                  vital::algo::detect_features >
 {
+public:
+  /// Constructor
+  detect_features_GFTT();
 
+  /// Copy constructor
+  detect_features_GFTT(const detect_features_GFTT &other);
 
-/// Match one set of features and corresponding descriptors to another
-vital::match_set_sptr
-match_features
-::match(vital::feature_set_sptr feat1, vital::descriptor_set_sptr desc1,
-        vital::feature_set_sptr feat2, vital::descriptor_set_sptr desc2) const
-{
-  // Return empty match set pointer if either of the input sets were empty
-  // pointers
-  if( !desc1 || !desc2 )
-  {
-    return vital::match_set_sptr();
-  }
-  // Only perform matching if both pointers are valid and if both descriptor
-  // sets contain non-zero elements
-  if( !desc1->size() || !desc2->size() )
-  {
-    return vital::match_set_sptr( new maptk::ocv::match_set() );
+  /// Destructor
+  virtual ~detect_features_GFTT();
+
+  /// Return the name of this implementation
+  virtual std::string impl_name() const { return "ocv_GFTT"; }
+  /// Returns a descriptive string for this implementation
+  virtual std::string description() const {
+    return "OpenCV feature detection via the GFTT algorithm";
   }
 
-  cv::Mat d1 = descriptors_to_ocv_matrix(*desc1);
-  cv::Mat d2 = descriptors_to_ocv_matrix(*desc2);
-  std::vector<cv::DMatch> matches;
-  ocv_match(d1, d2, matches);
-  return vital::match_set_sptr(new maptk::ocv::match_set(matches));
-}
+  /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
+  virtual vital::config_block_sptr get_configuration() const;
+  /// Set this algorithm's properties via a config block
+  virtual void set_configuration(vital::config_block_sptr config);
+  /// Check that the algorithm's configuration vital::config_block is valid
+  virtual bool check_configuration(vital::config_block_sptr config) const;
+
+private:
+  class priv;
+  std::unique_ptr<priv> const p_;
+};
 
 
 } // end namespace ocv
 } // end namespace maptk
 } // end namespace kwiver
+
+#endif //MAPTK_DETECT_FEATURES_GFTT_H_

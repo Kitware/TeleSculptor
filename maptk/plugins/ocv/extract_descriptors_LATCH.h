@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2016 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,51 +30,66 @@
 
 /**
  * \file
- * \brief Extended algorithm definition for OpenCV descriptor extractor algos
+ * \brief OCV LATCH descriptor extractor wrapper
  */
 
-#ifndef MAPTK_PLUGINS_OCV_EXTRACT_DESCRIPTORS_H_
-#define MAPTK_PLUGINS_OCV_EXTRACT_DESCRIPTORS_H_
+#ifndef MAPTK_EXTRACT_DESCRIPTORS_LATCH_H_
+#define MAPTK_EXTRACT_DESCRIPTORS_LATCH_H_
 
-#include <vital/vital_config.h>
-#include <vital/algo/extract_descriptors.h>
+#include <opencv2/opencv_modules.hpp>
+#ifdef HAVE_OPENCV_XFEATURES2D
 
+#include <memory>
+#include <string>
+
+#include <maptk/plugins/ocv/extract_descriptors.h>
 #include <maptk/plugins/ocv/maptk_ocv_export.h>
-
-#include <opencv2/features2d/features2d.hpp>
 
 namespace kwiver {
 namespace maptk {
 namespace ocv {
 
-/// OCV specific definition for algorithms that describe feature points
-/**
- * This extended algorithm_def provides a common implementation for the extract
- * method.
- */
-class MAPTK_OCV_EXPORT extract_descriptors
-  : public vital::algo::extract_descriptors
+
+class MAPTK_OCV_EXPORT extract_descriptors_LATCH
+  : public vital::algorithm_impl< extract_descriptors_LATCH,
+                                  ocv::extract_descriptors,
+                                  vital::algo::extract_descriptors >
 {
 public:
-  /// Extract from the image a descriptor corresponding to each feature
-  /**
-   * \param image_data contains the image data to process
-   * \param features the feature locations at which descriptors are extracted
-   * \returns a set of feature descriptors
-   */
-  virtual vital::descriptor_set_sptr
-  extract(vital::image_container_sptr image_data,
-          vital::feature_set_sptr features,
-          vital::image_container_sptr image_mask = vital::image_container_sptr()) const;
+  /// Constructor
+  extract_descriptors_LATCH();
+  /// Copy Constructor
+  extract_descriptors_LATCH( extract_descriptors_LATCH const &other );
+  /// Destructor
+  virtual ~extract_descriptors_LATCH();
 
-protected:
-  /// the descriptor extractor algorithm
-  cv::Ptr<cv::DescriptorExtractor> extractor;
+  /// Return the name of this implementation
+  virtual std::string impl_name() const { return "ocv_LATCH"; }
+  /// Returns a descriptive string for this implementation
+  virtual std::string description() const {
+    return "OpenCV feature-point descriptor extraction via the LATCH algorithm";
+  }
+
+  /// Get this algorithm's \link kwiver::vital::config_block configuration block \endlink
+  virtual vital::config_block_sptr get_configuration() const;
+  /// Set this algorithm's properties via a config block
+  virtual void set_configuration(vital::config_block_sptr config);
+  /// Check that the algorithm's configuration config_block is valid
+  virtual bool check_configuration(vital::config_block_sptr config) const;
+
+private:
+  class priv;
+  std::unique_ptr<priv> p_;
 };
+
+
+#define MAPTK_OCV_HAS_LATCH
+
 
 } // end namespace ocv
 } // end namespace maptk
 } // end namespace kwiver
 
+#endif //HAVE_OPENCV_XFEATURES2D
 
-#endif // MAPTK_PLUGINS_OCV_EXTRACT_DESCRIPTORS_H_
+#endif //MAPTK_EXTRACT_DESCRIPTORS_LATCH_H_
