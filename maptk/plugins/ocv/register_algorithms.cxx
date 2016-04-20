@@ -150,10 +150,6 @@ int register_algorithms( vital::registrar &reg )
 }
 
 
-#undef REGISTER_TYPE_OCV2
-#undef REGISTER_TYPE_OCV3
-
-
 } // end namespace ocv
 } // end namespace maptk
 } // end namespace kwiver
