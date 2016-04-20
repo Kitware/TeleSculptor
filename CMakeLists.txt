@@ -18,6 +18,10 @@ set(MAPTK_VERSION "${MAPTK_VERSION_MAJOR}.${MAPTK_VERSION_MINOR}.${MAPTK_VERSION
 string(TIMESTAMP MAPTK_COPYRIGHT_YEAR "%Y")
 
 ###
+# Needed to get fletch_DIR set early
+find_package( vital REQUIRED )
+
+###
 # Check to see if fletch directory is valid from the vital config
 #
 if ( IS_DIRECTORY ${fletch_DIR} )
