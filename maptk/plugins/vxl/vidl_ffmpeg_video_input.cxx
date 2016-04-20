@@ -54,6 +54,7 @@
 #include <mutex>
 #include <memory>
 #include <vector>
+#include <sstream>
 
 namespace kwiver {
 namespace maptk {
@@ -66,13 +67,14 @@ class vidl_ffmpeg_video_input::priv
 public:
   /// Constructor
   priv()
-    : config_start_frame( -1 ),
-      config_stop_after_frame( -1 ),
-      config_time_source( "pts, misp, klv0601, klv0104, none" ), // initialization string
+    : config_start_frame( 0 ),
+      config_stop_after_frame( 0 ),
+      config_time_source( "none" ), // initialization string
       config_time_scan_frame_limit( 100 ),
       d_have_frame( false ),
       d_at_eov( false ),
       d_have_frame_time( false ),
+      d_have_abs_frame_time( false ),
       d_have_metadata( false ),
       pts_of_meta_ts( 0.0 ),
       meta_ts( 0 ),
@@ -95,6 +97,7 @@ public:
   bool d_have_frame;
   bool d_at_eov;
   bool d_have_frame_time;
+  bool d_have_abs_frame_time;
   bool d_have_metadata;
 
   double pts_of_meta_ts;            // probably seconds
@@ -192,11 +195,7 @@ public:
     }
 
     // Determine which option has been selected to generate frame time;
-    if ( time_source == "pts" )
-    {
-      retval = pts_time();
-    }
-    else if ( time_source == "misp" )
+    if ( time_source == "misp" )
     {
       retval = misp_time();
     }
@@ -208,9 +207,16 @@ public:
     {
       retval = klv_time( kwiver::vital::video_metadata::MISB_0104 );
     }
-    else // assume "none"
+    else if ( time_source == "none" )
     {
       d_have_frame_time = false;
+      return true;              // optimized return
+    }
+    else
+    {
+      std::stringstream str;
+      str <<  "Unknown time source specified \"" << time_source << "\".";
+      throw kwiver::vital::video_config_exception( str.str() );
     }
 
     // If we have located a start time in the video, save the PTS for
@@ -244,25 +250,6 @@ public:
 
 
 // ------------------------------------------------------------------
-  bool pts_time()
-  {
-    bool retval(false);
-
-    pts_of_meta_ts = d_video_stream.current_pts();
-
-    // If the pts is zero, then assume that there is no time from video source
-    if ( 0.0 != pts_of_meta_ts )
-    {
-      LOG_DEBUG( this->d_logger, "Using pts for timestamp: " << pts_of_meta_ts );
-      d_have_frame_time = false;
-      retval = true;
-    }
-
-    return retval;
-  }
-
-
-// ------------------------------------------------------------------
   bool misp_time()
   {
     int frame_count( config_time_scan_frame_limit );
@@ -279,6 +266,7 @@ public:
         LOG_DEBUG( this->d_logger, "Found MISP frame time:" << meta_ts );
 
         d_have_frame_time = true;
+        d_have_abs_frame_time = true;
         retval = true;
       }
 
@@ -289,6 +277,7 @@ public:
     if ( 0 == d_video_stream.current_pts() )
     {
       d_have_frame_time = false;
+      d_have_abs_frame_time = false;
     }
 
     return retval;
@@ -333,6 +322,7 @@ public:
                 LOG_DEBUG( this->d_logger, "Found initial " << type << " timestamp: " << meta_ts );
 
                 d_have_frame_time = true;
+                d_have_abs_frame_time = true;
                 retval = true;
               } // has time element
             } // correct metadata type
@@ -346,6 +336,7 @@ public:
     if ( 0 == d_video_stream.current_pts() )
     {
       d_have_frame_time = false;
+      d_have_abs_frame_time = false;
     }
 
     return retval;
@@ -407,22 +398,25 @@ vidl_ffmpeg_video_input
   config->set_value( "config_stop_after_frame", d->config_stop_after_frame,
                      "Number of frames to supply. Default is all frames after start frame." );
 
-  config->set_value( "time_source", d->config_time_source,
-                     "List of sources for frame time information. This specified the desired source for the output timestamp. "
-                     "Times taht are embedded in the metadata packets are not effected. "
+  config->set_value( "absolute-time_source", d->config_time_source,
+                     "List of sources for absolute frame time information. "
+                     "This entry specifies that an absolute time is desired in the output time stamp. "
+                     "Absolute times are derived from the metadata in the video stream. "
                      "The sources are tried in order until a valid time is found. "
+                     "Valid options are \"none\", \"misp\", \"klv0601\", \"klv0104\".\n"
+                     "Where:\n"
+                     "    none - do not supply absolute time\n"
+                     "    misp - use frame embedded time stamps.\n"
+                     "    klv0601 - use klv 0601 format metadata for frame time\n"
+                     "    klv0104 - use klv 0104 format metadata for frame time"
+
+
                      "Note that when \"none\" is found in the list, it is always succeeds and no other time "
                      "source will be tried. So if \"none\" is to be used, it should be the only entry in the list."
                      "The time in the output timestamp will be marked as invalid and the HAS_FRAME_TIME "
                      "capability will be set to false. If all specified entries are tried and no valid time source is found, "
                      "no time will be returned in the output timestamp, as if \"none\" was the specified time source. "
-                     "Valid options are \"none\", \"pts\", \"misp\", \"klv0601\", \"klv0104\".\n"
-                     "Where:\n"
-                     "    none - do not supply frame time\n"
-                     "    pts - presentation time stamp.\n"
-                     "    misp - use frame embedded time stamps.\n"
-                     "    klv0601 - use klv 0601 format metadata for frame time\n"
-                     "    klv0104 - use klv 0104 format metadata for frame time" );
+    );
 
   return config;
 }
@@ -448,7 +442,6 @@ vidl_ffmpeg_video_input
 
   kwiver::vital::tokenize( config->get_value<std::string>( "time_source", d->config_time_source ),
             d->config_time_source_list, " ,", true );
-  d->config_time_source_list.push_back( "none" );
 }
 
 
@@ -468,7 +461,6 @@ vidl_ffmpeg_video_input
   VITAL_FOREACH( auto source, time_source )
   {
     if (source != "none"
-        && source != "pts"
         && source != "misp"
         && source != "klv0601"
         && source != "klv0104")
@@ -480,14 +472,15 @@ vidl_ffmpeg_video_input
 
   if ( ! valid_src )
   {
-    LOG_ERROR( m_logger, "time_source must be one of none, pts, misp, klv0601, klv0104" );
+    LOG_ERROR( m_logger, "time source must be a comma separated list of one or more "
+               "of the following strings: \"none\", \"misp\", \"klv0601\", \"klv0104\"" );
     retcode = false;
   }
 
   // validate start frame
   vital::timestamp::frame_t frame =  config->get_value<vital::timestamp::frame_t>( "start_at_frame");
-  // -1 is not set, otherwise must be greater than 1
-  if (frame != -1 && frame < 0 )
+  //  zero indicates not set, otherwise must be 1 or greater
+  if (frame < 0 )
   {
     LOG_ERROR( m_logger, "start_at_frame must be greater than 0" );
     retcode = false;
@@ -518,7 +511,7 @@ vidl_ffmpeg_video_input
   d->d_at_eov = false;
   d->d_frame_number = 1;
 
-  if ( d->config_start_frame != unsigned(-1) &&  d->config_start_frame > 1 )
+  if ( d->config_start_frame != 0 &&  d->config_start_frame > 1 )
   {
     // move stream to specified frame number
     d->d_video_stream.seek_frame( d->config_start_frame );
@@ -554,6 +547,7 @@ vidl_ffmpeg_video_input
   set_capability(vital::algo::video_input::HAS_EOV, true );
   set_capability(vital::algo::video_input::HAS_FRAME_NUMBERS, true );
   set_capability(vital::algo::video_input::HAS_FRAME_TIME, d->d_have_frame_time  );
+  set_capability(vital::algo::video_input::HAS_ABSOLUTE_FRAME_TIME, d->d_have_abs_frame_time  );
   set_capability(vital::algo::video_input::HAS_METADATA, d->d_have_metadata  );
 }
 
@@ -606,7 +600,7 @@ vidl_ffmpeg_video_input
   }
 
   unsigned int frame_num = d->d_video_stream.frame_number();
-  if( d->config_stop_after_frame < frame_num )
+  if( (d->config_stop_after_frame != 0) && (d->config_stop_after_frame < frame_num ))
   {
     d->d_at_eov = true;  // logical end of file
     return false;
