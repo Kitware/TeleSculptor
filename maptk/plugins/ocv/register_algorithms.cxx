@@ -101,6 +101,8 @@ int register_algorithms( vital::registrar &reg )
   REGISTER_TYPE( maptk::ocv::match_features_flannbased );
 
   // Conditional algorithms
+  // Source ``MAPTK_OCV_HAS_*`` symbol definitions can be found in the header
+  //  files of the algorithms referred to.
 #ifdef MAPTK_OCV_HAS_AGAST
   REGISTER_TYPE( maptk::ocv::detect_features_AGAST );
 #endif
