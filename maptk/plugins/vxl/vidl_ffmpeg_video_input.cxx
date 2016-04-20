@@ -41,6 +41,8 @@
 #include <vital/video_metadata/convert_metadata.h>
 #include <vital/vital_foreach.h>
 #include <vital/util/tokenize.h>
+#include <vital/klv/misp_time.h>
+
 
 #include <vital/klv/klv_data.h>
 
@@ -110,7 +112,6 @@ public:
   kwiver::vital::convert_metadata converter; // metadata converter object
 
   static std::mutex s_open_mutex;
-  static const std::string misp;
 
 
   // ==================================================================
@@ -168,57 +169,8 @@ public:
   }
 
 
-// ==================================================================
-//Extract the time stamp from the buffer
-  bool convertMISPmicrosectime( std::vector< unsigned char > const& buf, int64_t& ts )
-  {
-    enum MISP_time_code { MISPmicrosectime = 0,
-                          FLAG = 16,
-                          MSB_0,
-                          MSB_1,
-                          IGNORE_0,
-                          MSB_2,
-                          MSB_3,
-                          IGNORE_1,
-                          MSB_4,
-                          MSB_5,
-                          IGNORE_2,
-                          MSB_6,
-                          MSB_7,
-                          IGNORE_3,
-                          MISP_NUM_ELEMENTS };
 
-    //Check that the tag is the first thing in buf
-    for ( size_t i = 0; i < FLAG; i++ )
-    {
-      if ( buf[i] != misp[i] )
-      {
-        return false;
-      }
-    }
-
-    if ( buf.size() >= MISP_NUM_ELEMENTS )
-    {
-      ts = 0;
-
-      ts |= static_cast< int64_t > ( buf[MSB_7] );
-      ts |= static_cast< int64_t > ( buf[MSB_6] ) << 8;
-      ts |= static_cast< int64_t > ( buf[MSB_5] ) << 16;
-      ts |= static_cast< int64_t > ( buf[MSB_4] ) << 24;
-
-      ts |= static_cast< int64_t > ( buf[MSB_3] ) << 32;
-      ts |= static_cast< int64_t > ( buf[MSB_2] ) << 40;
-      ts |= static_cast< int64_t > ( buf[MSB_1] ) << 48;
-      ts |= static_cast< int64_t > ( buf[MSB_0] ) << 56;
-
-      return true;
-    }
-
-    return false;
-  } // convertMISPmicrosectime
-
-
-// ------------------------------------------------------------------
+ // ------------------------------------------------------------------
   /*
    * @brief Initialize timestamp for video.
    *
@@ -315,46 +267,14 @@ public:
   {
     int frame_count( config_time_scan_frame_limit );
     bool retval(false);
+    int64_t ts = 0;
 
     do
     {
       std::vector< unsigned char > pkt_data = d_video_stream.current_packet_data();
 
-      //Check if the data packet has enough bytes for the MISPmicrosectime packet
-      if ( pkt_data.size() < misp.length() + 13 )
+      if ( kwiver::vital::find_MISP_microsec_time(  pkt_data, ts ) )
       {
-        continue;
-      }
-
-      bool found;
-      size_t ts_location = std::string::npos;
-      size_t last = pkt_data.size() - misp.size();
-      for ( size_t i = 0; i <= last; i++ )
-      {
-        found = true;
-        for ( size_t j = 0; j < misp.size(); j++ )
-        {
-          if ( pkt_data[i + j] != misp[j] )
-          {
-            found = false;
-            break;
-          }
-        }
-
-        if ( found )
-        {
-          ts_location = i;
-          break;
-        }
-      } // end for
-
-      if ( ( std::string::npos != ts_location ) && ( ( ts_location + misp.length() + 13 ) < pkt_data.size() ) )
-      {
-        std::vector< unsigned char > MISPtime_buf( pkt_data.begin() + ts_location,
-                                                   pkt_data.begin() + ts_location + misp.length() + 13 );
-        int64_t ts = 0;
-
-        convertMISPmicrosectime( MISPtime_buf, ts );
         meta_ts = ts; // in usec
         LOG_DEBUG( this->d_logger, "Found MISP frame time:" << meta_ts );
 
@@ -435,7 +355,6 @@ public:
 
 // static open interlocking mutex
 std::mutex vidl_ffmpeg_video_input::priv::s_open_mutex;
-const std::string vidl_ffmpeg_video_input::priv::misp( "MISPmicrosectime" );
 
 
 // ==================================================================
