@@ -37,8 +37,6 @@
 
 #include <vector>
 
-#include <vital/algo/algorithm.txx>  // for INSTANTIATE_ALGORITHM_DEF macro
-
 #include <maptk/plugins/ocv/descriptor_set.h>
 #include <maptk/plugins/ocv/match_set.h>
 

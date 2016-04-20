@@ -57,7 +57,7 @@ set( maptk_ocv_sources
   draw_tracks.cxx
   estimate_homography.cxx
   extract_descriptors.cxx
-  extract_descritpors_BRIEF.cxx
+  extract_descriptors_BRIEF.cxx
   extract_descriptors_DAISY.cxx
   extract_descriptors_FREAK.cxx
   extract_descriptors_LATCH.cxx
