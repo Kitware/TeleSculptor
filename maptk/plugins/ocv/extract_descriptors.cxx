@@ -35,8 +35,6 @@
 
 #include "extract_descriptors.h"
 
-#include <vital/algo/algorithm.txx>
-
 #include <maptk/plugins/ocv/image_container.h>
 #include <maptk/plugins/ocv/feature_set.h>
 #include <maptk/plugins/ocv/descriptor_set.h>
