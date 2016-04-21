@@ -159,65 +159,6 @@ vital::landmark_map_sptr transform(vital::landmark_map_sptr landmarks,
 }
 
 
-/// Estimate a canonical coordinate transform for landmarks and cameras
-vital::similarity_d
-canonical_transform(vital::camera_map_sptr cameras,
-                    vital::landmark_map_sptr landmarks)
-{
-  using namespace maptk;
-  // find the centroid and scale of all the landmarks
-  typedef vital::landmark_map::map_landmark_t lm_map_t;
-  vital::vector_3d center(0,0,0);
-  double s=0.0;
-  vital::matrix_3x3d covar = vital::matrix_3x3d::Zero();
-  VITAL_FOREACH(const lm_map_t::value_type& p, landmarks->landmarks())
-  {
-    vital::vector_3d pt = p.second->loc();
-    center += pt;
-    covar += pt * pt.transpose();
-    s += pt.dot(pt);
-  }
-  const double num_lm = static_cast<double>(landmarks->size());
-  center /= num_lm;
-  covar /= num_lm;
-  covar -= center * center.transpose();
-  s /= num_lm;
-  s -= center.dot(center);
-  s = 1.0/std::sqrt(s);
-
-  Eigen::JacobiSVD<vital::matrix_3x3d> svd(covar, Eigen::ComputeFullV);
-  vital::matrix_3x3d rot = svd.matrixV();
-  // ensure that rot is a rotation (determinant 1)
-  rot.col(1) = rot.col(2).cross(rot.col(0)).normalized();
-
-  if(cameras->size() > 0)
-  {
-    // find the average camera center and  average up direction
-    vital::vector_3d cam_center(0,0,0);
-    vital::vector_3d cam_up(0,0,0);
-    typedef vital::camera_map::map_camera_t cam_map_t;
-    VITAL_FOREACH(const cam_map_t::value_type& p, cameras->cameras())
-    {
-      cam_center += p.second->center();
-    }
-    cam_center /= static_cast<double>(cameras->size());
-    cam_center -= center;
-    cam_center = cam_center.normalized();
-    // flip the plane normal if it points away from the cameras
-    if( cam_center.dot(rot.col(2)) < 0.0 )
-    {
-      // rotate 180 about the X-axis
-      rot.col(2) = -rot.col(2);
-      rot.col(1) = -rot.col(1);
-    }
-  }
-
-  vital::rotation_d R(rot);
-  R = R.inverse();
-  return vital::similarity_d(s, R, R*(-s*center));
-}
-
-
 /// Compute an approximate Necker reversal of cameras and landmarks
 void
 necker_reverse(vital::camera_map_sptr& cameras,
