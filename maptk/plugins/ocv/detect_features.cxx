@@ -37,7 +37,6 @@
 
 #include <vector>
 
-#include <vital/algo/algorithm.txx>
 #include <vital/exceptions/image.h>
 
 #include <maptk/plugins/ocv/feature_set.h>
