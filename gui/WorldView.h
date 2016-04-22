@@ -58,7 +58,7 @@ public:
   explicit WorldView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
   virtual ~WorldView();
 
-  void addDepthMaps(QString const& dMFileList, std::string type);
+//  void addDepthMaps(QString const& dMFileList, std::string type);
 
   std::string getActiveDepthMapType();
 public slots:
