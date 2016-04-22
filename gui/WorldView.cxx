@@ -422,39 +422,39 @@ void WorldView::setBackgroundColor(QColor const& color)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::addDepthMaps(QString const& dMFileList, std::string type)
-{
-  QTE_D();
+//void WorldView::addDepthMaps(QString const& dMFileList, std::string type)
+//{
+//  QTE_D();
 
-  d->UI.actionDepthmapDisplay->setEnabled(true);
-  d->UI.actionDepthmapDisplay->setChecked(true);
+//  std::cout << "addDepthMaps" << std::endl;
+//  d->UI.actionDepthmapDisplay->setEnabled(true);
+//  d->UI.actionDepthmapDisplay->setChecked(true);
 
-  d->depthMapOptions->enableDM(type);
+//  d->depthMapOptions->enableDM(type);
 
-  std::ifstream f(dMFileList.toStdString().c_str());
-  int frameNum;
-  std::string filename;
+//  std::ifstream f(dMFileList.toStdString().c_str());
+//  int frameNum;
+//  std::string filename;
 
-  if (type == "vtp")
-  {
-    while(f >> frameNum >> filename){
-      d->dMList.insert(std::pair<int, std::string>(frameNum,filename));
-    }
-  }
-  else if (type == "vts") {
-    while(f >> frameNum >> filename){
-      d->dMListSG.insert(std::pair<int, std::string>(frameNum,filename));
-    }
-  }
-  else if (type == "vert") {
-    while(f >> frameNum >> filename){
-      d->dMListVert.insert(std::pair<int, std::string>(frameNum,filename));
-      std::cout << "addDepthMaps" << std::endl;
-    }
-  }
+//  if (type == "vtp")
+//  {
+//    while(f >> frameNum >> filename){
+//      d->dMList.insert(std::pair<int, std::string>(frameNum,filename));
+//    }
+//  }
+//  else if (type == "vts") {
+//    while(f >> frameNum >> filename){
+//      d->dMListSG.insert(std::pair<int, std::string>(frameNum,filename));
+//    }
+//  }
+//  else if (type == "vert") {
+//    while(f >> frameNum >> filename){
+//      d->dMListVert.insert(std::pair<int, std::string>(frameNum,filename));
+//    }
+//  }
 
 
-}
+//}
 
 std::string WorldView::getActiveDepthMapType()
 {
@@ -517,6 +517,10 @@ void WorldView::setActiveDepthMap(int numCam, vtkMatrix4x4* mat, DepthMapPaths d
   cam = numCam;
   matrix = mat;
   dmp = dmpCam;
+
+  std::cout << "cam = " << cam
+            << "matrix = " << mat
+            << "dmp = " << dmp.dMpointsPath.toStdString() << std::endl;
 
   if (d->UI.actionDepthmapDisplay->isChecked() && dmp.dMpointsPath.toStdString() != "") {
     //PolyData
@@ -867,7 +871,8 @@ void WorldView::setDepthMapVisible(bool state)
   {
     d->verticesActor->SetVisibility(state);
   }
-//  setActiveDepthMap(cam,mat);
+
+  setActiveDepthMap(cam,matrix,dmp);
   d->UI.renderWidget->update();
 }
 

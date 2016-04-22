@@ -749,16 +749,16 @@ void MainWindow::openFiles(QStringList const& paths)
   }
 }
 
-void MainWindow::openFileDM(const QString &path, std::string type) {
-  QTE_D();
+//void MainWindow::openFileDM(const QString &path, std::string type) {
+//  QTE_D();
 
-  if(type == "vtp" || type == "vts" || type == "vert") {
-    d->UI.worldView->addDepthMaps(path,type);
-  }
-  if (type == "vti") {
-    d->UI.dMView->addDepthMaps(path);
-  }
-}
+//  if(type == "vtp" || type == "vts" || type == "vert") {
+//    d->UI.worldView->addDepthMaps(path,type);
+//  }
+//  if (type == "vti") {
+//    d->UI.dMView->addDepthMaps(path);
+//  }
+//}
 
 //void MainWindow::openFileDMS(const QString &path) {
 //  QTE_D();
@@ -851,6 +851,21 @@ void MainWindow::loadProject(QString const& path)
       d->cameras[camId].dmp.dMVerticesPath = project.DMvert[camId];
     }
   }
+
+  //Once every depthmap is loaded, set up the active depthmap to the first found
+  if(!project.DMvtp.isEmpty() || !project.DMvts.isEmpty()
+     || !project.DMvti.isEmpty() || !project.DMvert.isEmpty() )
+  {
+    for (int camId = 0; camId < d->cameras.size(); ++camId)
+    {
+      if (project.DMvtp.contains(camId))
+      {
+        setActiveCamera(camId);
+        break;
+      }
+    }
+  }
+
 
 
 

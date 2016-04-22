@@ -50,7 +50,7 @@ public slots:
   void openFile(QString const& path);
   void openFiles(QStringList const& paths);
 
-  void openFileDM(QString const& path, std::string type);
+//  void openFileDM(QString const& path, std::string type);
 
 //  void openFileDMS(QString const& path);
 
