@@ -440,7 +440,7 @@ void MainWindowPrivate::setActiveCamera(int id)
   m->SetElement(2,3,0.0);
 
   UI.worldView->setActiveDepthMap(activeCameraIndex,m,this->cameras[id].dmp);
-  UI.dMView->setDepthMap(this->cameras[id].dmp.dMImagePath);
+//  UI.dMView->setDepthMap(this->cameras[id].dmp.dMImagePath);
 //  this->updateDM();
 }
 
