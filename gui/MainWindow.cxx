@@ -440,6 +440,7 @@ void MainWindowPrivate::setActiveCamera(int id)
   m->SetElement(2,3,0.0);
 
   UI.worldView->setActiveDepthMap(activeCameraIndex,m,this->cameras[id].dmp);
+  UI.dMView->setDepthMap(this->cameras[id].dmp.dMImagePath);
 //  this->updateDM();
 }
 
@@ -477,7 +478,7 @@ void MainWindowPrivate::updateCameraView()
 
   // Show camera image
   this->loadImage(cd.imagePath, cd.camera);
-  //TODO: load DM
+
 
   if (!cd.camera)
   {
@@ -487,6 +488,7 @@ void MainWindowPrivate::updateCameraView()
     return;
   }
 
+  this->UI.cameraView->setFrameName(cd.imagePath);
   // Show landmarks
   this->UI.cameraView->clearLandmarks();
   if (this->landmarks)
@@ -856,6 +858,7 @@ void MainWindow::loadProject(QString const& path)
   if(!project.DMvtp.isEmpty() || !project.DMvts.isEmpty()
      || !project.DMvti.isEmpty() || !project.DMvert.isEmpty() )
   {
+    //TODO: replace this with a while loop.
     for (int camId = 0; camId < d->cameras.size(); ++camId)
     {
       if (project.DMvtp.contains(camId))
@@ -865,9 +868,6 @@ void MainWindow::loadProject(QString const& path)
       }
     }
   }
-
-
-
 
   d->UI.worldView->resetView();
 }

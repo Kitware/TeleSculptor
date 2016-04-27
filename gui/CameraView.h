@@ -56,6 +56,8 @@ public:
 
   void addFeatureTrack(kwiver::vital::track const&);
 
+  void setFrameName(QString frameName);
+
 public slots:
   void setBackgroundColor(QColor const&);
 
