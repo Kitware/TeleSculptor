@@ -29,6 +29,7 @@ DepthMapOptions::DepthMapOptions(QString const& settingsGroup,
   // Set up UI
   d->UI.setupUi(this);
 
+
   // Set up option persistence
   d->uiState.setCurrentGroup(settingsGroup);
 

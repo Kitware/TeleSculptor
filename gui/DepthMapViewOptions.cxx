@@ -4,7 +4,17 @@
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
 
-//#include <vtkActor.h>
+#include <QRadioButton>
+#include <QToolButton>
+#include <QWidgetAction>
+#include <QMenu>
+#include "DataColorOptions.h"
+
+#include <vtkImageActor.h>
+#include <vtkPointData.h>
+#include <vtkImageData.h>
+#include <vtkDataArray.h>
+
 
 //-----------------------------------------------------------------------------
 class DepthMapViewOptionsPrivate
@@ -13,10 +23,25 @@ public:
   Ui::DepthMapViewOptions UI;
   qtUiState uiState;
 
-//  QList<vtkActor*> actors;
+  vtkImageActor* imageActor;
+
+  void setPopup(QToolButton* button, QWidget* widget);
 
 };
 
+//-----------------------------------------------------------------------------
+void DepthMapViewOptionsPrivate::setPopup(QToolButton* button, QWidget* widget)
+{
+  auto const proxy = new QWidgetAction(button);
+  proxy->setDefaultWidget(widget);
+
+  auto const menu = new QMenu(button);
+  menu->addAction(proxy);
+
+  button->setMenu(menu);
+}
+
+//-----------------------------------------------------------------------------
 QTE_IMPLEMENT_D_FUNC(DepthMapViewOptions)
 
 DepthMapViewOptions::DepthMapViewOptions(QString const& settingsGroup,
@@ -27,18 +52,17 @@ DepthMapViewOptions::DepthMapViewOptions(QString const& settingsGroup,
 
   // Set up UI
   d->UI.setupUi(this);
+  layout = new QFormLayout();
+  d->UI.groupBox->setLayout(layout);
 
   // Set up option persistence
   d->uiState.setCurrentGroup(settingsGroup);
 
   d->uiState.restore();
 
+  bGroup = new QButtonGroup(d->UI.groupBox);
   // Connect signals/slots
-//  connect(d->UI.radioPoints, SIGNAL(toggled(bool)),
-//          this, SLOT(switchPointsVisible(bool)));
 
-//  connect(d->UI.radioSurfaces, SIGNAL(toggled(bool)),
-//          this, SLOT(switchSurfacesVisible(bool)));
 }
 
 DepthMapViewOptions::~DepthMapViewOptions()
@@ -47,61 +71,90 @@ DepthMapViewOptions::~DepthMapViewOptions()
   d->uiState.save();
 }
 
-//void DepthMapOptions::addActor(vtkActor* actor)
-//{
-//  QTE_D();
+void DepthMapViewOptions::addDepthMapMode(std::string name, bool needGradient)
+{
+  QTE_D();
 
-//  d->actors.append(actor);
-//}
+  QRadioButton *scalar = new QRadioButton(QString::fromStdString(name));
 
-//void DepthMapOptions::switchPointsVisible(bool state)
-//{
-//  QTE_D();
+  if (needGradient){
+    QToolButton *gradient = new QToolButton();
+    DataColorOptions *dataColorOptions = new DataColorOptions("DepthMapViewOptions/"+QString::fromStdString(name),
+                                                              this);
+    d->setPopup(gradient, dataColorOptions);
+    layout->addRow(scalar,gradient);
+    gradient->setIcon(dataColorOptions->icon());
+  }
+  else {
+    layout->addRow(scalar);
+  }
 
-//  d->actors[0]->SetVisibility(state);
 
-//  emit this->depthMapChanged();
-//}
 
-//void DepthMapOptions::switchSurfacesVisible(bool state)
-//{
-//  QTE_D();
-//  std::cout << "toggled" << std::endl;
-//  d->actors[1]->SetVisibility(state);
+//  d->UI.groupBox->layout()->addWidget(button);
 
-//  emit this->depthMapChanged();
-//}
+  scalar->setVisible(true);
+  scalar->setEnabled(true);
+  scalar->setCheckable(true);
 
-//void DepthMapOptions::enablePoints()
-//{
-//  QTE_D();
+  bGroup->addButton(scalar,bGroup->buttons().size());
 
-//  d->UI.radioPoints->setEnabled(true);
-//  d->UI.radioPoints->setChecked(true);
-//}
+  connect(scalar, SIGNAL(toggled(bool)),
+          this, SLOT(switchDisplayMode(bool)));
 
-//void DepthMapOptions::enableSurfaces()
-//{
-//  QTE_D();
+//  connect(dataColorOptions, SIGNAL(modified()), this, SIGNAL(modified()));
 
-//  d->UI.radioSurfaces->setEnabled(true);
+  if (!bGroup->button(0)->isChecked())
+  {
+      bGroup->button(0)->setChecked(true);
+  }
 
-//  if(!d->UI.radioPoints->isEnabled())
-//    d->UI.radioSurfaces->setChecked(true);
-//}
+}
 
-//bool DepthMapOptions::isPointsChecked()
-//{
-//  QTE_D();
+void DepthMapViewOptions::switchDisplayMode(bool checked)
+{
+  QTE_D();
 
-////  emit this->depthMapChanged();
-//  return d->UI.radioPoints->isChecked();
-//}
+  //This way it's only triggered on the checked event and not on the unchecked too
+  if (checked)
+  {
+    int buttonId = bGroup->checkedId();
+    std::cout << "buttonId = " << buttonId <<std::endl;
+    //Displaying the scalar array associated with the checked radio button
+    d->imageActor->GetInput()->GetPointData()
+        ->SetScalars(d->imageActor->GetInput()
+                     ->GetPointData()->GetArray(buttonId));
 
-//bool DepthMapOptions::isSurfacesChecked()
-//{
-//  QTE_D();
+    emit this->modified();
+  }
+}
 
-////  emit this->depthMapChanged();
-//  return d->UI.radioSurfaces->isChecked();
-//}
+void DepthMapViewOptions::addActor(vtkImageActor *actor)
+{
+  QTE_D();
+
+  bool needGradient;
+  d->imageActor = actor;
+
+  for (int i = 0; i < d->imageActor->GetInput()->GetPointData()->GetNumberOfArrays(); ++i)
+  {
+    if(d->imageActor->GetInput()->GetPointData()->GetArray(i)->GetNumberOfComponents() == 3)
+    {
+      needGradient = false;
+    }
+    else
+    {
+      needGradient = true;
+    }
+
+    addDepthMapMode(d->imageActor->GetInput()->GetPointData()->GetArrayName(i),needGradient);
+  }
+}
+
+void DepthMapViewOptions::cleanModes()
+{
+  for (int i = 0; i < bGroup->buttons().size(); ++i) {
+    bGroup->removeButton(bGroup->button(i));
+  }
+}
+

@@ -105,81 +105,112 @@ bool Project::read(QString const& path)
     }
 
     //Read depthmap points list
-    auto const& vtpFilePath = config->get_value<std::string>("depthmaps_points_file");
-    QFile vtpFile(base.filePath(qtString(vtpFilePath)));
-    if (vtpFile.open(QIODevice::ReadOnly | QIODevice::Text))
-    {
-      QTextStream vtpStream(&vtpFile);
-      int frameNum;
-      QString fileName;
-      while (!vtpStream.atEnd())
+    std::string vtpFilePath;
+    try {
+      vtpFilePath = config->get_value<std::string>("depthmaps_points_file");
+    } catch (...) {
+    }
+
+    if (!vtpFilePath.empty()) {
+      QFile vtpFile(base.filePath(qtString(vtpFilePath)));
+      if (vtpFile.open(QIODevice::ReadOnly | QIODevice::Text))
       {
-        vtpStream >> frameNum >> fileName;
-        if (!DMvtp.contains(frameNum))
+        QTextStream vtpStream(&vtpFile);
+        int frameNum;
+        QString fileName;
+        while (!vtpStream.atEnd())
         {
-          DMvtp.insert(frameNum,fileName);
+          vtpStream >> frameNum >> fileName;
+          if (!DMvtp.contains(frameNum))
+          {
+            DMvtp.insert(frameNum,fileName);
+          }
         }
       }
+      vtpFile.close();
     }
-    vtpFile.close();
 
     //Read depthmap surfaces list
-    auto const& vtsFilePath = config->get_value<std::string>("depthmaps_surfaces_file");
-    QFile vtsFile(base.filePath(qtString(vtsFilePath)));
-    if (vtsFile.open(QIODevice::ReadOnly | QIODevice::Text))
-    {
-      QTextStream vtsStream(&vtsFile);
-      int frameNum;
-      QString fileName;
-      while (!vtsStream.atEnd())
+    std::string vtsFilePath;
+    try {
+
+      vtsFilePath = config->get_value<std::string>("depthmaps_surfaces_file");
+    } catch (...) {
+    }
+
+    if (!vtpFilePath.empty()) {
+      QFile vtsFile(base.filePath(qtString(vtsFilePath)));
+      if (vtsFile.open(QIODevice::ReadOnly | QIODevice::Text))
       {
-        vtsStream >> frameNum >> fileName;
-        if (!DMvts.contains(frameNum))
+        QTextStream vtsStream(&vtsFile);
+        int frameNum;
+        QString fileName;
+        while (!vtsStream.atEnd())
         {
-          DMvts.insert(frameNum,fileName);
+          vtsStream >> frameNum >> fileName;
+          if (!DMvts.contains(frameNum))
+          {
+            DMvts.insert(frameNum,fileName);
+          }
         }
       }
+      vtsFile.close();
     }
-    vtsFile.close();
 
     //Read depthmap images list
-    auto const& vtiFilePath = config->get_value<std::string>("depthmaps_images_file");
-    QFile vtiFile(base.filePath(qtString(vtiFilePath)));
-    if (vtiFile.open(QIODevice::ReadOnly | QIODevice::Text))
-    {
-      QTextStream vtiStream(&vtiFile);
-      int frameNum;
-      QString fileName;
-      while (!vtiStream.atEnd())
+    std::string vtiFilePath;
+    try {
+
+      vtiFilePath = config->get_value<std::string>("depthmaps_images_file");
+    } catch (...) {
+    }
+
+    if (!vtiFilePath.empty()) {
+      QFile vtiFile(base.filePath(qtString(vtiFilePath)));
+      if (vtiFile.open(QIODevice::ReadOnly | QIODevice::Text))
       {
-        vtiStream >> frameNum >> fileName;
-        if (!DMvti.contains(frameNum))
+        QTextStream vtiStream(&vtiFile);
+        int frameNum;
+        QString fileName;
+        while (!vtiStream.atEnd())
         {
-          DMvti.insert(frameNum,fileName);
+          vtiStream >> frameNum >> fileName;
+          if (!DMvti.contains(frameNum))
+          {
+            DMvti.insert(frameNum,fileName);
+          }
         }
       }
+      vtiFile.close();
     }
-    vtiFile.close();
 
     //Read depthmap vertices list
-    auto const& vertFilePath = config->get_value<std::string>("depthmaps_vertices_file");
-    QFile vertFile(base.filePath(qtString(vertFilePath)));
-    if (vertFile.open(QIODevice::ReadOnly | QIODevice::Text))
-    {
-      QTextStream vertStream(&vertFile);
-      int frameNum;
-      QString fileName;
-      while (!vertStream.atEnd())
+    std::string vertFilePath;
+    try {
+
+      vertFilePath = config->get_value<std::string>("depthmaps_vertices_file");
+    } catch (...) {
+    }
+    if (!vertFilePath.empty()) {
+      QFile vertFile(base.filePath(qtString(vertFilePath)));
+      if (vertFile.open(QIODevice::ReadOnly | QIODevice::Text))
       {
-        vertStream >> frameNum >> fileName;
-        if (!DMvert.contains(frameNum))
+        QTextStream vertStream(&vertFile);
+        int frameNum;
+        QString fileName;
+        while (!vertStream.atEnd())
         {
-          DMvert.insert(frameNum,fileName);
+          vertStream >> frameNum >> fileName;
+          if (!DMvert.contains(frameNum))
+          {
+            DMvert.insert(frameNum,fileName);
+          }
         }
       }
+      vertFile.close();
     }
-    vertFile.close();
 
+    std::cout << "after ifs" << std::endl;
 
 
     return true;
