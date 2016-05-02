@@ -107,19 +107,6 @@ vital::landmark_map_sptr transform(vital::landmark_map_sptr landmarks,
                                    const vital::similarity_d& xform);
 
 
-/// Estimate a canonical coordinate transform for landmarks and cameras
-/**
- * Center landmarks about the origin with unit average scale,
- * orient the average camera principal axis to the -Z axis and
- * the average camera up vector to Y axis.
- * \note This assumes most cameras are viewing from the same side of
- *       3D landmarks and have similar up directions.
- */
-MAPTK_EXPORT
-vital::similarity_d
-canonical_transform(vital::camera_map_sptr cameras,
-                    vital::landmark_map_sptr landmarks);
-
 /// Compute an approximate Necker reversal of cameras and landmarks
 /**
  * This operation help restart bundle adjustment after falling into
