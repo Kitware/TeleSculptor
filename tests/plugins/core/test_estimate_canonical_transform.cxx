@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015-2016 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,32 +28,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_CANONICALTRANSFORMTOOL_H_
-#define MAPTK_CANONICALTRANSFORMTOOL_H_
+#include <test_common.h>
 
-#include "AbstractTool.h"
+#include <maptk/plugins/core/register_algorithms.h>
+#include <maptk/plugins/core/estimate_canonical_transform.h>
 
-class CanonicalTransformToolPrivate;
 
-class CanonicalTransformTool : public AbstractTool
+#define TEST_ARGS ()
+
+DECLARE_TEST_MAP();
+
+int
+main(int argc, char* argv[])
 {
-  Q_OBJECT
+  CHECK_ARGS(1);
 
-public:
-  explicit CanonicalTransformTool(QObject* parent = 0);
-  virtual ~CanonicalTransformTool();
+  kwiver::maptk::core::register_algorithms();
 
-  virtual Outputs outputs() const QTE_OVERRIDE;
+  testname_t const testname = argv[1];
 
-  virtual bool execute(QWidget* window = 0) QTE_OVERRIDE;
+  RUN_TEST(testname);
+}
 
-protected:
-  virtual void run() QTE_OVERRIDE;
 
-private:
-  QTE_DECLARE_PRIVATE_RPTR(CanonicalTransformTool)
-  QTE_DECLARE_PRIVATE(CanonicalTransformTool)
-  QTE_DISABLE_COPY(CanonicalTransformTool)
-};
-
-#endif
+IMPLEMENT_TEST(create)
+{
+  using namespace kwiver::vital;
+  algo::estimate_canonical_transform_sptr est_can_tfm
+      = algo::estimate_canonical_transform::create("core_pca");
+  if (!est_can_tfm)
+  {
+    TEST_ERROR("Unable to create core::estimate_canonical_transform by name");
+  }
+}

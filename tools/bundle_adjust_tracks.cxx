@@ -46,6 +46,7 @@
 #include <vital/config/config_block_io.h>
 
 #include <vital/algo/bundle_adjust.h>
+#include <vital/algo/estimate_canonical_transform.h>
 #include <vital/algo/estimate_similarity_transform.h>
 #include <vital/algo/geo_map.h>
 #include <vital/algo/initialize_cameras_landmarks.h>
@@ -190,6 +191,8 @@ static kwiver::vital::config_block_sptr default_config()
                                                kwiver::vital::algo::geo_map_sptr());
   kwiver::vital::algo::estimate_similarity_transform::get_nested_algo_configuration("st_estimator", config,
                                                                      kwiver::vital::algo::estimate_similarity_transform_sptr());
+  kwiver::vital::algo::estimate_canonical_transform::get_nested_algo_configuration("can_tfm_estimator", config,
+                                                                     kwiver::vital::algo::estimate_canonical_transform_sptr());
 
   return config;
 }
@@ -277,6 +280,14 @@ static bool check_config(kwiver::vital::config_block_sptr config)
       MAPTK_CONFIG_FAIL("Failed config check in st_estimator algorithm.");
     }
   }
+  if (config->has_value("can_tfm_estimator:type") && config->get_value<std::string>("can_tfm_estimator:type") != "")
+  {
+    if (!kwiver::vital::algo::estimate_canonical_transform::check_nested_algo_configuration("can_tfm_estimator", config))
+    {
+      MAPTK_CONFIG_FAIL("Failed config check in can_tfm_estimator algorithm.");
+    }
+  }
+
 
 #undef MAPTK_CONFIG_FAIL
 
@@ -617,6 +628,7 @@ static int maptk_main(int argc, char const* argv[])
   kwiver::vital::algo::triangulate_landmarks_sptr triangulator;
   kwiver::vital::algo::geo_map_sptr geo_mapper;
   kwiver::vital::algo::estimate_similarity_transform_sptr st_estimator;
+  kwiver::vital::algo::estimate_canonical_transform_sptr can_tfm_estimator;
 
   // If -c/--config given, read in confg file, merge in with default just generated
   if( ! opt_config.empty() )
@@ -634,6 +646,7 @@ static int maptk_main(int argc, char const* argv[])
   kwiver::vital::algo::initialize_cameras_landmarks::set_nested_algo_configuration("initializer", config, initializer);
   kwiver::vital::algo::geo_map::set_nested_algo_configuration("geo_mapper", config, geo_mapper);
   kwiver::vital::algo::estimate_similarity_transform::set_nested_algo_configuration("st_estimator", config, st_estimator);
+  kwiver::vital::algo::estimate_canonical_transform::set_nested_algo_configuration("can_tfm_estimator", config, can_tfm_estimator);
 
   //std::cerr << "[DEBUG] Config AFTER set:" << std::endl;
   //print_config(config);
@@ -650,6 +663,7 @@ static int maptk_main(int argc, char const* argv[])
     kwiver::vital::algo::initialize_cameras_landmarks::get_nested_algo_configuration("initializer", config, initializer);
     kwiver::vital::algo::geo_map::get_nested_algo_configuration("geo_mapper", config, geo_mapper);
     kwiver::vital::algo::estimate_similarity_transform::get_nested_algo_configuration("st_estimator", config, st_estimator);
+    kwiver::vital::algo::estimate_canonical_transform::get_nested_algo_configuration("can_tfm_estimator", config, can_tfm_estimator);
 
     //std::cerr << "[DEBUG] Given config output target: "
     //          << opt_out_config << std::endl;
@@ -904,7 +918,7 @@ static int maptk_main(int argc, char const* argv[])
   // The effect of this is to put the refined cameras and landmarks into the
   // same coordinate system as the input cameras / reference points.
   //
-  if (st_estimator)
+  if (st_estimator || can_tfm_estimator)
   {
     kwiver::vital::scoped_cpu_timer t_1( "--> st estimation and application" );
     std::cerr << "Estimating similarity transform from post-SBA to original space"
@@ -937,7 +951,7 @@ static int maptk_main(int argc, char const* argv[])
                 << "SBA-space ref landmarks)" << std::endl;
       sim_transform = st_estimator->estimate_transform(sba_space_landmarks, reference_landmarks);
     }
-    else if (input_cam_map->size() > 0)
+    else if (st_estimator && input_cam_map->size() > 0)
     {
       kwiver::vital::scoped_cpu_timer t_2( "    similarity transform estimation from camera" );
 
@@ -945,10 +959,10 @@ static int maptk_main(int argc, char const* argv[])
                 << "(from input cameras)" << std::endl;
       sim_transform = st_estimator->estimate_transform(cam_map, input_cam_map);
     }
-    else
+    else if (can_tfm_estimator)
     {
       // In the absence of other information, use a canonical transformation
-      sim_transform = kwiver::maptk::canonical_transform(cam_map, lm_map);
+      sim_transform = can_tfm_estimator->estimate_transform(cam_map, lm_map);
     }
 
     std::cerr << "--> Estimated Transformation: " << sim_transform

@@ -5,6 +5,7 @@ set( plugin_core_headers
   close_loops_multi_method.h
   compute_ref_homography_core.h
   convert_image_bypass.h
+  estimate_canonical_transform.h
   filter_features_magnitude.h
   hierarchical_bundle_adjust.h
   initialize_cameras_landmarks.h
@@ -27,6 +28,7 @@ set( plugin_core_sources
   close_loops_multi_method.cxx
   compute_ref_homography_core.cxx
   convert_image_bypass.cxx
+  estimate_canonical_transform.cxx
   filter_features_magnitude.cxx
   hierarchical_bundle_adjust.cxx
   initialize_cameras_landmarks.cxx
