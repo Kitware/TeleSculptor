@@ -30,7 +30,7 @@
 
 /**
  * \file
- * \brief OCV estimate_homography algorithm impl interface
+ * \brief OCV estimate_fundamental_matrix algorithm impl interface
  */
 
 #ifndef MAPTK_PLUGINS_OCV_ESTIMATE_FUNDAMENTAL_MATRIX_H_

@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,7 @@
 #include <test_common.h>
 #include <test_math.h>
 #include <test_scene.h>
+#include <test_random_point.h>
 
 #include <maptk/projected_track_set.h>
 #include <maptk/metrics.h>
@@ -131,7 +132,7 @@ IMPLEMENT_TEST(ideal_points)
     pts2.push_back(trks[i]->find(frame2)->feat->loc());
   }
 
-  // print the epipolar distances using this essential matrix
+  // print the epipolar distances using this fundamental matrix
   print_epipolar_distances(true_F->matrix(), pts1, pts2);
 
   // compute the fundmental matrix from the corresponding points
@@ -157,7 +158,7 @@ IMPLEMENT_TEST(ideal_points)
 }
 
 
-// test essential matrix estimation with noisy points
+// test fundamental matrix estimation with noisy points
 IMPLEMENT_TEST(noisy_points)
 {
   using namespace kwiver::maptk;
@@ -199,7 +200,7 @@ IMPLEMENT_TEST(noisy_points)
 
   print_epipolar_distances(true_F->matrix(), pts1, pts2);
 
-  // compute the essential matrix from the corresponding points
+  // compute the fundamental matrix from the corresponding points
   std::vector<bool> inliers;
   fundamental_matrix_sptr F_sptr = est_f.estimate(pts1, pts2,
                                                 inliers, 1.5);
@@ -218,6 +219,81 @@ IMPLEMENT_TEST(noisy_points)
   unsigned num_inliers = static_cast<unsigned>(std::count(inliers.begin(),
                                                           inliers.end(), true));
   std::cout << "num inliers "<<num_inliers<<std::endl;
+  bool enough_inliers = num_inliers > pts1.size() / 2;
+  TEST_EQUAL("Enough inliers", enough_inliers, true);
+}
+
+
+
+// test fundamental matrix estimation with outliers
+IMPLEMENT_TEST(outlier_points)
+{
+  using namespace kwiver::maptk;
+  ocv::estimate_fundamental_matrix est_f;
+
+  // create landmarks at the random locations
+  landmark_map_sptr landmarks = testing::init_landmarks(100);
+  landmarks = testing::noisy_landmarks(landmarks, 1.0);
+
+  // create a camera sequence (elliptical path)
+  camera_map_sptr cameras = testing::camera_seq();
+
+  // create tracks from the projections
+  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+
+  // add random noise to track image locations
+  tracks = testing::noisy_tracks(tracks, 0.5);
+
+  const frame_id_t frame1 = 0;
+  const frame_id_t frame2 = 10;
+
+  camera_map::map_camera_t cams = cameras->cameras();
+  camera_sptr cam1 = cams[frame1];
+  camera_sptr cam2 = cams[frame2];
+  camera_intrinsics_sptr cal1 = cam1->intrinsics();
+  camera_intrinsics_sptr cal2 = cam2->intrinsics();
+
+  // compute the true fundamental matrix from the cameras
+  fundamental_matrix_sptr true_F = fundamental_matrix_from_cameras(*cam1, *cam2);
+
+  // extract coresponding image points
+  std::vector<track_sptr> trks = tracks->tracks();
+  std::vector<vector_2d> pts1, pts2;
+  for(unsigned int i=0; i<trks.size(); ++i)
+  {
+    if (i % 3 == 0)
+    {
+      pts1.push_back(testing::random_point2d(1000.0));
+      pts2.push_back(testing::random_point2d(1000.0));
+    }
+    else
+    { 
+      pts1.push_back(trks[i]->find(frame1)->feat->loc());
+      pts2.push_back(trks[i]->find(frame2)->feat->loc());
+    }
+  }
+
+  print_epipolar_distances(true_F->matrix(), pts1, pts2);
+
+  // compute the fundamental matrix from the corresponding points
+  std::vector<bool> inliers;
+  fundamental_matrix_sptr F_sptr = est_f.estimate(pts1, pts2,
+                                                  inliers, 1.5);
+  matrix_3x3d F = F_sptr->matrix();
+  // check for sign difference
+  if( true_F->matrix().cwiseProduct(F).sum() < 0.0 )
+  {
+    F *= -1;
+  }
+
+  // compare true and computed fundamental matrices
+  std::cout << "true F = "<<*true_F<<std::endl;
+  std::cout << "Estimated F = "<< F <<std::endl;
+  TEST_NEAR("Fundamental Matrix Estimate", F, true_F->matrix(), 0.01);
+
+  unsigned num_inliers = static_cast<unsigned>(std::count(inliers.begin(),
+                                                          inliers.end(), true));
+  std::cout << "num inliers "<<num_inliers<<" out of "<<pts1.size()<<" points."<<std::endl;
   bool enough_inliers = num_inliers > pts1.size() / 3;
   TEST_EQUAL("Enough inliers", enough_inliers, true);
 }
