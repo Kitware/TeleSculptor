@@ -1,0 +1,24 @@
+MAPTK Release Notes for changes pending release approval by AFRL
+================================================================
+
+This file documents release notes for changes made to MAP-Tk which require
+public release approval from AFRL.  After approval, the changes and
+corresponding notes below will be incorporated into a public numbered
+release version, and the content of this file will be reset.
+
+
+Updates since last public release
+---------------------------------
+
+Scripts
+
+ * Added a Python script which uses OpenCV to produce mosaicked images of
+   video frames using the homographies produced by maptk_track_features.
+
+
+ Fixes since last public release
+-------------------------------
+
+Added an opencv fundamental matrix estimation wrapper. OpenCV can estimate a 
+fundamental matrix with the presence of outliers using RANSAC and can therefore
+be used as part of a matching algorithm.

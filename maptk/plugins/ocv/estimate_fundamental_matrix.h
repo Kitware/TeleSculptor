@@ -54,14 +54,26 @@ class MAPTK_OCV_EXPORT estimate_fundamental_matrix
   : public vital::algorithm_impl<estimate_fundamental_matrix, vital::algo::estimate_fundamental_matrix>
 {
 public:
+    /// Constructor
+  estimate_fundamental_matrix();
+
+  /// Destructor
+  virtual ~estimate_fundamental_matrix();
+
+  /// Copy Constructor
+  estimate_fundamental_matrix(const estimate_fundamental_matrix& other);
+  
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "ocv"; }
 
-  // No configuration yet for this class
-  /// \cond DoxygenSuppress
-  virtual void set_configuration(vital::config_block_sptr /*config*/) { }
-  virtual bool check_configuration(vital::config_block_sptr /*config*/) const { return true; }
-  /// \endcond
+  /// Get this algorithm's \link vital::config_block configuration block \endlink
+  virtual vital::config_block_sptr get_configuration() const;
+
+  /// Set this algorithm's properties via a config block
+  virtual void set_configuration(vital::config_block_sptr config);
+
+  /// Check that the algorithm's configuration config_block is valid
+  virtual bool check_configuration(vital::config_block_sptr config) const;
 
   /// Estimate a fundamental matrix from corresponding points
   /**
@@ -80,6 +92,10 @@ public:
            double inlier_scale = 3.0) const;
   using vital::algo::estimate_fundamental_matrix::estimate;
 
+private:
+  /// private implementation class
+  class priv;
+  const std::unique_ptr<priv> d_;
 };
 
 

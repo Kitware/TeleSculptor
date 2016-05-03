@@ -46,6 +46,87 @@ namespace maptk {
 namespace ocv
 {
 
+/// Private implementation class
+class estimate_fundamental_matrix::priv
+{
+public:
+  /// Constructor
+  priv()
+    : confidence_threshold(0.99)
+  {
+  }
+
+  priv(const priv& other)
+    : confidence_threshold(other.confidence_threshold)
+  {
+  }
+
+  double confidence_threshold;
+};
+
+
+/// Constructor
+estimate_fundamental_matrix
+::estimate_fundamental_matrix()
+: d_(new priv)
+{
+}
+
+
+/// Copy Constructor
+estimate_fundamental_matrix
+::estimate_fundamental_matrix(const estimate_fundamental_matrix& other)
+: d_(new priv(*other.d_))
+{
+}
+
+
+/// Destructor
+estimate_fundamental_matrix
+::~estimate_fundamental_matrix()
+{
+}
+
+/// Get this algorithm's \link vital::config_block configuration block \endlink
+vital::config_block_sptr
+estimate_fundamental_matrix
+::get_configuration() const
+{
+  // get base config from base class
+  vital::config_block_sptr config =
+      vital::algo::estimate_fundamental_matrix::get_configuration();
+
+  config->set_value("confidence_threshold", d_->confidence_threshold,
+                    "Confidence that estimated matrix is correct, range (0.0, 1.0]");
+
+  return config;
+}
+
+
+/// Set this algorithm's properties via a config block
+void
+estimate_fundamental_matrix
+::set_configuration(vital::config_block_sptr config)
+{
+  d_->confidence_threshold = config->get_value<double>("confidence_threshold", d_->confidence_threshold);
+}
+
+
+/// Check that the algorithm's configuration vital::config_block is valid
+bool
+estimate_fundamental_matrix
+::check_configuration(vital::config_block_sptr config) const
+{
+  double confidence_threshold = config->get_value<double>("confidence_threshold", d_->confidence_threshold);
+  if( confidence_threshold <= 0.0 || confidence_threshold > 1.0 )
+  {
+    std::cerr << "confidence_threshold parameter is " << confidence_threshold << ", needs to be in (0.0, 1.0]." << std::endl;
+    return false;
+  }
+
+  return true;
+}
+
 
 /// Estimate a fundamental matrix from corresponding points
 vital::fundamental_matrix_sptr
@@ -77,7 +158,7 @@ estimate_fundamental_matrix
   cv::Mat F = cv::findFundamentalMat( cv::Mat(points1), cv::Mat(points2),
                                       CV_FM_RANSAC,
                                       inlier_scale,
-                                      0.99, //confidence threshold
+                                      d_->confidence_threshold,
                                       inliers_mat );
   inliers.resize(inliers_mat.rows);
   for(unsigned i = 0; i < inliers.size(); ++i)
