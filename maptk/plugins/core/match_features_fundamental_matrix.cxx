@@ -64,7 +64,11 @@ public:
   priv(const priv& other)
   : inlier_scale(other.inlier_scale),
     min_required_inlier_count(other.min_required_inlier_count),
-    min_required_inlier_percent(other.min_required_inlier_percent)
+    min_required_inlier_percent(other.min_required_inlier_percent),
+    matcher_(!other.matcher_ ? algo::match_features_sptr()
+                             : other.matcher_->clone()),
+    f_estimator_(!other.f_estimator_ ? algo::estimate_fundamental_matrix_sptr()
+                                   : other.f_estimator_->clone())
   {
   }
 
@@ -76,6 +80,12 @@ public:
 
   // min inlier percent required to make any matches
   double min_required_inlier_percent;
+
+    /// The feature matching algorithm to use
+  vital::algo::match_features_sptr matcher_;
+
+  /// The fundamental matrix estimation algorithm to use
+  vital::algo::estimate_fundamental_matrix_sptr f_estimator_;
 };
 
 
@@ -90,13 +100,7 @@ match_features_fundamental_matrix
 /// Copy Constructor
 match_features_fundamental_matrix
 ::match_features_fundamental_matrix(const match_features_fundamental_matrix& other)
-: d_(new priv(*other.d_)),
-  matcher_(!other.matcher_ ? algo::match_features_sptr()
-                             : other.matcher_->clone()),
-  f_estimator_(!other.f_estimator_ ? algo::estimate_fundamental_matrix_sptr()
-                                   : other.f_estimator_->clone()),
-  feature_filter_(!other.feature_filter_ ? algo::filter_features_sptr()
-                                         : other.feature_filter_->clone())
+: d_(new priv(*other.d_))
 {
 }
 
@@ -115,8 +119,8 @@ match_features_fundamental_matrix
 {
   vital::config_block_sptr config = algorithm::get_configuration();
   config->set_value("inlier_scale", d_->inlier_scale,
-                    "The acceptable error distance (in pixels) between warped "
-                    "and measured points to be considered an inlier match.");
+                    "The acceptable error distance (in pixels) between a measured point "
+                    "and its epipolar line to be considered an inlier match.");
   config->set_value("min_required_inlier_count", d_->min_required_inlier_count,
                     "The minimum required inlier point count. If there are less "
                     "than this many inliers, no matches will be returned.");
@@ -127,11 +131,9 @@ match_features_fundamental_matrix
 
   // nested algorithm configurations
   vital::algo::estimate_fundamental_matrix::get_nested_algo_configuration("fundamental_matrix_estimator",
-                                                     config, f_estimator_);
+                                                                           config, d_->f_estimator_);
   vital::algo::match_features::get_nested_algo_configuration("feature_matcher", config,
-                                                      matcher_);
-  vital::algo::filter_features::get_nested_algo_configuration("filter_features", config,
-                                                          feature_filter_);
+                                                             d_->matcher_);
 
   return config;
 }
@@ -148,9 +150,8 @@ match_features_fundamental_matrix
 
   // Set nested algorithm configurations
   vital::algo::estimate_fundamental_matrix::set_nested_algo_configuration("fundamental_matrix_estimator",
-                                                                           config, f_estimator_);
-  vital::algo::match_features::set_nested_algo_configuration("feature_matcher", config, matcher_);
-  vital::algo::filter_features::set_nested_algo_configuration("filter_features", config, feature_filter_);
+                                                                           config, d_->f_estimator_);
+  vital::algo::match_features::set_nested_algo_configuration("feature_matcher", config, d_->matcher_);
 
   // Other parameters
   d_->inlier_scale = config->get_value<double>("inlier_scale");
@@ -187,32 +188,17 @@ match_features_fundamental_matrix
 ::match(feature_set_sptr feat1, descriptor_set_sptr desc1,
         feature_set_sptr feat2, descriptor_set_sptr desc2) const
 {
-  if( !matcher_ || !f_estimator_ )
+  if( !d_->matcher_ || !d_->f_estimator_ )
   {
     return match_set_sptr();
   }
 
-  // filter features if a filter_features is set
-  feature_set_sptr src_feat;
-  descriptor_set_sptr src_desc;
-  if (feature_filter_.get())
-  {
-    std::pair<feature_set_sptr, descriptor_set_sptr> ret = feature_filter_->filter(feat1, desc1);
-    src_feat = ret.first;
-    src_desc = ret.second;
-  }
-  else
-  {
-    src_feat = feat1;
-    src_desc = desc1;
-  }
-
   // compute the initial matches
-  match_set_sptr init_matches = matcher_->match(src_feat, src_desc, feat2, desc2);
+  match_set_sptr init_matches = d_->matcher_->match(feat1, desc1, feat2, desc2);
 
   // estimate a fundamental_matrix from the initial matches
   std::vector<bool> inliers;
-  fundamental_matrix_sptr F = f_estimator_->estimate(feat1, feat2, init_matches,
+  fundamental_matrix_sptr F = d_->f_estimator_->estimate(feat1, feat2, init_matches,
                                                      inliers, d_->inlier_scale);
   int inlier_count = static_cast<int>(std::count(inliers.begin(), inliers.end(), true));
   std::cout << "inlier ratio: " << inlier_count << "/" << inliers.size() << std::endl;

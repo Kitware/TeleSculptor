@@ -99,37 +99,11 @@ public:
   match(vital::feature_set_sptr feat1, vital::descriptor_set_sptr desc1,
         vital::feature_set_sptr feat2, vital::descriptor_set_sptr desc2) const;
 
-  /// Set the feature matching algorithm to use
-  void set_feature_matcher(vital::algo::match_features_sptr alg)
-  {
-    matcher_ = alg;
-  }
-
-  /// Set the optional feature filter to use
-  void set_feature_filter(vital::algo::filter_features_sptr alg)
-  {
-    feature_filter_ = alg;
-  }
-
-  /// Set the fundamental matrix estimation algorithm to use
-  void set_fundamental_matrix_estimator(vital::algo::estimate_fundamental_matrix_sptr alg)
-  {
-    f_estimator_ = alg;
-  }
 
 private:
   /// private implementation class
   class priv;
   const std::unique_ptr<priv> d_;
-
-  /// The feature matching algorithm to use
-  vital::algo::match_features_sptr matcher_;
-
-  /// The fundamental matrix estimation algorithm to use
-  vital::algo::estimate_fundamental_matrix_sptr f_estimator_;
-
-  /// The feature set filter algorithm to use
-  vital::algo::filter_features_sptr feature_filter_;
 };
 
 
