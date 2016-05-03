@@ -299,7 +299,7 @@ hierarchical_bundle_adjust
 
   //frame_id_t orig_max_frame = cameras->cameras().rbegin()->first;
   cerr << "Cameras given to hsba: " << cameras->size() << endl;
-  size_t num_orig_cams = cameras->size();
+  size_t num_orig_cams = tracks->all_frame_ids().size();
 
   // If interpolation rate is 0, then that means that all intermediate frames
   // should be interpolated on the first step. Due to how the algorithm
@@ -349,8 +349,8 @@ hierarchical_bundle_adjust
 
     // If we've just completed SBA with all original frames in the new map,
     // then we're done.
-    cerr << "completion check: " << active_cam_map->size() << " == " << num_orig_cams << " --> ";
-    if (active_cam_map->size() == num_orig_cams)
+    cerr << "completion check: " << active_cam_map->size() << " >= " << num_orig_cams << " --> ";
+    if (active_cam_map->size() >= num_orig_cams)
     {
       cerr << "yup" << endl;
       done = true;
@@ -415,6 +415,11 @@ hierarchical_bundle_adjust
 
           }
         }
+      }
+      if(interped_cams.empty())
+      {
+        cerr << "No new cameras interpolated, done." << endl;
+        break;
       }
       camera_map_sptr interped_cams_p(new simple_camera_map(interped_cams));
 

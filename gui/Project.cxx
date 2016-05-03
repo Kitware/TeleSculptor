@@ -105,9 +105,11 @@ bool Project::read(QString const& path)
     }
 
     //Read depthmap points list
+
     if (config->has_value("depthmaps_points_file"))
     {
       auto const& vtpFilePath = config->get_value<std::string>("depthmaps_points_file");
+
       QFile vtpFile(base.filePath(qtString(vtpFilePath)));
       if (vtpFile.open(QIODevice::ReadOnly | QIODevice::Text))
       {
@@ -125,7 +127,6 @@ bool Project::read(QString const& path)
       }
       vtpFile.close();
     }
-
 
     //Read depthmap surfaces list
     if (config->has_value("depthmaps_surfaces_file"))
@@ -149,7 +150,6 @@ bool Project::read(QString const& path)
       vtsFile.close();
     }
 
-
     //Read depthmap images list
     if (config->has_value("depthmaps_images_file"))
     {
@@ -172,7 +172,6 @@ bool Project::read(QString const& path)
       vtiFile.close();
     }
 
-
     //Read depthmap vertices list
     if (config->has_value("depthmaps_vertices_file"))
     {
@@ -194,9 +193,6 @@ bool Project::read(QString const& path)
       }
       vertFile.close();
     }
-
-
-
 
     return true;
   }

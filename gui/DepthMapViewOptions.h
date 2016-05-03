@@ -5,7 +5,10 @@
 
 #include <QtGui/QWidget>
 
-//class vtkActor;
+#include <QButtonGroup>
+#include <QFormLayout>
+
+class vtkImageActor;
 
 class DepthMapViewOptionsPrivate;
 
@@ -18,23 +21,22 @@ public:
                            QWidget *parent = 0, Qt::WindowFlags flags = 0);
   virtual ~DepthMapViewOptions();
 
-//  void addActor(vtkActor* actor);
+  void addActor(vtkImageActor* actor);
 
-//  bool isPointsChecked();
-//  bool isSurfacesChecked();
-
-//  void enablePoints();
-//  void enableSurfaces();
+  void cleanModes();
 
 signals:
-//  void modified();
-//  void depthMapChanged();
+  void modified();
 
 protected slots:
-//  void switchPointsVisible(bool);
-//  void switchSurfacesVisible(bool);
+  void switchDisplayMode(bool checked);
 
 private:
+  QButtonGroup* bGroup;
+  QFormLayout* layout;
+
+  void addDepthMapMode(std::string name, bool needGradient);
+
   QTE_DECLARE_PRIVATE_RPTR(DepthMapViewOptions)
   QTE_DECLARE_PRIVATE(DepthMapViewOptions)
 

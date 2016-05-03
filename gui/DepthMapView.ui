@@ -32,12 +32,18 @@
       <enum>Qt::ToolButtonFollowStyle</enum>
      </property>
      <addaction name="separator"/>
+     <addaction name="actionDisplayMode"/>
     </widget>
    </item>
    <item>
     <widget class="QVTKWidget" name="renderWidget" native="true"/>
    </item>
   </layout>
+  <action name="actionDisplayMode">
+   <property name="text">
+    <string>Display mode</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
