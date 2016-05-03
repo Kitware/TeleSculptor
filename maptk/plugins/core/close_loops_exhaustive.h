@@ -133,8 +133,8 @@ protected:
   /// Run exhaustive loop closure
   bool enabled_;
 
-  /// Stitching percent feature match required
-  double percent_match_req_;
+  /// number of feature matches required for acceptance
+  double match_req_;
 
   /// Max frames to close loops back to (-1 to beginning of sequence)
   int num_look_back_;

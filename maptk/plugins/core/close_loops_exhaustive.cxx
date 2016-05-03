@@ -59,7 +59,7 @@ using namespace kwiver::vital;
 close_loops_exhaustive
 ::close_loops_exhaustive()
 : enabled_(true),
-  percent_match_req_(0.35),
+  match_req_(100),
   num_look_back_(-1)
 {
 }
@@ -69,7 +69,7 @@ close_loops_exhaustive
 close_loops_exhaustive
 ::close_loops_exhaustive(const close_loops_exhaustive& other)
 : enabled_(other.enabled_),
-  percent_match_req_(other.percent_match_req_),
+  match_req_(other.match_req_),
   num_look_back_(other.num_look_back_),
   matcher_(!other.matcher_ ? algo::match_features_sptr() : other.matcher_->clone())
 {
@@ -80,8 +80,7 @@ std::string
 close_loops_exhaustive
 ::description() const
 {
-  return "Attempts long-term loop closure based on percentage of feature "
-    "points tracked.";
+  return "Attempts long-term loop closure";
 }
 
 
@@ -101,8 +100,8 @@ close_loops_exhaustive
                     "Should exhaustive loop closure be enabled? This option will attempt to "
                     "bridge the gap between frames and previous frames exhaustively");
 
-  config->set_value("percent_match_req", percent_match_req_,
-                    "The required percentage of features needed to be matched for a "
+  config->set_value("match_req", match_req_,
+                    "The required number of features needed to be matched for a "
                     "success (value must be between 0.0 and 1.0).");
 
   config->set_value("num_look_back", num_look_back_,
@@ -130,8 +129,8 @@ close_loops_exhaustive
   matcher_ = mf;
 
   enabled_ = config->get_value<bool>("enabled");
-  percent_match_req_ = config->get_value<double>("percent_match_req");
-  num_look_back_ = config->get_value<int>("new_shot_length");
+  match_req_ = config->get_value<double>("match_req");
+  num_look_back_ = config->get_value<int>("num_look_back");
 }
 
 
@@ -141,8 +140,6 @@ close_loops_exhaustive
 {
   return (
     algo::match_features::check_nested_algo_configuration("feature_matcher", config)
-    &&
-    std::abs( config->get_value<double>("percent_match_req") ) <= 1.0
   );
 }
 
@@ -187,9 +184,7 @@ close_loops_exhaustive
                                                  current_set->frame_features( frame_number ),
                                                  current_set->frame_descriptors( frame_number ));
 
-    // test matcher results
-    unsigned total_features = static_cast<unsigned>(f_set->size() + current_set->size());
-    if( 2*mset->size() < static_cast<unsigned>(percent_match_req_*total_features) )
+    if( mset->size() < match_req_ )
     {
       continue;
     }
