@@ -41,6 +41,8 @@ set(gui_ui
   DepthMapView.ui
   DepthMapOptions.ui
   DepthMapViewOptions.ui
+  ColorizeSurfaceOptions.ui
+  VolumeOptions.ui
 )
 
 set(gui_resources
@@ -64,6 +66,8 @@ set(gui_moc_headers
   PointOptions.h
   DepthMapOptions.h
   DepthMapViewOptions.h
+  VolumeOptions.h
+  ColorizeSurfaceOptions.h
   WorldView.h
   tools/AbstractTool.h
   tools/BundleAdjustTool.h
@@ -88,6 +92,8 @@ set(gui_sources
   PointOptions.cxx
   DepthMapOptions.cxx
   DepthMapViewOptions.cxx
+  VolumeOptions.cxx
+  ColorizeSurfaceOptions.cxx
   Project.cxx
   WorldView.cxx
   main.cxx

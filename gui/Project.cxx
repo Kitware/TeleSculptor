@@ -79,11 +79,6 @@ bool Project::read(QString const& path)
     this->tracks =
       getPath(config, base, "input_track_file", "output_tracks_file");
 
-//    this->DMvtp = getPath(config, base, "depthmaps_points_file");
-//    this->DMvts = getPath(config, base, "depthmaps_surfaces_file");
-//    this->DMvti = getPath(config, base, "depthmaps_images_file");
-//    this->DMvert = getPath(config, base, "depthmaps_vertices_file");
-
     // Read image list
     auto const& iflPath = config->get_value<std::string>("image_list_file");
     QFile ifl(base.filePath(qtString(iflPath)));
@@ -172,26 +167,10 @@ bool Project::read(QString const& path)
       vtiFile.close();
     }
 
-    //Read depthmap vertices list
-    if (config->has_value("depthmaps_vertices_file"))
+    //Read volume file
+    if (config->has_value("volume_file"))
     {
-      auto const& vertFilePath = config->get_value<std::string>("depthmaps_vertices_file");
-      QFile vertFile(base.filePath(qtString(vertFilePath)));
-      if (vertFile.open(QIODevice::ReadOnly | QIODevice::Text))
-      {
-        QTextStream vertStream(&vertFile);
-        int frameNum;
-        QString fileName;
-        while (!vertStream.atEnd())
-        {
-          vertStream >> frameNum >> fileName;
-          if (!DMvert.contains(frameNum))
-          {
-            DMvert.insert(frameNum,fileName);
-          }
-        }
-      }
-      vertFile.close();
+      this->volumePath = getPath(config, base, "volume_file");
     }
 
     return true;

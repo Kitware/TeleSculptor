@@ -829,9 +829,11 @@ void MainWindow::loadProject(QString const& path)
   {
     d->UI.worldView->enableDepthMap("vts");
   }
-  if (!project.DMvert.isEmpty())
+
+
+  if (!project.volumePath.isEmpty())
   {
-    d->UI.worldView->enableDepthMap("vert");
+    d->UI.worldView->loadVolume(project.volumePath);
   }
 
   for (int camId = 0; camId < d->cameras.size(); ++camId)
@@ -850,16 +852,11 @@ void MainWindow::loadProject(QString const& path)
     {
       d->cameras[camId].dmp.dMImagePath = project.DMvti[camId];
     }
-
-    if(!project.DMvert.isEmpty() && project.DMvert.contains(camId))
-    {
-      d->cameras[camId].dmp.dMVerticesPath = project.DMvert[camId];
-    }
   }
 
   //Once every depthmap is loaded, set up the active depthmap to the first found
   if(!project.DMvtp.isEmpty() || !project.DMvts.isEmpty()
-     || !project.DMvti.isEmpty() || !project.DMvert.isEmpty() )
+     || !project.DMvti.isEmpty() )
   {
     //TODO: replace this with a while loop.
     for (int camId = 0; camId < d->cameras.size(); ++camId)

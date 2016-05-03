@@ -38,6 +38,7 @@
 #include "ImageOptions.h"
 #include "PointOptions.h"
 #include "DepthMapOptions.h"
+#include "VolumeOptions.h"
 #include "vtkMaptkCamera.h"
 #include "vtkMaptkCameraRepresentation.h"
 
@@ -135,13 +136,14 @@ public:
   CameraOptions* cameraOptions;
   PointOptions* landmarkOptions;
   DepthMapOptions* depthMapOptions;
+  VolumeOptions* volumeOptions;
 
   vtkNew<vtkMatrix4x4> imageProjection;
   vtkNew<vtkMatrix4x4> imageLocalTransform;
 
   vtkNew<vtkActor> polyDataActor;
   vtkNew<vtkActor> structuredGridActor;
-  vtkNew<vtkVolume> verticesActor;
+  vtkNew<vtkActor> volumeActor;
 
   std::map<int, std::string> dMList;
   std::map<int, std::string> dMListSG;
@@ -298,7 +300,9 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
 
   d->depthMapOptions->addActor("points",d->polyDataActor.Get());
   d->depthMapOptions->addActor("surfaces",d->structuredGridActor.Get());
-  d->depthMapOptions->addActor("vertices",d->verticesActor.Get());
+
+  d->volumeOptions = new VolumeOptions("WorldView/Volume", this);
+  d->setPopup(d->UI.actionVolumeDisplay, d->volumeOptions);
 
 //  connect(d->depthMapOptions, SIGNAL(modified()),
 //          d->UI.renderWidget, SLOT(update()));
@@ -466,11 +470,41 @@ std::string WorldView::getActiveDepthMapType()
   if (d->depthMapOptions->isSurfacesChecked()) {
     return "surfaces";
   }
-  if (d->depthMapOptions->isVerticesChecked()) {
-    return "vertices";
-  }
 
   return "";
+}
+
+void WorldView::loadVolume(QString path)
+{
+  QTE_D();
+
+  d->UI.actionVolumeDisplay->setEnabled(true);
+
+  std::string filename = path.toStdString();
+
+  vtkNew<vtkXMLStructuredGridReader> readerV;
+
+  readerV->SetFileName(filename.c_str());
+  readerV->Update();
+
+  vtkNew<vtkGeometryFilter> geometryFilter;
+  geometryFilter->SetInputData(readerV->GetOutput());
+
+  vtkNew<vtkPolyDataMapper> mapper;
+  mapper->SetInputConnection(geometryFilter->GetOutputPort());
+  mapper->SetColorModeToDirectScalars();
+
+//  vtkNew<vtkTransform> transform;
+
+//  transform->SetMatrix(mat);
+
+  //Loading the volume into world view. Incomplete for now
+  d->volumeActor->SetMapper(mapper.Get());
+//  d->volumeActor->SetVisibility(true);
+//  d->volumeActor->SetUserTransform(transform.Get());
+
+  d->volumeOptions->setActor(d->volumeActor.Get());
+
 }
 
 //vtkPolyData *WorldView::getDepthMap()
@@ -593,15 +627,15 @@ void WorldView::setActiveDepthMap(int numCam, vtkMatrix4x4* mat, DepthMapPaths d
       d->renderer->AddViewProp(d->structuredGridActor.GetPointer());
     }
     //Vertices structured grid
-    if(d->depthMapOptions->isVerticesChecked() && dmp.dMVerticesPath.toStdString() != ""){
-      std::string filename = dmp.dMVerticesPath.toStdString();
-      std::cout << "if" << std::endl;
+//    if(d->depthMapOptions->isVerticesChecked() && dmp.dMVerticesPath.toStdString() != ""){
+//      std::string filename = dmp.dMVerticesPath.toStdString();
+//      std::cout << "if" << std::endl;
 
-      //TODO: read the file
-      vtkNew<vtkXMLStructuredGridReader> readerV;
+//      //TODO: read the file
+//      vtkNew<vtkXMLStructuredGridReader> readerV;
 
-      readerV->SetFileName(filename.c_str());
-      readerV->Update();
+//      readerV->SetFileName(filename.c_str());
+//      readerV->Update();
       // --
 
   //    readerV->GetOutput()->GetPointData()->SetScalars(readerV->GetOutput()->GetPointData()->GetArray("reconstruction_scalar"));
@@ -681,7 +715,7 @@ void WorldView::setActiveDepthMap(int numCam, vtkMatrix4x4* mat, DepthMapPaths d
 
   //    renderWindow->Render();
   //    renderWindowInteractor->Start();
-    }
+//    }
 
   }
 }
@@ -866,10 +900,6 @@ void WorldView::setDepthMapVisible(bool state)
   else if (d->depthMapOptions->isSurfacesChecked())
   {
     d->structuredGridActor->SetVisibility(state);
-  }
-  else if (d->depthMapOptions->isVerticesChecked())
-  {
-    d->verticesActor->SetVisibility(state);
   }
 
   setActiveDepthMap(cam,matrix,dmp);

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>168</width>
-    <height>132</height>
+    <height>104</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -43,16 +43,6 @@
         </property>
         <property name="checked">
          <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QRadioButton" name="radioVertices">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>Volume</string>
         </property>
        </widget>
       </item>

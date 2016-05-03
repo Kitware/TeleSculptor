@@ -40,13 +40,13 @@ struct Project
 
   QStringList images;
   QString cameraPath;
+  QString volumePath;
 
   QString tracks;
   QString landmarks;
   QMap<int, QString> DMvtp;
   QMap<int, QString> DMvts;
   QMap<int, QString> DMvti;
-  QMap<int, QString> DMvert;
 };
 
 #endif
