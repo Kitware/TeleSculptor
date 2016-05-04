@@ -304,9 +304,6 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->volumeOptions = new VolumeOptions("WorldView/Volume", this);
   d->setPopup(d->UI.actionVolumeDisplay, d->volumeOptions);
 
-//  connect(d->depthMapOptions, SIGNAL(modified()),
-//          d->UI.renderWidget, SLOT(update()));
-
   connect(d->depthMapOptions, SIGNAL(depthMapChanged()),
           this, SLOT(updateDepthMap()));
 
@@ -474,7 +471,7 @@ std::string WorldView::getActiveDepthMapType()
   return "";
 }
 
-void WorldView::loadVolume(QString path)
+void WorldView::loadVolume(QString path, int nbFrames)
 {
   QTE_D();
 
@@ -504,6 +501,7 @@ void WorldView::loadVolume(QString path)
 //  d->volumeActor->SetUserTransform(transform.Get());
 
   d->volumeOptions->setActor(d->volumeActor.Get());
+  d->volumeOptions->initFrameSampling(nbFrames);
 
 }
 

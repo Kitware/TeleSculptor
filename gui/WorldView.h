@@ -61,7 +61,7 @@ public:
 
   std::string getActiveDepthMapType();
 
-  void loadVolume(QString path);
+  void loadVolume(QString path, int nbFrames);
 public slots:
   void setBackgroundColor(QColor const&);
 
