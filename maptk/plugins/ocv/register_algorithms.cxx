@@ -50,6 +50,7 @@
 #include <maptk/plugins/ocv/detect_features_simple_blob.h>
 #include <maptk/plugins/ocv/detect_features_STAR.h>
 #include <maptk/plugins/ocv/draw_tracks.h>
+#include <maptk/plugins/ocv/estimate_fundamental_matrix.h>
 #include <maptk/plugins/ocv/estimate_homography.h>
 #include <maptk/plugins/ocv/extract_descriptors_BRIEF.h>
 #include <maptk/plugins/ocv/extract_descriptors_DAISY.h>
@@ -83,6 +84,7 @@ int register_algorithms( vital::registrar &reg )
 
   REGISTER_TYPE( maptk::ocv::analyze_tracks );
   REGISTER_TYPE( maptk::ocv::draw_tracks );
+  REGISTER_TYPE( maptk::ocv::estimate_fundamental_matrix );
   REGISTER_TYPE( maptk::ocv::estimate_homography );
   REGISTER_TYPE( maptk::ocv::image_io );
 

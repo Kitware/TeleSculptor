@@ -13,6 +13,7 @@ endif()
 ##############################
 # MAPTK OpenCV tests
 ##############################
+kwiver_discover_tests(ocv_estimate_fundamental_matrix test_libraries test_estimate_fundamental_matrix.cxx)
 kwiver_discover_tests(ocv_estimate_homography test_libraries test_estimate_homography.cxx)
 kwiver_discover_tests(ocv_image               test_libraries test_image.cxx)
 kwiver_discover_tests(ocv_feature_set         test_libraries test_feature_set.cxx)

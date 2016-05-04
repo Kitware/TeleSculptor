@@ -13,6 +13,7 @@ set( maptk_ocv_headers_public
   detect_features_simple_blob.h
   detect_features_STAR.h
   draw_tracks.h
+  estimate_fundamental_matrix.h
   estimate_homography.h
   extract_descriptors.h
   extract_descriptors_BRIEF.h
@@ -55,6 +56,7 @@ set( maptk_ocv_sources
   detect_features_simple_blob.cxx
   detect_features_STAR.cxx
   draw_tracks.cxx
+  estimate_fundamental_matrix.cxx
   estimate_homography.cxx
   extract_descriptors.cxx
   extract_descriptors_BRIEF.cxx

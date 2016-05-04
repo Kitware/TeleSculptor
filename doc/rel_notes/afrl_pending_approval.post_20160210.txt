@@ -27,6 +27,9 @@ OpenCV Plugin
    least present in 3.x that fill the feature detection, descriptor extraction
    and feature matching roles.
 
+ * Added an OpenCV fundamental matrix estimation wrapper. OpenCV can estimate a
+   fundamental matrix with the presence of outliers using RANSAC.
+
 Scripts
 
  * Added a Python script which uses OpenCV to produce mosaicked images of

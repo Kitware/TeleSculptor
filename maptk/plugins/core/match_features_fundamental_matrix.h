@@ -55,14 +55,14 @@ namespace core
 
 /// Combines a feature matcher, fundamental matrix estimation, and filtering
 /**
- *  This is a meta-algorithm for feature matching that combines one other feature 
+ *  This is a meta-algorithm for feature matching that combines one other feature
  *  matcher with fundamental matrix estimation and feature filtering.
  *  The algorithm applies another configurable feature matcher algorithm and
  *  then applies a fundamental matrix estimation algorithm to the resulting matches.
  *  Outliers to the fit fundamental matrix are discarded from the set of matches.
  *
  *  If a filter_features algorithm is provided, this will be run on the
- *  input features \b before running the matcher. 
+ *  input features \b before running the matcher.
  */
 class MAPTK_CORE_EXPORT match_features_fundamental_matrix
   : public vital::algorithm_impl<match_features_fundamental_matrix, vital::algo::match_features>
