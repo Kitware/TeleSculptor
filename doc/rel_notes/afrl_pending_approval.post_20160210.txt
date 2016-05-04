@@ -10,6 +10,11 @@ release version, and the content of this file will be reset.
 Updates since last public release
 ---------------------------------
 
+Core Plugin
+
+ * Added a new matcher that uses a fundamental matrix constraint to filter bad
+   matches.
+
 OpenCV Plugin
 
  * Added CMake support for handing and marking the use of OpenCV version >= 3.

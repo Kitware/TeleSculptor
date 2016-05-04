@@ -9,6 +9,7 @@ set( plugin_core_headers
   filter_features_magnitude.h
   hierarchical_bundle_adjust.h
   initialize_cameras_landmarks.h
+  match_features_fundamental_matrix.h
   match_features_homography.h
   register_algorithms.h
   track_features_core.h
@@ -32,6 +33,7 @@ set( plugin_core_sources
   filter_features_magnitude.cxx
   hierarchical_bundle_adjust.cxx
   initialize_cameras_landmarks.cxx
+  match_features_fundamental_matrix.cxx
   match_features_homography.cxx
   register_algorithms.cxx
   track_features_core.cxx

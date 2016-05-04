@@ -216,4 +216,3 @@ match_features_bruteforce
 } // end namespace ocv
 } // end namespace maptk
 } // end namespace kwiver
-
