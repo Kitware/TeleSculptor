@@ -10,6 +10,8 @@ if( MAPTK_ENABLE_OPENCV )
   include_directories( SYSTEM ${OpenCV_INCLUDE_DIRS} )
   # Docs say we don't need to add link_directories() call for OpenCV lib dirs
 
-  # NOTE: Artifact carried over from before re-design. What is this for? Ask Matt L.
-  set(USE_OPENCV_VERSION MAPTK_ENABLE_PLUGIN_OPENCV AND OpenCV_FOUND AND OpenCV_VERSION VERSION_GREATER "2.4")
+  if( OpenCV_FOUND AND OpenCV_VERSION VERSION_LESS "2.4.6" )
+    message(WARNING "Minimum support OpenCV version is 2.4.6, found ${OpenCV_VERSION}")
+    set(OpenCV_FOUND FALSE)
+  endif()
 endif()

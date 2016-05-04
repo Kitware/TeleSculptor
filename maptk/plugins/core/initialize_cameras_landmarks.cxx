@@ -1002,7 +1002,8 @@ initialize_cameras_landmarks
       }
     }
 
-    if( d_->bundle_adjuster && cams.size() >= 4 && is_power_of_two(cams.size()) )
+    if( d_->bundle_adjuster && cams.size() >= 4 &&
+        is_power_of_two(static_cast<unsigned int>(cams.size())) )
     {
       camera_map_sptr ba_cams(new simple_camera_map(cams));
       landmark_map_sptr ba_lms(new simple_landmark_map(lms));
@@ -1072,10 +1073,13 @@ initialize_cameras_landmarks
       cams = ba_cams2->cameras();
       lms = ba_lms2->landmarks();
     }
+
+    // if using bundle adjustment, remove landmarks with large error
+    // after optimization
+    std::set<track_id_t> to_remove = detect_bad_tracks(cams, lms, trks, 1.0);
+    remove_landmarks(to_remove, lms);
   }
 
-  std::set<track_id_t> to_remove = detect_bad_tracks(cams, lms, trks, 1.0);
-  remove_landmarks(to_remove, lms);
   cameras = camera_map_sptr(new simple_camera_map(cams));
   landmarks = landmark_map_sptr(new simple_landmark_map(lms));
 }

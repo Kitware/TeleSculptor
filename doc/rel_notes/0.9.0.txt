@@ -1,0 +1,34 @@
+MAP-Tk v0.9.0 Release Notes
+==========================
+
+This is a minor release of MAP-Tk that provides both new functionality and
+fixes over the previous v0.8.0 release.  However, MAP-Tk is still considered
+pre-release software and subject to significant API changes.
+
+
+Updates since v0.8.0
+---------------------------------
+
+MAP-Tk Library
+
+ * Removed the standalone canonical_transform() function in transform.h in
+   favor of an abstract algorithm with implementation in the core plugin.
+
+Core Plugin
+
+ * Added a new algorithm for canonical transform with the implementation
+   details moved from the function that was in transform.h.
+
+Visualization Application
+
+ * Updated the "Align" tool to use the configurable abstract algorithm
+   for canonical transform.
+
+Tools
+
+ * Updated the bundle_adjust_tracks tool to use the configurable abstract
+   algorithm for canonical transform.
+
+
+Fixes since v0.8.0
+-------------------------------

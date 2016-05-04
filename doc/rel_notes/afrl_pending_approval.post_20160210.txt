@@ -10,6 +10,26 @@ release version, and the content of this file will be reset.
 Updates since last public release
 ---------------------------------
 
+Core Plugin
+
+ * Added a new matcher that uses a fundamental matrix constraint to filter bad
+   matches.
+
+OpenCV Plugin
+
+ * Added CMake support for handing and marking the use of OpenCV version >= 3.
+
+ * Overhauled OpenCV algorithm introspection structure. Versions 3.x took away
+   the previous ability to introspect algorithm types and parameters,
+   requiring, for at least versions 3.x, for there to be manual wrappings of
+   each algorithm to be exposed. Removed introspection for any version and
+   now have cross-version compatible manual wrappings of all algorithms at
+   least present in 3.x that fill the feature detection, descriptor extraction
+   and feature matching roles.
+
+ * Added an OpenCV fundamental matrix estimation wrapper. OpenCV can estimate a
+   fundamental matrix with the presence of outliers using RANSAC.
+
 Scripts
 
  * Added a Python script which uses OpenCV to produce mosaicked images of
@@ -18,7 +38,3 @@ Scripts
 
  Fixes since last public release
 -------------------------------
-
-Added an opencv fundamental matrix estimation wrapper. OpenCV can estimate a 
-fundamental matrix with the presence of outliers using RANSAC and can therefore
-be used as part of a matching algorithm.

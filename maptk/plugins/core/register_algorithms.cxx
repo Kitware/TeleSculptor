@@ -40,9 +40,11 @@
 #include <maptk/plugins/core/close_loops_multi_method.h>
 #include <maptk/plugins/core/compute_ref_homography_core.h>
 #include <maptk/plugins/core/convert_image_bypass.h>
+#include <maptk/plugins/core/estimate_canonical_transform.h>
 #include <maptk/plugins/core/filter_features_magnitude.h>
 #include <maptk/plugins/core/hierarchical_bundle_adjust.h>
 #include <maptk/plugins/core/initialize_cameras_landmarks.h>
+#include <maptk/plugins/core/match_features_fundamental_matrix.h>
 #include <maptk/plugins/core/match_features_homography.h>
 #include <maptk/plugins/core/track_features_core.h>
 #include <maptk/plugins/core/triangulate_landmarks.h>
@@ -63,9 +65,11 @@ int register_algorithms(vital::registrar &reg)
     REGISTER_TYPE( maptk::core::close_loops_multi_method );
     REGISTER_TYPE( maptk::core::compute_ref_homography_core );
     REGISTER_TYPE( maptk::core::convert_image_bypass );
+    REGISTER_TYPE( maptk::core::estimate_canonical_transform );
     REGISTER_TYPE( maptk::core::filter_features_magnitude );
     REGISTER_TYPE( maptk::core::hierarchical_bundle_adjust );
     REGISTER_TYPE( maptk::core::initialize_cameras_landmarks );
+    REGISTER_TYPE( maptk::core::match_features_fundamental_matrix );
     REGISTER_TYPE( maptk::core::match_features_homography );
     REGISTER_TYPE( maptk::core::track_features_core );
     REGISTER_TYPE( maptk::core::triangulate_landmarks );
