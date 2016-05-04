@@ -8,7 +8,6 @@ MAP-Tk v0.8.1 is a bug fix release with no new functionality.
 Updates since v0.8.0
 --------------------
 
-Build System
 
- * Made linkage to the Ceres library private in the MAP-Tk Ceres plugin to
-   prevent dependency leakage into other projects.
+Fixes since v0.8.0
+--------------------

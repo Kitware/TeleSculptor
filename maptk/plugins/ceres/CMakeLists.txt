@@ -32,7 +32,7 @@ kwiver_add_library( maptk_ceres
   )
 target_link_libraries( maptk_ceres
   PUBLIC               maptk
-  PRIVATE              ceres
+                       ceres
   )
 
 maptk_create_plugin( maptk_ceres
