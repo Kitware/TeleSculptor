@@ -42,38 +42,113 @@
 
 #include <maptk/plugin_interface/algorithm_plugin_interface_macros.h>
 #include <maptk/plugins/ocv/analyze_tracks.h>
-#include <maptk/plugins/ocv/detect_features.h>
+#include <maptk/plugins/ocv/detect_features_AGAST.h>
+#include <maptk/plugins/ocv/detect_features_FAST.h>
+#include <maptk/plugins/ocv/detect_features_GFTT.h>
+#include <maptk/plugins/ocv/detect_features_MSD.h>
+#include <maptk/plugins/ocv/detect_features_MSER.h>
+#include <maptk/plugins/ocv/detect_features_simple_blob.h>
+#include <maptk/plugins/ocv/detect_features_STAR.h>
 #include <maptk/plugins/ocv/draw_tracks.h>
 #include <maptk/plugins/ocv/estimate_homography.h>
-#include <maptk/plugins/ocv/extract_descriptors.h>
+#include <maptk/plugins/ocv/extract_descriptors_BRIEF.h>
+#include <maptk/plugins/ocv/extract_descriptors_DAISY.h>
+#include <maptk/plugins/ocv/extract_descriptors_FREAK.h>
+#include <maptk/plugins/ocv/extract_descriptors_LATCH.h>
+#include <maptk/plugins/ocv/extract_descriptors_LUCID.h>
+#include <maptk/plugins/ocv/feature_detect_extract_BRISK.h>
+#include <maptk/plugins/ocv/feature_detect_extract_ORB.h>
+#include <maptk/plugins/ocv/feature_detect_extract_SIFT.h>
+#include <maptk/plugins/ocv/feature_detect_extract_SURF.h>
 #include <maptk/plugins/ocv/image_io.h>
-#include <maptk/plugins/ocv/match_features.h>
+#include <maptk/plugins/ocv/match_features_bruteforce.h>
+#include <maptk/plugins/ocv/match_features_flannbased.h>
 
 
 namespace kwiver {
 namespace maptk {
 namespace ocv {
 
+
 /// Register OCV algorithm implementations with the given or global registrar
 int register_algorithms( vital::registrar &reg )
 {
-#ifdef HAVE_OPENCV_NONFREE
+  vital::logger_handle_t log = vital::get_logger("ocv_register_algo");
+
+#if defined(HAVE_OPENCV_NONFREE)
   cv::initModule_nonfree();
 #endif
 
   REGISTRATION_INIT( reg );
 
   REGISTER_TYPE( maptk::ocv::analyze_tracks );
-  REGISTER_TYPE( maptk::ocv::detect_features );
   REGISTER_TYPE( maptk::ocv::draw_tracks );
   REGISTER_TYPE( maptk::ocv::estimate_homography );
-  REGISTER_TYPE( maptk::ocv::extract_descriptors );
   REGISTER_TYPE( maptk::ocv::image_io );
-  REGISTER_TYPE( maptk::ocv::match_features );
+
+  // OCV Algorithm based class wrappers
+  REGISTER_TYPE( maptk::ocv::detect_features_BRISK );
+  REGISTER_TYPE( maptk::ocv::detect_features_FAST );
+  REGISTER_TYPE( maptk::ocv::detect_features_GFTT );
+  REGISTER_TYPE( maptk::ocv::detect_features_MSER );
+  REGISTER_TYPE( maptk::ocv::detect_features_ORB );
+  REGISTER_TYPE( maptk::ocv::detect_features_simple_blob );
+
+  REGISTER_TYPE( maptk::ocv::extract_descriptors_BRISK );
+  REGISTER_TYPE( maptk::ocv::extract_descriptors_ORB );
+
+  REGISTER_TYPE( maptk::ocv::match_features_bruteforce );
+  REGISTER_TYPE( maptk::ocv::match_features_flannbased );
+
+  // Conditional algorithms
+  // Source ``MAPTK_OCV_HAS_*`` symbol definitions can be found in the header
+  //  files of the algorithms referred to.
+#ifdef MAPTK_OCV_HAS_AGAST
+  REGISTER_TYPE( maptk::ocv::detect_features_AGAST );
+#endif
+
+#ifdef MAPTK_OCV_HAS_BRIEF
+  REGISTER_TYPE( maptk::ocv::extract_descriptors_BRIEF );
+#endif
+
+#ifdef MAPTK_OCV_HAS_DAISY
+  REGISTER_TYPE( maptk::ocv::extract_descriptors_DAISY );
+#endif
+
+#ifdef MAPTK_OCV_HAS_FREAK
+  REGISTER_TYPE( maptk::ocv::extract_descriptors_FREAK );
+#endif
+
+#ifdef MAPTK_OCV_HAS_LATCH
+  REGISTER_TYPE( maptk::ocv::extract_descriptors_LATCH );
+#endif
+
+#ifdef MAPTK_OCV_HAS_LUCID
+  REGISTER_TYPE( maptk::ocv::extract_descriptors_LUCID );
+#endif
+
+#ifdef MAPTK_OCV_HAS_MSD
+  REGISTER_TYPE( maptk::ocv::detect_features_MSD );
+#endif
+
+#ifdef MAPTK_OCV_HAS_SIFT
+  REGISTER_TYPE( maptk::ocv::detect_features_SIFT );
+  REGISTER_TYPE( maptk::ocv::extract_descriptors_SIFT );
+#endif
+
+#ifdef MAPTK_OCV_HAS_STAR
+  REGISTER_TYPE( maptk::ocv::detect_features_STAR );
+#endif
+
+#ifdef MAPTK_OCV_HAS_SURF
+  REGISTER_TYPE( maptk::ocv::detect_features_SURF );
+  REGISTER_TYPE( maptk::ocv::extract_descriptors_SURF );
+#endif
 
   REGISTRATION_SUMMARY();
   return REGISTRATION_FAILURES();
 }
+
 
 } // end namespace ocv
 } // end namespace maptk

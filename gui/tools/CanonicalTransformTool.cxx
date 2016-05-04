@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2015-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,13 +30,59 @@
 
 #include "CanonicalTransformTool.h"
 
+#include <maptk/version.h>
+
+#include <vital/algo/estimate_canonical_transform.h>
+
+#include <vital/config/config_block_io.h>
+
 #include <maptk/transform.h>
 
+#include <qtStlUtil.h>
+
+#include <QtGui/QApplication>
 #include <QtGui/QMessageBox>
+
+#include <QtCore/QDir>
+
+using kwiver::vital::algo::estimate_canonical_transform;
+using kwiver::vital::algo::estimate_canonical_transform_sptr;
+
+namespace
+{
+static char const* const BLOCK = "can_tfm_estimator";
+
+//-----------------------------------------------------------------------------
+kwiver::vital::config_block_sptr readConfig(std::string const& name)
+{
+  try
+  {
+    using kwiver::vital::read_config_file;
+
+    auto const exeDir = QDir(QApplication::applicationDirPath());
+    auto const prefix = stdString(exeDir.absoluteFilePath(".."));
+    return read_config_file(name, "maptk", MAPTK_VERSION, prefix);
+  }
+  catch (...)
+  {
+    return {};
+  }
+}
+
+}
+
+//-----------------------------------------------------------------------------
+class CanonicalTransformToolPrivate
+{
+public:
+  estimate_canonical_transform_sptr algorithm;
+};
+
+QTE_IMPLEMENT_D_FUNC(CanonicalTransformTool)
 
 //-----------------------------------------------------------------------------
 CanonicalTransformTool::CanonicalTransformTool(QObject* parent)
-  : AbstractTool(parent)
+  : AbstractTool(parent), d_ptr(new CanonicalTransformToolPrivate)
 {
   this->setText("&Align");
   this->setToolTip(
@@ -60,6 +106,8 @@ AbstractTool::Outputs CanonicalTransformTool::outputs() const
 //-----------------------------------------------------------------------------
 bool CanonicalTransformTool::execute(QWidget* window)
 {
+  QTE_D();
+
   if (!this->hasLandmarks())
   {
     QMessageBox::information(
@@ -67,14 +115,39 @@ bool CanonicalTransformTool::execute(QWidget* window)
     return false;
   }
 
+  // Load configuration
+  auto const config = readConfig("gui_align.conf");
+
+  // Check configuration
+  if (!config)
+  {
+    QMessageBox::critical(
+      window, "Configuration error",
+      "No configuration data was found. Please check your installation.");
+    return false;
+  }
+
+  if (!estimate_canonical_transform::check_nested_algo_configuration(BLOCK, config))
+  {
+    QMessageBox::critical(
+      window, "Configuration error",
+      "An error was found in the algorithm configuration.");
+    return false;
+  }
+
+  // Create algorithm from configuration
+  estimate_canonical_transform::set_nested_algo_configuration(BLOCK, config, d->algorithm);
+
   return AbstractTool::execute(window);
 }
 
 //-----------------------------------------------------------------------------
 void CanonicalTransformTool::run()
 {
+  QTE_D();
+
   auto const& xf =
-    kwiver::maptk::canonical_transform(this->cameras(), this->landmarks());
+    d->algorithm->estimate_transform(this->cameras(), this->landmarks());
 
   this->updateCameras(kwiver::maptk::transform(this->cameras(), xf));
   this->updateLandmarks(kwiver::maptk::transform(this->landmarks(), xf));

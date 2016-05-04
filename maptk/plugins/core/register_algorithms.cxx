@@ -40,6 +40,7 @@
 #include <maptk/plugins/core/close_loops_multi_method.h>
 #include <maptk/plugins/core/compute_ref_homography_core.h>
 #include <maptk/plugins/core/convert_image_bypass.h>
+#include <maptk/plugins/core/estimate_canonical_transform.h>
 #include <maptk/plugins/core/filter_features_magnitude.h>
 #include <maptk/plugins/core/hierarchical_bundle_adjust.h>
 #include <maptk/plugins/core/initialize_cameras_landmarks.h>
@@ -64,6 +65,7 @@ int register_algorithms(vital::registrar &reg)
     REGISTER_TYPE( maptk::core::close_loops_multi_method );
     REGISTER_TYPE( maptk::core::compute_ref_homography_core );
     REGISTER_TYPE( maptk::core::convert_image_bypass );
+    REGISTER_TYPE( maptk::core::estimate_canonical_transform );
     REGISTER_TYPE( maptk::core::filter_features_magnitude );
     REGISTER_TYPE( maptk::core::hierarchical_bundle_adjust );
     REGISTER_TYPE( maptk::core::initialize_cameras_landmarks );
