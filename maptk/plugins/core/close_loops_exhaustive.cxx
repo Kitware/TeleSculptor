@@ -210,6 +210,8 @@ close_loops_exhaustive
                                                     current_features,
                                                     current_descriptors);
 
+    LOG_INFO(d_->m_logger, "Matching frame " << frame_number << " to "<< f
+                             << " matched "<< mset->size() << " features");
     if( mset->size() < d_->match_req )
     {
       continue;
@@ -233,6 +235,8 @@ close_loops_exhaustive
 
     if( !to_remove.empty() )
     {
+      LOG_INFO(d_->m_logger, "Matching frame " << frame_number << " to "<< f
+                             << " joined "<<to_remove.size() << " tracks");
       all_tracks.erase(
         std::remove_if( all_tracks.begin(), all_tracks.end(),
                         std::bind( track_in_set, std::placeholders::_1, &to_remove ) ),
