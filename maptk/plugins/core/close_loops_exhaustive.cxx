@@ -43,24 +43,54 @@
 #include <vector>
 #include <functional>
 
-#include <vital/algo/algorithm.h>
 #include <vital/exceptions/algorithm.h>
+#include <vital/algo/match_features.h>
 
 
 namespace kwiver {
 namespace maptk {
-
-namespace core
-{
+namespace core {
 
 using namespace kwiver::vital;
 
-/// Default Constructor
+/// Private implementation class
+class close_loops_exhaustive::priv
+{
+public:
+  /// Constructor
+  priv()
+    : match_req(100),
+      num_look_back(-1),
+      m_logger( vital::get_logger( "close_loops_exhaustive" ))
+  {
+  }
+
+  priv(const priv& other)
+    : match_req(other.match_req),
+      num_look_back(other.num_look_back),
+      matcher(!other.matcher ? algo::match_features_sptr() : other.matcher->clone()),
+      m_logger( vital::get_logger( "close_loops_exhaustive" ))
+  {
+  }
+
+  /// number of feature matches required for acceptance
+  int match_req;
+
+  /// Max frames to close loops back to (-1 to beginning of sequence)
+  int num_look_back;
+
+  /// The feature matching algorithm to use
+  vital::algo::match_features_sptr matcher;
+
+  /// Logger handle
+  vital::logger_handle_t m_logger;
+};
+
+
+/// Constructor
 close_loops_exhaustive
 ::close_loops_exhaustive()
-: enabled_(true),
-  match_req_(100),
-  num_look_back_(-1)
+: d_(new priv)
 {
 }
 
@@ -68,10 +98,14 @@ close_loops_exhaustive
 /// Copy Constructor
 close_loops_exhaustive
 ::close_loops_exhaustive(const close_loops_exhaustive& other)
-: enabled_(other.enabled_),
-  match_req_(other.match_req_),
-  num_look_back_(other.num_look_back_),
-  matcher_(!other.matcher_ ? algo::match_features_sptr() : other.matcher_->clone())
+: d_(new priv(*other.d_))
+{
+}
+
+
+/// Destructor
+close_loops_exhaustive
+::~close_loops_exhaustive() VITAL_NOTHROW
 {
 }
 
@@ -94,16 +128,12 @@ close_loops_exhaustive
 
   // Sub-algorithm implementation name + sub_config block
   // - Feature Matcher algorithm
-  algo::match_features::get_nested_algo_configuration("feature_matcher", config, matcher_);
+  algo::match_features::get_nested_algo_configuration("feature_matcher", config, d_->matcher);
 
-  config->set_value("enabled", enabled_,
-                    "Should exhaustive loop closure be enabled? This option will attempt to "
-                    "bridge the gap between frames and previous frames exhaustively");
-
-  config->set_value("match_req", match_req_,
+  config->set_value("match_req", d_->match_req,
                     "The required number of features needed to be matched for a success.");
 
-  config->set_value("num_look_back", num_look_back_,
+  config->set_value("num_look_back", d_->num_look_back,
                     "Maximum number of frames to search in the past for matching to "
                     "(-1 looks back to the beginning).");
 
@@ -121,15 +151,12 @@ close_loops_exhaustive
   vital::config_block_sptr config = this->get_configuration();
   config->merge_config(in_config);
 
-  // Setting nested algorithm instances via setter methods instead of directly
-  // assigning to instance property.
-  algo::match_features_sptr mf;
-  algo::match_features::set_nested_algo_configuration("feature_matcher", config, mf);
-  matcher_ = mf;
+  // Setting nested algorithm configuration
+  algo::match_features::set_nested_algo_configuration("feature_matcher",
+                                                      config, d_->matcher);
 
-  enabled_ = config->get_value<bool>("enabled");
-  match_req_ = config->get_value<int>("match_req");
-  num_look_back_ = config->get_value<int>("num_look_back");
+  d_->match_req = config->get_value<int>("match_req");
+  d_->num_look_back = config->get_value<int>("num_look_back");
 }
 
 
@@ -158,16 +185,10 @@ close_loops_exhaustive
           vital::image_container_sptr,
           vital::image_container_sptr ) const
 {
-  // check if enabled and possible
-  if( !enabled_)
-  {
-    return input;
-  }
-
   frame_id_t last_frame = 0;
-  if (num_look_back_ >= 0)
+  if (d_->num_look_back >= 0)
   {
-    last_frame = std::max<int>(frame_number - num_look_back_, 0);
+    last_frame = std::max<int>(frame_number - d_->num_look_back, 0);
   }
 
   std::vector< vital::track_sptr > all_tracks = input->tracks();
@@ -178,12 +199,12 @@ close_loops_exhaustive
     vital::track_set_sptr f_set = input->active_tracks( f );
 
     // run matcher alg
-    vital::match_set_sptr mset = matcher_->match(f_set->frame_features( f ),
-                                                 f_set->frame_descriptors( f ),
-                                                 current_set->frame_features( frame_number ),
-                                                 current_set->frame_descriptors( frame_number ));
+    vital::match_set_sptr mset = d_->matcher->match(f_set->frame_features( f ),
+                                                    f_set->frame_descriptors( f ),
+                                                    current_set->frame_features( frame_number ),
+                                                    current_set->frame_descriptors( frame_number ));
 
-    if( mset->size() < match_req_ )
+    if( mset->size() < d_->match_req )
     {
       continue;
     }
@@ -217,6 +238,5 @@ close_loops_exhaustive
 
 
 } // end namespace core
-
 } // end namespace maptk
 } // end namespace kwiver

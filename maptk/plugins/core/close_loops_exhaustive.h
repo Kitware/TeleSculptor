@@ -43,16 +43,14 @@
 #include <vital/types/image_container.h>
 #include <vital/types/track_set.h>
 
-#include <vital/algo/match_features.h>
 #include <vital/algo/close_loops.h>
 #include <vital/config/config_block.h>
 
+#include <memory>
 
 namespace kwiver {
 namespace maptk {
-
-namespace core
-{
+namespace core {
 
 /// Attempts to stitch over previous frames.
 /**
@@ -70,7 +68,7 @@ public:
   close_loops_exhaustive(const close_loops_exhaustive&);
 
   /// Destructor
-  virtual ~close_loops_exhaustive() VITAL_DEFAULT_DTOR;
+  virtual ~close_loops_exhaustive() VITAL_NOTHROW;
 
   /// Return the name of this implementation
   virtual std::string impl_name() const { return "exhaustive"; }
@@ -128,27 +126,16 @@ public:
           vital::image_container_sptr image,
           vital::image_container_sptr mask = vital::image_container_sptr() ) const;
 
-protected:
-
-  /// Run exhaustive loop closure
-  bool enabled_;
-
-  /// number of feature matches required for acceptance
-  int match_req_;
-
-  /// Max frames to close loops back to (-1 to beginning of sequence)
-  int num_look_back_;
-
-  /// The feature matching algorithm to use
-  vital::algo::match_features_sptr matcher_;
-
+private:
+  /// private implementation class
+  class priv;
+  const std::unique_ptr<priv> d_;
 };
 
 
-} // end namespace algo
-
+} // end namespace core
 } // end namespace maptk
 } // end namespace kwiver
 
 
-#endif // MAPTK_PLUGINS_CORE_CLOSE_LOOPS_exhaustive_H_
+#endif // MAPTK_PLUGINS_CORE_CLOSE_LOOPS_EXHAUSTIVE_H_
