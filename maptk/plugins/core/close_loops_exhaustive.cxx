@@ -194,6 +194,12 @@ close_loops_exhaustive
   std::vector< vital::track_sptr > all_tracks = input->tracks();
   vital::track_set_sptr current_set = input->active_tracks( frame_number );
 
+  std::vector<vital::track_sptr> current_tracks = current_set->tracks();
+  vital::descriptor_set_sptr current_descriptors =
+      current_set->frame_descriptors( frame_number );
+  vital::feature_set_sptr current_features =
+      current_set->frame_features( frame_number );
+
   for(vital::frame_id_t f = frame_number - 2; f >= last_frame; f-- )
   {
     vital::track_set_sptr f_set = input->active_tracks( f );
@@ -201,8 +207,8 @@ close_loops_exhaustive
     // run matcher alg
     vital::match_set_sptr mset = d_->matcher->match(f_set->frame_features( f ),
                                                     f_set->frame_descriptors( f ),
-                                                    current_set->frame_features( frame_number ),
-                                                    current_set->frame_descriptors( frame_number ));
+                                                    current_features,
+                                                    current_descriptors);
 
     if( mset->size() < d_->match_req )
     {
@@ -211,15 +217,17 @@ close_loops_exhaustive
 
     // modify track history
     std::vector<vital::track_sptr> f_tracks = f_set->tracks();
-    std::vector<vital::track_sptr> current_tracks = current_set->tracks();
     std::vector<vital::match> matches = mset->matches();
     std::set<vital::track_id_t> to_remove;
 
     for( unsigned i = 0; i < matches.size(); i++ )
     {
-      if( f_tracks[ matches[i].first ]->append( *current_tracks[ matches[i].second ] ) )
+      unsigned f_idx = matches[i].first;
+      unsigned c_idx = matches[i].second;
+      if( f_tracks[ f_idx ]->append( *current_tracks[ c_idx ] ) )
       {
-        to_remove.insert( current_tracks[ matches[i].second ]->id() );
+        to_remove.insert( current_tracks[ c_idx ]->id() );
+        current_tracks[ c_idx ] = f_tracks[ f_idx ];
       }
     }
 
@@ -230,10 +238,12 @@ close_loops_exhaustive
                         std::bind( track_in_set, std::placeholders::_1, &to_remove ) ),
         all_tracks.end()
       );
+      // recreate the track set with the new filtered tracks
+      input = std::make_shared<simple_track_set>( all_tracks );
     }
   }
 
-  return track_set_sptr( new simple_track_set( all_tracks ) );
+  return input;
 }
 
 
