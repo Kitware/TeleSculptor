@@ -71,6 +71,7 @@
 #include <maptk/local_geo_cs.h>
 #include <maptk/geo_reference_points_io.h>
 #include <maptk/metrics.h>
+#include <maptk/match_matrix.h>
 #include <maptk/transform.h>
 #include <maptk/version.h>
 
@@ -327,6 +328,69 @@ filter_tracks(kwiver::vital::track_set_sptr tracks, size_t min_length)
     }
   }
   return kwiver::vital::track_set_sptr(new kwiver::vital::simple_track_set(good_trks));
+}
+
+
+// ------------------------------------------------------------------
+/// filter track set by removing less important
+kwiver::vital::track_set_sptr
+filter_tracks_importance(kwiver::vital::track_set_sptr tracks, double min_score)
+{
+  using namespace kwiver;
+  std::vector<vital::frame_id_t> frames;
+  Eigen::SparseMatrix<unsigned int> mm = maptk::match_matrix(tracks, frames);
+
+  // build a frame map for reverse lookup of matrix indices
+  std::map<vital::frame_id_t, unsigned int> frame_map;
+  const unsigned int num_frames = static_cast<unsigned int>(frames.size());
+  for( unsigned int i=0; i<num_frames; ++i )
+  {
+    frame_map[frames[i]] = i;
+  }
+
+  // score the importance of each track against the match matrix
+  std::vector<vital::track_sptr> trks = tracks->tracks();
+  std::vector<std::pair<double, vital::track_sptr> > scores;
+  VITAL_FOREACH(const vital::track_sptr& t, trks)
+  {
+    // get all the frames covered by this track
+    std::set<vital::frame_id_t> t_frames = t->all_frame_ids();
+    // map the frames to a vector of all valid matrix indices
+    std::set<unsigned int> t_ind;
+    VITAL_FOREACH(const vital::frame_id_t& fid, t_frames)
+    {
+      std::map<vital::frame_id_t, unsigned int>::const_iterator fmi = frame_map.find(fid);
+      // only add to the vector if in the map
+      if( fmi != frame_map.end() )
+      {
+        t_ind.insert(fmi->second);
+      }
+    }
+
+    // get the scores from the match matrix
+    double score = 0.0;
+    typedef std::set<unsigned int>::const_iterator sitr_t;
+    for( sitr_t tfi1 = t_ind.begin(); tfi1 != t_ind.end(); ++tfi1)
+    {
+      for( sitr_t tfi2 = tfi1; tfi2 != t_ind.end(); ++tfi2)
+      {
+        score += 1.0 / mm.coeffRef(*tfi2, *tfi1);
+      }
+    }
+    scores.push_back(std::make_pair(score, t));
+  }
+
+  //std::sort(scores.begin(), scores.end());
+  std::vector<vital::track_sptr> good_trks;
+  VITAL_FOREACH(auto const& p, scores)
+  {
+    //std::cout << "len " << p.second->size() << "\t score " << p.first << std::endl;
+    if( p.first >= min_score )
+    {
+      good_trks.push_back(p.second);
+    }
+  }
+  return vital::track_set_sptr(new vital::simple_track_set(good_trks));
 }
 
 
@@ -679,7 +743,8 @@ static int maptk_main(int argc, char const* argv[])
   if( min_track_len > 1 )
   {
     kwiver::vital::scoped_cpu_timer t( "track filtering" );
-    tracks = filter_tracks(tracks, min_track_len);
+    //tracks = filter_tracks(tracks, min_track_len);
+    tracks = filter_tracks_importance(tracks, 0.1);
     LOG_DEBUG(main_logger, "filtered down to "<<tracks->size()<<" long tracks");
 
     // write out filtered tracks if output file is specified
