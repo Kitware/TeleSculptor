@@ -101,8 +101,7 @@ close_loops_exhaustive
                     "bridge the gap between frames and previous frames exhaustively");
 
   config->set_value("match_req", match_req_,
-                    "The required number of features needed to be matched for a "
-                    "success (value must be between 0.0 and 1.0).");
+                    "The required number of features needed to be matched for a success.");
 
   config->set_value("num_look_back", num_look_back_,
                     "Maximum number of frames to search in the past for matching to "
@@ -129,7 +128,7 @@ close_loops_exhaustive
   matcher_ = mf;
 
   enabled_ = config->get_value<bool>("enabled");
-  match_req_ = config->get_value<double>("match_req");
+  match_req_ = config->get_value<int>("match_req");
   num_look_back_ = config->get_value<int>("num_look_back");
 }
 

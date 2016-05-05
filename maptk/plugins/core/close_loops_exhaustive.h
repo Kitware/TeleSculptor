@@ -134,7 +134,7 @@ protected:
   bool enabled_;
 
   /// number of feature matches required for acceptance
-  double match_req_;
+  int match_req_;
 
   /// Max frames to close loops back to (-1 to beginning of sequence)
   int num_look_back_;
