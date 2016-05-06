@@ -66,6 +66,7 @@ public:
   priv()
     : match_req(100),
       search_bandwidth(10),
+      min_keyframe_misses(5),
       m_logger( vital::get_logger( "close_loops_keyframe" ))
   {
   }
@@ -73,6 +74,7 @@ public:
   priv(const priv& other)
     : match_req(other.match_req),
       search_bandwidth(other.search_bandwidth),
+      min_keyframe_misses(other.min_keyframe_misses),
       matcher(!other.matcher ? algo::match_features_sptr() : other.matcher->clone()),
       m_logger( vital::get_logger( "close_loops_keyframe" ))
   {
@@ -143,6 +145,9 @@ public:
   /// number of adjacent frames to match
   int search_bandwidth;
 
+  /// minimum number of keyframe misses before creating a new keyframe
+  int min_keyframe_misses;
+
   /// Indices of the the selected keyframes
   std::vector<frame_id_t> keyframes;
 
@@ -209,6 +214,11 @@ close_loops_keyframe
   config->set_value("search_bandwidth", d_->search_bandwidth,
                     "number of adjacent frames to match to (must be at least 1)");
 
+  config->set_value("min_keyframe_misses", d_->min_keyframe_misses,
+                    "minimum number of keyframe match misses before creating a new keyframe. "
+                    "A match miss occures when the current frame does not match any existing "
+                    "keyframe (must be at least 1)");
+
   return config;
 }
 
@@ -229,6 +239,7 @@ close_loops_keyframe
 
   d_->match_req = config->get_value<int>("match_req");
   d_->search_bandwidth = config->get_value<int>("search_bandwidth");
+  d_->min_keyframe_misses = config->get_value<int>("min_keyframe_misses");
 }
 
 
@@ -240,6 +251,7 @@ close_loops_keyframe
   return (
     algo::match_features::check_nested_algo_configuration("feature_matcher", config)
     && config->get_value<int>("search_bandwidth") >= 1
+    && config->get_value<int>("min_keyframe_misses") >= 1
   );
 }
 
@@ -362,7 +374,7 @@ close_loops_keyframe
   // If we've seen enough keyframe misses and the first miss has passed outside
   // of the search bandwidth, then add a new key frame by selecting the frame
   // since the first miss that has been most successful at matching.
-  if (d_->keyframe_misses.size() > 5 &&
+  if (d_->keyframe_misses.size() > d_->min_keyframe_misses &&
       d_->keyframe_misses.front() < last_frame)
   {
     auto hitr = d_->frame_matches.find(d_->keyframe_misses.front());
