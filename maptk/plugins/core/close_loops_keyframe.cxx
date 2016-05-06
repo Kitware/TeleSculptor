@@ -146,6 +146,12 @@ public:
   /// Indices of the the selected keyframes
   std::vector<frame_id_t> keyframes;
 
+  /// histogram of matches associated with each frame
+  std::map<frame_id_t, unsigned int> frame_matches;
+
+  /// a collection of recent frame that didn't match any keyframe
+  std::vector<frame_id_t> keyframe_misses;
+
   /// The feature matching algorithm to use
   vital::algo::match_features_sptr matcher;
 
@@ -238,7 +244,7 @@ close_loops_keyframe
 }
 
 
-/// Exaustive loop closure
+/// Frame stitching using keyframe-base matching
 vital::track_set_sptr
 close_loops_keyframe
 ::stitch( vital::frame_id_t frame_number,
@@ -246,45 +252,69 @@ close_loops_keyframe
           vital::image_container_sptr,
           vital::image_container_sptr ) const
 {
+  // initialize frame matches for this frame
+  d_->frame_matches[frame_number] = 0;
+
+  // do nothing for the first two frames, there is nothing to match
   if( frame_number < 2 )
   {
     return input;
   }
 
+  // compute the last frame we need to match to within the search bandwidth
+  // the conditional accounts for the boundary case at startup
   frame_id_t last_frame = 0;
   if(frame_number > d_->search_bandwidth)
   {
     last_frame = frame_number - d_->search_bandwidth;
   }
 
+  // the first frame is always a key frame (for now)
+  // This could proably be improved
   if(d_->keyframes.empty())
   {
     d_->keyframes.push_back(input->first_frame());
   }
 
-  std::vector< vital::track_sptr > all_tracks = input->tracks();
+  // extract the subset of tracks on the current frame and their
+  // features and descriptors
   vital::track_set_sptr current_set = input->active_tracks( frame_number );
-
   std::vector<vital::track_sptr> current_tracks = current_set->tracks();
   vital::descriptor_set_sptr current_descriptors =
       current_set->frame_descriptors( frame_number );
   vital::feature_set_sptr current_features =
       current_set->frame_features( frame_number );
 
+  // number of matched features and linked tracks are returned by reference
+  // in these variables
   int num_matched = 0, num_linked = 0;
+  // used to compute the maximum number of matches between the current frame
+  // and any of the key frames
   int max_keyframe_matched = 0;
+
+  // use this iterator to step backward through the keyframes
+  // as we step backward through the neighborhood to identify
+  // which neighborhood frames are also keyframes
   auto kitr = d_->keyframes.rbegin();
+  // since loop closure starts at frame n-2, if the latest
+  // keyframe happens to be n-1 we need to skip that one
   if (*kitr == frame_number-1)
   {
     ++kitr;
   }
+
+  // stitch with all frames within a neighborhood of the current frame
   for(vital::frame_id_t f = frame_number - 2; f >= last_frame; f-- )
   {
     input = d_->stitch(f, input, frame_number, current_tracks,
                        current_features, current_descriptors,
                        num_matched, num_linked);
-    // if this frame is a keyframe then account for it in computing the
-    // maximum number of matches to a key frame
+    // accumulate matches to help assign keyframes later
+    d_->frame_matches[frame_number] += num_matched;
+
+    // keyframes can occur within the current search neighborhood
+    // if this frame is a keyframe then account for it in the
+    // computation of the maximum number of matches to all keyframes
     std::string frame_name = "";
     if(kitr != d_->keyframes.rend() && f == *kitr)
     {
@@ -301,10 +331,10 @@ close_loops_keyframe
                            << num_linked << " joined tracks");
   }
 
-  // stitch will all previous keyframes
+  // stitch with all previous keyframes
   for(auto kitr = d_->keyframes.rbegin(); kitr != d_->keyframes.rend(); ++kitr)
   {
-    // if this frame was already matched then skip it
+    // if this frame was already matched above then skip it
     if(*kitr >= last_frame)
     {
       continue;
@@ -321,10 +351,36 @@ close_loops_keyframe
     }
   }
 
+  // keep track of frames that matched no keyframes
   if (max_keyframe_matched < d_->match_req)
   {
-    LOG_INFO(d_->m_logger, "creating new key frame on frame " << frame_number << ", mkm "<<max_keyframe_matched);
-    d_->keyframes.push_back(frame_number);
+    d_->keyframe_misses.push_back(frame_number);
+    LOG_DEBUG(d_->m_logger, "Frame " << frame_number << " added to keyframe misses. "
+                            << "Count: "<<d_->keyframe_misses.size());
+  }
+
+  // If we've seen enough keyframe misses and the first miss has passed outside
+  // of the search bandwidth, then add a new key frame by selecting the frame
+  // since the first miss that has been most successful at matching.
+  if (d_->keyframe_misses.size() > 5 &&
+      d_->keyframe_misses.front() < last_frame)
+  {
+    auto hitr = d_->frame_matches.find(d_->keyframe_misses.front());
+    unsigned int max_matches = 0;
+    frame_id_t max_id = 0;
+    // find the frame with the most accumulated matches
+    for(++hitr; hitr != d_->frame_matches.end(); ++hitr)
+    {
+      if(hitr->second > max_matches)
+      {
+        max_matches = hitr->second;
+        max_id = hitr->first;
+      }
+    }
+    // create the new keyframe and clear the list of misses
+    LOG_INFO(d_->m_logger, "creating new keyframe on frame " << max_id);
+    d_->keyframes.push_back(max_id);
+    d_->keyframe_misses.clear();
   }
 
   return input;
