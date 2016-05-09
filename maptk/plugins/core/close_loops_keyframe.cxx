@@ -383,7 +383,7 @@ close_loops_keyframe
     // but this key frame did not match, then exit the loop early and don't
     // match any more key frames.
     if (d_->stop_after_match &&
-        max_keyframe_matched > d_->match_req &&
+        max_keyframe_matched >= d_->match_req &&
         num_matched < d_->match_req)
     {
       break;
