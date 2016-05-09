@@ -67,6 +67,7 @@ public:
     : match_req(100),
       search_bandwidth(10),
       min_keyframe_misses(5),
+      stop_after_match(false),
       m_logger( vital::get_logger( "close_loops_keyframe" ))
   {
   }
@@ -75,6 +76,7 @@ public:
     : match_req(other.match_req),
       search_bandwidth(other.search_bandwidth),
       min_keyframe_misses(other.min_keyframe_misses),
+      stop_after_match(other.stop_after_match),
       matcher(!other.matcher ? algo::match_features_sptr() : other.matcher->clone()),
       m_logger( vital::get_logger( "close_loops_keyframe" ))
   {
@@ -148,6 +150,9 @@ public:
   /// minimum number of keyframe misses before creating a new keyframe
   int min_keyframe_misses;
 
+  /// stop matching against additional keyframes if at least one succeeds
+  bool stop_after_match;
+
   /// Indices of the the selected keyframes
   std::vector<frame_id_t> keyframes;
 
@@ -219,6 +224,13 @@ close_loops_keyframe
                     "A match miss occures when the current frame does not match any existing "
                     "keyframe (must be at least 1)");
 
+  config->set_value("stop_after_match", d_->stop_after_match,
+                    "If set, stop matching additional keyframes after at least "
+                    "one match is found and then one fails to match.  This "
+                    "prevents making many comparions to keyframes that are "
+                    "likely to fail, but it also misses unexpected matches "
+                    "that could make the tracks stronger.");
+
   return config;
 }
 
@@ -240,6 +252,7 @@ close_loops_keyframe
   d_->match_req = config->get_value<int>("match_req");
   d_->search_bandwidth = config->get_value<int>("search_bandwidth");
   d_->min_keyframe_misses = config->get_value<int>("min_keyframe_misses");
+  d_->stop_after_match = config->get_value<bool>("stop_after_match");
 }
 
 
@@ -365,6 +378,15 @@ close_loops_keyframe
     if( num_matched > max_keyframe_matched )
     {
       max_keyframe_matched = num_matched;
+    }
+    // if the stop-after-match option is set and we've already matched a keyframe
+    // but this key frame did not match, then exit the loop early and don't
+    // match any more key frames.
+    if (d_->stop_after_match &&
+        max_keyframe_matched > d_->match_req &&
+        num_matched < d_->match_req)
+    {
+      break;
     }
   }
 
