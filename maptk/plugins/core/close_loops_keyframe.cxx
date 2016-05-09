@@ -297,6 +297,11 @@ close_loops_keyframe
   vital::feature_set_sptr current_features =
       current_set->frame_features( frame_number );
 
+  // Initialize frame_matches to the number of tracks already matched
+  // between the current and previous frames.  This matching was done outside
+  // of loop closure as part of the standard frame-to-frame tracking
+  d_->frame_matches[frame_number] = current_set->active_tracks( frame_number-1 )->size();
+
   // number of matched features and linked tracks are returned by reference
   // in these variables
   int num_matched = 0, num_linked = 0;
@@ -379,7 +384,7 @@ close_loops_keyframe
   {
     auto hitr = d_->frame_matches.find(d_->keyframe_misses.front());
     unsigned int max_matches = 0;
-    frame_id_t max_id = 0;
+    frame_id_t max_id = d_->keyframe_misses.front();
     // find the frame with the most accumulated matches
     for(++hitr; hitr != d_->frame_matches.end(); ++hitr)
     {
