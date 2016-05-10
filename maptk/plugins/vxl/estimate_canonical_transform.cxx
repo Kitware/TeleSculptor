@@ -43,6 +43,7 @@
 #include <rrel/rrel_orthogonal_regression.h>
 #include <rrel/rrel_ran_sam_search.h>
 #include <rrel/rrel_ransac_obj.h>
+#include <rrel/rrel_lms_obj.h>
 
 using namespace kwiver::vital;
 
@@ -55,10 +56,12 @@ namespace vxl {
 class estimate_canonical_transform::priv
 {
 public:
+  enum rrel_method_types {RANSAC, LMS};
   /// Constructor
   priv()
     : estimate_scale(true),
       trace_level(0),
+      rrel_method(RANSAC),
       desired_prob_good(0.99),
       max_outlier_frac(0.75),
       prior_inlier_scale(0.1),
@@ -69,6 +72,7 @@ public:
   priv(const priv& other)
     : estimate_scale(other.estimate_scale),
       trace_level(other.trace_level),
+      rrel_method(other.rrel_method),
       desired_prob_good(other.desired_prob_good),
       max_outlier_frac(other.max_outlier_frac),
       prior_inlier_scale(other.prior_inlier_scale),
@@ -91,22 +95,48 @@ public:
     int max_pops = 1;
 
     rrel_orthogonal_regression *reg = new rrel_orthogonal_regression(vnl_points);
+    vnl_vector<double> pp;
 
-    rrel_ransac_obj* ransac = new rrel_ransac_obj();
-    rrel_ran_sam_search* ransam = new rrel_ran_sam_search;
-    ransam->set_sampling_params(max_outlier_frac, desired_prob_good, max_pops);
-    ransam->set_trace_level(trace_level);
-
-    reg->set_prior_scale(prior_inlier_scale);
-
-    if ( !ransam->estimate( reg, ransac) )
+    switch(rrel_method)
     {
-      LOG_ERROR(m_logger, "Unable to fit a plane to the landmarks.");
+      case RANSAC:
+      {
+        rrel_ransac_obj* ransac = new rrel_ransac_obj();
+        rrel_ran_sam_search* ransam = new rrel_ran_sam_search;
+        ransam->set_sampling_params(max_outlier_frac, desired_prob_good, max_pops);
+        ransam->set_trace_level(trace_level);
+
+        reg->set_prior_scale(prior_inlier_scale);
+
+        if ( !ransam->estimate( reg, ransac) )
+        {
+          LOG_ERROR(m_logger, "RANSAC unable to fit a plane to the landmarks.");
+        }
+        LOG_DEBUG(m_logger, "Estimated scale = " << ransam->scale());
+        pp = ransam->params();
+        delete ransam;
+        delete ransac;
+
+      }
+      case LMS:
+      {
+        int num_sam_inst = reg->num_samples_to_instantiate();
+        rrel_objective* lms = new rrel_lms_obj( num_sam_inst );
+        rrel_ran_sam_search* ransam = new rrel_ran_sam_search;
+        ransam->set_sampling_params(max_outlier_frac, desired_prob_good, max_pops);
+        ransam->set_trace_level(trace_level);
+
+        if ( !ransam->estimate( reg, lms) )
+        {
+          LOG_ERROR(m_logger, "LMS unable to fit a plane to the landmarks.");
+        }
+        LOG_DEBUG(m_logger, "Estimated scale = " << ransam->scale());
+        pp = ransam->params();
+        delete ransam;
+        delete lms;
+      }
     }
-    LOG_DEBUG(m_logger, "Estimated scale = " << ransam->scale());
-    vnl_vector<double> pp = ransam->params();
-    delete ransam;
-    delete ransac;
+
     delete reg;
     return vector_4d(pp[0], pp[1], pp[2], pp[3]);
   }
@@ -115,6 +145,8 @@ public:
   bool estimate_scale;
   // This controls the verbosity of the search techniques.
   int trace_level;
+  // The robust estimation method to used
+  rrel_method_types rrel_method;
   // The desired probability of finding the correct fit.
   double desired_prob_good;
   // The maximum fraction of the data that is expected to be gross outliers.
@@ -166,6 +198,12 @@ estimate_canonical_transform
                     "Integer value controlling the verbosity of the "
                     "plane search algorithms (0->no output, 3->max output).");
 
+  config->set_value("rrel_method", static_cast<int>(d_->rrel_method),
+                    "The robust estimation algorithm to use for plane "
+                    "fitting. Options are:\n"
+                    " 0 = RANSAC\n"
+                    " 1 = Least Median of Squares");
+
   config->set_value("desired_prob_good", d_->desired_prob_good,
                     "The desired probability of finding the correct plane fit.");
 
@@ -187,6 +225,8 @@ estimate_canonical_transform
 {
   d_->estimate_scale = config->get_value<bool>("estimate_scale", d_->estimate_scale);
   d_->trace_level = config->get_value<int>("trace_level", d_->trace_level);
+  d_->rrel_method = static_cast<priv::rrel_method_types>(
+                        config->get_value<int>("rrel_method", static_cast<int>(d_->rrel_method)));
   d_->desired_prob_good = config->get_value<double>("desired_prob_good", d_->desired_prob_good);
   d_->max_outlier_frac = config->get_value<double>("max_outlier_frac", d_->max_outlier_frac);
   d_->prior_inlier_scale = config->get_value<double>("prior_inlier_scale", d_->prior_inlier_scale);
