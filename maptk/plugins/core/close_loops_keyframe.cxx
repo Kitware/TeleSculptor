@@ -148,7 +148,7 @@ public:
   int search_bandwidth;
 
   /// minimum number of keyframe misses before creating a new keyframe
-  int min_keyframe_misses;
+  unsigned int min_keyframe_misses;
 
   /// stop matching against additional keyframes if at least one succeeds
   bool stop_after_match;
@@ -251,7 +251,7 @@ close_loops_keyframe
 
   d_->match_req = config->get_value<int>("match_req");
   d_->search_bandwidth = config->get_value<int>("search_bandwidth");
-  d_->min_keyframe_misses = config->get_value<int>("min_keyframe_misses");
+  d_->min_keyframe_misses = config->get_value<unsigned int>("min_keyframe_misses");
   d_->stop_after_match = config->get_value<bool>("stop_after_match");
 }
 
