@@ -39,7 +39,10 @@
 
 #include <algorithm>
 
-#include <vgl/algo/vgl_fit_plane_3d.h>
+#include <vnl/vnl_double_3.h>
+#include <rrel/rrel_orthogonal_regression.h>
+#include <rrel/rrel_ran_sam_search.h>
+#include <rrel/rrel_ransac_obj.h>
 
 using namespace kwiver::vital;
 
@@ -55,12 +58,20 @@ public:
   /// Constructor
   priv()
     : estimate_scale(true),
+      trace_level(0),
+      desired_prob_good(0.99),
+      max_outlier_frac(0.75),
+      prior_inlier_scale(0.1),
       m_logger( vital::get_logger( "estimate_canonical_transform" ))
   {
   }
 
   priv(const priv& other)
     : estimate_scale(other.estimate_scale),
+      trace_level(other.trace_level),
+      desired_prob_good(other.desired_prob_good),
+      max_outlier_frac(other.max_outlier_frac),
+      prior_inlier_scale(other.prior_inlier_scale),
       m_logger( vital::get_logger( "estimate_canonical_transform" ))
   {
   }
@@ -68,21 +79,49 @@ public:
   /// Helper function to estimate a ground plane from the data points
   vector_4d estimate_plane(std::vector<vector_3d> const& points) const
   {
-    vgl_fit_plane_3d<double> fit;
+    std::vector< vnl_vector<double> > vnl_points;
     VITAL_FOREACH(vector_3d const& p, points)
     {
-      fit.add_point(p[0], p[1], p[2]);
+      vnl_points.push_back(vnl_vector<double>(vnl_double_3(p[0], p[1], p[2])));
     }
-    if( !fit.fit() )
+
+    // The number of different populations in the data set. For most
+    // problems, the data is from one source (surface, etc.), so this
+    // will be 1.
+    int max_pops = 1;
+
+    rrel_orthogonal_regression *reg = new rrel_orthogonal_regression(vnl_points);
+
+    rrel_ransac_obj* ransac = new rrel_ransac_obj();
+    rrel_ran_sam_search* ransam = new rrel_ran_sam_search;
+    ransam->set_sampling_params(max_outlier_frac, desired_prob_good, max_pops);
+    ransam->set_trace_level(trace_level);
+
+    reg->set_prior_scale(prior_inlier_scale);
+
+    if ( !ransam->estimate( reg, ransac) )
     {
       LOG_ERROR(m_logger, "Unable to fit a plane to the landmarks.");
     }
-    vgl_homg_plane_3d<double> plane = fit.get_plane();
-
-    return vector_4d(plane.a(), plane.b(), plane.c(), plane.d());
+    LOG_DEBUG(m_logger, "Estimated scale = " << ransam->scale());
+    vnl_vector<double> pp = ransam->params();
+    delete ransam;
+    delete ransac;
+    delete reg;
+    return vector_4d(pp[0], pp[1], pp[2], pp[3]);
   }
 
+  // Enable estimation of scale in the similarity transform
   bool estimate_scale;
+  // This controls the verbosity of the search techniques.
+  int trace_level;
+  // The desired probability of finding the correct fit.
+  double desired_prob_good;
+  // The maximum fraction of the data that is expected to be gross outliers.
+  double max_outlier_frac;
+  // The initial estimate of inlier scale for RANSAC
+  double prior_inlier_scale;
+  // Logger handle
   vital::logger_handle_t m_logger;
 };
 
@@ -123,6 +162,20 @@ estimate_canonical_transform
                     "Estimate the scale to normalize the data. "
                     "If disabled the estimate transform is rigid");
 
+  config->set_value("trace_level", d_->trace_level,
+                    "Integer value controlling the verbosity of the "
+                    "plane search algorithms (0->no output, 3->max output).");
+
+  config->set_value("desired_prob_good", d_->desired_prob_good,
+                    "The desired probability of finding the correct plane fit.");
+
+  config->set_value("max_outlier_frac", d_->max_outlier_frac,
+                    "The maximum fraction of the landmarks that is expected "
+                    "outliers to the ground plane.");
+
+  config->set_value("prior_inlier_scale", d_->prior_inlier_scale,
+                    "The initial estimate of inlier scale for RANSAC "
+                    "fitting of the ground plane.");
   return config;
 }
 
@@ -133,6 +186,10 @@ estimate_canonical_transform
 ::set_configuration(vital::config_block_sptr config)
 {
   d_->estimate_scale = config->get_value<bool>("estimate_scale", d_->estimate_scale);
+  d_->trace_level = config->get_value<int>("trace_level", d_->trace_level);
+  d_->desired_prob_good = config->get_value<double>("desired_prob_good", d_->desired_prob_good);
+  d_->max_outlier_frac = config->get_value<double>("max_outlier_frac", d_->max_outlier_frac);
+  d_->prior_inlier_scale = config->get_value<double>("prior_inlier_scale", d_->prior_inlier_scale);
 }
 
 
