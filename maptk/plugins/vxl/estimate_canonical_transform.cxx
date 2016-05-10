@@ -39,6 +39,8 @@
 
 #include <algorithm>
 
+#include <vgl/algo/vgl_fit_plane_3d.h>
+
 using namespace kwiver::vital;
 
 namespace kwiver {
@@ -61,6 +63,23 @@ public:
     : estimate_scale(other.estimate_scale),
       m_logger( vital::get_logger( "estimate_canonical_transform" ))
   {
+  }
+
+  /// Helper function to estimate a ground plane from the data points
+  vector_4d estimate_plane(std::vector<vector_3d> const& points) const
+  {
+    vgl_fit_plane_3d<double> fit;
+    VITAL_FOREACH(vector_3d const& p, points)
+    {
+      fit.add_point(p[0], p[1], p[2]);
+    }
+    if( !fit.fit() )
+    {
+      LOG_ERROR(m_logger, "Unable to fit a plane to the landmarks.");
+    }
+    vgl_homg_plane_3d<double> plane = fit.get_plane();
+
+    return vector_4d(plane.a(), plane.b(), plane.c(), plane.d());
   }
 
   bool estimate_scale;
@@ -133,19 +152,32 @@ estimate_canonical_transform
                      kwiver::vital::landmark_map_sptr const landmarks) const
 {
   using namespace maptk;
+  std::vector<vector_3d> points;
+  VITAL_FOREACH(auto const& p, landmarks->landmarks())
+  {
+    points.push_back(p.second->loc());
+  }
+  // estimate the ground plane
+  vector_4d plane = d_->estimate_plane(points);
+  vector_3d normal = plane.head<3>();
+
+  //project the points onto the plane
+  VITAL_FOREACH(vector_3d& p, points)
+  {
+    p -= (normal.dot(p) + plane[3]) * normal;
+  }
+
   // find the centroid and scale of all the landmarks
-  typedef vital::landmark_map::map_landmark_t lm_map_t;
   vital::vector_3d center(0,0,0);
   double s=0.0;
   vital::matrix_3x3d covar = vital::matrix_3x3d::Zero();
-  VITAL_FOREACH(const lm_map_t::value_type& p, landmarks->landmarks())
+  VITAL_FOREACH(vector_3d const& p, points)
   {
-    vital::vector_3d pt = p.second->loc();
-    center += pt;
-    covar += pt * pt.transpose();
-    s += pt.dot(pt);
+    center += p;
+    covar += p * p.transpose();
+    s += p.dot(p);
   }
-  const double num_lm = static_cast<double>(landmarks->size());
+  const double num_lm = static_cast<double>(points.size());
   center /= num_lm;
   covar /= num_lm;
   covar -= center * center.transpose();
