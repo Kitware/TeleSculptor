@@ -56,10 +56,10 @@ namespace vxl {
  *  then applying a canonical transform to P1 and separately a
  *  canonical transform to P2 should bring the data into the same coordinates.
  *
- *  This implementation centers the data first fits a "ground" plane to the
- *  landmarks using robust estimate methods provided by the rgrl library.
+ *  This implementation first fits a "ground" plane to the landmark points
+ *  using robust estimation methods provided by the rrel library in VXL.
  *  It then estimates the remaining degrees of freedom using PCA much like
- *  the implementation in the core plugin.  The scale is set to normalized the
+ *  the implementation in the core plugin.  The scale is set to normalize the
  *  landmarks to unit standard deviation.
  */
 class MAPTK_VXL_EXPORT estimate_canonical_transform
