@@ -41,6 +41,9 @@ struct Project
   QStringList images;
   QString cameraPath;
   QString volumePath;
+  QString volumeKRTD;
+  QString volumeDepthmaps;
+
 
   QString tracks;
   QString landmarks;

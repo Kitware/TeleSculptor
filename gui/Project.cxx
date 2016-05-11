@@ -171,6 +171,8 @@ bool Project::read(QString const& path)
     if (config->has_value("volume_file"))
     {
       this->volumePath = getPath(config, base, "volume_file");
+      this->volumeKRTD = getPath(config, base, "volume_krtd_file");
+      this->volumeDepthmaps  = getPath(config, base, "volume_depthmaps_file");
     }
 
     return true;

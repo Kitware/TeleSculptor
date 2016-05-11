@@ -35,7 +35,7 @@
 
 #include <QtGui/QWidget>
 
-class vtkActor;
+class vtkPolyData;
 
 class VolumeOptionsPrivate;
 
@@ -48,7 +48,7 @@ public:
       QWidget* parent = 0, Qt::WindowFlags flags = 0);
   virtual ~VolumeOptions();
 
-  void setActor(vtkActor* actor);
+  void setVolume(vtkPolyData *mesh, std::string vtiList, std::string krtdList);
 
   void initFrameSampling(int nbFrames);
 

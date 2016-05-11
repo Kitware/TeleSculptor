@@ -435,13 +435,7 @@ void MainWindowPrivate::setActiveCamera(int id)
 
   if (cd.camera != NULL)
   {
-    vtkMatrix4x4* m = cd.camera->GetModelTransformMatrix();
-
-    m->SetElement(0,3,0.0);
-    m->SetElement(1,3,0.0);
-    m->SetElement(2,3,0.0);
-
-    UI.worldView->setActiveDepthMap(activeCameraIndex,m,this->cameras[id].dmp);
+    UI.worldView->setActiveDepthMap(this->cameras[id].camera,this->cameras[id].dmp);
   }
 //  UI.dMView->setDepthMap(this->cameras[id].dmp.dMImagePath);
 //  this->updateDM();
@@ -829,11 +823,16 @@ void MainWindow::loadProject(QString const& path)
   {
     d->UI.worldView->enableDepthMap("vts");
   }
+  if (!project.DMvti.isEmpty())
+  {
+    d->UI.worldView->enableDepthMap("vts");
+  }
 
 
   if (!project.volumePath.isEmpty())
   {
-    d->UI.worldView->loadVolume(project.volumePath,d->cameras.size());
+    d->UI.worldView->loadVolume(project.volumePath, d->cameras.size(),
+                                project.volumeDepthmaps.toStdString(), project.volumeKRTD.toStdString());
   }
 
   for (int camId = 0; camId < d->cameras.size(); ++camId)

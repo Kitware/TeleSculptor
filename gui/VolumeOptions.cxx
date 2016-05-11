@@ -32,6 +32,10 @@
 #include "ui_VolumeOptions.h"
 #include "ColorizeSurfaceOptions.h"
 
+#include <maptk/Helper.h>
+#include <maptk/ReconstructionData.h>
+#include <maptk/MeshColoration.h>
+
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
 
@@ -43,6 +47,9 @@
 #include <vtkPolyDataMapper.h>
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
+#include <vtkPolyData.h>
+
+#include <string>
 
 //-----------------------------------------------------------------------------
 class VolumeOptionsPrivate
@@ -107,22 +114,28 @@ VolumeOptions::~VolumeOptions()
 }
 
 //-----------------------------------------------------------------------------
-void VolumeOptions::setActor(vtkActor *actor)
+void VolumeOptions::setVolume(vtkPolyData* mesh, std::string vtiList, std::string krtdList)
 {
   QTE_D();
 
-  d->volumeActor = actor;
+//  d->volumeActor = actor;
 
-  vtkPointData* pointData = d->volumeActor->GetMapper()->GetInput()->GetPointData();
-  int nbArray = pointData->GetNumberOfArrays();
+//  MeshColoration mC(mesh, vtiList, krtdList);
+//  mC.ProcessColoration();
+//  vtkPolyData* output = mC.GetOutput();
 
-  std::string name;
+//  d->volumeActor->GetMapper()->setI;
 
-  for (int i = 0; i < nbArray; ++i) {
+//  vtkPointData* pointData = d->volumeActor->GetMapper()->GetInput()->GetPointData();
+//  int nbArray = pointData->GetNumberOfArrays();
 
-    name = pointData->GetArrayName(i);
-    d->colorizeSurfaceOptions->addColorDisplay(name);
-  }
+//  std::string name;
+
+//  for (int i = 0; i < nbArray; ++i) {
+
+//    name = pointData->GetArrayName(i);
+//    d->colorizeSurfaceOptions->addColorDisplay(name);
+//  }
 }
 
 //-----------------------------------------------------------------------------
