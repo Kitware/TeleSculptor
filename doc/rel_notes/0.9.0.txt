@@ -19,6 +19,14 @@ Core Plugin
  * Added a new algorithm for canonical transform with the implementation
    details moved from the function that was in transform.h.
 
+VXL Plugin
+
+ * Added a new algorithm for canonical transform which uses robust estimation
+   (e.g. RANSAC, LMS, IRLS) from the Rensselaer robust estimation library
+   (rrel) in VXL to fit a ground plane to the data.  The ground plane becomes
+   the Z=0 plane.  The rest of the free parameters are then fit by PCA as in
+   the core plugin implementation.
+
 Visualization Application
 
  * Updated the "Align" tool to use the configurable abstract algorithm
