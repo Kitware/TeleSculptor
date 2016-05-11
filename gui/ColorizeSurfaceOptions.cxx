@@ -34,6 +34,12 @@
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
 
+#include <vtkActor.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkDataSet.h>
+#include <vtkPointData.h>
+#include <vtkPolyData.h>
+
 //-----------------------------------------------------------------------------
 class ColorizeSurfaceOptionsPrivate
 {
@@ -42,6 +48,8 @@ public:
 
   Ui::ColorizeSurfaceOptions UI;
   qtUiState uiState;
+
+  vtkActor* volumeActor;
 
 };
 
@@ -68,6 +76,9 @@ ColorizeSurfaceOptions::ColorizeSurfaceOptions(const QString &settingsGroup, QWi
 
   connect(d->UI.radioButtonAllFrames, SIGNAL(toggled(bool)),
           this, SLOT(toggleAllFramesMenu()));
+
+  connect(d->UI.buttonCompute, SIGNAL(pressed()),
+          this, SLOT(setColor()));
 }
 
 //-----------------------------------------------------------------------------
@@ -91,6 +102,29 @@ void ColorizeSurfaceOptions::initFrameSampling(int nbFrames)
 
   d->UI.spinBoxFrameSampling->setMaximum(nbFrames-1);
   d->UI.spinBoxFrameSampling->setValue(nbFrames-1/20);
+}
+
+//-----------------------------------------------------------------------------
+void ColorizeSurfaceOptions::setVolume(vtkActor *actor)
+{
+  QTE_D();
+
+  d->volumeActor = actor;
+  int nbArrays = d->volumeActor->GetMapper()->GetInput()->GetPointData()->GetNumberOfArrays();
+
+  for (int i = 0; i < nbArrays; ++i) {
+    addColorDisplay(d->volumeActor->GetMapper()->GetInput()->GetPointData()->GetArray(i)->GetName());
+  }
+}
+
+//-----------------------------------------------------------------------------
+void ColorizeSurfaceOptions::setColor() {
+  QTE_D();
+  QString colorMode = d->UI.comboBoxColorDisplay->currentText();
+
+  d->volumeActor->GetMapper()->GetInput()->GetPointData()->SetScalars(d->volumeActor->GetMapper()->GetInput()->GetPointData()->GetArray(colorMode.toStdString().c_str()));
+
+  emit colorModeChanged(colorMode);
 }
 
 //-----------------------------------------------------------------------------

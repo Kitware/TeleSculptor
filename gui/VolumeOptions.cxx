@@ -135,7 +135,14 @@ void VolumeOptions::setVolume(vtkPolyData* mesh, std::string vtiList, std::strin
 
 //    name = pointData->GetArrayName(i);
 //    d->colorizeSurfaceOptions->addColorDisplay(name);
-//  }
+  //  }
+}
+
+void VolumeOptions::setVolume(vtkActor *actor)
+{
+  QTE_D();
+
+  d->colorizeSurfaceOptions->setVolume(actor);
 }
 
 //-----------------------------------------------------------------------------
@@ -160,4 +167,6 @@ void VolumeOptions::updateColorizeSurfaceMenu(QString text)
   QTE_D();
 
   d->UI.toolButtonColorizeSurfaceMenu->setText(text);
+
+  emit modified();
 }

@@ -37,6 +37,8 @@
 
 class vtkPolyData;
 
+class vtkActor;
+
 class VolumeOptionsPrivate;
 
 class VolumeOptions : public QWidget
@@ -49,8 +51,12 @@ public:
   virtual ~VolumeOptions();
 
   void setVolume(vtkPolyData *mesh, std::string vtiList, std::string krtdList);
+  void setVolume(vtkActor* actor);
 
   void initFrameSampling(int nbFrames);
+
+signals:
+  void modified();
 
 public slots:
   void showColorizeSurfaceMenu(bool state);

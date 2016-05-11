@@ -305,6 +305,9 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->volumeOptions = new VolumeOptions("WorldView/Volume", this);
   d->setPopup(d->UI.actionVolumeDisplay, d->volumeOptions);
 
+  connect(d->volumeOptions, SIGNAL(modified()),
+          d->UI.renderWidget, SLOT(update()));
+
   connect(d->depthMapOptions, SIGNAL(depthMapChanged()),
           this, SLOT(updateDepthMap()));
 
@@ -450,24 +453,22 @@ void WorldView::loadVolume(QString path, int nbFrames, std::string vtiList, std:
 
   readerPoly->SetFileName(filename.c_str());
   readerPoly->Update();
+//  readerPoly->GetOutput()->GetPointData()->SetScalars(readerPoly->GetOutput()->GetPointData()->GetArray(0));
 
   vtkNew<vtkPolyDataMapper> mapper;
   mapper->SetInputData(readerPoly->GetOutput());
   mapper->SetColorModeToDirectScalars();
 
-
-
-
-
-  //----
   d->volumeActor->SetMapper(mapper.Get());
 
-  d->volumeOptions->setVolume(readerPoly->GetOutput(),vtiList,krtdList);
+//  d->volumeOptions->setVolume(readerPoly->GetOutput(),vtiList,krtdList);
+  d->volumeOptions->setVolume(d->volumeActor.Get());
   d->volumeOptions->initFrameSampling(nbFrames);
 
   d->volumeActor->SetVisibility(true);
   d->renderer->AddActor(d->volumeActor.Get());
   d->renderer->AddViewProp(d->volumeActor.GetPointer());
+  d->UI.renderWidget->update();
 }
 
 //vtkPolyData *WorldView::getDepthMap()
