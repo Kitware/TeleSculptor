@@ -40,10 +40,12 @@
 #include <algorithm>
 
 #include <vnl/vnl_double_3.h>
+#include <rrel/rrel_irls.h>
+#include <rrel/rrel_lms_obj.h>
 #include <rrel/rrel_orthogonal_regression.h>
 #include <rrel/rrel_ran_sam_search.h>
 #include <rrel/rrel_ransac_obj.h>
-#include <rrel/rrel_lms_obj.h>
+#include <rrel/rrel_tukey_obj.h>
 
 using namespace kwiver::vital;
 
@@ -56,15 +58,18 @@ namespace vxl {
 class estimate_canonical_transform::priv
 {
 public:
-  enum rrel_method_types {RANSAC, LMS};
+  enum rrel_method_types {RANSAC, LMS, IRLS};
   /// Constructor
   priv()
     : estimate_scale(true),
       trace_level(0),
-      rrel_method(RANSAC),
+      rrel_method(IRLS),
       desired_prob_good(0.99),
       max_outlier_frac(0.75),
       prior_inlier_scale(0.1),
+      irls_max_iterations(15),
+      irls_iterations_for_scale(2),
+      irls_conv_tolerance(1e-4),
       m_logger( vital::get_logger( "estimate_canonical_transform" ))
   {
   }
@@ -76,6 +81,9 @@ public:
       desired_prob_good(other.desired_prob_good),
       max_outlier_frac(other.max_outlier_frac),
       prior_inlier_scale(other.prior_inlier_scale),
+      irls_max_iterations(other.irls_max_iterations),
+      irls_iterations_for_scale(other.irls_iterations_for_scale),
+      irls_conv_tolerance(other.irls_conv_tolerance),
       m_logger( vital::get_logger( "estimate_canonical_transform" ))
   {
   }
@@ -135,6 +143,28 @@ public:
         delete ransam;
         delete lms;
       }
+      case IRLS:
+      {
+        //  Beaton-Tukey loss function
+        rrel_m_est_obj * m_est = new rrel_tukey_obj( 4.0 );
+
+        reg->set_no_prior_scale();
+
+        // Iteratively Reweighted Least Squares
+        rrel_irls* irls = new rrel_irls( irls_max_iterations );
+        irls->set_est_scale( irls_iterations_for_scale );
+        irls->set_convergence_test( irls_conv_tolerance );
+        irls->set_trace_level(trace_level);
+
+        if ( !irls->estimate( reg, m_est ) )
+        {
+          LOG_ERROR(m_logger, "IRLS unable to fit a plane to the landmarks.");
+        }
+        LOG_DEBUG(m_logger, "Estimated scale = " << irls->scale());
+        pp = irls->params();
+        delete irls;
+        delete m_est;
+      }
     }
 
     delete reg;
@@ -153,6 +183,12 @@ public:
   double max_outlier_frac;
   // The initial estimate of inlier scale for RANSAC
   double prior_inlier_scale;
+  // The maximum number of iterations for IRLS
+  int irls_max_iterations;
+  // The number of IRLS iterations in which to estimate scale
+  int irls_iterations_for_scale;
+  // The convergence tolerance for IRLS
+  double irls_conv_tolerance;
   // Logger handle
   vital::logger_handle_t m_logger;
 };
@@ -202,7 +238,8 @@ estimate_canonical_transform
                     "The robust estimation algorithm to use for plane "
                     "fitting. Options are:\n"
                     " 0 = RANSAC\n"
-                    " 1 = Least Median of Squares");
+                    " 1 = Least Median of Squares (LMS)\n"
+                    " 2 = Iteratively Reweighted Least Squares (IRLS)");
 
   config->set_value("desired_prob_good", d_->desired_prob_good,
                     "The desired probability of finding the correct plane fit.");
@@ -214,6 +251,15 @@ estimate_canonical_transform
   config->set_value("prior_inlier_scale", d_->prior_inlier_scale,
                     "The initial estimate of inlier scale for RANSAC "
                     "fitting of the ground plane.");
+
+  config->set_value("irls_max_iterations", d_->irls_max_iterations,
+                    "The maximum number if iterations when using IRLS");
+
+  config->set_value("irls_iterations_for_scale", d_->irls_iterations_for_scale,
+                    "The number of IRLS iterations in which to estimate scale");
+
+  config->set_value("irls_conv_tolerance", d_->irls_conv_tolerance,
+                    "The convergence tolerance for IRLS");
   return config;
 }
 
@@ -230,6 +276,9 @@ estimate_canonical_transform
   d_->desired_prob_good = config->get_value<double>("desired_prob_good", d_->desired_prob_good);
   d_->max_outlier_frac = config->get_value<double>("max_outlier_frac", d_->max_outlier_frac);
   d_->prior_inlier_scale = config->get_value<double>("prior_inlier_scale", d_->prior_inlier_scale);
+  d_->irls_max_iterations = config->get_value<int>("irls_max_iterations", d_->irls_max_iterations);
+  d_->irls_iterations_for_scale = config->get_value<int>("irls_iterations_for_scale", d_->irls_iterations_for_scale);
+  d_->irls_conv_tolerance = config->get_value<double>("irls_conv_tolerance", d_->irls_conv_tolerance);
 }
 
 
