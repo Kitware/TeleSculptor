@@ -73,6 +73,7 @@
 #include <vtkColorTransferFunction.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkVolumeProperty.h>
+#include <vtkXMLImageDataReader.h>
 
 #include <qtMath.h>
 
@@ -423,40 +424,6 @@ void WorldView::setBackgroundColor(QColor const& color)
 }
 
 //-----------------------------------------------------------------------------
-//void WorldView::addDepthMaps(QString const& dMFileList, std::string type)
-//{
-//  QTE_D();
-
-//  std::cout << "addDepthMaps" << std::endl;
-//  d->UI.actionDepthmapDisplay->setEnabled(true);
-//  d->UI.actionDepthmapDisplay->setChecked(true);
-
-//  d->depthMapOptions->enableDM(type);
-
-//  std::ifstream f(dMFileList.toStdString().c_str());
-//  int frameNum;
-//  std::string filename;
-
-//  if (type == "vtp")
-//  {
-//    while(f >> frameNum >> filename){
-//      d->dMList.insert(std::pair<int, std::string>(frameNum,filename));
-//    }
-//  }
-//  else if (type == "vts") {
-//    while(f >> frameNum >> filename){
-//      d->dMListSG.insert(std::pair<int, std::string>(frameNum,filename));
-//    }
-//  }
-//  else if (type == "vert") {
-//    while(f >> frameNum >> filename){
-//      d->dMListVert.insert(std::pair<int, std::string>(frameNum,filename));
-//    }
-//  }
-
-
-//}
-
 std::string WorldView::getActiveDepthMapType()
 {
   QTE_D();
@@ -471,7 +438,7 @@ std::string WorldView::getActiveDepthMapType()
   return "";
 }
 
-void WorldView::loadVolume(QString path, int nbFrames)
+void WorldView::loadVolume(QString path, int nbFrames, std::string vtiList, std::string krtdList)
 {
   QTE_D();
 
@@ -479,30 +446,28 @@ void WorldView::loadVolume(QString path, int nbFrames)
 
   std::string filename = path.toStdString();
 
-  vtkNew<vtkXMLStructuredGridReader> readerV;
+  vtkNew<vtkXMLPolyDataReader> readerPoly;
 
-  readerV->SetFileName(filename.c_str());
-  readerV->Update();
-
-  vtkNew<vtkGeometryFilter> geometryFilter;
-  geometryFilter->SetInputData(readerV->GetOutput());
+  readerPoly->SetFileName(filename.c_str());
+  readerPoly->Update();
 
   vtkNew<vtkPolyDataMapper> mapper;
-  mapper->SetInputConnection(geometryFilter->GetOutputPort());
+  mapper->SetInputData(readerPoly->GetOutput());
   mapper->SetColorModeToDirectScalars();
 
-//  vtkNew<vtkTransform> transform;
 
-//  transform->SetMatrix(mat);
 
-  //Loading the volume into world view. Incomplete for now
+
+
+  //----
   d->volumeActor->SetMapper(mapper.Get());
-//  d->volumeActor->SetVisibility(true);
-//  d->volumeActor->SetUserTransform(transform.Get());
 
-  d->volumeOptions->setActor(d->volumeActor.Get());
+  d->volumeOptions->setVolume(readerPoly->GetOutput(),vtiList,krtdList);
   d->volumeOptions->initFrameSampling(nbFrames);
 
+  d->volumeActor->SetVisibility(true);
+  d->renderer->AddActor(d->volumeActor.Get());
+  d->renderer->AddViewProp(d->volumeActor.GetPointer());
 }
 
 //vtkPolyData *WorldView::getDepthMap()
@@ -543,71 +508,127 @@ void WorldView::loadVolume(QString path, int nbFrames)
 //}
 
 //-----------------------------------------------------------------------------
-void WorldView::setActiveDepthMap(int numCam, vtkMatrix4x4* mat, DepthMapPaths dmpCam) {
+void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, DepthMapPaths dmpCam) {
   QTE_D();
 
-  cam = numCam;
-  matrix = mat;
+  cam = camera;
+  vtkMatrix4x4* matrix = cam->GetViewTransformMatrix();
+
+//  matrix->SetElement(0,3,0.0);
+//  matrix->SetElement(1,3,0.0);
+//  matrix->SetElement(2,3,0.0);
+
   dmp = dmpCam;
 
   std::cout << "cam = " << cam
-            << "matrix = " << mat
-            << "dmp = " << dmp.dMpointsPath.toStdString() << std::endl;
+            << "matrix = " << *matrix
+            << "dmp = " << dmp.dMImagePath.toStdString() << std::endl;
 
-  if (d->UI.actionDepthmapDisplay->isChecked() && dmp.dMpointsPath.toStdString() != "") {
+  if (d->UI.actionDepthmapDisplay->isChecked() /*&& dmp.dMpointsPath.toStdString() != ""*/) {
     //PolyData
-    if(d->depthMapOptions->isPointsChecked()){
-      std::string filename = dmp.dMpointsPath.toStdString();
-      std::cout << filename <<std::endl;
+//    if(d->depthMapOptions->isPointsChecked()){
+//      std::string filename = dmp.dMpointsPath.toStdString();
+//      std::cout << filename <<std::endl;
 
-      vtkNew<vtkXMLPolyDataReader> readerPoly;
+//      vtkNew<vtkXMLPolyDataReader> readerPoly;
 
-      readerPoly->SetFileName(filename.c_str());
-      readerPoly->Update();
+//      readerPoly->SetFileName(filename.c_str());
+//      readerPoly->Update();
 
-      std::vector<vtkIdType> vertices(readerPoly->GetOutput()->GetNumberOfPoints());
-      for (int i = 0; i < readerPoly->GetOutput()->GetNumberOfPoints(); ++i) {
-        vertices[i] = i;
-      }
+//      std::vector<vtkIdType> vertices(readerPoly->GetOutput()->GetNumberOfPoints());
+//      for (int i = 0; i < readerPoly->GetOutput()->GetNumberOfPoints(); ++i) {
+//        vertices[i] = i;
+//      }
 
-      vtkNew<vtkCellArray> cells;
+//      vtkNew<vtkCellArray> cells;
 
-      cells->InsertNextCell(vertices.size(), &vertices[0]);
+//      cells->InsertNextCell(vertices.size(), &vertices[0]);
 
-      readerPoly->GetOutput()->SetVerts(cells.Get());
+//      readerPoly->GetOutput()->SetVerts(cells.Get());
 
-      readerPoly->GetOutput()->GetPointData()->SetScalars(readerPoly->GetOutput()->GetPointData()->GetArray("Color"));
-      vtkNew<vtkPolyDataMapper> mapper;
-    //  mapper->SetInputConnection(reader->GetOutputPort());
-      mapper->SetInputData(readerPoly->GetOutput());
-      mapper->SetColorModeToDirectScalars();
+//      readerPoly->GetOutput()->GetPointData()->SetScalars(readerPoly->GetOutput()->GetPointData()->GetArray("Color"));
+//      vtkNew<vtkPolyDataMapper> mapper;
+//    //  mapper->SetInputConnection(reader->GetOutputPort());
+//      mapper->SetInputData(readerPoly->GetOutput());
+//      mapper->SetColorModeToDirectScalars();
 
-      vtkNew<vtkTransform> transform;
+//      vtkNew<vtkTransform> transform;
 
-      transform->SetMatrix(mat);
+//      transform->SetMatrix(matrix);
 
-      d->polyDataActor->SetMapper(mapper.Get());
-      d->polyDataActor->SetVisibility(true);
-      d->polyDataActor->GetProperty()->SetPointSize(2);
-      d->polyDataActor->SetUserTransform(transform.Get());
-      d->renderer->AddActor(d->polyDataActor.Get());
+//      d->polyDataActor->SetMapper(mapper.Get());
+//      d->polyDataActor->SetVisibility(true);
+//      d->polyDataActor->GetProperty()->SetPointSize(2);
+//      d->polyDataActor->SetUserTransform(transform.Get());
+//      d->renderer->AddActor(d->polyDataActor.Get());
 
-      d->renderer->AddViewProp(d->polyDataActor.GetPointer());
-    }
+//      d->renderer->AddViewProp(d->polyDataActor.GetPointer());
+//    }
 
     //Surfaces
     if(d->depthMapOptions->isSurfacesChecked() && dmp.dMSurfacesPath.toStdString() != ""){
-      std::string filename = dmp.dMSurfacesPath.toStdString();
+//      std::string filename = dmp.dMSurfacesPath.toStdString();
 
-      vtkNew<vtkXMLStructuredGridReader> readerSG;
+//      vtkNew<vtkXMLStructuredGridReader> readerSG;
 
-      readerSG->SetFileName(filename.c_str());
-      readerSG->Update();
+//      readerSG->SetFileName(filename.c_str());
+//      readerSG->Update();
 
-      readerSG->GetOutput()->GetPointData()->SetScalars(readerSG->GetOutput()->GetPointData()->GetArray("Color"));
+//      readerSG->GetOutput()->GetPointData()->SetScalars(readerSG->GetOutput()->GetPointData()->GetArray("Color"));
+
+//      vtkNew<vtkGeometryFilter> geometryFilter;
+//      geometryFilter->SetInputData(readerSG->GetOutput());
+
+//      vtkNew<vtkPolyDataMapper> mapper;
+//      mapper->SetInputConnection(geometryFilter->GetOutputPort());
+//      mapper->SetColorModeToDirectScalars();
+
+//      vtkNew<vtkTransform> transform;
+
+//      transform->SetMatrix(matrix);
+
+//      d->structuredGridActor->SetMapper(mapper.Get());
+//      d->structuredGridActor->SetVisibility(true);
+//      d->structuredGridActor->SetUserTransform(transform.Get());
+//      d->renderer->AddActor(d->structuredGridActor.Get());
+
+//      d->renderer->AddViewProp(d->structuredGridActor.GetPointer());
+    }
+
+    if(d->depthMapOptions->isSurfacesChecked() && dmp.dMImagePath.toStdString() != ""){
+      std::string filename = dmp.dMImagePath.toStdString();
+
+      vtkNew<vtkXMLImageDataReader> readerIm;
+
+      readerIm->SetFileName(filename.c_str());
+      readerIm->Update();
+
+      int width = readerIm->GetOutput()->GetDimensions()[0];
+      int height = readerIm->GetOutput()->GetDimensions()[1];
+
+      vtkNew<vtkPoints> points;
+      points->SetNumberOfPoints(width*height);
+
+      double *pixel;
+      for (vtkIdType idPoint = 0; idPoint < readerIm->GetOutput()->GetNumberOfPoints(); ++idPoint) {
+        pixel = readerIm->GetOutput()->GetPoint(idPoint);
+
+        kwiver::vital::vector_3d p;
+        double depth = readerIm->GetOutput()->GetPointData()->GetArray("Depths")->GetTuple1(idPoint);
+
+        cam->UnProjectPoint(pixel, depth, &p);
+
+        points->SetPoint(idPoint,p[0],p[1],p[2]);
+      }
+
+      vtkNew<vtkStructuredGrid> structuredGrid;
+      structuredGrid->SetDimensions(width,height,1);
+      structuredGrid->SetPoints(points.Get());
+      structuredGrid->GetPointData()->AddArray(readerIm->GetOutput()->GetPointData()->GetArray("Color"));
+      structuredGrid->GetPointData()->SetScalars(structuredGrid->GetPointData()->GetArray("Color"));
 
       vtkNew<vtkGeometryFilter> geometryFilter;
-      geometryFilter->SetInputData(readerSG->GetOutput());
+      geometryFilter->SetInputData(structuredGrid.Get());
 
       vtkNew<vtkPolyDataMapper> mapper;
       mapper->SetInputConnection(geometryFilter->GetOutputPort());
@@ -615,11 +636,11 @@ void WorldView::setActiveDepthMap(int numCam, vtkMatrix4x4* mat, DepthMapPaths d
 
       vtkNew<vtkTransform> transform;
 
-      transform->SetMatrix(mat);
+      transform->SetMatrix(matrix);
 
       d->structuredGridActor->SetMapper(mapper.Get());
       d->structuredGridActor->SetVisibility(true);
-      d->structuredGridActor->SetUserTransform(transform.Get());
+//      d->structuredGridActor->SetUserTransform(transform.Get());
       d->renderer->AddActor(d->structuredGridActor.Get());
 
       d->renderer->AddViewProp(d->structuredGridActor.GetPointer());
@@ -900,7 +921,7 @@ void WorldView::setDepthMapVisible(bool state)
     d->structuredGridActor->SetVisibility(state);
   }
 
-  setActiveDepthMap(cam,matrix,dmp);
+  setActiveDepthMap(cam,dmp);
   d->UI.renderWidget->update();
 }
 
@@ -1042,6 +1063,6 @@ void WorldView::updateDepthMap()
 {
   QTE_D();
 //  std::cout << "update depth map..." << *matrix <<std::endl;
-  setActiveDepthMap(cam, matrix,dmp);
+  setActiveDepthMap(cam,dmp);
   d->UI.renderWidget->update();
 }

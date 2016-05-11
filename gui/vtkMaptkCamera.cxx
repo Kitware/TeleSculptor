@@ -114,6 +114,46 @@ bool vtkMaptkCamera::ProjectPoint(kwiver::vital::vector_3d const& in,
   out[1] = ppos[1];
   return true;
 }
+/**
+  *
+  * WARNING: The convention here is that depth is NOT the distance between the
+  * camera center and the 3D point but the distance between the projection of
+  * the 3D point on the optical axis and the optical center.
+*/
+//-----------------------------------------------------------------------------
+bool vtkMaptkCamera::UnProjectPoint(double point[2], double depth,
+                                    kwiver::vital::vector_3d *unProjectedPoint)
+{
+  // Build camera matrix
+  auto const K = this->MaptkCamera->intrinsics()->as_matrix();
+  auto const T = this->MaptkCamera->translation();
+  auto const R = kwiver::vital::matrix_3x3d(this->MaptkCamera->rotation());
+
+  kwiver::vital::vector_4d homogenousPoint;
+
+  homogenousPoint(0) = (point[0] - K(0,2))*depth/K(0,0);
+  homogenousPoint(1) = (point[1] - K(1,2))*depth/K(1,1);
+  homogenousPoint(2) = depth;
+  homogenousPoint(3) = 1;
+
+  kwiver::vital::matrix_4x4d unProjectionMatrix;
+  unProjectionMatrix << R(0,0) , R(0,1) , R(0,2) , T(0,0)
+                     , R(1,0) , R(1,1) , R(1,2) , T(1,0)
+                     , R(2,0) , R(2,1) , R(2,2) , T(2,0)
+                     , 0      , 0      , 0      , 1;
+
+  homogenousPoint = unProjectionMatrix.inverse() * homogenousPoint;
+
+
+
+  *unProjectedPoint << homogenousPoint(0,0)/homogenousPoint(3,0)
+                    , homogenousPoint(1,0)/homogenousPoint(3,0)
+                    , homogenousPoint(2,0)/homogenousPoint(3,0);
+
+
+
+  return true;
+}
 
 //-----------------------------------------------------------------------------
 bool vtkMaptkCamera::Update()
