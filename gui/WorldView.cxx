@@ -566,37 +566,8 @@ void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, DepthMapPaths dmpCam) 
 //      d->renderer->AddViewProp(d->polyDataActor.GetPointer());
 //    }
 
-    //Surfaces
-    if(d->depthMapOptions->isSurfacesChecked() && dmp.dMSurfacesPath.toStdString() != ""){
-//      std::string filename = dmp.dMSurfacesPath.toStdString();
 
-//      vtkNew<vtkXMLStructuredGridReader> readerSG;
-
-//      readerSG->SetFileName(filename.c_str());
-//      readerSG->Update();
-
-//      readerSG->GetOutput()->GetPointData()->SetScalars(readerSG->GetOutput()->GetPointData()->GetArray("Color"));
-
-//      vtkNew<vtkGeometryFilter> geometryFilter;
-//      geometryFilter->SetInputData(readerSG->GetOutput());
-
-//      vtkNew<vtkPolyDataMapper> mapper;
-//      mapper->SetInputConnection(geometryFilter->GetOutputPort());
-//      mapper->SetColorModeToDirectScalars();
-
-//      vtkNew<vtkTransform> transform;
-
-//      transform->SetMatrix(matrix);
-
-//      d->structuredGridActor->SetMapper(mapper.Get());
-//      d->structuredGridActor->SetVisibility(true);
-//      d->structuredGridActor->SetUserTransform(transform.Get());
-//      d->renderer->AddActor(d->structuredGridActor.Get());
-
-//      d->renderer->AddViewProp(d->structuredGridActor.GetPointer());
-    }
-
-    if(d->depthMapOptions->isSurfacesChecked() && dmp.dMImagePath.toStdString() != ""){
+    if(dmp.dMImagePath.toStdString() != ""){
       std::string filename = dmp.dMImagePath.toStdString();
 
       vtkNew<vtkXMLImageDataReader> readerIm;
@@ -623,29 +594,58 @@ void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, DepthMapPaths dmpCam) 
         points->SetPoint(idPoint,p[0],p[1],p[2]);
       }
 
-      vtkNew<vtkStructuredGrid> structuredGrid;
-      structuredGrid->SetDimensions(width,height,1);
-      structuredGrid->SetPoints(points.Get());
-      structuredGrid->GetPointData()->AddArray(readerIm->GetOutput()->GetPointData()->GetArray("Color"));
-      structuredGrid->GetPointData()->SetScalars(structuredGrid->GetPointData()->GetArray("Color"));
+      //Surfaces
+      if(d->depthMapOptions->isSurfacesChecked()) {
+        vtkNew<vtkStructuredGrid> structuredGrid;
+        structuredGrid->SetDimensions(width,height,1);
+        structuredGrid->SetPoints(points.Get());
+        structuredGrid->GetPointData()->AddArray(readerIm->GetOutput()->GetPointData()->GetArray("Color"));
+        structuredGrid->GetPointData()->SetScalars(structuredGrid->GetPointData()->GetArray("Color"));
 
-      vtkNew<vtkGeometryFilter> geometryFilter;
-      geometryFilter->SetInputData(structuredGrid.Get());
+        vtkNew<vtkGeometryFilter> geometryFilter;
+        geometryFilter->SetInputData(structuredGrid.Get());
 
-      vtkNew<vtkPolyDataMapper> mapper;
-      mapper->SetInputConnection(geometryFilter->GetOutputPort());
-      mapper->SetColorModeToDirectScalars();
+        vtkNew<vtkPolyDataMapper> mapper;
+        mapper->SetInputConnection(geometryFilter->GetOutputPort());
+        mapper->SetColorModeToDirectScalars();
 
-      vtkNew<vtkTransform> transform;
+        d->structuredGridActor->SetMapper(mapper.Get());
+        d->structuredGridActor->SetVisibility(true);
+        d->renderer->AddActor(d->structuredGridActor.Get());
 
-      transform->SetMatrix(matrix);
+        d->renderer->AddViewProp(d->structuredGridActor.GetPointer());
+      }
 
-      d->structuredGridActor->SetMapper(mapper.Get());
-      d->structuredGridActor->SetVisibility(true);
-//      d->structuredGridActor->SetUserTransform(transform.Get());
-      d->renderer->AddActor(d->structuredGridActor.Get());
+      //PolyData
+      if(d->depthMapOptions->isPointsChecked()){
+        vtkNew<vtkPolyData> polydata;
+        polydata->SetPoints(points.Get());
+        polydata->GetPointData()->AddArray(readerIm->GetOutput()->GetPointData()->GetArray("Color"));
+        polydata->GetPointData()->SetScalars(polydata->GetPointData()->GetArray("Color"));
 
-      d->renderer->AddViewProp(d->structuredGridActor.GetPointer());
+        std::vector<vtkIdType> vertices(polydata->GetNumberOfPoints());
+        for (int i = 0; i < polydata->GetNumberOfPoints(); ++i) {
+          vertices[i] = i;
+        }
+
+        vtkNew<vtkCellArray> cells;
+
+        cells->InsertNextCell(vertices.size(), &vertices[0]);
+
+        polydata->SetVerts(cells.Get());
+
+        vtkNew<vtkPolyDataMapper> mapper;
+        mapper->SetInputData(polydata.Get());
+        mapper->SetColorModeToDirectScalars();
+
+        d->polyDataActor->SetMapper(mapper.Get());
+        d->polyDataActor->SetVisibility(true);
+        d->polyDataActor->GetProperty()->SetPointSize(2);
+        d->renderer->AddActor(d->polyDataActor.Get());
+
+        d->renderer->AddViewProp(d->polyDataActor.GetPointer());
+      }
+
     }
     //Vertices structured grid
 //    if(d->depthMapOptions->isVerticesChecked() && dmp.dMVerticesPath.toStdString() != ""){
