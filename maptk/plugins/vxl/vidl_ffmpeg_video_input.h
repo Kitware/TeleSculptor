@@ -33,8 +33,8 @@
  * \brief Header file for video input using VXL methods.
  */
 
-#ifndef MAPTK_PLUGINS_VXL_VIDEO_INPUT_H
-#define MAPTK_PLUGINS_VXL_VIDEO_INPUT_H
+#ifndef MAPTK_PLUGINS_VXL_VIDL_FFMPEG_VIDEO_INPUT_H
+#define MAPTK_PLUGINS_VXL_VIDL_FFMPEG_VIDEO_INPUT_H
 
 #include <vital/algo/video_input.h>
 
@@ -95,4 +95,4 @@ private:
 
 } } } // end namespace
 
-#endif // MAPTK_PLUGINS_VXL_VIDEO_INPUT_H
+#endif // MAPTK_PLUGINS_VXL_VIDL_FFMPEG_VIDEO_INPUT_H
