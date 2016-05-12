@@ -150,6 +150,7 @@ bool Project::read(QString const& path)
     if (config->has_value("depthmaps_images_file"))
     {
       auto const& vtiFilePath = config->get_value<std::string>("depthmaps_images_file");
+      auto const& vtiBasePath =  QFileInfo(QString::fromStdString(vtiFilePath)).absoluteDir().absolutePath();
       QFile vtiFile(base.filePath(qtString(vtiFilePath)));
       if (vtiFile.open(QIODevice::ReadOnly | QIODevice::Text))
       {
@@ -159,9 +160,12 @@ bool Project::read(QString const& path)
         while (!vtiStream.atEnd())
         {
           vtiStream >> frameNum >> fileName;
+          std::string fileNamestr = vtiBasePath.toStdString() + QDir::separator().toAscii() +fileName.toStdString();
+          fileName = QString::fromStdString(fileNamestr);
           if (!DMvti.contains(frameNum))
           {
             DMvti.insert(frameNum,fileName);
+            std::cout << "filename = " << fileName.toStdString() <<std::endl;
           }
         }
       }
