@@ -839,6 +839,7 @@ void MainWindow::loadProject(QString const& path)
   }
   if (!project.DMvti.isEmpty())
   {
+    d->UI.worldView->enableDepthMap("vtp");
     d->UI.worldView->enableDepthMap("vts");
   }
 
