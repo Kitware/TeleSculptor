@@ -42,8 +42,6 @@
 #include <vital/vital_foreach.h>
 #include <vital/util/tokenize.h>
 #include <vital/klv/misp_time.h>
-
-
 #include <vital/klv/klv_data.h>
 
 #include <maptk/plugins/vxl/image_container.h>
@@ -55,6 +53,7 @@
 #include <memory>
 #include <vector>
 #include <sstream>
+
 
 namespace kwiver {
 namespace maptk {

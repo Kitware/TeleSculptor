@@ -40,8 +40,6 @@
 
 #include <maptk/plugins/vxl/maptk_vxl_export.h>
 
-#include <vidl/vidl_ffmpeg_istream.h>
-
 
 namespace kwiver {
 namespace maptk {
