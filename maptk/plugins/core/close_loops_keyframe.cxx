@@ -104,7 +104,7 @@ public:
     match_set_sptr mset = this->matcher->match(target_features, target_descriptors,
                                                current_features, current_descriptors);
 
-    num_matched = mset->size();
+    num_matched = static_cast<int>(mset->size());
     if( num_matched < this->match_req )
     {
       return input;
@@ -128,7 +128,7 @@ public:
 
     if( !to_remove.empty() )
     {
-      num_linked = to_remove.size();
+      num_linked = static_cast<int>(to_remove.size());
       std::vector<track_sptr> all_tracks = input->tracks();
       all_tracks.erase(
         std::remove_if( all_tracks.begin(), all_tracks.end(),
@@ -313,7 +313,8 @@ close_loops_keyframe
   // Initialize frame_matches to the number of tracks already matched
   // between the current and previous frames.  This matching was done outside
   // of loop closure as part of the standard frame-to-frame tracking
-  d_->frame_matches[frame_number] = current_set->active_tracks( frame_number-1 )->size();
+  d_->frame_matches[frame_number] =
+      static_cast<unsigned int>(current_set->active_tracks( frame_number-1 )->size());
 
   // number of matched features and linked tracks are returned by reference
   // in these variables
