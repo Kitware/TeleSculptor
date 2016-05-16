@@ -34,7 +34,7 @@
  */
 
 #include "descriptor_set.h"
-
+#include <vital/exceptions.h>
 
 /// This macro applies another macro to all of the types listed below.
 #define APPLY_TO_TYPES(MACRO) \
