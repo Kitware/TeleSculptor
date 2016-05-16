@@ -38,3 +38,14 @@ Scripts
 
  Fixes since last public release
 -------------------------------
+
+Plugins
+
+ * Corrected all plugins to use the Vital logging framework instead of
+   cout and cerr for status, debug, and error messages.
+
+Tools
+
+ * Corrected the track_features and bundle_adjust_tracks tools to use the
+   Vital logging framework instead of cout and cerr for status, debug,
+   and error messages.
