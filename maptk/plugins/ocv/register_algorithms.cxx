@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -74,8 +74,6 @@ namespace ocv {
 /// Register OCV algorithm implementations with the given or global registrar
 int register_algorithms( vital::registrar &reg )
 {
-  vital::logger_handle_t log = vital::get_logger("ocv_register_algo");
-
 #if defined(HAVE_OPENCV_NONFREE)
   cv::initModule_nonfree();
 #endif

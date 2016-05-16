@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2015 by Kitware, Inc.
+ * Copyright 2013-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,7 +63,7 @@ public:
   : auto_stretch(false),
     manual_stretch(false),
     intensity_range(0, 255),
-    m_logger( vital::get_logger( "maptk_vxl_image_io" ) )
+    m_logger( vital::get_logger( "vxl.image_io" ) )
   {
   }
 

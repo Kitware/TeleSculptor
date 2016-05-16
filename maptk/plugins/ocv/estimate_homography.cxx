@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2015 by Kitware, Inc.
+ * Copyright 2013-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,7 +63,8 @@ estimate_homography
 {
   if (pts1.size() < 4 || pts2.size() < 4)
   {
-    std::cerr << "Not enough points to estimate a homography" <<std::endl;
+    vital::logger_handle_t logger( vital::get_logger( "ocv.estimate_homography" ));
+    LOG_ERROR(logger, "Not enough points to estimate a homography");
     return vital::homography_sptr();
   }
 

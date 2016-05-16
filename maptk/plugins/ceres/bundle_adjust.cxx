@@ -155,7 +155,7 @@ public:
     optimize_dist_p1_p2(false),
     optimize_dist_k4_k5_k6(false),
     camera_intrinsic_share_type(AUTO_SHARE_INTRINSICS),
-    m_logger( vital::get_logger( "maptk.ceres.bundle_adjust" ))
+    m_logger( vital::get_logger( "ceres.bundle_adjust" ))
   {
   }
 
@@ -174,7 +174,7 @@ public:
     optimize_dist_p1_p2(other.optimize_dist_p1_p2),
     optimize_dist_k4_k5_k6(other.optimize_dist_k4_k5_k6),
     camera_intrinsic_share_type(other.camera_intrinsic_share_type),
-    m_logger( vital::get_logger( "maptk.ceres.bundle_adjust" ))
+    m_logger( vital::get_logger( "ceres.bundle_adjust" ))
   {
   }
 
@@ -607,7 +607,7 @@ bundle_adjust
 
   ::ceres::Solver::Summary summary;
   ::ceres::Solve(d_->options, &problem, &summary);
-  std::cout << summary.FullReport() << "\n";
+  LOG_DEBUG(d_->m_logger, "Ceres Full Report:\n" << summary.FullReport());
 
   // Update the landmarks with the optimized values
   VITAL_FOREACH(const lm_param_map_t::value_type& lmp, landmark_params)

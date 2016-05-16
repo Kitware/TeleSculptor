@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2015-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -65,7 +65,7 @@ public:
     scale_thresh(2.0),
     angle_thresh(-1.0),
     radius_thresh(200.0),
-    m_logger( vital::get_logger( "match_features_constrained" ) )
+    m_logger( vital::get_logger( "vxl.match_features_constrained" ) )
   {
   }
 
@@ -73,7 +73,7 @@ public:
     scale_thresh(other.scale_thresh),
     angle_thresh(other.angle_thresh),
     radius_thresh(other.radius_thresh),
-    m_logger( vital::get_logger( "match_features_constrained" ) )
+    m_logger( vital::get_logger( "vxl.match_features_constrained" ) )
   {
   }
 

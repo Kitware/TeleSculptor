@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2015 by Kitware, Inc.
+ * Copyright 2013-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -65,7 +65,8 @@ estimate_homography
 {
   if (pts1.size() < 4 || pts2.size() < 4)
   {
-    std::cerr << "Not enough points to estimate a homography" <<std::endl;
+    vital::logger_handle_t logger( vital::get_logger( "vxl.estimate_homography" ));
+    LOG_ERROR(logger, "Not enough points to estimate a homography");
     return homography_sptr();
   }
 
@@ -96,7 +97,8 @@ estimate_homography
 
   if ( ! result )
   {
-    std::cerr << "MSAC failed!!" << std::endl;
+    vital::logger_handle_t logger( vital::get_logger( "vxl.estimate_homography" ));
+    LOG_ERROR(logger, "MSAC failed!!");
     return homography_sptr();
   }
 
@@ -115,7 +117,8 @@ estimate_homography
   if( ! result2 )
   {
     // if the IRLS fails, fall back to the ransam estimate.
-    std::cerr << "IRLS failed" << std::endl;
+    vital::logger_handle_t logger( vital::get_logger( "vxl.estimate_homography" ));
+    LOG_ERROR(logger, "IRLS failed");
     hg.params_to_homog( ransam.params(), m.as_ref().non_const() );
   }
   else

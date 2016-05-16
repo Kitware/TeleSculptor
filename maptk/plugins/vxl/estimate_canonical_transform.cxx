@@ -70,7 +70,7 @@ public:
       irls_max_iterations(15),
       irls_iterations_for_scale(2),
       irls_conv_tolerance(1e-4),
-      m_logger( vital::get_logger( "estimate_canonical_transform" ))
+      m_logger( vital::get_logger( "vxl.estimate_canonical_transform" ))
   {
   }
 
@@ -84,7 +84,7 @@ public:
       irls_max_iterations(other.irls_max_iterations),
       irls_iterations_for_scale(other.irls_iterations_for_scale),
       irls_conv_tolerance(other.irls_conv_tolerance),
-      m_logger( vital::get_logger( "estimate_canonical_transform" ))
+      m_logger( vital::get_logger( "vxl.estimate_canonical_transform" ))
   {
   }
 

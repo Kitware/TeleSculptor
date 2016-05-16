@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2015 by Kitware, Inc.
+ * Copyright 2013-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -91,10 +91,7 @@ maptk_descriptors_to_ocv(const std::vector<vital::descriptor_sptr>& desc)
         dynamic_cast<const vital::descriptor_array_of<T>*>(desc[i].get());
     if( !d || d->size() != dim )
     {
-      std::cerr << "Error: mismatch type or size "
-                << "when converting descriptors to OpenCV"
-                << std::endl;
-      return cv::Mat();
+      throw vital::invalid_value("mismatch type or size when converting descriptors to OpenCV");
     }
     cv::Mat_<T> row = mat.row(i);
     std::copy(d->raw_data(), d->raw_data() + dim, row.begin());
@@ -125,8 +122,8 @@ descriptor_set
   {
   APPLY_TO_TYPES(CONVERT_CASE);
   default:
-    std::cerr << "Error: No case to handle OpenCV descriptors of type "
-              << data_.type() <<std::endl;
+    throw vital::invalid_value("No case to handle OpenCV descriptors of type "
+                               + data_.type());
   }
 #undef CONVERT_CASE
   /// \endcond

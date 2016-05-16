@@ -52,16 +52,21 @@ class estimate_fundamental_matrix::priv
 public:
   /// Constructor
   priv()
-    : confidence_threshold(0.99)
+    : confidence_threshold(0.99),
+      m_logger( vital::get_logger( "ocv.estimate_fundamental_matrix" ))
   {
   }
 
   priv(const priv& other)
-    : confidence_threshold(other.confidence_threshold)
+    : confidence_threshold(other.confidence_threshold),
+      m_logger( vital::get_logger( "ocv.estimate_fundamental_matrix" ))
   {
   }
 
   double confidence_threshold;
+
+  /// Logger handle
+  vital::logger_handle_t m_logger;
 };
 
 
@@ -120,7 +125,9 @@ estimate_fundamental_matrix
   double confidence_threshold = config->get_value<double>("confidence_threshold", d_->confidence_threshold);
   if( confidence_threshold <= 0.0 || confidence_threshold > 1.0 )
   {
-    std::cerr << "confidence_threshold parameter is " << confidence_threshold << ", needs to be in (0.0, 1.0]." << std::endl;
+    LOG_ERROR(d_->m_logger, "confidence_threshold parameter is "
+                            << confidence_threshold
+                            << ", needs to be in (0.0, 1.0].");
     return false;
   }
 
@@ -138,7 +145,7 @@ estimate_fundamental_matrix
 {
   if (pts1.size() < 8 || pts2.size() < 8)
   {
-    std::cerr << "Not enough points to estimate a fundamental matrix" <<std::endl;
+    LOG_ERROR(d_->m_logger, "Not enough points to estimate a fundamental matrix");
     return vital::fundamental_matrix_sptr();
   }
 
