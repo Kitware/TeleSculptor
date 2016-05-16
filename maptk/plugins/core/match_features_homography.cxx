@@ -58,7 +58,7 @@ public:
   : inlier_scale(10.0),
     min_required_inlier_count(0),
     min_required_inlier_percent(0.0),
-    m_logger( vital::get_logger( "match_features_homography" ))
+    m_logger( vital::get_logger( "core.match_features_homography" ))
   {
   }
 
@@ -66,7 +66,7 @@ public:
   : inlier_scale(other.inlier_scale),
     min_required_inlier_count(other.min_required_inlier_count),
     min_required_inlier_percent(other.min_required_inlier_percent),
-    m_logger( vital::get_logger( "match_features_homography" ))
+    m_logger( vital::get_logger( "core.match_features_homography" ))
   {
   }
 

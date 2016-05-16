@@ -53,13 +53,13 @@ public:
   /// Constructor
   priv()
     : estimate_scale(true),
-      m_logger( vital::get_logger( "estimate_canonical_transform" ))
+      m_logger( vital::get_logger( "core.estimate_canonical_transform" ))
   {
   }
 
   priv(const priv& other)
     : estimate_scale(other.estimate_scale),
-      m_logger( vital::get_logger( "estimate_canonical_transform" ))
+      m_logger( vital::get_logger( "core.estimate_canonical_transform" ))
   {
   }
 

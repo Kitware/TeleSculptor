@@ -117,7 +117,7 @@ public:
     : initial_sub_sample(1)
     , interpolation_rate(0)
     , rmse_reporting_enabled(false)
-    , m_logger( vital::get_logger( "hierarchical_bundle_adjust" ))
+    , m_logger( vital::get_logger( "core.hierarchical_bundle_adjust" ))
   {
   }
 
@@ -132,7 +132,7 @@ public:
                                                : other.camera_optimizer->clone())
     , lm_triangulator(!other.lm_triangulator ? algo::triangulate_landmarks_sptr()
                                              : other.lm_triangulator->clone())
-    , m_logger( vital::get_logger( "hierarchical_bundle_adjust" ))
+    , m_logger( vital::get_logger( "core.hierarchical_bundle_adjust" ))
   {
   }
 
