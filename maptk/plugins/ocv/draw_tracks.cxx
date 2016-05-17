@@ -341,7 +341,7 @@ draw_tracks
   // Validate inputs
   if( image_data.empty() )
   {
-    std::cerr << "Error: valid imagery must be provided" << std::endl;
+    LOG_ERROR(m_logger, "valid imagery must be provided");
     return image_container_sptr();
   }
 

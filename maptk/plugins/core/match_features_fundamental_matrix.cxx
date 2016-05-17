@@ -57,7 +57,8 @@ public:
   priv()
   : inlier_scale(10.0),
     min_required_inlier_count(0),
-    min_required_inlier_percent(0.0)
+    min_required_inlier_percent(0.0),
+    m_logger( vital::get_logger( "maptk.core.match_features_fundamental_matrix" ))
   {
   }
 
@@ -68,7 +69,8 @@ public:
     matcher_(!other.matcher_ ? algo::match_features_sptr()
                              : other.matcher_->clone()),
     f_estimator_(!other.f_estimator_ ? algo::estimate_fundamental_matrix_sptr()
-                                   : other.f_estimator_->clone())
+                                   : other.f_estimator_->clone()),
+    m_logger( vital::get_logger( "maptk.core.match_features_fundamental_matrix" ))
   {
   }
 
@@ -81,11 +83,14 @@ public:
   // min inlier percent required to make any matches
   double min_required_inlier_percent;
 
-    /// The feature matching algorithm to use
+  /// The feature matching algorithm to use
   vital::algo::match_features_sptr matcher_;
 
   /// The fundamental matrix estimation algorithm to use
   vital::algo::estimate_fundamental_matrix_sptr f_estimator_;
+
+  /// Logger handle
+  vital::logger_handle_t m_logger;
 };
 
 
@@ -201,7 +206,7 @@ match_features_fundamental_matrix
   fundamental_matrix_sptr F = d_->f_estimator_->estimate(feat1, feat2, init_matches,
                                                      inliers, d_->inlier_scale);
   int inlier_count = static_cast<int>(std::count(inliers.begin(), inliers.end(), true));
-  std::cout << "inlier ratio: " << inlier_count << "/" << inliers.size() << std::endl;
+  LOG_INFO(d_->m_logger, "inlier ratio: " << inlier_count << "/" << inliers.size());
 
   // verify matching criteria are met
   if( !inlier_count || inlier_count < d_->min_required_inlier_count ||
