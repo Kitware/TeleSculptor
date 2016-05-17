@@ -49,6 +49,7 @@
 #include <vital/algo/optimize_cameras.h>
 
 #include <maptk/plugins/core/triangulate_landmarks.h>
+#include <maptk/epipolar_geometry.h>
 #include <maptk/metrics.h>
 #include <maptk/match_matrix.h>
 #include <maptk/triangulate.h>
@@ -177,18 +178,6 @@ public:
   double estimate_t_scale(const vector_3d& KRp,
                           const vector_3d& Kt,
                           const vector_2d& pt2d) const;
-
-  /// Compute a valid left camera from an essential matrix
-  /**
-   *  There for four valid left camera possibilities for any essential
-   *  matrix (assuming the right camera is the identity camera).
-   *  This function select the left camera such that a corresponding
-   *  pair of points triangulates in front of both cameras.
-   */
-  vital::simple_camera
-  extract_valid_left_camera(const essential_matrix_d& e,
-                            const vector_2d& left_pt,
-                            const vector_2d& right_pt) const;
 
   bool verbose;
   bool init_from_last;
@@ -380,60 +369,6 @@ initialize_cameras_landmarks::priv
   double cx = a.x()*b.z() - a.z()*b.x();
   double cy = a.y()*b.z() - a.z()*b.y();
   return (a.x()*cx + a.y()*cy) / -(b.x()*cx + b.y()*cy);
-}
-
-/// Compute a valid left camera from an essential matrix
-vital::simple_camera
-initialize_cameras_landmarks::priv
-::extract_valid_left_camera(const essential_matrix_d& e,
-                            const vector_2d& left_pt,
-                            const vector_2d& right_pt) const
-{
-  /// construct an identity right camera
-  const vector_3d t = e.translation();
-  rotation_d R = e.rotation();
-
-  std::vector<vector_2d> pts;
-  pts.push_back(right_pt);
-  pts.push_back(left_pt);
-
-  std::vector<vital::simple_camera> cams(2);
-  const vital::simple_camera& left_camera = cams[1];
-
-  // option 1
-  cams[1] = vital::simple_camera(R.inverse()*-t, R);
-  vector_3d pt3 = triangulate_inhomog(cams, pts);
-  if( pt3.z() > 0.0 && left_camera.depth(pt3) > 0.0 )
-  {
-    return left_camera;
-  }
-
-  // option 2, with negated translation
-  cams[1] = vital::simple_camera(R.inverse()*t, R);
-  pt3 = triangulate_inhomog(cams, pts);
-  if( pt3.z() > 0.0 && left_camera.depth(pt3) > 0.0 )
-  {
-    return left_camera;
-  }
-
-  // option 3, with the twisted pair rotation
-  R = e.twisted_rotation();
-  cams[1] = vital::simple_camera(R.inverse()*-t, R);
-  pt3 = triangulate_inhomog(cams, pts);
-  if( pt3.z() > 0.0 && left_camera.depth(pt3) > 0.0 )
-  {
-    return left_camera;
-  }
-
-  // option 4, with negated translation
-  cams[1] = vital::simple_camera(R.inverse()*t, R);
-  pt3 = triangulate_inhomog(cams, pts);
-  if( pt3.z() > 0.0 && left_camera.depth(pt3) > 0.0 )
-  {
-    return left_camera;
-  }
-  // should never get here
-  return vital::simple_camera();
 }
 
 
