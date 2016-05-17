@@ -93,7 +93,7 @@ public:
     write_images_to_disk( true ),
     pattern( "feature_tracks_%05d.png" ),
     cur_frame_id( 0 ),
-    m_logger( kwiver::vital::get_logger( "ocv.draw_tracks" ) )
+    m_logger( kwiver::vital::get_logger( "maptk.ocv.draw_tracks" ) )
   {
   }
 

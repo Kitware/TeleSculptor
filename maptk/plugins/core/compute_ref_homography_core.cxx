@@ -153,7 +153,7 @@ public:
     frames_since_reset( 0 ),
     allow_ref_frame_regression( true ),
     min_ref_frame( 0 ),
-    m_logger( vital::get_logger( "core.compute_ref_homography_core" ))
+    m_logger( vital::get_logger( "maptk.core.compute_ref_homography_core" ))
   {
   }
 
@@ -169,7 +169,7 @@ public:
     frames_since_reset( other.frames_since_reset ),
     allow_ref_frame_regression( other.allow_ref_frame_regression ),
     min_ref_frame( other.min_ref_frame ),
-    m_logger( vital::get_logger( "core.compute_ref_homography_core" ))
+    m_logger( vital::get_logger( "maptk.core.compute_ref_homography_core" ))
   {
   }
 

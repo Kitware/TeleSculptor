@@ -58,7 +58,7 @@ public:
   : inlier_scale(10.0),
     min_required_inlier_count(0),
     min_required_inlier_percent(0.0),
-    m_logger( vital::get_logger( "core.match_features_fundamental_matrix" ))
+    m_logger( vital::get_logger( "maptk.core.match_features_fundamental_matrix" ))
   {
   }
 
@@ -70,7 +70,7 @@ public:
                              : other.matcher_->clone()),
     f_estimator_(!other.f_estimator_ ? algo::estimate_fundamental_matrix_sptr()
                                    : other.f_estimator_->clone()),
-    m_logger( vital::get_logger( "core.match_features_fundamental_matrix" ))
+    m_logger( vital::get_logger( "maptk.core.match_features_fundamental_matrix" ))
   {
   }
 

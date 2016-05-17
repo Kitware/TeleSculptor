@@ -63,7 +63,7 @@ estimate_homography
 {
   if (pts1.size() < 4 || pts2.size() < 4)
   {
-    vital::logger_handle_t logger( vital::get_logger( "ocv.estimate_homography" ));
+    vital::logger_handle_t logger( vital::get_logger( "maptk.ocv.estimate_homography" ));
     LOG_ERROR(logger, "Not enough points to estimate a homography");
     return vital::homography_sptr();
   }

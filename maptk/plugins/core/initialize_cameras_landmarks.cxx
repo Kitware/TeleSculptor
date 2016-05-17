@@ -139,7 +139,7 @@ public:
     // use the core triangulation as the default, users can change it
     lm_triangulator(new maptk::core::triangulate_landmarks()),
     bundle_adjuster(),
-    m_logger( vital::get_logger( "core.initialize_cameras_landmarks" ))
+    m_logger( vital::get_logger( "maptk.core.initialize_cameras_landmarks" ))
   {
   }
 
@@ -157,7 +157,7 @@ public:
                                            : other.lm_triangulator->clone()),
     bundle_adjuster(!other.bundle_adjuster ? algo::bundle_adjust_sptr()
                                            : other.bundle_adjuster->clone()),
-    m_logger( vital::get_logger( "core.initialize_cameras_landmarks" ))
+    m_logger( vital::get_logger( "maptk.core.initialize_cameras_landmarks" ))
   {
   }
 

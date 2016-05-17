@@ -114,7 +114,7 @@ convert( const f2f_homography_sptr &src1_to_ref,
   }
   catch(...)
   {
-    vital::logger_handle_t logger( vital::get_logger( "vxl.close_loops_homography_guided" ));
+    vital::logger_handle_t logger( vital::get_logger( "maptk.vxl.close_loops_homography_guided" ));
     LOG_ERROR(logger, "Warn: Invalid homography received");
   }
 
@@ -136,7 +136,7 @@ public:
     max_checkpoint_frames_( 10000 ),
     checkpoint_percent_overlap_( 0.70 ),
     homography_filename_( "" ),
-    m_logger( vital::get_logger( "vxl.close_loops_homography_guided" ))
+    m_logger( vital::get_logger( "maptk.vxl.close_loops_homography_guided" ))
   {
   }
 
@@ -149,7 +149,7 @@ public:
                                         : other.ref_computer_->clone() ),
     matcher_( !other.matcher_ ? algo::match_features_sptr()
                               : other.matcher_->clone() ),
-    m_logger( vital::get_logger( "vxl.close_loops_homography_guided" ))
+    m_logger( vital::get_logger( "maptk.vxl.close_loops_homography_guided" ))
   {
   }
 

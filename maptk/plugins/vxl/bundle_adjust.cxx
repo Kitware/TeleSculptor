@@ -69,7 +69,7 @@ public:
     max_iterations(1000),
     x_tolerance(1e-8),
     g_tolerance(1e-8),
-    m_logger( vital::get_logger( "vxl.bundle_adjust" ))
+    m_logger( vital::get_logger( "maptk.vxl.bundle_adjust" ))
   {
   }
 
@@ -82,7 +82,7 @@ public:
     max_iterations(other.max_iterations),
     x_tolerance(other.x_tolerance),
     g_tolerance(other.g_tolerance),
-    m_logger( vital::get_logger( "vxl.bundle_adjust" ))
+    m_logger( vital::get_logger( "maptk.vxl.bundle_adjust" ))
   {
   }
 

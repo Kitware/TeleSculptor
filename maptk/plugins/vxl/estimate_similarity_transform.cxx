@@ -112,7 +112,7 @@ estimate_similarity_transform
   if (!op.compute_ok())
   {
     // TODO: Do some exception handling here
-    vital::logger_handle_t logger( vital::get_logger( "vxl.estimate_similarity_transform" ));
+    vital::logger_handle_t logger( vital::get_logger( "maptk.vxl.estimate_similarity_transform" ));
     LOG_ERROR(logger, "ERROR: Invalid vpgl_ortho_procrustes construction");
     return similarity_d();
   }
@@ -124,7 +124,7 @@ estimate_similarity_transform
   if (!op.compute_ok())
   {
     // TODO: Do some exception handling here.
-    vital::logger_handle_t logger( vital::get_logger( "vxl.estimate_similarity_transform" ));
+    vital::logger_handle_t logger( vital::get_logger( "maptk.vxl.estimate_similarity_transform" ));
     LOG_ERROR(logger, "ERROR: vpgl_ortho_procrustes failed computation");
     return similarity_d();
   }

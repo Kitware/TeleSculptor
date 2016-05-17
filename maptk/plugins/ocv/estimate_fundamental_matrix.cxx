@@ -53,13 +53,13 @@ public:
   /// Constructor
   priv()
     : confidence_threshold(0.99),
-      m_logger( vital::get_logger( "ocv.estimate_fundamental_matrix" ))
+      m_logger( vital::get_logger( "maptk.ocv.estimate_fundamental_matrix" ))
   {
   }
 
   priv(const priv& other)
     : confidence_threshold(other.confidence_threshold),
-      m_logger( vital::get_logger( "ocv.estimate_fundamental_matrix" ))
+      m_logger( vital::get_logger( "maptk.ocv.estimate_fundamental_matrix" ))
   {
   }
 

@@ -65,7 +65,7 @@ estimate_homography
 {
   if (pts1.size() < 4 || pts2.size() < 4)
   {
-    vital::logger_handle_t logger( vital::get_logger( "vxl.estimate_homography" ));
+    vital::logger_handle_t logger( vital::get_logger( "maptk.vxl.estimate_homography" ));
     LOG_ERROR(logger, "Not enough points to estimate a homography");
     return homography_sptr();
   }
@@ -97,7 +97,7 @@ estimate_homography
 
   if ( ! result )
   {
-    vital::logger_handle_t logger( vital::get_logger( "vxl.estimate_homography" ));
+    vital::logger_handle_t logger( vital::get_logger( "maptk.vxl.estimate_homography" ));
     LOG_ERROR(logger, "MSAC failed!!");
     return homography_sptr();
   }
@@ -117,7 +117,7 @@ estimate_homography
   if( ! result2 )
   {
     // if the IRLS fails, fall back to the ransam estimate.
-    vital::logger_handle_t logger( vital::get_logger( "vxl.estimate_homography" ));
+    vital::logger_handle_t logger( vital::get_logger( "maptk.vxl.estimate_homography" ));
     LOG_ERROR(logger, "IRLS failed");
     hg.params_to_homog( ransam.params(), m.as_ref().non_const() );
   }

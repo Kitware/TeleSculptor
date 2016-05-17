@@ -57,12 +57,12 @@ class triangulate_landmarks::priv
 public:
   /// Constructor
   priv()
-  : m_logger( vital::get_logger( "vxl.triangulate_landmarks" ))
+  : m_logger( vital::get_logger( "maptk.vxl.triangulate_landmarks" ))
   {
   }
 
   priv(const priv& other)
-  : m_logger( vital::get_logger( "vxl.triangulate_landmarks" ))
+  : m_logger( vital::get_logger( "maptk.vxl.triangulate_landmarks" ))
   {
   }
 

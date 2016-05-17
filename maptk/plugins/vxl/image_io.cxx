@@ -63,7 +63,7 @@ public:
   : auto_stretch(false),
     manual_stretch(false),
     intensity_range(0, 255),
-    m_logger( vital::get_logger( "vxl.image_io" ) )
+    m_logger( vital::get_logger( "maptk.vxl.image_io" ) )
   {
   }
 
