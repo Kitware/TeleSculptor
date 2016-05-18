@@ -66,10 +66,10 @@ class vidl_ffmpeg_video_input::priv
 public:
   /// Constructor
   priv()
-    : config_start_frame( 0 ),
-      config_stop_after_frame( 0 ),
-      config_time_source( "none" ), // initialization string
-      config_time_scan_frame_limit( 100 ),
+    : c_start_at_frame( 0 ),
+      c_stop_after_frame( 0 ),
+      c_time_source( "none" ), // initialization string
+      c_time_scan_frame_limit( 100 ),
       d_have_frame( false ),
       d_at_eov( false ),
       d_have_frame_time( false ),
@@ -86,17 +86,34 @@ public:
   vital::logger_handle_t d_logger; // for logging in priv methods
 
   // Configuration values
-  unsigned int config_start_frame;
-  unsigned int config_stop_after_frame;
-  std::string  config_time_source; // default sources string
-  std::vector< std::string >  config_time_source_list;
-  int config_time_scan_frame_limit; // number of frames to scan looking for time
+  unsigned int c_start_at_frame;
+  unsigned int c_stop_after_frame;
+  std::string  c_time_source; // default sources string
+  std::vector< std::string >  c_time_source_list;
+  int c_time_scan_frame_limit; // number of frames to scan looking for time
 
   // local state
   bool d_have_frame;
   bool d_at_eov;
+
+  /**
+   * This is set to indicate that we can supply a frame time or some
+   * form. If this is false, the output timestamp will not have a time
+   * set. This also is used to report the HAS_FRAME_TIME capability.
+   */
   bool d_have_frame_time;
+
+  /**
+   * This is set to indicate that we can supply an absolute frame time
+   * rather than a relative frame time. This value is used to report
+   * the HAS_ABSOLUTE_FRAME_TIME capability.
+   */
   bool d_have_abs_frame_time;
+
+  /**
+   * This is set to indicate we can supply video metadata and is used
+   * to report the HAS_METADATA capability.
+   */
   bool d_have_metadata;
 
   double pts_of_meta_ts;            // probably seconds
@@ -169,7 +186,6 @@ public:
 
     return retval;
   }
-
 
 
  // ------------------------------------------------------------------
@@ -251,7 +267,7 @@ public:
 // ------------------------------------------------------------------
   bool misp_time()
   {
-    int frame_count( config_time_scan_frame_limit );
+    int frame_count( c_time_scan_frame_limit );
     bool retval(false);
     int64_t ts = 0;
 
@@ -286,7 +302,7 @@ public:
 // ------------------------------------------------------------------
   bool klv_time( std::string type )
   {
-    int frame_count( config_time_scan_frame_limit );
+    int frame_count( c_time_scan_frame_limit );
     bool retval(false);
 
     do
@@ -366,8 +382,9 @@ vidl_ffmpeg_video_input
   d->d_logger = this->m_logger;
 
   // Copy configuration values only
-  d->config_start_frame      = other.d->config_start_frame;
-  d->config_stop_after_frame = other.d->config_stop_after_frame;
+  d->c_time_scan_frame_limit   = other.d->c_time_scan_frame_limit;
+  d->c_start_at_frame          = other.d->c_start_at_frame;
+  d->c_stop_after_frame        = other.d->c_stop_after_frame;
 }
 
 
@@ -387,34 +404,33 @@ vidl_ffmpeg_video_input
   // get base config from base class
   vital::config_block_sptr config = vital::algo::video_input::get_configuration();
 
-  config->set_value( "time_scan_frame_limit", d->config_time_scan_frame_limit,
-                     "Number of frames to be scanned searching input video for embedded time. " );
+  config->set_value( "time_scan_frame_limit", d->c_time_scan_frame_limit,
+                     "Number of frames to be scanned searching input video for embedded time. "
+                      "If the value is zero, the whole video will be scanned." );
 
-  config->set_value( "start_at_frame", d->config_start_frame,
+  config->set_value( "start_at_frame", d->c_start_at_frame,
                      "Frame number (from 1) to start processing video input. "
-                     "Default is to start at the beginning of the video." );
+                     "If set to zero, start at the beginning of the video." );
 
-  config->set_value( "config_stop_after_frame", d->config_stop_after_frame,
-                     "Number of frames to supply. Default is all frames after start frame." );
+  config->set_value( "stop_after_frame", d->c_stop_after_frame,
+                     "Number of frames to supply. If set to zero then supply all frames after start frame." );
 
-  config->set_value( "absolute-time_source", d->config_time_source,
+  config->set_value( "absolute_time_source", d->c_time_source,
                      "List of sources for absolute frame time information. "
-                     "This entry specifies that an absolute time is desired in the output time stamp. "
+                     "This entry specifies a comma separated list of sources that are "
+                     "tried in order until a valid time source is found. "
+                     "If an absolute time source is found, it is used in the output time stamp. "
                      "Absolute times are derived from the metadata in the video stream. "
-                     "The sources are tried in order until a valid time is found. "
-                     "Valid options are \"none\", \"misp\", \"klv0601\", \"klv0104\".\n"
+                     "Valid source names are \"none\", \"misp\", \"klv0601\", \"klv0104\".\n"
                      "Where:\n"
                      "    none - do not supply absolute time\n"
                      "    misp - use frame embedded time stamps.\n"
                      "    klv0601 - use klv 0601 format metadata for frame time\n"
-                     "    klv0104 - use klv 0104 format metadata for frame time"
-
-
-                     "Note that when \"none\" is found in the list, it is always succeeds and no other time "
-                     "source will be tried. So if \"none\" is to be used, it should be the only entry in the list."
-                     "The time in the output timestamp will be marked as invalid and the HAS_FRAME_TIME "
-                     "capability will be set to false. If all specified entries are tried and no valid time source is found, "
-                     "no time will be returned in the output timestamp, as if \"none\" was the specified time source. "
+                     "    klv0104 - use klv 0104 format metadata for frame time\n"
+                     "Note that when \"none\" is found in the list no further time sources will be evaluated, "
+                     "the output timestamp will be marked as invalid, and the HAS_ABSOLUTE_FRAME_TIME capability "
+                     "will be set to false.  The same behavior occurs when all specified sources are tried and "
+                     "no valid time source is found."
     );
 
   return config;
@@ -433,14 +449,14 @@ vidl_ffmpeg_video_input
   vital::config_block_sptr config = this->get_configuration();
   config->merge_config(in_config);
 
-  d->config_start_frame = config->get_value<vital::timestamp::frame_t>(
-    "start_at_frame", d->config_start_frame );
+  d->c_start_at_frame = config->get_value<vital::timestamp::frame_t>(
+    "start_at_frame", d->c_start_at_frame );
 
-  d->config_stop_after_frame = config->get_value<vital::timestamp::frame_t>(
-    "stop_after_frame", d->config_stop_after_frame );
+  d->c_stop_after_frame = config->get_value<vital::timestamp::frame_t>(
+    "stop_after_frame", d->c_stop_after_frame );
 
-  kwiver::vital::tokenize( config->get_value<std::string>( "time_source", d->config_time_source ),
-            d->config_time_source_list, " ,", true );
+  kwiver::vital::tokenize( config->get_value<std::string>( "time_source", d->c_time_source ),
+            d->c_time_source_list, " ,", true );
 }
 
 
@@ -454,7 +470,7 @@ vidl_ffmpeg_video_input
   // validate time source
   bool valid_src( true );
   std::vector< std::string > time_source;
-  kwiver::vital::tokenize( config->get_value<std::string>( "time_source", d->config_time_source ),
+  kwiver::vital::tokenize( config->get_value<std::string>( "time_source", d->c_time_source ),
             time_source, " ,", true );
 
   VITAL_FOREACH( auto source, time_source )
@@ -510,7 +526,7 @@ vidl_ffmpeg_video_input
   d->d_at_eov = false;
   d->d_frame_number = 1;
 
-  if ( d->config_start_frame != 0 &&  d->config_start_frame > 1 )
+  if ( d->c_start_at_frame != 0 &&  d->c_start_at_frame > 1 )
   {
     // move stream to specified frame number
     d->d_video_stream.seek_frame( d->config_start_frame );
@@ -523,7 +539,7 @@ vidl_ffmpeg_video_input
   // See if we can generate a time base
   d->d_have_frame = true;
   bool time_found( false );
-  VITAL_FOREACH( auto time_source, d->config_time_source_list )
+  VITAL_FOREACH( auto time_source, d->c_time_source_list )
   {
     LOG_DEBUG( d->d_logger, "Looking for " << time_source << " as time source" );
     if( d->init_timestamp( time_source ) )  // will call advance()
@@ -599,7 +615,7 @@ vidl_ffmpeg_video_input
   }
 
   unsigned int frame_num = d->d_video_stream.frame_number();
-  if( (d->config_stop_after_frame != 0) && (d->config_stop_after_frame < frame_num ))
+  if( (d->c_stop_after_frame != 0) && (d->c_stop_after_frame < frame_num ))
   {
     d->d_at_eov = true;  // logical end of file
     return false;
