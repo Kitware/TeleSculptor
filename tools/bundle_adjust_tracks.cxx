@@ -155,6 +155,10 @@ static kwiver::vital::config_block_sptr default_config()
                     "Filter the input tracks keeping those covering "
                     "at least this many frames.");
 
+  config->set_value("min_mm_importance", "1.0",
+                    "Filter the input tracks with match matrix importance score "
+                    "below this threshold. Set to 0 to disable.");
+
   config->set_value("camera_sample_rate", "1",
                     "Sub-sample the cameras for by this rate.\n"
                     "Set to 1 to use all cameras, "
@@ -707,11 +711,18 @@ static int maptk_main(int argc, char const* argv[])
     return EXIT_FAILURE;
   }
   size_t min_track_len = config->get_value<size_t>("min_track_length");
-  if( min_track_len > 1 )
+  double min_mm_importance = config->get_value<double>("min_mm_importance");
+  if( min_track_len > 1 || min_mm_importance > 0.0 )
   {
     kwiver::vital::scoped_cpu_timer t( "track filtering" );
-    //tracks = filter_tracks(tracks, min_track_len);
-    tracks = filter_tracks_importance(tracks, 0.1);
+    if( min_track_len > 1 )
+    {
+      tracks = filter_tracks(tracks, min_track_len);
+    }
+    if( min_mm_importance > 0.0 )
+    {
+      tracks = filter_tracks_importance(tracks, 0.1);
+    }
     LOG_DEBUG(main_logger, "filtered down to "<<tracks->size()<<" long tracks");
 
     // write out filtered tracks if output file is specified
@@ -727,8 +738,8 @@ static int maptk_main(int argc, char const* argv[])
     if( tracks->size() == 0 )
     {
       LOG_ERROR(main_logger, "All track have been filtered. "
-                             << "No tracks are longer than " << min_track_len << " frames. "
-                             << "Try decreasing \"min_track_len\"");
+                             << "Try decreasing \"min_track_len\" "
+                             << "or \"min_mm_importance\"");
       return EXIT_FAILURE;
     }
   }
