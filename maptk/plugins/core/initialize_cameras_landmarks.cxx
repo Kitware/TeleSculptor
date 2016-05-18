@@ -128,6 +128,7 @@ public:
   : verbose(false),
     init_from_last(false),
     retriangulate_all(false),
+    reverse_ba_error_ratio(2.0),
     next_frame_max_distance(0),
     global_ba_rate(1.5),
     base_camera(),
@@ -144,6 +145,7 @@ public:
   : verbose(other.verbose),
     init_from_last(other.init_from_last),
     retriangulate_all(other.retriangulate_all),
+    reverse_ba_error_ratio(other.reverse_ba_error_ratio),
     next_frame_max_distance(other.next_frame_max_distance),
     global_ba_rate(other.global_ba_rate),
     base_camera(other.base_camera),
@@ -179,6 +181,7 @@ public:
   bool verbose;
   bool init_from_last;
   bool retriangulate_all;
+  double reverse_ba_error_ratio;
   unsigned int next_frame_max_distance;
   double global_ba_rate;
   vital::simple_camera base_camera;
@@ -417,6 +420,13 @@ initialize_cameras_landmarks
                     "initialized camera.  Otherwise, only triangulate or "
                     "re-triangulate landmarks that are marked for initialization.");
 
+  config->set_value("reverse_ba_error_ratio", d_->reverse_ba_error_ratio,
+                    "After final bundle adjustment, if the Necker reversal of "
+                    "the solution increases the RMSE by less than this factor, "
+                    "then run a bundle adjustment on the reversed data and "
+                    "choose the final solution with the lowest error.  Set to "
+                    "zero to disable.");
+
   config->set_value("next_frame_max_distance", d_->next_frame_max_distance,
                     "Limit the selection of the next frame to initialize to "
                     "within this many frames of an already initialized frame. "
@@ -489,6 +499,10 @@ initialize_cameras_landmarks
 
   d_->retriangulate_all = config->get_value<bool>("retriangulate_all",
                                                   d_->retriangulate_all);
+
+  d_->reverse_ba_error_ratio =
+      config->get_value<double>("reverse_ba_error_ratio",
+                                d_->reverse_ba_error_ratio);
 
   d_->next_frame_max_distance =
       config->get_value<unsigned int>("next_frame_max_distance",
@@ -1000,39 +1014,45 @@ initialize_cameras_landmarks
   // try depth reversal at the end
   if( d_->bundle_adjuster )
   {
+    LOG_INFO(d_->m_logger, "Running final bundle adjustment");
     camera_map_sptr ba_cams(new simple_camera_map(cams));
     landmark_map_sptr ba_lms(new simple_landmark_map(lms));
     double init_rmse = maptk::reprojection_rmse(cams, lms, trks);
-    LOG_INFO(d_->m_logger, "initial reprojection RMSE: " << init_rmse);
+    LOG_DEBUG(d_->m_logger, "initial reprojection RMSE: " << init_rmse);
 
     d_->bundle_adjuster->optimize(ba_cams, ba_lms, tracks);
     map_cam_t cams1 = ba_cams->cameras();
     map_landmark_t lms1 = ba_lms->landmarks();
     double final_rmse1 = maptk::reprojection_rmse(cams1, lms1, trks);
-    LOG_INFO(d_->m_logger, "final reprojection RMSE: " << final_rmse1);
+    LOG_DEBUG(d_->m_logger, "final reprojection RMSE: " << final_rmse1);
+    cams = ba_cams->cameras();
+    lms = ba_lms->landmarks();
 
-    // reverse cameras and optimize again
-    camera_map_sptr ba_cams2(new simple_camera_map(cams1));
-    landmark_map_sptr ba_lms2(new simple_landmark_map(lms1));
-    necker_reverse(ba_cams2, ba_lms2);
-    d_->lm_triangulator->triangulate(ba_cams2, tracks, ba_lms2);
-    init_rmse = maptk::reprojection_rmse(ba_cams2->cameras(), ba_lms2->landmarks(), trks);
-    LOG_INFO(d_->m_logger, "flipped initial reprojection RMSE: " << init_rmse);
-    d_->bundle_adjuster->optimize(ba_cams2, ba_lms2, tracks);
-    map_cam_t cams2 = ba_cams2->cameras();
-    map_landmark_t lms2 = ba_lms2->landmarks();
-    double final_rmse2 = maptk::reprojection_rmse(cams2, lms2, trks);
-    LOG_INFO(d_->m_logger, "flipped final reprojection RMSE: " << final_rmse2);
+    if( d_->reverse_ba_error_ratio > 0 )
+    {
+      // reverse cameras and optimize again
+      camera_map_sptr ba_cams2(new simple_camera_map(cams1));
+      landmark_map_sptr ba_lms2(new simple_landmark_map(lms1));
+      necker_reverse(ba_cams2, ba_lms2);
+      d_->lm_triangulator->triangulate(ba_cams2, tracks, ba_lms2);
+      init_rmse = maptk::reprojection_rmse(ba_cams2->cameras(), ba_lms2->landmarks(), trks);
+      LOG_DEBUG(d_->m_logger, "Necker reversed initial reprojection RMSE: " << init_rmse);
+      if( init_rmse < final_rmse1 * d_->reverse_ba_error_ratio )
+      {
+        LOG_INFO(d_->m_logger, "Running Necker reversed bundle adjustment for comparison");
+        d_->bundle_adjuster->optimize(ba_cams2, ba_lms2, tracks);
+        map_cam_t cams2 = ba_cams2->cameras();
+        map_landmark_t lms2 = ba_lms2->landmarks();
+        double final_rmse2 = maptk::reprojection_rmse(cams2, lms2, trks);
+        LOG_DEBUG(d_->m_logger, "Necker reversed final reprojection RMSE: " << final_rmse2);
 
-    if(final_rmse1 < final_rmse2)
-    {
-      cams = ba_cams->cameras();
-      lms = ba_lms->landmarks();
-    }
-    else
-    {
-      cams = ba_cams2->cameras();
-      lms = ba_lms2->landmarks();
+        if(final_rmse2 < final_rmse1)
+        {
+          LOG_INFO(d_->m_logger, "Necker reversed solution is better");
+          cams = ba_cams2->cameras();
+          lms = ba_lms2->landmarks();
+        }
+      }
     }
 
     // if using bundle adjustment, remove landmarks with large error
