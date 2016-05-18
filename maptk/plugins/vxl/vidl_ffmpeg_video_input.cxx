@@ -257,6 +257,10 @@ public:
       retval = false;
     }
 
+    // if, after advancing, the PTS is still zero, then we can not
+    // establish a relative time reference
+    d_have_frame_time = ( 0 != d_video_stream.current_pts() );
+
     // Clear any old metadata
     metadata_collection.clear();
 
@@ -280,20 +284,13 @@ public:
         meta_ts = ts; // in usec
         LOG_DEBUG( this->d_logger, "Found MISP frame time:" << meta_ts );
 
-        d_have_frame_time = true;
         d_have_abs_frame_time = true;
         retval = true;
       }
-
     }
-    while ( meta_ts == 0.0 && d_video_stream.advance() && frame_count-- );
-
-    // if, after advancing, the PTS is still zero, then we can not establish a time reference
-    if ( 0 == d_video_stream.current_pts() )
-    {
-      d_have_frame_time = false;
-      d_have_abs_frame_time = false;
-    }
+    while ( ( meta_ts == 0.0 )
+            && d_video_stream.advance()
+            && (( c_time_scan_frame_limit == 0) || frame_count-- ));
 
     return retval;
   } // misp_time
@@ -336,7 +333,6 @@ public:
 
                 LOG_DEBUG( this->d_logger, "Found initial " << type << " timestamp: " << meta_ts );
 
-                d_have_frame_time = true;
                 d_have_abs_frame_time = true;
                 retval = true;
               } // has time element
@@ -345,14 +341,9 @@ public:
         } // foreach over all metadata packets
       } // end if processed metadata collection
     }
-    while ( meta_ts == 0 && d_video_stream.advance() && frame_count-- );
-
-    // if, after advancing, the PTS is still zero, then we can not establish a time reference
-    if ( 0 == d_video_stream.current_pts() )
-    {
-      d_have_frame_time = false;
-      d_have_abs_frame_time = false;
-    }
+    while ( ( meta_ts == 0 )
+            && d_video_stream.advance()
+            && ( (c_time_scan_frame_limit == 0) || frame_count-- ) );
 
     return retval;
   } // klv_time
@@ -562,7 +553,8 @@ vidl_ffmpeg_video_input
   set_capability(vital::algo::video_input::HAS_EOV, true );
   set_capability(vital::algo::video_input::HAS_FRAME_NUMBERS, true );
   set_capability(vital::algo::video_input::HAS_FRAME_TIME, d->d_have_frame_time  );
-  set_capability(vital::algo::video_input::HAS_ABSOLUTE_FRAME_TIME, d->d_have_abs_frame_time  );
+  set_capability(vital::algo::video_input::HAS_ABSOLUTE_FRAME_TIME,
+                 (d->d_have_frame_time & d->d_have_abs_frame_time) );
   set_capability(vital::algo::video_input::HAS_METADATA, d->d_have_metadata  );
 }
 
