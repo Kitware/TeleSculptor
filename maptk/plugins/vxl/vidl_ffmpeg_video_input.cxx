@@ -520,7 +520,17 @@ vidl_ffmpeg_video_input
   if ( d->c_start_at_frame != 0 &&  d->c_start_at_frame > 1 )
   {
     // move stream to specified frame number
-    d->d_video_stream.seek_frame( d->config_start_frame );
+    unsigned int frame_num = d->d_video_stream.frame_number(); // get first/current frame number
+
+    while (frame_num < d->c_start_at_frame)
+    {
+      if( ! d->d_video_stream.advance() )
+      {
+        break;
+      }
+
+      frame_num = d->d_video_stream.frame_number();
+    }
   }
 
   // check for metadata
