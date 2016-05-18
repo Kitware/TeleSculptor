@@ -15,6 +15,10 @@ Core Plugin
  * Added a new matcher that uses a fundamental matrix constraint to filter bad
    matches.
 
+ * Added a new loop closure algorithm that exhaustively matches all pairs of
+   frames, or can be configured to match all frames within a moving temporal
+   window.
+
 OpenCV Plugin
 
  * Added CMake support for handing and marking the use of OpenCV version >= 3.

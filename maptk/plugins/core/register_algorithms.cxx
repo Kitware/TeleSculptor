@@ -37,6 +37,7 @@
 
 #include <maptk/plugin_interface/algorithm_plugin_interface_macros.h>
 #include <maptk/plugins/core/close_loops_bad_frames_only.h>
+#include <maptk/plugins/core/close_loops_exhaustive.h>
 #include <maptk/plugins/core/close_loops_keyframe.h>
 #include <maptk/plugins/core/close_loops_multi_method.h>
 #include <maptk/plugins/core/compute_ref_homography_core.h>
@@ -63,6 +64,7 @@ int register_algorithms(vital::registrar &reg)
     REGISTRATION_INIT( reg );
 
     REGISTER_TYPE( maptk::core::close_loops_bad_frames_only );
+    REGISTER_TYPE( maptk::core::close_loops_exhaustive );
     REGISTER_TYPE( maptk::core::close_loops_keyframe );
     REGISTER_TYPE( maptk::core::close_loops_multi_method );
     REGISTER_TYPE( maptk::core::compute_ref_homography_core );
