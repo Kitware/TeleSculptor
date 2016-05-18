@@ -36,12 +36,9 @@
 #include "close_loops_exhaustive.h"
 
 #include <algorithm>
-#include <iostream>
-#include <set>
-#include <sstream>
-#include <string>
-#include <vector>
 #include <functional>
+#include <set>
+#include <vector>
 
 #include <vital/exceptions/algorithm.h>
 #include <vital/algo/match_features.h>
