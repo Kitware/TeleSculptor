@@ -1,0 +1,51 @@
+MAPTK Release Notes for changes pending release approval by AFRL
+================================================================
+
+This file documents release notes for changes made to MAP-Tk which require
+public release approval from AFRL.  After approval, the changes and
+corresponding notes below will be incorporated into a public numbered
+release version, and the content of this file will be reset.
+
+
+Updates since last public release
+---------------------------------
+
+Core Plugin
+
+ * Added a new matcher that uses a fundamental matrix constraint to filter bad
+   matches.
+
+OpenCV Plugin
+
+ * Added CMake support for handing and marking the use of OpenCV version >= 3.
+
+ * Overhauled OpenCV algorithm introspection structure. Versions 3.x took away
+   the previous ability to introspect algorithm types and parameters,
+   requiring, for at least versions 3.x, for there to be manual wrappings of
+   each algorithm to be exposed. Removed introspection for any version and
+   now have cross-version compatible manual wrappings of all algorithms at
+   least present in 3.x that fill the feature detection, descriptor extraction
+   and feature matching roles.
+
+ * Added an OpenCV fundamental matrix estimation wrapper. OpenCV can estimate a
+   fundamental matrix with the presence of outliers using RANSAC.
+
+Scripts
+
+ * Added a Python script which uses OpenCV to produce mosaicked images of
+   video frames using the homographies produced by maptk_track_features.
+
+
+ Fixes since last public release
+-------------------------------
+
+Plugins
+
+ * Corrected all plugins to use the Vital logging framework instead of
+   cout and cerr for status, debug, and error messages.
+
+Tools
+
+ * Corrected the track_features and bundle_adjust_tracks tools to use the
+   Vital logging framework instead of cout and cerr for status, debug,
+   and error messages.

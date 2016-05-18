@@ -80,7 +80,6 @@ detect_bad_tracks(const camera_map::map_camera_t& cams,
     double rmse = kwiver::maptk::reprojection_rmse(cams, lm_single, trks);
     if( rmse > error_tol )
     {
-      std::cerr << "remove track "<<p.first<<" with rmse "<< rmse <<std::endl;
       to_remove.insert(p.first);
     }
   }
@@ -139,7 +138,8 @@ public:
     camera_optimizer(),
     // use the core triangulation as the default, users can change it
     lm_triangulator(new maptk::core::triangulate_landmarks()),
-    bundle_adjuster()
+    bundle_adjuster(),
+    m_logger( vital::get_logger( "maptk.core.initialize_cameras_landmarks" ))
   {
   }
 
@@ -156,7 +156,8 @@ public:
     lm_triangulator(!other.lm_triangulator ? algo::triangulate_landmarks_sptr()
                                            : other.lm_triangulator->clone()),
     bundle_adjuster(!other.bundle_adjuster ? algo::bundle_adjust_sptr()
-                                           : other.bundle_adjuster->clone())
+                                           : other.bundle_adjuster->clone()),
+    m_logger( vital::get_logger( "maptk.core.initialize_cameras_landmarks" ))
   {
   }
 
@@ -198,6 +199,9 @@ public:
   vital::algo::optimize_cameras_sptr camera_optimizer;
   vital::algo::triangulate_landmarks_sptr lm_triangulator;
   vital::algo::bundle_adjust_sptr bundle_adjuster;
+
+  /// Logger handle
+  vital::logger_handle_t m_logger;
 };
 
 
@@ -247,8 +251,8 @@ initialize_cameras_landmarks::priv
                                                           inliers.end(), true));
   if( this->verbose )
   {
-    std::cout << "E matrix num inliers = " << num_inliers
-              << "/" << inliers.size() << std::endl;
+    LOG_INFO(m_logger, "E matrix num inliers = " << num_inliers
+                       << "/" << inliers.size());
   }
 
   // get the first inlier index
@@ -291,12 +295,12 @@ initialize_cameras_landmarks::priv
   }
   if( this->verbose )
   {
-    std::cout << " median scale = "<< median_scale<<std::endl;
+    LOG_DEBUG(m_logger, "median scale = "<< median_scale);
     if( !scales.empty() )
     {
       std::sort(scales.begin(), scales.end());
-      std::cout << "    min scale = " << scales.front() << '\n'
-                << "    max scale = " << scales.back() << std::endl;
+      LOG_DEBUG(m_logger, "min/max scale = " << scales.front()
+                          << "/" << scales.back());
     }
   }
 
@@ -353,6 +357,9 @@ initialize_cameras_landmarks::priv
   {
     lms[p.first] = p.second;
   }
+  LOG_INFO(m_logger, "removing "<<to_remove.size()
+                     << "/" << lm_map->size()
+                     << " landmarks with RMSE > 5.0");
   remove_landmarks(to_remove, lms);
 }
 
@@ -721,7 +728,8 @@ find_nearby_new_frames(const std::set<frame_id_t>& new_frames,
 /// find the best pair of camera indices to start with
 void
 find_best_initial_pair(const Eigen::SparseMatrix<unsigned int>& mm,
-                       int& i, int& j)
+                       int& i, int& j,
+                       vital::logger_handle_t& logger)
 {
   typedef Eigen::Matrix<unsigned int, Eigen::Dynamic, 1> vectorXu;
   const int cols = mm.cols();
@@ -741,8 +749,8 @@ find_best_initial_pair(const Eigen::SparseMatrix<unsigned int>& mm,
   }
   const unsigned int threshold = std::max(global_max_matches / 2, 20u);
 
-  std::cout <<"global max "<<global_max_matches << std::endl;
-  std::cout <<"threshold "<<threshold << std::endl;
+  LOG_DEBUG(logger, "global max "<<global_max_matches);
+  LOG_DEBUG(logger, "threshold "<<threshold);
   for(int x=1; x<cols; ++x)
   {
     unsigned int max_matches = 0;
@@ -757,7 +765,8 @@ find_best_initial_pair(const Eigen::SparseMatrix<unsigned int>& mm,
         max_j = x+y;
       }
     }
-    std::cout << "max matches at "<<x<<" is "<< max_matches << " at "<< max_i << ", "<< max_j<<std::endl;
+    LOG_DEBUG(logger, "max matches at "<<x<<" is "<< max_matches
+                      << " at "<< max_i << ", "<< max_j);
     if( max_matches < threshold )
     {
       break;
@@ -773,7 +782,8 @@ find_best_initial_pair(const Eigen::SparseMatrix<unsigned int>& mm,
 frame_id_t
 next_best_frame(const track_set_sptr tracks,
                 const vital::landmark_map::map_landmark_t& lms,
-                const std::set<frame_id_t>& new_frame_ids)
+                const std::set<frame_id_t>& new_frame_ids,
+                vital::logger_handle_t& logger)
 {
   const std::vector<track_sptr> trks = tracks->tracks();
   typedef std::map<frame_id_t, unsigned int> frame_map_t;
@@ -805,7 +815,7 @@ next_best_frame(const track_set_sptr tracks,
   // check if remaining new frames see no existing landmarks
   if( vis_count.empty() )
   {
-    std::cout << "remaining frames do not see any existing landmarks" << std::endl;
+    LOG_INFO(logger, "remaining frames do not see any existing landmarks");
     return *new_frame_ids.begin();
   }
 
@@ -820,7 +830,8 @@ next_best_frame(const track_set_sptr tracks,
       best_frame = p.first;
     }
   }
-  std::cout << "frame "<< best_frame << " sees "<< max_count << " landmarks"<<std::endl;
+  LOG_DEBUG(logger, "frame "<< best_frame << " sees "
+                    << max_count << " landmarks");
   return best_frame;
 }
 
@@ -893,8 +904,9 @@ initialize_cameras_landmarks
   std::vector<frame_id_t> mm_frames(frame_ids.begin(), frame_ids.end());
   Eigen::SparseMatrix<unsigned int> mm = match_matrix(tracks, mm_frames);
   int init_i=0,init_j=0;
-  find_best_initial_pair(mm, init_i, init_j);
-  std::cout << "using frames "<< mm_frames[init_i] << " and " << mm_frames[init_j] <<std::endl;
+  find_best_initial_pair(mm, init_i, init_j, d_->m_logger);
+  LOG_INFO(d_->m_logger, "Initializing with frames "<< mm_frames[init_i]
+                         << " and " << mm_frames[init_j]);
 
   if(cams.empty())
   {
@@ -916,7 +928,7 @@ initialize_cameras_landmarks
       unsigned int search_range = d_->next_frame_max_distance;
       if( search_range < 1 )
       {
-        f = next_best_frame(tracks, lms, new_frame_ids);
+        f = next_best_frame(tracks, lms, new_frame_ids, d_->m_logger);
       }
       else
       {
@@ -927,7 +939,7 @@ initialize_cameras_landmarks
           nearby = find_nearby_new_frames(new_frame_ids, cams, search_range);
           search_range *= 2;
         }
-        f = next_best_frame(tracks, lms, nearby);
+        f = next_best_frame(tracks, lms, nearby, d_->m_logger);
       }
     }
     new_frame_ids.erase(f);
@@ -936,7 +948,7 @@ initialize_cameras_landmarks
     frame_id_t other_frame = find_closest_camera(f, cams);
     if(d_->verbose)
     {
-      std::cout <<"frame "<< f <<" uses reference "<< other_frame <<std::endl;
+      LOG_DEBUG(d_->m_logger, "frame "<< f <<" uses reference "<< other_frame);
     }
 
     // get the subset of tracks that have features on frame f
@@ -992,22 +1004,23 @@ initialize_cameras_landmarks
       std::vector<double> rpe = maptk::reprojection_errors(new_cam_map, lms, trks);
       if( rpe.empty() )
       {
-        std::cerr << "no landmark projections for new camera" << std::endl;
+        LOG_DEBUG(d_->m_logger, "no landmark projections for new camera");
       }
       else
       {
         std::sort(rpe.begin(), rpe.end());
-        std::cerr << "new camera reprojections - median: "<<rpe[rpe.size()/2]
-                  << " max: " << rpe.back() << std::endl;
+        LOG_DEBUG(d_->m_logger, "new camera reprojections - median: "
+                                << rpe[rpe.size()/2] << " max: " << rpe.back());
       }
     }
 
-    if( d_->bundle_adjuster && cams.size() >= 4 && is_power_of_two(cams.size()) )
+    if( d_->bundle_adjuster && cams.size() >= 4 &&
+        is_power_of_two(static_cast<unsigned int>(cams.size())) )
     {
       camera_map_sptr ba_cams(new simple_camera_map(cams));
       landmark_map_sptr ba_lms(new simple_landmark_map(lms));
       double init_rmse = maptk::reprojection_rmse(cams, lms, trks);
-      std::cerr << "initial reprojection RMSE: " << init_rmse << std::endl;
+      LOG_INFO(d_->m_logger, "initial reprojection RMSE: " << init_rmse);
 
       d_->bundle_adjuster->optimize(ba_cams, ba_lms, tracks);
       cams = ba_cams->cameras();
@@ -1015,13 +1028,17 @@ initialize_cameras_landmarks
 
       // detect tracks/landmarks with large error and remove them
       std::set<track_id_t> to_remove = detect_bad_tracks(cams, lms, trks, 5.0);
+      LOG_INFO(d_->m_logger, "removing "<<to_remove.size()
+                             << "/" << lms.size()
+                             << " landmarks with RMSE > 5.0");
       remove_landmarks(to_remove, lms);
       std::vector<track_sptr> all_trks = tracks->tracks();
       remove_tracks(to_remove, all_trks);
       tracks = track_set_sptr(new simple_track_set(all_trks));
       double final_rmse = maptk::reprojection_rmse(cams, lms, trks);
-      std::cerr << "final reprojection RMSE: " << final_rmse << std::endl;
-      std::cout << "updated focal length "<<cams.begin()->second->intrinsics()->focal_length() <<std::endl;
+      LOG_INFO(d_->m_logger, "final reprojection RMSE: " << final_rmse);
+      LOG_DEBUG(d_->m_logger, "updated focal length "
+                              << cams.begin()->second->intrinsics()->focal_length());
     }
 
     if(d_->verbose)
@@ -1029,9 +1046,9 @@ initialize_cameras_landmarks
       camera_map_sptr ba_cams(new simple_camera_map(cams));
       landmark_map_sptr ba_lms(new simple_landmark_map(lms));
       double curr_rmse = maptk::reprojection_rmse(cams, lms, trks);
-      std::cerr << "current reprojection RMSE: " << curr_rmse << std::endl;
+      LOG_INFO(d_->m_logger, "current reprojection RMSE: " << curr_rmse);
 
-      std::cout << "frame "<<f<<" - num landmarks = "<< lms.size() << std::endl;
+      LOG_DEBUG(d_->m_logger, "frame "<<f<<" - num landmarks = "<< lms.size());
     }
   }
 
@@ -1041,13 +1058,13 @@ initialize_cameras_landmarks
     camera_map_sptr ba_cams(new simple_camera_map(cams));
     landmark_map_sptr ba_lms(new simple_landmark_map(lms));
     double init_rmse = maptk::reprojection_rmse(cams, lms, trks);
-    std::cerr << "initial reprojection RMSE: " << init_rmse << std::endl;
+    LOG_INFO(d_->m_logger, "initial reprojection RMSE: " << init_rmse);
 
     d_->bundle_adjuster->optimize(ba_cams, ba_lms, tracks);
     map_cam_t cams1 = ba_cams->cameras();
     map_landmark_t lms1 = ba_lms->landmarks();
     double final_rmse1 = maptk::reprojection_rmse(cams1, lms1, trks);
-    std::cerr << "final reprojection RMSE: " << final_rmse1 << std::endl;
+    LOG_INFO(d_->m_logger, "final reprojection RMSE: " << final_rmse1);
 
     // reverse cameras and optimize again
     camera_map_sptr ba_cams2(new simple_camera_map(cams1));
@@ -1055,12 +1072,12 @@ initialize_cameras_landmarks
     necker_reverse(ba_cams2, ba_lms2);
     d_->lm_triangulator->triangulate(ba_cams2, tracks, ba_lms2);
     init_rmse = maptk::reprojection_rmse(ba_cams2->cameras(), ba_lms2->landmarks(), trks);
-    std::cerr << "flipped initial reprojection RMSE: " << init_rmse << std::endl;
+    LOG_INFO(d_->m_logger, "flipped initial reprojection RMSE: " << init_rmse);
     d_->bundle_adjuster->optimize(ba_cams2, ba_lms2, tracks);
     map_cam_t cams2 = ba_cams2->cameras();
     map_landmark_t lms2 = ba_lms2->landmarks();
     double final_rmse2 = maptk::reprojection_rmse(cams2, lms2, trks);
-    std::cerr << "flipped final reprojection RMSE: " << final_rmse2 << std::endl;
+    LOG_INFO(d_->m_logger, "flipped final reprojection RMSE: " << final_rmse2);
 
     if(final_rmse1 < final_rmse2)
     {
@@ -1072,10 +1089,16 @@ initialize_cameras_landmarks
       cams = ba_cams2->cameras();
       lms = ba_lms2->landmarks();
     }
+
+    // if using bundle adjustment, remove landmarks with large error
+    // after optimization
+    std::set<track_id_t> to_remove = detect_bad_tracks(cams, lms, trks, 1.0);
+    LOG_INFO(d_->m_logger, "removing "<<to_remove.size()
+                           << "/" << lms.size()
+                           << " landmarks with RMSE > 1.0");
+    remove_landmarks(to_remove, lms);
   }
 
-  std::set<track_id_t> to_remove = detect_bad_tracks(cams, lms, trks, 1.0);
-  remove_landmarks(to_remove, lms);
   cameras = camera_map_sptr(new simple_camera_map(cams));
   landmarks = landmark_map_sptr(new simple_landmark_map(lms));
 }

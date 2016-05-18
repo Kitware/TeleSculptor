@@ -131,6 +131,11 @@ void evaluate_initialization(const kwiver::vital::camera_map_sptr true_cams,
   vital::landmark_map::map_landmark_t new_lms = est_landmarks->landmarks();
   VITAL_FOREACH(landmark_map::map_landmark_t::value_type p, orig_lms)
   {
+    if (!new_lms[p.first] || !p.second)
+    {
+      TEST_ERROR("invalid landmark pointer");
+      continue;
+    }
     vital::landmark_sptr new_lm_tr = maptk::transform(new_lms[p.first], global_sim);
 
     double dt = (p.second->loc() - new_lm_tr->loc()).norm();
