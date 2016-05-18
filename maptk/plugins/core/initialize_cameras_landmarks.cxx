@@ -59,11 +59,6 @@
 using namespace kwiver::vital;
 
 namespace {
-inline bool is_power_of_two(unsigned int x)
-{
-  return ((x != 0) && ((x & (~x + 1)) == x));
-}
-
 
 /// detect bad tracks
 std::set<track_id_t>
@@ -134,6 +129,7 @@ public:
     init_from_last(false),
     retriangulate_all(false),
     next_frame_max_distance(0),
+    global_ba_rate(1.5),
     base_camera(),
     e_estimator(),
     camera_optimizer(),
@@ -149,6 +145,7 @@ public:
     init_from_last(other.init_from_last),
     retriangulate_all(other.retriangulate_all),
     next_frame_max_distance(other.next_frame_max_distance),
+    global_ba_rate(other.global_ba_rate),
     base_camera(other.base_camera),
     e_estimator(!other.e_estimator ? algo::estimate_essential_matrix_sptr()
                                    : other.e_estimator->clone()),
@@ -183,6 +180,7 @@ public:
   bool init_from_last;
   bool retriangulate_all;
   unsigned int next_frame_max_distance;
+  double global_ba_rate;
   vital::simple_camera base_camera;
   vital::algo::estimate_essential_matrix_sptr e_estimator;
   vital::algo::optimize_cameras_sptr camera_optimizer;
@@ -426,6 +424,10 @@ initialize_cameras_landmarks
                     "until a valid frame is found. "
                     "A value of zero disables this limit");
 
+  config->set_value("global_ba_rate", d_->global_ba_rate,
+                    "Run a global bundle adjustment every time the number of "
+                    "cameras in the system grows by this multiple.");
+
   config->set_value("base_camera:focal_length", K->focal_length(),
                     "focal length of the base camera model");
 
@@ -491,6 +493,9 @@ initialize_cameras_landmarks
   d_->next_frame_max_distance =
       config->get_value<unsigned int>("next_frame_max_distance",
                                       d_->next_frame_max_distance);
+
+  d_->global_ba_rate = config->get_value<double>("global_ba_rate",
+                                                 d_->global_ba_rate);
 
   vital::config_block_sptr bc = config->subblock("base_camera");
   simple_camera_intrinsics K2(bc->get_value<double>("focal_length",
@@ -851,6 +856,8 @@ initialize_cameras_landmarks
     cams[f] = d_->base_camera.clone();
   }
 
+  // keep track of the number of cameras needed for the next bundle adjustment
+  size_t num_cams_for_next_ba = 2;
   while( !new_frame_ids.empty() )
   {
     frame_id_t f;
@@ -949,9 +956,12 @@ initialize_cameras_landmarks
       }
     }
 
-    if( d_->bundle_adjuster && cams.size() >= 4 &&
-        is_power_of_two(static_cast<unsigned int>(cams.size())) )
+    if( d_->bundle_adjuster && cams.size() >= num_cams_for_next_ba )
     {
+      LOG_INFO(d_->m_logger, "Running Global Bundle Adjustment on "
+                              << cams.size() << " cameras and "
+                              << lms.size() << " landmarks");
+      num_cams_for_next_ba = static_cast<size_t>(d_->global_ba_rate * num_cams_for_next_ba);
       camera_map_sptr ba_cams(new simple_camera_map(cams));
       landmark_map_sptr ba_lms(new simple_landmark_map(lms));
       double init_rmse = maptk::reprojection_rmse(cams, lms, trks);
