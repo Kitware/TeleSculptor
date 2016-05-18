@@ -71,6 +71,7 @@
 #include <maptk/local_geo_cs.h>
 #include <maptk/geo_reference_points_io.h>
 #include <maptk/metrics.h>
+#include <maptk/match_matrix.h>
 #include <maptk/transform.h>
 #include <maptk/version.h>
 
@@ -153,6 +154,10 @@ static kwiver::vital::config_block_sptr default_config()
   config->set_value("min_track_length", "50",
                     "Filter the input tracks keeping those covering "
                     "at least this many frames.");
+
+  config->set_value("min_mm_importance", "1.0",
+                    "Filter the input tracks with match matrix importance score "
+                    "below this threshold. Set to 0 to disable.");
 
   config->set_value("camera_sample_rate", "1",
                     "Sub-sample the cameras for by this rate.\n"
@@ -327,6 +332,36 @@ filter_tracks(kwiver::vital::track_set_sptr tracks, size_t min_length)
     }
   }
   return kwiver::vital::track_set_sptr(new kwiver::vital::simple_track_set(good_trks));
+}
+
+
+// ------------------------------------------------------------------
+/// filter track set by removing less important
+kwiver::vital::track_set_sptr
+filter_tracks_importance(kwiver::vital::track_set_sptr tracks, double min_score)
+{
+  using namespace kwiver;
+
+  // compute the match matrix
+  std::vector<vital::frame_id_t> frames;
+  Eigen::SparseMatrix<unsigned int> mm = maptk::match_matrix(tracks, frames);
+
+  // compute the importance scores on the tracks
+  std::map<vital::track_id_t, double> importance =
+      maptk::match_matrix_track_importance(tracks, frames, mm);
+
+  std::vector<vital::track_sptr> trks = tracks->tracks();
+  std::vector<vital::track_sptr> good_trks;
+  VITAL_FOREACH(kwiver::vital::track_sptr t, trks)
+  {
+    std::map<vital::track_id_t, double>::const_iterator itr;
+    if( (itr = importance.find(t->id())) != importance.end() &&
+        itr->second >= min_score)
+    {
+      good_trks.push_back(t);
+    }
+  }
+  return vital::track_set_sptr(new vital::simple_track_set(good_trks));
 }
 
 
@@ -676,10 +711,18 @@ static int maptk_main(int argc, char const* argv[])
     return EXIT_FAILURE;
   }
   size_t min_track_len = config->get_value<size_t>("min_track_length");
-  if( min_track_len > 1 )
+  double min_mm_importance = config->get_value<double>("min_mm_importance");
+  if( min_track_len > 1 || min_mm_importance > 0.0 )
   {
     kwiver::vital::scoped_cpu_timer t( "track filtering" );
-    tracks = filter_tracks(tracks, min_track_len);
+    if( min_track_len > 1 )
+    {
+      tracks = filter_tracks(tracks, min_track_len);
+    }
+    if( min_mm_importance > 0.0 )
+    {
+      tracks = filter_tracks_importance(tracks, 0.1);
+    }
     LOG_DEBUG(main_logger, "filtered down to "<<tracks->size()<<" long tracks");
 
     // write out filtered tracks if output file is specified
@@ -695,8 +738,8 @@ static int maptk_main(int argc, char const* argv[])
     if( tracks->size() == 0 )
     {
       LOG_ERROR(main_logger, "All track have been filtered. "
-                             << "No tracks are longer than " << min_track_len << " frames. "
-                             << "Try decreasing \"min_track_len\"");
+                             << "Try decreasing \"min_track_len\" "
+                             << "or \"min_mm_importance\"");
       return EXIT_FAILURE;
     }
   }
