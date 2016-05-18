@@ -111,7 +111,8 @@ std::string
 close_loops_exhaustive
 ::description() const
 {
-  return "Attempts long-term loop closure";
+  return "Exhaustive matching of all frame pairs, "
+         "or all frames within a moving window";
 }
 
 
