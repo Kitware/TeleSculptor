@@ -58,7 +58,7 @@ public:
   priv()
     : match_req(100),
       num_look_back(-1),
-      m_logger( vital::get_logger( "close_loops_exhaustive" ))
+      m_logger( vital::get_logger( "maptk.core.close_loops_exhaustive" ))
   {
   }
 
@@ -66,7 +66,7 @@ public:
     : match_req(other.match_req),
       num_look_back(other.num_look_back),
       matcher(!other.matcher ? algo::match_features_sptr() : other.matcher->clone()),
-      m_logger( vital::get_logger( "close_loops_exhaustive" ))
+      m_logger( vital::get_logger( "maptk.core.close_loops_exhaustive" ))
   {
   }
 
