@@ -50,11 +50,12 @@ namespace core {
 
 using namespace kwiver::vital;
 
-
+namespace {
 /// Functor to help remove tracks from vector
 bool track_in_set( track_sptr trk_ptr, std::set<track_id_t>* set_ptr )
 {
   return set_ptr->find( trk_ptr->id() ) != set_ptr->end();
+}
 }
 
 
