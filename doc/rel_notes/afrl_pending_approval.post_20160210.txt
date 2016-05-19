@@ -15,6 +15,9 @@ Main Library
  * Added a function to match_matrix.h to use the match matrix to score each
    track on how important it is in covering the match matrix.
 
+ * Moved a function to extract a camera from an essential matrix from the core
+   initialize_cameras_landmarks algorithm into epipolar_geometry.h.
+
 Core Plugin
 
  * Added a new matcher that uses a fundamental matrix constraint to filter bad
@@ -49,7 +52,7 @@ Scripts
    video frames using the homographies produced by maptk_track_features.
 
 
- Fixes since last public release
+Fixes since last public release
 -------------------------------
 
 Plugins
