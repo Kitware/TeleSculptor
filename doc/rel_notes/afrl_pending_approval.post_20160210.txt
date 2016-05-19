@@ -10,6 +10,11 @@ release version, and the content of this file will be reset.
 Updates since last public release
 ---------------------------------
 
+Main Library
+
+ * Added a function to match_matrix.h to use the match matrix to score each
+   track on how important it is in covering the match matrix.
+
 Core Plugin
 
  * Added a new matcher that uses a fundamental matrix constraint to filter bad
@@ -18,6 +23,10 @@ Core Plugin
  * Added more config parameters to the initialize_cameras_landmarks algorithm
    to allow more control on how the algorithm is run and what thresholds are
    used.
+
+ * Added a new loop closure algorithm that exhaustively matches all pairs of
+   frames, or can be configured to match all frames within a moving temporal
+   window.
 
 OpenCV Plugin
 
@@ -53,3 +62,8 @@ Tools
  * Corrected the track_features and bundle_adjust_tracks tools to use the
    Vital logging framework instead of cout and cerr for status, debug,
    and error messages.
+
+ * Added a new track filtering option to the bundle_adjust_tracks tool
+   that filters tracks based on match matrix importance.  The idea is that
+   long tracks are usually most important, but some short tracks may be more
+   important if they are the only tracks that tie together a pair of frames.
