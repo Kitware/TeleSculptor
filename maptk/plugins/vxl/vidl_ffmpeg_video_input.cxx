@@ -501,6 +501,8 @@ void
 vidl_ffmpeg_video_input
 ::open( std::string video_name )
 {
+  this->close(); // close video stream and reset internal state
+
   d->video_path = video_name;
 
   // If the open succeeds, it will already have read the first frame.
@@ -579,6 +581,7 @@ vidl_ffmpeg_video_input
   d->d_have_frame = false;
   d->d_at_eov = false;
   d->d_have_frame_time = false;
+  d->d_have_abs_frame_time = false;
   d->d_have_metadata = false;
   d->d_frame_time = 0;
   d->d_frame_number = 1;
