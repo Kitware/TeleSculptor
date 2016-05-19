@@ -721,7 +721,7 @@ static int maptk_main(int argc, char const* argv[])
     }
     if( min_mm_importance > 0.0 )
     {
-      tracks = filter_tracks_importance(tracks, 0.1);
+      tracks = filter_tracks_importance(tracks, min_mm_importance);
     }
     LOG_DEBUG(main_logger, "filtered down to "<<tracks->size()<<" long tracks");
 
