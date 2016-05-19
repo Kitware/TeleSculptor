@@ -665,13 +665,14 @@ static int maptk_main(int argc, char const* argv[])
   kwiver::vital::algo::estimate_similarity_transform::set_nested_algo_configuration("st_estimator", config, st_estimator);
   kwiver::vital::algo::estimate_canonical_transform::set_nested_algo_configuration("can_tfm_estimator", config, can_tfm_estimator);
 
+  kwiver::vital::config_block_sptr dflt_config = default_config();
+  dflt_config->merge_config(config);
+  config = dflt_config;
+
   bool valid_config = check_config(config);
 
   if( ! opt_out_config.empty() )
   {
-    kwiver::vital::config_block_sptr dflt_config = default_config();
-    dflt_config->merge_config(config);
-    config = dflt_config;
     kwiver::vital::algo::bundle_adjust::get_nested_algo_configuration("bundle_adjuster", config, bundle_adjuster);
     kwiver::vital::algo::triangulate_landmarks::get_nested_algo_configuration("triangulator", config, triangulator);
     kwiver::vital::algo::initialize_cameras_landmarks::get_nested_algo_configuration("initializer", config, initializer);
