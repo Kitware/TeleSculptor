@@ -33,8 +33,12 @@
 
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
+#include <QWidgetAction>
+#include <QMenu>
 
 #include <vtkActor.h>
+
+#include "DepthMapFilterOptions.h"
 
 //-----------------------------------------------------------------------------
 class DepthMapOptionsPrivate
@@ -45,6 +49,9 @@ public:
 
 //  QList<vtkActor*> actors;
   std::map<std::string, vtkProp3D*> actors;
+  DepthMapFilterOptions* filterOptions;
+
+  void setPopup(QToolButton* button, QWidget* widget);
 
 };
 
@@ -65,12 +72,20 @@ DepthMapOptions::DepthMapOptions(QString const& settingsGroup,
 
   d->uiState.restore();
 
+  d->filterOptions = new DepthMapFilterOptions(settingsGroup, this);
+  d->setPopup(d->UI.toolButtonFilters, d->filterOptions);
   // Connect signals/slots
   connect(d->UI.radioPoints, SIGNAL(toggled(bool)),
           this, SLOT(switchsVisible(bool)));
 
   connect(d->UI.radioSurfaces, SIGNAL(toggled(bool)),
           this, SLOT(switchVisible(bool)));
+
+  connect(d->UI.checkBoxFilters, SIGNAL(toggled(bool)),
+          this, SLOT(showFiltersMenu(bool)));
+
+  connect(d->filterOptions, SIGNAL(filtersChanged()),
+          this, SLOT(modified()));
 }
 
 DepthMapOptions::~DepthMapOptions()
@@ -79,6 +94,19 @@ DepthMapOptions::~DepthMapOptions()
   d->uiState.save();
 }
 
+//-----------------------------------------------------------------------------
+void DepthMapOptionsPrivate::setPopup(QToolButton* button, QWidget* widget)
+{
+  auto const proxy = new QWidgetAction(button);
+  proxy->setDefaultWidget(widget);
+
+  auto const menu = new QMenu(button);
+  menu->addAction(proxy);
+
+  button->setMenu(menu);
+}
+
+//-----------------------------------------------------------------------------
 void DepthMapOptions::addActor(std::string type, vtkProp3D* actor)
 {
   QTE_D();
@@ -118,6 +146,13 @@ void DepthMapOptions::switchVisible(bool state)
 
 }
 
+void DepthMapOptions::showFiltersMenu(bool state)
+{
+  QTE_D();
+
+  d->UI.toolButtonFilters->setEnabled(state);
+}
+
 //void DepthMapOptions::enablePoints()
 //{
 //  QTE_D();
@@ -151,6 +186,41 @@ void DepthMapOptions::enableDM(std::string type)
     if(!d->UI.radioPoints->isEnabled())
       d->UI.radioSurfaces->setChecked(true);
   }
+}
+
+double DepthMapOptions::getBestCostValueMin()
+{
+  QTE_D();
+
+  return d->filterOptions->getBestCostValueMin();
+}
+
+double DepthMapOptions::getBestCostValueMax()
+{
+  QTE_D();
+
+  return d->filterOptions->getBestCostValueMax();
+}
+
+double DepthMapOptions::getUniquenessRatioMin()
+{
+  QTE_D();
+
+  return d->filterOptions->getUniquenessRatioMin();
+}
+
+double DepthMapOptions::getUniquenessRatioMax()
+{
+  QTE_D();
+
+  return d->filterOptions->getUniquenessRatioMax();
+}
+
+bool DepthMapOptions::isFiltersChecked()
+{
+  QTE_D();
+
+  return d->UI.checkBoxFilters->isChecked();
 }
 
 bool DepthMapOptions::isPointsChecked()

@@ -225,7 +225,7 @@ public:
     vtkSmartPointer<vtkMaptkCamera> camera;
 
     QString imagePath; // Full path to camera image data
-    DepthMapPaths dmp;
+    QString vtiPath;
 
   };
 
@@ -435,7 +435,7 @@ void MainWindowPrivate::setActiveCamera(int id)
 
   if (cd.camera != NULL)
   {
-    UI.worldView->setActiveDepthMap(this->cameras[id].camera,this->cameras[id].dmp);
+    UI.worldView->setActiveDepthMap(this->cameras[id].camera,this->cameras[id].vtiPath);
   }
 //  UI.dMView->setDepthMap(this->cameras[id].dmp.dMImagePath);
 //  this->updateDM();
@@ -838,19 +838,19 @@ void MainWindow::loadProject(QString const& path)
 
   for (int camId = 0; camId < d->cameras.size(); ++camId)
   {
-    if(!project.DMvtp.isEmpty() && project.DMvtp.contains(camId))
-    {
-      d->cameras[camId].dmp.dMpointsPath = project.DMvtp[camId];
-    }
+//    if(!project.DMvtp.isEmpty() && project.DMvtp.contains(camId))
+//    {
+//      d->cameras[camId].dmp.dMpointsPath = project.DMvtp[camId];
+//    }
 
-    if(!project.DMvts.isEmpty() && project.DMvts.contains(camId))
-    {
-      d->cameras[camId].dmp.dMSurfacesPath = project.DMvts[camId];
-    }
+//    if(!project.DMvts.isEmpty() && project.DMvts.contains(camId))
+//    {
+//      d->cameras[camId].dmp.dMSurfacesPath = project.DMvts[camId];
+//    }
 
     if(!project.DMvti.isEmpty() && project.DMvti.contains(camId))
     {
-      d->cameras[camId].dmp.dMImagePath = project.DMvti[camId];
+      d->cameras[camId].vtiPath = project.DMvti[camId];
     }
   }
 

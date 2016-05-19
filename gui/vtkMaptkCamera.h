@@ -55,7 +55,7 @@ public:
 
   // Description:
   // Project 3D point to 2D using the internal maptk camera
-  bool UnProjectPoint(double point[2], double depth,
+  bool UnprojectPoint(double point[2], double depth,
                       kwiver::vital::vector_3d *unProjectedPoint);
 
   // Description:

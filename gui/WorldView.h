@@ -89,8 +89,7 @@ public slots:
   void viewToWorldFront();
   void viewToWorldBack();
 
-//  void addDepthMapsSG(QString const& dMFileList);
-  void setActiveDepthMap(vtkMaptkCamera *cam, DepthMapPaths dmpCam);
+  void setActiveDepthMap(vtkMaptkCamera *cam, QString vtiPath);
 
   void enableDepthMap(std::string type);
 
@@ -101,9 +100,8 @@ protected slots:
 
 private:
 
-  vtkMaptkCamera* cam;
-//  vtkMatrix4x4* matrix;
-  DepthMapPaths dmp;
+  vtkMaptkCamera* currentCam;
+  QString currentVtiPath;
   QTE_DECLARE_PRIVATE_RPTR(WorldView)
   QTE_DECLARE_PRIVATE(WorldView)
 

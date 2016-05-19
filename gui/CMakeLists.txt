@@ -40,6 +40,7 @@ set(gui_ui
   PointOptions.ui
   DepthMapView.ui
   DepthMapOptions.ui
+  DepthMapFilterOptions.ui
   DepthMapViewOptions.ui
   ColorizeSurfaceOptions.ui
   VolumeOptions.ui
@@ -65,6 +66,7 @@ set(gui_moc_headers
   MatchMatrixWindow.h
   PointOptions.h
   DepthMapOptions.h
+  DepthMapFilterOptions.h
   DepthMapViewOptions.h
   VolumeOptions.h
   ColorizeSurfaceOptions.h
@@ -91,6 +93,7 @@ set(gui_sources
   MatchMatrixWindow.cxx
   PointOptions.cxx
   DepthMapOptions.cxx
+  DepthMapFilterOptions.cxx
   DepthMapViewOptions.cxx
   VolumeOptions.cxx
   ColorizeSurfaceOptions.cxx
