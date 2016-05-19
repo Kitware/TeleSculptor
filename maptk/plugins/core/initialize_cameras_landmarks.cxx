@@ -131,6 +131,8 @@ public:
     reverse_ba_error_ratio(2.0),
     next_frame_max_distance(0),
     global_ba_rate(1.5),
+    interim_reproj_thresh(5.0),
+    final_reproj_thresh(1.0),
     base_camera(),
     e_estimator(),
     camera_optimizer(),
@@ -148,6 +150,8 @@ public:
     reverse_ba_error_ratio(other.reverse_ba_error_ratio),
     next_frame_max_distance(other.next_frame_max_distance),
     global_ba_rate(other.global_ba_rate),
+    interim_reproj_thresh(other.interim_reproj_thresh),
+    final_reproj_thresh(other.final_reproj_thresh),
     base_camera(other.base_camera),
     e_estimator(!other.e_estimator ? algo::estimate_essential_matrix_sptr()
                                    : other.e_estimator->clone()),
@@ -184,6 +188,8 @@ public:
   double reverse_ba_error_ratio;
   unsigned int next_frame_max_distance;
   double global_ba_rate;
+  double interim_reproj_thresh;
+  double final_reproj_thresh;
   vital::simple_camera base_camera;
   vital::algo::estimate_essential_matrix_sptr e_estimator;
   vital::algo::optimize_cameras_sptr camera_optimizer;
@@ -342,14 +348,15 @@ initialize_cameras_landmarks::priv
   // detect and remove landmarks with large triangulation error
   std::set<track_id_t> to_remove = detect_bad_tracks(cams,
                                                      lm_map->landmarks(),
-                                                     trks, 5.0);
+                                                     trks, interim_reproj_thresh);
   VITAL_FOREACH(const lm_map_t::value_type& p, lm_map->landmarks())
   {
     lms[p.first] = p.second;
   }
   LOG_INFO(m_logger, "removing "<<to_remove.size()
                      << "/" << lm_map->size()
-                     << " landmarks with RMSE > 5.0");
+                     << " landmarks with RMSE > "
+                     << interim_reproj_thresh);
   remove_landmarks(to_remove, lms);
 }
 
@@ -438,6 +445,14 @@ initialize_cameras_landmarks
                     "Run a global bundle adjustment every time the number of "
                     "cameras in the system grows by this multiple.");
 
+  config->set_value("interim_reproj_thresh", d_->interim_reproj_thresh,
+                    "Threshold for rejecting landmarks based on reprojection "
+                    "error (in pixels) during intermediate processing steps.");
+
+  config->set_value("final_reproj_thresh", d_->interim_reproj_thresh,
+                    "Threshold for rejecting landmarks based on reprojection "
+                    "error (in pixels) after the final bundle adjustment.");
+
   config->set_value("base_camera:focal_length", K->focal_length(),
                     "focal length of the base camera model");
 
@@ -510,6 +525,14 @@ initialize_cameras_landmarks
 
   d_->global_ba_rate = config->get_value<double>("global_ba_rate",
                                                  d_->global_ba_rate);
+
+  d_->interim_reproj_thresh =
+      config->get_value<double>("interim_reproj_thresh",
+                                d_->interim_reproj_thresh);
+
+  d_->final_reproj_thresh =
+      config->get_value<double>("final_reproj_thresh",
+                                d_->final_reproj_thresh);
 
   vital::config_block_sptr bc = config->subblock("base_camera");
   simple_camera_intrinsics K2(bc->get_value<double>("focal_length",
@@ -986,10 +1009,12 @@ initialize_cameras_landmarks
       lms = ba_lms->landmarks();
 
       // detect tracks/landmarks with large error and remove them
-      std::set<track_id_t> to_remove = detect_bad_tracks(cams, lms, trks, 5.0);
+      std::set<track_id_t> to_remove = detect_bad_tracks(cams, lms, trks,
+                                                         d_->interim_reproj_thresh);
       LOG_INFO(d_->m_logger, "removing "<<to_remove.size()
                              << "/" << lms.size()
-                             << " landmarks with RMSE > 5.0");
+                             << " landmarks with RMSE > "
+                             << d_->interim_reproj_thresh);
       remove_landmarks(to_remove, lms);
       std::vector<track_sptr> all_trks = tracks->tracks();
       remove_tracks(to_remove, all_trks);
@@ -1057,10 +1082,12 @@ initialize_cameras_landmarks
 
     // if using bundle adjustment, remove landmarks with large error
     // after optimization
-    std::set<track_id_t> to_remove = detect_bad_tracks(cams, lms, trks, 1.0);
+    std::set<track_id_t> to_remove = detect_bad_tracks(cams, lms, trks,
+                                                       d_->final_reproj_thresh);
     LOG_INFO(d_->m_logger, "removing "<<to_remove.size()
                            << "/" << lms.size()
-                           << " landmarks with RMSE > 1.0");
+                           << " landmarks with RMSE > "
+                           << d_->final_reproj_thresh);
     remove_landmarks(to_remove, lms);
   }
 
