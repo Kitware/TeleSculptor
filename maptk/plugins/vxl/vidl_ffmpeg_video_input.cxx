@@ -97,7 +97,7 @@ public:
   bool d_at_eov;
 
   /**
-   * This is set to indicate that we can supply a frame time or some
+   * This is set to indicate that we can supply a frame time of some
    * form. If this is false, the output timestamp will not have a time
    * set. This also is used to report the HAS_FRAME_TIME capability.
    */
