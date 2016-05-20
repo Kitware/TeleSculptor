@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2015-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,6 +26,11 @@
  * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/**
+ * \file
+ * \brief Implementation of filter_features_magnitude algorithm
  */
 
 #include "filter_features_magnitude.h"
@@ -59,14 +64,14 @@ public:
   priv()
     : top_fraction(0.2),
       min_features(100),
-      m_logger( vital::get_logger( "filter_features_magnitude" ))
+      m_logger( vital::get_logger( "maptk.core.filter_features_magnitude" ))
   {
   }
 
   priv(const priv& other)
     : top_fraction(other.top_fraction),
       min_features(other.min_features),
-      m_logger( vital::get_logger( "filter_features_magnitude" ))
+      m_logger( vital::get_logger( "maptk.core.filter_features_magnitude" ))
   {
   }
 

@@ -607,7 +607,7 @@ bundle_adjust
 
   ::ceres::Solver::Summary summary;
   ::ceres::Solve(d_->options, &problem, &summary);
-  std::cout << summary.FullReport() << "\n";
+  LOG_DEBUG(d_->m_logger, "Ceres Full Report:\n" << summary.FullReport());
 
   // Update the landmarks with the optimized values
   VITAL_FOREACH(const lm_param_map_t::value_type& lmp, landmark_params)

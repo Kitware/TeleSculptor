@@ -102,6 +102,12 @@ Core Plugin
  * Updated triangulate_landmarks to set the number of observations on each
    computed landmark.
 
+ * Improved initialize_cameras_landmarks to allow for incremental
+   initialization that optionally runs an occasional bundle adjustment
+   and can remove landmarks/tracks that still have larger error after
+   bundle adjustment.  It also applies Necker reversal and runs another
+   bundle adjustment to test if the reversed solution has lower error.
+
 Ceres Plugin
 
  * Added an option to the bundle adjust algorithm to control how camera

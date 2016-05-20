@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,7 @@
 #include <maptk/plugin_interface/algorithm_plugin_interface_macros.h>
 #include <maptk/plugins/vxl/bundle_adjust.h>
 #include <maptk/plugins/vxl/close_loops_homography_guided.h>
+#include <maptk/plugins/vxl/estimate_canonical_transform.h>
 #include <maptk/plugins/vxl/estimate_essential_matrix.h>
 #include <maptk/plugins/vxl/estimate_fundamental_matrix.h>
 #include <maptk/plugins/vxl/estimate_homography.h>
@@ -60,6 +61,7 @@ int register_algorithms( vital::registrar &reg )
 
   REGISTER_TYPE( maptk::vxl::bundle_adjust );
   REGISTER_TYPE( maptk::vxl::close_loops_homography_guided );
+  REGISTER_TYPE( maptk::vxl::estimate_canonical_transform );
   REGISTER_TYPE( maptk::vxl::estimate_essential_matrix );
   REGISTER_TYPE( maptk::vxl::estimate_fundamental_matrix );
   REGISTER_TYPE( maptk::vxl::estimate_homography );

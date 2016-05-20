@@ -35,6 +35,7 @@
 
 #include "epipolar_geometry.h"
 #include <vital/vital_foreach.h>
+#include <maptk/triangulate.h>
 
 
 namespace kwiver {
@@ -70,6 +71,63 @@ mark_fm_inliers(vital::fundamental_matrix const& fm,
   }
   return inliers;
 }
+
+
+/// Compute a valid left camera from an essential matrix
+kwiver::vital::simple_camera
+extract_valid_left_camera(const kwiver::vital::essential_matrix_d& e,
+                          const kwiver::vital::vector_2d& left_pt,
+                          const kwiver::vital::vector_2d& right_pt)
+{
+  using namespace kwiver::vital;
+
+  /// construct an identity right camera
+  const vector_3d t = e.translation();
+  rotation_d R = e.rotation();
+
+  std::vector<vector_2d> pts;
+  pts.push_back(right_pt);
+  pts.push_back(left_pt);
+
+  std::vector<vital::simple_camera> cams(2);
+  const vital::simple_camera& left_camera = cams[1];
+
+  // option 1
+  cams[1] = vital::simple_camera(R.inverse()*-t, R);
+  vector_3d pt3 = triangulate_inhomog(cams, pts);
+  if( pt3.z() > 0.0 && left_camera.depth(pt3) > 0.0 )
+  {
+    return left_camera;
+  }
+
+  // option 2, with negated translation
+  cams[1] = vital::simple_camera(R.inverse()*t, R);
+  pt3 = triangulate_inhomog(cams, pts);
+  if( pt3.z() > 0.0 && left_camera.depth(pt3) > 0.0 )
+  {
+    return left_camera;
+  }
+
+  // option 3, with the twisted pair rotation
+  R = e.twisted_rotation();
+  cams[1] = vital::simple_camera(R.inverse()*-t, R);
+  pt3 = triangulate_inhomog(cams, pts);
+  if( pt3.z() > 0.0 && left_camera.depth(pt3) > 0.0 )
+  {
+    return left_camera;
+  }
+
+  // option 4, with negated translation
+  cams[1] = vital::simple_camera(R.inverse()*t, R);
+  pt3 = triangulate_inhomog(cams, pts);
+  if( pt3.z() > 0.0 && left_camera.depth(pt3) > 0.0 )
+  {
+    return left_camera;
+  }
+  // should never get here
+  return vital::simple_camera();
+}
+
 
 
 // Compute the fundamental matrix from a pair of cameras

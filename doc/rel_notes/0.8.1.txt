@@ -1,0 +1,13 @@
+MAP-Tk v0.8.1 Release Notes
+===========================
+
+This release provides patches to the MAP-Tk v0.8.0 release to address issues.
+MAP-Tk v0.8.1 is a bug fix release with no new functionality.
+
+
+Updates since v0.8.0
+--------------------
+
+
+Fixes since v0.8.0
+--------------------

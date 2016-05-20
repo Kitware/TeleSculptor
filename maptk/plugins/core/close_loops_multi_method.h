@@ -30,8 +30,7 @@
 
 /**
  * \file
- * \brief Header defining the \link maptk::algo::close_loops_bad_frames_only
- *        close_loops_bad_frames_only \endlink algorithm
+ * \brief Header defining the close_loops_multi_method algorithm
  */
 
 #ifndef MAPTK_PLUGINS_CORE_CLOSE_LOOPS_MULTI_METHOD_H_

@@ -1,0 +1,49 @@
+MAP-Tk v0.9.0 Release Notes
+==========================
+
+This is a minor release of MAP-Tk that provides both new functionality and
+fixes over the previous v0.8.0 release.  However, MAP-Tk is still considered
+pre-release software and subject to significant API changes.
+
+
+Updates since v0.8.0
+---------------------------------
+
+MAP-Tk Library
+
+ * Removed the standalone canonical_transform() function in transform.h in
+   favor of an abstract algorithm with implementation in the core plugin.
+
+Core Plugin
+
+ * Added a new algorithm for canonical transform with the implementation
+   details moved from the function that was in transform.h.
+
+ * Added a new loop closure algorithm implementation that searches for
+   matches in a local neighborhood and then establishes keyframes for
+   long term loop closure outside that neighborhood.  This algorithm
+   is generally slower than others, but can be configured to produce
+   considerably more dense match matrices with longer tracks.  It also handles
+   long term loop closure without any assumption about planar scenes.
+
+VXL Plugin
+
+ * Added a new algorithm for canonical transform which uses robust estimation
+   (e.g. RANSAC, LMS, IRLS) from the Rensselaer robust estimation library
+   (rrel) in VXL to fit a ground plane to the data.  The ground plane becomes
+   the Z=0 plane.  The rest of the free parameters are then fit by PCA as in
+   the core plugin implementation.
+
+Visualization Application
+
+ * Updated the "Align" tool to use the configurable abstract algorithm
+   for canonical transform.
+
+Tools
+
+ * Updated the bundle_adjust_tracks tool to use the configurable abstract
+   algorithm for canonical transform.
+
+
+Fixes since v0.8.0
+-------------------------------
