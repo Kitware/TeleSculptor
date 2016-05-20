@@ -97,6 +97,10 @@ VolumeOptions::VolumeOptions(const QString &settingsGroup, QWidget* parent, Qt::
 
   connect(d->colorizeSurfaceOptions, SIGNAL(colorModeChanged(QString)),
           this, SLOT(updateColorizeSurfaceMenu(QString)));
+
+  connect(d->UI.doubleSpinBoxSurfaceThreshold, SIGNAL(valueChanged(double)),
+    parent, SLOT(computeContour(double)));
+
 }
 
 //-----------------------------------------------------------------------------

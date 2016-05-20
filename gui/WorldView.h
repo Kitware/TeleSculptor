@@ -62,6 +62,10 @@ public:
   std::string getActiveDepthMapType();
 
   void loadVolume(QString path, int nbFrames);
+
+signals:
+  void contourChanged();
+
 public slots:
   void setBackgroundColor(QColor const&);
 
@@ -95,6 +99,9 @@ public slots:
   void enableDepthMap(std::string type);
 
   void updateDepthMap();
+
+  void computeContour(double threshold);
+
 protected slots:
   void updateCameras();
   void updateScale();
