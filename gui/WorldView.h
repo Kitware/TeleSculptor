@@ -79,6 +79,7 @@ public slots:
   void setLandmarksVisible(bool);
   void setGroundPlaneVisible(bool);
   void setDepthMapVisible(bool);
+  void setVolumeVisible(bool);
 
   void setPerspective(bool);
 

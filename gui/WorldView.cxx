@@ -320,6 +320,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   this->addAction(d->UI.actionShowLandmarks);
   this->addAction(d->UI.actionShowGroundPlane);
   this->addAction(d->UI.actionDepthmapDisplay);
+  this->addAction(d->UI.actionVolumeDisplay);
 
   connect(d->UI.actionViewReset, SIGNAL(triggered()),
           this, SLOT(resetView()));
@@ -348,6 +349,9 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(setGroundPlaneVisible(bool)));
   connect(d->UI.actionDepthmapDisplay, SIGNAL(toggled(bool)),
           this, SLOT(setDepthMapVisible(bool)));
+  connect(d->UI.actionVolumeDisplay, SIGNAL(toggled(bool)),
+          this, SLOT(setVolumeVisible(bool)));
+
 
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
@@ -912,6 +916,14 @@ void WorldView::setDepthMapVisible(bool state)
   }
 
   setActiveDepthMap(cam,matrix,dmp);
+  d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::setVolumeVisible(bool state)
+{
+  QTE_D();
+  d->volumeActor->SetVisibility(state);
   d->UI.renderWidget->update();
 }
 
