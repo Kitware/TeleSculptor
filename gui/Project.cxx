@@ -37,6 +37,7 @@
 #include <qtStlUtil.h>
 
 #include <QtGui/QApplication>
+#include <QtCore/QDebug>
 #include <QtCore/QDir>
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
@@ -174,6 +175,11 @@ bool Project::read(QString const& path)
     }
 
     return true;
+  }
+  catch (kwiver::vital::config_block_exception e)
+  {
+    qWarning() << e.what(); // TODO dialog?
+    return false;
   }
   catch (...)
   {
