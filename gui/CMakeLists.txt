@@ -73,6 +73,9 @@ set(gui_moc_headers
   tools/BundleAdjustTool.h
   tools/CanonicalTransformTool.h
   tools/NeckerReversalTool.h
+  tools/MeshColoration.h
+  tools/Helper.h
+  tools/ReconstructionData.h
 )
 
 set(gui_sources
@@ -105,6 +108,8 @@ set(gui_sources
   tools/BundleAdjustTool.cxx
   tools/CanonicalTransformTool.cxx
   tools/NeckerReversalTool.cxx
+  tools/MeshColoration.cxx
+  tools/ReconstructionData.cxx
 )
 
 maptk_use_appdata(

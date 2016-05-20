@@ -51,6 +51,11 @@ public:
   void setActor(vtkActor* actor);
 
   void initFrameSampling(int nbFrames);
+  void setKrtdVtiFile(QString krtd, QString vti);
+
+signals:
+  void meshIsColorizedFromColorizeSurfaceOption();
+  void currentFrameIDChanged(int);
 
 public slots:
   void showColorizeSurfaceMenu(bool state);

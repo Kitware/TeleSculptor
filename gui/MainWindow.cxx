@@ -833,7 +833,8 @@ void MainWindow::loadProject(QString const& path)
 
   if (!project.volumePath.isEmpty())
   {
-    d->UI.worldView->loadVolume(project.volumePath,d->cameras.size());
+    d->UI.worldView->loadVolume(project.volumePath,d->cameras.size(), project.volumeKrtdFile,
+      project.volumeVtiFile);
   }
 
   for (int camId = 0; camId < d->cameras.size(); ++camId)

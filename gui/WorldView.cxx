@@ -352,6 +352,8 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.actionVolumeDisplay, SIGNAL(toggled(bool)),
           this, SLOT(setVolumeVisible(bool)));
 
+  connect(d->volumeOptions, SIGNAL(meshIsColorizedFromColorizeSurfaceOption),
+    d->UI.renderWidget, SLOT(update()));
 
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
@@ -480,7 +482,7 @@ std::string WorldView::getActiveDepthMapType()
   return "";
 }
 
-void WorldView::loadVolume(QString path, int nbFrames)
+void WorldView::loadVolume(QString path, int nbFrames, QString krtd, QString vti)
 {
   QTE_D();
 
@@ -514,6 +516,7 @@ void WorldView::loadVolume(QString path, int nbFrames)
   d->volumeActor->SetMapper(contourMapper.Get());
 
   d->volumeOptions->setActor(d->volumeActor.Get());
+  d->volumeOptions->setKrtdVtiFile(krtd, vti);
 
   // Add this actor to the renderer
   d->renderer->AddActor(d->volumeActor.Get());
@@ -560,10 +563,11 @@ void WorldView::loadVolume(QString path, int nbFrames)
 //-----------------------------------------------------------------------------
 void WorldView::setActiveDepthMap(int numCam, vtkMatrix4x4* mat, DepthMapPaths dmpCam) {
   QTE_D();
-
   cam = numCam;
   matrix = mat;
   dmp = dmpCam;
+
+  emit(activeDepthMapChanged(cam));
 
   std::cout << "cam = " << cam
             << "matrix = " << mat

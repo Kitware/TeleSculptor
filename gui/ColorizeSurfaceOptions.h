@@ -35,6 +35,7 @@
 
 #include <QtGui/QWidget>
 
+class vtkActor;
 class ColorizeSurfaceOptionsPrivate;
 
 class ColorizeSurfaceOptions : public QWidget
@@ -50,11 +51,20 @@ public:
 
   void initFrameSampling(int nbFrames);
 
+  void setActor(vtkActor* actor);
+  void setKrtdFile(QString file);
+  void setVtiFile(QString file);
+
 signals:
   void colorModeChanged(QString);
+  void meshColorizedInColorizeSurfaceOption();
 
 public slots:
-  void toggleAllFramesMenu();
+  void colorize();
+  void enableAllFramesParameters(bool);
+  void allFrameSelected();
+  void currentFrameSelected();
+  void updateCurrentFrameNumber(int);
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(ColorizeSurfaceOptions)

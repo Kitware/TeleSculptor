@@ -101,6 +101,12 @@ VolumeOptions::VolumeOptions(const QString &settingsGroup, QWidget* parent, Qt::
   connect(d->UI.doubleSpinBoxSurfaceThreshold, SIGNAL(valueChanged(double)),
     parent, SLOT(computeContour(double)));
 
+  connect(d->colorizeSurfaceOptions, SIGNAL(meshColorizedInColorizeSurfaceOption()),
+    this, SIGNAL(meshIsColorizedFromColorizeSurfaceOption()));
+
+  connect(parent, SIGNAL(activeDepthMapChanged(int)),
+    d->colorizeSurfaceOptions, SLOT(updateCurrentFrameNumber(int)));
+
 }
 
 //-----------------------------------------------------------------------------
@@ -116,17 +122,8 @@ void VolumeOptions::setActor(vtkActor *actor)
   QTE_D();
 
   d->volumeActor = actor;
+  d->colorizeSurfaceOptions->setActor(actor);
 
-  vtkPointData* pointData = d->volumeActor->GetMapper()->GetInput()->GetPointData();
-  int nbArray = pointData->GetNumberOfArrays();
-
-  std::string name;
-
-  for (int i = 0; i < nbArray; ++i) {
-
-    name = pointData->GetArrayName(i);
-    d->colorizeSurfaceOptions->addColorDisplay(name);
-  }
 }
 
 //-----------------------------------------------------------------------------
@@ -135,6 +132,15 @@ void VolumeOptions::initFrameSampling(int nbFrames)
   QTE_D();
 
   d->colorizeSurfaceOptions->initFrameSampling(nbFrames);
+}
+
+//-----------------------------------------------------------------------------
+void VolumeOptions::setKrtdVtiFile(QString krtd, QString vti)
+{
+  QTE_D();
+
+  d->colorizeSurfaceOptions->setKrtdFile(krtd);
+  d->colorizeSurfaceOptions->setVtiFile(vti);
 }
 
 //-----------------------------------------------------------------------------

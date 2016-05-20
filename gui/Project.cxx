@@ -174,6 +174,16 @@ bool Project::read(QString const& path)
       this->volumePath = getPath(config, base, "volume_file");
     }
 
+    if (config->has_value("volume_krtd_file"))
+    {
+      this->volumeKrtdFile = getPath(config, base, "volume_krtd_file");
+    }
+
+    if (config->has_value("volume_depthmaps_file"))
+    {
+      this->volumeVtiFile = getPath(config, base, "volume_depthmaps_file");
+    }
+
     return true;
   }
   catch (kwiver::vital::config_block_exception e)
