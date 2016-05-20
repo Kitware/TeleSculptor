@@ -46,6 +46,12 @@ OpenCV Plugin
  * Added an OpenCV fundamental matrix estimation wrapper. OpenCV can estimate a
    fundamental matrix with the presence of outliers using RANSAC.
 
+VXL Plugin
+
+ * Added a video_input algorithm implementation that uses the FFmpeg via the
+   vidl_ffmpeg_istream class to read video frames and KLV metadata from encoded
+   video files.
+
 Scripts
 
  * Added a Python script which uses OpenCV to produce mosaicked images of
