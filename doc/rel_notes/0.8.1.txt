@@ -12,6 +12,16 @@ Updates since v0.8.0
 Fixes since v0.8.0
 --------------------
 
+VXL Plugin
+
+ * Updated the CMake code for using VXL to handle changes in VXL master so that
+   MAP-Tk can build against the latest VXL.  The lastest VXL master uses
+   VXL_CORE_INCLUDE_DIRS instead of VXL_CORE_INCLUDE_DIR to specify multiple
+   include directories (e.g. in source and build trees).  This is needed to
+   find configured headers that are in the build tree.  The same is true for
+   VXL_VCL_INCLUDE_DIRS.  MAP-Tk has been fixed to use *_INCLUDE_DIRS when
+   available.
+
 MAP-Tk GUI
 
  * Failing to parse a config block in the GUI was not reporting any message.
