@@ -11,3 +11,9 @@ Updates since v0.8.0
 
 Fixes since v0.8.0
 --------------------
+
+MAP-Tk GUI
+
+ * Failing to parse a config block in the GUI was not reporting any message.
+   The GUI now catches config exception and prints a warning message.  This
+   is a temporary solution until a proper error dialog is implemented.
