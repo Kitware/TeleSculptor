@@ -31,7 +31,7 @@
 #include "ColorizeSurfaceOptions.h"
 #include "ui_ColorizeSurfaceOptions.h"
 
-#include "tools\MeshColoration.h"
+#include "tools/MeshColoration.h"
 
 #include <qdebug.h>
 #include <qtUiState.h>
