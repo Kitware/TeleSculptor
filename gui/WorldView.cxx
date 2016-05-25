@@ -638,6 +638,13 @@ void WorldView::updateScale()
     d->landmarkActor->GetMapper()->Update();
     bbox.AddBounds(d->landmarkActor->GetBounds());
 
+    // If landmarks are not valid, then get ground scale from the cameras
+    if (!bbox.IsValid())
+    {
+      // Add camera centers
+      bbox.AddBounds(d->cameraRep->GetPathActor()->GetBounds());
+    }
+
     // Update ground plane scale
     auto const groundScale =
       1.5 * qMax(qMax(qAbs(bbox.GetBound(0)), qAbs(bbox.GetBound(1))),
