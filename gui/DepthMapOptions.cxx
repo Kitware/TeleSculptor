@@ -84,10 +84,15 @@ DepthMapOptions::DepthMapOptions(QString const& settingsGroup,
   connect(d->UI.checkBoxFilters, SIGNAL(toggled(bool)),
           this, SLOT(showFiltersMenu(bool)));
 
+  connect(d->UI.checkBoxBBox, SIGNAL(toggled(bool)),
+          this, SIGNAL(bBoxToggled()));
+
   connect(d->filterOptions, SIGNAL(filtersChanged()),
           this, SLOT(modified()));
+
 }
 
+//-----------------------------------------------------------------------------
 DepthMapOptions::~DepthMapOptions()
 {
   QTE_D();
@@ -115,24 +120,7 @@ void DepthMapOptions::addActor(std::string type, vtkProp3D* actor)
 
 }
 
-//void DepthMapOptions::switchPointsVisible(bool state)
-//{
-//  QTE_D();
-
-//  d->actors[0]->SetVisibility(state);
-
-//  emit this->depthMapChanged();
-//}
-
-//void DepthMapOptions::switchSurfacesVisible(bool state)
-//{
-//  QTE_D();
-//  std::cout << "toggled" << std::endl;
-//  d->actors[1]->SetVisibility(state);
-
-//  emit this->depthMapChanged();
-//}
-
+//-----------------------------------------------------------------------------
 void DepthMapOptions::switchVisible(bool state)
 {
   QTE_D();
@@ -146,6 +134,7 @@ void DepthMapOptions::switchVisible(bool state)
 
 }
 
+//-----------------------------------------------------------------------------
 void DepthMapOptions::showFiltersMenu(bool state)
 {
   QTE_D();
@@ -153,41 +142,25 @@ void DepthMapOptions::showFiltersMenu(bool state)
   d->UI.toolButtonFilters->setEnabled(state);
 }
 
-//void DepthMapOptions::enablePoints()
-//{
-//  QTE_D();
-
-//  d->UI.radioPoints->setEnabled(true);
-//  d->UI.radioPoints->setChecked(true);
-//}
-
-//void DepthMapOptions::enableSurfaces()
-//{
-//  QTE_D();
-
-//  d->UI.radioSurfaces->setEnabled(true);
-
-//  if(!d->UI.radioPoints->isEnabled())
-//    d->UI.radioSurfaces->setChecked(true);
-//}
-
-void DepthMapOptions::enableDM(std::string type)
+//-----------------------------------------------------------------------------
+void DepthMapOptions::enable()
 {
   QTE_D();
-  if(type == "vtp")
-  {
-    d->UI.radioPoints->setEnabled(true);
-    d->UI.radioPoints->setChecked(true);
-  }
-  else if(type == "vts")
-  {
-    d->UI.radioSurfaces->setEnabled(true);
 
-    if(!d->UI.radioPoints->isEnabled())
-      d->UI.radioSurfaces->setChecked(true);
-  }
+  d->UI.radioPoints->setEnabled(true);
+  d->UI.radioPoints->setChecked(true);
 }
 
+//-----------------------------------------------------------------------------
+void DepthMapOptions::enableBBoxDisplay(bool state)
+{
+  QTE_D();
+
+
+  d->UI.checkBoxBBox->setEnabled(state);
+}
+
+//-----------------------------------------------------------------------------
 double DepthMapOptions::getBestCostValueMin()
 {
   QTE_D();
@@ -195,6 +168,7 @@ double DepthMapOptions::getBestCostValueMin()
   return d->filterOptions->getBestCostValueMin();
 }
 
+//-----------------------------------------------------------------------------
 double DepthMapOptions::getBestCostValueMax()
 {
   QTE_D();
@@ -202,6 +176,7 @@ double DepthMapOptions::getBestCostValueMax()
   return d->filterOptions->getBestCostValueMax();
 }
 
+//-----------------------------------------------------------------------------
 double DepthMapOptions::getUniquenessRatioMin()
 {
   QTE_D();
@@ -209,6 +184,7 @@ double DepthMapOptions::getUniquenessRatioMin()
   return d->filterOptions->getUniquenessRatioMin();
 }
 
+//-----------------------------------------------------------------------------
 double DepthMapOptions::getUniquenessRatioMax()
 {
   QTE_D();
@@ -216,6 +192,7 @@ double DepthMapOptions::getUniquenessRatioMax()
   return d->filterOptions->getUniquenessRatioMax();
 }
 
+//-----------------------------------------------------------------------------
 bool DepthMapOptions::isFiltersChecked()
 {
   QTE_D();
@@ -223,6 +200,7 @@ bool DepthMapOptions::isFiltersChecked()
   return d->UI.checkBoxFilters->isChecked();
 }
 
+//-----------------------------------------------------------------------------
 bool DepthMapOptions::isPointsChecked()
 {
   QTE_D();
@@ -230,10 +208,19 @@ bool DepthMapOptions::isPointsChecked()
   return d->UI.radioPoints->isChecked();
 }
 
+//-----------------------------------------------------------------------------
 bool DepthMapOptions::isSurfacesChecked()
 {
   QTE_D();
 
   return d->UI.radioSurfaces->isChecked();
+}
+
+//-----------------------------------------------------------------------------
+bool DepthMapOptions::isBBoxChecked()
+{
+  QTE_D();
+
+  return d->UI.checkBoxBBox->isChecked();
 }
 

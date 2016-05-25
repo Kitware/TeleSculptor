@@ -77,6 +77,8 @@
 #include <vtkThreshold.h>
 #include <vtkThresholdPoints.h>
 #include <vtkInformation.h>
+#include <vtkCubeAxesActor.h>
+#include <vtkTextProperty.h>
 
 #include <qtMath.h>
 
@@ -148,6 +150,7 @@ public:
   vtkNew<vtkActor> polyDataActor;
   vtkNew<vtkActor> structuredGridActor;
   vtkNew<vtkActor> volumeActor;
+  vtkNew<vtkCubeAxesActor> cubeAxesActor;
 
   std::map<int, std::string> dMList;
   std::map<int, std::string> dMListSG;
@@ -314,6 +317,9 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   connect(d->depthMapOptions, SIGNAL(depthMapChanged()),
           this, SLOT(updateDepthMap()));
 
+  connect(d->depthMapOptions, SIGNAL(bBoxToggled()),
+          this, SLOT(setGridVisible()));
+
   // Connect actions
   this->addAction(d->UI.actionViewReset);
   this->addAction(d->UI.actionViewResetLandmarks);
@@ -444,6 +450,7 @@ std::string WorldView::getActiveDepthMapType()
   return "";
 }
 
+//----------------------------------------------------------------------
 void WorldView::loadVolume(QString path, int nbFrames, std::string vtiList, std::string krtdList)
 {
   QTE_D();
@@ -456,7 +463,6 @@ void WorldView::loadVolume(QString path, int nbFrames, std::string vtiList, std:
 
   readerPoly->SetFileName(filename.c_str());
   readerPoly->Update();
-//  readerPoly->GetOutput()->GetPointData()->SetScalars(readerPoly->GetOutput()->GetPointData()->GetArray(0));
 
   vtkNew<vtkPolyDataMapper> mapper;
   mapper->SetInputData(readerPoly->GetOutput());
@@ -480,14 +486,12 @@ void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, QString vtiPath) {
 
   currentVtiPath = vtiPath;
 
-  std::cout << "currentVtiPath" << currentVtiPath.toStdString() << std::endl;
-
   double bestCostValueMin = d->depthMapOptions->getBestCostValueMin();
   double bestCostValueMax = d->depthMapOptions->getBestCostValueMax();
   double uniquenessRatioMin = d->depthMapOptions->getUniquenessRatioMin();
   double uniquenessRatioMax = d->depthMapOptions->getUniquenessRatioMax();
 
-  if (d->UI.actionDepthmapDisplay->isChecked()) {
+  if (d->UI.actionDepthmapDisplay->isChecked() && !currentVtiPath.isEmpty()) {
 
     std::string filename = currentVtiPath.toStdString();
 
@@ -502,6 +506,8 @@ void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, QString vtiPath) {
     vtkNew<vtkPoints> points;
     points->SetNumberOfPoints(width*height);
 
+    double dmToImageRatio = camera->GetImageDimensions()[0]/width;
+
     double pixel[3];
     for (vtkIdType idPixel = 0; idPixel < readerIm->GetOutput()->GetNumberOfPoints(); ++idPixel) {
       readerIm->GetOutput()->GetPoint(idPixel,pixel);
@@ -510,22 +516,14 @@ void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, QString vtiPath) {
       kwiver::vital::vector_3d p;
       double depth = readerIm->GetOutput()->GetPointData()->GetArray("Depths")->GetTuple1(idPixel);
 
+      pixel[0] *= dmToImageRatio;
+      pixel[1] *= dmToImageRatio;
       camera->UnprojectPoint(pixel, depth, &p);
 
       points->SetPoint(idPixel,p[0],p[1],p[2]);
 
     }
-    //Surfaces
-//    vtkNew<vtkStructuredGrid> structuredGrid;
-//    structuredGrid->SetDimensions(width,height,1);
-//    structuredGrid->SetPoints(points.Get());
-//    structuredGrid->GetPointData()->AddArray(readerIm->GetOutput()->GetPointData()->GetArray("Color"));
-//    structuredGrid->GetPointData()->SetScalars(structuredGrid->GetPointData()->GetArray("Color"));
 
-//    vtkNew<vtkGeometryFilter> geometryFilter;
-//    geometryFilter->SetInputData(structuredGrid.Get());
-
-//    vtkPolyData* polyData = geometryFilter->GetOutput();
     vtkSmartPointer<vtkPolyData> polyData;
 
     vtkNew<vtkGeometryFilter> geometryFilterIm;
@@ -534,44 +532,27 @@ void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, QString vtiPath) {
     polyData = geometryFilterIm->GetOutput();
 
     polyData->SetPoints(points.Get());
-//    polyData->GetPointData()->AddArray(readerIm->GetOutput()->GetPointData()->GetArray("Color"));
-//    polyData->GetPointData()->AddArray(readerIm->GetOutput()->GetPointData()->GetArray("Best Cost Values"));
-//    polyData->GetPointData()->AddArray(readerIm->GetOutput()->GetPointData()->GetArray("Uniqueness Ratios"));
 
-//    polyData->GetPointData()->AddArray(readerIm->GetOutput()->GetPointData()->GetArray("Uniqueness Ratios"));
 
-//    polyData->GetPointData()->SetScalars(polyData->GetPointData()->GetArray("Color"));
     polyData->Print(std::cout);
     //Threshold
     vtkSmartPointer<vtkPolyData> polyDataToShow;
     if (d->depthMapOptions->isFiltersChecked()) {
       vtkNew<vtkThreshold> thresholdBestCostValues, thresholdUniquenessRatios;
 
-
       thresholdBestCostValues->SetInputData(polyData.Get());
-//      thresholdBestCostValues->Update();
-
-//      thresholdBestCostValues->GetOutput()->Print(std::cout);
 
       thresholdBestCostValues->SetInputArrayToProcess(0,0,0,vtkDataObject::FIELD_ASSOCIATION_POINTS,"Best Cost Values");
       thresholdBestCostValues->ThresholdBetween(bestCostValueMin,bestCostValueMax);
-//      thresholdBestCostValues->Update();
-
-//      std::cout << "bestCostValueMin " << bestCostValueMin << " bestCostValueMax " << bestCostValueMax << std::endl << std::endl;
-//      thresholdBestCostValues->GetOutput()->Print(std::cout);
 
       thresholdUniquenessRatios->SetInputConnection(thresholdBestCostValues->GetOutputPort());
       thresholdUniquenessRatios->SetInputArrayToProcess(0,0,0,vtkDataObject::FIELD_ASSOCIATION_POINTS,"Uniqueness Ratios");
       thresholdUniquenessRatios->ThresholdBetween(uniquenessRatioMin,uniquenessRatioMax);
-//      thresholdUniquenessRatios->Update();
-
-//      polyDataToShow =thresholdUniquenessRatios->GetOutput();
 
       vtkNew<vtkGeometryFilter> geometryFilter;
       geometryFilter->SetInputConnection(thresholdUniquenessRatios->GetOutputPort());
       geometryFilter->Update();
       polyDataToShow = geometryFilter->GetOutput();
-      polyDataToShow->Print(std::cout);
 
     }
     else
@@ -579,6 +560,7 @@ void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, QString vtiPath) {
       polyDataToShow = polyData.Get();
     }
 
+    polyDataToShow->GetPointData()->SetScalars(polyDataToShow->GetPointData()->GetArray("Color"));
     vtkNew<vtkPolyDataMapper> mapper;
 
     mapper->SetInputData(polyDataToShow.Get());
@@ -587,7 +569,7 @@ void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, QString vtiPath) {
     d->structuredGridActor->SetMapper(mapper.Get());
     d->structuredGridActor->SetVisibility(true);
 
-    if(d->depthMapOptions->isPointsChecked() /*&& currentCam != camera*/) {
+    if(d->depthMapOptions->isPointsChecked()) {
       d->structuredGridActor->GetProperty()->SetRepresentationToPoints();
     }
     else {
@@ -598,42 +580,40 @@ void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, QString vtiPath) {
 
     d->renderer->AddViewProp(d->structuredGridActor.GetPointer());
 
-    //PolyData
-//    if(d->depthMapOptions->isPointsChecked() && currentCam != camera){
-//      vtkNew<vtkPolyData> polydata;
-//      polydata->SetPoints(points.Get());
-//      polydata->GetPointData()->AddArray(readerIm->GetOutput()->GetPointData()->GetArray("Color"));
-//      polydata->GetPointData()->SetScalars(polydata->GetPointData()->GetArray("Color"));
+    //Displaying axes
+    d->cubeAxesActor->SetBounds(polyDataToShow->GetBounds());
+    d->cubeAxesActor->SetCamera(d->renderer->GetActiveCamera());
+    d->cubeAxesActor->GetTitleTextProperty(0)->SetColor(1.0, 0.0, 0.0);
+    d->cubeAxesActor->GetLabelTextProperty(0)->SetColor(1.0, 0.0, 0.0);
 
-//      std::vector<vtkIdType> vertices(polydata->GetNumberOfPoints());
-//      for (int i = 0; i < polydata->GetNumberOfPoints(); ++i) {
-//        vertices[i] = i;
-//      }
+    d->cubeAxesActor->GetTitleTextProperty(1)->SetColor(0.0, 1.0, 0.0);
+    d->cubeAxesActor->GetLabelTextProperty(1)->SetColor(0.0, 1.0, 0.0);
 
-//      vtkNew<vtkCellArray> cells;
+    d->cubeAxesActor->GetTitleTextProperty(2)->SetColor(0.0, 0.0, 1.0);
+    d->cubeAxesActor->GetLabelTextProperty(2)->SetColor(0.0, 0.0, 1.0);
 
-//      cells->InsertNextCell(vertices.size(), &vertices[0]);
+    d->cubeAxesActor->DrawXGridlinesOn();
+    d->cubeAxesActor->DrawYGridlinesOn();
+    d->cubeAxesActor->DrawZGridlinesOn();
+    d->cubeAxesActor->SetGridLineLocation(VTK_GRID_LINES_FURTHEST);
 
-//      polydata->SetVerts(cells.Get());
+    d->cubeAxesActor->XAxisMinorTickVisibilityOff();
+    d->cubeAxesActor->YAxisMinorTickVisibilityOff();
+    d->cubeAxesActor->ZAxisMinorTickVisibilityOff();
 
-//      vtkNew<vtkPolyDataMapper> mapper;
-//      mapper->SetInputData(polydata.Get());
-//      mapper->SetColorModeToDirectScalars();
-
-//      d->polyDataActor->SetMapper(mapper.Get());
-//      d->polyDataActor->SetVisibility(true);
-//      d->polyDataActor->GetProperty()->SetPointSize(2);
-//      d->polyDataActor->GetProperty()->SetRepresentationToSurface();
-//      d->renderer->AddActor(d->polyDataActor.Get());
-
-//      d->renderer->AddViewProp(d->polyDataActor.GetPointer());
-//    }
+    d->renderer->AddActor(d->cubeAxesActor.Get());
+    d->cubeAxesActor->SetVisibility(d->depthMapOptions->isBBoxChecked());
+    d->renderer->GetActiveCamera()->Azimuth(30);
+    d->renderer->GetActiveCamera()->Elevation(30);
   }
+
   currentCam = camera;
+
+
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::enableDepthMap(std::string type)
+void WorldView::enableDepthMap()
 {
   QTE_D();
 
@@ -641,7 +621,7 @@ void WorldView::enableDepthMap(std::string type)
   d->UI.actionDepthmapDisplay->setCheckable(true);
   d->UI.actionDepthmapDisplay->setChecked(false);
 
-  d->depthMapOptions->enableDM(type);
+  d->depthMapOptions->enable();
 }
 
 //-----------------------------------------------------------------------------
@@ -805,17 +785,36 @@ void WorldView::setDepthMapVisible(bool state)
 {
   QTE_D();
 
-  if (d->depthMapOptions->isPointsChecked())
-  {
-    d->polyDataActor->SetVisibility(state);
-  }
-  else if (d->depthMapOptions->isSurfacesChecked())
-  {
+//  if (d->depthMapOptions->isPointsChecked())
+//  {
+//    d->polyDataActor->SetVisibility(state);
+//  }
+//  else if (d->depthMapOptions->isSurfacesChecked())
+//  {
     d->structuredGridActor->SetVisibility(state);
-  }
+//  }
+
+    if (state)
+    {
+      setGridVisible();
+    }
+    else
+    {
+      d->cubeAxesActor->SetVisibility(false);
+    }
 
   setActiveDepthMap(currentCam,currentVtiPath);
   d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::setGridVisible()
+{
+   QTE_D();
+
+   if (d->UI.actionDepthmapDisplay->isChecked()) {
+     d->cubeAxesActor->SetVisibility(d->depthMapOptions->isBBoxChecked());
+   }
 }
 
 //-----------------------------------------------------------------------------
@@ -952,6 +951,7 @@ void WorldView::updateScale()
   }
 }
 
+//-----------------------------------------------------------------------------
 void WorldView::updateDepthMap()
 {
   QTE_D();

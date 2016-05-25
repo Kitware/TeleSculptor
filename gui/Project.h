@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,13 +43,13 @@ struct Project
   QString volumePath;
   QString volumeKRTD;
   QString volumeDepthmaps;
-
+  QString depthmaps;
 
   QString tracks;
-  QString landmarks;
+  QString landmarks;/*
   QMap<int, QString> DMvtp;
   QMap<int, QString> DMvts;
-  QMap<int, QString> DMvti;
+  QMap<int, QString> DMvti;*/
 };
 
 #endif

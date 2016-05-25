@@ -62,6 +62,10 @@ public:
   std::string getActiveDepthMapType();
 
   void loadVolume(QString path, int nbFrames, std::string vtiList, std::string krtdList);
+
+  void setActiveDepthMap(vtkMaptkCamera *cam, QString vtiPath);
+  void enableDepthMap();
+  void updateDepthMap();
 public slots:
   void setBackgroundColor(QColor const&);
 
@@ -75,6 +79,7 @@ public slots:
   void setLandmarksVisible(bool);
   void setGroundPlaneVisible(bool);
   void setDepthMapVisible(bool);
+  void setGridVisible();
 
   void setPerspective(bool);
 
@@ -89,11 +94,10 @@ public slots:
   void viewToWorldFront();
   void viewToWorldBack();
 
-  void setActiveDepthMap(vtkMaptkCamera *cam, QString vtiPath);
+ //void setActiveDepthMap(vtkMaptkCamera *cam, QString vtiPath);
 
-  void enableDepthMap(std::string type);
-
-  void updateDepthMap();
+  //void enableDepthMap(std::string type);
+  //void updateDepthMap();
 protected slots:
   void updateCameras();
   void updateScale();

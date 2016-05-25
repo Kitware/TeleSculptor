@@ -59,7 +59,7 @@ int main(int argc, char** argv)
   kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
 
   MainWindow window;
-  window.show();
+  window.start(argv[1]);
 
   return app.exec();
 }
