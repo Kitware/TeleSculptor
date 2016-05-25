@@ -27,3 +27,11 @@ MAP-Tk GUI
  * Failing to parse a config block in the GUI was not reporting any message.
    The GUI now catches config exception and prints a warning message.  This
    is a temporary solution until a proper error dialog is implemented.
+
+Tools
+
+ * Fixed an issue with converting POS filenames to KRTD in the pos2krtd tool.
+   When producing the KRTD filenames from the POS file names, the pos2krtd
+   tool was being too agressive about striping file extensions when more
+   than one '.' was in the file name.  In this release the tool strips the
+   extension at the last '.' instead of the first.

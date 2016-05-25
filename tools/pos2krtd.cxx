@@ -242,7 +242,8 @@ bool convert_pos2krtd_dir(const kwiver::vital::path_t& pos_dir,
     {
       kwiver::maptk::ins_data ins = kwiver::maptk::read_pos_file( p );
 
-      kwiver::vital::path_t krtd_filename = krtd_dir + "/" + ST::GetFilenameWithoutExtension( p ) + ".krtd";
+      kwiver::vital::path_t krtd_filename = krtd_dir + "/"
+                                          + ST::GetFilenameWithoutLastExtension( p ) + ".krtd";
       //std::cerr << "Loading " << p << std::endl;
       kwiver::vital::frame_id_t frame = static_cast<kwiver::vital::frame_id_t>(krtd_filenames.size());
       ins_map[frame] = ins;
