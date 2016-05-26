@@ -504,7 +504,7 @@ void WorldView::loadVolume(QString path, int nbFrames, QString krtd, QString vti
 
   // Set the actor's mapper
   d->volumeActor->SetMapper(contourMapper.Get());
-
+  d->volumeActor->SetVisibility(false);
   d->volumeOptions->setActor(d->volumeActor.Get());
   d->volumeOptions->setKrtdVtiFile(krtd, vti);
 
