@@ -638,15 +638,17 @@ void WorldView::updateScale()
     d->landmarkActor->GetMapper()->Update();
     bbox.AddBounds(d->landmarkActor->GetBounds());
 
+    // If landmarks are not valid, then get ground scale from the cameras
+    if (!bbox.IsValid())
+    {
+      // Add camera centers
+      bbox.AddBounds(d->cameraRep->GetPathActor()->GetBounds());
+    }
+
     // Update ground plane scale
     auto const groundScale =
       1.5 * qMax(qMax(qAbs(bbox.GetBound(0)), qAbs(bbox.GetBound(1))),
                  qMax(qAbs(bbox.GetBound(2)), qAbs(bbox.GetBound(3))));
-
-    d->groundPlane->SetOrigin(-groundScale, -groundScale, 0.0);
-    d->groundPlane->SetPoint1(+groundScale, -groundScale, 0.0);
-    d->groundPlane->SetPoint2(-groundScale, +groundScale, 0.0);
-    d->groundPlane->Modified();
 
     // Add camera centers
     bbox.AddBounds(d->cameraRep->GetPathActor()->GetBounds());
@@ -660,6 +662,12 @@ void WorldView::updateScale()
 
       // Update camera scale
       d->cameraOptions->setBaseCameraScale(cameraScale);
+
+      // Update the ground scale
+      d->groundPlane->SetOrigin(-groundScale, -groundScale, 0.0);
+      d->groundPlane->SetPoint1(+groundScale, -groundScale, 0.0);
+      d->groundPlane->SetPoint2(-groundScale, +groundScale, 0.0);
+      d->groundPlane->Modified();
     }
 
     d->scaleDirty = false;
