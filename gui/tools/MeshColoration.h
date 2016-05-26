@@ -55,12 +55,15 @@ public:
 
   // Functions
   bool ProcessColoration();
+  void initializeDataList();
 
 protected:
   // Attributes
   vtkPolyData* OutputMesh;
   int Sampling;
   std::vector<ReconstructionData*> DataList;
+  std::vector<std::string> vtiList;
+  std::vector<std::string> krtdList;
 };
 
 #endif

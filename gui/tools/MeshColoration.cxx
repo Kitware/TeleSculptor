@@ -56,21 +56,14 @@ MeshColoration::MeshColoration(vtkPolyData* mesh, std::string vti, std::string k
   //this->OutputMesh = vtkPolyData::New();
   //this->OutputMesh->DeepCopy(mesh);
 
-  std::vector<std::string> vtiList = help::ExtractAllFilePath(vti.c_str());
-  std::vector<std::string> krtdList = help::ExtractAllFilePath(krtd.c_str());
+  vtiList = help::ExtractAllFilePath(vti.c_str());
+  krtdList = help::ExtractAllFilePath(krtd.c_str());
   if (krtdList.size() < vtiList.size())
     {
     std::cerr << "Error, not enough krtd file for each vti file" << std::endl;
     return;
     }
 
-  int nbDepthMap = (int)vtiList.size();
-
-  for (int id = 0; id < nbDepthMap; id++)
-    {
-    ReconstructionData* data = new ReconstructionData(vtiList[id], krtdList[id]);
-    this->DataList.push_back(data);
-    }
 }
 
 MeshColoration::~MeshColoration()
@@ -107,9 +100,11 @@ vtkPolyData* MeshColoration::GetOutput()
 
 bool MeshColoration::ProcessColoration()
 {
+  initializeDataList();
+
   int nbDepthMap = (int)this->DataList.size();
 
-  if (this->OutputMesh == nullptr || nbDepthMap == 0 || this->Sampling >= nbDepthMap)
+  if (this->OutputMesh == nullptr || nbDepthMap == 0 /*|| this->Sampling >= nbDepthMap*/)
     {
     std::cerr << "Error when input has been set or during reading vti/krtd file path" << std::endl;
     return false;
@@ -161,8 +156,8 @@ bool MeshColoration::ProcessColoration()
       {
 
       // Use sampling if we don't want to use all frames
-      if (idData%this->Sampling != 0)
-        continue;
+//      if (idData%this->Sampling != 0)
+//        continue;
 
       ReconstructionData* data = this->DataList[idData];
 
@@ -211,4 +206,18 @@ bool MeshColoration::ProcessColoration()
   this->OutputMesh->GetPointData()->AddArray(projectedDMValue);
 
   return true;
+}
+
+void MeshColoration::initializeDataList()
+{
+  int nbDepthMap = (int)vtiList.size();
+
+  for (int id = 0; id < nbDepthMap; id++)
+  {
+    if (id%Sampling == 0)
+    {
+      ReconstructionData* data = new ReconstructionData(vtiList[id], krtdList[id]);
+      this->DataList.push_back(data);
+    }
+  }
 }
