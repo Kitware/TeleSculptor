@@ -47,7 +47,6 @@ public:
   Ui::DepthMapOptions UI;
   qtUiState uiState;
 
-//  QList<vtkActor*> actors;
   std::map<std::string, vtkProp3D*> actors;
   DepthMapFilterOptions* filterOptions;
 
@@ -74,12 +73,14 @@ DepthMapOptions::DepthMapOptions(QString const& settingsGroup,
 
   d->filterOptions = new DepthMapFilterOptions(settingsGroup, this);
   d->setPopup(d->UI.toolButtonFilters, d->filterOptions);
+  d->UI.toolButtonFilters->setEnabled(false);
+
   // Connect signals/slots
   connect(d->UI.radioPoints, SIGNAL(toggled(bool)),
-          this, SLOT(switchsVisible(bool)));
+          this, SIGNAL(depthMapRepresentationChanged()));
 
   connect(d->UI.radioSurfaces, SIGNAL(toggled(bool)),
-          this, SLOT(switchVisible(bool)));
+          this, SIGNAL(depthMapRepresentationChanged()));
 
   connect(d->UI.checkBoxFilters, SIGNAL(toggled(bool)),
           this, SLOT(showFiltersMenu(bool)));
@@ -88,7 +89,7 @@ DepthMapOptions::DepthMapOptions(QString const& settingsGroup,
           this, SIGNAL(bBoxToggled()));
 
   connect(d->filterOptions, SIGNAL(filtersChanged()),
-          this, SLOT(modified()));
+          this, SIGNAL(depthMapThresholdsChanged()));
 
 }
 
@@ -117,20 +118,6 @@ void DepthMapOptions::addActor(std::string type, vtkProp3D* actor)
   QTE_D();
 
   d->actors.insert(std::pair<std::string, vtkProp3D*>(type,actor));
-
-}
-
-//-----------------------------------------------------------------------------
-void DepthMapOptions::switchVisible(bool state)
-{
-  QTE_D();
-
-  if (d->UI.radioPoints->isEnabled())
-    d->actors["points"]->SetVisibility(d->UI.radioPoints->isChecked());
-  if (d->UI.radioSurfaces->isEnabled())
-    d->actors["surfaces"]->SetVisibility(d->UI.radioSurfaces->isChecked());
-
-  emit this->depthMapChanged();
 
 }
 
@@ -190,6 +177,13 @@ double DepthMapOptions::getUniquenessRatioMax()
   QTE_D();
 
   return d->filterOptions->getUniquenessRatioMax();
+}
+
+void DepthMapOptions::initializeFilters(double bcMin, double bcMax, double urMin, double urMax)
+{
+  QTE_D();
+
+  d->filterOptions->initializeFilters(bcMin,bcMax,urMin,urMax);
 }
 
 //-----------------------------------------------------------------------------
