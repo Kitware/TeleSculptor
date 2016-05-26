@@ -104,6 +104,16 @@ VolumeOptions::VolumeOptions(const QString &settingsGroup, QWidget* parent, Qt::
 
   connect(d->colorizeSurfaceOptions, SIGNAL(colorModeChanged(QString)),
           this, SLOT(updateColorizeSurfaceMenu(QString)));
+
+  connect(d->UI.doubleSpinBoxSurfaceThreshold, SIGNAL(valueChanged(double)),
+    parent, SLOT(computeContour(double)));
+
+  connect(d->colorizeSurfaceOptions, SIGNAL(meshColorizedInColorizeSurfaceOption()),
+    this, SIGNAL(meshIsColorizedFromColorizeSurfaceOption()));
+
+  connect(parent, SIGNAL(activeDepthMapChanged(int)),
+    d->colorizeSurfaceOptions, SLOT(updateCurrentFrameNumber(int)));
+
 }
 
 //-----------------------------------------------------------------------------
@@ -118,31 +128,16 @@ void VolumeOptions::setVolume(vtkPolyData* mesh, std::string vtiList, std::strin
 {
   QTE_D();
 
-//  d->volumeActor = actor;
 
-//  MeshColoration mC(mesh, vtiList, krtdList);
-//  mC.ProcessColoration();
-//  vtkPolyData* output = mC.GetOutput();
-
-//  d->volumeActor->GetMapper()->setI;
-
-//  vtkPointData* pointData = d->volumeActor->GetMapper()->GetInput()->GetPointData();
-//  int nbArray = pointData->GetNumberOfArrays();
-
-//  std::string name;
-
-//  for (int i = 0; i < nbArray; ++i) {
-
-//    name = pointData->GetArrayName(i);
-//    d->colorizeSurfaceOptions->addColorDisplay(name);
-  //  }
 }
 
-void VolumeOptions::setVolume(vtkActor *actor)
+void VolumeOptions::setActor(vtkActor *actor)
 {
   QTE_D();
 
-  d->colorizeSurfaceOptions->setVolume(actor);
+  d->volumeActor = actor;
+  d->colorizeSurfaceOptions->setActor(actor);
+
 }
 
 //-----------------------------------------------------------------------------
@@ -151,6 +146,15 @@ void VolumeOptions::initFrameSampling(int nbFrames)
   QTE_D();
 
   d->colorizeSurfaceOptions->initFrameSampling(nbFrames);
+}
+
+//-----------------------------------------------------------------------------
+void VolumeOptions::setKrtdVtiFile(QString krtd, QString vti)
+{
+  QTE_D();
+
+  d->colorizeSurfaceOptions->setKrtdFile(krtd);
+  d->colorizeSurfaceOptions->setVtiFile(vti);
 }
 
 //-----------------------------------------------------------------------------

@@ -37,6 +37,7 @@
 #include <qtStlUtil.h>
 
 #include <QtGui/QApplication>
+#include <QtCore/QDebug>
 #include <QtCore/QDir>
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
@@ -183,7 +184,22 @@ bool Project::read(QString const& path)
       this->volumeDepthmaps  = getPath(config, base, "volume_depthmaps_file");
     }
 
+    if (config->has_value("volume_krtd_file"))
+    {
+      this->volumeKrtdFile = getPath(config, base, "volume_krtd_file");
+    }
+
+    if (config->has_value("volume_depthmaps_file"))
+    {
+      this->volumeVtiFile = getPath(config, base, "volume_depthmaps_file");
+    }
+
     return true;
+  }
+  catch (kwiver::vital::config_block_exception e)
+  {
+    qWarning() << e.what(); // TODO dialog?
+    return false;
   }
   catch (...)
   {

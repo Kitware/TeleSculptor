@@ -48,6 +48,8 @@
 #include <vtkActorCollection.h>
 #include <vtkBoundingBox.h>
 #include <vtkCellArray.h>
+#include <vtkCellDataToPointData.h>
+#include <vtkContourFilter.h>
 #include <vtkDoubleArray.h>
 #include <vtkImageActor.h>
 #include <vtkImageData.h>
@@ -143,6 +145,7 @@ public:
   PointOptions* landmarkOptions;
   DepthMapOptions* depthMapOptions;
   VolumeOptions* volumeOptions;
+  vtkContourFilter* contourFilter;
 
   vtkNew<vtkMatrix4x4> imageProjection;
   vtkNew<vtkMatrix4x4> imageLocalTransform;
@@ -313,6 +316,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->volumeOptions = new VolumeOptions("WorldView/Volume", this);
   d->setPopup(d->UI.actionVolumeDisplay, d->volumeOptions);
 
+
   connect(d->volumeOptions, SIGNAL(modified()),
           d->UI.renderWidget, SLOT(update()));
 
@@ -326,6 +330,9 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(setGridVisible()));
 
   d->depthMapOptions->setEnabled(false);
+  connect(this, SIGNAL(contourChanged()),
+          d->UI.renderWidget, SLOT(update()));
+
 
   // Connect actions
   this->addAction(d->UI.actionViewReset);
@@ -335,6 +342,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   this->addAction(d->UI.actionShowLandmarks);
   this->addAction(d->UI.actionShowGroundPlane);
   this->addAction(d->UI.actionDepthmapDisplay);
+  this->addAction(d->UI.actionVolumeDisplay);
 
   connect(d->UI.actionViewReset, SIGNAL(triggered()),
           this, SLOT(resetView()));
@@ -363,6 +371,11 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(setGroundPlaneVisible(bool)));
   connect(d->UI.actionDepthmapDisplay, SIGNAL(toggled(bool)),
           this, SLOT(setDepthMapVisible(bool)));
+  connect(d->UI.actionVolumeDisplay, SIGNAL(toggled(bool)),
+          this, SLOT(setVolumeVisible(bool)));
+
+  connect(d->volumeOptions, SIGNAL(meshIsColorizedFromColorizeSurfaceOption),
+    d->UI.renderWidget, SLOT(update()));
 
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
@@ -458,7 +471,8 @@ std::string WorldView::getActiveDepthMapType()
 }
 
 //----------------------------------------------------------------------
-void WorldView::loadVolume(QString path, int nbFrames, std::string vtiList, std::string krtdList)
+
+void WorldView::loadVolume(QString path, int nbFrames, QString krtd, QString vti)
 {
   QTE_D();
 
@@ -466,25 +480,37 @@ void WorldView::loadVolume(QString path, int nbFrames, std::string vtiList, std:
 
   std::string filename = path.toStdString();
 
-  vtkNew<vtkXMLPolyDataReader> readerPoly;
+  // Create the vtk pipeline
+  // Read volume
+  vtkNew<vtkXMLStructuredGridReader> readerV;
+  readerV->SetFileName(filename.c_str());
+  // Transform cell data to point data for contour filter
+  vtkNew<vtkCellDataToPointData> transformCellToPointData;
+  transformCellToPointData->SetInputConnection(readerV->GetOutputPort());
+  transformCellToPointData->PassCellDataOn();
 
-  readerPoly->SetFileName(filename.c_str());
-  readerPoly->Update();
+  // Apply contour
+  d->contourFilter = vtkContourFilter::New();
+  d->contourFilter->SetInputConnection(transformCellToPointData->GetOutputPort());
+  d->contourFilter->SetNumberOfContours(1);
+  d->contourFilter->SetValue(0, 0.5);
+  // Declare which table will be use for the contour
+  d->contourFilter->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, "reconstruction_scalar");
 
-  vtkNew<vtkPolyDataMapper> mapper;
-  mapper->SetInputData(readerPoly->GetOutput());
-  mapper->SetColorModeToDirectScalars();
+  // Create mapper
+  vtkNew<vtkPolyDataMapper> contourMapper;
+  contourMapper->SetInputConnection(d->contourFilter->GetOutputPort());
+  contourMapper->SetColorModeToDirectScalars();
 
-  d->volumeActor->SetMapper(mapper.Get());
+  // Set the actor's mapper
+  d->volumeActor->SetMapper(contourMapper.Get());
 
-//  d->volumeOptions->setVolume(readerPoly->GetOutput(),vtiList,krtdList);
-  d->volumeOptions->setVolume(d->volumeActor.Get());
-  d->volumeOptions->initFrameSampling(nbFrames);
+  d->volumeOptions->setActor(d->volumeActor.Get());
+  d->volumeOptions->setKrtdVtiFile(krtd, vti);
 
-  d->volumeActor->SetVisibility(true);
+  // Add this actor to the renderer
   d->renderer->AddActor(d->volumeActor.Get());
-  d->renderer->AddViewProp(d->volumeActor.GetPointer());
-  d->UI.renderWidget->update();
+  emit(contourChanged());
 }
 
 //-----------------------------------------------------------------------------
@@ -521,6 +547,7 @@ void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, QString vtiPath) {
       pixel[0] *= dmToImageRatio;
       pixel[1] *= dmToImageRatio;
       camera->UnprojectPoint(pixel, depth, &p);
+
 
       points->SetPoint(idPixel,p[0],p[1],p[2]);
 
@@ -797,6 +824,12 @@ void WorldView::setGridVisible()
      d->cubeAxesActor->SetVisibility(d->depthMapOptions->isBBoxChecked());
    }
 }
+void WorldView::setVolumeVisible(bool state)
+{
+  QTE_D();
+  d->volumeActor->SetVisibility(state);
+  d->UI.renderWidget->update();
+}
 
 //-----------------------------------------------------------------------------
 void WorldView::resetView()
@@ -974,4 +1007,14 @@ void WorldView::updateDepthMapThresholds()
 //  geometryFilter->Update();
   d->depthmapActor->GetMapper()->SetInputConnection(geometryFilter->GetOutputPort());
   d->depthmapActor->GetMapper()->Update();
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::computeContour(double threshold)
+{
+  QTE_D();
+
+  d->contourFilter->SetValue(0, threshold);
+  d->UI.renderWidget->update();
+  emit(contourChanged());
 }

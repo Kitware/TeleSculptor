@@ -51,9 +51,14 @@ public:
   virtual ~VolumeOptions();
 
   void setVolume(vtkPolyData *mesh, std::string vtiList, std::string krtdList);
-  void setVolume(vtkActor* actor);
+  void setActor(vtkActor* actor);
 
   void initFrameSampling(int nbFrames);
+  void setKrtdVtiFile(QString krtd, QString vti);
+
+signals:
+  void meshIsColorizedFromColorizeSurfaceOption();
+  void currentFrameIDChanged(int);
 
 signals:
   void modified();
