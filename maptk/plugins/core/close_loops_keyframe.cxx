@@ -362,6 +362,8 @@ close_loops_keyframe
                            << " has "<< num_matched << " matches and "
                            << num_linked << " joined tracks");
   }
+  // divide by number of matched frames to get the average
+  d_->frame_matches[frame_number] /= (frame_number - last_frame);
 
   // stitch with all previous keyframes
   for(auto kitr = d_->keyframes.rbegin(); kitr != d_->keyframes.rend(); ++kitr)
@@ -418,10 +420,14 @@ close_loops_keyframe
         max_id = hitr->first;
       }
     }
-    // create the new keyframe and clear the list of misses
-    LOG_INFO(d_->m_logger, "creating new keyframe on frame " << max_id);
-    d_->keyframes.push_back(max_id);
-    d_->keyframe_misses.clear();
+    // the new key frame must have the required number of matches on average
+    if( max_matches > static_cast<unsigned int>(d_->match_req) )
+    {
+      // create the new keyframe and clear the list of misses
+      LOG_INFO(d_->m_logger, "creating new keyframe on frame " << max_id);
+      d_->keyframes.push_back(max_id);
+      d_->keyframe_misses.clear();
+    }
   }
 
   return input;

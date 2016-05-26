@@ -28,6 +28,11 @@ MAP-Tk GUI
    The GUI now catches config exception and prints a warning message.  This
    is a temporary solution until a proper error dialog is implemented.
 
+ * Fixed an issue with the ground plane disappearing after loading data that
+   did not include landmarks.  The ground plane now uses the cameras for scale
+   when only cameras are in the world view and no longer disappears when the
+   only data loaded is in the image view.
+
 Tools
 
  * Fixed an issue with converting POS filenames to KRTD in the pos2krtd tool.
