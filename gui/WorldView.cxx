@@ -476,6 +476,8 @@ void WorldView::loadVolume(QString path, int nbFrames, QString krtd, QString vti
 {
   QTE_D();
 
+  d->volumeOptions->initFrameSampling(nbFrames);
+
   d->UI.actionVolumeDisplay->setEnabled(true);
 
   std::string filename = path.toStdString();
@@ -507,6 +509,7 @@ void WorldView::loadVolume(QString path, int nbFrames, QString krtd, QString vti
   d->volumeActor->SetVisibility(false);
   d->volumeOptions->setActor(d->volumeActor.Get());
   d->volumeOptions->setKrtdVtiFile(krtd, vti);
+
 
   // Add this actor to the renderer
   d->renderer->AddActor(d->volumeActor.Get());

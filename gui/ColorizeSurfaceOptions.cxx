@@ -107,7 +107,7 @@ void ColorizeSurfaceOptions::initFrameSampling(int nbFrames)
   QTE_D();
 
   d->UI.spinBoxFrameSampling->setMaximum(nbFrames-1);
-  d->UI.spinBoxFrameSampling->setValue(nbFrames-1/20);
+  d->UI.spinBoxFrameSampling->setValue((nbFrames-1)/20);
 }
 
 void ColorizeSurfaceOptions::setCurrentDepthmapPath(std::string path)
