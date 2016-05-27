@@ -98,9 +98,9 @@ vtkPolyData* MeshColoration::GetOutput()
   return this->OutputMesh;
 }
 
-bool MeshColoration::ProcessColoration()
+bool MeshColoration::ProcessColoration(std::string currentVtiPath)
 {
-  initializeDataList();
+  initializeDataList(currentVtiPath);
 
   int nbDepthMap = (int)this->DataList.size();
 
@@ -208,16 +208,36 @@ bool MeshColoration::ProcessColoration()
   return true;
 }
 
-void MeshColoration::initializeDataList()
+void MeshColoration::initializeDataList(std::string currentVtiPath)
 {
-  int nbDepthMap = (int)vtiList.size();
+    int nbDepthMap = (int)vtiList.size();
 
-  for (int id = 0; id < nbDepthMap; id++)
+  //Take a subset of depthmap
+  if (currentVtiPath == "")
   {
-    if (id%Sampling == 0)
+    for (int id = 0; id < nbDepthMap; id++)
     {
-      ReconstructionData* data = new ReconstructionData(vtiList[id], krtdList[id]);
-      this->DataList.push_back(data);
+      if (id%Sampling == 0)
+      {
+        ReconstructionData* data = new ReconstructionData(vtiList[id], krtdList[id]);
+        this->DataList.push_back(data);
+      }
     }
   }
+  //Take the current depthmap
+  else
+  {
+    std::string currentDepthmapName = currentVtiPath.substr(currentVtiPath.find_last_of("/"));
+    for (int id = 0; id < nbDepthMap; id++)
+    {
+      std::string depthmapName = vtiList[id].substr(vtiList[id].find_last_of("/"));
+      if (currentDepthmapName == depthmapName)
+      {
+        ReconstructionData* data = new ReconstructionData(vtiList[id], krtdList[id]);
+        this->DataList.push_back(data);
+        break;
+      }
+    }
+  }
+
 }

@@ -57,7 +57,7 @@ public:
   QString krtdFile;
   QString vtiFile;
 
-  int currentFrameID;
+  std::string currentVtiPath;
 };
 
 QTE_IMPLEMENT_D_FUNC(ColorizeSurfaceOptions)
@@ -110,6 +110,21 @@ void ColorizeSurfaceOptions::initFrameSampling(int nbFrames)
   d->UI.spinBoxFrameSampling->setValue(nbFrames-1/20);
 }
 
+void ColorizeSurfaceOptions::setCurrentDepthmapPath(std::string path)
+{
+  QTE_D();
+
+  if (d->currentVtiPath != path)
+  {
+    d->currentVtiPath = path;
+//    colorize();
+    if (d->UI.radioButtonCurrentFrame->isChecked())
+    {
+      currentFrameSelected();
+    }
+  }
+}
+
 //-----------------------------------------------------------------------------
 void ColorizeSurfaceOptions::setActor(vtkActor* actor)
 {
@@ -138,13 +153,21 @@ void ColorizeSurfaceOptions::setVtiFile(QString file)
 void ColorizeSurfaceOptions::colorize()
 {
   QTE_D();
-  if (d->UI.comboBoxColorDisplay->isEnabled() && !d->vtiFile.isEmpty() && !d->krtdFile.isEmpty())
+  if (/*d->UI.comboBoxColorDisplay->isEnabled() &&*/ !d->vtiFile.isEmpty() && !d->krtdFile.isEmpty())
   {
     vtkPolyData* volume = vtkPolyData::SafeDownCast(d->volumeActor->GetMapper()->GetInput());
     MeshColoration* coloration = new MeshColoration(volume, d->vtiFile.toStdString(), d->krtdFile.toStdString());
     coloration->SetInput(volume);
     coloration->SetFrameSampling(d->UI.spinBoxFrameSampling->value());
-    coloration->ProcessColoration();
+    if(d->UI.radioButtonCurrentFrame->isChecked())
+    {
+      std::cout << "radioButtonCurrentFrame->isChecked()" << d->UI.radioButtonCurrentFrame->isChecked() <<std::endl;
+      coloration->ProcessColoration(d->currentVtiPath);
+    }
+    else
+    {
+      coloration->ProcessColoration();
+    }
 
     std::string name;
     int nbArray = volume->GetPointData()->GetNumberOfArrays();
@@ -176,20 +199,25 @@ void ColorizeSurfaceOptions::enableAllFramesParameters(bool state)
 //-----------------------------------------------------------------------------
 void ColorizeSurfaceOptions::allFrameSelected()
 {
-  this->enableAllFramesParameters(true);
+  enableAllFramesParameters(true);
 }
 
 //-----------------------------------------------------------------------------
 void ColorizeSurfaceOptions::currentFrameSelected()
 {
-  this->enableAllFramesParameters(false);
+  QTE_D();
+  enableAllFramesParameters(false);
+  std::cout << "currentVtiPath = " << d->currentVtiPath << std::endl;
+  if (!d->currentVtiPath.empty()) {
+    colorize();
+  }
 }
 
 //-----------------------------------------------------------------------------
-void ColorizeSurfaceOptions::updateCurrentFrameNumber(int idFrame)
-{
-  QTE_D();
+//void ColorizeSurfaceOptions::updateCurrentFrameNumber(int idFrame)
+//{
+//  QTE_D();
 
-  d->currentFrameID = idFrame;
-  qDebug() << idFrame;
-}
+//  d->currentFrameID = idFrame;
+//  qDebug() << idFrame;
+//}

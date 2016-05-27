@@ -56,6 +56,8 @@ public:
   void initFrameSampling(int nbFrames);
   void setKrtdVtiFile(QString krtd, QString vti);
 
+  void setCurrentDepthmapPath(std::string path);
+
 signals:
   void meshIsColorizedFromColorizeSurfaceOption();
   void currentFrameIDChanged(int);

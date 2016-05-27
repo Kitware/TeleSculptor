@@ -88,7 +88,7 @@ public slots:
   void setGridVisible();
 
   void setVolumeVisible(bool);
-
+  void setVolumeCurrentDepthmapPath(QString path);
 
   void setPerspective(bool);
 

@@ -52,6 +52,7 @@ public:
 
   void initFrameSampling(int nbFrames);
 
+  void setCurrentDepthmapPath(std::string path);
 
   void setActor(vtkActor* actor);
   void setKrtdFile(QString file);
@@ -67,7 +68,7 @@ public slots:
   void enableAllFramesParameters(bool);
   void allFrameSelected();
   void currentFrameSelected();
-  void updateCurrentFrameNumber(int);
+//  void updateCurrentFrameNumber(int);
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(ColorizeSurfaceOptions)

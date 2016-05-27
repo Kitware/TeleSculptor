@@ -831,6 +831,13 @@ void WorldView::setVolumeVisible(bool state)
   d->UI.renderWidget->update();
 }
 
+void WorldView::setVolumeCurrentDepthmapPath(QString path)
+{
+  QTE_D();
+
+  d->volumeOptions->setCurrentDepthmapPath(path.toStdString());
+}
+
 //-----------------------------------------------------------------------------
 void WorldView::resetView()
 {

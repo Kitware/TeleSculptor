@@ -157,6 +157,13 @@ void VolumeOptions::setKrtdVtiFile(QString krtd, QString vti)
   d->colorizeSurfaceOptions->setVtiFile(vti);
 }
 
+void VolumeOptions::setCurrentDepthmapPath(std::string path)
+{
+  QTE_D();
+
+  d->colorizeSurfaceOptions->setCurrentDepthmapPath(path);
+}
+
 //-----------------------------------------------------------------------------
 void VolumeOptions::showColorizeSurfaceMenu(bool state)
 {
