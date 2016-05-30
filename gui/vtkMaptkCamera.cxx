@@ -1,5 +1,5 @@
 /*ckwg +29
-* Copyright 2015 by Kitware, Inc.
+* Copyright 2015-2016 by Kitware, Inc.
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
@@ -125,48 +125,15 @@ bool vtkMaptkCamera::UnProjectPoint(double pixel[2], double depth,
                                     kwiver::vital::vector_3d *unProjectedPoint)
 {
   // Build camera matrix
-  auto const K = this->MaptkCamera->intrinsics()->as_matrix();
+  auto const K = this->MaptkCamera->intrinsics()->as_matrix()
+                      .triangularView<Eigen::Upper>();
   auto const T = this->MaptkCamera->translation();
   auto const R = kwiver::vital::matrix_3x3d(this->MaptkCamera->rotation());
 
-  kwiver::vital::vector_4d homogenousPoint;
+  kwiver::vital::vector_3d homogenousPoint(pixel[0], pixel[1], 1.0);
+  homogenousPoint *= depth;
 
-//  homogenousPoint(0) = (point[0] - K(0,2))*depth/K(0,0);
-//  homogenousPoint(1) = (point[1] - K(1,2))*depth/K(1,1);
-//  homogenousPoint(2) = depth;
-//  homogenousPoint(3) = 1;
-
-  homogenousPoint(0) = pixel[0] * depth;
-  homogenousPoint(1) = pixel[1] * depth;
-  homogenousPoint(2) = depth;
-  homogenousPoint(3) = 1;
-  kwiver::vital::matrix_4x4d homogenousK;
-
-  homogenousK << K(0,0), K(0,1), K(0,2), 0,
-                 K(1,0), K(1,1), K(1,2), 0,
-                 K(2,0), K(2,1), K(2,2), 0,
-                 0,      0,      0,      1;
-
-//  homogenousPoint = homogenousK.inverse() * homogenousPoint;
-
-  kwiver::vital::matrix_4x4d RT;
-  RT << R(0,0), R(0,1), R(0,2), T(0,0),
-        R(1,0), R(1,1), R(1,2), T(1,0),
-        R(2,0), R(2,1), R(2,2), T(2,0),
-        0,      0,      0,      1;
-
-
-//  std::cout << "homogenousK = " << homogenousK << std::endl;
-
-  homogenousPoint = RT.inverse() * homogenousK.inverse() * homogenousPoint;
-
-
-
-  *unProjectedPoint << homogenousPoint(0)/homogenousPoint(3),
-                       homogenousPoint(1)/homogenousPoint(3),
-                       homogenousPoint(2)/homogenousPoint(3);
-
-
+  *unProjectedPoint = R.transpose() * ((K.solve(homogenousPoint)) - T);
 
   return true;
 }
