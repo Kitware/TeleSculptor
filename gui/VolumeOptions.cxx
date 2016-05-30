@@ -32,10 +32,6 @@
 #include "ui_VolumeOptions.h"
 #include "ColorizeSurfaceOptions.h"
 
-#include <maptk/Helper.h>
-#include <maptk/ReconstructionData.h>
-#include <maptk/MeshColoration.h>
-
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
 
