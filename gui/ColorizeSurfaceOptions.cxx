@@ -88,6 +88,10 @@ ColorizeSurfaceOptions::ColorizeSurfaceOptions(const QString &settingsGroup, QWi
   connect(d->UI.buttonCompute, SIGNAL(clicked()),
     this, SLOT(colorize()));
 
+
+  connect(d->UI.comboBoxColorDisplay, SIGNAL(currentIndexChanged(int)),
+    this, SLOT(changeColorDisplay()));
+
   d->krtdFile = QString();
   d->vtiFile = QString();
 
@@ -147,6 +151,13 @@ void ColorizeSurfaceOptions::setVtiFile(QString file)
   QTE_D();
 
   d->vtiFile = file;
+}
+
+void ColorizeSurfaceOptions::changeColorDisplay()
+{
+  QTE_D();
+  vtkPolyData* volume = vtkPolyData::SafeDownCast(d->volumeActor->GetMapper()->GetInput());
+  volume->GetPointData()->SetActiveScalars(d->UI.comboBoxColorDisplay->currentText().toStdString().c_str());
 }
 
 //-----------------------------------------------------------------------------

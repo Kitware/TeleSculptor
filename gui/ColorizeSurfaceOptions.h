@@ -64,6 +64,7 @@ signals:
 
 public slots:
 
+  void changeColorDisplay();
   void colorize();
   void enableAllFramesParameters(bool);
   void allFrameSelected();
@@ -71,6 +72,7 @@ public slots:
 //  void updateCurrentFrameNumber(int);
 
 private:
+
   QTE_DECLARE_PRIVATE_RPTR(ColorizeSurfaceOptions)
   QTE_DECLARE_PRIVATE(ColorizeSurfaceOptions)
 
