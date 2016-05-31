@@ -439,24 +439,9 @@ void MainWindowPrivate::setActiveCamera(int id)
 
     UI.worldView->setVolumeCurrentDepthmapPath(this->cameras[id].vtiPath);
 
+    UI.dMView->setDepthMap(this->cameras[id].vtiPath);
   }
-//  UI.dMView->setDepthMap(this->cameras[id].dmp.dMImagePath);
-//  this->updateDM();
 }
-
-//-----------------------------------------------------------------------------
-//void MainWindowPrivate::updateDM() {
-//  auto& cd = this->cameras[activeCameraIndex];
-
-//  vtkMatrix4x4* m = cd.camera->GetModelTransformMatrix();
-
-//  m->SetElement(0,3,0.0);
-//  m->SetElement(1,3,0.0);
-//  m->SetElement(2,3,0.0);
-
-//  UI.worldView->setActiveDepthMap(activeCameraIndex,m);
-////  UI.dMView->setDepthMap(activeCameraIndex);
-//}
 
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::updateCameraView()
@@ -840,38 +825,6 @@ void MainWindow::loadProject(QString const& path)
     d->UI.worldView->loadVolume(project.volumePath,d->cameras.size(), project.volumeKrtdFile,
       project.volumeVtiFile);
   }
-
- // for (int camId = 0; camId < d->cameras.size(); ++camId)
- // {
-//    if(!project.DMvtp.isEmpty() && project.DMvtp.contains(camId))
-//    {
-//      d->cameras[camId].dmp.dMpointsPath = project.DMvtp[camId];
-//    }
-
-//    if(!project.DMvts.isEmpty() && project.DMvts.contains(camId))
-//    {
-//      d->cameras[camId].dmp.dMSurfacesPath = project.DMvts[camId];
-//    }
-
-//    if(!project.DMvti.isEmpty() && project.DMvti.contains(camId))
-//    {
-//      d->cameras[camId].vtiPath = project.DMvti[camId];
-//    }
- // }
-
-  //Once every depthmap is loaded, set up the active depthmap to the first found
- // if(!project.DMvtp.isEmpty() || !project.DMvts.isEmpty()
- //    || !project.DMvti.isEmpty() )
- // {
-    //TODO: replace this with a while loop.
- //   for (int camId = 0; camId < d->cameras.size(); ++camId)
- //   {
- //     if (project.DMvtp.contains(camId))
- //     {
- //       setActiveCamera(camId);
- //       break;
- //     }
- //   }
 
   d->UI.worldView->resetView();
 }
