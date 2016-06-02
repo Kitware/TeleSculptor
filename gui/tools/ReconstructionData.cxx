@@ -35,6 +35,7 @@
 // VTK includes
 #include "vtkDoubleArray.h"
 #include "vtkImageData.h"
+#include "vtkVector.h"
 #include "vtkMatrix3x3.h"
 #include "vtkMatrix4x4.h"
 #include "vtkPointData.h"
@@ -48,7 +49,7 @@ ReconstructionData::ReconstructionData()
 {
   this->DepthMap = nullptr;
   this->MatrixK = nullptr;
-  this->MatrixTR = nullptr;
+  this->MatrixRT = nullptr;
 }
 
 ReconstructionData::ReconstructionData(std::string depthPath,
@@ -66,14 +67,14 @@ ReconstructionData::ReconstructionData(std::string depthPath,
   // Read KRTD FILE
   vtkNew<vtkMatrix3x3> K;
   vtkNew<vtkMatrix4x4> RT;
-  this->MatrixTR = vtkMatrix4x4::New();
+  this->MatrixRT = vtkMatrix4x4::New();
   this->MatrixK = vtkMatrix3x3::New();
   this->Matrix4K = vtkMatrix4x4::New();
   help::ReadKrtdFile(matrixPath, K.Get(), RT.Get());
 
   // Set matrix K to  create matrix4x4 for K
   this->SetMatrixK(K.Get());
-  this->SetMatrixTR(RT.Get());
+  this->SetMatrixRT(RT.Get());
 }
 
 ReconstructionData::~ReconstructionData()
@@ -82,8 +83,8 @@ ReconstructionData::~ReconstructionData()
     this->DepthMap->Delete();
   if (this->MatrixK)
     this->MatrixK->Delete();
-  if (this->MatrixTR)
-    this->MatrixTR->Delete();
+  if (this->MatrixRT)
+    this->MatrixRT->Delete();
   if (this->Matrix4K)
     this->Matrix4K->Delete();
 }
@@ -129,9 +130,23 @@ vtkMatrix4x4* ReconstructionData::Get4MatrixK()
   return this->Matrix4K;
 }
 
+vtkVector3d ReconstructionData::GetCameraCenter()
+{
+  // -R.transpose() * T
+  return vtkVector3d(-(this->MatrixRT->GetElement(0,0)*this->MatrixRT->GetElement(0,3)
+                       + this->MatrixRT->GetElement(1,0)*this->MatrixRT->GetElement(1,3)
+                       + this->MatrixRT->GetElement(2,0)*this->MatrixRT->GetElement(2,3)),
+                     -(this->MatrixRT->GetElement(0,1)*this->MatrixRT->GetElement(0,3)
+                       + this->MatrixRT->GetElement(1,1)*this->MatrixRT->GetElement(1,3)
+                       + this->MatrixRT->GetElement(2,1)*this->MatrixRT->GetElement(2,3)),
+                     -(this->MatrixRT->GetElement(0,2)*this->MatrixRT->GetElement(0,3)
+                       + this->MatrixRT->GetElement(1,2)*this->MatrixRT->GetElement(1,3)
+                       + this->MatrixRT->GetElement(2,2)*this->MatrixRT->GetElement(2,3)));
+}
+
 vtkMatrix4x4* ReconstructionData::GetMatrixTR()
 {
-  return this->MatrixTR;
+  return this->MatrixRT;
 }
 
 void ReconstructionData::ApplyDepthThresholdFilter(double thresholdBestCost)
@@ -210,13 +225,13 @@ void ReconstructionData::SetMatrixK(vtkMatrix3x3* matrix)
   this->TransformCameraToDepthMap->SetMatrix(this->Matrix4K);
 }
 
-void ReconstructionData::SetMatrixTR(vtkMatrix4x4* matrix)
+void ReconstructionData::SetMatrixRT(vtkMatrix4x4* matrix)
 {
-  if (this->MatrixTR != nullptr)
-    this->MatrixTR->Delete();
-  this->MatrixTR = matrix;
-  this->MatrixTR->Register(0);
-  this->TransformWorldToCamera->SetMatrix(this->MatrixTR);
+  if (this->MatrixRT != nullptr)
+    this->MatrixRT->Delete();
+  this->MatrixRT = matrix;
+  this->MatrixRT->Register(0);
+  this->TransformWorldToCamera->SetMatrix(this->MatrixRT);
 }
 
 void ReconstructionData::ReadDepthMap(std::string path, vtkImageData* out)

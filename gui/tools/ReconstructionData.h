@@ -35,6 +35,7 @@ class vtkImageData;
 class vtkMatrix3x3;
 class vtkMatrix4x4;
 class vtkTransform;
+class vtkVector3d;
 
 #include <string>
 
@@ -52,11 +53,12 @@ public:
   vtkMatrix3x3* Get3MatrixK();
   vtkMatrix4x4* Get4MatrixK();
   vtkMatrix4x4* GetMatrixTR();
+  vtkVector3d GetCameraCenter();
 
   // SETTERS
   void SetDepthMap(vtkImageData* data);
   void SetMatrixK(vtkMatrix3x3* matrix);
-  void SetMatrixTR(vtkMatrix4x4* matrix);
+  void SetMatrixRT(vtkMatrix4x4* matrix);
 
   // FUNCTIONS
   void ApplyDepthThresholdFilter(double thresholdBestCost);
@@ -71,7 +73,7 @@ protected:
   vtkImageData* DepthMap;
   vtkMatrix3x3* MatrixK;
   vtkMatrix4x4* Matrix4K;
-  vtkMatrix4x4* MatrixTR;
+  vtkMatrix4x4* MatrixRT;
 
   vtkTransform* TransformWorldToCamera;
   vtkTransform* TransformCameraToDepthMap;

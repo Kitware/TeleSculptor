@@ -32,6 +32,7 @@
 // VTK includes
 #include "vtkDoubleArray.h"
 #include "vtkImageData.h"
+#include "vtkVector.h"
 #include "vtkNew.h"
 #include "vtkPointData.h"
 #include "vtkPolyData.h"
@@ -151,23 +152,28 @@ bool MeshColoration::ProcessColoration(std::string currentVtiPath)
     // Get mesh position from id
     double position[3];
     meshPointList->GetPoint(id, position);
+    double pointNormald[3];
+    OutputMesh->GetPointData()->GetArray("Normals")->GetTuple(id, pointNormald);
+    vtkVector3d pointNormal(pointNormald);
+
+
 
     for (int idData = 0; idData < nbDepthMap; idData++)
       {
-
-      // Use sampling if we don't want to use all frames
-//      if (idData%this->Sampling != 0)
-//        continue;
-
       ReconstructionData* data = this->DataList[idData];
-
-      // Transform to pixel index
+      vtkVector3d cameraCenter = data->GetCameraCenter();
+      // Check if the 3D point is in front of the camera
+      vtkVector3d cameraPointVec = vtkVector3d( position[0] - cameraCenter(0),
+                                                position[1] - cameraCenter(1),
+                                                position[2] - cameraCenter(2) );
+      if (cameraPointVec.Dot(pointNormal)>0.0)
+        continue;
+      // project 3D point to pixel coordinates
       int pixelPosition[2];
       data->TransformWorldToDepthMapPosition(position, pixelPosition);
       // Test if pixel is inside depth map
-      if (pixelPosition[0] < 0 || pixelPosition[1] < 0 ||
-        pixelPosition[0] >= depthMapDimensions[0] ||
-        pixelPosition[1] >= depthMapDimensions[1])
+      if (pixelPosition[0] < 0 || pixelPosition[0] >= depthMapDimensions[0] ||
+          pixelPosition[1] < 0 || pixelPosition[1] >= depthMapDimensions[1])
         {
         continue;
         }

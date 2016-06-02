@@ -103,7 +103,7 @@ namespace help
   // Description
   // Read krtd file and create K and RT matrix
   static bool ReadKrtdFile(std::string filename, vtkMatrix3x3* matrixK,
-                           vtkMatrix4x4* matrixTR)
+                           vtkMatrix4x4* matrixRT)
   {
     // Open the file
     std::ifstream file(filename.c_str());
@@ -141,7 +141,7 @@ namespace help
       {
         double value;
         iss >> value;
-        matrixTR->SetElement(i, j, value);
+        matrixRT->SetElement(i, j, value);
       }
     }
 
@@ -154,15 +154,15 @@ namespace help
     {
       double value;
       iss >> value;
-      matrixTR->SetElement(i, 3, value);
+      matrixRT->SetElement(i, 3, value);
     }
 
-    // Finalize matrix TR
+    // Finalize matrix RT
     for (int j = 0; j < 4; j++)
     {
-      matrixTR->SetElement(3, j, 0);
+      matrixRT->SetElement(3, j, 0);
     }
-    matrixTR->SetElement(3, 3, 1);
+    matrixRT->SetElement(3, 3, 1);
 
     return true;
   }
