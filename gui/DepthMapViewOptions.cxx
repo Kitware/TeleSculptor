@@ -75,6 +75,7 @@ void DepthMapViewOptionsPrivate::setPopup(QToolButton* button, QWidget* widget)
   auto const proxy = new QWidgetAction(button);
   proxy->setDefaultWidget(widget);
 
+
   auto const menu = new QMenu(button);
   menu->addAction(proxy);
 
@@ -92,15 +93,14 @@ DepthMapViewOptions::DepthMapViewOptions(QString const& settingsGroup,
 
   // Set up UI
   d->UI.setupUi(this);
-  layout = new QFormLayout();
-  d->UI.groupBox->setLayout(layout);
 
+  layout = new QVBoxLayout(d->UI.groupBox);
+  d->UI.groupBox->setLayout(layout);
   // Set up option persistence
   d->uiState.setCurrentGroup(settingsGroup);
 
   d->uiState.restore();
 
-  bGroup = new QButtonGroup(d->UI.groupBox);
   // Connect signals/slots
 
   d->originalImage = vtkSmartPointer<vtkImageData>::New();
@@ -117,18 +117,23 @@ void DepthMapViewOptions::addDepthMapMode(std::string name, bool needGradient)
 {
   QTE_D();
 
+
   QRadioButton *scalar = new QRadioButton(QString::fromStdString(name));
 
   int index = bGroup->buttons().size();
   bGroup->addButton(scalar,index);
 
-  if (needGradient){
-    QToolButton *gradient = new QToolButton();
+  if (needGradient)
+  {
+    QToolButton *gradient = new QToolButton(d->UI.groupBox);
     DataColorOptions *dataColorOptions = new DataColorOptions("DepthMapViewOptions/"+QString::fromStdString(name),
                                                               this);
     dataColorOptions->setEnabled(false);
     d->setPopup(gradient, dataColorOptions);
-    layout->addRow(scalar,gradient);
+    QHBoxLayout *hLayout = new QHBoxLayout();
+    hLayout->addWidget(scalar);
+    hLayout->addWidget(gradient);
+    layout->addLayout(hLayout);
     gradient->setIcon(dataColorOptions->icon());
 
     dataColorOptions->setEnabled(true);
@@ -138,8 +143,9 @@ void DepthMapViewOptions::addDepthMapMode(std::string name, bool needGradient)
 
     d->dcOptions.insert(std::pair<std::string, DataColorOptions*>(name, dataColorOptions));
   }
-  else {
-    layout->addRow(scalar);
+  else
+  {
+    layout->addWidget(scalar);
   }
 
   scalar->setVisible(true);
@@ -185,8 +191,6 @@ void DepthMapViewOptions::switchDisplayMode(bool checked)
       imageMapToColors->Update();
 
       d->imageActor->SetInputData(imageMapToColors->GetOutput());
-
-
     }
 
     emit this->modified();
@@ -197,6 +201,8 @@ void DepthMapViewOptions::addActor(vtkImageActor *actor)
 {
   QTE_D();
 
+  cleanModes();
+  bGroup = new QButtonGroup(d->UI.groupBox);
   bool needGradient;
   d->imageActor = actor;
   d->originalImage->DeepCopy(d->imageActor->GetInput());
@@ -216,17 +222,56 @@ void DepthMapViewOptions::addActor(vtkImageActor *actor)
     addDepthMapMode(d->imageActor->GetInput()->GetPointData()->GetArrayName(i),needGradient);
   }
 
-  bGroup->button(1)->setChecked(true);
+  bGroup->buttons()[1]->setChecked(true);
 
+}
+
+void DepthMapViewOptions::removeLayout(QLayout* layout)
+{
+    QLayoutItem* child;
+    while(layout->count()!=0)
+    {
+        child = layout->takeAt(0);
+        if(child->layout() != 0)
+        {
+            removeLayout(child->layout());
+        }
+        else if(child->widget() != 0)
+        {
+            delete child->widget();
+        }
+
+        delete child;
+    }
 }
 
 void DepthMapViewOptions::cleanModes()
 {
   QTE_D();
 
-  for (int i = 0; i < bGroup->buttons().size(); ++i) {
-    bGroup->removeButton(bGroup->button(i));
+  if (layout)
+  {
+    removeLayout(layout);
+    layout->update();
+    d->UI.formLayout->update();
   }
+
+  if(bGroup)
+  {
+
+    for (int i = 0; i < bGroup->buttons().size(); ++i)
+    {
+      if (bGroup->button(i))
+      {
+        bGroup->removeButton(bGroup->button(i));
+      }
+    }
+  }
+
+
+  d->UI.groupBox->repaint();
+
+  d->UI.formLayout->update();
 
   d->dcOptions.clear();
 }
