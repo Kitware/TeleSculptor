@@ -68,6 +68,13 @@ public slots:
   void saveLandmarks();
   void saveLandmarks(QString const& path);
 
+  void enableSaveMesh(bool state);
+  void enableSaveColoredMesh(bool state);
+
+  void saveMesh();
+  void saveVolume();
+  void saveColoredMesh();
+
   void setActiveCamera(int);
 
   void setViewBackroundColor();

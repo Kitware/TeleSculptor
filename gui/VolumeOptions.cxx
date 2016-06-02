@@ -98,6 +98,9 @@ VolumeOptions::VolumeOptions(const QString &settingsGroup, QWidget* parent, Qt::
   connect(d->UI.checkBoxColorizeSurface, SIGNAL(toggled(bool)),
           this, SLOT(showColorizeSurfaceMenu(bool)));
 
+  connect(d->UI.checkBoxColorizeSurface, SIGNAL(toggled(bool)),
+          this, SIGNAL(colorOptionsEnabled(bool)));
+
   connect(d->colorizeSurfaceOptions, SIGNAL(colorModeChanged(QString)),
           this, SLOT(updateColorizeSurfaceMenu(QString)));
 

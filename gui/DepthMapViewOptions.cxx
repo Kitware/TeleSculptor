@@ -99,6 +99,7 @@ DepthMapViewOptions::DepthMapViewOptions(QString const& settingsGroup,
   // Set up option persistence
   d->uiState.setCurrentGroup(settingsGroup);
 
+  bGroup = new QButtonGroup(d->UI.groupBox);
   d->uiState.restore();
 
   // Connect signals/slots
@@ -202,7 +203,6 @@ void DepthMapViewOptions::addActor(vtkImageActor *actor)
   QTE_D();
 
   cleanModes();
-  bGroup = new QButtonGroup(d->UI.groupBox);
   bool needGradient;
   d->imageActor = actor;
   d->originalImage->DeepCopy(d->imageActor->GetInput());
@@ -264,6 +264,7 @@ void DepthMapViewOptions::cleanModes()
       if (bGroup->button(i))
       {
         bGroup->removeButton(bGroup->button(i));
+        delete bGroup->button(i);
       }
     }
   }

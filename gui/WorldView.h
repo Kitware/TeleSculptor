@@ -70,6 +70,8 @@ public:
 signals:
   void contourChanged();
   void activeDepthMapChanged(int);
+  void meshEnabled(bool);
+  void coloredMeshEnabled(bool);
 
 public slots:
   void setBackgroundColor(QColor const&);
@@ -103,6 +105,10 @@ public slots:
   void viewToWorldFront();
   void viewToWorldBack();
 
+  void saveMesh(QString const& path);
+  void saveVolume(QString const& path);
+  void saveColoredMesh(QString const& path);
+
  //void setActiveDepthMap(vtkMaptkCamera *cam, QString vtiPath);
 
   //void enableDepthMap(std::string type);
@@ -116,6 +122,9 @@ public slots:
 protected slots:
   void updateCameras();
   void updateScale();
+
+public slots:
+
 
 private:
 

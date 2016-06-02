@@ -64,6 +64,7 @@ signals:
 
 signals:
   void modified();
+  void colorOptionsEnabled(bool);
 
 public slots:
   void showColorizeSurfaceMenu(bool state);
