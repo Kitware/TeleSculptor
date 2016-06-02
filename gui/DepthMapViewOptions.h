@@ -63,9 +63,10 @@ protected slots:
 
 private:
   QButtonGroup* bGroup;
-  QFormLayout* layout;
+  QVBoxLayout* layout;
 
   void addDepthMapMode(std::string name, bool needGradient);
+  void removeLayout(QLayout* layout);
 
   QTE_DECLARE_PRIVATE_RPTR(DepthMapViewOptions)
   QTE_DECLARE_PRIVATE(DepthMapViewOptions)
