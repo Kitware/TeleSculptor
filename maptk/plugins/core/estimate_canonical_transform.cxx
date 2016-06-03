@@ -53,17 +53,20 @@ public:
   /// Constructor
   priv()
     : estimate_scale(true),
+      height_percentile(0.05),
       m_logger( vital::get_logger( "maptk.core.estimate_canonical_transform" ))
   {
   }
 
   priv(const priv& other)
     : estimate_scale(other.estimate_scale),
+      height_percentile(other.height_percentile),
       m_logger( vital::get_logger( "maptk.core.estimate_canonical_transform" ))
   {
   }
 
   bool estimate_scale;
+  double height_percentile;
   vital::logger_handle_t m_logger;
 };
 
@@ -104,6 +107,12 @@ estimate_canonical_transform
                     "Estimate the scale to normalize the data. "
                     "If disabled the estimate transform is rigid");
 
+  config->set_value("height_percentile", d_->height_percentile,
+                    "Shift the ground plane along the normal axis such that "
+                    "this percentage of landmarks are below the ground. Values "
+                    "are in the range [0.0, 1.0).  If the value is outside "
+                    "this range use the mean height instead.");
+
   return config;
 }
 
@@ -114,6 +123,7 @@ estimate_canonical_transform
 ::set_configuration(vital::config_block_sptr config)
 {
   d_->estimate_scale = config->get_value<bool>("estimate_scale", d_->estimate_scale);
+  d_->height_percentile = config->get_value<double>("height_percentile", d_->height_percentile);
 }
 
 
@@ -178,6 +188,20 @@ estimate_canonical_transform
       rot.col(2) = -rot.col(2);
       rot.col(1) = -rot.col(1);
     }
+  }
+
+  if(d_->height_percentile >= 0.0 && d_->height_percentile < 1.0)
+  {
+    const vital::vector_3d z = rot.col(2);
+    std::vector<double> heights;
+    VITAL_FOREACH(const lm_map_t::value_type& p, landmarks->landmarks())
+    {
+      vital::vector_3d pt = p.second->loc();
+      heights.push_back(z.dot(pt-center));
+    }
+    std::sort(heights.begin(), heights.end());
+    const unsigned idx = static_cast<unsigned>(d_->height_percentile * heights.size());
+    center += heights[idx] * z;
   }
 
   if(!d_->estimate_scale)
