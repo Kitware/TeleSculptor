@@ -51,15 +51,15 @@ MeshColoration::MeshColoration()
   this->Sampling = 1;
 }
 
-MeshColoration::MeshColoration(vtkPolyData* mesh, std::string frameList, std::string krtd)
+MeshColoration::MeshColoration(vtkPolyData* mesh, std::string frameList, std::string krtdFolder)
   :MeshColoration()
 {
   //this->OutputMesh = vtkPolyData::New();
   //this->OutputMesh->DeepCopy(mesh);
 
   this->frameList = help::ExtractAllFilePath(frameList.c_str());
-  krtdList = help::ExtractAllFilePath(krtd.c_str());
-  if (krtdList.size() < frameList.size())
+  this->krtdFolder = help::ExtractAllKRTDFilePath(krtdFolder.c_str(), frameList.c_str());
+  if (this->krtdFolder.size() < frameList.size())
     {
     std::cerr << "Error, not enough krtd file for each vti file" << std::endl;
     return;
@@ -223,7 +223,7 @@ void MeshColoration::initializeDataList(std::string currentVtiPath)
     {
       if (id%Sampling == 0)
       {
-        ReconstructionData* data = new ReconstructionData(frameList[id], krtdList[id]);
+        ReconstructionData* data = new ReconstructionData(frameList[id], krtdFolder[id]);
         this->DataList.push_back(data);
       }
     }
@@ -237,7 +237,7 @@ void MeshColoration::initializeDataList(std::string currentVtiPath)
       std::string depthmapName = frameList[id].substr(frameList[id].find_last_of("/"));
       if (currentDepthmapName == depthmapName)
       {
-        ReconstructionData* data = new ReconstructionData(frameList[id], krtdList[id]);
+        ReconstructionData* data = new ReconstructionData(frameList[id], krtdFolder[id]);
         this->DataList.push_back(data);
         break;
       }

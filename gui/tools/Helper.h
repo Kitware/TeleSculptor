@@ -101,6 +101,46 @@ namespace help
 
   //----------------------------------------------------------------------------
   // Description
+  // Read global path and extract all contained path
+  static std::vector<std::string> ExtractAllKRTDFilePath(const char* globalPath, const char* framelist)
+  {
+    std::vector<std::string> pathList;
+
+    // Open file which contains the list of all file
+    std::ifstream container(framelist);
+    if (!container.is_open())
+    {
+      std::cerr << "Unable to open : " << framelist << std::endl;
+      return pathList;
+    }
+
+    std::string path;
+    while (!container.eof())
+    {
+      std::getline(container, path);
+      // only get the file name, not the whole path
+      std::vector <std::string> elems;
+      help::SplitString(path, ' ', elems);
+      std::vector <std::string> filename;
+      help::SplitString(elems[elems.size() - 1], '/', filename);
+
+      // check if there are an empty line
+      if (elems.size() == 0)
+      {
+        continue;
+      }
+
+      // Create the real data path to access depth map file
+      std::vector <std::string> elemsWithoutExtension;
+      help::SplitString(filename[filename.size() - 1], '.', elemsWithoutExtension);
+      pathList.push_back(std::string(globalPath) + "/" + elemsWithoutExtension[0] + ".krtd");
+    }
+
+    return pathList;
+  }
+
+  //----------------------------------------------------------------------------
+  // Description
   // Read krtd file and create K and RT matrix
   static bool ReadKrtdFile(std::string filename, vtkMatrix3x3* matrixK,
                            vtkMatrix4x4* matrixRT)

@@ -100,99 +100,26 @@ bool Project::read(QString const& path)
       }
     }
 
-    //Read depthmap points list
-
-//    if (config->has_value("depthmaps_points_file"))
-//    {
-//      auto const& vtpFilePath = config->get_value<std::string>("depthmaps_points_file");
-
-//      QFile vtpFile(base.filePath(qtString(vtpFilePath)));
-//      if (vtpFile.open(QIODevice::ReadOnly | QIODevice::Text))
-//      {
-//        QTextStream vtpStream(&vtpFile);
-//        int frameNum;
-//        QString fileName;
-//        while (!vtpStream.atEnd())
-//        {
-//          vtpStream >> frameNum >> fileName;
-//          if (!DMvtp.contains(frameNum))
-//          {
-//            DMvtp.insert(frameNum,fileName);
-//          }
-//        }
-//      }
-//      vtpFile.close();
-//    }
-
-//    //Read depthmap surfaces list
-//    if (config->has_value("depthmaps_surfaces_file"))
-//    {
-//      auto const& vtsFilePath = config->get_value<std::string>("depthmaps_surfaces_file");
-//      QFile vtsFile(base.filePath(qtString(vtsFilePath)));
-//      if (vtsFile.open(QIODevice::ReadOnly | QIODevice::Text))
-//      {
-//        QTextStream vtsStream(&vtsFile);
-//        int frameNum;
-//        QString fileName;
-//        while (!vtsStream.atEnd())
-//        {
-//          vtsStream >> frameNum >> fileName;
-//          if (!DMvts.contains(frameNum))
-//          {
-//            DMvts.insert(frameNum,fileName);
-//          }
-//        }
-//      }
-//      vtsFile.close();
-//    }
-
     //Read depthmap images list
     if (config->has_value("depthmaps_images_file"))
     {
       this->depthmaps = getPath(config, base, "depthmaps_images_file");
     }
-//    if (config->has_value("depthmaps_images_file"))
-//    {
-//      auto const& vtiFilePath = config->get_value<std::string>("depthmaps_images_file");
-//      auto const& vtiBasePath =  QFileInfo(QString::fromStdString(vtiFilePath)).absoluteDir().absolutePath();
-//      QFile vtiFile(base.filePath(qtString(vtiFilePath)));
-//      if (vtiFile.open(QIODevice::ReadOnly | QIODevice::Text))
-//      {
-//        QTextStream vtiStream(&vtiFile);
-//        int frameNum;
-//        QString fileName;
-//        while (!vtiStream.atEnd())
-//        {
-//          vtiStream >> frameNum >> fileName;
-//          std::string fileNamestr = vtiBasePath.toStdString() + QDir::separator().toAscii() +fileName.toStdString();
-//          fileName = QString::fromStdString(fileNamestr);
-//          if (!DMvti.contains(frameNum))
-//          {
-//            DMvti.insert(frameNum,fileName);
-//            std::cout << "filename = " << fileName.toStdString() <<std::endl;
-//          }
-//        }
-//      }
-//      vtiFile.close();
-//    }
 
     //Read volume file
     if (config->has_value("volume_file"))
     {
       this->volumePath = getPath(config, base, "volume_file");
-      this->volumeKRTD = getPath(config, base, "volume_krtd_file");
-      this->volumeDepthmaps  = getPath(config, base, "volume_depthmaps_file");
+      this->volumeKRTD = getPath(config, base, "output_krtd_dir");
+      this->volumeDepthmaps  = getPath(config, base, "image_list_file");
+      this->volumeVtiFile = getPath(config, base, "image_list_file");
     }
 
-    if (config->has_value("volume_krtd_file"))
+    if (config->has_value("output_krtd_dir"))
     {
-      this->volumeKrtdFile = getPath(config, base, "volume_krtd_file");
+      this->volumeKrtdFile = getPath(config, base, "output_krtd_dir");
     }
 
-    if (config->has_value("volume_depthmaps_file"))
-    {
-      this->volumeVtiFile = getPath(config, base, "volume_depthmaps_file");
-    }
 
     return true;
   }
