@@ -58,6 +58,8 @@ public:
   bool UnprojectPoint(double point[2], double depth,
                       kwiver::vital::vector_3d *unProjectedPoint);
 
+  void scaleK(float factor);
+
   // Description:
   // Update self (the VTK camera) based on the maptk camera and
   // ImageDimensions, if set

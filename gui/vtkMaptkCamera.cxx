@@ -136,8 +136,23 @@ bool vtkMaptkCamera::UnprojectPoint(double pixel[2], double depth,
 
   *unProjectedPoint = R.transpose() * ((KtriangularView.solve(homogenousPoint)) - T);
 
-
   return true;
+}
+
+void vtkMaptkCamera::scaleK(float factor)
+{
+  auto K = this->MaptkCamera->intrinsics()->as_matrix();
+  K(0,0) *= factor;
+  K(0,1) *= factor;
+  K(0,2) = (K(0,2) + 0.5)*factor - 0.5;
+  K(1,1) *= factor;
+  K(1,2) = (K(1,2) + 0.5)*factor - 0.5;
+
+  kwiver::vital::simple_camera_intrinsics newIntrinsics(K);
+
+  kwiver::vital::simple_camera scaledCamera(this->MaptkCamera->center(),
+                                       this->MaptkCamera->rotation(),newIntrinsics);
+  SetCamera(scaledCamera.clone());
 }
 
 //-----------------------------------------------------------------------------
