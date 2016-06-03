@@ -43,7 +43,7 @@ class MeshColoration
 {
 public:
   MeshColoration();
-  MeshColoration(vtkPolyData* mesh, std::string vtiList, std::string krtdList);
+  MeshColoration(vtkPolyData* mesh, std::string frameList, std::string krtdList);
   ~MeshColoration();
 
   // SETTER
@@ -62,7 +62,7 @@ protected:
   vtkPolyData* OutputMesh;
   int Sampling;
   std::vector<ReconstructionData*> DataList;
-  std::vector<std::string> vtiList;
+  std::vector<std::string> frameList;
   std::vector<std::string> krtdList;
 };
 

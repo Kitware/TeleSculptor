@@ -42,7 +42,7 @@
 #include "vtkSmartPointer.h"
 #include "vtkTransform.h"
 #include "vtkUnsignedCharArray.h"
-#include "vtkXMLImageDataReader.h"
+#include "vtkPNGReader.h"
 
 
 ReconstructionData::ReconstructionData()
@@ -92,7 +92,7 @@ ReconstructionData::~ReconstructionData()
 void ReconstructionData::GetColorValue(int* pixelPosition, double rgb[3])
 {
   vtkUnsignedCharArray* color =
-    vtkUnsignedCharArray::SafeDownCast(this->DepthMap->GetPointData()->GetArray("Color"));
+    vtkUnsignedCharArray::SafeDownCast(this->DepthMap->GetPointData()->GetArray("PNGImage"));
 
   if (color == nullptr)
     {
@@ -236,7 +236,7 @@ void ReconstructionData::SetMatrixRT(vtkMatrix4x4* matrix)
 
 void ReconstructionData::ReadDepthMap(std::string path, vtkImageData* out)
 {
-  vtkSmartPointer<vtkXMLImageDataReader> depthMapReader = vtkSmartPointer<vtkXMLImageDataReader>::New();
+  vtkSmartPointer<vtkPNGReader> depthMapReader = vtkSmartPointer<vtkPNGReader>::New();
   depthMapReader->SetFileName(path.c_str());
   depthMapReader->Update();
   out->ShallowCopy(depthMapReader->GetOutput());

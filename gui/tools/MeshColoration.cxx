@@ -51,15 +51,15 @@ MeshColoration::MeshColoration()
   this->Sampling = 1;
 }
 
-MeshColoration::MeshColoration(vtkPolyData* mesh, std::string vti, std::string krtd)
+MeshColoration::MeshColoration(vtkPolyData* mesh, std::string frameList, std::string krtd)
   :MeshColoration()
 {
   //this->OutputMesh = vtkPolyData::New();
   //this->OutputMesh->DeepCopy(mesh);
 
-  vtiList = help::ExtractAllFilePath(vti.c_str());
+  this->frameList = help::ExtractAllFilePath(frameList.c_str());
   krtdList = help::ExtractAllFilePath(krtd.c_str());
-  if (krtdList.size() < vtiList.size())
+  if (krtdList.size() < frameList.size())
     {
     std::cerr << "Error, not enough krtd file for each vti file" << std::endl;
     return;
@@ -82,8 +82,6 @@ void MeshColoration::SetInput(vtkPolyData* mesh)
 {
   if (this->OutputMesh != nullptr)
     this->OutputMesh->Delete();
-  //this->OutputMesh = vtkPolyData::New();
-  //this->OutputMesh->DeepCopy(mesh);
   this->OutputMesh = mesh;
 }
 
@@ -216,7 +214,7 @@ bool MeshColoration::ProcessColoration(std::string currentVtiPath)
 
 void MeshColoration::initializeDataList(std::string currentVtiPath)
 {
-    int nbDepthMap = (int)vtiList.size();
+    int nbDepthMap = (int)frameList.size();
 
   //Take a subset of depthmap
   if (currentVtiPath == "")
@@ -225,7 +223,7 @@ void MeshColoration::initializeDataList(std::string currentVtiPath)
     {
       if (id%Sampling == 0)
       {
-        ReconstructionData* data = new ReconstructionData(vtiList[id], krtdList[id]);
+        ReconstructionData* data = new ReconstructionData(frameList[id], krtdList[id]);
         this->DataList.push_back(data);
       }
     }
@@ -236,10 +234,10 @@ void MeshColoration::initializeDataList(std::string currentVtiPath)
     std::string currentDepthmapName = currentVtiPath.substr(currentVtiPath.find_last_of("/"));
     for (int id = 0; id < nbDepthMap; id++)
     {
-      std::string depthmapName = vtiList[id].substr(vtiList[id].find_last_of("/"));
+      std::string depthmapName = frameList[id].substr(frameList[id].find_last_of("/"));
       if (currentDepthmapName == depthmapName)
       {
-        ReconstructionData* data = new ReconstructionData(vtiList[id], krtdList[id]);
+        ReconstructionData* data = new ReconstructionData(frameList[id], krtdList[id]);
         this->DataList.push_back(data);
         break;
       }

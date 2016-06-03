@@ -435,7 +435,7 @@ void MainWindowPrivate::setActiveCamera(int id)
   {
     UI.worldView->setActiveDepthMap(this->cameras[id].camera,this->cameras[id].vtiPath);
 
-    UI.worldView->setVolumeCurrentDepthmapPath(this->cameras[id].vtiPath);
+    UI.worldView->setVolumeCurrentDepthmapPath(this->cameras[id].imagePath);
 
     UI.dMView->setDepthMap(this->cameras[id].vtiPath);
   }
