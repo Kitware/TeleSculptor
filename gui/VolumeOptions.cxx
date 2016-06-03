@@ -169,6 +169,7 @@ void VolumeOptions::showColorizeSurfaceMenu(bool state)
   QTE_D();
 
   d->UI.toolButtonColorizeSurfaceMenu->setEnabled(state);
+  d->colorizeSurfaceOptions->enableMenu(state);
 }
 
 //-----------------------------------------------------------------------------

@@ -16,6 +16,9 @@
   <layout class="QFormLayout" name="formLayout">
    <item row="0" column="0">
     <widget class="QRadioButton" name="radioButtonCurrentFrame">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="text">
       <string>Current frame</string>
      </property>
@@ -29,6 +32,9 @@
    </item>
    <item row="1" column="0">
     <widget class="QRadioButton" name="radioButtonAllFrames">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="text">
       <string>All frames</string>
      </property>

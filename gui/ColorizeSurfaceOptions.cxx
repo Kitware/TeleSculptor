@@ -122,7 +122,7 @@ void ColorizeSurfaceOptions::setCurrentDepthmapPath(std::string path)
   {
     d->currentVtiPath = path;
 //    colorize();
-    if (d->UI.radioButtonCurrentFrame->isChecked())
+    if (d->UI.radioButtonCurrentFrame->isChecked() && d->UI.radioButtonCurrentFrame->isEnabled())
     {
       currentFrameSelected();
     }
@@ -151,6 +151,14 @@ void ColorizeSurfaceOptions::setVtiFile(QString file)
   QTE_D();
 
   d->vtiFile = file;
+}
+
+void ColorizeSurfaceOptions::enableMenu(bool state)
+{
+  QTE_D();
+
+  d->UI.radioButtonAllFrames->setEnabled(state);
+  d->UI.radioButtonCurrentFrame->setEnabled(state);
 }
 
 void ColorizeSurfaceOptions::changeColorDisplay()

@@ -57,6 +57,7 @@ public:
   void setActor(vtkActor* actor);
   void setKrtdFile(QString file);
   void setVtiFile(QString file);
+  void enableMenu(bool);
 
 signals:
   void colorModeChanged(QString);
