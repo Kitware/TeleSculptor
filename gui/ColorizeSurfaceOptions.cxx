@@ -182,6 +182,7 @@ void ColorizeSurfaceOptions::colorize()
 
     std::string name;
     int nbArray = volume->GetPointData()->GetNumberOfArrays();
+    d->UI.comboBoxColorDisplay->clear();
     for (int i = 0; i < nbArray; ++i)
     {
       name = volume->GetPointData()->GetArrayName(i);
@@ -193,6 +194,7 @@ void ColorizeSurfaceOptions::colorize()
 
   }
 
+  d->UI.comboBoxColorDisplay->setEnabled(true);
   emit colorModeChanged(d->UI.buttonGroup->checkedButton()->text());
   emit(meshColorizedInColorizeSurfaceOption());
 }
@@ -203,7 +205,6 @@ void ColorizeSurfaceOptions::enableAllFramesParameters(bool state)
   QTE_D();
 
   d->UI.buttonCompute->setEnabled(state);
-  d->UI.comboBoxColorDisplay->setEnabled(state);
   d->UI.spinBoxFrameSampling->setEnabled(state);
 }
 
