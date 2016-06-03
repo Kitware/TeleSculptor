@@ -621,8 +621,6 @@ void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, QString vtiPath) {
 
     d->renderer->AddActor(d->cubeAxesActor.Get());
     d->cubeAxesActor->SetVisibility(d->depthMapOptions->isBBoxChecked());
-    d->renderer->GetActiveCamera()->Azimuth(30);
-    d->renderer->GetActiveCamera()->Elevation(30);
 
     //initializing the filters
     double bcRange[2], urRange[2];
