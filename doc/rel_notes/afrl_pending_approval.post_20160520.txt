@@ -1,0 +1,21 @@
+MAPTK Release Notes for changes pending release approval by AFRL
+================================================================
+
+This file documents release notes for changes made to MAP-Tk which require
+public release approval from AFRL.  After approval, the changes and
+corresponding notes below will be incorporated into a public numbered
+release version, and the content of this file will be reset.
+
+
+Updates since last public release
+---------------------------------
+
+Core Plugin
+
+ * Added an option to the PCA canonical transform estimator to shift the ground
+   plane vertically to place a configurable percentile of the landmarks above
+   the ground.
+
+
+Fixes since last public release
+-------------------------------
