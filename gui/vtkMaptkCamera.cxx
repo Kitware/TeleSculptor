@@ -156,6 +156,19 @@ void vtkMaptkCamera::scaleK(float factor)
 }
 
 //-----------------------------------------------------------------------------
+vtkMaptkCamera *vtkMaptkCamera::scaledK(float factor)
+{
+  vtkMaptkCamera* newCam = new vtkMaptkCamera();
+  newCam->DeepCopy(this);
+
+  newCam->scaleK(factor);
+
+  return newCam;
+}
+
+
+
+//-----------------------------------------------------------------------------
 bool vtkMaptkCamera::Update()
 {
   auto const& ci = this->MaptkCamera->intrinsics();
