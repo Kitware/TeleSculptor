@@ -300,6 +300,8 @@ void DepthMapView::setDepthMap(QString imagePath)
 
     d->renderer->AddViewProp(d->polyDataActor.GetPointer());
 
+    d->renderer->ResetCamera(readerIm->GetOutput()->GetBounds());
+
     d->UI.renderWidget->update();
 
   }
