@@ -62,6 +62,9 @@
 #include <vtkXMLPolyDataReader.h>
 #include <vtkXMLImageDataReader.h>
 #include <vtkActor.h>
+#include <vtkThreshold.h>
+#include <vtkGeometryFilter.h>
+
 
 #include "DepthMapViewOptions.h"
 
@@ -94,6 +97,8 @@ public:
   virtual ~ActorColorOption();
 
   void setDefaultColor(QColor const&);
+
+
 
   ActorColorButton* const button;
   qtUiState uiState;
@@ -154,6 +159,8 @@ public:
 
   DepthMapViewOptions* depthMapViewOptions;
 
+  vtkSmartPointer<vtkPolyData> currentDepthmap;
+
   double imageBounds[6];
 
   void setPopup(QAction* action, QMenu* menu);
@@ -208,6 +215,8 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   d->depthMapViewOptions = new DepthMapViewOptions("DepthmapView/DepthmapOptions", this);
   d->setPopup(d->UI.actionDisplayMode, d->depthMapViewOptions);
 
+  d->currentDepthmap = vtkSmartPointer<vtkPolyData>::New();
+
   // Connect actions
   connect(d->depthMapViewOptions, SIGNAL(modified()),
                d->UI.renderWidget, SLOT(update()));
@@ -223,12 +232,38 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   d->renderer->SetBackground(0.5, 0.5, 0.5);
   d->renderWindow->AddRenderer(d->renderer.GetPointer());
   d->UI.renderWidget->SetRenderWindow(d->renderWindow.GetPointer());
-//  d->UI.renderWidget->update();
 
   // Set interactor
   vtkNew<vtkInteractorStyleRubberBand2D> is;
   d->renderWindow->GetInteractor()->SetInteractorStyle(is.GetPointer());
 
+}
+
+void DepthMapView::updateDepthMapThresholds(double bcMin,double bcMax,double urMin,double urMax)
+{
+
+  QTE_D();
+
+  double bestCostValueMin = bcMin;
+  double bestCostValueMax = bcMax;
+  double uniquenessRatioMin = urMin;
+  double uniquenessRatioMax = urMax;
+
+  vtkNew<vtkThreshold> thresholdBestCostValues, thresholdUniquenessRatios;
+
+  thresholdBestCostValues->SetInputData(d->currentDepthmap.Get());
+
+  thresholdBestCostValues->SetInputArrayToProcess(0,0,0,vtkDataObject::FIELD_ASSOCIATION_POINTS,"Best Cost Values");
+  thresholdBestCostValues->ThresholdBetween(bestCostValueMin,bestCostValueMax);
+
+  thresholdUniquenessRatios->SetInputConnection(thresholdBestCostValues->GetOutputPort());
+  thresholdUniquenessRatios->SetInputArrayToProcess(0,0,0,vtkDataObject::FIELD_ASSOCIATION_POINTS,"Uniqueness Ratios");
+  thresholdUniquenessRatios->ThresholdBetween(uniquenessRatioMin,uniquenessRatioMax);
+
+  vtkNew<vtkGeometryFilter> geometryFilter;
+  geometryFilter->SetInputConnection(thresholdUniquenessRatios->GetOutputPort());
+  d->polyDataActor->GetMapper()->SetInputConnection(geometryFilter->GetOutputPort());
+  d->polyDataActor->GetMapper()->Update();
 }
 
 //-----------------------------------------------------------------------------
@@ -249,18 +284,21 @@ void DepthMapView::setDepthMap(QString imagePath)
     readerIm->SetFileName(imagePath.toStdString().c_str());
     readerIm->Update();
 
-      //Generating action buttons for each array in the imagedata
+    vtkNew<vtkGeometryFilter> geometryFilterIm;
+    geometryFilterIm->SetInputData(readerIm->GetOutput());
+    geometryFilterIm->Update();
 
     d->UI.toolBar->update();
 
-    d->imageActor->SetInputData(readerIm->GetOutput());
+    d->currentDepthmap = geometryFilterIm->GetOutput();
 
-    d->imageActor->SetVisibility(true);
-    d->renderer->AddActor(d->imageActor.Get());
+    vtkNew<vtkPolyDataMapper> mapperP;
+    mapperP->SetInputData(geometryFilterIm->GetOutput());
+    d->polyDataActor->SetMapper(mapperP.Get());
 
-    d->depthMapViewOptions->addActor(d->imageActor.Get());
+    d->depthMapViewOptions->addPolyData(d->polyDataActor.Get());
 
-    d->renderer->AddViewProp(d->imageActor.GetPointer());
+    d->renderer->AddViewProp(d->polyDataActor.GetPointer());
 
     d->UI.renderWidget->update();
 

@@ -72,6 +72,7 @@ signals:
   void activeDepthMapChanged(int);
   void meshEnabled(bool);
   void coloredMeshEnabled(bool);
+  void updateThresholds(double,double,double,double);
 
 public slots:
   void setBackgroundColor(QColor const&);

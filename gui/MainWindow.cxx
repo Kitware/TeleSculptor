@@ -433,11 +433,12 @@ void MainWindowPrivate::setActiveCamera(int id)
 
   if (cd.camera != NULL)
   {
+    UI.dMView->setDepthMap(this->cameras[id].vtiPath);
+
     UI.worldView->setActiveDepthMap(this->cameras[id].camera,this->cameras[id].vtiPath);
 
     UI.worldView->setVolumeCurrentDepthmapPath(this->cameras[id].imagePath);
 
-    UI.dMView->setDepthMap(this->cameras[id].vtiPath);
   }
 }
 
@@ -657,6 +658,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   connect(d->UI.worldView, SIGNAL(coloredMeshEnabled(bool)),
           this, SLOT(enableSaveColoredMesh(bool)));
+  connect(d->UI.worldView, SIGNAL(updateThresholds(double,double,double,double)),
+          this, SLOT(updateThresholdsDepthmapView(double,double,double,double)));
 
   this->setSlideDelay(d->UI.slideDelay->value());
 
@@ -1016,6 +1019,13 @@ void MainWindow::enableSaveColoredMesh(bool state)
   QTE_D();
 
   d->UI.actionExportColoredMesh->setEnabled(state);
+}
+
+void MainWindow::updateThresholdsDepthmapView(double bcMin, double bcMax, double urMin, double urMax)
+{
+  QTE_D();
+
+  d->UI.dMView->updateDepthMapThresholds(bcMin,bcMax,urMin,urMax);
 }
 
 //-----------------------------------------------------------------------------

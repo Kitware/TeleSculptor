@@ -71,6 +71,8 @@ public slots:
   void enableSaveMesh(bool state);
   void enableSaveColoredMesh(bool state);
 
+  void updateThresholdsDepthmapView(double bcMin,double bcMax,double urMin,double urMax);
+
   void saveMesh();
   void saveVolume();
   void saveColoredMesh();
