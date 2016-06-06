@@ -60,6 +60,8 @@ public:
 
   void scaleK(float factor);
 
+  vtkMaptkCamera* scaledK(float factor);
+
   // Description:
   // Update self (the VTK camera) based on the maptk camera and
   // ImageDimensions, if set

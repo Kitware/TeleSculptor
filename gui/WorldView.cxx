@@ -548,7 +548,8 @@ void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, QString vtiPath) {
     points->SetNumberOfPoints(width*height);
 
     double dmToImageRatio = camera->GetImageDimensions()[0]/width;
-    camera->scaleK(dmToImageRatio);
+//    camera->scaleK(dmToImageRatio);
+    vtkMaptkCamera* scaledCam = camera->scaledK(dmToImageRatio);
 
     double pixel[3];
     for (vtkIdType idPixel = 0; idPixel < readerIm->GetOutput()->GetNumberOfPoints(); ++idPixel) {
@@ -558,7 +559,7 @@ void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, QString vtiPath) {
       kwiver::vital::vector_3d p;
       double depth = readerIm->GetOutput()->GetPointData()->GetArray("Depths")->GetTuple1(idPixel);
 
-      camera->UnprojectPoint(pixel, depth, &p);
+      scaledCam->UnprojectPoint(pixel, depth, &p);
 
       points->SetPoint(idPixel,p[0],p[1],p[2]);
 
