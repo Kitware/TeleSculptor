@@ -31,6 +31,7 @@
 #include "ReconstructionData.h"
 
 #include <sstream>
+#include <cmath>
 
 // VTK includes
 #include "vtkDoubleArray.h"
