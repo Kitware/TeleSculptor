@@ -166,18 +166,31 @@ void DepthMapViewOptions::switchDisplayMode(bool checked)
   if (checked)
   {
     std::string buttonId = bGroup->checkedButton()->text().toStdString();
-    std::cout << "buttonId = " << buttonId <<std::endl;
 
     //Displaying the scalar array associated with the checked radio button
-    if (d->polyDataActor->GetMapper()->GetInput()->GetPointData()->GetArray(buttonId.c_str())->GetNumberOfComponents() < 3)
+    vtkDataArray* activeArray = d->polyDataActor->GetMapper()->GetInput()->GetPointData()->GetArray(buttonId.c_str());
+    d->polyDataActor->GetMapper()->GetInput()->GetPointData()->SetActiveScalars(buttonId.c_str());
+
+ d->polyDataActor->GetMapper()->SetScalarModeToUsePointData();
+    int numberOfComponents = activeArray->GetNumberOfComponents();
+
+    if (numberOfComponents < 3)
     {
+      d->polyDataActor->GetMapper()->SetColorModeToMapScalars();
       DataColorOptions *dc = d->dcOptions.at(buttonId);
 
+      double range[2];
+      activeArray->GetRange(range);
       d->polyDataActor->GetMapper()->SetLookupTable(dc->scalarsToColors());
+      d->polyDataActor->GetMapper()->GetLookupTable()->SetRange(range);
+      d->polyDataActor->GetMapper()->UseLookupTableScalarRangeOn();
+    }
+    else
+    {
+      d->polyDataActor->GetMapper()->SetColorModeToDirectScalars();
+      d->polyDataActor->GetMapper()->CreateDefaultLookupTable();
     }
 
-    d->polyDataActor->GetMapper()->GetInput()->GetPointData()->SetScalars(d->polyDataActor->GetMapper()->GetInput()->GetPointData()->GetArray(buttonId.c_str()));
-    d->polyDataActor->GetMapper()->SetColorModeToDirectScalars();
     d->polyDataActor->GetMapper()->Update();
     emit this->modified();
   }
@@ -207,7 +220,7 @@ void DepthMapViewOptions::addPolyData(vtkActor *polyDataActor)
     addDepthMapMode(d->polyDataActor->GetMapper()->GetInput()->GetPointData()->GetArrayName(i),needGradient);
   }
 
-  bGroup->buttons()[1]->setChecked(true);
+  bGroup->buttons()[0]->setChecked(true);
 
 
 }
