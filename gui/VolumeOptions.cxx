@@ -123,13 +123,6 @@ VolumeOptions::~VolumeOptions()
 }
 
 //-----------------------------------------------------------------------------
-void VolumeOptions::setVolume(vtkPolyData* mesh, std::string vtiList, std::string krtdList)
-{
-  QTE_D();
-
-
-}
-
 void VolumeOptions::setActor(vtkActor *actor)
 {
   QTE_D();
@@ -148,19 +141,20 @@ void VolumeOptions::initFrameSampling(int nbFrames)
 }
 
 //-----------------------------------------------------------------------------
-void VolumeOptions::setKrtdVtiFile(QString krtd, QString vti)
+void VolumeOptions::setKrtdFrameFile(QString krtd, QString frame)
 {
   QTE_D();
 
   d->colorizeSurfaceOptions->setKrtdFile(krtd);
-  d->colorizeSurfaceOptions->setVtiFile(vti);
+  d->colorizeSurfaceOptions->setFrameFile(frame);
 }
 
-void VolumeOptions::setCurrentDepthmapPath(std::string path)
+//-----------------------------------------------------------------------------
+void VolumeOptions::setCurrentFramePath(std::string path)
 {
   QTE_D();
 
-  d->colorizeSurfaceOptions->setCurrentDepthmapPath(path);
+  d->colorizeSurfaceOptions->setCurrentFramePath(path);
 }
 
 //-----------------------------------------------------------------------------

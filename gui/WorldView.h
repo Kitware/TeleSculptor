@@ -64,7 +64,7 @@ public:
   void setActiveDepthMap(vtkMaptkCamera *cam, QString vtiPath);
   void enableDepthMap();
 
-  void loadVolume(QString path, int nbFrames, QString krtd, QString vti);
+  void loadVolume(QString path, int nbFrames, QString krtd, QString frame);
 
 
 signals:
@@ -91,7 +91,7 @@ public slots:
   void setGridVisible();
 
   void setVolumeVisible(bool);
-  void setVolumeCurrentDepthmapPath(QString path);
+  void setVolumeCurrentFramePath(QString path);
 
   void setPerspective(bool);
 
@@ -110,13 +110,8 @@ public slots:
   void saveVolume(QString const& path);
   void saveColoredMesh(QString const& path);
 
- //void setActiveDepthMap(vtkMaptkCamera *cam, QString vtiPath);
-
-  //void enableDepthMap(std::string type);
-  //void updateDepthMap();
   void updateDepthMapRepresentation();
   void updateDepthMapThresholds();
-
 
   void computeContour(double threshold);
 
@@ -129,8 +124,6 @@ public slots:
 
 private:
 
-  vtkMaptkCamera* currentCam;
-  QString currentVtiPath;
   QTE_DECLARE_PRIVATE_RPTR(WorldView)
   QTE_DECLARE_PRIVATE(WorldView)
 

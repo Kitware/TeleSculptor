@@ -52,11 +52,12 @@ public:
 
   void initFrameSampling(int nbFrames);
 
-  void setCurrentDepthmapPath(std::string path);
+  void setCurrentFramePath(std::string path);
 
   void setActor(vtkActor* actor);
   void setKrtdFile(QString file);
-  void setVtiFile(QString file);
+  void setFrameFile(QString file);
+
   void enableMenu(bool);
 
 signals:
@@ -70,7 +71,6 @@ public slots:
   void enableAllFramesParameters(bool);
   void allFrameSelected();
   void currentFrameSelected();
-//  void updateCurrentFrameNumber(int);
 
 private:
 

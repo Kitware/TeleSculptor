@@ -55,9 +55,9 @@ public:
   vtkActor* volumeActor;
 
   QString krtdFile;
-  QString vtiFile;
+  QString frameFile;
 
-  std::string currentVtiPath;
+  std::string currentFramePath;
 };
 
 QTE_IMPLEMENT_D_FUNC(ColorizeSurfaceOptions)
@@ -93,7 +93,7 @@ ColorizeSurfaceOptions::ColorizeSurfaceOptions(const QString &settingsGroup, QWi
     this, SLOT(changeColorDisplay()));
 
   d->krtdFile = QString();
-  d->vtiFile = QString();
+  d->frameFile = QString();
 
   d->UI.comboBoxColorDisplay->setDuplicatesEnabled(false);
 }
@@ -114,14 +114,14 @@ void ColorizeSurfaceOptions::initFrameSampling(int nbFrames)
   d->UI.spinBoxFrameSampling->setValue((nbFrames-1)/20);
 }
 
-void ColorizeSurfaceOptions::setCurrentDepthmapPath(std::string path)
+void ColorizeSurfaceOptions::setCurrentFramePath(std::string path)
 {
   QTE_D();
 
-  if (d->currentVtiPath != path)
+  if (d->currentFramePath != path)
   {
-    d->currentVtiPath = path;
-//    colorize();
+    d->currentFramePath = path;
+
     if (d->UI.radioButtonCurrentFrame->isChecked() && d->UI.radioButtonCurrentFrame->isEnabled())
     {
       currentFrameSelected();
@@ -146,13 +146,14 @@ void ColorizeSurfaceOptions::setKrtdFile(QString file)
 }
 
 //-----------------------------------------------------------------------------
-void ColorizeSurfaceOptions::setVtiFile(QString file)
+void ColorizeSurfaceOptions::setFrameFile(QString file)
 {
   QTE_D();
 
-  d->vtiFile = file;
+  d->frameFile = file;
 }
 
+//-----------------------------------------------------------------------------
 void ColorizeSurfaceOptions::enableMenu(bool state)
 {
   QTE_D();
@@ -161,10 +162,13 @@ void ColorizeSurfaceOptions::enableMenu(bool state)
   d->UI.radioButtonCurrentFrame->setEnabled(state);
 }
 
+//-----------------------------------------------------------------------------
 void ColorizeSurfaceOptions::changeColorDisplay()
 {
   QTE_D();
+
   vtkPolyData* volume = vtkPolyData::SafeDownCast(d->volumeActor->GetMapper()->GetInput());
+
   volume->GetPointData()->SetActiveScalars(d->UI.comboBoxColorDisplay->currentText().toStdString().c_str());
 }
 
@@ -172,16 +176,18 @@ void ColorizeSurfaceOptions::changeColorDisplay()
 void ColorizeSurfaceOptions::colorize()
 {
   QTE_D();
-  if (/*d->UI.comboBoxColorDisplay->isEnabled() &&*/ !d->vtiFile.isEmpty() && !d->krtdFile.isEmpty())
+
+  if (!d->frameFile.isEmpty() && !d->krtdFile.isEmpty())
   {
     vtkPolyData* volume = vtkPolyData::SafeDownCast(d->volumeActor->GetMapper()->GetInput());
-    MeshColoration* coloration = new MeshColoration(volume, d->vtiFile.toStdString(), d->krtdFile.toStdString());
+    MeshColoration* coloration = new MeshColoration(volume, d->frameFile.toStdString(), d->krtdFile.toStdString());
+
     coloration->SetInput(volume);
     coloration->SetFrameSampling(d->UI.spinBoxFrameSampling->value());
+
     if(d->UI.radioButtonCurrentFrame->isChecked())
     {
-      std::cout << "radioButtonCurrentFrame->isChecked()" << d->UI.radioButtonCurrentFrame->isChecked() <<std::endl;
-      coloration->ProcessColoration(d->currentVtiPath);
+      coloration->ProcessColoration(d->currentFramePath);
     }
     else
     {
@@ -190,7 +196,9 @@ void ColorizeSurfaceOptions::colorize()
 
     std::string name;
     int nbArray = volume->GetPointData()->GetNumberOfArrays();
+
     d->UI.comboBoxColorDisplay->clear();
+
     for (int i = 0; i < nbArray; ++i)
     {
       name = volume->GetPointData()->GetArrayName(i);
@@ -198,11 +206,10 @@ void ColorizeSurfaceOptions::colorize()
     }
 
     volume->GetPointData()->SetActiveScalars("MeanColoration");
-
-
   }
 
   d->UI.comboBoxColorDisplay->setEnabled(true);
+
   emit colorModeChanged(d->UI.buttonGroup->checkedButton()->text());
   emit(meshColorizedInColorizeSurfaceOption());
 }
@@ -226,18 +233,11 @@ void ColorizeSurfaceOptions::allFrameSelected()
 void ColorizeSurfaceOptions::currentFrameSelected()
 {
   QTE_D();
+
   enableAllFramesParameters(false);
-  std::cout << "currentVtiPath = " << d->currentVtiPath << std::endl;
-  if (!d->currentVtiPath.empty()) {
+
+  if (!d->currentFramePath.empty())
+  {
     colorize();
   }
 }
-
-//-----------------------------------------------------------------------------
-//void ColorizeSurfaceOptions::updateCurrentFrameNumber(int idFrame)
-//{
-//  QTE_D();
-
-//  d->currentFrameID = idFrame;
-//  qDebug() << idFrame;
-//}

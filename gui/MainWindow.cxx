@@ -437,7 +437,7 @@ void MainWindowPrivate::setActiveCamera(int id)
 
     UI.worldView->setActiveDepthMap(this->cameras[id].camera,this->cameras[id].vtiPath);
 
-    UI.worldView->setVolumeCurrentDepthmapPath(this->cameras[id].imagePath);
+    UI.worldView->setVolumeCurrentFramePath(this->cameras[id].imagePath);
 
   }
 }
@@ -758,24 +758,6 @@ void MainWindow::openFiles(QStringList const& paths)
     this->openFile(path);
   }
 }
-
-//void MainWindow::openFileDM(const QString &path, std::string type) {
-//  QTE_D();
-
-//  if(type == "vtp" || type == "vts" || type == "vert") {
-//    d->UI.worldView->addDepthMaps(path,type);
-//  }
-//  if (type == "vti") {
-//    d->UI.dMView->addDepthMaps(path);
-//  }
-//}
-
-//void MainWindow::openFileDMS(const QString &path) {
-//  QTE_D();
-
-//    d->UI.worldView->addDepthMapsSG(path);
-
-//}
 
 //-----------------------------------------------------------------------------
 void MainWindow::loadProject(QString const& path)
@@ -1294,12 +1276,12 @@ void MainWindow::acceptToolResults()
   d->setActiveTool(0);
 }
 
-void MainWindow::updateDepthMap()
-{
-  QTE_D();
+//void MainWindow::updateDepthMap()
+//{
+//  QTE_D();
 
-  d->UI.worldView->setDepthMapVisible(true);
-}
+//  d->UI.worldView->setDepthMapVisible(true);
+//}
 
 //-----------------------------------------------------------------------------
 void MainWindow::showMatchMatrix()

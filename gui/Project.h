@@ -50,10 +50,7 @@ struct Project
   QString volumeVtiFile;
 
   QString tracks;
-  QString landmarks;/*
-  QMap<int, QString> DMvtp;
-  QMap<int, QString> DMvts;
-  QMap<int, QString> DMvti;*/
+  QString landmarks;
 };
 
 #endif

@@ -120,6 +120,7 @@ bool vtkMaptkCamera::ProjectPoint(kwiver::vital::vector_3d const& in,
   * camera center and the 3D point but the distance between the projection of
   * the 3D point on the optical axis and the optical center.
 */
+
 //-----------------------------------------------------------------------------
 bool vtkMaptkCamera::UnprojectPoint(double pixel[2], double depth,
                                     kwiver::vital::vector_3d *unProjectedPoint)
@@ -139,6 +140,7 @@ bool vtkMaptkCamera::UnprojectPoint(double pixel[2], double depth,
   return true;
 }
 
+//-----------------------------------------------------------------------------
 void vtkMaptkCamera::scaleK(float factor)
 {
   auto K = this->MaptkCamera->intrinsics()->as_matrix();

@@ -50,13 +50,12 @@ public:
       QWidget* parent = 0, Qt::WindowFlags flags = 0);
   virtual ~VolumeOptions();
 
-  void setVolume(vtkPolyData *mesh, std::string vtiList, std::string krtdList);
   void setActor(vtkActor* actor);
 
   void initFrameSampling(int nbFrames);
-  void setKrtdVtiFile(QString krtd, QString vti);
+  void setKrtdFrameFile(QString krtd, QString frame);
 
-  void setCurrentDepthmapPath(std::string path);
+  void setCurrentFramePath(std::string path);
 
 signals:
   void meshIsColorizedFromColorizeSurfaceOption();

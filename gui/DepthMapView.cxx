@@ -78,63 +78,6 @@
 
 QTE_IMPLEMENT_D_FUNC(DepthMapView)
 
-///////////////////////////////////////////////////////////////////////////////
-
-//BEGIN miscelaneous helpers
-
-namespace // anonymous
-{
-
-static char const* const TrueColor = "truecolor";
-static char const* const Elevation = "elevation";
-static char const* const Observations = "observations";
-
-//-----------------------------------------------------------------------------
-class ActorColorOption : public QWidget
-{
-public:
-  ActorColorOption(QString const& settingsGroup, QWidget* parent);
-  virtual ~ActorColorOption();
-
-  void setDefaultColor(QColor const&);
-
-
-
-  ActorColorButton* const button;
-  qtUiState uiState;
-};
-
-//-----------------------------------------------------------------------------
-ActorColorOption::ActorColorOption(
-  QString const& settingsGroup, QWidget* parent)
-  : QWidget(parent), button(new ActorColorButton(this))
-{
-  auto const layout = new QFormLayout(this);
-  layout->addRow("Color", this->button);
-
-  this->button->persist(this->uiState, settingsGroup + "/Color");
-  this->uiState.restore();
-}
-
-//-----------------------------------------------------------------------------
-ActorColorOption::~ActorColorOption()
-{
-  this->uiState.save();
-}
-
-//-----------------------------------------------------------------------------
-void ActorColorOption::setDefaultColor(QColor const& color)
-{
-  this->button->setColor(color);
-  this->uiState.restore();
-}
-
-} // namespace <anonymous>
-
-//END miscelaneous helpers
-
-///////////////////////////////////////////////////////////////////////////////
-
 //BEGIN DepthMapViewPrivate definition
 
 //-----------------------------------------------------------------------------
@@ -153,20 +96,17 @@ public:
   vtkNew<vtkActor> polyDataActor;
   vtkNew<vtkImageData> imageDM;
 
-  vtkNew<vtkMaptkFeatureTrackRepresentation> featureRep;
-
   std::map<int, std::string> dMList;
 
   DepthMapViewOptions* depthMapViewOptions;
 
   vtkSmartPointer<vtkPolyData> currentDepthmap;
 
-  double imageBounds[6];
-
   void setPopup(QAction* action, QMenu* menu);
   void setPopup(QAction* action, QWidget* widget);
 
 };
+
 //-----------------------------------------------------------------------------
 void DepthMapViewPrivate::setPopup(QAction* action, QMenu* menu)
 {
@@ -238,7 +178,7 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   d->renderWindow->GetInteractor()->SetInteractorStyle(is.GetPointer());
 
 }
-
+//-----------------------------------------------------------------------------
 void DepthMapView::updateDepthMapThresholds(double bcMin,double bcMax,double urMin,double urMax)
 {
 
@@ -261,7 +201,9 @@ void DepthMapView::updateDepthMapThresholds(double bcMin,double bcMax,double urM
   thresholdUniquenessRatios->ThresholdBetween(uniquenessRatioMin,uniquenessRatioMax);
 
   vtkNew<vtkGeometryFilter> geometryFilter;
+
   geometryFilter->SetInputConnection(thresholdUniquenessRatios->GetOutputPort());
+
   d->polyDataActor->GetMapper()->SetInputConnection(geometryFilter->GetOutputPort());
   d->polyDataActor->GetMapper()->Update();
 }
@@ -271,6 +213,7 @@ DepthMapView::~DepthMapView()
 {
 }
 
+//-----------------------------------------------------------------------------
 void DepthMapView::setDepthMap(QString imagePath)
 {
   QTE_D();

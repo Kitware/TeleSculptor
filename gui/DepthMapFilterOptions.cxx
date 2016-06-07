@@ -68,19 +68,8 @@ DepthMapFilterOptions::DepthMapFilterOptions(const QString &settingsGroup, QWidg
   connect(d->UI.pushButtonApply, SIGNAL(pressed()),
           this, SLOT(updateFilters()));
 
-//  connect(d->UI.doubleSpinBoxBestCostMax, SIGNAL(valueChanged(double)),
-//          this, SLOT(updateFilters()));
-
-//  connect(d->UI.doubleSpinBoxUniquenessRatioMin, SIGNAL(valueChanged(double)),
-//          this, SLOT(updateFilters()));
-
-//  connect(d->UI.doubleSpinBoxUniquenessRatioMax, SIGNAL(valueChanged(double)),
-//          this, SLOT(updateFilters()));
-
   connect(d->UI.pushButtonReset, SIGNAL(pressed()),
           this, SLOT(resetFilters()));
-
-
 }
 
 //-----------------------------------------------------------------------------
@@ -122,18 +111,23 @@ void DepthMapFilterOptions::updateFilters()
 {
   QTE_D();
 
-  if(d->UI.doubleSpinBoxUniquenessRatioMax->value() < d->UI.doubleSpinBoxUniquenessRatioMin->value())
+  double bcMin = d->UI.doubleSpinBoxBestCostMin->value();
+  double bcMax = d->UI.doubleSpinBoxBestCostMax->value();
+  double urMin = d->UI.doubleSpinBoxUniquenessRatioMin->value();
+  double urMax = d->UI.doubleSpinBoxUniquenessRatioMax->value();
+
+  if(bcMax < bcMin)
   {
-    d->UI.doubleSpinBoxUniquenessRatioMax->setValue(d->UI.doubleSpinBoxUniquenessRatioMin->value());
+    d->UI.doubleSpinBoxBestCostMax->setValue(bcMin);
   }
 
-  if(d->UI.doubleSpinBoxBestCostMax->value() < d->UI.doubleSpinBoxBestCostMin->value())
+  if(urMax < urMin)
   {
-    d->UI.doubleSpinBoxBestCostMax->setValue(d->UI.doubleSpinBoxBestCostMin->value());
+    d->UI.doubleSpinBoxUniquenessRatioMax->setValue(urMin);
   }
 
-  d->UI.doubleSpinBoxUniquenessRatioMax->setMinimum(d->UI.doubleSpinBoxUniquenessRatioMin->value());
-  d->UI.doubleSpinBoxBestCostMax->setMinimum(d->UI.doubleSpinBoxBestCostMin->value());
+  d->UI.doubleSpinBoxBestCostMax->setMinimum(bcMin);
+  d->UI.doubleSpinBoxUniquenessRatioMax->setMinimum(urMin);
 
   emit filtersChanged();
 
@@ -154,23 +148,27 @@ void DepthMapFilterOptions::initializeFilters(double bcMin, double bcMax, double
 void DepthMapFilterOptions::resetFilters()
 {
   QTE_D();
+  QDoubleSpinBox* bcMinSpinBox = d->UI.doubleSpinBoxBestCostMin;
+  QDoubleSpinBox* bcMaxSpinBox = d->UI.doubleSpinBoxBestCostMax;
+  QDoubleSpinBox* urMinSpinBox = d->UI.doubleSpinBoxUniquenessRatioMin;
+  QDoubleSpinBox* urMaxSpinBox = d->UI.doubleSpinBoxUniquenessRatioMax;
 
-  d->UI.doubleSpinBoxBestCostMin->setValue(d->initialBCMin);
-  d->UI.doubleSpinBoxBestCostMax->setValue(d->initialBCMax);
+  bcMinSpinBox->setValue(d->initialBCMin);
+  bcMaxSpinBox->setValue(d->initialBCMax);
 
-  d->UI.doubleSpinBoxBestCostMin->setMinimum(d->initialBCMin);
-  d->UI.doubleSpinBoxBestCostMax->setMinimum(d->initialBCMin);
+  bcMinSpinBox->setMinimum(d->initialBCMin);
+  bcMaxSpinBox->setMinimum(d->initialBCMin);
 
-  d->UI.doubleSpinBoxBestCostMin->setMaximum(d->initialBCMax);
-  d->UI.doubleSpinBoxBestCostMax->setMaximum(d->initialBCMax);
+  bcMinSpinBox->setMaximum(d->initialBCMax);
+  bcMaxSpinBox->setMaximum(d->initialBCMax);
 
-  d->UI.doubleSpinBoxUniquenessRatioMin->setValue(d->initialURMin);
-  d->UI.doubleSpinBoxUniquenessRatioMax->setValue(d->initialURMax);
+  urMinSpinBox->setValue(d->initialURMin);
+  urMaxSpinBox->setValue(d->initialURMax);
 
-  d->UI.doubleSpinBoxUniquenessRatioMin->setMinimum(d->initialURMin);
-  d->UI.doubleSpinBoxUniquenessRatioMax->setMinimum(d->initialURMin);
+  urMinSpinBox->setMinimum(d->initialURMin);
+  urMaxSpinBox->setMinimum(d->initialURMin);
 
-  d->UI.doubleSpinBoxUniquenessRatioMin->setMaximum(d->initialURMax);
-  d->UI.doubleSpinBoxUniquenessRatioMax->setMaximum(d->initialURMax);
+  urMinSpinBox->setMaximum(d->initialURMax);
+  urMaxSpinBox->setMaximum(d->initialURMax);
 }
 
