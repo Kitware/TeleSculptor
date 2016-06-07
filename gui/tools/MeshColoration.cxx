@@ -110,6 +110,11 @@ bool MeshColoration::ProcessColoration(std::string currentVtiPath)
     }
 
   vtkPoints* meshPointList = this->OutputMesh->GetPoints();
+  if (meshPointList == nullptr)
+  {
+    std::cerr << "invalid mesh points" <<std::endl;
+    return false;
+  }
   vtkIdType nbMeshPoint = meshPointList->GetNumberOfPoints();
   int* depthMapDimensions = this->DataList[0]->GetDepthMap()->GetDimensions();
 
