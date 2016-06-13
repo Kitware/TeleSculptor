@@ -1096,6 +1096,8 @@ void WorldView::updateDepthMapThresholds()
   d->depthmapActor->GetMapper()->Update();
 
   emit updateThresholds(bestCostValueMin,bestCostValueMax,uniquenessRatioMin,uniquenessRatioMax);
+
+  d->UI.renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
