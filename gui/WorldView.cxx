@@ -46,6 +46,7 @@
 #include <vtkActorCollection.h>
 #include <vtkBoundingBox.h>
 #include <vtkCellArray.h>
+#include <vtkCubeAxesActor.h>
 #include <vtkDoubleArray.h>
 #include <vtkImageActor.h>
 #include <vtkImageData.h>
@@ -58,6 +59,7 @@
 #include <vtkProperty.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
+#include <vtkTextProperty.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
 
@@ -125,6 +127,8 @@ public:
 
   vtkNew<vtkMatrix4x4> imageProjection;
   vtkNew<vtkMatrix4x4> imageLocalTransform;
+
+  vtkNew<vtkCubeAxesActor> cubeAxesActor;
 
   bool validImage;
   bool validTransform;
@@ -305,6 +309,17 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(setLandmarksVisible(bool)));
   connect(d->UI.actionShowGroundPlane, SIGNAL(toggled(bool)),
           this, SLOT(setGroundPlaneVisible(bool)));
+
+  for (int i = 0; i < this->children().size(); ++i) {
+    if (this->children().at(i)->inherits("QAction")) {
+      QAction * child = (QAction *) this->children().at(i);
+
+      if (child->isCheckable()) {
+        connect(child, SIGNAL(toggled(bool)),
+          this, SLOT(updateGrid()));
+      }
+    }
+  }
 
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
@@ -538,6 +553,80 @@ void WorldView::setGroundPlaneVisible(bool state)
 }
 
 //-----------------------------------------------------------------------------
+
+void WorldView::setGlobalGridVisible(bool state)
+{
+  QTE_D();
+
+  d->cubeAxesActor->SetVisibility(state);
+
+  if (state)
+  {
+    updateGrid();
+  }
+
+  d->UI.renderWidget->update();
+}
+
+void WorldView::updateGrid()
+{
+  QTE_D();
+
+  //Calculating the bounding box for the grid coordinates
+  double bounds[6] = {std::numeric_limits<double>::max(),std::numeric_limits<double>::min(),
+                      std::numeric_limits<double>::max(),std::numeric_limits<double>::min(),
+                      std::numeric_limits<double>::max(),std::numeric_limits<double>::min()};
+
+  double tmpBounds[6];
+
+  vtkActorCollection *collection = d->renderer->GetActors();
+
+  int volumeNum = collection->GetNumberOfItems();
+
+  collection->InitTraversal();
+
+  for (int i = 0; i < volumeNum; ++i)
+  {
+    vtkActor *act = collection->GetNextActor();
+
+    if (act != d->cubeAxesActor.Get() && act->GetVisibility())
+    {
+      act->GetMapper()->GetInput()->GetBounds(tmpBounds);
+
+      bounds[0] = std::min(bounds[0],tmpBounds[0]);
+      bounds[1] = std::max(bounds[1],tmpBounds[1]);
+      bounds[2] = std::min(bounds[2],tmpBounds[2]);
+      bounds[3] = std::max(bounds[3],tmpBounds[3]);
+      bounds[4] = std::min(bounds[4],tmpBounds[4]);
+      bounds[5] = std::max(bounds[5],tmpBounds[5]);
+    }
+  }
+
+  d->cubeAxesActor->SetBounds(bounds);
+  d->cubeAxesActor->SetCamera(d->renderer->GetActiveCamera());
+  d->cubeAxesActor->GetTitleTextProperty(0)->SetColor(1.0, 0.0, 0.0);
+  d->cubeAxesActor->GetLabelTextProperty(0)->SetColor(1.0, 0.0, 0.0);
+
+  d->cubeAxesActor->GetTitleTextProperty(1)->SetColor(0.0, 1.0, 0.0);
+  d->cubeAxesActor->GetLabelTextProperty(1)->SetColor(0.0, 1.0, 0.0);
+
+  d->cubeAxesActor->GetTitleTextProperty(2)->SetColor(0.0, 0.0, 1.0);
+  d->cubeAxesActor->GetLabelTextProperty(2)->SetColor(0.0, 0.0, 1.0);
+
+  d->cubeAxesActor->DrawXGridlinesOn();
+  d->cubeAxesActor->DrawYGridlinesOn();
+  d->cubeAxesActor->DrawZGridlinesOn();
+  d->cubeAxesActor->SetGridLineLocation(VTK_GRID_LINES_FURTHEST);
+
+  d->cubeAxesActor->XAxisMinorTickVisibilityOff();
+  d->cubeAxesActor->YAxisMinorTickVisibilityOff();
+  d->cubeAxesActor->ZAxisMinorTickVisibilityOff();
+
+  d->renderer->AddActor(d->cubeAxesActor.Get());
+
+  d->UI.renderWidget->update();
+
+}
 void WorldView::resetView()
 {
   QTE_D();

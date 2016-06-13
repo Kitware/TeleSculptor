@@ -37,6 +37,8 @@
 
 class vtkImageData;
 
+class vtkPolyData;
+
 namespace kwiver { namespace vital { class landmark_map; } }
 
 class vtkMaptkCamera;
@@ -63,6 +65,9 @@ public slots:
   void setCamerasVisible(bool);
   void setLandmarksVisible(bool);
   void setGroundPlaneVisible(bool);
+
+  void setGlobalGridVisible(bool state);
+  void updateGrid();
 
   void setPerspective(bool);
 
