@@ -53,7 +53,6 @@
     <addaction name="actionShowMatchMatrix"/>
     <addaction name="separator"/>
     <addaction name="actionSetBackgroundColor"/>
-    <addaction name="actionDepthMapView"/>
    </widget>
    <widget class="qtMenu" name="menuHelp">
     <property name="title">
@@ -339,7 +338,7 @@
   <customwidget>
    <class>qtMenu</class>
    <extends>QMenu</extends>
-   <header location="global">qtMenu.h</header>
+   <header>qtMenu.h</header>
   </customwidget>
   <customwidget>
    <class>DepthMapView</class>
