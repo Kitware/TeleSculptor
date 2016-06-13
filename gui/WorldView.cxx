@@ -50,6 +50,7 @@
 #include <vtkCellArray.h>
 #include <vtkCellDataToPointData.h>
 #include <vtkContourFilter.h>
+#include <vtkCubeAxesActor.h>
 #include <vtkDoubleArray.h>
 #include <vtkImageActor.h>
 #include <vtkImageData.h>
@@ -62,6 +63,7 @@
 #include <vtkProperty.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
+#include <vtkTextProperty.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
 #include <vtkXMLPolyDataReader.h>
@@ -386,6 +388,17 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
 
   connect(d->volumeOptions, SIGNAL(meshIsColorizedFromColorizeSurfaceOption),
     d->UI.renderWidget, SLOT(update()));
+
+  for (int i = 0; i < this->children().size(); ++i) {
+    if (this->children().at(i)->inherits("QAction")) {
+      QAction * child = (QAction *) this->children().at(i);
+
+      if (child->isCheckable()) {
+        connect(child, SIGNAL(toggled(bool)),
+          this, SLOT(updateGrid()));
+      }
+    }
+  }
 
   for (int i = 0; i < this->children().size(); ++i) {
     if (this->children().at(i)->inherits("QAction")) {
