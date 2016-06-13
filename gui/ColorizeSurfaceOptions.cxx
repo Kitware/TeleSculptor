@@ -170,6 +170,8 @@ void ColorizeSurfaceOptions::changeColorDisplay()
   vtkPolyData* volume = vtkPolyData::SafeDownCast(d->volumeActor->GetMapper()->GetInput());
 
   volume->GetPointData()->SetActiveScalars(d->UI.comboBoxColorDisplay->currentText().toStdString().c_str());
+
+  emit colorModeChanged(d->UI.buttonGroup->checkedButton()->text());
 }
 
 //-----------------------------------------------------------------------------
