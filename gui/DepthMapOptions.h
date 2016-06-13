@@ -62,9 +62,7 @@ public:
   void initializeFilters(double bcMin, double bcMax, double urMin, double urMax);
   bool isFiltersChecked();
 
-  void enableBBoxDisplay(bool state);
   void enable();
-  bool isBBoxChecked();
 signals:
 
   void bBoxToggled();

@@ -154,7 +154,6 @@ public:
 
   vtkSmartPointer<vtkPolyData> currentDepthmap;
 
-  vtkNew<vtkActor> polyDataActor;
   vtkNew<vtkActor> depthmapActor;
   vtkNew<vtkActor> volumeActor;
   vtkStructuredGrid* volume;
@@ -316,9 +315,6 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->depthMapOptions = new DepthMapOptions("WorldView/Depthmap", this);
   d->setPopup(d->UI.actionDepthmapDisplay, d->depthMapOptions);
 
-  d->depthMapOptions->addActor("points",d->polyDataActor.Get());
-  d->depthMapOptions->addActor("surfaces",d->depthmapActor.Get());
-
   d->volumeOptions = new VolumeOptions("WorldView/Volume", this);
   d->setPopup(d->UI.actionVolumeDisplay, d->volumeOptions);
 
@@ -344,6 +340,9 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
           this, SIGNAL(meshEnabled(bool)));
   connect(d->volumeOptions, SIGNAL(colorOptionsEnabled(bool)),
           this, SIGNAL(coloredMeshEnabled(bool)));
+
+ // connect(d->renderWindow, SIGNAL(),
+   //       this, SIGNAL(coloredMeshEnabled(bool)));
 
   // Connect actions
   this->addAction(d->UI.actionViewReset);
@@ -387,6 +386,17 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
 
   connect(d->volumeOptions, SIGNAL(meshIsColorizedFromColorizeSurfaceOption),
     d->UI.renderWidget, SLOT(update()));
+
+  for (int i = 0; i < this->children().size(); ++i) {
+    if (this->children().at(i)->inherits("QAction")) {
+      QAction * child = (QAction *) this->children().at(i);
+
+      if (child->isCheckable()) {
+        connect(child, SIGNAL(toggled(bool)),
+          this, SLOT(updateGrid()));
+      }
+    }
+  }
 
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
@@ -601,30 +611,6 @@ void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, QString vtiPath) {
 
     d->renderer->AddViewProp(d->depthmapActor.GetPointer());
 
-    //Calculating the bounding box for the grid coordinates
-    d->cubeAxesActor->SetBounds(d->currentDepthmap->GetBounds());
-    d->cubeAxesActor->SetCamera(d->renderer->GetActiveCamera());
-    d->cubeAxesActor->GetTitleTextProperty(0)->SetColor(1.0, 0.0, 0.0);
-    d->cubeAxesActor->GetLabelTextProperty(0)->SetColor(1.0, 0.0, 0.0);
-
-    d->cubeAxesActor->GetTitleTextProperty(1)->SetColor(0.0, 1.0, 0.0);
-    d->cubeAxesActor->GetLabelTextProperty(1)->SetColor(0.0, 1.0, 0.0);
-
-    d->cubeAxesActor->GetTitleTextProperty(2)->SetColor(0.0, 0.0, 1.0);
-    d->cubeAxesActor->GetLabelTextProperty(2)->SetColor(0.0, 0.0, 1.0);
-
-    d->cubeAxesActor->DrawXGridlinesOn();
-    d->cubeAxesActor->DrawYGridlinesOn();
-    d->cubeAxesActor->DrawZGridlinesOn();
-    d->cubeAxesActor->SetGridLineLocation(VTK_GRID_LINES_FURTHEST);
-
-    d->cubeAxesActor->XAxisMinorTickVisibilityOff();
-    d->cubeAxesActor->YAxisMinorTickVisibilityOff();
-    d->cubeAxesActor->ZAxisMinorTickVisibilityOff();
-
-    d->renderer->AddActor(d->cubeAxesActor.Get());
-    d->cubeAxesActor->SetVisibility(d->depthMapOptions->isBBoxChecked());
-
     //initializing the filters
     double bcRange[2], urRange[2];
 
@@ -815,28 +801,82 @@ void WorldView::setDepthMapVisible(bool state)
   d->depthmapActor->SetVisibility(state);
   d->depthMapOptions->setEnabled(state);
 
-  if (state)
-  {
-    setGridVisible();
-  }
-  else
-  {
-    d->cubeAxesActor->SetVisibility(false);
-  }
-
   setActiveDepthMap(d->currentCam,d->currentVtiPath);
   d->UI.renderWidget->update();
 }
 
-//-----------------------------------------------------------------------------
-void WorldView::setGridVisible()
+void WorldView::setGlobalGridVisible(bool state)
 {
-   QTE_D();
+  QTE_D();
 
-   if (d->UI.actionDepthmapDisplay->isChecked())
-   {
-     d->cubeAxesActor->SetVisibility(d->depthMapOptions->isBBoxChecked());
-   }
+  d->cubeAxesActor->SetVisibility(state);
+
+  if (state)
+  {
+    updateGrid();
+  }
+
+  d->UI.renderWidget->update();
+}
+
+void WorldView::updateGrid()
+{
+  QTE_D();
+
+  //Calculating the bounding box for the grid coordinates
+  double bounds[6] = {std::numeric_limits<double>::max(),std::numeric_limits<double>::min(),
+                      std::numeric_limits<double>::max(),std::numeric_limits<double>::min(),
+                      std::numeric_limits<double>::max(),std::numeric_limits<double>::min()};
+
+  double tmpBounds[6];
+
+  vtkActorCollection *collection = d->renderer->GetActors();
+
+  int volumeNum = collection->GetNumberOfItems();
+
+  collection->InitTraversal();
+
+  for (int i = 0; i < volumeNum; ++i)
+  {
+    vtkActor *act = collection->GetNextActor();
+
+    if (act != d->cubeAxesActor.Get() && act->GetVisibility())
+    {
+      act->GetMapper()->GetInput()->GetBounds(tmpBounds);
+
+      bounds[0] = std::min(bounds[0],tmpBounds[0]);
+      bounds[1] = std::max(bounds[1],tmpBounds[1]);
+      bounds[2] = std::min(bounds[2],tmpBounds[2]);
+      bounds[3] = std::max(bounds[3],tmpBounds[3]);
+      bounds[4] = std::min(bounds[4],tmpBounds[4]);
+      bounds[5] = std::max(bounds[5],tmpBounds[5]);
+    }
+  }
+
+  d->cubeAxesActor->SetBounds(bounds);
+  d->cubeAxesActor->SetCamera(d->renderer->GetActiveCamera());
+  d->cubeAxesActor->GetTitleTextProperty(0)->SetColor(1.0, 0.0, 0.0);
+  d->cubeAxesActor->GetLabelTextProperty(0)->SetColor(1.0, 0.0, 0.0);
+
+  d->cubeAxesActor->GetTitleTextProperty(1)->SetColor(0.0, 1.0, 0.0);
+  d->cubeAxesActor->GetLabelTextProperty(1)->SetColor(0.0, 1.0, 0.0);
+
+  d->cubeAxesActor->GetTitleTextProperty(2)->SetColor(0.0, 0.0, 1.0);
+  d->cubeAxesActor->GetLabelTextProperty(2)->SetColor(0.0, 0.0, 1.0);
+
+  d->cubeAxesActor->DrawXGridlinesOn();
+  d->cubeAxesActor->DrawYGridlinesOn();
+  d->cubeAxesActor->DrawZGridlinesOn();
+  d->cubeAxesActor->SetGridLineLocation(VTK_GRID_LINES_FURTHEST);
+
+  d->cubeAxesActor->XAxisMinorTickVisibilityOff();
+  d->cubeAxesActor->YAxisMinorTickVisibilityOff();
+  d->cubeAxesActor->ZAxisMinorTickVisibilityOff();
+
+  d->renderer->AddActor(d->cubeAxesActor.Get());
+
+  d->UI.renderWidget->update();
+
 }
 void WorldView::setVolumeVisible(bool state)
 {

@@ -88,7 +88,9 @@ public slots:
   void setGroundPlaneVisible(bool);
   void setDepthMapVisible(bool);
 
-  void setGridVisible();
+  void setGlobalGridVisible(bool state);
+
+  void updateGrid();
 
   void setVolumeVisible(bool);
   void setVolumeCurrentFramePath(QString path);

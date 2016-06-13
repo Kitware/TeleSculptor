@@ -53,6 +53,7 @@
     <addaction name="actionShowMatchMatrix"/>
     <addaction name="separator"/>
     <addaction name="actionSetBackgroundColor"/>
+    <addaction name="actionDisplayCoordinates"/>
    </widget>
    <widget class="qtMenu" name="menuHelp">
     <property name="title">
@@ -319,6 +320,14 @@
    </property>
    <property name="text">
     <string>Colored Mesh...</string>
+   </property>
+  </action>
+  <action name="actionDisplayCoordinates">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Display Coordinates</string>
    </property>
   </action>
  </widget>

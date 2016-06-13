@@ -85,9 +85,6 @@ DepthMapOptions::DepthMapOptions(QString const& settingsGroup,
   connect(d->UI.checkBoxFilters, SIGNAL(toggled(bool)),
           this, SLOT(showFiltersMenu(bool)));
 
-  connect(d->UI.checkBoxBBox, SIGNAL(toggled(bool)),
-          this, SIGNAL(bBoxToggled()));
-
   connect(d->filterOptions, SIGNAL(filtersChanged()),
           this, SIGNAL(depthMapThresholdsChanged()));
 
@@ -138,14 +135,6 @@ void DepthMapOptions::enable()
   d->UI.radioPoints->setChecked(true);
 }
 
-//-----------------------------------------------------------------------------
-void DepthMapOptions::enableBBoxDisplay(bool state)
-{
-  QTE_D();
-
-
-  d->UI.checkBoxBBox->setEnabled(state);
-}
 
 //-----------------------------------------------------------------------------
 double DepthMapOptions::getBestCostValueMin()
@@ -208,13 +197,5 @@ bool DepthMapOptions::isSurfacesChecked()
   QTE_D();
 
   return d->UI.radioSurfaces->isChecked();
-}
-
-//-----------------------------------------------------------------------------
-bool DepthMapOptions::isBBoxChecked()
-{
-  QTE_D();
-
-  return d->UI.checkBoxBBox->isChecked();
 }
 
