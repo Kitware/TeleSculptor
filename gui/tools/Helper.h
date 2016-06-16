@@ -121,14 +121,13 @@ namespace help
       // only get the file name, not the whole path
       std::vector <std::string> elems;
       help::SplitString(path, ' ', elems);
-      std::vector <std::string> filename;
-      help::SplitString(elems[elems.size() - 1], '/', filename);
-
       // check if there are an empty line
-      if (elems.size() == 0)
+      if( elems.empty() )
       {
         continue;
       }
+      std::vector <std::string> filename;
+      help::SplitString(elems[elems.size() - 1], '/', filename);
 
       // Create the real data path to access depth map file
       std::vector <std::string> elemsWithoutExtension;
