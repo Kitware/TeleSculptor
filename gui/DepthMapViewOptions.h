@@ -28,68 +28,52 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_CAMERAVIEW_H_
-#define MAPTK_CAMERAVIEW_H_
-
-#include <vital/vital_types.h>
+#ifndef DEPTHMAPVIEWOPTIONS_H
+#define DEPTHMAPVIEWOPTIONS_H
 
 #include <qtGlobal.h>
 
 #include <QtGui/QWidget>
 
-class vtkImageData;
+#include <QButtonGroup>
+#include <QFormLayout>
 
-namespace kwiver { namespace vital { class landmark_map; } }
-namespace kwiver { namespace vital { class track; } }
+class vtkActor;
 
-class vtkMaptkCamera;
+class vtkPolyData;
 
-class CameraViewPrivate;
+class DepthMapViewOptionsPrivate;
 
-class CameraView : public QWidget
+class DepthMapViewOptions : public QWidget
 {
   Q_OBJECT
 
 public:
-  explicit CameraView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~CameraView();
+  explicit DepthMapViewOptions(const QString &settingsGroup,
+                           QWidget *parent = 0, Qt::WindowFlags flags = 0);
+  virtual ~DepthMapViewOptions();
 
-  void addFeatureTrack(kwiver::vital::track const&);
+  void addPolyData(vtkActor *polyDataActor);
 
-  void setFrameName(QString frameName);
+  void cleanModes();
 
-public slots:
-  void setBackgroundColor(QColor const&);
-
-  void setImageData(vtkImageData* data, QSize const& dimensions);
-
-  void setLandmarksData(kwiver::vital::landmark_map const&);
-
-  void setActiveFrame(unsigned);
-
-  void addLandmark(kwiver::vital::landmark_id_t id, double x, double y);
-  void addResidual(kwiver::vital::track_id_t id,
-                   double x1, double y1,
-                   double x2, double y2);
-
-  void clearLandmarks();
-  void clearResiduals();
-
-  void resetView();
-  void resetViewToFullExtents();
+signals:
+  void modified();
 
 protected slots:
-  void setImageVisible(bool);
-  void setLandmarksVisible(bool);
-  void setResidualsVisible(bool);
-
-  void updateFeatures();
+  void switchDisplayMode(bool checked);
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(CameraView)
-  QTE_DECLARE_PRIVATE(CameraView)
+  QButtonGroup* bGroup;
+  QVBoxLayout* layout;
 
-  QTE_DISABLE_COPY(CameraView)
+  void addDepthMapMode(std::string name, bool needGradient);
+  void removeLayout(QLayout* layout);
+
+  QTE_DECLARE_PRIVATE_RPTR(DepthMapViewOptions)
+  QTE_DECLARE_PRIVATE(DepthMapViewOptions)
+
+  QTE_DISABLE_COPY(DepthMapViewOptions)
 };
 
-#endif
+#endif // DEPTHMAPVIEWOPTIONS_H

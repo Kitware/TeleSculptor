@@ -28,68 +28,56 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_CAMERAVIEW_H_
-#define MAPTK_CAMERAVIEW_H_
-
-#include <vital/vital_types.h>
+#ifndef DEPTHMAPOPTIONS_H
+#define DEPTHMAPOPTIONS_H
 
 #include <qtGlobal.h>
 
 #include <QtGui/QWidget>
 
-class vtkImageData;
+class vtkProp3D;
 
-namespace kwiver { namespace vital { class landmark_map; } }
-namespace kwiver { namespace vital { class track; } }
+class DepthMapOptionsPrivate;
 
-class vtkMaptkCamera;
-
-class CameraViewPrivate;
-
-class CameraView : public QWidget
+class DepthMapOptions : public QWidget
 {
   Q_OBJECT
 
 public:
-  explicit CameraView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~CameraView();
+  explicit DepthMapOptions(const QString &settingsGroup,
+                           QWidget *parent = 0, Qt::WindowFlags flags = 0);
+  virtual ~DepthMapOptions();
 
-  void addFeatureTrack(kwiver::vital::track const&);
+  void addActor(std::string type, vtkProp3D *actor);
 
-  void setFrameName(QString frameName);
+  bool isPointsChecked();
+  bool isSurfacesChecked();
+  bool isVerticesChecked();
+
+  double getBestCostValueMin();
+  double getBestCostValueMax();
+  double getUniquenessRatioMin();
+  double getUniquenessRatioMax();
+
+  void initializeFilters(double bcMin, double bcMax, double urMin, double urMax);
+  bool isFiltersChecked();
+
+  void enable();
+signals:
+
+  void bBoxToggled();
+  void modified();
+  void depthMapRepresentationChanged();
+  void depthMapThresholdsChanged();
 
 public slots:
-  void setBackgroundColor(QColor const&);
-
-  void setImageData(vtkImageData* data, QSize const& dimensions);
-
-  void setLandmarksData(kwiver::vital::landmark_map const&);
-
-  void setActiveFrame(unsigned);
-
-  void addLandmark(kwiver::vital::landmark_id_t id, double x, double y);
-  void addResidual(kwiver::vital::track_id_t id,
-                   double x1, double y1,
-                   double x2, double y2);
-
-  void clearLandmarks();
-  void clearResiduals();
-
-  void resetView();
-  void resetViewToFullExtents();
-
-protected slots:
-  void setImageVisible(bool);
-  void setLandmarksVisible(bool);
-  void setResidualsVisible(bool);
-
-  void updateFeatures();
+  void showFiltersMenu(bool);
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(CameraView)
-  QTE_DECLARE_PRIVATE(CameraView)
+  QTE_DECLARE_PRIVATE_RPTR(DepthMapOptions)
+  QTE_DECLARE_PRIVATE(DepthMapOptions)
 
-  QTE_DISABLE_COPY(CameraView)
+  QTE_DISABLE_COPY(DepthMapOptions)
 };
 
-#endif
+#endif // DEPTHMAPOPTIONS_H

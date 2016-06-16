@@ -1,5 +1,5 @@
 /*ckwg +29
-* Copyright 2015 by Kitware, Inc.
+* Copyright 2015-2016 by Kitware, Inc.
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
@@ -114,6 +114,61 @@ bool vtkMaptkCamera::ProjectPoint(kwiver::vital::vector_3d const& in,
   out[1] = ppos[1];
   return true;
 }
+/**
+  *
+  * WARNING: The convention here is that depth is NOT the distance between the
+  * camera center and the 3D point but the distance between the projection of
+  * the 3D point on the optical axis and the optical center.
+*/
+
+//-----------------------------------------------------------------------------
+bool vtkMaptkCamera::UnprojectPoint(double pixel[2], double depth,
+                                    kwiver::vital::vector_3d *unProjectedPoint)
+{
+  // Build camera matrix
+  auto const K = this->MaptkCamera->intrinsics()->as_matrix();
+  auto const KtriangularView = K.triangularView<Eigen::Upper>();
+  auto const T = this->MaptkCamera->translation();
+  auto const R = kwiver::vital::matrix_3x3d(this->MaptkCamera->rotation());
+
+  kwiver::vital::vector_3d homogenousPoint(pixel[0], pixel[1], 1.0);
+
+  homogenousPoint *= depth;
+
+  *unProjectedPoint = R.transpose() * ((KtriangularView.solve(homogenousPoint)) - T);
+
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+void vtkMaptkCamera::scaleK(float factor)
+{
+  auto K = this->MaptkCamera->intrinsics()->as_matrix();
+  K(0,0) *= factor;
+  K(0,1) *= factor;
+  K(0,2) = (K(0,2) + 0.5)*factor - 0.5;
+  K(1,1) *= factor;
+  K(1,2) = (K(1,2) + 0.5)*factor - 0.5;
+
+  kwiver::vital::simple_camera_intrinsics newIntrinsics(K);
+
+  kwiver::vital::simple_camera scaledCamera(this->MaptkCamera->center(),
+                                       this->MaptkCamera->rotation(),newIntrinsics);
+  SetCamera(scaledCamera.clone());
+}
+
+//-----------------------------------------------------------------------------
+vtkMaptkCamera *vtkMaptkCamera::scaledK(float factor)
+{
+  vtkMaptkCamera* newCam = new vtkMaptkCamera();
+  newCam->DeepCopy(this);
+
+  newCam->scaleK(factor);
+
+  return newCam;
+}
+
+
 
 //-----------------------------------------------------------------------------
 bool vtkMaptkCamera::Update()

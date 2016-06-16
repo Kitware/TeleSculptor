@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>963</width>
     <height>600</height>
    </rect>
   </property>
@@ -19,8 +19,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
-     <height>21</height>
+     <width>963</width>
+     <height>27</height>
     </rect>
    </property>
    <widget class="qtMenu" name="menuFile">
@@ -33,6 +33,10 @@
      </property>
      <addaction name="actionExportCameras"/>
      <addaction name="actionExportLandmarks"/>
+     <addaction name="separator"/>
+     <addaction name="actionExportVolume"/>
+     <addaction name="actionExportMesh"/>
+     <addaction name="actionExportColoredMesh"/>
     </widget>
     <addaction name="actionOpen"/>
     <addaction name="menuExport"/>
@@ -49,6 +53,7 @@
     <addaction name="actionShowMatchMatrix"/>
     <addaction name="separator"/>
     <addaction name="actionSetBackgroundColor"/>
+    <addaction name="actionDisplayCoordinates"/>
    </widget>
    <widget class="qtMenu" name="menuHelp">
     <property name="title">
@@ -148,6 +153,15 @@
     <number>2</number>
    </attribute>
    <widget class="CameraView" name="cameraView"/>
+  </widget>
+  <widget class="QDockWidget" name="dMDock">
+   <property name="windowTitle">
+    <string>DepthMap View</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="DepthMapView" name="dMView"/>
   </widget>
   <action name="actionQuit">
    <property name="icon">
@@ -274,6 +288,48 @@
     <string>Change the background color of the views</string>
    </property>
   </action>
+  <action name="actionDepthMapView">
+   <property name="text">
+    <string>View Depth Map</string>
+   </property>
+  </action>
+  <action name="actionOpenDepthmaps">
+   <property name="text">
+    <string>Open Depthmaps</string>
+   </property>
+  </action>
+  <action name="actionExportVolume">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Volume...</string>
+   </property>
+  </action>
+  <action name="actionExportMesh">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Mesh...</string>
+   </property>
+  </action>
+  <action name="actionExportColoredMesh">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Colored Mesh...</string>
+   </property>
+  </action>
+  <action name="actionDisplayCoordinates">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Display Coordinates</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -291,7 +347,13 @@
   <customwidget>
    <class>qtMenu</class>
    <extends>QMenu</extends>
-   <header location="global">qtMenu.h</header>
+   <header>qtMenu.h</header>
+  </customwidget>
+  <customwidget>
+   <class>DepthMapView</class>
+   <extends>QWidget</extends>
+   <header>DepthMapView.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>

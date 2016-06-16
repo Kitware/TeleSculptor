@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_CAMERAVIEW_H_
-#define MAPTK_CAMERAVIEW_H_
+#ifndef MAPTK_DepthMapView_H_
+#define MAPTK_DepthMapView_H_
 
 #include <vital/vital_types.h>
 
@@ -37,59 +37,35 @@
 
 #include <QtGui/QWidget>
 
-class vtkImageData;
+class DepthMapViewPrivate;
 
-namespace kwiver { namespace vital { class landmark_map; } }
-namespace kwiver { namespace vital { class track; } }
+class vtkPolyData;
 
-class vtkMaptkCamera;
+class QMenu;
 
-class CameraViewPrivate;
-
-class CameraView : public QWidget
+class DepthMapView : public QWidget
 {
   Q_OBJECT
 
 public:
-  explicit CameraView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~CameraView();
+  explicit DepthMapView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  virtual ~DepthMapView();
 
-  void addFeatureTrack(kwiver::vital::track const&);
-
-  void setFrameName(QString frameName);
+  void setDepthMap(QString imagePath);
 
 public slots:
+  void updateDepthMapThresholds(double,double,double,double);
   void setBackgroundColor(QColor const&);
 
-  void setImageData(vtkImageData* data, QSize const& dimensions);
-
-  void setLandmarksData(kwiver::vital::landmark_map const&);
-
-  void setActiveFrame(unsigned);
-
-  void addLandmark(kwiver::vital::landmark_id_t id, double x, double y);
-  void addResidual(kwiver::vital::track_id_t id,
-                   double x1, double y1,
-                   double x2, double y2);
-
-  void clearLandmarks();
-  void clearResiduals();
-
-  void resetView();
-  void resetViewToFullExtents();
-
 protected slots:
-  void setImageVisible(bool);
-  void setLandmarksVisible(bool);
-  void setResidualsVisible(bool);
-
-  void updateFeatures();
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(CameraView)
-  QTE_DECLARE_PRIVATE(CameraView)
+  QMenu* viewMenu;
 
-  QTE_DISABLE_COPY(CameraView)
+  QTE_DECLARE_PRIVATE_RPTR(DepthMapView)
+  QTE_DECLARE_PRIVATE(DepthMapView)
+
+  QTE_DISABLE_COPY(DepthMapView)
 };
 
 #endif

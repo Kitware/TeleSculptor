@@ -54,6 +54,15 @@ public:
                     double (&projPoint)[2]);
 
   // Description:
+  // Project 3D point to 2D using the internal maptk camera
+  bool UnprojectPoint(double point[2], double depth,
+                      kwiver::vital::vector_3d *unProjectedPoint);
+
+  void scaleK(float factor);
+
+  vtkMaptkCamera* scaledK(float factor);
+
+  // Description:
   // Update self (the VTK camera) based on the maptk camera and
   // ImageDimensions, if set
   bool Update();

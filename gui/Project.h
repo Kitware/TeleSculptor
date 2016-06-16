@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,7 @@
 #define MAPTK_PROJECT_H_
 
 #include <QtCore/QStringList>
+#include <QMap>
 
 struct Project
 {
@@ -39,6 +40,14 @@ struct Project
 
   QStringList images;
   QString cameraPath;
+  QString volumePath;
+
+  QString volumeKRTD;
+  QString volumeDepthmaps;
+  QString depthmaps;
+
+  QString volumeKrtdFile;
+  QString volumeVtiFile;
 
   QString tracks;
   QString landmarks;

@@ -28,68 +28,56 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_CAMERAVIEW_H_
-#define MAPTK_CAMERAVIEW_H_
-
-#include <vital/vital_types.h>
+#ifndef COLORIZESURFACEOPTIONS_H
+#define COLORIZESURFACEOPTIONS_H
 
 #include <qtGlobal.h>
 
 #include <QtGui/QWidget>
 
-class vtkImageData;
+class vtkActor;
 
-namespace kwiver { namespace vital { class landmark_map; } }
-namespace kwiver { namespace vital { class track; } }
+class ColorizeSurfaceOptionsPrivate;
 
-class vtkMaptkCamera;
-
-class CameraViewPrivate;
-
-class CameraView : public QWidget
+class ColorizeSurfaceOptions : public QWidget
 {
   Q_OBJECT
 
 public:
-  explicit CameraView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~CameraView();
+  explicit ColorizeSurfaceOptions(const QString &settingsGroup,
+      QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  virtual ~ColorizeSurfaceOptions();
 
-  void addFeatureTrack(kwiver::vital::track const&);
+  void addColorDisplay(std::string name);
 
-  void setFrameName(QString frameName);
+  void initFrameSampling(int nbFrames);
+
+  void setCurrentFramePath(std::string path);
+
+  void setActor(vtkActor* actor);
+  void setKrtdFile(QString file);
+  void setFrameFile(QString file);
+
+  void enableMenu(bool);
+
+signals:
+  void colorModeChanged(QString);
+  void meshColorizedInColorizeSurfaceOption();
 
 public slots:
-  void setBackgroundColor(QColor const&);
 
-  void setImageData(vtkImageData* data, QSize const& dimensions);
-
-  void setLandmarksData(kwiver::vital::landmark_map const&);
-
-  void setActiveFrame(unsigned);
-
-  void addLandmark(kwiver::vital::landmark_id_t id, double x, double y);
-  void addResidual(kwiver::vital::track_id_t id,
-                   double x1, double y1,
-                   double x2, double y2);
-
-  void clearLandmarks();
-  void clearResiduals();
-
-  void resetView();
-  void resetViewToFullExtents();
-
-protected slots:
-  void setImageVisible(bool);
-  void setLandmarksVisible(bool);
-  void setResidualsVisible(bool);
-
-  void updateFeatures();
+  void changeColorDisplay();
+  void colorize();
+  void enableAllFramesParameters(bool);
+  void allFrameSelected();
+  void currentFrameSelected();
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(CameraView)
-  QTE_DECLARE_PRIVATE(CameraView)
 
-  QTE_DISABLE_COPY(CameraView)
+  QTE_DECLARE_PRIVATE_RPTR(ColorizeSurfaceOptions)
+  QTE_DECLARE_PRIVATE(ColorizeSurfaceOptions)
+
+  QTE_DISABLE_COPY(ColorizeSurfaceOptions)
 };
 
-#endif
+#endif // COLORIZESURFACEOPTIONS_H

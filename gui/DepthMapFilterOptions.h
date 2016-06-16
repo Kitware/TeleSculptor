@@ -28,68 +28,44 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_CAMERAVIEW_H_
-#define MAPTK_CAMERAVIEW_H_
-
-#include <vital/vital_types.h>
+#ifndef DEPTHMAPFILTEROPTIONS_H
+#define DEPTHMAPFILTEROPTIONS_H
 
 #include <qtGlobal.h>
 
 #include <QtGui/QWidget>
 
-class vtkImageData;
 
-namespace kwiver { namespace vital { class landmark_map; } }
-namespace kwiver { namespace vital { class track; } }
+class DepthMapFilterOptionsPrivate;
 
-class vtkMaptkCamera;
 
-class CameraViewPrivate;
-
-class CameraView : public QWidget
+class DepthMapFilterOptions : public QWidget
 {
   Q_OBJECT
 
 public:
-  explicit CameraView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~CameraView();
+  explicit DepthMapFilterOptions(const QString &settingsGroup,
+      QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  virtual ~DepthMapFilterOptions();
 
-  void addFeatureTrack(kwiver::vital::track const&);
+  double getBestCostValueMin();
+  double getBestCostValueMax();
+  double getUniquenessRatioMin();
+  double getUniquenessRatioMax();
 
-  void setFrameName(QString frameName);
+  void initializeFilters(double bcMin, double bcMax, double urMin, double urMax);
+signals:
+  void filtersChanged();
 
 public slots:
-  void setBackgroundColor(QColor const&);
-
-  void setImageData(vtkImageData* data, QSize const& dimensions);
-
-  void setLandmarksData(kwiver::vital::landmark_map const&);
-
-  void setActiveFrame(unsigned);
-
-  void addLandmark(kwiver::vital::landmark_id_t id, double x, double y);
-  void addResidual(kwiver::vital::track_id_t id,
-                   double x1, double y1,
-                   double x2, double y2);
-
-  void clearLandmarks();
-  void clearResiduals();
-
-  void resetView();
-  void resetViewToFullExtents();
-
-protected slots:
-  void setImageVisible(bool);
-  void setLandmarksVisible(bool);
-  void setResidualsVisible(bool);
-
-  void updateFeatures();
+  void updateFilters();
+  void resetFilters();
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(CameraView)
-  QTE_DECLARE_PRIVATE(CameraView)
+  QTE_DECLARE_PRIVATE_RPTR(DepthMapFilterOptions)
+  QTE_DECLARE_PRIVATE(DepthMapFilterOptions)
 
-  QTE_DISABLE_COPY(CameraView)
+  QTE_DISABLE_COPY(DepthMapFilterOptions)
 };
 
-#endif
+#endif // DEPTHMAPFILTEROPTIONS_H

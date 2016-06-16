@@ -28,68 +28,52 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_CAMERAVIEW_H_
-#define MAPTK_CAMERAVIEW_H_
-
-#include <vital/vital_types.h>
+#ifndef VOLUMEOPTIONS_H_
+#define VOLUMEOPTIONS_H_
 
 #include <qtGlobal.h>
 
 #include <QtGui/QWidget>
 
-class vtkImageData;
+class vtkPolyData;
 
-namespace kwiver { namespace vital { class landmark_map; } }
-namespace kwiver { namespace vital { class track; } }
+class vtkActor;
 
-class vtkMaptkCamera;
+class VolumeOptionsPrivate;
 
-class CameraViewPrivate;
-
-class CameraView : public QWidget
+class VolumeOptions : public QWidget
 {
   Q_OBJECT
 
 public:
-  explicit CameraView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~CameraView();
+  explicit VolumeOptions(const QString &settingsGroup,
+      QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  virtual ~VolumeOptions();
 
-  void addFeatureTrack(kwiver::vital::track const&);
+  void setActor(vtkActor* actor);
 
-  void setFrameName(QString frameName);
+  void initFrameSampling(int nbFrames);
+  void setKrtdFrameFile(QString krtd, QString frame);
+
+  void setCurrentFramePath(std::string path);
+
+signals:
+  void meshIsColorizedFromColorizeSurfaceOption();
+  void currentFrameIDChanged(int);
+
+signals:
+  void modified();
+  void colorOptionsEnabled(bool);
 
 public slots:
-  void setBackgroundColor(QColor const&);
-
-  void setImageData(vtkImageData* data, QSize const& dimensions);
-
-  void setLandmarksData(kwiver::vital::landmark_map const&);
-
-  void setActiveFrame(unsigned);
-
-  void addLandmark(kwiver::vital::landmark_id_t id, double x, double y);
-  void addResidual(kwiver::vital::track_id_t id,
-                   double x1, double y1,
-                   double x2, double y2);
-
-  void clearLandmarks();
-  void clearResiduals();
-
-  void resetView();
-  void resetViewToFullExtents();
-
-protected slots:
-  void setImageVisible(bool);
-  void setLandmarksVisible(bool);
-  void setResidualsVisible(bool);
-
-  void updateFeatures();
+  void showColorizeSurfaceMenu(bool state);
+  void updateColorizeSurfaceMenu(QString text);
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(CameraView)
-  QTE_DECLARE_PRIVATE(CameraView)
+  QTE_DECLARE_PRIVATE_RPTR(VolumeOptions)
+  QTE_DECLARE_PRIVATE(VolumeOptions)
 
-  QTE_DISABLE_COPY(CameraView)
+  QTE_DISABLE_COPY(VolumeOptions)
 };
 
 #endif

@@ -39,7 +39,9 @@
 
 #include "AboutDialog.h"
 #include "MatchMatrixWindow.h"
+#include "DepthMapView.h"
 #include "Project.h"
+#include "DepthMapPaths.h"
 #include "vtkMaptkCamera.h"
 
 #include <maptk/match_matrix.h>
@@ -216,12 +218,15 @@ class MainWindowPrivate
 {
 public:
   // Data structures
+
   struct CameraData
   {
     int id;
     vtkSmartPointer<vtkMaptkCamera> camera;
 
     QString imagePath; // Full path to camera image data
+    QString vtiPath;
+
   };
 
   // Methods
@@ -423,6 +428,18 @@ void MainWindowPrivate::setActiveCamera(int id)
   this->activeCameraIndex = id;
   this->UI.worldView->setActiveCamera(this->cameras[id].camera);
   this->updateCameraView();
+
+  auto& cd = this->cameras[activeCameraIndex];
+
+  if (cd.camera != NULL)
+  {
+    UI.dMView->setDepthMap(this->cameras[id].vtiPath);
+
+    UI.worldView->setActiveDepthMap(this->cameras[id].camera,this->cameras[id].vtiPath);
+
+    UI.worldView->setVolumeCurrentFramePath(this->cameras[id].imagePath);
+
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -446,6 +463,7 @@ void MainWindowPrivate::updateCameraView()
   // Show camera image
   this->loadImage(cd.imagePath, cd.camera);
 
+
   if (!cd.camera)
   {
     // Can't show landmarks or residuals with no camera
@@ -454,6 +472,7 @@ void MainWindowPrivate::updateCameraView()
     return;
   }
 
+  this->UI.cameraView->setFrameName(cd.imagePath);
   // Show landmarks
   this->UI.cameraView->clearLandmarks();
   if (this->landmarks)
@@ -593,6 +612,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->UI.menuView->addSeparator();
   d->UI.menuView->addAction(d->UI.cameraViewDock->toggleViewAction());
   d->UI.menuView->addAction(d->UI.cameraSelectorDock->toggleViewAction());
+  d->UI.menuView->addAction(d->UI.dMDock->toggleViewAction());
 
   d->UI.playSlideshowButton->setDefaultAction(d->UI.actionSlideshowPlay);
   d->UI.loopSlideshowButton->setDefaultAction(d->UI.actionSlideshowLoop);
@@ -600,10 +620,18 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.actionOpen, SIGNAL(triggered()), this, SLOT(openFile()));
   connect(d->UI.actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
 
+  connect(d->UI.actionDisplayCoordinates, SIGNAL(toggled(bool)), d->UI.worldView, SLOT(setGlobalGridVisible(bool)));
+
   connect(d->UI.actionExportCameras, SIGNAL(triggered()),
           this, SLOT(saveCameras()));
   connect(d->UI.actionExportLandmarks, SIGNAL(triggered()),
           this, SLOT(saveLandmarks()));
+  connect(d->UI.actionExportVolume, SIGNAL(triggered()),
+          this, SLOT(saveVolume()));
+  connect(d->UI.actionExportMesh, SIGNAL(triggered()),
+          this, SLOT(saveMesh()));
+  connect(d->UI.actionExportColoredMesh, SIGNAL(triggered()),
+          this, SLOT(saveColoredMesh()));
 
   connect(d->UI.actionShowMatchMatrix, SIGNAL(triggered()),
           this, SLOT(showMatchMatrix()));
@@ -628,6 +656,14 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.camera, SIGNAL(valueChanged(int)),
           this, SLOT(setActiveCamera(int)));
 
+  connect(d->UI.worldView, SIGNAL(meshEnabled(bool)),
+          this, SLOT(enableSaveMesh(bool)));
+
+  connect(d->UI.worldView, SIGNAL(coloredMeshEnabled(bool)),
+          this, SLOT(enableSaveColoredMesh(bool)));
+  connect(d->UI.worldView, SIGNAL(updateThresholds(double,double,double,double)),
+          this, SLOT(updateThresholdsDepthmapView(double,double,double,double)));
+
   this->setSlideDelay(d->UI.slideDelay->value());
 
   // Set up UI persistence and restore previous state
@@ -651,6 +687,16 @@ MainWindow::~MainWindow()
 {
   QTE_D();
   d->uiState.save();
+}
+
+void MainWindow::start(char *path)
+{
+  if (path)
+  {
+    openFile(QString(path));
+  }
+
+  show();
 }
 
 //-----------------------------------------------------------------------------
@@ -736,7 +782,6 @@ void MainWindow::loadProject(QString const& path)
   {
     this->loadLandmarks(project.landmarks);
   }
-
   if (project.cameraPath.isEmpty())
   {
     foreach (auto const& ip, project.images)
@@ -764,6 +809,19 @@ void MainWindow::loadProject(QString const& path)
         d->addFrame(0, ip);
       }
     }
+  }
+  //Adding depthmaps (when they exists) to existing camera
+  if (!project.depthmaps.isEmpty())
+  {
+    this->loadDepthmaps(project.depthmaps);
+  }
+
+
+  if (!project.volumePath.isEmpty())
+  {
+
+    d->UI.worldView->loadVolume(project.volumePath,d->cameras.size(), project.volumeKrtdFile,
+      project.volumeVtiFile);
   }
 
   d->UI.worldView->resetView();
@@ -811,12 +869,68 @@ void MainWindow::loadTracks(QString const& path)
       }
 
       d->UI.actionShowMatchMatrix->setEnabled(!tracks->tracks().empty());
+//      d->UI.actionDepthMapView->setEnabled(!tracks->tracks().empty());
     }
   }
   catch (...)
   {
     qWarning() << "failed to read tracks from" << path;
   }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::loadDepthmaps(QString const& path)
+{
+  QTE_D();
+    QMap<int, QString> DMvti;
+
+    QFile vtiFile(path);
+    auto const& vtiBasePath =  QFileInfo(path).absoluteDir().absolutePath();
+
+    if (vtiFile.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+      QTextStream vtiStream(&vtiFile);
+      int frameNum;
+      QString fileName;
+      while (!vtiStream.atEnd())
+      {
+        vtiStream >> frameNum >> fileName;
+        std::string fileNamestr = vtiBasePath.toStdString() + QDir::separator().toAscii() +fileName.toStdString();
+
+        fileName = QString::fromStdString(fileNamestr);
+        if (!DMvti.contains(frameNum))
+        {
+          DMvti.insert(frameNum,fileName);
+        }
+      }
+    }
+    vtiFile.close();
+
+    for (int camId = 0; camId < d->cameras.size(); ++camId)
+    {
+      if(!DMvti.isEmpty() && DMvti.contains(camId))
+      {
+        d->cameras[camId].vtiPath = DMvti[camId];
+      }
+    }
+
+    //Once every depthmap is loaded, set up the active depthmap to the first found
+
+    int camId = 0;
+
+    while (camId < d->cameras.size() && !DMvti.contains(camId))
+    {
+      camId++;
+    }
+
+    if (camId < d->cameras.size())
+    {
+       setActiveCamera(camId);
+    }
+
+
+    d->UI.worldView->enableDepthMap();
+
 }
 
 //-----------------------------------------------------------------------------
@@ -875,6 +989,28 @@ void MainWindow::saveLandmarks(QString const& path)
               "The output file may not have been written correctly.");
     QMessageBox::critical(this, "Export error", msg.arg(path));
   }
+}
+
+void MainWindow::enableSaveMesh(bool state)
+{
+  QTE_D();
+
+  d->UI.actionExportVolume->setEnabled(state);
+  d->UI.actionExportMesh->setEnabled(state);
+}
+
+void MainWindow::enableSaveColoredMesh(bool state)
+{
+  QTE_D();
+
+  d->UI.actionExportColoredMesh->setEnabled(state);
+}
+
+void MainWindow::updateThresholdsDepthmapView(double bcMin, double bcMax, double urMin, double urMax)
+{
+  QTE_D();
+
+  d->UI.dMView->updateDepthMapThresholds(bcMin,bcMax,urMin,urMax);
 }
 
 //-----------------------------------------------------------------------------
@@ -960,6 +1096,56 @@ void MainWindow::saveCameras(QString const& path)
     mb.exec();
   }
 }
+
+//-----------------------------------------------------------------------------
+void MainWindow::saveMesh()
+{
+  QTE_D();
+
+  auto const path = QFileDialog::getSaveFileName(
+    this, "Export Mesh", QString(),
+    "Mesh file (*.vtp);;"
+    "All Files (*)");
+
+  if (!path.isEmpty())
+  {
+    d->UI.worldView->saveMesh(path);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void MainWindow::saveVolume()
+{
+  QTE_D();
+
+  auto const path = QFileDialog::getSaveFileName(
+    this, "Export Volume", QString(),
+    "Mesh file (*.vts);;"
+    "All Files (*)");
+
+  if (!path.isEmpty())
+  {
+    d->UI.worldView->saveVolume(path);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::saveColoredMesh()
+{
+  QTE_D();
+
+  auto const path = QFileDialog::getSaveFileName(
+    this, "Export Colored Mesh", QString(),
+    "Mesh file (*.vtp);;"
+    "All Files (*)");
+
+  if (!path.isEmpty())
+  {
+    d->UI.worldView->saveColoredMesh(path);
+  }
+}
+
 
 //-----------------------------------------------------------------------------
 void MainWindow::setSlideDelay(int delayExp)
@@ -1093,6 +1279,13 @@ void MainWindow::acceptToolResults()
   d->setActiveTool(0);
 }
 
+//void MainWindow::updateDepthMap()
+//{
+//  QTE_D();
+
+//  d->UI.worldView->setDepthMapVisible(true);
+//}
+
 //-----------------------------------------------------------------------------
 void MainWindow::showMatchMatrix()
 {
@@ -1110,6 +1303,21 @@ void MainWindow::showMatchMatrix()
     window->show();
   }
 }
+
+//-----------------------------------------------------------------------------
+//void MainWindow::showDepthMapView()
+//{
+//  QTE_D();
+
+//  if (d->tracks)
+//  {
+//    //TODO: searching into right folder if there's a depthmap to show
+
+//    // Show window
+//    auto window = new DepthMapViewWindow();
+//    window->show();
+//  }
+//}
 
 //-----------------------------------------------------------------------------
 void MainWindow::setViewBackroundColor()
