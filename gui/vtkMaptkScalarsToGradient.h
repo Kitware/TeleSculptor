@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -12,9 +12,9 @@
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  *
- *  * Neither name of Kitware, Inc. nor the names of any contributors may be used
- *    to endorse or promote products derived from this software without specific
- *    prior written permission.
+ *  * Neither the name Kitware, Inc. nor the names of any contributors may be
+ *    used to endorse or promote products derived from this software without
+ *    specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -43,7 +43,7 @@ class vtkMaptkScalarsToGradient : public vtkScalarsToColors
 {
 public:
   vtkTypeMacro(vtkMaptkScalarsToGradient, vtkScalarsToColors);
-  static vtkMaptkScalarsToGradient *New();
+  static vtkMaptkScalarsToGradient* New();
 
   void SetGradient(qtGradient const&);
 
@@ -65,6 +65,5 @@ private:
   QTE_DECLARE_PRIVATE(vtkMaptkScalarsToGradient)
   QTE_DISABLE_COPY(vtkMaptkScalarsToGradient)
 };
-
 
 #endif

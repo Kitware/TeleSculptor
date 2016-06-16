@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -12,9 +12,9 @@
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  *
- *  * Neither name of Kitware, Inc. nor the names of any contributors may be used
- *    to endorse or promote products derived from this software without specific
- *    prior written permission.
+ *  * Neither the name Kitware, Inc. nor the names of any contributors may be
+ *    used to endorse or promote products derived from this software without
+ *    specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -112,7 +112,6 @@ T sparseMax(Eigen::SparseMatrix<T> const& m)
   return result;
 }
 
-
 //-----------------------------------------------------------------------------
 QString supportedImageFilter()
 {
@@ -201,14 +200,13 @@ void MatchMatrixWindowPrivate::persist(
 void MatchMatrixWindowPrivate::buildHorizontalImage(
   qtGradient const& gradient,
   AbstractValueAlgorithm const& valueAlgorithm,
-  AbstractScaleAlgorithm const& scaleAlgorithm
-)
+  AbstractScaleAlgorithm const& scaleAlgorithm)
 {
   auto const k = this->matrix.rows();
   auto minY = k;
   auto maxY = k;
 
-  auto image = QImage(k, k*2, QImage::Format_RGB32);
+  auto image = QImage(k, k * 2, QImage::Format_RGB32);
   image.fill(gradient.at(0.0));
 
   foreach (auto it, kwiver::vital::enumerate(this->matrix))
@@ -230,14 +228,13 @@ void MatchMatrixWindowPrivate::buildHorizontalImage(
 void MatchMatrixWindowPrivate::buildVerticalImage(
   qtGradient const& gradient,
   AbstractValueAlgorithm const& valueAlgorithm,
-  AbstractScaleAlgorithm const& scaleAlgorithm
-)
+  AbstractScaleAlgorithm const& scaleAlgorithm)
 {
   auto const k = this->matrix.rows();
   auto minX = k;
   auto maxX = k;
 
-  auto image = QImage(k*2, k, QImage::Format_RGB32);
+  auto image = QImage(k * 2, k, QImage::Format_RGB32);
   image.fill(gradient.at(0.0));
 
   foreach (auto it, kwiver::vital::enumerate(this->matrix))
@@ -259,8 +256,7 @@ void MatchMatrixWindowPrivate::buildVerticalImage(
 void MatchMatrixWindowPrivate::buildDiagonalImage(
   qtGradient const& gradient,
   AbstractValueAlgorithm const& valueAlgorithm,
-  AbstractScaleAlgorithm const& scaleAlgorithm
-)
+  AbstractScaleAlgorithm const& scaleAlgorithm)
 {
   auto const k = this->matrix.rows();
   auto image = QImage(k, k, QImage::Format_RGB32);
