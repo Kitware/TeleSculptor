@@ -193,6 +193,9 @@ static kwiver::vital::config_block_sptr default_config()
       config->set_value("depthmaps_images_file", "",
                         "An optional file containing paths to depthmaps as image datas.");
 
+      config->set_value("krtd_clean_up", "false",
+                        "Delete krtd files present into output_krtd_dir before launching the bundle adjustment.");
+
   kwiver::vital::algo::bundle_adjust::get_nested_algo_configuration("bundle_adjuster", config,
                                                      kwiver::vital::algo::bundle_adjust_sptr());
   kwiver::vital::algo::initialize_cameras_landmarks
@@ -1031,6 +1034,22 @@ static int maptk_main(int argc, char const* argv[])
   //
   // Write the output KRTD files
   //
+  if (config->get_value<bool>("krtd_clean_up") )
+  {
+    std::cout << "Cleaning " << config->get_value<std::string>("output_krtd_dir") << " before writing new files." << std::endl;
+
+    std::ifstream framelist(config->get_value<std::string>("image_list_file"));
+    std::string filePath, krtdFile;
+
+    while (framelist >> filePath)
+    {
+      krtdFile = ST::GetFilenameWithoutExtension(filePath) + ".krtd";
+
+      ST::RemoveFile(config->get_value<std::string>("output_krtd_dir") + krtdFile);
+    }
+
+  }
+
   if( config->has_value("output_krtd_dir") )
   {
     std::cerr << "Writing output KRTD files" << std::endl;
