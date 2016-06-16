@@ -51,7 +51,7 @@ public:
   vtkTypeMacro(vtkMaptkFeatureTrackRepresentation, vtkObject);
   void PrintSelf(ostream& os, vtkIndent indent);
 
-  static vtkMaptkFeatureTrackRepresentation *New();
+  static vtkMaptkFeatureTrackRepresentation* New();
 
   void AddTrackPoint(unsigned trackId, unsigned frameId, double x, double y);
 

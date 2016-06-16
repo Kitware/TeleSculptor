@@ -78,12 +78,13 @@ static char const* const Observations = "observations";
 class WorldViewPrivate
 {
 public:
-  WorldViewPrivate() :
-    validImage(false),
-    validTransform(false),
-    cameraRepDirty(false),
-    scaleDirty(false)
-    {}
+  WorldViewPrivate()
+    : validImage(false),
+      validTransform(false),
+      cameraRepDirty(false),
+      scaleDirty(false)
+  {
+  }
 
   void setPopup(QAction* action, QMenu* menu);
   void setPopup(QAction* action, QWidget* widget);

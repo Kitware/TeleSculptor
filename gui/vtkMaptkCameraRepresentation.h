@@ -45,7 +45,7 @@ public:
   vtkTypeMacro(vtkMaptkCameraRepresentation, vtkObject);
   void PrintSelf(ostream& os, vtkIndent indent);
 
-  static vtkMaptkCameraRepresentation *New();
+  static vtkMaptkCameraRepresentation* New();
 
   void AddCamera(vtkCamera* camera);
   void RemoveCamera(vtkCamera* camera);

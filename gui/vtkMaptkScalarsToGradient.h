@@ -43,7 +43,7 @@ class vtkMaptkScalarsToGradient : public vtkScalarsToColors
 {
 public:
   vtkTypeMacro(vtkMaptkScalarsToGradient, vtkScalarsToColors);
-  static vtkMaptkScalarsToGradient *New();
+  static vtkMaptkScalarsToGradient* New();
 
   void SetGradient(qtGradient const&);
 
@@ -65,6 +65,5 @@ private:
   QTE_DECLARE_PRIVATE(vtkMaptkScalarsToGradient)
   QTE_DISABLE_COPY(vtkMaptkScalarsToGradient)
 };
-
 
 #endif

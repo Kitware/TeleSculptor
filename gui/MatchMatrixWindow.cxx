@@ -112,7 +112,6 @@ T sparseMax(Eigen::SparseMatrix<T> const& m)
   return result;
 }
 
-
 //-----------------------------------------------------------------------------
 QString supportedImageFilter()
 {
@@ -201,14 +200,13 @@ void MatchMatrixWindowPrivate::persist(
 void MatchMatrixWindowPrivate::buildHorizontalImage(
   qtGradient const& gradient,
   AbstractValueAlgorithm const& valueAlgorithm,
-  AbstractScaleAlgorithm const& scaleAlgorithm
-)
+  AbstractScaleAlgorithm const& scaleAlgorithm)
 {
   auto const k = this->matrix.rows();
   auto minY = k;
   auto maxY = k;
 
-  auto image = QImage(k, k*2, QImage::Format_RGB32);
+  auto image = QImage(k, k * 2, QImage::Format_RGB32);
   image.fill(gradient.at(0.0));
 
   foreach (auto it, kwiver::vital::enumerate(this->matrix))
@@ -230,14 +228,13 @@ void MatchMatrixWindowPrivate::buildHorizontalImage(
 void MatchMatrixWindowPrivate::buildVerticalImage(
   qtGradient const& gradient,
   AbstractValueAlgorithm const& valueAlgorithm,
-  AbstractScaleAlgorithm const& scaleAlgorithm
-)
+  AbstractScaleAlgorithm const& scaleAlgorithm)
 {
   auto const k = this->matrix.rows();
   auto minX = k;
   auto maxX = k;
 
-  auto image = QImage(k*2, k, QImage::Format_RGB32);
+  auto image = QImage(k * 2, k, QImage::Format_RGB32);
   image.fill(gradient.at(0.0));
 
   foreach (auto it, kwiver::vital::enumerate(this->matrix))
@@ -259,8 +256,7 @@ void MatchMatrixWindowPrivate::buildVerticalImage(
 void MatchMatrixWindowPrivate::buildDiagonalImage(
   qtGradient const& gradient,
   AbstractValueAlgorithm const& valueAlgorithm,
-  AbstractScaleAlgorithm const& scaleAlgorithm
-)
+  AbstractScaleAlgorithm const& scaleAlgorithm)
 {
   auto const k = this->matrix.rows();
   auto image = QImage(k, k, QImage::Format_RGB32);

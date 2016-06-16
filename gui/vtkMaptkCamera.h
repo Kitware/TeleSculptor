@@ -41,7 +41,7 @@ public:
   vtkTypeMacro(vtkMaptkCamera, vtkCamera);
   void PrintSelf(ostream& os, vtkIndent indent);
 
-  static vtkMaptkCamera *New();
+  static vtkMaptkCamera* New();
 
   // Description:
   // Set/Get the internal maptk camera
@@ -80,7 +80,7 @@ public:
   vtkGetMacro(AspectRatio, double);
   vtkSetMacro(AspectRatio, double);
 
-  void DeepCopy(vtkMaptkCamera *source);
+  void DeepCopy(vtkMaptkCamera* source);
 
 protected:
   vtkMaptkCamera();
