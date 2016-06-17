@@ -553,7 +553,6 @@ void WorldView::setGroundPlaneVisible(bool state)
 }
 
 //-----------------------------------------------------------------------------
-
 void WorldView::setGlobalGridVisible(bool state)
 {
   QTE_D();
@@ -568,41 +567,41 @@ void WorldView::setGlobalGridVisible(bool state)
   d->UI.renderWidget->update();
 }
 
+//-----------------------------------------------------------------------------
 void WorldView::updateGrid()
 {
   QTE_D();
 
   //Calculating the bounding box for the grid coordinates
-  double bounds[6] = {std::numeric_limits<double>::max(),std::numeric_limits<double>::min(),
-                      std::numeric_limits<double>::max(),std::numeric_limits<double>::min(),
-                      std::numeric_limits<double>::max(),std::numeric_limits<double>::min()};
+  double totalBounds[6] = {
+    std::numeric_limits<double>::max(), std::numeric_limits<double>::min(),
+    std::numeric_limits<double>::max(), std::numeric_limits<double>::min(),
+    std::numeric_limits<double>::max(), std::numeric_limits<double>::min()};
 
-  double tmpBounds[6];
+  auto const actors = d->renderer->GetActors();
 
-  vtkActorCollection *collection = d->renderer->GetActors();
-
-  int volumeNum = collection->GetNumberOfItems();
-
-  collection->InitTraversal();
-
-  for (int i = 0; i < volumeNum; ++i)
+  // Add bounds of "all" actors to total bounds
+  actors->InitTraversal();
+  while (auto const actor = actors->GetNextActor())
   {
-    vtkActor *act = collection->GetNextActor();
-
-    if (act != d->cubeAxesActor.Get() && act->GetVisibility())
+    // Skip the axes actor, and any hidden actors
+    if (actor == d->cubeAxesActor.Get() || !actor->GetVisibility())
     {
-      act->GetMapper()->GetInput()->GetBounds(tmpBounds);
-
-      bounds[0] = std::min(bounds[0],tmpBounds[0]);
-      bounds[1] = std::max(bounds[1],tmpBounds[1]);
-      bounds[2] = std::min(bounds[2],tmpBounds[2]);
-      bounds[3] = std::max(bounds[3],tmpBounds[3]);
-      bounds[4] = std::min(bounds[4],tmpBounds[4]);
-      bounds[5] = std::max(bounds[5],tmpBounds[5]);
+      continue;
     }
+
+    double actorBounds[6];
+    actor->GetMapper()->GetInput()->GetBounds(actorBounds);
+
+    totalBounds[0] = std::min(totalBounds[0], actorBounds[0]);
+    totalBounds[1] = std::max(totalBounds[1], actorBounds[1]);
+    totalBounds[2] = std::min(totalBounds[2], actorBounds[2]);
+    totalBounds[3] = std::max(totalBounds[3], actorBounds[3]);
+    totalBounds[4] = std::min(totalBounds[4], actorBounds[4]);
+    totalBounds[5] = std::max(totalBounds[5], actorBounds[5]);
   }
 
-  d->cubeAxesActor->SetBounds(bounds);
+  d->cubeAxesActor->SetBounds(totalBounds);
   d->cubeAxesActor->SetCamera(d->renderer->GetActiveCamera());
   d->cubeAxesActor->GetTitleTextProperty(0)->SetColor(1.0, 0.0, 0.0);
   d->cubeAxesActor->GetLabelTextProperty(0)->SetColor(1.0, 0.0, 0.0);
@@ -625,8 +624,9 @@ void WorldView::updateGrid()
   d->renderer->AddActor(d->cubeAxesActor.Get());
 
   d->UI.renderWidget->update();
-
 }
+
+//-----------------------------------------------------------------------------
 void WorldView::resetView()
 {
   QTE_D();

@@ -600,7 +600,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.actionOpen, SIGNAL(triggered()), this, SLOT(openFile()));
   connect(d->UI.actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
 
-  connect(d->UI.actionDisplayCoordinates, SIGNAL(toggled(bool)), d->UI.worldView, SLOT(setGlobalGridVisible(bool)));
+  connect(d->UI.actionDisplayCoordinates, SIGNAL(toggled(bool)),
+          d->UI.worldView, SLOT(setGlobalGridVisible(bool)));
 
   connect(d->UI.actionExportCameras, SIGNAL(triggered()),
           this, SLOT(saveCameras()));

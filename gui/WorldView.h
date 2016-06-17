@@ -36,7 +36,6 @@
 #include <QtGui/QWidget>
 
 class vtkImageData;
-
 class vtkPolyData;
 
 namespace kwiver { namespace vital { class landmark_map; } }
