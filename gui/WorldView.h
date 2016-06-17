@@ -79,6 +79,8 @@ public slots:
   void viewToWorldFront();
   void viewToWorldBack();
 
+  void invalidateGeometry();
+
 protected slots:
   void updateAxes();
   void updateCameras();

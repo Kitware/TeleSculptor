@@ -288,7 +288,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->setPopup(d->UI.actionShowCameras, d->cameraOptions);
 
   connect(d->cameraOptions, SIGNAL(modified()),
-          d->UI.renderWidget, SLOT(update()));
+          this, SLOT(invalidateGeometry()));
 
   d->landmarkOptions = new PointOptions("WorldView/Landmarks", this);
   d->landmarkOptions->addActor(d->landmarkActor.GetPointer());
@@ -488,7 +488,7 @@ void WorldView::setImageData(vtkImageData* data, QSize const& dimensions)
   d->validImage = data;
   d->imageActor->SetInputData(data ? data : d->emptyImage.GetPointer());
   d->imageActor->SetVisibility(data && d->validTransform && showImage);
-  d->updateAxes(this, true);
+  d->UI.renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -677,6 +677,13 @@ void WorldView::setPerspective(bool perspective)
 
   d->renderer->GetActiveCamera()->SetParallelProjection(!perspective);
   d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::invalidateGeometry()
+{
+  QTE_D();
+  d->updateAxes(this);
 }
 
 //-----------------------------------------------------------------------------
