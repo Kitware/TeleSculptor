@@ -84,7 +84,9 @@ public:
     validImage(false),
     validTransform(false),
     cameraRepDirty(false),
-    scaleDirty(false)
+    scaleDirty(false),
+    axesDirty(false),
+    axesVisible(false)
     {}
 
   void setPopup(QAction* action, QMenu* menu);
@@ -98,6 +100,7 @@ public:
   void updateImageTransform();
   void updateCameras(WorldView*);
   void updateScale(WorldView*);
+  void updateAxes(WorldView*, bool immediate = false);
 
   Ui::WorldView UI;
   Am::WorldView AM;
@@ -121,6 +124,8 @@ public:
   vtkNew<vtkPlaneSource> groundPlane;
   vtkNew<vtkActor> groundActor;
 
+  vtkNew<vtkCubeAxesActor> cubeAxesActor;
+
   ImageOptions* imageOptions;
   CameraOptions* cameraOptions;
   PointOptions* landmarkOptions;
@@ -128,13 +133,14 @@ public:
   vtkNew<vtkMatrix4x4> imageProjection;
   vtkNew<vtkMatrix4x4> imageLocalTransform;
 
-  vtkNew<vtkCubeAxesActor> cubeAxesActor;
-
   bool validImage;
   bool validTransform;
 
   bool cameraRepDirty;
   bool scaleDirty;
+  bool axesDirty;
+
+  bool axesVisible;
 };
 
 QTE_IMPLEMENT_D_FUNC(WorldView)
@@ -234,6 +240,21 @@ void WorldViewPrivate::updateScale(WorldView* q)
 }
 
 //-----------------------------------------------------------------------------
+void WorldViewPrivate::updateAxes(WorldView* q, bool immediate)
+{
+  if (immediate)
+  {
+    this->axesDirty = true;
+    q->updateAxes();
+  }
+  else if (!this->axesDirty)
+  {
+    this->axesDirty = true;
+    QMetaObject::invokeMethod(q, "updateAxes", Qt::QueuedConnection);
+  }
+}
+
+//-----------------------------------------------------------------------------
 WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   : QWidget(parent, flags), d_ptr(new WorldViewPrivate)
 {
@@ -310,17 +331,6 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.actionShowGroundPlane, SIGNAL(toggled(bool)),
           this, SLOT(setGroundPlaneVisible(bool)));
 
-  for (int i = 0; i < this->children().size(); ++i) {
-    if (this->children().at(i)->inherits("QAction")) {
-      QAction * child = (QAction *) this->children().at(i);
-
-      if (child->isCheckable()) {
-        connect(child, SIGNAL(toggled(bool)),
-          this, SLOT(updateGrid()));
-      }
-    }
-  }
-
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
   d->renderWindow->AddRenderer(d->renderer.GetPointer());
@@ -382,6 +392,32 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->groundActor->GetProperty()->SetLighting(false);
   d->groundActor->GetProperty()->SetRepresentationToWireframe();
   d->renderer->AddActor(d->groundActor.GetPointer());
+
+  // Set up axes
+  d->cubeAxesActor->GetTitleTextProperty(0)->SetColor(1.0, 0.3, 0.3);
+  d->cubeAxesActor->GetLabelTextProperty(0)->SetColor(1.0, 0.3, 0.3);
+  d->cubeAxesActor->GetTitleTextProperty(1)->SetColor(0.0, 1.0, 0.0);
+  d->cubeAxesActor->GetLabelTextProperty(1)->SetColor(0.0, 1.0, 0.0);
+  d->cubeAxesActor->GetTitleTextProperty(2)->SetColor(0.4, 0.4, 1.0);
+  d->cubeAxesActor->GetLabelTextProperty(2)->SetColor(0.4, 0.4, 1.0);
+
+  d->cubeAxesActor->GetXAxesLinesProperty()->SetColor(0.5, 0.5, 0.5);
+  d->cubeAxesActor->GetYAxesLinesProperty()->SetColor(0.5, 0.5, 0.5);
+  d->cubeAxesActor->GetZAxesLinesProperty()->SetColor(0.5, 0.5, 0.5);
+  d->cubeAxesActor->GetXAxesGridlinesProperty()->SetColor(0.5, 0.5, 0.5);
+  d->cubeAxesActor->GetYAxesGridlinesProperty()->SetColor(0.5, 0.5, 0.5);
+  d->cubeAxesActor->GetZAxesGridlinesProperty()->SetColor(0.5, 0.5, 0.5);
+
+  d->cubeAxesActor->DrawXGridlinesOn();
+  d->cubeAxesActor->DrawYGridlinesOn();
+  d->cubeAxesActor->DrawZGridlinesOn();
+  d->cubeAxesActor->XAxisMinorTickVisibilityOff();
+  d->cubeAxesActor->YAxisMinorTickVisibilityOff();
+  d->cubeAxesActor->ZAxisMinorTickVisibilityOff();
+  d->cubeAxesActor->SetFlyMode(VTK_FLY_FURTHEST_TRIAD);
+  d->cubeAxesActor->SetGridLineLocation(VTK_GRID_LINES_FURTHEST);
+
+  d->renderer->AddActor(d->cubeAxesActor.GetPointer());
 }
 
 //-----------------------------------------------------------------------------
@@ -407,6 +443,7 @@ void WorldView::addCamera(int id, vtkMaptkCamera* camera)
   d->cameraRep->AddCamera(camera);
 
   d->updateCameras(this);
+  d->updateAxes(this);
 }
 
 //-----------------------------------------------------------------------------
@@ -434,6 +471,7 @@ void WorldView::setActiveCamera(vtkMaptkCamera* camera)
   d->cameraRep->SetActiveCamera(camera);
 
   d->updateCameras(this);
+  d->updateAxes(this);
 }
 
 //-----------------------------------------------------------------------------
@@ -450,7 +488,7 @@ void WorldView::setImageData(vtkImageData* data, QSize const& dimensions)
   d->validImage = data;
   d->imageActor->SetInputData(data ? data : d->emptyImage.GetPointer());
   d->imageActor->SetVisibility(data && d->validTransform && showImage);
-  d->UI.renderWidget->update();
+  d->updateAxes(this, true);
 }
 
 //-----------------------------------------------------------------------------
@@ -516,6 +554,7 @@ void WorldView::setLandmarks(kwiver::vital::landmark_map const& lm)
   d->landmarkObservations->Modified();
 
   d->updateScale(this);
+  d->updateAxes(this);
 }
 
 //-----------------------------------------------------------------------------
@@ -524,7 +563,7 @@ void WorldView::setImageVisible(bool state)
   QTE_D();
 
   d->imageActor->SetVisibility(state && d->validImage && d->validTransform);
-  d->UI.renderWidget->update();
+  d->updateAxes(this, true);
 }
 
 //-----------------------------------------------------------------------------
@@ -532,6 +571,7 @@ void WorldView::setCamerasVisible(bool state)
 {
   QTE_D();
   d->cameraOptions->setCamerasVisible(state);
+  d->updateAxes(this, true);
 }
 
 //-----------------------------------------------------------------------------
@@ -540,7 +580,7 @@ void WorldView::setLandmarksVisible(bool state)
   QTE_D();
 
   d->landmarkActor->SetVisibility(state);
-  d->UI.renderWidget->update();
+  d->updateAxes(this, true);
 }
 
 //-----------------------------------------------------------------------------
@@ -549,81 +589,25 @@ void WorldView::setGroundPlaneVisible(bool state)
   QTE_D();
 
   d->groundActor->SetVisibility(state);
-  d->UI.renderWidget->update();
+  d->updateAxes(this, true);
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::setGlobalGridVisible(bool state)
+void WorldView::setAxesVisible(bool state)
 {
   QTE_D();
 
-  d->cubeAxesActor->SetVisibility(state);
+  d->axesVisible = state;
 
   if (state)
   {
-    updateGrid();
+    d->updateAxes(this, true);
   }
-
-  d->UI.renderWidget->update();
-}
-
-//-----------------------------------------------------------------------------
-void WorldView::updateGrid()
-{
-  QTE_D();
-
-  //Calculating the bounding box for the grid coordinates
-  double totalBounds[6] = {
-    std::numeric_limits<double>::max(), std::numeric_limits<double>::min(),
-    std::numeric_limits<double>::max(), std::numeric_limits<double>::min(),
-    std::numeric_limits<double>::max(), std::numeric_limits<double>::min()};
-
-  auto const actors = d->renderer->GetActors();
-
-  // Add bounds of "all" actors to total bounds
-  actors->InitTraversal();
-  while (auto const actor = actors->GetNextActor())
+  else
   {
-    // Skip the axes actor, and any hidden actors
-    if (actor == d->cubeAxesActor.Get() || !actor->GetVisibility())
-    {
-      continue;
-    }
-
-    double actorBounds[6];
-    actor->GetMapper()->GetInput()->GetBounds(actorBounds);
-
-    totalBounds[0] = std::min(totalBounds[0], actorBounds[0]);
-    totalBounds[1] = std::max(totalBounds[1], actorBounds[1]);
-    totalBounds[2] = std::min(totalBounds[2], actorBounds[2]);
-    totalBounds[3] = std::max(totalBounds[3], actorBounds[3]);
-    totalBounds[4] = std::min(totalBounds[4], actorBounds[4]);
-    totalBounds[5] = std::max(totalBounds[5], actorBounds[5]);
+    d->cubeAxesActor->SetVisibility(state);
+    d->UI.renderWidget->update();
   }
-
-  d->cubeAxesActor->SetBounds(totalBounds);
-  d->cubeAxesActor->SetCamera(d->renderer->GetActiveCamera());
-  d->cubeAxesActor->GetTitleTextProperty(0)->SetColor(1.0, 0.0, 0.0);
-  d->cubeAxesActor->GetLabelTextProperty(0)->SetColor(1.0, 0.0, 0.0);
-
-  d->cubeAxesActor->GetTitleTextProperty(1)->SetColor(0.0, 1.0, 0.0);
-  d->cubeAxesActor->GetLabelTextProperty(1)->SetColor(0.0, 1.0, 0.0);
-
-  d->cubeAxesActor->GetTitleTextProperty(2)->SetColor(0.0, 0.0, 1.0);
-  d->cubeAxesActor->GetLabelTextProperty(2)->SetColor(0.0, 0.0, 1.0);
-
-  d->cubeAxesActor->DrawXGridlinesOn();
-  d->cubeAxesActor->DrawYGridlinesOn();
-  d->cubeAxesActor->DrawZGridlinesOn();
-  d->cubeAxesActor->SetGridLineLocation(VTK_GRID_LINES_FURTHEST);
-
-  d->cubeAxesActor->XAxisMinorTickVisibilityOff();
-  d->cubeAxesActor->YAxisMinorTickVisibilityOff();
-  d->cubeAxesActor->ZAxisMinorTickVisibilityOff();
-
-  d->renderer->AddActor(d->cubeAxesActor.Get());
-
-  d->UI.renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -705,6 +689,49 @@ void WorldView::updateCameras()
     d->cameraRep->Update();
     d->UI.renderWidget->update();
     d->cameraRepDirty = false;
+  }
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::updateAxes()
+{
+  QTE_D();
+
+  if (d->axesDirty)
+  {
+    // Compute bounds of visible actors
+    auto const actors = d->renderer->GetActors();
+    vtkBoundingBox bbox;
+
+    actors->InitTraversal();
+    while (auto const actor = actors->GetNextActor())
+    {
+      // Skip the axes actor, and any hidden actors
+      if (actor == d->cubeAxesActor.Get() || !actor->GetVisibility())
+      {
+        continue;
+      }
+
+      bbox.AddBounds(actor->GetBounds());
+    }
+
+    // Update scale of axes, or hide if nothing is visible
+    if (bbox.IsValid())
+    {
+      d->cubeAxesActor->SetVisibility(d->axesVisible);
+      d->cubeAxesActor->SetCamera(d->renderer->GetActiveCamera());
+      d->cubeAxesActor->SetBounds(bbox.GetBound(0), bbox.GetBound(1),
+                                  bbox.GetBound(2), bbox.GetBound(3),
+                                  bbox.GetBound(4), bbox.GetBound(5));
+    }
+    else
+    {
+      d->cubeAxesActor->SetVisibility(false);
+    }
+
+    d->axesDirty = false;
+    d->renderer->ResetCameraClippingRange();
+    d->UI.renderWidget->update();
   }
 }
 

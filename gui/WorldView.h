@@ -64,9 +64,7 @@ public slots:
   void setCamerasVisible(bool);
   void setLandmarksVisible(bool);
   void setGroundPlaneVisible(bool);
-
-  void setGlobalGridVisible(bool state);
-  void updateGrid();
+  void setAxesVisible(bool);
 
   void setPerspective(bool);
 
@@ -82,6 +80,7 @@ public slots:
   void viewToWorldBack();
 
 protected slots:
+  void updateAxes();
   void updateCameras();
   void updateScale();
 
