@@ -22,7 +22,7 @@ target_link_libraries(maptk_pos2krtd
 
 kwiver_add_executable(maptk_bundle_adjust_tracks bundle_adjust_tracks.cxx)
 target_link_libraries(maptk_bundle_adjust_tracks
-  PRIVATE             maptk vital_apm kwiversys
+  PRIVATE             maptk vital_apm kwiversys boost_filesystem boost_system
   )
 
 kwiver_add_executable(maptk_analyze_tracks analyze_tracks.cxx)

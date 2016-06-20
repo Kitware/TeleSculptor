@@ -41,6 +41,8 @@
 #include <string>
 #include <vector>
 
+#include <boost/filesystem.hpp>
+
 #include <vital/vital_foreach.h>
 #include <vital/config/config_block.h>
 #include <vital/config/config_block_io.h>
@@ -182,7 +184,7 @@ static kwiver::vital::config_block_sptr default_config()
 
 
       config->set_value("krtd_clean_up", "false",
-                        "Delete krtd files present into output_krtd_dir before launching the bundle adjustment.");
+                        "Delete all previously existing KRTD files present in output_krtd_dir before writing new KRTD files.");
   kwiver::vital::algo::bundle_adjust::get_nested_algo_configuration("bundle_adjuster", config,
                                                      kwiver::vital::algo::bundle_adjust_sptr());
   kwiver::vital::algo::initialize_cameras_landmarks
@@ -1023,16 +1025,22 @@ static int maptk_main(int argc, char const* argv[])
   //
   if (config->get_value<bool>("krtd_clean_up") )
   {
-    std::cout << "Cleaning " << config->get_value<std::string>("output_krtd_dir") << " before writing new files." << std::endl;
 
-    std::ifstream framelist(config->get_value<std::string>("image_list_file"));
-    std::string filePath, krtdFile;
+    std::cerr << "Cleaning "
+              << config->get_value<std::string>("output_krtd_dir")
+              << " before writing new files." << std::endl;
 
-    while (framelist >> filePath)
+    boost::filesystem::path p(config->get_value<std::string>("output_krtd_dir"));
+    boost::filesystem::directory_iterator end_iter;
+
+    for( boost::filesystem::directory_iterator dir_iter(p);
+         dir_iter != end_iter; ++dir_iter)
     {
-      krtdFile = ST::GetFilenameWithoutExtension(filePath) + ".krtd";
-
-      ST::RemoveFile(config->get_value<std::string>("output_krtd_dir") + krtdFile);
+      if (boost::filesystem::is_regular_file(dir_iter->status())
+          && boost::filesystem::extension(dir_iter->path()) == ".krtd")
+      {
+        boost::filesystem::remove(dir_iter->path());
+      }
     }
 
   }
