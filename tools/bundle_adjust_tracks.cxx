@@ -41,8 +41,6 @@
 #include <string>
 #include <vector>
 
-#include <boost/filesystem.hpp>
-
 #include <vital/vital_foreach.h>
 #include <vital/config/config_block.h>
 #include <vital/config/config_block_io.h>
@@ -1030,16 +1028,14 @@ static int maptk_main(int argc, char const* argv[])
               << config->get_value<std::string>("output_krtd_dir")
               << " before writing new files." << std::endl;
 
-    boost::filesystem::path p(config->get_value<std::string>("output_krtd_dir"));
-    boost::filesystem::directory_iterator end_iter;
+    kwiver::vital::path_t krtd_dir = config->get_value<std::string>("output_krtd_dir");
+    std::vector<kwiver::vital::path_t> files = files_in_dir(krtd_dir);
 
-    for( boost::filesystem::directory_iterator dir_iter(p);
-         dir_iter != end_iter; ++dir_iter)
+    for (int i = 0; i < files.size(); ++i)
     {
-      if (boost::filesystem::is_regular_file(dir_iter->status())
-          && boost::filesystem::extension(dir_iter->path()) == ".krtd")
+      if (ST::GetFilenameExtension(files[i]) == ".krtd")
       {
-        boost::filesystem::remove(dir_iter->path());
+        ST::RemoveFile(files[i]);
       }
     }
 
