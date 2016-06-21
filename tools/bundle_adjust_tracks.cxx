@@ -187,6 +187,9 @@ static kwiver::vital::config_block_sptr default_config()
                     "when updating cameras. This option is only relevent if a "
                     "value is give to the input_pos_files option.");
 
+
+      config->set_value("krtd_clean_up", "false",
+                        "Delete all previously existing KRTD files present in output_krtd_dir before writing new KRTD files.");
   kwiver::vital::algo::bundle_adjust::get_nested_algo_configuration("bundle_adjuster", config,
                                                      kwiver::vital::algo::bundle_adjust_sptr());
   kwiver::vital::algo::initialize_cameras_landmarks
@@ -1033,6 +1036,26 @@ static int maptk_main(int argc, char const* argv[])
   //
   // Write the output KRTD files
   //
+  if (config->get_value<bool>("krtd_clean_up") )
+  {
+
+    std::cerr << "Cleaning "
+              << config->get_value<std::string>("output_krtd_dir")
+              << " before writing new files." << std::endl;
+
+    kwiver::vital::path_t krtd_dir = config->get_value<std::string>("output_krtd_dir");
+    std::vector<kwiver::vital::path_t> files = files_in_dir(krtd_dir);
+
+    for (int i = 0; i < files.size(); ++i)
+    {
+      if (ST::GetFilenameLastExtension(files[i]) == ".krtd")
+      {
+        ST::RemoveFile(files[i]);
+      }
+    }
+
+  }
+
   if( config->has_value("output_krtd_dir") )
   {
     LOG_INFO(main_logger, "Writing output KRTD files");

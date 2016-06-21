@@ -44,6 +44,11 @@ Tools
  * Updated the bundle_adjust_tracks tool to use the configurable abstract
    algorithm for canonical transform.
 
+ * Added an option to the bundle_adjust_tracks tool to remove all the KRTD
+   files from the output directory before writing new ones.  This is useful
+   when only a subset of cameras are computed and we do not want a mix of
+   old and new camera files.
+
 
 Fixes since v0.8.0
 -------------------------------
