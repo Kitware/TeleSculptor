@@ -1033,7 +1033,7 @@ static int maptk_main(int argc, char const* argv[])
 
     for (int i = 0; i < files.size(); ++i)
     {
-      if (ST::GetFilenameExtension(files[i]) == ".krtd")
+      if (ST::GetFilenameLastExtension(files[i]) == ".krtd")
       {
         ST::RemoveFile(files[i]);
       }
