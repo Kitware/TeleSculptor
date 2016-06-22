@@ -196,6 +196,9 @@ static kwiver::vital::config_block_sptr default_config()
       config->set_value("krtd_clean_up", "false",
                         "Delete krtd files present into output_krtd_dir before launching the bundle adjustment.");
 
+      config->set_value("krtd_clean_up", "false",
+                        "Delete all previously existing KRTD files present in output_krtd_dir before writing new KRTD files.");
+
   kwiver::vital::algo::bundle_adjust::get_nested_algo_configuration("bundle_adjuster", config,
                                                      kwiver::vital::algo::bundle_adjust_sptr());
   kwiver::vital::algo::initialize_cameras_landmarks
@@ -1036,16 +1039,21 @@ static int maptk_main(int argc, char const* argv[])
   //
   if (config->get_value<bool>("krtd_clean_up") )
   {
-    std::cout << "Cleaning " << config->get_value<std::string>("output_krtd_dir") << " before writing new files." << std::endl;
 
-    std::ifstream framelist(config->get_value<std::string>("image_list_file"));
-    std::string filePath, krtdFile;
 
-    while (framelist >> filePath)
+    std::cerr << "Cleaning "
+              << config->get_value<std::string>("output_krtd_dir")
+              << " before writing new files." << std::endl;
+
+    kwiver::vital::path_t krtd_dir = config->get_value<std::string>("output_krtd_dir");
+    std::vector<kwiver::vital::path_t> files = files_in_dir(krtd_dir);
+
+    for (int i = 0; i < files.size(); ++i)
     {
-      krtdFile = ST::GetFilenameWithoutExtension(filePath) + ".krtd";
-
-      ST::RemoveFile(config->get_value<std::string>("output_krtd_dir") + krtdFile);
+      if (ST::GetFilenameLastExtension(files[i]) == ".krtd")
+      {
+        ST::RemoveFile(files[i]);
+      }
     }
 
   }

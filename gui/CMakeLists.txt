@@ -167,6 +167,7 @@ target_link_libraries(mapgui
   vtkRenderingCore
   vtkCommonCore
   vtksys
+  vtkWebGLExporter
   ${VTK_LIBRARIES}
   qtExtensions
   ${QT_QTMAIN_LIBRARY}

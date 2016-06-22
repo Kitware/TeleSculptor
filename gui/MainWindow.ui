@@ -34,6 +34,8 @@
      <addaction name="actionExportCameras"/>
      <addaction name="actionExportLandmarks"/>
      <addaction name="separator"/>
+	 <addaction name="actionWebGLScene"/>
+	 <addaction name="separator"/>
      <addaction name="actionExportVolume"/>
      <addaction name="actionExportMesh"/>
      <addaction name="actionExportColoredMesh"/>
@@ -328,6 +330,11 @@
    </property>
    <property name="text">
     <string>Display Coordinates</string>
+    </property>
+   </action>
+  <action name="actionWebGLScene">
+   <property name="text">
+    <string>WebGL Scene...</string>
    </property>
   </action>
  </widget>

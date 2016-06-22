@@ -236,7 +236,7 @@ void vtkMaptkCamera::GetTransform(vtkMatrix4x4* out, double const plane[4])
 }
 
 //-----------------------------------------------------------------------------
-void vtkMaptkCamera::DeepCopy(vtkMaptkCamera *source)
+void vtkMaptkCamera::DeepCopy(vtkMaptkCamera* source)
 {
   this->Superclass::DeepCopy(source);
 
