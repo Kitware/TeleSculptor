@@ -630,6 +630,9 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   this->setSlideDelay(d->UI.slideDelay->value());
 
+  connect(d->UI.actionWebGLScene, SIGNAL(triggered(bool)),
+          this, SLOT(exportWebGLScene()));
+
   // Set up UI persistence and restore previous state
   auto const sdItem = new qtUiState::Item<int, QSlider>(
     d->UI.slideDelay, &QSlider::value, &QSlider::setValue);
@@ -1148,6 +1151,20 @@ void MainWindow::showUserManual()
       this, "Not found",
       "The user manual could not be located. Please check your installation.");
   }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::exportWebGLScene()
+{
+  QTE_D();
+
+  auto const path = QFileDialog::getSaveFileName(
+    this, "Export Scene to WebGL", QString(),
+    "WebGL scene file (*.html);;"
+    "All Files (*)");
+
+   d->UI.worldView->exportWebGLScene(path);
+
 }
 
 //END MainWindow
