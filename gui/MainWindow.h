@@ -70,6 +70,8 @@ public slots:
   void showAboutDialog();
   void showUserManual();
 
+  void exportWebGLScene();
+
 protected slots:
   void setSlideDelay(int);
   void setSlideshowPlaying(bool);

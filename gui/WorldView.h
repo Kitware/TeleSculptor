@@ -77,6 +77,7 @@ public slots:
   void viewToWorldFront();
   void viewToWorldBack();
 
+  void exportWebGLScene(QString const& path);
 protected slots:
   void updateCameras();
   void updateScale();

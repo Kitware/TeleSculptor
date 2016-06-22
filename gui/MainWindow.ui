@@ -33,6 +33,8 @@
      </property>
      <addaction name="actionExportCameras"/>
      <addaction name="actionExportLandmarks"/>
+     <addaction name="separator"/>
+     <addaction name="actionWebGLScene"/>
     </widget>
     <addaction name="actionOpen"/>
     <addaction name="menuExport"/>
@@ -272,6 +274,11 @@
    </property>
    <property name="toolTip">
     <string>Change the background color of the views</string>
+   </property>
+  </action>
+  <action name="actionWebGLScene">
+   <property name="text">
+    <string>WebGL Scene...</string>
    </property>
   </action>
  </widget>
