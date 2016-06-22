@@ -12,9 +12,9 @@
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  *
- *  * Neither name of Kitware, Inc. nor the names of any contributors may be used
- *    to endorse or promote products derived from this software without specific
- *    prior written permission.
+ *  * Neither the name Kitware, Inc. nor the names of any contributors may be
+ *    used to endorse or promote products derived from this software without
+ *    specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -761,15 +761,17 @@ void WorldView::updateScale()
     d->landmarkActor->GetMapper()->Update();
     bbox.AddBounds(d->landmarkActor->GetBounds());
 
+    // If landmarks are not valid, then get ground scale from the cameras
+    if (!bbox.IsValid())
+    {
+      // Add camera centers
+      bbox.AddBounds(d->cameraRep->GetPathActor()->GetBounds());
+    }
+
     // Update ground plane scale
     auto const groundScale =
       1.5 * qMax(qMax(qAbs(bbox.GetBound(0)), qAbs(bbox.GetBound(1))),
                  qMax(qAbs(bbox.GetBound(2)), qAbs(bbox.GetBound(3))));
-
-    d->groundPlane->SetOrigin(-groundScale, -groundScale, 0.0);
-    d->groundPlane->SetPoint1(+groundScale, -groundScale, 0.0);
-    d->groundPlane->SetPoint2(-groundScale, +groundScale, 0.0);
-    d->groundPlane->Modified();
 
     // Add camera centers
     bbox.AddBounds(d->cameraRep->GetPathActor()->GetBounds());
@@ -783,6 +785,12 @@ void WorldView::updateScale()
 
       // Update camera scale
       d->cameraOptions->setBaseCameraScale(cameraScale);
+
+      // Update the ground scale
+      d->groundPlane->SetOrigin(-groundScale, -groundScale, 0.0);
+      d->groundPlane->SetPoint1(+groundScale, -groundScale, 0.0);
+      d->groundPlane->SetPoint2(-groundScale, +groundScale, 0.0);
+      d->groundPlane->Modified();
     }
 
     d->scaleDirty = false;
