@@ -48,9 +48,9 @@
 
 ReconstructionData::ReconstructionData()
 {
-  this->DepthMap = nullptr;
-  this->MatrixK = nullptr;
-  this->MatrixRT = nullptr;
+  this->DepthMap = 0;
+  this->MatrixK = 0;
+  this->MatrixRT = 0;
 }
 
 ReconstructionData::ReconstructionData(std::string depthPath,
@@ -95,7 +95,7 @@ void ReconstructionData::GetColorValue(int* pixelPosition, double rgb[3])
   vtkUnsignedCharArray* color =
     vtkUnsignedCharArray::SafeDownCast(this->DepthMap->GetPointData()->GetArray("PNGImage"));
 
-  if (color == nullptr)
+  if (color == 0)
     {
     std::cerr << "Error, no 'Color' array exists" << std::endl;
     return;
@@ -152,7 +152,7 @@ vtkMatrix4x4* ReconstructionData::GetMatrixTR()
 
 void ReconstructionData::ApplyDepthThresholdFilter(double thresholdBestCost)
 {
-  if (this->DepthMap == nullptr)
+  if (this->DepthMap == 0)
     return;
 
   vtkDoubleArray* depths =
@@ -160,7 +160,7 @@ void ReconstructionData::ApplyDepthThresholdFilter(double thresholdBestCost)
   vtkDoubleArray* bestCost =
     vtkDoubleArray::SafeDownCast(this->DepthMap->GetPointData()->GetArray("Best Cost Values"));
 
-  if (depths == nullptr)
+  if (depths == 0)
     {
     std::cerr << "Error during threshold, depths is empty" << std::endl;
     return;
@@ -198,7 +198,7 @@ void ReconstructionData::TransformWorldToDepthMapPosition(const double* worldCoo
 
 void ReconstructionData::SetDepthMap(vtkImageData* data)
 {
-  if (this->DepthMap != nullptr)
+  if (this->DepthMap != 0)
     this->DepthMap->Delete();
   this->DepthMap = data;
   this->DepthMap->Register(0);
@@ -206,12 +206,12 @@ void ReconstructionData::SetDepthMap(vtkImageData* data)
 
 void ReconstructionData::SetMatrixK(vtkMatrix3x3* matrix)
 {
-  if (this->MatrixK != nullptr)
+  if (this->MatrixK != 0)
     this->MatrixK->Delete();
   this->MatrixK = matrix;
   this->MatrixK->Register(0);
 
-  if (this->Matrix4K != nullptr)
+  if (this->Matrix4K != 0)
     this->Matrix4K->Delete();
   this->Matrix4K = vtkMatrix4x4::New();
   this->Matrix4K->Identity();
@@ -228,7 +228,7 @@ void ReconstructionData::SetMatrixK(vtkMatrix3x3* matrix)
 
 void ReconstructionData::SetMatrixRT(vtkMatrix4x4* matrix)
 {
-  if (this->MatrixRT != nullptr)
+  if (this->MatrixRT != 0)
     this->MatrixRT->Delete();
   this->MatrixRT = matrix;
   this->MatrixRT->Register(0);
