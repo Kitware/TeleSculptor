@@ -43,7 +43,6 @@
 #include <vital/types/camera.h>
 #include <vital/types/landmark_map.h>
 
-#include <vtkActorCollection.h>
 #include <vtkBoundingBox.h>
 #include <vtkCellArray.h>
 #include <vtkCubeAxesActor.h>
@@ -707,19 +706,22 @@ void WorldView::updateAxes()
   if (d->axesDirty)
   {
     // Compute bounds of visible actors
-    auto const actors = d->renderer->GetActors();
+    auto const props = d->renderer->GetViewProps();
     vtkBoundingBox bbox;
 
-    actors->InitTraversal();
-    while (auto const actor = actors->GetNextActor())
+    double tb[6];
+    d->imageActor->GetBounds(tb);
+
+    props->InitTraversal();
+    while (auto const prop = props->GetNextProp())
     {
       // Skip the axes actor, and any hidden actors
-      if (actor == d->cubeAxesActor.Get() || !actor->GetVisibility())
+      if (prop == d->cubeAxesActor.GetPointer() || !prop->GetVisibility())
       {
         continue;
       }
 
-      bbox.AddBounds(actor->GetBounds());
+      bbox.AddBounds(prop->GetBounds());
     }
 
     // Update scale of axes, or hide if nothing is visible
