@@ -62,7 +62,10 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
 
-#include <vtkWebGLExporter.h>
+#ifdef VTKWEBGLEXPORTER
+  #include <vtkWebGLExporter.h>
+#endif
+
 #include <qtMath.h>
 
 #include <QtGui/QMenu>
@@ -682,10 +685,12 @@ void WorldView::updateScale()
   }
 }
 
+#ifdef VTKWEBGLEXPORTER
 //-----------------------------------------------------------------------------
 void WorldView::exportWebGLScene(QString const& path)
 {
   QTE_D();
+
 
   vtkNew<vtkWebGLExporter> exporter;
 
@@ -717,5 +722,5 @@ void WorldView::exportWebGLScene(QString const& path)
 
   exporter->exportStaticScene(d->renderWindow->GetRenderers(), width, height,
                               path.toStdString().c_str());
-
 }
+#endif

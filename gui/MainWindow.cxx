@@ -630,9 +630,10 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   this->setSlideDelay(d->UI.slideDelay->value());
 
+#ifdef VTKWEBGLEXPORTER
   connect(d->UI.actionWebGLScene, SIGNAL(triggered(bool)),
           this, SLOT(exportWebGLScene()));
-
+#endif
   // Set up UI persistence and restore previous state
   auto const sdItem = new qtUiState::Item<int, QSlider>(
     d->UI.slideDelay, &QSlider::value, &QSlider::setValue);
@@ -768,6 +769,10 @@ void MainWindow::loadProject(QString const& path)
       }
     }
   }
+
+#ifdef VTKWEBGLEXPORTER
+  d->UI.actionWebGLScene->setEnabled(true);
+#endif
 
   d->UI.worldView->resetView();
 }
@@ -1153,6 +1158,7 @@ void MainWindow::showUserManual()
   }
 }
 
+#ifdef VTKWEBGLEXPORTER
 //-----------------------------------------------------------------------------
 void MainWindow::exportWebGLScene()
 {
@@ -1163,8 +1169,9 @@ void MainWindow::exportWebGLScene()
     "WebGL scene file (*.html);;"
     "All Files (*)");
 
-   d->UI.worldView->exportWebGLScene(path);
+  d->UI.worldView->exportWebGLScene(path);
 
 }
+#endif
 
 //END MainWindow

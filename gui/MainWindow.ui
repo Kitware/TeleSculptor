@@ -20,7 +20,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>21</height>
+     <height>27</height>
     </rect>
    </property>
    <widget class="qtMenu" name="menuFile">
@@ -277,6 +277,9 @@
    </property>
   </action>
   <action name="actionWebGLScene">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>WebGL Scene...</string>
    </property>
