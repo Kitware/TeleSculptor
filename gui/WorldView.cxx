@@ -416,6 +416,9 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->cubeAxesActor->SetFlyMode(VTK_FLY_FURTHEST_TRIAD);
   d->cubeAxesActor->SetGridLineLocation(VTK_GRID_LINES_FURTHEST);
 
+  d->cubeAxesActor->SetCamera(d->renderer->GetActiveCamera());
+  d->cubeAxesActor->SetVisibility(false);
+
   d->renderer->AddActor(d->cubeAxesActor.GetPointer());
 }
 
