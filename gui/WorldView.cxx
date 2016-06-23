@@ -486,13 +486,11 @@ void WorldView::setLandmarks(kwiver::vital::landmark_map const& lm)
   }
 
   auto fields = QHash<QString, FieldInformation>{};
-  FieldInformation elvField = {Elevation, {minZ, maxZ}};
-  fields.insert("Elevation", elvField);
+  fields.insert("Elevation", FieldInformation{Elevation, {minZ, maxZ}});
   if (maxObservations)
   {
     auto const upper = static_cast<double>(maxObservations);
-    FieldInformation obsField = {Observations, {0.0, upper}};
-    fields.insert("Observations", obsField);
+    fields.insert("Observations", FieldInformation{Observations, {0.0, upper}});
   }
 
   d->landmarkOptions->setTrueColorAvailable(haveColor);
