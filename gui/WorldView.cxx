@@ -722,5 +722,6 @@ void WorldView::exportWebGLScene(QString const& path)
 
   exporter->exportStaticScene(d->renderWindow->GetRenderers(), width, height,
                               path.toStdString().c_str());
+
 }
 #endif

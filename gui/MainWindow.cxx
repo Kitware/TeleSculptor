@@ -1158,6 +1158,7 @@ void MainWindow::showUserManual()
   }
 }
 
+
 #ifdef VTKWEBGLEXPORTER
 //-----------------------------------------------------------------------------
 void MainWindow::exportWebGLScene()
