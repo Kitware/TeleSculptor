@@ -66,19 +66,19 @@
 #include <kwiversys/CommandLineArguments.hxx>
 #include <kwiversys/Directory.hxx>
 
+#include <arrows/core/metrics.h>
+#include <arrows/core/match_matrix.h>
+#include <arrows/core/transform.h>
+
 #include <maptk/colorize.h>
+#include <maptk/geo_reference_points_io.h>
 #include <maptk/ins_data_io.h>
 #include <maptk/local_geo_cs.h>
-#include <maptk/geo_reference_points_io.h>
-#include <maptk/metrics.h>
-#include <maptk/match_matrix.h>
-#include <maptk/transform.h>
 #include <maptk/version.h>
 
 typedef kwiversys::SystemTools     ST;
 
 static kwiver::vital::logger_handle_t main_logger( kwiver::vital::get_logger( "bundle_adjust_tracks_tool" ) );
-
 static kwiver::vital::config_block_sptr default_config()
 {
 
@@ -154,7 +154,6 @@ static kwiver::vital::config_block_sptr default_config()
   config->set_value("min_track_length", "50",
                     "Filter the input tracks keeping those covering "
                     "at least this many frames.");
-
   config->set_value("min_mm_importance", "1.0",
                     "Filter the input tracks with match matrix importance score "
                     "below this threshold. Set to 0 to disable.");
@@ -187,12 +186,11 @@ static kwiver::vital::config_block_sptr default_config()
                     "when updating cameras. This option is only relevent if a "
                     "value is give to the input_pos_files option.");
 
-  config->set_value("krtd_clean_up", "false",
-                    "Delete all previously existing KRTD files present in output_krtd_dir before writing new KRTD files.");
 
+      config->set_value("krtd_clean_up", "false",
+                        "Delete all previously existing KRTD files present in output_krtd_dir before writing new KRTD files.");
   config->set_value("depthmaps_images_file", "",
                     "An optional file containing paths to depthmaps as image datas.");
-
   kwiver::vital::algo::bundle_adjust::get_nested_algo_configuration("bundle_adjuster", config,
                                                      kwiver::vital::algo::bundle_adjust_sptr());
   kwiver::vital::algo::initialize_cameras_landmarks
@@ -350,11 +348,11 @@ filter_tracks_importance(kwiver::vital::track_set_sptr tracks, double min_score)
 
   // compute the match matrix
   std::vector<vital::frame_id_t> frames;
-  Eigen::SparseMatrix<unsigned int> mm = maptk::match_matrix(tracks, frames);
+  Eigen::SparseMatrix<unsigned int> mm = kwiver::arrows::match_matrix(tracks, frames);
 
   // compute the importance scores on the tracks
   std::map<vital::track_id_t, double> importance =
-      maptk::match_matrix_track_importance(tracks, frames, mm);
+    kwiver::arrows::match_matrix_track_importance(tracks, frames, mm);
 
   std::vector<vital::track_sptr> trks = tracks->tracks();
   std::vector<vital::track_sptr> good_trks;
@@ -564,7 +562,7 @@ load_input_cameras_krtd(kwiver::vital::config_block_sptr config,
     if (filename2frame.size() != krtd_cams.size())
     {
       LOG_WARN(main_logger, "Input KRTD camera set is sparse compared to input "
-                            << "imagery! (there wasn't a matching KRTD input file for "
+                << "imagery! (there wasn't a matching KRTD input file for "
                             << "every input image file)");
     }
     input_cameras = krtd_cams;
@@ -664,6 +662,7 @@ static int maptk_main(int argc, char const* argv[])
                                                          MAPTK_VERSION, prefix));
   }
 
+
   kwiver::vital::algo::bundle_adjust::set_nested_algo_configuration("bundle_adjuster", config, bundle_adjuster);
   kwiver::vital::algo::triangulate_landmarks::set_nested_algo_configuration("triangulator", config, triangulator);
   kwiver::vital::algo::initialize_cameras_landmarks::set_nested_algo_configuration("initializer", config, initializer);
@@ -724,7 +723,7 @@ static int maptk_main(int argc, char const* argv[])
     kwiver::vital::scoped_cpu_timer t( "track filtering" );
     if( min_track_len > 1 )
     {
-      tracks = filter_tracks(tracks, min_track_len);
+    tracks = filter_tracks(tracks, min_track_len);
     }
     if( min_mm_importance > 0.0 )
     {
@@ -745,7 +744,7 @@ static int maptk_main(int argc, char const* argv[])
     if( tracks->size() == 0 )
     {
       LOG_ERROR(main_logger, "All track have been filtered. "
-                             << "Try decreasing \"min_track_len\" "
+                << "Try decreasing \"min_track_len\""
                              << "or \"min_mm_importance\"");
       return EXIT_FAILURE;
     }
@@ -837,7 +836,7 @@ static int maptk_main(int argc, char const* argv[])
   if (necker_reverse_input)
   {
     LOG_INFO(main_logger, "Applying Necker reversal");
-    kwiver::maptk::necker_reverse(cam_map, lm_map);
+    kwiver::arrows::necker_reverse(cam_map, lm_map);
   }
 
   bool init_unloaded_cams = config->get_value<bool>("initialize_unloaded_cameras", true);
@@ -916,14 +915,14 @@ static int maptk_main(int argc, char const* argv[])
   { // scope block
     kwiver::vital::scoped_cpu_timer t( "Tool-level SBA algorithm" );
 
-    double init_rmse = kwiver::maptk::reprojection_rmse(cam_map->cameras(),
+    double init_rmse = kwiver::arrows::reprojection_rmse(cam_map->cameras(),
                                                         lm_map->landmarks(),
                                                         tracks->tracks());
     LOG_DEBUG(main_logger, "initial reprojection RMSE: " << init_rmse);
 
     bundle_adjuster->optimize(cam_map, lm_map, tracks);
 
-    double end_rmse = kwiver::maptk::reprojection_rmse(cam_map->cameras(),
+    double end_rmse = kwiver::arrows::reprojection_rmse(cam_map->cameras(),
                                                        lm_map->landmarks(),
                                                        tracks->tracks());
     LOG_DEBUG(main_logger, "final reprojection RMSE: " << end_rmse);
@@ -963,7 +962,7 @@ static int maptk_main(int argc, char const* argv[])
       kwiver::vital::landmark_map_sptr sba_space_landmarks(new kwiver::vital::simple_landmark_map(reference_landmarks->landmarks()));
       triangulator->triangulate(cam_map, reference_tracks, sba_space_landmarks);
 
-      double post_tri_rmse = kwiver::maptk::reprojection_rmse(cam_map->cameras(),
+      double post_tri_rmse = kwiver::arrows::reprojection_rmse(cam_map->cameras(),
                                                               sba_space_landmarks->landmarks(),
                                                               reference_tracks->tracks());
       LOG_DEBUG(main_logger, "Post-triangulation RMSE: " << post_tri_rmse);
@@ -991,8 +990,8 @@ static int maptk_main(int argc, char const* argv[])
 
     // apply to cameras and landmarks
     LOG_INFO(main_logger, "Applying transform to cameras and landmarks");
-    cam_map = kwiver::maptk::transform(cam_map, sim_transform);
-    lm_map = kwiver::maptk::transform(lm_map, sim_transform);
+    cam_map = kwiver::arrows::transform(cam_map, sim_transform);
+    lm_map = kwiver::arrows::transform(lm_map, sim_transform);
   }
 
   //
