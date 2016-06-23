@@ -315,7 +315,7 @@ void MainWindowPrivate::addImage(QString const& imagePath)
   if (this->orphanCameras.isEmpty())
   {
     this->orphanImages.enqueue(this->cameras.count());
-    this->addFrame(0, imagePath);
+    this->addFrame(kwiver::vital::camera_sptr(), imagePath);
     return;
   }
 
@@ -761,7 +761,7 @@ void MainWindow::loadProject(QString const& path)
       {
         qWarning() << "failed to read camera for" << ip
                    << "from" << project.cameraPath;
-        d->addFrame(0, ip);
+        d->addFrame(kwiver::vital::camera_sptr(), ip);
       }
     }
   }
