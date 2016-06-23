@@ -715,8 +715,12 @@ void WorldView::updateAxes()
     props->InitTraversal();
     while (auto const prop = props->GetNextProp())
     {
-      // Skip the axes actor, and any hidden actors
-      if (prop == d->cubeAxesActor.GetPointer() || !prop->GetVisibility())
+      // Skip the axes, ground and frustums representations, and any hidden actors
+      if (prop == d->cubeAxesActor.GetPointer()
+          || prop == d->groundActor.GetPointer()
+          || prop == d->cameraRep->GetActiveActor()
+          || prop == d->cameraRep->GetNonActiveActor()
+          || !prop->GetVisibility())
       {
         continue;
       }
