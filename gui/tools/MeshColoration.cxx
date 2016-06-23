@@ -52,7 +52,6 @@ MeshColoration::MeshColoration()
 }
 
 MeshColoration::MeshColoration(vtkPolyData* mesh, std::string frameList, std::string krtdFolder)
-  :MeshColoration()
 {
   //this->OutputMesh = vtkPolyData::New();
   //this->OutputMesh->DeepCopy(mesh);
