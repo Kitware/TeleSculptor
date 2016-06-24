@@ -139,14 +139,6 @@ void LaunchPlaneSweepView::setKrtdFolder(QString krtdFolder)
 }
 
 //-----------------------------------------------------------------------------
-void LaunchPlaneSweepView::setFramesFolder(QString framesFolder)
-{
-  QTE_D();
-
-  d->framesFolder = framesFolder;
-}
-
-//-----------------------------------------------------------------------------
 void LaunchPlaneSweepView::setLandmarksFile(QString landmarksFile)
 {
   QTE_D();
@@ -245,6 +237,26 @@ void LaunchPlaneSweepView::setFrameList(QString frameList)
   QTE_D();
 
   d->frameList = frameList;
+}
+
+//-----------------------------------------------------------------------------
+void LaunchPlaneSweepView::setNumCam(int numCam)
+{
+  QTE_D();
+
+  d->UI.spinBoxFrameSample->setMaximum(numCam);
+  d->UI.spinBoxRefFrameStep->setMaximum(numCam);
+}
+
+//-----------------------------------------------------------------------------
+void LaunchPlaneSweepView::initalizeValues(QString krtdFolder,
+                                           QString landmarksFile,
+                                           QString frameList, int numCam)
+{
+  setKrtdFolder(krtdFolder);
+  setLandmarksFile(landmarksFile);
+  setFrameList(frameList);
+  setNumCam(numCam);
 }
 
 //-----------------------------------------------------------------------------

@@ -48,10 +48,12 @@ public:
   virtual ~LaunchPlaneSweepView();
 
   void setKrtdFolder(QString krtdFolder);
-  void setFramesFolder(QString framesFolder);
   void setLandmarksFile(QString landmarksFile);
   void setFrameList(QString frameList);
+  void setNumCam(int numCam);
 
+  void initalizeValues(QString krtdFolder,QString landmarksFile,
+                       QString frameList,int numCam);
   void runningState();
 
 public slots:
