@@ -47,7 +47,7 @@
       <bool>false</bool>
      </property>
      <property name="decimals">
-      <number>0</number>
+      <number>2</number>
      </property>
      <property name="minimum">
       <double>0.000000000000000</double>
