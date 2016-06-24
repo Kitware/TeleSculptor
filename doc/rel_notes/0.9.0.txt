@@ -50,7 +50,7 @@ Tools
    old and new camera files.
 
  * Added an option to display the world axes around the visible geometry.
-   This option cna be enabled and disabled in the "View" menu.
+   This option can be enabled and disabled in the "View" menu.
 
 Fixes since v0.8.0
 -------------------------------
