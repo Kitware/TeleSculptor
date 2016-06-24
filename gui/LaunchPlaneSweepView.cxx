@@ -159,7 +159,7 @@ void LaunchPlaneSweepView::compute()
 {
   QTE_D();
 
-  std::string pslPath = d->UI.lineEditPSLPath->text().toStdString();
+  QString pslPath = d->UI.lineEditPSLPath->text();
 
   d->args << "--debug";
 
@@ -188,7 +188,7 @@ void LaunchPlaneSweepView::compute()
   {
     if (this->children().at(i)->inherits("QCheckBox"))
     {
-      QCheckBox *child = (QCheckBox*) this->children().at(i);
+      QCheckBox *child = qobject_cast<QCheckBox*>(this->children().at(i));
 
       if (child->isChecked())
       {
@@ -197,19 +197,20 @@ void LaunchPlaneSweepView::compute()
     }
     else if (this->children().at(i)->inherits("QComboBox"))
     {
-      QComboBox *child = (QComboBox*) this->children().at(i);
+      QComboBox *child = qobject_cast<QComboBox*>(this->children().at(i));
 
       d->addArg(child, child->currentText().toStdString());
     }
     else if (this->children().at(i)->inherits("QSpinBox"))
     {
-      QSpinBox *child = (QSpinBox*) this->children().at(i);
+      QSpinBox *child = qobject_cast<QSpinBox*>(this->children().at(i));
 
       d->addArg(child,child->value());
     }
   }
 
-  d->addArg(d->UI.lineEditOutputDirectory,d->UI.lineEditOutputDirectory->text().toStdString());
+  d->addArg(d->UI.lineEditOutputDirectory,
+            d->UI.lineEditOutputDirectory->text().toStdString());
 
 
   d->dialog->show();
@@ -218,7 +219,7 @@ void LaunchPlaneSweepView::compute()
   runningState();
 
   d->psl->setProcessChannelMode(QProcess::MergedChannels);
-  d->psl->start(QString::fromStdString(pslPath),d->args);
+  d->psl->start(pslPath,d->args);
 }
 
 //-----------------------------------------------------------------------------
@@ -255,7 +256,7 @@ void LaunchPlaneSweepView::initialState()
   d->args.clear();
   for (int i = 0; i < this->children().size(); ++i) {
     if (this->children().at(i)->inherits("QWidget")) {
-      QWidget *child = (QWidget*) this->children().at(i);
+      QWidget *child = qobject_cast<QWidget*>(this->children().at(i));
       child->setEnabled(true);
     }
   }
@@ -285,7 +286,7 @@ void LaunchPlaneSweepView::runningState()
   {
     if (this->children().at(i)->inherits("QWidget"))
     {
-      QWidget *child = (QWidget*) this->children().at(i);
+      QWidget *child = qobject_cast<QWidget*>(this->children().at(i));
       child->setEnabled(false);
     }
   }
