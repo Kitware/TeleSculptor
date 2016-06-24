@@ -580,11 +580,11 @@ void CameraView::setLandmarksData(kwiver::vital::landmark_map const& lm)
   }
 
   auto fields = QHash<QString, FieldInformation>{};
-  fields.insert("Elevation", {Elevation, {minZ, maxZ}});
+  fields.insert("Elevation", FieldInformation{Elevation, {minZ, maxZ}});
   if (maxObservations)
   {
     auto const upper = static_cast<double>(maxObservations);
-    fields.insert("Observations", {Observations, {0.0, upper}});
+    fields.insert("Observations", FieldInformation{Observations, {0.0, upper}});
   }
 
   d->landmarkOptions->setTrueColorAvailable(haveColor);
