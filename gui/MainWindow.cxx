@@ -445,6 +445,7 @@ void MainWindowPrivate::updateCameraView()
 
   // Show camera image
   this->loadImage(cd.imagePath, cd.camera);
+  this->UI.cameraView->setImagePath(cd.imagePath);
 
   if (!cd.camera)
   {
@@ -454,7 +455,6 @@ void MainWindowPrivate::updateCameraView()
     return;
   }
 
-  this->UI.cameraView->setFrameName(cd.imagePath);
   // Show landmarks
   this->UI.cameraView->clearLandmarks();
   if (this->landmarks)

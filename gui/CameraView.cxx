@@ -514,6 +514,13 @@ void CameraView::setBackgroundColor(QColor const& color)
 }
 
 //-----------------------------------------------------------------------------
+void CameraView::setImagePath(QString const& path)
+{
+  QTE_D();
+  d->UI.labelImagePath->setText(path);
+}
+
+//-----------------------------------------------------------------------------
 void CameraView::setImageData(vtkImageData* data, QSize const& dimensions)
 {
   QTE_D();
@@ -605,13 +612,6 @@ void CameraView::addFeatureTrack(kwiver::vital::track const& track)
   }
 
   d->updateFeatures(this);
-}
-
-void CameraView::setFrameName(QString frameName)
-{
-  QTE_D();
-
-  d->UI.labelImagePath->setText(frameName);
 }
 
 //-----------------------------------------------------------------------------
