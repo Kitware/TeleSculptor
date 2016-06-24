@@ -67,10 +67,9 @@ OutputDialog::OutputDialog(QWidget* parent, Qt::WindowFlags flags)
   QTE_D();
 
   this->setAttribute(Qt::WA_DeleteOnClose);
+
   // Set up UI
   d->UI.setupUi(this);
-
-  // Set up signals/slots
 
 }
 
