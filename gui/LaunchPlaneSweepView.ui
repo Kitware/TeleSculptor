@@ -1,0 +1,437 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>LaunchPlaneSweepView</class>
+ <widget class="QWidget" name="LaunchPlaneSweepView">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>427</width>
+    <height>775</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Compute Depthmaps with PSL</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="13" column="0">
+    <widget class="QLabel" name="label_11">
+     <property name="text">
+      <string>Min. Angle Degree Between Frames</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="1">
+    <widget class="QComboBox" name="comboBoxMatchCost">
+     <property name="configField" stdset="0">
+      <string>--PS_MATCHING_COSTS</string>
+     </property>
+     <item>
+      <property name="text">
+       <string>SAD</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>ZNCC</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="14" column="0">
+    <widget class="QLabel" name="label_16">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Outputs parameters</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0">
+    <widget class="QLabel" name="label_4">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Matching Cost Parameters</string>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="0">
+    <widget class="QLabel" name="label_13">
+     <property name="text">
+      <string>Reference Frame Step</string>
+     </property>
+    </widget>
+   </item>
+   <item row="11" column="1">
+    <widget class="QSpinBox" name="spinBoxFrameSample">
+     <property name="minimum">
+      <number>1</number>
+     </property>
+     <property name="value">
+      <number>20</number>
+     </property>
+     <property name="configField" stdset="0">
+      <string>--PS_MAX_NUM_IMAGES</string>
+     </property>
+    </widget>
+   </item>
+   <item row="20" column="1">
+    <widget class="QCheckBox" name="checkBoxUseSubPixel">
+     <property name="text">
+      <string>Use Sub Pixel Computation</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+     <property name="configField" stdset="0">
+      <string>--PS_USE_SUBPIXEL</string>
+     </property>
+    </widget>
+   </item>
+   <item row="15" column="1">
+    <widget class="QComboBox" name="comboBoxOutputs">
+     <property name="configField" stdset="0">
+      <string>--writePointClouds</string>
+     </property>
+     <item>
+      <property name="text">
+       <string>vti</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>vtp</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>vts</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>vtpvts</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>vrml</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="label_3">
+     <property name="text">
+      <string>Depth Max</string>
+     </property>
+    </widget>
+   </item>
+   <item row="18" column="0">
+    <widget class="QLabel" name="label_5">
+     <property name="text">
+      <string>Number of Planes</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QDoubleSpinBox" name="doubleSpinBoxDepthMin">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="decimals">
+      <number>0</number>
+     </property>
+     <property name="minimum">
+      <double>0.000000000000000</double>
+     </property>
+     <property name="configField" stdset="0">
+      <string>--PS_MIN_DEPTH</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="0">
+    <widget class="QLabel" name="label_8">
+     <property name="text">
+      <string>Matching Window Size</string>
+     </property>
+    </widget>
+   </item>
+   <item row="19" column="1">
+    <widget class="QDoubleSpinBox" name="doubleSpinBoxRescaleFactor">
+     <property name="minimum">
+      <double>0.100000000000000</double>
+     </property>
+     <property name="singleStep">
+      <double>0.250000000000000</double>
+     </property>
+     <property name="value">
+      <double>1.000000000000000</double>
+     </property>
+     <property name="configField" stdset="0">
+      <string>--PS_RESCALE_FACTOR</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QDoubleSpinBox" name="doubleSpinBoxDepthMax">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="configField" stdset="0">
+      <string>--PS_MAX_DEPTH</string>
+     </property>
+    </widget>
+   </item>
+   <item row="15" column="0">
+    <widget class="QLabel" name="label_14">
+     <property name="text">
+      <string>Outputs</string>
+     </property>
+    </widget>
+   </item>
+   <item row="19" column="0">
+    <widget class="QLabel" name="label_6">
+     <property name="text">
+      <string>Rescale Factor</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="0">
+    <widget class="QLabel" name="label_10">
+     <property name="text">
+      <string>Occlusion Mode</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QLineEdit" name="lineEditPSLPath">
+     <property name="text">
+      <string>/home/louis/develop/PlaneSweepLib/build/bin/cudaPlanesweepMAPTk</string>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="0">
+    <widget class="QLabel" name="label_15">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Frames Parameters</string>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="1">
+    <widget class="QSpinBox" name="spinBoxRefFrameStep">
+     <property name="cursor">
+      <cursorShape>ArrowCursor</cursorShape>
+     </property>
+     <property name="minimum">
+      <number>1</number>
+     </property>
+     <property name="value">
+      <number>5</number>
+     </property>
+     <property name="configField" stdset="0">
+      <string>--ref_view_step</string>
+     </property>
+    </widget>
+   </item>
+   <item row="13" column="1">
+    <widget class="QDoubleSpinBox" name="doubleSpinBoxMinAngle">
+     <property name="minimum">
+      <double>2.000000000000000</double>
+     </property>
+     <property name="configField" stdset="0">
+      <string>--PS_MIN_ANGLE_DEGREE</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Depth Min</string>
+     </property>
+    </widget>
+   </item>
+   <item row="11" column="0">
+    <widget class="QLabel" name="label_12">
+     <property name="text">
+      <string>Number of Frame to Use</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="1">
+    <widget class="QCheckBox" name="checkBoxColorMatching">
+     <property name="text">
+      <string>Use Color matching</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+     <property name="configField" stdset="0">
+      <string>--PS_COLOR_MATCHING</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0">
+    <widget class="QLabel" name="label_7">
+     <property name="text">
+      <string>Matching Costs Algorithm</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QCheckBox" name="checkBoxDepthAuto">
+     <property name="text">
+      <string>Depth Auto</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+     <property name="configFiled" stdset="0">
+      <string/>
+     </property>
+     <property name="configField" stdset="0">
+      <string>--PS_AUTO_RANGE</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="1">
+    <widget class="QComboBox" name="comboBoxOcclusionMode">
+     <property name="configField" stdset="0">
+      <string>--PS_OCCLUSION_MODE</string>
+     </property>
+     <item>
+      <property name="text">
+       <string>None</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>RefSplit</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>BestK</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="17" column="0">
+    <widget class="QLabel" name="label_17">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Misc. parameters</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="1">
+    <widget class="QSpinBox" name="spinBoxWindowSize">
+     <property name="minimum">
+      <number>1</number>
+     </property>
+     <property name="value">
+      <number>5</number>
+     </property>
+     <property name="configField" stdset="0">
+      <string>--PS_MATCHING_WINDOW_SIZE</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label_18">
+     <property name="text">
+      <string>PlaneSweepLib path</string>
+     </property>
+    </widget>
+   </item>
+   <item row="18" column="1">
+    <widget class="QSpinBox" name="spinBoxPlanes">
+     <property name="maximum">
+      <number>10000</number>
+     </property>
+     <property name="value">
+      <number>512</number>
+     </property>
+     <property name="configField" stdset="0">
+      <string>--PS_NUM_PLANES</string>
+     </property>
+    </widget>
+   </item>
+   <item row="16" column="1">
+    <widget class="QLineEdit" name="lineEditOutputDirectory">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="text">
+      <string>depthmaps</string>
+     </property>
+     <property name="configField" stdset="0">
+      <string>--outputDirectory</string>
+     </property>
+    </widget>
+   </item>
+   <item row="16" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Output Directory</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="label_9">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Depth Parameters</string>
+     </property>
+    </widget>
+   </item>
+   <item row="21" column="0">
+    <widget class="QPushButton" name="pushButtonCompute">
+     <property name="text">
+      <string>Compute</string>
+     </property>
+    </widget>
+   </item>
+   <item row="21" column="1">
+    <widget class="QPushButton" name="pushButtonStop">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="text">
+      <string>Stop</string>
+     </property>
+     <property name="flat">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

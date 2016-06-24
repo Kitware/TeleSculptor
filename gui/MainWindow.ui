@@ -62,6 +62,13 @@
     <property name="title">
      <string>&amp;Compute</string>
     </property>
+    <widget class="QMenu" name="menuDepthmaps">
+     <property name="title">
+      <string>Depthmaps...</string>
+     </property>
+     <addaction name="actionPlaneSweepLib"/>
+    </widget>
+    <addaction name="menuDepthmaps"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuCompute"/>
@@ -274,6 +281,11 @@
     <string>Change the background color of the views</string>
    </property>
   </action>
+  <action name="actionPlaneSweepLib">
+   <property name="text">
+    <string>Plane Sweep Lib</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -291,7 +303,7 @@
   <customwidget>
    <class>qtMenu</class>
    <extends>QMenu</extends>
-   <header location="global">qtMenu.h</header>
+   <header>qtMenu.h</header>
   </customwidget>
  </customwidgets>
  <resources>

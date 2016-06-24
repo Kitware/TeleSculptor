@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -12,9 +12,9 @@
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  *
- *  * Neither the name Kitware, Inc. nor the names of any contributors may be
- *    used to endorse or promote products derived from this software without
- *    specific prior written permission.
+ *  * Neither name of Kitware, Inc. nor the names of any contributors may be used
+ *    to endorse or promote products derived from this software without specific
+ *    prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -28,63 +28,45 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_MAINWINDOW_H_
-#define MAPTK_MAINWINDOW_H_
+#ifndef MAPTK_LAUNCHPLANESWEEPVIEW_H_
+#define MAPTK_LAUNCHPLANESWEEPVIEW_H_
 
 #include <qtGlobal.h>
 
 #include <QMainWindow>
 
-class MainWindowPrivate;
+#include <Eigen/SparseCore>
 
-class MainWindow : public QMainWindow
+class LaunchPlaneSweepViewPrivate;
+
+class LaunchPlaneSweepView : public QWidget
 {
   Q_OBJECT
 
 public:
-  explicit MainWindow(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~MainWindow();
+  explicit LaunchPlaneSweepView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  virtual ~LaunchPlaneSweepView();
+
+  void setKrtdFolder(std::string krtdFolder);
+  void setFramesFolder(std::string framesFolder);
+  void setLandmarksFile(std::string landmarksFile);
+  void setFrameList(std::string frameList);
+
+  void runningState();
 
 public slots:
-  void openFile();
-  void openFile(QString const& path);
-  void openFiles(QStringList const& paths);
+  void compute();
+  void enableColorMatching();
+  void initialState();
 
-  void loadProject(QString const& path);
-  void loadImage(QString const& path);
-  void loadCamera(QString const& path);
-  void loadTracks(QString const& path);
-  void loadLandmarks(QString const& path);
-
-  void saveCameras();
-  void saveCameras(QString const& path);
-  void saveLandmarks();
-  void saveLandmarks(QString const& path);
-
-  void setActiveCamera(int);
-
-  void setViewBackroundColor();
-
-  void showMatchMatrix();
-
-  void showComputeDepthmaps();
-
-  void showAboutDialog();
-  void showUserManual();
 
 protected slots:
-  void setSlideDelay(int);
-  void setSlideshowPlaying(bool);
-  void nextSlide();
-
-  void executeTool(QObject*);
-  void acceptToolResults();
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(MainWindow)
-  QTE_DECLARE_PRIVATE(MainWindow)
+  QTE_DECLARE_PRIVATE_RPTR(LaunchPlaneSweepView)
+  QTE_DECLARE_PRIVATE(LaunchPlaneSweepView)
 
-  QTE_DISABLE_COPY(MainWindow)
+  QTE_DISABLE_COPY(LaunchPlaneSweepView)
 };
 
 #endif

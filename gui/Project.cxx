@@ -79,6 +79,7 @@ bool Project::read(QString const& path)
 
     // Read image list
     auto const& iflPath = config->get_value<std::string>("image_list_file");
+    this->frameListPath = QString::fromStdString(iflPath);
     QFile ifl(base.filePath(qtString(iflPath)));
     if (!ifl.open(QIODevice::ReadOnly | QIODevice::Text))
     {

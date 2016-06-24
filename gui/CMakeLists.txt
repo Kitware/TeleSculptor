@@ -32,12 +32,14 @@ set(gui_am_ui
 set(gui_ui
   ${gui_am_ui}
   AboutDialog.ui
+  OutputDialog.ui
   CameraOptions.ui
   DataColorOptions.ui
   DataFilterOptions.ui
   FeatureOptions.ui
   ImageOptions.ui
   PointOptions.ui
+  LaunchPlaneSweepView.ui
 )
 
 set(gui_resources
@@ -47,6 +49,7 @@ set(gui_resources
 
 set(gui_moc_headers
   AboutDialog.h
+  OutputDialog.h
   ActorColorButton.h
   CameraOptions.h
   CameraView.h
@@ -63,10 +66,12 @@ set(gui_moc_headers
   tools/BundleAdjustTool.h
   tools/CanonicalTransformTool.h
   tools/NeckerReversalTool.h
+  LaunchPlaneSweepView.h
 )
 
 set(gui_sources
   AboutDialog.cxx
+  OutputDialog.cxx
   ActorColorButton.cxx
   CameraOptions.cxx
   CameraView.cxx
@@ -90,6 +95,7 @@ set(gui_sources
   tools/BundleAdjustTool.cxx
   tools/CanonicalTransformTool.cxx
   tools/NeckerReversalTool.cxx
+  LaunchPlaneSweepView.cxx
 )
 
 maptk_use_appdata(
