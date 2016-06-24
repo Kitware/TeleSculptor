@@ -20,7 +20,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>21</height>
+     <height>27</height>
     </rect>
    </property>
    <widget class="qtMenu" name="menuFile">
@@ -63,6 +63,9 @@
      <string>&amp;Compute</string>
     </property>
     <widget class="QMenu" name="menuDepthmaps">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="title">
       <string>Depthmaps...</string>
      </property>
@@ -282,6 +285,9 @@
    </property>
   </action>
   <action name="actionPlaneSweepLib">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Plane Sweep Lib</string>
    </property>
@@ -303,7 +309,7 @@
   <customwidget>
    <class>qtMenu</class>
    <extends>QMenu</extends>
-   <header>qtMenu.h</header>
+   <header location="global">qtMenu.h</header>
   </customwidget>
  </customwidgets>
  <resources>

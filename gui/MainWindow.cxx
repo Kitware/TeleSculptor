@@ -777,6 +777,7 @@ void MainWindow::loadProject(QString const& path)
   d->krtdFolder = project.cameraPath;
   d->landmarksFile = project.landmarks;
   d->framesFolder = project.frameListPath;
+  d->UI.menuDepthmaps->setEnabled(true);
 
   d->UI.worldView->resetView();
 }
