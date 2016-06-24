@@ -60,12 +60,12 @@ public:
 
   QProcess *psl;
 
-  std::string krtdFolder;
-  std::string framesFolder;
-  std::string frameList;
-  std::string landmarksFile;
+  QString krtdFolder;
+  QString framesFolder;
+  QString frameList;
+  QString landmarksFile;
 
-  void addArg(QWidget* item, std::string value="");
+  void addArg(QWidget* item, QString value="");
   void addArg(QWidget *item, double value);
 
   OutputDialog* dialog;
@@ -131,7 +131,7 @@ LaunchPlaneSweepView::~LaunchPlaneSweepView()
 }
 
 //-----------------------------------------------------------------------------
-void LaunchPlaneSweepView::setKrtdFolder(std::string krtdFolder)
+void LaunchPlaneSweepView::setKrtdFolder(QString krtdFolder)
 {
   QTE_D();
 
@@ -139,7 +139,7 @@ void LaunchPlaneSweepView::setKrtdFolder(std::string krtdFolder)
 }
 
 //-----------------------------------------------------------------------------
-void LaunchPlaneSweepView::setFramesFolder(std::string framesFolder)
+void LaunchPlaneSweepView::setFramesFolder(QString framesFolder)
 {
   QTE_D();
 
@@ -147,7 +147,7 @@ void LaunchPlaneSweepView::setFramesFolder(std::string framesFolder)
 }
 
 //-----------------------------------------------------------------------------
-void LaunchPlaneSweepView::setLandmarksFile(std::string landmarksFile)
+void LaunchPlaneSweepView::setLandmarksFile(QString landmarksFile)
 {
   QTE_D();
 
@@ -165,10 +165,10 @@ void LaunchPlaneSweepView::compute()
 
   //Getting frame folder
 
-  std::ifstream frameList(d->frameList);
+  std::ifstream frameList(d->frameList.toStdString());
   std::string framePath, frameFolder, imageListFile;
 
-  imageListFile = "--imageListFile=" + d->frameList;
+  imageListFile = "--imageListFile=" + d->frameList.toStdString();
 
   frameList >> framePath;
   frameFolder = framePath.substr(0,framePath.find_last_of("/\\"));
@@ -178,9 +178,9 @@ void LaunchPlaneSweepView::compute()
   frameFolder = "--frameFolder=" + frameFolder;
 
   d->args <<  QString::fromStdString(frameFolder) ;
-  d->args << QString::fromStdString(d->krtdFolder);
+  d->args << d->krtdFolder;
   d->args << QString::fromStdString(imageListFile);
-  d->args << QString::fromStdString(d->landmarksFile);
+  d->args << d->landmarksFile;
 
   //Parsing arguments from form
 
@@ -199,7 +199,7 @@ void LaunchPlaneSweepView::compute()
     {
       QComboBox *child = qobject_cast<QComboBox*>(this->children().at(i));
 
-      d->addArg(child, child->currentText().toStdString());
+      d->addArg(child, child->currentText());
     }
     else if (this->children().at(i)->inherits("QSpinBox"))
     {
@@ -209,8 +209,7 @@ void LaunchPlaneSweepView::compute()
     }
   }
 
-  d->addArg(d->UI.lineEditOutputDirectory,
-            d->UI.lineEditOutputDirectory->text().toStdString());
+  d->addArg(d->UI.lineEditOutputDirectory, d->UI.lineEditOutputDirectory->text());
 
 
   d->dialog->show();
@@ -241,7 +240,7 @@ void LaunchPlaneSweepView::enableColorMatching()
 }
 
 //-----------------------------------------------------------------------------
-void LaunchPlaneSweepView::setFrameList(std::string frameList)
+void LaunchPlaneSweepView::setFrameList(QString frameList)
 {
   QTE_D();
 
@@ -296,15 +295,15 @@ void LaunchPlaneSweepView::runningState()
 //END LaunchPlaneSweepView
 
 //-----------------------------------------------------------------------------
-void LaunchPlaneSweepViewPrivate::addArg(QWidget *item, std::string value)
+void LaunchPlaneSweepViewPrivate::addArg(QWidget *item, QString value)
 {
-  std::string arg = item->property("configField").toString().toStdString();
+  QString arg = item->property("configField").toString();
 
-  if(!value.empty())
+  if(!value.isEmpty())
   {
-    arg += "=" + value;
+    arg = arg + "=" + value;
   }
-  args << QString::fromStdString(arg);
+  args << arg;
 
 }
 
@@ -315,5 +314,5 @@ void LaunchPlaneSweepViewPrivate::addArg(QWidget *item, double value)
   sstream << value;
   std::string valueStr = sstream.str();
 
-  addArg(item,valueStr);
+  addArg(item,QString::fromStdString(valueStr));
 }

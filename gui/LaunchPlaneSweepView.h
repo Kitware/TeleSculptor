@@ -47,10 +47,10 @@ public:
   explicit LaunchPlaneSweepView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
   virtual ~LaunchPlaneSweepView();
 
-  void setKrtdFolder(std::string krtdFolder);
-  void setFramesFolder(std::string framesFolder);
-  void setLandmarksFile(std::string landmarksFile);
-  void setFrameList(std::string frameList);
+  void setKrtdFolder(QString krtdFolder);
+  void setFramesFolder(QString framesFolder);
+  void setLandmarksFile(QString landmarksFile);
+  void setFrameList(QString frameList);
 
   void runningState();
 
