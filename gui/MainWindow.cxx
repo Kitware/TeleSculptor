@@ -1129,9 +1129,9 @@ void MainWindow::showComputeDepthmaps()
 
   auto window = new LaunchPlaneSweepView();
 
-  window->setKrtdFolder(d->krtdFolder.toStdString());
-  window->setFrameList(d->framesFolder.toStdString());
-  window->setLandmarksFile(d->landmarksFile.toStdString());
+  window->setKrtdFolder(d->krtdFolder);
+  window->setFrameList(d->framesFolder);
+  window->setLandmarksFile(d->landmarksFile);
 
   window->show();
 }
