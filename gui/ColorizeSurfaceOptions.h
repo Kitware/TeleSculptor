@@ -12,9 +12,9 @@
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  *
- *  * Neither the name Kitware, Inc. nor the names of any contributors may be
- *    used to endorse or promote products derived from this software without
- *    specific prior written permission.
+ *  * Neither name of Kitware, Inc. nor the names of any contributors may be used
+ *    to endorse or promote products derived from this software without specific
+ *    prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -28,38 +28,56 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "MainWindow.h"
+#ifndef COLORIZESURFACEOPTIONS_H
+#define COLORIZESURFACEOPTIONS_H
 
-#include <maptk/version.h>
+#include <qtGlobal.h>
 
-#include <vital/algorithm_plugin_manager.h>
+#include <QtGui/QWidget>
 
-#include <qtStlUtil.h>
-#include <qtUtil.h>
+class vtkActor;
 
-#include <QApplication>
-#include <QtCore/QDir>
+class ColorizeSurfaceOptionsPrivate;
 
-//-----------------------------------------------------------------------------
-int main(int argc, char** argv)
+class ColorizeSurfaceOptions : public QWidget
 {
-  // Set application information
-  QApplication::setApplicationName("MapGUI");
-  QApplication::setOrganizationName("Kitware");
-  QApplication::setOrganizationDomain("kitware.com");
-  QApplication::setApplicationVersion(MAPTK_VERSION);
+  Q_OBJECT
 
-  QApplication app(argc, argv);
-  qtUtil::setApplicationIcon("mapgui");
+public:
+  explicit ColorizeSurfaceOptions(const QString &settingsGroup,
+      QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  virtual ~ColorizeSurfaceOptions();
 
-  // Load Vital/MAP-Tk plugins
-  auto const exeDir = QDir(QApplication::applicationDirPath());
-  auto const rel_path = stdString(exeDir.absoluteFilePath("..")) + "/lib/maptk";
-  kwiver::vital::algorithm_plugin_manager::instance().add_search_path(rel_path);
-  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
+  void addColorDisplay(std::string name);
 
-  MainWindow window;
-  window.start(argv[1]);
+  void initFrameSampling(int nbFrames);
 
-  return app.exec();
-}
+  void setCurrentFramePath(std::string path);
+
+  void setActor(vtkActor* actor);
+  void setKrtdFile(QString file);
+  void setFrameFile(QString file);
+
+  void enableMenu(bool);
+
+signals:
+  void colorModeChanged(QString);
+  void meshColorizedInColorizeSurfaceOption();
+
+public slots:
+
+  void changeColorDisplay();
+  void colorize();
+  void enableAllFramesParameters(bool);
+  void allFrameSelected();
+  void currentFrameSelected();
+
+private:
+
+  QTE_DECLARE_PRIVATE_RPTR(ColorizeSurfaceOptions)
+  QTE_DECLARE_PRIVATE(ColorizeSurfaceOptions)
+
+  QTE_DISABLE_COPY(ColorizeSurfaceOptions)
+};
+
+#endif // COLORIZESURFACEOPTIONS_H

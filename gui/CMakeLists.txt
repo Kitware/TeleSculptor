@@ -38,6 +38,12 @@ set(gui_ui
   FeatureOptions.ui
   ImageOptions.ui
   PointOptions.ui
+  DepthMapView.ui
+  DepthMapOptions.ui
+  DepthMapFilterOptions.ui
+  DepthMapViewOptions.ui
+  ColorizeSurfaceOptions.ui
+  VolumeOptions.ui
 )
 
 set(gui_resources
@@ -56,13 +62,22 @@ set(gui_moc_headers
   GradientSelector.h
   ImageOptions.h
   MainWindow.h
+  DepthMapView.h
   MatchMatrixWindow.h
   PointOptions.h
+  DepthMapOptions.h
+  DepthMapFilterOptions.h
+  DepthMapViewOptions.h
+  VolumeOptions.h
+  ColorizeSurfaceOptions.h
   WorldView.h
   tools/AbstractTool.h
   tools/BundleAdjustTool.h
   tools/CanonicalTransformTool.h
   tools/NeckerReversalTool.h
+  tools/MeshColoration.h
+  tools/Helper.h
+  tools/ReconstructionData.h
 )
 
 set(gui_sources
@@ -77,8 +92,14 @@ set(gui_sources
   ImageOptions.cxx
   MainWindow.cxx
   MatchMatrixAlgorithms.cxx
+  DepthMapView.cxx
   MatchMatrixWindow.cxx
   PointOptions.cxx
+  DepthMapOptions.cxx
+  DepthMapFilterOptions.cxx
+  DepthMapViewOptions.cxx
+  VolumeOptions.cxx
+  ColorizeSurfaceOptions.cxx
   Project.cxx
   WorldView.cxx
   main.cxx
@@ -90,6 +111,8 @@ set(gui_sources
   tools/BundleAdjustTool.cxx
   tools/CanonicalTransformTool.cxx
   tools/NeckerReversalTool.cxx
+  tools/MeshColoration.cxx
+  tools/ReconstructionData.cxx
 )
 
 maptk_use_appdata(
@@ -144,6 +167,8 @@ target_link_libraries(mapgui
   vtkRenderingCore
   vtkCommonCore
   vtksys
+  vtkWebGLExporter
+  ${VTK_LIBRARIES}
   qtExtensions
   ${QT_QTMAIN_LIBRARY}
   ${QT_LIBRARIES}

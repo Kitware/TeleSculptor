@@ -180,9 +180,25 @@ static kwiver::vital::config_block_sptr default_config()
                     "when updating cameras. This option is only relevent if a "
                     "value is give to the input_pos_files option.");
 
+  config->set_value("depthmaps_points_file", "",
+                    "An optional file containing paths to depthmaps as polydatas.");
+
+  config->set_value("depthmaps_surfaces_file", "",
+                    "An optional file containing paths to depthmaps as structured grid.");
+
+  config->set_value("volume_file", "",
+                    "An optional file containing paths to a volume.");
+
+
+      config->set_value("depthmaps_images_file", "",
+                        "An optional file containing paths to depthmaps as image datas.");
+
+      config->set_value("krtd_clean_up", "false",
+                        "Delete krtd files present into output_krtd_dir before launching the bundle adjustment.");
 
       config->set_value("krtd_clean_up", "false",
                         "Delete all previously existing KRTD files present in output_krtd_dir before writing new KRTD files.");
+
   kwiver::vital::algo::bundle_adjust::get_nested_algo_configuration("bundle_adjuster", config,
                                                      kwiver::vital::algo::bundle_adjust_sptr());
   kwiver::vital::algo::initialize_cameras_landmarks
@@ -1023,6 +1039,7 @@ static int maptk_main(int argc, char const* argv[])
   //
   if (config->get_value<bool>("krtd_clean_up") )
   {
+
 
     std::cerr << "Cleaning "
               << config->get_value<std::string>("output_krtd_dir")

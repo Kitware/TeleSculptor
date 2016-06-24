@@ -12,9 +12,9 @@
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  *
- *  * Neither the name Kitware, Inc. nor the names of any contributors may be
- *    used to endorse or promote products derived from this software without
- *    specific prior written permission.
+ *  * Neither name of Kitware, Inc. nor the names of any contributors may be used
+ *    to endorse or promote products derived from this software without specific
+ *    prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -28,38 +28,56 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "MainWindow.h"
+#ifndef DEPTHMAPOPTIONS_H
+#define DEPTHMAPOPTIONS_H
 
-#include <maptk/version.h>
+#include <qtGlobal.h>
 
-#include <vital/algorithm_plugin_manager.h>
+#include <QtGui/QWidget>
 
-#include <qtStlUtil.h>
-#include <qtUtil.h>
+class vtkProp3D;
 
-#include <QApplication>
-#include <QtCore/QDir>
+class DepthMapOptionsPrivate;
 
-//-----------------------------------------------------------------------------
-int main(int argc, char** argv)
+class DepthMapOptions : public QWidget
 {
-  // Set application information
-  QApplication::setApplicationName("MapGUI");
-  QApplication::setOrganizationName("Kitware");
-  QApplication::setOrganizationDomain("kitware.com");
-  QApplication::setApplicationVersion(MAPTK_VERSION);
+  Q_OBJECT
 
-  QApplication app(argc, argv);
-  qtUtil::setApplicationIcon("mapgui");
+public:
+  explicit DepthMapOptions(const QString &settingsGroup,
+                           QWidget *parent = 0, Qt::WindowFlags flags = 0);
+  virtual ~DepthMapOptions();
 
-  // Load Vital/MAP-Tk plugins
-  auto const exeDir = QDir(QApplication::applicationDirPath());
-  auto const rel_path = stdString(exeDir.absoluteFilePath("..")) + "/lib/maptk";
-  kwiver::vital::algorithm_plugin_manager::instance().add_search_path(rel_path);
-  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
+  void addActor(std::string type, vtkProp3D *actor);
 
-  MainWindow window;
-  window.start(argv[1]);
+  bool isPointsChecked();
+  bool isSurfacesChecked();
+  bool isVerticesChecked();
 
-  return app.exec();
-}
+  double getBestCostValueMin();
+  double getBestCostValueMax();
+  double getUniquenessRatioMin();
+  double getUniquenessRatioMax();
+
+  void initializeFilters(double bcMin, double bcMax, double urMin, double urMax);
+  bool isFiltersChecked();
+
+  void enable();
+signals:
+
+  void bBoxToggled();
+  void modified();
+  void depthMapRepresentationChanged();
+  void depthMapThresholdsChanged();
+
+public slots:
+  void showFiltersMenu(bool);
+
+private:
+  QTE_DECLARE_PRIVATE_RPTR(DepthMapOptions)
+  QTE_DECLARE_PRIVATE(DepthMapOptions)
+
+  QTE_DISABLE_COPY(DepthMapOptions)
+};
+
+#endif // DEPTHMAPOPTIONS_H

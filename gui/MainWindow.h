@@ -45,6 +45,8 @@ public:
   explicit MainWindow(QWidget* parent = 0, Qt::WindowFlags flags = 0);
   virtual ~MainWindow();
 
+  void start(char* path);
+
 public slots:
   void openFile();
   void openFile(QString const& path);
@@ -55,11 +57,21 @@ public slots:
   void loadCamera(QString const& path);
   void loadTracks(QString const& path);
   void loadLandmarks(QString const& path);
+  void loadDepthmaps(QString const& path);
 
   void saveCameras();
   void saveCameras(QString const& path);
   void saveLandmarks();
   void saveLandmarks(QString const& path);
+
+  void enableSaveMesh(bool state);
+  void enableSaveColoredMesh(bool state);
+
+  void updateThresholdsDepthmapView(double bcMin,double bcMax,double urMin,double urMax);
+
+  void saveMesh();
+  void saveVolume();
+  void saveColoredMesh();
 
   void setActiveCamera(int);
 
@@ -70,6 +82,8 @@ public slots:
   void showAboutDialog();
   void showUserManual();
 
+  void exportWebGLScene();
+
 protected slots:
   void setSlideDelay(int);
   void setSlideshowPlaying(bool);
@@ -77,6 +91,8 @@ protected slots:
 
   void executeTool(QObject*);
   void acceptToolResults();
+
+//  void updateDepthMap();
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(MainWindow)

@@ -32,6 +32,7 @@
 #define MAPTK_PROJECT_H_
 
 #include <QtCore/QStringList>
+#include <QMap>
 
 struct Project
 {
@@ -39,6 +40,14 @@ struct Project
 
   QStringList images;
   QString cameraPath;
+  QString volumePath;
+
+  QString volumeKRTD;
+  QString volumeDepthmaps;
+  QString depthmaps;
+
+  QString volumeKrtdFile;
+  QString volumeVtiFile;
 
   QString tracks;
   QString landmarks;

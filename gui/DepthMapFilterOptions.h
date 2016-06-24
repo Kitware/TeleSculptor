@@ -12,9 +12,9 @@
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  *
- *  * Neither the name Kitware, Inc. nor the names of any contributors may be
- *    used to endorse or promote products derived from this software without
- *    specific prior written permission.
+ *  * Neither name of Kitware, Inc. nor the names of any contributors may be used
+ *    to endorse or promote products derived from this software without specific
+ *    prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -28,38 +28,44 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "MainWindow.h"
+#ifndef DEPTHMAPFILTEROPTIONS_H
+#define DEPTHMAPFILTEROPTIONS_H
 
-#include <maptk/version.h>
+#include <qtGlobal.h>
 
-#include <vital/algorithm_plugin_manager.h>
+#include <QtGui/QWidget>
 
-#include <qtStlUtil.h>
-#include <qtUtil.h>
 
-#include <QApplication>
-#include <QtCore/QDir>
+class DepthMapFilterOptionsPrivate;
 
-//-----------------------------------------------------------------------------
-int main(int argc, char** argv)
+
+class DepthMapFilterOptions : public QWidget
 {
-  // Set application information
-  QApplication::setApplicationName("MapGUI");
-  QApplication::setOrganizationName("Kitware");
-  QApplication::setOrganizationDomain("kitware.com");
-  QApplication::setApplicationVersion(MAPTK_VERSION);
+  Q_OBJECT
 
-  QApplication app(argc, argv);
-  qtUtil::setApplicationIcon("mapgui");
+public:
+  explicit DepthMapFilterOptions(const QString &settingsGroup,
+      QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  virtual ~DepthMapFilterOptions();
 
-  // Load Vital/MAP-Tk plugins
-  auto const exeDir = QDir(QApplication::applicationDirPath());
-  auto const rel_path = stdString(exeDir.absoluteFilePath("..")) + "/lib/maptk";
-  kwiver::vital::algorithm_plugin_manager::instance().add_search_path(rel_path);
-  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
+  double getBestCostValueMin();
+  double getBestCostValueMax();
+  double getUniquenessRatioMin();
+  double getUniquenessRatioMax();
 
-  MainWindow window;
-  window.start(argv[1]);
+  void initializeFilters(double bcMin, double bcMax, double urMin, double urMax);
+signals:
+  void filtersChanged();
 
-  return app.exec();
-}
+public slots:
+  void updateFilters();
+  void resetFilters();
+
+private:
+  QTE_DECLARE_PRIVATE_RPTR(DepthMapFilterOptions)
+  QTE_DECLARE_PRIVATE(DepthMapFilterOptions)
+
+  QTE_DISABLE_COPY(DepthMapFilterOptions)
+};
+
+#endif // DEPTHMAPFILTEROPTIONS_H

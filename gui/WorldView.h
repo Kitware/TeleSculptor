@@ -34,8 +34,14 @@
 #include <qtGlobal.h>
 
 #include <QtGui/QWidget>
+#include <vtkMatrix4x4.h>
+#include <vtkTransform.h>
+
+#include "DepthMapPaths.h"
 
 class vtkImageData;
+
+class vtkPolyData;
 
 namespace kwiver { namespace vital { class landmark_map; } }
 
@@ -51,6 +57,23 @@ public:
   explicit WorldView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
   virtual ~WorldView();
 
+//  void addDepthMaps(QString const& dMFileList, std::string type);
+
+  std::string getActiveDepthMapType();
+
+  void setActiveDepthMap(vtkMaptkCamera *cam, QString vtiPath);
+  void enableDepthMap();
+
+  void loadVolume(QString path, int nbFrames, QString krtd, QString frame);
+
+
+signals:
+  void contourChanged();
+  void activeDepthMapChanged(int);
+  void meshEnabled(bool);
+  void coloredMeshEnabled(bool);
+  void updateThresholds(double,double,double,double);
+
 public slots:
   void setBackgroundColor(QColor const&);
 
@@ -63,6 +86,14 @@ public slots:
   void setCamerasVisible(bool);
   void setLandmarksVisible(bool);
   void setGroundPlaneVisible(bool);
+  void setDepthMapVisible(bool);
+
+  void setGlobalGridVisible(bool state);
+
+  void updateGrid();
+
+  void setVolumeVisible(bool);
+  void setVolumeCurrentFramePath(QString path);
 
   void setPerspective(bool);
 
@@ -77,11 +108,26 @@ public slots:
   void viewToWorldFront();
   void viewToWorldBack();
 
+  void saveMesh(QString const& path);
+  void saveVolume(QString const& path);
+  void saveColoredMesh(QString const& path);
+
+  void updateDepthMapRepresentation();
+  void updateDepthMapThresholds();
+
+  void computeContour(double threshold);
+
+
+  void exportWebGLScene(QString const& path);
 protected slots:
   void updateCameras();
   void updateScale();
 
+public slots:
+
+
 private:
+
   QTE_DECLARE_PRIVATE_RPTR(WorldView)
   QTE_DECLARE_PRIVATE(WorldView)
 

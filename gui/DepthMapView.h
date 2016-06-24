@@ -12,9 +12,9 @@
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  *
- *  * Neither the name Kitware, Inc. nor the names of any contributors may be
- *    used to endorse or promote products derived from this software without
- *    specific prior written permission.
+ *  * Neither name of Kitware, Inc. nor the names of any contributors may be used
+ *    to endorse or promote products derived from this software without specific
+ *    prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -28,38 +28,44 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "MainWindow.h"
+#ifndef MAPTK_DepthMapView_H_
+#define MAPTK_DepthMapView_H_
 
-#include <maptk/version.h>
+#include <vital/vital_types.h>
 
-#include <vital/algorithm_plugin_manager.h>
+#include <qtGlobal.h>
 
-#include <qtStlUtil.h>
-#include <qtUtil.h>
+#include <QtGui/QWidget>
 
-#include <QApplication>
-#include <QtCore/QDir>
+class DepthMapViewPrivate;
 
-//-----------------------------------------------------------------------------
-int main(int argc, char** argv)
+class vtkPolyData;
+
+class QMenu;
+
+class DepthMapView : public QWidget
 {
-  // Set application information
-  QApplication::setApplicationName("MapGUI");
-  QApplication::setOrganizationName("Kitware");
-  QApplication::setOrganizationDomain("kitware.com");
-  QApplication::setApplicationVersion(MAPTK_VERSION);
+  Q_OBJECT
 
-  QApplication app(argc, argv);
-  qtUtil::setApplicationIcon("mapgui");
+public:
+  explicit DepthMapView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  virtual ~DepthMapView();
 
-  // Load Vital/MAP-Tk plugins
-  auto const exeDir = QDir(QApplication::applicationDirPath());
-  auto const rel_path = stdString(exeDir.absoluteFilePath("..")) + "/lib/maptk";
-  kwiver::vital::algorithm_plugin_manager::instance().add_search_path(rel_path);
-  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
+  void setDepthMap(QString imagePath);
 
-  MainWindow window;
-  window.start(argv[1]);
+public slots:
+  void updateDepthMapThresholds(double,double,double,double);
+  void setBackgroundColor(QColor const&);
 
-  return app.exec();
-}
+protected slots:
+
+private:
+  QMenu* viewMenu;
+
+  QTE_DECLARE_PRIVATE_RPTR(DepthMapView)
+  QTE_DECLARE_PRIVATE(DepthMapView)
+
+  QTE_DISABLE_COPY(DepthMapView)
+};
+
+#endif

@@ -607,6 +607,13 @@ void CameraView::addFeatureTrack(kwiver::vital::track const& track)
   d->updateFeatures(this);
 }
 
+void CameraView::setFrameName(QString frameName)
+{
+  QTE_D();
+
+  d->UI.labelImagePath->setText(frameName);
+}
+
 //-----------------------------------------------------------------------------
 void CameraView::addLandmark(
   kwiver::vital::landmark_id_t id, double x, double y)
