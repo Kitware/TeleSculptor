@@ -49,6 +49,7 @@
     <addaction name="actionShowMatchMatrix"/>
     <addaction name="separator"/>
     <addaction name="actionSetBackgroundColor"/>
+    <addaction name="actionShowWorldAxes"/>
    </widget>
    <widget class="qtMenu" name="menuHelp">
     <property name="title">
@@ -290,6 +291,14 @@
    </property>
    <property name="text">
     <string>Plane Sweep Lib</string>
+   </property>
+  </action>
+  <action name="actionShowWorldAxes">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>World &amp;Axes</string>
    </property>
   </action>
  </widget>

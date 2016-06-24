@@ -320,7 +320,7 @@ void MainWindowPrivate::addImage(QString const& imagePath)
   if (this->orphanCameras.isEmpty())
   {
     this->orphanImages.enqueue(this->cameras.count());
-    this->addFrame(0, imagePath);
+    this->addFrame(kwiver::vital::camera_sptr(), imagePath);
     return;
   }
 
@@ -605,6 +605,9 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.actionOpen, SIGNAL(triggered()), this, SLOT(openFile()));
   connect(d->UI.actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
 
+  connect(d->UI.actionShowWorldAxes, SIGNAL(toggled(bool)),
+          d->UI.worldView, SLOT(setAxesVisible(bool)));
+
   connect(d->UI.actionExportCameras, SIGNAL(triggered()),
           this, SLOT(saveCameras()));
   connect(d->UI.actionExportLandmarks, SIGNAL(triggered()),
@@ -646,12 +649,16 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->viewBackgroundColor = new StateValue<QColor>{Qt::black},
   d->uiState.map("ViewBackground", d->viewBackgroundColor);
 
+  d->uiState.mapChecked("WorldView/Axes", d->UI.actionShowWorldAxes);
+
   d->uiState.mapState("Window/state", this);
   d->uiState.mapGeometry("Window/geometry", this);
   d->uiState.restore();
 
   d->UI.worldView->setBackgroundColor(*d->viewBackgroundColor);
   d->UI.cameraView->setBackgroundColor(*d->viewBackgroundColor);
+
+  d->UI.worldView->resetView();
 }
 
 //-----------------------------------------------------------------------------
@@ -769,7 +776,7 @@ void MainWindow::loadProject(QString const& path)
       {
         qWarning() << "failed to read camera for" << ip
                    << "from" << project.cameraPath;
-        d->addFrame(0, ip);
+        d->addFrame(kwiver::vital::camera_sptr(), ip);
       }
     }
   }

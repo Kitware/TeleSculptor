@@ -36,6 +36,7 @@
 #include <QtGui/QWidget>
 
 class vtkImageData;
+class vtkPolyData;
 
 namespace kwiver { namespace vital { class landmark_map; } }
 
@@ -63,6 +64,7 @@ public slots:
   void setCamerasVisible(bool);
   void setLandmarksVisible(bool);
   void setGroundPlaneVisible(bool);
+  void setAxesVisible(bool);
 
   void setPerspective(bool);
 
@@ -77,7 +79,10 @@ public slots:
   void viewToWorldFront();
   void viewToWorldBack();
 
+  void invalidateGeometry();
+
 protected slots:
+  void updateAxes();
   void updateCameras();
   void updateScale();
 
