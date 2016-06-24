@@ -49,7 +49,7 @@ public:
   Ui::OutputDialog UI;
   qtUiState uiState;
 
-  QProcess *psl;
+  QProcess *process;
 };
 
 QTE_IMPLEMENT_D_FUNC(OutputDialog)
@@ -86,14 +86,15 @@ void OutputDialog::setOutputToDisplay(QProcess *process)
 {
   QTE_D();
 
-  d->psl = process;
+  d->process = process;
 }
 
-void OutputDialog::ouputPSL()
+//-----------------------------------------------------------------------------
+void OutputDialog::ouputProcess()
 {
   QTE_D();
 
-    QString outputText(d->psl->readAll());
+    QString outputText(d->process->readAll());
     d->UI.plainTextEdit->appendPlainText(outputText);
 }
 

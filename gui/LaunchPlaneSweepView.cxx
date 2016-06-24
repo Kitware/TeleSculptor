@@ -42,6 +42,7 @@
 #include <string>
 #include <QProcess>
 #include <QByteArray>
+#include <QFileDialog>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -110,13 +111,16 @@ LaunchPlaneSweepView::LaunchPlaneSweepView(QWidget* parent, Qt::WindowFlags flag
   d->psl = new QProcess();
 
   connect(d->psl, SIGNAL(readyRead()),
-         d->dialog, SLOT(ouputPSL()));
+         d->dialog, SLOT(ouputProcess()));
 
   connect(d->psl, SIGNAL(finished(int)),
          this, SLOT(initialState()));
 
   connect(d->UI.pushButtonStop, SIGNAL(clicked(bool)),
          d->psl, SLOT(kill()));
+
+  connect(d->UI.pushButtonExplore, SIGNAL(clicked(bool)),
+         this, SLOT(openFileExplorer()));
 }
 
 //-----------------------------------------------------------------------------
@@ -167,7 +171,7 @@ void LaunchPlaneSweepView::compute()
   imageListFile = "--imageListFile=" + d->frameList;
 
   frameList >> framePath;
-  frameFolder = framePath.substr(0,framePath.find_last_of("/"));
+  frameFolder = framePath.substr(0,framePath.find_last_of("/\\"));
 
   frameList.close();
 
@@ -263,12 +267,24 @@ void LaunchPlaneSweepView::initialState()
 }
 
 //-----------------------------------------------------------------------------
+void LaunchPlaneSweepView::openFileExplorer()
+{
+  QTE_D();
+  QString path = QFileDialog::getOpenFileName();
+
+  d->UI.lineEditPSLPath->setText(path);
+
+}
+
+//-----------------------------------------------------------------------------
 void LaunchPlaneSweepView::runningState()
 {
   QTE_D();
 
-  for (int i = 0; i < this->children().size(); ++i) {
-    if (this->children().at(i)->inherits("QWidget")) {
+  for (int i = 0; i < this->children().size(); ++i)
+  {
+    if (this->children().at(i)->inherits("QWidget"))
+    {
       QWidget *child = (QWidget*) this->children().at(i);
       child->setEnabled(false);
     }

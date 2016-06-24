@@ -58,6 +58,7 @@ public slots:
   void compute();
   void enableColorMatching();
   void initialState();
+  void openFileExplorer();
 
 
 protected slots:

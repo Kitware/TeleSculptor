@@ -52,7 +52,7 @@ public:
 
 
 public slots:
-  void ouputPSL();
+  void ouputProcess();
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(OutputDialog)
