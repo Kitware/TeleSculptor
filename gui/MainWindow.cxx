@@ -454,6 +454,7 @@ void MainWindowPrivate::updateCameraView()
     return;
   }
 
+  this->UI.cameraView->setFrameName(cd.imagePath);
   // Show landmarks
   this->UI.cameraView->clearLandmarks();
   if (this->landmarks)
