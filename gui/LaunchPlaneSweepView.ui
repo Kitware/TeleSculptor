@@ -89,21 +89,6 @@
      <property name="configField" stdset="0">
       <string>--PS_OCCLUSION_MODE</string>
      </property>
-     <item>
-      <property name="text">
-       <string>None</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>RefSplit</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>BestK</string>
-      </property>
-     </item>
     </widget>
    </item>
    <item row="12" column="0">
@@ -231,31 +216,6 @@
      <property name="configField" stdset="0">
       <string>--writePointClouds</string>
      </property>
-     <item>
-      <property name="text">
-       <string>vti</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>vtp</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>vts</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>vtpvts</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>vrml</string>
-      </property>
-     </item>
     </widget>
    </item>
    <item row="16" column="0">
@@ -299,16 +259,6 @@
      <property name="configField" stdset="0">
       <string>--PS_MATCHING_COSTS</string>
      </property>
-     <item>
-      <property name="text">
-       <string>SAD</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>ZNCC</string>
-      </property>
-     </item>
     </widget>
    </item>
    <item row="5" column="1">

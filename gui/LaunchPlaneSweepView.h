@@ -56,6 +56,7 @@ public:
                        QString frameList,int numCam);
   void runningState();
 
+
 public slots:
   void compute();
   void enableColorMatching();
@@ -64,6 +65,7 @@ public slots:
 
 
 protected slots:
+  void initializeComboBoxes();
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(LaunchPlaneSweepView)

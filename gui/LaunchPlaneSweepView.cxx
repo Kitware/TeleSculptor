@@ -121,6 +121,8 @@ LaunchPlaneSweepView::LaunchPlaneSweepView(QWidget* parent, Qt::WindowFlags flag
 
   connect(d->UI.pushButtonExplore, SIGNAL(clicked(bool)),
          this, SLOT(openFileExplorer()));
+
+  initializeComboBoxes();
 }
 
 //-----------------------------------------------------------------------------
@@ -191,7 +193,7 @@ void LaunchPlaneSweepView::compute()
     {
       QComboBox *child = qobject_cast<QComboBox*>(this->children().at(i));
 
-      d->addArg(child, child->currentText());
+      d->addArg(child, child->itemData(child->currentIndex()).toString());
     }
     else if (this->children().at(i)->inherits("QSpinBox"))
     {
@@ -302,6 +304,25 @@ void LaunchPlaneSweepView::runningState()
     }
   }
   d->UI.pushButtonStop->setEnabled(true);
+}
+
+//-----------------------------------------------------------------------------
+void LaunchPlaneSweepView::initializeComboBoxes()
+{
+  QTE_D();
+
+  d->UI.comboBoxMatchCost->addItem("SAD",QVariant("SAD"));
+  d->UI.comboBoxMatchCost->addItem("ZNCC",QVariant("ZNCC"));
+
+  d->UI.comboBoxOcclusionMode->addItem("None",QVariant("None"));
+  d->UI.comboBoxOcclusionMode->addItem("Ref Split",QVariant("RefSplit"));
+  d->UI.comboBoxOcclusionMode->addItem("Best K",QVariant("BestK"));
+
+  d->UI.comboBoxOutputs->addItem("VTI files only",QVariant("vti"));
+  d->UI.comboBoxOutputs->addItem("VTI and VTS",QVariant("vts"));
+  d->UI.comboBoxOutputs->addItem("VTI and VTP",QVariant("vtp"));
+  d->UI.comboBoxOutputs->addItem("VTI, VTP and VTS files",QVariant("vtpvts"));
+  d->UI.comboBoxOutputs->addItem("VTI and VRML files",QVariant("vrml"));
 }
 
 //END LaunchPlaneSweepView
