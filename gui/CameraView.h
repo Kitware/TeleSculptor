@@ -56,11 +56,11 @@ public:
 
   void addFeatureTrack(kwiver::vital::track const&);
 
-  void setFrameName(QString frameName);
 
 public slots:
   void setBackgroundColor(QColor const&);
 
+  void setImagePath(QString const&);
   void setImageData(vtkImageData* data, QSize const& dimensions);
 
   void setLandmarksData(kwiver::vital::landmark_map const&);
