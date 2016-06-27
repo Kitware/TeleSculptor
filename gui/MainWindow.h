@@ -70,6 +70,10 @@ public slots:
   void showAboutDialog();
   void showUserManual();
 
+#ifdef VTKWEBGLEXPORTER
+  void exportWebGLScene();
+#endif
+
 protected slots:
   void setSlideDelay(int);
   void setSlideshowPlaying(bool);
