@@ -284,6 +284,9 @@
    <property name="text">
     <string>WebGL Scene...</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionShowWorldAxes">
    <property name="checkable">

@@ -634,6 +634,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   this->setSlideDelay(d->UI.slideDelay->value());
 
 #ifdef VTKWEBGLEXPORTER
+  d->UI.actionWebGLScene->setVisible(true);
   connect(d->UI.actionWebGLScene, SIGNAL(triggered(bool)),
           this, SLOT(exportWebGLScene()));
 #endif
