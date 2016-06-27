@@ -52,5 +52,8 @@ Tools
  * Added an option to display the world axes around the visible geometry.
    This option can be enabled and disabled in the "View" menu.
 
+ * The absolute path to the current frame is now displayed at the bottom of the
+   Camera view.
+
 Fixes since v0.8.0
 -------------------------------

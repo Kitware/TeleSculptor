@@ -445,6 +445,7 @@ void MainWindowPrivate::updateCameraView()
 
   // Show camera image
   this->loadImage(cd.imagePath, cd.camera);
+  this->UI.cameraView->setImagePath(cd.imagePath);
 
   if (!cd.camera)
   {
