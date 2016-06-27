@@ -41,6 +41,7 @@
 #include "MatchMatrixWindow.h"
 #include "Project.h"
 #include "vtkMaptkCamera.h"
+#include "LaunchPlaneSweepView.h"
 
 #include <maptk/match_matrix.h>
 #include <maptk/version.h>
@@ -266,6 +267,10 @@ public:
 
   QQueue<int> orphanImages;
   QQueue<int> orphanCameras;
+
+  QString krtdFolder;
+  QString landmarksFile;
+  QString framesFolder;
 };
 
 QTE_IMPLEMENT_D_FUNC(MainWindow)
@@ -631,6 +636,9 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.camera, SIGNAL(valueChanged(int)),
           this, SLOT(setActiveCamera(int)));
 
+  connect(d->UI.actionPlaneSweepLib, SIGNAL(triggered(bool)),
+          this, SLOT(showComputeDepthmaps()));
+
   this->setSlideDelay(d->UI.slideDelay->value());
 
   // Set up UI persistence and restore previous state
@@ -772,6 +780,11 @@ void MainWindow::loadProject(QString const& path)
       }
     }
   }
+
+  d->krtdFolder = project.cameraPath;
+  d->landmarksFile = project.landmarks;
+  d->framesFolder = project.frameListPath;
+  d->UI.menuDepthmaps->setEnabled(true);
 
   d->UI.worldView->resetView();
 }
@@ -1116,6 +1129,21 @@ void MainWindow::showMatchMatrix()
     window->setMatrix(mm);
     window->show();
   }
+}
+
+void MainWindow::showComputeDepthmaps()
+{
+  QTE_D();
+
+  auto window = new LaunchPlaneSweepView();
+
+//  window->setKrtdFolder(d->krtdFolder);
+//  window->setFrameList(d->framesFolder);
+//  window->setLandmarksFile(d->landmarksFile);
+
+  window->initalizeValues(d->krtdFolder, d->landmarksFile,
+                          d->framesFolder, d->cameras.size());
+  window->show();
 }
 
 //-----------------------------------------------------------------------------

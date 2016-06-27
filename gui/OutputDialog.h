@@ -12,9 +12,9 @@
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  *
- *  * Neither the name Kitware, Inc. nor the names of any contributors may be
- *    used to endorse or promote products derived from this software without
- *    specific prior written permission.
+ *  * Neither name of Kitware, Inc. nor the names of any contributors may be used
+ *    to endorse or promote products derived from this software without specific
+ *    prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -28,63 +28,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_MAINWINDOW_H_
-#define MAPTK_MAINWINDOW_H_
+#ifndef MAPTK_OUTPUTDIALOG_H_
+#define MAPTK_OUTPUTDIALOG_H_
 
 #include <qtGlobal.h>
+#include <QDialog>
 
 #include <QMainWindow>
 
-class MainWindowPrivate;
 
-class MainWindow : public QMainWindow
+class OutputDialogPrivate;
+
+class QProcess;
+
+class OutputDialog : public QDialog
 {
   Q_OBJECT
 
 public:
-  explicit MainWindow(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~MainWindow();
+  explicit OutputDialog(QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  virtual ~OutputDialog();
+  void setOutputToDisplay(QProcess *process);
+
 
 public slots:
-  void openFile();
-  void openFile(QString const& path);
-  void openFiles(QStringList const& paths);
-
-  void loadProject(QString const& path);
-  void loadImage(QString const& path);
-  void loadCamera(QString const& path);
-  void loadTracks(QString const& path);
-  void loadLandmarks(QString const& path);
-
-  void saveCameras();
-  void saveCameras(QString const& path);
-  void saveLandmarks();
-  void saveLandmarks(QString const& path);
-
-  void setActiveCamera(int);
-
-  void setViewBackroundColor();
-
-  void showMatchMatrix();
-
-  void showComputeDepthmaps();
-
-  void showAboutDialog();
-  void showUserManual();
-
-protected slots:
-  void setSlideDelay(int);
-  void setSlideshowPlaying(bool);
-  void nextSlide();
-
-  void executeTool(QObject*);
-  void acceptToolResults();
+  void ouputProcess();
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(MainWindow)
-  QTE_DECLARE_PRIVATE(MainWindow)
+  QTE_DECLARE_PRIVATE_RPTR(OutputDialog)
+  QTE_DECLARE_PRIVATE(OutputDialog)
 
-  QTE_DISABLE_COPY(MainWindow)
+  QTE_DISABLE_COPY(OutputDialog)
 };
 
 #endif

@@ -20,7 +20,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>21</height>
+     <height>27</height>
     </rect>
    </property>
    <widget class="qtMenu" name="menuFile">
@@ -63,6 +63,16 @@
     <property name="title">
      <string>&amp;Compute</string>
     </property>
+    <widget class="QMenu" name="menuDepthmaps">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="title">
+      <string>Depthmaps...</string>
+     </property>
+     <addaction name="actionPlaneSweepLib"/>
+    </widget>
+    <addaction name="menuDepthmaps"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuCompute"/>
@@ -273,6 +283,14 @@
    </property>
    <property name="toolTip">
     <string>Change the background color of the views</string>
+   </property>
+  </action>
+  <action name="actionPlaneSweepLib">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Plane Sweep Lib</string>
    </property>
   </action>
   <action name="actionShowWorldAxes">
