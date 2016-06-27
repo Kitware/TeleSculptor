@@ -5,7 +5,6 @@ find_package(qtExtensions REQUIRED)
 include(${qtExtensions_USE_FILE})
 
 find_package(VTK 6.2 REQUIRED)
-
 include(${VTK_USE_FILE})
 
 #
@@ -22,12 +21,6 @@ include_directories(
   ${MAPTK_SOURCE_DIR}
   ${MAPTK_BINARY_DIR}
 )
-
-if(vtkWebGLExporter_LOADED)
-  message(STATUS "Module vtkWebGLExporter loaded, wekGL export enabled")
-  add_definitions(-DVTKWEBGLEXPORTER)
-endif()
-
 
 set(gui_am_ui
   CameraView.ui
@@ -138,7 +131,6 @@ kwiver_add_executable(mapgui
 )
 unset(no_install)
 
-
 target_link_libraries(mapgui
   maptk
   vital_apm
@@ -157,6 +149,8 @@ target_link_libraries(mapgui
 )
 
 if(vtkWebGLExporter_LOADED)
+  message(STATUS "Module vtkWebGLExporter present: wekGL export enabled")
+  target_compile_definitions(mapgui PRIVATE -DVTKWEBGLEXPORTER)
   target_link_libraries(mapgui vtkWebGLExporter)
 endif()
 

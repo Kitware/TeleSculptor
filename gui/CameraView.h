@@ -56,7 +56,6 @@ public:
 
   void addFeatureTrack(kwiver::vital::track const&);
 
-
 public slots:
   void setBackgroundColor(QColor const&);
 

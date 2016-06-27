@@ -58,13 +58,13 @@
 #include <vtkProperty.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
-#include <vtkScalarsToColors.h>
 #include <vtkTextProperty.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
 
 #ifdef VTKWEBGLEXPORTER
-  #include <vtkWebGLExporter.h>
+#include <vtkScalarsToColors.h>
+#include <vtkWebGLExporter.h>
 #endif
 
 #include <qtMath.h>
@@ -816,29 +816,26 @@ void WorldView::updateScale()
   }
 }
 
-#ifdef VTKWEBGLEXPORTER
 //-----------------------------------------------------------------------------
 void WorldView::exportWebGLScene(QString const& path)
 {
+#ifdef VTKWEBGLEXPORTER
   QTE_D();
-
 
   vtkNew<vtkWebGLExporter> exporter;
 
   int width = d->renderWindow->GetScreenSize()[0];
   int height = d->renderWindow->GetScreenSize()[1];
 
-  /* WARNING: This is a workaround. There's a bug in
-   * vtkWebGLPolyData->GetColorsFromPointData():
-   * the LookupTable->GetVectorMode() is passed instead of the GetMapper->GetColorMode.
-   * This bug is fixed in the latest version of VTK, but not in the 6.2 required by MapTK.
-   * The workaround here is to force the LookupTable's VectorMode to
-   * vtkScalarsToColors::RGBCOLORS if the Mapper's ColorMode equals
-   * VTK_COLOR_MODE_DEFAULT or VTK_COLOR_MODE_DIRECT_SCALARS.
-   *
-   * This workaround shall be removed when MapTK will be compatible with the latest
-   * VTK version.
-  */
+  // HACK: There's a bug in vtkWebGLPolyData->GetColorsFromPointData():
+  // LookupTable->GetVectorMode() is passed instead of GetMapper->GetColorMode.
+  // The workaround here is to force the LookupTable's VectorMode to
+  // vtkScalarsToColors::RGBCOLORS if the mapper's ColorMode equals
+  // VTK_COLOR_MODE_DEFAULT or VTK_COLOR_MODE_DIRECT_SCALARS.
+  //
+  // See also https://gitlab.kitware.com/vtk/vtk/merge_requests/1585. This
+  // workaround should be removed when MapTK moves to a version of VTK that
+  // contains the fix.
   auto const actors = d->renderer->GetActors();
   actors->InitTraversal();
   while (auto const actor = actors->GetNextActor())
@@ -853,6 +850,7 @@ void WorldView::exportWebGLScene(QString const& path)
 
   exporter->exportStaticScene(d->renderWindow->GetRenderers(), width, height,
                               qPrintable(path));
-
-}
+#else
+  Q_UNUSED(path)
 #endif
+}
