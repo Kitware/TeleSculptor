@@ -828,15 +828,15 @@ void WorldView::exportWebGLScene(QString const& path)
   int width = d->renderWindow->GetScreenSize()[0];
   int height = d->renderWindow->GetScreenSize()[1];
 
-  /** WARNING: This is a workaround. There's a bug in
+  /* WARNING: This is a workaround. There's a bug in
    * vtkWebGLPolyData->GetColorsFromPointData():
-   * the LookupTable->GetVectorMode() is passed instead of the GetMapper->GetColorMode. This bug is
-   * fixed in the last  version of VTK, but not in the 6.2 required by MapTK.
+   * the LookupTable->GetVectorMode() is passed instead of the GetMapper->GetColorMode.
+   * This bug is fixed in the latest version of VTK, but not in the 6.2 required by MapTK.
    * The workaround here is to force the LookupTable's VectorMode to
    * vtkScalarsToColors::RGBCOLORS if the Mapper's ColorMode equals
    * VTK_COLOR_MODE_DEFAULT or VTK_COLOR_MODE_DIRECT_SCALARS.
    *
-   * This workaround shall be removed when MapTK will be compatible with the last
+   * This workaround shall be removed when MapTK will be compatible with the latest
    * VTK version.
   */
   auto const actors = d->renderer->GetActors();
