@@ -52,5 +52,9 @@ Tools
  * Added an option to display the world axes around the visible geometry.
    This option can be enabled and disabled in the "View" menu.
 
+ * Added an option to export the current scene to webGL. This option is only
+   available if VTK was built with the option Module_vtkWebGLExporter turned on.
+   This option can then be found in the "File > Export" menu.
+
 Fixes since v0.8.0
 -------------------------------
