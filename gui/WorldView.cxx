@@ -58,9 +58,14 @@
 #include <vtkProperty.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
+#include <vtkScalarsToColors.h>
 #include <vtkTextProperty.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
+
+#ifdef VTKWEBGLEXPORTER
+  #include <vtkWebGLExporter.h>
+#endif
 
 #include <qtMath.h>
 
@@ -810,3 +815,44 @@ void WorldView::updateScale()
     d->renderer->ResetCameraClippingRange();
   }
 }
+
+#ifdef VTKWEBGLEXPORTER
+//-----------------------------------------------------------------------------
+void WorldView::exportWebGLScene(QString const& path)
+{
+  QTE_D();
+
+
+  vtkNew<vtkWebGLExporter> exporter;
+
+  int width = d->renderWindow->GetScreenSize()[0];
+  int height = d->renderWindow->GetScreenSize()[1];
+
+  /* WARNING: This is a workaround. There's a bug in
+   * vtkWebGLPolyData->GetColorsFromPointData():
+   * the LookupTable->GetVectorMode() is passed instead of the GetMapper->GetColorMode.
+   * This bug is fixed in the latest version of VTK, but not in the 6.2 required by MapTK.
+   * The workaround here is to force the LookupTable's VectorMode to
+   * vtkScalarsToColors::RGBCOLORS if the Mapper's ColorMode equals
+   * VTK_COLOR_MODE_DEFAULT or VTK_COLOR_MODE_DIRECT_SCALARS.
+   *
+   * This workaround shall be removed when MapTK will be compatible with the latest
+   * VTK version.
+  */
+  auto const actors = d->renderer->GetActors();
+  actors->InitTraversal();
+  while (auto const actor = actors->GetNextActor())
+  {
+    if(actor && actor->GetMapper() &&
+       (actor->GetMapper()->GetColorMode() == VTK_COLOR_MODE_DEFAULT
+        || actor->GetMapper()->GetColorMode() == VTK_COLOR_MODE_DIRECT_SCALARS))
+    {
+      actor->GetMapper()->GetLookupTable()->SetVectorModeToRGBColors();
+    }
+  }
+
+  exporter->exportStaticScene(d->renderWindow->GetRenderers(), width, height,
+                              qPrintable(path));
+
+}
+#endif

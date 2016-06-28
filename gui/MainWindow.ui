@@ -20,7 +20,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>21</height>
+     <height>27</height>
     </rect>
    </property>
    <widget class="qtMenu" name="menuFile">
@@ -33,6 +33,8 @@
      </property>
      <addaction name="actionExportCameras"/>
      <addaction name="actionExportLandmarks"/>
+     <addaction name="separator"/>
+     <addaction name="actionWebGLScene"/>
     </widget>
     <addaction name="actionOpen"/>
     <addaction name="menuExport"/>
@@ -273,6 +275,17 @@
    </property>
    <property name="toolTip">
     <string>Change the background color of the views</string>
+   </property>
+  </action>
+  <action name="actionWebGLScene">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>WebGL Scene...</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionShowWorldAxes">

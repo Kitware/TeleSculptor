@@ -445,6 +445,7 @@ void MainWindowPrivate::updateCameraView()
 
   // Show camera image
   this->loadImage(cd.imagePath, cd.camera);
+  this->UI.cameraView->setImagePath(cd.imagePath);
 
   if (!cd.camera)
   {
@@ -633,6 +634,11 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   this->setSlideDelay(d->UI.slideDelay->value());
 
+#ifdef VTKWEBGLEXPORTER
+  d->UI.actionWebGLScene->setVisible(true);
+  connect(d->UI.actionWebGLScene, SIGNAL(triggered(bool)),
+          this, SLOT(exportWebGLScene()));
+#endif
   // Set up UI persistence and restore previous state
   auto const sdItem = new qtUiState::Item<int, QSlider>(
     d->UI.slideDelay, &QSlider::value, &QSlider::setValue);
@@ -772,6 +778,10 @@ void MainWindow::loadProject(QString const& path)
       }
     }
   }
+
+#ifdef VTKWEBGLEXPORTER
+  d->UI.actionWebGLScene->setEnabled(true);
+#endif
 
   d->UI.worldView->resetView();
 }
@@ -1156,5 +1166,22 @@ void MainWindow::showUserManual()
       "The user manual could not be located. Please check your installation.");
   }
 }
+
+
+#ifdef VTKWEBGLEXPORTER
+//-----------------------------------------------------------------------------
+void MainWindow::exportWebGLScene()
+{
+  QTE_D();
+
+  auto const path = QFileDialog::getSaveFileName(
+    this, "Export Scene to WebGL", QString(),
+    "WebGL scene file (*.html);;"
+    "All Files (*)");
+
+  d->UI.worldView->exportWebGLScene(path);
+
+}
+#endif
 
 //END MainWindow

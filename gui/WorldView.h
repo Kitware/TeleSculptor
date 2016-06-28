@@ -79,6 +79,10 @@ public slots:
   void viewToWorldFront();
   void viewToWorldBack();
 
+#ifdef VTKWEBGLEXPORTER
+  void exportWebGLScene(QString const& path);
+#endif
+
   void invalidateGeometry();
 
 protected slots:

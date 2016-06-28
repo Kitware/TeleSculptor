@@ -39,6 +39,16 @@ Visualization Application
  * Updated the "Align" tool to use the configurable abstract algorithm
    for canonical transform.
 
+ * Added an option to display the world axes around the visible geometry.
+   This option can be enabled and disabled in the "View" menu.
+
+ * Added an option to export the current scene to webGL. This option is only
+   available if VTK was built with the option Module_vtkWebGLExporter turned on.
+   This option can then be found in the "File > Export" menu.
+
+ * The absolute path to the current frame is now displayed at the bottom of the
+   Camera view.
+
 Tools
 
  * Updated the bundle_adjust_tracks tool to use the configurable abstract
@@ -49,8 +59,6 @@ Tools
    when only a subset of cameras are computed and we do not want a mix of
    old and new camera files.
 
- * Added an option to display the world axes around the visible geometry.
-   This option can be enabled and disabled in the "View" menu.
 
 Fixes since v0.8.0
 -------------------------------
