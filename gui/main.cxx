@@ -30,6 +30,8 @@
 
 #include "MainWindow.h"
 
+#include <iostream>
+
 #include <maptk/version.h>
 
 #include <vital/algorithm_plugin_manager.h>
@@ -40,6 +42,8 @@
 
 #include <QApplication>
 #include <QtCore/QDir>
+
+#include <kwiversys/CommandLineArguments.hxx>
 
 //-----------------------------------------------------------------------------
 int main(int argc, char** argv)
@@ -64,6 +68,29 @@ int main(int argc, char** argv)
   QApplication app(args.qtArgc(), args.qtArgv());
   qtUtil::setApplicationIcon("mapgui");
 
+  bool help;
+  std::string openFilePath;
+
+  typedef kwiversys::CommandLineArguments argT;
+
+  argT arg;
+
+  arg.Initialize(argc, argv);
+
+  arg.AddBooleanArgument("--help", &help, "Display usage information");
+  arg.AddBooleanArgument("-h", &help, "Display usage information");
+  arg.AddArgument("--input", argT::SPACE_ARGUMENT,
+                  &openFilePath, "File to open at launch");
+  arg.AddArgument("-i", argT::SPACE_ARGUMENT,
+                  &openFilePath, "File to open at launch");
+
+  if(!arg.Parse() || help)
+  {
+    std::cout << "USAGE:" << std::endl;
+    std::cout << arg.GetHelp() << std::endl;
+    return EXIT_FAILURE;
+  }
+
   // Load Vital/MAP-Tk plugins
   auto const exeDir = QDir(QApplication::applicationDirPath());
   auto const rel_path = stdString(exeDir.absoluteFilePath("..")) + "/lib/maptk";
@@ -72,6 +99,12 @@ int main(int argc, char** argv)
 
   // Create and show main window
   MainWindow window;
+
+  if (!openFilePath.empty())
+  {
+    window.openFile(QString::fromStdString(openFilePath));
+  }
+
   window.show();
   window.openFiles(args.values("files"));
 
