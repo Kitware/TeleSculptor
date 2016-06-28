@@ -49,6 +49,8 @@ Visualization Application
  * The absolute path to the current frame is now displayed at the bottom of the
    Camera view.
 
+ * The GUI now accepts a list of files to be opened on the command line.
+
 Tools
 
  * Updated the bundle_adjust_tracks tool to use the configurable abstract
