@@ -34,6 +34,7 @@
 
 #include <vital/algorithm_plugin_manager.h>
 
+#include <qtCliArgs.h>
 #include <qtStlUtil.h>
 #include <qtUtil.h>
 
@@ -49,7 +50,18 @@ int main(int argc, char** argv)
   QApplication::setOrganizationDomain("kitware.com");
   QApplication::setApplicationVersion(MAPTK_VERSION);
 
-  QApplication app(argc, argv);
+  // Set up command line options
+  qtCliArgs args(argc, argv);
+  qtCliOptions nargs;
+
+  nargs.add("files", "List of files to open", qtCliOption::NamedList);
+  args.addNamedArguments(nargs);
+
+  // Parse arguments
+  args.parseOrDie();
+
+  // Create application instance and set icon
+  QApplication app(args.qtArgc(), args.qtArgv());
   qtUtil::setApplicationIcon("mapgui");
 
   // Load Vital/MAP-Tk plugins
@@ -58,8 +70,11 @@ int main(int argc, char** argv)
   kwiver::vital::algorithm_plugin_manager::instance().add_search_path(rel_path);
   kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
 
+  // Create and show main window
   MainWindow window;
   window.show();
+  window.openFiles(args.values("files"));
 
+  // Hand off to event loop
   return app.exec();
 }
