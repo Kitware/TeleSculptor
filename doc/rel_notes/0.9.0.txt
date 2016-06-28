@@ -59,6 +59,9 @@ Tools
    when only a subset of cameras are computed and we do not want a mix of
    old and new camera files.
 
+ * Added command line arguments to get help (-h, --help) and to open directly a
+   config file at launch (-i, --input [PATH])
+
 
 Fixes since v0.8.0
 -------------------------------
