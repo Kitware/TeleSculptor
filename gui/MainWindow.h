@@ -60,6 +60,7 @@ public slots:
   void saveCameras(QString const& path);
   void saveLandmarks();
   void saveLandmarks(QString const& path);
+  void saveWebGLScene();
 
   void setActiveCamera(int);
 
@@ -69,10 +70,6 @@ public slots:
 
   void showAboutDialog();
   void showUserManual();
-
-#ifdef VTKWEBGLEXPORTER
-  void exportWebGLScene();
-#endif
 
 protected slots:
   void setSlideDelay(int);
