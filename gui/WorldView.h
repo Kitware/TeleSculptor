@@ -64,7 +64,6 @@ public:
 
   void setActiveDepthMap(vtkMaptkCamera *cam, QString vtiPath);
   void enableDepthMap();
-  void updateDepthMap();
 public slots:
   void setBackgroundColor(QColor const&);
 
@@ -102,6 +101,8 @@ public slots:
 
   //void enableDepthMap(std::string type);
   //void updateDepthMap();
+  void updateDepthMapRepresentation();
+  void updateDepthMapThresholds();
 protected slots:
   void updateAxes();
   void updateCameras();

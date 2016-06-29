@@ -54,16 +54,12 @@ public:
   bool isSurfacesChecked();
   bool isVerticesChecked();
 
-  void enableDM(std::string type);
-//  void enablePoints();
-//  void enableSurfaces();
-//  void enableVertices();
-
   double getBestCostValueMin();
   double getBestCostValueMax();
   double getUniquenessRatioMin();
   double getUniquenessRatioMax();
 
+  void initializeFilters(double bcMin, double bcMax, double urMin, double urMax);
   bool isFiltersChecked();
 
   void enableBBoxDisplay(bool state);
@@ -73,12 +69,10 @@ signals:
 
   void bBoxToggled();
   void modified();
-  void depthMapChanged();
+  void depthMapRepresentationChanged();
+  void depthMapThresholdsChanged();
 
-protected slots:
-//  void switchPointsVisible(bool);
-//  void switchSurfacesVisible(bool);
-  void switchVisible(bool);
+public slots:
   void showFiltersMenu(bool);
 
 private:

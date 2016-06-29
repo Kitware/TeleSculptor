@@ -53,11 +53,13 @@ public:
   double getUniquenessRatioMin();
   double getUniquenessRatioMax();
 
+  void initializeFilters(double bcMin, double bcMax, double urMin, double urMax);
 signals:
   void filtersChanged();
 
 public slots:
   void updateFilters();
+  void resetFilters();
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(DepthMapFilterOptions)

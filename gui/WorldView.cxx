@@ -156,8 +156,10 @@ public:
   vtkNew<vtkMatrix4x4> imageProjection;
   vtkNew<vtkMatrix4x4> imageLocalTransform;
 
+  vtkSmartPointer<vtkPolyData> currentDepthmap;
+
   vtkNew<vtkActor> polyDataActor;
-  vtkNew<vtkActor> structuredGridActor;
+  vtkNew<vtkActor> depthmapActor;
 
   std::map<int, std::string> dMList;
   std::map<int, std::string> dMListSG;
@@ -331,16 +333,21 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->setPopup(d->UI.actionDepthmapDisplay, d->depthMapOptions);
 
   d->depthMapOptions->addActor("points",d->polyDataActor.Get());
-  d->depthMapOptions->addActor("surfaces",d->structuredGridActor.Get());
+  d->depthMapOptions->addActor("surfaces",d->depthmapActor.Get());
 
 //  connect(d->depthMapOptions, SIGNAL(modified()),
 //          d->UI.renderWidget, SLOT(update()));
 
-  connect(d->depthMapOptions, SIGNAL(depthMapChanged()),
-          this, SLOT(updateDepthMap()));
+  connect(d->depthMapOptions, SIGNAL(depthMapRepresentationChanged()),
+          this, SLOT(updateDepthMapRepresentation()));
+
+  connect(d->depthMapOptions, SIGNAL(depthMapThresholdsChanged()),
+          this, SLOT(updateDepthMapThresholds()));
 
   connect(d->depthMapOptions, SIGNAL(bBoxToggled()),
           this, SLOT(setGridVisible()));
+
+  d->depthMapOptions->setEnabled(false);
 
   // Connect actions
   this->addAction(d->UI.actionViewReset);
@@ -505,11 +512,6 @@ void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, QString vtiPath) {
 
   currentVtiPath = vtiPath;
 
-  double bestCostValueMin = d->depthMapOptions->getBestCostValueMin();
-  double bestCostValueMax = d->depthMapOptions->getBestCostValueMax();
-  double uniquenessRatioMin = d->depthMapOptions->getUniquenessRatioMin();
-  double uniquenessRatioMax = d->depthMapOptions->getUniquenessRatioMax();
-
   if (d->UI.actionDepthmapDisplay->isChecked() && !currentVtiPath.isEmpty()) {
 
     std::string filename = currentVtiPath.toStdString();
@@ -554,53 +556,31 @@ void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, QString vtiPath) {
 
 
     polyData->Print(std::cout);
-    //Threshold
-    vtkSmartPointer<vtkPolyData> polyDataToShow;
-    if (d->depthMapOptions->isFiltersChecked()) {
-      vtkNew<vtkThreshold> thresholdBestCostValues, thresholdUniquenessRatios;
 
-      thresholdBestCostValues->SetInputData(polyData.Get());
 
-      thresholdBestCostValues->SetInputArrayToProcess(0,0,0,vtkDataObject::FIELD_ASSOCIATION_POINTS,"Best Cost Values");
-      thresholdBestCostValues->ThresholdBetween(bestCostValueMin,bestCostValueMax);
-
-      thresholdUniquenessRatios->SetInputConnection(thresholdBestCostValues->GetOutputPort());
-      thresholdUniquenessRatios->SetInputArrayToProcess(0,0,0,vtkDataObject::FIELD_ASSOCIATION_POINTS,"Uniqueness Ratios");
-      thresholdUniquenessRatios->ThresholdBetween(uniquenessRatioMin,uniquenessRatioMax);
-
-      vtkNew<vtkGeometryFilter> geometryFilter;
-      geometryFilter->SetInputConnection(thresholdUniquenessRatios->GetOutputPort());
-      geometryFilter->Update();
-      polyDataToShow = geometryFilter->GetOutput();
-
-    }
-    else
-    {
-      polyDataToShow = polyData.Get();
-    }
-
-    polyDataToShow->GetPointData()->SetScalars(polyDataToShow->GetPointData()->GetArray("Color"));
+    d->currentDepthmap = polyData.Get();
+    d->currentDepthmap->GetPointData()->SetScalars(d->currentDepthmap->GetPointData()->GetArray("Color"));
     vtkNew<vtkPolyDataMapper> mapper;
 
-    mapper->SetInputData(polyDataToShow.Get());
+    mapper->SetInputData(d->currentDepthmap.Get());
     mapper->SetColorModeToDirectScalars();
 
-    d->structuredGridActor->SetMapper(mapper.Get());
-    d->structuredGridActor->SetVisibility(true);
+    d->depthmapActor->SetMapper(mapper.Get());
+    d->depthmapActor->SetVisibility(true);
 
     if(d->depthMapOptions->isPointsChecked()) {
-      d->structuredGridActor->GetProperty()->SetRepresentationToPoints();
+      d->depthmapActor->GetProperty()->SetRepresentationToPoints();
     }
     else {
-      d->structuredGridActor->GetProperty()->SetRepresentationToSurface();
+      d->depthmapActor->GetProperty()->SetRepresentationToSurface();
     }
 
-    d->renderer->AddActor(d->structuredGridActor.Get());
+    d->renderer->AddActor(d->depthmapActor.Get());
 
-    d->renderer->AddViewProp(d->structuredGridActor.GetPointer());
+    d->renderer->AddViewProp(d->depthmapActor.GetPointer());
 
-    //Displaying axes
-    d->cubeAxesActor->SetBounds(polyDataToShow->GetBounds());
+    //Calculating the bounding box for the grid coordinates
+    d->cubeAxesActor->SetBounds(d->currentDepthmap->GetBounds());
     d->cubeAxesActor->SetCamera(d->renderer->GetActiveCamera());
     d->cubeAxesActor->GetTitleTextProperty(0)->SetColor(1.0, 0.0, 0.0);
     d->cubeAxesActor->GetLabelTextProperty(0)->SetColor(1.0, 0.0, 0.0);
@@ -624,6 +604,13 @@ void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, QString vtiPath) {
     d->cubeAxesActor->SetVisibility(d->depthMapOptions->isBBoxChecked());
     d->renderer->GetActiveCamera()->Azimuth(30);
     d->renderer->GetActiveCamera()->Elevation(30);
+
+    //initializing the filters
+    double bcRange[2], urRange[2];
+    polyData->GetPointData()->GetArray("Best Cost Values")->GetRange(bcRange);
+    polyData->GetPointData()->GetArray("Uniqueness Ratios")->GetRange(urRange);
+
+    d->depthMapOptions->initializeFilters(bcRange[0],bcRange[1],urRange[0],urRange[1]);
   }
 
   currentCam = camera;
@@ -826,14 +813,8 @@ void WorldView::setDepthMapVisible(bool state)
 {
   QTE_D();
 
-//  if (d->depthMapOptions->isPointsChecked())
-//  {
-//    d->polyDataActor->SetVisibility(state);
-//  }
-//  else if (d->depthMapOptions->isSurfacesChecked())
-//  {
-    d->structuredGridActor->SetVisibility(state);
-//  }
+    d->depthmapActor->SetVisibility(state);
+    d->depthMapOptions->setEnabled(state);
 
     if (state)
     {
@@ -1097,10 +1078,45 @@ void WorldView::exportWebGLScene(QString const& path)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::updateDepthMap()
+void WorldView::updateDepthMapRepresentation()
 {
   QTE_D();
 //  std::cout << "update depth map..." << *matrix <<std::endl;
-  setActiveDepthMap(currentCam,currentVtiPath);
+//  setActiveDepthMap(currentCam,currentVtiPath);
+  if(d->depthMapOptions->isPointsChecked()) {
+    d->depthmapActor->GetProperty()->SetRepresentationToPoints();
+  }
+  else {
+    d->depthmapActor->GetProperty()->SetRepresentationToSurface();
+  }
   d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::updateDepthMapThresholds()
+{
+
+  QTE_D();
+
+  double bestCostValueMin = d->depthMapOptions->getBestCostValueMin();
+  double bestCostValueMax = d->depthMapOptions->getBestCostValueMax();
+  double uniquenessRatioMin = d->depthMapOptions->getUniquenessRatioMin();
+  double uniquenessRatioMax = d->depthMapOptions->getUniquenessRatioMax();
+
+  vtkNew<vtkThreshold> thresholdBestCostValues, thresholdUniquenessRatios;
+
+  thresholdBestCostValues->SetInputData(d->currentDepthmap);
+
+  thresholdBestCostValues->SetInputArrayToProcess(0,0,0,vtkDataObject::FIELD_ASSOCIATION_POINTS,"Best Cost Values");
+  thresholdBestCostValues->ThresholdBetween(bestCostValueMin,bestCostValueMax);
+
+  thresholdUniquenessRatios->SetInputConnection(thresholdBestCostValues->GetOutputPort());
+  thresholdUniquenessRatios->SetInputArrayToProcess(0,0,0,vtkDataObject::FIELD_ASSOCIATION_POINTS,"Uniqueness Ratios");
+  thresholdUniquenessRatios->ThresholdBetween(uniquenessRatioMin,uniquenessRatioMax);
+
+  vtkNew<vtkGeometryFilter> geometryFilter;
+  geometryFilter->SetInputConnection(thresholdUniquenessRatios->GetOutputPort());
+//  geometryFilter->Update();
+  d->depthmapActor->GetMapper()->SetInputConnection(geometryFilter->GetOutputPort());
+  d->depthmapActor->GetMapper()->Update();
 }
