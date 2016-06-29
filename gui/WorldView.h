@@ -34,6 +34,8 @@
 #include <qtGlobal.h>
 
 #include <QtGui/QWidget>
+#include <vtkMatrix4x4.h>
+#include <vtkTransform.h>
 
 class vtkImageData;
 class vtkPolyData;
@@ -82,6 +84,11 @@ public slots:
   void exportWebGLScene(QString const& path);
 
   void invalidateGeometry();
+
+  void addDepthMaps(QString const& dMFileList);
+  void addDepthMapsSG(QString const& dMFileList);
+  void setActiveDepthMap(int numCam, vtkMatrix4x4 *mat);
+  void setActiveDepthMapSG(int numCam, vtkMatrix4x4 *mat);
 
 protected slots:
   void updateAxes();

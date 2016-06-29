@@ -77,6 +77,9 @@ bool Project::read(QString const& path)
     this->tracks =
       getPath(config, base, "input_track_file", "output_tracks_file");
 
+    this->DMvtp = getPath(config, base, "depthmaps_points_file");
+    this->DMvts = getPath(config, base, "depthmaps_surfaces_file");
+
     // Read image list
     auto const& iflPath = config->get_value<std::string>("image_list_file");
     QFile ifl(base.filePath(qtString(iflPath)));
