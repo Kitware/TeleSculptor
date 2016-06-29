@@ -112,11 +112,13 @@ void DepthMapFilterOptions::updateFilters()
 {
   QTE_D();
 
-  if(d->UI.doubleSpinBoxUniquenessRatioMax->value() < d->UI.doubleSpinBoxUniquenessRatioMin->value()) {
+  if(d->UI.doubleSpinBoxUniquenessRatioMax->value() < d->UI.doubleSpinBoxUniquenessRatioMin->value())
+  {
     d->UI.doubleSpinBoxUniquenessRatioMax->setValue(d->UI.doubleSpinBoxUniquenessRatioMin->value());
   }
 
-  if(d->UI.doubleSpinBoxBestCostMax->value() < d->UI.doubleSpinBoxBestCostMin->value()) {
+  if(d->UI.doubleSpinBoxBestCostMax->value() < d->UI.doubleSpinBoxBestCostMin->value())
+  {
     d->UI.doubleSpinBoxBestCostMax->setValue(d->UI.doubleSpinBoxBestCostMin->value());
   }
 

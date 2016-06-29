@@ -66,7 +66,12 @@ public:
 
   bool isFiltersChecked();
 
+  void enableBBoxDisplay(bool state);
+  void enable();
+  bool isBBoxChecked();
 signals:
+
+  void bBoxToggled();
   void modified();
   void depthMapChanged();
 

@@ -699,6 +699,16 @@ MainWindow::~MainWindow()
   d->uiState.save();
 }
 
+void MainWindow::start(char *path)
+{
+  if (path)
+  {
+    openFile(QString(path));
+  }
+
+  show();
+}
+
 //-----------------------------------------------------------------------------
 void MainWindow::openFile()
 {
@@ -829,18 +839,9 @@ void MainWindow::loadProject(QString const& path)
     }
   }
   //Adding depthmaps (when they exists) to existing camera
-  if (!project.DMvtp.isEmpty())
+  if (!project.depthmaps.isEmpty())
   {
-    d->UI.worldView->enableDepthMap("vtp");
-  }
-  if (!project.DMvts.isEmpty())
-  {
-    d->UI.worldView->enableDepthMap("vts");
-  }
-  if (!project.DMvti.isEmpty())
-  {
-    d->UI.worldView->enableDepthMap("vtp");
-    d->UI.worldView->enableDepthMap("vts");
+    this->loadDepthmaps(project.depthmaps);
   }
 
   for (int camId = 0; camId < d->cameras.size(); ++camId)
@@ -855,24 +856,25 @@ void MainWindow::loadProject(QString const& path)
 //      d->cameras[camId].dmp.dMSurfacesPath = project.DMvts[camId];
 //    }
 
-    if(!project.DMvti.isEmpty() && project.DMvti.contains(camId))
-    {
-      d->cameras[camId].vtiPath = project.DMvti[camId];
-    }
-  }
+//    if(!project.DMvti.isEmpty() && project.DMvti.contains(camId))
+//    {
+//      d->cameras[camId].vtiPath = project.DMvti[camId];
+//    }
+ // }
 
   //Once every depthmap is loaded, set up the active depthmap to the first found
-  if(!project.DMvtp.isEmpty() || !project.DMvts.isEmpty()
-     || !project.DMvti.isEmpty() )
-  {
-    for (int camId = 0; camId < d->cameras.size(); ++camId)
-    {
-      if (project.DMvtp.contains(camId))
-      {
-        setActiveCamera(camId);
-        break;
-      }
-    }
+ // if(!project.DMvtp.isEmpty() || !project.DMvts.isEmpty()
+ //    || !project.DMvti.isEmpty() )
+ // {
+    //TODO: replace this with a while loop.
+ //   for (int camId = 0; camId < d->cameras.size(); ++camId)
+ //   {
+ //     if (project.DMvtp.contains(camId))
+ //     {
+ //       setActiveCamera(camId);
+ //       break;
+ //     }
+ //   }
   }
 
 
@@ -934,6 +936,61 @@ void MainWindow::loadTracks(QString const& path)
   {
     qWarning() << "failed to read tracks from" << path;
   }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::loadDepthmaps(QString const& path)
+{
+  QTE_D();
+    QMap<int, QString> DMvti;
+
+    QFile vtiFile(path);
+    auto const& vtiBasePath =  QFileInfo(path).absoluteDir().absolutePath();
+
+    if (vtiFile.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+      QTextStream vtiStream(&vtiFile);
+      int frameNum;
+      QString fileName;
+      while (!vtiStream.atEnd())
+      {
+        vtiStream >> frameNum >> fileName;
+        std::string fileNamestr = vtiBasePath.toStdString() + QDir::separator().toAscii() +fileName.toStdString();
+
+        fileName = QString::fromStdString(fileNamestr);
+        if (!DMvti.contains(frameNum))
+        {
+          DMvti.insert(frameNum,fileName);
+        }
+      }
+    }
+    vtiFile.close();
+
+    for (int camId = 0; camId < d->cameras.size(); ++camId)
+    {
+      if(!DMvti.isEmpty() && DMvti.contains(camId))
+      {
+        d->cameras[camId].vtiPath = DMvti[camId];
+      }
+    }
+
+    //Once every depthmap is loaded, set up the active depthmap to the first found
+
+    int camId = 0;
+
+    while (camId < d->cameras.size() && !DMvti.contains(camId))
+    {
+      camId++;
+    }
+
+    if (camId < d->cameras.size())
+    {
+       setActiveCamera(camId);
+    }
+
+
+    d->UI.worldView->enableDepthMap();
+
 }
 
 //-----------------------------------------------------------------------------
