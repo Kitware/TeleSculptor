@@ -866,7 +866,6 @@ void MainWindow::loadTracks(QString const& path)
       }
 
       d->UI.actionShowMatchMatrix->setEnabled(!tracks->tracks().empty());
-//      d->UI.actionDepthMapView->setEnabled(!tracks->tracks().empty());
     }
   }
   catch (...)

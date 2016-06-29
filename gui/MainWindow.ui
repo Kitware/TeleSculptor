@@ -52,7 +52,6 @@
     <addaction name="separator"/>
     <addaction name="actionSetBackgroundColor"/>
     <addaction name="actionShowWorldAxes"/>
-    <addaction name="actionDepthMapView"/>
    </widget>
    <widget class="qtMenu" name="menuHelp">
     <property name="title">
@@ -304,11 +303,6 @@
    </property>
    <property name="text">
     <string>World &amp;Axes</string>
-   </property>
-  </action>
-  <action name="actionDepthMapView">
-   <property name="text">
-    <string>View Depth Map</string>
    </property>
   </action>
   <action name="actionOpenDepthmaps">
