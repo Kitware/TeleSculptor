@@ -249,10 +249,6 @@ void DepthMapView::setDepthMap(QString imagePath)
     readerIm->SetFileName(imagePath.toStdString().c_str());
     readerIm->Update();
 
-      //Set default color on the first array
-    std::cout << "imagedata file : "<< imagePath.toStdString() <<std::endl;
-//    readerIm->GetOutput()->GetPointData()->SetScalars(readerIm->GetOutput()->GetPointData()->GetArray(0));
-
       //Generating action buttons for each array in the imagedata
 
     d->UI.toolBar->update();
@@ -262,8 +258,9 @@ void DepthMapView::setDepthMap(QString imagePath)
     d->imageActor->SetVisibility(true);
     d->renderer->AddActor(d->imageActor.Get());
 
-    d->renderer->AddViewProp(d->imageActor.GetPointer());
     d->depthMapViewOptions->addActor(d->imageActor.Get());
+
+    d->renderer->AddViewProp(d->imageActor.GetPointer());
 
     d->UI.renderWidget->update();
 
