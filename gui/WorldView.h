@@ -40,7 +40,6 @@
 #include "DepthMapPaths.h"
 
 class vtkImageData;
-class vtkPolyData;
 
 class vtkPolyData;
 
