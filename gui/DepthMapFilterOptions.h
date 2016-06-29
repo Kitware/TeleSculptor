@@ -28,59 +28,42 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DEPTHMAPOPTIONS_H
-#define DEPTHMAPOPTIONS_H
+#ifndef DEPTHMAPFILTEROPTIONS_H
+#define DEPTHMAPFILTEROPTIONS_H
 
 #include <qtGlobal.h>
 
 #include <QtGui/QWidget>
 
-class vtkProp3D;
 
-class DepthMapOptionsPrivate;
+class DepthMapFilterOptionsPrivate;
 
-class DepthMapOptions : public QWidget
+
+class DepthMapFilterOptions : public QWidget
 {
   Q_OBJECT
 
 public:
-  explicit DepthMapOptions(const QString &settingsGroup,
-                           QWidget *parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~DepthMapOptions();
-
-  void addActor(std::string type, vtkProp3D *actor);
-
-  bool isPointsChecked();
-  bool isSurfacesChecked();
-  bool isVerticesChecked();
-
-  void enableDM(std::string type);
-//  void enablePoints();
-//  void enableSurfaces();
-//  void enableVertices();
+  explicit DepthMapFilterOptions(const QString &settingsGroup,
+      QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  virtual ~DepthMapFilterOptions();
 
   double getBestCostValueMin();
   double getBestCostValueMax();
   double getUniquenessRatioMin();
   double getUniquenessRatioMax();
 
-  bool isFiltersChecked();
-
 signals:
-  void modified();
-  void depthMapChanged();
+  void filtersChanged();
 
-protected slots:
-//  void switchPointsVisible(bool);
-//  void switchSurfacesVisible(bool);
-  void switchVisible(bool);
-  void showFiltersMenu(bool);
+public slots:
+  void updateFilters();
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(DepthMapOptions)
-  QTE_DECLARE_PRIVATE(DepthMapOptions)
+  QTE_DECLARE_PRIVATE_RPTR(DepthMapFilterOptions)
+  QTE_DECLARE_PRIVATE(DepthMapFilterOptions)
 
-  QTE_DISABLE_COPY(DepthMapOptions)
+  QTE_DISABLE_COPY(DepthMapFilterOptions)
 };
 
-#endif // DEPTHMAPOPTIONS_H
+#endif // DEPTHMAPFILTEROPTIONS_H

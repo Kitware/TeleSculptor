@@ -40,6 +40,7 @@ set(gui_ui
   PointOptions.ui
   DepthMapView.ui
   DepthMapOptions.ui
+  DepthMapFilterOptions.ui
   DepthMapViewOptions.ui
 )
 
@@ -63,6 +64,7 @@ set(gui_moc_headers
   MatchMatrixWindow.h
   PointOptions.h
   DepthMapOptions.h
+  DepthMapFilterOptions.h
   DepthMapViewOptions.h
   WorldView.h
   tools/AbstractTool.h
@@ -87,6 +89,7 @@ set(gui_sources
   MatchMatrixWindow.cxx
   PointOptions.cxx
   DepthMapOptions.cxx
+  DepthMapFilterOptions.cxx
   DepthMapViewOptions.cxx
   Project.cxx
   WorldView.cxx
