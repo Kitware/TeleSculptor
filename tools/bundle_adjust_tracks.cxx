@@ -180,14 +180,16 @@ static kwiver::vital::config_block_sptr default_config()
                     "when updating cameras. This option is only relevent if a "
                     "value is give to the input_pos_files option.");
 
-
       config->set_value("krtd_clean_up", "false",
                         "Delete all previously existing KRTD files present in output_krtd_dir before writing new KRTD files.");
 
-  config->set_value("depthmaps_points_file", " ",
+  config->set_value("depthmaps_points_file", "",
                     "An optional file containing paths to depthmaps as polydatas.");
 
-  config->set_value("depthmaps_surfaces_file", " ",
+  config->set_value("depthmaps_surfaces_file", "",
+                    "An optional file containing paths to depthmaps as structured grid.");
+
+  config->set_value("depthmaps_vertices_file", "",
                     "An optional file containing paths to depthmaps as structured grid.");
 
   kwiver::vital::algo::bundle_adjust::get_nested_algo_configuration("bundle_adjuster", config,

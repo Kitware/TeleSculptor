@@ -41,6 +41,9 @@
 #include <QtCore/QDir>
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
+#include <QTextStream>
+
+#include <iostream>
 
 //-----------------------------------------------------------------------------
 QString getPath(kwiver::vital::config_block_sptr const& config,
@@ -77,9 +80,10 @@ bool Project::read(QString const& path)
     this->tracks =
       getPath(config, base, "input_track_file", "output_tracks_file");
 
-    this->DMvtp = getPath(config, base, "depthmaps_points_file");
-    this->DMvts = getPath(config, base, "depthmaps_surfaces_file");
-    this->DMvti = getPath(config, base, "depthmaps_images_file");
+//    this->DMvtp = getPath(config, base, "depthmaps_points_file");
+//    this->DMvts = getPath(config, base, "depthmaps_surfaces_file");
+//    this->DMvti = getPath(config, base, "depthmaps_images_file");
+//    this->DMvert = getPath(config, base, "depthmaps_vertices_file");
 
     // Read image list
     auto const& iflPath = config->get_value<std::string>("image_list_file");
@@ -100,6 +104,84 @@ bool Project::read(QString const& path)
         this->images.append(base.filePath(QString::fromLocal8Bit(line, ll)));
       }
     }
+
+    //Read depthmap points list
+    auto const& vtpFilePath = config->get_value<std::string>("depthmaps_points_file");
+    QFile vtpFile(base.filePath(qtString(vtpFilePath)));
+    if (vtpFile.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+      QTextStream vtpStream(&vtpFile);
+      int frameNum;
+      QString fileName;
+      while (!vtpStream.atEnd())
+      {
+        vtpStream >> frameNum >> fileName;
+        if (!DMvtp.contains(frameNum))
+        {
+          DMvtp.insert(frameNum,fileName);
+        }
+      }
+    }
+    vtpFile.close();
+
+    //Read depthmap surfaces list
+    auto const& vtsFilePath = config->get_value<std::string>("depthmaps_surfaces_file");
+    QFile vtsFile(base.filePath(qtString(vtsFilePath)));
+    if (vtsFile.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+      QTextStream vtsStream(&vtsFile);
+      int frameNum;
+      QString fileName;
+      while (!vtsStream.atEnd())
+      {
+        vtsStream >> frameNum >> fileName;
+        if (!DMvts.contains(frameNum))
+        {
+          DMvts.insert(frameNum,fileName);
+        }
+      }
+    }
+    vtsFile.close();
+
+    //Read depthmap images list
+    auto const& vtiFilePath = config->get_value<std::string>("depthmaps_images_file");
+    QFile vtiFile(base.filePath(qtString(vtiFilePath)));
+    if (vtiFile.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+      QTextStream vtiStream(&vtiFile);
+      int frameNum;
+      QString fileName;
+      while (!vtiStream.atEnd())
+      {
+        vtiStream >> frameNum >> fileName;
+        if (!DMvti.contains(frameNum))
+        {
+          DMvti.insert(frameNum,fileName);
+        }
+      }
+    }
+    vtiFile.close();
+
+    //Read depthmap vertices list
+    auto const& vertFilePath = config->get_value<std::string>("depthmaps_vertices_file");
+    QFile vertFile(base.filePath(qtString(vertFilePath)));
+    if (vertFile.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+      QTextStream vertStream(&vertFile);
+      int frameNum;
+      QString fileName;
+      while (!vertStream.atEnd())
+      {
+        vertStream >> frameNum >> fileName;
+        if (!DMvert.contains(frameNum))
+        {
+          DMvert.insert(frameNum,fileName);
+        }
+      }
+    }
+    vertFile.close();
+
+
 
     return true;
   }

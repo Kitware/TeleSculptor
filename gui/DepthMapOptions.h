@@ -5,7 +5,7 @@
 
 #include <QtGui/QWidget>
 
-class vtkActor;
+class vtkProp3D;
 
 class DepthMapOptionsPrivate;
 
@@ -18,21 +18,25 @@ public:
                            QWidget *parent = 0, Qt::WindowFlags flags = 0);
   virtual ~DepthMapOptions();
 
-  void addActor(vtkActor* actor);
+  void addActor(std::string type, vtkProp3D *actor);
 
   bool isPointsChecked();
   bool isSurfacesChecked();
+  bool isVerticesChecked();
 
-  void enablePoints();
-  void enableSurfaces();
+  void enableDM(std::string type);
+//  void enablePoints();
+//  void enableSurfaces();
+//  void enableVertices();
 
 signals:
   void modified();
   void depthMapChanged();
 
 protected slots:
-  void switchPointsVisible(bool);
-  void switchSurfacesVisible(bool);
+//  void switchPointsVisible(bool);
+//  void switchSurfacesVisible(bool);
+  void switchVisible(bool);
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(DepthMapOptions)

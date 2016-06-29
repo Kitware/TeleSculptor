@@ -37,6 +37,8 @@
 #include <vtkMatrix4x4.h>
 #include <vtkTransform.h>
 
+#include "DepthMapPaths.h"
+
 class vtkImageData;
 class vtkPolyData;
 
@@ -58,7 +60,7 @@ public:
 
   void addDepthMaps(QString const& dMFileList, std::string type);
 
-  vtkPolyData* getDepthMap();
+  std::string getActiveDepthMapType();
 public slots:
   void setBackgroundColor(QColor const&);
 
@@ -92,7 +94,9 @@ public slots:
   void invalidateGeometry();
 
 //  void addDepthMapsSG(QString const& dMFileList);
-  void setActiveDepthMap(int numCam, vtkMatrix4x4 *mat);
+  void setActiveDepthMap(int numCam, vtkMatrix4x4 *mat, DepthMapPaths dmpCam);
+
+  void enableDepthMap(std::string type);
 
   void updateDepthMap();
 protected slots:
@@ -104,6 +108,7 @@ private:
 
   int cam;
   vtkMatrix4x4* matrix;
+  DepthMapPaths dmp;
   QTE_DECLARE_PRIVATE_RPTR(WorldView)
   QTE_DECLARE_PRIVATE(WorldView)
 

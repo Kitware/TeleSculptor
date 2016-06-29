@@ -32,6 +32,7 @@
 #define MAPTK_PROJECT_H_
 
 #include <QtCore/QStringList>
+#include <QMap>
 
 struct Project
 {
@@ -42,9 +43,10 @@ struct Project
 
   QString tracks;
   QString landmarks;
-  QString DMvtp;
-  QString DMvts;
-  QString DMvti;
+  QMap<int, QString> DMvtp;
+  QMap<int, QString> DMvts;
+  QMap<int, QString> DMvti;
+  QMap<int, QString> DMvert;
 };
 
 #endif

@@ -41,6 +41,7 @@
 #include "MatchMatrixWindow.h"
 #include "DepthMapView.h"
 #include "Project.h"
+#include "DepthMapPaths.h"
 #include "vtkMaptkCamera.h"
 
 #include <maptk/match_matrix.h>
@@ -217,12 +218,15 @@ class MainWindowPrivate
 {
 public:
   // Data structures
+
   struct CameraData
   {
     int id;
     vtkSmartPointer<vtkMaptkCamera> camera;
 
     QString imagePath; // Full path to camera image data
+    DepthMapPaths dmp;
+
   };
 
   // Methods
@@ -242,7 +246,7 @@ public:
   void setActiveCamera(int);
   void updateCameraView();
 
-  void updateDM();
+//  void updateDM();
 
   void loadImage(QString const& path, vtkMaptkCamera* camera);
 
@@ -426,11 +430,7 @@ void MainWindowPrivate::setActiveCamera(int id)
   this->activeCameraIndex = id;
   this->UI.worldView->setActiveCamera(this->cameras[id].camera);
   this->updateCameraView();
-  this->updateDM();
-}
 
-//-----------------------------------------------------------------------------
-void MainWindowPrivate::updateDM() {
   auto& cd = this->cameras[activeCameraIndex];
 
   vtkMatrix4x4* m = cd.camera->GetModelTransformMatrix();
@@ -439,9 +439,23 @@ void MainWindowPrivate::updateDM() {
   m->SetElement(1,3,0.0);
   m->SetElement(2,3,0.0);
 
-  UI.worldView->setActiveDepthMap(activeCameraIndex,m);
-  UI.dMView->setDepthMap(activeCameraIndex);
+  UI.worldView->setActiveDepthMap(activeCameraIndex,m,this->cameras[id].dmp);
+//  this->updateDM();
 }
+
+//-----------------------------------------------------------------------------
+//void MainWindowPrivate::updateDM() {
+//  auto& cd = this->cameras[activeCameraIndex];
+
+//  vtkMatrix4x4* m = cd.camera->GetModelTransformMatrix();
+
+//  m->SetElement(0,3,0.0);
+//  m->SetElement(1,3,0.0);
+//  m->SetElement(2,3,0.0);
+
+//  UI.worldView->setActiveDepthMap(activeCameraIndex,m);
+////  UI.dMView->setDepthMap(activeCameraIndex);
+//}
 
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::updateCameraView()
@@ -464,6 +478,8 @@ void MainWindowPrivate::updateCameraView()
   // Show camera image
   this->loadImage(cd.imagePath, cd.camera);
   this->UI.cameraView->setImagePath(cd.imagePath);
+
+  //TODO: load DM
 
   if (!cd.camera)
   {
@@ -751,7 +767,7 @@ void MainWindow::openFiles(QStringList const& paths)
 void MainWindow::openFileDM(const QString &path, std::string type) {
   QTE_D();
 
-  if(type == "vtp" || type == "vts") {
+  if(type == "vtp" || type == "vts" || type == "vert") {
     d->UI.worldView->addDepthMaps(path,type);
   }
   if (type == "vti") {
@@ -786,19 +802,6 @@ void MainWindow::loadProject(QString const& path)
   {
     this->loadLandmarks(project.landmarks);
   }
-  if(!project.DMvtp.isEmpty())
-  {
-    this->openFileDM(project.DMvtp,"vtp");
-  }
-  if(!project.DMvts.isEmpty())
-  {
-    this->openFileDM(project.DMvts,"vts");
-  }
-  if(!project.DMvti.isEmpty())
-  {
-    this->openFileDM(project.DMvti,"vti");
-  }
-
   if (project.cameraPath.isEmpty())
   {
     foreach (auto const& ip, project.images)
@@ -827,6 +830,44 @@ void MainWindow::loadProject(QString const& path)
       }
     }
   }
+  //Adding depthmaps (when they exists) to existing camera
+  if (!project.DMvtp.isEmpty())
+  {
+    d->UI.worldView->enableDepthMap("vtp");
+  }
+  if (!project.DMvts.isEmpty())
+  {
+    d->UI.worldView->enableDepthMap("vts");
+  }
+  if (!project.DMvert.isEmpty())
+  {
+    d->UI.worldView->enableDepthMap("vert");
+  }
+
+  for (int camId = 0; camId < d->cameras.size(); ++camId)
+  {
+    if(!project.DMvtp.isEmpty() && project.DMvtp.contains(camId))
+    {
+      d->cameras[camId].dmp.dMpointsPath = project.DMvtp[camId];
+    }
+
+    if(!project.DMvts.isEmpty() && project.DMvts.contains(camId))
+    {
+      d->cameras[camId].dmp.dMSurfacesPath = project.DMvts[camId];
+    }
+
+    if(!project.DMvti.isEmpty() && project.DMvti.contains(camId))
+    {
+      d->cameras[camId].dmp.dMImagePath = project.DMvti[camId];
+    }
+
+    if(!project.DMvert.isEmpty() && project.DMvert.contains(camId))
+    {
+      d->cameras[camId].dmp.dMVerticesPath = project.DMvert[camId];
+    }
+  }
+
+
 
 #ifdef VTKWEBGLEXPORTER
   d->UI.actionWebGLScene->setEnabled(true);
