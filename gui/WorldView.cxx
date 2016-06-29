@@ -581,30 +581,6 @@ void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, QString vtiPath) {
 
     d->renderer->AddViewProp(d->depthmapActor.GetPointer());
 
-    //Calculating the bounding box for the grid coordinates
-    d->cubeAxesActor->SetBounds(d->currentDepthmap->GetBounds());
-    d->cubeAxesActor->SetCamera(d->renderer->GetActiveCamera());
-    d->cubeAxesActor->GetTitleTextProperty(0)->SetColor(1.0, 0.0, 0.0);
-    d->cubeAxesActor->GetLabelTextProperty(0)->SetColor(1.0, 0.0, 0.0);
-
-    d->cubeAxesActor->GetTitleTextProperty(1)->SetColor(0.0, 1.0, 0.0);
-    d->cubeAxesActor->GetLabelTextProperty(1)->SetColor(0.0, 1.0, 0.0);
-
-    d->cubeAxesActor->GetTitleTextProperty(2)->SetColor(0.0, 0.0, 1.0);
-    d->cubeAxesActor->GetLabelTextProperty(2)->SetColor(0.0, 0.0, 1.0);
-
-    d->cubeAxesActor->DrawXGridlinesOn();
-    d->cubeAxesActor->DrawYGridlinesOn();
-    d->cubeAxesActor->DrawZGridlinesOn();
-    d->cubeAxesActor->SetGridLineLocation(VTK_GRID_LINES_FURTHEST);
-
-    d->cubeAxesActor->XAxisMinorTickVisibilityOff();
-    d->cubeAxesActor->YAxisMinorTickVisibilityOff();
-    d->cubeAxesActor->ZAxisMinorTickVisibilityOff();
-
-    d->renderer->AddActor(d->cubeAxesActor.Get());
-    d->cubeAxesActor->SetVisibility(d->depthMapOptions->isBBoxChecked());
-
     //initializing the filters
     double bcRange[2], urRange[2];
 
@@ -817,28 +793,8 @@ void WorldView::setDepthMapVisible(bool state)
   d->depthmapActor->SetVisibility(state);
   d->depthMapOptions->setEnabled(state);
 
-  if (state)
-  {
-    setGridVisible();
-  }
-  else
-  {
-    d->cubeAxesActor->SetVisibility(false);
-  }
-
   setActiveDepthMap(d->currentCam,d->currentVtiPath);
   d->UI.renderWidget->update();
-}
-
-//-----------------------------------------------------------------------------
-void WorldView::setGridVisible()
-{
-   QTE_D();
-
-   if (d->UI.actionDepthmapDisplay->isChecked())
-   {
-     d->cubeAxesActor->SetVisibility(d->depthMapOptions->isBBoxChecked());
-   }
 }
 
 //-----------------------------------------------------------------------------

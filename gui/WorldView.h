@@ -82,7 +82,6 @@ public slots:
   void setGroundPlaneVisible(bool);
   void setAxesVisible(bool);
   void setDepthMapVisible(bool);
-  void setGridVisible();
 
   void setPerspective(bool);
 
