@@ -761,24 +761,6 @@ void MainWindow::openFiles(QStringList const& paths)
   }
 }
 
-//void MainWindow::openFileDM(const QString &path, std::string type) {
-//  QTE_D();
-
-//  if(type == "vtp" || type == "vts" || type == "vert") {
-//    d->UI.worldView->addDepthMaps(path,type);
-//  }
-//  if (type == "vti") {
-//    d->UI.dMView->addDepthMaps(path);
-//  }
-//}
-
-//void MainWindow::openFileDMS(const QString &path) {
-//  QTE_D();
-
-//    d->UI.worldView->addDepthMapsSG(path);
-
-//}
-
 //-----------------------------------------------------------------------------
 void MainWindow::loadProject(QString const& path)
 {
@@ -1246,12 +1228,12 @@ void MainWindow::acceptToolResults()
   d->setActiveTool(0);
 }
 
-void MainWindow::updateDepthMap()
-{
-  QTE_D();
+//void MainWindow::updateDepthMap()
+//{
+//  QTE_D();
 
-  d->UI.worldView->setDepthMapVisible(true);
-}
+//  d->UI.worldView->setDepthMapVisible(true);
+//}
 
 //-----------------------------------------------------------------------------
 void MainWindow::showMatchMatrix()

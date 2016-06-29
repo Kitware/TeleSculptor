@@ -99,16 +99,14 @@ DepthMapViewOptions::DepthMapViewOptions(QString const& settingsGroup,
 
   layout = new QVBoxLayout(d->UI.groupBox);
   d->UI.groupBox->setLayout(layout);
+
   // Set up option persistence
   d->uiState.setCurrentGroup(settingsGroup);
 
   bGroup = new QButtonGroup(d->UI.groupBox);
   d->uiState.restore();
 
-
   d->originalImage = vtkSmartPointer<vtkPolyData>::New();
-
-
 }
 
 DepthMapViewOptions::~DepthMapViewOptions()
@@ -121,10 +119,10 @@ void DepthMapViewOptions::addDepthMapMode(std::string name, bool needGradient)
 {
   QTE_D();
 
-
   QRadioButton *scalar = new QRadioButton(QString::fromStdString(name));
 
   int index = bGroup->buttons().size();
+
   bGroup->addButton(scalar,index);
 
   if (needGradient)
@@ -134,10 +132,13 @@ void DepthMapViewOptions::addDepthMapMode(std::string name, bool needGradient)
                                                               this);
     dataColorOptions->setEnabled(false);
     d->setPopup(gradient, dataColorOptions);
+
     QHBoxLayout *hLayout = new QHBoxLayout();
     hLayout->addWidget(scalar);
     hLayout->addWidget(gradient);
+
     layout->addLayout(hLayout);
+
     gradient->setIcon(dataColorOptions->icon());
 
     dataColorOptions->setEnabled(true);
@@ -168,30 +169,34 @@ void DepthMapViewOptions::switchDisplayMode(bool checked)
     std::string buttonId = bGroup->checkedButton()->text().toStdString();
 
     //Displaying the scalar array associated with the checked radio button
-    vtkDataArray* activeArray = d->polyDataActor->GetMapper()->GetInput()->GetPointData()->GetArray(buttonId.c_str());
-    d->polyDataActor->GetMapper()->GetInput()->GetPointData()->SetActiveScalars(buttonId.c_str());
+    vtkMapper* mapper = d->polyDataActor->GetMapper();
+    vtkDataArray* activeArray = mapper->GetInput()->GetPointData()->GetArray(buttonId.c_str());
 
- d->polyDataActor->GetMapper()->SetScalarModeToUsePointData();
+    mapper->GetInput()->GetPointData()->SetActiveScalars(buttonId.c_str());
+
+    mapper->SetScalarModeToUsePointData();
     int numberOfComponents = activeArray->GetNumberOfComponents();
 
     if (numberOfComponents < 3)
     {
-      d->polyDataActor->GetMapper()->SetColorModeToMapScalars();
       DataColorOptions *dc = d->dcOptions.at(buttonId);
 
       double range[2];
+
       activeArray->GetRange(range);
-      d->polyDataActor->GetMapper()->SetLookupTable(dc->scalarsToColors());
-      d->polyDataActor->GetMapper()->GetLookupTable()->SetRange(range);
-      d->polyDataActor->GetMapper()->UseLookupTableScalarRangeOn();
+
+      mapper->SetColorModeToMapScalars();
+      mapper->SetLookupTable(dc->scalarsToColors());
+      mapper->GetLookupTable()->SetRange(range);
+      mapper->UseLookupTableScalarRangeOn();
     }
     else
     {
-      d->polyDataActor->GetMapper()->SetColorModeToDirectScalars();
-      d->polyDataActor->GetMapper()->CreateDefaultLookupTable();
+      mapper->SetColorModeToDirectScalars();
+      mapper->CreateDefaultLookupTable();
     }
 
-    d->polyDataActor->GetMapper()->Update();
+    mapper->Update();
     emit this->modified();
   }
 }
@@ -203,12 +208,16 @@ void DepthMapViewOptions::addPolyData(vtkActor *polyDataActor)
   d->polyDataActor = polyDataActor;
 
   cleanModes();
+
   bool needGradient;
+
   d->originalImage->DeepCopy(d->polyDataActor->GetMapper()->GetInput());
 
-  for (int i = 0; i <  d->polyDataActor->GetMapper()->GetInput()->GetPointData()->GetNumberOfArrays(); ++i)
+  vtkPointData* pointData = d->polyDataActor->GetMapper()->GetInput()->GetPointData();
+
+  for (int i = 0; i <  pointData->GetNumberOfArrays(); ++i)
   {
-    if(d->polyDataActor->GetMapper()->GetInput()->GetPointData()->GetArray(i)->GetNumberOfComponents() == 3)
+    if(pointData->GetArray(i)->GetNumberOfComponents() == 3)
     {
       needGradient = false;
     }
@@ -217,7 +226,7 @@ void DepthMapViewOptions::addPolyData(vtkActor *polyDataActor)
       needGradient = true;
     }
 
-    addDepthMapMode(d->polyDataActor->GetMapper()->GetInput()->GetPointData()->GetArrayName(i),needGradient);
+    addDepthMapMode(pointData->GetArrayName(i),needGradient);
   }
 
   bGroup->buttons()[0]->setChecked(true);

@@ -101,12 +101,9 @@ public slots:
 
   void invalidateGeometry();
 
- //void setActiveDepthMap(vtkMaptkCamera *cam, QString vtiPath);
-
-  //void enableDepthMap(std::string type);
-  //void updateDepthMap();
   void updateDepthMapRepresentation();
   void updateDepthMapThresholds();
+
 protected slots:
   void updateAxes();
   void updateCameras();
@@ -114,8 +111,6 @@ protected slots:
 
 private:
 
-  vtkMaptkCamera* currentCam;
-  QString currentVtiPath;
   QTE_DECLARE_PRIVATE_RPTR(WorldView)
   QTE_DECLARE_PRIVATE(WorldView)
 
