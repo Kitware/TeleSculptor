@@ -435,9 +435,9 @@ void MainWindowPrivate::setActiveCamera(int id)
 
   if (cd.camera != NULL)
   {
-    UI.worldView->setActiveDepthMap(this->cameras[id].camera,this->cameras[id].vtiPath);
-
     UI.dMView->setDepthMap(this->cameras[id].vtiPath);
+
+    UI.worldView->setActiveDepthMap(this->cameras[id].camera,this->cameras[id].vtiPath);
   }
 }
 
@@ -649,6 +649,9 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   connect(d->UI.camera, SIGNAL(valueChanged(int)),
           this, SLOT(setActiveCamera(int)));
+
+  connect(d->UI.worldView, SIGNAL(updateThresholds(double,double,double,double)),
+          this, SLOT(updateThresholdsDepthmapView(double,double,double,double)));
 
   this->setSlideDelay(d->UI.slideDelay->value());
 
@@ -1000,6 +1003,13 @@ void MainWindow::saveLandmarks(QString const& path)
               "The output file may not have been written correctly.");
     QMessageBox::critical(this, "Export error", msg.arg(path));
   }
+}
+
+void MainWindow::updateThresholdsDepthmapView(double bcMin, double bcMax, double urMin, double urMax)
+{
+  QTE_D();
+
+  d->UI.dMView->updateDepthMapThresholds(bcMin,bcMax,urMin,urMax);
 }
 
 //-----------------------------------------------------------------------------

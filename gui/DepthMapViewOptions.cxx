@@ -40,7 +40,6 @@
 #include <QMenu>
 #include "DataColorOptions.h"
 
-#include <vtkImageActor.h>
 #include <vtkPointData.h>
 #include <vtkImageData.h>
 #include <vtkDataArray.h>
@@ -51,6 +50,10 @@
 #include <vtkImageMapToColors.h>
 #include <vtkNew.h>
 #include <vtkSmartPointer.h>
+#include <vtkPolyData.h>
+#include <vtkActor.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkProperty.h>
 
 
 //-----------------------------------------------------------------------------
@@ -60,8 +63,8 @@ public:
   Ui::DepthMapViewOptions UI;
   qtUiState uiState;
 
-  vtkImageActor* imageActor;
-  vtkSmartPointer<vtkImageData> originalImage;
+  vtkActor* polyDataActor;
+  vtkSmartPointer<vtkPolyData> originalImage;
 
   std::map<std::string, DataColorOptions*> dcOptions;
 
@@ -102,9 +105,9 @@ DepthMapViewOptions::DepthMapViewOptions(QString const& settingsGroup,
   bGroup = new QButtonGroup(d->UI.groupBox);
   d->uiState.restore();
 
-  // Connect signals/slots
 
-  d->originalImage = vtkSmartPointer<vtkImageData>::New();
+  d->originalImage = vtkSmartPointer<vtkPolyData>::New();
+
 
 }
 
@@ -139,9 +142,6 @@ void DepthMapViewOptions::addDepthMapMode(std::string name, bool needGradient)
 
     dataColorOptions->setEnabled(true);
 
-//    connect(dataColorOptions, SIGNAL(iconChanged(QIcon)),
-//            gradient, SLOT());
-
     d->dcOptions.insert(std::pair<std::string, DataColorOptions*>(name, dataColorOptions));
   }
   else
@@ -153,9 +153,6 @@ void DepthMapViewOptions::addDepthMapMode(std::string name, bool needGradient)
   scalar->setEnabled(true);
   scalar->setCheckable(true);
 
-
-
-//  connect(dataColorOptions, SIGNAL(modified()), this, SIGNAL(modified()));
   connect(scalar, SIGNAL(toggled(bool)),
           this, SLOT(switchDisplayMode(bool)));
 
@@ -171,46 +168,34 @@ void DepthMapViewOptions::switchDisplayMode(bool checked)
     std::string buttonId = bGroup->checkedButton()->text().toStdString();
     std::cout << "buttonId = " << buttonId <<std::endl;
 
-
-    vtkNew<vtkImageData> im;
-    im->DeepCopy(d->originalImage);
-    d->imageActor->SetInputData(im.Get());
-
-    d->imageActor->GetInput()->GetPointData()
-        ->SetActiveScalars(buttonId.c_str());
-
     //Displaying the scalar array associated with the checked radio button
-    if (d->imageActor->GetInput()->GetPointData()->GetArray(buttonId.c_str())->GetNumberOfComponents() < 3)
+    if (d->polyDataActor->GetMapper()->GetInput()->GetPointData()->GetArray(buttonId.c_str())->GetNumberOfComponents() < 3)
     {
       DataColorOptions *dc = d->dcOptions.at(buttonId);
 
-      vtkNew<vtkImageMapToColors> imageMapToColors;
-      imageMapToColors->SetLookupTable(dc->scalarsToColors());
-      imageMapToColors->PassAlphaToOutputOn();
-      imageMapToColors->SetInputData(d->imageActor->GetInput());
-
-      imageMapToColors->Update();
-
-      d->imageActor->SetInputData(imageMapToColors->GetOutput());
+      d->polyDataActor->GetMapper()->SetLookupTable(dc->scalarsToColors());
     }
 
+    d->polyDataActor->GetMapper()->GetInput()->GetPointData()->SetScalars(d->polyDataActor->GetMapper()->GetInput()->GetPointData()->GetArray(buttonId.c_str()));
+    d->polyDataActor->GetMapper()->SetColorModeToDirectScalars();
+    d->polyDataActor->GetMapper()->Update();
     emit this->modified();
   }
 }
 
-void DepthMapViewOptions::addActor(vtkImageActor *actor)
+void DepthMapViewOptions::addPolyData(vtkActor *polyDataActor)
 {
   QTE_D();
 
+  d->polyDataActor = polyDataActor;
+
   cleanModes();
   bool needGradient;
-  d->imageActor = actor;
-  d->originalImage->DeepCopy(d->imageActor->GetInput());
+  d->originalImage->DeepCopy(d->polyDataActor->GetMapper()->GetInput());
 
-  for (int i = 0; i < d->imageActor->GetInput()->GetPointData()->GetNumberOfArrays(); ++i)
+  for (int i = 0; i <  d->polyDataActor->GetMapper()->GetInput()->GetPointData()->GetNumberOfArrays(); ++i)
   {
-    std::cout << d->imageActor->GetInput()->GetPointData()->GetArray(i) << std::endl;
-    if(d->imageActor->GetInput()->GetPointData()->GetArray(i)->GetNumberOfComponents() == 3)
+    if(d->polyDataActor->GetMapper()->GetInput()->GetPointData()->GetArray(i)->GetNumberOfComponents() == 3)
     {
       needGradient = false;
     }
@@ -219,10 +204,11 @@ void DepthMapViewOptions::addActor(vtkImageActor *actor)
       needGradient = true;
     }
 
-    addDepthMapMode(d->imageActor->GetInput()->GetPointData()->GetArrayName(i),needGradient);
+    addDepthMapMode(d->polyDataActor->GetMapper()->GetInput()->GetPointData()->GetArrayName(i),needGradient);
   }
 
   bGroup->buttons()[1]->setChecked(true);
+
 
 }
 
@@ -268,7 +254,6 @@ void DepthMapViewOptions::cleanModes()
       }
     }
   }
-
 
   d->UI.groupBox->repaint();
 

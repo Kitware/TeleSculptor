@@ -64,6 +64,10 @@ public:
 
   void setActiveDepthMap(vtkMaptkCamera *cam, QString vtiPath);
   void enableDepthMap();
+
+signals:
+  void updateThresholds(double,double,double,double);
+
 public slots:
   void setBackgroundColor(QColor const&);
 

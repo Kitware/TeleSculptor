@@ -553,10 +553,6 @@ void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, QString vtiPath) {
 
     polyData->SetPoints(points.Get());
 
-
-    polyData->Print(std::cout);
-
-
     d->currentDepthmap = polyData.Get();
     d->currentDepthmap->GetPointData()->SetScalars(d->currentDepthmap->GetPointData()->GetArray("Color"));
     vtkNew<vtkPolyDataMapper> mapper;
@@ -1095,6 +1091,9 @@ void WorldView::updateDepthMapThresholds()
 
   QTE_D();
 
+  //TODO: Resolve error  This data object does not contain the requested extent.
+
+
   double bestCostValueMin = d->depthMapOptions->getBestCostValueMin();
   double bestCostValueMax = d->depthMapOptions->getBestCostValueMax();
   double uniquenessRatioMin = d->depthMapOptions->getUniquenessRatioMin();
@@ -1116,4 +1115,6 @@ void WorldView::updateDepthMapThresholds()
 //  geometryFilter->Update();
   d->depthmapActor->GetMapper()->SetInputConnection(geometryFilter->GetOutputPort());
   d->depthmapActor->GetMapper()->Update();
+
+  emit updateThresholds(bestCostValueMin,bestCostValueMax,uniquenessRatioMin,uniquenessRatioMax);
 }

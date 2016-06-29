@@ -67,7 +67,10 @@ public slots:
   void saveCameras(QString const& path);
   void saveLandmarks();
   void saveLandmarks(QString const& path);
+
   void saveWebGLScene();
+
+  void updateThresholdsDepthmapView(double bcMin,double bcMax,double urMin,double urMax);
 
   void setActiveCamera(int);
 

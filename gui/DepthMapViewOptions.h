@@ -38,7 +38,9 @@
 #include <QButtonGroup>
 #include <QFormLayout>
 
-class vtkImageActor;
+class vtkActor;
+
+class vtkPolyData;
 
 class DepthMapViewOptionsPrivate;
 
@@ -51,7 +53,7 @@ public:
                            QWidget *parent = 0, Qt::WindowFlags flags = 0);
   virtual ~DepthMapViewOptions();
 
-  void addActor(vtkImageActor* actor);
+  void addPolyData(vtkActor *polyDataActor);
 
   void cleanModes();
 
