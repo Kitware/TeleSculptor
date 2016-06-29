@@ -160,7 +160,7 @@
    <attribute name="dockWidgetArea">
     <number>2</number>
    </attribute>
-   <widget class="DepthMapView" name="dockWidgetContents"/>
+   <widget class="DepthMapView" name="dMView"/>
   </widget>
   <action name="actionQuit">
    <property name="icon">

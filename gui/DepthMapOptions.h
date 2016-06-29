@@ -19,10 +19,20 @@ public:
   virtual ~DepthMapOptions();
 
   void addActor(vtkActor* actor);
+
+  bool isPointsChecked();
+  bool isSurfacesChecked();
+
+  void enablePoints();
+  void enableSurfaces();
+
 signals:
   void modified();
+  void depthMapChanged();
 
 protected slots:
+  void switchPointsVisible(bool);
+  void switchSurfacesVisible(bool);
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(DepthMapOptions)

@@ -12,9 +12,9 @@
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  *
- *  * Neither the name Kitware, Inc. nor the names of any contributors may be
- *    used to endorse or promote products derived from this software without
- *    specific prior written permission.
+ *  * Neither name of Kitware, Inc. nor the names of any contributors may be used
+ *    to endorse or promote products derived from this software without specific
+ *    prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -63,8 +63,9 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
 #include <vtkXMLPolyDataReader.h>
+#include <vtkStructuredGrid.h>
 #include <vtkXMLStructuredGridReader.h>
-//#include <vtkStructuredGridMapper.h>
+#include <vtkGeometryFilter.h>
 
 #ifdef VTKWEBGLEXPORTER
 #include <vtkScalarsToColors.h>
@@ -315,8 +316,14 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->depthMapOptions = new DepthMapOptions("WorldView/Depthmap", this);
   d->setPopup(d->UI.actionDepthmapDisplay, d->depthMapOptions);
 
-  connect(d->depthMapOptions, SIGNAL(modified()),
-          d->UI.renderWidget, SLOT(update()));
+  d->depthMapOptions->addActor(d->polyDataActor.Get());
+  d->depthMapOptions->addActor(d->structuredGridActor.Get());
+
+//  connect(d->depthMapOptions, SIGNAL(modified()),
+//          d->UI.renderWidget, SLOT(update()));
+
+  connect(d->depthMapOptions, SIGNAL(depthMapChanged()),
+          this, SLOT(updateDepthMap()));
 
   // Connect actions
   this->addAction(d->UI.actionViewReset);
@@ -461,46 +468,81 @@ void WorldView::setBackgroundColor(QColor const& color)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::addDepthMaps(QString const& dMFileList)
+void WorldView::addDepthMaps(QString const& dMFileList, std::string type)
 {
   QTE_D();
 
   d->UI.actionDepthmapDisplay->setEnabled(true);
   d->UI.actionDepthmapDisplay->setChecked(true);
+  if (type == "vtp")
+  {
+    d->depthMapOptions->enablePoints();
+  }
+  else if (type == "vts")
+  {
+    d->depthMapOptions->enableSurfaces();
+  }
 
   std::ifstream f(dMFileList.toStdString().c_str());
   int frameNum;
   std::string filename;
 
-  while(f >> frameNum >> filename){
-    d->dMList.insert(std::pair<int, std::string>(frameNum,filename));
+  if (type == "vtp")
+  {
+    while(f >> frameNum >> filename){
+      d->dMList.insert(std::pair<int, std::string>(frameNum,filename));
+    }
+  }
+  else if (type == "vts") {
+    while(f >> frameNum >> filename){
+      d->dMListSG.insert(std::pair<int, std::string>(frameNum,filename));
+    }
   }
 
+
+}
+
+vtkPolyData *WorldView::getDepthMap()
+{
+  QTE_D();
+
+  if (d->depthMapOptions->isPointsChecked()) {
+    return (vtkPolyData* ) d->polyDataActor->GetMapper()->GetInput();
+  }
+
+  if (d->depthMapOptions->isSurfacesChecked()) {
+    return (vtkPolyData* ) d->structuredGridActor->GetMapper()->GetInput();
+  }
+  return NULL;
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::addDepthMapsSG(QString const& dMFileList)
-{
-  QTE_D();
+//void WorldView::addDepthMapsSG(QString const& dMFileList)
+//{
+//  QTE_D();
 
-  d->UI.actionDepthmapDisplay->setEnabled(true);
-  d->UI.actionDepthmapDisplay->setChecked(true);
+//  d->UI.actionDepthmapDisplay->setEnabled(true);
+//  d->UI.actionDepthmapDisplay->setChecked(true);
+//  d->depthMapOptions->enableSurfaces();
 
-  std::ifstream f(dMFileList.toStdString().c_str());
-  int frameNum;
-  std::string filename;
+//  std::ifstream f(dMFileList.toStdString().c_str());
+//  int frameNum;
+//  std::string filename;
 
-  while(f >> frameNum >> filename){
-    d->dMListSG.insert(std::pair<int, std::string>(frameNum,filename));
-  }
+//  while(f >> frameNum >> filename){
+//    d->dMListSG.insert(std::pair<int, std::string>(frameNum,filename));
+//  }
 
-}
+//}
 
 //-----------------------------------------------------------------------------
 void WorldView::setActiveDepthMap(int numCam, vtkMatrix4x4* mat) {
   QTE_D();
 
-  if(d->dMList.find(numCam) != d->dMList.end()){
+  cam = numCam;
+  matrix = mat;
+
+  if(d->dMList.find(numCam) != d->dMList.end() && d->depthMapOptions->isPointsChecked()){
     std::string filename = d->dMList[numCam];
 
     vtkNew<vtkXMLPolyDataReader> readerPoly;
@@ -537,36 +579,22 @@ void WorldView::setActiveDepthMap(int numCam, vtkMatrix4x4* mat) {
 
     d->renderer->AddViewProp(d->polyDataActor.GetPointer());
   }
-}
 
-//-----------------------------------------------------------------------------
-void WorldView::setActiveDepthMapSG(int numCam, vtkMatrix4x4* mat) {
-  QTE_D();
-
-  if(d->dMListSG.find(numCam) != d->dMListSG.end()){
+  if(d->dMListSG.find(numCam) != d->dMListSG.end() && d->depthMapOptions->isSurfacesChecked()){
     std::string filename = d->dMListSG[numCam];
 
     vtkNew<vtkXMLStructuredGridReader> readerSG;
 
     readerSG->SetFileName(filename.c_str());
     readerSG->Update();
-//    std::vector<vtkIdType> vertices(readerSG->GetOutput()->GetNumberOfPoints());
-//    for (int i = 0; i < readerSG->GetOutput()->GetNumberOfPoints(); ++i) {
-//      vertices[i] = i;
-//    }
 
-//    vtkNew<vtkCellArray> cells;
+    readerSG->GetOutput()->GetPointData()->SetScalars(readerSG->GetOutput()->GetPointData()->GetArray("Color"));
 
-//    cells->InsertNextCell(vertices.size(), &vertices[0]);
+    vtkNew<vtkGeometryFilter> geometryFilter;
+    geometryFilter->SetInputData(readerSG->GetOutput());
 
-//    readerSG->GetOutput()->SetVerts(cells.Get());
-    vtkNew<vtkPolyData> p;
-
-//    readerSG->GetOutput()->GetPointData()->SetScalars(readerSG->GetOutput()->GetPointData()->GetArray("Color"));
-    p->CopyStructure(readerSG->GetOutputAsDataSet());
     vtkNew<vtkPolyDataMapper> mapper;
-  //  mapper->SetInputConnection(reader->GetOutputPort());
-    mapper->SetInputData(p.Get());
+    mapper->SetInputConnection(geometryFilter->GetOutputPort());
     mapper->SetColorModeToDirectScalars();
 
     vtkNew<vtkTransform> transform;
@@ -575,7 +603,6 @@ void WorldView::setActiveDepthMapSG(int numCam, vtkMatrix4x4* mat) {
 
     d->structuredGridActor->SetMapper(mapper.Get());
     d->structuredGridActor->SetVisibility(true);
-    d->structuredGridActor->GetProperty()->SetPointSize(2);
     d->structuredGridActor->SetUserTransform(transform.Get());
     d->renderer->AddActor(d->structuredGridActor.Get());
 
@@ -584,6 +611,7 @@ void WorldView::setActiveDepthMapSG(int numCam, vtkMatrix4x4* mat) {
 }
 
 //-----------------------------------------------------------------------------
+
 void WorldView::addCamera(int id, vtkMaptkCamera* camera)
 {
   Q_UNUSED(id)
@@ -766,6 +794,8 @@ void WorldView::setDepthMapVisible(bool state)
   QTE_D();
 
   d->polyDataActor->SetVisibility(state);
+  d->structuredGridActor->SetVisibility(state);
+//  setActiveDepthMap(cam,mat);
   d->UI.renderWidget->update();
 }
 
@@ -1005,4 +1035,13 @@ void WorldView::exportWebGLScene(QString const& path)
 #else
   Q_UNUSED(path)
 #endif
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::updateDepthMap()
+{
+  QTE_D();
+  std::cout << "update depth map..." << *matrix <<std::endl;
+  setActiveDepthMap(cam, matrix);
+  d->UI.renderWidget->update();
 }

@@ -31,64 +31,13 @@
      <property name="toolButtonStyle">
       <enum>Qt::ToolButtonFollowStyle</enum>
      </property>
-     <addaction name="actionViewReset"/>
      <addaction name="separator"/>
-     <addaction name="actionColors"/>
-     <addaction name="actionUniquenessRatio"/>
-     <addaction name="actionBestCostValues"/>
     </widget>
    </item>
    <item>
     <widget class="QVTKWidget" name="renderWidget" native="true"/>
    </item>
   </layout>
-  <action name="actionViewReset">
-   <property name="icon">
-    <iconset resource="icons/icons.qrc">
-     <normaloff>:/icons/22x22/view-reset</normaloff>:/icons/22x22/view-reset</iconset>
-   </property>
-   <property name="text">
-    <string>&amp;Reset View</string>
-   </property>
-   <property name="toolTip">
-    <string>Reset the view to the camera image extents</string>
-   </property>
-   <property name="shortcut">
-    <string>R</string>
-   </property>
-   <property name="shortcutContext">
-    <enum>Qt::WidgetWithChildrenShortcut</enum>
-   </property>
-  </action>
-  <action name="actionViewResetFullExtents">
-   <property name="text">
-    <string>Zoom &amp;Extents</string>
-   </property>
-   <property name="toolTip">
-    <string>Reset the view extents so that the entire scene is visible</string>
-   </property>
-   <property name="shortcut">
-    <string>Shift+R</string>
-   </property>
-   <property name="shortcutContext">
-    <enum>Qt::WidgetWithChildrenShortcut</enum>
-   </property>
-  </action>
-  <action name="actionColors">
-   <property name="text">
-    <string>Colors</string>
-   </property>
-  </action>
-  <action name="actionBestCostValues">
-   <property name="text">
-    <string>Best Cost Values</string>
-   </property>
-  </action>
-  <action name="actionUniquenessRatio">
-   <property name="text">
-    <string>Uniqueness Ratio</string>
-   </property>
-  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -98,8 +47,6 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="icons/icons.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

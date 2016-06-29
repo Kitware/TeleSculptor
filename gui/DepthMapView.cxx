@@ -60,6 +60,7 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
 #include <vtkXMLPolyDataReader.h>
+#include <vtkXMLImageDataReader.h>
 #include <vtkActor.h>
 
 #include <qtMath.h>
@@ -134,7 +135,7 @@ class DepthMapViewPrivate
 {
 public:
 
-  DepthMapViewPrivate() : featuresDirty(false) {}
+  DepthMapViewPrivate() {}
 
   Ui::DepthMapView UI;
 
@@ -143,13 +144,13 @@ public:
 
   vtkNew<vtkImageActor> imageActor;
   vtkNew<vtkActor> polyDataActor;
-  vtkNew<vtkImageData> emptyImage;
+  vtkNew<vtkImageData> imageDM;
 
   vtkNew<vtkMaptkFeatureTrackRepresentation> featureRep;
 
-  double imageBounds[6];
+  std::map<int, std::string> dMList;
 
-  bool featuresDirty;
+  double imageBounds[6];
 };
 
 //END DepthMapViewPrivate definition
@@ -172,16 +173,16 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   // Set up UI
   d->UI.setupUi(this);
 
-  this->addAction(d->UI.actionViewReset);
-  this->addAction(d->UI.actionViewResetFullExtents);
+//  this->addAction(d->UI.actionViewReset);
+//  this->addAction(d->UI.actionViewResetFullExtents);
 
-  auto const viewMenu = new QMenu(this);
-  viewMenu->addAction(d->UI.actionViewReset);
-  viewMenu->addAction(d->UI.actionViewResetFullExtents);
+  viewMenu = new QMenu(this);
+//  viewMenu->addAction(d->UI.actionViewReset);
+//  viewMenu->addAction(d->UI.actionViewResetFullExtents);
 
-  // Connect actions
-  this->addAction(d->UI.actionViewReset);
-  this->addAction(d->UI.actionViewResetFullExtents);
+//  // Connect actions
+//  this->addAction(d->UI.actionViewReset);
+//  this->addAction(d->UI.actionViewResetFullExtents);
 
   // Set up ortho view
   d->renderer->GetActiveCamera()->ParallelProjectionOn();
@@ -189,37 +190,33 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   d->renderer->GetActiveCamera()->SetPosition(0.0, 0.0, 2.0);
 
   //Set up polydata
-  vtkNew<vtkXMLPolyDataReader> reader;
-  reader->SetFileName("/home/louis/develop/PlaneSweepLib/build/bin/depthMaps/frame_0003_depth_map.0.vtp");
-  reader->Update();
+//  vtkNew<vtkXMLPolyDataReader> reader;
+//  reader->SetFileName("/home/louis/develop/PlaneSweepLib/build/bin/depthMaps/frame_0003_depth_map.0.vtp");
+//  reader->Update();
 
-  if(reader->GetOutput()) {
-    std::cout << "polydata loaded " <<  reader->GetOutput()->GetNumberOfPoints()<< std::endl;
-  }
+//  std::vector<vtkIdType> vertices(reader->GetOutput()->GetNumberOfPoints());
+//  for (int i = 0; i < reader->GetOutput()->GetNumberOfPoints(); ++i) {
+//    vertices[i] = i;
+//  }
 
-  std::vector<vtkIdType> vertices(reader->GetOutput()->GetNumberOfPoints());
-  for (int i = 0; i < reader->GetOutput()->GetNumberOfPoints(); ++i) {
-    vertices[i] = i;
-  }
+//  vtkNew<vtkCellArray> cells;
 
-  vtkNew<vtkCellArray> cells;
+//  cells->InsertNextCell(vertices.size(), &vertices[0]);
 
-  cells->InsertNextCell(vertices.size(), &vertices[0]);
-
-  reader->GetOutput()->SetVerts(cells.Get());
+//  reader->GetOutput()->SetVerts(cells.Get());
 
 
-  reader->GetOutput()->GetPointData()->SetScalars(reader->GetOutput()->GetPointData()->GetArray("Color"));
-  vtkNew<vtkPolyDataMapper> mapper;
-//  mapper->SetInputConnection(reader->GetOutputPort());
-  mapper->SetInputData(reader->GetOutput());
-  mapper->SetColorModeToDirectScalars();
+//  reader->GetOutput()->GetPointData()->SetScalars(reader->GetOutput()->GetPointData()->GetArray("Color"));
+//  vtkNew<vtkPolyDataMapper> mapper;
+////  mapper->SetInputConnection(reader->GetOutputPort());
+//  mapper->SetInputData(reader->GetOutput());
+//  mapper->SetColorModeToDirectScalars();
 
 
-  d->polyDataActor->SetMapper(mapper.Get());
-  d->polyDataActor->SetVisibility(true);
-  d->polyDataActor->GetProperty()->SetPointSize(2);
-  d->renderer->AddActor(d->polyDataActor.Get());
+//  d->polyDataActor->SetMapper(mapper.Get());
+//  d->polyDataActor->SetVisibility(true);
+//  d->polyDataActor->GetProperty()->SetPointSize(2);
+//  d->renderer->AddActor(d->polyDataActor.Get());
 
   d->renderer->AddViewProp(d->polyDataActor.GetPointer());
   d->imageActor->SetPosition(0.0, 0.0, -0.5);
@@ -233,28 +230,77 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   vtkNew<vtkInteractorStyleRubberBand2D> is;
   d->renderWindow->GetInteractor()->SetInteractorStyle(is.GetPointer());
 
-
-
-  // Set up actors
-//  d->renderer->AddActor(d->featureRep->GetActivePointsActor());
-//  d->renderer->AddActor(d->featureRep->GetTrailsActor());
-//  d->renderer->AddActor(d->landmarks.actor.GetPointer());
-//  d->renderer->AddActor(d->residuals.actor.GetPointer());
-
-//  d->renderer->AddViewProp(d->imageActor.GetPointer());
-//  d->imageActor->SetPosition(0.0, 0.0, -0.5);
-
-  // Create "dummy" image data for use when we have no "real" image
-//  d->emptyImage->SetExtent(0, 0, 0, 0, 0, 0);
-//  d->emptyImage->AllocateScalars(VTK_UNSIGNED_CHAR, 1);
-//  d->emptyImage->SetScalarComponentFromDouble(0, 0, 0, 0, 0.0);
-
-//  this->setImageData(0, QSize(1, 1));
 }
 
 //-----------------------------------------------------------------------------
 DepthMapView::~DepthMapView()
 {
+}
+
+void DepthMapView::addDepthMaps(const QString &dMFileList)
+{
+  QTE_D();
+
+  std::ifstream f(dMFileList.toStdString().c_str());
+  int frameNum;
+  std::string filename;
+
+  while(f >> frameNum >> filename){
+    d->dMList.insert(std::pair<int, std::string>(frameNum,filename));
+  }
+
+}
+
+void DepthMapView::setDepthMap(int numCam)
+{
+  QTE_D();
+
+  if(d->dMList.find(numCam) != d->dMList.end()){
+    std::string filename = d->dMList[numCam];
+
+    vtkNew<vtkXMLImageDataReader> readerIm;
+
+    readerIm->SetFileName(filename.c_str());
+    readerIm->Update();
+
+    //Set default color on the first array
+//    readerIm->GetOutput()->GetPointData()->SetScalars(readerIm->GetOutput()->GetPointData()->GetArray(0));
+
+    //Generating action buttons for each array in the imagedata
+
+    for (int i = 0; i < readerIm->GetOutput()->GetPointData()->GetNumberOfArrays(); ++i) {
+      QAction* ac = new QAction(readerIm->GetOutput()->GetPointData()->GetArrayName(i), this);
+
+      ac->setVisible(true);
+      ac->setEnabled(true);
+      ac->setCheckable(true);
+      ac->setIconVisibleInMenu(true);
+      actions.push_back(ac);
+
+      this->addAction(ac);
+      viewMenu->addAction(ac);
+      d->UI.toolBar->addAction(ac);
+
+
+
+     connect(ac, SIGNAL(toggled(bool)),
+              this, SLOT(setActiveScalar()));
+    }
+//      std::cout << "Added " << readerIm->GetOutput()->GetPointData()->GetArrayName(i) << " button" <<std::endl;
+
+    std::cout << "after setChecked" << std::endl;
+    d->UI.toolBar->update();
+
+    d->imageActor->SetInputData(readerIm->GetOutput());
+
+    d->imageActor->SetVisibility(true);
+    d->renderer->AddActor(d->imageActor.Get());
+    actions[0]->setChecked(true);
+
+    d->renderer->AddViewProp(d->imageActor.GetPointer());
+  }
+
+  d->UI.renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -301,7 +347,33 @@ void DepthMapView::resetViewToFullExtents()
   QTE_D();
 
 //  d->renderer->ResetCamera();
-//  d->UI.renderWidget->update();
+  //  d->UI.renderWidget->update();
+}
+
+void DepthMapView::setActiveScalar()
+{
+  QTE_D();
+
+  int actionChecked;
+  for (int i = 0; i < actions.size(); ++i) {
+    if(actions[i]->isChecked()){
+      actionChecked = i;
+      std::cout << "found action, i = " << i << std::endl;
+      d->imageActor->GetInput()->GetPointData()
+          ->SetScalars(d->imageActor->GetInput()->GetPointData()->GetArray(i));
+    }
+  }
+
+/*  std::cout << "after first for" << std::endl;
+  for (int i = 0; i < actions.size(); ++i) {
+    if(i != actionChecked){
+      actions[i]->setChecked(false);
+    }
+  }
+
+  std::cout << "after second for" << std::endl*/;
+  d->UI.toolBar->update();
+  d->UI.renderWidget->update();
 }
 
 
