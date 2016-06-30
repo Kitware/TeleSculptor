@@ -189,8 +189,8 @@ static kwiver::vital::config_block_sptr default_config()
   config->set_value("depthmaps_surfaces_file", "",
                     "An optional file containing paths to depthmaps as structured grid.");
 
-  config->set_value("depthmaps_vertices_file", "",
-                    "An optional file containing paths to depthmaps as structured grid.");
+      config->set_value("depthmaps_images_file", "",
+                        "An optional file containing paths to depthmaps as image datas.");
 
   kwiver::vital::algo::bundle_adjust::get_nested_algo_configuration("bundle_adjuster", config,
                                                      kwiver::vital::algo::bundle_adjust_sptr());

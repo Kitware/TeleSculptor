@@ -433,14 +433,17 @@ void MainWindowPrivate::setActiveCamera(int id)
 
   auto& cd = this->cameras[activeCameraIndex];
 
-  vtkMatrix4x4* m = cd.camera->GetModelTransformMatrix();
+  if (cd.camera != NULL)
+  {
+    vtkMatrix4x4* m = cd.camera->GetModelTransformMatrix();
 
-  m->SetElement(0,3,0.0);
-  m->SetElement(1,3,0.0);
-  m->SetElement(2,3,0.0);
+    m->SetElement(0,3,0.0);
+    m->SetElement(1,3,0.0);
+    m->SetElement(2,3,0.0);
 
-  UI.worldView->setActiveDepthMap(activeCameraIndex,m,this->cameras[id].dmp);
 
+    UI.worldView->setActiveDepthMap(activeCameraIndex,m,this->cameras[id].dmp);
+  }
 //  UI.dMView->setDepthMap(this->cameras[id].dmp.dMImagePath);
 //  this->updateDM();
 }
@@ -841,10 +844,6 @@ void MainWindow::loadProject(QString const& path)
   {
     d->UI.worldView->enableDepthMap("vts");
   }
-  if (!project.DMvert.isEmpty())
-  {
-    d->UI.worldView->enableDepthMap("vert");
-  }
 
   for (int camId = 0; camId < d->cameras.size(); ++camId)
   {
@@ -862,16 +861,11 @@ void MainWindow::loadProject(QString const& path)
     {
       d->cameras[camId].dmp.dMImagePath = project.DMvti[camId];
     }
-
-    if(!project.DMvert.isEmpty() && project.DMvert.contains(camId))
-    {
-      d->cameras[camId].dmp.dMVerticesPath = project.DMvert[camId];
-    }
   }
 
   //Once every depthmap is loaded, set up the active depthmap to the first found
   if(!project.DMvtp.isEmpty() || !project.DMvts.isEmpty()
-     || !project.DMvti.isEmpty() || !project.DMvert.isEmpty() )
+     || !project.DMvti.isEmpty() )
   {
     for (int camId = 0; camId < d->cameras.size(); ++camId)
     {

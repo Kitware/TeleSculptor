@@ -41,10 +41,6 @@ DepthMapOptions::DepthMapOptions(QString const& settingsGroup,
 
   connect(d->UI.radioSurfaces, SIGNAL(toggled(bool)),
           this, SLOT(switchVisible(bool)));
-
-  connect(d->UI.radioVertices, SIGNAL(toggled(bool)),
-          this, SLOT(switchVisible(bool)));
-
 }
 
 DepthMapOptions::~DepthMapOptions()
@@ -87,8 +83,6 @@ void DepthMapOptions::switchVisible(bool state)
     d->actors["points"]->SetVisibility(d->UI.radioPoints->isChecked());
   if (d->UI.radioSurfaces->isEnabled())
     d->actors["surfaces"]->SetVisibility(d->UI.radioSurfaces->isChecked());
-  if (d->UI.radioVertices->isEnabled())
-    d->actors["vertices"]->SetVisibility(d->UI.radioVertices->isChecked());
 
   emit this->depthMapChanged();
 
@@ -127,13 +121,6 @@ void DepthMapOptions::enableDM(std::string type)
     if(!d->UI.radioPoints->isEnabled())
       d->UI.radioSurfaces->setChecked(true);
   }
-  else if(type == "vert")
-  {
-    d->UI.radioVertices->setEnabled(true);
-
-    if(!d->UI.radioPoints->isEnabled())
-      d->UI.radioVertices->setChecked(true);
-  }
 }
 
 bool DepthMapOptions::isPointsChecked()
@@ -148,12 +135,5 @@ bool DepthMapOptions::isSurfacesChecked()
   QTE_D();
 
   return d->UI.radioSurfaces->isChecked();
-}
-
-bool DepthMapOptions::isVerticesChecked()
-{
-  QTE_D();
-
-  return d->UI.radioVertices->isChecked();
 }
 

@@ -46,7 +46,6 @@ struct Project
   QMap<int, QString> DMvtp;
   QMap<int, QString> DMvts;
   QMap<int, QString> DMvti;
-  QMap<int, QString> DMvert;
 };
 
 #endif

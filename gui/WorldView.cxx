@@ -72,7 +72,6 @@
 #include <vtkPiecewiseFunction.h>
 #include <vtkColorTransferFunction.h>
 #include <vtkUnstructuredGrid.h>
-#include <vtkVolumeProperty.h>
 
 #ifdef VTKWEBGLEXPORTER
 #include <vtkScalarsToColors.h>
@@ -152,7 +151,6 @@ public:
 
   vtkNew<vtkActor> polyDataActor;
   vtkNew<vtkActor> structuredGridActor;
-  vtkNew<vtkVolume> verticesActor;
 
   std::map<int, std::string> dMList;
   std::map<int, std::string> dMListSG;
@@ -327,7 +325,6 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
 
   d->depthMapOptions->addActor("points",d->polyDataActor.Get());
   d->depthMapOptions->addActor("surfaces",d->structuredGridActor.Get());
-  d->depthMapOptions->addActor("vertices",d->verticesActor.Get());
 
 //  connect(d->depthMapOptions, SIGNAL(modified()),
 //          d->UI.renderWidget, SLOT(update()));
@@ -522,9 +519,6 @@ std::string WorldView::getActiveDepthMapType()
   if (d->depthMapOptions->isSurfacesChecked()) {
     return "surfaces";
   }
-  if (d->depthMapOptions->isVerticesChecked()) {
-    return "vertices";
-  }
 
   return "";
 }
@@ -649,15 +643,15 @@ void WorldView::setActiveDepthMap(int numCam, vtkMatrix4x4* mat, DepthMapPaths d
       d->renderer->AddViewProp(d->structuredGridActor.GetPointer());
     }
     //Vertices structured grid
-    if(d->depthMapOptions->isVerticesChecked() && dmp.dMVerticesPath.toStdString() != ""){
-      std::string filename = dmp.dMVerticesPath.toStdString();
-      std::cout << "if" << std::endl;
+//    if(d->depthMapOptions->isVerticesChecked() && dmp.dMVerticesPath.toStdString() != ""){
+//      std::string filename = dmp.dMVerticesPath.toStdString();
+//      std::cout << "if" << std::endl;
 
-      //TODO: read the file
-      vtkNew<vtkXMLStructuredGridReader> readerV;
+//      //TODO: read the file
+//      vtkNew<vtkXMLStructuredGridReader> readerV;
 
-      readerV->SetFileName(filename.c_str());
-      readerV->Update();
+//      readerV->SetFileName(filename.c_str());
+//      readerV->Update();
       // --
 
   //    readerV->GetOutput()->GetPointData()->SetScalars(readerV->GetOutput()->GetPointData()->GetArray("reconstruction_scalar"));
@@ -737,7 +731,7 @@ void WorldView::setActiveDepthMap(int numCam, vtkMatrix4x4* mat, DepthMapPaths d
 
   //    renderWindow->Render();
   //    renderWindowInteractor->Start();
-    }
+//    }
 
   }
 }
@@ -944,10 +938,6 @@ void WorldView::setDepthMapVisible(bool state)
   else if (d->depthMapOptions->isSurfacesChecked())
   {
     d->structuredGridActor->SetVisibility(state);
-  }
-  else if (d->depthMapOptions->isVerticesChecked())
-  {
-    d->verticesActor->SetVisibility(state);
   }
 
   setActiveDepthMap(cam,matrix,dmp);

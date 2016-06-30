@@ -61,6 +61,7 @@ public:
 //  void addDepthMaps(QString const& dMFileList, std::string type);
 
   std::string getActiveDepthMapType();
+
 public slots:
   void setBackgroundColor(QColor const&);
 
