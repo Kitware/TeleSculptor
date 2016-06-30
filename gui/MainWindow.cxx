@@ -433,7 +433,7 @@ void MainWindowPrivate::setActiveCamera(int id)
 
   auto& cd = this->cameras[activeCameraIndex];
 
-  if (cd.camera != NULL)
+  if (!this->cameras[id].vtiPath.isEmpty())
   {
     UI.dMView->setDepthMap(this->cameras[id].vtiPath);
 
@@ -816,7 +816,6 @@ void MainWindow::loadProject(QString const& path)
     this->loadDepthmaps(project.depthmaps);
   }
 
-
 #ifdef VTKWEBGLEXPORTER
   d->UI.actionWebGLScene->setEnabled(true);
 #endif
@@ -878,55 +877,44 @@ void MainWindow::loadTracks(QString const& path)
 void MainWindow::loadDepthmaps(QString const& path)
 {
   QTE_D();
-    QMap<int, QString> DMvti;
 
-    QFile vtiFile(path);
-    auto const& vtiBasePath =  QFileInfo(path).absoluteDir().absolutePath();
+  QFile vtListiFile(path);
+  auto const& vtiListFileBasePath =  QFileInfo(path).absoluteDir().absolutePath();
 
-    if (vtiFile.open(QIODevice::ReadOnly | QIODevice::Text))
+  if (vtListiFile.open(QIODevice::ReadOnly | QIODevice::Text))
+  {
+    QTextStream vtiStream(&vtListiFile);
+    int frameNum;
+    QString vtiFileName;
+
+    while (!vtiStream.atEnd())
     {
-      QTextStream vtiStream(&vtiFile);
-      int frameNum;
-      QString fileName;
-      while (!vtiStream.atEnd())
-      {
-        vtiStream >> frameNum >> fileName;
-        std::string fileNamestr = vtiBasePath.toStdString() + QDir::separator().toAscii() +fileName.toStdString();
+      vtiStream >> frameNum >> vtiFileName;
 
-        fileName = QString::fromStdString(fileNamestr);
-        if (!DMvti.contains(frameNum))
-        {
-          DMvti.insert(frameNum,fileName);
-        }
+      if(!vtiFileName.isEmpty())
+      {
+        vtiFileName = vtiListFileBasePath + QDir::separator() + vtiFileName;
+
+        d->cameras[frameNum].vtiPath = vtiFileName;
       }
     }
-    vtiFile.close();
+  }
 
-    for (int camId = 0; camId < d->cameras.size(); ++camId)
-    {
-      if(!DMvti.isEmpty() && DMvti.contains(camId))
-      {
-        d->cameras[camId].vtiPath = DMvti[camId];
-      }
-    }
+  vtListiFile.close();
 
-    //Once every depthmap is loaded, set up the active depthmap to the first found
+  d->UI.worldView->enableDepthMap();
 
-    int camId = 0;
+  // If the active camera has an associated depthmap, we load it into the DepthMapView
 
-    while (camId < d->cameras.size() && !DMvti.contains(camId))
-    {
-      camId++;
-    }
+  QString activeCameraVtiPath = d->cameras[d->activeCameraIndex].vtiPath;
 
-    if (camId < d->cameras.size())
-    {
-       setActiveCamera(camId);
-    }
+  if(!activeCameraVtiPath.isEmpty())
+  {
+    d->UI.dMView->setDepthMap(activeCameraVtiPath);
 
-
-    d->UI.worldView->enableDepthMap();
-
+    d->UI.worldView->setActiveDepthMap(d->cameras[d->activeCameraIndex].camera,
+                                       activeCameraVtiPath);
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -987,7 +975,9 @@ void MainWindow::saveLandmarks(QString const& path)
   }
 }
 
-void MainWindow::updateThresholdsDepthmapView(double bcMin, double bcMax, double urMin, double urMax)
+//-----------------------------------------------------------------------------
+void MainWindow::updateThresholdsDepthmapView(double bcMin, double bcMax,
+                                              double urMin, double urMax)
 {
   QTE_D();
 

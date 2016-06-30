@@ -35,9 +35,7 @@
 
 #include <QtGui/QWidget>
 
-
 class DepthMapFilterOptionsPrivate;
-
 
 class DepthMapFilterOptions : public QWidget
 {
@@ -54,6 +52,7 @@ public:
   double getUniquenessRatioMax();
 
   void initializeFilters(double bcMin, double bcMax, double urMin, double urMax);
+
 signals:
   void filtersChanged();
 

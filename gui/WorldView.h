@@ -57,10 +57,7 @@ public:
   explicit WorldView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
   virtual ~WorldView();
 
-//  void addDepthMaps(QString const& dMFileList, std::string type);
-
   std::string getActiveDepthMapType();
-
 
   void setActiveDepthMap(vtkMaptkCamera *cam, QString vtiPath);
   void enableDepthMap();

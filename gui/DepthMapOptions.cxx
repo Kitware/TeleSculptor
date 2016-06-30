@@ -40,6 +40,10 @@
 
 #include "DepthMapFilterOptions.h"
 
+///////////////////////////////////////////////////////////////////////////////
+
+//BEGIN DepthMapOptionsPrivate declaration
+
 //-----------------------------------------------------------------------------
 class DepthMapOptionsPrivate
 {
@@ -47,15 +51,39 @@ public:
   Ui::DepthMapOptions UI;
   qtUiState uiState;
 
-  std::map<std::string, vtkProp3D*> actors;
   DepthMapFilterOptions* filterOptions;
 
   void setPopup(QToolButton* button, QWidget* widget);
 
 };
 
+//END DepthMapOptionsPrivate definition
+
+///////////////////////////////////////////////////////////////////////////////
+
+//BEGIN DepthMapOptionsPrivate implementation
+
+//-----------------------------------------------------------------------------
+void DepthMapOptionsPrivate::setPopup(QToolButton* button, QWidget* widget)
+{
+  auto const proxy = new QWidgetAction(button);
+  proxy->setDefaultWidget(widget);
+
+  auto const menu = new QMenu(button);
+  menu->addAction(proxy);
+
+  button->setMenu(menu);
+}
+
+//END DepthMapOptionsPrivate implementation
+
+///////////////////////////////////////////////////////////////////////////////
+
+//BEGIN DepthMapOptions
+
 QTE_IMPLEMENT_D_FUNC(DepthMapOptions)
 
+//-----------------------------------------------------------------------------
 DepthMapOptions::DepthMapOptions(QString const& settingsGroup,
                                  QWidget* parent, Qt::WindowFlags flags) :
   QWidget(parent, flags), d_ptr(new DepthMapOptionsPrivate)
@@ -64,7 +92,6 @@ DepthMapOptions::DepthMapOptions(QString const& settingsGroup,
 
   // Set up UI
   d->UI.setupUi(this);
-
 
   // Set up option persistence
   d->uiState.setCurrentGroup(settingsGroup);
@@ -87,7 +114,6 @@ DepthMapOptions::DepthMapOptions(QString const& settingsGroup,
 
   connect(d->filterOptions, SIGNAL(filtersChanged()),
           this, SIGNAL(depthMapThresholdsChanged()));
-
 }
 
 //-----------------------------------------------------------------------------
@@ -95,27 +121,6 @@ DepthMapOptions::~DepthMapOptions()
 {
   QTE_D();
   d->uiState.save();
-}
-
-//-----------------------------------------------------------------------------
-void DepthMapOptionsPrivate::setPopup(QToolButton* button, QWidget* widget)
-{
-  auto const proxy = new QWidgetAction(button);
-  proxy->setDefaultWidget(widget);
-
-  auto const menu = new QMenu(button);
-  menu->addAction(proxy);
-
-  button->setMenu(menu);
-}
-
-//-----------------------------------------------------------------------------
-void DepthMapOptions::addActor(std::string type, vtkProp3D* actor)
-{
-  QTE_D();
-
-  d->actors.insert(std::pair<std::string, vtkProp3D*>(type,actor));
-
 }
 
 //-----------------------------------------------------------------------------
@@ -167,19 +172,13 @@ double DepthMapOptions::getUniquenessRatioMax()
   return d->filterOptions->getUniquenessRatioMax();
 }
 
-void DepthMapOptions::initializeFilters(double bcMin, double bcMax, double urMin, double urMax)
+//-----------------------------------------------------------------------------
+void DepthMapOptions::initializeFilters(double bcMin, double bcMax,
+                                        double urMin, double urMax)
 {
   QTE_D();
 
   d->filterOptions->initializeFilters(bcMin,bcMax,urMin,urMax);
-}
-
-//-----------------------------------------------------------------------------
-bool DepthMapOptions::isFiltersChecked()
-{
-  QTE_D();
-
-  return d->UI.checkBoxFilters->isChecked();
 }
 
 //-----------------------------------------------------------------------------
@@ -198,3 +197,4 @@ bool DepthMapOptions::isSurfacesChecked()
   return d->UI.radioSurfaces->isChecked();
 }
 
+//END DepthMapOptions

@@ -53,7 +53,7 @@ public:
                            QWidget *parent = 0, Qt::WindowFlags flags = 0);
   virtual ~DepthMapViewOptions();
 
-  void addPolyData(vtkActor *polyDataActor);
+  void addActor(vtkActor *polyDataActor);
 
   void cleanModes();
 
@@ -68,7 +68,7 @@ private:
   QVBoxLayout* layout;
 
   void addDepthMapMode(std::string name, bool needGradient);
-  void removeLayout(QLayout* layout);
+  void clearLayout(QLayout* layout);
 
   QTE_DECLARE_PRIVATE_RPTR(DepthMapViewOptions)
   QTE_DECLARE_PRIVATE(DepthMapViewOptions)

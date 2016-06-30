@@ -34,6 +34,9 @@
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
 
+///////////////////////////////////////////////////////////////////////////////
+
+//BEGIN DepthMapFilterOptionsPrivate definition
 
 //-----------------------------------------------------------------------------
 class DepthMapFilterOptionsPrivate
@@ -47,10 +50,17 @@ public:
   double initialBCMin, initialBCMax, initialURMin, initialURMax;
 };
 
+//END DepthMapFilterOptionsPrivate definition
+
+///////////////////////////////////////////////////////////////////////////////
+
+//BEGIN DepthMapFilterOptions
+
 QTE_IMPLEMENT_D_FUNC(DepthMapFilterOptions)
 
 //-----------------------------------------------------------------------------
-DepthMapFilterOptions::DepthMapFilterOptions(const QString &settingsGroup, QWidget* parent, Qt::WindowFlags flags)
+DepthMapFilterOptions::DepthMapFilterOptions(const QString &settingsGroup,
+                                             QWidget* parent, Qt::WindowFlags flags)
   : QWidget(parent, flags), d_ptr(new DepthMapFilterOptionsPrivate)
 {
   QTE_D();
@@ -78,6 +88,7 @@ DepthMapFilterOptions::~DepthMapFilterOptions()
   QTE_D();
   d->uiState.save();
 }
+
 //-----------------------------------------------------------------------------
 double DepthMapFilterOptions::getBestCostValueMin()
 {
@@ -85,6 +96,7 @@ double DepthMapFilterOptions::getBestCostValueMin()
 
  return d->UI.doubleSpinBoxBestCostMin->value();
 }
+
 //-----------------------------------------------------------------------------
 double DepthMapFilterOptions::getBestCostValueMax()
 {
@@ -92,6 +104,7 @@ double DepthMapFilterOptions::getBestCostValueMax()
 
  return d->UI.doubleSpinBoxBestCostMax->value();
 }
+
 //-----------------------------------------------------------------------------
 double DepthMapFilterOptions::getUniquenessRatioMin()
 {
@@ -99,6 +112,7 @@ double DepthMapFilterOptions::getUniquenessRatioMin()
 
  return d->UI.doubleSpinBoxUniquenessRatioMin->value();
 }
+
 //-----------------------------------------------------------------------------
 double DepthMapFilterOptions::getUniquenessRatioMax()
 {
@@ -107,6 +121,7 @@ double DepthMapFilterOptions::getUniquenessRatioMax()
   return d->UI.doubleSpinBoxUniquenessRatioMax->value();
 }
 
+//-----------------------------------------------------------------------------
 void DepthMapFilterOptions::updateFilters()
 {
   QTE_D();
@@ -133,7 +148,9 @@ void DepthMapFilterOptions::updateFilters()
 
 }
 
-void DepthMapFilterOptions::initializeFilters(double bcMin, double bcMax, double urMin, double urMax)
+//-----------------------------------------------------------------------------
+void DepthMapFilterOptions::initializeFilters(double bcMin, double bcMax,
+                                              double urMin, double urMax)
 {
   QTE_D();
 
@@ -145,9 +162,11 @@ void DepthMapFilterOptions::initializeFilters(double bcMin, double bcMax, double
   resetFilters();
 }
 
+//-----------------------------------------------------------------------------
 void DepthMapFilterOptions::resetFilters()
 {
   QTE_D();
+
   QDoubleSpinBox* bcMinSpinBox = d->UI.doubleSpinBoxBestCostMin;
   QDoubleSpinBox* bcMaxSpinBox = d->UI.doubleSpinBoxBestCostMax;
   QDoubleSpinBox* urMinSpinBox = d->UI.doubleSpinBoxUniquenessRatioMin;
@@ -172,3 +191,4 @@ void DepthMapFilterOptions::resetFilters()
   urMaxSpinBox->setMaximum(d->initialURMax);
 }
 
+//END DepthMapFilterOptions

@@ -146,16 +146,16 @@ unset(no_install)
 target_link_libraries(mapgui
   maptk
   vital_apm
+  vtkCommonCore
   vtkGUISupportQt
   vtkInteractionStyle
+  vtkIOXML
   vtkViewsCore
   vtkRenderingFreeTypeOpenGL
   vtkRenderingVolumeOpenGL
   vtkRenderingOpenGL
   vtkRenderingCore
-  vtkCommonCore
   vtksys
-  ${VTK_LIBRARIES}
   qtExtensions
   ${QT_QTMAIN_LIBRARY}
   ${QT_LIBRARIES}

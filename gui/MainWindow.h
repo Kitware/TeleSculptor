@@ -66,7 +66,8 @@ public slots:
 
   void saveWebGLScene();
 
-  void updateThresholdsDepthmapView(double bcMin,double bcMax,double urMin,double urMax);
+  void updateThresholdsDepthmapView(double bcMin,double bcMax,
+                                    double urMin,double urMax);
 
   void setActiveCamera(int);
 
@@ -84,8 +85,6 @@ protected slots:
 
   void executeTool(QObject*);
   void acceptToolResults();
-
-//  void updateDepthMap();
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(MainWindow)

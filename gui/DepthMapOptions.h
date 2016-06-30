@@ -48,26 +48,20 @@ public:
                            QWidget *parent = 0, Qt::WindowFlags flags = 0);
   virtual ~DepthMapOptions();
 
-  void addActor(std::string type, vtkProp3D *actor);
-
   bool isPointsChecked();
   bool isSurfacesChecked();
-  bool isVerticesChecked();
 
   double getBestCostValueMin();
   double getBestCostValueMax();
   double getUniquenessRatioMin();
   double getUniquenessRatioMax();
 
-  void initializeFilters(double bcMin, double bcMax, double urMin, double urMax);
-  bool isFiltersChecked();
+  void initializeFilters(double bcMin, double bcMax,
+                         double urMin, double urMax);
 
-  void enableBBoxDisplay(bool state);
   void enable();
-  bool isBBoxChecked();
-signals:
 
-  void bBoxToggled();
+signals:
   void modified();
   void depthMapRepresentationChanged();
   void depthMapThresholdsChanged();
