@@ -126,16 +126,17 @@ bool vtkMaptkCamera::UnprojectPoint(double pixel[2], double depth,
                                     kwiver::vital::vector_3d *unProjectedPoint)
 {
   // Build camera matrix
-  auto const K = this->MaptkCamera->intrinsics()->as_matrix();
-  auto const KtriangularView = K.triangularView<Eigen::Upper>();
   auto const T = this->MaptkCamera->translation();
   auto const R = kwiver::vital::matrix_3x3d(this->MaptkCamera->rotation());
 
-  kwiver::vital::vector_3d homogenousPoint(pixel[0], pixel[1], 1.0);
+  kwiver::vital::vector_2d normPoint = this->MaptkCamera->intrinsics()->
+      unmap(kwiver::vital::vector_2d(pixel[0], pixel[1]));
+
+  kwiver::vital::vector_3d homogenousPoint(normPoint[0], normPoint[1], 1.0);
 
   homogenousPoint *= depth;
 
-  *unProjectedPoint = R.transpose() * ((KtriangularView.solve(homogenousPoint)) - T);
+  *unProjectedPoint = R.transpose() * (homogenousPoint - T);
 
   return true;
 }
