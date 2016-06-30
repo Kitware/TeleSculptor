@@ -183,12 +183,6 @@ static kwiver::vital::config_block_sptr default_config()
       config->set_value("krtd_clean_up", "false",
                         "Delete all previously existing KRTD files present in output_krtd_dir before writing new KRTD files.");
 
-  config->set_value("depthmaps_points_file", "",
-                    "An optional file containing paths to depthmaps as polydatas.");
-
-  config->set_value("depthmaps_surfaces_file", "",
-                    "An optional file containing paths to depthmaps as structured grid.");
-
       config->set_value("depthmaps_images_file", "",
                         "An optional file containing paths to depthmaps as image datas.");
 

@@ -133,7 +133,6 @@ reprojection_rmse(const std::map<frame_id_t, camera_sptr>& cameras,
       ++num_obs;
     }
   }
-  std::cout << "error_sum = " << error_sum << std::endl;
   return std::sqrt(error_sum / num_obs);
 }
 
