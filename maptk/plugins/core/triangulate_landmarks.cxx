@@ -180,6 +180,7 @@ triangulate_landmarks
     if (t_itr == track_map.end())
     {
       // there is no track for the provided landmark
+      failed_landmarks.insert(p.first);
       continue;
     }
     const vital::track& t = *t_itr->second;
@@ -242,6 +243,10 @@ triangulate_landmarks
         lm->set_observations(lm_observations);
         triangulated_lms[p.first] = lm;
       }
+    }
+    else
+    {
+      failed_landmarks.insert(p.first);
     }
   }
   if( !failed_landmarks.empty() )
