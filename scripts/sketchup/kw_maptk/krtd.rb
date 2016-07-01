@@ -83,6 +83,14 @@ class KRTD
     return @y_dim
   end
 
+  def focal_length_x
+    return @focal_length_x
+  end
+
+  def focal_length_y
+    return @focal_length_y
+  end
+
   def fov_x
     @_fov_x = @_fov_x ? @_fov_x 
 	      : 2 * Math.atan((@x_dim / 2.0) / @focal_length_x) * 180 / Math::PI
