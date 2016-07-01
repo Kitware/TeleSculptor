@@ -16,6 +16,10 @@ Core Plugin
    plane vertically to place a configurable percentile of the landmarks above
    the ground.
 
+Scripts
+
+ * In the SketchUp import plugin allow the user to select how many frames to
+   use if there are more than 10 available.
 
 Fixes since last public release
 -------------------------------
