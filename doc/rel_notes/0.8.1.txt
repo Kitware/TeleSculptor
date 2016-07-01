@@ -16,6 +16,12 @@ Scripts
 Fixes since v0.8.0
 --------------------
 
+Core Plugin
+
+ * In the core triangulation algorithm, landmarks that were not observed by
+   enough cameras or had no corresponding tracks were not counted towards the
+   the number of failed triangulations.  Now they are.
+
 VXL Plugin
 
  * Updated the CMake code for using VXL to handle changes in VXL master so that
