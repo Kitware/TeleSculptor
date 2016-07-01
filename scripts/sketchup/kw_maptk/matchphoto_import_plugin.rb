@@ -136,6 +136,20 @@ class MatchphotoMaptkImporter < Sketchup::Importer
     smooth_flags = Geom::PolygonMesh::NO_SMOOTH_OR_HIDE
     img_fps = read_in_image_fps(file_path)
 
+    # if there are more than 10 images in the list, let the user select how many to use
+    if img_fps.size > 10
+      prompts = ["How many frames do you want to use?"]
+      defaults = ["10"]
+      num_frames = UI.inputbox(prompts, defaults, "Number of #{img_fps.size} available frames to use")[0].to_i
+
+      new_img_fps = Array.new
+      for i in 0..num_frames
+        idx = ((img_fps.size-1) * (i.to_f / num_frames)).to_i
+        new_img_fps.push img_fps[idx]
+      end
+      img_fps = new_img_fps
+    end
+
     not_opened = Array.new
     img_fps.each do |img_fp|
 
