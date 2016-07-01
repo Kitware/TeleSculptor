@@ -431,13 +431,13 @@ void MainWindowPrivate::setActiveCamera(int id)
   this->UI.worldView->setActiveCamera(this->cameras[id].camera);
   this->updateCameraView();
 
-  auto& cd = this->cameras[activeCameraIndex];
+  auto& cd = this->cameras[id];
 
-  if (!this->cameras[id].vtiPath.isEmpty())
+  if (!cd.vtiPath.isEmpty())
   {
-    UI.dMView->setDepthMap(this->cameras[id].vtiPath);
+    UI.dMView->setDepthMap(cd.vtiPath);
 
-    UI.worldView->setActiveDepthMap(this->cameras[id].camera,this->cameras[id].vtiPath);
+    UI.worldView->setActiveDepthMap(cd.camera, cd.vtiPath);
   }
 }
 

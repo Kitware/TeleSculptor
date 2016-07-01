@@ -147,6 +147,8 @@ target_link_libraries(mapgui
   maptk
   vital_apm
   vtkCommonCore
+  vtkFiltersCore
+  vtkFiltersGeometry
   vtkGUISupportQt
   vtkInteractionStyle
   vtkIOXML
