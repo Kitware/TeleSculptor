@@ -1045,9 +1045,9 @@ static int maptk_main(int argc, char const* argv[])
   if (config->get_value<bool>("krtd_clean_up") )
   {
 
-    std::cerr << "Cleaning "
-              << config->get_value<std::string>("output_krtd_dir")
-              << " before writing new files." << std::endl;
+    LOG_INFO(main_logger, "Cleaning "
+                          << config->get_value<std::string>("output_krtd_dir")
+                          << " before writing new files.");
 
     kwiver::vital::path_t krtd_dir = config->get_value<std::string>("output_krtd_dir");
     std::vector<kwiver::vital::path_t> files = files_in_dir(krtd_dir);
