@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2015 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,7 @@
 #include <vital/exceptions.h>
 #include <vital/io/eigen_io.h>
 #include <vital/vital_foreach.h>
+#include <vital/logger/logger.h>
 
 #include <fstream>
 #include <iomanip>
@@ -56,6 +57,8 @@ void load_reference_file(vital::path_t const& reference_file,
                          vital::track_set_sptr & ref_track_set)
 {
   using namespace std;
+
+  kwiver::vital::logger_handle_t logger( kwiver::vital::get_logger( "load_reference_file" ) );
 
   // Read in file, creating a landmark map and a vector of tracks, associated
   // via IDs
@@ -87,8 +90,7 @@ void load_reference_file(vital::path_t const& reference_file,
 
   // TODO: put in try-catch around >>'s in case we have an ill-formatted file,
   // or there's a parse error
-  cerr << "[load_reference_file] Reading from file: " << reference_file << endl;
-  cerr << "[load_reference_file] Reading landmarks and tracks..." << endl;
+  LOG_INFO(logger, "Reading ground control points from file: " << reference_file);
   for (std::string line; std::getline(input_stream, line);)
   {
     ss.clear();
@@ -108,15 +110,13 @@ void load_reference_file(vital::path_t const& reference_file,
     // interpret all other geo-positions with respect to.
     if (lgcs.utm_origin_zone() == -1)
     {
-      cerr << "[load_reference_file] - lgcs origin zone: " << zone << endl;
+      LOG_DEBUG(logger, "lgcs origin zone: " << zone );
       lgcs.set_utm_origin_zone(zone);
     }
 
-    //cerr << "[load_reference_file] landmark " << cur_id << " position :: " << std::setprecision(12) << vec << endl;
     reference_lms[cur_id] = vital::landmark_sptr(new vital::landmark_d(vec));
 
     // while there's still input left, read in track states
-    //cerr << "[] track:" << endl;
     vital::track_sptr lm_track(new vital::track());
     lm_track->set_id(static_cast<vital::track_id_t>(cur_id));
     while (ss.peek() != std::char_traits<char>::eof())
@@ -126,25 +126,24 @@ void load_reference_file(vital::path_t const& reference_file,
       lm_track->append(vital::track::track_state(frm,
                        vital::feature_sptr(new vital::feature_d(feat_loc)),
                        vital::descriptor_sptr()));
-      //cerr << "[]\t- " << frm << " :: " << feat_loc << endl;
     }
     reference_tracks.push_back(lm_track);
 
     ++cur_id;
   }
+  LOG_INFO(logger, "Loaded "<< reference_tracks.size() <<" ground control points");
 
   // Initialize lgcs center
   mean /= static_cast<double>(reference_lms.size());
   lgcs.set_utm_origin(mean);
-  cerr << "[load_reference_file] mean position (lgcs origin): " << mean << endl;
+  LOG_DEBUG(logger, "mean position (lgcs origin): " << mean.transpose());
 
   // Scan through reference landmarks, adjusting their location by the lgcs
   // origin.
-  cerr << "[load_reference_file] transforming lm geographic locations to local system..." << endl;
+  LOG_INFO(logger, "transforming ground control points to local coordinates");
   VITAL_FOREACH(vital::landmark_map::map_landmark_t::value_type & p, reference_lms)
   {
     dynamic_cast<vital::landmark_d*>(p.second.get())->set_loc(p.second->loc() - mean);
-    //cerr << "[load_reference_file] -- " << p.first << " :: " << p.second->loc() << endl;
   }
 
   ref_landmarks = vital::landmark_map_sptr(new vital::simple_landmark_map(reference_lms));
