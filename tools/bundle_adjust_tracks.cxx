@@ -961,6 +961,12 @@ static int maptk_main(int argc, char const* argv[])
                             << "reference tracks and post-SBA cameras");
       kwiver::vital::landmark_map_sptr sba_space_landmarks(new kwiver::vital::simple_landmark_map(reference_landmarks->landmarks()));
       triangulator->triangulate(cam_map, reference_tracks, sba_space_landmarks);
+      if (sba_space_landmarks->size() < reference_landmarks->size())
+      {
+        LOG_WARN(main_logger, "Only " << sba_space_landmarks->size()
+                              << " out of " << reference_landmarks->size()
+                              << " reference points triangulated");
+      }
 
       double post_tri_rmse = kwiver::maptk::reprojection_rmse(cam_map->cameras(),
                                                               sba_space_landmarks->landmarks(),
