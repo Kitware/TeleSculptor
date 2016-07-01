@@ -48,12 +48,14 @@ def load_camera(file_path)
   up_point3d = Geom::Vector3d.new( krtd_ff.up[0], krtd_ff.up[1], krtd_ff.up[2] )
   
   new_cam = Sketchup::Camera.new( cam_point3d, target_point3d, up_point3d )
-  #SketchUp can not handle perspective cameras with FOV < 1
+  # SketchUp does not allow perspective cameras with FOV < 1 degree.
+  # The focal_length is also limited to less than 3000.
+  # However, image_width is unconstrained.  This work around sets an
+  # artificially small image_width such that when combined with a
+  # focal_length of 1000 we get the desired FOV.
   if krtd_ff.fov_y < 1.0
-    #new_cam.perspective = false
     new_cam.image_width = 1000 / krtd_ff.focal_length_x * krtd_ff.y_dim
     new_cam.focal_length = 1000
-    UI.messagebox("FOV "+new_cam.fov.to_s+" Foc "+new_cam.focal_length.to_s+" width "+new_cam.image_width.to_s+" is_height "+new_cam.fov_is_height?.to_s)
   else
     new_cam.fov = krtd_ff.fov_y
   end
