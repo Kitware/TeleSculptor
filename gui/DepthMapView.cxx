@@ -199,6 +199,8 @@ void DepthMapView::updateDepthMapThresholds(double bcMin, double bcMax,
 
   d->polyDataActor->GetMapper()->SetInputConnection(geometryFilter->GetOutputPort());
   d->polyDataActor->GetMapper()->Update();
+
+  d->UI.renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
