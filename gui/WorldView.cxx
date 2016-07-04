@@ -94,7 +94,8 @@ public:
     cameraRepDirty(false),
     scaleDirty(false),
     axesDirty(false),
-    axesVisible(false)
+    axesVisible(false),
+    depthmapAlreadLoaded(false)
     {}
 
   void setPopup(QAction* action, QMenu* menu);
@@ -162,6 +163,8 @@ public:
   bool axesDirty;
 
   bool axesVisible;
+
+  bool depthmapAlreadLoaded;
 };
 
 QTE_IMPLEMENT_D_FUNC(WorldView)
@@ -478,12 +481,9 @@ void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, QString vtiPath)
 {
   QTE_D();
 
-  d->currentVtiPath = vtiPath;
-  d->currentCam = camera;
-
-  if(d->UI.actionDepthmapDisplay->isChecked())
+  if(d->UI.actionDepthmapDisplay->isChecked() && !d->depthmapAlreadLoaded)
   {
-    std::string filename = d->currentVtiPath.toStdString();
+    std::string filename = vtiPath.toStdString();
 
     vtkNew<vtkXMLImageDataReader> readerIm;
 
@@ -543,7 +543,6 @@ void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, QString vtiPath)
     mapper->SetColorModeToDirectScalars();
 
     d->depthmapActor->SetMapper(mapper.Get());
-    d->depthmapActor->SetVisibility(true);
 
     if(d->depthMapOptions->isPointsChecked())
     {
@@ -567,7 +566,13 @@ void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, QString vtiPath)
 
     d->depthMapOptions->initializeFilters(bcRange[0], bcRange[1],
                                           urRange[0], urRange[1]);
+
+
+    d->depthmapAlreadLoaded = true;
   }
+
+  d->currentCam = camera;
+  d->currentVtiPath = vtiPath;
 }
 
 //-----------------------------------------------------------------------------
@@ -583,7 +588,6 @@ void WorldView::enableDepthMap()
 }
 
 //-----------------------------------------------------------------------------
-
 void WorldView::addCamera(int id, vtkMaptkCamera* camera)
 {
   Q_UNUSED(id)
@@ -622,6 +626,8 @@ void WorldView::setActiveCamera(vtkMaptkCamera* camera)
 
   d->updateCameras(this);
   d->updateAxes(this);
+
+  d->depthmapAlreadLoaded = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -772,6 +778,7 @@ void WorldView::setDepthMapVisible(bool state)
   {
     setActiveDepthMap(d->currentCam,d->currentVtiPath);
   }
+
   d->UI.renderWidget->update();
 }
 
@@ -1058,4 +1065,6 @@ void WorldView::updateDepthMapThresholds()
   emit updateThresholds(bestCostValueMin,bestCostValueMax,uniquenessRatioMin,uniquenessRatioMax);
 
   d->UI.renderWidget->update();
+
+  d->depthmapAlreadLoaded = true;
 }
