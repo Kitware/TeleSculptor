@@ -148,10 +148,6 @@ public:
   vtkNew<vtkActor> polyDataActor;
   vtkNew<vtkActor> depthmapActor;
 
-  std::map<int, std::string> dMList;
-  std::map<int, std::string> dMListSG;
-  std::map<int, std::string> dMListVert;
-
   vtkMaptkCamera* currentCam;
   QString currentVtiPath;
 
