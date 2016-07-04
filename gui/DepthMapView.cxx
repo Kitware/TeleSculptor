@@ -139,6 +139,8 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   // Set up UI
   d->UI.setupUi(this);
 
+  this->addAction(d->UI.actionViewReset);
+
   viewMenu = new QMenu(this);
   viewMenu->addAction(d->UI.actionDisplayMode);
 
@@ -151,6 +153,9 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   // Connect actions
   connect(d->depthMapViewOptions, SIGNAL(modified()),
                d->UI.renderWidget, SLOT(update()));
+
+  connect(d->UI.actionViewReset, SIGNAL(triggered()),
+          this, SLOT(resetView()));
 
   // Set up ortho view
   d->renderer->GetActiveCamera()->ParallelProjectionOn();
@@ -238,7 +243,7 @@ void DepthMapView::setDepthMap(QString imagePath)
 
     d->renderer->AddViewProp(d->polyDataActor.GetPointer());
 
-    d->renderer->ResetCamera(readerIm->GetOutput()->GetBounds());
+    d->renderer->ResetCamera(geometryFilterIm->GetOutput()->GetBounds());
 
     d->UI.renderWidget->update();
   }
@@ -250,6 +255,29 @@ void DepthMapView::setBackgroundColor(QColor const& color)
   QTE_D();
 
   d->renderer->SetBackground(color.redF(), color.greenF(), color.blueF());
+  d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
+void DepthMapView::resetView()
+{
+  QTE_D();
+
+  double renderAspect[2];
+  d->renderer->GetAspect(renderAspect);
+
+  double bounds[6];
+  d->currentDepthmap->GetBounds(bounds);
+
+  auto const w = bounds[1] - bounds[0];
+  auto const h = bounds[3] - bounds[4];
+  auto const a = w / h;
+
+  auto const s = 0.5 * h * qMax(a / renderAspect[0], 1.0);
+
+  d->renderer->ResetCamera(bounds);
+  d->renderer->GetActiveCamera()->SetParallelScale(s);
+
   d->UI.renderWidget->update();
 }
 

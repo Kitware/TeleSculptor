@@ -53,9 +53,13 @@ public:
 
   void setDepthMap(QString imagePath);
 
+
 public slots:
   void updateDepthMapThresholds(double,double,double,double);
+
   void setBackgroundColor(QColor const&);
+
+  void resetView();
 
 private:
   QMenu* viewMenu;
