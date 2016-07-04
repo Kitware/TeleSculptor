@@ -147,6 +147,8 @@ void DepthMapViewOptions::addDepthMapMode(std::string name, bool needGradient)
   if (needGradient)
   {
     QToolButton *gradient = new QToolButton(d->UI.groupBox);
+    gradient->setPopupMode(gradient->InstantPopup);
+
     DataColorOptions *dataColorOptions =
         new DataColorOptions("DepthMapViewOptions/"+QString::fromStdString(name),this);
 
