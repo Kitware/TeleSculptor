@@ -127,8 +127,8 @@ def check_config(c):
 
     mlist_file = c.get_value('mask_list_file')
     mlist_valid = True
-    if not mlist_file or (os.path.isfile(mlist_file) and not os.path.isdir(mlist_file)):
-        log.warn("Invalid image list filepath: '%s'", ilist_file)
+    if mlist_file and (not os.path.isfile(mlist_file) or os.path.isdir(mlist_file)):
+        log.warn("Invalid mask list filepath: '%s'", ilist_file)
         mlist_valid = False
 
     return algo_check and ilist_valid and mlist_valid
@@ -198,7 +198,6 @@ def main():
 
     # Read in image files, and optional mask files
     # iterate over track features function
-    track_set = TrackSet()
     with open(image_list_fp) as f:
         frame_list = [l.strip() for l in f]
     if mask_list_fp:
@@ -211,11 +210,15 @@ def main():
         "masks)" % (len(frame_list), len(mask_list))
 
     # Track over frames + masks
+    track_set = TrackSet()
     for i, (f, m) in enumerate(itertools.izip(frame_list, mask_list)):
+        log.info("Processing frame: %s", f)
         frame = image_converter.convert(image_reader.load(f))
         mask = (m and image_converter.convert(image_reader.load(m))) or None
-        feature_tracker.track(track_set, i, frame, mask)
+        track_set = feature_tracker.track(track_set, i, frame, mask)
+        # TODO: maptk::extract_feature_colors?
 
+    log.info("Writing tracks file: %s", output_tracks_fp)
     safe_create_dir(os.path.dirname(output_tracks_fp))
     track_set.write_tracks_file(output_tracks_fp)
 
