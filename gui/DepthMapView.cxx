@@ -218,7 +218,7 @@ void DepthMapView::setDepthMap(QString imagePath)
 {
   QTE_D();
 
-  if(!imagePath.isEmpty())
+  if(!imagePath.isEmpty() && this->isVisible())
   {
     d->depthMapViewOptions->cleanModes();
 
