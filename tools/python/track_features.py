@@ -70,10 +70,10 @@ def base_algorithms(c=ConfigBlock()):
     iio = ImageIo('image_reader')
     iio.set_config(c)
 
-    ci = ConvertImage('image_converter')
+    ci = ConvertImage('convert_image')
     ci.set_config(c)
 
-    tf = TrackFeatures('track_features')
+    tf = TrackFeatures('feature_tracker')
     tf.set_config(c)
 
     return iio, ci, tf
