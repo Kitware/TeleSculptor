@@ -553,15 +553,24 @@ void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, QString vtiPath)
 
     d->renderer->AddViewProp(d->depthmapActor.GetPointer());
 
-    //initializing the filters
 
-    double bcRange[2], urRange[2];
+    if(!d->depthMapOptions->isFilterChecked()
+       || !d->depthMapOptions->isFilterPersistChecked())
+    {
+      //initializing the filters
 
-    d->currentDepthmap->GetPointData()->GetArray("Best Cost Values")->GetRange(bcRange);
-    d->currentDepthmap->GetPointData()->GetArray("Uniqueness Ratios")->GetRange(urRange);
+      double bcRange[2], urRange[2];
 
-    d->depthMapOptions->initializeFilters(bcRange[0], bcRange[1],
-                                          urRange[0], urRange[1]);
+      d->currentDepthmap->GetPointData()->GetArray("Best Cost Values")->GetRange(bcRange);
+      d->currentDepthmap->GetPointData()->GetArray("Uniqueness Ratios")->GetRange(urRange);
+
+      d->depthMapOptions->initializeFilters(bcRange[0], bcRange[1],
+                                            urRange[0], urRange[1]);
+    }
+    else
+    {
+      updateDepthMapThresholds();
+    }
 
 
     d->depthmapAlreadLoaded = true;

@@ -53,6 +53,8 @@ public:
 
   void initializeFilters(double bcMin, double bcMax, double urMin, double urMax);
 
+  bool isFilterPersist();
+
 signals:
   void filtersChanged();
 

@@ -61,6 +61,9 @@ public:
 
   void enable();
 
+  bool isFilterPersistChecked();
+  bool isFilterChecked();
+
 signals:
   void modified();
   void depthMapRepresentationChanged();

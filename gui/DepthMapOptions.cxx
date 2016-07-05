@@ -141,6 +141,22 @@ void DepthMapOptions::enable()
 }
 
 //-----------------------------------------------------------------------------
+bool DepthMapOptions::isFilterPersistChecked()
+{
+  QTE_D();
+
+  return d->filterOptions->isFilterPersist();
+}
+
+//-----------------------------------------------------------------------------
+bool DepthMapOptions::isFilterChecked()
+{
+  QTE_D();
+
+  return d->UI.checkBoxFilters->isChecked();
+}
+
+//-----------------------------------------------------------------------------
 double DepthMapOptions::getBestCostValueMin()
 {
   QTE_D();

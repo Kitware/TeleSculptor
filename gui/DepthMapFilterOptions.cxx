@@ -163,6 +163,14 @@ void DepthMapFilterOptions::initializeFilters(double bcMin, double bcMax,
 }
 
 //-----------------------------------------------------------------------------
+bool DepthMapFilterOptions::isFilterPersist()
+{
+  QTE_D();
+
+  return d->UI.checkBoxPersist->isChecked();
+}
+
+//-----------------------------------------------------------------------------
 void DepthMapFilterOptions::resetFilters()
 {
   QTE_D();
