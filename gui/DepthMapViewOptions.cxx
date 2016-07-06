@@ -71,6 +71,7 @@ public:
   vtkSmartPointer<vtkPolyData> originalImage;
 
   std::map<std::string, DataColorOptions*> dcOptions;
+  std::map<std::string, QToolButton*> gradients;
 
   void setPopup(QToolButton* button, QWidget* widget);
 
@@ -164,10 +165,20 @@ void DepthMapViewOptions::addDepthMapMode(std::string name, bool needGradient)
 
     gradient->setIcon(dataColorOptions->icon());
 
+    gradient->setEnabled(false);
+
     dataColorOptions->setEnabled(true);
+
+    connect(dataColorOptions, SIGNAL(modified()),
+            this, SIGNAL(modified()));
+
+    connect(dataColorOptions, SIGNAL(modified()),
+            this, SLOT(updateGradient()));
 
     d->dcOptions.insert(std::pair<std::string, DataColorOptions*>(name,
                                                                   dataColorOptions));
+
+    d->gradients.insert(std::pair<std::string, QToolButton*>(name, gradient));
   }
   else
   {
@@ -206,6 +217,18 @@ void DepthMapViewOptions::switchDisplayMode(bool checked)
 
     if (numberOfComponents < 3)
     {
+      std::map<std::string, QToolButton*>::iterator it;
+      for (it = d->gradients.begin(); it != d->gradients.end(); ++it) {
+        if(it->first != buttonId)
+        {
+          it->second->setEnabled(false);
+        }
+        else
+        {
+          it->second->setEnabled(true);
+        }
+      }
+
       DataColorOptions *dc = d->dcOptions.at(buttonId);
 
       double range[2];
@@ -216,6 +239,7 @@ void DepthMapViewOptions::switchDisplayMode(bool checked)
       mapper->SetLookupTable(dc->scalarsToColors());
       mapper->GetLookupTable()->SetRange(range);
       mapper->UseLookupTableScalarRangeOn();
+
     }
     else
     {
@@ -227,6 +251,23 @@ void DepthMapViewOptions::switchDisplayMode(bool checked)
 
     emit this->modified();
   }
+}
+
+//-----------------------------------------------------------------------------
+void DepthMapViewOptions::updateGradient()
+{
+  QTE_D();
+
+  std::string buttonId = bGroup->checkedButton()->text().toStdString();
+
+  QToolButton *gradient = d->gradients.at(buttonId);
+
+  DataColorOptions *dc = d->dcOptions.at(buttonId);
+
+  gradient->setIcon(dc->icon());
+  gradient->repaint();
+
+  this->update();
 }
 
 //-----------------------------------------------------------------------------

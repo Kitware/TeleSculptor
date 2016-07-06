@@ -63,6 +63,8 @@ signals:
 protected slots:
   void switchDisplayMode(bool checked);
 
+  void updateGradient();
+
 private:
   QButtonGroup* bGroup;
   QVBoxLayout* layout;
