@@ -360,6 +360,7 @@ void DepthMapViewOptions::cleanModes()
   d->UI.formLayout->update();
 
   d->dcOptions.clear();
+  d->gradients.clear();
 }
 
 //END DepthMapViewOptions
