@@ -914,6 +914,8 @@ void MainWindow::loadDepthmaps(QString const& path)
 
     d->UI.worldView->setActiveDepthMap(d->cameras[d->activeCameraIndex].camera,
                                        activeCameraVtiPath);
+
+    d->UI.dMView->resetView();
   }
 }
 
