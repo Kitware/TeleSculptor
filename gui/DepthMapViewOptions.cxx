@@ -149,23 +149,16 @@ void DepthMapViewOptions::addDepthMapMode(std::string name, bool needGradient,
   if (needGradient)
   {
     QToolButton *gradient = new QToolButton(d->UI.groupBox);
+
     gradient->setPopupMode(gradient->InstantPopup);
+    gradient->setEnabled(false);
 
     DataColorOptions *dataColorOptions =
         new DataColorOptions("DepthMapViewOptions/"+QString::fromStdString(name),this);
 
-    d->setPopup(gradient, dataColorOptions);
-
-    QHBoxLayout *hLayout = new QHBoxLayout();
-
-    hLayout->addWidget(scalar);
-    hLayout->addWidget(gradient);
-
-    layout->addLayout(hLayout);
-
     gradient->setIcon(dataColorOptions->icon());
 
-    gradient->setEnabled(false);
+    d->setPopup(gradient, dataColorOptions);
 
     dataColorOptions->setEnabled(true);
     dataColorOptions->setAvailableRange(lower, upper);
@@ -175,6 +168,13 @@ void DepthMapViewOptions::addDepthMapMode(std::string name, bool needGradient,
 
     connect(dataColorOptions, SIGNAL(modified()),
             this, SLOT(updateGradient()));
+
+    QHBoxLayout *hLayout = new QHBoxLayout();
+
+    hLayout->addWidget(scalar);
+    hLayout->addWidget(gradient);
+
+    layout->addLayout(hLayout);
 
     d->dcOptions.insert(std::pair<std::string, DataColorOptions*>(name,
                                                                   dataColorOptions));
@@ -219,6 +219,7 @@ void DepthMapViewOptions::switchDisplayMode(bool checked)
     if (numberOfComponents < 3)
     {
       std::map<std::string, QToolButton*>::iterator it;
+
       for (it = d->gradients.begin(); it != d->gradients.end(); ++it) {
         if(it->first != buttonId)
         {
@@ -310,21 +311,22 @@ void DepthMapViewOptions::addActor(vtkActor *polyDataActor)
 //-----------------------------------------------------------------------------
 void DepthMapViewOptions::clearLayout(QLayout* layout)
 {
-    QLayoutItem* child;
-    while(layout->count()!=0)
-    {
-        child = layout->takeAt(0);
-        if(child->layout() != 0)
-        {
-            clearLayout(child->layout());
-        }
-        else if(child->widget() != 0)
-        {
-            delete child->widget();
-        }
+  QLayoutItem* child;
+  while(layout->count()!=0)
+  {
+    child = layout->takeAt(0);
 
-        delete child;
+    if(child->layout() != 0)
+    {
+      clearLayout(child->layout());
     }
+    else if(child->widget() != 0)
+    {
+      delete child->widget();
+    }
+
+    delete child;
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -336,17 +338,18 @@ void DepthMapViewOptions::cleanModes()
   {
     clearLayout(layout);
     layout->update();
+
     d->UI.formLayout->update();
   }
 
   if(bGroup)
   {
-
     for (int i = 0; i < bGroup->buttons().size(); ++i)
     {
       if (bGroup->button(i))
       {
         bGroup->removeButton(bGroup->button(i));
+
         delete bGroup->button(i);
       }
     }
