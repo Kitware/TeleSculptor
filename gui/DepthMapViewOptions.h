@@ -69,7 +69,8 @@ private:
   QButtonGroup* bGroup;
   QVBoxLayout* layout;
 
-  void addDepthMapMode(std::string name, bool needGradient);
+  void addDepthMapMode(std::string name, bool needGradient,
+                       double lower, double upper);
   void clearLayout(QLayout* layout);
 
   QTE_DECLARE_PRIVATE_RPTR(DepthMapViewOptions)

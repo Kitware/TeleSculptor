@@ -135,7 +135,8 @@ DepthMapViewOptions::~DepthMapViewOptions()
 }
 
 //-----------------------------------------------------------------------------
-void DepthMapViewOptions::addDepthMapMode(std::string name, bool needGradient)
+void DepthMapViewOptions::addDepthMapMode(std::string name, bool needGradient,
+                                          double lower, double upper)
 {
   QTE_D();
 
@@ -153,7 +154,6 @@ void DepthMapViewOptions::addDepthMapMode(std::string name, bool needGradient)
     DataColorOptions *dataColorOptions =
         new DataColorOptions("DepthMapViewOptions/"+QString::fromStdString(name),this);
 
-    dataColorOptions->setEnabled(false);
     d->setPopup(gradient, dataColorOptions);
 
     QHBoxLayout *hLayout = new QHBoxLayout();
@@ -168,6 +168,7 @@ void DepthMapViewOptions::addDepthMapMode(std::string name, bool needGradient)
     gradient->setEnabled(false);
 
     dataColorOptions->setEnabled(true);
+    dataColorOptions->setAvailableRange(lower, upper);
 
     connect(dataColorOptions, SIGNAL(modified()),
             this, SIGNAL(modified()));
@@ -288,6 +289,8 @@ void DepthMapViewOptions::addActor(vtkActor *polyDataActor)
 
   for (int i = 0; i <  pointData->GetNumberOfArrays(); ++i)
   {
+    double range[2];
+
     if(pointData->GetArray(i)->GetNumberOfComponents() == 3)
     {
       needGradient = false;
@@ -295,9 +298,10 @@ void DepthMapViewOptions::addActor(vtkActor *polyDataActor)
     else
     {
       needGradient = true;
+      pointData->GetArray(i)->GetRange(range);
     }
 
-    addDepthMapMode(pointData->GetArrayName(i),needGradient);
+    addDepthMapMode(pointData->GetArrayName(i),needGradient, range[0], range[1]);
   }
 
   bGroup->buttons()[0]->setChecked(true);
