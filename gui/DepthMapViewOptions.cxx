@@ -222,6 +222,8 @@ void DepthMapViewOptions::switchDisplayMode(bool checked)
 
     if (numberOfComponents < 3)
     {
+      //Only enable the gradient associated with the checked display mode
+
       std::map<std::string, QToolButton*>::iterator it;
 
       for (it = d->gradients.begin(); it != d->gradients.end(); ++it) {
@@ -245,10 +247,10 @@ void DepthMapViewOptions::switchDisplayMode(bool checked)
       mapper->SetLookupTable(dc->scalarsToColors());
       mapper->GetLookupTable()->SetRange(range);
       mapper->UseLookupTableScalarRangeOn();
-
     }
     else
     {
+
       mapper->SetColorModeToDirectScalars();
       mapper->CreateDefaultLookupTable();
     }
@@ -310,7 +312,6 @@ void DepthMapViewOptions::addActor(vtkActor *polyDataActor)
   }
 
   bGroup->buttons()[d->lastButtonId]->setChecked(true);
-
 }
 
 //-----------------------------------------------------------------------------
