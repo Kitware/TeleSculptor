@@ -239,13 +239,8 @@ void DepthMapViewOptions::switchDisplayMode(bool checked)
 
       DataColorOptions *dc = d->dcOptions.at(buttonId);
 
-      double range[2];
-
-      activeArray->GetRange(range);
-
       mapper->SetColorModeToMapScalars();
       mapper->SetLookupTable(dc->scalarsToColors());
-      mapper->GetLookupTable()->SetRange(range);
       mapper->UseLookupTableScalarRangeOn();
     }
     else
