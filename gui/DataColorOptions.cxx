@@ -34,6 +34,8 @@
 
 #include "vtkMaptkScalarsToGradient.h"
 
+#include <cmath>
+
 #include <vtkNew.h>
 
 #include <qtGradient.h>
