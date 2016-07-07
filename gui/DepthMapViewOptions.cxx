@@ -73,6 +73,8 @@ public:
   std::map<std::string, DataColorOptions*> dcOptions;
   std::map<std::string, QToolButton*> gradients;
 
+  int lastButtonId;
+
   void setPopup(QToolButton* button, QWidget* widget);
 
 };
@@ -124,6 +126,8 @@ DepthMapViewOptions::DepthMapViewOptions(QString const& settingsGroup,
   d->uiState.restore();
 
   d->originalImage = vtkSmartPointer<vtkPolyData>::New();
+
+  d->lastButtonId = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -305,7 +309,8 @@ void DepthMapViewOptions::addActor(vtkActor *polyDataActor)
     addDepthMapMode(pointData->GetArrayName(i),needGradient, range[0], range[1]);
   }
 
-  bGroup->buttons()[0]->setChecked(true);
+  bGroup->buttons()[d->lastButtonId]->setChecked(true);
+
 }
 
 //-----------------------------------------------------------------------------
@@ -334,16 +339,13 @@ void DepthMapViewOptions::cleanModes()
 {
   QTE_D();
 
-  if (layout)
-  {
-    clearLayout(layout);
-    layout->update();
-
-    d->UI.formLayout->update();
-  }
-
   if(bGroup)
   {
+    if (bGroup->checkedId() >= 0)
+    {
+      d->lastButtonId = bGroup->checkedId();
+    }
+
     for (int i = 0; i < bGroup->buttons().size(); ++i)
     {
       if (bGroup->button(i))
@@ -353,6 +355,14 @@ void DepthMapViewOptions::cleanModes()
         delete bGroup->button(i);
       }
     }
+  }
+
+  if (layout)
+  {
+    clearLayout(layout);
+    layout->update();
+
+    d->UI.formLayout->update();
   }
 
   d->UI.groupBox->repaint();
