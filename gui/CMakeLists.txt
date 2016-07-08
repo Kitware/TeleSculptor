@@ -35,13 +35,13 @@ set(gui_ui
   CameraOptions.ui
   DataColorOptions.ui
   DataFilterOptions.ui
+  DepthMapFilterOptions.ui
+  DepthMapOptions.ui
+  DepthMapView.ui
+  DepthMapViewOptions.ui
   FeatureOptions.ui
   ImageOptions.ui
   PointOptions.ui
-  DepthMapView.ui
-  DepthMapOptions.ui
-  DepthMapFilterOptions.ui
-  DepthMapViewOptions.ui
 )
 
 set(gui_resources
@@ -56,16 +56,16 @@ set(gui_moc_headers
   CameraView.h
   DataColorOptions.h
   DataFilterOptions.h
+  DepthMapFilterOptions.h
+  DepthMapOptions.h
+  DepthMapView.h
+  DepthMapViewOptions.h
   FeatureOptions.h
   GradientSelector.h
   ImageOptions.h
   MainWindow.h
-  DepthMapView.h
   MatchMatrixWindow.h
   PointOptions.h
-  DepthMapOptions.h
-  DepthMapFilterOptions.h
-  DepthMapViewOptions.h
   WorldView.h
   tools/AbstractTool.h
   tools/BundleAdjustTool.h
@@ -80,17 +80,17 @@ set(gui_sources
   CameraView.cxx
   DataColorOptions.cxx
   DataFilterOptions.cxx
+  DepthMapFilterOptions.cxx
+  DepthMapOptions.cxx
+  DepthMapView.cxx
+  DepthMapViewOptions.cxx
   FeatureOptions.cxx
   GradientSelector.cxx
   ImageOptions.cxx
   MainWindow.cxx
   MatchMatrixAlgorithms.cxx
-  DepthMapView.cxx
   MatchMatrixWindow.cxx
   PointOptions.cxx
-  DepthMapOptions.cxx
-  DepthMapFilterOptions.cxx
-  DepthMapViewOptions.cxx
   Project.cxx
   WorldView.cxx
   main.cxx
@@ -146,9 +146,6 @@ unset(no_install)
 target_link_libraries(mapgui
   maptk
   vital_apm
-  vtkCommonCore
-  vtkFiltersCore
-  vtkFiltersGeometry
   vtkGUISupportQt
   vtkInteractionStyle
   vtkIOXML
@@ -157,6 +154,9 @@ target_link_libraries(mapgui
   vtkRenderingVolumeOpenGL
   vtkRenderingOpenGL
   vtkRenderingCore
+  vtkFiltersGeometry
+  vtkFiltersCore
+  vtkCommonCore
   vtksys
   qtExtensions
   ${QT_QTMAIN_LIBRARY}
