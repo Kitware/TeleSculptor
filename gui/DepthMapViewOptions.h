@@ -49,11 +49,11 @@ class DepthMapViewOptions : public QWidget
   Q_OBJECT
 
 public:
-  explicit DepthMapViewOptions(const QString &settingsGroup,
-                           QWidget *parent = 0, Qt::WindowFlags flags = 0);
+  explicit DepthMapViewOptions(const QString& settingsGroup,
+                               QWidget* parent = 0, Qt::WindowFlags flags = 0);
   virtual ~DepthMapViewOptions();
 
-  void addActor(vtkActor *polyDataActor);
+  void addActor(vtkActor* polyDataActor);
 
   void cleanModes();
 

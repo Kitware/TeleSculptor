@@ -34,27 +34,26 @@
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
 
+#include "DataColorOptions.h"
+#include <QMenu>
 #include <QRadioButton>
 #include <QToolButton>
 #include <QWidgetAction>
-#include <QMenu>
-#include "DataColorOptions.h"
 
-#include <vtkPointData.h>
-#include <vtkImageData.h>
 #include <vtkDataArray.h>
+#include <vtkImageData.h>
+#include <vtkPointData.h>
 
-#include <vtkScalarsToColors.h>
+#include <vtkActor.h>
+#include <vtkImageMapToColors.h>
 #include <vtkImageMapper3D.h>
 #include <vtkLookupTable.h>
-#include <vtkImageMapToColors.h>
 #include <vtkNew.h>
-#include <vtkSmartPointer.h>
 #include <vtkPolyData.h>
-#include <vtkActor.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
-
+#include <vtkScalarsToColors.h>
+#include <vtkSmartPointer.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -78,7 +77,6 @@ public:
   bool initialValues;
 
   void setPopup(QToolButton* button, QWidget* widget);
-
 };
 
 //END DepthMapViewOptionsPrivate declaration
@@ -92,7 +90,6 @@ void DepthMapViewOptionsPrivate::setPopup(QToolButton* button, QWidget* widget)
 {
   auto const proxy = new QWidgetAction(button);
   proxy->setDefaultWidget(widget);
-
 
   auto const menu = new QMenu(button);
   menu->addAction(proxy);
@@ -110,8 +107,8 @@ QTE_IMPLEMENT_D_FUNC(DepthMapViewOptions)
 
 //-----------------------------------------------------------------------------
 DepthMapViewOptions::DepthMapViewOptions(QString const& settingsGroup,
-                                 QWidget* parent, Qt::WindowFlags flags) :
-  QWidget(parent, flags), d_ptr(new DepthMapViewOptionsPrivate)
+                                         QWidget* parent, Qt::WindowFlags flags)
+  : QWidget(parent, flags), d_ptr(new DepthMapViewOptionsPrivate)
 {
   QTE_D();
 
@@ -148,23 +145,23 @@ void DepthMapViewOptions::addDepthMapMode(std::string name, bool needGradient,
 {
   QTE_D();
 
-  QRadioButton *scalar = new QRadioButton(QString::fromStdString(name));
+  auto const scalar = new QRadioButton(QString::fromStdString(name));
 
   int index = bGroup->buttons().size();
 
-  bGroup->addButton(scalar,index);
+  bGroup->addButton(scalar, index);
 
   if (needGradient)
   {
-    QToolButton *gradient = new QToolButton(d->UI.groupBox);
+    auto const gradient = new QToolButton(d->UI.groupBox);
 
     gradient->setPopupMode(gradient->InstantPopup);
     gradient->setEnabled(false);
 
     d->gradients.insert(std::pair<std::string, QToolButton*>(name, gradient));
 
-    DataColorOptions *dataColorOptions =
-        new DataColorOptions("DepthMapViewOptions/"+QString::fromStdString(name),this);
+    auto const dataColorOptions =
+      new DataColorOptions("DepthMapViewOptions/" + QString::fromStdString(name), this);
 
     d->dcOptions.insert(std::pair<std::string, DataColorOptions*>(name,
                                                                   dataColorOptions));
@@ -175,12 +172,12 @@ void DepthMapViewOptions::addDepthMapMode(std::string name, bool needGradient,
 
     dataColorOptions->setEnabled(true);
 
-    if(!d->initialValues)
+    if (!d->initialValues)
     {
       double min = dataColorOptions->getMinValue();
       double max = dataColorOptions->getMaxValue();
 
-      if(lower > min)
+      if (lower > min)
       {
         lower = min;
       }
@@ -199,13 +196,12 @@ void DepthMapViewOptions::addDepthMapMode(std::string name, bool needGradient,
     connect(dataColorOptions, SIGNAL(modified()),
             this, SLOT(updateGradient()));
 
-    QHBoxLayout *hLayout = new QHBoxLayout();
+    QHBoxLayout* hLayout = new QHBoxLayout();
 
     hLayout->addWidget(scalar);
     hLayout->addWidget(gradient);
 
     layout->addLayout(hLayout);
-
   }
   else
   {
@@ -235,7 +231,7 @@ void DepthMapViewOptions::switchDisplayMode(bool checked)
 
     vtkMapper* mapper = d->polyDataActor->GetMapper();
     vtkDataArray* activeArray =
-        mapper->GetInput()->GetPointData()->GetArray(buttonId.c_str());
+      mapper->GetInput()->GetPointData()->GetArray(buttonId.c_str());
 
     mapper->GetInput()->GetPointData()->SetActiveScalars(buttonId.c_str());
 
@@ -248,8 +244,9 @@ void DepthMapViewOptions::switchDisplayMode(bool checked)
 
       std::map<std::string, QToolButton*>::iterator it;
 
-      for (it = d->gradients.begin(); it != d->gradients.end(); ++it) {
-        if(it->first != buttonId)
+      for (it = d->gradients.begin(); it != d->gradients.end(); ++it)
+      {
+        if (it->first != buttonId)
         {
           it->second->setEnabled(false);
         }
@@ -259,7 +256,7 @@ void DepthMapViewOptions::switchDisplayMode(bool checked)
         }
       }
 
-      DataColorOptions *dc = d->dcOptions.at(buttonId);
+      DataColorOptions* dc = d->dcOptions.at(buttonId);
 
       mapper->SetColorModeToMapScalars();
       mapper->SetLookupTable(dc->scalarsToColors());
@@ -285,9 +282,9 @@ void DepthMapViewOptions::updateGradient()
 
   std::string buttonId = bGroup->checkedButton()->text().toStdString();
 
-  QToolButton *gradient = d->gradients.at(buttonId);
+  QToolButton* gradient = d->gradients.at(buttonId);
 
-  DataColorOptions *dc = d->dcOptions.at(buttonId);
+  DataColorOptions* dc = d->dcOptions.at(buttonId);
 
   gradient->setIcon(dc->icon());
   gradient->repaint();
@@ -296,7 +293,7 @@ void DepthMapViewOptions::updateGradient()
 }
 
 //-----------------------------------------------------------------------------
-void DepthMapViewOptions::addActor(vtkActor *polyDataActor)
+void DepthMapViewOptions::addActor(vtkActor* polyDataActor)
 {
   QTE_D();
 
@@ -309,13 +306,13 @@ void DepthMapViewOptions::addActor(vtkActor *polyDataActor)
   d->originalImage->DeepCopy(d->polyDataActor->GetMapper()->GetInput());
 
   vtkPointData* pointData =
-      d->polyDataActor->GetMapper()->GetInput()->GetPointData();
+    d->polyDataActor->GetMapper()->GetInput()->GetPointData();
 
-  for (int i = 0; i <  pointData->GetNumberOfArrays(); ++i)
+  for (int i = 0; i < pointData->GetNumberOfArrays(); ++i)
   {
     double range[2];
 
-    if(pointData->GetArray(i)->GetNumberOfComponents() == 3)
+    if (pointData->GetArray(i)->GetNumberOfComponents() == 3)
     {
       needGradient = false;
     }
@@ -325,7 +322,7 @@ void DepthMapViewOptions::addActor(vtkActor *polyDataActor)
       pointData->GetArray(i)->GetRange(range);
     }
 
-    addDepthMapMode(pointData->GetArrayName(i),needGradient, range[0], range[1]);
+    addDepthMapMode(pointData->GetArrayName(i), needGradient, range[0], range[1]);
   }
 
   bGroup->buttons()[d->lastButtonId]->setChecked(true);
@@ -337,15 +334,15 @@ void DepthMapViewOptions::addActor(vtkActor *polyDataActor)
 void DepthMapViewOptions::clearLayout(QLayout* layout)
 {
   QLayoutItem* child;
-  while(layout->count()!=0)
+  while (layout->count() != 0)
   {
     child = layout->takeAt(0);
 
-    if(child->layout() != 0)
+    if (child->layout() != 0)
     {
       clearLayout(child->layout());
     }
-    else if(child->widget() != 0)
+    else if (child->widget() != 0)
     {
       delete child->widget();
     }
@@ -359,7 +356,7 @@ void DepthMapViewOptions::cleanModes()
 {
   QTE_D();
 
-  if(bGroup)
+  if (bGroup)
   {
     if (bGroup->checkedId() >= 0)
     {

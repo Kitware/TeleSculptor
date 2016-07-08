@@ -3,7 +3,8 @@
 
 #include <QString>
 
-struct DepthMapPaths {
+struct DepthMapPaths
+{
   QString dMpointsPath;
   QString dMSurfacesPath;
   QString dMImagePath;

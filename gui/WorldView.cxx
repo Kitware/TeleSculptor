@@ -34,10 +34,10 @@
 #include "am_WorldView.h"
 
 #include "CameraOptions.h"
+#include "DepthMapOptions.h"
 #include "FieldInformation.h"
 #include "ImageOptions.h"
 #include "PointOptions.h"
-#include "DepthMapOptions.h"
 #include "vtkMaptkCamera.h"
 #include "vtkMaptkCameraRepresentation.h"
 
@@ -58,8 +58,8 @@
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
-#include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
+#include <vtkRenderer.h>
 #include <vtkTextProperty.h>
 #include <vtkThreshold.h>
 #include <vtkUnsignedCharArray.h>
@@ -88,15 +88,16 @@ static char const* const Observations = "observations";
 class WorldViewPrivate
 {
 public:
-  WorldViewPrivate() :
-    validImage(false),
-    validTransform(false),
-    cameraRepDirty(false),
-    scaleDirty(false),
-    axesDirty(false),
-    axesVisible(false),
-    depthmapAlreadLoaded(false)
-    {}
+  WorldViewPrivate()
+    : validImage(false),
+      validTransform(false),
+      cameraRepDirty(false),
+      scaleDirty(false),
+      axesDirty(false),
+      axesVisible(false),
+      depthmapAlreadLoaded(false)
+  {
+  }
 
   void setPopup(QAction* action, QMenu* menu);
   void setPopup(QAction* action, QWidget* widget);
@@ -477,7 +478,7 @@ void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, QString vtiPath)
 {
   QTE_D();
 
-  if(d->UI.actionDepthmapDisplay->isChecked() && !d->depthmapAlreadLoaded)
+  if (d->UI.actionDepthmapDisplay->isChecked() && !d->depthmapAlreadLoaded)
   {
     std::string filename = vtiPath.toStdString();
 
@@ -491,31 +492,29 @@ void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, QString vtiPath)
 
     vtkNew<vtkPoints> points;
 
-    points->SetNumberOfPoints(width*height);
+    points->SetNumberOfPoints(width * height);
 
     //Unprojecting the points from the vtifile
 
-    double dmToImageRatio = camera->GetImageDimensions()[0]/width;
+    double dmToImageRatio = camera->GetImageDimensions()[0] / width;
 
     vtkMaptkCamera* scaledCam = camera->scaledK(dmToImageRatio);
 
     double pixel[3];
 
-    for (vtkIdType idPixel = 0; idPixel < readerIm->GetOutput()->
-         GetNumberOfPoints(); ++idPixel)
+    for (vtkIdType idPixel = 0; idPixel < readerIm->GetOutput()->GetNumberOfPoints(); ++idPixel)
     {
-      readerIm->GetOutput()->GetPoint(idPixel,pixel);
+      readerIm->GetOutput()->GetPoint(idPixel, pixel);
 
-      pixel[1] = height-1-pixel[1];
+      pixel[1] = height - 1 - pixel[1];
 
       kwiver::vital::vector_3d p;
 
-      double depth = readerIm->GetOutput()->GetPointData()->GetArray("Depths")->
-          GetTuple1(idPixel);
+      double depth = readerIm->GetOutput()->GetPointData()->GetArray("Depths")->GetTuple1(idPixel);
 
       scaledCam->UnprojectPoint(pixel, depth, &p);
 
-      points->SetPoint(idPixel,p[0],p[1],p[2]);
+      points->SetPoint(idPixel, p[0], p[1], p[2]);
     }
 
     //Generating the PolyData to show
@@ -530,8 +529,8 @@ void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, QString vtiPath)
     polyData->SetPoints(points.Get());
 
     d->currentDepthmap = polyData.Get();
-    d->currentDepthmap->GetPointData()->SetScalars(d->currentDepthmap->
-                                                   GetPointData()->GetArray("Color"));
+    d->currentDepthmap->GetPointData()->SetScalars(
+      d->currentDepthmap->GetPointData()->GetArray("Color"));
 
     vtkNew<vtkPolyDataMapper> mapper;
 
@@ -540,11 +539,11 @@ void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, QString vtiPath)
 
     d->depthmapActor->SetMapper(mapper.Get());
 
-    if(d->depthMapOptions->isPointsChecked())
+    if (d->depthMapOptions->isPointsChecked())
     {
       d->depthmapActor->GetProperty()->SetRepresentationToPoints();
     }
-    else if(d->depthMapOptions->isSurfacesChecked())
+    else if (d->depthMapOptions->isSurfacesChecked())
     {
       d->depthmapActor->GetProperty()->SetRepresentationToSurface();
     }
@@ -553,9 +552,7 @@ void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, QString vtiPath)
 
     d->renderer->AddViewProp(d->depthmapActor.GetPointer());
 
-
-    if(!d->depthMapOptions->isFilterChecked()
-       || !d->depthMapOptions->isFilterPersistChecked())
+    if (!d->depthMapOptions->isFilterChecked() || !d->depthMapOptions->isFilterPersistChecked())
     {
       //initializing the filters
 
@@ -571,7 +568,6 @@ void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, QString vtiPath)
     {
       updateDepthMapThresholds();
     }
-
 
     d->depthmapAlreadLoaded = true;
   }
@@ -781,7 +777,7 @@ void WorldView::setDepthMapVisible(bool state)
 
   if (state)
   {
-    setActiveDepthMap(d->currentCam,d->currentVtiPath);
+    setActiveDepthMap(d->currentCam, d->currentVtiPath);
   }
 
   d->UI.renderWidget->update();
@@ -1030,10 +1026,12 @@ void WorldView::updateDepthMapRepresentation()
 {
   QTE_D();
 
-  if(d->depthMapOptions->isPointsChecked()) {
+  if (d->depthMapOptions->isPointsChecked())
+  {
     d->depthmapActor->GetProperty()->SetRepresentationToPoints();
   }
-  else {
+  else
+  {
     d->depthmapActor->GetProperty()->SetRepresentationToSurface();
   }
   d->UI.renderWidget->update();
@@ -1054,12 +1052,12 @@ void WorldView::updateDepthMapThresholds()
 
   thresholdBestCostValues->SetInputData(d->currentDepthmap);
 
-  thresholdBestCostValues->SetInputArrayToProcess(0,0,0,vtkDataObject::FIELD_ASSOCIATION_POINTS,"Best Cost Values");
-  thresholdBestCostValues->ThresholdBetween(bestCostValueMin,bestCostValueMax);
+  thresholdBestCostValues->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, "Best Cost Values");
+  thresholdBestCostValues->ThresholdBetween(bestCostValueMin, bestCostValueMax);
 
   thresholdUniquenessRatios->SetInputConnection(thresholdBestCostValues->GetOutputPort());
-  thresholdUniquenessRatios->SetInputArrayToProcess(0,0,0,vtkDataObject::FIELD_ASSOCIATION_POINTS,"Uniqueness Ratios");
-  thresholdUniquenessRatios->ThresholdBetween(uniquenessRatioMin,uniquenessRatioMax);
+  thresholdUniquenessRatios->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, "Uniqueness Ratios");
+  thresholdUniquenessRatios->ThresholdBetween(uniquenessRatioMin, uniquenessRatioMax);
 
   vtkNew<vtkGeometryFilter> geometryFilter;
   geometryFilter->SetInputConnection(thresholdUniquenessRatios->GetOutputPort());
@@ -1067,7 +1065,7 @@ void WorldView::updateDepthMapThresholds()
   d->depthmapActor->GetMapper()->SetInputConnection(geometryFilter->GetOutputPort());
   d->depthmapActor->GetMapper()->Update();
 
-  emit updateThresholds(bestCostValueMin,bestCostValueMax,uniquenessRatioMin,uniquenessRatioMax);
+  emit updateThresholds(bestCostValueMin, bestCostValueMax, uniquenessRatioMin, uniquenessRatioMax);
 
   d->UI.renderWidget->update();
 

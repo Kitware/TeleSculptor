@@ -32,9 +32,9 @@
 
 #include <vital/io/camera_io.h>
 
-#include <vtkObjectFactory.h>
 #include <vtkMath.h>
 #include <vtkMatrix4x4.h>
+#include <vtkObjectFactory.h>
 
 #include <vtksys/SystemTools.hxx>
 
@@ -123,14 +123,13 @@ bool vtkMaptkCamera::ProjectPoint(kwiver::vital::vector_3d const& in,
 
 //-----------------------------------------------------------------------------
 bool vtkMaptkCamera::UnprojectPoint(double pixel[2], double depth,
-                                    kwiver::vital::vector_3d *unProjectedPoint)
+                                    kwiver::vital::vector_3d* unProjectedPoint)
 {
   // Build camera matrix
   auto const T = this->MaptkCamera->translation();
   auto const R = kwiver::vital::matrix_3x3d(this->MaptkCamera->rotation());
 
-  kwiver::vital::vector_2d normPoint = this->MaptkCamera->intrinsics()->
-      unmap(kwiver::vital::vector_2d(pixel[0], pixel[1]));
+  kwiver::vital::vector_2d normPoint = this->MaptkCamera->intrinsics()->unmap(kwiver::vital::vector_2d(pixel[0], pixel[1]));
 
   kwiver::vital::vector_3d homogenousPoint(normPoint[0], normPoint[1], 1.0);
 
@@ -146,21 +145,21 @@ void vtkMaptkCamera::scaleK(float factor)
 {
   auto K = this->MaptkCamera->intrinsics()->as_matrix();
 
-  K(0,0) *= factor;
-  K(0,1) *= factor;
-  K(0,2) *= factor;
-  K(1,1) *= factor;
-  K(1,2) *= factor;
+  K(0, 0) *= factor;
+  K(0, 1) *= factor;
+  K(0, 2) *= factor;
+  K(1, 1) *= factor;
+  K(1, 2) *= factor;
 
   kwiver::vital::simple_camera_intrinsics newIntrinsics(K);
 
   kwiver::vital::simple_camera scaledCamera(this->MaptkCamera->center(),
-                                       this->MaptkCamera->rotation(),newIntrinsics);
+                                            this->MaptkCamera->rotation(), newIntrinsics);
   SetCamera(scaledCamera.clone());
 }
 
 //-----------------------------------------------------------------------------
-vtkMaptkCamera *vtkMaptkCamera::scaledK(float factor)
+vtkMaptkCamera* vtkMaptkCamera::scaledK(float factor)
 {
   vtkMaptkCamera* newCam = new vtkMaptkCamera();
   newCam->DeepCopy(this);
@@ -169,8 +168,6 @@ vtkMaptkCamera *vtkMaptkCamera::scaledK(float factor)
 
   return newCam;
 }
-
-
 
 //-----------------------------------------------------------------------------
 bool vtkMaptkCamera::Update()

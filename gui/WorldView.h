@@ -59,11 +59,11 @@ public:
 
   std::string getActiveDepthMapType();
 
-  void setActiveDepthMap(vtkMaptkCamera *cam, QString vtiPath);
+  void setActiveDepthMap(vtkMaptkCamera* cam, QString vtiPath);
   void enableDepthMap();
 
 signals:
-  void updateThresholds(double,double,double,double);
+  void updateThresholds(double, double, double, double);
 
 public slots:
   void setBackgroundColor(QColor const&);
@@ -106,7 +106,6 @@ protected slots:
   void updateScale();
 
 private:
-
   QTE_DECLARE_PRIVATE_RPTR(WorldView)
   QTE_DECLARE_PRIVATE(WorldView)
 

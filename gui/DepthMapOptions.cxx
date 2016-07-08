@@ -33,6 +33,7 @@
 
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
+
 #include <QWidgetAction>
 #include <QMenu>
 
@@ -54,7 +55,6 @@ public:
   DepthMapFilterOptions* filterOptions;
 
   void setPopup(QToolButton* button, QWidget* widget);
-
 };
 
 //END DepthMapOptionsPrivate definition
@@ -85,8 +85,8 @@ QTE_IMPLEMENT_D_FUNC(DepthMapOptions)
 
 //-----------------------------------------------------------------------------
 DepthMapOptions::DepthMapOptions(QString const& settingsGroup,
-                                 QWidget* parent, Qt::WindowFlags flags) :
-  QWidget(parent, flags), d_ptr(new DepthMapOptionsPrivate)
+                                 QWidget* parent, Qt::WindowFlags flags)
+  : QWidget(parent, flags), d_ptr(new DepthMapOptionsPrivate)
 {
   QTE_D();
 
@@ -194,7 +194,7 @@ void DepthMapOptions::initializeFilters(double bcMin, double bcMax,
 {
   QTE_D();
 
-  d->filterOptions->initializeFilters(bcMin,bcMax,urMin,urMax);
+  d->filterOptions->initializeFilters(bcMin, bcMax, urMin, urMax);
 }
 
 //-----------------------------------------------------------------------------

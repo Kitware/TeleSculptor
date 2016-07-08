@@ -59,7 +59,7 @@ public:
 QTE_IMPLEMENT_D_FUNC(DepthMapFilterOptions)
 
 //-----------------------------------------------------------------------------
-DepthMapFilterOptions::DepthMapFilterOptions(const QString &settingsGroup,
+DepthMapFilterOptions::DepthMapFilterOptions(const QString& settingsGroup,
                                              QWidget* parent, Qt::WindowFlags flags)
   : QWidget(parent, flags), d_ptr(new DepthMapFilterOptionsPrivate)
 {
@@ -67,7 +67,6 @@ DepthMapFilterOptions::DepthMapFilterOptions(const QString &settingsGroup,
 
   // Set up UI
   d->UI.setupUi(this);
-
 
   // Set up option persistence
   d->uiState.setCurrentGroup(settingsGroup);
@@ -93,24 +92,21 @@ DepthMapFilterOptions::~DepthMapFilterOptions()
 double DepthMapFilterOptions::getBestCostValueMin()
 {
   QTE_D();
-
- return d->UI.doubleSpinBoxBestCostMin->value();
+  return d->UI.doubleSpinBoxBestCostMin->value();
 }
 
 //-----------------------------------------------------------------------------
 double DepthMapFilterOptions::getBestCostValueMax()
 {
   QTE_D();
-
- return d->UI.doubleSpinBoxBestCostMax->value();
+  return d->UI.doubleSpinBoxBestCostMax->value();
 }
 
 //-----------------------------------------------------------------------------
 double DepthMapFilterOptions::getUniquenessRatioMin()
 {
   QTE_D();
-
- return d->UI.doubleSpinBoxUniquenessRatioMin->value();
+  return d->UI.doubleSpinBoxUniquenessRatioMin->value();
 }
 
 //-----------------------------------------------------------------------------
@@ -131,12 +127,12 @@ void DepthMapFilterOptions::updateFilters()
   double urMin = d->UI.doubleSpinBoxUniquenessRatioMin->value();
   double urMax = d->UI.doubleSpinBoxUniquenessRatioMax->value();
 
-  if(bcMax < bcMin)
+  if (bcMax < bcMin)
   {
     d->UI.doubleSpinBoxBestCostMax->setValue(bcMin);
   }
 
-  if(urMax < urMin)
+  if (urMax < urMin)
   {
     d->UI.doubleSpinBoxUniquenessRatioMax->setValue(urMin);
   }
@@ -145,7 +141,6 @@ void DepthMapFilterOptions::updateFilters()
   d->UI.doubleSpinBoxUniquenessRatioMax->setMinimum(urMin);
 
   emit filtersChanged();
-
 }
 
 //-----------------------------------------------------------------------------

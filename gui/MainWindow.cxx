@@ -38,10 +38,10 @@
 #include "tools/NeckerReversalTool.h"
 
 #include "AboutDialog.h"
-#include "MatchMatrixWindow.h"
-#include "DepthMapView.h"
-#include "Project.h"
 #include "DepthMapPaths.h"
+#include "DepthMapView.h"
+#include "MatchMatrixWindow.h"
+#include "Project.h"
 #include "vtkMaptkCamera.h"
 
 #include <maptk/match_matrix.h>
@@ -218,7 +218,6 @@ class MainWindowPrivate
 {
 public:
   // Data structures
-
   struct CameraData
   {
     int id;
@@ -226,7 +225,6 @@ public:
 
     QString imagePath; // Full path to camera image data
     QString vtiPath;
-
   };
 
   // Methods
@@ -651,8 +649,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.camera, SIGNAL(valueChanged(int)),
           this, SLOT(setActiveCamera(int)));
 
-  connect(d->UI.worldView, SIGNAL(updateThresholds(double,double,double,double)),
-          this, SLOT(updateThresholdsDepthmapView(double,double,double,double)));
+  connect(d->UI.worldView, SIGNAL(updateThresholds(double, double, double, double)),
+          this, SLOT(updateThresholdsDepthmapView(double, double, double, double)));
 
   this->setSlideDelay(d->UI.slideDelay->value());
 
@@ -689,7 +687,7 @@ MainWindow::~MainWindow()
   d->uiState.save();
 }
 
-void MainWindow::start(char *path)
+void MainWindow::start(char* path)
 {
   if (path)
   {
@@ -879,7 +877,7 @@ void MainWindow::loadDepthmaps(QString const& path)
   QTE_D();
 
   QFile vtListiFile(path);
-  auto const& vtiListFileBasePath =  QFileInfo(path).absoluteDir().absolutePath();
+  auto const& vtiListFileBasePath = QFileInfo(path).absoluteDir().absolutePath();
 
   if (vtListiFile.open(QIODevice::ReadOnly | QIODevice::Text))
   {
@@ -891,7 +889,7 @@ void MainWindow::loadDepthmaps(QString const& path)
     {
       vtiStream >> frameNum >> vtiFileName;
 
-      if(!vtiFileName.isEmpty())
+      if (!vtiFileName.isEmpty())
       {
         vtiFileName = vtiListFileBasePath + QDir::separator() + vtiFileName;
 
@@ -908,7 +906,7 @@ void MainWindow::loadDepthmaps(QString const& path)
 
   QString activeCameraVtiPath = d->cameras[d->activeCameraIndex].vtiPath;
 
-  if(!activeCameraVtiPath.isEmpty())
+  if (!activeCameraVtiPath.isEmpty())
   {
     d->UI.dMView->setDepthMap(activeCameraVtiPath);
 
@@ -983,7 +981,7 @@ void MainWindow::updateThresholdsDepthmapView(double bcMin, double bcMax,
 {
   QTE_D();
 
-  d->UI.dMView->updateDepthMapThresholds(bcMin,bcMax,urMin,urMax);
+  d->UI.dMView->updateDepthMapThresholds(bcMin, bcMax, urMin, urMax);
 }
 
 //-----------------------------------------------------------------------------
