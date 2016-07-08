@@ -115,6 +115,22 @@ vtkScalarsToColors* DataColorOptions::scalarsToColors() const
 }
 
 //-----------------------------------------------------------------------------
+double DataColorOptions::getMinValue()
+{
+  QTE_D();
+
+  return d->UI.minimum->value();
+}
+
+//-----------------------------------------------------------------------------
+double DataColorOptions::getMaxValue()
+{
+  QTE_D();
+
+  return d->UI.maximum->value();
+}
+
+//-----------------------------------------------------------------------------
 void DataColorOptions::setAvailableRange(double lower, double upper)
 {
   QTE_D();

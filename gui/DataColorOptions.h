@@ -53,6 +53,9 @@ public:
 
   vtkScalarsToColors* scalarsToColors() const;
 
+  double getMinValue();
+  double getMaxValue();
+
 public slots:
   void setAvailableRange(double lower, double upper);
   void setGradient(int);

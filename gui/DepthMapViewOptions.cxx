@@ -75,6 +75,8 @@ public:
 
   int lastButtonId;
 
+  bool initialValues;
+
   void setPopup(QToolButton* button, QWidget* widget);
 
 };
@@ -128,6 +130,8 @@ DepthMapViewOptions::DepthMapViewOptions(QString const& settingsGroup,
   d->originalImage = vtkSmartPointer<vtkPolyData>::New();
 
   d->lastButtonId = 0;
+
+  d->initialValues = true;
 }
 
 //-----------------------------------------------------------------------------
@@ -157,14 +161,36 @@ void DepthMapViewOptions::addDepthMapMode(std::string name, bool needGradient,
     gradient->setPopupMode(gradient->InstantPopup);
     gradient->setEnabled(false);
 
+    d->gradients.insert(std::pair<std::string, QToolButton*>(name, gradient));
+
     DataColorOptions *dataColorOptions =
         new DataColorOptions("DepthMapViewOptions/"+QString::fromStdString(name),this);
+
+    d->dcOptions.insert(std::pair<std::string, DataColorOptions*>(name,
+                                                                  dataColorOptions));
 
     gradient->setIcon(dataColorOptions->icon());
 
     d->setPopup(gradient, dataColorOptions);
 
     dataColorOptions->setEnabled(true);
+
+    if(!d->initialValues)
+    {
+      double min = dataColorOptions->getMinValue();
+      double max = dataColorOptions->getMaxValue();
+
+      if(lower > min)
+      {
+        lower = min;
+      }
+
+      if (upper < max)
+      {
+        upper = max;
+      }
+    }
+
     dataColorOptions->setAvailableRange(lower, upper);
 
     connect(dataColorOptions, SIGNAL(modified()),
@@ -180,10 +206,6 @@ void DepthMapViewOptions::addDepthMapMode(std::string name, bool needGradient,
 
     layout->addLayout(hLayout);
 
-    d->dcOptions.insert(std::pair<std::string, DataColorOptions*>(name,
-                                                                  dataColorOptions));
-
-    d->gradients.insert(std::pair<std::string, QToolButton*>(name, gradient));
   }
   else
   {
@@ -307,6 +329,8 @@ void DepthMapViewOptions::addActor(vtkActor *polyDataActor)
   }
 
   bGroup->buttons()[d->lastButtonId]->setChecked(true);
+
+  d->initialValues = false;
 }
 
 //-----------------------------------------------------------------------------
