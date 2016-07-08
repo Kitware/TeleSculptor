@@ -38,8 +38,6 @@
 #include "tools/NeckerReversalTool.h"
 
 #include "AboutDialog.h"
-#include "DepthMapPaths.h"
-#include "DepthMapView.h"
 #include "MatchMatrixWindow.h"
 #include "Project.h"
 #include "vtkMaptkCamera.h"

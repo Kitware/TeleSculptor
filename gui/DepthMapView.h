@@ -31,8 +31,6 @@
 #ifndef MAPTK_DEPTHMAPVIEW_H_
 #define MAPTK_DEPTHMAPVIEW_H_
 
-#include <vital/vital_types.h>
-
 #include <qtGlobal.h>
 
 #include <QtGui/QWidget>

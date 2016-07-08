@@ -34,10 +34,6 @@
 #include <qtGlobal.h>
 
 #include <QtGui/QWidget>
-#include <vtkMatrix4x4.h>
-#include <vtkTransform.h>
-
-#include "DepthMapPaths.h"
 
 class vtkImageData;
 

@@ -32,33 +32,22 @@
 
 #include "ui_DepthMapView.h"
 
-#include <vital/types/landmark_map.h>
-#include <vital/types/track.h>
+#include "DepthMapViewOptions.h"
 
-#include <vtkActor.h>
 #include <vtkCamera.h>
 #include <vtkGeometryFilter.h>
 #include <vtkImageData.h>
 #include <vtkInteractorStyleRubberBand2D.h>
 #include <vtkNew.h>
-#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
-#include <vtkProperty.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 #include <vtkSmartPointer.h>
 #include <vtkThreshold.h>
 #include <vtkXMLImageDataReader.h>
 
-#include "DepthMapViewOptions.h"
-
-#include <qtMath.h>
-#include <qtUiState.h>
-
-#include <QtGui/QFormLayout>
 #include <QtGui/QMenu>
-#include <QtGui/QToolButton>
 #include <QtGui/QWidgetAction>
 
 

@@ -37,13 +37,11 @@
 #include <qtStlUtil.h>
 
 #include <QtGui/QApplication>
+
 #include <QtCore/QDebug>
 #include <QtCore/QDir>
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
-#include <QTextStream>
-
-#include <iostream>
 
 //-----------------------------------------------------------------------------
 QString getPath(kwiver::vital::config_block_sptr const& config,

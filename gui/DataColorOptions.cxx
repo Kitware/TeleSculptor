@@ -34,14 +34,14 @@
 
 #include "vtkMaptkScalarsToGradient.h"
 
-#include <cmath>
-
 #include <vtkNew.h>
 
 #include <qtGradient.h>
 #include <qtScopedValueChange.h>
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
+
+#include <cmath>
 
 QTE_IMPLEMENT_D_FUNC(DataColorOptions)
 

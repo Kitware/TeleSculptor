@@ -29,6 +29,7 @@
  */
 
 #include "DepthMapFilterOptions.h"
+
 #include "ui_DepthMapFilterOptions.h"
 
 #include <qtUiState.h>

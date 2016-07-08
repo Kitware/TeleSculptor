@@ -32,7 +32,6 @@
 #define MAPTK_PROJECT_H_
 
 #include <QtCore/QStringList>
-#include <QMap>
 
 struct Project
 {

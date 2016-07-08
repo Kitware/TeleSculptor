@@ -29,17 +29,16 @@
  */
 
 #include "DepthMapOptions.h"
+
 #include "ui_DepthMapOptions.h"
+
+#include "DepthMapFilterOptions.h"
 
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
 
-#include <QWidgetAction>
-#include <QMenu>
-
-#include <vtkActor.h>
-
-#include "DepthMapFilterOptions.h"
+#include <QtGui/QMenu>
+#include <QtGui/QWidgetAction>
 
 ///////////////////////////////////////////////////////////////////////////////
 

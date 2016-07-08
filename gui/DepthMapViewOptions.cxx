@@ -29,31 +29,22 @@
  */
 
 #include "DepthMapViewOptions.h"
+
 #include "ui_DepthMapViewOptions.h"
 
-#include <qtUiState.h>
-#include <qtUiStateItem.h>
-
 #include "DataColorOptions.h"
-#include <QMenu>
-#include <QRadioButton>
-#include <QToolButton>
-#include <QWidgetAction>
-
-#include <vtkDataArray.h>
-#include <vtkImageData.h>
-#include <vtkPointData.h>
 
 #include <vtkActor.h>
-#include <vtkImageMapToColors.h>
-#include <vtkImageMapper3D.h>
-#include <vtkLookupTable.h>
-#include <vtkNew.h>
+#include <vtkDataArray.h>
+#include <vtkMapper.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
-#include <vtkPolyDataMapper.h>
-#include <vtkProperty.h>
-#include <vtkScalarsToColors.h>
 #include <vtkSmartPointer.h>
+
+#include <QtGui/QMenu>
+#include <QtGui/QRadioButton>
+#include <QtGui/QToolButton>
+#include <QtGui/QWidgetAction>
 
 ///////////////////////////////////////////////////////////////////////////////
 
