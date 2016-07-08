@@ -129,11 +129,11 @@ bool vtkMaptkCamera::UnprojectPoint(double pixel[2], double depth,
   auto const T = this->MaptkCamera->translation();
   auto const R = kwiver::vital::matrix_3x3d(this->MaptkCamera->rotation());
 
-  kwiver::vital::vector_2d normPoint = this->MaptkCamera->intrinsics()->unmap(kwiver::vital::vector_2d(pixel[0], pixel[1]));
+  auto const inPoint = kwiver::vital::vector_2d{pixel[0], pixel[1]};
+  auto const normPoint = this->MaptkCamera->intrinsics()->unmap(inPoint);
 
-  kwiver::vital::vector_3d homogenousPoint(normPoint[0], normPoint[1], 1.0);
-
-  homogenousPoint *= depth;
+  auto const homogenousPoint =
+    kwiver::vital::vector_3d{normPoint[0], normPoint[1], 1.0} * depth;
 
   *unProjectedPoint = R.transpose() * (homogenousPoint - T);
 
@@ -154,7 +154,8 @@ void vtkMaptkCamera::scaleK(float factor)
   kwiver::vital::simple_camera_intrinsics newIntrinsics(K);
 
   kwiver::vital::simple_camera scaledCamera(this->MaptkCamera->center(),
-                                            this->MaptkCamera->rotation(), newIntrinsics);
+                                            this->MaptkCamera->rotation(),
+                                            newIntrinsics);
   SetCamera(scaledCamera.clone());
 }
 

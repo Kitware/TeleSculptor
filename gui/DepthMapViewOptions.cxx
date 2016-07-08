@@ -80,8 +80,8 @@ void DepthMapViewOptionsPrivate::setPopup(QToolButton* button, QWidget* widget)
 }
 
 //-----------------------------------------------------------------------------
-DepthMapViewOptions::DepthMapViewOptions(QString const& settingsGroup,
-                                         QWidget* parent, Qt::WindowFlags flags)
+DepthMapViewOptions::DepthMapViewOptions(
+  QString const& settingsGroup, QWidget* parent, Qt::WindowFlags flags)
   : QWidget(parent, flags), d_ptr(new DepthMapViewOptionsPrivate)
 {
   QTE_D();
@@ -141,18 +141,8 @@ void DepthMapViewOptions::addDepthMapMode(std::string name, bool needGradient,
 
     if (!d->initialValues)
     {
-      double min = dataColorOptions->getMinValue();
-      double max = dataColorOptions->getMaxValue();
-
-      if (lower > min)
-      {
-        lower = min;
-      }
-
-      if (upper < max)
-      {
-        upper = max;
-      }
+      lower = qMin(lower, dataColorOptions->getMinValue());
+      upper = qMax(upper, dataColorOptions->getMaxValue());
     }
 
     dataColorOptions->setAvailableRange(lower, upper);

@@ -643,8 +643,10 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.camera, SIGNAL(valueChanged(int)),
           this, SLOT(setActiveCamera(int)));
 
-  connect(d->UI.worldView, SIGNAL(updateThresholds(double, double, double, double)),
-          this, SLOT(updateThresholdsDepthmapView(double, double, double, double)));
+  connect(d->UI.worldView,
+          SIGNAL(updateThresholds(double, double, double, double)),
+          this,
+          SLOT(updateThresholdsDepthmapView(double, double, double, double)));
 
   this->setSlideDelay(d->UI.slideDelay->value());
 
@@ -760,10 +762,12 @@ void MainWindow::loadProject(QString const& path)
   {
     this->loadTracks(project.tracks);
   }
+
   if (!project.landmarks.isEmpty())
   {
     this->loadLandmarks(project.landmarks);
   }
+
   if (project.cameraPath.isEmpty())
   {
     foreach (auto const& ip, project.images)
@@ -792,7 +796,8 @@ void MainWindow::loadProject(QString const& path)
       }
     }
   }
-  //Adding depthmaps (when they exists) to existing camera
+
+  // Add depth maps (when they exists) to existing camera
   if (!project.depthmaps.isEmpty())
   {
     this->loadDepthmaps(project.depthmaps);
@@ -861,7 +866,8 @@ void MainWindow::loadDepthmaps(QString const& path)
   QTE_D();
 
   QFile vtListiFile(path);
-  auto const& vtiListFileBasePath = QFileInfo(path).absoluteDir().absolutePath();
+  auto const& vtiListFileBasePath =
+    QFileInfo(path).absoluteDir().absolutePath();
 
   if (vtListiFile.open(QIODevice::ReadOnly | QIODevice::Text))
   {
@@ -886,7 +892,8 @@ void MainWindow::loadDepthmaps(QString const& path)
 
   d->UI.worldView->enableDepthMap();
 
-  // If the active camera has an associated depthmap, we load it into the DepthMapView
+  // If the active camera has an associated depthmap, we load it into the
+  // DepthMapView
 
   QString activeCameraVtiPath = d->cameras[d->activeCameraIndex].vtiPath;
 

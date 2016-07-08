@@ -44,8 +44,8 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-DepthMapFilterOptions::DepthMapFilterOptions(const QString& settingsGroup,
-                                             QWidget* parent, Qt::WindowFlags flags)
+DepthMapFilterOptions::DepthMapFilterOptions(
+  const QString& settingsGroup, QWidget* parent, Qt::WindowFlags flags)
   : QWidget(parent, flags), d_ptr(new DepthMapFilterOptionsPrivate)
 {
   QTE_D();

@@ -141,7 +141,8 @@ void DataColorOptions::setAvailableRange(double lower, double upper)
   d->UI.minimum->setRange(lower, upper);
   d->UI.maximum->setRange(lower, upper);
 
-  double step = std::pow(10.0, std::floor(std::log10(std::abs(upper - lower))) - 1);
+  auto const scale = std::floor(std::log10(std::abs(upper - lower)));
+  auto const step = std::pow(10.0, scale - 1.0);
 
   d->UI.minimum->setSingleStep(step);
   d->UI.maximum->setSingleStep(step);

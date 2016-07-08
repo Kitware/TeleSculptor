@@ -43,7 +43,8 @@ class DepthMapFilterOptions : public QWidget
 
 public:
   explicit DepthMapFilterOptions(const QString& settingsGroup,
-                                 QWidget* parent = 0, Qt::WindowFlags flags = 0);
+                                 QWidget* parent = 0,
+                                 Qt::WindowFlags flags = 0);
   virtual ~DepthMapFilterOptions();
 
   double getBestCostValueMin();
@@ -51,7 +52,8 @@ public:
   double getUniquenessRatioMin();
   double getUniquenessRatioMax();
 
-  void initializeFilters(double bcMin, double bcMax, double urMin, double urMax);
+  void initializeFilters(double bcMin, double bcMax,
+                         double urMin, double urMax);
 
   bool isFilterPersist();
 
