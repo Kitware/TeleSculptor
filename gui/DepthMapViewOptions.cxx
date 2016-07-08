@@ -46,16 +46,13 @@
 #include <QtGui/QToolButton>
 #include <QtGui/QWidgetAction>
 
-///////////////////////////////////////////////////////////////////////////////
-
-//BEGIN DepthMapViewOptionsPrivate declaration
+QTE_IMPLEMENT_D_FUNC(DepthMapViewOptions)
 
 //-----------------------------------------------------------------------------
 class DepthMapViewOptionsPrivate
 {
 public:
   Ui::DepthMapViewOptions UI;
-  qtUiState uiState;
 
   vtkActor* polyDataActor;
   vtkSmartPointer<vtkPolyData> originalImage;
@@ -70,12 +67,6 @@ public:
   void setPopup(QToolButton* button, QWidget* widget);
 };
 
-//END DepthMapViewOptionsPrivate declaration
-
-///////////////////////////////////////////////////////////////////////////////
-
-//BEGIN DepthMapViewOptionsPrivate implementation
-
 //-----------------------------------------------------------------------------
 void DepthMapViewOptionsPrivate::setPopup(QToolButton* button, QWidget* widget)
 {
@@ -87,14 +78,6 @@ void DepthMapViewOptionsPrivate::setPopup(QToolButton* button, QWidget* widget)
 
   button->setMenu(menu);
 }
-
-//END DepthMapViewOptionsPrivate declaration
-
-///////////////////////////////////////////////////////////////////////////////
-
-//BEGIN DepthMapViewOptions
-
-QTE_IMPLEMENT_D_FUNC(DepthMapViewOptions)
 
 //-----------------------------------------------------------------------------
 DepthMapViewOptions::DepthMapViewOptions(QString const& settingsGroup,
@@ -109,11 +92,7 @@ DepthMapViewOptions::DepthMapViewOptions(QString const& settingsGroup,
   layout = new QVBoxLayout(d->UI.groupBox);
   d->UI.groupBox->setLayout(layout);
 
-  // Set up option persistence
-  d->uiState.setCurrentGroup(settingsGroup);
-
   bGroup = new QButtonGroup(d->UI.groupBox);
-  d->uiState.restore();
 
   d->originalImage = vtkSmartPointer<vtkPolyData>::New();
 
@@ -125,9 +104,6 @@ DepthMapViewOptions::DepthMapViewOptions(QString const& settingsGroup,
 //-----------------------------------------------------------------------------
 DepthMapViewOptions::~DepthMapViewOptions()
 {
-  QTE_D();
-
-  d->uiState.save();
 }
 
 //-----------------------------------------------------------------------------
@@ -380,5 +356,3 @@ void DepthMapViewOptions::cleanModes()
   d->dcOptions.clear();
   d->gradients.clear();
 }
-
-//END DepthMapViewOptions

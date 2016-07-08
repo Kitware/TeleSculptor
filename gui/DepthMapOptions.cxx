@@ -34,33 +34,21 @@
 
 #include "DepthMapFilterOptions.h"
 
-#include <qtUiState.h>
-#include <qtUiStateItem.h>
-
 #include <QtGui/QMenu>
 #include <QtGui/QWidgetAction>
 
-///////////////////////////////////////////////////////////////////////////////
-
-//BEGIN DepthMapOptionsPrivate declaration
+QTE_IMPLEMENT_D_FUNC(DepthMapOptions)
 
 //-----------------------------------------------------------------------------
 class DepthMapOptionsPrivate
 {
 public:
+  void setPopup(QToolButton* button, QWidget* widget);
+
   Ui::DepthMapOptions UI;
-  qtUiState uiState;
 
   DepthMapFilterOptions* filterOptions;
-
-  void setPopup(QToolButton* button, QWidget* widget);
 };
-
-//END DepthMapOptionsPrivate definition
-
-///////////////////////////////////////////////////////////////////////////////
-
-//BEGIN DepthMapOptionsPrivate implementation
 
 //-----------------------------------------------------------------------------
 void DepthMapOptionsPrivate::setPopup(QToolButton* button, QWidget* widget)
@@ -74,14 +62,6 @@ void DepthMapOptionsPrivate::setPopup(QToolButton* button, QWidget* widget)
   button->setMenu(menu);
 }
 
-//END DepthMapOptionsPrivate implementation
-
-///////////////////////////////////////////////////////////////////////////////
-
-//BEGIN DepthMapOptions
-
-QTE_IMPLEMENT_D_FUNC(DepthMapOptions)
-
 //-----------------------------------------------------------------------------
 DepthMapOptions::DepthMapOptions(QString const& settingsGroup,
                                  QWidget* parent, Qt::WindowFlags flags)
@@ -91,11 +71,6 @@ DepthMapOptions::DepthMapOptions(QString const& settingsGroup,
 
   // Set up UI
   d->UI.setupUi(this);
-
-  // Set up option persistence
-  d->uiState.setCurrentGroup(settingsGroup);
-
-  d->uiState.restore();
 
   d->filterOptions = new DepthMapFilterOptions(settingsGroup, this);
   d->setPopup(d->UI.toolButtonFilters, d->filterOptions);
@@ -118,8 +93,6 @@ DepthMapOptions::DepthMapOptions(QString const& settingsGroup,
 //-----------------------------------------------------------------------------
 DepthMapOptions::~DepthMapOptions()
 {
-  QTE_D();
-  d->uiState.save();
 }
 
 //-----------------------------------------------------------------------------
@@ -211,5 +184,3 @@ bool DepthMapOptions::isSurfacesChecked()
 
   return d->UI.radioSurfaces->isChecked();
 }
-
-//END DepthMapOptions

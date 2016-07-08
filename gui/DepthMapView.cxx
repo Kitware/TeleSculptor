@@ -48,19 +48,17 @@
 #include <vtkXMLImageDataReader.h>
 
 #include <QtGui/QMenu>
+#include <QtGui/QToolButton>
 #include <QtGui/QWidgetAction>
 
-
-///////////////////////////////////////////////////////////////////////////////
-
-//BEGIN DepthMapViewPrivate definition
+QTE_IMPLEMENT_D_FUNC(DepthMapView)
 
 //-----------------------------------------------------------------------------
 class DepthMapViewPrivate
 {
 public:
-
-  DepthMapViewPrivate() {}
+  void setPopup(QAction* action, QMenu* menu);
+  void setPopup(QAction* action, QWidget* widget);
 
   Ui::DepthMapView UI;
 
@@ -72,17 +70,7 @@ public:
   DepthMapViewOptions* depthMapViewOptions;
 
   vtkSmartPointer<vtkPolyData> currentDepthmap;
-
-  void setPopup(QAction* action, QMenu* menu);
-  void setPopup(QAction* action, QWidget* widget);
-
 };
-
-//END DepthMapViewPrivate definition
-
-///////////////////////////////////////////////////////////////////////////////
-
-//BEGIN DepthMapViewPrivate implementation
 
 //-----------------------------------------------------------------------------
 void DepthMapViewPrivate::setPopup(QAction* action, QMenu* menu)
@@ -110,14 +98,6 @@ void DepthMapViewPrivate::setPopup(QAction* action, QWidget* widget)
 
   this->setPopup(action, menu);
 }
-
-//END DepthMapViewPrivate implementation
-
-///////////////////////////////////////////////////////////////////////////////
-
-//BEGIN DepthMapView
-
-QTE_IMPLEMENT_D_FUNC(DepthMapView)
 
 //-----------------------------------------------------------------------------
 DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
@@ -270,5 +250,3 @@ void DepthMapView::resetView()
 
   d->UI.renderWidget->update();
 }
-
-//END DepthMapView

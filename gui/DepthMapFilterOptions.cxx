@@ -32,32 +32,16 @@
 
 #include "ui_DepthMapFilterOptions.h"
 
-#include <qtUiState.h>
-#include <qtUiStateItem.h>
-
-///////////////////////////////////////////////////////////////////////////////
-
-//BEGIN DepthMapFilterOptionsPrivate definition
+QTE_IMPLEMENT_D_FUNC(DepthMapFilterOptions)
 
 //-----------------------------------------------------------------------------
 class DepthMapFilterOptionsPrivate
 {
 public:
-  DepthMapFilterOptionsPrivate() {}
-
   Ui::DepthMapFilterOptions UI;
-  qtUiState uiState;
 
   double initialBCMin, initialBCMax, initialURMin, initialURMax;
 };
-
-//END DepthMapFilterOptionsPrivate definition
-
-///////////////////////////////////////////////////////////////////////////////
-
-//BEGIN DepthMapFilterOptions
-
-QTE_IMPLEMENT_D_FUNC(DepthMapFilterOptions)
 
 //-----------------------------------------------------------------------------
 DepthMapFilterOptions::DepthMapFilterOptions(const QString& settingsGroup,
@@ -66,18 +50,10 @@ DepthMapFilterOptions::DepthMapFilterOptions(const QString& settingsGroup,
 {
   QTE_D();
 
-  // Set up UI
   d->UI.setupUi(this);
 
-  // Set up option persistence
-  d->uiState.setCurrentGroup(settingsGroup);
-
-  d->uiState.restore();
-
-  // Connect signals/slots
   connect(d->UI.pushButtonApply, SIGNAL(pressed()),
           this, SLOT(updateFilters()));
-
   connect(d->UI.pushButtonReset, SIGNAL(pressed()),
           this, SLOT(resetFilters()));
 }
@@ -85,8 +61,6 @@ DepthMapFilterOptions::DepthMapFilterOptions(const QString& settingsGroup,
 //-----------------------------------------------------------------------------
 DepthMapFilterOptions::~DepthMapFilterOptions()
 {
-  QTE_D();
-  d->uiState.save();
 }
 
 //-----------------------------------------------------------------------------
@@ -194,5 +168,3 @@ void DepthMapFilterOptions::resetFilters()
   urMinSpinBox->setMaximum(d->initialURMax);
   urMaxSpinBox->setMaximum(d->initialURMax);
 }
-
-//END DepthMapFilterOptions
