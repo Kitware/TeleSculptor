@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_DepthMapView_H_
-#define MAPTK_DepthMapView_H_
+#ifndef MAPTK_DEPTHMAPVIEW_H_
+#define MAPTK_DEPTHMAPVIEW_H_
 
 #include <vital/vital_types.h>
 

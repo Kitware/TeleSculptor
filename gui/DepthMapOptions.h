@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DEPTHMAPOPTIONS_H
-#define DEPTHMAPOPTIONS_H
+#ifndef MAPTK_DEPTHMAPOPTIONS_H_
+#define MAPTK_DEPTHMAPOPTIONS_H_
 
 #include <qtGlobal.h>
 
@@ -79,4 +79,4 @@ private:
   QTE_DISABLE_COPY(DepthMapOptions)
 };
 
-#endif // DEPTHMAPOPTIONS_H
+#endif

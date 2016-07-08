@@ -1,5 +1,5 @@
-#ifndef DEPTHMAPVIEWWINDOW_H
-#define DEPTHMAPVIEWWINDOW_H
+#ifndef MAPTK_DEPTHMAPVIEWWINDOW_H_
+#define MAPTK_DEPTHMAPVIEWWINDOW_H_
 
 #include <QMainWindow>
 
@@ -20,4 +20,4 @@ private:
   Ui::DepthMapViewWindow* ui;
 };
 
-#endif // DEPTHMAPVIEWWINDOW_H
+#endif

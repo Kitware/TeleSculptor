@@ -1,5 +1,5 @@
-#ifndef DEPTHMAPPATHS_H
-#define DEPTHMAPPATHS_H
+#ifndef MAPTK_DEPTHMAPPATHS_H_
+#define MAPTK_DEPTHMAPPATHS_H_
 
 #include <QString>
 
@@ -11,4 +11,4 @@ struct DepthMapPaths
   QString dMVerticesPath;
 };
 
-#endif // DEPTHMAPPATHS_H
+#endif
