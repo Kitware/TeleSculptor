@@ -242,8 +242,6 @@ public:
   void setActiveCamera(int);
   void updateCameraView();
 
-//  void updateDM();
-
   void loadImage(QString const& path, vtkMaptkCamera* camera);
 
   void setActiveTool(AbstractTool* tool);
@@ -458,8 +456,6 @@ void MainWindowPrivate::updateCameraView()
   // Show camera image
   this->loadImage(cd.imagePath, cd.camera);
   this->UI.cameraView->setImagePath(cd.imagePath);
-
-  //TODO: load DM
 
   if (!cd.camera)
   {
@@ -683,16 +679,6 @@ MainWindow::~MainWindow()
 {
   QTE_D();
   d->uiState.save();
-}
-
-void MainWindow::start(char* path)
-{
-  if (path)
-  {
-    openFile(QString(path));
-  }
-
-  show();
 }
 
 //-----------------------------------------------------------------------------
@@ -1216,13 +1202,6 @@ void MainWindow::acceptToolResults()
   d->setActiveTool(0);
 }
 
-//void MainWindow::updateDepthMap()
-//{
-//  QTE_D();
-
-//  d->UI.worldView->setDepthMapVisible(true);
-//}
-
 //-----------------------------------------------------------------------------
 void MainWindow::showMatchMatrix()
 {
@@ -1240,21 +1219,6 @@ void MainWindow::showMatchMatrix()
     window->show();
   }
 }
-
-//-----------------------------------------------------------------------------
-//void MainWindow::showDepthMapView()
-//{
-//  QTE_D();
-
-//  if (d->tracks)
-//  {
-//    //TODO: searching into right folder if there's a depthmap to show
-
-//    // Show window
-//    auto window = new DepthMapViewWindow();
-//    window->show();
-//  }
-//}
 
 //-----------------------------------------------------------------------------
 void MainWindow::setViewBackroundColor()

@@ -45,8 +45,6 @@ public:
   explicit MainWindow(QWidget* parent = 0, Qt::WindowFlags flags = 0);
   virtual ~MainWindow();
 
-  void start(char* path);
-
 public slots:
   void openFile();
   void openFile(QString const& path);
