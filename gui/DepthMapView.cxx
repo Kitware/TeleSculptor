@@ -32,6 +32,7 @@
 
 #include "ui_DepthMapView.h"
 
+#include "DataArrays.h"
 #include "DepthMapViewOptions.h"
 
 #include <vtkCamera.h>
@@ -50,6 +51,8 @@
 #include <QtGui/QMenu>
 #include <QtGui/QToolButton>
 #include <QtGui/QWidgetAction>
+
+using namespace DepthMapArrays;
 
 QTE_IMPLEMENT_D_FUNC(DepthMapView)
 
@@ -152,14 +155,16 @@ void DepthMapView::updateThresholds(double bcMin, double bcMax,
 
   thresholdBestCostValues->SetInputData(d->currentDepthMap.Get());
   thresholdBestCostValues->SetInputArrayToProcess(
-    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, "Best Cost Values");
+    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS,
+    DepthMapArrays::BestCostValues);
   thresholdBestCostValues->ThresholdBetween(
     bestCostValueMin, bestCostValueMax);
 
   thresholdUniquenessRatios->SetInputConnection(
     thresholdBestCostValues->GetOutputPort());
   thresholdUniquenessRatios->SetInputArrayToProcess(
-    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, "Uniqueness Ratios");
+    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS,
+    DepthMapArrays::UniquenessRatios);
   thresholdUniquenessRatios->ThresholdBetween(
     uniquenessRatioMin, uniquenessRatioMax);
 

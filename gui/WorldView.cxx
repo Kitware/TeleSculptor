@@ -34,6 +34,7 @@
 #include "am_WorldView.h"
 
 #include "CameraOptions.h"
+#include "DataArrays.h"
 #include "DepthMapOptions.h"
 #include "FieldInformation.h"
 #include "ImageOptions.h"
@@ -78,12 +79,9 @@
 #include <QtGui/QToolButton>
 #include <QtGui/QWidgetAction>
 
-namespace // anonymous
-{
-static char const* const TrueColor = "truecolor";
-static char const* const Elevation = "elevation";
-static char const* const Observations = "observations";
-}
+using namespace LandmarkArrays;
+
+QTE_IMPLEMENT_D_FUNC(WorldView)
 
 //-----------------------------------------------------------------------------
 class WorldViewPrivate
@@ -163,8 +161,6 @@ public:
 
   bool depthMapLoaded;
 };
-
-QTE_IMPLEMENT_D_FUNC(WorldView)
 
 //-----------------------------------------------------------------------------
 void WorldViewPrivate::setPopup(QAction* action, QMenu* menu)
@@ -504,7 +500,8 @@ void WorldView::setActiveDepthMap(
       pixel[1] = height - 1 - pixel[1];
 
       auto const pd = reader->GetOutput()->GetPointData();
-      auto const depth = pd->GetArray("Depths")->GetTuple1(idPixel);
+      auto const da = pd->GetArray(DepthMapArrays::Depth);
+      auto const depth = da->GetTuple1(idPixel);
 
       auto const p = scaledCamera->UnprojectPoint(pixel, depth);
 
@@ -523,7 +520,7 @@ void WorldView::setActiveDepthMap(
 
     d->currentDepthMap = polyData.Get();
     d->currentDepthMap->GetPointData()->SetScalars(
-      d->currentDepthMap->GetPointData()->GetArray("Color"));
+      d->currentDepthMap->GetPointData()->GetArray(DepthMapArrays::TrueColor));
 
     vtkNew<vtkPolyDataMapper> mapper;
 
@@ -553,8 +550,8 @@ void WorldView::setActiveDepthMap(
       double bcRange[2], urRange[2];
 
       auto const pd = d->currentDepthMap->GetPointData();
-      pd->GetArray("Best Cost Values")->GetRange(bcRange);
-      pd->GetArray("Uniqueness Ratios")->GetRange(urRange);
+      pd->GetArray(DepthMapArrays::BestCostValues)->GetRange(bcRange);
+      pd->GetArray(DepthMapArrays::UniquenessRatios)->GetRange(urRange);
 
       d->depthMapOptions->initializeFilters(bcRange[0], bcRange[1],
                                             urRange[0], urRange[1]);
