@@ -153,7 +153,7 @@ void DepthMapView::updateThresholds(double bcMin, double bcMax,
   vtkNew<vtkThreshold> thresholdBestCostValues;
   vtkNew<vtkThreshold> thresholdUniquenessRatios;
 
-  thresholdBestCostValues->SetInputData(d->currentDepthMap.Get());
+  thresholdBestCostValues->SetInputData(d->currentDepthMap.GetPointer());
   thresholdBestCostValues->SetInputArrayToProcess(
     0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS,
     DepthMapArrays::BestCostValues);
@@ -209,9 +209,9 @@ void DepthMapView::setDepthMap(QString const& imagePath)
 
     vtkNew<vtkPolyDataMapper> mapper;
     mapper->SetInputData(geometryFilter->GetOutput());
-    d->polyDataActor->SetMapper(mapper.Get());
+    d->polyDataActor->SetMapper(mapper.GetPointer());
 
-    d->depthMapViewOptions->addActor(d->polyDataActor.Get());
+    d->depthMapViewOptions->addActor(d->polyDataActor.GetPointer());
 
     d->renderer->AddViewProp(d->polyDataActor.GetPointer());
 

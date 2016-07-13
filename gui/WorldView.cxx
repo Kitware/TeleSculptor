@@ -516,18 +516,18 @@ void WorldView::setActiveDepthMap(
     geometryFilter->Update();
 
     polyData = geometryFilter->GetOutput();
-    polyData->SetPoints(points.Get());
+    polyData->SetPoints(points.GetPointer());
 
-    d->currentDepthMap = polyData.Get();
+    d->currentDepthMap = polyData.GetPointer();
     d->currentDepthMap->GetPointData()->SetScalars(
       d->currentDepthMap->GetPointData()->GetArray(DepthMapArrays::TrueColor));
 
     vtkNew<vtkPolyDataMapper> mapper;
 
-    mapper->SetInputData(d->currentDepthMap.Get());
+    mapper->SetInputData(d->currentDepthMap.GetPointer());
     mapper->SetColorModeToDirectScalars();
 
-    d->depthMapActor->SetMapper(mapper.Get());
+    d->depthMapActor->SetMapper(mapper.GetPointer());
 
     switch (d->depthMapOptions->displayMode())
     {
@@ -539,7 +539,7 @@ void WorldView::setActiveDepthMap(
         break;
     }
 
-    d->renderer->AddActor(d->depthMapActor.Get());
+    d->renderer->AddActor(d->depthMapActor.GetPointer());
 
     d->renderer->AddViewProp(d->depthMapActor.GetPointer());
 
