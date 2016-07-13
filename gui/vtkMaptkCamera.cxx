@@ -135,11 +135,11 @@ kwiver::vital::vector_3d vtkMaptkCamera::UnprojectPoint(
   auto const homogenousPoint =
     kwiver::vital::vector_3d{normPoint[0], normPoint[1], 1.0} * depth;
 
-  return R.transpose() * (homogenousPoint - T);
+  return kwiver::vital::vector_3d(R.transpose() * (homogenousPoint - T));
 }
 
 //-----------------------------------------------------------------------------
-void vtkMaptkCamera::ScaleK(float factor)
+void vtkMaptkCamera::ScaleK(double factor)
 {
   auto K = this->MaptkCamera->intrinsics()->as_matrix();
 
@@ -158,7 +158,7 @@ void vtkMaptkCamera::ScaleK(float factor)
 }
 
 //-----------------------------------------------------------------------------
-vtkSmartPointer<vtkMaptkCamera> vtkMaptkCamera::ScaledK(float factor)
+vtkSmartPointer<vtkMaptkCamera> vtkMaptkCamera::ScaledK(double factor)
 {
   auto newCam = vtkSmartPointer<vtkMaptkCamera>::New();
   newCam->DeepCopy(this);

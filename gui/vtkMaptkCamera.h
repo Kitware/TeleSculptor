@@ -59,9 +59,9 @@ public:
   // specified depth
   kwiver::vital::vector_3d UnprojectPoint(double point[2], double depth);
 
-  void ScaleK(float factor);
+  void ScaleK(double factor);
 
-  vtkSmartPointer<vtkMaptkCamera> ScaledK(float factor);
+  vtkSmartPointer<vtkMaptkCamera> ScaledK(double factor);
 
   // Description:
   // Update self (the VTK camera) based on the maptk camera and

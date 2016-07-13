@@ -488,10 +488,12 @@ void WorldView::setActiveDepthMap(
 
     vtkNew<vtkPoints> points;
 
-    points->SetNumberOfPoints(width * height);
+    points->SetNumberOfPoints(static_cast<vtkIdType>(width * height));
 
     // Unproject the points from the VTI file
-    auto const dmToImageRatio = camera->GetImageDimensions()[0] / width;
+    auto const dmToImageRatio =
+      static_cast<double>(camera->GetImageDimensions()[0]) /
+      static_cast<double>(width);
     auto const scaledCamera = camera->ScaledK(dmToImageRatio);
 
     foreach (auto const idPixel,
