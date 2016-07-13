@@ -37,10 +37,6 @@
 
 class DepthMapViewPrivate;
 
-class vtkPolyData;
-
-class QMenu;
-
 class DepthMapView : public QWidget
 {
   Q_OBJECT
@@ -59,8 +55,6 @@ public slots:
   void resetView();
 
 private:
-  QMenu* viewMenu;
-
   QTE_DECLARE_PRIVATE_RPTR(DepthMapView)
   QTE_DECLARE_PRIVATE(DepthMapView)
 

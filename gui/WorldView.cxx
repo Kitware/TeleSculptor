@@ -320,7 +320,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
           d->UI.renderWidget, SLOT(update()));
 
   d->depthMapOptions = new DepthMapOptions("WorldView/Depthmap", this);
-  d->setPopup(d->UI.actionDepthmapDisplay, d->depthMapOptions);
+  d->setPopup(d->UI.actionShowDepthMap, d->depthMapOptions);
 
   d->depthMapOptions->setEnabled(false);
 
@@ -336,7 +336,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   this->addAction(d->UI.actionShowCameras);
   this->addAction(d->UI.actionShowLandmarks);
   this->addAction(d->UI.actionShowGroundPlane);
-  this->addAction(d->UI.actionDepthmapDisplay);
+  this->addAction(d->UI.actionShowDepthMap);
 
   connect(d->UI.actionViewReset, SIGNAL(triggered()),
           this, SLOT(resetView()));
@@ -363,7 +363,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(setLandmarksVisible(bool)));
   connect(d->UI.actionShowGroundPlane, SIGNAL(toggled(bool)),
           this, SLOT(setGroundPlaneVisible(bool)));
-  connect(d->UI.actionDepthmapDisplay, SIGNAL(toggled(bool)),
+  connect(d->UI.actionShowDepthMap, SIGNAL(toggled(bool)),
           this, SLOT(setDepthMapVisible(bool)));
 
   // Set up render pipeline
@@ -476,7 +476,7 @@ void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, QString vtiPath)
 {
   QTE_D();
 
-  if (d->UI.actionDepthmapDisplay->isChecked() && !d->depthMapLoaded)
+  if (d->UI.actionShowDepthMap->isChecked() && !d->depthMapLoaded)
   {
     vtkNew<vtkXMLImageDataReader> readerIm;
 

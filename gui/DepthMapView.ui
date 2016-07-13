@@ -14,16 +14,7 @@
    <string>DepthMap View</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <property name="leftMargin">
-    <number>0</number>
-   </property>
-   <property name="topMargin">
-    <number>0</number>
-   </property>
-   <property name="rightMargin">
-    <number>0</number>
-   </property>
-   <property name="bottomMargin">
+   <property name="margin">
     <number>0</number>
    </property>
    <item>
@@ -31,7 +22,6 @@
      <property name="toolButtonStyle">
       <enum>Qt::ToolButtonFollowStyle</enum>
      </property>
-     <addaction name="separator"/>
      <addaction name="actionViewReset"/>
      <addaction name="actionDisplayMode"/>
     </widget>

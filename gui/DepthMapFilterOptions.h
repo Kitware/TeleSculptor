@@ -61,7 +61,11 @@ signals:
   void filtersChanged();
 
 public slots:
-  void updateFilters();
+  void updateBestCostMinimum();
+  void updateBestCostMaximum();
+  void updateUniquenessRatioMinimum();
+  void updateUniquenessRatioMaximum();
+
   void resetFilters();
 
 private:

@@ -426,11 +426,9 @@ void MainWindowPrivate::setActiveCamera(int id)
   this->updateCameraView();
 
   auto& cd = this->cameras[id];
-
   if (!cd.vtiPath.isEmpty())
   {
-    UI.dMView->setDepthMap(cd.vtiPath);
-
+    UI.depthMapView->setDepthMap(cd.vtiPath);
     UI.worldView->setActiveDepthMap(cd.camera, cd.vtiPath);
   }
 }
@@ -604,7 +602,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->UI.menuView->addSeparator();
   d->UI.menuView->addAction(d->UI.cameraViewDock->toggleViewAction());
   d->UI.menuView->addAction(d->UI.cameraSelectorDock->toggleViewAction());
-  d->UI.menuView->addAction(d->UI.dMDock->toggleViewAction());
+  d->UI.menuView->addAction(d->UI.depthMapViewDock->toggleViewAction());
 
   d->UI.playSlideshowButton->setDefaultAction(d->UI.actionSlideshowPlay);
   d->UI.loopSlideshowButton->setDefaultAction(d->UI.actionSlideshowLoop);
@@ -645,7 +643,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   connect(d->UI.worldView,
           SIGNAL(depthMapThresholdsChanged(double, double, double, double)),
-          d->UI.dMView,
+          d->UI.depthMapView,
           SLOT(updateThresholds(double, double, double, double)));
 
   this->setSlideDelay(d->UI.slideDelay->value());
@@ -899,12 +897,12 @@ void MainWindow::loadDepthmaps(QString const& path)
 
   if (!activeCameraVtiPath.isEmpty())
   {
-    d->UI.dMView->setDepthMap(activeCameraVtiPath);
+    d->UI.depthMapView->setDepthMap(activeCameraVtiPath);
 
     d->UI.worldView->setActiveDepthMap(d->cameras[d->activeCameraIndex].camera,
                                        activeCameraVtiPath);
 
-    d->UI.dMView->resetView();
+    d->UI.depthMapView->resetView();
   }
 }
 

@@ -37,7 +37,7 @@
      <addaction name="actionShowCameras"/>
      <addaction name="actionShowLandmarks"/>
      <addaction name="actionShowGroundPlane"/>
-     <addaction name="actionDepthmapDisplay"/>
+     <addaction name="actionShowDepthMap"/>
     </widget>
    </item>
    <item>
@@ -253,7 +253,7 @@
     <string>I</string>
    </property>
   </action>
-  <action name="actionDepthmapDisplay">
+  <action name="actionShowDepthMap">
    <property name="checkable">
     <bool>true</bool>
    </property>

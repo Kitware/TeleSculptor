@@ -108,11 +108,6 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   // Set up UI
   d->UI.setupUi(this);
 
-  this->addAction(d->UI.actionViewReset);
-
-  viewMenu = new QMenu(this);
-  viewMenu->addAction(d->UI.actionDisplayMode);
-
   d->depthMapViewOptions =
     new DepthMapViewOptions("DepthmapView/DepthmapOptions", this);
   d->setPopup(d->UI.actionDisplayMode, d->depthMapViewOptions);
@@ -120,11 +115,12 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   d->currentDepthmap = vtkSmartPointer<vtkPolyData>::New();
 
   // Connect actions
-  connect(d->depthMapViewOptions, SIGNAL(modified()),
-               d->UI.renderWidget, SLOT(update()));
+  this->addAction(d->UI.actionViewReset);
 
   connect(d->UI.actionViewReset, SIGNAL(triggered()),
           this, SLOT(resetView()));
+  connect(d->depthMapViewOptions, SIGNAL(modified()),
+          d->UI.renderWidget, SLOT(update()));
 
   // Set up ortho view
   d->renderer->GetActiveCamera()->ParallelProjectionOn();

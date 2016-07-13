@@ -73,19 +73,16 @@ DepthMapOptions::DepthMapOptions(QString const& settingsGroup,
   d->UI.setupUi(this);
 
   d->filterOptions = new DepthMapFilterOptions(settingsGroup, this);
-  d->setPopup(d->UI.toolButtonFilters, d->filterOptions);
-  d->UI.toolButtonFilters->setEnabled(false);
+  d->setPopup(d->UI.filterMenu, d->filterOptions);
+  d->UI.filterMenu->setEnabled(false);
 
   // Connect signals/slots
-  connect(d->UI.radioPoints, SIGNAL(toggled(bool)),
+  connect(d->UI.points, SIGNAL(toggled(bool)),
           this, SIGNAL(displayModeChanged()));
-  connect(d->UI.radioSurfaces, SIGNAL(toggled(bool)),
+  connect(d->UI.surfaces, SIGNAL(toggled(bool)),
           this, SIGNAL(displayModeChanged()));
 
-  connect(d->UI.checkBoxFilters, SIGNAL(toggled(bool)),
-          this, SLOT(showFiltersMenu(bool)));
-
-  connect(d->UI.checkBoxFilters, SIGNAL(toggled(bool)),
+  connect(d->UI.filter, SIGNAL(toggled(bool)),
           this, SIGNAL(thresholdsChanged()));
   connect(d->filterOptions, SIGNAL(filtersChanged()),
           this, SIGNAL(thresholdsChanged()));
@@ -97,20 +94,12 @@ DepthMapOptions::~DepthMapOptions()
 }
 
 //-----------------------------------------------------------------------------
-void DepthMapOptions::showFiltersMenu(bool state)
-{
-  QTE_D();
-
-  d->UI.toolButtonFilters->setEnabled(state);
-}
-
-//-----------------------------------------------------------------------------
 void DepthMapOptions::enable()
 {
   QTE_D();
 
-  d->UI.radioPoints->setEnabled(true);
-  d->UI.radioPoints->setChecked(true);
+  d->UI.points->setEnabled(true);
+  d->UI.points->setChecked(true);
 }
 
 //-----------------------------------------------------------------------------
@@ -124,8 +113,7 @@ bool DepthMapOptions::isFilterPersistent() const
 bool DepthMapOptions::isFilterEnabled() const
 {
   QTE_D();
-
-  return d->UI.checkBoxFilters->isChecked();
+  return d->UI.filter->isChecked();
 }
 
 //-----------------------------------------------------------------------------
@@ -168,5 +156,5 @@ void DepthMapOptions::initializeFilters(double bcMin, double bcMax,
 DepthMapOptions::DisplayMode DepthMapOptions::displayMode() const
 {
   QTE_D();
-  return (d->UI.radioSurfaces->isChecked() ? Surfaces : Points);
+  return (d->UI.surfaces->isChecked() ? Surfaces : Points);
 }

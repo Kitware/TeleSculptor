@@ -74,9 +74,6 @@ signals:
   void displayModeChanged();
   void thresholdsChanged();
 
-public slots:
-  void showFiltersMenu(bool);
-
 private:
   QTE_DECLARE_PRIVATE_RPTR(DepthMapOptions)
   QTE_DECLARE_PRIVATE(DepthMapOptions)
