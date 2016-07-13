@@ -222,7 +222,7 @@ public:
     vtkSmartPointer<vtkMaptkCamera> camera;
 
     QString imagePath; // Full path to camera image data
-    QString vtiPath;
+    QString depthMapPath; // Full path to depth map data
   };
 
   // Methods
@@ -426,10 +426,10 @@ void MainWindowPrivate::setActiveCamera(int id)
   this->updateCameraView();
 
   auto& cd = this->cameras[id];
-  if (!cd.vtiPath.isEmpty())
+  if (!cd.depthMapPath.isEmpty())
   {
-    UI.depthMapView->setDepthMap(cd.vtiPath);
-    UI.worldView->setActiveDepthMap(cd.camera, cd.vtiPath);
+    UI.depthMapView->setDepthMap(cd.depthMapPath);
+    UI.worldView->setActiveDepthMap(cd.camera, cd.depthMapPath);
   }
 }
 
@@ -757,16 +757,19 @@ void MainWindow::loadProject(QString const& path)
     return;
   }
 
+  // Load tracks
   if (!project.tracks.isEmpty())
   {
     this->loadTracks(project.tracks);
   }
 
+  // Load landmarks
   if (!project.landmarks.isEmpty())
   {
     this->loadLandmarks(project.landmarks);
   }
 
+  // Load cameras and/or images
   if (project.cameraPath.isEmpty())
   {
     foreach (auto const& ip, project.images)
@@ -796,10 +799,23 @@ void MainWindow::loadProject(QString const& path)
     }
   }
 
-  // Add depth maps (when they exists) to existing camera
-  if (!project.depthmaps.isEmpty())
+  // Associate depth maps with cameras
+  foreach (auto dm, qtEnumerate(project.depthMaps))
   {
-    this->loadDepthmaps(project.depthmaps);
+    auto const i = dm.key();
+    if (i >= 0 && i < d->cameras.count())
+    {
+      d->cameras[i].depthMapPath = dm.value();
+    }
+
+    if (i == d->activeCameraIndex)
+    {
+      d->UI.worldView->setActiveDepthMap(
+        d->cameras[d->activeCameraIndex].camera, dm.value());
+
+      d->UI.depthMapView->setDepthMap(dm.value());
+      d->UI.depthMapView->resetView();
+    }
   }
 
 #ifdef VTKWEBGLEXPORTER
@@ -856,52 +872,6 @@ void MainWindow::loadTracks(QString const& path)
   catch (...)
   {
     qWarning() << "failed to read tracks from" << path;
-  }
-}
-
-//-----------------------------------------------------------------------------
-void MainWindow::loadDepthmaps(QString const& path)
-{
-  QTE_D();
-
-  QFile vtListiFile(path);
-  auto const& vtiListFileBasePath =
-    QFileInfo(path).absoluteDir().absolutePath();
-
-  if (vtListiFile.open(QIODevice::ReadOnly | QIODevice::Text))
-  {
-    QTextStream vtiStream(&vtListiFile);
-    int frameNum;
-    QString vtiFileName;
-
-    while (!vtiStream.atEnd())
-    {
-      vtiStream >> frameNum >> vtiFileName;
-
-      if (!vtiFileName.isEmpty())
-      {
-        vtiFileName = vtiListFileBasePath + QDir::separator() + vtiFileName;
-
-        d->cameras[frameNum].vtiPath = vtiFileName;
-      }
-    }
-  }
-
-  vtListiFile.close();
-
-  // If the active camera has an associated depthmap, we load it into the
-  // DepthMapView
-
-  QString activeCameraVtiPath = d->cameras[d->activeCameraIndex].vtiPath;
-
-  if (!activeCameraVtiPath.isEmpty())
-  {
-    d->UI.depthMapView->setDepthMap(activeCameraVtiPath);
-
-    d->UI.worldView->setActiveDepthMap(d->cameras[d->activeCameraIndex].camera,
-                                       activeCameraVtiPath);
-
-    d->UI.depthMapView->resetView();
   }
 }
 

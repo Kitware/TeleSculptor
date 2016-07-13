@@ -55,7 +55,6 @@ public slots:
   void loadCamera(QString const& path);
   void loadTracks(QString const& path);
   void loadLandmarks(QString const& path);
-  void loadDepthmaps(QString const& path);
 
   void saveCameras();
   void saveCameras(QString const& path);
