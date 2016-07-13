@@ -79,6 +79,8 @@
 #include <QtGui/QToolButton>
 #include <QtGui/QWidgetAction>
 
+#include <QtCore/QDebug>
+
 using namespace LandmarkArrays;
 
 QTE_IMPLEMENT_D_FUNC(WorldView)
@@ -479,12 +481,20 @@ void WorldView::setActiveDepthMap(
     reader->SetFileName(qPrintable(depthMapPath));
     reader->Update();
 
+    auto const pointCount = reader->GetOutput()->GetNumberOfPoints();
+    if (!pointCount)
+    {
+      qWarning() << "Failed to read depth map from" << depthMapPath;
+      return;
+    }
+
     auto const width = reader->GetOutput()->GetDimensions()[0];
     auto const height = reader->GetOutput()->GetDimensions()[1];
+    qDebug() << "point counts:" << width * height << pointCount;
 
     vtkNew<vtkPoints> points;
 
-    points->SetNumberOfPoints(static_cast<vtkIdType>(width * height));
+    points->SetNumberOfPoints(pointCount);
 
     // Unproject the points from the VTI file
     auto const dmToImageRatio =
@@ -492,20 +502,19 @@ void WorldView::setActiveDepthMap(
       static_cast<double>(width);
     auto const scaledCamera = camera->ScaledK(dmToImageRatio);
 
-    foreach (auto const idPixel,
-             qtIndexRange(reader->GetOutput()->GetNumberOfPoints()))
+    foreach (auto const i, qtIndexRange(pointCount))
     {
       double pixel[3];
-      reader->GetOutput()->GetPoint(idPixel, pixel);
+      reader->GetOutput()->GetPoint(i, pixel);
       pixel[1] = height - 1 - pixel[1];
 
       auto const pd = reader->GetOutput()->GetPointData();
       auto const da = pd->GetArray(DepthMapArrays::Depth);
-      auto const depth = da->GetTuple1(idPixel);
+      auto const depth = da->GetTuple1(i);
 
       auto const p = scaledCamera->UnprojectPoint(pixel, depth);
 
-      points->SetPoint(idPixel, p[0], p[1], p[2]);
+      points->SetPoint(i, p[0], p[1], p[2]);
     }
 
     // Generate the PolyData to show
@@ -550,11 +559,21 @@ void WorldView::setActiveDepthMap(
       double bcRange[2], urRange[2];
 
       auto const pd = d->currentDepthMap->GetPointData();
-      pd->GetArray(DepthMapArrays::BestCostValues)->GetRange(bcRange);
-      pd->GetArray(DepthMapArrays::UniquenessRatios)->GetRange(urRange);
+      auto const bcArray = pd->GetArray(DepthMapArrays::BestCostValues);
+      auto const urArray = pd->GetArray(DepthMapArrays::UniquenessRatios);
 
-      d->depthMapOptions->initializeFilters(bcRange[0], bcRange[1],
-                                            urRange[0], urRange[1]);
+      if (bcArray && urArray)
+      {
+        bcArray->GetRange(bcRange);
+        urArray->GetRange(urRange);
+
+        d->depthMapOptions->initializeFilters(bcRange[0], bcRange[1],
+                                              urRange[0], urRange[1]);
+      }
+      else
+      {
+        qWarning() << "Failed to load data from depth map" << depthMapPath;
+      }
     }
     else
     {
