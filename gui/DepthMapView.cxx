@@ -128,7 +128,7 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   d->renderer->GetActiveCamera()->SetPosition(0.0, 0.0, 2.0);
 
   // Set up render pipeline
-  d->renderer->SetBackground(0.5, 0.5, 0.5);
+  d->renderer->SetBackground(0, 0, 0);
   d->renderWindow->AddRenderer(d->renderer.GetPointer());
   d->UI.renderWidget->SetRenderWindow(d->renderWindow.GetPointer());
 

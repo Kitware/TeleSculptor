@@ -670,6 +670,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   d->UI.worldView->setBackgroundColor(*d->viewBackgroundColor);
   d->UI.cameraView->setBackgroundColor(*d->viewBackgroundColor);
+  d->UI.depthMapView->setBackgroundColor(*d->viewBackgroundColor);
 
   d->UI.worldView->resetView();
 }
@@ -1228,6 +1229,7 @@ void MainWindow::setViewBackroundColor()
     *d->viewBackgroundColor = dlg.currentColor();
     d->UI.worldView->setBackgroundColor(*d->viewBackgroundColor);
     d->UI.cameraView->setBackgroundColor(*d->viewBackgroundColor);
+    d->UI.depthMapView->setBackgroundColor(*d->viewBackgroundColor);
   }
 }
 
