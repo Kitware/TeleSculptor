@@ -145,9 +145,9 @@ public:
   vtkNew<vtkMatrix4x4> imageProjection;
   vtkNew<vtkMatrix4x4> imageLocalTransform;
 
-  vtkSmartPointer<vtkPolyData> currentDepthmap;
+  vtkSmartPointer<vtkPolyData> currentDepthMap;
 
-  vtkNew<vtkActor> depthmapActor;
+  vtkNew<vtkActor> depthMapActor;
 
   vtkMaptkCamera* currentCamera;
   QString currentDepthMapPath;
@@ -318,7 +318,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   connect(d->landmarkOptions, SIGNAL(modified()),
           d->UI.renderWidget, SLOT(update()));
 
-  d->depthMapOptions = new DepthMapOptions("WorldView/Depthmap", this);
+  d->depthMapOptions = new DepthMapOptions("WorldView/DepthMap", this);
   d->setPopup(d->UI.actionShowDepthMap, d->depthMapOptions);
 
   d->depthMapOptions->setEnabled(false);
@@ -521,30 +521,30 @@ void WorldView::setActiveDepthMap(
     polyData = geometryFilter->GetOutput();
     polyData->SetPoints(points.Get());
 
-    d->currentDepthmap = polyData.Get();
-    d->currentDepthmap->GetPointData()->SetScalars(
-      d->currentDepthmap->GetPointData()->GetArray("Color"));
+    d->currentDepthMap = polyData.Get();
+    d->currentDepthMap->GetPointData()->SetScalars(
+      d->currentDepthMap->GetPointData()->GetArray("Color"));
 
     vtkNew<vtkPolyDataMapper> mapper;
 
-    mapper->SetInputData(d->currentDepthmap.Get());
+    mapper->SetInputData(d->currentDepthMap.Get());
     mapper->SetColorModeToDirectScalars();
 
-    d->depthmapActor->SetMapper(mapper.Get());
+    d->depthMapActor->SetMapper(mapper.Get());
 
     switch (d->depthMapOptions->displayMode())
     {
       case DepthMapOptions::Points:
-        d->depthmapActor->GetProperty()->SetRepresentationToPoints();
+        d->depthMapActor->GetProperty()->SetRepresentationToPoints();
         break;
       case DepthMapOptions::Surfaces:
-        d->depthmapActor->GetProperty()->SetRepresentationToSurface();
+        d->depthMapActor->GetProperty()->SetRepresentationToSurface();
         break;
     }
 
-    d->renderer->AddActor(d->depthmapActor.Get());
+    d->renderer->AddActor(d->depthMapActor.Get());
 
-    d->renderer->AddViewProp(d->depthmapActor.GetPointer());
+    d->renderer->AddViewProp(d->depthMapActor.GetPointer());
 
     if (!(d->depthMapOptions->isFilterEnabled() &&
           d->depthMapOptions->isFilterPersistent()))
@@ -552,7 +552,7 @@ void WorldView::setActiveDepthMap(
       // Initialize the filters
       double bcRange[2], urRange[2];
 
-      auto const pd = d->currentDepthmap->GetPointData();
+      auto const pd = d->currentDepthMap->GetPointData();
       pd->GetArray("Best Cost Values")->GetRange(bcRange);
       pd->GetArray("Uniqueness Ratios")->GetRange(urRange);
 
@@ -755,7 +755,7 @@ void WorldView::setDepthMapVisible(bool state)
 {
   QTE_D();
 
-  d->depthmapActor->SetVisibility(state);
+  d->depthMapActor->SetVisibility(state);
   d->depthMapOptions->setEnabled(state);
 
   if (state)
@@ -974,10 +974,10 @@ void WorldView::updateDepthMapDisplayMode()
   switch (d->depthMapOptions->displayMode())
   {
     case DepthMapOptions::Points:
-      d->depthmapActor->GetProperty()->SetRepresentationToPoints();
+      d->depthMapActor->GetProperty()->SetRepresentationToPoints();
       break;
     case DepthMapOptions::Surfaces:
-      d->depthmapActor->GetProperty()->SetRepresentationToSurface();
+      d->depthMapActor->GetProperty()->SetRepresentationToSurface();
       break;
   }
   d->UI.renderWidget->update();
@@ -996,7 +996,7 @@ void WorldView::updateDepthMapThresholds()
   vtkNew<vtkThreshold> thresholdBestCostValues;
   vtkNew<vtkThreshold> thresholdUniquenessRatios;
 
-  thresholdBestCostValues->SetInputData(d->currentDepthmap);
+  thresholdBestCostValues->SetInputData(d->currentDepthMap);
   thresholdBestCostValues->SetInputArrayToProcess(
     0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, "Best Cost Values");
   thresholdBestCostValues->ThresholdBetween(
@@ -1013,9 +1013,9 @@ void WorldView::updateDepthMapThresholds()
   geometryFilter->SetInputConnection(
     thresholdUniquenessRatios->GetOutputPort());
 
-  d->depthmapActor->GetMapper()->SetInputConnection(
+  d->depthMapActor->GetMapper()->SetInputConnection(
     geometryFilter->GetOutputPort());
-  d->depthmapActor->GetMapper()->Update();
+  d->depthMapActor->GetMapper()->Update();
 
   emit depthMapThresholdsChanged(bestCostValueMin, bestCostValueMax,
                                  uniquenessRatioMin, uniquenessRatioMax);

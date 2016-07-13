@@ -69,7 +69,7 @@ public:
 
   DepthMapViewOptions* depthMapViewOptions;
 
-  vtkSmartPointer<vtkPolyData> currentDepthmap;
+  vtkSmartPointer<vtkPolyData> currentDepthMap;
 };
 
 //-----------------------------------------------------------------------------
@@ -108,11 +108,10 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   // Set up UI
   d->UI.setupUi(this);
 
-  d->depthMapViewOptions =
-    new DepthMapViewOptions("DepthmapView/DepthmapOptions", this);
+  d->depthMapViewOptions = new DepthMapViewOptions("DepthMapView", this);
   d->setPopup(d->UI.actionDisplayMode, d->depthMapViewOptions);
 
-  d->currentDepthmap = vtkSmartPointer<vtkPolyData>::New();
+  d->currentDepthMap = vtkSmartPointer<vtkPolyData>::New();
 
   // Connect actions
   this->addAction(d->UI.actionViewReset);
@@ -151,7 +150,7 @@ void DepthMapView::updateThresholds(double bcMin, double bcMax,
   vtkNew<vtkThreshold> thresholdBestCostValues;
   vtkNew<vtkThreshold> thresholdUniquenessRatios;
 
-  thresholdBestCostValues->SetInputData(d->currentDepthmap.Get());
+  thresholdBestCostValues->SetInputData(d->currentDepthMap.Get());
   thresholdBestCostValues->SetInputArrayToProcess(
     0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, "Best Cost Values");
   thresholdBestCostValues->ThresholdBetween(
@@ -201,7 +200,7 @@ void DepthMapView::setDepthMap(QString const& imagePath)
 
     d->UI.toolBar->update();
 
-    d->currentDepthmap = geometryFilter->GetOutput();
+    d->currentDepthMap = geometryFilter->GetOutput();
 
     vtkNew<vtkPolyDataMapper> mapper;
     mapper->SetInputData(geometryFilter->GetOutput());
@@ -233,7 +232,7 @@ void DepthMapView::resetView()
   d->renderer->GetAspect(renderAspect);
 
   double bounds[6];
-  d->currentDepthmap->GetBounds(bounds);
+  d->currentDepthMap->GetBounds(bounds);
 
   auto const w = bounds[1] - bounds[0];
   auto const h = bounds[3] - bounds[4];
