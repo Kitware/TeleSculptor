@@ -889,8 +889,6 @@ void MainWindow::loadDepthmaps(QString const& path)
 
   vtListiFile.close();
 
-  d->UI.worldView->enableDepthMap();
-
   // If the active camera has an associated depthmap, we load it into the
   // DepthMapView
 

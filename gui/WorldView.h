@@ -54,7 +54,6 @@ public:
   virtual ~WorldView();
 
   void setActiveDepthMap(vtkMaptkCamera* cam, QString vtiPath);
-  void enableDepthMap();
 
 signals:
   void depthMapThresholdsChanged(double, double, double, double);

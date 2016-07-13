@@ -65,8 +65,6 @@ public:
   void initializeFilters(double bcMin, double bcMax,
                          double urMin, double urMax);
 
-  void enable();
-
   bool isFilterPersistent() const;
   bool isFilterEnabled() const;
 

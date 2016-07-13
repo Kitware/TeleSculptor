@@ -571,18 +571,6 @@ void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, QString vtiPath)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::enableDepthMap()
-{
-  QTE_D();
-
-  d->UI.actionDepthmapDisplay->setEnabled(true);
-  d->UI.actionDepthmapDisplay->setCheckable(true);
-  d->UI.actionDepthmapDisplay->setChecked(false);
-
-  d->depthMapOptions->enable();
-}
-
-//-----------------------------------------------------------------------------
 void WorldView::addCamera(int id, vtkMaptkCamera* camera)
 {
   Q_UNUSED(id)

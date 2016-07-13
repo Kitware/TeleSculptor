@@ -94,15 +94,6 @@ DepthMapOptions::~DepthMapOptions()
 }
 
 //-----------------------------------------------------------------------------
-void DepthMapOptions::enable()
-{
-  QTE_D();
-
-  d->UI.points->setEnabled(true);
-  d->UI.points->setChecked(true);
-}
-
-//-----------------------------------------------------------------------------
 bool DepthMapOptions::isFilterPersistent() const
 {
   QTE_D();
