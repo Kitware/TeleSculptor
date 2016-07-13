@@ -45,9 +45,9 @@ public:
   explicit DepthMapView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
   virtual ~DepthMapView();
 
-  void setDepthMap(QString imagePath);
-
 public slots:
+  void setDepthMap(QString const& imagePath);
+
   void updateThresholds(double, double, double, double);
 
   void setBackgroundColor(QColor const&);

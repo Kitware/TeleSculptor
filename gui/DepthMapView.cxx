@@ -182,7 +182,7 @@ DepthMapView::~DepthMapView()
 }
 
 //-----------------------------------------------------------------------------
-void DepthMapView::setDepthMap(QString imagePath)
+void DepthMapView::setDepthMap(QString const& imagePath)
 {
   QTE_D();
 
@@ -190,22 +190,22 @@ void DepthMapView::setDepthMap(QString imagePath)
   {
     d->depthMapViewOptions->cleanModes();
 
-    vtkNew<vtkXMLImageDataReader> readerIm;
+    vtkNew<vtkXMLImageDataReader> reader;
 
-    readerIm->SetFileName(imagePath.toStdString().c_str());
-    readerIm->Update();
+    reader->SetFileName(qPrintable(imagePath));
+    reader->Update();
 
-    vtkNew<vtkGeometryFilter> geometryFilterIm;
-    geometryFilterIm->SetInputData(readerIm->GetOutput());
-    geometryFilterIm->Update();
+    vtkNew<vtkGeometryFilter> geometryFilter;
+    geometryFilter->SetInputData(reader->GetOutput());
+    geometryFilter->Update();
 
     d->UI.toolBar->update();
 
-    d->currentDepthmap = geometryFilterIm->GetOutput();
+    d->currentDepthmap = geometryFilter->GetOutput();
 
-    vtkNew<vtkPolyDataMapper> mapperP;
-    mapperP->SetInputData(geometryFilterIm->GetOutput());
-    d->polyDataActor->SetMapper(mapperP.Get());
+    vtkNew<vtkPolyDataMapper> mapper;
+    mapper->SetInputData(geometryFilter->GetOutput());
+    d->polyDataActor->SetMapper(mapper.Get());
 
     d->depthMapViewOptions->addActor(d->polyDataActor.Get());
 

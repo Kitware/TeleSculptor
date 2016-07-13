@@ -36,7 +36,6 @@
 #include <QtGui/QWidget>
 
 class vtkImageData;
-
 class vtkPolyData;
 
 namespace kwiver { namespace vital { class landmark_map; } }
@@ -53,8 +52,6 @@ public:
   explicit WorldView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
   virtual ~WorldView();
 
-  void setActiveDepthMap(vtkMaptkCamera* cam, QString vtiPath);
-
 signals:
   void depthMapThresholdsChanged(double, double, double, double);
 
@@ -63,6 +60,7 @@ public slots:
 
   void addCamera(int id, vtkMaptkCamera* camera);
   void setLandmarks(kwiver::vital::landmark_map const&);
+  void setActiveDepthMap(vtkMaptkCamera* camera, QString const& depthMapPath);
 
   void setImageData(vtkImageData* data, QSize const& dimensions);
 
@@ -90,13 +88,12 @@ public slots:
 
   void invalidateGeometry();
 
-  void updateDepthMapDisplayMode();
-  void updateDepthMapThresholds();
-
 protected slots:
   void updateAxes();
   void updateCameras();
   void updateScale();
+  void updateDepthMapDisplayMode();
+  void updateDepthMapThresholds();
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(WorldView)
