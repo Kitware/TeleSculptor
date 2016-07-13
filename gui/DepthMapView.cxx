@@ -142,8 +142,8 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
 }
 
 //-----------------------------------------------------------------------------
-void DepthMapView::updateDepthMapThresholds(double bcMin, double bcMax,
-                                            double urMin, double urMax)
+void DepthMapView::updateThresholds(double bcMin, double bcMax,
+                                    double urMin, double urMax)
 {
   QTE_D();
 

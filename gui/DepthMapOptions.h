@@ -44,30 +44,35 @@ class DepthMapOptions : public QWidget
   Q_OBJECT
 
 public:
+  enum DisplayMode
+  {
+    Points,
+    Surfaces,
+  };
+
+public:
   explicit DepthMapOptions(const QString& settingsGroup,
                            QWidget* parent = 0, Qt::WindowFlags flags = 0);
   virtual ~DepthMapOptions();
 
-  bool isPointsChecked();
-  bool isSurfacesChecked();
+  DisplayMode displayMode() const;
 
-  double getBestCostValueMin();
-  double getBestCostValueMax();
-  double getUniquenessRatioMin();
-  double getUniquenessRatioMax();
+  double bestCostValueMinimum() const;
+  double bestCostValueMaximum() const;
+  double uniquenessRatioMinimum() const;
+  double uniquenessRatioMaximum() const;
 
   void initializeFilters(double bcMin, double bcMax,
                          double urMin, double urMax);
 
   void enable();
 
-  bool isFilterPersistChecked();
-  bool isFilterChecked();
+  bool isFilterPersistent() const;
+  bool isFilterEnabled() const;
 
 signals:
-  void modified();
-  void depthMapRepresentationChanged();
-  void depthMapThresholdsChanged();
+  void displayModeChanged();
+  void thresholdsChanged();
 
 public slots:
   void showFiltersMenu(bool);

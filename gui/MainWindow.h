@@ -64,9 +64,6 @@ public slots:
 
   void saveWebGLScene();
 
-  void updateThresholdsDepthmapView(double bcMin, double bcMax,
-                                    double urMin, double urMax);
-
   void setActiveCamera(int);
 
   void setViewBackroundColor();

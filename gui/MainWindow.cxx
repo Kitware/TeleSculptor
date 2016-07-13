@@ -644,9 +644,9 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(setActiveCamera(int)));
 
   connect(d->UI.worldView,
-          SIGNAL(updateThresholds(double, double, double, double)),
-          this,
-          SLOT(updateThresholdsDepthmapView(double, double, double, double)));
+          SIGNAL(depthMapThresholdsChanged(double, double, double, double)),
+          d->UI.dMView,
+          SLOT(updateThresholds(double, double, double, double)));
 
   this->setSlideDelay(d->UI.slideDelay->value());
 
@@ -964,15 +964,6 @@ void MainWindow::saveLandmarks(QString const& path)
               "The output file may not have been written correctly.");
     QMessageBox::critical(this, "Export error", msg.arg(path));
   }
-}
-
-//-----------------------------------------------------------------------------
-void MainWindow::updateThresholdsDepthmapView(double bcMin, double bcMax,
-                                              double urMin, double urMax)
-{
-  QTE_D();
-
-  d->UI.dMView->updateDepthMapThresholds(bcMin, bcMax, urMin, urMax);
 }
 
 //-----------------------------------------------------------------------------

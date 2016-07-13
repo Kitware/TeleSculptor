@@ -52,7 +52,7 @@ public:
   void setDepthMap(QString imagePath);
 
 public slots:
-  void updateDepthMapThresholds(double,double,double,double);
+  void updateThresholds(double, double, double, double);
 
   void setBackgroundColor(QColor const&);
 

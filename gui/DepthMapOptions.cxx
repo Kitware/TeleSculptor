@@ -78,16 +78,17 @@ DepthMapOptions::DepthMapOptions(QString const& settingsGroup,
 
   // Connect signals/slots
   connect(d->UI.radioPoints, SIGNAL(toggled(bool)),
-          this, SIGNAL(depthMapRepresentationChanged()));
-
+          this, SIGNAL(displayModeChanged()));
   connect(d->UI.radioSurfaces, SIGNAL(toggled(bool)),
-          this, SIGNAL(depthMapRepresentationChanged()));
+          this, SIGNAL(displayModeChanged()));
 
   connect(d->UI.checkBoxFilters, SIGNAL(toggled(bool)),
           this, SLOT(showFiltersMenu(bool)));
 
+  connect(d->UI.checkBoxFilters, SIGNAL(toggled(bool)),
+          this, SIGNAL(thresholdsChanged()));
   connect(d->filterOptions, SIGNAL(filtersChanged()),
-          this, SIGNAL(depthMapThresholdsChanged()));
+          this, SIGNAL(thresholdsChanged()));
 }
 
 //-----------------------------------------------------------------------------
@@ -113,15 +114,14 @@ void DepthMapOptions::enable()
 }
 
 //-----------------------------------------------------------------------------
-bool DepthMapOptions::isFilterPersistChecked()
+bool DepthMapOptions::isFilterPersistent() const
 {
   QTE_D();
-
-  return d->filterOptions->isFilterPersist();
+  return d->filterOptions->isFilterPersistent();
 }
 
 //-----------------------------------------------------------------------------
-bool DepthMapOptions::isFilterChecked()
+bool DepthMapOptions::isFilterEnabled() const
 {
   QTE_D();
 
@@ -129,35 +129,31 @@ bool DepthMapOptions::isFilterChecked()
 }
 
 //-----------------------------------------------------------------------------
-double DepthMapOptions::getBestCostValueMin()
+double DepthMapOptions::bestCostValueMinimum() const
 {
   QTE_D();
-
-  return d->filterOptions->getBestCostValueMin();
+  return d->filterOptions->bestCostValueMinimum();
 }
 
 //-----------------------------------------------------------------------------
-double DepthMapOptions::getBestCostValueMax()
+double DepthMapOptions::bestCostValueMaximum() const
 {
   QTE_D();
-
-  return d->filterOptions->getBestCostValueMax();
+  return d->filterOptions->bestCostValueMaximum();
 }
 
 //-----------------------------------------------------------------------------
-double DepthMapOptions::getUniquenessRatioMin()
+double DepthMapOptions::uniquenessRatioMinimum() const
 {
   QTE_D();
-
-  return d->filterOptions->getUniquenessRatioMin();
+  return d->filterOptions->uniquenessRatioMinimum();
 }
 
 //-----------------------------------------------------------------------------
-double DepthMapOptions::getUniquenessRatioMax()
+double DepthMapOptions::uniquenessRatioMaximum() const
 {
   QTE_D();
-
-  return d->filterOptions->getUniquenessRatioMax();
+  return d->filterOptions->uniquenessRatioMaximum();
 }
 
 //-----------------------------------------------------------------------------
@@ -165,22 +161,12 @@ void DepthMapOptions::initializeFilters(double bcMin, double bcMax,
                                         double urMin, double urMax)
 {
   QTE_D();
-
   d->filterOptions->initializeFilters(bcMin, bcMax, urMin, urMax);
 }
 
 //-----------------------------------------------------------------------------
-bool DepthMapOptions::isPointsChecked()
+DepthMapOptions::DisplayMode DepthMapOptions::displayMode() const
 {
   QTE_D();
-
-  return d->UI.radioPoints->isChecked();
-}
-
-//-----------------------------------------------------------------------------
-bool DepthMapOptions::isSurfacesChecked()
-{
-  QTE_D();
-
-  return d->UI.radioSurfaces->isChecked();
+  return (d->UI.radioSurfaces->isChecked() ? Surfaces : Points);
 }

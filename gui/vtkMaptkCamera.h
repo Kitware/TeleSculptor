@@ -34,6 +34,7 @@
 #include <vital/types/camera.h>
 
 #include <vtkCamera.h>
+#include <vtkSmartPointer.h>
 
 class vtkMaptkCamera : public vtkCamera
 {
@@ -54,13 +55,13 @@ public:
                     double (&projPoint)[2]);
 
   // Description:
-  // Project 3D point to 2D using the internal maptk camera
-  bool UnprojectPoint(double point[2], double depth,
-                      kwiver::vital::vector_3d* unProjectedPoint);
+  // Reverse project 2D point to 3D using the internal maptk camera and
+  // specified depth
+  kwiver::vital::vector_3d UnprojectPoint(double point[2], double depth);
 
-  void scaleK(float factor);
+  void ScaleK(float factor);
 
-  vtkMaptkCamera* scaledK(float factor);
+  vtkSmartPointer<vtkMaptkCamera> ScaledK(float factor);
 
   // Description:
   // Update self (the VTK camera) based on the maptk camera and

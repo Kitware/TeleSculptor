@@ -57,7 +57,7 @@ public:
   void enableDepthMap();
 
 signals:
-  void updateThresholds(double, double, double, double);
+  void depthMapThresholdsChanged(double, double, double, double);
 
 public slots:
   void setBackgroundColor(QColor const&);
@@ -91,7 +91,7 @@ public slots:
 
   void invalidateGeometry();
 
-  void updateDepthMapRepresentation();
+  void updateDepthMapDisplayMode();
   void updateDepthMapThresholds();
 
 protected slots:

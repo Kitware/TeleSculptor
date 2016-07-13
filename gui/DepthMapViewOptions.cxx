@@ -141,8 +141,8 @@ void DepthMapViewOptions::addDepthMapMode(std::string name, bool needGradient,
 
     if (!d->initialValues)
     {
-      lower = qMin(lower, dataColorOptions->getMinValue());
-      upper = qMax(upper, dataColorOptions->getMaxValue());
+      lower = qMin(lower, dataColorOptions->minimum());
+      upper = qMax(upper, dataColorOptions->maximum());
     }
 
     dataColorOptions->setAvailableRange(lower, upper);

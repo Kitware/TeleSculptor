@@ -47,15 +47,15 @@ public:
                                  Qt::WindowFlags flags = 0);
   virtual ~DepthMapFilterOptions();
 
-  double getBestCostValueMin();
-  double getBestCostValueMax();
-  double getUniquenessRatioMin();
-  double getUniquenessRatioMax();
+  double bestCostValueMinimum() const;
+  double bestCostValueMaximum() const;
+  double uniquenessRatioMinimum() const;
+  double uniquenessRatioMaximum() const;
 
   void initializeFilters(double bcMin, double bcMax,
                          double urMin, double urMax);
 
-  bool isFilterPersist();
+  bool isFilterPersistent() const;
 
 signals:
   void filtersChanged();

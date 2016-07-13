@@ -122,8 +122,8 @@ bool vtkMaptkCamera::ProjectPoint(kwiver::vital::vector_3d const& in,
 */
 
 //-----------------------------------------------------------------------------
-bool vtkMaptkCamera::UnprojectPoint(double pixel[2], double depth,
-                                    kwiver::vital::vector_3d* unProjectedPoint)
+kwiver::vital::vector_3d vtkMaptkCamera::UnprojectPoint(
+  double pixel[2], double depth)
 {
   // Build camera matrix
   auto const T = this->MaptkCamera->translation();
@@ -135,13 +135,11 @@ bool vtkMaptkCamera::UnprojectPoint(double pixel[2], double depth,
   auto const homogenousPoint =
     kwiver::vital::vector_3d{normPoint[0], normPoint[1], 1.0} * depth;
 
-  *unProjectedPoint = R.transpose() * (homogenousPoint - T);
-
-  return true;
+  return R.transpose() * (homogenousPoint - T);
 }
 
 //-----------------------------------------------------------------------------
-void vtkMaptkCamera::scaleK(float factor)
+void vtkMaptkCamera::ScaleK(float factor)
 {
   auto K = this->MaptkCamera->intrinsics()->as_matrix();
 
@@ -160,12 +158,12 @@ void vtkMaptkCamera::scaleK(float factor)
 }
 
 //-----------------------------------------------------------------------------
-vtkMaptkCamera* vtkMaptkCamera::scaledK(float factor)
+vtkSmartPointer<vtkMaptkCamera> vtkMaptkCamera::ScaledK(float factor)
 {
-  vtkMaptkCamera* newCam = new vtkMaptkCamera();
+  auto newCam = vtkSmartPointer<vtkMaptkCamera>::New();
   newCam->DeepCopy(this);
 
-  newCam->scaleK(factor);
+  newCam->ScaleK(factor);
 
   return newCam;
 }
