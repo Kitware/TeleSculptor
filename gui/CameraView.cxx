@@ -404,9 +404,6 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->UI.setupUi(this);
   d->AM.setupActions(d->UI, this);
 
-  this->addAction(d->UI.actionViewReset);
-  this->addAction(d->UI.actionViewResetFullExtents);
-
   auto const viewMenu = new QMenu(this);
   viewMenu->addAction(d->UI.actionViewReset);
   viewMenu->addAction(d->UI.actionViewResetFullExtents);
