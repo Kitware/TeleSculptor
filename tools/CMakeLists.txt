@@ -34,3 +34,8 @@ kwiver_add_executable(maptk_estimate_homography estimate_homography.cxx)
 target_link_libraries(maptk_estimate_homography
   PRIVATE             maptk vital_apm kwiversys
   )
+
+kwiver_add_executable(maptk_undistort_frames undistort_frames.cxx)
+target_link_libraries(maptk_undistort_frames
+  PRIVATE             maptk vital_apm kwiversys
+  )
