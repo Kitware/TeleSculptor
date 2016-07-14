@@ -38,8 +38,7 @@
 #include <QtGui/QWidget>
 
 class vtkActor;
-
-class vtkPolyData;
+class vtkPointData;
 
 class DepthMapViewOptionsPrivate;
 
@@ -52,26 +51,21 @@ public:
                                QWidget* parent = 0, Qt::WindowFlags flags = 0);
   virtual ~DepthMapViewOptions();
 
-  void addActor(vtkActor* polyDataActor);
-
-  void cleanModes();
+  void setActor(vtkActor*);
 
 signals:
   void modified();
 
-protected slots:
-  void switchDisplayMode(bool checked);
+public slots:
+  void updateRanges(vtkPointData*);
+  void updateActor();
 
-  void updateGradient();
+protected slots:
+  void setDepthIcon(QIcon const&);
+  void setBestCostValueIcon(QIcon const&);
+  void setUniquenessRatioIcon(QIcon const&);
 
 private:
-  QButtonGroup* bGroup;
-  QVBoxLayout* layout;
-
-  void addDepthMapMode(std::string name, bool needGradient,
-                       double lower, double upper);
-  void clearLayout(QLayout* layout);
-
   QTE_DECLARE_PRIVATE_RPTR(DepthMapViewOptions)
   QTE_DECLARE_PRIVATE(DepthMapViewOptions)
 

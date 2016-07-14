@@ -68,7 +68,8 @@ public:
   vtkNew<vtkRenderer> renderer;
   vtkNew<vtkRenderWindow> renderWindow;
 
-  vtkNew<vtkActor> polyDataActor;
+  vtkNew<vtkPolyDataMapper> mapper;
+  vtkNew<vtkActor> actor;
 
   DepthMapViewOptions* depthMapViewOptions;
 
@@ -112,17 +113,17 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   d->UI.setupUi(this);
 
   d->depthMapViewOptions = new DepthMapViewOptions("DepthMapView", this);
+  d->depthMapViewOptions->setActor(d->actor.GetPointer());
   d->setPopup(d->UI.actionDisplayMode, d->depthMapViewOptions);
 
-  d->currentDepthMap = vtkSmartPointer<vtkPolyData>::New();
+  connect(d->depthMapViewOptions, SIGNAL(modified()),
+          d->UI.renderWidget, SLOT(update()));
 
   // Connect actions
   this->addAction(d->UI.actionViewReset);
 
   connect(d->UI.actionViewReset, SIGNAL(triggered()),
           this, SLOT(resetView()));
-  connect(d->depthMapViewOptions, SIGNAL(modified()),
-          d->UI.renderWidget, SLOT(update()));
 
   // Set up ortho view
   d->renderer->GetActiveCamera()->ParallelProjectionOn();
@@ -133,6 +134,11 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   d->renderer->SetBackground(0, 0, 0);
   d->renderWindow->AddRenderer(d->renderer.GetPointer());
   d->UI.renderWidget->SetRenderWindow(d->renderWindow.GetPointer());
+
+  // Set up depth map actor
+  d->actor->SetMapper(d->mapper.GetPointer());
+  d->renderer->AddViewProp(d->actor.GetPointer());
+  d->currentDepthMap = vtkSmartPointer<vtkPolyData>::New();
 
   // Set interactor
   vtkNew<vtkInteractorStyleRubberBand2D> is;
@@ -173,9 +179,8 @@ void DepthMapView::updateThresholds(double bcMin, double bcMax,
   geometryFilter->SetInputConnection(
     thresholdUniquenessRatios->GetOutputPort());
 
-  d->polyDataActor->GetMapper()->SetInputConnection(
-    geometryFilter->GetOutputPort());
-  d->polyDataActor->GetMapper()->Update();
+  d->mapper->SetInputConnection(geometryFilter->GetOutputPort());
+  d->mapper->Update();
 
   d->UI.renderWidget->update();
 }
@@ -192,8 +197,6 @@ void DepthMapView::setDepthMap(QString const& imagePath)
 
   if (!imagePath.isEmpty() && this->isVisible())
   {
-    d->depthMapViewOptions->cleanModes();
-
     vtkNew<vtkXMLImageDataReader> reader;
 
     reader->SetFileName(qPrintable(imagePath));
@@ -203,17 +206,12 @@ void DepthMapView::setDepthMap(QString const& imagePath)
     geometryFilter->SetInputData(reader->GetOutput());
     geometryFilter->Update();
 
-    d->UI.toolBar->update();
-
     d->currentDepthMap = geometryFilter->GetOutput();
 
-    vtkNew<vtkPolyDataMapper> mapper;
-    mapper->SetInputData(geometryFilter->GetOutput());
-    d->polyDataActor->SetMapper(mapper.GetPointer());
+    d->mapper->SetInputData(d->currentDepthMap);
 
-    d->depthMapViewOptions->addActor(d->polyDataActor.GetPointer());
-
-    d->renderer->AddViewProp(d->polyDataActor.GetPointer());
+    d->depthMapViewOptions->updateRanges(d->currentDepthMap->GetPointData());
+    d->depthMapViewOptions->updateActor();
 
     d->UI.renderWidget->update();
   }
