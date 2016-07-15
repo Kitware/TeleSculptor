@@ -42,7 +42,7 @@
 #include <set>
 #include <vector>
 
-#include <maptk/plugins/ocv/ocv_algo_tools.h>
+#include <opencv2/core/core.hpp>
 
 using namespace kwiver::vital;
 

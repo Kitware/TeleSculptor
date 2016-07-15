@@ -66,14 +66,22 @@ public:
   virtual void* data() { return this->mat_data_; }
 
   /// Return the OpenCV reference counter
+#ifndef MAPTK_HAS_OPENCV_VER_3
   int* get_ref_counter() const { return this->mat_refcount_; }
+#else
+  cv::UMatData* get_umatdata() const { return this->u_; }
+#endif
 
 protected:
   /// The cv::Mat data
   unsigned char* mat_data_;
 
   /// The ref count shared with cv::Mat
+#ifndef MAPTK_HAS_OPENCV_VER_3
   int* mat_refcount_;
+#else
+  cv::UMatData *u_;
+#endif
 };
 
 
