@@ -30,50 +30,32 @@
 
 /**
  * \file
- * \brief OCV detect_features algorithm impl interface
+ * \brief Extended algorithm definition for OpenCV feature detector algos
  */
 
 #ifndef MAPTK_PLUGINS_OCV_DETECT_FEATURES_H_
 #define MAPTK_PLUGINS_OCV_DETECT_FEATURES_H_
 
-
 #include <vital/vital_config.h>
-#include <maptk/plugins/ocv/maptk_ocv_export.h>
-
 #include <vital/algo/detect_features.h>
 
-#include <memory>
+#include <maptk/plugins/ocv/maptk_ocv_export.h>
+
+#include <opencv2/features2d/features2d.hpp>
 
 namespace kwiver {
 namespace maptk {
+namespace ocv  {
 
-namespace ocv
-{
-
-/// An algorithm class for detecting feature points using OpenCV
+/// OCV Specific base definition for algorithms that detect feature points
+/**
+ * This extended algorithm_def provides a common implementation for the detect
+ * method.
+ */
 class MAPTK_OCV_EXPORT detect_features
-  : public vital::algorithm_impl<detect_features, vital::algo::detect_features>
+  : public kwiver::vital::algo::detect_features
 {
 public:
-  /// Constructor
-  detect_features();
-
-  /// Destructor
-  virtual ~detect_features();
-
-  /// Copy Constructor
-  detect_features(const detect_features& other);
-
-  /// Return the name of this implementation
-  virtual std::string impl_name() const { return "ocv"; }
-
-  /// Get this algorithm's \link maptk::kwiver::config_block configuration block \endlink
-  virtual vital::config_block_sptr get_configuration() const;
-  /// Set this algorithm's properties via a config block
-  virtual void set_configuration(vital::config_block_sptr config);
-  /// Check that the algorithm's configuration vital::config_block is valid
-  virtual bool check_configuration(vital::config_block_sptr config) const;
-
   /// Extract a set of image features from the provided image
   /**
    * A given mask image should be one-channel (mask->depth() == 1). If the
@@ -90,14 +72,12 @@ public:
   detect(vital::image_container_sptr image_data,
          vital::image_container_sptr mask = vital::image_container_sptr()) const;
 
-private:
-  /// private implementation class
-  class priv;
-  const std::unique_ptr<priv> d_;
+protected:
+  /// the feature detector algorithm
+  cv::Ptr<cv::FeatureDetector> detector;
 };
 
 } // end namespace ocv
-
 } // end namespace maptk
 } // end namespace kwiver
 

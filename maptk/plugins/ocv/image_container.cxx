@@ -109,7 +109,11 @@ image_container
           dynamic_cast<mat_image_memory*>(memory.get()) )
     {
       // extract the existing reference counter from the MAPTK wrapper
+#ifndef MAPTK_HAS_OPENCV_VER_3
       out.refcount = mat_memory->get_ref_counter();
+#else
+      out.u = mat_memory->get_umatdata();
+#endif
       out.addref();
     }
     // TODO use MatAllocator to share memory with image_memory

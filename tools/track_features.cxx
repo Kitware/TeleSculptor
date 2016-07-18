@@ -122,7 +122,7 @@ static bool check_config(kwiver::vital::config_block_sptr config)
   bool config_valid = true;
 
 #define MAPTK_CONFIG_FAIL(msg) \
-  std::cerr << "Config Check Fail: " << msg << std::endl; \
+  LOG_ERROR(main_logger, "Config Check Fail: " << msg); \
   config_valid = false
 
   // A given homography file is invalid if it names a directory, or if its
@@ -215,18 +215,6 @@ static kwiver::vital::image::byte invert_mask_pixel( kwiver::vital::image::byte 
 }
 
 
-#define print_config(config)                                            \
-  do                                                                    \
-  {                                                                     \
-    VITAL_FOREACH( kwiver::vital::config_block_key_t key, config->available_values() ) \
-    {                                                                   \
-      std::cerr << "\t"                                                 \
-           << key << " = " << config->get_value<kwiver::vital::config_block_key_t>(key) \
-           << std::endl;                                                \
-    }                                                                   \
-  } while (false)
-
-
 // ------------------------------------------------------------------
 static int maptk_main(int argc, char const* argv[])
 {
@@ -249,7 +237,7 @@ static int maptk_main(int argc, char const* argv[])
 
     if ( ! arg.Parse() )
   {
-    std::cerr << "Problem parsing arguments" << std::endl;
+    LOG_ERROR(main_logger, "Problem parsing arguments");
     return EXIT_FAILURE;
   }
 
@@ -289,9 +277,6 @@ static int maptk_main(int argc, char const* argv[])
                                                          MAPTK_VERSION, prefix));
   }
 
-  //std::cerr << "[DEBUG] Config BEFORE set:" << std::endl;
-  //print_config(config);
-
   kwiver::vital::algo::track_features::set_nested_algo_configuration("feature_tracker", config, feature_tracker);
   kwiver::vital::algo::track_features::get_nested_algo_configuration("feature_tracker", config, feature_tracker);
   kwiver::vital::algo::image_io::set_nested_algo_configuration("image_reader", config, image_reader);
@@ -301,28 +286,24 @@ static int maptk_main(int argc, char const* argv[])
   kwiver::vital::algo::compute_ref_homography::set_nested_algo_configuration("output_homography_generator", config, out_homog_generator);
   kwiver::vital::algo::compute_ref_homography::get_nested_algo_configuration("output_homography_generator", config, out_homog_generator);
 
-  //std::cerr << "[DEBUG] Config AFTER set:" << std::endl;
-  //print_config(config);
-
   bool valid_config = check_config(config);
 
   if( ! opt_out_config.empty() )
   {
-    //std::cerr << "[DEBUG] Given config output target: " << opt_out_config << std::endl;
     write_config_file(config, opt_out_config );
     if(valid_config)
     {
-      std::cerr << "INFO: Configuration file contained valid parameters and may be used for running" << std::endl;
+      LOG_INFO(main_logger, "Configuration file contained valid parameters and may be used for running");
     }
     else
     {
-      std::cerr << "WARNING: Configuration deemed not valid." << std::endl;
+      LOG_WARN(main_logger, "Configuration deemed not valid.");
     }
     return EXIT_SUCCESS;
   }
   else if(!valid_config)
   {
-    std::cerr << "ERROR: Configuration not valid." << std::endl;
+    LOG_ERROR(main_logger, "Configuration not valid.");
     return EXIT_FAILURE;
   }
 
@@ -337,7 +318,7 @@ static int maptk_main(int argc, char const* argv[])
   std::ifstream ifs(image_list_file.c_str());
   if (!ifs)
   {
-    std::cerr << "Error: Could not open image list \"" << image_list_file << "\"" << std::endl;
+    LOG_ERROR(main_logger, "Error: Could not open image list \"" << image_list_file << "\"");
     return EXIT_FAILURE;
   }
   // Creating input image list, checking file existance
@@ -391,8 +372,8 @@ static int maptk_main(int argc, char const* argv[])
   std::ofstream ofs(output_tracks_file.c_str());
   if (!ofs)
   {
-    std::cerr << "Error: Could not open track file for writing: \""
-              << output_tracks_file << "\"" << std::endl;
+    LOG_ERROR(main_logger, "Could not open track file for writing: \""
+                           << output_tracks_file << "\"");
     return EXIT_FAILURE;
   }
   ofs.close();
@@ -407,9 +388,8 @@ static int maptk_main(int argc, char const* argv[])
     homog_ofs.open( homog_fp.c_str() );
     if ( !homog_ofs )
     {
-      std::cerr << "Error: Could not open homography file for writing: "
-                << homog_fp
-                << std::endl;
+      LOG_ERROR(main_logger, "Could not open homography file for writing: "
+                             << homog_fp);
       return EXIT_FAILURE;
     }
   }
@@ -418,7 +398,7 @@ static int maptk_main(int argc, char const* argv[])
   kwiver::vital::track_set_sptr tracks;
   for(unsigned i=0; i<files.size(); ++i)
   {
-    std::cout << "processing frame "<<i<<": "<<files[i]<<std::endl;
+    LOG_INFO(main_logger, "processing frame "<<i<<": "<<files[i]);
 
     auto const image = image_reader->load( files[i] );
     auto const converted_image = image_converter->convert( image );
@@ -466,7 +446,7 @@ static int maptk_main(int argc, char const* argv[])
     // -> still doesn't take into account a full shotbreak, which would incur a track reset
     if ( homog_ofs.is_open() )
     {
-      std::cout << "\twritting homography" << std::endl;
+      LOG_DEBUG(main_logger, "writing homography");
       homog_ofs << *(out_homog_generator->estimate(i, tracks)) << std::endl;
     }
   }
@@ -492,13 +472,13 @@ int main(int argc, char const* argv[])
   }
   catch (std::exception const& e)
   {
-    std::cerr << "Exception caught: " << e.what() << std::endl;
+    LOG_ERROR(main_logger, "Exception caught: " << e.what());
 
     return EXIT_FAILURE;
   }
   catch (...)
   {
-    std::cerr << "Unknown exception caught" << std::endl;
+    LOG_ERROR(main_logger, "Unknown exception caught");
 
     return EXIT_FAILURE;
   }

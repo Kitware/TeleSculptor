@@ -57,14 +57,19 @@ class triangulate_landmarks::priv
 public:
   /// Constructor
   priv()
+  : m_logger( vital::get_logger( "maptk.vxl.triangulate_landmarks" ))
   {
   }
 
   priv(const priv& other)
+  : m_logger( vital::get_logger( "maptk.vxl.triangulate_landmarks" ))
   {
   }
 
   /// parameters - none yet
+
+  /// Logger handle
+  vital::logger_handle_t m_logger;
 };
 
 
@@ -214,8 +219,8 @@ triangulate_landmarks
   }
   if( !failed_landmarks.empty() )
   {
-    std::cerr << "failed to triangulate " << failed_landmarks.size()
-              << " of " << lms.size() << " landmarks" << std::endl;
+    LOG_ERROR(d_->m_logger, "failed to triangulate " << failed_landmarks.size()
+                            << " of " << lms.size() << " landmarks");
   }
   landmarks = landmark_map_sptr(new simple_landmark_map(triangulated_lms));
 }
