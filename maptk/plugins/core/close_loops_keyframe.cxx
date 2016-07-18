@@ -50,11 +50,12 @@ namespace core {
 
 using namespace kwiver::vital;
 
-
+namespace {
 /// Functor to help remove tracks from vector
 bool track_in_set( track_sptr trk_ptr, std::set<track_id_t>* set_ptr )
 {
   return set_ptr->find( trk_ptr->id() ) != set_ptr->end();
+}
 }
 
 
@@ -68,7 +69,7 @@ public:
       search_bandwidth(10),
       min_keyframe_misses(5),
       stop_after_match(false),
-      m_logger( vital::get_logger( "close_loops_keyframe" ))
+      m_logger( vital::get_logger( "maptk.core.close_loops_keyframe" ))
   {
   }
 
@@ -78,7 +79,7 @@ public:
       min_keyframe_misses(other.min_keyframe_misses),
       stop_after_match(other.stop_after_match),
       matcher(!other.matcher ? algo::match_features_sptr() : other.matcher->clone()),
-      m_logger( vital::get_logger( "close_loops_keyframe" ))
+      m_logger( vital::get_logger( "maptk.core.close_loops_keyframe" ))
   {
   }
 

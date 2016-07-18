@@ -17,6 +17,8 @@ set(MAPTK_VERSION_PATCH 0)
 set(MAPTK_VERSION "${MAPTK_VERSION_MAJOR}.${MAPTK_VERSION_MINOR}.${MAPTK_VERSION_PATCH}")
 string(TIMESTAMP MAPTK_COPYRIGHT_YEAR "%Y")
 
+###
+# Needed to get fletch_DIR set early
 find_package( vital REQUIRED )
 
 ###
@@ -32,6 +34,11 @@ endif()
 list(INSERT CMAKE_MODULE_PATH 0
   "${MAPTK_SOURCE_DIR}/CMake"
   )
+
+###
+# Dependencies and Modules
+#
+include( maptk-depends )
 
 ###
 # Options and setup
@@ -65,11 +72,6 @@ include( kwiver-configcheck )
 
 set(kwiver_export_name     maptk_exports)
 
-
-###
-# Dependencies and Modules
-#
-include( maptk-depends )
 
 # this is where the source code for libraries/plugins lives
 add_subdirectory(maptk)

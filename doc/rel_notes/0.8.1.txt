@@ -8,9 +8,19 @@ MAP-Tk v0.8.1 is a bug fix release with no new functionality.
 Updates since v0.8.0
 --------------------
 
+Scripts
+
+ * The SketchUp import script now loads MAP-Tk landmarks into a new layer.
+
 
 Fixes since v0.8.0
 --------------------
+
+Core Plugin
+
+ * In the core triangulation algorithm, landmarks that were not observed by
+   enough cameras or had no corresponding tracks were not counted towards the
+   the number of failed triangulations.  Now they are.
 
 VXL Plugin
 
@@ -40,3 +50,13 @@ Tools
    tool was being too agressive about striping file extensions when more
    than one '.' was in the file name.  In this release the tool strips the
    extension at the last '.' instead of the first.
+
+Scripts
+
+ * Fixed a bug in the SketchUp import script was loading MAP-Tk data assuming
+   units of inches instead of meters.
+
+ * Worked around an issue in the Sketchup import script in which SketchUp was
+   limiting the FOV of cameras to greater than 1 degree.  The loading script
+   now adjusts the image width and focal length parameter to force FOV less
+   than 1 degree when needed.

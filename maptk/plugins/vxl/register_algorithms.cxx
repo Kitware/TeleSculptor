@@ -47,6 +47,7 @@
 #include <maptk/plugins/vxl/optimize_cameras.h>
 #include <maptk/plugins/vxl/triangulate_landmarks.h>
 #include <maptk/plugins/vxl/match_features_constrained.h>
+#include <maptk/plugins/vxl/vidl_ffmpeg_video_input.h>
 
 
 namespace kwiver {
@@ -69,6 +70,7 @@ int register_algorithms( vital::registrar &reg )
   REGISTER_TYPE( maptk::vxl::optimize_cameras );
   REGISTER_TYPE( maptk::vxl::triangulate_landmarks );
   REGISTER_TYPE( maptk::vxl::match_features_constrained );
+  REGISTER_TYPE( maptk::vxl::vidl_ffmpeg_video_input );
 
   REGISTRATION_SUMMARY();
   return REGISTRATION_FAILURES();

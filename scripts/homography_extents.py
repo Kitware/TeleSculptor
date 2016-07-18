@@ -42,19 +42,16 @@ import numpy as np
 import homography_io
 
 
-def compute_extents(homogs, img_shape):
+def compute_extents(homogs, img_shapes):
     """Compute output extents from a sequence of homographies and an image shape
     """
-    h, w = img_shape
-
-    corners = np.matrix([[0, 0, 1],[w, 0, 1],[w, h, 1],[0, h, 1]], dtype='float').T
-
     min_x = np.inf
     max_x = -np.inf
     min_y = np.inf
     max_y = -np.inf
-    for H in homogs:
-        mapped = H * corners
+    for M, (h,w) in zip(homogs, img_shapes):
+        corners = np.matrix([[0, 0, 1],[w, 0, 1],[w, h, 1],[0, h, 1]], dtype='float').T
+        mapped = M * corners
         X = mapped[0,:] / mapped[2,:]
         Y = mapped[1,:] / mapped[2,:]
         min_x = min(min_x, np.min(X))
@@ -78,7 +75,9 @@ def main():
 
     homogs = homography_io.load_homography_file(in_homog)
 
-    (min_x, max_x), (min_y, max_y) = compute_extents([H for _, H, in homogs], (h, w))
+    img_shapes = [(h, w)] * len(homogs)
+    (min_x, max_x), (min_y, max_y) = compute_extents([H for _, H, in homogs],
+                                                     img_shapes)
 
     print "X range:", min_x, max_x
     print "Y range:", min_y, max_y

@@ -18,6 +18,12 @@ if(PROJ_DIR)
 elseif(NOT PROJ_FOUND)
   include(CommonFindMacros)
 
+  ###
+  # Sometimes fletch sets PROJ4_ROOT instead of PROJ_ROOT
+  # A better solution would be go have fletch publish both PROJ_ROOT symbols.
+  if (PROJ4_ROOT)
+    set( PROJ_ROOT ${PROJ4_ROOT} )
+  endif()
   setup_find_root_context(PROJ)
 
   find_path(PROJ_INCLUDE_DIR "proj_api.h"
@@ -45,4 +51,10 @@ elseif(NOT PROJ_FOUND)
   find_package_handle_standard_args(PROJ DEFAULT_MSG
     PROJ_INCLUDE_DIR PROJ_LIBRARY
     )
+
+  ###
+  # for compatibility
+  set( PROJ4_LIBRARY ${PROJ_LIBRARY} )
+  set( PROJ4_INCLUDE ${PROJ_INCLUDE} )
+
 endif()

@@ -14,6 +14,12 @@ MAP-Tk Library
  * Removed the standalone canonical_transform() function in transform.h in
    favor of an abstract algorithm with implementation in the core plugin.
 
+ * Added a function to match_matrix.h to use the match matrix to score each
+   track on how important it is in covering the match matrix.
+
+ * Moved a function to extract a camera from an essential matrix from the core
+   initialize_cameras_landmarks algorithm into epipolar_geometry.h.
+
 Core Plugin
 
  * Added a new algorithm for canonical transform with the implementation
@@ -26,6 +32,32 @@ Core Plugin
    considerably more dense match matrices with longer tracks.  It also handles
    long term loop closure without any assumption about planar scenes.
 
+ * Added a new matcher that uses a fundamental matrix constraint to filter bad
+   matches.
+
+ * Added more config parameters to the initialize_cameras_landmarks algorithm
+   to allow more control on how the algorithm is run and what thresholds are
+   used.
+
+ * Added a new loop closure algorithm that exhaustively matches all pairs of
+   frames, or can be configured to match all frames within a moving temporal
+   window.
+
+OpenCV Plugin
+
+ * Added CMake support for handing and marking the use of OpenCV version >= 3.
+
+ * Overhauled OpenCV algorithm introspection structure. Versions 3.x took away
+   the previous ability to introspect algorithm types and parameters,
+   requiring, for at least versions 3.x, for there to be manual wrappings of
+   each algorithm to be exposed. Removed introspection for any version and
+   now have cross-version compatible manual wrappings of all algorithms at
+   least present in 3.x that fill the feature detection, descriptor extraction
+   and feature matching roles.
+
+ * Added an OpenCV fundamental matrix estimation wrapper. OpenCV can estimate a
+   fundamental matrix with the presence of outliers using RANSAC.
+
 VXL Plugin
 
  * Added a new algorithm for canonical transform which uses robust estimation
@@ -33,6 +65,10 @@ VXL Plugin
    (rrel) in VXL to fit a ground plane to the data.  The ground plane becomes
    the Z=0 plane.  The rest of the free parameters are then fit by PCA as in
    the core plugin implementation.
+
+ * Added a video_input algorithm implementation that uses the FFmpeg via the
+   vidl_ffmpeg_istream class to read video frames and KLV metadata from encoded
+   video files.
 
 Visualization Application
 
@@ -68,6 +104,27 @@ Tools
    when only a subset of cameras are computed and we do not want a mix of
    old and new camera files.
 
+Scripts
+
+ * Added a Python script which uses OpenCV to produce mosaicked images of
+   video frames using the homographies produced by maptk_track_features.
+
 
 Fixes since v0.8.0
 -------------------------------
+
+Plugins
+
+ * Corrected all plugins to use the Vital logging framework instead of
+   cout and cerr for status, debug, and error messages.
+
+Tools
+
+ * Corrected the track_features and bundle_adjust_tracks tools to use the
+   Vital logging framework instead of cout and cerr for status, debug,
+   and error messages.
+
+ * Added a new track filtering option to the bundle_adjust_tracks tool
+   that filters tracks based on match matrix importance.  The idea is that
+   long tracks are usually most important, but some short tracks may be more
+   important if they are the only tracks that tie together a pair of frames.
