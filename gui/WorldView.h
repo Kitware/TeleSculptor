@@ -57,12 +57,14 @@ public slots:
 
   void addCamera(int id, vtkMaptkCamera* camera);
   void setLandmarks(kwiver::vital::landmark_map const&);
+  void setVisibleLandmarks(kwiver::vital::landmark_map const&);
 
   void setImageData(vtkImageData* data, QSize const& dimensions);
 
   void setImageVisible(bool);
   void setCamerasVisible(bool);
   void setLandmarksVisible(bool);
+  void setVisibleLandmarksVisible(bool);
   void setGroundPlaneVisible(bool);
   void setAxesVisible(bool);
 

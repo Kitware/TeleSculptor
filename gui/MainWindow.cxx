@@ -422,7 +422,33 @@ void MainWindowPrivate::setActiveCamera(int id)
 {
   this->activeCameraIndex = id;
   this->UI.worldView->setActiveCamera(this->cameras[id].camera);
+
+  kwiver::vital::landmark_map::map_landmark_t visibleLandmarks;
+
   this->updateCameraView();
+
+  if (this->tracks)
+  {
+    auto const& tracks = this->tracks->tracks();
+    foreach (auto const& track, tracks)
+    {
+      auto const& state = track->find(this->activeCameraIndex);
+      if (state != track->end() && state->feat)
+      {
+        auto const& id = track->id();
+        auto const& landmark = landmarks->landmarks()[id];
+
+        if (landmark)
+        {
+          visibleLandmarks.insert(std::pair<kwiver::vital::landmark_id_t,
+                                  kwiver::vital::landmark_sptr>(id,landmark));
+        }
+      }
+    }
+  }
+
+  this->UI.worldView->setVisibleLandmarks(
+        kwiver::vital::simple_landmark_map(visibleLandmarks));
 }
 
 //-----------------------------------------------------------------------------
@@ -490,6 +516,26 @@ void MainWindowPrivate::updateCameraView()
           auto const& fp = state->feat->loc();
           auto const& lp = landmarkPoints[id];
           this->UI.cameraView->addResidual(id, fp[0], fp[1], lp[0], lp[1]);
+        }
+      }
+    }
+  }
+
+  // Show landmarks visible by the current camera
+  this->UI.cameraView->clearVisibleLandmarks();
+  if (this->tracks)
+  {
+    auto const& tracks = this->tracks->tracks();
+    foreach (auto const& track, tracks)
+    {
+      auto const& state = track->find(this->activeCameraIndex);
+      if (state != track->end() && state->feat)
+      {
+        auto const id = track->id();
+        if (landmarkPoints.contains(id))
+        {
+          auto const& lp = landmarkPoints[id];
+          this->UI.cameraView->addVisibleLandmark(id, lp[0], lp[1]);
         }
       }
     }

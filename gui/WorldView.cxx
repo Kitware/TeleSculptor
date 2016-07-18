@@ -122,6 +122,14 @@ public:
   vtkNew<vtkPolyDataMapper> landmarkMapper;
   vtkNew<vtkActor> landmarkActor;
 
+  vtkNew<vtkPoints> visibleLandmarkPoints;
+  vtkNew<vtkCellArray> visibleLandmarkVerts;
+  vtkNew<vtkDoubleArray> visibleLandmarkElevations;
+  vtkNew<vtkUnsignedCharArray> visibleLandmarkColors;
+  vtkNew<vtkUnsignedIntArray> visibleLandmarkObservations;
+  vtkNew<vtkPolyDataMapper> visibleLandmarkMapper;
+  vtkNew<vtkActor> visibleLandmarkActor;
+
   vtkNew<vtkImageActor> imageActor;
   vtkNew<vtkImageData> emptyImage;
 
@@ -133,6 +141,7 @@ public:
   ImageOptions* imageOptions;
   CameraOptions* cameraOptions;
   PointOptions* landmarkOptions;
+  PointOptions* visibleLandmarkOptions;
 
   vtkNew<vtkMatrix4x4> imageProjection;
   vtkNew<vtkMatrix4x4> imageLocalTransform;
@@ -301,6 +310,13 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   connect(d->landmarkOptions, SIGNAL(modified()),
           d->UI.renderWidget, SLOT(update()));
 
+  d->visibleLandmarkOptions = new PointOptions("WorldView/VisibleLandmarks", this);
+  d->visibleLandmarkOptions->addActor(d->visibleLandmarkActor.GetPointer());
+  d->setPopup(d->UI.actionShowVisibleLandmarks, d->visibleLandmarkOptions);
+
+  connect(d->visibleLandmarkOptions, SIGNAL(modified()),
+          d->UI.renderWidget, SLOT(update()));
+
   // Connect actions
   this->addAction(d->UI.actionViewReset);
   this->addAction(d->UI.actionViewResetLandmarks);
@@ -332,6 +348,8 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(setCamerasVisible(bool)));
   connect(d->UI.actionShowLandmarks, SIGNAL(toggled(bool)),
           this, SLOT(setLandmarksVisible(bool)));
+  connect(d->UI.actionShowVisibleLandmarks, SIGNAL(toggled(bool)),
+          this, SLOT(setVisibleLandmarksVisible(bool)));
   connect(d->UI.actionShowGroundPlane, SIGNAL(toggled(bool)),
           this, SLOT(setGroundPlaneVisible(bool)));
 
@@ -380,6 +398,33 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->renderer->AddActor(d->landmarkActor.GetPointer());
 
   d->landmarkOptions->addMapper(d->landmarkMapper.GetPointer());
+
+  // Set up visible landmarks actor
+  vtkNew<vtkPolyData> visibleLandmarkPolyData;
+
+  auto const visibleLandmarkPointData = visibleLandmarkPolyData->GetPointData();
+
+  d->visibleLandmarkColors->SetName(TrueColor);
+  d->visibleLandmarkColors->SetNumberOfComponents(3);
+
+  d->visibleLandmarkElevations->SetName(Elevation);
+  d->visibleLandmarkElevations->SetNumberOfComponents(1);
+
+  d->visibleLandmarkObservations->SetName(Observations);
+  d->visibleLandmarkObservations->SetNumberOfComponents(1);
+
+  visibleLandmarkPolyData->SetPoints(d->visibleLandmarkPoints.GetPointer());
+  visibleLandmarkPolyData->SetVerts(d->visibleLandmarkVerts.GetPointer());
+  visibleLandmarkPointData->AddArray(d->visibleLandmarkColors.GetPointer());
+  visibleLandmarkPointData->AddArray(d->visibleLandmarkElevations.GetPointer());
+  visibleLandmarkPointData->AddArray(d->visibleLandmarkObservations.GetPointer());
+  d->visibleLandmarkMapper->SetInputData(visibleLandmarkPolyData.GetPointer());
+
+  d->visibleLandmarkActor->SetMapper(d->visibleLandmarkMapper.GetPointer());
+  d->visibleLandmarkActor->SetVisibility(d->UI.actionShowVisibleLandmarks->isChecked());
+  d->renderer->AddActor(d->visibleLandmarkActor.GetPointer());
+
+  d->visibleLandmarkOptions->addMapper(d->visibleLandmarkMapper.GetPointer());
 
   // Set up ground plane grid
   d->groundPlane->SetOrigin(-10.0, -10.0, 0.0);
@@ -565,6 +610,72 @@ void WorldView::setLandmarks(kwiver::vital::landmark_map const& lm)
 }
 
 //-----------------------------------------------------------------------------
+void WorldView::setVisibleLandmarks(kwiver::vital::landmark_map const& lm)
+{
+  QTE_D();
+
+  auto const& landmarks = lm.landmarks();
+  auto const size = static_cast<vtkIdType>(landmarks.size());
+
+  auto const defaultColor = kwiver::vital::rgb_color{};
+  auto haveColor = false;
+  auto maxObservations = unsigned{0};
+  auto minZ = qInf(), maxZ = -qInf();
+
+  d->visibleLandmarkPoints->Reset();
+  d->visibleLandmarkVerts->Reset();
+  d->visibleLandmarkColors->Reset();
+  d->visibleLandmarkElevations->Reset();
+  d->visibleLandmarkObservations->Reset();
+  d->visibleLandmarkPoints->Allocate(size);
+  d->visibleLandmarkVerts->Allocate(size);
+  d->visibleLandmarkColors->Allocate(3 * size);
+  d->visibleLandmarkElevations->Allocate(size);
+  d->visibleLandmarkObservations->Allocate(size);
+
+  vtkIdType vertIndex = 0;
+  foreach (auto const& lm, landmarks)
+  {
+    auto const& pos = lm.second->loc();
+    auto const& color = lm.second->color();
+    auto const observations = lm.second->observations();
+
+    d->visibleLandmarkPoints->InsertNextPoint(pos.data());
+    d->visibleLandmarkVerts->InsertNextCell(1);
+    d->visibleLandmarkVerts->InsertCellPoint(vertIndex++);
+    d->visibleLandmarkColors->InsertNextValue(color.r);
+    d->visibleLandmarkColors->InsertNextValue(color.g);
+    d->visibleLandmarkColors->InsertNextValue(color.b);
+    d->visibleLandmarkElevations->InsertNextValue(pos[2]);
+    d->visibleLandmarkObservations->InsertNextValue(observations);
+
+    haveColor = haveColor || (color != defaultColor);
+    maxObservations = qMax(maxObservations, observations);
+    minZ = qMin(minZ, pos[2]);
+    maxZ = qMax(maxZ, pos[2]);
+  }
+
+  auto fields = QHash<QString, FieldInformation>{};
+  fields.insert("Elevation", FieldInformation{Elevation, {minZ, maxZ}});
+  if (maxObservations)
+  {
+    auto const upper = static_cast<double>(maxObservations);
+    fields.insert("Observations", FieldInformation{Observations, {0.0, upper}});
+  }
+
+  d->visibleLandmarkOptions->setTrueColorAvailable(haveColor);
+  d->visibleLandmarkOptions->setDataFields(fields);
+
+  d->visibleLandmarkPoints->Modified();
+  d->visibleLandmarkVerts->Modified();
+  d->visibleLandmarkColors->Modified();
+  d->visibleLandmarkObservations->Modified();
+
+  d->updateScale(this);
+  d->updateAxes(this);
+}
+
+//-----------------------------------------------------------------------------
 void WorldView::setImageVisible(bool state)
 {
   QTE_D();
@@ -587,6 +698,15 @@ void WorldView::setLandmarksVisible(bool state)
   QTE_D();
 
   d->landmarkActor->SetVisibility(state);
+  d->updateAxes(this, true);
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::setVisibleLandmarksVisible(bool state)
+{
+  QTE_D();
+
+  d->visibleLandmarkActor->SetVisibility(state);
   d->updateAxes(this, true);
 }
 

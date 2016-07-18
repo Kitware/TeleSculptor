@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>560</width>
+    <width>649</width>
     <height>300</height>
    </rect>
   </property>
@@ -14,7 +14,16 @@
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <property name="margin">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
     <number>0</number>
    </property>
    <item>
@@ -27,6 +36,7 @@
      <addaction name="actionShowFrameImage"/>
      <addaction name="actionShowCameras"/>
      <addaction name="actionShowLandmarks"/>
+     <addaction name="actionShowVisibleLandmarks"/>
      <addaction name="actionShowGroundPlane"/>
     </widget>
    </item>
@@ -241,6 +251,24 @@
    </property>
    <property name="shortcut">
     <string>I</string>
+   </property>
+  </action>
+  <action name="actionShowVisibleLandmarks">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/22x22/landmark</normaloff>:/icons/22x22/landmark</iconset>
+   </property>
+   <property name="text">
+    <string>Visible Landmarks</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle visibility of landmarks visible by the current camera</string>
    </property>
   </action>
  </widget>
