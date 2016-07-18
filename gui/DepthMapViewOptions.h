@@ -12,9 +12,9 @@
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  *
- *  * Neither name of Kitware, Inc. nor the names of any contributors may be used
- *    to endorse or promote products derived from this software without specific
- *    prior written permission.
+ *  * Neither the name Kitware, Inc. nor the names of any contributors may be
+ *    used to endorse or promote products derived from this software without
+ *    specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -28,19 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DEPTHMAPVIEWOPTIONS_H
-#define DEPTHMAPVIEWOPTIONS_H
+#ifndef MAPTK_DEPTHMAPVIEWOPTIONS_H_
+#define MAPTK_DEPTHMAPVIEWOPTIONS_H_
 
 #include <qtGlobal.h>
 
+#include <QtGui/QButtonGroup>
+#include <QtGui/QVBoxLayout>
 #include <QtGui/QWidget>
 
-#include <QButtonGroup>
-#include <QFormLayout>
-
 class vtkActor;
-
-class vtkPolyData;
+class vtkPointData;
 
 class DepthMapViewOptionsPrivate;
 
@@ -49,34 +47,29 @@ class DepthMapViewOptions : public QWidget
   Q_OBJECT
 
 public:
-  explicit DepthMapViewOptions(const QString &settingsGroup,
-                           QWidget *parent = 0, Qt::WindowFlags flags = 0);
+  explicit DepthMapViewOptions(const QString& settingsGroup,
+                               QWidget* parent = 0, Qt::WindowFlags flags = 0);
   virtual ~DepthMapViewOptions();
 
-  void addActor(vtkActor *polyDataActor);
-
-  void cleanModes();
+  void setActor(vtkActor*);
 
 signals:
   void modified();
 
-protected slots:
-  void switchDisplayMode(bool checked);
+public slots:
+  void updateRanges(vtkPointData*);
+  void updateActor();
 
-  void updateGradient();
+protected slots:
+  void setDepthIcon(QIcon const&);
+  void setBestCostValueIcon(QIcon const&);
+  void setUniquenessRatioIcon(QIcon const&);
 
 private:
-  QButtonGroup* bGroup;
-  QVBoxLayout* layout;
-
-  void addDepthMapMode(std::string name, bool needGradient,
-                       double lower, double upper);
-  void clearLayout(QLayout* layout);
-
   QTE_DECLARE_PRIVATE_RPTR(DepthMapViewOptions)
   QTE_DECLARE_PRIVATE(DepthMapViewOptions)
 
   QTE_DISABLE_COPY(DepthMapViewOptions)
 };
 
-#endif // DEPTHMAPVIEWOPTIONS_H
+#endif

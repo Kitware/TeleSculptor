@@ -45,8 +45,6 @@ public:
   explicit MainWindow(QWidget* parent = 0, Qt::WindowFlags flags = 0);
   virtual ~MainWindow();
 
-  void start(char* path);
-
 public slots:
   void openFile();
   void openFile(QString const& path);
@@ -57,7 +55,6 @@ public slots:
   void loadCamera(QString const& path);
   void loadTracks(QString const& path);
   void loadLandmarks(QString const& path);
-  void loadDepthmaps(QString const& path);
 
   void saveCameras();
   void saveCameras(QString const& path);
@@ -65,9 +62,6 @@ public slots:
   void saveLandmarks(QString const& path);
 
   void saveWebGLScene();
-
-  void updateThresholdsDepthmapView(double bcMin,double bcMax,
-                                    double urMin,double urMax);
 
   void setActiveCamera(int);
 

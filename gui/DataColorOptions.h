@@ -51,10 +51,10 @@ public:
 
   QIcon icon() const;
 
-  vtkScalarsToColors* scalarsToColors() const;
+  double minimum() const;
+  double maximum() const;
 
-  double getMinValue();
-  double getMaxValue();
+  vtkScalarsToColors* scalarsToColors() const;
 
 public slots:
   void setAvailableRange(double lower, double upper);

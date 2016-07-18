@@ -12,9 +12,9 @@
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  *
- *  * Neither name of Kitware, Inc. nor the names of any contributors may be used
- *    to endorse or promote products derived from this software without specific
- *    prior written permission.
+ *  * Neither the name Kitware, Inc. nor the names of any contributors may be
+ *    used to endorse or promote products derived from this software without
+ *    specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DEPTHMAPFILTEROPTIONS_H
-#define DEPTHMAPFILTEROPTIONS_H
+#ifndef MAPTK_DEPTHMAPFILTEROPTIONS_H_
+#define MAPTK_DEPTHMAPFILTEROPTIONS_H_
 
 #include <qtGlobal.h>
 
@@ -42,24 +42,30 @@ class DepthMapFilterOptions : public QWidget
   Q_OBJECT
 
 public:
-  explicit DepthMapFilterOptions(const QString &settingsGroup,
-      QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  explicit DepthMapFilterOptions(const QString& settingsGroup,
+                                 QWidget* parent = 0,
+                                 Qt::WindowFlags flags = 0);
   virtual ~DepthMapFilterOptions();
 
-  double getBestCostValueMin();
-  double getBestCostValueMax();
-  double getUniquenessRatioMin();
-  double getUniquenessRatioMax();
+  double bestCostValueMinimum() const;
+  double bestCostValueMaximum() const;
+  double uniquenessRatioMinimum() const;
+  double uniquenessRatioMaximum() const;
 
-  void initializeFilters(double bcMin, double bcMax, double urMin, double urMax);
+  void initializeFilters(double bcMin, double bcMax,
+                         double urMin, double urMax);
 
-  bool isFilterPersist();
+  bool isFilterPersistent() const;
 
 signals:
   void filtersChanged();
 
 public slots:
-  void updateFilters();
+  void updateBestCostMinimum();
+  void updateBestCostMaximum();
+  void updateUniquenessRatioMinimum();
+  void updateUniquenessRatioMaximum();
+
   void resetFilters();
 
 private:
@@ -69,4 +75,4 @@ private:
   QTE_DISABLE_COPY(DepthMapFilterOptions)
 };
 
-#endif // DEPTHMAPFILTEROPTIONS_H
+#endif

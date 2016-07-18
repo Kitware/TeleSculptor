@@ -14,16 +14,7 @@
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <property name="leftMargin">
-    <number>0</number>
-   </property>
-   <property name="topMargin">
-    <number>0</number>
-   </property>
-   <property name="rightMargin">
-    <number>0</number>
-   </property>
-   <property name="bottomMargin">
+   <property name="margin">
     <number>0</number>
    </property>
    <item>
@@ -37,7 +28,7 @@
      <addaction name="actionShowCameras"/>
      <addaction name="actionShowLandmarks"/>
      <addaction name="actionShowGroundPlane"/>
-     <addaction name="actionDepthmapDisplay"/>
+     <addaction name="actionShowDepthMap"/>
     </widget>
    </item>
    <item>
@@ -253,15 +244,12 @@
     <string>I</string>
    </property>
   </action>
-  <action name="actionDepthmapDisplay">
+  <action name="actionShowDepthMap">
    <property name="checkable">
     <bool>true</bool>
    </property>
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
    <property name="text">
-    <string>Depthmap</string>
+    <string>Depth Map</string>
    </property>
    <property name="toolTip">
     <string>Toggles dempthmaps display</string>

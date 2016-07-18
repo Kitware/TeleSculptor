@@ -28,37 +28,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_DEPTHMAPVIEW_H_
-#define MAPTK_DEPTHMAPVIEW_H_
+#ifndef MAPTK_DATAARRAYS_H_
+#define MAPTK_DATAARRAYS_H_
 
-#include <qtGlobal.h>
-
-#include <QtGui/QWidget>
-
-class DepthMapViewPrivate;
-
-class DepthMapView : public QWidget
+namespace LandmarkArrays
 {
-  Q_OBJECT
+  static char const* const TrueColor = "truecolor";
+  static char const* const Elevation = "elevation";
+  static char const* const Observations = "observations";
+}
 
-public:
-  explicit DepthMapView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~DepthMapView();
-
-public slots:
-  void setDepthMap(QString const& imagePath);
-
-  void updateThresholds(double, double, double, double);
-
-  void setBackgroundColor(QColor const&);
-
-  void resetView();
-
-private:
-  QTE_DECLARE_PRIVATE_RPTR(DepthMapView)
-  QTE_DECLARE_PRIVATE(DepthMapView)
-
-  QTE_DISABLE_COPY(DepthMapView)
-};
+namespace DepthMapArrays
+{
+  // CAUTION: These must match the names in the VTI files
+  static char const* const Depth = "Depths";
+  static char const* const TrueColor = "Color";
+  static char const* const BestCostValues = "Best Cost Values";
+  static char const* const UniquenessRatios = "Uniqueness Ratios";
+}
 
 #endif

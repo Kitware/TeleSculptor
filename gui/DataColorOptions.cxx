@@ -34,14 +34,14 @@
 
 #include "vtkMaptkScalarsToGradient.h"
 
-#include <cmath>
-
 #include <vtkNew.h>
 
 #include <qtGradient.h>
 #include <qtScopedValueChange.h>
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
+
+#include <cmath>
 
 QTE_IMPLEMENT_D_FUNC(DataColorOptions)
 
@@ -115,18 +115,16 @@ vtkScalarsToColors* DataColorOptions::scalarsToColors() const
 }
 
 //-----------------------------------------------------------------------------
-double DataColorOptions::getMinValue()
+double DataColorOptions::minimum() const
 {
   QTE_D();
-
   return d->UI.minimum->value();
 }
 
 //-----------------------------------------------------------------------------
-double DataColorOptions::getMaxValue()
+double DataColorOptions::maximum() const
 {
   QTE_D();
-
   return d->UI.maximum->value();
 }
 
@@ -141,7 +139,8 @@ void DataColorOptions::setAvailableRange(double lower, double upper)
   d->UI.minimum->setRange(lower, upper);
   d->UI.maximum->setRange(lower, upper);
 
-  double step = std::pow(10.0, std::floor(std::log10(std::abs(upper - lower))) -1);
+  auto const scale = std::floor(std::log10(std::abs(upper - lower)));
+  auto const step = std::pow(10.0, scale - 1.0);
 
   d->UI.minimum->setSingleStep(step);
   d->UI.maximum->setSingleStep(step);

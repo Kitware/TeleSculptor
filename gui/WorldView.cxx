@@ -12,9 +12,9 @@
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  *
- *  * Neither name of Kitware, Inc. nor the names of any contributors may be used
- *    to endorse or promote products derived from this software without specific
- *    prior written permission.
+ *  * Neither the name Kitware, Inc. nor the names of any contributors may be
+ *    used to endorse or promote products derived from this software without
+ *    specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -34,10 +34,11 @@
 #include "am_WorldView.h"
 
 #include "CameraOptions.h"
+#include "DataArrays.h"
+#include "DepthMapOptions.h"
 #include "FieldInformation.h"
 #include "ImageOptions.h"
 #include "PointOptions.h"
-#include "DepthMapOptions.h"
 #include "vtkMaptkCamera.h"
 #include "vtkMaptkCameraRepresentation.h"
 
@@ -58,8 +59,8 @@
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
-#include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
+#include <vtkRenderer.h>
 #include <vtkTextProperty.h>
 #include <vtkThreshold.h>
 #include <vtkUnsignedCharArray.h>
@@ -71,32 +72,33 @@
 #include <vtkWebGLExporter.h>
 #endif
 
+#include <qtIndexRange.h>
 #include <qtMath.h>
 
 #include <QtGui/QMenu>
 #include <QtGui/QToolButton>
 #include <QtGui/QWidgetAction>
 
-namespace // anonymous
-{
-static char const* const TrueColor = "truecolor";
-static char const* const Elevation = "elevation";
-static char const* const Observations = "observations";
-}
+#include <QtCore/QDebug>
+
+using namespace LandmarkArrays;
+
+QTE_IMPLEMENT_D_FUNC(WorldView)
 
 //-----------------------------------------------------------------------------
 class WorldViewPrivate
 {
 public:
-  WorldViewPrivate() :
-    validImage(false),
-    validTransform(false),
-    cameraRepDirty(false),
-    scaleDirty(false),
-    axesDirty(false),
-    axesVisible(false),
-    depthmapAlreadLoaded(false)
-    {}
+  WorldViewPrivate()
+    : validImage(false),
+      validTransform(false),
+      cameraRepDirty(false),
+      scaleDirty(false),
+      axesDirty(false),
+      axesVisible(false),
+      depthMapLoaded(false)
+  {
+  }
 
   void setPopup(QAction* action, QMenu* menu);
   void setPopup(QAction* action, QWidget* widget);
@@ -143,13 +145,12 @@ public:
   vtkNew<vtkMatrix4x4> imageProjection;
   vtkNew<vtkMatrix4x4> imageLocalTransform;
 
-  vtkSmartPointer<vtkPolyData> currentDepthmap;
+  vtkSmartPointer<vtkPolyData> currentDepthMap;
 
-  vtkNew<vtkActor> polyDataActor;
-  vtkNew<vtkActor> depthmapActor;
+  vtkNew<vtkActor> depthMapActor;
 
-  vtkMaptkCamera* currentCam;
-  QString currentVtiPath;
+  vtkMaptkCamera* currentCamera;
+  QString currentDepthMapPath;
 
   bool validImage;
   bool validTransform;
@@ -160,10 +161,8 @@ public:
 
   bool axesVisible;
 
-  bool depthmapAlreadLoaded;
+  bool depthMapLoaded;
 };
-
-QTE_IMPLEMENT_D_FUNC(WorldView)
 
 //-----------------------------------------------------------------------------
 void WorldViewPrivate::setPopup(QAction* action, QMenu* menu)
@@ -317,17 +316,14 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   connect(d->landmarkOptions, SIGNAL(modified()),
           d->UI.renderWidget, SLOT(update()));
 
-  //Depthmap Options
-
-  d->depthMapOptions = new DepthMapOptions("WorldView/Depthmap", this);
-  d->setPopup(d->UI.actionDepthmapDisplay, d->depthMapOptions);
+  d->depthMapOptions = new DepthMapOptions("WorldView/DepthMap", this);
+  d->setPopup(d->UI.actionShowDepthMap, d->depthMapOptions);
 
   d->depthMapOptions->setEnabled(false);
 
-  connect(d->depthMapOptions, SIGNAL(depthMapRepresentationChanged()),
-          this, SLOT(updateDepthMapRepresentation()));
-
-  connect(d->depthMapOptions, SIGNAL(depthMapThresholdsChanged()),
+  connect(d->depthMapOptions, SIGNAL(displayModeChanged()),
+          this, SLOT(updateDepthMapDisplayMode()));
+  connect(d->depthMapOptions, SIGNAL(thresholdsChanged()),
           this, SLOT(updateDepthMapThresholds()));
 
   // Connect actions
@@ -337,7 +333,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   this->addAction(d->UI.actionShowCameras);
   this->addAction(d->UI.actionShowLandmarks);
   this->addAction(d->UI.actionShowGroundPlane);
-  this->addAction(d->UI.actionDepthmapDisplay);
+  this->addAction(d->UI.actionShowDepthMap);
 
   connect(d->UI.actionViewReset, SIGNAL(triggered()),
           this, SLOT(resetView()));
@@ -364,7 +360,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(setLandmarksVisible(bool)));
   connect(d->UI.actionShowGroundPlane, SIGNAL(toggled(bool)),
           this, SLOT(setGroundPlaneVisible(bool)));
-  connect(d->UI.actionDepthmapDisplay, SIGNAL(toggled(bool)),
+  connect(d->UI.actionShowDepthMap, SIGNAL(toggled(bool)),
           this, SLOT(setDepthMapVisible(bool)));
 
   // Set up render pipeline
@@ -473,123 +469,122 @@ void WorldView::setBackgroundColor(QColor const& color)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::setActiveDepthMap(vtkMaptkCamera* camera, QString vtiPath)
+void WorldView::setActiveDepthMap(
+  vtkMaptkCamera* camera, QString const& depthMapPath)
 {
   QTE_D();
 
-  if(d->UI.actionDepthmapDisplay->isChecked() && !d->depthmapAlreadLoaded)
+  if (d->UI.actionShowDepthMap->isChecked() && !d->depthMapLoaded)
   {
-    std::string filename = vtiPath.toStdString();
+    vtkNew<vtkXMLImageDataReader> reader;
 
-    vtkNew<vtkXMLImageDataReader> readerIm;
+    reader->SetFileName(qPrintable(depthMapPath));
+    reader->Update();
 
-    readerIm->SetFileName(filename.c_str());
-    readerIm->Update();
+    auto const pointCount = reader->GetOutput()->GetNumberOfPoints();
+    if (!pointCount)
+    {
+      qWarning() << "Failed to read depth map from" << depthMapPath;
+      return;
+    }
 
-    int width = readerIm->GetOutput()->GetDimensions()[0];
-    int height = readerIm->GetOutput()->GetDimensions()[1];
+    auto const width = reader->GetOutput()->GetDimensions()[0];
+    auto const height = reader->GetOutput()->GetDimensions()[1];
+    qDebug() << "point counts:" << width * height << pointCount;
 
     vtkNew<vtkPoints> points;
 
-    points->SetNumberOfPoints(width*height);
+    points->SetNumberOfPoints(pointCount);
 
-    //Unprojecting the points from the vtifile
+    // Unproject the points from the VTI file
+    auto const dmToImageRatio =
+      static_cast<double>(camera->GetImageDimensions()[0]) /
+      static_cast<double>(width);
+    auto const scaledCamera = camera->ScaledK(dmToImageRatio);
 
-    double dmToImageRatio = camera->GetImageDimensions()[0]/width;
-
-    vtkMaptkCamera* scaledCam = camera->scaledK(dmToImageRatio);
-
-    double pixel[3];
-
-    for (vtkIdType idPixel = 0; idPixel < readerIm->GetOutput()->
-         GetNumberOfPoints(); ++idPixel)
+    foreach (auto const i, qtIndexRange(pointCount))
     {
-      readerIm->GetOutput()->GetPoint(idPixel,pixel);
+      double pixel[3];
+      reader->GetOutput()->GetPoint(i, pixel);
+      pixel[1] = height - 1 - pixel[1];
 
-      pixel[1] = height-1-pixel[1];
+      auto const pd = reader->GetOutput()->GetPointData();
+      auto const da = pd->GetArray(DepthMapArrays::Depth);
+      auto const depth = da->GetTuple1(i);
 
-      kwiver::vital::vector_3d p;
+      auto const p = scaledCamera->UnprojectPoint(pixel, depth);
 
-      double depth = readerIm->GetOutput()->GetPointData()->GetArray("Depths")->
-          GetTuple1(idPixel);
-
-      scaledCam->UnprojectPoint(pixel, depth, &p);
-
-      points->SetPoint(idPixel,p[0],p[1],p[2]);
+      points->SetPoint(i, p[0], p[1], p[2]);
     }
 
-    //Generating the PolyData to show
-
+    // Generate the PolyData to show
     vtkSmartPointer<vtkPolyData> polyData;
-    vtkNew<vtkGeometryFilter> geometryFilterIm;
+    vtkNew<vtkGeometryFilter> geometryFilter;
 
-    geometryFilterIm->SetInputData(readerIm->GetOutput());
-    geometryFilterIm->Update();
+    geometryFilter->SetInputData(reader->GetOutput());
+    geometryFilter->Update();
 
-    polyData = geometryFilterIm->GetOutput();
-    polyData->SetPoints(points.Get());
+    polyData = geometryFilter->GetOutput();
+    polyData->SetPoints(points.GetPointer());
 
-    d->currentDepthmap = polyData.Get();
-    d->currentDepthmap->GetPointData()->SetScalars(d->currentDepthmap->
-                                                   GetPointData()->GetArray("Color"));
+    d->currentDepthMap = polyData.GetPointer();
+    d->currentDepthMap->GetPointData()->SetScalars(
+      d->currentDepthMap->GetPointData()->GetArray(DepthMapArrays::TrueColor));
 
     vtkNew<vtkPolyDataMapper> mapper;
 
-    mapper->SetInputData(d->currentDepthmap.Get());
+    mapper->SetInputData(d->currentDepthMap.GetPointer());
     mapper->SetColorModeToDirectScalars();
 
-    d->depthmapActor->SetMapper(mapper.Get());
+    d->depthMapActor->SetMapper(mapper.GetPointer());
 
-    if(d->depthMapOptions->isPointsChecked())
+    switch (d->depthMapOptions->displayMode())
     {
-      d->depthmapActor->GetProperty()->SetRepresentationToPoints();
+      case DepthMapOptions::Points:
+        d->depthMapActor->GetProperty()->SetRepresentationToPoints();
+        break;
+      case DepthMapOptions::Surfaces:
+        d->depthMapActor->GetProperty()->SetRepresentationToSurface();
+        break;
     }
-    else if(d->depthMapOptions->isSurfacesChecked())
+
+    d->renderer->AddActor(d->depthMapActor.GetPointer());
+
+    d->renderer->AddViewProp(d->depthMapActor.GetPointer());
+
+    if (!(d->depthMapOptions->isFilterEnabled() &&
+          d->depthMapOptions->isFilterPersistent()))
     {
-      d->depthmapActor->GetProperty()->SetRepresentationToSurface();
-    }
-
-    d->renderer->AddActor(d->depthmapActor.Get());
-
-    d->renderer->AddViewProp(d->depthmapActor.GetPointer());
-
-
-    if(!d->depthMapOptions->isFilterChecked()
-       || !d->depthMapOptions->isFilterPersistChecked())
-    {
-      //initializing the filters
-
+      // Initialize the filters
       double bcRange[2], urRange[2];
 
-      d->currentDepthmap->GetPointData()->GetArray("Best Cost Values")->GetRange(bcRange);
-      d->currentDepthmap->GetPointData()->GetArray("Uniqueness Ratios")->GetRange(urRange);
+      auto const pd = d->currentDepthMap->GetPointData();
+      auto const bcArray = pd->GetArray(DepthMapArrays::BestCostValues);
+      auto const urArray = pd->GetArray(DepthMapArrays::UniquenessRatios);
 
-      d->depthMapOptions->initializeFilters(bcRange[0], bcRange[1],
-                                            urRange[0], urRange[1]);
+      if (bcArray && urArray)
+      {
+        bcArray->GetRange(bcRange);
+        urArray->GetRange(urRange);
+
+        d->depthMapOptions->initializeFilters(bcRange[0], bcRange[1],
+                                              urRange[0], urRange[1]);
+      }
+      else
+      {
+        qWarning() << "Failed to load data from depth map" << depthMapPath;
+      }
     }
     else
     {
       updateDepthMapThresholds();
     }
 
-
-    d->depthmapAlreadLoaded = true;
+    d->depthMapLoaded = true;
   }
 
-  d->currentCam = camera;
-  d->currentVtiPath = vtiPath;
-}
-
-//-----------------------------------------------------------------------------
-void WorldView::enableDepthMap()
-{
-  QTE_D();
-
-  d->UI.actionDepthmapDisplay->setEnabled(true);
-  d->UI.actionDepthmapDisplay->setCheckable(true);
-  d->UI.actionDepthmapDisplay->setChecked(false);
-
-  d->depthMapOptions->enable();
+  d->currentCamera = camera;
+  d->currentDepthMapPath = depthMapPath;
 }
 
 //-----------------------------------------------------------------------------
@@ -632,7 +627,7 @@ void WorldView::setActiveCamera(vtkMaptkCamera* camera)
   d->updateCameras(this);
   d->updateAxes(this);
 
-  d->depthmapAlreadLoaded = false;
+  d->depthMapLoaded = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -776,12 +771,12 @@ void WorldView::setDepthMapVisible(bool state)
 {
   QTE_D();
 
-  d->depthmapActor->SetVisibility(state);
+  d->depthMapActor->SetVisibility(state);
   d->depthMapOptions->setEnabled(state);
 
   if (state)
   {
-    setActiveDepthMap(d->currentCam,d->currentVtiPath);
+    setActiveDepthMap(d->currentCamera, d->currentDepthMapPath);
   }
 
   d->UI.renderWidget->update();
@@ -893,12 +888,13 @@ void WorldView::updateAxes()
     props->InitTraversal();
     while (auto const prop = props->GetNextProp())
     {
-      // Skip the axes, ground and frustums representations, and any hidden actors
-      if (prop == d->cubeAxesActor.GetPointer()
-          || prop == d->groundActor.GetPointer()
-          || prop == d->cameraRep->GetActiveActor()
-          || prop == d->cameraRep->GetNonActiveActor()
-          || !prop->GetVisibility())
+      // Skip the axes, ground and frustums representations, and any hidden
+      // actors
+      if (prop == d->cubeAxesActor.GetPointer() ||
+          prop == d->groundActor.GetPointer() ||
+          prop == d->cameraRep->GetActiveActor() ||
+          prop == d->cameraRep->GetNonActiveActor() ||
+          !prop->GetVisibility())
       {
         continue;
       }
@@ -987,6 +983,65 @@ void WorldView::updateScale()
 }
 
 //-----------------------------------------------------------------------------
+void WorldView::updateDepthMapDisplayMode()
+{
+  QTE_D();
+
+  switch (d->depthMapOptions->displayMode())
+  {
+    case DepthMapOptions::Points:
+      d->depthMapActor->GetProperty()->SetRepresentationToPoints();
+      break;
+    case DepthMapOptions::Surfaces:
+      d->depthMapActor->GetProperty()->SetRepresentationToSurface();
+      break;
+  }
+  d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::updateDepthMapThresholds()
+{
+  QTE_D();
+
+  double bestCostValueMin = d->depthMapOptions->bestCostValueMinimum();
+  double bestCostValueMax = d->depthMapOptions->bestCostValueMaximum();
+  double uniquenessRatioMin = d->depthMapOptions->uniquenessRatioMinimum();
+  double uniquenessRatioMax = d->depthMapOptions->uniquenessRatioMaximum();
+
+  vtkNew<vtkThreshold> thresholdBestCostValues;
+  vtkNew<vtkThreshold> thresholdUniquenessRatios;
+
+  thresholdBestCostValues->SetInputData(d->currentDepthMap);
+  thresholdBestCostValues->SetInputArrayToProcess(
+    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, "Best Cost Values");
+  thresholdBestCostValues->ThresholdBetween(
+    bestCostValueMin, bestCostValueMax);
+
+  thresholdUniquenessRatios->SetInputConnection(
+    thresholdBestCostValues->GetOutputPort());
+  thresholdUniquenessRatios->SetInputArrayToProcess(
+    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, "Uniqueness Ratios");
+  thresholdUniquenessRatios->ThresholdBetween(
+    uniquenessRatioMin, uniquenessRatioMax);
+
+  vtkNew<vtkGeometryFilter> geometryFilter;
+  geometryFilter->SetInputConnection(
+    thresholdUniquenessRatios->GetOutputPort());
+
+  d->depthMapActor->GetMapper()->SetInputConnection(
+    geometryFilter->GetOutputPort());
+  d->depthMapActor->GetMapper()->Update();
+
+  emit depthMapThresholdsChanged(bestCostValueMin, bestCostValueMax,
+                                 uniquenessRatioMin, uniquenessRatioMax);
+
+  d->UI.renderWidget->update();
+
+  d->depthMapLoaded = true;
+}
+
+//-----------------------------------------------------------------------------
 void WorldView::exportWebGLScene(QString const& path)
 {
 #ifdef VTKWEBGLEXPORTER
@@ -1011,8 +1066,8 @@ void WorldView::exportWebGLScene(QString const& path)
   while (auto const actor = actors->GetNextActor())
   {
     if(actor && actor->GetMapper() &&
-       (actor->GetMapper()->GetColorMode() == VTK_COLOR_MODE_DEFAULT
-        || actor->GetMapper()->GetColorMode() == VTK_COLOR_MODE_DIRECT_SCALARS))
+       (actor->GetMapper()->GetColorMode() == VTK_COLOR_MODE_DEFAULT ||
+        actor->GetMapper()->GetColorMode() == VTK_COLOR_MODE_DIRECT_SCALARS))
     {
       actor->GetMapper()->GetLookupTable()->SetVectorModeToRGBColors();
     }
@@ -1023,53 +1078,4 @@ void WorldView::exportWebGLScene(QString const& path)
 #else
   Q_UNUSED(path)
 #endif
-}
-
-//-----------------------------------------------------------------------------
-void WorldView::updateDepthMapRepresentation()
-{
-  QTE_D();
-
-  if(d->depthMapOptions->isPointsChecked()) {
-    d->depthmapActor->GetProperty()->SetRepresentationToPoints();
-  }
-  else {
-    d->depthmapActor->GetProperty()->SetRepresentationToSurface();
-  }
-  d->UI.renderWidget->update();
-}
-
-//-----------------------------------------------------------------------------
-void WorldView::updateDepthMapThresholds()
-{
-
-  QTE_D();
-
-  double bestCostValueMin = d->depthMapOptions->getBestCostValueMin();
-  double bestCostValueMax = d->depthMapOptions->getBestCostValueMax();
-  double uniquenessRatioMin = d->depthMapOptions->getUniquenessRatioMin();
-  double uniquenessRatioMax = d->depthMapOptions->getUniquenessRatioMax();
-
-  vtkNew<vtkThreshold> thresholdBestCostValues, thresholdUniquenessRatios;
-
-  thresholdBestCostValues->SetInputData(d->currentDepthmap);
-
-  thresholdBestCostValues->SetInputArrayToProcess(0,0,0,vtkDataObject::FIELD_ASSOCIATION_POINTS,"Best Cost Values");
-  thresholdBestCostValues->ThresholdBetween(bestCostValueMin,bestCostValueMax);
-
-  thresholdUniquenessRatios->SetInputConnection(thresholdBestCostValues->GetOutputPort());
-  thresholdUniquenessRatios->SetInputArrayToProcess(0,0,0,vtkDataObject::FIELD_ASSOCIATION_POINTS,"Uniqueness Ratios");
-  thresholdUniquenessRatios->ThresholdBetween(uniquenessRatioMin,uniquenessRatioMax);
-
-  vtkNew<vtkGeometryFilter> geometryFilter;
-  geometryFilter->SetInputConnection(thresholdUniquenessRatios->GetOutputPort());
-
-  d->depthmapActor->GetMapper()->SetInputConnection(geometryFilter->GetOutputPort());
-  d->depthmapActor->GetMapper()->Update();
-
-  emit updateThresholds(bestCostValueMin,bestCostValueMax,uniquenessRatioMin,uniquenessRatioMax);
-
-  d->UI.renderWidget->update();
-
-  d->depthmapAlreadLoaded = true;
 }

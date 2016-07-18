@@ -1,40 +1,40 @@
 /*ckwg +29
-* Copyright 2015-2016 by Kitware, Inc.
-* All rights reserved.
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are met:
-*
-*  * Redistributions of source code must retain the above copyright notice,
-*    this list of conditions and the following disclaimer.
-*
-*  * Redistributions in binary form must reproduce the above copyright notice,
-*    this list of conditions and the following disclaimer in the documentation
-*    and/or other materials provided with the distribution.
-*
-*  * Neither name of Kitware, Inc. nor the names of any contributors may be used
-*    to endorse or promote products derived from this software without specific
-*    prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-* ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
-* ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-* OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Copyright 2016 by Kitware, Inc.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *  * Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ *  * Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ *  * Neither the name Kitware, Inc. nor the names of any contributors may be
+ *    used to endorse or promote products derived from this software without
+ *    specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 #include "vtkMaptkCamera.h"
 
 #include <vital/io/camera_io.h>
 
-#include <vtkObjectFactory.h>
 #include <vtkMath.h>
 #include <vtkMatrix4x4.h>
+#include <vtkObjectFactory.h>
 
 #include <vtksys/SystemTools.hxx>
 
@@ -122,55 +122,52 @@ bool vtkMaptkCamera::ProjectPoint(kwiver::vital::vector_3d const& in,
 */
 
 //-----------------------------------------------------------------------------
-bool vtkMaptkCamera::UnprojectPoint(double pixel[2], double depth,
-                                    kwiver::vital::vector_3d *unProjectedPoint)
+kwiver::vital::vector_3d vtkMaptkCamera::UnprojectPoint(
+  double pixel[2], double depth)
 {
   // Build camera matrix
   auto const T = this->MaptkCamera->translation();
   auto const R = kwiver::vital::matrix_3x3d(this->MaptkCamera->rotation());
 
-  kwiver::vital::vector_2d normPoint = this->MaptkCamera->intrinsics()->
-      unmap(kwiver::vital::vector_2d(pixel[0], pixel[1]));
+  auto const inPoint = kwiver::vital::vector_2d{pixel[0], pixel[1]};
+  auto const normPoint = this->MaptkCamera->intrinsics()->unmap(inPoint);
 
-  kwiver::vital::vector_3d homogenousPoint(normPoint[0], normPoint[1], 1.0);
+  auto const homogenousPoint = kwiver::vital::vector_3d{normPoint[0] * depth,
+                                                        normPoint[1] * depth,
+                                                        depth};
 
-  homogenousPoint *= depth;
-
-  *unProjectedPoint = R.transpose() * (homogenousPoint - T);
-
-  return true;
+  return kwiver::vital::vector_3d(R.transpose() * (homogenousPoint - T));
 }
 
 //-----------------------------------------------------------------------------
-void vtkMaptkCamera::scaleK(float factor)
+void vtkMaptkCamera::ScaleK(double factor)
 {
   auto K = this->MaptkCamera->intrinsics()->as_matrix();
 
-  K(0,0) *= factor;
-  K(0,1) *= factor;
-  K(0,2) *= factor;
-  K(1,1) *= factor;
-  K(1,2) *= factor;
+  K(0, 0) *= factor;
+  K(0, 1) *= factor;
+  K(0, 2) *= factor;
+  K(1, 1) *= factor;
+  K(1, 2) *= factor;
 
   kwiver::vital::simple_camera_intrinsics newIntrinsics(K);
 
   kwiver::vital::simple_camera scaledCamera(this->MaptkCamera->center(),
-                                       this->MaptkCamera->rotation(),newIntrinsics);
+                                            this->MaptkCamera->rotation(),
+                                            newIntrinsics);
   SetCamera(scaledCamera.clone());
 }
 
 //-----------------------------------------------------------------------------
-vtkMaptkCamera *vtkMaptkCamera::scaledK(float factor)
+vtkSmartPointer<vtkMaptkCamera> vtkMaptkCamera::ScaledK(double factor)
 {
-  vtkMaptkCamera* newCam = new vtkMaptkCamera();
+  auto newCam = vtkSmartPointer<vtkMaptkCamera>::New();
   newCam->DeepCopy(this);
 
-  newCam->scaleK(factor);
+  newCam->ScaleK(factor);
 
   return newCam;
 }
-
-
 
 //-----------------------------------------------------------------------------
 bool vtkMaptkCamera::Update()

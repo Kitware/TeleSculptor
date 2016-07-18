@@ -12,9 +12,9 @@
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  *
- *  * Neither name of Kitware, Inc. nor the names of any contributors may be used
- *    to endorse or promote products derived from this software without specific
- *    prior written permission.
+ *  * Neither the name Kitware, Inc. nor the names of any contributors may be
+ *    used to endorse or promote products derived from this software without
+ *    specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DEPTHMAPOPTIONS_H
-#define DEPTHMAPOPTIONS_H
+#ifndef MAPTK_DEPTHMAPOPTIONS_H_
+#define MAPTK_DEPTHMAPOPTIONS_H_
 
 #include <qtGlobal.h>
 
@@ -44,33 +44,33 @@ class DepthMapOptions : public QWidget
   Q_OBJECT
 
 public:
-  explicit DepthMapOptions(const QString &settingsGroup,
-                           QWidget *parent = 0, Qt::WindowFlags flags = 0);
+  enum DisplayMode
+  {
+    Points,
+    Surfaces,
+  };
+
+public:
+  explicit DepthMapOptions(const QString& settingsGroup,
+                           QWidget* parent = 0, Qt::WindowFlags flags = 0);
   virtual ~DepthMapOptions();
 
-  bool isPointsChecked();
-  bool isSurfacesChecked();
+  DisplayMode displayMode() const;
 
-  double getBestCostValueMin();
-  double getBestCostValueMax();
-  double getUniquenessRatioMin();
-  double getUniquenessRatioMax();
+  double bestCostValueMinimum() const;
+  double bestCostValueMaximum() const;
+  double uniquenessRatioMinimum() const;
+  double uniquenessRatioMaximum() const;
 
   void initializeFilters(double bcMin, double bcMax,
                          double urMin, double urMax);
 
-  void enable();
-
-  bool isFilterPersistChecked();
-  bool isFilterChecked();
+  bool isFilterPersistent() const;
+  bool isFilterEnabled() const;
 
 signals:
-  void modified();
-  void depthMapRepresentationChanged();
-  void depthMapThresholdsChanged();
-
-public slots:
-  void showFiltersMenu(bool);
+  void displayModeChanged();
+  void thresholdsChanged();
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(DepthMapOptions)
@@ -79,4 +79,4 @@ private:
   QTE_DISABLE_COPY(DepthMapOptions)
 };
 
-#endif // DEPTHMAPOPTIONS_H
+#endif

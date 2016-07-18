@@ -39,9 +39,7 @@
 
 #include "AboutDialog.h"
 #include "MatchMatrixWindow.h"
-#include "DepthMapView.h"
 #include "Project.h"
-#include "DepthMapPaths.h"
 #include "vtkMaptkCamera.h"
 
 #include <maptk/match_matrix.h>
@@ -218,15 +216,13 @@ class MainWindowPrivate
 {
 public:
   // Data structures
-
   struct CameraData
   {
     int id;
     vtkSmartPointer<vtkMaptkCamera> camera;
 
     QString imagePath; // Full path to camera image data
-    QString vtiPath;
-
+    QString depthMapPath; // Full path to depth map data
   };
 
   // Methods
@@ -245,8 +241,6 @@ public:
 
   void setActiveCamera(int);
   void updateCameraView();
-
-//  void updateDM();
 
   void loadImage(QString const& path, vtkMaptkCamera* camera);
 
@@ -432,12 +426,10 @@ void MainWindowPrivate::setActiveCamera(int id)
   this->updateCameraView();
 
   auto& cd = this->cameras[id];
-
-  if (!cd.vtiPath.isEmpty())
+  if (!cd.depthMapPath.isEmpty())
   {
-    UI.dMView->setDepthMap(cd.vtiPath);
-
-    UI.worldView->setActiveDepthMap(cd.camera, cd.vtiPath);
+    UI.depthMapView->setDepthMap(cd.depthMapPath);
+    UI.worldView->setActiveDepthMap(cd.camera, cd.depthMapPath);
   }
 }
 
@@ -462,8 +454,6 @@ void MainWindowPrivate::updateCameraView()
   // Show camera image
   this->loadImage(cd.imagePath, cd.camera);
   this->UI.cameraView->setImagePath(cd.imagePath);
-
-  //TODO: load DM
 
   if (!cd.camera)
   {
@@ -612,7 +602,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->UI.menuView->addSeparator();
   d->UI.menuView->addAction(d->UI.cameraViewDock->toggleViewAction());
   d->UI.menuView->addAction(d->UI.cameraSelectorDock->toggleViewAction());
-  d->UI.menuView->addAction(d->UI.dMDock->toggleViewAction());
+  d->UI.menuView->addAction(d->UI.depthMapViewDock->toggleViewAction());
 
   d->UI.playSlideshowButton->setDefaultAction(d->UI.actionSlideshowPlay);
   d->UI.loopSlideshowButton->setDefaultAction(d->UI.actionSlideshowLoop);
@@ -651,8 +641,10 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.camera, SIGNAL(valueChanged(int)),
           this, SLOT(setActiveCamera(int)));
 
-  connect(d->UI.worldView, SIGNAL(updateThresholds(double,double,double,double)),
-          this, SLOT(updateThresholdsDepthmapView(double,double,double,double)));
+  connect(d->UI.worldView,
+          SIGNAL(depthMapThresholdsChanged(double, double, double, double)),
+          d->UI.depthMapView,
+          SLOT(updateThresholds(double, double, double, double)));
 
   this->setSlideDelay(d->UI.slideDelay->value());
 
@@ -678,6 +670,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   d->UI.worldView->setBackgroundColor(*d->viewBackgroundColor);
   d->UI.cameraView->setBackgroundColor(*d->viewBackgroundColor);
+  d->UI.depthMapView->setBackgroundColor(*d->viewBackgroundColor);
 
   d->UI.worldView->resetView();
 }
@@ -687,16 +680,6 @@ MainWindow::~MainWindow()
 {
   QTE_D();
   d->uiState.save();
-}
-
-void MainWindow::start(char *path)
-{
-  if (path)
-  {
-    openFile(QString(path));
-  }
-
-  show();
 }
 
 //-----------------------------------------------------------------------------
@@ -774,14 +757,19 @@ void MainWindow::loadProject(QString const& path)
     return;
   }
 
+  // Load tracks
   if (!project.tracks.isEmpty())
   {
     this->loadTracks(project.tracks);
   }
+
+  // Load landmarks
   if (!project.landmarks.isEmpty())
   {
     this->loadLandmarks(project.landmarks);
   }
+
+  // Load cameras and/or images
   if (project.cameraPath.isEmpty())
   {
     foreach (auto const& ip, project.images)
@@ -810,10 +798,24 @@ void MainWindow::loadProject(QString const& path)
       }
     }
   }
-  //Adding depthmaps (when they exists) to existing camera
-  if (!project.depthmaps.isEmpty())
+
+  // Associate depth maps with cameras
+  foreach (auto dm, qtEnumerate(project.depthMaps))
   {
-    this->loadDepthmaps(project.depthmaps);
+    auto const i = dm.key();
+    if (i >= 0 && i < d->cameras.count())
+    {
+      d->cameras[i].depthMapPath = dm.value();
+    }
+
+    if (i == d->activeCameraIndex)
+    {
+      d->UI.worldView->setActiveDepthMap(
+        d->cameras[d->activeCameraIndex].camera, dm.value());
+
+      d->UI.depthMapView->setDepthMap(dm.value());
+      d->UI.depthMapView->resetView();
+    }
   }
 
 #ifdef VTKWEBGLEXPORTER
@@ -874,52 +876,6 @@ void MainWindow::loadTracks(QString const& path)
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::loadDepthmaps(QString const& path)
-{
-  QTE_D();
-
-  QFile vtListiFile(path);
-  auto const& vtiListFileBasePath =  QFileInfo(path).absoluteDir().absolutePath();
-
-  if (vtListiFile.open(QIODevice::ReadOnly | QIODevice::Text))
-  {
-    QTextStream vtiStream(&vtListiFile);
-    int frameNum;
-    QString vtiFileName;
-
-    while (!vtiStream.atEnd())
-    {
-      vtiStream >> frameNum >> vtiFileName;
-
-      if(!vtiFileName.isEmpty())
-      {
-        vtiFileName = vtiListFileBasePath + QDir::separator() + vtiFileName;
-
-        d->cameras[frameNum].vtiPath = vtiFileName;
-      }
-    }
-  }
-
-  vtListiFile.close();
-
-  d->UI.worldView->enableDepthMap();
-
-  // If the active camera has an associated depthmap, we load it into the DepthMapView
-
-  QString activeCameraVtiPath = d->cameras[d->activeCameraIndex].vtiPath;
-
-  if(!activeCameraVtiPath.isEmpty())
-  {
-    d->UI.dMView->setDepthMap(activeCameraVtiPath);
-
-    d->UI.worldView->setActiveDepthMap(d->cameras[d->activeCameraIndex].camera,
-                                       activeCameraVtiPath);
-
-    d->UI.dMView->resetView();
-  }
-}
-
-//-----------------------------------------------------------------------------
 void MainWindow::loadLandmarks(QString const& path)
 {
   QTE_D();
@@ -975,15 +931,6 @@ void MainWindow::saveLandmarks(QString const& path)
               "The output file may not have been written correctly.");
     QMessageBox::critical(this, "Export error", msg.arg(path));
   }
-}
-
-//-----------------------------------------------------------------------------
-void MainWindow::updateThresholdsDepthmapView(double bcMin, double bcMax,
-                                              double urMin, double urMax)
-{
-  QTE_D();
-
-  d->UI.dMView->updateDepthMapThresholds(bcMin,bcMax,urMin,urMax);
 }
 
 //-----------------------------------------------------------------------------
@@ -1220,13 +1167,6 @@ void MainWindow::acceptToolResults()
   d->setActiveTool(0);
 }
 
-//void MainWindow::updateDepthMap()
-//{
-//  QTE_D();
-
-//  d->UI.worldView->setDepthMapVisible(true);
-//}
-
 //-----------------------------------------------------------------------------
 void MainWindow::showMatchMatrix()
 {
@@ -1246,21 +1186,6 @@ void MainWindow::showMatchMatrix()
 }
 
 //-----------------------------------------------------------------------------
-//void MainWindow::showDepthMapView()
-//{
-//  QTE_D();
-
-//  if (d->tracks)
-//  {
-//    //TODO: searching into right folder if there's a depthmap to show
-
-//    // Show window
-//    auto window = new DepthMapViewWindow();
-//    window->show();
-//  }
-//}
-
-//-----------------------------------------------------------------------------
 void MainWindow::setViewBackroundColor()
 {
   QTE_D();
@@ -1272,6 +1197,7 @@ void MainWindow::setViewBackroundColor()
     *d->viewBackgroundColor = dlg.currentColor();
     d->UI.worldView->setBackgroundColor(*d->viewBackgroundColor);
     d->UI.cameraView->setBackgroundColor(*d->viewBackgroundColor);
+    d->UI.depthMapView->setBackgroundColor(*d->viewBackgroundColor);
   }
 }
 

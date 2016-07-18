@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015-2016 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -12,9 +12,9 @@
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  *
- *  * Neither name of Kitware, Inc. nor the names of any contributors may be used
- *    to endorse or promote products derived from this software without specific
- *    prior written permission.
+ *  * Neither the name Kitware, Inc. nor the names of any contributors may be
+ *    used to endorse or promote products derived from this software without
+ *    specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -32,68 +32,49 @@
 
 #include "ui_DepthMapView.h"
 
-#include <vital/types/landmark_map.h>
-#include <vital/types/track.h>
+#include "DataArrays.h"
+#include "DepthMapViewOptions.h"
 
-#include <vtkActor.h>
 #include <vtkCamera.h>
 #include <vtkGeometryFilter.h>
 #include <vtkImageData.h>
 #include <vtkInteractorStyleRubberBand2D.h>
 #include <vtkNew.h>
-#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
-#include <vtkProperty.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 #include <vtkSmartPointer.h>
 #include <vtkThreshold.h>
 #include <vtkXMLImageDataReader.h>
 
-#include "DepthMapViewOptions.h"
-
-#include <qtMath.h>
-#include <qtUiState.h>
-
-#include <QtGui/QFormLayout>
 #include <QtGui/QMenu>
 #include <QtGui/QToolButton>
 #include <QtGui/QWidgetAction>
 
+using namespace DepthMapArrays;
 
-///////////////////////////////////////////////////////////////////////////////
-
-//BEGIN DepthMapViewPrivate definition
+QTE_IMPLEMENT_D_FUNC(DepthMapView)
 
 //-----------------------------------------------------------------------------
 class DepthMapViewPrivate
 {
 public:
-
-  DepthMapViewPrivate() {}
+  void setPopup(QAction* action, QMenu* menu);
+  void setPopup(QAction* action, QWidget* widget);
 
   Ui::DepthMapView UI;
 
   vtkNew<vtkRenderer> renderer;
   vtkNew<vtkRenderWindow> renderWindow;
 
-  vtkNew<vtkActor> polyDataActor;
+  vtkNew<vtkPolyDataMapper> mapper;
+  vtkNew<vtkActor> actor;
 
   DepthMapViewOptions* depthMapViewOptions;
 
-  vtkSmartPointer<vtkPolyData> currentDepthmap;
-
-  void setPopup(QAction* action, QMenu* menu);
-  void setPopup(QAction* action, QWidget* widget);
-
+  vtkSmartPointer<vtkPolyData> currentDepthMap;
 };
-
-//END DepthMapViewPrivate definition
-
-///////////////////////////////////////////////////////////////////////////////
-
-//BEGIN DepthMapViewPrivate implementation
 
 //-----------------------------------------------------------------------------
 void DepthMapViewPrivate::setPopup(QAction* action, QMenu* menu)
@@ -122,14 +103,6 @@ void DepthMapViewPrivate::setPopup(QAction* action, QWidget* widget)
   this->setPopup(action, menu);
 }
 
-//END DepthMapViewPrivate implementation
-
-///////////////////////////////////////////////////////////////////////////////
-
-//BEGIN DepthMapView
-
-QTE_IMPLEMENT_D_FUNC(DepthMapView)
-
 //-----------------------------------------------------------------------------
 DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   : QWidget(parent, flags), d_ptr(new DepthMapViewPrivate)
@@ -139,20 +112,15 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   // Set up UI
   d->UI.setupUi(this);
 
-  this->addAction(d->UI.actionViewReset);
-
-  viewMenu = new QMenu(this);
-  viewMenu->addAction(d->UI.actionDisplayMode);
-
-  d->depthMapViewOptions =
-      new DepthMapViewOptions("DepthmapView/DepthmapOptions", this);
+  d->depthMapViewOptions = new DepthMapViewOptions("DepthMapView", this);
+  d->depthMapViewOptions->setActor(d->actor.GetPointer());
   d->setPopup(d->UI.actionDisplayMode, d->depthMapViewOptions);
 
-  d->currentDepthmap = vtkSmartPointer<vtkPolyData>::New();
+  connect(d->depthMapViewOptions, SIGNAL(modified()),
+          d->UI.renderWidget, SLOT(update()));
 
   // Connect actions
-  connect(d->depthMapViewOptions, SIGNAL(modified()),
-               d->UI.renderWidget, SLOT(update()));
+  this->addAction(d->UI.actionViewReset);
 
   connect(d->UI.actionViewReset, SIGNAL(triggered()),
           this, SLOT(resetView()));
@@ -163,19 +131,23 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   d->renderer->GetActiveCamera()->SetPosition(0.0, 0.0, 2.0);
 
   // Set up render pipeline
-  d->renderer->SetBackground(0.5, 0.5, 0.5);
+  d->renderer->SetBackground(0, 0, 0);
   d->renderWindow->AddRenderer(d->renderer.GetPointer());
   d->UI.renderWidget->SetRenderWindow(d->renderWindow.GetPointer());
+
+  // Set up depth map actor
+  d->actor->SetMapper(d->mapper.GetPointer());
+  d->renderer->AddViewProp(d->actor.GetPointer());
+  d->currentDepthMap = vtkSmartPointer<vtkPolyData>::New();
 
   // Set interactor
   vtkNew<vtkInteractorStyleRubberBand2D> is;
   d->renderWindow->GetInteractor()->SetInteractorStyle(is.GetPointer());
-
 }
 
 //-----------------------------------------------------------------------------
-void DepthMapView::updateDepthMapThresholds(double bcMin, double bcMax,
-                                            double urMin, double urMax)
+void DepthMapView::updateThresholds(double bcMin, double bcMax,
+                                    double urMin, double urMax)
 {
   QTE_D();
 
@@ -184,26 +156,31 @@ void DepthMapView::updateDepthMapThresholds(double bcMin, double bcMax,
   double uniquenessRatioMin = urMin;
   double uniquenessRatioMax = urMax;
 
-  vtkNew<vtkThreshold> thresholdBestCostValues, thresholdUniquenessRatios;
+  vtkNew<vtkThreshold> thresholdBestCostValues;
+  vtkNew<vtkThreshold> thresholdUniquenessRatios;
 
-  thresholdBestCostValues->SetInputData(d->currentDepthmap.Get());
-  thresholdBestCostValues->
-      SetInputArrayToProcess(0,0,0,vtkDataObject::FIELD_ASSOCIATION_POINTS,
-                             "Best Cost Values");
-  thresholdBestCostValues->ThresholdBetween(bestCostValueMin,bestCostValueMax);
+  thresholdBestCostValues->SetInputData(d->currentDepthMap.GetPointer());
+  thresholdBestCostValues->SetInputArrayToProcess(
+    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS,
+    DepthMapArrays::BestCostValues);
+  thresholdBestCostValues->ThresholdBetween(
+    bestCostValueMin, bestCostValueMax);
 
-  thresholdUniquenessRatios->SetInputConnection(thresholdBestCostValues->GetOutputPort());
-  thresholdUniquenessRatios->
-      SetInputArrayToProcess(0,0,0,vtkDataObject::FIELD_ASSOCIATION_POINTS,
-                             "Uniqueness Ratios");
-  thresholdUniquenessRatios->ThresholdBetween(uniquenessRatioMin,uniquenessRatioMax);
+  thresholdUniquenessRatios->SetInputConnection(
+    thresholdBestCostValues->GetOutputPort());
+  thresholdUniquenessRatios->SetInputArrayToProcess(
+    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS,
+    DepthMapArrays::UniquenessRatios);
+  thresholdUniquenessRatios->ThresholdBetween(
+    uniquenessRatioMin, uniquenessRatioMax);
 
   vtkNew<vtkGeometryFilter> geometryFilter;
 
-  geometryFilter->SetInputConnection(thresholdUniquenessRatios->GetOutputPort());
+  geometryFilter->SetInputConnection(
+    thresholdUniquenessRatios->GetOutputPort());
 
-  d->polyDataActor->GetMapper()->SetInputConnection(geometryFilter->GetOutputPort());
-  d->polyDataActor->GetMapper()->Update();
+  d->mapper->SetInputConnection(geometryFilter->GetOutputPort());
+  d->mapper->Update();
 
   d->UI.renderWidget->update();
 }
@@ -214,34 +191,27 @@ DepthMapView::~DepthMapView()
 }
 
 //-----------------------------------------------------------------------------
-void DepthMapView::setDepthMap(QString imagePath)
+void DepthMapView::setDepthMap(QString const& imagePath)
 {
   QTE_D();
 
-  if(!imagePath.isEmpty() && this->isVisible())
+  if (!imagePath.isEmpty() && this->isVisible())
   {
-    d->depthMapViewOptions->cleanModes();
+    vtkNew<vtkXMLImageDataReader> reader;
 
-    vtkNew<vtkXMLImageDataReader> readerIm;
+    reader->SetFileName(qPrintable(imagePath));
+    reader->Update();
 
-    readerIm->SetFileName(imagePath.toStdString().c_str());
-    readerIm->Update();
+    vtkNew<vtkGeometryFilter> geometryFilter;
+    geometryFilter->SetInputData(reader->GetOutput());
+    geometryFilter->Update();
 
-    vtkNew<vtkGeometryFilter> geometryFilterIm;
-    geometryFilterIm->SetInputData(readerIm->GetOutput());
-    geometryFilterIm->Update();
+    d->currentDepthMap = geometryFilter->GetOutput();
 
-    d->UI.toolBar->update();
+    d->mapper->SetInputData(d->currentDepthMap);
 
-    d->currentDepthmap = geometryFilterIm->GetOutput();
-
-    vtkNew<vtkPolyDataMapper> mapperP;
-    mapperP->SetInputData(geometryFilterIm->GetOutput());
-    d->polyDataActor->SetMapper(mapperP.Get());
-
-    d->depthMapViewOptions->addActor(d->polyDataActor.Get());
-
-    d->renderer->AddViewProp(d->polyDataActor.GetPointer());
+    d->depthMapViewOptions->updateRanges(d->currentDepthMap->GetPointData());
+    d->depthMapViewOptions->updateActor();
 
     d->UI.renderWidget->update();
   }
@@ -265,7 +235,7 @@ void DepthMapView::resetView()
   d->renderer->GetAspect(renderAspect);
 
   double bounds[6];
-  d->currentDepthmap->GetBounds(bounds);
+  d->currentDepthMap->GetBounds(bounds);
 
   auto const w = bounds[1] - bounds[0];
   auto const h = bounds[3] - bounds[4];
@@ -278,5 +248,3 @@ void DepthMapView::resetView()
 
   d->UI.renderWidget->update();
 }
-
-//END DepthMapView
