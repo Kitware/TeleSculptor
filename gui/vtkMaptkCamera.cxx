@@ -132,8 +132,9 @@ kwiver::vital::vector_3d vtkMaptkCamera::UnprojectPoint(
   auto const inPoint = kwiver::vital::vector_2d{pixel[0], pixel[1]};
   auto const normPoint = this->MaptkCamera->intrinsics()->unmap(inPoint);
 
-  auto const homogenousPoint =
-    kwiver::vital::vector_3d{normPoint[0], normPoint[1], 1.0} * depth;
+  auto const homogenousPoint = kwiver::vital::vector_3d{normPoint[0] * depth,
+                                                        normPoint[1] * depth,
+                                                        depth};
 
   return kwiver::vital::vector_3d(R.transpose() * (homogenousPoint - T));
 }
