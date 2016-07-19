@@ -52,6 +52,9 @@ public:
   Ui::DataColorOptions UI;
   qtUiState uiState;
 
+  double autoLower;
+  double autoUpper;
+
   vtkNew<vtkMaptkScalarsToGradient> scalarsToGradient;
 };
 
@@ -129,7 +132,8 @@ double DataColorOptions::maximum() const
 }
 
 //-----------------------------------------------------------------------------
-void DataColorOptions::setAvailableRange(double lower, double upper)
+void DataColorOptions::setAvailableRange(
+  double lower, double upper, double autoLower, double autoUpper)
 {
   QTE_D();
 
@@ -144,6 +148,9 @@ void DataColorOptions::setAvailableRange(double lower, double upper)
 
   d->UI.minimum->setSingleStep(step);
   d->UI.maximum->setSingleStep(step);
+
+  d->autoLower = qMax(lower, autoLower);
+  d->autoUpper = qMin(upper, autoUpper);
 
   this->updateMinimum();
   this->updateMaximum();
@@ -168,7 +175,9 @@ void DataColorOptions::updateMinimum()
 
   if (d->UI.autoMinimum->isChecked())
   {
-    d->UI.minimum->setValue(d->UI.minimum->minimum());
+    auto const softLimit =
+      (d->UI.autoMaximum->isChecked() ? +qInf() : d->UI.maximum->value());
+    d->UI.minimum->setValue(qMin(softLimit, d->autoLower));
   }
 
   auto const limit = d->UI.minimum->value();
@@ -190,7 +199,9 @@ void DataColorOptions::updateMaximum()
 
   if (d->UI.autoMaximum->isChecked())
   {
-    d->UI.maximum->setValue(d->UI.maximum->maximum());
+    auto const softLimit =
+      (d->UI.autoMinimum->isChecked() ? -qInf() : d->UI.minimum->value());
+    d->UI.maximum->setValue(qMax(softLimit, d->autoUpper));
   }
 
   auto const limit = d->UI.maximum->value();

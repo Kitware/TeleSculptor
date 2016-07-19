@@ -178,13 +178,16 @@ void DepthMapViewOptions::updateRanges(vtkPointData* pointData)
         double range[2];
         dataArray->GetRange(range);
 
+        auto cumulativeLower = range[0];
+        auto cumulativeUpper = range[1];
         if (d->rangeInitialized)
         {
-          range[0] = qMin(range[0], mi.options->minimum());
-          range[1] = qMax(range[1], mi.options->maximum());
+          cumulativeLower = qMin(cumulativeLower, mi.options->minimum());
+          cumulativeUpper = qMax(cumulativeUpper, mi.options->maximum());
         }
 
-        mi.options->setAvailableRange(range[0], range[1]);
+        mi.options->setAvailableRange(cumulativeLower, cumulativeUpper,
+                                      range[0], range[1]);
       }
     }
   }
