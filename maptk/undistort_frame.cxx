@@ -51,11 +51,11 @@ namespace maptk {
 
 using namespace kwiver::vital;
 
-/// Use the cameras to project the landmarks back into their images.
 vtkSmartPointer<vtkImageData> undistortFrame(std::string const framePath,
                                              camera *cam)
 {
   //Read the frame into an imageData
+
   auto const reader = vtkImageReader2Factory::CreateImageReader2(framePath.c_str());
 
   reader->SetFileName(framePath.c_str());
@@ -81,12 +81,14 @@ vtkSmartPointer<vtkImageData> undistortFrame(std::string const framePath,
                                        GetScalars()->GetNumberOfTuples());
 
   //Get old image as array
+
   vtkDataArray* scalars = originalFrame->GetPointData()->GetScalars();
 
   double originalPixel[3], undistortedCoord[3];
   vtkIdType undistortedPixelId;
 
-  //Create a perfect camera for mapping
+  //Create a perfect (i.e. with no distortion) camera for mapping
+
   simple_camera* perfectCam = new simple_camera(*cam);
 
   simple_camera_intrinsics* perfectIntrinsics =
