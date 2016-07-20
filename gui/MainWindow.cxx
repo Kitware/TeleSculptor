@@ -222,6 +222,7 @@ public:
     vtkSmartPointer<vtkMaptkCamera> camera;
 
     QString imagePath; // Full path to camera image data
+    QString depthMapPath; // Full path to depth map data
   };
 
   // Methods
@@ -423,6 +424,13 @@ void MainWindowPrivate::setActiveCamera(int id)
   this->activeCameraIndex = id;
   this->UI.worldView->setActiveCamera(this->cameras[id].camera);
   this->updateCameraView();
+
+  auto& cd = this->cameras[id];
+  if (!cd.depthMapPath.isEmpty())
+  {
+    UI.depthMapView->setDepthMap(cd.depthMapPath);
+    UI.worldView->setActiveDepthMap(cd.camera, cd.depthMapPath);
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -594,6 +602,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->UI.menuView->addSeparator();
   d->UI.menuView->addAction(d->UI.cameraViewDock->toggleViewAction());
   d->UI.menuView->addAction(d->UI.cameraSelectorDock->toggleViewAction());
+  d->UI.menuView->addAction(d->UI.depthMapViewDock->toggleViewAction());
 
   d->UI.playSlideshowButton->setDefaultAction(d->UI.actionSlideshowPlay);
   d->UI.loopSlideshowButton->setDefaultAction(d->UI.actionSlideshowLoop);
@@ -632,6 +641,11 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.camera, SIGNAL(valueChanged(int)),
           this, SLOT(setActiveCamera(int)));
 
+  connect(d->UI.worldView,
+          SIGNAL(depthMapThresholdsChanged(double, double, double, double)),
+          d->UI.depthMapView,
+          SLOT(updateThresholds(double, double, double, double)));
+
   this->setSlideDelay(d->UI.slideDelay->value());
 
 #ifdef VTKWEBGLEXPORTER
@@ -656,6 +670,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   d->UI.worldView->setBackgroundColor(*d->viewBackgroundColor);
   d->UI.cameraView->setBackgroundColor(*d->viewBackgroundColor);
+  d->UI.depthMapView->setBackgroundColor(*d->viewBackgroundColor);
 
   d->UI.worldView->resetView();
 }
@@ -742,15 +757,19 @@ void MainWindow::loadProject(QString const& path)
     return;
   }
 
+  // Load tracks
   if (!project.tracks.isEmpty())
   {
     this->loadTracks(project.tracks);
   }
+
+  // Load landmarks
   if (!project.landmarks.isEmpty())
   {
     this->loadLandmarks(project.landmarks);
   }
 
+  // Load cameras and/or images
   if (project.cameraPath.isEmpty())
   {
     foreach (auto const& ip, project.images)
@@ -777,6 +796,25 @@ void MainWindow::loadProject(QString const& path)
                    << "from" << project.cameraPath;
         d->addFrame(kwiver::vital::camera_sptr(), ip);
       }
+    }
+  }
+
+  // Associate depth maps with cameras
+  foreach (auto dm, qtEnumerate(project.depthMaps))
+  {
+    auto const i = dm.key();
+    if (i >= 0 && i < d->cameras.count())
+    {
+      d->cameras[i].depthMapPath = dm.value();
+    }
+
+    if (i == d->activeCameraIndex)
+    {
+      d->UI.worldView->setActiveDepthMap(
+        d->cameras[d->activeCameraIndex].camera, dm.value());
+
+      d->UI.depthMapView->setDepthMap(dm.value());
+      d->UI.depthMapView->resetView();
     }
   }
 
@@ -1159,6 +1197,7 @@ void MainWindow::setViewBackroundColor()
     *d->viewBackgroundColor = dlg.currentColor();
     d->UI.worldView->setBackgroundColor(*d->viewBackgroundColor);
     d->UI.cameraView->setBackgroundColor(*d->viewBackgroundColor);
+    d->UI.depthMapView->setBackgroundColor(*d->viewBackgroundColor);
   }
 }
 

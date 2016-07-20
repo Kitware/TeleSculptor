@@ -52,11 +52,15 @@ public:
   explicit WorldView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
   virtual ~WorldView();
 
+signals:
+  void depthMapThresholdsChanged(double, double, double, double);
+
 public slots:
   void setBackgroundColor(QColor const&);
 
   void addCamera(int id, vtkMaptkCamera* camera);
   void setLandmarks(kwiver::vital::landmark_map const&);
+  void setActiveDepthMap(vtkMaptkCamera* camera, QString const& depthMapPath);
 
   void setImageData(vtkImageData* data, QSize const& dimensions);
 
@@ -65,6 +69,7 @@ public slots:
   void setLandmarksVisible(bool);
   void setGroundPlaneVisible(bool);
   void setAxesVisible(bool);
+  void setDepthMapVisible(bool);
 
   void setPerspective(bool);
 
@@ -87,6 +92,8 @@ protected slots:
   void updateAxes();
   void updateCameras();
   void updateScale();
+  void updateDepthMapDisplayMode();
+  void updateDepthMapThresholds();
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(WorldView)
