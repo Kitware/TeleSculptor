@@ -68,7 +68,8 @@ public:
     normalize_data(true),
     max_iterations(1000),
     x_tolerance(1e-8),
-    g_tolerance(1e-8)
+    g_tolerance(1e-8),
+    m_logger( vital::get_logger( "maptk.vxl.bundle_adjust" ))
   {
   }
 
@@ -80,7 +81,8 @@ public:
     normalize_data(other.normalize_data),
     max_iterations(other.max_iterations),
     x_tolerance(other.x_tolerance),
-    g_tolerance(other.g_tolerance)
+    g_tolerance(other.g_tolerance),
+    m_logger( vital::get_logger( "maptk.vxl.bundle_adjust" ))
   {
   }
 
@@ -96,6 +98,9 @@ public:
   unsigned max_iterations;
   double x_tolerance;
   double g_tolerance;
+
+  /// Logger handle
+  vital::logger_handle_t m_logger;
 };
 
 
@@ -234,13 +239,13 @@ bundle_adjust
     if (d_->verbose)                                                    \
     {                                                                   \
       t.start();                                                        \
-      std::cerr << msg << " ... " << std::endl;                         \
+      LOG_DEBUG(d_->m_logger, msg << " ... ");                          \
     }                                                                   \
     code                                                                \
     if (d_->verbose)                                                    \
     {                                                                   \
       t.stop();                                                         \
-      std::cerr << "--> " << t.elapsed() << "s CPU" << std::endl;       \
+      LOG_DEBUG(d_->m_logger, " --> " << t.elapsed() << "s CPU");       \
     }                                                                   \
   } while(false)
 
