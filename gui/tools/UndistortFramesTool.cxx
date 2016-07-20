@@ -131,7 +131,8 @@ void UndistortFramesTool::run()
   std::vector<std::string> frameList;
   std::vector<kwiver::vital::camera_sptr> cameras;
 
-  for (int i = 0; i < nbCams; ++i) {
+  for (int i = 0; i < nbCams; ++i)
+  {
     frameList.push_back(frames[i].toStdString());
     cameras.push_back(cp.get()->cameras().at(i));
   }

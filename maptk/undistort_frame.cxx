@@ -104,6 +104,7 @@ vtkSmartPointer<vtkImageData> undistortFrame(std::string const framePath,
   vector_2d normalizedCoord, newCoord;
 
   //Undistort each point and save it in the new array
+
   for (vtkIdType idPixel = 0; idPixel < originalFrame->GetNumberOfPoints(); ++idPixel)
   {
     originalFrame->GetPoint(idPixel,originalPixel);
