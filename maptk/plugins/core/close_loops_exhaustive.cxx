@@ -212,7 +212,7 @@ close_loops_exhaustive
 
     LOG_INFO(d_->m_logger, "Matching frame " << frame_number << " to "<< f
                              << " matched "<< mset->size() << " features");
-    if( mset->size() < d_->match_req )
+    if( mset->size() < static_cast<unsigned int>(d_->match_req) )
     {
       continue;
     }
