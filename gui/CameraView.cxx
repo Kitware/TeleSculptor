@@ -34,6 +34,7 @@
 #include "am_CameraView.h"
 
 #include "ActorColorButton.h"
+#include "DataArrays.h"
 #include "FeatureOptions.h"
 #include "FieldInformation.h"
 #include "ImageOptions.h"
@@ -74,12 +75,10 @@ QTE_IMPLEMENT_D_FUNC(CameraView)
 
 //BEGIN miscelaneous helpers
 
+using namespace LandmarkArrays;
+
 namespace // anonymous
 {
-
-static char const* const TrueColor = "truecolor";
-static char const* const Elevation = "elevation";
-static char const* const Observations = "observations";
 
 //-----------------------------------------------------------------------------
 struct LandmarkData
@@ -406,9 +405,6 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   // Set up UI
   d->UI.setupUi(this);
   d->AM.setupActions(d->UI, this);
-
-  this->addAction(d->UI.actionViewReset);
-  this->addAction(d->UI.actionViewResetFullExtents);
 
   auto const viewMenu = new QMenu(this);
   viewMenu->addAction(d->UI.actionViewReset);

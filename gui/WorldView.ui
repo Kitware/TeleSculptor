@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>649</width>
+    <width>650</width>
     <height>300</height>
    </rect>
   </property>
@@ -38,6 +38,7 @@
      <addaction name="actionShowLandmarks"/>
      <addaction name="actionShowVisibleLandmarks"/>
      <addaction name="actionShowGroundPlane"/>
+     <addaction name="actionShowDepthMap"/>
     </widget>
    </item>
    <item>
@@ -269,6 +270,17 @@
    </property>
    <property name="toolTip">
     <string>Toggle visibility of landmarks visible by the current camera</string>
+   </property>
+  </action>
+  <action name="actionShowDepthMap">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Depth Map</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggles dempthmaps display</string>
    </property>
   </action>
  </widget>

@@ -90,6 +90,13 @@ Visualization Application
  * Added options to the World and Camera view to visualize the landmarks seen
    by the current camera. Those landmarks can also be colored and thresholded.
 
+ * Added a depth map view and a depth map visualisation in the world view. The
+   depth maps can be thresholded directly in the world view, and the depth map
+   view offers several visualisation modes such as depths, uniqueness ratios or
+   best cost values. Depth maps can be loaded by initializing the parameter
+   "depthmaps_images_file" with the path to the depth maps (*.vti files) list in
+   the configuration file.
+
 Tools
 
  * Updated the bundle_adjust_tracks tool to use the configurable abstract

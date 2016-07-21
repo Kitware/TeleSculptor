@@ -41,6 +41,8 @@
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
 
+#include <cmath>
+
 QTE_IMPLEMENT_D_FUNC(DataColorOptions)
 
 //-----------------------------------------------------------------------------
@@ -49,6 +51,9 @@ class DataColorOptionsPrivate
 public:
   Ui::DataColorOptions UI;
   qtUiState uiState;
+
+  double autoLower;
+  double autoUpper;
 
   vtkNew<vtkMaptkScalarsToGradient> scalarsToGradient;
 };
@@ -113,7 +118,22 @@ vtkScalarsToColors* DataColorOptions::scalarsToColors() const
 }
 
 //-----------------------------------------------------------------------------
-void DataColorOptions::setAvailableRange(double lower, double upper)
+double DataColorOptions::minimum() const
+{
+  QTE_D();
+  return d->UI.minimum->value();
+}
+
+//-----------------------------------------------------------------------------
+double DataColorOptions::maximum() const
+{
+  QTE_D();
+  return d->UI.maximum->value();
+}
+
+//-----------------------------------------------------------------------------
+void DataColorOptions::setAvailableRange(
+  double lower, double upper, double autoLower, double autoUpper)
 {
   QTE_D();
 
@@ -122,6 +142,15 @@ void DataColorOptions::setAvailableRange(double lower, double upper)
 
   d->UI.minimum->setRange(lower, upper);
   d->UI.maximum->setRange(lower, upper);
+
+  auto const scale = std::floor(std::log10(std::abs(upper - lower)));
+  auto const step = std::pow(10.0, scale - 1.0);
+
+  d->UI.minimum->setSingleStep(step);
+  d->UI.maximum->setSingleStep(step);
+
+  d->autoLower = qMax(lower, autoLower);
+  d->autoUpper = qMin(upper, autoUpper);
 
   this->updateMinimum();
   this->updateMaximum();
@@ -146,7 +175,9 @@ void DataColorOptions::updateMinimum()
 
   if (d->UI.autoMinimum->isChecked())
   {
-    d->UI.minimum->setValue(d->UI.minimum->minimum());
+    auto const softLimit =
+      (d->UI.autoMaximum->isChecked() ? +qInf() : d->UI.maximum->value());
+    d->UI.minimum->setValue(qMin(softLimit, d->autoLower));
   }
 
   auto const limit = d->UI.minimum->value();
@@ -168,7 +199,9 @@ void DataColorOptions::updateMaximum()
 
   if (d->UI.autoMaximum->isChecked())
   {
-    d->UI.maximum->setValue(d->UI.maximum->maximum());
+    auto const softLimit =
+      (d->UI.autoMinimum->isChecked() ? -qInf() : d->UI.minimum->value());
+    d->UI.maximum->setValue(qMax(softLimit, d->autoUpper));
   }
 
   auto const limit = d->UI.maximum->value();

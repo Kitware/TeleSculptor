@@ -28,22 +28,51 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_PROJECT_H_
-#define MAPTK_PROJECT_H_
+#ifndef MAPTK_DEPTHMAPFILTEROPTIONS_H_
+#define MAPTK_DEPTHMAPFILTEROPTIONS_H_
 
-#include <QtCore/QMap>
-#include <QtCore/QStringList>
+#include <qtGlobal.h>
 
-struct Project
+#include <QtGui/QWidget>
+
+class DepthMapFilterOptionsPrivate;
+
+class DepthMapFilterOptions : public QWidget
 {
-  bool read(QString const& path);
+  Q_OBJECT
 
-  QStringList images;
-  QString cameraPath;
-  QMap<int, QString> depthMaps;
+public:
+  explicit DepthMapFilterOptions(const QString& settingsGroup,
+                                 QWidget* parent = 0,
+                                 Qt::WindowFlags flags = 0);
+  virtual ~DepthMapFilterOptions();
 
-  QString tracks;
-  QString landmarks;
+  double bestCostValueMinimum() const;
+  double bestCostValueMaximum() const;
+  double uniquenessRatioMinimum() const;
+  double uniquenessRatioMaximum() const;
+
+  void initializeFilters(double bcMin, double bcMax,
+                         double urMin, double urMax);
+
+  bool isFilterPersistent() const;
+
+signals:
+  void filtersChanged();
+
+public slots:
+  void updateBestCostMinimum();
+  void updateBestCostMaximum();
+  void updateUniquenessRatioMinimum();
+  void updateUniquenessRatioMaximum();
+
+  void resetFilters();
+
+private:
+  QTE_DECLARE_PRIVATE_RPTR(DepthMapFilterOptions)
+  QTE_DECLARE_PRIVATE(DepthMapFilterOptions)
+
+  QTE_DISABLE_COPY(DepthMapFilterOptions)
 };
 
 #endif

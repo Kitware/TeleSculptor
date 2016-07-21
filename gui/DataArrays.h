@@ -28,22 +28,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_PROJECT_H_
-#define MAPTK_PROJECT_H_
+#ifndef MAPTK_DATAARRAYS_H_
+#define MAPTK_DATAARRAYS_H_
 
-#include <QtCore/QMap>
-#include <QtCore/QStringList>
-
-struct Project
+namespace LandmarkArrays
 {
-  bool read(QString const& path);
+  static char const* const TrueColor = "truecolor";
+  static char const* const Elevation = "elevation";
+  static char const* const Observations = "observations";
+}
 
-  QStringList images;
-  QString cameraPath;
-  QMap<int, QString> depthMaps;
-
-  QString tracks;
-  QString landmarks;
-};
+namespace DepthMapArrays
+{
+  // CAUTION: These must match the names in the VTI files
+  static char const* const Depth = "Depths";
+  static char const* const TrueColor = "Color";
+  static char const* const BestCostValues = "Best Cost Values";
+  static char const* const UniquenessRatios = "Uniqueness Ratios";
+}
 
 #endif
