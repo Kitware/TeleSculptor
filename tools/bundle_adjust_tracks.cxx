@@ -1049,7 +1049,7 @@ static int maptk_main(int argc, char const* argv[])
     kwiver::vital::path_t krtd_dir = config->get_value<std::string>("output_krtd_dir");
     std::vector<kwiver::vital::path_t> files = files_in_dir(krtd_dir);
 
-    for (int i = 0; i < files.size(); ++i)
+    for (size_t i = 0; i < files.size(); ++i)
     {
       if (ST::GetFilenameLastExtension(files[i]) == ".krtd")
       {
