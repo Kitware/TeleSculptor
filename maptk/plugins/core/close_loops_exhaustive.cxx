@@ -188,7 +188,8 @@ close_loops_exhaustive
   frame_id_t last_frame = 0;
   if (d_->num_look_back >= 0)
   {
-    last_frame = std::max<int>(frame_number - d_->num_look_back, 0);
+    const int fnum = static_cast<int>(frame_number);
+    last_frame = std::max<int>(fnum - d_->num_look_back, 0);
   }
 
   std::vector< vital::track_sptr > all_tracks = input->tracks();
