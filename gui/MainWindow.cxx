@@ -440,8 +440,7 @@ void MainWindowPrivate::setActiveCamera(int id)
     auto const& tracks = this->tracks->tracks();
     foreach (auto const& track, tracks)
     {
-      auto const& all_frame_ids = track->all_frame_ids();
-      if (all_frame_ids.count(id))
+      if (track->find(id) != track->end())
       {
         auto const& landmarkId = track->id();
         auto const& landmark = this->landmarks->landmarks()[landmarkId];
