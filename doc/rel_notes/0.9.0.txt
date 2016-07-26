@@ -112,6 +112,13 @@ Scripts
  * Added a Python script which uses OpenCV to produce mosaicked images of
    video frames using the homographies produced by maptk_track_features.
 
+Default Configuration
+
+ * Switched default loop closure method to keyframe based instead of a mix
+   of homography based and bad frame detection.
+
+ * Switched default feature descriptors to use non-upright SURF.
+
 
 Fixes since v0.8.0
 -------------------------------
