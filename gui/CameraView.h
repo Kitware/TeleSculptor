@@ -78,6 +78,8 @@ public slots:
   void clearVisibleLandmarks();
   void clearResiduals();
 
+  void setVisibleLandmarksVisibleOnly(bool);
+
   void resetView();
   void resetViewToFullExtents();
 

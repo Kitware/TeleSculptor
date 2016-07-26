@@ -35,6 +35,7 @@
 #include "DataColorOptions.h"
 #include "DataFilterOptions.h"
 #include "FieldInformation.h"
+#include "VisibleLandmarksOptions.h"
 
 #include <vtkActor.h>
 #include <vtkDataSet.h>
@@ -99,6 +100,7 @@ public:
 
   DataColorOptions* dataColorOptions;
   DataFilterOptions* dataFilterOptions;
+  VisibleLandmarksOptions* visibleLandmarksOptions;
 
   QList<vtkActor*> actors;
   QList<vtkMapper*> mappers;
@@ -249,6 +251,10 @@ PointOptions::PointOptions(QString const& settingsGroup,
   d->UI.dataFilterMenu->setText(d->dataFilterOptions->iconText() + " ");
   d->filterState = Qt::Unchecked;
 
+  d->visibleLandmarksOptions =
+      new VisibleLandmarksOptions(settingsGroup+"VsibleLandmarksOptions", this);
+  d->setPopup(d->UI.visibleLandmarksMenu, d->visibleLandmarksOptions);
+
   // Set up option persistence
   d->uiState.setCurrentGroup(settingsGroup);
 
@@ -274,6 +280,15 @@ PointOptions::PointOptions(QString const& settingsGroup,
 
   connect(&d->colorMode, SIGNAL(buttonClicked(int)),
           this, SLOT(setColorMode(int)));
+
+  connect(d->UI.showVisibleLandmarks, SIGNAL(toggled(bool)),
+          this, SLOT(showVisibleLandmarks(bool)));
+
+  connect(d->UI.showVisibleLandmarksOnly, SIGNAL(toggled(bool)),
+          this, SIGNAL(showVisibleLandmarksOnly(bool)));
+
+  connect(d->visibleLandmarksOptions, SIGNAL(visibleLandmarksChanged()),
+          this, SIGNAL(modified()));
 
   connect(d->dataColorOptions, SIGNAL(iconChanged(QIcon)),
           this, SLOT(setDataColorIcon(QIcon)));
@@ -341,6 +356,15 @@ void PointOptions::addActor(vtkActor* actor)
   actor->GetProperty()->SetPointSize(d->UI.size->value());
 
   d->actors.append(actor);
+  std::cout << "d->actors.size() = " << d->actors.size() << std::endl;
+}
+
+//-----------------------------------------------------------------------------
+void PointOptions::addVisibleLandmarksActor(vtkActor *actor)
+{
+  QTE_D();
+
+  d->visibleLandmarksOptions->addActor(actor);
 }
 
 //-----------------------------------------------------------------------------
@@ -351,6 +375,13 @@ void PointOptions::addMapper(vtkMapper* mapper)
   d->setDisplayMode(mapper, d->colorMode.checkedId());
 
   d->mappers.append(mapper);
+}
+
+bool PointOptions::isVisibleLandmarksChecked()
+{
+  QTE_D();
+
+  return d->UI.showVisibleLandmarks->isChecked();
 }
 
 //-----------------------------------------------------------------------------
@@ -384,6 +415,18 @@ void PointOptions::setDataColorIcon(QIcon const& icon)
 {
   QTE_D();
   d->UI.dataColorMenu->setIcon(icon);
+}
+
+//-----------------------------------------------------------------------------
+void PointOptions::showVisibleLandmarks(bool state)
+{
+  QTE_D();
+
+  d->visibleLandmarksOptions->setVisibility(state);
+
+  d->UI.showVisibleLandmarksOnly->setEnabled(state);
+
+  emit this->modified();
 }
 
 //-----------------------------------------------------------------------------

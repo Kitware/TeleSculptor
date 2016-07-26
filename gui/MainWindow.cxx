@@ -223,6 +223,7 @@ public:
 
     QString imagePath; // Full path to camera image data
     QString depthMapPath; // Full path to depth map data
+    kwiver::vital::landmark_map::map_landmark_t *visibleLandmarks;
   };
 
   // Methods
@@ -340,6 +341,8 @@ void MainWindowPrivate::addFrame(
 
   cd.imagePath = imagePath;
 
+  cd.visibleLandmarks = new kwiver::vital::landmark_map::map_landmark_t();
+
   if (camera)
   {
     this->orphanImages.clear();
@@ -424,32 +427,10 @@ void MainWindowPrivate::setActiveCamera(int id)
   this->activeCameraIndex = id;
   this->UI.worldView->setActiveCamera(this->cameras[id].camera);
 
-  kwiver::vital::landmark_map::map_landmark_t visibleLandmarks;
-
   this->updateCameraView();
 
-  if (this->tracks)
-  {
-    auto const& tracks = this->tracks->tracks();
-    foreach (auto const& track, tracks)
-    {
-      auto const& state = track->find(this->activeCameraIndex);
-      if (state != track->end() && state->feat)
-      {
-        auto const& id = track->id();
-        auto const& landmark = landmarks->landmarks()[id];
-
-        if (landmark)
-        {
-          visibleLandmarks.insert(std::pair<kwiver::vital::landmark_id_t,
-                                  kwiver::vital::landmark_sptr>(id,landmark));
-        }
-      }
-    }
-  }
-
-  this->UI.worldView->setVisibleLandmarks(
-        kwiver::vital::simple_landmark_map(visibleLandmarks));
+  this->UI.worldView->setVisibleLandmarks(kwiver::vital::simple_landmark_map(
+                                            *this->cameras[id].visibleLandmarks));
 
   auto& cd = this->cameras[id];
   if (!cd.depthMapPath.isEmpty())
@@ -531,22 +512,12 @@ void MainWindowPrivate::updateCameraView()
 
   // Show landmarks visible by the current camera
   this->UI.cameraView->clearVisibleLandmarks();
-  if (this->tracks)
+  foreach (auto const& landmark, *this->cameras[this->activeCameraIndex].visibleLandmarks)
   {
-    auto const& tracks = this->tracks->tracks();
-    foreach (auto const& track, tracks)
-    {
-      auto const& state = track->find(this->activeCameraIndex);
-      if (state != track->end() && state->feat)
-      {
-        auto const id = track->id();
-        if (landmarkPoints.contains(id))
-        {
-          auto const& lp = landmarkPoints[id];
-          this->UI.cameraView->addVisibleLandmark(id, lp[0], lp[1]);
-        }
-      }
-    }
+    auto coord = landmark.second->loc();
+    double pp[2];
+    this->cameras[this->activeCameraIndex].camera->ProjectPoint(coord,pp);
+    this->UI.cameraView->addVisibleLandmark(landmark.first,pp[0],pp[1]);
   }
 }
 
@@ -861,6 +832,27 @@ void MainWindow::loadProject(QString const& path)
 
       d->UI.depthMapView->setDepthMap(dm.value());
       d->UI.depthMapView->resetView();
+    }
+  }
+
+  // Set visible landmarks for each cameras all at once
+  if (d->tracks)
+  {
+    auto const& tracks = d->tracks->tracks();
+    foreach (auto const& track, tracks)
+    {
+      auto const& all_frame_ids = track->all_frame_ids();
+      foreach (auto frame_id, all_frame_ids)
+      {
+        auto const& id = track->id();
+        auto const& landmark = d->landmarks->landmarks()[id];
+
+        if (landmark)
+        {
+          d->cameras[frame_id].visibleLandmarks->insert(
+                std::make_pair(id, landmark));
+        }
+      }
     }
   }
 

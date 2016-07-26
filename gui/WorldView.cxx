@@ -320,16 +320,10 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
 
   d->landmarkOptions = new PointOptions("WorldView/Landmarks", this);
   d->landmarkOptions->addActor(d->landmarkActor.GetPointer());
+  d->landmarkOptions->addVisibleLandmarksActor(d->visibleLandmarkActor.GetPointer());
   d->setPopup(d->UI.actionShowLandmarks, d->landmarkOptions);
 
   connect(d->landmarkOptions, SIGNAL(modified()),
-          d->UI.renderWidget, SLOT(update()));
-
-  d->visibleLandmarkOptions = new PointOptions("WorldView/VisibleLandmarks", this);
-  d->visibleLandmarkOptions->addActor(d->visibleLandmarkActor.GetPointer());
-  d->setPopup(d->UI.actionShowVisibleLandmarks, d->visibleLandmarkOptions);
-
-  connect(d->visibleLandmarkOptions, SIGNAL(modified()),
           d->UI.renderWidget, SLOT(update()));
 
   d->depthMapOptions = new DepthMapOptions("WorldView/DepthMap", this);
@@ -374,12 +368,13 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(setCamerasVisible(bool)));
   connect(d->UI.actionShowLandmarks, SIGNAL(toggled(bool)),
           this, SLOT(setLandmarksVisible(bool)));
-  connect(d->UI.actionShowVisibleLandmarks, SIGNAL(toggled(bool)),
-          this, SLOT(setVisibleLandmarksVisible(bool)));
   connect(d->UI.actionShowGroundPlane, SIGNAL(toggled(bool)),
           this, SLOT(setGroundPlaneVisible(bool)));
   connect(d->UI.actionShowDepthMap, SIGNAL(toggled(bool)),
           this, SLOT(setDepthMapVisible(bool)));
+
+  connect(d->landmarkOptions, SIGNAL(showVisibleLandmarksOnly(bool)),
+          this, SLOT(setVisibleLandmarksVisibleOnly(bool)));
 
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
@@ -449,10 +444,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->visibleLandmarkMapper->SetInputData(visibleLandmarkPolyData.GetPointer());
 
   d->visibleLandmarkActor->SetMapper(d->visibleLandmarkMapper.GetPointer());
-  d->visibleLandmarkActor->SetVisibility(d->UI.actionShowVisibleLandmarks->isChecked());
   d->renderer->AddActor(d->visibleLandmarkActor.GetPointer());
-
-  d->visibleLandmarkOptions->addMapper(d->visibleLandmarkMapper.GetPointer());
 
   // Set up ground plane grid
   d->groundPlane->SetOrigin(-10.0, -10.0, 0.0);
@@ -812,9 +804,6 @@ void WorldView::setVisibleLandmarks(kwiver::vital::landmark_map const& lm)
     fields.insert("Observations", FieldInformation{Observations, {0.0, upper}});
   }
 
-  d->visibleLandmarkOptions->setTrueColorAvailable(haveColor);
-  d->visibleLandmarkOptions->setDataFields(fields);
-
   d->visibleLandmarkPoints->Modified();
   d->visibleLandmarkVerts->Modified();
   d->visibleLandmarkColors->Modified();
@@ -847,6 +836,26 @@ void WorldView::setLandmarksVisible(bool state)
   QTE_D();
 
   d->landmarkActor->SetVisibility(state);
+
+  if(!state)
+  {
+    d->landmarkOptions->showVisibleLandmarks(false);
+  }
+  else
+  {
+    d->landmarkOptions->showVisibleLandmarks(
+          d->landmarkOptions->isVisibleLandmarksChecked());
+  }
+
+  d->updateAxes(this, true);
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::setVisibleLandmarksVisibleOnly(bool state)
+{
+  QTE_D();
+
+  d->landmarkActor->SetVisibility(!state);
   d->updateAxes(this, true);
 }
 

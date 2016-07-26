@@ -28,62 +28,47 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_POINTOPTIONS_H_
-#define MAPTK_POINTOPTIONS_H_
+#ifndef VISIBLELANDMARKSOPTIONS_H
+#define VISIBLELANDMARKSOPTIONS_H
 
 #include <qtGlobal.h>
 
 #include <QtGui/QWidget>
 
 class vtkActor;
-class vtkMapper;
 
 struct FieldInformation;
 
-class PointOptionsPrivate;
+class VisibleLandmarksOptionsPrivate;
 
-class PointOptions : public QWidget
+class VisibleLandmarksOptions : public QWidget
 {
   Q_OBJECT
 
 public:
-  explicit PointOptions(QString const& settingsGroup,
+  explicit VisibleLandmarksOptions(QString const& settingsGroup,
                         QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~PointOptions();
+  virtual ~VisibleLandmarksOptions();
 
   void addActor(vtkActor*);
-  void addVisibleLandmarksActor(vtkActor*);
-  void addMapper(vtkMapper*);
-
-  bool isVisibleLandmarksChecked();
 
   void setDefaultColor(QColor const&);
 
 public slots:
-  void setTrueColorAvailable(bool);
-  void setDataFields(QHash<QString, FieldInformation> const&);
+  void setVisibility(bool);
 
-
-  void showVisibleLandmarks(bool);
 signals:
   void modified();
-  void visibleLandmarksDisplayChanged();
-  void showVisibleLandmarksOnly(bool);
+  void visibleLandmarksChanged();
 
 protected slots:
   void setSize(int);
-  void setColorMode(int);
-
-  void setDataColorIcon(QIcon const&);
-
-  void updateActiveDataField();
-  void updateFilters();
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(PointOptions)
-  QTE_DECLARE_PRIVATE(PointOptions)
+  QTE_DECLARE_PRIVATE_RPTR(VisibleLandmarksOptions)
+  QTE_DECLARE_PRIVATE(VisibleLandmarksOptions)
 
-  QTE_DISABLE_COPY(PointOptions)
+  QTE_DISABLE_COPY(VisibleLandmarksOptions)
 };
 
 #endif

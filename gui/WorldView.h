@@ -68,6 +68,7 @@ public slots:
   void setImageVisible(bool);
   void setCamerasVisible(bool);
   void setLandmarksVisible(bool);
+  void setVisibleLandmarksVisibleOnly(bool);
   void setVisibleLandmarksVisible(bool);
   void setGroundPlaneVisible(bool);
   void setAxesVisible(bool);

@@ -208,7 +208,7 @@ public:
 
   PointOptions* landmarkOptions;
 
-  PointOptions* visibleLandmarksOptions;
+//  PointOptions* visibleLandmarksOptions;
 
   double imageBounds[6];
 
@@ -431,24 +431,11 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->landmarkOptions->setDefaultColor(Qt::magenta);
   d->landmarkOptions->addActor(d->landmarks.actor.GetPointer());
   d->landmarkOptions->addMapper(d->landmarks.mapper.GetPointer());
+  d->landmarkOptions->addVisibleLandmarksActor(d->visibleLandmarks.actor.GetPointer());
 
   d->setPopup(d->UI.actionShowLandmarks, d->landmarkOptions);
 
   connect(d->landmarkOptions, SIGNAL(modified()),
-          d->UI.renderWidget, SLOT(update()));
-
-  d->visibleLandmarksOptions = new PointOptions("CameraView/VisibleLandmarks",
-                                                        this);
-  d->visibleLandmarksOptions->setDefaultColor(Qt::magenta);
-  d->visibleLandmarksOptions->addActor(d->visibleLandmarks.actor.GetPointer());
-  d->visibleLandmarksOptions->addMapper(d->visibleLandmarks.mapper.GetPointer());
-
-  d->visibleLandmarks.actor->SetVisibility(d->UI.actionShowVisibleLandmarks->
-                                           isChecked());
-
-  d->setPopup(d->UI.actionShowVisibleLandmarks, d->visibleLandmarksOptions);
-
-  connect(d->visibleLandmarksOptions, SIGNAL(modified()),
           d->UI.renderWidget, SLOT(update()));
 
   auto const residualsOptions =
@@ -466,7 +453,6 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   this->addAction(d->UI.actionViewResetFullExtents);
   this->addAction(d->UI.actionShowFeatures);
   this->addAction(d->UI.actionShowLandmarks);
-  this->addAction(d->UI.actionShowVisibleLandmarks);
   this->addAction(d->UI.actionShowResiduals);
 
   connect(d->UI.actionViewReset, SIGNAL(triggered()),
@@ -480,10 +466,11 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
           featureOptions, SLOT(setFeaturesVisible(bool)));
   connect(d->UI.actionShowLandmarks, SIGNAL(toggled(bool)),
           this, SLOT(setLandmarksVisible(bool)));
-  connect(d->UI.actionShowVisibleLandmarks, SIGNAL(toggled(bool)),
-          this, SLOT(setVisibleLandmarksVisible(bool)));
   connect(d->UI.actionShowResiduals, SIGNAL(toggled(bool)),
           this, SLOT(setResidualsVisible(bool)));
+
+  connect(d->landmarkOptions, SIGNAL(showVisibleLandmarksOnly(bool)),
+          this, SLOT(setVisibleLandmarksVisibleOnly(bool)));
 
   // Set up ortho view
   d->renderer->GetActiveCamera()->ParallelProjectionOn();
@@ -613,9 +600,6 @@ void CameraView::setLandmarksData(kwiver::vital::landmark_map const& lm)
 
   d->landmarkOptions->setTrueColorAvailable(haveColor);
   d->landmarkOptions->setDataFields(fields);
-
-  d->visibleLandmarksOptions->setTrueColorAvailable(haveColor);
-  d->visibleLandmarksOptions->setDataFields(fields);
 }
 
 //-----------------------------------------------------------------------------
@@ -683,6 +667,16 @@ void CameraView::clearResiduals()
 }
 
 //-----------------------------------------------------------------------------
+void CameraView::setVisibleLandmarksVisibleOnly(bool state)
+{
+  QTE_D();
+
+  d->landmarks.actor->SetVisibility(!state);
+
+  d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
 void CameraView::clearVisibleLandmarks()
 {
   QTE_D();
@@ -704,6 +698,17 @@ void CameraView::setLandmarksVisible(bool state)
   QTE_D();
 
   d->landmarks.actor->SetVisibility(state);
+
+  if(!state)
+  {
+    d->visibleLandmarks.actor->SetVisibility(false);
+  }
+  else
+  {
+    d->visibleLandmarks.actor->SetVisibility(
+          d->landmarkOptions->isVisibleLandmarksChecked());
+  }
+
   d->UI.renderWidget->update();
 }
 
