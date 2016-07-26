@@ -326,6 +326,8 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   connect(d->landmarkOptions, SIGNAL(modified()),
           d->UI.renderWidget, SLOT(update()));
 
+  d->visibleLandmarkActor->SetVisibility(d->landmarkOptions->isVisibleLandmarksChecked());
+
   d->depthMapOptions = new DepthMapOptions("WorldView/DepthMap", this);
   d->setPopup(d->UI.actionShowDepthMap, d->depthMapOptions);
 
@@ -835,15 +837,19 @@ void WorldView::setLandmarksVisible(bool state)
 {
   QTE_D();
 
-  d->landmarkActor->SetVisibility(state);
-
+  if(!d->landmarkOptions->isVisibleLandmarksOnlyChecked()
+     || (d->landmarkOptions->isVisibleLandmarksOnlyChecked()
+         && !d->landmarkOptions->isVisibleLandmarksChecked()))
+  {
+    d->landmarkActor->SetVisibility(state);
+  }
   if(!state)
   {
-    d->landmarkOptions->showVisibleLandmarks(false);
+    d->visibleLandmarkActor->SetVisibility(false);
   }
   else
   {
-    d->landmarkOptions->showVisibleLandmarks(
+    d->visibleLandmarkActor->SetVisibility(
           d->landmarkOptions->isVisibleLandmarksChecked());
   }
 

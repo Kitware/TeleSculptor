@@ -433,6 +433,8 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->landmarkOptions->addMapper(d->landmarks.mapper.GetPointer());
   d->landmarkOptions->addVisibleLandmarksActor(d->visibleLandmarks.actor.GetPointer());
 
+  d->visibleLandmarks.actor->SetVisibility(d->landmarkOptions->isVisibleLandmarksChecked());
+
   d->setPopup(d->UI.actionShowLandmarks, d->landmarkOptions);
 
   connect(d->landmarkOptions, SIGNAL(modified()),
@@ -697,7 +699,12 @@ void CameraView::setLandmarksVisible(bool state)
 {
   QTE_D();
 
-  d->landmarks.actor->SetVisibility(state);
+  if(!d->landmarkOptions->isVisibleLandmarksOnlyChecked()
+     || (d->landmarkOptions->isVisibleLandmarksOnlyChecked()
+         && !d->landmarkOptions->isVisibleLandmarksChecked()))
+  {
+    d->landmarks.actor->SetVisibility(state);
+  }
 
   if(!state)
   {

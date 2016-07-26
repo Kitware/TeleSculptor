@@ -56,6 +56,7 @@ public:
   void addMapper(vtkMapper*);
 
   bool isVisibleLandmarksChecked();
+  bool isVisibleLandmarksOnlyChecked();
 
   void setDefaultColor(QColor const&);
 

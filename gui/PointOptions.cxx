@@ -377,11 +377,20 @@ void PointOptions::addMapper(vtkMapper* mapper)
   d->mappers.append(mapper);
 }
 
+//-----------------------------------------------------------------------------
 bool PointOptions::isVisibleLandmarksChecked()
 {
   QTE_D();
 
   return d->UI.showVisibleLandmarks->isChecked();
+}
+
+//-----------------------------------------------------------------------------
+bool PointOptions::isVisibleLandmarksOnlyChecked()
+{
+  QTE_D();
+
+  return d->UI.showVisibleLandmarksOnly->isChecked();
 }
 
 //-----------------------------------------------------------------------------
@@ -425,6 +434,15 @@ void PointOptions::showVisibleLandmarks(bool state)
   d->visibleLandmarksOptions->setVisibility(state);
 
   d->UI.showVisibleLandmarksOnly->setEnabled(state);
+
+  if(!state)
+  {
+    emit showVisibleLandmarksOnly(false);
+  }
+  else if (state && d->UI.showVisibleLandmarksOnly->isChecked())
+  {
+    emit showVisibleLandmarksOnly(true);
+  }
 
   emit this->modified();
 }
