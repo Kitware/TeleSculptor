@@ -224,6 +224,7 @@ public:
     QString imagePath; // Full path to camera image data
     QString depthMapPath; // Full path to depth map data
     kwiver::vital::landmark_map::map_landmark_t *visibleLandmarks;
+    bool areVisibleLandmarksLoaded = false;
   };
 
   // Methods
@@ -426,6 +427,30 @@ void MainWindowPrivate::setActiveCamera(int id)
 {
   this->activeCameraIndex = id;
   this->UI.worldView->setActiveCamera(this->cameras[id].camera);
+
+  //Load visible landmarks for the active camera once
+  if(!this->cameras[id].areVisibleLandmarksLoaded)
+  {
+
+    auto const& tracks = this->tracks->tracks();
+    foreach (auto const& track, tracks)
+    {
+      auto const& all_frame_ids = track->all_frame_ids();
+      if (all_frame_ids.count(id))
+      {
+        auto const& landmarkId = track->id();
+        auto const& landmark = this->landmarks->landmarks()[landmarkId];
+
+        if (landmark)
+        {
+          this->cameras[id].visibleLandmarks->insert(
+                std::make_pair(landmarkId, landmark));
+        }
+      }
+    }
+
+    this->cameras[id].areVisibleLandmarksLoaded = true;
+  }
 
   this->updateCameraView();
 
@@ -832,27 +857,6 @@ void MainWindow::loadProject(QString const& path)
 
       d->UI.depthMapView->setDepthMap(dm.value());
       d->UI.depthMapView->resetView();
-    }
-  }
-
-  // Set visible landmarks for each cameras all at once
-  if (d->tracks)
-  {
-    auto const& tracks = d->tracks->tracks();
-    foreach (auto const& track, tracks)
-    {
-      auto const& all_frame_ids = track->all_frame_ids();
-      foreach (auto frame_id, all_frame_ids)
-      {
-        auto const& id = track->id();
-        auto const& landmark = d->landmarks->landmarks()[id];
-
-        if (landmark)
-        {
-          d->cameras[frame_id].visibleLandmarks->insert(
-                std::make_pair(id, landmark));
-        }
-      }
     }
   }
 
