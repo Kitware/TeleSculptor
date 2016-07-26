@@ -106,6 +106,8 @@ public:
   QList<vtkMapper*> mappers;
   QHash<vtkPolyDataMapper*, vtkThresholdPoints*> filters;
 
+  vtkActor* nonVisibleLandmarksActor;
+
   QHash<QString, FieldInformation> fields;
 
   QButtonGroup colorMode;
@@ -282,10 +284,13 @@ PointOptions::PointOptions(QString const& settingsGroup,
           this, SLOT(setColorMode(int)));
 
   connect(d->UI.showVisibleLandmarks, SIGNAL(toggled(bool)),
-          this, SLOT(showVisibleLandmarks(bool)));
+          this, SIGNAL(visibleLandmarksDisplayChanged(bool)));
+
+  connect(d->UI.showVisibleLandmarks, SIGNAL(toggled(bool)),
+          d->UI.showVisibleLandmarksOnly, SLOT(setEnabled(bool)));
 
   connect(d->UI.showVisibleLandmarksOnly, SIGNAL(toggled(bool)),
-          this, SIGNAL(showVisibleLandmarksOnly(bool)));
+          this, SLOT(showVisibleLandmarksOnly(bool)));
 
   connect(d->visibleLandmarksOptions, SIGNAL(visibleLandmarksChanged()),
           this, SIGNAL(modified()));
@@ -348,6 +353,16 @@ void PointOptions::setDataFields(
 }
 
 //-----------------------------------------------------------------------------
+void PointOptions::showVisibleLandmarksOnly(bool state)
+{
+  QTE_D();
+
+   d->nonVisibleLandmarksActor->SetVisibility(!state);
+
+   emit this->modified();
+}
+
+//-----------------------------------------------------------------------------
 void PointOptions::addActor(vtkActor* actor)
 {
   QTE_D();
@@ -356,7 +371,6 @@ void PointOptions::addActor(vtkActor* actor)
   actor->GetProperty()->SetPointSize(d->UI.size->value());
 
   d->actors.append(actor);
-  std::cout << "d->actors.size() = " << d->actors.size() << std::endl;
 }
 
 //-----------------------------------------------------------------------------
@@ -365,6 +379,15 @@ void PointOptions::addVisibleLandmarksActor(vtkActor *actor)
   QTE_D();
 
   d->visibleLandmarksOptions->addActor(actor);
+}
+
+//-----------------------------------------------------------------------------
+void PointOptions::addNonVisibleLandmarksActor(vtkActor * actor)
+{
+  QTE_D();
+
+  d->nonVisibleLandmarksActor = actor;
+  addActor(actor);
 }
 
 //-----------------------------------------------------------------------------
@@ -424,27 +447,6 @@ void PointOptions::setDataColorIcon(QIcon const& icon)
 {
   QTE_D();
   d->UI.dataColorMenu->setIcon(icon);
-}
-
-//-----------------------------------------------------------------------------
-void PointOptions::showVisibleLandmarks(bool state)
-{
-  QTE_D();
-
-  d->visibleLandmarksOptions->setVisibility(state);
-
-  d->UI.showVisibleLandmarksOnly->setEnabled(state);
-
-  if(!state)
-  {
-    emit showVisibleLandmarksOnly(false);
-  }
-  else if (state && d->UI.showVisibleLandmarksOnly->isChecked())
-  {
-    emit showVisibleLandmarksOnly(true);
-  }
-
-  emit this->modified();
 }
 
 //-----------------------------------------------------------------------------

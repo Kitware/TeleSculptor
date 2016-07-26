@@ -224,6 +224,7 @@ public:
     QString imagePath; // Full path to camera image data
     QString depthMapPath; // Full path to depth map data
     kwiver::vital::landmark_map::map_landmark_t *visibleLandmarks;
+    kwiver::vital::landmark_map::map_landmark_t *nonVisibleLandmarks;
     bool areVisibleLandmarksLoaded = false;
   };
 
@@ -342,7 +343,9 @@ void MainWindowPrivate::addFrame(
 
   cd.imagePath = imagePath;
 
+
   cd.visibleLandmarks = new kwiver::vital::landmark_map::map_landmark_t();
+  cd.nonVisibleLandmarks = new kwiver::vital::landmark_map::map_landmark_t();
 
   if (camera)
   {
@@ -432,6 +435,8 @@ void MainWindowPrivate::setActiveCamera(int id)
   if(!this->cameras[id].areVisibleLandmarksLoaded)
   {
 
+    *this->cameras[id].nonVisibleLandmarks = landmarks->landmarks();
+
     auto const& tracks = this->tracks->tracks();
     foreach (auto const& track, tracks)
     {
@@ -445,6 +450,7 @@ void MainWindowPrivate::setActiveCamera(int id)
         {
           this->cameras[id].visibleLandmarks->insert(
                 std::make_pair(landmarkId, landmark));
+          this->cameras[id].nonVisibleLandmarks->erase(landmarkId);
         }
       }
     }
@@ -456,6 +462,10 @@ void MainWindowPrivate::setActiveCamera(int id)
 
   this->UI.worldView->setVisibleLandmarks(kwiver::vital::simple_landmark_map(
                                             *this->cameras[id].visibleLandmarks));
+
+
+  this->UI.worldView->setNonVisibleLandmarks(kwiver::vital::simple_landmark_map(
+                                            *this->cameras[id].nonVisibleLandmarks));
 
   auto& cd = this->cameras[id];
   if (!cd.depthMapPath.isEmpty())
@@ -543,6 +553,15 @@ void MainWindowPrivate::updateCameraView()
     double pp[2];
     this->cameras[this->activeCameraIndex].camera->ProjectPoint(coord,pp);
     this->UI.cameraView->addVisibleLandmark(landmark.first,pp[0],pp[1]);
+  }
+
+  this->UI.cameraView->clearNonVisibleLandmarks();
+  foreach (auto const& landmark, *this->cameras[this->activeCameraIndex].nonVisibleLandmarks)
+  {
+    auto coord = landmark.second->loc();
+    double pp[2];
+    this->cameras[this->activeCameraIndex].camera->ProjectPoint(coord,pp);
+    this->UI.cameraView->addNonVisibleLandmark(landmark.first,pp[0],pp[1]);
   }
 }
 

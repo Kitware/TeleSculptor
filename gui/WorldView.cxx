@@ -137,6 +137,14 @@ public:
   vtkNew<vtkPolyDataMapper> visibleLandmarkMapper;
   vtkNew<vtkActor> visibleLandmarkActor;
 
+  vtkNew<vtkPoints> nonVisibleLandmarkPoints;
+  vtkNew<vtkCellArray> nonVisibleLandmarkVerts;
+  vtkNew<vtkDoubleArray> nonVisibleLandmarkElevations;
+  vtkNew<vtkUnsignedCharArray> nonVisibleLandmarkColors;
+  vtkNew<vtkUnsignedIntArray> nonVisibleLandmarkObservations;
+  vtkNew<vtkPolyDataMapper> nonVisibleLandmarkMapper;
+  vtkNew<vtkActor> nonVisibleLandmarkActor;
+
   vtkNew<vtkImageActor> imageActor;
   vtkNew<vtkImageData> emptyImage;
 
@@ -320,6 +328,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
 
   d->landmarkOptions = new PointOptions("WorldView/Landmarks", this);
   d->landmarkOptions->addActor(d->landmarkActor.GetPointer());
+  d->landmarkOptions->addNonVisibleLandmarksActor(d->nonVisibleLandmarkActor.GetPointer());
   d->landmarkOptions->addVisibleLandmarksActor(d->visibleLandmarkActor.GetPointer());
   d->setPopup(d->UI.actionShowLandmarks, d->landmarkOptions);
 
@@ -375,8 +384,8 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.actionShowDepthMap, SIGNAL(toggled(bool)),
           this, SLOT(setDepthMapVisible(bool)));
 
-  connect(d->landmarkOptions, SIGNAL(showVisibleLandmarksOnly(bool)),
-          this, SLOT(setVisibleLandmarksVisibleOnly(bool)));
+  connect(d->landmarkOptions, SIGNAL(visibleLandmarksDisplayChanged(bool)),
+          this, SLOT(switchToVisibleLandmarksMode(bool)));
 
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
@@ -447,6 +456,31 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
 
   d->visibleLandmarkActor->SetMapper(d->visibleLandmarkMapper.GetPointer());
   d->renderer->AddActor(d->visibleLandmarkActor.GetPointer());
+
+  // Set up non-visible landmarks actor
+  vtkNew<vtkPolyData> nonVisibleLandmarkPolyData;
+
+  auto const nonVisibleLandmarkPointData = nonVisibleLandmarkPolyData->GetPointData();
+
+  d->nonVisibleLandmarkColors->SetName(TrueColor);
+  d->visibleLandmarkColors->SetNumberOfComponents(3);
+
+  d->nonVisibleLandmarkElevations->SetName(Elevation);
+  d->nonVisibleLandmarkElevations->SetNumberOfComponents(1);
+
+  d->nonVisibleLandmarkObservations->SetName(Observations);
+  d->nonVisibleLandmarkObservations->SetNumberOfComponents(1);
+
+  nonVisibleLandmarkPolyData->SetPoints(d->nonVisibleLandmarkPoints.GetPointer());
+  nonVisibleLandmarkPolyData->SetVerts(d->nonVisibleLandmarkVerts.GetPointer());
+  nonVisibleLandmarkPointData->AddArray(d->nonVisibleLandmarkColors.GetPointer());
+  nonVisibleLandmarkPointData->AddArray(d->nonVisibleLandmarkElevations.GetPointer());
+  nonVisibleLandmarkPointData->AddArray(d->nonVisibleLandmarkObservations.GetPointer());
+  d->nonVisibleLandmarkMapper->SetInputData(nonVisibleLandmarkPolyData.GetPointer());
+
+  d->nonVisibleLandmarkActor->SetMapper(d->nonVisibleLandmarkMapper.GetPointer());
+  d->nonVisibleLandmarkActor->SetVisibility(false);
+  d->renderer->AddActor(d->nonVisibleLandmarkActor.GetPointer());
 
   // Set up ground plane grid
   d->groundPlane->SetOrigin(-10.0, -10.0, 0.0);
@@ -816,6 +850,69 @@ void WorldView::setVisibleLandmarks(kwiver::vital::landmark_map const& lm)
 }
 
 //-----------------------------------------------------------------------------
+void WorldView::setNonVisibleLandmarks(kwiver::vital::landmark_map const& lm)
+{
+  QTE_D();
+
+  auto const& landmarks = lm.landmarks();
+  auto const size = static_cast<vtkIdType>(landmarks.size());
+
+  auto const defaultColor = kwiver::vital::rgb_color{};
+  auto haveColor = false;
+  auto maxObservations = unsigned{0};
+  auto minZ = qInf(), maxZ = -qInf();
+
+  d->nonVisibleLandmarkPoints->Reset();
+  d->nonVisibleLandmarkVerts->Reset();
+  d->nonVisibleLandmarkColors->Reset();
+  d->nonVisibleLandmarkElevations->Reset();
+  d->nonVisibleLandmarkObservations->Reset();
+  d->nonVisibleLandmarkPoints->Allocate(size);
+  d->nonVisibleLandmarkVerts->Allocate(size);
+  d->nonVisibleLandmarkColors->Allocate(3 * size);
+  d->nonVisibleLandmarkElevations->Allocate(size);
+  d->nonVisibleLandmarkObservations->Allocate(size);
+
+  vtkIdType vertIndex = 0;
+  foreach (auto const& lm, landmarks)
+  {
+    auto const& pos = lm.second->loc();
+    auto const& color = lm.second->color();
+    auto const observations = lm.second->observations();
+
+    d->nonVisibleLandmarkPoints->InsertNextPoint(pos.data());
+    d->nonVisibleLandmarkVerts->InsertNextCell(1);
+    d->nonVisibleLandmarkVerts->InsertCellPoint(vertIndex++);
+    d->nonVisibleLandmarkColors->InsertNextValue(color.r);
+    d->nonVisibleLandmarkColors->InsertNextValue(color.g);
+    d->nonVisibleLandmarkColors->InsertNextValue(color.b);
+    d->nonVisibleLandmarkElevations->InsertNextValue(pos[2]);
+    d->nonVisibleLandmarkObservations->InsertNextValue(observations);
+
+    haveColor = haveColor || (color != defaultColor);
+    maxObservations = qMax(maxObservations, observations);
+    minZ = qMin(minZ, pos[2]);
+    maxZ = qMax(maxZ, pos[2]);
+  }
+
+  auto fields = QHash<QString, FieldInformation>{};
+  fields.insert("Elevation", FieldInformation{Elevation, {minZ, maxZ}});
+  if (maxObservations)
+  {
+    auto const upper = static_cast<double>(maxObservations);
+    fields.insert("Observations", FieldInformation{Observations, {0.0, upper}});
+  }
+
+  d->nonVisibleLandmarkPoints->Modified();
+  d->nonVisibleLandmarkVerts->Modified();
+  d->nonVisibleLandmarkColors->Modified();
+  d->nonVisibleLandmarkObservations->Modified();
+
+  d->updateScale(this);
+  d->updateAxes(this);
+}
+
+//-----------------------------------------------------------------------------
 void WorldView::setImageVisible(bool state)
 {
   QTE_D();
@@ -837,40 +934,17 @@ void WorldView::setLandmarksVisible(bool state)
 {
   QTE_D();
 
-  if(!d->landmarkOptions->isVisibleLandmarksOnlyChecked()
-     || (d->landmarkOptions->isVisibleLandmarksOnlyChecked()
-         && !d->landmarkOptions->isVisibleLandmarksChecked()))
+  if(d->landmarkOptions->isVisibleLandmarksChecked())
   {
-    d->landmarkActor->SetVisibility(state);
-  }
-  if(!state)
-  {
-    d->visibleLandmarkActor->SetVisibility(false);
+    d->visibleLandmarkActor->SetVisibility(state);
+    d->nonVisibleLandmarkActor->SetVisibility(state && !d->landmarkOptions->
+                                              isVisibleLandmarksOnlyChecked());
   }
   else
   {
-    d->visibleLandmarkActor->SetVisibility(
-          d->landmarkOptions->isVisibleLandmarksChecked());
+    d->landmarkActor->SetVisibility(state);
   }
 
-  d->updateAxes(this, true);
-}
-
-//-----------------------------------------------------------------------------
-void WorldView::setVisibleLandmarksVisibleOnly(bool state)
-{
-  QTE_D();
-
-  d->landmarkActor->SetVisibility(!state);
-  d->updateAxes(this, true);
-}
-
-//-----------------------------------------------------------------------------
-void WorldView::setVisibleLandmarksVisible(bool state)
-{
-  QTE_D();
-
-  d->visibleLandmarkActor->SetVisibility(state);
   d->updateAxes(this, true);
 }
 
@@ -1174,6 +1248,19 @@ void WorldView::updateDepthMapThresholds()
   d->UI.renderWidget->update();
 
   d->depthMapLoaded = true;
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::switchToVisibleLandmarksMode(bool state)
+{
+  QTE_D();
+
+  d->landmarkActor->SetVisibility(!state);
+  d->visibleLandmarkActor->SetVisibility(state);
+  d->nonVisibleLandmarkActor->SetVisibility(state && !d->landmarkOptions->
+                                            isVisibleLandmarksOnlyChecked());
+
+  d->UI.renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------

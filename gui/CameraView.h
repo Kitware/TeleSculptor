@@ -70,12 +70,15 @@ public slots:
 
   void addVisibleLandmark(kwiver::vital::landmark_id_t id, double x, double y);
 
+  void addNonVisibleLandmark(kwiver::vital::landmark_id_t id, double x, double y);
+
   void addResidual(kwiver::vital::track_id_t id,
                    double x1, double y1,
                    double x2, double y2);
 
   void clearLandmarks();
   void clearVisibleLandmarks();
+  void clearNonVisibleLandmarks();
   void clearResiduals();
 
   void setVisibleLandmarksVisibleOnly(bool);
@@ -90,6 +93,8 @@ protected slots:
   void setResidualsVisible(bool);
 
   void updateFeatures();
+
+  void switchToVisibleLandmarksMode(bool);
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(CameraView)

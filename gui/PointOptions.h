@@ -53,6 +53,7 @@ public:
 
   void addActor(vtkActor*);
   void addVisibleLandmarksActor(vtkActor*);
+  void addNonVisibleLandmarksActor(vtkActor*);
   void addMapper(vtkMapper*);
 
   bool isVisibleLandmarksChecked();
@@ -64,12 +65,11 @@ public slots:
   void setTrueColorAvailable(bool);
   void setDataFields(QHash<QString, FieldInformation> const&);
 
-
-  void showVisibleLandmarks(bool);
+  void showVisibleLandmarksOnly(bool);
 signals:
   void modified();
-  void visibleLandmarksDisplayChanged();
-  void showVisibleLandmarksOnly(bool);
+  void visibleLandmarksDisplayChanged(bool);
+  void visibleLandmarksOnlyDisplayChanged(bool);
 
 protected slots:
   void setSize(int);
