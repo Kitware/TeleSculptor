@@ -99,6 +99,50 @@ maptk_descriptors_to_ocv(const std::vector<vital::descriptor_sptr>& desc)
   return mat;
 }
 
+
+/// Convert OpenCV type number into a string
+std::string cv_type_to_string(int number)
+{
+    // find type
+    int type_int = number % 8;
+    std::string type_str;
+
+    switch (type_int)
+    {
+        case 0:
+            type_str = "8U";
+            break;
+        case 1:
+            type_str = "8S";
+            break;
+        case 2:
+            type_str = "16U";
+            break;
+        case 3:
+            type_str = "16S";
+            break;
+        case 4:
+            type_str = "32S";
+            break;
+        case 5:
+            type_str = "32F";
+            break;
+        case 6:
+            type_str = "64F";
+            break;
+        default:
+            break;
+    }
+
+    // find channel
+    int channel = (number / 8) + 1;
+
+    std::stringstream type;
+    type << "CV_" << type_str << "C" << channel;
+
+    return type.str();
+}
+
 } // end anonymous namespace
 
 
@@ -123,7 +167,7 @@ descriptor_set
   APPLY_TO_TYPES(CONVERT_CASE);
   default:
     throw vital::invalid_value("No case to handle OpenCV descriptors of type "
-                               + data_.type());
+                               + cv_type_to_string(data_.type()));
   }
 #undef CONVERT_CASE
   /// \endcond

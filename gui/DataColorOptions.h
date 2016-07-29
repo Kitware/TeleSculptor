@@ -32,6 +32,7 @@
 #define MAPTK_DATACOLOROPTIONS_H_
 
 #include <qtGlobal.h>
+#include <qtMath.h>
 
 #include <QtGui/QIcon>
 #include <QtGui/QWidget>
@@ -51,10 +52,15 @@ public:
 
   QIcon icon() const;
 
+  double minimum() const;
+  double maximum() const;
+
   vtkScalarsToColors* scalarsToColors() const;
 
 public slots:
-  void setAvailableRange(double lower, double upper);
+  void setAvailableRange(double lower, double upper,
+                         double autoLower = -qInf(),
+                         double autoUpper = +qInf());
   void setGradient(int);
 
 signals:

@@ -363,7 +363,8 @@ close_loops_keyframe
                            << num_linked << " joined tracks");
   }
   // divide by number of matched frames to get the average
-  d_->frame_matches[frame_number] /= (frame_number - last_frame);
+  d_->frame_matches[frame_number] /=
+    static_cast<unsigned int>(frame_number - last_frame);
 
   // stitch with all previous keyframes
   for(auto kitr = d_->keyframes.rbegin(); kitr != d_->keyframes.rend(); ++kitr)

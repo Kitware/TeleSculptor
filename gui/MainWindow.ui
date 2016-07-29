@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>963</width>
     <height>600</height>
    </rect>
   </property>
@@ -19,8 +19,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
-     <height>27</height>
+     <width>963</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="qtMenu" name="menuFile">
@@ -151,6 +151,15 @@
     <number>2</number>
    </attribute>
    <widget class="CameraView" name="cameraView"/>
+  </widget>
+  <widget class="QDockWidget" name="depthMapViewDock">
+   <property name="windowTitle">
+    <string>DepthMap View</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="DepthMapView" name="depthMapView"/>
   </widget>
   <action name="actionQuit">
    <property name="icon">
@@ -314,6 +323,12 @@
    <class>qtMenu</class>
    <extends>QMenu</extends>
    <header location="global">qtMenu.h</header>
+  </customwidget>
+  <customwidget>
+   <class>DepthMapView</class>
+   <extends>QWidget</extends>
+   <header>DepthMapView.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>

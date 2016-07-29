@@ -87,6 +87,13 @@ Visualization Application
 
  * The GUI now accepts a list of files to be opened on the command line.
 
+ * Added a depth map view and a depth map visualisation in the world view. The
+   depth maps can be thresholded directly in the world view, and the depth map
+   view offers several visualisation modes such as depths, uniqueness ratios or
+   best cost values. Depth maps can be loaded by initializing the parameter
+   "depthmaps_images_file" with the path to the depth maps (*.vti files) list in
+   the configuration file.
+
 Tools
 
  * Updated the bundle_adjust_tracks tool to use the configurable abstract
@@ -101,6 +108,13 @@ Scripts
 
  * Added a Python script which uses OpenCV to produce mosaicked images of
    video frames using the homographies produced by maptk_track_features.
+
+Default Configuration
+
+ * Switched default loop closure method to keyframe based instead of a mix
+   of homography based and bad frame detection.
+
+ * Switched default feature descriptors to use non-upright SURF.
 
 
 Fixes since v0.8.0

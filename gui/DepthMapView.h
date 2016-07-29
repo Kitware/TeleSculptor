@@ -28,22 +28,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_PROJECT_H_
-#define MAPTK_PROJECT_H_
+#ifndef MAPTK_DEPTHMAPVIEW_H_
+#define MAPTK_DEPTHMAPVIEW_H_
 
-#include <QtCore/QMap>
-#include <QtCore/QStringList>
+#include <qtGlobal.h>
 
-struct Project
+#include <QtGui/QWidget>
+
+class DepthMapViewPrivate;
+
+class DepthMapView : public QWidget
 {
-  bool read(QString const& path);
+  Q_OBJECT
 
-  QStringList images;
-  QString cameraPath;
-  QMap<int, QString> depthMaps;
+public:
+  explicit DepthMapView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  virtual ~DepthMapView();
 
-  QString tracks;
-  QString landmarks;
+public slots:
+  void setDepthMap(QString const& imagePath);
+
+  void updateThresholds(double, double, double, double);
+
+  void setBackgroundColor(QColor const&);
+
+  void resetView();
+
+private:
+  QTE_DECLARE_PRIVATE_RPTR(DepthMapView)
+  QTE_DECLARE_PRIVATE(DepthMapView)
+
+  QTE_DISABLE_COPY(DepthMapView)
 };
 
 #endif

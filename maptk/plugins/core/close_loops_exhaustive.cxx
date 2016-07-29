@@ -188,7 +188,8 @@ close_loops_exhaustive
   frame_id_t last_frame = 0;
   if (d_->num_look_back >= 0)
   {
-    last_frame = std::max<int>(frame_number - d_->num_look_back, 0);
+    const int fnum = static_cast<int>(frame_number);
+    last_frame = std::max<int>(fnum - d_->num_look_back, 0);
   }
 
   std::vector< vital::track_sptr > all_tracks = input->tracks();
@@ -212,7 +213,7 @@ close_loops_exhaustive
 
     LOG_INFO(d_->m_logger, "Matching frame " << frame_number << " to "<< f
                              << " matched "<< mset->size() << " features");
-    if( mset->size() < d_->match_req )
+    if( mset->size() < static_cast<unsigned int>(d_->match_req) )
     {
       continue;
     }

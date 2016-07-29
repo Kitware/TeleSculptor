@@ -37,6 +37,7 @@
 #include <qtStlUtil.h>
 
 #include <QtGui/QApplication>
+
 #include <QtCore/QDebug>
 #include <QtCore/QDir>
 #include <QtCore/QFile>
@@ -78,22 +79,48 @@ bool Project::read(QString const& path)
       getPath(config, base, "input_track_file", "output_tracks_file");
 
     // Read image list
-    auto const& iflPath = config->get_value<std::string>("image_list_file");
-    QFile ifl(base.filePath(qtString(iflPath)));
-    if (!ifl.open(QIODevice::ReadOnly | QIODevice::Text))
+    auto const& ilfPath = config->get_value<std::string>("image_list_file");
+    QFile ilf(base.filePath(qtString(ilfPath)));
+    if (!ilf.open(QIODevice::ReadOnly | QIODevice::Text))
     {
       // TODO set error
       return false;
     }
 
-    while (!ifl.atEnd())
+    while (!ilf.atEnd())
     {
-      auto const& line = ifl.readLine();
+      auto const& line = ilf.readLine();
       if (!line.isEmpty())
       {
         // Strip '\n' and convert to full path
         auto const ll = line.length() - (line.endsWith('\n') ? 1 : 0);
         this->images.append(base.filePath(QString::fromLocal8Bit(line, ll)));
+      }
+    }
+
+    // Read depth map images list
+    if (config->has_value("depthmaps_images_file"))
+    {
+      auto const& dmifPath =
+        config->get_value<std::string>("depthmaps_images_file");
+      auto const& dmifAbsolutePath = base.filePath(qtString(dmifPath));
+      auto const& dmifBase = QFileInfo(dmifAbsolutePath).absoluteDir();
+      QFile dmif(dmifAbsolutePath);
+      if (!dmif.open(QIODevice::ReadOnly | QIODevice::Text))
+      {
+        // TODO set error
+        return false;
+      }
+
+      auto parts = QRegExp("(\\d+)\\s+([^\n]+)\n*");
+      while (!dmif.atEnd())
+      {
+        auto const& line = QString::fromLocal8Bit(dmif.readLine());
+        if (parts.exactMatch(line))
+        {
+          this->depthMaps.insert(parts.cap(1).toInt(),
+                                 dmifBase.filePath(parts.cap(2)));
+        }
       }
     }
 

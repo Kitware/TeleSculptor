@@ -35,6 +35,10 @@ set(gui_ui
   CameraOptions.ui
   DataColorOptions.ui
   DataFilterOptions.ui
+  DepthMapFilterOptions.ui
+  DepthMapOptions.ui
+  DepthMapView.ui
+  DepthMapViewOptions.ui
   FeatureOptions.ui
   ImageOptions.ui
   PointOptions.ui
@@ -52,6 +56,10 @@ set(gui_moc_headers
   CameraView.h
   DataColorOptions.h
   DataFilterOptions.h
+  DepthMapFilterOptions.h
+  DepthMapOptions.h
+  DepthMapView.h
+  DepthMapViewOptions.h
   FeatureOptions.h
   GradientSelector.h
   ImageOptions.h
@@ -72,6 +80,10 @@ set(gui_sources
   CameraView.cxx
   DataColorOptions.cxx
   DataFilterOptions.cxx
+  DepthMapFilterOptions.cxx
+  DepthMapOptions.cxx
+  DepthMapView.cxx
+  DepthMapViewOptions.cxx
   FeatureOptions.cxx
   GradientSelector.cxx
   ImageOptions.cxx
@@ -136,11 +148,14 @@ target_link_libraries(mapgui
   vital_apm
   vtkGUISupportQt
   vtkInteractionStyle
+  vtkIOXML
   vtkViewsCore
   vtkRenderingFreeTypeOpenGL
   vtkRenderingVolumeOpenGL
   vtkRenderingOpenGL
   vtkRenderingCore
+  vtkFiltersGeometry
+  vtkFiltersCore
   vtkCommonCore
   vtksys
   qtExtensions

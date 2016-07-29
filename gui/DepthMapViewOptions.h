@@ -28,22 +28,48 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_PROJECT_H_
-#define MAPTK_PROJECT_H_
+#ifndef MAPTK_DEPTHMAPVIEWOPTIONS_H_
+#define MAPTK_DEPTHMAPVIEWOPTIONS_H_
 
-#include <QtCore/QMap>
-#include <QtCore/QStringList>
+#include <qtGlobal.h>
 
-struct Project
+#include <QtGui/QButtonGroup>
+#include <QtGui/QVBoxLayout>
+#include <QtGui/QWidget>
+
+class vtkActor;
+class vtkPointData;
+
+class DepthMapViewOptionsPrivate;
+
+class DepthMapViewOptions : public QWidget
 {
-  bool read(QString const& path);
+  Q_OBJECT
 
-  QStringList images;
-  QString cameraPath;
-  QMap<int, QString> depthMaps;
+public:
+  explicit DepthMapViewOptions(const QString& settingsGroup,
+                               QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  virtual ~DepthMapViewOptions();
 
-  QString tracks;
-  QString landmarks;
+  void setActor(vtkActor*);
+
+signals:
+  void modified();
+
+public slots:
+  void updateRanges(vtkPointData*);
+  void updateActor();
+
+protected slots:
+  void setDepthIcon(QIcon const&);
+  void setBestCostValueIcon(QIcon const&);
+  void setUniquenessRatioIcon(QIcon const&);
+
+private:
+  QTE_DECLARE_PRIVATE_RPTR(DepthMapViewOptions)
+  QTE_DECLARE_PRIVATE(DepthMapViewOptions)
+
+  QTE_DISABLE_COPY(DepthMapViewOptions)
 };
 
 #endif

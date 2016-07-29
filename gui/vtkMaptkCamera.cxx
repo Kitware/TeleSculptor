@@ -32,9 +32,9 @@
 
 #include <vital/io/camera_io.h>
 
-#include <vtkObjectFactory.h>
 #include <vtkMath.h>
 #include <vtkMatrix4x4.h>
+#include <vtkObjectFactory.h>
 
 #include <vtksys/SystemTools.hxx>
 
@@ -113,6 +113,60 @@ bool vtkMaptkCamera::ProjectPoint(kwiver::vital::vector_3d const& in,
   out[0] = ppos[0];
   out[1] = ppos[1];
   return true;
+}
+/**
+  *
+  * WARNING: The convention here is that depth is NOT the distance between the
+  * camera center and the 3D point but the distance between the projection of
+  * the 3D point on the optical axis and the optical center.
+*/
+
+//-----------------------------------------------------------------------------
+kwiver::vital::vector_3d vtkMaptkCamera::UnprojectPoint(
+  double pixel[2], double depth)
+{
+  // Build camera matrix
+  auto const T = this->MaptkCamera->translation();
+  auto const R = kwiver::vital::matrix_3x3d(this->MaptkCamera->rotation());
+
+  auto const inPoint = kwiver::vital::vector_2d{pixel[0], pixel[1]};
+  auto const normPoint = this->MaptkCamera->intrinsics()->unmap(inPoint);
+
+  auto const homogenousPoint = kwiver::vital::vector_3d{normPoint[0] * depth,
+                                                        normPoint[1] * depth,
+                                                        depth};
+
+  return kwiver::vital::vector_3d(R.transpose() * (homogenousPoint - T));
+}
+
+//-----------------------------------------------------------------------------
+void vtkMaptkCamera::ScaleK(double factor)
+{
+  auto K = this->MaptkCamera->intrinsics()->as_matrix();
+
+  K(0, 0) *= factor;
+  K(0, 1) *= factor;
+  K(0, 2) *= factor;
+  K(1, 1) *= factor;
+  K(1, 2) *= factor;
+
+  kwiver::vital::simple_camera_intrinsics newIntrinsics(K);
+
+  kwiver::vital::simple_camera scaledCamera(this->MaptkCamera->center(),
+                                            this->MaptkCamera->rotation(),
+                                            newIntrinsics);
+  SetCamera(scaledCamera.clone());
+}
+
+//-----------------------------------------------------------------------------
+vtkSmartPointer<vtkMaptkCamera> vtkMaptkCamera::ScaledK(double factor)
+{
+  auto newCam = vtkSmartPointer<vtkMaptkCamera>::New();
+  newCam->DeepCopy(this);
+
+  newCam->ScaleK(factor);
+
+  return newCam;
 }
 
 //-----------------------------------------------------------------------------
