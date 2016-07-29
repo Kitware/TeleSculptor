@@ -20,12 +20,12 @@ Core Plugin
 
  * In the core triangulation algorithm, landmarks that were not observed by
    enough cameras or had no corresponding tracks were not counted towards the
-   the number of failed triangulations.  Now they are.
+   number of failed triangulations.  Now they are.
 
 VXL Plugin
 
  * Updated the CMake code for using VXL to handle changes in VXL master so that
-   MAP-Tk can build against the latest VXL.  The lastest VXL master uses
+   MAP-Tk can build against the latest VXL.  The latest VXL master uses
    VXL_CORE_INCLUDE_DIRS instead of VXL_CORE_INCLUDE_DIR to specify multiple
    include directories (e.g. in source and build trees).  This is needed to
    find configured headers that are in the build tree.  The same is true for
@@ -47,7 +47,7 @@ Tools
 
  * Fixed an issue with converting POS filenames to KRTD in the pos2krtd tool.
    When producing the KRTD filenames from the POS file names, the pos2krtd
-   tool was being too agressive about striping file extensions when more
+   tool was being too aggressive about striping file extensions when more
    than one '.' was in the file name.  In this release the tool strips the
    extension at the last '.' instead of the first.
 
