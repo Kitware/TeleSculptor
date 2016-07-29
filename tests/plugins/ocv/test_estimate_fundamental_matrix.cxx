@@ -149,7 +149,7 @@ IMPLEMENT_TEST(ideal_points)
   // compare true and computed fundamental matrices
   std::cout << "true F = "<<*true_F<<std::endl;
   std::cout << "Estimated F = "<< F <<std::endl;
-  TEST_NEAR("Fundamental Matrix Estimate", F, true_F->matrix(), 1e-6);
+  TEST_NEAR("Fundamental Matrix Estimate", F, true_F->matrix(), 1e-5);
 
   unsigned num_inliers = static_cast<unsigned>(std::count(inliers.begin(),
                                                           inliers.end(), true));
