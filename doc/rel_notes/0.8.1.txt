@@ -5,14 +5,6 @@ This release provides patches to the MAP-Tk v0.8.0 release to address issues.
 MAP-Tk v0.8.1 is a bug fix release with no new functionality.
 
 
-Updates since v0.8.0
---------------------
-
-Scripts
-
- * The SketchUp import script now loads MAP-Tk landmarks into a new layer.
-
-
 Fixes since v0.8.0
 --------------------
 
@@ -60,3 +52,5 @@ Scripts
    limiting the FOV of cameras to greater than 1 degree.  The loading script
    now adjusts the image width and focal length parameter to force FOV less
    than 1 degree when needed.
+
+ * The SketchUp import script now loads MAP-Tk landmarks into a new layer.
