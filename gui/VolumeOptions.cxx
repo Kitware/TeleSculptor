@@ -78,14 +78,14 @@ void VolumeOptionsPrivate::setPopup(QToolButton* button, QWidget* widget)
 }
 
 //-----------------------------------------------------------------------------
-VolumeOptions::VolumeOptions(const QString &settingsGroup, QWidget* parent, Qt::WindowFlags flags)
+VolumeOptions::VolumeOptions(const QString &settingsGroup, QWidget* parent,
+                             Qt::WindowFlags flags)
   : QWidget(parent, flags), d_ptr(new VolumeOptionsPrivate)
 {
   QTE_D();
 
   // Set up UI
   d->UI.setupUi(this);
-
 
   // Set up option persistence
   d->uiState.setCurrentGroup(settingsGroup);
@@ -94,6 +94,7 @@ VolumeOptions::VolumeOptions(const QString &settingsGroup, QWidget* parent, Qt::
 
   d->colorizeSurfaceOptions = new ColorizeSurfaceOptions(settingsGroup, this);
   d->setPopup(d->UI.toolButtonColorizeSurfaceMenu, d->colorizeSurfaceOptions);
+
   // Connect signals/slots
   connect(d->UI.checkBoxColorizeSurface, SIGNAL(toggled(bool)),
           this, SLOT(showColorizeSurfaceMenu(bool)));
@@ -112,7 +113,6 @@ VolumeOptions::VolumeOptions(const QString &settingsGroup, QWidget* parent, Qt::
 
   connect(parent, SIGNAL(activeDepthMapChanged(int)),
     d->colorizeSurfaceOptions, SLOT(updateCurrentFrameNumber(int)));
-
 }
 
 //-----------------------------------------------------------------------------
@@ -129,7 +129,6 @@ void VolumeOptions::setActor(vtkActor *actor)
 
   d->volumeActor = actor;
   d->colorizeSurfaceOptions->setActor(actor);
-
 }
 
 //-----------------------------------------------------------------------------

@@ -41,12 +41,15 @@
 #include "PointOptions.h"
 #include "vtkMaptkCamera.h"
 #include "vtkMaptkCameraRepresentation.h"
+#include "VolumeOptions.h"
 
 #include <vital/types/camera.h>
 #include <vital/types/landmark_map.h>
 
 #include <vtkBoundingBox.h>
 #include <vtkCellArray.h>
+#include <vtkCellDataToPointData.h>
+#include <vtkContourFilter.h>
 #include <vtkCubeAxesActor.h>
 #include <vtkDoubleArray.h>
 #include <vtkGeometryFilter.h>
@@ -63,15 +66,12 @@
 #include <vtkRenderer.h>
 #include <vtkTextProperty.h>
 #include <vtkThreshold.h>
+#include <vtkStructuredGrid.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
 #include <vtkXMLImageDataReader.h>
-
-#include <vtkContourFilter.h>
-#include <VolumeOptions.h>
-#include <vtkStructuredGrid.h>
 #include <vtkXMLStructuredGridReader.h>
-#include <vtkCellDataToPointData.h>
+
 
 #ifdef VTKWEBGLEXPORTER
 #include <vtkScalarsToColors.h>
@@ -343,8 +343,10 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
 
   connect(d->volumeOptions, SIGNAL(modified()),
           d->UI.renderWidget, SLOT(update()));
+
   connect(d->volumeOptions, SIGNAL(colorOptionsEnabled(bool)),
           this, SIGNAL(coloredMeshEnabled(bool)));
+
   connect(this, SIGNAL(contourChanged()),
           d->UI.renderWidget, SLOT(update()));
 
@@ -611,7 +613,8 @@ void WorldView::setActiveDepthMap(
   d->currentCamera = camera;
   d->currentDepthMapPath = depthMapPath;
 }
-//----------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
 void WorldView::loadVolume(QString path, int nbFrames, QString krtd, QString frame)
 {
   QTE_D();
@@ -639,7 +642,9 @@ void WorldView::loadVolume(QString path, int nbFrames, QString krtd, QString fra
   d->contourFilter->SetNumberOfContours(1);
   d->contourFilter->SetValue(0, 0.5);
   // Declare which table will be use for the contour
-  d->contourFilter->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, "reconstruction_scalar");
+  d->contourFilter->SetInputArrayToProcess(0, 0, 0,
+                                           vtkDataObject::FIELD_ASSOCIATION_POINTS,
+                                           "reconstruction_scalar");
 
   // Create mapper
   vtkNew<vtkPolyDataMapper> contourMapper;
@@ -662,6 +667,7 @@ void WorldView::loadVolume(QString path, int nbFrames, QString krtd, QString fra
 void WorldView::setVolumeVisible(bool state)
 {
   QTE_D();
+
   d->volumeActor->SetVisibility(state);
   d->UI.renderWidget->update();
 }
@@ -681,6 +687,7 @@ void WorldView::computeContour(double threshold)
 
   d->contourFilter->SetValue(0, threshold);
   d->UI.renderWidget->update();
+
   emit(contourChanged());
 }
 

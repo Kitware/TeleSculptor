@@ -35,10 +35,6 @@
 
 #include <QtGui/QWidget>
 
-//TODO: Remove?
-#include <vtkMatrix4x4.h>
-#include <vtkTransform.h>
-
 class vtkImageData;
 class vtkPolyData;
 

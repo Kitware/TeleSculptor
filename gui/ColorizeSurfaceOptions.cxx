@@ -63,14 +63,15 @@ public:
 QTE_IMPLEMENT_D_FUNC(ColorizeSurfaceOptions)
 
 //-----------------------------------------------------------------------------
-ColorizeSurfaceOptions::ColorizeSurfaceOptions(const QString &settingsGroup, QWidget* parent, Qt::WindowFlags flags)
+ColorizeSurfaceOptions::ColorizeSurfaceOptions(const QString &settingsGroup,
+                                               QWidget* parent,
+                                               Qt::WindowFlags flags)
   : QWidget(parent, flags), d_ptr(new ColorizeSurfaceOptionsPrivate)
 {
   QTE_D();
 
   // Set up UI
   d->UI.setupUi(this);
-
 
   // Set up option persistence
   d->uiState.setCurrentGroup(settingsGroup);
@@ -102,6 +103,7 @@ ColorizeSurfaceOptions::ColorizeSurfaceOptions(const QString &settingsGroup, QWi
 ColorizeSurfaceOptions::~ColorizeSurfaceOptions()
 {
   QTE_D();
+
   d->uiState.save();
 }
 
@@ -114,6 +116,7 @@ void ColorizeSurfaceOptions::initFrameSampling(int nbFrames)
   d->UI.spinBoxFrameSampling->setValue((nbFrames-1)/20);
 }
 
+//-----------------------------------------------------------------------------
 void ColorizeSurfaceOptions::setCurrentFramePath(std::string path)
 {
   QTE_D();
@@ -122,7 +125,8 @@ void ColorizeSurfaceOptions::setCurrentFramePath(std::string path)
   {
     d->currentFramePath = path;
 
-    if (d->UI.radioButtonCurrentFrame->isChecked() && d->UI.radioButtonCurrentFrame->isEnabled())
+    if (d->UI.radioButtonCurrentFrame->isChecked()
+        && d->UI.radioButtonCurrentFrame->isEnabled())
     {
       currentFrameSelected();
     }
@@ -167,9 +171,11 @@ void ColorizeSurfaceOptions::changeColorDisplay()
 {
   QTE_D();
 
-  vtkPolyData* volume = vtkPolyData::SafeDownCast(d->volumeActor->GetMapper()->GetInput());
+  vtkPolyData* volume = vtkPolyData::SafeDownCast(d->volumeActor->GetMapper()
+                                                  ->GetInput());
 
-  volume->GetPointData()->SetActiveScalars(d->UI.comboBoxColorDisplay->currentText().toStdString().c_str());
+  volume->GetPointData()->SetActiveScalars(d->UI.comboBoxColorDisplay
+                                           ->currentText().toStdString().c_str());
 
   emit colorModeChanged(d->UI.buttonGroup->checkedButton()->text());
 }
@@ -181,8 +187,10 @@ void ColorizeSurfaceOptions::colorize()
 
   if (!d->frameFile.isEmpty() && !d->krtdFile.isEmpty())
   {
-    vtkPolyData* volume = vtkPolyData::SafeDownCast(d->volumeActor->GetMapper()->GetInput());
-    MeshColoration* coloration = new MeshColoration(volume, d->frameFile.toStdString(), d->krtdFile.toStdString());
+    vtkPolyData* volume = vtkPolyData::SafeDownCast(d->volumeActor->GetMapper()
+                                                    ->GetInput());
+    MeshColoration* coloration = new MeshColoration(volume, d->frameFile.toStdString(),
+                                                    d->krtdFile.toStdString());
 
     coloration->SetInput(volume);
     coloration->SetFrameSampling(d->UI.spinBoxFrameSampling->value());
