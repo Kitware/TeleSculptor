@@ -33,6 +33,7 @@ set(gui_ui
   ${gui_am_ui}
   AboutDialog.ui
   CameraOptions.ui
+  ColorizeSurfaceOptions.ui
   DataColorOptions.ui
   DataFilterOptions.ui
   DepthMapFilterOptions.ui
@@ -42,6 +43,7 @@ set(gui_ui
   FeatureOptions.ui
   ImageOptions.ui
   PointOptions.ui
+  VolumeOptions.ui
 )
 
 set(gui_resources
@@ -54,6 +56,7 @@ set(gui_moc_headers
   ActorColorButton.h
   CameraOptions.h
   CameraView.h
+  ColorizeSurfaceOptions.h
   DataColorOptions.h
   DataFilterOptions.h
   DepthMapFilterOptions.h
@@ -66,11 +69,15 @@ set(gui_moc_headers
   MainWindow.h
   MatchMatrixWindow.h
   PointOptions.h
+  VolumeOptions.h
   WorldView.h
   tools/AbstractTool.h
   tools/BundleAdjustTool.h
   tools/CanonicalTransformTool.h
   tools/NeckerReversalTool.h
+  tools/MeshColoration.h
+  tools/Helper.h
+  tools/ReconstructionData.h
 )
 
 set(gui_sources
@@ -78,6 +85,7 @@ set(gui_sources
   ActorColorButton.cxx
   CameraOptions.cxx
   CameraView.cxx
+  ColorizeSurfaceOptions.cxx
   DataColorOptions.cxx
   DataFilterOptions.cxx
   DepthMapFilterOptions.cxx
@@ -92,6 +100,7 @@ set(gui_sources
   MatchMatrixWindow.cxx
   PointOptions.cxx
   Project.cxx
+  VolumeOptions.cxx
   WorldView.cxx
   main.cxx
   vtkMaptkCamera.cxx
@@ -102,6 +111,8 @@ set(gui_sources
   tools/BundleAdjustTool.cxx
   tools/CanonicalTransformTool.cxx
   tools/NeckerReversalTool.cxx
+  tools/ReconstructionData.cxx
+  tools/MeshColoration.cxx
 )
 
 maptk_use_appdata(

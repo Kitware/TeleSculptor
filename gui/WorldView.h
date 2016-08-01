@@ -35,6 +35,10 @@
 
 #include <QtGui/QWidget>
 
+//TODO: Remove?
+#include <vtkMatrix4x4.h>
+#include <vtkTransform.h>
+
 class vtkImageData;
 class vtkPolyData;
 
@@ -52,8 +56,11 @@ public:
   explicit WorldView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
   virtual ~WorldView();
 
+  void loadVolume(QString path, int nbFrames, QString krtd, QString frame);
 signals:
   void depthMapThresholdsChanged(double, double, double, double);
+  void contourChanged();
+  void updateThresholds(double,double,double,double);
 
 public slots:
   void setBackgroundColor(QColor const&);
@@ -87,6 +94,11 @@ public slots:
   void exportWebGLScene(QString const& path);
 
   void invalidateGeometry();
+
+  void setVolumeVisible(bool);
+  void setVolumeCurrentFramePath(QString path);
+
+  void computeContour(double threshold);
 
 protected slots:
   void updateAxes();

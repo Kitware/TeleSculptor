@@ -431,6 +431,8 @@ void MainWindowPrivate::setActiveCamera(int id)
     UI.depthMapView->setDepthMap(cd.depthMapPath);
     UI.worldView->setActiveDepthMap(cd.camera, cd.depthMapPath);
   }
+
+  UI.worldView->setVolumeCurrentFramePath(cd.imagePath);
 }
 
 //-----------------------------------------------------------------------------
@@ -821,6 +823,14 @@ void MainWindow::loadProject(QString const& path)
 #ifdef VTKWEBGLEXPORTER
   d->UI.actionWebGLScene->setEnabled(true);
 #endif
+
+  //Load volume
+  if (!project.volumePath.isEmpty())
+  {
+
+    d->UI.worldView->loadVolume(project.volumePath,d->cameras.size(),
+                                project.volumeKrtdFile, project.volumeVtiFile);
+  }
 
   d->UI.worldView->resetView();
 }

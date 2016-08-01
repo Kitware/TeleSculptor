@@ -12,9 +12,9 @@
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  *
- *  * Neither the name Kitware, Inc. nor the names of any contributors may be
- *    used to endorse or promote products derived from this software without
- *    specific prior written permission.
+ *  * Neither name of Kitware, Inc. nor the names of any contributors may be used
+ *    to endorse or promote products derived from this software without specific
+ *    prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -28,26 +28,56 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_PROJECT_H_
-#define MAPTK_PROJECT_H_
+#ifndef COLORIZESURFACEOPTIONS_H
+#define COLORIZESURFACEOPTIONS_H
 
-#include <QtCore/QMap>
-#include <QtCore/QStringList>
+#include <qtGlobal.h>
 
-struct Project
+#include <QtGui/QWidget>
+
+class vtkActor;
+
+class ColorizeSurfaceOptionsPrivate;
+
+class ColorizeSurfaceOptions : public QWidget
 {
-  bool read(QString const& path);
+  Q_OBJECT
 
-  QStringList images;
-  QString cameraPath;
-  QMap<int, QString> depthMaps;
+public:
+  explicit ColorizeSurfaceOptions(const QString &settingsGroup,
+      QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  virtual ~ColorizeSurfaceOptions();
 
-  QString tracks;
-  QString landmarks;
+  void addColorDisplay(std::string name);
 
-  QString volumePath;
-  QString volumeKrtdFile;
-  QString volumeVtiFile;
+  void initFrameSampling(int nbFrames);
+
+  void setCurrentFramePath(std::string path);
+
+  void setActor(vtkActor* actor);
+  void setKrtdFile(QString file);
+  void setFrameFile(QString file);
+
+  void enableMenu(bool);
+
+signals:
+  void colorModeChanged(QString);
+  void meshColorizedInColorizeSurfaceOption();
+
+public slots:
+
+  void changeColorDisplay();
+  void colorize();
+  void enableAllFramesParameters(bool);
+  void allFrameSelected();
+  void currentFrameSelected();
+
+private:
+
+  QTE_DECLARE_PRIVATE_RPTR(ColorizeSurfaceOptions)
+  QTE_DECLARE_PRIVATE(ColorizeSurfaceOptions)
+
+  QTE_DISABLE_COPY(ColorizeSurfaceOptions)
 };
 
-#endif
+#endif // COLORIZESURFACEOPTIONS_H

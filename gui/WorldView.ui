@@ -29,6 +29,7 @@
      <addaction name="actionShowLandmarks"/>
      <addaction name="actionShowGroundPlane"/>
      <addaction name="actionShowDepthMap"/>
+     <addaction name="actionVolumeDisplay"/>
     </widget>
    </item>
    <item>
@@ -253,6 +254,20 @@
    </property>
    <property name="toolTip">
     <string>Toggles dempthmaps display</string>
+   </property>
+  </action>
+  <action name="actionVolumeDisplay">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Volume</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle volume display</string>
    </property>
   </action>
  </widget>
