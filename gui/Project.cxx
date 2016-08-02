@@ -128,8 +128,7 @@ bool Project::read(QString const& path)
     if (config->has_value("volume_file"))
     {
       this->volumePath = getPath(config, base, "volume_file");
-      this->volumeVtiFile = getPath(config, base, "image_list_file");
-      this->volumeKrtdFile = getPath(config, base, "output_krtd_dir");
+      this->imageListPath = getPath(config, base, "image_list_file");
     }
 
     return true;

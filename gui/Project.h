@@ -46,8 +46,7 @@ struct Project
   QString landmarks;
 
   QString volumePath;
-  QString volumeKrtdFile;
-  QString volumeVtiFile;
+  QString imageListPath;
 };
 
 #endif

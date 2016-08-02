@@ -841,7 +841,7 @@ void MainWindow::loadProject(QString const& path)
   {
 
     d->UI.worldView->loadVolume(project.volumePath,d->cameras.size(),
-                                project.volumeKrtdFile, project.volumeVtiFile);
+                                project.cameraPath, project.imageListPath);
   }
 
   d->UI.worldView->resetView();
