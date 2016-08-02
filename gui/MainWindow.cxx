@@ -619,6 +619,12 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(saveCameras()));
   connect(d->UI.actionExportLandmarks, SIGNAL(triggered()),
           this, SLOT(saveLandmarks()));
+  connect(d->UI.actionExportVolume, SIGNAL(triggered()),
+          this, SLOT(saveVolume()));
+  connect(d->UI.actionExportMesh, SIGNAL(triggered()),
+          this, SLOT(saveMesh()));
+  connect(d->UI.actionExportColoredMesh, SIGNAL(triggered()),
+          this, SLOT(saveColoredMesh()));
 
   connect(d->UI.actionShowMatchMatrix, SIGNAL(triggered()),
           this, SLOT(showMatchMatrix()));
@@ -642,6 +648,12 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   connect(d->UI.camera, SIGNAL(valueChanged(int)),
           this, SLOT(setActiveCamera(int)));
+
+  connect(d->UI.worldView, SIGNAL(meshEnabled(bool)),
+          this, SLOT(enableSaveMesh(bool)));
+
+  connect(d->UI.worldView, SIGNAL(coloredMeshEnabled(bool)),
+          this, SLOT(enableSaveColoredMesh(bool)));
 
   connect(d->UI.worldView,
           SIGNAL(depthMapThresholdsChanged(double, double, double, double)),
@@ -1043,6 +1055,71 @@ void MainWindow::saveWebGLScene()
     d->UI.worldView->exportWebGLScene(path);
   }
 #endif
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::enableSaveMesh(bool state)
+{
+  QTE_D();
+
+  d->UI.actionExportVolume->setEnabled(state);
+  d->UI.actionExportMesh->setEnabled(state);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::enableSaveColoredMesh(bool state)
+{
+  QTE_D();
+
+  d->UI.actionExportColoredMesh->setEnabled(state);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::saveMesh()
+{
+  QTE_D();
+
+  auto const path = QFileDialog::getSaveFileName(
+    this, "Export Mesh", QString("mesh.vtp"),
+    "Mesh file (*.vtp);;"
+    "All Files (*)");
+
+  if (!path.isEmpty())
+  {
+    d->UI.worldView->saveMesh(path);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::saveVolume()
+{
+  QTE_D();
+
+  auto const path = QFileDialog::getSaveFileName(
+    this, "Export Volume", QString("volume.vts"),
+    "Mesh file (*.vts);;"
+    "All Files (*)");
+
+  if (!path.isEmpty())
+  {
+    d->UI.worldView->saveVolume(path);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::saveColoredMesh()
+{
+  QTE_D();
+
+  auto const path = QFileDialog::getSaveFileName(
+    this, "Export Colored Mesh", QString("colored_mesh.vtp"),
+    "Mesh file (*.vtp);;"
+    "All Files (*)");
+
+  if (!path.isEmpty())
+  {
+    d->UI.worldView->saveColoredMesh(path);
+  }
 }
 
 //-----------------------------------------------------------------------------

@@ -63,6 +63,12 @@ public slots:
 
   void saveWebGLScene();
 
+  void enableSaveMesh(bool);
+  void enableSaveColoredMesh(bool);
+  void saveMesh();
+  void saveVolume();
+  void saveColoredMesh();
+
   void setActiveCamera(int);
 
   void setViewBackroundColor();

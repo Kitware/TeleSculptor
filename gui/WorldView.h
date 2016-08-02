@@ -57,6 +57,8 @@ signals:
   void depthMapThresholdsChanged(double, double, double, double);
   void contourChanged();
   void updateThresholds(double,double,double,double);
+  void meshEnabled(bool);
+  void coloredMeshEnabled(bool);
 
 public slots:
   void setBackgroundColor(QColor const&);
@@ -88,6 +90,10 @@ public slots:
   void viewToWorldBack();
 
   void exportWebGLScene(QString const& path);
+
+  void saveMesh(QString const& path);
+  void saveVolume(QString const& path);
+  void saveColoredMesh(QString const& path);
 
   void invalidateGeometry();
 

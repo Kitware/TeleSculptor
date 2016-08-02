@@ -70,7 +70,9 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
 #include <vtkXMLImageDataReader.h>
+#include <vtkXMLPolyDataWriter.h>
 #include <vtkXMLStructuredGridReader.h>
+#include <vtkXMLStructuredGridWriter.h>
 
 
 #ifdef VTKWEBGLEXPORTER
@@ -333,6 +335,8 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
 
   d->depthMapOptions->setEnabled(false);
 
+  connect(d->UI.actionVolumeDisplay, SIGNAL(triggered(bool)),
+          this, SIGNAL(meshEnabled(bool)));
   connect(d->depthMapOptions, SIGNAL(displayModeChanged()),
           this, SLOT(updateDepthMapDisplayMode()));
   connect(d->depthMapOptions, SIGNAL(thresholdsChanged()),
@@ -389,6 +393,11 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(setDepthMapVisible(bool)));
   connect(d->UI.actionVolumeDisplay, SIGNAL(toggled(bool)),
           this, SLOT(setVolumeVisible(bool)));
+
+  connect(d->UI.actionVolumeDisplay, SIGNAL(toggled(bool)),
+          this, SIGNAL(meshEnabled(bool)));
+  connect(d->volumeOptions, SIGNAL(colorOptionsEnabled(bool)),
+          this, SIGNAL(coloredMeshEnabled(bool)));
 
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
@@ -1182,4 +1191,62 @@ void WorldView::exportWebGLScene(QString const& path)
 #else
   Q_UNUSED(path)
 #endif
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::saveMesh(const QString &path)
+{
+  QTE_D();
+
+  vtkPolyData* mesh = d->contourFilter->GetOutput();
+
+  for (int i = 0; i < mesh->GetPointData()->GetNumberOfArrays(); ++i)
+  {
+    mesh->GetPointData()->RemoveArray(i);;
+  }
+
+  vtkNew<vtkXMLPolyDataWriter> writer;
+
+  writer->SetFileName(path.toStdString().c_str());
+  writer->AddInputDataObject(mesh);
+  writer->SetDataModeToBinary();
+  writer->Write();
+
+  std::cout << "Saved : " << path.toStdString() << std::endl;
+
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::saveVolume(const QString &path)
+{
+  QTE_D();
+
+  //NOTE: For now, the volume is set in the configuration parameters.
+  //      It may be generated directly from the GUI in the future.
+
+  vtkNew<vtkXMLStructuredGridWriter> writer;
+
+  writer->SetFileName(path.toStdString().c_str());
+  writer->AddInputDataObject(d->volume);
+  writer->SetDataModeToBinary();
+  writer->Write();
+
+  std::cout << "Saved : " << path.toStdString() << std::endl;
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::saveColoredMesh(const QString &path)
+{
+  QTE_D();
+
+  vtkPolyData* mesh = d->contourFilter->GetOutput();
+
+  vtkNew<vtkXMLPolyDataWriter> writer;
+
+  writer->SetFileName(path.toStdString().c_str());
+  writer->AddInputDataObject(mesh);
+  writer->SetDataModeToBinary();
+  writer->Write();
+
+  std::cout << "Saved : " << path.toStdString() << std::endl;
 }
