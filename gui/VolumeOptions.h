@@ -55,7 +55,11 @@ public:
   void initFrameSampling(int nbFrames);
   void setKrtdFrameFile(QString krtd, QString frame);
 
+  void colorize();
+
   void setCurrentFramePath(std::string path);
+
+  bool isColorOptionsEnabled();
 
 signals:
   void meshIsColorizedFromColorizeSurfaceOption();

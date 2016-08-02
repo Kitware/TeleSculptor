@@ -697,7 +697,11 @@ void WorldView::computeContour(double threshold)
   d->contourFilter->SetValue(0, threshold);
   d->UI.renderWidget->update();
 
-  emit(contourChanged());
+  if(d->volumeOptions->isColorOptionsEnabled())
+  {
+    d->volumeOptions->colorize();
+  }
+
 }
 
 //-----------------------------------------------------------------------------

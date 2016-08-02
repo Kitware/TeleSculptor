@@ -149,11 +149,28 @@ void VolumeOptions::setKrtdFrameFile(QString krtd, QString frame)
 }
 
 //-----------------------------------------------------------------------------
+void VolumeOptions::colorize()
+{
+  QTE_D();
+
+  d->colorizeSurfaceOptions->colorize();
+}
+
+//-----------------------------------------------------------------------------
 void VolumeOptions::setCurrentFramePath(std::string path)
 {
   QTE_D();
 
   d->colorizeSurfaceOptions->setCurrentFramePath(path);
+}
+
+//-----------------------------------------------------------------------------
+bool VolumeOptions::isColorOptionsEnabled()
+{
+  QTE_D();
+
+  return d->UI.checkBoxColorizeSurface->isCheckable()
+         && d->UI.checkBoxColorizeSurface->isChecked();
 }
 
 //-----------------------------------------------------------------------------

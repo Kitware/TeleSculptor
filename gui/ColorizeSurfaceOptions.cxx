@@ -210,6 +210,8 @@ void ColorizeSurfaceOptions::colorize()
 
   if (!d->frameFile.isEmpty() && !d->krtdFile.isEmpty())
   {
+    d->UI.comboBoxColorDisplay->clear();
+
     vtkPolyData* volume = vtkPolyData::SafeDownCast(d->volumeActor->GetMapper()
                                                     ->GetInput());
     MeshColoration* coloration = new MeshColoration(volume, d->frameFile.toStdString(),
@@ -229,8 +231,6 @@ void ColorizeSurfaceOptions::colorize()
 
     std::string name;
     int nbArray = volume->GetPointData()->GetNumberOfArrays();
-
-    d->UI.comboBoxColorDisplay->clear();
 
     for (int i = 0; i < nbArray; ++i)
     {
