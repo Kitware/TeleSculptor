@@ -335,7 +335,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
 
   d->depthMapOptions->setEnabled(false);
 
-  connect(d->UI.actionVolumeDisplay, SIGNAL(triggered(bool)),
+  connect(d->UI.actionShowVolume, SIGNAL(triggered(bool)),
           this, SIGNAL(meshEnabled(bool)));
   connect(d->depthMapOptions, SIGNAL(displayModeChanged()),
           this, SLOT(updateDepthMapDisplayMode()));
@@ -343,7 +343,9 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(updateDepthMapThresholds()));
 
   d->volumeOptions = new VolumeOptions("WorldView/Volume", this);
-  d->setPopup(d->UI.actionVolumeDisplay, d->volumeOptions);
+  d->setPopup(d->UI.actionShowVolume, d->volumeOptions);
+
+  d->volumeOptions->setEnabled(false);
 
   connect(d->volumeOptions, SIGNAL(modified()),
           d->UI.renderWidget, SLOT(update()));
@@ -362,7 +364,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   this->addAction(d->UI.actionShowLandmarks);
   this->addAction(d->UI.actionShowGroundPlane);
   this->addAction(d->UI.actionShowDepthMap);
-  this->addAction(d->UI.actionVolumeDisplay);
+  this->addAction(d->UI.actionShowVolume);
 
   connect(d->UI.actionViewReset, SIGNAL(triggered()),
           this, SLOT(resetView()));
@@ -391,10 +393,10 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(setGroundPlaneVisible(bool)));
   connect(d->UI.actionShowDepthMap, SIGNAL(toggled(bool)),
           this, SLOT(setDepthMapVisible(bool)));
-  connect(d->UI.actionVolumeDisplay, SIGNAL(toggled(bool)),
+  connect(d->UI.actionShowVolume, SIGNAL(toggled(bool)),
           this, SLOT(setVolumeVisible(bool)));
 
-  connect(d->UI.actionVolumeDisplay, SIGNAL(toggled(bool)),
+  connect(d->UI.actionShowVolume, SIGNAL(toggled(bool)),
           this, SIGNAL(meshEnabled(bool)));
   connect(d->volumeOptions, SIGNAL(colorOptionsEnabled(bool)),
           this, SIGNAL(coloredMeshEnabled(bool)));
@@ -630,7 +632,7 @@ void WorldView::loadVolume(QString path, int nbFrames, QString krtd, QString fra
 
   d->volumeOptions->initFrameSampling(nbFrames);
 
-  d->UI.actionVolumeDisplay->setEnabled(true);
+  d->UI.actionShowVolume->setEnabled(true);
 
   std::string filename = path.toStdString();
 
@@ -678,6 +680,7 @@ void WorldView::setVolumeVisible(bool state)
   QTE_D();
 
   d->volumeActor->SetVisibility(state);
+  d->volumeOptions->setEnabled(state);
   d->UI.renderWidget->update();
 }
 
