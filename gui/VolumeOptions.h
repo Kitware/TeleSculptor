@@ -62,7 +62,6 @@ public:
   bool isColorOptionsEnabled();
 
 signals:
-  void meshIsColorizedFromColorizeSurfaceOption();
   void currentFrameIDChanged(int);
   void modified();
   void colorOptionsEnabled(bool);

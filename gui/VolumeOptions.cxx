@@ -108,9 +108,6 @@ VolumeOptions::VolumeOptions(const QString &settingsGroup, QWidget* parent,
   connect(d->UI.doubleSpinBoxSurfaceThreshold, SIGNAL(valueChanged(double)),
     parent, SLOT(computeContour(double)));
 
-  connect(d->colorizeSurfaceOptions, SIGNAL(meshColorizedInColorizeSurfaceOption()),
-    this, SIGNAL(meshIsColorizedFromColorizeSurfaceOption()));
-
   connect(parent, SIGNAL(activeDepthMapChanged(int)),
     d->colorizeSurfaceOptions, SLOT(updateCurrentFrameNumber(int)));
 }

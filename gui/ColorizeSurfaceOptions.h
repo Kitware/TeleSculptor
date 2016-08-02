@@ -62,7 +62,6 @@ public:
 
 signals:
   void colorModeChanged(QString);
-  void meshColorizedInColorizeSurfaceOption();
 
 public slots:
 
