@@ -39,6 +39,8 @@
 
 #include <vtkActor.h>
 
+#include <vtkLookupTable.h>
+#include <vtkNew.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
@@ -177,6 +179,27 @@ void ColorizeSurfaceOptions::changeColorDisplay()
   volume->GetPointData()->SetActiveScalars(d->UI.comboBoxColorDisplay
                                            ->currentText().toStdString().c_str());
 
+  vtkMapper* mapper = d->volumeActor->GetMapper();
+
+  if(volume->GetPointData()->GetScalars()
+     && volume->GetPointData()->GetScalars()->GetNumberOfComponents() != 3)
+  {
+    vtkNew<vtkLookupTable> table;
+    table->SetRange(volume->GetPointData()->GetScalars()->GetRange());
+    table->Build();
+    mapper->SetLookupTable(table.Get());
+    mapper->SetColorModeToMapScalars();
+    mapper->UseLookupTableScalarRangeOn();
+  }
+  else
+  {
+    mapper->SetColorModeToDirectScalars();
+    mapper->CreateDefaultLookupTable();
+    mapper->UseLookupTableScalarRangeOff();
+  }
+
+  mapper->Update();
+
   emit colorModeChanged(d->UI.buttonGroup->checkedButton()->text());
 }
 
@@ -216,6 +239,8 @@ void ColorizeSurfaceOptions::colorize()
     }
 
     volume->GetPointData()->SetActiveScalars("MeanColoration");
+    d->UI.comboBoxColorDisplay->setCurrentIndex(
+          d->UI.comboBoxColorDisplay->findText("MeanColoration"));
   }
 
   d->UI.comboBoxColorDisplay->setEnabled(true);
@@ -231,6 +256,8 @@ void ColorizeSurfaceOptions::enableAllFramesParameters(bool state)
 
   d->UI.buttonCompute->setEnabled(state);
   d->UI.spinBoxFrameSampling->setEnabled(state);
+  d->UI.comboBoxColorDisplay->setEnabled(false);
+  d->UI.comboBoxColorDisplay->clear();
 }
 
 //-----------------------------------------------------------------------------
