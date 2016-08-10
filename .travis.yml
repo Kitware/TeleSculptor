@@ -24,6 +24,8 @@ addons:
     - libgl1-mesa-dev
     - libxt-dev
     - libqt4-dev
+    - libblas-dev
+    - liblapack-dev
 
 script:
   - export PATH=$HOME/deps/bin:$PATH
