@@ -33,6 +33,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Python equivalent of the C++ MapTK tool
 
+This tool is a simpler version than the C++ equivalent and is MISSING the
+following functionality:
+
+    - Tracks do not save their local color information
+    - reference homography generation
+    - no mask inversion option
+    - no multichannel constraint option or checking
+
 """
 import argparse
 import errno
