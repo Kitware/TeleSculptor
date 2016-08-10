@@ -86,25 +86,14 @@ fletch_cmake_opts="\
  -Dfletch_ENABLE_Ceres=ON \
  -Dfletch_ENABLE_SuiteSparse=ON \
  -Dfletch_ENABLE_OpenCV=ON \
- -Dfletch_ENABLE_VTK=ON"
+ -Dfletch_ENABLE_VTK=ON
+ -Dfletch_ENABLE_VXL=ON
+ -Dfletch_ENABLE_OpenCV_highgui=ON"
 build_repo fletch https://github.com/Kitware/fletch.git
 
 # Build and install Vital
 vital_cmake_opts="-DVITAL_ENABLE_C_LIB=ON"
 build_repo vital https://github.com/Kitware/vital.git
-
-# Build and install VXL
-vxl_cmake_opts="\
-  -DCMAKE_CXX_STANDARD=11 \
-  -DBUILD_RPL=ON \
-  -DBUILD_BRL=OFF \
-  -DBUILD_MUL=OFF \
-  -DBUILD_GEL=OFF \
-  -DBUILD_OXL=OFF \
-  -DBUILD_OUL=OFF \
-  -DBUILD_PRIP=OFF \
-  -DBUILD_TBL=OFF"
-build_repo vxl https://github.com/vxl/vxl.git
 
 # Build and install QtExtensions
 build_repo qtextensions https://github.com/Kitware/qtextensions.git
