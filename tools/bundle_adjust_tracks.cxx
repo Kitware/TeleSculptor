@@ -814,8 +814,6 @@ static int maptk_main(int argc, char const* argv[])
     {
       cameras[v.first] = v.second->clone();
     }
-    // Triangulate initial landmarks based on cameras and tracks
-    triangulator->triangulate(input_cam_map, tracks, lm_map);
   }
   kwiver::vital::camera_map_sptr cam_map;
   if(!cameras.empty())
