@@ -85,6 +85,7 @@ fletch_cmake_opts="\
  -Dfletch_ENABLE_Eigen=ON \
  -Dfletch_ENABLE_Ceres=ON \
  -Dfletch_ENABLE_SuiteSparse=ON \
+ -DOPENBLAS_LIBRARY=/usr/lib/libblas.so \
  -Dfletch_ENABLE_OpenCV=ON \
  -Dfletch_ENABLE_VTK=ON
  -Dfletch_ENABLE_VXL=ON
