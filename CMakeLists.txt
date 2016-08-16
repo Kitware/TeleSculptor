@@ -26,6 +26,8 @@ find_package( vital REQUIRED )
 #
 if ( IS_DIRECTORY ${fletch_DIR} )
   find_package( fletch NO_MODULE )
+  # Search for libraries in the fletch install root
+  list(APPEND CMAKE_PREFIX_PATH ${fletch_ROOT})
 endif()
 
 ###
