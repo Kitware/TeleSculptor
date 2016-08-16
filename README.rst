@@ -104,7 +104,6 @@ CMake Options
 -------------
 
 ============================== =================================================
-``BUILD_SHARED_LIBS``          Build shared libraries (.so/.dylib/.dll)
 ``CMAKE_BUILD_TYPE``           The compiler mode, usually ``Debug`` or ``Release``
 ``CMAKE_INSTALL_PREFIX``       The path to where you want MAP-Tk to install
 
@@ -123,11 +122,6 @@ CMake Options
 ``MAPTK_USE_BUILD_PLUGIN_DIR`` Add the path to plugins in the build directory to
                                the plugin search path
 ============================== =================================================
-
-.. note::
-
-  Shared libraries (``BUILD_SHARED_LIBS=ON``) is required to support dynamic
-  plugin loading
 
 
 Dependencies
