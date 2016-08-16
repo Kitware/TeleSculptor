@@ -45,12 +45,8 @@ include( maptk-depends )
 #
 include(CMakeDependentOption)
 
-# we can't build shared libraries on Windows so we leave it off by default
-if (WIN32)
-  option(BUILD_SHARED_LIBS "Build shared libraries." ON)
-else()
-  option(BUILD_SHARED_LIBS "Build shared libraries." OFF)
-endif()
+# Always build shared libraries, required due to plugin infrastructure
+set(BUILD_SHARED_LIBS ON)
 
 # default to MAPTK_LIB_SUFFIX for backwards compatibility
 if(DEFINED MAPTK_LIB_SUFFIX)
