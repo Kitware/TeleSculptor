@@ -126,6 +126,10 @@ Build System
    Fletch install root when finding packages.  This removes the need to
    manually point CMake at each dependent library provided by Fletch.
 
+ * Removed CMake option to build shared vs static libraries.  Due to the plugin
+   infrastructure used in Vital, we can no longer build static MAP-Tk
+   libraries.
+
 Plugins
 
  * Corrected all plugins to use the Vital logging framework instead of
