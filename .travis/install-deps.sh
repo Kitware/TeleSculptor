@@ -80,8 +80,9 @@ build_repo ()
 
 
 # Build and install Fletch
-fletch_install_cmd="cp -r install/* $INSTALL_DIR/"
+fletch_install_cmd=":" # no-op
 fletch_cmake_opts="\
+ -Dfletch_BUILD_INSTALL_PREFIX=$INSTALL_DIR/ \
  -Dfletch_ENABLE_Eigen=ON \
  -Dfletch_ENABLE_Ceres=ON \
  -Dfletch_ENABLE_SuiteSparse=ON \
