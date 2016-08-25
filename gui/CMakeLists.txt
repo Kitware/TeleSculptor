@@ -42,6 +42,7 @@ set(gui_ui
   FeatureOptions.ui
   ImageOptions.ui
   PointOptions.ui
+  VisibleLandmarksOptions.ui
 )
 
 set(gui_resources
@@ -67,6 +68,7 @@ set(gui_moc_headers
   MatchMatrixWindow.h
   PointOptions.h
   WorldView.h
+  VisibleLandmarksOptions.h
   tools/AbstractTool.h
   tools/BundleAdjustTool.h
   tools/CanonicalTransformTool.h
@@ -93,6 +95,7 @@ set(gui_sources
   PointOptions.cxx
   Project.cxx
   WorldView.cxx
+  VisibleLandmarksOptions.cxx
   main.cxx
   vtkMaptkCamera.cxx
   vtkMaptkCameraRepresentation.cxx

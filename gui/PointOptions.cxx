@@ -35,6 +35,7 @@
 #include "DataColorOptions.h"
 #include "DataFilterOptions.h"
 #include "FieldInformation.h"
+#include "VisibleLandmarksOptions.h"
 
 #include <vtkActor.h>
 #include <vtkDataSet.h>
@@ -99,10 +100,13 @@ public:
 
   DataColorOptions* dataColorOptions;
   DataFilterOptions* dataFilterOptions;
+  VisibleLandmarksOptions* visibleLandmarksOptions;
 
   QList<vtkActor*> actors;
   QList<vtkMapper*> mappers;
   QHash<vtkPolyDataMapper*, vtkThresholdPoints*> filters;
+
+  vtkActor* nonVisibleLandmarksActor;
 
   QHash<QString, FieldInformation> fields;
 
@@ -249,6 +253,10 @@ PointOptions::PointOptions(QString const& settingsGroup,
   d->UI.dataFilterMenu->setText(d->dataFilterOptions->iconText() + " ");
   d->filterState = Qt::Unchecked;
 
+  d->visibleLandmarksOptions =
+      new VisibleLandmarksOptions(settingsGroup+"VsibleLandmarksOptions", this);
+  d->setPopup(d->UI.visibleLandmarksMenu, d->visibleLandmarksOptions);
+
   // Set up option persistence
   d->uiState.setCurrentGroup(settingsGroup);
 
@@ -274,6 +282,18 @@ PointOptions::PointOptions(QString const& settingsGroup,
 
   connect(&d->colorMode, SIGNAL(buttonClicked(int)),
           this, SLOT(setColorMode(int)));
+
+  connect(d->UI.showVisibleLandmarks, SIGNAL(toggled(bool)),
+          this, SIGNAL(visibleLandmarksDisplayChanged(bool)));
+
+  connect(d->UI.showVisibleLandmarks, SIGNAL(toggled(bool)),
+          d->UI.showVisibleLandmarksOnly, SLOT(setEnabled(bool)));
+
+  connect(d->UI.showVisibleLandmarksOnly, SIGNAL(toggled(bool)),
+          this, SLOT(showVisibleLandmarksOnly(bool)));
+
+  connect(d->visibleLandmarksOptions, SIGNAL(visibleLandmarksChanged()),
+          this, SIGNAL(modified()));
 
   connect(d->dataColorOptions, SIGNAL(iconChanged(QIcon)),
           this, SLOT(setDataColorIcon(QIcon)));
@@ -333,6 +353,16 @@ void PointOptions::setDataFields(
 }
 
 //-----------------------------------------------------------------------------
+void PointOptions::showVisibleLandmarksOnly(bool state)
+{
+  QTE_D();
+
+   d->nonVisibleLandmarksActor->SetVisibility(!state);
+
+   emit this->modified();
+}
+
+//-----------------------------------------------------------------------------
 void PointOptions::addActor(vtkActor* actor)
 {
   QTE_D();
@@ -344,6 +374,23 @@ void PointOptions::addActor(vtkActor* actor)
 }
 
 //-----------------------------------------------------------------------------
+void PointOptions::addVisibleLandmarksActor(vtkActor *actor)
+{
+  QTE_D();
+
+  d->visibleLandmarksOptions->addActor(actor);
+}
+
+//-----------------------------------------------------------------------------
+void PointOptions::addNonVisibleLandmarksActor(vtkActor * actor)
+{
+  QTE_D();
+
+  d->nonVisibleLandmarksActor = actor;
+  addActor(actor);
+}
+
+//-----------------------------------------------------------------------------
 void PointOptions::addMapper(vtkMapper* mapper)
 {
   QTE_D();
@@ -351,6 +398,22 @@ void PointOptions::addMapper(vtkMapper* mapper)
   d->setDisplayMode(mapper, d->colorMode.checkedId());
 
   d->mappers.append(mapper);
+}
+
+//-----------------------------------------------------------------------------
+bool PointOptions::isVisibleLandmarksChecked()
+{
+  QTE_D();
+
+  return d->UI.showVisibleLandmarks->isChecked();
+}
+
+//-----------------------------------------------------------------------------
+bool PointOptions::isVisibleLandmarksOnlyChecked()
+{
+  QTE_D();
+
+  return d->UI.showVisibleLandmarksOnly->isChecked();
 }
 
 //-----------------------------------------------------------------------------

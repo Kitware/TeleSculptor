@@ -60,6 +60,8 @@ public slots:
 
   void addCamera(int id, vtkMaptkCamera* camera);
   void setLandmarks(kwiver::vital::landmark_map const&);
+  void setVisibleLandmarks(kwiver::vital::landmark_map const&);
+  void setNonVisibleLandmarks(kwiver::vital::landmark_map const&);
   void setActiveDepthMap(vtkMaptkCamera* camera, QString const& depthMapPath);
 
   void setImageData(vtkImageData* data, QSize const& dimensions);
@@ -94,6 +96,8 @@ protected slots:
   void updateScale();
   void updateDepthMapDisplayMode();
   void updateDepthMapThresholds();
+
+  void switchToVisibleLandmarksMode(bool);
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(WorldView)

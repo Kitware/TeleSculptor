@@ -202,6 +202,8 @@ public:
 
   LandmarkCloud landmarks;
   SegmentCloud residuals;
+  LandmarkCloud visibleLandmarks;
+  LandmarkCloud nonVisibleLandmarks;
 
   QHash<kwiver::vital::landmark_id_t, LandmarkData> landmarkData;
 
@@ -248,7 +250,6 @@ CameraViewPrivate::PointCloud::PointCloud()
 void CameraViewPrivate::PointCloud::addPoint(double x, double y, double z)
 {
   auto const vid = this->points->InsertNextPoint(x, y, z);
-
   this->verts->InsertNextCell(1);
   this->verts->InsertCellPoint(vid);
 
@@ -375,6 +376,8 @@ void CameraViewPrivate::setTransforms(int imageHeight)
   this->featureRep->GetTrailsActor()->SetUserMatrix(xf.GetPointer());
   this->landmarks.actor->SetUserMatrix(xf.GetPointer());
   this->residuals.actor->SetUserMatrix(xf.GetPointer());
+  this->visibleLandmarks.actor->SetUserMatrix(xf.GetPointer());
+  this->nonVisibleLandmarks.actor->SetUserMatrix(xf.GetPointer());
 }
 
 //-----------------------------------------------------------------------------
@@ -428,6 +431,11 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->landmarkOptions->setDefaultColor(Qt::magenta);
   d->landmarkOptions->addActor(d->landmarks.actor.GetPointer());
   d->landmarkOptions->addMapper(d->landmarks.mapper.GetPointer());
+  d->landmarkOptions->addVisibleLandmarksActor(d->visibleLandmarks.actor.GetPointer());
+  d->landmarkOptions->addNonVisibleLandmarksActor(d->nonVisibleLandmarks.actor.GetPointer());
+
+  d->visibleLandmarks.actor->SetVisibility(d->landmarkOptions->isVisibleLandmarksChecked());
+  d->nonVisibleLandmarks.actor->SetVisibility(false);
 
   d->setPopup(d->UI.actionShowLandmarks, d->landmarkOptions);
 
@@ -465,6 +473,9 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.actionShowResiduals, SIGNAL(toggled(bool)),
           this, SLOT(setResidualsVisible(bool)));
 
+  connect(d->landmarkOptions, SIGNAL(visibleLandmarksDisplayChanged(bool)),
+          this, SLOT(switchToVisibleLandmarksMode(bool)));
+
   // Set up ortho view
   d->renderer->GetActiveCamera()->ParallelProjectionOn();
   d->renderer->GetActiveCamera()->SetClippingRange(1.0, 3.0);
@@ -484,6 +495,8 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->renderer->AddActor(d->featureRep->GetTrailsActor());
   d->renderer->AddActor(d->landmarks.actor.GetPointer());
   d->renderer->AddActor(d->residuals.actor.GetPointer());
+  d->renderer->AddActor(d->visibleLandmarks.actor.GetPointer());
+  d->renderer->AddActor(d->nonVisibleLandmarks.actor.GetPointer());
 
   d->renderer->AddViewProp(d->imageActor.GetPointer());
   d->imageActor->SetPosition(0.0, 0.0, -0.5);
@@ -622,6 +635,25 @@ void CameraView::addLandmark(
 }
 
 //-----------------------------------------------------------------------------
+void CameraView::addVisibleLandmark(
+    kwiver::vital::landmark_id_t id, double x, double y)
+{
+  QTE_D();
+
+  d->visibleLandmarks.addPoint(x, y, 1.0, d->landmarkData.value(id));
+  d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
+void CameraView::addNonVisibleLandmark(kwiver::vital::landmark_id_t id, double x, double y)
+{
+  QTE_D();
+
+  d->nonVisibleLandmarks.addPoint(x, y, 1.0, d->landmarkData.value(id));
+  d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
 void CameraView::addResidual(
   kwiver::vital::track_id_t id, double x1, double y1, double x2, double y2)
 {
@@ -649,6 +681,30 @@ void CameraView::clearResiduals()
 }
 
 //-----------------------------------------------------------------------------
+void CameraView::setVisibleLandmarksVisibleOnly(bool state)
+{
+  QTE_D();
+
+  d->landmarks.actor->SetVisibility(!state);
+
+  d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
+void CameraView::clearVisibleLandmarks()
+{
+  QTE_D();
+  d->visibleLandmarks.clear();
+}
+
+//-----------------------------------------------------------------------------
+void CameraView::clearNonVisibleLandmarks()
+{
+  QTE_D();
+  d->nonVisibleLandmarks.clear();
+}
+
+//-----------------------------------------------------------------------------
 void CameraView::setImageVisible(bool state)
 {
   QTE_D();
@@ -662,7 +718,26 @@ void CameraView::setLandmarksVisible(bool state)
 {
   QTE_D();
 
-  d->landmarks.actor->SetVisibility(state);
+  if(d->landmarkOptions->isVisibleLandmarksChecked())
+  {
+    d->visibleLandmarks.actor->SetVisibility(state);
+    d->nonVisibleLandmarks.actor->SetVisibility(state && !d->landmarkOptions->
+                                              isVisibleLandmarksOnlyChecked());
+  }
+  else
+  {
+    d->landmarks.actor->SetVisibility(state);
+  }
+
+  d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
+void CameraView::setVisibleLandmarksVisible(bool state)
+{
+  QTE_D();
+
+  d->visibleLandmarks.actor->SetVisibility(state);
   d->UI.renderWidget->update();
 }
 
@@ -716,6 +791,19 @@ void CameraView::updateFeatures()
 
     d->featuresDirty = false;
   }
+}
+
+//-----------------------------------------------------------------------------
+void CameraView::switchToVisibleLandmarksMode(bool state)
+{
+  QTE_D();
+
+  d->landmarks.actor->SetVisibility(!state);
+  d->visibleLandmarks.actor->SetVisibility(state);
+  d->nonVisibleLandmarks.actor->SetVisibility(state && !d->landmarkOptions->
+                                            isVisibleLandmarksOnlyChecked());
+
+  d->UI.renderWidget->update();
 }
 
 //END CameraView
