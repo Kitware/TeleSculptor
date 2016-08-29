@@ -3,6 +3,9 @@ include(CheckCXXCompilerFlag)
 include_directories("${MAPTK_SOURCE_DIR}")
 include_directories("${MAPTK_BINARY_DIR}")
 
+find_package(VTK 6.2 REQUIRED)
+include(${VTK_USE_FILE})
+
 
 ###
 # Setting up main library
@@ -19,6 +22,7 @@ set(maptk_public_headers
   match_matrix.h
   triangulate.h
   transform.h
+  undistort_frame.h
 
   plugin_interface/algorithm_plugin_interface.h
   plugin_interface/algorithm_plugin_interface_macros.h
@@ -38,6 +42,7 @@ set(maptk_sources
   projected_track_set.cxx
   transform.cxx
   triangulate.cxx
+  undistort_frame.cxx
   )
 
 kwiver_configure_file( version.h
@@ -69,6 +74,9 @@ kwiver_add_library(
 target_link_libraries( maptk
   PUBLIC               vital
                        kwiversys
+                       vtkCommonCore
+                       vtksys
+                       vtkIOImage
   )
 
 

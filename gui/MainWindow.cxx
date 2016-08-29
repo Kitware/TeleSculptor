@@ -36,6 +36,7 @@
 #include "tools/BundleAdjustTool.h"
 #include "tools/CanonicalTransformTool.h"
 #include "tools/NeckerReversalTool.h"
+#include "tools/UndistortFramesTool.h"
 
 #include "AboutDialog.h"
 #include "MatchMatrixWindow.h"
@@ -239,6 +240,8 @@ public:
   kwiver::vital::camera_map_sptr cameraMap() const;
   void updateCameras(kwiver::vital::camera_map_sptr const&);
 
+  QMap<kwiver::vital::frame_id_t, QString>* frameMap() const;
+
   void setActiveCamera(int);
   void updateCameraView();
 
@@ -390,6 +393,23 @@ kwiver::vital::camera_map_sptr MainWindowPrivate::cameraMap() const
   }
 
   return std::make_shared<kwiver::vital::simple_camera_map>(map);
+}
+
+//-----------------------------------------------------------------------------
+QMap<kwiver::vital::frame_id_t, QString> *MainWindowPrivate::frameMap() const
+{
+  auto map = new QMap<kwiver::vital::frame_id_t, QString>();
+
+  foreach (auto i, qtIndexRange(this->cameras.count()))
+  {
+    auto const& cd = this->cameras[i];
+    if (!cd.imagePath.isEmpty())
+    {
+      map->insert(static_cast<kwiver::vital::frame_id_t>(i), cd.imagePath);
+    }
+  }
+
+  return map;
 }
 
 //-----------------------------------------------------------------------------
@@ -598,6 +618,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->addTool(new BundleAdjustTool(this), this);
   d->addTool(new CanonicalTransformTool(this), this);
   d->addTool(new NeckerReversalTool(this), this);
+  d->addTool(new UndistortFramesTool(this), this);
 
   d->UI.menuView->addSeparator();
   d->UI.menuView->addAction(d->UI.cameraViewDock->toggleViewAction());
@@ -1129,6 +1150,19 @@ void MainWindow::executeTool(QObject* object)
     tool->setTracks(d->tracks);
     tool->setCameras(d->cameraMap());
     tool->setLandmarks(d->landmarks);
+
+    if (tool->inherits("UndistortFramesTool")) {
+
+      QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"),
+                                                   "./",
+                                                   QFileDialog::ShowDirsOnly
+                                                   | QFileDialog::DontResolveSymlinks);
+
+      UndistortFramesTool * t = qobject_cast<UndistortFramesTool*>(tool);
+
+      t->setOutputDir(dir);
+      t->setFrames(d->frameMap());
+    }
 
     if (!tool->execute())
     {
