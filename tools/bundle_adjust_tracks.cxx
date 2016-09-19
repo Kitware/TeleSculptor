@@ -187,11 +187,11 @@ static kwiver::vital::config_block_sptr default_config()
                     "when updating cameras. This option is only relevent if a "
                     "value is give to the input_pos_files option.");
 
-      config->set_value("krtd_clean_up", "false",
-                        "Delete all previously existing KRTD files present in output_krtd_dir before writing new KRTD files.");
+  config->set_value("krtd_clean_up", "false",
+                    "Delete all previously existing KRTD files present in output_krtd_dir before writing new KRTD files.");
 
-      config->set_value("depthmaps_images_file", "",
-                        "An optional file containing paths to depthmaps as image datas.");
+  config->set_value("depthmaps_images_file", "",
+                    "An optional file containing paths to depthmaps as image datas.");
 
   kwiver::vital::algo::bundle_adjust::get_nested_algo_configuration("bundle_adjuster", config,
                                                      kwiver::vital::algo::bundle_adjust_sptr());
@@ -814,8 +814,6 @@ static int maptk_main(int argc, char const* argv[])
     {
       cameras[v.first] = v.second->clone();
     }
-    // Triangulate initial landmarks based on cameras and tracks
-    triangulator->triangulate(input_cam_map, tracks, lm_map);
   }
   kwiver::vital::camera_map_sptr cam_map;
   if(!cameras.empty())

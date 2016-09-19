@@ -104,6 +104,8 @@ Tools
    when only a subset of cameras are computed and we do not want a mix of
    old and new camera files.
 
+ * Added ``-h`` option to C++ track features too. Equivalent to ``--help``.
+
 Scripts
 
  * Added a Python script which uses OpenCV to produce mosaicked images of
@@ -145,3 +147,11 @@ Tools
    that filters tracks based on match matrix importance.  The idea is that
    long tracks are usually most important, but some short tracks may be more
    important if they are the only tracks that tie together a pair of frames.
+
+ * Removed call to landmark triangulation algorithm that was effectively doing
+   nothing.
+
+VXL
+
+ * Fixed bug in bundle adjust implementation where input landmarks were being
+   accidentally modified in-place.
