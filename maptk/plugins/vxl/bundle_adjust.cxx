@@ -386,7 +386,10 @@ bundle_adjust
     {
       const vgl_point_3d<double>& pt = active_world_pts[i];
       vector_3d loc(pt.x(), pt.y(), pt.z());
-      landmark_sptr lm = lms[lm_id_index[i]];
+      // Cloning here so we don't change the landmarks contained in the input
+      // map.
+      landmark_sptr lm = lms[lm_id_index[i]]->clone();
+      lms[lm_id_index[i]] = lm;
       if( landmark_d* lmd = dynamic_cast<landmark_d*>(lm.get()) )
       {
         lmd->set_loc(loc);
