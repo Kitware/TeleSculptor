@@ -141,6 +141,16 @@ static kwiver::vital::config_block_sptr default_config()
                     "When loading a subset of cameras, should we optimize only the "
                     "loaded cameras or also initialize and optimize the unspecified cameras");
 
+  config->set_value("geo_origin_file", "output/geo_origin.txt",
+                    "This file contains the geographical location of the origin "
+                    "of the local cartesian coordinate system used in the camera "
+                    "and landmark files.  This file is use for input and output. "
+                    "If the files exists it will be read to define the origin. "
+                    "If the file does not exist an origin will be computed from "
+                    "geographic metadata provided and written to this file. "
+                    "The file format is ASCII (degrees, meters):\n"
+                    "latitude longitude altitude");
+
   config->set_value("output_ply_file", "output/landmarks.ply",
                     "Path to the output PLY file in which to write "
                     "resulting 3D landmark points");
@@ -787,6 +797,28 @@ static int maptk_main(int argc, char const* argv[])
   // Create the local coordinate system
   //
   kwiver::maptk::local_geo_cs local_cs(geo_mapper);
+  bool geo_origin_loaded_from_file = false;
+  if (config->get_value<std::string>("geo_origin_file", "") != "")
+  {
+    kwiver::vital::path_t geo_origin_file = config->get_value<kwiver::vital::path_t>("geo_origin_file");
+    // load the coordinates from a file if it exists
+    if (ST::FileExists(geo_origin_file, true))
+    {
+      std::ifstream ifs(geo_origin_file);
+      double lat, lon, alt;
+      ifs >> lat >> lon >> alt;
+      LOG_INFO(main_logger, "Loaded origin point: "
+                            << lat << ", " << lon << ", " << alt);
+      double x,y;
+      int zone;
+      bool is_north_hemi;
+      local_cs.geo_map_algo()->latlon_to_utm(lat, lon, x, y, zone, is_north_hemi);
+      local_cs.set_utm_origin_zone(zone);
+      local_cs.set_utm_origin(kwiver::vital::vector_3d(x, y, alt));
+      geo_origin_loaded_from_file = true;
+    }
+  }
+
 
   //
   // Initialize input and main cameras
@@ -830,6 +862,33 @@ static int maptk_main(int argc, char const* argv[])
     // Load up landmarks and assocaited tracks from file, (re)initializing
     // local coordinate system object to the reference.
     kwiver::maptk::load_reference_file(ref_file, local_cs, reference_landmarks, reference_tracks);
+  }
+
+  // if we computed an origin that was not loaded from a file
+  if (local_cs.utm_origin_zone() >= 0 &&
+      !geo_origin_loaded_from_file)
+  {
+    // write out the origin of the local coordinate system
+    double easting = local_cs.utm_origin()[0];
+    double northing = local_cs.utm_origin()[1];
+    double altitude = local_cs.utm_origin()[2];
+    int zone = local_cs.utm_origin_zone();
+    double lat, lon;
+    local_cs.geo_map_algo()->utm_to_latlon(easting, northing, zone, true, lat, lon);
+    if (config->get_value<std::string>("geo_origin_file", "") != "")
+    {
+      kwiver::vital::path_t geo_origin_file = config->get_value<kwiver::vital::path_t>("geo_origin_file");
+      std::ofstream ofs(geo_origin_file);
+      if (ofs)
+      {
+        LOG_INFO(main_logger, "Saving local coordinate origin to " << geo_origin_file);
+        ofs << std::setprecision(12) << lat << " " << lon << " " << altitude;
+      }
+    }
+    LOG_INFO(main_logger, "Local coordinate origin: " << std::setprecision(12)
+                                                      << lat << ", "
+                                                      << lon << ", "
+                                                      << altitude);
   }
 
   // apply necker reversal if requested
