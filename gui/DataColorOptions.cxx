@@ -51,6 +51,8 @@ class DataColorOptionsPrivate
 public:
   Ui::DataColorOptions UI;
   qtUiState uiState;
+  double autoLower;
+  double autoUpper;
 
   double autoLower;
   double autoUpper;
@@ -142,6 +144,14 @@ void DataColorOptions::setAvailableRange(
 
   d->UI.minimum->setRange(lower, upper);
   d->UI.maximum->setRange(lower, upper);
+  auto const scale = std::floor(std::log10(std::abs(upper - lower)));
+  auto const step = std::pow(10.0, scale - 1.0);
+
+  d->UI.minimum->setSingleStep(step);
+  d->UI.maximum->setSingleStep(step);
+
+  d->autoLower = qMax(lower, autoLower);
+  d->autoUpper = qMin(upper, autoUpper);
 
   auto const scale = std::floor(std::log10(std::abs(upper - lower)));
   auto const step = std::pow(10.0, scale - 1.0);

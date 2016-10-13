@@ -640,6 +640,10 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   connect(d->UI.camera, SIGNAL(valueChanged(int)),
           this, SLOT(setActiveCamera(int)));
+  connect(d->UI.worldView,
+          SIGNAL(depthMapThresholdsChanged(double, double, double, double)),
+          d->UI.depthMapView,
+          SLOT(updateThresholds(double, double, double, double)));
 
   connect(d->UI.worldView,
           SIGNAL(depthMapThresholdsChanged(double, double, double, double)),
@@ -647,6 +651,11 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           SLOT(updateThresholds(double, double, double, double)));
 
   this->setSlideDelay(d->UI.slideDelay->value());
+#ifdef VTKWEBGLEXPORTER
+  d->UI.actionWebGLScene->setVisible(true);
+  connect(d->UI.actionWebGLScene, SIGNAL(triggered(bool)),
+          this, SLOT(saveWebGLScene()));
+#endif
 
 #ifdef VTKWEBGLEXPORTER
   d->UI.actionWebGLScene->setVisible(true);
@@ -661,6 +670,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   d->viewBackgroundColor = new StateValue<QColor>{Qt::black},
   d->uiState.map("ViewBackground", d->viewBackgroundColor);
+  d->uiState.mapChecked("WorldView/Axes", d->UI.actionShowWorldAxes);
 
   d->uiState.mapChecked("WorldView/Axes", d->UI.actionShowWorldAxes);
 
@@ -798,6 +808,28 @@ void MainWindow::loadProject(QString const& path)
       }
     }
   }
+  // Associate depth maps with cameras
+  foreach (auto dm, qtEnumerate(project.depthMaps))
+  {
+    auto const i = dm.key();
+    if (i >= 0 && i < d->cameras.count())
+    {
+      d->cameras[i].depthMapPath = dm.value();
+    }
+
+    if (i == d->activeCameraIndex)
+    {
+      d->UI.worldView->setActiveDepthMap(
+        d->cameras[d->activeCameraIndex].camera, dm.value());
+
+      d->UI.depthMapView->setDepthMap(dm.value());
+      d->UI.depthMapView->resetView();
+    }
+  }
+
+#ifdef VTKWEBGLEXPORTER
+  d->UI.actionWebGLScene->setEnabled(true);
+#endif
 
   // Associate depth maps with cameras
   foreach (auto dm, qtEnumerate(project.depthMaps))

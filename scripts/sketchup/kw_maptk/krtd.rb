@@ -31,20 +31,20 @@
 
 require 'matrix'
 
-# Because matrices are immutable in Ruby, apparantly, so this allows us to 
+# Because matrices are immutable in Ruby, apparantly, so this allows us to
 # change elements at a given index. See
 # compgroups.net/comp.lang.ruby/matrix-class-how-to-set-a-single-element/769573
 # for more information.
-class Matrix 
-  def []=(i, j, x) 
-    @rows[i][j] = x 
-  end 
+class Matrix
+  def []=(i, j, x)
+    @rows[i][j] = x
+  end
 end
 
 
 class KRTD
-  def initialize(focal_length_mat, 
-		 rotation_mat, 
+  def initialize(focal_length_mat,
+		 rotation_mat,
 		 translation_vec,
                  name = nil,
 		 distortion = nil)
@@ -52,7 +52,7 @@ class KRTD
     @rotation_mat = rotation_mat
     @translation_vec = translation_vec
     @_name = name
-    
+
     # dimensions are stored by half in the krtd files, in pixels
     @x_dim = 2 * @focal_length_mat[0, 2]
     @y_dim = 2 * @focal_length_mat[1, 2]
@@ -74,11 +74,11 @@ class KRTD
   def name
     return @_name
   end
-  
+
   def x_dim
     return @x_dim
   end
-  
+
   def y_dim
     return @y_dim
   end
@@ -92,7 +92,7 @@ class KRTD
   end
 
   def fov_x
-    @_fov_x = @_fov_x ? @_fov_x 
+    @_fov_x = @_fov_x ? @_fov_x
 	      : 2 * Math.atan((@x_dim / 2.0) / @focal_length_x) * 180 / Math::PI
     return @_fov_x
   end
@@ -105,8 +105,8 @@ class KRTD
 
   def up
     if @_up == nil then
-      @_up = -1 * Vector[@rotation_mat[1, 0], 
-		    @rotation_mat[1, 1], 
+      @_up = -1 * Vector[@rotation_mat[1, 0],
+		    @rotation_mat[1, 1],
 		    @rotation_mat[1, 2]]
     end
     return @_up
@@ -131,22 +131,22 @@ class KRTD
 end
 
 def from_file(fp)
-  # Given the filepath of a krtd file, read in the values and create and 
-  # return a KRTD object from those values. 
-  #   The first three lines are a 3x3 matrix containing focal length 
-  # information, where the first two diagonal elements are respectively the x 
-  # and y focal lengths, in pixels, and the first two entries in the third 
+  # Given the filepath of a krtd file, read in the values and create and
+  # return a KRTD object from those values.
+  #   The first three lines are a 3x3 matrix containing focal length
+  # information, where the first two diagonal elements are respectively the x
+  # and y focal lengths, in pixels, and the first two entries in the third
   # column contains the principal point which is assumed to be at half of the
   # image width and height.
   # 	The next three lines (after a blank line) contain the 3x3 rotational
   # matrix.
-  #  	The next line (after another blank line) contains the 3x1 translation 
+  #  	The next line (after another blank line) contains the 3x1 translation
   # vector.
-  #   The final line (after again another blank line) contains distortion 
+  #   The final line (after again another blank line) contains distortion
   # information, which at this point we are reading in as a single floating
   # point value. We're not currently doing anything with this information.
   #   See the following lines for an example of a krtd file.
-  # 
+  #
   #   f_x  0    pp_x
   #   0    f_y  pp_y
   #   0    0    1
@@ -165,7 +165,7 @@ def from_file(fp)
   rotation_mat = Matrix.zero(3)
   translation_vec = nil
   distortion = 0
-  
+
   idx = 0 # For line counting
   while (line = krtd_file.gets)
     raw_line = line.strip.split
@@ -186,4 +186,3 @@ def from_file(fp)
   end
   return KRTD.new(focal_length_mat, rotation_mat, translation_vec, fp, distortion)
 end
-

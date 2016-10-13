@@ -53,6 +53,14 @@ public:
   // Project 3D point to 2D using the internal maptk camera
   bool ProjectPoint(kwiver::vital::vector_3d const& point,
                     double (&projPoint)[2]);
+  // Description:
+  // Reverse project 2D point to 3D using the internal maptk camera and
+  // specified depth
+  kwiver::vital::vector_3d UnprojectPoint(double point[2], double depth);
+
+  void ScaleK(double factor);
+
+  vtkSmartPointer<vtkMaptkCamera> ScaledK(double factor);
 
   // Description:
   // Reverse project 2D point to 3D using the internal maptk camera and
