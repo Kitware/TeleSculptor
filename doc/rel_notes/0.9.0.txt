@@ -31,6 +31,31 @@ Core Plugin
    is generally slower than others, but can be configured to produce
    considerably more dense match matrices with longer tracks.  It also handles
    long term loop closure without any assumption about planar scenes.
+ * Added a new matcher that uses a fundamental matrix constraint to filter bad
+   matches.
+
+ * Added more config parameters to the initialize_cameras_landmarks algorithm
+   to allow more control on how the algorithm is run and what thresholds are
+   used.
+
+ * Added a new loop closure algorithm that exhaustively matches all pairs of
+   frames, or can be configured to match all frames within a moving temporal
+   window.
+
+OpenCV Plugin
+
+ * Added CMake support for handing and marking the use of OpenCV version >= 3.
+
+ * Overhauled OpenCV algorithm introspection structure. Versions 3.x took away
+   the previous ability to introspect algorithm types and parameters,
+   requiring, for at least versions 3.x, for there to be manual wrappings of
+   each algorithm to be exposed. Removed introspection for any version and
+   now have cross-version compatible manual wrappings of all algorithms at
+   least present in 3.x that fill the feature detection, descriptor extraction
+   and feature matching roles.
+
+ * Added an OpenCV fundamental matrix estimation wrapper. OpenCV can estimate a
+   fundamental matrix with the presence of outliers using RANSAC.
 
  * Added a new matcher that uses a fundamental matrix constraint to filter bad
    matches.
@@ -65,6 +90,9 @@ VXL Plugin
    (rrel) in VXL to fit a ground plane to the data.  The ground plane becomes
    the Z=0 plane.  The rest of the free parameters are then fit by PCA as in
    the core plugin implementation.
+ * Added a video_input algorithm implementation that uses the FFmpeg via the
+   vidl_ffmpeg_istream class to read video frames and KLV metadata from encoded
+   video files.
 
  * Added a video_input algorithm implementation that uses the FFmpeg via the
    vidl_ffmpeg_istream class to read video frames and KLV metadata from encoded
@@ -74,6 +102,24 @@ Visualization Application
 
  * Updated the "Align" tool to use the configurable abstract algorithm
    for canonical transform.
+ * Added an option to display the world axes around the visible geometry.
+   This option can be enabled and disabled in the "View" menu.
+
+ * Added an option to export the current scene to webGL. This option is only
+   available if VTK was built with the option Module_vtkWebGLExporter turned on.
+   This option can then be found in the "File > Export" menu.
+
+ * The absolute path to the current frame is now displayed at the bottom of the
+   Camera view.
+
+ * The GUI now accepts a list of files to be opened on the command line.
+
+ * Added a depth map view and a depth map visualisation in the world view. The
+   depth maps can be thresholded directly in the world view, and the depth map
+   view offers several visualisation modes such as depths, uniqueness ratios or
+   best cost values. Depth maps can be loaded by initializing the parameter
+   "depthmaps_images_file" with the path to the depth maps (*.vti files) list in
+   the configuration file.
 
  * Added an option to display the world axes around the visible geometry.
    This option can be enabled and disabled in the "View" menu.
@@ -103,6 +149,19 @@ Tools
    files from the output directory before writing new ones.  This is useful
    when only a subset of cameras are computed and we do not want a mix of
    old and new camera files.
+ * Added ``-h`` option to C++ track features too. Equivalent to ``--help``.
+
+Scripts
+
+ * Added a Python script which uses OpenCV to produce mosaicked images of
+   video frames using the homographies produced by maptk_track_features.
+
+Default Configuration
+
+ * Switched default loop closure method to keyframe based instead of a mix
+   of homography based and bad frame detection.
+
+ * Switched default feature descriptors to use non-upright SURF.
 
  * Added ``-h`` option to C++ track features too. Equivalent to ``--help``.
 

@@ -59,6 +59,7 @@
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
+
 #include <vtkRenderWindow.h>
 #include <vtkRenderer.h>
 #include <vtkTextProperty.h>
@@ -315,6 +316,15 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
 
   connect(d->landmarkOptions, SIGNAL(modified()),
           d->UI.renderWidget, SLOT(update()));
+  d->depthMapOptions = new DepthMapOptions("WorldView/DepthMap", this);
+  d->setPopup(d->UI.actionShowDepthMap, d->depthMapOptions);
+
+  d->depthMapOptions->setEnabled(false);
+
+  connect(d->depthMapOptions, SIGNAL(displayModeChanged()),
+          this, SLOT(updateDepthMapDisplayMode()));
+  connect(d->depthMapOptions, SIGNAL(thresholdsChanged()),
+          this, SLOT(updateDepthMapThresholds()));
 
   d->depthMapOptions = new DepthMapOptions("WorldView/DepthMap", this);
   d->setPopup(d->UI.actionShowDepthMap, d->depthMapOptions);

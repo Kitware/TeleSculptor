@@ -162,6 +162,11 @@ target_link_libraries(mapgui
   ${QT_QTMAIN_LIBRARY}
   ${QT_LIBRARIES}
 )
+if(vtkWebGLExporter_LOADED)
+  message(STATUS "Module vtkWebGLExporter present: wekGL export enabled")
+  target_compile_definitions(mapgui PRIVATE -DVTKWEBGLEXPORTER)
+  target_link_libraries(mapgui vtkWebGLExporter)
+endif()
 
 if(vtkWebGLExporter_LOADED)
   message(STATUS "Module vtkWebGLExporter present: wekGL export enabled")
