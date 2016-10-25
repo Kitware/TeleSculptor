@@ -30,7 +30,7 @@
 
 #include "NeckerReversalTool.h"
 
-#include <maptk/transform.h>
+#include <arrows/core/transform.h>
 
 #include <QtGui/QMessageBox>
 
@@ -78,7 +78,7 @@ void NeckerReversalTool::run()
   auto cp = this->cameras();
   auto lp = this->landmarks();
 
-  kwiver::maptk::necker_reverse(cp, lp);
+  kwiver::arrows::necker_reverse(cp, lp);
 
   this->updateCameras(cp);
   this->updateLandmarks(lp);
