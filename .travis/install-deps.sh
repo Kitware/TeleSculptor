@@ -92,9 +92,24 @@ fletch_cmake_opts="\
  -Dfletch_ENABLE_OpenCV_highgui=ON"
 build_repo fletch https://github.com/Kitware/fletch.git
 
-# Build and install Vital
-vital_cmake_opts="-DVITAL_ENABLE_C_LIB=ON"
-build_repo vital https://github.com/Kitware/vital.git
+# Build and install KWIVER
+kwiver_branch=release
+kwiver_cmake_opts="\
+ -DKWIVER_ENABLE_ARROWS=ON \
+ -DKWIVER_ENABLE_CERES=ON \
+ -DKWIVER_ENABLE_C_BINDINGS=OFF \
+ -DKWIVER_ENABLE_DOCS=OFF \
+ -DKWIVER_ENABLE_LOG4CXX=OFF \
+ -DKWIVER_ENABLE_OPENCV=ON \
+ -DKWIVER_ENABLE_PROJ=ON \
+ -DKWIVER_ENABLE_PYTHON=OFF \
+ -DKWIVER_ENABLE_SPROKIT=OFF \
+ -DKWIVER_ENABLE_TESTS=OFF \
+ -DKWIVER_ENABLE_TOOLS=OFF \
+ -DKWIVER_ENABLE_TRACK_ORACLE=OFF \
+ -DKWIVER_ENABLE_VISCL=OFF \
+ -DKWIVER_ENABLE_VXL=ON"
+build_repo kwiver https://github.com/Kitware/kwiver.git
 
 # Build and install QtExtensions
 build_repo qtextensions https://github.com/Kitware/qtextensions.git
