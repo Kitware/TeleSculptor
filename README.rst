@@ -19,17 +19,21 @@ the variation in depth of the 3D scene is small compared to distance to the
 camera.  In these cases, planar homographies can be used to assist feature
 tracking, stabilize the video, and aid in solving loop closure problems.
 
-The MAP-Tk software architecture is highly modular and provides an algorithm
-abstraction layer that allows seamless interchange and run-time selection of
-algorithms from various other open source projects like OpenCV, VXL, Ceres
-Solver, and PROJ4.  The core library is light-weight with minimal dependencies
-(C++ standard library, Vital, and Eigen).  The tools are written to depend
-only on the MAP-Tk and Vital core libraries.  Additional capabilities are
-provided in plugin modules that use third party libraries to implement various
-abstract algorithm interfaces defined in the core.  Plugin modules may also
-implement additional versions of core MAP-Tk data structures.
+MAP-Tk uses the KWIVER_ software architecture, which was originally developed
+for MAP-Tk, is highly modular, and provides an algorithm abstraction layer
+that allows seamless interchange and run-time selection of algorithms from
+various other open source projects like OpenCV, VXL, Ceres Solver, and PROJ4.
+The core library and tools are light-weight with minimal dependencies
+(C++ standard library, KWIVER_ vital, and Eigen_).  The tools are written to depend
+only on the MAP-Tk and KWIVER_ vital libraries.  Additional capabilities are
+provided by KWIVER arrows (plugin modules) that use third party libraries
+to implement various abstract algorithm interfaces defined in KWIVER_ vital
+library.  Earlier versions of MAP-Tk contained these core data structures,
+algorithms, and plugins, but these have since been moved to KWIVER_ for easier
+reuse across projects.  What remains in this repository are the tools, scripts,
+and applications required to apply to algorithms to photogrammetry problems.
 
-In addition to the libraries and tools, a Qt GUI application is provided to
+A Qt GUI application is provided to
 assist with visualization of data and results with the help of VTK.
 The screenshots below show the MAP-Tk GUI visualizing results of MAP-Tk
 run on example videos from the `VIRAT Video Dataset`_ and `CLIF 2007 Dataset`_.
@@ -59,13 +63,7 @@ Overview of Directories
 ``examples``            contains example tool configuration for public datasets
 ``gui``                 contains the visualization GUI source code and headers
 ``gui/icons``           contains the visualization GUI icon resources
-``maptk``               contains the core library source and headers
-``maptk/plugins/ceres`` contains the Ceres Solver plugin source and headers
-``maptk/plugins/core``  contains core plugin source and headers
-``maptk/plugins/ocv``   contains the OpenCV plugin source and headers
-``maptk/plugins/proj``  contains the PROJ4 plugin source and headers
-``maptk/plugins/viscl`` contains the VisCL plugin source and headers
-``maptk/plugins/vxl``   contains the VXL plugin source and headers
+``maptk``               contains the maptk library source and headers
 ``packaging``           contains support files for CPack packaging
 ``scripts``             contains Python helper scripts
 ``scripts/blender``     contains Python plug-ins for Blender
@@ -113,14 +111,8 @@ CMake Options
                                enabled)
 ``MAPTK_ENABLE_TESTING``       Build the unit tests
 
-``MAPTK_ENABLE_CERES``         Turn on building the Ceres Solver plugin module
-``MAPTK_ENABLE_OPENCV``        Turn on building the OpenCV plugin module
-``MAPTK_ENABLE_PROJ``          Turn on building the PROJ.4 plugin module
-``MAPTK_ENABLE_VISCL``         Turn on building the VisCL plugin module
-``MAPTK_ENABLE_VXL``           Turn on building the VXL plugin module
-
-``MAPTK_USE_BUILD_PLUGIN_DIR`` Add the path to plugins in the build directory to
-                               the plugin search path
+``kwiver_DIR``                 Path to the KWIVER build or install tree
+``qtExtensions_DIR``           Path to the QtExtension build or install tree
 ============================== =================================================
 
 
@@ -137,23 +129,31 @@ Required
 ''''''''
 
 The only hard dependencies of MAP-Tk are on the C++ standard library,
-Vital_ (|>=| 0.1), and Eigen_ (|>=| 3.0; also required by Vital).
+KWIVER_ (|>=| 1.0), and Eigen_ (|>=| 3.0; also required by KWIVER).
 
-Optional Plugins
-''''''''''''''''
+Recommended KWIVER Plugins
+''''''''''''''''''''''''''
 
-Each MAP-Tk plugin module brings in more dependencies for additional
-functionality.  Dependencies for each module are:
+When building KWIVER for use in MAP-Tk there are several arrows (plugins) that
+should be enabled to provide maximum capability to MAP-Tk.  The KWIVER arrows
+are not a build-time dependency of MAP-Tk, but are required at run-time to
+provide algorithm implementations to run.  The following KWIVER arrows provide
+algorithms which are optionally used by MAP-Tk:
 
-* Ceres  : version 1.10.0 or greater
+* Core   : algorithm implementations with no additional dependencies
+* Ceres  : supplies bundle adjustment using Ceres Solver
            http://ceres-solver.org/
-* OpenCV : version 2.4.X (with X >= 6, 3.X support coming soon)
+* OpenCV : supplies feature detectors, descriptors, matcher; homography and
+           fundamental matrix estimators; image I/O, and more.
            http://opencv.org/
-* PROJ   : version 4.7
-           http://trac.osgeo.org/proj/
-* VisCL  : experimental code (unversioned, use master branch)
+* PROJ   : provides geographic transforms (e.g. Lat/Lon to UTM)
+           http://trac.osgeo.org/proj/:
+* VisCL  : experimental code for OpenCL acceleration
+           (currently not recommend for most users)
            https://github.com/Kitware/VisCL
-* VXL    : version 1.17 or greater
+* VXL    : supplies a simple bundle adjuster, image I/O, homgraphy and
+           fundamental matrix estimation, and more.
+           (note: requires unreleased version, use Fletch_ to build)
            http://vxl.sourceforge.net/
 
 GUI
@@ -168,6 +168,15 @@ dependencies.  To build the GUI, you need:
                  http://www.github.com/kitware/qtextensions
 * VTK          : version 6.2
                  http://www.vtk.org/
+
+Most of the dependencies for KWIVER and MAP-Tk can be provided by a
+meta-project called Fletch_.  Fletch uses CMake to fetch, configure,
+and build various third party packages such that they work together
+in a consistent way across platforms.  We recommend that you use Fletch
+to build Ceres, Eigen, OpenCV, PROJ, Qt, VTK, and VXL and their dependencies.
+Next build KWIVER and set "fletch_DIR" in CMake to point to your Fletch build.
+Enable the arrows recommended above in the KWIVER build. Finally, build MAP-Tk
+and set "kwiver_DIR" in CMake to point to your KWIVER build.
 
 Documentation
 '''''''''''''
@@ -351,9 +360,9 @@ public release via 88ABW-2015-2555.
 .. _Eigen: http://eigen.tuxfamily.org/
 .. _Kitware: http://www.kitware.com/
 .. _KWIVER: http://www.kwiver.org/
+.. _Fletch: https://github.com/Kitware/fletch
 .. _Travis CI: https://travis-ci.org/
 .. _VisualSFM: http://ccwu.me/vsfm/
-.. _Vital: http://www.github.com/Kitware/Vital
 
 .. Appendix II: Text Substitutions
 .. ===============================
