@@ -140,21 +140,32 @@ are not a build-time dependency of MAP-Tk, but are required at run-time to
 provide algorithm implementations to run.  The following KWIVER arrows provide
 algorithms which are optionally used by MAP-Tk:
 
-* Core   : algorithm implementations with no additional dependencies
-* Ceres  : supplies bundle adjustment using Ceres Solver
-           http://ceres-solver.org/
-* OpenCV : supplies feature detectors, descriptors, matcher; homography and
-           fundamental matrix estimators; image I/O, and more.
-           http://opencv.org/
-* PROJ   : provides geographic transforms (e.g. Lat/Lon to UTM)
-           http://trac.osgeo.org/proj/:
-* VisCL  : experimental code for OpenCL acceleration
-           (currently not recommend for most users)
-           https://github.com/Kitware/VisCL
-* VXL    : supplies a simple bundle adjuster, image I/O, homgraphy and
-           fundamental matrix estimation, and more.
-           (note: requires unreleased version, use Fletch_ to build)
-           http://vxl.sourceforge.net/
+* Core
+    algorithm implementations with no additional dependencies
+
+* Ceres
+    supplies bundle adjustment using Ceres Solver
+    http://ceres-solver.org/
+
+* OpenCV
+    supplies feature detectors, descriptors, matcher; homography and
+    fundamental matrix estimators; image I/O, and more.
+    http://opencv.org/
+
+* PROJ
+    provides geographic transforms (e.g. Lat/Lon to UTM)
+    http://trac.osgeo.org/proj/:
+
+* VisCL
+    experimental code for OpenCL acceleration
+    (currently not recommend for most users)
+    https://github.com/Kitware/VisCL
+
+* VXL
+    supplies a simple bundle adjuster, image I/O, homgraphy and
+    fundamental matrix estimation, and more.
+    (note: requires unreleased version, use Fletch_ to build)
+    http://vxl.sourceforge.net/
 
 GUI
 '''
@@ -162,12 +173,17 @@ GUI
 The visualization application (GUI) is optional, and has additional
 dependencies.  To build the GUI, you need:
 
-* Qt 4         : version 4.8.0 or greater (4.8.6 or greater recommended)
-                 http://www.qt.io/
-* qtExtensions : no versioned releases as of writing; use master branch
-                 http://www.github.com/kitware/qtextensions
-* VTK          : version 6.2
-                 http://www.vtk.org/
+* Qt 4
+    version 4.8.0 or greater (4.8.6 or greater recommended)
+    http://www.qt.io/
+
+* qtExtensions
+    no versioned releases as of writing; use master branch
+    http://www.github.com/kitware/qtextensions
+
+* VTK
+    version 6.2
+    http://www.vtk.org/
 
 Most of the dependencies for KWIVER and MAP-Tk can be provided by a
 meta-project called Fletch_.  Fletch uses CMake to fetch, configure,
@@ -184,15 +200,19 @@ Documentation
 Documentation generation is another optional component that brings in
 additional dependencies.  To build the API documentation, you need:
 
-* Doxygen  : version 1.7 or greater
-             http://www.stack.nl/~dimitri/doxygen/
+* Doxygen
+    version 1.7 or greater
+    http://www.stack.nl/~dimitri/doxygen/
 
 To build the user manual(s), you need:
 
-* Python   : version 2.6 or greater
-             http://www.python.org/
-* Docutils : version 0.11 or greater
-             http://docutils.sourceforge.net/
+* Python
+    version 2.6 or greater
+    http://www.python.org/
+
+* Docutils
+    version 0.11 or greater
+    http://docutils.sourceforge.net/
 
 (At present, only the GUI has a user manual.  Other manuals may be added in the
 future.)
