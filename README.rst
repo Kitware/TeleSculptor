@@ -153,13 +153,14 @@ functionality.  Dependencies for each module are:
 
 * Ceres  : version 1.10.0 or greater
            http://ceres-solver.org/
-* OpenCV : version 2.4.X (with X >= 6, 3.X support coming soon)
+* OpenCV : version 2.4.X (with X >= 6) or 3.X
            http://opencv.org/
 * PROJ   : version 4.7
            http://trac.osgeo.org/proj/
 * VisCL  : experimental code (unversioned, use master branch)
            https://github.com/Kitware/VisCL
-* VXL    : version 1.17 or greater
+* VXL    : unrelased version (master) after July 2016
+           (it is easiest to obtain a compatible version from Fletch_)
            http://vxl.sourceforge.net/
 
 GUI
@@ -355,6 +356,7 @@ public release via 88ABW-2015-2555.
 .. _Bundler: http://www.cs.cornell.edu/~snavely/bundler/
 .. _CDash: http://www.cdash.org/
 .. _Eigen: http://eigen.tuxfamily.org/
+.. _Fletch: http://www.github.com/Kitware/fletch
 .. _Kitware: http://www.kitware.com/
 .. _KWIVER: http://www.kwiver.org/
 .. _PlaneSweepLib: https://github.com/bastienjacquet/PlaneSweepLib
