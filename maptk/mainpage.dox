@@ -1,0 +1,24 @@
+/// Primary namespace under which the contents of the MAP-Tk package are located
+namespace kwiver {
+namespace maptk {
+// The following text is included in the main documentation page by doxygen
+/** \mainpage maptk Library
+\section sec-core-contents Contents
+Abstract algorithms, data structures, and plugins that were previously
+implemented in MAP-Tk have now been refactored into the KWIVER project on which
+MAP-Tk depends.  Most of what remains in MAP-Tk are the command line tools and
+GUI.  The maptk library is now minimal and contains only some geographic data
+structures and a few helper functions.
+
+Refer to the <a href="http://www.kwiver.org/">KWIVER</a> documentation for
+details on how to call algorithms used in MAP-Tk.
+
+
+\subsection sec_geographic Geographic Data Structures
+- \ref ins_data : a representataion of Inertial Navigation Data (INS), such as
+               loaded from POS file.
+- \ref local_geo_cs : a representation of a local geographic coordinate system.
+               A Cartesian coordinate system in meters with an origin in UTM.
+*/
+}
+}
