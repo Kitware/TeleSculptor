@@ -43,6 +43,12 @@ More information about this example data can be found in the
 .. image:: /doc/screenshot/mapgui_screenshot_linux.png
    :alt: Linux Screenshot
 
+The MAP-Tk GUI now supports visualization of depth maps, but compution of
+depth maps is not yet supported by MAP-Tk.  Instead, the cameras computed
+by MAP-Tk can be used with a fork of PlaneSweepLib_ that reads in the cameras
+and images and produces depthmaps that the GUI can load.  We are working on
+extending MAP-Tk to compute depth maps directly.
+
 While the initial software implementation relies on batch post-processing
 of aerial video, our intent is to move to an online video stream processing
 framework and optimize the algorithms to real-time performance for use
@@ -351,6 +357,7 @@ public release via 88ABW-2015-2555.
 .. _Eigen: http://eigen.tuxfamily.org/
 .. _Kitware: http://www.kitware.com/
 .. _KWIVER: http://www.kwiver.org/
+.. _PlaneSweepLib: https://github.com/bastienjacquet/PlaneSweepLib
 .. _Travis CI: https://travis-ci.org/
 .. _VisualSFM: http://ccwu.me/vsfm/
 .. _Vital: http://www.github.com/Kitware/Vital
