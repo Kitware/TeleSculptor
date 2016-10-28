@@ -55,4 +55,9 @@ endif()
 ###
 # Marking source root for documentation generation
 #
-kwiver_create_doxygen( maptk "${CMAKE_CURRENT_LIST_DIR}" )
+if(NOT DOXYGEN_MAPTK_NUMBER)
+  set(DOXYGEN_MAPTK_NUMBER "v${MAPTK_VERSION}")
+endif()
+kwiver_create_doxygen( maptk "${CMAKE_CURRENT_LIST_DIR}"
+                       DISPLAY_NAME "MAP-Tk"
+                       VERSION_NUMBER "${DOXYGEN_MAPTK_NUMBER}")
