@@ -19,19 +19,19 @@ the variation in depth of the 3D scene is small compared to distance to the
 camera.  In these cases, planar homographies can be used to assist feature
 tracking, stabilize the video, and aid in solving loop closure problems.
 
-MAP-Tk uses the KWIVER_ software architecture, which was originally developed
-for MAP-Tk, is highly modular, and provides an algorithm abstraction layer
+MAP-Tk uses the KWIVER_ software architecture.  Originally developed for
+MAP-Tk, KWIVER is highly modular and provides an algorithm abstraction layer
 that allows seamless interchange and run-time selection of algorithms from
 various other open source projects like OpenCV, VXL, Ceres Solver, and PROJ4.
 The core library and tools are light-weight with minimal dependencies
 (C++ standard library, KWIVER_ vital, and Eigen_).  The tools are written to depend
-only on the MAP-Tk and KWIVER_ vital libraries.  Additional capabilities are
+only on the MAP-Tk and KWIVER vital libraries.  Additional capabilities are
 provided by KWIVER arrows (plugin modules) that use third party libraries
-to implement various abstract algorithm interfaces defined in KWIVER_ vital
+to implement various abstract algorithm interfaces defined in the KWIVER vital
 library.  Earlier versions of MAP-Tk contained these core data structures,
-algorithms, and plugins, but these have since been moved to KWIVER_ for easier
+algorithms, and plugins, but these have since been moved to KWIVER for easier
 reuse across projects.  What remains in this repository are the tools, scripts,
-and applications required to apply to algorithms to photogrammetry problems.
+and applications required to apply KWIVER algorithms to photogrammetry problems.
 
 A Qt GUI application is provided to
 assist with visualization of data and results with the help of VTK.
