@@ -84,6 +84,10 @@ Tool Bar
   however the grid lines are otherwise strictly aesthetic and do not correspond
   to any particular values.
 
+:icon:`blank` Show 3D Depth Map
+  Toggles visibility of the depth map (if avaialble) rendered as a 3D point
+  cloud or mesh; see `3D Depth Map Options`_.
+
 Camera Options
 --------------
 
@@ -130,6 +134,21 @@ In addition to coloring by data, points may be filtered (selectively displayed)
 according to their respective values of the currently selected data set.
 Filtering may exclude points above or below selected lower or upper, or that
 are not within said bounds.
+
+3D Depth Map Options
+--------------------
+
+The :action:`- Show Depth Map` pop-up provides additional controls on the
+display of depth maps in the world view.  The options allow the depth map to be
+rendered either as a 3D point cloud (one point per pixel) or a dense triangular
+mesh (one vertex per pixel).  In either case, the rendered depth data is
+colored by the RGB color values of the corresponding video frame.  A filter
+option is also available to remove depth points based on thresholds on various
+attriutes.  Currently these attributes are the Uniqueness Ratio and Best Cost
+Value.  Images of these attibutes as well as the depth map itself are also
+shown in the DepthMap View and the filter options selected here apply to that
+view as well.  See `DepthMap View`_.
+
 
 Camera View
 ===========
@@ -183,6 +202,48 @@ The trail color and length (number of adjacent frames to be used) may be
 changed, as well as whether to show trails only for lower-numbered frames
 ("historic" mode), or for all adjacent frames ("symmetric" mode). In all cases,
 trails are displayed only for active feature points.
+
+DepthMap View
+=============
+
+The DepthMap View provides an image viewer similar to the Camera View but
+specialized to display depth map images.  Depth map images are loaded from
+VTK image (.vti) files associated with a particular video frame.  Often
+there are only depth maps on a subset of frames.  The active (or most recent)
+depth maps is displayed in this view by mapping depth to color.
+The DepthMap View can also display image of other attributes associated
+with the depth map such as the image color.  Some attributes like uniqueness
+and best cost are associated with the algorithms used to generate the depth.
+The same depth maps can be rendered in the World View as a point cloud.
+Furthermore, depth map filtering options in the World View also apply to the
+image rendering of the depth map in the DepthMap View.
+Depth maps are currently not produced by MAP-Tk but require third-party
+software to take MAP-Tk cameras and images to produce them.
+
+Tool Bar
+--------
+
+:icon:`view-reset` Reset View
+  Resets the view to the camera image extents.
+
+:icon:`blank` Display mode
+  Selects which image mode to display in the in the view: Color, Depth,
+  Best Cost Value, Uniqueness Ratio; see `Color Map Options`_.
+  The depth filters apply regardless of which image is shown.
+
+Color Map Options
+-----------------
+
+In addition to selecting the mode under `Display Mode` there is also an
+option to select the color mapping function for each mode except Color.
+The mapping function describes how the scalar data field (e.g. depth) is
+mapped to color.  Below the color map option are the minimum and maximum values
+from the data used in the mapping.  The `Auto` checkbox, which is checked by
+default, indicates that the values are determined automatically from the range
+of values in the image data.  By unselected the `Auto` checkbox the minimum
+and maximum values of the range can be adjusted manually for finer control of
+the visualization.
+
 
 Camera Selection
 ================
