@@ -43,6 +43,12 @@ More information about this example data can be found in the
 .. image:: /doc/screenshot/mapgui_screenshot_linux.png
    :alt: Linux Screenshot
 
+The MAP-Tk GUI now supports visualization of depth maps, but compution of
+depth maps is not yet supported by MAP-Tk.  Instead, the cameras computed
+by MAP-Tk can be used with a fork of PlaneSweepLib_ that reads in the cameras
+and images and produces depthmaps that the GUI can load.  We are working on
+extending MAP-Tk to compute depth maps directly.
+
 While the initial software implementation relies on batch post-processing
 of aerial video, our intent is to move to an online video stream processing
 framework and optimize the algorithms to real-time performance for use
@@ -147,13 +153,14 @@ functionality.  Dependencies for each module are:
 
 * Ceres  : version 1.10.0 or greater
            http://ceres-solver.org/
-* OpenCV : version 2.4.X (with X >= 6, 3.X support coming soon)
+* OpenCV : version 2.4.X (with X >= 6) or 3.X
            http://opencv.org/
 * PROJ   : version 4.7
            http://trac.osgeo.org/proj/
 * VisCL  : experimental code (unversioned, use master branch)
            https://github.com/Kitware/VisCL
-* VXL    : version 1.17 or greater
+* VXL    : unrelased version (master) after July 2016
+           (it is easiest to obtain a compatible version from Fletch_)
            http://vxl.sourceforge.net/
 
 GUI
@@ -200,7 +207,8 @@ Doxygen documentation for released versions are here:
 ================================= ===============================================
 **MAP-Tk v0.6.1** Documentation   http://www.kwiver.org/maptk/docs/release/v0.6.1
 **MAP-Tk v0.7.2** Documentation   http://www.kwiver.org/maptk/docs/release/v0.7.2
-**MAP-Tk v0.8.0** Documentation   http://www.kwiver.org/maptk/docs/release/v0.8.0
+**MAP-Tk v0.8.1** Documentation   http://www.kwiver.org/maptk/docs/release/v0.8.1
+**MAP-Tk v0.9.0** Documentation   http://www.kwiver.org/maptk/docs/release/v0.9.0
 ================================= ===============================================
 
 Building Documentation
@@ -349,8 +357,10 @@ public release via 88ABW-2015-2555.
 .. _Bundler: http://www.cs.cornell.edu/~snavely/bundler/
 .. _CDash: http://www.cdash.org/
 .. _Eigen: http://eigen.tuxfamily.org/
+.. _Fletch: http://www.github.com/Kitware/fletch
 .. _Kitware: http://www.kitware.com/
 .. _KWIVER: http://www.kwiver.org/
+.. _PlaneSweepLib: https://github.com/bastienjacquet/PlaneSweepLib
 .. _Travis CI: https://travis-ci.org/
 .. _VisualSFM: http://ccwu.me/vsfm/
 .. _Vital: http://www.github.com/Kitware/Vital
