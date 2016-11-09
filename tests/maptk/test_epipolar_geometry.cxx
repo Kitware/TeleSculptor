@@ -32,8 +32,8 @@
 #include <test_math.h>
 #include <test_scene.h>
 
-#include <maptk/projected_track_set.h>
-#include <maptk/epipolar_geometry.h>
+#include <arrows/core/projected_track_set.h>
+#include <arrows/core/epipolar_geometry.h>
 
 
 #define TEST_ARGS ()
@@ -90,7 +90,7 @@ IMPLEMENT_TEST(ideal_points)
   camera_map_sptr cameras = testing::camera_seq();
 
   // create tracks from the projections
-  track_set_sptr tracks = projected_tracks(landmarks, cameras);
+  track_set_sptr tracks = kwiver::arrows::projected_tracks(landmarks, cameras);
 
   const frame_id_t frame1 = 0;
   const frame_id_t frame2 = 10;
@@ -102,8 +102,8 @@ IMPLEMENT_TEST(ideal_points)
   camera_intrinsics_sptr cal2 = cam2->intrinsics();
 
   // compute the true essential matrix from the cameras
-  essential_matrix_sptr em = essential_matrix_from_cameras(*cam1, *cam2);
-  fundamental_matrix_sptr fm = fundamental_matrix_from_cameras(*cam1, *cam2);
+  essential_matrix_sptr em = kwiver::arrows::essential_matrix_from_cameras(*cam1, *cam2);
+  fundamental_matrix_sptr fm = kwiver::arrows::fundamental_matrix_from_cameras(*cam1, *cam2);
 
   // extract coresponding image points
   std::vector<track_sptr> trks = tracks->tracks();
@@ -128,7 +128,7 @@ IMPLEMENT_TEST(ideal_points)
   print_epipolar_distances(fm->matrix(), pts1, pts2);
 
   // compute the inliers with a small scale
-  std::vector<bool> inliers = mark_fm_inliers(*fm, pts1, pts2, 1e-8);
+  std::vector<bool> inliers = kwiver::arrows::mark_fm_inliers(*fm, pts1, pts2, 1e-8);
 
   unsigned num_inliers = static_cast<unsigned>(std::count(inliers.begin(),
                                                           inliers.end(), true));
@@ -136,8 +136,8 @@ IMPLEMENT_TEST(ideal_points)
   TEST_EQUAL("All points are inliers", num_inliers, pts1.size());
 
   // compute the inliers with a small scale
-  inliers = mark_fm_inliers(fundamental_matrix_d(em->matrix()),
-                            norm_pts1, norm_pts2, 1e-8);
+  inliers = kwiver::arrows::mark_fm_inliers(fundamental_matrix_d(em->matrix()),
+                                            norm_pts1, norm_pts2, 1e-8);
 
   num_inliers = static_cast<unsigned>(std::count(inliers.begin(),
                                                  inliers.end(), true));
