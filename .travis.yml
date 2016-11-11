@@ -30,13 +30,8 @@ script:
   - export PATH=$HOME/deps/bin:$PATH
   - mkdir build
   - cd build
-  - cmake -DMAPTK_ENABLE_PROJ:BOOL=ON
-          -DMAPTK_ENABLE_OPENCV:BOOL=ON
-          -DMAPTK_ENABLE_VXL:BOOL=ON
-          -DMAPTK_ENABLE_CERES:BOOL=ON
-          -DMAPTK_ENABLE_GUI:BOOL=ON
+  - cmake -DMAPTK_ENABLE_GUI:BOOL=ON
           -DMAPTK_ENABLE_TESTING:BOOL=ON
-          -DEIGEN_INCLUDE_DIR:PATH=$HOME/deps/include/eigen3
           ../
   - make -j2
   - ctest

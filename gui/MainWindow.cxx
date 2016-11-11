@@ -42,12 +42,12 @@
 #include "Project.h"
 #include "vtkMaptkCamera.h"
 
-#include <maptk/match_matrix.h>
 #include <maptk/version.h>
 
 #include <vital/io/camera_io.h>
 #include <vital/io/landmark_map_io.h>
 #include <vital/io/track_set_io.h>
+#include <arrows/core/match_matrix.h>
 
 #include <vtkImageData.h>
 #include <vtkImageReader2.h>
@@ -1176,7 +1176,7 @@ void MainWindow::showMatchMatrix()
   {
     // Get matrix
     auto frames = std::vector<kwiver::vital::frame_id_t>();
-    auto const mm = kwiver::maptk::match_matrix(d->tracks, frames);
+    auto const mm = kwiver::arrows::match_matrix(d->tracks, frames);
 
     // Show window
     auto window = new MatchMatrixWindow();
