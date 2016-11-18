@@ -95,7 +95,6 @@ fletch_cmake_opts="\
 build_repo fletch https://github.com/Kitware/fletch.git
 
 # Build and install KWIVER
-kwiver_branch=release
 kwiver_cmake_opts="\
  -DKWIVER_ENABLE_ARROWS=ON \
  -DKWIVER_ENABLE_CERES=ON \
