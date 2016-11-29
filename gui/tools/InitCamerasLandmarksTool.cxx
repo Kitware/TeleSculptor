@@ -1,0 +1,158 @@
+/*ckwg +29
+ * Copyright 2016 by Kitware, Inc.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *  * Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ *  * Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ *  * Neither the name Kitware, Inc. nor the names of any contributors may be
+ *    used to endorse or promote products derived from this software without
+ *    specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+#include "InitCamerasLandmarksTool.h"
+
+#include <maptk/version.h>
+
+#include <vital/algo/initialize_cameras_landmarks.h>
+
+#include <vital/config/config_block_io.h>
+
+#include <qtStlUtil.h>
+
+#include <QtGui/QApplication>
+#include <QtGui/QMessageBox>
+
+#include <QtCore/QDir>
+
+using kwiver::vital::algo::initialize_cameras_landmarks;
+using kwiver::vital::algo::initialize_cameras_landmarks_sptr;
+
+namespace
+{
+static char const* const BLOCK = "initializer";
+static char const* const CONFIG_FILE = "gui_initialize.conf";
+
+//-----------------------------------------------------------------------------
+kwiver::vital::config_block_sptr readConfig(std::string const& name)
+{
+  try
+  {
+    using kwiver::vital::read_config_file;
+
+    auto const exeDir = QDir(QApplication::applicationDirPath());
+    auto const prefix = stdString(exeDir.absoluteFilePath(".."));
+    return read_config_file(name, "maptk", MAPTK_VERSION, prefix);
+  }
+  catch (...)
+  {
+    return {};
+  }
+}
+
+}
+
+//-----------------------------------------------------------------------------
+class InitCamerasLandmarksToolPrivate
+{
+public:
+  initialize_cameras_landmarks_sptr algorithm;
+};
+
+QTE_IMPLEMENT_D_FUNC(InitCamerasLandmarksTool)
+
+//-----------------------------------------------------------------------------
+InitCamerasLandmarksTool::InitCamerasLandmarksTool(QObject* parent)
+  : AbstractTool(parent), d_ptr(new InitCamerasLandmarksToolPrivate)
+{
+  this->setText("&Estimate Cameras/Landmarks");
+  this->setToolTip(
+    "<nobr>Estimate cameras and landmarks from a set of feature tracks</nobr>");
+}
+
+//-----------------------------------------------------------------------------
+InitCamerasLandmarksTool::~InitCamerasLandmarksTool()
+{
+}
+
+//-----------------------------------------------------------------------------
+AbstractTool::Outputs InitCamerasLandmarksTool::outputs() const
+{
+  return Cameras | Landmarks;
+}
+
+//-----------------------------------------------------------------------------
+bool InitCamerasLandmarksTool::execute(QWidget* window)
+{
+  QTE_D();
+
+  // Check inputs
+  if (!this->hasTracks())
+  {
+    QMessageBox::information(
+      window, "Insufficient data",
+      "This operation requires feature tracks.");
+    return false;
+  }
+
+  // Load configuration
+  auto const config = readConfig(CONFIG_FILE);
+
+  // Check configuration
+  if (!config)
+  {
+    QMessageBox::critical(
+      window, "Configuration error",
+      QString("No configuration data was found. Looking for \"")
+      + CONFIG_FILE + "\". Please check your installation.");
+    return false;
+  }
+
+  if (!initialize_cameras_landmarks::check_nested_algo_configuration(BLOCK, config))
+  {
+    QMessageBox::critical(
+      window, "Configuration error",
+      "An error was found in the algorithm configuration.");
+    return false;
+  }
+
+  // Create algorithm from configuration
+  initialize_cameras_landmarks::set_nested_algo_configuration(BLOCK, config, d->algorithm);
+
+  // Hand off to base class
+  return AbstractTool::execute(window);
+}
+
+//-----------------------------------------------------------------------------
+void InitCamerasLandmarksTool::run()
+{
+  QTE_D();
+
+  auto cp = this->cameras();
+  auto lp = this->landmarks();
+  auto tp = this->tracks();
+
+  d->algorithm->initialize(cp, lp, tp);
+
+  this->updateCameras(cp);
+  this->updateLandmarks(lp);
+  this->updateTracks(tp);
+}

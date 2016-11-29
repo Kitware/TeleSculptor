@@ -35,6 +35,7 @@
 
 #include "tools/BundleAdjustTool.h"
 #include "tools/CanonicalTransformTool.h"
+#include "tools/InitCamerasLandmarksTool.h"
 #include "tools/NeckerReversalTool.h"
 
 #include "AboutDialog.h"
@@ -597,6 +598,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   d->addTool(new BundleAdjustTool(this), this);
   d->addTool(new CanonicalTransformTool(this), this);
+  d->addTool(new InitCamerasLandmarksTool(this), this);
   d->addTool(new NeckerReversalTool(this), this);
 
   d->UI.menuView->addSeparator();
