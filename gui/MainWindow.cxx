@@ -403,16 +403,24 @@ void MainWindowPrivate::updateCameras(
   foreach (auto const& iter, cameras->cameras())
   {
     auto const index = static_cast<int>(iter.first);
-    if (index >= 0 && index < cameraCount)
+    if (index >= 0 && index < cameraCount && iter.second)
     {
       auto& cd = this->cameras[index];
-      if (cd.camera)
+      if (!cd.camera)
       {
-        cd.camera->SetCamera(iter.second);
-        cd.camera->Update();
-
-        allowExport = allowExport || iter.second;
+        cd.camera = vtkSmartPointer<vtkMaptkCamera>::New();
+        this->UI.worldView->addCamera(cd.id, cd.camera);
       }
+      cd.camera->SetCamera(iter.second);
+      cd.camera->Update();
+
+      if (cd.id == this->activeCameraIndex)
+      {
+        this->UI.worldView->setActiveCamera(cd.camera);
+        this->updateCameraView();
+      }
+
+      allowExport = allowExport || iter.second;
     }
   }
 
