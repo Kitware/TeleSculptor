@@ -49,12 +49,15 @@
 #include <vital/io/track_set_io.h>
 #include <arrows/core/match_matrix.h>
 
+#include <vtkGeometryFilter.h>
 #include <vtkImageData.h>
 #include <vtkImageReader2.h>
 #include <vtkImageReader2Collection.h>
 #include <vtkImageReader2Factory.h>
 #include <vtkNew.h>
+#include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
+#include <vtkXMLImageDataReader.h>
 
 #include <qtEnumerate.h>
 #include <qtIndexRange.h>
@@ -244,6 +247,8 @@ public:
 
   void loadImage(QString const& path, vtkMaptkCamera* camera);
 
+  void loadDepthMap(QString const& imagePath);
+
   void setActiveTool(AbstractTool* tool);
 
   // Member variables
@@ -267,6 +272,9 @@ public:
 
   QQueue<int> orphanImages;
   QQueue<int> orphanCameras;
+
+  vtkNew<vtkXMLImageDataReader> depthReader;
+  vtkNew<vtkGeometryFilter> depthGeometryFilter;
 };
 
 QTE_IMPLEMENT_D_FUNC(MainWindow)
@@ -428,8 +436,7 @@ void MainWindowPrivate::setActiveCamera(int id)
   auto& cd = this->cameras[id];
   if (!cd.depthMapPath.isEmpty())
   {
-    UI.depthMapView->setDepthMap(cd.depthMapPath);
-    UI.worldView->setActiveDepthMap(cd.camera, cd.depthMapPath);
+    this->loadDepthMap(cd.depthMapPath);
   }
 }
 
@@ -566,6 +573,22 @@ void MainWindowPrivate::loadImage(QString const& path, vtkMaptkCamera* camera)
   }
 }
 
+
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::loadDepthMap(QString const& imagePath)
+{
+  this->depthReader->SetFileName(qPrintable(imagePath));
+
+  // Make sure we've hooked up the reader (initially connected to a dummy
+  // polydata to avoid vtk complaints)
+  this->depthGeometryFilter->SetInputConnection(
+    this->depthReader->GetOutputPort());
+
+  this->UI.depthMapView->updateView(true);
+  this->UI.worldView->updateDepthMap(
+    this->cameras[this->activeCameraIndex].camera);
+}
+
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::setActiveTool(AbstractTool* tool)
 {
@@ -646,6 +669,9 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           d->UI.depthMapView,
           SLOT(updateThresholds(double, double, double, double)));
 
+  connect(d->UI.depthMapViewDock, SIGNAL(visibilityChanged(bool)),
+          d->UI.depthMapView, SLOT(updateView(bool)));
+
   this->setSlideDelay(d->UI.slideDelay->value());
 
 #ifdef VTKWEBGLEXPORTER
@@ -671,6 +697,12 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->UI.worldView->setBackgroundColor(*d->viewBackgroundColor);
   d->UI.cameraView->setBackgroundColor(*d->viewBackgroundColor);
   d->UI.depthMapView->setBackgroundColor(*d->viewBackgroundColor);
+
+  // Hookup basic depth pipeline and pass geometry filter to relevant views
+  vtkNew<vtkPolyData> emptyPolyData;
+  d->depthGeometryFilter->SetInputData(emptyPolyData.GetPointer());
+  d->UI.worldView->setDepthGeometryFilter(d->depthGeometryFilter.GetPointer());
+  d->UI.depthMapView->setDepthGeometryFilter(d->depthGeometryFilter.GetPointer());
 
   d->UI.worldView->resetView();
 }
@@ -810,11 +842,7 @@ void MainWindow::loadProject(QString const& path)
 
     if (i == d->activeCameraIndex)
     {
-      d->UI.worldView->setActiveDepthMap(
-        d->cameras[d->activeCameraIndex].camera, dm.value());
-
-      d->UI.depthMapView->setDepthMap(dm.value());
-      d->UI.depthMapView->resetView();
+      d->loadDepthMap(dm.value());
     }
   }
 
