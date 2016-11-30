@@ -28,5 +28,19 @@ Tools
    this same option can be used to read an origin location in to specify the
    origin point manually.
 
+Visualization Application
+
+ * Extended the tool framework in the GUI to handle callbacks from the tools
+   to allow some tools to provide updated visualization of intermediate results
+   while they are still running.  Also extended the tool framework to allow
+   creatiion of new cameras and landmarks, not just update existing ones.
+
+ * Add visualization of intermediate results of the bundle adjustment tool
+   using a callback.
+
+ * Added a camera and landmark initialization tool that creates cameras
+   and landmarks starting with just tracks. It uses callbacks to show
+   intermediate results.
+
 Fixes since last public release
 -------------------------------
