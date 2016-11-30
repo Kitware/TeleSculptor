@@ -151,7 +151,22 @@ void BundleAdjustTool::run()
 
   d->algorithm->optimize(cp, lp, tp);
 
-  this->updateCameras(cp);
-  this->updateLandmarks(lp);
-  this->updateTracks(tp);
+  {
+    QMutexLocker locker(&this->mutex);
+    this->updateCameras(cp);
+    this->updateLandmarks(lp);
+  }
+}
+
+//-----------------------------------------------------------------------------
+bool BundleAdjustTool::callback_handler(camera_map_sptr cameras,
+                                        landmark_map_sptr landmarks)
+{
+  {
+    QMutexLocker locker(&this->mutex);
+    this->setCameras(cameras);
+    this->setLandmarks(landmarks);
+  }
+  emit updated();
+  return !this->terminationRequested();
 }

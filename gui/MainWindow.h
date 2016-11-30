@@ -78,7 +78,9 @@ protected slots:
   void nextSlide();
 
   void executeTool(QObject*);
+  void acceptToolFinalResults();
   void acceptToolResults();
+  void updateToolResults();
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(MainWindow)

@@ -36,13 +36,16 @@
 class AbstractToolPrivate : public QThread
 {
 public:
-  AbstractToolPrivate(AbstractTool* q) : q_ptr(q) {}
+  AbstractToolPrivate(AbstractTool* q)
+    : terminationRequested(false), q_ptr(q) {}
 
   virtual void run() QTE_OVERRIDE;
 
   kwiver::vital::track_set_sptr tracks;
   kwiver::vital::camera_map_sptr cameras;
   kwiver::vital::landmark_map_sptr landmarks;
+
+  bool terminationRequested;
 
 protected:
   QTE_DECLARE_PUBLIC_PTR(AbstractTool)
@@ -92,6 +95,13 @@ AbstractTool::landmark_map_sptr AbstractTool::landmarks() const
 {
   QTE_D();
   return d->landmarks;
+}
+
+//-----------------------------------------------------------------------------
+void AbstractTool::requestTermination()
+{
+  QTE_D();
+  d->terminationRequested = true;
 }
 
 //-----------------------------------------------------------------------------
@@ -157,6 +167,7 @@ bool AbstractTool::execute(QWidget* window)
   QTE_D();
 
   d->start();
+  d->terminationRequested = false;
   return true;
 }
 
@@ -200,4 +211,12 @@ void AbstractTool::updateLandmarks(landmark_map_sptr const& newLandmarks)
 {
   QTE_D();
   d->landmarks = newLandmarks;
+}
+
+//-----------------------------------------------------------------------------
+/// Return true if early termination of the tool has been requested
+bool AbstractTool::terminationRequested() const
+{
+  QTE_D();
+  return d->terminationRequested;
 }

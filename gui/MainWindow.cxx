@@ -259,6 +259,9 @@ public:
 
   AbstractTool* activeTool;
   QList<AbstractTool*> tools;
+  kwiver::vital::camera_map_sptr toolUpdateCameras;
+  kwiver::vital::landmark_map_sptr toolUpdateLandmarks;
+  kwiver::vital::track_set_sptr toolUpdateTracks;
 
   QList<CameraData> cameras;
   kwiver::vital::track_set_sptr tracks;
@@ -281,8 +284,10 @@ void MainWindowPrivate::addTool(AbstractTool* tool, MainWindow* mainWindow)
 
   QObject::connect(tool, SIGNAL(triggered()),
                    &this->toolDispatcher, SLOT(map()));
-  QObject::connect(tool, SIGNAL(completed()),
+  QObject::connect(tool, SIGNAL(updated()),
                    mainWindow, SLOT(acceptToolResults()));
+  QObject::connect(tool, SIGNAL(completed()),
+                   mainWindow, SLOT(acceptToolFinalResults()));
 
   this->tools.append(tool);
 }
@@ -1148,33 +1153,89 @@ void MainWindow::executeTool(QObject* object)
 }
 
 //-----------------------------------------------------------------------------
+void MainWindow::acceptToolFinalResults()
+{
+  QTE_D();
+  acceptToolResults();
+  d->setActiveTool(0);
+}
+
+//-----------------------------------------------------------------------------
 void MainWindow::acceptToolResults()
 {
   QTE_D();
+  // if all the update variables are Null then trigger a GUI update after
+  // extracting the data otherwise we've already triggered an update that
+  // hasn't happened yet, so don't trigger another
+  bool updateNeeded = !d->toolUpdateCameras &&
+                      !d->toolUpdateLandmarks &&
+                      !d->toolUpdateTracks;
 
   if (d->activeTool)
   {
+    QMutexLocker locker(&d->activeTool->mutex);
     auto const outputs = d->activeTool->outputs();
 
+    d->toolUpdateCameras = NULL;
+    d->toolUpdateLandmarks = NULL;
+    d->toolUpdateTracks = NULL;
     if (outputs.testFlag(AbstractTool::Cameras))
     {
-      d->updateCameras(d->activeTool->cameras());
+      d->toolUpdateCameras = d->activeTool->cameras();
     }
     if (outputs.testFlag(AbstractTool::Landmarks))
     {
-      d->landmarks = d->activeTool->landmarks();
-      d->UI.worldView->setLandmarks(*d->landmarks);
-
-      d->UI.actionExportLandmarks->setEnabled(
-        d->landmarks && d->landmarks->size());
+      d->toolUpdateLandmarks = d->activeTool->landmarks();
     }
-
-    if (!d->cameras.isEmpty())
+    if (outputs.testFlag(AbstractTool::Tracks))
     {
-      d->setActiveCamera(d->activeCameraIndex);
+      d->toolUpdateTracks = d->activeTool->tracks();
     }
   }
-  d->setActiveTool(0);
+
+  if(updateNeeded)
+  {
+    QTimer::singleShot(1000, this, SLOT(updateToolResults()));
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::updateToolResults()
+{
+  QTE_D();
+
+  if (d->toolUpdateCameras)
+  {
+    d->updateCameras(d->toolUpdateCameras);
+    d->toolUpdateCameras = NULL;
+  }
+  if (d->toolUpdateLandmarks)
+  {
+    d->landmarks = d->toolUpdateLandmarks;
+    d->UI.worldView->setLandmarks(*d->landmarks);
+
+    d->UI.actionExportLandmarks->setEnabled(
+      d->landmarks && d->landmarks->size());
+    d->toolUpdateLandmarks = NULL;
+  }
+  if (d->toolUpdateTracks)
+  {
+    d->tracks = d->toolUpdateTracks;
+    d->updateCameraView();
+
+    foreach (auto const& track, d->tracks->tracks())
+    {
+      d->UI.cameraView->addFeatureTrack(*track);
+    }
+
+    d->UI.actionShowMatchMatrix->setEnabled(!d->tracks->tracks().empty());
+    d->toolUpdateTracks = NULL;
+  }
+
+  if (!d->cameras.isEmpty())
+  {
+    d->setActiveCamera(d->activeCameraIndex);
+  }
 }
 
 //-----------------------------------------------------------------------------

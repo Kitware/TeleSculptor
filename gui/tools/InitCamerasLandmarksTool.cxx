@@ -137,6 +137,13 @@ bool InitCamerasLandmarksTool::execute(QWidget* window)
   // Create algorithm from configuration
   initialize_cameras_landmarks::set_nested_algo_configuration(BLOCK, config, d->algorithm);
 
+  // Set the callback to receive updates
+  using std::placeholders::_1;
+  using std::placeholders::_2;
+  typedef initialize_cameras_landmarks::callback_t callback_t;
+  callback_t cb = std::bind(&InitCamerasLandmarksTool::callback_handler, this, _1, _2);
+  d->algorithm->set_callback(cb);
+
   // Hand off to base class
   return AbstractTool::execute(window);
 }
@@ -152,7 +159,22 @@ void InitCamerasLandmarksTool::run()
 
   d->algorithm->initialize(cp, lp, tp);
 
-  this->updateCameras(cp);
-  this->updateLandmarks(lp);
-  this->updateTracks(tp);
+  {
+    QMutexLocker locker(&this->mutex);
+    this->updateCameras(cp);
+    this->updateLandmarks(lp);
+  }
+}
+
+//-----------------------------------------------------------------------------
+bool InitCamerasLandmarksTool::callback_handler(camera_map_sptr cameras,
+                                                landmark_map_sptr landmarks)
+{
+  {
+    QMutexLocker locker(&this->mutex);
+    this->setCameras(cameras);
+    this->setLandmarks(landmarks);
+  }
+  emit updated();
+  return !this->terminationRequested();
 }

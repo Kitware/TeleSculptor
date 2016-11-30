@@ -36,6 +36,7 @@
 #include <vital/types/track_set.h>
 
 #include <qtGlobal.h>
+#include <QMutex>
 
 #include <QtGui/QAction>
 
@@ -124,9 +125,17 @@ public:
   ///          as doing so may not be thread safe.
   landmark_map_sptr landmarks() const;
 
+  /// A mutex for serialization between threads
+  QMutex mutex;
+
+  /// Call this function to request early termination of the tool if supported
+  void requestTermination();
+
 signals:
   /// Emitted when the tool execution is completed.
   void completed();
+  /// Emitted when an intermediate update of the data is available to show progress.
+  void updated();
 
 protected:
   /// Execute the tool.
@@ -170,6 +179,9 @@ protected:
   /// This sets the landmarks that are produced by the tool as output. Unlike
   /// setCameras, this does not make a deep copy of the provided landmarks.
   void updateLandmarks(landmark_map_sptr const&);
+
+  /// Return true if early termination of the tool has been requested
+  bool terminationRequested() const;
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(AbstractTool)
