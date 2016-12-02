@@ -7,3 +7,11 @@ MAP-Tk v0.9.1 is a bug fix release with no new functionality.
 
 Fixes since v0.9.0
 --------------------
+
+Ceres Plugin
+
+ * Fixed an assertion from Ceres that caused program termination due to adding
+   constraints on camera intrinsics that were not used in the optimization.
+   We now keep track of which intrinsics are used and only constrain those.
+   The error message was:
+   "problem_impl.cc:65 Check failed: it != parameter_map.end() Parameter block not found"
