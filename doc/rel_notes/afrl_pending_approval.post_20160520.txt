@@ -35,6 +35,10 @@ Visualization Application
    while they are still running.  Also extended the tool framework to allow
    creatiion of new cameras and landmarks, not just update existing ones.
 
+ * Added a cancel option for GUI computation tools which run for a long time
+   and use callbacks to provide updates.  The cancel button allows for early
+   termination of those tools.
+
  * Add visualization of intermediate results of the bundle adjustment tool
    using a callback.
 
