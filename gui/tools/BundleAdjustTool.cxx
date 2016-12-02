@@ -168,5 +168,5 @@ bool BundleAdjustTool::callback_handler(camera_map_sptr cameras,
     this->setLandmarks(landmarks);
   }
   emit updated();
-  return !this->terminationRequested();
+  return !this->isCanceled();
 }

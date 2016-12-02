@@ -65,6 +65,13 @@ public:
   /// Get the types of output produced by the tool.
   virtual Outputs outputs() const = 0;
 
+  /// Get if the tool can be canceled.
+  ///
+  /// This method must be overridden by tool implementations. It should return
+  /// \c false if the tool cannot be interrupted by the user. A return value of
+  /// \c true implies that calling cancel() may have an effect.
+  virtual bool isCancelable() = 0;
+
   /// Set the tracks to be used as input to the tool.
   void setTracks(track_set_sptr const&);
 
@@ -128,14 +135,23 @@ public:
   /// A mutex for serialization between threads
   QMutex mutex;
 
-  /// Call this function to request early termination of the tool if supported
-  void requestTermination();
-
 signals:
   /// Emitted when the tool execution is completed.
   void completed();
   /// Emitted when an intermediate update of the data is available to show progress.
   void updated();
+
+  /// Emitted when the tool execution terminates due to user cancellation.
+  void canceled();
+
+public slots:
+  /// Ask the tool to cancel execution.
+  ///
+  /// This sets a flag indicating that the user has requested the tool
+  /// execution should halt. The tool may or may not honor such a request.
+  ///
+  /// \sa canceled, isCancelable
+  virtual void cancel();
 
 protected:
   /// Execute the tool.
@@ -143,6 +159,9 @@ protected:
   /// This method must be overridden by tool implementations. The default
   /// implementation of execute() calls this method in a separate thread.
   virtual void run() = 0;
+
+  /// Check if the user has requested that tool execution be canceled.
+  bool isCanceled() const;
 
   /// Test if the tool has track data.
   ///
@@ -179,9 +198,6 @@ protected:
   /// This sets the landmarks that are produced by the tool as output. Unlike
   /// setCameras, this does not make a deep copy of the provided landmarks.
   void updateLandmarks(landmark_map_sptr const&);
-
-  /// Return true if early termination of the tool has been requested
-  bool terminationRequested() const;
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(AbstractTool)

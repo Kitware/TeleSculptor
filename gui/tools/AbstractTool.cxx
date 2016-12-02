@@ -32,12 +32,13 @@
 
 #include <QtCore/QThread>
 
+#include <atomic>
+
 //-----------------------------------------------------------------------------
 class AbstractToolPrivate : public QThread
 {
 public:
-  AbstractToolPrivate(AbstractTool* q)
-    : terminationRequested(false), q_ptr(q) {}
+  AbstractToolPrivate(AbstractTool* q) : q_ptr(q) {}
 
   virtual void run() QTE_OVERRIDE;
 
@@ -45,7 +46,7 @@ public:
   kwiver::vital::camera_map_sptr cameras;
   kwiver::vital::landmark_map_sptr landmarks;
 
-  bool terminationRequested;
+  std::atomic<bool> cancelRequested;
 
 protected:
   QTE_DECLARE_PUBLIC_PTR(AbstractTool)
@@ -98,10 +99,10 @@ AbstractTool::landmark_map_sptr AbstractTool::landmarks() const
 }
 
 //-----------------------------------------------------------------------------
-void AbstractTool::requestTermination()
+void AbstractTool::cancel()
 {
   QTE_D();
-  d->terminationRequested = true;
+  d->cancelRequested = true;
 }
 
 //-----------------------------------------------------------------------------
@@ -166,9 +167,16 @@ bool AbstractTool::execute(QWidget* window)
 {
   QTE_D();
 
+  d->cancelRequested = false;
   d->start();
-  d->terminationRequested = false;
   return true;
+}
+
+//-----------------------------------------------------------------------------
+bool AbstractTool::isCanceled() const
+{
+  QTE_D();
+  return d->cancelRequested;
 }
 
 //-----------------------------------------------------------------------------
@@ -211,12 +219,4 @@ void AbstractTool::updateLandmarks(landmark_map_sptr const& newLandmarks)
 {
   QTE_D();
   d->landmarks = newLandmarks;
-}
-
-//-----------------------------------------------------------------------------
-/// Return true if early termination of the tool has been requested
-bool AbstractTool::terminationRequested() const
-{
-  QTE_D();
-  return d->terminationRequested;
 }

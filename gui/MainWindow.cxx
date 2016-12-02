@@ -257,6 +257,7 @@ public:
   QTimer slideTimer;
   QSignalMapper toolDispatcher;
 
+  QAction* toolSeparator;
   AbstractTool* activeTool;
   QList<AbstractTool*> tools;
   kwiver::vital::camera_map_sptr toolUpdateCameras;
@@ -278,7 +279,7 @@ QTE_IMPLEMENT_D_FUNC(MainWindow)
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::addTool(AbstractTool* tool, MainWindow* mainWindow)
 {
-  this->UI.menuCompute->addAction(tool);
+  this->UI.menuCompute->insertAction(this->toolSeparator, tool);
 
   this->toolDispatcher.setMapping(tool, tool);
 
@@ -583,13 +584,26 @@ void MainWindowPrivate::loadImage(QString const& path, vtkMaptkCamera* camera)
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::setActiveTool(AbstractTool* tool)
 {
+  // Disconnect cancel action
+  QObject::disconnect(this->UI.actionCancelComputation, 0, this->activeTool, 0);
+
+  // Update current tool
   this->activeTool = tool;
 
+  // Connect cancel action
+  if (tool)
+  {
+    QObject::connect(this->UI.actionCancelComputation, SIGNAL(triggered()),
+                     tool, SLOT(cancel()));
+  }
+
   auto const enableTools = !tool;
+  auto const enableCancel = tool && tool->isCancelable();
   foreach (auto const& tool, this->tools)
   {
     tool->setEnabled(enableTools);
   }
+  this->UI.actionCancelComputation->setEnabled(enableCancel);
   this->UI.actionOpen->setEnabled(enableTools);
 }
 
@@ -608,6 +622,9 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   // Set up UI
   d->UI.setupUi(this);
   d->AM.setupActions(d->UI, this);
+
+  d->toolSeparator =
+    d->UI.menuCompute->insertSeparator(d->UI.actionCancelComputation);
 
   d->addTool(new BundleAdjustTool(this), this);
   d->addTool(new CanonicalTransformTool(this), this);
