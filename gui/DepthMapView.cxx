@@ -38,6 +38,7 @@
 #include <vtkCamera.h>
 #include <vtkGeometryFilter.h>
 #include <vtkImageData.h>
+#include <vtkImageDataGeometryFilter.h>
 #include <vtkInteractorStyleRubberBand2D.h>
 #include <vtkNew.h>
 #include <vtkPolyData.h>
@@ -64,6 +65,7 @@ public:
   void setPopup(QAction* action, QWidget* widget);
 
   bool viewNeedsReset;
+  bool pipelineConnected;
 
   Ui::DepthMapView UI;
 
@@ -75,7 +77,7 @@ public:
 
   DepthMapViewOptions* depthMapViewOptions;
 
-  vtkSmartPointer<vtkGeometryFilter> inputDepthGeometryFilter;
+  vtkSmartPointer<vtkImageDataGeometryFilter> inputDepthGeometryFilter;
 };
 
 //-----------------------------------------------------------------------------
@@ -112,6 +114,7 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   QTE_D();
 
   d->viewNeedsReset = true;
+  d->pipelineConnected = false;
 
   // Set up UI
   d->UI.setupUi(this);
@@ -193,12 +196,27 @@ DepthMapView::~DepthMapView()
 {
 }
 
+
+//-----------------------------------------------------------------------------
+void DepthMapView::connectPipeline()
+{
+  QTE_D();
+
+  if (!d->inputDepthGeometryFilter || d->pipelineConnected)
+  {
+    return;
+  }
+
+  d->mapper->SetInputConnection(d->inputDepthGeometryFilter->GetOutputPort());
+  d->pipelineConnected = true;
+}
+
 //-----------------------------------------------------------------------------
 void DepthMapView::updateView(bool processUpdate)
 {
   QTE_D();
 
-  if (processUpdate && d->inputDepthGeometryFilter && this->isVisible())
+  if (processUpdate && d->pipelineConnected && this->isVisible())
   {
     // Reset the depth view if the bounds from the geometry filter prior to
     // update are invalid
@@ -210,14 +228,6 @@ void DepthMapView::updateView(bool processUpdate)
     }
 
     d->inputDepthGeometryFilter->Update();
-
-    // We may call this function without having setup the reader, so if the
-    // bounds are invalid, return
-    bounds = d->inputDepthGeometryFilter->GetOutput()->GetBounds();
-    if (bounds[0] > bounds[1])
-    {
-      return;
-    }
 
     d->depthMapViewOptions->updateRanges(
       d->inputDepthGeometryFilter->GetOutput()->GetPointData());
@@ -243,18 +253,12 @@ void DepthMapView::setBackgroundColor(QColor const& color)
 }
 
 //-----------------------------------------------------------------------------
-void DepthMapView::setDepthGeometryFilter(vtkGeometryFilter* geometryFilter)
+void DepthMapView::setDepthGeometryFilter(vtkImageDataGeometryFilter* geometryFilter)
 {
   QTE_D();
 
   if (d->inputDepthGeometryFilter != geometryFilter)
   {
-    if (geometryFilter != NULL)
-    {
-      d->mapper->SetInputConnection(geometryFilter->GetOutputPort());
-      // Do we need to do anything special if the depth filter has changed?
-      // As currently used, the answer is "no".
-    }
     d->inputDepthGeometryFilter = geometryFilter;
   }
 }

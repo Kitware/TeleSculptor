@@ -49,7 +49,7 @@
 #include <vital/io/track_set_io.h>
 #include <arrows/core/match_matrix.h>
 
-#include <vtkGeometryFilter.h>
+#include <vtkImageDataGeometryFilter.h>
 #include <vtkImageData.h>
 #include <vtkImageReader2.h>
 #include <vtkImageReader2Collection.h>
@@ -274,7 +274,7 @@ public:
   QQueue<int> orphanCameras;
 
   vtkNew<vtkXMLImageDataReader> depthReader;
-  vtkNew<vtkGeometryFilter> depthGeometryFilter;
+  vtkNew<vtkImageDataGeometryFilter> depthGeometryFilter;
 };
 
 QTE_IMPLEMENT_D_FUNC(MainWindow)
@@ -579,10 +579,9 @@ void MainWindowPrivate::loadDepthMap(QString const& imagePath)
 {
   this->depthReader->SetFileName(qPrintable(imagePath));
 
-  // Make sure we've hooked up the reader (initially connected to a dummy
-  // polydata to avoid vtk complaints)
-  this->depthGeometryFilter->SetInputConnection(
-    this->depthReader->GetOutputPort());
+  // Once we have a filename set, we can execute the depth pipeline
+  this->UI.depthMapView->connectPipeline();
+  this->UI.worldView->enableDepthProcessing();
 
   this->UI.depthMapView->updateView(true);
   this->UI.worldView->updateDepthMap(
@@ -699,8 +698,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->UI.depthMapView->setBackgroundColor(*d->viewBackgroundColor);
 
   // Hookup basic depth pipeline and pass geometry filter to relevant views
-  vtkNew<vtkPolyData> emptyPolyData;
-  d->depthGeometryFilter->SetInputData(emptyPolyData.GetPointer());
+  d->depthGeometryFilter->SetInputConnection(d->depthReader->GetOutputPort());
   d->UI.worldView->setDepthGeometryFilter(d->depthGeometryFilter.GetPointer());
   d->UI.depthMapView->setDepthGeometryFilter(d->depthGeometryFilter.GetPointer());
 

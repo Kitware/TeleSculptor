@@ -52,6 +52,7 @@
 #include <vtkGeometryFilter.h>
 #include <vtkImageActor.h>
 #include <vtkImageData.h>
+#include <vtkImageDataGeometryFilter.h>
 #include <vtkMatrix4x4.h>
 #include <vtkNew.h>
 #include <vtkPlaneSource.h>
@@ -148,10 +149,12 @@ public:
   vtkNew<vtkPolyData> currentDepthMap;
 
   vtkTimeStamp DepthMapExecutionTimeStamp;
-  vtkSmartPointer<vtkGeometryFilter> inputDepthGeometryFilter;
+  vtkSmartPointer<vtkImageDataGeometryFilter> inputDepthGeometryFilter;
   vtkNew<vtkActor> depthMapActor;
 
   vtkMaptkCamera* currentCamera;
+
+  bool depthProcessingEnabled;
 
   bool validImage;
   bool validTransform;
@@ -454,6 +457,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->renderer->AddActor(d->cubeAxesActor.GetPointer());
 
   // Setup DepthMap actor
+  d->depthProcessingEnabled = false;
   vtkNew<vtkPolyDataMapper> mapper;
   mapper->SetInputData(d->currentDepthMap.GetPointer());
   mapper->SetColorModeToDirectScalars();
@@ -474,7 +478,15 @@ void WorldView::setBackgroundColor(QColor const& color)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::setDepthGeometryFilter(vtkGeometryFilter* geometryFilter)
+void WorldView::enableDepthProcessing()
+{
+  QTE_D();
+
+  d->depthProcessingEnabled = true;
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::setDepthGeometryFilter(vtkImageDataGeometryFilter* geometryFilter)
 {
   QTE_D();
 
@@ -487,6 +499,11 @@ void WorldView::updateDepthMap(vtkMaptkCamera* camera)
   QTE_D();
 
   d->currentCamera = camera;
+
+  if (!d->depthProcessingEnabled)
+  {
+    return;
+  }
 
   if (!d->inputDepthGeometryFilter)
   {
