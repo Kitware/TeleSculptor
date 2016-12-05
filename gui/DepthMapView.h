@@ -62,8 +62,6 @@ private:
   QTE_DECLARE_PRIVATE(DepthMapView)
 
   QTE_DISABLE_COPY(DepthMapView)
-
-  vtkGeometryFilter* DepthGeometryFilter;
 };
 
 #endif
