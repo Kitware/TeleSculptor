@@ -73,7 +73,7 @@ public slots:
 
   void setPerspective(bool);
 
-  void setActiveCamera(vtkMaptkCamera* camera);
+  void setActiveCamera(int id);
 
   void resetView();
   void resetViewToLandmarks();

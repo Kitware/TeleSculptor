@@ -305,7 +305,7 @@ void MainWindowPrivate::addCamera(kwiver::vital::camera_sptr const& camera)
   this->UI.worldView->addCamera(cd.id, cd.camera);
   if (cd.id == this->activeCameraIndex)
   {
-    this->UI.worldView->setActiveCamera(cd.camera);
+    this->UI.worldView->setActiveCamera(cd.id);
     this->updateCameraView();
   }
 }
@@ -422,7 +422,7 @@ void MainWindowPrivate::updateCameras(
 void MainWindowPrivate::setActiveCamera(int id)
 {
   this->activeCameraIndex = id;
-  this->UI.worldView->setActiveCamera(this->cameras[id].camera);
+  this->UI.worldView->setActiveCamera(id);
   this->updateCameraView();
 
   auto& cd = this->cameras[id];
