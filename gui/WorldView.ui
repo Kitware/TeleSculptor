@@ -256,7 +256,7 @@
     <string>Depth Map</string>
    </property>
    <property name="toolTip">
-    <string>Toggles dempthmaps display</string>
+    <string>Toggles depth maps display</string>
    </property>
   </action>
  </widget>
