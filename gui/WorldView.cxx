@@ -524,7 +524,6 @@ void WorldView::updateDepthMap(vtkMaptkCamera* camera)
 
     auto const width = readerOutput->GetDimensions()[0];
     auto const height = readerOutput->GetDimensions()[1];
-    qDebug() << "point counts:" << width * height << pointCount;
 
     vtkNew<vtkPoints> points;
 
