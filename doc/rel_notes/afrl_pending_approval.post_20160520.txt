@@ -46,5 +46,19 @@ Visualization Application
    and landmarks starting with just tracks. It uses callbacks to show
    intermediate results.
 
+ * Added an icon in the GUI for the depth map.
+
+
 Fixes since last public release
 -------------------------------
+
+Visualization Application
+
+ * Removed duplicate loading and filtering of depth maps between the World view
+   and Depth Map view.  This makes it twice as fast.
+
+ * Fixed a bug where depth map loading was printing an error message about not
+   being able to load "" when there is no depth map on the first frame.
+
+ * Fixed a bug where the depth map view bounds were not properly set when
+   loading the first depth map after the first frame.
