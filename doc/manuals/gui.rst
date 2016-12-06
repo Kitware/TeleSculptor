@@ -146,8 +146,8 @@ colored by the RGB color values of the corresponding video frame.  A filter
 option is also available to remove depth points based on thresholds on various
 attriutes.  Currently these attributes are the Uniqueness Ratio and Best Cost
 Value.  Images of these attibutes as well as the depth map itself are also
-shown in the DepthMap View and the filter options selected here apply to that
-view as well.  See `DepthMap View`_.
+shown in the Depth Map View and the filter options selected here apply to that
+view as well.  See `Depth Map View`_.
 
 
 Camera View
@@ -203,20 +203,20 @@ changed, as well as whether to show trails only for lower-numbered frames
 ("historic" mode), or for all adjacent frames ("symmetric" mode). In all cases,
 trails are displayed only for active feature points.
 
-DepthMap View
-=============
+Depth Map View
+==============
 
-The DepthMap View provides an image viewer similar to the Camera View but
+The Depth Map View provides an image viewer similar to the Camera View but
 specialized to display depth map images.  Depth map images are loaded from
 VTK image (.vti) files associated with a particular video frame.  Often
 there are only depth maps on a subset of frames.  The active (or most recent)
 depth maps is displayed in this view by mapping depth to color.
-The DepthMap View can also display image of other attributes associated
+The Depth Map View can also display image of other attributes associated
 with the depth map such as the image color.  Some attributes like uniqueness
 and best cost are associated with the algorithms used to generate the depth.
 The same depth maps can be rendered in the World View as a point cloud.
 Furthermore, depth map filtering options in the World View also apply to the
-image rendering of the depth map in the DepthMap View.
+image rendering of the depth map in the Depth Map View.
 Depth maps are currently not produced by MAP-Tk but require third-party
 software to take MAP-Tk cameras and images to produce them.
 
