@@ -49,6 +49,8 @@
 #include <vital/io/track_set_io.h>
 #include <arrows/core/match_matrix.h>
 
+#include <vtksys/SystemTools.hxx>
+
 #include <vtkImageDataGeometryFilter.h>
 #include <vtkImageData.h>
 #include <vtkImageReader2.h>
@@ -577,6 +579,12 @@ void MainWindowPrivate::loadImage(QString const& path, vtkMaptkCamera* camera)
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::loadDepthMap(QString const& imagePath)
 {
+  if (!vtksys::SystemTools::FileExists(qPrintable(imagePath), true))
+  {
+    qWarning() << "File doesn't exist: " << imagePath;
+    return;
+  }
+
   this->depthReader->SetFileName(qPrintable(imagePath));
 
   // Once we have a filename set, we can execute the depth pipeline
