@@ -430,7 +430,7 @@ void MainWindowPrivate::updateCameras(
 
       if (cd.id == this->activeCameraIndex)
       {
-        this->UI.worldView->setActiveCamera(cd.camera);
+        this->UI.worldView->setActiveCamera(cd.id);
         this->updateCameraView();
       }
 
