@@ -34,8 +34,10 @@
 #include <qtGlobal.h>
 
 #include <QMainWindow>
+#include <memory>
 
 class MainWindowPrivate;
+class ToolData;
 
 class MainWindow : public QMainWindow
 {
@@ -79,7 +81,7 @@ protected slots:
 
   void executeTool(QObject*);
   void acceptToolFinalResults();
-  void acceptToolResults();
+  void acceptToolResults(std::shared_ptr<ToolData> data);
   void updateToolResults();
 
 private:

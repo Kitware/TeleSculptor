@@ -36,7 +36,6 @@
 #include <vital/types/track_set.h>
 
 #include <qtGlobal.h>
-#include <QMutex>
 
 #include <QtGui/QAction>
 
@@ -94,6 +93,9 @@ public:
   /// \c false if the tool cannot be interrupted by the user. A return value of
   /// \c true implies that calling cancel() may have an effect.
   virtual bool isCancelable() = 0;
+
+  /// Return a shared pointer to the tools data
+  std::shared_ptr<ToolData> toolData();
 
   /// Set the tracks to be used as input to the tool.
   void setTracks(track_set_sptr const&);
@@ -155,14 +157,11 @@ public:
   ///          as doing so may not be thread safe.
   landmark_map_sptr landmarks() const;
 
-  /// A mutex for serialization between threads
-  QMutex mutex;
-
 signals:
   /// Emitted when the tool execution is completed.
   void completed();
   /// Emitted when an intermediate update of the data is available to show progress.
-  void updated();
+  void updated(std::shared_ptr<ToolData>);
 
   /// Emitted when the tool execution terminates due to user cancellation.
   void canceled();

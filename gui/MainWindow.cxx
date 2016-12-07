@@ -1201,12 +1201,15 @@ void MainWindow::executeTool(QObject* object)
 void MainWindow::acceptToolFinalResults()
 {
   QTE_D();
-  acceptToolResults();
+  if (d->activeTool)
+  {
+    acceptToolResults(d->activeTool->toolData());
+  }
   d->setActiveTool(0);
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::acceptToolResults()
+void MainWindow::acceptToolResults(std::shared_ptr<ToolData> data)
 {
   QTE_D();
   // if all the update variables are Null then trigger a GUI update after
@@ -1218,7 +1221,6 @@ void MainWindow::acceptToolResults()
 
   if (d->activeTool)
   {
-    QMutexLocker locker(&d->activeTool->mutex);
     auto const outputs = d->activeTool->outputs();
 
     d->toolUpdateCameras = NULL;
@@ -1226,15 +1228,15 @@ void MainWindow::acceptToolResults()
     d->toolUpdateTracks = NULL;
     if (outputs.testFlag(AbstractTool::Cameras))
     {
-      d->toolUpdateCameras = d->activeTool->cameras();
+      d->toolUpdateCameras = data->cameras;
     }
     if (outputs.testFlag(AbstractTool::Landmarks))
     {
-      d->toolUpdateLandmarks = d->activeTool->landmarks();
+      d->toolUpdateLandmarks = data->landmarks;
     }
     if (outputs.testFlag(AbstractTool::Tracks))
     {
-      d->toolUpdateTracks = d->activeTool->tracks();
+      d->toolUpdateTracks = data->tracks;
     }
   }
 

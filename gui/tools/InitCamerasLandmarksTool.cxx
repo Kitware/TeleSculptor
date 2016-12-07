@@ -199,22 +199,19 @@ void InitCamerasLandmarksTool::run()
 
   d->algorithm->initialize(cp, lp, tp);
 
-  {
-    QMutexLocker locker(&this->mutex);
-    this->updateCameras(cp);
-    this->updateLandmarks(lp);
-  }
+  this->updateCameras(cp);
+  this->updateLandmarks(lp);
 }
 
 //-----------------------------------------------------------------------------
 bool InitCamerasLandmarksTool::callback_handler(camera_map_sptr cameras,
                                                 landmark_map_sptr landmarks)
 {
-  {
-    QMutexLocker locker(&this->mutex);
-    this->setCameras(cameras);
-    this->setLandmarks(landmarks);
-  }
-  emit updated();
+  // make a copy of the tool data
+  auto data = std::make_shared<ToolData>(*this->toolData());
+  data->copyCameras(cameras);
+  data->copyLandmarks(landmarks);
+
+  emit updated(data);
   return !this->isCanceled();
 }

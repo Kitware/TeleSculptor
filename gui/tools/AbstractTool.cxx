@@ -38,11 +38,12 @@
 class AbstractToolPrivate : public QThread
 {
 public:
-  AbstractToolPrivate(AbstractTool* q) : q_ptr(q) {}
+  AbstractToolPrivate(AbstractTool* q)
+    : data(std::make_shared<ToolData>()), q_ptr(q) {}
 
   virtual void run() QTE_OVERRIDE;
 
-  ToolData data;
+  std::shared_ptr<ToolData> data;
 
   std::atomic<bool> cancelRequested;
 
@@ -133,24 +134,31 @@ AbstractTool::~AbstractTool()
 }
 
 //-----------------------------------------------------------------------------
+std::shared_ptr<ToolData> AbstractTool::toolData()
+{
+  QTE_D();
+  return d->data;
+}
+
+//-----------------------------------------------------------------------------
 kwiver::vital::track_set_sptr AbstractTool::tracks() const
 {
   QTE_D();
-  return d->data.tracks;
+  return d->data->tracks;
 }
 
 //-----------------------------------------------------------------------------
 kwiver::vital::camera_map_sptr AbstractTool::cameras() const
 {
   QTE_D();
-  return d->data.cameras;
+  return d->data->cameras;
 }
 
 //-----------------------------------------------------------------------------
 AbstractTool::landmark_map_sptr AbstractTool::landmarks() const
 {
   QTE_D();
-  return d->data.landmarks;
+  return d->data->landmarks;
 }
 
 //-----------------------------------------------------------------------------
@@ -164,21 +172,21 @@ void AbstractTool::cancel()
 void AbstractTool::setTracks(track_set_sptr const& newTracks)
 {
   QTE_D();
-  d->data.copyTracks(newTracks);
+  d->data->copyTracks(newTracks);
 }
 
 //-----------------------------------------------------------------------------
 void AbstractTool::setCameras(camera_map_sptr const& newCameras)
 {
   QTE_D();
-  d->data.copyCameras(newCameras);
+  d->data->copyCameras(newCameras);
 }
 
 //-----------------------------------------------------------------------------
 void AbstractTool::setLandmarks(landmark_map_sptr const& newLandmarks)
 {
   QTE_D();
-  d->data.copyLandmarks(newLandmarks);
+  d->data->copyLandmarks(newLandmarks);
 }
 
 //-----------------------------------------------------------------------------
@@ -202,40 +210,40 @@ bool AbstractTool::isCanceled() const
 bool AbstractTool::hasTracks() const
 {
   QTE_D();
-  return d->data.tracks && d->data.tracks->size();
+  return d->data->tracks && d->data->tracks->size();
 }
 
 //-----------------------------------------------------------------------------
 bool AbstractTool::hasCameras() const
 {
   QTE_D();
-  return d->data.cameras && d->data.cameras->size();
+  return d->data->cameras && d->data->cameras->size();
 }
 
 //-----------------------------------------------------------------------------
 bool AbstractTool::hasLandmarks() const
 {
   QTE_D();
-  return d->data.landmarks && d->data.landmarks->size();
+  return d->data->landmarks && d->data->landmarks->size();
 }
 
 //-----------------------------------------------------------------------------
 void AbstractTool::updateTracks(track_set_sptr const& newTracks)
 {
   QTE_D();
-  d->data.tracks = newTracks;
+  d->data->tracks = newTracks;
 }
 
 //-----------------------------------------------------------------------------
 void AbstractTool::updateCameras(camera_map_sptr const& newCameras)
 {
   QTE_D();
-  d->data.cameras = newCameras;
+  d->data->cameras = newCameras;
 }
 
 //-----------------------------------------------------------------------------
 void AbstractTool::updateLandmarks(landmark_map_sptr const& newLandmarks)
 {
   QTE_D();
-  d->data.landmarks = newLandmarks;
+  d->data->landmarks = newLandmarks;
 }
