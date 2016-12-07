@@ -42,9 +42,7 @@ public:
 
   virtual void run() QTE_OVERRIDE;
 
-  kwiver::vital::track_set_sptr tracks;
-  kwiver::vital::camera_map_sptr cameras;
-  kwiver::vital::landmark_map_sptr landmarks;
+  AbstractTool::Data data;
 
   std::atomic<bool> cancelRequested;
 
@@ -60,6 +58,63 @@ void AbstractToolPrivate::run()
 {
   QTE_Q();
   q->run();
+}
+
+//-----------------------------------------------------------------------------
+void AbstractTool::Data::copyTracks(track_set_sptr const& newTracks)
+{
+  if (newTracks)
+  {
+    auto copiedTracks = std::vector<kwiver::vital::track_sptr>{};
+    foreach (auto const& ti, newTracks->tracks())
+    {
+      copiedTracks.push_back(std::make_shared<kwiver::vital::track>(*ti));
+    }
+    this->tracks =
+      std::make_shared<kwiver::vital::simple_track_set>(copiedTracks);
+  }
+  else
+  {
+    this->tracks = track_set_sptr();
+  }
+}
+
+//-----------------------------------------------------------------------------
+void AbstractTool::Data::copyCameras(camera_map_sptr const& newCameras)
+{
+  if (newCameras)
+  {
+    auto copiedCameras = kwiver::vital::camera_map::map_camera_t{};
+    foreach (auto const& ci, newCameras->cameras())
+    {
+      copiedCameras.insert(std::make_pair(ci.first, ci.second->clone()));
+    }
+    this->cameras =
+      std::make_shared<kwiver::vital::simple_camera_map>(copiedCameras);
+  }
+  else
+  {
+    this->cameras = camera_map_sptr();
+  }
+}
+
+//-----------------------------------------------------------------------------
+void AbstractTool::Data::copyLandmarks(landmark_map_sptr const& newLandmarks)
+{
+  if (newLandmarks)
+  {
+    auto copiedLandmarks = kwiver::vital::landmark_map::map_landmark_t{};
+    foreach (auto const& ci, newLandmarks->landmarks())
+    {
+      copiedLandmarks.insert(std::make_pair(ci.first, ci.second->clone()));
+    }
+    this->landmarks =
+      std::make_shared<kwiver::vital::simple_landmark_map>(copiedLandmarks);
+  }
+  else
+  {
+    this->landmarks = landmark_map_sptr();
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -81,21 +136,21 @@ AbstractTool::~AbstractTool()
 kwiver::vital::track_set_sptr AbstractTool::tracks() const
 {
   QTE_D();
-  return d->tracks;
+  return d->data.tracks;
 }
 
 //-----------------------------------------------------------------------------
 kwiver::vital::camera_map_sptr AbstractTool::cameras() const
 {
   QTE_D();
-  return d->cameras;
+  return d->data.cameras;
 }
 
 //-----------------------------------------------------------------------------
 AbstractTool::landmark_map_sptr AbstractTool::landmarks() const
 {
   QTE_D();
-  return d->landmarks;
+  return d->data.landmarks;
 }
 
 //-----------------------------------------------------------------------------
@@ -108,58 +163,22 @@ void AbstractTool::cancel()
 //-----------------------------------------------------------------------------
 void AbstractTool::setTracks(track_set_sptr const& newTracks)
 {
-  if (newTracks)
-  {
-    auto copiedTracks = std::vector<kwiver::vital::track_sptr>{};
-    foreach (auto const& ti, newTracks->tracks())
-    {
-      copiedTracks.push_back(std::make_shared<kwiver::vital::track>(*ti));
-    }
-    this->updateTracks(
-      std::make_shared<kwiver::vital::simple_track_set>(copiedTracks));
-  }
-  else
-  {
-    this->updateTracks({});
-  }
+  QTE_D();
+  d->data.copyTracks(newTracks);
 }
 
 //-----------------------------------------------------------------------------
 void AbstractTool::setCameras(camera_map_sptr const& newCameras)
 {
-  if (newCameras)
-  {
-    auto copiedCameras = kwiver::vital::camera_map::map_camera_t{};
-    foreach (auto const& ci, newCameras->cameras())
-    {
-      copiedCameras.insert(std::make_pair(ci.first, ci.second->clone()));
-    }
-    this->updateCameras(
-      std::make_shared<kwiver::vital::simple_camera_map>(copiedCameras));
-  }
-  else
-  {
-    this->updateCameras({});
-  }
+  QTE_D();
+  d->data.copyCameras(newCameras);
 }
 
 //-----------------------------------------------------------------------------
 void AbstractTool::setLandmarks(landmark_map_sptr const& newLandmarks)
 {
-  if (newLandmarks)
-  {
-    auto copiedLandmarks = kwiver::vital::landmark_map::map_landmark_t{};
-    foreach (auto const& ci, newLandmarks->landmarks())
-    {
-      copiedLandmarks.insert(std::make_pair(ci.first, ci.second->clone()));
-    }
-    this->updateLandmarks(
-      std::make_shared<kwiver::vital::simple_landmark_map>(copiedLandmarks));
-  }
-  else
-  {
-    this->updateLandmarks({});
-  }
+  QTE_D();
+  d->data.copyLandmarks(newLandmarks);
 }
 
 //-----------------------------------------------------------------------------
@@ -183,40 +202,40 @@ bool AbstractTool::isCanceled() const
 bool AbstractTool::hasTracks() const
 {
   QTE_D();
-  return d->tracks && d->tracks->size();
+  return d->data.tracks && d->data.tracks->size();
 }
 
 //-----------------------------------------------------------------------------
 bool AbstractTool::hasCameras() const
 {
   QTE_D();
-  return d->cameras && d->cameras->size();
+  return d->data.cameras && d->data.cameras->size();
 }
 
 //-----------------------------------------------------------------------------
 bool AbstractTool::hasLandmarks() const
 {
   QTE_D();
-  return d->landmarks && d->landmarks->size();
+  return d->data.landmarks && d->data.landmarks->size();
 }
 
 //-----------------------------------------------------------------------------
 void AbstractTool::updateTracks(track_set_sptr const& newTracks)
 {
   QTE_D();
-  d->tracks = newTracks;
+  d->data.tracks = newTracks;
 }
 
 //-----------------------------------------------------------------------------
 void AbstractTool::updateCameras(camera_map_sptr const& newCameras)
 {
   QTE_D();
-  d->cameras = newCameras;
+  d->data.cameras = newCameras;
 }
 
 //-----------------------------------------------------------------------------
 void AbstractTool::updateLandmarks(landmark_map_sptr const& newLandmarks)
 {
   QTE_D();
-  d->landmarks = newLandmarks;
+  d->data.landmarks = newLandmarks;
 }
