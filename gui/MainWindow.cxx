@@ -293,8 +293,8 @@ void MainWindowPrivate::addTool(AbstractTool* tool, MainWindow* mainWindow)
 
   QObject::connect(tool, SIGNAL(triggered()),
                    &this->toolDispatcher, SLOT(map()));
-  QObject::connect(tool, SIGNAL(updated()),
-                   mainWindow, SLOT(acceptToolResults()));
+  QObject::connect(tool, SIGNAL(updated(std::shared_ptr<ToolData>)),
+                   mainWindow, SLOT(acceptToolResults(std::shared_ptr<ToolData>)));
   QObject::connect(tool, SIGNAL(completed()),
                    mainWindow, SLOT(acceptToolFinalResults()));
 
