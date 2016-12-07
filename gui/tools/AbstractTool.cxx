@@ -42,7 +42,7 @@ public:
 
   virtual void run() QTE_OVERRIDE;
 
-  AbstractTool::Data data;
+  ToolData data;
 
   std::atomic<bool> cancelRequested;
 
@@ -61,7 +61,7 @@ void AbstractToolPrivate::run()
 }
 
 //-----------------------------------------------------------------------------
-void AbstractTool::Data::copyTracks(track_set_sptr const& newTracks)
+void ToolData::copyTracks(track_set_sptr const& newTracks)
 {
   if (newTracks)
   {
@@ -80,7 +80,7 @@ void AbstractTool::Data::copyTracks(track_set_sptr const& newTracks)
 }
 
 //-----------------------------------------------------------------------------
-void AbstractTool::Data::copyCameras(camera_map_sptr const& newCameras)
+void ToolData::copyCameras(camera_map_sptr const& newCameras)
 {
   if (newCameras)
   {
@@ -99,7 +99,7 @@ void AbstractTool::Data::copyCameras(camera_map_sptr const& newCameras)
 }
 
 //-----------------------------------------------------------------------------
-void AbstractTool::Data::copyLandmarks(landmark_map_sptr const& newLandmarks)
+void ToolData::copyLandmarks(landmark_map_sptr const& newLandmarks)
 {
   if (newLandmarks)
   {

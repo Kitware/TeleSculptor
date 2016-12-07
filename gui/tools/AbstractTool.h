@@ -42,6 +42,29 @@
 
 class AbstractToolPrivate;
 
+/// A class to hold data that is modified by the tool
+class ToolData
+{
+public:
+  typedef kwiver::vital::track_set_sptr track_set_sptr;
+  typedef kwiver::vital::camera_map_sptr camera_map_sptr;
+  typedef kwiver::vital::landmark_map_sptr landmark_map_sptr;
+
+  /// Deep copy the tracks into this data class
+  void copyTracks(track_set_sptr const&);
+
+  /// Deep copy the cameras into this data class
+  void copyCameras(camera_map_sptr const&);
+
+  /// Deep copy the landmarks into this data class
+  void copyLandmarks(landmark_map_sptr const&);
+
+  track_set_sptr tracks;
+  camera_map_sptr cameras;
+  landmark_map_sptr landmarks;
+};
+
+
 class AbstractTool : public QAction
 {
   Q_OBJECT
@@ -50,26 +73,6 @@ public:
   typedef kwiver::vital::track_set_sptr track_set_sptr;
   typedef kwiver::vital::camera_map_sptr camera_map_sptr;
   typedef kwiver::vital::landmark_map_sptr landmark_map_sptr;
-
-  /// A class to hold data that is modified by the tool
-  class Data
-  {
-  public:
-
-    /// Deep copy the tracks into this data class
-    void copyTracks(track_set_sptr const&);
-
-    /// Deep copy the cameras into this data class
-    void copyCameras(camera_map_sptr const&);
-
-    /// Deep copy the landmarks into this data class
-    void copyLandmarks(landmark_map_sptr const&);
-
-
-    track_set_sptr tracks;
-    camera_map_sptr cameras;
-    landmark_map_sptr landmarks;
-  };
 
   enum Output
   {
