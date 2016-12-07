@@ -158,7 +158,7 @@ void AbstractTool::setLandmarks(landmark_map_sptr const& newLandmarks)
   }
   else
   {
-    this->updateCameras({});
+    this->updateLandmarks({});
   }
 }
 
