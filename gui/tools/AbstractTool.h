@@ -63,6 +63,7 @@ public:
   landmark_map_sptr landmarks;
 };
 
+Q_DECLARE_METATYPE(std::shared_ptr<ToolData>)
 
 class AbstractTool : public QAction
 {

@@ -646,6 +646,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->UI.setupUi(this);
   d->AM.setupActions(d->UI, this);
 
+  qRegisterMetaType<std::shared_ptr<ToolData>>();
+
   d->toolSeparator =
     d->UI.menuCompute->insertSeparator(d->UI.actionCancelComputation);
 
