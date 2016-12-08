@@ -34,10 +34,12 @@
 #include <qtGlobal.h>
 
 #include <QMainWindow>
+
 #include <memory>
 
-class MainWindowPrivate;
 class ToolData;
+
+class MainWindowPrivate;
 
 class MainWindow : public QMainWindow
 {

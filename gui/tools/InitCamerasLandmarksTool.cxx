@@ -160,16 +160,16 @@ void InitCamerasLandmarksTool::run()
   // If cp is Null the initialize algorithm will create all cameras.
   // If not Null it will only create cameras if they are in the map but Null.
   // So we need to add placeholders for missing cameras to the map
-  if(cp)
+  if (cp)
   {
     using kwiver::vital::frame_id_t;
     using kwiver::vital::camera_map;
     std::set<frame_id_t> frame_ids = tp->all_frame_ids();
     camera_map::map_camera_t all_cams = cp->cameras();
 
-    VITAL_FOREACH(auto const& id, frame_ids)
+    VITAL_FOREACH (auto const& id, frame_ids)
     {
-      if(all_cams.find(id) == all_cams.end())
+      if (all_cams.find(id) == all_cams.end())
       {
         all_cams[id] = kwiver::vital::camera_sptr();
       }
@@ -180,16 +180,16 @@ void InitCamerasLandmarksTool::run()
   // If lp is Null the initialize algorithm will create all landmarks.
   // If not Null it will only create landmarks if they are in the map but Null.
   // So we need to add placeholders for missing landmarks to the map
-  if(lp)
+  if (lp)
   {
     using kwiver::vital::track_id_t;
     using kwiver::vital::landmark_map;
     std::set<track_id_t> track_ids = tp->all_track_ids();
     landmark_map::map_landmark_t all_lms = lp->landmarks();
 
-    VITAL_FOREACH(auto const& id, track_ids)
+    VITAL_FOREACH (auto const& id, track_ids)
     {
-      if(all_lms.find(id) == all_lms.end())
+      if (all_lms.find(id) == all_lms.end())
       {
         all_lms[id] = kwiver::vital::landmark_sptr();
       }
