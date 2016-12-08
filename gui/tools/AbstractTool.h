@@ -93,7 +93,7 @@ public:
   /// This method must be overridden by tool implementations. It should return
   /// \c false if the tool cannot be interrupted by the user. A return value of
   /// \c true implies that calling cancel() may have an effect.
-  virtual bool isCancelable() = 0;
+  virtual bool isCancelable() const = 0;
 
   /// Return a shared pointer to the tools data
   std::shared_ptr<ToolData> data();

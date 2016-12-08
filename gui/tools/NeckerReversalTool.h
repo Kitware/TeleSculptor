@@ -44,7 +44,7 @@ public:
   virtual Outputs outputs() const QTE_OVERRIDE;
 
   /// Get if the tool can be canceled.
-  virtual bool isCancelable() QTE_OVERRIDE { return false; }
+  virtual bool isCancelable() const QTE_OVERRIDE { return false; }
 
   virtual bool execute(QWidget* window = 0) QTE_OVERRIDE;
 
