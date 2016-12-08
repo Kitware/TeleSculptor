@@ -96,7 +96,7 @@ public:
   virtual bool isCancelable() = 0;
 
   /// Return a shared pointer to the tools data
-  std::shared_ptr<ToolData> toolData();
+  std::shared_ptr<ToolData> data();
 
   /// Set the tracks to be used as input to the tool.
   void setTracks(track_set_sptr const&);

@@ -134,7 +134,7 @@ AbstractTool::~AbstractTool()
 }
 
 //-----------------------------------------------------------------------------
-std::shared_ptr<ToolData> AbstractTool::toolData()
+std::shared_ptr<ToolData> AbstractTool::data()
 {
   QTE_D();
   return d->data;

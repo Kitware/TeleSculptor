@@ -1203,7 +1203,7 @@ void MainWindow::acceptToolFinalResults()
   QTE_D();
   if (d->activeTool)
   {
-    acceptToolResults(d->activeTool->toolData());
+    acceptToolResults(d->activeTool->data());
   }
   d->setActiveTool(0);
 }
