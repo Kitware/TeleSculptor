@@ -651,9 +651,9 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->toolSeparator =
     d->UI.menuCompute->insertSeparator(d->UI.actionCancelComputation);
 
+  d->addTool(new InitCamerasLandmarksTool(this), this);
   d->addTool(new BundleAdjustTool(this), this);
   d->addTool(new CanonicalTransformTool(this), this);
-  d->addTool(new InitCamerasLandmarksTool(this), this);
   d->addTool(new NeckerReversalTool(this), this);
 
   d->UI.menuView->addSeparator();
