@@ -36,9 +36,9 @@ def load_camera(file_path)
   ents = model.active_entities
   pages = Sketchup.active_model.pages
   view = Sketchup.active_model.active_view
-  
+
   krtd_ff = from_file(file_path)
-  
+
   cam_point3d = Geom::Point3d.new( krtd_ff.position[0].m,
                                    krtd_ff.position[1].m,
                                    krtd_ff.position[2].m )
@@ -46,7 +46,7 @@ def load_camera(file_path)
                                       krtd_ff.target[1].m,
                                       krtd_ff.target[2].m )
   up_point3d = Geom::Vector3d.new( krtd_ff.up[0], krtd_ff.up[1], krtd_ff.up[2] )
-  
+
   new_cam = Sketchup::Camera.new( cam_point3d, target_point3d, up_point3d )
   # SketchUp does not allow perspective cameras with FOV < 1 degree.
   # The focal_length is also limited to less than 3000.
@@ -61,8 +61,6 @@ def load_camera(file_path)
   end
   new_cam.aspect_ratio = krtd_ff.x_dim / krtd_ff.y_dim
   view.camera = new_cam
-  
+
   return new_cam
 end
-
-

@@ -70,6 +70,7 @@ set(gui_moc_headers
   tools/AbstractTool.h
   tools/BundleAdjustTool.h
   tools/CanonicalTransformTool.h
+  tools/InitCamerasLandmarksTool.h
   tools/NeckerReversalTool.h
 )
 
@@ -101,6 +102,7 @@ set(gui_sources
   tools/AbstractTool.cxx
   tools/BundleAdjustTool.cxx
   tools/CanonicalTransformTool.cxx
+  tools/InitCamerasLandmarksTool.cxx
   tools/NeckerReversalTool.cxx
 )
 
@@ -145,6 +147,7 @@ unset(no_install)
 
 target_link_libraries(mapgui
   maptk
+  kwiver_algo_core
   vital_apm
   vtkGUISupportQt
   vtkInteractionStyle

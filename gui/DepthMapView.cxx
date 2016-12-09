@@ -63,6 +63,8 @@ public:
   void setPopup(QAction* action, QMenu* menu);
   void setPopup(QAction* action, QWidget* widget);
 
+  bool viewNeedsReset;
+
   Ui::DepthMapView UI;
 
   vtkNew<vtkRenderer> renderer;
@@ -73,7 +75,7 @@ public:
 
   DepthMapViewOptions* depthMapViewOptions;
 
-  vtkSmartPointer<vtkPolyData> currentDepthMap;
+  vtkSmartPointer<vtkGeometryFilter> inputDepthGeometryFilter;
 };
 
 //-----------------------------------------------------------------------------
@@ -109,6 +111,8 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
 {
   QTE_D();
 
+  d->viewNeedsReset = true;
+
   // Set up UI
   d->UI.setupUi(this);
 
@@ -138,7 +142,6 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   // Set up depth map actor
   d->actor->SetMapper(d->mapper.GetPointer());
   d->renderer->AddViewProp(d->actor.GetPointer());
-  d->currentDepthMap = vtkSmartPointer<vtkPolyData>::New();
 
   // Set interactor
   vtkNew<vtkInteractorStyleRubberBand2D> is;
@@ -159,7 +162,7 @@ void DepthMapView::updateThresholds(double bcMin, double bcMax,
   vtkNew<vtkThreshold> thresholdBestCostValues;
   vtkNew<vtkThreshold> thresholdUniquenessRatios;
 
-  thresholdBestCostValues->SetInputData(d->currentDepthMap.GetPointer());
+  thresholdBestCostValues->SetInputData(d->inputDepthGeometryFilter->GetOutput());
   thresholdBestCostValues->SetInputArrayToProcess(
     0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS,
     DepthMapArrays::BestCostValues);
@@ -191,29 +194,42 @@ DepthMapView::~DepthMapView()
 }
 
 //-----------------------------------------------------------------------------
-void DepthMapView::setDepthMap(QString const& imagePath)
+void DepthMapView::updateView(bool processUpdate)
 {
   QTE_D();
 
-  if (!imagePath.isEmpty() && this->isVisible())
+  if (processUpdate && d->inputDepthGeometryFilter && this->isVisible())
   {
-    vtkNew<vtkXMLImageDataReader> reader;
+    // Reset the depth view if the bounds from the geometry filter prior to
+    // update are invalid
+    bool resetView = false;
+    double* bounds = d->inputDepthGeometryFilter->GetOutput()->GetBounds();
+    if (bounds[0] > bounds[1])
+    {
+      resetView = true;
+    }
 
-    reader->SetFileName(qPrintable(imagePath));
-    reader->Update();
+    d->inputDepthGeometryFilter->Update();
 
-    vtkNew<vtkGeometryFilter> geometryFilter;
-    geometryFilter->SetInputData(reader->GetOutput());
-    geometryFilter->Update();
+    // We may call this function without having setup the reader, so if the
+    // bounds are invalid, return
+    bounds = d->inputDepthGeometryFilter->GetOutput()->GetBounds();
+    if (bounds[0] > bounds[1])
+    {
+      return;
+    }
 
-    d->currentDepthMap = geometryFilter->GetOutput();
-
-    d->mapper->SetInputData(d->currentDepthMap);
-
-    d->depthMapViewOptions->updateRanges(d->currentDepthMap->GetPointData());
+    d->depthMapViewOptions->updateRanges(
+      d->inputDepthGeometryFilter->GetOutput()->GetPointData());
     d->depthMapViewOptions->updateActor();
 
     d->UI.renderWidget->update();
+
+    if (resetView || d->viewNeedsReset)
+    {
+      d->viewNeedsReset = false;
+      this->resetView();
+    }
   }
 }
 
@@ -227,6 +243,23 @@ void DepthMapView::setBackgroundColor(QColor const& color)
 }
 
 //-----------------------------------------------------------------------------
+void DepthMapView::setDepthGeometryFilter(vtkGeometryFilter* geometryFilter)
+{
+  QTE_D();
+
+  if (d->inputDepthGeometryFilter != geometryFilter)
+  {
+    if (geometryFilter != NULL)
+    {
+      d->mapper->SetInputConnection(geometryFilter->GetOutputPort());
+      // Do we need to do anything special if the depth filter has changed?
+      // As currently used, the answer is "no".
+    }
+    d->inputDepthGeometryFilter = geometryFilter;
+  }
+}
+
+//-----------------------------------------------------------------------------
 void DepthMapView::resetView()
 {
   QTE_D();
@@ -235,7 +268,7 @@ void DepthMapView::resetView()
   d->renderer->GetAspect(renderAspect);
 
   double bounds[6];
-  d->currentDepthMap->GetBounds(bounds);
+  d->inputDepthGeometryFilter->GetOutput()->GetBounds(bounds);
 
   auto const w = bounds[1] - bounds[0];
   auto const h = bounds[3] - bounds[4];

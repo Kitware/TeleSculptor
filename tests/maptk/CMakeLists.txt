@@ -1,6 +1,6 @@
 project(maptk_test_maptk)
 
-set(test_libraries maptk)
+set(test_libraries maptk kwiver_algo_core)
 
 ##############################
 # MAP-Tk library tests

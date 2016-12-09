@@ -82,11 +82,11 @@ void load_reference_file(vital::path_t const& reference_file,
   vital::landmark_map::map_landmark_t reference_lms;
   std::vector<vital::track_sptr> reference_tracks;
 
-  // Resetting lgcs' logical initialization
-  lgcs.set_utm_origin(vec);
-  lgcs.set_utm_origin_zone(-1);
   // Mean position of all landmarks.
   vital::vector_3d mean(0,0,0);
+
+  // If the zone is invalid then use the reference points to compute a new origin
+  const bool set_lgcs_origin = (lgcs.utm_origin_zone() == -1);
 
   // TODO: put in try-catch around >>'s in case we have an ill-formatted file,
   // or there's a parse error
@@ -108,7 +108,7 @@ void load_reference_file(vital::path_t const& reference_file,
 
     // Use the zone of the first input landmark as the base zone from which we
     // interpret all other geo-positions with respect to.
-    if (lgcs.utm_origin_zone() == -1)
+    if (set_lgcs_origin)
     {
       LOG_DEBUG(logger, "lgcs origin zone: " << zone );
       lgcs.set_utm_origin_zone(zone);
@@ -133,17 +133,20 @@ void load_reference_file(vital::path_t const& reference_file,
   }
   LOG_INFO(logger, "Loaded "<< reference_tracks.size() <<" ground control points");
 
-  // Initialize lgcs center
-  mean /= static_cast<double>(reference_lms.size());
-  lgcs.set_utm_origin(mean);
-  LOG_DEBUG(logger, "mean position (lgcs origin): " << mean.transpose());
+  if (set_lgcs_origin)
+  {
+    // Initialize lgcs center
+    mean /= static_cast<double>(reference_lms.size());
+    lgcs.set_utm_origin(mean);
+    LOG_DEBUG(logger, "mean position (lgcs origin): " << mean.transpose());
+  }
 
   // Scan through reference landmarks, adjusting their location by the lgcs
   // origin.
   LOG_INFO(logger, "transforming ground control points to local coordinates");
   VITAL_FOREACH(vital::landmark_map::map_landmark_t::value_type & p, reference_lms)
   {
-    dynamic_cast<vital::landmark_d*>(p.second.get())->set_loc(p.second->loc() - mean);
+    dynamic_cast<vital::landmark_d*>(p.second.get())->set_loc(p.second->loc() - lgcs.utm_origin());
   }
 
   ref_landmarks = vital::landmark_map_sptr(new vital::simple_landmark_map(reference_lms));

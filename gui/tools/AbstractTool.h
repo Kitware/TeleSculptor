@@ -41,6 +41,30 @@
 
 class AbstractToolPrivate;
 
+/// A class to hold data that is modified by the tool
+class ToolData
+{
+public:
+  typedef kwiver::vital::track_set_sptr track_set_sptr;
+  typedef kwiver::vital::camera_map_sptr camera_map_sptr;
+  typedef kwiver::vital::landmark_map_sptr landmark_map_sptr;
+
+  /// Deep copy the tracks into this data class
+  void copyTracks(track_set_sptr const&);
+
+  /// Deep copy the cameras into this data class
+  void copyCameras(camera_map_sptr const&);
+
+  /// Deep copy the landmarks into this data class
+  void copyLandmarks(landmark_map_sptr const&);
+
+  track_set_sptr tracks;
+  camera_map_sptr cameras;
+  landmark_map_sptr landmarks;
+};
+
+Q_DECLARE_METATYPE(std::shared_ptr<ToolData>)
+
 class AbstractTool : public QAction
 {
   Q_OBJECT
@@ -63,6 +87,16 @@ public:
 
   /// Get the types of output produced by the tool.
   virtual Outputs outputs() const = 0;
+
+  /// Get if the tool can be canceled.
+  ///
+  /// This method must be overridden by tool implementations. It should return
+  /// \c false if the tool cannot be interrupted by the user. A return value of
+  /// \c true implies that calling cancel() may have an effect.
+  virtual bool isCancelable() const = 0;
+
+  /// Return a shared pointer to the tools data
+  std::shared_ptr<ToolData> data();
 
   /// Set the tracks to be used as input to the tool.
   void setTracks(track_set_sptr const&);
@@ -127,6 +161,20 @@ public:
 signals:
   /// Emitted when the tool execution is completed.
   void completed();
+  /// Emitted when an intermediate update of the data is available to show progress.
+  void updated(std::shared_ptr<ToolData>);
+
+  /// Emitted when the tool execution terminates due to user cancellation.
+  void canceled();
+
+public slots:
+  /// Ask the tool to cancel execution.
+  ///
+  /// This sets a flag indicating that the user has requested the tool
+  /// execution should halt. The tool may or may not honor such a request.
+  ///
+  /// \sa canceled, isCancelable
+  virtual void cancel();
 
 protected:
   /// Execute the tool.
@@ -134,6 +182,9 @@ protected:
   /// This method must be overridden by tool implementations. The default
   /// implementation of execute() calls this method in a separate thread.
   virtual void run() = 0;
+
+  /// Check if the user has requested that tool execution be canceled.
+  bool isCanceled() const;
 
   /// Test if the tool has track data.
   ///

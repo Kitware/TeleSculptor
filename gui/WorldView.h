@@ -35,6 +35,7 @@
 
 #include <QtGui/QWidget>
 
+class vtkGeometryFilter;
 class vtkImageData;
 class vtkPolyData;
 
@@ -60,7 +61,9 @@ public slots:
 
   void addCamera(int id, vtkMaptkCamera* camera);
   void setLandmarks(kwiver::vital::landmark_map const&);
-  void setActiveDepthMap(vtkMaptkCamera* camera, QString const& depthMapPath);
+
+  void setDepthGeometryFilter(vtkGeometryFilter*);
+  void updateDepthMap(vtkMaptkCamera* camera);
 
   void setImageData(vtkImageData* data, QSize const& dimensions);
 
@@ -73,7 +76,7 @@ public slots:
 
   void setPerspective(bool);
 
-  void setActiveCamera(vtkMaptkCamera* camera);
+  void setActiveCamera(int id);
 
   void resetView();
   void resetViewToLandmarks();

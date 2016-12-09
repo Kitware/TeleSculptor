@@ -35,6 +35,10 @@
 
 #include <QMainWindow>
 
+#include <memory>
+
+class ToolData;
+
 class MainWindowPrivate;
 
 class MainWindow : public QMainWindow
@@ -78,7 +82,9 @@ protected slots:
   void nextSlide();
 
   void executeTool(QObject*);
-  void acceptToolResults();
+  void acceptToolFinalResults();
+  void acceptToolResults(std::shared_ptr<ToolData> data);
+  void updateToolResults();
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(MainWindow)
