@@ -34,11 +34,12 @@
 
 #include "DataArrays.h"
 #include "DepthMapViewOptions.h"
+#include "vtkMaptkScalarDataFilter.h"
 
 #include <vtkCamera.h>
 #include <vtkGeometryFilter.h>
 #include <vtkImageData.h>
-#include <vtkImageDataGeometryFilter.h>
+#include <vtkMaptkImageDataGeometryFilter.h>
 #include <vtkInteractorStyleRubberBand2D.h>
 #include <vtkNew.h>
 #include <vtkPolyData.h>
@@ -72,12 +73,13 @@ public:
   vtkNew<vtkRenderer> renderer;
   vtkNew<vtkRenderWindow> renderWindow;
 
+  vtkNew<vtkMaptkScalarDataFilter> scalarFilter;
   vtkNew<vtkPolyDataMapper> mapper;
   vtkNew<vtkActor> actor;
 
   DepthMapViewOptions* depthMapViewOptions;
 
-  vtkSmartPointer<vtkImageDataGeometryFilter> inputDepthGeometryFilter;
+  vtkSmartPointer<vtkMaptkImageDataGeometryFilter> inputDepthGeometryFilter;
 };
 
 //-----------------------------------------------------------------------------
@@ -143,7 +145,12 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   d->UI.renderWidget->SetRenderWindow(d->renderWindow.GetPointer());
 
   // Set up depth map actor
+  vtkNew<vtkMaptkScalarDataFilter> depthScalarFilter;
+
+  d->scalarFilter->SetScalarArrayName(DepthMapArrays::Depth);
+  d->mapper->SetInputConnection(d->scalarFilter->GetOutputPort());
   d->actor->SetMapper(d->mapper.GetPointer());
+  d->actor->VisibilityOff();
   d->renderer->AddViewProp(d->actor.GetPointer());
 
   // Set interactor
@@ -152,50 +159,20 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
 }
 
 //-----------------------------------------------------------------------------
-void DepthMapView::updateThresholds(double bcMin, double bcMax,
-                                    double urMin, double urMax)
+void DepthMapView::updateThresholds()
 {
   QTE_D();
 
-  double bestCostValueMin = bcMin;
-  double bestCostValueMax = bcMax;
-  double uniquenessRatioMin = urMin;
-  double uniquenessRatioMax = urMax;
-
-  vtkNew<vtkThreshold> thresholdBestCostValues;
-  vtkNew<vtkThreshold> thresholdUniquenessRatios;
-
-  thresholdBestCostValues->SetInputData(d->inputDepthGeometryFilter->GetOutput());
-  thresholdBestCostValues->SetInputArrayToProcess(
-    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS,
-    DepthMapArrays::BestCostValues);
-  thresholdBestCostValues->ThresholdBetween(
-    bestCostValueMin, bestCostValueMax);
-
-  thresholdUniquenessRatios->SetInputConnection(
-    thresholdBestCostValues->GetOutputPort());
-  thresholdUniquenessRatios->SetInputArrayToProcess(
-    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS,
-    DepthMapArrays::UniquenessRatios);
-  thresholdUniquenessRatios->ThresholdBetween(
-    uniquenessRatioMin, uniquenessRatioMax);
-
-  vtkNew<vtkGeometryFilter> geometryFilter;
-
-  geometryFilter->SetInputConnection(
-    thresholdUniquenessRatios->GetOutputPort());
-
-  d->mapper->SetInputConnection(geometryFilter->GetOutputPort());
-  d->mapper->Update();
-
-  d->UI.renderWidget->update();
+  if (this->isVisible())
+  {
+    d->UI.renderWidget->update();
+  }
 }
 
 //-----------------------------------------------------------------------------
 DepthMapView::~DepthMapView()
 {
 }
-
 
 //-----------------------------------------------------------------------------
 void DepthMapView::connectPipeline()
@@ -207,7 +184,8 @@ void DepthMapView::connectPipeline()
     return;
   }
 
-  d->mapper->SetInputConnection(d->inputDepthGeometryFilter->GetOutputPort());
+  d->scalarFilter->SetInputConnection(d->inputDepthGeometryFilter->GetOutputPort());
+  d->actor->VisibilityOn();
   d->pipelineConnected = true;
 }
 
@@ -229,6 +207,7 @@ void DepthMapView::updateView(bool processUpdate)
 
     d->inputDepthGeometryFilter->Update();
 
+    vtkPointData* pd = d->inputDepthGeometryFilter->GetOutput()->GetPointData();
     d->depthMapViewOptions->updateRanges(
       d->inputDepthGeometryFilter->GetOutput()->GetPointData());
     d->depthMapViewOptions->updateActor();
@@ -253,7 +232,7 @@ void DepthMapView::setBackgroundColor(QColor const& color)
 }
 
 //-----------------------------------------------------------------------------
-void DepthMapView::setDepthGeometryFilter(vtkImageDataGeometryFilter* geometryFilter)
+void DepthMapView::setDepthGeometryFilter(vtkMaptkImageDataGeometryFilter* geometryFilter)
 {
   QTE_D();
 

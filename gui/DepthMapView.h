@@ -36,7 +36,7 @@
 #include <QtGui/QWidget>
 
 class DepthMapViewPrivate;
-class vtkImageDataGeometryFilter;
+class vtkMaptkImageDataGeometryFilter;
 
 class DepthMapView : public QWidget
 {
@@ -51,11 +51,11 @@ public slots:
 
   void updateView(bool);
 
-  void updateThresholds(double, double, double, double);
+  void updateThresholds();
 
   void setBackgroundColor(QColor const&);
 
-  void setDepthGeometryFilter(vtkImageDataGeometryFilter*);
+  void setDepthGeometryFilter(vtkMaptkImageDataGeometryFilter*);
 
   void resetView();
 

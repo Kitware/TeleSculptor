@@ -40,6 +40,8 @@
 #include "AboutDialog.h"
 #include "MatchMatrixWindow.h"
 #include "Project.h"
+#include "vtkMaptkImageDataGeometryFilter.h"
+#include "vtkMaptkImageUnprojectDepth.h"
 #include "vtkMaptkCamera.h"
 
 #include <maptk/version.h>
@@ -51,7 +53,6 @@
 
 #include <vtksys/SystemTools.hxx>
 
-#include <vtkImageDataGeometryFilter.h>
 #include <vtkImageData.h>
 #include <vtkImageReader2.h>
 #include <vtkImageReader2Collection.h>
@@ -276,7 +277,8 @@ public:
   QQueue<int> orphanCameras;
 
   vtkNew<vtkXMLImageDataReader> depthReader;
-  vtkNew<vtkImageDataGeometryFilter> depthGeometryFilter;
+  vtkNew<vtkMaptkImageUnprojectDepth> depthFilter;
+  vtkNew<vtkMaptkImageDataGeometryFilter> depthGeometryFilter;
 };
 
 QTE_IMPLEMENT_D_FUNC(MainWindow)
@@ -585,15 +587,23 @@ void MainWindowPrivate::loadDepthMap(QString const& imagePath)
     return;
   }
 
+  if (this->depthReader->GetFileName() &&
+    !strcmp(this->depthReader->GetFileName(), qPrintable(imagePath)))
+  {
+    // No change to reader input... return without any update
+    return;
+  }
+
   this->depthReader->SetFileName(qPrintable(imagePath));
 
-  // Once we have a filename set, we can execute the depth pipeline
+  // Once we have a filename set, we can execute the depth pipeline; at some
+  // point we may want to disconnect the piplelines or hide the relevant actor
   this->UI.depthMapView->connectPipeline();
-  this->UI.worldView->enableDepthProcessing();
+  this->UI.worldView->connectDepthPipeline();
 
+  this->depthFilter->SetCamera(this->cameras[this->activeCameraIndex].camera);
+  this->UI.worldView->updateDepthMap();
   this->UI.depthMapView->updateView(true);
-  this->UI.worldView->updateDepthMap(
-    this->cameras[this->activeCameraIndex].camera);
 }
 
 //-----------------------------------------------------------------------------
@@ -671,10 +681,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.camera, SIGNAL(valueChanged(int)),
           this, SLOT(setActiveCamera(int)));
 
-  connect(d->UI.worldView,
-          SIGNAL(depthMapThresholdsChanged(double, double, double, double)),
-          d->UI.depthMapView,
-          SLOT(updateThresholds(double, double, double, double)));
+  connect(d->UI.worldView, SIGNAL(depthMapThresholdsChanged()),
+          d->UI.depthMapView, SLOT(updateThresholds()));
 
   connect(d->UI.depthMapViewDock, SIGNAL(visibilityChanged(bool)),
           d->UI.depthMapView, SLOT(updateView(bool)));
@@ -706,7 +714,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->UI.depthMapView->setBackgroundColor(*d->viewBackgroundColor);
 
   // Hookup basic depth pipeline and pass geometry filter to relevant views
-  d->depthGeometryFilter->SetInputConnection(d->depthReader->GetOutputPort());
+  d->depthFilter->SetInputConnection(d->depthReader->GetOutputPort());
+  d->depthGeometryFilter->SetInputConnection(d->depthFilter->GetOutputPort());
   d->UI.worldView->setDepthGeometryFilter(d->depthGeometryFilter.GetPointer());
   d->UI.depthMapView->setDepthGeometryFilter(d->depthGeometryFilter.GetPointer());
 

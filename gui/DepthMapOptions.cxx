@@ -83,9 +83,9 @@ DepthMapOptions::DepthMapOptions(QString const& settingsGroup,
           this, SIGNAL(displayModeChanged()));
 
   connect(d->UI.filter, SIGNAL(toggled(bool)),
-          this, SIGNAL(thresholdsChanged()));
+          this, SIGNAL(thresholdsChanged(bool)));
   connect(d->filterOptions, SIGNAL(filtersChanged()),
-          this, SIGNAL(thresholdsChanged()));
+          this, SLOT(thresholdsChanged()));
 }
 
 //-----------------------------------------------------------------------------
@@ -148,4 +148,11 @@ DepthMapOptions::DisplayMode DepthMapOptions::displayMode() const
 {
   QTE_D();
   return (d->UI.surfaces->isChecked() ? Surfaces : Points);
+}
+
+//-----------------------------------------------------------------------------
+void DepthMapOptions::thresholdsChanged()
+{
+  QTE_D();
+  emit thresholdsChanged(d->UI.filter->isChecked());
 }

@@ -41,7 +41,7 @@ vtkStandardNewMacro(vtkMaptkImageUnprojectDepth);
 
 vtkCxxSetObjectMacro(vtkMaptkImageUnprojectDepth, Camera, vtkMaptkCamera);
 
-
+//-----------------------------------------------------------------------------
 vtkMaptkImageUnprojectDepth::vtkMaptkImageUnprojectDepth()
 {
   this->Camera = 0;
@@ -53,6 +53,7 @@ vtkMaptkImageUnprojectDepth::vtkMaptkImageUnprojectDepth()
   this->SetUnprojectedPointArrayName("Points");
 }
 
+//-----------------------------------------------------------------------------
 vtkMaptkImageUnprojectDepth::~vtkMaptkImageUnprojectDepth()
 {
   this->SetCamera(0);
@@ -60,6 +61,7 @@ vtkMaptkImageUnprojectDepth::~vtkMaptkImageUnprojectDepth()
   this->SetUnprojectedPointArrayName(0);
 }
 
+//-----------------------------------------------------------------------------
 void vtkMaptkImageUnprojectDepth::SimpleExecute(vtkImageData* input,
                                            vtkImageData* output)
 {
@@ -95,6 +97,12 @@ void vtkMaptkImageUnprojectDepth::SimpleExecute(vtkImageData* input,
     return;
   }
 
+  // Get the scaled camera for doing the unproject
+  auto const imageRatio =
+    static_cast<double>(this->Camera->GetImageDimensions()[0]) /
+    static_cast<double>(input->GetDimensions()[0]);
+  auto const scaledCamera = this->Camera->ScaledK(imageRatio);
+
   vtkDataArray* inputPoints = output->GetPointData()->GetArray(
     this->UnprojectedPointArrayName);
   if (inputPoints)
@@ -120,16 +128,14 @@ void vtkMaptkImageUnprojectDepth::SimpleExecute(vtkImageData* input,
   double* depthPtr = depths->GetPointer(0);
   float* pointsPtr = points->GetPointer(0);
   double pixel[2];
-  vtkIdType index = 0;
   for (int row = extents[2]; row <= extents[3]; ++row)
   {
     pixel[1] = height - 1 - (origin[1] + row * spacing[1]);
-    for (int column = extents[0]; column <= extents[1];
-         ++column, ++depthPtr, ++index)
+    for (int column = extents[0]; column <= extents[1]; ++column, ++depthPtr)
     {
       pixel[0] = origin[0] + column * spacing[0];
 
-      auto const p = this->Camera->UnprojectPoint(pixel, *depthPtr);
+      auto const p = scaledCamera->UnprojectPoint(pixel, *depthPtr);
       *pointsPtr = p[0];
       *(++pointsPtr) = p[1];
       *(++pointsPtr) = p[2];

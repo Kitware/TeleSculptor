@@ -97,7 +97,9 @@ set(gui_sources
   vtkMaptkCamera.cxx
   vtkMaptkCameraRepresentation.cxx
   vtkMaptkFeatureTrackRepresentation.cxx
+  vtkMaptkImageDataGeometryFilter.cxx
   vtkMaptkImageUnprojectDepth.cxx
+  vtkMaptkScalarDataFilter.cxx
   vtkMaptkScalarsToGradient.cxx
   tools/AbstractTool.cxx
   tools/BundleAdjustTool.cxx
