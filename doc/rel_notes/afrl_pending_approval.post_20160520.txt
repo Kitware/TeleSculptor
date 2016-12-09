@@ -23,6 +23,8 @@ Scripts
 
 Tools
 
+ * Added python version of track features tool.
+
  * The maptk_bundle_adjust_tracks tool now has a configuration option to write
    out the geographic coordinates of the local coordinate system origin.  Also
    this same option can be used to read an origin location in to specify the
