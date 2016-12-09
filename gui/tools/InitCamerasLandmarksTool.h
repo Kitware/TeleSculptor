@@ -28,60 +28,38 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "MainWindow.h"
-#include "tools/AbstractTool.h"
+#ifndef MAPTK_INITCAMERASLANDMARKSTOOL_H_
+#define MAPTK_INITCAMERASLANDMARKSTOOL_H_
 
-#include <maptk/version.h>
+#include "AbstractTool.h"
 
-#include <vital/algorithm_plugin_manager.h>
+class InitCamerasLandmarksToolPrivate;
 
-#include <qtCliArgs.h>
-#include <qtStlUtil.h>
-#include <qtUtil.h>
-
-#include <QApplication>
-#include <QMetaType>
-#include <QtCore/QDir>
-
-#include <memory>
-
-//-----------------------------------------------------------------------------
-int main(int argc, char** argv)
+class InitCamerasLandmarksTool : public AbstractTool
 {
-  // Set application information
-  QApplication::setApplicationName("MapGUI");
-  QApplication::setOrganizationName("Kitware");
-  QApplication::setOrganizationDomain("kitware.com");
-  QApplication::setApplicationVersion(MAPTK_VERSION);
+  Q_OBJECT
 
-  // Register meta types
-  qRegisterMetaType<std::shared_ptr<ToolData>>();
+public:
+  explicit InitCamerasLandmarksTool(QObject* parent = 0);
+  virtual ~InitCamerasLandmarksTool();
 
-  // Set up command line options
-  qtCliArgs args(argc, argv);
-  qtCliOptions nargs;
+  virtual Outputs outputs() const QTE_OVERRIDE;
 
-  nargs.add("files", "List of files to open", qtCliOption::NamedList);
-  args.addNamedArguments(nargs);
+  /// Get if the tool can be canceled.
+  virtual bool isCancelable() const QTE_OVERRIDE { return true; }
 
-  // Parse arguments
-  args.parseOrDie();
+  virtual bool execute(QWidget* window = 0) QTE_OVERRIDE;
 
-  // Create application instance and set icon
-  QApplication app(args.qtArgc(), args.qtArgv());
-  qtUtil::setApplicationIcon("mapgui");
+  bool callback_handler(camera_map_sptr cameras, landmark_map_sptr landmarks);
 
-  // Load Vital/MAP-Tk plugins
-  auto const exeDir = QDir(QApplication::applicationDirPath());
-  auto const rel_path = stdString(exeDir.absoluteFilePath("..")) + "/lib/maptk";
-  kwiver::vital::algorithm_plugin_manager::instance().add_search_path(rel_path);
-  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
+protected:
+  virtual void run() QTE_OVERRIDE;
 
-  // Create and show main window
-  MainWindow window;
-  window.show();
-  window.openFiles(args.values("files"));
+private:
+  QTE_DECLARE_PRIVATE_RPTR(InitCamerasLandmarksTool)
+  QTE_DECLARE_PRIVATE(InitCamerasLandmarksTool)
+  QTE_DISABLE_COPY(InitCamerasLandmarksTool)
+};
 
-  // Hand off to event loop
-  return app.exec();
-}
+#endif
+#define MAPTK_INITCAMERASLANDMARKSTOOL_H_
