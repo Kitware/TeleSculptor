@@ -40,6 +40,8 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 
+#include <vital/vital_foreach.h>
+
 #include <map>
 
 vtkStandardNewMacro(vtkMaptkImageDataGeometryFilter);
@@ -213,7 +215,7 @@ int vtkMaptkImageDataGeometryFilter::RequestData(
 
   // Check any / all constraints
   bool completelyFiltered = false;
-  for each(auto const constraint in this->Internal->Constraints)
+  VITAL_FOREACH(auto const constraint, this->Internal->Constraints)
   {
     vtkDataArray* dataArray = pointData->GetArray(constraint.first.c_str());
     if (dataArray)
@@ -262,7 +264,7 @@ int vtkMaptkImageDataGeometryFilter::RequestData(
     if (this->ThresholdCells && constraints.size())
     {
       bool skipCell = false;
-      for each(auto const constraint in constraints)
+      VITAL_FOREACH(auto const constraint, constraints)
       {
         double value = constraint.Array->GetTuple1(i);
         if (value < constraint.MinValue || value > constraint.MaxValue)
