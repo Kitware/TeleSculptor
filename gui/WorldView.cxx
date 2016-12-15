@@ -574,18 +574,21 @@ void WorldView::addCamera(int id, vtkMaptkCamera* camera)
 
   QTE_D();
 
-  d->cameraRep->AddCamera(camera);
+  d->cameraRep->AddCamera(id, camera);
 
   d->updateCameras(this);
   d->updateAxes(this);
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::setActiveCamera(vtkMaptkCamera* camera)
+void WorldView::setActiveCamera(int id)
 {
   static auto const plane = kwiver::vital::vector_4d(0.0, 0.0, 1.0, 0.0);
 
   QTE_D();
+
+  d->cameraRep->SetActiveCamera(id);
+  vtkMaptkCamera * camera = dynamic_cast<vtkMaptkCamera*>(d->cameraRep->GetActiveCamera());
 
   if (camera)
   {
@@ -601,8 +604,6 @@ void WorldView::setActiveCamera(vtkMaptkCamera* camera)
     d->validTransform = false;
     d->imageActor->SetVisibility(false);
   }
-
-  d->cameraRep->SetActiveCamera(camera);
 
   d->updateCameras(this);
   d->updateAxes(this);

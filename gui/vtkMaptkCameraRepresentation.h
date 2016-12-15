@@ -47,12 +47,12 @@ public:
 
   static vtkMaptkCameraRepresentation* New();
 
-  void AddCamera(vtkCamera* camera);
-  void RemoveCamera(vtkCamera* camera);
+  void AddCamera(int id, vtkCamera* camera);
+  void RemoveCamera(int id);
 
   // Description:
   // Get/Set the camera to be displayed as the active camera
-  void SetActiveCamera(vtkCamera* camera);
+  void SetActiveCamera(int id);
   vtkGetObjectMacro(ActiveCamera, vtkCamera);
 
   // Description:
