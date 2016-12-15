@@ -44,6 +44,7 @@
 #include <vtkNew.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
+#include <vtkProperty.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 #include <vtkSmartPointer.h>
@@ -150,8 +151,24 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   d->scalarFilter->SetScalarArrayName(DepthMapArrays::Depth);
   d->mapper->SetInputConnection(d->scalarFilter->GetOutputPort());
   d->actor->SetMapper(d->mapper.GetPointer());
+  d->actor->GetProperty()->SetPointSize(2.0);
   d->actor->VisibilityOff();
   d->renderer->AddViewProp(d->actor.GetPointer());
+
+  // Add keyboard actions for increasing and descreasing depth point size
+  QAction* actionIncreasePointSize = new QAction(this);
+  actionIncreasePointSize->setShortcut(Qt::Key_Plus);
+  actionIncreasePointSize->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+  d->UI.renderWidget->addAction(actionIncreasePointSize);
+  connect(actionIncreasePointSize, SIGNAL(triggered()),
+    this, SLOT(increasePointSize()));
+
+  QAction* actionDecreasePointSize = new QAction(this);
+  actionDecreasePointSize->setShortcut(Qt::Key_Minus);
+  actionDecreasePointSize->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+  d->UI.renderWidget->addAction(actionDecreasePointSize);
+  connect(actionDecreasePointSize, SIGNAL(triggered()),
+    this, SLOT(decreasePointSize()));
 
   // Set interactor
   vtkNew<vtkInteractorStyleRubberBand2D> is;
@@ -261,6 +278,28 @@ void DepthMapView::resetView()
 
   d->renderer->ResetCamera(bounds);
   d->renderer->GetActiveCamera()->SetParallelScale(s);
+
+  d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
+void DepthMapView::increasePointSize()
+{
+  QTE_D();
+
+  float pointSize = d->actor->GetProperty()->GetPointSize();
+  d->actor->GetProperty()->SetPointSize(pointSize + 0.5);
+
+  d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
+void DepthMapView::decreasePointSize()
+{
+  QTE_D();
+
+  float pointSize = d->actor->GetProperty()->GetPointSize() - 0.5;
+  d->actor->GetProperty()->SetPointSize(pointSize < 1 ? 1 : pointSize);
 
   d->UI.renderWidget->update();
 }

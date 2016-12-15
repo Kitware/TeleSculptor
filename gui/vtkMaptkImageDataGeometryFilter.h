@@ -50,10 +50,18 @@ public:
 
   // Description:
   // Set ThresholdCells to true if you wish to skip any voxel/pixels which have scalar
-  // values that don't satisfy specified constraints.
+  // values that don't satisfy specified constraints. Default is 0 (off)
   vtkSetMacro(ThresholdCells,int);
   vtkGetMacro(ThresholdCells,int);
   vtkBooleanMacro(ThresholdCells,int);
+
+  // Description:
+  // Set GenerateTriangleOutput to true if the 3rd output should be filled with
+  // triangles (polygons) instead of vertices. If false, this output is the
+  // same as the 2nd output. Default is 0 (off).
+  vtkSetMacro(GenerateTriangleOutput, int);
+  vtkGetMacro(GenerateTriangleOutput, int);
+  vtkBooleanMacro(GenerateTriangleOutput, int);
 
   // Description:
   // Get/Set the unprojected point array name.  Default is "Points".
@@ -68,6 +76,7 @@ protected:
   virtual int FillInputPortInformation(int port, vtkInformation *info);
 
   int    ThresholdCells;
+  int    GenerateTriangleOutput;
 
 private:
   vtkMaptkImageDataGeometryFilter(const vtkMaptkImageDataGeometryFilter&);  // Not implemented.

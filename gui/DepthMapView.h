@@ -59,6 +59,10 @@ public slots:
 
   void resetView();
 
+  void increasePointSize();
+
+  void decreasePointSize();
+
 private:
   QTE_DECLARE_PRIVATE_RPTR(DepthMapView)
   QTE_DECLARE_PRIVATE(DepthMapView)

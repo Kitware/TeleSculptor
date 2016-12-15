@@ -460,8 +460,22 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   mapper->SetColorModeToDirectScalars();
   d->depthMapActor->SetMapper(mapper.GetPointer());
   d->renderer->AddActor(d->depthMapActor.GetPointer());
-  d->depthMapActor->GetProperty()->SetRepresentationToPoints();
   d->depthMapActor->VisibilityOff();
+
+  // Add keyboard actions for increasing and descreasing depth point size
+  QAction* actionIncreasePointSize = new QAction(this);
+  actionIncreasePointSize->setShortcut(Qt::Key_Plus);
+  actionIncreasePointSize->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+  d->UI.renderWidget->addAction(actionIncreasePointSize);
+  connect(actionIncreasePointSize, SIGNAL(triggered()),
+    this, SLOT(increaseDepthMapPointSize()));
+
+  QAction* actionDecreasePointSize = new QAction(this);
+  actionDecreasePointSize->setShortcut(Qt::Key_Minus);
+  actionDecreasePointSize->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+  d->UI.renderWidget->addAction(actionDecreasePointSize);
+  connect(actionDecreasePointSize, SIGNAL(triggered()),
+    this, SLOT(decreaseDepthMapPointSize()));
 }
 
 //-----------------------------------------------------------------------------
@@ -482,8 +496,19 @@ void WorldView::connectDepthPipeline()
 {
   QTE_D();
 
-  d->depthScalarFilter->SetInputConnection(
-    d->inputDepthGeometryFilter->GetOutputPort(1));
+  switch (d->depthMapOptions->displayMode())
+  {
+  case DepthMapOptions::Points:
+    d->inputDepthGeometryFilter->GenerateTriangleOutputOff();
+    d->depthScalarFilter->SetInputConnection(
+      d->inputDepthGeometryFilter->GetOutputPort(1));
+    break;
+  case DepthMapOptions::Surfaces:
+    d->inputDepthGeometryFilter->GenerateTriangleOutputOn();
+    d->depthScalarFilter->SetInputConnection(
+      d->inputDepthGeometryFilter->GetOutputPort(2));
+    break;
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -935,15 +960,7 @@ void WorldView::updateDepthMapDisplayMode()
 {
   QTE_D();
 
-  switch (d->depthMapOptions->displayMode())
-  {
-    case DepthMapOptions::Points:
-      d->depthMapActor->GetProperty()->SetRepresentationToPoints();
-      break;
-    case DepthMapOptions::Surfaces:
-      d->depthMapActor->GetProperty()->SetRepresentationToSurface();
-      break;
-  }
+  this->connectDepthPipeline();
   d->UI.renderWidget->update();
 }
 
@@ -1005,4 +1022,26 @@ void WorldView::exportWebGLScene(QString const& path)
 #else
   Q_UNUSED(path)
 #endif
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::increaseDepthMapPointSize()
+{
+  QTE_D();
+
+  float pointSize = d->depthMapActor->GetProperty()->GetPointSize();
+  d->depthMapActor->GetProperty()->SetPointSize(pointSize + 0.5);
+
+  d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::decreaseDepthMapPointSize()
+{
+  QTE_D();
+
+  float pointSize = d->depthMapActor->GetProperty()->GetPointSize() - 0.5;
+  d->depthMapActor->GetProperty()->SetPointSize(pointSize < 1 ? 1 : pointSize);
+
+  d->UI.renderWidget->update();
 }

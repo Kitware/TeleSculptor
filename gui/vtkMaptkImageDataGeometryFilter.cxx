@@ -76,15 +76,12 @@ vtkMaptkImageDataGeometryFilter::vtkMaptkImageDataGeometryFilter()
   : Internal(new vtkInternal)
 {
   this->ThresholdCells  = 0;
+  this->GenerateTriangleOutput = 0;
 
   this->UnprojectedPointArrayName = 0;
   this->SetUnprojectedPointArrayName("Points");
 
-  this->SetNumberOfOutputPorts(2);
-  // Is this required?
-  vtkPolyData *output2 = vtkPolyData::New();
-  this->GetExecutive()->SetOutputData(1, output2);
-  output2->Delete();
+  this->SetNumberOfOutputPorts(3);
 }
 
 //-----------------------------------------------------------------------------
@@ -139,6 +136,7 @@ int vtkMaptkImageDataGeometryFilter::RequestData(
   vtkPolyData *output = vtkPolyData::SafeDownCast(
     outInfo->Get(vtkDataObject::DATA_OBJECT()));
   vtkPolyData* outputUnprojected = vtkPolyData::GetData(outputVector, 1);
+  vtkPolyData* outputUnprojectedPolys = vtkPolyData::GetData(outputVector, 2);
 
   vtkPoints *newPts=0;
   vtkDebugMacro(<< "Extracting structured points geometry");
@@ -173,12 +171,14 @@ int vtkMaptkImageDataGeometryFilter::RequestData(
   {
     vtkErrorMacro(<< "Unable to find / use input3D points for 2nd output");
     outputUnprojected->SetPoints(newPts);
+    outputUnprojectedPolys->SetPoints(newPts);
   }
   else
   {
     vtkPoints* points3D = vtkPoints::New();
     points3D->SetData(inputPoints);
     outputUnprojected->SetPoints(points3D);
+    outputUnprojectedPolys->SetPoints(points3D);
     points3D->FastDelete();
   }
 
@@ -200,6 +200,7 @@ int vtkMaptkImageDataGeometryFilter::RequestData(
   vtkPointData* pointData = input->GetPointData();
   output->GetPointData()->ShallowCopy(pointData);
   outputUnprojected->GetPointData()->ShallowCopy(pointData);
+  outputUnprojectedPolys->GetPointData()->ShallowCopy(pointData);
 
   struct ConstraintType
   {
@@ -282,68 +283,73 @@ int vtkMaptkImageDataGeometryFilter::RequestData(
     newVerts->InsertNextCell(1, &i);
   }
 
-  // Add triangles according to the validPoints; all 3 points making up a
-  // triangle must be valid
-  vtkCellArray* newPolys = vtkCellArray::New();
-  int numberOfRowsMinus1 = extents[3] - extents[2];
-  int numberOfColumnsMinus1 = extents[1] - extents[0];
-  newPolys->Allocate(2 * 4 * numberOfRowsMinus1 * numberOfColumnsMinus1);
-  output->SetPolys(newPolys);
-  outputUnprojected->SetPolys(newPolys);
-  newPolys->FastDelete();
-
-  // Setup pointers to two first rows of validPoints
-  vtkIdType* thisRow = validPoints;
-  vtkIdType* nextRow = validPoints + (numberOfColumnsMinus1 + 1);
-  vtkIdType triIds[3];
-  for (int i = 0; i < numberOfRowsMinus1; ++i, ++thisRow, ++nextRow)
+  if (this->GenerateTriangleOutput)
   {
-    for (int j = 0; j < numberOfColumnsMinus1; ++j, ++thisRow, ++nextRow)
+    // Add triangles according to the validPoints; all 3 points making up a
+    // triangle must be valid
+    vtkCellArray* newPolys = vtkCellArray::New();
+    int numberOfRowsMinus1 = extents[3] - extents[2];
+    int numberOfColumnsMinus1 = extents[1] - extents[0];
+    newPolys->Allocate(2 * 4 * numberOfRowsMinus1 * numberOfColumnsMinus1);
+    outputUnprojectedPolys->SetPolys(newPolys);
+    newPolys->FastDelete();
+
+    // Setup pointers to two first rows of validPoints
+    vtkIdType* thisRow = validPoints;
+    vtkIdType* nextRow = validPoints + (numberOfColumnsMinus1 + 1);
+    vtkIdType triIds[3];
+    for (int i = 0; i < numberOfRowsMinus1; ++i, ++thisRow, ++nextRow)
     {
-      // if all 4 points for this quad are valid, add two triangles; if 3 valid
-      // points add a single triangle, otherwise add no triangles
-      if (*thisRow != -1 && *(thisRow + 1) != -1 &&
+      for (int j = 0; j < numberOfColumnsMinus1; ++j, ++thisRow, ++nextRow)
+      {
+        // if all 4 points for this quad are valid, add two triangles; if 3 valid
+        // points add a single triangle, otherwise add no triangles
+        if (*thisRow != -1 && *(thisRow + 1) != -1 &&
           *nextRow != -1 && *(nextRow + 1) != -1)
-      {
-        triIds[0] = *thisRow;
-        triIds[1] = *(thisRow + 1);
-        triIds[2] = *(nextRow + 1);
-        newPolys->InsertNextCell(3, triIds);
-        triIds[1] = triIds[2];
-        triIds[2] = *nextRow;
-        newPolys->InsertNextCell(3, triIds);
-      }
-      else if (*thisRow != -1 && *(thisRow + 1) != -1 && *nextRow != -1)
-      {
-        triIds[0] = *thisRow;
-        triIds[1] = *(thisRow + 1);
-        triIds[2] = *nextRow;
-        newPolys->InsertNextCell(3, triIds);
-      }
-      else if (*thisRow != -1 && *(thisRow + 1) != -1 && *(nextRow + 1) != -1)
-      {
-        triIds[0] = *thisRow;
-        triIds[1] = *(thisRow + 1);
-        triIds[2] = *(nextRow + 1);
-        newPolys->InsertNextCell(3, triIds);
-      }
-      else if (*thisRow != -1 && *nextRow != -1 && *(nextRow + 1) != -1)
-      {
-        triIds[0] = *thisRow;
-        triIds[1] = *(nextRow + 1);
-        triIds[2] = *nextRow;
-        newPolys->InsertNextCell(3, triIds);
-      }
-      else if (*(thisRow + 1) != -1 && *nextRow != -1 && *(nextRow + 1) != -1)
-      {
-        triIds[0] = *(thisRow + 1);
-        triIds[1] = *(nextRow + 1);
-        triIds[2] = *nextRow;
-        newPolys->InsertNextCell(3, triIds);
+        {
+          triIds[0] = *thisRow;
+          triIds[1] = *(thisRow + 1);
+          triIds[2] = *(nextRow + 1);
+          newPolys->InsertNextCell(3, triIds);
+          triIds[1] = triIds[2];
+          triIds[2] = *nextRow;
+          newPolys->InsertNextCell(3, triIds);
+        }
+        else if (*thisRow != -1 && *(thisRow + 1) != -1 && *nextRow != -1)
+        {
+          triIds[0] = *thisRow;
+          triIds[1] = *(thisRow + 1);
+          triIds[2] = *nextRow;
+          newPolys->InsertNextCell(3, triIds);
+        }
+        else if (*thisRow != -1 && *(thisRow + 1) != -1 && *(nextRow + 1) != -1)
+        {
+          triIds[0] = *thisRow;
+          triIds[1] = *(thisRow + 1);
+          triIds[2] = *(nextRow + 1);
+          newPolys->InsertNextCell(3, triIds);
+        }
+        else if (*thisRow != -1 && *nextRow != -1 && *(nextRow + 1) != -1)
+        {
+          triIds[0] = *thisRow;
+          triIds[1] = *(nextRow + 1);
+          triIds[2] = *nextRow;
+          newPolys->InsertNextCell(3, triIds);
+        }
+        else if (*(thisRow + 1) != -1 && *nextRow != -1 && *(nextRow + 1) != -1)
+        {
+          triIds[0] = *(thisRow + 1);
+          triIds[1] = *(nextRow + 1);
+          triIds[2] = *nextRow;
+          newPolys->InsertNextCell(3, triIds);
+        }
       }
     }
   }
-
+  else
+  {
+    outputUnprojectedPolys->SetVerts(newVerts);
+  }
   return 1;
 }
 
