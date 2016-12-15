@@ -67,7 +67,7 @@ public:
   void setPopup(QAction* action, QWidget* widget);
 
   bool viewNeedsReset;
-  bool pipelineConnected;
+  bool validDepthInput;
 
   Ui::DepthMapView UI;
 
@@ -117,7 +117,7 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   QTE_D();
 
   d->viewNeedsReset = true;
-  d->pipelineConnected = false;
+  d->validDepthInput = false;
 
   // Set up UI
   d->UI.setupUi(this);
@@ -192,18 +192,15 @@ DepthMapView::~DepthMapView()
 }
 
 //-----------------------------------------------------------------------------
-void DepthMapView::connectPipeline()
+void DepthMapView::setValidDepthInput(bool state)
 {
   QTE_D();
 
-  if (!d->inputDepthGeometryFilter || d->pipelineConnected)
+  d->validDepthInput = state;
+  if (!state)
   {
-    return;
+    d->actor->VisibilityOff();
   }
-
-  d->scalarFilter->SetInputConnection(d->inputDepthGeometryFilter->GetOutputPort());
-  d->actor->VisibilityOn();
-  d->pipelineConnected = true;
 }
 
 //-----------------------------------------------------------------------------
@@ -211,8 +208,11 @@ void DepthMapView::updateView(bool processUpdate)
 {
   QTE_D();
 
-  if (processUpdate && d->pipelineConnected && this->isVisible())
+  if (processUpdate && d->validDepthInput && this->isVisible())
   {
+    // Make sure the actor is visible
+    d->actor->VisibilityOn();
+
     // Reset the depth view if the bounds from the geometry filter prior to
     // update are invalid
     bool resetView = false;
@@ -255,6 +255,8 @@ void DepthMapView::setDepthGeometryFilter(vtkMaptkImageDataGeometryFilter* geome
   if (d->inputDepthGeometryFilter != geometryFilter)
   {
     d->inputDepthGeometryFilter = geometryFilter;
+    d->scalarFilter->SetInputConnection(d->inputDepthGeometryFilter ?
+      d->inputDepthGeometryFilter->GetOutputPort() : 0);
   }
 }
 

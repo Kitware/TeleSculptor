@@ -47,7 +47,8 @@ public:
   virtual ~DepthMapView();
 
 public slots:
-  void connectPipeline();
+
+  void setValidDepthInput(bool);
 
   void updateView(bool);
 

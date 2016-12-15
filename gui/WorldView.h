@@ -62,6 +62,7 @@ public slots:
   void addCamera(int id, vtkMaptkCamera* camera);
   void setLandmarks(kwiver::vital::landmark_map const&);
 
+  void setValidDepthInput(bool);
   void connectDepthPipeline();
   void setDepthGeometryFilter(vtkMaptkImageDataGeometryFilter*);
   void updateDepthMap();

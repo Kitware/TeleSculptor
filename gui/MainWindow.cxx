@@ -611,10 +611,8 @@ void MainWindowPrivate::loadDepthMap(QString const& imagePath)
 
   this->depthReader->SetFileName(qPrintable(imagePath));
 
-  // Once we have a filename set, we can execute the depth pipeline; at some
-  // point we may want to disconnect the piplelines or hide the relevant actor
-  this->UI.depthMapView->connectPipeline();
-  this->UI.worldView->connectDepthPipeline();
+  this->UI.depthMapView->setValidDepthInput(true);
+  this->UI.worldView->setValidDepthInput(true);
 
   this->depthFilter->SetCamera(this->cameras[this->activeCameraIndex].camera);
   this->UI.worldView->updateDepthMap();

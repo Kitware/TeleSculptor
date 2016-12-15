@@ -99,7 +99,8 @@ public:
       cameraRepDirty(false),
       scaleDirty(false),
       axesDirty(false),
-      axesVisible(false)
+      axesVisible(false),
+      validDepthInput(false)
   {
   }
 
@@ -153,6 +154,7 @@ public:
   vtkNew<vtkMaptkScalarDataFilter> depthScalarFilter;
   vtkNew<vtkActor> depthMapActor;
 
+  bool validDepthInput;
   bool validImage;
   bool validTransform;
 
@@ -492,9 +494,26 @@ void WorldView::setBackgroundColor(QColor const& color)
 }
 
 //-----------------------------------------------------------------------------
+void WorldView::setValidDepthInput(bool state)
+{
+  QTE_D();
+  d->validDepthInput = state;
+  if (!state)
+  {
+    d->depthMapActor->VisibilityOff();
+  }
+}
+
+//-----------------------------------------------------------------------------
 void WorldView::connectDepthPipeline()
 {
   QTE_D();
+
+  if (!d->inputDepthGeometryFilter)
+  {
+    d->depthScalarFilter->SetInputConnection(0);
+    return;
+  }
 
   switch (d->depthMapOptions->displayMode())
   {
@@ -516,7 +535,11 @@ void WorldView::setDepthGeometryFilter(vtkMaptkImageDataGeometryFilter* geometry
 {
   QTE_D();
 
-  d->inputDepthGeometryFilter = geometryFilter;
+  if (d->inputDepthGeometryFilter != geometryFilter)
+  {
+    d->inputDepthGeometryFilter = geometryFilter;
+    this->connectDepthPipeline();
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -565,6 +588,8 @@ void WorldView::updateDepthMap()
       qWarning() << "Failed to load data from depth map";
     }
   }
+
+  this->setDepthMapVisible(d->UI.actionShowDepthMap->isChecked());
 }
 
 //-----------------------------------------------------------------------------
@@ -750,10 +775,13 @@ void WorldView::setDepthMapVisible(bool state)
 {
   QTE_D();
 
-  d->depthMapActor->SetVisibility(state);
+  if (d->validDepthInput &&
+      d->depthMapActor->GetVisibility() != static_cast<int>(state))
+  {
+    d->depthMapActor->SetVisibility(state);
+    d->UI.renderWidget->update();
+  }
   d->depthMapOptions->setEnabled(state);
-
-  d->UI.renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
