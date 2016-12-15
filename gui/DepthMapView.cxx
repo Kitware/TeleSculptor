@@ -224,7 +224,6 @@ void DepthMapView::updateView(bool processUpdate)
 
     d->inputDepthGeometryFilter->Update();
 
-    vtkPointData* pd = d->inputDepthGeometryFilter->GetOutput()->GetPointData();
     d->depthMapViewOptions->updateRanges(
       d->inputDepthGeometryFilter->GetOutput()->GetPointData());
     d->depthMapViewOptions->updateActor();
