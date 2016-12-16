@@ -94,13 +94,13 @@ class WorldViewPrivate
 {
 public:
   WorldViewPrivate()
-    : validImage(false),
+    : validDepthInput(false),
+      validImage(false),
       validTransform(false),
       cameraRepDirty(false),
       scaleDirty(false),
       axesDirty(false),
-      axesVisible(false),
-      validDepthInput(false)
+      axesVisible(false)
   {
   }
 
