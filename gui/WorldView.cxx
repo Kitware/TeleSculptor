@@ -94,7 +94,8 @@ class WorldViewPrivate
 {
 public:
   WorldViewPrivate()
-    : validDepthInput(false),
+    : rangeUpdateNeeded(false),
+      validDepthInput(false),
       validImage(false),
       validTransform(false),
       cameraRepDirty(false),
@@ -149,11 +150,11 @@ public:
   vtkNew<vtkMatrix4x4> imageProjection;
   vtkNew<vtkMatrix4x4> imageLocalTransform;
 
-  vtkTimeStamp DepthMapExecutionTimeStamp;
   vtkSmartPointer<vtkMaptkImageDataGeometryFilter> inputDepthGeometryFilter;
   vtkNew<vtkMaptkScalarDataFilter> depthScalarFilter;
   vtkNew<vtkActor> depthMapActor;
 
+  bool rangeUpdateNeeded;
   bool validDepthInput;
   bool validImage;
   bool validTransform;
@@ -547,11 +548,30 @@ void WorldView::updateDepthMap()
 {
   QTE_D();
 
+  if (!d->depthMapActor->GetVisibility())
+  {
+    d->rangeUpdateNeeded = true;
+    return;
+  }
+
+  // d->rangeUpdateNeeded set to false in updateThresholdRanges
+  this->updateThresholdRanges();
+
+  this->setDepthMapVisible(d->UI.actionShowDepthMap->isChecked());
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::updateThresholdRanges()
+{
+  QTE_D();
+
   if (!d->inputDepthGeometryFilter)
   {
     qWarning() << "Geometry filter is not set!";
     return;
   }
+
+  d->rangeUpdateNeeded = false;
 
   // Update threhsold settings per user settings
   vtkAlgorithm* geometryInputFilter =
@@ -589,7 +609,6 @@ void WorldView::updateDepthMap()
     }
   }
 
-  this->setDepthMapVisible(d->UI.actionShowDepthMap->isChecked());
 }
 
 //-----------------------------------------------------------------------------
@@ -779,6 +798,11 @@ void WorldView::setDepthMapVisible(bool state)
       d->depthMapActor->GetVisibility() != static_cast<int>(state))
   {
     d->depthMapActor->SetVisibility(state);
+
+    if (d->rangeUpdateNeeded && state)
+    {
+      this->updateThresholdRanges();
+    }
     d->UI.renderWidget->update();
   }
   d->depthMapOptions->setEnabled(state);

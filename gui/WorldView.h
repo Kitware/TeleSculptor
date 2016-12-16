@@ -101,6 +101,7 @@ protected slots:
   void updateDepthMapThresholds(bool filterState);
   void increaseDepthMapPointSize();
   void decreaseDepthMapPointSize();
+  void updateThresholdRanges();
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(WorldView)
