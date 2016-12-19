@@ -64,6 +64,8 @@ public slots:
   void saveCameras(QString const& path);
   void saveLandmarks();
   void saveLandmarks(QString const& path);
+  void saveDepthPoints();
+  void saveDepthPoints(QString const& path);
 
   void saveWebGLScene();
 

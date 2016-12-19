@@ -617,6 +617,7 @@ void MainWindowPrivate::loadDepthMap(QString const& imagePath)
   this->depthFilter->SetCamera(this->cameras[this->activeCameraIndex].camera);
   this->UI.worldView->updateDepthMap();
   this->UI.depthMapView->updateView(true);
+  this->UI.actionExportDepthPoints->setEnabled(true);
 }
 
 //-----------------------------------------------------------------------------
@@ -687,6 +688,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(saveCameras()));
   connect(d->UI.actionExportLandmarks, SIGNAL(triggered()),
           this, SLOT(saveLandmarks()));
+  connect(d->UI.actionExportDepthPoints, SIGNAL(triggered()),
+          this, SLOT(saveDepthPoints()));
 
   connect(d->UI.actionShowMatchMatrix, SIGNAL(triggered()),
           this, SLOT(showMatchMatrix()));
@@ -1087,6 +1090,38 @@ void MainWindow::saveCameras(QString const& path)
                        errors.join("  \n"));
 
     mb.exec();
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::saveDepthPoints()
+{
+  auto const path = QFileDialog::getSaveFileName(
+    this, "Export Depth Point Cloud", QString(),
+    "PLY file (*.ply);;"
+    "All Files (*)");
+
+  if (!path.isEmpty())
+  {
+    this->saveDepthPoints(path);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::saveDepthPoints(QString const& path)
+{
+  QTE_D();
+
+  try
+  {
+    d->UI.worldView->saveDepthPoints(path);
+  }
+  catch (...)
+  {
+    auto const msg =
+      QString("An error occurred while exporting depth points to \"%1\". "
+              "The output file may not have been written correctly.");
+    QMessageBox::critical(this, "Export error", msg.arg(path));
   }
 }
 

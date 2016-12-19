@@ -154,6 +154,7 @@ target_link_libraries(mapgui
   vital_apm
   vtkGUISupportQt
   vtkInteractionStyle
+  vtkIOPLY
   vtkIOXML
   vtkViewsCore
   vtkRenderingFreeTypeOpenGL

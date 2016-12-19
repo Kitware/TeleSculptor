@@ -58,6 +58,7 @@
 #include <vtkMatrix4x4.h>
 #include <vtkNew.h>
 #include <vtkPlaneSource.h>
+#include <vtkPLYWriter.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
@@ -1036,6 +1037,20 @@ void WorldView::updateDepthMapThresholds(bool filterState)
   emit depthMapThresholdsChanged();
 
   d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::saveDepthPoints(QString const& path)
+{
+  QTE_D();
+
+  vtkNew<vtkPLYWriter> writer;
+
+  writer->SetFileName(path.toStdString().c_str());
+  writer->SetInputData(d->depthScalarFilter->GetOutput());
+  writer->SetColorMode(0);
+  writer->SetArrayName(DepthMapArrays::TrueColor);
+  writer->Write();
 }
 
 //-----------------------------------------------------------------------------

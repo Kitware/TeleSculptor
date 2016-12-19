@@ -33,6 +33,7 @@
      </property>
      <addaction name="actionExportCameras"/>
      <addaction name="actionExportLandmarks"/>
+     <addaction name="actionExportDepthPoints"/>
      <addaction name="separator"/>
      <addaction name="actionWebGLScene"/>
     </widget>
@@ -319,6 +320,17 @@
    </property>
    <property name="toolTip">
     <string>Cancel execution of the currently running computation</string>
+   </property>
+  </action>
+  <action name="actionExportDepthPoints">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>PLY &amp;Depth Points...</string>
+   </property>
+   <property name="toolTip">
+    <string>Export the current depth map as a PLY point cloud</string>
    </property>
   </action>
  </widget>

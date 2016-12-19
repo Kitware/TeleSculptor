@@ -89,6 +89,7 @@ public slots:
   void viewToWorldFront();
   void viewToWorldBack();
 
+  void saveDepthPoints(QString const& path);
   void exportWebGLScene(QString const& path);
 
   void invalidateGeometry();
