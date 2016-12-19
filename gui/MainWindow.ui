@@ -327,10 +327,13 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>PLY &amp;Depth Points...</string>
+    <string>PLY &amp;Depth Map...</string>
+   </property>
+   <property name="iconText">
+    <string>PLY Depth Map</string>
    </property>
    <property name="toolTip">
-    <string>Export the current depth map as a PLY point cloud</string>
+    <string>Export the current back projected depth map as a PLY file</string>
    </property>
   </action>
  </widget>
