@@ -365,6 +365,8 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(setGroundPlaneVisible(bool)));
   connect(d->UI.actionShowDepthMap, SIGNAL(toggled(bool)),
           this, SLOT(setDepthMapVisible(bool)));
+  connect(d->UI.actionShowDepthMap, SIGNAL(toggled(bool)),
+          this, SIGNAL(depthMapEnabled(bool)));
 
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);

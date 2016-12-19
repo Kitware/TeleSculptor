@@ -69,6 +69,8 @@ public slots:
 
   void saveWebGLScene();
 
+  void enableSaveDepthPoints(bool);
+
   void setActiveCamera(int);
 
   void setViewBackroundColor();

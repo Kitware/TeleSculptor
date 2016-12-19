@@ -691,6 +691,9 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.actionExportDepthPoints, SIGNAL(triggered()),
           this, SLOT(saveDepthPoints()));
 
+  connect(d->UI.worldView, SIGNAL(depthMapEnabled(bool)),
+          this, SLOT(enableSaveDepthPoints(bool)));
+
   connect(d->UI.actionShowMatchMatrix, SIGNAL(triggered()),
           this, SLOT(showMatchMatrix()));
 
@@ -1091,6 +1094,18 @@ void MainWindow::saveCameras(QString const& path)
 
     mb.exec();
   }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::enableSaveDepthPoints(bool state)
+{
+  QTE_D();
+
+  if (state && d->depthGeometryFilter->GetOutput()->GetNumberOfVerts() <= 0)
+  {
+    state = false;
+  }
+  d->UI.actionExportDepthPoints->setEnabled(state);
 }
 
 //-----------------------------------------------------------------------------

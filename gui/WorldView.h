@@ -55,6 +55,7 @@ public:
 
 signals:
   void depthMapThresholdsChanged();
+  void depthMapEnabled(bool);
 
 public slots:
   void setBackgroundColor(QColor const&);
