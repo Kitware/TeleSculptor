@@ -50,6 +50,16 @@ Visualization Application
 
  * Added an icon in the GUI for the depth map.
 
+ * Added specialized vtk filters for efficiently processing the depth map for
+   display in both the WorldView and DepthMapView.
+
+ * Switched DepthMapView display representation to points instead of polygons;
+   it renders much faster and is indistinguishable for sufficiently large point
+   size. The '+' and '-' keys can be used to increase and decrease,
+   respectively, the point size of the depth map in both the WorldView and
+   DepthMapView; the point size of each display is controlled independently
+   based on focus.
+
 
 Fixes since last public release
 -------------------------------

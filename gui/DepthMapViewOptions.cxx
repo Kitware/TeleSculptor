@@ -34,6 +34,7 @@
 
 #include "DataArrays.h"
 #include "DataColorOptions.h"
+#include "vtkMaptkScalarDataFilter.h"
 
 #include <vtkActor.h>
 #include <vtkDataArray.h>
@@ -41,6 +42,8 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
+
+#include <qtScopedValueChange.h>
 
 #include <QtGui/QMenu>
 #include <QtGui/QWidgetAction>
@@ -172,6 +175,7 @@ void DepthMapViewOptions::updateRanges(vtkPointData* pointData)
   {
     if (mi.options)
     {
+      qtScopedBlockSignals bs{mi.options};
       auto const dataArray = pointData->GetArray(mi.arrayName);
       if (dataArray)
       {
@@ -205,11 +209,11 @@ void DepthMapViewOptions::updateActor()
 
   auto const& mi = d->modes[mode];
 
-  // Set active data on mapper
   auto const mapper = d->actor->GetMapper();
-  auto const pointData = mapper->GetInput()->GetPointData();
+  vtkMaptkScalarDataFilter* filter =
+    vtkMaptkScalarDataFilter::SafeDownCast(mapper->GetInputAlgorithm());
+  filter->SetScalarArrayName(mi.arrayName);
 
-  pointData->SetActiveScalars(mi.arrayName);
   mapper->SetScalarModeToUsePointData();
 
   if (mi.options)
@@ -224,7 +228,6 @@ void DepthMapViewOptions::updateActor()
     mapper->CreateDefaultLookupTable();
   }
 
-  mapper->Update();
   emit this->modified();
 }
 

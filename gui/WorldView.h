@@ -35,7 +35,7 @@
 
 #include <QtGui/QWidget>
 
-class vtkGeometryFilter;
+class vtkMaptkImageDataGeometryFilter;
 class vtkImageData;
 class vtkPolyData;
 
@@ -54,7 +54,7 @@ public:
   virtual ~WorldView();
 
 signals:
-  void depthMapThresholdsChanged(double, double, double, double);
+  void depthMapThresholdsChanged();
 
 public slots:
   void setBackgroundColor(QColor const&);
@@ -62,8 +62,10 @@ public slots:
   void addCamera(int id, vtkMaptkCamera* camera);
   void setLandmarks(kwiver::vital::landmark_map const&);
 
-  void setDepthGeometryFilter(vtkGeometryFilter*);
-  void updateDepthMap(vtkMaptkCamera* camera);
+  void setValidDepthInput(bool);
+  void connectDepthPipeline();
+  void setDepthGeometryFilter(vtkMaptkImageDataGeometryFilter*);
+  void updateDepthMap();
 
   void setImageData(vtkImageData* data, QSize const& dimensions);
 
@@ -96,7 +98,10 @@ protected slots:
   void updateCameras();
   void updateScale();
   void updateDepthMapDisplayMode();
-  void updateDepthMapThresholds();
+  void updateDepthMapThresholds(bool filterState);
+  void increaseDepthMapPointSize();
+  void decreaseDepthMapPointSize();
+  void updateThresholdRanges();
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(WorldView)
