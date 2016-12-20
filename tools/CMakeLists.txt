@@ -25,6 +25,11 @@ target_link_libraries(maptk_bundle_adjust_tracks
   PRIVATE             maptk kwiver_algo_core vital_apm kwiversys
   )
 
+kwiver_add_executable(maptk_apply_gcp apply_gcp.cxx)
+target_link_libraries(maptk_apply_gcp
+  PRIVATE             maptk kwiver_algo_core vital_apm kwiversys
+  )
+
 kwiver_add_executable(maptk_analyze_tracks analyze_tracks.cxx)
 target_link_libraries(maptk_analyze_tracks
   PRIVATE             maptk kwiver_algo_core vital_apm kwiversys
