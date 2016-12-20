@@ -1236,7 +1236,8 @@ void MainWindow::saveColoredMesh()
 
   auto const path = QFileDialog::getSaveFileName(
     this, "Export Colored Mesh", QString("colored_mesh.vtp"),
-    "Mesh file (*.vtp);;"
+    "VTK Polydata (*.vtp);;"
+    "PLY File (*.ply);;"
     "All Files (*)");
 
   if (!path.isEmpty())

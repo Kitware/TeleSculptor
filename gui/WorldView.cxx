@@ -94,6 +94,8 @@
 
 #include <QtCore/QDebug>
 
+#include <QFileInfo>
+
 using namespace LandmarkArrays;
 
 QTE_IMPLEMENT_D_FUNC(WorldView)
@@ -1267,14 +1269,26 @@ void WorldView::saveColoredMesh(const QString &path)
 {
   QTE_D();
 
-  vtkPolyData* mesh = d->contourFilter->GetOutput();
-
-  vtkNew<vtkXMLPolyDataWriter> writer;
-
-  writer->SetFileName(path.toStdString().c_str());
-  writer->AddInputDataObject(mesh);
-  writer->SetDataModeToBinary();
-  writer->Write();
+  const QString ext = QFileInfo(path).suffix().toLower();
+  if(ext == "ply")
+  {
+    vtkNew<vtkPLYWriter> writer;
+    writer->SetFileName(path.toStdString().c_str());
+    writer->SetColorMode(0);
+    vtkSmartPointer<vtkPolyData> mesh = d->contourFilter->GetOutput();
+    writer->SetArrayName(mesh->GetPointData()->GetScalars()->GetName());
+    writer->SetLookupTable(d->volumeActor->GetMapper()->GetLookupTable());
+    writer->AddInputDataObject(mesh);
+    writer->Write();
+  }
+  else
+  {
+    vtkNew<vtkXMLPolyDataWriter> writer;
+    writer->SetFileName(path.toStdString().c_str());
+    writer->SetDataModeToBinary();
+    writer->AddInputDataObject(d->contourFilter->GetOutput());
+    writer->Write();
+  }
 
   std::cout << "Saved : " << path.toStdString() << std::endl;
 }
