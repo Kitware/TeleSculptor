@@ -55,6 +55,7 @@ public:
 
 signals:
   void depthMapThresholdsChanged();
+  void depthMapEnabled(bool);
 
 public slots:
   void setBackgroundColor(QColor const&);
@@ -89,6 +90,7 @@ public slots:
   void viewToWorldFront();
   void viewToWorldBack();
 
+  void saveDepthPoints(QString const& path);
   void exportWebGLScene(QString const& path);
 
   void invalidateGeometry();

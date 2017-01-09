@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,6 +58,7 @@
 #include <vtkMatrix4x4.h>
 #include <vtkNew.h>
 #include <vtkPlaneSource.h>
+#include <vtkPLYWriter.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
@@ -364,6 +365,8 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(setGroundPlaneVisible(bool)));
   connect(d->UI.actionShowDepthMap, SIGNAL(toggled(bool)),
           this, SLOT(setDepthMapVisible(bool)));
+  connect(d->UI.actionShowDepthMap, SIGNAL(toggled(bool)),
+          this, SIGNAL(depthMapEnabled(bool)));
 
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
@@ -1043,6 +1046,20 @@ void WorldView::updateDepthMapThresholds(bool filterState)
   emit depthMapThresholdsChanged();
 
   d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::saveDepthPoints(QString const& path)
+{
+  QTE_D();
+
+  vtkNew<vtkPLYWriter> writer;
+
+  writer->SetFileName(path.toStdString().c_str());
+  writer->SetInputConnection(d->depthScalarFilter->GetOutputPort());
+  writer->SetColorMode(0);
+  writer->SetArrayName(DepthMapArrays::TrueColor);
+  writer->Write();
 }
 
 //-----------------------------------------------------------------------------
