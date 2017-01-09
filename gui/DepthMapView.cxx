@@ -146,8 +146,6 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   d->UI.renderWidget->SetRenderWindow(d->renderWindow.GetPointer());
 
   // Set up depth map actor
-  vtkNew<vtkMaptkScalarDataFilter> depthScalarFilter;
-
   d->scalarFilter->SetScalarArrayName(DepthMapArrays::Depth);
   d->mapper->SetInputConnection(d->scalarFilter->GetOutputPort());
   d->actor->SetMapper(d->mapper.GetPointer());
