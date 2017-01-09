@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1049,7 +1049,7 @@ void WorldView::saveDepthPoints(QString const& path)
   vtkNew<vtkPLYWriter> writer;
 
   writer->SetFileName(path.toStdString().c_str());
-  writer->SetInputData(d->depthScalarFilter->GetOutput());
+  writer->SetInputConnection(d->depthScalarFilter->GetOutputPort());
   writer->SetColorMode(0);
   writer->SetArrayName(DepthMapArrays::TrueColor);
   writer->Write();
