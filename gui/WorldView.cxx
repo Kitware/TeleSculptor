@@ -550,14 +550,21 @@ void WorldView::updateDepthMap()
 
   if (!d->depthMapActor->GetVisibility())
   {
-    d->rangeUpdateNeeded = true;
-    return;
+    if (d->UI.actionShowDepthMap->isChecked())
+    {
+      d->depthMapActor->SetVisibility(true);
+    }
+    else
+    {
+      d->rangeUpdateNeeded = true;
+      return;
+    }
   }
 
   // d->rangeUpdateNeeded set to false in updateThresholdRanges
   this->updateThresholdRanges();
 
-  this->setDepthMapVisible(d->UI.actionShowDepthMap->isChecked());
+  d->UI.renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
