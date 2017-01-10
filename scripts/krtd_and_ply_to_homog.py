@@ -116,7 +116,7 @@ def main():
         homogs.append(H)
 
     homogs = [("%d %d" % (i,i), H) for i, H in enumerate(homogs)]
-    write_homog_file(homogs, out_homog_file)
+    write_homography_file(homogs, out_homog_file)
 
 
 
