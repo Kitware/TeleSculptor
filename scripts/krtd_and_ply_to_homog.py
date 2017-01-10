@@ -45,6 +45,14 @@ from landmark_io import *
 from homography_io import *
 
 
+def homography_to_ground(camera):
+    """Computes the homography from the image plane to Z=0 plane
+    """
+    K, R, t, _ = camera
+    H = np.dot(K, np.hstack((R[:,0:2],t)))
+    return npla.inv(H)
+
+
 def homography_from_plane(camera1, camera2, plane):
     """Computes the homography induced by a plane between images of
     camera1 and camera2.  The resulting homography maps a point from
@@ -78,6 +86,10 @@ def main():
     description = "Read a PLY and set of KRTDs and produce a homography file"
     parser = OptionParser(usage=usage, description=description)
 
+    parser.add_option("-z", "--use-z-plane",
+                      action="store_true", dest="z_plane")
+    parser.add_option("-g", "--to-ground",
+                      action="store_true", dest="to_ground")
     (options, args) = parser.parse_args()
 
     ply_filename = args[0]
@@ -87,17 +99,23 @@ def main():
     L , _ = load_landmark_ply_file(ply_filename)
     C = load_camera_krtd_glob(krtd_glob)
 
-    plane = estimate_plane(L)
+    if options.z_plane:
+        plane = np.array([0, 0, 1, 0])
+    else:
+        plane = estimate_plane(L)
 
     cams = sorted(C.iteritems())
     cam0 = cams[0][1]
     homogs = []
     for f, cam in cams:
         print f
-        H = homography_from_plane(cam, cam0, plane)
+        if options.to_ground:
+            H = homography_to_ground(cam)
+        else:
+            H = homography_from_plane(cam, cam0, plane)
         homogs.append(H)
 
-    homogs = [("%d %d"%(i,i), H) for i, H in enumerate(homogs)]
+    homogs = [("%d %d" % (i,i), H) for i, H in enumerate(homogs)]
     write_homography_file(homogs, out_homog_file)
 
 
