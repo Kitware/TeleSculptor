@@ -1,0 +1,30 @@
+MAPTK Release Notes for changes pending release approval by AFRL
+================================================================
+
+This file documents release notes for changes made to MAP-Tk which require
+public release approval from AFRL.  After approval, the changes and
+corresponding notes below will be incorporated into a public numbered
+release version, and the content of this file will be reset.
+
+
+Updates since last public release
+---------------------------------
+
+
+Scripts
+
+ * Added options in the krtd_and_ply_to_homogs.py script to estimate a ground
+   plane from the PLY data or use the Z=0 plane when computing homographies.
+
+ * Added an option in the mosaic_images.py script to scale the output image.
+
+ * Improved memory efficiency of mosaic_images.py by avoiding preloading of
+   all images.
+
+Tools
+
+Visualization Application
+
+
+Fixes since last public release
+-------------------------------
