@@ -1,0 +1,158 @@
+MAP-Tk v0.9.0 Release Notes
+==========================
+
+This is a minor release of MAP-Tk that provides both new functionality and
+fixes over the previous v0.8.1 release.  However, MAP-Tk is still considered
+pre-release software and subject to significant API changes.
+
+
+Updates since v0.8.1
+---------------------------------
+
+MAP-Tk Library
+
+ * Removed the standalone canonical_transform() function in transform.h in
+   favor of an abstract algorithm with implementation in the core plugin.
+
+ * Added a function to match_matrix.h to use the match matrix to score each
+   track on how important it is in covering the match matrix.
+
+ * Moved a function to extract a camera from an essential matrix from the core
+   initialize_cameras_landmarks algorithm into epipolar_geometry.h.
+
+Core Plugin
+
+ * Added a new algorithm for canonical transform with the implementation
+   details moved from the function that was in transform.h.
+
+ * Added a new loop closure algorithm implementation that searches for
+   matches in a local neighborhood and then establishes keyframes for
+   long term loop closure outside that neighborhood.  This algorithm
+   is generally slower than others, but can be configured to produce
+   considerably more dense match matrices with longer tracks.  It also handles
+   long term loop closure without any assumption about planar scenes.
+
+ * Added a new matcher that uses a fundamental matrix constraint to filter bad
+   matches.
+
+ * Added more config parameters to the initialize_cameras_landmarks algorithm
+   to allow more control on how the algorithm is run and what thresholds are
+   used.
+
+ * Added a new loop closure algorithm that exhaustively matches all pairs of
+   frames, or can be configured to match all frames within a moving temporal
+   window.
+
+OpenCV Plugin
+
+ * Added support for OpenCV version >= 3.0 while maintaining support for
+   OpenCV >= 2.4.6.  We may drop support for OpenCV 2.X in a future release.
+
+ * Overhauled OpenCV algorithm introspection structure. Versions 3.x took away
+   the previous ability to introspect algorithm types and parameters,
+   requiring, for at least versions 3.x, for there to be manual wrappings of
+   each algorithm to be exposed. Removed introspection for any version and
+   now have cross-version compatible manual wrappings of all algorithms at
+   least present in 3.x that fill the feature detection, descriptor extraction
+   and feature matching roles.
+
+ * Added an OpenCV fundamental matrix estimation wrapper. OpenCV can estimate a
+   fundamental matrix with the presence of outliers using RANSAC.
+
+VXL Plugin
+
+ * Added a new algorithm for canonical transform which uses robust estimation
+   (e.g. RANSAC, LMS, IRLS) from the Rensselaer robust estimation library
+   (rrel) in VXL to fit a ground plane to the data.  The ground plane becomes
+   the Z=0 plane.  The rest of the free parameters are then fit by PCA as in
+   the core plugin implementation.
+
+ * Added a video_input algorithm implementation that uses the FFmpeg via the
+   vidl_ffmpeg_istream class to read video frames and KLV metadata from encoded
+   video files.
+
+Visualization Application
+
+ * Updated the "Align" tool to use the configurable abstract algorithm
+   for canonical transform.
+
+ * Added an option to display the world axes around the visible geometry.
+   This option can be enabled and disabled in the "View" menu.
+
+ * Added an option to export the current scene to webGL. This option is only
+   available if VTK was built with the option Module_vtkWebGLExporter turned on.
+   This option can then be found in the "File > Export" menu.
+
+ * The absolute path to the current frame is now displayed at the bottom of the
+   Camera view.
+
+ * The GUI now accepts a list of files to be opened on the command line.
+
+ * Added a depth map view and a depth map visualization in the world view. The
+   depth maps can be thresholded directly in the world view, and the depth map
+   view offers several visualization modes such as depths, uniqueness ratios or
+   best cost values. Depth maps can be loaded by initializing the parameter
+   "depthmaps_images_file" with the path to the depth maps (*.vti files) list in
+   the configuration file.
+
+Tools
+
+ * Updated the bundle_adjust_tracks tool to use the configurable abstract
+   algorithm for canonical transform.
+
+ * Added an option to the bundle_adjust_tracks tool to remove all the KRTD
+   files from the output directory before writing new ones.  This is useful
+   when only a subset of cameras are computed and we do not want a mix of
+   old and new camera files.
+
+ * Added ``-h`` option to C++ track features too. Equivalent to ``--help``.
+
+Scripts
+
+ * Added a Python script which uses OpenCV to produce mosaicked images of
+   video frames using the homographies produced by maptk_track_features.
+
+Default Configuration
+
+ * Switched default loop closure method to keyframe based instead of a mix
+   of homography based and bad frame detection.
+
+ * Switched default feature descriptors to use non-upright SURF.
+
+
+Fixes since v0.8.1
+-------------------------------
+
+Build System
+
+ * When Fletch is found, or referenced by Vital, CMake will now search the
+   Fletch install root when finding packages.  This removes the need to
+   manually point CMake at each dependent library provided by Fletch.
+
+ * Removed CMake option to build shared vs static libraries.  Due to the plugin
+   infrastructure used in Vital, we can no longer build static MAP-Tk
+   libraries.
+
+Plugins
+
+ * Corrected all plugins to use the Vital logging framework instead of
+   cout and cerr for status, debug, and error messages.
+
+Tools
+
+ * Corrected the track_features and bundle_adjust_tracks tools to use the
+   Vital logging framework instead of cout and cerr for status, debug,
+   and error messages.
+
+ * Added a new track filtering option to the bundle_adjust_tracks tool
+   that filters tracks based on match matrix importance.  The idea is that
+   long tracks are usually most important, but some short tracks may be more
+   important if they are the only tracks that tie together a pair of frames.
+
+ * Removed call to landmark triangulation algorithm that was effectively doing
+   nothing.
+
+VXL
+
+ * Fixed bug in bundle adjust implementation where input landmarks were being
+   accidentally modified in-place.

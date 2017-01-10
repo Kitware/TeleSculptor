@@ -2,11 +2,7 @@ MAPTK v0.6.1 Release Notes
 ==========================
 
 This release provides patches to the MAPTK v0.6.0 release to address issues.
-MAPTK v0.6.1 is primarily a bug fix release with very minimal new functionality.
-
-
-Updates since v0.6.0
---------------------
+MAPTK v0.6.1 is a bug fix release with no new functionality.
 
 
 Fixes since v0.6.0
@@ -18,11 +14,22 @@ Build System
    This allows CMake super builds to specify which Eigen MAP-Tk should build
    against.
 
+ * Fixed some issues with the default Visual Studio compiler flags that were
+   causing CMake to hang during VS2013 compiler tests.
+
 MAP-Tk Library
 
  * Fixed a bug in the camera_<T> type casting constructor that was causing some
    member variables to not be copied and cast.  Added a regression test to
    catch this issue.
+
+Tools
+
+ * Fixed a compile failure on some systems due to passing the base camera by
+   value in the pos2krtd tool.
+
+ * Fixed an issue in the track_feature tool where, when using a mask file, it
+   was throwing an error if the file exists, not when it was missing.
 
 Tests
 

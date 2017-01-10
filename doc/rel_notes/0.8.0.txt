@@ -1,0 +1,213 @@
+MAP-Tk v0.8.0 Release Notes
+==========================
+
+This is a major release of MAP-Tk that provides both new functionality and
+fixes over the previous v0.7.2 release.  However, MAP-Tk is still considered
+pre-release software and subject to significant API changes.
+
+The primary change in this release is a major refactoring of MAP-Tk into
+two repositories.  There is a new repository called Vital on which MAP-Tk
+now depends.  Vital now contains core framework constructs from MAP-Tk
+while the MAP-Tk repository contains plugins, tools, the GUI application,
+and some SfM specific helper functions.  This split will allow easier
+sharing of the core framework across KWIVER projects.  Some core features
+from the Vibrant repository (better logging and config parsing) were also
+integrated into Vital, and MAP-Tk benefits from those.
+
+As part of the refactoring MAP-Tk also moved to C++11.  C++11 provides most
+of what MAP-TK relied on Boost for.  Thus, the Boost dependency has been
+removed and replaced by standard library calls where available.  For other
+uses of Boost (e.g. filesystem, program options) we now rely on KWIVERSYS.
+KWIVERSYS is code provided by Vital and original developed to support CMake.
+
+The move to C++11 means dropping support for some older compilers. Visual
+Studio 2013 and above is now required on Windows.  Some versions of GCC with
+only partial C++11 support are still supported.  In particular, GCC 4.4.7 is
+supported to allow builds on CentOS 5/6; however, GCC 4.4.7 still requires
+Boost in some areas to address standard library deficiencies.
+
+Using the new, more powerful config file parsing in Vital the default MAP-Tk
+configuration files have been broken up into smaller files which reference
+each other and use namespaces for readability and reuse.  The default config
+files are now installed and shared by the GUI and CLI tools.
+
+There are numerous additional changes, especially in the GUI visualization
+application.  These changes are described below.
+
+
+Updates since v0.7.2
+---------------------------------
+
+MAP-Tk Library
+
+ * Moved a large number of core data types and abstract algorithms to a
+   new dependent project name Vital.  Vital will provide a common framework
+   for logging, configuration, and core data types to be shared across
+   KWIVER projects.
+
+ * Changed the camera and camera_intrinsic classes to act as higher level
+   containers.  Each now has an abstract base class and a "simple" concrete
+   class.  The templated derived classes (e.g. camera_<T>) have been removed.
+   The simple classes use the double type internally.
+
+ * Changed the camera to contain a shared pointer to a camera_intrinsics
+   object rather than an instance.  This allows cameras to share common
+   intrinsics.
+
+ * Moved some common functions like project() and depth() into the camera
+   base class to allow usage without down-casting.
+
+ * Changed the canonical transform function to set the orientation
+   based on the eigenvector of the landmark point cloud.  The cameras are
+   now only used to set the sign of the up vector (Z-axis).
+
+ * Improved the Necker reversal transform so that the residual error
+   is now kept low after the transform and the transform is now involutory.
+   That is, applying the reversal a second time will return to the previous
+   state.
+
+ * Removed required dependency on Boost. Replaced Boost with equivalent
+   functions in the C++11 standard library when available.  When not available
+   kwiversys (found in Vital) provides equivalent constructs.  The exception
+   is that the unit tests will require boost::random for some older C++0x
+   compilers without std::random.
+
+ * Applying transformations now better preserve additional data associated with
+   landmarks (e.g. color, number of observations).
+
+ * Added a new utility module with functions to extract feature colors from
+   an input image (and apply to relevant features in a feature track set), and
+   to compute landmark colors from a feature track set with color information.
+
+ * Refactored some helper functions into epipolar_geometry.h for converting
+   between fundamental matrices, essential matrices, and cameras, and for
+   computing inliers to a fundamental matrix within feature matches.
+
+Configuration
+
+ * The sample config files for the tools have now been refactored.  Reusable
+   default config files for each algorithm are now provided in the "config"
+   directory and example top-level config files are provided in the "examples"
+   directory, organized by data set.  The example config files include the
+   algorithm config files using the new "include" directive.  Algorithm config
+   files may include other algorithm include files.
+
+ * Config files are now installed with the application and can be found at
+   runtime anywhere on the configuration search path.  The configuration
+   search path can be extended with the KWIVER_CONFIG_PATH environment
+   variable.
+
+Core Plugin
+
+ * Updated triangulate_landmarks to set the number of observations on each
+   computed landmark.
+
+ * Improved initialize_cameras_landmarks to allow for incremental
+   initialization that optionally runs an occasional bundle adjustment
+   and can remove landmarks/tracks that still have larger error after
+   bundle adjustment.  It also applies Necker reversal and runs another
+   bundle adjustment to test if the reversed solution has lower error.
+
+Ceres Plugin
+
+ * Added an option to the bundle adjust algorithm to control how camera
+   intrinsics are shared across cameras.  The default auto sharing mode
+   optimizes a separate set of intrinsics for each camera_intrinsics object
+   shared amongst the cameras.  Additional options allow forcing each camera
+   to have its own independent intrinsics and forcing all cameras share
+   one common set of intrinsics.
+
+ * Modified bundle_adjust to preserve additional data associated with landmarks
+   (e.g. color, number of observations) during optimization.
+
+VXL Plugin
+
+ * Updated triangulate_landmarks to set the number of observations on each
+   computed landmark.
+
+ * Added an initial implementation of fundamental matrix estimation using VXL.
+
+Visualization Application
+
+ * Added ability to execute some computations (for now, computing and applying
+   basic transformations, applying bundle adjustment to refine the solution)
+   from within the GUI.
+
+ * Added ability to export cameras and landmarks to (respectively) KRTD and PLY
+   files.
+
+ * Added ability to visualize locations of corresponding feature points on
+   adjacent frames to the camera view. This may be helpful as an additional
+   means of visualizing camera motion when there exists a spatial correlation
+   between adjacent cameras (e.g. frames extracted from continuous-shot video).
+
+ * Added "match matrix" view, allowing the number of corresponding feature
+   points for arbitrary frame pairs to be visualized as a "heat map" with
+   various Visualization options.
+
+ * Added ability to load imagery directly, and without requiring that cameras
+   are loaded.
+
+ * Added ability to visualize landmarks by "true color", elevation, or number
+   of observations, when relevant data is available.
+
+ * Added ability to selectively display ("filter") landmarks based on values of
+   available data (e.g. elevation, number of observations).
+
+ * Added ground plane display to world view.
+
+ * Added ability to view camera frame image, projected to the ground plane, in
+   the world view.
+
+ * Added ability to toggle world view between parallel and perspective
+   projections, and to reset the rotation of the same to one of several basic
+   presets (top, left, etc.).
+
+ * Added ability to change the background color of the views.
+
+ * The GUI user manual can now be accessed from within the GUI.
+
+ * Added an "About" dialog including information about the version number,
+   acknowledgements, license, and build information.
+
+OCV Plugin
+
+ * Images are now mapped so that the first channel of the vital::image view is
+   red (RGB) rather than blue (BGR).
+
+SketchUp Plugin
+
+ * Added a new plugin (Ruby scripts) for the SketchUp 3D Modeling software
+   (http://www.sketchup.com/) that allow direct import of MAP-Tk outputs by
+   loading the MAP-Tk config files or individually loading KRTD or PLY files.
+   Once loaded, the cameras are presented as "Photo Match" pages which allows
+   the user to build models aligned to images.
+
+Tools
+
+ * The track features tool now extracts feature colors and writes them to the
+   track file.
+
+ * The bundle adjust tool now computes landmark colors from feature colors and
+   writes them to the landmark PLY.
+
+
+Fixes since v0.7.2
+-------------------------------
+
+OpenCV Plugin
+
+ * Fixed an issue with some parameters to draw_tracks and analyze_tracks
+   in which the get_configuration function was always returning the default
+   parameters, even after other values were set.
+
+Visualization Application
+
+ * Several performance bottlenecks that limited the rate at which "slideshow"
+   mode could switch frames have been identified and mitigated.
+
+ * Fixed bug where newly loaded landmarks would be visible in the world view
+   even if landmarks were disabled.
+
+ * Fixed bug that caused feature tracks to be "misaligned" if a camera could
+   not be loaded.

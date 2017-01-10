@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2014-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,39 +34,45 @@
 #include <string>
 #include <vector>
 
-#include <maptk/algo/image_io.h>
-#include <maptk/algo/analyze_tracks.h>
-#include <maptk/algo/draw_tracks.h>
-#include <maptk/algorithm_plugin_manager.h>
-#include <maptk/camera.h>
-#include <maptk/camera_map_io.h>
-#include <maptk/landmark_map.h>
-#include <maptk/landmark_map_io.h>
-#include <maptk/camera_io.h>
-#include <maptk/projected_track_set.h>
-#include <maptk/image_container.h>
-#include <maptk/config_block.h>
-#include <maptk/config_block_io.h>
-#include <maptk/exceptions.h>
-#include <maptk/track_set_io.h>
-#include <maptk/types.h>
+#include <vital/config/config_block.h>
+#include <vital/config/config_block_io.h>
 
-#include <boost/foreach.hpp>
-#include <boost/filesystem.hpp>
+#include <vital/algorithm_plugin_manager.h>
+#include <vital/algo/image_io.h>
+#include <vital/exceptions.h>
+#include <vital/io/camera_io.h>
+#include <vital/io/camera_map_io.h>
+#include <vital/io/landmark_map_io.h>
+#include <vital/io/track_set_io.h>
+#include <vital/types/camera.h>
+#include <vital/types/image_container.h>
+#include <vital/types/landmark_map.h>
+#include <vital/vital_types.h>
+#include <vital/algo/analyze_tracks.h>
+#include <vital/algo/draw_tracks.h>
+#include <vital/util/get_paths.h>
 
-#include <boost/program_options/options_description.hpp>
-#include <boost/program_options/parsers.hpp>
-#include <boost/program_options/value_semantic.hpp>
-#include <boost/program_options/variables_map.hpp>
+#include <kwiversys/SystemTools.hxx>
+#include <kwiversys/CommandLineArguments.hxx>
+
+#include <arrows/core/projected_track_set.h>
+#include <maptk/version.h>
+
+typedef kwiversys::SystemTools     ST;
+typedef kwiversys::CommandLineArguments argT;
 
 
-namespace bfs = boost::filesystem;
+// Global options
+bool        opt_help( false );
+std::string opt_config;         // config file name
+std::string opt_out_config;     // output config file name
 
 
-static maptk::config_block_sptr default_config()
+// ------------------------------------------------------------------
+static kwiver::vital::config_block_sptr default_config()
 {
-  maptk::config_block_sptr config =
-    maptk::config_block::empty_config( "analyze_tracks_tool" );
+  kwiver::vital::config_block_sptr config =
+    kwiver::vital::config_block::empty_config( "analyze_tracks_tool" );
 
   config->set_value( "track_file", "",
                      "Path to a required input file containing all features tracks "
@@ -88,23 +94,24 @@ static maptk::config_block_sptr default_config()
                      "Path to an optional camera directory, which can be used alongside "
                      "a landmark ply file to generate a comparison track set." );
 
-  maptk::algo::analyze_tracks::get_nested_algo_configuration(
-    "track_analyzer", config, maptk::algo::analyze_tracks_sptr() );
+  kwiver::vital::algo::analyze_tracks::get_nested_algo_configuration(
+    "track_analyzer", config, kwiver::vital::algo::analyze_tracks_sptr() );
 
   return config;
 }
 
 
-static bool check_config( maptk::config_block_sptr config )
+// ------------------------------------------------------------------
+static bool check_config( kwiver::vital::config_block_sptr config )
 {
   if( !config->has_value( "track_file" ) ||
-      !bfs::exists( maptk::path_t( config->get_value<std::string>( "track_file" ) ) ) )
+      !ST::FileExists( kwiver::vital::path_t( config->get_value<std::string>( "track_file" ) ) ) )
   {
     std::cerr << "A valid track file must be specified!" << std::endl;
     return false;
   }
 
-  if( !maptk::algo::analyze_tracks::check_nested_algo_configuration( "track_analyzer", config ) )
+  if( !kwiver::vital::algo::analyze_tracks::check_nested_algo_configuration( "track_analyzer", config ) )
   {
     std::cerr << "Invalid analyze_tracks config" << std::endl;
     return false;
@@ -113,13 +120,13 @@ static bool check_config( maptk::config_block_sptr config )
   if( config->has_value( "image_list_file" ) &&
       !config->get_value<std::string>( "image_list_file" ).empty() )
   {
-    if( !bfs::exists( maptk::path_t( config->get_value<std::string>( "image_list_file" ) ) ) )
+    if( !ST::FileExists( kwiver::vital::path_t( config->get_value<std::string>( "image_list_file" ) ) ) )
     {
       std::cerr << "Cannot find image list file" << std::endl;
       return false;
     }
-    else if( !maptk::algo::image_io::check_nested_algo_configuration( "image_reader", config ) ||
-             !maptk::algo::image_io::check_nested_algo_configuration( "track_drawer", config ) )
+    else if( !kwiver::vital::algo::image_io::check_nested_algo_configuration( "image_reader", config ) ||
+             !kwiver::vital::algo::image_io::check_nested_algo_configuration( "track_drawer", config ) )
     {
       std::cerr << "Unable to configure track drawer" << std::endl;
       return false;
@@ -137,42 +144,41 @@ static bool check_config( maptk::config_block_sptr config )
 }
 
 
+// ------------------------------------------------------------------
 static int maptk_main(int argc, char const* argv[])
 {
-  // register the algorithm implementations
-  maptk::algorithm_plugin_manager::instance().register_plugins();
+  kwiversys::CommandLineArguments arg;
 
-  // define/parse CLI options
-  boost::program_options::options_description opt_desc;
-  opt_desc.add_options()
-    ( "help,h", "output help message and exit" )
-    ( "config,c",
-      boost::program_options::value<maptk::path_t>(),
-      "Configuration file for the tool." )
-    ( "output-config,o",
-      boost::program_options::value<maptk::path_t>(),
-      "Output a configuration.This may be seeded with a configuration file from -c/--config." )
-    ;
-  boost::program_options::variables_map vm;
+  arg.Initialize( argc, argv );
 
-  try
+  arg.AddArgument( "--help",        argT::NO_ARGUMENT, &opt_help, "Display usage information" );
+  arg.AddArgument( "--config",      argT::SPACE_ARGUMENT, &opt_config, "Configuration file for tool" );
+  arg.AddArgument( "-c",            argT::SPACE_ARGUMENT, &opt_config, "Configuration file for tool" );
+  arg.AddArgument( "--output-config", argT::SPACE_ARGUMENT, &opt_out_config,
+                   "Output a configuration. This may be seeded with a configuration file from -c/--config." );
+  arg.AddArgument( "-o",            argT::SPACE_ARGUMENT, &opt_out_config,
+                   "Output a configuration. This may be seeded with a configuration file from -c/--config." );
+
+
+  if ( ! arg.Parse() )
   {
-    boost::program_options::store(
-      boost::program_options::parse_command_line(argc, argv, opt_desc), vm );
-  }
-  catch( boost::program_options::unknown_option const& e )
-  {
-    std::cerr << "Error: unknown option " << e.get_option_name() << std::endl;
+    std::cerr << "Problem parsing arguments" << std::endl;
     return EXIT_FAILURE;
   }
 
-  boost::program_options::notify( vm );
-
-  if( vm.count( "help" ) )
+  if ( opt_help )
   {
-    std::cerr << opt_desc << std::endl;
+    std::cerr
+      << "USAGE: " << argv[0] << " [OPTS]\n\n"
+      << "Options:"
+      << arg.GetHelp() << std::endl;
     return EXIT_SUCCESS;
   }
+
+  // register the algorithm implementations
+  std::string rel_plugin_path = kwiver::vital::get_executable_path() + "/../lib/maptk";
+  kwiver::vital::algorithm_plugin_manager::instance().add_search_path(rel_plugin_path);
+  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
 
   // Set config to algo chain
   // Get config from algo chain after set
@@ -180,20 +186,20 @@ static int maptk_main(int argc, char const* argv[])
   //
   // If -o/--output-config given, output config result and notify of current (in)validity
   // Else error if provided config not valid.
-  namespace algo = maptk::algo;
-  namespace bfs = boost::filesystem;
 
   // Set up top level configuration w/ defaults where applicable.
-  maptk::config_block_sptr config = default_config();
+  kwiver::vital::config_block_sptr config = default_config();
 
-  algo::image_io_sptr image_reader;
-  algo::analyze_tracks_sptr analyze_tracks;
-  algo::draw_tracks_sptr draw_tracks;
+  kwiver::vital::algo::image_io_sptr image_reader;
+  kwiver::vital::algo::analyze_tracks_sptr analyze_tracks;
+  kwiver::vital::algo::draw_tracks_sptr draw_tracks;
 
   // If -c/--config given, read in confgi file, merge in with default just generated
-  if( vm.count( "config" ) )
+  if( ! opt_config.empty() )
   {
-    config->merge_config( maptk::read_config_file( vm[ "config" ].as<maptk::path_t>() ) );
+    const std::string prefix = kwiver::vital::get_executable_path() + "/..";
+    config->merge_config(kwiver::vital::read_config_file(opt_config, "maptk",
+                                                         MAPTK_VERSION, prefix));
   }
 
   // Load all input images if they are specified
@@ -205,22 +211,22 @@ static int maptk_main(int argc, char const* argv[])
 
   if( use_images )
   {
-    algo::image_io::set_nested_algo_configuration( "image_reader", config, image_reader );
-    algo::image_io::get_nested_algo_configuration( "image_reader", config, image_reader );
+    kwiver::vital::algo::image_io::set_nested_algo_configuration( "image_reader", config, image_reader );
+    kwiver::vital::algo::image_io::get_nested_algo_configuration( "image_reader", config, image_reader );
 
-    algo::draw_tracks::set_nested_algo_configuration( "track_drawer", config, draw_tracks );
-    algo::draw_tracks::get_nested_algo_configuration( "track_drawer", config, draw_tracks );
+    kwiver::vital::algo::draw_tracks::set_nested_algo_configuration( "track_drawer", config, draw_tracks );
+    kwiver::vital::algo::draw_tracks::get_nested_algo_configuration( "track_drawer", config, draw_tracks );
   }
 
-  algo::analyze_tracks::set_nested_algo_configuration( "track_analyzer", config, analyze_tracks );
-  algo::analyze_tracks::get_nested_algo_configuration( "track_analyzer", config, analyze_tracks );
+  kwiver::vital::algo::analyze_tracks::set_nested_algo_configuration( "track_analyzer", config, analyze_tracks );
+  kwiver::vital::algo::analyze_tracks::get_nested_algo_configuration( "track_analyzer", config, analyze_tracks );
 
   bool valid_config = check_config( config );
 
   // Output a config file if specified
-  if( vm.count( "output-config" ) )
+  if( ! opt_out_config.empty() )
   {
-    write_config_file( config, vm[ "output-config" ].as<maptk::path_t>() );
+    write_config_file( config, opt_out_config );
 
     if( valid_config )
     {
@@ -240,11 +246,11 @@ static int maptk_main(int argc, char const* argv[])
   }
 
   // Load main track set
-  maptk::track_set_sptr tracks;
+  kwiver::vital::track_set_sptr tracks;
 
   std::cout << std::endl << "Loading main track set file..." << std::endl;
   std::string track_file = config->get_value<std::string>( "track_file" );
-  tracks = maptk::read_track_file( track_file );
+  tracks = kwiver::vital::read_track_file( track_file );
 
   // Generate statistics if enabled
   if( analyze_tracks )
@@ -275,7 +281,7 @@ static int maptk_main(int argc, char const* argv[])
   // Read and process input images if set
   if( use_images )
   {
-    std::vector<maptk::path_t> image_paths;
+    std::vector<kwiver::vital::path_t> image_paths;
     std::string image_list_file = config->get_value<std::string>( "image_list_file" );
     std::ifstream ifs( image_list_file.c_str() );
 
@@ -292,7 +298,7 @@ static int maptk_main(int argc, char const* argv[])
     }
 
     // Load comparison tracks if enabled
-    maptk::track_set_sptr comparison_tracks;
+    kwiver::vital::track_set_sptr comparison_tracks;
 
     if( config->has_value( "comparison_track_file" ) &&
         !config->get_value<std::string>( "comparison_track_file" ).empty() )
@@ -301,7 +307,7 @@ static int maptk_main(int argc, char const* argv[])
 
       std::cout << std::endl << "Loading comparison track set file..." << std::endl;
 
-      comparison_tracks = maptk::read_track_file( track_file );
+      comparison_tracks = kwiver::vital::read_track_file( track_file );
     }
     else if( config->has_value( "comparison_landmark_file" ) &&
              !config->get_value<std::string>( "comparison_landmark_file" ).empty() &&
@@ -313,8 +319,8 @@ static int maptk_main(int argc, char const* argv[])
 
       std::cout << std::endl << "Loading comparison track set file..." << std::endl;
 
-      maptk::landmark_map_sptr landmarks = maptk::read_ply_file( landmark_file );
-      maptk::camera_map_sptr cameras = maptk::read_krtd_files( image_paths, camera_dir );
+      kwiver::vital::landmark_map_sptr landmarks = kwiver::vital::read_ply_file( landmark_file );
+      kwiver::vital::camera_map_sptr cameras = kwiver::vital::read_krtd_files( image_paths, camera_dir );
 
       if( !cameras )
       {
@@ -328,7 +334,7 @@ static int maptk_main(int argc, char const* argv[])
         return EXIT_FAILURE;
       }
 
-      comparison_tracks = projected_tracks( landmarks, cameras );
+      comparison_tracks = kwiver::arrows::projected_tracks( landmarks, cameras );
     }
 
     // Read images one by one, this is more memory efficient than loading them all
@@ -336,14 +342,14 @@ static int maptk_main(int argc, char const* argv[])
 
     for( unsigned i = 0; i < image_paths.size(); i++ )
     {
-      if( !bfs::exists( image_paths[i] ) )
+      if( !ST::FileExists( image_paths[i] ) )
       {
-        throw maptk::path_not_exists( image_paths[i] );
+        throw kwiver::vital::path_not_exists( image_paths[i] );
       }
 
-      maptk::image_container_sptr_list images;
+      kwiver::vital::image_container_sptr_list images;
 
-      maptk::image_container_sptr image = image_reader->load( image_paths[i].string() );
+      kwiver::vital::image_container_sptr image = image_reader->load( image_paths[i] );
       images.push_back( image );
 
       // Draw tracks on images
@@ -356,6 +362,7 @@ static int maptk_main(int argc, char const* argv[])
 }
 
 
+// ------------------------------------------------------------------
 int main( int argc, char const* argv[] )
 {
   try

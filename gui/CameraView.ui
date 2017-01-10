@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CameraView</class>
+ <widget class="QWidget" name="CameraView">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>595</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="margin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QToolBar" name="toolBar">
+     <property name="toolButtonStyle">
+      <enum>Qt::ToolButtonFollowStyle</enum>
+     </property>
+     <addaction name="actionViewReset"/>
+     <addaction name="separator"/>
+     <addaction name="actionShowFrameImage"/>
+     <addaction name="actionShowFeatures"/>
+     <addaction name="actionShowLandmarks"/>
+     <addaction name="actionShowResiduals"/>
+    </widget>
+   </item>
+   <item>
+    <widget class="QVTKWidget" name="renderWidget" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="labelImagePath">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="margin">
+      <number>1</number>
+     </property>
+     <property name="indent">
+      <number>3</number>
+     </property>
+     <property name="textInteractionFlags">
+      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+  <action name="actionViewReset">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/22x22/view-reset</normaloff>:/icons/22x22/view-reset</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Reset View</string>
+   </property>
+   <property name="toolTip">
+    <string>Reset the view to the camera image extents</string>
+   </property>
+   <property name="shortcut">
+    <string>R</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
+  </action>
+  <action name="actionViewResetFullExtents">
+   <property name="text">
+    <string>Zoom &amp;Extents</string>
+   </property>
+   <property name="toolTip">
+    <string>Reset the view extents so that the entire scene is visible</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+R</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
+  </action>
+  <action name="actionShowFeatures">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/22x22/feature</normaloff>:/icons/22x22/feature</iconset>
+   </property>
+   <property name="text">
+    <string>Show Features</string>
+   </property>
+   <property name="iconText">
+    <string>Features</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle visibility of feature points/tracks</string>
+   </property>
+   <property name="shortcut">
+    <string>F</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
+  </action>
+  <action name="actionShowLandmarks">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/22x22/landmark</normaloff>:/icons/22x22/landmark</iconset>
+   </property>
+   <property name="text">
+    <string>Show Landmarks</string>
+   </property>
+   <property name="iconText">
+    <string>Landmarks</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle visibility of landmarks</string>
+   </property>
+   <property name="shortcut">
+    <string>L</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
+  </action>
+  <action name="actionShowResiduals">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/22x22/residual</normaloff>:/icons/22x22/residual</iconset>
+   </property>
+   <property name="text">
+    <string>Show Residuals</string>
+   </property>
+   <property name="iconText">
+    <string>Residuals</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle visibility of landmark estimation residuals</string>
+   </property>
+   <property name="shortcut">
+    <string>E</string>
+   </property>
+  </action>
+  <action name="actionShowFrameImage">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/22x22/image</normaloff>:/icons/22x22/image</iconset>
+   </property>
+   <property name="text">
+    <string>Show Camera Frame Image</string>
+   </property>
+   <property name="iconText">
+    <string>Image</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle visibility of the camera frame image (projected to the ground plane)</string>
+   </property>
+   <property name="shortcut">
+    <string>I</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QVTKWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">QVTKWidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="icons/icons.qrc"/>
+ </resources>
+ <connections/>
+</ui>

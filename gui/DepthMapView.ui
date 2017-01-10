@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DepthMapView</class>
+ <widget class="QWidget" name="DepthMapView">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>429</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Depth Map View</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="icons/icons.qrc">
+    <normaloff>:/icons/22x22/depthmap</normaloff>:/icons/22x22/depthmap</iconset>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="margin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QToolBar" name="toolBar">
+     <property name="toolButtonStyle">
+      <enum>Qt::ToolButtonFollowStyle</enum>
+     </property>
+     <addaction name="actionViewReset"/>
+     <addaction name="actionDisplayMode"/>
+    </widget>
+   </item>
+   <item>
+    <widget class="QVTKWidget" name="renderWidget" native="true"/>
+   </item>
+  </layout>
+  <action name="actionDisplayMode">
+   <property name="text">
+    <string>Display mode</string>
+   </property>
+  </action>
+  <action name="actionViewReset">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/22x22/view-reset</normaloff>:/icons/22x22/view-reset</iconset>
+   </property>
+   <property name="text">
+    <string>Reset View</string>
+   </property>
+   <property name="shortcut">
+    <string>R</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QVTKWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">QVTKWidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="icons/icons.qrc"/>
+ </resources>
+ <connections/>
+</ui>

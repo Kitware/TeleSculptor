@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,16 +36,19 @@
 #ifndef MAPTK_LOCAL_GEO_CS_H_
 #define MAPTK_LOCAL_GEO_CS_H_
 
-#include <maptk/config.h>
 
-#include "algo/geo_map.h"
-#include "camera.h"
-#include "ins_data.h"
-#include "rotation.h"
-#include "types.h"
+#include <vital/vital_config.h>
+#include <maptk/maptk_export.h>
 
-namespace maptk
-{
+#include <vital/algo/geo_map.h>
+#include <maptk/ins_data.h>
+
+#include <vital/types/camera.h>
+#include <vital/types/rotation.h>
+#include <vital/vital_types.h>
+
+namespace kwiver {
+namespace maptk {
 
 
 /// Represents a local geo coordinate system origin expressed in UTM
@@ -53,26 +56,26 @@ namespace maptk
  *  Provides functions to use global INS data to update local camera pose
  *  and local camera pose to update global INS data.
  */
-class MAPTK_LIB_EXPORT local_geo_cs
+class MAPTK_EXPORT local_geo_cs
 {
 public:
   /// Constructor
-  explicit local_geo_cs(algo::geo_map_sptr alg);
+  explicit local_geo_cs(vital::algo::geo_map_sptr alg);
 
   /// Set the local UTM coordinate origin
-  void set_utm_origin(const vector_3d& origin) { utm_origin_ = origin; }
+  void set_utm_origin(const vital::vector_3d& origin) { utm_origin_ = origin; }
 
   /// Set the local UTM origin zone
   void set_utm_origin_zone(int zone) { utm_origin_zone_ = zone; }
 
   /// Access the local UTM coordinate origin
-  const vector_3d& utm_origin() const { return utm_origin_; }
+  const vital::vector_3d& utm_origin() const { return utm_origin_; }
 
   /// Access the local UTM origin zone
   int utm_origin_zone() const { return utm_origin_zone_; }
 
   /// Access the geographic mapping algorithm
-  algo::geo_map_sptr geo_map_algo() const { return geo_map_algo_; }
+  vital::algo::geo_map_sptr geo_map_algo() const { return geo_map_algo_; }
 
   /// Use the pose data provided by INS to update camera pose
   /**
@@ -80,18 +83,18 @@ public:
    * \param cam         The camera to be updated.
    * \param rot_offset  A rotation offset to apply to INS yaw pitch roll data
    */
-  void update_camera(const ins_data& ins, camera_d& cam,
-                     rotation_d const& rot_offset = rotation_d()) const;
+  void update_camera(const maptk::ins_data& ins, vital::simple_camera& cam,
+                     vital::rotation_d const& rot_offset = vital::rotation_d()) const;
 
   /// Use the camera pose to update an INS data structure
-  void update_ins_data(const camera_d& cam, ins_data& ins) const;
+  void update_ins_data(const vital::simple_camera& cam, maptk::ins_data& ins) const;
 
 private:
   /// An algorithm provided to compute geographic transformations
-  algo::geo_map_sptr geo_map_algo_;
+  vital::algo::geo_map_sptr geo_map_algo_;
 
   /// The local coordinates origin in UTM (easting, northing, altitude)
-  vector_3d utm_origin_;
+  vital::vector_3d utm_origin_;
 
   /// The UTM zone number containing the UTM origin
   int utm_origin_zone_;
@@ -112,12 +115,12 @@ private:
  *       and zone are determined from the mean camera easting and northing
  *       at zero altitude.
  */
-MAPTK_LIB_EXPORT
-std::map<frame_id_t, camera_sptr>
-initialize_cameras_with_ins(const std::map<frame_id_t, ins_data>& ins_map,
-                            const camera_d& base_camera,
+MAPTK_EXPORT
+std::map<vital::frame_id_t, vital::camera_sptr>
+initialize_cameras_with_ins(const std::map<vital::frame_id_t, maptk::ins_data>& ins_map,
+                            const vital::simple_camera& base_camera,
                             local_geo_cs& lgcs,
-                            rotation_d const& rot_offset = rotation_d());
+                            vital::rotation_d const& rot_offset = vital::rotation_d());
 
 
 /// Update a sequence of ins_data from a sequence of cameras and local_geo_cs
@@ -130,14 +133,15 @@ initialize_cameras_with_ins(const std::map<frame_id_t, ins_data>& ins_map,
  *                  a new one is created
  * \note the supplied lgcs must have a valid utm_origin_zone()
  */
-MAPTK_LIB_EXPORT
+MAPTK_EXPORT
 void
-update_ins_from_cameras(const std::map<frame_id_t, camera_sptr>& cam_map,
-                        const local_geo_cs& lgcs,
-                        std::map<frame_id_t, ins_data>& ins_map);
+update_ins_from_cameras(const std::map<vital::frame_id_t, vital::camera_sptr>& cam_map,
+                        const maptk::local_geo_cs& lgcs,
+                        std::map<vital::frame_id_t, maptk::ins_data>& ins_map);
 
 
 } // end namespace maptk
+} // end namespace kwiver
 
 
 #endif // MAPTK_LOCAL_GEO_CS_H_

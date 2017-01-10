@@ -1,0 +1,56 @@
+MAP-Tk v0.8.1 Release Notes
+===========================
+
+This release provides patches to the MAP-Tk v0.8.0 release to address issues.
+MAP-Tk v0.8.1 is a bug fix release with no new functionality.
+
+
+Fixes since v0.8.0
+--------------------
+
+Core Plugin
+
+ * In the core triangulation algorithm, landmarks that were not observed by
+   enough cameras or had no corresponding tracks were not counted towards the
+   number of failed triangulations.  Now they are.
+
+VXL Plugin
+
+ * Updated the CMake code for using VXL to handle changes in VXL master so that
+   MAP-Tk can build against the latest VXL.  The latest VXL master uses
+   VXL_CORE_INCLUDE_DIRS instead of VXL_CORE_INCLUDE_DIR to specify multiple
+   include directories (e.g. in source and build trees).  This is needed to
+   find configured headers that are in the build tree.  The same is true for
+   VXL_VCL_INCLUDE_DIRS.  MAP-Tk has been fixed to use *_INCLUDE_DIRS when
+   available.
+
+MAP-Tk GUI
+
+ * Failing to parse a config block in the GUI was not reporting any message.
+   The GUI now catches config exception and prints a warning message.  This
+   is a temporary solution until a proper error dialog is implemented.
+
+ * Fixed an issue with the ground plane disappearing after loading data that
+   did not include landmarks.  The ground plane now uses the cameras for scale
+   when only cameras are in the world view and no longer disappears when the
+   only data loaded is in the image view.
+
+Tools
+
+ * Fixed an issue with converting POS filenames to KRTD in the pos2krtd tool.
+   When producing the KRTD filenames from the POS file names, the pos2krtd
+   tool was being too aggressive about striping file extensions when more
+   than one '.' was in the file name.  In this release the tool strips the
+   extension at the last '.' instead of the first.
+
+Scripts
+
+ * Fixed a bug in the SketchUp import script was loading MAP-Tk data assuming
+   units of inches instead of meters.
+
+ * Worked around an issue in the Sketchup import script in which SketchUp was
+   limiting the FOV of cameras to greater than 1 degree.  The loading script
+   now adjusts the image width and focal length parameter to force FOV less
+   than 1 degree when needed.
+
+ * The SketchUp import script now loads MAP-Tk landmarks into a new layer.

@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2013-2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,10 +39,10 @@
 #include <sstream>
 #include <iomanip>
 
-#include <maptk/exceptions/io.h>
+#include <vital/exceptions/io.h>
 
-namespace maptk
-{
+namespace kwiver {
+namespace maptk {
 
 /// equality operator
 bool operator ==(const ins_data& d1, const ins_data& d2)
@@ -128,7 +128,7 @@ std::istream& operator>>(std::istream& s, ins_data& d)
     ss << "Too few fields found in the given data stream "
        << "(discovered " << tokens.size() << " field(s), expected "
        << "14 or 15).";
-    throw invalid_data(ss.str());
+    throw vital::invalid_data(ss.str());
   }
   else if( tokens.size() == 15 )
   {
@@ -157,3 +157,4 @@ std::istream& operator>>(std::istream& s, ins_data& d)
 
 
 } // end namespace maptk
+} // end namespace kwiver

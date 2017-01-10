@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>WorldView</class>
+ <widget class="QWidget" name="WorldView">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>650</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="margin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QToolBar" name="toolBar">
+     <property name="toolButtonStyle">
+      <enum>Qt::ToolButtonFollowStyle</enum>
+     </property>
+     <addaction name="actionViewReset"/>
+     <addaction name="separator"/>
+     <addaction name="actionShowFrameImage"/>
+     <addaction name="actionShowCameras"/>
+     <addaction name="actionShowLandmarks"/>
+     <addaction name="actionShowGroundPlane"/>
+     <addaction name="actionShowDepthMap"/>
+    </widget>
+   </item>
+   <item>
+    <widget class="QVTKWidget" name="renderWidget" native="true"/>
+   </item>
+  </layout>
+  <action name="actionViewReset">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/22x22/view-reset</normaloff>:/icons/22x22/view-reset</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Reset View</string>
+   </property>
+   <property name="toolTip">
+    <string>Reset the view extents so that the entire scene is visible</string>
+   </property>
+   <property name="shortcut">
+    <string>R</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
+  </action>
+  <action name="actionViewResetLandmarks">
+   <property name="text">
+    <string>Zoom to &amp;Landmarks</string>
+   </property>
+   <property name="toolTip">
+    <string>Reset the view extents so that all landmarks are visible</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+R</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
+  </action>
+  <action name="actionShowCameras">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/22x22/camera</normaloff>:/icons/22x22/camera</iconset>
+   </property>
+   <property name="text">
+    <string>Show Cameras</string>
+   </property>
+   <property name="iconText">
+    <string>Cameras</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle visibility of cameras</string>
+   </property>
+   <property name="shortcut">
+    <string>C</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
+  </action>
+  <action name="actionShowLandmarks">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/22x22/landmark</normaloff>:/icons/22x22/landmark</iconset>
+   </property>
+   <property name="text">
+    <string>Show Landmarks</string>
+   </property>
+   <property name="iconText">
+    <string>Landmarks</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle visibility of landmarks</string>
+   </property>
+   <property name="shortcut">
+    <string>L</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
+  </action>
+  <action name="actionShowGroundPlane">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/22x22/grid</normaloff>:/icons/22x22/grid</iconset>
+   </property>
+   <property name="text">
+    <string>Show Ground Plane Grid</string>
+   </property>
+   <property name="iconText">
+    <string>Ground</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle visibility of the ground plane grid</string>
+   </property>
+   <property name="shortcut">
+    <string>G</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
+  </action>
+  <action name="actionViewToWorldTop">
+   <property name="text">
+    <string>View to World &amp;Top</string>
+   </property>
+   <property name="toolTip">
+    <string>Resets the view rotation so that the view is looking down the Z+ axis, with the Y+ axis up</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
+  </action>
+  <action name="actionViewToWorldLeft">
+   <property name="text">
+    <string>View to World L&amp;eft</string>
+   </property>
+   <property name="toolTip">
+    <string>Resets the view rotation so that the view is looking down the X- axis, with the Z+ axis up</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
+  </action>
+  <action name="actionViewToWorldRight">
+   <property name="text">
+    <string>View to World R&amp;ight</string>
+   </property>
+   <property name="toolTip">
+    <string>Resets the view rotation so that the view is looking down the X+ axis, with the Z+ axis up</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
+  </action>
+  <action name="actionViewToWorldFront">
+   <property name="text">
+    <string>View to World &amp;Front</string>
+   </property>
+   <property name="toolTip">
+    <string>Resets the view rotation so that the view is looking down the Y- axis, with the Z+ axis up</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
+  </action>
+  <action name="actionViewToWorldBack">
+   <property name="text">
+    <string>View to World &amp;Back</string>
+   </property>
+   <property name="toolTip">
+    <string>Resets the view rotation so that the view is looking down the Y+ axis, with the Z+ axis up</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
+  </action>
+  <action name="actionViewPerspective">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Perspective</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggles the view between perspective and parallel projection</string>
+   </property>
+   <property name="shortcut">
+    <string>P</string>
+   </property>
+  </action>
+  <action name="actionShowFrameImage">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/22x22/image</normaloff>:/icons/22x22/image</iconset>
+   </property>
+   <property name="text">
+    <string>Show Camera Frame Image</string>
+   </property>
+   <property name="iconText">
+    <string>Image</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle visibility of the camera frame image (projected to the ground plane)</string>
+   </property>
+   <property name="shortcut">
+    <string>I</string>
+   </property>
+  </action>
+  <action name="actionShowDepthMap">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/22x22/depthmap</normaloff>:/icons/22x22/depthmap</iconset>
+   </property>
+   <property name="text">
+    <string>Depth Map</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggles depth maps display</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QVTKWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">QVTKWidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="icons/icons.qrc"/>
+ </resources>
+ <connections/>
+</ui>
