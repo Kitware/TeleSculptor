@@ -1333,6 +1333,7 @@ void MainWindow::updateToolResults()
   if (d->toolUpdateTracks)
   {
     d->tracks = d->toolUpdateTracks;
+    d->UI.cameraView->clearFeatureTracks();
     d->updateCameraView();
 
     foreach (auto const& track, d->tracks->tracks())

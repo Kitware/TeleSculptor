@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -646,6 +646,14 @@ void CameraView::clearResiduals()
 {
   QTE_D();
   d->residuals.clear();
+}
+
+//-----------------------------------------------------------------------------
+void CameraView::clearFeatureTracks()
+{
+  QTE_D();
+  d->featureRep->ClearTrackData();
+  d->updateFeatures(this);
 }
 
 //-----------------------------------------------------------------------------
