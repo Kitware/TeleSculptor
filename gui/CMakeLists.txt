@@ -72,6 +72,7 @@ set(gui_moc_headers
   tools/CanonicalTransformTool.h
   tools/InitCamerasLandmarksTool.h
   tools/NeckerReversalTool.h
+  tools/TrackFilterTool.h
 )
 
 set(gui_sources
@@ -107,6 +108,7 @@ set(gui_sources
   tools/CanonicalTransformTool.cxx
   tools/InitCamerasLandmarksTool.cxx
   tools/NeckerReversalTool.cxx
+  tools/TrackFilterTool.cxx
 )
 
 maptk_use_appdata(
