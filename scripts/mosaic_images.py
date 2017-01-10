@@ -67,6 +67,10 @@ def main():
                       type="int", dest="frame",
                       help="draw a frame around each image")
 
+    parser.add_option("-s", "--scale", default=1.0,
+                      type="float", dest="scale",
+                      help="scale of the output mosaic size")
+
     parser.add_option("-a", "--all-frame", default=False,
                       action="store_true", dest="all_frame",
                       help="draw all parts of the frames, even when obscured")
@@ -81,6 +85,9 @@ def main():
         image_files = [line.rstrip() for line in f]
 
     homogs = homography_io.load_homography_file(homog_filename)
+
+    sH = np.diag([options.scale, options.scale, 1.0])
+    homogs = [(f, sH * H) for f, H in homogs]
 
     if len(homogs) != len(image_files):
         sys.exit("Number of homographies ("+str(len(homogs))+
