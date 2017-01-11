@@ -37,6 +37,7 @@
 #include "tools/CanonicalTransformTool.h"
 #include "tools/InitCamerasLandmarksTool.h"
 #include "tools/NeckerReversalTool.h"
+#include "tools/TrackFeaturesTool.h"
 #include "tools/TrackFilterTool.h"
 
 #include "AboutDialog.h"
@@ -685,6 +686,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->toolSeparator =
     d->UI.menuCompute->insertSeparator(d->UI.actionCancelComputation);
 
+  d->addTool(new TrackFeaturesTool(this), this);
   d->addTool(new InitCamerasLandmarksTool(this), this);
   d->addTool(new BundleAdjustTool(this), this);
   d->addTool(new CanonicalTransformTool(this), this);
