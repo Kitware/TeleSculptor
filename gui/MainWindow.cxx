@@ -234,7 +234,10 @@ public:
   };
 
   // Methods
-  MainWindowPrivate() : activeTool(0), activeCameraIndex(-1) {}
+  MainWindowPrivate()
+    : activeTool(0)
+    , toolUpdateActiveFrame(-1)
+    , activeCameraIndex(-1) {}
 
   void addTool(AbstractTool* tool, MainWindow* mainWindow);
 
@@ -244,6 +247,7 @@ public:
   void addFrame(kwiver::vital::camera_sptr const& camera,
                 QString const& imagePath);
 
+  std::vector<std::string> imagePaths() const;
   kwiver::vital::camera_map_sptr cameraMap() const;
   void updateCameras(kwiver::vital::camera_map_sptr const&);
 
@@ -269,6 +273,7 @@ public:
   QAction* toolSeparator;
   AbstractTool* activeTool;
   QList<AbstractTool*> tools;
+  int toolUpdateActiveFrame;
   kwiver::vital::camera_map_sptr toolUpdateCameras;
   kwiver::vital::landmark_map_sptr toolUpdateLandmarks;
   kwiver::vital::track_set_sptr toolUpdateTracks;
@@ -392,6 +397,20 @@ void MainWindowPrivate::addFrame(
     this->setActiveCamera(0);
     this->UI.cameraView->resetView();
   }
+}
+
+//-----------------------------------------------------------------------------
+std::vector<std::string> MainWindowPrivate::imagePaths() const
+{
+  std::vector<std::string> paths(this->cameras.count());
+
+  foreach (auto i, qtIndexRange(this->cameras.count()))
+  {
+    auto const& cd = this->cameras[i];
+    paths[i] = cd.imagePath.toStdString();
+  }
+
+  return paths;
 }
 
 //-----------------------------------------------------------------------------
@@ -1251,6 +1270,8 @@ void MainWindow::executeTool(QObject* object)
   if (tool && !d->activeTool)
   {
     d->setActiveTool(tool);
+    tool->setActiveFrame(d->activeCameraIndex);
+    tool->setImagePaths(d->imagePaths());
     tool->setTracks(d->tracks);
     tool->setCameras(d->cameraMap());
     tool->setLandmarks(d->landmarks);
@@ -1282,7 +1303,8 @@ void MainWindow::acceptToolResults(std::shared_ptr<ToolData> data)
   // hasn't happened yet, so don't trigger another
   bool updateNeeded = !d->toolUpdateCameras &&
                       !d->toolUpdateLandmarks &&
-                      !d->toolUpdateTracks;
+                      !d->toolUpdateTracks &&
+                      d->toolUpdateActiveFrame < 0;
 
   if (d->activeTool)
   {
@@ -1291,6 +1313,7 @@ void MainWindow::acceptToolResults(std::shared_ptr<ToolData> data)
     d->toolUpdateCameras = NULL;
     d->toolUpdateLandmarks = NULL;
     d->toolUpdateTracks = NULL;
+    d->toolUpdateActiveFrame = -1;
     if (outputs.testFlag(AbstractTool::Cameras))
     {
       d->toolUpdateCameras = data->cameras;
@@ -1302,6 +1325,10 @@ void MainWindow::acceptToolResults(std::shared_ptr<ToolData> data)
     if (outputs.testFlag(AbstractTool::Tracks))
     {
       d->toolUpdateTracks = data->tracks;
+    }
+    if (outputs.testFlag(AbstractTool::ActiveFrame))
+    {
+      d->toolUpdateActiveFrame = static_cast<int>(data->activeFrame);
     }
   }
 
@@ -1343,6 +1370,11 @@ void MainWindow::updateToolResults()
 
     d->UI.actionShowMatchMatrix->setEnabled(!d->tracks->tracks().empty());
     d->toolUpdateTracks = NULL;
+  }
+  if (d->toolUpdateActiveFrame >= 0)
+  {
+    this->setActiveCamera(d->toolUpdateActiveFrame);
+    d->toolUpdateActiveFrame = -1;
   }
 
   if (!d->cameras.isEmpty())
