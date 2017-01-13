@@ -16,7 +16,9 @@ Scripts
  * Added options in the krtd_and_ply_to_homogs.py script to estimate a ground
    plane from the PLY data or use the Z=0 plane when computing homographies.
 
- * Added an option in the mosaic_images.py script to scale the output image.
+ * Added an option in the mosaic_images.py script to scale the output image and
+   another option to estimate the scale of the output to match the scale of the
+   input images on average.
 
  * Improved memory efficiency of mosaic_images.py by avoiding preloading of
    all images.
