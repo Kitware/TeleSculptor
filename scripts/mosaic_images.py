@@ -40,7 +40,7 @@ import scipy.ndimage.morphology as morph
 import math
 
 import homography_io
-from homography_extents import compute_extents
+from homography_extents import compute_extents, compute_average_scale
 
 
 def image_file_dims(filename):
@@ -62,6 +62,11 @@ def main():
     parser.add_option("-b", "--blend", default=False,
                       action="store_true", dest="blend",
                       help="blend the pixels when creating the mosaic")
+
+    parser.add_option("-m", "--match-resolution", default=False,
+                      action="store_true", dest="match_resolution",
+                      help="automatically estimate the output image scale "
+                           "to match the input resolution on average")
 
     parser.add_option("-f", "--frame-width", default=0,
                       type="int", dest="frame",
@@ -86,9 +91,6 @@ def main():
 
     homogs = homography_io.load_homography_file(homog_filename)
 
-    sH = np.diag([options.scale, options.scale, 1.0])
-    homogs = [(f, sH * H) for f, H in homogs]
-
     if len(homogs) != len(image_files):
         sys.exit("Number of homographies ("+str(len(homogs))+
                  ") does not match number of images ("+
@@ -97,6 +99,14 @@ def main():
     shapes = [image_file_dims(fn) for fn in image_files]
     img = cv2.imread(image_files[0])
     img_dtype = img.dtype
+
+    scale = options.scale
+    if options.match_resolution:
+        scale = 1.0 / compute_average_scale([H for _, H in homogs], shapes)
+
+    sH = np.diag([scale, scale, 1.0])
+    homogs = [(f, sH * H) for f, H in homogs]
+
 
     if options.expand:
         x_rng, y_rng = compute_extents([H for _, H in homogs], shapes)
