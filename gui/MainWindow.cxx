@@ -1375,6 +1375,7 @@ void MainWindow::updateToolResults()
   }
   if (d->toolUpdateActiveFrame >= 0)
   {
+    d->UI.camera->setValue(d->toolUpdateActiveFrame);
     this->setActiveCamera(d->toolUpdateActiveFrame);
     d->toolUpdateActiveFrame = -1;
   }
