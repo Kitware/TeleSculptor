@@ -184,6 +184,8 @@ void vtkMaptkFeatureTrackRepresentation::ClearTrackData()
 {
   this->Internal->Points->Reset();
   this->Internal->Tracks.clear();
+  this->Internal->PointsCells->Reset();
+  this->Internal->TrailsCells->Reset();
 }
 
 //-----------------------------------------------------------------------------
