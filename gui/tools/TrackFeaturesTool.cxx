@@ -163,7 +163,8 @@ void TrackFeaturesTool::run()
   auto const& paths = this->imagePaths();
   auto tracks = this->tracks();
 
-  for(unsigned int i=frame; i<paths.size(); ++i)
+  unsigned int i=frame;
+  for(; i<paths.size(); ++i)
   {
     auto const image = d->image_reader->load(paths[i]);
     auto const converted_image = d->image_converter->convert(image);
@@ -185,4 +186,5 @@ void TrackFeaturesTool::run()
     }
   }
   this->updateTracks(tracks);
+  this->setActiveFrame(i);
 }
