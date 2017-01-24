@@ -73,7 +73,7 @@ int main(int argc, char** argv)
 
   // Load Vital/MAP-Tk plugins
   auto const exeDir = QDir(QApplication::applicationDirPath());
-  auto const rel_path = stdString(exeDir.absoluteFilePath("..")) + "/lib/maptk";
+  auto const rel_path = stdString(exeDir.absoluteFilePath("..")) + "/lib/modules";
   kwiver::vital::algorithm_plugin_manager::instance().add_search_path(rel_path);
   kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
 
