@@ -35,6 +35,7 @@
 
 #include <QtGui/QWidget>
 
+class vtkMaptkImageDataGeometryFilter;
 class vtkImageData;
 class vtkPolyData;
 
@@ -53,14 +54,19 @@ public:
   virtual ~WorldView();
 
 signals:
-  void depthMapThresholdsChanged(double, double, double, double);
+  void depthMapThresholdsChanged();
+  void depthMapEnabled(bool);
 
 public slots:
   void setBackgroundColor(QColor const&);
 
   void addCamera(int id, vtkMaptkCamera* camera);
   void setLandmarks(kwiver::vital::landmark_map const&);
-  void setActiveDepthMap(vtkMaptkCamera* camera, QString const& depthMapPath);
+
+  void setValidDepthInput(bool);
+  void connectDepthPipeline();
+  void setDepthGeometryFilter(vtkMaptkImageDataGeometryFilter*);
+  void updateDepthMap();
 
   void setImageData(vtkImageData* data, QSize const& dimensions);
 
@@ -73,7 +79,7 @@ public slots:
 
   void setPerspective(bool);
 
-  void setActiveCamera(vtkMaptkCamera* camera);
+  void setActiveCamera(int id);
 
   void resetView();
   void resetViewToLandmarks();
@@ -84,6 +90,7 @@ public slots:
   void viewToWorldFront();
   void viewToWorldBack();
 
+  void saveDepthPoints(QString const& path);
   void exportWebGLScene(QString const& path);
 
   void invalidateGeometry();
@@ -93,7 +100,10 @@ protected slots:
   void updateCameras();
   void updateScale();
   void updateDepthMapDisplayMode();
-  void updateDepthMapThresholds();
+  void updateDepthMapThresholds(bool filterState);
+  void increaseDepthMapPointSize();
+  void decreaseDepthMapPointSize();
+  void updateThresholdRanges();
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(WorldView)

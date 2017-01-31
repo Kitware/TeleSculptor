@@ -20,7 +20,7 @@
      <x>0</x>
      <y>0</y>
      <width>963</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="qtMenu" name="menuFile">
@@ -33,6 +33,7 @@
      </property>
      <addaction name="actionExportCameras"/>
      <addaction name="actionExportLandmarks"/>
+     <addaction name="actionExportDepthPoints"/>
      <addaction name="separator"/>
      <addaction name="actionWebGLScene"/>
     </widget>
@@ -65,6 +66,7 @@
     <property name="title">
      <string>&amp;Compute</string>
     </property>
+    <addaction name="actionCancelComputation"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuCompute"/>
@@ -303,6 +305,35 @@
    </property>
    <property name="text">
     <string>World &amp;Axes</string>
+   </property>
+  </action>
+  <action name="actionCancelComputation">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/16x16/cancel</normaloff>:/icons/16x16/cancel</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Cancel</string>
+   </property>
+   <property name="toolTip">
+    <string>Cancel execution of the currently running computation</string>
+   </property>
+  </action>
+  <action name="actionExportDepthPoints">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>PLY &amp;Depth Map...</string>
+   </property>
+   <property name="iconText">
+    <string>PLY Depth Map</string>
+   </property>
+   <property name="toolTip">
+    <string>Export the current back projected depth map as a PLY file</string>
    </property>
   </action>
  </widget>

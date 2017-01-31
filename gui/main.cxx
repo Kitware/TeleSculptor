@@ -29,6 +29,7 @@
  */
 
 #include "MainWindow.h"
+#include "tools/AbstractTool.h"
 
 #include <maptk/version.h>
 
@@ -39,7 +40,10 @@
 #include <qtUtil.h>
 
 #include <QApplication>
+#include <QMetaType>
 #include <QtCore/QDir>
+
+#include <memory>
 
 //-----------------------------------------------------------------------------
 int main(int argc, char** argv)
@@ -49,6 +53,9 @@ int main(int argc, char** argv)
   QApplication::setOrganizationName("Kitware");
   QApplication::setOrganizationDomain("kitware.com");
   QApplication::setApplicationVersion(MAPTK_VERSION);
+
+  // Register meta types
+  qRegisterMetaType<std::shared_ptr<ToolData>>();
 
   // Set up command line options
   qtCliArgs args(argc, argv);

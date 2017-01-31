@@ -70,6 +70,7 @@ set(gui_moc_headers
   tools/AbstractTool.h
   tools/BundleAdjustTool.h
   tools/CanonicalTransformTool.h
+  tools/InitCamerasLandmarksTool.h
   tools/NeckerReversalTool.h
 )
 
@@ -97,10 +98,14 @@ set(gui_sources
   vtkMaptkCamera.cxx
   vtkMaptkCameraRepresentation.cxx
   vtkMaptkFeatureTrackRepresentation.cxx
+  vtkMaptkImageDataGeometryFilter.cxx
+  vtkMaptkImageUnprojectDepth.cxx
+  vtkMaptkScalarDataFilter.cxx
   vtkMaptkScalarsToGradient.cxx
   tools/AbstractTool.cxx
   tools/BundleAdjustTool.cxx
   tools/CanonicalTransformTool.cxx
+  tools/InitCamerasLandmarksTool.cxx
   tools/NeckerReversalTool.cxx
 )
 
@@ -149,6 +154,7 @@ target_link_libraries(mapgui
   vital_apm
   vtkGUISupportQt
   vtkInteractionStyle
+  vtkIOPLY
   vtkIOXML
   vtkViewsCore
   vtkRenderingFreeTypeOpenGL

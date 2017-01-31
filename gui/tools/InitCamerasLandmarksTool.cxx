@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "BundleAdjustTool.h"
+#include "InitCamerasLandmarksTool.h"
 
 #include <maptk/version.h>
 
-#include <vital/algo/bundle_adjust.h>
+#include <vital/algo/initialize_cameras_landmarks.h>
 
 #include <vital/config/config_block_io.h>
 
@@ -43,12 +43,13 @@
 
 #include <QtCore/QDir>
 
-using kwiver::vital::algo::bundle_adjust;
-using kwiver::vital::algo::bundle_adjust_sptr;
+using kwiver::vital::algo::initialize_cameras_landmarks;
+using kwiver::vital::algo::initialize_cameras_landmarks_sptr;
 
 namespace
 {
-static char const* const BLOCK = "bundle_adjuster";
+static char const* const BLOCK = "initializer";
+static char const* const CONFIG_FILE = "gui_initialize.conf";
 
 //-----------------------------------------------------------------------------
 kwiver::vital::config_block_sptr readConfig(std::string const& name)
@@ -70,62 +71,62 @@ kwiver::vital::config_block_sptr readConfig(std::string const& name)
 }
 
 //-----------------------------------------------------------------------------
-class BundleAdjustToolPrivate
+class InitCamerasLandmarksToolPrivate
 {
 public:
-  bundle_adjust_sptr algorithm;
+  initialize_cameras_landmarks_sptr algorithm;
 };
 
-QTE_IMPLEMENT_D_FUNC(BundleAdjustTool)
+QTE_IMPLEMENT_D_FUNC(InitCamerasLandmarksTool)
 
 //-----------------------------------------------------------------------------
-BundleAdjustTool::BundleAdjustTool(QObject* parent)
-  : AbstractTool(parent), d_ptr(new BundleAdjustToolPrivate)
+InitCamerasLandmarksTool::InitCamerasLandmarksTool(QObject* parent)
+  : AbstractTool(parent), d_ptr(new InitCamerasLandmarksToolPrivate)
 {
-  this->setText("&Refine Solution");
+  this->setText("&Estimate Cameras/Landmarks");
   this->setToolTip(
-    "<nobr>Apply bundle adjustment to the cameras and landmarks in order to"
-    "</nobr> refine the quality of the 3D reconstruction");
+    "<nobr>Estimate cameras and landmarks from a set of feature tracks</nobr>");
 }
 
 //-----------------------------------------------------------------------------
-BundleAdjustTool::~BundleAdjustTool()
+InitCamerasLandmarksTool::~InitCamerasLandmarksTool()
 {
 }
 
 //-----------------------------------------------------------------------------
-AbstractTool::Outputs BundleAdjustTool::outputs() const
+AbstractTool::Outputs InitCamerasLandmarksTool::outputs() const
 {
   return Cameras | Landmarks;
 }
 
 //-----------------------------------------------------------------------------
-bool BundleAdjustTool::execute(QWidget* window)
+bool InitCamerasLandmarksTool::execute(QWidget* window)
 {
   QTE_D();
 
   // Check inputs
-  if (!this->hasLandmarks() || !this->hasCameras() || !this->hasTracks())
+  if (!this->hasTracks())
   {
     QMessageBox::information(
       window, "Insufficient data",
-      "This operation requires feature tracks, cameras and landmarks.");
+      "This operation requires feature tracks.");
     return false;
   }
 
   // Load configuration
-  auto const config = readConfig("gui_bundle_adjust.conf");
+  auto const config = readConfig(CONFIG_FILE);
 
   // Check configuration
   if (!config)
   {
     QMessageBox::critical(
       window, "Configuration error",
-      "No configuration data was found. Please check your installation.");
+      QString("No configuration data was found. Looking for \"")
+      + CONFIG_FILE + "\". Please check your installation.");
     return false;
   }
 
-  if (!bundle_adjust::check_nested_algo_configuration(BLOCK, config))
+  if (!initialize_cameras_landmarks::check_nested_algo_configuration(BLOCK, config))
   {
     QMessageBox::critical(
       window, "Configuration error",
@@ -134,13 +135,13 @@ bool BundleAdjustTool::execute(QWidget* window)
   }
 
   // Create algorithm from configuration
-  bundle_adjust::set_nested_algo_configuration(BLOCK, config, d->algorithm);
+  initialize_cameras_landmarks::set_nested_algo_configuration(BLOCK, config, d->algorithm);
 
   // Set the callback to receive updates
   using std::placeholders::_1;
   using std::placeholders::_2;
-  typedef bundle_adjust::callback_t callback_t;
-  callback_t cb = std::bind(&BundleAdjustTool::callback_handler, this, _1, _2);
+  typedef initialize_cameras_landmarks::callback_t callback_t;
+  callback_t cb = std::bind(&InitCamerasLandmarksTool::callback_handler, this, _1, _2);
   d->algorithm->set_callback(cb);
 
   // Hand off to base class
@@ -148,7 +149,7 @@ bool BundleAdjustTool::execute(QWidget* window)
 }
 
 //-----------------------------------------------------------------------------
-void BundleAdjustTool::run()
+void InitCamerasLandmarksTool::run()
 {
   QTE_D();
 
@@ -156,15 +157,55 @@ void BundleAdjustTool::run()
   auto lp = this->landmarks();
   auto tp = this->tracks();
 
-  d->algorithm->optimize(cp, lp, tp);
+  // If cp is Null the initialize algorithm will create all cameras.
+  // If not Null it will only create cameras if they are in the map but Null.
+  // So we need to add placeholders for missing cameras to the map
+  if (cp)
+  {
+    using kwiver::vital::frame_id_t;
+    using kwiver::vital::camera_map;
+    std::set<frame_id_t> frame_ids = tp->all_frame_ids();
+    camera_map::map_camera_t all_cams = cp->cameras();
+
+    VITAL_FOREACH (auto const& id, frame_ids)
+    {
+      if (all_cams.find(id) == all_cams.end())
+      {
+        all_cams[id] = kwiver::vital::camera_sptr();
+      }
+    }
+    cp = std::make_shared<kwiver::vital::simple_camera_map>(all_cams);
+  }
+
+  // If lp is Null the initialize algorithm will create all landmarks.
+  // If not Null it will only create landmarks if they are in the map but Null.
+  // So we need to add placeholders for missing landmarks to the map
+  if (lp)
+  {
+    using kwiver::vital::track_id_t;
+    using kwiver::vital::landmark_map;
+    std::set<track_id_t> track_ids = tp->all_track_ids();
+    landmark_map::map_landmark_t all_lms = lp->landmarks();
+
+    VITAL_FOREACH (auto const& id, track_ids)
+    {
+      if (all_lms.find(id) == all_lms.end())
+      {
+        all_lms[id] = kwiver::vital::landmark_sptr();
+      }
+    }
+    lp = std::make_shared<kwiver::vital::simple_landmark_map>(all_lms);
+  }
+
+  d->algorithm->initialize(cp, lp, tp);
 
   this->updateCameras(cp);
   this->updateLandmarks(lp);
 }
 
 //-----------------------------------------------------------------------------
-bool BundleAdjustTool::callback_handler(camera_map_sptr cameras,
-                                        landmark_map_sptr landmarks)
+bool InitCamerasLandmarksTool::callback_handler(camera_map_sptr cameras,
+                                                landmark_map_sptr landmarks)
 {
   // make a copy of the tool data
   auto data = std::make_shared<ToolData>();
