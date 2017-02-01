@@ -127,7 +127,7 @@ kwiver::vital::vector_3d vtkMaptkCamera::UnprojectPoint(
 {
   // Build camera matrix
   auto const T = this->MaptkCamera->translation();
-  auto const R = kwiver::vital::matrix_3x3d(this->MaptkCamera->rotation());
+  auto const R = this->MaptkCamera->rotation().matrix();
 
   auto const inPoint = kwiver::vital::vector_2d{pixel[0], pixel[1]};
   auto const normPoint = this->MaptkCamera->intrinsics()->unmap(inPoint);
@@ -205,7 +205,7 @@ void vtkMaptkCamera::GetTransform(vtkMatrix4x4* out, double const plane[4])
   // Build camera matrix
   auto const k = this->MaptkCamera->intrinsics()->as_matrix();
   auto const t = this->MaptkCamera->translation();
-  auto const r = kwiver::vital::matrix_3x3d(this->MaptkCamera->rotation());
+  auto const r = this->MaptkCamera->rotation().matrix();
 
   auto const kr = kwiver::vital::matrix_3x3d(k * r);
   auto const kt = kwiver::vital::vector_3d(k * t);
