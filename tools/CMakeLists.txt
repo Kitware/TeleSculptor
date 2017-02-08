@@ -5,6 +5,11 @@ include_directories("${MAPTK_BINARY_DIR}")
 
 get_property(maptk_libs GLOBAL PROPERTY maptk_libraries)
 
+kwiver_add_executable(maptk_detect_and_describe detect_and_describe.cxx)
+target_link_libraries(maptk_detect_and_describe
+  PRIVATE             maptk vital_algo vital_apm kwiversys
+    )
+
 kwiver_add_executable(maptk_track_features track_features.cxx)
 target_link_libraries(maptk_track_features
   PRIVATE             maptk vital_algo vital_apm kwiversys
