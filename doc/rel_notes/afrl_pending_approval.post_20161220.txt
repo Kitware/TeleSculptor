@@ -25,6 +25,10 @@ Scripts
 
 Tools
 
+ * Added a new detect_and_describe tool that runs feature detection and
+   descriptor extraction on each frame and writes the outputs to files
+   using the feature_descriptor_io algorithm.
+
 Visualization Application
 
 
