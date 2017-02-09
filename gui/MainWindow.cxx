@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,7 @@
 #include "tools/CanonicalTransformTool.h"
 #include "tools/InitCamerasLandmarksTool.h"
 #include "tools/NeckerReversalTool.h"
+#include "tools/TrackFilterTool.h"
 
 #include "AboutDialog.h"
 #include "MatchMatrixWindow.h"
@@ -669,6 +670,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->addTool(new BundleAdjustTool(this), this);
   d->addTool(new CanonicalTransformTool(this), this);
   d->addTool(new NeckerReversalTool(this), this);
+  d->addTool(new TrackFilterTool(this), this);
 
   d->UI.menuView->addSeparator();
   d->UI.menuView->addAction(d->UI.cameraViewDock->toggleViewAction());
@@ -1331,6 +1333,7 @@ void MainWindow::updateToolResults()
   if (d->toolUpdateTracks)
   {
     d->tracks = d->toolUpdateTracks;
+    d->UI.cameraView->clearFeatureTracks();
     d->updateCameraView();
 
     foreach (auto const& track, d->tracks->tracks())

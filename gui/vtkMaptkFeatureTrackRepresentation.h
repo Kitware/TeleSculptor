@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,6 +54,10 @@ public:
   static vtkMaptkFeatureTrackRepresentation* New();
 
   void AddTrackPoint(unsigned trackId, unsigned frameId, double x, double y);
+
+  // Description:
+  // Remove all track data
+  void ClearTrackData();
 
   // Description:
   // Get/Set the active frame
