@@ -236,15 +236,26 @@ if (MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
   endif()
   list(APPEND FIXUP_DIRS "${qtExtensions_DIR}/${BINARY_DIR}")
 
+  list(APPEND FIXUP_DIRS "${KWIVER_LIBRARY_DIR}/${BINARY_DIR}")
+  if(DEFINED fletch_ROOT)
+    if(WIN32)
+	  list(APPEND FIXUP_DIRS "${fletch_ROOT}/bin")
+	  # this is a hack for now.  Fletch should really export paths like this.
+	  list(APPEND FIXUP_DIRS "${fletch_ROOT}/x64/vc12/bin")
+	else()
+	  list(APPEND FIXUP_DIRS "${fletch_ROOT}/lib")
+	endif()
+  endif()
+
+
   # Location for QT libraries
   list(APPEND FIXUP_DIRS "${QT_BIN_DIR}")
   list(APPEND FIXUP_DIRS "${QT_LIBRARY_DIR}")
   list(APPEND FIXUP_DIRS "${QT_BINARY_DIR}")
 
-  get_property( maptk_plugins GLOBAL PROPERTY maptk_plugin_libraries)
-  foreach( tgt ${maptk_plugins} )
-    list(APPEND libs_genex "${dest_prefix}/lib/maptk/$<TARGET_FILE_NAME:${tgt}>")
-  endforeach()
+  install(DIRECTORY "${KWIVER_DIR}/lib/${BINARY_DIR}/modules" DESTINATION lib
+          COMPONENT Runtime
+          FILES_MATCHING PATTERN "*${CMAKE_SHARED_LIBRARY_SUFFIX}" )
 
   get_property( bundle_path GLOBAL PROPERTY maptk_bundle_paths)
 
@@ -260,20 +271,21 @@ if (MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
 
   file(GENERATE OUTPUT ${script_file}
     CONTENT "
-set(plugin_libs \"${libs_genex}\")
 set(bundle_path \"${bundle_path}\")
           ")
 
   install(CODE "
         file(GLOB_RECURSE QTPLUGINS
             \"${dest_prefix}/${plugin_dest_dir}/plugins/*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
+        file(GLOB_RECURSE KWIVER_PLUGINS
+            \"${dest_prefix}/lib/modules/*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
         set(BU_CHMOD_BUNDLE_ITEMS ON)
         set(ENV{VS_UNICODE_OUTPUT} \"\")
         include(${MAPTK_SOURCE_DIR}/CMake/utils/maptk-utils-bundle.cmake)
         include( ${MAPTK_BINARY_DIR}/CMakeFiles/plugin-libs-\${CMAKE_INSTALL_CONFIG_NAME}.cmake )
         list(APPEND FIXUP_DIRS ${FIXUP_DIRS} \${bundle_path})
         list(REMOVE_DUPLICATES FIXUP_DIRS)
-        set(libs \${plugin_libs} \${QTPLUGINS})
+        set(libs \${KWIVER_PLUGINS} \${QTPLUGINS})
         include(BundleUtilities)
         fixup_bundle(\"${gui-exe}\" \"\${libs}\" \"\${FIXUP_DIRS}\")
         ")
