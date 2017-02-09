@@ -28,73 +28,38 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_MAINWINDOW_H_
-#define MAPTK_MAINWINDOW_H_
+#ifndef MAPTK_INITCAMERASLANDMARKSTOOL_H_
+#define MAPTK_INITCAMERASLANDMARKSTOOL_H_
 
-#include <qtGlobal.h>
+#include "AbstractTool.h"
 
-#include <QMainWindow>
+class InitCamerasLandmarksToolPrivate;
 
-#include <memory>
-
-class ToolData;
-
-class MainWindowPrivate;
-
-class MainWindow : public QMainWindow
+class InitCamerasLandmarksTool : public AbstractTool
 {
   Q_OBJECT
 
 public:
-  explicit MainWindow(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~MainWindow();
+  explicit InitCamerasLandmarksTool(QObject* parent = 0);
+  virtual ~InitCamerasLandmarksTool();
 
-public slots:
-  void openFile();
-  void openFile(QString const& path);
-  void openFiles(QStringList const& paths);
+  virtual Outputs outputs() const QTE_OVERRIDE;
 
-  void loadProject(QString const& path);
-  void loadImage(QString const& path);
-  void loadCamera(QString const& path);
-  void loadTracks(QString const& path);
-  void loadLandmarks(QString const& path);
+  /// Get if the tool can be canceled.
+  virtual bool isCancelable() const QTE_OVERRIDE { return true; }
 
-  void saveCameras();
-  void saveCameras(QString const& path);
-  void saveLandmarks();
-  void saveLandmarks(QString const& path);
-  void saveDepthPoints();
-  void saveDepthPoints(QString const& path);
+  virtual bool execute(QWidget* window = 0) QTE_OVERRIDE;
 
-  void saveWebGLScene();
+  bool callback_handler(camera_map_sptr cameras, landmark_map_sptr landmarks);
 
-  void enableSaveDepthPoints(bool);
-
-  void setActiveCamera(int);
-
-  void setViewBackroundColor();
-
-  void showMatchMatrix();
-
-  void showAboutDialog();
-  void showUserManual();
-
-protected slots:
-  void setSlideDelay(int);
-  void setSlideshowPlaying(bool);
-  void nextSlide();
-
-  void executeTool(QObject*);
-  void acceptToolFinalResults();
-  void acceptToolResults(std::shared_ptr<ToolData> data);
-  void updateToolResults();
+protected:
+  virtual void run() QTE_OVERRIDE;
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(MainWindow)
-  QTE_DECLARE_PRIVATE(MainWindow)
-
-  QTE_DISABLE_COPY(MainWindow)
+  QTE_DECLARE_PRIVATE_RPTR(InitCamerasLandmarksTool)
+  QTE_DECLARE_PRIVATE(InitCamerasLandmarksTool)
+  QTE_DISABLE_COPY(InitCamerasLandmarksTool)
 };
 
 #endif
+#define MAPTK_INITCAMERASLANDMARKSTOOL_H_

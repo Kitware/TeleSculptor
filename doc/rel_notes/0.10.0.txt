@@ -1,0 +1,85 @@
+MAP-Tk v0.10.0 Release Notes
+============================
+
+This is a minor release of MAP-Tk that provides both new functionality and
+fixes over the previous v0.9.0 release.  This release introduces another big
+refactoring of the MAP-Tk code base.  MAP-Tk now builds against KWIVER instead
+of the stand-along Vital repository.  Vital has moved into KWIVER and the stand
+alone Vital repository is discontinued.  All of the plugins previously located
+in MAP-Tk have also moved into KWIVER.  The plugins are now called "arrows".
+That leaves this project, MAP-Tk, with a collection of tools and scripts for
+photogrammetry.  MAP-Tk no longer a toolkit.  The toolkit has become KWIVER.
+MAP-Tk is the collection of photogrammetry tools built on KWIVER.  As such,
+we may rebrand MAP-Tk in a future release to make this more clear.
+
+
+Updates since v0.9.0
+--------------------
+
+Core Plugin
+
+ * Added an option to the PCA canonical transform estimator to shift the ground
+   plane vertically to place a configurable percentile of the landmarks above
+   the ground.
+
+Scripts
+
+ * In the SketchUp import plugin allow the user to select how many frames to
+   use if there are more than 10 available.
+
+Tools
+
+ * Added python version of track features tool.
+
+ * The maptk_bundle_adjust_tracks tool now has a configuration option to write
+   out the geographic coordinates of the local coordinate system origin.  Also
+   this same option can be used to read an origin location in to specify the
+   origin point manually.
+
+ * Added a tool to apply ground control points to transform the coordinate system
+   without running bundle adjustment.
+
+Visualization Application
+
+ * Extended the tool framework in the GUI to handle callbacks from the tools
+   to allow some tools to provide updated visualization of intermediate results
+   while they are still running.  Also extended the tool framework to allow
+   creatiion of new cameras and landmarks, not just update existing ones.
+
+ * Added a cancel option for GUI computation tools which run for a long time
+   and use callbacks to provide updates.  The cancel button allows for early
+   termination of those tools.
+
+ * Add visualization of intermediate results of the bundle adjustment tool
+   using a callback.
+
+ * Added a camera and landmark initialization tool that creates cameras
+   and landmarks starting with just tracks. It uses callbacks to show
+   intermediate results.
+
+ * Added an icon in the GUI for the depth map.
+
+ * Added specialized vtk filters for efficiently processing the depth map for
+   display in both the WorldView and DepthMapView.
+
+ * Switched DepthMapView display representation to points instead of polygons;
+   it renders much faster and is indistinguishable for sufficiently large point
+   size. The '+' and '-' keys can be used to increase and decrease,
+   respectively, the point size of the depth map in both the WorldView and
+   DepthMapView; the point size of each display is controlled independently
+   based on focus.
+
+
+Fixes since v0.9.0
+------------------
+
+Visualization Application
+
+ * Removed duplicate loading and filtering of depth maps between the World view
+   and Depth Map view.  This makes it twice as fast.
+
+ * Fixed a bug where depth map loading was printing an error message about not
+   being able to load "" when there is no depth map on the first frame.
+
+ * Fixed a bug where the depth map view bounds were not properly set when
+   loading the first depth map after the first frame.

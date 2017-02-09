@@ -70,6 +70,9 @@ public:
 
 signals:
   void displayModeChanged();
+  void thresholdsChanged(bool);
+
+protected slots:
   void thresholdsChanged();
 
 private:

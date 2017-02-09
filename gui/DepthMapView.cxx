@@ -34,14 +34,17 @@
 
 #include "DataArrays.h"
 #include "DepthMapViewOptions.h"
+#include "vtkMaptkScalarDataFilter.h"
 
 #include <vtkCamera.h>
 #include <vtkGeometryFilter.h>
 #include <vtkImageData.h>
+#include <vtkMaptkImageDataGeometryFilter.h>
 #include <vtkInteractorStyleRubberBand2D.h>
 #include <vtkNew.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
+#include <vtkProperty.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 #include <vtkSmartPointer.h>
@@ -64,18 +67,20 @@ public:
   void setPopup(QAction* action, QWidget* widget);
 
   bool viewNeedsReset;
+  bool validDepthInput;
 
   Ui::DepthMapView UI;
 
   vtkNew<vtkRenderer> renderer;
   vtkNew<vtkRenderWindow> renderWindow;
 
+  vtkNew<vtkMaptkScalarDataFilter> scalarFilter;
   vtkNew<vtkPolyDataMapper> mapper;
   vtkNew<vtkActor> actor;
 
   DepthMapViewOptions* depthMapViewOptions;
 
-  vtkSmartPointer<vtkGeometryFilter> inputDepthGeometryFilter;
+  vtkSmartPointer<vtkMaptkImageDataGeometryFilter> inputDepthGeometryFilter;
 };
 
 //-----------------------------------------------------------------------------
@@ -112,6 +117,7 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   QTE_D();
 
   d->viewNeedsReset = true;
+  d->validDepthInput = false;
 
   // Set up UI
   d->UI.setupUi(this);
@@ -140,8 +146,27 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   d->UI.renderWidget->SetRenderWindow(d->renderWindow.GetPointer());
 
   // Set up depth map actor
+  d->scalarFilter->SetScalarArrayName(DepthMapArrays::Depth);
+  d->mapper->SetInputConnection(d->scalarFilter->GetOutputPort());
   d->actor->SetMapper(d->mapper.GetPointer());
+  d->actor->GetProperty()->SetPointSize(2.0);
+  d->actor->VisibilityOff();
   d->renderer->AddViewProp(d->actor.GetPointer());
+
+  // Add keyboard actions for increasing and descreasing depth point size
+  QAction* actionIncreasePointSize = new QAction(this);
+  actionIncreasePointSize->setShortcut(Qt::Key_Plus);
+  actionIncreasePointSize->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+  d->UI.renderWidget->addAction(actionIncreasePointSize);
+  connect(actionIncreasePointSize, SIGNAL(triggered()),
+    this, SLOT(increasePointSize()));
+
+  QAction* actionDecreasePointSize = new QAction(this);
+  actionDecreasePointSize->setShortcut(Qt::Key_Minus);
+  actionDecreasePointSize->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+  d->UI.renderWidget->addAction(actionDecreasePointSize);
+  connect(actionDecreasePointSize, SIGNAL(triggered()),
+    this, SLOT(decreasePointSize()));
 
   // Set interactor
   vtkNew<vtkInteractorStyleRubberBand2D> is;
@@ -149,43 +174,14 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
 }
 
 //-----------------------------------------------------------------------------
-void DepthMapView::updateThresholds(double bcMin, double bcMax,
-                                    double urMin, double urMax)
+void DepthMapView::updateThresholds()
 {
   QTE_D();
 
-  double bestCostValueMin = bcMin;
-  double bestCostValueMax = bcMax;
-  double uniquenessRatioMin = urMin;
-  double uniquenessRatioMax = urMax;
-
-  vtkNew<vtkThreshold> thresholdBestCostValues;
-  vtkNew<vtkThreshold> thresholdUniquenessRatios;
-
-  thresholdBestCostValues->SetInputData(d->inputDepthGeometryFilter->GetOutput());
-  thresholdBestCostValues->SetInputArrayToProcess(
-    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS,
-    DepthMapArrays::BestCostValues);
-  thresholdBestCostValues->ThresholdBetween(
-    bestCostValueMin, bestCostValueMax);
-
-  thresholdUniquenessRatios->SetInputConnection(
-    thresholdBestCostValues->GetOutputPort());
-  thresholdUniquenessRatios->SetInputArrayToProcess(
-    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS,
-    DepthMapArrays::UniquenessRatios);
-  thresholdUniquenessRatios->ThresholdBetween(
-    uniquenessRatioMin, uniquenessRatioMax);
-
-  vtkNew<vtkGeometryFilter> geometryFilter;
-
-  geometryFilter->SetInputConnection(
-    thresholdUniquenessRatios->GetOutputPort());
-
-  d->mapper->SetInputConnection(geometryFilter->GetOutputPort());
-  d->mapper->Update();
-
-  d->UI.renderWidget->update();
+  if (this->isVisible())
+  {
+    d->UI.renderWidget->update();
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -194,12 +190,27 @@ DepthMapView::~DepthMapView()
 }
 
 //-----------------------------------------------------------------------------
+void DepthMapView::setValidDepthInput(bool state)
+{
+  QTE_D();
+
+  d->validDepthInput = state;
+  if (!state)
+  {
+    d->actor->VisibilityOff();
+  }
+}
+
+//-----------------------------------------------------------------------------
 void DepthMapView::updateView(bool processUpdate)
 {
   QTE_D();
 
-  if (processUpdate && d->inputDepthGeometryFilter && this->isVisible())
+  if (processUpdate && d->validDepthInput && this->isVisible())
   {
+    // Make sure the actor is visible
+    d->actor->VisibilityOn();
+
     // Reset the depth view if the bounds from the geometry filter prior to
     // update are invalid
     bool resetView = false;
@@ -210,14 +221,6 @@ void DepthMapView::updateView(bool processUpdate)
     }
 
     d->inputDepthGeometryFilter->Update();
-
-    // We may call this function without having setup the reader, so if the
-    // bounds are invalid, return
-    bounds = d->inputDepthGeometryFilter->GetOutput()->GetBounds();
-    if (bounds[0] > bounds[1])
-    {
-      return;
-    }
 
     d->depthMapViewOptions->updateRanges(
       d->inputDepthGeometryFilter->GetOutput()->GetPointData());
@@ -243,19 +246,15 @@ void DepthMapView::setBackgroundColor(QColor const& color)
 }
 
 //-----------------------------------------------------------------------------
-void DepthMapView::setDepthGeometryFilter(vtkGeometryFilter* geometryFilter)
+void DepthMapView::setDepthGeometryFilter(vtkMaptkImageDataGeometryFilter* geometryFilter)
 {
   QTE_D();
 
   if (d->inputDepthGeometryFilter != geometryFilter)
   {
-    if (geometryFilter != NULL)
-    {
-      d->mapper->SetInputConnection(geometryFilter->GetOutputPort());
-      // Do we need to do anything special if the depth filter has changed?
-      // As currently used, the answer is "no".
-    }
     d->inputDepthGeometryFilter = geometryFilter;
+    d->scalarFilter->SetInputConnection(d->inputDepthGeometryFilter ?
+      d->inputDepthGeometryFilter->GetOutputPort() : 0);
   }
 }
 
@@ -278,6 +277,28 @@ void DepthMapView::resetView()
 
   d->renderer->ResetCamera(bounds);
   d->renderer->GetActiveCamera()->SetParallelScale(s);
+
+  d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
+void DepthMapView::increasePointSize()
+{
+  QTE_D();
+
+  float pointSize = d->actor->GetProperty()->GetPointSize();
+  d->actor->GetProperty()->SetPointSize(pointSize + 0.5);
+
+  d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
+void DepthMapView::decreasePointSize()
+{
+  QTE_D();
+
+  float pointSize = d->actor->GetProperty()->GetPointSize() - 0.5;
+  d->actor->GetProperty()->SetPointSize(pointSize < 1 ? 1 : pointSize);
 
   d->UI.renderWidget->update();
 }
