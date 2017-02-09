@@ -9,48 +9,38 @@ if(POLICY CMP0054)
 endif()
 
 ###
+# Options and setup
+#
+include(CMakeDependentOption)
+
+###
+# Add the CMake directory for CMake modules
+#
+list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/CMake" )
+
+###
 # Versioning
 #
 set(MAPTK_VERSION_MAJOR 0)
-set(MAPTK_VERSION_MINOR 9)
+set(MAPTK_VERSION_MINOR 10)
 set(MAPTK_VERSION_PATCH 0)
 set(MAPTK_VERSION "${MAPTK_VERSION_MAJOR}.${MAPTK_VERSION_MINOR}.${MAPTK_VERSION_PATCH}")
 string(TIMESTAMP MAPTK_COPYRIGHT_YEAR "%Y")
 
 ###
-# Needed to get fletch_DIR set early
-find_package( vital REQUIRED )
-
-###
-# Check to see if fletch directory is valid from the vital config
+# project specific directories
 #
-if ( IS_DIRECTORY ${fletch_DIR} )
-  find_package( fletch NO_MODULE )
+set(MAPTK_CMAKE_DIR            "${CMAKE_SOURCE_DIR}/CMake")
+
+# root directories
+set(MAPTK_SOURCE_DIR           "${CMAKE_SOURCE_DIR}")
+set(MAPTK_BINARY_DIR           "${CMAKE_BINARY_DIR}")
+
+# Always build shared libraries, required due to plugin infrastructure
+if(DEFINED BUILD_SHARED_LIBS AND NOT BUILD_SHARED_LIBS)
+  message(FATAL_ERROR "MAP-Tk must be built as shared libraries, please set BUILD_SHARED_LIBS=ON")
 endif()
-
-###
-# Add the CMake directory for CMake modules
-#
-list(INSERT CMAKE_MODULE_PATH 0
-  "${MAPTK_SOURCE_DIR}/CMake"
-  )
-
-###
-# Dependencies and Modules
-#
-include( maptk-depends )
-
-###
-# Options and setup
-#
-include(CMakeDependentOption)
-
-# we can't build shared libraries on Windows so we leave it off by default
-if (WIN32)
-  option(BUILD_SHARED_LIBS "Build shared libraries." ON)
-else()
-  option(BUILD_SHARED_LIBS "Build shared libraries." OFF)
-endif()
+set(BUILD_SHARED_LIBS ON)
 
 # default to MAPTK_LIB_SUFFIX for backwards compatibility
 if(DEFINED MAPTK_LIB_SUFFIX)
@@ -59,21 +49,23 @@ endif()
 set(LIB_SUFFIX "${MAPTK_LIB_SUFFIX}" CACHE STRING "String suffix appended to the library directory we install into")
 mark_as_advanced( LIB_SUFFIX )
 
+if ( IS_DIRECTORY ${fletch_DIR} )
+  find_package( fletch NO_MODULE )
+endif()
+
+include( maptk-depends )
+
 ###
 # use kwiver util methods
 #
 include( kwiver-utils )
-include( maptk-utils ) # local utilities
-include( vital-flags ) # use same compile flags as vital
-
-###
-# check compiler support
+include( kwiver-flags )
 include( kwiver-configcheck )
+include( maptk-utils ) # local utilities
 
+# set the name for our package exports
 set(kwiver_export_name     maptk_exports)
 
-
-# this is where the source code for libraries/plugins lives
 add_subdirectory(maptk)
 
 # this is where the executables source code lives
@@ -173,7 +165,6 @@ kwiver_install(
   DESTINATION "${maptk_cmake_install_dir}"
   FILE        maptk-config-targets.cmake
   )
-
 
 ###
 # CPack Packaging

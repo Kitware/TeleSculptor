@@ -41,7 +41,7 @@
 
 #include <unsupported/Eigen/SparseExtra>
 
-#include <maptk/match_matrix.h>
+#include <arrows/core/match_matrix.h>
 #include <vital/exceptions.h>
 #include <vital/io/track_set_io.h>
 
@@ -176,7 +176,7 @@ static int maptk_main(int argc, char const* argv[])
   // compute the match matrix
   std::cout << "computing matching matrix" <<std::endl;
   std::vector<vital::frame_id_t> frames;
-  Eigen::SparseMatrix<unsigned int> mm = maptk::match_matrix(tracks, frames);
+  Eigen::SparseMatrix<unsigned int> mm = kwiver::arrows::match_matrix(tracks, frames);
 
   // write output
   if( ! opt_out_matrix.empty() )

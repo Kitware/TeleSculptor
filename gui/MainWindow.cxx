@@ -35,26 +35,33 @@
 
 #include "tools/BundleAdjustTool.h"
 #include "tools/CanonicalTransformTool.h"
+#include "tools/InitCamerasLandmarksTool.h"
 #include "tools/NeckerReversalTool.h"
 
 #include "AboutDialog.h"
 #include "MatchMatrixWindow.h"
 #include "Project.h"
+#include "vtkMaptkImageDataGeometryFilter.h"
+#include "vtkMaptkImageUnprojectDepth.h"
 #include "vtkMaptkCamera.h"
 
-#include <maptk/match_matrix.h>
 #include <maptk/version.h>
 
 #include <vital/io/camera_io.h>
 #include <vital/io/landmark_map_io.h>
 #include <vital/io/track_set_io.h>
+#include <arrows/core/match_matrix.h>
+
+#include <vtksys/SystemTools.hxx>
 
 #include <vtkImageData.h>
 #include <vtkImageReader2.h>
 #include <vtkImageReader2Collection.h>
 #include <vtkImageReader2Factory.h>
 #include <vtkNew.h>
+#include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
+#include <vtkXMLImageDataReader.h>
 
 #include <qtEnumerate.h>
 #include <qtIndexRange.h>
@@ -244,6 +251,8 @@ public:
 
   void loadImage(QString const& path, vtkMaptkCamera* camera);
 
+  void loadDepthMap(QString const& imagePath);
+
   void setActiveTool(AbstractTool* tool);
 
   // Member variables
@@ -256,8 +265,12 @@ public:
   QTimer slideTimer;
   QSignalMapper toolDispatcher;
 
+  QAction* toolSeparator;
   AbstractTool* activeTool;
   QList<AbstractTool*> tools;
+  kwiver::vital::camera_map_sptr toolUpdateCameras;
+  kwiver::vital::landmark_map_sptr toolUpdateLandmarks;
+  kwiver::vital::track_set_sptr toolUpdateTracks;
 
   QList<CameraData> cameras;
   kwiver::vital::track_set_sptr tracks;
@@ -267,6 +280,10 @@ public:
 
   QQueue<int> orphanImages;
   QQueue<int> orphanCameras;
+
+  vtkNew<vtkXMLImageDataReader> depthReader;
+  vtkNew<vtkMaptkImageUnprojectDepth> depthFilter;
+  vtkNew<vtkMaptkImageDataGeometryFilter> depthGeometryFilter;
 };
 
 QTE_IMPLEMENT_D_FUNC(MainWindow)
@@ -274,14 +291,16 @@ QTE_IMPLEMENT_D_FUNC(MainWindow)
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::addTool(AbstractTool* tool, MainWindow* mainWindow)
 {
-  this->UI.menuCompute->addAction(tool);
+  this->UI.menuCompute->insertAction(this->toolSeparator, tool);
 
   this->toolDispatcher.setMapping(tool, tool);
 
   QObject::connect(tool, SIGNAL(triggered()),
                    &this->toolDispatcher, SLOT(map()));
+  QObject::connect(tool, SIGNAL(updated(std::shared_ptr<ToolData>)),
+                   mainWindow, SLOT(acceptToolResults(std::shared_ptr<ToolData>)));
   QObject::connect(tool, SIGNAL(completed()),
-                   mainWindow, SLOT(acceptToolResults()));
+                   mainWindow, SLOT(acceptToolFinalResults()));
 
   this->tools.append(tool);
 }
@@ -305,7 +324,7 @@ void MainWindowPrivate::addCamera(kwiver::vital::camera_sptr const& camera)
   this->UI.worldView->addCamera(cd.id, cd.camera);
   if (cd.id == this->activeCameraIndex)
   {
-    this->UI.worldView->setActiveCamera(cd.camera);
+    this->UI.worldView->setActiveCamera(cd.id);
     this->updateCameraView();
   }
 }
@@ -402,16 +421,24 @@ void MainWindowPrivate::updateCameras(
   foreach (auto const& iter, cameras->cameras())
   {
     auto const index = static_cast<int>(iter.first);
-    if (index >= 0 && index < cameraCount)
+    if (index >= 0 && index < cameraCount && iter.second)
     {
       auto& cd = this->cameras[index];
-      if (cd.camera)
+      if (!cd.camera)
       {
-        cd.camera->SetCamera(iter.second);
-        cd.camera->Update();
-
-        allowExport = allowExport || iter.second;
+        cd.camera = vtkSmartPointer<vtkMaptkCamera>::New();
+        this->UI.worldView->addCamera(cd.id, cd.camera);
       }
+      cd.camera->SetCamera(iter.second);
+      cd.camera->Update();
+
+      if (cd.id == this->activeCameraIndex)
+      {
+        this->UI.worldView->setActiveCamera(cd.id);
+        this->updateCameraView();
+      }
+
+      allowExport = allowExport || iter.second;
     }
   }
 
@@ -422,14 +449,13 @@ void MainWindowPrivate::updateCameras(
 void MainWindowPrivate::setActiveCamera(int id)
 {
   this->activeCameraIndex = id;
-  this->UI.worldView->setActiveCamera(this->cameras[id].camera);
+  this->UI.worldView->setActiveCamera(id);
   this->updateCameraView();
 
   auto& cd = this->cameras[id];
   if (!cd.depthMapPath.isEmpty())
   {
-    UI.depthMapView->setDepthMap(cd.depthMapPath);
-    UI.worldView->setActiveDepthMap(cd.camera, cd.depthMapPath);
+    this->loadDepthMap(cd.depthMapPath);
   }
 
   UI.worldView->setVolumeCurrentFramePath(cd.imagePath);
@@ -568,16 +594,57 @@ void MainWindowPrivate::loadImage(QString const& path, vtkMaptkCamera* camera)
   }
 }
 
+
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::loadDepthMap(QString const& imagePath)
+{
+  if (!vtksys::SystemTools::FileExists(qPrintable(imagePath), true))
+  {
+    qWarning() << "File doesn't exist: " << imagePath;
+    return;
+  }
+
+  if (this->depthReader->GetFileName() &&
+    !strcmp(this->depthReader->GetFileName(), qPrintable(imagePath)))
+  {
+    // No change to reader input... return without any update
+    return;
+  }
+
+  this->depthReader->SetFileName(qPrintable(imagePath));
+
+  this->UI.depthMapView->setValidDepthInput(true);
+  this->UI.worldView->setValidDepthInput(true);
+
+  this->depthFilter->SetCamera(this->cameras[this->activeCameraIndex].camera);
+  this->UI.worldView->updateDepthMap();
+  this->UI.depthMapView->updateView(true);
+  this->UI.actionExportDepthPoints->setEnabled(true);
+}
+
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::setActiveTool(AbstractTool* tool)
 {
+  // Disconnect cancel action
+  QObject::disconnect(this->UI.actionCancelComputation, 0, this->activeTool, 0);
+
+  // Update current tool
   this->activeTool = tool;
 
+  // Connect cancel action
+  if (tool)
+  {
+    QObject::connect(this->UI.actionCancelComputation, SIGNAL(triggered()),
+                     tool, SLOT(cancel()));
+  }
+
   auto const enableTools = !tool;
+  auto const enableCancel = tool && tool->isCancelable();
   foreach (auto const& tool, this->tools)
   {
     tool->setEnabled(enableTools);
   }
+  this->UI.actionCancelComputation->setEnabled(enableCancel);
   this->UI.actionOpen->setEnabled(enableTools);
 }
 
@@ -597,6 +664,10 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->UI.setupUi(this);
   d->AM.setupActions(d->UI, this);
 
+  d->toolSeparator =
+    d->UI.menuCompute->insertSeparator(d->UI.actionCancelComputation);
+
+  d->addTool(new InitCamerasLandmarksTool(this), this);
   d->addTool(new BundleAdjustTool(this), this);
   d->addTool(new CanonicalTransformTool(this), this);
   d->addTool(new NeckerReversalTool(this), this);
@@ -625,6 +696,11 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(saveMesh()));
   connect(d->UI.actionExportColoredMesh, SIGNAL(triggered()),
           this, SLOT(saveColoredMesh()));
+  connect(d->UI.actionExportDepthPoints, SIGNAL(triggered()),
+          this, SLOT(saveDepthPoints()));
+
+  connect(d->UI.worldView, SIGNAL(depthMapEnabled(bool)),
+          this, SLOT(enableSaveDepthPoints(bool)));
 
   connect(d->UI.actionShowMatchMatrix, SIGNAL(triggered()),
           this, SLOT(showMatchMatrix()));
@@ -655,10 +731,11 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.worldView, SIGNAL(coloredMeshEnabled(bool)),
           this, SLOT(enableSaveColoredMesh(bool)));
 
-  connect(d->UI.worldView,
-          SIGNAL(depthMapThresholdsChanged(double, double, double, double)),
-          d->UI.depthMapView,
-          SLOT(updateThresholds(double, double, double, double)));
+  connect(d->UI.worldView, SIGNAL(depthMapThresholdsChanged()),
+          d->UI.depthMapView, SLOT(updateThresholds()));
+
+  connect(d->UI.depthMapViewDock, SIGNAL(visibilityChanged(bool)),
+          d->UI.depthMapView, SLOT(updateView(bool)));
 
   this->setSlideDelay(d->UI.slideDelay->value());
 
@@ -685,6 +762,12 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->UI.worldView->setBackgroundColor(*d->viewBackgroundColor);
   d->UI.cameraView->setBackgroundColor(*d->viewBackgroundColor);
   d->UI.depthMapView->setBackgroundColor(*d->viewBackgroundColor);
+
+  // Hookup basic depth pipeline and pass geometry filter to relevant views
+  d->depthFilter->SetInputConnection(d->depthReader->GetOutputPort());
+  d->depthGeometryFilter->SetInputConnection(d->depthFilter->GetOutputPort());
+  d->UI.worldView->setDepthGeometryFilter(d->depthGeometryFilter.GetPointer());
+  d->UI.depthMapView->setDepthGeometryFilter(d->depthGeometryFilter.GetPointer());
 
   d->UI.worldView->resetView();
 }
@@ -824,11 +907,7 @@ void MainWindow::loadProject(QString const& path)
 
     if (i == d->activeCameraIndex)
     {
-      d->UI.worldView->setActiveDepthMap(
-        d->cameras[d->activeCameraIndex].camera, dm.value());
-
-      d->UI.depthMapView->setDepthMap(dm.value());
-      d->UI.depthMapView->resetView();
+      d->loadDepthMap(dm.value());
     }
   }
 
@@ -1040,6 +1119,50 @@ void MainWindow::saveCameras(QString const& path)
 }
 
 //-----------------------------------------------------------------------------
+void MainWindow::enableSaveDepthPoints(bool state)
+{
+  QTE_D();
+
+  if (state && d->depthGeometryFilter->GetOutput()->GetNumberOfVerts() <= 0)
+  {
+    state = false;
+  }
+  d->UI.actionExportDepthPoints->setEnabled(state);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::saveDepthPoints()
+{
+  auto const path = QFileDialog::getSaveFileName(
+    this, "Export Depth Point Cloud", QString(),
+    "PLY file (*.ply);;"
+    "All Files (*)");
+
+  if (!path.isEmpty())
+  {
+    this->saveDepthPoints(path);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::saveDepthPoints(QString const& path)
+{
+  QTE_D();
+
+  try
+  {
+    d->UI.worldView->saveDepthPoints(path);
+  }
+  catch (...)
+  {
+    auto const msg =
+      QString("An error occurred while exporting depth points to \"%1\". "
+              "The output file may not have been written correctly.");
+    QMessageBox::critical(this, "Export error", msg.arg(path));
+  }
+}
+
+//-----------------------------------------------------------------------------
 void MainWindow::saveWebGLScene()
 {
 #ifdef VTKWEBGLEXPORTER
@@ -1225,33 +1348,91 @@ void MainWindow::executeTool(QObject* object)
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::acceptToolResults()
+void MainWindow::acceptToolFinalResults()
 {
   QTE_D();
+  if (d->activeTool)
+  {
+    acceptToolResults(d->activeTool->data());
+  }
+  d->setActiveTool(0);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::acceptToolResults(std::shared_ptr<ToolData> data)
+{
+  QTE_D();
+  // if all the update variables are Null then trigger a GUI update after
+  // extracting the data otherwise we've already triggered an update that
+  // hasn't happened yet, so don't trigger another
+  bool updateNeeded = !d->toolUpdateCameras &&
+                      !d->toolUpdateLandmarks &&
+                      !d->toolUpdateTracks;
 
   if (d->activeTool)
   {
     auto const outputs = d->activeTool->outputs();
 
+    d->toolUpdateCameras = NULL;
+    d->toolUpdateLandmarks = NULL;
+    d->toolUpdateTracks = NULL;
     if (outputs.testFlag(AbstractTool::Cameras))
     {
-      d->updateCameras(d->activeTool->cameras());
+      d->toolUpdateCameras = data->cameras;
     }
     if (outputs.testFlag(AbstractTool::Landmarks))
     {
-      d->landmarks = d->activeTool->landmarks();
-      d->UI.worldView->setLandmarks(*d->landmarks);
-
-      d->UI.actionExportLandmarks->setEnabled(
-        d->landmarks && d->landmarks->size());
+      d->toolUpdateLandmarks = data->landmarks;
     }
-
-    if (!d->cameras.isEmpty())
+    if (outputs.testFlag(AbstractTool::Tracks))
     {
-      d->setActiveCamera(d->activeCameraIndex);
+      d->toolUpdateTracks = data->tracks;
     }
   }
-  d->setActiveTool(0);
+
+  if(updateNeeded)
+  {
+    QTimer::singleShot(1000, this, SLOT(updateToolResults()));
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::updateToolResults()
+{
+  QTE_D();
+
+  if (d->toolUpdateCameras)
+  {
+    d->updateCameras(d->toolUpdateCameras);
+    d->toolUpdateCameras = NULL;
+  }
+  if (d->toolUpdateLandmarks)
+  {
+    d->landmarks = d->toolUpdateLandmarks;
+    d->UI.worldView->setLandmarks(*d->landmarks);
+
+    d->UI.actionExportLandmarks->setEnabled(
+      d->landmarks && d->landmarks->size());
+    d->toolUpdateLandmarks = NULL;
+  }
+  if (d->toolUpdateTracks)
+  {
+    d->tracks = d->toolUpdateTracks;
+    d->updateCameraView();
+
+    foreach (auto const& track, d->tracks->tracks())
+    {
+      d->UI.cameraView->addFeatureTrack(*track);
+    }
+
+    d->UI.actionShowMatchMatrix->setEnabled(!d->tracks->tracks().empty());
+    d->toolUpdateTracks = NULL;
+  }
+
+  if (!d->cameras.isEmpty())
+  {
+    d->setActiveCamera(d->activeCameraIndex);
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -1263,7 +1444,7 @@ void MainWindow::showMatchMatrix()
   {
     // Get matrix
     auto frames = std::vector<kwiver::vital::frame_id_t>();
-    auto const mm = kwiver::maptk::match_matrix(d->tracks, frames);
+    auto const mm = kwiver::arrows::match_matrix(d->tracks, frames);
 
     // Show window
     auto window = new MatchMatrixWindow();

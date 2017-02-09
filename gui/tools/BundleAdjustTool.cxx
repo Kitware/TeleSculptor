@@ -136,6 +136,13 @@ bool BundleAdjustTool::execute(QWidget* window)
   // Create algorithm from configuration
   bundle_adjust::set_nested_algo_configuration(BLOCK, config, d->algorithm);
 
+  // Set the callback to receive updates
+  using std::placeholders::_1;
+  using std::placeholders::_2;
+  typedef bundle_adjust::callback_t callback_t;
+  callback_t cb = std::bind(&BundleAdjustTool::callback_handler, this, _1, _2);
+  d->algorithm->set_callback(cb);
+
   // Hand off to base class
   return AbstractTool::execute(window);
 }
@@ -153,5 +160,17 @@ void BundleAdjustTool::run()
 
   this->updateCameras(cp);
   this->updateLandmarks(lp);
-  this->updateTracks(tp);
+}
+
+//-----------------------------------------------------------------------------
+bool BundleAdjustTool::callback_handler(camera_map_sptr cameras,
+                                        landmark_map_sptr landmarks)
+{
+  // make a copy of the tool data
+  auto data = std::make_shared<ToolData>();
+  data->copyCameras(cameras);
+  data->copyLandmarks(landmarks);
+
+  emit updated(data);
+  return !this->isCanceled();
 }

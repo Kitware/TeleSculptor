@@ -48,6 +48,7 @@
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
 
+#include <map>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -155,7 +156,7 @@ class vtkMaptkCameraRepresentation::vtkInternal
 public:
   vtkCamera* NextCamera();
 
-  vtkNew<vtkCollection> Cameras;
+  std::map<int, vtkCamera*> Cameras;
 
   vtkNew<vtkPolyData> ActivePolyData;
   vtkNew<vtkAppendPolyData> NonActiveAppendPolyData;
@@ -172,11 +173,6 @@ public:
   bool PathNeedsUpdate;
 };
 
-//-----------------------------------------------------------------------------
-vtkCamera* vtkMaptkCameraRepresentation::vtkInternal::NextCamera()
-{
-  return vtkCamera::SafeDownCast(this->Cameras->GetNextItemAsObject());
-}
 
 //-----------------------------------------------------------------------------
 vtkMaptkCameraRepresentation::vtkMaptkCameraRepresentation()
@@ -232,61 +228,67 @@ vtkMaptkCameraRepresentation::~vtkMaptkCameraRepresentation()
   this->ActiveActor->Delete();
   this->NonActiveActor->Delete();
   this->PathActor->Delete();
+  VITAL_FOREACH(auto const camData, this->Internal->Cameras)
+  {
+    camData.second->UnRegister(this);
+  }
 }
 
 //-----------------------------------------------------------------------------
-void vtkMaptkCameraRepresentation::AddCamera(vtkCamera* camera)
+void vtkMaptkCameraRepresentation::AddCamera(int id, vtkCamera* camera)
 {
   // Don't allow null or duplicate entries
-  if (!camera || this->Internal->Cameras->IsItemPresent(camera))
+  if (!camera || this->Internal->Cameras.count(id) > 0)
   {
     return;
   }
 
-  this->Internal->Cameras->AddItem(camera);
+  this->Internal->Cameras[id] = camera;
+  camera->Register(this);
   this->Internal->PathNeedsUpdate = true;
   this->Modified();
 }
 
 //-----------------------------------------------------------------------------
-void vtkMaptkCameraRepresentation::RemoveCamera(vtkCamera* camera)
+void vtkMaptkCameraRepresentation::RemoveCamera(int id)
 {
   // If item isn't present, do nothing
-  if (!this->Internal->Cameras->IsItemPresent(camera))
+  auto camIter = this->Internal->Cameras.find(id);
+  if (camIter == this->Internal->Cameras.end())
   {
     return;
   }
 
   // Remove camera from non-active polydata collection
-  auto const pd = this->Internal->CameraNonActivePolyData.find(camera);
+  auto const pd = this->Internal->CameraNonActivePolyData.find(camIter->second);
   if (pd != this->Internal->CameraNonActivePolyData.end())
   {
     this->Internal->NonActiveAppendPolyData->RemoveInputData(pd->second);
     this->Internal->CameraNonActivePolyData.erase(pd);
   }
 
-  if (this->ActiveCamera == camera)
+  if (this->ActiveCamera == camIter->second)
   {
     this->ActiveCamera = 0;
   }
 
-  this->Internal->Cameras->RemoveItem(camera);
+  camIter->second->UnRegister(this);
+  this->Internal->Cameras.erase(camIter);
   this->Internal->PathNeedsUpdate = true;
   this->Modified();
 }
 
 //-----------------------------------------------------------------------------
-void vtkMaptkCameraRepresentation::SetActiveCamera(vtkCamera* camera)
+void vtkMaptkCameraRepresentation::SetActiveCamera(int id)
 {
-  if (this->ActiveCamera == camera)
+  auto camIter = this->Internal->Cameras.find(id);
+  if (camIter == this->Internal->Cameras.end() ||
+      this->ActiveCamera == camIter->second)
   {
     return;
   }
 
-  // Make sure the camera is in the list
-  this->AddCamera(camera);
-
-  this->ActiveCamera = camera;
+  this->ActiveCamera = camIter->second;
   this->Modified();
 }
 
@@ -306,20 +308,19 @@ void vtkMaptkCameraRepresentation::Update()
   // cameras that are missing
   std::unordered_set<vtkPolyData*> nonActivePolyData;
   int skipCount = 0;
-  this->Internal->Cameras->InitTraversal();
-  while (auto const camera = this->Internal->NextCamera())
+  VITAL_FOREACH(auto const camData, this->Internal->Cameras)
   {
     if (!((skipCount++) % this->DisplayDensity))
     {
-      if (camera != this->ActiveCamera)
+      if (camData.second != this->ActiveCamera)
       {
-        auto& pd = this->Internal->CameraNonActivePolyData[camera];
+        auto& pd = this->Internal->CameraNonActivePolyData[camData.second];
         if (!pd)
         {
           // If we don't already have polydata for this non-active camera,
           // build it now
           pd = PolyDataPointer::New();
-          BuildCameraFrustum(camera, this->NonActiveCameraRepLength, pd);
+          BuildCameraFrustum(camData.second, this->NonActiveCameraRepLength, pd);
         }
         nonActivePolyData.insert(pd);
       }
@@ -355,15 +356,14 @@ void vtkMaptkCameraRepresentation::Update()
     this->Internal->PathPolyData->Reset();
     this->Internal->PathPolyData->Modified();
     vtkPoints* points = this->Internal->PathPolyData->GetPoints();
-    points->Allocate(this->Internal->Cameras->GetNumberOfItems());
+    points->Allocate(this->Internal->Cameras.size());
     vtkCellArray* lines = this->Internal->PathPolyData->GetLines();
-    lines->InsertNextCell(this->Internal->Cameras->GetNumberOfItems());
+    lines->InsertNextCell(this->Internal->Cameras.size());
 
-    this->Internal->Cameras->InitTraversal();
-    while (auto const camera = this->Internal->NextCamera())
+    VITAL_FOREACH(auto const& camData, this->Internal->Cameras)
     {
       double position[3];
-      camera->GetPosition(position);
+      camData.second->GetPosition(position);
       lines->InsertCellPoint(points->InsertNextPoint(position));
     }
   }
@@ -375,7 +375,7 @@ void vtkMaptkCameraRepresentation::PrintSelf(ostream& os, vtkIndent indent)
   this->Superclass::PrintSelf(os, indent);
 
   os << indent << "Number Of Cameras: "
-     << this->Internal->Cameras->GetNumberOfItems() << endl;
+     << this->Internal->Cameras.size() << endl;
   os << indent << "ActiveCameraRepLength: "
      << this->ActiveCameraRepLength << endl;
   os << indent << "NonActiveCameraRepLength: "

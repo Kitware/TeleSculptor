@@ -35,6 +35,10 @@
 
 #include <QMainWindow>
 
+#include <memory>
+
+class ToolData;
+
 class MainWindowPrivate;
 
 class MainWindow : public QMainWindow
@@ -60,6 +64,8 @@ public slots:
   void saveCameras(QString const& path);
   void saveLandmarks();
   void saveLandmarks(QString const& path);
+  void saveDepthPoints();
+  void saveDepthPoints(QString const& path);
 
   void saveWebGLScene();
 
@@ -68,6 +74,8 @@ public slots:
   void saveMesh();
   void saveVolume();
   void saveColoredMesh();
+
+  void enableSaveDepthPoints(bool);
 
   void setActiveCamera(int);
 
@@ -84,7 +92,9 @@ protected slots:
   void nextSlide();
 
   void executeTool(QObject*);
-  void acceptToolResults();
+  void acceptToolFinalResults();
+  void acceptToolResults(std::shared_ptr<ToolData> data);
+  void updateToolResults();
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(MainWindow)

@@ -11,7 +11,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>DepthMap View</string>
+   <string>Depth Map View</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="icons/icons.qrc">
+    <normaloff>:/icons/22x22/depthmap</normaloff>:/icons/22x22/depthmap</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="margin">
