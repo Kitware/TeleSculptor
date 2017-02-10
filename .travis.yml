@@ -15,8 +15,8 @@ matrix:
           packages:
             - g++-4.8
       env: COMPILER=g++-4.8
-    - compiler: clang
-      env: COMPILER=clang++-3.4
+    - compiler: clang # default version is 3.4
+      env: COMPILER=clang++
 
 cache:
   directories:
