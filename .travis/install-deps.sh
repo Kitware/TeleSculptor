@@ -68,6 +68,8 @@ build_repo ()
     cmake ../source \
           -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR/ \
           -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_CXX_COMPILER=$CXX_COMPILER \
+          -DCMAKE_C_COMPILER=$C_COMPILER \
           $CMAKE_OPTS
     make -j2
     $INSTALL_CMD
