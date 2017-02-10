@@ -4,9 +4,26 @@
 sudo: false
 
 language: cpp
-compiler:
-  - gcc
-  - clang
+
+matrix:
+  include:
+    - compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-4.9
+      env: COMPILER=g++-4.9
+    - compiler: clang
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.6
+          packages:
+            - clang-3.6
+      env: COMPILER=clang++-3.6
 
 cache:
   directories:
@@ -30,7 +47,8 @@ script:
   - export PATH=$HOME/deps/bin:$PATH
   - mkdir build
   - cd build
-  - cmake -DMAPTK_ENABLE_GUI:BOOL=ON
+  - cmake -DCMAKE_CXX_COMPILER=$COMPILER
+          -DMAPTK_ENABLE_GUI:BOOL=ON
           -DMAPTK_ENABLE_TESTING:BOOL=ON
           ../
   - make -j2
