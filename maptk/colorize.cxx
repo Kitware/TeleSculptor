@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,6 +39,31 @@
 
 namespace kwiver {
 namespace maptk {
+
+
+/// Extract feature colors from a frame image
+vital::feature_set_sptr
+extract_feature_colors(
+  vital::feature_set const& features,
+  vital::image_container const& image)
+{
+  const vital::image_of<uint8_t> image_data(image.get_image());
+  std::vector<vital::feature_sptr> in_feat = features.features();
+  std::vector<vital::feature_sptr> out_feat;
+  out_feat.reserve(in_feat.size());
+
+  VITAL_FOREACH (auto const& f, in_feat)
+  {
+    auto const& loc = f->loc();
+    auto const fd = std::make_shared<vital::feature_d>(*f);
+    fd->set_color(image_data.at(static_cast<unsigned>(loc[0]),
+                                static_cast<unsigned>(loc[1])));
+    out_feat.push_back(fd);
+  }
+
+  return std::make_shared<vital::simple_feature_set>(out_feat);
+}
+
 
 
 /// Extract feature colors from a frame image

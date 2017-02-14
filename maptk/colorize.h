@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,6 +46,20 @@
 namespace kwiver {
 namespace maptk {
 
+/// Extract feature colors from a frame image
+/*
+ * This function extracts the feature colors from a supplied frame image and
+ * applies them to all features in a feature set by sampling the image at each
+ * feature's location.
+ *
+ *  \param [in] features a set of features for which to assign colors
+ *  \param [in] image the image from which to take colors
+ *  \return a feature set with updated features
+ */
+MAPTK_EXPORT
+vital::feature_set_sptr extract_feature_colors(
+  vital::feature_set const& features,
+  vital::image_container const& image);
 
 /// Extract feature colors from a frame image
 /**
