@@ -25,11 +25,18 @@ Scripts
 
 Tools
 
+ * Updated the maptk_bundle_adjust tool to use the filter_tracks algorithm from
+   KWIVER instead of directly applying filters.
+
  * Added a new detect_and_describe tool that runs feature detection and
    descriptor extraction on each frame and writes the outputs to files
    using the feature_descriptor_io algorithm.
 
 Visualization Application
+
+ * Added a "Filter Tracks" tool to the GUI that runs the filter_tracks
+   algorithm in KWIVER.  Updated the GUI to properly clear existing tracks
+   before adding tracks returned from a tool.
 
 
 Fixes since last public release

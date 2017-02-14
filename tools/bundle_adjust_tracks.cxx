@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2016 by Kitware, Inc.
+ * Copyright 2014-2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,6 +50,7 @@
 #include <vital/algo/estimate_similarity_transform.h>
 #include <vital/algo/geo_map.h>
 #include <vital/algo/initialize_cameras_landmarks.h>
+#include <vital/algo/filter_tracks.h>
 #include <vital/algo/triangulate_landmarks.h>
 #include <vital/algorithm_plugin_manager.h>
 #include <vital/exceptions.h>
@@ -162,14 +163,6 @@ static kwiver::vital::config_block_sptr default_config()
   config->set_value("output_krtd_dir", "output/krtd",
                     "A directory in which to write the output KRTD files.");
 
-  config->set_value("min_track_length", "50",
-                    "Filter the input tracks keeping those covering "
-                    "at least this many frames.");
-
-  config->set_value("min_mm_importance", "1.0",
-                    "Filter the input tracks with match matrix importance score "
-                    "below this threshold. Set to 0 to disable.");
-
   config->set_value("camera_sample_rate", "1",
                     "Sub-sample the cameras for by this rate.\n"
                     "Set to 1 to use all cameras, "
@@ -204,6 +197,8 @@ static kwiver::vital::config_block_sptr default_config()
   config->set_value("depthmaps_images_file", "",
                     "An optional file containing paths to depthmaps as image datas.");
 
+  kwiver::vital::algo::filter_tracks::get_nested_algo_configuration("track_filter", config,
+                                                     kwiver::vital::algo::filter_tracks_sptr());
   kwiver::vital::algo::bundle_adjust::get_nested_algo_configuration("bundle_adjuster", config,
                                                      kwiver::vital::algo::bundle_adjust_sptr());
   kwiver::vital::algo::initialize_cameras_landmarks
@@ -280,6 +275,11 @@ static bool check_config(kwiver::vital::config_block_sptr config)
     }
   }
 
+
+  if (!kwiver::vital::algo::filter_tracks::check_nested_algo_configuration("track_filter", config))
+  {
+    MAPTK_CONFIG_FAIL("Failed config check in track_filter algorithm.");
+  }
   if (!kwiver::vital::algo::bundle_adjust::check_nested_algo_configuration("bundle_adjuster", config))
   {
     MAPTK_CONFIG_FAIL("Failed config check in bundle_adjuster algorithm.");
@@ -331,54 +331,6 @@ base_camera_from_config(kwiver::vital::config_block_sptr config)
         config->get_value<double>("skew"));
   return kwiver::vital::simple_camera(kwiver::vital::vector_3d(0,0,-1),
                                       kwiver::vital::rotation_d(), K);
-}
-
-
-// ------------------------------------------------------------------
-/// filter track set by removing short tracks
-kwiver::vital::track_set_sptr
-filter_tracks(kwiver::vital::track_set_sptr tracks, size_t min_length)
-{
-  std::vector<kwiver::vital::track_sptr> trks = tracks->tracks();
-  std::vector<kwiver::vital::track_sptr> good_trks;
-  VITAL_FOREACH(kwiver::vital::track_sptr t, trks)
-  {
-    if( t->size() >= min_length )
-    {
-      good_trks.push_back(t);
-    }
-  }
-  return kwiver::vital::track_set_sptr(new kwiver::vital::simple_track_set(good_trks));
-}
-
-
-// ------------------------------------------------------------------
-/// filter track set by removing less important
-kwiver::vital::track_set_sptr
-filter_tracks_importance(kwiver::vital::track_set_sptr tracks, double min_score)
-{
-  using namespace kwiver;
-
-  // compute the match matrix
-  std::vector<vital::frame_id_t> frames;
-  Eigen::SparseMatrix<unsigned int> mm = kwiver::arrows::match_matrix(tracks, frames);
-
-  // compute the importance scores on the tracks
-  std::map<vital::track_id_t, double> importance =
-    kwiver::arrows::match_matrix_track_importance(tracks, frames, mm);
-
-  std::vector<vital::track_sptr> trks = tracks->tracks();
-  std::vector<vital::track_sptr> good_trks;
-  VITAL_FOREACH(kwiver::vital::track_sptr t, trks)
-  {
-    std::map<vital::track_id_t, double>::const_iterator itr;
-    if( (itr = importance.find(t->id())) != importance.end() &&
-        itr->second >= min_score)
-    {
-      good_trks.push_back(t);
-    }
-  }
-  return vital::track_set_sptr(new vital::simple_track_set(good_trks));
 }
 
 
@@ -646,7 +598,7 @@ static int maptk_main(int argc, char const* argv[])
   }
 
   // register the algorithm implementations
-  std::string rel_plugin_path = kwiver::vital::get_executable_path() + "/../lib/maptk";
+  std::string rel_plugin_path = kwiver::vital::get_executable_path() + "/../lib/modules";
   kwiver::vital::algorithm_plugin_manager::instance().add_search_path(rel_plugin_path);
   kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
 
@@ -662,6 +614,7 @@ static int maptk_main(int argc, char const* argv[])
   kwiver::vital::config_block_sptr config = kwiver::vital::config_block::empty_config();
   kwiver::vital::algo::bundle_adjust_sptr bundle_adjuster;
   kwiver::vital::algo::initialize_cameras_landmarks_sptr initializer;
+  kwiver::vital::algo::filter_tracks_sptr track_filter;
   kwiver::vital::algo::triangulate_landmarks_sptr triangulator;
   kwiver::vital::algo::geo_map_sptr geo_mapper;
   kwiver::vital::algo::estimate_similarity_transform_sptr st_estimator;
@@ -679,6 +632,7 @@ static int maptk_main(int argc, char const* argv[])
   kwiver::vital::algo::bundle_adjust::set_nested_algo_configuration("bundle_adjuster", config, bundle_adjuster);
   kwiver::vital::algo::triangulate_landmarks::set_nested_algo_configuration("triangulator", config, triangulator);
   kwiver::vital::algo::initialize_cameras_landmarks::set_nested_algo_configuration("initializer", config, initializer);
+  kwiver::vital::algo::filter_tracks::set_nested_algo_configuration("track_filter", config, track_filter);
   kwiver::vital::algo::geo_map::set_nested_algo_configuration("geo_mapper", config, geo_mapper);
   kwiver::vital::algo::estimate_similarity_transform::set_nested_algo_configuration("st_estimator", config, st_estimator);
   kwiver::vital::algo::estimate_canonical_transform::set_nested_algo_configuration("can_tfm_estimator", config, can_tfm_estimator);
@@ -694,6 +648,7 @@ static int maptk_main(int argc, char const* argv[])
     kwiver::vital::algo::bundle_adjust::get_nested_algo_configuration("bundle_adjuster", config, bundle_adjuster);
     kwiver::vital::algo::triangulate_landmarks::get_nested_algo_configuration("triangulator", config, triangulator);
     kwiver::vital::algo::initialize_cameras_landmarks::get_nested_algo_configuration("initializer", config, initializer);
+    kwiver::vital::algo::filter_tracks::get_nested_algo_configuration("track_filter", config, track_filter);
     kwiver::vital::algo::geo_map::get_nested_algo_configuration("geo_mapper", config, geo_mapper);
     kwiver::vital::algo::estimate_similarity_transform::get_nested_algo_configuration("st_estimator", config, st_estimator);
     kwiver::vital::algo::estimate_canonical_transform::get_nested_algo_configuration("can_tfm_estimator", config, can_tfm_estimator);
@@ -729,19 +684,13 @@ static int maptk_main(int argc, char const* argv[])
     LOG_ERROR(main_logger, "No tracks loaded.");
     return EXIT_FAILURE;
   }
-  size_t min_track_len = config->get_value<size_t>("min_track_length");
-  double min_mm_importance = config->get_value<double>("min_mm_importance");
-  if( min_track_len > 1 || min_mm_importance > 0.0 )
+
+  //
+  // Filter the tracks
+  //
   {
     kwiver::vital::scoped_cpu_timer t( "track filtering" );
-    if( min_track_len > 1 )
-    {
-      tracks = filter_tracks(tracks, min_track_len);
-    }
-    if( min_mm_importance > 0.0 )
-    {
-      tracks = filter_tracks_importance(tracks, min_mm_importance);
-    }
+    tracks = track_filter->filter(tracks);
     LOG_DEBUG(main_logger, "filtered down to "<<tracks->size()<<" long tracks");
 
     // write out filtered tracks if output file is specified

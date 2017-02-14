@@ -28,68 +28,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_CAMERAVIEW_H_
-#define MAPTK_CAMERAVIEW_H_
+#ifndef MAPTK_TRACKFILTERTOOL_H_
+#define MAPTK_TRACKFILTERTOOL_H_
 
-#include <vital/vital_types.h>
+#include "AbstractTool.h"
 
-#include <qtGlobal.h>
+class TrackFilterToolPrivate;
 
-#include <QtGui/QWidget>
-
-class vtkImageData;
-
-namespace kwiver { namespace vital { class landmark_map; } }
-namespace kwiver { namespace vital { class track; } }
-
-class vtkMaptkCamera;
-
-class CameraViewPrivate;
-
-class CameraView : public QWidget
+class TrackFilterTool : public AbstractTool
 {
   Q_OBJECT
 
 public:
-  explicit CameraView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~CameraView();
+  explicit TrackFilterTool(QObject* parent = 0);
+  virtual ~TrackFilterTool();
 
-  void addFeatureTrack(kwiver::vital::track const&);
+  virtual Outputs outputs() const QTE_OVERRIDE;
 
-public slots:
-  void setBackgroundColor(QColor const&);
+  /// Get if the tool can be canceled.
+  virtual bool isCancelable() const QTE_OVERRIDE { return false; }
 
-  void setImagePath(QString const&);
-  void setImageData(vtkImageData* data, QSize const& dimensions);
+  virtual bool execute(QWidget* window = 0) QTE_OVERRIDE;
 
-  void setLandmarksData(kwiver::vital::landmark_map const&);
-
-  void setActiveFrame(unsigned);
-
-  void addLandmark(kwiver::vital::landmark_id_t id, double x, double y);
-  void addResidual(kwiver::vital::track_id_t id,
-                   double x1, double y1,
-                   double x2, double y2);
-
-  void clearLandmarks();
-  void clearResiduals();
-  void clearFeatureTracks();
-
-  void resetView();
-  void resetViewToFullExtents();
-
-protected slots:
-  void setImageVisible(bool);
-  void setLandmarksVisible(bool);
-  void setResidualsVisible(bool);
-
-  void updateFeatures();
+protected:
+  virtual void run() QTE_OVERRIDE;
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(CameraView)
-  QTE_DECLARE_PRIVATE(CameraView)
-
-  QTE_DISABLE_COPY(CameraView)
+  QTE_DECLARE_PRIVATE_RPTR(TrackFilterTool)
+  QTE_DECLARE_PRIVATE(TrackFilterTool)
+  QTE_DISABLE_COPY(TrackFilterTool)
 };
 
 #endif
