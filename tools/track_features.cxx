@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2016 by Kitware, Inc.
+ * Copyright 2013-2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,7 +46,6 @@
 #include <vital/logger/logger.h>
 #include <vital/vital_foreach.h>
 
-#include <vital/algorithm_plugin_manager.h>
 #include <vital/exceptions.h>
 #include <vital/io/track_set_io.h>
 #include <vital/vital_types.h>
@@ -54,6 +53,7 @@
 #include <vital/algo/convert_image.h>
 #include <vital/algo/track_features.h>
 #include <vital/algo/compute_ref_homography.h>
+#include <vital/plugin_loader/plugin_manager.h>
 #include <vital/util/get_paths.h>
 #include <vital/util/transform_image.h>
 
@@ -254,8 +254,8 @@ static int maptk_main(int argc, char const* argv[])
 
   // register the algorithm implementations
   std::string rel_plugin_path = kwiver::vital::get_executable_path() + "/../lib/modules";
-  kwiver::vital::algorithm_plugin_manager::instance().add_search_path(rel_plugin_path);
-  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
+  kwiver::vital::plugin_manager::instance().add_search_path(rel_plugin_path);
+  kwiver::vital::plugin_manager::instance().load_all_plugins();
 
   // Set config to algo chain
   // Get config from algo chain after set
