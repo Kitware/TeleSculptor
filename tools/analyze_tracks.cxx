@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2016 by Kitware, Inc.
+ * Copyright 2014-2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,19 +37,19 @@
 #include <vital/config/config_block.h>
 #include <vital/config/config_block_io.h>
 
-#include <vital/algorithm_plugin_manager.h>
+#include <vital/algo/analyze_tracks.h>
 #include <vital/algo/image_io.h>
+#include <vital/algo/draw_tracks.h>
 #include <vital/exceptions.h>
 #include <vital/io/camera_io.h>
 #include <vital/io/camera_map_io.h>
 #include <vital/io/landmark_map_io.h>
 #include <vital/io/track_set_io.h>
+#include <vital/plugin_loader/plugin_manager.h>
 #include <vital/types/camera.h>
 #include <vital/types/image_container.h>
 #include <vital/types/landmark_map.h>
 #include <vital/vital_types.h>
-#include <vital/algo/analyze_tracks.h>
-#include <vital/algo/draw_tracks.h>
 #include <vital/util/get_paths.h>
 
 #include <kwiversys/SystemTools.hxx>
@@ -177,8 +177,8 @@ static int maptk_main(int argc, char const* argv[])
 
   // register the algorithm implementations
   std::string rel_plugin_path = kwiver::vital::get_executable_path() + "/../lib/modules";
-  kwiver::vital::algorithm_plugin_manager::instance().add_search_path(rel_plugin_path);
-  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
+  kwiver::vital::plugin_manager::instance().add_search_path(rel_plugin_path);
+  kwiver::vital::plugin_manager::instance().load_all_plugins();
 
   // Set config to algo chain
   // Get config from algo chain after set
