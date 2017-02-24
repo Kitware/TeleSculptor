@@ -2,11 +2,11 @@ MAP-Tk v0.9.0 Release Notes
 ==========================
 
 This is a minor release of MAP-Tk that provides both new functionality and
-fixes over the previous v0.8.0 release.  However, MAP-Tk is still considered
+fixes over the previous v0.8.1 release.  However, MAP-Tk is still considered
 pre-release software and subject to significant API changes.
 
 
-Updates since v0.8.0
+Updates since v0.8.1
 ---------------------------------
 
 MAP-Tk Library
@@ -45,7 +45,8 @@ Core Plugin
 
 OpenCV Plugin
 
- * Added CMake support for handing and marking the use of OpenCV version >= 3.
+ * Added support for OpenCV version >= 3.0 while maintaining support for
+   OpenCV >= 2.4.6.  We may drop support for OpenCV 2.X in a future release.
 
  * Overhauled OpenCV algorithm introspection structure. Versions 3.x took away
    the previous ability to introspect algorithm types and parameters,
@@ -87,9 +88,9 @@ Visualization Application
 
  * The GUI now accepts a list of files to be opened on the command line.
 
- * Added a depth map view and a depth map visualisation in the world view. The
+ * Added a depth map view and a depth map visualization in the world view. The
    depth maps can be thresholded directly in the world view, and the depth map
-   view offers several visualisation modes such as depths, uniqueness ratios or
+   view offers several visualization modes such as depths, uniqueness ratios or
    best cost values. Depth maps can be loaded by initializing the parameter
    "depthmaps_images_file" with the path to the depth maps (*.vti files) list in
    the configuration file.
@@ -104,6 +105,8 @@ Tools
    when only a subset of cameras are computed and we do not want a mix of
    old and new camera files.
 
+ * Added ``-h`` option to C++ track features too. Equivalent to ``--help``.
+
 Scripts
 
  * Added a Python script which uses OpenCV to produce mosaicked images of
@@ -117,8 +120,18 @@ Default Configuration
  * Switched default feature descriptors to use non-upright SURF.
 
 
-Fixes since v0.8.0
+Fixes since v0.8.1
 -------------------------------
+
+Build System
+
+ * When Fletch is found, or referenced by Vital, CMake will now search the
+   Fletch install root when finding packages.  This removes the need to
+   manually point CMake at each dependent library provided by Fletch.
+
+ * Removed CMake option to build shared vs static libraries.  Due to the plugin
+   infrastructure used in Vital, we can no longer build static MAP-Tk
+   libraries.
 
 Plugins
 
@@ -135,3 +148,11 @@ Tools
    that filters tracks based on match matrix importance.  The idea is that
    long tracks are usually most important, but some short tracks may be more
    important if they are the only tracks that tie together a pair of frames.
+
+ * Removed call to landmark triangulation algorithm that was effectively doing
+   nothing.
+
+VXL
+
+ * Fixed bug in bundle adjust implementation where input landmarks were being
+   accidentally modified in-place.

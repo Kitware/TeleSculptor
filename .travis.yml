@@ -4,9 +4,17 @@
 sudo: false
 
 language: cpp
-compiler:
-  - gcc
-  - clang
+
+matrix:
+  include:
+    - compiler: gcc
+      env:
+        - C_COMPILER=gcc-4.8
+        - CXX_COMPILER=g++-4.8
+    - compiler: clang
+      env: # default clang is version 3.4
+        - C_COMPILER=clang
+        - CXX_COMPILER=clang++
 
 cache:
   directories:
@@ -18,24 +26,23 @@ before_script:
 addons:
   apt:
     sources:
-    - boost-latest
+    - ubuntu-toolchain-r-test
     packages:
+    - g++-4.8
     - libproj-dev
     - libgl1-mesa-dev
     - libxt-dev
     - libqt4-dev
+    - libatlas-base-dev
 
 script:
   - export PATH=$HOME/deps/bin:$PATH
   - mkdir build
   - cd build
-  - cmake -DMAPTK_ENABLE_PROJ:BOOL=ON
-          -DMAPTK_ENABLE_OPENCV:BOOL=ON
-          -DMAPTK_ENABLE_VXL:BOOL=ON
-          -DMAPTK_ENABLE_CERES:BOOL=ON
+  - cmake -DCMAKE_C_COMPILER=$C_COMPILER
+          -DCMAKE_CXX_COMPILER=$CXX_COMPILER
           -DMAPTK_ENABLE_GUI:BOOL=ON
           -DMAPTK_ENABLE_TESTING:BOOL=ON
-          -DEIGEN_INCLUDE_DIR:PATH=$HOME/deps/include/eigen3
           ../
   - make -j2
   - ctest

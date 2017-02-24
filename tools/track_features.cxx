@@ -55,6 +55,7 @@
 #include <vital/algo/track_features.h>
 #include <vital/algo/compute_ref_homography.h>
 #include <vital/util/get_paths.h>
+#include <vital/util/transform_image.h>
 
 #include <kwiversys/SystemTools.hxx>
 #include <kwiversys/CommandLineArguments.hxx>
@@ -209,7 +210,7 @@ static bool check_config(kwiver::vital::config_block_sptr config)
 
 
 // ------------------------------------------------------------------
-static kwiver::vital::image::byte invert_mask_pixel( kwiver::vital::image::byte const &b )
+static bool invert_mask_pixel( bool const &b )
 {
   return !b;
 }
@@ -228,6 +229,7 @@ static int maptk_main(int argc, char const* argv[])
   typedef kwiversys::CommandLineArguments argT;
 
   arg.AddArgument( "--help",        argT::NO_ARGUMENT, &opt_help, "Display usage information" );
+  arg.AddArgument( "-h",            argT::NO_ARGUMENT, &opt_help, "Display usage information" );
   arg.AddArgument( "--config",      argT::SPACE_ARGUMENT, &opt_config, "Configuration file for tool" );
   arg.AddArgument( "-c",            argT::SPACE_ARGUMENT, &opt_config, "Configuration file for tool" );
   arg.AddArgument( "--output-config", argT::SPACE_ARGUMENT, &opt_out_config,
@@ -251,7 +253,7 @@ static int maptk_main(int argc, char const* argv[])
   }
 
   // register the algorithm implementations
-  std::string rel_plugin_path = kwiver::vital::get_executable_path() + "/../lib/maptk";
+  std::string rel_plugin_path = kwiver::vital::get_executable_path() + "/../lib/modules";
   kwiver::vital::algorithm_plugin_manager::instance().add_search_path(rel_plugin_path);
   kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
 
@@ -427,10 +429,12 @@ static int maptk_main(int argc, char const* argv[])
       {
         LOG_DEBUG( main_logger,
                    "Inverting mask image pixels" );
-        kwiver::vital::image mask_image( mask->get_image() );
+        kwiver::vital::image_of<bool> mask_image;
+        kwiver::vital::cast_image( mask->get_image(), mask_image );
         kwiver::vital::transform_image( mask_image, invert_mask_pixel );
         LOG_DEBUG( main_logger,
                    "Inverting mask image pixels -- Done" );
+        mask = std::make_shared<kwiver::vital::simple_image_container>( mask_image );
       }
 
       converted_mask = image_converter->convert( mask );

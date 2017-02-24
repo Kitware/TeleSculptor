@@ -36,7 +36,7 @@
 
 #include <vital/config/config_block_io.h>
 
-#include <maptk/transform.h>
+#include <arrows/core/transform.h>
 
 #include <qtStlUtil.h>
 
@@ -149,6 +149,6 @@ void CanonicalTransformTool::run()
   auto const& xf =
     d->algorithm->estimate_transform(this->cameras(), this->landmarks());
 
-  this->updateCameras(kwiver::maptk::transform(this->cameras(), xf));
-  this->updateLandmarks(kwiver::maptk::transform(this->landmarks(), xf));
+  this->updateCameras(kwiver::arrows::transform(this->cameras(), xf));
+  this->updateLandmarks(kwiver::arrows::transform(this->landmarks(), xf));
 }

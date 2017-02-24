@@ -66,13 +66,14 @@
 #include <kwiversys/CommandLineArguments.hxx>
 #include <kwiversys/Directory.hxx>
 
+#include <arrows/core/metrics.h>
+#include <arrows/core/match_matrix.h>
+#include <arrows/core/transform.h>
+
 #include <maptk/colorize.h>
+#include <maptk/geo_reference_points_io.h>
 #include <maptk/ins_data_io.h>
 #include <maptk/local_geo_cs.h>
-#include <maptk/geo_reference_points_io.h>
-#include <maptk/metrics.h>
-#include <maptk/match_matrix.h>
-#include <maptk/transform.h>
 #include <maptk/version.h>
 
 typedef kwiversys::SystemTools     ST;
@@ -141,6 +142,16 @@ static kwiver::vital::config_block_sptr default_config()
                     "When loading a subset of cameras, should we optimize only the "
                     "loaded cameras or also initialize and optimize the unspecified cameras");
 
+  config->set_value("geo_origin_file", "output/geo_origin.txt",
+                    "This file contains the geographical location of the origin "
+                    "of the local cartesian coordinate system used in the camera "
+                    "and landmark files.  This file is use for input and output. "
+                    "If the files exists it will be read to define the origin. "
+                    "If the file does not exist an origin will be computed from "
+                    "geographic metadata provided and written to this file. "
+                    "The file format is ASCII (degrees, meters):\n"
+                    "latitude longitude altitude");
+
   config->set_value("output_ply_file", "output/landmarks.ply",
                     "Path to the output PLY file in which to write "
                     "resulting 3D landmark points");
@@ -187,11 +198,11 @@ static kwiver::vital::config_block_sptr default_config()
                     "when updating cameras. This option is only relevent if a "
                     "value is give to the input_pos_files option.");
 
-      config->set_value("krtd_clean_up", "false",
-                        "Delete all previously existing KRTD files present in output_krtd_dir before writing new KRTD files.");
+  config->set_value("krtd_clean_up", "false",
+                    "Delete all previously existing KRTD files present in output_krtd_dir before writing new KRTD files.");
 
-      config->set_value("depthmaps_images_file", "",
-                        "An optional file containing paths to depthmaps as image datas.");
+  config->set_value("depthmaps_images_file", "",
+                    "An optional file containing paths to depthmaps as image datas.");
 
   kwiver::vital::algo::bundle_adjust::get_nested_algo_configuration("bundle_adjuster", config,
                                                      kwiver::vital::algo::bundle_adjust_sptr());
@@ -350,11 +361,11 @@ filter_tracks_importance(kwiver::vital::track_set_sptr tracks, double min_score)
 
   // compute the match matrix
   std::vector<vital::frame_id_t> frames;
-  Eigen::SparseMatrix<unsigned int> mm = maptk::match_matrix(tracks, frames);
+  Eigen::SparseMatrix<unsigned int> mm = kwiver::arrows::match_matrix(tracks, frames);
 
   // compute the importance scores on the tracks
   std::map<vital::track_id_t, double> importance =
-      maptk::match_matrix_track_importance(tracks, frames, mm);
+    kwiver::arrows::match_matrix_track_importance(tracks, frames, mm);
 
   std::vector<vital::track_sptr> trks = tracks->tracks();
   std::vector<vital::track_sptr> good_trks;
@@ -635,7 +646,7 @@ static int maptk_main(int argc, char const* argv[])
   }
 
   // register the algorithm implementations
-  std::string rel_plugin_path = kwiver::vital::get_executable_path() + "/../lib/maptk";
+  std::string rel_plugin_path = kwiver::vital::get_executable_path() + "/../lib/modules";
   kwiver::vital::algorithm_plugin_manager::instance().add_search_path(rel_plugin_path);
   kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
 
@@ -663,6 +674,7 @@ static int maptk_main(int argc, char const* argv[])
     config->merge_config(kwiver::vital::read_config_file(opt_config, "maptk",
                                                          MAPTK_VERSION, prefix));
   }
+
 
   kwiver::vital::algo::bundle_adjust::set_nested_algo_configuration("bundle_adjuster", config, bundle_adjuster);
   kwiver::vital::algo::triangulate_landmarks::set_nested_algo_configuration("triangulator", config, triangulator);
@@ -787,6 +799,28 @@ static int maptk_main(int argc, char const* argv[])
   // Create the local coordinate system
   //
   kwiver::maptk::local_geo_cs local_cs(geo_mapper);
+  bool geo_origin_loaded_from_file = false;
+  if (config->get_value<std::string>("geo_origin_file", "") != "")
+  {
+    kwiver::vital::path_t geo_origin_file = config->get_value<kwiver::vital::path_t>("geo_origin_file");
+    // load the coordinates from a file if it exists
+    if (ST::FileExists(geo_origin_file, true))
+    {
+      std::ifstream ifs(geo_origin_file);
+      double lat, lon, alt;
+      ifs >> lat >> lon >> alt;
+      LOG_INFO(main_logger, "Loaded origin point: "
+                            << lat << ", " << lon << ", " << alt);
+      double x,y;
+      int zone;
+      bool is_north_hemi;
+      local_cs.geo_map_algo()->latlon_to_utm(lat, lon, x, y, zone, is_north_hemi);
+      local_cs.set_utm_origin_zone(zone);
+      local_cs.set_utm_origin(kwiver::vital::vector_3d(x, y, alt));
+      geo_origin_loaded_from_file = true;
+    }
+  }
+
 
   //
   // Initialize input and main cameras
@@ -814,8 +848,6 @@ static int maptk_main(int argc, char const* argv[])
     {
       cameras[v.first] = v.second->clone();
     }
-    // Triangulate initial landmarks based on cameras and tracks
-    triangulator->triangulate(input_cam_map, tracks, lm_map);
   }
   kwiver::vital::camera_map_sptr cam_map;
   if(!cameras.empty())
@@ -834,12 +866,39 @@ static int maptk_main(int argc, char const* argv[])
     kwiver::maptk::load_reference_file(ref_file, local_cs, reference_landmarks, reference_tracks);
   }
 
+  // if we computed an origin that was not loaded from a file
+  if (local_cs.utm_origin_zone() >= 0 &&
+      !geo_origin_loaded_from_file)
+  {
+    // write out the origin of the local coordinate system
+    double easting = local_cs.utm_origin()[0];
+    double northing = local_cs.utm_origin()[1];
+    double altitude = local_cs.utm_origin()[2];
+    int zone = local_cs.utm_origin_zone();
+    double lat, lon;
+    local_cs.geo_map_algo()->utm_to_latlon(easting, northing, zone, true, lat, lon);
+    if (config->get_value<std::string>("geo_origin_file", "") != "")
+    {
+      kwiver::vital::path_t geo_origin_file = config->get_value<kwiver::vital::path_t>("geo_origin_file");
+      std::ofstream ofs(geo_origin_file);
+      if (ofs)
+      {
+        LOG_INFO(main_logger, "Saving local coordinate origin to " << geo_origin_file);
+        ofs << std::setprecision(12) << lat << " " << lon << " " << altitude;
+      }
+    }
+    LOG_INFO(main_logger, "Local coordinate origin: " << std::setprecision(12)
+                                                      << lat << ", "
+                                                      << lon << ", "
+                                                      << altitude);
+  }
+
   // apply necker reversal if requested
   bool necker_reverse_input = config->get_value<bool>("necker_reverse_input", false);
   if (necker_reverse_input)
   {
     LOG_INFO(main_logger, "Applying Necker reversal");
-    kwiver::maptk::necker_reverse(cam_map, lm_map);
+    kwiver::arrows::necker_reverse(cam_map, lm_map);
   }
 
   bool init_unloaded_cams = config->get_value<bool>("initialize_unloaded_cameras", true);
@@ -918,14 +977,14 @@ static int maptk_main(int argc, char const* argv[])
   { // scope block
     kwiver::vital::scoped_cpu_timer t( "Tool-level SBA algorithm" );
 
-    double init_rmse = kwiver::maptk::reprojection_rmse(cam_map->cameras(),
+    double init_rmse = kwiver::arrows::reprojection_rmse(cam_map->cameras(),
                                                         lm_map->landmarks(),
                                                         tracks->tracks());
     LOG_DEBUG(main_logger, "initial reprojection RMSE: " << init_rmse);
 
     bundle_adjuster->optimize(cam_map, lm_map, tracks);
 
-    double end_rmse = kwiver::maptk::reprojection_rmse(cam_map->cameras(),
+    double end_rmse = kwiver::arrows::reprojection_rmse(cam_map->cameras(),
                                                        lm_map->landmarks(),
                                                        tracks->tracks());
     LOG_DEBUG(main_logger, "final reprojection RMSE: " << end_rmse);
@@ -964,8 +1023,14 @@ static int maptk_main(int argc, char const* argv[])
                             << "reference tracks and post-SBA cameras");
       kwiver::vital::landmark_map_sptr sba_space_landmarks(new kwiver::vital::simple_landmark_map(reference_landmarks->landmarks()));
       triangulator->triangulate(cam_map, reference_tracks, sba_space_landmarks);
+      if (sba_space_landmarks->size() < reference_landmarks->size())
+      {
+        LOG_WARN(main_logger, "Only " << sba_space_landmarks->size()
+                              << " out of " << reference_landmarks->size()
+                              << " reference points triangulated");
+      }
 
-      double post_tri_rmse = kwiver::maptk::reprojection_rmse(cam_map->cameras(),
+      double post_tri_rmse = kwiver::arrows::reprojection_rmse(cam_map->cameras(),
                                                               sba_space_landmarks->landmarks(),
                                                               reference_tracks->tracks());
       LOG_DEBUG(main_logger, "Post-triangulation RMSE: " << post_tri_rmse);
@@ -993,8 +1058,8 @@ static int maptk_main(int argc, char const* argv[])
 
     // apply to cameras and landmarks
     LOG_INFO(main_logger, "Applying transform to cameras and landmarks");
-    cam_map = kwiver::maptk::transform(cam_map, sim_transform);
-    lm_map = kwiver::maptk::transform(lm_map, sim_transform);
+    cam_map = kwiver::arrows::transform(cam_map, sim_transform);
+    lm_map = kwiver::arrows::transform(lm_map, sim_transform);
   }
 
   //
@@ -1042,9 +1107,9 @@ static int maptk_main(int argc, char const* argv[])
   if (config->get_value<bool>("krtd_clean_up") )
   {
 
-    std::cerr << "Cleaning "
-              << config->get_value<std::string>("output_krtd_dir")
-              << " before writing new files." << std::endl;
+    LOG_INFO(main_logger, "Cleaning "
+                          << config->get_value<std::string>("output_krtd_dir")
+                          << " before writing new files.");
 
     kwiver::vital::path_t krtd_dir = config->get_value<std::string>("output_krtd_dir");
     std::vector<kwiver::vital::path_t> files = files_in_dir(krtd_dir);

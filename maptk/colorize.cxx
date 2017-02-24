@@ -48,7 +48,7 @@ extract_feature_colors(
   vital::image_container const& image,
   vital::frame_id_t frame_id)
 {
-  auto const& image_data = image.get_image();
+  const vital::image_of<uint8_t> image_data(image.get_image());
 
   auto tracks_copy = tracks.tracks();
   VITAL_FOREACH (auto& track, tracks_copy)

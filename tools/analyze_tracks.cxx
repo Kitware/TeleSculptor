@@ -55,7 +55,7 @@
 #include <kwiversys/SystemTools.hxx>
 #include <kwiversys/CommandLineArguments.hxx>
 
-#include <maptk/projected_track_set.h>
+#include <arrows/core/projected_track_set.h>
 #include <maptk/version.h>
 
 typedef kwiversys::SystemTools     ST;
@@ -176,7 +176,7 @@ static int maptk_main(int argc, char const* argv[])
   }
 
   // register the algorithm implementations
-  std::string rel_plugin_path = kwiver::vital::get_executable_path() + "/../lib/maptk";
+  std::string rel_plugin_path = kwiver::vital::get_executable_path() + "/../lib/modules";
   kwiver::vital::algorithm_plugin_manager::instance().add_search_path(rel_plugin_path);
   kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
 
@@ -334,7 +334,7 @@ static int maptk_main(int argc, char const* argv[])
         return EXIT_FAILURE;
       }
 
-      comparison_tracks = kwiver::maptk::projected_tracks( landmarks, cameras );
+      comparison_tracks = kwiver::arrows::projected_tracks( landmarks, cameras );
     }
 
     // Read images one by one, this is more memory efficient than loading them all
