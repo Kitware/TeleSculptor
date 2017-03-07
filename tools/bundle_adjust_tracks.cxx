@@ -52,12 +52,12 @@
 #include <vital/algo/initialize_cameras_landmarks.h>
 #include <vital/algo/filter_tracks.h>
 #include <vital/algo/triangulate_landmarks.h>
-#include <vital/algorithm_plugin_manager.h>
 #include <vital/exceptions.h>
 #include <vital/io/camera_io.h>
 #include <vital/io/eigen_io.h>
 #include <vital/io/landmark_map_io.h>
 #include <vital/io/track_set_io.h>
+#include <vital/plugin_loader/plugin_manager.h>
 #include <vital/types/track_set.h>
 #include <vital/vital_types.h>
 #include <vital/util/cpu_timer.h>
@@ -599,8 +599,8 @@ static int maptk_main(int argc, char const* argv[])
 
   // register the algorithm implementations
   std::string rel_plugin_path = kwiver::vital::get_executable_path() + "/../lib/modules";
-  kwiver::vital::algorithm_plugin_manager::instance().add_search_path(rel_plugin_path);
-  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
+  kwiver::vital::plugin_manager::instance().add_search_path(rel_plugin_path);
+  kwiver::vital::plugin_manager::instance().load_all_plugins();
 
   // Set config to algo chain
   // Get config from algo chain after set

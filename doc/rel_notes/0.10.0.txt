@@ -29,6 +29,8 @@ Scripts
 
 Tools
 
+ * Updated all tools to use the new plugin loading framework from KWIVER.
+
  * Added python version of track features tool.
 
  * The maptk_bundle_adjust_tracks tool now has a configuration option to write
@@ -37,6 +39,8 @@ Tools
    origin point manually.
 
 Visualization Application
+
+ * Updated the GUI to use the new plugin loading framework from KWIVER.
 
  * Extended the tool framework in the GUI to handle callbacks from the tools
    to allow some tools to provide updated visualization of intermediate results
