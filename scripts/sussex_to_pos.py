@@ -1,5 +1,39 @@
+#!/usr/bin/env python
+#ckwg +28
+# Copyright 2015 by Kitware, Inc. All Rights Reserved. Please refer to
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+#  * Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+#
+#  * Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#
+#  * Neither name of Kitware, Inc. nor the names of any contributors may be used
+#    to endorse or promote products derived from this software without specific
+#    prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
+# ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+"""
+This script is used to read Sussex MUTC metadata and produce POS metadata.
+"""
+
 from __future__ import division, print_function
-from matplotlib import pyplot as plt
+from optparse import OptionParser
 import glob, os
 import numpy as np
 import pandas as pd
@@ -10,7 +44,8 @@ def convert_pos2krtd_dir(frame_pattern, sussex_dir, pos_dir):
     """
     
     The POS data format stores each frame's worth of metadata in its own text 
-    file with the same name as the frame. The data
+    file with the same name as the frame. The data is stored in the following 
+    order:
     
     Element   Data Type           Description
        0       double      Sensor yaw angle (degrees)
@@ -35,9 +70,9 @@ def convert_pos2krtd_dir(frame_pattern, sussex_dir, pos_dir):
         Directory for the Sussex MUTC metadata csv.
     
     Example
-    frame_pattern = 'C:/Matt/data/24_Sept_2015_WAMI_Flight_1/frames/*.jpg'
-    sussex_dir = 'C:/Matt/data/24_Sept_2015_WAMI_Flight_1/novatel_ins_data_2015-09-24-10-01-18'
-    pos_dir = 'C:/Matt/data/24_Sept_2015_WAMI_Flight_1/pos'
+    frame_pattern = '/media/sf_Matt/data/24_Sept_2015_WAMI_Flight_1/frames/*.jpg'
+    sussex_dir = '/media/sf_Matt/data/24_Sept_2015_WAMI_Flight_1/novatel_ins_data_2015-09-24-10-01-18'
+    pos_dir = '/media/sf_Matt/data/24_Sept_2015_WAMI_Flight_1/pos'
     """
     
     # Frind frames
@@ -90,7 +125,7 @@ def convert_pos2krtd_dir(frame_pattern, sussex_dir, pos_dir):
                       'vel_n','vel_e','vel_u','roll','pitch','azimuth']
         
     # Create interpolation objects against time.
-    time        = pva_df.time.tolist()
+    time        = pva_df.time.as_matrix()
     
     # Remove large offset so that the interpolation is better behaved.
     t0 = time[0]
@@ -109,12 +144,12 @@ def convert_pos2krtd_dir(frame_pattern, sussex_dir, pos_dir):
     fname = glob.glob(''.join([sussex_dir,'/*pos_1.csv']))[0]
     pos_1_df = pd.read_csv(fname)
     pos_1_df.columns = ['time','seq','stamp','frame_id','status','service',
-                      'latitude','longitude','altitude','position_covariance0',
-                      'position_covariance1','position_covariance2',
-                      'position_covariance3','position_covariance4',
-                      'position_covariance5','position_covariance6',
-                      'position_covariance7','position_covariance8',
-                      'position_covariance_type']
+                        'latitude','longitude','altitude',
+                        'position_covariance0','position_covariance1',
+                        'position_covariance2','position_covariance3',
+                        'position_covariance4','position_covariance5',
+                        'position_covariance6','position_covariance7',
+                        'position_covariance8','position_covariance_type']
     
     # Create interpolation objects against time.
     time        = pos_1_df.time.tolist()
@@ -196,3 +231,25 @@ def convert_pos2krtd_dir(frame_pattern, sussex_dir, pos_dir):
         
         np.savetxt(pos_fname, np.atleast_2d(pos_datai), delimiter=',',
                    fmt='%.10f,'*7 + '%i,' + '%.10f,'*3 + '%i,'*2 + '%i')
+
+
+def main():
+    usage = "usage: %prog [options] frame_pattern sussex_dir pos_dir"
+    description = "Convert Sussex MUTC metadata to POS metadata"
+    parser = OptionParser(usage=usage, description=description)
+
+    (options, args) = parser.parse_args()
+    
+    if len(args) < 3:
+        parser.print_help()
+        return
+    
+    frame_pattern = args[0]
+    sussex_dir = args[1]
+    pos_dir = args[2]
+
+    convert_pos2krtd_dir(frame_pattern, sussex_dir, pos_dir)
+
+
+if __name__ == "__main__":
+    main()
