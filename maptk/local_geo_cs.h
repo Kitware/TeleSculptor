@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2016 by Kitware, Inc.
+ * Copyright 2013-2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -99,6 +99,37 @@ private:
   /// The UTM zone number containing the UTM origin
   int utm_origin_zone_;
 };
+
+
+/// Read a local_geo_cs from a text file
+/**
+ * The file format is the geographic origin in latitude (deg), longitude (deg),
+ * and altitude (m) in space delimited ASCII value.  These values are read
+ * into an existing local_geo_cs with a valid geo_map algorithm instance.
+ *
+ * \param [in,out] lgcs      The local geographic coordinate system that is
+ *                           updated with the origin in the file.
+ * \param [in]     file_path The path to the file to read.
+ */
+MAPTK_EXPORT
+void
+read_local_geo_cs_from_file(local_geo_cs& lgcs,
+                            vital::path_t const& file_path);
+
+
+/// Write a local_geo_cs to a text file
+/**
+ * The file format is the geographic origin in latitude (deg), longitude (deg),
+ * and altitude (m) in space delimited ASCII value.  These values are written
+ * from an existing local_geo_cs.
+ *
+ * \param [in] lgcs      The local geographic coordinate system to write.
+ * \param [in] file_path The path to the file to write.
+ */
+MAPTK_EXPORT
+void
+write_local_geo_cs_to_file(local_geo_cs const& lgcs,
+                           vital::path_t const& file_path);
 
 
 /// Use a sequence of ins_data objects to initialize a sequence of cameras

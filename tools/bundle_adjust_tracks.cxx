@@ -34,7 +34,6 @@
  */
 
 #include <iostream>
-#include <iomanip>
 #include <fstream>
 #include <sstream>
 #include <exception>
@@ -755,17 +754,8 @@ static int maptk_main(int argc, char const* argv[])
     // load the coordinates from a file if it exists
     if (ST::FileExists(geo_origin_file, true))
     {
-      std::ifstream ifs(geo_origin_file);
-      double lat, lon, alt;
-      ifs >> lat >> lon >> alt;
-      LOG_INFO(main_logger, "Loaded origin point: "
-                            << lat << ", " << lon << ", " << alt);
-      double x,y;
-      int zone;
-      bool is_north_hemi;
-      local_cs.geo_map_algo()->latlon_to_utm(lat, lon, x, y, zone, is_north_hemi);
-      local_cs.set_utm_origin_zone(zone);
-      local_cs.set_utm_origin(kwiver::vital::vector_3d(x, y, alt));
+      read_local_geo_cs_from_file(local_cs, geo_origin_file);
+      LOG_INFO(main_logger, "Loaded origin point from: " << geo_origin_file);
       geo_origin_loaded_from_file = true;
     }
   }
@@ -817,29 +807,12 @@ static int maptk_main(int argc, char const* argv[])
 
   // if we computed an origin that was not loaded from a file
   if (local_cs.utm_origin_zone() >= 0 &&
-      !geo_origin_loaded_from_file)
+      !geo_origin_loaded_from_file &&
+      config->get_value<std::string>("geo_origin_file", "") != "")
   {
-    // write out the origin of the local coordinate system
-    double easting = local_cs.utm_origin()[0];
-    double northing = local_cs.utm_origin()[1];
-    double altitude = local_cs.utm_origin()[2];
-    int zone = local_cs.utm_origin_zone();
-    double lat, lon;
-    local_cs.geo_map_algo()->utm_to_latlon(easting, northing, zone, true, lat, lon);
-    if (config->get_value<std::string>("geo_origin_file", "") != "")
-    {
-      kwiver::vital::path_t geo_origin_file = config->get_value<kwiver::vital::path_t>("geo_origin_file");
-      std::ofstream ofs(geo_origin_file);
-      if (ofs)
-      {
-        LOG_INFO(main_logger, "Saving local coordinate origin to " << geo_origin_file);
-        ofs << std::setprecision(12) << lat << " " << lon << " " << altitude;
-      }
-    }
-    LOG_INFO(main_logger, "Local coordinate origin: " << std::setprecision(12)
-                                                      << lat << ", "
-                                                      << lon << ", "
-                                                      << altitude);
+    kwiver::vital::path_t geo_origin_file = config->get_value<kwiver::vital::path_t>("geo_origin_file");
+    LOG_INFO(main_logger, "Saving local coordinate origin to " << geo_origin_file);
+    write_local_geo_cs_to_file(local_cs, geo_origin_file);
   }
 
   // apply necker reversal if requested

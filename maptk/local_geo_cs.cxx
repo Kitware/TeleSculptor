@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2015 by Kitware, Inc.
+ * Copyright 2013-2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,10 @@
  */
 
 #include "local_geo_cs.h"
+
+#include <fstream>
+#include <iomanip>
+
 #include <vital/vital_foreach.h>
 
 #define _USE_MATH_DEFINES
@@ -116,6 +120,43 @@ local_geo_cs
   // camera Z in meters while INS data altitude represented in feet
   ins.alt = c.z() / foot2meter;
   ins.source_name = "MAPTK";
+}
+
+
+/// Read a local_geo_cs from a text file
+void
+read_local_geo_cs_from_file(local_geo_cs& lgcs,
+                            vital::path_t const& file_path)
+{
+  std::ifstream ifs(file_path);
+  double lat, lon, alt;
+  ifs >> lat >> lon >> alt;
+  double x,y;
+  int zone;
+  bool is_north_hemi;
+  lgcs.geo_map_algo()->latlon_to_utm(lat, lon, x, y, zone, is_north_hemi);
+  lgcs.set_utm_origin_zone(zone);
+  lgcs.set_utm_origin(kwiver::vital::vector_3d(x, y, alt));
+}
+
+
+/// Write a local_geo_cs to a text file
+void
+write_local_geo_cs_to_file(local_geo_cs const& lgcs,
+                           vital::path_t const& file_path)
+{
+  // write out the origin of the local coordinate system
+  double easting = lgcs.utm_origin()[0];
+  double northing = lgcs.utm_origin()[1];
+  double altitude = lgcs.utm_origin()[2];
+  int zone = lgcs.utm_origin_zone();
+  double lat, lon;
+  lgcs.geo_map_algo()->utm_to_latlon(easting, northing, zone, true, lat, lon);
+  std::ofstream ofs(file_path);
+  if (ofs)
+  {
+    ofs << std::setprecision(12) << lat << " " << lon << " " << altitude;
+  }
 }
 
 
