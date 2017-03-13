@@ -61,6 +61,9 @@
 typedef kwiversys::SystemTools     ST;
 typedef kwiversys::CommandLineArguments argT;
 
+static kwiver::vital::logger_handle_t
+  main_logger( kwiver::vital::get_logger( "pos2krtd_tool" ) );
+
 // ------------------------------------------------------------------
 // return a default configuration object
 kwiver::vital::config_block_sptr
@@ -86,6 +89,17 @@ default_config()
                     "I.e. if a file was provided for input, output "
                     "should point to a file path to output to. If input was a "
                     "directory, output will be treated like a directory.");
+
+  config->set_value("geo_origin_file", "output/geo_origin.txt",
+                    "This file contains the geographical location of the origin "
+                    "of the local cartesian coordinate system used in the camera "
+                    "and landmark files.  This file is use for input and output. "
+                    "If the files exists it will be read to define the origin. "
+                    "If the file does not exist an origin will be computed from "
+                    "geographic metadata provided and written to this file. "
+                    "The file format is ASCII (degrees, meters):\n"
+                    "latitude longitude altitude");
+
 
   // base camera options
   config->set_value("base_camera:focal_length", "1.0",
@@ -378,7 +392,23 @@ static int maptk_main(int argc, char const* argv[])
     return EXIT_FAILURE;
   }
 
+  //
+  // Create the local coordinate system
+  //
   kwiver::maptk::local_geo_cs local_cs(geo_mapper);
+  bool geo_origin_loaded_from_file = false;
+  if (config->get_value<std::string>("geo_origin_file", "") != "")
+  {
+    kwiver::vital::path_t geo_origin_file = config->get_value<kwiver::vital::path_t>("geo_origin_file");
+    // load the coordinates from a file if it exists
+    if (ST::FileExists(geo_origin_file, true))
+    {
+      read_local_geo_cs_from_file(local_cs, geo_origin_file);
+      LOG_INFO(main_logger, "Loaded origin point from: " << geo_origin_file);
+      geo_origin_loaded_from_file = true;
+    }
+  }
+
 
   if( ST::FileIsDirectory(input) )
   {
@@ -400,6 +430,17 @@ static int maptk_main(int argc, char const* argv[])
   else if( !convert_pos2krtd(input, output, local_cs, base_camera, ins_rot_offset) )
   {
     return EXIT_FAILURE;
+  }
+
+
+  // if we computed an origin that was not loaded from a file
+  if (local_cs.utm_origin_zone() >= 0 &&
+      !geo_origin_loaded_from_file &&
+      config->get_value<std::string>("geo_origin_file", "") != "")
+  {
+    kwiver::vital::path_t geo_origin_file = config->get_value<kwiver::vital::path_t>("geo_origin_file");
+    LOG_INFO(main_logger, "Saving local coordinate origin to " << geo_origin_file);
+    write_local_geo_cs_to_file(local_cs, geo_origin_file);
   }
 
   return EXIT_SUCCESS;
