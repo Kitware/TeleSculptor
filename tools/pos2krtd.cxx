@@ -103,7 +103,8 @@ default_config()
   // INS transformation/offset options
   config->set_value("ins:rotation_offset", "0 0 0 1",
                     "A quaternion used to offset rotation data from POS files when "
-                    "updating cameras.");
+                    "updating cameras. This is used to correct erroneous "
+                    "metadata in the POS files.");
 
   return config;
 }
