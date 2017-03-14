@@ -37,15 +37,14 @@
 #define MAPTK_LOCAL_GEO_CS_H_
 
 
-#include <vital/vital_config.h>
 #include <maptk/maptk_export.h>
 
 #include <vital/algo/geo_map.h>
-#include <maptk/ins_data.h>
-
 #include <vital/types/camera.h>
 #include <vital/types/rotation.h>
+#include <vital/video_metadata/video_metadata.h>
 #include <vital/vital_types.h>
+#include <vital/vital_config.h>
 
 namespace kwiver {
 namespace maptk {
@@ -77,17 +76,19 @@ public:
   /// Access the geographic mapping algorithm
   vital::algo::geo_map_sptr geo_map_algo() const { return geo_map_algo_; }
 
-  /// Use the pose data provided by INS to update camera pose
+  /// Use the pose data provided by metadata to update camera pose
   /**
-   * \param ins_data    INS data packet to update the camera with
+   * \param metadata    The metadata packet to update the camera with
    * \param cam         The camera to be updated.
-   * \param rot_offset  A rotation offset to apply to INS yaw pitch roll data
+   * \param rot_offset  A rotation offset to apply to metadata yaw/pitch/roll data
    */
-  void update_camera(const maptk::ins_data& ins, vital::simple_camera& cam,
+  void update_camera(vital::video_metadata const& md,
+                     vital::simple_camera& cam,
                      vital::rotation_d const& rot_offset = vital::rotation_d()) const;
 
-  /// Use the camera pose to update an INS data structure
-  void update_ins_data(const vital::simple_camera& cam, maptk::ins_data& ins) const;
+  /// Use the camera pose to update the metadata structure
+  void update_metadata(vital::simple_camera const& cam,
+                       vital::video_metadata& md) const;
 
 private:
   /// An algorithm provided to compute geographic transformations
@@ -132,14 +133,14 @@ write_local_geo_cs_to_file(local_geo_cs const& lgcs,
                            vital::path_t const& file_path);
 
 
-/// Use a sequence of ins_data objects to initialize a sequence of cameras
+/// Use a sequence of metadata objects to initialize a sequence of cameras
 /**
- * \param [in]     ins_map is a mapping from frame number to INS data object
- * \param [in]     base_camera is the camera to reposition at each INS pose.
- * \param [in,out] lgcs is the local geographic coordinate system used to map
- *                 lat/long to a local UTM coordinate system
- * \param [in]     Rotation offset to apply to INS yaw/pitch/roll data before
- *                 updating a camera's rotation.
+ * \param [in]     md_map       A mapping from frame number to INS data object
+ * \param [in]     base_camera  The camera to reposition at each INS pose.
+ * \param [in,out] lgcs         The local geographic coordinate system used to
+ *                              map lat/long to a local UTM coordinate system
+ * \param [in]     rot_offset   Rotation offset to apply to yaw/pitch/roll
+ *                              metadata before updating a camera's rotation.
  * \returns a mapping from frame number to camera
  * \note The \c lgcs object is updated only if it does not contain a valid
  *       utm_origin_zone().  If updated, the computed local origin
@@ -148,27 +149,28 @@ write_local_geo_cs_to_file(local_geo_cs const& lgcs,
  */
 MAPTK_EXPORT
 std::map<vital::frame_id_t, vital::camera_sptr>
-initialize_cameras_with_ins(const std::map<vital::frame_id_t, maptk::ins_data>& ins_map,
-                            const vital::simple_camera& base_camera,
-                            local_geo_cs& lgcs,
-                            vital::rotation_d const& rot_offset = vital::rotation_d());
+initialize_cameras_with_metadata(std::map<vital::frame_id_t,
+                                          vital::video_metadata_sptr> const& md_map,
+                                 vital::simple_camera const& base_camera,
+                                 local_geo_cs& lgcs,
+                                 vital::rotation_d const& rot_offset = vital::rotation_d());
 
 
-/// Update a sequence of ins_data from a sequence of cameras and local_geo_cs
+/// Update a sequence of metadata from a sequence of cameras and local_geo_cs
 /**
- * \param [in] cam_map is a mapping from frame number to camera
- * \param [in] lgcs is the local geographic coordinate system used to map
- *             local UTM to lat/long
- * \param [in,out]  ins_map a mapping from frame_number of ins_data object to update.
- *                  If no ins_data object is found for a frame,
- *                  a new one is created
+ * \param [in]      cam_map   A mapping from frame number to camera
+ * \param [in]      lgcs      The local geographic coordinate system used to
+ *                            map local UTM to lat/long
+ * \param [in,out]  md_map    A mapping from frame_number of metadata objects
+ *                            to update.  If no metadata object is found for
+ *                            a frame, a new one is created.
  * \note the supplied lgcs must have a valid utm_origin_zone()
  */
 MAPTK_EXPORT
 void
-update_ins_from_cameras(const std::map<vital::frame_id_t, vital::camera_sptr>& cam_map,
-                        const maptk::local_geo_cs& lgcs,
-                        std::map<vital::frame_id_t, maptk::ins_data>& ins_map);
+update_metadata_from_cameras(std::map<vital::frame_id_t, vital::camera_sptr> const& cam_map,
+                             maptk::local_geo_cs const& lgcs,
+                             std::map<vital::frame_id_t, vital::video_metadata_sptr>& md_map);
 
 
 } // end namespace maptk

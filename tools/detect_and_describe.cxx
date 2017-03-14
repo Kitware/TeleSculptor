@@ -33,6 +33,9 @@
  * \brief Feature detector and descriptor utility
  */
 
+
+#include "tool_common.h"
+
 #include <iostream>
 #include <fstream>
 #include <exception>
@@ -54,6 +57,7 @@
 #include <vital/algo/detect_features.h>
 #include <vital/algo/extract_descriptors.h>
 #include <vital/algo/feature_descriptor_io.h>
+#include <vital/algo/video_input.h>
 #include <vital/plugin_loader/plugin_manager.h>
 #include <vital/util/get_paths.h>
 #include <vital/util/transform_image.h>
@@ -73,9 +77,11 @@ static kwiver::vital::config_block_sptr default_config()
 {
   kwiver::vital::config_block_sptr config = kwiver::vital::config_block::empty_config("detect_and_describe_tool");
 
-  config->set_value("image_list_file", "",
-                    "Path to an input file containing new-line separated paths "
-                    "to sequential image files.");
+  config->set_value("video_source", "",
+                    "Path to an input file to be opened as a video. "
+                    "This could be either a video file or a text file "
+                    "containing new-line separated paths to sequential "
+                    "image files.");
   config->set_value("mask_list_file", "",
                     "Optional path to an input file containing new-line "
                     "separated paths to mask images. This list should be "
@@ -106,6 +112,8 @@ static kwiver::vital::config_block_sptr default_config()
                     "computation on this frame.  If this option is disabled "
                     "then skip if the file exists, without loading it");
 
+  kwiver::vital::algo::video_input::get_nested_algo_configuration("video_reader", config,
+                                      kwiver::vital::algo::video_input_sptr());
   kwiver::vital::algo::detect_features::get_nested_algo_configuration("feature_detector", config,
                                       kwiver::vital::algo::detect_features_sptr());
   kwiver::vital::algo::extract_descriptors::get_nested_algo_configuration("descriptor_extractor", config,
@@ -148,17 +156,17 @@ static bool check_config(kwiver::vital::config_block_sptr config)
     }
   }
 
-  if ( ! config->has_value("image_list_file") ||
-      config->get_value<std::string>("image_list_file") == "")
+  if ( ! config->has_value("video_source") ||
+      config->get_value<std::string>("video_source") == "")
   {
-    MAPTK_CONFIG_FAIL("Config needs value image_list_file");
+    MAPTK_CONFIG_FAIL("Config needs value video_source");
   }
   else
   {
-    std::string path = config->get_value<std::string>("image_list_file");
+    std::string path = config->get_value<std::string>("video_source");
     if ( ! ST::FileExists( kwiver::vital::path_t(path), true ) )
     {
-      MAPTK_CONFIG_FAIL("image_list_file path, " << path << ", does not exist or is not a regular file");
+      MAPTK_CONFIG_FAIL("video_source path, " << path << ", does not exist or is not a regular file");
     }
   }
 
@@ -170,6 +178,11 @@ static bool check_config(kwiver::vital::config_block_sptr config)
     {
       MAPTK_CONFIG_FAIL("mask_list_file path, " << mask_list_file << ", does not exist");
     }
+  }
+
+  if (!kwiver::vital::algo::video_input::check_nested_algo_configuration("video_reader", config))
+  {
+    MAPTK_CONFIG_FAIL("video_reader configuration check failed");
   }
 
   if (!kwiver::vital::algo::detect_features::check_nested_algo_configuration("feature_detector", config))
@@ -255,6 +268,7 @@ static int maptk_main(int argc, char const* argv[])
 
   // Set up top level configuration w/ defaults where applicable.
   kwiver::vital::config_block_sptr config = default_config();
+  kwiver::vital::algo::video_input_sptr video_reader;
   kwiver::vital::algo::detect_features_sptr feature_detector;
   kwiver::vital::algo::extract_descriptors_sptr descriptor_extractor;
   kwiver::vital::algo::feature_descriptor_io_sptr fd_io;
@@ -269,6 +283,10 @@ static int maptk_main(int argc, char const* argv[])
                                                          MAPTK_VERSION, prefix));
   }
 
+  kwiver::vital::algo::video_input::
+    set_nested_algo_configuration("video_reader", config, video_reader);
+  kwiver::vital::algo::video_input::
+    get_nested_algo_configuration("video_reader", config, video_reader);
   kwiver::vital::algo::detect_features::
     set_nested_algo_configuration("feature_detector", config, feature_detector);
   kwiver::vital::algo::detect_features::
@@ -313,37 +331,29 @@ static int maptk_main(int argc, char const* argv[])
 
   // Attempt opening input and output files.
   //  - filepath validity checked above
-  std::string image_list_file = config->get_value<std::string>("image_list_file");
+  std::string video_source = config->get_value<std::string>("video_source");
   std::string mask_list_file = config->get_value<std::string>("mask_list_file");
   bool invert_masks = config->get_value<bool>("invert_masks");
   bool expect_multichannel_masks = config->get_value<bool>("expect_multichannel_masks");
   std::string features_dir = config->get_value<std::string>("features_dir");
   bool validate_existing_features = config->get_value<bool>("validate_existing_features");
 
-  std::ifstream ifs(image_list_file.c_str());
-  if (!ifs)
-  {
-    LOG_ERROR(main_logger, "Error: Could not open image list \"" << image_list_file << "\"");
-    return EXIT_FAILURE;
-  }
-  // Creating input image list, checking file existance
-  std::vector<kwiver::vital::path_t> files;
-  for (std::string line; std::getline(ifs,line); )
-  {
-    files.push_back(line);
-    if ( ! ST::FileExists( files[files.size()-1], true ) )
-    {
-      throw kwiver::vital::path_not_exists(files[files.size()-1]);
-    }
-  }
 
-  std::vector<kwiver::vital::path_t> fd_files;
-  VITAL_FOREACH(auto const& image_path, files)
+  LOG_INFO( main_logger, "Reading Video" );
+  video_reader->open(video_source);
+
+  // Pre-scan the video to get an accurate frame count
+  // We may wish to remove this later if we start operating on live streams
+  kwiver::vital::timestamp ts;
+  std::vector<kwiver::vital::timestamp> timestamps;
+  while( video_reader->next_frame(ts) )
   {
-    kwiver::vital::path_t kwfd_file =
-      features_dir + "/" + ST::SplitPathRootComponent(image_path) + ".kwfd";
-    fd_files.push_back(kwfd_file);
+    timestamps.push_back(ts);
   }
+  // close and re-open to return to the video start
+  video_reader->close();
+  video_reader->open(video_source);
+
 
   // Create mask image list if a list file was given, else fill list with empty
   // images. Files vector will only be populated if the use_masks bool is true
@@ -351,7 +361,7 @@ static int maptk_main(int argc, char const* argv[])
   std::vector<kwiver::vital::path_t> mask_files;
   if( mask_list_file != "" )
   {
-    LOG_DEBUG( main_logger, "Loading paired mask images from list file" );
+    LOG_DEBUG( main_logger, "Checking paired mask images from list file" );
 
     use_masks = true;
     // Load file stream
@@ -370,13 +380,13 @@ static int maptk_main(int argc, char const* argv[])
       }
     }
     // Check that image/mask list sizes are the same
-    if( files.size() != mask_files.size() )
+    if( timestamps.size() != mask_files.size() )
     {
-      throw kwiver::vital::invalid_value("Image and mask file lists are not congruent "
-                                 "in size.");
+      throw kwiver::vital::invalid_value("video and mask file lists have "
+                                         "different frame counts");
     }
     LOG_DEBUG( main_logger,
-               "Loaded " << mask_files.size() << " mask image files." );
+               "Validated " << mask_files.size() << " mask image files." );
   }
 
   // Verify that the output directory exists, or make it
@@ -398,24 +408,39 @@ static int maptk_main(int argc, char const* argv[])
   }
 
   // Detect features on each frame sequentially
-  for(unsigned i=0; i<files.size(); ++i)
+  while( video_reader->next_frame(ts) )
   {
+    auto md_vec = video_reader->frame_metadata();
+    kwiver::vital::video_metadata_sptr md;
+    if( md_vec.empty() || !md_vec[0] )
+    {
+      md = std::make_shared<kwiver::vital::video_metadata>();
+    }
+    else
+    {
+      md = md_vec[0];
+    }
+    std::string basename = kwiver::maptk::basename_from_metadata(*md, ts.get_frame());
+    kwiver::vital::path_t kwfd_file = features_dir + "/" + basename + ".kwfd";
+
     // if the features file already exists then test loading it and skip
-    if( ST::FileExists( fd_files[i] ) )
+    if( ST::FileExists( kwfd_file ) )
     {
       if( !validate_existing_features )
       {
-        LOG_INFO( main_logger, "Skipping frame "<<i<<", output exists: " << fd_files[i] );
+        LOG_INFO( main_logger, "Skipping frame " << ts.get_frame() <<
+                               ", output exists: " << kwfd_file );
         continue;
       }
       try
       {
         kwiver::vital::feature_set_sptr feat;
         kwiver::vital::descriptor_set_sptr desc;
-        fd_io->load(fd_files[i], feat, desc);
+        fd_io->load(kwfd_file, feat, desc);
         if( feat && feat->size() > 0 && desc && desc->size() > 0 )
         {
-          LOG_INFO( main_logger, "Skipping frame "<<i<<", output exists: " << fd_files[i] );
+          LOG_INFO( main_logger, "Skipping frame " << ts.get_frame() <<
+                                 ", output exists: " << kwfd_file );
           LOG_INFO( main_logger, "file contains " << feat->size() << " features, "
                                  << desc->size() << " descriptors" );
           continue;
@@ -423,20 +448,20 @@ static int maptk_main(int argc, char const* argv[])
       }
       catch(...)
       {
-        LOG_WARN( main_logger, "Not able to load " << fd_files[i] << ", recomputing" );
+        LOG_WARN( main_logger, "Not able to load " << kwfd_file << ", recomputing" );
       }
     }
 
-    LOG_INFO(main_logger, "processing frame "<<i<<": "<<files[i]);
+    LOG_INFO(main_logger, "processing frame "<< ts.get_frame());
 
-    auto const image = image_reader->load( files[i] );
+    auto const image = video_reader->frame_image();
     auto const converted_image = image_converter->convert( image );
 
     // Load the mask for this image if we were given a mask image list
     kwiver::vital::image_container_sptr mask, converted_mask;
     if( use_masks )
     {
-      mask = image_reader->load( mask_files[i] );
+      mask = image_reader->load( mask_files[ts.get_frame()] );
 
       // error out if we are not expecting a multi-channel mask
       if( !expect_multichannel_masks && mask->depth() > 1 )
@@ -482,9 +507,9 @@ static int maptk_main(int argc, char const* argv[])
     kwiver::vital::descriptor_set_sptr curr_desc =
       descriptor_extractor->extract(converted_image, curr_feat, converted_mask);
 
-    LOG_INFO( main_logger, "Saving features to " << fd_files[i] );
+    LOG_INFO( main_logger, "Saving features to " << kwfd_file );
     // make the enclosing directory if it does not already exist
-    const kwiver::vital::path_t fd_dir = ST::GetFilenamePath( fd_files[i] );
+    const kwiver::vital::path_t fd_dir = ST::GetFilenamePath( kwfd_file );
     if( !ST::FileIsDirectory( fd_dir ) )
     {
       if( !ST::MakeDirectory( fd_dir ) )
@@ -493,7 +518,7 @@ static int maptk_main(int argc, char const* argv[])
         return EXIT_FAILURE;
       }
     }
-    fd_io->save(fd_files[i], curr_feat, curr_desc);
+    fd_io->save(kwfd_file, curr_feat, curr_desc);
 
   }
 
