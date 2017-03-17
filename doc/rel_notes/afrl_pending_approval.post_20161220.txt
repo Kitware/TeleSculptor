@@ -18,8 +18,9 @@ Examples/Configs
  * Added default config files for video_input algorithms that load from image
    lists, with and without POS files.
 
- * Refactored core_track_features.conf to make the feature detector/descriptor
-   reusable across other configs.
+ * Refactored core_track_features.conf to make the feature detector,
+   descriptor, and matcher reusable across other configs.  Also refactored
+   the loop closure configs to reuse a common feature matcher config.
 
 Main Library
 
