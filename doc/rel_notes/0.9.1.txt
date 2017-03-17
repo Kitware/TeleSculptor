@@ -30,6 +30,9 @@ Tools
    values invalid.  These defaults have been corrected to match the current
    OpenCV configuration variable names.
 
+ * The inlier scale argument to the estimate_homography tool was being ignored.
+   This was fixed to pass the specified value into the relevant function.
+
 Visualization Application
 
  * Fixed a copy/paste error in the AbstractTool class.  If landmarks were Null
