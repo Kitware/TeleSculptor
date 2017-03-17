@@ -158,7 +158,7 @@ static int maptk_main(int argc, char const* argv[])
   static bool opt_help(false);
   static std::string opt_config;
   static std::string opt_out_config;
-  static double opt_inlier_scale(0);
+  static double opt_inlier_scale(2.0);
   static std::string opt_mask_image;
   static std::string opt_mask2_image;
 
@@ -384,7 +384,7 @@ static int maptk_main(int argc, char const* argv[])
   LOG_INFO(main_logger, "Estimating homography...");
   std::vector<bool> inliers;
   kwiver::vital::homography_sptr homog = homog_estimator->estimate(i2_features, i1_features,
-                                                           matches, inliers);
+                                                           matches, inliers, opt_inlier_scale);
   if( ! homog )
   {
     LOG_ERROR( main_logger, "Failed to estimate valid homography! NULL returned." );
