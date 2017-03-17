@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2016 by Kitware, Inc.
+ * Copyright 2014-2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -104,15 +104,13 @@ static kwiver::vital::config_block_sptr default_config()
 
   config->set_value("image_converter:type", "bypass");
 
-  config->set_value("feature_detector:type", "ocv");
-  config->set_value("feature_detector:ocv:detector:type", "Feature2D.SURF");
-  config->set_value("feature_detector:ocv:detector:Feature2D.SURF:hessianThreshold", 250);
+  config->set_value("feature_detector:type", "ocv_SURF");
+  config->set_value("feature_detector:ocv_SURF:hessian_threshold", 250);
 
-  config->set_value("descriptor_extractor:type", "ocv");
-  config->set_value("descriptor_extractor:ocv:extractor:type", "Feature2D.SURF");
-  config->set_value("descriptor_extractor:ocv:extractor:Feature2D.SURF:hessianThreshold", 250);
+  config->set_value("descriptor_extractor:type", "ocv_SURF");
+  config->set_value("descriptor_extractor:ocv_SURF:hessian_threshold", 250);
 
-  config->set_value("feature_matcher:type", "ocv");
+  config->set_value("feature_matcher:type", "ocv_flann_based");
 
   config->set_value("homog_estimator:type", "vxl");
 
