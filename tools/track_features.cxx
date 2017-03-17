@@ -220,13 +220,6 @@ static bool check_config(kwiver::vital::config_block_sptr config)
 
 
 // ------------------------------------------------------------------
-static bool invert_mask_pixel( bool const &b )
-{
-  return !b;
-}
-
-
-// ------------------------------------------------------------------
 static int maptk_main(int argc, char const* argv[])
 {
   static bool        opt_help(false);
@@ -444,7 +437,7 @@ static int maptk_main(int argc, char const* argv[])
                    "Inverting mask image pixels" );
         kwiver::vital::image_of<bool> mask_image;
         kwiver::vital::cast_image( mask->get_image(), mask_image );
-        kwiver::vital::transform_image( mask_image, invert_mask_pixel );
+        kwiver::vital::transform_image( mask_image, [] (bool b) { return !b; } );
         LOG_DEBUG( main_logger,
                    "Inverting mask image pixels -- Done" );
         mask = std::make_shared<kwiver::vital::simple_image_container>( mask_image );
