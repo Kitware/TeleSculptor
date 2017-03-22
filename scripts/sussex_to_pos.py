@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #ckwg +28
-# Copyright 2015-2017 by Kitware, Inc. All Rights Reserved. Please refer to
+# Copyright 2017 by Kitware, Inc. All Rights Reserved. Please refer to
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
