@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #ckwg +28
-# Copyright 2015 by Kitware, Inc. All Rights Reserved. Please refer to
+# Copyright 2015-2017 by Kitware, Inc. All Rights Reserved. Please refer to
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """
-This script is used to read Sussex MUTC metadata and produce POS metadata.
+This script is used to read Sussex Novatel metadata and produce POS metadata.
 """
 
 from __future__ import division, print_function
@@ -149,6 +149,9 @@ def convert_pos2krtd_dir(frame_pattern, sussex_dir, pos_dir):
         Global pattern for image files.
     sussex_dir : str
         Directory for the Sussex MUTC metadata csv.
+    pos_dir : str
+        Directory for the output POS files. If it does not currently exist, it 
+        will be created.
     
     Example
     frame_pattern = '/media/sf_Matt/data/24_Sept_2015_WAMI_Flight_1/frames/*.jpg'
@@ -275,7 +278,7 @@ def convert_pos2krtd_dir(frame_pattern, sussex_dir, pos_dir):
     for i in range(len(frame_fnames)):
         # The POS file name will match that of the image frame.
         img_fname = os.path.splitext(os.path.split(frame_fnames[i])[1])[0]
-        pos_fname = ''.join([pos_dir,'/',img_fname,'.txt'])
+        pos_fname = ''.join([pos_dir,'/',img_fname,'.pos'])
         
         pos_datai = np.zeros(14)
         
@@ -349,13 +352,13 @@ def convert_pos2krtd_dir(frame_pattern, sussex_dir, pos_dir):
         pos_datai[10] = 0
         
         # IMU status
-        pos_datai[11] = 3   # NOT SURE WHAT THIS DOES
+        pos_datai[11] = -1  # NOT SURE WHAT THIS DOES
         
         # Local adjustment
-        pos_datai[12] = 4   # NOT SURE WHAT THIS DOES
+        pos_datai[12] = 0   # NOT SURE WHAT THIS DOES
         
         # Flags ?
-        pos_datai[13] = 1   # NOT SURE WHAT THIS DOES
+        pos_datai[13] = 0   # NOT SURE WHAT THIS DOES
         
         np.savetxt(pos_fname, np.atleast_2d(pos_datai), delimiter=',',
                    fmt='%.10f,'*7 + '%i,' + '%.10f,'*3 + '%i,'*2 + '%i')
