@@ -37,3 +37,6 @@ Visualization Application
 
  * Fixed a copy/paste error in the AbstractTool class.  If landmarks were Null
    it was updating the cameras with Null, not the landmarks.
+
+Build System
+ * Added MAPTK_VERSION to the installed maptk-config.cmake
