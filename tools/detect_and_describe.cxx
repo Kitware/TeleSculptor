@@ -211,6 +211,82 @@ static bool check_config(kwiver::vital::config_block_sptr config)
 }
 
 
+/// Check a filepath to see if it is an existing and valid KWFD file
+/**
+ * If a feature_descriptor_io algorithm is not specified only check that the
+ * file exists.  Otherwise read the file and make sure it is valid.
+ */
+bool valid_feature_file_exists( std::string const& filepath,
+                                kwiver::vital::frame_id_t frame,
+                                kwiver::vital::algo::feature_descriptor_io_sptr fd_io )
+{
+  // if the features file already exists then test loading it and skip
+  if( ST::FileExists( filepath ) )
+  {
+    if( !fd_io )
+    {
+      LOG_INFO( main_logger, "Skipping frame " << frame <<
+                             ", output exists: " << filepath );
+      return true;
+    }
+    try
+    {
+      kwiver::vital::feature_set_sptr feat;
+      kwiver::vital::descriptor_set_sptr desc;
+      fd_io->load(filepath, feat, desc);
+      if( feat && feat->size() > 0 && desc && desc->size() > 0 )
+      {
+        LOG_INFO( main_logger, "Skipping frame " << frame <<
+                               ", output exists: " << filepath );
+        LOG_INFO( main_logger, "file contains " << feat->size() << " features, "
+                               << desc->size() << " descriptors" );
+        return true;
+      }
+    }
+    catch(...)
+    {
+      LOG_WARN( main_logger, "Not able to load " << filepath << ", recomputing" );
+    }
+  }
+  return false;
+}
+
+
+/// Extract the mask image from the container, invert, and repackage
+kwiver::vital::image_container_sptr
+invert_mask_image(kwiver::vital::image_container_sptr mask)
+{
+  LOG_DEBUG( main_logger,
+             "Inverting mask image pixels" );
+  kwiver::vital::image_of<bool> mask_image;
+  kwiver::vital::cast_image( mask->get_image(), mask_image );
+  kwiver::vital::transform_image( mask_image, [] (bool b) { return !b; } );
+  LOG_DEBUG( main_logger,
+             "Inverting mask image pixels -- Done" );
+  return std::make_shared<kwiver::vital::simple_image_container>( mask_image );
+}
+
+
+/// Validate a mask image according to the expected number of channels.
+bool validate_mask_image( kwiver::vital::image_container_sptr mask,
+                          bool expect_multichannel_masks=false )
+{
+  // error out if we are not expecting a multi-channel mask
+  if( !expect_multichannel_masks && mask->depth() > 1 )
+  {
+    LOG_ERROR( main_logger,
+               "Encounted multi-channel mask image!" );
+    return false;
+  }
+  else if( expect_multichannel_masks && mask->depth() == 1 )
+  {
+    LOG_WARN( main_logger,
+              "Expecting multi-channel masks but received one that was "
+              "single-channel." );
+  }
+  return true;
+}
+
 
 // ------------------------------------------------------------------
 static int maptk_main(int argc, char const* argv[])
@@ -418,32 +494,10 @@ static int maptk_main(int argc, char const* argv[])
     kwiver::vital::path_t kwfd_file = features_dir + "/" + basename + ".kwfd";
 
     // if the features file already exists then test loading it and skip
-    if( ST::FileExists( kwfd_file ) )
+    if( !valid_feature_file_exists( kwfd_file, ts.get_frame(),
+                                    validate_existing_features ? fd_io : nullptr ) )
     {
-      if( !validate_existing_features )
-      {
-        LOG_INFO( main_logger, "Skipping frame " << ts.get_frame() <<
-                               ", output exists: " << kwfd_file );
-        continue;
-      }
-      try
-      {
-        kwiver::vital::feature_set_sptr feat;
-        kwiver::vital::descriptor_set_sptr desc;
-        fd_io->load(kwfd_file, feat, desc);
-        if( feat && feat->size() > 0 && desc && desc->size() > 0 )
-        {
-          LOG_INFO( main_logger, "Skipping frame " << ts.get_frame() <<
-                                 ", output exists: " << kwfd_file );
-          LOG_INFO( main_logger, "file contains " << feat->size() << " features, "
-                                 << desc->size() << " descriptors" );
-          continue;
-        }
-      }
-      catch(...)
-      {
-        LOG_WARN( main_logger, "Not able to load " << kwfd_file << ", recomputing" );
-      }
+      continue;
     }
 
     LOG_INFO(main_logger, "processing frame "<< ts.get_frame());
@@ -457,30 +511,14 @@ static int maptk_main(int argc, char const* argv[])
     {
       mask = image_reader->load( mask_files[ts.get_frame()] );
 
-      // error out if we are not expecting a multi-channel mask
-      if( !expect_multichannel_masks && mask->depth() > 1 )
+      if( !validate_mask_image( mask, expect_multichannel_masks ) )
       {
-        LOG_ERROR( main_logger,
-                   "Encounted multi-channel mask image!" );
         return EXIT_FAILURE;
-      }
-      else if( expect_multichannel_masks && mask->depth() == 1 )
-      {
-        LOG_WARN( main_logger,
-                  "Expecting multi-channel masks but received one that was "
-                  "single-channel." );
       }
 
       if( invert_masks )
       {
-        LOG_DEBUG( main_logger,
-                   "Inverting mask image pixels" );
-        kwiver::vital::image_of<bool> mask_image;
-        kwiver::vital::cast_image( mask->get_image(), mask_image );
-        kwiver::vital::transform_image( mask_image, [] (bool b) { return !b; } );
-        LOG_DEBUG( main_logger,
-                   "Inverting mask image pixels -- Done" );
-        mask = std::make_shared<kwiver::vital::simple_image_container>( mask_image );
+        mask = invert_mask_image( mask );
       }
 
       converted_mask = image_converter->convert( mask );
