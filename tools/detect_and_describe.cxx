@@ -36,6 +36,7 @@
 
 #include "tool_common.h"
 
+#include <deque>
 #include <iostream>
 #include <fstream>
 #include <exception>
@@ -60,6 +61,7 @@
 #include <vital/algo/video_input.h>
 #include <vital/plugin_loader/plugin_manager.h>
 #include <vital/util/get_paths.h>
+#include <vital/util/thread_pool.h>
 #include <vital/util/transform_image.h>
 
 #include <kwiversys/SystemTools.hxx>
@@ -477,10 +479,27 @@ static int maptk_main(int argc, char const* argv[])
     }
   }
 
-  // Detect features on each frame sequentially
-  while( video_reader->next_frame(ts) )
+  std::mutex video_mutex;
+
+  // This lambda function runs in a thread to read the video and launch processing jobs
+  auto handle_frame = [&] ()
   {
-    auto md_vec = video_reader->frame_metadata();
+    kwiver::vital::video_metadata_vector md_vec;
+    kwiver::vital::image_container_sptr image;
+    kwiver::vital::timestamp ts;
+    {
+      // lock the video mutex while incrementing the video and getting a frame
+      std::lock_guard<std::mutex> vlock(video_mutex);
+      if( !video_reader->next_frame(ts) )
+      {
+        return false;
+      }
+      md_vec = video_reader->frame_metadata();
+      // get the frame now even though we do not yet know if it will be needed.
+      // This way we can release the lock and let another thread increment the video.
+      image = video_reader->frame_image();
+    }
+
     kwiver::vital::video_metadata_sptr md;
     if( md_vec.empty() || !md_vec[0] )
     {
@@ -494,15 +513,14 @@ static int maptk_main(int argc, char const* argv[])
     kwiver::vital::path_t kwfd_file = features_dir + "/" + basename + ".kwfd";
 
     // if the features file already exists then test loading it and skip
-    if( !valid_feature_file_exists( kwfd_file, ts.get_frame(),
-                                    validate_existing_features ? fd_io : nullptr ) )
+    if( valid_feature_file_exists( kwfd_file, ts.get_frame(),
+                                   validate_existing_features ? fd_io : nullptr ) )
     {
-      continue;
+      return true;
     }
 
     LOG_INFO(main_logger, "processing frame "<< ts.get_frame());
 
-    auto const image = video_reader->frame_image();
     auto const converted_image = image_converter->convert( image );
 
     // Load the mask for this image if we were given a mask image list
@@ -513,7 +531,7 @@ static int maptk_main(int argc, char const* argv[])
 
       if( !validate_mask_image( mask, expect_multichannel_masks ) )
       {
-        return EXIT_FAILURE;
+        return false;
       }
 
       if( invert_masks )
@@ -547,11 +565,45 @@ static int maptk_main(int argc, char const* argv[])
       if( !ST::MakeDirectory( fd_dir ) )
       {
         LOG_ERROR( main_logger, "Unable to create directory: " << fd_dir );
-        return EXIT_FAILURE;
+        return false;
       }
     }
     fd_io->save(kwfd_file, curr_feat, curr_desc);
 
+    return true;
+  };
+
+
+
+  // access the thread pool
+  auto& pool = kwiver::vital::thread_pool::instance();
+
+  // queue of future returns from jobs
+  std::deque<std::future<bool> > frame_status_queue;
+
+  // number of jobs to keep in the queue
+  // this has 1.5 times the number of threads as a heuristic to make sure
+  // we keep threads busy but don't lag too far in checking for errors
+  unsigned int buffer = pool.num_threads() * 3 / 2;
+  bool not_failed = true;
+  while(not_failed)
+  {
+    // enqueue a task to process one frame
+    frame_status_queue.push_back(pool.enqueue(handle_frame));
+    // if we have the specified number of frames queued up
+    if( frame_status_queue.size() > buffer )
+    {
+      // wait for a job to complete and get the status
+      not_failed = frame_status_queue.front().get();
+      frame_status_queue.pop_front();
+    }
+  }
+
+  // wait for all remaining jobs to complete
+  while( !frame_status_queue.empty() )
+  {
+    frame_status_queue.front().wait();
+    frame_status_queue.pop_front();
   }
 
   return EXIT_SUCCESS;
