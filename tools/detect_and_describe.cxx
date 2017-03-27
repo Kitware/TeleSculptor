@@ -239,8 +239,8 @@ bool valid_feature_file_exists( std::string const& filepath,
       if( feat && feat->size() > 0 && desc && desc->size() > 0 )
       {
         LOG_INFO( main_logger, "Skipping frame " << frame <<
-                               ", output exists: " << filepath );
-        LOG_INFO( main_logger, "file contains " << feat->size() << " features, "
+                               ", output exists: " << filepath <<
+                               "\nfile contains " << feat->size() << " features, "
                                << desc->size() << " descriptors" );
         return true;
       }
@@ -519,7 +519,7 @@ static int maptk_main(int argc, char const* argv[])
       return true;
     }
 
-    LOG_INFO(main_logger, "processing frame "<< ts.get_frame());
+    LOG_DEBUG(main_logger, "processing frame "<< ts.get_frame());
 
     auto const converted_image = image_converter->convert( image );
 
@@ -546,7 +546,8 @@ static int maptk_main(int argc, char const* argv[])
     kwiver::vital::feature_set_sptr curr_feat =
       feature_detector->detect(converted_image, converted_mask);
 
-    LOG_INFO( main_logger, "Detected " << curr_feat->size() << " features");
+    LOG_INFO( main_logger, "Detected " << curr_feat->size() <<
+                           " features on frame " << ts.get_frame() );
 
     if (curr_feat)
     {
@@ -557,7 +558,7 @@ static int maptk_main(int argc, char const* argv[])
     kwiver::vital::descriptor_set_sptr curr_desc =
       descriptor_extractor->extract(converted_image, curr_feat, converted_mask);
 
-    LOG_INFO( main_logger, "Saving features to " << kwfd_file );
+    LOG_DEBUG( main_logger, "Saving features to " << kwfd_file );
     // make the enclosing directory if it does not already exist
     const kwiver::vital::path_t fd_dir = ST::GetFilenamePath( kwfd_file );
     if( !ST::FileIsDirectory( fd_dir ) )
