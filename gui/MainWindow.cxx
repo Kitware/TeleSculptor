@@ -713,6 +713,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(saveLandmarks()));
   connect(d->UI.actionExportDepthPoints, SIGNAL(triggered()),
           this, SLOT(saveDepthPoints()));
+  connect(d->UI.actionExportTracks, SIGNAL(triggered()),
+          this, SLOT(saveTracks()));
 
   connect(d->UI.worldView, SIGNAL(depthMapEnabled(bool)),
           this, SLOT(enableSaveDepthPoints(bool)));
@@ -968,6 +970,9 @@ void MainWindow::loadTracks(QString const& path)
         d->UI.cameraView->addFeatureTrack(*track);
       }
 
+      d->UI.actionExportTracks->setEnabled(
+          d->tracks && d->tracks->size());
+
       d->UI.actionShowMatchMatrix->setEnabled(!tracks->tracks().empty());
     }
   }
@@ -1030,6 +1035,38 @@ void MainWindow::saveLandmarks(QString const& path)
   {
     auto const msg =
       QString("An error occurred while exporting landmarks to \"%1\". "
+              "The output file may not have been written correctly.");
+    QMessageBox::critical(this, "Export error", msg.arg(path));
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::saveTracks()
+{
+  auto const path = QFileDialog::getSaveFileName(
+    this, "Export Tracks", QString(),
+    "Track file (*.txt);;"
+    "All Files (*)");
+
+  if (!path.isEmpty())
+  {
+    this->saveTracks(path);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::saveTracks(QString const& path)
+{
+  QTE_D();
+
+  try
+  {
+    kwiver::vital::write_track_file(d->tracks, kvPath(path));
+  }
+  catch (...)
+  {
+    auto const msg =
+      QString("An error occurred while exporting tracks to \"%1\". "
               "The output file may not have been written correctly.");
     QMessageBox::critical(this, "Export error", msg.arg(path));
   }
@@ -1369,6 +1406,8 @@ void MainWindow::updateToolResults()
     {
       d->UI.cameraView->addFeatureTrack(*track);
     }
+    d->UI.actionExportTracks->setEnabled(
+        d->tracks && d->tracks->size());
 
     d->UI.actionShowMatchMatrix->setEnabled(!d->tracks->tracks().empty());
     d->toolUpdateTracks = NULL;
