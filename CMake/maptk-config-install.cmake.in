@@ -6,6 +6,7 @@ set(CMAKE_MODULE_PATH "@module_path@" ${CMAKE_MODULE_PATH})
 get_filename_component(MAPTK_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
 set(MAPTK_INCLUDE_DIRS "${MAPTK_ROOT}/include" "@EIGEN3_INCLUDE_DIR@")
 set(MAPTK_LIBRARIES @maptk_libs@)
+set(MAPTK_VERSION @MAPTK_VERSION@)
 
 # Include the library targets
 include("${CMAKE_CURRENT_LIST_DIR}/maptk-config-targets.cmake")

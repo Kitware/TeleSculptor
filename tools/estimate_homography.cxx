@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2016 by Kitware, Inc.
+ * Copyright 2014-2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,9 +44,9 @@
 
 #include <vital/types/image_container.h>
 #include <vital/exceptions.h>
+#include <vital/plugin_loader/plugin_manager.h>
 #include <vital/vital_types.h>
 
-#include <vital/algorithm_plugin_manager.h>
 #include <vital/algo/image_io.h>
 #include <vital/algo/convert_image.h>
 #include <vital/algo/detect_features.h>
@@ -104,15 +104,13 @@ static kwiver::vital::config_block_sptr default_config()
 
   config->set_value("image_converter:type", "bypass");
 
-  config->set_value("feature_detector:type", "ocv");
-  config->set_value("feature_detector:ocv:detector:type", "Feature2D.SURF");
-  config->set_value("feature_detector:ocv:detector:Feature2D.SURF:hessianThreshold", 250);
+  config->set_value("feature_detector:type", "ocv_SURF");
+  config->set_value("feature_detector:ocv_SURF:hessian_threshold", 250);
 
-  config->set_value("descriptor_extractor:type", "ocv");
-  config->set_value("descriptor_extractor:ocv:extractor:type", "Feature2D.SURF");
-  config->set_value("descriptor_extractor:ocv:extractor:Feature2D.SURF:hessianThreshold", 250);
+  config->set_value("descriptor_extractor:type", "ocv_SURF");
+  config->set_value("descriptor_extractor:ocv_SURF:hessian_threshold", 250);
 
-  config->set_value("feature_matcher:type", "ocv");
+  config->set_value("feature_matcher:type", "ocv_flann_based");
 
   config->set_value("homog_estimator:type", "vxl");
 
@@ -160,7 +158,7 @@ static int maptk_main(int argc, char const* argv[])
   static bool opt_help(false);
   static std::string opt_config;
   static std::string opt_out_config;
-  static double opt_inlier_scale(0);
+  static double opt_inlier_scale(2.0);
   static std::string opt_mask_image;
   static std::string opt_mask2_image;
 
@@ -254,9 +252,9 @@ static int maptk_main(int argc, char const* argv[])
   }
 
   // register the algorithm implementations
-  std::string rel_plugin_path = kwiver::vital::get_executable_path() + "/../lib/maptk";
-  kwiver::vital::algorithm_plugin_manager::instance().add_search_path(rel_plugin_path);
-  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
+  std::string rel_plugin_path = kwiver::vital::get_executable_path() + "/../lib/modules";
+  kwiver::vital::plugin_manager::instance().add_search_path(rel_plugin_path);
+  kwiver::vital::plugin_manager::instance().load_all_plugins();
 
   // Set config to algo chain
   // Get config from algo chain after set
@@ -386,7 +384,7 @@ static int maptk_main(int argc, char const* argv[])
   LOG_INFO(main_logger, "Estimating homography...");
   std::vector<bool> inliers;
   kwiver::vital::homography_sptr homog = homog_estimator->estimate(i2_features, i1_features,
-                                                           matches, inliers);
+                                                           matches, inliers, opt_inlier_scale);
   if( ! homog )
   {
     LOG_ERROR( main_logger, "Failed to estimate valid homography! NULL returned." );

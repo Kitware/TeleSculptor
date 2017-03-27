@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2016 by Kitware, Inc.
+ * Copyright 2014-2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,19 +37,19 @@
 #include <vital/config/config_block.h>
 #include <vital/config/config_block_io.h>
 
-#include <vital/algorithm_plugin_manager.h>
-#include <vital/algo/image_io.h>
+#include <vital/algo/analyze_tracks.h>
+#include <vital/algo/draw_tracks.h>
+#include <vital/algo/video_input.h>
 #include <vital/exceptions.h>
 #include <vital/io/camera_io.h>
 #include <vital/io/camera_map_io.h>
 #include <vital/io/landmark_map_io.h>
 #include <vital/io/track_set_io.h>
+#include <vital/plugin_loader/plugin_manager.h>
 #include <vital/types/camera.h>
 #include <vital/types/image_container.h>
 #include <vital/types/landmark_map.h>
 #include <vital/vital_types.h>
-#include <vital/algo/analyze_tracks.h>
-#include <vital/algo/draw_tracks.h>
 #include <vital/util/get_paths.h>
 
 #include <kwiversys/SystemTools.hxx>
@@ -77,10 +77,11 @@ static kwiver::vital::config_block_sptr default_config()
   config->set_value( "track_file", "",
                      "Path to a required input file containing all features tracks "
                      "generated from some prior processing." );
-  config->set_value( "image_list_file", "",
-                     "Path to an optional input file containing new-line separated "
-                     "paths to sequential image files for the given tracks. This "
-                     "file is required for draw tracks output." );
+  config->set_value( "video_source", "",
+                     "Path to an input file to be opened as a video. "
+                     "This could be either a video file or a text file "
+                     "containing new-line separated paths to sequential "
+                     "image files.");
   config->set_value( "output_file", "",
                      "Path to an optional file to write text outputs to. If this file "
                      "exists, it will be overwritten." );
@@ -117,16 +118,15 @@ static bool check_config( kwiver::vital::config_block_sptr config )
     return false;
   }
 
-  if( config->has_value( "image_list_file" ) &&
-      !config->get_value<std::string>( "image_list_file" ).empty() )
+  if( config->has_value( "video_source" ) &&
+      !config->get_value<std::string>( "video_source" ).empty() )
   {
-    if( !ST::FileExists( kwiver::vital::path_t( config->get_value<std::string>( "image_list_file" ) ) ) )
+    if( !ST::FileExists( kwiver::vital::path_t( config->get_value<std::string>( "video_source" ) ) ) )
     {
-      std::cerr << "Cannot find image list file" << std::endl;
+      std::cerr << "Cannot find video_source file" << std::endl;
       return false;
     }
-    else if( !kwiver::vital::algo::image_io::check_nested_algo_configuration( "image_reader", config ) ||
-             !kwiver::vital::algo::image_io::check_nested_algo_configuration( "track_drawer", config ) )
+    else if( !kwiver::vital::algo::draw_tracks::check_nested_algo_configuration( "track_drawer", config ) )
     {
       std::cerr << "Unable to configure track drawer" << std::endl;
       return false;
@@ -176,9 +176,9 @@ static int maptk_main(int argc, char const* argv[])
   }
 
   // register the algorithm implementations
-  std::string rel_plugin_path = kwiver::vital::get_executable_path() + "/../lib/maptk";
-  kwiver::vital::algorithm_plugin_manager::instance().add_search_path(rel_plugin_path);
-  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
+  std::string rel_plugin_path = kwiver::vital::get_executable_path() + "/../lib/modules";
+  kwiver::vital::plugin_manager::instance().add_search_path(rel_plugin_path);
+  kwiver::vital::plugin_manager::instance().load_all_plugins();
 
   // Set config to algo chain
   // Get config from algo chain after set
@@ -190,7 +190,7 @@ static int maptk_main(int argc, char const* argv[])
   // Set up top level configuration w/ defaults where applicable.
   kwiver::vital::config_block_sptr config = default_config();
 
-  kwiver::vital::algo::image_io_sptr image_reader;
+  kwiver::vital::algo::video_input_sptr video_reader;
   kwiver::vital::algo::analyze_tracks_sptr analyze_tracks;
   kwiver::vital::algo::draw_tracks_sptr draw_tracks;
 
@@ -203,16 +203,16 @@ static int maptk_main(int argc, char const* argv[])
   }
 
   // Load all input images if they are specified
-  bool use_images = config->has_value( "image_list_file" ) &&
-                    !config->get_value<std::string>( "image_list_file" ).empty();
+  bool use_images = config->has_value( "video_source" ) &&
+                    !config->get_value<std::string>( "video_source" ).empty();
 
   bool output_to_file = config->has_value( "output_file" ) &&
                         !config->get_value<std::string>( "output_file" ).empty();
 
   if( use_images )
   {
-    kwiver::vital::algo::image_io::set_nested_algo_configuration( "image_reader", config, image_reader );
-    kwiver::vital::algo::image_io::get_nested_algo_configuration( "image_reader", config, image_reader );
+    kwiver::vital::algo::video_input::set_nested_algo_configuration("video_reader", config, video_reader);
+    kwiver::vital::algo::video_input::get_nested_algo_configuration("video_reader", config, video_reader);
 
     kwiver::vital::algo::draw_tracks::set_nested_algo_configuration( "track_drawer", config, draw_tracks );
     kwiver::vital::algo::draw_tracks::get_nested_algo_configuration( "track_drawer", config, draw_tracks );
@@ -282,20 +282,9 @@ static int maptk_main(int argc, char const* argv[])
   if( use_images )
   {
     std::vector<kwiver::vital::path_t> image_paths;
-    std::string image_list_file = config->get_value<std::string>( "image_list_file" );
-    std::ifstream ifs( image_list_file.c_str() );
+    std::string video_source = config->get_value<std::string>( "video_source" );
 
-    if( !ifs )
-    {
-      std::cerr << "Error: Could not open image list \"" << image_list_file << "\"" << std::endl;
-      return EXIT_FAILURE;
-    }
-
-    // Creating input image list, checking file existance, and loading the image
-    for( std::string line; std::getline(ifs,line); )
-    {
-      image_paths.push_back( line );
-    }
+    video_reader->open(video_source);
 
     // Load comparison tracks if enabled
     kwiver::vital::track_set_sptr comparison_tracks;
@@ -340,16 +329,11 @@ static int maptk_main(int argc, char const* argv[])
     // Read images one by one, this is more memory efficient than loading them all
     std::cout << std::endl << "Generating feature images..." << std::endl;
 
-    for( unsigned i = 0; i < image_paths.size(); i++ )
+    kwiver::vital::timestamp ts;
+    while( video_reader->next_frame(ts) )
     {
-      if( !ST::FileExists( image_paths[i] ) )
-      {
-        throw kwiver::vital::path_not_exists( image_paths[i] );
-      }
-
       kwiver::vital::image_container_sptr_list images;
-
-      kwiver::vital::image_container_sptr image = image_reader->load( image_paths[i] );
+      kwiver::vital::image_container_sptr image = video_reader->frame_image();
       images.push_back( image );
 
       // Draw tracks on images

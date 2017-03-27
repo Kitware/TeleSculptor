@@ -10,13 +10,35 @@ release version, and the content of this file will be reset.
 Updates since last public release
 ---------------------------------
 
+Examples/Configs
+
+ * Updated the example tool configuration files to account for tool changes
+   to use the video_input API.
+
+ * Added default config files for video_input algorithms that load from image
+   lists, with and without POS files.
+
+ * Refactored core_track_features.conf to make the feature detector,
+   descriptor, and matcher reusable across other configs.  Also refactored
+   the loop closure configs to reuse a common feature matcher config.
+
+Main Library
+
+ * Removed the ins_data structure for holding POS file data as well as all
+   functions for reading and writing POS files.  This is now covered by
+   the more general video_metadata structure in KWIVER.
+
+ * Updated all the local_geo_cs functions that used ins_data to use
+   video_metadata instead.
 
 Scripts
 
  * Added options in the krtd_and_ply_to_homogs.py script to estimate a ground
    plane from the PLY data or use the Z=0 plane when computing homographies.
 
- * Added an option in the mosaic_images.py script to scale the output image.
+ * Added an option in the mosaic_images.py script to scale the output image and
+   another option to estimate the scale of the output to match the scale of the
+   input images on average.
 
  * Improved memory efficiency of mosaic_images.py by avoiding preloading of
    all images.
@@ -26,11 +48,28 @@ Tools
  * Updated the maptk_bundle_adjust tool to use the filter_tracks algorithm from
    KWIVER instead of directly applying filters.
 
+ * Added a new detect_and_describe tool that runs feature detection and
+   descriptor extraction on each frame and writes the outputs to files
+   using the feature_descriptor_io algorithm.  This tool uses the thread pool
+   to process frames in parallel.
+
+ * Updated all tools to use the video_input API from KWIVER to read both
+   images and metadata.  This replaces the custom loops over files in an image
+   list.  This change allows tools to run directly on video files (e.g. AVI,
+   MPEG) with optional KLV metadata as well as lists of images with optional
+   lists of POS metadata files.
+
 Visualization Application
 
  * Added a "Filter Tracks" tool to the GUI that runs the filter_tracks
    algorithm in KWIVER.  Updated the GUI to properly clear existing tracks
    before adding tracks returned from a tool.
+
+ * Updated the GUI to allow "video_source" as an alternative to
+   "image_file_list" when looking for a list of images to load in a project
+   config file.  This currently only handles the case where the video source
+   is a list of images, but is compatible with the new variable naming in
+   tool configuration files.
 
 
 Fixes since last public release

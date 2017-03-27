@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2015 by Kitware, Inc.
+ * Copyright 2013-2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,7 +34,12 @@
  */
 
 #include "local_geo_cs.h"
+
+#include <fstream>
+#include <iomanip>
+
 #include <vital/vital_foreach.h>
+#include <vital/video_metadata/video_metadata_traits.h>
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -56,8 +61,6 @@ namespace maptk {
   static const double rad2deg = static_cast<double>( 180.0 ) / LOCAL_PI;
 /// scale factor converting degrees to radians
   static const double deg2rad = static_cast<double>( LOCAL_PI ) / 180.0;
-/// scale factor convertint feet into meters
-static const double foot2meter = 0.3048;
 
 
 /// Constructor
@@ -70,86 +73,166 @@ local_geo_cs
 }
 
 
-/// Use the pose data provided by INS to update camera pose
+/// Use the pose data provided by metadata to update camera pose
 void
 local_geo_cs
-::update_camera(const ins_data& ins, simple_camera& cam,
-                rotation_d const& rot_offset) const
+::update_camera(vital::video_metadata const& md,
+                vital::simple_camera& cam,
+                vital::rotation_d const& rot_offset) const
 {
   if( !geo_map_algo_ )
   {
     return;
   }
 
-  // Apply offset rotation specifically on the lhs of the INS
-  cam.set_rotation(rot_offset * rotation_d(ins.yaw * deg2rad,
-                                           ins.pitch * deg2rad,
-                                           ins.roll * deg2rad));
+  if( md.has( vital::VITAL_META_SENSOR_YAW_ANGLE) &&
+      md.has( vital::VITAL_META_SENSOR_PITCH_ANGLE) &&
+      md.has( vital::VITAL_META_SENSOR_ROLL_ANGLE) )
+  {
+    double yaw = md.find( vital::VITAL_META_SENSOR_YAW_ANGLE ).as_double();
+    double pitch = md.find( vital::VITAL_META_SENSOR_PITCH_ANGLE ).as_double();
+    double roll = md.find( vital::VITAL_META_SENSOR_ROLL_ANGLE ).as_double();
 
-  // TODO: Possibly add a positional offset optional parameter, also.
+    // Apply offset rotation specifically on the lhs of the INS
+    cam.set_rotation(rot_offset * rotation_d(yaw * deg2rad,
+                                             pitch * deg2rad,
+                                             roll * deg2rad));
+  }
+
+  if( md.has( vital::VITAL_META_SENSOR_LOCATION) &&
+      md.has( vital::VITAL_META_SENSOR_ALTITUDE) )
+  {
+    double alt = md.find( vital::VITAL_META_SENSOR_ALTITUDE ).as_double();
+    vital::geo_lat_lon gll;
+    md.find( vital::VITAL_META_SENSOR_LOCATION ).data( gll );
+
+    // TODO: Possibly add a positional offset optional parameter, also.
+    double x,y;
+    int zone;
+    bool is_north_hemi;
+    geo_map_algo_->latlon_to_utm(gll.latitude(), gll.longitude(),
+                                 x, y, zone, is_north_hemi, utm_origin_zone_);
+    cam.set_center(vector_3d(x, y, alt) - utm_origin_);
+  }
+}
+
+
+/// Use the camera pose to update the metadata structure
+void
+local_geo_cs
+::update_metadata(vital::simple_camera const& cam,
+                  vital::video_metadata& md) const
+{
+  if( !geo_map_algo_ )
+  {
+    return;
+  }
+  double yaw, pitch, roll;
+  cam.rotation().get_yaw_pitch_roll(yaw, pitch, roll);
+  yaw *= rad2deg;
+  pitch *= rad2deg;
+  roll *= rad2deg;
+  vital::vector_3d c = cam.get_center() + utm_origin_;
+  double lat, lon;
+  geo_map_algo_->utm_to_latlon(c.x(), c.y(), utm_origin_zone_, true,
+                               lat, lon);
+
+  vital::geo_lat_lon latlon( lat, lon );
+  md.add( NEW_METADATA_ITEM( VITAL_META_SENSOR_LOCATION, latlon ) );
+  md.add( NEW_METADATA_ITEM( VITAL_META_SENSOR_ALTITUDE, c.z() ) );
+  md.add( NEW_METADATA_ITEM( VITAL_META_SENSOR_YAW_ANGLE, yaw ) );
+  md.add( NEW_METADATA_ITEM( VITAL_META_SENSOR_PITCH_ANGLE, pitch ) );
+  md.add( NEW_METADATA_ITEM( VITAL_META_SENSOR_ROLL_ANGLE, roll ) );
+}
+
+
+/// Read a local_geo_cs from a text file
+void
+read_local_geo_cs_from_file(local_geo_cs& lgcs,
+                            vital::path_t const& file_path)
+{
+  std::ifstream ifs(file_path);
+  double lat, lon, alt;
+  ifs >> lat >> lon >> alt;
   double x,y;
   int zone;
   bool is_north_hemi;
-  geo_map_algo_->latlon_to_utm(ins.lat, ins.lon,
-                               x, y, zone, is_north_hemi, utm_origin_zone_);
-  // INS DATA altitude currently in feet. Converting to meters.
-  cam.set_center(vector_3d(x, y, ins.alt * foot2meter) - utm_origin_);
+  lgcs.geo_map_algo()->latlon_to_utm(lat, lon, x, y, zone, is_north_hemi);
+  lgcs.set_utm_origin_zone(zone);
+  lgcs.set_utm_origin(kwiver::vital::vector_3d(x, y, alt));
 }
 
 
-/// Use the camera pose to update an INS data structure
+/// Write a local_geo_cs to a text file
 void
-local_geo_cs
-::update_ins_data(const simple_camera& cam, ins_data& ins) const
+write_local_geo_cs_to_file(local_geo_cs const& lgcs,
+                           vital::path_t const& file_path)
 {
-  if( !geo_map_algo_ )
+  // write out the origin of the local coordinate system
+  double easting = lgcs.utm_origin()[0];
+  double northing = lgcs.utm_origin()[1];
+  double altitude = lgcs.utm_origin()[2];
+  int zone = lgcs.utm_origin_zone();
+  double lat, lon;
+  lgcs.geo_map_algo()->utm_to_latlon(easting, northing, zone, true, lat, lon);
+  std::ofstream ofs(file_path);
+  if (ofs)
   {
-    return;
+    ofs << std::setprecision(12) << lat << " " << lon << " " << altitude;
   }
-  cam.rotation().get_yaw_pitch_roll(ins.yaw, ins.pitch, ins.roll);
-  ins.yaw *= rad2deg;
-  ins.pitch *= rad2deg;
-  ins.roll *= rad2deg;
-  vital::vector_3d c = cam.get_center() + utm_origin_;
-  geo_map_algo_->utm_to_latlon(c.x(), c.y(), utm_origin_zone_, true,
-                               ins.lat, ins.lon);
-  // camera Z in meters while INS data altitude represented in feet
-  ins.alt = c.z() / foot2meter;
-  ins.source_name = "MAPTK";
 }
 
 
-/// Use a sequence of ins_data objects to initialize a sequence of cameras
-std::map<frame_id_t, camera_sptr>
-initialize_cameras_with_ins(const std::map<frame_id_t, ins_data>& ins_map,
-                            const simple_camera& base_camera,
-                            local_geo_cs& lgcs,
-                            rotation_d const& rot_offset)
+
+/// Use a sequence of metadata objects to initialize a sequence of cameras
+std::map<vital::frame_id_t, vital::camera_sptr>
+initialize_cameras_with_metadata(std::map<vital::frame_id_t,
+                                          vital::video_metadata_sptr> const& md_map,
+                                 vital::simple_camera const& base_camera,
+                                 local_geo_cs& lgcs,
+                                 vital::rotation_d const& rot_offset)
 {
   std::map<frame_id_t, camera_sptr> cam_map;
   vital::vector_3d mean(0,0,0);
   simple_camera active_cam(base_camera);
 
   bool update_local_origin = false;
-  if( lgcs.utm_origin_zone() < 0 && !ins_map.empty())
+  if( lgcs.utm_origin_zone() < 0 && !md_map.empty())
   {
     // if a local coordinate system has not been established,
     // use the coordinates of the first camera
-    update_local_origin = true;
-    const ins_data& ins = ins_map.begin()->second;
-    double x,y;
-    int zone;
-    bool is_north_hemi;
-    lgcs.geo_map_algo()->latlon_to_utm(ins.lat, ins.lon,
-                                       x, y, zone, is_north_hemi);
-    lgcs.set_utm_origin_zone(zone);
-    lgcs.set_utm_origin(vital::vector_3d(x, y, 0.0));
+    vital::video_metadata_sptr md = nullptr;
+    for( auto m : md_map )
+    {
+      if( m.second )
+      {
+        md = m.second;
+        break;
+      }
+    }
+    if( md &&
+        md->has( vital::VITAL_META_SENSOR_LOCATION ) )
+    {
+      vital::geo_lat_lon gll;
+      md->find( vital::VITAL_META_SENSOR_LOCATION ).data( gll );
+      double x,y;
+      int zone;
+      bool is_north_hemi;
+      lgcs.geo_map_algo()->latlon_to_utm(gll.latitude(), gll.longitude(),
+                                         x, y, zone, is_north_hemi);
+      lgcs.set_utm_origin_zone(zone);
+      lgcs.set_utm_origin(vital::vector_3d(x, y, 0.0));
+      update_local_origin = true;
+    }
   }
-  typedef std::map<frame_id_t, ins_data>::value_type ins_map_val_t;
-  VITAL_FOREACH(ins_map_val_t const &p, ins_map)
+  VITAL_FOREACH(auto const& p, md_map)
   {
-    const ins_data& ins = p.second;
-    lgcs.update_camera(ins, active_cam, rot_offset);
+    auto md = p.second;
+    if( !md )
+    {
+      continue;
+    }
+    lgcs.update_camera(*md, active_cam, rot_offset);
     mean += active_cam.center();
     cam_map[p.first] = camera_sptr(new simple_camera(active_cam));
   }
@@ -176,27 +259,33 @@ initialize_cameras_with_ins(const std::map<frame_id_t, ins_data>& ins_map,
 }
 
 
-/// Update a sequence of ins_data from a sequence of cameras and local_geo_cs
+/// Update a sequence of metadata from a sequence of cameras and local_geo_cs
 void
-update_ins_from_cameras(const std::map<frame_id_t, camera_sptr>& cam_map,
-                        const local_geo_cs& lgcs,
-                        std::map<frame_id_t, ins_data>& ins_map)
+update_metadata_from_cameras(std::map<frame_id_t, camera_sptr> const& cam_map,
+                             local_geo_cs const& lgcs,
+                             std::map<frame_id_t, vital::video_metadata_sptr>& md_map)
 {
   if( lgcs.utm_origin_zone() < 0 )
   {
     // TODO throw an exception here?
-    std::cerr << "WARNING: local geo coordinates do not have an origin"
-              << std::endl;
+    vital::logger_handle_t
+      logger( vital::get_logger( "update_metadata_from_cameras" ) );
+    LOG_WARN( logger, "local geo coordinates do not have an origin");
     return;
   }
 
   typedef std::map<frame_id_t, camera_sptr>::value_type cam_map_val_t;
   VITAL_FOREACH(cam_map_val_t const &p, cam_map)
   {
-    ins_data& active_ins = ins_map[p.first];
-    if( simple_camera* cam = dynamic_cast<simple_camera*>(p.second.get()) )
+    auto active_md = md_map[p.first];
+    if( !active_md )
     {
-      lgcs.update_ins_data(*cam, active_ins);
+      md_map[p.first] = active_md = std::make_shared<vital::video_metadata>();
+    }
+    auto cam = dynamic_cast<vital::simple_camera*>(p.second.get());
+    if( active_md && cam )
+    {
+      lgcs.update_metadata(*cam, *active_md);
     }
   }
 }

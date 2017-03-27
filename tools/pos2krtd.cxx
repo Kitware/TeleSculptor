@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2016 by Kitware, Inc.
+ * Copyright 2013-2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,8 @@
  * \brief POS file to KRTD conversion utility
  */
 
+#include "tool_common.h"
+
 #include <iostream>
 #include <fstream>
 #include <exception>
@@ -43,10 +45,12 @@
 #include <vital/config/config_block.h>
 #include <vital/config/config_block_io.h>
 
+#include <vital/algo/video_input.h>
 #include <vital/io/camera_io.h>
 #include <vital/io/eigen_io.h>
 #include <vital/exceptions.h>
-#include <vital/algorithm_plugin_manager.h>
+#include <vital/plugin_loader/plugin_manager.h>
+#include <vital/video_metadata/video_metadata_tags.h>
 #include <vital/vital_types.h>
 #include <vital/util/get_paths.h>
 
@@ -54,12 +58,14 @@
 #include <kwiversys/CommandLineArguments.hxx>
 #include <kwiversys/Directory.hxx>
 
-#include <maptk/ins_data_io.h>
 #include <maptk/local_geo_cs.h>
 #include <maptk/version.h>
 
 typedef kwiversys::SystemTools     ST;
 typedef kwiversys::CommandLineArguments argT;
+
+static kwiver::vital::logger_handle_t
+  main_logger( kwiver::vital::get_logger( "pos2krtd_tool" ) );
 
 // ------------------------------------------------------------------
 // return a default configuration object
@@ -69,23 +75,29 @@ default_config()
   kwiver::vital::config_block_sptr config = kwiver::vital::config_block::empty_config();
 
   // general options
-  config->set_value("input", "",
-                    "Input file or directory of input files.\n"
-                    "\n"
-                    "If multiple POS files are to be converted into KRTD "
-                    "files, it is recommended to use the directory arguemnts "
-                    "in order for the application to create a unified local "
-                    "coordinate system.");
+  config->set_value("video_source", "",
+                    "Path to an input file to be opened as a video. "
+                    "This could be either a video file or a text file "
+                    "containing new-line separated paths to sequential "
+                    "image files.  Only metadata is ready from the video.");
+
   config->set_value("output", "",
                     "Output file or directory where output files will be "
                     "placed. If a directory, output files will mirror the "
                     "filename stem of input files. The output file mode will "
                     "be interpreted the same as the file mode of the input "
-                    "parameter.\n"
-                    "\n"
-                    "I.e. if a file was provided for input, output "
-                    "should point to a file path to output to. If input was a "
-                    "directory, output will be treated like a directory.");
+                    "parameter.");
+
+  config->set_value("geo_origin_file", "output/geo_origin.txt",
+                    "This file contains the geographical location of the origin "
+                    "of the local cartesian coordinate system used in the camera "
+                    "and landmark files.  This file is use for input and output. "
+                    "If the files exists it will be read to define the origin. "
+                    "If the file does not exist an origin will be computed from "
+                    "geographic metadata provided and written to this file. "
+                    "The file format is ASCII (degrees, meters):\n"
+                    "latitude longitude altitude");
+
 
   // base camera options
   config->set_value("base_camera:focal_length", "1.0",
@@ -105,6 +117,10 @@ default_config()
                     "A quaternion used to offset rotation data from POS files when "
                     "updating cameras.");
 
+  auto default_vi = kwiver::vital::algo::video_input::create("pos");
+  kwiver::vital::algo::video_input::
+    get_nested_algo_configuration("video_reader", config, default_vi);
+
   return config;
 }
 
@@ -120,14 +136,13 @@ check_config(kwiver::vital::config_block_sptr config)
   std::cerr << "Config Check Fail: " << msg << std::endl;       \
   config_valid = false
 
-  if (!config->has_value("input")
-      || config->get_value<std::string>("input") == "")
+  if (config->get_value<std::string>("video_source") == "")
   {
-    MAPTK_CHECK_FAIL("Not given an input file or directory.");
+    MAPTK_CHECK_FAIL("Not given an video_source file or directory.");
   }
-  else if ( ! ST::FileExists(config->get_value<kwiver::vital::path_t>("input")))
+  else if ( ! ST::FileExists(config->get_value<kwiver::vital::path_t>("video_source")))
   {
-    MAPTK_CHECK_FAIL("Path given for input doesn't exist.");
+    MAPTK_CHECK_FAIL("Path given for video_source doesn't exist.");
   }
 
   if (!config->has_value("output")
@@ -138,20 +153,13 @@ check_config(kwiver::vital::config_block_sptr config)
   // When we have a valid input path...
   else if (config_valid)
   {
-    kwiver::vital::path_t input = config->get_value<kwiver::vital::path_t>("input"),
+    kwiver::vital::path_t video_source = config->get_value<kwiver::vital::path_t>("video_source"),
            output = config->get_value<kwiver::vital::path_t>("output");
     if ( ST::FileExists( output ) )
     {
-      if (ST::FileIsDirectory(input) && !ST::FileIsDirectory(output))
+      if (!ST::FileIsDirectory(output))
       {
-        MAPTK_CHECK_FAIL("Output given exists but is not a directory! "
-                         "Input was a directory, so output must also be a "
-                         "directory.");
-      }
-      else if (!ST::FileIsDirectory(input) && ST::FileIsDirectory(output))
-      {
-        MAPTK_CHECK_FAIL("Input was a file, but given output path is a "
-                         "directory!");
+        MAPTK_CHECK_FAIL("Output given exists but is not a directory!");
       }
     }
   }
@@ -174,112 +182,6 @@ base_camera_from_config(kwiver::vital::config_block_sptr config)
         config->get_value<double>("skew"));
   return kwiver::vital::simple_camera(kwiver::vital::vector_3d(0,0,-1),
                                       kwiver::vital::rotation_d(), K);
-}
-
-
-// ------------------------------------------------------------------
-/// Convert a INS data to a camera
-bool convert_ins2camera(const kwiver::maptk::ins_data& ins,
-                        kwiver::maptk::local_geo_cs& cs,
-                        kwiver::vital::simple_camera& cam,
-                        kwiver::vital::rotation_d const& ins_rot_offset = kwiver::vital::rotation_d())
-{
-  if( cs.utm_origin_zone() < 0 )
-  {
-    std::cerr << "lat: "<<ins.lat<<" lon: "<<ins.lon<<std::endl;
-    cs.set_utm_origin_zone(cs.geo_map_algo()->latlon_zone(ins.lat, ins.lon));
-    std::cerr << "using zone "<< cs.utm_origin_zone() <<std::endl;
-  }
-
-  cs.update_camera(ins, cam, ins_rot_offset);
-  return true;
-}
-
-
-// ------------------------------------------------------------------
-/// Convert a POS file to a KRTD file
-bool convert_pos2krtd(const kwiver::vital::path_t& pos_filename,
-                      const kwiver::vital::path_t& krtd_filename,
-                      kwiver::maptk::local_geo_cs& cs,
-                      const kwiver::vital::simple_camera& base_camera,
-                      kwiver::vital::rotation_d const& ins_rot_offset = kwiver::vital::rotation_d())
-{
-  kwiver::maptk::ins_data ins;
-  // a local copy of the base camera to modify in place
-  kwiver::vital::simple_camera local_camera(base_camera);
-  ins = kwiver::maptk::read_pos_file(pos_filename);
-  if ( !convert_ins2camera(ins, cs, local_camera, ins_rot_offset) )
-  {
-    return false;
-  }
-  kwiver::vital::write_krtd_file(local_camera, krtd_filename);
-  return true;
-}
-
-
-// ------------------------------------------------------------------
-/// Convert a directory of POS file to a directory of KRTD files
-bool convert_pos2krtd_dir(const kwiver::vital::path_t& pos_dir,
-                          const kwiver::vital::path_t& krtd_dir,
-                          kwiver::maptk::local_geo_cs& cs,
-                          const kwiver::vital::simple_camera& base_camera,
-                          kwiver::vital::rotation_d const& ins_rot_offset = kwiver::vital::rotation_d())
-{
-  std::vector<std::string> krtd_filenames;
-  std::map<kwiver::vital::frame_id_t, kwiver::maptk::ins_data> ins_map;
-
-  kwiversys::Directory dir;
-  dir.Load( pos_dir );
-
-  std::cerr << "Loading POS files" << std::endl;
-
-  unsigned long num_files = dir.GetNumberOfFiles();
-  for ( unsigned long i = 0; i < num_files; i++)
-  {
-    kwiver::vital::path_t p = pos_dir + "/" + dir.GetFile( i );
-
-    try
-    {
-      kwiver::maptk::ins_data ins = kwiver::maptk::read_pos_file( p );
-
-      kwiver::vital::path_t krtd_filename = krtd_dir + "/"
-                                          + ST::GetFilenameWithoutLastExtension( p ) + ".krtd";
-      //std::cerr << "Loading " << p << std::endl;
-      kwiver::vital::frame_id_t frame = static_cast<kwiver::vital::frame_id_t>(krtd_filenames.size());
-      ins_map[frame] = ins;
-      krtd_filenames.push_back(krtd_filename);
-    }
-    catch (kwiver::vital::io_exception const& e)
-    {
-      std::cerr << "-> Skipping invalid file: " << p << std::endl;
-      std::cerr << "   " << e.what() << std::endl;
-    }
-  } // end foreach
-
-  if (ins_map.size() == 0)
-  {
-    std::cerr << "WARNING: No valid input files found in directory. "
-              << "Nothing to do."
-              << std::endl;
-    return false;
-  }
-
-  std::cerr << "Initializing cameras" << std::endl;
-  std::map<kwiver::vital::frame_id_t, kwiver::vital::camera_sptr> cam_map;
-  cam_map = kwiver::maptk::initialize_cameras_with_ins(ins_map, base_camera, cs, ins_rot_offset);
-
-  std::cerr << "Writing KRTD files" << std::endl;
-  typedef std::map<kwiver::vital::frame_id_t, kwiver::vital::camera_sptr>::value_type cam_map_val_t;
-  VITAL_FOREACH(cam_map_val_t const &p, cam_map)
-  {
-    kwiver::vital::simple_camera* cam = dynamic_cast<kwiver::vital::simple_camera*>(p.second.get());
-    kwiver::vital::write_krtd_file(*cam, krtd_filenames[p.first]);
-  }
-
-  kwiver::vital::vector_3d origin = cs.utm_origin();
-  std::cerr << "using local UTM origin at "<<origin[0] <<", "<<origin[1]
-            <<", zone "<<cs.utm_origin_zone() <<std::endl;
-  return true;
 }
 
 
@@ -325,15 +227,17 @@ static int maptk_main(int argc, char const* argv[])
 
 
   // register the algorithm implementations
-  std::string rel_plugin_path = kwiver::vital::get_executable_path() + "/../lib/maptk";
-  kwiver::vital::algorithm_plugin_manager::instance().add_search_path(rel_plugin_path);
-  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
+  std::string rel_plugin_path = kwiver::vital::get_executable_path() + "/../lib/modules";
+  kwiver::vital::plugin_manager::instance().add_search_path(rel_plugin_path);
+  kwiver::vital::plugin_manager::instance().load_all_plugins();
 
   //
   // Initialize from configuration
   //
   kwiver::vital::config_block_sptr config = default_config();
+  kwiver::vital::algo::video_input_sptr video_reader;
 
+  // If -c/--config given, read in confg file, merge in with default just generated
   if ( ! opt_config.empty())
   {
     const std::string prefix = kwiver::vital::get_executable_path() + "/..";
@@ -341,9 +245,14 @@ static int maptk_main(int argc, char const* argv[])
                                                          MAPTK_VERSION, prefix));
   }
 
+  kwiver::vital::algo::video_input::
+    set_nested_algo_configuration("video_reader", config, video_reader);
+  kwiver::vital::algo::video_input::
+    get_nested_algo_configuration("video_reader", config, video_reader);
+
   bool config_is_valid = check_config(config);
 
-    if ( ! opt_out_config.empty() )
+  if ( ! opt_out_config.empty() )
   {
     kwiver::vital::path_t output_path = opt_out_config;
     kwiver::vital::write_config_file(config, output_path);
@@ -365,8 +274,8 @@ static int maptk_main(int argc, char const* argv[])
   }
 
 
-  kwiver::vital::path_t input = config->get_value<kwiver::vital::path_t>("input"),
-                output = config->get_value<kwiver::vital::path_t>("output");
+  kwiver::vital::path_t video_source = config->get_value<kwiver::vital::path_t>("video_source"),
+                       output = config->get_value<kwiver::vital::path_t>("output");
   kwiver::vital::simple_camera base_camera = base_camera_from_config(config->subblock_view("base_camera"));
   kwiver::vital::rotation_d ins_rot_offset = config->get_value<kwiver::vital::rotation_d>("ins:rotation_offset");
 
@@ -378,28 +287,82 @@ static int maptk_main(int argc, char const* argv[])
     return EXIT_FAILURE;
   }
 
+  //
+  // Create the local coordinate system
+  //
   kwiver::maptk::local_geo_cs local_cs(geo_mapper);
-
-  if( ST::FileIsDirectory(input) )
+  bool geo_origin_loaded_from_file = false;
+  if (config->get_value<std::string>("geo_origin_file", "") != "")
   {
-    std::cerr << "processing "<<input<<" as a directory of POS files" << std::endl;
-    if( ! ST::FileExists(output) )
+    kwiver::vital::path_t geo_origin_file = config->get_value<kwiver::vital::path_t>("geo_origin_file");
+    // load the coordinates from a file if it exists
+    if (ST::FileExists(geo_origin_file, true))
     {
-      if( ! ST::MakeDirectory( output ) )
-      {
-        std::cerr << "Unable to create output directory: " << output << std::endl;
-        return EXIT_FAILURE;
-      }
+      read_local_geo_cs_from_file(local_cs, geo_origin_file);
+      LOG_INFO(main_logger, "Loaded origin point from: " << geo_origin_file);
+      geo_origin_loaded_from_file = true;
     }
-    if( !convert_pos2krtd_dir(input, output, local_cs, base_camera, ins_rot_offset) )
+  }
+
+
+  std::map<kwiver::vital::frame_id_t, kwiver::vital::video_metadata_sptr> md_map;
+  std::map<kwiver::vital::frame_id_t, std::string> krtd_filenames;
+
+  LOG_INFO( main_logger, "Opening Video: " << video_source );
+  video_reader->open(video_source);
+
+  LOG_INFO( main_logger, "Reading Video" );
+  kwiver::vital::timestamp ts;
+  while( video_reader->next_frame(ts) )
+  {
+    auto md_vec = video_reader->frame_metadata();
+    if( md_vec.empty() || !md_vec[0] )
     {
+      continue;
+    }
+    auto md = md_vec[0];
+    md_map[ts.get_frame()] = md;
+    std::string basename = kwiver::maptk::basename_from_metadata(*md, ts.get_frame());
+    krtd_filenames[ts.get_frame()] = output + "/" + basename + ".krtd";
+  }
+
+  if (md_map.size() == 0)
+  {
+    LOG_WARN( main_logger, "No valid metadata found in directory. Nothing to do.");
+    return EXIT_SUCCESS;
+  }
+
+  LOG_INFO( main_logger, "Initializing cameras" );
+  std::map<kwiver::vital::frame_id_t, kwiver::vital::camera_sptr> cam_map;
+  cam_map = kwiver::maptk::initialize_cameras_with_metadata(md_map, base_camera, local_cs, ins_rot_offset);
+
+  // create output KRTD directory
+  if( ! ST::FileExists(output) )
+  {
+    if( ! ST::MakeDirectory( output ) )
+    {
+      LOG_ERROR( main_logger, "Unable to create output directory: " << output );
       return EXIT_FAILURE;
     }
   }
-  // otherwise treat input as a single file
-  else if( !convert_pos2krtd(input, output, local_cs, base_camera, ins_rot_offset) )
+
+  LOG_INFO( main_logger, "Writing KRTD files" );
+  typedef std::map<kwiver::vital::frame_id_t, kwiver::vital::camera_sptr>::value_type cam_map_val_t;
+  VITAL_FOREACH(cam_map_val_t const &p, cam_map)
   {
-    return EXIT_FAILURE;
+    kwiver::vital::simple_camera* cam = dynamic_cast<kwiver::vital::simple_camera*>(p.second.get());
+    kwiver::vital::write_krtd_file(*cam, krtd_filenames[p.first]);
+  }
+
+
+  // if we computed an origin that was not loaded from a file
+  if (local_cs.utm_origin_zone() >= 0 &&
+      !geo_origin_loaded_from_file &&
+      config->get_value<std::string>("geo_origin_file", "") != "")
+  {
+    kwiver::vital::path_t geo_origin_file = config->get_value<kwiver::vital::path_t>("geo_origin_file");
+    LOG_INFO(main_logger, "Saving local coordinate origin to " << geo_origin_file);
+    write_local_geo_cs_to_file(local_cs, geo_origin_file);
   }
 
   return EXIT_SUCCESS;

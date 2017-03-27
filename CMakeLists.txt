@@ -152,6 +152,7 @@ kwiver_configure_file( maptk-install-config
   "${MAPTK_SOURCE_DIR}/CMake/maptk-config-install.cmake.in"
   "${MAPTK_CONFIG_INSTALL_FILE}"
   EIGEN3_INCLUDE_DIR
+  MAPTK_VERSION
   maptk_libs
   module_path
   )

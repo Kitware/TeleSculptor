@@ -1,14 +1,20 @@
-MAPTK Release Notes for changes pending release approval by AFRL
-================================================================
+MAP-Tk v0.10.0 Release Notes
+============================
 
-This file documents release notes for changes made to MAP-Tk which require
-public release approval from AFRL.  After approval, the changes and
-corresponding notes below will be incorporated into a public numbered
-release version, and the content of this file will be reset.
+This is a minor release of MAP-Tk that provides both new functionality and
+fixes over the previous v0.9.0 release.  This release introduces another big
+refactoring of the MAP-Tk code base.  MAP-Tk now builds against KWIVER instead
+of the stand-along Vital repository.  Vital has moved into KWIVER and the stand
+alone Vital repository is discontinued.  All of the plugins previously located
+in MAP-Tk have also moved into KWIVER.  The plugins are now called "arrows".
+That leaves this project, MAP-Tk, with a collection of tools and scripts for
+photogrammetry.  MAP-Tk no longer a toolkit.  The toolkit has become KWIVER.
+MAP-Tk is the collection of photogrammetry tools built on KWIVER.  As such,
+we may rebrand MAP-Tk in a future release to make this more clear.
 
 
-Updates since last public release
----------------------------------
+Updates since v0.9.0
+--------------------
 
 Core Plugin
 
@@ -23,6 +29,8 @@ Scripts
 
 Tools
 
+ * Updated all tools to use the new plugin loading framework from KWIVER.
+
  * Added python version of track features tool.
 
  * The maptk_bundle_adjust_tracks tool now has a configuration option to write
@@ -31,6 +39,8 @@ Tools
    origin point manually.
 
 Visualization Application
+
+ * Updated the GUI to use the new plugin loading framework from KWIVER.
 
  * Extended the tool framework in the GUI to handle callbacks from the tools
    to allow some tools to provide updated visualization of intermediate results
@@ -61,8 +71,8 @@ Visualization Application
    based on focus.
 
 
-Fixes since last public release
--------------------------------
+Fixes since v0.9.0
+------------------
 
 Visualization Application
 
