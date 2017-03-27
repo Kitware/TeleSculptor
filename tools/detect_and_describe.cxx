@@ -36,6 +36,7 @@
 
 #include "tool_common.h"
 
+#include <deque>
 #include <iostream>
 #include <fstream>
 #include <exception>
@@ -60,6 +61,7 @@
 #include <vital/algo/video_input.h>
 #include <vital/plugin_loader/plugin_manager.h>
 #include <vital/util/get_paths.h>
+#include <vital/util/thread_pool.h>
 #include <vital/util/transform_image.h>
 
 #include <kwiversys/SystemTools.hxx>
@@ -211,10 +213,80 @@ static bool check_config(kwiver::vital::config_block_sptr config)
 }
 
 
-// ------------------------------------------------------------------
-static bool invert_mask_pixel( bool const &b )
+/// Check a filepath to see if it is an existing and valid KWFD file
+/**
+ * If a feature_descriptor_io algorithm is not specified only check that the
+ * file exists.  Otherwise read the file and make sure it is valid.
+ */
+bool valid_feature_file_exists( std::string const& filepath,
+                                kwiver::vital::frame_id_t frame,
+                                kwiver::vital::algo::feature_descriptor_io_sptr fd_io )
 {
-  return !b;
+  // if the features file already exists then test loading it and skip
+  if( ST::FileExists( filepath ) )
+  {
+    if( !fd_io )
+    {
+      LOG_INFO( main_logger, "Skipping frame " << frame <<
+                             ", output exists: " << filepath );
+      return true;
+    }
+    try
+    {
+      kwiver::vital::feature_set_sptr feat;
+      kwiver::vital::descriptor_set_sptr desc;
+      fd_io->load(filepath, feat, desc);
+      if( feat && feat->size() > 0 && desc && desc->size() > 0 )
+      {
+        LOG_INFO( main_logger, "Skipping frame " << frame <<
+                               ", output exists: " << filepath <<
+                               "\nfile contains " << feat->size() << " features, "
+                               << desc->size() << " descriptors" );
+        return true;
+      }
+    }
+    catch(...)
+    {
+      LOG_WARN( main_logger, "Not able to load " << filepath << ", recomputing" );
+    }
+  }
+  return false;
+}
+
+
+/// Extract the mask image from the container, invert, and repackage
+kwiver::vital::image_container_sptr
+invert_mask_image(kwiver::vital::image_container_sptr mask)
+{
+  LOG_DEBUG( main_logger,
+             "Inverting mask image pixels" );
+  kwiver::vital::image_of<bool> mask_image;
+  kwiver::vital::cast_image( mask->get_image(), mask_image );
+  kwiver::vital::transform_image( mask_image, [] (bool b) { return !b; } );
+  LOG_DEBUG( main_logger,
+             "Inverting mask image pixels -- Done" );
+  return std::make_shared<kwiver::vital::simple_image_container>( mask_image );
+}
+
+
+/// Validate a mask image according to the expected number of channels.
+bool validate_mask_image( kwiver::vital::image_container_sptr mask,
+                          bool expect_multichannel_masks=false )
+{
+  // error out if we are not expecting a multi-channel mask
+  if( !expect_multichannel_masks && mask->depth() > 1 )
+  {
+    LOG_ERROR( main_logger,
+               "Encounted multi-channel mask image!" );
+    return false;
+  }
+  else if( expect_multichannel_masks && mask->depth() == 1 )
+  {
+    LOG_WARN( main_logger,
+              "Expecting multi-channel masks but received one that was "
+              "single-channel." );
+  }
+  return true;
 }
 
 
@@ -407,10 +479,27 @@ static int maptk_main(int argc, char const* argv[])
     }
   }
 
-  // Detect features on each frame sequentially
-  while( video_reader->next_frame(ts) )
+  std::mutex video_mutex;
+
+  // This lambda function runs in a thread to read the video and launch processing jobs
+  auto handle_frame = [&] ()
   {
-    auto md_vec = video_reader->frame_metadata();
+    kwiver::vital::video_metadata_vector md_vec;
+    kwiver::vital::image_container_sptr image;
+    kwiver::vital::timestamp ts;
+    {
+      // lock the video mutex while incrementing the video and getting a frame
+      std::lock_guard<std::mutex> vlock(video_mutex);
+      if( !video_reader->next_frame(ts) )
+      {
+        return false;
+      }
+      md_vec = video_reader->frame_metadata();
+      // get the frame now even though we do not yet know if it will be needed.
+      // This way we can release the lock and let another thread increment the video.
+      image = video_reader->frame_image();
+    }
+
     kwiver::vital::video_metadata_sptr md;
     if( md_vec.empty() || !md_vec[0] )
     {
@@ -424,37 +513,14 @@ static int maptk_main(int argc, char const* argv[])
     kwiver::vital::path_t kwfd_file = features_dir + "/" + basename + ".kwfd";
 
     // if the features file already exists then test loading it and skip
-    if( ST::FileExists( kwfd_file ) )
+    if( valid_feature_file_exists( kwfd_file, ts.get_frame(),
+                                   validate_existing_features ? fd_io : nullptr ) )
     {
-      if( !validate_existing_features )
-      {
-        LOG_INFO( main_logger, "Skipping frame " << ts.get_frame() <<
-                               ", output exists: " << kwfd_file );
-        continue;
-      }
-      try
-      {
-        kwiver::vital::feature_set_sptr feat;
-        kwiver::vital::descriptor_set_sptr desc;
-        fd_io->load(kwfd_file, feat, desc);
-        if( feat && feat->size() > 0 && desc && desc->size() > 0 )
-        {
-          LOG_INFO( main_logger, "Skipping frame " << ts.get_frame() <<
-                                 ", output exists: " << kwfd_file );
-          LOG_INFO( main_logger, "file contains " << feat->size() << " features, "
-                                 << desc->size() << " descriptors" );
-          continue;
-        }
-      }
-      catch(...)
-      {
-        LOG_WARN( main_logger, "Not able to load " << kwfd_file << ", recomputing" );
-      }
+      return true;
     }
 
-    LOG_INFO(main_logger, "processing frame "<< ts.get_frame());
+    LOG_DEBUG(main_logger, "processing frame "<< ts.get_frame());
 
-    auto const image = video_reader->frame_image();
     auto const converted_image = image_converter->convert( image );
 
     // Load the mask for this image if we were given a mask image list
@@ -463,30 +529,14 @@ static int maptk_main(int argc, char const* argv[])
     {
       mask = image_reader->load( mask_files[ts.get_frame()] );
 
-      // error out if we are not expecting a multi-channel mask
-      if( !expect_multichannel_masks && mask->depth() > 1 )
+      if( !validate_mask_image( mask, expect_multichannel_masks ) )
       {
-        LOG_ERROR( main_logger,
-                   "Encounted multi-channel mask image!" );
-        return EXIT_FAILURE;
-      }
-      else if( expect_multichannel_masks && mask->depth() == 1 )
-      {
-        LOG_WARN( main_logger,
-                  "Expecting multi-channel masks but received one that was "
-                  "single-channel." );
+        return false;
       }
 
       if( invert_masks )
       {
-        LOG_DEBUG( main_logger,
-                   "Inverting mask image pixels" );
-        kwiver::vital::image_of<bool> mask_image;
-        kwiver::vital::cast_image( mask->get_image(), mask_image );
-        kwiver::vital::transform_image( mask_image, invert_mask_pixel );
-        LOG_DEBUG( main_logger,
-                   "Inverting mask image pixels -- Done" );
-        mask = std::make_shared<kwiver::vital::simple_image_container>( mask_image );
+        mask = invert_mask_image( mask );
       }
 
       converted_mask = image_converter->convert( mask );
@@ -496,7 +546,8 @@ static int maptk_main(int argc, char const* argv[])
     kwiver::vital::feature_set_sptr curr_feat =
       feature_detector->detect(converted_image, converted_mask);
 
-    LOG_INFO( main_logger, "Detected " << curr_feat->size() << " features");
+    LOG_INFO( main_logger, "Detected " << curr_feat->size() <<
+                           " features on frame " << ts.get_frame() );
 
     if (curr_feat)
     {
@@ -507,7 +558,7 @@ static int maptk_main(int argc, char const* argv[])
     kwiver::vital::descriptor_set_sptr curr_desc =
       descriptor_extractor->extract(converted_image, curr_feat, converted_mask);
 
-    LOG_INFO( main_logger, "Saving features to " << kwfd_file );
+    LOG_DEBUG( main_logger, "Saving features to " << kwfd_file );
     // make the enclosing directory if it does not already exist
     const kwiver::vital::path_t fd_dir = ST::GetFilenamePath( kwfd_file );
     if( !ST::FileIsDirectory( fd_dir ) )
@@ -515,11 +566,45 @@ static int maptk_main(int argc, char const* argv[])
       if( !ST::MakeDirectory( fd_dir ) )
       {
         LOG_ERROR( main_logger, "Unable to create directory: " << fd_dir );
-        return EXIT_FAILURE;
+        return false;
       }
     }
     fd_io->save(kwfd_file, curr_feat, curr_desc);
 
+    return true;
+  };
+
+
+
+  // access the thread pool
+  auto& pool = kwiver::vital::thread_pool::instance();
+
+  // queue of future returns from jobs
+  std::deque<std::future<bool> > frame_status_queue;
+
+  // number of jobs to keep in the queue
+  // this has 1.5 times the number of threads as a heuristic to make sure
+  // we keep threads busy but don't lag too far in checking for errors
+  unsigned int buffer = pool.num_threads() * 3 / 2;
+  bool not_failed = true;
+  while(not_failed)
+  {
+    // enqueue a task to process one frame
+    frame_status_queue.push_back(pool.enqueue(handle_frame));
+    // if we have the specified number of frames queued up
+    if( frame_status_queue.size() > buffer )
+    {
+      // wait for a job to complete and get the status
+      not_failed = frame_status_queue.front().get();
+      frame_status_queue.pop_front();
+    }
+  }
+
+  // wait for all remaining jobs to complete
+  while( !frame_status_queue.empty() )
+  {
+    frame_status_queue.front().wait();
+    frame_status_queue.pop_front();
   }
 
   return EXIT_SUCCESS;

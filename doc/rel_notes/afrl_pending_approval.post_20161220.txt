@@ -50,7 +50,8 @@ Tools
 
  * Added a new detect_and_describe tool that runs feature detection and
    descriptor extraction on each frame and writes the outputs to files
-   using the feature_descriptor_io algorithm.
+   using the feature_descriptor_io algorithm.  This tool uses the thread pool
+   to process frames in parallel.
 
  * Updated all tools to use the video_input API from KWIVER to read both
    images and metadata.  This replaces the custom loops over files in an image
