@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -141,6 +141,20 @@ std::shared_ptr<ToolData> AbstractTool::data()
 }
 
 //-----------------------------------------------------------------------------
+unsigned int AbstractTool::activeFrame() const
+{
+  QTE_D();
+  return d->data->activeFrame;
+}
+
+//-----------------------------------------------------------------------------
+std::vector<std::string> const& AbstractTool::imagePaths() const
+{
+  QTE_D();
+  return d->data->imagePaths;
+}
+
+//-----------------------------------------------------------------------------
 kwiver::vital::track_set_sptr AbstractTool::tracks() const
 {
   QTE_D();
@@ -166,6 +180,20 @@ void AbstractTool::cancel()
 {
   QTE_D();
   d->cancelRequested = true;
+}
+
+//-----------------------------------------------------------------------------
+void AbstractTool::setActiveFrame(unsigned int frame)
+{
+  QTE_D();
+  d->data->activeFrame = frame;
+}
+
+//-----------------------------------------------------------------------------
+void AbstractTool::setImagePaths(std::vector<std::string> const& paths)
+{
+  QTE_D();
+  d->data->imagePaths = paths;
 }
 
 //-----------------------------------------------------------------------------
@@ -204,6 +232,20 @@ bool AbstractTool::isCanceled() const
 {
   QTE_D();
   return d->cancelRequested;
+}
+
+//-----------------------------------------------------------------------------
+bool AbstractTool::hasImagePaths() const
+{
+  QTE_D();
+  foreach (auto const& path, d->data->imagePaths)
+  {
+    if(path != "")
+    {
+      return true;
+    }
+  }
+  return false;
 }
 
 //-----------------------------------------------------------------------------

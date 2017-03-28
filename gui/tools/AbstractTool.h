@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,6 +58,8 @@ public:
   /// Deep copy the landmarks into this data class
   void copyLandmarks(landmark_map_sptr const&);
 
+  unsigned int activeFrame;
+  std::vector<std::string> imagePaths;
   track_set_sptr tracks;
   camera_map_sptr cameras;
   landmark_map_sptr landmarks;
@@ -79,6 +81,7 @@ public:
     Tracks = 0x1,
     Cameras = 0x2,
     Landmarks = 0x4,
+    ActiveFrame = 0x8,
   };
   Q_DECLARE_FLAGS(Outputs, Output)
 
@@ -97,6 +100,12 @@ public:
 
   /// Return a shared pointer to the tools data
   std::shared_ptr<ToolData> data();
+
+  /// Set the active frame to be used by the tool.
+  void setActiveFrame(unsigned int frame);
+
+  /// Set the image paths to be used as input to the tool.
+  void setImagePaths(std::vector<std::string> const&);
 
   /// Set the tracks to be used as input to the tool.
   void setTracks(track_set_sptr const&);
@@ -118,6 +127,12 @@ public:
   /// \return \c true if tool execution was started successfully, otherwise
   ///         \c false.
   virtual bool execute(QWidget* window = 0);
+
+  /// Get the active frame.
+  unsigned int activeFrame() const;
+
+  /// Get image paths.
+  std::vector<std::string> const& imagePaths() const;
 
   /// Get tracks.
   ///
@@ -185,6 +200,12 @@ protected:
 
   /// Check if the user has requested that tool execution be canceled.
   bool isCanceled() const;
+
+  /// Test if the tool has image path data.
+  ///
+  /// \return \c true if the tool data has a non-zero number of images,
+  ///         otherwise \c false
+  bool hasImagePaths() const;
 
   /// Test if the tool has track data.
   ///

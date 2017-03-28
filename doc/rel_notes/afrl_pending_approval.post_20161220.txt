@@ -71,6 +71,13 @@ Visualization Application
    is a list of images, but is compatible with the new variable naming in
    tool configuration files.
 
+ * Added a "Track Features" tool to the GUI that runs a track_features
+   algorithm much like the maptk_track_features command line tool.  This
+   tool processes images loaded into the GUI and does not yet support
+   video files.
+
+ * Added an option to export tracks from the GUI to an ASCII text file.
+
 
 Fixes since last public release
 -------------------------------

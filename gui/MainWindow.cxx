@@ -37,6 +37,7 @@
 #include "tools/CanonicalTransformTool.h"
 #include "tools/InitCamerasLandmarksTool.h"
 #include "tools/NeckerReversalTool.h"
+#include "tools/TrackFeaturesTool.h"
 #include "tools/TrackFilterTool.h"
 
 #include "AboutDialog.h"
@@ -234,7 +235,10 @@ public:
   };
 
   // Methods
-  MainWindowPrivate() : activeTool(0), activeCameraIndex(-1) {}
+  MainWindowPrivate()
+    : activeTool(0)
+    , toolUpdateActiveFrame(-1)
+    , activeCameraIndex(-1) {}
 
   void addTool(AbstractTool* tool, MainWindow* mainWindow);
 
@@ -244,6 +248,7 @@ public:
   void addFrame(kwiver::vital::camera_sptr const& camera,
                 QString const& imagePath);
 
+  std::vector<std::string> imagePaths() const;
   kwiver::vital::camera_map_sptr cameraMap() const;
   void updateCameras(kwiver::vital::camera_map_sptr const&);
 
@@ -269,6 +274,7 @@ public:
   QAction* toolSeparator;
   AbstractTool* activeTool;
   QList<AbstractTool*> tools;
+  int toolUpdateActiveFrame;
   kwiver::vital::camera_map_sptr toolUpdateCameras;
   kwiver::vital::landmark_map_sptr toolUpdateLandmarks;
   kwiver::vital::track_set_sptr toolUpdateTracks;
@@ -392,6 +398,20 @@ void MainWindowPrivate::addFrame(
     this->setActiveCamera(0);
     this->UI.cameraView->resetView();
   }
+}
+
+//-----------------------------------------------------------------------------
+std::vector<std::string> MainWindowPrivate::imagePaths() const
+{
+  std::vector<std::string> paths(this->cameras.count());
+
+  foreach (auto i, qtIndexRange(this->cameras.count()))
+  {
+    auto const& cd = this->cameras[i];
+    paths[i] = cd.imagePath.toStdString();
+  }
+
+  return paths;
 }
 
 //-----------------------------------------------------------------------------
@@ -666,6 +686,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->toolSeparator =
     d->UI.menuCompute->insertSeparator(d->UI.actionCancelComputation);
 
+  d->addTool(new TrackFeaturesTool(this), this);
   d->addTool(new InitCamerasLandmarksTool(this), this);
   d->addTool(new BundleAdjustTool(this), this);
   d->addTool(new CanonicalTransformTool(this), this);
@@ -692,6 +713,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(saveLandmarks()));
   connect(d->UI.actionExportDepthPoints, SIGNAL(triggered()),
           this, SLOT(saveDepthPoints()));
+  connect(d->UI.actionExportTracks, SIGNAL(triggered()),
+          this, SLOT(saveTracks()));
 
   connect(d->UI.worldView, SIGNAL(depthMapEnabled(bool)),
           this, SLOT(enableSaveDepthPoints(bool)));
@@ -947,6 +970,9 @@ void MainWindow::loadTracks(QString const& path)
         d->UI.cameraView->addFeatureTrack(*track);
       }
 
+      d->UI.actionExportTracks->setEnabled(
+          d->tracks && d->tracks->size());
+
       d->UI.actionShowMatchMatrix->setEnabled(!tracks->tracks().empty());
     }
   }
@@ -1009,6 +1035,38 @@ void MainWindow::saveLandmarks(QString const& path)
   {
     auto const msg =
       QString("An error occurred while exporting landmarks to \"%1\". "
+              "The output file may not have been written correctly.");
+    QMessageBox::critical(this, "Export error", msg.arg(path));
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::saveTracks()
+{
+  auto const path = QFileDialog::getSaveFileName(
+    this, "Export Tracks", QString(),
+    "Track file (*.txt);;"
+    "All Files (*)");
+
+  if (!path.isEmpty())
+  {
+    this->saveTracks(path);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::saveTracks(QString const& path)
+{
+  QTE_D();
+
+  try
+  {
+    kwiver::vital::write_track_file(d->tracks, kvPath(path));
+  }
+  catch (...)
+  {
+    auto const msg =
+      QString("An error occurred while exporting tracks to \"%1\". "
               "The output file may not have been written correctly.");
     QMessageBox::critical(this, "Export error", msg.arg(path));
   }
@@ -1251,6 +1309,8 @@ void MainWindow::executeTool(QObject* object)
   if (tool && !d->activeTool)
   {
     d->setActiveTool(tool);
+    tool->setActiveFrame(d->activeCameraIndex);
+    tool->setImagePaths(d->imagePaths());
     tool->setTracks(d->tracks);
     tool->setCameras(d->cameraMap());
     tool->setLandmarks(d->landmarks);
@@ -1282,7 +1342,8 @@ void MainWindow::acceptToolResults(std::shared_ptr<ToolData> data)
   // hasn't happened yet, so don't trigger another
   bool updateNeeded = !d->toolUpdateCameras &&
                       !d->toolUpdateLandmarks &&
-                      !d->toolUpdateTracks;
+                      !d->toolUpdateTracks &&
+                      d->toolUpdateActiveFrame < 0;
 
   if (d->activeTool)
   {
@@ -1291,6 +1352,7 @@ void MainWindow::acceptToolResults(std::shared_ptr<ToolData> data)
     d->toolUpdateCameras = NULL;
     d->toolUpdateLandmarks = NULL;
     d->toolUpdateTracks = NULL;
+    d->toolUpdateActiveFrame = -1;
     if (outputs.testFlag(AbstractTool::Cameras))
     {
       d->toolUpdateCameras = data->cameras;
@@ -1302,6 +1364,10 @@ void MainWindow::acceptToolResults(std::shared_ptr<ToolData> data)
     if (outputs.testFlag(AbstractTool::Tracks))
     {
       d->toolUpdateTracks = data->tracks;
+    }
+    if (outputs.testFlag(AbstractTool::ActiveFrame))
+    {
+      d->toolUpdateActiveFrame = static_cast<int>(data->activeFrame);
     }
   }
 
@@ -1340,9 +1406,17 @@ void MainWindow::updateToolResults()
     {
       d->UI.cameraView->addFeatureTrack(*track);
     }
+    d->UI.actionExportTracks->setEnabled(
+        d->tracks && d->tracks->size());
 
     d->UI.actionShowMatchMatrix->setEnabled(!d->tracks->tracks().empty());
     d->toolUpdateTracks = NULL;
+  }
+  if (d->toolUpdateActiveFrame >= 0)
+  {
+    d->UI.camera->setValue(d->toolUpdateActiveFrame);
+    this->setActiveCamera(d->toolUpdateActiveFrame);
+    d->toolUpdateActiveFrame = -1;
   }
 
   if (!d->cameras.isEmpty())
