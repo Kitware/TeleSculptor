@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,8 @@
 
 #include <Eigen/SparseCore>
 
+#include <vital/vital_types.h>
+
 class MatchMatrixWindowPrivate;
 
 class MatchMatrixWindow : public QMainWindow
@@ -48,7 +50,8 @@ public:
   virtual ~MatchMatrixWindow();
 
 public slots:
-  void setMatrix(Eigen::SparseMatrix<uint> const&);
+  void setMatrix(Eigen::SparseMatrix<uint> const&,
+                 std::vector<kwiver::vital::frame_id_t> const&);
 
   void saveImage();
   void saveImage(QString const& path);
