@@ -75,39 +75,6 @@ files_in_dir(kwiver::vital::path_t const& vdir)
 }
 
 
-/// Extract an image file basename from metadata and (if needed) frame number
-/**
- * The purpose of this function is to provide a standard way to get a base file
- * name (no file extension) from metadata.  This is either the original image
- * file basename, if provided, or the video basename, if provided, with frame
- * number appended, or simply "frame%05d".
- */
-std::string
-basename_from_metadata(kwiver::vital::video_metadata const& md,
-                       kwiver::vital::frame_id_t frame)
-{
-  typedef kwiversys::SystemTools  ST;
-
-  std::string basename = "frame";
-  if( md.has( kwiver::vital::VITAL_META_IMAGE_FILENAME ) )
-  {
-    std::string img_name = md.find( kwiver::vital::VITAL_META_IMAGE_FILENAME ).as_string();
-    basename = ST::GetFilenameWithoutLastExtension( img_name );
-  }
-  else
-  {
-    if ( md.has( kwiver::vital::VITAL_META_VIDEO_FILENAME ) )
-    {
-      std::string vid_name = md.find( kwiver::vital::VITAL_META_VIDEO_FILENAME ).as_string();
-      basename = ST::GetFilenameWithoutLastExtension( vid_name );
-    }
-    char frame_str[6];
-    std::snprintf(frame_str, 6, "%05d", static_cast<int>(frame));
-    basename += std::string(frame_str);
-  }
-  return basename;
-}
-
 } // end namespace maptk
 } // end namespace kwiver
 
