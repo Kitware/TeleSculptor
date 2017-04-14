@@ -409,7 +409,12 @@ static int maptk_main(int argc, char const* argv[])
     LOG_INFO(main_logger, "processing frame "<<ts.get_frame() );
 
     auto const image = video_reader->frame_image();
-    auto const converted_image = image_converter->convert( image );
+    auto const mdv = video_reader->frame_metadata();
+    auto converted_image = image_converter->convert( image );
+    if( !mdv.empty() )
+    {
+      converted_image->set_metadata( mdv[0] );
+    }
 
     // Load the mask for this image if we were given a mask image list
     kwiver::vital::image_container_sptr mask, converted_mask;
