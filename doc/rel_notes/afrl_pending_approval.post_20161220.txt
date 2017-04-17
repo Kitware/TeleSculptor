@@ -22,6 +22,10 @@ Examples/Configs
    descriptor, and matcher reusable across other configs.  Also refactored
    the loop closure configs to reuse a common feature matcher config.
 
+ * Update core_track_features.conf to include configuration for writing
+   features and descriptors to disk with the core feature_descriptor_io
+   algorithm.
+
 Main Library
 
  * Removed the ins_data structure for holding POS file data as well as all
