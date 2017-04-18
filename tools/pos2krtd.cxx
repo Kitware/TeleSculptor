@@ -51,6 +51,7 @@
 #include <vital/exceptions.h>
 #include <vital/plugin_loader/plugin_manager.h>
 #include <vital/video_metadata/video_metadata_tags.h>
+#include <vital/video_metadata/video_metadata_util.h>
 #include <vital/vital_types.h>
 #include <vital/util/get_paths.h>
 
@@ -322,7 +323,7 @@ static int maptk_main(int argc, char const* argv[])
     }
     auto md = md_vec[0];
     md_map[ts.get_frame()] = md;
-    std::string basename = kwiver::maptk::basename_from_metadata(*md, ts.get_frame());
+    std::string basename = kwiver::vital::basename_from_metadata(md, ts.get_frame());
     krtd_filenames[ts.get_frame()] = output + "/" + basename + ".krtd";
   }
 

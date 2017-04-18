@@ -63,6 +63,7 @@
 #include <vital/util/get_paths.h>
 #include <vital/util/thread_pool.h>
 #include <vital/util/transform_image.h>
+#include <vital/video_metadata/video_metadata_util.h>
 
 #include <kwiversys/SystemTools.hxx>
 #include <kwiversys/CommandLineArguments.hxx>
@@ -501,15 +502,11 @@ static int maptk_main(int argc, char const* argv[])
     }
 
     kwiver::vital::video_metadata_sptr md;
-    if( md_vec.empty() || !md_vec[0] )
-    {
-      md = std::make_shared<kwiver::vital::video_metadata>();
-    }
-    else
+    if( !md_vec.empty() )
     {
       md = md_vec[0];
     }
-    std::string basename = kwiver::maptk::basename_from_metadata(*md, ts.get_frame());
+    std::string basename = kwiver::vital::basename_from_metadata(md, ts.get_frame());
     kwiver::vital::path_t kwfd_file = features_dir + "/" + basename + ".kwfd";
 
     // if the features file already exists then test loading it and skip

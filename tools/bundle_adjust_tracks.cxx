@@ -65,6 +65,7 @@
 #include <vital/util/cpu_timer.h>
 #include <vital/util/get_paths.h>
 #include <vital/video_metadata/pos_metadata_io.h>
+#include <vital/video_metadata/video_metadata_util.h>
 
 #include <kwiversys/SystemTools.hxx>
 #include <kwiversys/CommandLineArguments.hxx>
@@ -620,7 +621,7 @@ static int maptk_main(int argc, char const* argv[])
     auto md = md_vec[0];
     auto frame = ts.get_frame();
     md_map[frame] = md;
-    std::string basename = kwiver::maptk::basename_from_metadata(*md, frame);
+    std::string basename = kwiver::vital::basename_from_metadata(md, frame);
     basename_map[frame] = basename;
   }
 
