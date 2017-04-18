@@ -47,6 +47,9 @@ Scripts
  * Improved memory efficiency of mosaic_images.py by avoiding preloading of
    all images.
 
+ * Added a script to convert Novatel IMU data from the SUSSEX datasets to the
+   POS file format used by MAP-Tk.
+
 Tools
 
  * Updated the maptk_bundle_adjust tool to use the filter_tracks algorithm from
