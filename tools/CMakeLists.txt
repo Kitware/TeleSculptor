@@ -32,7 +32,7 @@ target_link_libraries(maptk_bundle_adjust_tracks
 
 kwiver_add_executable(maptk_apply_gcp apply_gcp.cxx)
 target_link_libraries(maptk_apply_gcp
-  PRIVATE             maptk kwiver_algo_core vital_apm kwiversys
+  PRIVATE             maptk kwiver_algo_core vital_vpm kwiversys
   )
 
 kwiver_add_executable(maptk_analyze_tracks analyze_tracks.cxx)

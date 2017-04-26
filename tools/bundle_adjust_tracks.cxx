@@ -55,7 +55,6 @@
 #include <vital/algo/triangulate_landmarks.h>
 #include <vital/algo/video_input.h>
 #include <vital/exceptions.h>
-#include <vital/io/camera_io.h>
 #include <vital/io/eigen_io.h>
 #include <vital/io/landmark_map_io.h>
 #include <vital/io/track_set_io.h>
@@ -362,53 +361,6 @@ subsample_cameras(kwiver::vital::camera_map_sptr cameras, unsigned factor)
 }
 
 
-// Load input KRTD cameras from file, matching against the given image
-// filename map. Returns false if failure occurred.
-bool
-load_input_cameras_krtd(kwiver::vital::config_block_sptr config,
-                        std::map<kwiver::vital::frame_id_t, std::string> const& basename_map,
-                        kwiver::maptk::local_geo_cs & local_cs,
-                        kwiver::vital::camera_map::map_camera_t & input_cameras)
-{
-  kwiver::vital::scoped_cpu_timer t( "Initializing cameras from KRTD files" );
-
-  std::string krtd_dir = config->get_value<std::string>("input_krtd_files");
-  kwiver::vital::camera_map::map_camera_t krtd_cams;
-  for (auto p : basename_map)
-  {
-    std::string krtd_filename = krtd_dir + '/' + p.second + ".krtd";
-    try
-    {
-      kwiver::vital::camera_sptr cam = kwiver::vital::read_krtd_file(krtd_filename);
-      krtd_cams[p.first] = cam;
-    }
-    catch(kwiver::vital::file_not_found_exception)
-    {
-    }
-  }
-
-  // if krtd_map is empty, then there were no input krtd files that matched
-  // input imagery.
-  if (krtd_cams.empty())
-  {
-    LOG_ERROR(main_logger, "No KRTD files from input set match input image "
-                           << "frames. Check KRTD input files!");
-    return false;
-  }
-
-  // Warning if loaded KRTD camera set is sparse compared to input imagery
-  // TODO: generated interpolated cameras for missing KRTD files.
-  if (basename_map.size() != krtd_cams.size())
-  {
-    LOG_WARN(main_logger, "Input KRTD camera set is sparse compared to input "
-                          << "imagery! (there wasn't a matching KRTD input file for "
-                          << "every input image file)");
-  }
-  input_cameras = krtd_cams;
-  return true;
-}
-
-
 // Generic configuration based input camera load function.
 //
 // The local_cs and input_cameras objects may or may not be updated based on
@@ -440,7 +392,12 @@ bool load_input_cameras(kwiver::vital::config_block_sptr config,
   }
   else if (config->get_value<std::string>("input_krtd_files", "") != "")
   {
-    return load_input_cameras_krtd(config, basename_map, local_cs, input_cameras);
+    std::string krtd_dir = config->get_value<std::string>("input_krtd_files");
+    input_cameras = kwiver::maptk::load_input_cameras_krtd(krtd_dir, basename_map);
+    if (input_cameras.empty())
+    {
+      return false;
+    }
   }
 
   // No input specified
