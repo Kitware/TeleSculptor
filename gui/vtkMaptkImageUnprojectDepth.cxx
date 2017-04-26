@@ -99,8 +99,8 @@ void vtkMaptkImageUnprojectDepth::SimpleExecute(vtkImageData* input,
 
   // Get the scaled camera for doing the unproject
   auto const imageRatio =
-    static_cast<double>(this->Camera->GetImageDimensions()[0]) /
-    static_cast<double>(input->GetDimensions()[0]);
+    static_cast<double>(input->GetDimensions()[0]) /
+    static_cast<double>(this->Camera->GetImageDimensions()[0]);
   auto const scaledCamera = this->Camera->ScaledK(imageRatio);
 
   vtkDataArray* inputPoints = output->GetPointData()->GetArray(

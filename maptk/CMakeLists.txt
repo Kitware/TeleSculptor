@@ -8,8 +8,6 @@ include_directories("${MAPTK_BINARY_DIR}")
 #
 set(maptk_public_headers
   geo_reference_points_io.h
-  ins_data.h
-  ins_data_io.h
   local_geo_cs.h
   )
 
@@ -21,8 +19,6 @@ set(maptk_private_headers
 set(maptk_sources
   colorize.cxx
   geo_reference_points_io.cxx
-  ins_data.cxx
-  ins_data_io.cxx
   local_geo_cs.cxx
   )
 
@@ -42,6 +38,7 @@ kwiver_add_library(
 
 target_link_libraries( maptk
   PUBLIC               vital
+                       vital_video_metadata
                        kwiversys
   )
 

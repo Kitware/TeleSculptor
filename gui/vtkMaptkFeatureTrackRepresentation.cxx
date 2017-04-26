@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -177,6 +177,15 @@ void vtkMaptkFeatureTrackRepresentation::AddTrackPoint(
 {
   auto const id = this->Internal->Points->InsertNextPoint(x, y, 0.0);
   this->Internal->Tracks[trackId][frameId] = id;
+}
+
+//-----------------------------------------------------------------------------
+void vtkMaptkFeatureTrackRepresentation::ClearTrackData()
+{
+  this->Internal->Points->Reset();
+  this->Internal->Tracks.clear();
+  this->Internal->PointsCells->Reset();
+  this->Internal->TrailsCells->Reset();
 }
 
 //-----------------------------------------------------------------------------

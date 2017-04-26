@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -169,6 +169,7 @@ public:
 
   Eigen::SparseMatrix<uint> matrix;
   uint maxValue;
+  std::vector<kwiver::vital::frame_id_t> frames;
 
   QImage image;
   int offset;
@@ -360,13 +361,16 @@ void MatchMatrixImageItem::updateStatusText(const QPointF& pos)
     return;
   }
 
+  kwiver::vital::frame_id_t fx = q->frames[x];
+  kwiver::vital::frame_id_t fy = q->frames[y];
+
   // Show status text
   if (x == y)
   {
     static auto const format =
       QString("Frame %1 has %2 feature point(s)");
 
-    q->UI.statusBar->showMessage(format.arg(x).arg(q->matrix.coeff(x, y)));
+    q->UI.statusBar->showMessage(format.arg(fx).arg(q->matrix.coeff(x, y)));
   }
   else
   {
@@ -377,7 +381,7 @@ void MatchMatrixImageItem::updateStatusText(const QPointF& pos)
     auto const cy = q->matrix.coeff(y, y);
     auto const cxy = q->matrix.coeff(x, y);
 
-    q->UI.statusBar->showMessage(format.arg(x).arg(y).arg(cx).arg(cy).arg(cxy));
+    q->UI.statusBar->showMessage(format.arg(fx).arg(fy).arg(cx).arg(cy).arg(cxy));
   }
 }
 
@@ -456,12 +460,14 @@ MatchMatrixWindow::~MatchMatrixWindow()
 }
 
 //-----------------------------------------------------------------------------
-void MatchMatrixWindow::setMatrix(Eigen::SparseMatrix<uint> const& matrix)
+void MatchMatrixWindow::setMatrix(Eigen::SparseMatrix<uint> const& matrix,
+                                  std::vector<kwiver::vital::frame_id_t> const& frames)
 {
   QTE_D();
 
   d->matrix = matrix;
   d->maxValue = sparseMax(matrix);
+  d->frames = frames;
 
   this->updateImage();
 }

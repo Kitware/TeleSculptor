@@ -30,9 +30,13 @@
 
 /**
  * \file
- * \brief Feature tracker utility
+ * \brief Feature detector and descriptor utility
  */
 
+
+#include "tool_common.h"
+
+#include <deque>
 #include <iostream>
 #include <fstream>
 #include <exception>
@@ -51,12 +55,15 @@
 #include <vital/vital_types.h>
 #include <vital/algo/image_io.h>
 #include <vital/algo/convert_image.h>
-#include <vital/algo/track_features.h>
-#include <vital/algo/compute_ref_homography.h>
+#include <vital/algo/detect_features.h>
+#include <vital/algo/extract_descriptors.h>
+#include <vital/algo/feature_descriptor_io.h>
 #include <vital/algo/video_input.h>
 #include <vital/plugin_loader/plugin_manager.h>
 #include <vital/util/get_paths.h>
+#include <vital/util/thread_pool.h>
 #include <vital/util/transform_image.h>
+#include <vital/video_metadata/video_metadata_util.h>
 
 #include <kwiversys/SystemTools.hxx>
 #include <kwiversys/CommandLineArguments.hxx>
@@ -66,12 +73,12 @@
 typedef kwiversys::SystemTools ST;
 typedef kwiversys::CommandLineArguments argT;
 
-static kwiver::vital::logger_handle_t main_logger( kwiver::vital::get_logger( "track_features_tool" ) );
+static kwiver::vital::logger_handle_t main_logger( kwiver::vital::get_logger( "detect_and_describe_tool" ) );
 
 // ------------------------------------------------------------------
 static kwiver::vital::config_block_sptr default_config()
 {
-  kwiver::vital::config_block_sptr config = kwiver::vital::config_block::empty_config("feature_tracker_tool");
+  kwiver::vital::config_block_sptr config = kwiver::vital::config_block::empty_config("detect_and_describe_tool");
 
   config->set_value("video_source", "",
                     "Path to an input file to be opened as a video. "
@@ -81,9 +88,9 @@ static kwiver::vital::config_block_sptr default_config()
   config->set_value("mask_list_file", "",
                     "Optional path to an input file containing new-line "
                     "separated paths to mask images. This list should be "
-                    "parallel in association to frames provided by the "
-                    "``video_source`` video. Mask images must be the same size "
-                    "as the image they are associated with.\n"
+                    "parallel in association to files specified in "
+                    "``image_list_file``. Mask image must be the same size as "
+                    "the image they are associated with.\n"
                     "\n"
                     "Leave this blank if no image masking is desired.");
   config->set_value("invert_masks", false,
@@ -99,25 +106,27 @@ static kwiver::vital::config_block_sptr default_config()
                     "warning when a single-channel mask is provided. If this "
                     "is false we error upon seeing a multi-channel mask "
                     "image.");
-  config->set_value("output_tracks_file", "",
-                    "Path to a file to write output tracks to. If this "
-                    "file exists, it will be overwritten.");
-  config->set_value("output_homography_file", "",
-                    "Optional path to a file to write source-to-reference "
-                    "homographies for each frame. Leave blank to disable this "
-                    "output. The output_homography_generator algorithm type "
-                    "only needs to be set if this is set.");
+  config->set_value("features_dir", "",
+                    "Path to a directory in which to write the output feature "
+                    "detection and description files");
+  config->set_value("validate_existing_features", true,
+                    "When a features file already exists, validate that the "
+                    "file can load sucessfully before deciding to skip "
+                    "computation on this frame.  If this option is disabled "
+                    "then skip if the file exists, without loading it");
 
   kwiver::vital::algo::video_input::get_nested_algo_configuration("video_reader", config,
                                       kwiver::vital::algo::video_input_sptr());
-  kwiver::vital::algo::track_features::get_nested_algo_configuration("feature_tracker", config,
-                                      kwiver::vital::algo::track_features_sptr());
+  kwiver::vital::algo::detect_features::get_nested_algo_configuration("feature_detector", config,
+                                      kwiver::vital::algo::detect_features_sptr());
+  kwiver::vital::algo::extract_descriptors::get_nested_algo_configuration("descriptor_extractor", config,
+                                      kwiver::vital::algo::extract_descriptors_sptr());
   kwiver::vital::algo::image_io::get_nested_algo_configuration("image_reader", config,
                                       kwiver::vital::algo::image_io_sptr());
   kwiver::vital::algo::convert_image::get_nested_algo_configuration("convert_image", config,
                                       kwiver::vital::algo::convert_image_sptr());
-  kwiver::vital::algo::compute_ref_homography::get_nested_algo_configuration("output_homography_generator",
-                              config, kwiver::vital::algo::compute_ref_homography_sptr());
+  kwiver::vital::algo::feature_descriptor_io::get_nested_algo_configuration("fd_io", config,
+                                      kwiver::vital::algo::feature_descriptor_io_sptr());
   return config;
 }
 
@@ -131,30 +140,22 @@ static bool check_config(kwiver::vital::config_block_sptr config)
   LOG_ERROR(main_logger, "Config Check Fail: " << msg); \
   config_valid = false
 
-  // A given homography file is invalid if it names a directory, or if its
-  // parent path either doesn't exist or names a regular file.
-  if ( config->has_value("output_homography_file")
-    && config->get_value<std::string>("output_homography_file") != "" )
+  // A given output directory is invalid if it names a file
+  if ( config->has_value("features_dir")
+    && config->get_value<std::string>("features_dir") != "" )
   {
-    kwiver::vital::config_path_t fp = config->get_value<kwiver::vital::config_path_t>("output_homography_file");
-    if ( kwiversys::SystemTools::FileIsDirectory( fp ) )
+    kwiver::vital::config_path_t fp = config->get_value<kwiver::vital::config_path_t>("features_dir");
+    if ( ST::FileExists( fp ) && !ST::FileIsDirectory( fp ) )
     {
-      MAPTK_CONFIG_FAIL("Given output homography file is a directory! "
+      MAPTK_CONFIG_FAIL("Given features directory is a file "
                         << "(Given: " << fp << ")");
     }
-    else if ( ST::GetFilenamePath( fp ) != "" &&
-              ! ST::FileIsDirectory( ST::GetFilenamePath( fp ) ))
-    {
-      MAPTK_CONFIG_FAIL("Given output homography file does not have a valid "
-                        << "parent path! (Given: " << fp << ")");
-    }
 
-    // Check that compute_ref_homography algo is correctly configured
-    if( !kwiver::vital::algo::compute_ref_homography
-             ::check_nested_algo_configuration("output_homography_generator",
-                                               config) )
+    // Check that fd_io algo is correctly configured
+    if( !kwiver::vital::algo::feature_descriptor_io
+             ::check_nested_algo_configuration("fd_io", config) )
     {
-      MAPTK_CONFIG_FAIL("output_homography_generator configuration check failed");
+      MAPTK_CONFIG_FAIL("fd_io configuration check failed");
     }
   }
 
@@ -182,25 +183,19 @@ static bool check_config(kwiver::vital::config_block_sptr config)
     }
   }
 
-  if (!config->has_value("output_tracks_file") ||
-      config->get_value<std::string>("output_tracks_file") == "" )
-  {
-    MAPTK_CONFIG_FAIL("Config needs value output_tracks_file");
-  }
-  else if ( ! ST::FileIsDirectory( ST::CollapseFullPath( ST::GetFilenamePath(
-              config->get_value<kwiver::vital::path_t>("output_tracks_file") ) ) ) )
-  {
-    MAPTK_CONFIG_FAIL("output_tracks_file is not in a valid directory");
-  }
-
   if (!kwiver::vital::algo::video_input::check_nested_algo_configuration("video_reader", config))
   {
     MAPTK_CONFIG_FAIL("video_reader configuration check failed");
   }
 
-  if (!kwiver::vital::algo::track_features::check_nested_algo_configuration("feature_tracker", config))
+  if (!kwiver::vital::algo::detect_features::check_nested_algo_configuration("feature_detector", config))
   {
     MAPTK_CONFIG_FAIL("feature_tracker configuration check failed");
+  }
+
+  if (!kwiver::vital::algo::extract_descriptors::check_nested_algo_configuration("descriptor_extractor", config))
+  {
+    MAPTK_CONFIG_FAIL("descriptor_extractor configuration check failed");
   }
 
   if (!kwiver::vital::algo::image_io::check_nested_algo_configuration("image_reader", config))
@@ -216,6 +211,83 @@ static bool check_config(kwiver::vital::config_block_sptr config)
 #undef MAPTK_CONFIG_FAIL
 
   return config_valid;
+}
+
+
+/// Check a filepath to see if it is an existing and valid KWFD file
+/**
+ * If a feature_descriptor_io algorithm is not specified only check that the
+ * file exists.  Otherwise read the file and make sure it is valid.
+ */
+bool valid_feature_file_exists( std::string const& filepath,
+                                kwiver::vital::frame_id_t frame,
+                                kwiver::vital::algo::feature_descriptor_io_sptr fd_io )
+{
+  // if the features file already exists then test loading it and skip
+  if( ST::FileExists( filepath ) )
+  {
+    if( !fd_io )
+    {
+      LOG_INFO( main_logger, "Skipping frame " << frame <<
+                             ", output exists: " << filepath );
+      return true;
+    }
+    try
+    {
+      kwiver::vital::feature_set_sptr feat;
+      kwiver::vital::descriptor_set_sptr desc;
+      fd_io->load(filepath, feat, desc);
+      if( feat && feat->size() > 0 && desc && desc->size() > 0 )
+      {
+        LOG_INFO( main_logger, "Skipping frame " << frame <<
+                               ", output exists: " << filepath <<
+                               "\nfile contains " << feat->size() << " features, "
+                               << desc->size() << " descriptors" );
+        return true;
+      }
+    }
+    catch(...)
+    {
+      LOG_WARN( main_logger, "Not able to load " << filepath << ", recomputing" );
+    }
+  }
+  return false;
+}
+
+
+/// Extract the mask image from the container, invert, and repackage
+kwiver::vital::image_container_sptr
+invert_mask_image(kwiver::vital::image_container_sptr mask)
+{
+  LOG_DEBUG( main_logger,
+             "Inverting mask image pixels" );
+  kwiver::vital::image_of<bool> mask_image;
+  kwiver::vital::cast_image( mask->get_image(), mask_image );
+  kwiver::vital::transform_image( mask_image, [] (bool b) { return !b; } );
+  LOG_DEBUG( main_logger,
+             "Inverting mask image pixels -- Done" );
+  return std::make_shared<kwiver::vital::simple_image_container>( mask_image );
+}
+
+
+/// Validate a mask image according to the expected number of channels.
+bool validate_mask_image( kwiver::vital::image_container_sptr mask,
+                          bool expect_multichannel_masks=false )
+{
+  // error out if we are not expecting a multi-channel mask
+  if( !expect_multichannel_masks && mask->depth() > 1 )
+  {
+    LOG_ERROR( main_logger,
+               "Encounted multi-channel mask image!" );
+    return false;
+  }
+  else if( expect_multichannel_masks && mask->depth() == 1 )
+  {
+    LOG_WARN( main_logger,
+              "Expecting multi-channel masks but received one that was "
+              "single-channel." );
+  }
+  return true;
 }
 
 
@@ -270,10 +342,11 @@ static int maptk_main(int argc, char const* argv[])
   // Set up top level configuration w/ defaults where applicable.
   kwiver::vital::config_block_sptr config = default_config();
   kwiver::vital::algo::video_input_sptr video_reader;
-  kwiver::vital::algo::track_features_sptr feature_tracker;
+  kwiver::vital::algo::detect_features_sptr feature_detector;
+  kwiver::vital::algo::extract_descriptors_sptr descriptor_extractor;
+  kwiver::vital::algo::feature_descriptor_io_sptr fd_io;
   kwiver::vital::algo::image_io_sptr image_reader;
   kwiver::vital::algo::convert_image_sptr image_converter;
-  kwiver::vital::algo::compute_ref_homography_sptr out_homog_generator;
 
   // If -c/--config given, read in confg file, merge in with default just generated
   if( ! opt_config.empty() )
@@ -283,16 +356,30 @@ static int maptk_main(int argc, char const* argv[])
                                                          MAPTK_VERSION, prefix));
   }
 
-  kwiver::vital::algo::video_input::set_nested_algo_configuration("video_reader", config, video_reader);
-  kwiver::vital::algo::video_input::get_nested_algo_configuration("video_reader", config, video_reader);
-  kwiver::vital::algo::track_features::set_nested_algo_configuration("feature_tracker", config, feature_tracker);
-  kwiver::vital::algo::track_features::get_nested_algo_configuration("feature_tracker", config, feature_tracker);
-  kwiver::vital::algo::image_io::set_nested_algo_configuration("image_reader", config, image_reader);
-  kwiver::vital::algo::image_io::get_nested_algo_configuration("image_reader", config, image_reader);
-  kwiver::vital::algo::convert_image::set_nested_algo_configuration("convert_image", config, image_converter);
-  kwiver::vital::algo::convert_image::get_nested_algo_configuration("convert_image", config, image_converter);
-  kwiver::vital::algo::compute_ref_homography::set_nested_algo_configuration("output_homography_generator", config, out_homog_generator);
-  kwiver::vital::algo::compute_ref_homography::get_nested_algo_configuration("output_homography_generator", config, out_homog_generator);
+  kwiver::vital::algo::video_input::
+    set_nested_algo_configuration("video_reader", config, video_reader);
+  kwiver::vital::algo::video_input::
+    get_nested_algo_configuration("video_reader", config, video_reader);
+  kwiver::vital::algo::detect_features::
+    set_nested_algo_configuration("feature_detector", config, feature_detector);
+  kwiver::vital::algo::detect_features::
+    get_nested_algo_configuration("feature_detector", config, feature_detector);
+  kwiver::vital::algo::extract_descriptors::
+    set_nested_algo_configuration("descriptor_extractor", config, descriptor_extractor);
+  kwiver::vital::algo::extract_descriptors::
+    get_nested_algo_configuration("descriptor_extractor", config, descriptor_extractor);
+  kwiver::vital::algo::feature_descriptor_io::
+    set_nested_algo_configuration("fd_io", config, fd_io);
+  kwiver::vital::algo::feature_descriptor_io::
+    get_nested_algo_configuration("fd_io", config, fd_io);
+  kwiver::vital::algo::image_io::
+    set_nested_algo_configuration("image_reader", config, image_reader);
+  kwiver::vital::algo::image_io::
+    get_nested_algo_configuration("image_reader", config, image_reader);
+  kwiver::vital::algo::convert_image::
+    set_nested_algo_configuration("convert_image", config, image_converter);
+  kwiver::vital::algo::convert_image::
+    get_nested_algo_configuration("convert_image", config, image_converter);
 
   bool valid_config = check_config(config);
 
@@ -321,7 +408,8 @@ static int maptk_main(int argc, char const* argv[])
   std::string mask_list_file = config->get_value<std::string>("mask_list_file");
   bool invert_masks = config->get_value<bool>("invert_masks");
   bool expect_multichannel_masks = config->get_value<bool>("expect_multichannel_masks");
-  std::string output_tracks_file = config->get_value<std::string>("output_tracks_file");
+  std::string features_dir = config->get_value<std::string>("features_dir");
+  bool validate_existing_features = config->get_value<bool>("validate_existing_features");
 
 
   LOG_INFO( main_logger, "Reading Video" );
@@ -374,47 +462,63 @@ static int maptk_main(int argc, char const* argv[])
                "Validated " << mask_files.size() << " mask image files." );
   }
 
-  // verify that we can open the output file for writing
-  // so that we don't find a problem only after spending
-  // hours of computation time.
-  std::ofstream ofs(output_tracks_file.c_str());
-  if (!ofs)
+  // Verify that the output directory exists, or make it
+  // If the given path is a directory, we obviously can't write to it.
+  if( ST::FileExists( features_dir )  && !ST::FileIsDirectory( features_dir ) )
   {
-    LOG_ERROR(main_logger, "Could not open track file for writing: \""
-                           << output_tracks_file << "\"");
-    return EXIT_FAILURE;
+    throw kwiver::vital::file_write_exception(features_dir, "The output directory is a file");
   }
-  ofs.close();
 
-  // Create the output homography file stream if specified
-  // Validity of file path checked during configuration file validity check.
-  std::ofstream homog_ofs;
-  if ( config->has_value("output_homography_file") &&
-       config->get_value<std::string>("output_homography_file") != "" )
+  // Check that the directory of the given filepath exists, creating necessary
+  // directories where needed.
+  if( ! ST::FileIsDirectory( features_dir ) )
   {
-    kwiver::vital::path_t homog_fp = config->get_value<kwiver::vital::path_t>("output_homography_file");
-    homog_ofs.open( homog_fp.c_str() );
-    if ( !homog_ofs )
+    if( ! ST::MakeDirectory( features_dir ) )
     {
-      LOG_ERROR(main_logger, "Could not open homography file for writing: "
-                             << homog_fp);
-      return EXIT_FAILURE;
+      throw kwiver::vital::file_write_exception(features_dir, "Attempted directory creation, "
+                                                "but no directory created!");
     }
   }
 
-  // Track features on each frame sequentially
-  kwiver::vital::track_set_sptr tracks;
-  while( video_reader->next_frame(ts) )
-  {
-    LOG_INFO(main_logger, "processing frame "<<ts.get_frame() );
+  std::mutex video_mutex;
 
-    auto const image = video_reader->frame_image();
-    auto const mdv = video_reader->frame_metadata();
-    auto converted_image = image_converter->convert( image );
-    if( !mdv.empty() )
+  // This lambda function runs in a thread to read the video and launch processing jobs
+  auto handle_frame = [&] ()
+  {
+    kwiver::vital::video_metadata_vector md_vec;
+    kwiver::vital::image_container_sptr image;
+    kwiver::vital::timestamp ts;
     {
-      converted_image->set_metadata( mdv[0] );
+      // lock the video mutex while incrementing the video and getting a frame
+      std::lock_guard<std::mutex> vlock(video_mutex);
+      if( !video_reader->next_frame(ts) )
+      {
+        return false;
+      }
+      md_vec = video_reader->frame_metadata();
+      // get the frame now even though we do not yet know if it will be needed.
+      // This way we can release the lock and let another thread increment the video.
+      image = video_reader->frame_image();
     }
+
+    kwiver::vital::video_metadata_sptr md;
+    if( !md_vec.empty() )
+    {
+      md = md_vec[0];
+    }
+    std::string basename = kwiver::vital::basename_from_metadata(md, ts.get_frame());
+    kwiver::vital::path_t kwfd_file = features_dir + "/" + basename + ".kwfd";
+
+    // if the features file already exists then test loading it and skip
+    if( valid_feature_file_exists( kwfd_file, ts.get_frame(),
+                                   validate_existing_features ? fd_io : nullptr ) )
+    {
+      return true;
+    }
+
+    LOG_DEBUG(main_logger, "processing frame "<< ts.get_frame());
+
+    auto const converted_image = image_converter->convert( image );
 
     // Load the mask for this image if we were given a mask image list
     kwiver::vital::image_container_sptr mask, converted_mask;
@@ -422,58 +526,83 @@ static int maptk_main(int argc, char const* argv[])
     {
       mask = image_reader->load( mask_files[ts.get_frame()] );
 
-      // error out if we are not expecting a multi-channel mask
-      if( !expect_multichannel_masks && mask->depth() > 1 )
+      if( !validate_mask_image( mask, expect_multichannel_masks ) )
       {
-        LOG_ERROR( main_logger,
-                   "Encounted multi-channel mask image!" );
-        return EXIT_FAILURE;
-      }
-      else if( expect_multichannel_masks && mask->depth() == 1 )
-      {
-        LOG_WARN( main_logger,
-                  "Expecting multi-channel masks but received one that was "
-                  "single-channel." );
+        return false;
       }
 
       if( invert_masks )
       {
-        LOG_DEBUG( main_logger,
-                   "Inverting mask image pixels" );
-        kwiver::vital::image_of<bool> mask_image;
-        kwiver::vital::cast_image( mask->get_image(), mask_image );
-        kwiver::vital::transform_image( mask_image, [] (bool b) { return !b; } );
-        LOG_DEBUG( main_logger,
-                   "Inverting mask image pixels -- Done" );
-        mask = std::make_shared<kwiver::vital::simple_image_container>( mask_image );
+        mask = invert_mask_image( mask );
       }
 
       converted_mask = image_converter->convert( mask );
     }
 
-    tracks = feature_tracker->track(tracks, ts.get_frame(),
-                                    converted_image, converted_mask);
-    if (tracks)
+    // detect features on the current frame
+    kwiver::vital::feature_set_sptr curr_feat =
+      feature_detector->detect(converted_image, converted_mask);
+
+    LOG_INFO( main_logger, "Detected " << curr_feat->size() <<
+                           " features on frame " << ts.get_frame() );
+
+    if (curr_feat)
     {
-      tracks = kwiver::maptk::extract_feature_colors(*tracks, *image, ts.get_frame());
+      curr_feat = kwiver::maptk::extract_feature_colors(*curr_feat, *converted_image);
     }
 
-    // Compute ref homography for current frame with current track set + write to file
-    // -> still doesn't take into account a full shotbreak, which would incur a track reset
-    if ( homog_ofs.is_open() )
-    {
-      LOG_DEBUG(main_logger, "writing homography");
-      homog_ofs << *(out_homog_generator->estimate(ts.get_frame(), tracks)) << std::endl;
-    }
-  }
+    // extract descriptors on the current frame
+    kwiver::vital::descriptor_set_sptr curr_desc =
+      descriptor_extractor->extract(converted_image, curr_feat, converted_mask);
 
-  if ( homog_ofs.is_open() )
+    LOG_DEBUG( main_logger, "Saving features to " << kwfd_file );
+    // make the enclosing directory if it does not already exist
+    const kwiver::vital::path_t fd_dir = ST::GetFilenamePath( kwfd_file );
+    if( !ST::FileIsDirectory( fd_dir ) )
+    {
+      if( !ST::MakeDirectory( fd_dir ) )
+      {
+        LOG_ERROR( main_logger, "Unable to create directory: " << fd_dir );
+        return false;
+      }
+    }
+    fd_io->save(kwfd_file, curr_feat, curr_desc);
+
+    return true;
+  };
+
+
+
+  // access the thread pool
+  auto& pool = kwiver::vital::thread_pool::instance();
+
+  // queue of future returns from jobs
+  std::deque<std::future<bool> > frame_status_queue;
+
+  // number of jobs to keep in the queue
+  // this has 1.5 times the number of threads as a heuristic to make sure
+  // we keep threads busy but don't lag too far in checking for errors
+  unsigned int buffer = pool.num_threads() * 3 / 2;
+  bool not_failed = true;
+  while(not_failed)
   {
-    homog_ofs.close();
+    // enqueue a task to process one frame
+    frame_status_queue.push_back(pool.enqueue(handle_frame));
+    // if we have the specified number of frames queued up
+    if( frame_status_queue.size() > buffer )
+    {
+      // wait for a job to complete and get the status
+      not_failed = frame_status_queue.front().get();
+      frame_status_queue.pop_front();
+    }
   }
 
-  // Writing out tracks to file
-  kwiver::vital::write_track_file(tracks, output_tracks_file);
+  // wait for all remaining jobs to complete
+  while( !frame_status_queue.empty() )
+  {
+    frame_status_queue.front().wait();
+    frame_status_queue.pop_front();
+  }
 
   return EXIT_SUCCESS;
 }

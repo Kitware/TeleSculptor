@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -79,8 +79,8 @@ bool Project::read(QString const& path)
       getPath(config, base, "input_track_file", "output_tracks_file");
 
     // Read image list
-    auto const& ilfPath = config->get_value<std::string>("image_list_file");
-    QFile ilf(base.filePath(qtString(ilfPath)));
+    auto ilfPath = getPath(config, base, "image_list_file", "video_source");
+    QFile ilf(base.filePath(ilfPath));
     if (!ilf.open(QIODevice::ReadOnly | QIODevice::Text))
     {
       // TODO set error
