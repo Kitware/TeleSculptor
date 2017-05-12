@@ -36,6 +36,8 @@
 // VTK includes
 #include "vtkDoubleArray.h"
 #include "vtkImageData.h"
+#include "vtkImageReader2Factory.h"
+#include "vtkImageReader2.h"
 #include "vtkVector.h"
 #include "vtkMatrix3x3.h"
 #include "vtkMatrix4x4.h"
@@ -44,7 +46,6 @@
 #include "vtkSmartPointer.h"
 #include "vtkTransform.h"
 #include "vtkUnsignedCharArray.h"
-#include "vtkPNGReader.h"
 
 
 namespace
@@ -173,7 +174,7 @@ ReconstructionData::~ReconstructionData()
 void ReconstructionData::GetColorValue(int* pixelPosition, double rgb[3])
 {
   vtkUnsignedCharArray* color =
-    vtkUnsignedCharArray::SafeDownCast(this->DepthMap->GetPointData()->GetArray("PNGImage"));
+    vtkUnsignedCharArray::SafeDownCast(this->DepthMap->GetPointData()->GetArray(0));
 
   if (color == 0)
     {
@@ -317,8 +318,10 @@ void ReconstructionData::SetMatrixRT(vtkMatrix4x4* matrix)
 
 void ReconstructionData::ReadDepthMap(std::string path, vtkImageData* out)
 {
-  vtkSmartPointer<vtkPNGReader> depthMapReader = vtkSmartPointer<vtkPNGReader>::New();
-  depthMapReader->SetFileName(path.c_str());
-  depthMapReader->Update();
-  out->ShallowCopy(depthMapReader->GetOutput());
+  vtkSmartPointer<vtkImageReader2Factory> readerFactory =
+      vtkSmartPointer<vtkImageReader2Factory>::New();
+  vtkSmartPointer<vtkImageReader2> imageReader = readerFactory->CreateImageReader2(path.c_str());
+  imageReader->SetFileName(path.c_str());
+  imageReader->Update();
+  out->ShallowCopy(imageReader->GetOutput());
 }
