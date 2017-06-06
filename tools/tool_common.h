@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2016 by Kitware, Inc.
+ * Copyright 2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,57 +30,53 @@
 
 /**
  * \file
- * \brief File IO functions for a \ref maptk::ins_data
- *
- * File format is the POS file.
+ * \brief Helper functions shared by tools
  */
 
-#ifndef MAPTK_INS_DATA_IO_H_
-#define MAPTK_INS_DATA_IO_H_
+#ifndef MAPTK_TOOL_COMMON_H_
+#define MAPTK_TOOL_COMMON_H_
 
+#include <cstdio>
 
-#include "ins_data.h"
 #include <vital/vital_types.h>
+#include <vital/logger/logger.h>
+#include <vital/video_metadata/video_metadata.h>
 
+#include <kwiversys/Directory.hxx>
+#include <kwiversys/SystemTools.hxx>
 
 namespace kwiver {
 namespace maptk {
 
-/// Read in a POS file, producing an ins_data object
-/**
- * \throws file_not_found_exception
- *    Thrown when the file could not be found on the file system.
- * \throws file_not_read_exception
- *    Thrown when the file could not be read or parsed for whatever reason.
- * \throws invalid_file
- *    Thrown when the data in the file is not sufficient to create an ins_data
- *    object for return.
- *
- * \param file_path   The path to the file to read in.
- * \return A \c ins_data object representing the contents of the read-in file.
- */
-ins_data
-MAPTK_EXPORT
-read_pos_file(vital::path_t const& file_path);
 
-/// Output the given \c ins_data object to the specified file path
-/**
- * If a file exists at the target location, it will be overwritten. If the
- * containing directory of the given path does not exist, it will be created
- * before the file is opened for writing.
- *
- * \throws file_write_exception
- *    Thrown when something prevents output of the file.
- *
- * \param ins       The \c ins_data object to output.
- * \param file_path The path to output the file to.
- */
-void
-MAPTK_EXPORT
-write_pos_file(maptk::ins_data const& ins,
-               vital::path_t const& file_path);
+/// Return a sorted list of files in a directory
+std::vector< kwiver::vital::path_t >
+files_in_dir(kwiver::vital::path_t const& vdir)
+{
+  using namespace kwiver;
+  std::vector< vital::path_t > files;
+
+  kwiversys::Directory dir;
+  if ( 0 == dir.Load( vdir ) )
+  {
+    vital::logger_handle_t main_logger( vital::get_logger( "files_in_dir" ) );
+    LOG_WARN(main_logger, "Could not access directory \"" << vdir << "\"");
+    return files;
+  }
+
+  unsigned long num_files = dir.GetNumberOfFiles();
+  for ( unsigned long i = 0; i < num_files; i++)
+  {
+    files.push_back( vdir + '/' + dir.GetFile( i ) );
+  }
+
+  std::sort( files.begin(), files.end() );
+  return files;
+}
+
 
 } // end namespace maptk
 } // end namespace kwiver
 
-#endif // MAPTK_INS_DATA_IO_H_
+
+#endif

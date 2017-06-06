@@ -61,6 +61,24 @@ def compute_extents(homogs, img_shapes):
     return (min_x, max_x), (min_y, max_y)
 
 
+def compute_average_scale(homogs, img_shapes):
+    """Compute average pixel scaling from a sequence of homographies and an image shape
+    """
+    scale = 0.0
+    for M, (h,w) in zip(homogs, img_shapes):
+        corners = np.matrix([[0, 0, 1],[w, 0, 1],[w, h, 1],[0, h, 1]], dtype='float').T
+        mapped = M * corners
+        X = np.array(mapped[0,:] / mapped[2,:])[0]
+        Y = np.array(mapped[1,:] / mapped[2,:])[0]
+        for i in range(4):
+          i2 = (i + 2) % 4
+          v1 = np.array([X[i]-X[i2], Y[i]-Y[i2]])
+          v2 = np.array([corners[0,i]-corners[0,i2], corners[1,i]-corners[1,i2]])
+          s = np.sqrt(v1.dot(v1) / v2.dot(v2))
+          scale = scale + s
+    return scale / (4 * len(homogs))
+
+
 def main():
     usage  = "usage: %prog [options] homog_file img_width img_height\n\n"
     usage += "  Compute the output extents of a homography file\n"
@@ -78,9 +96,11 @@ def main():
     img_shapes = [(h, w)] * len(homogs)
     (min_x, max_x), (min_y, max_y) = compute_extents([H for _, H, in homogs],
                                                      img_shapes)
+    scale = compute_average_scale([H for _, H, in homogs], img_shapes)
 
     print "X range:", min_x, max_x
     print "Y range:", min_y, max_y
+    print "scale: ", scale
 
 
 if __name__ == "__main__":
