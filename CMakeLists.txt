@@ -42,16 +42,8 @@ if(DEFINED BUILD_SHARED_LIBS AND NOT BUILD_SHARED_LIBS)
 endif()
 set(BUILD_SHARED_LIBS ON)
 
-# default to MAPTK_LIB_SUFFIX for backwards compatibility
-if(DEFINED MAPTK_LIB_SUFFIX)
-  message(WARNING "MAPTK_LIB_SUFFIX is deprecated. Please use LIB_SUFFIX instead.")
-endif()
 set(LIB_SUFFIX "${MAPTK_LIB_SUFFIX}" CACHE STRING "String suffix appended to the library directory we install into")
 mark_as_advanced( LIB_SUFFIX )
-
-if ( IS_DIRECTORY ${fletch_DIR} )
-  find_package( fletch NO_MODULE )
-endif()
 
 include( maptk-depends )
 
