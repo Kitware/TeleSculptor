@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2017 by Kitware, Inc.
+ * Copyright 2016-2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,7 @@
 
 /**
  * \file
- * \brief Sparse Bungle Adjustment utility
+ * \brief Apply Ground Control Points utility
  */
 
 #include "tool_common.h"
@@ -46,15 +46,13 @@
 #include <vital/config/config_block.h>
 #include <vital/config/config_block_io.h>
 
-#include <vital/algo/bundle_adjust.h>
 #include <vital/algo/estimate_canonical_transform.h>
 #include <vital/algo/estimate_similarity_transform.h>
 #include <vital/algo/geo_map.h>
-#include <vital/algo/initialize_cameras_landmarks.h>
-#include <vital/algo/filter_tracks.h>
 #include <vital/algo/triangulate_landmarks.h>
 #include <vital/algo/video_input.h>
 #include <vital/exceptions.h>
+#include <vital/io/camera_io.h>
 #include <vital/io/eigen_io.h>
 #include <vital/io/landmark_map_io.h>
 #include <vital/io/track_set_io.h>
@@ -70,22 +68,20 @@
 #include <kwiversys/CommandLineArguments.hxx>
 
 #include <arrows/core/metrics.h>
-#include <arrows/core/match_matrix.h>
 #include <arrows/core/transform.h>
 
-#include <maptk/colorize.h>
 #include <maptk/geo_reference_points_io.h>
 #include <maptk/local_geo_cs.h>
 #include <maptk/version.h>
 
 typedef kwiversys::SystemTools     ST;
 
-static kwiver::vital::logger_handle_t main_logger( kwiver::vital::get_logger( "bundle_adjust_tracks_tool" ) );
+static kwiver::vital::logger_handle_t main_logger( kwiver::vital::get_logger( "apply_gcp_tool" ) );
 
 static kwiver::vital::config_block_sptr default_config()
 {
 
-  kwiver::vital::config_block_sptr config = kwiver::vital::config_block::empty_config("bundle_adjust_tracks_tool");
+  kwiver::vital::config_block_sptr config = kwiver::vital::config_block::empty_config("apply_gcp_tool");
 
   config->set_value("video_source", "",
                     "Path to an input file to be opened as a video. "
@@ -93,26 +89,14 @@ static kwiver::vital::config_block_sptr default_config()
                     "containing new-line separated paths to sequential "
                     "image files.");
 
-  config->set_value("input_track_file", "",
-                    "Path an input file containing feature tracks");
-
-  config->set_value("filtered_track_file", "",
-                    "Path to write a file containing filtered feature tracks");
-
-  config->set_value("init_cameras_with_metadata", false,
-                    "Enables initialization of cameras from video metadata."
-                    "\n"
-                    "This is mutually exclusive with the input_krtd_files "
-                    "option for system initialization, and shadowed by the "
-                    "input_reference_points option when using an "
-                    "st_estimator.");
+  config->set_value("input_ply_file", "",
+                    "Path to the PLY file from which to read 3D landmark points");
 
   config->set_value("input_krtd_files", "",
-                    "A directory containing input KRTD camera files.\n"
+                    "A directory containing input KRTD camera files, or a text "
+                    "file containing a newline-separated list of KRTD files.\n"
                     "\n"
-                    "This is mutually exclusive with init_cameras_with_metadata "
-                    "option for system initialization, and shadowed by the "
-                    "input_reference_points_file when using an st_estimator.");
+                    "This is optional, leave blank to ignore.");
 
   config->set_value("input_reference_points_file", "",
                     "File containing reference points to use for reprojection "
@@ -136,10 +120,6 @@ static kwiver::vital::config_block_sptr default_config()
                     "\n"
                     "Landmark z position, or altitude, should be provided in meters.");
 
-  config->set_value("initialize_unloaded_cameras", "true",
-                    "When loading a subset of cameras, should we optimize only the "
-                    "loaded cameras or also initialize and optimize the unspecified cameras");
-
   config->set_value("geo_origin_file", "output/geo_origin.txt",
                     "This file contains the geographical location of the origin "
                     "of the local cartesian coordinate system used in the camera "
@@ -160,49 +140,8 @@ static kwiver::vital::config_block_sptr default_config()
   config->set_value("output_krtd_dir", "output/krtd",
                     "A directory in which to write the output KRTD files.");
 
-  config->set_value("camera_sample_rate", "1",
-                    "Sub-sample the cameras for by this rate.\n"
-                    "Set to 1 to use all cameras, "
-                    "2 to use every other camera, etc.");
-
-  config->set_value("necker_reverse_input", "false",
-                    "Apply a Necker reversal to the initial cameras and landmarks");
-
-  config->set_value("base_camera:focal_length", "1.0",
-                    "focal length of the base camera model");
-
-  config->set_value("base_camera:principal_point", "640 480",
-                    "The principal point of the base camera model \"x y\".\n"
-                    "It is usually safe to assume this is the center of the "
-                    "image.");
-
-  config->set_value("base_camera:aspect_ratio", "1.0",
-                    "the pixel aspect ratio of the base camera model");
-
-  config->set_value("base_camera:skew", "0.0",
-                    "The skew factor of the base camera model.\n"
-                    "This is almost always zero in any real camera.");
-
-  config->set_value("ins:rotation_offset", "0 0 0 1",
-                    "A quaternion used to offset rotation from metadata "
-                    "when updating cameras. This option is only relevent if "
-                    "init_cameras_with_metadata is enabled.");
-
-  config->set_value("krtd_clean_up", "false",
-                    "Delete all previously existing KRTD files present in output_krtd_dir before writing new KRTD files.");
-
-  config->set_value("depthmaps_images_file", "",
-                    "An optional file containing paths to depthmaps as image datas.");
-
-  auto default_vi = kwiver::vital::algo::video_input::create("pos");
+  auto default_vi = kwiver::vital::algo::video_input::create("image_list");
   kwiver::vital::algo::video_input::get_nested_algo_configuration("video_reader", config, default_vi);
-  kwiver::vital::algo::filter_tracks::get_nested_algo_configuration("track_filter", config,
-                                                     kwiver::vital::algo::filter_tracks_sptr());
-  kwiver::vital::algo::bundle_adjust::get_nested_algo_configuration("bundle_adjuster", config,
-                                                     kwiver::vital::algo::bundle_adjust_sptr());
-  kwiver::vital::algo::initialize_cameras_landmarks
-      ::get_nested_algo_configuration("initializer", config,
-                                      kwiver::vital::algo::initialize_cameras_landmarks_sptr());
   kwiver::vital::algo::triangulate_landmarks::get_nested_algo_configuration("triangulator", config,
                         kwiver::vital::algo::triangulate_landmarks_sptr());
   kwiver::vital::algo::geo_map::get_nested_algo_configuration("geo_mapper", config,
@@ -238,29 +177,13 @@ static bool check_config(kwiver::vital::config_block_sptr config)
     }
   }
 
-  if (!config->has_value("input_track_file"))
-  {
-    MAPTK_CONFIG_FAIL("Not given a tracks file path");
-  }
-  else if (! ST::FileExists( config->get_value<std::string>("input_track_file"), true ) )
-  {
-    MAPTK_CONFIG_FAIL("Given tracks file path doesn't point to an existing file.");
-  }
-
   // Checking input cameras and reference points file existance.
-  bool input_metadata = config->get_value<bool>("init_cameras_with_metadata", false);
-  bool input_krtd = false;
   if (config->get_value<std::string>("input_krtd_files", "") != "")
   {
-    input_krtd = true;
     if (! ST::FileExists(config->get_value<std::string>("input_krtd_files")))
     {
       MAPTK_CONFIG_FAIL("KRTD input path given, but does not point to an existing location.");
     }
-  }
-  if (input_metadata && input_krtd)
-  {
-    MAPTK_CONFIG_FAIL("Both input metadata and KRTD cameras were given. Don't know which to use!");
   }
   if (config->get_value<std::string>("input_reference_points_file", "") != "")
   {
@@ -270,23 +193,9 @@ static bool check_config(kwiver::vital::config_block_sptr config)
     }
   }
 
-
   if (!kwiver::vital::algo::video_input::check_nested_algo_configuration("video_reader", config))
   {
     MAPTK_CONFIG_FAIL("video_reader configuration check failed");
-  }
-  if (!kwiver::vital::algo::filter_tracks::check_nested_algo_configuration("track_filter", config))
-  {
-    MAPTK_CONFIG_FAIL("Failed config check in track_filter algorithm.");
-  }
-  if (!kwiver::vital::algo::bundle_adjust::check_nested_algo_configuration("bundle_adjuster", config))
-  {
-    MAPTK_CONFIG_FAIL("Failed config check in bundle_adjuster algorithm.");
-  }
-  if (!kwiver::vital::algo::initialize_cameras_landmarks
-            ::check_nested_algo_configuration("initializer", config))
-  {
-    MAPTK_CONFIG_FAIL("Failed config check in initializer algorithm.");
   }
   if (!kwiver::vital::algo::triangulate_landmarks::check_nested_algo_configuration("triangulator", config))
   {
@@ -315,93 +224,6 @@ static bool check_config(kwiver::vital::config_block_sptr config)
 #undef MAPTK_CONFIG_FAIL
 
   return config_valid;
-}
-
-
-// ------------------------------------------------------------------
-/// create a base camera instance from config options
-kwiver::vital::simple_camera
-base_camera_from_config(kwiver::vital::config_block_sptr config)
-{
-  kwiver::vital::simple_camera_intrinsics
-      K(config->get_value<double>("focal_length"),
-        config->get_value<kwiver::vital::vector_2d>("principal_point"),
-        config->get_value<double>("aspect_ratio"),
-        config->get_value<double>("skew"));
-  return kwiver::vital::simple_camera(kwiver::vital::vector_3d(0,0,-1),
-                                      kwiver::vital::rotation_d(), K);
-}
-
-
-// ------------------------------------------------------------------
-/// Subsample a every Nth camera, where N is specfied by factor
-/**
- * Uses camera frame numbers to determine subsample. This is fine when we
- * assume the cameras given are sequential and always start with frame 0.
- * This will behave in possibly undesired ways when the given cameras are not in
- * sequential frame order, or the first camera's frame is not a multiple of
- * \c factor.  This function ensures that the first and last cameras are
- * included
- */
-kwiver::vital::camera_map_sptr
-subsample_cameras(kwiver::vital::camera_map_sptr cameras, unsigned factor)
-{
-  kwiver::vital::camera_map::map_camera_t cams = cameras->cameras();
-  kwiver::vital::camera_map::map_camera_t sub_cams;
-  VITAL_FOREACH(const kwiver::vital::camera_map::map_camera_t::value_type& p, cams)
-  {
-    if(p.first % factor == 0)
-    {
-      sub_cams.insert(p);
-    }
-  }
-  // Also include the last camera
-  sub_cams.insert(*cams.rbegin());
-  return kwiver::vital::camera_map_sptr(new kwiver::vital::simple_camera_map(sub_cams));
-}
-
-
-// Generic configuration based input camera load function.
-//
-// The local_cs and input_cameras objects may or may not be updated based on
-// configuration.
-//
-// Returns false if errors occurred, otherwise true. Returns true even if no
-// input cameras loaded (check size of input_cameras structure).
-bool load_input_cameras(kwiver::vital::config_block_sptr config,
-                        std::map<kwiver::vital::frame_id_t, kwiver::vital::video_metadata_sptr> const& md_map,
-                        std::map<kwiver::vital::frame_id_t, std::string> const& basename_map,
-                        kwiver::maptk::local_geo_cs & local_cs,
-                        kwiver::vital::camera_map::map_camera_t & input_cameras)
-{
-  // configuration check assured mutual exclusivity
-  if (config->get_value<bool>("init_cameras_with_metadata", false))
-  {
-    // create initial cameras from metadata
-    kwiver::vital::simple_camera base_camera =
-      base_camera_from_config(config->subblock("base_camera"));
-    kwiver::vital::rotation_d ins_rot_offset =
-      config->get_value<kwiver::vital::rotation_d>("ins:rotation_offset",
-                                                   kwiver::vital::rotation_d());
-
-    // create initial cameras from metadata
-    input_cameras = kwiver::maptk::initialize_cameras_with_metadata(md_map, base_camera,
-                                                                    local_cs,
-                                                                    ins_rot_offset);
-    return !input_cameras.empty();
-  }
-  else if (config->get_value<std::string>("input_krtd_files", "") != "")
-  {
-    std::string krtd_dir = config->get_value<std::string>("input_krtd_files");
-    input_cameras = kwiver::maptk::load_input_cameras_krtd(krtd_dir, basename_map);
-    if (input_cameras.empty())
-    {
-      return false;
-    }
-  }
-
-  // No input specified
-  return true;
 }
 
 
@@ -455,9 +277,6 @@ static int maptk_main(int argc, char const* argv[])
   // Set up top level configuration w/ defaults where applicable.
   kwiver::vital::config_block_sptr config = kwiver::vital::config_block::empty_config();
   kwiver::vital::algo::video_input_sptr video_reader;
-  kwiver::vital::algo::bundle_adjust_sptr bundle_adjuster;
-  kwiver::vital::algo::initialize_cameras_landmarks_sptr initializer;
-  kwiver::vital::algo::filter_tracks_sptr track_filter;
   kwiver::vital::algo::triangulate_landmarks_sptr triangulator;
   kwiver::vital::algo::geo_map_sptr geo_mapper;
   kwiver::vital::algo::estimate_similarity_transform_sptr st_estimator;
@@ -473,10 +292,7 @@ static int maptk_main(int argc, char const* argv[])
 
 
   kwiver::vital::algo::video_input::set_nested_algo_configuration("video_reader", config, video_reader);
-  kwiver::vital::algo::bundle_adjust::set_nested_algo_configuration("bundle_adjuster", config, bundle_adjuster);
   kwiver::vital::algo::triangulate_landmarks::set_nested_algo_configuration("triangulator", config, triangulator);
-  kwiver::vital::algo::initialize_cameras_landmarks::set_nested_algo_configuration("initializer", config, initializer);
-  kwiver::vital::algo::filter_tracks::set_nested_algo_configuration("track_filter", config, track_filter);
   kwiver::vital::algo::geo_map::set_nested_algo_configuration("geo_mapper", config, geo_mapper);
   kwiver::vital::algo::estimate_similarity_transform::set_nested_algo_configuration("st_estimator", config, st_estimator);
   kwiver::vital::algo::estimate_canonical_transform::set_nested_algo_configuration("can_tfm_estimator", config, can_tfm_estimator);
@@ -490,10 +306,7 @@ static int maptk_main(int argc, char const* argv[])
   if( ! opt_out_config.empty() )
   {
     kwiver::vital::algo::video_input::get_nested_algo_configuration("video_reader", config, video_reader);
-    kwiver::vital::algo::bundle_adjust::get_nested_algo_configuration("bundle_adjuster", config, bundle_adjuster);
     kwiver::vital::algo::triangulate_landmarks::get_nested_algo_configuration("triangulator", config, triangulator);
-    kwiver::vital::algo::initialize_cameras_landmarks::get_nested_algo_configuration("initializer", config, initializer);
-    kwiver::vital::algo::filter_tracks::get_nested_algo_configuration("track_filter", config, track_filter);
     kwiver::vital::algo::geo_map::get_nested_algo_configuration("geo_mapper", config, geo_mapper);
     kwiver::vital::algo::estimate_similarity_transform::get_nested_algo_configuration("st_estimator", config, st_estimator);
     kwiver::vital::algo::estimate_canonical_transform::get_nested_algo_configuration("can_tfm_estimator", config, can_tfm_estimator);
@@ -514,47 +327,6 @@ static int maptk_main(int argc, char const* argv[])
   {
     LOG_ERROR(main_logger, "Configuration not valid.");
     return EXIT_FAILURE;
-  }
-
-  //
-  // Read the track file
-  //
-  std::string track_file = config->get_value<std::string>("input_track_file");
-  LOG_INFO(main_logger, "loading track file: " << track_file);
-  kwiver::vital::track_set_sptr tracks = kwiver::vital::read_track_file(track_file);
-
-  LOG_DEBUG(main_logger, "loaded "<<tracks->size()<<" tracks");
-  if( tracks->size() == 0 )
-  {
-    LOG_ERROR(main_logger, "No tracks loaded.");
-    return EXIT_FAILURE;
-  }
-
-  //
-  // Filter the tracks
-  //
-  {
-    kwiver::vital::scoped_cpu_timer t( "track filtering" );
-    tracks = track_filter->filter(tracks);
-    LOG_DEBUG(main_logger, "filtered down to "<<tracks->size()<<" long tracks");
-
-    // write out filtered tracks if output file is specified
-    if (config->has_value("filtered_track_file"))
-    {
-      std::string out_track_file = config->get_value<std::string>("filtered_track_file");
-      if( out_track_file != "" )
-      {
-        kwiver::vital::write_track_file(tracks, out_track_file);
-      }
-    }
-
-    if( tracks->size() == 0 )
-    {
-      LOG_ERROR(main_logger, "All track have been filtered. "
-                             << "Try decreasing \"min_track_len\" "
-                             << "or \"min_mm_importance\"");
-      return EXIT_FAILURE;
-    }
   }
 
   //
@@ -601,23 +373,27 @@ static int maptk_main(int argc, char const* argv[])
 
 
   //
-  // Initialize input and main cameras
+  // Load Cameras and Landmarks
   //
-  // Initialize input camera map based on which input files were given, if any.
-  // If input_cameras is empty after this method, then there were no input
-  // camera files.
-  //
-  // Config check above ensures validity + mutual exclusivity of these options
-  kwiver::vital::camera_map::map_camera_t input_cameras;
-  if (!load_input_cameras(config, md_map, basename_map, local_cs, input_cameras))
+  std::string krtd_dir = config->get_value<std::string>("input_krtd_files");
+  kwiver::vital::camera_map::map_camera_t input_cameras =
+    kwiver::maptk::load_input_cameras_krtd(krtd_dir, basename_map);
+  if (input_cameras.empty())
   {
     LOG_ERROR(main_logger, "Failed to load input cameras");
     return EXIT_FAILURE;
   }
 
+  kwiver::vital::landmark_map_sptr lm_map;
+  if( config->has_value("input_ply_file") )
+  {
+    std::string ply_file = config->get_value<std::string>("input_ply_file");
+    lm_map = kwiver::vital::read_ply_file(ply_file);
+  }
+
+
   // Copy input cameras into main camera map
   kwiver::vital::camera_map::map_camera_t cameras;
-  kwiver::vital::landmark_map_sptr lm_map;
   kwiver::vital::camera_map_sptr input_cam_map(new kwiver::vital::simple_camera_map(input_cameras));
   if (input_cameras.size() != 0)
   {
@@ -652,104 +428,6 @@ static int maptk_main(int argc, char const* argv[])
     LOG_INFO(main_logger, "Saving local coordinate origin to " << geo_origin_file);
     write_local_geo_cs_to_file(local_cs, geo_origin_file);
   }
-
-  // apply necker reversal if requested
-  bool necker_reverse_input = config->get_value<bool>("necker_reverse_input", false);
-  if (necker_reverse_input)
-  {
-    LOG_INFO(main_logger, "Applying Necker reversal");
-    kwiver::arrows::necker_reverse(cam_map, lm_map);
-  }
-
-  bool init_unloaded_cams = config->get_value<bool>("initialize_unloaded_cameras", true);
-  if (init_unloaded_cams)
-  {
-    if( cam_map )
-    {
-      cameras = cam_map->cameras();
-    }
-    VITAL_FOREACH(const kwiver::vital::frame_id_t& id, tracks->all_frame_ids())
-    {
-      // if id is already in the map, do nothing.
-      // if id is not it the map add a null camera pointer
-      cameras[id];
-    }
-    cam_map = kwiver::vital::camera_map_sptr(new kwiver::vital::simple_camera_map(cameras));
-  }
-
-  //
-  // Cut down input cameras if a sub-sample rate was specified
-  //
-  unsigned int cam_samp_rate = config->get_value<unsigned int>("camera_sample_rate");
-  if(cam_samp_rate > 1)
-  {
-    kwiver::vital::scoped_cpu_timer t( "Tool-level sub-sampling" );
-
-    // If there are no cameras loaded, create a map of NULL cameras to subsample
-    if( !cam_map )
-    {
-      VITAL_FOREACH(const kwiver::vital::frame_id_t& id, tracks->all_frame_ids())
-      {
-        cameras[id] = kwiver::vital::camera_sptr();
-      }
-      cam_map = kwiver::vital::camera_map_sptr(new kwiver::vital::simple_camera_map(cameras));
-    }
-
-    kwiver::vital::camera_map_sptr subsampled_cams = subsample_cameras(cam_map, cam_samp_rate);
-
-    // If we were given reference landmarks and tracks, make sure to include
-    // the cameras for frames reference track states land on. Required for
-    // sba-space landmark triangulation and correlation later.
-    if (reference_tracks->size() > 0)
-    {
-      kwiver::vital::camera_map::map_camera_t cams = cam_map->cameras(),
-                                      sub_cams = subsampled_cams->cameras();
-      // for each track state in each reference track, make sure that the
-      // state's frame's camera is in the sub-sampled set of cameras
-      VITAL_FOREACH(kwiver::vital::track_sptr const t, reference_tracks->tracks())
-      {
-        for (kwiver::vital::track::history_const_itr tsit = t->begin(); tsit != t->end(); ++tsit)
-        {
-          if (cams.count(tsit->frame_id) > 0)
-          {
-            sub_cams.insert(*cams.find(tsit->frame_id));
-          }
-        }
-      }
-      subsampled_cams = kwiver::vital::camera_map_sptr(new kwiver::vital::simple_camera_map(sub_cams));
-    }
-
-    cam_map = subsampled_cams;
-    LOG_INFO(main_logger, "Subsampled down to "<<cam_map->size()<<" cameras");
-  }
-
-  //
-  // Initialize cameras and landmarks
-  //
-  {
-    kwiver::vital::scoped_cpu_timer t( "Initializing cameras and landmarks" );
-    initializer->initialize(cam_map, lm_map, tracks);
-  }
-
-  //
-  // Run bundle adjustment
-  //
-  { // scope block
-    kwiver::vital::scoped_cpu_timer t( "Tool-level SBA algorithm" );
-
-    double init_rmse = kwiver::arrows::reprojection_rmse(cam_map->cameras(),
-                                                        lm_map->landmarks(),
-                                                        tracks->tracks());
-    LOG_DEBUG(main_logger, "initial reprojection RMSE: " << init_rmse);
-
-    bundle_adjuster->optimize(cam_map, lm_map, tracks);
-
-    double end_rmse = kwiver::arrows::reprojection_rmse(cam_map->cameras(),
-                                                       lm_map->landmarks(),
-                                                       tracks->tracks());
-    LOG_DEBUG(main_logger, "final reprojection RMSE: " << end_rmse);
-  }
-
 
   //
   // Adjust cameras/landmarks based on input cameras/reference points
@@ -800,14 +478,6 @@ static int maptk_main(int argc, char const* argv[])
                             << "SBA-space ref landmarks)");
       sim_transform = st_estimator->estimate_transform(sba_space_landmarks, reference_landmarks);
     }
-    else if (st_estimator && input_cam_map->size() > 0)
-    {
-      kwiver::vital::scoped_cpu_timer t_2( "    similarity transform estimation from camera" );
-
-      LOG_INFO(main_logger, "Estimating transform to refined cameras "
-                            << "(from input cameras)");
-      sim_transform = st_estimator->estimate_transform(cam_map, input_cam_map);
-    }
     else if (can_tfm_estimator)
     {
       // In the absence of other information, use a canonical transformation
@@ -821,11 +491,6 @@ static int maptk_main(int argc, char const* argv[])
     cam_map = kwiver::arrows::transform(cam_map, sim_transform);
     lm_map = kwiver::arrows::transform(lm_map, sim_transform);
   }
-
-  //
-  // Compute landmark colors
-  //
-  lm_map = kwiver::maptk::compute_landmark_colors(*lm_map, *tracks);
 
   //
   // Write the output PLY file
@@ -867,26 +532,6 @@ static int maptk_main(int argc, char const* argv[])
   //
   // Write the output KRTD files
   //
-  if (config->get_value<bool>("krtd_clean_up") )
-  {
-
-    LOG_INFO(main_logger, "Cleaning "
-                          << config->get_value<std::string>("output_krtd_dir")
-                          << " before writing new files.");
-
-    kwiver::vital::path_t krtd_dir = config->get_value<std::string>("output_krtd_dir");
-    std::vector<kwiver::vital::path_t> files = kwiver::maptk::files_in_dir(krtd_dir);
-
-    for (size_t i = 0; i < files.size(); ++i)
-    {
-      if (ST::GetFilenameLastExtension(files[i]) == ".krtd")
-      {
-        ST::RemoveFile(files[i]);
-      }
-    }
-
-  }
-
   if( config->has_value("output_krtd_dir") )
   {
     LOG_INFO(main_logger, "Writing output KRTD files");
