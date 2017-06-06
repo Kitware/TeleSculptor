@@ -22,10 +22,48 @@ Core Plugin
    plane vertically to place a configurable percentile of the landmarks above
    the ground.
 
+Examples/Configs
+
+ * Updated the example tool configuration files to account for tool changes
+   to use the video_input API.
+
+ * Added default config files for video_input algorithms that load from image
+   lists, with and without POS files.
+
+ * Refactored core_track_features.conf to make the feature detector,
+   descriptor, and matcher reusable across other configs.  Also refactored
+   the loop closure configs to reuse a common feature matcher config.
+
+ * Update core_track_features.conf to include configuration for writing
+   features and descriptors to disk with the core feature_descriptor_io
+   algorithm.
+
+Main Library
+
+ * Removed the ins_data structure for holding POS file data as well as all
+   functions for reading and writing POS files.  This is now covered by
+   the more general video_metadata structure in KWIVER.
+
+ * Updated all the local_geo_cs functions that used ins_data to use
+   video_metadata instead.
+
 Scripts
 
  * In the SketchUp import plugin allow the user to select how many frames to
    use if there are more than 10 available.
+
+ * Added options in the krtd_and_ply_to_homogs.py script to estimate a ground
+   plane from the PLY data or use the Z=0 plane when computing homographies.
+
+ * Added an option in the mosaic_images.py script to scale the output image and
+   another option to estimate the scale of the output to match the scale of the
+   input images on average.
+
+ * Improved memory efficiency of mosaic_images.py by avoiding preloading of
+   all images.
+
+ * Added a script to convert Novatel IMU data from the SUSSEX datasets to the
+   POS file format used by MAP-Tk.
 
 Tools
 
@@ -40,6 +78,20 @@ Tools
 
  * Added a tool to apply ground control points to transform the coordinate system
    without running bundle adjustment.
+
+ * Updated the maptk_bundle_adjust tool to use the filter_tracks algorithm from
+   KWIVER instead of directly applying filters.
+
+ * Added a new detect_and_describe tool that runs feature detection and
+   descriptor extraction on each frame and writes the outputs to files
+   using the feature_descriptor_io algorithm.  This tool uses the thread pool
+   to process frames in parallel.
+
+ * Updated all tools to use the video_input API from KWIVER to read both
+   images and metadata.  This replaces the custom loops over files in an image
+   list.  This change allows tools to run directly on video files (e.g. AVI,
+   MPEG) with optional KLV metadata as well as lists of images with optional
+   lists of POS metadata files.
 
 Visualization Application
 
@@ -72,6 +124,23 @@ Visualization Application
    respectively, the point size of the depth map in both the WorldView and
    DepthMapView; the point size of each display is controlled independently
    based on focus.
+
+ * Added a "Filter Tracks" tool to the GUI that runs the filter_tracks
+   algorithm in KWIVER.  Updated the GUI to properly clear existing tracks
+   before adding tracks returned from a tool.
+
+ * Updated the GUI to allow "video_source" as an alternative to
+   "image_file_list" when looking for a list of images to load in a project
+   config file.  This currently only handles the case where the video source
+   is a list of images, but is compatible with the new variable naming in
+   tool configuration files.
+
+ * Added a "Track Features" tool to the GUI that runs a track_features
+   algorithm much like the maptk_track_features command line tool.  This
+   tool processes images loaded into the GUI and does not yet support
+   video files.
+
+ * Added an option to export tracks from the GUI to an ASCII text file.
 
 
 Fixes since v0.9.0
