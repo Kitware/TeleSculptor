@@ -37,9 +37,9 @@ kwiver_add_library(
   )
 
 target_link_libraries( maptk
-  PUBLIC               vital
-                       vital_video_metadata
-                       kwiversys
+  PUBLIC               kwiver::vital
+                       kwiver::vital_video_metadata
+                       kwiver::kwiversys
   )
 
 # Configuring/Adding compile definitions to target
