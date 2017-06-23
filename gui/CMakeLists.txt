@@ -154,8 +154,8 @@ unset(no_install)
 
 target_link_libraries(mapgui
   maptk
-  kwiver_algo_core
-  vital_vpm
+  kwiver::kwiver_algo_core
+  kwiver::vital_vpm
   vtkGUISupportQt
   vtkInteractionStyle
   vtkIOPLY
