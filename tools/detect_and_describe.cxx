@@ -582,7 +582,7 @@ static int maptk_main(int argc, char const* argv[])
   // number of jobs to keep in the queue
   // this has 1.5 times the number of threads as a heuristic to make sure
   // we keep threads busy but don't lag too far in checking for errors
-  unsigned int buffer = pool.num_threads() * 3 / 2;
+  size_t buffer = pool.num_threads() * 3 / 2;
   bool not_failed = true;
   while(not_failed)
   {
