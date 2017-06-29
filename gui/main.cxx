@@ -49,7 +49,7 @@
 int main(int argc, char** argv)
 {
   // Set application information
-  QApplication::setApplicationName("MapGUI");
+  QApplication::setApplicationName("MAP-Tk TeleSculptor");
   QApplication::setOrganizationName("Kitware");
   QApplication::setOrganizationDomain("kitware.com");
   QApplication::setApplicationVersion(MAPTK_VERSION);
@@ -69,7 +69,7 @@ int main(int argc, char** argv)
 
   // Create application instance and set icon
   QApplication app(args.qtArgc(), args.qtArgv());
-  qtUtil::setApplicationIcon("mapgui");
+  qtUtil::setApplicationIcon("TeleSculptor");
 
   // Load KWIVER plugins
   auto const exeDir = QDir(QApplication::applicationDirPath());

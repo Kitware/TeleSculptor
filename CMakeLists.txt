@@ -192,16 +192,16 @@ set(CPACK_PACKAGE_ICON              "${CMAKE_CURRENT_SOURCE_DIR}/packaging\\\\ma
 set(CPACK_DMG_DS_STORE              "${CMAKE_CURRENT_SOURCE_DIR}/packaging/DS_Store")
 
 # NSIS Package options
-set(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\mapgui.exe")
-set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}/gui/icons\\\\mapgui.ico")
-set(CPACK_NSIS_MUI_UNIICON "${CMAKE_CURRENT_SOURCE_DIR}/gui/icons\\\\mapgui.ico")
+set(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\TeleSculptor.exe")
+set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}/gui/icons\\\\telesculptor.ico")
+set(CPACK_NSIS_MUI_UNIICON "${CMAKE_CURRENT_SOURCE_DIR}/gui/icons\\\\telesculptor.ico")
 set(CPACK_NSIS_CONTACT "${CPACK_PACKAGE_CONTACT}")
 set(CPACK_NSIS_HELP_LINK "http://www.kitware.com")
 set(CPACK_NSIS_URL_INFO_ABOUT "http://www.kwiver.org")
 set(CPACK_NSIS_MENU_LINKS "http://www.kwiver.org" "KWIVER Website")
 
 if(MAPTK_ENABLE_GUI)
-  set (CPACK_PACKAGE_EXECUTABLES "mapgui" "MAP-Tk GUI" ${CPACK_PACKAGE_EXECUTABLES})
+  set (CPACK_PACKAGE_EXECUTABLES "TeleSculptor" "MAP-Tk TeleSculptor" ${CPACK_PACKAGE_EXECUTABLES})
 endif()
 
 if(APPLE)

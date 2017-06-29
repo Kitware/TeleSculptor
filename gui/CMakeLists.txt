@@ -131,17 +131,17 @@ qt4_add_resources(gui_res_sources ${gui_resources})
 qte_amc_wrap_ui(gui_amc_sources ActionManagerDialog ${gui_am_ui})
 
 if (WIN32)
-  set(gui_icon_source mapgui.rc)
+  set(gui_icon_source TeleSculptor.rc)
 endif()
 if(APPLE)
-  set(gui_icon_source icons/mapgui.icns)
-  set(MACOSX_BUNDLE_ICON_FILE mapgui.icns)
-  set_source_files_properties(icons/mapgui.icns PROPERTIES
+  set(gui_icon_source icons/TeleSculptor.icns)
+  set(MACOSX_BUNDLE_ICON_FILE TeleSculptor.icns)
+  set_source_files_properties(icons/TeleSculptor.icns PROPERTIES
     MACOSX_PACKAGE_LOCATION Resources)
 endif()
 
 set(no_install ON)
-kwiver_add_executable(mapgui
+kwiver_add_executable(TeleSculptor
   WIN32 MACOSX_BUNDLE
   ${gui_sources}
   ${gui_ui_sources}
@@ -152,7 +152,7 @@ kwiver_add_executable(mapgui
 )
 unset(no_install)
 
-target_link_libraries(mapgui
+target_link_libraries(TeleSculptor
   maptk
   kwiver::kwiver_algo_core
   kwiver::vital_vpm
@@ -176,24 +176,24 @@ target_link_libraries(mapgui
 
 if(vtkWebGLExporter_LOADED)
   message(STATUS "Module vtkWebGLExporter present: wekGL export enabled")
-  target_compile_definitions(mapgui PRIVATE -DVTKWEBGLEXPORTER)
-  target_link_libraries(mapgui vtkWebGLExporter)
+  target_compile_definitions(TeleSculptor PRIVATE -DVTKWEBGLEXPORTER)
+  target_link_libraries(TeleSculptor vtkWebGLExporter)
 endif()
 
 if(APPLE)
   file(STRINGS "${MAPTK_SOURCE_DIR}/LICENSE" copyright_line
     LIMIT_COUNT 1 REGEX "Copyright")
 
-  set_target_properties(mapgui PROPERTIES
-    OUTPUT_NAME MAP-Tk
-    MACOSX_BUNDLE_NAME "MAP-Tk"
-    MACOSX_BUNDLE_INFO_STRING "MAP-Tk v${MAPTK_VERSION} GUI Application"
+  set_target_properties(TeleSculptor PROPERTIES
+    OUTPUT_NAME TeleSculptor
+    MACOSX_BUNDLE_NAME "MAP-Tk TeleSculptor"
+    MACOSX_BUNDLE_INFO_STRING "MAP-Tk v${MAPTK_VERSION} TeleSculptor Application"
     MACOSX_BUNDLE_SHORT_VERSION_STRING "${MAPTK_VERSION}"
     MACOSX_BUNDLE_COPYRIGHT "${copyright_line}"
     )
 endif()
 
-kwiver_install(TARGETS mapgui
+kwiver_install(TARGETS TeleSculptor
   ${exports}
   RUNTIME DESTINATION bin
   BUNDLE DESTINATION "${CMAKE_BUNDLE_LOCATION}")
@@ -203,9 +203,9 @@ kwiver_install(TARGETS mapgui
 SET(plugin_dest_dir bin)
 SET(qtconf_dest_dir bin)
 set(dest_prefix "\${DESTDIR}\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}")
-set(gui-exe "${dest_prefix}/bin/mapgui${CMAKE_EXECUTABLE_SUFFIX}")
+set(gui-exe "${dest_prefix}/bin/TeleSculptor${CMAKE_EXECUTABLE_SUFFIX}")
 if(APPLE)
-  set(gui-exe "${dest_prefix}/MacOS/MAP-Tk")
+  set(gui-exe "${dest_prefix}/MacOS/TeleSculptor")
   set(plugin_dest_dir lib)
   set(qtconf_dest_dir Resources)
 endif()

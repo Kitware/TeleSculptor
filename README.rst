@@ -1,7 +1,7 @@
 ############################################
                    MAP-Tk
 ############################################
-.. image:: /gui/icons/64x64/mapgui.png
+.. image:: /gui/icons/64x64/telesculptor.png
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Motion-imagery Aerial Photogrammetry Toolkit
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -252,7 +252,7 @@ If ``MAPTK_ENABLE_MANUALS`` is enabled, and CMake finds, or is provided with, a
 path to the Python executable which is able to import docutils, then the user
 manuals are built as part of the normal build process under the target
 "manuals".  The GUI manual can be viewed from inside the GUI by choosing the
-"MapGUI User Manual" action from the "Help" menu.
+"MAP-Tk TeleSculptor User Manual" action from the "Help" menu.
 
 
 Testing

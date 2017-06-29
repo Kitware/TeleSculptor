@@ -1,5 +1,5 @@
 ===============================================================================
-  MAP-Tk GUI
+  MAP-Tk TeleSculptor
 ===============================================================================
 
 .. role:: f
@@ -396,10 +396,10 @@ View Menu
 Help Menu
 ---------
 
-:icon:`help-manual` MapGUI User Manual
+:icon:`help-manual` MAP-Tk TeleSculptor User Manual
   Displays the user manual (i.e. this document) in the default web browser.
 
-:icon:`mapgui` About MapGUI
+:icon:`telesculptor` About MAP-Tk TeleSculptor
   Shows copyright and version information about the application.
 
 Glossary
