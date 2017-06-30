@@ -10,18 +10,21 @@
 Overview
 ========
 
-The MAP-Tk GUI provides a means of visualizing the output of MAP-Tk data and
-results. Entities available for display include the cameras, camera imagery,
-feature points, and landmarks.
+The MAP-Tk TeleSculptor graphical applicaton provides a means of computing
+structure-from-motion and visualizing the results, as well as loading results
+from the MAP-Tk command line tools. Entities available for display include the
+images or video frames, tracked feature points, cameras frustums, 3D landmark
+points, and dense depth maps.
 
-The GUI consists of a primary (world) view, a secondary (camera) view, and a
-camera selection panel. The world view is a three dimensional view that shows
-the cameras and landmarks in the computed world coordinate system. The camera
-view shows the imagery from a single camera along with corresponding feature
-points, projected landmarks, and estimation residuals. The camera selection
-panel provides controls to select the active camera and to use the slideshow
-mode. The camera view and camera selection panel are dockable and can be
-rearranged or detached to suit user preference.
+The GUI consists of a primary (world) view, secondary (camera and depth) views,
+and a frame selection panel. The world view is a three dimensional view that
+shows the cameras and landmarks in the computed world coordinate system. The
+camera view shows the imagery from a single camera along with corresponding
+feature points, projected landmarks, and estimation residuals. The depth map
+view shows an estimated depth image for the current frame, if one is available.
+The frame selection panel provides controls to select the active camera and to
+use the slideshow mode. The camera view, depth view, and camera selection panel,
+are dockable and can be rearranged or detached to suit user preference.
 
 World View
 ==========
@@ -36,11 +39,15 @@ semi-arbitrary length, with the active camera highlighted (see
 `Camera Options`_). The "camera path", which is a line connecting the camera
 centers, can also be displayed.
 
-.. TODO update above when we add support for cameras as points
-
 Additionally, the world view can display a representation of the ground plane
 (i.e. the world coordinate plane :f:`z = 0`), and can display the frame image
-for the active camera projected to the same.
+for the active camera projected to that plane.  These projections result in
+a stablized view of the video if the scene is largely planar and that plane
+has been algined with `z = 0`.  There is a tool avaialable to reorient the
+data for this purpose.
+
+The world view also supports visualization of the depth image for the current
+frame as either a dense RGB point cloud or a surface mesh.
 
 Tool Bar
 --------
