@@ -90,6 +90,8 @@ fletch_cmake_opts="\
 build_repo fletch https://github.com/Kitware/fletch.git
 
 # Build and install KWIVER, minimum need to build MAP-Tk
+kwiver_cmake_opts="\
+ -DKWIVER_ENABLE_ARROWS=ON"
 build_repo kwiver https://github.com/Kitware/kwiver.git
 
 # Build and install QtExtensions
