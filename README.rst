@@ -299,7 +299,7 @@ adjustment pipeline.  The other tools are for debugging and analysis purposes.
 ``maptk_detect_and_describe``
   This optional tool pre-computes feature points and descriptors on each frame
   of video and caches them on disk.  The same is also done in the
-  ``maptk_track_featuers``, so this step is not required.  However, this tool
+  ``maptk_track_features``, so this step is not required.  However, this tool
   makes better use of threading to process all frames in parallel.
 
 ``maptk_track_featues``
