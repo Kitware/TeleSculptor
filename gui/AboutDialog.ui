@@ -35,7 +35,7 @@
       </size>
      </property>
      <property name="pixmap">
-      <pixmap resource="icons/icons.qrc">:/icons/64x64/mapgui</pixmap>
+      <pixmap resource="icons/icons.qrc">:/icons/64x64/telesculptor</pixmap>
      </property>
     </widget>
    </item>
@@ -65,8 +65,8 @@ p { margin-top: 0px; margin-bottom: 0px; }
       <property name="text">
        <string>&lt;html&gt;&lt;body&gt;
 &lt;p&gt;
-  The MAP-Tk GUI:&lt;br/&gt;
-  Visualization tool for MAP-Tk input imagery, feature detection, camera registration, and landmark estimation
+  MAP-Tk TeleSculptor:&lt;br/&gt;
+  Graphical tool for image and video structure-from-motion, photogrammetry, and 3D surface reconstruction.
 &lt;/p&gt;
 &lt;p&gt;
   &lt;a href=&quot;http://www.github.com/kitware/maptk&quot;&gt;http://www.github.com/kitware/maptk/&lt;/a&gt;&lt;br/&gt;

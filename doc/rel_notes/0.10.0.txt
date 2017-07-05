@@ -4,13 +4,42 @@ MAP-Tk v0.10.0 Release Notes
 This is a minor release of MAP-Tk that provides both new functionality and
 fixes over the previous v0.9.0 release.  This release introduces another big
 refactoring of the MAP-Tk code base.  MAP-Tk now builds against KWIVER instead
-of the stand-along Vital repository.  Vital has moved into KWIVER and the stand
+of the stand-alone Vital repository.  Vital has moved into KWIVER and the stand
 alone Vital repository is discontinued.  All of the plugins previously located
 in MAP-Tk have also moved into KWIVER.  The plugins are now called "arrows".
 That leaves this project, MAP-Tk, with a collection of tools and scripts for
-photogrammetry.  MAP-Tk no longer a toolkit.  The toolkit has become KWIVER.
-MAP-Tk is the collection of photogrammetry tools built on KWIVER.  As such,
-we may rebrand MAP-Tk in a future release to make this more clear.
+photogrammetry.  MAP-Tk is no longer a software development kit.  The SDK has
+become KWIVER.  MAP-Tk is now the collection of end user photogrammetry tools
+built on top of KWIVER.
+
+The GUI application is now the central part of the MAP-Tk project, and this
+release of MAP-Tk gives the MAP-Tk GUI a new name.  It was previously
+just called MAP-Tk GUI or MapGUI.  We are now calling it "TeleSculptor".
+TeleSculptor has become more than just a tool for visualization of results.
+Starting in this release you can now run all the steps of an end-to-end
+structure-from-motion pipeline directly in the GUI and get live visualization
+of the results as they are computed.
+
+The command line tools in MAP-Tk now use a video_input API from KWIVER to allow
+direct processing of video files without needing to first decode the video into
+a list of images.  This feature has not yet come to TeleSculptor, but will
+in a future release.  Image lists are still handled by the video_input API
+through an image list reader backend.
+
+There are two new command line tools in this release of MAP-Tk:
+maptk_detect_and_describe and maptk_apply_gcp.  The first tool allows you to
+pre-compute feature detections and descriptors for each frame of video and
+cache them on disk.  The same algorithms are already run in
+maptk_track_features but the detect_and_describe tool runs them faster by
+processing each frame in parallel using a thread pool.  The second tool allows
+you to post process a bundle adjustment solution to apply or re-apply ground
+control points (GCPs) for geo-registration.  The same algorithms are already
+run at the end of maptk_bundle_adjust_tracks, but maptk_apply_gcp allows you to
+easily reapply GCPs without re-running bundle adjustment.
+
+For additional details about the changes in this release, see the detailed
+notes below as well as the release notes of the corresponding KWIVER v1.1.0
+release.
 
 
 Updates since v0.9.0
@@ -93,14 +122,14 @@ Tools
    MPEG) with optional KLV metadata as well as lists of images with optional
    lists of POS metadata files.
 
-Visualization Application
+TeleSculptor Application
 
  * Updated the GUI to use the new plugin loading framework from KWIVER.
 
  * Extended the tool framework in the GUI to handle callbacks from the tools
    to allow some tools to provide updated visualization of intermediate results
    while they are still running.  Also extended the tool framework to allow
-   creatiion of new cameras and landmarks, not just update existing ones.
+   creation of new cameras and landmarks, not just update existing ones.
 
  * Added a cancel option for GUI computation tools which run for a long time
    and use callbacks to provide updates.  The cancel button allows for early
@@ -146,7 +175,7 @@ Visualization Application
 Fixes since v0.9.0
 ------------------
 
-Visualization Application
+TeleSculptor Application
 
  * Removed duplicate loading and filtering of depth maps between the World view
    and Depth Map view.  This makes it twice as fast.

@@ -1,14 +1,14 @@
 ############################################
                    MAP-Tk
 ############################################
-.. image:: /gui/icons/64x64/mapgui.png
+.. image:: /gui/icons/64x64/telesculptor.png
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Motion-imagery Aerial Photogrammetry Toolkit
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-MAP-Tk is an open source C++ collection of libraries and tools for making
-measurements from aerial video.  Initial capability focuses on estimating
-the camera flight trajectory and a sparse 3D point cloud of the scene.
+MAP-Tk started as an open source C++ collection of libraries and tools for
+making measurements from aerial video.  Initial capability focused on
+estimating the camera flight trajectory and a sparse 3D point cloud of a scene.
 These products are jointly optimized via sparse bundle adjustment and are
 geo-localized if given additional control points or GPS metadata.
 
@@ -32,13 +32,19 @@ library.  Earlier versions of MAP-Tk contained these core data structures,
 algorithms, and plugins, but these have since been moved to KWIVER for easier
 reuse across projects.  What remains in this repository are the tools, scripts,
 and applications required to apply KWIVER algorithms to photogrammetry problems.
+As MAP-Tk capabilities have continued to migrate up into KWIVER this repository
+has become less of a "toolkit" and more of an end user application that uses
+the KWIVER toolkit.  Additionally the capabilities are starting to branch out
+beyond aerial data.  As a result, we are transitioning away from the MAP-Tk
+name as this repository becomes more about the GUI application named
+TeleSculptor.
 
-A Qt GUI application is provided to
-assist with visualization of data and results with the help of VTK.
-The screenshots below show the MAP-Tk GUI visualizing results of MAP-Tk
-run on example videos from the `VIRAT Video Dataset`_ and `CLIF 2007 Dataset`_.
-More information about this example data can be found in the
-`examples <examples>`_ directory.
+TeleSculptor is a GUI application built on Qt.  It provides a graphical
+interface to run photogrammetry algorithms and assist with visualization of
+data and results with the help of VTK.  The screenshots below show TeleSculptor
+running on example videos from the `VIRAT Video Dataset`_ and
+`CLIF 2007 Dataset`_.  More information about this example data can be found in
+the `examples <examples>`_ directory.
 
 .. image:: /doc/screenshot/mapgui_screenshot_osx.png
    :alt: Mac OS X Screenshot
@@ -47,16 +53,15 @@ More information about this example data can be found in the
 .. image:: /doc/screenshot/mapgui_screenshot_linux.png
    :alt: Linux Screenshot
 
-The MAP-Tk GUI now supports visualization of depth maps, but compution of
-depth maps is not yet supported by MAP-Tk.  Instead, the cameras computed
+TeleSculptor now supports visualization of depth maps, but compution of
+depth maps is not yet supported by KWIVER.  Instead, the cameras computed
 by MAP-Tk can be used with a fork of PlaneSweepLib_ that reads in the cameras
 and images and produces depthmaps that the GUI can load.  We are working on
-extending MAP-Tk to compute depth maps directly.
+extending MAP-Tk TeleSculptor to compute depth maps directly.
 
 While the initial software implementation relies on batch post-processing
 of aerial video, our intent is to move to an online video stream processing
-framework and optimize the algorithms to real-time performance for use
-onboard unmanned aerial vehicles.
+framework and optimize the algorithm to run in real-time.
 
 
 Overview of Directories
@@ -84,8 +89,8 @@ Building MAP-Tk
 MAP-Tk uses CMake (www.cmake.org) for easy cross-platform compilation. The
 minimum required version of CMake is 3.0, but newer versions are recommended.
 
-Currently, a compiler with at least partial C++11 support (e.g. GCC 4.4, Visual
-Studio 2013) is required.
+As with KWIVER, MAP-Tk requires C++11 compliant compiler
+(e.g. GCC 4.8, Visual Studio 2015).
 
 
 Running CMake
@@ -135,7 +140,7 @@ Required
 ''''''''
 
 The only hard dependencies of MAP-Tk are on the C++ standard library,
-KWIVER_ (|>=| 1.0), and Eigen_ (|>=| 3.0; also required by KWIVER).
+KWIVER_ (|>=| 1.1), and Eigen_ (|>=| 3.0; also required by KWIVER).
 
 Recommended KWIVER Plugins
 ''''''''''''''''''''''''''
@@ -173,14 +178,15 @@ algorithms which are optionally used by MAP-Tk:
     (note: requires unreleased version, use Fletch_ to build)
     http://vxl.sourceforge.net/
 
-GUI
-'''
+TeleSculptor
+''''''''''''
 
-The visualization application (GUI) is optional, and has additional
-dependencies.  To build the GUI, you need:
+The MAP-Tk TeleSculptor GUI application is an optional (but recommended)
+part of the MAP-Tk build.  It has additional dependencies.
+To build the TeleSculptor, you need:
 
 * Qt 4
-    version 4.8.0 or greater (4.8.6 or greater recommended)
+    version 4.8.0 or greater (4.8.6 or greater recommended, provided by Fletch)
     http://www.qt.io/
 
 * qtExtensions
@@ -188,7 +194,7 @@ dependencies.  To build the GUI, you need:
     http://www.github.com/kitware/qtextensions
 
 * VTK
-    version 6.2
+    version 6.2 (provided by FLetch)
     http://www.vtk.org/
 
 Most of the dependencies for KWIVER and MAP-Tk can be provided by a
@@ -252,7 +258,7 @@ If ``MAPTK_ENABLE_MANUALS`` is enabled, and CMake finds, or is provided with, a
 path to the Python executable which is able to import docutils, then the user
 manuals are built as part of the normal build process under the target
 "manuals".  The GUI manual can be viewed from inside the GUI by choosing the
-"MapGUI User Manual" action from the "Help" menu.
+"MAP-Tk TeleSculptor User Manual" action from the "Help" menu.
 
 
 Testing
@@ -290,6 +296,12 @@ The primary tools are ``maptk_track_features`` and
 ``maptk_bundle_adjust_tracks``. Together these form the sparse bundle
 adjustment pipeline.  The other tools are for debugging and analysis purposes.
 
+``maptk_detect_and_describe``
+  This optional tool pre-computes feature points and descriptors on each frame
+  of video and caches them on disk.  The same is also done in the
+  ``maptk_track_features``, so this step is not required.  However, this tool
+  makes better use of threading to process all frames in parallel.
+
 ``maptk_track_featues``
   Takes a list of images and produces a feature tracks file.
 
@@ -297,6 +309,13 @@ adjustment pipeline.  The other tools are for debugging and analysis purposes.
   Takes feature tracks and produces cameras (KRTD files) and 3D points (PLY
   file). Can also take input POS files or geo-reference points and produce
   optimized POS files.
+
+``maptk_apply_gcp``
+  This tool takes an existing solution from ``maptk_bundle_adjust_tracks``
+  and uses provided ground control points (GCPs) to fit a 3D similarity
+  transformation to align the solution to the GCPs.  The same is done in
+  the bundle adjust tool, but this tool lets you update and reapply GCPs
+  without recomputing bundle adjustment.
 
 ``maptk_pos2krtd``
   Takes POS files and directly produces KRTD.

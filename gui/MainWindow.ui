@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MapGUI</string>
+   <string>MAP-Tk TeleSculptor</string>
   </property>
   <widget class="WorldView" name="worldView"/>
   <widget class="QMenuBar" name="menubar">
@@ -230,7 +230,7 @@
      <normaloff>:/icons/16x16/help-manual</normaloff>:/icons/16x16/help-manual</iconset>
    </property>
    <property name="text">
-    <string>MapGUI User &amp;Manual</string>
+    <string>MAP-Tk TeleSculptor User &amp;Manual</string>
    </property>
    <property name="shortcut">
     <string>F1</string>
@@ -239,10 +239,10 @@
   <action name="actionAbout">
    <property name="icon">
     <iconset resource="icons/icons.qrc">
-     <normaloff>:/icons/16x16/mapgui</normaloff>:/icons/16x16/mapgui</iconset>
+     <normaloff>:/icons/16x16/telesculptor</normaloff>:/icons/16x16/telesculptor</iconset>
    </property>
    <property name="text">
-    <string>&amp;About MapGUI</string>
+    <string>&amp;About MAP-Tk TeleSculptor</string>
    </property>
   </action>
   <action name="actionShowMatchMatrix">
