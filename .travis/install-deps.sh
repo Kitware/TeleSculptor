@@ -6,7 +6,7 @@ export PATH=$INSTALL_DIR/bin:$PATH
 HASH_DIR=$INSTALL_DIR/hashes
 mkdir -p $HASH_DIR
 
-# Make a directory to test installation of KWIVER into
+# Make a directory to test installation of MAP-Tk into
 mkdir -p $HOME/install
 
 # check if directory is cached

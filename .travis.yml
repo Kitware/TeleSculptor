@@ -44,4 +44,5 @@ script:
           -DMAPTK_ENABLE_TESTING:BOOL=ON
           ../
   - make -j2
+  - make install
   - ctest
