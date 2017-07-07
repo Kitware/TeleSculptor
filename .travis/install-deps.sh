@@ -6,6 +6,9 @@ export PATH=$INSTALL_DIR/bin:$PATH
 HASH_DIR=$INSTALL_DIR/hashes
 mkdir -p $HASH_DIR
 
+# Make a directory to test installation of MAP-Tk into
+mkdir -p $HOME/install
+
 # check if directory is cached
 if [ ! -f "$INSTALL_DIR/bin/cmake" ]; then
   cd /tmp
@@ -81,37 +84,17 @@ build_repo ()
 }
 
 
-# Build and install Fletch
+# Build and install a bare minimum Fletch for MAP-Tk
 fletch_install_cmd=":" # no-op
 fletch_cmake_opts="\
  -Dfletch_BUILD_INSTALL_PREFIX=$INSTALL_DIR/ \
  -Dfletch_ENABLE_Eigen=ON \
- -Dfletch_ENABLE_GLog=ON \
- -Dfletch_ENABLE_GFlags=ON \
- -Dfletch_ENABLE_Ceres=ON \
- -Dfletch_ENABLE_SuiteSparse=ON \
- -Dfletch_ENABLE_OpenCV=ON \
- -Dfletch_ENABLE_VTK=ON
- -Dfletch_ENABLE_VXL=ON
- -Dfletch_ENABLE_OpenCV_highgui=ON"
+ -Dfletch_ENABLE_VTK=ON"
 build_repo fletch https://github.com/Kitware/fletch.git
 
-# Build and install KWIVER
+# Build and install KWIVER, minimum need to build MAP-Tk
 kwiver_cmake_opts="\
- -DKWIVER_ENABLE_ARROWS=ON \
- -DKWIVER_ENABLE_CERES=ON \
- -DKWIVER_ENABLE_C_BINDINGS=OFF \
- -DKWIVER_ENABLE_DOCS=OFF \
- -DKWIVER_ENABLE_LOG4CXX=OFF \
- -DKWIVER_ENABLE_OPENCV=ON \
- -DKWIVER_ENABLE_PROJ=ON \
- -DKWIVER_ENABLE_PYTHON=OFF \
- -DKWIVER_ENABLE_SPROKIT=OFF \
- -DKWIVER_ENABLE_TESTS=OFF \
- -DKWIVER_ENABLE_TOOLS=OFF \
- -DKWIVER_ENABLE_TRACK_ORACLE=OFF \
- -DKWIVER_ENABLE_VISCL=OFF \
- -DKWIVER_ENABLE_VXL=ON"
+ -DKWIVER_ENABLE_ARROWS=ON"
 build_repo kwiver https://github.com/Kitware/kwiver.git
 
 # Build and install QtExtensions
