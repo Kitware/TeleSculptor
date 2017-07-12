@@ -42,15 +42,15 @@ TeleSculptor.
 TeleSculptor is a GUI application built on Qt.  It provides a graphical
 interface to run photogrammetry algorithms and assist with visualization of
 data and results with the help of VTK.  The screenshots below show TeleSculptor
-running on example videos from the `VIRAT Video Dataset`_ and
-`CLIF 2007 Dataset`_.  More information about this example data can be found in
-the `examples <examples>`_ directory.
+running on example videos from the `VIRAT Video Dataset`_,
+`CLIF 2007 Dataset`_, and other public data sets.  More information about this
+example data can be found in the `examples <examples>`_ directory.
 
 .. image:: /doc/screenshot/telesculptor_screenshot_macos.png
    :alt: MacOS Screenshot
 .. image:: /doc/screenshot/mapgui_screenshot_windows.png
    :alt: Windows Screenshot
-.. image:: /doc/screenshot/mapgui_screenshot_linux.png
+.. image:: /doc/screenshot/telesculptor_screenshot_linux.png
    :alt: Linux Screenshot
 
 TeleSculptor now supports visualization of depth maps, but compution of
