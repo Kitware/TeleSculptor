@@ -46,8 +46,8 @@ running on example videos from the `VIRAT Video Dataset`_ and
 `CLIF 2007 Dataset`_.  More information about this example data can be found in
 the `examples <examples>`_ directory.
 
-.. image:: /doc/screenshot/mapgui_screenshot_osx.png
-   :alt: Mac OS X Screenshot
+.. image:: /doc/screenshot/telesculptor_screenshot_macos.png
+   :alt: MacOS Screenshot
 .. image:: /doc/screenshot/mapgui_screenshot_windows.png
    :alt: Windows Screenshot
 .. image:: /doc/screenshot/mapgui_screenshot_linux.png
