@@ -48,7 +48,7 @@ example data can be found in the `examples <examples>`_ directory.
 
 .. image:: /doc/screenshot/telesculptor_screenshot_macos.png
    :alt: MacOS Screenshot
-.. image:: /doc/screenshot/mapgui_screenshot_windows.png
+.. image:: /doc/screenshot/telesculptor_screenshot_windows.png
    :alt: Windows Screenshot
 .. image:: /doc/screenshot/telesculptor_screenshot_linux.png
    :alt: Linux Screenshot
