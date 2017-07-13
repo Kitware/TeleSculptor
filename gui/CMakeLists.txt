@@ -260,7 +260,7 @@ if (MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
 
   install(DIRECTORY "${KWIVER_DIR}/lib/${BINARY_DIR}/modules" DESTINATION lib
           COMPONENT Runtime
-          FILES_MATCHING PATTERN "*${CMAKE_SHARED_LIBRARY_SUFFIX}" )
+          FILES_MATCHING PATTERN "*kwiver_algo*${CMAKE_SHARED_LIBRARY_SUFFIX}" )
 
   get_property( bundle_path GLOBAL PROPERTY maptk_bundle_paths)
 
