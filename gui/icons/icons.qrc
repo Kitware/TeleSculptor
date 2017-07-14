@@ -18,6 +18,7 @@
     <file alias="residual">16x16/residual.png</file>
     <file alias="save">16x16/save.png</file>
     <file alias="view-reset">16x16/view-reset.png</file>
+    <file alias="volume">16x16/volume.png</file>
   </qresource>
   <qresource prefix="icons/22x22">
     <file alias="camera">22x22/camera.png</file>
@@ -37,6 +38,7 @@
     <file alias="residual">22x22/residual.png</file>
     <file alias="save">22x22/save.png</file>
     <file alias="view-reset">22x22/view-reset.png</file>
+    <file alias="volume">22x22/volume.png</file>
   </qresource>
   <qresource prefix="icons/32x32">
     <file alias="telesculptor">32x32/telesculptor.png</file>
