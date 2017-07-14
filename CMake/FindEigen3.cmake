@@ -74,6 +74,7 @@ else (EIGEN3_INCLUDE_DIR)
   if(EIGEN3_INCLUDE_DIR)
     _eigen3_check_version()
   endif(EIGEN3_INCLUDE_DIR)
+
   restore_find_root_context(EIGEN3)
 
   include(FindPackageHandleStandardArgs)

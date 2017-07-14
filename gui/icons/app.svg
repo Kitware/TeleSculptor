@@ -581,7 +581,7 @@
   <g
      id="128_icon"
      inkscape:label="#icon"
-     inkscape:export-filename="/usr/local/src/matthew/work/maptk/gui/icons/128x128/mapgui.png"
+     inkscape:export-filename="/usr/local/src/matthew/work/maptk/gui/icons/128x128/telesculptor.png"
      inkscape:export-xdpi="90"
      inkscape:export-ydpi="90">
     <rect
@@ -762,7 +762,7 @@
      inkscape:label="#icon"
      id="64_icon"
      transform="matrix(0.5,0,0,0.5,128,0)"
-     inkscape:export-filename="/usr/local/src/matthew/work/maptk/gui/icons/64x64/mapgui.png"
+     inkscape:export-filename="/usr/local/src/matthew/work/maptk/gui/icons/64x64/telesculptor.png"
      inkscape:export-xdpi="90"
      inkscape:export-ydpi="90">
     <rect
@@ -984,7 +984,7 @@
      inkscape:label="#icon"
      id="48_icon"
      transform="matrix(0.375,0,0,0.375,128,64)"
-     inkscape:export-filename="/usr/local/src/matthew/work/maptk/gui/icons/48x48/mapgui.png"
+     inkscape:export-filename="/usr/local/src/matthew/work/maptk/gui/icons/48x48/telesculptor.png"
      inkscape:export-xdpi="90"
      inkscape:export-ydpi="90">
     <rect
@@ -1209,7 +1209,7 @@
      transform="matrix(0.25,0,0,0.25,176,80)"
      id="32_icon"
      inkscape:label="#icon"
-     inkscape:export-filename="/usr/local/src/matthew/work/maptk/gui/icons/32x32/mapgui.png"
+     inkscape:export-filename="/usr/local/src/matthew/work/maptk/gui/icons/32x32/telesculptor.png"
      inkscape:export-xdpi="90"
      inkscape:export-ydpi="90">
     <rect
@@ -1467,7 +1467,7 @@
      inkscape:label="#icon"
      id="g4452"
      transform="matrix(0.125,0,0,0.125,176,64)"
-     inkscape:export-filename="/usr/local/src/matthew/work/maptk/gui/icons/16x16/mapgui.png"
+     inkscape:export-filename="/usr/local/src/matthew/work/maptk/gui/icons/16x16/telesculptor.png"
      inkscape:export-xdpi="90"
      inkscape:export-ydpi="90">
     <rect

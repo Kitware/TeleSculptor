@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@
 #include <vital/algo/initialize_cameras_landmarks.h>
 
 #include <vital/config/config_block_io.h>
+#include <vital/vital_foreach.h>
 
 #include <qtStlUtil.h>
 

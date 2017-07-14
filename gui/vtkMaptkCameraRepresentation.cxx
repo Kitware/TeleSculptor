@@ -358,7 +358,7 @@ void vtkMaptkCameraRepresentation::Update()
     vtkPoints* points = this->Internal->PathPolyData->GetPoints();
     points->Allocate(this->Internal->Cameras.size());
     vtkCellArray* lines = this->Internal->PathPolyData->GetLines();
-    lines->InsertNextCell(this->Internal->Cameras.size());
+    lines->InsertNextCell(static_cast<int>(this->Internal->Cameras.size()));
 
     VITAL_FOREACH(auto const& camData, this->Internal->Cameras)
     {

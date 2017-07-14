@@ -40,7 +40,14 @@ import scipy.ndimage.morphology as morph
 import math
 
 import homography_io
-from homography_extents import compute_extents
+from homography_extents import compute_extents, compute_average_scale
+
+
+def image_file_dims(filename):
+    """Return the image size (height, width) without loading all the pixels"""
+    from PIL import Image
+    img = Image.open(filename)
+    return img.size[::-1]
 
 
 def main():
@@ -56,9 +63,18 @@ def main():
                       action="store_true", dest="blend",
                       help="blend the pixels when creating the mosaic")
 
+    parser.add_option("-m", "--match-resolution", default=False,
+                      action="store_true", dest="match_resolution",
+                      help="automatically estimate the output image scale "
+                           "to match the input resolution on average")
+
     parser.add_option("-f", "--frame-width", default=0,
                       type="int", dest="frame",
                       help="draw a frame around each image")
+
+    parser.add_option("-s", "--scale", default=1.0,
+                      type="float", dest="scale",
+                      help="scale of the output mosaic size")
 
     parser.add_option("-a", "--all-frame", default=False,
                       action="store_true", dest="all_frame",
@@ -80,8 +96,17 @@ def main():
                  ") does not match number of images ("+
                  str(len(image_files))+")")
 
-    images = [cv2.imread(fn) for fn in image_files]
-    shapes = [img.shape[:2] for img in images]
+    shapes = [image_file_dims(fn) for fn in image_files]
+    img = cv2.imread(image_files[0])
+    img_dtype = img.dtype
+
+    scale = options.scale
+    if options.match_resolution:
+        scale = 1.0 / compute_average_scale([H for _, H in homogs], shapes)
+
+    sH = np.diag([scale, scale, 1.0])
+    homogs = [(f, sH * H) for f, H in homogs]
+
 
     if options.expand:
         x_rng, y_rng = compute_extents([H for _, H in homogs], shapes)
@@ -90,17 +115,20 @@ def main():
                         int(math.ceil(y_rng[1] - y_rng[0])))
     else:
         H_offset = np.eye(3)
-        mosaic_shape = images[0].shape[1::-1]
+        mosaic_shape = img.shape[1::-1]
 
     if options.blend:
         out_type = np.int32
     else:
-        out_type = images[0].dtype
+        out_type = img_dtype
 
+    print "creating mosaic of size", mosaic_shape
     mosaic = np.zeros(mosaic_shape[::-1] + (4,), out_type)
     edges = np.zeros(mosaic.shape[:2], np.bool)
-    for fname, img, (_, H) in zip(image_files, images, homogs):
+    for fname, (_, H) in zip(image_files, homogs):
+        print "processing", fname
         H = H_offset * H
+        img = cv2.imread(fname)
         imgt = cv2.cvtColor(img, cv2.COLOR_BGR2BGRA)
         warped = cv2.warpPerspective(imgt, H, mosaic_shape)
         if options.frame > 0:
@@ -120,7 +148,7 @@ def main():
         mask = np.nonzero(mosaic[:,:,3] > 255)
         for i in range(4):
             mosaic[:,:,i][mask] /= mosaic[:,:,3][mask] / 255
-        mosaic.astype(images[0].dtype)
+        mosaic.astype(img_dtype)
     if options.frame > 0 and options.all_frame:
         mosaic[edges] = (0,0,255,255)
     cv2.imwrite(mosaic_filename, mosaic)

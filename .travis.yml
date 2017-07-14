@@ -29,11 +29,9 @@ addons:
     - ubuntu-toolchain-r-test
     packages:
     - g++-4.8
-    - libproj-dev
     - libgl1-mesa-dev
     - libxt-dev
     - libqt4-dev
-    - libatlas-base-dev
 
 script:
   - export PATH=$HOME/deps/bin:$PATH
@@ -41,8 +39,10 @@ script:
   - cd build
   - cmake -DCMAKE_C_COMPILER=$C_COMPILER
           -DCMAKE_CXX_COMPILER=$CXX_COMPILER
+          -DCMAKE_INSTALL_PREFIX=$HOME/install
           -DMAPTK_ENABLE_GUI:BOOL=ON
           -DMAPTK_ENABLE_TESTING:BOOL=ON
           ../
   - make -j2
+  - make install
   - ctest

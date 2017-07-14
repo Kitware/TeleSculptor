@@ -35,7 +35,7 @@ kwiver_configure_file( create_manual.py
   )
 
 set(outputs)
-foreach(man gui)
+foreach(man telesculptor)
   set(_in "${CMAKE_CURRENT_SOURCE_DIR}/${man}.rst")
   set(_out "${manual_dir}/${man}.html")
   add_custom_command(

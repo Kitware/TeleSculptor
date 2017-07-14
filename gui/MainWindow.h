@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -64,6 +64,8 @@ public slots:
   void saveCameras(QString const& path);
   void saveLandmarks();
   void saveLandmarks(QString const& path);
+  void saveTracks();
+  void saveTracks(QString const& path);
   void saveDepthPoints();
   void saveDepthPoints(QString const& path);
 

@@ -42,16 +42,8 @@ if(DEFINED BUILD_SHARED_LIBS AND NOT BUILD_SHARED_LIBS)
 endif()
 set(BUILD_SHARED_LIBS ON)
 
-# default to MAPTK_LIB_SUFFIX for backwards compatibility
-if(DEFINED MAPTK_LIB_SUFFIX)
-  message(WARNING "MAPTK_LIB_SUFFIX is deprecated. Please use LIB_SUFFIX instead.")
-endif()
 set(LIB_SUFFIX "${MAPTK_LIB_SUFFIX}" CACHE STRING "String suffix appended to the library directory we install into")
 mark_as_advanced( LIB_SUFFIX )
-
-if ( IS_DIRECTORY ${fletch_DIR} )
-  find_package( fletch NO_MODULE )
-endif()
 
 include( maptk-depends )
 
@@ -152,6 +144,7 @@ kwiver_configure_file( maptk-install-config
   "${MAPTK_SOURCE_DIR}/CMake/maptk-config-install.cmake.in"
   "${MAPTK_CONFIG_INSTALL_FILE}"
   EIGEN3_INCLUDE_DIR
+  MAPTK_VERSION
   maptk_libs
   module_path
   )
@@ -199,16 +192,16 @@ set(CPACK_PACKAGE_ICON              "${CMAKE_CURRENT_SOURCE_DIR}/packaging\\\\ma
 set(CPACK_DMG_DS_STORE              "${CMAKE_CURRENT_SOURCE_DIR}/packaging/DS_Store")
 
 # NSIS Package options
-set(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\mapgui.exe")
-set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}/gui/icons\\\\mapgui.ico")
-set(CPACK_NSIS_MUI_UNIICON "${CMAKE_CURRENT_SOURCE_DIR}/gui/icons\\\\mapgui.ico")
+set(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\TeleSculptor.exe")
+set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}/gui/icons\\\\telesculptor.ico")
+set(CPACK_NSIS_MUI_UNIICON "${CMAKE_CURRENT_SOURCE_DIR}/gui/icons\\\\telesculptor.ico")
 set(CPACK_NSIS_CONTACT "${CPACK_PACKAGE_CONTACT}")
 set(CPACK_NSIS_HELP_LINK "http://www.kitware.com")
 set(CPACK_NSIS_URL_INFO_ABOUT "http://www.kwiver.org")
 set(CPACK_NSIS_MENU_LINKS "http://www.kwiver.org" "KWIVER Website")
 
 if(MAPTK_ENABLE_GUI)
-  set (CPACK_PACKAGE_EXECUTABLES "mapgui" "MAP-Tk GUI" ${CPACK_PACKAGE_EXECUTABLES})
+  set (CPACK_PACKAGE_EXECUTABLES "TeleSculptor" "MAP-Tk TeleSculptor" ${CPACK_PACKAGE_EXECUTABLES})
 endif()
 
 if(APPLE)

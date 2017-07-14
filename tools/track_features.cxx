@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2016 by Kitware, Inc.
+ * Copyright 2013-2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,7 +46,6 @@
 #include <vital/logger/logger.h>
 #include <vital/vital_foreach.h>
 
-#include <vital/algorithm_plugin_manager.h>
 #include <vital/exceptions.h>
 #include <vital/io/track_set_io.h>
 #include <vital/vital_types.h>
@@ -54,6 +53,8 @@
 #include <vital/algo/convert_image.h>
 #include <vital/algo/track_features.h>
 #include <vital/algo/compute_ref_homography.h>
+#include <vital/algo/video_input.h>
+#include <vital/plugin_loader/plugin_manager.h>
 #include <vital/util/get_paths.h>
 #include <vital/util/transform_image.h>
 
@@ -72,15 +73,17 @@ static kwiver::vital::config_block_sptr default_config()
 {
   kwiver::vital::config_block_sptr config = kwiver::vital::config_block::empty_config("feature_tracker_tool");
 
-  config->set_value("image_list_file", "",
-                    "Path to an input file containing new-line separated paths "
-                    "to sequential image files.");
+  config->set_value("video_source", "",
+                    "Path to an input file to be opened as a video. "
+                    "This could be either a video file or a text file "
+                    "containing new-line separated paths to sequential "
+                    "image files.");
   config->set_value("mask_list_file", "",
                     "Optional path to an input file containing new-line "
                     "separated paths to mask images. This list should be "
-                    "parallel in association to files specified in "
-                    "``image_list_file``. Mask image must be the same size as "
-                    "the image they are associated with.\n"
+                    "parallel in association to frames provided by the "
+                    "``video_source`` video. Mask images must be the same size "
+                    "as the image they are associated with.\n"
                     "\n"
                     "Leave this blank if no image masking is desired.");
   config->set_value("invert_masks", false,
@@ -105,6 +108,8 @@ static kwiver::vital::config_block_sptr default_config()
                     "output. The output_homography_generator algorithm type "
                     "only needs to be set if this is set.");
 
+  kwiver::vital::algo::video_input::get_nested_algo_configuration("video_reader", config,
+                                      kwiver::vital::algo::video_input_sptr());
   kwiver::vital::algo::track_features::get_nested_algo_configuration("feature_tracker", config,
                                       kwiver::vital::algo::track_features_sptr());
   kwiver::vital::algo::image_io::get_nested_algo_configuration("image_reader", config,
@@ -153,17 +158,17 @@ static bool check_config(kwiver::vital::config_block_sptr config)
     }
   }
 
-  if ( ! config->has_value("image_list_file") ||
-      config->get_value<std::string>("image_list_file") == "")
+  if ( ! config->has_value("video_source") ||
+      config->get_value<std::string>("video_source") == "")
   {
-    MAPTK_CONFIG_FAIL("Config needs value image_list_file");
+    MAPTK_CONFIG_FAIL("Config needs value video_source");
   }
   else
   {
-    std::string path = config->get_value<std::string>("image_list_file");
+    std::string path = config->get_value<std::string>("video_source");
     if ( ! ST::FileExists( kwiver::vital::path_t(path), true ) )
     {
-      MAPTK_CONFIG_FAIL("image_list_file path, " << path << ", does not exist or is not a regular file");
+      MAPTK_CONFIG_FAIL("video_source path, " << path << ", does not exist or is not a regular file");
     }
   }
 
@@ -188,6 +193,11 @@ static bool check_config(kwiver::vital::config_block_sptr config)
     MAPTK_CONFIG_FAIL("output_tracks_file is not in a valid directory");
   }
 
+  if (!kwiver::vital::algo::video_input::check_nested_algo_configuration("video_reader", config))
+  {
+    MAPTK_CONFIG_FAIL("video_reader configuration check failed");
+  }
+
   if (!kwiver::vital::algo::track_features::check_nested_algo_configuration("feature_tracker", config))
   {
     MAPTK_CONFIG_FAIL("feature_tracker configuration check failed");
@@ -206,13 +216,6 @@ static bool check_config(kwiver::vital::config_block_sptr config)
 #undef MAPTK_CONFIG_FAIL
 
   return config_valid;
-}
-
-
-// ------------------------------------------------------------------
-static bool invert_mask_pixel( bool const &b )
-{
-  return !b;
 }
 
 
@@ -254,8 +257,8 @@ static int maptk_main(int argc, char const* argv[])
 
   // register the algorithm implementations
   std::string rel_plugin_path = kwiver::vital::get_executable_path() + "/../lib/modules";
-  kwiver::vital::algorithm_plugin_manager::instance().add_search_path(rel_plugin_path);
-  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
+  kwiver::vital::plugin_manager::instance().add_search_path(rel_plugin_path);
+  kwiver::vital::plugin_manager::instance().load_all_plugins();
 
   // Set config to algo chain
   // Get config from algo chain after set
@@ -266,6 +269,7 @@ static int maptk_main(int argc, char const* argv[])
 
   // Set up top level configuration w/ defaults where applicable.
   kwiver::vital::config_block_sptr config = default_config();
+  kwiver::vital::algo::video_input_sptr video_reader;
   kwiver::vital::algo::track_features_sptr feature_tracker;
   kwiver::vital::algo::image_io_sptr image_reader;
   kwiver::vital::algo::convert_image_sptr image_converter;
@@ -279,6 +283,8 @@ static int maptk_main(int argc, char const* argv[])
                                                          MAPTK_VERSION, prefix));
   }
 
+  kwiver::vital::algo::video_input::set_nested_algo_configuration("video_reader", config, video_reader);
+  kwiver::vital::algo::video_input::get_nested_algo_configuration("video_reader", config, video_reader);
   kwiver::vital::algo::track_features::set_nested_algo_configuration("feature_tracker", config, feature_tracker);
   kwiver::vital::algo::track_features::get_nested_algo_configuration("feature_tracker", config, feature_tracker);
   kwiver::vital::algo::image_io::set_nested_algo_configuration("image_reader", config, image_reader);
@@ -311,28 +317,28 @@ static int maptk_main(int argc, char const* argv[])
 
   // Attempt opening input and output files.
   //  - filepath validity checked above
-  std::string image_list_file = config->get_value<std::string>("image_list_file");
+  std::string video_source = config->get_value<std::string>("video_source");
   std::string mask_list_file = config->get_value<std::string>("mask_list_file");
   bool invert_masks = config->get_value<bool>("invert_masks");
   bool expect_multichannel_masks = config->get_value<bool>("expect_multichannel_masks");
   std::string output_tracks_file = config->get_value<std::string>("output_tracks_file");
 
-  std::ifstream ifs(image_list_file.c_str());
-  if (!ifs)
+
+  LOG_INFO( main_logger, "Reading Video" );
+  video_reader->open(video_source);
+
+  // Pre-scan the video to get an accurate frame count
+  // We may wish to remove this later if we start operating on live streams
+  kwiver::vital::timestamp ts;
+  std::vector<kwiver::vital::timestamp> timestamps;
+  while( video_reader->next_frame(ts) )
   {
-    LOG_ERROR(main_logger, "Error: Could not open image list \"" << image_list_file << "\"");
-    return EXIT_FAILURE;
+    timestamps.push_back(ts);
   }
-  // Creating input image list, checking file existance
-  std::vector<kwiver::vital::path_t> files;
-  for (std::string line; std::getline(ifs,line); )
-  {
-    files.push_back(line);
-    if ( ! ST::FileExists( files[files.size()-1], true ) )
-    {
-      throw kwiver::vital::path_not_exists(files[files.size()-1]);
-    }
-  }
+  // close and re-open to return to the video start
+  video_reader->close();
+  video_reader->open(video_source);
+
 
   // Create mask image list if a list file was given, else fill list with empty
   // images. Files vector will only be populated if the use_masks bool is true
@@ -340,7 +346,7 @@ static int maptk_main(int argc, char const* argv[])
   std::vector<kwiver::vital::path_t> mask_files;
   if( mask_list_file != "" )
   {
-    LOG_DEBUG( main_logger, "Loading paired mask images from list file" );
+    LOG_DEBUG( main_logger, "Checking paired mask images from list file" );
 
     use_masks = true;
     // Load file stream
@@ -359,13 +365,13 @@ static int maptk_main(int argc, char const* argv[])
       }
     }
     // Check that image/mask list sizes are the same
-    if( files.size() != mask_files.size() )
+    if( timestamps.size() != mask_files.size() )
     {
-      throw kwiver::vital::invalid_value("Image and mask file lists are not congruent "
-                                 "in size.");
+      throw kwiver::vital::invalid_value("video and mask file lists have "
+                                         "different frame counts");
     }
     LOG_DEBUG( main_logger,
-               "Loaded " << mask_files.size() << " mask image files." );
+               "Validated " << mask_files.size() << " mask image files." );
   }
 
   // verify that we can open the output file for writing
@@ -398,18 +404,23 @@ static int maptk_main(int argc, char const* argv[])
 
   // Track features on each frame sequentially
   kwiver::vital::track_set_sptr tracks;
-  for(unsigned i=0; i<files.size(); ++i)
+  while( video_reader->next_frame(ts) )
   {
-    LOG_INFO(main_logger, "processing frame "<<i<<": "<<files[i]);
+    LOG_INFO(main_logger, "processing frame "<<ts.get_frame() );
 
-    auto const image = image_reader->load( files[i] );
-    auto const converted_image = image_converter->convert( image );
+    auto const image = video_reader->frame_image();
+    auto const mdv = video_reader->frame_metadata();
+    auto converted_image = image_converter->convert( image );
+    if( !mdv.empty() )
+    {
+      converted_image->set_metadata( mdv[0] );
+    }
 
     // Load the mask for this image if we were given a mask image list
     kwiver::vital::image_container_sptr mask, converted_mask;
     if( use_masks )
     {
-      mask = image_reader->load( mask_files[i] );
+      mask = image_reader->load( mask_files[ts.get_frame()] );
 
       // error out if we are not expecting a multi-channel mask
       if( !expect_multichannel_masks && mask->depth() > 1 )
@@ -431,7 +442,7 @@ static int maptk_main(int argc, char const* argv[])
                    "Inverting mask image pixels" );
         kwiver::vital::image_of<bool> mask_image;
         kwiver::vital::cast_image( mask->get_image(), mask_image );
-        kwiver::vital::transform_image( mask_image, invert_mask_pixel );
+        kwiver::vital::transform_image( mask_image, [] (bool b) { return !b; } );
         LOG_DEBUG( main_logger,
                    "Inverting mask image pixels -- Done" );
         mask = std::make_shared<kwiver::vital::simple_image_container>( mask_image );
@@ -440,10 +451,11 @@ static int maptk_main(int argc, char const* argv[])
       converted_mask = image_converter->convert( mask );
     }
 
-    tracks = feature_tracker->track(tracks, i, converted_image, converted_mask);
+    tracks = feature_tracker->track(tracks, ts.get_frame(),
+                                    converted_image, converted_mask);
     if (tracks)
     {
-      tracks = kwiver::maptk::extract_feature_colors(*tracks, *image, i);
+      tracks = kwiver::maptk::extract_feature_colors(*tracks, *image, ts.get_frame());
     }
 
     // Compute ref homography for current frame with current track set + write to file
@@ -451,7 +463,7 @@ static int maptk_main(int argc, char const* argv[])
     if ( homog_ofs.is_open() )
     {
       LOG_DEBUG(main_logger, "writing homography");
-      homog_ofs << *(out_homog_generator->estimate(i, tracks)) << std::endl;
+      homog_ofs << *(out_homog_generator->estimate(ts.get_frame(), tracks)) << std::endl;
     }
   }
 
