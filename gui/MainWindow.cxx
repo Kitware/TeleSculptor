@@ -114,7 +114,7 @@ QString cameraName(QString const& imagePath, int cameraIndex)
 //-----------------------------------------------------------------------------
 QString findUserManual()
 {
-  static auto const name = "gui.html";
+  static auto const name = "telesculptor.html";
   static auto const product = "maptk";
   static auto const version = MAPTK_VERSION;
 
