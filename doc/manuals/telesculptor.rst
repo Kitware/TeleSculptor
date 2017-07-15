@@ -91,7 +91,7 @@ Tool Bar
   however the grid lines are otherwise strictly aesthetic and do not correspond
   to any particular values.
 
-:icon:`blank` Show 3D Depth Map
+:icon:`depthmap` Show 3D Depth Map
   Toggles visibility of the depth map (if avaialble) rendered as a 3D point
   cloud or mesh; see `3D Depth Map Options`_.
 
@@ -145,7 +145,7 @@ are not within said bounds.
 3D Depth Map Options
 --------------------
 
-The :action:`- Show Depth Map` pop-up provides additional controls on the
+The :action:`depthmap Show Depth Map` pop-up provides additional controls on the
 display of depth maps in the world view.  The options allow the depth map to be
 rendered either as a 3D point cloud (one point per pixel) or a dense triangular
 mesh (one vertex per pixel).  In either case, the rendered depth data is
