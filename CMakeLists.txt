@@ -81,7 +81,7 @@ if(MAPTK_ENABLE_GUI)
       set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}/")
     endif()
     set(CMAKE_INSTALL_PREFIX
-      "${CMAKE_INSTALL_PREFIX}MAP-Tk.app/Contents")
+      "${CMAKE_INSTALL_PREFIX}TeleSculptor.app/Contents")
   endif()
   add_subdirectory(gui)
 endif()
