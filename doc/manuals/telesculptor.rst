@@ -112,12 +112,6 @@ which can be arbitrary, and significantly different across various data sets.)
 The inactive camera scale is relative to the active camera scale, with the
 maximum allowed value giving active and inactive camera frustums the same size.
 
-.. notice::
-  Display of inactive cameras as points is not yet implemented. Selecting this
-  option has no effect, and may cause display glitches.
-
-.. TODO remove above notice and fix documentation when we support cameras as
-   points
 
 Point Options
 -------------
