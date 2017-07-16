@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef VOLUMEOPTIONS_H_
-#define VOLUMEOPTIONS_H_
+#ifndef MAPTK_VOLUMEOPTIONS_H_
+#define MAPTK_VOLUMEOPTIONS_H_
 
 #include <qtGlobal.h>
 
