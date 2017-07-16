@@ -30,6 +30,8 @@
 
 #include "MeshColoration.h"
 
+#include <kwiversys/SystemTools.hxx>
+
 // VTK includes
 #include "vtkDoubleArray.h"
 #include "vtkImageData.h"
@@ -38,7 +40,6 @@
 #include "vtkPointData.h"
 #include "vtkPolyData.h"
 #include "vtkSmartPointer.h"
-#include <vtksys/SystemTools.hxx>
 
 // Project includes
 #include "ReconstructionData.h"
@@ -48,23 +49,10 @@
 #include <numeric>
 #include <sstream>
 
+typedef kwiversys::SystemTools  ST;
 
 namespace
 {
-
-//----------------------------------------------------------------------------
-// Description
-// Split string by separated char
-static void SplitString(const std::string &s, char delim,
-                        std::vector<std::string> &elems)
-{
-  std::stringstream ss(s);
-  std::string item;
-  while (std::getline(ss, item, delim))
-    {
-    elems.push_back(item);
-    }
-}
 
 //----------------------------------------------------------------------------
 // Description
@@ -72,7 +60,7 @@ static void SplitString(const std::string &s, char delim,
 static std::string GetFilenamePath(const std::string& filename)
 {
   std::string fn = filename;
-  vtksys::SystemTools::ConvertToUnixSlashes(fn);
+  ST::ConvertToUnixSlashes(fn);
 
   std::string::size_type slash_pos = fn.rfind("/");
   if (slash_pos != std::string::npos)
@@ -115,7 +103,7 @@ static std::vector<std::string> ExtractAllFilePath(const char* globalPath)
   // Get current working directory
   if (directoryPath == "")
   {
-    directoryPath = vtksys::SystemTools::GetCurrentWorkingDirectory();
+    directoryPath = ST::GetCurrentWorkingDirectory();
   }
 
   std::string path;
@@ -123,8 +111,7 @@ static std::vector<std::string> ExtractAllFilePath(const char* globalPath)
   {
     std::getline(container, path);
     // only get the file name, not the whole path
-    std::vector <std::string> elems;
-    SplitString(path, ' ', elems);
+    std::vector <kwiversys::String> elems = ST::SplitString(path, ' ');
 
     // check if there are an empty line
     if (elems.size() == 0)
@@ -159,19 +146,16 @@ static std::vector<std::string> ExtractAllKRTDFilePath(const char* globalPath, c
   {
     std::getline(container, path);
     // only get the file name, not the whole path
-    std::vector <std::string> elems;
-    SplitString(path, ' ', elems);
+    std::vector <kwiversys::String> elems = ST::SplitString(path, ' ');
     // check if there are an empty line
     if( elems.empty() )
     {
       continue;
     }
-    std::vector <std::string> filename;
-    SplitString(elems[elems.size() - 1], '/', filename);
+    std::vector <kwiversys::String> filename = ST::SplitString(elems[elems.size() - 1], '/');
 
     // Create the real data path to access depth map file
-    std::vector <std::string> elemsWithoutExtension;
-    SplitString(filename[filename.size() - 1], '.', elemsWithoutExtension);
+    std::vector <kwiversys::String> elemsWithoutExtension = ST::SplitString(filename[filename.size() - 1], '.');
     pathList.push_back(std::string(globalPath) + "/" + elemsWithoutExtension[0] + ".krtd");
   }
 
