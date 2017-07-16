@@ -56,34 +56,6 @@ namespace
 
 //----------------------------------------------------------------------------
 // Description
-// Get the filename path (copy from vtk in order to allow debug)
-static std::string GetFilenamePath(const std::string& filename)
-{
-  std::string fn = filename;
-  ST::ConvertToUnixSlashes(fn);
-
-  std::string::size_type slash_pos = fn.rfind("/");
-  if (slash_pos != std::string::npos)
-  {
-    std::string  ret = fn.substr(0, slash_pos);
-    if (ret.size() == 2 && ret[1] == ':')
-    {
-      return ret + '/';
-    }
-    if (ret.empty())
-    {
-      return "/";
-    }
-    return ret;
-  }
-  else
-  {
-    return "";
-  }
-}
-
-//----------------------------------------------------------------------------
-// Description
 // Read global path and extract all contained path
 static std::vector<std::string> ExtractAllFilePath(const char* globalPath)
 {
@@ -99,7 +71,7 @@ static std::vector<std::string> ExtractAllFilePath(const char* globalPath)
 
   // Extract path of globalPath from globalPath
   //std::string pwd_str = globalPath;
-  std::string directoryPath = GetFilenamePath(std::string(globalPath));
+  std::string directoryPath = ST::GetFilenamePath(std::string(globalPath));
   // Get current working directory
   if (directoryPath == "")
   {
