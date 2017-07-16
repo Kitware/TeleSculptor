@@ -55,8 +55,11 @@ namespace
 {
 
 //----------------------------------------------------------------------------
-// Description
-// Read global path and extract all contained path
+/// Read global path and extract all contained path
+/**
+ * This function is deprecated.  MeshColoration should be receiving image and
+ * camera data directly from the application, not reloading it from disk.
+ */
 static std::vector<std::string> ExtractAllFilePath(const char* globalPath)
 {
   std::vector<std::string> pathList;
@@ -98,9 +101,13 @@ static std::vector<std::string> ExtractAllFilePath(const char* globalPath)
   return pathList;
 }
 
+
 //----------------------------------------------------------------------------
-// Description
-// Read global path and extract all contained path
+/// Read global path and extract all contained path
+/**
+ * This function is deprecated.  MeshColoration should be receiving image and
+ * camera data directly from the application, not reloading it from disk.
+ */
 static std::vector<std::string> ExtractAllKRTDFilePath(const char* globalPath, const char* framelist)
 {
   std::vector<std::string> pathList;
@@ -133,6 +140,7 @@ static std::vector<std::string> ExtractAllKRTDFilePath(const char* globalPath, c
 
   return pathList;
 }
+
 
 //----------------------------------------------------------------------------
 // Description

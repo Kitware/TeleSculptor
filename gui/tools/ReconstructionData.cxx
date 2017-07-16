@@ -51,8 +51,13 @@ namespace
 {
 
 //----------------------------------------------------------------------------
-// Description
-// Read krtd file and create K and RT matrix
+/// Read krtd file and create K and RT matrix
+/**
+ * This function is deprecated.  It is here because this code came from a
+ * separate project that needed to load KRTD files directly.  The
+ * Reconstruction should get a camera object passed directly rather than a
+ * path to a KRTD file.
+ */
 static bool ReadKrtdFile(std::string filename, vtkMatrix3x3* matrixK,
                          vtkMatrix4x4* matrixRT)
 {
