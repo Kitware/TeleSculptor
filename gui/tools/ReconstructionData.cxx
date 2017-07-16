@@ -27,7 +27,6 @@
 // LIABILITY, OR TORT(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 // OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "Helper.h"
 #include "ReconstructionData.h"
 
 #include <sstream>
@@ -39,11 +38,86 @@
 #include "vtkVector.h"
 #include "vtkMatrix3x3.h"
 #include "vtkMatrix4x4.h"
+#include "vtkNew.h"
 #include "vtkPointData.h"
 #include "vtkSmartPointer.h"
 #include "vtkTransform.h"
 #include "vtkUnsignedCharArray.h"
 #include "vtkPNGReader.h"
+
+
+namespace
+{
+
+//----------------------------------------------------------------------------
+// Description
+// Read krtd file and create K and RT matrix
+static bool ReadKrtdFile(std::string filename, vtkMatrix3x3* matrixK,
+                         vtkMatrix4x4* matrixRT)
+{
+  // Open the file
+  std::ifstream file(filename.c_str());
+  if (!file.is_open())
+  {
+    std::cerr << "Unable to open krtd file : " << filename << std::endl;
+    return false;
+  }
+
+  std::string line;
+
+  // Get matrix K
+  for (int i = 0; i < 3; i++)
+  {
+    getline(file, line);
+    std::istringstream iss(line);
+
+    for (int j = 0; j < 3; j++)
+    {
+      double value;
+      iss >> value;
+      matrixK->SetElement(i, j, value);
+    }
+  }
+
+  getline(file, line);
+
+  // Get matrix R
+  for (int i = 0; i < 3; i++)
+  {
+    getline(file, line);
+    std::istringstream iss(line);
+
+    for (int j = 0; j < 3; j++)
+    {
+      double value;
+      iss >> value;
+      matrixRT->SetElement(i, j, value);
+    }
+  }
+
+  getline(file, line);
+
+  // Get matrix T
+  getline(file, line);
+  std::istringstream iss(line);
+  for (int i = 0; i < 3; i++)
+  {
+    double value;
+    iss >> value;
+    matrixRT->SetElement(i, 3, value);
+  }
+
+  // Finalize matrix RT
+  for (int j = 0; j < 4; j++)
+  {
+    matrixRT->SetElement(3, j, 0);
+  }
+  matrixRT->SetElement(3, 3, 1);
+
+  return true;
+}
+
+} // end anonymous namespace
 
 
 ReconstructionData::ReconstructionData()
@@ -71,7 +145,7 @@ ReconstructionData::ReconstructionData(std::string depthPath,
   this->MatrixRT = vtkMatrix4x4::New();
   this->MatrixK = vtkMatrix3x3::New();
   this->Matrix4K = vtkMatrix4x4::New();
-  help::ReadKrtdFile(matrixPath, K.Get(), RT.Get());
+  ReadKrtdFile(matrixPath, K.Get(), RT.Get());
 
   // Set matrix K to  create matrix4x4 for K
   this->SetMatrixK(K.Get());

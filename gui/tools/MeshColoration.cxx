@@ -37,13 +37,166 @@
 #include "vtkPointData.h"
 #include "vtkPolyData.h"
 #include "vtkSmartPointer.h"
+#include <vtksys/SystemTools.hxx>
 
 // Project includes
-#include "Helper.h"
 #include "ReconstructionData.h"
 
 // Other includes
+#include <algorithm>
 #include <numeric>
+#include <sstream>
+
+
+namespace
+{
+
+//----------------------------------------------------------------------------
+// Description
+// Split string by separated char
+static void SplitString(const std::string &s, char delim,
+                        std::vector<std::string> &elems)
+{
+  std::stringstream ss(s);
+  std::string item;
+  while (std::getline(ss, item, delim))
+    {
+    elems.push_back(item);
+    }
+}
+
+//----------------------------------------------------------------------------
+// Description
+// Get the filename path (copy from vtk in order to allow debug)
+static std::string GetFilenamePath(const std::string& filename)
+{
+  std::string fn = filename;
+  vtksys::SystemTools::ConvertToUnixSlashes(fn);
+
+  std::string::size_type slash_pos = fn.rfind("/");
+  if (slash_pos != std::string::npos)
+  {
+    std::string  ret = fn.substr(0, slash_pos);
+    if (ret.size() == 2 && ret[1] == ':')
+    {
+      return ret + '/';
+    }
+    if (ret.empty())
+    {
+      return "/";
+    }
+    return ret;
+  }
+  else
+  {
+    return "";
+  }
+}
+
+//----------------------------------------------------------------------------
+// Description
+// Read global path and extract all contained path
+static std::vector<std::string> ExtractAllFilePath(const char* globalPath)
+{
+  std::vector<std::string> pathList;
+
+  // Open file which contains the list of all file
+  std::ifstream container(globalPath);
+  if (!container.is_open())
+  {
+    std::cerr << "Unable to open : " << globalPath << std::endl;
+    return pathList;
+  }
+
+  // Extract path of globalPath from globalPath
+  //std::string pwd_str = globalPath;
+  std::string directoryPath = GetFilenamePath(std::string(globalPath));
+  // Get current working directory
+  if (directoryPath == "")
+  {
+    directoryPath = vtksys::SystemTools::GetCurrentWorkingDirectory();
+  }
+
+  std::string path;
+  while (!container.eof())
+  {
+    std::getline(container, path);
+    // only get the file name, not the whole path
+    std::vector <std::string> elems;
+    SplitString(path, ' ', elems);
+
+    // check if there are an empty line
+    if (elems.size() == 0)
+    {
+      continue;
+    }
+
+    // Create the real data path to access depth map file
+    pathList.push_back(directoryPath + "/" + elems[elems.size() - 1]);
+  }
+
+  return pathList;
+}
+
+//----------------------------------------------------------------------------
+// Description
+// Read global path and extract all contained path
+static std::vector<std::string> ExtractAllKRTDFilePath(const char* globalPath, const char* framelist)
+{
+  std::vector<std::string> pathList;
+
+  // Open file which contains the list of all file
+  std::ifstream container(framelist);
+  if (!container.is_open())
+  {
+    std::cerr << "Unable to open : " << framelist << std::endl;
+    return pathList;
+  }
+
+  std::string path;
+  while (!container.eof())
+  {
+    std::getline(container, path);
+    // only get the file name, not the whole path
+    std::vector <std::string> elems;
+    SplitString(path, ' ', elems);
+    // check if there are an empty line
+    if( elems.empty() )
+    {
+      continue;
+    }
+    std::vector <std::string> filename;
+    SplitString(elems[elems.size() - 1], '/', filename);
+
+    // Create the real data path to access depth map file
+    std::vector <std::string> elemsWithoutExtension;
+    SplitString(filename[filename.size() - 1], '.', elemsWithoutExtension);
+    pathList.push_back(std::string(globalPath) + "/" + elemsWithoutExtension[0] + ".krtd");
+  }
+
+  return pathList;
+}
+
+//----------------------------------------------------------------------------
+// Description
+// Compute median of a vector
+template <typename T>
+static void ComputeMedian(std::vector<T> vector, double& median)
+{
+  std::sort(vector.begin(), vector.end());
+  size_t middleIndex = vector.size() / 2;
+  if (vector.size() % 2 == 0)
+    {
+    median = (vector[middleIndex] + vector[middleIndex - 1]) / 2;
+    }
+  else
+    {
+    median = vector[middleIndex];
+    }
+}
+
+} // end anonymous namspace
+
 
 MeshColoration::MeshColoration()
 {
@@ -57,8 +210,8 @@ MeshColoration::MeshColoration(vtkPolyData* mesh, std::string frameList, std::st
   //this->OutputMesh = vtkPolyData::New();
   //this->OutputMesh->DeepCopy(mesh);
 
-  this->frameList = help::ExtractAllFilePath(frameList.c_str());
-  this->krtdFolder = help::ExtractAllKRTDFilePath(krtdFolder.c_str(), frameList.c_str());
+  this->frameList = ExtractAllFilePath(frameList.c_str());
+  this->krtdFolder = ExtractAllKRTDFilePath(krtdFolder.c_str(), frameList.c_str());
   if (this->krtdFolder.size() < frameList.size())
     {
     std::cerr << "Error, not enough krtd file for each vti file" << std::endl;
@@ -198,9 +351,9 @@ bool MeshColoration::ProcessColoration(std::string currentVtiPath)
       double nbVal = (double)list0.size();
       meanValues->SetTuple3(id, sum0 / (double)nbVal, sum1 / (double)nbVal, sum2 / (double)nbVal);
       double median0, median1, median2;
-      help::ComputeMedian<double>(list0, median0);
-      help::ComputeMedian<double>(list1, median1);
-      help::ComputeMedian<double>(list2, median2);
+      ComputeMedian<double>(list0, median0);
+      ComputeMedian<double>(list1, median1);
+      ComputeMedian<double>(list2, median2);
       medianValues->SetTuple3(id, median0, median1, median2);
       projectedDMValue->SetTuple1(id, list0.size());
       }

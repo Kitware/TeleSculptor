@@ -74,7 +74,6 @@ set(gui_moc_headers
   tools/AbstractTool.h
   tools/BundleAdjustTool.h
   tools/CanonicalTransformTool.h
-  tools/Helper.h
   tools/InitCamerasLandmarksTool.h
   tools/MeshColoration.h
   tools/NeckerReversalTool.h
