@@ -189,7 +189,7 @@ MeshColoration::~MeshColoration()
 {
   if (this->OutputMesh != 0)
     this->OutputMesh->Delete();
-  for (int i = 0; i < this->DataList.size(); i++)
+  for (size_t i = 0; i < this->DataList.size(); i++)
     {
     delete this->DataList[i];
     }
