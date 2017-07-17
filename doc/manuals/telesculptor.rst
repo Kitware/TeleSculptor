@@ -102,7 +102,7 @@ Tool Bar
   Toggles visibility of the depth map (if avaialble) rendered as a 3D point
   cloud or mesh; see `3D Depth Map Options`_.
 
-:icon:`blank` Surface from Volume
+:icon:`volume` Surface from Volume
   Toggles the visibility of the surface mesh extracted from volumetric data.
   This option is disabled if no volume data is loaded; see
   `Volume Surface Options`_.
@@ -167,7 +167,7 @@ view as well.  See `Depth Map View`_.
 Volume Surface Options
 ----------------------
 
-The :action:`- Volume from Surface` pop-up provides additional controls on the
+The :action:`volume Volume from Surface` pop-up provides additional controls on the
 extraction and coloring of a surface from volumetric data.  The "Surface
 threshold" parameter controls the value of the iso-surface at which the surface
 is extracted from the volume.  The "Colorize surface" option, if checked,
