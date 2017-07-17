@@ -53,9 +53,15 @@ public:
   explicit WorldView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
   virtual ~WorldView();
 
+  void loadVolume(QString path, int nbFrames, QString krtd, QString frame);
 signals:
   void depthMapThresholdsChanged();
   void depthMapEnabled(bool);
+
+  void contourChanged();
+  void updateThresholds(double,double,double,double);
+  void meshEnabled(bool);
+  void coloredMeshEnabled(bool);
 
 public slots:
   void setBackgroundColor(QColor const&);
@@ -93,7 +99,16 @@ public slots:
   void saveDepthPoints(QString const& path);
   void exportWebGLScene(QString const& path);
 
+  void saveMesh(QString const& path);
+  void saveVolume(QString const& path);
+  void saveColoredMesh(QString const& path);
+
   void invalidateGeometry();
+
+  void setVolumeVisible(bool);
+  void setVolumeCurrentFramePath(QString path);
+
+  void computeContour(double threshold);
 
 protected slots:
   void updateAxes();

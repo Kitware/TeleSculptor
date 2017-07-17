@@ -18,7 +18,11 @@ just called MAP-Tk GUI or MapGUI.  We are now calling it "TeleSculptor".
 TeleSculptor has become more than just a tool for visualization of results.
 Starting in this release you can now run all the steps of an end-to-end
 structure-from-motion pipeline directly in the GUI and get live visualization
-of the results as they are computed.
+of the results as they are computed.  This release also has experimental
+support for extracting, coloring, and rendering iso-surfaces from volumetric
+data.  The use case is depth map fusion using a trucated signed distance
+function.  This currently requires external tools (CudaDepthMapIntegration)
+but we will integrate those algorithm into the GUI in a future release.
 
 The command line tools in MAP-Tk now use a video_input API from KWIVER to allow
 direct processing of video files without needing to first decode the video into
@@ -170,6 +174,18 @@ TeleSculptor Application
    video files.
 
  * Added an option to export tracks from the GUI to an ASCII text file.
+
+ * Added an option to load a volumetric array and extract an iso-surface
+   at a provided threshold and show that surface in the World View.
+   Currently the volume data must be loaded by setting a variable in a
+   configuration file opened when starting the application from the command
+   line.  This feature is for visualizing the results of fusing multiple
+   depthmaps using CudaDepthMapIntegration.
+
+ * Added options to color the surface surface extracted from a 3D volume
+   by back projecting one or more images onto the surface.
+
+ * Added options to export the extracted surface mesh to PLY or VTK formats.
 
 
 Fixes since v0.9.0
