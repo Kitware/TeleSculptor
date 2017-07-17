@@ -162,13 +162,21 @@ ReconstructionData::ReconstructionData(std::string depthPath,
 ReconstructionData::~ReconstructionData()
 {
   if (this->DepthMap)
+  {
     this->DepthMap->Delete();
+  }
   if (this->MatrixK)
+  {
     this->MatrixK->Delete();
+  }
   if (this->MatrixRT)
+  {
     this->MatrixRT->Delete();
+  }
   if (this->Matrix4K)
+  {
     this->Matrix4K->Delete();
+  }
 }
 
 void ReconstructionData::GetColorValue(int* pixelPosition, double rgb[3])
@@ -177,10 +185,10 @@ void ReconstructionData::GetColorValue(int* pixelPosition, double rgb[3])
     vtkUnsignedCharArray::SafeDownCast(this->DepthMap->GetPointData()->GetArray(0));
 
   if (color == 0)
-    {
+  {
     std::cerr << "Error, no 'Color' array exists" << std::endl;
     return;
-    }
+  }
 
   int* depthDims = this->DepthMap->GetDimensions();
 
@@ -242,10 +250,10 @@ void ReconstructionData::ApplyDepthThresholdFilter(double thresholdBestCost)
     vtkDoubleArray::SafeDownCast(this->DepthMap->GetPointData()->GetArray("Best Cost Values"));
 
   if (depths == 0)
-    {
+  {
     std::cerr << "Error during threshold, depths is empty" << std::endl;
     return;
-    }
+  }
 
   int nbTuples = depths->GetNumberOfTuples();
 
@@ -253,13 +261,13 @@ void ReconstructionData::ApplyDepthThresholdFilter(double thresholdBestCost)
     return;
 
   for (int i = 0; i < nbTuples; i++)
-    {
+  {
     double v_bestCost = bestCost->GetTuple1(i);
     if (v_bestCost > thresholdBestCost)
-      {
+    {
       depths->SetTuple1(i, -1);
-      }
     }
+  }
 }
 
 void ReconstructionData::TransformWorldToDepthMapPosition(const double* worldCoordinate,
@@ -280,7 +288,9 @@ void ReconstructionData::TransformWorldToDepthMapPosition(const double* worldCoo
 void ReconstructionData::SetDepthMap(vtkImageData* data)
 {
   if (this->DepthMap != 0)
+  {
     this->DepthMap->Delete();
+  }
   this->DepthMap = data;
   this->DepthMap->Register(0);
 }
@@ -288,21 +298,25 @@ void ReconstructionData::SetDepthMap(vtkImageData* data)
 void ReconstructionData::SetMatrixK(vtkMatrix3x3* matrix)
 {
   if (this->MatrixK != 0)
+  {
     this->MatrixK->Delete();
+  }
   this->MatrixK = matrix;
   this->MatrixK->Register(0);
 
   if (this->Matrix4K != 0)
+  {
     this->Matrix4K->Delete();
+  }
   this->Matrix4K = vtkMatrix4x4::New();
   this->Matrix4K->Identity();
   for (int i = 0; i < 3; i++)
-    {
+  {
     for (int j = 0; j < 3; j++)
-      {
+    {
       this->Matrix4K->SetElement(i, j, this->MatrixK->GetElement(i, j));
-      }
     }
+  }
 
   this->TransformCameraToDepthMap->SetMatrix(this->Matrix4K);
 }
@@ -310,7 +324,9 @@ void ReconstructionData::SetMatrixK(vtkMatrix3x3* matrix)
 void ReconstructionData::SetMatrixRT(vtkMatrix4x4* matrix)
 {
   if (this->MatrixRT != 0)
+  {
     this->MatrixRT->Delete();
+  }
   this->MatrixRT = matrix;
   this->MatrixRT->Register(0);
   this->TransformWorldToCamera->SetMatrix(this->MatrixRT);
