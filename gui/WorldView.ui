@@ -273,6 +273,10 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/22x22/volume</normaloff>:/icons/22x22/volume</iconset>
+   </property>
    <property name="enabled">
     <bool>false</bool>
    </property>

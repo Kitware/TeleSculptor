@@ -75,9 +75,7 @@ set(gui_moc_headers
   tools/BundleAdjustTool.h
   tools/CanonicalTransformTool.h
   tools/InitCamerasLandmarksTool.h
-  tools/MeshColoration.h
   tools/NeckerReversalTool.h
-  tools/ReconstructionData.h
   tools/TrackFilterTool.h
   tools/TrackFeaturesTool.h
 )

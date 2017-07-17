@@ -143,8 +143,7 @@ static std::vector<std::string> ExtractAllKRTDFilePath(const char* globalPath, c
 
 
 //----------------------------------------------------------------------------
-// Description
-// Compute median of a vector
+/// Compute median of a vector
 template <typename T>
 static void ComputeMedian(std::vector<T> vector, double& median)
 {
@@ -178,35 +177,41 @@ MeshColoration::MeshColoration(vtkPolyData* mesh, std::string frameList, std::st
   this->frameList = ExtractAllFilePath(frameList.c_str());
   this->krtdFolder = ExtractAllKRTDFilePath(krtdFolder.c_str(), frameList.c_str());
   if (this->krtdFolder.size() < frameList.size())
-    {
+  {
     std::cerr << "Error, not enough krtd file for each vti file" << std::endl;
     return;
-    }
+  }
 
 }
 
 MeshColoration::~MeshColoration()
 {
   if (this->OutputMesh != 0)
+  {
     this->OutputMesh->Delete();
-  for (int i = 0; i < this->DataList.size(); i++)
-    {
+  }
+  for (size_t i = 0; i < this->DataList.size(); i++)
+  {
     delete this->DataList[i];
-    }
+  }
   this->DataList.clear();
 }
 
 void MeshColoration::SetInput(vtkPolyData* mesh)
 {
   if (this->OutputMesh != 0)
+  {
     this->OutputMesh->Delete();
+  }
   this->OutputMesh = mesh;
 }
 
 void MeshColoration::SetFrameSampling(int sample)
 {
   if (sample < 1)
+  {
     return;
+  }
   this->Sampling = sample;
 }
 
@@ -222,10 +227,10 @@ bool MeshColoration::ProcessColoration(std::string currentVtiPath)
   int nbDepthMap = (int)this->DataList.size();
 
   if (this->OutputMesh == 0 || nbDepthMap == 0 /*|| this->Sampling >= nbDepthMap*/)
-    {
+  {
     std::cerr << "Error when input has been set or during reading vti/krtd file path" << std::endl;
     return false;
-    }
+  }
 
   vtkPoints* meshPointList = this->OutputMesh->GetPoints();
   if (meshPointList == 0)
@@ -280,7 +285,7 @@ bool MeshColoration::ProcessColoration(std::string currentVtiPath)
 
 
     for (int idData = 0; idData < nbDepthMap; idData++)
-      {
+    {
       ReconstructionData* data = this->DataList[idData];
       vtkVector3d cameraCenter = data->GetCameraCenter();
       // Check if the 3D point is in front of the camera
@@ -288,16 +293,18 @@ bool MeshColoration::ProcessColoration(std::string currentVtiPath)
                                                 position[1] - cameraCenter(1),
                                                 position[2] - cameraCenter(2) );
       if (cameraPointVec.Dot(pointNormal)>0.0)
+      {
         continue;
+      }
       // project 3D point to pixel coordinates
       int pixelPosition[2];
       data->TransformWorldToDepthMapPosition(position, pixelPosition);
       // Test if pixel is inside depth map
       if (pixelPosition[0] < 0 || pixelPosition[0] >= depthMapDimensions[0] ||
           pixelPosition[1] < 0 || pixelPosition[1] >= depthMapDimensions[1])
-        {
+      {
         continue;
-        }
+      }
 
       double color[3];
       data->GetColorValue(pixelPosition, color);
@@ -309,7 +316,7 @@ bool MeshColoration::ProcessColoration(std::string currentVtiPath)
 
     // If we get elements
     if (list0.size() != 0)
-      {
+    {
       double sum0 = std::accumulate(list0.begin(), list0.end(), 0);
       double sum1 = std::accumulate(list1.begin(), list1.end(), 0);
       double sum2 = std::accumulate(list2.begin(), list2.end(), 0);
@@ -321,7 +328,7 @@ bool MeshColoration::ProcessColoration(std::string currentVtiPath)
       ComputeMedian<double>(list2, median2);
       medianValues->SetTuple3(id, median0, median1, median2);
       projectedDMValue->SetTuple1(id, list0.size());
-      }
+    }
 
     list0.clear();
     list1.clear();
@@ -337,7 +344,7 @@ bool MeshColoration::ProcessColoration(std::string currentVtiPath)
 
 void MeshColoration::initializeDataList(std::string currentVtiPath)
 {
-    int nbDepthMap = (int)frameList.size();
+  int nbDepthMap = (int)frameList.size();
 
   //Take a subset of depthmap
   if (currentVtiPath == "")
