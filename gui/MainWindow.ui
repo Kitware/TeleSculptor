@@ -37,6 +37,10 @@
      <addaction name="actionExportTracks"/>
      <addaction name="separator"/>
      <addaction name="actionWebGLScene"/>
+     <addaction name="separator"/>
+     <addaction name="actionExportVolume"/>
+     <addaction name="actionExportMesh"/>
+     <addaction name="actionExportColoredMesh"/>
     </widget>
     <addaction name="actionOpen"/>
     <addaction name="menuExport"/>
@@ -298,6 +302,35 @@
    </property>
    <property name="visible">
     <bool>false</bool>
+   </property>
+  </action>
+  <action name="actionOpenDepthmaps">
+   <property name="text">
+    <string>Open Depthmaps</string>
+   </property>
+  </action>
+  <action name="actionExportVolume">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Volume...</string>
+   </property>
+  </action>
+  <action name="actionExportMesh">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Mesh...</string>
+   </property>
+  </action>
+  <action name="actionExportColoredMesh">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Colored Mesh...</string>
    </property>
   </action>
   <action name="actionShowWorldAxes">

@@ -39,6 +39,7 @@
 #include "FieldInformation.h"
 #include "ImageOptions.h"
 #include "PointOptions.h"
+#include "VolumeOptions.h"
 #include "vtkMaptkImageUnprojectDepth.h"
 #include "vtkMaptkCamera.h"
 #include "vtkMaptkCameraRepresentation.h"
@@ -49,6 +50,8 @@
 
 #include <vtkBoundingBox.h>
 #include <vtkCellArray.h>
+#include <vtkCellDataToPointData.h>
+#include <vtkContourFilter.h>
 #include <vtkCubeAxesActor.h>
 #include <vtkDoubleArray.h>
 #include <vtkGeometryFilter.h>
@@ -65,12 +68,17 @@
 #include <vtkProperty.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderer.h>
+#include <vtkStructuredGrid.h>
 #include <vtkTextProperty.h>
 #include <vtkThreshold.h>
 #include <vtkTimeStamp.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
 #include <vtkXMLImageDataReader.h>
+#include <vtkXMLPolyDataWriter.h>
+#include <vtkXMLStructuredGridReader.h>
+#include <vtkXMLStructuredGridWriter.h>
+
 
 #ifdef VTKWEBGLEXPORTER
 #include <vtkScalarsToColors.h>
@@ -85,6 +93,8 @@
 #include <QtGui/QWidgetAction>
 
 #include <QtCore/QDebug>
+
+#include <QFileInfo>
 
 using namespace LandmarkArrays;
 
@@ -148,12 +158,18 @@ public:
   PointOptions* landmarkOptions;
   DepthMapOptions* depthMapOptions;
 
+  VolumeOptions* volumeOptions;
+  vtkContourFilter* contourFilter;
+
   vtkNew<vtkMatrix4x4> imageProjection;
   vtkNew<vtkMatrix4x4> imageLocalTransform;
 
   vtkSmartPointer<vtkMaptkImageDataGeometryFilter> inputDepthGeometryFilter;
   vtkNew<vtkMaptkScalarDataFilter> depthScalarFilter;
   vtkNew<vtkActor> depthMapActor;
+
+  vtkNew<vtkActor> volumeActor;
+  vtkStructuredGrid* volume;
 
   bool rangeUpdateNeeded;
   bool validDepthInput;
@@ -324,10 +340,26 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
 
   d->depthMapOptions->setEnabled(false);
 
+  connect(d->UI.actionShowVolume, SIGNAL(triggered(bool)),
+          this, SIGNAL(meshEnabled(bool)));
   connect(d->depthMapOptions, SIGNAL(displayModeChanged()),
           this, SLOT(updateDepthMapDisplayMode()));
   connect(d->depthMapOptions, SIGNAL(thresholdsChanged(bool)),
           this, SLOT(updateDepthMapThresholds(bool)));
+
+  d->volumeOptions = new VolumeOptions("WorldView/Volume", this);
+  d->setPopup(d->UI.actionShowVolume, d->volumeOptions);
+
+  d->volumeOptions->setEnabled(false);
+
+  connect(d->volumeOptions, SIGNAL(modified()),
+          d->UI.renderWidget, SLOT(update()));
+
+  connect(d->volumeOptions, SIGNAL(colorOptionsEnabled(bool)),
+          this, SIGNAL(coloredMeshEnabled(bool)));
+
+  connect(this, SIGNAL(contourChanged()),
+          d->UI.renderWidget, SLOT(update()));
 
   // Connect actions
   this->addAction(d->UI.actionViewReset);
@@ -337,6 +369,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   this->addAction(d->UI.actionShowLandmarks);
   this->addAction(d->UI.actionShowGroundPlane);
   this->addAction(d->UI.actionShowDepthMap);
+  this->addAction(d->UI.actionShowVolume);
 
   connect(d->UI.actionViewReset, SIGNAL(triggered()),
           this, SLOT(resetView()));
@@ -367,6 +400,13 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(setDepthMapVisible(bool)));
   connect(d->UI.actionShowDepthMap, SIGNAL(toggled(bool)),
           this, SIGNAL(depthMapEnabled(bool)));
+
+  connect(d->UI.actionShowVolume, SIGNAL(toggled(bool)),
+          this, SLOT(setVolumeVisible(bool)));
+  connect(d->UI.actionShowVolume, SIGNAL(toggled(bool)),
+          this, SIGNAL(meshEnabled(bool)));
+  connect(d->volumeOptions, SIGNAL(colorOptionsEnabled(bool)),
+          this, SIGNAL(coloredMeshEnabled(bool)));
 
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
@@ -617,6 +657,88 @@ void WorldView::updateThresholdRanges()
     {
       qWarning() << "Failed to load data from depth map";
     }
+  }
+
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::loadVolume(QString path, int nbFrames, QString krtd, QString frame)
+{
+  QTE_D();
+
+  d->volumeOptions->initFrameSampling(nbFrames);
+
+  d->UI.actionShowVolume->setEnabled(true);
+
+  std::string filename = path.toStdString();
+
+  // Create the vtk pipeline
+  // Read volume
+  vtkNew<vtkXMLStructuredGridReader> readerV;
+  readerV->SetFileName(filename.c_str());
+
+  d->volume = readerV->GetOutput();
+  // Transform cell data to point data for contour filter
+  vtkNew<vtkCellDataToPointData> transformCellToPointData;
+  transformCellToPointData->SetInputConnection(readerV->GetOutputPort());
+  transformCellToPointData->PassCellDataOn();
+
+  // Apply contour
+  d->contourFilter = vtkContourFilter::New();
+  d->contourFilter->SetInputConnection(transformCellToPointData->GetOutputPort());
+  d->contourFilter->SetNumberOfContours(1);
+  d->contourFilter->SetValue(0, 0.5);
+  // Declare which table will be use for the contour
+  d->contourFilter->SetInputArrayToProcess(0, 0, 0,
+                                           vtkDataObject::FIELD_ASSOCIATION_POINTS,
+                                           "reconstruction_scalar");
+
+  // Create mapper
+  vtkNew<vtkPolyDataMapper> contourMapper;
+  contourMapper->SetInputConnection(d->contourFilter->GetOutputPort());
+  contourMapper->SetColorModeToDirectScalars();
+
+  // Set the actor's mapper
+  d->volumeActor->SetMapper(contourMapper.Get());
+  d->volumeActor->SetVisibility(false);
+  d->volumeOptions->setActor(d->volumeActor.Get());
+  d->volumeOptions->setKrtdFrameFile(krtd, frame);
+
+
+  // Add this actor to the renderer
+  d->renderer->AddActor(d->volumeActor.Get());
+  emit(contourChanged());
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::setVolumeVisible(bool state)
+{
+  QTE_D();
+
+  d->volumeActor->SetVisibility(state);
+  d->volumeOptions->setEnabled(state);
+  d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::setVolumeCurrentFramePath(QString path)
+{
+  QTE_D();
+
+  d->volumeOptions->setCurrentFramePath(path.toStdString());
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::computeContour(double threshold)
+{
+  QTE_D();
+
+  d->contourFilter->SetValue(0, threshold);
+  d->UI.renderWidget->update();
+
+  if(d->volumeOptions->isColorOptionsEnabled())
+  {
+    d->volumeOptions->colorize();
   }
 
 }
@@ -1099,6 +1221,76 @@ void WorldView::exportWebGLScene(QString const& path)
 #else
   Q_UNUSED(path)
 #endif
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::saveMesh(const QString &path)
+{
+  QTE_D();
+
+  vtkPolyData* mesh = d->contourFilter->GetOutput();
+
+  for (int i = 0; i < mesh->GetPointData()->GetNumberOfArrays(); ++i)
+  {
+    mesh->GetPointData()->RemoveArray(i);;
+  }
+
+  vtkNew<vtkXMLPolyDataWriter> writer;
+
+  writer->SetFileName(path.toStdString().c_str());
+  writer->AddInputDataObject(mesh);
+  writer->SetDataModeToBinary();
+  writer->Write();
+
+  std::cout << "Saved : " << path.toStdString() << std::endl;
+
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::saveVolume(const QString &path)
+{
+  QTE_D();
+
+  //NOTE: For now, the volume is set in the configuration parameters.
+  //      It may be generated directly from the GUI in the future.
+
+  vtkNew<vtkXMLStructuredGridWriter> writer;
+
+  writer->SetFileName(path.toStdString().c_str());
+  writer->AddInputDataObject(d->volume);
+  writer->SetDataModeToBinary();
+  writer->Write();
+
+  std::cout << "Saved : " << path.toStdString() << std::endl;
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::saveColoredMesh(const QString &path)
+{
+  QTE_D();
+
+  const QString ext = QFileInfo(path).suffix().toLower();
+  if(ext == "ply")
+  {
+    vtkNew<vtkPLYWriter> writer;
+    writer->SetFileName(path.toStdString().c_str());
+    writer->SetColorMode(0);
+    vtkSmartPointer<vtkPolyData> mesh = d->contourFilter->GetOutput();
+    writer->SetArrayName(mesh->GetPointData()->GetScalars()->GetName());
+    writer->SetLookupTable(d->volumeActor->GetMapper()->GetLookupTable());
+    writer->AddInputDataObject(mesh);
+    writer->Write();
+  }
+  else
+  {
+    vtkNew<vtkXMLPolyDataWriter> writer;
+    writer->SetFileName(path.toStdString().c_str());
+    writer->SetDataModeToBinary();
+    writer->AddInputDataObject(d->contourFilter->GetOutput());
+    writer->Write();
+  }
+
+  std::cout << "Saved : " << path.toStdString() << std::endl;
 }
 
 //-----------------------------------------------------------------------------

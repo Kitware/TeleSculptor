@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016 by Kitware, SAS; Copyright 2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,25 +28,43 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_PROJECT_H_
-#define MAPTK_PROJECT_H_
+#ifndef MAPTK_MESHCOLORATION_H_
+#define MAPTK_MESHCOLORATION_H_
 
-#include <QtCore/QMap>
-#include <QtCore/QStringList>
+// VTK Class
+class vtkPolyData;
 
-struct Project
+// Project class
+class ReconstructionData;
+
+#include <string>
+#include <vector>
+
+class MeshColoration
 {
-  bool read(QString const& path);
+public:
+  MeshColoration();
+  MeshColoration(vtkPolyData* mesh, std::string frameList, std::string krtdFolder);
+  ~MeshColoration();
 
-  QStringList images;
-  QString cameraPath;
-  QMap<int, QString> depthMaps;
+  // SETTER
+  void SetInput(vtkPolyData* mesh);
+  void SetFrameSampling(int sample);
 
-  QString tracks;
-  QString landmarks;
+  // GETTER
+  vtkPolyData* GetOutput();
 
-  QString volumePath;
-  QString imageListPath;
+  // Functions
+  bool ProcessColoration(std::string currentVtiPath ="");
+  void initializeDataList(std::string currentVtiPath ="");
+
+protected:
+  // Attributes
+  vtkPolyData* OutputMesh;
+  int Sampling;
+  std::vector<ReconstructionData*> DataList;
+  std::vector<std::string> frameList;
+  std::vector<std::string> krtdFolder;
 };
 
 #endif

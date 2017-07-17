@@ -14,7 +14,7 @@ The MAP-Tk TeleSculptor graphical applicaton provides a means of computing
 structure-from-motion and visualizing the results, as well as loading results
 from the MAP-Tk command line tools. Entities available for display include the
 images or video frames, tracked feature points, cameras frustums, 3D landmark
-points, and dense depth maps.
+points, dense depth maps, and surfaces extracted volumetric data.
 
 The GUI consists of a primary (world) view, secondary (camera and depth) views,
 and a frame selection panel. The world view is a three dimensional view that
@@ -47,7 +47,14 @@ has been algined with `z = 0`.  There is a tool avaialable to reorient the
 data for this purpose.
 
 The world view also supports visualization of the depth image for the current
-frame as either a dense RGB point cloud or a surface mesh.
+frame as either a dense RGB point cloud or a surface mesh.  It also can render
+a 3D surface mesh extracted from the level set of a volumetric array.
+The volume is typically the result of the fusion of several depth maps
+using a truncated signed distance function or similar operator.
+Computation of depth maps and volumetric data are not yet supported in the
+TeleSculptor application.  These types of data must be computed by command
+line tools and loaded into TeleSculptor for visualization by setting variables
+in a configuration file.
 
 Tool Bar
 --------
@@ -94,6 +101,12 @@ Tool Bar
 :icon:`depthmap` Show 3D Depth Map
   Toggles visibility of the depth map (if avaialble) rendered as a 3D point
   cloud or mesh; see `3D Depth Map Options`_.
+
+:icon:`blank` Surface from Volume
+  Toggles the visibility of the surface mesh extracted from volumetric data.
+  This option is disabled if no volume data is loaded; see
+  `Volume Surface Options`_.
+
 
 Camera Options
 --------------
@@ -149,6 +162,21 @@ attriutes.  Currently these attributes are the Uniqueness Ratio and Best Cost
 Value.  Images of these attibutes as well as the depth map itself are also
 shown in the Depth Map View and the filter options selected here apply to that
 view as well.  See `Depth Map View`_.
+
+
+Volume Surface Options
+----------------------
+
+The :action:`- Volume from Surface` pop-up provides additional controls on the
+extraction and coloring of a surface from volumetric data.  The "Surface
+threshold" parameter controls the value of the iso-surface at which the surface
+is extracted from the volume.  The "Colorize surface" option, if checked,
+allows coloring each vertex of the mesh.  The "Current frame" mode projects the
+RGB values from the current frame onto the mesh, while the "All frames"
+mode combines apperance projected from all frames or a subset of frame
+sampled at a regular interval.  The "Color display" options determine how to
+color the surface.  Options include mean color, median color, surface normal,
+and number of observations.
 
 
 Camera View

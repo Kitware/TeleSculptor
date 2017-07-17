@@ -124,6 +124,13 @@ bool Project::read(QString const& path)
       }
     }
 
+    //Read Volume file
+    if (config->has_value("volume_file"))
+    {
+      this->volumePath = getPath(config, base, "volume_file");
+      this->imageListPath = getPath(config, base, "image_list_file");
+    }
+
     return true;
   }
   catch (kwiver::vital::config_block_exception e)
