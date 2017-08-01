@@ -49,7 +49,6 @@
 #include <vital/algo/bundle_adjust.h>
 #include <vital/algo/estimate_canonical_transform.h>
 #include <vital/algo/estimate_similarity_transform.h>
-#include <vital/algo/geo_map.h>
 #include <vital/algo/initialize_cameras_landmarks.h>
 #include <vital/algo/filter_tracks.h>
 #include <vital/algo/triangulate_landmarks.h>
@@ -61,6 +60,7 @@
 #include <vital/plugin_loader/plugin_manager.h>
 #include <vital/types/track_set.h>
 #include <vital/vital_types.h>
+#include <vital/types/geodesy.h>
 #include <vital/util/cpu_timer.h>
 #include <vital/util/get_paths.h>
 #include <vital/video_metadata/pos_metadata_io.h>
@@ -205,8 +205,6 @@ static kwiver::vital::config_block_sptr default_config()
                                       kwiver::vital::algo::initialize_cameras_landmarks_sptr());
   kwiver::vital::algo::triangulate_landmarks::get_nested_algo_configuration("triangulator", config,
                         kwiver::vital::algo::triangulate_landmarks_sptr());
-  kwiver::vital::algo::geo_map::get_nested_algo_configuration("geo_mapper", config,
-                                               kwiver::vital::algo::geo_map_sptr());
   kwiver::vital::algo::estimate_similarity_transform::get_nested_algo_configuration("st_estimator", config,
                                                                      kwiver::vital::algo::estimate_similarity_transform_sptr());
   kwiver::vital::algo::estimate_canonical_transform::get_nested_algo_configuration("can_tfm_estimator", config,
@@ -291,10 +289,6 @@ static bool check_config(kwiver::vital::config_block_sptr config)
   if (!kwiver::vital::algo::triangulate_landmarks::check_nested_algo_configuration("triangulator", config))
   {
     MAPTK_CONFIG_FAIL("Failed config check in triangulator algorithm.");
-  }
-  if (!kwiver::vital::algo::geo_map::check_nested_algo_configuration("geo_mapper", config))
-  {
-    MAPTK_CONFIG_FAIL("Failed config check in geo_mapper algorithm.");
   }
   if (config->has_value("st_estimator:type") && config->get_value<std::string>("st_estimator:type") != "")
   {
@@ -444,6 +438,12 @@ static int maptk_main(int argc, char const* argv[])
   kwiver::vital::plugin_manager::instance().add_search_path(rel_plugin_path);
   kwiver::vital::plugin_manager::instance().load_all_plugins();
 
+  if( kwiver::vital::get_geo_conv() == nullptr )
+  {
+    std::cerr << "No geographic conversion module available" << std::endl;
+    return EXIT_FAILURE;
+  }
+
   // Set config to algo chain
   // Get config from algo chain after set
   // Check config validity, store result
@@ -459,7 +459,6 @@ static int maptk_main(int argc, char const* argv[])
   kwiver::vital::algo::initialize_cameras_landmarks_sptr initializer;
   kwiver::vital::algo::filter_tracks_sptr track_filter;
   kwiver::vital::algo::triangulate_landmarks_sptr triangulator;
-  kwiver::vital::algo::geo_map_sptr geo_mapper;
   kwiver::vital::algo::estimate_similarity_transform_sptr st_estimator;
   kwiver::vital::algo::estimate_canonical_transform_sptr can_tfm_estimator;
 
@@ -477,7 +476,6 @@ static int maptk_main(int argc, char const* argv[])
   kwiver::vital::algo::triangulate_landmarks::set_nested_algo_configuration("triangulator", config, triangulator);
   kwiver::vital::algo::initialize_cameras_landmarks::set_nested_algo_configuration("initializer", config, initializer);
   kwiver::vital::algo::filter_tracks::set_nested_algo_configuration("track_filter", config, track_filter);
-  kwiver::vital::algo::geo_map::set_nested_algo_configuration("geo_mapper", config, geo_mapper);
   kwiver::vital::algo::estimate_similarity_transform::set_nested_algo_configuration("st_estimator", config, st_estimator);
   kwiver::vital::algo::estimate_canonical_transform::set_nested_algo_configuration("can_tfm_estimator", config, can_tfm_estimator);
 
@@ -494,7 +492,6 @@ static int maptk_main(int argc, char const* argv[])
     kwiver::vital::algo::triangulate_landmarks::get_nested_algo_configuration("triangulator", config, triangulator);
     kwiver::vital::algo::initialize_cameras_landmarks::get_nested_algo_configuration("initializer", config, initializer);
     kwiver::vital::algo::filter_tracks::get_nested_algo_configuration("track_filter", config, track_filter);
-    kwiver::vital::algo::geo_map::get_nested_algo_configuration("geo_mapper", config, geo_mapper);
     kwiver::vital::algo::estimate_similarity_transform::get_nested_algo_configuration("st_estimator", config, st_estimator);
     kwiver::vital::algo::estimate_canonical_transform::get_nested_algo_configuration("can_tfm_estimator", config, can_tfm_estimator);
 
@@ -585,7 +582,7 @@ static int maptk_main(int argc, char const* argv[])
   //
   // Create the local coordinate system
   //
-  kwiver::maptk::local_geo_cs local_cs(geo_mapper);
+  kwiver::maptk::local_geo_cs local_cs;
   bool geo_origin_loaded_from_file = false;
   if (config->get_value<std::string>("geo_origin_file", "") != "")
   {
@@ -644,7 +641,7 @@ static int maptk_main(int argc, char const* argv[])
   }
 
   // if we computed an origin that was not loaded from a file
-  if (local_cs.utm_origin_zone() >= 0 &&
+  if (!local_cs.origin().is_empty() &&
       !geo_origin_loaded_from_file &&
       config->get_value<std::string>("geo_origin_file", "") != "")
   {
