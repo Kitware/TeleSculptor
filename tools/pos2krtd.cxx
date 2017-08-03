@@ -53,6 +53,7 @@
 #include <vital/video_metadata/video_metadata_tags.h>
 #include <vital/video_metadata/video_metadata_util.h>
 #include <vital/vital_types.h>
+#include <vital/types/geodesy.h>
 #include <vital/util/get_paths.h>
 
 #include <kwiversys/SystemTools.hxx>
@@ -282,17 +283,16 @@ static int maptk_main(int argc, char const* argv[])
   kwiver::vital::rotation_d ins_rot_offset = config->get_value<kwiver::vital::rotation_d>("ins:rotation_offset");
 
 
-  kwiver::vital::algo::geo_map_sptr geo_mapper = kwiver::vital::algo::geo_map::create("proj");
-  if( !geo_mapper )
+  if( kwiver::vital::get_geo_conv() == nullptr )
   {
-    std::cerr << "No geo_map module available" << std::endl;
+    std::cerr << "No geographic conversion module available" << std::endl;
     return EXIT_FAILURE;
   }
 
   //
   // Create the local coordinate system
   //
-  kwiver::maptk::local_geo_cs local_cs(geo_mapper);
+  kwiver::maptk::local_geo_cs local_cs;
   bool geo_origin_loaded_from_file = false;
   if (config->get_value<std::string>("geo_origin_file", "") != "")
   {
@@ -358,7 +358,7 @@ static int maptk_main(int argc, char const* argv[])
 
 
   // if we computed an origin that was not loaded from a file
-  if (local_cs.utm_origin_zone() >= 0 &&
+  if (!local_cs.origin().is_empty() &&
       !geo_origin_loaded_from_file &&
       config->get_value<std::string>("geo_origin_file", "") != "")
   {

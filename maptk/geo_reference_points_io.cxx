@@ -36,6 +36,7 @@
 #include "geo_reference_points_io.h"
 #include <vital/exceptions.h>
 #include <vital/io/eigen_io.h>
+#include <vital/types/geodesy.h>
 #include <vital/vital_foreach.h>
 #include <vital/logger/logger.h>
 
@@ -73,9 +74,7 @@ void load_reference_file(vital::path_t const& reference_file,
   vital::frame_id_t frm;
   vital::vector_2d feat_loc;
   vital::vector_3d vec(0,0,0);
-  double x, y;
-  int zone;
-  bool northp;
+
   // used to stream file lines into data types
   std::istringstream ss;
 
@@ -85,8 +84,9 @@ void load_reference_file(vital::path_t const& reference_file,
   // Mean position of all landmarks.
   vital::vector_3d mean(0,0,0);
 
-  // If the zone is invalid then use the reference points to compute a new origin
-  const bool set_lgcs_origin = (lgcs.utm_origin_zone() == -1);
+  // If the origin is invalid then use the reference points to compute a new origin
+  const bool set_lgcs_origin = lgcs.origin().is_empty();
+  int crs = lgcs.origin().crs();
 
   // TODO: put in try-catch around >>'s in case we have an ill-formatted file,
   // or there's a parse error
@@ -99,20 +99,20 @@ void load_reference_file(vital::path_t const& reference_file,
     // input landmarks are given in lon/lat/alt format (ignoring alt for now)
     ss >> vec;
 
-    // When this is called the first time, setzone is given a -1, which is the
-    // default for the function.
-    lgcs.geo_map_algo()->latlon_to_utm(vec.y(), vec.x(), x, y, zone, northp,
-                                       lgcs.utm_origin_zone());
-    vec[0] = x; vec[1] = y; vec[2] = vec.z();
-    mean += vec;
-
-    // Use the zone of the first input landmark as the base zone from which we
-    // interpret all other geo-positions with respect to.
-    if (set_lgcs_origin)
+    vital::vector_2d lon_lat(vec.x(), vec.y());
+    vital::geo_point gp(lon_lat, vital::SRID::lat_lon_WGS84);
+    if ( lgcs.origin().is_empty() )
     {
-      LOG_DEBUG(logger, "lgcs origin zone: " << zone );
-      lgcs.set_utm_origin_zone(zone);
+      auto zone = vital::utm_ups_zone( lon_lat );
+      crs = (zone.north ? vital::SRID::UTM_WGS84_north : vital::SRID::UTM_WGS84_south) + zone.number;
+      LOG_DEBUG(logger, "lgcs origin zone: " << zone.number );
+      lgcs.set_origin( vital::geo_point( gp.location( crs ), crs ) );
     }
+    vital::vector_2d utm = gp.location(crs);
+
+    vec[0] = utm.x();
+    vec[1] = utm.y();
+    mean += vec;
 
     reference_lms[cur_id] = vital::landmark_sptr(new vital::landmark_d(vec));
 
@@ -138,7 +138,8 @@ void load_reference_file(vital::path_t const& reference_file,
   {
     // Initialize lgcs center
     mean /= static_cast<double>(reference_lms.size());
-    lgcs.set_utm_origin(mean);
+    lgcs.set_origin( vital::geo_point( vital::vector_2d( mean.x(), mean.y() ), crs ) );
+    lgcs.set_origin_altitude( mean.z() );
     LOG_DEBUG(logger, "mean position (lgcs origin): " << mean.transpose());
   }
 
@@ -147,7 +148,12 @@ void load_reference_file(vital::path_t const& reference_file,
   LOG_INFO(logger, "transforming ground control points to local coordinates");
   VITAL_FOREACH(vital::landmark_map::map_landmark_t::value_type & p, reference_lms)
   {
-    dynamic_cast<vital::landmark_d*>(p.second.get())->set_loc(p.second->loc() - lgcs.utm_origin());
+    auto loc = p.second->loc();
+    auto origin_pt = lgcs.origin().location();
+    loc[0] -= origin_pt[0];
+    loc[1] -= origin_pt[1];
+    loc[2] -= lgcs.origin_altitude();
+    dynamic_cast<vital::landmark_d*>(p.second.get())->set_loc(loc);
   }
 
   ref_landmarks = std::make_shared<vital::simple_landmark_map>(reference_lms);

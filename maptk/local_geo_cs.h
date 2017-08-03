@@ -39,8 +39,8 @@
 
 #include <maptk/maptk_export.h>
 
-#include <vital/algo/geo_map.h>
 #include <vital/types/camera.h>
+#include <vital/types/geo_point.h>
 #include <vital/types/rotation.h>
 #include <vital/video_metadata/video_metadata.h>
 #include <vital/vital_types.h>
@@ -59,22 +59,22 @@ class MAPTK_EXPORT local_geo_cs
 {
 public:
   /// Constructor
-  explicit local_geo_cs(vital::algo::geo_map_sptr alg);
+  local_geo_cs();
 
-  /// Set the local UTM coordinate origin
-  void set_utm_origin(const vital::vector_3d& origin) { utm_origin_ = origin; }
+  /// Set the geographic coordinate origin
+  /**
+   * Internally converts this coordinate to WGS84 UTM
+   */
+  void set_origin(const vital::geo_point& origin);
 
-  /// Set the local UTM origin zone
-  void set_utm_origin_zone(int zone) { utm_origin_zone_ = zone; }
+  /// Set the altitude of the origin (in meters)
+  void set_origin_altitude(double alt) { origin_alt_ = alt; }
 
-  /// Access the local UTM coordinate origin
-  const vital::vector_3d& utm_origin() const { return utm_origin_; }
+  /// Access the geographic coordinate of the origin
+  const vital::geo_point& origin() const { return geo_origin_; }
 
-  /// Access the local UTM origin zone
-  int utm_origin_zone() const { return utm_origin_zone_; }
-
-  /// Access the geographic mapping algorithm
-  vital::algo::geo_map_sptr geo_map_algo() const { return geo_map_algo_; }
+  /// Access the geographic coordinate altituded (in meters)
+  int origin_altitude() const { return origin_alt_; }
 
   /// Use the pose data provided by metadata to update camera pose
   /**
@@ -91,14 +91,11 @@ public:
                        vital::video_metadata& md) const;
 
 private:
-  /// An algorithm provided to compute geographic transformations
-  vital::algo::geo_map_sptr geo_map_algo_;
+  /// The local coordinates origin
+  vital::geo_point geo_origin_;
 
-  /// The local coordinates origin in UTM (easting, northing, altitude)
-  vital::vector_3d utm_origin_;
-
-  /// The UTM zone number containing the UTM origin
-  int utm_origin_zone_;
+  /// altitude of the local coordinate origin
+  double origin_alt_;
 };
 
 
@@ -106,7 +103,7 @@ private:
 /**
  * The file format is the geographic origin in latitude (deg), longitude (deg),
  * and altitude (m) in space delimited ASCII value.  These values are read
- * into an existing local_geo_cs with a valid geo_map algorithm instance.
+ * into an existing local_geo_cs.
  *
  * \param [in,out] lgcs      The local geographic coordinate system that is
  *                           updated with the origin in the file.
