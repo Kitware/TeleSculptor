@@ -33,7 +33,7 @@
 
 #include <vital/types/camera_map.h>
 #include <vital/types/landmark_map.h>
-#include <vital/types/track_set.h>
+#include <vital/types/feature_track_set.h>
 
 #include <qtGlobal.h>
 
@@ -45,12 +45,12 @@ class AbstractToolPrivate;
 class ToolData
 {
 public:
-  typedef kwiver::vital::track_set_sptr track_set_sptr;
+  typedef kwiver::vital::feature_track_set_sptr feature_track_set_sptr;
   typedef kwiver::vital::camera_map_sptr camera_map_sptr;
   typedef kwiver::vital::landmark_map_sptr landmark_map_sptr;
 
-  /// Deep copy the tracks into this data class
-  void copyTracks(track_set_sptr const&);
+  /// Deep copy the feature tracks into this data class
+  void copyTracks(feature_track_set_sptr const&);
 
   /// Deep copy the cameras into this data class
   void copyCameras(camera_map_sptr const&);
@@ -60,7 +60,7 @@ public:
 
   unsigned int activeFrame;
   std::vector<std::string> imagePaths;
-  track_set_sptr tracks;
+  feature_track_set_sptr tracks;
   camera_map_sptr cameras;
   landmark_map_sptr landmarks;
 };
@@ -72,7 +72,7 @@ class AbstractTool : public QAction
   Q_OBJECT
 
 public:
-  typedef kwiver::vital::track_set_sptr track_set_sptr;
+  typedef kwiver::vital::feature_track_set_sptr feature_track_set_sptr;
   typedef kwiver::vital::camera_map_sptr camera_map_sptr;
   typedef kwiver::vital::landmark_map_sptr landmark_map_sptr;
 
@@ -107,8 +107,8 @@ public:
   /// Set the image paths to be used as input to the tool.
   void setImagePaths(std::vector<std::string> const&);
 
-  /// Set the tracks to be used as input to the tool.
-  void setTracks(track_set_sptr const&);
+  /// Set the feature tracks to be used as input to the tool.
+  void setTracks(feature_track_set_sptr const&);
 
   /// Set the cameras to be used as input to the tool.
   void setCameras(camera_map_sptr const&);
@@ -145,7 +145,7 @@ public:
   ///
   /// \warning Users must not call this method while the tool is executing,
   ///          as doing so may not be thread safe.
-  track_set_sptr tracks() const;
+  feature_track_set_sptr tracks() const;
 
   /// Get cameras.
   ///
@@ -229,7 +229,7 @@ protected:
   ///
   /// This sets the tracks that are produced by the tool as output. Unlike
   /// setTracks, this does not make a deep copy of the provided tracks.
-  void updateTracks(track_set_sptr const&);
+  void updateTracks(feature_track_set_sptr const&);
 
   /// Set the cameras produced by the tool.
   ///

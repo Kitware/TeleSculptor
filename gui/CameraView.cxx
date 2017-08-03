@@ -41,6 +41,7 @@
 #include "vtkMaptkCamera.h"
 #include "vtkMaptkFeatureTrackRepresentation.h"
 
+#include <vital/types/feature_track_set.h>
 #include <vital/types/landmark_map.h>
 #include <vital/types/track.h>
 
@@ -603,8 +604,13 @@ void CameraView::addFeatureTrack(kwiver::vital::track const& track)
 
   foreach (auto const& state, track)
   {
-    auto const& loc = state.feat->loc();
-    d->featureRep->AddTrackPoint(id, state.frame_id, loc[0], loc[1]);
+    auto const& fts = std::dynamic_pointer_cast<kwiver::vital::feature_track_state>(state);
+    if ( !fts )
+    {
+      continue;
+    }
+    auto const& loc = fts->feature->loc();
+    d->featureRep->AddTrackPoint(id, state->frame(), loc[0], loc[1]);
   }
 
   d->updateFeatures(this);
