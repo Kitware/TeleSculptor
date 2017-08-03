@@ -57,7 +57,7 @@
 #include <vital/io/landmark_map_io.h>
 #include <vital/io/track_set_io.h>
 #include <vital/plugin_loader/plugin_manager.h>
-#include <vital/types/track_set.h>
+#include <vital/types/feature_track_set.h>
 #include <vital/vital_types.h>
 #include <vital/util/cpu_timer.h>
 #include <vital/util/get_paths.h>
@@ -409,7 +409,7 @@ static int maptk_main(int argc, char const* argv[])
   }
 
   kwiver::vital::landmark_map_sptr reference_landmarks(new kwiver::vital::simple_landmark_map());
-  kwiver::vital::track_set_sptr reference_tracks(new kwiver::vital::simple_track_set());
+  kwiver::vital::feature_track_set_sptr reference_tracks = std::make_shared<kwiver::vital::simple_feature_track_set>();
   if (config->get_value<std::string>("input_reference_points_file", "") != "")
   {
     kwiver::vital::path_t ref_file = config->get_value<kwiver::vital::path_t>("input_reference_points_file");
