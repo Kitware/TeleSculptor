@@ -62,21 +62,21 @@ void AbstractToolPrivate::run()
 }
 
 //-----------------------------------------------------------------------------
-void ToolData::copyTracks(track_set_sptr const& newTracks)
+void ToolData::copyTracks(feature_track_set_sptr const& newTracks)
 {
   if (newTracks)
   {
     auto copiedTracks = std::vector<kwiver::vital::track_sptr>{};
     foreach (auto const& ti, newTracks->tracks())
     {
-      copiedTracks.push_back(std::make_shared<kwiver::vital::track>(*ti));
+      copiedTracks.push_back(ti->clone());
     }
     this->tracks =
-      std::make_shared<kwiver::vital::simple_track_set>(copiedTracks);
+      std::make_shared<kwiver::vital::simple_feature_track_set>(copiedTracks);
   }
   else
   {
-    this->tracks = track_set_sptr();
+    this->tracks = feature_track_set_sptr();
   }
 }
 
@@ -155,7 +155,7 @@ std::vector<std::string> const& AbstractTool::imagePaths() const
 }
 
 //-----------------------------------------------------------------------------
-kwiver::vital::track_set_sptr AbstractTool::tracks() const
+kwiver::vital::feature_track_set_sptr AbstractTool::tracks() const
 {
   QTE_D();
   return d->data->tracks;
@@ -197,7 +197,7 @@ void AbstractTool::setImagePaths(std::vector<std::string> const& paths)
 }
 
 //-----------------------------------------------------------------------------
-void AbstractTool::setTracks(track_set_sptr const& newTracks)
+void AbstractTool::setTracks(feature_track_set_sptr const& newTracks)
 {
   QTE_D();
   d->data->copyTracks(newTracks);
@@ -270,7 +270,7 @@ bool AbstractTool::hasLandmarks() const
 }
 
 //-----------------------------------------------------------------------------
-void AbstractTool::updateTracks(track_set_sptr const& newTracks)
+void AbstractTool::updateTracks(feature_track_set_sptr const& newTracks)
 {
   QTE_D();
   d->data->tracks = newTracks;

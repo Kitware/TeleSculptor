@@ -51,17 +51,17 @@ namespace kwiver {
 namespace maptk {
 
 
-/// Load landmarks and tracks from reference points file
+/// Load landmarks and feature tracks from reference points file
 void load_reference_file(vital::path_t const& reference_file,
                          local_geo_cs & lgcs,
                          vital::landmark_map_sptr & ref_landmarks,
-                         vital::track_set_sptr & ref_track_set)
+                         vital::feature_track_set_sptr & ref_track_set)
 {
   using namespace std;
 
   kwiver::vital::logger_handle_t logger( kwiver::vital::get_logger( "load_reference_file" ) );
 
-  // Read in file, creating a landmark map and a vector of tracks, associated
+  // Read in file, creating a landmark map and a vector of feature tracks, associated
   // via IDs
   std::ifstream input_stream(reference_file.c_str(), std::fstream::in);
   if (!input_stream)
@@ -117,15 +117,16 @@ void load_reference_file(vital::path_t const& reference_file,
     reference_lms[cur_id] = vital::landmark_sptr(new vital::landmark_d(vec));
 
     // while there's still input left, read in track states
-    vital::track_sptr lm_track(new vital::track());
+    vital::track_sptr lm_track = vital::track::make();
     lm_track->set_id(static_cast<vital::track_id_t>(cur_id));
     while (ss.peek() != std::char_traits<char>::eof())
     {
       ss >> frm;
       ss >> feat_loc;
-      lm_track->append(vital::track::track_state(frm,
+      auto fts = std::make_shared<vital::feature_track_state>(frm,
                        vital::feature_sptr(new vital::feature_d(feat_loc)),
-                       vital::descriptor_sptr()));
+                       vital::descriptor_sptr());
+      lm_track->append(fts);
     }
     reference_tracks.push_back(lm_track);
 
@@ -155,8 +156,8 @@ void load_reference_file(vital::path_t const& reference_file,
     dynamic_cast<vital::landmark_d*>(p.second.get())->set_loc(loc);
   }
 
-  ref_landmarks = vital::landmark_map_sptr(new vital::simple_landmark_map(reference_lms));
-  ref_track_set = vital::track_set_sptr(new vital::simple_track_set(reference_tracks));
+  ref_landmarks = std::make_shared<vital::simple_landmark_map>(reference_lms);
+  ref_track_set = std::make_shared<vital::simple_feature_track_set>(reference_tracks);
 }
 
 

@@ -1,0 +1,28 @@
+MAP-Tk v0.11.0 Release Notes
+============================
+
+This is a minor release of MAP-Tk that provides both new functionality and
+fixes over the previous v0.10.0 release.
+
+
+Updates since v0.10.0
+--------------------
+
+Overall
+
+ * Updated everything to use the new feature_track_set class and
+   feature_track_state class from KWIVER.  The previous data structure,
+   track_set is now a base class and is generalized to support other types of
+   tracks, like moving object tracks.
+
+
+Fixes since v0.10.0
+------------------
+
+Tests
+
+ * All of the unit tests in v0.10.0 were testing functions that had moved
+   into KWIVER.  Those tests had also been duplicated in KWIVER, so the
+   redundant tests in MAP-Tk were removed.  This leaves MAP-Tk with no tests.
+   New tests, especially for the command line tools, should be added in the
+   future.

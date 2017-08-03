@@ -277,10 +277,10 @@ public:
   int toolUpdateActiveFrame;
   kwiver::vital::camera_map_sptr toolUpdateCameras;
   kwiver::vital::landmark_map_sptr toolUpdateLandmarks;
-  kwiver::vital::track_set_sptr toolUpdateTracks;
+  kwiver::vital::feature_track_set_sptr toolUpdateTracks;
 
   QList<CameraData> cameras;
-  kwiver::vital::track_set_sptr tracks;
+  kwiver::vital::feature_track_set_sptr tracks;
   kwiver::vital::landmark_map_sptr landmarks;
 
   int activeCameraIndex;
@@ -539,12 +539,17 @@ void MainWindowPrivate::updateCameraView()
     foreach (auto const& track, tracks)
     {
       auto const& state = track->find(this->activeCameraIndex);
-      if (state != track->end() && state->feat)
+      if ( state == track->end() )
+      {
+        continue;
+      }
+      auto fts = std::dynamic_pointer_cast<kwiver::vital::feature_track_state>(*state);
+      if ( fts && fts->feature)
       {
         auto const id = track->id();
         if (landmarkPoints.contains(id))
         {
-          auto const& fp = state->feat->loc();
+          auto const& fp = fts->feature->loc();
           auto const& lp = landmarkPoints[id];
           this->UI.cameraView->addResidual(id, fp[0], fp[1], lp[0], lp[1]);
         }
@@ -981,7 +986,7 @@ void MainWindow::loadTracks(QString const& path)
 
   try
   {
-    auto const& tracks = kwiver::vital::read_track_file(kvPath(path));
+    auto const& tracks = kwiver::vital::read_feature_track_file(kvPath(path));
     if (tracks)
     {
       d->tracks = tracks;

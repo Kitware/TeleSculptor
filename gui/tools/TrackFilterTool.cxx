@@ -143,6 +143,7 @@ void TrackFilterTool::run()
   QTE_D();
 
   auto tp = d->algorithm->filter(this->tracks());
+  auto ftp = std::static_pointer_cast<kwiver::vital::feature_track_set>(tp);
 
-  this->updateTracks(tp);
+  this->updateTracks(ftp);
 }
