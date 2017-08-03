@@ -15,6 +15,13 @@ Overall
    track_set is now a base class and is generalized to support other types of
    tracks, like moving object tracks.
 
+ * Replaced use of the geo_map vital algorithm with the new geodetic conversion
+   functions and data structures provided in KWIVER.  The new approach still
+   uses plugins (e.g. PROJ4) but only supports one backend at a time that is
+   globally accessible throughout KWIVER.  There is no more need to explicitly
+   pass a geo_map object around.  New data structures, like geo_point, know
+   how to convert themselves into different coordinate systems.
+
 
 Fixes since v0.10.0
 ------------------
