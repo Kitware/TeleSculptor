@@ -403,7 +403,7 @@ static int maptk_main(int argc, char const* argv[])
   }
 
   // Track features on each frame sequentially
-  kwiver::vital::track_set_sptr tracks;
+  kwiver::vital::feature_track_set_sptr tracks;
   while( video_reader->next_frame(ts) )
   {
     LOG_INFO(main_logger, "processing frame "<<ts.get_frame() );

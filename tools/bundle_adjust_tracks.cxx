@@ -59,7 +59,7 @@
 #include <vital/io/landmark_map_io.h>
 #include <vital/io/track_set_io.h>
 #include <vital/plugin_loader/plugin_manager.h>
-#include <vital/types/track_set.h>
+#include <vital/types/feature_track_set.h>
 #include <vital/vital_types.h>
 #include <vital/util/cpu_timer.h>
 #include <vital/util/get_paths.h>
@@ -521,7 +521,7 @@ static int maptk_main(int argc, char const* argv[])
   //
   std::string track_file = config->get_value<std::string>("input_track_file");
   LOG_INFO(main_logger, "loading track file: " << track_file);
-  kwiver::vital::track_set_sptr tracks = kwiver::vital::read_track_file(track_file);
+  kwiver::vital::feature_track_set_sptr tracks = kwiver::vital::read_feature_track_file(track_file);
 
   LOG_DEBUG(main_logger, "loaded "<<tracks->size()<<" tracks");
   if( tracks->size() == 0 )
@@ -535,7 +535,8 @@ static int maptk_main(int argc, char const* argv[])
   //
   {
     kwiver::vital::scoped_cpu_timer t( "track filtering" );
-    tracks = track_filter->filter(tracks);
+    auto filt_tracks = track_filter->filter(tracks);
+    tracks = std::static_pointer_cast<kwiver::vital::feature_track_set>(filt_tracks);
     LOG_DEBUG(main_logger, "filtered down to "<<tracks->size()<<" long tracks");
 
     // write out filtered tracks if output file is specified
@@ -633,7 +634,7 @@ static int maptk_main(int argc, char const* argv[])
   }
 
   kwiver::vital::landmark_map_sptr reference_landmarks(new kwiver::vital::simple_landmark_map());
-  kwiver::vital::track_set_sptr reference_tracks(new kwiver::vital::simple_track_set());
+  kwiver::vital::feature_track_set_sptr reference_tracks = std::make_shared<kwiver::vital::simple_feature_track_set>();
   if (config->get_value<std::string>("input_reference_points_file", "") != "")
   {
     kwiver::vital::path_t ref_file = config->get_value<kwiver::vital::path_t>("input_reference_points_file");
@@ -708,11 +709,11 @@ static int maptk_main(int argc, char const* argv[])
       // state's frame's camera is in the sub-sampled set of cameras
       VITAL_FOREACH(kwiver::vital::track_sptr const t, reference_tracks->tracks())
       {
-        for (kwiver::vital::track::history_const_itr tsit = t->begin(); tsit != t->end(); ++tsit)
+        for (auto ts : *t)
         {
-          if (cams.count(tsit->frame_id) > 0)
+          if (cams.count(ts->frame()) > 0)
           {
-            sub_cams.insert(*cams.find(tsit->frame_id));
+            sub_cams.insert(*cams.find(ts->frame()));
           }
         }
       }

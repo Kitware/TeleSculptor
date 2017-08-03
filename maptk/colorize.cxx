@@ -67,56 +67,49 @@ extract_feature_colors(
 
 
 /// Extract feature colors from a frame image
-vital::track_set_sptr
+vital::feature_track_set_sptr
 extract_feature_colors(
-  vital::track_set const& tracks,
+  vital::feature_track_set const& tracks,
   vital::image_container const& image,
   vital::frame_id_t frame_id)
 {
   const vital::image_of<uint8_t> image_data(image.get_image());
 
-  auto tracks_copy = tracks.tracks();
-  VITAL_FOREACH (auto& track, tracks_copy)
+  auto trks = tracks.tracks();
+  VITAL_FOREACH (auto& track, trks)
   {
     auto const si = track->find(frame_id);
     if (si != track->end())
     {
-      auto const new_track = std::make_shared<vital::track>();
-      new_track->set_id(track->id());
-
       VITAL_FOREACH (auto const& state, *track)
       {
-        if (state.frame_id == frame_id)
+        if (state->frame() == frame_id)
         {
-          auto new_state = vital::track::track_state{state};
+          auto fts = std::dynamic_pointer_cast<vital::feature_track_state>(state);
+          if ( !fts )
+          {
+            continue;
+          }
 
-          auto const feat = std::make_shared<vital::feature_d>(*state.feat);
+          auto const feat = std::make_shared<vital::feature_d>(*fts->feature);
           auto const& loc = feat->get_loc();
           feat->set_color(image_data.at(static_cast<unsigned>(loc[0]),
                                         static_cast<unsigned>(loc[1])));
 
-          new_state.feat = feat;
-
-          new_track->append(new_state);
-        }
-        else
-        {
-          new_track->append(state);
+          fts->feature = feat;
         }
       }
-
-      track = new_track;
     }
   }
 
-  return std::make_shared<vital::simple_track_set>(tracks_copy);
+  return std::make_shared<vital::simple_feature_track_set>(trks);
 }
 
 
 /// Compute colors for landmarks
 vital::landmark_map_sptr compute_landmark_colors(
   vital::landmark_map const& landmarks,
-  vital::track_set const& tracks)
+  vital::feature_track_set const& tracks)
 {
   auto colored_landmarks = landmarks.landmarks();
   auto const no_such_landmark = colored_landmarks.end();
@@ -130,7 +123,12 @@ vital::landmark_map_sptr compute_landmark_colors(
       int ra = 0, ga = 0, ba = 0, k = 0; // accumulators
       VITAL_FOREACH (auto const& ts, *track)
       {
-        auto const& color = ts.feat->color();
+        auto fts = std::dynamic_pointer_cast<vital::feature_track_state>(ts);
+        if( !fts )
+        {
+          continue;
+        }
+        auto const& color = fts->feature->color();
         ra += color.r;
         ga += color.g;
         ba += color.b;
