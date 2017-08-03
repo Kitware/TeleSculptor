@@ -8,20 +8,12 @@ fixes over the previous v0.10.0 release.
 Updates since v0.10.0
 --------------------
 
-Main Library
+Overall
 
- * Updated all functions to use the new feature_track_set class and
-   feature_track_state class from KWIVER.
-
-Tools
-
- * Updated all tools to use the new feature_track_set class and
-   feature_track_state class from KWIVER.
-
-TeleSculptor Application
-
- * Updated the application to use the new feature_track_set class and
-   feature_track_state class from KWIVER.
+ * Updated everything to use the new feature_track_set class and
+   feature_track_state class from KWIVER.  The previous data structure,
+   track_set is now a base class and is generalized to support other types of
+   tracks, like moving object tracks.
 
 
 Fixes since v0.10.0
