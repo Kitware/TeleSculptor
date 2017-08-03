@@ -438,12 +438,6 @@ static int maptk_main(int argc, char const* argv[])
   kwiver::vital::plugin_manager::instance().add_search_path(rel_plugin_path);
   kwiver::vital::plugin_manager::instance().load_all_plugins();
 
-  if( kwiver::vital::get_geo_conv() == nullptr )
-  {
-    std::cerr << "No geographic conversion module available" << std::endl;
-    return EXIT_FAILURE;
-  }
-
   // Set config to algo chain
   // Get config from algo chain after set
   // Check config validity, store result
