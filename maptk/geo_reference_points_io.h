@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2016 by Kitware, Inc.
+ * Copyright 2014-2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,7 @@
 #include "local_geo_cs.h"
 
 #include <vital/types/landmark_map.h>
-#include <vital/types/track_set.h>
+#include <vital/types/feature_track_set.h>
 #include <vital/vital_types.h>
 
 
@@ -51,7 +51,7 @@ namespace kwiver {
 namespace maptk {
 
 
-/// Load landmarks and tracks from reference points file
+/// Load landmarks and feature tracks from reference points file
 /**
  * Initializes and uses a local_geo_cs object given to transform reference
  * landmarks into a local coordinate system. The newly initialized lgcs is
@@ -77,7 +77,7 @@ void
 load_reference_file(vital::path_t const& reference_file,
                     local_geo_cs & lgcs,
                     vital::landmark_map_sptr & ref_landmarks,
-                    vital::track_set_sptr & ref_track_set);
+                    vital::feature_track_set_sptr & ref_track_set);
 
 
 } // end namespace maptk

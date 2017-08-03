@@ -38,9 +38,10 @@
 
 #include <maptk/maptk_export.h>
 
+#include <vital/types/feature_set.h>
 #include <vital/types/image_container.h>
 #include <vital/types/landmark_map.h>
-#include <vital/types/track_set.h>
+#include <vital/types/feature_track_set.h>
 
 
 namespace kwiver {
@@ -67,14 +68,14 @@ vital::feature_set_sptr extract_feature_colors(
  * applies them to all features in the input track set with the same frame
  * number.
  *
- *  \param [in] tracks a set of tracks in which to colorize feature points
+ *  \param [in] tracks a set of feature tracks in which to colorize feature points
  *  \param [in] image the image from which to take colors
  *  \param [in] frame_id the frame number of the image
  *  \return a track set with updated features
  */
 MAPTK_EXPORT
-vital::track_set_sptr extract_feature_colors(
-  vital::track_set const& tracks,
+vital::feature_track_set_sptr extract_feature_colors(
+  vital::feature_track_set const& tracks,
   vital::image_container const& image,
   vital::frame_id_t frame_id);
 
@@ -84,13 +85,13 @@ vital::track_set_sptr extract_feature_colors(
  * associated feature points.
  *
  *  \param [in] landmarks a set of landmarks to be colored
- *  \param [in] tracks tracks to be used for computing landmark colors
+ *  \param [in] tracks feature tracks to be used for computing landmark colors
  *  \return a set of colored landmarks
  */
 MAPTK_EXPORT
 vital::landmark_map_sptr compute_landmark_colors(
   vital::landmark_map const& landmarks,
-  vital::track_set const& tracks);
+  vital::feature_track_set const& tracks);
 
 } // end namespace maptk
 } // end namespace kwiver
