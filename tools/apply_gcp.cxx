@@ -409,7 +409,7 @@ static int maptk_main(int argc, char const* argv[])
   }
 
   kwiver::vital::landmark_map_sptr reference_landmarks(new kwiver::vital::simple_landmark_map());
-  kwiver::vital::feature_track_set_sptr reference_tracks = std::make_shared<kwiver::vital::simple_feature_track_set>();
+  kwiver::vital::feature_track_set_sptr reference_tracks = std::make_shared<kwiver::vital::feature_track_set>();
   if (config->get_value<std::string>("input_reference_points_file", "") != "")
   {
     kwiver::vital::path_t ref_file = config->get_value<kwiver::vital::path_t>("input_reference_points_file");
