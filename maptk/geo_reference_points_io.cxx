@@ -157,7 +157,7 @@ void load_reference_file(vital::path_t const& reference_file,
   }
 
   ref_landmarks = std::make_shared<vital::simple_landmark_map>(reference_lms);
-  ref_track_set = std::make_shared<vital::simple_feature_track_set>(reference_tracks);
+  ref_track_set = std::make_shared<vital::feature_track_set>(reference_tracks);
 }
 
 

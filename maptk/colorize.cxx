@@ -102,7 +102,7 @@ extract_feature_colors(
     }
   }
 
-  return std::make_shared<vital::simple_feature_track_set>(trks);
+  return std::make_shared<vital::feature_track_set>(trks);
 }
 
 

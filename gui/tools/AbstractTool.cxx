@@ -72,7 +72,7 @@ void ToolData::copyTracks(feature_track_set_sptr const& newTracks)
       copiedTracks.push_back(ti->clone());
     }
     this->tracks =
-      std::make_shared<kwiver::vital::simple_feature_track_set>(copiedTracks);
+      std::make_shared<kwiver::vital::feature_track_set>(copiedTracks);
   }
   else
   {
