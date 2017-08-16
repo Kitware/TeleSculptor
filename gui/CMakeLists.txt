@@ -268,7 +268,7 @@ if (MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
 
   install(DIRECTORY "${KWIVER_DIR}/lib/${BINARY_DIR}/modules" DESTINATION lib
           COMPONENT Runtime
-          FILES_MATCHING PATTERN "*kwiver_algo*${CMAKE_SHARED_LIBRARY_SUFFIX}" )
+          FILES_MATCHING PATTERN "*kwiver_algo*${CMAKE_SHARED_MODULE_SUFFIX}" )
 
   get_property( bundle_path GLOBAL PROPERTY maptk_bundle_paths)
 
@@ -291,7 +291,7 @@ set(bundle_path \"${bundle_path}\")
         file(GLOB_RECURSE QTPLUGINS
             \"${dest_prefix}/${plugin_dest_dir}/plugins/*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
         file(GLOB_RECURSE KWIVER_PLUGINS
-            \"${dest_prefix}/lib/modules/*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
+            \"${dest_prefix}/lib/modules/*${CMAKE_SHARED_MODULE_SUFFIX}\")
         set(BU_CHMOD_BUNDLE_ITEMS ON)
         set(ENV{VS_UNICODE_OUTPUT} \"\")
         include(${MAPTK_SOURCE_DIR}/CMake/utils/maptk-utils-bundle.cmake)
