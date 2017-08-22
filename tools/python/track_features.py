@@ -228,7 +228,7 @@ def main():
 
     log.info("Writing tracks file: %s", output_tracks_fp)
     safe_create_dir(os.path.dirname(output_tracks_fp))
-    track_set.write_tracks_file(output_tracks_fp)
+    track_set.write_feature_tracks_file(output_tracks_fp)
 
 
 if __name__ == '__main__':
