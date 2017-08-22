@@ -473,7 +473,7 @@ static int maptk_main(int argc, char const* argv[])
   }
 
   // Writing out tracks to file
-  kwiver::vital::write_track_file(tracks, output_tracks_file);
+  kwiver::vital::write_feature_track_file(tracks, output_tracks_file);
 
   return EXIT_SUCCESS;
 }

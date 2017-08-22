@@ -1088,7 +1088,7 @@ void MainWindow::saveTracks(QString const& path)
 
   try
   {
-    kwiver::vital::write_track_file(d->tracks, kvPath(path));
+    kwiver::vital::write_feature_track_file(d->tracks, kvPath(path));
   }
   catch (...)
   {
