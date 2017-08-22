@@ -1,0 +1,17 @@
+MAP-Tk v0.10.1 Release Notes
+============================
+
+This release provides patches to the MAP-Tk v0.10.0 release to address issues.
+MAP-Tk v0.10.1 is a bug fix release with no new functionality.
+
+
+Fixes since v0.10.0
+--------------------
+
+Build System
+
+ * The CPack installer packaging was broken on MacOS due to using the variable
+   CMAKE_SHARED_LIBRARY_SUFFIX instead of CMAKE_SHARED_MODULE_SUFFIX to find
+   KWIVER plugins to include in the package.  These variables are the same on
+   most platforms but differ on MacOS where libraries are .dylib and modules
+   are .so.
