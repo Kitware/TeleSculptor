@@ -40,7 +40,6 @@
 #include <vital/config/config_block.h>
 #include <vital/config/config_block_io.h>
 #include <vital/logger/logger.h>
-#include <vital/vital_foreach.h>
 
 #include <vital/types/image_container.h>
 #include <vital/exceptions.h>

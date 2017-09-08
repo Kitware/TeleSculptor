@@ -40,7 +40,6 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 
-#include <vital/vital_foreach.h>
 
 #include <map>
 

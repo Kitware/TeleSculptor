@@ -38,7 +38,6 @@
 #include <fstream>
 #include <iomanip>
 
-#include <vital/vital_foreach.h>
 #include <vital/types/geodesy.h>
 #include <vital/video_metadata/video_metadata_traits.h>
 

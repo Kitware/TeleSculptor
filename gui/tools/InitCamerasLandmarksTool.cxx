@@ -35,7 +35,6 @@
 #include <vital/algo/initialize_cameras_landmarks.h>
 
 #include <vital/config/config_block_io.h>
-#include <vital/vital_foreach.h>
 
 #include <qtStlUtil.h>
 

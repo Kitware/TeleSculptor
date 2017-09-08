@@ -37,7 +37,6 @@
 #include <vital/exceptions.h>
 #include <vital/io/eigen_io.h>
 #include <vital/types/geodesy.h>
-#include <vital/vital_foreach.h>
 #include <vital/logger/logger.h>
 
 #include <fstream>

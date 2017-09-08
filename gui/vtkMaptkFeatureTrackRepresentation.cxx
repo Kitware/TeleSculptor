@@ -30,7 +30,6 @@
 
 #include "vtkMaptkFeatureTrackRepresentation.h"
 
-#include <vital/vital_foreach.h>
 
 #include <vtkActor.h>
 #include <vtkCellArray.h>

@@ -35,7 +35,6 @@
 
 #include "colorize.h"
 
-#include <vital/vital_foreach.h>
 
 namespace kwiver {
 namespace maptk {

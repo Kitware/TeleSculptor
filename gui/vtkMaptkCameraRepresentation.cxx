@@ -34,7 +34,6 @@
 
 #include <vital/types/vector.h>
 
-#include <vital/vital_foreach.h>
 
 #include <vtkActor.h>
 #include <vtkAppendPolyData.h>
