@@ -168,7 +168,7 @@ void InitCamerasLandmarksTool::run()
     std::set<frame_id_t> frame_ids = tp->all_frame_ids();
     camera_map::map_camera_t all_cams = cp->cameras();
 
-    VITAL_FOREACH (auto const& id, frame_ids)
+    for (auto const& id : frame_ids)
     {
       if (all_cams.find(id) == all_cams.end())
       {
@@ -188,7 +188,7 @@ void InitCamerasLandmarksTool::run()
     std::set<track_id_t> track_ids = tp->all_track_ids();
     landmark_map::map_landmark_t all_lms = lp->landmarks();
 
-    VITAL_FOREACH (auto const& id, track_ids)
+    for (auto const& id : track_ids)
     {
       if (all_lms.find(id) == all_lms.end())
       {

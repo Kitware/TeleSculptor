@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -142,7 +142,7 @@ void SetInputs(vtkAppendPolyData* apd, std::unordered_set<vtkPolyData*> inputs)
 
   // Anything still in the new inputs list is missing from the existing inputs,
   // so now we can add those
-  VITAL_FOREACH (auto const input, inputs)
+  for (auto const input : inputs)
   {
     apd->AddInputData(input);
   }
@@ -228,7 +228,7 @@ vtkMaptkCameraRepresentation::~vtkMaptkCameraRepresentation()
   this->ActiveActor->Delete();
   this->NonActiveActor->Delete();
   this->PathActor->Delete();
-  VITAL_FOREACH(auto const camData, this->Internal->Cameras)
+  for(auto const camData : this->Internal->Cameras)
   {
     camData.second->UnRegister(this);
   }
@@ -308,7 +308,7 @@ void vtkMaptkCameraRepresentation::Update()
   // cameras that are missing
   std::unordered_set<vtkPolyData*> nonActivePolyData;
   int skipCount = 0;
-  VITAL_FOREACH(auto const camData, this->Internal->Cameras)
+  for(auto const camData : this->Internal->Cameras)
   {
     if (!((skipCount++) % this->DisplayDensity))
     {
@@ -360,7 +360,7 @@ void vtkMaptkCameraRepresentation::Update()
     vtkCellArray* lines = this->Internal->PathPolyData->GetLines();
     lines->InsertNextCell(static_cast<int>(this->Internal->Cameras.size()));
 
-    VITAL_FOREACH(auto const& camData, this->Internal->Cameras)
+    for(auto const& camData : this->Internal->Cameras)
     {
       double position[3];
       camData.second->GetPosition(position);

@@ -350,7 +350,7 @@ static int maptk_main(int argc, char const* argv[])
 
   LOG_INFO( main_logger, "Writing KRTD files" );
   typedef std::map<kwiver::vital::frame_id_t, kwiver::vital::camera_sptr>::value_type cam_map_val_t;
-  VITAL_FOREACH(cam_map_val_t const &p, cam_map)
+  for(cam_map_val_t const &p : cam_map)
   {
     kwiver::vital::simple_camera* cam = dynamic_cast<kwiver::vital::simple_camera*>(p.second.get());
     kwiver::vital::write_krtd_file(*cam, krtd_filenames[p.first]);

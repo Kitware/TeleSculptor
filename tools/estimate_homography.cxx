@@ -393,7 +393,7 @@ static int maptk_main(int argc, char const* argv[])
 
   // Reporting inlier count
   size_t inlier_count = 0;
-  VITAL_FOREACH(bool b, inliers)
+  for(bool b : inliers)
   {
     if (b)
     {

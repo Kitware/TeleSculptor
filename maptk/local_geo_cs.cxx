@@ -213,7 +213,7 @@ initialize_cameras_with_metadata(std::map<vital::frame_id_t,
       update_local_origin = true;
     }
   }
-  VITAL_FOREACH(auto const& p, md_map)
+  for(auto const& p : md_map)
   {
     auto md = p.second;
     if( !md )
@@ -237,7 +237,7 @@ initialize_cameras_with_metadata(std::map<vital::frame_id_t,
 
     // shift all cameras to the new coordinate system.
     typedef std::map<frame_id_t, camera_sptr>::value_type cam_map_val_t;
-    VITAL_FOREACH(cam_map_val_t const &p, cam_map)
+    for(cam_map_val_t const &p : cam_map)
     {
       simple_camera* cam = dynamic_cast<simple_camera*>(p.second.get());
       cam->set_center(cam->get_center() - mean);
@@ -264,7 +264,7 @@ update_metadata_from_cameras(std::map<frame_id_t, camera_sptr> const& cam_map,
   }
 
   typedef std::map<frame_id_t, camera_sptr>::value_type cam_map_val_t;
-  VITAL_FOREACH(cam_map_val_t const &p, cam_map)
+  for(cam_map_val_t const &p : cam_map)
   {
     auto active_md = md_map[p.first];
     if( !active_md )
