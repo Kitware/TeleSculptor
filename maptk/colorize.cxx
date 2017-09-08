@@ -35,7 +35,6 @@
 
 #include "colorize.h"
 
-#include <vital/vital_foreach.h>
 
 namespace kwiver {
 namespace maptk {
@@ -52,7 +51,7 @@ extract_feature_colors(
   std::vector<vital::feature_sptr> out_feat;
   out_feat.reserve(in_feat.size());
 
-  VITAL_FOREACH (auto const& f, in_feat)
+  for (auto const& f : in_feat)
   {
     auto const& loc = f->loc();
     auto const fd = std::make_shared<vital::feature_d>(*f);
@@ -76,12 +75,12 @@ extract_feature_colors(
   const vital::image_of<uint8_t> image_data(image.get_image());
 
   auto trks = tracks.tracks();
-  VITAL_FOREACH (auto& track, trks)
+  for (auto& track : trks)
   {
     auto const si = track->find(frame_id);
     if (si != track->end())
     {
-      VITAL_FOREACH (auto const& state, *track)
+      for (auto const& state : *track)
       {
         if (state->frame() == frame_id)
         {
@@ -114,14 +113,14 @@ vital::landmark_map_sptr compute_landmark_colors(
   auto colored_landmarks = landmarks.landmarks();
   auto const no_such_landmark = colored_landmarks.end();
 
-  VITAL_FOREACH (auto const track, tracks.tracks())
+  for (auto const track : tracks.tracks())
   {
     auto const lmid = static_cast<vital::landmark_id_t>(track->id());
     auto lmi = colored_landmarks.find(lmid);
     if (lmi != no_such_landmark)
     {
       int ra = 0, ga = 0, ba = 0, k = 0; // accumulators
-      VITAL_FOREACH (auto const& ts, *track)
+      for (auto const& ts : *track)
       {
         auto fts = std::dynamic_pointer_cast<vital::feature_track_state>(ts);
         if( !fts )

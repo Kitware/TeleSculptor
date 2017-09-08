@@ -10,6 +10,9 @@ Updates since v0.10.0
 
 Overall
 
+ * Removed all uses of VITAL_FOREACH, which has been removed from KWIVER,
+   and replace with standard C++11 range-based for loops.
+
  * Updated everything to use the new feature_track_set class and
    feature_track_state class from KWIVER.  The previous data structure,
    track_set is now a base class and is generalized to support other types of

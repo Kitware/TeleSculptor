@@ -42,7 +42,6 @@
 #include <string>
 #include <vector>
 
-#include <vital/vital_foreach.h>
 #include <vital/config/config_block.h>
 #include <vital/config/config_block_io.h>
 
@@ -394,7 +393,7 @@ static int maptk_main(int argc, char const* argv[])
   kwiver::vital::camera_map_sptr input_cam_map(new kwiver::vital::simple_camera_map(input_cameras));
   if (input_cameras.size() != 0)
   {
-    VITAL_FOREACH(kwiver::vital::camera_map::map_camera_t::value_type &v, input_cameras)
+    for(kwiver::vital::camera_map::map_camera_t::value_type &v : input_cameras)
     {
       cameras[v.first] = v.second->clone();
     }
@@ -536,7 +535,7 @@ static int maptk_main(int argc, char const* argv[])
 
     kwiver::vital::path_t krtd_dir = config->get_value<std::string>("output_krtd_dir");
     typedef kwiver::vital::camera_map::map_camera_t::value_type cam_map_val_t;
-    VITAL_FOREACH(cam_map_val_t const& p, cam_map->cameras())
+    for(cam_map_val_t const& p : cam_map->cameras())
     {
       if (p.second)
       {

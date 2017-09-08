@@ -37,7 +37,6 @@
 #include <vital/exceptions.h>
 #include <vital/io/eigen_io.h>
 #include <vital/types/geodesy.h>
-#include <vital/vital_foreach.h>
 #include <vital/logger/logger.h>
 
 #include <fstream>
@@ -146,7 +145,7 @@ void load_reference_file(vital::path_t const& reference_file,
   // Scan through reference landmarks, adjusting their location by the lgcs
   // origin.
   LOG_INFO(logger, "transforming ground control points to local coordinates");
-  VITAL_FOREACH(vital::landmark_map::map_landmark_t::value_type & p, reference_lms)
+  for(vital::landmark_map::map_landmark_t::value_type & p : reference_lms)
   {
     auto loc = p.second->loc();
     auto origin_pt = lgcs.origin().location();
