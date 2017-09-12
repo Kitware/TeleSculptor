@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -107,9 +107,6 @@ VolumeOptions::VolumeOptions(const QString &settingsGroup, QWidget* parent,
 
   connect(d->UI.doubleSpinBoxSurfaceThreshold, SIGNAL(valueChanged(double)),
     parent, SLOT(computeContour(double)));
-
-  connect(parent, SIGNAL(activeDepthMapChanged(int)),
-    d->colorizeSurfaceOptions, SLOT(updateCurrentFrameNumber(int)));
 }
 
 //-----------------------------------------------------------------------------
