@@ -50,6 +50,7 @@ include( maptk-depends )
 ###
 # use kwiver util methods
 #
+include( kwiver-cmake-future )
 include( kwiver-utils )
 include( kwiver-flags )
 include( kwiver-configcheck )
