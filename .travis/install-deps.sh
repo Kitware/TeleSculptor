@@ -26,10 +26,12 @@ fi
 cd /tmp
 if [ -f $TRAVIS_BUILD_DIR/doc/release-notes/master.txt ]; then
   FLETCH_TAR_FILE_ID=599c39468d777f7d33e9cbe5
-  echo "Using master branch of Fletch"
+  kwiver_branch="master"
+  echo "Using master branches of Fletch and KWIVER"
 else
   FLETCH_TAR_FILE_ID=599f2db18d777f7d33e9cc9e
-  echo "Using release branch of Fletch"
+  kwiver_branch="release"
+  echo "Using release branches of Fletch and KWIVER"
 fi
 
 wget https://data.kitware.com/api/v1/file/$FLETCH_TAR_FILE_ID/hashsum_file/sha512 -O fletch.sha512
