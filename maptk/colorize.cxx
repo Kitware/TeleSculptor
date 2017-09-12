@@ -68,10 +68,14 @@ extract_feature_colors(
 /// Extract feature colors from a frame image
 vital::feature_track_set_sptr
 extract_feature_colors(
-  vital::feature_track_set const& tracks,
+  vital::feature_track_set_sptr tracks,
   vital::image_container const& image,
   vital::frame_id_t frame_id)
 {
+  if (!tracks)
+  {
+    return nullptr;
+  }
   const vital::image_of<uint8_t> image_data(image.get_image());
 
   for (auto& state : tracks->frame_states( frame_id ))

@@ -180,7 +180,7 @@ void TrackFeaturesTool::run()
     tracks = d->feature_tracker->track(tracks, i, converted_image);
     if (tracks)
     {
-      tracks = kwiver::maptk::extract_feature_colors(*tracks, *image, i);
+      tracks = kwiver::maptk::extract_feature_colors(tracks, *image, i);
     }
 
     // make a copy of the tool data

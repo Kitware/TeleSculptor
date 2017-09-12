@@ -454,7 +454,7 @@ static int maptk_main(int argc, char const* argv[])
                                     converted_image, converted_mask);
     if (tracks)
     {
-      tracks = kwiver::maptk::extract_feature_colors(*tracks, *image, ts.get_frame());
+      tracks = kwiver::maptk::extract_feature_colors(tracks, *image, ts.get_frame());
     }
 
     // Compute ref homography for current frame with current track set + write to file
