@@ -1,5 +1,5 @@
 /*ckwg +29
-* Copyright 2016 by Kitware, Inc.
+* Copyright 2016-2017 by Kitware, Inc.
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,6 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 
-#include <vital/vital_foreach.h>
 
 #include <map>
 
@@ -215,7 +214,7 @@ int vtkMaptkImageDataGeometryFilter::RequestData(
 
   // Check any / all constraints
   bool completelyFiltered = false;
-  VITAL_FOREACH(auto const constraint, this->Internal->Constraints)
+  for(auto const constraint : this->Internal->Constraints)
   {
     vtkDataArray* dataArray = pointData->GetArray(constraint.first.c_str());
     if (dataArray)
@@ -264,7 +263,7 @@ int vtkMaptkImageDataGeometryFilter::RequestData(
     if (this->ThresholdCells && constraints.size())
     {
       bool skipCell = false;
-      VITAL_FOREACH(auto const constraint, constraints)
+      for(auto const constraint : constraints)
       {
         double value = constraint.Array->GetTuple1(i);
         if (value < constraint.MinValue || value > constraint.MaxValue)

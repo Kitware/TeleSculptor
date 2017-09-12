@@ -42,7 +42,6 @@
 #include <string>
 #include <vector>
 
-#include <vital/vital_foreach.h>
 #include <vital/config/config_block.h>
 #include <vital/config/config_block_io.h>
 
@@ -342,7 +341,7 @@ subsample_cameras(kwiver::vital::camera_map_sptr cameras, unsigned factor)
 {
   kwiver::vital::camera_map::map_camera_t cams = cameras->cameras();
   kwiver::vital::camera_map::map_camera_t sub_cams;
-  VITAL_FOREACH(const kwiver::vital::camera_map::map_camera_t::value_type& p, cams)
+  for(const kwiver::vital::camera_map::map_camera_t::value_type& p : cams)
   {
     if(p.first % factor == 0)
     {
@@ -613,7 +612,7 @@ static int maptk_main(int argc, char const* argv[])
   kwiver::vital::camera_map_sptr input_cam_map(new kwiver::vital::simple_camera_map(input_cameras));
   if (input_cameras.size() != 0)
   {
-    VITAL_FOREACH(kwiver::vital::camera_map::map_camera_t::value_type &v, input_cameras)
+    for(kwiver::vital::camera_map::map_camera_t::value_type &v : input_cameras)
     {
       cameras[v.first] = v.second->clone();
     }
@@ -660,7 +659,7 @@ static int maptk_main(int argc, char const* argv[])
     {
       cameras = cam_map->cameras();
     }
-    VITAL_FOREACH(const kwiver::vital::frame_id_t& id, tracks->all_frame_ids())
+    for(const kwiver::vital::frame_id_t& id : tracks->all_frame_ids())
     {
       // if id is already in the map, do nothing.
       // if id is not it the map add a null camera pointer
@@ -680,7 +679,7 @@ static int maptk_main(int argc, char const* argv[])
     // If there are no cameras loaded, create a map of NULL cameras to subsample
     if( !cam_map )
     {
-      VITAL_FOREACH(const kwiver::vital::frame_id_t& id, tracks->all_frame_ids())
+      for(const kwiver::vital::frame_id_t& id : tracks->all_frame_ids())
       {
         cameras[id] = kwiver::vital::camera_sptr();
       }
@@ -698,7 +697,7 @@ static int maptk_main(int argc, char const* argv[])
                                       sub_cams = subsampled_cams->cameras();
       // for each track state in each reference track, make sure that the
       // state's frame's camera is in the sub-sampled set of cameras
-      VITAL_FOREACH(kwiver::vital::track_sptr const t, reference_tracks->tracks())
+      for(kwiver::vital::track_sptr const t : reference_tracks->tracks())
       {
         for (auto ts : *t)
         {
@@ -886,7 +885,7 @@ static int maptk_main(int argc, char const* argv[])
 
     kwiver::vital::path_t krtd_dir = config->get_value<std::string>("output_krtd_dir");
     typedef kwiver::vital::camera_map::map_camera_t::value_type cam_map_val_t;
-    VITAL_FOREACH(cam_map_val_t const& p, cam_map->cameras())
+    for(cam_map_val_t const& p : cam_map->cameras())
     {
       if (p.second)
       {

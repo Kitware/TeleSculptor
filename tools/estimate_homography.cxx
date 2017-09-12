@@ -40,7 +40,6 @@
 #include <vital/config/config_block.h>
 #include <vital/config/config_block_io.h>
 #include <vital/logger/logger.h>
-#include <vital/vital_foreach.h>
 
 #include <vital/types/image_container.h>
 #include <vital/exceptions.h>
@@ -393,7 +392,7 @@ static int maptk_main(int argc, char const* argv[])
 
   // Reporting inlier count
   size_t inlier_count = 0;
-  VITAL_FOREACH(bool b, inliers)
+  for(bool b : inliers)
   {
     if (b)
     {

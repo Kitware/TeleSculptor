@@ -19,6 +19,7 @@ matrix:
 cache:
   directories:
   - $HOME/deps
+  - /opt/kitware
 
 before_script:
   - bash .travis/install-deps.sh
