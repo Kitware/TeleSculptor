@@ -116,7 +116,7 @@ void load_reference_file(vital::path_t const& reference_file,
     reference_lms[cur_id] = vital::landmark_sptr(new vital::landmark_d(vec));
 
     // while there's still input left, read in track states
-    vital::track_sptr lm_track = vital::track::make();
+    vital::track_sptr lm_track = vital::track::create();
     lm_track->set_id(static_cast<vital::track_id_t>(cur_id));
     while (ss.peek() != std::char_traits<char>::eof())
     {
