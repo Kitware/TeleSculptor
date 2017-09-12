@@ -101,7 +101,7 @@ extract_feature_colors(
     }
   }
 
-  return std::make_shared<vital::feature_track_set>(trks);
+  return tracks;
 }
 
 
