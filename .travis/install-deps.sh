@@ -2,9 +2,11 @@
 set -e
 
 INSTALL_DIR=$HOME/deps
-export PATH=$INSTALL_DIR/bin:$PATH
-HASH_DIR=$INSTALL_DIR/hashes
+KITWARE_DIR=/opt/kitware
+export PATH=$INSTALL_DIR/bin:$KITWARE_DIR/fletch/bin:$KITWARE_DIR/kwiver/bin:$PATH
+HASH_DIR=/opt/kitware/hashes
 mkdir -p $HASH_DIR
+mkdir -p $INSTALL_DIR
 
 # Make a directory to test installation of MAP-Tk into
 mkdir -p $HOME/install
@@ -16,6 +18,31 @@ if [ ! -f "$INSTALL_DIR/bin/cmake" ]; then
   bash cmake-3.4.0-Linux-x86_64.sh --skip-license --prefix="$INSTALL_DIR/"
 else
   echo 'Using cached CMake directory.';
+fi
+
+
+
+# download and unpack Fletch
+cd /tmp
+if [ -f $TRAVIS_BUILD_DIR/doc/release-notes/master.txt ]; then
+  FLETCH_TAR_FILE_ID=599c39468d777f7d33e9cbe5
+  echo "Using master branch of Fletch"
+else
+  FLETCH_TAR_FILE_ID=599f2db18d777f7d33e9cc9e
+  echo "Using release branch of Fletch"
+fi
+
+wget https://data.kitware.com/api/v1/file/$FLETCH_TAR_FILE_ID/hashsum_file/sha512 -O fletch.sha512
+RHASH=`cat fletch.sha512`
+HASH_FILE="$HASH_DIR/fletch.sha512"
+echo "Current Fletch tarball hash: " $RHASH
+if [ -f $HASH_FILE ] && [ -n "$RHASH" ] && grep -q $RHASH $HASH_FILE ; then
+  echo "Using cached Fletch download"
+else
+  wget https://data.kitware.com/api/v1/file/$FLETCH_TAR_FILE_ID/download -O fletch.tgz
+  rm -rf $KITWARE_DIR/fletch/*
+  tar -xzf fletch.tgz -C $KITWARE_DIR
+  cp fletch.sha512 $HASH_FILE
 fi
 
 # Build and install a repository from source only.
@@ -84,17 +111,10 @@ build_repo ()
 }
 
 
-# Build and install a bare minimum Fletch for MAP-Tk
-fletch_install_cmd=":" # no-op
-fletch_cmake_opts="\
- -Dfletch_BUILD_INSTALL_PREFIX=$INSTALL_DIR/ \
- -Dfletch_ENABLE_Eigen=ON \
- -Dfletch_ENABLE_VTK=ON"
-build_repo fletch https://github.com/Kitware/fletch.git
-
 # Build and install KWIVER, minimum need to build MAP-Tk
 kwiver_cmake_opts="\
- -DKWIVER_ENABLE_ARROWS=ON"
+ -DKWIVER_ENABLE_ARROWS=ON \
+ -Dfletch_DIR=$KITWARE_DIR/fletch"
 build_repo kwiver https://github.com/Kitware/kwiver.git
 
 # Build and install QtExtensions
