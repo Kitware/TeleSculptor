@@ -31,6 +31,14 @@ TeleSculptor
    VTK 6.2.  This upgrade provides substantial improvements to rendering
    speed of large data sets.
 
+MAP-Tk Library
+
+ * modified extract_feature_colors API to accept a feature_track_set by
+   shared_ptr, modify to tracks in-place, and return the same modifed
+   feature_track_set.  It also uses the new track_set API to more quickly
+   find track state on a frame and avoids destroying the frame index if
+   one is used in the track_set.
+
 
 Fixes since v0.10.0
 ------------------
