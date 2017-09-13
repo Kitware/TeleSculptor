@@ -75,7 +75,7 @@ vital::feature_set_sptr extract_feature_colors(
  */
 MAPTK_EXPORT
 vital::feature_track_set_sptr extract_feature_colors(
-  vital::feature_track_set const& tracks,
+  vital::feature_track_set_sptr tracks,
   vital::image_container const& image,
   vital::frame_id_t frame_id);
 

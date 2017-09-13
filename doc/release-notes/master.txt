@@ -25,6 +25,14 @@ Overall
    pass a geo_map object around.  New data structures, like geo_point, know
    how to convert themselves into different coordinate systems.
 
+MAP-Tk Library
+
+ * modified extract_feature_colors API to accept a feature_track_set by
+   shared_ptr, modify to tracks in-place, and return the same modifed
+   feature_track_set.  It also uses the new track_set API to more quickly
+   find track state on a frame and avoids destroying the frame index if
+   one is used in the track_set.
+
 
 Fixes since v0.10.0
 ------------------

@@ -68,40 +68,33 @@ extract_feature_colors(
 /// Extract feature colors from a frame image
 vital::feature_track_set_sptr
 extract_feature_colors(
-  vital::feature_track_set const& tracks,
+  vital::feature_track_set_sptr tracks,
   vital::image_container const& image,
   vital::frame_id_t frame_id)
 {
+  if (!tracks)
+  {
+    return nullptr;
+  }
   const vital::image_of<uint8_t> image_data(image.get_image());
 
-  auto trks = tracks.tracks();
-  for (auto& track : trks)
+  for (auto& state : tracks->frame_states( frame_id ))
   {
-    auto const si = track->find(frame_id);
-    if (si != track->end())
+    auto fts = std::dynamic_pointer_cast<vital::feature_track_state>(state);
+    if ( !fts )
     {
-      for (auto const& state : *track)
-      {
-        if (state->frame() == frame_id)
-        {
-          auto fts = std::dynamic_pointer_cast<vital::feature_track_state>(state);
-          if ( !fts )
-          {
-            continue;
-          }
-
-          auto const feat = std::make_shared<vital::feature_d>(*fts->feature);
-          auto const& loc = feat->get_loc();
-          feat->set_color(image_data.at(static_cast<unsigned>(loc[0]),
-                                        static_cast<unsigned>(loc[1])));
-
-          fts->feature = feat;
-        }
-      }
+      continue;
     }
+
+    auto const feat = std::make_shared<vital::feature_d>(*fts->feature);
+    auto const& loc = feat->get_loc();
+    feat->set_color(image_data.at(static_cast<unsigned>(loc[0]),
+                                  static_cast<unsigned>(loc[1])));
+
+    fts->feature = feat;
   }
 
-  return std::make_shared<vital::feature_track_set>(trks);
+  return tracks;
 }
 
 
