@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -285,6 +285,7 @@ void vtkMaptkCameraRepresentation::SetActiveCamera(int id)
   if (camIter == this->Internal->Cameras.end() ||
       this->ActiveCamera == camIter->second)
   {
+    this->ActiveCamera = nullptr;
     return;
   }
 
