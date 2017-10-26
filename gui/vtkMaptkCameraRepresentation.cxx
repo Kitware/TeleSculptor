@@ -284,6 +284,7 @@ void vtkMaptkCameraRepresentation::SetActiveCamera(int id)
   if (camIter == this->Internal->Cameras.end() ||
       this->ActiveCamera == camIter->second)
   {
+    this->ActiveCamera = nullptr;
     return;
   }
 
