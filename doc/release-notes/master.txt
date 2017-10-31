@@ -37,9 +37,9 @@ TeleSculptor
 
  * Changed frame indexing to be one-based rather than zero-based.  This change
    was needed since the new streaming video API used in the tracking tools now
-   produces frames with one-based indexing.  As a result, track data files
-   produced by earlier versions of MAP-Tk will be mis-aligned by one frame
-   when loaded into the newer version of the TeleSculptor application.
+   produces frames with one-based indexing.  Track files produced with older
+   versions that had zero-based indexing are detected and frame numbers are
+   shifted by one.
 
 
 Fixes since v0.10.0
