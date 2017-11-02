@@ -135,9 +135,8 @@ local_geo_cs
   vital::vector_3d c = cam.get_center();
   vital::geo_point gc(vector_2d(c.x(), c.y()) + geo_origin_.location(),
                       geo_origin_.crs());
-  vector_2d lon_lat = gc.location(SRID::lat_lon_WGS84);
 
-  md.add( NEW_METADATA_ITEM( VITAL_META_SENSOR_LOCATION, lon_lat ) );
+  md.add( NEW_METADATA_ITEM( VITAL_META_SENSOR_LOCATION, gc ) );
   md.add( NEW_METADATA_ITEM( VITAL_META_SENSOR_ALTITUDE, c.z() ) );
   md.add( NEW_METADATA_ITEM( VITAL_META_SENSOR_YAW_ANGLE, yaw ) );
   md.add( NEW_METADATA_ITEM( VITAL_META_SENSOR_PITCH_ANGLE, pitch ) );
