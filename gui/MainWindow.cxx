@@ -564,8 +564,54 @@ bool MainWindowPrivate::updateCamera(kwiver::vital::frame_id_t frame,
 }
 
 //-----------------------------------------------------------------------------
-void MainWindowPrivate::setActiveCamera(int id)
+void MainWindowPrivate::setActiveCamera(int id_)
 {
+  int id = id_;
+  //if only keyframes are to be displayed in the camera view
+  bool only_keyframes = this->UI.actionKeyframes_only->isChecked();   
+  if (only_keyframes)
+  {    
+    bool next_keyframe_found = false;
+
+    if (id >= this->activeCameraIndex)
+    { //positive movement in sequence
+      //find the next keyframe in the sequence
+      while (id <= this->cameras.size())
+      {
+        if (tracks->get_frame_metadata(id))
+        {
+          next_keyframe_found = true;
+          break;
+        }
+        ++id;
+      }           
+    }
+    else
+    { //going backward in sequence
+      //find the previous keyframe in the sequence
+      while (id >= 1)
+      {
+        if (tracks->get_frame_metadata(id))
+        {
+          next_keyframe_found = true;
+          break;
+        }
+        --id;
+      }
+    }
+    if (!next_keyframe_found)
+    {
+      // There was not a keyframe to move to in the direction we're going.
+      // So set the active camera back to what it was.
+      this->UI.camera->setValue(this->activeCameraIndex);
+      this->UI.cameraSpin->setValue(this->activeCameraIndex);
+      return;
+    }
+  }
+
+  this->UI.camera->setValue(id);
+  this->UI.cameraSpin->setValue(id);
+
   this->activeCameraIndex = id;
   this->UI.worldView->setActiveCamera(id);
   this->updateCameraView();
