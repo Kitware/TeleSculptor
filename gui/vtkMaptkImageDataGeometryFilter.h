@@ -64,7 +64,7 @@ public:
   vtkBooleanMacro(GenerateTriangleOutput, int);
 
   // Description:
-  // Get/Set the unprojected point array name.  Default is "Points".
+  // Get/Set the unprojected point array name.  Default is "PointsWithDesc".
   vtkSetStringMacro(UnprojectedPointArrayName);
   vtkGetStringMacro(UnprojectedPointArrayName);
 

@@ -48,10 +48,12 @@ public:
   virtual ~FeatureOptions();
 
 public slots:
-  void setFeaturesVisible(bool);
+  void setFeaturesWithDescVisible(bool);
+  void setFeaturesWithoutDescVisible(bool);
 
 protected slots:
-  void setTrailsVisible(bool);
+  void setTrailsWithDescVisible(bool);
+  void setTrailsWithoutDescVisible(bool);
   void setTrailsLength(int);
   void setTrailsStyle(int);
 

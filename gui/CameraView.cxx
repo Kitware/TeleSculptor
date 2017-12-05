@@ -372,8 +372,10 @@ void CameraViewPrivate::setTransforms(int imageHeight)
   xf->SetElement(1, 1, -1.0);
   xf->SetElement(1, 3, imageHeight);
 
-  this->featureRep->GetActivePointsActor()->SetUserMatrix(xf.GetPointer());
-  this->featureRep->GetTrailsActor()->SetUserMatrix(xf.GetPointer());
+  this->featureRep->GetActivePointsWithDescActor()->SetUserMatrix(xf.GetPointer());
+  this->featureRep->GetActivePointsWithoutDescActor()->SetUserMatrix(xf.GetPointer());
+  this->featureRep->GetTrailsWithDescActor()->SetUserMatrix(xf.GetPointer());
+  this->featureRep->GetTrailsWithoutDescActor()->SetUserMatrix(xf.GetPointer());
   this->landmarks.actor->SetUserMatrix(xf.GetPointer());
   this->residuals.actor->SetUserMatrix(xf.GetPointer());
 }
@@ -481,8 +483,10 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->renderWindow->GetInteractor()->SetInteractorStyle(is.GetPointer());
 
   // Set up actors
-  d->renderer->AddActor(d->featureRep->GetActivePointsActor());
-  d->renderer->AddActor(d->featureRep->GetTrailsActor());
+  d->renderer->AddActor(d->featureRep->GetActivePointsWithDescActor());
+  d->renderer->AddActor(d->featureRep->GetActivePointsWithoutDescActor());
+  d->renderer->AddActor(d->featureRep->GetTrailsWithDescActor());
+  d->renderer->AddActor(d->featureRep->GetTrailsWithoutDescActor());
   d->renderer->AddActor(d->landmarks.actor.GetPointer());
   d->renderer->AddActor(d->residuals.actor.GetPointer());
 
@@ -610,7 +614,14 @@ void CameraView::addFeatureTrack(kwiver::vital::track const& track)
       continue;
     }
     auto const& loc = fts->feature->loc();
-    d->featureRep->AddTrackPoint(id, state->frame(), loc[0], loc[1]);
+    if (fts->descriptor)
+    {
+      d->featureRep->AddTrackWithDescPoint(id, state->frame(), loc[0], loc[1]);
+    }
+    else
+    {
+      d->featureRep->AddTrackWithoutDescPoint(id, state->frame(), loc[0], loc[1]);
+    }
   }
 
   d->updateFeatures(this);
