@@ -39,7 +39,7 @@
 #include <iomanip>
 
 #include <vital/types/geodesy.h>
-#include <vital/video_metadata/video_metadata_traits.h>
+#include <vital/types/metadata_traits.h>
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -88,7 +88,7 @@ local_geo_cs
 /// Use the pose data provided by metadata to update camera pose
 void
 local_geo_cs
-::update_camera(vital::video_metadata const& md,
+::update_camera(vital::metadata const& md,
                 vital::simple_camera& cam,
                 vital::rotation_d const& rot_offset) const
 {
@@ -125,7 +125,7 @@ local_geo_cs
 void
 local_geo_cs
 ::update_metadata(vital::simple_camera const& cam,
-                  vital::video_metadata& md) const
+                  vital::metadata& md) const
 {
   double yaw, pitch, roll;
   cam.rotation().get_yaw_pitch_roll(yaw, pitch, roll);
@@ -178,7 +178,7 @@ write_local_geo_cs_to_file(local_geo_cs const& lgcs,
 /// Use a sequence of metadata objects to initialize a sequence of cameras
 std::map<vital::frame_id_t, vital::camera_sptr>
 initialize_cameras_with_metadata(std::map<vital::frame_id_t,
-                                          vital::video_metadata_sptr> const& md_map,
+                                          vital::metadata_sptr> const& md_map,
                                  vital::simple_camera const& base_camera,
                                  local_geo_cs& lgcs,
                                  vital::rotation_d const& rot_offset)
@@ -192,7 +192,7 @@ initialize_cameras_with_metadata(std::map<vital::frame_id_t,
   {
     // if a local coordinate system has not been established,
     // use the coordinates of the first camera
-    vital::video_metadata_sptr md = nullptr;
+    vital::metadata_sptr md = nullptr;
     for( auto m : md_map )
     {
       if( m.second )
@@ -251,7 +251,7 @@ initialize_cameras_with_metadata(std::map<vital::frame_id_t,
 void
 update_metadata_from_cameras(std::map<frame_id_t, camera_sptr> const& cam_map,
                              local_geo_cs const& lgcs,
-                             std::map<frame_id_t, vital::video_metadata_sptr>& md_map)
+                             std::map<frame_id_t, vital::metadata_sptr>& md_map)
 {
   if( lgcs.origin().is_empty() )
   {
@@ -268,7 +268,7 @@ update_metadata_from_cameras(std::map<frame_id_t, camera_sptr> const& cam_map,
     auto active_md = md_map[p.first];
     if( !active_md )
     {
-      md_map[p.first] = active_md = std::make_shared<vital::video_metadata>();
+      md_map[p.first] = active_md = std::make_shared<vital::metadata>();
     }
     auto cam = dynamic_cast<vital::simple_camera*>(p.second.get());
     if( active_md && cam )

@@ -38,7 +38,6 @@ kwiver_add_library(
 
 target_link_libraries( maptk
   PUBLIC               kwiver::vital
-                       kwiver::vital_video_metadata
                        kwiver::kwiversys
   )
 

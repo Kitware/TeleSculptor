@@ -42,7 +42,6 @@
 #include <vital/io/camera_io.h>
 #include <vital/logger/logger.h>
 #include <vital/types/camera_map.h>
-#include <vital/video_metadata/video_metadata.h>
 #include <vital/vital_types.h>
 
 #include <kwiversys/Directory.hxx>
