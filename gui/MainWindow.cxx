@@ -49,6 +49,7 @@
 
 #include <maptk/version.h>
 
+#include <vital/algo/video_input.h>
 #include <vital/io/camera_io.h>
 #include <vital/io/landmark_map_io.h>
 #include <vital/io/track_set_io.h>
@@ -225,7 +226,7 @@ class MainWindowPrivate
 {
 public:
   // Data structures
-  struct CameraData
+  struct FrameData
   {
     int id;
     vtkSmartPointer<vtkMaptkCamera> camera;
@@ -244,6 +245,7 @@ public:
 
   void addCamera(kwiver::vital::camera_sptr const& camera);
   void addImage(QString const& imagePath);
+  void addVideoSource(kwiver::vital::config_block_sptr const& config);
 
   void addFrame(kwiver::vital::camera_sptr const& camera,
                 QString const& imagePath);
@@ -279,7 +281,11 @@ public:
   kwiver::vital::landmark_map_sptr toolUpdateLandmarks;
   kwiver::vital::feature_track_set_sptr toolUpdateTracks;
 
-  QList<CameraData> cameras;
+  QString videoFileName;
+  kwiver::vital::config_block_sptr videoSourceConfig;
+  kwiver::vital::algo::video_input_sptr videoSource;
+
+  QList<FrameData> frames;
   kwiver::vital::feature_track_set_sptr tracks;
   kwiver::vital::landmark_map_sptr landmarks;
 
@@ -317,12 +323,12 @@ void MainWindowPrivate::addCamera(kwiver::vital::camera_sptr const& camera)
 {
   if (this->orphanImages.isEmpty())
   {
-    this->orphanCameras.enqueue(this->cameras.count());
+    this->orphanCameras.enqueue(this->frames.count());
     this->addFrame(camera, QString());
     return;
   }
 
-  auto& cd = this->cameras[this->orphanImages.dequeue()];
+  auto& cd = this->frames[this->orphanImages.dequeue()];
 
   cd.camera = vtkSmartPointer<vtkMaptkCamera>::New();
   cd.camera->SetCamera(camera);
@@ -341,12 +347,12 @@ void MainWindowPrivate::addImage(QString const& imagePath)
 {
   if (this->orphanCameras.isEmpty())
   {
-    this->orphanImages.enqueue(this->cameras.count());
+    this->orphanImages.enqueue(this->frames.count());
     this->addFrame(kwiver::vital::camera_sptr(), imagePath);
     return;
   }
 
-  auto& cd = this->cameras[this->orphanCameras.dequeue()];
+  auto& cd = this->frames[this->orphanCameras.dequeue()];
 
   cd.imagePath = imagePath;
 
@@ -357,12 +363,32 @@ void MainWindowPrivate::addImage(QString const& imagePath)
 }
 
 //-----------------------------------------------------------------------------
+void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& config)
+{
+  // Save the configuration so independent video sources can be created for tools
+  this->videoSourceConfig = config;
+
+  // Close the existing video source if it exists
+  if(this->videoSource)
+  {
+    this->videoSource->close();
+  }
+
+  kwiver::vital::algo::video_input::get_nested_algo_configuration(
+                                                            "video_reader",
+                                                            config,
+                                                            this->videoSource);
+
+  std::cerr << "Video Source name " << this->videoSource->static_type_name() << std::endl;
+}
+
+//-----------------------------------------------------------------------------
 void MainWindowPrivate::addFrame(
   kwiver::vital::camera_sptr const& camera, QString const& imagePath)
 {
-  CameraData cd;
+  FrameData cd;
 
-  cd.id = this->cameras.count() + 1;
+  cd.id = this->frames.count() + 1;
 
   cd.imagePath = imagePath;
 
@@ -382,14 +408,14 @@ void MainWindowPrivate::addFrame(
     this->orphanCameras.clear();
   }
 
-  this->cameras.append(cd);
+  this->frames.append(cd);
 
-  this->UI.camera->setRange(1, this->cameras.count());
-  this->UI.cameraSpin->setRange(1, this->cameras.count());
+  this->UI.camera->setRange(1, this->frames.count());
+  this->UI.cameraSpin->setRange(1, this->frames.count());
 
   // When the first camera is added, show it immediately and reset the camera
   // view, and enable slideshow controls
-  if (this->cameras.count() == 1)
+  if (this->frames.count() == 1)
   {
     this->UI.actionSlideshowPlay->setEnabled(true);
     this->UI.camera->setEnabled(true);
@@ -403,11 +429,11 @@ void MainWindowPrivate::addFrame(
 //-----------------------------------------------------------------------------
 std::vector<std::string> MainWindowPrivate::imagePaths() const
 {
-  std::vector<std::string> paths(this->cameras.count());
+  std::vector<std::string> paths(this->frames.count());
 
-  foreach (auto i, qtIndexRange(this->cameras.count()))
+  foreach (auto i, qtIndexRange(this->frames.count()))
   {
-    auto const& cd = this->cameras[i];
+    auto const& cd = this->frames[i];
     paths[i] = cd.imagePath.toStdString();
   }
 
@@ -419,9 +445,9 @@ kwiver::vital::camera_map_sptr MainWindowPrivate::cameraMap() const
 {
   kwiver::vital::camera_map::map_camera_t map;
 
-  foreach (auto i, qtIndexRange(this->cameras.count()))
+  foreach (auto i, qtIndexRange(this->frames.count()))
   {
-    auto const& cd = this->cameras[i];
+    auto const& cd = this->frames[i];
     if (cd.camera)
     {
       map.insert(std::make_pair(static_cast<kwiver::vital::frame_id_t>(i),
@@ -436,7 +462,7 @@ kwiver::vital::camera_map_sptr MainWindowPrivate::cameraMap() const
 void MainWindowPrivate::updateCameras(
   kwiver::vital::camera_map_sptr const& cameras)
 {
-  auto const cameraCount = this->cameras.count();
+  auto const cameraCount = this->frames.count();
   auto allowExport = false;
 
   foreach (auto const& iter, cameras->cameras())
@@ -444,7 +470,7 @@ void MainWindowPrivate::updateCameras(
     auto const index = static_cast<int>(iter.first);
     if (index >= 0 && index < cameraCount && iter.second)
     {
-      auto& cd = this->cameras[index];
+      auto& cd = this->frames[index];
       if (!cd.camera)
       {
         cd.camera = vtkSmartPointer<vtkMaptkCamera>::New();
@@ -473,7 +499,7 @@ void MainWindowPrivate::setActiveCamera(int id)
   this->UI.worldView->setActiveCamera(id);
   this->updateCameraView();
 
-  auto& cd = this->cameras[id-1];
+  auto& cd = this->frames[id-1];
   if (!cd.depthMapPath.isEmpty())
   {
     this->loadDepthMap(cd.depthMapPath);
@@ -498,7 +524,7 @@ void MainWindowPrivate::updateCameraView()
 
   QHash<kwiver::vital::track_id_t, kwiver::vital::vector_2d> landmarkPoints;
 
-  auto const& cd = this->cameras[this->activeCameraIndex-1];
+  auto const& cd = this->frames[this->activeCameraIndex-1];
 
   // Show camera image
   this->loadImage(cd.imagePath, cd.camera);
@@ -642,7 +668,7 @@ void MainWindowPrivate::loadDepthMap(QString const& imagePath)
   this->UI.depthMapView->setValidDepthInput(true);
   this->UI.worldView->setValidDepthInput(true);
 
-  this->depthFilter->SetCamera(this->cameras[this->activeCameraIndex].camera);
+  this->depthFilter->SetCamera(this->frames[this->activeCameraIndex].camera);
   this->UI.worldView->updateDepthMap();
   this->UI.depthMapView->updateView(true);
   this->UI.actionExportDepthPoints->setEnabled(true);
@@ -884,6 +910,12 @@ void MainWindow::loadProject(QString const& path)
     return;
   }
 
+  // Get the video source
+  if (project.videoSourceConfig->has_value("type"))
+  {
+    d->addVideoSource(project.videoSourceConfig);
+  }
+
   // Load tracks
   if (!project.tracks.isEmpty())
   {
@@ -930,9 +962,9 @@ void MainWindow::loadProject(QString const& path)
   foreach (auto dm, qtEnumerate(project.depthMaps))
   {
     auto const i = dm.key();
-    if (i >= 0 && i < d->cameras.count())
+    if (i >= 0 && i < d->frames.count())
     {
-      d->cameras[i].depthMapPath = dm.value();
+      d->frames[i].depthMapPath = dm.value();
     }
 
     if (i == d->activeCameraIndex)
@@ -949,8 +981,8 @@ void MainWindow::loadProject(QString const& path)
   if (!project.volumePath.isEmpty())
   {
 
-    d->UI.worldView->loadVolume(project.volumePath,d->cameras.size(),
-                                project.cameraPath, project.imageListPath);
+    d->UI.worldView->loadVolume(project.volumePath,d->frames.size(),
+                                project.cameraPath, project.videoSourcePath);
   }
 
   d->UI.worldView->resetView();
@@ -1142,9 +1174,9 @@ void MainWindow::saveCameras(QString const& path)
   auto out = QHash<QString, kwiver::vital::camera_sptr>();
   auto willOverwrite = QStringList();
 
-  foreach (auto i, qtIndexRange(d->cameras.count()))
+  foreach (auto i, qtIndexRange(d->frames.count()))
   {
-    auto const& cd = d->cameras[i];
+    auto const& cd = d->frames[i];
     if (cd.camera)
     {
       auto const camera = cd.camera->GetCamera();
@@ -1407,7 +1439,7 @@ void MainWindow::setActiveCamera(int id)
 {
   QTE_D();
 
-  if (id < 1 || id > d->cameras.count())
+  if (id < 1 || id > d->frames.count())
   {
     qDebug() << "MainWindow::setActiveCamera:"
              << " requested ID" << id << "is invalid";
@@ -1536,7 +1568,7 @@ void MainWindow::updateToolResults()
     d->toolUpdateActiveFrame = -1;
   }
 
-  if (!d->cameras.isEmpty())
+  if (!d->frames.isEmpty())
   {
     d->setActiveCamera(d->activeCameraIndex);
   }

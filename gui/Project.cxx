@@ -32,8 +32,6 @@
 
 #include <maptk/version.h>
 
-#include <vital/config/config_block_io.h>
-
 #include <qtStlUtil.h>
 
 #include <QtGui/QApplication>
@@ -42,6 +40,8 @@
 #include <QtCore/QDir>
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
+
+#include <iostream>
 
 //-----------------------------------------------------------------------------
 QString getPath(kwiver::vital::config_block_sptr const& config,
@@ -128,12 +128,14 @@ bool Project::read(QString const& path)
     if (config->has_value("volume_file"))
     {
       this->volumePath = getPath(config, base, "volume_file");
-      this->imageListPath = getPath(config, base, "image_list_file");
-      if (this->imageListPath.isEmpty())
+      this->videoSourcePath = getPath(config, base, "image_list_file");
+      if (this->videoSourcePath.isEmpty())
       {
-        this->imageListPath = getPath(config, base, "video_source");
+        this->videoSourcePath = getPath(config, base, "video_source");
       }
     }
+
+    videoSourceConfig = config->subblock("video_reader");
 
     return true;
   }

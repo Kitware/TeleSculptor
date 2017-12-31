@@ -31,6 +31,8 @@
 #ifndef MAPTK_PROJECT_H_
 #define MAPTK_PROJECT_H_
 
+#include <vital/config/config_block_io.h>
+
 #include <QtCore/QMap>
 #include <QtCore/QStringList>
 
@@ -46,7 +48,9 @@ struct Project
   QString landmarks;
 
   QString volumePath;
-  QString imageListPath;
+  QString videoSourcePath;
+
+  kwiver::vital::config_block_sptr videoSourceConfig;
 };
 
 #endif
