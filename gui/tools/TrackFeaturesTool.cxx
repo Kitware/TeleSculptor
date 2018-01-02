@@ -38,8 +38,8 @@
 #include <vital/algo/track_features.h>
 
 #include <vital/config/config_block_io.h>
-#include <vital/video_metadata/video_metadata.h>
-#include <vital/video_metadata/video_metadata_traits.h>
+#include <vital/types/metadata.h>
+#include <vital/types/metadata_traits.h>
 
 #include <qtStlUtil.h>
 
@@ -173,7 +173,7 @@ void TrackFeaturesTool::run()
 
     // Set the metadata on the image.
     // For now, the only metadata is the filename of the image.
-    auto md = std::make_shared<kwiver::vital::video_metadata>();
+    auto md = std::make_shared<kwiver::vital::metadata>();
     md->add( NEW_METADATA_ITEM( kwiver::vital::VITAL_META_IMAGE_FILENAME, paths[i] ) );
     converted_image->set_metadata(md);
 

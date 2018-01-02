@@ -41,8 +41,8 @@
 
 #include <vital/types/camera.h>
 #include <vital/types/geo_point.h>
+#include <vital/types/metadata.h>
 #include <vital/types/rotation.h>
-#include <vital/video_metadata/video_metadata.h>
 #include <vital/vital_types.h>
 #include <vital/vital_config.h>
 
@@ -82,13 +82,13 @@ public:
    * \param cam         The camera to be updated.
    * \param rot_offset  A rotation offset to apply to metadata yaw/pitch/roll data
    */
-  void update_camera(vital::video_metadata const& md,
+  void update_camera(vital::metadata const& md,
                      vital::simple_camera& cam,
                      vital::rotation_d const& rot_offset = vital::rotation_d()) const;
 
   /// Use the camera pose to update the metadata structure
   void update_metadata(vital::simple_camera const& cam,
-                       vital::video_metadata& md) const;
+                       vital::metadata& md) const;
 
 private:
   /// The local coordinates origin
@@ -147,7 +147,7 @@ write_local_geo_cs_to_file(local_geo_cs const& lgcs,
 MAPTK_EXPORT
 std::map<vital::frame_id_t, vital::camera_sptr>
 initialize_cameras_with_metadata(std::map<vital::frame_id_t,
-                                          vital::video_metadata_sptr> const& md_map,
+                                          vital::metadata_sptr> const& md_map,
                                  vital::simple_camera const& base_camera,
                                  local_geo_cs& lgcs,
                                  vital::rotation_d const& rot_offset = vital::rotation_d());
@@ -167,7 +167,7 @@ MAPTK_EXPORT
 void
 update_metadata_from_cameras(std::map<vital::frame_id_t, vital::camera_sptr> const& cam_map,
                              maptk::local_geo_cs const& lgcs,
-                             std::map<vital::frame_id_t, vital::video_metadata_sptr>& md_map);
+                             std::map<vital::frame_id_t, vital::metadata_sptr>& md_map);
 
 
 } // end namespace maptk

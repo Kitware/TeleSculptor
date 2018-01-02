@@ -50,6 +50,7 @@
 #include <vital/logger/logger.h>
 
 #include <vital/exceptions.h>
+#include <vital/io/metadata_io.h>
 #include <vital/io/track_set_io.h>
 #include <vital/vital_types.h>
 #include <vital/algo/image_io.h>
@@ -62,7 +63,6 @@
 #include <vital/util/get_paths.h>
 #include <vital/util/thread_pool.h>
 #include <vital/util/transform_image.h>
-#include <vital/video_metadata/video_metadata_util.h>
 
 #include <kwiversys/SystemTools.hxx>
 #include <kwiversys/CommandLineArguments.hxx>
@@ -484,7 +484,7 @@ static int maptk_main(int argc, char const* argv[])
   // This lambda function runs in a thread to read the video and launch processing jobs
   auto handle_frame = [&] ()
   {
-    kwiver::vital::video_metadata_vector md_vec;
+    kwiver::vital::metadata_vector md_vec;
     kwiver::vital::image_container_sptr image;
     kwiver::vital::timestamp ts;
     {
@@ -500,7 +500,7 @@ static int maptk_main(int argc, char const* argv[])
       image = video_reader->frame_image();
     }
 
-    kwiver::vital::video_metadata_sptr md;
+    kwiver::vital::metadata_sptr md;
     if( !md_vec.empty() )
     {
       md = md_vec[0];

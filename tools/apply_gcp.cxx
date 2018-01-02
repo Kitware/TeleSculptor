@@ -53,6 +53,7 @@
 #include <vital/io/camera_io.h>
 #include <vital/io/eigen_io.h>
 #include <vital/io/landmark_map_io.h>
+#include <vital/io/metadata_io.h>
 #include <vital/io/track_set_io.h>
 #include <vital/plugin_loader/plugin_manager.h>
 #include <vital/types/feature_track_set.h>
@@ -60,8 +61,6 @@
 #include <vital/types/geodesy.h>
 #include <vital/util/cpu_timer.h>
 #include <vital/util/get_paths.h>
-#include <vital/video_metadata/pos_metadata_io.h>
-#include <vital/video_metadata/video_metadata_util.h>
 
 #include <kwiversys/SystemTools.hxx>
 #include <kwiversys/CommandLineArguments.hxx>
@@ -328,7 +327,7 @@ static int maptk_main(int argc, char const* argv[])
   //
   // Read the Video (metadata only, no pixels)
   //
-  std::map<kwiver::vital::frame_id_t, kwiver::vital::video_metadata_sptr> md_map;
+  std::map<kwiver::vital::frame_id_t, kwiver::vital::metadata_sptr> md_map;
   std::map<kwiver::vital::frame_id_t, std::string> basename_map;
 
   LOG_INFO( main_logger, "Reading Video" );
@@ -508,7 +507,7 @@ static int maptk_main(int argc, char const* argv[])
 
     kwiver::vital::path_t pos_dir = config->get_value<std::string>("output_pos_dir");
     // Create updated metadata from adjusted cameras for POS file output.
-    typedef std::map<kwiver::vital::frame_id_t, kwiver::vital::video_metadata_sptr> md_map_t;
+    typedef std::map<kwiver::vital::frame_id_t, kwiver::vital::metadata_sptr> md_map_t;
     md_map_t updated_md_map;
     update_metadata_from_cameras(cam_map->cameras(), local_cs, updated_md_map);
     for(auto const& p : updated_md_map)

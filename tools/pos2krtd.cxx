@@ -47,10 +47,9 @@
 #include <vital/algo/video_input.h>
 #include <vital/io/camera_io.h>
 #include <vital/io/eigen_io.h>
+#include <vital/io/metadata_io.h>
 #include <vital/exceptions.h>
 #include <vital/plugin_loader/plugin_manager.h>
-#include <vital/video_metadata/video_metadata_tags.h>
-#include <vital/video_metadata/video_metadata_util.h>
 #include <vital/vital_types.h>
 #include <vital/types/geodesy.h>
 #include <vital/util/get_paths.h>
@@ -306,7 +305,7 @@ static int maptk_main(int argc, char const* argv[])
   }
 
 
-  std::map<kwiver::vital::frame_id_t, kwiver::vital::video_metadata_sptr> md_map;
+  std::map<kwiver::vital::frame_id_t, kwiver::vital::metadata_sptr> md_map;
   std::map<kwiver::vital::frame_id_t, std::string> krtd_filenames;
 
   LOG_INFO( main_logger, "Opening Video: " << video_source );
