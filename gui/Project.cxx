@@ -135,7 +135,7 @@ bool Project::read(QString const& path)
       }
     }
 
-    videoSourceConfig = config->subblock("video_reader");
+    videoSourceConfig = config;
 
     return true;
   }

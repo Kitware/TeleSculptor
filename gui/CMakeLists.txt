@@ -102,6 +102,7 @@ set(gui_sources
   Project.cxx
   VolumeOptions.cxx
   WorldView.cxx
+  image_container.cxx
   main.cxx
   vtkMaptkCamera.cxx
   vtkMaptkCameraRepresentation.cxx

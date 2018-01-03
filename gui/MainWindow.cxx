@@ -47,6 +47,8 @@
 #include "vtkMaptkImageUnprojectDepth.h"
 #include "vtkMaptkCamera.h"
 
+#include "image_container.h"
+
 #include <maptk/version.h>
 
 #include <vital/algo/video_input.h>
@@ -245,7 +247,8 @@ public:
 
   void addCamera(kwiver::vital::camera_sptr const& camera);
   void addImage(QString const& imagePath);
-  void addVideoSource(kwiver::vital::config_block_sptr const& config);
+  void addVideoSource(kwiver::vital::config_block_sptr const& config,
+                      QString const& videoSourcePath);
 
   void addFrame(kwiver::vital::camera_sptr const& camera,
                 QString const& imagePath);
@@ -258,6 +261,8 @@ public:
   void updateCameraView();
 
   void loadImage(QString const& path, vtkMaptkCamera* camera);
+
+  void loadImage(FrameData frame);
 
   void loadDepthMap(QString const& imagePath);
 
@@ -284,6 +289,7 @@ public:
   QString videoFileName;
   kwiver::vital::config_block_sptr videoSourceConfig;
   kwiver::vital::algo::video_input_sptr videoSource;
+  kwiver::vital::timestamp currentVideoTimestamp;
 
   QList<FrameData> frames;
   kwiver::vital::feature_track_set_sptr tracks;
@@ -363,7 +369,8 @@ void MainWindowPrivate::addImage(QString const& imagePath)
 }
 
 //-----------------------------------------------------------------------------
-void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& config)
+void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& config,
+                                       QString const& videoSourcePath)
 {
   // Save the configuration so independent video sources can be created for tools
   this->videoSourceConfig = config;
@@ -374,12 +381,15 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
     this->videoSource->close();
   }
 
-  kwiver::vital::algo::video_input::get_nested_algo_configuration(
+  kwiver::vital::algo::video_input::set_nested_algo_configuration(
                                                             "video_reader",
                                                             config,
                                                             this->videoSource);
 
-  std::cerr << "Video Source name " << this->videoSource->static_type_name() << std::endl;
+  if (this->videoSource)
+  {
+    this->videoSource->open(videoSourcePath.toStdString());
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -524,13 +534,15 @@ void MainWindowPrivate::updateCameraView()
 
   QHash<kwiver::vital::track_id_t, kwiver::vital::vector_2d> landmarkPoints;
 
-  auto const& cd = this->frames[this->activeCameraIndex-1];
+  auto const& frame = this->frames[this->activeCameraIndex-1];
 
   // Show camera image
-  this->loadImage(cd.imagePath, cd.camera);
-  this->UI.cameraView->setImagePath(cd.imagePath);
+  this->loadImage(frame.imagePath, frame.camera);
+  this->UI.cameraView->setImagePath(frame.imagePath);
 
-  if (!cd.camera)
+  this->loadImage(frame);
+
+  if (!frame.camera)
   {
     // Can't show landmarks or residuals with no camera
     this->UI.cameraView->clearLandmarks();
@@ -547,7 +559,7 @@ void MainWindowPrivate::updateCameraView()
     foreach (auto const& lm, landmarks)
     {
       double pp[2];
-      if (cd.camera->ProjectPoint(lm.second->loc(), pp))
+      if (frame.camera->ProjectPoint(lm.second->loc(), pp))
       {
         // Add projected landmark to camera view
         auto const id = lm.first;
@@ -646,6 +658,23 @@ void MainWindowPrivate::loadImage(QString const& path, vtkMaptkCamera* camera)
   }
 }
 
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::loadImage(FrameData frame)
+{
+  // TODO: check frame current frame index
+
+  // Get frame from video source
+  if (this->videoSource)
+  {
+
+    if (!videoSource->good())
+    {
+      videoSource->next_frame(currentVideoTimestamp);
+    }
+    auto frameImage = videoSource->frame_image();
+    auto test = kwiver::vtk::image_container::vital_to_vtk(frameImage->get_image());
+  }
+}
 
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::loadDepthMap(QString const& imagePath)
@@ -911,9 +940,9 @@ void MainWindow::loadProject(QString const& path)
   }
 
   // Get the video source
-  if (project.videoSourceConfig->has_value("type"))
+  if (project.videoSourceConfig->has_value("video_reader:type"))
   {
-    d->addVideoSource(project.videoSourceConfig);
+    d->addVideoSource(project.videoSourceConfig, project.videoSourcePath);
   }
 
   // Load tracks
