@@ -138,8 +138,10 @@ void vtkMaptkFeatureTrackRepresentation::vtkInternal::UpdateTrails(
     points.clear();
 
     bool active_found = false;
-    auto const fe = track.upper_bound(maxFrame);
-    for (auto fi = track.lower_bound(minFrame); fi != fe; ++fi)
+
+    //put all correspondences in for features that include descriptors
+    auto const fe = track.cend();
+    for (auto fi = track.cbegin(); fi != fe; ++fi)
     {
       points.push_back(fi->second);
       if (fi->first == activeFrame)
