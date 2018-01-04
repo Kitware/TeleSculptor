@@ -95,7 +95,7 @@ public:
   static kwiver::vital::image_pixel_traits vtk_to_vital(int type);
 
   /// Convert a VITAL image to an OpenCV vtkImageData
-  static vtkSmartPointer<vtkImageData> vital_to_vtk(const kwiver::vital::image& img);
+  static vtkSmartPointer<vtkImageData> vital_to_vtk(kwiver::vital::image& img);
 
   /// Convert a kwiver::vital::image_pixel_traits to an OpenCV vtkImageData type integer
   static int vital_to_vtk(const kwiver::vital::image_pixel_traits& pt);

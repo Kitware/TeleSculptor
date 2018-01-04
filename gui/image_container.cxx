@@ -35,6 +35,8 @@
 
 #include "image_container.h"
 
+#include <vtkImageImport.h>
+
 namespace kwiver {
 namespace vtk {
 
@@ -74,15 +76,42 @@ image_container
 }
 
 
-/// Convert a VITAL image to an OpenCV vtkImageData
+/// Convert a VITAL image to vtkImageData
 vtkSmartPointer<vtkImageData>
 image_container
-::vital_to_vtk(const kwiver::vital::image& img)
+::vital_to_vtk(kwiver::vital::image& img)
 {
-  std::cerr << "FRAME vital_to_vtk" << std::endl;
-  auto retVal = vtkSmartPointer<vtkImageData>::New();
-  retVal->SetDimensions(img.width(), img.height(), img.depth());
-  return retVal;
+  auto imgTraits = img.pixel_traits();
+
+  // Get the image type
+  int imageType = VTK_VOID;
+  switch (imgTraits.type)
+  {
+    case kwiver::vital::image_pixel_traits::UNSIGNED:
+      imageType = VTK_UNSIGNED_CHAR;
+      break;
+    case kwiver::vital::image_pixel_traits::SIGNED:
+      imageType = VTK_SIGNED_CHAR;
+      break;
+    case kwiver::vital::image_pixel_traits::FLOAT:
+      imageType = VTK_FLOAT;
+      break;
+    default:
+      imageType = VTK_VOID;
+      break;
+    // TODO: exception or error/warning message?
+  }
+
+  // convert to vtkFrameData
+  vtkSmartPointer<vtkImageImport> imageImport =
+    vtkSmartPointer<vtkImageImport>::New();
+  imageImport->SetWholeExtent(0, img.width()-1, 0, img.height()-1, 0, 0);
+  imageImport->SetDataExtentToWholeExtent();
+  imageImport->SetDataScalarType(imageType);
+  imageImport->SetImportVoidPointer(img.first_pixel());
+  imageImport->Update();
+
+  return imageImport->GetOutput();
 }
 
 /// Extract a vtkImageData from any image container

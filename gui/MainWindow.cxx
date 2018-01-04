@@ -666,13 +666,13 @@ void MainWindowPrivate::loadImage(FrameData frame)
   // Get frame from video source
   if (this->videoSource)
   {
-
+    // Advance video source if it hasn't been advanced
     if (!videoSource->good())
     {
       videoSource->next_frame(currentVideoTimestamp);
     }
-    auto frameImage = videoSource->frame_image();
-    auto test = kwiver::vtk::image_container::vital_to_vtk(frameImage->get_image());
+    auto frameImg = videoSource->frame_image()->get_image();
+    auto testImage = kwiver::vtk::image_container::vital_to_vtk(frameImg);
   }
 }
 
