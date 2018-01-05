@@ -47,8 +47,6 @@
 #include "vtkMaptkImageUnprojectDepth.h"
 #include "vtkMaptkCamera.h"
 
-#include "image_container.h"
-
 #include <maptk/version.h>
 
 #include <vital/algo/video_input.h>
@@ -60,6 +58,8 @@
 #include <vtksys/SystemTools.hxx>
 
 #include <vtkImageData.h>
+#include <vtkImageFlip.h>
+#include <vtkImageImport.h>
 #include <vtkImageReader2.h>
 #include <vtkImageReader2Collection.h>
 #include <vtkImageReader2Factory.h>
@@ -260,9 +260,10 @@ public:
   void setActiveCamera(int);
   void updateCameraView();
 
-  void loadImage(QString const& path, vtkMaptkCamera* camera);
+  vtkSmartPointer<vtkImageData> vitalToVtkImage(kwiver::vital::image& img);
 
   void loadImage(FrameData frame);
+  void loadEmptyImage(vtkMaptkCamera* camera);
 
   void loadDepthMap(QString const& imagePath);
 
@@ -523,7 +524,7 @@ void MainWindowPrivate::updateCameraView()
 {
   if (this->activeCameraIndex < 1)
   {
-    this->loadImage(QString(), 0);
+    this->loadEmptyImage(0);
     this->UI.cameraView->setActiveFrame(static_cast<unsigned>(-1));
     this->UI.cameraView->clearLandmarks();
     return;
@@ -537,10 +538,8 @@ void MainWindowPrivate::updateCameraView()
   auto const& frame = this->frames[this->activeCameraIndex-1];
 
   // Show camera image
-  this->loadImage(frame.imagePath, frame.camera);
-  this->UI.cameraView->setImagePath(frame.imagePath);
-
   this->loadImage(frame);
+  this->UI.cameraView->setImagePath(frame.imagePath);
 
   if (!frame.camera)
   {
@@ -597,71 +596,74 @@ void MainWindowPrivate::updateCameraView()
 }
 
 //-----------------------------------------------------------------------------
-void MainWindowPrivate::loadImage(QString const& path, vtkMaptkCamera* camera)
+// TODO: move this method to a new implementation of image_container in a new
+//       vtk arrow
+vtkSmartPointer<vtkImageData>
+MainWindowPrivate::vitalToVtkImage(kwiver::vital::image& img)
 {
-  if (path.isEmpty())
+  auto imgTraits = img.pixel_traits();
+
+  // Get the image type
+  int imageType = VTK_VOID;
+  switch (imgTraits.type)
   {
-    auto imageDimensions = QSize(1, 1);
-    if (camera)
-    {
-      int w, h;
-      camera->GetImageDimensions(w, h);
-      imageDimensions = QSize(w, h);
-    }
-
-    this->UI.cameraView->setImageData(0, imageDimensions);
-    this->UI.worldView->setImageData(0, imageDimensions);
+    case kwiver::vital::image_pixel_traits::UNSIGNED:
+      imageType = VTK_UNSIGNED_CHAR;
+      break;
+    case kwiver::vital::image_pixel_traits::SIGNED:
+      imageType = VTK_SIGNED_CHAR;
+      break;
+    case kwiver::vital::image_pixel_traits::FLOAT:
+      imageType = VTK_FLOAT;
+      break;
+    default:
+      imageType = VTK_VOID;
+      break;
+    // TODO: exception or error/warning message?
   }
-  else
+
+  // convert to vtkFrameData
+  vtkSmartPointer<vtkImageImport> imageImport =
+    vtkSmartPointer<vtkImageImport>::New();
+  imageImport->SetDataScalarType(imageType);
+  imageImport->SetNumberOfScalarComponents(img.depth());
+  imageImport->SetWholeExtent(0, img.width()-1, 0, img.height()-1, 0, 0);
+  imageImport->SetDataExtentToWholeExtent();
+  imageImport->SetImportVoidPointer(img.first_pixel());
+  imageImport->Update();
+
+  // Flip image so it has the correct axis for VTK
+  vtkSmartPointer<vtkImageFlip> flipFilter =
+    vtkSmartPointer<vtkImageFlip>::New();
+  flipFilter->SetFilteredAxis(1); // flip x axis
+  flipFilter->SetInputConnection(imageImport->GetOutputPort());
+  flipFilter->Update();
+
+  return flipFilter->GetOutput();
+}
+
+void MainWindowPrivate::loadEmptyImage(vtkMaptkCamera* camera)
+{
+  auto imageDimensions = QSize(1, 1);
+  if (camera)
   {
-    // Create a reader capable of reading the image file
-    auto const reader =
-      vtkImageReader2Factory::CreateImageReader2(qPrintable(path));
-    if (!reader)
-    {
-      qWarning() << "Failed to create image reader for image" << path;
-      this->loadImage(QString(), camera);
-      return;
-    }
-
-    // Load the image
-    reader->SetFileName(qPrintable(path));
-    reader->Update();
-
-    // Get dimensions
-    auto const data = reader->GetOutput();
-    int dimensions[3];
-    data->GetDimensions(dimensions);
-
-    // Test for errors
-    if (dimensions[0] < 2 || dimensions[1] < 2)
-    {
-      qWarning() << "Failed to read image" << path;
-      this->loadImage(QString(), camera);
-    }
-    else
-    {
-      // If successful, update camera image dimensions
-      if (camera)
-      {
-        camera->SetImageDimensions(dimensions);
-      }
-
-      // Set image on views
-      auto const size = QSize(dimensions[0], dimensions[1]);
-      this->UI.cameraView->setImageData(data, size);
-      this->UI.worldView->setImageData(data, size);
-    }
-
-    // Delete the reader
-    reader->Delete();
+    int w, h;
+    camera->GetImageDimensions(w, h);
+    imageDimensions = QSize(w, h);
   }
+
+  this->UI.cameraView->setImageData(0, imageDimensions);
+  this->UI.worldView->setImageData(0, imageDimensions);
 }
 
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::loadImage(FrameData frame)
 {
-  // TODO: check frame current frame index
+  // TODO: check if seek vs next_frame is needed
+  if (frame.id != this->currentVideoTimestamp.get_frame())
+  {
+    videoSource->seek_frame(this->currentVideoTimestamp, frame.id);
+  }
 
   // Get frame from video source
   if (this->videoSource)
@@ -669,10 +671,37 @@ void MainWindowPrivate::loadImage(FrameData frame)
     // Advance video source if it hasn't been advanced
     if (!videoSource->good())
     {
-      videoSource->next_frame(currentVideoTimestamp);
+      videoSource->next_frame(this->currentVideoTimestamp);
     }
     auto frameImg = videoSource->frame_image()->get_image();
-    auto testImage = kwiver::vtk::image_container::vital_to_vtk(frameImg);
+    auto imageData = this->vitalToVtkImage(frameImg);
+
+    int dimensions[3];
+    imageData->GetDimensions(dimensions);
+
+    // Test for errors
+    if (dimensions[0] < 2 || dimensions[1] < 2)
+    {
+      qWarning() << "Failed to read image for frame " << frame.id;
+      this->loadEmptyImage(frame.camera);
+    }
+    else
+    {
+      // If successful, update camera image dimensions
+      if (frame.camera)
+      {
+        frame.camera->SetImageDimensions(dimensions);
+      }
+
+      // Set image on views
+      auto const size = QSize(dimensions[0], dimensions[1]);
+      this->UI.cameraView->setImageData(imageData, size);
+      this->UI.worldView->setImageData(imageData, size);
+    }
+  }
+  else
+  {
+    this->loadEmptyImage(frame.camera);
   }
 }
 
