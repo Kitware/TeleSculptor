@@ -31,6 +31,8 @@
 #ifndef MAPTK_ABSTRACTTOOL_H_
 #define MAPTK_ABSTRACTTOOL_H_
 
+#include <vital/algo/video_input.h>
+#include <vital/config/config_block_types.h>
 #include <vital/types/camera_map.h>
 #include <vital/types/landmark_map.h>
 #include <vital/types/feature_track_set.h>
@@ -45,6 +47,7 @@ class AbstractToolPrivate;
 class ToolData
 {
 public:
+  typedef kwiver::vital::algo::video_input_sptr video_input_sptr;
   typedef kwiver::vital::feature_track_set_sptr feature_track_set_sptr;
   typedef kwiver::vital::camera_map_sptr camera_map_sptr;
   typedef kwiver::vital::landmark_map_sptr landmark_map_sptr;
@@ -60,6 +63,7 @@ public:
 
   unsigned int activeFrame;
   std::vector<std::string> imagePaths;
+  video_input_sptr videoSource;
   feature_track_set_sptr tracks;
   camera_map_sptr cameras;
   landmark_map_sptr landmarks;
@@ -72,6 +76,7 @@ class AbstractTool : public QAction
   Q_OBJECT
 
 public:
+  typedef kwiver::vital::algo::video_input_sptr video_input_sptr;
   typedef kwiver::vital::feature_track_set_sptr feature_track_set_sptr;
   typedef kwiver::vital::camera_map_sptr camera_map_sptr;
   typedef kwiver::vital::landmark_map_sptr landmark_map_sptr;
@@ -115,6 +120,10 @@ public:
 
   /// Set the landmarks to be used as input to the tool.
   void setLandmarks(landmark_map_sptr const&);
+
+  /// Create a separate video source for the tool.
+  void createVideoSource(kwiver::vital::config_block_sptr const& config,
+                         QString const& videoSourcePath);
 
   /// Execute the tool.
   ///

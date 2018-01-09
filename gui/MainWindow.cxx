@@ -287,7 +287,7 @@ public:
   kwiver::vital::landmark_map_sptr toolUpdateLandmarks;
   kwiver::vital::feature_track_set_sptr toolUpdateTracks;
 
-  QString videoFileName;
+  QString videoSourcePath;
   kwiver::vital::config_block_sptr videoSourceConfig;
   kwiver::vital::algo::video_input_sptr videoSource;
   kwiver::vital::timestamp currentVideoTimestamp;
@@ -375,6 +375,7 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
 {
   // Save the configuration so independent video sources can be created for tools
   this->videoSourceConfig = config;
+  this->videoSourcePath = videoSourcePath;
 
   // Close the existing video source if it exists
   if(this->videoSource)
@@ -539,7 +540,7 @@ void MainWindowPrivate::updateCameraView()
 
   // Show camera image
   this->loadImage(frame);
-  this->UI.cameraView->setImagePath(frame.imagePath);
+  // this->UI.cameraView->setImagePath(frame.imagePath);
 
   if (!frame.camera)
   {
@@ -662,7 +663,10 @@ void MainWindowPrivate::loadImage(FrameData frame)
   // TODO: check if seek vs next_frame is needed
   if (frame.id != this->currentVideoTimestamp.get_frame())
   {
-    videoSource->seek_frame(this->currentVideoTimestamp, frame.id);
+    if (!videoSource->seek_frame(this->currentVideoTimestamp, frame.id))
+    {
+      this->loadEmptyImage(frame.camera);
+    }
   }
 
   // Get frame from video source
@@ -1521,6 +1525,7 @@ void MainWindow::executeTool(QObject* object)
     tool->setTracks(d->tracks);
     tool->setCameras(d->cameraMap());
     tool->setLandmarks(d->landmarks);
+    tool->createVideoSource(d->videoSourceConfig, d->videoSourcePath);
 
     if (!tool->execute())
     {

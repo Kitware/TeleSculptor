@@ -218,6 +218,29 @@ void AbstractTool::setLandmarks(landmark_map_sptr const& newLandmarks)
 }
 
 //-----------------------------------------------------------------------------
+void AbstractTool::createVideoSource(kwiver::vital::config_block_sptr const& config,
+                                     QString const& videoSourcePath)
+{
+  QTE_D();
+
+  // Close the existing video source if it exists
+  if(d->data->videoSource)
+  {
+    d->data->videoSource->close();
+  }
+
+  kwiver::vital::algo::video_input::set_nested_algo_configuration(
+                                                            "video_reader",
+                                                            config,
+                                                            d->data->videoSource);
+
+  if (d->data->videoSource)
+  {
+    d->data->videoSource->open(videoSourcePath.toStdString());
+  }
+}
+
+//-----------------------------------------------------------------------------
 bool AbstractTool::execute(QWidget* window)
 {
   QTE_D();
