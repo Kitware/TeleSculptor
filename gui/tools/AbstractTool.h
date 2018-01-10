@@ -31,7 +31,6 @@
 #ifndef MAPTK_ABSTRACTTOOL_H_
 #define MAPTK_ABSTRACTTOOL_H_
 
-#include <vital/algo/video_input.h>
 #include <vital/config/config_block_types.h>
 #include <vital/types/camera_map.h>
 #include <vital/types/landmark_map.h>
@@ -47,10 +46,10 @@ class AbstractToolPrivate;
 class ToolData
 {
 public:
-  typedef kwiver::vital::algo::video_input_sptr video_input_sptr;
   typedef kwiver::vital::feature_track_set_sptr feature_track_set_sptr;
   typedef kwiver::vital::camera_map_sptr camera_map_sptr;
   typedef kwiver::vital::landmark_map_sptr landmark_map_sptr;
+  typedef kwiver::vital::config_block_sptr config_block_sptr;
 
   /// Deep copy the feature tracks into this data class
   void copyTracks(feature_track_set_sptr const&);
@@ -63,10 +62,11 @@ public:
 
   unsigned int activeFrame;
   std::vector<std::string> imagePaths;
-  video_input_sptr videoSource;
+  std::string videoPath;
   feature_track_set_sptr tracks;
   camera_map_sptr cameras;
   landmark_map_sptr landmarks;
+  config_block_sptr config;
 };
 
 Q_DECLARE_METATYPE(std::shared_ptr<ToolData>)
@@ -76,10 +76,10 @@ class AbstractTool : public QAction
   Q_OBJECT
 
 public:
-  typedef kwiver::vital::algo::video_input_sptr video_input_sptr;
   typedef kwiver::vital::feature_track_set_sptr feature_track_set_sptr;
   typedef kwiver::vital::camera_map_sptr camera_map_sptr;
   typedef kwiver::vital::landmark_map_sptr landmark_map_sptr;
+  typedef kwiver::vital::config_block_sptr config_block_sptr;
 
   enum Output
   {
@@ -121,9 +121,11 @@ public:
   /// Set the landmarks to be used as input to the tool.
   void setLandmarks(landmark_map_sptr const&);
 
-  /// Create a separate video source for the tool.
-  void createVideoSource(kwiver::vital::config_block_sptr const& config,
-                         QString const& videoSourcePath);
+  /// Set the video source path.
+  void setVideoPath(std::string const&);
+
+  /// Set the config file if any
+  void setConfig(config_block_sptr const&);
 
   /// Execute the tool.
   ///
@@ -233,6 +235,12 @@ protected:
   /// \return \c true if the tool data has a non-zero number of landmarks,
   ///         otherwise \c false
   bool hasLandmarks() const;
+
+  /// Test if the tool has video data.
+  ///
+  /// \return \c true if the tool data has an associated video source,
+  ///         otherwise \c false
+  bool hasVideoSource() const;
 
   /// Set the tracks produced by the tool.
   ///

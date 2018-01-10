@@ -48,7 +48,7 @@ struct Project
   QString landmarks;
 
   QString volumePath;
-  QString videoSourcePath;
+  QString videoPath;
 
   kwiver::vital::config_block_sptr videoSourceConfig;
 };

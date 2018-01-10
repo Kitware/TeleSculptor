@@ -248,7 +248,7 @@ public:
   void addCamera(kwiver::vital::camera_sptr const& camera);
   void addImage(QString const& imagePath);
   void addVideoSource(kwiver::vital::config_block_sptr const& config,
-                      QString const& videoSourcePath);
+                      QString const& videoPath);
 
   void addFrame(kwiver::vital::camera_sptr const& camera,
                 QString const& imagePath);
@@ -287,7 +287,7 @@ public:
   kwiver::vital::landmark_map_sptr toolUpdateLandmarks;
   kwiver::vital::feature_track_set_sptr toolUpdateTracks;
 
-  QString videoSourcePath;
+  QString videoPath;
   kwiver::vital::config_block_sptr videoSourceConfig;
   kwiver::vital::algo::video_input_sptr videoSource;
   kwiver::vital::timestamp currentVideoTimestamp;
@@ -371,11 +371,11 @@ void MainWindowPrivate::addImage(QString const& imagePath)
 
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& config,
-                                       QString const& videoSourcePath)
+                                       QString const& videoPath)
 {
   // Save the configuration so independent video sources can be created for tools
   this->videoSourceConfig = config;
-  this->videoSourcePath = videoSourcePath;
+  this->videoPath = videoPath;
 
   // Close the existing video source if it exists
   if(this->videoSource)
@@ -390,7 +390,7 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
 
   if (this->videoSource)
   {
-    this->videoSource->open(videoSourcePath.toStdString());
+    this->videoSource->open(videoPath.toStdString());
   }
 }
 
@@ -975,7 +975,7 @@ void MainWindow::loadProject(QString const& path)
   // Get the video source
   if (project.videoSourceConfig->has_value("video_reader:type"))
   {
-    d->addVideoSource(project.videoSourceConfig, project.videoSourcePath);
+    d->addVideoSource(project.videoSourceConfig, project.videoPath);
   }
 
   // Load tracks
@@ -1044,7 +1044,7 @@ void MainWindow::loadProject(QString const& path)
   {
 
     d->UI.worldView->loadVolume(project.volumePath,d->frames.size(),
-                                project.cameraPath, project.videoSourcePath);
+                                project.cameraPath, project.videoPath);
   }
 
   d->UI.worldView->resetView();
@@ -1525,7 +1525,7 @@ void MainWindow::executeTool(QObject* object)
     tool->setTracks(d->tracks);
     tool->setCameras(d->cameraMap());
     tool->setLandmarks(d->landmarks);
-    tool->createVideoSource(d->videoSourceConfig, d->videoSourcePath);
+    tool->setVideoPath(d->videoPath.toStdString());
 
     if (!tool->execute())
     {

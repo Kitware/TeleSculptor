@@ -218,26 +218,16 @@ void AbstractTool::setLandmarks(landmark_map_sptr const& newLandmarks)
 }
 
 //-----------------------------------------------------------------------------
-void AbstractTool::createVideoSource(kwiver::vital::config_block_sptr const& config,
-                                     QString const& videoSourcePath)
+void AbstractTool::setVideoPath(std::string const& path)
 {
   QTE_D();
+  d->data->videoPath = path;
+}
 
-  // Close the existing video source if it exists
-  if(d->data->videoSource)
-  {
-    d->data->videoSource->close();
-  }
-
-  kwiver::vital::algo::video_input::set_nested_algo_configuration(
-                                                            "video_reader",
-                                                            config,
-                                                            d->data->videoSource);
-
-  if (d->data->videoSource)
-  {
-    d->data->videoSource->open(videoSourcePath.toStdString());
-  }
+void AbstractTool::setConfig(config_block_sptr const& config)
+{
+  QTE_D();
+  d->data->config = config;
 }
 
 //-----------------------------------------------------------------------------
@@ -290,6 +280,20 @@ bool AbstractTool::hasLandmarks() const
 {
   QTE_D();
   return d->data->landmarks && d->data->landmarks->size();
+}
+
+//-----------------------------------------------------------------------------
+bool AbstractTool::hasVideoSource() const
+{
+  QTE_D();
+  if (d->data->videoPath == "" || !d->data->config)
+  {
+    return false;
+  }
+  else
+  {
+    return true;
+  }
 }
 
 //-----------------------------------------------------------------------------
