@@ -1526,6 +1526,7 @@ void MainWindow::executeTool(QObject* object)
     tool->setCameras(d->cameraMap());
     tool->setLandmarks(d->landmarks);
     tool->setVideoPath(d->videoPath.toStdString());
+    tool->setConfig(d->videoSourceConfig);
 
     if (!tool->execute())
     {
