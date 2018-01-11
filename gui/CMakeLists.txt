@@ -81,6 +81,7 @@ set(gui_moc_headers
   tools/SaveFrameTool.h
   tools/SaveKeyFrameTool.h
   tools/TrackFilterTool.h
+  tools/TrackFeaturesSprokitTool.h
   tools/TrackFeaturesTool.h
   tools/TriangulateTool.h
 )
@@ -127,6 +128,7 @@ set(gui_sources
   tools/SaveFrameTool.cxx
   tools/SaveKeyFrameTool.cxx
   tools/TrackFilterTool.cxx
+  tools/TrackFeaturesSprokitTool.cxx
   tools/TrackFeaturesTool.cxx
   tools/TriangulateTool.cxx
 )
@@ -172,7 +174,9 @@ unset(no_install)
 
 target_link_libraries(TeleSculptor
   maptk
+  kwiver::kwiver_adapter
   kwiver::kwiver_algo_core
+  kwiver::sprokit_pipeline
   kwiver::vital_vpm
   vtkFiltersSources
   vtkGUISupportQt
