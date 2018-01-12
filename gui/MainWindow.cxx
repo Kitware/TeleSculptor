@@ -362,7 +362,7 @@ void MainWindowPrivate::addFrame(
 {
   CameraData cd;
 
-  cd.id = this->cameras.count();
+  cd.id = this->cameras.count() + 1;
 
   cd.imagePath = imagePath;
 
@@ -384,8 +384,8 @@ void MainWindowPrivate::addFrame(
 
   this->cameras.append(cd);
 
-  this->UI.camera->setRange(0, this->cameras.count() - 1);
-  this->UI.cameraSpin->setRange(0, this->cameras.count() - 1);
+  this->UI.camera->setRange(1, this->cameras.count());
+  this->UI.cameraSpin->setRange(1, this->cameras.count());
 
   // When the first camera is added, show it immediately and reset the camera
   // view, and enable slideshow controls
@@ -395,7 +395,7 @@ void MainWindowPrivate::addFrame(
     this->UI.camera->setEnabled(true);
     this->UI.cameraSpin->setEnabled(true);
 
-    this->setActiveCamera(0);
+    this->setActiveCamera(1);
     this->UI.cameraView->resetView();
   }
 }
@@ -473,7 +473,7 @@ void MainWindowPrivate::setActiveCamera(int id)
   this->UI.worldView->setActiveCamera(id);
   this->updateCameraView();
 
-  auto& cd = this->cameras[id];
+  auto& cd = this->cameras[id-1];
   if (!cd.depthMapPath.isEmpty())
   {
     this->loadDepthMap(cd.depthMapPath);
@@ -485,7 +485,7 @@ void MainWindowPrivate::setActiveCamera(int id)
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::updateCameraView()
 {
-  if (this->activeCameraIndex < 0)
+  if (this->activeCameraIndex < 1)
   {
     this->loadImage(QString(), 0);
     this->UI.cameraView->setActiveFrame(static_cast<unsigned>(-1));
@@ -498,7 +498,7 @@ void MainWindowPrivate::updateCameraView()
 
   QHash<kwiver::vital::track_id_t, kwiver::vital::vector_2d> landmarkPoints;
 
-  auto const& cd = this->cameras[this->activeCameraIndex];
+  auto const& cd = this->cameras[this->activeCameraIndex-1];
 
   // Show camera image
   this->loadImage(cd.imagePath, cd.camera);
@@ -986,13 +986,37 @@ void MainWindow::loadTracks(QString const& path)
 
   try
   {
-    auto const& tracks = kwiver::vital::read_feature_track_file(kvPath(path));
+    using namespace kwiver::vital;
+    auto tracks = read_feature_track_file(kvPath(path));
     if (tracks)
     {
+      // check for older zero-based track files
+      if (tracks->first_frame() == 0)
+      {
+        qWarning() << "Loaded tracks have zero-based indexing, "
+                      "shifting to one-based indexing";
+        // shift tracks to start with frame one
+        std::vector<track_sptr> new_tracks;
+        for (auto track : tracks->tracks())
+        {
+          auto new_track = track::create(track->data());
+          new_track->set_id(track->id());
+          for (auto ts : *track)
+          {
+            auto fts = std::dynamic_pointer_cast<feature_track_state>(ts);
+            auto new_fts = std::make_shared<feature_track_state>(ts->frame()+1,
+                                                fts->feature, fts->descriptor);
+            new_track->append(new_fts);
+          }
+          new_tracks.push_back(new_track);
+        }
+        tracks = std::make_shared<feature_track_set>(new_tracks);
+      }
+
       d->tracks = tracks;
       d->updateCameraView();
 
-      foreach (auto const& track, tracks->tracks())
+      for (auto const& track : tracks->tracks())
       {
         d->UI.cameraView->addFeatureTrack(*track);
       }
@@ -1383,7 +1407,7 @@ void MainWindow::setActiveCamera(int id)
 {
   QTE_D();
 
-  if (id < 0 || id >= d->cameras.count())
+  if (id < 1 || id > d->cameras.count())
   {
     qDebug() << "MainWindow::setActiveCamera:"
              << " requested ID" << id << "is invalid";
