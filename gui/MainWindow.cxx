@@ -578,23 +578,25 @@ void MainWindowPrivate::setActiveCamera(int id_)
       //find the next keyframe in the sequence
       while (id <= this->cameras.size())
       {
-        if (tracks->get_frame_metadata(id))
+        if(std::dynamic_pointer_cast<kwiver::vital::feature_track_set_frame_data>(
+          tracks->frame_data(id))->is_keyframe)
         {
           next_keyframe_found = true;
           break;
         }
         ++id;
-      }           
+      }
     }
     else
     { //going backward in sequence
       //find the previous keyframe in the sequence
       while (id >= 1)
       {
-        if (tracks->get_frame_metadata(id))
+        if (std::dynamic_pointer_cast<kwiver::vital::feature_track_set_frame_data>(
+          tracks->frame_data(id))->is_keyframe)
         {
-          next_keyframe_found = true;
-          break;
+            next_keyframe_found = true;
+            break;
         }
         --id;
       }
