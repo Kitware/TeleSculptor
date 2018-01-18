@@ -29,6 +29,7 @@
  */
 
 #include "TrackFeaturesTool.h"
+#include "ConfigHelper.h"
 
 #include <maptk/colorize.h>
 #include <maptk/version.h>
@@ -38,16 +39,10 @@
 #include <vital/algo/track_features.h>
 #include <vital/algo/video_input.h>
 
-#include <vital/config/config_block_io.h>
 #include <vital/types/metadata.h>
 #include <vital/types/metadata_traits.h>
 
-#include <qtStlUtil.h>
-
-#include <QtGui/QApplication>
 #include <QtGui/QMessageBox>
-
-#include <QtCore/QDir>
 
 using kwiver::vital::algo::image_io;
 using kwiver::vital::algo::image_io_sptr;
@@ -64,24 +59,6 @@ static char const* const BLOCK_IR = "image_reader";
 static char const* const BLOCK_CI = "image_converter";
 static char const* const BLOCK_TF = "feature_tracker";
 static char const* const BLOCK_VR = "video_reader";
-
-//-----------------------------------------------------------------------------
-kwiver::vital::config_block_sptr readConfig(std::string const& name)
-{
-  try
-  {
-    using kwiver::vital::read_config_file;
-
-    auto const exeDir = QDir(QApplication::applicationDirPath());
-    auto const prefix = stdString(exeDir.absoluteFilePath(".."));
-    return read_config_file(name, "maptk", MAPTK_VERSION, prefix);
-  }
-  catch (...)
-  {
-    return {};
-  }
-}
-
 }
 
 //-----------------------------------------------------------------------------
@@ -131,7 +108,7 @@ bool TrackFeaturesTool::execute(QWidget* window)
   }
 
   // Load configuration
-  auto const config = readConfig("gui_track_features.conf");
+  auto const config = ConfigHelper::readConfig("gui_track_features.conf");
 
   // Check configuration
   if (!config)

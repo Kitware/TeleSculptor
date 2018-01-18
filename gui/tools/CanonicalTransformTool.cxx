@@ -29,21 +29,13 @@
  */
 
 #include "CanonicalTransformTool.h"
-
-#include <maptk/version.h>
+#include "ConfigHelper.h"
 
 #include <vital/algo/estimate_canonical_transform.h>
 
-#include <vital/config/config_block_io.h>
-
 #include <arrows/core/transform.h>
 
-#include <qtStlUtil.h>
-
-#include <QtGui/QApplication>
 #include <QtGui/QMessageBox>
-
-#include <QtCore/QDir>
 
 using kwiver::vital::algo::estimate_canonical_transform;
 using kwiver::vital::algo::estimate_canonical_transform_sptr;
@@ -51,24 +43,6 @@ using kwiver::vital::algo::estimate_canonical_transform_sptr;
 namespace
 {
 static char const* const BLOCK = "can_tfm_estimator";
-
-//-----------------------------------------------------------------------------
-kwiver::vital::config_block_sptr readConfig(std::string const& name)
-{
-  try
-  {
-    using kwiver::vital::read_config_file;
-
-    auto const exeDir = QDir(QApplication::applicationDirPath());
-    auto const prefix = stdString(exeDir.absoluteFilePath(".."));
-    return read_config_file(name, "maptk", MAPTK_VERSION, prefix);
-  }
-  catch (...)
-  {
-    return {};
-  }
-}
-
 }
 
 //-----------------------------------------------------------------------------
@@ -116,7 +90,7 @@ bool CanonicalTransformTool::execute(QWidget* window)
   }
 
   // Load configuration
-  auto const config = readConfig("gui_align.conf");
+  auto const config = ConfigHelper::readConfig("gui_align.conf");
 
   // Check configuration
   if (!config)

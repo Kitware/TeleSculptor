@@ -39,6 +39,7 @@
 #include "tools/NeckerReversalTool.h"
 #include "tools/TrackFeaturesTool.h"
 #include "tools/TrackFilterTool.h"
+#include "tools/ConfigHelper.h"
 
 #include "AboutDialog.h"
 #include "MatchMatrixWindow.h"
@@ -171,6 +172,18 @@ QSet<QString> supportedImageExtensions()
       result.insert(ext.mid(1).toLower());
     }
   }
+
+  return result;
+}
+
+QSet<QString> supportedVideoExtensions()
+{
+  QSet<QString> result;
+
+  // For now just add some common extensions we expect to encounter
+  result.insert("mpeg");
+  result.insert("mpg");
+  result.insert("mp4");
 
   return result;
 }
@@ -391,6 +404,21 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
   if (this->videoSource)
   {
     this->videoSource->open(videoPath.toStdString());
+  }
+
+  // Add frames for video if needed
+  auto numFrames = this->videoSource->num_frames();
+  for (int i = this->frames.count(); i < numFrames; ++i)
+  {
+    if (this->orphanCameras.isEmpty())
+    {
+      this->addFrame(kwiver::vital::camera_sptr(), QString());
+    }
+    else
+    {
+      // TODO: do something with orphanCameras
+      this->addFrame(kwiver::vital::camera_sptr(), QString());
+    }
   }
 }
 
@@ -903,9 +931,13 @@ void MainWindow::openFile()
   static auto const imageFilters =
     makeFilters(supportedImageExtensions().toList());
 
+  static auto const videoFilters =
+    makeFilters(supportedVideoExtensions().toList());
+
   auto const paths = QFileDialog::getOpenFileNames(
     this, "Open File", QString(),
-    "All Supported Files (*.conf *.txt *.ply *.krtd " + imageFilters + ");;"
+    "All Supported Files (*.conf *.txt *.ply *.krtd "
+      + imageFilters + " " + videoFilters + ");;"
     "Project configuration file (*.conf);;"
     "Track file (*.txt);;"
     "Landmark file (*.ply);;"
@@ -922,6 +954,7 @@ void MainWindow::openFile()
 void MainWindow::openFile(QString const& path)
 {
   static auto const imageExtensions = supportedImageExtensions();
+  static auto const videoExtensions = supportedVideoExtensions();
 
   auto const fi = QFileInfo(path);
   if (fi.suffix().toLower() == "conf")
@@ -943,6 +976,10 @@ void MainWindow::openFile(QString const& path)
   else if (imageExtensions.contains(fi.suffix().toLower()))
   {
     this->loadImage(path);
+  }
+  else if (videoExtensions.contains(fi.suffix().toLower()))
+  {
+    this->loadVideo(path);
   }
   else
   {
@@ -1055,6 +1092,14 @@ void MainWindow::loadImage(QString const& path)
 {
   QTE_D();
   d->addImage(path);
+}
+
+void MainWindow::loadVideo(QString const& path)
+{
+  QTE_D();
+
+  auto config = ConfigHelper::readConfig("gui_video_reader.conf");
+  d->addVideoSource(config, path);
 }
 
 //-----------------------------------------------------------------------------

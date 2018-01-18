@@ -29,19 +29,11 @@
  */
 
 #include "InitCamerasLandmarksTool.h"
-
-#include <maptk/version.h>
+#include "ConfigHelper.h"
 
 #include <vital/algo/initialize_cameras_landmarks.h>
 
-#include <vital/config/config_block_io.h>
-
-#include <qtStlUtil.h>
-
-#include <QtGui/QApplication>
 #include <QtGui/QMessageBox>
-
-#include <QtCore/QDir>
 
 using kwiver::vital::algo::initialize_cameras_landmarks;
 using kwiver::vital::algo::initialize_cameras_landmarks_sptr;
@@ -50,24 +42,6 @@ namespace
 {
 static char const* const BLOCK = "initializer";
 static char const* const CONFIG_FILE = "gui_initialize.conf";
-
-//-----------------------------------------------------------------------------
-kwiver::vital::config_block_sptr readConfig(std::string const& name)
-{
-  try
-  {
-    using kwiver::vital::read_config_file;
-
-    auto const exeDir = QDir(QApplication::applicationDirPath());
-    auto const prefix = stdString(exeDir.absoluteFilePath(".."));
-    return read_config_file(name, "maptk", MAPTK_VERSION, prefix);
-  }
-  catch (...)
-  {
-    return {};
-  }
-}
-
 }
 
 //-----------------------------------------------------------------------------
@@ -114,7 +88,7 @@ bool InitCamerasLandmarksTool::execute(QWidget* window)
   }
 
   // Load configuration
-  auto const config = readConfig(CONFIG_FILE);
+  auto const config = ConfigHelper::readConfig(CONFIG_FILE);
 
   // Check configuration
   if (!config)

@@ -29,19 +29,11 @@
  */
 
 #include "TrackFilterTool.h"
-
-#include <maptk/version.h>
+#include "ConfigHelper.h"
 
 #include <vital/algo/filter_tracks.h>
 
-#include <vital/config/config_block_io.h>
-
-#include <qtStlUtil.h>
-
-#include <QtGui/QApplication>
 #include <QtGui/QMessageBox>
-
-#include <QtCore/QDir>
 
 using kwiver::vital::algo::filter_tracks;
 using kwiver::vital::algo::filter_tracks_sptr;
@@ -49,24 +41,6 @@ using kwiver::vital::algo::filter_tracks_sptr;
 namespace
 {
 static char const* const BLOCK = "track_filter";
-
-//-----------------------------------------------------------------------------
-kwiver::vital::config_block_sptr readConfig(std::string const& name)
-{
-  try
-  {
-    using kwiver::vital::read_config_file;
-
-    auto const exeDir = QDir(QApplication::applicationDirPath());
-    auto const prefix = stdString(exeDir.absoluteFilePath(".."));
-    return read_config_file(name, "maptk", MAPTK_VERSION, prefix);
-  }
-  catch (...)
-  {
-    return {};
-  }
-}
-
 }
 
 //-----------------------------------------------------------------------------
@@ -112,7 +86,7 @@ bool TrackFilterTool::execute(QWidget* window)
   }
 
   // Load configuration
-  auto const config = readConfig("gui_filter_tracks.conf");
+  auto const config = ConfigHelper::readConfig("gui_filter_tracks.conf");
 
   // Check configuration
   if (!config)

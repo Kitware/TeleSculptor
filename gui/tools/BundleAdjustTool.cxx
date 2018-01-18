@@ -29,19 +29,11 @@
  */
 
 #include "BundleAdjustTool.h"
-
-#include <maptk/version.h>
+#include "ConfigHelper.h"
 
 #include <vital/algo/bundle_adjust.h>
 
-#include <vital/config/config_block_io.h>
-
-#include <qtStlUtil.h>
-
-#include <QtGui/QApplication>
 #include <QtGui/QMessageBox>
-
-#include <QtCore/QDir>
 
 using kwiver::vital::algo::bundle_adjust;
 using kwiver::vital::algo::bundle_adjust_sptr;
@@ -49,24 +41,6 @@ using kwiver::vital::algo::bundle_adjust_sptr;
 namespace
 {
 static char const* const BLOCK = "bundle_adjuster";
-
-//-----------------------------------------------------------------------------
-kwiver::vital::config_block_sptr readConfig(std::string const& name)
-{
-  try
-  {
-    using kwiver::vital::read_config_file;
-
-    auto const exeDir = QDir(QApplication::applicationDirPath());
-    auto const prefix = stdString(exeDir.absoluteFilePath(".."));
-    return read_config_file(name, "maptk", MAPTK_VERSION, prefix);
-  }
-  catch (...)
-  {
-    return {};
-  }
-}
-
 }
 
 //-----------------------------------------------------------------------------
@@ -114,7 +88,7 @@ bool BundleAdjustTool::execute(QWidget* window)
   }
 
   // Load configuration
-  auto const config = readConfig("gui_bundle_adjust.conf");
+  auto const config = ConfigHelper::readConfig("gui_bundle_adjust.conf");
 
   // Check configuration
   if (!config)
