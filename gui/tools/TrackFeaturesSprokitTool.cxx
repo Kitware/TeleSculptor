@@ -91,10 +91,23 @@ kwiver::vital::config_block_sptr readConfig(std::string const& name)
 class TrackFeaturesSprokitToolPrivate
 {
 public:
+  TrackFeaturesSprokitToolPrivate();
   image_io_sptr image_reader;
   convert_image_sptr image_converter;
   track_features_sptr feature_tracker;
+  kwiver::vital::timestamp::frame_t m_frame_number;
+  kwiver::vital::timestamp::time_t m_frame_time;
+  kwiver::vital::timestamp::time_t m_config_frame_time;
 };
+
+TrackFeaturesSprokitToolPrivate
+::TrackFeaturesSprokitToolPrivate():
+  m_frame_number(1),
+  m_frame_time(0),
+  m_config_frame_time(1000)
+{
+
+}
 
 QTE_IMPLEMENT_D_FUNC(TrackFeaturesSprokitTool)
 
@@ -183,9 +196,6 @@ void TrackFeaturesSprokitTool::run()
   // Start pipeline and wait for it to finish
   ep.start();
 
-  // Create dataset for input
-  auto ds = kwiver::adapter::adapter_data_set::create();
-
   unsigned int frame = this->activeFrame();
   auto const& paths = this->imagePaths();
 
@@ -199,83 +209,41 @@ void TrackFeaturesSprokitTool::run()
     auto md = std::make_shared<kwiver::vital::metadata>();
     md->add(NEW_METADATA_ITEM(kwiver::vital::VITAL_META_IMAGE_FILENAME, paths[i]));
     converted_image->set_metadata(md);
-    auto timestamp = converted_image->get_metadata()->timestamp();
 
+    kwiver::vital::timestamp frame_ts(d->m_frame_time, d->m_frame_number);
+
+    ++d->m_frame_number;
+    d->m_frame_time += d->m_config_frame_time;
+
+    // Create dataset for input
+    auto ds = kwiver::adapter::adapter_data_set::create();
     ds->add_value("image", converted_image);
-    ds->add_value("timestamp", timestamp);
+    ds->add_value("timestamp", frame_ts);
     ep.send(ds);
 
     if (this->isCanceled())
     {
       break;
     }
-    auto rds = ep.receive();
+    if (!ep.empty())
+    {
+      auto rds = ep.receive();
+    }
   }
   ep.send_end_of_input();
 
+  kwiver::vital::feature_track_set_sptr out_tracks;
+  while (!ep.at_end())
+  {
+    auto rds = ep.receive();
+    auto ix = rds->find("feature_track_set");
+    if (ix != rds->end())
+    {
+      out_tracks = ix->second->get_datum<kwiver::vital::feature_track_set_sptr>();
+    }
+  }
   ep.wait();
 
-  bool end_reached = ep.at_end();
-  auto rds = ep.receive();
-  auto ix = rds->find("feature_track_set");
+  this->updateTracks(out_tracks);
 
-  auto d_ptr = ix->second->get_datum<kwiver::vital::feature_track_set_sptr>();
-
-  this->updateTracks(d_ptr);
-
-
-  //// Create dataset for input
-  //auto ds = kwiver::adapter::adapter_data_set::create();
-
-  //// Put OCV image in vital container
-  //kwiver::vital::image_container_sptr img(new kwiver::arrows::ocv::image_container(cv_img));
-
-  //ds->add_value("image", img);
-  //ep.send(ds);
-  //ep.send_end_of_input(); // indicate end of input
-
-  //                        // Get results from pipeline
-  //auto rds = ep.receive();
-  //auto ix = rds->find("d_vector");
-  //auto d_ptr = ix->second->get_datum<kwiver::vital::double_vector_sptr>();
-
-  //ep.wait();
-
-
-
-  //unsigned int frame = this->activeFrame();
-
-  //auto tracks = this->tracks();
-
-  //unsigned int i=frame;
-  //for(; i<paths.size(); ++i)
-  //{
-  //  auto const image = d->image_reader->load(paths[i]);
-  //  auto const converted_image = d->image_converter->convert(image);
-
-  //  // Set the metadata on the image.
-  //  // For now, the only metadata is the filename of the image.
-  //  auto md = std::make_shared<kwiver::vital::metadata>();
-  //  md->add( NEW_METADATA_ITEM( kwiver::vital::VITAL_META_IMAGE_FILENAME, paths[i] ) );
-  //  converted_image->set_metadata(md);
-
-  //  tracks = d->feature_tracker->track(tracks, i, converted_image);
-  //  if (tracks)
-  //  {
-  //    tracks = kwiver::maptk::extract_feature_colors(tracks, *image, i);
-  //  }
-
-  //  // make a copy of the tool data
-  //  auto data = std::make_shared<ToolData>();
-  //  data->copyTracks(tracks);
-  //  data->activeFrame = i;
-
-  //  emit updated(data);
-  //  if( this->isCanceled() )
-  //  {
-  //    break;
-  //  }
-  //}
-  //this->updateTracks(tracks);
-  //this->setActiveFrame(i);
 }
