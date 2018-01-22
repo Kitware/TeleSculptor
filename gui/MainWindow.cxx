@@ -246,7 +246,6 @@ public:
     int id;
     vtkSmartPointer<vtkMaptkCamera> camera;
 
-    QString imagePath; // Full path to camera image data
     QString depthMapPath; // Full path to depth map data
   };
 
@@ -263,8 +262,7 @@ public:
   void addVideoSource(kwiver::vital::config_block_sptr const& config,
                       QString const& videoPath);
 
-  void addFrame(kwiver::vital::camera_sptr const& camera,
-                QString const& imagePath);
+  void addFrame(kwiver::vital::camera_sptr const& camera, int id);
 
   std::vector<std::string> imagePaths() const;
   kwiver::vital::camera_map_sptr cameraMap() const;
@@ -311,8 +309,8 @@ public:
 
   int activeCameraIndex;
 
-  QQueue<int> orphanImages;
-  QQueue<int> orphanCameras;
+  // Frames without a camera
+  QQueue<int> orphanFrames;
 
   vtkNew<vtkXMLImageDataReader> depthReader;
   vtkNew<vtkMaptkImageUnprojectDepth> depthFilter;
@@ -341,23 +339,22 @@ void MainWindowPrivate::addTool(AbstractTool* tool, MainWindow* mainWindow)
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::addCamera(kwiver::vital::camera_sptr const& camera)
 {
-  if (this->orphanImages.isEmpty())
+  if (this->orphanFrames.isEmpty())
   {
-    this->orphanCameras.enqueue(this->frames.count());
-    this->addFrame(camera, QString());
+    this->addFrame(camera, this->frames.count() + 1);
     return;
   }
 
-  auto& cd = this->frames[this->orphanImages.dequeue()];
+  auto& fd = this->frames[this->orphanFrames.dequeue()];
 
-  cd.camera = vtkSmartPointer<vtkMaptkCamera>::New();
-  cd.camera->SetCamera(camera);
-  cd.camera->Update();
+  fd.camera = vtkSmartPointer<vtkMaptkCamera>::New();
+  fd.camera->SetCamera(camera);
+  fd.camera->Update();
 
-  this->UI.worldView->addCamera(cd.id, cd.camera);
-  if (cd.id == this->activeCameraIndex)
+  this->UI.worldView->addCamera(fd.id, fd.camera);
+  if (fd.id == this->activeCameraIndex)
   {
-    this->UI.worldView->setActiveCamera(cd.id);
+    this->UI.worldView->setActiveCamera(fd.id);
     this->updateCameraView();
   }
 }
@@ -365,21 +362,7 @@ void MainWindowPrivate::addCamera(kwiver::vital::camera_sptr const& camera)
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::addImage(QString const& imagePath)
 {
-  if (this->orphanCameras.isEmpty())
-  {
-    this->orphanImages.enqueue(this->frames.count());
-    this->addFrame(kwiver::vital::camera_sptr(), imagePath);
-    return;
-  }
-
-  auto& cd = this->frames[this->orphanCameras.dequeue()];
-
-  cd.imagePath = imagePath;
-
-  if (cd.id == this->activeCameraIndex)
-  {
-    this->updateCameraView();
-  }
+  // TODO: Create/manage image list video source
 }
 
 //-----------------------------------------------------------------------------
@@ -410,31 +393,22 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
   auto numFrames = this->videoSource->num_frames();
   for (int i = this->frames.count(); i < numFrames; ++i)
   {
-    if (this->orphanCameras.isEmpty())
-    {
-      this->addFrame(kwiver::vital::camera_sptr(), QString());
-    }
-    else
-    {
-      // TODO: do something with orphanCameras
-      this->addFrame(kwiver::vital::camera_sptr(), QString());
-    }
+    this->orphanFrames.enqueue(i);
+    this->addFrame(kwiver::vital::camera_sptr(), i + 1);
   }
 }
 
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::addFrame(
-  kwiver::vital::camera_sptr const& camera, QString const& imagePath)
+  kwiver::vital::camera_sptr const& camera, int id)
 {
   FrameData cd;
 
-  cd.id = this->frames.count() + 1;
-
-  cd.imagePath = imagePath;
+  cd.id = id;
 
   if (camera)
   {
-    this->orphanImages.clear();
+    this->orphanFrames.clear();
 
     cd.camera = vtkSmartPointer<vtkMaptkCamera>::New();
     cd.camera->SetCamera(camera);
@@ -442,10 +416,6 @@ void MainWindowPrivate::addFrame(
 
     this->UI.worldView->addCamera(cd.id, cd.camera);
     this->UI.actionExportCameras->setEnabled(true);
-  }
-  else
-  {
-    this->orphanCameras.clear();
   }
 
   this->frames.append(cd);
@@ -470,12 +440,6 @@ void MainWindowPrivate::addFrame(
 std::vector<std::string> MainWindowPrivate::imagePaths() const
 {
   std::vector<std::string> paths(this->frames.count());
-
-  foreach (auto i, qtIndexRange(this->frames.count()))
-  {
-    auto const& cd = this->frames[i];
-    paths[i] = cd.imagePath.toStdString();
-  }
 
   return paths;
 }
@@ -545,7 +509,8 @@ void MainWindowPrivate::setActiveCamera(int id)
     this->loadDepthMap(cd.depthMapPath);
   }
 
-  UI.worldView->setVolumeCurrentFramePath(cd.imagePath);
+  // TODO: remove this gui element?
+  // UI.worldView->setVolumeCurrentFramePath(cd.imagePath);
 }
 
 //-----------------------------------------------------------------------------
@@ -568,6 +533,7 @@ void MainWindowPrivate::updateCameraView()
 
   // Show camera image
   this->loadImage(frame);
+  // TODO: remove this gui element?
   // this->UI.cameraView->setImagePath(frame.imagePath);
 
   if (!frame.camera)
@@ -1045,6 +1011,8 @@ void MainWindow::loadProject(QString const& path)
   }
 
   // Load cameras and/or images
+  // TODO: get *.krtd in cameraDir and load all files with addCamera
+#if 0
   if (project.cameraPath.isEmpty())
   {
     foreach (auto const& ip, project.images)
@@ -1073,6 +1041,7 @@ void MainWindow::loadProject(QString const& path)
       }
     }
   }
+#endif
 
   // Associate depth maps with cameras
   foreach (auto dm, qtEnumerate(project.depthMaps))
@@ -1306,7 +1275,7 @@ void MainWindow::saveCameras(QString const& path)
       auto const camera = cd.camera->GetCamera();
       if (camera)
       {
-        auto const filepath = path + "/" + cameraName(cd.imagePath, i);
+        auto const filepath = path + "/" + cameraName("", i);
         out.insert(filepath, camera);
 
         if (QFileInfo(filepath).exists())
@@ -1583,6 +1552,7 @@ void MainWindow::executeTool(QObject* object)
   {
     d->setActiveTool(tool);
     tool->setActiveFrame(d->activeCameraIndex);
+    // TODO: remove this from the Tools?
     tool->setImagePaths(d->imagePaths());
     tool->setTracks(d->tracks);
     tool->setCameras(d->cameraMap());
