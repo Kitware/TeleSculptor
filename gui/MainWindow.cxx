@@ -705,9 +705,26 @@ void MainWindowPrivate::loadImage(FrameData frame)
     {
       videoSource->next_frame(this->currentVideoTimestamp);
     }
-    auto frameImg = videoSource->frame_image()->get_image();
-    auto imageData = this->vitalToVtkImage(frameImg);
 
+    kwiver::vital::image frameImg;
+    auto sourceImg = videoSource->frame_image()->get_image();
+
+    // If image is interlaced it is already compatible with VTK
+    if (sourceImg.d_step() == 1)
+    {
+      frameImg = sourceImg;
+    }
+    // Otherwise we need a deep copy to get it to be interlaced
+    else
+    {
+      frameImg = kwiver::vital::image(sourceImg.width(),
+                                      sourceImg.height(),
+                                      sourceImg.depth(),
+                                      true);
+      frameImg.copy_from(sourceImg);
+    }
+
+    auto imageData = this->vitalToVtkImage(frameImg);
     int dimensions[3];
     imageData->GetDimensions(dimensions);
 
