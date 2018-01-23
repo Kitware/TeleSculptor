@@ -55,6 +55,8 @@
 #include <sprokit/processes/adapters/embedded_pipeline.h>
 #include <sprokit/pipeline_util/literal_pipeline.h>
 
+#include <kwiversys/SystemTools.hxx>
+
 using kwiver::vital::algo::image_io;
 using kwiver::vital::algo::image_io_sptr;
 using kwiver::vital::algo::convert_image;
@@ -179,7 +181,7 @@ void TrackFeaturesSprokitTool::run()
 {
   QTE_D();
 
-  std::string pipe_file = "D:/export_controlled_data/telesculptor/sequence2/track_features_embedded.pipe";
+  std::string pipe_file = "D:/export_controlled_data/telesculptor/sequence2/track_features_embedded.pipe";  //TODO THIS NEEDS TO POINT TO THE BUILD OR INSTALL DIR COPY
 
   // Open pipeline description
   std::ifstream pipe_str;
