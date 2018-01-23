@@ -1011,37 +1011,29 @@ void MainWindow::loadProject(QString const& path)
   }
 
   // Load cameras and/or images
-  // TODO: get *.krtd in cameraDir and load all files with addCamera
-#if 0
-  if (project.cameraPath.isEmpty())
+  if (!project.cameraPath.isEmpty())
   {
-    foreach (auto const& ip, project.images)
-    {
-      d->addImage(ip);
-    }
-  }
-  else
-  {
-    auto const cameraDir = kwiver::vital::path_t(kvPath(project.cameraPath));
-    foreach (auto const& ip, project.images)
+    QDir cameraDir(project.cameraPath);
+    cameraDir.setNameFilters(QStringList() << "*.krtd");
+    QStringList cameraFiles = cameraDir.entryList();
+
+    foreach (auto const& cf, cameraFiles)
     {
       try
       {
         auto const& camera =
-          kwiver::vital::read_krtd_file(kvPath(ip), cameraDir);
+          kwiver::vital::read_krtd_file(kvPath(cf), kvPath(project.cameraPath));
 
         // Add camera to scene
-        d->addFrame(camera, ip);
+        d->addCamera(camera);
       }
       catch (...)
       {
-        qWarning() << "failed to read camera for" << ip
-                   << "from" << project.cameraPath;
-        d->addFrame(kwiver::vital::camera_sptr(), ip);
+        qWarning() << "failed to read camera file " << cf
+                   << " from " << project.cameraPath;
       }
     }
   }
-#endif
 
   // Associate depth maps with cameras
   foreach (auto dm, qtEnumerate(project.depthMaps))
