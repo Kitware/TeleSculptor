@@ -61,7 +61,6 @@ public:
   void copyLandmarks(landmark_map_sptr const&);
 
   unsigned int activeFrame;
-  std::vector<std::string> imagePaths;
   std::string videoPath;
   feature_track_set_sptr tracks;
   camera_map_sptr cameras;
@@ -142,9 +141,6 @@ public:
   /// Get the active frame.
   unsigned int activeFrame() const;
 
-  /// Get image paths.
-  std::vector<std::string> const& imagePaths() const;
-
   /// Get tracks.
   ///
   /// This returns the new tracks resulting from the tool execution. If the
@@ -211,12 +207,6 @@ protected:
 
   /// Check if the user has requested that tool execution be canceled.
   bool isCanceled() const;
-
-  /// Test if the tool has image path data.
-  ///
-  /// \return \c true if the tool data has a non-zero number of images,
-  ///         otherwise \c false
-  bool hasImagePaths() const;
 
   /// Test if the tool has track data.
   ///

@@ -146,7 +146,6 @@ void TrackFeaturesTool::run()
   QTE_D();
 
   unsigned int frame = this->activeFrame();
-  auto const& paths = this->imagePaths();
   auto tracks = this->tracks();
   kwiver::vital::timestamp currentTimestamp;
 

@@ -148,13 +148,6 @@ unsigned int AbstractTool::activeFrame() const
 }
 
 //-----------------------------------------------------------------------------
-std::vector<std::string> const& AbstractTool::imagePaths() const
-{
-  QTE_D();
-  return d->data->imagePaths;
-}
-
-//-----------------------------------------------------------------------------
 kwiver::vital::feature_track_set_sptr AbstractTool::tracks() const
 {
   QTE_D();
@@ -187,13 +180,6 @@ void AbstractTool::setActiveFrame(unsigned int frame)
 {
   QTE_D();
   d->data->activeFrame = frame;
-}
-
-//-----------------------------------------------------------------------------
-void AbstractTool::setImagePaths(std::vector<std::string> const& paths)
-{
-  QTE_D();
-  d->data->imagePaths = paths;
 }
 
 //-----------------------------------------------------------------------------
@@ -245,20 +231,6 @@ bool AbstractTool::isCanceled() const
 {
   QTE_D();
   return d->cancelRequested;
-}
-
-//-----------------------------------------------------------------------------
-bool AbstractTool::hasImagePaths() const
-{
-  QTE_D();
-  foreach (auto const& path, d->data->imagePaths)
-  {
-    if(path != "")
-    {
-      return true;
-    }
-  }
-  return false;
 }
 
 //-----------------------------------------------------------------------------

@@ -264,7 +264,6 @@ public:
 
   void addFrame(kwiver::vital::camera_sptr const& camera, int id);
 
-  std::vector<std::string> imagePaths() const;
   kwiver::vital::camera_map_sptr cameraMap() const;
   void updateCameras(kwiver::vital::camera_map_sptr const&);
 
@@ -434,14 +433,6 @@ void MainWindowPrivate::addFrame(
     this->setActiveCamera(1);
     this->UI.cameraView->resetView();
   }
-}
-
-//-----------------------------------------------------------------------------
-std::vector<std::string> MainWindowPrivate::imagePaths() const
-{
-  std::vector<std::string> paths(this->frames.count());
-
-  return paths;
 }
 
 //-----------------------------------------------------------------------------
@@ -1544,8 +1535,6 @@ void MainWindow::executeTool(QObject* object)
   {
     d->setActiveTool(tool);
     tool->setActiveFrame(d->activeCameraIndex);
-    // TODO: remove this from the Tools?
-    tool->setImagePaths(d->imagePaths());
     tool->setTracks(d->tracks);
     tool->setCameras(d->cameraMap());
     tool->setLandmarks(d->landmarks);
