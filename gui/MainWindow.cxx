@@ -837,6 +837,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.actionOpen, SIGNAL(triggered()), this, SLOT(openFile()));
   connect(d->UI.actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
 
+  connect(d->UI.actionNewProject, SIGNAL(triggered()), this, SLOT(newProject()));
+
   connect(d->UI.actionShowWorldAxes, SIGNAL(toggled(bool)),
           d->UI.worldView, SLOT(setAxesVisible(bool)));
 
@@ -1005,6 +1007,18 @@ void MainWindow::openFiles(QStringList const& paths)
   foreach (auto const& path, paths)
   {
     this->openFile(path);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::newProject()
+{
+  auto const filename = QFileDialog::getSaveFileName(
+    this, "Select Project File", QString(), "Project Files (*.proj)");
+
+  if (!filename.isEmpty())
+  {
+    qWarning() << "Saving project to " << filename;
   }
 }
 
