@@ -45,7 +45,6 @@
 #include <QtGui/QMessageBox>
 
 using kwiver::vital::algo::image_io;
-using kwiver::vital::algo::image_io_sptr;
 using kwiver::vital::algo::convert_image;
 using kwiver::vital::algo::convert_image_sptr;
 using kwiver::vital::algo::track_features;
@@ -55,7 +54,6 @@ using kwiver::vital::algo::video_input_sptr;
 
 namespace
 {
-static char const* const BLOCK_IR = "image_reader";
 static char const* const BLOCK_CI = "image_converter";
 static char const* const BLOCK_TF = "feature_tracker";
 static char const* const BLOCK_VR = "video_reader";
@@ -65,7 +63,6 @@ static char const* const BLOCK_VR = "video_reader";
 class TrackFeaturesToolPrivate
 {
 public:
-  image_io_sptr image_reader;
   convert_image_sptr image_converter;
   track_features_sptr feature_tracker;
   video_input_sptr video_reader;
@@ -119,8 +116,7 @@ bool TrackFeaturesTool::execute(QWidget* window)
     return false;
   }
 
-  if (!image_io::check_nested_algo_configuration(BLOCK_IR, config) ||
-      !convert_image::check_nested_algo_configuration(BLOCK_CI, config) ||
+  if (!convert_image::check_nested_algo_configuration(BLOCK_CI, config) ||
       !track_features::check_nested_algo_configuration(BLOCK_TF, config) ||
       !video_input::check_nested_algo_configuration(BLOCK_VR, this->data()->config))
 
@@ -132,7 +128,6 @@ bool TrackFeaturesTool::execute(QWidget* window)
   }
 
   // Create algorithm from configuration
-  image_io::set_nested_algo_configuration(BLOCK_IR, config, d->image_reader);
   convert_image::set_nested_algo_configuration(BLOCK_CI, config, d->image_converter);
   track_features::set_nested_algo_configuration(BLOCK_TF, config, d->feature_tracker);
   video_input::set_nested_algo_configuration(BLOCK_VR, this->data()->config, d->video_reader);
