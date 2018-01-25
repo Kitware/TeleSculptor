@@ -147,7 +147,7 @@ void TrackFeaturesTool::run()
   d->video_reader->open(this->data()->videoPath);
 
   // Seek to just before active frame TODO: check status?
-  if (frame != 0)
+  if (frame > 1)
   {
     d->video_reader->seek_frame(currentTimestamp, frame-1);
   }

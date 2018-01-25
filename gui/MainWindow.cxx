@@ -53,6 +53,7 @@
 #include <vital/algo/video_input.h>
 #include <vital/io/camera_io.h>
 #include <vital/io/landmark_map_io.h>
+#include <vital/io/metadata_io.h>
 #include <vital/io/track_set_io.h>
 #include <arrows/core/match_matrix.h>
 
@@ -184,6 +185,9 @@ QSet<QString> supportedVideoExtensions()
   result.insert("mpeg");
   result.insert("mpg");
   result.insert("mp4");
+  result.insert("avi");
+  result.insert("wmw");
+  result.insert("mov");
 
   return result;
 }
@@ -272,6 +276,8 @@ public:
 
   vtkSmartPointer<vtkImageData> vitalToVtkImage(kwiver::vital::image& img);
 
+  std::string getFrameName(kwiver::vital::frame_id_t frame);
+
   void loadImage(FrameData frame);
   void loadEmptyImage(vtkMaptkCamera* camera);
 
@@ -298,7 +304,7 @@ public:
   kwiver::vital::feature_track_set_sptr toolUpdateTracks;
 
   QString videoPath;
-  kwiver::vital::config_block_sptr videoSourceConfig;
+  kwiver::vital::config_block_sptr projectConfig;
   kwiver::vital::algo::video_input_sptr videoSource;
   kwiver::vital::timestamp currentVideoTimestamp;
 
@@ -369,7 +375,7 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
                                        QString const& videoPath)
 {
   // Save the configuration so independent video sources can be created for tools
-  this->videoSourceConfig = config;
+  this->projectConfig = config;
   this->videoPath = videoPath;
 
   // Close the existing video source if it exists
@@ -500,7 +506,7 @@ void MainWindowPrivate::setActiveCamera(int id)
     this->loadDepthMap(cd.depthMapPath);
   }
 
-  // TODO: remove this gui element?
+  // TODO: Uncomment once MeshColoration is working directly off video frames
   // UI.worldView->setVolumeCurrentFramePath(cd.imagePath);
 }
 
@@ -524,8 +530,6 @@ void MainWindowPrivate::updateCameraView()
 
   // Show camera image
   this->loadImage(frame);
-  // TODO: remove this gui element?
-  // this->UI.cameraView->setImagePath(frame.imagePath);
 
   if (!frame.camera)
   {
@@ -628,6 +632,26 @@ MainWindowPrivate::vitalToVtkImage(kwiver::vital::image& img)
   return flipFilter->GetOutput();
 }
 
+std::string MainWindowPrivate::getFrameName(kwiver::vital::frame_id_t frameId)
+{
+  std::string retVal = "";
+
+  if (this->videoSource)
+  {
+    auto mdVec = this->videoSource->frame_metadata();
+    for (auto const& md: mdVec)
+    {
+      if (md->has( kwiver::vital::VITAL_META_IMAGE_FILENAME ) ||
+          md->has( kwiver::vital::VITAL_META_VIDEO_FILENAME ) )
+      {
+        retVal = kwiver::vital::basename_from_metadata(md, frameId);
+      }
+    }
+  }
+
+  return retVal;
+}
+
 void MainWindowPrivate::loadEmptyImage(vtkMaptkCamera* camera)
 {
   auto imageDimensions = QSize(1, 1);
@@ -698,6 +722,10 @@ void MainWindowPrivate::loadImage(FrameData frame)
       {
         frame.camera->SetImageDimensions(dimensions);
       }
+
+      // Set frame name in camera view
+      std::string frameName = this->getFrameName(frame.id);
+      this->UI.cameraView->setImagePath(QString::fromStdString(frameName));
 
       // Set image on views
       auto const size = QSize(dimensions[0], dimensions[1]);
@@ -908,11 +936,12 @@ void MainWindow::openFile()
   static auto const videoFilters =
     makeFilters(supportedVideoExtensions().toList());
 
+  // TODO: Add image filters back once that is supported again.
   auto const paths = QFileDialog::getOpenFileNames(
     this, "Open File", QString(),
-    "All Supported Files (*.conf *.txt *.ply *.krtd "
-      + imageFilters + " " + videoFilters + ");;"
+    "All Supported Files (*.conf *.txt *.ply *.krtd " + videoFilters + ");;"
     "Project configuration file (*.conf);;"
+    "Video file (" + videoFilters + ");;"
     "Track file (*.txt);;"
     "Landmark file (*.ply);;"
     "Camera file (*.krtd);;"
@@ -984,9 +1013,9 @@ void MainWindow::loadProject(QString const& path)
   }
 
   // Get the video source
-  if (project.videoSourceConfig->has_value("video_reader:type"))
+  if (project.projectConfig->has_value("video_reader:type"))
   {
-    d->addVideoSource(project.videoSourceConfig, project.videoPath);
+    d->addVideoSource(project.projectConfig, project.videoPath);
   }
 
   // Load tracks
@@ -1004,24 +1033,24 @@ void MainWindow::loadProject(QString const& path)
   // Load cameras and/or images
   if (!project.cameraPath.isEmpty())
   {
-    QDir cameraDir(project.cameraPath);
-    cameraDir.setNameFilters(QStringList() << "*.krtd");
-    QStringList cameraFiles = cameraDir.entryList();
-
-    foreach (auto const& cf, cameraFiles)
+    foreach (auto const& frame, d->frames)
     {
-      try
+      auto frameName = QString::fromStdString(d->getFrameName(frame.id));
+      if (frameName != "")
       {
-        auto const& camera =
-          kwiver::vital::read_krtd_file(kvPath(cf), kvPath(project.cameraPath));
+        try
+        {
+            auto const& camera = kwiver::vital::read_krtd_file(
+              kvPath(frameName), kvPath(project.cameraPath));
 
-        // Add camera to scene
-        d->addCamera(camera);
-      }
-      catch (...)
-      {
-        qWarning() << "failed to read camera file " << cf
-                   << " from " << project.cameraPath;
+            // Add camera to scene
+            d->addCamera(camera);
+        }
+        catch (...)
+        {
+          qWarning() << "failed to read camera file " << frameName
+                     << " from " << project.cameraPath;
+        }
       }
     }
   }
@@ -1539,7 +1568,7 @@ void MainWindow::executeTool(QObject* object)
     tool->setCameras(d->cameraMap());
     tool->setLandmarks(d->landmarks);
     tool->setVideoPath(d->videoPath.toStdString());
-    tool->setConfig(d->videoSourceConfig);
+    tool->setConfig(d->projectConfig);
 
     if (!tool->execute())
     {

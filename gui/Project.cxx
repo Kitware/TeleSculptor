@@ -128,14 +128,14 @@ bool Project::read(QString const& path)
     if (config->has_value("volume_file"))
     {
       this->volumePath = getPath(config, base, "volume_file");
-      this->videoPath = getPath(config, base, "image_list_file");
+      this->videoPath = getPath(config, base, "video_source");
       if (this->videoPath.isEmpty())
       {
-        this->videoPath = getPath(config, base, "video_source");
+        this->videoPath = getPath(config, base, "image_list_file");
       }
     }
 
-    videoSourceConfig = config;
+    projectConfig = config;
 
     return true;
   }

@@ -50,7 +50,7 @@ struct Project
   QString volumePath;
   QString videoPath;
 
-  kwiver::vital::config_block_sptr videoSourceConfig;
+  kwiver::vital::config_block_sptr projectConfig;
 };
 
 #endif
