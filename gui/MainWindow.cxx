@@ -322,6 +322,9 @@ public:
   vtkNew<vtkXMLImageDataReader> depthReader;
   vtkNew<vtkMaptkImageUnprojectDepth> depthFilter;
   vtkNew<vtkMaptkImageDataGeometryFilter> depthGeometryFilter;
+
+  // Current project
+  std::shared_ptr<Project> currProject;
 };
 
 QTE_IMPLEMENT_D_FUNC(MainWindow)
@@ -1027,33 +1030,34 @@ void MainWindow::loadProject(QString const& path)
 {
   QTE_D();
 
-  Project project;
-  if (!project.read(path))
+  d->currProject = std::make_shared<Project>();
+  if (!d->currProject->read(path))
   {
     qWarning() << "Failed to load project from" << path; // TODO dialog?
+    d->currProject.reset();
     return;
   }
 
   // Get the video source
-  if (project.projectConfig->has_value("video_reader:type"))
+  if (d->currProject->projectConfig->has_value("video_reader:type"))
   {
-    d->addVideoSource(project.projectConfig, project.videoPath);
+    d->addVideoSource(d->currProject->projectConfig, d->currProject->videoPath);
   }
 
   // Load tracks
-  if (!project.tracks.isEmpty())
+  if (!d->currProject->tracks.isEmpty())
   {
-    this->loadTracks(project.tracks);
+    this->loadTracks(d->currProject->tracks);
   }
 
   // Load landmarks
-  if (!project.landmarks.isEmpty())
+  if (!d->currProject->landmarks.isEmpty())
   {
-    this->loadLandmarks(project.landmarks);
+    this->loadLandmarks(d->currProject->landmarks);
   }
 
   // Load cameras and/or images
-  if (!project.cameraPath.isEmpty())
+  if (!d->currProject->cameraPath.isEmpty())
   {
     foreach (auto const& frame, d->frames)
     {
@@ -1063,7 +1067,7 @@ void MainWindow::loadProject(QString const& path)
         try
         {
           auto const& camera = kwiver::vital::read_krtd_file(
-            kvPath(frameName), kvPath(project.cameraPath));
+            kvPath(frameName), kvPath(d->currProject->cameraPath));
 
           // Add camera to scene
           d->addCamera(camera);
@@ -1071,14 +1075,14 @@ void MainWindow::loadProject(QString const& path)
         catch (...)
         {
           qWarning() << "failed to read camera file " << frameName
-                     << " from " << project.cameraPath;
+                     << " from " << d->currProject->cameraPath;
         }
       }
     }
   }
 
   // Associate depth maps with cameras
-  foreach (auto dm, qtEnumerate(project.depthMaps))
+  foreach (auto dm, qtEnumerate(d->currProject->depthMaps))
   {
     auto const i = dm.key();
     if (i >= 0 && i < d->frames.count())
@@ -1097,11 +1101,11 @@ void MainWindow::loadProject(QString const& path)
 #endif
 
   //Load volume
-  if (!project.volumePath.isEmpty())
+  if (!d->currProject->volumePath.isEmpty())
   {
 
-    d->UI.worldView->loadVolume(project.volumePath,d->frames.size(),
-                                project.cameraPath, project.videoPath);
+    d->UI.worldView->loadVolume(d->currProject->volumePath, d->frames.size(),
+                                d->currProject->cameraPath, d->currProject->videoPath);
   }
 
   d->UI.worldView->resetView();

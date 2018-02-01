@@ -38,9 +38,10 @@
 
 struct Project
 {
+  Project();
+
   bool read(QString const& path);
 
-  QStringList images;
   QString cameraPath;
   QMap<int, QString> depthMaps;
 

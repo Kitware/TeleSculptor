@@ -59,6 +59,12 @@ QString getPath(kwiver::vital::config_block_sptr const& config,
 }
 
 //-----------------------------------------------------------------------------
+Project::Project()
+{
+  projectConfig = kwiver::vital::config_block::empty_config();
+}
+
+//-----------------------------------------------------------------------------
 bool Project::read(QString const& path)
 {
   auto const& base = QFileInfo(path).absoluteDir();
@@ -77,26 +83,6 @@ bool Project::read(QString const& path)
     this->landmarks = getPath(config, base, "output_ply_file");
     this->tracks =
       getPath(config, base, "input_track_file", "output_tracks_file");
-
-    // Read image list
-    auto ilfPath = getPath(config, base, "image_list_file", "video_source");
-    QFile ilf(base.filePath(ilfPath));
-    if (!ilf.open(QIODevice::ReadOnly | QIODevice::Text))
-    {
-      // TODO set error
-      return false;
-    }
-
-    while (!ilf.atEnd())
-    {
-      auto const& line = ilf.readLine();
-      if (!line.isEmpty())
-      {
-        // Strip '\n' and convert to full path
-        auto const ll = line.length() - (line.endsWith('\n') ? 1 : 0);
-        this->images.append(base.filePath(QString::fromLocal8Bit(line, ll)));
-      }
-    }
 
     // Read depth map images list
     if (config->has_value("depthmaps_images_file"))
