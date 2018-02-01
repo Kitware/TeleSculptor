@@ -55,6 +55,7 @@
 #include <vital/io/landmark_map_io.h>
 #include <vital/io/metadata_io.h>
 #include <vital/io/track_set_io.h>
+#include <vital/types/metadata_map.h>
 #include <arrows/core/match_matrix.h>
 
 #include <vtksys/SystemTools.hxx>
@@ -307,6 +308,7 @@ public:
   kwiver::vital::config_block_sptr projectConfig;
   kwiver::vital::algo::video_input_sptr videoSource;
   kwiver::vital::timestamp currentVideoTimestamp;
+  kwiver::vital::metadata_map::map_metadata_t videoMetadataMap;
 
   QList<FrameData> frames;
   kwiver::vital::feature_track_set_sptr tracks;
@@ -400,6 +402,12 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
   {
     this->orphanFrames.enqueue(i);
     this->addFrame(kwiver::vital::camera_sptr(), i + 1);
+  }
+
+  // Get the video metadata
+  if (this->videoSource)
+  {
+    videoMetadataMap = this->videoSource->metadata_map()->metadata();
   }
 }
 
@@ -636,9 +644,9 @@ std::string MainWindowPrivate::getFrameName(kwiver::vital::frame_id_t frameId)
 {
   std::string retVal = "";
 
-  if (this->videoSource)
+  if (videoMetadataMap.find(frameId) != videoMetadataMap.end())
   {
-    auto mdVec = this->videoSource->frame_metadata();
+    auto mdVec = videoMetadataMap[frameId];
     for (auto const& md: mdVec)
     {
       if (md->has( kwiver::vital::VITAL_META_IMAGE_FILENAME ) ||
@@ -1040,11 +1048,11 @@ void MainWindow::loadProject(QString const& path)
       {
         try
         {
-            auto const& camera = kwiver::vital::read_krtd_file(
-              kvPath(frameName), kvPath(project.cameraPath));
+          auto const& camera = kwiver::vital::read_krtd_file(
+            kvPath(frameName), kvPath(project.cameraPath));
 
-            // Add camera to scene
-            d->addCamera(camera);
+          // Add camera to scene
+          d->addCamera(camera);
         }
         catch (...)
         {
