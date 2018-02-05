@@ -67,7 +67,7 @@ class MaptkConfImporter < Sketchup::Importer
       key_value = line.split("=")
       key = key_value[0].strip
       value = key_value[1] ? key_value[1].strip : ""
-      
+
       case key
       when IMAGE_LIST_FILE_KW
         image_list_file = value
@@ -80,7 +80,7 @@ class MaptkConfImporter < Sketchup::Importer
 
     # Check to ensure all of the required keywords were found and show a warning message
     # and return nil if they weren't
-    if image_list_file == "" 
+    if image_list_file == ""
       UI.messagebox('Error parsing MAP-Tk conf file: missing image_list_file keyword')
       return nil
     elsif output_ply_file == ""

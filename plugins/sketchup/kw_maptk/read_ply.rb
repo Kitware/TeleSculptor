@@ -56,7 +56,7 @@ class PLYImporter < Sketchup::Importer
     entities = model.entities
     pt_group = entities.add_group
     pt_group.layer = pt_layer
-    
+
     passed_end_header = false
     while (raw_line = file.gets)
       if passed_end_header == true
@@ -70,7 +70,7 @@ class PLYImporter < Sketchup::Importer
         next
       end
     end
-      
+
     return 0
   end
 end
