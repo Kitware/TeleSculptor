@@ -394,23 +394,32 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
                                                             config,
                                                             this->videoSource);
 
-  if (this->videoSource)
+  try
   {
-    this->videoSource->open(videoPath.toStdString());
-  }
+    if (this->videoSource)
+    {
+      this->videoSource->open(videoPath.toStdString());
+    }
 
-  // Add frames for video if needed
-  auto numFrames = this->videoSource->num_frames();
-  for (int i = this->frames.count(); i < numFrames; ++i)
-  {
-    this->orphanFrames.enqueue(i);
-    this->addFrame(kwiver::vital::camera_sptr(), i + 1);
-  }
+    // Add frames for video if needed
+    auto numFrames = this->videoSource->num_frames();
+    for (int i = this->frames.count(); i < numFrames; ++i)
+    {
+      this->orphanFrames.enqueue(i);
+      this->addFrame(kwiver::vital::camera_sptr(), i + 1);
+    }
 
-  // Get the video metadata
-  if (this->videoSource)
+    // Get the video metadata
+    if (this->videoSource)
+    {
+      videoMetadataMap = this->videoSource->metadata_map()->metadata();
+    }
+  }
+  catch (kwiver::vital::file_not_found_exception e)
   {
-    videoMetadataMap = this->videoSource->metadata_map()->metadata();
+    qWarning() << e.what();
+    this->videoSource->close();
+    this->videoSource.reset();
   }
 }
 
@@ -1016,12 +1025,16 @@ void MainWindow::openFiles(QStringList const& paths)
 //-----------------------------------------------------------------------------
 void MainWindow::newProject()
 {
-  auto const filename = QFileDialog::getSaveFileName(
-    this, "Select Project File", QString(), "Project Files (*.proj)");
+  QTE_D();
 
-  if (!filename.isEmpty())
+  auto const dirname = QFileDialog::getExistingDirectory(
+    this, "Select Project Directory");
+
+  if (!dirname.isEmpty())
   {
-    qWarning() << "Saving project to " << filename;
+    d->currProject.reset();
+    d->currProject = std::make_shared<Project>(dirname);
+    d->currProject->write();
   }
 }
 

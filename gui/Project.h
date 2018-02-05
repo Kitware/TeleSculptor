@@ -36,12 +36,17 @@
 #include <QtCore/QMap>
 #include <QtCore/QStringList>
 
+static std::string WORKING_DIR_TAG = "working_directory";
+
 struct Project
 {
   Project();
+  Project(QString dir);
 
   bool read(QString const& path);
+  void write();
 
+  QString workingDir;
   QString cameraPath;
   QMap<int, QString> depthMaps;
 

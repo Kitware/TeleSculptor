@@ -65,6 +65,15 @@ Project::Project()
 }
 
 //-----------------------------------------------------------------------------
+Project::Project(QString dir)
+{
+  projectConfig = kwiver::vital::config_block::empty_config();
+
+  workingDir = dir;
+  projectConfig->set_value(WORKING_DIR_TAG, workingDir.toStdString());
+}
+
+//-----------------------------------------------------------------------------
 bool Project::read(QString const& path)
 {
   auto const& base = QFileInfo(path).absoluteDir();
@@ -78,6 +87,18 @@ bool Project::read(QString const& path)
                                                          "maptk",
                                                          MAPTK_VERSION,
                                                          prefix);
+
+    if (config->has_value(WORKING_DIR_TAG))
+    {
+      this->workingDir =
+        QString::fromStdString(config->get_value<std::string>(WORKING_DIR_TAG));
+    }
+    else
+    {
+      qWarning() << "Config file must have "
+                 << QString::fromStdString(WORKING_DIR_TAG);
+      return false;
+    }
 
     this->cameraPath = getPath(config, base, "output_krtd_dir");
     this->landmarks = getPath(config, base, "output_ply_file");
@@ -114,11 +135,12 @@ bool Project::read(QString const& path)
     if (config->has_value("volume_file"))
     {
       this->volumePath = getPath(config, base, "volume_file");
-      this->videoPath = getPath(config, base, "video_source");
-      if (this->videoPath.isEmpty())
-      {
-        this->videoPath = getPath(config, base, "image_list_file");
-      }
+    }
+
+    // Read video file
+    if (config->has_value("video_source") || config->has_value("image_list_file"))
+    {
+      this->videoPath = getPath(config, base, "video_source", "image_list_file");
     }
 
     projectConfig = config;
@@ -136,4 +158,11 @@ bool Project::read(QString const& path)
     // TODO set error
     return false;
   }
+}
+
+void Project::write()
+{
+  auto filePath = QDir::cleanPath(workingDir + QDir::separator() +
+                                  QFileInfo(workingDir).fileName() + ".conf");
+  kwiver::vital::write_config_file(projectConfig, filePath.toStdString());
 }
