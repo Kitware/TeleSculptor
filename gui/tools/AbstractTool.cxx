@@ -148,13 +148,6 @@ unsigned int AbstractTool::activeFrame() const
 }
 
 //-----------------------------------------------------------------------------
-std::vector<std::string> const& AbstractTool::imagePaths() const
-{
-  QTE_D();
-  return d->data->imagePaths;
-}
-
-//-----------------------------------------------------------------------------
 kwiver::vital::feature_track_set_sptr AbstractTool::tracks() const
 {
   QTE_D();
@@ -190,13 +183,6 @@ void AbstractTool::setActiveFrame(unsigned int frame)
 }
 
 //-----------------------------------------------------------------------------
-void AbstractTool::setImagePaths(std::vector<std::string> const& paths)
-{
-  QTE_D();
-  d->data->imagePaths = paths;
-}
-
-//-----------------------------------------------------------------------------
 void AbstractTool::setTracks(feature_track_set_sptr const& newTracks)
 {
   QTE_D();
@@ -218,6 +204,19 @@ void AbstractTool::setLandmarks(landmark_map_sptr const& newLandmarks)
 }
 
 //-----------------------------------------------------------------------------
+void AbstractTool::setVideoPath(std::string const& path)
+{
+  QTE_D();
+  d->data->videoPath = path;
+}
+
+void AbstractTool::setConfig(config_block_sptr const& config)
+{
+  QTE_D();
+  d->data->config = config;
+}
+
+//-----------------------------------------------------------------------------
 bool AbstractTool::execute(QWidget* window)
 {
   QTE_D();
@@ -232,20 +231,6 @@ bool AbstractTool::isCanceled() const
 {
   QTE_D();
   return d->cancelRequested;
-}
-
-//-----------------------------------------------------------------------------
-bool AbstractTool::hasImagePaths() const
-{
-  QTE_D();
-  foreach (auto const& path, d->data->imagePaths)
-  {
-    if(path != "")
-    {
-      return true;
-    }
-  }
-  return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -267,6 +252,20 @@ bool AbstractTool::hasLandmarks() const
 {
   QTE_D();
   return d->data->landmarks && d->data->landmarks->size();
+}
+
+//-----------------------------------------------------------------------------
+bool AbstractTool::hasVideoSource() const
+{
+  QTE_D();
+  if (d->data->videoPath == "" || !d->data->config)
+  {
+    return false;
+  }
+  else
+  {
+    return true;
+  }
 }
 
 //-----------------------------------------------------------------------------

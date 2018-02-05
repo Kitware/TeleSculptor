@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,29 +28,38 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_PROJECT_H_
-#define MAPTK_PROJECT_H_
+#ifndef CONFIG_HELPER_H_
+#define CONFIG_HELPER_H_
+
+#include <maptk/version.h>
 
 #include <vital/config/config_block_io.h>
 
-#include <QtCore/QMap>
-#include <QtCore/QStringList>
+#include <qtStlUtil.h>
 
-struct Project
+#include <QtGui/QApplication>
+#include <QtCore/QDir>
+
+class ConfigHelper
 {
-  bool read(QString const& path);
+public:
+  //----------------------------------------------------------------------------
+  static kwiver::vital::config_block_sptr readConfig(std::string const& name)
+  {
+    try
+    {
+      using kwiver::vital::read_config_file;
 
-  QStringList images;
-  QString cameraPath;
-  QMap<int, QString> depthMaps;
+      auto const exeDir = QDir(QApplication::applicationDirPath());
+      auto const prefix = stdString(exeDir.absoluteFilePath(".."));
+      return read_config_file(name, "maptk", MAPTK_VERSION, prefix);
+    }
+    catch (...)
+    {
+      return {};
+    }
+  }
 
-  QString tracks;
-  QString landmarks;
-
-  QString volumePath;
-  QString videoPath;
-
-  kwiver::vital::config_block_sptr projectConfig;
 };
 
 #endif
