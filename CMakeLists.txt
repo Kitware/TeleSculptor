@@ -67,6 +67,9 @@ add_subdirectory(tools)
 # this is where the algorithm default configuration files live
 add_subdirectory(config)
 
+# this is where the plugins to 3rd party software live
+add_subdirectory(plugins)
+
 # this is where configuration for example data sets lives
 add_subdirectory(examples)
 
