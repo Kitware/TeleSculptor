@@ -1,0 +1,20 @@
+MAP-Tk Release Notes for changes pending release approval by AFRL
+=================================================================
+
+This file documents release notes for changes made to MAP-Tk which require
+public release approval from AFRL.  After approval, the changes and
+corresponding notes below will be incorporated into a public numbered
+release version, and the content of this file will be reset.
+
+
+Updates since last public release
+---------------------------------
+
+TeleSculptor
+
+ * Video files can now be open directly or via a config file into TeleSculptor
+   for viewing and processing.
+
+
+Fixes since last public release
+-------------------------------
