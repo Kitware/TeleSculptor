@@ -10,6 +10,12 @@ release version, and the content of this file will be reset.
 Updates since last public release
 ---------------------------------
 
+Plugins
+
+ * Moved the Blender and SketchUp plugins out of the scripts directory and
+   into a top-level plugins directory, added a README, and configured these
+   files to be installed.
+
 TeleSculptor
 
  * Video files can now be open directly or via a config file into TeleSculptor
