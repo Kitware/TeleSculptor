@@ -305,7 +305,6 @@ public:
   kwiver::vital::feature_track_set_sptr toolUpdateTracks;
 
   QString videoPath;
-  kwiver::vital::config_block_sptr projectConfig;
   kwiver::vital::algo::video_input_sptr videoSource;
   kwiver::vital::timestamp currentVideoTimestamp;
   kwiver::vital::metadata_map::map_metadata_t videoMetadataMap;
@@ -380,7 +379,10 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
                                        QString const& videoPath)
 {
   // Save the configuration so independent video sources can be created for tools
-  this->projectConfig = config;
+  if (this->currProject)
+  {
+    this->currProject->projectConfig = config;
+  }
   this->videoPath = videoPath;
 
   // Close the existing video source if it exists
@@ -1034,6 +1036,14 @@ void MainWindow::newProject()
   {
     d->currProject.reset();
     d->currProject = std::make_shared<Project>(dirname);
+
+    if (d->videoSource)
+    {
+      d->currProject->videoPath = d->videoPath;
+      auto config = ConfigHelper::readConfig("gui_video_reader.conf");
+      d->currProject->projectConfig->merge_config(config);
+    }
+
     d->currProject->write();
   }
 }
@@ -1136,7 +1146,17 @@ void MainWindow::loadVideo(QString const& path)
   QTE_D();
 
   auto config = ConfigHelper::readConfig("gui_video_reader.conf");
-  d->addVideoSource(config, path);
+  if (d->currProject)
+  {
+    d->currProject->projectConfig->merge_config(config);
+    d->currProject->videoPath = path;
+    d->currProject->write();
+    d->addVideoSource(d->currProject->projectConfig, path);
+  }
+  else
+  {
+    d->addVideoSource(config, path);
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -1607,7 +1627,7 @@ void MainWindow::executeTool(QObject* object)
     tool->setCameras(d->cameraMap());
     tool->setLandmarks(d->landmarks);
     tool->setVideoPath(d->videoPath.toStdString());
-    tool->setConfig(d->projectConfig);
+    tool->setConfig(d->currProject->projectConfig);
 
     if (!tool->execute())
     {

@@ -138,9 +138,12 @@ bool Project::read(QString const& path)
     }
 
     // Read video file
-    if (config->has_value("video_source") || config->has_value("image_list_file"))
+    if (config->has_value(VIDEO_SOURCE_TAG) ||
+        config->has_value("image_list_file"))
     {
-      this->videoPath = getPath(config, base, "video_source", "image_list_file");
+      this->videoPath = getPath(config, base,
+                                VIDEO_SOURCE_TAG.c_str(),
+                                "image_list_file");
     }
 
     projectConfig = config;
@@ -162,6 +165,11 @@ bool Project::read(QString const& path)
 
 void Project::write()
 {
+  if (!videoPath.isEmpty())
+  {
+    projectConfig->set_value(VIDEO_SOURCE_TAG, videoPath.toStdString());
+  }
+
   auto filePath = QDir::cleanPath(workingDir + QDir::separator() +
                                   QFileInfo(workingDir).fileName() + ".conf");
   kwiver::vital::write_config_file(projectConfig, filePath.toStdString());

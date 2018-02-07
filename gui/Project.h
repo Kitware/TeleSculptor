@@ -37,6 +37,7 @@
 #include <QtCore/QStringList>
 
 static std::string WORKING_DIR_TAG = "working_directory";
+static std::string VIDEO_SOURCE_TAG = "video_source";
 
 struct Project
 {
