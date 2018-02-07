@@ -59,6 +59,21 @@ QString getPath(kwiver::vital::config_block_sptr const& config,
 }
 
 //-----------------------------------------------------------------------------
+// Returns the relative path if the filepath is contained in the directory and
+// returns the absolute path if not.
+QString getContingentRelativePath(QDir dir, QString filepath)
+{
+  if (filepath.startsWith(dir.absolutePath()))
+  {
+    return dir.relativeFilePath(filepath);
+  }
+  else
+  {
+    return filepath;
+  }
+}
+
+//-----------------------------------------------------------------------------
 Project::Project()
 {
   projectConfig = kwiver::vital::config_block::empty_config();
@@ -70,7 +85,6 @@ Project::Project(QString dir)
   projectConfig = kwiver::vital::config_block::empty_config();
 
   workingDir = dir;
-  projectConfig->set_value(WORKING_DIR_TAG, workingDir.toStdString());
 }
 
 //-----------------------------------------------------------------------------
@@ -95,9 +109,7 @@ bool Project::read(QString const& path)
     }
     else
     {
-      qWarning() << "Config file must have "
-                 << QString::fromStdString(WORKING_DIR_TAG);
-      return false;
+      this->workingDir = base;
     }
 
     this->cameraPath = getPath(config, base, "output_krtd_dir");
@@ -167,10 +179,13 @@ void Project::write()
 {
   if (!videoPath.isEmpty())
   {
-    projectConfig->set_value(VIDEO_SOURCE_TAG, videoPath.toStdString());
+    projectConfig->set_value(VIDEO_SOURCE_TAG,
+      getContingentRelativePath(workingDir, videoPath).toStdString());
   }
 
-  auto filePath = QDir::cleanPath(workingDir + QDir::separator() +
-                                  QFileInfo(workingDir).fileName() + ".conf");
-  kwiver::vital::write_config_file(projectConfig, filePath.toStdString());
+  if (projectConfig->available_values().size() > 0)
+  {
+    auto filePath = workingDir.absoluteFilePath(workingDir.dirName() + ".conf");
+    kwiver::vital::write_config_file(projectConfig, filePath.toStdString());
+  }
 }

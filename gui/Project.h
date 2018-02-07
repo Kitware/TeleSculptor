@@ -33,6 +33,7 @@
 
 #include <vital/config/config_block_io.h>
 
+#include <QtCore/QDir>
 #include <QtCore/QMap>
 #include <QtCore/QStringList>
 
@@ -47,7 +48,7 @@ struct Project
   bool read(QString const& path);
   void write();
 
-  QString workingDir;
+  QDir workingDir;
   QString cameraPath;
   QMap<int, QString> depthMaps;
 
