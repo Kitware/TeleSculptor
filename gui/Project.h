@@ -33,14 +33,22 @@
 
 #include <vital/config/config_block_io.h>
 
+#include <QtCore/QDir>
 #include <QtCore/QMap>
 #include <QtCore/QStringList>
 
+static std::string WORKING_DIR_TAG = "working_directory";
+static std::string VIDEO_SOURCE_TAG = "video_source";
+
 struct Project
 {
-  bool read(QString const& path);
+  Project();
+  Project(QString dir);
 
-  QStringList images;
+  bool read(QString const& path);
+  void write();
+
+  QDir workingDir;
   QString cameraPath;
   QMap<int, QString> depthMaps;
 

@@ -42,6 +42,7 @@
      <addaction name="actionExportMesh"/>
      <addaction name="actionExportColoredMesh"/>
     </widget>
+    <addaction name="actionNewProject"/>
     <addaction name="actionOpen"/>
     <addaction name="menuExport"/>
     <addaction name="separator"/>
@@ -168,6 +169,14 @@
    </attribute>
    <widget class="DepthMapView" name="depthMapView"/>
   </widget>
+  <action name="actionNewProject">
+   <property name="text">
+    <string>&amp;New Project</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
+  </action>
   <action name="actionQuit">
    <property name="icon">
     <iconset resource="icons/icons.qrc">

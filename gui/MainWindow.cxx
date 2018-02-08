@@ -305,7 +305,6 @@ public:
   kwiver::vital::feature_track_set_sptr toolUpdateTracks;
 
   QString videoPath;
-  kwiver::vital::config_block_sptr projectConfig;
   kwiver::vital::algo::video_input_sptr videoSource;
   kwiver::vital::timestamp currentVideoTimestamp;
   kwiver::vital::metadata_map::map_metadata_t videoMetadataMap;
@@ -322,6 +321,9 @@ public:
   vtkNew<vtkXMLImageDataReader> depthReader;
   vtkNew<vtkMaptkImageUnprojectDepth> depthFilter;
   vtkNew<vtkMaptkImageDataGeometryFilter> depthGeometryFilter;
+
+  // Current project
+  std::shared_ptr<Project> currProject;
 };
 
 QTE_IMPLEMENT_D_FUNC(MainWindow)
@@ -377,7 +379,10 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
                                        QString const& videoPath)
 {
   // Save the configuration so independent video sources can be created for tools
-  this->projectConfig = config;
+  if (this->currProject)
+  {
+    this->currProject->projectConfig = config;
+  }
   this->videoPath = videoPath;
 
   // Close the existing video source if it exists
@@ -391,23 +396,32 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
                                                             config,
                                                             this->videoSource);
 
-  if (this->videoSource)
+  try
   {
-    this->videoSource->open(videoPath.toStdString());
-  }
+    if (this->videoSource)
+    {
+      this->videoSource->open(videoPath.toStdString());
+    }
 
-  // Add frames for video if needed
-  auto numFrames = this->videoSource->num_frames();
-  for (int i = this->frames.count(); i < numFrames; ++i)
-  {
-    this->orphanFrames.enqueue(i);
-    this->addFrame(kwiver::vital::camera_sptr(), i + 1);
-  }
+    // Add frames for video if needed
+    auto numFrames = this->videoSource->num_frames();
+    for (int i = this->frames.count(); i < numFrames; ++i)
+    {
+      this->orphanFrames.enqueue(i);
+      this->addFrame(kwiver::vital::camera_sptr(), i + 1);
+    }
 
-  // Get the video metadata
-  if (this->videoSource)
+    // Get the video metadata
+    if (this->videoSource)
+    {
+      videoMetadataMap = this->videoSource->metadata_map()->metadata();
+    }
+  }
+  catch (kwiver::vital::file_not_found_exception e)
   {
-    videoMetadataMap = this->videoSource->metadata_map()->metadata();
+    qWarning() << e.what();
+    this->videoSource->close();
+    this->videoSource.reset();
   }
 }
 
@@ -837,6 +851,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.actionOpen, SIGNAL(triggered()), this, SLOT(openFile()));
   connect(d->UI.actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
 
+  connect(d->UI.actionNewProject, SIGNAL(triggered()), this, SLOT(newProject()));
+
   connect(d->UI.actionShowWorldAxes, SIGNAL(toggled(bool)),
           d->UI.worldView, SLOT(setAxesVisible(bool)));
 
@@ -1009,37 +1025,62 @@ void MainWindow::openFiles(QStringList const& paths)
 }
 
 //-----------------------------------------------------------------------------
+void MainWindow::newProject()
+{
+  QTE_D();
+
+  auto const dirname = QFileDialog::getExistingDirectory(
+    this, "Select Project Directory");
+
+  if (!dirname.isEmpty())
+  {
+    d->currProject.reset();
+    d->currProject = std::make_shared<Project>(dirname);
+
+    if (d->videoSource)
+    {
+      d->currProject->videoPath = d->videoPath;
+      auto config = ConfigHelper::readConfig("gui_video_reader.conf");
+      d->currProject->projectConfig->merge_config(config);
+    }
+
+    d->currProject->write();
+  }
+}
+
+//-----------------------------------------------------------------------------
 void MainWindow::loadProject(QString const& path)
 {
   QTE_D();
 
-  Project project;
-  if (!project.read(path))
+  d->currProject = std::make_shared<Project>();
+  if (!d->currProject->read(path))
   {
     qWarning() << "Failed to load project from" << path; // TODO dialog?
+    d->currProject.reset();
     return;
   }
 
   // Get the video source
-  if (project.projectConfig->has_value("video_reader:type"))
+  if (d->currProject->projectConfig->has_value("video_reader:type"))
   {
-    d->addVideoSource(project.projectConfig, project.videoPath);
+    d->addVideoSource(d->currProject->projectConfig, d->currProject->videoPath);
   }
 
   // Load tracks
-  if (!project.tracks.isEmpty())
+  if (!d->currProject->tracks.isEmpty())
   {
-    this->loadTracks(project.tracks);
+    this->loadTracks(d->currProject->tracks);
   }
 
   // Load landmarks
-  if (!project.landmarks.isEmpty())
+  if (!d->currProject->landmarks.isEmpty())
   {
-    this->loadLandmarks(project.landmarks);
+    this->loadLandmarks(d->currProject->landmarks);
   }
 
   // Load cameras and/or images
-  if (!project.cameraPath.isEmpty())
+  if (!d->currProject->cameraPath.isEmpty())
   {
     foreach (auto const& frame, d->frames)
     {
@@ -1049,7 +1090,7 @@ void MainWindow::loadProject(QString const& path)
         try
         {
           auto const& camera = kwiver::vital::read_krtd_file(
-            kvPath(frameName), kvPath(project.cameraPath));
+            kvPath(frameName), kvPath(d->currProject->cameraPath));
 
           // Add camera to scene
           d->addCamera(camera);
@@ -1057,14 +1098,14 @@ void MainWindow::loadProject(QString const& path)
         catch (...)
         {
           qWarning() << "failed to read camera file " << frameName
-                     << " from " << project.cameraPath;
+                     << " from " << d->currProject->cameraPath;
         }
       }
     }
   }
 
   // Associate depth maps with cameras
-  foreach (auto dm, qtEnumerate(project.depthMaps))
+  foreach (auto dm, qtEnumerate(d->currProject->depthMaps))
   {
     auto const i = dm.key();
     if (i >= 0 && i < d->frames.count())
@@ -1083,11 +1124,11 @@ void MainWindow::loadProject(QString const& path)
 #endif
 
   //Load volume
-  if (!project.volumePath.isEmpty())
+  if (!d->currProject->volumePath.isEmpty())
   {
 
-    d->UI.worldView->loadVolume(project.volumePath,d->frames.size(),
-                                project.cameraPath, project.videoPath);
+    d->UI.worldView->loadVolume(d->currProject->volumePath, d->frames.size(),
+                                d->currProject->cameraPath, d->currProject->videoPath);
   }
 
   d->UI.worldView->resetView();
@@ -1105,7 +1146,17 @@ void MainWindow::loadVideo(QString const& path)
   QTE_D();
 
   auto config = ConfigHelper::readConfig("gui_video_reader.conf");
-  d->addVideoSource(config, path);
+  if (d->currProject)
+  {
+    d->currProject->projectConfig->merge_config(config);
+    d->currProject->videoPath = path;
+    d->currProject->write();
+    d->addVideoSource(d->currProject->projectConfig, path);
+  }
+  else
+  {
+    d->addVideoSource(config, path);
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -1576,7 +1627,7 @@ void MainWindow::executeTool(QObject* object)
     tool->setCameras(d->cameraMap());
     tool->setLandmarks(d->landmarks);
     tool->setVideoPath(d->videoPath.toStdString());
-    tool->setConfig(d->projectConfig);
+    tool->setConfig(d->currProject->projectConfig);
 
     if (!tool->execute())
     {

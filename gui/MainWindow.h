@@ -54,6 +54,8 @@ public slots:
   void openFile(QString const& path);
   void openFiles(QStringList const& paths);
 
+  void newProject();
+
   void loadProject(QString const& path);
   void loadImage(QString const& path);
   void loadVideo(QString const& path);

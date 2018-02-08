@@ -59,6 +59,35 @@ QString getPath(kwiver::vital::config_block_sptr const& config,
 }
 
 //-----------------------------------------------------------------------------
+// Returns the relative path if the filepath is contained in the directory and
+// returns the absolute path if not.
+QString getContingentRelativePath(QDir dir, QString filepath)
+{
+  if (filepath.startsWith(dir.absolutePath()))
+  {
+    return dir.relativeFilePath(filepath);
+  }
+  else
+  {
+    return filepath;
+  }
+}
+
+//-----------------------------------------------------------------------------
+Project::Project()
+{
+  projectConfig = kwiver::vital::config_block::empty_config();
+}
+
+//-----------------------------------------------------------------------------
+Project::Project(QString dir)
+{
+  projectConfig = kwiver::vital::config_block::empty_config();
+
+  workingDir = dir;
+}
+
+//-----------------------------------------------------------------------------
 bool Project::read(QString const& path)
 {
   auto const& base = QFileInfo(path).absoluteDir();
@@ -73,37 +102,28 @@ bool Project::read(QString const& path)
                                                          MAPTK_VERSION,
                                                          prefix);
 
-    this->cameraPath = getPath(config, base, "output_krtd_dir");
-    this->landmarks = getPath(config, base, "output_ply_file");
+    if (config->has_value(WORKING_DIR_TAG))
+    {
+      this->workingDir =
+        QString::fromStdString(config->get_value<std::string>(WORKING_DIR_TAG));
+    }
+    else
+    {
+      this->workingDir = base;
+    }
+
+    this->cameraPath = getPath(config, this->workingDir, "output_krtd_dir");
+    this->landmarks = getPath(config, this->workingDir, "output_ply_file");
     this->tracks =
-      getPath(config, base, "input_track_file", "output_tracks_file");
-
-    // Read image list
-    auto ilfPath = getPath(config, base, "image_list_file", "video_source");
-    QFile ilf(base.filePath(ilfPath));
-    if (!ilf.open(QIODevice::ReadOnly | QIODevice::Text))
-    {
-      // TODO set error
-      return false;
-    }
-
-    while (!ilf.atEnd())
-    {
-      auto const& line = ilf.readLine();
-      if (!line.isEmpty())
-      {
-        // Strip '\n' and convert to full path
-        auto const ll = line.length() - (line.endsWith('\n') ? 1 : 0);
-        this->images.append(base.filePath(QString::fromLocal8Bit(line, ll)));
-      }
-    }
+      getPath(config, this->workingDir, "input_track_file", "output_tracks_file");
 
     // Read depth map images list
     if (config->has_value("depthmaps_images_file"))
     {
       auto const& dmifPath =
         config->get_value<std::string>("depthmaps_images_file");
-      auto const& dmifAbsolutePath = base.filePath(qtString(dmifPath));
+      auto const& dmifAbsolutePath =
+        this->workingDir.filePath(qtString(dmifPath));
       auto const& dmifBase = QFileInfo(dmifAbsolutePath).absoluteDir();
       QFile dmif(dmifAbsolutePath);
       if (!dmif.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -127,12 +147,16 @@ bool Project::read(QString const& path)
     //Read Volume file
     if (config->has_value("volume_file"))
     {
-      this->volumePath = getPath(config, base, "volume_file");
-      this->videoPath = getPath(config, base, "video_source");
-      if (this->videoPath.isEmpty())
-      {
-        this->videoPath = getPath(config, base, "image_list_file");
-      }
+      this->volumePath = getPath(config, this->workingDir, "volume_file");
+    }
+
+    // Read video file
+    if (config->has_value(VIDEO_SOURCE_TAG) ||
+        config->has_value("image_list_file"))
+    {
+      this->videoPath = getPath(config, this->workingDir,
+                                VIDEO_SOURCE_TAG.c_str(),
+                                "image_list_file");
     }
 
     projectConfig = config;
@@ -149,5 +173,20 @@ bool Project::read(QString const& path)
   {
     // TODO set error
     return false;
+  }
+}
+
+void Project::write()
+{
+  if (!videoPath.isEmpty())
+  {
+    projectConfig->set_value(VIDEO_SOURCE_TAG,
+      getContingentRelativePath(workingDir, videoPath).toStdString());
+  }
+
+  if (projectConfig->available_values().size() > 0)
+  {
+    auto filePath = workingDir.absoluteFilePath(workingDir.dirName() + ".conf");
+    kwiver::vital::write_config_file(projectConfig, filePath.toStdString());
   }
 }
