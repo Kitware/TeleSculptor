@@ -45,8 +45,8 @@ class MatchphotoMaptkImporter < Sketchup::Importer
     @_krtd_prefix = nil
     @_image_fps = Array.new
     @_krtd_fps = Array.new
-  end                     
-  
+  end
+
   def description
     return "Read in a list of image filepaths (*.txt)"
   end
@@ -194,21 +194,20 @@ class MatchphotoMaptkImporter < Sketchup::Importer
   def guess_krtd_location(s)
     return File.join(File.dirname(s), swap_img_ext_for_krtd(File.basename(s)))
   end
-  
+
   def swap_img_ext_for_krtd(s)
     file_name = File.basename(s)
     img_ext_to_swap = File.extname(file_name)
     bname =  file_name.split(img_ext_to_swap)[0]
     return  "#{bname}.krtd"
   end
-  
+
   def swap_krtd_ext_for(s, img_ext)
     # have to make sure there is a dot in the specified extension
     img_ext = img_ext[0] == "." ? img_ext : "." + img_ext
     return s.split(".krtd")[0] + img_ext
   end
-    
+
 end
 
 Sketchup.register_importer(MatchphotoMaptkImporter.new)
-      

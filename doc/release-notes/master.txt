@@ -41,8 +41,6 @@ TeleSculptor
    versions that had zero-based indexing are detected and frame numbers are
    shifted by one.
 
- * Video files can now be open directly or via a config file into TeleSculptor
-   for viewing and processing.
 
 Fixes since v0.10.0
 ------------------
