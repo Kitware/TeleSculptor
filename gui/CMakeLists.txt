@@ -249,6 +249,11 @@ if (MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
   list(APPEND FIXUP_DIRS "${qtExtensions_DIR}/${BINARY_DIR}")
 
   list(APPEND FIXUP_DIRS "${KWIVER_LIBRARY_DIR}/${BINARY_DIR}")
+  # Windows also has libraries (DLLs) in the bin directory
+  if(WIN32)
+    list(APPEND FIXUP_DIRS "${KWIVER_DIR}/bin/${BINARY_DIR}")
+  endif()
+
   if(DEFINED fletch_ROOT)
     if(WIN32)
       list(APPEND FIXUP_DIRS "${fletch_ROOT}/bin")
