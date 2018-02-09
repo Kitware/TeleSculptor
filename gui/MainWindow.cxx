@@ -1034,6 +1034,13 @@ void MainWindow::newProject()
 
   if (!dirname.isEmpty())
   {
+    // Set the current working directory to the project directory
+    if (!QDir::setCurrent(dirname))
+    {
+      qWarning() << "Unable to set current working directory to "
+                 << "project directory: " << dirname;
+    }
+
     d->currProject.reset();
     d->currProject = std::make_shared<Project>(dirname);
 
@@ -1059,6 +1066,13 @@ void MainWindow::loadProject(QString const& path)
     qWarning() << "Failed to load project from" << path; // TODO dialog?
     d->currProject.reset();
     return;
+  }
+
+  // Set the current working directory to the project directory
+  if (!QDir::setCurrent(d->currProject->workingDir.absolutePath()))
+  {
+    qWarning() << "Unable to set current working directory to "
+      << "project directory: " << d->currProject->workingDir.absolutePath();
   }
 
   // Get the video source
