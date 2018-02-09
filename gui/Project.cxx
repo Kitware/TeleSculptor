@@ -32,6 +32,8 @@
 
 #include <maptk/version.h>
 
+#include <kwiversys/SystemTools.hxx>
+
 #include <qtStlUtil.h>
 
 #include <QtGui/QApplication>
@@ -63,7 +65,8 @@ QString getPath(kwiver::vital::config_block_sptr const& config,
 // returns the absolute path if not.
 QString getContingentRelativePath(QDir dir, QString filepath)
 {
-  if (filepath.startsWith(dir.absolutePath()))
+  if (kwiversys::SystemTools::IsSubDirectory(filepath.toStdString(),
+                                             dir.absolutePath().toStdString()))
   {
     return dir.relativeFilePath(filepath);
   }
