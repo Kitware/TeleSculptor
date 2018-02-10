@@ -49,6 +49,7 @@
 #include "vtkMaptkCamera.h"
 
 #include <maptk/version.h>
+#include <maptk/local_geo_cs.h>
 
 #include <vital/algo/video_input.h>
 #include <vital/io/camera_io.h>
@@ -403,18 +404,44 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
       this->videoSource->open(videoPath.toStdString());
     }
 
-    // Add frames for video if needed
-    auto numFrames = this->videoSource->num_frames();
-    for (int i = this->frames.count(); i < numFrames; ++i)
-    {
-      this->orphanFrames.enqueue(i);
-      this->addFrame(kwiver::vital::camera_sptr(), i + 1);
-    }
-
     // Get the video metadata
     if (this->videoSource)
     {
       videoMetadataMap = this->videoSource->metadata_map()->metadata();
+    }
+
+    // If we have metadata try and initialize cameras
+    std::map<kwiver::vital::frame_id_t, kwiver::vital::camera_sptr> camMap;
+    if (videoMetadataMap.size() > 0)
+    {
+      std::map<kwiver::vital::frame_id_t, kwiver::vital::metadata_sptr> mdMap;
+      for (auto const& mdIter: this->videoMetadataMap)
+      {
+        // TODO: just using first element of metadata vector for now
+        mdMap[mdIter.first] = mdIter.second[0];
+      }
+
+      auto baseCamera = kwiver::vital::simple_camera();
+      auto localGeoCs = kwiver::maptk::local_geo_cs();
+      camMap = kwiver::maptk::initialize_cameras_with_metadata(
+          mdMap, baseCamera, localGeoCs);
+    }
+
+    // Add frames for video if needed
+    auto numFrames = this->videoSource->num_frames();
+    for (int i = this->frames.count(); i < numFrames; ++i)
+    {
+      // frames start at 1, list index starts at 0
+      auto frameIdx = i + 1;
+      if (camMap.find(frameIdx) != camMap.end())
+      {
+        this->addFrame(camMap[frameIdx], frameIdx);
+      }
+      else
+      {
+        this->orphanFrames.enqueue(i);
+        this->addFrame(kwiver::vital::camera_sptr(), frameIdx);
+      }
     }
   }
   catch (kwiver::vital::file_not_found_exception e)
