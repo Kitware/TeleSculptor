@@ -75,6 +75,7 @@ set(gui_moc_headers
   tools/AbstractTool.h
   tools/BundleAdjustTool.h
   tools/CanonicalTransformTool.h
+  tools/ComputeDepthTool.h
   tools/InitCamerasLandmarksTool.h
   tools/NeckerReversalTool.h
   tools/TrackFilterTool.h
@@ -114,6 +115,7 @@ set(gui_sources
   tools/AbstractTool.cxx
   tools/BundleAdjustTool.cxx
   tools/CanonicalTransformTool.cxx
+  tools/ComputeDepthTool.cxx
   tools/InitCamerasLandmarksTool.cxx
   tools/NeckerReversalTool.cxx
   tools/MeshColoration.cxx

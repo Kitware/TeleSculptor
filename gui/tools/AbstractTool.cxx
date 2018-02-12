@@ -119,6 +119,15 @@ void ToolData::copyLandmarks(landmark_map_sptr const& newLandmarks)
 }
 
 //-----------------------------------------------------------------------------
+void ToolData::copyDepth(kwiver::vital::image_container_sptr const& newDepth)
+{
+  if (newDepth)
+  {
+    this->active_depth = newDepth;
+  }
+}
+
+//-----------------------------------------------------------------------------
 AbstractTool::AbstractTool(QObject* parent)
   : QAction(parent), d_ptr(new AbstractToolPrivate(this))
 {
@@ -273,6 +282,13 @@ void AbstractTool::updateTracks(feature_track_set_sptr const& newTracks)
 {
   QTE_D();
   d->data->tracks = newTracks;
+}
+
+//-----------------------------------------------------------------------------
+void AbstractTool::updateDepth(kwiver::vital::image_container_sptr const& newDepth)
+{
+  QTE_D();
+  d->data->active_depth = newDepth;
 }
 
 //-----------------------------------------------------------------------------

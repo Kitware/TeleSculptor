@@ -35,6 +35,7 @@
 #include <vital/types/camera_map.h>
 #include <vital/types/landmark_map.h>
 #include <vital/types/feature_track_set.h>
+#include <vital/types/image_container.h>
 
 #include <qtGlobal.h>
 
@@ -50,6 +51,7 @@ public:
   typedef kwiver::vital::camera_map_sptr camera_map_sptr;
   typedef kwiver::vital::landmark_map_sptr landmark_map_sptr;
   typedef kwiver::vital::config_block_sptr config_block_sptr;
+  typedef kwiver::vital::image_container_sptr image_container_sptr;
 
   /// Deep copy the feature tracks into this data class
   void copyTracks(feature_track_set_sptr const&);
@@ -60,9 +62,13 @@ public:
   /// Deep copy the landmarks into this data class
   void copyLandmarks(landmark_map_sptr const&);
 
+  /// copy a depth image into this data class
+  void copyDepth(kwiver::vital::image_container_sptr const&);
+
   unsigned int activeFrame;
   std::string videoPath;
   feature_track_set_sptr tracks;
+  image_container_sptr active_depth;
   camera_map_sptr cameras;
   landmark_map_sptr landmarks;
   config_block_sptr config;
@@ -86,6 +92,7 @@ public:
     Cameras = 0x2,
     Landmarks = 0x4,
     ActiveFrame = 0x8,
+    Depth = 0x10
   };
   Q_DECLARE_FLAGS(Outputs, Output)
 
@@ -243,6 +250,9 @@ protected:
   /// This sets the cameras that are produced by the tool as output. Unlike
   /// setCameras, this does not make a deep copy of the provided cameras.
   void updateCameras(camera_map_sptr const&);
+
+  /// Set the depth map produced by the tool.
+  void updateDepth(kwiver::vital::image_container_sptr const& newDepth);
 
   /// Set the landmarks produced by the tool.
   ///
