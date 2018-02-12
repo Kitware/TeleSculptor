@@ -81,8 +81,10 @@ public:
    * \param metadata    The metadata packet to update the camera with
    * \param cam         The camera to be updated.
    * \param rot_offset  A rotation offset to apply to metadata yaw/pitch/roll data
+   *
+   * \return            True if metadata was available to set camera, false otherwise
    */
-  void update_camera(vital::metadata const& md,
+  bool update_camera(vital::metadata const& md,
                      vital::simple_camera& cam,
                      vital::rotation_d const& rot_offset = vital::rotation_d()) const;
 

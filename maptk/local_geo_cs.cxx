@@ -86,12 +86,14 @@ local_geo_cs
 
 
 /// Use the pose data provided by metadata to update camera pose
-void
+bool
 local_geo_cs
 ::update_camera(vital::metadata const& md,
                 vital::simple_camera& cam,
                 vital::rotation_d const& rot_offset) const
 {
+  bool camera_modified = false;
+
   if( md.has( vital::VITAL_META_SENSOR_YAW_ANGLE) &&
       md.has( vital::VITAL_META_SENSOR_PITCH_ANGLE) &&
       md.has( vital::VITAL_META_SENSOR_ROLL_ANGLE) )
@@ -104,6 +106,7 @@ local_geo_cs
     cam.set_rotation(rot_offset * rotation_d(yaw * deg2rad,
                                              pitch * deg2rad,
                                              roll * deg2rad));
+    camera_modified = true;
   }
 
   if( md.has( vital::VITAL_META_SENSOR_LOCATION) &&
@@ -117,7 +120,9 @@ local_geo_cs
     vector_2d loc = gloc.location(geo_origin_.crs());
     loc -= geo_origin_.location();
     cam.set_center(vector_3d(loc.x(), loc.y(), alt - origin_alt_));
+    camera_modified = true;
   }
+  return camera_modified;
 }
 
 
@@ -218,9 +223,11 @@ initialize_cameras_with_metadata(std::map<vital::frame_id_t,
     {
       continue;
     }
-    lgcs.update_camera(*md, active_cam, rot_offset);
-    mean += active_cam.center();
-    cam_map[p.first] = camera_sptr(new simple_camera(active_cam));
+    if ( lgcs.update_camera(*md, active_cam, rot_offset) )
+    {
+      mean += active_cam.center();
+      cam_map[p.first] = camera_sptr(new simple_camera(active_cam));
+    }
   }
 
   if( update_local_origin )
