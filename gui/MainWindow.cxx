@@ -721,7 +721,8 @@ void MainWindowPrivate::loadImage(FrameData frame)
   // TODO: check if seek vs next_frame is needed
   if (frame.id != this->currentVideoTimestamp.get_frame())
   {
-    if (!videoSource->seek_frame(this->currentVideoTimestamp, frame.id))
+    if (!this->videoSource ||
+        !videoSource->seek_frame(this->currentVideoTimestamp, frame.id))
     {
       this->loadEmptyImage(frame.camera);
     }
