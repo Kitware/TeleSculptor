@@ -89,8 +89,10 @@ bool CanonicalTransformTool::execute(QWidget* window)
     return false;
   }
 
-  // Load configuration
+  // Merge project config with default config file
   auto const config = ConfigHelper::readConfig("gui_align.conf");
+  this->data()->config->merge_config(config);
+
 
   // Check configuration
   if (!config)
@@ -101,7 +103,8 @@ bool CanonicalTransformTool::execute(QWidget* window)
     return false;
   }
 
-  if (!estimate_canonical_transform::check_nested_algo_configuration(BLOCK, config))
+  if (!estimate_canonical_transform::check_nested_algo_configuration(
+    BLOCK, this->data()->config))
   {
     QMessageBox::critical(
       window, "Configuration error",
@@ -110,7 +113,8 @@ bool CanonicalTransformTool::execute(QWidget* window)
   }
 
   // Create algorithm from configuration
-  estimate_canonical_transform::set_nested_algo_configuration(BLOCK, config, d->algorithm);
+  estimate_canonical_transform::set_nested_algo_configuration(
+    BLOCK, this->data()->config, d->algorithm);
 
   return AbstractTool::execute(window);
 }

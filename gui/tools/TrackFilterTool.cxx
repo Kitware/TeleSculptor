@@ -85,8 +85,9 @@ bool TrackFilterTool::execute(QWidget* window)
     return false;
   }
 
-  // Load configuration
+  // Merge project config with default config file
   auto const config = ConfigHelper::readConfig("gui_filter_tracks.conf");
+  this->data()->config->merge_config(config);
 
   // Check configuration
   if (!config)
@@ -97,7 +98,7 @@ bool TrackFilterTool::execute(QWidget* window)
     return false;
   }
 
-  if (!filter_tracks::check_nested_algo_configuration(BLOCK, config))
+  if (!filter_tracks::check_nested_algo_configuration(BLOCK, this->data()->config))
   {
     QMessageBox::critical(
       window, "Configuration error",
@@ -106,7 +107,7 @@ bool TrackFilterTool::execute(QWidget* window)
   }
 
   // Create algorithm from configuration
-  filter_tracks::set_nested_algo_configuration(BLOCK, config, d->algorithm);
+  filter_tracks::set_nested_algo_configuration(BLOCK, this->data()->config, d->algorithm);
 
   return AbstractTool::execute(window);
 }

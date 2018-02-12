@@ -210,7 +210,7 @@ void AbstractTool::setVideoPath(std::string const& path)
   d->data->videoPath = path;
 }
 
-void AbstractTool::setConfig(config_block_sptr const& config)
+void AbstractTool::setConfig(config_block_sptr& config)
 {
   QTE_D();
   d->data->config = config;

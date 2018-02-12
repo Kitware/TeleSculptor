@@ -104,8 +104,9 @@ bool TrackFeaturesTool::execute(QWidget* window)
     return false;
   }
 
-  // Load configuration
+  // Merge project config with default config file
   auto const config = ConfigHelper::readConfig("gui_track_features.conf");
+  this->data()->config->merge_config(config);
 
   // Check configuration
   if (!config)
@@ -116,8 +117,8 @@ bool TrackFeaturesTool::execute(QWidget* window)
     return false;
   }
 
-  if (!convert_image::check_nested_algo_configuration(BLOCK_CI, config) ||
-      !track_features::check_nested_algo_configuration(BLOCK_TF, config) ||
+  if (!convert_image::check_nested_algo_configuration(BLOCK_CI, this->data()->config) ||
+      !track_features::check_nested_algo_configuration(BLOCK_TF, this->data()->config) ||
       !video_input::check_nested_algo_configuration(BLOCK_VR, this->data()->config))
 
   {
@@ -128,8 +129,8 @@ bool TrackFeaturesTool::execute(QWidget* window)
   }
 
   // Create algorithm from configuration
-  convert_image::set_nested_algo_configuration(BLOCK_CI, config, d->image_converter);
-  track_features::set_nested_algo_configuration(BLOCK_TF, config, d->feature_tracker);
+  convert_image::set_nested_algo_configuration(BLOCK_CI, this->data()->config, d->image_converter);
+  track_features::set_nested_algo_configuration(BLOCK_TF, this->data()->config, d->feature_tracker);
   video_input::set_nested_algo_configuration(BLOCK_VR, this->data()->config, d->video_reader);
 
   return AbstractTool::execute(window);
