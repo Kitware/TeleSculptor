@@ -182,7 +182,7 @@ write_local_geo_cs_to_file(local_geo_cs const& lgcs,
 /// Use a sequence of metadata objects to initialize a sequence of cameras
 std::map<vital::frame_id_t, vital::camera_sptr>
 initialize_cameras_with_metadata(std::map<vital::frame_id_t,
-                                          vital::metadata_sptr> const& md_map,
+                                 vital::metadata_sptr> const& md_map,
                                  vital::simple_camera const& base_camera,
                                  local_geo_cs& lgcs,
                                  vital::rotation_d const& rot_offset)

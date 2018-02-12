@@ -397,6 +397,13 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
                                                             config,
                                                             this->videoSource);
 
+  kwiver::vital::simple_camera_intrinsics K_def;
+  kwiver::vital::camera_intrinsics_sptr K = std::make_shared<kwiver::vital::simple_camera_intrinsics>(
+    config->get_value<double>("initializer:core:base_camera:focal_length",1.0),
+    config->get_value<kwiver::vital::vector_2d>("initializer:core:base_camera:principal_point", K_def.principal_point()),
+    config->get_value<double>("initializer:core:base_camera:aspect_ratio", K_def.aspect_ratio()),
+    config->get_value<double>("initializer:core:base_camera:skew", K_def.skew()));
+
   try
   {
     if (this->videoSource)
@@ -422,6 +429,9 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
       }
 
       auto baseCamera = kwiver::vital::simple_camera();
+      baseCamera.set_intrinsics(K);
+
+      auto localGeoCs = kwiver::maptk::local_geo_cs();
       camMap = kwiver::maptk::initialize_cameras_with_metadata(
           mdMap, baseCamera, this->localGeoCs);
     }

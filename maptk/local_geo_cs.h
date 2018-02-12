@@ -74,7 +74,7 @@ public:
   const vital::geo_point& origin() const { return geo_origin_; }
 
   /// Access the geographic coordinate altituded (in meters)
-  int origin_altitude() const { return origin_alt_; }
+  double origin_altitude() const { return origin_alt_; }
 
   /// Use the pose data provided by metadata to update camera pose
   /**
