@@ -116,9 +116,9 @@ TrackFeaturesSprokitTool::TrackFeaturesSprokitTool(QObject* parent)
 {
   this->setText("&Track Features");
   this->setToolTip(
-    "<nobr>Detect feature points in the images, compute feature descriptors, "
-    "</nobr>and track the features across images.  Also run loop closure if "
-    "configured to do so.");
+    "<nobr>Track features through a the video and identify keyframes. "
+    "</nobr>Compute descriptors on the keyframes and match to a visual "
+    "index to close loops.");
 }
 
 //-----------------------------------------------------------------------------

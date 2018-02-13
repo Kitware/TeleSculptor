@@ -74,11 +74,11 @@ QTE_IMPLEMENT_D_FUNC(TrackFeaturesTool)
 TrackFeaturesTool::TrackFeaturesTool(QObject* parent)
   : AbstractTool(parent), d_ptr(new TrackFeaturesToolPrivate)
 {
-  this->setText("&Track Features");
+  this->setText("&Track Features Dense");
   this->setToolTip(
     "<nobr>Detect feature points in the images, compute feature descriptors, "
     "</nobr>and track the features across images.  Also run loop closure if "
-    "configured to do so.");
+    "configured to do so.  This is slower than the primary tracking algorithm.");
 }
 
 //-----------------------------------------------------------------------------
