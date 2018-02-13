@@ -1,4 +1,4 @@
-file(GLOB config_files *.conf)
+file(GLOB config_files *.conf *.gz)
 
 # Ensure target directory exists
 set(out_dir "${MAPTK_BINARY_DIR}/share/maptk/${MAPTK_VERSION}/config")
