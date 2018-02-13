@@ -84,6 +84,29 @@ local_geo_cs
   geo_origin_ = geo_point(origin.location(crs), crs);
 }
 
+#define TO_RADIAN(X) (X)*M_PI/180.0
+
+vital::matrix_3x3d rotation_zyx(double yaw, double pitch, double roll)
+{
+  vital::matrix_3x3d Rr;
+  vital::matrix_3x3d Rp;
+  vital::matrix_3x3d Ry;
+  // about x
+  Rr << 1, 0, 0,
+    0, cos(roll), -sin(roll),
+    0, sin(roll), cos(roll);
+
+  // about y
+  Rp << cos(pitch), 0, sin(pitch),
+    0, 1, 0,
+    -sin(pitch), 0, cos(pitch);
+
+  // about z
+  Ry << cos(yaw), -sin(yaw), 0,
+    sin(yaw), cos(yaw), 0,
+    0, 0, 1;  // Juda's code ends in 0, 0, -1
+  return Ry*Rp*Rr;
+}
 
 /// Use the pose data provided by metadata to update camera pose
 bool
@@ -94,18 +117,61 @@ local_geo_cs
 {
   bool camera_modified = false;
 
-  if( md.has( vital::VITAL_META_SENSOR_YAW_ANGLE) &&
-      md.has( vital::VITAL_META_SENSOR_PITCH_ANGLE) &&
-      md.has( vital::VITAL_META_SENSOR_ROLL_ANGLE) )
+  double platform_yaw = 0.0, platform_pitch = 0.0, platform_roll = 0.0;
+  if (md.has(vital::VITAL_META_PLATFORM_HEADING_ANGLE))
   {
-    double yaw = md.find( vital::VITAL_META_SENSOR_YAW_ANGLE ).as_double();
-    double pitch = md.find( vital::VITAL_META_SENSOR_PITCH_ANGLE ).as_double();
-    double roll = md.find( vital::VITAL_META_SENSOR_ROLL_ANGLE ).as_double();
+    md.find(vital::VITAL_META_PLATFORM_HEADING_ANGLE).data(platform_yaw);
+  }
+  if (md.has(vital::VITAL_META_PLATFORM_PITCH_ANGLE))
+  {
+    md.find(vital::VITAL_META_PLATFORM_PITCH_ANGLE).data(platform_pitch);
+  }
+  if (md.has(vital::VITAL_META_PLATFORM_ROLL_ANGLE))
+  {
+    md.find(vital::VITAL_META_PLATFORM_ROLL_ANGLE).data(platform_roll);
+  }
+  double sensor_yaw = 0.0, sensor_pitch = 0.0, sensor_roll = 0.0;
+  if (md.has(vital::VITAL_META_SENSOR_REL_AZ_ANGLE))
+  {
+    md.find(vital::VITAL_META_SENSOR_REL_AZ_ANGLE).data(sensor_yaw);
+  }
+  if (md.has(vital::VITAL_META_SENSOR_REL_EL_ANGLE))
+  {
+    md.find(vital::VITAL_META_SENSOR_REL_EL_ANGLE).data(sensor_pitch);
+  }
+  if (md.has(vital::VITAL_META_SENSOR_REL_ROLL_ANGLE))
+  {
+    md.find(vital::VITAL_META_SENSOR_REL_ROLL_ANGLE).data(sensor_roll);
+  }
 
-    // Apply offset rotation specifically on the lhs of the INS
-    cam.set_rotation(rot_offset * rotation_d(yaw * deg2rad,
-                                             pitch * deg2rad,
-                                             roll * deg2rad));
+  if (!(std::isnan(platform_yaw) || std::isnan(platform_pitch) || std::isnan(platform_roll) ||
+        std::isnan(sensor_yaw) || std::isnan(sensor_pitch) || std::isnan(sensor_roll)))
+  {
+    vital::matrix_3x3d R;
+    // rotation from east north up to platform
+    // platform has x out nose, y out left wing, z up
+    vital::matrix_3x3d Rp = rotation_zyx(TO_RADIAN(-platform_yaw+90.0),
+      TO_RADIAN(-platform_pitch),
+      TO_RADIAN(platform_roll));
+
+    // rotation from platform to gimbal
+    // gimbal x is camera viewing direction
+    // gimbal y is left in image (-x in standard computer vision image coordinates)
+    vital::matrix_3x3d Rs = rotation_zyx(TO_RADIAN(-sensor_yaw),
+      TO_RADIAN(-sensor_pitch),
+      TO_RADIAN(sensor_roll));
+
+    // rotation from gimbal frame to camera frame
+    // camera frame has x right in image, y down, z along optical axis
+    vital::matrix_3x3d R_c;
+    R_c << 0, -1,  0,
+           0,  0, -1,
+           1,  0,  0;
+
+    R = R_c*Rs.transpose()*Rp.transpose();
+
+    cam.set_rotation(kwiver::vital::rotation_d(R));
+
     camera_modified = true;
   }
 
