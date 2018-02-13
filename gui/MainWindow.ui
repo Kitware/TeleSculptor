@@ -73,7 +73,14 @@
     <property name="title">
      <string>&amp;Compute</string>
     </property>
+    <widget class="qtMenu" name="menuAdvanced">
+     <property name="title">
+      <string>&amp;Advanced</string>
+     </property>
+    </widget>
     <addaction name="actionCancelComputation"/>
+    <addaction name="separator"/>
+    <addaction name="menuAdvanced"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuCompute"/>

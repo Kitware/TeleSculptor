@@ -294,6 +294,7 @@ public:
   QSignalMapper toolDispatcher;
 
   QAction* toolSeparator;
+  QMenu* toolMenu;
   AbstractTool* activeTool;
   QList<AbstractTool*> tools;
   int toolUpdateActiveFrame;
@@ -334,7 +335,7 @@ QTE_IMPLEMENT_D_FUNC(MainWindow)
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::addTool(AbstractTool* tool, MainWindow* mainWindow)
 {
-  this->UI.menuCompute->insertAction(this->toolSeparator, tool);
+  this->toolMenu->insertAction(this->toolSeparator, tool);
 
   this->toolDispatcher.setMapping(tool, tool);
 
@@ -979,6 +980,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->UI.setupUi(this);
   d->AM.setupActions(d->UI, this);
 
+  d->toolMenu = d->UI.menuCompute;
   d->toolSeparator =
     d->UI.menuCompute->insertSeparator(d->UI.actionCancelComputation);
 
@@ -988,6 +990,11 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->addTool(new InitCamerasLandmarksTool(this), this);
   d->addTool(new BundleAdjustTool(this), this);
   d->addTool(new CanonicalTransformTool(this), this);
+
+  d->toolMenu = d->UI.menuAdvanced;
+  d->toolSeparator =
+    d->UI.menuAdvanced->addSeparator();
+  d->addTool(new TrackFeaturesTool(this), this);
   d->addTool(new NeckerReversalTool(this), this);
   d->addTool(new TrackFilterTool(this), this);
   d->addTool(new ComputeDepthTool(this), this);
