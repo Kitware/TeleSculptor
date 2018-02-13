@@ -343,6 +343,8 @@ void MainWindowPrivate::addTool(AbstractTool* tool, MainWindow* mainWindow)
   QObject::connect(tool, SIGNAL(completed()),
                    mainWindow, SLOT(acceptToolFinalResults()));
 
+  tool->setEnabled(false);
+
   this->tools.append(tool);
 }
 
@@ -1085,6 +1087,11 @@ void MainWindow::newProject()
 
     d->currProject->write();
   }
+
+  foreach (auto const& tool, d->tools)
+  {
+    tool->setEnabled(true);
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -1178,6 +1185,11 @@ void MainWindow::loadProject(QString const& path)
   }
 
   d->UI.worldView->resetView();
+
+  foreach (auto const& tool, d->tools)
+  {
+    tool->setEnabled(true);
+  }
 }
 
 //-----------------------------------------------------------------------------
