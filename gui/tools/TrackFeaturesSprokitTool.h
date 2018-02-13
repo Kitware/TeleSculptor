@@ -32,6 +32,7 @@
 #define MAPTK_TRACKFEATURESSPROKITTOOL_H_
 
 #include "AbstractTool.h"
+#include <sstream>
 
 class TrackFeaturesSprokitToolPrivate;
 
@@ -51,6 +52,8 @@ public:
 
 protected:
   virtual void run() QTE_OVERRIDE;
+
+  virtual std::stringstream create_pipeline_config(QWidget* window = 0);
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(TrackFeaturesSprokitTool)

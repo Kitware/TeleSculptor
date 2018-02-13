@@ -29,6 +29,7 @@
  */
 
 #include "TrackFeaturesSprokitTool.h"
+#include "ConfigHelper.h"
 
 #include <fstream>
 #include <sstream>
@@ -56,7 +57,6 @@
 #include <sprokit/processes/adapters/embedded_pipeline.h>
 #include <sprokit/pipeline_util/literal_pipeline.h>
 
-#include <kwiversys/SystemTools.hxx>
 
 using kwiver::vital::algo::image_io;
 using kwiver::vital::algo::image_io_sptr;
@@ -70,25 +70,7 @@ using kwiver::vital::algo::video_input_sptr;
 namespace
 {
   static char const* const BLOCK_CI = "image_converter";
-  static char const* const BLOCK_TF = "feature_tracker";
   static char const* const BLOCK_VR = "video_reader";
-
-  //-----------------------------------------------------------------------------
-  kwiver::vital::config_block_sptr readConfig(std::string const& name)
-  {
-    try
-    {
-      using kwiver::vital::read_config_file;
-
-      auto const exeDir = QDir(QApplication::applicationDirPath());
-      auto const prefix = stdString(exeDir.absoluteFilePath(".."));
-      return read_config_file(name, "maptk", MAPTK_VERSION, prefix);
-    }
-    catch (...)
-    {
-      return{};
-    }
-  }
 }  // end anonymous namespace
 
 
@@ -98,8 +80,8 @@ class TrackFeaturesSprokitToolPrivate
 public:
   TrackFeaturesSprokitToolPrivate();
   convert_image_sptr image_converter;
-  track_features_sptr feature_tracker;
   video_input_sptr video_reader;
+  kwiver::embedded_pipeline ep;
 };
 
 TrackFeaturesSprokitToolPrivate
@@ -145,7 +127,7 @@ bool TrackFeaturesSprokitTool::execute(QWidget* window)
   }
 
   // Load configuration
-  auto const config = readConfig("gui_track_features.conf");
+  auto const config = ConfigHelper::readConfig("gui_track_features.conf");
 
   // Check configuration
   if (!config)
@@ -169,26 +151,46 @@ bool TrackFeaturesSprokitTool::execute(QWidget* window)
   convert_image::set_nested_algo_configuration(BLOCK_CI, config, d->image_converter);
   video_input::set_nested_algo_configuration(BLOCK_VR, this->data()->config, d->video_reader);
 
+  std::stringstream pipe_str = create_pipeline_config(window);
+  if (pipe_str.str().empty())
+  {
+    return false;
+  }
+
+  // create a embedded pipeline
+  try
+  {
+    d->ep.build_pipeline(pipe_str);
+  }
+  catch (sprokit::pipeline_exception const& e)
+  {
+    QMessageBox::critical(
+      window, "Configuration error",
+      QString("Error parsing Sprokit pipeline.\n") + e.what());
+    return false;
+  }
+
   return AbstractTool::execute(window);
 }
 
 std::stringstream
 TrackFeaturesSprokitTool
-::create_pipeline_config()
+::create_pipeline_config(QWidget* window)
 {
   std::stringstream ss;
 
-  bool from_file = false;
-  if (from_file)
+  std::string pipe_file = ConfigHelper::findConfig("track_features_embedded.pipe");
+  if (false && !pipe_file.empty())
   {
-    std::string pipe_file = "D:/export_controlled_data/telesculptor/sequence2/track_features_embedded.pipe";  //TODO THIS NEEDS TO POINT TO THE BUILD OR INSTALL DIR COPY
-
-                                                                                                              // Open pipeline description
+    // Open pipeline description
     std::ifstream pipe_str;
     pipe_str.open(pipe_file, std::ifstream::in);
 
     if (!pipe_str)
     {
+      QMessageBox::critical(
+        window, "Configuration error",
+        QString::fromStdString("Unable to open file: " + pipe_file));
       return ss;
     }
     ss << pipe_str.rdbuf();
@@ -196,18 +198,14 @@ TrackFeaturesSprokitTool
   }
   else
   {
-    std::string voc_path;
-    kwiver::vital::config_path_list_t kwiver_config_path;
-    kwiversys::SystemTools::GetPath(kwiver_config_path, "KWIVER_CONFIG_PATH");
-    if (!kwiver_config_path.empty())
+    // find the path the vocabulary file
+    std::string voc_path = ConfigHelper::findConfig("kwiver_voc.yml.gz");
+    if (voc_path.empty())
     {
-      //look in the kwiver config directory
-      voc_path = kwiver_config_path[0] + "/kwiver_voc.yml.gz";
-    }
-    else
-    {
-      //look in the working directory
-      voc_path = "kwiver_voc.yml.gz";
+      QMessageBox::critical(
+        window, "Configuration error",
+        "No vocabulary data was found. Please check your installation.");
+      return std::stringstream();
     }
 
     ss << SPROKIT_PROCESS("input_adapter", "input")
@@ -278,9 +276,9 @@ TrackFeaturesSprokitTool
       << SPROKIT_CONNECT("input", "timestamp", "disp", "timestamp")
       << SPROKIT_CONNECT("draw", "output_image", "disp", "image")
       << SPROKIT_CONNECT("loop_detector", "feature_track_set", "output", "feature_track_set");
-
-    return ss;
   }
+
+  return ss;
 }
 
 //-----------------------------------------------------------------------------
@@ -290,18 +288,8 @@ TrackFeaturesSprokitTool
 {
   QTE_D();
 
-  std::stringstream pipe_str = create_pipeline_config();
-  if (pipe_str.str().empty())
-  {
-    return;
-  }
-
-  // create a embedded pipeline
-  kwiver::embedded_pipeline ep;
-  ep.build_pipeline(pipe_str);
-
   // Start pipeline and wait for it to finish
-  ep.start();
+  d->ep.start();
 
   unsigned int frame = this->activeFrame();
   kwiver::vital::timestamp currentTimestamp;
@@ -329,30 +317,30 @@ TrackFeaturesSprokitTool
     auto ds = kwiver::adapter::adapter_data_set::create();
     ds->add_value("image", converted_image);
     ds->add_value("timestamp", currentTimestamp);
-    ep.send(ds);
+    d->ep.send(ds);
 
     if (this->isCanceled())
     {
       break;
     }
-    if (!ep.empty())
+    if (!d->ep.empty())
     {
-      auto rds = ep.receive();
+      auto rds = d->ep.receive();
     }
   }
-  ep.send_end_of_input();
+  d->ep.send_end_of_input();
 
   kwiver::vital::feature_track_set_sptr out_tracks;
-  while (!ep.at_end())
+  while (!d->ep.at_end())
   {
-    auto rds = ep.receive();
+    auto rds = d->ep.receive();
     auto ix = rds->find("feature_track_set");
     if (ix != rds->end())
     {
       out_tracks = ix->second->get_datum<kwiver::vital::feature_track_set_sptr>();
     }
   }
-  ep.wait();
+  d->ep.wait();
 
   this->updateTracks(out_tracks);
 
