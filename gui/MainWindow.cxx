@@ -324,7 +324,7 @@ public:
   vtkNew<vtkMaptkImageDataGeometryFilter> depthGeometryFilter;
 
   // Current project
-  std::shared_ptr<Project> currProject;
+  QSharedPointer<Project> currProject;
 };
 
 QTE_IMPLEMENT_D_FUNC(MainWindow)
@@ -830,6 +830,10 @@ void MainWindowPrivate::setActiveTool(AbstractTool* tool)
   {
     QObject::connect(this->UI.actionCancelComputation, SIGNAL(triggered()),
                      tool, SLOT(cancel()));
+    QObject::connect(this->UI.actionCancelComputation, SIGNAL(triggered()),
+                     currProject.data(), SLOT(write()));
+    QObject::connect(tool, SIGNAL(completed()),
+                     currProject.data(), SLOT(write()));
   }
 
   auto const enableTools = !tool;
@@ -1069,8 +1073,8 @@ void MainWindow::newProject()
                  << "project directory: " << dirname;
     }
 
-    d->currProject.reset();
-    d->currProject = std::make_shared<Project>(dirname);
+    d->currProject.clear();
+    d->currProject = QSharedPointer<Project>(new Project(dirname));
 
     if (d->videoSource)
     {
@@ -1088,11 +1092,11 @@ void MainWindow::loadProject(QString const& path)
 {
   QTE_D();
 
-  d->currProject = std::make_shared<Project>();
+  d->currProject = QSharedPointer<Project>(new Project());;
   if (!d->currProject->read(path))
   {
     qWarning() << "Failed to load project from" << path; // TODO dialog?
-    d->currProject.reset();
+    d->currProject.clear();
     return;
   }
 

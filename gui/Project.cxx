@@ -88,6 +88,7 @@ Project::Project(QString dir)
   projectConfig = kwiver::vital::config_block::empty_config();
 
   workingDir = dir;
+  filePath = workingDir.absoluteFilePath(workingDir.dirName() + ".conf");
 }
 
 //-----------------------------------------------------------------------------
@@ -114,6 +115,8 @@ bool Project::read(QString const& path)
     {
       this->workingDir = base;
     }
+
+    filePath = path;
 
     this->cameraPath = getPath(config, this->workingDir, "output_krtd_dir");
     this->landmarks = getPath(config, this->workingDir, "output_ply_file");
@@ -189,7 +192,6 @@ void Project::write()
 
   if (projectConfig->available_values().size() > 0)
   {
-    auto filePath = workingDir.absoluteFilePath(workingDir.dirName() + ".conf");
     kwiver::vital::write_config_file(projectConfig, filePath.toStdString());
   }
 }
