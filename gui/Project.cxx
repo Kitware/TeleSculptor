@@ -61,22 +61,6 @@ QString getPath(kwiver::vital::config_block_sptr const& config,
 }
 
 //-----------------------------------------------------------------------------
-// Returns the relative path if the filepath is contained in the directory and
-// returns the absolute path if not.
-QString getContingentRelativePath(QDir dir, QString filepath)
-{
-  if (kwiversys::SystemTools::IsSubDirectory(filepath.toStdString(),
-                                             dir.absolutePath().toStdString()))
-  {
-    return dir.relativeFilePath(filepath);
-  }
-  else
-  {
-    return filepath;
-  }
-}
-
-//-----------------------------------------------------------------------------
 Project::Project()
 {
   projectConfig = kwiver::vital::config_block::empty_config();
@@ -182,12 +166,28 @@ bool Project::read(QString const& path)
   }
 }
 
+//-----------------------------------------------------------------------------
+// Returns the relative path if the filepath is contained in the directory and
+// returns the absolute path if not.
+QString Project::getContingentRelativePath(QString filepath)
+{
+  if (kwiversys::SystemTools::IsSubDirectory(filepath.toStdString(),
+                                             workingDir.absolutePath().toStdString()))
+  {
+    return workingDir.relativeFilePath(filepath);
+  }
+  else
+  {
+    return filepath;
+  }
+}
+
 void Project::write()
 {
   if (!videoPath.isEmpty())
   {
     projectConfig->set_value(VIDEO_SOURCE_TAG,
-      getContingentRelativePath(workingDir, videoPath).toStdString());
+      getContingentRelativePath(videoPath).toStdString());
   }
 
   if (projectConfig->available_values().size() > 0)

@@ -1342,6 +1342,9 @@ void MainWindow::saveLandmarks(QString const& path)
   try
   {
     kwiver::vital::write_ply_file(d->landmarks, kvPath(path));
+    d->currProject->projectConfig->set_value("output_ply_file",
+      kvPath(d->currProject->getContingentRelativePath(path)));
+    d->currProject->write();
   }
   catch (...)
   {
@@ -1374,6 +1377,9 @@ void MainWindow::saveTracks(QString const& path)
   try
   {
     kwiver::vital::write_feature_track_file(d->tracks, kvPath(path));
+    d->currProject->projectConfig->set_value("output_tracks_file",
+      kvPath(d->currProject->getContingentRelativePath(path)));
+    d->currProject->write();
   }
   catch (...)
   {
@@ -1402,6 +1408,10 @@ void MainWindow::saveCameras(QString const& path)
 
   auto out = QHash<QString, kwiver::vital::camera_sptr>();
   auto willOverwrite = QStringList();
+
+  d->currProject->projectConfig->set_value("output_krtd_dir",
+    kvPath(d->currProject->getContingentRelativePath(path)));
+  d->currProject->write();
 
   foreach (auto i, qtIndexRange(d->frames.count()))
   {
@@ -1502,6 +1512,9 @@ void MainWindow::saveDepthPoints(QString const& path)
   try
   {
     d->UI.worldView->saveDepthPoints(path);
+    d->currProject->projectConfig->set_value("depthmaps_images_file",
+      kvPath(d->currProject->getContingentRelativePath(path)));
+    d->currProject->write();
   }
   catch (...)
   {
@@ -1576,6 +1589,9 @@ void MainWindow::saveVolume()
   if (!path.isEmpty())
   {
     d->UI.worldView->saveVolume(path);
+    d->currProject->projectConfig->set_value("volume_file",
+      kvPath(d->currProject->getContingentRelativePath(path)));
+    d->currProject->write();
   }
 }
 

@@ -52,6 +52,8 @@ public:
 
   bool read(QString const& path);
 
+  QString getContingentRelativePath(QString filepath);
+
   QString filePath;
   QDir workingDir;
   QString cameraPath;
