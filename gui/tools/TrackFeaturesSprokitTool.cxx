@@ -180,7 +180,8 @@ TrackFeaturesSprokitTool
   std::stringstream ss;
 
   std::string pipe_file = findConfig("track_features_embedded.pipe");
-  if (false && !pipe_file.empty())
+  // Load from a pipeline description file if found
+  if (!pipe_file.empty())
   {
     // Open pipeline description
     std::ifstream pipe_str;
