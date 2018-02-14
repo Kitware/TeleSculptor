@@ -73,9 +73,11 @@ int main(int argc, char** argv)
 
   // Load KWIVER plugins
   auto const exeDir = QDir(QApplication::applicationDirPath());
-  auto const rel_path = stdString(exeDir.absoluteFilePath("..")) + "/lib/modules";
-  kwiver::vital::plugin_manager::instance().add_search_path(rel_path);
-  kwiver::vital::plugin_manager::instance().load_all_plugins();
+  auto const rel_path = stdString(exeDir.absoluteFilePath(".."));
+  auto & vpm = kwiver::vital::plugin_manager::instance();
+  vpm.add_search_path(rel_path + "/lib/modules");
+  vpm.add_search_path(rel_path + "/lib/sprokit");
+  vpm.load_all_plugins();
 
   // Create and show main window
   MainWindow window;
