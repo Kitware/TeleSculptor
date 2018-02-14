@@ -321,11 +321,22 @@ TrackFeaturesSprokitTool
 
     if (this->isCanceled())
     {
+      d->video_reader->close();
       break;
     }
     if (!d->ep.empty())
     {
       auto rds = d->ep.receive();
+      auto ix = rds->find("feature_track_set");
+      if (ix != rds->end())
+      {
+        auto out_tracks = ix->second->get_datum<kwiver::vital::feature_track_set_sptr>();
+        // make a copy of the tool data
+        auto data = std::make_shared<ToolData>();
+        data->copyTracks(out_tracks);
+        data->activeFrame = out_tracks->last_frame();
+        emit updated(data);
+      }
     }
   }
   d->ep.send_end_of_input();
@@ -338,6 +349,11 @@ TrackFeaturesSprokitTool
     if (ix != rds->end())
     {
       out_tracks = ix->second->get_datum<kwiver::vital::feature_track_set_sptr>();
+      // make a copy of the tool data
+      auto data = std::make_shared<ToolData>();
+      data->copyTracks(out_tracks);
+      data->activeFrame = out_tracks->last_frame();
+      emit updated(data);
     }
   }
   d->ep.wait();
