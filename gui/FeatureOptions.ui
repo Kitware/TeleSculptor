@@ -119,7 +119,7 @@
            <number>1</number>
           </property>
           <property name="maximum">
-           <number>16</number>
+           <number>500</number>
           </property>
           <property name="pageStep">
            <number>4</number>
