@@ -242,18 +242,6 @@ TrackFeaturesSprokitTool
       << SPROKIT_CONFIG("close_loops:appearance_indexed:bag_of_words_matching:dbow2:training_image_list_path", "")
       << SPROKIT_CONFIG("close_loops:appearance_indexed:bag_of_words_matching:dbow2:vocabulary_path", voc_path)
 
-      << SPROKIT_PROCESS("draw_tracks", "draw")
-      << SPROKIT_CONFIG("draw_tracks:type", "ocv")
-      << SPROKIT_CONFIG("draw_tracks:ocv:draw_track_ids", "false")
-      << SPROKIT_CONFIG("draw_tracks:ocv:draw_untracked_features", "true")
-      << SPROKIT_CONFIG("draw_tracks:ocv:draw_shift_lines", "false")
-      << SPROKIT_CONFIG("draw_tracks:ocv:draw_match_lines", "true")
-
-      << SPROKIT_PROCESS("image_viewer", "disp")
-      << SPROKIT_CONFIG("annotate_image", "true")
-      << SPROKIT_CONFIG("pause_time", "0.001")
-      << SPROKIT_CONFIG("title", "images")
-
       << SPROKIT_PROCESS("output_adapter", "output")
       << SPROKIT_CONFIG_BLOCK("_pipeline:_edge")
       << SPROKIT_CONFIG("capacity", "2")
@@ -268,13 +256,9 @@ TrackFeaturesSprokitTool
       << SPROKIT_CONNECT("detect_if_keyframe", "feature_track_set", "detect_if_keyframe", "loop_back_tracks")
       << SPROKIT_CONNECT("input", "image", "detect_if_keyframe", "image")
       << SPROKIT_CONNECT("input", "timestamp", "detect_if_keyframe", "timestamp")
-      << SPROKIT_CONNECT("detect_if_keyframe", "feature_track_set", "draw", "feature_track_set")
       << SPROKIT_CONNECT("detect_if_keyframe", "feature_track_set", "loop_detector", "next_tracks")
       << SPROKIT_CONNECT("loop_detector", "feature_track_set", "loop_detector", "loop_back_tracks")
       << SPROKIT_CONNECT("input", "timestamp", "loop_detector", "timestamp")
-      << SPROKIT_CONNECT("input", "image", "draw", "image")
-      << SPROKIT_CONNECT("input", "timestamp", "disp", "timestamp")
-      << SPROKIT_CONNECT("draw", "output_image", "disp", "image")
       << SPROKIT_CONNECT("loop_detector", "feature_track_set", "output", "feature_track_set");
   }
 
