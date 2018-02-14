@@ -275,6 +275,10 @@ if (MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
           COMPONENT Runtime
           FILES_MATCHING PATTERN "*kwiver_algo*${CMAKE_SHARED_MODULE_SUFFIX}" )
 
+  install(DIRECTORY "${KWIVER_DIR}/lib/${BINARY_DIR}/sprokit" DESTINATION lib
+          COMPONENT Runtime
+          FILES_MATCHING PATTERN "*${CMAKE_SHARED_MODULE_SUFFIX}" )
+
   get_property( bundle_path GLOBAL PROPERTY maptk_bundle_paths)
 
   list(APPEND FIXUP_DIRS "${VTK_CMAKE_DIR}../..")
