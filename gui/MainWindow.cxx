@@ -441,11 +441,16 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
         mdMap[mdIter.first] = mdIter.second[0];
       }
 
-      auto baseCamera = kwiver::vital::simple_camera();
-      baseCamera.set_intrinsics(K);
+      bool init_cams_with_metadata = config->get_value<bool>("initialize_cameras_with_metadata", true);
 
-      camMap = kwiver::maptk::initialize_cameras_with_metadata(
+      if (init_cams_with_metadata)
+      {
+        auto baseCamera = kwiver::vital::simple_camera();
+        baseCamera.set_intrinsics(K);
+
+        camMap = kwiver::maptk::initialize_cameras_with_metadata(
           mdMap, baseCamera, this->localGeoCs);
+      }
     }
 
     // Add frames for video if needed
