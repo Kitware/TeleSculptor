@@ -33,6 +33,7 @@
 
 #include <maptk/version.h>
 
+#include <kwiversys/SystemTools.hxx>
 #include <vital/plugin_loader/plugin_manager.h>
 
 #include <qtCliArgs.h>
@@ -78,6 +79,14 @@ int main(int argc, char** argv)
   vpm.add_search_path(rel_path + "/lib/modules");
   vpm.add_search_path(rel_path + "/lib/sprokit");
   vpm.load_all_plugins();
+
+  // Tell PROJ where to find its data files
+  std::string rel_proj_path = rel_path + "/share/proj";
+  if ( kwiversys::SystemTools::FileExists(rel_proj_path) &&
+       kwiversys::SystemTools::FileIsDirectory(rel_proj_path) )
+  {
+    kwiversys::SystemTools::PutEnv("PROJ_LIB="+rel_proj_path);
+  }
 
   // Create and show main window
   MainWindow window;

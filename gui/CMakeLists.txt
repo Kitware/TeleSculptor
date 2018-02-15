@@ -279,6 +279,9 @@ if (MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
           COMPONENT Runtime
           FILES_MATCHING PATTERN "*${CMAKE_SHARED_MODULE_SUFFIX}" )
 
+  install(DIRECTORY "${fletch_ROOT}/share/proj"
+          DESTINATION share COMPONENT Runtime)
+
   get_property( bundle_path GLOBAL PROPERTY maptk_bundle_paths)
 
   list(APPEND FIXUP_DIRS "${VTK_CMAKE_DIR}../..")
