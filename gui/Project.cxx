@@ -73,6 +73,11 @@ Project::Project(QString dir)
 
   workingDir = dir;
   filePath = workingDir.absoluteFilePath(workingDir.dirName() + ".conf");
+
+  // Set default paths
+  cameraPath = "results/krtd";
+  tracksPath = "tracks.txt";
+  landmarksPath = "results/landmarks.ply";
 }
 
 //-----------------------------------------------------------------------------
@@ -103,8 +108,8 @@ bool Project::read(QString const& path)
     filePath = path;
 
     this->cameraPath = getPath(config, this->workingDir, "output_krtd_dir");
-    this->landmarks = getPath(config, this->workingDir, "output_ply_file");
-    this->tracks =
+    this->landmarksPath = getPath(config, this->workingDir, "output_ply_file");
+    this->tracksPath =
       getPath(config, this->workingDir, "input_track_file", "output_tracks_file");
 
     // Read depth map images list

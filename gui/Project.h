@@ -54,16 +54,18 @@ public:
 
   QString getContingentRelativePath(QString filepath);
 
-  QString filePath;
   QDir workingDir;
-  QString cameraPath;
-  QMap<int, QString> depthMaps;
 
-  QString tracks;
-  QString landmarks;
-
-  QString volumePath;
+  QString filePath;
   QString videoPath;
+
+  QString tracksPath;
+  QString landmarksPath;
+  QString depthmapsPath;
+  QString volumePath;
+  QString cameraPath;
+
+  QMap<int, QString> depthMaps;
 
   kwiver::vital::config_block_sptr projectConfig;
 
