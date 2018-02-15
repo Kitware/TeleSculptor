@@ -1193,11 +1193,18 @@ void MainWindow::loadVideo(QString const& path)
     d->currProject->projectConfig->merge_config(config);
     d->currProject->videoPath = path;
     d->currProject->write();
-    d->addVideoSource(d->currProject->projectConfig, path);
+    config = d->currProject->projectConfig;
   }
-  else
+
+  try
   {
     d->addVideoSource(config, path);
+  }
+  catch (std::exception e)
+  {
+    QMessageBox::critical(
+      this, "Error loading video\n",
+      e.what());
   }
 }
 
