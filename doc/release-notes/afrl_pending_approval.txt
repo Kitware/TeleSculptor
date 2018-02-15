@@ -24,3 +24,9 @@ TeleSculptor
 
 Fixes since last public release
 -------------------------------
+
+Installer
+
+ * Fixed an issue where required data files for PROJ were not installed.
+   This also requires TeleSculptor and the command line tools to set an
+   environment variable to tell PROJ where the data is installed.
