@@ -76,7 +76,7 @@ Project::Project(QString dir)
 
   // Set default paths
   cameraPath = "results/krtd";
-  tracksPath = "tracks.txt";
+  tracksPath = "results/tracks.txt";
   landmarksPath = "results/landmarks.ply";
 }
 
