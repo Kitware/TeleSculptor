@@ -1138,21 +1138,23 @@ void MainWindow::loadProject(QString const& path)
     foreach (auto const& frame, d->frames)
     {
       auto frameName = QString::fromStdString(d->getFrameName(frame.id));
-      if (frameName != "")
+      if (frameName == "")
       {
-        try
-        {
-          auto const& camera = kwiver::vital::read_krtd_file(
-            kvPath(frameName), kvPath(d->currProject->cameraPath));
+        frameName = cameraName("", frame.id);
+      }
 
-          // Add camera to scene
-          d->addCamera(camera);
-        }
-        catch (...)
-        {
-          qWarning() << "failed to read camera file " << frameName
-                     << " from " << d->currProject->cameraPath;
-        }
+      try
+      {
+        auto const& camera = kwiver::vital::read_krtd_file(
+          kvPath(frameName), kvPath(d->currProject->cameraPath));
+
+        // Add camera to scene
+        d->addCamera(camera);
+      }
+      catch (...)
+      {
+        qWarning() << "failed to read camera file " << frameName
+                   << " from " << d->currProject->cameraPath;
       }
     }
   }
