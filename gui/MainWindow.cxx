@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016-2017 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1667,21 +1667,32 @@ void MainWindow::executeTool(QObject* object)
 {
   QTE_D();
 
-  auto const tool = qobject_cast<AbstractTool*>(object);
-  if (tool && !d->activeTool)
+  try
   {
-    d->setActiveTool(tool);
-    tool->setActiveFrame(d->activeCameraIndex);
-    tool->setTracks(d->tracks);
-    tool->setCameras(d->cameraMap());
-    tool->setLandmarks(d->landmarks);
-    tool->setVideoPath(d->videoPath.toStdString());
-    tool->setConfig(d->currProject->projectConfig);
-
-    if (!tool->execute())
+    auto const tool = qobject_cast<AbstractTool*>(object);
+    if (tool && !d->activeTool)
     {
-      d->setActiveTool(0);
+      d->setActiveTool(tool);
+      tool->setActiveFrame(d->activeCameraIndex);
+      tool->setTracks(d->tracks);
+      tool->setCameras(d->cameraMap());
+      tool->setLandmarks(d->landmarks);
+      tool->setVideoPath(d->videoPath.toStdString());
+      tool->setConfig(d->currProject->projectConfig);
+
+      if (!tool->execute())
+      {
+        d->setActiveTool(0);
+      }
     }
+  }
+  catch (std::exception e)
+  {
+    QString message("The tool failed with the following error:\n");
+    message += e.what();
+    QMessageBox::critical(
+      this, "Error in Tool",
+      message);
   }
 }
 
