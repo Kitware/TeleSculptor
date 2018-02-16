@@ -89,7 +89,6 @@ bool BundleAdjustTool::execute(QWidget* window)
 
   // Merge project config with default config file
   auto const config = ConfigHelper::readConfig("gui_bundle_adjust.conf");
-  this->data()->config->merge_config(config);
 
   // Check configuration
   if (!config)
@@ -100,7 +99,8 @@ bool BundleAdjustTool::execute(QWidget* window)
     return false;
   }
 
-  if (!bundle_adjust::check_nested_algo_configuration(BLOCK, this->data()->config))
+  config->merge_config(this->data()->config);
+  if (!bundle_adjust::check_nested_algo_configuration(BLOCK, config))
   {
     QMessageBox::critical(
       window, "Configuration error",
@@ -109,7 +109,7 @@ bool BundleAdjustTool::execute(QWidget* window)
   }
 
   // Create algorithm from configuration
-  bundle_adjust::set_nested_algo_configuration(BLOCK, this->data()->config, d->algorithm);
+  bundle_adjust::set_nested_algo_configuration(BLOCK, config, d->algorithm);
 
   // Set the callback to receive updates
   using std::placeholders::_1;

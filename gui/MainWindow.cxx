@@ -324,7 +324,7 @@ public:
   vtkNew<vtkMaptkImageDataGeometryFilter> depthGeometryFilter;
 
   // Current project
-  QSharedPointer<Project> currProject;
+  std::shared_ptr<Project> currProject;
 };
 
 QTE_IMPLEMENT_D_FUNC(MainWindow)
@@ -833,9 +833,9 @@ void MainWindowPrivate::setActiveTool(AbstractTool* tool)
     QObject::connect(this->UI.actionCancelComputation, SIGNAL(triggered()),
                      tool, SLOT(cancel()));
     QObject::connect(this->UI.actionCancelComputation, SIGNAL(triggered()),
-                     currProject.data(), SLOT(write()));
+                     currProject.get(), SLOT(write()));
     QObject::connect(tool, SIGNAL(completed()),
-                     currProject.data(), SLOT(write()));
+                     currProject.get(), SLOT(write()));
   }
 
   auto const enableTools = !tool;
@@ -891,9 +891,9 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           d->UI.worldView, SLOT(setAxesVisible(bool)));
 
   connect(d->UI.actionExportCameras, SIGNAL(triggered()),
-          this, SLOT(saveCamerasDialog()));
+          this, SLOT(saveCameras()));
   connect(d->UI.actionExportLandmarks, SIGNAL(triggered()),
-          this, SLOT(saveLandmarksDialog()));
+          this, SLOT(saveLandmarks()));
   connect(d->UI.actionExportVolume, SIGNAL(triggered()),
           this, SLOT(saveVolume()));
   connect(d->UI.actionExportMesh, SIGNAL(triggered()),
@@ -903,7 +903,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.actionExportDepthPoints, SIGNAL(triggered()),
           this, SLOT(saveDepthPoints()));
   connect(d->UI.actionExportTracks, SIGNAL(triggered()),
-          this, SLOT(saveTracksDialog()));
+          this, SLOT(saveTracks()));
 
   connect(d->UI.worldView, SIGNAL(depthMapEnabled(bool)),
           this, SLOT(enableSaveDepthPoints(bool)));
@@ -918,7 +918,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(setViewBackroundColor()));
 
   connect(d->UI.actionAbout, SIGNAL(triggered()),
-          this, SLOT(showAboutDialog()));
+          this, SLOT(showAbout()));
   connect(d->UI.actionShowManual, SIGNAL(triggered()),
           this, SLOT(showUserManual()));
 
@@ -1075,8 +1075,8 @@ void MainWindow::newProject()
                  << "project directory: " << dirname;
     }
 
-    d->currProject.clear();
-    d->currProject = QSharedPointer<Project>(new Project(dirname));
+    d->currProject.reset();
+    d->currProject = std::shared_ptr<Project>(new Project(dirname));
 
     if (d->videoSource)
     {
@@ -1099,11 +1099,11 @@ void MainWindow::loadProject(QString const& path)
 {
   QTE_D();
 
-  d->currProject = QSharedPointer<Project>(new Project());;
+  d->currProject = std::make_shared<Project>();
   if (!d->currProject->read(path))
   {
     qWarning() << "Failed to load project from" << path; // TODO dialog?
-    d->currProject.clear();
+    d->currProject.reset();
     return;
   }
 
@@ -1323,7 +1323,7 @@ void MainWindow::loadLandmarks(QString const& path)
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::saveLandmarksDialog()
+void MainWindow::saveLandmarks()
 {
   QTE_D();
 
@@ -1334,23 +1334,18 @@ void MainWindow::saveLandmarksDialog()
 
   if (!path.isEmpty())
   {
-    d->currProject->landmarksPath =
-      d->currProject->getContingentRelativePath(path);
-    this->saveLandmarks();
+    this->saveLandmarks(path);
   }
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::saveLandmarks()
+void MainWindow::saveLandmarks(QString const& path)
 {
   QTE_D();
 
   try
   {
-    kwiver::vital::write_ply_file(d->landmarks, kvPath(d->currProject->landmarksPath));
-    d->currProject->projectConfig->set_value("output_ply_file",
-      kvPath(d->currProject->getContingentRelativePath(d->currProject->landmarksPath)));
-    d->currProject->write();
+    kwiver::vital::write_ply_file(d->landmarks, kvPath(path));
   }
   catch (...)
   {
@@ -1362,7 +1357,7 @@ void MainWindow::saveLandmarks()
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::saveTracksDialog()
+void MainWindow::saveTracks()
 {
   QTE_D();
 
@@ -1373,23 +1368,19 @@ void MainWindow::saveTracksDialog()
 
   if (!path.isEmpty())
   {
-    d->currProject->tracksPath =
-      d->currProject->getContingentRelativePath(path);
-    this->saveTracks();
+    this->saveTracks(path);
   }
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::saveTracks()
+void MainWindow::saveTracks(QString const& path)
 {
   QTE_D();
 
   try
   {
-    kwiver::vital::write_feature_track_file(d->tracks,
-      kvPath(d->currProject->tracksPath));
-    d->currProject->projectConfig->set_value("output_tracks_file",
-      kvPath(d->currProject->tracksPath));
+    kwiver::vital::write_feature_track_file(d->tracks, kvPath(path));
+
     d->currProject->write();
   }
   catch (...)
@@ -1397,22 +1388,7 @@ void MainWindow::saveTracks()
     auto const msg =
       QString("An error occurred while exporting tracks to \"%1\". "
               "The output file may not have been written correctly.");
-    QMessageBox::critical(this, "Export error", msg.arg(d->currProject->tracksPath));
-  }
-}
-
-//-----------------------------------------------------------------------------
-void MainWindow::saveCamerasDialog()
-{
-  QTE_D();
-
-  auto const path = QFileDialog::getExistingDirectory(this, "Export Cameras");
-
-  if (!path.isEmpty())
-  {
-    d->currProject->cameraPath =
-      d->currProject->getContingentRelativePath(path);
-    this->saveCameras();
+    QMessageBox::critical(this, "Export error", msg.arg(path));
   }
 }
 
@@ -1421,12 +1397,21 @@ void MainWindow::saveCameras()
 {
   QTE_D();
 
+  auto const path = QFileDialog::getExistingDirectory(this, "Export Cameras");
+
+  if (!path.isEmpty())
+  {
+    this->saveCameras(path);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::saveCameras(QString const& path)
+{
+  QTE_D();
+
   auto out = QHash<QString, kwiver::vital::camera_sptr>();
   auto willOverwrite = QStringList();
-
-  d->currProject->projectConfig->set_value("output_krtd_dir",
-    kvPath(d->currProject->cameraPath));
-  d->currProject->write();
 
   foreach (auto i, qtIndexRange(d->frames.count()))
   {
@@ -1801,16 +1786,24 @@ void MainWindow::saveToolResults()
 
     if (outputs.testFlag(AbstractTool::Cameras))
     {
-      saveCameras();
+      saveCameras(d->currProject->cameraPath);
+      d->currProject->projectConfig->set_value("output_krtd_dir", kvPath(
+        d->currProject->getContingentRelativePath(d->currProject->cameraPath)));
     }
     if (outputs.testFlag(AbstractTool::Landmarks))
     {
-      saveLandmarks();
+      saveLandmarks(d->currProject->landmarksPath);
+      d->currProject->projectConfig->set_value("output_ply_file", kvPath(
+        d->currProject->getContingentRelativePath(d->currProject->landmarksPath)));
     }
     if (outputs.testFlag(AbstractTool::Tracks))
     {
-      saveTracks();
+      saveTracks(d->currProject->tracksPath);
+      d->currProject->projectConfig->set_value("output_ply_file", kvPath(
+        d->currProject->getContingentRelativePath(d->currProject->tracksPath)));
     }
+
+    d->currProject->write();
   }
 }
 
