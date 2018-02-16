@@ -273,7 +273,13 @@ if (MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
 
   install(DIRECTORY "${KWIVER_DIR}/lib/${BINARY_DIR}/modules" DESTINATION lib
           COMPONENT Runtime
-          FILES_MATCHING PATTERN "*kwiver_algo*${CMAKE_SHARED_MODULE_SUFFIX}" )
+          FILES_MATCHING PATTERN "*plugin${CMAKE_SHARED_MODULE_SUFFIX}" )
+
+  install(DIRECTORY "${KWIVER_DIR}/lib/${BINARY_DIR}/modules/"
+          DESTINATION ${plugin_dest_dir}
+          COMPONENT Runtime
+          FILES_MATCHING PATTERN "*logger${CMAKE_SHARED_MODULE_SUFFIX}"
+          PATTERN "plugin_explorer" EXCLUDE )
 
   install(DIRECTORY "${KWIVER_DIR}/lib/${BINARY_DIR}/sprokit" DESTINATION lib
           COMPONENT Runtime
