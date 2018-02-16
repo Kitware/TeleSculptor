@@ -1,4 +1,4 @@
-file(GLOB config_files *.conf *.pipe)
+file(GLOB config_files *.conf *.pipe *.properties)
 file(GLOB model_files *.gz)
 
 # Ensure target directory exists
