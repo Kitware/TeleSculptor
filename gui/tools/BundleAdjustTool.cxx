@@ -87,7 +87,7 @@ bool BundleAdjustTool::execute(QWidget* window)
     return false;
   }
 
-  // Load configuration
+  // Merge project config with default config file
   auto const config = ConfigHelper::readConfig("gui_bundle_adjust.conf");
 
   // Check configuration
@@ -99,6 +99,7 @@ bool BundleAdjustTool::execute(QWidget* window)
     return false;
   }
 
+  config->merge_config(this->data()->config);
   if (!bundle_adjust::check_nested_algo_configuration(BLOCK, config))
   {
     QMessageBox::critical(

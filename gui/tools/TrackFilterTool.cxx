@@ -85,7 +85,7 @@ bool TrackFilterTool::execute(QWidget* window)
     return false;
   }
 
-  // Load configuration
+  // Merge project config with default config file
   auto const config = ConfigHelper::readConfig("gui_filter_tracks.conf");
 
   // Check configuration
@@ -97,6 +97,7 @@ bool TrackFilterTool::execute(QWidget* window)
     return false;
   }
 
+  config->merge_config(this->data()->config);
   if (!filter_tracks::check_nested_algo_configuration(BLOCK, config))
   {
     QMessageBox::critical(

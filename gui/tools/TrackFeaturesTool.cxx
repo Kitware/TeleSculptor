@@ -104,7 +104,7 @@ bool TrackFeaturesTool::execute(QWidget* window)
     return false;
   }
 
-  // Load configuration
+  // Merge project config with default config file
   auto const config = ConfigHelper::readConfig("gui_track_features.conf");
 
   // Check configuration
@@ -116,9 +116,10 @@ bool TrackFeaturesTool::execute(QWidget* window)
     return false;
   }
 
+  config->merge_config(this->data()->config);
   if (!convert_image::check_nested_algo_configuration(BLOCK_CI, config) ||
       !track_features::check_nested_algo_configuration(BLOCK_TF, config) ||
-      !video_input::check_nested_algo_configuration(BLOCK_VR, this->data()->config))
+      !video_input::check_nested_algo_configuration(BLOCK_VR, config))
 
   {
     QMessageBox::critical(
@@ -130,7 +131,7 @@ bool TrackFeaturesTool::execute(QWidget* window)
   // Create algorithm from configuration
   convert_image::set_nested_algo_configuration(BLOCK_CI, config, d->image_converter);
   track_features::set_nested_algo_configuration(BLOCK_TF, config, d->feature_tracker);
-  video_input::set_nested_algo_configuration(BLOCK_VR, this->data()->config, d->video_reader);
+  video_input::set_nested_algo_configuration(BLOCK_VR, config, d->video_reader);
 
   return AbstractTool::execute(window);
 }

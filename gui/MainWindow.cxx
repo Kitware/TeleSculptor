@@ -343,6 +343,8 @@ void MainWindowPrivate::addTool(AbstractTool* tool, MainWindow* mainWindow)
   QObject::connect(tool, SIGNAL(completed()),
                    mainWindow, SLOT(acceptToolFinalResults()));
 
+  tool->setEnabled(false);
+
   this->tools.append(tool);
 }
 
@@ -830,6 +832,10 @@ void MainWindowPrivate::setActiveTool(AbstractTool* tool)
   {
     QObject::connect(this->UI.actionCancelComputation, SIGNAL(triggered()),
                      tool, SLOT(cancel()));
+    QObject::connect(this->UI.actionCancelComputation, SIGNAL(triggered()),
+                     currProject.get(), SLOT(write()));
+    QObject::connect(tool, SIGNAL(completed()),
+                     currProject.get(), SLOT(write()));
   }
 
   auto const enableTools = !tool;
@@ -912,7 +918,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(setViewBackroundColor()));
 
   connect(d->UI.actionAbout, SIGNAL(triggered()),
-          this, SLOT(showAboutDialog()));
+          this, SLOT(showAbout()));
   connect(d->UI.actionShowManual, SIGNAL(triggered()),
           this, SLOT(showUserManual()));
 
@@ -1070,7 +1076,7 @@ void MainWindow::newProject()
     }
 
     d->currProject.reset();
-    d->currProject = std::make_shared<Project>(dirname);
+    d->currProject = std::shared_ptr<Project>(new Project(dirname));
 
     if (d->videoSource)
     {
@@ -1080,6 +1086,11 @@ void MainWindow::newProject()
     }
 
     d->currProject->write();
+  }
+
+  foreach (auto const& tool, d->tools)
+  {
+    tool->setEnabled(true);
   }
 }
 
@@ -1110,15 +1121,15 @@ void MainWindow::loadProject(QString const& path)
   }
 
   // Load tracks
-  if (!d->currProject->tracks.isEmpty())
+  if (!d->currProject->tracksPath.isEmpty())
   {
-    this->loadTracks(d->currProject->tracks);
+    this->loadTracks(d->currProject->tracksPath);
   }
 
   // Load landmarks
-  if (!d->currProject->landmarks.isEmpty())
+  if (!d->currProject->landmarksPath.isEmpty())
   {
-    this->loadLandmarks(d->currProject->landmarks);
+    this->loadLandmarks(d->currProject->landmarksPath);
   }
 
   // Load cameras and/or images
@@ -1127,21 +1138,23 @@ void MainWindow::loadProject(QString const& path)
     foreach (auto const& frame, d->frames)
     {
       auto frameName = QString::fromStdString(d->getFrameName(frame.id));
-      if (frameName != "")
+      if (frameName == "")
       {
-        try
-        {
-          auto const& camera = kwiver::vital::read_krtd_file(
-            kvPath(frameName), kvPath(d->currProject->cameraPath));
+        frameName = cameraName("", frame.id);
+      }
 
-          // Add camera to scene
-          d->addCamera(camera);
-        }
-        catch (...)
-        {
-          qWarning() << "failed to read camera file " << frameName
-                     << " from " << d->currProject->cameraPath;
-        }
+      try
+      {
+        auto const& camera = kwiver::vital::read_krtd_file(
+          kvPath(frameName), kvPath(d->currProject->cameraPath));
+
+        // Add camera to scene
+        d->addCamera(camera);
+      }
+      catch (...)
+      {
+        qWarning() << "failed to read camera file " << frameName
+                   << " from " << d->currProject->cameraPath;
       }
     }
   }
@@ -1174,6 +1187,11 @@ void MainWindow::loadProject(QString const& path)
   }
 
   d->UI.worldView->resetView();
+
+  foreach (auto const& tool, d->tools)
+  {
+    tool->setEnabled(true);
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -1307,6 +1325,8 @@ void MainWindow::loadLandmarks(QString const& path)
 //-----------------------------------------------------------------------------
 void MainWindow::saveLandmarks()
 {
+  QTE_D();
+
   auto const path = QFileDialog::getSaveFileName(
     this, "Export Landmarks", QString(),
     "Landmark file (*.ply);;"
@@ -1332,13 +1352,15 @@ void MainWindow::saveLandmarks(QString const& path)
     auto const msg =
       QString("An error occurred while exporting landmarks to \"%1\". "
               "The output file may not have been written correctly.");
-    QMessageBox::critical(this, "Export error", msg.arg(path));
+    QMessageBox::critical(this, "Export error", msg.arg(d->currProject->landmarksPath));
   }
 }
 
 //-----------------------------------------------------------------------------
 void MainWindow::saveTracks()
 {
+  QTE_D();
+
   auto const path = QFileDialog::getSaveFileName(
     this, "Export Tracks", QString(),
     "Track file (*.txt);;"
@@ -1358,6 +1380,8 @@ void MainWindow::saveTracks(QString const& path)
   try
   {
     kwiver::vital::write_feature_track_file(d->tracks, kvPath(path));
+
+    d->currProject->write();
   }
   catch (...)
   {
@@ -1371,6 +1395,8 @@ void MainWindow::saveTracks(QString const& path)
 //-----------------------------------------------------------------------------
 void MainWindow::saveCameras()
 {
+  QTE_D();
+
   auto const path = QFileDialog::getExistingDirectory(this, "Export Cameras");
 
   if (!path.isEmpty())
@@ -1395,7 +1421,7 @@ void MainWindow::saveCameras(QString const& path)
       auto const camera = cd.camera->GetCamera();
       if (camera)
       {
-        auto const filepath = path + "/" + cameraName("", i);
+        auto const filepath = d->currProject->cameraPath + "/" + cameraName("", i);
         out.insert(filepath, camera);
 
         if (QFileInfo(filepath).exists())
@@ -1442,8 +1468,8 @@ void MainWindow::saveCameras(QString const& path)
       QString("Error(s) occurred while exporting cameras to \"%1\". "
               "One or more output files may not have been written correctly.");
 
-    QMessageBox mb(QMessageBox::Critical, "Export error", msg.arg(path),
-                   QMessageBox::Ok, this);
+    QMessageBox mb(QMessageBox::Critical, "Export error",
+                   msg.arg(d->currProject->cameraPath), QMessageBox::Ok, this);
 
     mb.setDetailedText("Error writing the following file(s):\n  " +
                        errors.join("  \n"));
@@ -1486,6 +1512,9 @@ void MainWindow::saveDepthPoints(QString const& path)
   try
   {
     d->UI.worldView->saveDepthPoints(path);
+    d->currProject->projectConfig->set_value("depthmaps_images_file",
+      kvPath(d->currProject->getContingentRelativePath(path)));
+    d->currProject->write();
   }
   catch (...)
   {
@@ -1560,6 +1589,10 @@ void MainWindow::saveVolume()
   if (!path.isEmpty())
   {
     d->UI.worldView->saveVolume(path);
+    d->currProject->volumePath = d->currProject->getContingentRelativePath(path);
+    d->currProject->projectConfig->set_value("volume_file",
+      kvPath(d->currProject->volumePath));
+    d->currProject->write();
   }
 }
 
@@ -1692,6 +1725,7 @@ void MainWindow::acceptToolFinalResults()
   if (d->activeTool)
   {
     acceptToolResults(d->activeTool->data());
+    saveToolResults();
   }
   d->setActiveTool(0);
 }
@@ -1737,6 +1771,39 @@ void MainWindow::acceptToolResults(std::shared_ptr<ToolData> data)
   if(updateNeeded)
   {
     QTimer::singleShot(1000, this, SLOT(updateToolResults()));
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void MainWindow::saveToolResults()
+{
+  QTE_D();
+
+  if (d->activeTool)
+  {
+    auto const outputs = d->activeTool->outputs();
+
+    if (outputs.testFlag(AbstractTool::Cameras))
+    {
+      saveCameras(d->currProject->cameraPath);
+      d->currProject->projectConfig->set_value("output_krtd_dir", kvPath(
+        d->currProject->getContingentRelativePath(d->currProject->cameraPath)));
+    }
+    if (outputs.testFlag(AbstractTool::Landmarks))
+    {
+      saveLandmarks(d->currProject->landmarksPath);
+      d->currProject->projectConfig->set_value("output_ply_file", kvPath(
+        d->currProject->getContingentRelativePath(d->currProject->landmarksPath)));
+    }
+    if (outputs.testFlag(AbstractTool::Tracks))
+    {
+      saveTracks(d->currProject->tracksPath);
+      d->currProject->projectConfig->set_value("output_ply_file", kvPath(
+        d->currProject->getContingentRelativePath(d->currProject->tracksPath)));
+    }
+
+    d->currProject->write();
   }
 }
 

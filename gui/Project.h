@@ -40,25 +40,38 @@
 static std::string WORKING_DIR_TAG = "working_directory";
 static std::string VIDEO_SOURCE_TAG = "video_source";
 
-struct Project
+class Project : public QObject
 {
+  Q_OBJECT
+
+// TODO: Encapsulate data and add accessors
+public:
+
   Project();
   Project(QString dir);
 
   bool read(QString const& path);
-  void write();
+
+  QString getContingentRelativePath(QString filepath);
 
   QDir workingDir;
-  QString cameraPath;
-  QMap<int, QString> depthMaps;
 
-  QString tracks;
-  QString landmarks;
-
-  QString volumePath;
+  QString filePath;
   QString videoPath;
 
+  QString tracksPath;
+  QString landmarksPath;
+  QString depthmapsPath;
+  QString volumePath;
+  QString cameraPath;
+
+  QMap<int, QString> depthMaps;
+
   kwiver::vital::config_block_sptr projectConfig;
+
+public slots:
+  void write();
+
 };
 
 #endif

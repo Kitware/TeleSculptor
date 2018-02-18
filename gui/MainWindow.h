@@ -71,6 +71,7 @@ public slots:
   void saveTracks(QString const& path);
   void saveDepthPoints();
   void saveDepthPoints(QString const& path);
+  void saveToolResults();
 
   void saveWebGLScene();
 

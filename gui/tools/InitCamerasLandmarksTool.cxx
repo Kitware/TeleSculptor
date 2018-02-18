@@ -87,7 +87,7 @@ bool InitCamerasLandmarksTool::execute(QWidget* window)
     return false;
   }
 
-  // Load configuration
+  // Merge project config with default config file
   auto const config = ConfigHelper::readConfig(CONFIG_FILE);
 
   // Check configuration
@@ -100,6 +100,7 @@ bool InitCamerasLandmarksTool::execute(QWidget* window)
     return false;
   }
 
+  config->merge_config(this->data()->config);
   if (!initialize_cameras_landmarks::check_nested_algo_configuration(BLOCK, config))
   {
     QMessageBox::critical(
@@ -109,7 +110,8 @@ bool InitCamerasLandmarksTool::execute(QWidget* window)
   }
 
   // Create algorithm from configuration
-  initialize_cameras_landmarks::set_nested_algo_configuration(BLOCK, config, d->algorithm);
+  initialize_cameras_landmarks::set_nested_algo_configuration(
+    BLOCK, config, d->algorithm);
 
   // Set the callback to receive updates
   using std::placeholders::_1;

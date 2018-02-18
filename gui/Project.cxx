@@ -61,22 +61,6 @@ QString getPath(kwiver::vital::config_block_sptr const& config,
 }
 
 //-----------------------------------------------------------------------------
-// Returns the relative path if the filepath is contained in the directory and
-// returns the absolute path if not.
-QString getContingentRelativePath(QDir dir, QString filepath)
-{
-  if (kwiversys::SystemTools::IsSubDirectory(filepath.toStdString(),
-                                             dir.absolutePath().toStdString()))
-  {
-    return dir.relativeFilePath(filepath);
-  }
-  else
-  {
-    return filepath;
-  }
-}
-
-//-----------------------------------------------------------------------------
 Project::Project()
 {
   projectConfig = kwiver::vital::config_block::empty_config();
@@ -88,6 +72,12 @@ Project::Project(QString dir)
   projectConfig = kwiver::vital::config_block::empty_config();
 
   workingDir = dir;
+  filePath = workingDir.absoluteFilePath(workingDir.dirName() + ".conf");
+
+  // Set default paths
+  cameraPath = "results/krtd";
+  tracksPath = "results/tracks.txt";
+  landmarksPath = "results/landmarks.ply";
 }
 
 //-----------------------------------------------------------------------------
@@ -115,9 +105,11 @@ bool Project::read(QString const& path)
       this->workingDir = base;
     }
 
+    filePath = path;
+
     this->cameraPath = getPath(config, this->workingDir, "output_krtd_dir");
-    this->landmarks = getPath(config, this->workingDir, "output_ply_file");
-    this->tracks =
+    this->landmarksPath = getPath(config, this->workingDir, "output_ply_file");
+    this->tracksPath =
       getPath(config, this->workingDir, "input_track_file", "output_tracks_file");
 
     // Read depth map images list
@@ -179,17 +171,32 @@ bool Project::read(QString const& path)
   }
 }
 
+//-----------------------------------------------------------------------------
+// Returns the relative path if the filepath is contained in the directory and
+// returns the absolute path if not.
+QString Project::getContingentRelativePath(QString filepath)
+{
+  if (kwiversys::SystemTools::IsSubDirectory(filepath.toStdString(),
+                                             workingDir.absolutePath().toStdString()))
+  {
+    return workingDir.relativeFilePath(filepath);
+  }
+  else
+  {
+    return filepath;
+  }
+}
+
 void Project::write()
 {
   if (!videoPath.isEmpty())
   {
     projectConfig->set_value(VIDEO_SOURCE_TAG,
-      getContingentRelativePath(workingDir, videoPath).toStdString());
+      getContingentRelativePath(videoPath).toStdString());
   }
 
   if (projectConfig->available_values().size() > 0)
   {
-    auto filePath = workingDir.absoluteFilePath(workingDir.dirName() + ".conf");
     kwiver::vital::write_config_file(projectConfig, filePath.toStdString());
   }
 }

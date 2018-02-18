@@ -124,7 +124,7 @@ public:
   void setVideoPath(std::string const&);
 
   /// Set the config file if any
-  void setConfig(config_block_sptr const&);
+  void setConfig(config_block_sptr&);
 
   /// Execute the tool.
   ///

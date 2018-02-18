@@ -69,6 +69,7 @@ set(gui_moc_headers
   MainWindow.h
   MatchMatrixWindow.h
   PointOptions.h
+  Project.h
   VolumeOptions.h
   WorldView.h
   tools/AbstractTool.h
