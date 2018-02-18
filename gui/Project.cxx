@@ -78,6 +78,7 @@ Project::Project(QString dir)
   cameraPath = "results/krtd";
   tracksPath = "results/tracks.txt";
   landmarksPath = "results/landmarks.ply";
+  geoOriginFile = "results/geo_origin.txt";
 }
 
 //-----------------------------------------------------------------------------
@@ -139,10 +140,16 @@ bool Project::read(QString const& path)
       }
     }
 
-    //Read Volume file
+    // Read Volume file
     if (config->has_value("volume_file"))
     {
       this->volumePath = getPath(config, this->workingDir, "volume_file");
+    }
+
+    // Read the geo origin file
+    if (config->has_value("geo_origin_file"))
+    {
+      this->geoOriginFile = getPath(config, this->workingDir, "geo_origin_file");
     }
 
     // Read video file
