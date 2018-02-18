@@ -919,7 +919,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(setViewBackroundColor()));
 
   connect(d->UI.actionAbout, SIGNAL(triggered()),
-          this, SLOT(showAbout()));
+          this, SLOT(showAboutDialog()));
   connect(d->UI.actionShowManual, SIGNAL(triggered()),
           this, SLOT(showUserManual()));
 
