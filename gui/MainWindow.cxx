@@ -1332,8 +1332,6 @@ void MainWindow::loadLandmarks(QString const& path)
 //-----------------------------------------------------------------------------
 void MainWindow::saveLandmarks()
 {
-  QTE_D();
-
   auto const path = QFileDialog::getSaveFileName(
     this, "Export Landmarks", QString(),
     "Landmark file (*.ply);;"
@@ -1366,8 +1364,6 @@ void MainWindow::saveLandmarks(QString const& path)
 //-----------------------------------------------------------------------------
 void MainWindow::saveTracks()
 {
-  QTE_D();
-
   auto const path = QFileDialog::getSaveFileName(
     this, "Export Tracks", QString(),
     "Track file (*.txt);;"
@@ -1402,8 +1398,6 @@ void MainWindow::saveTracks(QString const& path)
 //-----------------------------------------------------------------------------
 void MainWindow::saveCameras()
 {
-  QTE_D();
-
   auto const path = QFileDialog::getExistingDirectory(this, "Export Cameras");
 
   if (!path.isEmpty())
