@@ -314,6 +314,8 @@ public:
   kwiver::vital::feature_track_set_sptr tracks;
   kwiver::vital::landmark_map_sptr landmarks;
 
+  kwiver::maptk::local_geo_cs localGeoCs;
+
   int activeCameraIndex;
 
   // Frames without a camera
@@ -424,9 +426,8 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
       }
 
       auto baseCamera = kwiver::vital::simple_camera();
-      auto localGeoCs = kwiver::maptk::local_geo_cs();
       camMap = kwiver::maptk::initialize_cameras_with_metadata(
-          mdMap, baseCamera, localGeoCs);
+          mdMap, baseCamera, this->localGeoCs);
     }
 
     // Add frames for video if needed
@@ -918,7 +919,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(setViewBackroundColor()));
 
   connect(d->UI.actionAbout, SIGNAL(triggered()),
-          this, SLOT(showAbout()));
+          this, SLOT(showAboutDialog()));
   connect(d->UI.actionShowManual, SIGNAL(triggered()),
           this, SLOT(showUserManual()));
 
@@ -1186,6 +1187,21 @@ void MainWindow::loadProject(QString const& path)
                                 d->currProject->cameraPath, d->currProject->videoPath);
   }
 
+  if (!d->currProject->geoOriginFile.isEmpty())
+  {
+    if (vtksys::SystemTools::FileExists(
+        d->currProject->geoOriginFile.toStdString(), true))
+    {
+      kwiver::maptk::read_local_geo_cs_from_file(
+        d->localGeoCs, d->currProject->geoOriginFile.toStdString());
+    }
+    else
+    {
+      qWarning() << "Failed to open geo origin file "
+        << d->currProject->geoOriginFile << ". File does not exist.";
+    }
+  }
+
   d->UI.worldView->resetView();
 
   foreach (auto const& tool, d->tools)
@@ -1325,8 +1341,6 @@ void MainWindow::loadLandmarks(QString const& path)
 //-----------------------------------------------------------------------------
 void MainWindow::saveLandmarks()
 {
-  QTE_D();
-
   auto const path = QFileDialog::getSaveFileName(
     this, "Export Landmarks", QString(),
     "Landmark file (*.ply);;"
@@ -1359,8 +1373,6 @@ void MainWindow::saveLandmarks(QString const& path)
 //-----------------------------------------------------------------------------
 void MainWindow::saveTracks()
 {
-  QTE_D();
-
   auto const path = QFileDialog::getSaveFileName(
     this, "Export Tracks", QString(),
     "Track file (*.txt);;"
@@ -1395,8 +1407,6 @@ void MainWindow::saveTracks(QString const& path)
 //-----------------------------------------------------------------------------
 void MainWindow::saveCameras()
 {
-  QTE_D();
-
   auto const path = QFileDialog::getExistingDirectory(this, "Export Cameras");
 
   if (!path.isEmpty())
@@ -1801,6 +1811,14 @@ void MainWindow::saveToolResults()
       saveTracks(d->currProject->tracksPath);
       d->currProject->projectConfig->set_value("output_ply_file", kvPath(
         d->currProject->getContingentRelativePath(d->currProject->tracksPath)));
+    }
+
+    if (!d->currProject->geoOriginFile.isEmpty() && !d->localGeoCs.origin().is_empty())
+    {
+      d->currProject->projectConfig->set_value("geo_origin_file", kvPath(
+        d->currProject->getContingentRelativePath(d->currProject->geoOriginFile)));
+      kwiver::maptk::write_local_geo_cs_to_file(
+        d->localGeoCs, d->currProject->geoOriginFile.toStdString());
     }
 
     d->currProject->write();

@@ -64,6 +64,7 @@ public:
   QString depthmapsPath;
   QString volumePath;
   QString cameraPath;
+  QString geoOriginFile;
 
   QMap<int, QString> depthMaps;
 
