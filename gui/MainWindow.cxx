@@ -1189,8 +1189,17 @@ void MainWindow::loadProject(QString const& path)
 
   if (!d->currProject->geoOriginFile.isEmpty())
   {
-    kwiver::maptk::read_local_geo_cs_from_file(
-      d->localGeoCs, d->currProject->geoOriginFile.toStdString());
+    if (vtksys::SystemTools::FileExists(
+        d->currProject->geoOriginFile.toStdString(), true))
+    {
+      kwiver::maptk::read_local_geo_cs_from_file(
+        d->localGeoCs, d->currProject->geoOriginFile.toStdString());
+    }
+    else
+    {
+      qWarning() << "Failed to open geo origin file "
+        << d->currProject->geoOriginFile << ". File does not exist.";
+    }
   }
 
   d->UI.worldView->resetView();
@@ -1804,8 +1813,10 @@ void MainWindow::saveToolResults()
         d->currProject->getContingentRelativePath(d->currProject->tracksPath)));
     }
 
-    if (!d->currProject->geoOriginFile.isEmpty())
+    if (!d->currProject->geoOriginFile.isEmpty() && !d->localGeoCs.origin().is_empty())
     {
+      d->currProject->projectConfig->set_value("geo_origin_file", kvPath(
+        d->currProject->getContingentRelativePath(d->currProject->geoOriginFile)));
       kwiver::maptk::write_local_geo_cs_to_file(
         d->localGeoCs, d->currProject->geoOriginFile.toStdString());
     }
