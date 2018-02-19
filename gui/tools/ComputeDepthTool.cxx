@@ -51,6 +51,17 @@
 #include <algorithm>
 #include <sstream>
 
+#include <vtkXMLImageDataWriter.h>
+#include <vtkNew.h>
+#include <vtkImageData.h>
+#include <vtkPoints.h>
+#include <vtkFloatArray.h>
+#include <vtkSmartPointer.h>
+#include <vtkCellArray.h>
+#include <vtkPointData.h>
+#include <vtkDoubleArray.h>
+#include <vtkUnsignedCharArray.h>
+
 using kwiver::vital::algo::image_io;
 using kwiver::vital::algo::image_io_sptr;
 using kwiver::vital::algo::compute_depth;
@@ -108,7 +119,7 @@ ComputeDepthTool::~ComputeDepthTool()
 //-----------------------------------------------------------------------------
 AbstractTool::Outputs ComputeDepthTool::outputs() const
 {
-  return Depth;
+  return Depth | ActiveFrame;
 }
 
 //-----------------------------------------------------------------------------
@@ -160,6 +171,56 @@ bool ComputeDepthTool::execute(QWidget* window)
 }
 
 //-----------------------------------------------------------------------------
+vtkSmartPointer<vtkImageData> depth_to_vtk(kwiver::vital::image_container_sptr depth_img, kwiver::vital::image_container_sptr color_img)
+{
+  int ni = depth_img->width();
+  int nj = depth_img->height();
+  vtkNew<vtkDoubleArray> uniquenessRatios;
+  uniquenessRatios->SetName("Uniqueness Ratios");
+  uniquenessRatios->SetNumberOfValues(ni*nj);
+
+  vtkNew<vtkDoubleArray> bestCost;
+  bestCost->SetName("Best Cost Values");
+  bestCost->SetNumberOfValues(ni*nj);
+
+  vtkNew<vtkUnsignedCharArray> color;
+  color->SetName("Color");
+  color->SetNumberOfComponents(3);
+  color->SetNumberOfTuples(ni*nj);
+
+  vtkNew<vtkDoubleArray> depths;
+  depths->SetName("Depths");
+  depths->SetNumberOfComponents(1);
+  depths->SetNumberOfTuples(ni*nj);
+
+  vtkIdType pt_id = 0;
+
+  for (int y = nj - 1; y >= 0; y--)
+  {
+    for (int x = 0; x < ni; x++)
+    {
+      uniquenessRatios->SetValue(pt_id, 0);
+      bestCost->SetValue(pt_id, 0);
+      depths->SetValue(pt_id, depth_img->get_image().at<double>(x, y));
+      color->SetTuple3(pt_id, (int)color_img->get_image().at<unsigned int>(x, y, 0),
+                              (int)color_img->get_image().at<unsigned int>(x, y, 1),
+                              (int)color_img->get_image().at<unsigned int>(x, y, 2));
+      pt_id++;
+    }
+  }
+
+  vtkSmartPointer<vtkImageData> imageData = vtkSmartPointer<vtkImageData>::New();
+  imageData->SetSpacing(1, 1, 1);
+  imageData->SetOrigin(0, 0, 0);
+  imageData->SetDimensions(ni, nj, 1);
+  imageData->GetPointData()->AddArray(depths.Get());
+  imageData->GetPointData()->AddArray(color.Get());
+  imageData->GetPointData()->AddArray(uniquenessRatios.Get());
+  imageData->GetPointData()->AddArray(bestCost.Get());
+  return imageData;
+}
+
+//-----------------------------------------------------------------------------
 void ComputeDepthTool::run()
 {
   QTE_D();
@@ -208,21 +269,13 @@ void ComputeDepthTool::run()
   //convert landmarks to vector
   foreach(auto const& l, lm)
   {
-    QMessageBox Msgbox;
-    std::ostringstream stream;
-    stream << this->landmarks()->size() << " " << this->landmarks()->landmarks().size() << " " << l.first;
-    Msgbox.setText(QString(stream.str().c_str()));
-    Msgbox.exec();
     landmarks_out.push_back(l.second);
   }
-  return;
-
 
   //compute depth
   kwiver::vital::image_container_sptr depth = d->depth_algo->compute(frames_out, cameras_out, landmarks_out, frame);
+  vtkSmartPointer<vtkImageData> image_data = depth_to_vtk(depth, frames_out[frame]);
 
-  // make a copy of the tool data
-  auto data = std::make_shared<ToolData>();
-  data->copyDepth(depth);
-  emit updated(data);
+  this->updateDepth(image_data);
 }
+

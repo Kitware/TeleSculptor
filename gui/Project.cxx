@@ -78,6 +78,7 @@ Project::Project(QString dir)
   cameraPath = "results/krtd";
   tracksPath = "results/tracks.txt";
   landmarksPath = "results/landmarks.ply";
+  depthPath = "results/depth";
 }
 
 //-----------------------------------------------------------------------------
@@ -108,6 +109,7 @@ bool Project::read(QString const& path)
     filePath = path;
 
     this->cameraPath = getPath(config, this->workingDir, "output_krtd_dir");
+    this->depthPath = getPath(config, this->workingDir, "output_depth_dir");
     this->landmarksPath = getPath(config, this->workingDir, "output_ply_file");
     this->tracksPath =
       getPath(config, this->workingDir, "input_track_file", "output_tracks_file");

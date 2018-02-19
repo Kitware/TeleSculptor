@@ -37,6 +37,9 @@
 #include <vital/types/feature_track_set.h>
 #include <vital/types/image_container.h>
 
+#include <vtkSmartPointer.h>
+#include <vtkImageData.h>
+
 #include <qtGlobal.h>
 
 #include <QtGui/QAction>
@@ -51,7 +54,7 @@ public:
   typedef kwiver::vital::camera_map_sptr camera_map_sptr;
   typedef kwiver::vital::landmark_map_sptr landmark_map_sptr;
   typedef kwiver::vital::config_block_sptr config_block_sptr;
-  typedef kwiver::vital::image_container_sptr image_container_sptr;
+  typedef vtkSmartPointer<vtkImageData> depth_sptr;
 
   /// Deep copy the feature tracks into this data class
   void copyTracks(feature_track_set_sptr const&);
@@ -62,13 +65,13 @@ public:
   /// Deep copy the landmarks into this data class
   void copyLandmarks(landmark_map_sptr const&);
 
-  /// copy a depth image into this data class
-  void copyDepth(kwiver::vital::image_container_sptr const&);
+  /// Deep copy a depth image into this data class
+  void copyDepth(depth_sptr const&);
 
   unsigned int activeFrame;
   std::string videoPath;
   feature_track_set_sptr tracks;
-  image_container_sptr active_depth;
+  depth_sptr active_depth;
   camera_map_sptr cameras;
   landmark_map_sptr landmarks;
   config_block_sptr config;
@@ -85,6 +88,7 @@ public:
   typedef kwiver::vital::camera_map_sptr camera_map_sptr;
   typedef kwiver::vital::landmark_map_sptr landmark_map_sptr;
   typedef kwiver::vital::config_block_sptr config_block_sptr;
+  typedef vtkSmartPointer<vtkImageData> depth_sptr;
 
   enum Output
   {
@@ -252,7 +256,7 @@ protected:
   void updateCameras(camera_map_sptr const&);
 
   /// Set the depth map produced by the tool.
-  void updateDepth(kwiver::vital::image_container_sptr const& newDepth);
+  void updateDepth(depth_sptr const& newDepth);
 
   /// Set the landmarks produced by the tool.
   ///

@@ -119,11 +119,12 @@ void ToolData::copyLandmarks(landmark_map_sptr const& newLandmarks)
 }
 
 //-----------------------------------------------------------------------------
-void ToolData::copyDepth(kwiver::vital::image_container_sptr const& newDepth)
+void ToolData::copyDepth(depth_sptr const& newDepth)
 {
+  this->active_depth = vtkSmartPointer<vtkImageData>::New();
   if (newDepth)
   {
-    this->active_depth = newDepth;
+    this->active_depth->DeepCopy(newDepth);
   }
 }
 
@@ -285,7 +286,7 @@ void AbstractTool::updateTracks(feature_track_set_sptr const& newTracks)
 }
 
 //-----------------------------------------------------------------------------
-void AbstractTool::updateDepth(kwiver::vital::image_container_sptr const& newDepth)
+void AbstractTool::updateDepth(depth_sptr const& newDepth)
 {
   QTE_D();
   d->data->active_depth = newDepth;

@@ -65,6 +65,7 @@ public slots:
 
   void saveCameras();
   void saveCameras(QString const& path);
+  void saveDepthImage(QString const& path);
   void saveLandmarks();
   void saveLandmarks(QString const& path);
   void saveTracks();
@@ -72,6 +73,7 @@ public slots:
   void saveDepthPoints();
   void saveDepthPoints(QString const& path);
   void saveToolResults();
+
 
   void saveWebGLScene();
 

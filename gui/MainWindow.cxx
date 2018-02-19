@@ -62,6 +62,7 @@
 
 #include <vtksys/SystemTools.hxx>
 
+#include <vtkXMLImageDataWriter.h>
 #include <vtkImageData.h>
 #include <vtkImageFlip.h>
 #include <vtkImageImport.h>
@@ -314,6 +315,7 @@ public:
   QList<FrameData> frames;
   kwiver::vital::feature_track_set_sptr tracks;
   kwiver::vital::landmark_map_sptr landmarks;
+  vtkSmartPointer<vtkImageData> active_depth;
 
   int activeCameraIndex;
 
@@ -1481,6 +1483,22 @@ void MainWindow::saveCameras(QString const& path)
 }
 
 //-----------------------------------------------------------------------------
+void MainWindow::saveDepthImage(QString const& path)
+{
+  QTE_D();
+
+  auto const defaultName = QString("depth%1.vti");
+  QString filename = defaultName.arg(d->toolUpdateActiveFrame, 4, 10, QChar('0'));
+  
+  vtkNew<vtkXMLImageDataWriter> writerI;
+  auto const filepath = path + "/" + filename;
+  writerI->SetFileName(stdString(filepath).c_str());
+  writerI->AddInputDataObject(d->active_depth.Get());
+  writerI->SetDataModeToBinary();
+  writerI->Write();
+}
+
+//-----------------------------------------------------------------------------
 void MainWindow::enableSaveDepthPoints(bool state)
 {
   QTE_D();
@@ -1768,6 +1786,10 @@ void MainWindow::acceptToolResults(std::shared_ptr<ToolData> data)
     {
       d->toolUpdateActiveFrame = static_cast<int>(data->activeFrame);
     }
+    if (outputs.testFlag(AbstractTool::Depth))
+    {
+      d->active_depth = data->active_depth;
+    }
   }
 
   if(updateNeeded)
@@ -1803,6 +1825,12 @@ void MainWindow::saveToolResults()
       saveTracks(d->currProject->tracksPath);
       d->currProject->projectConfig->set_value("output_ply_file", kvPath(
         d->currProject->getContingentRelativePath(d->currProject->tracksPath)));
+    }
+    if (outputs.testFlag(AbstractTool::Depth))
+    {
+      saveDepthImage(d->currProject->depthPath);
+      d->currProject->projectConfig->set_value("output_depth_dir", kvPath(
+        d->currProject->getContingentRelativePath(d->currProject->depthPath)));
     }
 
     d->currProject->write();
