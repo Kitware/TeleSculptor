@@ -37,6 +37,7 @@
 #include "tools/CanonicalTransformTool.h"
 #include "tools/InitCamerasLandmarksTool.h"
 #include "tools/NeckerReversalTool.h"
+#include "tools/SaveKeyFrameTool.h"
 #include "tools/TrackFeaturesTool.h"
 #include "tools/TrackFilterTool.h"
 #include "tools/ConfigHelper.h"
@@ -874,6 +875,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->addTool(new CanonicalTransformTool(this), this);
   d->addTool(new NeckerReversalTool(this), this);
   d->addTool(new TrackFilterTool(this), this);
+  d->addTool(new SaveKeyFrameTool(this), this);
 
   d->UI.menuView->addSeparator();
   d->UI.menuView->addAction(d->UI.cameraViewDock->toggleViewAction());
@@ -1327,9 +1329,9 @@ void MainWindow::loadTracks(QString const& path)
       d->UI.actionShowMatchMatrix->setEnabled(!tracks->tracks().empty());
     }
   }
-  catch (...)
+  catch (std::exception const& e)
   {
-    qWarning() << "failed to read tracks from" << path;
+    qWarning() << "failed to read tracks from" << path << " with error: " << e.what();
   }
 }
 

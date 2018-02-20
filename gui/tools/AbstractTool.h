@@ -86,6 +86,7 @@ public:
     Cameras = 0x2,
     Landmarks = 0x4,
     ActiveFrame = 0x8,
+    KeyFrames = 0x10,
   };
   Q_DECLARE_FLAGS(Outputs, Output)
 
