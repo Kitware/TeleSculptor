@@ -99,6 +99,7 @@ class ComputeDepthToolPrivate
 public:
   video_input_sptr video_reader;
   compute_depth_sptr depth_algo;
+  kwiver::vital::image_container_sptr ref_img;
 };
 
 QTE_IMPLEMENT_D_FUNC(ComputeDepthTool)
@@ -167,6 +168,13 @@ bool ComputeDepthTool::execute(QWidget* window)
   video_input::set_nested_algo_configuration(BLOCK_VR, this->data()->config, d->video_reader);
   compute_depth::set_nested_algo_configuration(BLOCK_CD, config, d->depth_algo);
 
+  // Set the callback to receive updates
+  using std::placeholders::_1;
+  using std::placeholders::_2;
+  typedef compute_depth::callback_t callback_t;
+  callback_t cb = std::bind(&ComputeDepthTool::callback_handler, this, _1, _2);
+  d->depth_algo->set_callback(cb);
+
   return AbstractTool::execute(window);
 }
 
@@ -202,9 +210,9 @@ vtkSmartPointer<vtkImageData> depth_to_vtk(kwiver::vital::image_container_sptr d
       uniquenessRatios->SetValue(pt_id, 0);
       bestCost->SetValue(pt_id, 0);
       depths->SetValue(pt_id, depth_img->get_image().at<double>(x, y));
-      color->SetTuple3(pt_id, (int)color_img->get_image().at<unsigned int>(x, y, 0),
-                              (int)color_img->get_image().at<unsigned int>(x, y, 1),
-                              (int)color_img->get_image().at<unsigned int>(x, y, 2));
+      color->SetTuple3(pt_id, (int)color_img->get_image().at<unsigned char>(x, y, 0),
+                              (int)color_img->get_image().at<unsigned char>(x, y, 1),
+                              (int)color_img->get_image().at<unsigned char>(x, y, 2));
       pt_id++;
     }
   }
@@ -234,7 +242,7 @@ void ComputeDepthTool::run()
   std::vector<kwiver::vital::image_container_sptr> frames_out;
   std::vector<kwiver::vital::camera_sptr> cameras_out;
   std::vector<kwiver::vital::landmark_sptr> landmarks_out;
-  const unsigned int numsupport = 10;
+  const unsigned int numsupport = 15;
   int halfsupport = numsupport / 2;
 
   if (d->video_reader->num_frames() < numsupport + 1)
@@ -255,12 +263,17 @@ void ComputeDepthTool::run()
   }
 
   kwiver::vital::timestamp currentTimestamp;
-  d->video_reader->seek_frame(currentTimestamp, start);
+  d->video_reader->seek_frame(currentTimestamp, start + 1);
 
   //collect images and cameras
   for (int i = start; i <= end; ++i)
   {
     auto const image = d->video_reader->frame_image();
+    auto const mdv = d->video_reader->frame_metadata();
+    if (!mdv.empty())
+    {
+      image->set_metadata(mdv[0]);
+    }
     frames_out.push_back(image);
     cameras_out.push_back(cm.find(i)->second);
     d->video_reader->next_frame(currentTimestamp);
@@ -272,10 +285,25 @@ void ComputeDepthTool::run()
     landmarks_out.push_back(l.second);
   }
 
+  d->ref_img = frames_out[frame];
+
   //compute depth
   kwiver::vital::image_container_sptr depth = d->depth_algo->compute(frames_out, cameras_out, landmarks_out, frame);
   vtkSmartPointer<vtkImageData> image_data = depth_to_vtk(depth, frames_out[frame]);
 
   this->updateDepth(image_data);
+  this->setActiveFrame(frame);
 }
 
+//-----------------------------------------------------------------------------
+bool ComputeDepthTool::callback_handler(kwiver::vital::image_container_sptr depth, unsigned int iterations)
+{
+  // make a copy of the tool data
+  auto data = std::make_shared<ToolData>();
+  vtkSmartPointer<vtkImageData> depthData = depth_to_vtk(depth, this->d_ptr->ref_img);
+
+  data->copyDepth(depthData);
+  
+  emit updated(data);
+  return !this->isCanceled();
+}
