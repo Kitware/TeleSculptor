@@ -444,7 +444,7 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
       }
     }
   }
-  catch (kwiver::vital::file_not_found_exception e)
+  catch (kwiver::vital::file_not_found_exception const& e)
   {
     qWarning() << e.what();
     this->videoSource->close();
@@ -1200,7 +1200,7 @@ void MainWindow::loadVideo(QString const& path)
   {
     d->addVideoSource(config, path);
   }
-  catch (std::exception e)
+  catch (std::exception const& e)
   {
     QMessageBox::critical(
       this, "Error loading video\n",
@@ -1686,7 +1686,7 @@ void MainWindow::executeTool(QObject* object)
       }
     }
   }
-  catch (std::exception e)
+  catch (std::exception const& e)
   {
     QString message("The tool failed with the following error:\n");
     message += e.what();
