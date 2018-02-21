@@ -1122,19 +1122,20 @@ void MainWindow::loadProject(QString const& path)
   }
 
   // Load tracks
-  if (!d->currProject->tracksPath.isEmpty())
+  if (d->currProject->projectConfig->has_value("input_track_file") ||
+      d->currProject->projectConfig->has_value("output_track_file"))
   {
     this->loadTracks(d->currProject->tracksPath);
   }
 
   // Load landmarks
-  if (!d->currProject->landmarksPath.isEmpty())
+  if (d->currProject->projectConfig->has_value("output_ply_file"))
   {
     this->loadLandmarks(d->currProject->landmarksPath);
   }
 
-  // Load cameras and/or images
-  if (!d->currProject->cameraPath.isEmpty())
+  // Load cameras
+  if (d->currProject->projectConfig->has_value("output_krtd_dir"))
   {
     foreach (auto const& frame, d->frames)
     {
@@ -1179,15 +1180,14 @@ void MainWindow::loadProject(QString const& path)
   d->UI.actionWebGLScene->setEnabled(true);
 #endif
 
-  //Load volume
-  if (!d->currProject->volumePath.isEmpty())
+  // Load volume
+  if (d->currProject->projectConfig->has_value("volume_file"))
   {
-
     d->UI.worldView->loadVolume(d->currProject->volumePath, d->frames.size(),
                                 d->currProject->cameraPath, d->currProject->videoPath);
   }
 
-  if (!d->currProject->geoOriginFile.isEmpty())
+  if (d->currProject->projectConfig->has_value("geo_origin_file"))
   {
     if (vtksys::SystemTools::FileExists(
         d->currProject->geoOriginFile.toStdString(), true))
@@ -1820,7 +1820,7 @@ void MainWindow::saveToolResults()
     if (outputs.testFlag(AbstractTool::Tracks))
     {
       saveTracks(d->currProject->tracksPath);
-      d->currProject->projectConfig->set_value("output_ply_file", kvPath(
+      d->currProject->projectConfig->set_value("output_tracks_file", kvPath(
         d->currProject->getContingentRelativePath(d->currProject->tracksPath)));
     }
 
