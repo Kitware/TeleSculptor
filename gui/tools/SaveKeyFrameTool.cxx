@@ -109,10 +109,7 @@ void SaveKeyFrameTool::run()
 
   d->video_reader->open(this->data()->videoPath);
 
-  // Uncomment once keyframes issues in kwiver are resolved
-  // for (auto const& frame: this->tracks()->keyframes())
-  std::set<kwiver::vital::frame_id_t> testKeyFrames = {1, 301, 401, 581, 1001};
-  for (auto const& frame: testKeyFrames)
+  for (auto const& frame: this->tracks()->keyframes())
   {
     if (d->video_reader->seek_frame(currentTimestamp, frame))
     {
