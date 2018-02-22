@@ -30,7 +30,8 @@
 ## Author = 'jonathan.owens'
 
 require 'sketchup.rb'
-require_relative './krtd_importer.rb'
+#require_relative './krtd_importer.rb'
+require File.join(File.dirname(__FILE__), 'krtd_importer.rb')
 
 class MatchphotoMaptkImporter < Sketchup::Importer
   # This method is not necessarily used by sketchup, but allows us to instantiate
@@ -123,20 +124,23 @@ class MatchphotoMaptkImporter < Sketchup::Importer
       guess_krtd_location_flag = true
     end
 
-    model = Sketchup.active_model
+	model = Sketchup.active_model
     entities = model.entities
     pages = model.pages
-    cam_layer = model.layers.add('Cameras')
+	cam_layer = model.layers.add('Cameras')
     cam_layer.page_behavior = LAYER_IS_HIDDEN_ON_NEW_PAGES
     material = model.materials.add('camera')
     material.alpha = 0.1
     material.color = 'red'
-    cam_group = entities.add_group
-    cam_group.layer = cam_layer
-    smooth_flags = Geom::PolygonMesh::NO_SMOOTH_OR_HIDE
+	cam_group = entities.add_group
+	cam_group.layer = cam_layer
+	mesh = Geom::PolygonMesh.new
+	
+    smooth_flags = 0#Geom::PolygonMesh::NO_SMOOTH_OR_HIDE#This line is crashing the program
+	#https://github.com/jimfoltz/SketchUp-Ruby-API-Doc/blob/master/lib/polygonmesh.rb
+	
     img_fps = read_in_image_fps(file_path)
-
-    # if there are more than 10 images in the list, let the user select how many to use
+	# if there are more than 10 images in the list, let the user select how many to use
     if img_fps.size > 10
       prompts = ["How many frames do you want to use?"]
       defaults = ["10"]
@@ -152,7 +156,8 @@ class MatchphotoMaptkImporter < Sketchup::Importer
 
     not_opened = Array.new
     img_fps.each do |img_fp|
-
+	
+	
       # if not a valid path, try prepending the directory of the image list file
       if ! File.file?(img_fp)
         img_fp = File.join(File.dirname(file_path), img_fp)
@@ -164,24 +169,27 @@ class MatchphotoMaptkImporter < Sketchup::Importer
       else
         krtd_fname = File.join(@_krtd_prefix, swap_img_ext_for_krtd(img_fp))
       end
-
+	
       if not File.exists?(krtd_fname)
         not_opened.push(File.basename(img_fp))
         next
       end
-      new_cam = load_camera(krtd_fname)
-      scale = new_cam.eye.distance(Geom::Point3d.new) / 3
+      new_cam = load_camera(krtd_fname)#This line is the issue now
+	  scale = new_cam.eye.distance(Geom::Point3d.new) / 3
       cam_mesh = make_camera_mesh(new_cam, scale)
+	  
       cam_group.entities.add_faces_from_mesh(cam_mesh, smooth_flags, material, material)
-
       page = pages.add_matchphoto_page(img_fp, camera = new_cam, page_name = File.basename(img_fp))
       page.transition_time = 0
     end
+	
     if ! not_opened.empty?
       UI.messagebox("Failed to open #{not_opened.length} krtd files")
     end
-
-    if pages.length > 0
+	UI.messagebox("Finished the if statement")
+	UI.messagebox(pages.count)
+    if pages.count > 0#pages.length crashed it
+	  UI.messagebox("Added pages")
       pages.selected_page = pages[0]
       return 0
     else

@@ -29,7 +29,7 @@
 
 ## Author = 'jonathan.owens'
 
-require 'matrix'
+#require 'matrix'
 
 # Because matrices are immutable in Ruby, apparantly, so this allows us to
 # change elements at a given index. See
@@ -54,12 +54,16 @@ class KRTD
     @_name = name
 
     # dimensions are stored by half in the krtd files, in pixels
-    @x_dim = 2 * @focal_length_mat[0, 2]
-    @y_dim = 2 * @focal_length_mat[1, 2]
+    #@x_dim = 2 * @focal_length_mat[0, 2]
+    #@y_dim = 2 * @focal_length_mat[1, 2]
+    @x_dim = 2 * @focal_length_mat[0 * 3 + 2]
+    @y_dim = 2 * @focal_length_mat[1 * 3 + 2]
 
     # in pixels
-    @focal_length_x = @focal_length_mat[0, 0]
-    @focal_length_y = @focal_length_mat[1, 1]
+    #@focal_length_x = @focal_length_mat[0, 0]
+    #@focal_length_y = @focal_length_mat[1, 1]
+	@focal_length_x = @focal_length_mat[0 * 3 + 0]
+    @focal_length_y = @focal_length_mat[1 * 3 + 1]
 
     # initializing the properties that need computing. we'll actually
     # compute them once the getter method is called so as not to waste
@@ -92,38 +96,60 @@ class KRTD
   end
 
   def fov_x
-    @_fov_x = @_fov_x ? @_fov_x
-	      : 2 * Math.atan((@x_dim / 2.0) / @focal_length_x) * 180 / Math::PI
+    @_fov_x = @_fov_x ? @_fov_x : 2 * Math.atan((@x_dim / 2.0) / @focal_length_x) * 180 / Math::PI
     return @_fov_x
   end
 
   def fov_y
-    @_fov_y = @_fov_y ? @_fov_y
-	      : 2 * Math.atan((@y_dim / 2.0) / @focal_length_y) * 180 / Math::PI
+    @_fov_y = @_fov_y ? @_fov_y : 2 * Math.atan((@y_dim / 2.0) / @focal_length_y) * 180 / Math::PI
     return @_fov_y
   end
 
   def up
-    if @_up == nil then
-      @_up = -1 * Vector[@rotation_mat[1, 0],
-		    @rotation_mat[1, 1],
-		    @rotation_mat[1, 2]]
+    #if @_up == nil then
+    #  @_up = -1 * Vector[@rotation_mat[1, 0],
+	#	    @rotation_mat[1, 1],
+	#	    @rotation_mat[1, 2]]
+    #end
+	if @_up == nil then
+      @_up = [@rotation_mat[3] * -1,
+		    @rotation_mat[4] * -1,
+		    @rotation_mat[5] * -1]
     end
     return @_up
   end
 
   def target
-    if @_target == nil then
-      @_target = position + Vector[@rotation_mat[2, 0],
-                                   @rotation_mat[2, 1],
-                                   @rotation_mat[2, 2]]
+    #if @_target == nil then
+    #  @_target = position + Vector[@rotation_mat[2, 0],
+    #                               @rotation_mat[2, 1],
+    #                               @rotation_mat[2, 2]]
+    #end
+	if @_target == nil then
+	  position#sets the value of @_position
+      @_target = [@_position[0] + @rotation_mat[6],
+				@_position[1] + @rotation_mat[7],
+				@_position[2] + @rotation_mat[8]]
     end
     return @_target
   end
 
   def position
-    if @_position == nil then
-      @_position = -1 * @rotation_mat.transpose * @translation_vec
+    #if @_position == nil then
+    #  @_position = -1 * @rotation_mat.transpose * @translation_vec
+    #end
+    #return @_position
+	if @_position == nil then
+      @_position = [0,0,0]
+	  @_position[0] = -1 * (@rotation_mat[0] * @translation_vec[0]+
+					@rotation_mat[3] * @translation_vec[1] +
+					@rotation_mat[6] * @translation_vec[2])
+	  @_position[1] = -1 * (@rotation_mat[1] * @translation_vec[0]+
+					@rotation_mat[4] * @translation_vec[1] +
+					@rotation_mat[7] * @translation_vec[2])
+	  @_position[2] = -1 * (@rotation_mat[2] * @translation_vec[0]+
+					@rotation_mat[5] * @translation_vec[1] +
+					@rotation_mat[8] * @translation_vec[2])
     end
     return @_position
   end
@@ -161,28 +187,28 @@ def from_file(fp)
   #
   krtd_file = File.new(fp, "r")
   name = fp
-  focal_length_mat = Matrix.zero(3)
-  rotation_mat = Matrix.zero(3)
+  focal_length_mat = [0,0,0,0,0,0,0,0,0]#this line is the issue. Because there is no matrix class probably
+  rotation_mat = [0,0,0,0,0,0,0,0,0]#I am going to hack around with making everything arrays
   translation_vec = nil
   distortion = 0
-
   idx = 0 # For line counting
   while (line = krtd_file.gets)
     raw_line = line.strip.split
     if idx < 3 then
-      focal_length_mat[idx, 0] = raw_line[0].to_f
-      focal_length_mat[idx, 1] = raw_line[1].to_f
-      focal_length_mat[idx, 2] = raw_line[2].to_f
+      focal_length_mat[idx * 3 + 0] = raw_line[0].to_f
+      focal_length_mat[idx * 3 + 1] = raw_line[1].to_f
+      focal_length_mat[idx * 3 + 2] = raw_line[2].to_f
     elsif idx > 3 && idx < 7 then
-      rotation_mat[idx - 4, 0] = raw_line[0].to_f
-      rotation_mat[idx - 4, 1] = raw_line[1].to_f
-      rotation_mat[idx - 4, 2] = raw_line[2].to_f
+      rotation_mat[(idx - 4) * 3 + 0] = raw_line[0].to_f
+      rotation_mat[(idx - 4) * 3 + 1] = raw_line[1].to_f
+      rotation_mat[(idx - 4) * 3 + 2] = raw_line[2].to_f
     elsif idx > 7 && idx < 9 then
-      translation_vec = Vector[raw_line[0].to_f, raw_line[1].to_f, raw_line[2].to_f]
+      translation_vec = [raw_line[0].to_f, raw_line[1].to_f, raw_line[2].to_f]
     elsif idx == 10 then
       distortion = raw_line[0].to_f
     end
     idx += 1
   end
-  return KRTD.new(focal_length_mat, rotation_mat, translation_vec, fp, distortion)
+  new_krtd = KRTD.new(focal_length_mat, rotation_mat, translation_vec, fp, distortion)
+  return new_krtd
 end
