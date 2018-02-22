@@ -1086,6 +1086,15 @@ void MainWindow::newProject()
       d->currProject->projectConfig->merge_config(config);
     }
 
+    saveCameras(d->currProject->cameraPath);
+    d->currProject->projectConfig->set_value("output_krtd_dir", kvPath(
+      d->currProject->getContingentRelativePath(d->currProject->cameraPath)));
+
+    if (!d->localGeoCs.origin().is_empty())
+    {
+      saveGeoOrigin(d->currProject->geoOriginFile);
+    }
+
     d->currProject->write();
   }
 
@@ -1123,7 +1132,7 @@ void MainWindow::loadProject(QString const& path)
 
   // Load tracks
   if (d->currProject->projectConfig->has_value("input_track_file") ||
-      d->currProject->projectConfig->has_value("output_track_file"))
+      d->currProject->projectConfig->has_value("output_tracks_file"))
   {
     this->loadTracks(d->currProject->tracksPath);
   }
@@ -1226,8 +1235,6 @@ void MainWindow::loadVideo(QString const& path)
   {
     d->currProject->projectConfig->merge_config(config);
     d->currProject->videoPath = path;
-    d->currProject->write();
-    config = d->currProject->projectConfig;
   }
 
   try
@@ -1239,6 +1246,20 @@ void MainWindow::loadVideo(QString const& path)
     QMessageBox::critical(
       this, "Error loading video\n",
       e.what());
+  }
+
+  if (d->currProject)
+  {
+    saveCameras(d->currProject->cameraPath);
+    d->currProject->projectConfig->set_value("output_krtd_dir", kvPath(
+      d->currProject->getContingentRelativePath(d->currProject->cameraPath)));
+
+    if (!d->localGeoCs.origin().is_empty())
+    {
+      saveGeoOrigin(d->currProject->geoOriginFile);
+    }
+
+    d->currProject->write();
   }
 }
 
@@ -1348,18 +1369,24 @@ void MainWindow::saveLandmarks()
 
   if (!path.isEmpty())
   {
-    this->saveLandmarks(path);
+    this->saveLandmarks(path, false);
   }
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::saveLandmarks(QString const& path)
+void MainWindow::saveLandmarks(QString const& path, bool writeToProject)
 {
   QTE_D();
 
   try
   {
     kwiver::vital::write_ply_file(d->landmarks, kvPath(path));
+
+    if (writeToProject && d->currProject)
+    {
+      d->currProject->projectConfig->set_value("output_ply_file", kvPath(
+        d->currProject->getContingentRelativePath(path)));
+    }
   }
   catch (...)
   {
@@ -1380,12 +1407,12 @@ void MainWindow::saveTracks()
 
   if (!path.isEmpty())
   {
-    this->saveTracks(path);
+    this->saveTracks(path, false);
   }
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::saveTracks(QString const& path)
+void MainWindow::saveTracks(QString const& path, bool writeToProject)
 {
   QTE_D();
 
@@ -1393,7 +1420,11 @@ void MainWindow::saveTracks(QString const& path)
   {
     kwiver::vital::write_feature_track_file(d->tracks, kvPath(path));
 
-    d->currProject->write();
+    if (writeToProject && d->currProject)
+    {
+      d->currProject->projectConfig->set_value("output_tracks_file", kvPath(
+        d->currProject->getContingentRelativePath(path)));
+    }
   }
   catch (...)
   {
@@ -1411,12 +1442,12 @@ void MainWindow::saveCameras()
 
   if (!path.isEmpty())
   {
-    this->saveCameras(path);
+    this->saveCameras(path, false);
   }
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::saveCameras(QString const& path)
+void MainWindow::saveCameras(QString const& path, bool writeToProject)
 {
   QTE_D();
 
@@ -1470,6 +1501,12 @@ void MainWindow::saveCameras(QString const& path)
     {
       errors.append(iter.key());
     }
+  }
+
+  if (writeToProject && d->currProject)
+  {
+    d->currProject->projectConfig->set_value("output_krtd_dir", kvPath(
+      d->currProject->getContingentRelativePath(path)));
   }
 
   if (!errors.isEmpty())
@@ -1533,6 +1570,15 @@ void MainWindow::saveDepthPoints(QString const& path)
               "The output file may not have been written correctly.");
     QMessageBox::critical(this, "Export error", msg.arg(path));
   }
+}
+
+void MainWindow::saveGeoOrigin(QString const& path)
+{
+  QTE_D();
+
+  d->currProject->projectConfig->set_value("geo_origin_file", kvPath(
+    d->currProject->getContingentRelativePath(path)));
+  kwiver::maptk::write_local_geo_cs_to_file(d->localGeoCs, path.toStdString());
 }
 
 //-----------------------------------------------------------------------------
@@ -1808,28 +1854,19 @@ void MainWindow::saveToolResults()
     if (outputs.testFlag(AbstractTool::Cameras))
     {
       saveCameras(d->currProject->cameraPath);
-      d->currProject->projectConfig->set_value("output_krtd_dir", kvPath(
-        d->currProject->getContingentRelativePath(d->currProject->cameraPath)));
     }
     if (outputs.testFlag(AbstractTool::Landmarks))
     {
       saveLandmarks(d->currProject->landmarksPath);
-      d->currProject->projectConfig->set_value("output_ply_file", kvPath(
-        d->currProject->getContingentRelativePath(d->currProject->landmarksPath)));
     }
     if (outputs.testFlag(AbstractTool::Tracks))
     {
       saveTracks(d->currProject->tracksPath);
-      d->currProject->projectConfig->set_value("output_tracks_file", kvPath(
-        d->currProject->getContingentRelativePath(d->currProject->tracksPath)));
     }
 
-    if (!d->currProject->geoOriginFile.isEmpty() && !d->localGeoCs.origin().is_empty())
+    if (!d->localGeoCs.origin().is_empty())
     {
-      d->currProject->projectConfig->set_value("geo_origin_file", kvPath(
-        d->currProject->getContingentRelativePath(d->currProject->geoOriginFile)));
-      kwiver::maptk::write_local_geo_cs_to_file(
-        d->localGeoCs, d->currProject->geoOriginFile.toStdString());
+      saveGeoOrigin(d->currProject->geoOriginFile);
     }
 
     d->currProject->write();
