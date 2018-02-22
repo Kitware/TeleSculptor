@@ -39,7 +39,7 @@ require File.join(File.dirname(__FILE__),'matchphoto_import_plugin.rb')
 
 # These are the keywords that correspond to the relevant values of interest from the
 # maptk configuration file and are the only lines we care about in this file.
-IMAGE_LIST_FILE_KW = 'video_source'
+IMAGE_FOLDER_KW = 'output_keyframes_dir'
 OUTPUT_PLY_FILE_KW = 'output_ply_file'
 OUTPUT_KRTD_DIR_KW = 'output_krtd_dir'
 
@@ -61,7 +61,7 @@ class MaptkConfImporter < Sketchup::Importer
   end
 
   def get_kws_of_interest(fp)
-    image_list_file = ""
+    output_image_dir = ""
     output_ply_file = ""
     output_krtd_dir = ""
 
@@ -73,8 +73,8 @@ class MaptkConfImporter < Sketchup::Importer
       value = key_value[1] ? key_value[1].strip : ""
 
       case key
-      when IMAGE_LIST_FILE_KW
-        image_list_file = value
+      when IMAGE_FOLDER_KW
+        output_image_dir = value
       when OUTPUT_PLY_FILE_KW
         output_ply_file = value
       when OUTPUT_KRTD_DIR_KW
@@ -84,8 +84,8 @@ class MaptkConfImporter < Sketchup::Importer
 
     # Check to ensure all of the required keywords were found and show a warning message
     # and return nil if they weren't
-    if image_list_file == ""
-      UI.messagebox("Error parsing MAP-Tk conf file: missing #{IMAGE_LIST_FILE_KW} keyword")
+    if output_image_dir == ""
+      UI.messagebox("Error parsing MAP-Tk conf file: missing #{IMAGE_FOLDER_KW} keyword")
       return nil
     elsif output_ply_file == ""
       UI.messagebox("Error parsing MAP-Tk conf file: missing #{OUTPUT_PLY_FILE_KW} keyword")
@@ -96,8 +96,9 @@ class MaptkConfImporter < Sketchup::Importer
     end
 	
     # if not a valid path, try prepending the directory of the conf file
-    if ! File.file?(image_list_file)
-      image_list_file = File.join(File.dirname(fp), image_list_file)
+    if ! File.directory?(output_image_dir)
+      output_image_dir = File.join(File.dirname(fp), output_image_dir)
+	  UI.messagebox(output_image_dir)
     end
 
     # if not a valid directory, try prepending the directory of the conf file
@@ -112,7 +113,7 @@ class MaptkConfImporter < Sketchup::Importer
 
 	#UI.messagebox("All of the requisite information was found")
 	
-    return image_list_file, output_ply_file, output_krtd_dir
+    return output_image_dir, output_ply_file, output_krtd_dir
   end
 
   def load_file(file_path, status)
@@ -124,14 +125,14 @@ class MaptkConfImporter < Sketchup::Importer
       return 1
     end
 
-    image_list_file = kwds[0]
+    output_image_folder = kwds[0]
     output_ply_file = kwds[1]
     output_krtd_dir = kwds[2]
 
     # We delegate the importing of the photos/krtd files to the matchphoto_import_plugin.
     photo_krtd_importer = MatchphotoMaptkImporter.new
     photo_krtd_importer.instantiate(output_krtd_dir)
-    status_images = photo_krtd_importer.load_file(image_list_file, 0)
+    status_images = photo_krtd_importer.load_file(output_image_folder, 0)
     # And the ply importing to the PLYImporter plugin.
     ply_importer = PLYImporter.new
     status_ply = ply_importer.load_file(output_ply_file, 0)

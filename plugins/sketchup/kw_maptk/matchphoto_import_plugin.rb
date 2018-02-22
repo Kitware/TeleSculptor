@@ -73,15 +73,14 @@ class MatchphotoMaptkImporter < Sketchup::Importer
   end
 
   def read_in_image_fps(fp)
-    file = File.new(fp, "r")
-    image_fps = Array.new
-
-    while (line = file.gets)
-      image_fps.push line.strip
-    end
-    file.close
-    @_image_fps = image_fps
-    return image_fps
+    image_fps = Dir.entries(fp).reject {|f| File.directory? f}
+	full_image_fps = Array.new
+    image_fps.each do |image_fps|
+	  full = File.join(fp,image_fps)
+	  full_image_fps.push(full)
+    end	
+	
+    return full_image_fps
   end
 
   def make_camera_mesh(camera, length=1.0)
@@ -153,10 +152,8 @@ class MatchphotoMaptkImporter < Sketchup::Importer
       end
       img_fps = new_img_fps
     end
-
     not_opened = Array.new
     img_fps.each do |img_fp|
-	
 	
       # if not a valid path, try prepending the directory of the image list file
       if ! File.file?(img_fp)
@@ -169,27 +166,24 @@ class MatchphotoMaptkImporter < Sketchup::Importer
       else
         krtd_fname = File.join(@_krtd_prefix, swap_img_ext_for_krtd(img_fp))
       end
-	
       if not File.exists?(krtd_fname)
         not_opened.push(File.basename(img_fp))
         next
       end
-      new_cam = load_camera(krtd_fname)#This line is the issue now
+      new_cam = load_camera(krtd_fname)
 	  scale = new_cam.eye.distance(Geom::Point3d.new) / 3
       cam_mesh = make_camera_mesh(new_cam, scale)
 	  
       cam_group.entities.add_faces_from_mesh(cam_mesh, smooth_flags, material, material)
-      page = pages.add_matchphoto_page(img_fp, camera = new_cam, page_name = File.basename(img_fp))
+	  page = pages.add_matchphoto_page(img_fp, camera = new_cam, page_name = File.basename(img_fp))
       page.transition_time = 0
     end
 	
     if ! not_opened.empty?
       UI.messagebox("Failed to open #{not_opened.length} krtd files")
     end
-	UI.messagebox("Finished the if statement")
-	UI.messagebox(pages.count)
+	
     if pages.count > 0#pages.length crashed it
-	  UI.messagebox("Added pages")
       pages.selected_page = pages[0]
       return 0
     else

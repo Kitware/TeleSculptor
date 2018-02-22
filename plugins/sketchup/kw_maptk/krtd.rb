@@ -195,14 +195,16 @@ def from_file(fp)
   while (line = krtd_file.gets)
     raw_line = line.strip.split
     if idx < 3 then
+	  #Everything is in a 1D array, rather than a 2D one as previously 
       focal_length_mat[idx * 3 + 0] = raw_line[0].to_f
       focal_length_mat[idx * 3 + 1] = raw_line[1].to_f
       focal_length_mat[idx * 3 + 2] = raw_line[2].to_f
     elsif idx > 3 && idx < 7 then
+	  #Everything is in a 1D array, rather than a 2D one as previously 
       rotation_mat[(idx - 4) * 3 + 0] = raw_line[0].to_f
       rotation_mat[(idx - 4) * 3 + 1] = raw_line[1].to_f
       rotation_mat[(idx - 4) * 3 + 2] = raw_line[2].to_f
-    elsif idx > 7 && idx < 9 then
+    elsif idx > 7 && idx < 9 then#idx==8
       translation_vec = [raw_line[0].to_f, raw_line[1].to_f, raw_line[2].to_f]
     elsif idx == 10 then
       distortion = raw_line[0].to_f
