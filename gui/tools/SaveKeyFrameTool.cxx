@@ -49,6 +49,8 @@ namespace
 {
 static char const* const BLOCK_VR = "video_reader";
 static char const* const BLOCK_IW = "image_writer";
+static char const* const KEYFRAMES_TAG = "output_keyframes_dir";
+static char const* const KEYFRAMES_PATH = "results/keyframes";
 }
 
 QTE_IMPLEMENT_D_FUNC(SaveKeyFrameTool)
@@ -138,10 +140,22 @@ void SaveKeyFrameTool::run()
   QTE_D();
 
   // Create keyframes directory if it doesn't exist
-  if (!kwiversys::SystemTools::FileExists("results/keyframes"))
+  if (!kwiversys::SystemTools::FileExists(KEYFRAMES_PATH))
   {
-    kwiversys::SystemTools::MakeDirectory("results/keyframes");
+    kwiversys::SystemTools::MakeDirectory(KEYFRAMES_PATH);
   }
+
+  std::string keyframesDir;
+  if (this->data()->config->has_value(KEYFRAMES_TAG))
+  {
+    keyframesDir = this->data()->config->get_value<std::string>(KEYFRAMES_TAG);
+  }
+  else
+  {
+    keyframesDir = KEYFRAMES_PATH;
+  }
+  auto keyframeBase =
+    QDir(QString::fromStdString(keyframesDir)).filePath("frame_").toStdString();
 
   kwiver::vital::timestamp currentTimestamp;
 
@@ -152,11 +166,10 @@ void SaveKeyFrameTool::run()
     if (d->video_reader->seek_frame(currentTimestamp, frame))
     {
       std::ostringstream ss;
-      ss << "results/keyframes/frame_" << std::setw(4) << std::setfill('0') << frame << ".png";
+      ss << keyframeBase << std::setw(4) << std::setfill('0') << frame << ".png";
       auto filename = ss.str();
       try
       {
-        auto frameImg = d->video_reader->frame_image();
         d->image_writer->save(ss.str(), d->video_reader->frame_image());
       }
       catch (std::exception const& e)
@@ -170,6 +183,12 @@ void SaveKeyFrameTool::run()
       qWarning() << "Key frame " << frame << " not available in video source.";
     }
   }
+
+  if (!this->data()->config->has_value(KEYFRAMES_TAG))
+  {
+    this->data()->config->set_value(KEYFRAMES_TAG, KEYFRAMES_PATH);
+  }
+
 
   d->video_reader->close();
 }
