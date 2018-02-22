@@ -89,6 +89,7 @@
 #include <QtGui/QDesktopServices>
 #include <QtGui/QFileDialog>
 #include <QtGui/QMessageBox>
+#include <QtGui/qpushbutton.h>
 
 #include <QtCore/QDebug>
 #include <QtCore/QQueue>
@@ -1596,11 +1597,12 @@ void MainWindow::saveCameras(QString const& path, bool writeToProject)
                    "One or more files will be overwritten by this operation. "
                    "Do you wish to continue?", QMessageBox::Cancel, this);
 
-    mb.addButton("&Overwrite", QMessageBox::AcceptRole);
+    QAbstractButton* myOverwrite = mb.addButton("&Overwrite", QMessageBox::AcceptRole);
     mb.setDetailedText("The following file(s) will be overwritten:\n  " +
                        willOverwrite.join("  \n"));
 
-    if (mb.exec() != QDialog::Accepted)
+    mb.exec();
+    if (mb.clickedButton() != myOverwrite)
     {
       // User canceled operation
       return;
