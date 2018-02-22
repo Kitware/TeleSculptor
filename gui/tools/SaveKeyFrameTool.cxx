@@ -182,13 +182,17 @@ void SaveKeyFrameTool::run()
     {
       qWarning() << "Key frame " << frame << " not available in video source.";
     }
+
+    if( this->isCanceled() )
+    {
+      break;
+    }
   }
 
   if (!this->data()->config->has_value(KEYFRAMES_TAG))
   {
     this->data()->config->set_value(KEYFRAMES_TAG, KEYFRAMES_PATH);
   }
-
 
   d->video_reader->close();
 }

@@ -1092,7 +1092,8 @@ void MainWindow::newProject()
     d->currProject->projectConfig->set_value("output_krtd_dir", kvPath(
       d->currProject->getContingentRelativePath(d->currProject->cameraPath)));
 
-    if (!d->localGeoCs.origin().is_empty())
+    if (!d->localGeoCs.origin().is_empty() &&
+        !d->currProject->geoOriginFile.isEmpty())
     {
       saveGeoOrigin(d->currProject->geoOriginFile);
     }
@@ -1256,7 +1257,8 @@ void MainWindow::loadVideo(QString const& path)
     d->currProject->projectConfig->set_value("output_krtd_dir", kvPath(
       d->currProject->getContingentRelativePath(d->currProject->cameraPath)));
 
-    if (!d->localGeoCs.origin().is_empty())
+    if (!d->localGeoCs.origin().is_empty() &&
+        !d->currProject->geoOriginFile.isEmpty())
     {
       saveGeoOrigin(d->currProject->geoOriginFile);
     }
@@ -1866,7 +1868,8 @@ void MainWindow::saveToolResults()
       saveTracks(d->currProject->tracksPath);
     }
 
-    if (!d->localGeoCs.origin().is_empty())
+    if (!d->localGeoCs.origin().is_empty() &&
+        !d->currProject->geoOriginFile.isEmpty())
     {
       saveGeoOrigin(d->currProject->geoOriginFile);
     }
