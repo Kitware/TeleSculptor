@@ -29,18 +29,26 @@
  */
 
 #include "SaveKeyFrameTool.h"
+#include "ConfigHelper.h"
 
+#include <iomanip>
+
+#include <vital/algo/image_io.h>
 #include <vital/algo/video_input.h>
+#include <kwiversys/SystemTools.hxx>
 
 #include <QtCore/QDebug>
 #include <QtGui/QMessageBox>
 
 using kwiver::vital::algo::video_input;
 using kwiver::vital::algo::video_input_sptr;
+using kwiver::vital::algo::image_io;
+using kwiver::vital::algo::image_io_sptr;
 
 namespace
 {
 static char const* const BLOCK_VR = "video_reader";
+static char const* const BLOCK_IW = "image_writer";
 }
 
 QTE_IMPLEMENT_D_FUNC(SaveKeyFrameTool)
@@ -50,6 +58,7 @@ class SaveKeyFrameToolPrivate
 {
 public:
   video_input_sptr video_reader;
+  image_io_sptr image_writer;
 };
 
 //-----------------------------------------------------------------------------
@@ -90,12 +99,35 @@ bool SaveKeyFrameTool::execute(QWidget* window)
   {
     QMessageBox::critical(
       window, "Configuration error",
-      "An error was found in the algorithm configuration.");
+      "An error was found in the video source algorithm configuration.");
+    return false;
+  }
+
+  // Merge project config with default config file
+  auto const config = ConfigHelper::readConfig("gui_keyframe_image_writer.conf");
+
+  // Check configuration
+  if (!config)
+  {
+    QMessageBox::critical(
+      window, "Configuration error",
+      "No configuration data was found. Please check your installation.");
+    return false;
+  }
+
+  config->merge_config(this->data()->config);
+  if (!image_io::check_nested_algo_configuration(BLOCK_IW, config))
+  {
+    QMessageBox::critical(
+      window, "Configuration error",
+      "An error was found in the image writer algorithm configuration.");
     return false;
   }
 
   video_input::set_nested_algo_configuration(
     BLOCK_VR, this->data()->config, d->video_reader);
+  image_io::set_nested_algo_configuration(
+    BLOCK_IW, config, d->image_writer);
 
   return AbstractTool::execute(window);
 }
@@ -105,6 +137,12 @@ void SaveKeyFrameTool::run()
 {
   QTE_D();
 
+  // Create keyframes directory if it doesn't exist
+  if (!kwiversys::SystemTools::FileExists("results/keyframes"))
+  {
+    kwiversys::SystemTools::MakeDirectory("results/keyframes");
+  }
+
   kwiver::vital::timestamp currentTimestamp;
 
   d->video_reader->open(this->data()->videoPath);
@@ -113,7 +151,19 @@ void SaveKeyFrameTool::run()
   {
     if (d->video_reader->seek_frame(currentTimestamp, frame))
     {
-      qWarning() << "FRAME: " << frame;
+      std::ostringstream ss;
+      ss << "results/keyframes/frame_" << std::setw(4) << std::setfill('0') << frame << ".png";
+      auto filename = ss.str();
+      try
+      {
+        auto frameImg = d->video_reader->frame_image();
+        d->image_writer->save(ss.str(), d->video_reader->frame_image());
+      }
+      catch (std::exception const& e)
+      {
+        qWarning() << "Error writing frame to "
+        << QString::fromStdString(filename) << ": " <<  e.what();
+      }
     }
     else
     {
