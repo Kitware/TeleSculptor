@@ -32,10 +32,10 @@
 
 class KRTD
   def initialize(focal_length_mat,
-         rotation_mat,
-         translation_vec,
-         name = nil,
-         distortion = nil)
+                 rotation_mat,
+                 translation_vec,
+                 name = nil,
+                 distortion = nil)
     @focal_length_mat = focal_length_mat
     @rotation_mat = rotation_mat
     @translation_vec = translation_vec
@@ -93,8 +93,8 @@ class KRTD
   def up
     if @_up == nil then
       @_up = [@rotation_mat[3] * -1,
-            @rotation_mat[4] * -1,
-            @rotation_mat[5] * -1]
+              @rotation_mat[4] * -1,
+              @rotation_mat[5] * -1]
     end
     return @_up
   end
@@ -103,8 +103,8 @@ class KRTD
     if @_target == nil then
       position #sets the value of @_position if it wasn't set previously 
       @_target = [@_position[0] + @rotation_mat[6],
-                @_position[1] + @rotation_mat[7],
-                @_position[2] + @rotation_mat[8]]
+                  @_position[1] + @rotation_mat[7],
+                  @_position[2] + @rotation_mat[8]]
     end
     return @_target
   end
@@ -114,14 +114,14 @@ class KRTD
       @_position = [0,0,0]
       #@_position = -1 * @rotation_mat.transpose * @translation_vec
       @_position[0] = -1 * (@rotation_mat[0] * @translation_vec[0]+
-                     @rotation_mat[3] * @translation_vec[1] +
-                     @rotation_mat[6] * @translation_vec[2])
+                            @rotation_mat[3] * @translation_vec[1]+
+                            @rotation_mat[6] * @translation_vec[2])
       @_position[1] = -1 * (@rotation_mat[1] * @translation_vec[0]+
-                     @rotation_mat[4] * @translation_vec[1] +
-                     @rotation_mat[7] * @translation_vec[2])
+                            @rotation_mat[4] * @translation_vec[1]+
+                            @rotation_mat[7] * @translation_vec[2])
       @_position[2] = -1 * (@rotation_mat[2] * @translation_vec[0]+
-                     @rotation_mat[5] * @translation_vec[1] +
-                     @rotation_mat[8] * @translation_vec[2])
+                            @rotation_mat[5] * @translation_vec[1]+
+                            @rotation_mat[8] * @translation_vec[2])
     end
     return @_position
   end
@@ -168,11 +168,11 @@ def from_file(fp)
   idx = 0 # For line counting
   while (line = krtd_file.gets)
     raw_line = line.strip.split
-    if idx < 3 then 
+    if idx < 3 then
       focal_length_mat[idx * 3 + 0] = raw_line[0].to_f
       focal_length_mat[idx * 3 + 1] = raw_line[1].to_f
       focal_length_mat[idx * 3 + 2] = raw_line[2].to_f
-    elsif idx > 3 && idx < 7 then 
+    elsif idx > 3 && idx < 7 then
       rotation_mat[(idx - 4) * 3 + 0] = raw_line[0].to_f
       rotation_mat[(idx - 4) * 3 + 1] = raw_line[1].to_f
       rotation_mat[(idx - 4) * 3 + 2] = raw_line[2].to_f

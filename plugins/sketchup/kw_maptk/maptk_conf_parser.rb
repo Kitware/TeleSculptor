@@ -30,9 +30,8 @@
 ## Author = "jonathan.owens"
 
 require 'sketchup.rb'
-#require_relative './read_ply.rb'
-#require_relative './matchphoto_import_plugin.rb'
-#taken from https://stackoverflow.com/questions/2681031/why-doesnt-relative-require-work-on-ruby-1-8-6, and seen in other files
+
+#SketchUp 8 comes with Ruby 1.8.6, which doesn't support require_relative
 require File.join(File.dirname(__FILE__),'read_ply.rb')
 require File.join(File.dirname(__FILE__),'matchphoto_import_plugin.rb')
 

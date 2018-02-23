@@ -135,8 +135,7 @@ class MatchphotoMaptkImporter < Sketchup::Importer
     cam_group.layer = cam_layer
     mesh = Geom::PolygonMesh.new
     
-    smooth_flags = 0#Geom::PolygonMesh::NO_SMOOTH_OR_HIDE#This line is crashing the program
-    #https://github.com/jimfoltz/SketchUp-Ruby-API-Doc/blob/master/lib/polygonmesh.rb
+    smooth_flags = 0#Geom::PolygonMesh::NO_SMOOTH_OR_HIDE#
     
     img_fps = read_in_image_fps(file_path)
     # if there are more than 10 images in the list, let the user select how many to use
@@ -183,7 +182,7 @@ class MatchphotoMaptkImporter < Sketchup::Importer
       UI.messagebox("Failed to open #{not_opened.length} krtd files")
     end
     
-	#SketchUp 8 does not support pages.length
+    #SketchUp 8 does not support pages.length
     if pages.count > 0
       pages.selected_page = pages[0]
       return 0
