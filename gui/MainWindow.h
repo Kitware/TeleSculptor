@@ -101,7 +101,7 @@ protected slots:
 
   void executeTool(QObject*);
   void acceptToolFinalResults();
-  void acceptToolResults(std::shared_ptr<ToolData> data);
+  void acceptToolResults(std::shared_ptr<ToolData> data, bool isFinal = false);
   void updateToolResults();
 
 private:

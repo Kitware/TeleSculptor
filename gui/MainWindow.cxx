@@ -121,6 +121,20 @@ QString cameraName(QString const& imagePath, int cameraIndex)
 }
 
 //-----------------------------------------------------------------------------
+QString depthName(QString const& imagePath, int depthIndex)
+{
+  static auto const defaultName = QString("depth%1.vti");
+
+  if (imagePath.isEmpty())
+  {
+    return defaultName.arg(depthIndex, 4, 10, QChar('0'));
+  }
+
+  auto const fi = QFileInfo(imagePath);
+  return fi.completeBaseName() + ".vti";
+}
+
+//-----------------------------------------------------------------------------
 QString findUserManual()
 {
   static auto const name = "telesculptor.html";
@@ -261,7 +275,8 @@ public:
   MainWindowPrivate()
     : activeTool(0)
     , toolUpdateActiveFrame(-1)
-    , activeCameraIndex(-1) {}
+    , activeCameraIndex(-1)
+    , activeDepthFrame(-1) {}
 
   void addTool(AbstractTool* tool, MainWindow* mainWindow);
 
@@ -306,6 +321,7 @@ public:
   kwiver::vital::camera_map_sptr toolUpdateCameras;
   kwiver::vital::landmark_map_sptr toolUpdateLandmarks;
   kwiver::vital::feature_track_set_sptr toolUpdateTracks;
+  vtkSmartPointer<vtkImageData> toolUpdateDepth;
 
   QString videoPath;
   kwiver::vital::algo::video_input_sptr videoSource;
@@ -315,7 +331,8 @@ public:
   QList<FrameData> frames;
   kwiver::vital::feature_track_set_sptr tracks;
   kwiver::vital::landmark_map_sptr landmarks;
-  vtkSmartPointer<vtkImageData> active_depth;
+  vtkSmartPointer<vtkImageData> activeDepth;
+  int activeDepthFrame;
 
   int activeCameraIndex;
 
@@ -1487,15 +1504,16 @@ void MainWindow::saveDepthImage(QString const& path)
 {
   QTE_D();
 
-  auto const defaultName = QString("depth%1.vti");
-  QString filename = defaultName.arg(d->toolUpdateActiveFrame, 4, 10, QChar('0'));
+  QString filename = depthName("", d->activeDepthFrame);
   
   vtkNew<vtkXMLImageDataWriter> writerI;
   auto const filepath = path + "/" + filename;
   writerI->SetFileName(stdString(filepath).c_str());
-  writerI->AddInputDataObject(d->active_depth.Get());
+  writerI->AddInputDataObject(d->activeDepth.Get());
   writerI->SetDataModeToBinary();
   writerI->Write();
+
+  d->frames[d->activeDepthFrame].depthMapPath = filepath;
 }
 
 //-----------------------------------------------------------------------------
@@ -1744,14 +1762,14 @@ void MainWindow::acceptToolFinalResults()
   QTE_D();
   if (d->activeTool)
   {
-    acceptToolResults(d->activeTool->data());
+    acceptToolResults(d->activeTool->data(), true);
     saveToolResults();
   }
   d->setActiveTool(0);
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::acceptToolResults(std::shared_ptr<ToolData> data)
+void MainWindow::acceptToolResults(std::shared_ptr<ToolData> data, bool isFinal)
 {
   QTE_D();
   // if all the update variables are Null then trigger a GUI update after
@@ -1760,6 +1778,7 @@ void MainWindow::acceptToolResults(std::shared_ptr<ToolData> data)
   bool updateNeeded = !d->toolUpdateCameras &&
                       !d->toolUpdateLandmarks &&
                       !d->toolUpdateTracks &&
+                      !d->toolUpdateDepth &&
                       d->toolUpdateActiveFrame < 0;
 
   if (d->activeTool)
@@ -1770,6 +1789,7 @@ void MainWindow::acceptToolResults(std::shared_ptr<ToolData> data)
     d->toolUpdateLandmarks = NULL;
     d->toolUpdateTracks = NULL;
     d->toolUpdateActiveFrame = -1;
+    d->toolUpdateDepth = NULL;
     if (outputs.testFlag(AbstractTool::Cameras))
     {
       d->toolUpdateCameras = data->cameras;
@@ -1782,17 +1802,21 @@ void MainWindow::acceptToolResults(std::shared_ptr<ToolData> data)
     {
       d->toolUpdateTracks = data->tracks;
     }
+    if (outputs.testFlag(AbstractTool::Depth))
+    {
+      d->toolUpdateDepth = data->active_depth;
+    }
     if (outputs.testFlag(AbstractTool::ActiveFrame))
     {
       d->toolUpdateActiveFrame = static_cast<int>(data->activeFrame);
     }
-    if (outputs.testFlag(AbstractTool::Depth))
-    {
-      d->active_depth = data->active_depth;
-    }
   }
 
-  if(updateNeeded)
+  if (isFinal)
+  {
+    updateToolResults();  //force immediate update on tool finish so we ensure update before saving
+  }
+  else if(updateNeeded)
   {
     QTimer::singleShot(1000, this, SLOT(updateToolResults()));
   }
@@ -1878,6 +1902,24 @@ void MainWindow::updateToolResults()
     this->setActiveCamera(d->toolUpdateActiveFrame);
     d->toolUpdateActiveFrame = -1;
   }
+  if (d->toolUpdateDepth)
+  {
+    d->activeDepth = d->toolUpdateDepth;
+    d->activeDepthFrame = d->activeCameraIndex;
+
+    d->depthFilter->SetInputData(d->activeDepth);
+
+    d->UI.depthMapView->setValidDepthInput(true);
+    d->UI.worldView->setValidDepthInput(true);
+
+    d->depthFilter->SetCamera(d->frames[d->activeDepthFrame].camera);
+    d->UI.worldView->updateDepthMap();
+    d->UI.depthMapView->updateView(true);
+    d->UI.actionExportDepthPoints->setEnabled(true);
+
+    d->toolUpdateDepth = NULL;
+  }
+
 
   if (!d->frames.isEmpty())
   {

@@ -233,7 +233,8 @@ void ComputeDepthTool::run()
 {
   QTE_D();
 
-  int frame = this->activeFrame();
+  int frame = this->activeFrame() - 1;
+
   auto const& lm = this->landmarks()->landmarks();
   auto const& cm = this->cameras()->cameras();
 
@@ -242,23 +243,27 @@ void ComputeDepthTool::run()
   std::vector<kwiver::vital::image_container_sptr> frames_out;
   std::vector<kwiver::vital::camera_sptr> cameras_out;
   std::vector<kwiver::vital::landmark_sptr> landmarks_out;
-  const unsigned int numsupport = 15;
-  int halfsupport = numsupport / 2;
+  const int halfsupport = 7;
 
-  if (d->video_reader->num_frames() < numsupport + 1)
+  if (d->video_reader->num_frames() < 2*halfsupport + 1)
     return;
 
   // compute support range
   int start = frame - halfsupport;
   int end = frame + halfsupport;
+  int ref_frame = halfsupport;
   if (start < 0) 
   {
-    end += abs(start);
+    int offset = abs(start);
+    end += offset;
+    ref_frame -= offset;
     start = 0;    
   }
   if (end >= d->video_reader->num_frames())
   {
-    start -= end - d->video_reader->num_frames() + 1;
+    int offset = end - d->video_reader->num_frames() + 1;
+    start -= offset;
+    ref_frame += offset;
     end = d->video_reader->num_frames() - 1;
   }
 
@@ -275,7 +280,7 @@ void ComputeDepthTool::run()
       image->set_metadata(mdv[0]);
     }
     frames_out.push_back(image);
-    cameras_out.push_back(cm.find(i)->second);
+    cameras_out.push_back(cm.find(currentTimestamp.get_frame())->second);
     d->video_reader->next_frame(currentTimestamp);
   }
   
@@ -285,14 +290,13 @@ void ComputeDepthTool::run()
     landmarks_out.push_back(l.second);
   }
 
-  d->ref_img = frames_out[frame];
+  d->ref_img = frames_out[ref_frame];
 
   //compute depth
-  kwiver::vital::image_container_sptr depth = d->depth_algo->compute(frames_out, cameras_out, landmarks_out, frame);
-  vtkSmartPointer<vtkImageData> image_data = depth_to_vtk(depth, frames_out[frame]);
+  kwiver::vital::image_container_sptr depth = d->depth_algo->compute(frames_out, cameras_out, landmarks_out, ref_frame);
+  vtkSmartPointer<vtkImageData> image_data = depth_to_vtk(depth, frames_out[ref_frame]);
 
   this->updateDepth(image_data);
-  this->setActiveFrame(frame);
 }
 
 //-----------------------------------------------------------------------------
