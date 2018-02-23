@@ -30,11 +30,10 @@
 ## Author = 'jonathan.owens'
 ## Author = 'david.russell'
 
-#require_relative './krtd.rb'
-#This version of SketchUp came with Ruby 1.8.6, which doesn't support require_relative
+#SketchUp 8 comes with Ruby 1.8.6, which doesn't support require_relative
 require File.join(File.dirname(__FILE__), 'krtd.rb')
-
-
+    
+    
 def load_camera(file_path)
   model = Sketchup.active_model
   ents = model.active_entities

@@ -28,7 +28,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.erermer
 
 ## Author = 'jonathan.owens'
-## Author = 'david.russell'
 
 require 'sketchup.rb'
 
@@ -48,7 +47,7 @@ class PLYImporter < Sketchup::Importer
   def supports_options?
     return false
   end
-
+    
   def load_file(file_path, status)
     file = File.new(file_path, "r")
     model = Sketchup.active_model

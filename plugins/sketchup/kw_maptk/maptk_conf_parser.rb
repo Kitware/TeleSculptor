@@ -98,21 +98,26 @@ class MaptkConfImporter < Sketchup::Importer
     # if not a valid path, try prepending the directory of the conf file
     if ! File.directory?(output_image_dir)
       output_image_dir = File.join(File.dirname(fp), output_image_dir)
-	  UI.messagebox(output_image_dir)
+      if ! File.directory?(output_image_dir)
+        UI.messagebox("The value of #{IMAGE_FOLDER_KW} is incorrect. #{output_image_dir} is not a valid directory")
+      end
     end
 
     # if not a valid directory, try prepending the directory of the conf file
     if ! File.directory?(output_krtd_dir)
       output_krtd_dir = File.join(File.dirname(fp), output_krtd_dir)
+      if ! File.directory?(output_krtd_dir)
+        UI.messagebox("The value of #{OUTPUT_KRTD_DIR_KW} is incorrect. #{output_krtd_dir} is not a valid directory")
+      end
     end
 
     # if not a valid directory, try prepending the directory of the conf file
     if ! File.file?(output_ply_file)
       output_ply_file = File.join(File.dirname(fp), output_ply_file)
+      if ! File.file?(output_ply_file)
+        UI.messagebox("The value of #{OUTPUT_PLY_FILE_KW} is incorrect. #{output_ply_file} is not a valid file.")
     end
 
-	#UI.messagebox("All of the requisite information was found")
-	
     return output_image_dir, output_ply_file, output_krtd_dir
   end
 
