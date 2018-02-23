@@ -106,20 +106,6 @@ kwiver::vital::path_t kvPath(QString const& s)
 }
 
 //-----------------------------------------------------------------------------
-QString cameraName(QString const& imagePath, int cameraIndex)
-{
-  static auto const defaultName = QString("camera%1.krtd");
-
-  if (imagePath.isEmpty())
-  {
-    return defaultName.arg(cameraIndex, 4, 10, QChar('0'));
-  }
-
-  auto const fi = QFileInfo(imagePath);
-  return fi.completeBaseName() + ".krtd";
-}
-
-//-----------------------------------------------------------------------------
 QString findUserManual()
 {
   static auto const name = "telesculptor.html";

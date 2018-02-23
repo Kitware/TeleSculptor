@@ -68,6 +68,9 @@ public:
 SaveKeyFrameTool::SaveKeyFrameTool(QObject* parent)
   : AbstractTool(parent), d_ptr(new SaveKeyFrameToolPrivate)
 {
+  this->data()->logger =
+    kwiver::vital::get_logger("telesculptor.tools.save_key_frames");
+
   this->setText("Save Key Frames");
   this->setToolTip(
     "Saves the key frames from the Track Features to disk.");
@@ -164,19 +167,21 @@ void SaveKeyFrameTool::run()
     if (d->video_reader->seek_frame(currentTimestamp, frame))
     {
       auto filename = QDir(QString::fromStdString(keyframesDir)).
-        filePath(kwiver::maptk::frameName(frame, "png"));
+        filePath(kwiver::maptk::frameName(frame, "png")).toStdString();
       try
       {
-        d->image_writer->save(filename.toStdString(), d->video_reader->frame_image());
+        d->image_writer->save(filename, d->video_reader->frame_image());
       }
       catch (std::exception const& e)
       {
-        qWarning() << "Error writing frame to " << filename << ": " <<  e.what();
+        LOG_WARN(this->data()->logger, "Error writing frame to "
+                                       << filename << ": " <<  e.what());
       }
     }
     else
     {
-      qWarning() << "Key frame " << frame << " not available in video source.";
+      LOG_WARN(this->data()->logger, "Key frame " << frame
+                                     << " not available in video source.");
     }
 
     if( this->isCanceled() )
