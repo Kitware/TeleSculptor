@@ -80,7 +80,6 @@ class MaptkConfImporter < Sketchup::Importer
         output_krtd_dir = value
       end
     end
-
     # Check to ensure all of the required keywords were found and show a warning message
     # and return nil if they weren't
     if output_image_dir == ""
@@ -120,7 +119,6 @@ class MaptkConfImporter < Sketchup::Importer
         return nil
       end
     end
-
     return output_image_dir, output_ply_file, output_krtd_dir
   end
 
@@ -136,12 +134,11 @@ class MaptkConfImporter < Sketchup::Importer
     output_image_folder = kwds[0]
     output_ply_file = kwds[1]
     output_krtd_dir = kwds[2]
-
     # We delegate the importing of the photos/krtd files to the matchphoto_import_plugin.
     photo_krtd_importer = MatchphotoMaptkImporter.new
     photo_krtd_importer.instantiate(output_krtd_dir)
     status_images = photo_krtd_importer.load_file(output_image_folder, 0)
-    # And the ply importing to the PLYImporter plugin.
+	# And the ply importing to the PLYImporter plugin.
     ply_importer = PLYImporter.new
     status_ply = ply_importer.load_file(output_ply_file, 0)
     return 0
