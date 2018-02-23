@@ -83,41 +83,6 @@ class MatchphotoMaptkImporter < Sketchup::Importer
     return full_image_fps
   end
 
-  def check_for_krtd(img_fps)
-    valid_img_fps = Array.new
-    krtd_fps = Array.new
-    num_bad_img_fps = 0
-    num_bad_krtd_fps = 0
-    img_fps.each do |img_fp|
-      # if not a valid path, try prepending the directory of the image list file
-      if ! File.file?(img_fp)
-        img_fp = File.join(File.dirname(file_path), img_fp)
-      end
-      if ! File.file?(img_fp)
-        num_bad_img_fps += 1
-        next
-      end
-        
-      krtd_fname = nil
-      if guess_krtd_location_flag
-        krtd_fname = guess_krtd_location(img_fp)
-      else
-        krtd_fname = File.join(@_krtd_prefix, swap_img_ext_for_krtd(img_fp))
-      end
-      if File.file?(krtd_fname)
-        valid_img_fps.push(img_fp)
-        krtd_fps.push(krtd_fname)
-      else
-        num_bad_krtd_fps += 1
-      end
-
-    end
-    return [valid_img_fps,
-           krtd_fps,
-           num_bad_img_fps,
-           num_bad_krtd_fps]
-  end
-
   def make_camera_mesh(camera, length=1.0)
     zs = length
     ys = Math.tan(camera.fov * Math::PI / 360.0) * zs
@@ -172,10 +137,7 @@ class MatchphotoMaptkImporter < Sketchup::Importer
     
     smooth_flags = 0#Geom::PolygonMesh::NO_SMOOTH_OR_HIDE#
     
-    raw_img_fps = read_in_image_fps(file_path)
-    fps_conglomerate = check_for_krtd(raw_img_fps)
-    img_fps  = fps_conglomerate[0]
-    krtd_fps = fps_conglomerate[1]
+    img_fps = read_in_image_fps(file_path)
     # if there are more than 10 images in the list, let the user select how many to use
     if img_fps.size > 10
       prompts = ["How many frames do you want to use?"]
