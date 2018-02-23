@@ -116,6 +116,7 @@ class MaptkConfImporter < Sketchup::Importer
       output_ply_file = File.join(File.dirname(fp), output_ply_file)
       if ! File.file?(output_ply_file)
         UI.messagebox("The value of #{OUTPUT_PLY_FILE_KW} is incorrect. #{output_ply_file} is not a valid file.")
+      end
     end
 
     return output_image_dir, output_ply_file, output_krtd_dir

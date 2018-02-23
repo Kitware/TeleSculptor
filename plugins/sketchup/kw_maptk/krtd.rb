@@ -81,14 +81,12 @@ class KRTD
   end
     
   def fov_x
-    @_fov_x = @_fov_x ? @_fov_x 
-             : 2 * Math.atan((@x_dim / 2.0) / @focal_length_x) * 180 / Math::PI
+    @_fov_x = @_fov_x ? @_fov_x : 2 * Math.atan((@x_dim / 2.0) / @focal_length_x) * 180 / Math::PI
     return @_fov_x
   end
     
   def fov_y
-    @_fov_y = @_fov_y ? @_fov_y
-            : 2 * Math.atan((@y_dim / 2.0) / @focal_length_y) * 180 / Math::PI
+    @_fov_y = @_fov_y ? @_fov_y : 2 * Math.atan((@y_dim / 2.0) / @focal_length_y) * 180 / Math::PI
     return @_fov_y
   end
 
