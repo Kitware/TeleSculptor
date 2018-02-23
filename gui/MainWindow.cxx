@@ -448,8 +448,17 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
 
       if (init_cams_with_metadata)
       {
+        auto im = this->videoSource->frame_image();
+
         auto baseCamera = kwiver::vital::simple_camera();
         baseCamera.set_intrinsics(K);
+
+        bool init_intrinsics_with_metadata =
+          config->get_value<bool>("initialize_intrinsics_with_metadata", true);
+        if (init_intrinsics_with_metadata)
+        {
+          kwiver::maptk::set_intrinsics_from_metadata(baseCamera, mdMap, im);
+        }
 
         camMap = kwiver::maptk::initialize_cameras_with_metadata(
           mdMap, baseCamera, this->localGeoCs);
