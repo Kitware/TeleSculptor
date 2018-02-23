@@ -89,6 +89,7 @@ class MatchphotoMaptkImporter < Sketchup::Importer
     krtd_fps = Array.new
     num_bad_img_fps = 0
     num_bad_krtd_fps = 0
+
     img_fps.each do |img_fp|
       # if not a valid path, try prepending the directory of the image list file
       if ! File.file?(img_fp)
@@ -184,14 +185,16 @@ class MatchphotoMaptkImporter < Sketchup::Importer
       defaults = ["10"]
       # subtracting one to remove off-by-one error in following loop
       num_frames = (UI.inputbox(prompts, defaults, "Number of #{img_fps.size} available frames to use")[0].to_i) - 1
-
       new_img_fps = Array.new
       new_krtd_fps = Array.new
+
+      #intelligently down-sampling the cameras
       for i in 0..num_frames
         idx = ((img_fps.size-1) * (i.to_f / num_frames)).to_i
         new_krtd_fps.push krtd_fps[idx]
         new_img_fps.push img_fps[idx]
       end
+
       krtd_fps = new_krtd_fps
       img_fps = new_img_fps
     end

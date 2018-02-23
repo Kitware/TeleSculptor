@@ -28,6 +28,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ## Author = "jonathan.owens"
+## Author = "david.russell"
 
 require 'sketchup.rb'
 
