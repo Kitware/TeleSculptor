@@ -1211,7 +1211,7 @@ void MainWindow::loadProject(QString const& path)
     }
   }
 
-  d->UI.worldView->resetView();
+  d->UI.worldView->queueResetView();
 
   foreach (auto const& tool, d->tools)
   {
@@ -1261,6 +1261,8 @@ void MainWindow::loadVideo(QString const& path)
 
     d->currProject->write();
   }
+
+  d->UI.worldView->queueResetView();
 }
 
 //-----------------------------------------------------------------------------
