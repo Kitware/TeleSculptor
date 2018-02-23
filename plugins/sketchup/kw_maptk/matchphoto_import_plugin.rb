@@ -30,7 +30,8 @@
 ## Author = 'jonathan.owens'
 
 require 'sketchup.rb'
-require_relative './krtd_importer.rb'
+#require_relative isn't supported in SketchUp 8. 
+require File.join(File.dirname(__FILE__), 'krtd_importer.rb')
 
 class MatchphotoMaptkImporter < Sketchup::Importer
   # This method is not necessarily used by sketchup, but allows us to instantiate
@@ -40,7 +41,7 @@ class MatchphotoMaptkImporter < Sketchup::Importer
     @_image_fps = Array.new
     @_krtd_fps = Array.new
   end
-
+    
   def initialize
     @_krtd_prefix = nil
     @_image_fps = Array.new
@@ -72,15 +73,14 @@ class MatchphotoMaptkImporter < Sketchup::Importer
   end
 
   def read_in_image_fps(fp)
-    file = File.new(fp, "r")
-    image_fps = Array.new
-
-    while (line = file.gets)
-      image_fps.push line.strip
-    end
-    file.close
-    @_image_fps = image_fps
-    return image_fps
+    image_fps = Dir.entries(fp).reject {|f| File.directory? f}
+    full_image_fps = Array.new
+    image_fps.each do |image_fps|
+      full = File.join(fp,image_fps)
+      full_image_fps.push(full)
+    end    
+    
+    return full_image_fps
   end
 
   def make_camera_mesh(camera, length=1.0)
@@ -133,9 +133,11 @@ class MatchphotoMaptkImporter < Sketchup::Importer
     material.color = 'red'
     cam_group = entities.add_group
     cam_group.layer = cam_layer
-    smooth_flags = Geom::PolygonMesh::NO_SMOOTH_OR_HIDE
+    mesh = Geom::PolygonMesh.new
+    
+    smooth_flags = 0#Geom::PolygonMesh::NO_SMOOTH_OR_HIDE#
+    
     img_fps = read_in_image_fps(file_path)
-
     # if there are more than 10 images in the list, let the user select how many to use
     if img_fps.size > 10
       prompts = ["How many frames do you want to use?"]
@@ -149,10 +151,9 @@ class MatchphotoMaptkImporter < Sketchup::Importer
       end
       img_fps = new_img_fps
     end
-
     not_opened = Array.new
     img_fps.each do |img_fp|
-
+    
       # if not a valid path, try prepending the directory of the image list file
       if ! File.file?(img_fp)
         img_fp = File.join(File.dirname(file_path), img_fp)
@@ -164,7 +165,6 @@ class MatchphotoMaptkImporter < Sketchup::Importer
       else
         krtd_fname = File.join(@_krtd_prefix, swap_img_ext_for_krtd(img_fp))
       end
-
       if not File.exists?(krtd_fname)
         not_opened.push(File.basename(img_fp))
         next
@@ -172,16 +172,18 @@ class MatchphotoMaptkImporter < Sketchup::Importer
       new_cam = load_camera(krtd_fname)
       scale = new_cam.eye.distance(Geom::Point3d.new) / 3
       cam_mesh = make_camera_mesh(new_cam, scale)
+      
       cam_group.entities.add_faces_from_mesh(cam_mesh, smooth_flags, material, material)
-
       page = pages.add_matchphoto_page(img_fp, camera = new_cam, page_name = File.basename(img_fp))
       page.transition_time = 0
     end
+    
     if ! not_opened.empty?
       UI.messagebox("Failed to open #{not_opened.length} krtd files")
     end
-
-    if pages.length > 0
+    
+    #SketchUp 8 does not support pages.length
+    if pages.count > 0
       pages.selected_page = pages[0]
       return 0
     else

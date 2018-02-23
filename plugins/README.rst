@@ -22,7 +22,9 @@ allow the third-party software to load in files produced by MAP-Tk.
                     images using camera calibration from MAP-Tk.  SketchUp
                     plugins are written in Ruby.  To install SketchUp plugins
                     follow the directions in this
-                    `article <https://help.sketchup.com/en/article/38583>`_.
+                    `article <https://help.sketchup.com/en/article/38583>`_ or 
+                    simply copy the folder and top-level file into the 'Plugins'
+                    directory in your SketchUp installation.
 =================== ===========================================================
 
 

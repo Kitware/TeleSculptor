@@ -28,17 +28,18 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ## Author = 'jonathan.owens'
+## Author = 'david.russell'
 
-require_relative './krtd.rb'
-
+#SketchUp 8 comes with Ruby 1.8.6, which doesn't support require_relative
+require File.join(File.dirname(__FILE__), 'krtd.rb')
+    
+    
 def load_camera(file_path)
   model = Sketchup.active_model
   ents = model.active_entities
   pages = Sketchup.active_model.pages
   view = Sketchup.active_model.active_view
-
   krtd_ff = from_file(file_path)
-
   cam_point3d = Geom::Point3d.new( krtd_ff.position[0].m,
                                    krtd_ff.position[1].m,
                                    krtd_ff.position[2].m )
@@ -46,7 +47,6 @@ def load_camera(file_path)
                                       krtd_ff.target[1].m,
                                       krtd_ff.target[2].m )
   up_point3d = Geom::Vector3d.new( krtd_ff.up[0], krtd_ff.up[1], krtd_ff.up[2] )
-
   new_cam = Sketchup::Camera.new( cam_point3d, target_point3d, up_point3d )
   # SketchUp does not allow perspective cameras with FOV < 1 degree.
   # The focal_length is also limited to less than 3000.
