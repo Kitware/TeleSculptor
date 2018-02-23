@@ -100,6 +100,7 @@ class MaptkConfImporter < Sketchup::Importer
       output_image_dir = File.join(File.dirname(fp), output_image_dir)
       if ! File.directory?(output_image_dir)
         UI.messagebox("The value of #{IMAGE_FOLDER_KW} is incorrect. #{output_image_dir} is not a valid directory")
+        return nil
       end
     end
 
@@ -108,6 +109,7 @@ class MaptkConfImporter < Sketchup::Importer
       output_krtd_dir = File.join(File.dirname(fp), output_krtd_dir)
       if ! File.directory?(output_krtd_dir)
         UI.messagebox("The value of #{OUTPUT_KRTD_DIR_KW} is incorrect. #{output_krtd_dir} is not a valid directory")
+        return nil
       end
     end
 
@@ -116,6 +118,7 @@ class MaptkConfImporter < Sketchup::Importer
       output_ply_file = File.join(File.dirname(fp), output_ply_file)
       if ! File.file?(output_ply_file)
         UI.messagebox("The value of #{OUTPUT_PLY_FILE_KW} is incorrect. #{output_ply_file} is not a valid file.")
+        return nil
       end
     end
 

@@ -34,7 +34,7 @@ class KRTD
   def initialize(focal_length_mat,
          rotation_mat,
          translation_vec,
-                 name = nil,
+         name = nil,
          distortion = nil)
     @focal_length_mat = focal_length_mat
     @rotation_mat = rotation_mat
