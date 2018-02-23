@@ -92,7 +92,7 @@ class MaptkConfImporter < Sketchup::Importer
       UI.messagebox("Error parsing MAP-Tk conf file: missing #{OUTPUT_KRTD_DIR_KW} keyword")
       return nil
     end
-	
+
     # if not a valid path, try prepending the directory of the conf file
     if ! File.directory?(output_image_dir)
       output_image_dir = File.join(File.dirname(fp), output_image_dir)
@@ -138,7 +138,7 @@ class MaptkConfImporter < Sketchup::Importer
     photo_krtd_importer = MatchphotoMaptkImporter.new
     photo_krtd_importer.instantiate(output_krtd_dir)
     status_images = photo_krtd_importer.load_file(output_image_folder, 0)
-	# And the ply importing to the PLYImporter plugin.
+    # And the ply importing to the PLYImporter plugin.
     ply_importer = PLYImporter.new
     status_ply = ply_importer.load_file(output_ply_file, 0)
     return 0
