@@ -96,6 +96,7 @@ set(gui_sources
   DepthMapViewOptions.cxx
   FeatureOptions.cxx
   GradientSelector.cxx
+  GuiCommon.cxx
   ImageOptions.cxx
   MainWindow.cxx
   MatchMatrixAlgorithms.cxx

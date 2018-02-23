@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@
  */
 
 #include "SaveKeyFrameTool.h"
-#include "ConfigHelper.h"
+#include "GuiCommon.h"
 
 #include <iomanip>
 
@@ -38,6 +38,7 @@
 #include <kwiversys/SystemTools.hxx>
 
 #include <QtCore/QDebug>
+#include <QtCore/QDir>
 #include <QtGui/QMessageBox>
 
 using kwiver::vital::algo::video_input;
@@ -106,7 +107,7 @@ bool SaveKeyFrameTool::execute(QWidget* window)
   }
 
   // Merge project config with default config file
-  auto const config = ConfigHelper::readConfig("gui_keyframe_image_writer.conf");
+  auto const config = kwiver::maptk::readConfig("gui_keyframe_image_writer.conf");
 
   // Check configuration
   if (!config)
@@ -139,12 +140,6 @@ void SaveKeyFrameTool::run()
 {
   QTE_D();
 
-  // Create keyframes directory if it doesn't exist
-  if (!kwiversys::SystemTools::FileExists(KEYFRAMES_PATH))
-  {
-    kwiversys::SystemTools::MakeDirectory(KEYFRAMES_PATH);
-  }
-
   std::string keyframesDir;
   if (this->data()->config->has_value(KEYFRAMES_TAG))
   {
@@ -154,28 +149,29 @@ void SaveKeyFrameTool::run()
   {
     keyframesDir = KEYFRAMES_PATH;
   }
-  auto keyframeBase =
-    QDir(QString::fromStdString(keyframesDir)).filePath("frame_").toStdString();
+
+  // Create keyframes directory if it doesn't exist
+  if (!kwiversys::SystemTools::FileExists(keyframesDir))
+  {
+    kwiversys::SystemTools::MakeDirectory(keyframesDir);
+  }
 
   kwiver::vital::timestamp currentTimestamp;
-
   d->video_reader->open(this->data()->videoPath);
 
   for (auto const& frame: this->tracks()->keyframes())
   {
     if (d->video_reader->seek_frame(currentTimestamp, frame))
     {
-      std::ostringstream ss;
-      ss << keyframeBase << std::setw(4) << std::setfill('0') << frame << ".png";
-      auto filename = ss.str();
+      auto filename = QDir(QString::fromStdString(keyframesDir)).
+        filePath(kwiver::maptk::frameName(frame, "png"));
       try
       {
-        d->image_writer->save(ss.str(), d->video_reader->frame_image());
+        d->image_writer->save(filename.toStdString(), d->video_reader->frame_image());
       }
       catch (std::exception const& e)
       {
-        qWarning() << "Error writing frame to "
-        << QString::fromStdString(filename) << ": " <<  e.what();
+        qWarning() << "Error writing frame to " << filename << ": " <<  e.what();
       }
     }
     else

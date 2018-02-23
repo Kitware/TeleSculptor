@@ -29,7 +29,7 @@
  */
 
 #include "InitCamerasLandmarksTool.h"
-#include "ConfigHelper.h"
+#include "GuiCommon.h"
 
 #include <vital/algo/initialize_cameras_landmarks.h>
 
@@ -88,7 +88,7 @@ bool InitCamerasLandmarksTool::execute(QWidget* window)
   }
 
   // Merge project config with default config file
-  auto const config = ConfigHelper::readConfig(CONFIG_FILE);
+  auto const config = kwiver::maptk::readConfig(CONFIG_FILE);
 
   // Check configuration
   if (!config)

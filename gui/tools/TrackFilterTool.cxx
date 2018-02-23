@@ -29,7 +29,7 @@
  */
 
 #include "TrackFilterTool.h"
-#include "ConfigHelper.h"
+#include "GuiCommon.h"
 
 #include <vital/algo/filter_tracks.h>
 
@@ -86,7 +86,7 @@ bool TrackFilterTool::execute(QWidget* window)
   }
 
   // Merge project config with default config file
-  auto const config = ConfigHelper::readConfig("gui_filter_tracks.conf");
+  auto const config = kwiver::maptk::readConfig("gui_filter_tracks.conf");
 
   // Check configuration
   if (!config)

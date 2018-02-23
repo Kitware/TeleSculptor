@@ -28,35 +28,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_SAVEKEYFRAMETOOL_H_
-#define MAPTK_SAVEKEYFRAMETOOL_H_
+#ifndef GUI_COMMON_H_
+#define GUI_COMMON_H_
 
-#include "AbstractTool.h"
+#include <qtStlUtil.h>
 
-class SaveKeyFrameToolPrivate;
+#include <vital/config/config_block_io.h>
 
-class SaveKeyFrameTool : public AbstractTool
-{
-  Q_OBJECT
+namespace kwiver {
+namespace maptk {
 
-public:
-  explicit SaveKeyFrameTool(QObject* parent = 0);
-  virtual ~SaveKeyFrameTool();
+// Generates frame name with frame number in a standard format
+QString frameName(int index, QString const& extension);
 
-  virtual Outputs outputs() const QTE_OVERRIDE;
+// Loads config file from installed config location
+kwiver::vital::config_block_sptr readConfig(std::string const& name);
 
-  /// Get if the tool can be canceled.
-  virtual bool isCancelable() const QTE_OVERRIDE { return true; }
-
-  virtual bool execute(QWidget* window = 0) QTE_OVERRIDE;
-
-protected:
-  virtual void run() QTE_OVERRIDE;
-
-private:
-  QTE_DECLARE_PRIVATE_RPTR(SaveKeyFrameTool)
-  QTE_DECLARE_PRIVATE(SaveKeyFrameTool)
-  QTE_DISABLE_COPY(SaveKeyFrameTool)
-};
+} // end namespace maptk
+} // end namespace kwiver
 
 #endif

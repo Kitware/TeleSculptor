@@ -29,7 +29,7 @@
  */
 
 #include "TrackFeaturesTool.h"
-#include "ConfigHelper.h"
+#include "GuiCommon.h"
 
 #include <maptk/colorize.h>
 #include <maptk/version.h>
@@ -105,7 +105,7 @@ bool TrackFeaturesTool::execute(QWidget* window)
   }
 
   // Merge project config with default config file
-  auto const config = ConfigHelper::readConfig("gui_track_features.conf");
+  auto const config = kwiver::maptk::readConfig("gui_track_features.conf");
 
   // Check configuration
   if (!config)

@@ -29,7 +29,7 @@
  */
 
 #include "CanonicalTransformTool.h"
-#include "ConfigHelper.h"
+#include "GuiCommon.h"
 
 #include <vital/algo/estimate_canonical_transform.h>
 
@@ -90,7 +90,7 @@ bool CanonicalTransformTool::execute(QWidget* window)
   }
 
   // Merge project config with default config file
-  auto const config = ConfigHelper::readConfig("gui_align.conf");
+  auto const config = kwiver::maptk::readConfig("gui_align.conf");
 
   // Check configuration
   if (!config)

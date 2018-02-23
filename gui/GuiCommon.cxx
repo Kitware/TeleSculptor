@@ -28,38 +28,39 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CONFIG_HELPER_H_
-#define CONFIG_HELPER_H_
+#include "GuiCommon.h"
 
 #include <maptk/version.h>
 
-#include <vital/config/config_block_io.h>
-
-#include <qtStlUtil.h>
-
-#include <QtGui/QApplication>
 #include <QtCore/QDir>
+#include <QtGui/QApplication>
 
-class ConfigHelper
+namespace kwiver {
+namespace maptk {
+
+//-----------------------------------------------------------------------------
+QString frameName(int index, QString const& extension)
 {
-public:
-  //----------------------------------------------------------------------------
-  static kwiver::vital::config_block_sptr readConfig(std::string const& name)
+  static auto const defaultName = QString("frame%1");
+  return defaultName.arg(index, 4, 10, QChar('0')) + "." + extension;
+}
+
+//----------------------------------------------------------------------------
+kwiver::vital::config_block_sptr readConfig(std::string const& name)
+{
+  try
   {
-    try
-    {
-      using kwiver::vital::read_config_file;
+    using kwiver::vital::read_config_file;
 
-      auto const exeDir = QDir(QApplication::applicationDirPath());
-      auto const prefix = stdString(exeDir.absoluteFilePath(".."));
-      return read_config_file(name, "maptk", MAPTK_VERSION, prefix);
-    }
-    catch (...)
-    {
-      return {};
-    }
+    auto const exeDir = QDir(QApplication::applicationDirPath());
+    auto const prefix = stdString(exeDir.absoluteFilePath(".."));
+    return read_config_file(name, "maptk", MAPTK_VERSION, prefix);
   }
+  catch (...)
+  {
+    return {};
+  }
+}
 
-};
-
-#endif
+} // end namespace maptk
+} // end namespace kwiver

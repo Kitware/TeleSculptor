@@ -29,6 +29,7 @@
  */
 
 #include "MainWindow.h"
+#include "GuiCommon.h"
 
 #include "ui_MainWindow.h"
 #include "am_MainWindow.h"
@@ -40,7 +41,6 @@
 #include "tools/SaveKeyFrameTool.h"
 #include "tools/TrackFeaturesTool.h"
 #include "tools/TrackFilterTool.h"
-#include "tools/ConfigHelper.h"
 
 #include "AboutDialog.h"
 #include "MatchMatrixWindow.h"
@@ -1084,7 +1084,7 @@ void MainWindow::newProject()
     if (d->videoSource)
     {
       d->currProject->videoPath = d->videoPath;
-      auto config = ConfigHelper::readConfig("gui_video_reader.conf");
+      auto config = kwiver::maptk::readConfig("gui_video_reader.conf");
       d->currProject->projectConfig->merge_config(config);
     }
 
@@ -1154,7 +1154,7 @@ void MainWindow::loadProject(QString const& path)
       auto frameName = QString::fromStdString(d->getFrameName(frame.id));
       if (frameName == "")
       {
-        frameName = cameraName("", frame.id);
+        frameName = kwiver::maptk::frameName(frame.id, "krtd");
       }
 
       try
@@ -1233,7 +1233,7 @@ void MainWindow::loadVideo(QString const& path)
 {
   QTE_D();
 
-  auto config = ConfigHelper::readConfig("gui_video_reader.conf");
+  auto config = kwiver::maptk::readConfig("gui_video_reader.conf");
   if (d->currProject)
   {
     d->currProject->projectConfig->merge_config(config);
@@ -1466,7 +1466,8 @@ void MainWindow::saveCameras(QString const& path, bool writeToProject)
       auto const camera = cd.camera->GetCamera();
       if (camera)
       {
-        auto const filepath = d->currProject->cameraPath + "/" + cameraName("", i);
+        auto const filepath = QDir(d->currProject->cameraPath).
+          filePath(kwiver::maptk::frameName(i, "krtd"));
         out.insert(filepath, camera);
 
         if (QFileInfo(filepath).exists())
