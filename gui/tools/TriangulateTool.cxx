@@ -31,24 +31,24 @@
 #include "TriangulateTool.h"
 #include "ConfigHelper.h"
 
-#include <vital/algo/initialize_cameras_landmarks.h>
+#include <vital/algo/triangulate_landmarks.h>
 
 #include <QtGui/QMessageBox>
 
-using kwiver::vital::algo::initialize_cameras_landmarks;
-using kwiver::vital::algo::initialize_cameras_landmarks_sptr;
+using kwiver::vital::algo::triangulate_landmarks;
+using kwiver::vital::algo::triangulate_landmarks_sptr;
 
 namespace
 {
-static char const* const BLOCK = "initializer";
-static char const* const CONFIG_FILE = "gui_triangulate_initialize.conf";
+static char const* const BLOCK = "triangulator";
+static char const* const CONFIG_FILE = "gui_triangulate.conf";
 }
 
 //-----------------------------------------------------------------------------
 class TriangulateToolPrivate
 {
 public:
-  initialize_cameras_landmarks_sptr algorithm;
+  triangulate_landmarks_sptr algorithm;
 };
 
 QTE_IMPLEMENT_D_FUNC(TriangulateTool)
@@ -57,6 +57,9 @@ QTE_IMPLEMENT_D_FUNC(TriangulateTool)
 TriangulateTool::TriangulateTool(QObject* parent)
   : AbstractTool(parent), d_ptr(new TriangulateToolPrivate)
 {
+  this->data()->logger =
+    kwiver::vital::get_logger("telesculptor.tools.triangulate");
+
   this->setText("&Triangulate Landmarks");
   this->setToolTip(
     "<nobr>Triangulate landmarks in current set of cameras.</nobr>");
@@ -70,7 +73,7 @@ TriangulateTool::~TriangulateTool()
 //-----------------------------------------------------------------------------
 AbstractTool::Outputs TriangulateTool::outputs() const
 {
-  return Cameras | Landmarks;
+  return Landmarks;
 }
 
 //-----------------------------------------------------------------------------
@@ -79,11 +82,11 @@ bool TriangulateTool::execute(QWidget* window)
   QTE_D();
 
   // Check inputs
-  if (!this->hasTracks())
+  if (!this->hasTracks() || !this->hasCameras())
   {
     QMessageBox::information(
       window, "Insufficient data",
-      "This operation requires feature tracks.");
+      "This operation requires feature tracks and cameras.");
     return false;
   }
 
@@ -101,7 +104,7 @@ bool TriangulateTool::execute(QWidget* window)
   }
 
   config->merge_config(this->data()->config);
-  if (!initialize_cameras_landmarks::check_nested_algo_configuration(BLOCK, config))
+  if (!triangulate_landmarks::check_nested_algo_configuration(BLOCK, config))
   {
     QMessageBox::critical(
       window, "Configuration error",
@@ -110,15 +113,8 @@ bool TriangulateTool::execute(QWidget* window)
   }
 
   // Create algorithm from configuration
-  initialize_cameras_landmarks::set_nested_algo_configuration(
+  triangulate_landmarks::set_nested_algo_configuration(
     BLOCK, config, d->algorithm);
-
-  // Set the callback to receive updates
-  using std::placeholders::_1;
-  using std::placeholders::_2;
-  typedef initialize_cameras_landmarks::callback_t callback_t;
-  callback_t cb = std::bind(&TriangulateTool::callback_handler, this, _1, _2);
-  d->algorithm->set_callback(cb);
 
   // Hand off to base class
   return AbstractTool::execute(window);
@@ -130,65 +126,25 @@ void TriangulateTool::run()
   QTE_D();
 
   auto cp = this->cameras();
-  auto lp = this->landmarks();
   auto tp = this->tracks();
-  auto mp = this->metadata();
 
-  // If cp is Null the initialize algorithm will create all cameras.
-  // If not Null it will only create cameras if they are in the map but Null.
-  // So we need to add placeholders for missing cameras to the map
-  if (cp)
+  kwiver::vital::landmark_map::map_landmark_t init_lms;
+  std::set<kwiver::vital::track_id_t> track_ids = tp->all_track_ids();
+
+  // Landmarks to triangulate must be created in the map and set to Null.
+  kwiver::vital::vector_3d init_loc(0, 0, 0);
+  for (auto const& id : track_ids)
   {
-    using kwiver::vital::frame_id_t;
-    using kwiver::vital::camera_map;
-    std::set<frame_id_t> frame_ids = tp->all_frame_ids();
-    camera_map::map_camera_t all_cams = cp->cameras();
-
-    for (auto const& id : frame_ids)
-    {
-      if (all_cams.find(id) == all_cams.end())
-      {
-        all_cams[id] = kwiver::vital::camera_sptr();
-      }
-    }
-    cp = std::make_shared<kwiver::vital::simple_camera_map>(all_cams);
+    init_lms[id] = std::make_shared<kwiver::vital::landmark_d>(init_loc);
   }
+  kwiver::vital::landmark_map_sptr lp =
+    std::make_shared<kwiver::vital::simple_landmark_map>(init_lms);
 
-  // If lp is Null the initialize algorithm will create all landmarks.
-  // If not Null it will only create landmarks if they are in the map but Null.
-  // So we need to add placeholders for missing landmarks to the map
-  if (lp)
-  {
-    using kwiver::vital::track_id_t;
-    using kwiver::vital::landmark_map;
-    std::set<track_id_t> track_ids = tp->all_track_ids();
-    landmark_map::map_landmark_t all_lms = lp->landmarks();
+  d->algorithm->triangulate(cp, tp, lp);
 
-    for (auto const& id : track_ids)
-    {
-      if (all_lms.find(id) == all_lms.end())
-      {
-        all_lms[id] = kwiver::vital::landmark_sptr();
-      }
-    }
-    lp = std::make_shared<kwiver::vital::simple_landmark_map>(all_lms);
-  }
+  LOG_INFO(this->data()->logger, "Triangulated " << lp->size()
+           << " out of " << init_lms.size() << " tracks.");
 
-  d->algorithm->initialize(cp, lp, tp, mp);
-
-  this->updateCameras(cp);
   this->updateLandmarks(lp);
 }
 
-//-----------------------------------------------------------------------------
-bool TriangulateTool::callback_handler(camera_map_sptr cameras,
-                                                landmark_map_sptr landmarks)
-{
-  // make a copy of the tool data
-  auto data = std::make_shared<ToolData>();
-  data->copyCameras(cameras);
-  data->copyLandmarks(landmarks);
-
-  emit updated(data);
-  return !this->isCanceled();
-}

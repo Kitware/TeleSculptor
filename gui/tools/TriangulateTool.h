@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,11 +46,9 @@ public:
   virtual Outputs outputs() const QTE_OVERRIDE;
 
   /// Get if the tool can be canceled.
-  virtual bool isCancelable() const QTE_OVERRIDE { return true; }
+  virtual bool isCancelable() const QTE_OVERRIDE { return false; }
 
   virtual bool execute(QWidget* window = 0) QTE_OVERRIDE;
-
-  bool callback_handler(camera_map_sptr cameras, landmark_map_sptr landmarks);
 
 protected:
   virtual void run() QTE_OVERRIDE;
