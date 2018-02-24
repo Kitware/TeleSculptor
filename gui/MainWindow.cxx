@@ -259,6 +259,8 @@ public:
 
   kwiver::vital::camera_map_sptr cameraMap() const;
   void updateCameras(kwiver::vital::camera_map_sptr const&);
+  bool updateCamera(kwiver::vital::frame_id_t frame,
+                    kwiver::vital::camera_sptr cam);
 
   void setActiveCamera(int);
   void updateCameraView();
@@ -508,28 +510,39 @@ void MainWindowPrivate::updateCameras(
   foreach (auto const& iter, cameras->cameras())
   {
     auto const index = static_cast<int>(iter.first);
-    if (index >= 0 && index < cameraCount && iter.second)
+    if (updateCamera(iter.first, iter.second))
     {
-      auto& cd = this->frames[index];
-      if (!cd.camera)
-      {
-        cd.camera = vtkSmartPointer<vtkMaptkCamera>::New();
-        this->UI.worldView->addCamera(cd.id, cd.camera);
-      }
-      cd.camera->SetCamera(iter.second);
-      cd.camera->Update();
-
-      if (cd.id == this->activeCameraIndex)
-      {
-        this->UI.worldView->setActiveCamera(cd.id);
-        this->updateCameraView();
-      }
-
       allowExport = allowExport || iter.second;
     }
   }
 
   this->UI.actionExportCameras->setEnabled(allowExport);
+}
+
+//-----------------------------------------------------------------------------
+bool MainWindowPrivate::updateCamera(kwiver::vital::frame_id_t frame,
+                                     kwiver::vital::camera_sptr cam)
+{
+  if (frame > 0 && frame <= this->frames.count() && cam)
+  {
+    auto& cd = this->frames[frame - 1];
+    if (!cd.camera)
+    {
+      cd.camera = vtkSmartPointer<vtkMaptkCamera>::New();
+      this->UI.worldView->addCamera(cd.id, cd.camera);
+    }
+    cd.camera->SetCamera(cam);
+    cd.camera->Update();
+
+    if (cd.id == this->activeCameraIndex)
+    {
+      this->UI.worldView->setActiveCamera(cd.id);
+      this->updateCameraView();
+    }
+
+    return true;
+  }
+  return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -1141,7 +1154,7 @@ void MainWindow::loadProject(QString const& path)
           kvPath(frameName), kvPath(d->currProject->cameraPath));
 
         // Add camera to scene
-        d->addCamera(camera);
+        d->updateCamera(frame.id, camera);
       }
       catch (...)
       {
