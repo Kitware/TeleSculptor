@@ -34,17 +34,30 @@
 #include <qtStlUtil.h>
 
 #include <vital/config/config_block_io.h>
+#include <vital/types/metadata_map.h>
+#include <vital/vital_types.h>
 
-namespace kwiver {
-namespace maptk {
 
-// Generates frame name with frame number in a standard format
-QString frameName(int index, QString const& extension);
+// Generates frame name basename in a standard format
+// This version uses a map of all metadata
+std::string frameName(kwiver::vital::frame_id_t frame,
+                      kwiver::vital::metadata_map::map_metadata_t const& mdm);
+
+
+// Generates frame name basename in a standard format
+// This version uses a vector of metadata for the frame
+std::string frameName(kwiver::vital::frame_id_t frame,
+                      kwiver::vital::metadata_vector const& mdv);
+
+
+// Generates frame name basename in a standard format
+// This version uses a single metadata object for the frame
+std::string frameName(kwiver::vital::frame_id_t frame,
+                      kwiver::vital::metadata_sptr md);
+
 
 // Loads config file from installed config location
 kwiver::vital::config_block_sptr readConfig(std::string const& name);
 
-} // end namespace maptk
-} // end namespace kwiver
 
 #endif

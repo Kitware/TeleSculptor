@@ -55,7 +55,6 @@
 #include <vital/algo/video_input.h>
 #include <vital/io/camera_io.h>
 #include <vital/io/landmark_map_io.h>
-#include <vital/io/metadata_io.h>
 #include <vital/io/track_set_io.h>
 #include <vital/types/metadata_map.h>
 #include <arrows/core/match_matrix.h>
@@ -686,20 +685,7 @@ MainWindowPrivate::vitalToVtkImage(kwiver::vital::image& img)
 
 std::string MainWindowPrivate::getFrameName(kwiver::vital::frame_id_t frameId)
 {
-  if (videoMetadataMap.find(frameId) != videoMetadataMap.end())
-  {
-    auto mdVec = videoMetadataMap[frameId];
-    for (auto const& md: mdVec)
-    {
-      if (md->has( kwiver::vital::VITAL_META_IMAGE_FILENAME ) ||
-          md->has( kwiver::vital::VITAL_META_VIDEO_FILENAME ) )
-      {
-        return kwiver::vital::basename_from_metadata(md, frameId);
-      }
-    }
-  }
-
-  return kwiver::vital::basename_from_metadata(nullptr, frameId);
+  return frameName(frameId, this->videoMetadataMap);
 }
 
 void MainWindowPrivate::loadEmptyImage(vtkMaptkCamera* camera)
@@ -1081,7 +1067,7 @@ void MainWindow::newProject()
     if (d->videoSource)
     {
       d->currProject->videoPath = d->videoPath;
-      auto config = kwiver::maptk::readConfig("gui_video_reader.conf");
+      auto config = readConfig("gui_video_reader.conf");
       d->currProject->projectConfig->merge_config(config);
     }
 
@@ -1226,7 +1212,7 @@ void MainWindow::loadVideo(QString const& path)
 {
   QTE_D();
 
-  auto config = kwiver::maptk::readConfig("gui_video_reader.conf");
+  auto config = readConfig("gui_video_reader.conf");
   if (d->currProject)
   {
     d->currProject->projectConfig->merge_config(config);

@@ -32,18 +32,53 @@
 
 #include <maptk/version.h>
 
+#include <vital/io/metadata_io.h>
+
 #include <QtCore/QDir>
 #include <QtGui/QApplication>
 
-namespace kwiver {
-namespace maptk {
 
 //-----------------------------------------------------------------------------
-QString frameName(int index, QString const& extension)
+std::string
+frameName(kwiver::vital::frame_id_t frame,
+          kwiver::vital::metadata_map::map_metadata_t const& mdm)
 {
-  static auto const defaultName = QString("frame%1");
-  return defaultName.arg(index, 4, 10, QChar('0')) + "." + extension;
+  using kwiver::vital::basename_from_metadata;
+  auto md_itr = mdm.find(frame);
+  if (md_itr != mdm.end())
+  {
+    return frameName(frame, md_itr->second);
+  }
+  return basename_from_metadata(nullptr, frame);
 }
+
+
+//-----------------------------------------------------------------------------
+std::string
+frameName(kwiver::vital::frame_id_t frame,
+          kwiver::vital::metadata_vector const& mdv)
+{
+  using kwiver::vital::basename_from_metadata;
+  for (auto const& md : mdv)
+  {
+    if (md->has(kwiver::vital::VITAL_META_IMAGE_FILENAME) ||
+        md->has(kwiver::vital::VITAL_META_VIDEO_FILENAME))
+    {
+      return basename_from_metadata(md, frame);
+    }
+  }
+  return basename_from_metadata(nullptr, frame);
+}
+
+
+//----------------------------------------------------------------------------
+std::string
+frameName(kwiver::vital::frame_id_t frame,
+          kwiver::vital::metadata_sptr md)
+{
+  return kwiver::vital::basename_from_metadata(md, frame);
+}
+
 
 //----------------------------------------------------------------------------
 kwiver::vital::config_block_sptr readConfig(std::string const& name)
@@ -61,6 +96,3 @@ kwiver::vital::config_block_sptr readConfig(std::string const& name)
     return {};
   }
 }
-
-} // end namespace maptk
-} // end namespace kwiver

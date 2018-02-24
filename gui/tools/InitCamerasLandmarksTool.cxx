@@ -88,7 +88,7 @@ bool InitCamerasLandmarksTool::execute(QWidget* window)
   }
 
   // Merge project config with default config file
-  auto const config = kwiver::maptk::readConfig(CONFIG_FILE);
+  auto const config = readConfig(CONFIG_FILE);
 
   // Check configuration
   if (!config)

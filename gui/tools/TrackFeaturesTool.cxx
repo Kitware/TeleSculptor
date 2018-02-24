@@ -105,7 +105,7 @@ bool TrackFeaturesTool::execute(QWidget* window)
   }
 
   // Merge project config with default config file
-  auto const config = kwiver::maptk::readConfig("gui_track_features.conf");
+  auto const config = readConfig("gui_track_features.conf");
 
   // Check configuration
   if (!config)

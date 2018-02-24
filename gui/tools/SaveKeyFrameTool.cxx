@@ -110,7 +110,7 @@ bool SaveKeyFrameTool::execute(QWidget* window)
   }
 
   // Merge project config with default config file
-  auto const config = kwiver::maptk::readConfig("gui_keyframe_image_writer.conf");
+  auto const config = readConfig("gui_keyframe_image_writer.conf");
 
   // Check configuration
   if (!config)
@@ -166,8 +166,8 @@ void SaveKeyFrameTool::run()
   {
     if (d->video_reader->seek_frame(currentTimestamp, frame))
     {
-      auto filename = QDir(QString::fromStdString(keyframesDir)).
-        filePath(kwiver::maptk::frameName(frame, "png")).toStdString();
+      auto md = d->video_reader->frame_metadata();
+      auto filename = keyframesDir + "/" + frameName(frame, md) + ".png";
       try
       {
         d->image_writer->save(filename, d->video_reader->frame_image());

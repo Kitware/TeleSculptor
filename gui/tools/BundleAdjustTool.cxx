@@ -88,7 +88,7 @@ bool BundleAdjustTool::execute(QWidget* window)
   }
 
   // Merge project config with default config file
-  auto const config = kwiver::maptk::readConfig("gui_bundle_adjust.conf");
+  auto const config = readConfig("gui_bundle_adjust.conf");
 
   // Check configuration
   if (!config)
