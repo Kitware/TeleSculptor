@@ -1475,7 +1475,8 @@ void MainWindow::saveCameras(QString const& path, bool writeToProject)
     }
   }
 
-  if (!willOverwrite.isEmpty())
+  // warn about overwriting files only if not auto-saving to the project
+  if (!writeToProject && !willOverwrite.isEmpty())
   {
     QMessageBox mb(QMessageBox::Warning, "Confirm overwrite",
                    "One or more files will be overwritten by this operation. "
