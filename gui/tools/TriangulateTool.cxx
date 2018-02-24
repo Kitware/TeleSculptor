@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016-2017 by Kitware, Inc.
+ * Copyright 2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -131,7 +131,9 @@ void TriangulateTool::run()
   kwiver::vital::landmark_map::map_landmark_t init_lms;
   std::set<kwiver::vital::track_id_t> track_ids = tp->all_track_ids();
 
-  // Landmarks to triangulate must be created in the map and set to Null.
+  // Landmarks to triangulate must be created in the map.
+  // These could be initialized to Null, but some versions of KWIVER may
+  // crash, so it is safer to give them a value
   kwiver::vital::vector_3d init_loc(0, 0, 0);
   for (auto const& id : track_ids)
   {
