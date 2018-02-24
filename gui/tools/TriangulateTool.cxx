@@ -29,7 +29,7 @@
  */
 
 #include "TriangulateTool.h"
-#include "ConfigHelper.h"
+#include "GuiCommon.h"
 
 #include <vital/algo/triangulate_landmarks.h>
 
@@ -91,7 +91,7 @@ bool TriangulateTool::execute(QWidget* window)
   }
 
   // Merge project config with default config file
-  auto const config = ConfigHelper::readConfig(CONFIG_FILE);
+  auto const config = readConfig(CONFIG_FILE);
 
   // Check configuration
   if (!config)
