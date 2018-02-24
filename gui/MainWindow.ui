@@ -398,8 +398,11 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
-    <string>keyframes only</string>
+    <string>Keyframes Only</string>
    </property>
   </action>
  </widget>
