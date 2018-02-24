@@ -104,19 +104,6 @@ kwiver::vital::path_t kvPath(QString const& s)
   return stdString(s);
 }
 
-//-----------------------------------------------------------------------------
-QString cameraName(QString const& imagePath, int cameraIndex)
-{
-  static auto const defaultName = QString("camera%1.krtd");
-
-  if (imagePath.isEmpty())
-  {
-    return defaultName.arg(cameraIndex, 4, 10, QChar('0'));
-  }
-
-  auto const fi = QFileInfo(imagePath);
-  return fi.completeBaseName() + ".krtd";
-}
 
 //-----------------------------------------------------------------------------
 QString findUserManual()
@@ -272,6 +259,8 @@ public:
 
   kwiver::vital::camera_map_sptr cameraMap() const;
   void updateCameras(kwiver::vital::camera_map_sptr const&);
+  bool updateCamera(kwiver::vital::frame_id_t frame,
+                    kwiver::vital::camera_sptr cam);
 
   void setActiveCamera(int);
   void updateCameraView();
@@ -521,28 +510,39 @@ void MainWindowPrivate::updateCameras(
   foreach (auto const& iter, cameras->cameras())
   {
     auto const index = static_cast<int>(iter.first);
-    if (index >= 0 && index < cameraCount && iter.second)
+    if (updateCamera(iter.first, iter.second))
     {
-      auto& cd = this->frames[index];
-      if (!cd.camera)
-      {
-        cd.camera = vtkSmartPointer<vtkMaptkCamera>::New();
-        this->UI.worldView->addCamera(cd.id, cd.camera);
-      }
-      cd.camera->SetCamera(iter.second);
-      cd.camera->Update();
-
-      if (cd.id == this->activeCameraIndex)
-      {
-        this->UI.worldView->setActiveCamera(cd.id);
-        this->updateCameraView();
-      }
-
       allowExport = allowExport || iter.second;
     }
   }
 
   this->UI.actionExportCameras->setEnabled(allowExport);
+}
+
+//-----------------------------------------------------------------------------
+bool MainWindowPrivate::updateCamera(kwiver::vital::frame_id_t frame,
+                                     kwiver::vital::camera_sptr cam)
+{
+  if (frame > 0 && frame <= this->frames.count() && cam)
+  {
+    auto& cd = this->frames[frame - 1];
+    if (!cd.camera)
+    {
+      cd.camera = vtkSmartPointer<vtkMaptkCamera>::New();
+      this->UI.worldView->addCamera(cd.id, cd.camera);
+    }
+    cd.camera->SetCamera(cam);
+    cd.camera->Update();
+
+    if (cd.id == this->activeCameraIndex)
+    {
+      this->UI.worldView->setActiveCamera(cd.id);
+      this->updateCameraView();
+    }
+
+    return true;
+  }
+  return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -686,8 +686,6 @@ MainWindowPrivate::vitalToVtkImage(kwiver::vital::image& img)
 
 std::string MainWindowPrivate::getFrameName(kwiver::vital::frame_id_t frameId)
 {
-  std::string retVal = "";
-
   if (videoMetadataMap.find(frameId) != videoMetadataMap.end())
   {
     auto mdVec = videoMetadataMap[frameId];
@@ -696,12 +694,12 @@ std::string MainWindowPrivate::getFrameName(kwiver::vital::frame_id_t frameId)
       if (md->has( kwiver::vital::VITAL_META_IMAGE_FILENAME ) ||
           md->has( kwiver::vital::VITAL_META_VIDEO_FILENAME ) )
       {
-        retVal = kwiver::vital::basename_from_metadata(md, frameId);
+        return kwiver::vital::basename_from_metadata(md, frameId);
       }
     }
   }
 
-  return retVal;
+  return kwiver::vital::basename_from_metadata(nullptr, frameId);
 }
 
 void MainWindowPrivate::loadEmptyImage(vtkMaptkCamera* camera)
@@ -1148,11 +1146,7 @@ void MainWindow::loadProject(QString const& path)
   {
     foreach (auto const& frame, d->frames)
     {
-      auto frameName = QString::fromStdString(d->getFrameName(frame.id));
-      if (frameName == "")
-      {
-        frameName = cameraName("", frame.id);
-      }
+      auto frameName = QString::fromStdString(d->getFrameName(frame.id) + ".krtd");
 
       try
       {
@@ -1160,7 +1154,7 @@ void MainWindow::loadProject(QString const& path)
           kvPath(frameName), kvPath(d->currProject->cameraPath));
 
         // Add camera to scene
-        d->addCamera(camera);
+        d->updateCamera(frame.id, camera);
       }
       catch (...)
       {
@@ -1464,7 +1458,8 @@ void MainWindow::saveCameras(QString const& path, bool writeToProject)
       auto const camera = cd.camera->GetCamera();
       if (camera)
       {
-        auto const filepath = d->currProject->cameraPath + "/" + cameraName("", i);
+        auto cameraName = QString::fromStdString(d->getFrameName(cd.id) + ".krtd");
+        auto const filepath = d->currProject->cameraPath + "/" + cameraName;
         out.insert(filepath, camera);
 
         if (QFileInfo(filepath).exists())
@@ -1475,7 +1470,8 @@ void MainWindow::saveCameras(QString const& path, bool writeToProject)
     }
   }
 
-  if (!willOverwrite.isEmpty())
+  // warn about overwriting files only if not auto-saving to the project
+  if (!writeToProject && !willOverwrite.isEmpty())
   {
     QMessageBox mb(QMessageBox::Warning, "Confirm overwrite",
                    "One or more files will be overwritten by this operation. "
