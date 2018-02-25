@@ -1504,8 +1504,12 @@ void MainWindow::saveDepthImage(QString const& path)
 {
   QTE_D();
 
+  if (!d->activeDepth || d->activeDepthFrame < 1)
+  {
+    return;
+  }
+
   QString filename = depthName("", d->activeDepthFrame);
-  
 
   if (!QDir(path).exists())
   {
