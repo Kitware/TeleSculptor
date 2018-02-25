@@ -128,11 +128,12 @@ AbstractTool::Outputs ComputeDepthTool::outputs() const
 bool ComputeDepthTool::execute(QWidget* window)
 {
   QTE_D();
-
-  if (!this->hasVideoSource())
+  // Check inputs
+  if (!this->hasVideoSource() || !this->hasCameras() || !this->hasLandmarks())
   {
     QMessageBox::information(
-      window, "Insufficient data", "This operation requires a video source.");
+      window, "Insufficient data",
+      "This operation requires a video source, cameras, and landmarks");
     return false;
   }
 
