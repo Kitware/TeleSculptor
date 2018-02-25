@@ -254,6 +254,8 @@ void ComputeDepthTool::run()
 
   kwiver::vital::timestamp currentTimestamp;
   d->video_reader->seek_frame(currentTimestamp, frame);
+  LOG_DEBUG(this->data()->logger,
+    "Reference frame is " << currentTimestamp.get_frame());
   auto cam = cm.find(currentTimestamp.get_frame());
   if (cam == cm.end() || !cam->second)
   {
@@ -292,6 +294,8 @@ void ComputeDepthTool::run()
     {
       continue;
     }
+    LOG_DEBUG(this->data()->logger,
+      "Adding support frame " << currentTimestamp.get_frame());
     auto const mdv = d->video_reader->frame_metadata();
     if (!mdv.empty())
     {
