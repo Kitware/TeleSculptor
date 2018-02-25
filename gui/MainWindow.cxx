@@ -1506,6 +1506,13 @@ void MainWindow::saveDepthImage(QString const& path)
 
   QString filename = depthName("", d->activeDepthFrame);
   
+
+  if (!QDir(path).exists())
+  {
+    QDir().mkdir(path);
+  }
+
+
   vtkNew<vtkXMLImageDataWriter> writerI;
   auto const filepath = path + "/" + filename;
   writerI->SetFileName(stdString(filepath).c_str());
