@@ -109,6 +109,9 @@ QTE_IMPLEMENT_D_FUNC(ComputeDepthTool)
 ComputeDepthTool::ComputeDepthTool(QObject* parent)
   : AbstractTool(parent), d_ptr(new ComputeDepthToolPrivate)
 {
+  this->data()->logger =
+    kwiver::vital::get_logger("telesculptor.tools.compute_depth");
+
   this->setText("&Compute Depth Maps");
   this->setToolTip("Computes depth maps on key images.");
 }
@@ -235,57 +238,71 @@ void ComputeDepthTool::run()
 {
   QTE_D();
 
-  int frame = this->activeFrame() - 1;
+  int frame = this->activeFrame();
 
   auto const& lm = this->landmarks()->landmarks();
   auto const& cm = this->cameras()->cameras();
 
-  d->video_reader->open(this->data()->videoPath);
-  
   std::vector<kwiver::vital::image_container_sptr> frames_out;
   std::vector<kwiver::vital::camera_sptr> cameras_out;
   std::vector<kwiver::vital::landmark_sptr> landmarks_out;
+  std::vector<kwiver::vital::frame_id_t> frame_ids;
   const int halfsupport = 7;
+  int ref_frame = 0;
 
-  if (d->video_reader->num_frames() < 2*halfsupport + 1)
-    return;
-
-  // compute support range
-  int start = frame - halfsupport;
-  int end = frame + halfsupport;
-  int ref_frame = halfsupport;
-  if (start < 0) 
-  {
-    int offset = abs(start);
-    end += offset;
-    ref_frame -= offset;
-    start = 0;    
-  }
-  if (end >= d->video_reader->num_frames())
-  {
-    int offset = end - d->video_reader->num_frames() + 1;
-    start -= offset;
-    ref_frame += offset;
-    end = d->video_reader->num_frames() - 1;
-  }
+  d->video_reader->open(this->data()->videoPath);
 
   kwiver::vital::timestamp currentTimestamp;
-  d->video_reader->seek_frame(currentTimestamp, start + 1);
-
-  //collect images and cameras
-  for (int i = start; i <= end; ++i)
+  d->video_reader->seek_frame(currentTimestamp, frame);
+  auto cam = cm.find(currentTimestamp.get_frame());
+  if (cam == cm.end() || !cam->second)
   {
+    LOG_DEBUG(this->data()->logger,
+      "No camera available on the selected frame");
+    return;
+  }
+
+  auto const image = d->video_reader->frame_image();
+  if (!image)
+  {
+    LOG_DEBUG(this->data()->logger,
+      "No image available on the selected frame");
+    return;
+  }
+  auto const mdv = d->video_reader->frame_metadata();
+  if (!mdv.empty())
+  {
+    image->set_metadata(mdv[0]);
+  }
+  frames_out.push_back(image);
+  cameras_out.push_back(cam->second);
+  frame_ids.push_back(currentTimestamp.get_frame());
+
+  // find halfsupport more frames with valid cameras and images
+  while (d->video_reader->good() && frames_out.size() <= halfsupport)
+  {
+    d->video_reader->next_frame(currentTimestamp);
+    cam = cm.find(currentTimestamp.get_frame());
+    if (cam == cm.end() || !cam->second)
+    {
+      continue;
+    }
     auto const image = d->video_reader->frame_image();
+    if (!image)
+    {
+      continue;
+    }
     auto const mdv = d->video_reader->frame_metadata();
     if (!mdv.empty())
     {
       image->set_metadata(mdv[0]);
     }
     frames_out.push_back(image);
-    cameras_out.push_back(cm.find(currentTimestamp.get_frame())->second);
-    d->video_reader->next_frame(currentTimestamp);
+    cameras_out.push_back(cam->second);
+    frame_ids.push_back(currentTimestamp.get_frame());
   }
-  
+
+
   //convert landmarks to vector
   foreach(auto const& l, lm)
   {
