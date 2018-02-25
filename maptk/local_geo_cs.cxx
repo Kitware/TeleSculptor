@@ -295,24 +295,18 @@ initialize_cameras_with_metadata(std::map<vital::frame_id_t,
   {
     // if a local coordinate system has not been established,
     // use the coordinates of the first camera
-    vital::metadata_sptr md = nullptr;
     for( auto m : md_map )
     {
-      if( m.second )
+      if( m.second && m.second->has(vital::VITAL_META_SENSOR_LOCATION) )
       {
-        md = m.second;
+        vital::geo_point gloc;
+        m.second->find(vital::VITAL_META_SENSOR_LOCATION).data(gloc);
+
+        lgcs.set_origin(gloc);
+        lgcs.set_origin_altitude(0.0);
+        update_local_origin = true;
         break;
       }
-    }
-    if( md &&
-        md->has( vital::VITAL_META_SENSOR_LOCATION ) )
-    {
-      vital::geo_point gloc;
-      md->find( vital::VITAL_META_SENSOR_LOCATION ).data( gloc );
-
-      lgcs.set_origin( gloc );
-      lgcs.set_origin_altitude( 0.0 );
-      update_local_origin = true;
     }
   }
   for(auto const& p : md_map)
