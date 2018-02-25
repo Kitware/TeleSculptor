@@ -1896,28 +1896,28 @@ void MainWindow::updateToolResults()
     d->UI.actionShowMatchMatrix->setEnabled(!d->tracks->tracks().empty());
     d->toolUpdateTracks = NULL;
   }
-  if (d->toolUpdateActiveFrame >= 0)
-  {
-    d->UI.camera->setValue(d->toolUpdateActiveFrame);
-    this->setActiveCamera(d->toolUpdateActiveFrame);
-    d->toolUpdateActiveFrame = -1;
-  }
   if (d->toolUpdateDepth)
   {
     d->activeDepth = d->toolUpdateDepth;
-    d->activeDepthFrame = d->activeCameraIndex;
+    d->activeDepthFrame = d->toolUpdateActiveFrame;
 
     d->depthFilter->SetInputData(d->activeDepth);
 
     d->UI.depthMapView->setValidDepthInput(true);
     d->UI.worldView->setValidDepthInput(true);
 
-    d->depthFilter->SetCamera(d->frames[d->activeDepthFrame].camera);
+    d->depthFilter->SetCamera(d->frames[d->toolUpdateActiveFrame - 1].camera);
     d->UI.worldView->updateDepthMap();
     d->UI.depthMapView->updateView(true);
     d->UI.actionExportDepthPoints->setEnabled(true);
 
     d->toolUpdateDepth = NULL;
+  }
+  if (d->toolUpdateActiveFrame >= 0)
+  {
+    d->UI.camera->setValue(d->toolUpdateActiveFrame);
+    this->setActiveCamera(d->toolUpdateActiveFrame);
+    d->toolUpdateActiveFrame = -1;
   }
 
 

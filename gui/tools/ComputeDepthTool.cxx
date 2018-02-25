@@ -100,6 +100,7 @@ public:
   video_input_sptr video_reader;
   compute_depth_sptr depth_algo;
   kwiver::vital::image_container_sptr ref_img;
+  kwiver::vital::frame_id_t ref_frame;
 };
 
 QTE_IMPLEMENT_D_FUNC(ComputeDepthTool)
@@ -291,6 +292,7 @@ void ComputeDepthTool::run()
   }
 
   d->ref_img = frames_out[ref_frame];
+  d->ref_frame = frame;
 
   //compute depth
   kwiver::vital::image_container_sptr depth = d->depth_algo->compute(frames_out, cameras_out, landmarks_out, ref_frame);
@@ -307,7 +309,8 @@ bool ComputeDepthTool::callback_handler(kwiver::vital::image_container_sptr dept
   vtkSmartPointer<vtkImageData> depthData = depth_to_vtk(depth, this->d_ptr->ref_img);
 
   data->copyDepth(depthData);
-  
+  data->activeFrame = d_ptr->ref_frame;
+
   emit updated(data);
   return !this->isCanceled();
 }
