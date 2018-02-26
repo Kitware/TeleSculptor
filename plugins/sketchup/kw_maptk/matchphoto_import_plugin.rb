@@ -211,10 +211,6 @@ class MatchphotoMaptkImporter < Sketchup::Importer
       page.transition_time = 0
     end
 
-    if fps_conglomerate[3] != 0 || fps_conglomerate[2] !=0
-      UI.messagebox("Failed to open #{fps_conglomerate[3]} krtd files and #{fps_conglomerate[2]} image files.")
-    end
-
     #SketchUp 8 does not support pages.length
     if pages.count > 0
       pages.selected_page = pages[0]
