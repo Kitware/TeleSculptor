@@ -644,7 +644,9 @@ void MainWindowPrivate::setActiveCamera(int id_)
     return;
   }
 
+  auto oldSignalState = this->UI.camera->blockSignals(true);
   this->UI.camera->setValue(id);
+  this->UI.camera->blockSignals(oldSignalState);
   this->UI.cameraSpin->setValue(id);
 
   this->activeCameraIndex = id;
