@@ -28,6 +28,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ## Author = "jonathan.owens"
+## Author = "david.russell"
 
 require 'sketchup.rb'
 
@@ -38,7 +39,7 @@ require File.join(File.dirname(__FILE__),'matchphoto_import_plugin.rb')
 
 # These are the keywords that correspond to the relevant values of interest from the
 # maptk configuration file and are the only lines we care about in this file.
-IMAGE_FOLDER_KW = 'output_keyframes_dir'
+IMAGE_FOLDER_KW = 'output_frames_dir'
 OUTPUT_PLY_FILE_KW = 'output_ply_file'
 OUTPUT_KRTD_DIR_KW = 'output_krtd_dir'
 
@@ -80,7 +81,6 @@ class MaptkConfImporter < Sketchup::Importer
         output_krtd_dir = value
       end
     end
-
     # Check to ensure all of the required keywords were found and show a warning message
     # and return nil if they weren't
     if output_image_dir == ""
@@ -93,7 +93,7 @@ class MaptkConfImporter < Sketchup::Importer
       UI.messagebox("Error parsing MAP-Tk conf file: missing #{OUTPUT_KRTD_DIR_KW} keyword")
       return nil
     end
-	
+
     # if not a valid path, try prepending the directory of the conf file
     if ! File.directory?(output_image_dir)
       output_image_dir = File.join(File.dirname(fp), output_image_dir)
@@ -120,7 +120,6 @@ class MaptkConfImporter < Sketchup::Importer
         return nil
       end
     end
-
     return output_image_dir, output_ply_file, output_krtd_dir
   end
 
@@ -136,7 +135,6 @@ class MaptkConfImporter < Sketchup::Importer
     output_image_folder = kwds[0]
     output_ply_file = kwds[1]
     output_krtd_dir = kwds[2]
-
     # We delegate the importing of the photos/krtd files to the matchphoto_import_plugin.
     photo_krtd_importer = MatchphotoMaptkImporter.new
     photo_krtd_importer.instantiate(output_krtd_dir)
