@@ -49,6 +49,7 @@
 #include <vital/types/landmark_map.h>
 
 #include <vtkBoundingBox.h>
+#include <vtkBoxWidget2.h>
 #include <vtkCellArray.h>
 #include <vtkCellDataToPointData.h>
 #include <vtkContourFilter.h>
@@ -78,7 +79,7 @@
 #include <vtkXMLPolyDataWriter.h>
 #include <vtkXMLStructuredGridReader.h>
 #include <vtkXMLStructuredGridWriter.h>
-
+#include <vtkWidgetRepresentation.h>
 
 #ifdef VTKWEBGLEXPORTER
 #include <vtkScalarsToColors.h>
@@ -170,6 +171,8 @@ public:
 
   vtkNew<vtkActor> volumeActor;
   vtkStructuredGrid* volume;
+
+  vtkSmartPointer<vtkBoxWidget2> boxWidget;
 
   bool rangeUpdateNeeded;
   bool validDepthInput;
@@ -400,6 +403,8 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(setDepthMapVisible(bool)));
   connect(d->UI.actionShowDepthMap, SIGNAL(toggled(bool)),
           this, SIGNAL(depthMapEnabled(bool)));
+  connect(d->UI.actionSelectROI, SIGNAL(toggled(bool)),
+          this, SLOT(selectROI(bool)));
 
   connect(d->UI.actionShowVolume, SIGNAL(toggled(bool)),
           this, SLOT(setVolumeVisible(bool)));
@@ -1335,4 +1340,34 @@ void WorldView::decreaseDepthMapPointSize()
   d->depthMapActor->GetProperty()->SetPointSize(pointSize < 1 ? 1 : pointSize);
 
   d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::selectROI(bool toggled)
+{
+  QTE_D();
+
+  if (toggled && d->landmarkPoints->GetNumberOfPoints() > 1)
+  {
+    d->boxWidget =
+      vtkSmartPointer<vtkBoxWidget2>::New();
+    d->boxWidget->SetInteractor(d->renderWindow->GetInteractor());
+    d->boxWidget->RotationEnabledOff();
+    d->boxWidget->GetRepresentation()->SetPlaceFactor(1); // Default is 0.5
+    d->boxWidget->GetRepresentation()->PlaceWidget(d->landmarkActor->GetBounds());
+    d->boxWidget->On();
+  }
+  else
+  {
+    if (d->boxWidget)
+      d->boxWidget->Off();
+    d->boxWidget = NULL;
+
+  }
+
+
+
+  d->UI.renderWidget->update();
+
+
 }

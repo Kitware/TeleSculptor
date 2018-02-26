@@ -84,6 +84,7 @@ public slots:
   void setGroundPlaneVisible(bool);
   void setAxesVisible(bool);
   void setDepthMapVisible(bool);
+  void selectROI(bool);
 
   void setPerspective(bool);
 

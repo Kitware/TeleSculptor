@@ -297,6 +297,17 @@
     <string>S</string>
    </property>
   </action>
+  <action name="actionClearROI">
+   <property name="text">
+    <string>ClearROI</string>
+   </property>
+   <property name="toolTip">
+    <string>Clear region of interest selection</string>
+   </property>
+   <property name="shortcut">
+    <string>Esc</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
