@@ -39,7 +39,7 @@ require File.join(File.dirname(__FILE__),'matchphoto_import_plugin.rb')
 
 # These are the keywords that correspond to the relevant values of interest from the
 # maptk configuration file and are the only lines we care about in this file.
-IMAGE_FOLDER_KW = 'output_keyframes_dir'
+IMAGE_FOLDER_KW = 'output_frames_dir'
 OUTPUT_PLY_FILE_KW = 'output_ply_file'
 OUTPUT_KRTD_DIR_KW = 'output_krtd_dir'
 
