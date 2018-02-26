@@ -14,16 +14,7 @@
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <property name="leftMargin">
-    <number>0</number>
-   </property>
-   <property name="topMargin">
-    <number>0</number>
-   </property>
-   <property name="rightMargin">
-    <number>0</number>
-   </property>
-   <property name="bottomMargin">
+   <property name="margin">
     <number>0</number>
    </property>
    <item>
@@ -37,6 +28,7 @@
      <addaction name="actionShowCameras"/>
      <addaction name="actionShowLandmarks"/>
      <addaction name="actionShowGroundPlane"/>
+     <addaction name="actionSelectROI"/>
      <addaction name="actionShowDepthMap"/>
      <addaction name="actionShowVolume"/>
     </widget>
@@ -273,18 +265,36 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="icons/icons.qrc">
      <normaloff>:/icons/22x22/volume</normaloff>:/icons/22x22/volume</iconset>
-   </property>
-   <property name="enabled">
-    <bool>false</bool>
    </property>
    <property name="text">
     <string>Volume</string>
    </property>
    <property name="toolTip">
     <string>Toggle volume display</string>
+   </property>
+  </action>
+  <action name="actionSelectROI">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/22x22/roi</normaloff>:/icons/22x22/roi</iconset>
+   </property>
+   <property name="text">
+    <string>SelectROI</string>
+   </property>
+   <property name="toolTip">
+    <string>Select 3D region of interest</string>
+   </property>
+   <property name="shortcut">
+    <string>S</string>
    </property>
   </action>
  </widget>
