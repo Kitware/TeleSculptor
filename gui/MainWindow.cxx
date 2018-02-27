@@ -572,11 +572,29 @@ void MainWindowPrivate::setActiveCamera(int id)
   this->activeCameraIndex = id;
   this->UI.worldView->setActiveCamera(id);
   this->updateCameraView();
-
-  auto& cd = this->frames[id-1];
-  if (!cd.depthMapPath.isEmpty())
+  
+  //load from memory if cached
+  if (id == this->activeDepthFrame)
   {
-    this->loadDepthMap(cd.depthMapPath);
+    this->depthReader->SetFileName("");
+    this->depthFilter->RemoveAllInputConnections(0);
+    this->depthFilter->SetInputData(this->activeDepth);
+
+    this->UI.depthMapView->setValidDepthInput(true);
+    this->UI.worldView->setValidDepthInput(true);
+
+    this->depthFilter->SetCamera(this->frames[id - 1].camera);
+    this->UI.worldView->updateDepthMap();
+    this->UI.depthMapView->updateView(true);
+    this->UI.actionExportDepthPoints->setEnabled(true);
+  }
+  else // load from file
+  {
+    auto& cd = this->frames[id - 1];
+    if (!cd.depthMapPath.isEmpty())
+    {
+      this->loadDepthMap(cd.depthMapPath);
+    }
   }
 
   // TODO: Uncomment once MeshColoration is working directly off video frames
@@ -814,6 +832,9 @@ void MainWindowPrivate::loadDepthMap(QString const& imagePath)
     return;
   }
 
+  this->depthFilter->RemoveAllInputs();
+  this->depthFilter->SetInputConnection(this->depthReader->GetOutputPort());
+  
   this->depthReader->SetFileName(qPrintable(imagePath));
 
   this->UI.depthMapView->setValidDepthInput(true);
@@ -1177,18 +1198,18 @@ void MainWindow::loadProject(QString const& path)
     }
   }
 
-  // Associate depth maps with cameras
-  foreach (auto dm, qtEnumerate(d->currProject->depthMaps))
+  //find depth map paths
+  if (d->currProject->projectConfig->has_value("output_depth_dir"))
   {
-    auto const i = dm.key();
-    if (i >= 0 && i < d->frames.count())
+    foreach(auto & frame, d->frames)
     {
-      d->frames[i].depthMapPath = dm.value();
-    }
-
-    if (i == d->activeCameraIndex)
-    {
-      d->loadDepthMap(dm.value());
+      auto depthName = QString::fromStdString(d->getFrameName(frame.id) + ".vti");
+      QString depthMapPath = QString::fromStdString(kvPath(d->currProject->depthPath) + '/' + kvPath(depthName));
+      QFileInfo check_file(depthMapPath);
+      if (check_file.exists() && check_file.isFile()) 
+      {
+        frame.depthMapPath = depthMapPath;
+      }
     }
   }
 
@@ -1224,6 +1245,8 @@ void MainWindow::loadProject(QString const& path)
   {
     tool->setEnabled(true);
   }
+
+  d->setActiveCamera(d->activeCameraIndex);
 }
 
 //-----------------------------------------------------------------------------
@@ -1969,16 +1992,6 @@ void MainWindow::updateToolResults()
   {
     d->activeDepth = d->toolUpdateDepth;
     d->activeDepthFrame = d->toolUpdateActiveFrame;
-
-    d->depthFilter->SetInputData(d->activeDepth);
-
-    d->UI.depthMapView->setValidDepthInput(true);
-    d->UI.worldView->setValidDepthInput(true);
-
-    d->depthFilter->SetCamera(d->frames[d->toolUpdateActiveFrame - 1].camera);
-    d->UI.worldView->updateDepthMap();
-    d->UI.depthMapView->updateView(true);
-    d->UI.actionExportDepthPoints->setEnabled(true);
 
     d->toolUpdateDepth = NULL;
   }

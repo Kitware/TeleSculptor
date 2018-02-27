@@ -133,32 +133,6 @@ bool Project::read(QString const& path)
     this->depthPath =
       getPath(config, this->workingDir, "output_depth_dir", DEPTH_PATH);
 
-    // Read depth map images list
-    if (config->has_value("depthmaps_images_file"))
-    {
-      auto const& dmifPath =
-        config->get_value<std::string>("depthmaps_images_file");
-      auto const& dmifAbsolutePath =
-        this->workingDir.filePath(qtString(dmifPath));
-      auto const& dmifBase = QFileInfo(dmifAbsolutePath).absoluteDir();
-      QFile dmif(dmifAbsolutePath);
-      if (!dmif.open(QIODevice::ReadOnly | QIODevice::Text))
-      {
-        // TODO set error
-        return false;
-      }
-
-      auto parts = QRegExp("(\\d+)\\s+([^\n]+)\n*");
-      while (!dmif.atEnd())
-      {
-        auto const& line = QString::fromLocal8Bit(dmif.readLine());
-        if (parts.exactMatch(line))
-        {
-          this->depthMaps.insert(parts.cap(1).toInt(),
-                                 dmifBase.filePath(parts.cap(2)));
-        }
-      }
-    }
 
     // Read Volume file
     if (config->has_value("volume_file"))

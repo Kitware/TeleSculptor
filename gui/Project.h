@@ -58,13 +58,10 @@ public:
 
   QString tracksPath;
   QString landmarksPath;
-  QString depthmapsPath;
   QString volumePath;
   QString cameraPath;
   QString geoOriginFile;
   QString depthPath;
-
-  QMap<int, QString> depthMaps;
 
   kwiver::vital::config_block_sptr projectConfig;
 

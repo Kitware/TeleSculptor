@@ -112,8 +112,8 @@ ComputeDepthTool::ComputeDepthTool(QObject* parent)
   this->data()->logger =
     kwiver::vital::get_logger("telesculptor.tools.compute_depth");
 
-  this->setText("&Compute Depth Maps");
-  this->setToolTip("Computes depth maps on key images.");
+  this->setText("&Compute Depth Map");
+  this->setToolTip("Computes depth map on current image.");
 }
 
 //-----------------------------------------------------------------------------
@@ -247,7 +247,7 @@ void ComputeDepthTool::run()
   std::vector<kwiver::vital::camera_sptr> cameras_out;
   std::vector<kwiver::vital::landmark_sptr> landmarks_out;
   std::vector<kwiver::vital::frame_id_t> frame_ids;
-  const int halfsupport = 7;
+  const int halfsupport = 10;
   int ref_frame = 0;
 
   d->video_reader->open(this->data()->videoPath);
