@@ -572,7 +572,7 @@ void MainWindowPrivate::setActiveCamera(int id)
   this->activeCameraIndex = id;
   this->UI.worldView->setActiveCamera(id);
   this->updateCameraView();
-  
+
   //load from memory if cached
   if (id == this->activeDepthFrame)
   {
@@ -834,7 +834,7 @@ void MainWindowPrivate::loadDepthMap(QString const& imagePath)
 
   this->depthFilter->RemoveAllInputs();
   this->depthFilter->SetInputConnection(this->depthReader->GetOutputPort());
-  
+
   this->depthReader->SetFileName(qPrintable(imagePath));
 
   this->UI.depthMapView->setValidDepthInput(true);
@@ -1206,7 +1206,7 @@ void MainWindow::loadProject(QString const& path)
       auto depthName = QString::fromStdString(d->getFrameName(frame.id) + ".vti");
       QString depthMapPath = QString::fromStdString(kvPath(d->currProject->depthPath) + '/' + kvPath(depthName));
       QFileInfo check_file(depthMapPath);
-      if (check_file.exists() && check_file.isFile()) 
+      if (check_file.exists() && check_file.isFile())
       {
         frame.depthMapPath = depthMapPath;
       }
