@@ -49,6 +49,7 @@
 #include "AboutDialog.h"
 #include "MatchMatrixWindow.h"
 #include "Project.h"
+#include "VideoImport.h"
 #include "vtkMaptkImageDataGeometryFilter.h"
 #include "vtkMaptkImageUnprojectDepth.h"
 #include "vtkMaptkCamera.h"
@@ -410,6 +411,10 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
                                  K_def.principal_point()),
     config->get_value<double>(bc + "aspect_ratio", K_def.aspect_ratio()),
     config->get_value<double>(bc + "skew", K_def.skew()));
+
+  std::shared_ptr<VideoImport> videoImporter =
+    std::make_shared<VideoImport>(config, videoPath.toStdString());
+  videoImporter->start();
 
   try
   {
