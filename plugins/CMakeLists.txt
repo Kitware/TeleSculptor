@@ -14,7 +14,7 @@ kwiver_install(
 
 # Install the zipped ruby file
 kwiver_install(
-  DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/sketchup"
+  FILES "${CMAKE_CURRENT_BINARY_DIR}/kw_maptk.rbz"
   COMPONENT runtime
   DESTINATION share/maptk/${MAPTK_VERSION}/plugins
   )
@@ -27,20 +27,11 @@ add_custom_target(sketchup-movefiles
     ${CMAKE_CURRENT_SOURCE_DIR}/sketchup/kw_maptk.rb ${CMAKE_CURRENT_BINARY_DIR}/kw_maptk.rb)
 
 # Zip kw_maptk and kw_maptk.rb into kw_maptk.rbz
-add_custom_target(sketchup-rubyzip
+add_custom_target(sketchup-rubyzip ALL
   COMMAND ${CMAKE_COMMAND} -E tar "cfx"
     "${CMAKE_CURRENT_BINARY_DIR}/kw_maptk.rbz" --format=zip
     "${CMAKE_CURRENT_BINARY_DIR}/kw_maptk.rb"
     "${CMAKE_CURRENT_BINARY_DIR}/kw_maptk")
 
-# Put the *.rbz into ./sketchup
-add_custom_target(sketchup-movezip ALL
-  COMMAND ${CMAKE_COMMAND} -E make_directory
-    "${CMAKE_CURRENT_BINARY_DIR}/sketchup"
-  COMMAND ${CMAKE_COMMAND} -E copy
-    "${CMAKE_CURRENT_BINARY_DIR}/kw_maptk.rbz"
-    "${CMAKE_CURRENT_BINARY_DIR}/sketchup/kw_maptk.rbz")
-
-# Enforce: files moved->files zipped->move zip
-add_dependencies(sketchup-movezip sketchup-rubyzip)
+# Enforce: files moved->files zipped
 add_dependencies(sketchup-rubyzip sketchup-movefiles)
