@@ -33,20 +33,14 @@ add_custom_target(sketchup-rubyzip
     "${CMAKE_CURRENT_BINARY_DIR}/kw_maptk.rb"
     "${CMAKE_CURRENT_BINARY_DIR}/kw_maptk")
 
-# Remove unneeded files and put the *.rbz into ./sketchup
-add_custom_target(sketchup-cleanup ALL
+# Put the *.rbz into ./sketchup
+add_custom_target(sketchup-movezip ALL
   COMMAND ${CMAKE_COMMAND} -E make_directory
     "${CMAKE_CURRENT_BINARY_DIR}/sketchup"
   COMMAND ${CMAKE_COMMAND} -E copy
     "${CMAKE_CURRENT_BINARY_DIR}/kw_maptk.rbz"
-    "${CMAKE_CURRENT_BINARY_DIR}/sketchup/kw_maptk.rbz"
-  COMMAND ${CMAKE_COMMAND} -E remove -f
-    "${CMAKE_CURRENT_BINARY_DIR}/kw_maptk.rbz"
-  COMMAND ${CMAKE_COMMAND} -E remove -f
-    "${CMAKE_CURRENT_BINARY_DIR}/kw_maptk.rb"
-  COMMAND ${CMAKE_COMMAND} -E remove_directory
-    "${CMAKE_CURRENT_BINARY_DIR}/kw_maptk")
+    "${CMAKE_CURRENT_BINARY_DIR}/sketchup/kw_maptk.rbz")
 
-# Enforce: files moved->files zipped->cleanup
-add_dependencies(sketchup-cleanup sketchup-rubyzip)
+# Enforce: files moved->files zipped->move zip
+add_dependencies(sketchup-movezip sketchup-rubyzip)
 add_dependencies(sketchup-rubyzip sketchup-movefiles)
