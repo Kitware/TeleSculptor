@@ -81,6 +81,7 @@ set(gui_moc_headers
   tools/SaveKeyFrameTool.h
   tools/TrackFilterTool.h
   tools/TrackFeaturesTool.h
+  tools/TriangulateTool.h
 )
 
 set(gui_sources
@@ -125,6 +126,7 @@ set(gui_sources
   tools/SaveKeyFrameTool.cxx
   tools/TrackFilterTool.cxx
   tools/TrackFeaturesTool.cxx
+  tools/TriangulateTool.cxx
 )
 
 maptk_use_appdata(

@@ -42,6 +42,7 @@
 #include "tools/SaveKeyFrameTool.h"
 #include "tools/TrackFeaturesTool.h"
 #include "tools/TrackFilterTool.h"
+#include "tools/TriangulateTool.h"
 
 #include "AboutDialog.h"
 #include "MatchMatrixWindow.h"
@@ -854,6 +855,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
     d->UI.menuCompute->insertSeparator(d->UI.actionCancelComputation);
 
   d->addTool(new TrackFeaturesTool(this), this);
+  d->addTool(new TriangulateTool(this), this);
   d->addTool(new InitCamerasLandmarksTool(this), this);
   d->addTool(new BundleAdjustTool(this), this);
   d->addTool(new CanonicalTransformTool(this), this);
