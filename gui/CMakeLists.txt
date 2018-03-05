@@ -77,6 +77,7 @@ set(gui_moc_headers
   tools/CanonicalTransformTool.h
   tools/InitCamerasLandmarksTool.h
   tools/NeckerReversalTool.h
+  tools/SaveFrameTool.h
   tools/SaveKeyFrameTool.h
   tools/TrackFilterTool.h
   tools/TrackFeaturesTool.h
@@ -120,6 +121,7 @@ set(gui_sources
   tools/NeckerReversalTool.cxx
   tools/MeshColoration.cxx
   tools/ReconstructionData.cxx
+  tools/SaveFrameTool.cxx
   tools/SaveKeyFrameTool.cxx
   tools/TrackFilterTool.cxx
   tools/TrackFeaturesTool.cxx

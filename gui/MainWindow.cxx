@@ -38,6 +38,7 @@
 #include "tools/CanonicalTransformTool.h"
 #include "tools/InitCamerasLandmarksTool.h"
 #include "tools/NeckerReversalTool.h"
+#include "tools/SaveFrameTool.h"
 #include "tools/SaveKeyFrameTool.h"
 #include "tools/TrackFeaturesTool.h"
 #include "tools/TrackFilterTool.h"
@@ -858,6 +859,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->addTool(new CanonicalTransformTool(this), this);
   d->addTool(new NeckerReversalTool(this), this);
   d->addTool(new TrackFilterTool(this), this);
+  d->addTool(new SaveFrameTool(this), this);
   d->addTool(new SaveKeyFrameTool(this), this);
 
   d->UI.menuView->addSeparator();
