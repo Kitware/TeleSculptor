@@ -31,14 +31,18 @@
 #ifndef MAPTK_VIDEOINPUT_H_
 #define MAPTK_VIDEOINPUT_H_
 
+#include <maptk/local_geo_cs.h>
+
 #include <vital/vital_types.h>
 #include <vital/config/config_block_types.h>
 #include <vital/logger/logger.h>
 #include <vital/types/camera.h>
 #include <vital/types/metadata.h>
+#include <vital/types/metadata_map.h>
 
 #include <qtGlobal.h>
 
+#include <QMetaType>
 #include <QtCore/QThread>
 
 class VideoImportPrivate;
@@ -47,10 +51,10 @@ class VideoData
 {
 public:
 
-  kwiver::vital::timestamp::frame_t frame;
-  kwiver::vital::metadata_vector mdVec;
-  kwiver::vital::camera_sptr camera;
+  kwiver::vital::metadata_map::map_metadata_t metadataMap;
 };
+
+Q_DECLARE_METATYPE(std::shared_ptr<VideoData>);
 
 class VideoImport : public QThread
 {
@@ -59,14 +63,18 @@ class VideoImport : public QThread
 public:
   typedef kwiver::vital::config_block_sptr config_block_sptr;
 
-  VideoImport(config_block_sptr const&, std::string const&);
+  VideoImport();
   virtual ~VideoImport();
+
+  void setData(config_block_sptr const&,
+               std::string const&,
+               kwiver::maptk::local_geo_cs& lgcs);
 
 signals:
   /// Emitted when the tool execution is completed.
-  void completed();
+  void completed(std::shared_ptr<VideoData>);
   /// Emitted when an intermediate update of the data is available to show progress.
-  void updated(std::shared_ptr<VideoData>);
+  void updated(int);
 
 protected:
   /// Execute the tool.

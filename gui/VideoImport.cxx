@@ -55,19 +55,14 @@ public:
   config_block_sptr config;
   std::string videoPath;
 
+  kwiver::maptk::local_geo_cs localGeoCs;
+
   kwiver::vital::logger_handle_t logger;
 };
 
 //-----------------------------------------------------------------------------
-VideoImport::VideoImport(config_block_sptr const& config, std::string const& path)
-  : d_ptr(new VideoImportPrivate())
-{
-  QTE_D();
-
-  d->config = config;
-  d->videoPath = path;
-  // connect(d, SIGNAL(finished()), this, SIGNAL(completed()));
-}
+VideoImport::VideoImport() : d_ptr(new VideoImportPrivate())
+{}
 
 //-----------------------------------------------------------------------------
 VideoImport::~VideoImport()
@@ -75,6 +70,18 @@ VideoImport::~VideoImport()
   QTE_D();
 
   d->video_reader->close();
+}
+
+//-----------------------------------------------------------------------------
+void VideoImport::setData(config_block_sptr const& config,
+                     std::string const& path,
+                     kwiver::maptk::local_geo_cs& lgcs)
+{
+  QTE_D();
+
+  d->config = config;
+  d->videoPath = path;
+  d->localGeoCs = lgcs;
 }
 
 //-----------------------------------------------------------------------------
@@ -96,14 +103,24 @@ void VideoImport::run()
   kwiver::vital::timestamp currentTimestamp;
   d->video_reader->open(d->videoPath);
 
+  // TODO: remwork algorithms to use map_metadata_t from metadata_map.h
+  auto videoData = std::make_shared<VideoData>();
+
   while (d->video_reader->next_frame(currentTimestamp))
   {
-    VideoData vd;
-    vd.frame = currentTimestamp.get_frame();
-    vd.mdVec = d->video_reader->frame_metadata();
+    auto frame = currentTimestamp.get_frame();
+    auto mdVec = d->video_reader->frame_metadata();
 
-    std::cout << "FRAME: vd.frame = " << vd.frame << std::endl;
+    if (mdVec.size() > 0)
+    {
+      // TODO: just using first element of metadata vector for now
+      videoData->metadataMap.insert(std::make_pair(frame, mdVec));
+    }
+
+    emit updated(frame);
   }
+
+  emit completed(videoData);
 
   d->video_reader->close();
 }

@@ -249,12 +249,7 @@ public:
   };
 
   // Methods
-  MainWindowPrivate()
-    : activeTool(0)
-    , toolUpdateActiveFrame(-1)
-    , framesToSkip(1)
-    , activeDepthFrame(-1)
-    , activeCameraIndex(-1) {}
+  MainWindowPrivate(MainWindow* mainWindow);
 
   void addTool(AbstractTool* tool, MainWindow* mainWindow);
 
@@ -264,6 +259,7 @@ public:
                       QString const& videoPath);
 
   void addFrame(kwiver::vital::camera_sptr const& camera, int id);
+  void updateFrames(std::shared_ptr<VideoData>);
 
   kwiver::vital::camera_map_sptr cameraMap() const;
   void updateCameras(kwiver::vital::camera_map_sptr const&);
@@ -305,6 +301,7 @@ public:
   vtkSmartPointer<vtkImageData> toolUpdateDepth;
 
   QString videoPath;
+  kwiver::vital::config_block_sptr videoConfig;
   kwiver::vital::algo::video_input_sptr videoSource;
   kwiver::vital::timestamp currentVideoTimestamp;
   kwiver::vital::metadata_map::map_metadata_t videoMetadataMap;
@@ -320,6 +317,8 @@ public:
 
   int activeCameraIndex;
 
+  VideoImport videoImporter;
+
   // Frames without a camera
   QQueue<int> orphanFrames;
 
@@ -332,6 +331,18 @@ public:
 };
 
 QTE_IMPLEMENT_D_FUNC(MainWindow)
+
+//-----------------------------------------------------------------------------
+MainWindowPrivate::MainWindowPrivate(MainWindow* mainWindow)
+    : activeTool(0)
+    , toolUpdateActiveFrame(-1)
+    , activeCameraIndex(-1)
+{
+  QObject::connect(&videoImporter, SIGNAL(updated(int)),
+                   mainWindow, SLOT(addFrame(int)));
+  QObject::connect(&videoImporter, SIGNAL(completed(std::shared_ptr<VideoData>)),
+                   mainWindow, SLOT(updateFrames(std::shared_ptr<VideoData>)));
+}
 
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::addTool(AbstractTool* tool, MainWindow* mainWindow)
@@ -391,6 +402,7 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
     this->currProject->projectConfig = config;
   }
   this->videoPath = videoPath;
+  this->videoConfig = config;
 
   // Close the existing video source if it exists
   if(this->videoSource)
@@ -401,20 +413,7 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
   kwiver::vital::algo::video_input::
     set_nested_algo_configuration("video_reader", config, this->videoSource);
 
-  using kwiver::vital::vector_2d;
-
-  kwiver::vital::simple_camera_intrinsics K_def;
-  const std::string bc = "video_reader:base_camera:";
-  auto K = std::make_shared<kwiver::vital::simple_camera_intrinsics>(
-    config->get_value<double>(bc + "focal_length", K_def.focal_length()),
-    config->get_value<vector_2d>(bc + "principal_point",
-                                 K_def.principal_point()),
-    config->get_value<double>(bc + "aspect_ratio", K_def.aspect_ratio()),
-    config->get_value<double>(bc + "skew", K_def.skew()));
-
-  std::shared_ptr<VideoImport> videoImporter =
-    std::make_shared<VideoImport>(config, videoPath.toStdString());
-  videoImporter->start();
+  videoImporter.setData(config, videoPath.toStdString(), this->localGeoCs);
 
   try
   {
@@ -431,52 +430,7 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
         config->get_value<int>("video_reader:vidl_ffmpeg:output_nth_frame");
     }
 
-    // Get the video metadata
-    if (this->videoSource)
-    {
-      videoMetadataMap = this->videoSource->metadata_map()->metadata();
-    }
-
-    // If we have metadata try and initialize cameras
-    std::map<kwiver::vital::frame_id_t, kwiver::vital::camera_sptr> camMap;
-    if (videoMetadataMap.size() > 0)
-    {
-      std::map<kwiver::vital::frame_id_t, kwiver::vital::metadata_sptr> mdMap;
-      for (auto const& mdIter: this->videoMetadataMap)
-      {
-        // TODO: just using first element of metadata vector for now
-        mdMap[mdIter.first] = mdIter.second[0];
-      }
-
-      bool init_cams_with_metadata =
-        config->get_value<bool>("initialize_cameras_with_metadata", true);
-
-      if (init_cams_with_metadata)
-      {
-        auto baseCamera = kwiver::vital::simple_camera();
-        baseCamera.set_intrinsics(K);
-
-        camMap = kwiver::maptk::initialize_cameras_with_metadata(
-          mdMap, baseCamera, this->localGeoCs);
-      }
-    }
-
-    // Add frames for video if needed
-    auto numFrames = this->videoSource->num_frames();
-    for (unsigned int i = this->frames.count(); i < numFrames; ++i)
-    {
-      // frames start at 1, list index starts at 0
-      auto frameIdx = i + 1;
-      if (camMap.find(frameIdx) != camMap.end())
-      {
-        this->addFrame(camMap[frameIdx], frameIdx);
-      }
-      else
-      {
-        this->orphanFrames.enqueue(i);
-        this->addFrame(kwiver::vital::camera_sptr(), frameIdx);
-      }
-    }
+    videoImporter.start();
   }
   catch (kwiver::vital::file_not_found_exception const& e)
   {
@@ -521,6 +475,53 @@ void MainWindowPrivate::addFrame(
 
     this->setActiveCamera(1);
     this->UI.cameraView->resetView();
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::updateFrames(std::shared_ptr<VideoData> vd)
+{
+  this->videoMetadataMap = vd->metadataMap;
+
+  using kwiver::vital::vector_2d;
+
+  kwiver::vital::simple_camera_intrinsics K_def;
+  const std::string bc = "video_reader:base_camera:";
+  auto K = std::make_shared<kwiver::vital::simple_camera_intrinsics>(
+    this->videoConfig->get_value<double>(bc + "focal_length",
+                                         K_def.focal_length()),
+    this->videoConfig->get_value<vector_2d>(bc + "principal_point",
+                                            K_def.principal_point()),
+    this->videoConfig->get_value<double>(bc + "aspect_ratio",
+                                         K_def.aspect_ratio()),
+    this->videoConfig->get_value<double>(bc + "skew", K_def.skew()));
+
+  std::map<kwiver::vital::frame_id_t, kwiver::vital::camera_sptr> camMap;
+  if (videoMetadataMap.size() > 0)
+  {
+    std::map<kwiver::vital::frame_id_t, kwiver::vital::metadata_sptr> mdMap;
+    for (auto const& mdIter: this->videoMetadataMap)
+    {
+      // TODO: just using first element of metadata vector for now
+      mdMap[mdIter.first] = mdIter.second[0];
+    }
+
+    bool init_cams_with_metadata =
+      this->videoConfig->get_value<bool>("initialize_cameras_with_metadata", true);
+
+    if (init_cams_with_metadata)
+    {
+      auto baseCamera = kwiver::vital::simple_camera();
+      baseCamera.set_intrinsics(K);
+
+      camMap = kwiver::maptk::initialize_cameras_with_metadata(
+        mdMap, baseCamera, this->localGeoCs);
+    }
+  }
+
+  for (auto cam : camMap)
+  {
+    this->updateCamera(cam.first, cam.second);
   }
 }
 
@@ -975,7 +976,7 @@ void MainWindowPrivate::setActiveTool(AbstractTool* tool)
 
 //-----------------------------------------------------------------------------
 MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
-  : QMainWindow(parent, flags), d_ptr(new MainWindowPrivate)
+  : QMainWindow(parent, flags), d_ptr(new MainWindowPrivate(this))
 {
   QTE_D();
 
@@ -2107,6 +2108,22 @@ void MainWindow::updateToolResults()
   {
     d->setActiveCamera(d->activeCameraIndex);
   }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::addFrame(int frame)
+{
+  QTE_D();
+
+  d->addFrame(nullptr, frame);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::updateFrames(std::shared_ptr<VideoData> vd)
+{
+  QTE_D();
+
+  d->updateFrames(vd);
 }
 
 //-----------------------------------------------------------------------------

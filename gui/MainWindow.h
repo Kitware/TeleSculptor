@@ -41,6 +41,8 @@ class ToolData;
 
 class MainWindowPrivate;
 
+class VideoData;
+
 class MainWindow : public QMainWindow
 {
   Q_OBJECT
@@ -104,6 +106,8 @@ protected slots:
   void acceptToolFinalResults();
   void acceptToolResults(std::shared_ptr<ToolData> data, bool isFinal = false);
   void updateToolResults();
+  void addFrame(int);
+  void updateFrames(std::shared_ptr<VideoData>);
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(MainWindow)
