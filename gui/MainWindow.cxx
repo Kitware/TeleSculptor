@@ -61,7 +61,7 @@
 #include <vital/types/metadata_map.h>
 #include <arrows/core/match_matrix.h>
 
-#include <vtksys/SystemTools.hxx>
+#include <kwiversys/SystemTools.hxx>
 
 #include <vtkImageData.h>
 #include <vtkImageFlip.h>
@@ -781,7 +781,7 @@ void MainWindowPrivate::loadImage(FrameData frame)
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::loadDepthMap(QString const& imagePath)
 {
-  if (!vtksys::SystemTools::FileExists(qPrintable(imagePath), true))
+  if (!kwiversys::SystemTools::FileExists(qPrintable(imagePath), true))
   {
     qWarning() << "File doesn't exist: " << imagePath;
     return;
@@ -1184,7 +1184,7 @@ void MainWindow::loadProject(QString const& path)
 
   if (d->currProject->projectConfig->has_value("geo_origin_file"))
   {
-    if (vtksys::SystemTools::FileExists(
+    if (kwiversys::SystemTools::FileExists(
         d->currProject->geoOriginFile.toStdString(), true))
     {
       kwiver::maptk::read_local_geo_cs_from_file(
