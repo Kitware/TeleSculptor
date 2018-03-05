@@ -16,7 +16,7 @@ kwiver_install(
 kwiver_install(
   FILES "${CMAKE_CURRENT_BINARY_DIR}/kw_maptk.rbz"
   COMPONENT runtime
-  DESTINATION share/maptk/${MAPTK_VERSION}/plugins
+  DESTINATION share/maptk/${MAPTK_VERSION}/plugins/sketchup
   )
 
 # Move files to out of ./sketchup into the binary directory
