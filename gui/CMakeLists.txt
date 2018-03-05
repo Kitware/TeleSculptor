@@ -172,13 +172,15 @@ target_link_libraries(TeleSculptor
   maptk
   kwiver::kwiver_algo_core
   kwiver::vital_vpm
+  vtkFiltersSources
   vtkGUISupportQt
+  vtkImagingCore
+  vtkInteractionStyle
   vtkIOImage
   vtkIOPLY
   vtkIOXML
   vtkRenderingAnnotation
   vtkRenderingFreeType
-  vtkRenderingGL2PSOpenGL2
   qtExtensions
   ${QT_QTMAIN_LIBRARY}
   ${QT_LIBRARIES}
