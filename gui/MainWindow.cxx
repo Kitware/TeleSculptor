@@ -430,6 +430,11 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
         config->get_value<int>("video_reader:vidl_ffmpeg:output_nth_frame");
     }
 
+    foreach (auto const& tool, this->tools)
+    {
+      tool->setEnabled(false);
+    }
+
     videoImporter.start();
   }
   catch (kwiver::vital::file_not_found_exception const& e)
@@ -523,6 +528,14 @@ void MainWindowPrivate::updateFrames(std::shared_ptr<VideoData> vd)
   {
     this->updateCamera(cam.first, cam.second);
   }
+
+  if (this->currProject){
+    for (auto const& tool : this->tools)
+    {
+      tool->setEnabled(true);
+    }
+  }
+
 }
 
 //-----------------------------------------------------------------------------
