@@ -4,7 +4,7 @@ include(${QT_USE_FILE})
 find_package(qtExtensions REQUIRED)
 include(${qtExtensions_USE_FILE})
 
-find_package(VTK 6.2 REQUIRED)
+find_package(VTK 8.0 REQUIRED)
 include(${VTK_USE_FILE})
 
 #
@@ -173,18 +173,12 @@ target_link_libraries(TeleSculptor
   kwiver::kwiver_algo_core
   kwiver::vital_vpm
   vtkGUISupportQt
-  vtkInteractionStyle
+  vtkIOImage
   vtkIOPLY
   vtkIOXML
-  vtkViewsCore
-  vtkRenderingFreeTypeOpenGL
-  vtkRenderingVolumeOpenGL
-  vtkRenderingOpenGL
-  vtkRenderingCore
-  vtkFiltersGeometry
-  vtkFiltersCore
-  vtkCommonCore
-  vtksys
+  vtkRenderingAnnotation
+  vtkRenderingFreeType
+  vtkRenderingGL2PSOpenGL2
   qtExtensions
   ${QT_QTMAIN_LIBRARY}
   ${QT_LIBRARIES}
