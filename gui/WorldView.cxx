@@ -491,8 +491,8 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->cubeAxesActor->XAxisMinorTickVisibilityOff();
   d->cubeAxesActor->YAxisMinorTickVisibilityOff();
   d->cubeAxesActor->ZAxisMinorTickVisibilityOff();
-  d->cubeAxesActor->SetFlyMode(VTK_FLY_FURTHEST_TRIAD);
-  d->cubeAxesActor->SetGridLineLocation(VTK_GRID_LINES_FURTHEST);
+  d->cubeAxesActor->SetFlyMode(vtkCubeAxesActor::VTK_FLY_FURTHEST_TRIAD);
+  d->cubeAxesActor->SetGridLineLocation(vtkCubeAxesActor::VTK_GRID_LINES_FURTHEST);
 
   d->cubeAxesActor->SetCamera(d->renderer->GetActiveCamera());
   d->cubeAxesActor->SetVisibility(false);
@@ -938,6 +938,12 @@ void WorldView::setDepthMapVisible(bool state)
     d->UI.renderWidget->update();
   }
   d->depthMapOptions->setEnabled(state);
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::queueResetView()
+{
+  QMetaObject::invokeMethod(this, "resetView", Qt::QueuedConnection);
 }
 
 //-----------------------------------------------------------------------------

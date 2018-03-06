@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2017 by Kitware, Inc.
+ * Copyright 2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,77 +28,83 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "TrackFilterTool.h"
+#include "TriangulateTool.h"
 #include "GuiCommon.h"
 
-#include <vital/algo/filter_tracks.h>
+#include <vital/algo/triangulate_landmarks.h>
 
 #include <QtGui/QMessageBox>
 
-using kwiver::vital::algo::filter_tracks;
-using kwiver::vital::algo::filter_tracks_sptr;
+using kwiver::vital::algo::triangulate_landmarks;
+using kwiver::vital::algo::triangulate_landmarks_sptr;
 
 namespace
 {
-static char const* const BLOCK = "track_filter";
+static char const* const BLOCK = "triangulator";
+static char const* const CONFIG_FILE = "gui_triangulate.conf";
 }
 
 //-----------------------------------------------------------------------------
-class TrackFilterToolPrivate
+class TriangulateToolPrivate
 {
 public:
-  filter_tracks_sptr algorithm;
+  triangulate_landmarks_sptr algorithm;
 };
 
-QTE_IMPLEMENT_D_FUNC(TrackFilterTool)
+QTE_IMPLEMENT_D_FUNC(TriangulateTool)
 
 //-----------------------------------------------------------------------------
-TrackFilterTool::TrackFilterTool(QObject* parent)
-  : AbstractTool(parent), d_ptr(new TrackFilterToolPrivate)
+TriangulateTool::TriangulateTool(QObject* parent)
+  : AbstractTool(parent), d_ptr(new TriangulateToolPrivate)
 {
-  this->setText("&Filter Tracks");
+  this->data()->logger =
+    kwiver::vital::get_logger("telesculptor.tools.triangulate");
+
+  this->setText("&Triangulate Landmarks");
   this->setToolTip(
-    "<nobr>Filter feature tracks to remove short and redundant tracks to speed "
-    "</nobr>up bundle adjustment");
+    "<nobr>Triangulate landmarks in current set of cameras.</nobr>");
 }
 
 //-----------------------------------------------------------------------------
-TrackFilterTool::~TrackFilterTool()
+TriangulateTool::~TriangulateTool()
 {
 }
 
 //-----------------------------------------------------------------------------
-AbstractTool::Outputs TrackFilterTool::outputs() const
+AbstractTool::Outputs TriangulateTool::outputs() const
 {
-  return Tracks;
+  return Landmarks;
 }
 
 //-----------------------------------------------------------------------------
-bool TrackFilterTool::execute(QWidget* window)
+bool TriangulateTool::execute(QWidget* window)
 {
   QTE_D();
 
-  if (!this->hasTracks())
+  // Check inputs
+  if (!this->hasTracks() || !this->hasCameras())
   {
     QMessageBox::information(
-      window, "Insufficient data", "This operation requires tracks.");
+      window, "Insufficient data",
+      "This operation requires feature tracks and cameras.");
     return false;
   }
 
   // Merge project config with default config file
-  auto const config = readConfig("gui_filter_tracks.conf");
+  auto const config = readConfig(CONFIG_FILE);
 
   // Check configuration
   if (!config)
   {
     QMessageBox::critical(
       window, "Configuration error",
-      "No configuration data was found. Please check your installation.");
+      QString("No configuration data was found. Looking for \"")
+      + CONFIG_FILE + "\". Please check your installation.");
     return false;
   }
 
   config->merge_config(this->data()->config);
-  if (!filter_tracks::check_nested_algo_configuration(BLOCK, config))
+  if (!triangulate_landmarks::check_nested_algo_configuration(BLOCK, config))
   {
     QMessageBox::critical(
       window, "Configuration error",
@@ -107,18 +113,40 @@ bool TrackFilterTool::execute(QWidget* window)
   }
 
   // Create algorithm from configuration
-  filter_tracks::set_nested_algo_configuration(BLOCK, config, d->algorithm);
+  triangulate_landmarks::set_nested_algo_configuration(
+    BLOCK, config, d->algorithm);
 
+  // Hand off to base class
   return AbstractTool::execute(window);
 }
 
 //-----------------------------------------------------------------------------
-void TrackFilterTool::run()
+void TriangulateTool::run()
 {
   QTE_D();
 
-  auto tp = d->algorithm->filter(this->tracks());
-  auto ftp = std::static_pointer_cast<kwiver::vital::feature_track_set>(tp);
+  auto cp = this->cameras();
+  auto tp = this->tracks();
 
-  this->updateTracks(ftp);
+  kwiver::vital::landmark_map::map_landmark_t init_lms;
+  std::set<kwiver::vital::track_id_t> track_ids = tp->all_track_ids();
+
+  // Landmarks to triangulate must be created in the map.
+  // These could be initialized to Null, but some versions of KWIVER may
+  // crash, so it is safer to give them a value
+  kwiver::vital::vector_3d init_loc(0, 0, 0);
+  for (auto const& id : track_ids)
+  {
+    init_lms[id] = std::make_shared<kwiver::vital::landmark_d>(init_loc);
+  }
+  kwiver::vital::landmark_map_sptr lp =
+    std::make_shared<kwiver::vital::simple_landmark_map>(init_lms);
+
+  d->algorithm->triangulate(cp, tp, lp);
+
+  LOG_INFO(this->data()->logger, "Triangulated " << lp->size()
+           << " out of " << init_lms.size() << " tracks.");
+
+  this->updateLandmarks(lp);
 }
+

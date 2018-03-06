@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016-2017 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@
  */
 
 #include "MainWindow.h"
+#include "GuiCommon.h"
 
 #include "ui_MainWindow.h"
 #include "am_MainWindow.h"
@@ -38,9 +39,11 @@
 #include "tools/ComputeDepthTool.h"
 #include "tools/InitCamerasLandmarksTool.h"
 #include "tools/NeckerReversalTool.h"
+#include "tools/SaveFrameTool.h"
+#include "tools/SaveKeyFrameTool.h"
 #include "tools/TrackFeaturesTool.h"
 #include "tools/TrackFilterTool.h"
-#include "tools/ConfigHelper.h"
+#include "tools/TriangulateTool.h"
 
 #include "AboutDialog.h"
 #include "MatchMatrixWindow.h"
@@ -55,12 +58,11 @@
 #include <vital/algo/video_input.h>
 #include <vital/io/camera_io.h>
 #include <vital/io/landmark_map_io.h>
-#include <vital/io/metadata_io.h>
 #include <vital/io/track_set_io.h>
 #include <vital/types/metadata_map.h>
 #include <arrows/core/match_matrix.h>
 
-#include <vtksys/SystemTools.hxx>
+#include <kwiversys/SystemTools.hxx>
 
 #include <vtkXMLImageDataWriter.h>
 #include <vtkImageData.h>
@@ -104,20 +106,6 @@ namespace // anonymous
 kwiver::vital::path_t kvPath(QString const& s)
 {
   return stdString(s);
-}
-
-//-----------------------------------------------------------------------------
-QString cameraName(QString const& imagePath, int cameraIndex)
-{
-  static auto const defaultName = QString("camera%1.krtd");
-
-  if (imagePath.isEmpty())
-  {
-    return defaultName.arg(cameraIndex, 4, 10, QChar('0'));
-  }
-
-  auto const fi = QFileInfo(imagePath);
-  return fi.completeBaseName() + ".krtd";
 }
 
 //-----------------------------------------------------------------------------
@@ -289,6 +277,8 @@ public:
 
   kwiver::vital::camera_map_sptr cameraMap() const;
   void updateCameras(kwiver::vital::camera_map_sptr const&);
+  bool updateCamera(kwiver::vital::frame_id_t frame,
+                    kwiver::vital::camera_sptr cam);
 
   void setActiveCamera(int);
   void updateCameraView();
@@ -333,6 +323,8 @@ public:
   kwiver::vital::landmark_map_sptr landmarks;
   vtkSmartPointer<vtkImageData> activeDepth;
   int activeDepthFrame;
+
+  kwiver::maptk::local_geo_cs localGeoCs;
 
   int activeCameraIndex;
 
@@ -444,9 +436,8 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
       }
 
       auto baseCamera = kwiver::vital::simple_camera();
-      auto localGeoCs = kwiver::maptk::local_geo_cs();
       camMap = kwiver::maptk::initialize_cameras_with_metadata(
-          mdMap, baseCamera, localGeoCs);
+          mdMap, baseCamera, this->localGeoCs);
     }
 
     // Add frames for video if needed
@@ -466,7 +457,7 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
       }
     }
   }
-  catch (kwiver::vital::file_not_found_exception e)
+  catch (kwiver::vital::file_not_found_exception const& e)
   {
     qWarning() << e.what();
     this->videoSource->close();
@@ -540,28 +531,39 @@ void MainWindowPrivate::updateCameras(
   foreach (auto const& iter, cameras->cameras())
   {
     auto const index = static_cast<int>(iter.first);
-    if (index >= 0 && index < cameraCount && iter.second)
+    if (updateCamera(iter.first, iter.second))
     {
-      auto& cd = this->frames[index];
-      if (!cd.camera)
-      {
-        cd.camera = vtkSmartPointer<vtkMaptkCamera>::New();
-        this->UI.worldView->addCamera(cd.id, cd.camera);
-      }
-      cd.camera->SetCamera(iter.second);
-      cd.camera->Update();
-
-      if (cd.id == this->activeCameraIndex)
-      {
-        this->UI.worldView->setActiveCamera(cd.id);
-        this->updateCameraView();
-      }
-
       allowExport = allowExport || iter.second;
     }
   }
 
   this->UI.actionExportCameras->setEnabled(allowExport);
+}
+
+//-----------------------------------------------------------------------------
+bool MainWindowPrivate::updateCamera(kwiver::vital::frame_id_t frame,
+                                     kwiver::vital::camera_sptr cam)
+{
+  if (frame > 0 && frame <= this->frames.count() && cam)
+  {
+    auto& cd = this->frames[frame - 1];
+    if (!cd.camera)
+    {
+      cd.camera = vtkSmartPointer<vtkMaptkCamera>::New();
+      this->UI.worldView->addCamera(cd.id, cd.camera);
+    }
+    cd.camera->SetCamera(cam);
+    cd.camera->Update();
+
+    if (cd.id == this->activeCameraIndex)
+    {
+      this->UI.worldView->setActiveCamera(cd.id);
+      this->updateCameraView();
+    }
+
+    return true;
+  }
+  return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -705,22 +707,7 @@ MainWindowPrivate::vitalToVtkImage(kwiver::vital::image& img)
 
 std::string MainWindowPrivate::getFrameName(kwiver::vital::frame_id_t frameId)
 {
-  std::string retVal = "";
-
-  if (videoMetadataMap.find(frameId) != videoMetadataMap.end())
-  {
-    auto mdVec = videoMetadataMap[frameId];
-    for (auto const& md: mdVec)
-    {
-      if (md->has( kwiver::vital::VITAL_META_IMAGE_FILENAME ) ||
-          md->has( kwiver::vital::VITAL_META_VIDEO_FILENAME ) )
-      {
-        retVal = kwiver::vital::basename_from_metadata(md, frameId);
-      }
-    }
-  }
-
-  return retVal;
+  return frameName(frameId, this->videoMetadataMap);
 }
 
 void MainWindowPrivate::loadEmptyImage(vtkMaptkCamera* camera)
@@ -814,7 +801,7 @@ void MainWindowPrivate::loadImage(FrameData frame)
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::loadDepthMap(QString const& imagePath)
 {
-  if (!vtksys::SystemTools::FileExists(qPrintable(imagePath), true))
+  if (!kwiversys::SystemTools::FileExists(qPrintable(imagePath), true))
   {
     qWarning() << "File doesn't exist: " << imagePath;
     return;
@@ -888,12 +875,15 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
     d->UI.menuCompute->insertSeparator(d->UI.actionCancelComputation);
 
   d->addTool(new TrackFeaturesTool(this), this);
+  d->addTool(new TriangulateTool(this), this);
   d->addTool(new InitCamerasLandmarksTool(this), this);
   d->addTool(new BundleAdjustTool(this), this);
   d->addTool(new CanonicalTransformTool(this), this);
   d->addTool(new NeckerReversalTool(this), this);
   d->addTool(new TrackFilterTool(this), this);
   d->addTool(new ComputeDepthTool(this), this);
+  d->addTool(new SaveFrameTool(this), this);
+  d->addTool(new SaveKeyFrameTool(this), this);
 
   d->UI.menuView->addSeparator();
   d->UI.menuView->addAction(d->UI.cameraViewDock->toggleViewAction());
@@ -939,7 +929,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(setViewBackroundColor()));
 
   connect(d->UI.actionAbout, SIGNAL(triggered()),
-          this, SLOT(showAbout()));
+          this, SLOT(showAboutDialog()));
   connect(d->UI.actionShowManual, SIGNAL(triggered()),
           this, SLOT(showUserManual()));
 
@@ -1102,8 +1092,18 @@ void MainWindow::newProject()
     if (d->videoSource)
     {
       d->currProject->videoPath = d->videoPath;
-      auto config = ConfigHelper::readConfig("gui_video_reader.conf");
+      auto config = readConfig("gui_video_reader.conf");
       d->currProject->projectConfig->merge_config(config);
+    }
+
+    saveCameras(d->currProject->cameraPath);
+    d->currProject->projectConfig->set_value("output_krtd_dir", kvPath(
+      d->currProject->getContingentRelativePath(d->currProject->cameraPath)));
+
+    if (!d->localGeoCs.origin().is_empty() &&
+        !d->currProject->geoOriginFile.isEmpty())
+    {
+      saveGeoOrigin(d->currProject->geoOriginFile);
     }
 
     d->currProject->write();
@@ -1142,27 +1142,24 @@ void MainWindow::loadProject(QString const& path)
   }
 
   // Load tracks
-  if (!d->currProject->tracksPath.isEmpty())
+  if (d->currProject->projectConfig->has_value("input_track_file") ||
+      d->currProject->projectConfig->has_value("output_tracks_file"))
   {
     this->loadTracks(d->currProject->tracksPath);
   }
 
   // Load landmarks
-  if (!d->currProject->landmarksPath.isEmpty())
+  if (d->currProject->projectConfig->has_value("output_ply_file"))
   {
     this->loadLandmarks(d->currProject->landmarksPath);
   }
 
-  // Load cameras and/or images
-  if (!d->currProject->cameraPath.isEmpty())
+  // Load cameras
+  if (d->currProject->projectConfig->has_value("output_krtd_dir"))
   {
     foreach (auto const& frame, d->frames)
     {
-      auto frameName = QString::fromStdString(d->getFrameName(frame.id));
-      if (frameName == "")
-      {
-        frameName = cameraName("", frame.id);
-      }
+      auto frameName = QString::fromStdString(d->getFrameName(frame.id) + ".krtd");
 
       try
       {
@@ -1170,7 +1167,7 @@ void MainWindow::loadProject(QString const& path)
           kvPath(frameName), kvPath(d->currProject->cameraPath));
 
         // Add camera to scene
-        d->addCamera(camera);
+        d->updateCamera(frame.id, camera);
       }
       catch (...)
       {
@@ -1199,15 +1196,29 @@ void MainWindow::loadProject(QString const& path)
   d->UI.actionWebGLScene->setEnabled(true);
 #endif
 
-  //Load volume
-  if (!d->currProject->volumePath.isEmpty())
+  // Load volume
+  if (d->currProject->projectConfig->has_value("volume_file"))
   {
-
     d->UI.worldView->loadVolume(d->currProject->volumePath, d->frames.size(),
                                 d->currProject->cameraPath, d->currProject->videoPath);
   }
 
-  d->UI.worldView->resetView();
+  if (d->currProject->projectConfig->has_value("geo_origin_file"))
+  {
+    if (kwiversys::SystemTools::FileExists(
+        d->currProject->geoOriginFile.toStdString(), true))
+    {
+      kwiver::maptk::read_local_geo_cs_from_file(
+        d->localGeoCs, d->currProject->geoOriginFile.toStdString());
+    }
+    else
+    {
+      qWarning() << "Failed to open geo origin file "
+        << d->currProject->geoOriginFile << ". File does not exist.";
+    }
+  }
+
+  d->UI.worldView->queueResetView();
 
   foreach (auto const& tool, d->tools)
   {
@@ -1226,25 +1237,40 @@ void MainWindow::loadVideo(QString const& path)
 {
   QTE_D();
 
-  auto config = ConfigHelper::readConfig("gui_video_reader.conf");
+  auto config = readConfig("gui_video_reader.conf");
   if (d->currProject)
   {
     d->currProject->projectConfig->merge_config(config);
     d->currProject->videoPath = path;
-    d->currProject->write();
-    config = d->currProject->projectConfig;
   }
 
   try
   {
     d->addVideoSource(config, path);
   }
-  catch (std::exception e)
+  catch (std::exception const& e)
   {
     QMessageBox::critical(
       this, "Error loading video\n",
       e.what());
   }
+
+  if (d->currProject)
+  {
+    saveCameras(d->currProject->cameraPath);
+    d->currProject->projectConfig->set_value("output_krtd_dir", kvPath(
+      d->currProject->getContingentRelativePath(d->currProject->cameraPath)));
+
+    if (!d->localGeoCs.origin().is_empty() &&
+        !d->currProject->geoOriginFile.isEmpty())
+    {
+      saveGeoOrigin(d->currProject->geoOriginFile);
+    }
+
+    d->currProject->write();
+  }
+
+  d->UI.worldView->queueResetView();
 }
 
 //-----------------------------------------------------------------------------
@@ -1311,9 +1337,9 @@ void MainWindow::loadTracks(QString const& path)
       d->UI.actionShowMatchMatrix->setEnabled(!tracks->tracks().empty());
     }
   }
-  catch (...)
+  catch (std::exception const& e)
   {
-    qWarning() << "failed to read tracks from" << path;
+    qWarning() << "failed to read tracks from" << path << " with error: " << e.what();
   }
 }
 
@@ -1346,8 +1372,6 @@ void MainWindow::loadLandmarks(QString const& path)
 //-----------------------------------------------------------------------------
 void MainWindow::saveLandmarks()
 {
-  QTE_D();
-
   auto const path = QFileDialog::getSaveFileName(
     this, "Export Landmarks", QString(),
     "Landmark file (*.ply);;"
@@ -1355,18 +1379,24 @@ void MainWindow::saveLandmarks()
 
   if (!path.isEmpty())
   {
-    this->saveLandmarks(path);
+    this->saveLandmarks(path, false);
   }
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::saveLandmarks(QString const& path)
+void MainWindow::saveLandmarks(QString const& path, bool writeToProject)
 {
   QTE_D();
 
   try
   {
     kwiver::vital::write_ply_file(d->landmarks, kvPath(path));
+
+    if (writeToProject && d->currProject)
+    {
+      d->currProject->projectConfig->set_value("output_ply_file", kvPath(
+        d->currProject->getContingentRelativePath(path)));
+    }
   }
   catch (...)
   {
@@ -1380,8 +1410,6 @@ void MainWindow::saveLandmarks(QString const& path)
 //-----------------------------------------------------------------------------
 void MainWindow::saveTracks()
 {
-  QTE_D();
-
   auto const path = QFileDialog::getSaveFileName(
     this, "Export Tracks", QString(),
     "Track file (*.txt);;"
@@ -1389,12 +1417,12 @@ void MainWindow::saveTracks()
 
   if (!path.isEmpty())
   {
-    this->saveTracks(path);
+    this->saveTracks(path, false);
   }
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::saveTracks(QString const& path)
+void MainWindow::saveTracks(QString const& path, bool writeToProject)
 {
   QTE_D();
 
@@ -1402,7 +1430,11 @@ void MainWindow::saveTracks(QString const& path)
   {
     kwiver::vital::write_feature_track_file(d->tracks, kvPath(path));
 
-    d->currProject->write();
+    if (writeToProject && d->currProject)
+    {
+      d->currProject->projectConfig->set_value("output_tracks_file", kvPath(
+        d->currProject->getContingentRelativePath(path)));
+    }
   }
   catch (...)
   {
@@ -1416,18 +1448,16 @@ void MainWindow::saveTracks(QString const& path)
 //-----------------------------------------------------------------------------
 void MainWindow::saveCameras()
 {
-  QTE_D();
-
   auto const path = QFileDialog::getExistingDirectory(this, "Export Cameras");
 
   if (!path.isEmpty())
   {
-    this->saveCameras(path);
+    this->saveCameras(path, false);
   }
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::saveCameras(QString const& path)
+void MainWindow::saveCameras(QString const& path, bool writeToProject)
 {
   QTE_D();
 
@@ -1442,7 +1472,8 @@ void MainWindow::saveCameras(QString const& path)
       auto const camera = cd.camera->GetCamera();
       if (camera)
       {
-        auto const filepath = d->currProject->cameraPath + "/" + cameraName("", i);
+        auto cameraName = QString::fromStdString(d->getFrameName(cd.id) + ".krtd");
+        auto const filepath = d->currProject->cameraPath + "/" + cameraName;
         out.insert(filepath, camera);
 
         if (QFileInfo(filepath).exists())
@@ -1453,7 +1484,8 @@ void MainWindow::saveCameras(QString const& path)
     }
   }
 
-  if (!willOverwrite.isEmpty())
+  // warn about overwriting files only if not auto-saving to the project
+  if (!writeToProject && !willOverwrite.isEmpty())
   {
     QMessageBox mb(QMessageBox::Warning, "Confirm overwrite",
                    "One or more files will be overwritten by this operation. "
@@ -1481,6 +1513,12 @@ void MainWindow::saveCameras(QString const& path)
     {
       errors.append(iter.key());
     }
+  }
+
+  if (writeToProject && d->currProject)
+  {
+    d->currProject->projectConfig->set_value("output_krtd_dir", kvPath(
+      d->currProject->getContingentRelativePath(path)));
   }
 
   if (!errors.isEmpty())
@@ -1572,6 +1610,15 @@ void MainWindow::saveDepthPoints(QString const& path)
               "The output file may not have been written correctly.");
     QMessageBox::critical(this, "Export error", msg.arg(path));
   }
+}
+
+void MainWindow::saveGeoOrigin(QString const& path)
+{
+  QTE_D();
+
+  d->currProject->projectConfig->set_value("geo_origin_file", kvPath(
+    d->currProject->getContingentRelativePath(path)));
+  kwiver::maptk::write_local_geo_cs_to_file(d->localGeoCs, path.toStdString());
 }
 
 //-----------------------------------------------------------------------------
@@ -1749,21 +1796,32 @@ void MainWindow::executeTool(QObject* object)
 {
   QTE_D();
 
-  auto const tool = qobject_cast<AbstractTool*>(object);
-  if (tool && !d->activeTool)
+  try
   {
-    d->setActiveTool(tool);
-    tool->setActiveFrame(d->activeCameraIndex);
-    tool->setTracks(d->tracks);
-    tool->setCameras(d->cameraMap());
-    tool->setLandmarks(d->landmarks);
-    tool->setVideoPath(d->videoPath.toStdString());
-    tool->setConfig(d->currProject->projectConfig);
-
-    if (!tool->execute())
+    auto const tool = qobject_cast<AbstractTool*>(object);
+    if (tool && !d->activeTool)
     {
-      d->setActiveTool(0);
+      d->setActiveTool(tool);
+      tool->setActiveFrame(d->activeCameraIndex);
+      tool->setTracks(d->tracks);
+      tool->setCameras(d->cameraMap());
+      tool->setLandmarks(d->landmarks);
+      tool->setVideoPath(d->videoPath.toStdString());
+      tool->setConfig(d->currProject->projectConfig);
+
+      if (!tool->execute())
+      {
+        d->setActiveTool(0);
+      }
     }
+  }
+  catch (std::exception const& e)
+  {
+    QString message("The tool failed with the following error:\n");
+    message += e.what();
+    QMessageBox::critical(
+      this, "Error in Tool",
+      message);
   }
 }
 
@@ -1846,20 +1904,20 @@ void MainWindow::saveToolResults()
     if (outputs.testFlag(AbstractTool::Cameras))
     {
       saveCameras(d->currProject->cameraPath);
-      d->currProject->projectConfig->set_value("output_krtd_dir", kvPath(
-        d->currProject->getContingentRelativePath(d->currProject->cameraPath)));
     }
     if (outputs.testFlag(AbstractTool::Landmarks))
     {
       saveLandmarks(d->currProject->landmarksPath);
-      d->currProject->projectConfig->set_value("output_ply_file", kvPath(
-        d->currProject->getContingentRelativePath(d->currProject->landmarksPath)));
     }
     if (outputs.testFlag(AbstractTool::Tracks))
     {
       saveTracks(d->currProject->tracksPath);
-      d->currProject->projectConfig->set_value("output_ply_file", kvPath(
-        d->currProject->getContingentRelativePath(d->currProject->tracksPath)));
+    }
+
+    if (!d->localGeoCs.origin().is_empty() &&
+        !d->currProject->geoOriginFile.isEmpty())
+    {
+      saveGeoOrigin(d->currProject->geoOriginFile);
     }
     if (outputs.testFlag(AbstractTool::Depth))
     {

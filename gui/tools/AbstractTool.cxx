@@ -66,13 +66,8 @@ void ToolData::copyTracks(feature_track_set_sptr const& newTracks)
 {
   if (newTracks)
   {
-    auto copiedTracks = std::vector<kwiver::vital::track_sptr>{};
-    foreach (auto const& ti, newTracks->tracks())
-    {
-      copiedTracks.push_back(ti->clone());
-    }
-    this->tracks =
-      std::make_shared<kwiver::vital::feature_track_set>(copiedTracks);
+    this->tracks = std::dynamic_pointer_cast<kwiver::vital::feature_track_set>(
+      newTracks->clone());
   }
   else
   {

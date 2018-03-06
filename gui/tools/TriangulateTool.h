@@ -28,38 +28,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CONFIG_HELPER_H_
-#define CONFIG_HELPER_H_
+#ifndef MAPTK_TRIANGULATETOOL_H_
+#define MAPTK_TRIANGULATETOOL_H_
 
-#include <maptk/version.h>
+#include "AbstractTool.h"
 
-#include <vital/config/config_block_io.h>
+class TriangulateToolPrivate;
 
-#include <qtStlUtil.h>
-
-#include <QtGui/QApplication>
-#include <QtCore/QDir>
-
-class ConfigHelper
+class TriangulateTool : public AbstractTool
 {
+  Q_OBJECT
+
 public:
-  //----------------------------------------------------------------------------
-  static kwiver::vital::config_block_sptr readConfig(std::string const& name)
-  {
-    try
-    {
-      using kwiver::vital::read_config_file;
+  explicit TriangulateTool(QObject* parent = 0);
+  virtual ~TriangulateTool();
 
-      auto const exeDir = QDir(QApplication::applicationDirPath());
-      auto const prefix = stdString(exeDir.absoluteFilePath(".."));
-      return read_config_file(name, "maptk", MAPTK_VERSION, prefix);
-    }
-    catch (...)
-    {
-      return {};
-    }
-  }
+  virtual Outputs outputs() const QTE_OVERRIDE;
 
+  /// Get if the tool can be canceled.
+  virtual bool isCancelable() const QTE_OVERRIDE { return false; }
+
+  virtual bool execute(QWidget* window = 0) QTE_OVERRIDE;
+
+protected:
+  virtual void run() QTE_OVERRIDE;
+
+private:
+  QTE_DECLARE_PRIVATE_RPTR(TriangulateTool)
+  QTE_DECLARE_PRIVATE(TriangulateTool)
+  QTE_DISABLE_COPY(TriangulateTool)
 };
 
 #endif
+#define MAPTK_TRIANGULATETOOL_H_

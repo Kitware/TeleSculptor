@@ -29,7 +29,7 @@
  */
 
 #include "BundleAdjustTool.h"
-#include "ConfigHelper.h"
+#include "GuiCommon.h"
 
 #include <vital/algo/bundle_adjust.h>
 
@@ -88,7 +88,7 @@ bool BundleAdjustTool::execute(QWidget* window)
   }
 
   // Merge project config with default config file
-  auto const config = ConfigHelper::readConfig("gui_bundle_adjust.conf");
+  auto const config = readConfig("gui_bundle_adjust.conf");
 
   // Check configuration
   if (!config)

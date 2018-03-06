@@ -83,7 +83,7 @@ void vtkMaptkFeatureTrackRepresentation::vtkInternal::UpdateActivePoints(
     }
   }
 
-  this->PointsPolyData->Modified();
+  this->PointsCells->Modified();
 }
 
 //-----------------------------------------------------------------------------
@@ -128,7 +128,7 @@ void vtkMaptkFeatureTrackRepresentation::vtkInternal::UpdateTrails(
     }
   }
 
-  this->TrailsPolyData->Modified();
+  this->TrailsCells->Modified();
 }
 
 //-----------------------------------------------------------------------------

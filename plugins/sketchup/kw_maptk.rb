@@ -33,8 +33,8 @@ require 'extensions.rb'
 ext = SketchupExtension.new('MAP-Tk Importer', File.join('kw_maptk', 'MaptkImporter.rb'))
 
 ext.creator = 'Kitware, Inc.'
-ext.version = '1.0.0'
-ext.copyright = '2015'
+ext.version = '0.11.0'
+ext.copyright = '2018'
 ext.description = 'Allows importing of MAP-Tk configuration files and ply files.'
 
 Sketchup.register_extension(ext, true)

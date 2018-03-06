@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2017 by Kitware, Inc.
+ * Copyright 2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,84 +28,89 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "TrackFeaturesTool.h"
+#include "SaveFrameTool.h"
 #include "GuiCommon.h"
 
-#include <maptk/colorize.h>
-#include <maptk/version.h>
+#include <iomanip>
 
 #include <vital/algo/image_io.h>
-#include <vital/algo/convert_image.h>
-#include <vital/algo/track_features.h>
 #include <vital/algo/video_input.h>
+#include <kwiversys/SystemTools.hxx>
 
-#include <vital/types/metadata.h>
-#include <vital/types/metadata_traits.h>
-
+#include <QtCore/QDebug>
+#include <QtCore/QDir>
 #include <QtGui/QMessageBox>
 
-using kwiver::vital::algo::image_io;
-using kwiver::vital::algo::convert_image;
-using kwiver::vital::algo::convert_image_sptr;
-using kwiver::vital::algo::track_features;
-using kwiver::vital::algo::track_features_sptr;
 using kwiver::vital::algo::video_input;
 using kwiver::vital::algo::video_input_sptr;
+using kwiver::vital::algo::image_io;
+using kwiver::vital::algo::image_io_sptr;
 
 namespace
 {
-static char const* const BLOCK_CI = "image_converter";
-static char const* const BLOCK_TF = "feature_tracker";
 static char const* const BLOCK_VR = "video_reader";
+static char const* const BLOCK_IW = "image_writer";
+static char const* const FRAMES_TAG = "output_frames_dir";
+static char const* const FRAMES_PATH = "results/frames";
 }
 
+QTE_IMPLEMENT_D_FUNC(SaveFrameTool)
+
 //-----------------------------------------------------------------------------
-class TrackFeaturesToolPrivate
+class SaveFrameToolPrivate
 {
 public:
-  convert_image_sptr image_converter;
-  track_features_sptr feature_tracker;
   video_input_sptr video_reader;
+  image_io_sptr image_writer;
 };
 
-QTE_IMPLEMENT_D_FUNC(TrackFeaturesTool)
-
 //-----------------------------------------------------------------------------
-TrackFeaturesTool::TrackFeaturesTool(QObject* parent)
-  : AbstractTool(parent), d_ptr(new TrackFeaturesToolPrivate)
+SaveFrameTool::SaveFrameTool(QObject* parent)
+  : AbstractTool(parent), d_ptr(new SaveFrameToolPrivate)
 {
-  this->setText("&Track Features");
+  this->data()->logger =
+    kwiver::vital::get_logger("telesculptor.tools.save_frames");
+
+  this->setText("Save Frames");
   this->setToolTip(
-    "<nobr>Detect feature points in the images, compute feature descriptors, "
-    "</nobr>and track the features across images.  Also run loop closure if "
-    "configured to do so.");
+    "Saves the video frames to disk.");
 }
 
 //-----------------------------------------------------------------------------
-TrackFeaturesTool::~TrackFeaturesTool()
+SaveFrameTool::~SaveFrameTool()
 {
 }
 
 //-----------------------------------------------------------------------------
-AbstractTool::Outputs TrackFeaturesTool::outputs() const
+AbstractTool::Outputs SaveFrameTool::outputs() const
 {
-  return Tracks | ActiveFrame;
+  return KeyFrames;
 }
 
 //-----------------------------------------------------------------------------
-bool TrackFeaturesTool::execute(QWidget* window)
+bool SaveFrameTool::execute(QWidget* window)
 {
   QTE_D();
 
   if (!this->hasVideoSource())
   {
     QMessageBox::information(
-      window, "Insufficient data", "This operation requires a video source.");
+      window, "Insufficient data",
+      "This operation requires a video source.");
+    return false;
+  }
+
+  if (!video_input::check_nested_algo_configuration(
+    BLOCK_VR, this->data()->config))
+  {
+    QMessageBox::critical(
+      window, "Configuration error",
+      "An error was found in the video source algorithm configuration.");
     return false;
   }
 
   // Merge project config with default config file
-  auto const config = readConfig("gui_track_features.conf");
+  auto const config = readConfig("gui_frame_image_writer.conf");
 
   // Check configuration
   if (!config)
@@ -117,73 +122,70 @@ bool TrackFeaturesTool::execute(QWidget* window)
   }
 
   config->merge_config(this->data()->config);
-  if (!convert_image::check_nested_algo_configuration(BLOCK_CI, config) ||
-      !track_features::check_nested_algo_configuration(BLOCK_TF, config) ||
-      !video_input::check_nested_algo_configuration(BLOCK_VR, config))
-
+  if (!image_io::check_nested_algo_configuration(BLOCK_IW, config))
   {
     QMessageBox::critical(
       window, "Configuration error",
-      "An error was found in the algorithm configuration.");
+      "An error was found in the image writer algorithm configuration.");
     return false;
   }
 
-  // Create algorithm from configuration
-  convert_image::set_nested_algo_configuration(BLOCK_CI, config, d->image_converter);
-  track_features::set_nested_algo_configuration(BLOCK_TF, config, d->feature_tracker);
-  video_input::set_nested_algo_configuration(BLOCK_VR, config, d->video_reader);
+  video_input::set_nested_algo_configuration(
+    BLOCK_VR, this->data()->config, d->video_reader);
+  image_io::set_nested_algo_configuration(
+    BLOCK_IW, config, d->image_writer);
 
   return AbstractTool::execute(window);
 }
 
 //-----------------------------------------------------------------------------
-void TrackFeaturesTool::run()
+void SaveFrameTool::run()
 {
   QTE_D();
 
-  unsigned int frame = this->activeFrame();
-  auto tracks = this->tracks();
-  kwiver::vital::timestamp currentTimestamp;
-
-  d->video_reader->open(this->data()->videoPath);
-
-  // Seek to just before active frame TODO: check status?
-  if (frame > 1)
+  std::string framesDir;
+  if (this->data()->config->has_value(FRAMES_TAG))
   {
-    d->video_reader->seek_frame(currentTimestamp, frame-1);
+    framesDir = this->data()->config->get_value<std::string>(FRAMES_TAG);
+  }
+  else
+  {
+    framesDir = FRAMES_PATH;
   }
 
+  // Create frames directory if it doesn't exist
+  if (!kwiversys::SystemTools::FileExists(framesDir))
+  {
+    kwiversys::SystemTools::MakeDirectory(framesDir);
+  }
+
+  kwiver::vital::timestamp currentTimestamp;
+  d->video_reader->open(this->data()->videoPath);
   while (d->video_reader->next_frame(currentTimestamp))
   {
-    auto const image = d->video_reader->frame_image();
-    auto const converted_image = d->image_converter->convert(image);
-
-    auto const mdv = d->video_reader->frame_metadata();
-    if( !mdv.empty() )
+    auto frame = currentTimestamp.get_frame();
+    auto md = d->video_reader->frame_metadata();
+    auto filename = framesDir + "/" + frameName(frame, md) + ".png";
+    try
     {
-      converted_image->set_metadata( mdv[0] );
+      d->image_writer->save(filename, d->video_reader->frame_image());
+    }
+    catch (std::exception const& e)
+    {
+      LOG_WARN(this->data()->logger, "Error writing frame to "
+                                     << filename << ": " <<  e.what());
     }
 
-    frame = currentTimestamp.get_frame();
-    tracks = d->feature_tracker->track(tracks, frame, converted_image);
-    if (tracks)
-    {
-      tracks = kwiver::maptk::extract_feature_colors(tracks, *image, frame);
-    }
-
-    // make a copy of the tool data
-    auto data = std::make_shared<ToolData>();
-    data->copyTracks(tracks);
-    data->activeFrame = frame;
-
-    emit updated(data);
     if( this->isCanceled() )
     {
-      d->video_reader->close();
       break;
     }
   }
+
+  if (!this->data()->config->has_value(FRAMES_TAG))
+  {
+    this->data()->config->set_value(FRAMES_TAG, FRAMES_PATH);
+  }
+
   d->video_reader->close();
-  this->updateTracks(tracks);
-  this->setActiveFrame(frame);
 }

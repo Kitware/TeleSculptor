@@ -25,6 +25,12 @@ Overall
    pass a geo_map object around.  New data structures, like geo_point, know
    how to convert themselves into different coordinate systems.
 
+TeleSculptor
+
+ * Updated the TeleSculptor application to build against VTK 8.0 instead of
+   VTK 6.2.  This upgrade provides substantial improvements to rendering
+   speed of large data sets.
+
 MAP-Tk Library
 
  * modified extract_feature_colors API to accept a feature_track_set by

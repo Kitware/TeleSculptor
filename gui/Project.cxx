@@ -45,9 +45,22 @@
 
 #include <iostream>
 
+namespace
+{
+static char const* const CAMERA_PATH = "results/krtd";
+static char const* const TRACKS_PATH = "results/tracks.txt";
+static char const* const LANDMARKS_PATH = "results/landmarks.ply";
+static char const* const GEO_ORIGIN_PATH = "results/geo_origin.txt";
+static char const* const DEPTH_PATH = "results/depth";
+static std::string WORKING_DIR_TAG = "working_directory";
+static std::string VIDEO_SOURCE_TAG = "video_source";
+static char const* const IMAGE_LIST_FILE = "image_list_file";
+}
+
 //-----------------------------------------------------------------------------
 QString getPath(kwiver::vital::config_block_sptr const& config,
-                QDir const& base, char const* key, char const* altKey = 0)
+                QDir const& base, char const* key,
+                char const* defaultPath = 0, char const* altKey = 0)
 {
   try
   {
@@ -56,7 +69,8 @@ QString getPath(kwiver::vital::config_block_sptr const& config,
   }
   catch (...)
   {
-    return (altKey ? getPath(config, base, altKey) : QString());
+    return (altKey ? getPath(config, base, altKey, defaultPath) :
+            QString(defaultPath));
   }
 }
 
@@ -75,10 +89,11 @@ Project::Project(QString dir)
   filePath = workingDir.absoluteFilePath(workingDir.dirName() + ".conf");
 
   // Set default paths
-  cameraPath = "results/krtd";
-  tracksPath = "results/tracks.txt";
-  landmarksPath = "results/landmarks.ply";
-  depthPath = "results/depth";
+  cameraPath = CAMERA_PATH;
+  tracksPath = TRACKS_PATH;
+  landmarksPath = LANDMARKS_PATH;
+  geoOriginFile = GEO_ORIGIN_PATH;
+  depthPath = DEPTH_PATH;
 }
 
 //-----------------------------------------------------------------------------
@@ -108,11 +123,15 @@ bool Project::read(QString const& path)
 
     filePath = path;
 
-    this->cameraPath = getPath(config, this->workingDir, "output_krtd_dir");
-    this->depthPath = getPath(config, this->workingDir, "output_depth_dir");
-    this->landmarksPath = getPath(config, this->workingDir, "output_ply_file");
+    this->cameraPath =
+      getPath(config, this->workingDir, "output_krtd_dir", CAMERA_PATH);
+    this->landmarksPath =
+      getPath(config, this->workingDir, "output_ply_file", LANDMARKS_PATH);
     this->tracksPath =
-      getPath(config, this->workingDir, "input_track_file", "output_tracks_file");
+      getPath(config, this->workingDir, "input_track_file",
+              TRACKS_PATH, "output_tracks_file");
+    this->depthPath =
+      getPath(config, this->workingDir, "output_depth_dir", DEPTH_PATH);
 
     // Read depth map images list
     if (config->has_value("depthmaps_images_file"))
@@ -141,19 +160,26 @@ bool Project::read(QString const& path)
       }
     }
 
-    //Read Volume file
+    // Read Volume file
     if (config->has_value("volume_file"))
     {
       this->volumePath = getPath(config, this->workingDir, "volume_file");
     }
 
+    // Read the geo origin file
+    if (config->has_value("geo_origin_file"))
+    {
+      this->geoOriginFile =
+        getPath(config, this->workingDir, "geo_origin_file", GEO_ORIGIN_PATH);
+    }
+
     // Read video file
     if (config->has_value(VIDEO_SOURCE_TAG) ||
-        config->has_value("image_list_file"))
+        config->has_value(IMAGE_LIST_FILE))
     {
       this->videoPath = getPath(config, this->workingDir,
                                 VIDEO_SOURCE_TAG.c_str(),
-                                "image_list_file");
+                                "", IMAGE_LIST_FILE);
     }
 
     projectConfig = config;

@@ -32,6 +32,7 @@
 #define MAPTK_ABSTRACTTOOL_H_
 
 #include <vital/config/config_block_types.h>
+#include <vital/logger/logger.h>
 #include <vital/types/camera_map.h>
 #include <vital/types/landmark_map.h>
 #include <vital/types/feature_track_set.h>
@@ -75,6 +76,7 @@ public:
   camera_map_sptr cameras;
   landmark_map_sptr landmarks;
   config_block_sptr config;
+  kwiver::vital::logger_handle_t logger;
 };
 
 Q_DECLARE_METATYPE(std::shared_ptr<ToolData>)
@@ -96,7 +98,8 @@ public:
     Cameras = 0x2,
     Landmarks = 0x4,
     ActiveFrame = 0x8,
-    Depth = 0x10
+    KeyFrames = 0x10,
+    Depth = 0x20
   };
   Q_DECLARE_FLAGS(Outputs, Output)
 
