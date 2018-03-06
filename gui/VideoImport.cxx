@@ -49,6 +49,7 @@ class VideoImportPrivate
 public:
   VideoImportPrivate() {
     logger = kwiver::vital::get_logger("telesculptor.video_input");
+    canceled = false;
   }
 
   video_input_sptr video_reader;
@@ -58,6 +59,8 @@ public:
   kwiver::maptk::local_geo_cs localGeoCs;
 
   kwiver::vital::logger_handle_t logger;
+
+  std::atomic<bool> canceled;
 };
 
 //-----------------------------------------------------------------------------
@@ -69,6 +72,7 @@ VideoImport::~VideoImport()
 {
   QTE_D();
 
+  this->wait();
   d->video_reader->close();
 }
 
@@ -106,7 +110,7 @@ void VideoImport::run()
   // TODO: remwork algorithms to use map_metadata_t from metadata_map.h
   auto videoData = std::make_shared<VideoData>();
 
-  while (d->video_reader->next_frame(currentTimestamp))
+  while (d->video_reader->next_frame(currentTimestamp) && !d->canceled)
   {
     auto frame = currentTimestamp.get_frame();
     auto mdVec = d->video_reader->frame_metadata();
@@ -123,4 +127,12 @@ void VideoImport::run()
   emit completed(videoData);
 
   d->video_reader->close();
+}
+
+//-----------------------------------------------------------------------------
+void VideoImport::cancel()
+{
+  QTE_D();
+
+  d->canceled = true;
 }

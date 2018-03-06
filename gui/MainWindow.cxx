@@ -960,13 +960,15 @@ void MainWindowPrivate::setActiveTool(AbstractTool* tool)
   // Update current tool
   this->activeTool = tool;
 
-  // Connect cancel action
+  // Connect actions
   if (tool)
   {
     QObject::connect(this->UI.actionCancelComputation, SIGNAL(triggered()),
                      tool, SLOT(cancel()));
     QObject::connect(this->UI.actionCancelComputation, SIGNAL(triggered()),
                      currProject.get(), SLOT(write()));
+    QObject::connect(this->UI.actionQuit, SIGNAL(triggered()),
+                     tool, SLOT(cancel()));
     QObject::connect(tool, SIGNAL(completed()),
                      currProject.get(), SLOT(write()));
   }

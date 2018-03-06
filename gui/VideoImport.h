@@ -76,6 +76,9 @@ signals:
   /// Emitted when an intermediate update of the data is available to show progress.
   void updated(int);
 
+public slots:
+  void cancel();
+
 protected:
   /// Execute the tool.
   ///
