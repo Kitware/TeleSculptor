@@ -577,7 +577,7 @@ bool MainWindowPrivate::updateCamera(kwiver::vital::frame_id_t frame,
 void MainWindowPrivate::setActiveCamera(int id)
 {
   //if only keyframes are to be displayed in the camera view
-  bool only_keyframes = this->UI.actionKeyframes_only->isChecked();
+  bool only_keyframes = this->UI.actionKeyframesOnly->isChecked();
   bool next_frame_found = false;
 
   if (id >= this->activeCameraIndex)
@@ -1437,7 +1437,7 @@ void MainWindow::loadTracks(QString const& path)
           d->tracks && d->tracks->size());
 
       d->UI.actionShowMatchMatrix->setEnabled(!tracks->tracks().empty());
-      d->UI.actionKeyframes_only->setEnabled(!tracks->tracks().empty());
+      d->UI.actionKeyframesOnly->setEnabled(!tracks->tracks().empty());
     }
   }
   catch (std::exception const& e)
@@ -2066,7 +2066,7 @@ void MainWindow::updateToolResults()
         d->tracks && d->tracks->size());
 
     d->UI.actionShowMatchMatrix->setEnabled(!d->tracks->tracks().empty());
-    d->UI.actionKeyframes_only->setEnabled(!d->tracks->tracks().empty());
+    d->UI.actionKeyframesOnly->setEnabled(!d->tracks->tracks().empty());
     d->toolUpdateTracks = NULL;
   }
   if (d->toolUpdateDepth)

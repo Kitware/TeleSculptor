@@ -59,7 +59,7 @@
     <addaction name="separator"/>
     <addaction name="actionSetBackgroundColor"/>
     <addaction name="actionShowWorldAxes"/>
-    <addaction name="actionKeyframes_only"/>
+    <addaction name="actionKeyframesOnly"/>
    </widget>
    <widget class="qtMenu" name="menuHelp">
     <property name="title">
@@ -394,7 +394,7 @@
     <string>Export the tracks in an ASCII track file</string>
    </property>
   </action>
-  <action name="actionKeyframes_only">
+  <action name="actionKeyframesOnly">
    <property name="checkable">
     <bool>true</bool>
    </property>
