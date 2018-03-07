@@ -36,6 +36,7 @@
 
 #include "tools/BundleAdjustTool.h"
 #include "tools/CanonicalTransformTool.h"
+#include "tools/ComputeDepthTool.h"
 #include "tools/InitCamerasLandmarksTool.h"
 #include "tools/NeckerReversalTool.h"
 #include "tools/SaveFrameTool.h"
@@ -63,6 +64,7 @@
 
 #include <kwiversys/SystemTools.hxx>
 
+#include <vtkXMLImageDataWriter.h>
 #include <vtkImageData.h>
 #include <vtkImageFlip.h>
 #include <vtkImageImport.h>
@@ -106,7 +108,7 @@ kwiver::vital::path_t kvPath(QString const& s)
   return stdString(s);
 }
 
-//-----------------------------------------------------------------------------
+
 QString findUserManual()
 {
   static auto const name = "telesculptor.html";
@@ -247,7 +249,8 @@ public:
   MainWindowPrivate()
     : activeTool(0)
     , toolUpdateActiveFrame(-1)
-    , activeCameraIndex(-1) {}
+    , activeCameraIndex(-1)
+    , activeDepthFrame(-1) {}
 
   void addTool(AbstractTool* tool, MainWindow* mainWindow);
 
@@ -294,6 +297,7 @@ public:
   kwiver::vital::camera_map_sptr toolUpdateCameras;
   kwiver::vital::landmark_map_sptr toolUpdateLandmarks;
   kwiver::vital::feature_track_set_sptr toolUpdateTracks;
+  vtkSmartPointer<vtkImageData> toolUpdateDepth;
 
   QString videoPath;
   kwiver::vital::algo::video_input_sptr videoSource;
@@ -303,6 +307,8 @@ public:
   QList<FrameData> frames;
   kwiver::vital::feature_track_set_sptr tracks;
   kwiver::vital::landmark_map_sptr landmarks;
+  vtkSmartPointer<vtkImageData> activeDepth;
+  int activeDepthFrame;
 
   kwiver::maptk::local_geo_cs localGeoCs;
 
@@ -553,10 +559,28 @@ void MainWindowPrivate::setActiveCamera(int id)
   this->UI.worldView->setActiveCamera(id);
   this->updateCameraView();
 
-  auto& cd = this->frames[id-1];
-  if (!cd.depthMapPath.isEmpty())
+  //load from memory if cached
+  if (id == this->activeDepthFrame)
   {
-    this->loadDepthMap(cd.depthMapPath);
+    this->depthReader->SetFileName("");
+    this->depthFilter->RemoveAllInputConnections(0);
+    this->depthFilter->SetInputData(this->activeDepth);
+
+    this->UI.depthMapView->setValidDepthInput(true);
+    this->UI.worldView->setValidDepthInput(true);
+
+    this->depthFilter->SetCamera(this->frames[id - 1].camera);
+    this->UI.worldView->updateDepthMap();
+    this->UI.depthMapView->updateView(true);
+    this->UI.actionExportDepthPoints->setEnabled(true);
+  }
+  else // load from file
+  {
+    auto& cd = this->frames[id - 1];
+    if (!cd.depthMapPath.isEmpty())
+    {
+      this->loadDepthMap(cd.depthMapPath);
+    }
   }
 
   // TODO: Uncomment once MeshColoration is working directly off video frames
@@ -794,6 +818,9 @@ void MainWindowPrivate::loadDepthMap(QString const& imagePath)
     return;
   }
 
+  this->depthFilter->RemoveAllInputs();
+  this->depthFilter->SetInputConnection(this->depthReader->GetOutputPort());
+
   this->depthReader->SetFileName(qPrintable(imagePath));
 
   this->UI.depthMapView->setValidDepthInput(true);
@@ -861,6 +888,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->addTool(new CanonicalTransformTool(this), this);
   d->addTool(new NeckerReversalTool(this), this);
   d->addTool(new TrackFilterTool(this), this);
+  d->addTool(new ComputeDepthTool(this), this);
   d->addTool(new SaveFrameTool(this), this);
   d->addTool(new SaveKeyFrameTool(this), this);
 
@@ -1156,18 +1184,18 @@ void MainWindow::loadProject(QString const& path)
     }
   }
 
-  // Associate depth maps with cameras
-  foreach (auto dm, qtEnumerate(d->currProject->depthMaps))
+  //find depth map paths
+  if (d->currProject->projectConfig->has_value("output_depth_dir"))
   {
-    auto const i = dm.key();
-    if (i >= 0 && i < d->frames.count())
+    foreach(auto & frame, d->frames)
     {
-      d->frames[i].depthMapPath = dm.value();
-    }
-
-    if (i == d->activeCameraIndex)
-    {
-      d->loadDepthMap(dm.value());
+      auto depthName = QString::fromStdString(d->getFrameName(frame.id) + ".vti");
+      QString depthMapPath = QString::fromStdString(kvPath(d->currProject->depthPath) + '/' + kvPath(depthName));
+      QFileInfo check_file(depthMapPath);
+      if (check_file.exists() && check_file.isFile())
+      {
+        frame.depthMapPath = depthMapPath;
+      }
     }
   }
 
@@ -1203,6 +1231,8 @@ void MainWindow::loadProject(QString const& path)
   {
     tool->setEnabled(true);
   }
+
+  d->setActiveCamera(d->activeCameraIndex);
 }
 
 //-----------------------------------------------------------------------------
@@ -1517,6 +1547,34 @@ void MainWindow::saveCameras(QString const& path, bool writeToProject)
 }
 
 //-----------------------------------------------------------------------------
+void MainWindow::saveDepthImage(QString const& path)
+{
+  QTE_D();
+
+  if (!d->activeDepth || d->activeDepthFrame < 1)
+  {
+    return;
+  }
+
+  QString filename = QString::fromStdString(d->getFrameName(d->activeDepthFrame) + ".vti");
+
+  if (!QDir(path).exists())
+  {
+    QDir().mkdir(path);
+  }
+
+
+  vtkNew<vtkXMLImageDataWriter> writerI;
+  auto const filepath = path + "/" + filename;
+  writerI->SetFileName(stdString(filepath).c_str());
+  writerI->AddInputDataObject(d->activeDepth.Get());
+  writerI->SetDataModeToBinary();
+  writerI->Write();
+
+  d->frames[d->activeDepthFrame].depthMapPath = filepath;
+}
+
+//-----------------------------------------------------------------------------
 void MainWindow::enableSaveDepthPoints(bool state)
 {
   QTE_D();
@@ -1782,14 +1840,14 @@ void MainWindow::acceptToolFinalResults()
   QTE_D();
   if (d->activeTool)
   {
-    acceptToolResults(d->activeTool->data());
+    acceptToolResults(d->activeTool->data(), true);
     saveToolResults();
   }
   d->setActiveTool(0);
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::acceptToolResults(std::shared_ptr<ToolData> data)
+void MainWindow::acceptToolResults(std::shared_ptr<ToolData> data, bool isFinal)
 {
   QTE_D();
   // if all the update variables are Null then trigger a GUI update after
@@ -1798,6 +1856,7 @@ void MainWindow::acceptToolResults(std::shared_ptr<ToolData> data)
   bool updateNeeded = !d->toolUpdateCameras &&
                       !d->toolUpdateLandmarks &&
                       !d->toolUpdateTracks &&
+                      !d->toolUpdateDepth &&
                       d->toolUpdateActiveFrame < 0;
 
   if (d->activeTool)
@@ -1808,6 +1867,7 @@ void MainWindow::acceptToolResults(std::shared_ptr<ToolData> data)
     d->toolUpdateLandmarks = NULL;
     d->toolUpdateTracks = NULL;
     d->toolUpdateActiveFrame = -1;
+    d->toolUpdateDepth = NULL;
     if (outputs.testFlag(AbstractTool::Cameras))
     {
       d->toolUpdateCameras = data->cameras;
@@ -1820,13 +1880,21 @@ void MainWindow::acceptToolResults(std::shared_ptr<ToolData> data)
     {
       d->toolUpdateTracks = data->tracks;
     }
+    if (outputs.testFlag(AbstractTool::Depth))
+    {
+      d->toolUpdateDepth = data->active_depth;
+    }
     if (outputs.testFlag(AbstractTool::ActiveFrame))
     {
       d->toolUpdateActiveFrame = static_cast<int>(data->activeFrame);
     }
   }
 
-  if(updateNeeded)
+  if (isFinal)
+  {
+    updateToolResults();  //force immediate update on tool finish so we ensure update before saving
+  }
+  else if(updateNeeded)
   {
     QTimer::singleShot(1000, this, SLOT(updateToolResults()));
   }
@@ -1859,6 +1927,12 @@ void MainWindow::saveToolResults()
         !d->currProject->geoOriginFile.isEmpty())
     {
       saveGeoOrigin(d->currProject->geoOriginFile);
+    }
+    if (outputs.testFlag(AbstractTool::Depth))
+    {
+      saveDepthImage(d->currProject->depthPath);
+      d->currProject->projectConfig->set_value("output_depth_dir", kvPath(
+        d->currProject->getContingentRelativePath(d->currProject->depthPath)));
     }
 
     d->currProject->write();
@@ -1900,12 +1974,20 @@ void MainWindow::updateToolResults()
     d->UI.actionShowMatchMatrix->setEnabled(!d->tracks->tracks().empty());
     d->toolUpdateTracks = NULL;
   }
+  if (d->toolUpdateDepth)
+  {
+    d->activeDepth = d->toolUpdateDepth;
+    d->activeDepthFrame = d->toolUpdateActiveFrame;
+
+    d->toolUpdateDepth = NULL;
+  }
   if (d->toolUpdateActiveFrame >= 0)
   {
     d->UI.camera->setValue(d->toolUpdateActiveFrame);
     this->setActiveCamera(d->toolUpdateActiveFrame);
     d->toolUpdateActiveFrame = -1;
   }
+
 
   if (!d->frames.isEmpty())
   {

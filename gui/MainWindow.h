@@ -71,8 +71,10 @@ public slots:
   void saveTracks(QString const& path, bool writeToProject = true);
   void saveDepthPoints();
   void saveDepthPoints(QString const& path);
+  void saveDepthImage(QString const& path);
   void saveGeoOrigin(QString const& path);
   void saveToolResults();
+
 
   void saveWebGLScene();
 
@@ -100,7 +102,7 @@ protected slots:
 
   void executeTool(QObject*);
   void acceptToolFinalResults();
-  void acceptToolResults(std::shared_ptr<ToolData> data);
+  void acceptToolResults(std::shared_ptr<ToolData> data, bool isFinal = false);
   void updateToolResults();
 
 private:
