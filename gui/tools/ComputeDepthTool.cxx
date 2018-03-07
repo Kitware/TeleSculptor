@@ -33,31 +33,20 @@
 
 #include <vital/algo/image_io.h>
 #include <vital/algo/compute_depth.h>
-
+#include <vital/algo/video_input.h>
 #include <vital/config/config_block_io.h>
 #include <vital/types/metadata.h>
-#include <vital/types/metadata_traits.h>
-#include <vital/algo/video_input.h>
 
 #include <qtStlUtil.h>
-
-#include <QtGui/QApplication>
 #include <QtGui/QMessageBox>
 
-#include <QtCore/QDir>
-
 #include <algorithm>
-#include <sstream>
 
-#include <vtkXMLImageDataWriter.h>
-#include <vtkNew.h>
-#include <vtkImageData.h>
-#include <vtkPoints.h>
-#include <vtkFloatArray.h>
-#include <vtkSmartPointer.h>
-#include <vtkCellArray.h>
-#include <vtkPointData.h>
 #include <vtkDoubleArray.h>
+#include <vtkImageData.h>
+#include <vtkNew.h>
+#include <vtkPointData.h>
+#include <vtkSmartPointer.h>
 #include <vtkUnsignedCharArray.h>
 
 using kwiver::vital::algo::image_io;
