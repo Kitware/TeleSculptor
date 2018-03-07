@@ -139,7 +139,8 @@ bool ComputeDepthTool::execute(QWidget* window)
   }
 
   // Create algorithm from configuration
-  video_input::set_nested_algo_configuration(BLOCK_VR, this->data()->config, d->video_reader);
+  config->merge_config(this->data()->config);
+  video_input::set_nested_algo_configuration(BLOCK_VR, config, d->video_reader);
   compute_depth::set_nested_algo_configuration(BLOCK_CD, config, d->depth_algo);
 
   // Set the callback to receive updates
