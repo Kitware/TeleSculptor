@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2017 by Kitware, Inc.
+ * Copyright 2017-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,24 +33,15 @@
 
 #include <fstream>
 #include <sstream>
-#include <maptk/colorize.h>
-#include <maptk/version.h>
 
-#include <vital/algo/image_io.h>
 #include <vital/algo/convert_image.h>
-#include <vital/algo/track_features.h>
 #include <vital/algo/video_input.h>
 
 #include <vital/config/config_block_io.h>
 #include <vital/types/metadata.h>
-#include <vital/types/metadata_traits.h>
 
 #include <qtStlUtil.h>
-
-#include <QtGui/QApplication>
 #include <QtGui/QMessageBox>
-
-#include <QtCore/QDir>
 
 #include <sprokit/pipeline/pipeline.h>
 #include <sprokit/processes/kwiver_type_traits.h>
@@ -58,12 +49,8 @@
 #include <sprokit/pipeline_util/literal_pipeline.h>
 
 
-using kwiver::vital::algo::image_io;
-using kwiver::vital::algo::image_io_sptr;
 using kwiver::vital::algo::convert_image;
 using kwiver::vital::algo::convert_image_sptr;
-using kwiver::vital::algo::track_features;
-using kwiver::vital::algo::track_features_sptr;
 using kwiver::vital::algo::video_input;
 using kwiver::vital::algo::video_input_sptr;
 
@@ -79,6 +66,7 @@ class TrackFeaturesSprokitToolPrivate
 {
 public:
   TrackFeaturesSprokitToolPrivate();
+
   convert_image_sptr image_converter;
   video_input_sptr video_reader;
   kwiver::embedded_pipeline ep;
@@ -87,7 +75,6 @@ public:
 TrackFeaturesSprokitToolPrivate
 ::TrackFeaturesSprokitToolPrivate()
 {
-
 }
 
 QTE_IMPLEMENT_D_FUNC(TrackFeaturesSprokitTool)
