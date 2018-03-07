@@ -154,7 +154,9 @@ bool ComputeDepthTool::execute(QWidget* window)
 }
 
 //-----------------------------------------------------------------------------
-vtkSmartPointer<vtkImageData> depth_to_vtk(kwiver::vital::image_container_sptr depth_img, kwiver::vital::image_container_sptr color_img)
+vtkSmartPointer<vtkImageData>
+depth_to_vtk(kwiver::vital::image_container_sptr depth_img,
+             kwiver::vital::image_container_sptr color_img)
 {
   int ni = static_cast<int>(depth_img->width());
   int nj = static_cast<int>(depth_img->height());
@@ -287,18 +289,21 @@ void ComputeDepthTool::run()
   d->ref_frame = frame;
 
   //compute depth
-  kwiver::vital::image_container_sptr depth = d->depth_algo->compute(frames_out, cameras_out, landmarks_out, ref_frame);
-  vtkSmartPointer<vtkImageData> image_data = depth_to_vtk(depth, frames_out[ref_frame]);
+  auto depth = d->depth_algo->compute(frames_out, cameras_out,
+                                      landmarks_out, ref_frame);
+  auto image_data = depth_to_vtk(depth, frames_out[ref_frame]);
 
   this->updateDepth(image_data);
 }
 
 //-----------------------------------------------------------------------------
-bool ComputeDepthTool::callback_handler(kwiver::vital::image_container_sptr depth, unsigned int iterations)
+bool
+ComputeDepthTool::callback_handler(kwiver::vital::image_container_sptr depth,
+                                   unsigned int iterations)
 {
   // make a copy of the tool data
   auto data = std::make_shared<ToolData>();
-  vtkSmartPointer<vtkImageData> depthData = depth_to_vtk(depth, this->d_ptr->ref_img);
+  auto depthData = depth_to_vtk(depth, this->d_ptr->ref_img);
 
   data->copyDepth(depthData);
   data->activeFrame = d_ptr->ref_frame;
