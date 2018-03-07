@@ -392,10 +392,19 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
     this->videoSource->close();
   }
 
-  kwiver::vital::algo::video_input::set_nested_algo_configuration(
-                                                            "video_reader",
-                                                            config,
-                                                            this->videoSource);
+  kwiver::vital::algo::video_input::
+    set_nested_algo_configuration("video_reader", config, this->videoSource);
+
+  using kwiver::vital::vector_2d;
+
+  kwiver::vital::simple_camera_intrinsics K_def;
+  const std::string bc = "video_reader:base_camera:";
+  auto K = std::make_shared<kwiver::vital::simple_camera_intrinsics>(
+    config->get_value<double>(bc + "focal_length", K_def.focal_length()),
+    config->get_value<vector_2d>(bc + "principal_point",
+                                 K_def.principal_point()),
+    config->get_value<double>(bc + "aspect_ratio", K_def.aspect_ratio()),
+    config->get_value<double>(bc + "skew", K_def.skew()));
 
   try
   {
@@ -422,6 +431,8 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
       }
 
       auto baseCamera = kwiver::vital::simple_camera();
+      baseCamera.set_intrinsics(K);
+
       camMap = kwiver::maptk::initialize_cameras_with_metadata(
           mdMap, baseCamera, this->localGeoCs);
     }
