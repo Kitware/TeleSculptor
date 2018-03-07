@@ -249,8 +249,9 @@ public:
   MainWindowPrivate()
     : activeTool(0)
     , toolUpdateActiveFrame(-1)
-    , activeCameraIndex(-1)
-    , activeDepthFrame(-1) {}
+    , framesToSkip(1)
+    , activeDepthFrame(-1)
+    , activeCameraIndex(-1) {}
 
   void addTool(AbstractTool* tool, MainWindow* mainWindow);
 
@@ -303,6 +304,7 @@ public:
   kwiver::vital::algo::video_input_sptr videoSource;
   kwiver::vital::timestamp currentVideoTimestamp;
   kwiver::vital::metadata_map::map_metadata_t videoMetadataMap;
+  kwiver::vital::frame_id_t framesToSkip;
 
   QList<FrameData> frames;
   kwiver::vital::feature_track_set_sptr tracks;
@@ -411,6 +413,14 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
     if (this->videoSource)
     {
       this->videoSource->open(videoPath.toStdString());
+    }
+
+    // Set the skip value if present
+    if (this->videoSource &&
+        config->has_value("video_reader:vidl_ffmpeg:output_nth_frame"))
+    {
+      this->framesToSkip =
+        config->get_value<int>("video_reader:vidl_ffmpeg:output_nth_frame");
     }
 
     // Get the video metadata
@@ -566,6 +576,78 @@ bool MainWindowPrivate::updateCamera(kwiver::vital::frame_id_t frame,
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::setActiveCamera(int id)
 {
+  //if only keyframes are to be displayed in the camera view
+  bool only_keyframes = this->UI.actionKeyframesOnly->isChecked();
+  bool next_frame_found = false;
+
+  if (id >= this->activeCameraIndex)
+  { //positive movement in sequence
+    //find the next keyframe in the sequence
+    while (id <= this->frames.size())
+    {
+      if (only_keyframes)
+      {
+        auto fd = std::dynamic_pointer_cast<kwiver::vital::feature_track_set_frame_data>(
+          tracks->frame_data(id));
+
+        if (fd && fd->is_keyframe)
+        {
+          next_frame_found = true;
+          break;
+        }
+      }
+      else
+      {
+        if (id == 1 || (id - 1)%this->framesToSkip == 0)
+        {
+          next_frame_found = true;
+          break;
+        }
+      }
+      ++id;
+    }
+  }
+  else
+  { //going backward in sequence
+    //find the previous keyframe in the sequence
+    while (id >= 1)
+    {
+      if (only_keyframes)
+      {
+        auto fd = std::dynamic_pointer_cast<kwiver::vital::feature_track_set_frame_data>(
+          tracks->frame_data(id));
+
+        if (fd && fd->is_keyframe)
+        {
+          next_frame_found = true;
+          break;
+        }
+      }
+      else
+      {
+        if (id == 1 || (id - 1)%this->framesToSkip ==0)
+        {
+          next_frame_found = true;
+          break;
+        }
+      }
+      --id;
+    }
+  }
+  if (!next_frame_found)
+  {
+    // There was not a keyframe to move to in the direction we're going.
+    // So set the active camera back to what it was.
+    this->UI.camera->setValue(this->activeCameraIndex);
+    this->UI.cameraSpin->setValue(this->activeCameraIndex);
+    return;
+  }
+
+  auto oldSignalState = this->UI.camera->blockSignals(true);
+  this->UI.camera->setValue(id);
+  this->UI.camera->blockSignals(oldSignalState);
+  this->UI.cameraSpin->setValue(id);
+
   this->activeCameraIndex = id;
   this->UI.worldView->setActiveCamera(id);
   this->updateCameraView();
@@ -1355,6 +1437,7 @@ void MainWindow::loadTracks(QString const& path)
           d->tracks && d->tracks->size());
 
       d->UI.actionShowMatchMatrix->setEnabled(!tracks->tracks().empty());
+      d->UI.actionKeyframesOnly->setEnabled(!tracks->tracks().empty());
     }
   }
   catch (std::exception const& e)
@@ -1983,6 +2066,7 @@ void MainWindow::updateToolResults()
         d->tracks && d->tracks->size());
 
     d->UI.actionShowMatchMatrix->setEnabled(!d->tracks->tracks().empty());
+    d->UI.actionKeyframesOnly->setEnabled(!d->tracks->tracks().empty());
     d->toolUpdateTracks = NULL;
   }
   if (d->toolUpdateDepth)
