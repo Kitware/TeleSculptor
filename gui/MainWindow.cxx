@@ -574,9 +574,8 @@ bool MainWindowPrivate::updateCamera(kwiver::vital::frame_id_t frame,
 }
 
 //-----------------------------------------------------------------------------
-void MainWindowPrivate::setActiveCamera(int id_)
+void MainWindowPrivate::setActiveCamera(int id)
 {
-  int id = id_;
   //if only keyframes are to be displayed in the camera view
   bool only_keyframes = this->UI.actionKeyframes_only->isChecked();
   bool next_frame_found = false;
