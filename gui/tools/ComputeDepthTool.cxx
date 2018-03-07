@@ -156,8 +156,8 @@ bool ComputeDepthTool::execute(QWidget* window)
 //-----------------------------------------------------------------------------
 vtkSmartPointer<vtkImageData> depth_to_vtk(kwiver::vital::image_container_sptr depth_img, kwiver::vital::image_container_sptr color_img)
 {
-  int ni = depth_img->width();
-  int nj = depth_img->height();
+  int ni = static_cast<int>(depth_img->width());
+  int nj = static_cast<int>(depth_img->height());
   vtkNew<vtkDoubleArray> uniquenessRatios;
   uniquenessRatios->SetName("Uniqueness Ratios");
   uniquenessRatios->SetNumberOfValues(ni*nj);
