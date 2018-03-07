@@ -108,21 +108,7 @@ kwiver::vital::path_t kvPath(QString const& s)
   return stdString(s);
 }
 
-//-----------------------------------------------------------------------------
-QString depthName(QString const& imagePath, int depthIndex)
-{
-  static auto const defaultName = QString("depth%1.vti");
 
-  if (imagePath.isEmpty())
-  {
-    return defaultName.arg(depthIndex, 4, 10, QChar('0'));
-  }
-
-  auto const fi = QFileInfo(imagePath);
-  return fi.completeBaseName() + ".vti";
-}
-
-//-----------------------------------------------------------------------------
 QString findUserManual()
 {
   static auto const name = "telesculptor.html";
@@ -1570,7 +1556,7 @@ void MainWindow::saveDepthImage(QString const& path)
     return;
   }
 
-  QString filename = depthName("", d->activeDepthFrame);
+  QString filename = QString::fromStdString(d->getFrameName(d->activeDepthFrame) + ".vti");
 
   if (!QDir(path).exists())
   {
