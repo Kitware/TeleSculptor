@@ -29,9 +29,7 @@
  */
 
 #include "ComputeDepthTool.h"
-
-#include <maptk/colorize.h>
-#include <maptk/version.h>
+#include "GuiCommon.h"
 
 #include <vital/algo/image_io.h>
 #include <vital/algo/compute_depth.h>
@@ -73,24 +71,6 @@ namespace
 {
 static char const* const BLOCK_VR = "video_reader";
 static char const* const BLOCK_CD = "compute_depth";
-
-//-----------------------------------------------------------------------------
-kwiver::vital::config_block_sptr readConfig(std::string const& name)
-{
-  try
-  {
-    using kwiver::vital::read_config_file;
-
-    auto const exeDir = QDir(QApplication::applicationDirPath());
-    auto const prefix = stdString(exeDir.absoluteFilePath(".."));
-    return read_config_file(name, "maptk", MAPTK_VERSION, prefix);
-  }
-  catch (...)
-  {
-    return {};
-  }
-}
-
 }
 
 //-----------------------------------------------------------------------------
