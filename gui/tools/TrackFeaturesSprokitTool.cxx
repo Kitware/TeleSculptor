@@ -29,7 +29,7 @@
  */
 
 #include "TrackFeaturesSprokitTool.h"
-#include "ConfigHelper.h"
+#include "GuiCommon.h"
 
 #include <fstream>
 #include <sstream>
@@ -127,7 +127,7 @@ bool TrackFeaturesSprokitTool::execute(QWidget* window)
   }
 
   // Load configuration
-  auto const config = ConfigHelper::readConfig("gui_track_features.conf");
+  auto const config = readConfig("gui_track_features.conf");
 
   // Check configuration
   if (!config)
@@ -179,7 +179,7 @@ TrackFeaturesSprokitTool
 {
   std::stringstream ss;
 
-  std::string pipe_file = ConfigHelper::findConfig("track_features_embedded.pipe");
+  std::string pipe_file = findConfig("track_features_embedded.pipe");
   if (false && !pipe_file.empty())
   {
     // Open pipeline description
@@ -199,7 +199,7 @@ TrackFeaturesSprokitTool
   else
   {
     // find the path the vocabulary file
-    std::string voc_path = ConfigHelper::findConfig("kwiver_voc.yml.gz");
+    std::string voc_path = findConfig("kwiver_voc.yml.gz");
     if (voc_path.empty())
     {
       QMessageBox::critical(

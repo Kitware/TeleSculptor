@@ -60,4 +60,7 @@ std::string frameName(kwiver::vital::frame_id_t frame,
 kwiver::vital::config_block_sptr readConfig(std::string const& name);
 
 
+// find the full path to the first matching file on the config search path
+kwiver::vital::path_t findConfig(std::string const& name);
+
 #endif
