@@ -125,8 +125,9 @@ bool TrackFeaturesSprokitTool::execute(QWidget* window)
     return false;
   }
 
+  config->merge_config(this->data()->config);
   if (!convert_image::check_nested_algo_configuration(BLOCK_CI, config) ||
-      !video_input::check_nested_algo_configuration(BLOCK_VR, this->data()->config))
+      !video_input::check_nested_algo_configuration(BLOCK_VR, config))
   {
     QMessageBox::critical(
       window, "Configuration error",
@@ -136,7 +137,7 @@ bool TrackFeaturesSprokitTool::execute(QWidget* window)
 
   // Create algorithm from configuration
   convert_image::set_nested_algo_configuration(BLOCK_CI, config, d->image_converter);
-  video_input::set_nested_algo_configuration(BLOCK_VR, this->data()->config, d->video_reader);
+  video_input::set_nested_algo_configuration(BLOCK_VR, config, d->video_reader);
 
   std::stringstream pipe_str = create_pipeline_config(window);
   if (pipe_str.str().empty())
