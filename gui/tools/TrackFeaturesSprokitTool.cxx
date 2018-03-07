@@ -145,7 +145,7 @@ bool TrackFeaturesSprokitTool::execute(QWidget* window)
     return false;
   }
 
-  // create a embedded pipeline
+  // create an embedded pipeline
   try
   {
     d->ep.build_pipeline(pipe_str);
@@ -187,7 +187,7 @@ TrackFeaturesSprokitTool
   }
   else
   {
-    // find the path the vocabulary file
+    // find the path to the vocabulary file
     std::string voc_path = findConfig("kwiver_voc.yml.gz");
     if (voc_path.empty())
     {
