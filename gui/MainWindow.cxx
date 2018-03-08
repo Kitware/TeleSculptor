@@ -501,7 +501,7 @@ void MainWindowPrivate::updateFrames(std::shared_ptr<VideoData> vd)
                                          K_def.aspect_ratio()),
     this->videoConfig->get_value<double>(bc + "skew", K_def.skew()));
 
-  std::map<kwiver::vital::frame_id_t, kwiver::vital::camera_sptr> camMap;
+  kwiver::vital::camera_map::map_camera_t camMap;
   if (videoMetadataMap.size() > 0)
   {
     std::map<kwiver::vital::frame_id_t, kwiver::vital::metadata_sptr> mdMap;
@@ -524,10 +524,7 @@ void MainWindowPrivate::updateFrames(std::shared_ptr<VideoData> vd)
     }
   }
 
-  for (auto cam : camMap)
-  {
-    this->updateCamera(cam.first, cam.second);
-  }
+  this->updateCameras(std::make_shared<kwiver::vital::simple_camera_map>(camMap));
 
   if (this->currProject){
     for (auto const& tool : this->tools)
@@ -1610,7 +1607,7 @@ void MainWindow::saveCameras(QString const& path, bool writeToProject)
       if (camera)
       {
         auto cameraName = QString::fromStdString(d->getFrameName(cd.id) + ".krtd");
-        auto const filepath = d->currProject->cameraPath + "/" + cameraName;
+        auto const filepath = path + "/" + cameraName;
         out.insert(filepath, camera);
 
         if (QFileInfo(filepath).exists())

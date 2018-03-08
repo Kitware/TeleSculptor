@@ -49,6 +49,8 @@ class VideoImportPrivate
 public:
   VideoImportPrivate() {
     logger = kwiver::vital::get_logger("telesculptor.video_input");
+    // Needs its own copy of config since parameters will changed.
+    config = kwiver::vital::config_block::empty_config();
     canceled = false;
   }
 
@@ -83,7 +85,12 @@ void VideoImport::setData(config_block_sptr const& config,
 {
   QTE_D();
 
-  d->config = config;
+  d->config->merge_config(config);
+  // For import of metadata we want every frame
+  if (d->config->has_value("video_reader:vidl_ffmpeg:output_nth_frame"))
+  {
+    d->config->set_value("video_reader:vidl_ffmpeg:output_nth_frame", 1);
+  }
   d->videoPath = path;
   d->localGeoCs = lgcs;
 }
