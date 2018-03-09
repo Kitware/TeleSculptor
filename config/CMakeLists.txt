@@ -1,4 +1,5 @@
-file(GLOB config_files *.conf)
+file(GLOB config_files *.conf *.pipe)
+file(GLOB model_files *.gz)
 
 # Ensure target directory exists
 set(out_dir "${MAPTK_BINARY_DIR}/share/maptk/${MAPTK_VERSION}/config")
@@ -22,9 +23,18 @@ foreach(file ${config_files})
   add_dependencies(maptk-data-config configure-${target})
 endforeach()
 
-# Install config files
+# Add targets to copy model files
+foreach(file ${model_files})
+  get_filename_component(filename ${file} NAME)
+  configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/${filename}"
+    "${out_dir}/${filename}" COPYONLY
+    )
+endforeach()
+
+# Install config and model files
 kwiver_install(
-  FILES ${config_files}
+  FILES ${config_files} ${model_files}
   COMPONENT runtime
   DESTINATION share/maptk/${MAPTK_VERSION}/config
   )

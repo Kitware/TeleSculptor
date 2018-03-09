@@ -1,0 +1,135 @@
+# ================================================================
+process input
+ :: input_adapter
+
+# ================================================================
+process tracker
+  :: feature_tracker
+  track_features:type = ocv_KLT
+  track_features:ocv_KLT:new_feat_exclusionary_radius_image_fraction = 0.02
+  track_features:ocv_KLT:redetect_frac_lost_threshold = 0.7
+  track_features:ocv_KLT:feature_detector:type = ocv_FAST
+  track_features:ocv_KLT:feature_detector:ocv_FAST:threshold = 50
+  track_features:ocv_KLT:feature_detector:ocv_FAST:nonmaxSuppression = true
+
+# ================================================================
+process keyframes
+  :: keyframe_selection_process
+  keyframe_selection_1:type = basic
+  keyframe_selection_1:basic:fraction_tracks_lost_to_necessitate_new_keyframe = 0.1
+
+# ================================================================
+process detect_if_keyframe
+  :: detect_features_if_keyframe_process
+  augment_keyframes:type = augment_keyframes
+  augment_keyframes:augment_keyframes:kf_only_feature_detector:type = ocv_ORB
+  augment_keyframes:augment_keyframes:kf_only_descriptor_extractor:type = ocv_ORB
+  augment_keyframes:augment_keyframes:kf_only_feature_detector:ocv_ORB:n_features = 2000
+
+# ================================================================
+
+process loop_detector
+  :: close_loops_process
+  close_loops:type = appearance_indexed
+
+  close_loops:appearance_indexed:min_loop_inlier_matches = 50
+  close_loops:appearance_indexed:match_features:type = homography_guided
+  close_loops:appearance_indexed:match_features:homography_guided:homography_estimator:type = ocv
+  close_loops:appearance_indexed:match_features:homography_guided:feature_matcher1:type = ocv_brute_force
+
+  close_loops:appearance_indexed:bag_of_words_matching:type = dbow2
+  close_loops:appearance_indexed:bag_of_words_matching:dbow2:feature_detector:type = ocv_ORB
+  close_loops:appearance_indexed:bag_of_words_matching:dbow2:descriptor_extractor:type = ocv_ORB
+  close_loops:appearance_indexed:bag_of_words_matching:dbow2:image_io:type = ocv
+  close_loops:appearance_indexed:bag_of_words_matching:dbow2:max_num_candidate_matches_from_vocabulary_tree = 20
+  close_loops:appearance_indexed:bag_of_words_matching:dbow2:training_image_list_path =
+  close_loops:appearance_indexed:bag_of_words_matching:dbow2:vocabulary_path = kwiver_voc.yml.gz
+
+# ================================================================
+
+process draw
+  :: draw_tracks
+  draw_tracks:type = ocv
+  draw_tracks:ocv:draw_track_ids = false
+  draw_tracks:ocv:draw_untracked_features = true
+  draw_tracks:ocv:draw_shift_lines = false
+  draw_tracks:ocv:draw_match_lines = true
+  draw_tracks:ocv:first_frame_id = 1
+
+# ================================================================
+process disp
+  :: image_viewer
+  annotate_image = true
+  pause_time     = 0.001  #  pause_time in seconds. 0 means wait for keystroke.
+  title          = images
+#  footer         = images
+#  header         = header-header
+
+# ================================================================
+process output
+ :: output_adapter
+
+# ================================================================
+# global pipeline config
+#
+config _pipeline:_edge
+       capacity = 2
+
+# ================================================================
+# connections
+connect from input.image
+        to   tracker.image
+
+connect from input.timestamp
+        to   tracker.timestamp
+
+#back connection to tracker
+connect from tracker.feature_track_set
+        to   tracker.feature_track_set
+
+connect from tracker.feature_track_set
+        to   keyframes.next_tracks
+
+connect from input.timestamp
+        to   keyframes.timestamp
+
+connect from keyframes.feature_track_set
+        to   keyframes.loop_back_tracks
+
+connect from keyframes.feature_track_set
+        to   detect_if_keyframe.next_tracks
+
+connect from detect_if_keyframe.feature_track_set
+        to   detect_if_keyframe.loop_back_tracks
+
+connect from input.image
+        to   detect_if_keyframe.image
+
+connect from input.timestamp
+        to   detect_if_keyframe.timestamp
+
+connect from detect_if_keyframe.feature_track_set
+        to   draw.feature_track_set
+
+connect from detect_if_keyframe.feature_track_set
+        to   loop_detector.next_tracks
+
+connect from loop_detector.feature_track_set
+        to   loop_detector.loop_back_tracks
+
+connect from input.timestamp
+        to   loop_detector.timestamp
+
+connect from input.image
+        to   draw.image
+
+connect from input.timestamp
+        to   disp.timestamp
+
+connect from draw.output_image
+        to   disp.image
+
+connect from loop_detector.feature_track_set
+        to   output.feature_track_set
+
+# -- end of file --

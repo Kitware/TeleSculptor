@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2018 by Kitware, Inc.
+ * Copyright 2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,39 +28,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GUI_COMMON_H_
-#define GUI_COMMON_H_
+#ifndef MAPTK_TRACKFEATURESSPROKITTOOL_H_
+#define MAPTK_TRACKFEATURESSPROKITTOOL_H_
 
-#include <qtStlUtil.h>
+#include "AbstractTool.h"
+#include <sstream>
 
-#include <vital/config/config_block_io.h>
-#include <vital/types/metadata_map.h>
-#include <vital/vital_types.h>
+class TrackFeaturesSprokitToolPrivate;
 
+class TrackFeaturesSprokitTool : public AbstractTool
+{
+  Q_OBJECT
 
-// Generates frame name basename in a standard format
-// This version uses a map of all metadata
-std::string frameName(kwiver::vital::frame_id_t frame,
-                      kwiver::vital::metadata_map::map_metadata_t const& mdm);
+public:
+  explicit TrackFeaturesSprokitTool(QObject* parent = 0);
+  virtual ~TrackFeaturesSprokitTool();
+  virtual Outputs outputs() const QTE_OVERRIDE;
 
+  /// Get if the tool can be canceled.
+  virtual bool isCancelable() const QTE_OVERRIDE { return true; }
 
-// Generates frame name basename in a standard format
-// This version uses a vector of metadata for the frame
-std::string frameName(kwiver::vital::frame_id_t frame,
-                      kwiver::vital::metadata_vector const& mdv);
+  virtual bool execute(QWidget* window = 0) QTE_OVERRIDE;
 
+protected:
+  virtual void run() QTE_OVERRIDE;
 
-// Generates frame name basename in a standard format
-// This version uses a single metadata object for the frame
-std::string frameName(kwiver::vital::frame_id_t frame,
-                      kwiver::vital::metadata_sptr md);
+  virtual std::stringstream create_pipeline_config(QWidget* window = 0);
 
+private:
+  QTE_DECLARE_PRIVATE_RPTR(TrackFeaturesSprokitTool)
+  QTE_DECLARE_PRIVATE(TrackFeaturesSprokitTool)
+  QTE_DISABLE_COPY(TrackFeaturesSprokitTool)
+};
 
-// Loads config file from installed config location
-kwiver::vital::config_block_sptr readConfig(std::string const& name);
-
-
-// find the full path to the first matching file on the config search path
-kwiver::vital::path_t findConfig(std::string const& name);
-
-#endif
+#endif // MAPTK_TRACKFEATURESSPROKITTOOL_H_

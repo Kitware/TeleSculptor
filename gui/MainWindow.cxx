@@ -41,6 +41,7 @@
 #include "tools/NeckerReversalTool.h"
 #include "tools/SaveFrameTool.h"
 #include "tools/SaveKeyFrameTool.h"
+#include "tools/TrackFeaturesSprokitTool.h"
 #include "tools/TrackFeaturesTool.h"
 #include "tools/TrackFilterTool.h"
 #include "tools/TriangulateTool.h"
@@ -975,6 +976,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
     d->UI.menuCompute->insertSeparator(d->UI.actionCancelComputation);
 
   d->addTool(new TrackFeaturesTool(this), this);
+  d->addTool(new TrackFeaturesSprokitTool(this), this);
   d->addTool(new TriangulateTool(this), this);
   d->addTool(new InitCamerasLandmarksTool(this), this);
   d->addTool(new BundleAdjustTool(this), this);

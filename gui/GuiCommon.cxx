@@ -33,6 +33,7 @@
 #include <maptk/version.h>
 
 #include <vital/io/metadata_io.h>
+#include <kwiversys/SystemTools.hxx>
 
 #include <QtCore/QDir>
 #include <QtGui/QApplication>
@@ -96,3 +97,35 @@ kwiver::vital::config_block_sptr readConfig(std::string const& name)
     return {};
   }
 }
+
+//----------------------------------------------------------------------------
+ // find the full path to the first matching file on the config search path
+ kwiver::vital::path_t findConfig(std::string const& name)
+ {
+   try
+   {
+     using kwiver::vital::application_config_file_paths;
+
+     auto const exeDir = QDir(QApplication::applicationDirPath());
+     auto const prefix = stdString(exeDir.absoluteFilePath(".."));
+     auto const& search_paths =
+       application_config_file_paths("maptk", MAPTK_VERSION, prefix);
+
+     for (auto const& search_path : search_paths)
+     {
+       auto const& config_path = search_path + "/" + name;
+
+       if (kwiversys::SystemTools::FileExists(config_path) &&
+         !kwiversys::SystemTools::FileIsDirectory(config_path))
+       {
+         return config_path;
+       }
+     }
+   }
+   catch (...)
+   {
+     return "";
+   }
+   return "";
+ }
+
