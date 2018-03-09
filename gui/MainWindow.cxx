@@ -520,7 +520,7 @@ kwiver::vital::camera_map_sptr MainWindowPrivate::cameraMap() const
     auto const& cd = this->frames[i];
     if (cd.camera)
     {
-      map.insert(std::make_pair(static_cast<kwiver::vital::frame_id_t>(i),
+      map.insert(std::make_pair(static_cast<kwiver::vital::frame_id_t>(cd.id),
                                 cd.camera->GetCamera()));
     }
   }
