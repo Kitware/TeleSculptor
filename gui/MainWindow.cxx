@@ -920,7 +920,7 @@ void MainWindowPrivate::loadDepthMap(QString const& imagePath)
   this->UI.depthMapView->setValidDepthInput(true);
   this->UI.worldView->setValidDepthInput(true);
 
-  this->depthFilter->SetCamera(this->frames[this->activeCameraIndex].camera);
+  this->depthFilter->SetCamera(this->frames[this->activeCameraIndex-1].camera);
   this->UI.worldView->updateDepthMap();
   this->UI.depthMapView->updateView(true);
   this->UI.actionExportDepthPoints->setEnabled(true);
