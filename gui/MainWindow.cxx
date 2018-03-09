@@ -985,21 +985,20 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
     d->UI.menuCompute->insertSeparator(d->UI.actionCancelComputation);
 
   d->addTool(new TrackFeaturesTool(this), this);
-  d->addTool(new TrackFeaturesSprokitTool(this), this);
   d->addTool(new TriangulateTool(this), this);
-  d->addTool(new InitCamerasLandmarksTool(this), this);
   d->addTool(new BundleAdjustTool(this), this);
-  d->addTool(new CanonicalTransformTool(this), this);
+  d->addTool(new SaveFrameTool(this), this);
+  d->addTool(new ComputeDepthTool(this), this);
 
   d->toolMenu = d->UI.menuAdvanced;
   d->toolSeparator =
     d->UI.menuAdvanced->addSeparator();
-  d->addTool(new TrackFeaturesTool(this), this);
+  d->addTool(new TrackFeaturesSprokitTool(this), this);
   d->addTool(new NeckerReversalTool(this), this);
   d->addTool(new TrackFilterTool(this), this);
-  d->addTool(new ComputeDepthTool(this), this);
-  d->addTool(new SaveFrameTool(this), this);
+  d->addTool(new InitCamerasLandmarksTool(this), this);
   d->addTool(new SaveKeyFrameTool(this), this);
+  d->addTool(new CanonicalTransformTool(this), this);
 
   d->UI.menuView->addSeparator();
   d->UI.menuView->addAction(d->UI.cameraViewDock->toggleViewAction());
