@@ -441,7 +441,8 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
         mdMap[mdIter.first] = mdIter.second[0];
       }
 
-      bool init_cams_with_metadata = config->get_value<bool>("initialize_cameras_with_metadata", true);
+      bool init_cams_with_metadata =
+        config->get_value<bool>("initialize_cameras_with_metadata", true);
 
       if (init_cams_with_metadata)
       {
