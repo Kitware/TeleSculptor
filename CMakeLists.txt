@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.0)
+
+set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install CACHE PATH "Install location")
 project(MAPTK)
+
+option(MAPTK_SUPERBUILD  "Enable MAPTK superbuild" ON)
 
 ###
 # CMake policies
@@ -35,6 +39,7 @@ set(MAPTK_CMAKE_DIR            "${CMAKE_SOURCE_DIR}/CMake")
 # root directories
 set(MAPTK_SOURCE_DIR           "${CMAKE_SOURCE_DIR}")
 set(MAPTK_BINARY_DIR           "${CMAKE_BINARY_DIR}")
+set(MAPTK_STAMP_DIR ${MAPTK_BINARY_DIR}/MAPTK-ExternalProject-Stamps)
 
 # Always build shared libraries, required due to plugin infrastructure
 if(DEFINED BUILD_SHARED_LIBS AND NOT BUILD_SHARED_LIBS)
@@ -45,15 +50,41 @@ set(BUILD_SHARED_LIBS ON)
 set(LIB_SUFFIX "${MAPTK_LIB_SUFFIX}" CACHE STRING "String suffix appended to the library directory we install into")
 mark_as_advanced( LIB_SUFFIX )
 
+###
+# Option for CUDA/CUDNN
+#
+option(MAPTK_BUILD_WITH_CUDA "Build with CUDA support" FALSE)
+if (MAPTK_BUILD_WITH_CUDA)
+  find_package( CUDA QUIET REQUIRED )
+# Option for CUDNN
+  option(MAPTK_BUILD_WITH_CUDNN "Build with CUDNN support" FALSE)
+  if (MAPTK_BUILD_WITH_CUDNN)
+    set( CUDNN_TOOLKIT_ROOT_DIR "" CACHE PATH "CUDNN root folder" )
+    find_package( CUDNN QUIET REQUIRED)
+  endif()
+elseif(MAPTK_BUILD_WITH_CUDNN)
+  unset(MAPTK_BUILD_WITH_CUDNN CACHE)
+  message(WARNING "Disabling MAPTK_BUILD_WITH_CUDNN, You must have MAPTK_BUILD_WITH_CUDA enabled for this to be enabled")
+endif()
+
+if(MAPTK_SUPERBUILD)
+  include(${MAPTK_CMAKE_DIR}/maptk-superbuild.cmake)
+  return()
+endif()
+
 include( maptk-depends )
 
 ###
-# use kwiver util methods
+# use kwiver/fletch/maptk util methods
 #
+find_package(kwiver REQUIRED)
+include_directories("${KWIVER_INCLUDE_DIRS}")
+link_directories("${KWIVER_LIBRARY_DIRS}")
 include( kwiver-cmake-future )
 include( kwiver-utils )
 include( kwiver-flags )
 include( kwiver-configcheck )
+find_package(fletch REQUIRED)
 include( maptk-utils ) # local utilities
 
 # set the name for our package exports
@@ -117,7 +148,7 @@ endif()
 ###
 # Top level installation
 #
-set(maptk_cmake_install_dir  "lib${LIB_SUFFIX}/cmake/maptk")
+set(maptk_cmake_install_dir  "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/cmake/maptk")
 
 # Install rules for CMake utilities
 include(maptk-install-utils)
