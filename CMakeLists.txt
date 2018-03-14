@@ -50,22 +50,7 @@ set(BUILD_SHARED_LIBS ON)
 set(LIB_SUFFIX "${MAPTK_LIB_SUFFIX}" CACHE STRING "String suffix appended to the library directory we install into")
 mark_as_advanced( LIB_SUFFIX )
 
-###
-# Option for CUDA/CUDNN
-#
-option(MAPTK_BUILD_WITH_CUDA "Build with CUDA support" FALSE)
-if (MAPTK_BUILD_WITH_CUDA)
-  find_package( CUDA QUIET REQUIRED )
-# Option for CUDNN
-#  option(MAPTK_BUILD_WITH_CUDNN "Build with CUDNN support" FALSE)
-#  if (MAPTK_BUILD_WITH_CUDNN)
-#    set( CUDNN_TOOLKIT_ROOT_DIR "" CACHE PATH "CUDNN root folder" )
-#    find_package( CUDNN QUIET REQUIRED)
-#  endif()
-#elseif(MAPTK_BUILD_WITH_CUDNN)
-#  unset(MAPTK_BUILD_WITH_CUDNN CACHE)
-#  message(WARNING "Disabling MAPTK_BUILD_WITH_CUDNN, You must have MAPTK_BUILD_WITH_CUDA enabled for this to be enabled")
-endif()
+option(MAPTK_ENABLE_GUI "Build MAPTK GUI" OFF)
 
 if(MAPTK_SUPERBUILD)
   include(${MAPTK_CMAKE_DIR}/maptk-superbuild.cmake)
@@ -73,19 +58,6 @@ if(MAPTK_SUPERBUILD)
 endif()
 
 include( maptk-depends )
-
-###
-# use kwiver/fletch/maptk util methods
-#
-find_package(kwiver REQUIRED)
-include_directories("${KWIVER_INCLUDE_DIRS}")
-link_directories("${KWIVER_LIBRARY_DIRS}")
-include( kwiver-cmake-future )
-include( kwiver-utils )
-include( kwiver-flags )
-include( kwiver-configcheck )
-find_package(fletch REQUIRED)
-include( maptk-utils ) # local utilities
 
 # set the name for our package exports
 set(kwiver_export_name     maptk_exports)
@@ -107,7 +79,6 @@ add_subdirectory(examples)
 ###
 # GUI
 #
-option(MAPTK_ENABLE_GUI "Build MAPTK GUI" OFF)
 if(MAPTK_ENABLE_GUI)
   if(APPLE)
     set(CMAKE_BUNDLE_LOCATION "${CMAKE_INSTALL_PREFIX}")
@@ -121,7 +92,6 @@ if(MAPTK_ENABLE_GUI)
   add_subdirectory(gui)
 endif()
 
-
 ###
 # Manuals
 #
@@ -129,7 +99,6 @@ option(MAPTK_ENABLE_MANUALS "Build MAPTK user manual(s)" OFF)
 if(MAPTK_ENABLE_MANUALS)
   add_subdirectory(doc/manuals)
 endif()
-
 
 ###
 # Testing
@@ -143,7 +112,6 @@ if(MAPTK_ENABLE_TESTING)
   mark_as_advanced(BUILD_TESTING)
   add_subdirectory(tests)
 endif()
-
 
 ###
 # Top level installation

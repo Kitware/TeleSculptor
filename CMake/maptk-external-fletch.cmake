@@ -2,10 +2,11 @@
 #
 set(KWIVER_DEPENDENCIES)
 
-message(STATUS "I am build fletch submodule!")
+message(STATUS "I am building the fletch submodule!")
 
 list(APPEND KWIVER_DEPENDENCIES fletch)
 list(APPEND MAPTK_DEPENDENCIES fletch)
+list(APPEND QT_EXTENSIONS_DEPENDENCIES fletch)
 
 ExternalProject_Add(fletch
   PREFIX ${MAPTK_BINARY_DIR}
@@ -22,7 +23,9 @@ ExternalProject_Add(fletch
     -Dfletch_ENABLE_Boost:BOOL=ON
     -DBoost_SELECT_VERSION:STRING=1.65.1
     -Dfletch_ENABLE_Caffe:BOOL=OFF
+    -Dfletch_ENABLE_Caffe_Segnet:BOOL=OFF
     -Dfletch_ENABLE_Ceres:BOOL=ON
+    -Dfletch_ENABLE_CppDB:BOOL=OFF
     -Dfletch_ENABLE_Darknet:BOOL=OFF
     -Dfletch_ENABLE_Darknet_OpenCV:BOOL=OFF
     -Dfletch_ENABLE_Eigen:BOOL=ON
@@ -35,6 +38,9 @@ ExternalProject_Add(fletch
     -Dfletch_ENABLE_GeographicLib:BOOL=OFF
     -Dfletch_ENABLE_HDF5:BOOL=OFF
     -Dfletch_ENABLE_ITK:BOOL=OFF
+    -Dfletch_ENABLE_LMDB:BOOL=OFF
+    -Dfletch_ENABLE_LevelDB:BOOL=OFF
+    -Dfletch_ENABLE_OpenBLAS:BOOL=OFF    
     -Dfletch_ENABLE_OpenCV:BOOL=ON
     -DOpenCV_SELECT_VERSION:STRING=3.4.0
     -Dfletch_ENABLE_OpenCV_FFmpeg:BOOL=ON
@@ -42,9 +48,11 @@ ExternalProject_Add(fletch
     -Dfletch_ENABLE_OpenCV_highgui:BOOL=ON
     -Dfletch_ENABLE_PNG:BOOL=ON
     -Dfletch_ENABLE_PROJ4:BOOL=ON
+    -Dfletch_ENABLE_PostGIS:BOOL=OFF
     -Dfletch_ENABLE_PostgresSQL:BOOL=OFF
-    -Dfletch_ENABLE_pybind11:BOOL=OFF
+    -Dfletch_ENABLE_Protobuf:BOOL=OFF
     -Dfletch_ENABLE_Qt:BOOL=ON
+    -Dfletch_ENABLE_Snappy:BOOL=OFF
     -Dfletch_ENABLE_SuiteSparse:BOOL=ON
     -Dfletch_ENABLE_TinyXML:BOOL=OFF
     -Dfletch_ENABLE_VTK:BOOL=ON
@@ -59,6 +67,8 @@ ExternalProject_Add(fletch
     -Dfletch_ENABLE_libtiff:BOOL=ON
     -Dfletch_ENABLE_libxml2:BOOL=ON
     -Dfletch_ENABLE_log4cplus:BOOL=ON
+    -Dfletch_ENABLE_openjpeg:BOOL=OFF
+    -Dfletch_ENABLE_pybind11:BOOL=OFF
     -Dfletch_ENABLE_shapelib:BOOL=OFF
     -Dfletch_BUILD_WITH_CUDA:BOOL=${MAPTK_BUILD_WITH_CUDA}
     -DCUDA_TOOLKIT_ROOT_DIR:PATH=${CUDA_TOOLKIT_ROOT_DIR}

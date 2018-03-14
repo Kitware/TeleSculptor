@@ -1,7 +1,23 @@
 # Central location for MAPTK external dependency declaration and resolution
 include(ExternalProject)
 
-set( fletch_DIR "" CACHE PATH "Path to FLETCH" )
+###
+# Option for CUDA/CUDNN
+#
+option(MAPTK_BUILD_WITH_CUDA "Build with CUDA support" FALSE)
+if (MAPTK_BUILD_WITH_CUDA)
+  find_package( CUDA QUIET REQUIRED )
+# Option for CUDNN
+#  option(MAPTK_BUILD_WITH_CUDNN "Build with CUDNN support" FALSE)
+#  if (MAPTK_BUILD_WITH_CUDNN)
+#    set( CUDNN_TOOLKIT_ROOT_DIR "" CACHE PATH "CUDNN root folder" )
+#    find_package( CUDNN QUIET REQUIRED)
+#  endif()
+#elseif(MAPTK_BUILD_WITH_CUDNN)
+#  unset(MAPTK_BUILD_WITH_CUDNN CACHE)
+#  message(WARNING "Disabling MAPTK_BUILD_WITH_CUDNN, You must have MAPTK_BUILD_WITH_CUDA enabled for this to be enabled")
+endif()
+
 set( kwiver_DIR "" CACHE PATH "Path to KWIVER" )
 
 set( kwiver_FOUND FALSE)
@@ -11,19 +27,21 @@ if(kwiver_DIR)
     message(STATUS "Looking for your kwiver in ${kwiver_DIR}...")
     # if we find it, we want to use the fletch_DIR used by kwiver
     # so cache off what we have, and unset it, so we get it in our scope
-    set(user_fletch_DIR ${fletch_DIR})
-    unset( fletch_DIR CACHE)
     find_package( kwiver NO_MODULE NO_POLICY_SCOPE)
     if ( kwiver_FOUND )
       message(STATUS "I found your kwiver!")
-      message(STATUS "It uses this fletch ${fletch_DIR}")
-      if(user_fletch_DIR)
-        message(STATUS "You provided a fletch_DIR and a kwiver_DIR, I am going to ignore this fletch_DIR and use the fletch_DIR used to build kwiver")
+      # See if KWIVER has fletch
+      if ( IS_DIRECTORY ${fletch_DIR} )
+        set( fletch_FOUND TRUE)
+        message(STATUS "kwiver uses this fletch ${fletch_DIR}")
+        find_package(fletch NO_MODULE)
+      else()
+        set( fletch_FOUND FALSE)
+        message(STATUS "kwiver was not built with fletch")        
       endif()
     else()
-     message(STATUS "I could not find your kwiver!")
-     # restore the user fletch dir since we failed to find the provided kwiver
-     set( fletch_DIR ${user_fletch_DIR} CACHE PATH "Path to FLETCH" )
+      message(STATUS "I could not find your kwiver!")
+      set( kwiver_FOUND FALSE)
     endif()
   else()
     message(STATUS "I could not find your kwiver!")
@@ -32,61 +50,14 @@ if(kwiver_DIR)
 endif()
 
 if(NOT kwiver_FOUND)
-  set( kwiver_DIR "" CACHE PATH "Path to KWIVER" )
-  
-  set( fletch_FOUND FALSE)
-  if(fletch_DIR)
-    ## Make sure this is a good fletch directory
-    if ( IS_DIRECTORY ${fletch_DIR} )
-      message(STATUS "Looking for your fletch...")
-      find_package( fletch NO_MODULE )
-      if ( fletch_FOUND )
-        message(STATUS "I found your fletch!")
-      else()
-        message(STATUS "I could not find your fletch!")
-      endif()
-    else()
-      message(STATUS "I could not find your fletch!")
-      set( fletch_FOUND FALSE)
-    endif()
-  endif()
-  
-  if(NOT fletch_FOUND)
-    set( fletch_DIR "" CACHE PATH "Path to FLETCH" )
-    include(CMake/maptk-depends-fletch.cmake)
-  endif()
-  include(CMake/maptk-depends-kwiver.cmake)
+  message(STATUS "Performing super build!")
+  include(CMake/maptk-external-fletch.cmake)
+  include(CMake/maptk-external-kwiver.cmake)  
 endif()
 
-ExternalProject_Add(Qt_Extensions
-  PREFIX ${MAPTK_BINARY_DIR}
-  SOURCE_DIR Qt_Extensions
-  BINARY_DIR Qt_Extensions-build
-  STAMP_DIR ${MAPTK_STAMP_DIR}
-  GIT_REPOSITORY "https://github.com/Kitware/qtextensions.git"
-  GIT_TAG de142f71190cbff9427ad1bbdcb340b34ec595bd
-  GIT_SHALLOW 1
-  CMAKE_CACHE_ARGS
-    -DBUILD_SHARED_LIBS:BOOL=ON
-    -DCMAKE_PREFIX_PATH:STRING=${CMAKE_PREFIX_PATH}
-    -DCMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX}
-    -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-    -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
-    -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
-    -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
-    -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
-    ${CMAKE_CXX_COMPILER_LAUNCHER_FLAG}
-    ${CMAKE_C_COMPILER_LAUNCHER_FLAG}
-    -DCMAKE_EXE_LINKER_FLAGS:STRING=${CMAKE_EXE_LINKER_FLAGS}
-    -DCMAKE_SHARED_LINKER_FLAGS:STRING=${CMAKE_SHARED_LINKER_FLAGS}
-    -DMAKECOMMAND:STRING=${MAKECOMMAND}
-    -DADDITIONAL_C_FLAGS:STRING=${ADDITIONAL_C_FLAGS}
-    -DADDITIONAL_CXX_FLAGS:STRING=${ADDITIONAL_CXX_FLAGS}
-  #INSTALL_COMMAND cmake -E echo "Skipping install step."
-  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
-)
-list(APPEND MAPTK_DEPENDENCIES Qt_Extensions)
-set(kwiver_DIR "${CMAKE_INSTALL_PREFIX}/lib/cmake/kwiver")
+if(MAPTK_ENABLE_GUI)
+    include(CMake/maptk-external-qt-extensions.cmake)
+  endif()
 
 # MAPTK
 set(MAPTK_INNER_DIR ${MAPTK_BINARY_DIR}/MAPTK-build)
@@ -101,7 +72,7 @@ ExternalProject_Add(MAPTK
     -Dkwiver_DIR:PATH=${kwiver_DIR}
     -DBUILD_SHARED_LIBS:BOOL=ON
     -DMAPTK_SUPERBUILD:BOOL=OFF
-    -DMAPTK_ENABLE_GUI:BOOL=ON
+    -DMAPTK_ENABLE_GUI:BOOL=${MAPTK_ENABLE_GUI}
     -DCMAKE_PREFIX_PATH:STRING=${CMAKE_PREFIX_PATH}
     -DCMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX}
     -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
