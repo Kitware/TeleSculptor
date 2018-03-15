@@ -39,7 +39,7 @@ set(MAPTK_CMAKE_DIR            "${CMAKE_SOURCE_DIR}/CMake")
 # root directories
 set(MAPTK_SOURCE_DIR           "${CMAKE_SOURCE_DIR}")
 set(MAPTK_BINARY_DIR           "${CMAKE_BINARY_DIR}")
-set(MAPTK_STAMP_DIR ${MAPTK_BINARY_DIR}/MAPTK-ExternalProject-Stamps)
+set(MAPTK_STAMP_DIR             ${MAPTK_BINARY_DIR}/MAPTK-ExternalProject-Stamps)
 
 # Always build shared libraries, required due to plugin infrastructure
 if(DEFINED BUILD_SHARED_LIBS AND NOT BUILD_SHARED_LIBS)
@@ -56,7 +56,6 @@ if(MAPTK_SUPERBUILD)
   include(${MAPTK_CMAKE_DIR}/maptk-superbuild.cmake)
   return()
 endif()
-
 include( maptk-depends )
 
 # set the name for our package exports

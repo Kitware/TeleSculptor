@@ -1,0 +1,7 @@
+curr_dir=$(pwd)
+cd @kwiver_DIR@
+source setup_KWIVER.sh
+cd $curr_dir
+
+export @LIBRARY_PATH_VAR@=$(pwd)/MAPTK-build/lib:$(pwd)/qtExtensions-build:$@LIBRARY_PATH_VAR@
+

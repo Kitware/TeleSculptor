@@ -89,3 +89,16 @@ ExternalProject_Add(MAPTK
   #INSTALL_COMMAND cmake -E echo "Skipping install step."
   INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
 )
+
+set(LIBRARY_PATH_VAR "LD_LIBRARY_PATH")
+if( APPLE )
+  set(LIBRARY_PATH_VAR "DYLD_FALLBACK_LIBRARY_PATH")
+endif()
+if(WIN32)
+  configure_file(${MAPTK_CMAKE_DIR}/start_MSVC.bat.in           ${MAPTK_BINARY_DIR}/start_MSVC.bat @ONLY)
+  configure_file(${MAPTK_CMAKE_DIR}/setup_MAPTK.build.bat.in    ${MAPTK_BINARY_DIR}/setup_MAPTK.bat @ONLY)
+  configure_file(${MAPTK_CMAKE_DIR}/setup_MAPTK.install.bat.in  ${CMAKE_INSTALL_PREFIX}/setup_MAPTK.bat @ONLY)
+else()
+  configure_file(${MAPTK_CMAKE_DIR}/setup_MAPTK.build.sh.in     ${MAPTK_BINARY_DIR}/setup_MAPTK.sh @ONLY)
+  configure_file(${MAPTK_CMAKE_DIR}/setup_MAPTK.install.sh.in   ${CMAKE_INSTALL_PREFIX}/setup_MAPTK.sh @ONLY)
+endif()
