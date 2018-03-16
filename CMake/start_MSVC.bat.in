@@ -23,4 +23,4 @@ set config=release
 
 call setup_MAPTK.bat %config%
 
-"%ProgramFiles(x86)%\Common Files\Microsoft Shared\MSEnv"\VSLauncher.exe DIVA.sln
+"%ProgramFiles(x86)%\Common Files\Microsoft Shared\MSEnv"\VSLauncher.exe MAPTK-build\MAPTK.sln

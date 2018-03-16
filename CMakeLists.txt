@@ -115,7 +115,7 @@ endif()
 ###
 # Top level installation
 #
-set(maptk_cmake_install_dir  "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/cmake/maptk")
+set(maptk_cmake_install_dir  "lib${LIB_SUFFIX}/cmake/maptk")
 
 # Install rules for CMake utilities
 include(maptk-install-utils)

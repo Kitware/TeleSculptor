@@ -12,7 +12,7 @@ ExternalProject_Add(kwiver
   STAMP_DIR ${MAPTK_STAMP_DIR}
   GIT_REPOSITORY "https://kwgitlab.kitware.com/computer-vision/KWIVER.git"
   GIT_TAG ff79c08104fb214e99cbb6a4c3a407b513fdb66a
-  GIT_SHALLOW 1
+  #GIT_SHALLOW 1
   CMAKE_CACHE_ARGS
     -DBUILD_SHARED_LIBS:BOOL=ON
     -Dfletch_DIR:PATH=${fletch_DIR}
@@ -63,4 +63,5 @@ ExternalProject_Add(kwiver
   INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
 )
 
+set(KWIVER_DIR "${MAPTK_BINARY_DIR}/kwiver-build")
 set(kwiver_DIR "${CMAKE_INSTALL_PREFIX}/lib/cmake/kwiver")

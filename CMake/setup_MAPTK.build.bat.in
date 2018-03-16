@@ -21,7 +21,7 @@ set config=release
 
 :Start
 
-cd @kwiver_DIR@
+cd @KWIVER_DIR@
 call setup_KWIVER.bat %config%
 cd @MAPTK_BINARY_DIR@
 set PATH=%PATH%;%~dp0/bin/%config%
