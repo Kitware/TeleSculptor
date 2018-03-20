@@ -47,6 +47,7 @@
 #include <sprokit/processes/kwiver_type_traits.h>
 #include <sprokit/processes/adapters/embedded_pipeline.h>
 #include <sprokit/pipeline_util/literal_pipeline.h>
+#include <arrows/core/track_set_impl.h>
 
 
 using kwiver::vital::algo::convert_image;
@@ -238,10 +239,11 @@ TrackFeaturesSprokitTool
       << SPROKIT_CONNECT("input", "image", "tracker", "image")
       << SPROKIT_CONNECT("input", "timestamp", "tracker", "timestamp")
       << SPROKIT_CONNECT("tracker", "feature_track_set", "tracker", "feature_track_set")
+      << SPROKIT_CONNECT("tracker", "feature_track_set", "output", "klt_frame_track_set")
       << SPROKIT_CONNECT("tracker", "feature_track_set", "keyframes", "next_tracks")
       << SPROKIT_CONNECT("input", "timestamp", "keyframes", "timestamp")
-      << SPROKIT_CONNECT("keyframes", "feature_track_set", "keyframes", "loop_back_tracks")
-      << SPROKIT_CONNECT("keyframes", "feature_track_set", "detect_if_keyframe", "next_tracks")
+      << SPROKIT_CONNECT("keyframes", "to_loop_back_tracks", "keyframes", "loop_back_tracks")
+      << SPROKIT_CONNECT("keyframes", "only_frame_data_tracks", "detect_if_keyframe", "next_tracks")
       << SPROKIT_CONNECT("detect_if_keyframe", "feature_track_set", "detect_if_keyframe", "loop_back_tracks")
       << SPROKIT_CONNECT("input", "image", "detect_if_keyframe", "image")
       << SPROKIT_CONNECT("input", "timestamp", "detect_if_keyframe", "timestamp")
@@ -279,6 +281,13 @@ TrackFeaturesSprokitTool
 
   this->updateProgress(static_cast<int>(frame), maxFrame);
   this->setDescription("Parsing video frames");
+
+  typedef std::unique_ptr<kwiver::vital::track_set_implementation> tsi_uptr;
+
+  kwiver::vital::feature_track_set_sptr accumulated_tracks =
+    std::make_shared<kwiver::vital::feature_track_set>(
+    tsi_uptr(new kwiver::arrows::core::frame_index_track_set_impl()));
+
 
   while (d->video_reader->next_frame(currentTimestamp))
   {
@@ -321,6 +330,14 @@ TrackFeaturesSprokitTool
         data->description = description().toStdString();
         emit updated(data);
       }
+
+      ix = rds->find("klt_frame_track_set");
+      if( ix != rds->end())
+      {
+        auto klt_frame_tracks = ix->second->get_datum<kwiver::vital::feature_track_set_sptr>();
+        //we have klt frames from current frame, yipee
+        accumulated_tracks->merge_in_other_feature_track_set(klt_frame_tracks);
+      }
     }
   }
   d->ep.send_end_of_input();
@@ -339,8 +356,19 @@ TrackFeaturesSprokitTool
       data->activeFrame = out_tracks->last_frame();
       emit updated(data);
     }
+
+    ix = rds->find("klt_frame_track_set");
+    if (ix != rds->end())
+    {
+      auto klt_frame_tracks = ix->second->get_datum<kwiver::vital::feature_track_set_sptr>();
+      //we have klt frames from current frame, yipee
+      accumulated_tracks->merge_in_other_feature_track_set(klt_frame_tracks);
+    }
+
   }
   d->ep.wait();
+
+  out_tracks->merge_in_other_feature_track_set(accumulated_tracks,true);
 
   this->updateTracks(out_tracks);
 
