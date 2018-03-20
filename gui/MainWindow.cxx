@@ -305,9 +305,10 @@ public:
   kwiver::vital::algo::video_input_sptr videoSource;
   kwiver::vital::timestamp currentVideoTimestamp;
   kwiver::vital::metadata_map::map_metadata_t videoMetadataMap;
-  kwiver::vital::frame_id_t framesToSkip;
+  kwiver::vital::frame_id_t advanceInterval;
 
-  QList<FrameData> frames;
+  unsigned int numFrames;
+  QMap<kwiver::vital::frame_id_t, FrameData> frames;
   kwiver::vital::feature_track_set_sptr tracks;
   kwiver::vital::landmark_map_sptr landmarks;
   vtkSmartPointer<vtkImageData> activeDepth;
@@ -336,6 +337,8 @@ QTE_IMPLEMENT_D_FUNC(MainWindow)
 MainWindowPrivate::MainWindowPrivate(MainWindow* mainWindow)
     : activeTool(0)
     , toolUpdateActiveFrame(-1)
+    , advanceInterval(1)
+    , numFrames(1)
     , activeCameraIndex(-1)
 {
   QObject::connect(&videoImporter, SIGNAL(updated(int)),
@@ -426,7 +429,7 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
     if (this->videoSource &&
         config->has_value("video_reader:vidl_ffmpeg:output_nth_frame"))
     {
-      this->framesToSkip =
+      this->advanceInterval =
         config->get_value<int>("video_reader:vidl_ffmpeg:output_nth_frame");
     }
 
@@ -465,13 +468,10 @@ void MainWindowPrivate::addFrame(
     this->UI.actionExportCameras->setEnabled(true);
   }
 
-  this->frames.append(cd);
-
-  this->UI.camera->setRange(1, this->frames.count());
-  this->UI.cameraSpin->setRange(1, this->frames.count());
+  this->frames.insert(id, cd);
 
   // When the first camera is added, show it immediately and reset the camera
-  // view, and enable slideshow controls
+  // view, enable slideshow controls, and set the frame number to one.
   if (this->frames.count() == 1)
   {
     this->UI.actionSlideshowPlay->setEnabled(true);
@@ -481,6 +481,14 @@ void MainWindowPrivate::addFrame(
     this->setActiveCamera(1);
     this->UI.cameraView->resetView();
   }
+  // Addition frames require the number of frames to be bumped
+  else
+  {
+    this->numFrames += this->advanceInterval;
+  }
+
+  this->UI.camera->setRange(1, this->numFrames);
+  this->UI.cameraSpin->setRange(1, this->numFrames);
 }
 
 //-----------------------------------------------------------------------------
@@ -574,9 +582,9 @@ void MainWindowPrivate::updateCameras(
 bool MainWindowPrivate::updateCamera(kwiver::vital::frame_id_t frame,
                                      kwiver::vital::camera_sptr cam)
 {
-  if (frame > 0 && frame <= this->frames.count() && cam)
+  if (frame > 0 && frame <= this->numFrames && cam)
   {
-    auto& cd = this->frames[frame - 1];
+    auto& cd = this->frames[frame];
     if (!cd.camera)
     {
       cd.camera = vtkSmartPointer<vtkMaptkCamera>::New();
@@ -606,7 +614,7 @@ void MainWindowPrivate::setActiveCamera(int id)
   if (id >= this->activeCameraIndex)
   { //positive movement in sequence
     //find the next keyframe in the sequence
-    while (id <= this->frames.size())
+    while (id <= this->numFrames)
     {
       if (only_keyframes)
       {
@@ -621,7 +629,7 @@ void MainWindowPrivate::setActiveCamera(int id)
       }
       else
       {
-        if (id == 1 || (id - 1)%this->framesToSkip == 0)
+        if (id == 1 || (id - 1)%this->advanceInterval == 0)
         {
           next_frame_found = true;
           break;
@@ -648,7 +656,7 @@ void MainWindowPrivate::setActiveCamera(int id)
       }
       else
       {
-        if (id == 1 || (id - 1)%this->framesToSkip ==0)
+        if (id == 1 || (id - 1)%this->advanceInterval ==0)
         {
           next_frame_found = true;
           break;
@@ -685,14 +693,14 @@ void MainWindowPrivate::setActiveCamera(int id)
     this->UI.depthMapView->setValidDepthInput(true);
     this->UI.worldView->setValidDepthInput(true);
 
-    this->depthFilter->SetCamera(this->frames[id - 1].camera);
+    this->depthFilter->SetCamera(this->frames[id].camera);
     this->UI.worldView->updateDepthMap();
     this->UI.depthMapView->updateView(true);
     this->UI.actionExportDepthPoints->setEnabled(true);
   }
   else // load from file
   {
-    auto& cd = this->frames[id - 1];
+    auto& cd = this->frames[id];
     if (!cd.depthMapPath.isEmpty())
     {
       this->loadDepthMap(cd.depthMapPath);
@@ -719,7 +727,7 @@ void MainWindowPrivate::updateCameraView()
 
   QHash<kwiver::vital::track_id_t, kwiver::vital::vector_2d> landmarkPoints;
 
-  auto const& frame = this->frames[this->activeCameraIndex-1];
+  auto const& frame = this->frames[this->activeCameraIndex];
 
   // Show camera image
   this->loadImage(frame);
@@ -942,7 +950,7 @@ void MainWindowPrivate::loadDepthMap(QString const& imagePath)
   this->UI.depthMapView->setValidDepthInput(true);
   this->UI.worldView->setValidDepthInput(true);
 
-  this->depthFilter->SetCamera(this->frames[this->activeCameraIndex-1].camera);
+  this->depthFilter->SetCamera(this->frames[this->activeCameraIndex].camera);
   this->UI.worldView->updateDepthMap();
   this->UI.depthMapView->updateView(true);
   this->UI.actionExportDepthPoints->setEnabled(true);
@@ -1916,7 +1924,7 @@ void MainWindow::setActiveCamera(int id)
 {
   QTE_D();
 
-  if (id < 1 || id > d->frames.count())
+  if (id < 1 || id > d->numFrames)
   {
     qDebug() << "MainWindow::setActiveCamera:"
              << " requested ID" << id << "is invalid";
