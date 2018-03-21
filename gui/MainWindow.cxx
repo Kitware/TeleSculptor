@@ -369,24 +369,31 @@ void MainWindowPrivate::addTool(AbstractTool* tool, MainWindow* mainWindow)
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::addCamera(kwiver::vital::camera_sptr const& camera)
 {
-  if (this->orphanFrames.isEmpty())
+  if (!this->orphanFrames.isEmpty())
   {
-    this->addFrame(camera, this->frames.count() + 1);
-    return;
+    auto orphanIndex = this->orphanFrames.dequeue();
+
+    if (this->frames.find(orphanIndex) != this->frames.end())
+    {
+      auto& fd = this->frames[orphanIndex];
+
+      fd.camera = vtkSmartPointer<vtkMaptkCamera>::New();
+      fd.camera->SetCamera(camera);
+      fd.camera->Update();
+
+      this->UI.worldView->addCamera(fd.id, fd.camera);
+      if (fd.id == this->activeCameraIndex)
+      {
+        this->UI.worldView->setActiveCamera(fd.id);
+        this->updateCameraView();
+      }
+
+      return;
+    }
   }
 
-  auto& fd = this->frames[this->orphanFrames.dequeue()];
-
-  fd.camera = vtkSmartPointer<vtkMaptkCamera>::New();
-  fd.camera->SetCamera(camera);
-  fd.camera->Update();
-
-  this->UI.worldView->addCamera(fd.id, fd.camera);
-  if (fd.id == this->activeCameraIndex)
-  {
-    this->UI.worldView->setActiveCamera(fd.id);
-    this->updateCameraView();
-  }
+  // Add the camera to the end
+  this->addFrame(camera, this->frames.count() + 1);
 }
 
 //-----------------------------------------------------------------------------
@@ -452,6 +459,12 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
 void MainWindowPrivate::addFrame(
   kwiver::vital::camera_sptr const& camera, int id)
 {
+  if (this->frames.find(id) != this->frames.end())
+  {
+    qWarning() << "Frame " << id << " already exists.";
+    return;
+  }
+
   FrameData cd;
 
   cd.id = id;
@@ -466,6 +479,10 @@ void MainWindowPrivate::addFrame(
 
     this->UI.worldView->addCamera(cd.id, cd.camera);
     this->UI.actionExportCameras->setEnabled(true);
+  }
+  else
+  {
+    this->orphanFrames.enqueue(id);
   }
 
   this->frames.insert(id, cd);
@@ -548,9 +565,8 @@ kwiver::vital::camera_map_sptr MainWindowPrivate::cameraMap() const
 {
   kwiver::vital::camera_map::map_camera_t map;
 
-  foreach (auto i, qtIndexRange(this->frames.count()))
+  for (auto cd : this->frames)
   {
-    auto const& cd = this->frames[i];
     if (cd.camera)
     {
       map.insert(std::make_pair(static_cast<kwiver::vital::frame_id_t>(cd.id),
@@ -582,7 +598,8 @@ void MainWindowPrivate::updateCameras(
 bool MainWindowPrivate::updateCamera(kwiver::vital::frame_id_t frame,
                                      kwiver::vital::camera_sptr cam)
 {
-  if (frame > 0 && frame <= this->numFrames && cam)
+  if (frame > 0 && frame <= this->numFrames && cam &&
+      this->frames.find(frame) != this->frames.end())
   {
     auto& cd = this->frames[frame];
     if (!cd.camera)
@@ -592,6 +609,13 @@ bool MainWindowPrivate::updateCamera(kwiver::vital::frame_id_t frame,
     }
     cd.camera->SetCamera(cam);
     cd.camera->Update();
+
+    // Remove from orphanFrames if needed.
+    auto orphanIndex = orphanFrames.indexOf(frame);
+    if (orphanIndex >= 0)
+    {
+      orphanFrames.removeAt(orphanIndex);
+    }
 
     if (cd.id == this->activeCameraIndex)
     {
@@ -693,17 +717,23 @@ void MainWindowPrivate::setActiveCamera(int id)
     this->UI.depthMapView->setValidDepthInput(true);
     this->UI.worldView->setValidDepthInput(true);
 
-    this->depthFilter->SetCamera(this->frames[id].camera);
+    if (this->frames.find(id) != this->frames.end())
+    {
+      this->depthFilter->SetCamera(this->frames[id].camera);
+    }
     this->UI.worldView->updateDepthMap();
     this->UI.depthMapView->updateView(true);
     this->UI.actionExportDepthPoints->setEnabled(true);
   }
   else // load from file
   {
-    auto& cd = this->frames[id];
-    if (!cd.depthMapPath.isEmpty())
+    if (this->frames.find(id) != this->frames.end())
     {
-      this->loadDepthMap(cd.depthMapPath);
+      auto& cd = this->frames[id];
+      if (!cd.depthMapPath.isEmpty())
+      {
+        this->loadDepthMap(cd.depthMapPath);
+      }
     }
   }
 
@@ -725,7 +755,12 @@ void MainWindowPrivate::updateCameraView()
   this->UI.cameraView->setActiveFrame(
     static_cast<unsigned>(this->activeCameraIndex));
 
-  QHash<kwiver::vital::track_id_t, kwiver::vital::vector_2d> landmarkPoints;
+  if (this->frames.find(this->activeCameraIndex) == this->frames.end())
+  {
+    this->loadEmptyImage(0);
+    this->UI.cameraView->clearLandmarks();
+    return;
+  }
 
   auto const& frame = this->frames[this->activeCameraIndex];
 
@@ -741,6 +776,7 @@ void MainWindowPrivate::updateCameraView()
   }
 
   // Show landmarks
+  QHash<kwiver::vital::track_id_t, kwiver::vital::vector_2d> landmarkPoints;
   this->UI.cameraView->clearLandmarks();
   if (this->landmarks)
   {
@@ -950,7 +986,10 @@ void MainWindowPrivate::loadDepthMap(QString const& imagePath)
   this->UI.depthMapView->setValidDepthInput(true);
   this->UI.worldView->setValidDepthInput(true);
 
-  this->depthFilter->SetCamera(this->frames[this->activeCameraIndex].camera);
+  if (this->frames.find(this->activeCameraIndex) != this->frames.end())
+  {
+    this->depthFilter->SetCamera(this->frames[this->activeCameraIndex].camera);
+  }
   this->UI.worldView->updateDepthMap();
   this->UI.depthMapView->updateView(true);
   this->UI.actionExportDepthPoints->setEnabled(true);
@@ -1606,9 +1645,8 @@ void MainWindow::saveCameras(QString const& path, bool writeToProject)
   auto out = QHash<QString, kwiver::vital::camera_sptr>();
   auto willOverwrite = QStringList();
 
-  foreach (auto i, qtIndexRange(d->frames.count()))
+  for (auto cd : d->frames)
   {
-    auto const& cd = d->frames[i];
     if (cd.camera)
     {
       auto const camera = cd.camera->GetCamera();
@@ -1705,7 +1743,10 @@ void MainWindow::saveDepthImage(QString const& path)
   writerI->SetDataModeToBinary();
   writerI->Write();
 
-  d->frames[d->activeDepthFrame].depthMapPath = filepath;
+  if (d->frames.find(d->activeDepthFrame) != d->frames.end())
+  {
+    d->frames[d->activeDepthFrame].depthMapPath = filepath;
+  }
 }
 
 //-----------------------------------------------------------------------------
