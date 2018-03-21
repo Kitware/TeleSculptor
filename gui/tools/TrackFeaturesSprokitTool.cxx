@@ -210,13 +210,16 @@ TrackFeaturesSprokitTool
 
       << SPROKIT_PROCESS("keyframe_selection_process", "keyframes")
       << SPROKIT_CONFIG("keyframe_selection_1:type", "basic")
-      << SPROKIT_CONFIG("keyframe_selection_1:basic:fraction_tracks_lost_to_necessitate_new_keyframe", "0.05")
+      << SPROKIT_CONFIG("keyframe_selection_1:basic:fraction_tracks_lost_to_necessitate_new_keyframe", "0.01")
 
       << SPROKIT_PROCESS("detect_features_if_keyframe_process", "detect_if_keyframe")
       << SPROKIT_CONFIG("augment_keyframes:type","augment_keyframes")
       << SPROKIT_CONFIG("augment_keyframes:augment_keyframes:kf_only_feature_detector:type", "ocv_ORB")
       << SPROKIT_CONFIG("augment_keyframes:augment_keyframes:kf_only_descriptor_extractor:type", "ocv_ORB")
       << SPROKIT_CONFIG("augment_keyframes:augment_keyframes:kf_only_feature_detector:ocv_ORB:n_features", "2000")
+      << SPROKIT_CONFIG("augment_keyframes:augment_keyframes:kf_only_feature_detector:ocv_ORB:patch_size", "31")
+      << SPROKIT_CONFIG("augment_keyframes:augment_keyframes:kf_only_feature_detector:ocv_ORB:n_levels", "8")
+      << SPROKIT_CONFIG("augment_keyframes:augment_keyframes:kf_only_feature_detector:ocv_ORB:fast_threshold", "20")
 
       << SPROKIT_PROCESS("close_loops_process", "loop_detector")
       << SPROKIT_CONFIG("close_loops:type", "appearance_indexed")
