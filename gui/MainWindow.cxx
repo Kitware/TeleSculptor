@@ -513,43 +513,70 @@ void MainWindowPrivate::updateFrames(std::shared_ptr<VideoData> vd)
 {
   this->videoMetadataMap = vd->metadataMap;
 
-  using kwiver::vital::vector_2d;
-
-  kwiver::vital::simple_camera_intrinsics K_def;
-  const std::string bc = "video_reader:base_camera:";
-  auto K = std::make_shared<kwiver::vital::simple_camera_intrinsics>(
-    this->videoConfig->get_value<double>(bc + "focal_length",
-                                         K_def.focal_length()),
-    this->videoConfig->get_value<vector_2d>(bc + "principal_point",
-                                            K_def.principal_point()),
-    this->videoConfig->get_value<double>(bc + "aspect_ratio",
-                                         K_def.aspect_ratio()),
-    this->videoConfig->get_value<double>(bc + "skew", K_def.skew()));
-
-  kwiver::vital::camera_map::map_camera_t camMap;
-  if (videoMetadataMap.size() > 0)
+  if (this->currProject &&
+      this->currProject->projectConfig->has_value("output_krtd_dir"))
   {
-    std::map<kwiver::vital::frame_id_t, kwiver::vital::metadata_sptr> mdMap;
-    for (auto const& mdIter: this->videoMetadataMap)
+    qWarning() << "Loading project cameras with frames.count = " << this->frames.count();
+    for (auto const& frame : this->frames)
     {
-      // TODO: just using first element of metadata vector for now
-      mdMap[mdIter.first] = mdIter.second[0];
-    }
+      auto frameName =
+        QString::fromStdString(this->getFrameName(frame.id) + ".krtd");
 
-    bool init_cams_with_metadata =
-      this->videoConfig->get_value<bool>("initialize_cameras_with_metadata", true);
+      try
+      {
+        auto const& camera = kwiver::vital::read_krtd_file(
+          kvPath(frameName), kvPath(this->currProject->cameraPath));
 
-    if (init_cams_with_metadata)
-    {
-      auto baseCamera = kwiver::vital::simple_camera();
-      baseCamera.set_intrinsics(K);
-
-      camMap = kwiver::maptk::initialize_cameras_with_metadata(
-        mdMap, baseCamera, this->localGeoCs);
+        // Add camera to scene
+        this->updateCamera(frame.id, camera);
+      }
+      catch (...)
+      {
+        qWarning() << "failed to read camera file " << frameName
+                   << " from " << this->currProject->cameraPath;
+      }
     }
   }
+  else
+  {
+    using kwiver::vital::vector_2d;
 
-  this->updateCameras(std::make_shared<kwiver::vital::simple_camera_map>(camMap));
+    kwiver::vital::simple_camera_intrinsics K_def;
+    const std::string bc = "video_reader:base_camera:";
+    auto K = std::make_shared<kwiver::vital::simple_camera_intrinsics>(
+      this->videoConfig->get_value<double>(bc + "focal_length",
+                                           K_def.focal_length()),
+      this->videoConfig->get_value<vector_2d>(bc + "principal_point",
+                                              K_def.principal_point()),
+      this->videoConfig->get_value<double>(bc + "aspect_ratio",
+                                           K_def.aspect_ratio()),
+      this->videoConfig->get_value<double>(bc + "skew", K_def.skew()));
+
+    kwiver::vital::camera_map::map_camera_t camMap;
+    if (videoMetadataMap.size() > 0)
+    {
+      std::map<kwiver::vital::frame_id_t, kwiver::vital::metadata_sptr> mdMap;
+      for (auto const& mdIter: this->videoMetadataMap)
+      {
+        // TODO: just using first element of metadata vector for now
+        mdMap[mdIter.first] = mdIter.second[0];
+      }
+
+      bool init_cams_with_metadata =
+        this->videoConfig->get_value<bool>("initialize_cameras_with_metadata", true);
+
+      if (init_cams_with_metadata)
+      {
+        auto baseCamera = kwiver::vital::simple_camera();
+        baseCamera.set_intrinsics(K);
+
+        camMap = kwiver::maptk::initialize_cameras_with_metadata(
+          mdMap, baseCamera, this->localGeoCs);
+      }
+    }
+
+    this->updateCameras(std::make_shared<kwiver::vital::simple_camera_map>(camMap));
+  }
 
   if (this->currProject){
     for (auto const& tool : this->tools)
@@ -1332,28 +1359,10 @@ void MainWindow::loadProject(QString const& path)
     this->loadLandmarks(d->currProject->landmarksPath);
   }
 
-  // Load cameras
-  if (d->currProject->projectConfig->has_value("output_krtd_dir"))
-  {
-    foreach (auto const& frame, d->frames)
-    {
-      auto frameName = QString::fromStdString(d->getFrameName(frame.id) + ".krtd");
+  // Don't load cameras until video importer is done.
+  d->videoImporter.wait();
 
-      try
-      {
-        auto const& camera = kwiver::vital::read_krtd_file(
-          kvPath(frameName), kvPath(d->currProject->cameraPath));
-
-        // Add camera to scene
-        d->updateCamera(frame.id, camera);
-      }
-      catch (...)
-      {
-        qWarning() << "failed to read camera file " << frameName
-                   << " from " << d->currProject->cameraPath;
-      }
-    }
-  }
+  // Cameras are loaded after video importer is done
 
   //find depth map paths
   if (d->currProject->projectConfig->has_value("output_depth_dir"))
