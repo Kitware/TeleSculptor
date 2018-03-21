@@ -210,7 +210,7 @@ TrackFeaturesSprokitTool
 
       << SPROKIT_PROCESS("keyframe_selection_process", "keyframes")
       << SPROKIT_CONFIG("keyframe_selection_1:type", "basic")
-      << SPROKIT_CONFIG("keyframe_selection_1:basic:fraction_tracks_lost_to_necessitate_new_keyframe", "0.1")
+      << SPROKIT_CONFIG("keyframe_selection_1:basic:fraction_tracks_lost_to_necessitate_new_keyframe", "0.05")
 
       << SPROKIT_PROCESS("detect_features_if_keyframe_process", "detect_if_keyframe")
       << SPROKIT_CONFIG("augment_keyframes:type","augment_keyframes")
