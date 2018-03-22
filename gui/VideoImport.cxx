@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2017 by Kitware, Inc.
+ * Copyright 2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -111,7 +111,8 @@ void VideoImport::run()
   d->video_reader->open(d->videoPath);
 
   // TODO: remwork algorithms to use map_metadata_t from metadata_map.h
-  auto videoData = std::make_shared<VideoData>();
+  auto metadataMap =
+    std::make_shared<kwiver::vital::metadata_map::map_metadata_t>();
 
   while (d->video_reader->next_frame(currentTimestamp) && !d->canceled)
   {
@@ -120,14 +121,13 @@ void VideoImport::run()
 
     if (mdVec.size() > 0)
     {
-      // TODO: just using first element of metadata vector for now
-      videoData->metadataMap.insert(std::make_pair(frame, mdVec));
+      metadataMap->insert(std::make_pair(frame, mdVec));
     }
 
     emit updated(frame);
   }
 
-  emit completed(videoData);
+  emit completed(metadataMap);
 
   d->video_reader->close();
 }

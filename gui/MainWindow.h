@@ -37,11 +37,11 @@
 
 #include <memory>
 
+#include <vital/types/metadata_map.h>
+
 class ToolData;
 
 class MainWindowPrivate;
-
-class VideoData;
 
 class MainWindow : public QMainWindow
 {
@@ -107,7 +107,7 @@ protected slots:
   void acceptToolResults(std::shared_ptr<ToolData> data, bool isFinal = false);
   void updateToolResults();
   void addFrame(int);
-  void updateFrames(std::shared_ptr<VideoData>);
+  void updateFrames(std::shared_ptr<kwiver::vital::metadata_map::map_metadata_t>);
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(MainWindow)

@@ -47,14 +47,7 @@
 
 class VideoImportPrivate;
 
-class VideoData
-{
-public:
-
-  kwiver::vital::metadata_map::map_metadata_t metadataMap;
-};
-
-Q_DECLARE_METATYPE(std::shared_ptr<VideoData>);
+Q_DECLARE_METATYPE(std::shared_ptr<kwiver::vital::metadata_map::map_metadata_t>);
 
 class VideoImport : public QThread
 {
@@ -72,7 +65,7 @@ public:
 
 signals:
   /// Emitted when the tool execution is completed.
-  void completed(std::shared_ptr<VideoData>);
+  void completed(std::shared_ptr<kwiver::vital::metadata_map::map_metadata_t>);
   /// Emitted when an intermediate update of the data is available to show progress.
   void updated(int);
 
