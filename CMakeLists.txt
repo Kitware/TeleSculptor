@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.0)
-
-set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install CACHE PATH "Install location")
+# MAP-Tk superbuild does not install 
+# But if you use this as a template and you do want to install
+# The install functionality is present and commented out
+#set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install CACHE PATH "Install location")
 project(MAPTK)
 
 option(MAPTK_SUPERBUILD  "Enable MAPTK superbuild" ON)
@@ -50,7 +52,8 @@ set(BUILD_SHARED_LIBS ON)
 set(LIB_SUFFIX "${MAPTK_LIB_SUFFIX}" CACHE STRING "String suffix appended to the library directory we install into")
 mark_as_advanced( LIB_SUFFIX )
 
-option(MAPTK_ENABLE_GUI "Build MAPTK GUI" OFF)
+option(MAPTK_ENABLE_GUI "Build MAPTK GUI" ON)
+option(MAPTK_ENABLE_TESTING "Build MAPTK testing" OFF)
 
 if(MAPTK_SUPERBUILD)
   include(${MAPTK_CMAKE_DIR}/maptk-superbuild.cmake)
@@ -103,7 +106,6 @@ endif()
 # Testing
 #
 # The following are required to uses Dart and the Cdash dashboard
-option(MAPTK_ENABLE_TESTING "Build MAPTK testing" OFF)
 if(MAPTK_ENABLE_TESTING)
   enable_testing()
   include(CTest)

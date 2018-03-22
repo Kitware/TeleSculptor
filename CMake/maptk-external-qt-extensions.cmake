@@ -2,6 +2,16 @@
 
 message(STATUS "I am building the qtExtensions submodule!")
 
+set( QT_QMAKE_EXECUTABLE "" CACHE FILEPATH "Path to QT QMake" )
+if (NOT IS_DIRECTORY ${QT4_DIR} )
+  if(IS_DIRECTORY ${fletch_DIR})
+    message(STATUS "Assuming Qt will be provided by fletch")
+    set(QT_QMAKE_EXECUTABLE "${fletch_DIR}/install/bin/qmake")
+  else()
+    message(WARNING "No path provided for QT_QMAKE_EXECUTABLE")
+  endif()
+endif()
+
 ExternalProject_Add(qtExtensions
   DEPENDS ${QT_EXTENSIONS_DEPENDENCIES}
   PREFIX ${MAPTK_BINARY_DIR}
@@ -10,11 +20,12 @@ ExternalProject_Add(qtExtensions
   STAMP_DIR ${MAPTK_STAMP_DIR}
   GIT_REPOSITORY "https://github.com/Kitware/qtextensions.git"
   GIT_TAG de142f71190cbff9427ad1bbdcb340b34ec595bd
-  GIT_SHALLOW 1
+  #GIT_SHALLOW 1
   CMAKE_CACHE_ARGS
     -DBUILD_SHARED_LIBS:BOOL=ON
+    -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
     -DCMAKE_PREFIX_PATH:STRING=${CMAKE_PREFIX_PATH}
-    -DCMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX}
+#    -DCMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX}
     -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
     -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
     -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
@@ -27,8 +38,11 @@ ExternalProject_Add(qtExtensions
     -DMAKECOMMAND:STRING=${MAKECOMMAND}
     -DADDITIONAL_C_FLAGS:STRING=${ADDITIONAL_C_FLAGS}
     -DADDITIONAL_CXX_FLAGS:STRING=${ADDITIONAL_CXX_FLAGS}
-  #INSTALL_COMMAND cmake -E echo "Skipping install step."
-  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
+  INSTALL_COMMAND cmake -E echo "Skipping install step."
+  #INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
 )
 list(APPEND MAPTK_DEPENDENCIES qtExtensions)
-set(qtExtensions_DIR "${CMAKE_INSTALL_PREFIX}/lib/cmake/qtExtensions")
+
+set(qtExtensions_DIR "${MAPTK_BINARY_DIR}/qtExtensions-build")
+# If we install fletch to a location, look for it here
+#set(qtExtensions_DIR "${CMAKE_INSTALL_PREFIX}/lib/cmake/qtExtensions")

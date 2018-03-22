@@ -10,7 +10,7 @@ if (MAPTK_BUILD_WITH_CUDA)
 # Option for CUDNN
 #  option(MAPTK_BUILD_WITH_CUDNN "Build with CUDNN support" FALSE)
 #  if (MAPTK_BUILD_WITH_CUDNN)
-#    set( CUDNN_TOOLKIT_ROOT_DIR "" CACHE PATH "CUDNN root folder" )
+#    set( CUDNN_ROOT_DIR "" CACHE PATH "CUDNN root folder" )
 #    find_package( CUDNN QUIET REQUIRED)
 #  endif()
 #elseif(MAPTK_BUILD_WITH_CUDNN)
@@ -56,8 +56,8 @@ if(NOT kwiver_FOUND)
 endif()
 
 if(MAPTK_ENABLE_GUI)
-    include(CMake/maptk-external-qt-extensions.cmake)
-  endif()
+  include(CMake/maptk-external-qt-extensions.cmake)
+endif()
 
 # MAPTK
 set(MAPTK_INNER_DIR ${MAPTK_BINARY_DIR}/MAPTK-build)
@@ -70,11 +70,13 @@ ExternalProject_Add(MAPTK
   STAMP_DIR ${MAPTK_STAMP_DIR}
   CMAKE_CACHE_ARGS
     -Dkwiver_DIR:PATH=${kwiver_DIR}
+    -DqtExtensions_DIR:PATH=${qtExtensions_DIR}
     -DBUILD_SHARED_LIBS:BOOL=ON
     -DMAPTK_SUPERBUILD:BOOL=OFF
     -DMAPTK_ENABLE_GUI:BOOL=${MAPTK_ENABLE_GUI}
+    -DMAPTK_ENABLE_TESTING:BOOL=${MAPTK_ENABLE_TESTING}
     -DCMAKE_PREFIX_PATH:STRING=${CMAKE_PREFIX_PATH}
-    -DCMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX}
+#    -DCMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX}
     -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
     -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
     -DCMAKE_CXX_FLAGS:STRING=${ep_common_cxx_flags}
@@ -86,8 +88,8 @@ ExternalProject_Add(MAPTK
     -DCMAKE_SHARED_LINKER_FLAGS:STRING=${CMAKE_SHARED_LINKER_FLAGS}
     -DADDITIONAL_C_FLAGS:STRING=${ADDITIONAL_C_FLAGS}
     -DADDITIONAL_CXX_FLAGS:STRING=${ADDITIONAL_CXX_FLAGS}
-  #INSTALL_COMMAND cmake -E echo "Skipping install step."
-  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
+  INSTALL_COMMAND cmake -E echo "Skipping install step."
+  #INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
 )
 
 set(LIBRARY_PATH_VAR "LD_LIBRARY_PATH")
@@ -97,8 +99,6 @@ endif()
 if(WIN32)
   configure_file(${MAPTK_CMAKE_DIR}/start_MSVC.bat.in           ${MAPTK_BINARY_DIR}/start_MSVC.bat @ONLY)
   configure_file(${MAPTK_CMAKE_DIR}/setup_MAPTK.build.bat.in    ${MAPTK_BINARY_DIR}/setup_MAPTK.bat @ONLY)
-  configure_file(${MAPTK_CMAKE_DIR}/setup_MAPTK.install.bat.in  ${CMAKE_INSTALL_PREFIX}/setup_MAPTK.bat @ONLY)
 else()
   configure_file(${MAPTK_CMAKE_DIR}/setup_MAPTK.build.sh.in     ${MAPTK_BINARY_DIR}/setup_MAPTK.sh @ONLY)
-  configure_file(${MAPTK_CMAKE_DIR}/setup_MAPTK.install.sh.in   ${CMAKE_INSTALL_PREFIX}/setup_MAPTK.sh @ONLY)
 endif()

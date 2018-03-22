@@ -1,5 +1,5 @@
 ::
-:: Script to source to setup the DIVA environment
+:: Script to source to setup the MAP-Tk environment
 ::
 
 :: Check to see if we are in an install directory or a build directory
@@ -19,9 +19,11 @@ echo usage: [debug ^| release]
 echo defaulting to release
 set config=release
 
+
 :Start
 
 cd @KWIVER_DIR@
 call setup_KWIVER.bat %config%
-cd @MAPTK_BINARY_DIR@
-set PATH=%PATH%;%~dp0/bin/%config%
+cd @MAPTK_INNER_DIR@/bin/%config%
+set PATH=%PATH%;%~dp0;@qtExtensions_DIR@/%config%;
+set KWIVER_CONFIG_PATH=%KWIVER_CONFIG_PATH%;@MAPTK_INNER_DIR@\share\maptk\@MAPTK_VERSION@\config
