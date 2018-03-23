@@ -22,8 +22,9 @@ set config=release
 :Start
 
 call setup_MAPTK.bat %config%
+cd ..\..\
 
-start MAPTK-build\MAPTK.sln /D .
+start MAPTK.sln /D .\
 :: Note if a different visual studio is associated with a *.sln file than should be
 :: Change your .sln file association to the VSLauncher usually found here
 :: "%ProgramFiles(x86)%\Common Files\Microsoft Shared\MSEnv"\VSLauncher.exe
