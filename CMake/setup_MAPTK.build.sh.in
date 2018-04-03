@@ -1,7 +1,13 @@
-curr_dir=$(pwd)
-cd @kwiver_DIR@
-source setup_KWIVER.sh
-cd $curr_dir
+#
+# Script to source to setup the MAP-Tk environment
+#
 
-export @LIBRARY_PATH_VAR@=$(pwd)/MAPTK-build/lib:$(pwd)/qtExtensions-build:$@LIBRARY_PATH_VAR@
+
+export @LIBRARY_PATH_VAR@=@MAPTK_INNER_DIR@/lib:@qtExtensions_DIR@:$@LIBRARY_PATH_VAR@
+export KWIVER_CONFIG_PATH=@KWIVER_CONFIG_PATH@:@MAPTK_INNER_DIR@/share/maptk/@MAPTK_VERSION@/config
+
+cd @KWIVER_DIR@
+source setup_KWIVER.sh
+cd @MAPTK_INNER_DIR@/bin
+
 
