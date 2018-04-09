@@ -96,7 +96,7 @@ public slots:
   void showUserManual();
 
 protected slots:
-  void setSlideDelay(int);
+  void setSlideSpeed(int);
   void setSlideshowPlaying(bool);
   void nextSlide();
 
