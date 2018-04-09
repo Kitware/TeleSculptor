@@ -458,7 +458,7 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
 
     // Add frames for video if needed
     auto numFrames = this->videoSource->num_frames();
-    for (int i = this->frames.count(); i < numFrames; ++i)
+    for (unsigned int i = this->frames.count(); i < numFrames; ++i)
     {
       // frames start at 1, list index starts at 0
       auto frameIdx = i + 1;
@@ -541,12 +541,10 @@ kwiver::vital::camera_map_sptr MainWindowPrivate::cameraMap() const
 void MainWindowPrivate::updateCameras(
   kwiver::vital::camera_map_sptr const& cameras)
 {
-  auto const cameraCount = this->frames.count();
   auto allowExport = false;
 
   foreach (auto const& iter, cameras->cameras())
   {
-    auto const index = static_cast<int>(iter.first);
     if (updateCamera(iter.first, iter.second))
     {
       allowExport = allowExport || iter.second;
