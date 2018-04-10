@@ -13,7 +13,26 @@
   <property name="windowTitle">
    <string>MAP-Tk TeleSculptor</string>
   </property>
-  <widget class="WorldView" name="worldView"/>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="WorldView" name="worldView" native="true"/>
+    </item>
+    <item>
+     <widget class="qtProgressWidget" name="progressWidget" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
@@ -438,6 +457,12 @@
    <class>DepthMapView</class>
    <extends>QWidget</extends>
    <header>DepthMapView.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>qtProgressWidget</class>
+   <extends>QWidget</extends>
+   <header>qtProgressWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
