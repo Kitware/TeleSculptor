@@ -84,7 +84,7 @@ write_match_matrix(std::ostream& os,
                    const Eigen::SparseMatrix<unsigned int>& mm)
 {
   // TODO write out the matrix in a more memory efficient way
-  os << Eigen::MatrixXd(mm) << std::endl;
+  os << Eigen::MatrixXd(mm.cast<double>()) << std::endl;
 }
 
 
