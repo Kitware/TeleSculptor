@@ -358,6 +358,8 @@ void MainWindowPrivate::addTool(AbstractTool* tool, MainWindow* mainWindow)
 
   QObject::connect(tool, SIGNAL(triggered()),
                    &this->toolDispatcher, SLOT(map()));
+  QObject::connect(tool, SIGNAL(triggered()),
+                   mainWindow, SLOT(toolTriggered()));
   QObject::connect(tool, SIGNAL(updated(std::shared_ptr<ToolData>)),
                    mainWindow, SLOT(acceptToolResults(std::shared_ptr<ToolData>)));
   QObject::connect(tool, SIGNAL(completed()),
@@ -1208,6 +1210,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->UI.depthMapView->setDepthGeometryFilter(d->depthGeometryFilter.GetPointer());
 
   d->UI.worldView->resetView();
+
+  d->UI.progressWidget->setBusyOnZero(true);
 }
 
 //-----------------------------------------------------------------------------
@@ -2001,6 +2005,14 @@ void MainWindow::setActiveCamera(int id)
 }
 
 //-----------------------------------------------------------------------------
+void MainWindow::toolTriggered()
+{
+  QTE_D();
+  AbstractTool* tool = qobject_cast<AbstractTool*> (this->sender());
+  d->UI.progressWidget->updateProgress(0, tool->text());
+}
+
+//-----------------------------------------------------------------------------
 void MainWindow::executeTool(QObject* object)
 {
   QTE_D();
@@ -2042,6 +2054,7 @@ void MainWindow::acceptToolFinalResults()
   {
     acceptToolResults(d->activeTool->data(), true);
     saveToolResults();
+    d->UI.progressWidget->updateProgress(100, d->activeTool->text());
   }
   d->setActiveTool(0);
 }
