@@ -10,6 +10,9 @@ release version, and the content of this file will be reset.
 Updates since last public release
 ---------------------------------
 
+TeleSculptor
+
+ * The loop over video frames to extract metadata for camera initialization nows occurs in a separate thread. This allows the user to interact with the gui and view the video while the camera initialization occurs.
 
 Fixes since last public release
 -------------------------------
