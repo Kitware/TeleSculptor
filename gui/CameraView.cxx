@@ -462,7 +462,9 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.actionShowFrameImage, SIGNAL(toggled(bool)),
           this, SLOT(setImageVisible(bool)));
   connect(d->UI.actionShowFeatures, SIGNAL(toggled(bool)),
-          featureOptions, SLOT(setFeaturesVisible(bool)));
+          featureOptions, SLOT(setFeaturesWithDescVisible(bool)));
+  connect(d->UI.actionShowFeatures, SIGNAL(toggled(bool)),
+          featureOptions, SLOT(setFeaturesWithoutDescVisible(bool)));
   connect(d->UI.actionShowLandmarks, SIGNAL(toggled(bool)),
           this, SLOT(setLandmarksVisible(bool)));
   connect(d->UI.actionShowResiduals, SIGNAL(toggled(bool)),
