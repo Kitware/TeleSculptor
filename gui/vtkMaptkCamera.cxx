@@ -44,7 +44,7 @@ namespace // anonymous
 {
 
 //-----------------------------------------------------------------------------
-void BuildCamera(vtkMaptkCamera* out, kwiver::vital::camera_sptr const& in,
+void BuildCamera(vtkMaptkCamera* out, kwiver::vital::camera_perspective_sptr const& in,
                  kwiver::vital::camera_intrinsics_sptr const& ci)
 {
   // Get camera parameters
@@ -89,13 +89,13 @@ vtkMaptkCamera::~vtkMaptkCamera()
 }
 
 //-----------------------------------------------------------------------------
-kwiver::vital::camera_sptr vtkMaptkCamera::GetCamera() const
+kwiver::vital::camera_perspective_sptr vtkMaptkCamera::GetCamera() const
 {
   return this->MaptkCamera;
 }
 
 //-----------------------------------------------------------------------------
-void vtkMaptkCamera::SetCamera(kwiver::vital::camera_sptr const& camera)
+void vtkMaptkCamera::SetCamera(kwiver::vital::camera_perspective_sptr const& camera)
 {
   this->MaptkCamera = camera;
 }
@@ -152,10 +152,12 @@ void vtkMaptkCamera::ScaleK(double factor)
 
   kwiver::vital::simple_camera_intrinsics newIntrinsics(K);
 
-  kwiver::vital::simple_camera scaledCamera(this->MaptkCamera->center(),
-                                            this->MaptkCamera->rotation(),
-                                            newIntrinsics);
-  SetCamera(scaledCamera.clone());
+  kwiver::vital::simple_camera_perspective scaledCamera(this->MaptkCamera->center(),
+                                                        this->MaptkCamera->rotation(),
+                                                        newIntrinsics);
+  auto cam_ptr =
+    std::dynamic_pointer_cast<kwiver::vital::camera_perspective>(scaledCamera.clone());
+  SetCamera(cam_ptr);
 }
 
 //-----------------------------------------------------------------------------

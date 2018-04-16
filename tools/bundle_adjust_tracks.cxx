@@ -312,7 +312,7 @@ static bool check_config(kwiver::vital::config_block_sptr config)
 
 // ------------------------------------------------------------------
 /// create a base camera instance from config options
-kwiver::vital::simple_camera
+kwiver::vital::simple_camera_perspective
 base_camera_from_config(kwiver::vital::config_block_sptr config)
 {
   kwiver::vital::simple_camera_intrinsics
@@ -320,7 +320,7 @@ base_camera_from_config(kwiver::vital::config_block_sptr config)
         config->get_value<kwiver::vital::vector_2d>("principal_point"),
         config->get_value<double>("aspect_ratio"),
         config->get_value<double>("skew"));
-  return kwiver::vital::simple_camera(kwiver::vital::vector_3d(0,0,-1),
+  return kwiver::vital::simple_camera_perspective(kwiver::vital::vector_3d(0,0,-1),
                                       kwiver::vital::rotation_d(), K);
 }
 
@@ -370,7 +370,7 @@ bool load_input_cameras(kwiver::vital::config_block_sptr config,
   if (config->get_value<bool>("init_cameras_with_metadata", false))
   {
     // create initial cameras from metadata
-    kwiver::vital::simple_camera base_camera =
+    kwiver::vital::simple_camera_perspective base_camera =
       base_camera_from_config(config->subblock("base_camera"));
     kwiver::vital::rotation_d ins_rot_offset =
       config->get_value<kwiver::vital::rotation_d>("ins:rotation_offset",
@@ -889,7 +889,8 @@ static int maptk_main(int argc, char const* argv[])
       if (p.second)
       {
         kwiver::vital::path_t out_krtd_file = krtd_dir + "/" + basename_map[p.first] + ".krtd";
-        write_krtd_file( *p.second, out_krtd_file );
+        auto cam_ptr = std::dynamic_pointer_cast<kwiver::vital::camera_perspective>( p.second );
+        write_krtd_file( *cam_ptr, out_krtd_file );
       }
     }
   }

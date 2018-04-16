@@ -52,6 +52,7 @@
 #include <vital/io/camera_io.h>
 #include <vital/io/landmark_map_io.h>
 #include <vital/io/track_set_io.h>
+#include <vital/types/camera_perspective.h>
 #include <arrows/core/match_matrix.h>
 
 #include <vtksys/SystemTools.hxx>
@@ -242,10 +243,10 @@ public:
 
   void addTool(AbstractTool* tool, MainWindow* mainWindow);
 
-  void addCamera(kwiver::vital::camera_sptr const& camera);
+  void addCamera(kwiver::vital::camera_perspective_sptr const& camera);
   void addImage(QString const& imagePath);
 
-  void addFrame(kwiver::vital::camera_sptr const& camera,
+  void addFrame(kwiver::vital::camera_perspective_sptr const& camera,
                 QString const& imagePath);
 
   std::vector<std::string> imagePaths() const;
@@ -313,7 +314,7 @@ void MainWindowPrivate::addTool(AbstractTool* tool, MainWindow* mainWindow)
 }
 
 //-----------------------------------------------------------------------------
-void MainWindowPrivate::addCamera(kwiver::vital::camera_sptr const& camera)
+void MainWindowPrivate::addCamera(kwiver::vital::camera_perspective_sptr const& camera)
 {
   if (this->orphanImages.isEmpty())
   {
@@ -342,7 +343,7 @@ void MainWindowPrivate::addImage(QString const& imagePath)
   if (this->orphanCameras.isEmpty())
   {
     this->orphanImages.enqueue(this->cameras.count());
-    this->addFrame(kwiver::vital::camera_sptr(), imagePath);
+    this->addFrame(kwiver::vital::camera_perspective_sptr(), imagePath);
     return;
   }
 
@@ -358,7 +359,7 @@ void MainWindowPrivate::addImage(QString const& imagePath)
 
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::addFrame(
-  kwiver::vital::camera_sptr const& camera, QString const& imagePath)
+  kwiver::vital::camera_perspective_sptr const& camera, QString const& imagePath)
 {
   CameraData cd;
 
@@ -450,7 +451,9 @@ void MainWindowPrivate::updateCameras(
         cd.camera = vtkSmartPointer<vtkMaptkCamera>::New();
         this->UI.worldView->addCamera(cd.id, cd.camera);
       }
-      cd.camera->SetCamera(iter.second);
+      auto cam_ptr =
+        std::dynamic_pointer_cast<kwiver::vital::camera_perspective>(iter.second);
+      cd.camera->SetCamera(cam_ptr);
       cd.camera->Update();
 
       if (cd.id == this->activeCameraIndex)
@@ -921,7 +924,7 @@ void MainWindow::loadProject(QString const& path)
       {
         qWarning() << "failed to read camera for" << ip
                    << "from" << project.cameraPath;
-        d->addFrame(kwiver::vital::camera_sptr(), ip);
+        d->addFrame(kwiver::vital::camera_perspective_sptr(), ip);
       }
     }
   }
@@ -1139,7 +1142,7 @@ void MainWindow::saveCameras(QString const& path)
 {
   QTE_D();
 
-  auto out = QHash<QString, kwiver::vital::camera_sptr>();
+  auto out = QHash<QString, kwiver::vital::camera_perspective_sptr>();
   auto willOverwrite = QStringList();
 
   foreach (auto i, qtIndexRange(d->cameras.count()))
@@ -1183,7 +1186,9 @@ void MainWindow::saveCameras(QString const& path)
   {
     try
     {
-      kwiver::vital::write_krtd_file(*iter.value(), kvPath(iter.key()));
+      auto cam_ptr =
+        std::dynamic_pointer_cast<kwiver::vital::camera_perspective>(iter.value());
+      kwiver::vital::write_krtd_file(*cam_ptr, kvPath(iter.key()));
     }
     catch (...)
     {
