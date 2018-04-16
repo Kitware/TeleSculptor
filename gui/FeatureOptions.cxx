@@ -47,6 +47,8 @@ public:
   void mapUiState(QString const& key, QSlider* slider);
   void mapUiState(QString const& key, QComboBox* comboBox);
 
+  void toggleTrailOptions();
+
   Ui::FeatureOptions UI;
   qtUiState uiState;
 
@@ -71,6 +73,14 @@ void FeatureOptionsPrivate::mapUiState(
   auto const item = new qtUiState::Item<int, QComboBox>(
     comboBox, &QComboBox::currentIndex, &QComboBox::setCurrentIndex);
   this->uiState.map(key, item);
+}
+
+//-----------------------------------------------------------------------------
+void FeatureOptionsPrivate::toggleTrailOptions()
+{
+  bool enable = this->UI.showTrailsWithDesc->isChecked() ||
+                this->UI.showTrailsWithoutDesc->isChecked();
+  this->UI.trailOptions->setEnabled(enable);
 }
 
 //-----------------------------------------------------------------------------
@@ -162,6 +172,7 @@ void FeatureOptions::setTrailsWithDescVisible(bool state)
 {
   QTE_D();
 
+  d->toggleTrailOptions();
   d->representation->GetTrailsWithDescActor()->SetVisibility(state);
 
   emit this->modified();
@@ -172,6 +183,7 @@ void FeatureOptions::setTrailsWithoutDescVisible(bool state)
 {
   QTE_D();
 
+  d->toggleTrailOptions();
   d->representation->GetTrailsWithoutDescActor()->SetVisibility(state);
 
   emit this->modified();

@@ -178,22 +178,6 @@
   <connection>
    <sender>showTrailsWithoutDesc</sender>
    <signal>toggled(bool)</signal>
-   <receiver>trailOptions</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>71</x>
-     <y>16</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>103</x>
-     <y>49</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>showTrailsWithoutDesc</sender>
-   <signal>toggled(bool)</signal>
    <receiver>trailColorWithoutDesc</receiver>
    <slot>setEnabled(bool)</slot>
    <hints>
@@ -204,22 +188,6 @@
     <hint type="destinationlabel">
      <x>172</x>
      <y>16</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>showTrailsWithDesc</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>trailOptions</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>119</x>
-     <y>112</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>181</x>
-     <y>192</y>
     </hint>
    </hints>
   </connection>
