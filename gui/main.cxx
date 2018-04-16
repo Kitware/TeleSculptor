@@ -30,6 +30,7 @@
 
 #include "MainWindow.h"
 #include "tools/AbstractTool.h"
+#include "VideoImport.h"
 
 #include <maptk/version.h>
 
@@ -57,6 +58,7 @@ int main(int argc, char** argv)
 
   // Register meta types
   qRegisterMetaType<std::shared_ptr<ToolData>>();
+  qRegisterMetaType<std::shared_ptr<kwiver::vital::metadata_map::map_metadata_t>>();
 
   // Set up command line options
   qtCliArgs args(argc, argv);

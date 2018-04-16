@@ -81,6 +81,7 @@ set(gui_moc_headers
   MatchMatrixWindow.h
   PointOptions.h
   Project.h
+  VideoImport.h
   VolumeOptions.h
   WorldView.h
   tools/AbstractTool.h
@@ -118,6 +119,7 @@ set(gui_sources
   MatchMatrixWindow.cxx
   PointOptions.cxx
   Project.cxx
+  VideoImport.cxx
   VolumeOptions.cxx
   WorldView.cxx
   main.cxx
