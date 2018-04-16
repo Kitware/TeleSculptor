@@ -45,6 +45,7 @@
 #include <vital/types/rotation.h>
 #include <vital/vital_types.h>
 #include <vital/vital_config.h>
+#include <vital/types/image_container.h>
 
 namespace kwiver {
 namespace maptk {
@@ -131,6 +132,23 @@ void
 write_local_geo_cs_to_file(local_geo_cs const& lgcs,
                            vital::path_t const& file_path);
 
+/// Use a sequence of metadata objects to initialize a camera's intrinsics
+/**
+* \param [in,out] cam          A camera whose intrinsics will be set
+* \param [in]     md_map       A mapping from frame number to INS data object
+* \param [in]     im           An image from the sequence.  This assumes all images in
+*                              the sequence are the same size.
+* \returns   true if intrinsic calibration is set for the camera from the metadata
+* \note This assumes that all cameras have the same intrinsics and so just finds
+*       the first metadata object that has paramenters that can be used to set the
+*       intrinsics.
+*/
+
+MAPTK_EXPORT
+bool set_intrinsics_from_metadata(vital::simple_camera &cam,
+                                  std::map<vital::frame_id_t,
+                                           vital::metadata_sptr> const& md_map,
+                                  vital::image_container_sptr const& im);
 
 /// Use a sequence of metadata objects to initialize a sequence of cameras
 /**

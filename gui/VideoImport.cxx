@@ -32,6 +32,8 @@
 
 #include <vital/algo/video_input.h>
 
+#include <atomic>
+
 using kwiver::vital::algo::video_input;
 using kwiver::vital::algo::video_input_sptr;
 using kwiver::vital::config_block_sptr;
