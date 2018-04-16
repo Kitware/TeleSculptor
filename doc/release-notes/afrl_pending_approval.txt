@@ -21,6 +21,11 @@ TeleSculptor
  * Video files can now be open directly or via a config file into TeleSculptor
    for viewing and processing.
 
+ * Added separate visibility and color options for display of feature tracks
+   that have descriptors and those that do not have descriptors.  This allows
+   for visual distinction between KLT tracks (without descriptors) on each
+   frame of video and ORB, or similar, tracks (with descriptors) on keyframes.
+
 
 Fixes since last public release
 -------------------------------
