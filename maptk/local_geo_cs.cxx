@@ -276,7 +276,48 @@ write_local_geo_cs_to_file(local_geo_cs const& lgcs,
   }
 }
 
+bool set_intrinsics_from_metadata(simple_camera &cam, std::map<vital::frame_id_t,
+  vital::metadata_sptr> const& md_map, vital::image_container_sptr const& im)
+{
+  auto intrin = std::dynamic_pointer_cast<simple_camera_intrinsics>(cam.intrinsics());
+  double im_w = double(im->width());
+  double im_h = double(im->height());
 
+  for (auto const &md : md_map)
+  {
+    bool focal_set = false;
+    if (!focal_set && md.second->has(vital::VITAL_META_SLANT_RANGE) && md.second->has(vital::VITAL_META_TARGET_WIDTH))
+    {
+      double slant_range, target_width;
+      md.second->find(vital::VITAL_META_SLANT_RANGE).data(slant_range);
+      md.second->find(vital::VITAL_META_TARGET_WIDTH).data(target_width);
+      double f = im_w*(slant_range / target_width);
+      intrin->set_focal_length(f);
+      focal_set = true;
+    }
+
+    if (!focal_set && md.second->has(vital::VITAL_META_SENSOR_HORIZONTAL_FOV))
+    {
+      double hfov;
+      md.second->find(vital::VITAL_META_SENSOR_HORIZONTAL_FOV).data(hfov);
+      double f = (im_w / 2) / tan(0.5*hfov*deg2rad);
+
+      intrin->set_focal_length(f);
+      focal_set = true;
+    }
+    if (focal_set)
+    {
+      vital::vector_2d pp(0.5*im_w, 0.5*im_h);
+      intrin->set_principal_point(pp);
+      intrin->set_aspect_ratio(1.0);
+      intrin->set_skew(0.0);
+      cam.set_intrinsics(intrin);
+      return true;
+    }
+  }
+
+  return false;
+}
 
 /// Use a sequence of metadata objects to initialize a sequence of cameras
 std::map<vital::frame_id_t, vital::camera_sptr>
