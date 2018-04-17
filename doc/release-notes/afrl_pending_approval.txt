@@ -10,71 +10,12 @@ release version, and the content of this file will be reset.
 Updates since last public release
 ---------------------------------
 
-Plugins
-
- * Moved the Blender and SketchUp plugins out of the scripts directory and
-   into a top-level plugins directory, added a README, and configured these
-   files to be installed.
-
- * The SketchUp plugin now supports older version of SketchUp
-   (back to version 8) and only attempts to load frames which have both an
-   image file and camera file available in the project.
-
 TeleSculptor
 
- * Video files can now be open directly or via a config file into TeleSculptor
-   for viewing and processing.
-
- * Added the concept of a "Project", which is essentially a configuration file
-   in a working directory in which algorithms can write results.  The user
-   must now create or open a project before running an algorithms.
-
- * TeleSculptor now depends on Sprokit from KWIVER and adds a new Sprokit
-   powered compute tool compute feature tracks using the new KLT feature
-   tracker in KWIVER.  The tool also detects key frames in video and uses
-   ORB feature detection and matching on the keyframes with bag of words
-   frame matching for loop closure.
-
- * A new tool is available in the compute menu to compute a dense depth
-   map on the current frame.  THis uses the new Super3D algorithms in KWIVER.
-
- * TeleSculptor now supports logging with log4cplus.
-
- * If an input video has KLV metadata (0601 or 0104) TeleSculptor will now
-   parse that metadata and use it to construct initial camera models.  It will
-   also use the metadata to set a geographic origin for the project, which is
-   written to the project directory.
-
- * TeleSculptor now has a pair of new tools in the Compute menu to save out
-   either keyframes or all frames of video to image files.
-
- * TeleSculptor now uses a common convention for naming all output files
-   supporting a frame of video.  If the input is an image list it uses the
-   source image names, if a video it uses video name plus frame number.
-
- * TeleSculptor now has a new tool for triangulating landmarks.  This is
-   useful when cameras are provided (e.g. from metadata), but landmarks are
-   not.
-
- * TeleSculptor now supports loading and processing videos with increasing
-   but non contiguous frame numbers.  This may occur when loading a video
-   at a reduced frame rate.
-
- * TeleSculptor now has an option to display only keyframes when playing
-   back a video.
-
- * The compute menu has been rearranged and now has an "Advanced" submenu
-   containing tool that are less stable or less commonly used.
+ * The loop over video frames to extract metadata for camera initialization now
+   occurs in a separate thread. This allows the user to interact with the GUI
+   and view the video while the camera initialization occurs.
 
 
 Fixes since last public release
 -------------------------------
-
-Installer
-
- * Fixed an issue where required data files for PROJ were not installed.
-   This also requires TeleSculptor and the command line tools to set an
-   environment variable to tell PROJ where the data is installed.
-
- * TeleSculptor now catches more algorithm exceptions and turns them into
-   warning messages rather than letting the application crash.
