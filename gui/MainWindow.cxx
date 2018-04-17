@@ -358,8 +358,6 @@ void MainWindowPrivate::addTool(AbstractTool* tool, MainWindow* mainWindow)
 
   QObject::connect(tool, SIGNAL(triggered()),
                    &this->toolDispatcher, SLOT(map()));
-  QObject::connect(tool, SIGNAL(triggered()),
-                   mainWindow, SLOT(toolTriggered()));
   QObject::connect(tool, SIGNAL(updated(std::shared_ptr<ToolData>)),
                    mainWindow, SLOT(acceptToolResults(std::shared_ptr<ToolData>)));
   QObject::connect(tool, SIGNAL(completed()),
@@ -2005,14 +2003,6 @@ void MainWindow::setActiveCamera(int id)
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::toolTriggered()
-{
-  QTE_D();
-  AbstractTool* tool = qobject_cast<AbstractTool*> (this->sender());
-  d->UI.progressWidget->updateProgress(0, tool->text());
-}
-
-//-----------------------------------------------------------------------------
 void MainWindow::executeTool(QObject* object)
 {
   QTE_D();
@@ -2034,6 +2024,10 @@ void MainWindow::executeTool(QObject* object)
       {
         d->setActiveTool(0);
       }
+      else
+      {
+        d->UI.progressWidget->updateProgress(tool->text(), 0, tool->toolTip());
+      }
     }
   }
   catch (std::exception const& e)
@@ -2054,7 +2048,8 @@ void MainWindow::acceptToolFinalResults()
   {
     acceptToolResults(d->activeTool->data(), true);
     saveToolResults();
-    d->UI.progressWidget->updateProgress(100, d->activeTool->text());
+    d->UI.progressWidget->updateProgress(d->activeTool->text(), 100,
+                                         d->activeTool->toolTip());
   }
   d->setActiveTool(0);
 }

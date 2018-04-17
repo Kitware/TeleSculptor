@@ -108,7 +108,6 @@ protected slots:
   void updateToolResults();
   void addFrame(int);
   void updateFrames(std::shared_ptr<kwiver::vital::metadata_map::map_metadata_t>);
-  void toolTriggered();
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(MainWindow)
