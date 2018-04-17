@@ -15,6 +15,10 @@ TeleSculptor
  * The loop over video frames to extract metadata for camera initialization now
    occurs in a separate thread. This allows the user to interact with the GUI
    and view the video while the camera initialization occurs.
+ * The slideshow delay slider has been replaced by a speed slider that controls
+   the slideshow playback speed. When the slider is to the far left, slideshow
+   speed is 0.25Hz and when to the far right, the slideshow plays without any
+   delay between frames.
 
 
 Fixes since last public release
