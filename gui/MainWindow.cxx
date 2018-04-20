@@ -1148,8 +1148,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   connect(&d->slideTimer, SIGNAL(timeout()), this, SLOT(nextSlide()));
   connect(d->UI.actionSlideshowPlay, SIGNAL(toggled(bool)),
           this, SLOT(setSlideshowPlaying(bool)));
-  connect(d->UI.slideDelay, SIGNAL(valueChanged(int)),
-          this, SLOT(setSlideDelay(int)));
+  connect(d->UI.slideSpeed, SIGNAL(valueChanged(int)),
+          this, SLOT(setSlideSpeed(int)));
 
   connect(d->UI.camera, SIGNAL(valueChanged(int)),
           this, SLOT(setActiveCamera(int)));
@@ -1166,7 +1166,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.depthMapViewDock, SIGNAL(visibilityChanged(bool)),
           d->UI.depthMapView, SLOT(updateView(bool)));
 
-  this->setSlideDelay(d->UI.slideDelay->value());
+  this->setSlideSpeed(d->UI.slideSpeed->value());
 
 #ifdef VTKWEBGLEXPORTER
   d->UI.actionWebGLScene->setVisible(true);
@@ -1176,8 +1176,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   // Set up UI persistence and restore previous state
   auto const sdItem = new qtUiState::Item<int, QSlider>(
-    d->UI.slideDelay, &QSlider::value, &QSlider::setValue);
-  d->uiState.map("SlideDelay", sdItem);
+    d->UI.slideSpeed, &QSlider::value, &QSlider::setValue);
+  d->uiState.map("SlideSpeed", sdItem);
 
   d->viewBackgroundColor = new StateValue<QColor>{Qt::black},
   d->uiState.map("ViewBackground", d->viewBackgroundColor);
@@ -1911,28 +1911,24 @@ void MainWindow::saveColoredMesh()
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::setSlideDelay(int delayExp)
+void MainWindow::setSlideSpeed(int speed)
 {
   QTE_D();
 
   static auto const ttFormat =
-    QString("%1 (%2)").arg(d->UI.slideDelay->toolTip());
+    QString("%1 (%2)").arg(d->UI.slideSpeed->toolTip());
 
-  auto const de = static_cast<double>(delayExp) * 0.1;
-  auto const delay = qRound(qPow(10.0, de));
+  auto dt = QString("Unconstrained");
+  auto delay = 0.0;
+  if (speed < 60)
+  {
+    auto const de = static_cast<double> (speed) * 0.1;
+    auto const fps = qPow(2.0, de);
+    delay = 1e3 / fps;
+    dt = QString("%1 / sec").arg(fps, 0, 'g', 2);
+  }
   d->slideTimer.setInterval(delay);
-
-  if (delay < 1000)
-  {
-    auto const fps = 1e3 / delay;
-    auto const dt = QString("%1 / sec").arg(fps, 0, 'f', 1);
-    d->UI.slideDelay->setToolTip(ttFormat.arg(dt));
-  }
-  else
-  {
-    auto const dt = QString("%1 sec").arg(delay / 1e3, 0, 'f', 1);
-    d->UI.slideDelay->setToolTip(ttFormat.arg(dt));
-  }
+  d->UI.slideSpeed->setToolTip(ttFormat.arg(dt));
 }
 
 //-----------------------------------------------------------------------------
