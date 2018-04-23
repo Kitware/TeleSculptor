@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2017 by Kitware, Inc.
+ * Copyright 2013-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,7 @@
 
 #include <maptk/maptk_export.h>
 
-#include <vital/types/camera.h>
+#include <vital/types/camera_perspective.h>
 #include <vital/types/geo_point.h>
 #include <vital/types/metadata.h>
 #include <vital/types/rotation.h>
@@ -86,11 +86,11 @@ public:
    * \return            True if metadata was available to set camera, false otherwise
    */
   bool update_camera(vital::metadata const& md,
-                     vital::simple_camera& cam,
+                     vital::simple_camera_perspective& cam,
                      vital::rotation_d const& rot_offset = vital::rotation_d()) const;
 
   /// Use the camera pose to update the metadata structure
-  void update_metadata(vital::simple_camera const& cam,
+  void update_metadata(vital::simple_camera_perspective const& cam,
                        vital::metadata& md) const;
 
 private:
@@ -145,7 +145,7 @@ write_local_geo_cs_to_file(local_geo_cs const& lgcs,
 */
 
 MAPTK_EXPORT
-bool set_intrinsics_from_metadata(vital::simple_camera &cam,
+bool set_intrinsics_from_metadata(vital::simple_camera_perspective &cam,
                                   std::map<vital::frame_id_t,
                                            vital::metadata_sptr> const& md_map,
                                   vital::image_container_sptr const& im);
@@ -168,7 +168,7 @@ MAPTK_EXPORT
 std::map<vital::frame_id_t, vital::camera_sptr>
 initialize_cameras_with_metadata(std::map<vital::frame_id_t,
                                           vital::metadata_sptr> const& md_map,
-                                 vital::simple_camera const& base_camera,
+                                 vital::simple_camera_perspective const& base_camera,
                                  local_geo_cs& lgcs,
                                  vital::rotation_d const& rot_offset = vital::rotation_d());
 

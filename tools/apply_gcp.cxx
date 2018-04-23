@@ -547,7 +547,8 @@ static int maptk_main(int argc, char const* argv[])
       if (p.second)
       {
         kwiver::vital::path_t out_krtd_file = krtd_dir + "/" + basename_map[p.first] + ".krtd";
-        write_krtd_file( *p.second, out_krtd_file );
+        auto cam_ptr = std::dynamic_pointer_cast<kwiver::vital::camera_perspective>( p.second );
+        write_krtd_file( *cam_ptr, out_krtd_file );
       }
     }
   }

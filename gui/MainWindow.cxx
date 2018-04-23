@@ -61,6 +61,7 @@
 #include <vital/io/camera_io.h>
 #include <vital/io/landmark_map_io.h>
 #include <vital/io/track_set_io.h>
+#include <vital/types/camera_perspective.h>
 #include <vital/types/metadata_map.h>
 #include <arrows/core/match_matrix.h>
 
@@ -253,18 +254,18 @@ public:
 
   void addTool(AbstractTool* tool, MainWindow* mainWindow);
 
-  void addCamera(kwiver::vital::camera_sptr const& camera);
+  void addCamera(kwiver::vital::camera_perspective_sptr const& camera);
   void addImage(QString const& imagePath);
   void addVideoSource(kwiver::vital::config_block_sptr const& config,
                       QString const& videoPath);
 
-  void addFrame(kwiver::vital::camera_sptr const& camera, int id);
+  void addFrame(kwiver::vital::camera_perspective_sptr const& camera, int id);
   void updateFrames(std::shared_ptr<kwiver::vital::metadata_map::map_metadata_t>);
 
   kwiver::vital::camera_map_sptr cameraMap() const;
   void updateCameras(kwiver::vital::camera_map_sptr const&);
   bool updateCamera(kwiver::vital::frame_id_t frame,
-                    kwiver::vital::camera_sptr cam);
+                    kwiver::vital::camera_perspective_sptr cam);
 
   void setActiveCamera(int);
   void updateCameraView();
@@ -368,7 +369,7 @@ void MainWindowPrivate::addTool(AbstractTool* tool, MainWindow* mainWindow)
 }
 
 //-----------------------------------------------------------------------------
-void MainWindowPrivate::addCamera(kwiver::vital::camera_sptr const& camera)
+void MainWindowPrivate::addCamera(kwiver::vital::camera_perspective_sptr const& camera)
 {
   if (!this->orphanFrames.isEmpty())
   {
@@ -457,7 +458,7 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
 
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::addFrame(
-  kwiver::vital::camera_sptr const& camera, int id)
+  kwiver::vital::camera_perspective_sptr const& camera, int id)
 {
   if (this->frames.find(id) != this->frames.end())
   {
@@ -565,7 +566,7 @@ void MainWindowPrivate::updateFrames(
       {
         auto im = this->videoSource->frame_image();
 
-        auto baseCamera = kwiver::vital::simple_camera();
+        auto baseCamera = kwiver::vital::simple_camera_perspective();
         baseCamera.set_intrinsics(K);
 
         bool init_intrinsics_with_metadata =
@@ -617,7 +618,9 @@ void MainWindowPrivate::updateCameras(
 
   foreach (auto const& iter, cameras->cameras())
   {
-    if (updateCamera(iter.first, iter.second))
+    using kwiver::vital::camera_perspective;
+    auto cam_ptr = std::dynamic_pointer_cast<camera_perspective>(iter.second);
+    if (updateCamera(iter.first, cam_ptr))
     {
       allowExport = allowExport || iter.second;
     }
@@ -628,7 +631,7 @@ void MainWindowPrivate::updateCameras(
 
 //-----------------------------------------------------------------------------
 bool MainWindowPrivate::updateCamera(kwiver::vital::frame_id_t frame,
-                                     kwiver::vital::camera_sptr cam)
+                                     kwiver::vital::camera_perspective_sptr cam)
 {
   auto fr = this->frames.find(frame);
   if (frame > 0 && frame <= this->frames.keys().last() && cam &&
@@ -1658,7 +1661,7 @@ void MainWindow::saveCameras(QString const& path, bool writeToProject)
 {
   QTE_D();
 
-  auto out = QHash<QString, kwiver::vital::camera_sptr>();
+  auto out = QHash<QString, kwiver::vital::camera_perspective_sptr>();
   auto willOverwrite = QStringList();
 
   for (auto cd : d->frames)
@@ -1704,7 +1707,9 @@ void MainWindow::saveCameras(QString const& path, bool writeToProject)
   {
     try
     {
-      kwiver::vital::write_krtd_file(*iter.value(), kvPath(iter.key()));
+      auto cam_ptr =
+        std::dynamic_pointer_cast<kwiver::vital::camera_perspective>(iter.value());
+      kwiver::vital::write_krtd_file(*cam_ptr, kvPath(iter.key()));
     }
     catch (...)
     {
