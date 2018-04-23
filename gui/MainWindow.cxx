@@ -889,8 +889,9 @@ MainWindowPrivate::vitalToVtkImage(kwiver::vital::image& img)
   vtkSmartPointer<vtkImageImport> imageImport =
     vtkSmartPointer<vtkImageImport>::New();
   imageImport->SetDataScalarType(imageType);
-  imageImport->SetNumberOfScalarComponents(img.depth());
-  imageImport->SetWholeExtent(0, img.width()-1, 0, img.height()-1, 0, 0);
+  imageImport->SetNumberOfScalarComponents(static_cast<int>(img.depth()));
+  imageImport->SetWholeExtent(0, static_cast<int>(img.width())-1,
+                              0, static_cast<int>(img.height())-1, 0, 0);
   imageImport->SetDataExtentToWholeExtent();
   imageImport->SetImportVoidPointer(img.first_pixel());
   imageImport->Update();
