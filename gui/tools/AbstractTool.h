@@ -77,6 +77,8 @@ public:
   landmark_map_sptr landmarks;
   config_block_sptr config;
   kwiver::vital::logger_handle_t logger;
+  int progress;
+  std::string description;
 };
 
 Q_DECLARE_METATYPE(std::shared_ptr<ToolData>)
@@ -193,6 +195,19 @@ public:
   /// \warning Users must not call this method while the tool is executing,
   ///          as doing so may not be thread safe.
   landmark_map_sptr landmarks() const;
+
+  /// Get tool progress.
+  ///
+  /// This returns the tool execution progress as an integer.
+  int progress() const;
+
+  //@{
+  /// Set/Get tool execution description.
+  ///
+  /// This returns a textual description of what the tool is doing.
+  QString description() const;
+  void setDescription(QString desc);
+  //@}
 
 signals:
   /// Emitted when the tool execution is completed.

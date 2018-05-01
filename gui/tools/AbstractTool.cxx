@@ -300,3 +300,27 @@ void AbstractTool::updateLandmarks(landmark_map_sptr const& newLandmarks)
   QTE_D();
   d->data->landmarks = newLandmarks;
 }
+
+//-----------------------------------------------------------------------------
+int AbstractTool::progress() const
+{
+  QTE_D();
+  int p = d->data->progress;
+  p = p < 0 ? 0 : p;
+  p = p > 100 ? 100 : p;
+  return p;
+}
+
+//-----------------------------------------------------------------------------
+QString AbstractTool::description() const
+{
+  QTE_D();
+  return QString::fromStdString(d->data->description);
+}
+
+//-----------------------------------------------------------------------------
+void AbstractTool::setDescription(QString desc)
+{
+  QTE_D();
+  d->data->description = desc.toStdString();
+}
