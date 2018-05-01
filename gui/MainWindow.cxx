@@ -676,7 +676,7 @@ void MainWindowPrivate::setActiveCamera(int id)
   if (id >= this->activeCameraIndex)
   { //positive movement in sequence
     //find the next keyframe in the sequence
-    unsigned int lastFrameId =
+    int lastFrameId =
       this->frames.isEmpty() ? 1 : this->frames.keys().last();
     while (id <= lastFrameId)
     {
@@ -1989,7 +1989,7 @@ void MainWindow::setActiveCamera(int id)
 {
   QTE_D();
 
-  unsigned int lastFrameId = d->frames.isEmpty() ? 1 : d->frames.keys().last();
+  int lastFrameId = d->frames.isEmpty() ? 1 : d->frames.keys().last();
   if (id < 1 || id > lastFrameId)
   {
     qDebug() << "MainWindow::setActiveCamera:"
