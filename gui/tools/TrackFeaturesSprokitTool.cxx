@@ -339,7 +339,7 @@ TrackFeaturesSprokitTool
       {
         auto klt_frame_tracks = ix->second->get_datum<kwiver::vital::feature_track_set_sptr>();
         //we have klt frames from current frame, yipee
-        accumulated_tracks->merge_in_other_feature_track_set(klt_frame_tracks);
+        accumulated_tracks->merge_in_other_track_set(klt_frame_tracks);
       }
     }
   }
@@ -365,13 +365,13 @@ TrackFeaturesSprokitTool
     {
       auto klt_frame_tracks = ix->second->get_datum<kwiver::vital::feature_track_set_sptr>();
       //we have klt frames from current frame, yipee
-      accumulated_tracks->merge_in_other_feature_track_set(klt_frame_tracks);
+      accumulated_tracks->merge_in_other_track_set(klt_frame_tracks);
     }
 
   }
   d->ep.wait();
 
-  out_tracks->merge_in_other_feature_track_set(accumulated_tracks,true);
+  out_tracks->merge_in_other_track_set(accumulated_tracks,true);
 
   this->updateTracks(out_tracks);
 
