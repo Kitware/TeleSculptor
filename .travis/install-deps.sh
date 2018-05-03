@@ -116,6 +116,7 @@ build_repo ()
 # Build and install KWIVER, minimum need to build MAP-Tk
 kwiver_cmake_opts="\
  -DKWIVER_ENABLE_ARROWS=ON \
+ -DKWIVER_ENABLE_SPROKIT=ON \
  -Dfletch_DIR=$KITWARE_DIR/fletch/share/cmake"
 build_repo kwiver https://github.com/Kitware/kwiver.git
 
