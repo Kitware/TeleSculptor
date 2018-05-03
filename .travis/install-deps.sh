@@ -117,6 +117,7 @@ build_repo ()
 kwiver_cmake_opts="\
  -DKWIVER_ENABLE_ARROWS=ON \
  -DKWIVER_ENABLE_SPROKIT=ON \
+ -DKWIVER_ENABLE_PROCESSES=ON \
  -Dfletch_DIR=$KITWARE_DIR/fletch/share/cmake"
 build_repo kwiver https://github.com/Kitware/kwiver.git
 
