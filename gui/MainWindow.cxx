@@ -280,6 +280,9 @@ public:
   void loadDepthMap(QString const& imagePath);
 
   void setActiveTool(AbstractTool* tool);
+  void updateProgress(const QString& name,
+                      const QString& description,
+                      int value);
 
   // Member variables
   Ui::MainWindow UI;
@@ -1070,6 +1073,36 @@ void MainWindowPrivate::setActiveTool(AbstractTool* tool)
   this->UI.actionOpen->setEnabled(enableTools);
 }
 
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::updateProgress(const QString& name,
+                                       const QString& description,
+                                       int value)
+{
+  QString n = name;
+  n.replace('&', "");
+  this->UI.progressWidget->setDescription(n, description);
+  this->UI.progressWidget->setValue(n, 0);
+  switch(value)
+  {
+    case 0:
+    {
+      this->UI.progressWidget->setValue(n, value);
+      this->UI.progressWidget->setRange(n, 0, 0);
+      break;
+    }
+    case 100:
+    {
+      this->UI.progressWidget->remove(n);
+      break;
+    }
+    default:
+    {
+      this->UI.progressWidget->setValue(n, value);
+      this->UI.progressWidget->setRange(n, 0, 100);
+    }
+  }
+}
+
 //END MainWindowPrivate
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1209,7 +1242,10 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   d->UI.worldView->resetView();
 
-  d->UI.progressWidget->setBusyOnZero(true);
+  // Set up the progress widget
+  d->UI.progressWidget->setAutoHide(true);
+  d->UI.progressWidget->setNameVisible(true);
+  d->UI.progressWidget->setDescriptionVisible(true);
 }
 
 //-----------------------------------------------------------------------------
@@ -2026,7 +2062,7 @@ void MainWindow::executeTool(QObject* object)
       }
       else
       {
-        d->UI.progressWidget->updateProgress(tool->text(), 0, tool->toolTip());
+        d->updateProgress(tool->text(), tool->toolTip(), 0);
       }
     }
   }
@@ -2048,8 +2084,7 @@ void MainWindow::acceptToolFinalResults()
   {
     acceptToolResults(d->activeTool->data(), true);
     saveToolResults();
-    d->UI.progressWidget->updateProgress(d->activeTool->text(), 100,
-                                         d->activeTool->toolTip());
+    d->updateProgress(d->activeTool->text(), d->activeTool->toolTip(), 100);
   }
   d->setActiveTool(0);
 }
