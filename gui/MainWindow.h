@@ -54,20 +54,27 @@ public slots:
   void openFile(QString const& path);
   void openFiles(QStringList const& paths);
 
+  void newProject();
+
   void loadProject(QString const& path);
   void loadImage(QString const& path);
+  void loadVideo(QString const& path);
   void loadCamera(QString const& path);
   void loadTracks(QString const& path);
   void loadLandmarks(QString const& path);
 
   void saveCameras();
-  void saveCameras(QString const& path);
+  void saveCameras(QString const& path, bool writeToProject = true);
   void saveLandmarks();
-  void saveLandmarks(QString const& path);
+  void saveLandmarks(QString const& path, bool writeToProject = true);
   void saveTracks();
-  void saveTracks(QString const& path);
+  void saveTracks(QString const& path, bool writeToProject = true);
   void saveDepthPoints();
   void saveDepthPoints(QString const& path);
+  void saveDepthImage(QString const& path);
+  void saveGeoOrigin(QString const& path);
+  void saveToolResults();
+
 
   void saveWebGLScene();
 
@@ -95,7 +102,7 @@ protected slots:
 
   void executeTool(QObject*);
   void acceptToolFinalResults();
-  void acceptToolResults(std::shared_ptr<ToolData> data);
+  void acceptToolResults(std::shared_ptr<ToolData> data, bool isFinal = false);
   void updateToolResults();
 
 private:

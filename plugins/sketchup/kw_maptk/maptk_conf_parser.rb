@@ -28,14 +28,18 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ## Author = "jonathan.owens"
+## Author = "david.russell"
 
 require 'sketchup.rb'
-require_relative './read_ply.rb'
-require_relative './matchphoto_import_plugin.rb'
+
+#SketchUp 8 comes with Ruby 1.8.6, which doesn't support require_relative
+require File.join(File.dirname(__FILE__),'read_ply.rb')
+require File.join(File.dirname(__FILE__),'matchphoto_import_plugin.rb')
+
 
 # These are the keywords that correspond to the relevant values of interest from the
 # maptk configuration file and are the only lines we care about in this file.
-IMAGE_LIST_FILE_KW = 'image_list_file'
+IMAGE_FOLDER_KW = 'output_frames_dir'
 OUTPUT_PLY_FILE_KW = 'output_ply_file'
 OUTPUT_KRTD_DIR_KW = 'output_krtd_dir'
 
@@ -57,7 +61,7 @@ class MaptkConfImporter < Sketchup::Importer
   end
 
   def get_kws_of_interest(fp)
-    image_list_file = ""
+    output_image_dir = ""
     output_ply_file = ""
     output_krtd_dir = ""
 
@@ -67,46 +71,56 @@ class MaptkConfImporter < Sketchup::Importer
       key_value = line.split("=")
       key = key_value[0].strip
       value = key_value[1] ? key_value[1].strip : ""
-      
+
       case key
-      when IMAGE_LIST_FILE_KW
-        image_list_file = value
+      when IMAGE_FOLDER_KW
+        output_image_dir = value
       when OUTPUT_PLY_FILE_KW
         output_ply_file = value
       when OUTPUT_KRTD_DIR_KW
         output_krtd_dir = value
       end
     end
-
     # Check to ensure all of the required keywords were found and show a warning message
     # and return nil if they weren't
-    if image_list_file == "" 
-      UI.messagebox('Error parsing MAP-Tk conf file: missing image_list_file keyword')
+    if output_image_dir == ""
+      UI.messagebox("Error parsing MAP-Tk conf file: missing #{IMAGE_FOLDER_KW} keyword")
       return nil
     elsif output_ply_file == ""
-      UI.messagebox('Error parsing MAP-Tk conf file: missing output_ply_file keyword')
+      UI.messagebox("Error parsing MAP-Tk conf file: missing #{OUTPUT_PLY_FILE_KW} keyword")
       return nil
     elsif output_krtd_dir == ""
-      UI.messagebox('Error parsing MAP-Tk conf file: missing output_krtd_dir keyword')
+      UI.messagebox("Error parsing MAP-Tk conf file: missing #{OUTPUT_KRTD_DIR_KW} keyword")
       return nil
     end
 
     # if not a valid path, try prepending the directory of the conf file
-    if ! File.file?(image_list_file)
-      image_list_file = File.join(File.dirname(fp), image_list_file)
+    if ! File.directory?(output_image_dir)
+      output_image_dir = File.join(File.dirname(fp), output_image_dir)
+      if ! File.directory?(output_image_dir)
+        UI.messagebox("The value of #{IMAGE_FOLDER_KW} is incorrect. #{output_image_dir} is not a valid directory")
+        return nil
+      end
     end
 
     # if not a valid directory, try prepending the directory of the conf file
     if ! File.directory?(output_krtd_dir)
       output_krtd_dir = File.join(File.dirname(fp), output_krtd_dir)
+      if ! File.directory?(output_krtd_dir)
+        UI.messagebox("The value of #{OUTPUT_KRTD_DIR_KW} is incorrect. #{output_krtd_dir} is not a valid directory")
+        return nil
+      end
     end
 
     # if not a valid directory, try prepending the directory of the conf file
     if ! File.file?(output_ply_file)
       output_ply_file = File.join(File.dirname(fp), output_ply_file)
+      if ! File.file?(output_ply_file)
+        UI.messagebox("The value of #{OUTPUT_PLY_FILE_KW} is incorrect. #{output_ply_file} is not a valid file.")
+        return nil
+      end
     end
-
-    return image_list_file, output_ply_file, output_krtd_dir
+    return output_image_dir, output_ply_file, output_krtd_dir
   end
 
   def load_file(file_path, status)
@@ -118,18 +132,16 @@ class MaptkConfImporter < Sketchup::Importer
       return 1
     end
 
-    image_list_file = kwds[0]
+    output_image_folder = kwds[0]
     output_ply_file = kwds[1]
     output_krtd_dir = kwds[2]
-
-    # We delgate the importing of the photos/krtd files to the matchphoto_import_plugin.
+    # We delegate the importing of the photos/krtd files to the matchphoto_import_plugin.
     photo_krtd_importer = MatchphotoMaptkImporter.new
     photo_krtd_importer.instantiate(output_krtd_dir)
-    status_images = photo_krtd_importer.load_file(image_list_file, 0)
-    # An the ply importing to the PLYImporter plugin.
+    status_images = photo_krtd_importer.load_file(output_image_folder, 0)
+    # And the ply importing to the PLYImporter plugin.
     ply_importer = PLYImporter.new
     status_ply = ply_importer.load_file(output_ply_file, 0)
-
     return 0
   end
 

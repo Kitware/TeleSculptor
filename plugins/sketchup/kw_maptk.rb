@@ -25,54 +25,16 @@
 # SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.erermer
-
-## Author = 'jonathan.owens'
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 require 'sketchup.rb'
+require 'extensions.rb'
 
-class PLYImporter < Sketchup::Importer
-  def description
-    return "ply point cloud ASCII files (*.ply)"
-  end
+ext = SketchupExtension.new('MAP-Tk Importer', File.join('kw_maptk', 'MaptkImporter.rb'))
 
-  def file_extension
-    return "ply"
-  end
+ext.creator = 'Kitware, Inc.'
+ext.version = '0.11.0'
+ext.copyright = '2018'
+ext.description = 'Allows importing of MAP-Tk configuration files and ply files.'
 
-  def id
-    return "com.kitware.importers.plyimporter"
-  end
-
-  def supports_options?
-    return false
-  end
-
-  def load_file(file_path, status)
-    file = File.new(file_path, "r")
-    model = Sketchup.active_model
-    pt_layer = model.layers.add('MAP-Tk Landmarks')
-    pt_layer.page_behavior = LAYER_IS_HIDDEN_ON_NEW_PAGES
-    entities = model.entities
-    pt_group = entities.add_group
-    pt_group.layer = pt_layer
-    
-    passed_end_header = false
-    while (raw_line = file.gets)
-      if passed_end_header == true
-        string_coords = raw_line.strip.split
-        pt = Geom::Point3d::new(string_coords[0].to_f.m,
-                                string_coords[1].to_f.m,
-                                string_coords[2].to_f.m)
-        pt_group.entities.add_cpoint(pt)
-      elsif raw_line.include? "end_header"
-        passed_end_header = true
-        next
-      end
-    end
-      
-    return 0
-  end
-end
-
-Sketchup.register_importer(PLYImporter.new)
+Sketchup.register_extension(ext, true)

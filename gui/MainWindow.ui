@@ -20,7 +20,7 @@
      <x>0</x>
      <y>0</y>
      <width>963</width>
-     <height>22</height>
+     <height>38</height>
     </rect>
    </property>
    <widget class="qtMenu" name="menuFile">
@@ -42,6 +42,7 @@
      <addaction name="actionExportMesh"/>
      <addaction name="actionExportColoredMesh"/>
     </widget>
+    <addaction name="actionNewProject"/>
     <addaction name="actionOpen"/>
     <addaction name="menuExport"/>
     <addaction name="separator"/>
@@ -58,6 +59,7 @@
     <addaction name="separator"/>
     <addaction name="actionSetBackgroundColor"/>
     <addaction name="actionShowWorldAxes"/>
+    <addaction name="actionKeyframesOnly"/>
    </widget>
    <widget class="qtMenu" name="menuHelp">
     <property name="title">
@@ -71,7 +73,14 @@
     <property name="title">
      <string>&amp;Compute</string>
     </property>
+    <widget class="qtMenu" name="menuAdvanced">
+     <property name="title">
+      <string>&amp;Advanced</string>
+     </property>
+    </widget>
     <addaction name="actionCancelComputation"/>
+    <addaction name="separator"/>
+    <addaction name="menuAdvanced"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuCompute"/>
@@ -101,6 +110,9 @@
       <widget class="QSpinBox" name="cameraSpin">
        <property name="enabled">
         <bool>false</bool>
+       </property>
+       <property name="keyboardTracking">
+         <bool>false</bool>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -168,6 +180,14 @@
    </attribute>
    <widget class="DepthMapView" name="depthMapView"/>
   </widget>
+  <action name="actionNewProject">
+   <property name="text">
+    <string>&amp;New Project</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
+  </action>
   <action name="actionQuit">
    <property name="icon">
     <iconset resource="icons/icons.qrc">
@@ -379,6 +399,17 @@
    </property>
    <property name="toolTip">
     <string>Export the tracks in an ASCII track file</string>
+   </property>
+  </action>
+  <action name="actionKeyframesOnly">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Keyframes Only</string>
    </property>
   </action>
  </widget>

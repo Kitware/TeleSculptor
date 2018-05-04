@@ -31,9 +31,15 @@
 #ifndef MAPTK_ABSTRACTTOOL_H_
 #define MAPTK_ABSTRACTTOOL_H_
 
+#include <vital/config/config_block_types.h>
+#include <vital/logger/logger.h>
 #include <vital/types/camera_map.h>
 #include <vital/types/landmark_map.h>
 #include <vital/types/feature_track_set.h>
+#include <vital/types/image_container.h>
+
+#include <vtkSmartPointer.h>
+#include <vtkImageData.h>
 
 #include <qtGlobal.h>
 
@@ -48,6 +54,8 @@ public:
   typedef kwiver::vital::feature_track_set_sptr feature_track_set_sptr;
   typedef kwiver::vital::camera_map_sptr camera_map_sptr;
   typedef kwiver::vital::landmark_map_sptr landmark_map_sptr;
+  typedef kwiver::vital::config_block_sptr config_block_sptr;
+  typedef vtkSmartPointer<vtkImageData> depth_sptr;
 
   /// Deep copy the feature tracks into this data class
   void copyTracks(feature_track_set_sptr const&);
@@ -58,11 +66,17 @@ public:
   /// Deep copy the landmarks into this data class
   void copyLandmarks(landmark_map_sptr const&);
 
+  /// Deep copy a depth image into this data class
+  void copyDepth(depth_sptr const&);
+
   unsigned int activeFrame;
-  std::vector<std::string> imagePaths;
+  std::string videoPath;
   feature_track_set_sptr tracks;
+  depth_sptr active_depth;
   camera_map_sptr cameras;
   landmark_map_sptr landmarks;
+  config_block_sptr config;
+  kwiver::vital::logger_handle_t logger;
 };
 
 Q_DECLARE_METATYPE(std::shared_ptr<ToolData>)
@@ -75,6 +89,8 @@ public:
   typedef kwiver::vital::feature_track_set_sptr feature_track_set_sptr;
   typedef kwiver::vital::camera_map_sptr camera_map_sptr;
   typedef kwiver::vital::landmark_map_sptr landmark_map_sptr;
+  typedef kwiver::vital::config_block_sptr config_block_sptr;
+  typedef vtkSmartPointer<vtkImageData> depth_sptr;
 
   enum Output
   {
@@ -82,6 +98,8 @@ public:
     Cameras = 0x2,
     Landmarks = 0x4,
     ActiveFrame = 0x8,
+    KeyFrames = 0x10,
+    Depth = 0x20
   };
   Q_DECLARE_FLAGS(Outputs, Output)
 
@@ -116,6 +134,12 @@ public:
   /// Set the landmarks to be used as input to the tool.
   void setLandmarks(landmark_map_sptr const&);
 
+  /// Set the video source path.
+  void setVideoPath(std::string const&);
+
+  /// Set the config file if any
+  void setConfig(config_block_sptr&);
+
   /// Execute the tool.
   ///
   /// Tool implementations should override this method to verify that they have
@@ -130,9 +154,6 @@ public:
 
   /// Get the active frame.
   unsigned int activeFrame() const;
-
-  /// Get image paths.
-  std::vector<std::string> const& imagePaths() const;
 
   /// Get tracks.
   ///
@@ -201,12 +222,6 @@ protected:
   /// Check if the user has requested that tool execution be canceled.
   bool isCanceled() const;
 
-  /// Test if the tool has image path data.
-  ///
-  /// \return \c true if the tool data has a non-zero number of images,
-  ///         otherwise \c false
-  bool hasImagePaths() const;
-
   /// Test if the tool has track data.
   ///
   /// \return \c true if the tool data has a non-zero number of feature tracks,
@@ -225,6 +240,12 @@ protected:
   ///         otherwise \c false
   bool hasLandmarks() const;
 
+  /// Test if the tool has video data.
+  ///
+  /// \return \c true if the tool data has an associated video source,
+  ///         otherwise \c false
+  bool hasVideoSource() const;
+
   /// Set the tracks produced by the tool.
   ///
   /// This sets the tracks that are produced by the tool as output. Unlike
@@ -236,6 +257,9 @@ protected:
   /// This sets the cameras that are produced by the tool as output. Unlike
   /// setCameras, this does not make a deep copy of the provided cameras.
   void updateCameras(camera_map_sptr const&);
+
+  /// Set the depth map produced by the tool.
+  void updateDepth(depth_sptr const& newDepth);
 
   /// Set the landmarks produced by the tool.
   ///

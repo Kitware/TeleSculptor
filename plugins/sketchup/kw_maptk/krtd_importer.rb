@@ -27,14 +27,40 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-require 'sketchup.rb'
-require 'extensions.rb'
+## Author = 'jonathan.owens'
+## Author = 'david.russell'
 
-ext = SketchupExtension.new('MAP-Tk Importer', File.join('kw_maptk', 'MaptkImporter.rb'))
+#SketchUp 8 comes with Ruby 1.8.6, which doesn't support require_relative
+require File.join(File.dirname(__FILE__), 'krtd.rb')
+    
+    
+def load_camera(file_path)
+  model = Sketchup.active_model
+  ents = model.active_entities
+  pages = Sketchup.active_model.pages
+  view = Sketchup.active_model.active_view
+  krtd_ff = from_file(file_path)
+  cam_point3d = Geom::Point3d.new( krtd_ff.position[0].m,
+                                   krtd_ff.position[1].m,
+                                   krtd_ff.position[2].m )
+  target_point3d = Geom::Point3d.new( krtd_ff.target[0].m,
+                                      krtd_ff.target[1].m,
+                                      krtd_ff.target[2].m )
+  up_point3d = Geom::Vector3d.new( krtd_ff.up[0], krtd_ff.up[1], krtd_ff.up[2] )
+  new_cam = Sketchup::Camera.new( cam_point3d, target_point3d, up_point3d )
+  # SketchUp does not allow perspective cameras with FOV < 1 degree.
+  # The focal_length is also limited to less than 3000.
+  # However, image_width is unconstrained.  This work around sets an
+  # artificially small image_width such that when combined with a
+  # focal_length of 1000 we get the desired FOV.
+  if krtd_ff.fov_y < 1.0
+    new_cam.image_width = 1000 / krtd_ff.focal_length_x * krtd_ff.y_dim
+    new_cam.focal_length = 1000
+  else
+    new_cam.fov = krtd_ff.fov_y
+  end
+  new_cam.aspect_ratio = krtd_ff.x_dim / krtd_ff.y_dim
+  view.camera = new_cam
 
-ext.creator = 'Kitware, Inc.'
-ext.version = '1.0.0'
-ext.copyright = '2015'
-ext.description = 'Allows importing of MAP-Tk configuration files and ply files.'
-
-Sketchup.register_extension(ext, true)
+  return new_cam
+end

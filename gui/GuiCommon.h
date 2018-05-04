@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,46 +28,39 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_PROJECT_H_
-#define MAPTK_PROJECT_H_
+#ifndef GUI_COMMON_H_
+#define GUI_COMMON_H_
+
+#include <qtStlUtil.h>
 
 #include <vital/config/config_block_io.h>
+#include <vital/types/metadata_map.h>
+#include <vital/vital_types.h>
 
-#include <QtCore/QDir>
-#include <QtCore/QMap>
-#include <QtCore/QStringList>
 
-class Project : public QObject
-{
-  Q_OBJECT
+// Generates frame name basename in a standard format
+// This version uses a map of all metadata
+std::string frameName(kwiver::vital::frame_id_t frame,
+                      kwiver::vital::metadata_map::map_metadata_t const& mdm);
 
-// TODO: Encapsulate data and add accessors
-public:
 
-  Project();
-  Project(QString dir);
+// Generates frame name basename in a standard format
+// This version uses a vector of metadata for the frame
+std::string frameName(kwiver::vital::frame_id_t frame,
+                      kwiver::vital::metadata_vector const& mdv);
 
-  bool read(QString const& path);
 
-  QString getContingentRelativePath(QString filepath);
+// Generates frame name basename in a standard format
+// This version uses a single metadata object for the frame
+std::string frameName(kwiver::vital::frame_id_t frame,
+                      kwiver::vital::metadata_sptr md);
 
-  QDir workingDir;
 
-  QString filePath;
-  QString videoPath;
+// Loads config file from installed config location
+kwiver::vital::config_block_sptr readConfig(std::string const& name);
 
-  QString tracksPath;
-  QString landmarksPath;
-  QString volumePath;
-  QString cameraPath;
-  QString geoOriginFile;
-  QString depthPath;
 
-  kwiver::vital::config_block_sptr projectConfig;
-
-public slots:
-  void write();
-
-};
+// find the full path to the first matching file on the config search path
+kwiver::vital::path_t findConfig(std::string const& name);
 
 #endif

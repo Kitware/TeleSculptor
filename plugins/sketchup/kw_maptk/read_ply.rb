@@ -25,42 +25,54 @@
 # SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.erermer
 
 ## Author = 'jonathan.owens'
 
-require_relative './krtd.rb'
+require 'sketchup.rb'
 
-def load_camera(file_path)
-  model = Sketchup.active_model
-  ents = model.active_entities
-  pages = Sketchup.active_model.pages
-  view = Sketchup.active_model.active_view
-
-  krtd_ff = from_file(file_path)
-
-  cam_point3d = Geom::Point3d.new( krtd_ff.position[0].m,
-                                   krtd_ff.position[1].m,
-                                   krtd_ff.position[2].m )
-  target_point3d = Geom::Point3d.new( krtd_ff.target[0].m,
-                                      krtd_ff.target[1].m,
-                                      krtd_ff.target[2].m )
-  up_point3d = Geom::Vector3d.new( krtd_ff.up[0], krtd_ff.up[1], krtd_ff.up[2] )
-
-  new_cam = Sketchup::Camera.new( cam_point3d, target_point3d, up_point3d )
-  # SketchUp does not allow perspective cameras with FOV < 1 degree.
-  # The focal_length is also limited to less than 3000.
-  # However, image_width is unconstrained.  This work around sets an
-  # artificially small image_width such that when combined with a
-  # focal_length of 1000 we get the desired FOV.
-  if krtd_ff.fov_y < 1.0
-    new_cam.image_width = 1000 / krtd_ff.focal_length_x * krtd_ff.y_dim
-    new_cam.focal_length = 1000
-  else
-    new_cam.fov = krtd_ff.fov_y
+class PLYImporter < Sketchup::Importer
+  def description
+    return "ply point cloud ASCII files (*.ply)"
   end
-  new_cam.aspect_ratio = krtd_ff.x_dim / krtd_ff.y_dim
-  view.camera = new_cam
 
-  return new_cam
+  def file_extension
+    return "ply"
+  end
+
+  def id
+    return "com.kitware.importers.plyimporter"
+  end
+
+  def supports_options?
+    return false
+  end
+    
+  def load_file(file_path, status)
+    file = File.new(file_path, "r")
+    model = Sketchup.active_model
+    pt_layer = model.layers.add('MAP-Tk Landmarks')
+    pt_layer.page_behavior = LAYER_IS_HIDDEN_ON_NEW_PAGES
+    entities = model.entities
+    pt_group = entities.add_group
+    pt_group.layer = pt_layer
+
+    passed_end_header = false
+    while (raw_line = file.gets)
+      if passed_end_header == true
+        string_coords = raw_line.strip.split
+        pt = Geom::Point3d::new(string_coords[0].to_f.m,
+                                string_coords[1].to_f.m,
+                                string_coords[2].to_f.m)
+        pt_group.entities.add_cpoint(pt)
+      elsif raw_line.include? "end_header"
+        passed_end_header = true
+        next
+      end
+    end
+
+    return 0
+  end
 end
+
+Sketchup.register_importer(PLYImporter.new)

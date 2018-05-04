@@ -195,6 +195,7 @@ vtkMaptkCameraRepresentation::vtkMaptkCameraRepresentation()
   this->ActiveActor->SetMapper(activeCameraMapper.GetPointer());
   this->ActiveActor->GetProperty()->SetRepresentationToWireframe();
   this->ActiveActor->GetProperty()->SetLighting(false);
+  this->ActiveActor->GetProperty()->SetLineWidth(2.0);
 
   this->Internal->NonActiveAppendPolyData->AddInputData(
     this->Internal->DummyPolyData.GetPointer());
@@ -206,6 +207,7 @@ vtkMaptkCameraRepresentation::vtkMaptkCameraRepresentation()
   this->NonActiveActor = vtkActor::New();
   this->NonActiveActor->SetMapper(nonActiveMapper.GetPointer());
   this->NonActiveActor->GetProperty()->SetRepresentationToWireframe();
+  this->NonActiveActor->GetProperty()->SetLineWidth(2.0);
 
   // Set up path actor and data
   vtkNew<vtkPoints> points;

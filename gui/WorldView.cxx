@@ -941,6 +941,12 @@ void WorldView::setDepthMapVisible(bool state)
 }
 
 //-----------------------------------------------------------------------------
+void WorldView::queueResetView()
+{
+  QMetaObject::invokeMethod(this, "resetView", Qt::QueuedConnection);
+}
+
+//-----------------------------------------------------------------------------
 void WorldView::resetView()
 {
   QTE_D();

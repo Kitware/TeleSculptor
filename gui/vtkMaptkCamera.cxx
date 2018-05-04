@@ -36,7 +36,6 @@
 #include <vtkMatrix4x4.h>
 #include <vtkObjectFactory.h>
 
-#include <vtksys/SystemTools.hxx>
 
 vtkStandardNewMacro(vtkMaptkCamera);
 

@@ -15,7 +15,7 @@ find_package(VTK 8.0 REQUIRED
   vtkInteractionStyle
   vtkRenderingAnnotation
   vtkRenderingFreeType
-)
+  )
 include(${VTK_USE_FILE})
 
 #
@@ -80,15 +80,21 @@ set(gui_moc_headers
   MainWindow.h
   MatchMatrixWindow.h
   PointOptions.h
+  Project.h
   VolumeOptions.h
   WorldView.h
   tools/AbstractTool.h
   tools/BundleAdjustTool.h
   tools/CanonicalTransformTool.h
+  tools/ComputeDepthTool.h
   tools/InitCamerasLandmarksTool.h
   tools/NeckerReversalTool.h
+  tools/SaveFrameTool.h
+  tools/SaveKeyFrameTool.h
   tools/TrackFilterTool.h
+  tools/TrackFeaturesSprokitTool.h
   tools/TrackFeaturesTool.h
+  tools/TriangulateTool.h
 )
 
 set(gui_sources
@@ -105,6 +111,7 @@ set(gui_sources
   DepthMapViewOptions.cxx
   FeatureOptions.cxx
   GradientSelector.cxx
+  GuiCommon.cxx
   ImageOptions.cxx
   MainWindow.cxx
   MatchMatrixAlgorithms.cxx
@@ -124,12 +131,17 @@ set(gui_sources
   tools/AbstractTool.cxx
   tools/BundleAdjustTool.cxx
   tools/CanonicalTransformTool.cxx
+  tools/ComputeDepthTool.cxx
   tools/InitCamerasLandmarksTool.cxx
   tools/NeckerReversalTool.cxx
   tools/MeshColoration.cxx
   tools/ReconstructionData.cxx
+  tools/SaveFrameTool.cxx
+  tools/SaveKeyFrameTool.cxx
   tools/TrackFilterTool.cxx
+  tools/TrackFeaturesSprokitTool.cxx
   tools/TrackFeaturesTool.cxx
+  tools/TriangulateTool.cxx
 )
 
 maptk_use_appdata(
@@ -173,7 +185,9 @@ unset(no_install)
 
 target_link_libraries(TeleSculptor
   maptk
+  kwiver::kwiver_adapter
   kwiver::kwiver_algo_core
+  kwiver::sprokit_pipeline
   kwiver::vital_vpm
   qtExtensions
   ${VTK_LIBRARIES}
@@ -248,6 +262,11 @@ if (MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
   list(APPEND FIXUP_DIRS "${qtExtensions_DIR}/${BINARY_DIR}")
 
   list(APPEND FIXUP_DIRS "${KWIVER_LIBRARY_DIR}/${BINARY_DIR}")
+  # Windows also has libraries (DLLs) in the bin directory
+  if(WIN32)
+    list(APPEND FIXUP_DIRS "${KWIVER_DIR}/bin/${BINARY_DIR}")
+  endif()
+
   if(DEFINED fletch_ROOT)
     if(WIN32)
       list(APPEND FIXUP_DIRS "${fletch_ROOT}/bin")
@@ -267,7 +286,33 @@ if (MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
 
   install(DIRECTORY "${KWIVER_DIR}/lib/${BINARY_DIR}/modules" DESTINATION lib
           COMPONENT Runtime
-          FILES_MATCHING PATTERN "*kwiver_algo*${CMAKE_SHARED_MODULE_SUFFIX}" )
+          FILES_MATCHING PATTERN "*plugin${CMAKE_SHARED_MODULE_SUFFIX}" )
+
+  install(DIRECTORY "${KWIVER_DIR}/lib/${BINARY_DIR}/modules/"
+          DESTINATION ${plugin_dest_dir}
+          COMPONENT Runtime
+          FILES_MATCHING PATTERN "*logger${CMAKE_SHARED_MODULE_SUFFIX}"
+          PATTERN "plugin_explorer" EXCLUDE )
+
+  install(DIRECTORY "${KWIVER_DIR}/lib/${BINARY_DIR}/sprokit" DESTINATION lib
+          COMPONENT Runtime
+          FILES_MATCHING PATTERN "*${CMAKE_SHARED_MODULE_SUFFIX}" )
+
+  install(DIRECTORY "${fletch_ROOT}/share/proj"
+          DESTINATION share COMPONENT Runtime)
+
+  set(kwiver_tools
+      config_explorer
+      dump_klv
+      pipe_config
+      pipe_to_dot
+      pipeline_runner
+      plugin_explorer)
+  foreach(tool ${kwiver_tools})
+    install(PROGRAMS "${KWIVER_DIR}/bin/${BINARY_DIR}/${tool}${CMAKE_EXECUTABLE_SUFFIX}"
+            DESTINATION bin
+            COMPONENT Runtime)
+  endforeach()
 
   get_property( bundle_path GLOBAL PROPERTY maptk_bundle_paths)
 
@@ -291,13 +336,15 @@ set(bundle_path \"${bundle_path}\")
             \"${dest_prefix}/${plugin_dest_dir}/plugins/*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
         file(GLOB_RECURSE KWIVER_PLUGINS
             \"${dest_prefix}/lib/modules/*${CMAKE_SHARED_MODULE_SUFFIX}\")
+        file(GLOB_RECURSE LOGGER_PLUGINS
+            \"${dest_prefix}/${plugin_dest_dir}/vital_*_logger${CMAKE_SHARED_LIBRARY_SUFFIX}\")
         set(BU_CHMOD_BUNDLE_ITEMS ON)
         set(ENV{VS_UNICODE_OUTPUT} \"\")
         include(${MAPTK_SOURCE_DIR}/CMake/utils/maptk-utils-bundle.cmake)
         include( ${MAPTK_BINARY_DIR}/CMakeFiles/plugin-libs-\${CMAKE_INSTALL_CONFIG_NAME}.cmake )
         list(APPEND FIXUP_DIRS ${FIXUP_DIRS} \${bundle_path})
         list(REMOVE_DUPLICATES FIXUP_DIRS)
-        set(libs \${KWIVER_PLUGINS} \${QTPLUGINS})
+        set(libs \${KWIVER_PLUGINS} \${LOGGER_PLUGINS} \${QTPLUGINS})
         include(BundleUtilities)
         fixup_bundle(\"${gui-exe}\" \"\${libs}\" \"\${FIXUP_DIRS}\")
         ")

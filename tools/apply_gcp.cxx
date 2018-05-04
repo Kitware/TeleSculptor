@@ -258,6 +258,14 @@ static int maptk_main(int argc, char const* argv[])
   kwiver::vital::plugin_manager::instance().add_search_path(rel_plugin_path);
   kwiver::vital::plugin_manager::instance().load_all_plugins();
 
+  // Tell PROJ where to find its data files
+  std::string rel_proj_path = kwiver::vital::get_executable_path() + "/../share/proj";
+  if ( kwiversys::SystemTools::FileExists(rel_proj_path) &&
+       kwiversys::SystemTools::FileIsDirectory(rel_proj_path) )
+  {
+    kwiversys::SystemTools::PutEnv("PROJ_LIB="+rel_proj_path);
+  }
+
   if( kwiver::vital::get_geo_conv() == nullptr )
   {
     std::cerr << "No geographic conversion module available" << std::endl;

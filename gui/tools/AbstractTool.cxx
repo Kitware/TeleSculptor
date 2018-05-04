@@ -66,13 +66,8 @@ void ToolData::copyTracks(feature_track_set_sptr const& newTracks)
 {
   if (newTracks)
   {
-    auto copiedTracks = std::vector<kwiver::vital::track_sptr>{};
-    foreach (auto const& ti, newTracks->tracks())
-    {
-      copiedTracks.push_back(ti->clone());
-    }
-    this->tracks =
-      std::make_shared<kwiver::vital::feature_track_set>(copiedTracks);
+    this->tracks = std::dynamic_pointer_cast<kwiver::vital::feature_track_set>(
+      newTracks->clone());
   }
   else
   {
@@ -119,6 +114,16 @@ void ToolData::copyLandmarks(landmark_map_sptr const& newLandmarks)
 }
 
 //-----------------------------------------------------------------------------
+void ToolData::copyDepth(depth_sptr const& newDepth)
+{
+  this->active_depth = vtkSmartPointer<vtkImageData>::New();
+  if (newDepth)
+  {
+    this->active_depth->DeepCopy(newDepth);
+  }
+}
+
+//-----------------------------------------------------------------------------
 AbstractTool::AbstractTool(QObject* parent)
   : QAction(parent), d_ptr(new AbstractToolPrivate(this))
 {
@@ -145,13 +150,6 @@ unsigned int AbstractTool::activeFrame() const
 {
   QTE_D();
   return d->data->activeFrame;
-}
-
-//-----------------------------------------------------------------------------
-std::vector<std::string> const& AbstractTool::imagePaths() const
-{
-  QTE_D();
-  return d->data->imagePaths;
 }
 
 //-----------------------------------------------------------------------------
@@ -190,13 +188,6 @@ void AbstractTool::setActiveFrame(unsigned int frame)
 }
 
 //-----------------------------------------------------------------------------
-void AbstractTool::setImagePaths(std::vector<std::string> const& paths)
-{
-  QTE_D();
-  d->data->imagePaths = paths;
-}
-
-//-----------------------------------------------------------------------------
 void AbstractTool::setTracks(feature_track_set_sptr const& newTracks)
 {
   QTE_D();
@@ -218,6 +209,19 @@ void AbstractTool::setLandmarks(landmark_map_sptr const& newLandmarks)
 }
 
 //-----------------------------------------------------------------------------
+void AbstractTool::setVideoPath(std::string const& path)
+{
+  QTE_D();
+  d->data->videoPath = path;
+}
+
+void AbstractTool::setConfig(config_block_sptr& config)
+{
+  QTE_D();
+  d->data->config = config;
+}
+
+//-----------------------------------------------------------------------------
 bool AbstractTool::execute(QWidget* window)
 {
   QTE_D();
@@ -232,20 +236,6 @@ bool AbstractTool::isCanceled() const
 {
   QTE_D();
   return d->cancelRequested;
-}
-
-//-----------------------------------------------------------------------------
-bool AbstractTool::hasImagePaths() const
-{
-  QTE_D();
-  foreach (auto const& path, d->data->imagePaths)
-  {
-    if(path != "")
-    {
-      return true;
-    }
-  }
-  return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -270,10 +260,31 @@ bool AbstractTool::hasLandmarks() const
 }
 
 //-----------------------------------------------------------------------------
+bool AbstractTool::hasVideoSource() const
+{
+  QTE_D();
+  if (d->data->videoPath == "" || !d->data->config)
+  {
+    return false;
+  }
+  else
+  {
+    return true;
+  }
+}
+
+//-----------------------------------------------------------------------------
 void AbstractTool::updateTracks(feature_track_set_sptr const& newTracks)
 {
   QTE_D();
   d->data->tracks = newTracks;
+}
+
+//-----------------------------------------------------------------------------
+void AbstractTool::updateDepth(depth_sptr const& newDepth)
+{
+  QTE_D();
+  d->data->active_depth = newDepth;
 }
 
 //-----------------------------------------------------------------------------

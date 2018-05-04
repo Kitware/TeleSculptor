@@ -28,9 +28,11 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ## Author = 'jonathan.owens'
+## Author = 'david.russell'
 
 require 'sketchup.rb'
-require_relative './krtd_importer.rb'
+#require_relative isn't supported in SketchUp 8.
+require File.join(File.dirname(__FILE__), 'krtd_importer.rb')
 
 class MatchphotoMaptkImporter < Sketchup::Importer
   # This method is not necessarily used by sketchup, but allows us to instantiate
@@ -45,8 +47,8 @@ class MatchphotoMaptkImporter < Sketchup::Importer
     @_krtd_prefix = nil
     @_image_fps = Array.new
     @_krtd_fps = Array.new
-  end                     
-  
+  end
+
   def description
     return "Read in a list of image filepaths (*.txt)"
   end
@@ -72,15 +74,52 @@ class MatchphotoMaptkImporter < Sketchup::Importer
   end
 
   def read_in_image_fps(fp)
-    file = File.new(fp, "r")
-    image_fps = Array.new
-
-    while (line = file.gets)
-      image_fps.push line.strip
+    image_fps = Dir.entries(fp).reject {|f| File.directory? f}
+    full_image_fps = Array.new
+    image_fps.each do |image_fps|
+      full = File.join(fp,image_fps)
+      full_image_fps.push(full)
     end
-    file.close
-    @_image_fps = image_fps
-    return image_fps
+
+    return full_image_fps
+  end
+
+  def check_for_krtd(img_fps, file_path, guess_krtd_location_flag)
+    valid_img_fps = Array.new
+    krtd_fps = Array.new
+    num_bad_img_fps = 0
+    num_bad_krtd_fps = 0
+
+    img_fps.each do |img_fp|
+      # if not a valid path, try prepending the directory of the image list file
+      if ! File.file?(img_fp)
+        img_fp = File.join(File.dirname(file_path), img_fp)
+      end
+      if ! File.file?(img_fp)
+        num_bad_img_fps += 1
+        next
+      end
+
+      krtd_fname = nil
+
+      if guess_krtd_location_flag
+        krtd_fname = guess_krtd_location(img_fp)
+      else
+        krtd_fname = File.join(@_krtd_prefix, swap_img_ext_for_krtd(img_fp))
+      end
+
+      if File.file?(krtd_fname)
+        valid_img_fps.push(img_fp)
+        krtd_fps.push(krtd_fname)
+      else
+        num_bad_krtd_fps += 1
+      end
+    end
+
+    return [valid_img_fps,
+           krtd_fps,
+           num_bad_img_fps,
+           num_bad_krtd_fps]
   end
 
   def make_camera_mesh(camera, length=1.0)
@@ -133,55 +172,47 @@ class MatchphotoMaptkImporter < Sketchup::Importer
     material.color = 'red'
     cam_group = entities.add_group
     cam_group.layer = cam_layer
-    smooth_flags = Geom::PolygonMesh::NO_SMOOTH_OR_HIDE
-    img_fps = read_in_image_fps(file_path)
+    mesh = Geom::PolygonMesh.new
+    smooth_flags = 0#Geom::PolygonMesh::NO_SMOOTH_OR_HIDE#
 
+    raw_img_fps = read_in_image_fps(file_path).sort
+    fps_conglomerate = check_for_krtd(raw_img_fps,file_path,guess_krtd_location_flag)
+    img_fps  = fps_conglomerate[0]
+    krtd_fps = fps_conglomerate[1]
     # if there are more than 10 images in the list, let the user select how many to use
     if img_fps.size > 10
       prompts = ["How many frames do you want to use?"]
       defaults = ["10"]
-      num_frames = UI.inputbox(prompts, defaults, "Number of #{img_fps.size} available frames to use")[0].to_i
-
+      # subtracting one to remove off-by-one error in following loop
+      num_frames = (UI.inputbox(prompts, defaults, "Number of #{img_fps.size} available frames to use")[0].to_i) - 1
       new_img_fps = Array.new
+      new_krtd_fps = Array.new
+
+      #intelligently down-sampling the cameras
       for i in 0..num_frames
         idx = ((img_fps.size-1) * (i.to_f / num_frames)).to_i
+        new_krtd_fps.push krtd_fps[idx]
         new_img_fps.push img_fps[idx]
       end
+
+      krtd_fps = new_krtd_fps
       img_fps = new_img_fps
     end
 
-    not_opened = Array.new
-    img_fps.each do |img_fp|
-
-      # if not a valid path, try prepending the directory of the image list file
-      if ! File.file?(img_fp)
-        img_fp = File.join(File.dirname(file_path), img_fp)
-      end
-
-      krtd_fname = nil
-      if guess_krtd_location_flag
-        krtd_fname = guess_krtd_location(img_fp)
-      else
-        krtd_fname = File.join(@_krtd_prefix, swap_img_ext_for_krtd(img_fp))
-      end
-
-      if not File.exists?(krtd_fname)
-        not_opened.push(File.basename(img_fp))
-        next
-      end
+    #for loop ranges are inclusive on both bounds
+    for i in 0..(krtd_fps.length - 1)
+      img_fp  = img_fps[i]
+      krtd_fname = krtd_fps[i]
       new_cam = load_camera(krtd_fname)
       scale = new_cam.eye.distance(Geom::Point3d.new) / 3
       cam_mesh = make_camera_mesh(new_cam, scale)
       cam_group.entities.add_faces_from_mesh(cam_mesh, smooth_flags, material, material)
-
       page = pages.add_matchphoto_page(img_fp, camera = new_cam, page_name = File.basename(img_fp))
       page.transition_time = 0
     end
-    if ! not_opened.empty?
-      UI.messagebox("Failed to open #{not_opened.length} krtd files")
-    end
 
-    if pages.length > 0
+    #SketchUp 8 does not support pages.length
+    if pages.count > 0
       pages.selected_page = pages[0]
       return 0
     else
@@ -194,21 +225,20 @@ class MatchphotoMaptkImporter < Sketchup::Importer
   def guess_krtd_location(s)
     return File.join(File.dirname(s), swap_img_ext_for_krtd(File.basename(s)))
   end
-  
+
   def swap_img_ext_for_krtd(s)
     file_name = File.basename(s)
     img_ext_to_swap = File.extname(file_name)
     bname =  file_name.split(img_ext_to_swap)[0]
     return  "#{bname}.krtd"
   end
-  
+
   def swap_krtd_ext_for(s, img_ext)
     # have to make sure there is a dot in the specified extension
     img_ext = img_ext[0] == "." ? img_ext : "." + img_ext
     return s.split(".krtd")[0] + img_ext
   end
-    
+
 end
 
 Sketchup.register_importer(MatchphotoMaptkImporter.new)
-      

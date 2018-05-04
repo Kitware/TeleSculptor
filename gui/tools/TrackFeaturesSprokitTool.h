@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2017 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,46 +28,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_PROJECT_H_
-#define MAPTK_PROJECT_H_
+#ifndef MAPTK_TRACKFEATURESSPROKITTOOL_H_
+#define MAPTK_TRACKFEATURESSPROKITTOOL_H_
 
-#include <vital/config/config_block_io.h>
+#include "AbstractTool.h"
+#include <sstream>
 
-#include <QtCore/QDir>
-#include <QtCore/QMap>
-#include <QtCore/QStringList>
+class TrackFeaturesSprokitToolPrivate;
 
-class Project : public QObject
+class TrackFeaturesSprokitTool : public AbstractTool
 {
   Q_OBJECT
 
-// TODO: Encapsulate data and add accessors
 public:
+  explicit TrackFeaturesSprokitTool(QObject* parent = 0);
+  virtual ~TrackFeaturesSprokitTool();
+  virtual Outputs outputs() const QTE_OVERRIDE;
 
-  Project();
-  Project(QString dir);
+  /// Get if the tool can be canceled.
+  virtual bool isCancelable() const QTE_OVERRIDE { return true; }
 
-  bool read(QString const& path);
+  virtual bool execute(QWidget* window = 0) QTE_OVERRIDE;
 
-  QString getContingentRelativePath(QString filepath);
+protected:
+  virtual void run() QTE_OVERRIDE;
 
-  QDir workingDir;
+  virtual std::string create_pipeline_config(QWidget* window = 0);
 
-  QString filePath;
-  QString videoPath;
-
-  QString tracksPath;
-  QString landmarksPath;
-  QString volumePath;
-  QString cameraPath;
-  QString geoOriginFile;
-  QString depthPath;
-
-  kwiver::vital::config_block_sptr projectConfig;
-
-public slots:
-  void write();
-
+private:
+  QTE_DECLARE_PRIVATE_RPTR(TrackFeaturesSprokitTool)
+  QTE_DECLARE_PRIVATE(TrackFeaturesSprokitTool)
+  QTE_DISABLE_COPY(TrackFeaturesSprokitTool)
 };
 
-#endif
+#endif // MAPTK_TRACKFEATURESSPROKITTOOL_H_

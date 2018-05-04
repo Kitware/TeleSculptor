@@ -87,6 +87,7 @@ public slots:
 
   void setActiveCamera(int id);
 
+  void queueResetView();
   void resetView();
   void resetViewToLandmarks();
 

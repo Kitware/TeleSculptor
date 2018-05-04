@@ -33,6 +33,7 @@
 
 #include <maptk/version.h>
 
+#include <kwiversys/SystemTools.hxx>
 #include <vital/plugin_loader/plugin_manager.h>
 
 #include <qtCliArgs.h>
@@ -73,9 +74,19 @@ int main(int argc, char** argv)
 
   // Load KWIVER plugins
   auto const exeDir = QDir(QApplication::applicationDirPath());
-  auto const rel_path = stdString(exeDir.absoluteFilePath("..")) + "/lib/modules";
-  kwiver::vital::plugin_manager::instance().add_search_path(rel_path);
-  kwiver::vital::plugin_manager::instance().load_all_plugins();
+  auto const rel_path = stdString(exeDir.absoluteFilePath(".."));
+  auto & vpm = kwiver::vital::plugin_manager::instance();
+  vpm.add_search_path(rel_path + "/lib/modules");
+  vpm.add_search_path(rel_path + "/lib/sprokit");
+  vpm.load_all_plugins();
+
+  // Tell PROJ where to find its data files
+  std::string rel_proj_path = rel_path + "/share/proj";
+  if ( kwiversys::SystemTools::FileExists(rel_proj_path) &&
+       kwiversys::SystemTools::FileIsDirectory(rel_proj_path) )
+  {
+    kwiversys::SystemTools::PutEnv("PROJ_LIB="+rel_proj_path);
+  }
 
   // Create and show main window
   MainWindow window;

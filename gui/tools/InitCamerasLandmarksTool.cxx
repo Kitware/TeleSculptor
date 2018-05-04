@@ -29,19 +29,11 @@
  */
 
 #include "InitCamerasLandmarksTool.h"
-
-#include <maptk/version.h>
+#include "GuiCommon.h"
 
 #include <vital/algo/initialize_cameras_landmarks.h>
 
-#include <vital/config/config_block_io.h>
-
-#include <qtStlUtil.h>
-
-#include <QtGui/QApplication>
 #include <QtGui/QMessageBox>
-
-#include <QtCore/QDir>
 
 using kwiver::vital::algo::initialize_cameras_landmarks;
 using kwiver::vital::algo::initialize_cameras_landmarks_sptr;
@@ -50,24 +42,6 @@ namespace
 {
 static char const* const BLOCK = "initializer";
 static char const* const CONFIG_FILE = "gui_initialize.conf";
-
-//-----------------------------------------------------------------------------
-kwiver::vital::config_block_sptr readConfig(std::string const& name)
-{
-  try
-  {
-    using kwiver::vital::read_config_file;
-
-    auto const exeDir = QDir(QApplication::applicationDirPath());
-    auto const prefix = stdString(exeDir.absoluteFilePath(".."));
-    return read_config_file(name, "maptk", MAPTK_VERSION, prefix);
-  }
-  catch (...)
-  {
-    return {};
-  }
-}
-
 }
 
 //-----------------------------------------------------------------------------
@@ -113,7 +87,7 @@ bool InitCamerasLandmarksTool::execute(QWidget* window)
     return false;
   }
 
-  // Load configuration
+  // Merge project config with default config file
   auto const config = readConfig(CONFIG_FILE);
 
   // Check configuration
@@ -126,6 +100,7 @@ bool InitCamerasLandmarksTool::execute(QWidget* window)
     return false;
   }
 
+  config->merge_config(this->data()->config);
   if (!initialize_cameras_landmarks::check_nested_algo_configuration(BLOCK, config))
   {
     QMessageBox::critical(
@@ -135,7 +110,8 @@ bool InitCamerasLandmarksTool::execute(QWidget* window)
   }
 
   // Create algorithm from configuration
-  initialize_cameras_landmarks::set_nested_algo_configuration(BLOCK, config, d->algorithm);
+  initialize_cameras_landmarks::set_nested_algo_configuration(
+    BLOCK, config, d->algorithm);
 
   // Set the callback to receive updates
   using std::placeholders::_1;

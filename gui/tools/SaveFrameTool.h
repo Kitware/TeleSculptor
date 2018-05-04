@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,46 +28,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_PROJECT_H_
-#define MAPTK_PROJECT_H_
+#ifndef MAPTK_SAVEFRAMETOOL_H_
+#define MAPTK_SAVEFRAMETOOL_H_
 
-#include <vital/config/config_block_io.h>
+#include "AbstractTool.h"
 
-#include <QtCore/QDir>
-#include <QtCore/QMap>
-#include <QtCore/QStringList>
+class SaveFrameToolPrivate;
 
-class Project : public QObject
+class SaveFrameTool : public AbstractTool
 {
   Q_OBJECT
 
-// TODO: Encapsulate data and add accessors
 public:
+  explicit SaveFrameTool(QObject* parent = 0);
+  virtual ~SaveFrameTool();
 
-  Project();
-  Project(QString dir);
+  virtual Outputs outputs() const QTE_OVERRIDE;
 
-  bool read(QString const& path);
+  /// Get if the tool can be canceled.
+  virtual bool isCancelable() const QTE_OVERRIDE { return true; }
 
-  QString getContingentRelativePath(QString filepath);
+  virtual bool execute(QWidget* window = 0) QTE_OVERRIDE;
 
-  QDir workingDir;
+protected:
+  virtual void run() QTE_OVERRIDE;
 
-  QString filePath;
-  QString videoPath;
-
-  QString tracksPath;
-  QString landmarksPath;
-  QString volumePath;
-  QString cameraPath;
-  QString geoOriginFile;
-  QString depthPath;
-
-  kwiver::vital::config_block_sptr projectConfig;
-
-public slots:
-  void write();
-
+private:
+  QTE_DECLARE_PRIVATE_RPTR(SaveFrameTool)
+  QTE_DECLARE_PRIVATE(SaveFrameTool)
+  QTE_DISABLE_COPY(SaveFrameTool)
 };
 
 #endif
