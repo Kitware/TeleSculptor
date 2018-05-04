@@ -1099,6 +1099,7 @@ void MainWindowPrivate::updateProgress(const QString& name,
     {
       this->UI.progressWidget->setValue(n, value);
       this->UI.progressWidget->setRange(n, 0, 100);
+      break;
     }
   }
 }
