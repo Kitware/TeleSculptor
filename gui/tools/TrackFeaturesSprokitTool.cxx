@@ -352,6 +352,11 @@ TrackFeaturesSprokitTool
         auto klt_frame_tracks = ix->second->get_datum<kwiver::vital::feature_track_set_sptr>();
         //we have klt frames from current frame, yipee
         accumulated_tracks->merge_in_other_track_set(klt_frame_tracks);
+
+        auto data = std::make_shared<ToolData>();
+        data->copyTracks(accumulated_tracks);
+        data->activeFrame = *(accumulated_tracks->all_frame_ids().rbegin());
+        emit updated(data);
       }
     }
   }
@@ -365,8 +370,11 @@ TrackFeaturesSprokitTool
     {
       auto klt_frame_tracks = ix->second->get_datum<kwiver::vital::feature_track_set_sptr>();
       accumulated_tracks->merge_in_other_track_set(klt_frame_tracks);
+      auto data = std::make_shared<ToolData>();
+      data->copyTracks(accumulated_tracks);
+      data->activeFrame = *(accumulated_tracks->all_frame_ids().rbegin());
+      emit updated(data);
     }
-
   }
   d->ep.wait();
 
@@ -397,8 +405,15 @@ TrackFeaturesSprokitTool
   for (auto fid : keyframes)
   {
     loop_detected_tracks = d->m_loop_closer->stitch(fid, loop_detected_tracks, kwiver::vital::image_container_sptr());
+    auto data = std::make_shared<ToolData>();
+    data->copyTracks(loop_detected_tracks);
+    data->activeFrame = fid;
+
+    emit updated(data);
   }
 
+  d->video_reader->close();
   this->updateTracks(loop_detected_tracks);
+  this->setActiveFrame(frame);
 
 }
