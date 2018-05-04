@@ -36,6 +36,9 @@
 
 #include <vital/algo/convert_image.h>
 #include <vital/algo/video_input.h>
+#include <vital/algo/keyframe_selection.h>
+#include <vital/algo/track_features.h>
+#include <vital/algo/close_loops.h>
 
 #include <vital/config/config_block_io.h>
 #include <vital/types/metadata.h>
@@ -54,11 +57,20 @@ using kwiver::vital::algo::convert_image;
 using kwiver::vital::algo::convert_image_sptr;
 using kwiver::vital::algo::video_input;
 using kwiver::vital::algo::video_input_sptr;
+using kwiver::vital::algo::keyframe_selection;
+using kwiver::vital::algo::keyframe_selection_sptr;
+using kwiver::vital::algo::track_features;
+using kwiver::vital::algo::track_features_sptr;
+using kwiver::vital::algo::close_loops;
+using kwiver::vital::algo::close_loops_sptr;
 
 namespace
 {
   static char const* const BLOCK_CI = "image_converter";
   static char const* const BLOCK_VR = "video_reader";
+  static char const* const BLOCK_KS = "keyframe_selector";
+  static char const* const BLOCK_DF = "detect_features";
+  static char const* const BLOCK_CL = "close_loops";
 }  // end anonymous namespace
 
 
@@ -71,6 +83,11 @@ public:
   convert_image_sptr image_converter;
   video_input_sptr video_reader;
   kwiver::embedded_pipeline ep;
+
+  keyframe_selection_sptr m_keyframe_selection;
+  track_features_sptr m_detect_if_keyframe;
+  close_loops_sptr m_loop_closer;
+
 };
 
 TrackFeaturesSprokitToolPrivate
@@ -115,7 +132,7 @@ bool TrackFeaturesSprokitTool::execute(QWidget* window)
   }
 
   // Load configuration
-  auto const config = readConfig("gui_track_features.conf");
+  auto const config = readConfig("gui_track_features_sprokit.conf");
 
   // Check configuration
   if (!config)
@@ -128,7 +145,10 @@ bool TrackFeaturesSprokitTool::execute(QWidget* window)
 
   config->merge_config(this->data()->config);
   if (!convert_image::check_nested_algo_configuration(BLOCK_CI, config) ||
-      !video_input::check_nested_algo_configuration(BLOCK_VR, config))
+      !video_input::check_nested_algo_configuration(BLOCK_VR, config)   ||
+      !keyframe_selection::check_nested_algo_configuration(BLOCK_KS,config) ||
+      !track_features::check_nested_algo_configuration(BLOCK_DF, config) ||
+      !close_loops::check_nested_algo_configuration(BLOCK_CL, config) )
   {
     QMessageBox::critical(
       window, "Configuration error",
@@ -139,6 +159,9 @@ bool TrackFeaturesSprokitTool::execute(QWidget* window)
   // Create algorithm from configuration
   convert_image::set_nested_algo_configuration(BLOCK_CI, config, d->image_converter);
   video_input::set_nested_algo_configuration(BLOCK_VR, config, d->video_reader);
+  keyframe_selection::set_nested_algo_configuration(BLOCK_KS, config, d->m_keyframe_selection);
+  track_features::set_nested_algo_configuration(BLOCK_DF, config, d->m_detect_if_keyframe);
+  close_loops::set_nested_algo_configuration(BLOCK_CL, config, d->m_loop_closer);
 
   std::stringstream pipe_str(create_pipeline_config(window));
   if (pipe_str.str().empty())
@@ -208,32 +231,32 @@ TrackFeaturesSprokitTool
       << SPROKIT_CONFIG("track_features:ocv_KLT:feature_detector:ocv_FAST:threshold", "50")
       << SPROKIT_CONFIG("track_features:ocv_KLT:feature_detector:ocv_FAST:nonmaxSuppression", "true")
 
-      << SPROKIT_PROCESS("keyframe_selection_process", "keyframes")
-      << SPROKIT_CONFIG("keyframe_selection_1:type", "basic")
-      << SPROKIT_CONFIG("keyframe_selection_1:basic:fraction_tracks_lost_to_necessitate_new_keyframe", "0.01")
+      //<< SPROKIT_PROCESS("keyframe_selection_process", "keyframes")
+      //<< SPROKIT_CONFIG("keyframe_selection_1:type", "basic")
+      //<< SPROKIT_CONFIG("keyframe_selection_1:basic:fraction_tracks_lost_to_necessitate_new_keyframe", "0.01")
 
-      << SPROKIT_PROCESS("detect_features_if_keyframe_process", "detect_if_keyframe")
-      << SPROKIT_CONFIG("augment_keyframes:type","augment_keyframes")
-      << SPROKIT_CONFIG("augment_keyframes:augment_keyframes:kf_only_feature_detector:type", "ocv_ORB")
-      << SPROKIT_CONFIG("augment_keyframes:augment_keyframes:kf_only_descriptor_extractor:type", "ocv_ORB")
-      << SPROKIT_CONFIG("augment_keyframes:augment_keyframes:kf_only_feature_detector:ocv_ORB:n_features", "2000")
-      << SPROKIT_CONFIG("augment_keyframes:augment_keyframes:kf_only_feature_detector:ocv_ORB:patch_size", "31")
-      << SPROKIT_CONFIG("augment_keyframes:augment_keyframes:kf_only_feature_detector:ocv_ORB:n_levels", "8")
-      << SPROKIT_CONFIG("augment_keyframes:augment_keyframes:kf_only_feature_detector:ocv_ORB:fast_threshold", "20")
+      //<< SPROKIT_PROCESS("detect_features_if_keyframe_process", "detect_if_keyframe")
+      //<< SPROKIT_CONFIG("augment_keyframes:type","augment_keyframes")
+      //<< SPROKIT_CONFIG("augment_keyframes:augment_keyframes:kf_only_feature_detector:type", "ocv_ORB")
+      //<< SPROKIT_CONFIG("augment_keyframes:augment_keyframes:kf_only_descriptor_extractor:type", "ocv_ORB")
+      //<< SPROKIT_CONFIG("augment_keyframes:augment_keyframes:kf_only_feature_detector:ocv_ORB:n_features", "2000")
+      //<< SPROKIT_CONFIG("augment_keyframes:augment_keyframes:kf_only_feature_detector:ocv_ORB:patch_size", "31")
+      //<< SPROKIT_CONFIG("augment_keyframes:augment_keyframes:kf_only_feature_detector:ocv_ORB:n_levels", "8")
+      //<< SPROKIT_CONFIG("augment_keyframes:augment_keyframes:kf_only_feature_detector:ocv_ORB:fast_threshold", "20")
 
-      << SPROKIT_PROCESS("close_loops_process", "loop_detector")
-      << SPROKIT_CONFIG("close_loops:type", "appearance_indexed")
-      << SPROKIT_CONFIG("close_loops:appearance_indexed:min_loop_inlier_matches", "50")
-      << SPROKIT_CONFIG("close_loops:appearance_indexed:match_features:type", "homography_guided")
-      << SPROKIT_CONFIG("close_loops:appearance_indexed:match_features:homography_guided:homography_estimator:type", "ocv")
-      << SPROKIT_CONFIG("close_loops:appearance_indexed:match_features:homography_guided:feature_matcher1:type", "ocv_brute_force")
-      << SPROKIT_CONFIG("close_loops:appearance_indexed:bag_of_words_matching:type", "dbow2")
-      << SPROKIT_CONFIG("close_loops:appearance_indexed:bag_of_words_matching:dbow2:feature_detector:type", "ocv_ORB")
-      << SPROKIT_CONFIG("close_loops:appearance_indexed:bag_of_words_matching:dbow2:descriptor_extractor:type", "ocv_ORB")
-      << SPROKIT_CONFIG("close_loops:appearance_indexed:bag_of_words_matching:dbow2:image_io:type", "ocv")
-      << SPROKIT_CONFIG("close_loops:appearance_indexed:bag_of_words_matching:dbow2:max_num_candidate_matches_from_vocabulary_tree", "20")
-      << SPROKIT_CONFIG("close_loops:appearance_indexed:bag_of_words_matching:dbow2:training_image_list_path", "")
-      << SPROKIT_CONFIG("close_loops:appearance_indexed:bag_of_words_matching:dbow2:vocabulary_path", voc_path)
+      //<< SPROKIT_PROCESS("close_loops_process", "loop_detector")
+      //<< SPROKIT_CONFIG("close_loops:type", "appearance_indexed")
+      //<< SPROKIT_CONFIG("close_loops:appearance_indexed:min_loop_inlier_matches", "50")
+      //<< SPROKIT_CONFIG("close_loops:appearance_indexed:match_features:type", "homography_guided")
+      //<< SPROKIT_CONFIG("close_loops:appearance_indexed:match_features:homography_guided:homography_estimator:type", "ocv")
+      //<< SPROKIT_CONFIG("close_loops:appearance_indexed:match_features:homography_guided:feature_matcher1:type", "ocv_brute_force")
+      //<< SPROKIT_CONFIG("close_loops:appearance_indexed:bag_of_words_matching:type", "dbow2")
+      //<< SPROKIT_CONFIG("close_loops:appearance_indexed:bag_of_words_matching:dbow2:feature_detector:type", "ocv_ORB")
+      //<< SPROKIT_CONFIG("close_loops:appearance_indexed:bag_of_words_matching:dbow2:descriptor_extractor:type", "ocv_ORB")
+      //<< SPROKIT_CONFIG("close_loops:appearance_indexed:bag_of_words_matching:dbow2:image_io:type", "ocv")
+      //<< SPROKIT_CONFIG("close_loops:appearance_indexed:bag_of_words_matching:dbow2:max_num_candidate_matches_from_vocabulary_tree", "20")
+      //<< SPROKIT_CONFIG("close_loops:appearance_indexed:bag_of_words_matching:dbow2:training_image_list_path", "")
+      //<< SPROKIT_CONFIG("close_loops:appearance_indexed:bag_of_words_matching:dbow2:vocabulary_path", voc_path)
 
       << SPROKIT_PROCESS("output_adapter", "output")
       << SPROKIT_CONFIG_BLOCK("_pipeline:_edge")
@@ -243,17 +266,20 @@ TrackFeaturesSprokitTool
       << SPROKIT_CONNECT("input", "timestamp", "tracker", "timestamp")
       << SPROKIT_CONNECT("tracker", "feature_track_set", "tracker", "feature_track_set")
       << SPROKIT_CONNECT("tracker", "feature_track_set", "output", "klt_frame_track_set")
-      << SPROKIT_CONNECT("tracker", "feature_track_set", "keyframes", "next_tracks")
-      << SPROKIT_CONNECT("input", "timestamp", "keyframes", "timestamp")
-      << SPROKIT_CONNECT("keyframes", "to_loop_back_tracks", "keyframes", "loop_back_tracks")
-      << SPROKIT_CONNECT("keyframes", "only_frame_data_tracks", "detect_if_keyframe", "next_tracks")
-      << SPROKIT_CONNECT("detect_if_keyframe", "feature_track_set", "detect_if_keyframe", "loop_back_tracks")
-      << SPROKIT_CONNECT("input", "image", "detect_if_keyframe", "image")
-      << SPROKIT_CONNECT("input", "timestamp", "detect_if_keyframe", "timestamp")
-      << SPROKIT_CONNECT("detect_if_keyframe", "feature_track_set", "loop_detector", "next_tracks")
-      << SPROKIT_CONNECT("loop_detector", "feature_track_set", "loop_detector", "loop_back_tracks")
-      << SPROKIT_CONNECT("input", "timestamp", "loop_detector", "timestamp")
-      << SPROKIT_CONNECT("loop_detector", "feature_track_set", "output", "feature_track_set");
+
+
+      //<< SPROKIT_CONNECT("tracker", "feature_track_set", "keyframes", "next_tracks")
+      //<< SPROKIT_CONNECT("input", "timestamp", "keyframes", "timestamp")
+      //<< SPROKIT_CONNECT("keyframes", "to_loop_back_tracks", "keyframes", "loop_back_tracks")
+      //<< SPROKIT_CONNECT("keyframes", "only_frame_data_tracks", "detect_if_keyframe", "next_tracks")
+      //<< SPROKIT_CONNECT("detect_if_keyframe", "feature_track_set", "detect_if_keyframe", "loop_back_tracks")
+      //<< SPROKIT_CONNECT("input", "image", "detect_if_keyframe", "image")
+      //<< SPROKIT_CONNECT("input", "timestamp", "detect_if_keyframe", "timestamp")
+      //<< SPROKIT_CONNECT("detect_if_keyframe", "feature_track_set", "loop_detector", "next_tracks")
+      //<< SPROKIT_CONNECT("loop_detector", "feature_track_set", "loop_detector", "loop_back_tracks")
+      //<< SPROKIT_CONNECT("input", "timestamp", "loop_detector", "timestamp")
+      //<< SPROKIT_CONNECT("loop_detector", "feature_track_set", "output", "feature_track_set")
+      ;
   }
 
   return ss.str();
@@ -271,7 +297,7 @@ TrackFeaturesSprokitTool
   // Start pipeline and wait for it to finish
   d->ep.start();
 
-  kwiver::vital::frame_id_t frame = this->activeFrame();
+  const kwiver::vital::frame_id_t frame = this->activeFrame();
   kwiver::vital::timestamp currentTimestamp;
 
   d->video_reader->open(this->data()->videoPath);
@@ -290,7 +316,6 @@ TrackFeaturesSprokitTool
   kwiver::vital::feature_track_set_sptr accumulated_tracks =
     std::make_shared<kwiver::vital::feature_track_set>(
     tsi_uptr(new kwiver::arrows::core::frame_index_track_set_impl()));
-
 
   while (d->video_reader->next_frame(currentTimestamp))
   {
@@ -321,20 +346,7 @@ TrackFeaturesSprokitTool
     if (!d->ep.empty())
     {
       auto rds = d->ep.receive();
-      auto ix = rds->find("feature_track_set");
-      if (ix != rds->end())
-      {
-        auto out_tracks = ix->second->get_datum<kwiver::vital::feature_track_set_sptr>();
-        // make a copy of the tool data
-        auto data = std::make_shared<ToolData>();
-        data->copyTracks(out_tracks);
-        data->activeFrame = out_tracks->last_frame();
-        data->progress = progress();
-        data->description = description().toStdString();
-        emit updated(data);
-      }
-
-      ix = rds->find("klt_frame_track_set");
+      auto ix = rds->find("klt_frame_track_set");
       if( ix != rds->end())
       {
         auto klt_frame_tracks = ix->second->get_datum<kwiver::vital::feature_track_set_sptr>();
@@ -345,34 +357,48 @@ TrackFeaturesSprokitTool
   }
   d->ep.send_end_of_input();
 
-  kwiver::vital::feature_track_set_sptr out_tracks;
   while (!d->ep.at_end())
   {
     auto rds = d->ep.receive();
-    auto ix = rds->find("feature_track_set");
-    if (ix != rds->end())
-    {
-      out_tracks = ix->second->get_datum<kwiver::vital::feature_track_set_sptr>();
-      // make a copy of the tool data
-      auto data = std::make_shared<ToolData>();
-      data->copyTracks(out_tracks);
-      data->activeFrame = out_tracks->last_frame();
-      emit updated(data);
-    }
-
-    ix = rds->find("klt_frame_track_set");
+    auto ix = rds->find("klt_frame_track_set");
     if (ix != rds->end())
     {
       auto klt_frame_tracks = ix->second->get_datum<kwiver::vital::feature_track_set_sptr>();
-      //we have klt frames from current frame, yipee
       accumulated_tracks->merge_in_other_track_set(klt_frame_tracks);
     }
 
   }
   d->ep.wait();
 
-  out_tracks->merge_in_other_track_set(accumulated_tracks,true);
+  //select the keyframes
+  auto kf_tracks = std::static_pointer_cast<kwiver::vital::feature_track_set>(d->m_keyframe_selection->select(accumulated_tracks));
 
-  this->updateTracks(out_tracks);
+  //do the feature extraction on keyframes
+  auto matchable_tracks = kf_tracks;
+
+  d->video_reader->close();
+  d->video_reader->open(this->data()->videoPath);
+
+  if (frame > 1)
+  {
+    d->video_reader->seek_frame(currentTimestamp, frame - 1);
+  }
+
+  while (d->video_reader->next_frame(currentTimestamp))
+  {
+    auto const image = d->video_reader->frame_image();
+    auto const converted_image = d->image_converter->convert(image);
+
+    matchable_tracks = std::static_pointer_cast<kwiver::vital::feature_track_set>(d->m_detect_if_keyframe->track(matchable_tracks,currentTimestamp.get_frame(),converted_image));
+  }
+
+  auto keyframes = matchable_tracks->keyframes();
+  auto loop_detected_tracks = matchable_tracks;
+  for (auto fid : keyframes)
+  {
+    loop_detected_tracks = d->m_loop_closer->stitch(fid, loop_detected_tracks, kwiver::vital::image_container_sptr());
+  }
+
+  this->updateTracks(loop_detected_tracks);
 
 }
