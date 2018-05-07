@@ -33,6 +33,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <time.h>
 
 #include <vital/algo/convert_image.h>
 #include <vital/algo/video_input.h>
@@ -317,6 +318,10 @@ TrackFeaturesSprokitTool
     std::make_shared<kwiver::vital::feature_track_set>(
     tsi_uptr(new kwiver::arrows::core::frame_index_track_set_impl()));
 
+  double disp_period = 2;
+  time_t last_disp_time;
+  time(&last_disp_time);
+
   while (d->video_reader->next_frame(currentTimestamp))
   {
     auto const image = d->video_reader->frame_image();
@@ -353,10 +358,17 @@ TrackFeaturesSprokitTool
         //we have klt frames from current frame, yipee
         accumulated_tracks->merge_in_other_track_set(klt_frame_tracks);
 
-        auto data = std::make_shared<ToolData>();
-        data->copyTracks(accumulated_tracks);
-        data->activeFrame = *(accumulated_tracks->all_frame_ids().rbegin());
-        emit updated(data);
+        time_t cur_time;
+        time(&cur_time);
+        double seconds_since_last_disp = difftime(cur_time, last_disp_time);
+        if (seconds_since_last_disp > disp_period)
+        {
+          last_disp_time = cur_time;
+          auto data = std::make_shared<ToolData>();
+          data->copyTracks(accumulated_tracks);
+          data->activeFrame = *(accumulated_tracks->all_frame_ids().rbegin());
+          emit updated(data);
+        }
       }
     }
   }
@@ -370,10 +382,18 @@ TrackFeaturesSprokitTool
     {
       auto klt_frame_tracks = ix->second->get_datum<kwiver::vital::feature_track_set_sptr>();
       accumulated_tracks->merge_in_other_track_set(klt_frame_tracks);
-      auto data = std::make_shared<ToolData>();
-      data->copyTracks(accumulated_tracks);
-      data->activeFrame = *(accumulated_tracks->all_frame_ids().rbegin());
-      emit updated(data);
+
+      time_t cur_time;
+      time(&cur_time);
+      double seconds_since_last_disp = difftime(cur_time, last_disp_time);
+      if (seconds_since_last_disp > disp_period)
+      {
+        last_disp_time = cur_time;
+        auto data = std::make_shared<ToolData>();
+        data->copyTracks(accumulated_tracks);
+        data->activeFrame = *(accumulated_tracks->all_frame_ids().rbegin());
+        emit updated(data);
+      }
     }
   }
   d->ep.wait();
@@ -405,11 +425,18 @@ TrackFeaturesSprokitTool
   for (auto fid : keyframes)
   {
     loop_detected_tracks = d->m_loop_closer->stitch(fid, loop_detected_tracks, kwiver::vital::image_container_sptr());
-    auto data = std::make_shared<ToolData>();
-    data->copyTracks(loop_detected_tracks);
-    data->activeFrame = fid;
 
-    emit updated(data);
+    time_t cur_time;
+    time(&cur_time);
+    double seconds_since_last_disp = difftime(cur_time, last_disp_time);
+    if (seconds_since_last_disp > disp_period)
+    {
+      last_disp_time = cur_time;
+      auto data = std::make_shared<ToolData>();
+      data->copyTracks(loop_detected_tracks);
+      data->activeFrame = fid;
+      emit updated(data);
+    }
   }
 
   d->video_reader->close();
