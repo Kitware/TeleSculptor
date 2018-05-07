@@ -372,9 +372,20 @@ Menu
 File Menu
 ---------
 
+:icon:`blank` New Project
+  Select a working directory for a project.  A project directory must be set
+  before the tools in the Compute menu can be run.  These tool will write files
+  into the project working directory.  A configuration file with the same name
+  as the directory is also created in the directory.  The project configuration
+  file stores references to the project data such as the source video and
+  computed results like cameras, tracks, or landmarks that will be loaded back
+  in when a project is opened.
+
 :icon:`open` Open
   Presents a dialog that allows the selection of one or more data files to be
-  loaded into the session.
+  loaded into the session.  Open is used to open a project config file, but can
+  also be used to open other files for inspection, like cameras and videos.
+  Once a project is created, this is how you open a video to be process.
 
 :icon:`blank` Export
   Provides options for exporting various data.
@@ -385,9 +396,72 @@ File Menu
 Compute Menu
 ------------
 
-:icon:`blank` Refine
+:icon:`blank` Track Features Dense
+  Run feature tracking on the loaded video starting from the current frame.
+  Features and descriptors are detected and each frame and cached into a file
+  in the project directory.  Features are then matched between adjacent frames
+  as well as between the current frame as past keyframes.  These feature
+  matches form "tracks" through time, and each track has the potential to
+  become a landmark.
+
+:icon:`blank` Triangulate Landmarks
+  For each available feature track, back project rays from the cameras that
+  contain each track state and intersect those rays in 3D to estimate the
+  location of a 3D landmark.  This requires both feature tracks and a
+  reasonably accurate set of cameras.
+
+:icon:`blank` Refine Solution
   Applies bundle adjustment to the cameras and landmarks in order to refine the
-  quality of the 3D reconstruction.
+  quality of the 3D reconstruction. It aims to minimze this distance between
+  the landmarks projected into each image by the cameras and the observed
+  location of the corresponding feature tracks.
+
+:icon:`blank` Save Frames
+  Iterate through a video and save every frame as an image file in a
+  subdirectory of the project directory.  This is needed when exporting
+  the data to other tools that do not support video files.  This option
+  must be run before importing a project into SketchUp.
+
+:icon:`blank` Compute Depth Map
+  Estimate a dense depth map and corresponding point cloud from the current
+  frame.  This requires a valid camera on the current frame as well as cameras
+  on other frames for triangulation.  It also requires landmarks, which are
+  used to fit the bounds in space in which the dense depth is estimated.
+
+Compute Menu -> Advanced
+------------------------
+
+:icon:`blank` Track Features
+  Run feature tracking on the loaded video.  This is similar to the dense
+  feature tracking tool, but uses a two stage approach.  It first uses sparse
+  optical flow (KLT) to quickly track the flow of feature points through video.
+  From these feature tracks it identifies keyframes and then runs a second
+  stage feature and descriptor detection and matching on only the keyframes.
+  Keyframes are matched quickly with a bag of visual words index.  This
+  approach should be much faster than the original dense feature matcher.
+  However, the current implementation is bogged down by memory copies and
+  needs to be redesigned.
+
+:icon:`blank` Reverse (Necker)
+  Transforms the cameras and landmarks in a manner intended to break the
+  refinement process out of a degenerate optimization (which can occur due to
+  the Necker cube phenomena\ [#nc]_), by computing a best fit plane to the
+  landmarks, mirroring the landmarks about said plane, and rotating the cameras
+  180\ |deg| about their respective optical axes and 180\ |deg| about the
+  best fit plane normal where each camera's optical axis intersects said plane.
+
+:icon:`blank` Filter Tracks
+  Filter the the tracks to retain a smaller subset of tracks that is still
+  representative of the original set.  The intent is to make bundle adjustment
+  (refine solution tool) faster without loosing critical constraints.  The
+  filter attempts to remove the shortest tracks that span the same frames
+  already covered by longer tracks.
+
+:icon:`blank` Estimate Cameras/Landmarks
+  Bootstraps booth cameras and landmarks starting only with tracks.  This also
+  runs bundle adjustment (refinement) along the way.  The goal is to
+  incrementally add cameras and landmarks, while optimizing, to build up
+  a consistent solution.  This tool does not yet use metadata as a constraint.
 
 :icon:`blank` Align
   Applies a similarity transformation to the camera and landmark data so that
@@ -397,13 +471,6 @@ Compute Menu
   landmarks will be centered about the origin and scaled to an approximate
   variance of :f:`1.0`.
 
-:icon:`blank` Reverse (Necker)
-  Transforms the cameras and landmarks in a manner intended to break the
-  refinement process out of a degenerate optimization (which can occur due to
-  the Necker cube phenomena\ [#nc]_), by computing a best fit plane to the
-  landmarks, mirroring the landmarks about said plane, and rotating the cameras
-  180\ |deg| about their respective optical axes and 180\ |deg| about the
-  best fit plane normal where each camera's optical axis intersects said plane.
 
 View Menu
 ---------

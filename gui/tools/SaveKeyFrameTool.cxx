@@ -50,8 +50,8 @@ namespace
 {
 static char const* const BLOCK_VR = "video_reader";
 static char const* const BLOCK_IW = "image_writer";
-static char const* const KEYFRAMES_TAG = "output_keyframes_dir";
-static char const* const KEYFRAMES_PATH = "results/keyframes";
+static char const* const KEYFRAMES_TAG = "output_frames_dir";
+static char const* const KEYFRAMES_PATH = "results/frames";
 }
 
 QTE_IMPLEMENT_D_FUNC(SaveKeyFrameTool)

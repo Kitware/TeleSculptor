@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2017 by Kitware, Inc.
+ * Copyright 2013-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -112,7 +112,7 @@ vital::matrix_3x3d rotation_zyx(double yaw, double pitch, double roll)
 bool
 local_geo_cs
 ::update_camera(vital::metadata const& md,
-                vital::simple_camera& cam,
+                vital::simple_camera_perspective& cam,
                 vital::rotation_d const& rot_offset) const
 {
   bool rotation_set = false;
@@ -215,7 +215,7 @@ local_geo_cs
 /// Use the camera pose to update the metadata structure
 void
 local_geo_cs
-::update_metadata(vital::simple_camera const& cam,
+::update_metadata(vital::simple_camera_perspective const& cam,
                   vital::metadata& md) const
 {
   if (md.has(vital::VITAL_META_PLATFORM_HEADING_ANGLE) &&
@@ -276,19 +276,60 @@ write_local_geo_cs_to_file(local_geo_cs const& lgcs,
   }
 }
 
+bool set_intrinsics_from_metadata(simple_camera_perspective &cam, std::map<vital::frame_id_t,
+  vital::metadata_sptr> const& md_map, vital::image_container_sptr const& im)
+{
+  auto intrin = std::dynamic_pointer_cast<simple_camera_intrinsics>(cam.intrinsics());
+  double im_w = double(im->width());
+  double im_h = double(im->height());
 
+  for (auto const &md : md_map)
+  {
+    bool focal_set = false;
+    if (!focal_set && md.second->has(vital::VITAL_META_SLANT_RANGE) && md.second->has(vital::VITAL_META_TARGET_WIDTH))
+    {
+      double slant_range, target_width;
+      md.second->find(vital::VITAL_META_SLANT_RANGE).data(slant_range);
+      md.second->find(vital::VITAL_META_TARGET_WIDTH).data(target_width);
+      double f = im_w*(slant_range / target_width);
+      intrin->set_focal_length(f);
+      focal_set = true;
+    }
+
+    if (!focal_set && md.second->has(vital::VITAL_META_SENSOR_HORIZONTAL_FOV))
+    {
+      double hfov;
+      md.second->find(vital::VITAL_META_SENSOR_HORIZONTAL_FOV).data(hfov);
+      double f = (im_w / 2) / tan(0.5*hfov*deg2rad);
+
+      intrin->set_focal_length(f);
+      focal_set = true;
+    }
+    if (focal_set)
+    {
+      vital::vector_2d pp(0.5*im_w, 0.5*im_h);
+      intrin->set_principal_point(pp);
+      intrin->set_aspect_ratio(1.0);
+      intrin->set_skew(0.0);
+      cam.set_intrinsics(intrin);
+      return true;
+    }
+  }
+
+  return false;
+}
 
 /// Use a sequence of metadata objects to initialize a sequence of cameras
 std::map<vital::frame_id_t, vital::camera_sptr>
 initialize_cameras_with_metadata(std::map<vital::frame_id_t,
                                  vital::metadata_sptr> const& md_map,
-                                 vital::simple_camera const& base_camera,
+                                 vital::simple_camera_perspective const& base_camera,
                                  local_geo_cs& lgcs,
                                  vital::rotation_d const& rot_offset)
 {
   std::map<frame_id_t, camera_sptr> cam_map;
   vital::vector_3d mean(0,0,0);
-  simple_camera active_cam(base_camera);
+  simple_camera_perspective active_cam(base_camera);
 
   bool update_local_origin = false;
   if( lgcs.origin().is_empty() && !md_map.empty())
@@ -319,7 +360,7 @@ initialize_cameras_with_metadata(std::map<vital::frame_id_t,
     if ( lgcs.update_camera(*md, active_cam, rot_offset) )
     {
       mean += active_cam.center();
-      cam_map[p.first] = camera_sptr(new simple_camera(active_cam));
+      cam_map[p.first] = camera_sptr(new simple_camera_perspective(active_cam));
     }
   }
 
@@ -337,7 +378,7 @@ initialize_cameras_with_metadata(std::map<vital::frame_id_t,
     typedef std::map<frame_id_t, camera_sptr>::value_type cam_map_val_t;
     for(cam_map_val_t const &p : cam_map)
     {
-      simple_camera* cam = dynamic_cast<simple_camera*>(p.second.get());
+      simple_camera_perspective* cam = dynamic_cast<simple_camera_perspective*>(p.second.get());
       cam->set_center(cam->get_center() - mean);
     }
   }
@@ -369,7 +410,7 @@ update_metadata_from_cameras(std::map<frame_id_t, camera_sptr> const& cam_map,
     {
       md_map[p.first] = active_md = std::make_shared<vital::metadata>();
     }
-    auto cam = dynamic_cast<vital::simple_camera*>(p.second.get());
+    auto cam = dynamic_cast<vital::simple_camera_perspective*>(p.second.get());
     if( active_md && cam )
     {
       lgcs.update_metadata(*cam, *active_md);

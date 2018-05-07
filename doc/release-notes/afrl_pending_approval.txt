@@ -10,16 +10,16 @@ release version, and the content of this file will be reset.
 Updates since last public release
 ---------------------------------
 
-Plugins
-
- * Moved the Blender and SketchUp plugins out of the scripts directory and
-   into a top-level plugins directory, added a README, and configured these
-   files to be installed.
-
 TeleSculptor
 
- * Video files can now be open directly or via a config file into TeleSculptor
-   for viewing and processing.
+ * The loop over video frames to extract metadata for camera initialization now
+   occurs in a separate thread. This allows the user to interact with the GUI
+   and view the video while the camera initialization occurs.
+
+ * The slideshow delay slider has been replaced by a speed slider that controls
+   the slideshow playback speed. When the slider is to the far left, slideshow
+   speed is 0.25Hz and when to the far right, the slideshow plays without any
+   delay between frames.
 
  * Added separate visibility and color options for display of feature tracks
    that have descriptors and those that do not have descriptors.  This allows
@@ -29,9 +29,3 @@ TeleSculptor
 
 Fixes since last public release
 -------------------------------
-
-Installer
-
- * Fixed an issue where required data files for PROJ were not installed.
-   This also requires TeleSculptor and the command line tools to set an
-   environment variable to tell PROJ where the data is installed.

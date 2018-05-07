@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2017 by Kitware, Inc.
+ * Copyright 2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,37 +28,61 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_TRACKFEATURESSPROKITTOOL_H_
-#define MAPTK_TRACKFEATURESSPROKITTOOL_H_
+#ifndef MAPTK_VIDEOINPUT_H_
+#define MAPTK_VIDEOINPUT_H_
 
-#include "AbstractTool.h"
-#include <sstream>
+#include <maptk/local_geo_cs.h>
 
-class TrackFeaturesSprokitToolPrivate;
+#include <vital/vital_types.h>
+#include <vital/config/config_block_types.h>
+#include <vital/logger/logger.h>
+#include <vital/types/camera.h>
+#include <vital/types/metadata.h>
+#include <vital/types/metadata_map.h>
 
-class TrackFeaturesSprokitTool : public AbstractTool
+#include <qtGlobal.h>
+
+#include <QMetaType>
+#include <QtCore/QThread>
+
+class VideoImportPrivate;
+
+Q_DECLARE_METATYPE(std::shared_ptr<kwiver::vital::metadata_map::map_metadata_t>);
+
+class VideoImport : public QThread
 {
   Q_OBJECT
 
 public:
-  explicit TrackFeaturesSprokitTool(QObject* parent = 0);
-  virtual ~TrackFeaturesSprokitTool();
-  virtual Outputs outputs() const QTE_OVERRIDE;
+  typedef kwiver::vital::config_block_sptr config_block_sptr;
 
-  /// Get if the tool can be canceled.
-  virtual bool isCancelable() const QTE_OVERRIDE { return true; }
+  VideoImport();
+  virtual ~VideoImport();
 
-  virtual bool execute(QWidget* window = 0) QTE_OVERRIDE;
+  void setData(config_block_sptr const&,
+               std::string const&,
+               kwiver::maptk::local_geo_cs& lgcs);
+
+signals:
+  /// Emitted when the tool execution is completed.
+  void completed(std::shared_ptr<kwiver::vital::metadata_map::map_metadata_t>);
+  /// Emitted when an intermediate update of the data is available to show progress.
+  void updated(int);
+
+public slots:
+  void cancel();
 
 protected:
-  virtual void run() QTE_OVERRIDE;
-
-  virtual std::string create_pipeline_config(QWidget* window = 0);
+  /// Execute the tool.
+  ///
+  /// This method must be overridden by tool implementations. The default
+  /// implementation of execute() calls this method in a separate thread.
+  virtual void run();
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(TrackFeaturesSprokitTool)
-  QTE_DECLARE_PRIVATE(TrackFeaturesSprokitTool)
-  QTE_DISABLE_COPY(TrackFeaturesSprokitTool)
+  QTE_DECLARE_PRIVATE_RPTR(VideoImport)
+  QTE_DECLARE_PRIVATE(VideoImport)
+  QTE_DISABLE_COPY(VideoImport)
 };
 
-#endif // MAPTK_TRACKFEATURESSPROKITTOOL_H_
+#endif

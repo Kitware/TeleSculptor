@@ -139,7 +139,7 @@ bool TrackFeaturesSprokitTool::execute(QWidget* window)
   convert_image::set_nested_algo_configuration(BLOCK_CI, config, d->image_converter);
   video_input::set_nested_algo_configuration(BLOCK_VR, config, d->video_reader);
 
-  std::stringstream pipe_str = create_pipeline_config(window);
+  std::stringstream pipe_str(create_pipeline_config(window));
   if (pipe_str.str().empty())
   {
     return false;
@@ -161,7 +161,7 @@ bool TrackFeaturesSprokitTool::execute(QWidget* window)
   return AbstractTool::execute(window);
 }
 
-std::stringstream
+std::string
 TrackFeaturesSprokitTool
 ::create_pipeline_config(QWidget* window)
 {
@@ -180,10 +180,10 @@ TrackFeaturesSprokitTool
       QMessageBox::critical(
         window, "Configuration error",
         QString::fromStdString("Unable to open file: " + pipe_file));
-      return ss;
+      return "";
     }
     ss << pipe_str.rdbuf();
-    return ss;
+    return ss.str();
   }
   else
   {
@@ -194,7 +194,7 @@ TrackFeaturesSprokitTool
       QMessageBox::critical(
         window, "Configuration error",
         "No vocabulary data was found. Please check your installation.");
-      return std::stringstream();
+      return "";
     }
 
     ss << SPROKIT_PROCESS("input_adapter", "input")
@@ -251,7 +251,7 @@ TrackFeaturesSprokitTool
       << SPROKIT_CONNECT("loop_detector", "feature_track_set", "output", "feature_track_set");
   }
 
-  return ss;
+  return ss.str();
 }
 
 //-----------------------------------------------------------------------------
