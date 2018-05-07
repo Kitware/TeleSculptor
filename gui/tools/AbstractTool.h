@@ -201,13 +201,10 @@ public:
   /// This returns the tool execution progress as an integer.
   int progress() const;
 
-  //@{
-  /// Set/Get tool execution description.
+  /// Get tool execution description.
   ///
   /// This returns a textual description of what the tool is doing.
   QString description() const;
-  void setDescription(QString desc);
-  //@}
 
 signals:
   /// Emitted when the tool execution is completed.
@@ -281,6 +278,16 @@ protected:
   /// This sets the landmarks that are produced by the tool as output. Unlike
   /// setCameras, this does not make a deep copy of the provided landmarks.
   void updateLandmarks(landmark_map_sptr const&);
+
+  /// Set tool progress.
+  ///
+  /// This returns the tool execution progress as an integer.
+  void updateProgress(int value);
+
+  /// Set tool execution description.
+  ///
+  /// This returns a textual description of what the tool is doing.
+  void setDescription(const QString& desc);
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(AbstractTool)

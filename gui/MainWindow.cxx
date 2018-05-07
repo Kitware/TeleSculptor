@@ -1102,6 +1102,7 @@ void MainWindowPrivate::updateProgress(const QString& name,
       break;
     }
   }
+  QApplication::processEvents();
 }
 
 //END MainWindowPrivate
@@ -2063,7 +2064,8 @@ void MainWindow::executeTool(QObject* object)
       }
       else
       {
-        d->updateProgress(tool->text(), tool->toolTip(), 0);
+        // Initialize the progress bar
+        d->updateProgress(tool->text(), tool->description(), 0);
       }
     }
   }
@@ -2085,7 +2087,10 @@ void MainWindow::acceptToolFinalResults()
   {
     acceptToolResults(d->activeTool->data(), true);
     saveToolResults();
-    d->updateProgress(d->activeTool->text(), d->activeTool->toolTip(), 100);
+    // Signal tool execution as complete to the progress widget
+    d->updateProgress(d->activeTool->text(),
+                      d->activeTool->description(),
+                      100);
   }
   d->setActiveTool(0);
 }
@@ -2132,6 +2137,10 @@ void MainWindow::acceptToolResults(std::shared_ptr<ToolData> data, bool isFinal)
     {
       d->toolUpdateActiveFrame = static_cast<int>(data->activeFrame);
     }
+    // Update tool progress
+    d->updateProgress(d->activeTool->text(),
+                      d->activeTool->description(),
+                      d->activeTool->progress());
   }
 
   if (isFinal)

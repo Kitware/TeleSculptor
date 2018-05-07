@@ -226,6 +226,9 @@ bool AbstractTool::execute(QWidget* window)
 {
   QTE_D();
 
+  // Reset progress reporting parameters
+  this->updateProgress(0);
+  this->setDescription(this->toolTip());
   d->cancelRequested = false;
   d->start();
   return true;
@@ -312,6 +315,13 @@ int AbstractTool::progress() const
 }
 
 //-----------------------------------------------------------------------------
+void AbstractTool::updateProgress(int value)
+{
+  QTE_D();
+  d->data->progress = value;
+}
+
+//-----------------------------------------------------------------------------
 QString AbstractTool::description() const
 {
   QTE_D();
@@ -319,7 +329,7 @@ QString AbstractTool::description() const
 }
 
 //-----------------------------------------------------------------------------
-void AbstractTool::setDescription(QString desc)
+void AbstractTool::setDescription(const QString& desc)
 {
   QTE_D();
   d->data->description = desc.toStdString();
