@@ -1463,9 +1463,6 @@ void MainWindow::loadProject(QString const& path)
     this->loadLandmarks(d->currProject->landmarksPath);
   }
 
-  // Don't load cameras until video importer is done.
-  d->videoImporter.wait();
-
   // Cameras are loaded after video importer is done
 
   //find depth map paths
