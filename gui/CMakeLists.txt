@@ -13,6 +13,7 @@ find_package(VTK 8.0 REQUIRED
   vtkIOXML
   vtkImagingCore
   vtkInteractionStyle
+  vtkInteractionWidgets
   vtkRenderingAnnotation
   vtkRenderingFreeType
   )
