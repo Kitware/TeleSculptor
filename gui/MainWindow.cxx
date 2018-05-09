@@ -514,22 +514,6 @@ void MainWindowPrivate::updateFrames(
 {
   this->videoMetadataMap = *mdMap;
 
-  using kwiver::vital::vector_2d;
-
-  kwiver::vital::simple_camera_intrinsics K_def;
-  const std::string bc = "video_reader:base_camera:";
-  auto K = std::make_shared<kwiver::vital::simple_camera_intrinsics>(
-    this->videoConfig->get_value<double>(bc + "focal_length",
-      K_def.focal_length()),
-    this->videoConfig->get_value<vector_2d>(bc + "principal_point",
-      K_def.principal_point()),
-    this->videoConfig->get_value<double>(bc + "aspect_ratio",
-      K_def.aspect_ratio()),
-    this->videoConfig->get_value<double>(bc + "skew", K_def.skew()));
-
-  auto baseCamera = kwiver::vital::simple_camera_perspective();
-  baseCamera.set_intrinsics(K);
-
   if (this->currProject &&
       this->currProject->projectConfig->has_value("output_krtd_dir"))
   {
@@ -551,14 +535,27 @@ void MainWindowPrivate::updateFrames(
       {
         qWarning() << "failed to read camera file " << frameName
                    << " from " << this->currProject->cameraPath;
-
-        auto bc_clone = std::static_pointer_cast<kwiver::vital::simple_camera_perspective>(baseCamera.clone());
-        this->updateCamera(frame.id, bc_clone);
       }
     }
   }
   else
   {
+    using kwiver::vital::vector_2d;
+
+    kwiver::vital::simple_camera_intrinsics K_def;
+    const std::string bc = "video_reader:base_camera:";
+    auto K = std::make_shared<kwiver::vital::simple_camera_intrinsics>(
+      this->videoConfig->get_value<double>(bc + "focal_length",
+        K_def.focal_length()),
+      this->videoConfig->get_value<vector_2d>(bc + "principal_point",
+        K_def.principal_point()),
+      this->videoConfig->get_value<double>(bc + "aspect_ratio",
+        K_def.aspect_ratio()),
+      this->videoConfig->get_value<double>(bc + "skew", K_def.skew()));
+
+    auto baseCamera = kwiver::vital::simple_camera_perspective();
+    baseCamera.set_intrinsics(K);
+
     kwiver::vital::camera_map::map_camera_t camMap;
     if (videoMetadataMap.size() > 0)
     {
