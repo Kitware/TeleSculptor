@@ -761,6 +761,16 @@ void MainWindowPrivate::setActiveCamera(int id)
   this->UI.worldView->setActiveCamera(id);
   this->updateCameraView();
 
+  // Show feature tracks
+  this->UI.cameraView->clearFeatureTracks();
+  if (this->tracks)
+  {
+    foreach(auto const& track, this->tracks->tracks())
+    {
+      this->UI.cameraView->addFeatureTrack(*track);
+    }
+  }
+
   //load from memory if cached
   if (id == this->activeDepthFrame)
   {
