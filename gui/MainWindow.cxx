@@ -510,6 +510,22 @@ void MainWindowPrivate::updateFrames(
 {
   this->videoMetadataMap = *mdMap;
 
+  using kwiver::vital::vector_2d;
+
+  kwiver::vital::simple_camera_intrinsics K_def;
+  const std::string bc = "video_reader:base_camera:";
+  auto K = std::make_shared<kwiver::vital::simple_camera_intrinsics>(
+    this->videoConfig->get_value<double>(bc + "focal_length",
+      K_def.focal_length()),
+    this->videoConfig->get_value<vector_2d>(bc + "principal_point",
+      K_def.principal_point()),
+    this->videoConfig->get_value<double>(bc + "aspect_ratio",
+      K_def.aspect_ratio()),
+    this->videoConfig->get_value<double>(bc + "skew", K_def.skew()));
+
+  auto baseCamera = kwiver::vital::simple_camera_perspective();
+  baseCamera.set_intrinsics(K);
+
   if (this->currProject &&
       this->currProject->projectConfig->has_value("output_krtd_dir"))
   {
@@ -531,24 +547,14 @@ void MainWindowPrivate::updateFrames(
       {
         qWarning() << "failed to read camera file " << frameName
                    << " from " << this->currProject->cameraPath;
+
+        auto bc_clone = std::static_pointer_cast<kwiver::vital::simple_camera_perspective>(baseCamera.clone());
+        this->updateCamera(frame.id, bc_clone);
       }
     }
   }
   else
   {
-    using kwiver::vital::vector_2d;
-
-    kwiver::vital::simple_camera_intrinsics K_def;
-    const std::string bc = "video_reader:base_camera:";
-    auto K = std::make_shared<kwiver::vital::simple_camera_intrinsics>(
-      this->videoConfig->get_value<double>(bc + "focal_length",
-                                           K_def.focal_length()),
-      this->videoConfig->get_value<vector_2d>(bc + "principal_point",
-                                              K_def.principal_point()),
-      this->videoConfig->get_value<double>(bc + "aspect_ratio",
-                                           K_def.aspect_ratio()),
-      this->videoConfig->get_value<double>(bc + "skew", K_def.skew()));
-
     kwiver::vital::camera_map::map_camera_t camMap;
     if (videoMetadataMap.size() > 0)
     {
@@ -565,9 +571,6 @@ void MainWindowPrivate::updateFrames(
       if (init_cams_with_metadata)
       {
         auto im = this->videoSource->frame_image();
-
-        auto baseCamera = kwiver::vital::simple_camera_perspective();
-        baseCamera.set_intrinsics(K);
 
         bool init_intrinsics_with_metadata =
           this->videoConfig->get_value<bool>("initialize_intrinsics_with_metadata", true);
@@ -616,13 +619,29 @@ void MainWindowPrivate::updateCameras(
 {
   auto allowExport = false;
 
+  std::set<kwiver::vital::frame_id_t> updated_frame_ids;
   foreach (auto const& iter, cameras->cameras())
   {
     using kwiver::vital::camera_perspective;
     auto cam_ptr = std::dynamic_pointer_cast<camera_perspective>(iter.second);
     if (updateCamera(iter.first, cam_ptr))
     {
+      updated_frame_ids.insert(iter.first);
       allowExport = allowExport || iter.second;
+    }
+  }
+
+  for (auto &f : this->frames)
+  {
+    auto fid = f.id;
+    if (updated_frame_ids.find(fid) != updated_frame_ids.end())
+    {
+      continue;
+    }
+    if (f.camera)
+    {
+      f.camera = NULL;
+      this->UI.worldView->removeCamera(fid);
     }
   }
 

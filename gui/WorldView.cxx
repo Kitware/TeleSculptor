@@ -757,6 +757,16 @@ void WorldView::addCamera(int id, vtkMaptkCamera* camera)
 }
 
 //-----------------------------------------------------------------------------
+void WorldView::removeCamera(int id)
+{
+  Q_UNUSED(id)
+
+    QTE_D();
+
+  d->cameraRep->RemoveCamera(id);
+}
+
+//-----------------------------------------------------------------------------
 void WorldView::setActiveCamera(int id)
 {
   static auto const plane = kwiver::vital::vector_4d(0.0, 0.0, 1.0, 0.0);
