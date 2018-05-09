@@ -394,7 +394,9 @@ void MainWindowPrivate::addCamera(kwiver::vital::camera_perspective_sptr const& 
   }
 
   // Add the camera to the end
-  this->addFrame(camera, this->frames.keys().last() + 1);
+  unsigned int lastFrameId =
+    this->frames.isEmpty() ? 0 : this->frames.keys().last();
+  this->addFrame(camera, lastFrameId + 1);
 }
 
 //-----------------------------------------------------------------------------
@@ -500,8 +502,10 @@ void MainWindowPrivate::addFrame(
     this->UI.cameraView->resetView();
   }
 
-  this->UI.camera->setRange(1, this->frames.keys().last());
-  this->UI.cameraSpin->setRange(1, this->frames.keys().last());
+  unsigned int lastFrameId =
+    this->frames.isEmpty() ? 1 : this->frames.keys().last();
+  this->UI.camera->setRange(1, lastFrameId);
+  this->UI.cameraSpin->setRange(1, lastFrameId);
 }
 
 //-----------------------------------------------------------------------------
@@ -653,33 +657,32 @@ bool MainWindowPrivate::updateCamera(kwiver::vital::frame_id_t frame,
                                      kwiver::vital::camera_perspective_sptr cam)
 {
   auto fr = this->frames.find(frame);
-  if (frame > 0 && frame <= this->frames.keys().last() && cam &&
-      fr != this->frames.end())
+  if (fr == this->frames.end() || !cam)
   {
-    if (!fr->camera)
-    {
-      fr->camera = vtkSmartPointer<vtkMaptkCamera>::New();
-      this->UI.worldView->addCamera(fr->id, fr->camera);
-    }
-    fr->camera->SetCamera(cam);
-    fr->camera->Update();
-
-    // Remove from orphanFrames if needed.
-    auto orphanIndex = orphanFrames.indexOf(frame);
-    if (orphanIndex >= 0)
-    {
-      orphanFrames.removeAt(orphanIndex);
-    }
-
-    if (fr->id == this->activeCameraIndex)
-    {
-      this->UI.worldView->setActiveCamera(fr->id);
-      this->updateCameraView();
-    }
-
-    return true;
+    return false;
   }
-  return false;
+  if (!fr->camera)
+  {
+    fr->camera = vtkSmartPointer<vtkMaptkCamera>::New();
+    this->UI.worldView->addCamera(fr->id, fr->camera);
+  }
+  fr->camera->SetCamera(cam);
+  fr->camera->Update();
+
+  // Remove from orphanFrames if needed.
+  auto orphanIndex = orphanFrames.indexOf(frame);
+  if (orphanIndex >= 0)
+  {
+    orphanFrames.removeAt(orphanIndex);
+  }
+
+  if (fr->id == this->activeCameraIndex)
+  {
+    this->UI.worldView->setActiveCamera(fr->id);
+    this->updateCameraView();
+  }
+
+  return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -692,7 +695,9 @@ void MainWindowPrivate::setActiveCamera(int id)
   if (id >= this->activeCameraIndex)
   { //positive movement in sequence
     //find the next keyframe in the sequence
-    while (id <= this->frames.keys().last())
+    int lastFrameId =
+      this->frames.isEmpty() ? 1 : this->frames.keys().last();
+    while (id <= lastFrameId)
     {
       if (only_keyframes)
       {
@@ -2013,7 +2018,8 @@ void MainWindow::setActiveCamera(int id)
 {
   QTE_D();
 
-  if (id < 1 || id > d->frames.keys().last())
+  int lastFrameId = d->frames.isEmpty() ? 1 : d->frames.keys().last();
+  if (id < 1 || id > lastFrameId)
   {
     qDebug() << "MainWindow::setActiveCamera:"
              << " requested ID" << id << "is invalid";
