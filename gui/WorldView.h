@@ -67,6 +67,7 @@ public slots:
   void setBackgroundColor(QColor const&);
 
   void addCamera(int id, vtkMaptkCamera* camera);
+  void removeCamera(int id);
   void setLandmarks(kwiver::vital::landmark_map const&);
 
   void setValidDepthInput(bool);
