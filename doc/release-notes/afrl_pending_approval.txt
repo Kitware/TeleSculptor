@@ -19,7 +19,6 @@ TeleSculptor
    the slideshow playback speed. When the slider is to the far left, slideshow
    speed is 0.25Hz and when to the far right, the slideshow plays without any
    delay between frames.
- * Fixed a bug where tracks were not being displayed.
 
 
 Fixes since last public release
