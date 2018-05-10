@@ -228,7 +228,7 @@ bool AbstractTool::execute(QWidget* window)
 
   // Reset progress reporting parameters
   this->updateProgress(0);
-  this->setDescription(this->toolTip());
+  this->setDescription("");
   d->cancelRequested = false;
   d->start();
   return true;
