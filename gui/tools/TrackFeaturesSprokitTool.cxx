@@ -232,33 +232,6 @@ TrackFeaturesSprokitTool
       << SPROKIT_CONFIG("track_features:ocv_KLT:feature_detector:ocv_FAST:threshold", "50")
       << SPROKIT_CONFIG("track_features:ocv_KLT:feature_detector:ocv_FAST:nonmaxSuppression", "true")
 
-      //<< SPROKIT_PROCESS("keyframe_selection_process", "keyframes")
-      //<< SPROKIT_CONFIG("keyframe_selection_1:type", "basic")
-      //<< SPROKIT_CONFIG("keyframe_selection_1:basic:fraction_tracks_lost_to_necessitate_new_keyframe", "0.01")
-
-      //<< SPROKIT_PROCESS("detect_features_if_keyframe_process", "detect_if_keyframe")
-      //<< SPROKIT_CONFIG("augment_keyframes:type","augment_keyframes")
-      //<< SPROKIT_CONFIG("augment_keyframes:augment_keyframes:kf_only_feature_detector:type", "ocv_ORB")
-      //<< SPROKIT_CONFIG("augment_keyframes:augment_keyframes:kf_only_descriptor_extractor:type", "ocv_ORB")
-      //<< SPROKIT_CONFIG("augment_keyframes:augment_keyframes:kf_only_feature_detector:ocv_ORB:n_features", "2000")
-      //<< SPROKIT_CONFIG("augment_keyframes:augment_keyframes:kf_only_feature_detector:ocv_ORB:patch_size", "31")
-      //<< SPROKIT_CONFIG("augment_keyframes:augment_keyframes:kf_only_feature_detector:ocv_ORB:n_levels", "8")
-      //<< SPROKIT_CONFIG("augment_keyframes:augment_keyframes:kf_only_feature_detector:ocv_ORB:fast_threshold", "20")
-
-      //<< SPROKIT_PROCESS("close_loops_process", "loop_detector")
-      //<< SPROKIT_CONFIG("close_loops:type", "appearance_indexed")
-      //<< SPROKIT_CONFIG("close_loops:appearance_indexed:min_loop_inlier_matches", "50")
-      //<< SPROKIT_CONFIG("close_loops:appearance_indexed:match_features:type", "homography_guided")
-      //<< SPROKIT_CONFIG("close_loops:appearance_indexed:match_features:homography_guided:homography_estimator:type", "ocv")
-      //<< SPROKIT_CONFIG("close_loops:appearance_indexed:match_features:homography_guided:feature_matcher1:type", "ocv_brute_force")
-      //<< SPROKIT_CONFIG("close_loops:appearance_indexed:bag_of_words_matching:type", "dbow2")
-      //<< SPROKIT_CONFIG("close_loops:appearance_indexed:bag_of_words_matching:dbow2:feature_detector:type", "ocv_ORB")
-      //<< SPROKIT_CONFIG("close_loops:appearance_indexed:bag_of_words_matching:dbow2:descriptor_extractor:type", "ocv_ORB")
-      //<< SPROKIT_CONFIG("close_loops:appearance_indexed:bag_of_words_matching:dbow2:image_io:type", "ocv")
-      //<< SPROKIT_CONFIG("close_loops:appearance_indexed:bag_of_words_matching:dbow2:max_num_candidate_matches_from_vocabulary_tree", "20")
-      //<< SPROKIT_CONFIG("close_loops:appearance_indexed:bag_of_words_matching:dbow2:training_image_list_path", "")
-      //<< SPROKIT_CONFIG("close_loops:appearance_indexed:bag_of_words_matching:dbow2:vocabulary_path", voc_path)
-
       << SPROKIT_PROCESS("output_adapter", "output")
       << SPROKIT_CONFIG_BLOCK("_pipeline:_edge")
       << SPROKIT_CONFIG("capacity", "2")
@@ -267,19 +240,6 @@ TrackFeaturesSprokitTool
       << SPROKIT_CONNECT("input", "timestamp", "tracker", "timestamp")
       << SPROKIT_CONNECT("tracker", "feature_track_set", "tracker", "feature_track_set")
       << SPROKIT_CONNECT("tracker", "feature_track_set", "output", "klt_frame_track_set")
-
-
-      //<< SPROKIT_CONNECT("tracker", "feature_track_set", "keyframes", "next_tracks")
-      //<< SPROKIT_CONNECT("input", "timestamp", "keyframes", "timestamp")
-      //<< SPROKIT_CONNECT("keyframes", "to_loop_back_tracks", "keyframes", "loop_back_tracks")
-      //<< SPROKIT_CONNECT("keyframes", "only_frame_data_tracks", "detect_if_keyframe", "next_tracks")
-      //<< SPROKIT_CONNECT("detect_if_keyframe", "feature_track_set", "detect_if_keyframe", "loop_back_tracks")
-      //<< SPROKIT_CONNECT("input", "image", "detect_if_keyframe", "image")
-      //<< SPROKIT_CONNECT("input", "timestamp", "detect_if_keyframe", "timestamp")
-      //<< SPROKIT_CONNECT("detect_if_keyframe", "feature_track_set", "loop_detector", "next_tracks")
-      //<< SPROKIT_CONNECT("loop_detector", "feature_track_set", "loop_detector", "loop_back_tracks")
-      //<< SPROKIT_CONNECT("input", "timestamp", "loop_detector", "timestamp")
-      //<< SPROKIT_CONNECT("loop_detector", "feature_track_set", "output", "feature_track_set")
       ;
   }
 
