@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
-# MAP-Tk superbuild does not install 
-# But if you use this as a template and you do want to install
-# The install functionality is present and commented out
-#set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install CACHE PATH "Install location")
-project(MAPTK)
+
+project(MAPTK-SuperBuild)
 
 option(MAPTK_SUPERBUILD  "Enable MAPTK superbuild" ON)
 
@@ -59,6 +56,7 @@ if(MAPTK_SUPERBUILD)
   include(${MAPTK_CMAKE_DIR}/maptk-superbuild.cmake)
   return()
 endif()
+project(MAPTK)
 include( maptk-depends )
 
 # set the name for our package exports

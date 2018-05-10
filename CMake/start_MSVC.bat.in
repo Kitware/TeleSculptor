@@ -22,7 +22,6 @@ set config=release
 :Start
 
 call setup_MAPTK.bat %config%
-cd ..\..\
 
 start MAPTK.sln /D .\
 :: Note if a different visual studio is associated with a *.sln file than should be

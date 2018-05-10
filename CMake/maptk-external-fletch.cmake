@@ -2,7 +2,7 @@
 #
 set(KWIVER_DEPENDENCIES)
 
-message(STATUS "I am building the fletch submodule!")
+message(STATUS "Configuring external fletch")
 
 list(APPEND KWIVER_DEPENDENCIES fletch)
 list(APPEND MAPTK_DEPENDENCIES fletch)
@@ -72,11 +72,7 @@ ExternalProject_Add(fletch
     -Dfletch_ENABLE_shapelib:BOOL=OFF
     -Dfletch_BUILD_WITH_CUDA:BOOL=${MAPTK_BUILD_WITH_CUDA}
     -DCUDA_TOOLKIT_ROOT_DIR:PATH=${CUDA_TOOLKIT_ROOT_DIR}
-#    -Dfletch_BUILD_WITH_CUDNN:BOOL=${MAPTK_BUILD_WITH_CUDNN}
-#    -DCUDNN_ROOT_DIR:PATH=${CUDNN_ROOT_DIR}
     -Dfletch_PYTHON_MAJOR_VERSION:STRING=2
-#    -Dfletch_BUILD_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX}
-#    -DCMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX}
     -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
     -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
     -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
@@ -89,10 +85,7 @@ ExternalProject_Add(fletch
     -DADDITIONAL_C_FLAGS:STRING=${ADDITIONAL_C_FLAGS}
     -DADDITIONAL_CXX_FLAGS:STRING=${ADDITIONAL_CXX_FLAGS}
   INSTALL_COMMAND cmake -E echo "Skipping install step."
-  #INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
 )
 
 set(fletch_DIR "${MAPTK_BINARY_DIR}/fletch-build")
-# If we install fletch to a location, look for it here
-#set(fletch_DIR "${CMAKE_INSTALL_PREFIX}/fletch-build")
 

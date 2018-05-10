@@ -24,6 +24,6 @@ set config=release
 
 cd @KWIVER_DIR@
 call setup_KWIVER.bat %config%
-cd @MAPTK_INNER_DIR@/bin/%config%
-set PATH=%PATH%;%~dp0;@qtExtensions_DIR@/%config%;
-set KWIVER_CONFIG_PATH=%KWIVER_CONFIG_PATH%;@MAPTK_INNER_DIR@\share\maptk\@MAPTK_VERSION@\config
+cd @MAPTK_BINARY_DIR@
+set PATH=%PATH%;@MAPTK_BINARY_DIR@/bin/%config%;@qtExtensions_DIR@/%config%;
+set KWIVER_CONFIG_PATH=%KWIVER_CONFIG_PATH%;@MAPTK_BINARY_DIR@\share\maptk\@MAPTK_VERSION@\config

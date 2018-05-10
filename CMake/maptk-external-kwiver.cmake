@@ -1,6 +1,6 @@
 # kwiver External Project
 
-message(STATUS "I am building the kwiver submodule!")
+message(STATUS "Configuring external KWIVER")
 
 list(APPEND MAPTK_DEPENDENCIES kwiver)
 
@@ -46,7 +46,6 @@ ExternalProject_Add(kwiver
     -DKWIVER_USE_BUILD_TREE:BOOL=OFF
     -DKWIVER_USE_CONFIGURATION_SUBDIRECTORY:BOOL=OFF
     -DCMAKE_PREFIX_PATH:STRING=${CMAKE_PREFIX_PATH}
-#    -DCMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX}
     -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
     -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
     -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
@@ -60,10 +59,7 @@ ExternalProject_Add(kwiver
     -DADDITIONAL_C_FLAGS:STRING=${ADDITIONAL_C_FLAGS}
     -DADDITIONAL_CXX_FLAGS:STRING=${ADDITIONAL_CXX_FLAGS}
   INSTALL_COMMAND cmake -E echo "Skipping install step."
-  #INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
 )
 
 set(KWIVER_DIR "${MAPTK_BINARY_DIR}/kwiver-build")
-set(kwiver_DIR "${MAPTK_BINARY_DIR}/kwiver-build")
-# If kwiver is installed it will be located here:
-#set(kwiver_DIR "${CMAKE_INSTALL_PREFIX}/lib/cmake/kwiver")
+set(kwiver_DIR "${MAPTK_BINARY_DIR}/kwiver-build" CACHE FILEPATH "Location of KWIVER" FORCE)

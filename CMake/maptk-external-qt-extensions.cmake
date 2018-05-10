@@ -1,15 +1,15 @@
 # Central location for MAPTK external dependency declaration and resolution
 
-message(STATUS "I am building the qtExtensions submodule!")
+message(STATUS "Configuring external qtExtensions")
+
 
 set( QT_QMAKE_EXECUTABLE "" CACHE FILEPATH "Path to QT QMake" )
-if (NOT IS_DIRECTORY ${QT4_DIR} )
-  if(IS_DIRECTORY ${fletch_DIR})
-    message(STATUS "Assuming Qt will be provided by fletch")
-    set(QT_QMAKE_EXECUTABLE "${fletch_DIR}/install/bin/qmake")
-  else()
-    message(WARNING "No path provided for QT_QMAKE_EXECUTABLE")
-  endif()
+if(IS_DIRECTORY ${fletch_DIR} AND NOT fletch_FOUND AND NOT QT_QMAKE_EXECUTABLE)
+  set(QT_QMAKE_EXECUTABLE "${fletch_DIR}/install/bin/qmake" CACHE FILEPATH "Used to find where Qt is installed" FORCE)
+endif()
+
+if(NOT QT_QMAKE_EXECUTABLE)
+  message(FATAL_ERROR "QT is required, Please set QT_QMAKE_EXECUTABLE")
 endif()
 
 ExternalProject_Add(qtExtensions
@@ -25,7 +25,6 @@ ExternalProject_Add(qtExtensions
     -DBUILD_SHARED_LIBS:BOOL=ON
     -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
     -DCMAKE_PREFIX_PATH:STRING=${CMAKE_PREFIX_PATH}
-#    -DCMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX}
     -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
     -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
     -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
@@ -44,5 +43,3 @@ ExternalProject_Add(qtExtensions
 list(APPEND MAPTK_DEPENDENCIES qtExtensions)
 
 set(qtExtensions_DIR "${MAPTK_BINARY_DIR}/qtExtensions-build")
-# If we install fletch to a location, look for it here
-#set(qtExtensions_DIR "${CMAKE_INSTALL_PREFIX}/lib/cmake/qtExtensions")
