@@ -378,6 +378,17 @@ TrackFeaturesSprokitTool
     auto const converted_image = d->image_converter->convert(image);
 
     matchable_tracks = std::static_pointer_cast<kwiver::vital::feature_track_set>(d->m_detect_if_keyframe->track(matchable_tracks,currentTimestamp.get_frame(),converted_image));
+    time_t cur_time;
+    time(&cur_time);
+    double seconds_since_last_disp = difftime(cur_time, last_disp_time);
+    if (seconds_since_last_disp > disp_period)
+    {
+      last_disp_time = cur_time;
+      auto data = std::make_shared<ToolData>();
+      data->copyTracks(matchable_tracks);
+      data->activeFrame = currentTimestamp.get_frame();
+      emit updated(data);
+    }
   }
 
   auto keyframes = matchable_tracks->keyframes();
