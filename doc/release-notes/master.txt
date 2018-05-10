@@ -148,6 +148,9 @@ TeleSculptor
 
  * Added metrics for rms error by camera and a check that the rays meeting at a
    point have some minimum angle.
+ 
+ * Moved loop closure out of sprokit pipeline to improve speed.
+
 
 Fixes since v0.10.0
 ------------------
