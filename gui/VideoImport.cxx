@@ -77,7 +77,10 @@ VideoImport::~VideoImport()
   QTE_D();
 
   this->wait();
-  d->video_reader->close();
+  if (d->video_reader)
+  {
+    d->video_reader->close();
+  }
 }
 
 //-----------------------------------------------------------------------------
