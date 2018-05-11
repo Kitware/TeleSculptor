@@ -26,6 +26,9 @@ TeleSculptor
    for visual distinction between KLT tracks (without descriptors) on each
    frame of video and ORB, or similar, tracks (with descriptors) on keyframes.
 
+ * Added a progress bar that appears below the World View to show progress when
+   tools are running.  It can also display a status message.
+
 
 Fixes since last public release
 -------------------------------
