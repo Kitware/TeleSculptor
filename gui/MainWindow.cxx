@@ -280,6 +280,9 @@ public:
   void loadDepthMap(QString const& imagePath);
 
   void setActiveTool(AbstractTool* tool);
+  void updateProgress(QObject* object,
+                      const QString& description = QString(""),
+                      int value = 0);
 
   // Member variables
   Ui::MainWindow UI;
@@ -329,6 +332,9 @@ public:
 
   // Current project
   std::shared_ptr<Project> currProject;
+
+  // Progress tracking
+  QHash<QObject*, int> progressIds;
 };
 
 QTE_IMPLEMENT_D_FUNC(MainWindow)
@@ -1096,6 +1102,48 @@ void MainWindowPrivate::setActiveTool(AbstractTool* tool)
   this->UI.actionOpen->setEnabled(enableTools);
 }
 
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::updateProgress(QObject* object,
+                                       const QString& description,
+                                       int value)
+{
+  QString desc = description;
+  desc.replace('&', "");
+  int taskId = -1;
+  if (!this->progressIds.contains(object))
+  {
+    taskId = this->UI.progressWidget->addTask(desc, 0, 0, 0);
+    this->progressIds.insert(object, taskId);
+    return;
+  }
+  else
+  {
+    taskId = this->progressIds.value(object);
+  }
+
+  this->UI.progressWidget->setTaskText(taskId, desc);
+  this->UI.progressWidget->setProgressValue(taskId, value);
+  switch(value)
+  {
+    case 0:
+    {
+      this->UI.progressWidget->setProgressRange(taskId, 0, 0);
+      break;
+    }
+    case 100:
+    {
+      this->UI.progressWidget->removeTask(taskId);
+      break;
+    }
+    default:
+    {
+      this->UI.progressWidget->setProgressRange(taskId, 0, 100);
+      break;
+    }
+  }
+  QApplication::processEvents();
+}
+
 //END MainWindowPrivate
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1234,6 +1282,9 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->UI.depthMapView->setDepthGeometryFilter(d->depthGeometryFilter.GetPointer());
 
   d->UI.worldView->resetView();
+
+  // Set up the progress widget
+  d->UI.progressWidget->setAutoHide(true);
 }
 
 //-----------------------------------------------------------------------------
@@ -2048,6 +2099,11 @@ void MainWindow::executeTool(QObject* object)
       {
         d->setActiveTool(0);
       }
+      else
+      {
+        // Initialize the progress bar
+        d->updateProgress(tool, tool->description(), 0);
+      }
     }
   }
   catch (std::exception const& e)
@@ -2068,6 +2124,10 @@ void MainWindow::acceptToolFinalResults()
   {
     acceptToolResults(d->activeTool->data(), true);
     saveToolResults();
+    // Signal tool execution as complete to the progress widget
+    d->updateProgress(d->activeTool,
+                      d->activeTool->description(),
+                      100);
   }
   d->setActiveTool(0);
 }
@@ -2114,6 +2174,10 @@ void MainWindow::acceptToolResults(std::shared_ptr<ToolData> data, bool isFinal)
     {
       d->toolUpdateActiveFrame = static_cast<int>(data->activeFrame);
     }
+    // Update tool progress
+    d->updateProgress(d->activeTool,
+                      d->activeTool->description(),
+                      d->activeTool->progress());
   }
 
   if (isFinal)

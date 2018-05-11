@@ -153,6 +153,9 @@ void TrackFeaturesTool::run()
     d->video_reader->seek_frame(currentTimestamp, frame-1);
   }
 
+  auto numFrames = d->video_reader->num_frames();
+  this->updateProgress(frame * 100.0 / numFrames);
+
   while (d->video_reader->next_frame(currentTimestamp))
   {
     auto const image = d->video_reader->frame_image();
@@ -165,6 +168,10 @@ void TrackFeaturesTool::run()
     }
 
     frame = currentTimestamp.get_frame();
+
+    // Update tool progress
+    this->updateProgress(frame * 100.0 / numFrames);
+
     tracks = d->feature_tracker->track(tracks, frame, converted_image);
     if (tracks)
     {
@@ -175,6 +182,8 @@ void TrackFeaturesTool::run()
     auto data = std::make_shared<ToolData>();
     data->copyTracks(tracks);
     data->activeFrame = frame;
+    data->progress = progress();
+    data->description = description().toStdString();
 
     emit updated(data);
     if( this->isCanceled() )

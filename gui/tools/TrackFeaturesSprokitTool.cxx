@@ -85,7 +85,7 @@ TrackFeaturesSprokitTool::TrackFeaturesSprokitTool(QObject* parent)
 {
   this->setText("&Track Features");
   this->setToolTip(
-    "<nobr>Track features through a the video and identify keyframes. "
+    "<nobr>Track features through the video and identify keyframes. "
     "</nobr>Compute descriptors on the keyframes and match to a visual "
     "index to close loops.");
 }
@@ -275,10 +275,17 @@ TrackFeaturesSprokitTool
     d->video_reader->seek_frame(currentTimestamp, frame - 1);
   }
 
+  auto numFrames = d->video_reader->num_frames();
+  this->updateProgress(frame * 100.0 / numFrames);
+  this->setDescription("Parsing video frames");
+
   while (d->video_reader->next_frame(currentTimestamp))
   {
     auto const image = d->video_reader->frame_image();
     auto const converted_image = d->image_converter->convert(image);
+
+    // Update tool progress
+    this->updateProgress(currentTimestamp.get_frame() * 100.0 / numFrames);
 
     auto const mdv = d->video_reader->frame_metadata();
     if (!mdv.empty())
@@ -308,6 +315,8 @@ TrackFeaturesSprokitTool
         auto data = std::make_shared<ToolData>();
         data->copyTracks(out_tracks);
         data->activeFrame = out_tracks->last_frame();
+        data->progress = progress();
+        data->description = description().toStdString();
         emit updated(data);
       }
     }
