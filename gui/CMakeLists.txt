@@ -21,7 +21,7 @@ if(NOT (QTE_QT_VERSION VERSION_EQUAL MAPTK_QT_VERSION))
     "Please provide path to qtExtensions built with Qt${MAPTK_QT_VERSION}.")
 endif()
 
-find_package(VTK 8.0 REQUIRED
+find_package(VTK 8.1 REQUIRED
   COMPONENTS
   vtkFiltersSources
   vtkGUISupportQt
