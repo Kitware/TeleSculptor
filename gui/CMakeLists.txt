@@ -1,8 +1,25 @@
-find_package(Qt4 4.8 REQUIRED)
-include(${QT_USE_FILE})
+include( maptk-qt )
+
+if(MAPTK_QT_VERSION VERSION_GREATER "4")
+  set(CMAKE_AUTOMOC ON)
+  set(Qt5_MODULES Core Widgets)
+  find_package(Qt5 COMPONENTS ${Qt5_MODULES} REQUIRED)
+  set(QT_LIBRARIES )
+  foreach(module ${Qt5_MODULES})
+    list(APPEND QT_LIBRARIES Qt5::${module})
+  endforeach()
+else()
+  find_package(Qt4 4.8 REQUIRED)
+  include(${QT_USE_FILE})
+endif()
 
 find_package(qtExtensions REQUIRED)
 include(${qtExtensions_USE_FILE})
+if(NOT (QTE_QT_VERSION VERSION_EQUAL MAPTK_QT_VERSION))
+  message(FATAL_ERROR "MAPTK_QT_VERSION is set to ${MAPTK_QT_VERSION}. "
+    "But QTE_QT_VERSION is ${QTE_QT_VERSION}. "
+    "Please provide path to qtExtensions built with Qt${MAPTK_QT_VERSION}.")
+endif()
 
 find_package(VTK 8.0 REQUIRED
   COMPONENTS
@@ -17,6 +34,17 @@ find_package(VTK 8.0 REQUIRED
   vtkRenderingFreeType
   )
 include(${VTK_USE_FILE})
+if(NOT (VTK_QT_VERSION VERSION_EQUAL MAPTK_QT_VERSION))
+  message(FATAL_ERROR "MAPTK_QT_VERSION is set to ${MAPTK_QT_VERSION}. "
+    "But VTK_QT_VERSION is ${VTK_QT_VERSION}. "
+    "Please provide path to VTK built with Qt${MAPTK_QT_VERSION}.")
+endif()
+if(VTK_QT_VERSION VERSION_GREATER "4" AND
+    VTK_RENDERING_BACKEND STREQUAL "OpenGL")
+  message(FATAL_ERROR "MapTK uses QVTKOpenGLWidget when compiled with Qt5. "
+    "This requires VTK_RENDERING_BACKEND to be OpenGL2. "
+    "Please ensure that VTK is compiled with the OpenGL2 backend and Qt5.")
+endif()
 
 #
 # This option should be set if you want to do a bundle fixup for
