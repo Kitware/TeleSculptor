@@ -52,45 +52,68 @@ public:
   void UpdateTrails(unsigned activeFrame, unsigned trailLength,
                     TrailStyleEnum style);
 
-  vtkNew<vtkPoints> Points;
+  vtkNew<vtkPoints> PointsWithDesc;
+  vtkNew<vtkPoints> PointsWithoutDesc;
 
-  vtkNew<vtkCellArray> PointsCells;
-  vtkNew<vtkCellArray> TrailsCells;
+  vtkNew<vtkCellArray> PointsWithDescCells;
+  vtkNew<vtkCellArray> PointsWithoutDescCells;
 
-  vtkNew<vtkPolyData> PointsPolyData;
-  vtkNew<vtkPolyData> TrailsPolyData;
+  vtkNew<vtkCellArray> TrailsWithDescCells;
+  vtkNew<vtkCellArray> TrailsWithoutDescCells;
+
+  vtkNew<vtkPolyData> PointsWithDescPolyData;
+  vtkNew<vtkPolyData> PointsWithoutDescPolyData;
+  vtkNew<vtkPolyData> TrailsWithDescPolyData;
+  vtkNew<vtkPolyData> TrailsWithoutDescPolyData;
 
   typedef std::map<unsigned, vtkIdType> TrackType;
   typedef std::map<unsigned, TrackType> TrackMapType;
 
-  TrackMapType Tracks;
+  TrackMapType TracksWithDesc;
+  TrackMapType TracksWithoutDesc;
 };
 
 //-----------------------------------------------------------------------------
 void vtkMaptkFeatureTrackRepresentation::vtkInternal::UpdateActivePoints(
   unsigned activeFrame)
 {
-  this->PointsCells->Reset();
+  this->PointsWithDescCells->Reset();
 
-  for(auto const& t : this->Tracks)
+  for(auto const& t : this->TracksWithDesc)
   {
     auto const& track = t.second;
     auto const fi = track.find(activeFrame);
     if (fi != track.cend())
     {
-      this->PointsCells->InsertNextCell(1);
-      this->PointsCells->InsertCellPoint(fi->second);
+      this->PointsWithDescCells->InsertNextCell(1);
+      this->PointsWithDescCells->InsertCellPoint(fi->second);
     }
   }
 
-  this->PointsCells->Modified();
+  this->PointsWithDescPolyData->Modified();
+
+  this->PointsWithoutDescCells->Reset();
+
+  for (auto const& t : this->TracksWithoutDesc)
+  {
+    auto const& track = t.second;
+    auto const fi = track.find(activeFrame);
+    if (fi != track.cend())
+    {
+      this->PointsWithoutDescCells->InsertNextCell(1);
+      this->PointsWithoutDescCells->InsertCellPoint(fi->second);
+    }
+  }
+
+  this->PointsWithoutDescCells->Modified();
 }
 
 //-----------------------------------------------------------------------------
 void vtkMaptkFeatureTrackRepresentation::vtkInternal::UpdateTrails(
   unsigned activeFrame, unsigned trailLength, TrailStyleEnum style)
 {
-  this->TrailsCells->Reset();
+  this->TrailsWithDescCells->Reset();
+  this->TrailsWithoutDescCells->Reset();
 
   auto const symmetric =
     (style == vtkMaptkFeatureTrackRepresentation::Symmetric);
@@ -101,7 +124,7 @@ void vtkMaptkFeatureTrackRepresentation::vtkInternal::UpdateTrails(
 
   std::vector<vtkIdType> points;
 
-  for (auto const& ti : this->Tracks)
+  for (auto const& ti : this->TracksWithDesc)
   {
     auto const& track = ti.second;
     if (track.cbegin()->first > activeFrame ||
@@ -114,21 +137,61 @@ void vtkMaptkFeatureTrackRepresentation::vtkInternal::UpdateTrails(
     // Build list of relevant points
     points.clear();
 
-    auto const fe = track.upper_bound(maxFrame);
-    for (auto fi = track.lower_bound(minFrame); fi != fe; ++fi)
+    bool active_found = false;
+
+    //put all correspondences in for features that include descriptors
+    auto const fe = track.cend();
+    for (auto fi = track.cbegin(); fi != fe; ++fi)
     {
       points.push_back(fi->second);
+      if (fi->first == activeFrame)
+      {
+        active_found = true;
+      }
     }
 
     // Create cell for trail (only if trail is non-empty)
     auto const n = static_cast<vtkIdType>(points.size());
-    if (n > 1)
+    if (n > 1 && active_found)
     {
-      this->TrailsCells->InsertNextCell(points.size(), points.data());
+      this->TrailsWithDescCells->InsertNextCell(points.size(), points.data());
     }
   }
 
-  this->TrailsCells->Modified();
+  for (auto const& ti : this->TracksWithoutDesc)
+  {
+    auto const& track = ti.second;
+    if (track.cbegin()->first > activeFrame ||
+      (--track.cend())->first < activeFrame)
+    {
+      // Skip tracks that are not active on the active frame
+      continue;
+    }
+
+    // Build list of relevant points
+    points.clear();
+
+    bool active_found = false;
+    auto const fe = track.upper_bound(maxFrame);
+    for (auto fi = track.lower_bound(minFrame); fi != fe; ++fi)
+    {
+      points.push_back(fi->second);
+      if (fi->first == activeFrame)
+      {
+        active_found = true;
+      }
+    }
+
+    // Create cell for trail (only if trail is non-empty)
+    auto const n = static_cast<vtkIdType>(points.size());
+    if (n > 1 && active_found)
+    {
+      this->TrailsWithoutDescCells->InsertNextCell(points.size(), points.data());
+    }
+  }
+
+  this->TrailsWithDescCells->Modified();
+  this->TrailsWithoutDescCells->Modified();
 }
 
 //-----------------------------------------------------------------------------
@@ -140,29 +203,52 @@ vtkMaptkFeatureTrackRepresentation::vtkMaptkFeatureTrackRepresentation()
   this->ActiveFrame = 0;
 
   // Set up actors and data
-  vtkNew<vtkPolyDataMapper> pointsMapper;
+  vtkNew<vtkPolyDataMapper> pointsWithDescMapper;
+  vtkNew<vtkPolyDataMapper> pointsWithoutDescMapper;
 
-  this->Internal->PointsPolyData->SetPoints(
-    this->Internal->Points.GetPointer());
-  this->Internal->PointsPolyData->SetVerts(
-    this->Internal->PointsCells.GetPointer());
+  this->Internal->PointsWithDescPolyData->SetPoints(
+    this->Internal->PointsWithDesc.GetPointer());
+  this->Internal->PointsWithDescPolyData->SetVerts(
+    this->Internal->PointsWithDescCells.GetPointer());
 
-  pointsMapper->SetInputData(this->Internal->PointsPolyData.GetPointer());
+  this->Internal->PointsWithoutDescPolyData->SetPoints(
+    this->Internal->PointsWithoutDesc.GetPointer());
+  this->Internal->PointsWithoutDescPolyData->SetVerts(
+    this->Internal->PointsWithoutDescCells.GetPointer());
 
-  vtkNew<vtkPolyDataMapper> trailsMapper;
+  pointsWithDescMapper->SetInputData(this->Internal->PointsWithDescPolyData.GetPointer());
+  pointsWithoutDescMapper->SetInputData(this->Internal->PointsWithoutDescPolyData.GetPointer());
 
-  this->Internal->TrailsPolyData->SetPoints(
-    this->Internal->Points.GetPointer());
-  this->Internal->TrailsPolyData->SetLines(
-    this->Internal->TrailsCells.GetPointer());
+  vtkNew<vtkPolyDataMapper> trailsWithDescMapper;
+  vtkNew<vtkPolyDataMapper> trailsWithoutDescMapper;
 
-  trailsMapper->SetInputData(this->Internal->TrailsPolyData.GetPointer());
+  this->Internal->TrailsWithDescPolyData->SetPoints(
+    this->Internal->PointsWithDesc.GetPointer());
 
-  this->ActivePointsActor = vtkSmartPointer<vtkActor>::New();
-  this->ActivePointsActor->SetMapper(pointsMapper.GetPointer());
+  this->Internal->TrailsWithDescPolyData->SetLines(
+    this->Internal->TrailsWithDescCells.GetPointer());
 
-  this->TrailsActor = vtkSmartPointer<vtkActor>::New();
-  this->TrailsActor->SetMapper(trailsMapper.GetPointer());
+  this->Internal->TrailsWithoutDescPolyData->SetPoints(
+    this->Internal->PointsWithoutDesc.GetPointer());
+
+  this->Internal->TrailsWithoutDescPolyData->SetLines(
+    this->Internal->TrailsWithoutDescCells.GetPointer());
+
+  trailsWithDescMapper->SetInputData(this->Internal->TrailsWithDescPolyData.GetPointer());
+  trailsWithoutDescMapper->SetInputData(this->Internal->TrailsWithoutDescPolyData.GetPointer());
+
+  this->ActivePointsWithDescActor = vtkSmartPointer<vtkActor>::New();
+  this->ActivePointsWithDescActor->SetMapper(pointsWithDescMapper.GetPointer());
+
+  this->ActivePointsWithoutDescActor = vtkSmartPointer<vtkActor>::New();
+  this->ActivePointsWithoutDescActor->SetMapper(pointsWithoutDescMapper.GetPointer());
+
+  this->TrailsWithDescActor = vtkSmartPointer<vtkActor>::New();
+  this->TrailsWithDescActor->SetMapper(trailsWithDescMapper.GetPointer());
+
+  this->TrailsWithoutDescActor = vtkSmartPointer<vtkActor>::New();
+  this->TrailsWithoutDescActor->SetMapper(trailsWithoutDescMapper.GetPointer());
+
 }
 
 //-----------------------------------------------------------------------------
@@ -171,20 +257,32 @@ vtkMaptkFeatureTrackRepresentation::~vtkMaptkFeatureTrackRepresentation()
 }
 
 //-----------------------------------------------------------------------------
-void vtkMaptkFeatureTrackRepresentation::AddTrackPoint(
+void vtkMaptkFeatureTrackRepresentation::AddTrackWithDescPoint(
   unsigned trackId, unsigned frameId, double x, double y)
 {
-  auto const id = this->Internal->Points->InsertNextPoint(x, y, 0.0);
-  this->Internal->Tracks[trackId][frameId] = id;
+  auto const id = this->Internal->PointsWithDesc->InsertNextPoint(x, y, 0.0);
+  this->Internal->TracksWithDesc[trackId][frameId] = id;
+}
+
+//-----------------------------------------------------------------------------
+void vtkMaptkFeatureTrackRepresentation::AddTrackWithoutDescPoint(
+  unsigned trackId, unsigned frameId, double x, double y)
+{
+  auto const id = this->Internal->PointsWithoutDesc->InsertNextPoint(x, y, 0.0);
+  this->Internal->TracksWithoutDesc[trackId][frameId] = id;
 }
 
 //-----------------------------------------------------------------------------
 void vtkMaptkFeatureTrackRepresentation::ClearTrackData()
 {
-  this->Internal->Points->Reset();
-  this->Internal->Tracks.clear();
-  this->Internal->PointsCells->Reset();
-  this->Internal->TrailsCells->Reset();
+  this->Internal->PointsWithDesc->Reset();
+  this->Internal->PointsWithoutDesc->Reset();
+  this->Internal->TracksWithDesc.clear();
+  this->Internal->TracksWithoutDesc.clear();
+  this->Internal->PointsWithDescCells->Reset();
+  this->Internal->PointsWithoutDescCells->Reset();
+  this->Internal->TrailsWithDescCells->Reset();
+  this->Internal->TrailsWithoutDescCells->Reset();
 }
 
 //-----------------------------------------------------------------------------
@@ -240,7 +338,7 @@ void vtkMaptkFeatureTrackRepresentation::PrintSelf(
   this->Superclass::PrintSelf(os, indent);
 
   os << indent << "Number Of Points: "
-     << this->Internal->Points->GetNumberOfPoints() << endl;
+     << this->Internal->PointsWithDesc->GetNumberOfPoints() << endl;
   os << indent << "ActiveFrame: "
      << this->ActiveFrame << endl;
   os << indent << "TrailLength: "

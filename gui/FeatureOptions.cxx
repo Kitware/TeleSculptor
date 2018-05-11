@@ -47,6 +47,8 @@ public:
   void mapUiState(QString const& key, QSlider* slider);
   void mapUiState(QString const& key, QComboBox* comboBox);
 
+  void toggleTrailOptions();
+
   Ui::FeatureOptions UI;
   qtUiState uiState;
 
@@ -74,6 +76,14 @@ void FeatureOptionsPrivate::mapUiState(
 }
 
 //-----------------------------------------------------------------------------
+void FeatureOptionsPrivate::toggleTrailOptions()
+{
+  bool enable = this->UI.showTrailsWithDesc->isChecked() ||
+                this->UI.showTrailsWithoutDesc->isChecked();
+  this->UI.trailOptions->setEnabled(enable);
+}
+
+//-----------------------------------------------------------------------------
 FeatureOptions::FeatureOptions(vtkMaptkFeatureTrackRepresentation* rep,
                                QString const& settingsGroup,
                                QWidget* parent, Qt::WindowFlags flags)
@@ -92,8 +102,10 @@ FeatureOptions::FeatureOptions(vtkMaptkFeatureTrackRepresentation* rep,
   // Set up option persistence
   d->uiState.setCurrentGroup(settingsGroup);
 
-  d->uiState.mapChecked("Trails", d->UI.showTrails);
-  d->UI.trailColor->persist(d->uiState, "Trails/Color");
+  d->uiState.mapChecked("TrailsWithDesc", d->UI.showTrailsWithDesc);
+  d->uiState.mapChecked("TrailsWithoutDesc", d->UI.showTrailsWithoutDesc);
+  d->UI.trailColorWithoutDesc->persist(d->uiState, "TrailsWithoutDesc/Color");
+  d->UI.trailColorWithDesc->persist(d->uiState, "TrailsWithDesc/Color");
   d->mapUiState("Trails/Length", d->UI.trailLength);
   d->mapUiState("Trails/Style", d->UI.trailStyle);
 
@@ -102,17 +114,22 @@ FeatureOptions::FeatureOptions(vtkMaptkFeatureTrackRepresentation* rep,
   // Set up initial representation state
   d->representation = rep;
 
-  this->setTrailsVisible(d->UI.showTrails->isChecked());
+  this->setTrailsWithDescVisible(d->UI.showTrailsWithDesc->isChecked());
+  this->setTrailsWithoutDescVisible(d->UI.showTrailsWithoutDesc->isChecked());
   this->setTrailsLength(d->UI.trailLength->value());
   this->setTrailsStyle(d->UI.trailStyle->currentIndex());
 
-  d->UI.trailColor->addActor(d->representation->GetTrailsActor());
+  d->UI.trailColorWithDesc->addActor(d->representation->GetTrailsWithDescActor());
+  d->UI.trailColorWithoutDesc->addActor(d->representation->GetTrailsWithoutDescActor());
 
-  this->addActor(d->representation->GetActivePointsActor());
+  this->addActor(d->representation->GetActivePointsWithDescActor());
+  this->addActor(d->representation->GetActivePointsWithoutDescActor());
 
   // Connect signals/slots
-  connect(d->UI.showTrails, SIGNAL(toggled(bool)),
-          this, SLOT(setTrailsVisible(bool)));
+  connect(d->UI.showTrailsWithDesc, SIGNAL(toggled(bool)),
+          this, SLOT(setTrailsWithDescVisible(bool)));
+  connect(d->UI.showTrailsWithoutDesc, SIGNAL(toggled(bool)),
+          this, SLOT(setTrailsWithoutDescVisible(bool)));
   connect(d->UI.trailLength, SIGNAL(valueChanged(int)),
           this, SLOT(setTrailsLength(int)));
   connect(d->UI.trailStyle, SIGNAL(currentIndexChanged(int)),
@@ -127,23 +144,47 @@ FeatureOptions::~FeatureOptions()
 }
 
 //-----------------------------------------------------------------------------
-void FeatureOptions::setFeaturesVisible(bool state)
+void FeatureOptions::setFeaturesWithDescVisible(bool state)
 {
   QTE_D();
 
-  d->representation->GetActivePointsActor()->SetVisibility(state);
-  d->representation->GetTrailsActor()->SetVisibility(
-    state && d->UI.showTrails->isChecked());
+  d->representation->GetActivePointsWithDescActor()->SetVisibility(state);
+  d->representation->GetTrailsWithDescActor()->SetVisibility(
+    state && d->UI.showTrailsWithDesc->isChecked());
 
   emit this->modified();
 }
 
 //-----------------------------------------------------------------------------
-void FeatureOptions::setTrailsVisible(bool state)
+void FeatureOptions::setFeaturesWithoutDescVisible(bool state)
 {
   QTE_D();
 
-  d->representation->GetTrailsActor()->SetVisibility(state);
+  d->representation->GetActivePointsWithoutDescActor()->SetVisibility(state);
+  d->representation->GetTrailsWithoutDescActor()->SetVisibility(
+    state && d->UI.showTrailsWithoutDesc->isChecked());
+
+  emit this->modified();
+}
+
+//-----------------------------------------------------------------------------
+void FeatureOptions::setTrailsWithDescVisible(bool state)
+{
+  QTE_D();
+
+  d->toggleTrailOptions();
+  d->representation->GetTrailsWithDescActor()->SetVisibility(state);
+
+  emit this->modified();
+}
+
+//-----------------------------------------------------------------------------
+void FeatureOptions::setTrailsWithoutDescVisible(bool state)
+{
+  QTE_D();
+
+  d->toggleTrailOptions();
+  d->representation->GetTrailsWithoutDescActor()->SetVisibility(state);
 
   emit this->modified();
 }
