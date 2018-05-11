@@ -8,6 +8,10 @@ if(POLICY CMP0054)
   cmake_policy(SET CMP0054 NEW)
 endif()
 
+if(POLICY CMP0020)
+  cmake_policy(SET CMP0020 NEW)
+endif()
+
 ###
 # Options and setup
 #

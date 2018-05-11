@@ -221,7 +221,6 @@ target_link_libraries(TeleSculptor
   kwiver::vital_vpm
   qtExtensions
   ${VTK_LIBRARIES}
-  ${QT_QTMAIN_LIBRARY}
   ${QT_LIBRARIES}
 )
 
