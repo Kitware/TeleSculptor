@@ -269,7 +269,12 @@ TrackFeaturesSprokitTool
     d->video_reader->seek_frame(currentTimestamp, frame - 1);
   }
 
-  this->updateProgress(static_cast<int>(frame), maxFrame);
+  time_t last_disp_time;
+  time(&last_disp_time);
+  double disp_period = 1.0;
+
+  auto numFrames = d->video_reader->num_frames();
+  this->updateProgress(frame * 100.0 / numFrames);
   this->setDescription("Parsing video frames");
 
   typedef std::unique_ptr<kwiver::vital::track_set_implementation> tsi_uptr;
@@ -288,8 +293,7 @@ TrackFeaturesSprokitTool
     auto const converted_image = d->image_converter->convert(image);
 
     // Update tool progress
-    this->updateProgress(
-      static_cast<int>(currentTimestamp.get_frame()), maxFrame);
+    this->updateProgress((1.0/3.0)*currentTimestamp.get_frame() * 100.0 / numFrames);
 
     auto const mdv = d->video_reader->frame_metadata();
     if (!mdv.empty())
@@ -317,16 +321,18 @@ TrackFeaturesSprokitTool
         auto klt_frame_tracks = ix->second->get_datum<kwiver::vital::feature_track_set_sptr>();
         //we have klt frames from current frame, yipee
         accumulated_tracks->merge_in_other_track_set(klt_frame_tracks);
-
         time_t cur_time;
         time(&cur_time);
         double seconds_since_last_disp = difftime(cur_time, last_disp_time);
         if (seconds_since_last_disp > disp_period)
         {
           last_disp_time = cur_time;
+          // make a copy of the tool data
           auto data = std::make_shared<ToolData>();
           data->copyTracks(accumulated_tracks);
-          data->activeFrame = *(accumulated_tracks->all_frame_ids().rbegin());
+          data->activeFrame = accumulated_tracks->last_frame();
+          data->progress = progress();
+          data->description = description().toStdString();
           emit updated(data);
         }
       }
@@ -377,16 +383,21 @@ TrackFeaturesSprokitTool
     auto const image = d->video_reader->frame_image();
     auto const converted_image = d->image_converter->convert(image);
 
+    this->updateProgress((1.0 / 3.0)*currentTimestamp.get_frame() * 100.0 / numFrames + (1.0/3.0));
+
     matchable_tracks = std::static_pointer_cast<kwiver::vital::feature_track_set>(d->m_detect_if_keyframe->track(matchable_tracks,currentTimestamp.get_frame(),converted_image));
     time_t cur_time;
     time(&cur_time);
     double seconds_since_last_disp = difftime(cur_time, last_disp_time);
     if (seconds_since_last_disp > disp_period)
     {
+      // Update tool progress
       last_disp_time = cur_time;
       auto data = std::make_shared<ToolData>();
       data->copyTracks(matchable_tracks);
       data->activeFrame = currentTimestamp.get_frame();
+      data->progress = progress();
+      data->description = description().toStdString();
       emit updated(data);
     }
   }
@@ -395,8 +406,9 @@ TrackFeaturesSprokitTool
   auto loop_detected_tracks = matchable_tracks;
   for (auto fid : keyframes)
   {
-    loop_detected_tracks = d->m_loop_closer->stitch(fid, loop_detected_tracks, kwiver::vital::image_container_sptr());
+    this->updateProgress((1.0 / 3.0)*currentTimestamp.get_frame() * 100.0 / numFrames + (2.0 / 3.0));
 
+    loop_detected_tracks = d->m_loop_closer->stitch(fid, loop_detected_tracks, kwiver::vital::image_container_sptr());
     time_t cur_time;
     time(&cur_time);
     double seconds_since_last_disp = difftime(cur_time, last_disp_time);
@@ -406,6 +418,8 @@ TrackFeaturesSprokitTool
       auto data = std::make_shared<ToolData>();
       data->copyTracks(loop_detected_tracks);
       data->activeFrame = fid;
+      data->progress = progress();
+      data->description = description().toStdString();
       emit updated(data);
     }
   }
