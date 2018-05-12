@@ -283,29 +283,38 @@ TrackFeaturesSprokitTool
     std::make_shared<kwiver::vital::feature_track_set>(
     tsi_uptr(new kwiver::arrows::core::frame_index_track_set_impl()));
 
-  double disp_period = 2;
-  time_t last_disp_time;
-  time(&last_disp_time);
-
-  while (d->video_reader->next_frame(currentTimestamp))
+  std::map<kwiver::vital::frame_id_t, const kwiver::vital::image_container_sptr> images;
+  bool end_reached = false;
+  while (!d->ep.at_end())
   {
-    auto const image = d->video_reader->frame_image();
-    auto const converted_image = d->image_converter->convert(image);
-
-    // Update tool progress
-    this->updateProgress((1.0/3.0)*currentTimestamp.get_frame() * 100.0 / numFrames);
-
-    auto const mdv = d->video_reader->frame_metadata();
-    if (!mdv.empty())
+    bool frame_read = d->video_reader->next_frame(currentTimestamp);
+    if (frame_read)
     {
-      converted_image->set_metadata(mdv[0]);
-    }
+      auto const image = d->video_reader->frame_image();
+      auto const converted_image = d->image_converter->convert(image);
 
-    // Create dataset for input
-    auto ds = kwiver::adapter::adapter_data_set::create();
-    ds->add_value("image", converted_image);
-    ds->add_value("timestamp", currentTimestamp);
-    d->ep.send(ds);
+      auto const mdv = d->video_reader->frame_metadata();
+      if (!mdv.empty())
+      {
+        converted_image->set_metadata(mdv[0]);
+      }
+
+      // Create dataset for input
+      auto ds = kwiver::adapter::adapter_data_set::create();
+      ds->add_value("image", converted_image);
+      ds->add_value("timestamp", currentTimestamp);
+      d->ep.send(ds);
+      images.insert(std::make_pair(currentTimestamp.get_frame(),converted_image));
+
+    }
+    else
+    {
+      if (!end_reached)
+      {
+        d->ep.send_end_of_input();
+        end_reached = true;
+      }
+    }
 
     if (this->isCanceled())
     {
@@ -321,6 +330,16 @@ TrackFeaturesSprokitTool
         auto klt_frame_tracks = ix->second->get_datum<kwiver::vital::feature_track_set_sptr>();
         //we have klt frames from current frame, yipee
         accumulated_tracks->merge_in_other_track_set(klt_frame_tracks);
+        accumulated_tracks = std::static_pointer_cast<kwiver::vital::feature_track_set>(d->m_keyframe_selection->select(accumulated_tracks));
+        auto fid = accumulated_tracks->last_frame();
+        auto converted_image = images[fid];
+        images.erase(fid);
+        accumulated_tracks = std::static_pointer_cast<kwiver::vital::feature_track_set>(d->m_detect_if_keyframe->track(accumulated_tracks, fid, converted_image));
+        accumulated_tracks = d->m_loop_closer->stitch(fid, accumulated_tracks, kwiver::vital::image_container_sptr());
+
+        // Update tool progress
+        this->updateProgress(fid* 100.0 / numFrames);
+
         time_t cur_time;
         time(&cur_time);
         double seconds_since_last_disp = difftime(cur_time, last_disp_time);
@@ -338,94 +357,8 @@ TrackFeaturesSprokitTool
       }
     }
   }
-  d->ep.send_end_of_input();
-
-  while (!d->ep.at_end())
-  {
-    auto rds = d->ep.receive();
-    auto ix = rds->find("klt_frame_track_set");
-    if (ix != rds->end())
-    {
-      auto klt_frame_tracks = ix->second->get_datum<kwiver::vital::feature_track_set_sptr>();
-      accumulated_tracks->merge_in_other_track_set(klt_frame_tracks);
-
-      time_t cur_time;
-      time(&cur_time);
-      double seconds_since_last_disp = difftime(cur_time, last_disp_time);
-      if (seconds_since_last_disp > disp_period)
-      {
-        last_disp_time = cur_time;
-        auto data = std::make_shared<ToolData>();
-        data->copyTracks(accumulated_tracks);
-        data->activeFrame = *(accumulated_tracks->all_frame_ids().rbegin());
-        emit updated(data);
-      }
-    }
-  }
   d->ep.wait();
-
-  //select the keyframes
-  auto kf_tracks = std::static_pointer_cast<kwiver::vital::feature_track_set>(d->m_keyframe_selection->select(accumulated_tracks));
-
-  //do the feature extraction on keyframes
-  auto matchable_tracks = kf_tracks;
-
-  d->video_reader->close();
-  d->video_reader->open(this->data()->videoPath);
-
-  if (frame > 1)
-  {
-    d->video_reader->seek_frame(currentTimestamp, frame - 1);
-  }
-
-  while (d->video_reader->next_frame(currentTimestamp))
-  {
-    auto const image = d->video_reader->frame_image();
-    auto const converted_image = d->image_converter->convert(image);
-
-    this->updateProgress((1.0 / 3.0)*currentTimestamp.get_frame() * 100.0 / numFrames + (1.0/3.0));
-
-    matchable_tracks = std::static_pointer_cast<kwiver::vital::feature_track_set>(d->m_detect_if_keyframe->track(matchable_tracks,currentTimestamp.get_frame(),converted_image));
-    time_t cur_time;
-    time(&cur_time);
-    double seconds_since_last_disp = difftime(cur_time, last_disp_time);
-    if (seconds_since_last_disp > disp_period)
-    {
-      // Update tool progress
-      last_disp_time = cur_time;
-      auto data = std::make_shared<ToolData>();
-      data->copyTracks(matchable_tracks);
-      data->activeFrame = currentTimestamp.get_frame();
-      data->progress = progress();
-      data->description = description().toStdString();
-      emit updated(data);
-    }
-  }
-
-  auto keyframes = matchable_tracks->keyframes();
-  auto loop_detected_tracks = matchable_tracks;
-  for (auto fid : keyframes)
-  {
-    this->updateProgress((1.0 / 3.0)*currentTimestamp.get_frame() * 100.0 / numFrames + (2.0 / 3.0));
-
-    loop_detected_tracks = d->m_loop_closer->stitch(fid, loop_detected_tracks, kwiver::vital::image_container_sptr());
-    time_t cur_time;
-    time(&cur_time);
-    double seconds_since_last_disp = difftime(cur_time, last_disp_time);
-    if (seconds_since_last_disp > disp_period)
-    {
-      last_disp_time = cur_time;
-      auto data = std::make_shared<ToolData>();
-      data->copyTracks(loop_detected_tracks);
-      data->activeFrame = fid;
-      data->progress = progress();
-      data->description = description().toStdString();
-      emit updated(data);
-    }
-  }
-
-  d->video_reader->close();
-  this->updateTracks(loop_detected_tracks);
+  this->updateTracks(accumulated_tracks);
   this->setActiveFrame(frame);
 
 }
