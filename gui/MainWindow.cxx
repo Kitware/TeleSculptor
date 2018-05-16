@@ -594,6 +594,22 @@ void MainWindowPrivate::updateFrames(
     this->updateCameras(std::make_shared<kwiver::vital::simple_camera_map>(camMap));
   }
 
+  //find depth map paths
+  if (this->currProject->projectConfig->has_value("output_depth_dir"))
+  {
+    foreach(auto & frame, this->frames)
+    {
+      auto depthName = QString::fromStdString(this->getFrameName(frame.id) + ".vti");
+      QString depthMapPath = QString::fromStdString(
+        kvPath(this->currProject->depthPath) + '/' + kvPath(depthName));
+      QFileInfo check_file(depthMapPath);
+      if (check_file.exists() && check_file.isFile())
+      {
+        frame.depthMapPath = depthMapPath;
+      }
+    }
+  }
+
   if (this->currProject){
     for (auto const& tool : this->tools)
     {
@@ -1463,22 +1479,7 @@ void MainWindow::loadProject(QString const& path)
     this->loadLandmarks(d->currProject->landmarksPath);
   }
 
-  // Cameras are loaded after video importer is done
-
-  //find depth map paths
-  if (d->currProject->projectConfig->has_value("output_depth_dir"))
-  {
-    foreach(auto & frame, d->frames)
-    {
-      auto depthName = QString::fromStdString(d->getFrameName(frame.id) + ".vti");
-      QString depthMapPath = QString::fromStdString(kvPath(d->currProject->depthPath) + '/' + kvPath(depthName));
-      QFileInfo check_file(depthMapPath);
-      if (check_file.exists() && check_file.isFile())
-      {
-        frame.depthMapPath = depthMapPath;
-      }
-    }
-  }
+  // Cameras and depth maps are loaded after video importer is done
 
 #ifdef VTKWEBGLEXPORTER
   d->UI.actionWebGLScene->setEnabled(true);
