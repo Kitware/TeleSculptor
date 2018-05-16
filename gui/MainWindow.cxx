@@ -442,11 +442,19 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
     }
 
     // Set the skip value if present
-    if (this->videoSource &&
-        config->has_value("video_reader:vidl_ffmpeg:output_nth_frame"))
+    // TODO: fix kwiver so this is done with an adapter and it not in the video source
+    if (this->videoSource)
     {
-      this->advanceInterval =
-        config->get_value<int>("video_reader:vidl_ffmpeg:output_nth_frame");
+      if(config->has_value("video_reader:vidl_ffmpeg:output_nth_frame"))
+      {
+        this->advanceInterval =
+          config->get_value<int>("video_reader:vidl_ffmpeg:output_nth_frame");
+      }
+      else if(config->has_value("video_reader:splice:output_nth_frame"))
+      {
+        this->advanceInterval =
+          config->get_value<int>("video_reader:splice:output_nth_frame");
+      }
     }
 
     foreach (auto const& tool, this->tools)
