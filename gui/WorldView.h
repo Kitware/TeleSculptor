@@ -53,7 +53,8 @@ public:
   explicit WorldView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
   virtual ~WorldView();
 
-  void loadVolume(QString path, int nbFrames, QString krtd, QString frame);
+  void initFrameSampling(int nbFrames);
+  void loadVolume(QString path, QString krtd, QString frame);
 signals:
   void depthMapThresholdsChanged();
   void depthMapEnabled(bool);

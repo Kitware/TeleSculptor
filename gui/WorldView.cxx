@@ -662,11 +662,17 @@ void WorldView::updateThresholdRanges()
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::loadVolume(QString path, int nbFrames, QString krtd, QString frame)
+void WorldView::initFrameSampling(int nbFrames)
 {
   QTE_D();
 
   d->volumeOptions->initFrameSampling(nbFrames);
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::loadVolume(QString path, QString krtd, QString frame)
+{
+  QTE_D();
 
   d->UI.actionShowVolume->setEnabled(true);
 

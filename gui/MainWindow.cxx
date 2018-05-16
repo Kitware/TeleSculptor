@@ -594,6 +594,24 @@ void MainWindowPrivate::updateFrames(
     this->updateCameras(std::make_shared<kwiver::vital::simple_camera_map>(camMap));
   }
 
+  //find depth map paths
+  if (this->currProject->projectConfig->has_value("output_depth_dir"))
+  {
+    foreach(auto & frame, this->frames)
+    {
+      auto depthName = QString::fromStdString(this->getFrameName(frame.id) + ".vti");
+      QString depthMapPath = QString::fromStdString(
+        kvPath(this->currProject->depthPath) + '/' + kvPath(depthName));
+      QFileInfo check_file(depthMapPath);
+      if (check_file.exists() && check_file.isFile())
+      {
+        frame.depthMapPath = depthMapPath;
+      }
+    }
+  }
+
+  this->UI.worldView->initFrameSampling(this->frames.size());
+
   if (this->currProject){
     for (auto const& tool : this->tools)
     {
@@ -1463,25 +1481,7 @@ void MainWindow::loadProject(QString const& path)
     this->loadLandmarks(d->currProject->landmarksPath);
   }
 
-  // Don't load cameras until video importer is done.
-  d->videoImporter.wait();
-
-  // Cameras are loaded after video importer is done
-
-  //find depth map paths
-  if (d->currProject->projectConfig->has_value("output_depth_dir"))
-  {
-    foreach(auto & frame, d->frames)
-    {
-      auto depthName = QString::fromStdString(d->getFrameName(frame.id) + ".vti");
-      QString depthMapPath = QString::fromStdString(kvPath(d->currProject->depthPath) + '/' + kvPath(depthName));
-      QFileInfo check_file(depthMapPath);
-      if (check_file.exists() && check_file.isFile())
-      {
-        frame.depthMapPath = depthMapPath;
-      }
-    }
-  }
+  // Cameras and depth maps are loaded after video importer is done
 
 #ifdef VTKWEBGLEXPORTER
   d->UI.actionWebGLScene->setEnabled(true);
@@ -1490,8 +1490,9 @@ void MainWindow::loadProject(QString const& path)
   // Load volume
   if (d->currProject->projectConfig->has_value("volume_file"))
   {
-    d->UI.worldView->loadVolume(d->currProject->volumePath, d->frames.size(),
-                                d->currProject->cameraPath, d->currProject->videoPath);
+    d->UI.worldView->loadVolume(d->currProject->volumePath,
+                                d->currProject->cameraPath,
+                                d->currProject->videoPath);
   }
 
   if (d->currProject->projectConfig->has_value("geo_origin_file"))
