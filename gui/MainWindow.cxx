@@ -610,6 +610,8 @@ void MainWindowPrivate::updateFrames(
     }
   }
 
+  this->UI.worldView->initFrameSampling(this->frames.size());
+
   if (this->currProject){
     for (auto const& tool : this->tools)
     {
@@ -1488,8 +1490,9 @@ void MainWindow::loadProject(QString const& path)
   // Load volume
   if (d->currProject->projectConfig->has_value("volume_file"))
   {
-    d->UI.worldView->loadVolume(d->currProject->volumePath, d->frames.size(),
-                                d->currProject->cameraPath, d->currProject->videoPath);
+    d->UI.worldView->loadVolume(d->currProject->volumePath,
+                                d->currProject->cameraPath,
+                                d->currProject->videoPath);
   }
 
   if (d->currProject->projectConfig->has_value("geo_origin_file"))
