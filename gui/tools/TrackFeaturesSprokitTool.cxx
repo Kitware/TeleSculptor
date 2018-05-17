@@ -345,11 +345,14 @@ TrackFeaturesSprokitTool
         double seconds_since_last_disp = difftime(cur_time, last_disp_time);
         if (seconds_since_last_disp > disp_period)
         {
+          auto fid = accumulated_tracks->last_frame();
+          auto active_tracks = accumulated_tracks->active_tracks(fid);
+          auto sub_tracks = std::make_shared<kwiver::vital::feature_track_set>(active_tracks);
           last_disp_time = cur_time;
           // make a copy of the tool data
           auto data = std::make_shared<ToolData>();
-          data->copyTracks(accumulated_tracks);
-          data->activeFrame = accumulated_tracks->last_frame();
+          data->copyTracks(sub_tracks);
+          data->activeFrame = fid;
           data->progress = progress();
           data->description = description().toStdString();
           emit updated(data);
