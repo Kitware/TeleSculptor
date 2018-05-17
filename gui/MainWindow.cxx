@@ -804,7 +804,7 @@ void MainWindowPrivate::setActiveCamera(int id)
   this->UI.cameraView->clearFeatureTracks();
   if (this->tracks)
   {
-    foreach(auto const& track, this->tracks->tracks())
+    for(auto const& track: this->tracks->active_tracks(id))
     {
       this->UI.cameraView->addFeatureTrack(*track);
     }
@@ -861,6 +861,8 @@ void MainWindowPrivate::updateCameraView()
 
   auto activeFrame = this->frames.find(this->activeCameraIndex);
 
+  auto fid = activeFrame.key();
+
   if (activeFrame == this->frames.end())
   {
     this->loadEmptyImage(0);
@@ -875,7 +877,7 @@ void MainWindowPrivate::updateCameraView()
   this->UI.cameraView->clearFeatureTracks();
   if (this->tracks)
   {
-    foreach(auto const& track, this->tracks->tracks())
+    for(auto const& track: this->tracks->active_tracks(fid))
     {
       this->UI.cameraView->addFeatureTrack(*track);
     }
