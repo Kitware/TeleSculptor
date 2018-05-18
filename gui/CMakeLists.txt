@@ -1,8 +1,8 @@
 include( maptk-qt )
 
+set(CMAKE_AUTOMOC ON)
 if(MAPTK_QT_VERSION VERSION_GREATER "4")
-  set(CMAKE_AUTOMOC ON)
-  set(Qt5_MODULES Core Widgets)
+  set(Qt5_MODULES Core Designer UiPlugin Widgets Xml)
   find_package(Qt5 COMPONENTS ${Qt5_MODULES} REQUIRED)
   set(QT_LIBRARIES )
   foreach(module ${Qt5_MODULES})
@@ -157,6 +157,7 @@ set(gui_sources
   MatchMatrixWindow.cxx
   PointOptions.cxx
   Project.cxx
+  QVTKOpenGLInit.cxx
   VideoImport.cxx
   VolumeOptions.cxx
   WorldView.cxx
@@ -195,9 +196,14 @@ configure_file(
   "${CMAKE_CURRENT_BINARY_DIR}/appdata.qrc"
 )
 
-qt4_wrap_ui(gui_ui_sources ${gui_ui})
-qt4_wrap_cpp(gui_moc_sources ${gui_moc_headers})
-qt4_add_resources(gui_res_sources ${gui_resources})
+if(MAPTK_QT_VERSION VERSION_GREATER "4")
+  qt5_wrap_ui(gui_ui_sources ${gui_ui})
+  qt5_add_resources(gui_res_sources ${gui_resources})
+else()
+  qt4_wrap_ui(gui_ui_sources ${gui_ui})
+  qt4_wrap_cpp(gui_moc_sources ${gui_moc_headers})
+  qt4_add_resources(gui_res_sources ${gui_resources})
+endif()
 
 qte_amc_wrap_ui(gui_amc_sources ActionManagerDialog ${gui_am_ui})
 
@@ -216,7 +222,6 @@ kwiver_add_executable(TeleSculptor
   WIN32 MACOSX_BUNDLE
   ${gui_sources}
   ${gui_ui_sources}
-  ${gui_moc_sources}
   ${gui_res_sources}
   ${gui_amc_sources}
   ${gui_icon_source}
