@@ -38,6 +38,6 @@ QVTKOpenGLInit::QVTKOpenGLInit()
 {
 #if !USE_QVTKWIDGET
   // Set the default surface format for the OpenGL view
-  QSurfaceFormat::setDefaultFormat(QVTKOpenGLWidget::defaultFormat());
+  QSurfaceFormat::setDefaultFormat(RenderWidget::defaultFormat());
 #endif
 }

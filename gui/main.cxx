@@ -31,6 +31,7 @@
 #include "MainWindow.h"
 #include "tools/AbstractTool.h"
 #include "VideoImport.h"
+#include "QVTKOpenGLInit.h"
 
 #include <maptk/version.h>
 
@@ -50,6 +51,7 @@
 //-----------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
+  QVTKOpenGLInit init;
   // Set application information
   QApplication::setApplicationName("MAP-Tk TeleSculptor");
   QApplication::setOrganizationName("Kitware");
