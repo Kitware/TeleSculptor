@@ -41,7 +41,7 @@
 #include <vital/types/metadata.h>
 
 #include <qtStlUtil.h>
-#include <QtGui/QMessageBox>
+#include <QMessageBox>
 
 #include <sprokit/pipeline/pipeline.h>
 #include <sprokit/processes/kwiver_type_traits.h>

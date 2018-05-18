@@ -88,13 +88,11 @@
 #include <qtIndexRange.h>
 #include <qtMath.h>
 
-#include <QtGui/QMenu>
-#include <QtGui/QToolButton>
-#include <QtGui/QWidgetAction>
-
-#include <QtCore/QDebug>
-
+#include <QDebug>
 #include <QFileInfo>
+#include <QMenu>
+#include <QToolButton>
+#include <QWidgetAction>
 
 using namespace LandmarkArrays;
 

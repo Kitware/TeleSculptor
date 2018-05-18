@@ -33,7 +33,7 @@
 
 #include <qtGlobal.h>
 
-#include <QtGui/QComboBox>
+#include <QComboBox>
 
 class qtGradient;
 

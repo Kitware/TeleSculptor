@@ -33,7 +33,7 @@
 
 #include <vital/algo/bundle_adjust.h>
 
-#include <QtGui/QMessageBox>
+#include <QMessageBox>
 
 using kwiver::vital::algo::bundle_adjust;
 using kwiver::vital::algo::bundle_adjust_sptr;

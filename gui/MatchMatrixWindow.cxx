@@ -42,11 +42,11 @@
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
 
-#include <QtGui/QFileDialog>
-#include <QtGui/QGraphicsSceneHoverEvent>
-#include <QtGui/QGraphicsPixmapItem>
-#include <QtGui/QImageWriter>
-#include <QtGui/QMessageBox>
+#include <QFileDialog>
+#include <QGraphicsSceneHoverEvent>
+#include <QGraphicsPixmapItem>
+#include <QImageWriter>
+#include <QMessageBox>
 
 #include <cmath>
 

@@ -35,7 +35,7 @@
 
 #include <qtGlobal.h>
 
-#include <QtGui/QWidget>
+#include <QWidget>
 
 class vtkImageData;
 

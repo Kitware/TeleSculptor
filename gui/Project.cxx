@@ -36,12 +36,12 @@
 
 #include <qtStlUtil.h>
 
-#include <QtGui/QApplication>
+#include <QApplication>
 
-#include <QtCore/QDebug>
-#include <QtCore/QDir>
-#include <QtCore/QFile>
-#include <QtCore/QFileInfo>
+#include <QDebug>
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
 
 #include <iostream>
 

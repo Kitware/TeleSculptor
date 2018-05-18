@@ -38,7 +38,7 @@
 #include <vital/types/metadata.h>
 
 #include <qtStlUtil.h>
-#include <QtGui/QMessageBox>
+#include <QMessageBox>
 
 #include <algorithm>
 

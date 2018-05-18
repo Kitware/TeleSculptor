@@ -33,7 +33,7 @@
 
 #include <qtGlobal.h>
 
-#include <QtGui/QWidget>
+#include <QWidget>
 
 class DepthMapViewPrivate;
 class vtkMaptkImageDataGeometryFilter;
