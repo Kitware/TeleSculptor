@@ -1170,7 +1170,6 @@ void MainWindowPrivate::updateProgress(QObject* object,
       break;
     }
   }
-  QApplication::processEvents();
 }
 
 //END MainWindowPrivate
