@@ -32,6 +32,7 @@
 
 #include "ui_WorldView.h"
 #include "am_WorldView.h"
+#include "QVTKWidgetConfigure.h"
 
 #include "CameraOptions.h"
 #include "DataArrays.h"
@@ -54,14 +55,15 @@
 #include <vtkContourFilter.h>
 #include <vtkCubeAxesActor.h>
 #include <vtkDoubleArray.h>
+#include <vtkGenericOpenGLRenderWindow.h>
 #include <vtkGeometryFilter.h>
 #include <vtkImageActor.h>
 #include <vtkImageData.h>
 #include <vtkMaptkImageDataGeometryFilter.h>
 #include <vtkMatrix4x4.h>
 #include <vtkNew.h>
-#include <vtkPlaneSource.h>
 #include <vtkPLYWriter.h>
+#include <vtkPlaneSource.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
@@ -130,8 +132,9 @@ public:
   Ui::WorldView UI;
   Am::WorldView AM;
 
+  RenderWidget* renderWidget;
   vtkNew<vtkRenderer> renderer;
-  vtkNew<vtkRenderWindow> renderWindow;
+  vtkSmartPointer<vtkRenderWindow> renderWindow;
 
   vtkNew<vtkMaptkCameraRepresentation> cameraRep;
 
@@ -236,7 +239,7 @@ void WorldViewPrivate::setView(
   camera->SetPosition(pos.data());
   camera->SetViewUp(up.data());
 
-  this->UI.renderWidget->update();
+  this->renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -300,6 +303,15 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->UI.setupUi(this);
   d->AM.setupActions(d->UI, this);
 
+  d->renderWidget = new RenderWidget(this);
+  this->layout()->addWidget(d->renderWidget);
+  d->renderWindow =
+#if USE_QVTKWIDGET
+      vtkSmartPointer<vtkRenderWindow>::New();
+#else
+      vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
+#endif
+
   auto const viewMenu = new QMenu(this);
   viewMenu->addAction(d->UI.actionViewReset);
   viewMenu->addAction(d->UI.actionViewResetLandmarks);
@@ -318,7 +330,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->setPopup(d->UI.actionShowFrameImage, d->imageOptions);
 
   connect(d->imageOptions, SIGNAL(modified()),
-          d->UI.renderWidget, SLOT(update()));
+          d->renderWidget, SLOT(update()));
 
   d->cameraOptions = new CameraOptions(d->cameraRep.GetPointer(), this);
   d->setPopup(d->UI.actionShowCameras, d->cameraOptions);
@@ -331,7 +343,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->setPopup(d->UI.actionShowLandmarks, d->landmarkOptions);
 
   connect(d->landmarkOptions, SIGNAL(modified()),
-          d->UI.renderWidget, SLOT(update()));
+          d->renderWidget, SLOT(update()));
 
   d->depthMapOptions = new DepthMapOptions("WorldView/DepthMap", this);
   d->setPopup(d->UI.actionShowDepthMap, d->depthMapOptions);
@@ -351,13 +363,13 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->volumeOptions->setEnabled(false);
 
   connect(d->volumeOptions, SIGNAL(modified()),
-          d->UI.renderWidget, SLOT(update()));
+          d->renderWidget, SLOT(update()));
 
   connect(d->volumeOptions, SIGNAL(colorOptionsEnabled(bool)),
           this, SIGNAL(coloredMeshEnabled(bool)));
 
   connect(this, SIGNAL(contourChanged()),
-          d->UI.renderWidget, SLOT(update()));
+          d->renderWidget, SLOT(update()));
 
   // Connect actions
   this->addAction(d->UI.actionViewReset);
@@ -409,7 +421,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
   d->renderWindow->AddRenderer(d->renderer.GetPointer());
-  d->UI.renderWidget->SetRenderWindow(d->renderWindow.GetPointer());
+  d->renderWidget->SetRenderWindow(d->renderWindow.GetPointer());
 
   d->renderer->AddActor(d->cameraRep->GetNonActiveActor());
   d->renderer->AddActor(d->cameraRep->GetActiveActor());
@@ -510,14 +522,14 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   QAction* actionIncreasePointSize = new QAction(this);
   actionIncreasePointSize->setShortcut(Qt::Key_Plus);
   actionIncreasePointSize->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-  d->UI.renderWidget->addAction(actionIncreasePointSize);
+  d->renderWidget->addAction(actionIncreasePointSize);
   connect(actionIncreasePointSize, SIGNAL(triggered()),
     this, SLOT(increaseDepthMapPointSize()));
 
   QAction* actionDecreasePointSize = new QAction(this);
   actionDecreasePointSize->setShortcut(Qt::Key_Minus);
   actionDecreasePointSize->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-  d->UI.renderWidget->addAction(actionDecreasePointSize);
+  d->renderWidget->addAction(actionDecreasePointSize);
   connect(actionDecreasePointSize, SIGNAL(triggered()),
     this, SLOT(decreaseDepthMapPointSize()));
 }
@@ -532,7 +544,7 @@ void WorldView::setBackgroundColor(QColor const& color)
 {
   QTE_D();
   d->renderer->SetBackground(color.redF(), color.greenF(), color.blueF());
-  d->UI.renderWidget->update();
+  d->renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -605,7 +617,7 @@ void WorldView::updateDepthMap()
   // d->rangeUpdateNeeded set to false in updateThresholdRanges
   this->updateThresholdRanges();
 
-  d->UI.renderWidget->update();
+  d->renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -721,7 +733,7 @@ void WorldView::setVolumeVisible(bool state)
 
   d->volumeActor->SetVisibility(state);
   d->volumeOptions->setEnabled(state);
-  d->UI.renderWidget->update();
+  d->renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -738,7 +750,7 @@ void WorldView::computeContour(double threshold)
   QTE_D();
 
   d->contourFilter->SetValue(0, threshold);
-  d->UI.renderWidget->update();
+  d->renderWidget->update();
 
   if(d->volumeOptions->isColorOptionsEnabled())
   {
@@ -813,7 +825,7 @@ void WorldView::setImageData(vtkImageData* data, QSize const& dimensions)
   d->validImage = data;
   d->imageActor->SetInputData(data ? data : d->emptyImage.GetPointer());
   d->imageActor->SetVisibility(data && d->validTransform && showImage);
-  d->UI.renderWidget->update();
+  d->renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -931,7 +943,7 @@ void WorldView::setAxesVisible(bool state)
   else
   {
     d->cubeAxesActor->SetVisibility(state);
-    d->UI.renderWidget->update();
+    d->renderWidget->update();
   }
 }
 
@@ -949,7 +961,7 @@ void WorldView::setDepthMapVisible(bool state)
     {
       this->updateThresholdRanges();
     }
-    d->UI.renderWidget->update();
+    d->renderWidget->update();
   }
   d->depthMapOptions->setEnabled(state);
 }
@@ -966,7 +978,7 @@ void WorldView::resetView()
   QTE_D();
 
   d->renderer->ResetCamera();
-  d->UI.renderWidget->update();
+  d->renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -982,7 +994,7 @@ void WorldView::resetViewToLandmarks()
   d->renderer->ResetCamera(bounds);
   d->renderer->ResetCameraClippingRange();
 
-  d->UI.renderWidget->update();
+  d->renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -1026,7 +1038,7 @@ void WorldView::setPerspective(bool perspective)
   QTE_D();
 
   d->renderer->GetActiveCamera()->SetParallelProjection(!perspective);
-  d->UI.renderWidget->update();
+  d->renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -1044,7 +1056,7 @@ void WorldView::updateCameras()
   if (d->cameraRepDirty)
   {
     d->cameraRep->Update();
-    d->UI.renderWidget->update();
+    d->renderWidget->update();
     d->cameraRepDirty = false;
   }
 }
@@ -1096,7 +1108,7 @@ void WorldView::updateAxes()
 
     d->axesDirty = false;
     d->renderer->ResetCameraClippingRange();
-    d->UI.renderWidget->update();
+    d->renderWidget->update();
   }
 }
 
@@ -1166,7 +1178,7 @@ void WorldView::updateDepthMapDisplayMode()
   QTE_D();
 
   this->connectDepthPipeline();
-  d->UI.renderWidget->update();
+  d->renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -1187,7 +1199,7 @@ void WorldView::updateDepthMapThresholds(bool filterState)
 
   emit depthMapThresholdsChanged();
 
-  d->UI.renderWidget->update();
+  d->renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -1321,7 +1333,7 @@ void WorldView::increaseDepthMapPointSize()
   float pointSize = d->depthMapActor->GetProperty()->GetPointSize();
   d->depthMapActor->GetProperty()->SetPointSize(pointSize + 0.5);
 
-  d->UI.renderWidget->update();
+  d->renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -1332,5 +1344,5 @@ void WorldView::decreaseDepthMapPointSize()
   float pointSize = d->depthMapActor->GetProperty()->GetPointSize() - 0.5;
   d->depthMapActor->GetProperty()->SetPointSize(pointSize < 1 ? 1 : pointSize);
 
-  d->UI.renderWidget->update();
+  d->renderWidget->update();
 }

@@ -14,16 +14,7 @@
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <property name="leftMargin">
-    <number>0</number>
-   </property>
-   <property name="topMargin">
-    <number>0</number>
-   </property>
-   <property name="rightMargin">
-    <number>0</number>
-   </property>
-   <property name="bottomMargin">
+   <property name="margin">
     <number>0</number>
    </property>
    <item>
@@ -40,9 +31,6 @@
      <addaction name="actionShowDepthMap"/>
      <addaction name="actionShowVolume"/>
     </widget>
-   </item>
-   <item>
-    <widget class="QVTKWidget" name="renderWidget" native="true"/>
    </item>
   </layout>
   <action name="actionViewReset">
@@ -273,12 +261,12 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="icons/icons.qrc">
      <normaloff>:/icons/22x22/volume</normaloff>:/icons/22x22/volume</iconset>
-   </property>
-   <property name="enabled">
-    <bool>false</bool>
    </property>
    <property name="text">
     <string>Volume</string>
@@ -288,14 +276,6 @@
    </property>
   </action>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>QVTKWidget</class>
-   <extends>QWidget</extends>
-   <header location="global">QVTKWidget.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources>
   <include location="icons/icons.qrc"/>
  </resources>

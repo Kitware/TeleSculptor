@@ -38,6 +38,7 @@
 #include "FeatureOptions.h"
 #include "FieldInformation.h"
 #include "ImageOptions.h"
+#include "QVTKWidgetConfigure.h"
 #include "vtkMaptkCamera.h"
 #include "vtkMaptkFeatureTrackRepresentation.h"
 
@@ -48,6 +49,7 @@
 #include <vtkCamera.h>
 #include <vtkCellArray.h>
 #include <vtkDoubleArray.h>
+#include <vtkGenericOpenGLRenderWindow.h>
 #include <vtkImageActor.h>
 #include <vtkImageData.h>
 #include <vtkInteractorStyleRubberBand2D.h>
@@ -57,8 +59,8 @@
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
-#include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
+#include <vtkRenderer.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
 
@@ -192,9 +194,10 @@ public:
 
   Ui::CameraView UI;
   Am::CameraView AM;
+  RenderWidget* renderWidget;
 
   vtkNew<vtkRenderer> renderer;
-  vtkNew<vtkRenderWindow> renderWindow;
+  vtkSmartPointer<vtkRenderWindow> renderWindow;
 
   vtkNew<vtkImageActor> imageActor;
   vtkNew<vtkImageData> emptyImage;
@@ -405,6 +408,14 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   // Set up UI
   d->UI.setupUi(this);
   d->AM.setupActions(d->UI, this);
+  d->renderWidget = new RenderWidget(this);
+  this->layout()->addWidget(d->renderWidget);
+  d->renderWindow =
+#if USE_QVTKWIDGET
+    vtkSmartPointer<vtkRenderWindow>::New();
+#else
+    vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
+#endif
 
   auto const viewMenu = new QMenu(this);
   viewMenu->addAction(d->UI.actionViewReset);
@@ -416,7 +427,7 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->setPopup(d->UI.actionShowFrameImage, imageOptions);
 
   connect(imageOptions, SIGNAL(modified()),
-          d->UI.renderWidget, SLOT(update()));
+          d->renderWidget, SLOT(update()));
 
   auto const featureOptions =
     new FeatureOptions(d->featureRep.GetPointer(),
@@ -425,7 +436,7 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->setPopup(d->UI.actionShowFeatures, featureOptions);
 
   connect(featureOptions, SIGNAL(modified()),
-          d->UI.renderWidget, SLOT(update()));
+          d->renderWidget, SLOT(update()));
 
   d->landmarkOptions = new PointOptions("CameraView/Landmarks", this);
   d->landmarkOptions->setDefaultColor(Qt::magenta);
@@ -435,7 +446,7 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->setPopup(d->UI.actionShowLandmarks, d->landmarkOptions);
 
   connect(d->landmarkOptions, SIGNAL(modified()),
-          d->UI.renderWidget, SLOT(update()));
+          d->renderWidget, SLOT(update()));
 
   auto const residualsOptions =
     new ActorColorOption("CameraView/Residuals", this);
@@ -445,7 +456,7 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->setPopup(d->UI.actionShowResiduals, residualsOptions);
 
   connect(residualsOptions->button, SIGNAL(colorChanged(QColor)),
-          d->UI.renderWidget, SLOT(update()));
+          d->renderWidget, SLOT(update()));
 
   // Connect actions
   this->addAction(d->UI.actionViewReset);
@@ -478,7 +489,7 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
   d->renderWindow->AddRenderer(d->renderer.GetPointer());
-  d->UI.renderWidget->SetRenderWindow(d->renderWindow.GetPointer());
+  d->renderWidget->SetRenderWindow(d->renderWindow.GetPointer());
 
   // Set interactor
   vtkNew<vtkInteractorStyleRubberBand2D> is;
@@ -513,7 +524,7 @@ void CameraView::setBackgroundColor(QColor const& color)
 {
   QTE_D();
   d->renderer->SetBackground(color.redF(), color.greenF(), color.blueF());
-  d->UI.renderWidget->update();
+  d->renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -550,7 +561,7 @@ void CameraView::setImageData(vtkImageData* data, QSize const& dimensions)
     d->setTransforms(qMax(0, static_cast<int>(h)));
   }
 
-  d->UI.renderWidget->update();
+  d->renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -559,7 +570,7 @@ void CameraView::setActiveFrame(unsigned frame)
   QTE_D();
 
   d->featureRep->SetActiveFrame(frame);
-  d->UI.renderWidget->update();
+  d->renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -637,7 +648,7 @@ void CameraView::addLandmark(
 
   d->landmarks.addPoint(x, y, 0.0, d->landmarkData.value(id));
 
-  d->UI.renderWidget->update();
+  d->renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -650,7 +661,7 @@ void CameraView::addResidual(
 
   d->residuals.addSegment(x1, y1, -0.2, x2, y2, -0.2);
 
-  d->UI.renderWidget->update();
+  d->renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -681,7 +692,7 @@ void CameraView::setImageVisible(bool state)
   QTE_D();
 
   d->imageActor->SetVisibility(state);
-  d->UI.renderWidget->update();
+  d->renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -690,7 +701,7 @@ void CameraView::setLandmarksVisible(bool state)
   QTE_D();
 
   d->landmarks.actor->SetVisibility(state);
-  d->UI.renderWidget->update();
+  d->renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -699,7 +710,7 @@ void CameraView::setResidualsVisible(bool state)
   QTE_D();
 
   d->residuals.actor->SetVisibility(state);
-  d->UI.renderWidget->update();
+  d->renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -719,7 +730,7 @@ void CameraView::resetView()
   d->renderer->ResetCamera(d->imageBounds);
   d->renderer->GetActiveCamera()->SetParallelScale(s);
 
-  d->UI.renderWidget->update();
+  d->renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -728,7 +739,7 @@ void CameraView::resetViewToFullExtents()
   QTE_D();
 
   d->renderer->ResetCamera();
-  d->UI.renderWidget->update();
+  d->renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -739,7 +750,7 @@ void CameraView::updateFeatures()
   if (d->featuresDirty)
   {
     d->featureRep->Update();
-    d->UI.renderWidget->update();
+    d->renderWidget->update();
 
     d->featuresDirty = false;
   }

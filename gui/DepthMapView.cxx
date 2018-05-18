@@ -34,19 +34,21 @@
 
 #include "DataArrays.h"
 #include "DepthMapViewOptions.h"
+#include "QVTKWidgetConfigure.h"
 #include "vtkMaptkScalarDataFilter.h"
 
 #include <vtkCamera.h>
+#include <vtkGenericOpenGLRenderWindow.h>
 #include <vtkGeometryFilter.h>
 #include <vtkImageData.h>
-#include <vtkMaptkImageDataGeometryFilter.h>
 #include <vtkInteractorStyleRubberBand2D.h>
+#include <vtkMaptkImageDataGeometryFilter.h>
 #include <vtkNew.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
-#include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
+#include <vtkRenderer.h>
 #include <vtkSmartPointer.h>
 #include <vtkThreshold.h>
 #include <vtkXMLImageDataReader.h>
@@ -70,9 +72,10 @@ public:
   bool validDepthInput;
 
   Ui::DepthMapView UI;
+  RenderWidget* renderWidget;
 
   vtkNew<vtkRenderer> renderer;
-  vtkNew<vtkRenderWindow> renderWindow;
+  vtkSmartPointer<vtkRenderWindow> renderWindow;
 
   vtkNew<vtkMaptkScalarDataFilter> scalarFilter;
   vtkNew<vtkPolyDataMapper> mapper;
@@ -121,13 +124,22 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
 
   // Set up UI
   d->UI.setupUi(this);
+  d->renderWidget = new RenderWidget(this);
+  this->layout()->addWidget(d->renderWidget);
+  d->renderWindow =
+#if USE_QVTKWIDGET
+      vtkSmartPointer<vtkRenderWindow>::New();
+#else
+      vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
+#endif
+
 
   d->depthMapViewOptions = new DepthMapViewOptions("DepthMapView", this);
   d->depthMapViewOptions->setActor(d->actor.GetPointer());
   d->setPopup(d->UI.actionDisplayMode, d->depthMapViewOptions);
 
   connect(d->depthMapViewOptions, SIGNAL(modified()),
-          d->UI.renderWidget, SLOT(update()));
+          d->renderWidget, SLOT(update()));
 
   // Connect actions
   this->addAction(d->UI.actionViewReset);
@@ -143,7 +155,7 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
   d->renderWindow->AddRenderer(d->renderer.GetPointer());
-  d->UI.renderWidget->SetRenderWindow(d->renderWindow.GetPointer());
+  d->renderWidget->SetRenderWindow(d->renderWindow.GetPointer());
 
   // Set up depth map actor
   d->scalarFilter->SetScalarArrayName(DepthMapArrays::Depth);
@@ -157,14 +169,14 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   QAction* actionIncreasePointSize = new QAction(this);
   actionIncreasePointSize->setShortcut(Qt::Key_Plus);
   actionIncreasePointSize->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-  d->UI.renderWidget->addAction(actionIncreasePointSize);
+  d->renderWidget->addAction(actionIncreasePointSize);
   connect(actionIncreasePointSize, SIGNAL(triggered()),
     this, SLOT(increasePointSize()));
 
   QAction* actionDecreasePointSize = new QAction(this);
   actionDecreasePointSize->setShortcut(Qt::Key_Minus);
   actionDecreasePointSize->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-  d->UI.renderWidget->addAction(actionDecreasePointSize);
+  d->renderWidget->addAction(actionDecreasePointSize);
   connect(actionDecreasePointSize, SIGNAL(triggered()),
     this, SLOT(decreasePointSize()));
 
@@ -180,7 +192,7 @@ void DepthMapView::updateThresholds()
 
   if (this->isVisible())
   {
-    d->UI.renderWidget->update();
+    d->renderWidget->update();
   }
 }
 
@@ -226,7 +238,7 @@ void DepthMapView::updateView(bool processUpdate)
       d->inputDepthGeometryFilter->GetOutput()->GetPointData());
     d->depthMapViewOptions->updateActor();
 
-    d->UI.renderWidget->update();
+    d->renderWidget->update();
 
     if (resetView || d->viewNeedsReset)
     {
@@ -242,7 +254,7 @@ void DepthMapView::setBackgroundColor(QColor const& color)
   QTE_D();
 
   d->renderer->SetBackground(color.redF(), color.greenF(), color.blueF());
-  d->UI.renderWidget->update();
+  d->renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -278,7 +290,7 @@ void DepthMapView::resetView()
   d->renderer->ResetCamera(bounds);
   d->renderer->GetActiveCamera()->SetParallelScale(s);
 
-  d->UI.renderWidget->update();
+  d->renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -289,7 +301,7 @@ void DepthMapView::increasePointSize()
   float pointSize = d->actor->GetProperty()->GetPointSize();
   d->actor->GetProperty()->SetPointSize(pointSize + 0.5);
 
-  d->UI.renderWidget->update();
+  d->renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -300,5 +312,5 @@ void DepthMapView::decreasePointSize()
   float pointSize = d->actor->GetProperty()->GetPointSize() - 0.5;
   d->actor->GetProperty()->SetPointSize(pointSize < 1 ? 1 : pointSize);
 
-  d->UI.renderWidget->update();
+  d->renderWidget->update();
 }

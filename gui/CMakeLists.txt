@@ -46,6 +46,16 @@ if(VTK_QT_VERSION VERSION_GREATER "4" AND
     "Please ensure that VTK is compiled with the OpenGL2 backend and Qt5.")
 endif()
 
+# Configure whether to use the QVTKWidget or the QVTKOpenGLWidget
+set(USE_QVTKWIDGET TRUE)
+if((${Qt5Core_VERSION} VERSION_GREATER "5.4.0") AND
+   (NOT ${VTK_VERSION} VERSION_LESS "8.0.0") AND
+   (${VTK_RENDERING_BACKEND} STREQUAL "OpenGL2"))
+  set(USE_QVTKWIDGET FALSE)
+endif()
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/QVTKWidgetConfigure.h.in
+               ${CMAKE_CURRENT_BINARY_DIR}/QVTKWidgetConfigure.h)
+
 #
 # This option should be set if you want to do a bundle fixup for
 # packaging.  The fixup is actually applied during install, but due to
