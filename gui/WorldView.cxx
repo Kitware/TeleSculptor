@@ -49,6 +49,7 @@
 #include <vital/types/landmark_map.h>
 
 #include <vtkBoundingBox.h>
+#include <vtkBox.h>
 #include <vtkBoxRepresentation.h>
 #include <vtkBoxWidget2.h>
 #include <vtkCellArray.h>
@@ -56,6 +57,7 @@
 #include <vtkContourFilter.h>
 #include <vtkCubeAxesActor.h>
 #include <vtkDoubleArray.h>
+#include <vtkEventQtSlotConnect.h>
 #include <vtkGeometryFilter.h>
 #include <vtkImageActor.h>
 #include <vtkImageData.h>
@@ -173,6 +175,8 @@ public:
   vtkStructuredGrid* volume;
 
   vtkSmartPointer<vtkBoxWidget2> boxWidget;
+  vtkSmartPointer<vtkBox> roi;
+  vtkNew<vtkEventQtSlotConnect> connections;
 
   bool rangeUpdateNeeded;
   bool validDepthInput;
@@ -1368,6 +1372,10 @@ void WorldView::selectROI(bool toggled)
       {
         rep->SetPlaceFactor(1); // Default is 0.5
         rep->PlaceWidget(d->landmarkActor->GetBounds());
+        d->connections->Connect(rep,
+                                vtkCommand::ModifiedEvent,
+                                this,
+                                SLOT());
       }
     }
     d->boxWidget->On();
@@ -1396,4 +1404,31 @@ void WorldView::resetROI()
     }
   }
   d->UI.renderWidget->update();
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::setROI(vtkBox* box)
+{
+  if (!box)
+  {
+    return;
+  }
+
+  QTE_D();
+  d->roi = box;
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::updateROI(vtkObject* caller,
+                          unsigned long,
+                          void*,
+                          void*)
+{
+  QTE_D();
+
+  vtkBoxRepresentation* rep = reinterpret_cast<vtkBoxRepresentation*>(caller);
+  if (rep && d->roi)
+  {
+    d->roi->SetBounds(rep->GetBounds());
+  }
 }

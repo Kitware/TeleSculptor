@@ -67,7 +67,7 @@
 
 #include <kwiversys/SystemTools.hxx>
 
-#include <vtkXMLImageDataWriter.h>
+#include <vtkBox.h>
 #include <vtkImageData.h>
 #include <vtkImageFlip.h>
 #include <vtkImageImport.h>
@@ -78,6 +78,7 @@
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
 #include <vtkXMLImageDataReader.h>
+#include <vtkXMLImageDataWriter.h>
 
 #include <qtEnumerate.h>
 #include <qtIndexRange.h>
@@ -329,6 +330,8 @@ public:
   vtkNew<vtkXMLImageDataReader> depthReader;
   vtkNew<vtkMaptkImageUnprojectDepth> depthFilter;
   vtkNew<vtkMaptkImageDataGeometryFilter> depthGeometryFilter;
+
+  vtkNew<vtkBox> roi;
 
   // Current project
   std::shared_ptr<Project> currProject;
@@ -1313,6 +1316,9 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   // Set up the progress widget
   d->UI.progressWidget->setAutoHide(true);
+
+  // Common ROI
+  d->UI.worldView->setROI(d->roi.GetPointer());
 }
 
 //-----------------------------------------------------------------------------
