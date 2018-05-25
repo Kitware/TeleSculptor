@@ -1643,15 +1643,18 @@ void MainWindow::loadTracks(QString const& path)
           new_tracks.push_back(new_track);
         }
 
-        tracks =
+        auto tks_temp =
           std::make_shared<kwiver::vital::feature_track_set>(
             tsi_uptr(new kwiver::arrows::core::frame_index_track_set_impl(new_tracks)));
+        tks_temp->set_frame_data(tracks->all_frame_data());
+        tracks = tks_temp;
       }
       else
       {
-        tracks = std::make_shared<kwiver::vital::feature_track_set>(
+        auto tks_temp = std::make_shared<kwiver::vital::feature_track_set>(
           tsi_uptr(new kwiver::arrows::core::frame_index_track_set_impl(tracks->tracks())));
-
+        tks_temp->set_frame_data(tracks->all_frame_data());
+        tracks = tks_temp;
       }
 
       d->tracks = tracks;
