@@ -297,12 +297,12 @@
     <string>S</string>
    </property>
   </action>
-  <action name="actionClearROI">
+  <action name="actionResetROI">
    <property name="text">
-    <string>ClearROI</string>
+    <string>ResetROI</string>
    </property>
    <property name="toolTip">
-    <string>Clear region of interest selection</string>
+    <string>Reset region of interest selection</string>
    </property>
    <property name="shortcut">
     <string>Esc</string>
