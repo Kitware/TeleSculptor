@@ -184,11 +184,15 @@ void InitCamerasLandmarksTool::run()
 bool InitCamerasLandmarksTool::callback_handler(camera_map_sptr cameras,
                                                 landmark_map_sptr landmarks)
 {
+  this->updateProgress(0);
+  this->setDescription("Keyframe-centric structure from motion");
   // make a copy of the tool data
   auto data = std::make_shared<ToolData>();
   data->copyCameras(cameras);
   data->copyLandmarks(landmarks);
-
+  data->description = description().toStdString();
+  data->progress = progress();
+  data->activeFrame = cameras->cameras().rbegin()->first;
   emit updated(data);
   return !this->isCanceled();
 }
