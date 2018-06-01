@@ -68,6 +68,8 @@ signals:
   void completed(std::shared_ptr<kwiver::vital::metadata_map::map_metadata_t>);
   /// Emitted when an intermediate update of the data is available to show progress.
   void updated(int);
+  /// Update progress
+  void updateProgress(QString, int);
 
 public slots:
   void cancel();
