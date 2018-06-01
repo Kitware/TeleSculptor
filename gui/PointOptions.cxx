@@ -50,6 +50,7 @@
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
 
+#include <QButtonGroup>
 #include <QMenu>
 #include <QWidgetAction>
 
