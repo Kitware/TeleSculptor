@@ -40,7 +40,7 @@
 #include <vital/vital_config.h>
 #include <maptk/maptk_export.h>
 
-#include "local_geo_cs.h"
+#include <vital/types/local_geo_cs.h>
 
 #include <vital/types/landmark_map.h>
 #include <vital/types/feature_track_set.h>
@@ -75,7 +75,7 @@ namespace maptk {
 MAPTK_EXPORT
 void
 load_reference_file(vital::path_t const& reference_file,
-                    local_geo_cs & lgcs,
+                    vital::local_geo_cs & lgcs,
                     vital::landmark_map_sptr & ref_landmarks,
                     vital::feature_track_set_sptr & ref_track_set);
 

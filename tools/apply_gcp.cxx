@@ -69,7 +69,7 @@
 #include <arrows/core/transform.h>
 
 #include <maptk/geo_reference_points_io.h>
-#include <maptk/local_geo_cs.h>
+#include <vital/types/local_geo_cs.h>
 #include <maptk/version.h>
 
 typedef kwiversys::SystemTools     ST;
@@ -360,7 +360,7 @@ static int maptk_main(int argc, char const* argv[])
   //
   // Create the local coordinate system
   //
-  kwiver::maptk::local_geo_cs local_cs;
+  kwiver::vital::local_geo_cs local_cs;
   bool geo_origin_loaded_from_file = false;
   if (config->get_value<std::string>("geo_origin_file", "") != "")
   {

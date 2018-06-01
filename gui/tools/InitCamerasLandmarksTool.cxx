@@ -132,6 +132,7 @@ void InitCamerasLandmarksTool::run()
   auto cp = this->cameras();
   auto lp = this->landmarks();
   auto tp = this->tracks();
+  auto sp = this->sfmConstraints();
 
   // If cp is Null the initialize algorithm will create all cameras.
   // If not Null it will only create cameras if they are in the map but Null.
@@ -173,7 +174,7 @@ void InitCamerasLandmarksTool::run()
     lp = std::make_shared<kwiver::vital::simple_landmark_map>(all_lms);
   }
 
-  d->algorithm->initialize(cp, lp, tp);
+  d->algorithm->initialize(cp, lp, tp, sp);
 
   this->updateCameras(cp);
   this->updateLandmarks(lp);

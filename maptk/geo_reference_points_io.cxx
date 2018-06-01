@@ -52,7 +52,7 @@ namespace maptk {
 
 /// Load landmarks and feature tracks from reference points file
 void load_reference_file(vital::path_t const& reference_file,
-                         local_geo_cs & lgcs,
+                         vital::local_geo_cs & lgcs,
                          vital::landmark_map_sptr & ref_landmarks,
                          vital::feature_track_set_sptr & ref_track_set)
 {

@@ -64,7 +64,7 @@ public:
   config_block_sptr config;
   std::string videoPath;
 
-  kwiver::maptk::local_geo_cs localGeoCs;
+  kwiver::vital::local_geo_cs localGeoCs;
 
   kwiver::vital::logger_handle_t logger;
 
@@ -91,7 +91,7 @@ VideoImport::~VideoImport()
 //-----------------------------------------------------------------------------
 void VideoImport::setData(config_block_sptr const& config,
                      std::string const& path,
-                     kwiver::maptk::local_geo_cs& lgcs)
+                     kwiver::vital::local_geo_cs& lgcs)
 {
   QTE_D();
 

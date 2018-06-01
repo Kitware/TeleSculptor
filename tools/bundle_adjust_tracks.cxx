@@ -73,7 +73,7 @@
 
 #include <maptk/colorize.h>
 #include <maptk/geo_reference_points_io.h>
-#include <maptk/local_geo_cs.h>
+#include <vital/types/local_geo_cs.h>
 #include <maptk/version.h>
 
 typedef kwiversys::SystemTools     ST;
@@ -363,7 +363,7 @@ subsample_cameras(kwiver::vital::camera_map_sptr cameras, unsigned factor)
 bool load_input_cameras(kwiver::vital::config_block_sptr config,
                         std::map<kwiver::vital::frame_id_t, kwiver::vital::metadata_sptr> const& md_map,
                         std::map<kwiver::vital::frame_id_t, std::string> const& basename_map,
-                        kwiver::maptk::local_geo_cs & local_cs,
+                        kwiver::vital::local_geo_cs & local_cs,
                         kwiver::vital::camera_map::map_camera_t & input_cameras)
 {
   // configuration check assured mutual exclusivity
@@ -377,7 +377,7 @@ bool load_input_cameras(kwiver::vital::config_block_sptr config,
                                                    kwiver::vital::rotation_d());
 
     // create initial cameras from metadata
-    input_cameras = kwiver::maptk::initialize_cameras_with_metadata(md_map, base_camera,
+    input_cameras = kwiver::vital::initialize_cameras_with_metadata(md_map, base_camera,
                                                                     local_cs,
                                                                     ins_rot_offset);
     return !input_cameras.empty();
@@ -583,7 +583,7 @@ static int maptk_main(int argc, char const* argv[])
   //
   // Create the local coordinate system
   //
-  kwiver::maptk::local_geo_cs local_cs;
+  kwiver::vital::local_geo_cs local_cs;
   bool geo_origin_loaded_from_file = false;
   if (config->get_value<std::string>("geo_origin_file", "") != "")
   {
