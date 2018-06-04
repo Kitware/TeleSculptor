@@ -50,8 +50,9 @@
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
 
-#include <QtGui/QMenu>
-#include <QtGui/QWidgetAction>
+#include <QButtonGroup>
+#include <QMenu>
+#include <QWidgetAction>
 
 namespace
 {

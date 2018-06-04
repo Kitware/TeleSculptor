@@ -35,7 +35,7 @@
 
 #include <arrows/core/transform.h>
 
-#include <QtGui/QMessageBox>
+#include <QMessageBox>
 
 using kwiver::vital::algo::estimate_canonical_transform;
 using kwiver::vital::algo::estimate_canonical_transform_sptr;

@@ -43,7 +43,7 @@
 
 #include <qtGlobal.h>
 
-#include <QtGui/QAction>
+#include <QAction>
 
 class AbstractToolPrivate;
 

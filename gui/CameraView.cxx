@@ -65,10 +65,10 @@
 #include <qtMath.h>
 #include <qtUiState.h>
 
-#include <QtGui/QFormLayout>
-#include <QtGui/QMenu>
-#include <QtGui/QToolButton>
-#include <QtGui/QWidgetAction>
+#include <QFormLayout>
+#include <QMenu>
+#include <QToolButton>
+#include <QWidgetAction>
 
 QTE_IMPLEMENT_D_FUNC(CameraView)
 

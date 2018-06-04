@@ -33,9 +33,9 @@
 
 #include <qtGlobal.h>
 
-#include <QtGui/QButtonGroup>
-#include <QtGui/QVBoxLayout>
-#include <QtGui/QWidget>
+#include <QButtonGroup>
+#include <QVBoxLayout>
+#include <QWidget>
 
 class vtkActor;
 class vtkPointData;

@@ -33,7 +33,7 @@
 
 #include <vital/algo/triangulate_landmarks.h>
 
-#include <QtGui/QMessageBox>
+#include <QMessageBox>
 
 using kwiver::vital::algo::triangulate_landmarks;
 using kwiver::vital::algo::triangulate_landmarks_sptr;

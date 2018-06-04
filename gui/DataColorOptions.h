@@ -34,8 +34,8 @@
 #include <qtGlobal.h>
 #include <qtMath.h>
 
-#include <QtGui/QIcon>
-#include <QtGui/QWidget>
+#include <QIcon>
+#include <QWidget>
 
 class vtkScalarsToColors;
 

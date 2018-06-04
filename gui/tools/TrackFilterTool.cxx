@@ -33,7 +33,7 @@
 
 #include <vital/algo/filter_tracks.h>
 
-#include <QtGui/QMessageBox>
+#include <QMessageBox>
 
 using kwiver::vital::algo::filter_tracks;
 using kwiver::vital::algo::filter_tracks_sptr;

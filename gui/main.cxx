@@ -42,8 +42,8 @@
 #include <qtUtil.h>
 
 #include <QApplication>
+#include <QDir>
 #include <QMetaType>
-#include <QtCore/QDir>
 
 #include <memory>
 

@@ -34,7 +34,7 @@
 
 #include <qtScopedValueChange.h>
 
-#include <QtGui/QPushButton>
+#include <QPushButton>
 
 QTE_IMPLEMENT_D_FUNC(DepthMapFilterOptions)
 

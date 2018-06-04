@@ -86,18 +86,17 @@
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
 
-#include <QtGui/QApplication>
-#include <QtGui/QColorDialog>
-#include <QtGui/QDesktopServices>
-#include <QtGui/QFileDialog>
-#include <QtGui/QMessageBox>
-#include <QtGui/qpushbutton.h>
-
-#include <QtCore/QDebug>
-#include <QtCore/QQueue>
-#include <QtCore/QSignalMapper>
-#include <QtCore/QTimer>
-#include <QtCore/QUrl>
+#include <QApplication>
+#include <QColorDialog>
+#include <QDebug>
+#include <QDesktopServices>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QPushButton>
+#include <QQueue>
+#include <QSignalMapper>
+#include <QTimer>
+#include <QUrl>
 
 ///////////////////////////////////////////////////////////////////////////////
 

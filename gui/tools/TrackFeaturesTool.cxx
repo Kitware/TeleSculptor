@@ -42,7 +42,7 @@
 #include <vital/types/metadata.h>
 #include <vital/types/metadata_traits.h>
 
-#include <QtGui/QMessageBox>
+#include <QMessageBox>
 
 using kwiver::vital::algo::image_io;
 using kwiver::vital::algo::convert_image;
