@@ -1006,7 +1006,11 @@ void MainWindowPrivate::updateCameraView()
 //-----------------------------------------------------------------------------
 std::string MainWindowPrivate::getFrameName(kv::frame_id_t frameId)
 {
-  auto md = videoMetadataMap->metadata();
+  kwiver::vital::metadata_map::map_metadata_t md;
+  if (videoMetadataMap)
+  {
+    md = videoMetadataMap->metadata();
+  }
   return frameName(frameId, md);
 }
 
