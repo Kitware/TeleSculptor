@@ -130,8 +130,9 @@ void BundleAdjustTool::run()
   auto cp = this->cameras();
   auto lp = this->landmarks();
   auto tp = this->tracks();
+  auto sp = this->sfmConstraints();
 
-  d->algorithm->optimize(cp, lp, tp);
+  d->algorithm->optimize(cp, lp, tp, sp);
 
   this->updateCameras(cp);
   this->updateLandmarks(lp);
