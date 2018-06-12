@@ -2091,6 +2091,20 @@ void MainWindow::saveCameras(QString const& path, bool writeToProject)
   auto out = QHash<QString, kv::camera_perspective_sptr>();
   auto willOverwrite = QStringList();
 
+  auto qdir = QDir(path);
+  auto entry_info_list = qdir.entryInfoList();
+  const QString cam_extension = "krtd";
+
+  for (auto &ent : entry_info_list)
+  {
+    if (ent.isFile() && ent.suffix() == cam_extension)
+    {
+      auto del_file_str = ent.absoluteFilePath();
+      QFile f(del_file_str);
+      f.remove();
+    }
+  }
+
   for (auto const& cd : d->frames)
   {
     if (cd.camera)
@@ -2098,7 +2112,8 @@ void MainWindow::saveCameras(QString const& path, bool writeToProject)
       auto const camera = cd.camera->GetCamera();
       if (camera)
       {
-        auto cameraName = qtString(d->getFrameName(cd.id)) + ".krtd";
+        auto cameraName = qtString(d->getFrameName(cd.id) + "."
+                                   + stdString(cam_extension));
         auto const filepath = QDir{path}.filePath(cameraName);
         out.insert(filepath, camera);
 
