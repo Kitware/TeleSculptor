@@ -70,7 +70,7 @@ InitCamerasLandmarksTool::~InitCamerasLandmarksTool()
 //-----------------------------------------------------------------------------
 AbstractTool::Outputs InitCamerasLandmarksTool::outputs() const
 {
-  return Cameras | Landmarks;
+  return Cameras | Landmarks | TrackChanges;
 }
 
 //-----------------------------------------------------------------------------
@@ -116,8 +116,9 @@ bool InitCamerasLandmarksTool::execute(QWidget* window)
   // Set the callback to receive updates
   using std::placeholders::_1;
   using std::placeholders::_2;
+  using std::placeholders::_3;
   typedef initialize_cameras_landmarks::callback_t callback_t;
-  callback_t cb = std::bind(&InitCamerasLandmarksTool::callback_handler, this, _1, _2);
+  callback_t cb = std::bind(&InitCamerasLandmarksTool::callback_handler, this, _1, _2, _3);
   d->algorithm->set_callback(cb);
 
   // Hand off to base class
@@ -182,7 +183,8 @@ void InitCamerasLandmarksTool::run()
 
 //-----------------------------------------------------------------------------
 bool InitCamerasLandmarksTool::callback_handler(camera_map_sptr cameras,
-                                                landmark_map_sptr landmarks)
+                                                landmark_map_sptr landmarks,
+                                                feature_track_set_changes_sptr track_changes)
 {
   this->updateProgress(0);
   this->setDescription("Keyframe-centric structure from motion");
@@ -190,6 +192,7 @@ bool InitCamerasLandmarksTool::callback_handler(camera_map_sptr cameras,
   auto data = std::make_shared<ToolData>();
   data->copyCameras(cameras);
   data->copyLandmarks(landmarks);
+  data->copyTrackChanges(track_changes);
   data->description = description().toStdString();
   data->progress = progress();
   data->activeFrame = cameras->cameras().rbegin()->first;

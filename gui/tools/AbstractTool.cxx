@@ -86,6 +86,20 @@ void ToolData::copyTracks(feature_track_set_sptr const& newTracks)
 }
 
 //-----------------------------------------------------------------------------
+void ToolData::copyTrackChanges(feature_track_set_changes_sptr const& newTrackChanges)
+{
+  if (newTrackChanges)
+  {
+    this->track_changes = std::dynamic_pointer_cast<kwiver::vital::feature_track_set_changes>(
+      newTrackChanges->clone());
+  }
+  else
+  {
+    this->track_changes = feature_track_set_changes_sptr();
+  }
+}
+
+//-----------------------------------------------------------------------------
 void ToolData::copyCameras(camera_map_sptr const& newCameras)
 {
   if (newCameras)
@@ -246,6 +260,13 @@ void AbstractTool::setTracks(feature_track_set_sptr const& newTracks)
 {
   QTE_D();
   d->data->copyTracks(newTracks);
+}
+
+//-----------------------------------------------------------------------------
+void AbstractTool::setTrackChanges(feature_track_set_changes_sptr const& newTrackChanges)
+{
+  QTE_D();
+  d->data->copyTrackChanges(newTrackChanges);
 }
 
 //-----------------------------------------------------------------------------
