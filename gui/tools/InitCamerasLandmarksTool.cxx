@@ -70,7 +70,7 @@ InitCamerasLandmarksTool::~InitCamerasLandmarksTool()
 //-----------------------------------------------------------------------------
 AbstractTool::Outputs InitCamerasLandmarksTool::outputs() const
 {
-  return Cameras | Landmarks | TrackChanges;
+  return Cameras | Landmarks | TrackChanges | Tracks;
 }
 
 //-----------------------------------------------------------------------------
@@ -179,6 +179,7 @@ void InitCamerasLandmarksTool::run()
 
   this->updateCameras(cp);
   this->updateLandmarks(lp);
+  this->updateTracks(tp);
 }
 
 //-----------------------------------------------------------------------------
