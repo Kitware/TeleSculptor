@@ -594,7 +594,8 @@ void MainWindowPrivate::updateFrames(
   }
 
   //find depth map paths
-  if (this->currProject->projectConfig->has_value("output_depth_dir"))
+  if (this->currProject &&
+      this->currProject->projectConfig->has_value("output_depth_dir"))
   {
     foreach(auto & frame, this->frames)
     {
