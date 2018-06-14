@@ -519,6 +519,8 @@ void MainWindowPrivate::updateFrames(
 {
   this->videoMetadataMap = *mdMap;
 
+  this->UI.metadata->updateMetadata(mdMap);
+
   if (this->currProject &&
       this->currProject->projectConfig->has_value("output_krtd_dir"))
   {
