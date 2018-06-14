@@ -37,6 +37,7 @@
 
 #include <qtColorUtil.h>
 #include <qtIndexRange.h>
+#include <qtSqueezedLabel.h>
 #include <qtStlUtil.h>
 
 #include <QEvent>
@@ -44,6 +45,7 @@
 #include <QLabel>
 #include <QScrollBar>
 #include <QSet>
+#include <QSpacerItem>
 #include <QVariant>
 #include <QVBoxLayout>
 
@@ -77,7 +79,7 @@ protected:
   static QString const valueTextTemplate;
 
   QHash<int, QLabel*> keyLabels;
-  QHash<int, QLabel*> valueLabels;
+  QHash<int, qtSqueezedLabel*> valueLabels;
 };
 
 //-----------------------------------------------------------------------------
@@ -92,20 +94,20 @@ void MetadataViewPrivate::addItem(int id, QString const& keyText)
     auto* const q = this->contentWidget;
 
     auto* const keyLabel = new QLabel{keyText, q};
-    auto* const valueLabel = new QLabel{q};
-
-    keyLabel->setTextInteractionFlags(
-      keyLabel->textInteractionFlags() |
-      Qt::TextSelectableByMouse);
-    valueLabel->setTextInteractionFlags(
-      valueLabel->textInteractionFlags() |
-      Qt::TextSelectableByMouse);
+    auto* const valueLabel = new qtSqueezedLabel{q};
 
     this->setKeyLabelColor(keyLabel);
-    valueLabel->setStyleSheet("margin-left: 1em;");
+    valueLabel->setTextMargins(1.0, 0.0);
+    valueLabel->setElideMode(qtSqueezedLabel::ElideFade);
 
-    q->layout()->addWidget(keyLabel);
-    q->layout()->addWidget(valueLabel);
+    auto* const layout = qobject_cast<QVBoxLayout*>(q->layout());
+    if (layout->count())
+    {
+      delete layout->takeAt(layout->count() - 1);
+    }
+    layout->addWidget(keyLabel);
+    layout->addWidget(valueLabel);
+    layout->addStretch(1);
 
     keyLabel->show();
     valueLabel->show();
@@ -126,11 +128,12 @@ void MetadataViewPrivate::setItemValue(int id, QString const& valueText)
     if (valueText.isEmpty())
     {
       l->setText("(empty)");
+      l->setToolTip({});
       l->setEnabled(false);
     }
     else
     {
-      l->setText(valueText);
+      l->setText(valueText.trimmed(), qtSqueezedLabel::SetToolTip);
       l->setEnabled(true);
     }
   }
@@ -142,6 +145,7 @@ void MetadataViewPrivate::clearItemValue(int id)
   if (auto* const l = this->valueLabels.value(id, nullptr))
   {
     l->setText("(not available)");
+    l->setToolTip({});
     l->setEnabled(false);
   }
 }
@@ -204,7 +208,8 @@ bool MetadataView::eventFilter(QObject* sender, QEvent* e)
   if (sender == d->contentWidget && e && e->type() == QEvent::Resize)
   {
     this->setMinimumWidth(
-      d->contentWidget->width() + this->verticalScrollBar()->width());
+      d->contentWidget->minimumSizeHint().width() +
+      this->verticalScrollBar()->width());
   }
 
   return QScrollArea::eventFilter(sender, e);
