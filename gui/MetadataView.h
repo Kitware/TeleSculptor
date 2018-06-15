@@ -50,7 +50,9 @@ public:
   virtual bool eventFilter(QObject* sender, QEvent* e) override;
 
 public slots:
-  void updateMetadata(std::shared_ptr<kwiver::vital::metadata_map::map_metadata_t> mdMap);
+  void updateMetadata(
+    std::shared_ptr<kwiver::vital::metadata_map::map_metadata_t>);
+  void updateMetadata(kwiver::vital::metadata_vector const&);
 
 protected:
   virtual void changeEvent(QEvent* e) override;

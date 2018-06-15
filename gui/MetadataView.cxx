@@ -67,6 +67,7 @@ public:
   void clearItemValue(int id);
 
   void removeItem(int id);
+  void clear();
 
   QSet<int> itemIds() const { return this->keyLabels.keys().toSet(); }
   void updateLabelColors();
@@ -158,6 +159,15 @@ void MetadataViewPrivate::removeItem(int id)
 }
 
 //-----------------------------------------------------------------------------
+void MetadataViewPrivate::clear()
+{
+  qDeleteAll(this->keyLabels);
+  qDeleteAll(this->valueLabels);
+  this->keyLabels.clear();
+  this->valueLabels.clear();
+}
+
+//-----------------------------------------------------------------------------
 void MetadataViewPrivate::setKeyLabelColor(QLabel* label)
 {
   auto const& p = label->palette();
@@ -229,9 +239,12 @@ void MetadataView::changeEvent(QEvent* e)
 
 //-----------------------------------------------------------------------------
 void MetadataView::updateMetadata(
-  std::shared_ptr<kwiver::vital::metadata_map::map_metadata_t> mdMap)
+  std::shared_ptr<kv::metadata_map::map_metadata_t> mdMap)
 {
   QTE_D();
+
+  // Reset UI so fields will be in correct order
+  d->clear();
 
   QSet<kv::vital_metadata_tag> mdKeys;
   auto traits = kv::metadata_traits{};
@@ -261,15 +274,34 @@ void MetadataView::updateMetadata(
       d->addItem(k, qtString(traits.tag_to_name(tag)));
     }
   }
+}
 
-  // Remove unused fields
-  for (auto k : d->itemIds())
+//-----------------------------------------------------------------------------
+void MetadataView::updateMetadata(kv::metadata_vector const& mdVec)
+{
+  QTE_D();
+
+  for (auto const k : d->itemIds())
   {
-    auto const tag = static_cast<kv::vital_metadata_tag>(k);
-    if (!mdKeys.contains(tag))
+    d->clearItemValue(k);
+  }
+
+  for (auto const& mdp : mdVec | kvr::valid)
+  {
+    for (auto const& mde : *mdp)
     {
-      d->removeItem(k);
+      using md_tag_type_t = std::underlying_type<kv::vital_metadata_tag>::type;
+      auto const k = static_cast<md_tag_type_t>(mde.first);
+      auto const* mdi = mde.second.get();
+
+      if (mdi)
+      {
+        d->setItemValue(k, qtString(mdi->as_string()));
+      }
     }
+
+    // TODO handle multiple metadatas?
+    break;
   }
 }
 
