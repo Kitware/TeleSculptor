@@ -347,6 +347,8 @@ MainWindowPrivate::MainWindowPrivate(MainWindow* mainWindow)
 {
   QObject::connect(&videoImporter, SIGNAL(updated(int)),
                    mainWindow, SLOT(addFrame(int)));
+  QObject::connect(&videoImporter, SIGNAL(updateProgress(QString, int)),
+                   mainWindow, SLOT(updateVideoImportProgress(QString, int)));
   QObject::connect(
     &videoImporter,
     SIGNAL(completed(std::shared_ptr<kwiver::vital::metadata_map::map_metadata_t>)),
@@ -2362,6 +2364,14 @@ void MainWindow::showUserManual()
       this, "Not found",
       "The user manual could not be located. Please check your installation.");
   }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::updateVideoImportProgress(QString desc, int progress)
+{
+  QTE_D();
+
+  d->updateProgress(this->sender(), desc, progress);
 }
 
 //END MainWindow

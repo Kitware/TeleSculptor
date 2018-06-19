@@ -34,6 +34,8 @@
 
 #include <atomic>
 
+#include <QFileInfo>
+
 using kwiver::vital::algo::video_input;
 using kwiver::vital::algo::video_input_sptr;
 using kwiver::vital::config_block_sptr;
@@ -119,6 +121,8 @@ void VideoImport::run()
   auto metadataMap =
     std::make_shared<kwiver::vital::metadata_map::map_metadata_t>();
 
+  QString description = QString("&Loading video from %1 (Frame %2)")
+    .arg(QFileInfo(d->videoPath.c_str()).fileName());
   while (d->video_reader->next_frame(currentTimestamp) && !d->canceled)
   {
     auto frame = currentTimestamp.get_frame();
@@ -129,9 +133,12 @@ void VideoImport::run()
       metadataMap->insert(std::make_pair(frame, mdVec));
     }
 
+    QString desc = description.arg(frame);
+    emit updateProgress(desc, 0.0);
     emit updated(frame);
   }
 
+  emit updateProgress(description, 100);
   emit completed(metadataMap);
 
   d->video_reader->close();
