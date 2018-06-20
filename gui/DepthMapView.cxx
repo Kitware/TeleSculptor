@@ -183,7 +183,7 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
 
   // Set interactor
   vtkNew<vtkInteractorStyleRubberBand2D> is;
-  d->renderWindow->GetInteractor()->SetInteractorStyle(is.GetPointer());
+  d->renderWidget->GetInteractor()->SetInteractorStyle(is.GetPointer());
 }
 
 //-----------------------------------------------------------------------------
