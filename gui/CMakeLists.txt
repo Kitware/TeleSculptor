@@ -14,7 +14,7 @@ if(NOT (QTE_QT_VERSION VERSION_EQUAL "5"))
     "Please provide path to qtExtensions built with Qt5.")
 endif()
 
-find_package(VTK 8.1 REQUIRED
+find_package(VTK REQUIRED
   COMPONENTS
   vtkFiltersSources
   vtkGUISupportQt
