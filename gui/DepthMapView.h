@@ -64,6 +64,8 @@ public slots:
 
   void decreasePointSize();
 
+  void render();
+
 private:
   QTE_DECLARE_PRIVATE_RPTR(DepthMapView)
   QTE_DECLARE_PRIVATE(DepthMapView)

@@ -77,6 +77,7 @@ public slots:
 
   void resetView();
   void resetViewToFullExtents();
+  void render();
 
 protected slots:
   void setImageVisible(bool);

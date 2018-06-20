@@ -112,6 +112,7 @@ public slots:
   void setVolumeCurrentFramePath(QString path);
 
   void computeContour(double threshold);
+  void render();
 
 protected slots:
   void updateAxes();

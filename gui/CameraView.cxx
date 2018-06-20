@@ -428,7 +428,7 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->setPopup(d->UI.actionShowFrameImage, imageOptions);
 
   connect(imageOptions, SIGNAL(modified()),
-          d->renderWidget, SLOT(update()));
+          this, SLOT(render()));
 
   auto const featureOptions =
     new FeatureOptions(d->featureRep.GetPointer(),
@@ -437,7 +437,7 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->setPopup(d->UI.actionShowFeatures, featureOptions);
 
   connect(featureOptions, SIGNAL(modified()),
-          d->renderWidget, SLOT(update()));
+          this, SLOT(render()));
 
   d->landmarkOptions = new PointOptions("CameraView/Landmarks", this);
   d->landmarkOptions->setDefaultColor(Qt::magenta);
@@ -447,7 +447,7 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->setPopup(d->UI.actionShowLandmarks, d->landmarkOptions);
 
   connect(d->landmarkOptions, SIGNAL(modified()),
-          d->renderWidget, SLOT(update()));
+          this, SLOT(render()));
 
   auto const residualsOptions =
     new ActorColorOption("CameraView/Residuals", this);
@@ -457,7 +457,7 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->setPopup(d->UI.actionShowResiduals, residualsOptions);
 
   connect(residualsOptions->button, SIGNAL(colorChanged(QColor)),
-          d->renderWidget, SLOT(update()));
+          this, SLOT(render()));
 
   // Connect actions
   this->addAction(d->UI.actionViewReset);
@@ -525,7 +525,7 @@ void CameraView::setBackgroundColor(QColor const& color)
 {
   QTE_D();
   d->renderer->SetBackground(color.redF(), color.greenF(), color.blueF());
-  d->renderWidget->update();
+  this->render();
 }
 
 //-----------------------------------------------------------------------------
@@ -562,7 +562,7 @@ void CameraView::setImageData(vtkImageData* data, QSize const& dimensions)
     d->setTransforms(qMax(0, static_cast<int>(h)));
   }
 
-  d->renderWidget->update();
+  this->render();
 }
 
 //-----------------------------------------------------------------------------
@@ -571,7 +571,7 @@ void CameraView::setActiveFrame(unsigned frame)
   QTE_D();
 
   d->featureRep->SetActiveFrame(frame);
-  d->renderWidget->update();
+  this->render();
 }
 
 //-----------------------------------------------------------------------------
@@ -649,7 +649,7 @@ void CameraView::addLandmark(
 
   d->landmarks.addPoint(x, y, 0.0, d->landmarkData.value(id));
 
-  d->renderWidget->update();
+  this->render();
 }
 
 //-----------------------------------------------------------------------------
@@ -662,7 +662,7 @@ void CameraView::addResidual(
 
   d->residuals.addSegment(x1, y1, -0.2, x2, y2, -0.2);
 
-  d->renderWidget->update();
+  this->render();
 }
 
 //-----------------------------------------------------------------------------
@@ -693,7 +693,7 @@ void CameraView::setImageVisible(bool state)
   QTE_D();
 
   d->imageActor->SetVisibility(state);
-  d->renderWidget->update();
+  this->render();
 }
 
 //-----------------------------------------------------------------------------
@@ -702,7 +702,7 @@ void CameraView::setLandmarksVisible(bool state)
   QTE_D();
 
   d->landmarks.actor->SetVisibility(state);
-  d->renderWidget->update();
+  this->render();
 }
 
 //-----------------------------------------------------------------------------
@@ -711,7 +711,7 @@ void CameraView::setResidualsVisible(bool state)
   QTE_D();
 
   d->residuals.actor->SetVisibility(state);
-  d->renderWidget->update();
+  this->render();
 }
 
 //-----------------------------------------------------------------------------
@@ -731,7 +731,7 @@ void CameraView::resetView()
   d->renderer->ResetCamera(d->imageBounds);
   d->renderer->GetActiveCamera()->SetParallelScale(s);
 
-  d->renderWidget->update();
+  this->render();
 }
 
 //-----------------------------------------------------------------------------
@@ -740,7 +740,7 @@ void CameraView::resetViewToFullExtents()
   QTE_D();
 
   d->renderer->ResetCamera();
-  d->renderWidget->update();
+  this->render();
 }
 
 //-----------------------------------------------------------------------------
@@ -751,10 +751,18 @@ void CameraView::updateFeatures()
   if (d->featuresDirty)
   {
     d->featureRep->Update();
-    d->renderWidget->update();
+    this->render();
 
     d->featuresDirty = false;
   }
+}
+
+//-----------------------------------------------------------------------------
+void CameraView::render()
+{
+  QTE_D();
+
+  d->renderWindow->Render();
 }
 
 //END CameraView

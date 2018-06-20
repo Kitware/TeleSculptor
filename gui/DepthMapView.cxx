@@ -140,7 +140,7 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   d->setPopup(d->UI.actionDisplayMode, d->depthMapViewOptions);
 
   connect(d->depthMapViewOptions, SIGNAL(modified()),
-          d->renderWidget, SLOT(update()));
+          this, SLOT(render()));
 
   // Connect actions
   this->addAction(d->UI.actionViewReset);
@@ -193,7 +193,7 @@ void DepthMapView::updateThresholds()
 
   if (this->isVisible())
   {
-    d->renderWidget->update();
+    this->render();
   }
 }
 
@@ -239,7 +239,7 @@ void DepthMapView::updateView(bool processUpdate)
       d->inputDepthGeometryFilter->GetOutput()->GetPointData());
     d->depthMapViewOptions->updateActor();
 
-    d->renderWidget->update();
+    this->render();
 
     if (resetView || d->viewNeedsReset)
     {
@@ -255,7 +255,7 @@ void DepthMapView::setBackgroundColor(QColor const& color)
   QTE_D();
 
   d->renderer->SetBackground(color.redF(), color.greenF(), color.blueF());
-  d->renderWidget->update();
+  this->render();
 }
 
 //-----------------------------------------------------------------------------
@@ -291,7 +291,7 @@ void DepthMapView::resetView()
   d->renderer->ResetCamera(bounds);
   d->renderer->GetActiveCamera()->SetParallelScale(s);
 
-  d->renderWidget->update();
+  this->render();
 }
 
 //-----------------------------------------------------------------------------
@@ -302,7 +302,7 @@ void DepthMapView::increasePointSize()
   float pointSize = d->actor->GetProperty()->GetPointSize();
   d->actor->GetProperty()->SetPointSize(pointSize + 0.5);
 
-  d->renderWidget->update();
+  this->render();
 }
 
 //-----------------------------------------------------------------------------
@@ -313,5 +313,13 @@ void DepthMapView::decreasePointSize()
   float pointSize = d->actor->GetProperty()->GetPointSize() - 0.5;
   d->actor->GetProperty()->SetPointSize(pointSize < 1 ? 1 : pointSize);
 
-  d->renderWidget->update();
+  this->render();
+}
+
+//-----------------------------------------------------------------------------
+void DepthMapView::render()
+{
+  QTE_D();
+
+  d->renderWindow->Render();
 }
