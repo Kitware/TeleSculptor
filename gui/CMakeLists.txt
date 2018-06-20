@@ -26,14 +26,18 @@ find_package(VTK REQUIRED
   vtkRenderingAnnotation
   vtkRenderingFreeType
   )
+if(VTK_VERSION VERSION_LESS 8.1)
+  message(FATAL_ERROR "${PROJECT_NAME} supports VTK >= v8.1 "
+    "(Found ${VTK_VERSION})")
+endif()
 include(${VTK_USE_FILE})
 if(VTK_QT_VERSION VERSION_EQUAL "4")
-  message(FATAL_ERROR "MAP-Tk does not support Qt4. "
+  message(FATAL_ERROR "${PROECT_NAME} does not support Qt4. "
     "But VTK_QT_VERSION is ${VTK_QT_VERSION}. "
     "Please provide path to VTK built with Qt version 5 or higher.")
 endif()
 if(VTK_RENDERING_BACKEND STREQUAL "OpenGL")
-  message(WARNING "MapTK supports VTK's OpenGL2 backend.\n"
+  message(WARNING "${PROJECT_NAME} supports VTK's OpenGL2 backend.\n"
     "The old OpenGL backend is known to have rendering issues and "
     "has been deprecated in newer versions of VTK.\n"
     "Consider switching VTK_RENDERING_BACKEND to OpenGL2.")
