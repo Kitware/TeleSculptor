@@ -361,7 +361,17 @@ TrackFeaturesSprokitTool
     }
   }
   d->ep.wait();
-  this->updateTracks(accumulated_tracks);
+
+  // ret_tracks is created to force the frame map to be rebuilt when it is needed next in SfM.
+  // Were we to rebuild the frame_map while doing loop completion only the first loop completion
+  // in a local area would be kept.  Not what we want.
+  kwiver::vital::feature_track_set_sptr ret_tracks =
+    std::make_shared<kwiver::vital::feature_track_set>(
+      tsi_uptr(new kwiver::arrows::core::frame_index_track_set_impl(accumulated_tracks->tracks())));
+
+  ret_tracks->set_frame_data(accumulated_tracks->all_frame_data());
+
+  this->updateTracks(ret_tracks);
   this->setActiveFrame(frame);
 
 }
