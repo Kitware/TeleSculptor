@@ -1,24 +1,17 @@
-include( maptk-qt )
-
 set(CMAKE_AUTOMOC ON)
-if(MAPTK_QT_VERSION VERSION_GREATER "4")
-  set(Qt5_MODULES Core Designer UiPlugin Widgets Xml)
-  find_package(Qt5 COMPONENTS ${Qt5_MODULES} REQUIRED)
-  set(QT_LIBRARIES )
-  foreach(module ${Qt5_MODULES})
-    list(APPEND QT_LIBRARIES Qt5::${module})
-  endforeach()
-else()
-  find_package(Qt4 4.8 REQUIRED)
-  include(${QT_USE_FILE})
-endif()
+set(Qt5_MODULES Core Designer UiPlugin Widgets Xml)
+find_package(Qt5 COMPONENTS ${Qt5_MODULES} REQUIRED)
+set(QT_LIBRARIES )
+foreach(module ${Qt5_MODULES})
+  list(APPEND QT_LIBRARIES Qt5::${module})
+endforeach()
 
 find_package(qtExtensions REQUIRED)
 include(${qtExtensions_USE_FILE})
-if(NOT (QTE_QT_VERSION VERSION_EQUAL MAPTK_QT_VERSION))
-  message(FATAL_ERROR "MAPTK_QT_VERSION is set to ${MAPTK_QT_VERSION}. "
+if(NOT (QTE_QT_VERSION VERSION_EQUAL "5"))
+  message(FATAL_ERROR "MAP-Tk supports Qt5 only."
     "But QTE_QT_VERSION is ${QTE_QT_VERSION}. "
-    "Please provide path to qtExtensions built with Qt${MAPTK_QT_VERSION}.")
+    "Please provide path to qtExtensions built with Qt5.")
 endif()
 
 find_package(VTK 8.1 REQUIRED
@@ -34,16 +27,16 @@ find_package(VTK 8.1 REQUIRED
   vtkRenderingFreeType
   )
 include(${VTK_USE_FILE})
-if(NOT (VTK_QT_VERSION VERSION_EQUAL MAPTK_QT_VERSION))
-  message(FATAL_ERROR "MAPTK_QT_VERSION is set to ${MAPTK_QT_VERSION}. "
+if(NOT (VTK_QT_VERSION VERSION_EQUAL "5"))
+  message(FATAL_ERROR "MAP-Tk supports Qt5 only. "
     "But VTK_QT_VERSION is ${VTK_QT_VERSION}. "
-    "Please provide path to VTK built with Qt${MAPTK_QT_VERSION}.")
+    "Please provide path to VTK built with Qt5.")
 endif()
-if(VTK_QT_VERSION VERSION_GREATER "4" AND
-    VTK_RENDERING_BACKEND STREQUAL "OpenGL")
-  message(FATAL_ERROR "MapTK uses QVTKOpenGLWidget when compiled with Qt5. "
-    "This requires VTK_RENDERING_BACKEND to be OpenGL2. "
-    "Please ensure that VTK is compiled with the OpenGL2 backend and Qt5.")
+if(VTK_RENDERING_BACKEND STREQUAL "OpenGL")
+  message(WARNING "MapTK supports VTK's OpenGL2 backend.\n"
+    "The old OpenGL backend is known to have rendering issues and "
+    "has been deprecated in newer versions of VTK.\n"
+    "Consider switching VTK_RENDERING_BACKEND to OpenGL2.")
 endif()
 
 # Configure whether to use the QVTKWidget or the QVTKOpenGLWidget
@@ -62,7 +55,9 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/QVTKWidgetConfigure.h.in
 # unexpected behaviour, all libraries are installed in the .../bin
 # directory. This is okay for Windows and Mac, but unexpected for Linux.
 #
-option( MAPTK_FIXUP_BUNDLE_ON_PACKAGE "Perform bundle fixup when building a package. Only set when packaging." OFF )
+option( MAPTK_FIXUP_BUNDLE_ON_PACKAGE
+  "Perform bundle fixup when building a package. Only set when packaging."
+  OFF )
 
 include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
@@ -196,14 +191,8 @@ configure_file(
   "${CMAKE_CURRENT_BINARY_DIR}/appdata.qrc"
 )
 
-if(MAPTK_QT_VERSION VERSION_GREATER "4")
-  qt5_wrap_ui(gui_ui_sources ${gui_ui})
-  qt5_add_resources(gui_res_sources ${gui_resources})
-else()
-  qt4_wrap_ui(gui_ui_sources ${gui_ui})
-  qt4_wrap_cpp(gui_moc_sources ${gui_moc_headers})
-  qt4_add_resources(gui_res_sources ${gui_resources})
-endif()
+qt5_wrap_ui(gui_ui_sources ${gui_ui})
+qt5_add_resources(gui_res_sources ${gui_resources})
 
 qte_amc_wrap_ui(gui_amc_sources ActionManagerDialog ${gui_am_ui})
 
