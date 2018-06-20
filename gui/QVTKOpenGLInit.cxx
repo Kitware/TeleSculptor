@@ -32,7 +32,7 @@
 #include "QVTKWidgetConfigure.h"
 
 // Qt includes
-#include <QtGlobal>
+#include <QSurfaceFormat>
 
 QVTKOpenGLInit::QVTKOpenGLInit()
 {
