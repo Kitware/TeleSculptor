@@ -8,10 +8,10 @@ endforeach()
 
 find_package(qtExtensions REQUIRED)
 include(${qtExtensions_USE_FILE})
-if(NOT (QTE_QT_VERSION VERSION_EQUAL "5"))
-  message(FATAL_ERROR "MAP-Tk supports Qt5 only."
+if(QTE_QT_VERSION VERSION_EQUAL "4")
+  message(FATAL_ERROR "${PROECT_NAME} does not support Qt4. "
     "But QTE_QT_VERSION is ${QTE_QT_VERSION}. "
-    "Please provide path to qtExtensions built with Qt5.")
+    "Please provide path to qtExtensions built with Qt version 5 or higher.")
 endif()
 
 find_package(VTK REQUIRED
@@ -46,7 +46,6 @@ endif()
 # Configure whether to use the QVTKWidget or the QVTKOpenGLWidget
 set(USE_QVTKWIDGET TRUE)
 if((${Qt5Core_VERSION} VERSION_GREATER "5.4.0") AND
-   (NOT ${VTK_VERSION} VERSION_LESS "8.0.0") AND
    (${VTK_RENDERING_BACKEND} STREQUAL "OpenGL2"))
   set(USE_QVTKWIDGET FALSE)
 endif()
@@ -97,42 +96,6 @@ set(gui_ui
 set(gui_resources
   icons/icons.qrc
   "${CMAKE_CURRENT_BINARY_DIR}/appdata.qrc"
-)
-
-set(gui_moc_headers
-  AboutDialog.h
-  ActorColorButton.h
-  CameraOptions.h
-  CameraView.h
-  ColorizeSurfaceOptions.h
-  DataColorOptions.h
-  DataFilterOptions.h
-  DepthMapFilterOptions.h
-  DepthMapOptions.h
-  DepthMapView.h
-  DepthMapViewOptions.h
-  FeatureOptions.h
-  GradientSelector.h
-  ImageOptions.h
-  MainWindow.h
-  MatchMatrixWindow.h
-  PointOptions.h
-  Project.h
-  VideoImport.h
-  VolumeOptions.h
-  WorldView.h
-  tools/AbstractTool.h
-  tools/BundleAdjustTool.h
-  tools/CanonicalTransformTool.h
-  tools/ComputeDepthTool.h
-  tools/InitCamerasLandmarksTool.h
-  tools/NeckerReversalTool.h
-  tools/SaveFrameTool.h
-  tools/SaveKeyFrameTool.h
-  tools/TrackFilterTool.h
-  tools/TrackFeaturesSprokitTool.h
-  tools/TrackFeaturesTool.h
-  tools/TriangulateTool.h
 )
 
 set(gui_sources
