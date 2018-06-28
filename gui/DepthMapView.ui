@@ -30,6 +30,9 @@
      <addaction name="actionDisplayMode"/>
     </widget>
    </item>
+   <item>
+    <widget class="QVTKOpenGLWidget" name="renderWidget" native="true"/>
+   </item>
   </layout>
   <action name="actionDisplayMode">
    <property name="text">
@@ -52,6 +55,14 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QVTKOpenGLWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">QVTKOpenGLWidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="icons/icons.qrc"/>
  </resources>

@@ -38,7 +38,6 @@
 #include "FeatureOptions.h"
 #include "FieldInformation.h"
 #include "ImageOptions.h"
-#include "QVTKWidgetConfigure.h"
 #include "vtkMaptkCamera.h"
 #include "vtkMaptkFeatureTrackRepresentation.h"
 
@@ -195,7 +194,6 @@ public:
 
   Ui::CameraView UI;
   Am::CameraView AM;
-  RenderWidget* renderWidget;
 
   vtkNew<vtkRenderer> renderer;
   vtkSmartPointer<vtkRenderWindow> renderWindow;
@@ -409,14 +407,8 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   // Set up UI
   d->UI.setupUi(this);
   d->AM.setupActions(d->UI, this);
-  d->renderWidget = new RenderWidget(this);
-  this->layout()->addWidget(d->renderWidget);
   d->renderWindow =
-#if USE_QVTKWIDGET
-    vtkSmartPointer<vtkRenderWindow>::New();
-#else
     vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
-#endif
 
   auto const viewMenu = new QMenu(this);
   viewMenu->addAction(d->UI.actionViewReset);
@@ -490,11 +482,11 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
   d->renderWindow->AddRenderer(d->renderer.GetPointer());
-  d->renderWidget->SetRenderWindow(d->renderWindow.GetPointer());
+  d->UI.renderWidget->SetRenderWindow(d->renderWindow.GetPointer());
 
   // Set interactor
   vtkNew<vtkInteractorStyleRubberBand2D> is;
-  d->renderWidget->GetInteractor()->SetInteractorStyle(is.GetPointer());
+  d->UI.renderWidget->GetInteractor()->SetInteractorStyle(is.GetPointer());
 
   // Set up actors
   d->renderer->AddActor(d->featureRep->GetActivePointsWithDescActor());

@@ -37,20 +37,11 @@ if(VTK_QT_VERSION VERSION_EQUAL "4")
     "Please provide path to VTK built with Qt version 5 or higher.")
 endif()
 if(VTK_RENDERING_BACKEND STREQUAL "OpenGL")
-  message(WARNING "${PROJECT_NAME} supports VTK's OpenGL2 backend.\n"
+  message(FATAL_ERROR "${PROJECT_NAME} does not support VTK's OpenGL backend.\n"
     "The old OpenGL backend is known to have rendering issues and "
     "has been deprecated in newer versions of VTK.\n"
-    "Consider switching VTK_RENDERING_BACKEND to OpenGL2.")
+    "Please provide path to VTK built with VTK_RENDERING_BACKEND = OpenGL2.")
 endif()
-
-# Configure whether to use the QVTKWidget or the QVTKOpenGLWidget
-set(USE_QVTKWIDGET TRUE)
-if((${Qt5Core_VERSION} VERSION_GREATER "5.4.0") AND
-   (${VTK_RENDERING_BACKEND} STREQUAL "OpenGL2"))
-  set(USE_QVTKWIDGET FALSE)
-endif()
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/QVTKWidgetConfigure.h.in
-               ${CMAKE_CURRENT_BINARY_DIR}/QVTKWidgetConfigure.h)
 
 #
 # This option should be set if you want to do a bundle fixup for
@@ -119,7 +110,6 @@ set(gui_sources
   MatchMatrixWindow.cxx
   PointOptions.cxx
   Project.cxx
-  QVTKOpenGLInit.cxx
   VideoImport.cxx
   VolumeOptions.cxx
   WorldView.cxx

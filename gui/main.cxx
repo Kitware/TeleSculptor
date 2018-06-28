@@ -31,7 +31,6 @@
 #include "MainWindow.h"
 #include "tools/AbstractTool.h"
 #include "VideoImport.h"
-#include "QVTKOpenGLInit.h"
 
 #include <maptk/version.h>
 
@@ -45,13 +44,17 @@
 #include <QApplication>
 #include <QDir>
 #include <QMetaType>
+#include <QSurfaceFormat>
 
 #include <memory>
+
+#include <QVTKOpenGLWidget.h>
 
 //-----------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
-  QVTKOpenGLInit init;
+  // Set the default surface format for the OpenGL view
+  QSurfaceFormat::setDefaultFormat(QVTKOpenGLWidget::defaultFormat());
   // Set application information
   QApplication::setApplicationName("MAP-Tk TeleSculptor");
   QApplication::setOrganizationName("Kitware");

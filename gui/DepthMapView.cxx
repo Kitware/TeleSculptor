@@ -34,7 +34,6 @@
 
 #include "DataArrays.h"
 #include "DepthMapViewOptions.h"
-#include "QVTKWidgetConfigure.h"
 #include "vtkMaptkScalarDataFilter.h"
 
 #include <vtkCamera.h>
@@ -73,7 +72,6 @@ public:
   bool validDepthInput;
 
   Ui::DepthMapView UI;
-  RenderWidget* renderWidget;
 
   vtkNew<vtkRenderer> renderer;
   vtkSmartPointer<vtkRenderWindow> renderWindow;
@@ -125,14 +123,8 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
 
   // Set up UI
   d->UI.setupUi(this);
-  d->renderWidget = new RenderWidget(this);
-  this->layout()->addWidget(d->renderWidget);
   d->renderWindow =
-#if USE_QVTKWIDGET
-      vtkSmartPointer<vtkRenderWindow>::New();
-#else
-      vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
-#endif
+    vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
 
 
   d->depthMapViewOptions = new DepthMapViewOptions("DepthMapView", this);
@@ -156,7 +148,7 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
   d->renderWindow->AddRenderer(d->renderer.GetPointer());
-  d->renderWidget->SetRenderWindow(d->renderWindow.GetPointer());
+  d->UI.renderWidget->SetRenderWindow(d->renderWindow.GetPointer());
 
   // Set up depth map actor
   d->scalarFilter->SetScalarArrayName(DepthMapArrays::Depth);
@@ -170,20 +162,20 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   QAction* actionIncreasePointSize = new QAction(this);
   actionIncreasePointSize->setShortcut(Qt::Key_Plus);
   actionIncreasePointSize->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-  d->renderWidget->addAction(actionIncreasePointSize);
+  d->UI.renderWidget->addAction(actionIncreasePointSize);
   connect(actionIncreasePointSize, SIGNAL(triggered()),
     this, SLOT(increasePointSize()));
 
   QAction* actionDecreasePointSize = new QAction(this);
   actionDecreasePointSize->setShortcut(Qt::Key_Minus);
   actionDecreasePointSize->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-  d->renderWidget->addAction(actionDecreasePointSize);
+  d->UI.renderWidget->addAction(actionDecreasePointSize);
   connect(actionDecreasePointSize, SIGNAL(triggered()),
     this, SLOT(decreasePointSize()));
 
   // Set interactor
   vtkNew<vtkInteractorStyleRubberBand2D> is;
-  d->renderWidget->GetInteractor()->SetInteractorStyle(is.GetPointer());
+  d->UI.renderWidget->GetInteractor()->SetInteractorStyle(is.GetPointer());
 }
 
 //-----------------------------------------------------------------------------
