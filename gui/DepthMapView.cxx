@@ -158,6 +158,9 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   d->actor->VisibilityOff();
   d->renderer->AddViewProp(d->actor.GetPointer());
 
+  // Enable antialiasing by default
+  d->renderer->UseFXAAOn();
+
   // Add keyboard actions for increasing and descreasing depth point size
   QAction* actionIncreasePointSize = new QAction(this);
   actionIncreasePointSize->setShortcut(Qt::Key_Plus);
@@ -314,4 +317,13 @@ void DepthMapView::render()
   QTE_D();
 
   d->renderWindow->Render();
+}
+
+//-----------------------------------------------------------------------------
+void DepthMapView::enableAntiAliasing(bool enable)
+{
+  QTE_D();
+
+  d->renderer->SetUseFXAA(enable);
+  this->render();
 }

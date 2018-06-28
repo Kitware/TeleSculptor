@@ -55,6 +55,7 @@ public:
 
   void initFrameSampling(int nbFrames);
   void loadVolume(QString path, QString krtd, QString frame);
+  void enableAntiAliasing(bool enable);
 signals:
   void depthMapThresholdsChanged();
   void depthMapEnabled(bool);

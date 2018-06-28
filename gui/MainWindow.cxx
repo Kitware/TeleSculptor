@@ -1323,6 +1323,10 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   // Set up the progress widget
   d->UI.progressWidget->setAutoHide(true);
+
+  // Antialiasing
+  connect(d->UI.actionAntialiasing, SIGNAL(toggled(bool)),
+          this, SLOT(enableAntiAliasing(bool)));
 }
 
 //-----------------------------------------------------------------------------
@@ -2381,6 +2385,16 @@ void MainWindow::updateVideoImportProgress(QString desc, int progress)
   QTE_D();
 
   d->updateProgress(this->sender(), desc, progress);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::enableAntiAliasing(bool enable)
+{
+  QTE_D();
+
+  d->UI.worldView->enableAntiAliasing(enable);
+  d->UI.cameraView->enableAntiAliasing(enable);
+  d->UI.depthMapView->enableAntiAliasing(enable);
 }
 
 //END MainWindow

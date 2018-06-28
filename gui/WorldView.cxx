@@ -421,6 +421,9 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->imageActor->SetVisibility(false);
   d->renderer->AddViewProp(d->imageActor.GetPointer());
 
+  // Enable antialiasing by default
+  d->renderer->UseFXAAOn();
+
   d->emptyImage->SetExtent(0, 0, 0, 0, 0, 0);
   d->emptyImage->AllocateScalars(VTK_UNSIGNED_CHAR, 1);
   d->emptyImage->SetScalarComponentFromDouble(0, 0, 0, 0, 0.0);
@@ -1348,4 +1351,13 @@ void WorldView::render()
   QTE_D();
 
   d->renderWindow->Render();
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::enableAntiAliasing(bool enable)
+{
+  QTE_D();
+
+  d->renderer->SetUseFXAA(enable);
+  this->render();
 }

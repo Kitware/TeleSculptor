@@ -56,6 +56,7 @@ public:
 
   void addFeatureTrack(kwiver::vital::track const&);
 
+  void enableAntiAliasing(bool enable);
 public slots:
   void setBackgroundColor(QColor const&);
 

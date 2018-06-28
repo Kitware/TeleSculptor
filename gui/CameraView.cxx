@@ -499,6 +499,9 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->renderer->AddViewProp(d->imageActor.GetPointer());
   d->imageActor->SetPosition(0.0, 0.0, -0.5);
 
+  // Enable antialising by default
+  d->renderer->UseFXAAOn();
+
   // Create "dummy" image data for use when we have no "real" image
   d->emptyImage->SetExtent(0, 0, 0, 0, 0, 0);
   d->emptyImage->AllocateScalars(VTK_UNSIGNED_CHAR, 1);
@@ -755,6 +758,15 @@ void CameraView::render()
   QTE_D();
 
   d->renderWindow->Render();
+}
+
+//-----------------------------------------------------------------------------
+void CameraView::enableAntiAliasing(bool enable)
+{
+  QTE_D();
+
+  d->renderer->SetUseFXAA(enable);
+  this->render();
 }
 
 //END CameraView

@@ -79,6 +79,7 @@
     <addaction name="actionSetBackgroundColor"/>
     <addaction name="actionShowWorldAxes"/>
     <addaction name="actionKeyframesOnly"/>
+    <addaction name="actionAntialiasing"/>
    </widget>
    <widget class="qtMenu" name="menuHelp">
     <property name="title">
@@ -432,6 +433,23 @@
    </property>
    <property name="text">
     <string>Keyframes Only</string>
+   </property>
+  </action>
+  <action name="actionAntialiasing">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Antialias views</string>
+   </property>
+   <property name="toolTip">
+     <string>Enable antialiasing for smoother geometry in each view</string>
    </property>
   </action>
  </widget>
