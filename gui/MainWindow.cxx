@@ -529,6 +529,8 @@ void MainWindowPrivate::updateFrames(
 {
   this->videoMetadataMap = *mdMap;
 
+  this->UI.metadata->updateMetadata(mdMap);
+
   if (this->currProject &&
       this->currProject->projectConfig->has_value("output_krtd_dir"))
   {
@@ -1067,6 +1069,17 @@ void MainWindowPrivate::loadImage(FrameData frame)
       auto const size = QSize(dimensions[0], dimensions[1]);
       this->UI.cameraView->setImageData(imageData, size);
       this->UI.worldView->setImageData(imageData, size);
+
+      // Update metadata view
+      if (this->videoMetadataMap.empty())
+      {
+        this->UI.metadata->updateMetadata(kwiver::vital::metadata_vector{});
+      }
+      else
+      {
+        auto mdi = --(this->videoMetadataMap.upper_bound(frame.id));
+        this->UI.metadata->updateMetadata(mdi->second);
+      }
     }
   }
   else

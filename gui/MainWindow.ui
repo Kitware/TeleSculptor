@@ -39,7 +39,7 @@
      <x>0</x>
      <y>0</y>
      <width>963</width>
-     <height>24</height>
+     <height>29</height>
     </rect>
    </property>
    <widget class="qtMenu" name="menuFile">
@@ -201,6 +201,28 @@
     <number>2</number>
    </attribute>
    <widget class="DepthMapView" name="depthMapView"/>
+  </widget>
+  <widget class="QDockWidget" name="metadataDock">
+   <property name="windowTitle">
+    <string>Metadata</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="MetadataView" name="metadata">
+    <property name="frameShape">
+     <enum>QFrame::NoFrame</enum>
+    </property>
+    <property name="horizontalScrollBarPolicy">
+     <enum>Qt::ScrollBarAlwaysOff</enum>
+    </property>
+    <property name="widgetResizable">
+     <bool>true</bool>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+    </property>
+   </widget>
   </widget>
   <action name="actionNewProject">
    <property name="text">
@@ -457,6 +479,12 @@
    <class>DepthMapView</class>
    <extends>QWidget</extends>
    <header>DepthMapView.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MetadataView</class>
+   <extends>QScrollArea</extends>
+   <header>MetadataView.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

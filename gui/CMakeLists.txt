@@ -79,6 +79,7 @@ set(gui_moc_headers
   ImageOptions.h
   MainWindow.h
   MatchMatrixWindow.h
+  MetadataView.h
   PointOptions.h
   Project.h
   VideoImport.h
@@ -117,6 +118,7 @@ set(gui_sources
   MainWindow.cxx
   MatchMatrixAlgorithms.cxx
   MatchMatrixWindow.cxx
+  MetadataView.cxx
   PointOptions.cxx
   Project.cxx
   VideoImport.cxx
