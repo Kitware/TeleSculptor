@@ -64,6 +64,7 @@
 #include <vital/types/camera_perspective.h>
 #include <vital/types/metadata_map.h>
 #include <arrows/core/match_matrix.h>
+#include <arrows/core/track_set_impl.h>
 
 #include <kwiversys/SystemTools.hxx>
 
@@ -1614,6 +1615,9 @@ void MainWindow::loadTracks(QString const& path)
 
   try
   {
+
+    typedef std::unique_ptr<kwiver::vital::track_set_implementation> tsi_uptr;
+
     using namespace kwiver::vital;
     auto tracks = read_feature_track_file(kvPath(path));
     if (tracks)
@@ -1638,7 +1642,19 @@ void MainWindow::loadTracks(QString const& path)
           }
           new_tracks.push_back(new_track);
         }
-        tracks = std::make_shared<feature_track_set>(new_tracks);
+
+        auto tks_temp =
+          std::make_shared<kwiver::vital::feature_track_set>(
+            tsi_uptr(new kwiver::arrows::core::frame_index_track_set_impl(new_tracks)));
+        tks_temp->set_frame_data(tracks->all_frame_data());
+        tracks = tks_temp;
+      }
+      else
+      {
+        auto tks_temp = std::make_shared<kwiver::vital::feature_track_set>(
+          tsi_uptr(new kwiver::arrows::core::frame_index_track_set_impl(tracks->tracks())));
+        tks_temp->set_frame_data(tracks->all_frame_data());
+        tracks = tks_temp;
       }
 
       d->tracks = tracks;
