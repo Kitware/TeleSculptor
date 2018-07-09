@@ -111,7 +111,7 @@ kwiver::vital::path_t kvPath(QString const& s)
   return stdString(s);
 }
 
-
+//-----------------------------------------------------------------------------
 QString findUserManual()
 {
   static auto const name = "telesculptor.html";
@@ -172,6 +172,7 @@ QSet<QString> supportedImageExtensions()
   return result;
 }
 
+//-----------------------------------------------------------------------------
 QSet<QString> supportedVideoExtensions()
 {
   QSet<QString> result;
@@ -1154,7 +1155,8 @@ void MainWindowPrivate::setActiveTool(AbstractTool* tool)
     tool->setEnabled(enableTools);
   }
   this->UI.actionCancelComputation->setEnabled(enableCancel);
-  this->UI.actionOpen->setEnabled(enableTools);
+  this->UI.actionOpenProject->setEnabled(enableTools);
+  // FIXME disable import actions
 }
 
 //-----------------------------------------------------------------------------
@@ -1243,10 +1245,20 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->UI.playSlideshowButton->setDefaultAction(d->UI.actionSlideshowPlay);
   d->UI.loopSlideshowButton->setDefaultAction(d->UI.actionSlideshowLoop);
 
-  connect(d->UI.actionOpen, SIGNAL(triggered()), this, SLOT(openFile()));
   connect(d->UI.actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
 
-  connect(d->UI.actionNewProject, SIGNAL(triggered()), this, SLOT(newProject()));
+  connect(d->UI.actionNewProject, SIGNAL(triggered()),
+          this, SLOT(newProject()));
+  connect(d->UI.actionOpenProject, SIGNAL(triggered()),
+          this, SLOT(openProject()));
+  connect(d->UI.actionImportImagery, SIGNAL(triggered()),
+          this, SLOT(openImagery()));
+  connect(d->UI.actionImportCameras, SIGNAL(triggered()),
+          this, SLOT(openCameras()));
+  connect(d->UI.actionImportTracks, SIGNAL(triggered()),
+          this, SLOT(openTracks()));
+  connect(d->UI.actionImportLandmarks, SIGNAL(triggered()),
+          this, SLOT(openLandmarks()));
 
   connect(d->UI.actionShowWorldAxes, SIGNAL(toggled(bool)),
           d->UI.worldView, SLOT(setAxesVisible(bool)));
@@ -1355,75 +1367,79 @@ MainWindow::~MainWindow()
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::openFile()
+void MainWindow::openProject()
+{
+  auto const path = QFileDialog::getOpenFileName(
+    this, "Open Project", QString(),
+    "Project configuration files (*.conf);;"
+    "All Files (*)");
+
+  if (!path.isEmpty())
+  {
+    this->loadProject(path);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::openImagery()
 {
   static auto const imageFilters =
     makeFilters(supportedImageExtensions().toList());
-
   static auto const videoFilters =
     makeFilters(supportedVideoExtensions().toList());
 
   // TODO: Add image filters back once that is supported again.
   auto const paths = QFileDialog::getOpenFileNames(
-    this, "Open File", QString(),
-    "All Supported Files (*.conf *.txt *.ply *.krtd " + videoFilters + ");;"
-    "Project configuration file (*.conf);;"
-    "Video file (" + videoFilters + ");;"
-    "Track file (*.txt);;"
-    "Landmark file (*.ply);;"
-    "Camera file (*.krtd);;"
+    this, "Open Imagery", QString(),
+    "All Supported Files (" + videoFilters + ");;"
+    "Video files (" + videoFilters + ");;"
     "All Files (*)");
 
-  if (!paths.isEmpty())
+  for (auto const& path : paths)
   {
-    this->openFiles(paths);
+    this->loadImagery(path);
   }
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::openFile(QString const& path)
+void MainWindow::openCameras()
 {
-  static auto const imageExtensions = supportedImageExtensions();
-  static auto const videoExtensions = supportedVideoExtensions();
+  auto const paths = QFileDialog::getOpenFileNames(
+    this, "Open Cameras", QString(),
+    "Camera files (*.krtd);;"
+    "All Files (*)");
 
-  auto const fi = QFileInfo(path);
-  if (fi.suffix().toLower() == "conf")
-  {
-    this->loadProject(path);
-  }
-  else if (fi.suffix().toLower() == "txt")
-  {
-    this->loadTracks(path);
-  }
-  else if (fi.suffix().toLower() == "ply")
-  {
-    this->loadLandmarks(path);
-  }
-  else if (fi.suffix().toLower() == "krtd")
+  for (auto const& path : paths)
   {
     this->loadCamera(path);
   }
-  else if (imageExtensions.contains(fi.suffix().toLower()))
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::openTracks()
+{
+  auto const paths = QFileDialog::getOpenFileNames(
+    this, "Open Feature Tracks", QString(),
+    "Feature track files (*.txt);;"
+    "All Files (*)");
+
+  for (auto const& path : paths)
   {
-    this->loadImage(path);
-  }
-  else if (videoExtensions.contains(fi.suffix().toLower()))
-  {
-    this->loadVideo(path);
-  }
-  else
-  {
-    qWarning() << "Don't know how to read file" << path
-               << "(unrecognized extension)";
+    this->loadTracks(path);
   }
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::openFiles(QStringList const& paths)
+void MainWindow::openLandmarks()
 {
-  foreach (auto const& path, paths)
+  auto const paths = QFileDialog::getOpenFileNames(
+    this, "Open Landmarks", QString(),
+    "Landmark files (*.ply);;"
+    "All Files (*)");
+
+  for (auto const& path : paths)
   {
-    this->openFile(path);
+    this->loadLandmarks(path);
   }
 }
 
@@ -1550,12 +1566,36 @@ void MainWindow::loadProject(QString const& path)
 }
 
 //-----------------------------------------------------------------------------
+void MainWindow::loadImagery(QString const& path)
+{
+  static auto const imageExtensions = supportedImageExtensions();
+  static auto const videoExtensions = supportedVideoExtensions();
+
+  auto const ext = QFileInfo{path}.suffix().toLower();
+  if (imageExtensions.contains(ext))
+  {
+    this->loadImage(path);
+  }
+  else if (videoExtensions.contains(ext))
+  {
+    // TODO: Handle [selection of] multiple videos better
+    this->loadVideo(path);
+  }
+  else
+  {
+    qWarning() << "Don't know how to read file" << path
+               << "(unrecognized extension)";
+  }
+}
+
+//-----------------------------------------------------------------------------
 void MainWindow::loadImage(QString const& path)
 {
   QTE_D();
   d->addImage(path);
 }
 
+//-----------------------------------------------------------------------------
 void MainWindow::loadVideo(QString const& path)
 {
   QTE_D();
@@ -2241,7 +2281,6 @@ void MainWindow::acceptToolResults(std::shared_ptr<ToolData> data, bool isFinal)
     QTimer::singleShot(1000, this, SLOT(updateToolResults()));
   }
 }
-
 
 //-----------------------------------------------------------------------------
 void MainWindow::saveToolResults()
