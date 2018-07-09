@@ -32,9 +32,11 @@
 
 #include <vital/algo/video_input.h>
 
-#include <atomic>
+#include <qtStlUtil.h>
 
 #include <QFileInfo>
+
+#include <atomic>
 
 using kwiver::vital::algo::video_input;
 using kwiver::vital::algo::video_input_sptr;
@@ -122,7 +124,7 @@ void VideoImport::run()
     std::make_shared<kwiver::vital::metadata_map::map_metadata_t>();
 
   QString description = QString("&Loading video from %1 (Frame %2)")
-    .arg(QFileInfo(d->videoPath.c_str()).fileName());
+    .arg(QFileInfo{qtString(d->videoPath)}.fileName());
   while (d->video_reader->next_frame(currentTimestamp) && !d->canceled)
   {
     auto frame = currentTimestamp.get_frame();

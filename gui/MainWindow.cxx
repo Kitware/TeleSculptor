@@ -66,8 +66,6 @@
 #include <arrows/core/match_matrix.h>
 #include <arrows/core/track_set_impl.h>
 
-#include <kwiversys/SystemTools.hxx>
-
 #include <vtkXMLImageDataWriter.h>
 #include <vtkImageData.h>
 #include <vtkImageFlip.h>
@@ -435,13 +433,13 @@ void MainWindowPrivate::addVideoSource(
   kwiver::vital::algo::video_input::
     set_nested_algo_configuration("video_reader", config, this->videoSource);
 
-  videoImporter.setData(config, videoPath.toStdString(), this->localGeoCs);
+  videoImporter.setData(config, stdString(videoPath), this->localGeoCs);
 
   try
   {
     if (this->videoSource)
     {
-      this->videoSource->open(videoPath.toStdString());
+      this->videoSource->open(stdString(videoPath));
     }
 
     // Set the skip value if present
@@ -539,8 +537,7 @@ void MainWindowPrivate::updateFrames(
     qWarning() << "Loading project cameras with frames.count = " << this->frames.count();
     for (auto const& frame : this->frames)
     {
-      auto frameName =
-        QString::fromStdString(this->getFrameName(frame.id) + ".krtd");
+      auto frameName = qtString(this->getFrameName(frame.id)) + ".krtd";
 
       try
       {
@@ -613,9 +610,8 @@ void MainWindowPrivate::updateFrames(
   {
     foreach(auto & frame, this->frames)
     {
-      auto depthName = QString::fromStdString(this->getFrameName(frame.id) + ".vti");
-      QString depthMapPath = QString::fromStdString(
-        kvPath(this->project->depthPath) + '/' + kvPath(depthName));
+      auto depthName = qtString(this->getFrameName(frame.id)) + ".vti";
+      auto depthMapPath = QDir{this->project->depthPath}.filePath(depthName);
       QFileInfo check_file(depthMapPath);
       if (check_file.exists() && check_file.isFile())
       {
@@ -1066,8 +1062,8 @@ void MainWindowPrivate::loadImage(FrameData frame)
       }
 
       // Set frame name in camera view
-      std::string frameName = this->getFrameName(frame.id);
-      this->UI.cameraView->setImagePath(QString::fromStdString(frameName));
+      this->UI.cameraView->setImagePath(
+        qtString(this->getFrameName(frame.id)));
 
       // Set image on views
       auto const size = QSize(dimensions[0], dimensions[1]);
@@ -1095,7 +1091,7 @@ void MainWindowPrivate::loadImage(FrameData frame)
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::loadDepthMap(QString const& imagePath)
 {
-  if (!kwiversys::SystemTools::FileExists(qPrintable(imagePath), true))
+  if (!QFileInfo{imagePath}.isFile())
   {
     qWarning() << "File doesn't exist: " << imagePath;
     return;
@@ -1523,11 +1519,10 @@ void MainWindow::loadProject(QString const& path)
 
   if (d->project->projectConfig->has_value("geo_origin_file"))
   {
-    if (kwiversys::SystemTools::FileExists(
-        d->project->geoOriginFile.toStdString(), true))
+    if (QFileInfo{d->project->geoOriginFile}.isFile())
     {
       kwiver::maptk::read_local_geo_cs_from_file(
-        d->localGeoCs, d->project->geoOriginFile.toStdString());
+        d->localGeoCs, stdString(d->project->geoOriginFile));
     }
     else
     {
@@ -1803,8 +1798,8 @@ void MainWindow::saveCameras(QString const& path, bool writeToProject)
       auto const camera = cd.camera->GetCamera();
       if (camera)
       {
-        auto cameraName = QString::fromStdString(d->getFrameName(cd.id) + ".krtd");
-        auto const filepath = path + "/" + cameraName;
+        auto cameraName = qtString(d->getFrameName(cd.id)) + ".krtd";
+        auto const filepath = QDir{path}.filePath(cameraName);
         out.insert(filepath, camera);
 
         if (QFileInfo(filepath).exists())
@@ -1881,7 +1876,7 @@ void MainWindow::saveDepthImage(QString const& path)
     return;
   }
 
-  QString filename = QString::fromStdString(d->getFrameName(d->activeDepthFrame) + ".vti");
+  auto filename = qtString(d->getFrameName(d->activeDepthFrame)) + ".vti";
 
   if (!QDir(path).exists())
   {
@@ -1890,8 +1885,8 @@ void MainWindow::saveDepthImage(QString const& path)
 
 
   vtkNew<vtkXMLImageDataWriter> writerI;
-  auto const filepath = path + "/" + filename;
-  writerI->SetFileName(stdString(filepath).c_str());
+  auto const filepath = QDir{path}.filePath(filename);
+  writerI->SetFileName(qPrintable(filepath));
   writerI->AddInputDataObject(d->activeDepth.Get());
   writerI->SetDataModeToBinary();
   writerI->Write();
@@ -1956,7 +1951,7 @@ void MainWindow::saveGeoOrigin(QString const& path)
 
   d->project->projectConfig->set_value("geo_origin_file", kvPath(
     d->project->getContingentRelativePath(path)));
-  kwiver::maptk::write_local_geo_cs_to_file(d->localGeoCs, path.toStdString());
+  kwiver::maptk::write_local_geo_cs_to_file(d->localGeoCs, stdString(path));
 }
 
 //-----------------------------------------------------------------------------
@@ -2141,7 +2136,7 @@ void MainWindow::executeTool(QObject* object)
       tool->setTracks(d->tracks);
       tool->setCameras(d->cameraMap());
       tool->setLandmarks(d->landmarks);
-      tool->setVideoPath(d->videoPath.toStdString());
+      tool->setVideoPath(stdString(d->videoPath));
       tool->setConfig(d->project->projectConfig);
 
       if (!tool->execute())
