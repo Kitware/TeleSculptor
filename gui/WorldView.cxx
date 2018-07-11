@@ -87,6 +87,7 @@
 
 #include <qtIndexRange.h>
 #include <qtMath.h>
+#include <qtStlUtil.h>
 
 #include <QDebug>
 #include <QFileInfo>
@@ -674,12 +675,10 @@ void WorldView::loadVolume(QString path, QString krtd, QString frame)
 
   d->UI.actionShowVolume->setEnabled(true);
 
-  std::string filename = path.toStdString();
-
   // Create the vtk pipeline
   // Read volume
   vtkNew<vtkXMLStructuredGridReader> readerV;
-  readerV->SetFileName(filename.c_str());
+  readerV->SetFileName(qPrintable(path));
 
   d->volume = readerV->GetOutput();
   // Transform cell data to point data for contour filter
@@ -729,7 +728,7 @@ void WorldView::setVolumeCurrentFramePath(QString path)
 {
   QTE_D();
 
-  d->volumeOptions->setCurrentFramePath(path.toStdString());
+  d->volumeOptions->setCurrentFramePath(stdString(path));
 }
 
 //-----------------------------------------------------------------------------
@@ -1197,7 +1196,7 @@ void WorldView::saveDepthPoints(QString const& path)
 
   vtkNew<vtkPLYWriter> writer;
 
-  writer->SetFileName(path.toStdString().c_str());
+  writer->SetFileName(qPrintable(path));
   writer->SetInputConnection(d->depthScalarFilter->GetOutputPort());
   writer->SetColorMode(0);
   writer->SetArrayName(DepthMapArrays::TrueColor);
@@ -1257,12 +1256,12 @@ void WorldView::saveMesh(const QString &path)
 
   vtkNew<vtkXMLPolyDataWriter> writer;
 
-  writer->SetFileName(path.toStdString().c_str());
+  writer->SetFileName(qPrintable(path));
   writer->AddInputDataObject(mesh);
   writer->SetDataModeToBinary();
   writer->Write();
 
-  std::cout << "Saved : " << path.toStdString() << std::endl;
+  std::cout << "Saved : " << qPrintable(path) << std::endl;
 
 }
 
@@ -1276,12 +1275,12 @@ void WorldView::saveVolume(const QString &path)
 
   vtkNew<vtkXMLStructuredGridWriter> writer;
 
-  writer->SetFileName(path.toStdString().c_str());
+  writer->SetFileName(qPrintable(path));
   writer->AddInputDataObject(d->volume);
   writer->SetDataModeToBinary();
   writer->Write();
 
-  std::cout << "Saved : " << path.toStdString() << std::endl;
+  std::cout << "Saved : " << qPrintable(path) << std::endl;
 }
 
 //-----------------------------------------------------------------------------
@@ -1293,7 +1292,7 @@ void WorldView::saveColoredMesh(const QString &path)
   if(ext == "ply")
   {
     vtkNew<vtkPLYWriter> writer;
-    writer->SetFileName(path.toStdString().c_str());
+    writer->SetFileName(qPrintable(path));
     writer->SetColorMode(0);
     vtkSmartPointer<vtkPolyData> mesh = d->contourFilter->GetOutput();
     writer->SetArrayName(mesh->GetPointData()->GetScalars()->GetName());
@@ -1304,13 +1303,13 @@ void WorldView::saveColoredMesh(const QString &path)
   else
   {
     vtkNew<vtkXMLPolyDataWriter> writer;
-    writer->SetFileName(path.toStdString().c_str());
+    writer->SetFileName(qPrintable(path));
     writer->SetDataModeToBinary();
     writer->AddInputDataObject(d->contourFilter->GetOutput());
     writer->Write();
   }
 
-  std::cout << "Saved : " << path.toStdString() << std::endl;
+  std::cout << "Saved : " << qPrintable(path) << std::endl;
 }
 
 //-----------------------------------------------------------------------------
