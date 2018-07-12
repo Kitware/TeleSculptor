@@ -71,6 +71,7 @@ public:
 
   unsigned int activeFrame;
   std::string videoPath;
+  std::string maskPath;
   feature_track_set_sptr tracks;
   depth_sptr active_depth;
   camera_map_sptr cameras;
@@ -138,6 +139,9 @@ public:
 
   /// Set the video source path.
   void setVideoPath(std::string const&);
+
+  /// Set the mask video source path.
+  void setMaskPath(std::string const&);
 
   /// Set the config file if any
   void setConfig(config_block_sptr&);

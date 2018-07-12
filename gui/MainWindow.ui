@@ -66,6 +66,7 @@
       <string>&amp;Import</string>
      </property>
      <addaction name="actionImportImagery"/>
+     <addaction name="actionImportMasks"/>
      <addaction name="actionImportCameras"/>
      <addaction name="actionImportTracks"/>
      <addaction name="actionImportLandmarks"/>
@@ -469,10 +470,18 @@
   </action>
   <action name="actionImportImagery">
    <property name="text">
-    <string>&amp;Imagery</string>
+    <string>&amp;Imagery...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O, I</string>
+   </property>
+  </action>
+  <action name="actionImportMasks">
+   <property name="text">
+    <string>&amp;Masks...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O, M</string>
    </property>
   </action>
   <action name="actionImportCameras">

@@ -56,14 +56,18 @@ public slots:
 
   void openProject();
   void openImagery();
+  void openMaskImagery();
   void openCameras();
   void openTracks();
   void openLandmarks();
 
   void loadProject(QString const& path);
   void loadImagery(QString const& path);
+  void loadMaskImagery(QString const& path);
   void loadImage(QString const& path);
   void loadVideo(QString const& path);
+  void loadMaskImage(QString const& path);
+  void loadMaskVideo(QString const& path);
   void loadCamera(QString const& path);
   void loadTracks(QString const& path);
   void loadLandmarks(QString const& path);

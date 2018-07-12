@@ -67,6 +67,8 @@ int main(int argc, char** argv)
          .add("p", qtCliOption::Short);
   options.add("imagery <file>", "Load imagery from 'file'")
          .add("i", qtCliOption::Short | qtCliOption::NamedList);
+  options.add("mask <file>", "Load mask imagery from 'file'")
+         .add("m", qtCliOption::Short | qtCliOption::NamedList);
   options.add("camera <file>", "Load camera(s) from 'file'")
          .add("c", qtCliOption::Short | qtCliOption::NamedList);
   options.add("tracks <file>", "Load feature tracks from 'file'")
@@ -107,6 +109,10 @@ int main(int argc, char** argv)
   for (auto const& path : args.values("imagery"))
   {
     window.loadImagery(path);
+  }
+  for (auto const& path : args.values("mask"))
+  {
+    window.loadMaskImagery(path);
   }
   for (auto const& path : args.values("camera"))
   {
