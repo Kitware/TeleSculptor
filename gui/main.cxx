@@ -49,11 +49,13 @@
 #include <memory>
 
 #include <QVTKOpenGLWidget.h>
+#include <vtkOpenGLRenderWindow.h>
 
 //-----------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
   // Set the default surface format for the OpenGL view
+  vtkOpenGLRenderWindow::SetGlobalMaximumNumberOfMultiSamples(0);
   QSurfaceFormat::setDefaultFormat(QVTKOpenGLWidget::defaultFormat());
   // Set application information
   QApplication::setApplicationName("MAP-Tk TeleSculptor");
