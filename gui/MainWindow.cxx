@@ -1082,15 +1082,22 @@ void MainWindowPrivate::loadImage(FrameData frame)
       this->UI.worldView->setImageData(imageData, size);
 
       // Update metadata view
-      auto md = this->videoMetadataMap->metadata();
-      if (md.empty())
+      if (!this->videoMetadataMap)
       {
         this->UI.metadata->updateMetadata(kv::metadata_vector{});
       }
       else
       {
-        auto mdi = --(md.upper_bound(frame.id));
-        this->UI.metadata->updateMetadata(mdi->second);
+        auto md_map = this->videoMetadataMap->metadata();
+        auto mdi = md_map.find(frame.id);
+        if (mdi == md_map.end())
+        {
+          this->UI.metadata->updateMetadata(kwiver::vital::metadata_vector{});
+        }
+        else
+        {
+          this->UI.metadata->updateMetadata(mdi->second);
+        }
       }
     }
   }
