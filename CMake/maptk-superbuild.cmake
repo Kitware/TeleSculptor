@@ -46,10 +46,6 @@ if(NOT kwiver_FOUND)
   include(CMake/maptk-external-kwiver.cmake)
 endif()
 
-if(MAPTK_ENABLE_GUI)
-  include(CMake/maptk-external-qt-extensions.cmake)
-endif()
-
 # MAPTK
 
 ExternalProject_Add(MAPTK

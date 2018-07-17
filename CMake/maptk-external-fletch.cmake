@@ -11,7 +11,7 @@ list(APPEND QT_EXTENSIONS_DEPENDENCIES fletch)
 ExternalProject_Add(fletch
   PREFIX ${MAPTK_BINARY_DIR}
   GIT_REPOSITORY "git://github.com/Kitware/fletch.git"
-  GIT_TAG aedb76ecaf3061ab96567c5e890fa9e6f186a212
+  GIT_TAG 209b5c7ce3d89e8661f097da2d4d0487810705cb
   #GIT_SHALLOW 1
   SOURCE_DIR fletch
   BINARY_DIR fletch-build
@@ -51,7 +51,7 @@ ExternalProject_Add(fletch
     -Dfletch_ENABLE_PostGIS:BOOL=OFF
     -Dfletch_ENABLE_PostgresSQL:BOOL=OFF
     -Dfletch_ENABLE_Protobuf:BOOL=OFF
-    -Dfletch_ENABLE_Qt:BOOL=ON
+    -Dfletch_ENABLE_Qt:BOOL=${MAPTK_ENABLE_GUI}
     -Dfletch_ENABLE_Snappy:BOOL=OFF
     -Dfletch_ENABLE_SuiteSparse:BOOL=ON
     -Dfletch_ENABLE_TinyXML:BOOL=OFF
@@ -68,6 +68,7 @@ ExternalProject_Add(fletch
     -Dfletch_ENABLE_libxml2:BOOL=ON
     -Dfletch_ENABLE_log4cplus:BOOL=ON
     -Dfletch_ENABLE_openjpeg:BOOL=OFF
+    -Dfletch_ENABLE_qtExtensions:BOOL=${MAPTK_ENABLE_GUI}
     -Dfletch_ENABLE_pybind11:BOOL=OFF
     -Dfletch_ENABLE_shapelib:BOOL=OFF
     -Dfletch_BUILD_WITH_CUDA:BOOL=${MAPTK_BUILD_WITH_CUDA}
