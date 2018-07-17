@@ -51,9 +51,9 @@
 #include <vtkThreshold.h>
 #include <vtkXMLImageDataReader.h>
 
-#include <QtGui/QMenu>
-#include <QtGui/QToolButton>
-#include <QtGui/QWidgetAction>
+#include <QMenu>
+#include <QToolButton>
+#include <QWidgetAction>
 
 using namespace DepthMapArrays;
 

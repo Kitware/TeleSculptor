@@ -35,8 +35,8 @@
 #include <vital/io/metadata_io.h>
 #include <kwiversys/SystemTools.hxx>
 
-#include <QtCore/QDir>
-#include <QtGui/QApplication>
+#include <QDir>
+#include <QApplication>
 
 
 //-----------------------------------------------------------------------------

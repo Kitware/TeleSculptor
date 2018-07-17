@@ -13,14 +13,33 @@
   <property name="windowTitle">
    <string>MAP-Tk TeleSculptor</string>
   </property>
-  <widget class="WorldView" name="worldView"/>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="WorldView" name="worldView" native="true"/>
+    </item>
+    <item>
+     <widget class="qtProgressWidget" name="progressWidget" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
      <width>963</width>
-     <height>38</height>
+     <height>29</height>
     </rect>
    </property>
    <widget class="qtMenu" name="menuFile">
@@ -111,11 +130,11 @@
        <property name="enabled">
         <bool>false</bool>
        </property>
-       <property name="keyboardTracking">
-         <bool>false</bool>
-       </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+       <property name="keyboardTracking">
+        <bool>false</bool>
        </property>
       </widget>
      </item>
@@ -134,21 +153,24 @@
       </widget>
      </item>
      <item>
-      <widget class="QSlider" name="slideDelay">
+      <widget class="QSlider" name="slideSpeed">
        <property name="toolTip">
-        <string>Slideshow time between cameras</string>
+        <string>Slideshow speed</string>
        </property>
        <property name="minimum">
-        <number>10</number>
+        <number>-20</number>
        </property>
        <property name="maximum">
-        <number>40</number>
+        <number>60</number>
        </property>
        <property name="value">
-        <number>30</number>
+        <number>59</number>
        </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="tickPosition">
+        <enum>QSlider::TicksBelow</enum>
        </property>
       </widget>
      </item>
@@ -179,6 +201,28 @@
     <number>2</number>
    </attribute>
    <widget class="DepthMapView" name="depthMapView"/>
+  </widget>
+  <widget class="QDockWidget" name="metadataDock">
+   <property name="windowTitle">
+    <string>Metadata</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="MetadataView" name="metadata">
+    <property name="frameShape">
+     <enum>QFrame::NoFrame</enum>
+    </property>
+    <property name="horizontalScrollBarPolicy">
+     <enum>Qt::ScrollBarAlwaysOff</enum>
+    </property>
+    <property name="widgetResizable">
+     <bool>true</bool>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+    </property>
+   </widget>
   </widget>
   <action name="actionNewProject">
    <property name="text">
@@ -435,6 +479,18 @@
    <class>DepthMapView</class>
    <extends>QWidget</extends>
    <header>DepthMapView.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MetadataView</class>
+   <extends>QScrollArea</extends>
+   <header>MetadataView.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>qtProgressWidget</class>
+   <extends>QWidget</extends>
+   <header>qtProgressWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

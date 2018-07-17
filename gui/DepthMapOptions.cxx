@@ -34,8 +34,8 @@
 
 #include "DepthMapFilterOptions.h"
 
-#include <QtGui/QMenu>
-#include <QtGui/QWidgetAction>
+#include <QMenu>
+#include <QWidgetAction>
 
 QTE_IMPLEMENT_D_FUNC(DepthMapOptions)
 

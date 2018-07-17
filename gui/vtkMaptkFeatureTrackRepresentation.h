@@ -53,7 +53,9 @@ public:
 
   static vtkMaptkFeatureTrackRepresentation* New();
 
-  void AddTrackPoint(unsigned trackId, unsigned frameId, double x, double y);
+  void AddTrackWithDescPoint(unsigned trackId, unsigned frameId, double x, double y);
+
+  void AddTrackWithoutDescPoint(unsigned trackId, unsigned frameId, double x, double y);
 
   // Description:
   // Remove all track data
@@ -82,12 +84,21 @@ public:
   void Update();
 
   // Description:
-  // Get the actor representing the active points of the feature tracks
-  vtkActor* GetActivePointsActor() { return this->ActivePointsActor; }
+  // Get the actor representing the active points with descriptors of the feature tracks
+  vtkActor* GetActivePointsWithDescActor() { return this->ActivePointsWithDescActor; }
 
   // Description:
-  // Get the actor representing the "trails" of the feature tracks
-  vtkActor* GetTrailsActor() { return this->TrailsActor; }
+  // Get the actor representing the active points of the feature tracks
+  vtkActor* GetActivePointsWithoutDescActor() { return this->ActivePointsWithoutDescActor; }
+
+
+  // Description:
+  // Get the actor representing the "trails without descriptors" in the feature tracks
+  vtkActor* GetTrailsWithoutDescActor() { return this->TrailsWithoutDescActor; }
+
+  // Description:
+  // Get the actor representing the "trails with descriptors" in the feature tracks
+  vtkActor* GetTrailsWithDescActor() { return this->TrailsWithDescActor; }
 
 protected:
   vtkMaptkFeatureTrackRepresentation();
@@ -101,8 +112,11 @@ private:
   unsigned TrailLength;
   TrailStyleEnum TrailStyle;
 
-  vtkSmartPointer<vtkActor> ActivePointsActor;
-  vtkSmartPointer<vtkActor> TrailsActor;
+  vtkSmartPointer<vtkActor> ActivePointsWithDescActor;
+  vtkSmartPointer<vtkActor> ActivePointsWithoutDescActor;
+
+  vtkSmartPointer<vtkActor> TrailsWithDescActor;
+  vtkSmartPointer<vtkActor> TrailsWithoutDescActor;
 
   class vtkInternal;
   std::unique_ptr<vtkInternal> const Internal;

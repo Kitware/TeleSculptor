@@ -41,6 +41,8 @@
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
 
+#include <QButtonGroup>
+
 namespace // anonymous
 {
 

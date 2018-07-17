@@ -33,10 +33,6 @@
 
 #include "tools/MeshColoration.h"
 
-#include <qdebug.h>
-#include <qtUiState.h>
-#include <qtUiStateItem.h>
-
 #include <vtkActor.h>
 
 #include <vtkLookupTable.h>
@@ -44,6 +40,12 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
+
+#include <qtStlUtil.h>
+#include <qtUiState.h>
+#include <qtUiStateItem.h>
+
+#include <QDebug>
 
 //-----------------------------------------------------------------------------
 class ColorizeSurfaceOptionsPrivate
@@ -173,16 +175,16 @@ void ColorizeSurfaceOptions::changeColorDisplay()
 {
   QTE_D();
 
-  vtkPolyData* volume = vtkPolyData::SafeDownCast(d->volumeActor->GetMapper()
-                                                  ->GetInput());
+  vtkPolyData* volume = vtkPolyData::SafeDownCast(
+    d->volumeActor->GetMapper()->GetInput());
 
-  volume->GetPointData()->SetActiveScalars(d->UI.comboBoxColorDisplay
-                                           ->currentText().toStdString().c_str());
+  volume->GetPointData()->SetActiveScalars(
+    qPrintable(d->UI.comboBoxColorDisplay->currentText()));
 
   vtkMapper* mapper = d->volumeActor->GetMapper();
 
-  if(volume->GetPointData()->GetScalars()
-     && volume->GetPointData()->GetScalars()->GetNumberOfComponents() != 3)
+  if(volume->GetPointData()->GetScalars() &&
+     volume->GetPointData()->GetScalars()->GetNumberOfComponents() != 3)
   {
     vtkNew<vtkLookupTable> table;
     table->SetRange(volume->GetPointData()->GetScalars()->GetRange());
@@ -214,8 +216,8 @@ void ColorizeSurfaceOptions::colorize()
 
     vtkPolyData* volume = vtkPolyData::SafeDownCast(d->volumeActor->GetMapper()
                                                     ->GetInput());
-    MeshColoration* coloration = new MeshColoration(volume, d->frameFile.toStdString(),
-                                                    d->krtdFile.toStdString());
+    MeshColoration* coloration = new MeshColoration(
+      volume, stdString(d->frameFile), stdString(d->krtdFile));
 
     coloration->SetInput(volume);
     coloration->SetFrameSampling(d->UI.spinBoxFrameSampling->value());
@@ -235,7 +237,7 @@ void ColorizeSurfaceOptions::colorize()
     for (int i = 0; i < nbArray; ++i)
     {
       name = volume->GetPointData()->GetArrayName(i);
-      d->UI.comboBoxColorDisplay->addItem(QString(name.c_str()));
+      d->UI.comboBoxColorDisplay->addItem(qtString(name));
     }
 
     volume->GetPointData()->SetActiveScalars("MeanColoration");

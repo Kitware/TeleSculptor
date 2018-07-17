@@ -37,9 +37,9 @@
 #include <vital/algo/video_input.h>
 #include <kwiversys/SystemTools.hxx>
 
-#include <QtCore/QDebug>
-#include <QtCore/QDir>
-#include <QtGui/QMessageBox>
+#include <QDebug>
+#include <QDir>
+#include <QMessageBox>
 
 using kwiver::vital::algo::video_input;
 using kwiver::vital::algo::video_input_sptr;

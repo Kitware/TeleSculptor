@@ -30,10 +30,10 @@
 
 #include "MainWindow.h"
 #include "tools/AbstractTool.h"
+#include "VideoImport.h"
 
 #include <maptk/version.h>
 
-#include <kwiversys/SystemTools.hxx>
 #include <vital/plugin_loader/plugin_manager.h>
 
 #include <qtCliArgs.h>
@@ -41,8 +41,8 @@
 #include <qtUtil.h>
 
 #include <QApplication>
+#include <QDir>
 #include <QMetaType>
-#include <QtCore/QDir>
 
 #include <memory>
 
@@ -57,6 +57,7 @@ int main(int argc, char** argv)
 
   // Register meta types
   qRegisterMetaType<std::shared_ptr<ToolData>>();
+  qRegisterMetaType<std::shared_ptr<kwiver::vital::metadata_map::map_metadata_t>>();
 
   // Set up command line options
   qtCliArgs args(argc, argv);
@@ -73,19 +74,17 @@ int main(int argc, char** argv)
   qtUtil::setApplicationIcon("TeleSculptor");
 
   // Load KWIVER plugins
-  auto const exeDir = QDir(QApplication::applicationDirPath());
-  auto const rel_path = stdString(exeDir.absoluteFilePath(".."));
-  auto & vpm = kwiver::vital::plugin_manager::instance();
-  vpm.add_search_path(rel_path + "/lib/modules");
-  vpm.add_search_path(rel_path + "/lib/sprokit");
+  auto const exeDir = QDir{QApplication::applicationDirPath()};
+  auto& vpm = kwiver::vital::plugin_manager::instance();
+  vpm.add_search_path(stdString(exeDir.absoluteFilePath("../lib/modules")));
+  vpm.add_search_path(stdString(exeDir.absoluteFilePath("../lib/sprokit")));
   vpm.load_all_plugins();
 
   // Tell PROJ where to find its data files
-  std::string rel_proj_path = rel_path + "/share/proj";
-  if ( kwiversys::SystemTools::FileExists(rel_proj_path) &&
-       kwiversys::SystemTools::FileIsDirectory(rel_proj_path) )
+  auto projDataDir = exeDir.absoluteFilePath("../share/proj");
+  if (QFileInfo{projDataDir}.isDir())
   {
-    kwiversys::SystemTools::PutEnv("PROJ_LIB="+rel_proj_path);
+    qputenv("PROJ_LIB", projDataDir.toLocal8Bit());
   }
 
   // Create and show main window

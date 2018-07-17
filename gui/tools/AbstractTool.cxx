@@ -30,7 +30,9 @@
 
 #include "AbstractTool.h"
 
-#include <QtCore/QThread>
+#include <qtStlUtil.h>
+
+#include <QThread>
 
 #include <atomic>
 
@@ -226,6 +228,9 @@ bool AbstractTool::execute(QWidget* window)
 {
   QTE_D();
 
+  // Reset progress reporting parameters
+  this->updateProgress(0);
+  this->setDescription("");
   d->cancelRequested = false;
   d->start();
   return true;
@@ -299,4 +304,35 @@ void AbstractTool::updateLandmarks(landmark_map_sptr const& newLandmarks)
 {
   QTE_D();
   d->data->landmarks = newLandmarks;
+}
+
+//-----------------------------------------------------------------------------
+int AbstractTool::progress() const
+{
+  QTE_D();
+  int p = d->data->progress;
+  p = p < 0 ? 0 : p;
+  p = p > 100 ? 100 : p;
+  return p;
+}
+
+//-----------------------------------------------------------------------------
+void AbstractTool::updateProgress(int value)
+{
+  QTE_D();
+  d->data->progress = value;
+}
+
+//-----------------------------------------------------------------------------
+QString AbstractTool::description() const
+{
+  QTE_D();
+  return qtString(d->data->description);
+}
+
+//-----------------------------------------------------------------------------
+void AbstractTool::setDescription(QString const& desc)
+{
+  QTE_D();
+  d->data->description = stdString(desc);
 }

@@ -38,7 +38,7 @@
 #include <vital/types/metadata.h>
 
 #include <qtStlUtil.h>
-#include <QtGui/QMessageBox>
+#include <QMessageBox>
 
 #include <algorithm>
 
@@ -209,6 +209,7 @@ depth_to_vtk(kwiver::vital::image_container_sptr depth_img,
 void ComputeDepthTool::run()
 {
   QTE_D();
+  using kwiver::vital::camera_perspective;
 
   int frame = this->activeFrame();
 
@@ -216,7 +217,7 @@ void ComputeDepthTool::run()
   auto const& cm = this->cameras()->cameras();
 
   std::vector<kwiver::vital::image_container_sptr> frames_out;
-  std::vector<kwiver::vital::camera_sptr> cameras_out;
+  std::vector<kwiver::vital::camera_perspective_sptr> cameras_out;
   std::vector<kwiver::vital::landmark_sptr> landmarks_out;
   std::vector<kwiver::vital::frame_id_t> frame_ids;
   const int halfsupport = 10;
@@ -249,7 +250,7 @@ void ComputeDepthTool::run()
     image->set_metadata(mdv[0]);
   }
   frames_out.push_back(image);
-  cameras_out.push_back(cam->second);
+  cameras_out.push_back(std::dynamic_pointer_cast<camera_perspective>(cam->second));
   frame_ids.push_back(currentTimestamp.get_frame());
 
   // find halfsupport more frames with valid cameras and images
@@ -274,7 +275,7 @@ void ComputeDepthTool::run()
       image->set_metadata(mdv[0]);
     }
     frames_out.push_back(image);
-    cameras_out.push_back(cam->second);
+    cameras_out.push_back(std::dynamic_pointer_cast<camera_perspective>(cam->second));
     frame_ids.push_back(currentTimestamp.get_frame());
   }
 

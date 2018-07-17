@@ -31,7 +31,7 @@
 #ifndef MAPTK_VTKMAPTKCAMERA_H_
 #define MAPTK_VTKMAPTKCAMERA_H_
 
-#include <vital/types/camera.h>
+#include <vital/types/camera_perspective.h>
 
 #include <vtkCamera.h>
 #include <vtkSmartPointer.h>
@@ -46,8 +46,8 @@ public:
 
   // Description:
   // Set/Get the internal maptk camera
-  kwiver::vital::camera_sptr GetCamera() const;
-  void SetCamera(kwiver::vital::camera_sptr const& camera);
+  kwiver::vital::camera_perspective_sptr GetCamera() const;
+  void SetCamera(kwiver::vital::camera_perspective_sptr const& camera);
 
   // Description:
   // Project 3D point to 2D using the internal maptk camera
@@ -105,7 +105,7 @@ private:
   int ImageDimensions[2];
   double AspectRatio;
 
-  kwiver::vital::camera_sptr MaptkCamera;
+  kwiver::vital::camera_perspective_sptr MaptkCamera;
 };
 
 #endif

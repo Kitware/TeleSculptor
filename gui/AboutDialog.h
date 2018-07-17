@@ -33,7 +33,7 @@
 
 #include <qtGlobal.h>
 
-#include <QtGui/QDialog>
+#include <QDialog>
 
 class AboutDialogPrivate;
 

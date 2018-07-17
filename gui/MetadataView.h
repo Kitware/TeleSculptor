@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,40 +28,40 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_FEATUREOPTIONS_H_
-#define MAPTK_FEATUREOPTIONS_H_
+#ifndef MAPTK_METADATAVIEW_H_
+#define MAPTK_METADATAVIEW_H_
 
-#include "PointOptions.h"
+#include <vital/types/metadata_map.h>
 
-class vtkMaptkFeatureTrackRepresentation;
+#include <qtGlobal.h>
 
-class FeatureOptionsPrivate;
+#include <QScrollArea>
 
-class FeatureOptions : public PointOptions
+class MetadataViewPrivate;
+
+class MetadataView : public QScrollArea
 {
   Q_OBJECT
 
 public:
-  explicit FeatureOptions(vtkMaptkFeatureTrackRepresentation*,
-                          QString const& settingsGroup,
-                          QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~FeatureOptions();
+  explicit MetadataView(QWidget* parent = 0);
+  virtual ~MetadataView();
+
+  virtual bool eventFilter(QObject* sender, QEvent* e) override;
 
 public slots:
-  void setFeaturesWithDescVisible(bool);
-  void setFeaturesWithoutDescVisible(bool);
+  void updateMetadata(
+    std::shared_ptr<kwiver::vital::metadata_map::map_metadata_t>);
+  void updateMetadata(kwiver::vital::metadata_vector const&);
 
-protected slots:
-  void setTrailsWithDescVisible(bool);
-  void setTrailsWithoutDescVisible(bool);
-  void setTrailsLength(int);
-  void setTrailsStyle(int);
+protected:
+  virtual void changeEvent(QEvent* e) override;
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(FeatureOptions)
-  QTE_DECLARE_PRIVATE(FeatureOptions)
+  QTE_DECLARE_PRIVATE_RPTR(MetadataView)
+  QTE_DECLARE_PRIVATE(MetadataView)
 
-  QTE_DISABLE_COPY(FeatureOptions)
+  QTE_DISABLE_COPY(MetadataView)
 };
 
 #endif

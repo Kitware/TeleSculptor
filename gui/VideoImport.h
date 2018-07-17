@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,40 +28,63 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_FEATUREOPTIONS_H_
-#define MAPTK_FEATUREOPTIONS_H_
+#ifndef MAPTK_VIDEOINPUT_H_
+#define MAPTK_VIDEOINPUT_H_
 
-#include "PointOptions.h"
+#include <maptk/local_geo_cs.h>
 
-class vtkMaptkFeatureTrackRepresentation;
+#include <vital/vital_types.h>
+#include <vital/config/config_block_types.h>
+#include <vital/logger/logger.h>
+#include <vital/types/camera.h>
+#include <vital/types/metadata.h>
+#include <vital/types/metadata_map.h>
 
-class FeatureOptionsPrivate;
+#include <qtGlobal.h>
 
-class FeatureOptions : public PointOptions
+#include <QMetaType>
+#include <QtCore/QThread>
+
+class VideoImportPrivate;
+
+Q_DECLARE_METATYPE(std::shared_ptr<kwiver::vital::metadata_map::map_metadata_t>);
+
+class VideoImport : public QThread
 {
   Q_OBJECT
 
 public:
-  explicit FeatureOptions(vtkMaptkFeatureTrackRepresentation*,
-                          QString const& settingsGroup,
-                          QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~FeatureOptions();
+  typedef kwiver::vital::config_block_sptr config_block_sptr;
+
+  VideoImport();
+  virtual ~VideoImport();
+
+  void setData(config_block_sptr const&,
+               std::string const&,
+               kwiver::maptk::local_geo_cs& lgcs);
+
+signals:
+  /// Emitted when the tool execution is completed.
+  void completed(std::shared_ptr<kwiver::vital::metadata_map::map_metadata_t>);
+  /// Emitted when an intermediate update of the data is available to show progress.
+  void updated(int);
+  /// Update progress
+  void updateProgress(QString, int);
 
 public slots:
-  void setFeaturesWithDescVisible(bool);
-  void setFeaturesWithoutDescVisible(bool);
+  void cancel();
 
-protected slots:
-  void setTrailsWithDescVisible(bool);
-  void setTrailsWithoutDescVisible(bool);
-  void setTrailsLength(int);
-  void setTrailsStyle(int);
+protected:
+  /// Execute the tool.
+  ///
+  /// This method must be overridden by tool implementations. The default
+  /// implementation of execute() calls this method in a separate thread.
+  virtual void run();
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(FeatureOptions)
-  QTE_DECLARE_PRIVATE(FeatureOptions)
-
-  QTE_DISABLE_COPY(FeatureOptions)
+  QTE_DECLARE_PRIVATE_RPTR(VideoImport)
+  QTE_DECLARE_PRIVATE(VideoImport)
+  QTE_DISABLE_COPY(VideoImport)
 };
 
 #endif

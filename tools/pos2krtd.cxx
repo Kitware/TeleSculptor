@@ -173,7 +173,7 @@ check_config(kwiver::vital::config_block_sptr config)
 
 // ------------------------------------------------------------------
 /// create a base camera instance from config options
-kwiver::vital::simple_camera
+kwiver::vital::simple_camera_perspective
 base_camera_from_config(kwiver::vital::config_block_sptr config)
 {
   kwiver::vital::simple_camera_intrinsics
@@ -181,8 +181,8 @@ base_camera_from_config(kwiver::vital::config_block_sptr config)
         config->get_value<kwiver::vital::vector_2d>("principal_point"),
         config->get_value<double>("aspect_ratio"),
         config->get_value<double>("skew"));
-  return kwiver::vital::simple_camera(kwiver::vital::vector_3d(0,0,-1),
-                                      kwiver::vital::rotation_d(), K);
+  return kwiver::vital::simple_camera_perspective(kwiver::vital::vector_3d(0,0,-1),
+                                                  kwiver::vital::rotation_d(), K);
 }
 
 
@@ -285,7 +285,7 @@ static int maptk_main(int argc, char const* argv[])
 
   kwiver::vital::path_t video_source = config->get_value<kwiver::vital::path_t>("video_source"),
                        output = config->get_value<kwiver::vital::path_t>("output");
-  kwiver::vital::simple_camera base_camera = base_camera_from_config(config->subblock_view("base_camera"));
+  auto base_camera = base_camera_from_config(config->subblock_view("base_camera"));
   kwiver::vital::rotation_d ins_rot_offset = config->get_value<kwiver::vital::rotation_d>("ins:rotation_offset");
 
 
@@ -358,7 +358,7 @@ static int maptk_main(int argc, char const* argv[])
   typedef std::map<kwiver::vital::frame_id_t, kwiver::vital::camera_sptr>::value_type cam_map_val_t;
   for(cam_map_val_t const &p : cam_map)
   {
-    kwiver::vital::simple_camera* cam = dynamic_cast<kwiver::vital::simple_camera*>(p.second.get());
+    auto cam = dynamic_cast<kwiver::vital::simple_camera_perspective*>(p.second.get());
     kwiver::vital::write_krtd_file(*cam, krtd_filenames[p.first]);
   }
 

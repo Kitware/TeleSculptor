@@ -33,7 +33,7 @@
 
 #include <vital/algo/initialize_cameras_landmarks.h>
 
-#include <QtGui/QMessageBox>
+#include <QMessageBox>
 
 using kwiver::vital::algo::initialize_cameras_landmarks;
 using kwiver::vital::algo::initialize_cameras_landmarks_sptr;

@@ -32,16 +32,13 @@
 
 #include <maptk/version.h>
 
-#include <kwiversys/SystemTools.hxx>
-
 #include <qtStlUtil.h>
 
-#include <QtGui/QApplication>
-
-#include <QtCore/QDebug>
-#include <QtCore/QDir>
-#include <QtCore/QFile>
-#include <QtCore/QFileInfo>
+#include <QApplication>
+#include <QDebug>
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
 
 #include <iostream>
 
@@ -106,15 +103,13 @@ bool Project::read(QString const& path)
     // Load config file
     auto const exeDir = QDir(QApplication::applicationDirPath());
     auto const prefix = stdString(exeDir.absoluteFilePath(".."));
-    auto const& config = kwiver::vital::read_config_file(qPrintable(path),
-                                                         "maptk",
-                                                         MAPTK_VERSION,
-                                                         prefix);
+    auto const& config = kwiver::vital::read_config_file(
+      qPrintable(path), "maptk", MAPTK_VERSION, prefix);
 
     if (config->has_value(WORKING_DIR_TAG))
     {
-      this->workingDir =
-        QString::fromStdString(config->get_value<std::string>(WORKING_DIR_TAG));
+      this->workingDir = qtString(
+        config->get_value<std::string>(WORKING_DIR_TAG));
     }
     else
     {
@@ -178,27 +173,28 @@ bool Project::read(QString const& path)
 // returns the absolute path if not.
 QString Project::getContingentRelativePath(QString filepath)
 {
-  if (kwiversys::SystemTools::IsSubDirectory(filepath.toStdString(),
-                                             workingDir.absolutePath().toStdString()))
-  {
-    return workingDir.relativeFilePath(filepath);
-  }
-  else
+  auto rel = workingDir.relativeFilePath(filepath);
+  if (rel.startsWith(".."))
   {
     return filepath;
   }
+  else
+  {
+    return rel;
+  }
 }
 
+//-----------------------------------------------------------------------------
 void Project::write()
 {
   if (!videoPath.isEmpty())
   {
     projectConfig->set_value(VIDEO_SOURCE_TAG,
-      getContingentRelativePath(videoPath).toStdString());
+      stdString(getContingentRelativePath(videoPath)));
   }
 
   if (projectConfig->available_values().size() > 0)
   {
-    kwiver::vital::write_config_file(projectConfig, filePath.toStdString());
+    kwiver::vital::write_config_file(projectConfig, stdString(filePath));
   }
 }

@@ -35,9 +35,9 @@
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
 
-#include <QtGui/QMenu>
-#include <QtGui/QWidgetAction>
+#include <QMenu>
 #include <QToolButton>
+#include <QWidgetAction>
 
 #include <vtkActor.h>
 #include <vtkPolyDataMapper.h>

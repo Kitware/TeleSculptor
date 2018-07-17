@@ -43,7 +43,7 @@
 
 #include <qtGlobal.h>
 
-#include <QtGui/QAction>
+#include <QAction>
 
 class AbstractToolPrivate;
 
@@ -77,6 +77,8 @@ public:
   landmark_map_sptr landmarks;
   config_block_sptr config;
   kwiver::vital::logger_handle_t logger;
+  int progress;
+  std::string description;
 };
 
 Q_DECLARE_METATYPE(std::shared_ptr<ToolData>)
@@ -194,6 +196,16 @@ public:
   ///          as doing so may not be thread safe.
   landmark_map_sptr landmarks() const;
 
+  /// Get tool progress.
+  ///
+  /// This returns the tool execution progress as an integer.
+  int progress() const;
+
+  /// Get tool execution description.
+  ///
+  /// This returns a textual description of what the tool is doing.
+  QString description() const;
+
 signals:
   /// Emitted when the tool execution is completed.
   void completed();
@@ -266,6 +278,16 @@ protected:
   /// This sets the landmarks that are produced by the tool as output. Unlike
   /// setCameras, this does not make a deep copy of the provided landmarks.
   void updateLandmarks(landmark_map_sptr const&);
+
+  /// Set tool progress.
+  ///
+  /// This returns the tool execution progress as an integer.
+  void updateProgress(int value);
+
+  /// Set tool execution description.
+  ///
+  /// This returns a textual description of what the tool is doing.
+  void setDescription(const QString& desc);
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(AbstractTool)
