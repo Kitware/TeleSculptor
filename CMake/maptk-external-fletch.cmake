@@ -6,7 +6,6 @@ message(STATUS "Configuring external fletch")
 
 list(APPEND KWIVER_DEPENDENCIES fletch)
 list(APPEND MAPTK_DEPENDENCIES fletch)
-list(APPEND QT_EXTENSIONS_DEPENDENCIES fletch)
 
 ExternalProject_Add(fletch
   PREFIX ${MAPTK_BINARY_DIR}
