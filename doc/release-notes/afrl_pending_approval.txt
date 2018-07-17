@@ -29,6 +29,8 @@ TeleSculptor
  * Added a progress bar that appears below the World View to show progress when
    tools are running.  It can also display a status message.
 
+ * Added ability to interactively add and edit a region of interest in the world
+ view.
 
 Fixes since last public release
 -------------------------------
