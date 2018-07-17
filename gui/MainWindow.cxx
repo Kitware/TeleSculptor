@@ -1318,6 +1318,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->UI.progressWidget->setAutoHide(true);
 
   // Common ROI
+  // Unitil the bounding box is initialized, the bounds are going to be
+  // [VTK_DOUBLE_MIN, VTK_DOUBLE_MAX] in all directions.
   d->UI.worldView->setROI(d->roi.GetPointer());
 }
 

@@ -1137,6 +1137,14 @@ void WorldView::updateScale()
     d->landmarkActor->GetMapper()->Update();
     bbox.AddBounds(d->landmarkActor->GetBounds());
 
+    double* bounds = d->roi->GetBounds();
+    if ((bounds[1] - bounds[0]) < 0.0 &&
+        (bounds[3] - bounds[2]) < 0.0 &&
+        (bounds[5] - bounds[4]) < 0.0)
+    {
+      d->roi->SetBounds(d->landmarkActor->GetBounds());
+    }
+
     // If landmarks are not valid, then get ground scale from the cameras
     if (!bbox.IsValid())
     {
@@ -1372,10 +1380,11 @@ void WorldView::selectROI(bool toggled)
       {
         rep->SetPlaceFactor(1); // Default is 0.5
         rep->PlaceWidget(d->landmarkActor->GetBounds());
-        d->connections->Connect(rep,
-                                vtkCommand::ModifiedEvent,
-                                this,
-                                SLOT());
+        d->connections->Connect(
+          d->boxWidget,
+          vtkCommand::InteractionEvent,
+          this,
+          SLOT(updateROI(vtkObject*, unsigned long, void*, void*)));
       }
     }
     d->boxWidget->On();
@@ -1401,6 +1410,10 @@ void WorldView::resetROI()
     if (rep)
     {
       rep->PlaceWidget(d->landmarkActor->GetBounds());
+      if (d->roi)
+      {
+        d->roi->SetBounds(d->landmarkActor->GetBounds());
+      }
     }
   }
   d->UI.renderWidget->update();
@@ -1426,7 +1439,9 @@ void WorldView::updateROI(vtkObject* caller,
 {
   QTE_D();
 
-  vtkBoxRepresentation* rep = reinterpret_cast<vtkBoxRepresentation*>(caller);
+  vtkBoxWidget2* w = reinterpret_cast<vtkBoxWidget2*>(caller);
+  vtkBoxRepresentation* rep =
+    vtkBoxRepresentation::SafeDownCast(w->GetRepresentation());
   if (rep && d->roi)
   {
     d->roi->SetBounds(rep->GetBounds());
