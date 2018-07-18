@@ -226,6 +226,7 @@ endif()
 #    This could be conditional on APPLE || WIN32 also
 #
 if (MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
+  include(${MAPTK_SOURCE_DIR}/CMake/maptk-install-qt-utils.cmake)
 
   if (WIN32)
     # Add expected location of VTK dlls
@@ -270,6 +271,10 @@ if (MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
 
 
   # Location for QT libraries
+  if(WIN32 AND TARGET Qt5::Core)
+    get_property(_Qt5_Core_LOCATION TARGET Qt5::Core PROPERTY LOCATION)
+    get_filename_component(QT_BINARY_DIR "${_Qt5_Core_LOCATION}" PATH)
+  endif()
   list(APPEND FIXUP_DIRS "${QT_BIN_DIR}")
   list(APPEND FIXUP_DIRS "${QT_LIBRARY_DIR}")
   list(APPEND FIXUP_DIRS "${QT_BINARY_DIR}")
@@ -308,7 +313,9 @@ if (MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
 
   list(APPEND FIXUP_DIRS "${VTK_CMAKE_DIR}../..")
 
-  install(DIRECTORY "${QT_PLUGINS_DIR}/imageformats" DESTINATION ${plugin_dest_dir}/plugins COMPONENT Runtime)
+  # install(DIRECTORY "${QT_PLUGINS_DIR}/imageformats" DESTINATION ${plugin_dest_dir}/plugins COMPONENT Runtime)
+  set(QT5_MODULES "Gui")
+  install_qt_plugins(QT5_MODULES "${plugin_dest_dir}/plugins" QT_PLUGINS)
   # install a qt.conf file
   install(CODE "
     file(WRITE \"${dest_prefix}/${qtconf_dest_dir}/qt.conf\" \"\")
@@ -322,6 +329,9 @@ set(bundle_path \"${bundle_path}\")
           ")
 
   install(CODE "
+        set(QT_PLUGINS_Release \"${QT_PLUGINS_Release}\")
+        set(QT_PLUGINS_Debug \"${QT_PLUGINS_Debug}\")
+        string(CONCAT QTPLUGINS \"QT_PLUGINS_\" \"\${CMAKE_INSTALL_CONFIG_NAME}\")
         file(GLOB_RECURSE QTPLUGINS
             \"${dest_prefix}/${plugin_dest_dir}/plugins/*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
         file(GLOB_RECURSE KWIVER_PLUGINS
