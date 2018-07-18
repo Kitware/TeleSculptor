@@ -35,8 +35,10 @@
 
 #include <QWidget>
 
-class vtkMaptkImageDataGeometryFilter;
+class vtkBox;
 class vtkImageData;
+class vtkMaptkImageDataGeometryFilter;
+class vtkObject;
 class vtkPolyData;
 
 namespace kwiver { namespace vital { class landmark_map; } }
@@ -55,6 +57,7 @@ public:
 
   void initFrameSampling(int nbFrames);
   void loadVolume(QString path, QString krtd, QString frame);
+  void setROI(vtkBox*);
 signals:
   void depthMapThresholdsChanged();
   void depthMapEnabled(bool);
@@ -84,6 +87,8 @@ public slots:
   void setGroundPlaneVisible(bool);
   void setAxesVisible(bool);
   void setDepthMapVisible(bool);
+  void selectROI(bool);
+  void resetROI();
 
   void setPerspective(bool);
 
@@ -122,6 +127,7 @@ protected slots:
   void increaseDepthMapPointSize();
   void decreaseDepthMapPointSize();
   void updateThresholdRanges();
+  void updateROI(vtkObject*, unsigned long, void*, void*);
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(WorldView)

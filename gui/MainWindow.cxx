@@ -66,7 +66,7 @@
 #include <arrows/core/match_matrix.h>
 #include <arrows/core/track_set_impl.h>
 
-#include <vtkXMLImageDataWriter.h>
+#include <vtkBox.h>
 #include <vtkImageData.h>
 #include <vtkImageFlip.h>
 #include <vtkImageImport.h>
@@ -77,6 +77,7 @@
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
 #include <vtkXMLImageDataReader.h>
+#include <vtkXMLImageDataWriter.h>
 
 #include <qtEnumerate.h>
 #include <qtIndexRange.h>
@@ -327,6 +328,8 @@ public:
   vtkNew<vtkXMLImageDataReader> depthReader;
   vtkNew<vtkMaptkImageUnprojectDepth> depthFilter;
   vtkNew<vtkMaptkImageDataGeometryFilter> depthGeometryFilter;
+
+  vtkNew<vtkBox> roi;
 
   // Current project
   QScopedPointer<Project> project;
@@ -1337,6 +1340,11 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   // Set up the progress widget
   d->UI.progressWidget->setAutoHide(true);
+
+  // Common ROI
+  // Unitil the bounding box is initialized, the bounds are going to be
+  // [VTK_DOUBLE_MIN, VTK_DOUBLE_MAX] in all directions.
+  d->UI.worldView->setROI(d->roi.GetPointer());
 }
 
 //-----------------------------------------------------------------------------
