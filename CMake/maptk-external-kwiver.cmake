@@ -7,8 +7,8 @@ list(APPEND MAPTK_DEPENDENCIES kwiver)
 ExternalProject_Add(kwiver
   DEPENDS ${KWIVER_DEPENDENCIES}
   PREFIX ${MAPTK_BINARY_DIR}
-  SOURCE_DIR kwiver
-  BINARY_DIR kwiver-build
+  SOURCE_DIR ${MAPTK_EXTERNAL_DIR}/kwiver
+  BINARY_DIR ${MAPTK_EXTERNAL_DIR}/kwiver-build
   STAMP_DIR ${MAPTK_STAMP_DIR}
   GIT_REPOSITORY "https://kwgitlab.kitware.com/computer-vision/KWIVER.git"
   GIT_TAG ef08d007fef117a000d969f7722915c493b41665
@@ -61,5 +61,5 @@ ExternalProject_Add(kwiver
   INSTALL_COMMAND cmake -E echo "Skipping install step."
 )
 
-set(KWIVER_DIR "${MAPTK_BINARY_DIR}/kwiver-build")
-set(kwiver_DIR "${MAPTK_BINARY_DIR}/kwiver-build" CACHE FILEPATH "Location of KWIVER" FORCE)
+set(KWIVER_DIR "${MAPTK_EXTERNAL_DIR}/kwiver-build")
+set(kwiver_DIR "${MAPTK_EXTERNAL_DIR}/kwiver-build" CACHE FILEPATH "Location of KWIVER" FORCE)

@@ -12,8 +12,8 @@ ExternalProject_Add(fletch
   GIT_REPOSITORY "git://github.com/Kitware/fletch.git"
   GIT_TAG 022ef09a90cb4ec1d45dd848da6aeb939da003ee
   #GIT_SHALLOW 1
-  SOURCE_DIR fletch
-  BINARY_DIR fletch-build
+  SOURCE_DIR ${MAPTK_EXTERNAL_DIR}/fletch
+  BINARY_DIR ${MAPTK_EXTERNAL_DIR}/fletch-build
   STAMP_DIR ${MAPTK_STAMP_DIR}
   CMAKE_CACHE_ARGS
     -DBUILD_SHARED_LIBS:BOOL=ON
@@ -87,5 +87,5 @@ ExternalProject_Add(fletch
   INSTALL_COMMAND cmake -E echo "Skipping install step."
 )
 
-set(fletch_DIR "${MAPTK_BINARY_DIR}/fletch-build")
+set(fletch_DIR "${MAPTK_EXTERNAL_DIR}/fletch-build")
 
