@@ -61,10 +61,21 @@ int main(int argc, char** argv)
 
   // Set up command line options
   qtCliArgs args(argc, argv);
-  qtCliOptions nargs;
+  qtCliOptions options;
 
-  nargs.add("files", "List of files to open", qtCliOption::NamedList);
-  args.addNamedArguments(nargs);
+  options.add("project <file>", "Load specified project file")
+         .add("p", qtCliOption::Short);
+  options.add("imagery <file>", "Load imagery from 'file'")
+         .add("i", qtCliOption::Short | qtCliOption::NamedList);
+  options.add("mask <file>", "Load mask imagery from 'file'")
+         .add("m", qtCliOption::Short | qtCliOption::NamedList);
+  options.add("camera <file>", "Load camera(s) from 'file'")
+         .add("c", qtCliOption::Short | qtCliOption::NamedList);
+  options.add("tracks <file>", "Load feature tracks from 'file'")
+         .add("t", qtCliOption::Short | qtCliOption::NamedList);
+  options.add("landmarks <file>", "Load landmarks from 'file'")
+         .add("l", qtCliOption::Short | qtCliOption::NamedList);
+  args.addOptions(options);
 
   // Parse arguments
   args.parseOrDie();
@@ -90,7 +101,31 @@ int main(int argc, char** argv)
   // Create and show main window
   MainWindow window;
   window.show();
-  window.openFiles(args.values("files"));
+
+  if (args.isSet("project"))
+  {
+    window.loadProject(args.value("project"));
+  }
+  for (auto const& path : args.values("imagery"))
+  {
+    window.loadImagery(path);
+  }
+  for (auto const& path : args.values("mask"))
+  {
+    window.loadMaskImagery(path);
+  }
+  for (auto const& path : args.values("camera"))
+  {
+    window.loadCamera(path);
+  }
+  for (auto const& path : args.values("tracks"))
+  {
+    window.loadTracks(path);
+  }
+  for (auto const& path : args.values("landmarks"))
+  {
+    window.loadLandmarks(path);
+  }
 
   // Hand off to event loop
   return app.exec();

@@ -57,18 +57,36 @@ namespace
 static char const* const BLOCK_CI = "image_converter";
 static char const* const BLOCK_TF = "feature_tracker";
 static char const* const BLOCK_VR = "video_reader";
+static char const* const BLOCK_MR = "mask_reader";
 }
 
 //-----------------------------------------------------------------------------
 class TrackFeaturesToolPrivate
 {
 public:
+  kwiver::vital::image_container_sptr getImage(
+    video_input_sptr const& reader, bool readerIsValid = true) const;
+
   convert_image_sptr image_converter;
   track_features_sptr feature_tracker;
   video_input_sptr video_reader;
+  video_input_sptr mask_reader;
 };
 
 QTE_IMPLEMENT_D_FUNC(TrackFeaturesTool)
+
+//-----------------------------------------------------------------------------
+kwiver::vital::image_container_sptr TrackFeaturesToolPrivate::getImage(
+  video_input_sptr const& reader, bool readerIsValid) const
+{
+  if (!readerIsValid)
+  {
+    return {};
+  }
+
+  auto const image = reader->frame_image();
+  return this->image_converter->convert(image);
+}
 
 //-----------------------------------------------------------------------------
 TrackFeaturesTool::TrackFeaturesTool(QObject* parent)
@@ -119,7 +137,8 @@ bool TrackFeaturesTool::execute(QWidget* window)
   config->merge_config(this->data()->config);
   if (!convert_image::check_nested_algo_configuration(BLOCK_CI, config) ||
       !track_features::check_nested_algo_configuration(BLOCK_TF, config) ||
-      !video_input::check_nested_algo_configuration(BLOCK_VR, config))
+      !video_input::check_nested_algo_configuration(BLOCK_VR, config) ||
+      !video_input::check_nested_algo_configuration(BLOCK_MR, config))
 
   {
     QMessageBox::critical(
@@ -132,6 +151,7 @@ bool TrackFeaturesTool::execute(QWidget* window)
   convert_image::set_nested_algo_configuration(BLOCK_CI, config, d->image_converter);
   track_features::set_nested_algo_configuration(BLOCK_TF, config, d->feature_tracker);
   video_input::set_nested_algo_configuration(BLOCK_VR, config, d->video_reader);
+  video_input::set_nested_algo_configuration(BLOCK_MR, config, d->mask_reader);
 
   return AbstractTool::execute(window);
 }
@@ -141,16 +161,27 @@ void TrackFeaturesTool::run()
 {
   QTE_D();
 
+  auto const hasMask = !this->data()->maskPath.empty();
+
   unsigned int frame = this->activeFrame();
   auto tracks = this->tracks();
   kwiver::vital::timestamp currentTimestamp;
 
   d->video_reader->open(this->data()->videoPath);
+  if (hasMask)
+  {
+    d->mask_reader->open(this->data()->maskPath);
+  }
 
   // Seek to just before active frame TODO: check status?
   if (frame > 1)
   {
-    d->video_reader->seek_frame(currentTimestamp, frame-1);
+    d->video_reader->seek_frame(currentTimestamp, frame - 1);
+    if (hasMask)
+    {
+      kwiver::vital::timestamp dummyTimestamp;
+      d->mask_reader->seek_frame(dummyTimestamp, frame - 1);
+    }
   }
 
   auto numFrames = d->video_reader->num_frames();
@@ -158,13 +189,19 @@ void TrackFeaturesTool::run()
 
   while (d->video_reader->next_frame(currentTimestamp))
   {
-    auto const image = d->video_reader->frame_image();
-    auto const converted_image = d->image_converter->convert(image);
+    if (hasMask)
+    {
+      kwiver::vital::timestamp dummyTimestamp;
+      d->mask_reader->next_frame(dummyTimestamp);
+    }
+
+    auto const image = d->getImage(d->video_reader);
+    auto const mask = d->getImage(d->mask_reader, hasMask);
 
     auto const mdv = d->video_reader->frame_metadata();
     if( !mdv.empty() )
     {
-      converted_image->set_metadata( mdv[0] );
+      image->set_metadata( mdv[0] );
     }
 
     frame = currentTimestamp.get_frame();
@@ -172,7 +209,7 @@ void TrackFeaturesTool::run()
     // Update tool progress
     this->updateProgress(frame * 100.0 / numFrames);
 
-    tracks = d->feature_tracker->track(tracks, frame, converted_image);
+    tracks = d->feature_tracker->track(tracks, frame, image, mask);
     if (tracks)
     {
       tracks = kwiver::maptk::extract_feature_colors(tracks, *image, frame);
@@ -188,11 +225,14 @@ void TrackFeaturesTool::run()
     emit updated(data);
     if( this->isCanceled() )
     {
-      d->video_reader->close();
       break;
     }
   }
   d->video_reader->close();
+  if (hasMask)
+  {
+    d->mask_reader->close();
+  }
   this->updateTracks(tracks);
   this->setActiveFrame(frame);
 }

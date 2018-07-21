@@ -111,7 +111,7 @@ kwiver::vital::path_t kvPath(QString const& s)
   return stdString(s);
 }
 
-
+//-----------------------------------------------------------------------------
 QString findUserManual()
 {
   static auto const name = "telesculptor.html";
@@ -172,6 +172,7 @@ QSet<QString> supportedImageExtensions()
   return result;
 }
 
+//-----------------------------------------------------------------------------
 QSet<QString> supportedVideoExtensions()
 {
   QSet<QString> result;
@@ -183,6 +184,7 @@ QSet<QString> supportedVideoExtensions()
   result.insert("avi");
   result.insert("wmw");
   result.insert("mov");
+  result.insert("txt"); // image list
 
   return result;
 }
@@ -257,6 +259,8 @@ public:
   void addImage(QString const& imagePath);
   void addVideoSource(kwiver::vital::config_block_sptr const& config,
                       QString const& videoPath);
+  void addMaskSource(kwiver::vital::config_block_sptr const& config,
+                     QString const& maskPath);
 
   void addFrame(kwiver::vital::camera_perspective_sptr const& camera, int id);
   void updateFrames(std::shared_ptr<kwiver::vital::metadata_map::map_metadata_t>);
@@ -309,6 +313,9 @@ public:
   kwiver::vital::timestamp currentVideoTimestamp;
   kwiver::vital::metadata_map::map_metadata_t videoMetadataMap;
   kwiver::vital::frame_id_t advanceInterval;
+
+  QString maskPath;
+  kwiver::vital::algo::video_input_sptr maskSource;
 
   QMap<kwiver::vital::frame_id_t, FrameData> frames;
   kwiver::vital::feature_track_set_sptr tracks;
@@ -474,6 +481,15 @@ void MainWindowPrivate::addVideoSource(
     this->videoSource->close();
     this->videoSource.reset();
   }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::addMaskSource(
+  kwiver::vital::config_block_sptr const& config, QString const& maskPath)
+{
+  Q_UNUSED(config);
+
+  this->maskPath = maskPath;
 }
 
 //-----------------------------------------------------------------------------
@@ -1154,7 +1170,8 @@ void MainWindowPrivate::setActiveTool(AbstractTool* tool)
     tool->setEnabled(enableTools);
   }
   this->UI.actionCancelComputation->setEnabled(enableCancel);
-  this->UI.actionOpen->setEnabled(enableTools);
+  this->UI.actionOpenProject->setEnabled(enableTools);
+  // FIXME disable import actions
 }
 
 //-----------------------------------------------------------------------------
@@ -1243,10 +1260,22 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->UI.playSlideshowButton->setDefaultAction(d->UI.actionSlideshowPlay);
   d->UI.loopSlideshowButton->setDefaultAction(d->UI.actionSlideshowLoop);
 
-  connect(d->UI.actionOpen, SIGNAL(triggered()), this, SLOT(openFile()));
   connect(d->UI.actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
 
-  connect(d->UI.actionNewProject, SIGNAL(triggered()), this, SLOT(newProject()));
+  connect(d->UI.actionNewProject, SIGNAL(triggered()),
+          this, SLOT(newProject()));
+  connect(d->UI.actionOpenProject, SIGNAL(triggered()),
+          this, SLOT(openProject()));
+  connect(d->UI.actionImportImagery, SIGNAL(triggered()),
+          this, SLOT(openImagery()));
+  connect(d->UI.actionImportMasks, SIGNAL(triggered()),
+          this, SLOT(openMaskImagery()));
+  connect(d->UI.actionImportCameras, SIGNAL(triggered()),
+          this, SLOT(openCameras()));
+  connect(d->UI.actionImportTracks, SIGNAL(triggered()),
+          this, SLOT(openTracks()));
+  connect(d->UI.actionImportLandmarks, SIGNAL(triggered()),
+          this, SLOT(openLandmarks()));
 
   connect(d->UI.actionShowWorldAxes, SIGNAL(toggled(bool)),
           d->UI.worldView, SLOT(setAxesVisible(bool)));
@@ -1355,75 +1384,100 @@ MainWindow::~MainWindow()
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::openFile()
+void MainWindow::openProject()
+{
+  auto const path = QFileDialog::getOpenFileName(
+    this, "Open Project", QString(),
+    "Project configuration files (*.conf);;"
+    "All Files (*)");
+
+  if (!path.isEmpty())
+  {
+    this->loadProject(path);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::openImagery()
 {
   static auto const imageFilters =
     makeFilters(supportedImageExtensions().toList());
-
   static auto const videoFilters =
     makeFilters(supportedVideoExtensions().toList());
 
   // TODO: Add image filters back once that is supported again.
   auto const paths = QFileDialog::getOpenFileNames(
-    this, "Open File", QString(),
-    "All Supported Files (*.conf *.txt *.ply *.krtd " + videoFilters + ");;"
-    "Project configuration file (*.conf);;"
-    "Video file (" + videoFilters + ");;"
-    "Track file (*.txt);;"
-    "Landmark file (*.ply);;"
-    "Camera file (*.krtd);;"
+    this, "Open Imagery", QString(),
+    "All Supported Files (" + videoFilters + ");;"
+    "Video files (" + videoFilters + ");;"
     "All Files (*)");
 
-  if (!paths.isEmpty())
+  for (auto const& path : paths)
   {
-    this->openFiles(paths);
+    this->loadImagery(path);
   }
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::openFile(QString const& path)
+void MainWindow::openMaskImagery()
 {
-  static auto const imageExtensions = supportedImageExtensions();
-  static auto const videoExtensions = supportedVideoExtensions();
+  static auto const imageFilters =
+    makeFilters(supportedImageExtensions().toList());
+  static auto const videoFilters =
+    makeFilters(supportedVideoExtensions().toList());
 
-  auto const fi = QFileInfo(path);
-  if (fi.suffix().toLower() == "conf")
+  // TODO: Add image filters back once that is supported again.
+  auto const paths = QFileDialog::getOpenFileNames(
+    this, "Open Mask Imagery", QString(),
+    "All Supported Files (" + videoFilters + ");;"
+    "Video files (" + videoFilters + ");;"
+    "All Files (*)");
+
+  for (auto const& path : paths)
   {
-    this->loadProject(path);
+    this->loadMaskImagery(path);
   }
-  else if (fi.suffix().toLower() == "txt")
-  {
-    this->loadTracks(path);
-  }
-  else if (fi.suffix().toLower() == "ply")
-  {
-    this->loadLandmarks(path);
-  }
-  else if (fi.suffix().toLower() == "krtd")
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::openCameras()
+{
+  auto const paths = QFileDialog::getOpenFileNames(
+    this, "Open Cameras", QString(),
+    "Camera files (*.krtd);;"
+    "All Files (*)");
+
+  for (auto const& path : paths)
   {
     this->loadCamera(path);
   }
-  else if (imageExtensions.contains(fi.suffix().toLower()))
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::openTracks()
+{
+  auto const paths = QFileDialog::getOpenFileNames(
+    this, "Open Feature Tracks", QString(),
+    "Feature track files (*.txt);;"
+    "All Files (*)");
+
+  for (auto const& path : paths)
   {
-    this->loadImage(path);
-  }
-  else if (videoExtensions.contains(fi.suffix().toLower()))
-  {
-    this->loadVideo(path);
-  }
-  else
-  {
-    qWarning() << "Don't know how to read file" << path
-               << "(unrecognized extension)";
+    this->loadTracks(path);
   }
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::openFiles(QStringList const& paths)
+void MainWindow::openLandmarks()
 {
-  foreach (auto const& path, paths)
+  auto const paths = QFileDialog::getOpenFileNames(
+    this, "Open Landmarks", QString(),
+    "Landmark files (*.ply);;"
+    "All Files (*)");
+
+  for (auto const& path : paths)
   {
-    this->openFile(path);
+    this->loadLandmarks(path);
   }
 }
 
@@ -1449,8 +1503,11 @@ void MainWindow::newProject()
     if (d->videoSource)
     {
       d->project->videoPath = d->videoPath;
-      auto config = readConfig("gui_video_reader.conf");
-      d->project->projectConfig->merge_config(config);
+      d->project->maskPath = d->maskPath;
+      auto vconfig = readConfig("gui_video_reader.conf");
+      auto mconfig = readConfig("gui_mask_reader.conf");
+      d->project->projectConfig->merge_config(vconfig);
+      d->project->projectConfig->merge_config(mconfig);
     }
 
     saveCameras(d->project->cameraPath);
@@ -1492,10 +1549,14 @@ void MainWindow::loadProject(QString const& path)
       << "project directory: " << d->project->workingDir.absolutePath();
   }
 
-  // Get the video source
+  // Get the video and mask sources
   if (d->project->projectConfig->has_value("video_reader:type"))
   {
     d->addVideoSource(d->project->projectConfig, d->project->videoPath);
+  }
+  if (d->project->projectConfig->has_value("mask_reader:type"))
+  {
+    d->addMaskSource(d->project->projectConfig, d->project->maskPath);
   }
 
   // Load tracks
@@ -1550,12 +1611,59 @@ void MainWindow::loadProject(QString const& path)
 }
 
 //-----------------------------------------------------------------------------
+void MainWindow::loadImagery(QString const& path)
+{
+  static auto const imageExtensions = supportedImageExtensions();
+  static auto const videoExtensions = supportedVideoExtensions();
+
+  auto const ext = QFileInfo{path}.suffix().toLower();
+  if (imageExtensions.contains(ext))
+  {
+    this->loadImage(path);
+  }
+  else if (videoExtensions.contains(ext))
+  {
+    // TODO: Handle [selection of] multiple videos better
+    this->loadVideo(path);
+  }
+  else
+  {
+    qWarning() << "Don't know how to read file" << path
+               << "(unrecognized extension)";
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::loadMaskImagery(QString const& path)
+{
+  static auto const imageExtensions = supportedImageExtensions();
+  static auto const videoExtensions = supportedVideoExtensions();
+
+  auto const ext = QFileInfo{path}.suffix().toLower();
+  if (imageExtensions.contains(ext))
+  {
+    this->loadMaskImage(path);
+  }
+  else if (videoExtensions.contains(ext))
+  {
+    // TODO: Handle [selection of] multiple videos better
+    this->loadMaskVideo(path);
+  }
+  else
+  {
+    qWarning() << "Don't know how to read file" << path
+               << "(unrecognized extension)";
+  }
+}
+
+//-----------------------------------------------------------------------------
 void MainWindow::loadImage(QString const& path)
 {
   QTE_D();
   d->addImage(path);
 }
 
+//-----------------------------------------------------------------------------
 void MainWindow::loadVideo(QString const& path)
 {
   QTE_D();
@@ -1594,6 +1702,41 @@ void MainWindow::loadVideo(QString const& path)
   }
 
   d->UI.worldView->queueResetView();
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::loadMaskImage(QString const& path)
+{
+  // TODO
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::loadMaskVideo(QString const& path)
+{
+  QTE_D();
+
+  auto config = readConfig("gui_mask_reader.conf");
+  if (d->project)
+  {
+    d->project->projectConfig->merge_config(config);
+    d->project->maskPath = path;
+  }
+
+  try
+  {
+    d->addMaskSource(config, path);
+  }
+  catch (std::exception const& e)
+  {
+    QMessageBox::critical(
+      this, "Error loading video\n",
+      e.what());
+  }
+
+  if (d->project)
+  {
+    d->project->write();
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -2145,6 +2288,7 @@ void MainWindow::executeTool(QObject* object)
       tool->setCameras(d->cameraMap());
       tool->setLandmarks(d->landmarks);
       tool->setVideoPath(stdString(d->videoPath));
+      tool->setMaskPath(stdString(d->maskPath));
       tool->setConfig(d->project->projectConfig);
 
       if (!tool->execute())
@@ -2241,7 +2385,6 @@ void MainWindow::acceptToolResults(std::shared_ptr<ToolData> data, bool isFinal)
     QTimer::singleShot(1000, this, SLOT(updateToolResults()));
   }
 }
-
 
 //-----------------------------------------------------------------------------
 void MainWindow::saveToolResults()

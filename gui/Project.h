@@ -55,6 +55,7 @@ public:
 
   QString filePath;
   QString videoPath;
+  QString maskPath;
 
   QString tracksPath;
   QString landmarksPath;

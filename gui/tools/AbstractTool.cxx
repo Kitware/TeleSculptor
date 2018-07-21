@@ -217,6 +217,14 @@ void AbstractTool::setVideoPath(std::string const& path)
   d->data->videoPath = path;
 }
 
+//-----------------------------------------------------------------------------
+void AbstractTool::setMaskPath(std::string const& path)
+{
+  QTE_D();
+  d->data->maskPath = path;
+}
+
+//-----------------------------------------------------------------------------
 void AbstractTool::setConfig(config_block_sptr& config)
 {
   QTE_D();
