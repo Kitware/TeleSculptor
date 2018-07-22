@@ -1066,6 +1066,8 @@ void MainWindowPrivate::loadImage(FrameData frame)
         frame.camera->SetImageDimensions(dimensions);
       }
 
+      sfmConstraints->store_image_size(frame.id, dimensions[0], dimensions[1]);
+
       // Set frame name in camera view
       this->UI.cameraView->setImagePath(
         qtString(this->getFrameName(frame.id)));
