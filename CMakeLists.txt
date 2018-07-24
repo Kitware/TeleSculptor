@@ -10,6 +10,9 @@ endif()
 if(POLICY CMP0054)
   cmake_policy(SET CMP0054 NEW)
 endif()
+if(POLICY CMP0071)
+  cmake_policy(SET CMP0071 NEW)
+endif()
 
 ###
 # Options and setup
