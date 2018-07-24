@@ -314,7 +314,7 @@ if (MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
   list(APPEND FIXUP_DIRS "${VTK_CMAKE_DIR}../..")
 
   # install(DIRECTORY "${QT_PLUGINS_DIR}/imageformats" DESTINATION ${plugin_dest_dir}/plugins COMPONENT Runtime)
-  set(QT5_MODULES "Gui")
+  set(QT5_MODULES "Gui;Widgets")
   install_qt_plugins(QT5_MODULES "${plugin_dest_dir}/plugins" QT_PLUGINS)
   # install a qt.conf file
   install(CODE "
