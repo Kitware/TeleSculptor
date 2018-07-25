@@ -43,6 +43,18 @@ set(MAPTK_BINARY_DIR           "${CMAKE_BINARY_DIR}")
 set(MAPTK_EXTERNAL_DIR         "${MAPTK_BINARY_DIR}/external")
 set(MAPTK_STAMP_DIR             ${MAPTK_EXTERNAL_DIR}/stamps)
 
+SET_PROPERTY(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release RelWithDebInfo) 
+if(NOT CMAKE_BUILD_TYPE)
+  message(STATUS "Setting build type to 'Release' as none was specified.")
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
+endif()
+
+if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+  set(CMAKE_CONFIGURATION_TYPES "Debug" CACHE TYPE INTERNAL FORCE )
+else() # Provide both configurations as they are compatible with each other
+  set(CMAKE_CONFIGURATION_TYPES "Release" "RelWithDebInfo" CACHE TYPE INTERNAL FORCE )
+endif()
+
 # Always build shared libraries, required due to plugin infrastructure
 if(DEFINED BUILD_SHARED_LIBS AND NOT BUILD_SHARED_LIBS)
   message(FATAL_ERROR "MAP-Tk must be built as shared libraries, please set BUILD_SHARED_LIBS=ON")

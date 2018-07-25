@@ -6,24 +6,18 @@
 :: a build directory structure has dlls in a configuration directory (i.e. bin/release/*.dlls)
 :: where as an install directory does not (bin/*.dlls)
 if exist %~dp0/bin/kwiversys.dll (
-  set config=
-  
-  if not [%1] == [] echo setting up an install directory, ignoring provided configuration.
-  GOTO Start
+  if not [%1] == [] (
+    set config=@CMAKE_BUILD_TYPE@
+  ) else (
+    set config=%1 
+  )
 )
-:: Not in an install directory, setup the path based on a build configuration
-set config=%1
-if /I (%1)==(debug) GOTO Start
-if /I (%1)==(release) GOTO Start
-echo usage: [debug ^| release]
-echo defaulting to release
-set config=release
 
 
 :Start
 
 cd @KWIVER_DIR@
-call setup_KWIVER.bat %config%
+call setup_KWIVER.bat @CMAKE_BUILD_TYPE@
 cd @MAPTK_BINARY_DIR@
-set PATH=%PATH%;@MAPTK_BINARY_DIR@/bin/%config%;@qtExtensions_DIR@/%config%;
+set PATH=%PATH%;@MAPTK_BINARY_DIR@/bin/%config%;
 set KWIVER_CONFIG_PATH=%KWIVER_CONFIG_PATH%;@MAPTK_BINARY_DIR@\share\maptk\@MAPTK_VERSION@\config
