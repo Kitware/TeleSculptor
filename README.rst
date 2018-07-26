@@ -130,9 +130,13 @@ Here is the quickest way to build via a cmd/bash shell
   
   # For MSVC
   # Open the MAPTK-Superbuild.sln, choose your build configuration, from the 'Build' menu choose 'Build Solution'
-  # When the build is complete, MSVC users should execute 'start_MSVC.bat'
-  # This will configure the MSVC PATH so you can execute executables from Visual Studio 
-  # NOTE: You 
+  # When the build is complete you may close this solution.
+  # Next, run the following script based on the chosen CMAKE_BUILD_TYPE 
+  #  'start_MSVC.bat debug'
+  #  'start_MSVC.bat release' (This is the default if you wish to double-click this bat file)
+  #  'start_MSVC.bat relwithdebinfo'
+  # This will configure the MSVC PATH so you can execute executables from Visual Studio
+  # See 'Mulit-Configuration Build Tools' for more details on running with MSVC
 
 CMake Options
 -------------
