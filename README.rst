@@ -86,135 +86,97 @@ Overview of Directories
 Building MAP-Tk
 ===============
 
+MAP-Tk requires C++11 compliant compiler
+(e.g. GCC 4.8.1, Clang 3.3, Visual Studio 2015).
 MAP-Tk uses CMake (www.cmake.org) for easy cross-platform compilation. The
 minimum required version of CMake is 3.0, but newer versions are recommended.
 
-As with KWIVER, MAP-Tk requires C++11 compliant compiler
-(e.g. GCC 4.8, Visual Studio 2015).
+Building
+--------
 
+The build is directed by CMake to ensure it can be built on various platforms. 
+The code is built by a CMake 'superbuild', meaning as part of the build, 
+CMake will download and build any dependent libraries needed by MAP-Tk. 
+The build is also out of source, meaning the code base is to be seperate from the build files.
+This means you will need two folders, one for the source code and one for the build files.
+Here is the quickest way to build via a cmd/bash shell
 
-Running CMake
--------------
+.. code-block :: bash
 
-We recommend building MAP-Tk out of the source directory to prevent mixing
-source files with compiled products.  Create a build directory in parallel
-with the MAP-Tk source directory.  From the command line, enter the
-empty build directory and run::
+  # On Linux systems, Install the following packages before building
+  $ sudo apt-get install build-essential libgl1-mesa-dev
+  $ sudo apt-get install libexpat1-dev
+  $ sudo apt-get install libgtk2.0-dev
+  $ sudo apt-get install liblapack-dev
 
-    $ ccmake /path/to/maptk/source
+  mkdir maptk
+  ## For this example, we assume source is in a 'src' folder under maptk/
+  mkdir builds
+  cd builds
+  # Feel free to make subfolders here, for example: debug and release
+  # Generate a makefile/msvc solution to perform the superbuild
+  # Provide cmake the source directory at the end (relative or absolute)
+  # Run CMake (it will use the system default compiler if you don't provide options or use the CMake GUI)
+  cmake -DCMAKE_BUILD_TYPE:STRING=Release ../src
+  # Using the CMake GUI you can set the source and build directories accordingly and press the "Configure"  and “Generate” buttons
+  # Alternatively, the ccmake tool allows for interactive selection of CMake options.
+  
 
-where the path above is the location of your MAP-Tk source tree.  The ccmake
-tool allows for interactive selection of CMake options.  Alternatively, using
-the CMake GUI you can set the source and build directories accordingly and
-press the "Configure" button.
-
+  # Build the install target/project
+  # On Linux/OSX/MinGW 
+  make
+  # Once the Superbuild is complete, the makefile will be replace with 
+  # the MAP-Tk makefile with all of its specific targets
+  
+  # For MSVC
+  # Open the MAPTK-Superbuild.sln, choose your build configuration, from the 'Build' menu choose 'Build Solution'
+  # When the build is complete, MSVC users should execute 'start_MSVC.bat'
+  # This will configure the MSVC PATH so you can execute executables from Visual Studio 
+  # NOTE: You 
 
 CMake Options
 -------------
 
 ============================== =================================================
 ``CMAKE_BUILD_TYPE``           The compiler mode, usually ``Debug`` or ``Release``
-``CMAKE_INSTALL_PREFIX``       The path to where you want MAP-Tk to install
 
-``MAPTK_ENABLE_MANUALS``       Turn on building the user documentation (manuals)
-``MAPTK_ENABLE_DOCS``          Turn on building the Doxygen documentation
-``MAPTK_INSTALL_DOCS``         Install Doxygen documentation (requires above
-                               enabled)
+``MAPTK_ENABLE_GUI``           Builds the TeleSculptor GUI 
+``MAPTK_ENABLE_MANUALS``       Turn on building the user documentation 
 ``MAPTK_ENABLE_TESTING``       Build the unit tests
-
-``kwiver_DIR``                 Path to the KWIVER build or install tree
-``qtExtensions_DIR``           Path to the QtExtension build or install tree
 ============================== =================================================
 
+Mulit-Configuration Build Tools
+'''''''''''''''''''''''''''''''
 
-Dependencies
-------------
+By default the CMAKE_BUILD_TYPE is set to Release.
 
-MAP-Tk has minimal required dependencies at the core level.  Enabling
-plugins adds additional capabilities as well as additional dependencies.
-Some functionality is duplicated between modules to provide choices.
-Feature tracking requires OpenCV or VisCL. Bundle adjustment requires
-Ceres Solver or VXL.  Geographic transformations require PROJ4.
+Separate directories are required for Debug and Release builds, requiring cmake to be run for each.
 
-Required
-''''''''
+Even if you are using a Multi-Configuration build tool (like MSVC) to build Debug you must select the Debug CMAKE_BUILD_TYPE.
+(On Windows in order to debug a project all dependent projects must be build with Debug information.)
 
-The only hard dependencies of MAP-Tk are on the C++ standard library,
-KWIVER_ (|>=| 1.1), and Eigen_ (|>=| 3.0; also required by KWIVER).
+For MSVC users wanting a RelWithDebInfo build we suggest you still choose Release for the superbuild.
+They are compatible with each other, and Fletch will build its base libraries as Release.
+MSVC will provide both Release and RelWithDebInfo configurations. To execute through MSVC against the RelWithDebInfo binaries,
+you will need to initialize MSVC with the proper environment by calling ``start_MSVC.bat RelWithDebInfo``.
+If you would like KWIVER to also run with RelWithDebInfo, you must build your KWIVER with RelWithDebInfo.
+Next you will need to modify the setup_MAPTK.bat to use the proper KWIVER paths, change the line calling setup_KIWVER.bat to ``call setup_KWIVER.bat RelWithDebInfo``.
 
-Recommended KWIVER Plugins
-''''''''''''''''''''''''''
-
-When building KWIVER for use in MAP-Tk there are several arrows (plugins) that
-should be enabled to provide maximum capability to MAP-Tk.  The KWIVER arrows
-are not a build-time dependency of MAP-Tk, but are required at run-time to
-provide algorithm implementations to run.  The following KWIVER arrows provide
-algorithms which are optionally used by MAP-Tk:
-
-* Core
-    algorithm implementations with no additional dependencies
-
-* Ceres
-    supplies bundle adjustment using Ceres Solver
-    http://ceres-solver.org/
-
-* OpenCV
-    supplies feature detectors, descriptors, matcher; homography and
-    fundamental matrix estimators; image I/O, and more.
-    http://opencv.org/
-
-* PROJ
-    provides geographic transforms (e.g. Lat/Lon to UTM)
-    http://trac.osgeo.org/proj/:
-
-* VisCL
-    experimental code for OpenCL acceleration
-    (currently not recommend for most users)
-    https://github.com/Kitware/VisCL
-
-* VXL
-    supplies a simple bundle adjuster, image I/O, homgraphy and
-    fundamental matrix estimation, and more.
-    (note: requires unreleased version, use Fletch_ to build)
-    http://vxl.sourceforge.net/
 
 TeleSculptor
 ''''''''''''
 
-The MAP-Tk TeleSculptor GUI application is an optional (but recommended)
-part of the MAP-Tk build.  It has additional dependencies.
-To build the TeleSculptor, you need:
-
-* Qt 4
-    version 4.8.0 or greater (4.8.6 or greater recommended, provided by Fletch)
-    http://www.qt.io/
-
-* qtExtensions
-    no versioned releases as of writing; use master branch
-    http://www.github.com/kitware/qtextensions
-
-* VTK
-    version 6.2 (provided by FLetch)
-    http://www.vtk.org/
-
-Most of the dependencies for KWIVER and MAP-Tk can be provided by a
-meta-project called Fletch_.  Fletch uses CMake to fetch, configure,
-and build various third party packages such that they work together
-in a consistent way across platforms.  We recommend that you use Fletch
-to build Ceres, Eigen, OpenCV, PROJ, Qt, VTK, and VXL and their dependencies.
-Next build KWIVER and set "fletch_DIR" in CMake to point to your Fletch build.
-Enable the arrows recommended above in the KWIVER build. Finally, build MAP-Tk
-and set "kwiver_DIR" in CMake to point to your KWIVER build.
+The MAP-Tk TeleSculptor GUI application is enabled by default,
+and all dependencies will be built by the Superbuild.
+You may choose to disable building the GUI by setting ``MAPTK_ENABLE_GUI`` to OFF
 
 Documentation
 '''''''''''''
 
-Documentation generation is another optional component that brings in
-additional dependencies.  To build the API documentation, you need:
-
-* Doxygen
-    version 1.7 or greater
-    http://www.stack.nl/~dimitri/doxygen/
+If ``MAPTK_ENABLE_MANUALS`` is enabled, and CMake finds all dependencies,
+then the user manuals are built as part of the normal build process under the target
+"manuals".  The GUI manual can be viewed from inside the GUI by choosing the
+"MAP-Tk TeleSculptor User Manual" action from the "Help" menu.
 
 To build the user manual(s), you need:
 
@@ -229,40 +191,9 @@ To build the user manual(s), you need:
 (At present, only the GUI has a user manual.  Other manuals may be added in the
 future.)
 
-Nightly builds of the Doxygen documentation for the primary branches are here:
-
-================================= ================================================
-Nightly **master** Documentation  http://www.kwiver.org/maptk/docs/nightly/master
-Nightly **release** Documentation http://www.kwiver.org/maptk/docs/nightly/release
-================================= ================================================
-
-Doxygen documentation for released versions are here:
-
-================================= ===============================================
-**MAP-Tk v0.6.1** Documentation   http://www.kwiver.org/maptk/docs/release/v0.6.1
-**MAP-Tk v0.7.2** Documentation   http://www.kwiver.org/maptk/docs/release/v0.7.2
-**MAP-Tk v0.8.1** Documentation   http://www.kwiver.org/maptk/docs/release/v0.8.1
-**MAP-Tk v0.9.0** Documentation   http://www.kwiver.org/maptk/docs/release/v0.9.0
-================================= ===============================================
-
-Building Documentation
-----------------------
-
-If ``MAPTK_ENABLE_DOCS`` is enabled, and CMake finds, or is provided with, a
-path to the Doxygen tool, then the HTML documentation is built as part of the
-normal build process under the target "doxygen".  Open
-``${MAPTK_BUILD_DIR}/docs/index.html`` in your browser to view the
-documentation.
-
-If ``MAPTK_ENABLE_MANUALS`` is enabled, and CMake finds, or is provided with, a
-path to the Python executable which is able to import docutils, then the user
-manuals are built as part of the normal build process under the target
-"manuals".  The GUI manual can be viewed from inside the GUI by choosing the
-"MAP-Tk TeleSculptor User Manual" action from the "Help" menu.
-
-
 Testing
-========
+'''''''
+
 Continuous integration testing is provided by CDash_.
 Our `MAP-Tk dashboard <https://open.cdash.org/index.php?project=MAPTK>`_
 hosts nightly build and test results across multiple platforms including
@@ -272,7 +203,6 @@ Anyone can contribute a build to this dashboard using the
 `dashboard script <CMake/dashboard-scripts/MAPTK_common.cmake>`_
 provided.  Follow the instructions in the comments.
 
-
 `Travis CI`_ is also used for continued integration testing.
 Travis CI is limited to a single platform (Ubuntu Linux), but provides
 automated testing of all topic branches and pull requests whenever they are created.
@@ -281,6 +211,28 @@ automated testing of all topic branches and pull requests whenever they are crea
 Travis CI **master** branch:  |CI:master|_
 Travis CI **release** branch: |CI:release|_
 ============================= =============
+
+Advanced Build
+--------------
+
+MAP-Tk is built on top of the `KWIVER <https://github.com/Kitware/kwiver>`_ toolkit.
+which is in turn built on the `Fletch <https://github.com/Kitware/fletch>`_ super build system.
+As mentioned above, to make it easier to build MAP-Tk, a "super-build" is provided to build both KWIVER and Fletch.
+But, if you wish, you may point the MAP-Tk build to use your own KWIVER builds.
+
+If you would like MAP-Tk to use a prebuilt version of KWIVER, specify the kwiver_DIR flag to cmake.
+The kwiver_DIR is the KWIVER build directory root, which contains the kwiver-config.cmake file. 
+
+.. code-block :: bash
+
+    $ cmake ../../src -DCMAKE_BUILD_TYPE=Release -Dkwiver_DIR:PATH=<path/to/kwiver/build/dir> 
+
+You must ensure that the specified build of KWIVER was built with at least the following options set:
+
+The required KWIVER flags can be found in this file : `<CMake/maptk-external-kwiver.cmake>`_ 
+
+The required Fletch flags can be found in this file : `<CMake/maptk-external-fletch.cmake>`_ 
+
 
 MAP-Tk Tools
 ============
@@ -421,3 +373,5 @@ public release via 88ABW-2015-2555.
 
 .. _CI:master: https://travis-ci.org/Kitware/maptk
 .. _CI:release: https://travis-ci.org/Kitware/maptk
+
+
