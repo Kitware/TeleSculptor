@@ -43,11 +43,11 @@ set(MAPTK_BINARY_DIR           "${CMAKE_BINARY_DIR}")
 set(MAPTK_EXTERNAL_DIR         "${MAPTK_BINARY_DIR}/external")
 set(MAPTK_STAMP_DIR             ${MAPTK_EXTERNAL_DIR}/stamps)
 
-SET_PROPERTY(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release RelWithDebInfo) 
 if(NOT CMAKE_BUILD_TYPE)
   message(STATUS "Setting build type to 'Release' as none was specified.")
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
 endif()
+SET_PROPERTY(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release RelWithDebInfo) 
 
 if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
   set(CMAKE_CONFIGURATION_TYPES "Debug" CACHE TYPE INTERNAL FORCE )
