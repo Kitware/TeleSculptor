@@ -1,0 +1,23 @@
+::
+:: Script to source to setup the MAP-Tk environment
+::
+
+:: Check to see if we are in an install directory or a build directory
+:: a build directory structure has dlls in a configuration directory (i.e. bin/release/*.dlls)
+:: where as an install directory does not (bin/*.dlls)
+if exist %~dp0/bin/kwiversys.dll (
+  if not [%1] == [] (
+    set config=@CMAKE_BUILD_TYPE@
+  ) else (
+    set config=%1 
+  )
+)
+
+:Start
+
+call setup_MAPTK.bat %config%
+
+start MAPTK.sln /D .\
+:: Note if a different visual studio is associated with a *.sln file than should be
+:: Change your .sln file association to the VSLauncher usually found here
+:: "%ProgramFiles(x86)%\Common Files\Microsoft Shared\MSEnv"\VSLauncher.exe

@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.0)
-project(MAPTK)
+
+
+set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install CACHE PATH "Install location")
+project(MAPTK-SuperBuild)
+
+option(MAPTK_SUPERBUILD  "Enable MAPTK superbuild" ON)
 
 ###
 # CMake policies
@@ -35,6 +40,20 @@ set(MAPTK_CMAKE_DIR            "${CMAKE_SOURCE_DIR}/CMake")
 # root directories
 set(MAPTK_SOURCE_DIR           "${CMAKE_SOURCE_DIR}")
 set(MAPTK_BINARY_DIR           "${CMAKE_BINARY_DIR}")
+set(MAPTK_EXTERNAL_DIR         "${MAPTK_BINARY_DIR}/external")
+set(MAPTK_STAMP_DIR             ${MAPTK_EXTERNAL_DIR}/stamps)
+
+SET_PROPERTY(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release RelWithDebInfo) 
+if(NOT CMAKE_BUILD_TYPE)
+  message(STATUS "Setting build type to 'Release' as none was specified.")
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
+endif()
+
+if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+  set(CMAKE_CONFIGURATION_TYPES "Debug" CACHE TYPE INTERNAL FORCE )
+else() # Provide both configurations as they are compatible with each other
+  set(CMAKE_CONFIGURATION_TYPES "Release" "RelWithDebInfo" CACHE TYPE INTERNAL FORCE )
+endif()
 
 # Always build shared libraries, required due to plugin infrastructure
 if(DEFINED BUILD_SHARED_LIBS AND NOT BUILD_SHARED_LIBS)
@@ -45,16 +64,20 @@ set(BUILD_SHARED_LIBS ON)
 set(LIB_SUFFIX "${MAPTK_LIB_SUFFIX}" CACHE STRING "String suffix appended to the library directory we install into")
 mark_as_advanced( LIB_SUFFIX )
 
-include( maptk-depends )
+set(LIBRARY_PATH_VAR "LD_LIBRARY_PATH")
+if( APPLE )
+  set(LIBRARY_PATH_VAR "DYLD_FALLBACK_LIBRARY_PATH")
+endif()
 
-###
-# use kwiver util methods
-#
-include( kwiver-cmake-future )
-include( kwiver-utils )
-include( kwiver-flags )
-include( kwiver-configcheck )
-include( maptk-utils ) # local utilities
+option(MAPTK_ENABLE_GUI "Build MAPTK GUI" ON)
+option(MAPTK_ENABLE_TESTING "Build MAPTK testing" OFF)
+
+if(MAPTK_SUPERBUILD)
+  include(${MAPTK_CMAKE_DIR}/maptk-superbuild.cmake)
+  return()
+endif()
+project(MAPTK)
+include( maptk-depends )
 
 # set the name for our package exports
 set(kwiver_export_name     maptk_exports)
@@ -76,7 +99,6 @@ add_subdirectory(examples)
 ###
 # GUI
 #
-option(MAPTK_ENABLE_GUI "Build MAPTK GUI" OFF)
 if(MAPTK_ENABLE_GUI)
   if(APPLE)
     set(CMAKE_BUNDLE_LOCATION "${CMAKE_INSTALL_PREFIX}")
@@ -90,6 +112,14 @@ if(MAPTK_ENABLE_GUI)
   add_subdirectory(gui)
 endif()
 
+###
+# Environment Scripts
+#
+
+configure_file(${MAPTK_CMAKE_DIR}/start_MSVC.bat.in           ${MAPTK_BINARY_DIR}/start_MSVC.bat @ONLY)
+configure_file(${MAPTK_CMAKE_DIR}/setup_MAPTK.build.bat.in    ${MAPTK_BINARY_DIR}/setup_MAPTK.bat @ONLY)
+configure_file(${MAPTK_CMAKE_DIR}/setup_MAPTK.build.sh.in     ${MAPTK_BINARY_DIR}/setup_MAPTK.sh @ONLY)
+
 
 ###
 # Manuals
@@ -99,12 +129,10 @@ if(MAPTK_ENABLE_MANUALS)
   add_subdirectory(doc/manuals)
 endif()
 
-
 ###
 # Testing
 #
 # The following are required to uses Dart and the Cdash dashboard
-option(MAPTK_ENABLE_TESTING "Build MAPTK testing" OFF)
 if(MAPTK_ENABLE_TESTING)
   enable_testing()
   include(CTest)
@@ -112,7 +140,6 @@ if(MAPTK_ENABLE_TESTING)
   mark_as_advanced(BUILD_TESTING)
   add_subdirectory(tests)
 endif()
-
 
 ###
 # Top level installation
