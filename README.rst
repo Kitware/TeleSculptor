@@ -155,12 +155,14 @@ Separate directories are required for Debug and Release builds, requiring cmake 
 Even if you are using a Multi-Configuration build tool (like MSVC) to build Debug you must select the Debug CMAKE_BUILD_TYPE.
 (On Windows in order to debug a project all dependent projects must be build with Debug information.)
 
-For MSVC users wanting a RelWithDebInfo build we suggest you still choose Release for the superbuild.
-They are compatible with each other, and Fletch will build its base libraries as Release.
-MSVC will provide both Release and RelWithDebInfo configurations. To execute through MSVC against the RelWithDebInfo binaries,
-you will need to initialize MSVC with the proper environment by calling ``start_MSVC.bat RelWithDebInfo``.
-If you would like KWIVER to also run with RelWithDebInfo, you must build your KWIVER with RelWithDebInfo.
-Next you will need to modify the setup_MAPTK.bat to use the proper KWIVER paths, change the line calling setup_KIWVER.bat to ``call setup_KWIVER.bat RelWithDebInfo``.
+For MSVC users wanting a RelWithDebInfo build we recommend you still choose Release for the superbuild.
+Release and RelWithDebInfo are compatible with each other, and Fletch will build its base libraries as Release.
+MSVC solutions will provide both Release and RelWithDebInfo configuration options.
+You will need to open the ``<build/directory>/external/kwiver-build/KWIVER.sln`` and
+build this solution with the RelWithDebInfo configuration.
+To execute through MSVC against the RelWithDebInfo binaries,
+you will need to start another MSVC instance with the proper environment by calling ``start_MSVC.bat RelWithDebInfo``.
+
 
 
 TeleSculptor
