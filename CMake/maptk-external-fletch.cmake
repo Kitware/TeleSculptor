@@ -51,6 +51,7 @@ ExternalProject_Add(fletch
     -Dfletch_ENABLE_PostgresSQL:BOOL=OFF
     -Dfletch_ENABLE_Protobuf:BOOL=OFF
     -Dfletch_ENABLE_Qt:BOOL=${MAPTK_ENABLE_GUI}
+    -DQt_SELECT_VERSION:STRING=5.10.0
     -Dfletch_ENABLE_Snappy:BOOL=OFF
     -Dfletch_ENABLE_SuiteSparse:BOOL=ON
     -Dfletch_ENABLE_TinyXML:BOOL=OFF
