@@ -36,7 +36,9 @@
 
 #include "tools/BundleAdjustTool.h"
 #include "tools/CanonicalTransformTool.h"
+#include "tools/ComputeAllDepthTool.h"
 #include "tools/ComputeDepthTool.h"
+#include "tools/FuseDepthTool.h"
 #include "tools/InitCamerasLandmarksTool.h"
 #include "tools/NeckerReversalTool.h"
 #include "tools/SaveFrameTool.h"
@@ -283,6 +285,8 @@ public:
   bool updateCamera(kv::frame_id_t frame,
                     kv::camera_perspective_sptr cam);
 
+  std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string> > depthLookup() const;
+
   void setActiveCamera(int);
   void updateCameraView();
 
@@ -317,6 +321,8 @@ public:
   kv::landmark_map_sptr toolUpdateLandmarks;
   kv::feature_track_set_sptr toolUpdateTracks;
   vtkSmartPointer<vtkImageData> toolUpdateDepth;
+  vtkSmartPointer<vtkStructuredGrid> toolUpdateVolume;
+  bool toolSaveDepthFlag = false;
 
   kv::config_block_sptr freestandingConfig = kv::config_block::empty_config();
 
@@ -698,6 +704,24 @@ kv::camera_map_sptr MainWindowPrivate::cameraMap() const
   }
 
   return std::make_shared<kv::simple_camera_map>(map);
+}
+
+
+//-----------------------------------------------------------------------------
+std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string> > MainWindowPrivate::depthLookup() const
+{
+  std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string> > lookup(new std::map<kwiver::vital::frame_id_t, std::string>());
+
+  for (auto cd : this->frames)
+  {
+    if (!cd.depthMapPath.isEmpty())
+    {
+      lookup->insert(std::make_pair(static_cast<kwiver::vital::frame_id_t>(cd.id),
+        qPrintable(cd.depthMapPath)));
+    }
+  }
+
+  return lookup;
 }
 
 //-----------------------------------------------------------------------------
@@ -1202,6 +1226,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->addTool(new BundleAdjustTool(this), this);
   d->addTool(new SaveFrameTool(this), this);
   d->addTool(new ComputeDepthTool(this), this);
+  d->addTool(new ComputeAllDepthTool(this), this);
+  d->addTool(new FuseDepthTool(this), this);
 
   d->toolMenu = d->UI.menuAdvanced;
   d->toolSeparator =
@@ -2112,6 +2138,8 @@ void MainWindow::saveDepthImage(QString const& path)
     QDir().mkdir(path);
   }
 
+  d->project->config->set_value("output_depth_dir", kvPath(
+    d->project->getContingentRelativePath(d->project->depthPath)));
 
   vtkNew<vtkXMLImageDataWriter> writerI;
   auto const filepath = QDir{path}.filePath(filename);
@@ -2366,6 +2394,8 @@ void MainWindow::executeTool(QObject* object)
     tool->setVideoPath(stdString(d->videoPath));
     tool->setMaskPath(stdString(d->maskPath));
     tool->setConfig(d->project->config);
+    tool->setROI(d->roi.Get());
+    tool->setDepthLookup(d->depthLookup());
     if (!d->frames.empty())
     {
       tool->setLastFrame(static_cast<int>(d->frames.lastKey()));
@@ -2425,6 +2455,7 @@ void MainWindow::acceptToolResults(
                       !d->toolUpdateLandmarks &&
                       !d->toolUpdateTracks &&
                       !d->toolUpdateDepth &&
+                      !d->toolUpdateVolume &&
                       d->toolUpdateActiveFrame < 0;
 
   if (d->activeTool)
@@ -2436,6 +2467,7 @@ void MainWindow::acceptToolResults(
     d->toolUpdateTracks = NULL;
     d->toolUpdateActiveFrame = -1;
     d->toolUpdateDepth = NULL;
+    d->toolUpdateVolume = NULL;
     if (outputs.testFlag(AbstractTool::Cameras))
     {
       d->toolUpdateCameras = data->cameras;
@@ -2455,6 +2487,14 @@ void MainWindow::acceptToolResults(
     if (outputs.testFlag(AbstractTool::ActiveFrame))
     {
       d->toolUpdateActiveFrame = static_cast<int>(data->activeFrame);
+    }
+    if (outputs.testFlag(AbstractTool::BatchDepth))
+    {
+      d->toolSaveDepthFlag = true;
+    }
+    if (outputs.testFlag(AbstractTool::Fusion))
+    {
+      d->toolUpdateVolume = data->volume;
     }
     // Update tool progress
     d->updateProgress(d->activeTool,
@@ -2500,7 +2540,8 @@ void MainWindow::saveToolResults()
     {
       saveGeoOrigin(d->project->geoOriginFile);
     }
-    if (outputs.testFlag(AbstractTool::Depth))
+
+    if (!outputs.testFlag(AbstractTool::BatchDepth) && outputs.testFlag(AbstractTool::Depth))
     {
       saveDepthImage(d->project->depthPath);
       d->project->config->set_value("output_depth_dir", kvPath(
@@ -2550,7 +2591,19 @@ void MainWindow::updateToolResults()
     d->activeDepth = d->toolUpdateDepth;
     d->activeDepthFrame = d->toolUpdateActiveFrame;
 
+    //In batch depth, each update is a full depth map from a different ref frame that must be saved
+    if (d->toolSaveDepthFlag)
+    {
+      saveDepthImage(d->project->depthPath);
+      d->toolSaveDepthFlag = false;
+    }
+
     d->toolUpdateDepth = NULL;
+  }
+  if (d->toolUpdateVolume)
+  {
+    d->UI.worldView->setVolume(d->toolUpdateVolume);
+    d->toolUpdateVolume = NULL;
   }
   if (d->toolUpdateActiveFrame >= 0)
   {

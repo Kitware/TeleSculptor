@@ -28,6 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "ComputeAllDepthTool.h"
 #include "ComputeDepthTool.h"
 #include "GuiCommon.h"
 
@@ -63,42 +64,41 @@ static char const* const BLOCK_CD = "compute_depth";
 }
 
 //-----------------------------------------------------------------------------
-class ComputeDepthToolPrivate
+class ComputeAllDepthToolPrivate
 {
 public:
   video_input_sptr video_reader;
   compute_depth_sptr depth_algo;
-  unsigned int max_iterations;
   kwiver::vital::image_container_sptr ref_img;
   kwiver::vital::frame_id_t ref_frame;
 };
 
-QTE_IMPLEMENT_D_FUNC(ComputeDepthTool)
+QTE_IMPLEMENT_D_FUNC(ComputeAllDepthTool)
 
 //-----------------------------------------------------------------------------
-ComputeDepthTool::ComputeDepthTool(QObject* parent)
-  : AbstractTool(parent), d_ptr(new ComputeDepthToolPrivate)
+ComputeAllDepthTool::ComputeAllDepthTool(QObject* parent)
+  : AbstractTool(parent), d_ptr(new ComputeAllDepthToolPrivate)
 {
   this->data()->logger =
     kwiver::vital::get_logger("telesculptor.tools.compute_depth");
 
-  this->setText("&Compute Depth Map");
-  this->setToolTip("Computes depth map on current image.");
+  this->setText("&Batch Compute Depth Maps");
+  this->setToolTip("Computes multiple depth maps over video.");
 }
 
 //-----------------------------------------------------------------------------
-ComputeDepthTool::~ComputeDepthTool()
+ComputeAllDepthTool::~ComputeAllDepthTool()
 {
 }
 
 //-----------------------------------------------------------------------------
-AbstractTool::Outputs ComputeDepthTool::outputs() const
+AbstractTool::Outputs ComputeAllDepthTool::outputs() const
 {
-  return Depth | ActiveFrame;
+  return Depth | ActiveFrame | BatchDepth;
 }
 
 //-----------------------------------------------------------------------------
-bool ComputeDepthTool::execute(QWidget* window)
+bool ComputeAllDepthTool::execute(QWidget* window)
 {
   QTE_D();
   // Check inputs
@@ -144,74 +144,11 @@ bool ComputeDepthTool::execute(QWidget* window)
   video_input::set_nested_algo_configuration(BLOCK_VR, config, d->video_reader);
   compute_depth::set_nested_algo_configuration(BLOCK_CD, config, d->depth_algo);
 
-  // TODO: find a more general way to get the number of iterations
-  std::string iterations_key = ":super3d:iterations";
-  d->max_iterations = config->get_value<unsigned int>(BLOCK_CD + iterations_key, 0);
-
-  // Set the callback to receive updates
-  using std::placeholders::_1;
-  using std::placeholders::_2;
-  typedef compute_depth::callback_t callback_t;
-  callback_t cb = std::bind(&ComputeDepthTool::callback_handler, this, _1, _2);
-  d->depth_algo->set_callback(cb);
-
   return AbstractTool::execute(window);
 }
 
 //-----------------------------------------------------------------------------
-vtkSmartPointer<vtkImageData>
-depth_to_vtk(kwiver::vital::image_container_sptr depth_img,
-             kwiver::vital::image_container_sptr color_img)
-{
-  int ni = static_cast<int>(depth_img->width());
-  int nj = static_cast<int>(depth_img->height());
-  vtkNew<vtkDoubleArray> uniquenessRatios;
-  uniquenessRatios->SetName("Uniqueness Ratios");
-  uniquenessRatios->SetNumberOfValues(ni*nj);
-
-  vtkNew<vtkDoubleArray> bestCost;
-  bestCost->SetName("Best Cost Values");
-  bestCost->SetNumberOfValues(ni*nj);
-
-  vtkNew<vtkUnsignedCharArray> color;
-  color->SetName("Color");
-  color->SetNumberOfComponents(3);
-  color->SetNumberOfTuples(ni*nj);
-
-  vtkNew<vtkDoubleArray> depths;
-  depths->SetName("Depths");
-  depths->SetNumberOfComponents(1);
-  depths->SetNumberOfTuples(ni*nj);
-
-  vtkIdType pt_id = 0;
-
-  for (int y = nj - 1; y >= 0; y--)
-  {
-    for (int x = 0; x < ni; x++)
-    {
-      uniquenessRatios->SetValue(pt_id, 0);
-      bestCost->SetValue(pt_id, 0);
-      depths->SetValue(pt_id, depth_img->get_image().at<double>(x, y));
-      color->SetTuple3(pt_id, (int)color_img->get_image().at<unsigned char>(x, y, 0),
-                              (int)color_img->get_image().at<unsigned char>(x, y, 1),
-                              (int)color_img->get_image().at<unsigned char>(x, y, 2));
-      pt_id++;
-    }
-  }
-
-  vtkSmartPointer<vtkImageData> imageData = vtkSmartPointer<vtkImageData>::New();
-  imageData->SetSpacing(1, 1, 1);
-  imageData->SetOrigin(0, 0, 0);
-  imageData->SetDimensions(ni, nj, 1);
-  imageData->GetPointData()->AddArray(depths.Get());
-  imageData->GetPointData()->AddArray(color.Get());
-  imageData->GetPointData()->AddArray(uniquenessRatios.Get());
-  imageData->GetPointData()->AddArray(bestCost.Get());
-  return imageData;
-}
-
-//-----------------------------------------------------------------------------
-void ComputeDepthTool::run()
+void ComputeAllDepthTool::run()
 {
   QTE_D();
   using kwiver::vital::camera_perspective;
@@ -227,9 +164,6 @@ void ComputeDepthTool::run()
   std::vector<kwiver::vital::frame_id_t> frame_ids;
   const int halfsupport = 10;
   int ref_frame = 0;
-
-  this->setDescription("Collecting Video Frames");
-  emit updated(std::make_shared<ToolData>());
 
   vtkBox *roi = this->ROI();
   double minptd[3];
@@ -298,8 +232,7 @@ void ComputeDepthTool::run()
   }
 
 
-  // Convert landmarks to vector
-  landmarks_out.reserve(lm.size());
+  //convert landmarks to vector
   foreach(auto const& l, lm)
   {
     landmarks_out.push_back(l.second);
@@ -309,8 +242,6 @@ void ComputeDepthTool::run()
   d->ref_frame = frame;
 
   //compute depth
-  this->setDescription("Computing Cost Volume");
-  emit updated(std::make_shared<ToolData>());
   auto depth = d->depth_algo->compute(frames_out, cameras_out,
                                       landmarks_out, ref_frame);
   auto image_data = depth_to_vtk(depth, frames_out[ref_frame]);
@@ -319,19 +250,3 @@ void ComputeDepthTool::run()
 }
 
 //-----------------------------------------------------------------------------
-bool
-ComputeDepthTool::callback_handler(kwiver::vital::image_container_sptr depth,
-                                   unsigned int iterations)
-{
-  // make a copy of the tool data
-  auto data = std::make_shared<ToolData>();
-  auto depthData = depth_to_vtk(depth, this->d_ptr->ref_img);
-
-  data->copyDepth(depthData);
-  data->activeFrame = d_ptr->ref_frame;
-  this->setDescription("Optimizing Depth");
-  this->updateProgress(iterations, d_ptr->max_iterations);
-
-  emit updated(data);
-  return !this->isCanceled();
-}

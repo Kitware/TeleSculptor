@@ -770,6 +770,46 @@ void WorldView::loadVolume(QString const& path)
 }
 
 //-----------------------------------------------------------------------------
+//TODO: add camera and video for coloring
+void WorldView::setVolume(vtkSmartPointer<vtkStructuredGrid> volume)
+{
+  QTE_D();
+
+  d->UI.actionShowVolume->setEnabled(true);
+
+  d->volume = volume;
+
+  // Transform cell data to point data for contour filter
+  vtkNew<vtkCellDataToPointData> transformCellToPointData;
+  transformCellToPointData->SetInputData(volume);
+  transformCellToPointData->PassCellDataOn();
+
+  // Apply contour
+  d->contourFilter = vtkContourFilter::New();
+  d->contourFilter->SetInputConnection(transformCellToPointData->GetOutputPort());
+  d->contourFilter->SetNumberOfContours(1);
+  d->contourFilter->SetValue(0, 0.5);
+  // Declare which table will be use for the contour
+  d->contourFilter->SetInputArrayToProcess(0, 0, 0,
+    vtkDataObject::FIELD_ASSOCIATION_POINTS,
+    "reconstruction_scalar");
+
+  // Create mapper
+  vtkNew<vtkPolyDataMapper> contourMapper;
+  contourMapper->SetInputConnection(d->contourFilter->GetOutputPort());
+  contourMapper->SetColorModeToDirectScalars();
+
+  // Set the actor's mapper
+  d->volumeActor->SetMapper(contourMapper.Get());
+  d->volumeActor->SetVisibility(false);
+  d->volumeOptions->setActor(d->volumeActor.Get());  
+
+  // Add this actor to the renderer
+  d->renderer->AddActor(d->volumeActor.Get());
+  emit(contourChanged());
+}
+
+//-----------------------------------------------------------------------------
 void WorldView::setVolumeVisible(bool state)
 {
   QTE_D();

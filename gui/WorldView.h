@@ -37,12 +37,14 @@
 #include <qtGlobal.h>
 
 #include <QWidget>
+#include <vtkSmartPointer.h>
 
 class vtkBox;
 class vtkImageData;
 class vtkMaptkImageDataGeometryFilter;
 class vtkObject;
 class vtkPolyData;
+class vtkStructuredGrid;
 
 namespace kwiver { namespace vital { class landmark_map; } }
 
@@ -62,6 +64,8 @@ public:
   void initFrameSampling(int nbFrames);
 
   void loadVolume(QString const& path);
+
+  void setVolume(vtkSmartPointer<vtkStructuredGrid> volume);
 
   void setVideoConfig(QString const& videoPath,
                       kwiver::vital::config_block_sptr config);
