@@ -57,6 +57,7 @@ public:
 
   void initFrameSampling(int nbFrames);
   void loadVolume(QString path, QString krtd, QString frame);
+  void enableAntiAliasing(bool enable);
   void setROI(vtkBox*);
 signals:
   void depthMapThresholdsChanged();
@@ -117,6 +118,7 @@ public slots:
   void setVolumeCurrentFramePath(QString path);
 
   void computeContour(double threshold);
+  void render();
 
 protected slots:
   void updateAxes();

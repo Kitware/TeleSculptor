@@ -47,8 +47,8 @@ public:
 
   void SetGradient(qtGradient const&);
 
+  using Superclass::SetRange;
   virtual void SetRange(double min, double max);
-  using vtkScalarsToColors::SetRange;
 
   virtual void GetColor(double v, double rgb[3]);
 

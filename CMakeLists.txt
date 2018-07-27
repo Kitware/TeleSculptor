@@ -9,8 +9,14 @@ option(MAPTK_SUPERBUILD  "Enable MAPTK superbuild" ON)
 ###
 # CMake policies
 #
+if(POLICY CMP0020)
+  cmake_policy(SET CMP0020 NEW)
+endif()
 if(POLICY CMP0054)
   cmake_policy(SET CMP0054 NEW)
+endif()
+if(POLICY CMP0071)
+  cmake_policy(SET CMP0071 NEW)
 endif()
 
 ###
