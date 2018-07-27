@@ -39,6 +39,7 @@
     <file alias="save">22x22/save.png</file>
     <file alias="view-reset">22x22/view-reset.png</file>
     <file alias="volume">22x22/volume.png</file>
+	<file alias="roi">22x22/roi.png</file>
   </qresource>
   <qresource prefix="icons/32x32">
     <file alias="telesculptor">32x32/telesculptor.png</file>

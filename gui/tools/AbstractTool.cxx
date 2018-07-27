@@ -30,7 +30,9 @@
 
 #include "AbstractTool.h"
 
-#include <QtCore/QThread>
+#include <qtStlUtil.h>
+
+#include <QThread>
 
 #include <atomic>
 
@@ -215,6 +217,14 @@ void AbstractTool::setVideoPath(std::string const& path)
   d->data->videoPath = path;
 }
 
+//-----------------------------------------------------------------------------
+void AbstractTool::setMaskPath(std::string const& path)
+{
+  QTE_D();
+  d->data->maskPath = path;
+}
+
+//-----------------------------------------------------------------------------
 void AbstractTool::setConfig(config_block_sptr& config)
 {
   QTE_D();
@@ -325,12 +335,12 @@ void AbstractTool::updateProgress(int value)
 QString AbstractTool::description() const
 {
   QTE_D();
-  return QString::fromStdString(d->data->description);
+  return qtString(d->data->description);
 }
 
 //-----------------------------------------------------------------------------
-void AbstractTool::setDescription(const QString& desc)
+void AbstractTool::setDescription(QString const& desc)
 {
   QTE_D();
-  d->data->description = desc.toStdString();
+  d->data->description = stdString(desc);
 }

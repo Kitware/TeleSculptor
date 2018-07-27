@@ -49,11 +49,15 @@
 #include <vital/types/landmark_map.h>
 
 #include <vtkBoundingBox.h>
+#include <vtkBox.h>
+#include <vtkBoxRepresentation.h>
+#include <vtkBoxWidget2.h>
 #include <vtkCellArray.h>
 #include <vtkCellDataToPointData.h>
 #include <vtkContourFilter.h>
 #include <vtkCubeAxesActor.h>
 #include <vtkDoubleArray.h>
+#include <vtkEventQtSlotConnect.h>
 #include <vtkGenericOpenGLRenderWindow.h>
 #include <vtkGeometryFilter.h>
 #include <vtkImageActor.h>
@@ -80,7 +84,6 @@
 #include <vtkXMLStructuredGridReader.h>
 #include <vtkXMLStructuredGridWriter.h>
 
-
 #ifdef VTKWEBGLEXPORTER
 #include <vtkScalarsToColors.h>
 #include <vtkWebGLExporter.h>
@@ -88,6 +91,7 @@
 
 #include <qtIndexRange.h>
 #include <qtMath.h>
+#include <qtStlUtil.h>
 
 #include <QDebug>
 #include <QFileInfo>
@@ -171,6 +175,10 @@ public:
 
   vtkNew<vtkActor> volumeActor;
   vtkStructuredGrid* volume;
+
+  vtkSmartPointer<vtkBoxWidget2> boxWidget;
+  vtkSmartPointer<vtkBox> roi;
+  vtkNew<vtkEventQtSlotConnect> connections;
 
   bool rangeUpdateNeeded;
   bool validDepthInput;
@@ -365,6 +373,11 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   connect(this, SIGNAL(contourChanged()),
           this, SLOT(render()));
 
+  auto const roiMenu = new QMenu(this);
+  roiMenu->addAction(d->UI.actionResetROI);
+  d->UI.actionResetROI->setDisabled(true);
+  d->setPopup(d->UI.actionSelectROI, roiMenu);
+
   // Connect actions
   this->addAction(d->UI.actionViewReset);
   this->addAction(d->UI.actionViewResetLandmarks);
@@ -404,6 +417,10 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(setDepthMapVisible(bool)));
   connect(d->UI.actionShowDepthMap, SIGNAL(toggled(bool)),
           this, SIGNAL(depthMapEnabled(bool)));
+  connect(d->UI.actionSelectROI, SIGNAL(toggled(bool)),
+          this, SLOT(selectROI(bool)));
+  connect(d->UI.actionResetROI, SIGNAL(triggered()),
+          this, SLOT(resetROI()));
 
   connect(d->UI.actionShowVolume, SIGNAL(toggled(bool)),
           this, SLOT(setVolumeVisible(bool)));
@@ -683,12 +700,10 @@ void WorldView::loadVolume(QString path, QString krtd, QString frame)
 
   d->UI.actionShowVolume->setEnabled(true);
 
-  std::string filename = path.toStdString();
-
   // Create the vtk pipeline
   // Read volume
   vtkNew<vtkXMLStructuredGridReader> readerV;
-  readerV->SetFileName(filename.c_str());
+  readerV->SetFileName(qPrintable(path));
 
   d->volume = readerV->GetOutput();
   // Transform cell data to point data for contour filter
@@ -738,7 +753,7 @@ void WorldView::setVolumeCurrentFramePath(QString path)
 {
   QTE_D();
 
-  d->volumeOptions->setCurrentFramePath(path.toStdString());
+  d->volumeOptions->setCurrentFramePath(stdString(path));
 }
 
 //-----------------------------------------------------------------------------
@@ -1133,6 +1148,14 @@ void WorldView::updateScale()
     d->landmarkActor->GetMapper()->Update();
     bbox.AddBounds(d->landmarkActor->GetBounds());
 
+    double* bounds = d->roi->GetBounds();
+    if ((bounds[1] - bounds[0]) < 0.0 &&
+        (bounds[3] - bounds[2]) < 0.0 &&
+        (bounds[5] - bounds[4]) < 0.0)
+    {
+      d->roi->SetBounds(d->landmarkActor->GetBounds());
+    }
+
     // If landmarks are not valid, then get ground scale from the cameras
     if (!bbox.IsValid())
     {
@@ -1177,8 +1200,6 @@ void WorldView::updateScale()
 //-----------------------------------------------------------------------------
 void WorldView::updateDepthMapDisplayMode()
 {
-  QTE_D();
-
   this->connectDepthPipeline();
   this->render();
 }
@@ -1211,7 +1232,7 @@ void WorldView::saveDepthPoints(QString const& path)
 
   vtkNew<vtkPLYWriter> writer;
 
-  writer->SetFileName(path.toStdString().c_str());
+  writer->SetFileName(qPrintable(path));
   writer->SetInputConnection(d->depthScalarFilter->GetOutputPort());
   writer->SetColorMode(0);
   writer->SetArrayName(DepthMapArrays::TrueColor);
@@ -1271,12 +1292,12 @@ void WorldView::saveMesh(const QString &path)
 
   vtkNew<vtkXMLPolyDataWriter> writer;
 
-  writer->SetFileName(path.toStdString().c_str());
+  writer->SetFileName(qPrintable(path));
   writer->AddInputDataObject(mesh);
   writer->SetDataModeToBinary();
   writer->Write();
 
-  std::cout << "Saved : " << path.toStdString() << std::endl;
+  std::cout << "Saved : " << qPrintable(path) << std::endl;
 
 }
 
@@ -1290,12 +1311,12 @@ void WorldView::saveVolume(const QString &path)
 
   vtkNew<vtkXMLStructuredGridWriter> writer;
 
-  writer->SetFileName(path.toStdString().c_str());
+  writer->SetFileName(qPrintable(path));
   writer->AddInputDataObject(d->volume);
   writer->SetDataModeToBinary();
   writer->Write();
 
-  std::cout << "Saved : " << path.toStdString() << std::endl;
+  std::cout << "Saved : " << qPrintable(path) << std::endl;
 }
 
 //-----------------------------------------------------------------------------
@@ -1307,7 +1328,7 @@ void WorldView::saveColoredMesh(const QString &path)
   if(ext == "ply")
   {
     vtkNew<vtkPLYWriter> writer;
-    writer->SetFileName(path.toStdString().c_str());
+    writer->SetFileName(qPrintable(path));
     writer->SetColorMode(0);
     vtkSmartPointer<vtkPolyData> mesh = d->contourFilter->GetOutput();
     writer->SetArrayName(mesh->GetPointData()->GetScalars()->GetName());
@@ -1318,13 +1339,13 @@ void WorldView::saveColoredMesh(const QString &path)
   else
   {
     vtkNew<vtkXMLPolyDataWriter> writer;
-    writer->SetFileName(path.toStdString().c_str());
+    writer->SetFileName(qPrintable(path));
     writer->SetDataModeToBinary();
     writer->AddInputDataObject(d->contourFilter->GetOutput());
     writer->Write();
   }
 
-  std::cout << "Saved : " << path.toStdString() << std::endl;
+  std::cout << "Saved : " << qPrintable(path) << std::endl;
 }
 
 //-----------------------------------------------------------------------------
@@ -1370,4 +1391,91 @@ void WorldView::enableAntiAliasing(bool enable)
 
   d->renderer->SetUseFXAA(enable);
   this->render();
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::selectROI(bool toggled)
+{
+  QTE_D();
+
+  if (toggled && d->landmarkPoints->GetNumberOfPoints() > 1)
+  {
+    if (!d->boxWidget)
+    {
+      d->boxWidget =
+        vtkSmartPointer<vtkBoxWidget2>::New();
+      d->boxWidget->SetInteractor(d->renderWindow->GetInteractor());
+      d->boxWidget->RotationEnabledOff();
+      vtkBoxRepresentation* rep =
+        vtkBoxRepresentation::SafeDownCast(d->boxWidget->GetRepresentation());
+      if (rep)
+      {
+        rep->SetPlaceFactor(1); // Default is 0.5
+        rep->PlaceWidget(d->landmarkActor->GetBounds());
+        d->connections->Connect(
+          d->boxWidget,
+          vtkCommand::InteractionEvent,
+          this,
+          SLOT(updateROI(vtkObject*, unsigned long, void*, void*)));
+      }
+    }
+    d->boxWidget->On();
+    d->UI.actionResetROI->setEnabled(true);
+  }
+  else if (d->boxWidget)
+  {
+    d->boxWidget->Off();
+    d->UI.actionResetROI->setEnabled(false);
+  }
+  this->render();
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::resetROI()
+{
+  QTE_D();
+
+  if (d->boxWidget && d->landmarkPoints->GetNumberOfPoints() > 1)
+  {
+    vtkBoxRepresentation* rep =
+      vtkBoxRepresentation::SafeDownCast(d->boxWidget->GetRepresentation());
+    if (rep)
+    {
+      rep->PlaceWidget(d->landmarkActor->GetBounds());
+      if (d->roi)
+      {
+        d->roi->SetBounds(d->landmarkActor->GetBounds());
+      }
+    }
+  }
+  this->render();
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::setROI(vtkBox* box)
+{
+  if (!box)
+  {
+    return;
+  }
+
+  QTE_D();
+  d->roi = box;
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::updateROI(vtkObject* caller,
+                          unsigned long,
+                          void*,
+                          void*)
+{
+  QTE_D();
+
+  vtkBoxWidget2* w = reinterpret_cast<vtkBoxWidget2*>(caller);
+  vtkBoxRepresentation* rep =
+    vtkBoxRepresentation::SafeDownCast(w->GetRepresentation());
+  if (rep && d->roi)
+  {
+    d->roi->SetBounds(rep->GetBounds());
+  }
 }

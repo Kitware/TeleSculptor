@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,47 +28,40 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_PROJECT_H_
-#define MAPTK_PROJECT_H_
+#ifndef MAPTK_METADATAVIEW_H_
+#define MAPTK_METADATAVIEW_H_
 
-#include <vital/config/config_block_io.h>
+#include <vital/types/metadata_map.h>
 
-#include <QtCore/QDir>
-#include <QtCore/QMap>
-#include <QtCore/QStringList>
+#include <qtGlobal.h>
 
-class Project : public QObject
+#include <QScrollArea>
+
+class MetadataViewPrivate;
+
+class MetadataView : public QScrollArea
 {
   Q_OBJECT
 
-// TODO: Encapsulate data and add accessors
 public:
+  explicit MetadataView(QWidget* parent = 0);
+  virtual ~MetadataView();
 
-  Project();
-  Project(QString dir);
-
-  bool read(QString const& path);
-
-  QString getContingentRelativePath(QString filepath);
-
-  QDir workingDir;
-
-  QString filePath;
-  QString videoPath;
-  QString maskPath;
-
-  QString tracksPath;
-  QString landmarksPath;
-  QString volumePath;
-  QString cameraPath;
-  QString geoOriginFile;
-  QString depthPath;
-
-  kwiver::vital::config_block_sptr projectConfig;
+  virtual bool eventFilter(QObject* sender, QEvent* e) override;
 
 public slots:
-  void write();
+  void updateMetadata(
+    std::shared_ptr<kwiver::vital::metadata_map::map_metadata_t>);
+  void updateMetadata(kwiver::vital::metadata_vector const&);
 
+protected:
+  virtual void changeEvent(QEvent* e) override;
+
+private:
+  QTE_DECLARE_PRIVATE_RPTR(MetadataView)
+  QTE_DECLARE_PRIVATE(MetadataView)
+
+  QTE_DISABLE_COPY(MetadataView)
 };
 
 #endif

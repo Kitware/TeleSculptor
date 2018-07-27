@@ -28,7 +28,18 @@ TeleSculptor
 
  * Added a progress bar that appears below the World View to show progress when
    tools are running.  It can also display a status message.
+   
+ * Added CMake superbuild to automatically pull and build a specified version of all 
+   the necessary libraries from Fletch and KWIVER. This allows MAP-Tk to be fully built
+   from a single build, rather than having to manually build and connect multiple builds.
+   The superbuild does still allow using a manually built KWIVER/Fletch if so desired.
+ 
 
+ * Added ability to interactively add and edit a region of interest in the
+   world view.
+
+ * Added ability to specify image masks.  Currently these are supported by
+   dense feature tracking.
 
 Fixes since last public release
 -------------------------------

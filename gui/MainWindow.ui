@@ -39,7 +39,7 @@
      <x>0</x>
      <y>0</y>
      <width>963</width>
-     <height>24</height>
+     <height>29</height>
     </rect>
    </property>
    <widget class="qtMenu" name="menuFile">
@@ -61,8 +61,20 @@
      <addaction name="actionExportMesh"/>
      <addaction name="actionExportColoredMesh"/>
     </widget>
+    <widget class="QMenu" name="menuImport">
+     <property name="title">
+      <string>&amp;Import</string>
+     </property>
+     <addaction name="actionImportImagery"/>
+     <addaction name="actionImportMasks"/>
+     <addaction name="actionImportCameras"/>
+     <addaction name="actionImportTracks"/>
+     <addaction name="actionImportLandmarks"/>
+    </widget>
     <addaction name="actionNewProject"/>
-    <addaction name="actionOpen"/>
+    <addaction name="actionOpenProject"/>
+    <addaction name="separator"/>
+    <addaction name="menuImport"/>
     <addaction name="menuExport"/>
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
@@ -203,6 +215,28 @@
    </attribute>
    <widget class="DepthMapView" name="depthMapView"/>
   </widget>
+  <widget class="QDockWidget" name="metadataDock">
+   <property name="windowTitle">
+    <string>Metadata</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="MetadataView" name="metadata">
+    <property name="frameShape">
+     <enum>QFrame::NoFrame</enum>
+    </property>
+    <property name="horizontalScrollBarPolicy">
+     <enum>Qt::ScrollBarAlwaysOff</enum>
+    </property>
+    <property name="widgetResizable">
+     <bool>true</bool>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+    </property>
+   </widget>
+  </widget>
   <action name="actionNewProject">
    <property name="text">
     <string>&amp;New Project</string>
@@ -223,16 +257,16 @@
     <string>Ctrl+Q</string>
    </property>
   </action>
-  <action name="actionOpen">
+  <action name="actionOpenProject">
    <property name="icon">
     <iconset resource="icons/icons.qrc">
      <normaloff>:/icons/16x16/open</normaloff>:/icons/16x16/open</iconset>
    </property>
    <property name="text">
-    <string>&amp;Open...</string>
+    <string>&amp;Open Project...</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+O</string>
+    <string>Ctrl+O, P</string>
    </property>
   </action>
   <action name="actionSlideshowPlay">
@@ -452,6 +486,46 @@
      <string>Enable antialiasing for smoother geometry in each view</string>
    </property>
   </action>
+  <action name="actionImportImagery">
+   <property name="text">
+    <string>&amp;Imagery...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O, I</string>
+   </property>
+  </action>
+  <action name="actionImportMasks">
+   <property name="text">
+    <string>&amp;Masks...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O, M</string>
+   </property>
+  </action>
+  <action name="actionImportCameras">
+   <property name="text">
+    <string>&amp;Cameras...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O, C</string>
+   </property>
+  </action>
+  <action name="actionImportTracks">
+   <property name="text">
+    <string>Feature &amp;Tracks...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O, T</string>
+   </property>
+  </action>
+  <action name="actionImportLandmarks">
+   <property name="text">
+    <string>&amp;Landmarks</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O, L</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -475,6 +549,12 @@
    <class>DepthMapView</class>
    <extends>QWidget</extends>
    <header>DepthMapView.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MetadataView</class>
+   <extends>QScrollArea</extends>
+   <header>MetadataView.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

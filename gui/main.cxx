@@ -34,7 +34,6 @@
 
 #include <maptk/version.h>
 
-#include <kwiversys/SystemTools.hxx>
 #include <vital/plugin_loader/plugin_manager.h>
 
 #include <qtCliArgs.h>
@@ -69,10 +68,21 @@ int main(int argc, char** argv)
 
   // Set up command line options
   qtCliArgs args(argc, argv);
-  qtCliOptions nargs;
+  qtCliOptions options;
 
-  nargs.add("files", "List of files to open", qtCliOption::NamedList);
-  args.addNamedArguments(nargs);
+  options.add("project <file>", "Load specified project file")
+         .add("p", qtCliOption::Short);
+  options.add("imagery <file>", "Load imagery from 'file'")
+         .add("i", qtCliOption::Short | qtCliOption::NamedList);
+  options.add("mask <file>", "Load mask imagery from 'file'")
+         .add("m", qtCliOption::Short | qtCliOption::NamedList);
+  options.add("camera <file>", "Load camera(s) from 'file'")
+         .add("c", qtCliOption::Short | qtCliOption::NamedList);
+  options.add("tracks <file>", "Load feature tracks from 'file'")
+         .add("t", qtCliOption::Short | qtCliOption::NamedList);
+  options.add("landmarks <file>", "Load landmarks from 'file'")
+         .add("l", qtCliOption::Short | qtCliOption::NamedList);
+  args.addOptions(options);
 
   // Parse arguments
   args.parseOrDie();
@@ -82,25 +92,47 @@ int main(int argc, char** argv)
   qtUtil::setApplicationIcon("TeleSculptor");
 
   // Load KWIVER plugins
-  auto const exeDir = QDir(QApplication::applicationDirPath());
-  auto const rel_path = stdString(exeDir.absoluteFilePath(".."));
-  auto & vpm = kwiver::vital::plugin_manager::instance();
-  vpm.add_search_path(rel_path + "/lib/modules");
-  vpm.add_search_path(rel_path + "/lib/sprokit");
+  auto const exeDir = QDir{QApplication::applicationDirPath()};
+  auto& vpm = kwiver::vital::plugin_manager::instance();
+  vpm.add_search_path(stdString(exeDir.absoluteFilePath("../lib/modules")));
+  vpm.add_search_path(stdString(exeDir.absoluteFilePath("../lib/sprokit")));
   vpm.load_all_plugins();
 
   // Tell PROJ where to find its data files
-  std::string rel_proj_path = rel_path + "/share/proj";
-  if ( kwiversys::SystemTools::FileExists(rel_proj_path) &&
-       kwiversys::SystemTools::FileIsDirectory(rel_proj_path) )
+  auto projDataDir = exeDir.absoluteFilePath("../share/proj");
+  if (QFileInfo{projDataDir}.isDir())
   {
-    kwiversys::SystemTools::PutEnv("PROJ_LIB="+rel_proj_path);
+    qputenv("PROJ_LIB", projDataDir.toLocal8Bit());
   }
 
   // Create and show main window
   MainWindow window;
   window.show();
-  window.openFiles(args.values("files"));
+
+  if (args.isSet("project"))
+  {
+    window.loadProject(args.value("project"));
+  }
+  for (auto const& path : args.values("imagery"))
+  {
+    window.loadImagery(path);
+  }
+  for (auto const& path : args.values("mask"))
+  {
+    window.loadMaskImagery(path);
+  }
+  for (auto const& path : args.values("camera"))
+  {
+    window.loadCamera(path);
+  }
+  for (auto const& path : args.values("tracks"))
+  {
+    window.loadTracks(path);
+  }
+  for (auto const& path : args.values("landmarks"))
+  {
+    window.loadLandmarks(path);
+  }
 
   // Hand off to event loop
   return app.exec();

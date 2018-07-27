@@ -23,6 +23,7 @@ find_package(VTK REQUIRED
   vtkIOXML
   vtkImagingCore
   vtkInteractionStyle
+  vtkInteractionWidgets
   vtkRenderingAnnotation
   vtkRenderingFreeType
   )
@@ -108,6 +109,7 @@ set(gui_sources
   MainWindow.cxx
   MatchMatrixAlgorithms.cxx
   MatchMatrixWindow.cxx
+  MetadataView.cxx
   PointOptions.cxx
   Project.cxx
   VideoImport.cxx

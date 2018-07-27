@@ -1,0 +1,23 @@
+::
+:: Script to source to setup the MAP-Tk environment
+::
+
+:: Check to see if we are in an install directory or a build directory
+:: a build directory structure has dlls in a configuration directory (i.e. bin/release/*.dlls)
+:: where as an install directory does not (bin/*.dlls)
+if exist %~dp0/bin/kwiversys.dll (
+  if not [%1] == [] (
+    set config=@CMAKE_BUILD_TYPE@
+  ) else (
+    set config=%1 
+  )
+)
+
+
+:Start
+
+cd @KWIVER_DIR@
+call setup_KWIVER.bat @CMAKE_BUILD_TYPE@
+cd @MAPTK_BINARY_DIR@
+set PATH=%PATH%;@MAPTK_BINARY_DIR@/bin/%config%;
+set KWIVER_CONFIG_PATH=%KWIVER_CONFIG_PATH%;@MAPTK_BINARY_DIR@\share\maptk\@MAPTK_VERSION@\config

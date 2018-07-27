@@ -54,6 +54,7 @@
 #include <vtkXMLImageDataReader.h>
 
 #include <QMenu>
+#include <QTimer>
 #include <QToolButton>
 #include <QWidgetAction>
 

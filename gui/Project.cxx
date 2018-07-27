@@ -32,12 +32,9 @@
 
 #include <maptk/version.h>
 
-#include <kwiversys/SystemTools.hxx>
-
 #include <qtStlUtil.h>
 
 #include <QApplication>
-
 #include <QDebug>
 #include <QDir>
 #include <QFile>
@@ -47,20 +44,18 @@
 
 namespace
 {
-static char const* const CAMERA_PATH = "results/krtd";
-static char const* const TRACKS_PATH = "results/tracks.txt";
-static char const* const LANDMARKS_PATH = "results/landmarks.ply";
-static char const* const GEO_ORIGIN_PATH = "results/geo_origin.txt";
-static char const* const DEPTH_PATH = "results/depth";
-static std::string WORKING_DIR_TAG = "working_directory";
-static std::string VIDEO_SOURCE_TAG = "video_source";
-static char const* const IMAGE_LIST_FILE = "image_list_file";
+static QString const CAMERA_PATH = "results/krtd";
+static QString const TRACKS_PATH = "results/tracks.txt";
+static QString const LANDMARKS_PATH = "results/landmarks.ply";
+static QString const GEO_ORIGIN_PATH = "results/geo_origin.txt";
+static QString const DEPTH_PATH = "results/depth";
 }
 
 //-----------------------------------------------------------------------------
 QString getPath(kwiver::vital::config_block_sptr const& config,
-                QDir const& base, char const* key,
-                char const* defaultPath = 0, char const* altKey = 0)
+                QDir const& base, std::string const& key,
+                QString const& defaultPath = {},
+                std::string const& altKey = {})
 {
   try
   {
@@ -69,7 +64,7 @@ QString getPath(kwiver::vital::config_block_sptr const& config,
   }
   catch (...)
   {
-    return (altKey ? getPath(config, base, altKey, defaultPath) :
+    return (!altKey.empty() ? getPath(config, base, altKey, defaultPath) :
             QString(defaultPath));
   }
 }
@@ -106,15 +101,13 @@ bool Project::read(QString const& path)
     // Load config file
     auto const exeDir = QDir(QApplication::applicationDirPath());
     auto const prefix = stdString(exeDir.absoluteFilePath(".."));
-    auto const& config = kwiver::vital::read_config_file(qPrintable(path),
-                                                         "maptk",
-                                                         MAPTK_VERSION,
-                                                         prefix);
+    auto const& config = kwiver::vital::read_config_file(
+      qPrintable(path), "maptk", MAPTK_VERSION, prefix);
 
-    if (config->has_value(WORKING_DIR_TAG))
+    if (config->has_value("working_directory"))
     {
-      this->workingDir =
-        QString::fromStdString(config->get_value<std::string>(WORKING_DIR_TAG));
+      this->workingDir = qtString(
+        config->get_value<std::string>("working_directory"));
     }
     else
     {
@@ -148,13 +141,10 @@ bool Project::read(QString const& path)
     }
 
     // Read video file
-    if (config->has_value(VIDEO_SOURCE_TAG) ||
-        config->has_value(IMAGE_LIST_FILE))
-    {
-      this->videoPath = getPath(config, this->workingDir,
-                                VIDEO_SOURCE_TAG.c_str(),
-                                "", IMAGE_LIST_FILE);
-    }
+    this->videoPath =
+      getPath(config, this->workingDir, "video_source", {}, "image_list_file");
+    this->maskPath =
+      getPath(config, this->workingDir, "mask_source");
 
     projectConfig = config;
 
@@ -178,27 +168,34 @@ bool Project::read(QString const& path)
 // returns the absolute path if not.
 QString Project::getContingentRelativePath(QString filepath)
 {
-  if (kwiversys::SystemTools::IsSubDirectory(filepath.toStdString(),
-                                             workingDir.absolutePath().toStdString()))
-  {
-    return workingDir.relativeFilePath(filepath);
-  }
-  else
+  auto rel = workingDir.relativeFilePath(filepath);
+  if (rel.startsWith(".."))
   {
     return filepath;
   }
+  else
+  {
+    return rel;
+  }
 }
 
+//-----------------------------------------------------------------------------
 void Project::write()
 {
-  if (!videoPath.isEmpty())
+  if (!this->videoPath.isEmpty())
   {
-    projectConfig->set_value(VIDEO_SOURCE_TAG,
-      getContingentRelativePath(videoPath).toStdString());
+    this->projectConfig->set_value("video_source",
+      stdString(this->getContingentRelativePath(this->videoPath)));
+  }
+  if (!this->maskPath.isEmpty())
+  {
+    this->projectConfig->set_value("mask_source",
+      stdString(this->getContingentRelativePath(this->maskPath)));
   }
 
-  if (projectConfig->available_values().size() > 0)
+  if (this->projectConfig->available_values().size() > 0)
   {
-    kwiver::vital::write_config_file(projectConfig, filePath.toStdString());
+    kwiver::vital::write_config_file(
+      this->projectConfig, stdString(this->filePath));
   }
 }
