@@ -932,6 +932,7 @@ void MainWindowPrivate::updateCameraView()
       }
     }
   }
+  this->UI.cameraView->render();
 }
 
 //-----------------------------------------------------------------------------

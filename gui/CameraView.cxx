@@ -69,6 +69,7 @@
 
 #include <QFormLayout>
 #include <QMenu>
+#include <QTimer>
 #include <QToolButton>
 #include <QWidgetAction>
 
@@ -183,7 +184,7 @@ public:
     vtkNew<vtkDoubleArray> elevations;
   };
 
-  CameraViewPrivate() : featuresDirty(false) {}
+  CameraViewPrivate() : featuresDirty(false), renderQueued(false) {}
 
   void setPopup(QAction* action, QMenu* menu);
   void setPopup(QAction* action, QWidget* widget);
@@ -213,6 +214,8 @@ public:
   double imageBounds[6];
 
   bool featuresDirty;
+
+  bool renderQueued;
 };
 
 //END CameraViewPrivate definition
@@ -643,8 +646,6 @@ void CameraView::addLandmark(
   QTE_D();
 
   d->landmarks.addPoint(x, y, 0.0, d->landmarkData.value(id));
-
-  this->render();
 }
 
 //-----------------------------------------------------------------------------
@@ -656,8 +657,6 @@ void CameraView::addResidual(
   Q_UNUSED(id)
 
   d->residuals.addSegment(x1, y1, -0.2, x2, y2, -0.2);
-
-  this->render();
 }
 
 //-----------------------------------------------------------------------------
@@ -757,7 +756,13 @@ void CameraView::render()
 {
   QTE_D();
 
-  d->renderWindow->Render();
+  if (!d->renderQueued)
+  {
+    QTimer::singleShot(0, [d]() {
+      d->renderWindow->Render();
+      d->renderQueued = false;
+    });
+  }
 }
 
 //-----------------------------------------------------------------------------

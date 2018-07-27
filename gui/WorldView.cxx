@@ -92,6 +92,7 @@
 #include <QDebug>
 #include <QFileInfo>
 #include <QMenu>
+#include <QTimer>
 #include <QToolButton>
 #include <QWidgetAction>
 
@@ -111,7 +112,8 @@ public:
       cameraRepDirty(false),
       scaleDirty(false),
       axesDirty(false),
-      axesVisible(false)
+      axesVisible(false),
+      renderQueued(false)
   {
   }
 
@@ -180,6 +182,8 @@ public:
   bool axesDirty;
 
   bool axesVisible;
+
+  bool renderQueued;
 };
 
 //-----------------------------------------------------------------------------
@@ -1350,7 +1354,13 @@ void WorldView::render()
 {
   QTE_D();
 
-  d->renderWindow->Render();
+  if (!d->renderQueued)
+  {
+    QTimer::singleShot(0, [d]() {
+      d->renderWindow->Render();
+      d->renderQueued = false;
+    });
+  }
 }
 
 //-----------------------------------------------------------------------------

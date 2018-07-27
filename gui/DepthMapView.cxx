@@ -65,6 +65,7 @@ QTE_IMPLEMENT_D_FUNC(DepthMapView)
 class DepthMapViewPrivate
 {
 public:
+  DepthMapViewPrivate() : renderQueued(false) {}
   void setPopup(QAction* action, QMenu* menu);
   void setPopup(QAction* action, QWidget* widget);
 
@@ -83,6 +84,8 @@ public:
   DepthMapViewOptions* depthMapViewOptions;
 
   vtkSmartPointer<vtkMaptkImageDataGeometryFilter> inputDepthGeometryFilter;
+
+  bool renderQueued;
 };
 
 //-----------------------------------------------------------------------------
@@ -316,7 +319,13 @@ void DepthMapView::render()
 {
   QTE_D();
 
-  d->renderWindow->Render();
+  if (!d->renderQueued)
+  {
+    QTimer::singleShot(0, [d]() {
+      d->renderWindow->Render();
+      d->renderQueued = false;
+    });
+  }
 }
 
 //-----------------------------------------------------------------------------
