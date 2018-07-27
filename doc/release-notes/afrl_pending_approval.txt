@@ -34,6 +34,11 @@ TeleSculptor
    from a single build, rather than having to manually build and connect multiple builds.
    The superbuild does still allow using a manually built KWIVER/Fletch if so desired.
  
+ * Updated TeleSculptor to use Qt version 5.10 instead of 4.8.  This also
+   enables the OpenGL2 backend in VTK 8.0 which provides faster rendering.
+   Qt5 now requires Python to build, so we are also requiring Python for
+   the superbuild, which enables Python in KWIVER.  We are not yet taking
+   advantage of KWIVER Python bindings in TeleSculptor, but may in the future.
 
  * Added ability to interactively add and edit a region of interest in the
    world view.
