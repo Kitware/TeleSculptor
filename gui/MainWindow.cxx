@@ -192,6 +192,16 @@ QSet<QString> supportedVideoExtensions()
 }
 
 //-----------------------------------------------------------------------------
+std::string imageConfigForPath(QString const& path, QString const& type)
+{
+  static const auto configTemplate = QString{"gui_%1_%2_reader.conf"};
+
+  const auto ext = QFileInfo{path}.suffix();
+  const QString mode = (ext.toLower() == "txt" ? "list" : "video");
+  return stdString(configTemplate.arg(type, mode));
+}
+
+//-----------------------------------------------------------------------------
 QString makeFilters(QStringList extensions)
 {
   auto result = QStringList();
@@ -1677,7 +1687,7 @@ void MainWindow::loadVideo(QString const& path)
 {
   QTE_D();
 
-  auto config = readConfig("gui_video_reader.conf");
+  auto config = readConfig(imageConfigForPath(path, "image"));
   if (d->project)
   {
     d->project->config->merge_config(config);
@@ -1724,7 +1734,7 @@ void MainWindow::loadMaskVideo(QString const& path)
 {
   QTE_D();
 
-  auto config = readConfig("gui_mask_reader.conf");
+  auto config = readConfig(imageConfigForPath(path, "mask"));
   if (d->project)
   {
     d->project->config->merge_config(config);
