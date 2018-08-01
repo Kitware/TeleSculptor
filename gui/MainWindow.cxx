@@ -98,6 +98,8 @@
 #include <QTimer>
 #include <QUrl>
 
+namespace kv = kwiver::vital;
+
 ///////////////////////////////////////////////////////////////////////////////
 
 //BEGIN miscellaneous helpers
@@ -307,15 +309,15 @@ public:
   kwiver::vital::feature_track_set_sptr toolUpdateTracks;
   vtkSmartPointer<vtkImageData> toolUpdateDepth;
 
+  kv::config_block_sptr freestandingConfig = kv::config_block::empty_config();
+
   QString videoPath;
-  kwiver::vital::config_block_sptr videoConfig;
+  QString maskPath;
   kwiver::vital::algo::video_input_sptr videoSource;
+  kwiver::vital::algo::video_input_sptr maskSource;
   kwiver::vital::timestamp currentVideoTimestamp;
   kwiver::vital::metadata_map::map_metadata_t videoMetadataMap;
   kwiver::vital::frame_id_t advanceInterval;
-
-  QString maskPath;
-  kwiver::vital::algo::video_input_sptr maskSource;
 
   QMap<kwiver::vital::frame_id_t, FrameData> frames;
   kwiver::vital::feature_track_set_sptr tracks;
@@ -429,10 +431,10 @@ void MainWindowPrivate::addVideoSource(
   // Save the configuration so independent video sources can be created for tools
   if (this->project)
   {
-    this->project->config = config;
+    this->project->config->merge_config(config);
   }
   this->videoPath = videoPath;
-  this->videoConfig = config;
+  this->freestandingConfig->merge_config(config);
 
   // Close the existing video source if it exists
   if(this->videoSource)
@@ -487,9 +489,14 @@ void MainWindowPrivate::addVideoSource(
 void MainWindowPrivate::addMaskSource(
   kwiver::vital::config_block_sptr const& config, QString const& maskPath)
 {
-  Q_UNUSED(config);
-
+  // Save the configuration so independent video sources can be created for
+  // tools
+  if (this->project)
+  {
+    this->project->config->merge_config(config);
+  }
   this->maskPath = maskPath;
+  this->freestandingConfig->merge_config(config);
 }
 
 //-----------------------------------------------------------------------------
@@ -575,18 +582,16 @@ void MainWindowPrivate::updateFrames(
   }
   else
   {
-    using kwiver::vital::vector_2d;
+#define GET_K_CONFIG(type, name) \
+  this->freestandingConfig->get_value<type>(bc + #name, K_def.name())
 
     kwiver::vital::simple_camera_intrinsics K_def;
     const std::string bc = "video_reader:base_camera:";
     auto K = std::make_shared<kwiver::vital::simple_camera_intrinsics>(
-      this->videoConfig->get_value<double>(bc + "focal_length",
-        K_def.focal_length()),
-      this->videoConfig->get_value<vector_2d>(bc + "principal_point",
-        K_def.principal_point()),
-      this->videoConfig->get_value<double>(bc + "aspect_ratio",
-        K_def.aspect_ratio()),
-      this->videoConfig->get_value<double>(bc + "skew", K_def.skew()));
+      GET_K_CONFIG(double, focal_length),
+      GET_K_CONFIG(kwiver::vital::vector_2d, principal_point),
+      GET_K_CONFIG(double, aspect_ratio),
+      GET_K_CONFIG(double, skew));
 
     auto baseCamera = kwiver::vital::simple_camera_perspective();
     baseCamera.set_intrinsics(K);
@@ -602,14 +607,16 @@ void MainWindowPrivate::updateFrames(
       }
 
       bool init_cams_with_metadata =
-        this->videoConfig->get_value<bool>("initialize_cameras_with_metadata", true);
+        this->freestandingConfig->get_value<bool>(
+          "initialize_cameras_with_metadata", true);
 
       if (init_cams_with_metadata)
       {
         auto im = this->videoSource->frame_image();
 
         bool init_intrinsics_with_metadata =
-          this->videoConfig->get_value<bool>("initialize_intrinsics_with_metadata", true);
+          this->freestandingConfig->get_value<bool>(
+            "initialize_intrinsics_with_metadata", true);
         if (init_intrinsics_with_metadata)
         {
           kwiver::maptk::set_intrinsics_from_metadata(baseCamera, mdMap, im);
@@ -1507,12 +1514,9 @@ void MainWindow::newProject()
 
     if (d->videoSource)
     {
+      d->project->config->merge_config(d->freestandingConfig);
       d->project->videoPath = d->videoPath;
       d->project->maskPath = d->maskPath;
-      auto vconfig = readConfig("gui_video_reader.conf");
-      auto mconfig = readConfig("gui_mask_reader.conf");
-      d->project->config->merge_config(vconfig);
-      d->project->config->merge_config(mconfig);
     }
 
     saveCameras(d->project->cameraPath);
