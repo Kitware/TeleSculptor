@@ -152,7 +152,7 @@ QSet<QString> supportedImageExtensions()
 
   // Get registered readers
   vtkNew<vtkImageReader2Collection> readers;
-  vtkImageReader2Factory::GetRegisteredReaders(readers.GetPointer());
+  vtkImageReader2Factory::GetRegisteredReaders(readers);
 
   // Extract extensions for each reader
   readers->InitTraversal();
@@ -1303,8 +1303,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   // Hookup basic depth pipeline and pass geometry filter to relevant views
   d->depthFilter->SetInputConnection(d->depthReader->GetOutputPort());
   d->depthGeometryFilter->SetInputConnection(d->depthFilter->GetOutputPort());
-  d->UI.worldView->setDepthGeometryFilter(d->depthGeometryFilter.GetPointer());
-  d->UI.depthMapView->setDepthGeometryFilter(d->depthGeometryFilter.GetPointer());
+  d->UI.worldView->setDepthGeometryFilter(d->depthGeometryFilter);
+  d->UI.depthMapView->setDepthGeometryFilter(d->depthGeometryFilter);
 
   d->UI.worldView->resetView();
 
@@ -1318,7 +1318,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   // Common ROI
   // Unitil the bounding box is initialized, the bounds are going to be
   // [VTK_DOUBLE_MIN, VTK_DOUBLE_MAX] in all directions.
-  d->UI.worldView->setROI(d->roi.GetPointer());
+  d->UI.worldView->setROI(d->roi);
 }
 
 //-----------------------------------------------------------------------------
