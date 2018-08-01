@@ -300,16 +300,16 @@ public:
   Am::MainWindow AM;
   qtUiState uiState;
 
-  StateValue<QColor>* viewBackgroundColor;
+  StateValue<QColor>* viewBackgroundColor = nullptr;
 
   QTimer slideTimer;
   QSignalMapper toolDispatcher;
 
-  QAction* toolSeparator;
-  QMenu* toolMenu;
-  AbstractTool* activeTool;
+  QAction* toolSeparator = nullptr;
+  QMenu* toolMenu = nullptr;
+  AbstractTool* activeTool = nullptr;
   QList<AbstractTool*> tools;
-  int toolUpdateActiveFrame;
+  int toolUpdateActiveFrame = -1;
   kv::camera_map_sptr toolUpdateCameras;
   kv::landmark_map_sptr toolUpdateLandmarks;
   kv::feature_track_set_sptr toolUpdateTracks;
@@ -323,17 +323,17 @@ public:
   kv::algo::video_input_sptr maskSource;
   kv::timestamp currentVideoTimestamp;
   kv::metadata_map::map_metadata_t videoMetadataMap;
-  kv::frame_id_t advanceInterval;
+  kv::frame_id_t advanceInterval = 1;
 
   QMap<kv::frame_id_t, FrameData> frames;
   kv::feature_track_set_sptr tracks;
   kv::landmark_map_sptr landmarks;
   vtkSmartPointer<vtkImageData> activeDepth;
-  int activeDepthFrame;
+  int activeDepthFrame = -1;
 
   kwiver::maptk::local_geo_cs localGeoCs;
 
-  int activeCameraIndex;
+  int activeCameraIndex = -1;
 
   VideoImport videoImporter;
 
@@ -357,10 +357,6 @@ QTE_IMPLEMENT_D_FUNC(MainWindow)
 
 //-----------------------------------------------------------------------------
 MainWindowPrivate::MainWindowPrivate(MainWindow* mainWindow)
-    : activeTool(0)
-    , toolUpdateActiveFrame(-1)
-    , advanceInterval(1)
-    , activeCameraIndex(-1)
 {
   QObject::connect(&videoImporter, SIGNAL(updated(int)),
                    mainWindow, SLOT(addFrame(int)));
