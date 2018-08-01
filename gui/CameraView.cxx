@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2017 by Kitware, Inc.
+ * Copyright 2017-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -377,12 +377,13 @@ void CameraViewPrivate::setTransforms(int imageHeight)
   xf->SetElement(1, 1, -1.0);
   xf->SetElement(1, 3, imageHeight);
 
-  this->featureRep->GetActivePointsWithDescActor()->SetUserMatrix(xf.GetPointer());
-  this->featureRep->GetActivePointsWithoutDescActor()->SetUserMatrix(xf.GetPointer());
-  this->featureRep->GetTrailsWithDescActor()->SetUserMatrix(xf.GetPointer());
-  this->featureRep->GetTrailsWithoutDescActor()->SetUserMatrix(xf.GetPointer());
-  this->landmarks.actor->SetUserMatrix(xf.GetPointer());
-  this->residuals.actor->SetUserMatrix(xf.GetPointer());
+  auto* const xfp = xf.GetPointer();
+  this->featureRep->GetActivePointsWithDescActor()->SetUserMatrix(xfp);
+  this->featureRep->GetActivePointsWithoutDescActor()->SetUserMatrix(xfp);
+  this->featureRep->GetTrailsWithDescActor()->SetUserMatrix(xfp);
+  this->featureRep->GetTrailsWithoutDescActor()->SetUserMatrix(xfp);
+  this->landmarks.actor->SetUserMatrix(xfp);
+  this->residuals.actor->SetUserMatrix(xfp);
 }
 
 //-----------------------------------------------------------------------------
@@ -620,7 +621,8 @@ void CameraView::addFeatureTrack(kwiver::vital::track const& track)
 
   foreach (auto const& state, track)
   {
-    auto const& fts = std::dynamic_pointer_cast<kwiver::vital::feature_track_state>(state);
+    auto const& fts =
+      std::dynamic_pointer_cast<kwiver::vital::feature_track_state>(state);
     if ( !fts )
     {
       continue;
@@ -628,11 +630,13 @@ void CameraView::addFeatureTrack(kwiver::vital::track const& track)
     auto const& loc = fts->feature->loc();
     if (fts->descriptor)
     {
-      d->featureRep->AddTrackWithDescPoint(id, state->frame(), loc[0], loc[1]);
+      d->featureRep->AddTrackWithDescPoint(
+        id, state->frame(), loc[0], loc[1]);
     }
     else
     {
-      d->featureRep->AddTrackWithoutDescPoint(id, state->frame(), loc[0], loc[1]);
+      d->featureRep->AddTrackWithoutDescPoint(
+        id, state->frame(), loc[0], loc[1]);
     }
   }
 

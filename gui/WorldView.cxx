@@ -516,7 +516,8 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->cubeAxesActor->YAxisMinorTickVisibilityOff();
   d->cubeAxesActor->ZAxisMinorTickVisibilityOff();
   d->cubeAxesActor->SetFlyMode(vtkCubeAxesActor::VTK_FLY_FURTHEST_TRIAD);
-  d->cubeAxesActor->SetGridLineLocation(vtkCubeAxesActor::VTK_GRID_LINES_FURTHEST);
+  d->cubeAxesActor->SetGridLineLocation(
+    vtkCubeAxesActor::VTK_GRID_LINES_FURTHEST);
 
   d->cubeAxesActor->SetCamera(d->renderer->GetActiveCamera());
   d->cubeAxesActor->SetVisibility(false);
@@ -599,7 +600,8 @@ void WorldView::connectDepthPipeline()
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::setDepthGeometryFilter(vtkMaptkImageDataGeometryFilter* geometryFilter)
+void WorldView::setDepthGeometryFilter(
+  vtkMaptkImageDataGeometryFilter* geometryFilter)
 {
   QTE_D();
 
@@ -730,13 +732,14 @@ void WorldView::loadVolume(QString path)
 
   // Apply contour
   d->contourFilter = vtkContourFilter::New();
-  d->contourFilter->SetInputConnection(transformCellToPointData->GetOutputPort());
+  d->contourFilter->SetInputConnection(
+    transformCellToPointData->GetOutputPort());
   d->contourFilter->SetNumberOfContours(1);
   d->contourFilter->SetValue(0, 0.5);
   // Declare which table will be use for the contour
-  d->contourFilter->SetInputArrayToProcess(0, 0, 0,
-                                           vtkDataObject::FIELD_ASSOCIATION_POINTS,
-                                           "reconstruction_scalar");
+  d->contourFilter->SetInputArrayToProcess(
+    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS,
+    "reconstruction_scalar");
 
   // Create mapper
   vtkNew<vtkPolyDataMapper> contourMapper;
@@ -817,7 +820,8 @@ void WorldView::setActiveCamera(int id)
   QTE_D();
 
   d->cameraRep->SetActiveCamera(id);
-  vtkMaptkCamera * camera = dynamic_cast<vtkMaptkCamera*>(d->cameraRep->GetActiveCamera());
+  auto* const camera =
+    dynamic_cast<vtkMaptkCamera*>(d->cameraRep->GetActiveCamera());
 
   if (camera)
   {

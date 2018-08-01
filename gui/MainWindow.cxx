@@ -436,7 +436,8 @@ void MainWindowPrivate::addVideoSource(
   kv::config_block_sptr const& config,
   QString const& videoPath)
 {
-  // Save the configuration so independent video sources can be created for tools
+  // Save the configuration so independent video sources can be created for
+  // tools
   if (this->project)
   {
     this->project->config->merge_config(config);
@@ -570,7 +571,8 @@ void MainWindowPrivate::updateFrames(
   if (this->project &&
       this->project->config->has_value("output_krtd_dir"))
   {
-    qWarning() << "Loading project cameras with frames.count = " << this->frames.count();
+    qWarning() << "Loading project cameras with frames.count = "
+               << this->frames.count();
     for (auto const& frame : this->frames)
     {
       auto frameName = qtString(this->getFrameName(frame.id)) + ".krtd";
@@ -1082,7 +1084,8 @@ void MainWindowPrivate::loadDepthMap(QString const& imagePath)
 void MainWindowPrivate::setActiveTool(AbstractTool* tool)
 {
   // Disconnect cancel action
-  QObject::disconnect(this->UI.actionCancelComputation, 0, this->activeTool, 0);
+  QObject::disconnect(this->UI.actionCancelComputation, nullptr,
+                      this->activeTool, nullptr);
 
   // Update current tool
   this->activeTool = tool;
@@ -1910,9 +1913,10 @@ void MainWindow::saveCameras(QString const& path, bool writeToProject)
                    "One or more files will be overwritten by this operation. "
                    "Do you wish to continue?", QMessageBox::Cancel, this);
 
-    QAbstractButton* myOverwrite = mb.addButton("&Overwrite", QMessageBox::AcceptRole);
+    auto* const myOverwrite =
+      mb.addButton("&Overwrite", QMessageBox::AcceptRole);
     mb.setDetailedText("The following file(s) will be overwritten:\n  " +
-                       willOverwrite.join("  \n"));
+                       willOverwrite.join("\n  "));
 
     mb.exec();
     if (mb.clickedButton() != myOverwrite)
@@ -2271,7 +2275,8 @@ void MainWindow::acceptToolFinalResults()
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::acceptToolResults(std::shared_ptr<ToolData> data, bool isFinal)
+void MainWindow::acceptToolResults(
+  std::shared_ptr<ToolData> data, bool isFinal)
 {
   QTE_D();
   // if all the update variables are Null then trigger a GUI update after
@@ -2320,7 +2325,8 @@ void MainWindow::acceptToolResults(std::shared_ptr<ToolData> data, bool isFinal)
 
   if (isFinal)
   {
-    updateToolResults();  //force immediate update on tool finish so we ensure update before saving
+    // Force immediate update on tool finish so we ensure update before saving
+    updateToolResults();
   }
   else if(updateNeeded)
   {

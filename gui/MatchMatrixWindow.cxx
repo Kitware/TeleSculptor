@@ -383,7 +383,8 @@ void MatchMatrixImageItem::updateStatusText(const QPointF& pos)
     auto const cy = q->matrix.coeff(y, y);
     auto const cxy = q->matrix.coeff(x, y);
 
-    q->UI.statusBar->showMessage(format.arg(fx).arg(fy).arg(cx).arg(cy).arg(cxy));
+    q->UI.statusBar->showMessage(
+      format.arg(fx).arg(fy).arg(cx).arg(cy).arg(cxy));
   }
 }
 

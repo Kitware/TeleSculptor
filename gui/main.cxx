@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016-2017 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,8 +63,9 @@ int main(int argc, char** argv)
   QApplication::setApplicationVersion(MAPTK_VERSION);
 
   // Register meta types
+  using map_metadata_t = kwiver::vital::metadata_map::map_metadata_t;
   qRegisterMetaType<std::shared_ptr<ToolData>>();
-  qRegisterMetaType<std::shared_ptr<kwiver::vital::metadata_map::map_metadata_t>>();
+  qRegisterMetaType<std::shared_ptr<map_metadata_t>>();
 
   // Set up command line options
   qtCliArgs args(argc, argv);

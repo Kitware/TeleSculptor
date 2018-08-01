@@ -115,7 +115,8 @@ protected slots:
   void acceptToolResults(std::shared_ptr<ToolData> data, bool isFinal = false);
   void updateToolResults();
   void addFrame(int);
-  void updateFrames(std::shared_ptr<kwiver::vital::metadata_map::map_metadata_t>);
+  void updateFrames(
+    std::shared_ptr<kwiver::vital::metadata_map::map_metadata_t>);
   void updateVideoImportProgress(QString, int);
   void enableAntiAliasing(bool enable);
 
