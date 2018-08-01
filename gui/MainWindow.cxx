@@ -429,7 +429,7 @@ void MainWindowPrivate::addVideoSource(
   // Save the configuration so independent video sources can be created for tools
   if (this->project)
   {
-    this->project->projectConfig = config;
+    this->project->config = config;
   }
   this->videoPath = videoPath;
   this->videoConfig = config;
@@ -551,7 +551,7 @@ void MainWindowPrivate::updateFrames(
   this->UI.metadata->updateMetadata(mdMap);
 
   if (this->project &&
-      this->project->projectConfig->has_value("output_krtd_dir"))
+      this->project->config->has_value("output_krtd_dir"))
   {
     qWarning() << "Loading project cameras with frames.count = " << this->frames.count();
     for (auto const& frame : this->frames)
@@ -625,7 +625,7 @@ void MainWindowPrivate::updateFrames(
 
   //find depth map paths
   if (this->project &&
-      this->project->projectConfig->has_value("output_depth_dir"))
+      this->project->config->has_value("output_depth_dir"))
   {
     foreach(auto & frame, this->frames)
     {
@@ -1511,12 +1511,12 @@ void MainWindow::newProject()
       d->project->maskPath = d->maskPath;
       auto vconfig = readConfig("gui_video_reader.conf");
       auto mconfig = readConfig("gui_mask_reader.conf");
-      d->project->projectConfig->merge_config(vconfig);
-      d->project->projectConfig->merge_config(mconfig);
+      d->project->config->merge_config(vconfig);
+      d->project->config->merge_config(mconfig);
     }
 
     saveCameras(d->project->cameraPath);
-    d->project->projectConfig->set_value("output_krtd_dir", kvPath(
+    d->project->config->set_value("output_krtd_dir", kvPath(
       d->project->getContingentRelativePath(d->project->cameraPath)));
 
     if (!d->localGeoCs.origin().is_empty() &&
@@ -1555,24 +1555,24 @@ void MainWindow::loadProject(QString const& path)
   }
 
   // Get the video and mask sources
-  if (d->project->projectConfig->has_value("video_reader:type"))
+  if (d->project->config->has_value("video_reader:type"))
   {
-    d->addVideoSource(d->project->projectConfig, d->project->videoPath);
+    d->addVideoSource(d->project->config, d->project->videoPath);
   }
-  if (d->project->projectConfig->has_value("mask_reader:type"))
+  if (d->project->config->has_value("mask_reader:type"))
   {
-    d->addMaskSource(d->project->projectConfig, d->project->maskPath);
+    d->addMaskSource(d->project->config, d->project->maskPath);
   }
 
   // Load tracks
-  if (d->project->projectConfig->has_value("input_track_file") ||
-      d->project->projectConfig->has_value("output_tracks_file"))
+  if (d->project->config->has_value("input_track_file") ||
+      d->project->config->has_value("output_tracks_file"))
   {
     this->loadTracks(d->project->tracksPath);
   }
 
   // Load landmarks
-  if (d->project->projectConfig->has_value("output_ply_file"))
+  if (d->project->config->has_value("output_ply_file"))
   {
     this->loadLandmarks(d->project->landmarksPath);
   }
@@ -1584,14 +1584,14 @@ void MainWindow::loadProject(QString const& path)
 #endif
 
   // Load volume
-  if (d->project->projectConfig->has_value("volume_file"))
+  if (d->project->config->has_value("volume_file"))
   {
     d->UI.worldView->loadVolume(d->project->volumePath,
                                 d->project->cameraPath,
                                 d->project->videoPath);
   }
 
-  if (d->project->projectConfig->has_value("geo_origin_file"))
+  if (d->project->config->has_value("geo_origin_file"))
   {
     if (QFileInfo{d->project->geoOriginFile}.isFile())
     {
@@ -1676,7 +1676,7 @@ void MainWindow::loadVideo(QString const& path)
   auto config = readConfig("gui_video_reader.conf");
   if (d->project)
   {
-    d->project->projectConfig->merge_config(config);
+    d->project->config->merge_config(config);
     d->project->videoPath = path;
   }
 
@@ -1694,7 +1694,7 @@ void MainWindow::loadVideo(QString const& path)
   if (d->project)
   {
     saveCameras(d->project->cameraPath);
-    d->project->projectConfig->set_value("output_krtd_dir", kvPath(
+    d->project->config->set_value("output_krtd_dir", kvPath(
       d->project->getContingentRelativePath(d->project->cameraPath)));
 
     if (!d->localGeoCs.origin().is_empty() &&
@@ -1723,7 +1723,7 @@ void MainWindow::loadMaskVideo(QString const& path)
   auto config = readConfig("gui_mask_reader.conf");
   if (d->project)
   {
-    d->project->projectConfig->merge_config(config);
+    d->project->config->merge_config(config);
     d->project->maskPath = path;
   }
 
@@ -1876,7 +1876,7 @@ void MainWindow::saveLandmarks(QString const& path, bool writeToProject)
 
     if (writeToProject && d->project)
     {
-      d->project->projectConfig->set_value("output_ply_file", kvPath(
+      d->project->config->set_value("output_ply_file", kvPath(
         d->project->getContingentRelativePath(path)));
     }
   }
@@ -1915,7 +1915,7 @@ void MainWindow::saveTracks(QString const& path, bool writeToProject)
 
     if (writeToProject && d->project)
     {
-      d->project->projectConfig->set_value("output_tracks_file", kvPath(
+      d->project->config->set_value("output_tracks_file", kvPath(
         d->project->getContingentRelativePath(path)));
     }
   }
@@ -2002,7 +2002,7 @@ void MainWindow::saveCameras(QString const& path, bool writeToProject)
 
   if (writeToProject && d->project)
   {
-    d->project->projectConfig->set_value("output_krtd_dir", kvPath(
+    d->project->config->set_value("output_krtd_dir", kvPath(
       d->project->getContingentRelativePath(path)));
   }
 
@@ -2088,7 +2088,7 @@ void MainWindow::saveDepthPoints(QString const& path)
   try
   {
     d->UI.worldView->saveDepthPoints(path);
-    d->project->projectConfig->set_value("depthmaps_images_file",
+    d->project->config->set_value("depthmaps_images_file",
       kvPath(d->project->getContingentRelativePath(path)));
     d->project->write();
   }
@@ -2105,7 +2105,7 @@ void MainWindow::saveGeoOrigin(QString const& path)
 {
   QTE_D();
 
-  d->project->projectConfig->set_value("geo_origin_file", kvPath(
+  d->project->config->set_value("geo_origin_file", kvPath(
     d->project->getContingentRelativePath(path)));
   kwiver::maptk::write_local_geo_cs_to_file(d->localGeoCs, stdString(path));
 }
@@ -2175,7 +2175,7 @@ void MainWindow::saveVolume()
   {
     d->UI.worldView->saveVolume(path);
     d->project->volumePath = d->project->getContingentRelativePath(path);
-    d->project->projectConfig->set_value("volume_file",
+    d->project->config->set_value("volume_file",
       kvPath(d->project->volumePath));
     d->project->write();
   }
@@ -2294,7 +2294,7 @@ void MainWindow::executeTool(QObject* object)
       tool->setLandmarks(d->landmarks);
       tool->setVideoPath(stdString(d->videoPath));
       tool->setMaskPath(stdString(d->maskPath));
-      tool->setConfig(d->project->projectConfig);
+      tool->setConfig(d->project->config);
 
       if (!tool->execute())
       {
@@ -2421,7 +2421,7 @@ void MainWindow::saveToolResults()
     if (outputs.testFlag(AbstractTool::Depth))
     {
       saveDepthImage(d->project->depthPath);
-      d->project->projectConfig->set_value("output_depth_dir", kvPath(
+      d->project->config->set_value("output_depth_dir", kvPath(
         d->project->getContingentRelativePath(d->project->depthPath)));
     }
 

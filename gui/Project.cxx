@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016-2017 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -52,19 +52,18 @@ static QString const DEPTH_PATH = "results/depth";
 }
 
 //-----------------------------------------------------------------------------
-QString getPath(kwiver::vital::config_block_sptr const& config,
-                QDir const& base, std::string const& key,
+QString getPath(Project const* project, std::string const& key,
                 QString const& defaultPath = {},
                 std::string const& altKey = {})
 {
   try
   {
-    auto const& value = config->get_value<std::string>(key);
-    return base.filePath(qtString(value));
+    auto const& value = project->config->get_value<std::string>(key);
+    return project->workingDir.filePath(qtString(value));
   }
   catch (...)
   {
-    return (!altKey.empty() ? getPath(config, base, altKey, defaultPath) :
+    return (!altKey.empty() ? getPath(project, altKey, defaultPath) :
             QString(defaultPath));
   }
 }
@@ -72,14 +71,11 @@ QString getPath(kwiver::vital::config_block_sptr const& config,
 //-----------------------------------------------------------------------------
 Project::Project()
 {
-  projectConfig = kwiver::vital::config_block::empty_config();
 }
 
 //-----------------------------------------------------------------------------
 Project::Project(QString dir)
 {
-  projectConfig = kwiver::vital::config_block::empty_config();
-
   workingDir = dir;
   filePath = workingDir.absoluteFilePath(workingDir.dirName() + ".conf");
 
@@ -101,7 +97,7 @@ bool Project::read(QString const& path)
     // Load config file
     auto const exeDir = QDir(QApplication::applicationDirPath());
     auto const prefix = stdString(exeDir.absoluteFilePath(".."));
-    auto const& config = kwiver::vital::read_config_file(
+    this->config = kwiver::vital::read_config_file(
       qPrintable(path), "maptk", MAPTK_VERSION, prefix);
 
     if (config->has_value("working_directory"))
@@ -116,37 +112,27 @@ bool Project::read(QString const& path)
 
     filePath = path;
 
-    this->cameraPath =
-      getPath(config, this->workingDir, "output_krtd_dir", CAMERA_PATH);
-    this->landmarksPath =
-      getPath(config, this->workingDir, "output_ply_file", LANDMARKS_PATH);
-    this->tracksPath =
-      getPath(config, this->workingDir, "input_track_file",
-              TRACKS_PATH, "output_tracks_file");
-    this->depthPath =
-      getPath(config, this->workingDir, "output_depth_dir", DEPTH_PATH);
-
+    this->cameraPath = getPath(this, "output_krtd_dir", CAMERA_PATH);
+    this->depthPath = getPath(this, "output_depth_dir", DEPTH_PATH);
+    this->landmarksPath = getPath(this, "output_ply_file", LANDMARKS_PATH);
+    this->tracksPath = getPath(this, "input_track_file", TRACKS_PATH,
+                               "output_tracks_file");
 
     // Read Volume file
-    if (config->has_value("volume_file"))
+    if (this->config->has_value("volume_file"))
     {
-      this->volumePath = getPath(config, this->workingDir, "volume_file");
+      this->volumePath = getPath(this, "volume_file");
     }
 
     // Read the geo origin file
-    if (config->has_value("geo_origin_file"))
+    if (this->config->has_value("geo_origin_file"))
     {
-      this->geoOriginFile =
-        getPath(config, this->workingDir, "geo_origin_file", GEO_ORIGIN_PATH);
+      this->geoOriginFile = getPath(this, "geo_origin_file", GEO_ORIGIN_PATH);
     }
 
     // Read video file
-    this->videoPath =
-      getPath(config, this->workingDir, "video_source", {}, "image_list_file");
-    this->maskPath =
-      getPath(config, this->workingDir, "mask_source");
-
-    projectConfig = config;
+    this->videoPath = getPath(this, "video_source", {}, "image_list_file");
+    this->maskPath = getPath(this, "mask_source");
 
     return true;
   }
@@ -184,18 +170,18 @@ void Project::write()
 {
   if (!this->videoPath.isEmpty())
   {
-    this->projectConfig->set_value("video_source",
+    this->config->set_value("video_source",
       stdString(this->getContingentRelativePath(this->videoPath)));
   }
   if (!this->maskPath.isEmpty())
   {
-    this->projectConfig->set_value("mask_source",
+    this->config->set_value("mask_source",
       stdString(this->getContingentRelativePath(this->maskPath)));
   }
 
-  if (this->projectConfig->available_values().size() > 0)
+  if (this->config->available_values().size() > 0)
   {
     kwiver::vital::write_config_file(
-      this->projectConfig, stdString(this->filePath));
+      this->config, stdString(this->filePath));
   }
 }
