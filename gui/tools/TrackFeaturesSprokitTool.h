@@ -43,15 +43,15 @@ class TrackFeaturesSprokitTool : public AbstractTool
 public:
   explicit TrackFeaturesSprokitTool(QObject* parent = 0);
   ~TrackFeaturesSprokitTool() override;
-  Outputs outputs() const QTE_OVERRIDE;
+  Outputs outputs() const override;
 
   /// Get if the tool can be canceled.
-  bool isCancelable() const QTE_OVERRIDE { return true; }
+  bool isCancelable() const override { return true; }
 
-  bool execute(QWidget* window = 0) QTE_OVERRIDE;
+  bool execute(QWidget* window = 0) override;
 
 protected:
-  void run() QTE_OVERRIDE;
+  void run() override;
 
   virtual std::string create_pipeline_config(QWidget* window = 0);
 

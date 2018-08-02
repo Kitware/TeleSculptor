@@ -43,17 +43,17 @@ public:
   explicit BundleAdjustTool(QObject* parent = 0);
   ~BundleAdjustTool() override;
 
-  Outputs outputs() const QTE_OVERRIDE;
+  Outputs outputs() const override;
 
   /// Get if the tool can be canceled.
-  bool isCancelable() const QTE_OVERRIDE { return true; }
+  bool isCancelable() const override { return true; }
 
-  bool execute(QWidget* window = 0) QTE_OVERRIDE;
+  bool execute(QWidget* window = 0) override;
 
   bool callback_handler(camera_map_sptr cameras, landmark_map_sptr landmarks);
 
 protected:
-  void run() QTE_OVERRIDE;
+  void run() override;
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(BundleAdjustTool)

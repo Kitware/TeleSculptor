@@ -215,12 +215,12 @@ public:
     return *this;
   }
 
-  QVariant value() const QTE_OVERRIDE
+  QVariant value() const override
   {
     return QVariant::fromValue(this->data);
   }
 
-  void setValue(QVariant const& newValue) QTE_OVERRIDE
+  void setValue(QVariant const& newValue) override
   {
     this->data = newValue.value<T>();
   }

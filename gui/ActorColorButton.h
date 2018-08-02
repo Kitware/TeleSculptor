@@ -52,7 +52,7 @@ public:
   void persist(qtUiState&, QString const&);
 
 public slots:
-  void setColor(QColor) QTE_OVERRIDE;
+  void setColor(QColor) override;
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(ActorColorButton)

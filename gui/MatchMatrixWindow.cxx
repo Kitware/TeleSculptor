@@ -287,9 +287,9 @@ public:
   MatchMatrixImageItem(QImage const& image, MatchMatrixWindowPrivate* q);
 
 protected:
-  void hoverEnterEvent(QGraphicsSceneHoverEvent* event) QTE_OVERRIDE;
-  void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) QTE_OVERRIDE;
-  void hoverMoveEvent(QGraphicsSceneHoverEvent* event) QTE_OVERRIDE;
+  void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override;
+  void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
+  void hoverMoveEvent(QGraphicsSceneHoverEvent* event) override;
 
   void updateStatusText(QPointF const& pos);
 

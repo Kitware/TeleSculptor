@@ -43,15 +43,15 @@ public:
   explicit TriangulateTool(QObject* parent = 0);
   ~TriangulateTool() override;
 
-  Outputs outputs() const QTE_OVERRIDE;
+  Outputs outputs() const override;
 
   /// Get if the tool can be canceled.
-  bool isCancelable() const QTE_OVERRIDE { return false; }
+  bool isCancelable() const override { return false; }
 
-  bool execute(QWidget* window = 0) QTE_OVERRIDE;
+  bool execute(QWidget* window = 0) override;
 
 protected:
-  void run() QTE_OVERRIDE;
+  void run() override;
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(TriangulateTool)

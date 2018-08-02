@@ -43,15 +43,15 @@ public:
   explicit TrackFeaturesTool(QObject* parent = 0);
   ~TrackFeaturesTool() override;
 
-  Outputs outputs() const QTE_OVERRIDE;
+  Outputs outputs() const override;
 
   /// Get if the tool can be canceled.
-  bool isCancelable() const QTE_OVERRIDE { return true; }
+  bool isCancelable() const override { return true; }
 
-  bool execute(QWidget* window = 0) QTE_OVERRIDE;
+  bool execute(QWidget* window = 0) override;
 
 protected:
-  void run() QTE_OVERRIDE;
+  void run() override;
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(TrackFeaturesTool)
