@@ -43,7 +43,7 @@ class vtkMaptkCameraRepresentation : public vtkObject
 {
 public:
   vtkTypeMacro(vtkMaptkCameraRepresentation, vtkObject);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   static vtkMaptkCameraRepresentation* New();
 
@@ -93,7 +93,7 @@ public:
 
 protected:
   vtkMaptkCameraRepresentation();
-  ~vtkMaptkCameraRepresentation();
+  ~vtkMaptkCameraRepresentation() override;
 
 private:
   vtkMaptkCameraRepresentation(vtkMaptkCameraRepresentation const&) = delete;

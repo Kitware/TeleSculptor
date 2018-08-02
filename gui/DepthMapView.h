@@ -44,7 +44,7 @@ class DepthMapView : public QWidget
 
 public:
   explicit DepthMapView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~DepthMapView();
+  ~DepthMapView() override;
 
   void enableAntiAliasing(bool enable);
 public slots:

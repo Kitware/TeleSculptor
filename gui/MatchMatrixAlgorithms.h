@@ -54,36 +54,32 @@ public:
 //-----------------------------------------------------------------------------
 class AbsoluteValueAlgorithm : public AbstractValueAlgorithm
 {
-  virtual double operator()(Matrix const&,
-                            MatrixIterator const&) const QTE_OVERRIDE;
-  virtual double max(double maxRawValue) const QTE_OVERRIDE;
+  double operator()(Matrix const&, MatrixIterator const&) const QTE_OVERRIDE;
+  double max(double maxRawValue) const QTE_OVERRIDE;
 };
 
 //-----------------------------------------------------------------------------
 class AbstractRelativeValueAlgorithm : public AbstractValueAlgorithm
 {
-  virtual double max(double maxRawValue) const QTE_OVERRIDE;
+  double max(double maxRawValue) const QTE_OVERRIDE;
 };
 
 //-----------------------------------------------------------------------------
 class RelativeXValueAlgorithm : public AbstractRelativeValueAlgorithm
 {
-  virtual double operator()(Matrix const&,
-                            MatrixIterator const&) const QTE_OVERRIDE;
+  double operator()(Matrix const&, MatrixIterator const&) const QTE_OVERRIDE;
 };
 
 //-----------------------------------------------------------------------------
 class RelativeYValueAlgorithm : public AbstractRelativeValueAlgorithm
 {
-  virtual double operator()(Matrix const&,
-                            MatrixIterator const&) const QTE_OVERRIDE;
+  double operator()(Matrix const&, MatrixIterator const&) const QTE_OVERRIDE;
 };
 
 //-----------------------------------------------------------------------------
 class RelativeXYValueAlgorithm : public AbstractRelativeValueAlgorithm
 {
-  virtual double operator()(Matrix const&,
-                            MatrixIterator const&) const QTE_OVERRIDE;
+  double operator()(Matrix const&, MatrixIterator const&) const QTE_OVERRIDE;
 };
 
 //END value algorithms
@@ -107,7 +103,7 @@ class LinearScaleAlgorithm : public AbstractScaleAlgorithm
 public:
   LinearScaleAlgorithm(double maxRawValue);
 
-  virtual double operator()(double rawValue) const QTE_OVERRIDE;
+  double operator()(double rawValue) const QTE_OVERRIDE;
 
 protected:
   double const scale;
@@ -119,7 +115,7 @@ class LogarithmicScaleAlgorithm : public AbstractScaleAlgorithm
 public:
   LogarithmicScaleAlgorithm(double maxRawValue, double rangeScale = 1.0);
 
-  virtual double operator()(double rawValue) const QTE_OVERRIDE;
+  double operator()(double rawValue) const QTE_OVERRIDE;
 
 protected:
   double const preScale;
@@ -132,7 +128,7 @@ class ExponentialScaleAlgorithm : public AbstractScaleAlgorithm
 public:
   ExponentialScaleAlgorithm(double maxRawValue, double exponent);
 
-  virtual double operator()(double rawValue) const QTE_OVERRIDE;
+  double operator()(double rawValue) const QTE_OVERRIDE;
 
 protected:
   double const scale;

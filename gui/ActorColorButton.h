@@ -45,14 +45,14 @@ class ActorColorButton : public qtColorButton
 
 public:
   explicit ActorColorButton(QWidget* parent = 0);
-  virtual ~ActorColorButton();
+  ~ActorColorButton() override;
 
   void addActor(vtkActor*);
 
   void persist(qtUiState&, QString const&);
 
 public slots:
-  virtual void setColor(QColor) QTE_OVERRIDE;
+  void setColor(QColor) QTE_OVERRIDE;
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(ActorColorButton)

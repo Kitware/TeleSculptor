@@ -40,7 +40,7 @@ class vtkMaptkCamera : public vtkCamera
 {
 public:
   vtkTypeMacro(vtkMaptkCamera, vtkCamera);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   static vtkMaptkCamera* New();
 
@@ -94,7 +94,7 @@ public:
 
 protected:
   vtkMaptkCamera();
-  ~vtkMaptkCamera();
+  ~vtkMaptkCamera() override;
 
   using vtkCamera::GetFrustumPlanes; // Hide overloaded virtual
 

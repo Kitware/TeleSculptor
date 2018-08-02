@@ -52,7 +52,7 @@ class CameraView : public QWidget
 
 public:
   explicit CameraView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~CameraView();
+  ~CameraView() override;
 
   void addFeatureTrack(kwiver::vital::track const&);
 

@@ -41,17 +41,17 @@ class CanonicalTransformTool : public AbstractTool
 
 public:
   explicit CanonicalTransformTool(QObject* parent = 0);
-  virtual ~CanonicalTransformTool();
+  ~CanonicalTransformTool() override;
 
-  virtual Outputs outputs() const QTE_OVERRIDE;
+  Outputs outputs() const QTE_OVERRIDE;
 
   /// Get if the tool can be canceled.
-  virtual bool isCancelable() const QTE_OVERRIDE { return false; }
+  bool isCancelable() const QTE_OVERRIDE { return false; }
 
-  virtual bool execute(QWidget* window = 0) QTE_OVERRIDE;
+  bool execute(QWidget* window = 0) QTE_OVERRIDE;
 
 protected:
-  virtual void run() QTE_OVERRIDE;
+  void run() QTE_OVERRIDE;
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(CanonicalTransformTool)

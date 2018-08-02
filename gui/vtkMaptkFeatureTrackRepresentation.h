@@ -49,7 +49,7 @@ public:
   };
 
   vtkTypeMacro(vtkMaptkFeatureTrackRepresentation, vtkObject);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   static vtkMaptkFeatureTrackRepresentation* New();
 
@@ -102,7 +102,7 @@ public:
 
 protected:
   vtkMaptkFeatureTrackRepresentation();
-  ~vtkMaptkFeatureTrackRepresentation();
+  ~vtkMaptkFeatureTrackRepresentation() override;
 
 private:
   vtkMaptkFeatureTrackRepresentation(vtkMaptkFeatureTrackRepresentation const&) = delete;

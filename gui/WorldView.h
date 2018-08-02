@@ -53,7 +53,7 @@ class WorldView : public QWidget
 
 public:
   explicit WorldView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~WorldView();
+  ~WorldView() override;
 
   void initFrameSampling(int nbFrames);
   void loadVolume(QString path, QString krtd, QString frame);

@@ -41,19 +41,19 @@ class BundleAdjustTool : public AbstractTool
 
 public:
   explicit BundleAdjustTool(QObject* parent = 0);
-  virtual ~BundleAdjustTool();
+  ~BundleAdjustTool() override;
 
-  virtual Outputs outputs() const QTE_OVERRIDE;
+  Outputs outputs() const QTE_OVERRIDE;
 
   /// Get if the tool can be canceled.
-  virtual bool isCancelable() const QTE_OVERRIDE { return true; }
+  bool isCancelable() const QTE_OVERRIDE { return true; }
 
-  virtual bool execute(QWidget* window = 0) QTE_OVERRIDE;
+  bool execute(QWidget* window = 0) QTE_OVERRIDE;
 
   bool callback_handler(camera_map_sptr cameras, landmark_map_sptr landmarks);
 
 protected:
-  virtual void run() QTE_OVERRIDE;
+  void run() QTE_OVERRIDE;
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(BundleAdjustTool)

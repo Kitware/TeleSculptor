@@ -48,7 +48,7 @@ class VolumeOptions : public QWidget
 public:
   explicit VolumeOptions(const QString &settingsGroup,
       QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~VolumeOptions();
+  ~VolumeOptions() override;
 
   void setActor(vtkActor* actor);
 

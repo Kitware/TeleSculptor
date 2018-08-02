@@ -46,7 +46,7 @@ class ColorizeSurfaceOptions : public QWidget
 public:
   explicit ColorizeSurfaceOptions(const QString &settingsGroup,
       QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~ColorizeSurfaceOptions();
+  ~ColorizeSurfaceOptions() override;
 
   void addColorDisplay(std::string name);
 

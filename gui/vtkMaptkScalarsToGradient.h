@@ -48,19 +48,19 @@ public:
   void SetGradient(qtGradient const&);
 
   using Superclass::SetRange;
-  virtual void SetRange(double min, double max);
+  void SetRange(double min, double max) override;
 
-  virtual void GetColor(double v, double rgb[3]);
+  void GetColor(double v, double rgb[3]) override;
 
 protected:
   QTE_DECLARE_PRIVATE_PTR(vtkMaptkScalarsToGradient)
 
   vtkMaptkScalarsToGradient();
-  ~vtkMaptkScalarsToGradient();
+  ~vtkMaptkScalarsToGradient() override;
 
-  virtual void MapScalarsThroughTable2(
+  void MapScalarsThroughTable2(
     void* input, unsigned char* output, int inputDataType,
-    int numberOfValues, int inputIncrement, int outputFormat);
+    int numberOfValues, int inputIncrement, int outputFormat) override;
 
 private:
   QTE_DECLARE_PRIVATE(vtkMaptkScalarsToGradient)
