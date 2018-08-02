@@ -42,6 +42,7 @@ require File.join(File.dirname(__FILE__),'matchphoto_import_plugin.rb')
 IMAGE_FOLDER_KW = 'output_frames_dir'
 OUTPUT_PLY_FILE_KW = 'output_ply_file'
 OUTPUT_KRTD_DIR_KW = 'output_krtd_dir'
+GCP_FILE_KW = 'ground_control_points_file'
 
 class MaptkConfImporter < Sketchup::Importer
   def description
@@ -64,6 +65,7 @@ class MaptkConfImporter < Sketchup::Importer
     output_image_dir = ""
     output_ply_file = ""
     output_krtd_dir = ""
+    gcp_file = ""
 
     conf_file = File.new(fp, "r")
 
@@ -79,6 +81,8 @@ class MaptkConfImporter < Sketchup::Importer
         output_ply_file = value
       when OUTPUT_KRTD_DIR_KW
         output_krtd_dir = value
+      when GCP_FILE_KW
+        gcp_file = value
       end
     end
     # Check to ensure all of the required keywords were found and show a warning message
@@ -112,7 +116,7 @@ class MaptkConfImporter < Sketchup::Importer
       end
     end
 
-    # if not a valid directory, try prepending the directory of the conf file
+    # if not a valid file, try prepending the directory of the conf file
     if ! File.file?(output_ply_file)
       output_ply_file = File.join(File.dirname(fp), output_ply_file)
       if ! File.file?(output_ply_file)
@@ -120,7 +124,17 @@ class MaptkConfImporter < Sketchup::Importer
         return nil
       end
     end
-    return output_image_dir, output_ply_file, output_krtd_dir
+
+    # if not a valid file, try prepending the directory of the conf file
+    if ! File.file?(gcp_file)
+      gcp_file = File.join(File.dirname(fp), gcp_file)
+      if ! File.file?(output_ply_file)
+        UI.messagebox("The value of #{GCP_FILE_KW} is incorrect. #{gcp_file} is not a valid file.")
+        return nil
+      end
+    end
+
+    return output_image_dir, output_ply_file, output_krtd_dir, gcp_file
   end
 
   def load_file(file_path, status)
@@ -135,13 +149,15 @@ class MaptkConfImporter < Sketchup::Importer
     output_image_folder = kwds[0]
     output_ply_file = kwds[1]
     output_krtd_dir = kwds[2]
+    gcp_file = kwds[3]
     # We delegate the importing of the photos/krtd files to the matchphoto_import_plugin.
     photo_krtd_importer = MatchphotoMaptkImporter.new
     photo_krtd_importer.instantiate(output_krtd_dir)
     status_images = photo_krtd_importer.load_file(output_image_folder, 0)
     # And the ply importing to the PLYImporter plugin.
     ply_importer = PLYImporter.new
-    status_ply = ply_importer.load_file(output_ply_file, 0)
+    status_ply = ply_importer.load_file(output_ply_file, 'MAP-Tk Landmarks', true)
+    status_gcp = ply_importer.load_file(gcp_file, 'MAP-Tk Ground Control Points', false)
     return 0
   end
 

@@ -48,11 +48,13 @@ class PLYImporter < Sketchup::Importer
     return false
   end
     
-  def load_file(file_path, status)
+  def load_file(file_path, layer_name, is_hidden)
     file = File.new(file_path, "r")
     model = Sketchup.active_model
-    pt_layer = model.layers.add('MAP-Tk Landmarks')
-    pt_layer.page_behavior = LAYER_IS_HIDDEN_ON_NEW_PAGES
+    pt_layer = model.layers.add(layer_name)
+    if is_hidden == true
+      pt_layer.page_behavior = LAYER_IS_HIDDEN_ON_NEW_PAGES
+    end
     entities = model.entities
     pt_group = entities.add_group
     pt_group.layer = pt_layer
