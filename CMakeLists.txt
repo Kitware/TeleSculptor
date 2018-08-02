@@ -29,13 +29,6 @@ include(CMakeDependentOption)
 #
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/CMake" )
 
-###
-# Versioning
-#
-set(MAPTK_VERSION_MAJOR 0)
-set(MAPTK_VERSION_MINOR 11)
-set(MAPTK_VERSION_PATCH 0)
-set(MAPTK_VERSION "${MAPTK_VERSION_MAJOR}.${MAPTK_VERSION_MINOR}.${MAPTK_VERSION_PATCH}")
 string(TIMESTAMP MAPTK_COPYRIGHT_YEAR "%Y")
 
 ###
@@ -82,7 +75,7 @@ if(MAPTK_SUPERBUILD)
   include(${MAPTK_CMAKE_DIR}/maptk-superbuild.cmake)
   return()
 endif()
-project(MAPTK)
+project(MAPTK VERSION 0.11.0)
 include( maptk-depends )
 
 # set the name for our package exports
