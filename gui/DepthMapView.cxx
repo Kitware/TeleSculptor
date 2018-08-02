@@ -188,8 +188,6 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
 //-----------------------------------------------------------------------------
 void DepthMapView::updateThresholds()
 {
-  QTE_D();
-
   if (this->isVisible())
   {
     this->render();
