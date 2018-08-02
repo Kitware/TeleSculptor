@@ -134,11 +134,12 @@ bool TrackFeaturesTool::execute(QWidget* window)
     return false;
   }
 
+  auto const hasMask = !this->data()->maskPath.empty();
   config->merge_config(this->data()->config);
   if (!convert_image::check_nested_algo_configuration(BLOCK_CI, config) ||
       !track_features::check_nested_algo_configuration(BLOCK_TF, config) ||
       !video_input::check_nested_algo_configuration(BLOCK_VR, config) ||
-      !video_input::check_nested_algo_configuration(BLOCK_MR, config))
+      (hasMask && !video_input::check_nested_algo_configuration(BLOCK_MR, config)))
 
   {
     QMessageBox::critical(
