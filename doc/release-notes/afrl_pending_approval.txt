@@ -46,5 +46,11 @@ TeleSculptor
  * Added ability to specify image masks.  Currently these are supported by
    dense feature tracking.
 
+
 Fixes since last public release
 -------------------------------
+
+Packaging
+
+ * When packaging, CMake's fixup_bundle was not scanning sprokit plugins
+   for dependencies.  This has been corrected. 
