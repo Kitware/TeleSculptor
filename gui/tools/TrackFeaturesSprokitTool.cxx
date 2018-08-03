@@ -273,8 +273,7 @@ TrackFeaturesSprokitTool
   time(&last_disp_time);
   double disp_period = 1.0;
 
-  auto numFrames = d->video_reader->num_frames();
-  this->updateProgress(frame * 100.0 / numFrames);
+  this->updateProgress(static_cast<int>(frame), maxFrame);
   this->setDescription("Parsing video frames");
 
   typedef std::unique_ptr<kwiver::vital::track_set_implementation> tsi_uptr;
@@ -305,7 +304,6 @@ TrackFeaturesSprokitTool
       ds->add_value("timestamp", currentTimestamp);
       d->ep.send(ds);
       images.insert(std::make_pair(currentTimestamp.get_frame(),converted_image));
-
     }
     else
     {
@@ -338,7 +336,7 @@ TrackFeaturesSprokitTool
         accumulated_tracks = d->m_loop_closer->stitch(fid, accumulated_tracks, kwiver::vital::image_container_sptr());
 
         // Update tool progress
-        this->updateProgress(fid* 100.0 / numFrames);
+        this->updateProgress(static_cast<int>(fid), maxFrame);
 
         time_t cur_time;
         time(&cur_time);
