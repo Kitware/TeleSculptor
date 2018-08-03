@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2017 by Kitware, Inc.
+ * Copyright 2017-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -162,10 +162,11 @@ void TrackFeaturesTool::run()
 {
   QTE_D();
 
+  auto const maxFrame = this->data()->maxFrame;
   auto const hasMask = !this->data()->maskPath.empty();
 
-  unsigned int frame = this->activeFrame();
   auto tracks = this->tracks();
+  kwiver::vital::frame_id_t frame = this->activeFrame();
   kwiver::vital::timestamp currentTimestamp;
 
   d->video_reader->open(this->data()->videoPath);
@@ -185,8 +186,7 @@ void TrackFeaturesTool::run()
     }
   }
 
-  auto numFrames = d->video_reader->num_frames();
-  this->updateProgress(frame * 100.0 / numFrames);
+  this->updateProgress(static_cast<int>(frame), maxFrame);
 
   while (d->video_reader->next_frame(currentTimestamp))
   {
@@ -208,7 +208,7 @@ void TrackFeaturesTool::run()
     frame = currentTimestamp.get_frame();
 
     // Update tool progress
-    this->updateProgress(frame * 100.0 / numFrames);
+    this->updateProgress(static_cast<int>(frame), maxFrame);
 
     tracks = d->feature_tracker->track(tracks, frame, image, mask);
     if (tracks)

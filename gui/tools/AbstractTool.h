@@ -69,6 +69,7 @@ public:
   /// Deep copy a depth image into this data class
   void copyDepth(depth_sptr const&);
 
+  int maxFrame;
   unsigned int activeFrame;
   std::string videoPath;
   std::string maskPath;
@@ -124,6 +125,15 @@ public:
 
   /// Set the active frame to be used by the tool.
   void setActiveFrame(unsigned int frame);
+
+  /// Set the frame number of the last frame.
+  ///
+  /// This sets the frame number of the last frame of the video. This is an
+  /// optimization in order to allow some tools to correctly report their
+  /// progress, since this value is expected to be known by the caller, but may
+  /// be expensive for the tool to determine. This does \em not affect how many
+  /// frames the tool will actually process.
+  void setLastFrame(int);
 
   /// Set the feature tracks to be used as input to the tool.
   void setTracks(feature_track_set_sptr const&);
@@ -283,7 +293,7 @@ protected:
   /// Set tool progress.
   ///
   /// This returns the tool execution progress as an integer.
-  void updateProgress(int value);
+  void updateProgress(int value, int maximum = 100);
 
   /// Set tool execution description.
   ///

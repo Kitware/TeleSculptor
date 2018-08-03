@@ -2299,6 +2299,10 @@ void MainWindow::executeTool(QObject* object)
       tool->setVideoPath(stdString(d->videoPath));
       tool->setMaskPath(stdString(d->maskPath));
       tool->setConfig(d->project->config);
+      if (!d->frames.empty())
+      {
+        tool->setLastFrame(static_cast<int>(d->frames.lastKey()));
+      }
 
       if (!tool->execute())
       {

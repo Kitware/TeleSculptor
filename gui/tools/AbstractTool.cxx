@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2017 by Kitware, Inc.
+ * Copyright 2017-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -190,6 +190,13 @@ void AbstractTool::setActiveFrame(unsigned int frame)
 }
 
 //-----------------------------------------------------------------------------
+void AbstractTool::setLastFrame(int count)
+{
+  QTE_D();
+  d->data->maxFrame = count;
+}
+
+//-----------------------------------------------------------------------------
 void AbstractTool::setTracks(feature_track_set_sptr const& newTracks)
 {
   QTE_D();
@@ -325,10 +332,11 @@ int AbstractTool::progress() const
 }
 
 //-----------------------------------------------------------------------------
-void AbstractTool::updateProgress(int value)
+void AbstractTool::updateProgress(int value, int maximum)
 {
   QTE_D();
-  d->data->progress = value;
+  // FIXME also report progress range rather than forcing to 0-100
+  d->data->progress = (100 * value) / maximum;
 }
 
 //-----------------------------------------------------------------------------

@@ -261,10 +261,12 @@ TrackFeaturesSprokitTool
 {
   QTE_D();
 
+  auto const maxFrame = this->data()->maxFrame;
+
   // Start pipeline and wait for it to finish
   d->ep.start();
 
-  unsigned int frame = this->activeFrame();
+  kwiver::vital::frame_id_t frame = this->activeFrame();
   kwiver::vital::timestamp currentTimestamp;
 
   d->video_reader->open(this->data()->videoPath);
@@ -275,8 +277,7 @@ TrackFeaturesSprokitTool
     d->video_reader->seek_frame(currentTimestamp, frame - 1);
   }
 
-  auto numFrames = d->video_reader->num_frames();
-  this->updateProgress(frame * 100.0 / numFrames);
+  this->updateProgress(static_cast<int>(frame), maxFrame);
   this->setDescription("Parsing video frames");
 
   while (d->video_reader->next_frame(currentTimestamp))
@@ -285,7 +286,8 @@ TrackFeaturesSprokitTool
     auto const converted_image = d->image_converter->convert(image);
 
     // Update tool progress
-    this->updateProgress(currentTimestamp.get_frame() * 100.0 / numFrames);
+    this->updateProgress(
+      static_cast<int>(currentTimestamp.get_frame()), maxFrame);
 
     auto const mdv = d->video_reader->frame_metadata();
     if (!mdv.empty())
