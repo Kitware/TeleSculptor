@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -64,11 +64,11 @@ public:
   QString geoOriginFile;
   QString depthPath;
 
-  kwiver::vital::config_block_sptr projectConfig;
+  kwiver::vital::config_block_sptr config =
+    kwiver::vital::config_block::empty_config();
 
 public slots:
   void write();
-
 };
 
 #endif
