@@ -65,7 +65,7 @@ private:
   vtkMaptkImageUnprojectDepth(vtkMaptkImageUnprojectDepth const&) = delete;
   void operator=(vtkMaptkImageUnprojectDepth const&) = delete;
 
-  vtkMaptkCamera* Camera;
+  vtkSmartPointer<vtkMaptkCamera> Camera;
 
   char* DepthArrayName;
   char* UnprojectedPointArrayName;

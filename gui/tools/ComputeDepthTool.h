@@ -63,6 +63,7 @@ private:
 };
 
 vtkSmartPointer<vtkImageData>
-depth_to_vtk(kwiver::vital::image_container_sptr depth_img, kwiver::vital::image_container_sptr color_img);
+depth_to_vtk(kwiver::vital::image_container_sptr depth_img, kwiver::vital::image_container_sptr color_img,
+             int i0, int ni, int j0, int nj);
 
 #endif

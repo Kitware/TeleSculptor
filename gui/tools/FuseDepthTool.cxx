@@ -43,6 +43,7 @@
 
 #include <algorithm>
 
+#include <vtkIntArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkImageData.h>
 #include <vtkNew.h>
@@ -100,14 +101,22 @@ bool FuseDepthTool::execute(QWidget* window)
 {
   QTE_D();
   // Check inputs
-  if (!this->hasCameras() || !this->hasDepthLookup())
+  if (!this->hasDepthLookup())
   {
     QMessageBox::information(
       window, "Insufficient data",
-      "This operation requires a video source, cameras, and landmarks");
+      "This operation requires depth maps");
     return false;
   }
 
+    // Check inputs
+  if (!this->hasCameras())
+  {
+    QMessageBox::information(
+      window, "Insufficient data",
+      "This operation requires cameras");
+    return false;
+  }
   // Load configuration
   auto const config = readConfig("gui_integrate_depth_maps.conf");
 
@@ -137,12 +146,24 @@ bool FuseDepthTool::execute(QWidget* window)
 }
 
 //-----------------------------------------------------------------------------
-kwiver::vital::image_container_sptr load_depth_map(const std::string &filename)
+kwiver::vital::image_container_sptr load_depth_map(const std::string &filename, int &i0, int &ni, int &j0, int &nj)
 {
   vtkNew<vtkXMLImageDataReader> depthReader;
   depthReader->SetFileName(filename.c_str());
   depthReader->Update();
   vtkImageData *img = depthReader->GetOutput();
+
+  vtkIntArray* crop = static_cast<vtkIntArray*>(img->GetFieldData()->GetArray("Crop"));
+  if (crop)
+  {
+    i0 = crop->GetValue(0);    ni = crop->GetValue(1);
+    j0 = crop->GetValue(2);    nj = crop->GetValue(3);
+  }
+  else
+  {
+    i0 = j0 = 0;
+    ni = img->GetDimensions()[0];    nj = img->GetDimensions()[1];
+  }
   
   vtkDoubleArray *depths = dynamic_cast<vtkDoubleArray *>(img->GetPointData()->GetArray("Depths"));
   
@@ -206,10 +227,29 @@ volume_to_vtk(kwiver::vital::image_container_sptr volume, const kwiver::vital::v
 }
 
 //-----------------------------------------------------------------------------
+
+kwiver::vital::camera_perspective_sptr crop_camera(const kwiver::vital::camera_perspective_sptr& cam,
+                                                  int i0, int ni, int j0, int nj)
+{
+  kwiver::vital::simple_camera_intrinsics newIntrinsics(*cam->intrinsics());
+  kwiver::vital::vector_2d pp = newIntrinsics.principal_point();
+
+  pp[0] -= i0;
+  pp[1] -= j0;
+
+  newIntrinsics.set_principal_point(pp);
+
+  kwiver::vital::simple_camera_perspective cropCam(cam->center(),
+                                                   cam->rotation(),
+                                                   newIntrinsics);    
+
+  return std::dynamic_pointer_cast<kwiver::vital::camera_perspective>(cropCam.clone());
+}
+
+//-----------------------------------------------------------------------------
 void FuseDepthTool::run()
 {
   QTE_D();
-  using kwiver::vital::camera_perspective;
 
   int frame = this->activeFrame();
 
@@ -225,8 +265,11 @@ void FuseDepthTool::run()
     auto camitr = cameras.find(itr->first);
     if (camitr == cameras.end())
       continue;
-    cameras_out.push_back(std::dynamic_pointer_cast<camera_perspective>(camitr->second));
-    depths_out.push_back(load_depth_map(itr->second));
+    kwiver::vital::camera_perspective_sptr cam = std::dynamic_pointer_cast<kwiver::vital::camera_perspective>(camitr->second);
+    int i0, ni, j0, nj;
+    kwiver::vital::image_container_sptr depth = load_depth_map(itr->second, i0, ni, j0, nj);
+    depths_out.push_back(depth);
+    cameras_out.push_back(crop_camera(cam, i0, ni, j0, nj));    
   }
 
   double minptd[3];

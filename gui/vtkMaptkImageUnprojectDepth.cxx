@@ -34,6 +34,7 @@
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkImageData.h>
+#include <vtkIntArray.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 
@@ -63,7 +64,7 @@ vtkMaptkImageUnprojectDepth::~vtkMaptkImageUnprojectDepth()
 
 //-----------------------------------------------------------------------------
 void vtkMaptkImageUnprojectDepth::SimpleExecute(vtkImageData* input,
-                                           vtkImageData* output)
+                                                vtkImageData* output)
 {
   // All we're doing is adding an array to the point data
   output->ShallowCopy(input);
@@ -78,8 +79,8 @@ void vtkMaptkImageUnprojectDepth::SimpleExecute(vtkImageData* input,
     output->GetPointData()->GetArray(this->DepthArrayName));
   if (!depths || depths->GetNumberOfComponents() != 1)
   {
-    vtkErrorMacro(<< "Specified input depth array is not present or is not " <<
-      "a scalar DoubleArray as expected!");
+    vtkErrorMacro(<< "Specified input depth array is not present or is not "
+                  << "a scalar DoubleArray as expected!");
     return;
   }
 
@@ -92,16 +93,24 @@ void vtkMaptkImageUnprojectDepth::SimpleExecute(vtkImageData* input,
 
   if (dims[0] < 2 || dims[1] < 2 || dims[2] != 1)
   {
-    vtkErrorMacro(<< "Expecting XY plane but input is " << dims[0] <<
-      " by " << dims[1] << " by " << dims[2]);
+    vtkErrorMacro(<< "Expecting XY plane but input is " << dims[0] << " by " << dims[1] << " by " << dims[2]);
     return;
+  }
+
+  vtkIntArray* crop = static_cast<vtkIntArray*>(output->GetFieldData()->GetArray("Crop"));
+  auto cam = this->Camera;
+  if (crop)
+  {
+    cam = cam->CropCamera(crop->GetValue(0), crop->GetValue(1), crop->GetValue(2), crop->GetValue(3));
   }
 
   // Get the scaled camera for doing the unproject
   auto const imageRatio =
     static_cast<double>(input->GetDimensions()[0]) /
-    static_cast<double>(this->Camera->GetImageDimensions()[0]);
-  auto const scaledCamera = this->Camera->ScaledK(imageRatio);
+    static_cast<double>(cam->GetImageDimensions()[0]);
+  cam = cam->ScaledK(imageRatio);
+
+
 
   vtkDataArray* inputPoints = output->GetPointData()->GetArray(
     this->UnprojectedPointArrayName);
@@ -135,7 +144,7 @@ void vtkMaptkImageUnprojectDepth::SimpleExecute(vtkImageData* input,
     {
       pixel[0] = origin[0] + column * spacing[0];
 
-      auto const p = scaledCamera->UnprojectPoint(pixel, *depthPtr);
+      auto const p = cam->UnprojectPoint(pixel, *depthPtr);
       *pointsPtr = p[0];
       *(++pointsPtr) = p[1];
       *(++pointsPtr) = p[2];

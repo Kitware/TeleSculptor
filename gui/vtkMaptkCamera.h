@@ -65,6 +65,8 @@ public:
 
   vtkSmartPointer<vtkMaptkCamera> ScaledK(double factor);
 
+  vtkSmartPointer<vtkMaptkCamera> CropCamera(int i0, int ni, int j0, int nj);
+
   // Description:
   // Update self (the VTK camera) based on the maptk camera and
   // ImageDimensions, if set
