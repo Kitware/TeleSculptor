@@ -423,7 +423,7 @@ void MainWindowPrivate::addCamera(kwiver::vital::camera_perspective_sptr const& 
 
   // Add the camera to the end
   unsigned int lastFrameId =
-    this->frames.isEmpty() ? 0 : this->frames.keys().last();
+    this->frames.isEmpty() ? 0 : this->frames.lastKey();
   this->addFrame(camera, lastFrameId + 1);
 }
 
@@ -554,7 +554,7 @@ void MainWindowPrivate::addFrame(
   }
 
   unsigned int lastFrameId =
-    this->frames.isEmpty() ? 1 : this->frames.keys().last();
+    this->frames.isEmpty() ? 1 : this->frames.lastKey();
   this->UI.camera->setRange(1, lastFrameId);
   this->UI.cameraSpin->setRange(1, lastFrameId);
 }
@@ -763,7 +763,7 @@ void MainWindowPrivate::setActiveCamera(int id)
   { //positive movement in sequence
     //find the next keyframe in the sequence
     int lastFrameId =
-      this->frames.isEmpty() ? 1 : this->frames.keys().last();
+      this->frames.isEmpty() ? 1 : this->frames.lastKey();
     while (id <= lastFrameId)
     {
       if (only_keyframes)
@@ -2280,7 +2280,7 @@ void MainWindow::setActiveCamera(int id)
 {
   QTE_D();
 
-  int lastFrameId = d->frames.isEmpty() ? 1 : d->frames.keys().last();
+  int lastFrameId = d->frames.isEmpty() ? 1 : d->frames.lastKey();
   if (id < 1 || id > lastFrameId)
   {
     qDebug() << "MainWindow::setActiveCamera:"
@@ -2309,6 +2309,10 @@ void MainWindow::executeTool(QObject* object)
       tool->setVideoPath(stdString(d->videoPath));
       tool->setMaskPath(stdString(d->maskPath));
       tool->setConfig(d->project->config);
+      if (!d->frames.empty())
+      {
+        tool->setLastFrame(static_cast<int>(d->frames.lastKey()));
+      }
 
       if (!tool->execute())
       {
