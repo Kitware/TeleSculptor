@@ -1223,6 +1223,7 @@ void MainWindowPrivate::updateProgress(QObject* object,
     case 100:
     {
       this->UI.progressWidget->removeTask(taskId);
+      this->progressIds.remove(object);
       break;
     }
     default:
