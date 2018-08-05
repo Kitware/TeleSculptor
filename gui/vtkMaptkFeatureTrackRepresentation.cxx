@@ -90,6 +90,7 @@ void vtkMaptkFeatureTrackRepresentation::vtkInternal::UpdateActivePoints(
     }
   }
 
+  this->PointsWithDescCells->Modified();
   this->PointsWithDescPolyData->Modified();
 
   this->PointsWithoutDescCells->Reset();
@@ -106,6 +107,7 @@ void vtkMaptkFeatureTrackRepresentation::vtkInternal::UpdateActivePoints(
   }
 
   this->PointsWithoutDescCells->Modified();
+  this->PointsWithoutDescPolyData->Modified();
 }
 
 //-----------------------------------------------------------------------------
@@ -192,6 +194,8 @@ void vtkMaptkFeatureTrackRepresentation::vtkInternal::UpdateTrails(
 
   this->TrailsWithDescCells->Modified();
   this->TrailsWithoutDescCells->Modified();
+  this->TrailsWithDescPolyData->Modified();
+  this->TrailsWithoutDescPolyData->Modified();
 }
 
 //-----------------------------------------------------------------------------

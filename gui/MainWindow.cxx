@@ -834,16 +834,6 @@ void MainWindowPrivate::setActiveCamera(int id)
 
   this->updateCameraView();
 
-  // Show feature tracks
-  this->UI.cameraView->clearFeatureTracks();
-  if (this->tracks)
-  {
-    for(auto const& track: this->tracks->active_tracks(id))
-    {
-      this->UI.cameraView->addFeatureTrack(*track);
-    }
-  }
-
   //load from memory if cached
   if (id == this->activeDepthFrame)
   {
@@ -907,15 +897,6 @@ void MainWindowPrivate::updateCameraView()
   // Show camera image
   this->loadImage(*activeFrame);
 
-  // Show feature tracks
-  this->UI.cameraView->clearFeatureTracks();
-  if (this->tracks)
-  {
-    for(auto const& track: this->tracks->active_tracks(fid))
-    {
-      this->UI.cameraView->addFeatureTrack(*track);
-    }
-  }
 
   if (!activeFrame->camera)
   {
@@ -1826,6 +1807,10 @@ void MainWindow::loadTracks(QString const& path)
 
       d->tracks = tracks;
       d->updateCameraView();
+      for (auto const& track : tracks->tracks())
+      {
+        d->UI.cameraView->addFeatureTrack(*track);
+      }
 
       d->UI.actionExportTracks->setEnabled(
           d->tracks && d->tracks->size());
