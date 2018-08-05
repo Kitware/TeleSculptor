@@ -68,6 +68,7 @@ class ComputeDepthToolPrivate
 public:
   video_input_sptr video_reader;
   compute_depth_sptr depth_algo;
+  unsigned int max_iterations;
   kwiver::vital::image_container_sptr ref_img;
   kwiver::vital::frame_id_t ref_frame;
 };
@@ -142,6 +143,10 @@ bool ComputeDepthTool::execute(QWidget* window)
   config->merge_config(this->data()->config);
   video_input::set_nested_algo_configuration(BLOCK_VR, config, d->video_reader);
   compute_depth::set_nested_algo_configuration(BLOCK_CD, config, d->depth_algo);
+
+  // TODO: find a more general way to get the number of iterations
+  std::string iterations_key = ":super3d:iterations";
+  d->max_iterations = config->get_value<unsigned int>(BLOCK_CD + iterations_key, 0);
 
   // Set the callback to receive updates
   using std::placeholders::_1;
@@ -223,6 +228,9 @@ void ComputeDepthTool::run()
   const int halfsupport = 10;
   int ref_frame = 0;
 
+  this->setDescription("Collecting Video Frames");
+  emit updated(std::make_shared<ToolData>());
+
   d->video_reader->open(this->data()->videoPath);
 
   kwiver::vital::timestamp currentTimestamp;
@@ -290,6 +298,8 @@ void ComputeDepthTool::run()
   d->ref_frame = frame;
 
   //compute depth
+  this->setDescription("Computing Cost Volume");
+  emit updated(std::make_shared<ToolData>());
   auto depth = d->depth_algo->compute(frames_out, cameras_out,
                                       landmarks_out, ref_frame);
   auto image_data = depth_to_vtk(depth, frames_out[ref_frame]);
@@ -308,6 +318,8 @@ ComputeDepthTool::callback_handler(kwiver::vital::image_container_sptr depth,
 
   data->copyDepth(depthData);
   data->activeFrame = d_ptr->ref_frame;
+  this->setDescription("Optimizing Depth");
+  this->updateProgress(iterations, d_ptr->max_iterations);
 
   emit updated(data);
   return !this->isCanceled();
