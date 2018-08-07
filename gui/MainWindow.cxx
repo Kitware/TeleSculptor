@@ -68,8 +68,6 @@
 
 #include <vtkBox.h>
 #include <vtkImageData.h>
-#include <vtkImageFlip.h>
-#include <vtkImageImport.h>
 #include <vtkImageReader2.h>
 #include <vtkImageReader2Collection.h>
 #include <vtkImageReader2Factory.h>
@@ -284,8 +282,6 @@ public:
 
   void setActiveCamera(int);
   void updateCameraView();
-
-  vtkSmartPointer<vtkImageData> vitalToVtkImage(kwiver::vital::image& img);
 
   std::string getFrameName(kwiver::vital::frame_id_t frame);
 
@@ -954,54 +950,6 @@ void MainWindowPrivate::updateCameraView()
   this->UI.cameraView->render();
 }
 
-//-----------------------------------------------------------------------------
-// TODO: move this method to a new implementation of image_container in a new
-//       vtk arrow
-vtkSmartPointer<vtkImageData>
-MainWindowPrivate::vitalToVtkImage(kwiver::vital::image& img)
-{
-  auto imgTraits = img.pixel_traits();
-
-  // Get the image type
-  int imageType = VTK_VOID;
-  switch (imgTraits.type)
-  {
-    case kwiver::vital::image_pixel_traits::UNSIGNED:
-      imageType = VTK_UNSIGNED_CHAR;
-      break;
-    case kwiver::vital::image_pixel_traits::SIGNED:
-      imageType = VTK_SIGNED_CHAR;
-      break;
-    case kwiver::vital::image_pixel_traits::FLOAT:
-      imageType = VTK_FLOAT;
-      break;
-    default:
-      imageType = VTK_VOID;
-      break;
-    // TODO: exception or error/warning message?
-  }
-
-  // convert to vtkFrameData
-  vtkSmartPointer<vtkImageImport> imageImport =
-    vtkSmartPointer<vtkImageImport>::New();
-  imageImport->SetDataScalarType(imageType);
-  imageImport->SetNumberOfScalarComponents(static_cast<int>(img.depth()));
-  imageImport->SetWholeExtent(0, static_cast<int>(img.width())-1,
-                              0, static_cast<int>(img.height())-1, 0, 0);
-  imageImport->SetDataExtentToWholeExtent();
-  imageImport->SetImportVoidPointer(img.first_pixel());
-  imageImport->Update();
-
-  // Flip image so it has the correct axis for VTK
-  vtkSmartPointer<vtkImageFlip> flipFilter =
-    vtkSmartPointer<vtkImageFlip>::New();
-  flipFilter->SetFilteredAxis(1); // flip x axis
-  flipFilter->SetInputConnection(imageImport->GetOutputPort());
-  flipFilter->Update();
-
-  return flipFilter->GetOutput();
-}
-
 std::string MainWindowPrivate::getFrameName(kwiver::vital::frame_id_t frameId)
 {
   return frameName(frameId, this->videoMetadataMap);
@@ -1061,7 +1009,7 @@ void MainWindowPrivate::loadImage(FrameData frame)
       frameImg.copy_from(sourceImg);
     }
 
-    auto imageData = this->vitalToVtkImage(frameImg);
+    auto imageData = vitalToVtkImage(frameImg);
     int dimensions[3];
     imageData->GetDimensions(dimensions);
 
