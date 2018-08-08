@@ -30,8 +30,12 @@
 
 #include "ReconstructionData.h"
 
+#include "GuiCommon.h"
+
 #include <sstream>
 #include <cmath>
+// KWIVER includes
+#include <vital/types/camera_perspective.h>
 
 // VTK includes
 #include "vtkDoubleArray.h"
@@ -39,6 +43,7 @@
 #include "vtkImageReader2Factory.h"
 #include "vtkImageReader2.h"
 #include "vtkVector.h"
+#include "vtkMaptkCamera.h"
 #include "vtkMatrix3x3.h"
 #include "vtkMatrix4x4.h"
 #include "vtkNew.h"
@@ -50,6 +55,37 @@
 
 namespace
 {
+
+//----------------------------------------------------------------------------
+/// Import krtd data and create K and RT matrix
+/**
+ * Imprt krtd data from camera and load the data K and RT matrices.
+ */
+static void ImportCameraData(vtkSmartPointer<vtkMaptkCamera> cam,
+                             vtkMatrix3x3* matrixK,
+                             vtkMatrix4x4* matrixRT)
+{
+  auto cam_ptr = cam->GetCamera();
+
+  // Get the K matrix
+  kwiver::vital::matrix_3x3d K = cam_ptr->intrinsics()->as_matrix();
+
+
+  // Get R and T
+  kwiver::vital::matrix_3x3d R = cam_ptr->rotation().matrix();
+  kwiver::vital::vector_3d T = cam_ptr->translation();
+
+  // Copy the data
+  for (unsigned int i = 0; i < 3; ++i)
+  {
+    for (unsigned int j = 0; j < 3; ++j)
+    {
+      matrixK->SetElement(i, j, K(i, j));
+      matrixRT->SetElement(i, j, R(i, j));
+    }
+    matrixRT->SetElement(i, 3, T[i]);
+  } 
+}
 
 //----------------------------------------------------------------------------
 /// Read krtd file and create K and RT matrix
@@ -159,6 +195,26 @@ ReconstructionData::ReconstructionData(std::string depthPath,
   this->SetMatrixRT(RT.Get());
 }
 
+ReconstructionData::ReconstructionData(kwiver::vital::image& image,
+                                       vtkSmartPointer<vtkMaptkCamera> camera)
+                                       : ReconstructionData()
+{
+  // Get Depth map as vtkImageData
+  this->DepthMap = vitalToVtkImage(image);
+
+  // Get camera data
+  vtkNew<vtkMatrix3x3> K;
+  vtkNew<vtkMatrix4x4> RT;
+  this->MatrixRT = vtkMatrix4x4::New();
+  this->MatrixK = vtkMatrix3x3::New();
+  this->Matrix4K = vtkMatrix4x4::New();
+  ImportCameraData(camera, K.Get(), RT.Get());
+
+  // Set matrix K to  create matrix4x4 for K
+  this->SetMatrixK(K.Get());
+  this->SetMatrixRT(RT.Get());
+}
+
 ReconstructionData::~ReconstructionData()
 {
   if (this->DepthMap)
@@ -205,7 +261,7 @@ void ReconstructionData::GetColorValue(int* pixelPosition, double rgb[3])
   }
 }
 
-vtkImageData* ReconstructionData::GetDepthMap()
+vtkSmartPointer<vtkImageData> ReconstructionData::GetDepthMap()
 {
   return this->DepthMap;
 }
@@ -285,7 +341,7 @@ void ReconstructionData::TransformWorldToDepthMapPosition(const double* worldCoo
   pixelCoordinate[1] = std::round(depthMapCoordinate[1]);
 }
 
-void ReconstructionData::SetDepthMap(vtkImageData* data)
+void ReconstructionData::SetDepthMap(vtkSmartPointer<vtkImageData> data)
 {
   if (this->DepthMap != 0)
   {
@@ -332,7 +388,7 @@ void ReconstructionData::SetMatrixRT(vtkMatrix4x4* matrix)
   this->TransformWorldToCamera->SetMatrix(this->MatrixRT);
 }
 
-void ReconstructionData::ReadDepthMap(std::string path, vtkImageData* out)
+void ReconstructionData::ReadDepthMap(std::string path, vtkSmartPointer<vtkImageData> out)
 {
   vtkSmartPointer<vtkImageReader2Factory> readerFactory =
       vtkSmartPointer<vtkImageReader2Factory>::New();
