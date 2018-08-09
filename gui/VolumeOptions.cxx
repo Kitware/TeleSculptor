@@ -143,6 +143,18 @@ void VolumeOptions::setKrtdFrameFile(QString krtd, QString frame)
 }
 
 //-----------------------------------------------------------------------------
+void VolumeOptions::setColorizeRequirements(
+  std::string videoPath,
+  kwiver::vital::config_block_sptr& config,
+  kwiver::vital::camera_map_sptr cameras)
+{
+  QTE_D();
+
+  d->colorizeSurfaceOptions->setVideoInfo(config, videoPath);
+  d->colorizeSurfaceOptions->setCameras(cameras);
+}
+
+//-----------------------------------------------------------------------------
 void VolumeOptions::colorize()
 {
   QTE_D();

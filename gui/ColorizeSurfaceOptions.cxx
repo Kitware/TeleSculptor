@@ -58,6 +58,10 @@ public:
 
   vtkActor* volumeActor;
 
+  kwiver::vital::config_block_sptr videoConfig;
+  std::string videoPath;
+  kwiver::vital::camera_map_sptr cameras;
+
   QString krtdFile;
   QString frameFile;
 
@@ -143,6 +147,24 @@ void ColorizeSurfaceOptions::setActor(vtkActor* actor)
   QTE_D();
 
   d->volumeActor = actor;
+}
+
+//-----------------------------------------------------------------------------
+void ColorizeSurfaceOptions::setVideoInfo(
+  kwiver::vital::config_block_sptr& config, std::string path)
+{
+  QTE_D();
+
+  d->videoConfig = config;
+  d->videoPath = path;
+}
+
+//-----------------------------------------------------------------------------
+void ColorizeSurfaceOptions::setCameras(kwiver::vital::camera_map_sptr& cameras)
+{
+  QTE_D();
+
+  d->cameras = cameras;
 }
 
 //-----------------------------------------------------------------------------

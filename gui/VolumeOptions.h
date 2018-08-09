@@ -31,6 +31,9 @@
 #ifndef MAPTK_VOLUMEOPTIONS_H_
 #define MAPTK_VOLUMEOPTIONS_H_
 
+#include <vital/config/config_block_types.h>
+#include <vital/types/camera_map.h>
+
 #include <qtGlobal.h>
 
 #include <QWidget>
@@ -54,6 +57,9 @@ public:
 
   void initFrameSampling(int nbFrames);
   void setKrtdFrameFile(QString krtd, QString frame);
+  void setColorizeRequirements(std::string videoPath,
+                               kwiver::vital::config_block_sptr&,
+                               kwiver::vital::camera_map_sptr cameras);
 
   void colorize();
 

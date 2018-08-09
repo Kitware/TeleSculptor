@@ -53,6 +53,11 @@ typedef kwiversys::SystemTools  ST;
 
 namespace
 {
+static char const* const BLOCK_VR = "video_reader";
+}
+
+namespace
+{
 
 //----------------------------------------------------------------------------
 /// Read global path and extract all contained path
@@ -182,6 +187,21 @@ MeshColoration::MeshColoration(vtkPolyData* mesh, std::string frameList, std::st
     return;
   }
 
+}
+
+MeshColoration::MeshColoration(vtkPolyData* mesh,
+                               kwiver::vital::config_block_sptr& config,
+                               std::string videoPath,
+                               kwiver::vital::camera_map_sptr& cameras)
+  : MeshColoration()
+{
+  //this->OutputMesh = vtkPolyData::New();
+  //this->OutputMesh->DeepCopy(mesh);
+
+  this->videoPath = videoPath;
+  kwiver::vital::algo::video_input::set_nested_algo_configuration(
+    BLOCK_VR, config, this->videoReader);
+  this->cameras = cameras;
 }
 
 MeshColoration::~MeshColoration()

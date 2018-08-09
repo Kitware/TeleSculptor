@@ -31,6 +31,9 @@
 #ifndef MAPTK_COLORIZESURFACEOPTIONS_H_
 #define MAPTK_COLORIZESURFACEOPTIONS_H_
 
+#include <vital/config/config_block_types.h>
+#include <vital/types/camera_map.h>
+
 #include <qtGlobal.h>
 
 #include <QWidget>
@@ -55,6 +58,8 @@ public:
   void setCurrentFramePath(std::string path);
 
   void setActor(vtkActor* actor);
+  void setVideoInfo(kwiver::vital::config_block_sptr& config, std::string path);
+  void setCameras(kwiver::vital::camera_map_sptr& cameras);
   void setKrtdFile(QString file);
   void setFrameFile(QString file);
 
