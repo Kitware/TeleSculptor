@@ -49,7 +49,6 @@ class ReconstructionData
 {
 public:
   ReconstructionData();
-  ReconstructionData(std::string depthPath, std::string matrixPath);
   ReconstructionData(kwiver::vital::image& image, kwiver::vital::camera_sptr& camera);
   ~ReconstructionData();
 
@@ -70,9 +69,6 @@ public:
   // FUNCTIONS
   void ApplyDepthThresholdFilter(double thresholdBestCost);
   void TransformWorldToDepthMapPosition(const double* worldCoordinate, int pixelCoordinate[2]);
-
-  // STATIC FUNCTIONS
-  static void ReadDepthMap(std::string path, vtkSmartPointer<vtkImageData> out);
 
 protected:
   // Attributes

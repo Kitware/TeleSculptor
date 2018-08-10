@@ -134,15 +134,6 @@ void VolumeOptions::initFrameSampling(int nbFrames)
 }
 
 //-----------------------------------------------------------------------------
-void VolumeOptions::setKrtdFrameFile(QString krtd, QString frame)
-{
-  QTE_D();
-
-  d->colorizeSurfaceOptions->setKrtdFile(krtd);
-  d->colorizeSurfaceOptions->setFrameFile(frame);
-}
-
-//-----------------------------------------------------------------------------
 void VolumeOptions::setColorizeRequirements(
   std::string videoPath,
   kwiver::vital::config_block_sptr& config,

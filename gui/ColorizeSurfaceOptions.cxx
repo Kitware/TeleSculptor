@@ -168,22 +168,6 @@ void ColorizeSurfaceOptions::setCameras(kwiver::vital::camera_map_sptr& cameras)
 }
 
 //-----------------------------------------------------------------------------
-void ColorizeSurfaceOptions::setKrtdFile(QString file)
-{
-  QTE_D();
-
-  d->krtdFile = file;
-}
-
-//-----------------------------------------------------------------------------
-void ColorizeSurfaceOptions::setFrameFile(QString file)
-{
-  QTE_D();
-
-  d->frameFile = file;
-}
-
-//-----------------------------------------------------------------------------
 void ColorizeSurfaceOptions::enableMenu(bool state)
 {
   QTE_D();

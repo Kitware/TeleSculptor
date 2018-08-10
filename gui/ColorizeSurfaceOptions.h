@@ -60,8 +60,6 @@ public:
   void setActor(vtkActor* actor);
   void setVideoInfo(kwiver::vital::config_block_sptr& config, std::string path);
   void setCameras(kwiver::vital::camera_map_sptr& cameras);
-  void setKrtdFile(QString file);
-  void setFrameFile(QString file);
 
   void enableMenu(bool);
 

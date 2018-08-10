@@ -49,7 +49,6 @@ class MeshColoration
 {
 public:
   MeshColoration();
-  MeshColoration(vtkPolyData* mesh, std::string frameList, std::string krtdFolder);
   MeshColoration(vtkPolyData* mesh,
                  kwiver::vital::config_block_sptr& config,
                  std::string videoPath,
@@ -72,8 +71,6 @@ protected:
   vtkPolyData* OutputMesh;
   int Sampling;
   std::vector<ReconstructionData*> DataList;
-  std::vector<std::string> frameList;
-  std::vector<std::string> krtdFolder;
 
   std::string videoPath;
   kwiver::vital::algo::video_input_sptr videoReader;

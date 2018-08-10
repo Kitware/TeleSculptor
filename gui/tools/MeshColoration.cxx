@@ -60,94 +60,6 @@ namespace
 {
 
 //----------------------------------------------------------------------------
-/// Read global path and extract all contained path
-/**
- * This function is deprecated.  MeshColoration should be receiving image and
- * camera data directly from the application, not reloading it from disk.
- */
-static std::vector<std::string> ExtractAllFilePath(const char* globalPath)
-{
-  std::vector<std::string> pathList;
-
-  // Open file which contains the list of all file
-  std::ifstream container(globalPath);
-  if (!container.is_open())
-  {
-    std::cerr << "Unable to open : " << globalPath << std::endl;
-    return pathList;
-  }
-
-  // Extract path of globalPath from globalPath
-  //std::string pwd_str = globalPath;
-  std::string directoryPath = ST::GetFilenamePath(std::string(globalPath));
-  // Get current working directory
-  if (directoryPath == "")
-  {
-    directoryPath = ST::GetCurrentWorkingDirectory();
-  }
-
-  std::string path;
-  while (!container.eof())
-  {
-    std::getline(container, path);
-    // only get the file name, not the whole path
-    std::vector <kwiversys::String> elems = ST::SplitString(path, ' ');
-
-    // check if there are an empty line
-    if (elems.size() == 0)
-    {
-      continue;
-    }
-
-    // Create the real data path to access depth map file
-    pathList.push_back(directoryPath + "/" + elems[elems.size() - 1]);
-  }
-
-  return pathList;
-}
-
-
-//----------------------------------------------------------------------------
-/// Read global path and extract all contained path
-/**
- * This function is deprecated.  MeshColoration should be receiving image and
- * camera data directly from the application, not reloading it from disk.
- */
-static std::vector<std::string> ExtractAllKRTDFilePath(const char* globalPath, const char* framelist)
-{
-  std::vector<std::string> pathList;
-
-  // Open file which contains the list of all file
-  std::ifstream container(framelist);
-  if (!container.is_open())
-  {
-    std::cerr << "Unable to open : " << framelist << std::endl;
-    return pathList;
-  }
-
-  std::string path;
-  while (!container.eof())
-  {
-    std::getline(container, path);
-    // only get the file name, not the whole path
-    std::vector <kwiversys::String> elems = ST::SplitString(path, ' ');
-    // check if there are an empty line
-    if( elems.empty() )
-    {
-      continue;
-    }
-    std::vector <kwiversys::String> filename = ST::SplitString(elems[elems.size() - 1], '/');
-
-    // Create the real data path to access depth map file
-    std::vector <kwiversys::String> elemsWithoutExtension = ST::SplitString(filename[filename.size() - 1], '.');
-    pathList.push_back(std::string(globalPath) + "/" + elemsWithoutExtension[0] + ".krtd");
-  }
-
-  return pathList;
-}
-
-
-//----------------------------------------------------------------------------
 /// Compute median of a vector
 template <typename T>
 static void ComputeMedian(std::vector<T> vector, double& median)
@@ -171,22 +83,6 @@ MeshColoration::MeshColoration()
 {
   this->OutputMesh = 0;
   this->Sampling = 1;
-}
-
-MeshColoration::MeshColoration(vtkPolyData* mesh, std::string frameList, std::string krtdFolder)
-  :MeshColoration()
-{
-  //this->OutputMesh = vtkPolyData::New();
-  //this->OutputMesh->DeepCopy(mesh);
-
-  this->frameList = ExtractAllFilePath(frameList.c_str());
-  this->krtdFolder = ExtractAllKRTDFilePath(krtdFolder.c_str(), frameList.c_str());
-  if (this->krtdFolder.size() < frameList.size())
-  {
-    std::cerr << "Error, not enough krtd file for each vti file" << std::endl;
-    return;
-  }
-
 }
 
 MeshColoration::MeshColoration(vtkPolyData* mesh,
