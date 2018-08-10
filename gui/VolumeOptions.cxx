@@ -163,11 +163,11 @@ void VolumeOptions::colorize()
 }
 
 //-----------------------------------------------------------------------------
-void VolumeOptions::setCurrentFramePath(std::string path)
+void VolumeOptions::setCurrentFrame(int frame)
 {
   QTE_D();
 
-  d->colorizeSurfaceOptions->setCurrentFramePath(path);
+  d->colorizeSurfaceOptions->setCurrentFrame(frame);
 }
 
 //-----------------------------------------------------------------------------

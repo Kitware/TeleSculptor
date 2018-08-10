@@ -240,9 +240,9 @@ vtkPolyData* MeshColoration::GetOutput()
   return this->OutputMesh;
 }
 
-bool MeshColoration::ProcessColoration(std::string currentVtiPath)
+bool MeshColoration::ProcessColoration(int frame)
 {
-  initializeDataList(currentVtiPath);
+  initializeDataList(frame);
 
   int nbDepthMap = (int)this->DataList.size();
 
@@ -362,18 +362,23 @@ bool MeshColoration::ProcessColoration(std::string currentVtiPath)
   return true;
 }
 
-void MeshColoration::initializeDataList(std::string currentVtiPath)
+void MeshColoration::initializeDataList(int frameId)
 {
-  int nbDepthMap = (int)frameList.size();
+  this->videoReader->open(this->videoPath);
+  int nbDepthMap = this->videoReader->num_frames();
+  kwiver::vital::timestamp ts;
+  auto cam_map = this->cameras->cameras();
 
   //Take a subset of depthmap
-  if (currentVtiPath == "")
+  if (frameId < 0)
   {
-    for (int id = 0; id < nbDepthMap; id++)
+    for (int id = 1; id <= nbDepthMap; id++)
     {
+      this->videoReader->next_frame(ts);
       if (id%Sampling == 0)
       {
-        ReconstructionData* data = new ReconstructionData(frameList[id], krtdFolder[id]);
+        ReconstructionData* data = new ReconstructionData(
+          this->videoReader->frame_image()->get_image(), cam_map[id]);
         this->DataList.push_back(data);
       }
     }
@@ -381,17 +386,18 @@ void MeshColoration::initializeDataList(std::string currentVtiPath)
   //Take the current depthmap
   else
   {
-    std::string currentDepthmapName = currentVtiPath.substr(currentVtiPath.find_last_of("/"));
+    // std::string currentDepthmapName = currentVtiPath.substr(currentVtiPath.find_last_of("/"));
     for (int id = 0; id < nbDepthMap; id++)
     {
-      std::string depthmapName = frameList[id].substr(frameList[id].find_last_of("/"));
-      if (currentDepthmapName == depthmapName)
+      if (frameId == id)
       {
-        ReconstructionData* data = new ReconstructionData(frameList[id], krtdFolder[id]);
+        this->videoReader->seek_frame(ts, frameId);
+        ReconstructionData* data = new ReconstructionData(
+          this->videoReader->frame_image()->get_image(), cam_map[id]);
         this->DataList.push_back(data);
         break;
       }
     }
   }
-
+  this->videoReader->close();
 }

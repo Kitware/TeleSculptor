@@ -64,8 +64,8 @@ public:
   vtkPolyData* GetOutput();
 
   // Functions
-  bool ProcessColoration(std::string currentVtiPath ="");
-  void initializeDataList(std::string currentVtiPath ="");
+  bool ProcessColoration(int frame = -1);
+  void initializeDataList(int frameId);
 
 protected:
   // Attributes

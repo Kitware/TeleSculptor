@@ -34,6 +34,7 @@
 
 #include <sstream>
 #include <cmath>
+
 // KWIVER includes
 #include <vital/types/camera_perspective.h>
 
@@ -61,15 +62,15 @@ namespace
 /**
  * Imprt krtd data from camera and load the data K and RT matrices.
  */
-static void ImportCameraData(vtkSmartPointer<vtkMaptkCamera> cam,
+static void ImportCameraData(kwiver::vital::camera_sptr& cam,
                              vtkMatrix3x3* matrixK,
                              vtkMatrix4x4* matrixRT)
 {
-  auto cam_ptr = cam->GetCamera();
+  auto cam_ptr =
+    std::dynamic_pointer_cast<kwiver::vital::camera_perspective>(cam);
 
   // Get the K matrix
   kwiver::vital::matrix_3x3d K = cam_ptr->intrinsics()->as_matrix();
-
 
   // Get R and T
   kwiver::vital::matrix_3x3d R = cam_ptr->rotation().matrix();
@@ -84,7 +85,7 @@ static void ImportCameraData(vtkSmartPointer<vtkMaptkCamera> cam,
       matrixRT->SetElement(i, j, R(i, j));
     }
     matrixRT->SetElement(i, 3, T[i]);
-  } 
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -178,7 +179,6 @@ ReconstructionData::ReconstructionData(std::string depthPath,
   this->DepthMap = vtkImageData::New();
   ReconstructionData::ReadDepthMap(depthPath, this->DepthMap);
 
-
   this->TransformWorldToCamera = vtkTransform::New();
   this->TransformCameraToDepthMap = vtkTransform::New();
 
@@ -196,11 +196,14 @@ ReconstructionData::ReconstructionData(std::string depthPath,
 }
 
 ReconstructionData::ReconstructionData(kwiver::vital::image& image,
-                                       vtkSmartPointer<vtkMaptkCamera> camera)
+                                       kwiver::vital::camera_sptr& camera)
                                        : ReconstructionData()
 {
   // Get Depth map as vtkImageData
   this->DepthMap = vitalToVtkImage(image);
+
+  this->TransformWorldToCamera = vtkTransform::New();
+  this->TransformCameraToDepthMap = vtkTransform::New();
 
   // Get camera data
   vtkNew<vtkMatrix3x3> K;

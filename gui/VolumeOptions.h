@@ -58,12 +58,12 @@ public:
   void initFrameSampling(int nbFrames);
   void setKrtdFrameFile(QString krtd, QString frame);
   void setColorizeRequirements(std::string videoPath,
-                               kwiver::vital::config_block_sptr&,
+                               kwiver::vital::config_block_sptr& config,
                                kwiver::vital::camera_map_sptr cameras);
 
   void colorize();
 
-  void setCurrentFramePath(std::string path);
+  void setCurrentFrame(int);
 
   bool isColorOptionsEnabled();
 

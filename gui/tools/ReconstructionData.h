@@ -32,11 +32,11 @@
 #define MAPTK_RECONSTRUCTIONDATA_H_
 
 // KWIVER includes
+#include <vital/types/camera.h>
 #include <vital/types/image.h>
 
 // VTK includes
 class vtkImageData;
-class vtkMaptkCamera;
 class vtkMatrix3x3;
 class vtkMatrix4x4;
 class vtkTransform;
@@ -50,7 +50,7 @@ class ReconstructionData
 public:
   ReconstructionData();
   ReconstructionData(std::string depthPath, std::string matrixPath);
-  ReconstructionData(kwiver::vital::image& image, vtkSmartPointer<vtkMaptkCamera> camera);
+  ReconstructionData(kwiver::vital::image& image, kwiver::vital::camera_sptr& camera);
   ~ReconstructionData();
 
   // GETTERS

@@ -31,6 +31,9 @@
 #ifndef MAPTK_WORLDVIEW_H_
 #define MAPTK_WORLDVIEW_H_
 
+#include <vital/config/config_block_types.h>
+#include <vital/types/camera_map.h>
+
 #include <qtGlobal.h>
 
 #include <QWidget>
@@ -56,7 +59,10 @@ public:
   virtual ~WorldView();
 
   void initFrameSampling(int nbFrames);
-  void loadVolume(QString path, QString krtd, QString frame);
+  void loadVolume(QString path,
+                  QString videoPath,
+                  kwiver::vital::config_block_sptr& config,
+                  kwiver::vital::camera_map_sptr cameras);
   void enableAntiAliasing(bool enable);
   void setROI(vtkBox*);
 signals:
@@ -115,7 +121,7 @@ public slots:
   void invalidateGeometry();
 
   void setVolumeVisible(bool);
-  void setVolumeCurrentFramePath(QString path);
+  void setVolumeCurrentFrame(int);
 
   void computeContour(double threshold);
   void render();

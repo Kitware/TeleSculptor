@@ -652,6 +652,15 @@ void MainWindowPrivate::updateFrames(
     }
   }
 
+  // Load volume
+  if (this->project->config->has_value("volume_file"))
+  {
+    this->UI.worldView->loadVolume(this->project->volumePath,
+                                   this->project->videoPath,
+                                   this->project->config,
+                                   this->cameraMap());
+  }
+
   this->UI.worldView->initFrameSampling(this->frames.size());
 
   if (this->project){
@@ -861,8 +870,7 @@ void MainWindowPrivate::setActiveCamera(int id)
     }
   }
 
-  // TODO: Uncomment once MeshColoration is working directly off video frames
-  // UI.worldView->setVolumeCurrentFramePath(cd.imagePath);
+  UI.worldView->setVolumeCurrentFrame(id);
 }
 
 //-----------------------------------------------------------------------------
@@ -1526,14 +1534,6 @@ void MainWindow::loadProject(QString const& path)
 #ifdef VTKWEBGLEXPORTER
   d->UI.actionWebGLScene->setEnabled(true);
 #endif
-
-  // Load volume
-  if (d->project->config->has_value("volume_file"))
-  {
-    d->UI.worldView->loadVolume(d->project->volumePath,
-                                d->project->cameraPath,
-                                d->project->videoPath);
-  }
 
   if (d->project->config->has_value("geo_origin_file"))
   {

@@ -55,7 +55,7 @@ public:
 
   void initFrameSampling(int nbFrames);
 
-  void setCurrentFramePath(std::string path);
+  void setCurrentFrame(int frame);
 
   void setActor(vtkActor* actor);
   void setVideoInfo(kwiver::vital::config_block_sptr& config, std::string path);

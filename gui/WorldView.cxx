@@ -694,7 +694,10 @@ void WorldView::initFrameSampling(int nbFrames)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::loadVolume(QString path, QString krtd, QString frame)
+void WorldView::loadVolume(QString path,
+                           QString videoPath,
+                           kwiver::vital::config_block_sptr& config,
+                           kwiver::vital::camera_map_sptr cameras)
 {
   QTE_D();
 
@@ -730,8 +733,7 @@ void WorldView::loadVolume(QString path, QString krtd, QString frame)
   d->volumeActor->SetMapper(contourMapper.Get());
   d->volumeActor->SetVisibility(false);
   d->volumeOptions->setActor(d->volumeActor.Get());
-  d->volumeOptions->setKrtdFrameFile(krtd, frame);
-
+  d->volumeOptions->setColorizeRequirements(stdString(videoPath), config, cameras);
 
   // Add this actor to the renderer
   d->renderer->AddActor(d->volumeActor.Get());
@@ -749,11 +751,11 @@ void WorldView::setVolumeVisible(bool state)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::setVolumeCurrentFramePath(QString path)
+void WorldView::setVolumeCurrentFrame(int frame)
 {
   QTE_D();
 
-  d->volumeOptions->setCurrentFramePath(stdString(path));
+  d->volumeOptions->setCurrentFrame(frame);
 }
 
 //-----------------------------------------------------------------------------
