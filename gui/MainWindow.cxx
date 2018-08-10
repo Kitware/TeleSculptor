@@ -390,6 +390,8 @@ void MainWindowPrivate::addTool(AbstractTool* tool, MainWindow* mainWindow)
                    mainWindow, SLOT(acceptToolResults(std::shared_ptr<ToolData>)));
   QObject::connect(tool, SIGNAL(completed()),
                    mainWindow, SLOT(acceptToolFinalResults()));
+  QObject::connect(tool, SIGNAL(failed(QString)),
+                   mainWindow, SLOT(reportToolError(QString)));
 
   tool->setEnabled(false);
 
@@ -2308,6 +2310,13 @@ void MainWindow::executeTool(QObject* object)
       d->updateProgress(tool, tool->description(), 0);
     }
   }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::reportToolError(QString const& msg)
+{
+    QMessageBox::critical(this, "Error in Tool",
+                          "Tool execution failed: " + msg);
 }
 
 //-----------------------------------------------------------------------------

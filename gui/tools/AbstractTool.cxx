@@ -60,7 +60,15 @@ QTE_IMPLEMENT_D_FUNC(AbstractTool)
 void AbstractToolPrivate::run()
 {
   QTE_Q();
-  q->run();
+
+  try
+  {
+    q->run();
+  }
+  catch (const std::exception& e)
+  {
+    emit q->failed(QString::fromLocal8Bit(e.what()));
+  }
 }
 
 //-----------------------------------------------------------------------------
