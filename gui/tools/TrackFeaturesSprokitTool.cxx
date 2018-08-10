@@ -227,7 +227,7 @@ TrackFeaturesSprokitTool
       << SPROKIT_PROCESS("feature_tracker", "tracker")
       << SPROKIT_CONFIG("track_features:type", "ocv_KLT")
       << SPROKIT_CONFIG("track_features:ocv_KLT:new_feat_exclusionary_radius_image_fraction", "0.02")
-      << SPROKIT_CONFIG("track_features:ocv_KLT:redetect_frac_lost_threshold", "0.7")
+      << SPROKIT_CONFIG("track_features:ocv_KLT:redetect_frac_lost_threshold", "0.9")
       << SPROKIT_CONFIG("track_features:ocv_KLT:feature_detector:type", "ocv_FAST")
       << SPROKIT_CONFIG("track_features:ocv_KLT:feature_detector:ocv_FAST:threshold", "50")
       << SPROKIT_CONFIG("track_features:ocv_KLT:feature_detector:ocv_FAST:nonmaxSuppression", "true")
