@@ -278,6 +278,10 @@ TrackFeaturesSprokitTool
 
   typedef std::unique_ptr<kwiver::vital::track_set_implementation> tsi_uptr;
 
+  kwiver::vital::feature_track_set_sptr klt_only_tracks =
+    std::make_shared<kwiver::vital::feature_track_set>(
+      tsi_uptr(new kwiver::arrows::core::frame_index_track_set_impl()));
+
   kwiver::vital::feature_track_set_sptr accumulated_tracks =
     std::make_shared<kwiver::vital::feature_track_set>(
     tsi_uptr(new kwiver::arrows::core::frame_index_track_set_impl()));
@@ -327,8 +331,19 @@ TrackFeaturesSprokitTool
       {
         auto klt_frame_tracks = ix->second->get_datum<kwiver::vital::feature_track_set_sptr>();
         //we have klt frames from current frame, yipee
+
+        klt_only_tracks->merge_in_other_track_set(klt_frame_tracks);
         accumulated_tracks->merge_in_other_track_set(klt_frame_tracks);
-        accumulated_tracks = std::static_pointer_cast<kwiver::vital::feature_track_set>(d->m_keyframe_selection->select(accumulated_tracks));
+
+        klt_only_tracks = std::static_pointer_cast<kwiver::vital::feature_track_set>(d->m_keyframe_selection->select(klt_only_tracks));
+
+        auto latest_frame = accumulated_tracks->last_frame();
+        auto kfids = klt_only_tracks->keyframes();
+        bool is_keyframe = kfids.find(latest_frame) != kfids.end();
+        auto ftsfd = std::make_shared<kwiver::vital::feature_track_set_frame_data>();
+        ftsfd->is_keyframe = is_keyframe;
+        accumulated_tracks->set_frame_data(ftsfd, latest_frame);
+
         auto fid = accumulated_tracks->last_frame();
         auto converted_image = images[fid];
         images.erase(fid);
