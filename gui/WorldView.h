@@ -72,7 +72,7 @@ public:
   void setCameras(kwiver::vital::camera_map_sptr cameras);
 
   void enableAntiAliasing(bool enable);
-  void setROI(vtkBox*);
+  void setROI(vtkBox*, bool init = false);
 
   GroundControlPointsWidget* groundControlPointsWidget() const;
 signals:

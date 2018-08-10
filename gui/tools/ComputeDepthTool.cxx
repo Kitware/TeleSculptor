@@ -210,7 +210,7 @@ depth_to_vtk(kwiver::vital::image_container_sptr depth_img,
   vtkSmartPointer<vtkImageData> imageData = vtkSmartPointer<vtkImageData>::New();
   imageData->SetSpacing(1, 1, 1);
   imageData->SetOrigin(0, 0, 0);
-  imageData->SetDimensions(ni, nj, 1);
+  imageData->SetDimensions(ni , nj, 1);
   imageData->GetPointData()->AddArray(depths.Get());
   imageData->GetPointData()->AddArray(color.Get());
   imageData->GetPointData()->AddArray(uniquenessRatios.Get());

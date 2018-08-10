@@ -120,7 +120,8 @@ public:
       scaleDirty(false),
       axesDirty(false),
       axesVisible(false),
-      renderQueued(false)
+      renderQueued(false),
+      initroi(false)
   {
   }
 
@@ -182,6 +183,7 @@ public:
 
   vtkSmartPointer<vtkBoxWidget2> boxWidget;
   vtkSmartPointer<vtkBox> roi;
+  bool initroi;
   vtkNew<vtkEventQtSlotConnect> connections;
 
   bool rangeUpdateNeeded;
@@ -1471,7 +1473,7 @@ void WorldView::selectROI(bool toggled)
 {
   QTE_D();
 
-  if (toggled && d->landmarkPoints->GetNumberOfPoints() > 1)
+  if (toggled && (d->landmarkPoints->GetNumberOfPoints() > 1 || d->initroi))
   {
     if (!d->boxWidget)
     {
@@ -1484,7 +1486,13 @@ void WorldView::selectROI(bool toggled)
       if (rep)
       {
         rep->SetPlaceFactor(1); // Default is 0.5
-        rep->PlaceWidget(d->landmarkActor->GetBounds());
+        if (d->initroi)
+        {
+          rep->PlaceWidget(d->roi->GetBounds());
+          d->initroi = false;
+        }
+        else
+          rep->PlaceWidget(d->landmarkActor->GetBounds());
         d->connections->Connect(
           d->boxWidget,
           vtkCommand::InteractionEvent,
@@ -1525,7 +1533,7 @@ void WorldView::resetROI()
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::setROI(vtkBox* box)
+void WorldView::setROI(vtkBox* box, bool init)
 {
   if (!box)
   {
@@ -1534,6 +1542,7 @@ void WorldView::setROI(vtkBox* box)
 
   QTE_D();
   d->roi = box;
+  d->initroi = init;
 }
 
 //-----------------------------------------------------------------------------

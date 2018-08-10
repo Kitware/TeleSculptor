@@ -53,7 +53,7 @@
 #include <vtkXMLImageDataReader.h>
 #include <vtkStructuredGrid.h>
 #include <vtkCellData.h>
-#include <vtkImageDataToPointSet.h>
+#include <vtkCellDataToPointData.h>
 
 using kwiver::vital::algo::image_io;
 using kwiver::vital::algo::image_io_sptr;
@@ -174,9 +174,9 @@ kwiver::vital::image_container_sptr load_depth_map(const std::string &filename, 
                              kwiver::vital::image_pixel_traits(kwiver::vital::image_pixel_traits::FLOAT, 8));
 
   vtkIdType pt_id = 0;
-  for (int y = dims[1] - 1; y >= 0; y--)
+  for (int x = 0; x < dims[0]; x++)
   {
-    for (int x = 0; x < dims[0]; x++)
+    for (int y = 0; y < dims[1]; y++)
     {
       depth.at<double>(x, y) = depths->GetValue(pt_id);
       pt_id++;
@@ -193,7 +193,7 @@ volume_to_vtk(kwiver::vital::image_container_sptr volume, const kwiver::vital::v
   vtkSmartPointer<vtkImageData> grid = vtkSmartPointer<vtkImageData>::New();
 
   grid->SetOrigin(origin[0], origin[1], origin[2]);
-  grid->SetDimensions(volume->width(), volume->height(), volume->depth());
+  grid->SetDimensions(volume->width() + 1, volume->height() + 1, volume->depth() + 1); //vtk cells are dim - 1 for some reason
   grid->SetSpacing(spacing[0], spacing[1], spacing[2]);
 
   // initialize output
@@ -204,9 +204,10 @@ volume_to_vtk(kwiver::vital::image_container_sptr volume, const kwiver::vital::v
 
   vtkIdType pt_id = 0;
   const kwiver::vital::image &vol = volume->get_image();
+
   for (unsigned int k = 0; k < volume->depth(); k++)
   {
-    for (unsigned int j = 0; j < volume->height(); j++)
+    for (int j = 0; j < volume->height(); j++)
     {
       for (unsigned int i = 0; i < volume->width(); i++)
       {
@@ -217,12 +218,13 @@ volume_to_vtk(kwiver::vital::image_container_sptr volume, const kwiver::vital::v
 
   grid->GetCellData()->AddArray(vals.Get());
 
-  vtkSmartPointer<vtkImageDataToPointSet> imageDataToPointSet =
-    vtkSmartPointer<vtkImageDataToPointSet>::New();
+  vtkSmartPointer<vtkCellDataToPointData> celltopts =
+    vtkSmartPointer<vtkCellDataToPointData>::New();
 
-  imageDataToPointSet->SetInputData(grid);
-  imageDataToPointSet->Update();
-  vtkStructuredGrid *output = imageDataToPointSet->GetOutput(); 
+  celltopts->SetInputData(grid);
+  celltopts->Update();
+  vtkStructuredGrid* output = (vtkStructuredGrid *)celltopts->GetOutput();
+  output->GetPointData()->SetActiveScalars("reconstruction_scalar"); 
   return vtkSmartPointer<vtkStructuredGrid>(output);
 }
 
@@ -269,7 +271,7 @@ void FuseDepthTool::run()
     int i0, ni, j0, nj;
     kwiver::vital::image_container_sptr depth = load_depth_map(itr->second, i0, ni, j0, nj);
     depths_out.push_back(depth);
-    cameras_out.push_back(crop_camera(cam, i0, ni, j0, nj));    
+    cameras_out.push_back(crop_camera(cam, i0, ni, j0, nj));
   }
 
   double minptd[3];
@@ -285,8 +287,6 @@ void FuseDepthTool::run()
   d->fuse_algo->integrate(minpt, maxpt, depths_out, cameras_out, volume, spacing);
 
   vtkSmartPointer<vtkStructuredGrid> vtk_volume = volume_to_vtk(volume, minpt, spacing);
-
-  std::cerr << minpt << "***" << volume->width() << std::endl;
 
   this->updateFusion(vtk_volume);
 }
