@@ -98,17 +98,19 @@ void vtkMaptkImageUnprojectDepth::SimpleExecute(vtkImageData* input,
   }
 
   vtkIntArray* crop = static_cast<vtkIntArray*>(output->GetFieldData()->GetArray("Crop"));
+  vtkSmartPointer<vtkMaptkCamera> cropCam;
   auto cam = this->Camera;
   if (crop)
   {
-    cam = cam->CropCamera(crop->GetValue(0), crop->GetValue(1), crop->GetValue(2), crop->GetValue(3));
+    cropCam = cam->CropCamera(crop->GetValue(0), crop->GetValue(1), crop->GetValue(2), crop->GetValue(3));
+    cam = cropCam.GetPointer();
   }
 
   // Get the scaled camera for doing the unproject
   auto const imageRatio =
     static_cast<double>(input->GetDimensions()[0]) /
     static_cast<double>(cam->GetImageDimensions()[0]);
-  cam = cam->ScaledK(imageRatio);
+  auto const scaledCamera = cam->ScaledK(imageRatio);
 
 
 
@@ -144,7 +146,7 @@ void vtkMaptkImageUnprojectDepth::SimpleExecute(vtkImageData* input,
     {
       pixel[0] = origin[0] + column * spacing[0];
 
-      auto const p = cam->UnprojectPoint(pixel, *depthPtr);
+      auto const p = scaledCamera->UnprojectPoint(pixel, *depthPtr);
       *pointsPtr = p[0];
       *(++pointsPtr) = p[1];
       *(++pointsPtr) = p[2];
