@@ -190,8 +190,14 @@ void ComputeAllDepthTool::run()
     landmarks_out.push_back(l.second);
   }
 
+  this->setDescription("Estimating Depth");
+  this->updateProgress(0, 100);
+  auto data = std::make_shared<ToolData>();
+  data->activeFrame = 0;
+  emit updated(data);
   for (unsigned int f = 0; f < total_frames; f+=stride)
   {
+    this->updateProgress(f, total_frames);
     int frame = frames_in_range[f];
 
     std::vector<kwiver::vital::image_container_sptr> frames_out;
