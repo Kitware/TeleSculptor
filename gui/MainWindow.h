@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016-2017 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -110,6 +110,7 @@ protected slots:
   void nextSlide();
 
   void executeTool(QObject*);
+  void reportToolError(QString const&);
   void acceptToolFinalResults();
   void acceptToolResults(std::shared_ptr<ToolData> data, bool isFinal = false);
   void updateToolResults();

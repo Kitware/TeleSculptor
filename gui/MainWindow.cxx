@@ -390,6 +390,8 @@ void MainWindowPrivate::addTool(AbstractTool* tool, MainWindow* mainWindow)
                    mainWindow, SLOT(acceptToolResults(std::shared_ptr<ToolData>)));
   QObject::connect(tool, SIGNAL(completed()),
                    mainWindow, SLOT(acceptToolFinalResults()));
+  QObject::connect(tool, SIGNAL(failed(QString)),
+                   mainWindow, SLOT(reportToolError(QString)));
 
   tool->setEnabled(false);
 
@@ -2282,43 +2284,39 @@ void MainWindow::executeTool(QObject* object)
 {
   QTE_D();
 
-  try
+  auto const tool = qobject_cast<AbstractTool*>(object);
+  if (tool && !d->activeTool)
   {
-    auto const tool = qobject_cast<AbstractTool*>(object);
-    if (tool && !d->activeTool)
+    d->setActiveTool(tool);
+    tool->setActiveFrame(d->activeCameraIndex);
+    tool->setTracks(d->tracks);
+    tool->setCameras(d->cameraMap());
+    tool->setLandmarks(d->landmarks);
+    tool->setVideoPath(stdString(d->videoPath));
+    tool->setMaskPath(stdString(d->maskPath));
+    tool->setConfig(d->project->config);
+    if (!d->frames.empty())
     {
-      d->setActiveTool(tool);
-      tool->setActiveFrame(d->activeCameraIndex);
-      tool->setTracks(d->tracks);
-      tool->setCameras(d->cameraMap());
-      tool->setLandmarks(d->landmarks);
-      tool->setVideoPath(stdString(d->videoPath));
-      tool->setMaskPath(stdString(d->maskPath));
-      tool->setConfig(d->project->config);
-      if (!d->frames.empty())
-      {
-        tool->setLastFrame(static_cast<int>(d->frames.lastKey()));
-      }
+      tool->setLastFrame(static_cast<int>(d->frames.lastKey()));
+    }
 
-      if (!tool->execute())
-      {
-        d->setActiveTool(0);
-      }
-      else
-      {
-        // Initialize the progress bar
-        d->updateProgress(tool, tool->description(), 0);
-      }
+    if (!tool->execute())
+    {
+      d->setActiveTool(0);
+    }
+    else
+    {
+      // Initialize the progress bar
+      d->updateProgress(tool, tool->description(), 0);
     }
   }
-  catch (std::exception const& e)
-  {
-    QString message("The tool failed with the following error:\n");
-    message += e.what();
-    QMessageBox::critical(
-      this, "Error in Tool",
-      message);
-  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::reportToolError(QString const& msg)
+{
+    QMessageBox::critical(this, "Error in Tool",
+                          "Tool execution failed: " + msg);
 }
 
 //-----------------------------------------------------------------------------

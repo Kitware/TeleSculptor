@@ -226,6 +226,9 @@ signals:
   /// Emitted when the tool execution terminates due to user cancellation.
   void canceled();
 
+  /// Emitted when the tool execution terminates due to an execution error.
+  void failed(QString reason);
+
 public slots:
   /// Ask the tool to cancel execution.
   ///
