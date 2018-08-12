@@ -261,20 +261,23 @@ bool MeshColoration::ProcessColoration(int frame)
 void MeshColoration::initializeDataList(int frameId)
 {
   this->videoReader->open(this->videoPath);
-  int nbDepthMap = this->videoReader->num_frames();
   kwiver::vital::timestamp ts;
   auto cam_map = this->cameras->cameras();
 
   //Take a subset of depthmap
   if (frameId < 0)
   {
-    for (int id = 1; id <= nbDepthMap; id++)
+    unsigned int counter = 0;
+    for (auto cam_itr : cam_map)
     {
-      this->videoReader->next_frame(ts);
-      if (id%Sampling == 0)
+      if ((counter++) % Sampling != 0)
+      {
+        continue;
+      }
+      if (this->videoReader->seek_frame(ts, cam_itr.first))
       {
         ReconstructionData* data = new ReconstructionData(
-          this->videoReader->frame_image()->get_image(), cam_map[id]);
+          this->videoReader->frame_image()->get_image(), cam_itr.second);
         this->DataList.push_back(data);
       }
     }
@@ -282,16 +285,14 @@ void MeshColoration::initializeDataList(int frameId)
   //Take the current depthmap
   else
   {
-    // std::string currentDepthmapName = currentVtiPath.substr(currentVtiPath.find_last_of("/"));
-    for (int id = 0; id < nbDepthMap; id++)
+    auto cam_itr = cam_map.find(frameId);
+    if (cam_itr != cam_map.end())
     {
-      if (frameId == id)
+      if (this->videoReader->seek_frame(ts, frameId))
       {
-        this->videoReader->seek_frame(ts, frameId);
         ReconstructionData* data = new ReconstructionData(
-          this->videoReader->frame_image()->get_image(), cam_map[id]);
+          this->videoReader->frame_image()->get_image(), cam_itr->second);
         this->DataList.push_back(data);
-        break;
       }
     }
   }
