@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, SAS; Copyright 2017 by Kitware, Inc.
+ * Copyright 2016 by Kitware, SAS; Copyright 2017-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -86,6 +86,14 @@ static void ImportCameraData(kwiver::vital::camera_sptr& cam,
     }
     matrixRT->SetElement(i, 3, T[i]);
   }
+
+  // Set the bottom row to [0, 0, 0, 1]
+  for (int j = 0; j < 3; ++j)
+  {
+    matrixRT->SetElement(3, j, 0);
+  }
+  matrixRT->SetElement(3, 3, 1);
+
 }
 
 } // end anonymous namespace
