@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -151,7 +151,7 @@ void ColorizeSurfaceOptions::setActor(vtkActor* actor)
 
 //-----------------------------------------------------------------------------
 void ColorizeSurfaceOptions::setVideoInfo(
-  kwiver::vital::config_block_sptr& config, std::string path)
+  kwiver::vital::config_block_sptr config, std::string path)
 {
   QTE_D();
 
@@ -160,7 +160,7 @@ void ColorizeSurfaceOptions::setVideoInfo(
 }
 
 //-----------------------------------------------------------------------------
-void ColorizeSurfaceOptions::setCameras(kwiver::vital::camera_map_sptr& cameras)
+void ColorizeSurfaceOptions::setCameras(kwiver::vital::camera_map_sptr cameras)
 {
   QTE_D();
 

@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,10 +59,13 @@ public:
   virtual ~WorldView();
 
   void initFrameSampling(int nbFrames);
-  void loadVolume(QString path,
-                  QString videoPath,
-                  kwiver::vital::config_block_sptr& config,
-                  kwiver::vital::camera_map_sptr cameras);
+
+  void loadVolume(QString path);
+
+  void setVideoConfig(QString videoPath,
+                      kwiver::vital::config_block_sptr config);
+  void setCameras(kwiver::vital::camera_map_sptr cameras);
+
   void enableAntiAliasing(bool enable);
   void setROI(vtkBox*);
 signals:

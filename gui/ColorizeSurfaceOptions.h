@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016-2017 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,8 +58,8 @@ public:
   void setCurrentFrame(int frame);
 
   void setActor(vtkActor* actor);
-  void setVideoInfo(kwiver::vital::config_block_sptr& config, std::string path);
-  void setCameras(kwiver::vital::camera_map_sptr& cameras);
+  void setVideoInfo(kwiver::vital::config_block_sptr config, std::string path);
+  void setCameras(kwiver::vital::camera_map_sptr cameras);
 
   void enableMenu(bool);
 
