@@ -441,6 +441,8 @@ void MainWindowPrivate::addVideoSource(
   }
   this->videoPath = videoPath;
   this->freestandingConfig->merge_config(config);
+  // Set video path and config for volume mesh coloring
+  this->UI.worldView->setVideoConfig(videoPath, config);
 
   // Close the existing video source if it exists
   if(this->videoSource)
@@ -585,6 +587,7 @@ void MainWindowPrivate::updateFrames(
                    << " from " << this->project->cameraPath;
       }
     }
+    this->UI.worldView->setCameras(this->cameraMap());
   }
   else
   {
@@ -652,14 +655,7 @@ void MainWindowPrivate::updateFrames(
     }
   }
 
-  // Load volume
-  if (this->project->config->has_value("volume_file"))
-  {
-    this->UI.worldView->loadVolume(this->project->volumePath,
-                                   this->project->videoPath,
-                                   this->project->config,
-                                   this->cameraMap());
-  }
+  this->UI.worldView->queueResetView();
 
   this->UI.worldView->initFrameSampling(this->frames.size());
 
@@ -720,6 +716,7 @@ void MainWindowPrivate::updateCameras(
       this->UI.worldView->removeCamera(fid);
     }
   }
+  this->UI.worldView->setCameras(cameras);
 
   this->UI.actionExportCameras->setEnabled(allowExport);
 }
@@ -999,25 +996,8 @@ void MainWindowPrivate::loadImage(FrameData frame)
       videoSource->next_frame(this->currentVideoTimestamp);
     }
 
-    kwiver::vital::image frameImg;
     auto sourceImg = videoSource->frame_image()->get_image();
-
-    // If image is interlaced it is already compatible with VTK
-    if (sourceImg.d_step() == 1)
-    {
-      frameImg = sourceImg;
-    }
-    // Otherwise we need a deep copy to get it to be interlaced
-    else
-    {
-      frameImg = kwiver::vital::image(sourceImg.width(),
-                                      sourceImg.height(),
-                                      sourceImg.depth(),
-                                      true);
-      frameImg.copy_from(sourceImg);
-    }
-
-    auto imageData = vitalToVtkImage(frameImg);
+    auto imageData = vitalToVtkImage(sourceImg);
     int dimensions[3];
     imageData->GetDimensions(dimensions);
 
@@ -1534,6 +1514,12 @@ void MainWindow::loadProject(QString const& path)
 #ifdef VTKWEBGLEXPORTER
   d->UI.actionWebGLScene->setEnabled(true);
 #endif
+
+  // Load volume
+  if (d->project->config->has_value("volume_file"))
+  {
+    d->UI.worldView->loadVolume(d->project->volumePath);
+  }
 
   if (d->project->config->has_value("geo_origin_file"))
   {

@@ -136,7 +136,22 @@ kwiver::vital::path_t findConfig(std::string const& name)
 //----------------------------------------------------------------------------
 vtkSmartPointer<vtkImageData> vitalToVtkImage(kwiver::vital::image& img)
 {
-  auto imgTraits = img.pixel_traits();
+  kwiver::vital::image frameImg;
+  // If image is interlaced it is already compatible with VTK
+  if (img.d_step() == 1)
+  {
+    frameImg = img;
+  }
+  // Otherwise we need a deep copy to get it to be interlaced
+  else
+  {
+    // create an interlaced image of the same dimensions and type
+    frameImg = kwiver::vital::image(img.width(), img.height(), img.depth(),
+                                    true, img.pixel_traits());
+    frameImg.copy_from(img);
+  }
+
+  auto imgTraits = frameImg.pixel_traits();
 
   // Get the image type
   int imageType = VTK_VOID;
@@ -156,16 +171,16 @@ vtkSmartPointer<vtkImageData> vitalToVtkImage(kwiver::vital::image& img)
       break;
     // TODO: exception or error/warning message?
   }
-        
+
 	// convert to vtkFrameData
     vtkSmartPointer<vtkImageImport> imageImport =
         vtkSmartPointer<vtkImageImport>::New();
     imageImport->SetDataScalarType(imageType);
-    imageImport->SetNumberOfScalarComponents(static_cast<int>(img.depth()));
-    imageImport->SetWholeExtent(0, static_cast<int>(img.width()) - 1,
-                                0, static_cast<int>(img.height()) - 1, 0, 0);
+    imageImport->SetNumberOfScalarComponents(static_cast<int>(frameImg.depth()));
+    imageImport->SetWholeExtent(0, static_cast<int>(frameImg.width()) - 1,
+                                0, static_cast<int>(frameImg.height()) - 1, 0, 0);
     imageImport->SetDataExtentToWholeExtent();
-    imageImport->SetImportVoidPointer(img.first_pixel());
+    imageImport->SetImportVoidPointer(frameImg.first_pixel());
     imageImport->Update();
 
     // Flip image so it has the correct axis for VTK
