@@ -1286,6 +1286,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->viewBackgroundColor = new StateValue<QColor>{Qt::black},
   d->uiState.map("ViewBackground", d->viewBackgroundColor);
 
+  d->uiState.mapChecked("Antialiasing", d->UI.actionAntialiasing);
+
   d->uiState.mapChecked("WorldView/Axes", d->UI.actionShowWorldAxes);
 
   d->uiState.mapState("Window/state", this);
@@ -1310,6 +1312,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   // Antialiasing
   connect(d->UI.actionAntialiasing, SIGNAL(toggled(bool)),
           this, SLOT(enableAntiAliasing(bool)));
+  this->enableAntiAliasing(d->UI.actionAntialiasing->isChecked());
 
   // Common ROI
   // Unitil the bounding box is initialized, the bounds are going to be
