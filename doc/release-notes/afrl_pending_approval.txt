@@ -53,4 +53,12 @@ Fixes since last public release
 Packaging
 
  * When packaging, CMake's fixup_bundle was not scanning sprokit plugins
-   for dependencies.  This has been corrected. 
+   for dependencies.  This has been corrected.
+
+TeleSculptor
+
+ * The functionality to color mesh surfaces was broken when TeleSculptor
+   switched to using the video_input API to load all imagery.  This code
+   has now been fixed to work with video_input.  It now works as it did
+   before.  It also no longer requires camera files to loaded again from
+   KRTD files and instead uses the in memory cameras.
