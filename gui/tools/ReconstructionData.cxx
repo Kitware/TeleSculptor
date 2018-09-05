@@ -41,8 +41,6 @@
 // VTK includes
 #include "vtkDoubleArray.h"
 #include "vtkImageData.h"
-#include "vtkImageReader2Factory.h"
-#include "vtkImageReader2.h"
 #include "vtkVector.h"
 #include "vtkMaptkCamera.h"
 #include "vtkMatrix3x3.h"
