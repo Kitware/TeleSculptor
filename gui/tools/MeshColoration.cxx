@@ -53,94 +53,11 @@ typedef kwiversys::SystemTools  ST;
 
 namespace
 {
-
-//----------------------------------------------------------------------------
-/// Read global path and extract all contained path
-/**
- * This function is deprecated.  MeshColoration should be receiving image and
- * camera data directly from the application, not reloading it from disk.
- */
-static std::vector<std::string> ExtractAllFilePath(const char* globalPath)
-{
-  std::vector<std::string> pathList;
-
-  // Open file which contains the list of all file
-  std::ifstream container(globalPath);
-  if (!container.is_open())
-  {
-    std::cerr << "Unable to open : " << globalPath << std::endl;
-    return pathList;
-  }
-
-  // Extract path of globalPath from globalPath
-  //std::string pwd_str = globalPath;
-  std::string directoryPath = ST::GetFilenamePath(std::string(globalPath));
-  // Get current working directory
-  if (directoryPath == "")
-  {
-    directoryPath = ST::GetCurrentWorkingDirectory();
-  }
-
-  std::string path;
-  while (!container.eof())
-  {
-    std::getline(container, path);
-    // only get the file name, not the whole path
-    std::vector <kwiversys::String> elems = ST::SplitString(path, ' ');
-
-    // check if there are an empty line
-    if (elems.size() == 0)
-    {
-      continue;
-    }
-
-    // Create the real data path to access depth map file
-    pathList.push_back(directoryPath + "/" + elems[elems.size() - 1]);
-  }
-
-  return pathList;
+static char const* const BLOCK_VR = "video_reader";
 }
 
-
-//----------------------------------------------------------------------------
-/// Read global path and extract all contained path
-/**
- * This function is deprecated.  MeshColoration should be receiving image and
- * camera data directly from the application, not reloading it from disk.
- */
-static std::vector<std::string> ExtractAllKRTDFilePath(const char* globalPath, const char* framelist)
+namespace
 {
-  std::vector<std::string> pathList;
-
-  // Open file which contains the list of all file
-  std::ifstream container(framelist);
-  if (!container.is_open())
-  {
-    std::cerr << "Unable to open : " << framelist << std::endl;
-    return pathList;
-  }
-
-  std::string path;
-  while (!container.eof())
-  {
-    std::getline(container, path);
-    // only get the file name, not the whole path
-    std::vector <kwiversys::String> elems = ST::SplitString(path, ' ');
-    // check if there are an empty line
-    if( elems.empty() )
-    {
-      continue;
-    }
-    std::vector <kwiversys::String> filename = ST::SplitString(elems[elems.size() - 1], '/');
-
-    // Create the real data path to access depth map file
-    std::vector <kwiversys::String> elemsWithoutExtension = ST::SplitString(filename[filename.size() - 1], '.');
-    pathList.push_back(std::string(globalPath) + "/" + elemsWithoutExtension[0] + ".krtd");
-  }
-
-  return pathList;
-}
-
 
 //----------------------------------------------------------------------------
 /// Compute median of a vector
@@ -168,20 +85,19 @@ MeshColoration::MeshColoration()
   this->Sampling = 1;
 }
 
-MeshColoration::MeshColoration(vtkPolyData* mesh, std::string frameList, std::string krtdFolder)
-  :MeshColoration()
+MeshColoration::MeshColoration(vtkPolyData* mesh,
+                               kwiver::vital::config_block_sptr& config,
+                               std::string videoPath,
+                               kwiver::vital::camera_map_sptr& cameras)
+  : MeshColoration()
 {
   //this->OutputMesh = vtkPolyData::New();
   //this->OutputMesh->DeepCopy(mesh);
 
-  this->frameList = ExtractAllFilePath(frameList.c_str());
-  this->krtdFolder = ExtractAllKRTDFilePath(krtdFolder.c_str(), frameList.c_str());
-  if (this->krtdFolder.size() < frameList.size())
-  {
-    std::cerr << "Error, not enough krtd file for each vti file" << std::endl;
-    return;
-  }
-
+  this->videoPath = videoPath;
+  kwiver::vital::algo::video_input::set_nested_algo_configuration(
+    BLOCK_VR, config, this->videoReader);
+  this->cameras = cameras;
 }
 
 MeshColoration::~MeshColoration()
@@ -220,9 +136,9 @@ vtkPolyData* MeshColoration::GetOutput()
   return this->OutputMesh;
 }
 
-bool MeshColoration::ProcessColoration(std::string currentVtiPath)
+bool MeshColoration::ProcessColoration(int frame)
 {
-  initializeDataList(currentVtiPath);
+  initializeDataList(frame);
 
   int nbDepthMap = (int)this->DataList.size();
 
@@ -342,18 +258,26 @@ bool MeshColoration::ProcessColoration(std::string currentVtiPath)
   return true;
 }
 
-void MeshColoration::initializeDataList(std::string currentVtiPath)
+void MeshColoration::initializeDataList(int frameId)
 {
-  int nbDepthMap = (int)frameList.size();
+  this->videoReader->open(this->videoPath);
+  kwiver::vital::timestamp ts;
+  auto cam_map = this->cameras->cameras();
 
   //Take a subset of depthmap
-  if (currentVtiPath == "")
+  if (frameId < 0)
   {
-    for (int id = 0; id < nbDepthMap; id++)
+    unsigned int counter = 0;
+    for (auto cam_itr : cam_map)
     {
-      if (id%Sampling == 0)
+      if ((counter++) % Sampling != 0)
       {
-        ReconstructionData* data = new ReconstructionData(frameList[id], krtdFolder[id]);
+        continue;
+      }
+      if (this->videoReader->seek_frame(ts, cam_itr.first))
+      {
+        ReconstructionData* data = new ReconstructionData(
+          this->videoReader->frame_image()->get_image(), cam_itr.second);
         this->DataList.push_back(data);
       }
     }
@@ -361,17 +285,16 @@ void MeshColoration::initializeDataList(std::string currentVtiPath)
   //Take the current depthmap
   else
   {
-    std::string currentDepthmapName = currentVtiPath.substr(currentVtiPath.find_last_of("/"));
-    for (int id = 0; id < nbDepthMap; id++)
+    auto cam_itr = cam_map.find(frameId);
+    if (cam_itr != cam_map.end())
     {
-      std::string depthmapName = frameList[id].substr(frameList[id].find_last_of("/"));
-      if (currentDepthmapName == depthmapName)
+      if (this->videoReader->seek_frame(ts, frameId))
       {
-        ReconstructionData* data = new ReconstructionData(frameList[id], krtdFolder[id]);
+        ReconstructionData* data = new ReconstructionData(
+          this->videoReader->frame_image()->get_image(), cam_itr->second);
         this->DataList.push_back(data);
-        break;
       }
     }
   }
-
+  this->videoReader->close();
 }

@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,9 @@
 #ifndef MAPTK_WORLDVIEW_H_
 #define MAPTK_WORLDVIEW_H_
 
+#include <vital/config/config_block_types.h>
+#include <vital/types/camera_map.h>
+
 #include <qtGlobal.h>
 
 #include <QWidget>
@@ -56,7 +59,13 @@ public:
   virtual ~WorldView();
 
   void initFrameSampling(int nbFrames);
-  void loadVolume(QString path, QString krtd, QString frame);
+
+  void loadVolume(QString path);
+
+  void setVideoConfig(QString videoPath,
+                      kwiver::vital::config_block_sptr config);
+  void setCameras(kwiver::vital::camera_map_sptr cameras);
+
   void enableAntiAliasing(bool enable);
   void setROI(vtkBox*);
 signals:
@@ -115,7 +124,7 @@ public slots:
   void invalidateGeometry();
 
   void setVolumeVisible(bool);
-  void setVolumeCurrentFramePath(QString path);
+  void setVolumeCurrentFrame(int);
 
   void computeContour(double threshold);
   void render();

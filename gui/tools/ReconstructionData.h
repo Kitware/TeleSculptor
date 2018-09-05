@@ -31,12 +31,17 @@
 #ifndef MAPTK_RECONSTRUCTIONDATA_H_
 #define MAPTK_RECONSTRUCTIONDATA_H_
 
+// KWIVER includes
+#include <vital/types/camera.h>
+#include <vital/types/image.h>
+
 // VTK includes
 class vtkImageData;
 class vtkMatrix3x3;
 class vtkMatrix4x4;
 class vtkTransform;
 class vtkVector3d;
+#include "vtkSmartPointer.h"
 
 #include <string>
 
@@ -44,20 +49,20 @@ class ReconstructionData
 {
 public:
   ReconstructionData();
-  ReconstructionData(std::string depthPath, std::string matrixPath);
+  ReconstructionData(kwiver::vital::image& image, kwiver::vital::camera_sptr& camera);
   ~ReconstructionData();
 
   // GETTERS
   int* GetDepthMapDimensions();
   void GetColorValue(int* pixelPosition, double rgb[3]);
-  vtkImageData* GetDepthMap();
+  vtkSmartPointer<vtkImageData> GetDepthMap();
   vtkMatrix3x3* Get3MatrixK();
   vtkMatrix4x4* Get4MatrixK();
   vtkMatrix4x4* GetMatrixTR();
   vtkVector3d GetCameraCenter();
 
   // SETTERS
-  void SetDepthMap(vtkImageData* data);
+  void SetDepthMap(vtkSmartPointer<vtkImageData> data);
   void SetMatrixK(vtkMatrix3x3* matrix);
   void SetMatrixRT(vtkMatrix4x4* matrix);
 
@@ -65,13 +70,9 @@ public:
   void ApplyDepthThresholdFilter(double thresholdBestCost);
   void TransformWorldToDepthMapPosition(const double* worldCoordinate, int pixelCoordinate[2]);
 
-  // STATIC FUNCTIONS
-  static void ReadDepthMap(std::string path, vtkImageData* out);
-
 protected:
-
   // Attributes
-  vtkImageData* DepthMap;
+  vtkSmartPointer<vtkImageData> DepthMap;
   vtkMatrix3x3* MatrixK;
   vtkMatrix4x4* Matrix4K;
   vtkMatrix4x4* MatrixRT;

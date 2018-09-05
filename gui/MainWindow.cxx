@@ -68,8 +68,6 @@
 
 #include <vtkBox.h>
 #include <vtkImageData.h>
-#include <vtkImageFlip.h>
-#include <vtkImageImport.h>
 #include <vtkImageReader2.h>
 #include <vtkImageReader2Collection.h>
 #include <vtkImageReader2Factory.h>
@@ -285,8 +283,6 @@ public:
   void setActiveCamera(int);
   void updateCameraView();
 
-  vtkSmartPointer<vtkImageData> vitalToVtkImage(kwiver::vital::image& img);
-
   std::string getFrameName(kwiver::vital::frame_id_t frame);
 
   void loadImage(FrameData frame);
@@ -447,6 +443,8 @@ void MainWindowPrivate::addVideoSource(
   }
   this->videoPath = videoPath;
   this->freestandingConfig->merge_config(config);
+  // Set video path and config for volume mesh coloring
+  this->UI.worldView->setVideoConfig(videoPath, config);
 
   // Close the existing video source if it exists
   if(this->videoSource)
@@ -591,6 +589,7 @@ void MainWindowPrivate::updateFrames(
                    << " from " << this->project->cameraPath;
       }
     }
+    this->UI.worldView->setCameras(this->cameraMap());
   }
   else
   {
@@ -658,6 +657,8 @@ void MainWindowPrivate::updateFrames(
     }
   }
 
+  this->UI.worldView->queueResetView();
+
   this->UI.worldView->initFrameSampling(this->frames.size());
 
   if (this->project){
@@ -717,6 +718,7 @@ void MainWindowPrivate::updateCameras(
       this->UI.worldView->removeCamera(fid);
     }
   }
+  this->UI.worldView->setCameras(cameras);
 
   this->UI.actionExportCameras->setEnabled(allowExport);
 }
@@ -867,8 +869,7 @@ void MainWindowPrivate::setActiveCamera(int id)
     }
   }
 
-  // TODO: Uncomment once MeshColoration is working directly off video frames
-  // UI.worldView->setVolumeCurrentFramePath(cd.imagePath);
+  UI.worldView->setVolumeCurrentFrame(id);
 }
 
 //-----------------------------------------------------------------------------
@@ -956,54 +957,6 @@ void MainWindowPrivate::updateCameraView()
   this->UI.cameraView->render();
 }
 
-//-----------------------------------------------------------------------------
-// TODO: move this method to a new implementation of image_container in a new
-//       vtk arrow
-vtkSmartPointer<vtkImageData>
-MainWindowPrivate::vitalToVtkImage(kwiver::vital::image& img)
-{
-  auto imgTraits = img.pixel_traits();
-
-  // Get the image type
-  int imageType = VTK_VOID;
-  switch (imgTraits.type)
-  {
-    case kwiver::vital::image_pixel_traits::UNSIGNED:
-      imageType = VTK_UNSIGNED_CHAR;
-      break;
-    case kwiver::vital::image_pixel_traits::SIGNED:
-      imageType = VTK_SIGNED_CHAR;
-      break;
-    case kwiver::vital::image_pixel_traits::FLOAT:
-      imageType = VTK_FLOAT;
-      break;
-    default:
-      imageType = VTK_VOID;
-      break;
-    // TODO: exception or error/warning message?
-  }
-
-  // convert to vtkFrameData
-  vtkSmartPointer<vtkImageImport> imageImport =
-    vtkSmartPointer<vtkImageImport>::New();
-  imageImport->SetDataScalarType(imageType);
-  imageImport->SetNumberOfScalarComponents(static_cast<int>(img.depth()));
-  imageImport->SetWholeExtent(0, static_cast<int>(img.width())-1,
-                              0, static_cast<int>(img.height())-1, 0, 0);
-  imageImport->SetDataExtentToWholeExtent();
-  imageImport->SetImportVoidPointer(img.first_pixel());
-  imageImport->Update();
-
-  // Flip image so it has the correct axis for VTK
-  vtkSmartPointer<vtkImageFlip> flipFilter =
-    vtkSmartPointer<vtkImageFlip>::New();
-  flipFilter->SetFilteredAxis(1); // flip x axis
-  flipFilter->SetInputConnection(imageImport->GetOutputPort());
-  flipFilter->Update();
-
-  return flipFilter->GetOutput();
-}
-
 std::string MainWindowPrivate::getFrameName(kwiver::vital::frame_id_t frameId)
 {
   return frameName(frameId, this->videoMetadataMap);
@@ -1045,25 +998,8 @@ void MainWindowPrivate::loadImage(FrameData frame)
       videoSource->next_frame(this->currentVideoTimestamp);
     }
 
-    kwiver::vital::image frameImg;
     auto sourceImg = videoSource->frame_image()->get_image();
-
-    // If image is interlaced it is already compatible with VTK
-    if (sourceImg.d_step() == 1)
-    {
-      frameImg = sourceImg;
-    }
-    // Otherwise we need a deep copy to get it to be interlaced
-    else
-    {
-      frameImg = kwiver::vital::image(sourceImg.width(),
-                                      sourceImg.height(),
-                                      sourceImg.depth(),
-                                      true);
-      frameImg.copy_from(sourceImg);
-    }
-
-    auto imageData = this->vitalToVtkImage(frameImg);
+    auto imageData = vitalToVtkImage(sourceImg);
     int dimensions[3];
     imageData->GetDimensions(dimensions);
 
@@ -1584,9 +1520,7 @@ void MainWindow::loadProject(QString const& path)
   // Load volume
   if (d->project->config->has_value("volume_file"))
   {
-    d->UI.worldView->loadVolume(d->project->volumePath,
-                                d->project->cameraPath,
-                                d->project->videoPath);
+    d->UI.worldView->loadVolume(d->project->volumePath);
   }
 
   if (d->project->config->has_value("geo_origin_file"))

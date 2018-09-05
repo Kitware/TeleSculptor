@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016-2017 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -134,12 +134,20 @@ void VolumeOptions::initFrameSampling(int nbFrames)
 }
 
 //-----------------------------------------------------------------------------
-void VolumeOptions::setKrtdFrameFile(QString krtd, QString frame)
+void VolumeOptions::setCameras(kwiver::vital::camera_map_sptr cameras)
 {
   QTE_D();
 
-  d->colorizeSurfaceOptions->setKrtdFile(krtd);
-  d->colorizeSurfaceOptions->setFrameFile(frame);
+  d->colorizeSurfaceOptions->setCameras(cameras);
+}
+
+//-----------------------------------------------------------------------------
+void VolumeOptions::setVideoConfig(std::string videoPath,
+                                   kwiver::vital::config_block_sptr config)
+{
+  QTE_D();
+
+  d->colorizeSurfaceOptions->setVideoInfo(config, videoPath);
 }
 
 //-----------------------------------------------------------------------------
@@ -151,11 +159,11 @@ void VolumeOptions::colorize()
 }
 
 //-----------------------------------------------------------------------------
-void VolumeOptions::setCurrentFramePath(std::string path)
+void VolumeOptions::setCurrentFrame(int frame)
 {
   QTE_D();
 
-  d->colorizeSurfaceOptions->setCurrentFramePath(path);
+  d->colorizeSurfaceOptions->setCurrentFrame(frame);
 }
 
 //-----------------------------------------------------------------------------

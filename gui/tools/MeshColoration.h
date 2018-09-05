@@ -31,6 +31,11 @@
 #ifndef MAPTK_MESHCOLORATION_H_
 #define MAPTK_MESHCOLORATION_H_
 
+// KWIVER includes
+#include <vital/algo/video_input.h>
+#include <vital/config/config_block_types.h>
+#include <vital/types/camera_map.h>
+
 // VTK Class
 class vtkPolyData;
 
@@ -44,7 +49,10 @@ class MeshColoration
 {
 public:
   MeshColoration();
-  MeshColoration(vtkPolyData* mesh, std::string frameList, std::string krtdFolder);
+  MeshColoration(vtkPolyData* mesh,
+                 kwiver::vital::config_block_sptr& config,
+                 std::string videoPath,
+                 kwiver::vital::camera_map_sptr& cameras);
   ~MeshColoration();
 
   // SETTER
@@ -55,16 +63,18 @@ public:
   vtkPolyData* GetOutput();
 
   // Functions
-  bool ProcessColoration(std::string currentVtiPath ="");
-  void initializeDataList(std::string currentVtiPath ="");
+  bool ProcessColoration(int frame = -1);
+  void initializeDataList(int frameId);
 
 protected:
   // Attributes
   vtkPolyData* OutputMesh;
   int Sampling;
   std::vector<ReconstructionData*> DataList;
-  std::vector<std::string> frameList;
-  std::vector<std::string> krtdFolder;
+
+  std::string videoPath;
+  kwiver::vital::algo::video_input_sptr videoReader;
+  kwiver::vital::camera_map_sptr cameras;
 };
 
 #endif

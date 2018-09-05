@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, SAS; Copyright 2017 by Kitware, Inc.
+ * Copyright 2016 by Kitware, SAS; Copyright 2017-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,8 +30,13 @@
 
 #include "ReconstructionData.h"
 
+#include "GuiCommon.h"
+
 #include <sstream>
 #include <cmath>
+
+// KWIVER includes
+#include <vital/types/camera_perspective.h>
 
 // VTK includes
 #include "vtkDoubleArray.h"
@@ -39,6 +44,7 @@
 #include "vtkImageReader2Factory.h"
 #include "vtkImageReader2.h"
 #include "vtkVector.h"
+#include "vtkMaptkCamera.h"
 #include "vtkMatrix3x3.h"
 #include "vtkMatrix4x4.h"
 #include "vtkNew.h"
@@ -52,76 +58,42 @@ namespace
 {
 
 //----------------------------------------------------------------------------
-/// Read krtd file and create K and RT matrix
+/// Import krtd data and create K and RT matrix
 /**
- * This function is deprecated.  It is here because this code came from a
- * separate project that needed to load KRTD files directly.  The
- * Reconstruction should get a camera object passed directly rather than a
- * path to a KRTD file.
+ * Imprt krtd data from camera and load the data K and RT matrices.
  */
-static bool ReadKrtdFile(std::string filename, vtkMatrix3x3* matrixK,
-                         vtkMatrix4x4* matrixRT)
+static void ImportCameraData(kwiver::vital::camera_sptr& cam,
+                             vtkMatrix3x3* matrixK,
+                             vtkMatrix4x4* matrixRT)
 {
-  // Open the file
-  std::ifstream file(filename.c_str());
-  if (!file.is_open())
+  auto cam_ptr =
+    std::dynamic_pointer_cast<kwiver::vital::camera_perspective>(cam);
+
+  // Get the K matrix
+  kwiver::vital::matrix_3x3d K = cam_ptr->intrinsics()->as_matrix();
+
+  // Get R and T
+  kwiver::vital::matrix_3x3d R = cam_ptr->rotation().matrix();
+  kwiver::vital::vector_3d T = cam_ptr->translation();
+
+  // Copy the data
+  for (unsigned int i = 0; i < 3; ++i)
   {
-    std::cerr << "Unable to open krtd file : " << filename << std::endl;
-    return false;
-  }
-
-  std::string line;
-
-  // Get matrix K
-  for (int i = 0; i < 3; i++)
-  {
-    getline(file, line);
-    std::istringstream iss(line);
-
-    for (int j = 0; j < 3; j++)
+    for (unsigned int j = 0; j < 3; ++j)
     {
-      double value;
-      iss >> value;
-      matrixK->SetElement(i, j, value);
+      matrixK->SetElement(i, j, K(i, j));
+      matrixRT->SetElement(i, j, R(i, j));
     }
+    matrixRT->SetElement(i, 3, T[i]);
   }
 
-  getline(file, line);
-
-  // Get matrix R
-  for (int i = 0; i < 3; i++)
-  {
-    getline(file, line);
-    std::istringstream iss(line);
-
-    for (int j = 0; j < 3; j++)
-    {
-      double value;
-      iss >> value;
-      matrixRT->SetElement(i, j, value);
-    }
-  }
-
-  getline(file, line);
-
-  // Get matrix T
-  getline(file, line);
-  std::istringstream iss(line);
-  for (int i = 0; i < 3; i++)
-  {
-    double value;
-    iss >> value;
-    matrixRT->SetElement(i, 3, value);
-  }
-
-  // Finalize matrix RT
-  for (int j = 0; j < 4; j++)
+  // Set the bottom row to [0, 0, 0, 1]
+  for (int j = 0; j < 3; ++j)
   {
     matrixRT->SetElement(3, j, 0);
   }
   matrixRT->SetElement(3, 3, 1);
 
-  return true;
 }
 
 } // end anonymous namespace
@@ -134,25 +106,23 @@ ReconstructionData::ReconstructionData()
   this->MatrixRT = 0;
 }
 
-ReconstructionData::ReconstructionData(std::string depthPath,
-                                       std::string matrixPath)
-                                       :ReconstructionData()
+ReconstructionData::ReconstructionData(kwiver::vital::image& image,
+                                       kwiver::vital::camera_sptr& camera)
+                                       : ReconstructionData()
 {
-  // Read DEPTH MAP an fill this->DepthMap
-  this->DepthMap = vtkImageData::New();
-  ReconstructionData::ReadDepthMap(depthPath, this->DepthMap);
-
+  // Get Depth map as vtkImageData
+  this->DepthMap = vitalToVtkImage(image);
 
   this->TransformWorldToCamera = vtkTransform::New();
   this->TransformCameraToDepthMap = vtkTransform::New();
 
-  // Read KRTD FILE
+  // Get camera data
   vtkNew<vtkMatrix3x3> K;
   vtkNew<vtkMatrix4x4> RT;
   this->MatrixRT = vtkMatrix4x4::New();
   this->MatrixK = vtkMatrix3x3::New();
   this->Matrix4K = vtkMatrix4x4::New();
-  ReadKrtdFile(matrixPath, K.Get(), RT.Get());
+  ImportCameraData(camera, K.Get(), RT.Get());
 
   // Set matrix K to  create matrix4x4 for K
   this->SetMatrixK(K.Get());
@@ -205,7 +175,7 @@ void ReconstructionData::GetColorValue(int* pixelPosition, double rgb[3])
   }
 }
 
-vtkImageData* ReconstructionData::GetDepthMap()
+vtkSmartPointer<vtkImageData> ReconstructionData::GetDepthMap()
 {
   return this->DepthMap;
 }
@@ -285,7 +255,7 @@ void ReconstructionData::TransformWorldToDepthMapPosition(const double* worldCoo
   pixelCoordinate[1] = std::round(depthMapCoordinate[1]);
 }
 
-void ReconstructionData::SetDepthMap(vtkImageData* data)
+void ReconstructionData::SetDepthMap(vtkSmartPointer<vtkImageData> data)
 {
   if (this->DepthMap != 0)
   {
@@ -330,14 +300,4 @@ void ReconstructionData::SetMatrixRT(vtkMatrix4x4* matrix)
   this->MatrixRT = matrix;
   this->MatrixRT->Register(0);
   this->TransformWorldToCamera->SetMatrix(this->MatrixRT);
-}
-
-void ReconstructionData::ReadDepthMap(std::string path, vtkImageData* out)
-{
-  vtkSmartPointer<vtkImageReader2Factory> readerFactory =
-      vtkSmartPointer<vtkImageReader2Factory>::New();
-  vtkSmartPointer<vtkImageReader2> imageReader = readerFactory->CreateImageReader2(path.c_str());
-  imageReader->SetFileName(path.c_str());
-  imageReader->Update();
-  out->ShallowCopy(imageReader->GetOutput());
 }

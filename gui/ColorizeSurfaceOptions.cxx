@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,10 +58,14 @@ public:
 
   vtkActor* volumeActor;
 
+  kwiver::vital::config_block_sptr videoConfig;
+  std::string videoPath;
+  kwiver::vital::camera_map_sptr cameras;
+
   QString krtdFile;
   QString frameFile;
 
-  std::string currentFramePath;
+  int currentFrame;
 };
 
 QTE_IMPLEMENT_D_FUNC(ColorizeSurfaceOptions)
@@ -121,13 +125,13 @@ void ColorizeSurfaceOptions::initFrameSampling(int nbFrames)
 }
 
 //-----------------------------------------------------------------------------
-void ColorizeSurfaceOptions::setCurrentFramePath(std::string path)
+void ColorizeSurfaceOptions::setCurrentFrame(int frame)
 {
   QTE_D();
 
-  if (d->currentFramePath != path)
+  if (d->currentFrame != frame)
   {
-    d->currentFramePath = path;
+    d->currentFrame = frame;
 
     if (d->UI.radioButtonCurrentFrame->isChecked()
         && d->UI.radioButtonCurrentFrame->isEnabled())
@@ -146,19 +150,21 @@ void ColorizeSurfaceOptions::setActor(vtkActor* actor)
 }
 
 //-----------------------------------------------------------------------------
-void ColorizeSurfaceOptions::setKrtdFile(QString file)
+void ColorizeSurfaceOptions::setVideoInfo(
+  kwiver::vital::config_block_sptr config, std::string path)
 {
   QTE_D();
 
-  d->krtdFile = file;
+  d->videoConfig = config;
+  d->videoPath = path;
 }
 
 //-----------------------------------------------------------------------------
-void ColorizeSurfaceOptions::setFrameFile(QString file)
+void ColorizeSurfaceOptions::setCameras(kwiver::vital::camera_map_sptr cameras)
 {
   QTE_D();
 
-  d->frameFile = file;
+  d->cameras = cameras;
 }
 
 //-----------------------------------------------------------------------------
@@ -210,21 +216,21 @@ void ColorizeSurfaceOptions::colorize()
 {
   QTE_D();
 
-  if (!d->frameFile.isEmpty() && !d->krtdFile.isEmpty())
+  if (d->cameras->size() > 0)
   {
     d->UI.comboBoxColorDisplay->clear();
 
     vtkPolyData* volume = vtkPolyData::SafeDownCast(d->volumeActor->GetMapper()
                                                     ->GetInput());
     MeshColoration* coloration = new MeshColoration(
-      volume, stdString(d->frameFile), stdString(d->krtdFile));
+      volume, d->videoConfig, d->videoPath, d->cameras);
 
     coloration->SetInput(volume);
     coloration->SetFrameSampling(d->UI.spinBoxFrameSampling->value());
 
     if(d->UI.radioButtonCurrentFrame->isChecked())
     {
-      coloration->ProcessColoration(d->currentFramePath);
+      coloration->ProcessColoration(d->currentFrame);
     }
     else
     {
@@ -274,7 +280,7 @@ void ColorizeSurfaceOptions::currentFrameSelected()
 
   enableAllFramesParameters(false);
 
-  if (!d->currentFramePath.empty())
+  if (d->currentFrame != -1)
   {
     colorize();
   }

@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016-2017 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,9 @@
 #ifndef MAPTK_VOLUMEOPTIONS_H_
 #define MAPTK_VOLUMEOPTIONS_H_
 
+#include <vital/config/config_block_types.h>
+#include <vital/types/camera_map.h>
+
 #include <qtGlobal.h>
 
 #include <QWidget>
@@ -53,11 +56,15 @@ public:
   void setActor(vtkActor* actor);
 
   void initFrameSampling(int nbFrames);
-  void setKrtdFrameFile(QString krtd, QString frame);
+
+  void setCameras(kwiver::vital::camera_map_sptr cameras);
+
+  void setVideoConfig(std::string videoPath,
+                      kwiver::vital::config_block_sptr config);
 
   void colorize();
 
-  void setCurrentFramePath(std::string path);
+  void setCurrentFrame(int);
 
   bool isColorOptionsEnabled();
 
