@@ -56,11 +56,12 @@ namespace
 {
 
 //----------------------------------------------------------------------------
-/// Import krtd data and create K and RT matrix
+/// Extract camera data into K and RT matrices
 /**
- * Imprt krtd data from camera and load the data K and RT matrices.
+ * Extracts the camera intrinsic matrix (K) and pose matrix (RT) from a Vital
+ * camera and populates VTK matrices with these values.
  */
-static void ImportCameraData(kwiver::vital::camera_sptr& cam,
+static void ExtractCameraData(kwiver::vital::camera_sptr& cam,
                              vtkMatrix3x3* matrixK,
                              vtkMatrix4x4* matrixRT)
 {
@@ -120,7 +121,7 @@ ReconstructionData::ReconstructionData(kwiver::vital::image& image,
   this->MatrixRT = vtkMatrix4x4::New();
   this->MatrixK = vtkMatrix3x3::New();
   this->Matrix4K = vtkMatrix4x4::New();
-  ImportCameraData(camera, K.Get(), RT.Get());
+  ExtractCameraData(camera, K.Get(), RT.Get());
 
   // Set matrix K to  create matrix4x4 for K
   this->SetMatrixK(K.Get());
