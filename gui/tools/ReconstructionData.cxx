@@ -208,36 +208,6 @@ vtkMatrix4x4* ReconstructionData::GetMatrixTR()
   return this->MatrixRT;
 }
 
-void ReconstructionData::ApplyImageThresholdFilter(double thresholdBestCost)
-{
-  if (this->Image == 0)
-    return;
-
-  vtkDoubleArray* depths =
-    vtkDoubleArray::SafeDownCast(this->Image->GetPointData()->GetArray("Depths"));
-  vtkDoubleArray* bestCost =
-    vtkDoubleArray::SafeDownCast(this->Image->GetPointData()->GetArray("Best Cost Values"));
-
-  if (depths == 0)
-  {
-    std::cerr << "Error during threshold, depths is empty" << std::endl;
-    return;
-  }
-
-  int nbTuples = depths->GetNumberOfTuples();
-
-  if (bestCost->GetNumberOfTuples() != nbTuples)
-    return;
-
-  for (int i = 0; i < nbTuples; i++)
-  {
-    double v_bestCost = bestCost->GetTuple1(i);
-    if (v_bestCost > thresholdBestCost)
-    {
-      depths->SetTuple1(i, -1);
-    }
-  }
-}
 
 void ReconstructionData::TransformWorldToImagePosition(const double* worldCoordinate,
                                                        int pixelCoordinate[2])

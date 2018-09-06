@@ -66,7 +66,6 @@ public:
   void SetMatrixRT(vtkMatrix4x4* matrix);
 
   // FUNCTIONS
-  void ApplyImageThresholdFilter(double thresholdBestCost);
   void TransformWorldToImagePosition(const double* worldCoordinate, int pixelCoordinate[2]);
 
 protected:
