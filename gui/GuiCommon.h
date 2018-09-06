@@ -70,6 +70,6 @@ kwiver::vital::path_t findConfig(std::string const& name);
 // converts a vital image to a vtkImage
 // TODO:  move this method to a new implementation of image_container in a new
 //        vtk arrow
-vtkSmartPointer<vtkImageData> vitalToVtkImage(kwiver::vital::image& img);
+vtkSmartPointer<vtkImageData> vitalToVtkImage(kwiver::vital::image const& img);
 
 #endif

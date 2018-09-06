@@ -61,9 +61,9 @@ namespace
  * Extracts the camera intrinsic matrix (K) and pose matrix (RT) from a Vital
  * camera and populates VTK matrices with these values.
  */
-static void ExtractCameraData(kwiver::vital::camera_sptr& cam,
-                             vtkMatrix3x3* matrixK,
-                             vtkMatrix4x4* matrixRT)
+static void ExtractCameraData(kwiver::vital::camera_sptr const& cam,
+                              vtkMatrix3x3* matrixK,
+                              vtkMatrix4x4* matrixRT)
 {
   auto cam_ptr =
     std::dynamic_pointer_cast<kwiver::vital::camera_perspective>(cam);
@@ -105,9 +105,10 @@ ReconstructionData::ReconstructionData()
   this->MatrixRT = 0;
 }
 
-ReconstructionData::ReconstructionData(kwiver::vital::image& image,
-                                       kwiver::vital::camera_sptr& camera)
-                                       : ReconstructionData()
+ReconstructionData::ReconstructionData(
+  kwiver::vital::image const& image,
+  kwiver::vital::camera_sptr const& camera)
+  : ReconstructionData()
 {
   // Get Depth map as vtkImageData
   this->DepthMap = vitalToVtkImage(image);

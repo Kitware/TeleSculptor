@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, SAS; Copyright 2017 by Kitware, Inc.
+ * Copyright 2016 by Kitware, SAS; Copyright 2017-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,7 +49,8 @@ class ReconstructionData
 {
 public:
   ReconstructionData();
-  ReconstructionData(kwiver::vital::image& image, kwiver::vital::camera_sptr& camera);
+  ReconstructionData(kwiver::vital::image const& image,
+                     kwiver::vital::camera_sptr const& camera);
   ~ReconstructionData();
 
   // GETTERS
