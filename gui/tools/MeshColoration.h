@@ -35,12 +35,10 @@
 #include <vital/algo/video_input.h>
 #include <vital/config/config_block_types.h>
 #include <vital/types/camera_map.h>
+#include <vital/types/camera_perspective.h>
 
 // VTK Class
 class vtkPolyData;
-
-// Project class
-class ReconstructionData;
 
 #include <string>
 #include <vector>
@@ -70,7 +68,9 @@ protected:
   // Attributes
   vtkPolyData* OutputMesh;
   int Sampling;
-  std::vector<ReconstructionData*> DataList;
+  typedef std::pair<kwiver::vital::image_of<uint8_t>,
+                    kwiver::vital::camera_perspective_sptr> ColorationData;
+  std::vector<ColorationData> DataList;
 
   std::string videoPath;
   kwiver::vital::algo::video_input_sptr videoReader;

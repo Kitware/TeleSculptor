@@ -41,9 +41,6 @@
 #include "vtkPolyData.h"
 #include "vtkSmartPointer.h"
 
-// Project includes
-#include "ReconstructionData.h"
-
 // Other includes
 #include <algorithm>
 #include <numeric>
@@ -106,10 +103,6 @@ MeshColoration::~MeshColoration()
   {
     this->OutputMesh->Delete();
   }
-  for (size_t i = 0; i < this->DataList.size(); i++)
-  {
-    delete this->DataList[i];
-  }
   this->DataList.clear();
 }
 
@@ -140,9 +133,9 @@ bool MeshColoration::ProcessColoration(int frame)
 {
   initializeDataList(frame);
 
-  int nbDepthMap = (int)this->DataList.size();
+  int numFrames = static_cast<int>(this->DataList.size());
 
-  if (this->OutputMesh == 0 || nbDepthMap == 0 /*|| this->Sampling >= nbDepthMap*/)
+  if (this->OutputMesh == 0 || numFrames == 0 )
   {
     std::cerr << "Error when input has been set or during reading vti/krtd file path" << std::endl;
     return false;
@@ -155,7 +148,6 @@ bool MeshColoration::ProcessColoration(int frame)
     return false;
   }
   vtkIdType nbMeshPoint = meshPointList->GetNumberOfPoints();
-  int* imageDimensions = this->DataList[0]->GetImage()->GetDimensions();
 
   // Contains rgb values
   vtkSmartPointer<vtkUnsignedCharArray> meanValues = vtkUnsignedCharArray::New();
@@ -187,47 +179,48 @@ bool MeshColoration::ProcessColoration(int frame)
 
   for (vtkIdType id = 0; id < nbMeshPoint; id++)
   {
-    list0.reserve(nbDepthMap);
-    list1.reserve(nbDepthMap);
-    list2.reserve(nbDepthMap);
+    list0.reserve(numFrames);
+    list1.reserve(numFrames);
+    list2.reserve(numFrames);
 
     // Get mesh position from id
-    double position[3];
-    meshPointList->GetPoint(id, position);
-    double pointNormald[3];
-    OutputMesh->GetPointData()->GetArray("Normals")->GetTuple(id, pointNormald);
-    vtkVector3d pointNormal(pointNormald);
+    kwiver::vital::vector_3d position;
+    meshPointList->GetPoint(id, position.data());
+    kwiver::vital::vector_3d pointNormal;
+    OutputMesh->GetPointData()->GetArray("Normals")->GetTuple(id, pointNormal.data());
 
-
-
-    for (int idData = 0; idData < nbDepthMap; idData++)
+    for (int idData = 0; idData < numFrames; idData++)
     {
-      ReconstructionData* data = this->DataList[idData];
-      vtkVector3d cameraCenter = data->GetCameraCenter();
+      kwiver::vital::camera_perspective_sptr camera = this->DataList[idData].second;
       // Check if the 3D point is in front of the camera
-      vtkVector3d cameraPointVec = vtkVector3d( position[0] - cameraCenter(0),
-                                                position[1] - cameraCenter(1),
-                                                position[2] - cameraCenter(2) );
-      if (cameraPointVec.Dot(pointNormal)>0.0)
+      if (camera->depth(position) <= 0.0)
       {
         continue;
       }
+
+      // test that we are viewing the front side of the mesh
+      kwiver::vital::vector_3d cameraPointVec = position - camera->center();
+      if (cameraPointVec.dot(pointNormal)>0.0)
+      {
+        continue;
+      }
+
       // project 3D point to pixel coordinates
-      int pixelPosition[2];
-      data->TransformWorldToImagePosition(position, pixelPosition);
-      // Test if pixel is inside depth map
-      if (pixelPosition[0] < 0 || pixelPosition[0] >= imageDimensions[0] ||
-          pixelPosition[1] < 0 || pixelPosition[1] >= imageDimensions[1])
+      auto pixelPosition = camera->project(position);
+      kwiver::vital::image_of<uint8_t> const& colorImage = this->DataList[idData].first;
+      try
+      {
+        unsigned i = static_cast<unsigned>(pixelPosition[0]);
+        unsigned j = static_cast<unsigned>(pixelPosition[1]);
+        kwiver::vital::rgb_color rgb = colorImage.at(i, j);
+        list0.push_back(rgb.r);
+        list1.push_back(rgb.g);
+        list2.push_back(rgb.b);
+      }
+      catch (std::out_of_range)
       {
         continue;
       }
-
-      double color[3];
-      data->GetColorValue(pixelPosition, color);
-
-      list0.push_back(color[0]);
-      list1.push_back(color[1]);
-      list2.push_back(color[2]);
     }
 
     // If we get elements
@@ -264,7 +257,7 @@ void MeshColoration::initializeDataList(int frameId)
   kwiver::vital::timestamp ts;
   auto cam_map = this->cameras->cameras();
 
-  //Take a subset of depthmap
+  //Take a subset of images
   if (frameId < 0)
   {
     unsigned int counter = 0;
@@ -274,25 +267,41 @@ void MeshColoration::initializeDataList(int frameId)
       {
         continue;
       }
-      if (this->videoReader->seek_frame(ts, cam_itr.first))
+      auto cam_ptr =
+        std::dynamic_pointer_cast<kwiver::vital::camera_perspective>(cam_itr.second);
+      if (cam_ptr && this->videoReader->seek_frame(ts, cam_itr.first))
       {
-        ReconstructionData* data = new ReconstructionData(
-          this->videoReader->frame_image()->get_image(), cam_itr.second);
-        this->DataList.push_back(data);
+        try
+        {
+          kwiver::vital::image_of<uint8_t>
+            image(this->videoReader->frame_image()->get_image());
+          this->DataList.push_back(ColorationData(image, cam_ptr));
+        }
+        catch (kwiver::vital::image_type_mismatch_exception)
+        {
+        }
       }
     }
   }
-  //Take the current depthmap
+  //Take the current image
   else
   {
     auto cam_itr = cam_map.find(frameId);
     if (cam_itr != cam_map.end())
     {
-      if (this->videoReader->seek_frame(ts, frameId))
+      auto cam_ptr =
+        std::dynamic_pointer_cast<kwiver::vital::camera_perspective>(cam_itr->second);
+      if (cam_ptr && this->videoReader->seek_frame(ts, frameId))
       {
-        ReconstructionData* data = new ReconstructionData(
-          this->videoReader->frame_image()->get_image(), cam_itr->second);
-        this->DataList.push_back(data);
+        try
+        {
+          kwiver::vital::image_of<uint8_t>
+            image(this->videoReader->frame_image()->get_image());
+          this->DataList.push_back(ColorationData(image, cam_ptr));
+        }
+        catch (kwiver::vital::image_type_mismatch_exception)
+        {
+        }
       }
     }
   }

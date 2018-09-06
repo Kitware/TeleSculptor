@@ -130,7 +130,6 @@ set(gui_sources
   tools/InitCamerasLandmarksTool.cxx
   tools/NeckerReversalTool.cxx
   tools/MeshColoration.cxx
-  tools/ReconstructionData.cxx
   tools/SaveFrameTool.cxx
   tools/SaveKeyFrameTool.cxx
   tools/TrackFilterTool.cxx
