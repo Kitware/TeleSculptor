@@ -155,7 +155,7 @@ bool MeshColoration::ProcessColoration(int frame)
     return false;
   }
   vtkIdType nbMeshPoint = meshPointList->GetNumberOfPoints();
-  int* depthMapDimensions = this->DataList[0]->GetDepthMap()->GetDimensions();
+  int* imageDimensions = this->DataList[0]->GetImage()->GetDimensions();
 
   // Contains rgb values
   vtkSmartPointer<vtkUnsignedCharArray> meanValues = vtkUnsignedCharArray::New();
@@ -214,10 +214,10 @@ bool MeshColoration::ProcessColoration(int frame)
       }
       // project 3D point to pixel coordinates
       int pixelPosition[2];
-      data->TransformWorldToDepthMapPosition(position, pixelPosition);
+      data->TransformWorldToImagePosition(position, pixelPosition);
       // Test if pixel is inside depth map
-      if (pixelPosition[0] < 0 || pixelPosition[0] >= depthMapDimensions[0] ||
-          pixelPosition[1] < 0 || pixelPosition[1] >= depthMapDimensions[1])
+      if (pixelPosition[0] < 0 || pixelPosition[0] >= imageDimensions[0] ||
+          pixelPosition[1] < 0 || pixelPosition[1] >= imageDimensions[1])
       {
         continue;
       }

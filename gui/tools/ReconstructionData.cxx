@@ -100,7 +100,7 @@ static void ExtractCameraData(kwiver::vital::camera_sptr& cam,
 
 ReconstructionData::ReconstructionData()
 {
-  this->DepthMap = 0;
+  this->Image = 0;
   this->MatrixK = 0;
   this->MatrixRT = 0;
 }
@@ -109,11 +109,11 @@ ReconstructionData::ReconstructionData(kwiver::vital::image& image,
                                        kwiver::vital::camera_sptr& camera)
                                        : ReconstructionData()
 {
-  // Get Depth map as vtkImageData
-  this->DepthMap = vitalToVtkImage(image);
+  // Get image memory as vtkImageData
+  this->Image = vitalToVtkImage(image);
 
   this->TransformWorldToCamera = vtkTransform::New();
-  this->TransformCameraToDepthMap = vtkTransform::New();
+  this->TransformCameraToImage = vtkTransform::New();
 
   // Get camera data
   vtkNew<vtkMatrix3x3> K;
@@ -130,9 +130,9 @@ ReconstructionData::ReconstructionData(kwiver::vital::image& image,
 
 ReconstructionData::~ReconstructionData()
 {
-  if (this->DepthMap)
+  if (this->Image)
   {
-    this->DepthMap->Delete();
+    this->Image->Delete();
   }
   if (this->MatrixK)
   {
@@ -151,7 +151,7 @@ ReconstructionData::~ReconstructionData()
 void ReconstructionData::GetColorValue(int* pixelPosition, double rgb[3])
 {
   vtkUnsignedCharArray* color =
-    vtkUnsignedCharArray::SafeDownCast(this->DepthMap->GetPointData()->GetArray(0));
+    vtkUnsignedCharArray::SafeDownCast(this->Image->GetPointData()->GetArray(0));
 
   if (color == 0)
   {
@@ -159,14 +159,14 @@ void ReconstructionData::GetColorValue(int* pixelPosition, double rgb[3])
     return;
   }
 
-  int* depthDims = this->DepthMap->GetDimensions();
+  int* imageDims = this->Image->GetDimensions();
 
   int pix[3];
   pix[0] = pixelPosition[0];
-  pix[1] = depthDims[1] - 1 - pixelPosition[1];
+  pix[1] = imageDims[1] - 1 - pixelPosition[1];
   pix[2] = 0;
 
-  int id = this->DepthMap->ComputePointId(pix);
+  int id = this->Image->ComputePointId(pix);
   double* temp = color->GetTuple3(id);
   for (size_t i = 0; i < 3; i++)
   {
@@ -174,9 +174,9 @@ void ReconstructionData::GetColorValue(int* pixelPosition, double rgb[3])
   }
 }
 
-vtkSmartPointer<vtkImageData> ReconstructionData::GetDepthMap()
+vtkSmartPointer<vtkImageData> ReconstructionData::GetImage()
 {
-  return this->DepthMap;
+  return this->Image;
 }
 
 vtkMatrix3x3* ReconstructionData::Get3MatrixK()
@@ -208,15 +208,15 @@ vtkMatrix4x4* ReconstructionData::GetMatrixTR()
   return this->MatrixRT;
 }
 
-void ReconstructionData::ApplyDepthThresholdFilter(double thresholdBestCost)
+void ReconstructionData::ApplyImageThresholdFilter(double thresholdBestCost)
 {
-  if (this->DepthMap == 0)
+  if (this->Image == 0)
     return;
 
   vtkDoubleArray* depths =
-    vtkDoubleArray::SafeDownCast(this->DepthMap->GetPointData()->GetArray("Depths"));
+    vtkDoubleArray::SafeDownCast(this->Image->GetPointData()->GetArray("Depths"));
   vtkDoubleArray* bestCost =
-    vtkDoubleArray::SafeDownCast(this->DepthMap->GetPointData()->GetArray("Best Cost Values"));
+    vtkDoubleArray::SafeDownCast(this->Image->GetPointData()->GetArray("Best Cost Values"));
 
   if (depths == 0)
   {
@@ -239,29 +239,29 @@ void ReconstructionData::ApplyDepthThresholdFilter(double thresholdBestCost)
   }
 }
 
-void ReconstructionData::TransformWorldToDepthMapPosition(const double* worldCoordinate,
-                                                          int pixelCoordinate[2])
+void ReconstructionData::TransformWorldToImagePosition(const double* worldCoordinate,
+                                                       int pixelCoordinate[2])
 {
   double cameraCoordinate[3];
   this->TransformWorldToCamera->TransformPoint(worldCoordinate, cameraCoordinate);
-  double depthMapCoordinate[3];
-  this->TransformCameraToDepthMap->TransformVector(cameraCoordinate, depthMapCoordinate);
+  double imageCoordinate[3];
+  this->TransformCameraToImage->TransformVector(cameraCoordinate, imageCoordinate);
 
-  depthMapCoordinate[0] = depthMapCoordinate[0] / depthMapCoordinate[2];
-  depthMapCoordinate[1] = depthMapCoordinate[1] / depthMapCoordinate[2];
+  imageCoordinate[0] = imageCoordinate[0] / imageCoordinate[2];
+  imageCoordinate[1] = imageCoordinate[1] / imageCoordinate[2];
 
-  pixelCoordinate[0] = std::round(depthMapCoordinate[0]);
-  pixelCoordinate[1] = std::round(depthMapCoordinate[1]);
+  pixelCoordinate[0] = std::round(imageCoordinate[0]);
+  pixelCoordinate[1] = std::round(imageCoordinate[1]);
 }
 
-void ReconstructionData::SetDepthMap(vtkSmartPointer<vtkImageData> data)
+void ReconstructionData::SetImage(vtkSmartPointer<vtkImageData> data)
 {
-  if (this->DepthMap != 0)
+  if (this->Image != 0)
   {
-    this->DepthMap->Delete();
+    this->Image->Delete();
   }
-  this->DepthMap = data;
-  this->DepthMap->Register(0);
+  this->Image = data;
+  this->Image->Register(0);
 }
 
 void ReconstructionData::SetMatrixK(vtkMatrix3x3* matrix)
@@ -287,7 +287,7 @@ void ReconstructionData::SetMatrixK(vtkMatrix3x3* matrix)
     }
   }
 
-  this->TransformCameraToDepthMap->SetMatrix(this->Matrix4K);
+  this->TransformCameraToImage->SetMatrix(this->Matrix4K);
 }
 
 void ReconstructionData::SetMatrixRT(vtkMatrix4x4* matrix)

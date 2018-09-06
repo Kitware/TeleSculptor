@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, SAS; Copyright 2017 by Kitware, Inc.
+ * Copyright 2016 by Kitware, SAS; Copyright 2017-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,32 +53,31 @@ public:
   ~ReconstructionData();
 
   // GETTERS
-  int* GetDepthMapDimensions();
   void GetColorValue(int* pixelPosition, double rgb[3]);
-  vtkSmartPointer<vtkImageData> GetDepthMap();
+  vtkSmartPointer<vtkImageData> GetImage();
   vtkMatrix3x3* Get3MatrixK();
   vtkMatrix4x4* Get4MatrixK();
   vtkMatrix4x4* GetMatrixTR();
   vtkVector3d GetCameraCenter();
 
   // SETTERS
-  void SetDepthMap(vtkSmartPointer<vtkImageData> data);
+  void SetImage(vtkSmartPointer<vtkImageData> data);
   void SetMatrixK(vtkMatrix3x3* matrix);
   void SetMatrixRT(vtkMatrix4x4* matrix);
 
   // FUNCTIONS
-  void ApplyDepthThresholdFilter(double thresholdBestCost);
-  void TransformWorldToDepthMapPosition(const double* worldCoordinate, int pixelCoordinate[2]);
+  void ApplyImageThresholdFilter(double thresholdBestCost);
+  void TransformWorldToImagePosition(const double* worldCoordinate, int pixelCoordinate[2]);
 
 protected:
   // Attributes
-  vtkSmartPointer<vtkImageData> DepthMap;
+  vtkSmartPointer<vtkImageData> Image;
   vtkMatrix3x3* MatrixK;
   vtkMatrix4x4* Matrix4K;
   vtkMatrix4x4* MatrixRT;
 
   vtkTransform* TransformWorldToCamera;
-  vtkTransform* TransformCameraToDepthMap;
+  vtkTransform* TransformCameraToImage;
 };
 
 #endif
