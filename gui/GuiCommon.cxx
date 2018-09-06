@@ -134,7 +134,7 @@ kwiver::vital::path_t findConfig(std::string const& name)
 }
 
 //----------------------------------------------------------------------------
-vtkSmartPointer<vtkImageData> vitalToVtkImage(kwiver::vital::image& img)
+vtkSmartPointer<vtkImageData> vitalToVtkImage(kwiver::vital::image const& img)
 {
   kwiver::vital::image frameImg;
   // If image is interlaced it is already compatible with VTK
