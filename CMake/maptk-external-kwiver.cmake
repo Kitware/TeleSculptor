@@ -11,7 +11,7 @@ ExternalProject_Add(kwiver
   BINARY_DIR ${MAPTK_EXTERNAL_DIR}/kwiver-build
   STAMP_DIR ${MAPTK_STAMP_DIR}
   GIT_REPOSITORY "https://kwgitlab.kitware.com/computer-vision/KWIVER.git"
-  GIT_TAG ef08d007fef117a000d969f7722915c493b41665
+  GIT_TAG 16a1a304fc44b4005d98f0677bf75dbce633f932
   #GIT_SHALLOW 1
   CMAKE_CACHE_ARGS
     -DBUILD_SHARED_LIBS:BOOL=ON
@@ -63,4 +63,4 @@ ExternalProject_Add(kwiver
 )
 
 set(KWIVER_DIR "${MAPTK_EXTERNAL_DIR}/kwiver-build")
-set(kwiver_DIR "${MAPTK_EXTERNAL_DIR}/kwiver-build" CACHE FILEPATH "Location of KWIVER" FORCE)
+set(kwiver_DIR "${MAPTK_EXTERNAL_DIR}/kwiver-build" CACHE PATH "Location of KWIVER" FORCE)

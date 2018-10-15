@@ -119,6 +119,10 @@ configure_file(${MAPTK_CMAKE_DIR}/start_MSVC.bat.in           ${MAPTK_BINARY_DIR
 configure_file(${MAPTK_CMAKE_DIR}/setup_MAPTK.build.bat.in    ${MAPTK_BINARY_DIR}/setup_MAPTK.bat @ONLY)
 configure_file(${MAPTK_CMAKE_DIR}/setup_MAPTK.build.sh.in     ${MAPTK_BINARY_DIR}/setup_MAPTK.sh @ONLY)
 
+if(MSVC)
+  # Create vcxproj.user files for every executable with the correct runtime environment
+  kwiver_setup_msvc_env(${MAPTK_BINARY_DIR}/setup_MAPTK.bat)
+endif()
 
 ###
 # Manuals
