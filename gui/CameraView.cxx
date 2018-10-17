@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2017 by Kitware, Inc.
+ * Copyright 2017-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -227,10 +227,10 @@ public:
 //-----------------------------------------------------------------------------
 CameraViewPrivate::VertexCloud::VertexCloud()
 {
-  this->data->SetPoints(this->points.GetPointer());
-  this->mapper->SetInputData(this->data.GetPointer());
+  this->data->SetPoints(this->points);
+  this->mapper->SetInputData(this->data);
 
-  this->actor->SetMapper(this->mapper.GetPointer());
+  this->actor->SetMapper(this->mapper);
   this->actor->GetProperty()->SetPointSize(2);
 }
 
@@ -247,7 +247,7 @@ void CameraViewPrivate::VertexCloud::clear()
 //-----------------------------------------------------------------------------
 CameraViewPrivate::PointCloud::PointCloud()
 {
-  this->data->SetVerts(this->verts.GetPointer());
+  this->data->SetVerts(this->verts);
 }
 
 //-----------------------------------------------------------------------------
@@ -265,8 +265,8 @@ void CameraViewPrivate::PointCloud::addPoint(double x, double y, double z)
 //-----------------------------------------------------------------------------
 CameraViewPrivate::SegmentCloud::SegmentCloud()
 {
-  this->data->SetVerts(this->verts.GetPointer());
-  this->data->SetLines(this->verts.GetPointer());
+  this->data->SetVerts(this->verts);
+  this->data->SetLines(this->verts);
 }
 
 //-----------------------------------------------------------------------------
@@ -297,9 +297,9 @@ CameraViewPrivate::LandmarkCloud::LandmarkCloud()
   this->elevations->SetName(Elevation);
   this->elevations->SetNumberOfComponents(1);
 
-  this->data->GetPointData()->AddArray(this->colors.GetPointer());
-  this->data->GetPointData()->AddArray(this->observations.GetPointer());
-  this->data->GetPointData()->AddArray(this->elevations.GetPointer());
+  this->data->GetPointData()->AddArray(this->colors);
+  this->data->GetPointData()->AddArray(this->observations);
+  this->data->GetPointData()->AddArray(this->elevations);
 }
 
 //-----------------------------------------------------------------------------
@@ -377,12 +377,12 @@ void CameraViewPrivate::setTransforms(int imageHeight)
   xf->SetElement(1, 1, -1.0);
   xf->SetElement(1, 3, imageHeight);
 
-  this->featureRep->GetActivePointsWithDescActor()->SetUserMatrix(xf.GetPointer());
-  this->featureRep->GetActivePointsWithoutDescActor()->SetUserMatrix(xf.GetPointer());
-  this->featureRep->GetTrailsWithDescActor()->SetUserMatrix(xf.GetPointer());
-  this->featureRep->GetTrailsWithoutDescActor()->SetUserMatrix(xf.GetPointer());
-  this->landmarks.actor->SetUserMatrix(xf.GetPointer());
-  this->residuals.actor->SetUserMatrix(xf.GetPointer());
+  this->featureRep->GetActivePointsWithDescActor()->SetUserMatrix(xf);
+  this->featureRep->GetActivePointsWithoutDescActor()->SetUserMatrix(xf);
+  this->featureRep->GetTrailsWithDescActor()->SetUserMatrix(xf);
+  this->featureRep->GetTrailsWithoutDescActor()->SetUserMatrix(xf);
+  this->landmarks.actor->SetUserMatrix(xf);
+  this->residuals.actor->SetUserMatrix(xf);
 }
 
 //-----------------------------------------------------------------------------
@@ -419,15 +419,14 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->setPopup(d->UI.actionViewReset, viewMenu);
 
   auto const imageOptions = new ImageOptions("CameraView/Image", this);
-  imageOptions->addActor(d->imageActor.GetPointer());
+  imageOptions->addActor(d->imageActor);
   d->setPopup(d->UI.actionShowFrameImage, imageOptions);
 
   connect(imageOptions, SIGNAL(modified()),
           this, SLOT(render()));
 
   auto const featureOptions =
-    new FeatureOptions(d->featureRep.GetPointer(),
-                       "CameraView/FeaturePoints", this);
+    new FeatureOptions{d->featureRep, "CameraView/FeaturePoints", this};
 
   d->setPopup(d->UI.actionShowFeatures, featureOptions);
 
@@ -436,8 +435,8 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
 
   d->landmarkOptions = new PointOptions("CameraView/Landmarks", this);
   d->landmarkOptions->setDefaultColor(Qt::magenta);
-  d->landmarkOptions->addActor(d->landmarks.actor.GetPointer());
-  d->landmarkOptions->addMapper(d->landmarks.mapper.GetPointer());
+  d->landmarkOptions->addActor(d->landmarks.actor);
+  d->landmarkOptions->addMapper(d->landmarks.mapper);
 
   d->setPopup(d->UI.actionShowLandmarks, d->landmarkOptions);
 
@@ -447,7 +446,7 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   auto const residualsOptions =
     new ActorColorOption("CameraView/Residuals", this);
   residualsOptions->setDefaultColor(QColor(255, 128, 0));
-  residualsOptions->button->addActor(d->residuals.actor.GetPointer());
+  residualsOptions->button->addActor(d->residuals.actor);
 
   d->setPopup(d->UI.actionShowResiduals, residualsOptions);
 
@@ -484,22 +483,22 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
 
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
-  d->renderWindow->AddRenderer(d->renderer.GetPointer());
-  d->UI.renderWidget->SetRenderWindow(d->renderWindow.GetPointer());
+  d->renderWindow->AddRenderer(d->renderer);
+  d->UI.renderWidget->SetRenderWindow(d->renderWindow);
 
   // Set interactor
   vtkNew<vtkInteractorStyleRubberBand2D> is;
-  d->UI.renderWidget->GetInteractor()->SetInteractorStyle(is.GetPointer());
+  d->UI.renderWidget->GetInteractor()->SetInteractorStyle(is);
 
   // Set up actors
   d->renderer->AddActor(d->featureRep->GetActivePointsWithDescActor());
   d->renderer->AddActor(d->featureRep->GetActivePointsWithoutDescActor());
   d->renderer->AddActor(d->featureRep->GetTrailsWithDescActor());
   d->renderer->AddActor(d->featureRep->GetTrailsWithoutDescActor());
-  d->renderer->AddActor(d->landmarks.actor.GetPointer());
-  d->renderer->AddActor(d->residuals.actor.GetPointer());
+  d->renderer->AddActor(d->landmarks.actor);
+  d->renderer->AddActor(d->residuals.actor);
 
-  d->renderer->AddViewProp(d->imageActor.GetPointer());
+  d->renderer->AddViewProp(d->imageActor);
   d->imageActor->SetPosition(0.0, 0.0, -0.5);
 
   // Enable antialising by default
@@ -541,7 +540,7 @@ void CameraView::setImageData(vtkImageData* data, QSize const& dimensions)
   if (!data)
   {
     // If no image given, clear current image and replace with "empty" image
-    d->imageActor->SetInputData(d->emptyImage.GetPointer());
+    d->imageActor->SetInputData(d->emptyImage);
 
     d->imageBounds[0] = 0.0; d->imageBounds[1] = dimensions.width() - 1;
     d->imageBounds[2] = 0.0; d->imageBounds[3] = dimensions.height() - 1;
@@ -620,7 +619,8 @@ void CameraView::addFeatureTrack(kwiver::vital::track const& track)
 
   foreach (auto const& state, track)
   {
-    auto const& fts = std::dynamic_pointer_cast<kwiver::vital::feature_track_state>(state);
+    auto const& fts =
+      std::dynamic_pointer_cast<kwiver::vital::feature_track_state>(state);
     if ( !fts )
     {
       continue;
@@ -628,11 +628,13 @@ void CameraView::addFeatureTrack(kwiver::vital::track const& track)
     auto const& loc = fts->feature->loc();
     if (fts->descriptor)
     {
-      d->featureRep->AddTrackWithDescPoint(id, state->frame(), loc[0], loc[1]);
+      d->featureRep->AddTrackWithDescPoint(
+        id, state->frame(), loc[0], loc[1]);
     }
     else
     {
-      d->featureRep->AddTrackWithoutDescPoint(id, state->frame(), loc[0], loc[1]);
+      d->featureRep->AddTrackWithoutDescPoint(
+        id, state->frame(), loc[0], loc[1]);
     }
   }
 

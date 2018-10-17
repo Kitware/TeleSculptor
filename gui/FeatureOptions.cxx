@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -119,8 +119,10 @@ FeatureOptions::FeatureOptions(vtkMaptkFeatureTrackRepresentation* rep,
   this->setTrailsLength(d->UI.trailLength->value());
   this->setTrailsStyle(d->UI.trailStyle->currentIndex());
 
-  d->UI.trailColorWithDesc->addActor(d->representation->GetTrailsWithDescActor());
-  d->UI.trailColorWithoutDesc->addActor(d->representation->GetTrailsWithoutDescActor());
+  d->UI.trailColorWithDesc->addActor(
+    d->representation->GetTrailsWithDescActor());
+  d->UI.trailColorWithoutDesc->addActor(
+    d->representation->GetTrailsWithoutDescActor());
 
   this->addActor(d->representation->GetActivePointsWithDescActor());
   this->addActor(d->representation->GetActivePointsWithoutDescActor());

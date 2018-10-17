@@ -256,11 +256,11 @@ void WorldViewPrivate::updateImageTransform()
   vtkNew<vtkMatrix4x4> xf;
 
   vtkMatrix4x4::Multiply4x4(
-    this->imageProjection.GetPointer(),
-    this->imageLocalTransform.GetPointer(),
-    xf.GetPointer());
+    this->imageProjection,
+    this->imageLocalTransform,
+    xf);
 
-  this->imageActor->SetUserMatrix(xf.GetPointer());
+  this->imageActor->SetUserMatrix(xf);
 }
 
 //-----------------------------------------------------------------------------
@@ -328,20 +328,20 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->setPopup(d->UI.actionViewReset, viewMenu);
 
   d->imageOptions = new ImageOptions("WorldView/Image", this);
-  d->imageOptions->addActor(d->imageActor.GetPointer());
+  d->imageOptions->addActor(d->imageActor);
   d->setPopup(d->UI.actionShowFrameImage, d->imageOptions);
 
   connect(d->imageOptions, SIGNAL(modified()),
           this, SLOT(render()));
 
-  d->cameraOptions = new CameraOptions(d->cameraRep.GetPointer(), this);
+  d->cameraOptions = new CameraOptions{d->cameraRep, this};
   d->setPopup(d->UI.actionShowCameras, d->cameraOptions);
 
   connect(d->cameraOptions, SIGNAL(modified()),
           this, SLOT(invalidateGeometry()));
 
   d->landmarkOptions = new PointOptions("WorldView/Landmarks", this);
-  d->landmarkOptions->addActor(d->landmarkActor.GetPointer());
+  d->landmarkOptions->addActor(d->landmarkActor);
   d->setPopup(d->UI.actionShowLandmarks, d->landmarkOptions);
 
   connect(d->landmarkOptions, SIGNAL(modified()),
@@ -431,8 +431,8 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
 
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
-  d->renderWindow->AddRenderer(d->renderer.GetPointer());
-  d->UI.renderWidget->SetRenderWindow(d->renderWindow.GetPointer());
+  d->renderWindow->AddRenderer(d->renderer);
+  d->UI.renderWidget->SetRenderWindow(d->renderWindow);
 
   d->renderer->AddActor(d->cameraRep->GetNonActiveActor());
   d->renderer->AddActor(d->cameraRep->GetActiveActor());
@@ -440,7 +440,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
 
   // Set up image actor and "dummy" data for use when we have no "real" image
   d->imageActor->SetVisibility(false);
-  d->renderer->AddViewProp(d->imageActor.GetPointer());
+  d->renderer->AddViewProp(d->imageActor);
 
   // Enable antialiasing by default
   d->renderer->UseFXAAOn();
@@ -465,18 +465,18 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->landmarkObservations->SetName(Observations);
   d->landmarkObservations->SetNumberOfComponents(1);
 
-  landmarkPolyData->SetPoints(d->landmarkPoints.GetPointer());
-  landmarkPolyData->SetVerts(d->landmarkVerts.GetPointer());
-  landmarkPointData->AddArray(d->landmarkColors.GetPointer());
-  landmarkPointData->AddArray(d->landmarkElevations.GetPointer());
-  landmarkPointData->AddArray(d->landmarkObservations.GetPointer());
-  d->landmarkMapper->SetInputData(landmarkPolyData.GetPointer());
+  landmarkPolyData->SetPoints(d->landmarkPoints);
+  landmarkPolyData->SetVerts(d->landmarkVerts);
+  landmarkPointData->AddArray(d->landmarkColors);
+  landmarkPointData->AddArray(d->landmarkElevations);
+  landmarkPointData->AddArray(d->landmarkObservations);
+  d->landmarkMapper->SetInputData(landmarkPolyData);
 
-  d->landmarkActor->SetMapper(d->landmarkMapper.GetPointer());
+  d->landmarkActor->SetMapper(d->landmarkMapper);
   d->landmarkActor->SetVisibility(d->UI.actionShowLandmarks->isChecked());
-  d->renderer->AddActor(d->landmarkActor.GetPointer());
+  d->renderer->AddActor(d->landmarkActor);
 
-  d->landmarkOptions->addMapper(d->landmarkMapper.GetPointer());
+  d->landmarkOptions->addMapper(d->landmarkMapper);
 
   // Set up ground plane grid
   d->groundPlane->SetOrigin(-10.0, -10.0, 0.0);
@@ -488,11 +488,11 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   groundMapper->SetInputConnection(d->groundPlane->GetOutputPort());
   groundMapper->SetResolveCoincidentTopologyToPolygonOffset();
 
-  d->groundActor->SetMapper(groundMapper.GetPointer());
+  d->groundActor->SetMapper(groundMapper);
   d->groundActor->GetProperty()->SetColor(0.5, 0.5, 0.5);
   d->groundActor->GetProperty()->SetLighting(false);
   d->groundActor->GetProperty()->SetRepresentationToWireframe();
-  d->renderer->AddActor(d->groundActor.GetPointer());
+  d->renderer->AddActor(d->groundActor);
 
   // Set up axes
   d->cubeAxesActor->GetTitleTextProperty(0)->SetColor(1.0, 0.3, 0.3);
@@ -516,20 +516,21 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->cubeAxesActor->YAxisMinorTickVisibilityOff();
   d->cubeAxesActor->ZAxisMinorTickVisibilityOff();
   d->cubeAxesActor->SetFlyMode(vtkCubeAxesActor::VTK_FLY_FURTHEST_TRIAD);
-  d->cubeAxesActor->SetGridLineLocation(vtkCubeAxesActor::VTK_GRID_LINES_FURTHEST);
+  d->cubeAxesActor->SetGridLineLocation(
+    vtkCubeAxesActor::VTK_GRID_LINES_FURTHEST);
 
   d->cubeAxesActor->SetCamera(d->renderer->GetActiveCamera());
   d->cubeAxesActor->SetVisibility(false);
 
-  d->renderer->AddActor(d->cubeAxesActor.GetPointer());
+  d->renderer->AddActor(d->cubeAxesActor);
 
   // Setup DepthMap actor
   d->depthScalarFilter->SetScalarArrayName(DepthMapArrays::TrueColor);
   vtkNew<vtkPolyDataMapper> mapper;
   mapper->SetInputConnection(d->depthScalarFilter->GetOutputPort());
   mapper->SetColorModeToDirectScalars();
-  d->depthMapActor->SetMapper(mapper.GetPointer());
-  d->renderer->AddActor(d->depthMapActor.GetPointer());
+  d->depthMapActor->SetMapper(mapper);
+  d->renderer->AddActor(d->depthMapActor);
   d->depthMapActor->VisibilityOff();
 
   // Add keyboard actions for increasing and descreasing depth point size
@@ -599,7 +600,8 @@ void WorldView::connectDepthPipeline()
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::setDepthGeometryFilter(vtkMaptkImageDataGeometryFilter* geometryFilter)
+void WorldView::setDepthGeometryFilter(
+  vtkMaptkImageDataGeometryFilter* geometryFilter)
 {
   QTE_D();
 
@@ -730,13 +732,14 @@ void WorldView::loadVolume(QString path)
 
   // Apply contour
   d->contourFilter = vtkContourFilter::New();
-  d->contourFilter->SetInputConnection(transformCellToPointData->GetOutputPort());
+  d->contourFilter->SetInputConnection(
+    transformCellToPointData->GetOutputPort());
   d->contourFilter->SetNumberOfContours(1);
   d->contourFilter->SetValue(0, 0.5);
   // Declare which table will be use for the contour
-  d->contourFilter->SetInputArrayToProcess(0, 0, 0,
-                                           vtkDataObject::FIELD_ASSOCIATION_POINTS,
-                                           "reconstruction_scalar");
+  d->contourFilter->SetInputArrayToProcess(
+    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS,
+    "reconstruction_scalar");
 
   // Create mapper
   vtkNew<vtkPolyDataMapper> contourMapper;
@@ -817,11 +820,12 @@ void WorldView::setActiveCamera(int id)
   QTE_D();
 
   d->cameraRep->SetActiveCamera(id);
-  vtkMaptkCamera * camera = dynamic_cast<vtkMaptkCamera*>(d->cameraRep->GetActiveCamera());
+  auto* const camera =
+    dynamic_cast<vtkMaptkCamera*>(d->cameraRep->GetActiveCamera());
 
   if (camera)
   {
-    camera->GetTransform(d->imageProjection.GetPointer(), plane.data());
+    camera->GetTransform(d->imageProjection, plane.data());
     d->updateImageTransform();
 
     auto const showImage = d->UI.actionShowFrameImage->isChecked();
@@ -850,7 +854,7 @@ void WorldView::setImageData(vtkImageData* data, QSize const& dimensions)
 
   auto const showImage = d->UI.actionShowFrameImage->isChecked();
   d->validImage = data;
-  d->imageActor->SetInputData(data ? data : d->emptyImage.GetPointer());
+  d->imageActor->SetInputData(data ? data : d->emptyImage);
   d->imageActor->SetVisibility(data && d->validTransform && showImage);
   this->render();
 }
@@ -1112,8 +1116,8 @@ void WorldView::updateAxes()
     {
       // Skip the axes, ground and frustums representations, and any hidden
       // actors
-      if (prop == d->cubeAxesActor.GetPointer() ||
-          prop == d->groundActor.GetPointer() ||
+      if (prop == d->cubeAxesActor ||
+          prop == d->groundActor ||
           prop == d->cameraRep->GetActiveActor() ||
           prop == d->cameraRep->GetNonActiveActor() ||
           !prop->GetVisibility())

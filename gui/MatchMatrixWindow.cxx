@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016-2017 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,6 +49,8 @@
 #include <QMessageBox>
 
 #include <cmath>
+
+namespace kv = kwiver::vital;
 
 using std::floor;
 using std::pow;
@@ -104,7 +106,7 @@ T sparseMax(Eigen::SparseMatrix<T> const& m)
 {
   auto result = T(0);
 
-  foreach (auto it, kwiver::vital::enumerate(m))
+  foreach (auto it, kv::enumerate(m))
   {
     result = std::max(result, it.value());
   }
@@ -169,7 +171,7 @@ public:
 
   Eigen::SparseMatrix<uint> matrix;
   uint maxValue;
-  std::vector<kwiver::vital::frame_id_t> frames;
+  std::vector<kv::frame_id_t> frames;
 
   QImage image;
   int offset;
@@ -210,7 +212,7 @@ void MatchMatrixWindowPrivate::buildHorizontalImage(
   auto image = QImage(k, k * 2, QImage::Format_RGB32);
   image.fill(gradient.at(0.0));
 
-  foreach (auto it, kwiver::vital::enumerate(this->matrix))
+  foreach (auto it, kv::enumerate(this->matrix))
   {
     auto const y = it.col() + k - 1 - it.row();
     minY = qMin(minY, y);
@@ -238,7 +240,7 @@ void MatchMatrixWindowPrivate::buildVerticalImage(
   auto image = QImage(k * 2, k, QImage::Format_RGB32);
   image.fill(gradient.at(0.0));
 
-  foreach (auto it, kwiver::vital::enumerate(this->matrix))
+  foreach (auto it, kv::enumerate(this->matrix))
   {
     auto const x = it.row() + k - 1 - it.col();
     minX = qMin(minX, x);
@@ -263,7 +265,7 @@ void MatchMatrixWindowPrivate::buildDiagonalImage(
   auto image = QImage(k, k, QImage::Format_RGB32);
   image.fill(gradient.at(0.0));
 
-  foreach (auto it, kwiver::vital::enumerate(this->matrix))
+  foreach (auto it, kv::enumerate(this->matrix))
   {
     auto const a = scaleAlgorithm(valueAlgorithm(this->matrix, it));
     auto const c = gradient.at(a);
@@ -361,8 +363,8 @@ void MatchMatrixImageItem::updateStatusText(const QPointF& pos)
     return;
   }
 
-  kwiver::vital::frame_id_t fx = q->frames[x];
-  kwiver::vital::frame_id_t fy = q->frames[y];
+  kv::frame_id_t fx = q->frames[x];
+  kv::frame_id_t fy = q->frames[y];
 
   // Show status text
   if (x == y)
@@ -381,7 +383,8 @@ void MatchMatrixImageItem::updateStatusText(const QPointF& pos)
     auto const cy = q->matrix.coeff(y, y);
     auto const cxy = q->matrix.coeff(x, y);
 
-    q->UI.statusBar->showMessage(format.arg(fx).arg(fy).arg(cx).arg(cy).arg(cxy));
+    q->UI.statusBar->showMessage(
+      format.arg(fx).arg(fy).arg(cx).arg(cy).arg(cxy));
   }
 }
 
@@ -461,7 +464,7 @@ MatchMatrixWindow::~MatchMatrixWindow()
 
 //-----------------------------------------------------------------------------
 void MatchMatrixWindow::setMatrix(Eigen::SparseMatrix<uint> const& matrix,
-                                  std::vector<kwiver::vital::frame_id_t> const& frames)
+                                  std::vector<kv::frame_id_t> const& frames)
 {
   QTE_D();
 
