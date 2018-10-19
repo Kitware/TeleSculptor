@@ -40,9 +40,10 @@
 #include "ImageOptions.h"
 #include "PointOptions.h"
 #include "VolumeOptions.h"
-#include "vtkMaptkImageUnprojectDepth.h"
 #include "vtkMaptkCamera.h"
 #include "vtkMaptkCameraRepresentation.h"
+#include "vtkMaptkImageUnprojectDepth.h"
+#include "vtkMaptkInteractorStyle.h"
 #include "vtkMaptkScalarDataFilter.h"
 
 #include <vital/types/camera.h>
@@ -72,6 +73,7 @@
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
 #include <vtkRenderWindow.h>
+#include <vtkRenderWindowInteractor.h>
 #include <vtkRenderer.h>
 #include <vtkStructuredGrid.h>
 #include <vtkTextProperty.h>
@@ -433,6 +435,9 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->renderer->SetBackground(0, 0, 0);
   d->renderWindow->AddRenderer(d->renderer);
   d->UI.renderWidget->SetRenderWindow(d->renderWindow);
+
+  vtkNew<vtkMaptkInteractorStyle> iren;
+  d->renderWindow->GetInteractor()->SetInteractorStyle(iren);
 
   d->renderer->AddActor(d->cameraRep->GetNonActiveActor());
   d->renderer->AddActor(d->cameraRep->GetActiveActor());

@@ -121,6 +121,7 @@ set(gui_sources
   vtkMaptkFeatureTrackRepresentation.cxx
   vtkMaptkImageDataGeometryFilter.cxx
   vtkMaptkImageUnprojectDepth.cxx
+  vtkMaptkInteractorStyle.cxx
   vtkMaptkScalarDataFilter.cxx
   vtkMaptkScalarsToGradient.cxx
   tools/AbstractTool.cxx
