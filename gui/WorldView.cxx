@@ -37,12 +37,13 @@
 #include "DataArrays.h"
 #include "DepthMapOptions.h"
 #include "FieldInformation.h"
+#include "GroundControlPointsWidget.h"
 #include "ImageOptions.h"
 #include "PointOptions.h"
 #include "VolumeOptions.h"
-#include "vtkMaptkImageUnprojectDepth.h"
 #include "vtkMaptkCamera.h"
 #include "vtkMaptkCameraRepresentation.h"
+#include "vtkMaptkImageUnprojectDepth.h"
 #include "vtkMaptkScalarDataFilter.h"
 
 #include <vital/types/camera.h>
@@ -162,6 +163,7 @@ public:
   CameraOptions* cameraOptions;
   PointOptions* landmarkOptions;
   DepthMapOptions* depthMapOptions;
+  GroundControlPointsWidget* groundControlPointsWidget;
 
   VolumeOptions* volumeOptions;
   vtkContourFilter* contourFilter;
@@ -387,6 +389,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   this->addAction(d->UI.actionShowGroundPlane);
   this->addAction(d->UI.actionShowDepthMap);
   this->addAction(d->UI.actionShowVolume);
+  this->addAction(d->UI.PlaceGroundControlPoint);
 
   connect(d->UI.actionViewReset, SIGNAL(triggered()),
           this, SLOT(resetView()));
@@ -433,6 +436,10 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->renderer->SetBackground(0, 0, 0);
   d->renderWindow->AddRenderer(d->renderer);
   d->UI.renderWidget->SetRenderWindow(d->renderWindow);
+  d->groundControlPointsWidget = new GroundControlPointsWidget(this);
+  d->groundControlPointsWidget->setInteractor(d->UI.renderWidget->GetInteractor());
+  connect(d->UI.PlaceGroundControlPoint, &QAction::toggled,
+          this, &WorldView::pointPlacementEnabled);
 
   d->renderer->AddActor(d->cameraRep->GetNonActiveActor());
   d->renderer->AddActor(d->cameraRep->GetActiveActor());
@@ -1120,7 +1127,8 @@ void WorldView::updateAxes()
           prop == d->groundActor ||
           prop == d->cameraRep->GetActiveActor() ||
           prop == d->cameraRep->GetNonActiveActor() ||
-          !prop->GetVisibility())
+          !prop->GetVisibility() ||
+          !prop->GetBounds())
       {
         continue;
       }
@@ -1497,4 +1505,12 @@ void WorldView::updateROI(vtkObject* caller,
   {
     d->roi->SetBounds(rep->GetBounds());
   }
+}
+
+//-----------------------------------------------------------------------------
+GroundControlPointsWidget* WorldView::groundControlPointsWidget() const
+{
+  QTE_D();
+
+  return d->groundControlPointsWidget;
 }

@@ -47,24 +47,25 @@
 #include "tools/TriangulateTool.h"
 
 #include "AboutDialog.h"
+#include "GroundControlPointsHelper.h"
 #include "MatchMatrixWindow.h"
 #include "Project.h"
 #include "VideoImport.h"
+#include "vtkMaptkCamera.h"
 #include "vtkMaptkImageDataGeometryFilter.h"
 #include "vtkMaptkImageUnprojectDepth.h"
-#include "vtkMaptkCamera.h"
 
-#include <maptk/version.h>
 #include <maptk/local_geo_cs.h>
+#include <maptk/version.h>
 
+#include <arrows/core/match_matrix.h>
+#include <arrows/core/track_set_impl.h>
 #include <vital/algo/video_input.h>
 #include <vital/io/camera_io.h>
 #include <vital/io/landmark_map_io.h>
 #include <vital/io/track_set_io.h>
 #include <vital/types/camera_perspective.h>
 #include <vital/types/metadata_map.h>
-#include <arrows/core/match_matrix.h>
-#include <arrows/core/track_set_impl.h>
 
 #include <vtkBox.h>
 #include <vtkImageData.h>
@@ -78,6 +79,7 @@
 #include <vtkXMLImageDataWriter.h>
 
 #include <qtEnumerate.h>
+#include <qtGet.h>
 #include <qtIndexRange.h>
 #include <qtMath.h>
 #include <qtStlUtil.h>
@@ -351,6 +353,9 @@ public:
 
   // Progress tracking
   QHash<QObject*, int> progressIds;
+
+  // Manual landmarks
+  GroundControlPointsHelper* groundControlPointsHelper;
 };
 
 QTE_IMPLEMENT_D_FUNC(MainWindow)
@@ -878,6 +883,7 @@ void MainWindowPrivate::updateCameraView()
     this->loadEmptyImage(0);
     this->UI.cameraView->setActiveFrame(static_cast<unsigned>(-1));
     this->UI.cameraView->clearLandmarks();
+    this->UI.cameraView->clearGroundControlPoints();
     return;
   }
 
@@ -885,8 +891,6 @@ void MainWindowPrivate::updateCameraView()
     static_cast<unsigned>(this->activeCameraIndex));
 
   auto activeFrame = this->frames.find(this->activeCameraIndex);
-
-  auto fid = activeFrame.key();
 
   if (activeFrame == this->frames.end())
   {
@@ -904,6 +908,7 @@ void MainWindowPrivate::updateCameraView()
     // Can't show landmarks or residuals with no camera
     this->UI.cameraView->clearLandmarks();
     this->UI.cameraView->clearResiduals();
+    this->UI.cameraView->clearGroundControlPoints();
     return;
   }
 
@@ -952,6 +957,8 @@ void MainWindowPrivate::updateCameraView()
       }
     }
   }
+
+  this->groundControlPointsHelper->updateCameraViewPoints();
   this->UI.cameraView->render();
 }
 
@@ -1213,6 +1220,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(openTracks()));
   connect(d->UI.actionImportLandmarks, SIGNAL(triggered()),
           this, SLOT(openLandmarks()));
+  connect(d->UI.actionImportGroundControlPoints, SIGNAL(triggered()),
+          this, SLOT(openGroundControlPoints()));
 
   connect(d->UI.actionShowWorldAxes, SIGNAL(toggled(bool)),
           d->UI.worldView, SLOT(setAxesVisible(bool)));
@@ -1221,6 +1230,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           this, SLOT(saveCameras()));
   connect(d->UI.actionExportLandmarks, SIGNAL(triggered()),
           this, SLOT(saveLandmarks()));
+  connect(d->UI.actionExportGroundControlPoints, SIGNAL(triggered()),
+          this, SLOT(saveGroundControlPoints()));
   connect(d->UI.actionExportVolume, SIGNAL(triggered()),
           this, SLOT(saveVolume()));
   connect(d->UI.actionExportMesh, SIGNAL(triggered()),
@@ -1308,6 +1319,17 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   // Set up the progress widget
   d->UI.progressWidget->setAutoHide(true);
+
+  // Ground control points
+  d->groundControlPointsHelper = new GroundControlPointsHelper(this);
+  connect(d->groundControlPointsHelper,
+          &GroundControlPointsHelper::pointCountChanged,
+          this, [d](int count) {
+            d->UI.actionExportGroundControlPoints->setEnabled(count > 0);
+          });
+  connect(d->UI.worldView, &WorldView::pointPlacementEnabled,
+          d->groundControlPointsHelper,
+          &GroundControlPointsHelper::enableWidgets);
 
   // Antialiasing
   connect(d->UI.actionAntialiasing, SIGNAL(toggled(bool)),
@@ -1422,6 +1444,20 @@ void MainWindow::openLandmarks()
   for (auto const& path : paths)
   {
     this->loadLandmarks(path);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::openGroundControlPoints()
+{
+  auto const paths = QFileDialog::getOpenFileNames(
+    this, "Open Ground Control Points", QString(),
+    "Ground Control Point Files (*.ply);;"
+    "All Files (*)");
+
+  for (auto const& path : paths)
+  {
+    this->loadGroundControlPoints(path);
   }
 }
 
@@ -1547,6 +1583,13 @@ void MainWindow::loadProject(QString const& path)
   }
 
   d->setActiveCamera(d->activeCameraIndex);
+
+  // Load ground control points after cameras are loaded
+  if (d->project->config->has_value("ground_control_points_file"))
+  {
+    this->loadGroundControlPoints(d->project->groundControlPath);
+  }
+
 }
 
 //-----------------------------------------------------------------------------
@@ -1791,6 +1834,29 @@ void MainWindow::loadLandmarks(QString const& path)
 }
 
 //-----------------------------------------------------------------------------
+void MainWindow::loadGroundControlPoints(QString const& path)
+{
+  QTE_D();
+
+  try
+  {
+    auto const& gcp = kwiver::vital::read_ply_file(kvPath(path));
+    if (gcp)
+    {
+      d->groundControlPointsHelper->setGroundControlPoints(*gcp);
+
+      d->UI.actionExportGroundControlPoints->setEnabled(
+        d->groundControlPointsHelper->groundControlPoints() &&
+        d->groundControlPointsHelper->groundControlPoints()->size());
+    }
+  }
+  catch (...)
+  {
+    qWarning() << "failed to read landmarks from" << path;
+  }
+}
+
+//-----------------------------------------------------------------------------
 void MainWindow::saveLandmarks()
 {
   auto const path = QFileDialog::getSaveFileName(
@@ -1826,6 +1892,51 @@ void MainWindow::saveLandmarks(QString const& path, bool writeToProject)
               "The output file may not have been written correctly.");
     QMessageBox::critical(
       this, "Export error", msg.arg(d->project->landmarksPath));
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::saveGroundControlPoints()
+{
+  auto const path = QFileDialog::getSaveFileName(
+    this, "Export Ground Control Points", QString(),
+    "Landmark file (*.ply);;"
+    "All Files (*)");
+
+  if (!path.isEmpty())
+  {
+    this->saveGroundControlPoints(path, true);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::saveGroundControlPoints(QString const& path, bool writeToProject)
+{
+  QTE_D();
+
+  try
+  {
+    kwiver::vital::write_ply_file(
+      d->groundControlPointsHelper->groundControlPoints(),
+      kvPath(path));
+
+    if (writeToProject && d->project)
+    {
+      d->project->groundControlPath =
+        d->project->getContingentRelativePath(path);
+      d->project->config->set_value(
+        "ground_control_points_file",
+        kvPath(d->project->groundControlPath));
+      d->project->write();
+    }
+  }
+  catch (...)
+  {
+    auto const msg =
+      QString("An error occurred while exporting ground control points to \"%1\". "
+              "The output file may not have been written correctly.");
+    QMessageBox::critical(this, "Export error",
+                          msg.arg(d->project->groundControlPath));
   }
 }
 
@@ -2507,6 +2618,36 @@ void MainWindow::updateVideoImportProgress(QString desc, int progress)
   QTE_D();
 
   d->updateProgress(this->sender(), desc, progress);
+}
+
+//-----------------------------------------------------------------------------
+WorldView* MainWindow::worldView()
+{
+  QTE_D();
+
+  return d->UI.worldView;
+}
+
+//-----------------------------------------------------------------------------
+CameraView* MainWindow::cameraView()
+{
+  QTE_D();
+
+  return d->UI.cameraView;
+}
+
+//-----------------------------------------------------------------------------
+vtkMaptkCamera* MainWindow::activeCamera()
+{
+  QTE_D();
+
+  if (d->activeCameraIndex < 1 || d->frames.empty())
+  {
+    return nullptr;
+  }
+
+  auto* const activeFrame = qtGet(d->frames, d->activeCameraIndex);
+  return (activeFrame ? activeFrame->camera : nullptr);
 }
 
 //-----------------------------------------------------------------------------

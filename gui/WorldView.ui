@@ -14,7 +14,16 @@
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <property name="margin">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
     <number>0</number>
    </property>
    <item>
@@ -27,6 +36,7 @@
      <addaction name="actionShowFrameImage"/>
      <addaction name="actionShowCameras"/>
      <addaction name="actionShowLandmarks"/>
+     <addaction name="PlaceGroundControlPoint"/>
      <addaction name="actionShowGroundPlane"/>
      <addaction name="actionSelectROI"/>
      <addaction name="actionShowDepthMap"/>
@@ -277,6 +287,27 @@
    </property>
    <property name="toolTip">
     <string>Toggle volume display</string>
+   </property>
+  </action>
+  <action name="PlaceGroundControlPoint">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/22x22/crosshair</normaloff>:/icons/22x22/crosshair</iconset>
+   </property>
+   <property name="text">
+    <string>Control Points</string>
+   </property>
+   <property name="toolTip">
+    <string>Place/edit ground control points in the view</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+G</string>
    </property>
   </action>
   <action name="actionSelectROI">

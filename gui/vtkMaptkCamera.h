@@ -40,7 +40,7 @@ class vtkMaptkCamera : public vtkCamera
 {
 public:
   vtkTypeMacro(vtkMaptkCamera, vtkCamera);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   static vtkMaptkCamera* New();
 
@@ -58,6 +58,8 @@ public:
   // Reverse project 2D point to 3D using the internal maptk camera and
   // specified depth
   kwiver::vital::vector_3d UnprojectPoint(double point[2], double depth);
+  kwiver::vital::vector_3d UnprojectPoint(double point[2]);
+  double Depth(kwiver::vital::vector_3d point) const;
 
   void ScaleK(double factor);
 
