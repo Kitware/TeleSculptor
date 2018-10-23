@@ -1,6 +1,7 @@
 <RCC>
   <qresource prefix="icons/16x16">
     <file alias="camera">16x16/camera.png</file>
+    <file alias="crosshair">16x16/crosshair.png</file>
     <file alias="cancel">16x16/cancel.png</file>
     <file alias="close">16x16/close.png</file>
     <file alias="depthmap">16x16/depthmap.png</file>
@@ -21,6 +22,7 @@
     <file alias="volume">16x16/volume.png</file>
   </qresource>
   <qresource prefix="icons/22x22">
+    <file alias="crosshair">22x22/crosshair.png</file>
     <file alias="camera">22x22/camera.png</file>
     <file alias="cancel">22x22/cancel.png</file>
     <file alias="close">22x22/close.png</file>

@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016-2018 by Kitware, Inc.
+ * Copyright 2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,48 +28,52 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_PROJECT_H_
-#define MAPTK_PROJECT_H_
+#ifndef MAPTK_GROUNDCONTROLPOINTSHELPER_H_
+#define MAPTK_GROUNDCONTROLPOINTSHELPER_H_
 
-#include <vital/config/config_block_io.h>
+// qtExtensions includes
+#include <qtGlobal.h>
 
-#include <QtCore/QDir>
-#include <QtCore/QMap>
-#include <QtCore/QStringList>
+// Qt declarations
+#include <QObject>
 
-class Project : public QObject
+// Kwiver includes
+#include <vital/types/landmark_map.h>
+
+// Forward declarations
+class GroundControlPointsHelperPrivate;
+
+class GroundControlPointsHelper : public QObject
 {
   Q_OBJECT
 
-// TODO: Encapsulate data and add accessors
 public:
+  GroundControlPointsHelper(QObject* parent = nullptr);
+  ~GroundControlPointsHelper();
 
-  Project();
-  Project(QString dir);
+  void updateCameraViewPoints();
 
-  bool read(QString const& path);
-
-  QString getContingentRelativePath(QString filepath);
-
-  QDir workingDir;
-
-  QString filePath;
-  QString videoPath;
-  QString maskPath;
-
-  QString tracksPath;
-  QString landmarksPath;
-  QString volumePath;
-  QString cameraPath;
-  QString geoOriginFile;
-  QString depthPath;
-  QString groundControlPath;
-
-  kwiver::vital::config_block_sptr config =
-    kwiver::vital::config_block::empty_config();
+  void setGroundControlPoints(kwiver::vital::landmark_map const&);
+  kwiver::vital::landmark_map_sptr groundControlPoints() const;
 
 public slots:
-  void write();
+  void enableWidgets(bool);
+
+signals:
+  void pointCountChanged(int);
+
+protected slots:
+  void addCameraViewPoint();
+  void addWorldViewPoint();
+
+  void moveCameraViewPoint();
+  void moveWorldViewPoint();
+
+private:
+  QTE_DECLARE_PRIVATE_RPTR(GroundControlPointsHelper)
+  QTE_DECLARE_PRIVATE(GroundControlPointsHelper)
+
+  QTE_DISABLE_COPY(GroundControlPointsHelper)
 };
 
 #endif

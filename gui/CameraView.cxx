@@ -37,8 +37,8 @@
 #include "DataArrays.h"
 #include "FeatureOptions.h"
 #include "FieldInformation.h"
+#include "GroundControlPointsWidget.h"
 #include "ImageOptions.h"
-#include "vtkMaptkCamera.h"
 #include "vtkMaptkFeatureTrackRepresentation.h"
 
 #include <vital/types/feature_track_set.h>
@@ -204,12 +204,15 @@ public:
 
   vtkNew<vtkMaptkFeatureTrackRepresentation> featureRep;
 
+  vtkNew<vtkMatrix4x4> transformMatrix;
+
   LandmarkCloud landmarks;
   SegmentCloud residuals;
 
   QHash<kwiver::vital::landmark_id_t, LandmarkData> landmarkData;
 
   PointOptions* landmarkOptions;
+  GroundControlPointsWidget* groundControlPointsWidget;
 
   double imageBounds[6];
 
@@ -371,8 +374,7 @@ void CameraViewPrivate::setPopup(QAction* action, QWidget* widget)
 //-----------------------------------------------------------------------------
 void CameraViewPrivate::setTransforms(int imageHeight)
 {
-  vtkNew<vtkMatrix4x4> xf;
-
+  vtkMatrix4x4* xf = this->transformMatrix;
   xf->Identity();
   xf->SetElement(1, 1, -1.0);
   xf->SetElement(1, 3, imageHeight);
@@ -443,6 +445,9 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   connect(d->landmarkOptions, SIGNAL(modified()),
           this, SLOT(render()));
 
+  d->groundControlPointsWidget = new GroundControlPointsWidget(this);
+  d->groundControlPointsWidget->setTransformMatrix(d->transformMatrix);
+
   auto const residualsOptions =
     new ActorColorOption("CameraView/Residuals", this);
   residualsOptions->setDefaultColor(QColor(255, 128, 0));
@@ -489,6 +494,7 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   // Set interactor
   vtkNew<vtkInteractorStyleRubberBand2D> is;
   d->UI.renderWidget->GetInteractor()->SetInteractorStyle(is);
+  d->groundControlPointsWidget->setInteractor(d->UI.renderWidget->GetInteractor());
 
   // Set up actors
   d->renderer->AddActor(d->featureRep->GetActivePointsWithDescActor());
@@ -754,6 +760,14 @@ void CameraView::updateFeatures()
 }
 
 //-----------------------------------------------------------------------------
+GroundControlPointsWidget* CameraView::groundControlPointsWidget() const
+{
+  QTE_D();
+
+  return d->groundControlPointsWidget;
+}
+
+//-----------------------------------------------------------------------------
 void CameraView::render()
 {
   QTE_D();
@@ -773,6 +787,15 @@ void CameraView::enableAntiAliasing(bool enable)
   QTE_D();
 
   d->renderer->SetUseFXAA(enable);
+  this->render();
+}
+
+//-----------------------------------------------------------------------------
+void CameraView::clearGroundControlPoints()
+{
+  QTE_D();
+
+  d->groundControlPointsWidget->clearPoints();
   this->render();
 }
 
