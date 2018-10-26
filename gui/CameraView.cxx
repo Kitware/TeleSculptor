@@ -424,16 +424,16 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   imageOptions->addActor(d->imageActor);
   d->setPopup(d->UI.actionShowFrameImage, imageOptions);
 
-  connect(imageOptions, SIGNAL(modified()),
-          this, SLOT(render()));
+  connect(imageOptions, &ImageOptions::modified,
+          this, &CameraView::render);
 
   auto const featureOptions =
     new FeatureOptions{d->featureRep, "CameraView/FeaturePoints", this};
 
   d->setPopup(d->UI.actionShowFeatures, featureOptions);
 
-  connect(featureOptions, SIGNAL(modified()),
-          this, SLOT(render()));
+  connect(featureOptions, &FeatureOptions::modified,
+          this, &CameraView::render);
 
   d->landmarkOptions = new PointOptions("CameraView/Landmarks", this);
   d->landmarkOptions->setDefaultColor(Qt::magenta);
@@ -442,8 +442,8 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
 
   d->setPopup(d->UI.actionShowLandmarks, d->landmarkOptions);
 
-  connect(d->landmarkOptions, SIGNAL(modified()),
-          this, SLOT(render()));
+  connect(d->landmarkOptions, &PointOptions::modified,
+          this, &CameraView::render);
 
   d->groundControlPointsWidget = new GroundControlPointsWidget(this);
   d->groundControlPointsWidget->setTransformMatrix(d->transformMatrix);
@@ -455,8 +455,8 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
 
   d->setPopup(d->UI.actionShowResiduals, residualsOptions);
 
-  connect(residualsOptions->button, SIGNAL(colorChanged(QColor)),
-          this, SLOT(render()));
+  connect(residualsOptions->button, &ActorColorButton::colorChanged,
+          this, &CameraView::render);
 
   // Connect actions
   this->addAction(d->UI.actionViewReset);
@@ -465,21 +465,21 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   this->addAction(d->UI.actionShowLandmarks);
   this->addAction(d->UI.actionShowResiduals);
 
-  connect(d->UI.actionViewReset, SIGNAL(triggered()),
-          this, SLOT(resetView()));
-  connect(d->UI.actionViewResetFullExtents, SIGNAL(triggered()),
-          this, SLOT(resetViewToFullExtents()));
+  connect(d->UI.actionViewReset, &QAction::triggered,
+          this, &CameraView::resetView);
+  connect(d->UI.actionViewResetFullExtents, &QAction::triggered,
+          this, &CameraView::resetViewToFullExtents);
 
-  connect(d->UI.actionShowFrameImage, SIGNAL(toggled(bool)),
-          this, SLOT(setImageVisible(bool)));
-  connect(d->UI.actionShowFeatures, SIGNAL(toggled(bool)),
-          featureOptions, SLOT(setFeaturesWithDescVisible(bool)));
-  connect(d->UI.actionShowFeatures, SIGNAL(toggled(bool)),
-          featureOptions, SLOT(setFeaturesWithoutDescVisible(bool)));
-  connect(d->UI.actionShowLandmarks, SIGNAL(toggled(bool)),
-          this, SLOT(setLandmarksVisible(bool)));
-  connect(d->UI.actionShowResiduals, SIGNAL(toggled(bool)),
-          this, SLOT(setResidualsVisible(bool)));
+  connect(d->UI.actionShowFrameImage, &QAction::toggled,
+          this, &CameraView::setImageVisible);
+  connect(d->UI.actionShowFeatures, &QAction::toggled,
+          featureOptions, &FeatureOptions::setFeaturesWithDescVisible);
+  connect(d->UI.actionShowFeatures, &QAction::toggled,
+          featureOptions, &FeatureOptions::setFeaturesWithoutDescVisible);
+  connect(d->UI.actionShowLandmarks, &QAction::toggled,
+          this, &CameraView::setLandmarksVisible);
+  connect(d->UI.actionShowResiduals, &QAction::toggled,
+          this, &CameraView::setResidualsVisible);
 
   // Set up ortho view
   d->renderer->GetActiveCamera()->ParallelProjectionOn();

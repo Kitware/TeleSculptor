@@ -432,27 +432,30 @@ MatchMatrixWindow::MatchMatrixWindow(QWidget* parent, Qt::WindowFlags flags)
   this->updateImageTransform();
 
   // Set up signals/slots
-  connect(d->UI.actionSaveImage, SIGNAL(triggered()), this, SLOT(saveImage()));
+  connect(d->UI.actionSaveImage, &QAction::triggered,
+          this, QOverload<>::of(&MatchMatrixWindow::saveImage));
 
-  connect(d->UI.layout, SIGNAL(currentIndexChanged(QString)),
-          this, SLOT(updateImage()));
-  connect(d->UI.orientation, SIGNAL(currentIndexChanged(QString)),
-          this, SLOT(updateImageTransform()));
-  connect(d->UI.values, SIGNAL(currentIndexChanged(QString)),
-          this, SLOT(updateImage()));
-  connect(d->UI.scale, SIGNAL(currentIndexChanged(QString)),
-          this, SLOT(updateImage()));
-  connect(d->UI.color, SIGNAL(currentIndexChanged(QString)),
-          this, SLOT(updateImage()));
-  connect(d->UI.exponent, SIGNAL(valueChanged(double)),
-          this, SLOT(updateImage()));
-  connect(d->UI.range, SIGNAL(valueChanged(double)),
-          this, SLOT(updateImage()));
+  auto const indexChangedSignal =
+    QOverload<int>::of(&QComboBox::currentIndexChanged);
+  connect(d->UI.layout, indexChangedSignal,
+          this, &MatchMatrixWindow::updateImage);
+  connect(d->UI.orientation, indexChangedSignal,
+          this, &MatchMatrixWindow::updateImageTransform);
+  connect(d->UI.values, indexChangedSignal,
+          this, &MatchMatrixWindow::updateImage);
+  connect(d->UI.scale, indexChangedSignal,
+          this, &MatchMatrixWindow::updateImage);
+  connect(d->UI.color, indexChangedSignal,
+          this, &MatchMatrixWindow::updateImage);
+  connect(d->UI.exponent, &qtDoubleSlider::valueChanged,
+          this, &MatchMatrixWindow::updateImage);
+  connect(d->UI.range, &qtDoubleSlider::valueChanged,
+          this, &MatchMatrixWindow::updateImage);
 
-  connect(d->UI.values, SIGNAL(currentIndexChanged(QString)),
-          this, SLOT(updateControls()));
-  connect(d->UI.scale, SIGNAL(currentIndexChanged(QString)),
-          this, SLOT(updateControls()));
+  connect(d->UI.values, indexChangedSignal,
+          this, &MatchMatrixWindow::updateControls);
+  connect(d->UI.scale, indexChangedSignal,
+          this, &MatchMatrixWindow::updateControls);
 }
 
 //-----------------------------------------------------------------------------

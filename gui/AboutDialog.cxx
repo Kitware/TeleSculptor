@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -146,8 +146,8 @@ AboutDialog::AboutDialog(QWidget* parent, Qt::WindowFlags f)
   qtUtil::setStandardIcons(d->UI.buttonBox);
   this->setWindowTitle(QString("About %1").arg(qApp->applicationName()));
 
-  connect(d->UI.about, SIGNAL(linkActivated(QString)),
-          this, SLOT(openLink(QString)));
+  connect(d->UI.about, &QLabel::linkActivated,
+          this, &AboutDialog::openLink);
 
   // Fill title and copyright texts
   d->UI.title->setText(formatTitle(d->UI.title->text()));

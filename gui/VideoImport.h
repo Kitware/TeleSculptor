@@ -69,7 +69,7 @@ signals:
   /// Emitted when an intermediate update of the data is available to show progress.
   void updated(int);
   /// Update progress
-  void updateProgress(QString, int);
+  void progressChanged(QString, int);
 
 public slots:
   void cancel();

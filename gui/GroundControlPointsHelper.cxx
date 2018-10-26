@@ -61,31 +61,23 @@ GroundControlPointsHelper::GroundControlPointsHelper(QObject* parent)
   GroundControlPointsWidget* cameraWidget =
     d->mainWindow->cameraView()->groundControlPointsWidget();
 
-  QObject::connect(
-    worldWidget, SIGNAL(pointPlaced()), this, SLOT(addCameraViewPoint()));
-  QObject::connect(
-    cameraWidget, SIGNAL(pointPlaced()), this, SLOT(addWorldViewPoint()));
+  connect(worldWidget, &GroundControlPointsWidget::pointPlaced,
+          this, &GroundControlPointsHelper::addCameraViewPoint);
+  connect(cameraWidget, &GroundControlPointsWidget::pointPlaced,
+          this, &GroundControlPointsHelper::addWorldViewPoint);
 
-  QObject::connect(
-    worldWidget, SIGNAL(pointMoved()), this, SLOT(moveCameraViewPoint()));
-  QObject::connect(
-    cameraWidget, SIGNAL(pointMoved()), this, SLOT(moveWorldViewPoint()));
-  QObject::connect(worldWidget,
-                   &GroundControlPointsWidget::pointDeleted,
-                   cameraWidget,
-                   &GroundControlPointsWidget::deletePoint);
-  QObject::connect(cameraWidget,
-                   &GroundControlPointsWidget::pointDeleted,
-                   worldWidget,
-                   &GroundControlPointsWidget::deletePoint);
-  QObject::connect(cameraWidget,
-                   &GroundControlPointsWidget::activePointChanged,
-                   worldWidget,
-                   &GroundControlPointsWidget::setActivePoint);
-  QObject::connect(worldWidget,
-                   &GroundControlPointsWidget::activePointChanged,
-                   cameraWidget,
-                   &GroundControlPointsWidget::setActivePoint);
+  connect(worldWidget, &GroundControlPointsWidget::pointMoved,
+          this, &GroundControlPointsHelper::moveCameraViewPoint);
+  connect(cameraWidget, &GroundControlPointsWidget::pointMoved,
+          this, &GroundControlPointsHelper::moveWorldViewPoint);
+  connect(worldWidget, &GroundControlPointsWidget::pointDeleted,
+          cameraWidget, &GroundControlPointsWidget::deletePoint);
+  connect(cameraWidget, &GroundControlPointsWidget::pointDeleted,
+          worldWidget, &GroundControlPointsWidget::deletePoint);
+  connect(cameraWidget, &GroundControlPointsWidget::activePointChanged,
+          worldWidget, &GroundControlPointsWidget::setActivePoint);
+  connect(worldWidget, &GroundControlPointsWidget::activePointChanged,
+          cameraWidget, &GroundControlPointsWidget::setActivePoint);
 }
 
 //-----------------------------------------------------------------------------
@@ -284,7 +276,8 @@ GroundControlPointsHelper::groundControlPoints() const
 void GroundControlPointsHelper::enableWidgets(bool enable)
 {
   QTE_D();
-  d->mainWindow->worldView()->groundControlPointsWidget()->enableWidget(enable);
+  d->mainWindow->worldView()->groundControlPointsWidget()->enableWidget(
+    enable);
   d->mainWindow->cameraView()->groundControlPointsWidget()->enableWidget(
     enable);
 }
