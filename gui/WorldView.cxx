@@ -761,7 +761,7 @@ void WorldView::loadVolume(QString path)
 
   // Add this actor to the renderer
   d->renderer->AddActor(d->volumeActor.Get());
-  emit(contourChanged());
+  emit contourChanged();
 }
 
 //-----------------------------------------------------------------------------
@@ -1405,7 +1405,7 @@ void WorldView::render()
 
   if (!d->renderQueued)
   {
-    QTimer::singleShot(0, [d]() {
+    QTimer::singleShot(0, this, [d]() {
       d->renderWindow->Render();
       d->renderQueued = false;
     });

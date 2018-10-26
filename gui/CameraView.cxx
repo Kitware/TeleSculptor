@@ -774,7 +774,7 @@ void CameraView::render()
 
   if (!d->renderQueued)
   {
-    QTimer::singleShot(0, [d]() {
+    QTimer::singleShot(0, this, [d]() {
       d->renderWindow->Render();
       d->renderQueued = false;
     });
