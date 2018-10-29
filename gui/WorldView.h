@@ -61,9 +61,9 @@ public:
 
   void initFrameSampling(int nbFrames);
 
-  void loadVolume(QString path);
+  void loadVolume(QString const& path);
 
-  void setVideoConfig(QString videoPath,
+  void setVideoConfig(QString const& videoPath,
                       kwiver::vital::config_block_sptr config);
   void setCameras(kwiver::vital::camera_map_sptr cameras);
 

@@ -202,7 +202,7 @@ std::string imageConfigForPath(QString const& path, QString const& type)
 }
 
 //-----------------------------------------------------------------------------
-QString makeFilters(QStringList extensions)
+QString makeFilters(QStringList const& extensions)
 {
   auto result = QStringList();
   foreach (auto const& extension, extensions)
@@ -2618,7 +2618,7 @@ void MainWindow::showUserManual()
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::updateVideoImportProgress(QString desc, int progress)
+void MainWindow::updateVideoImportProgress(QString const& desc, int progress)
 {
   QTE_D();
 

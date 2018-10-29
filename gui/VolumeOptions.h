@@ -49,7 +49,7 @@ class VolumeOptions : public QWidget
   Q_OBJECT
 
 public:
-  explicit VolumeOptions(const QString &settingsGroup,
+  explicit VolumeOptions(QString const& settingsGroup,
       QWidget* parent = 0, Qt::WindowFlags flags = 0);
   ~VolumeOptions() override;
 
@@ -59,7 +59,7 @@ public:
 
   void setCameras(kwiver::vital::camera_map_sptr cameras);
 
-  void setVideoConfig(std::string videoPath,
+  void setVideoConfig(std::string const& videoPath,
                       kwiver::vital::config_block_sptr config);
 
   void colorize();
@@ -75,7 +75,7 @@ signals:
 
 public slots:
   void showColorizeSurfaceMenu(bool state);
-  void updateColorizeSurfaceMenu(QString text);
+  void updateColorizeSurfaceMenu(QString const& text);
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(VolumeOptions)

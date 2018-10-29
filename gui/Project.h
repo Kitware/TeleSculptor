@@ -45,11 +45,11 @@ class Project : public QObject
 public:
 
   Project();
-  Project(QString dir);
+  Project(QString const& dir);
 
   bool read(QString const& path);
 
-  QString getContingentRelativePath(QString filepath);
+  QString getContingentRelativePath(QString const& filepath);
 
   QDir workingDir;
 

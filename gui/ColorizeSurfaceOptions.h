@@ -58,7 +58,8 @@ public:
   void setCurrentFrame(int frame);
 
   void setActor(vtkActor* actor);
-  void setVideoInfo(kwiver::vital::config_block_sptr config, std::string path);
+  void setVideoInfo(kwiver::vital::config_block_sptr config,
+                    std::string const& path);
   void setCameras(kwiver::vital::camera_map_sptr cameras);
 
   void enableMenu(bool);

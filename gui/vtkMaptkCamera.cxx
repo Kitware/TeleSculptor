@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -146,7 +146,7 @@ kwiver::vital::vector_3d vtkMaptkCamera::UnprojectPoint(double pixel[2])
 }
 
 //-----------------------------------------------------------------------------
-double vtkMaptkCamera::Depth(kwiver::vital::vector_3d point) const
+double vtkMaptkCamera::Depth(kwiver::vital::vector_3d const& point) const
 {
   return this->MaptkCamera->depth(point);
 }

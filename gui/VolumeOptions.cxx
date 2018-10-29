@@ -145,7 +145,7 @@ void VolumeOptions::setCameras(kwiver::vital::camera_map_sptr cameras)
 }
 
 //-----------------------------------------------------------------------------
-void VolumeOptions::setVideoConfig(std::string videoPath,
+void VolumeOptions::setVideoConfig(std::string const& videoPath,
                                    kwiver::vital::config_block_sptr config)
 {
   QTE_D();
@@ -188,7 +188,7 @@ void VolumeOptions::showColorizeSurfaceMenu(bool state)
 }
 
 //-----------------------------------------------------------------------------
-void VolumeOptions::updateColorizeSurfaceMenu(QString text)
+void VolumeOptions::updateColorizeSurfaceMenu(QString const& text)
 {
   QTE_D();
 

@@ -704,7 +704,7 @@ void WorldView::initFrameSampling(int nbFrames)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::setVideoConfig(QString videoPath,
+void WorldView::setVideoConfig(QString const& videoPath,
                                kwiver::vital::config_block_sptr config)
 {
   QTE_D();
@@ -721,7 +721,7 @@ void WorldView::setCameras(kwiver::vital::camera_map_sptr cameras)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::loadVolume(QString path)
+void WorldView::loadVolume(QString const& path)
 {
   QTE_D();
 

@@ -75,7 +75,7 @@ Project::Project()
 }
 
 //-----------------------------------------------------------------------------
-Project::Project(QString dir)
+Project::Project(QString const& dir)
 {
   workingDir = dir;
   filePath = workingDir.absoluteFilePath(workingDir.dirName() + ".conf");
@@ -161,7 +161,7 @@ bool Project::read(QString const& path)
 //-----------------------------------------------------------------------------
 // Returns the relative path if the filepath is contained in the directory and
 // returns the absolute path if not.
-QString Project::getContingentRelativePath(QString filepath)
+QString Project::getContingentRelativePath(QString const& filepath)
 {
   auto rel = workingDir.relativeFilePath(filepath);
   if (rel.startsWith(".."))

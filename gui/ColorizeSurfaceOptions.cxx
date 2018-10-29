@@ -151,7 +151,7 @@ void ColorizeSurfaceOptions::setActor(vtkActor* actor)
 
 //-----------------------------------------------------------------------------
 void ColorizeSurfaceOptions::setVideoInfo(
-  kwiver::vital::config_block_sptr config, std::string path)
+  kwiver::vital::config_block_sptr config, std::string const& path)
 {
   QTE_D();
 
