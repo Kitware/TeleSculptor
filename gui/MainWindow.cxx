@@ -2006,7 +2006,7 @@ void MainWindow::saveCameras(QString const& path, bool writeToProject)
         auto const filepath = QDir{path}.filePath(cameraName);
         out.insert(filepath, camera);
 
-        if (QFileInfo(filepath).exists())
+        if (QFileInfo::exists(filepath))
         {
           willOverwrite.append(filepath);
         }
