@@ -539,7 +539,7 @@ void CameraView::setImagePath(QString const& path)
 }
 
 //-----------------------------------------------------------------------------
-void CameraView::setImageData(vtkImageData* data, QSize const& dimensions)
+void CameraView::setImageData(vtkImageData* data, QSize dimensions)
 {
   QTE_D();
 

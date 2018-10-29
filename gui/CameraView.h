@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2017 by Kitware, Inc.
+ * Copyright 2017-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,7 +63,7 @@ public slots:
   void setBackgroundColor(QColor const&);
 
   void setImagePath(QString const&);
-  void setImageData(vtkImageData* data, QSize const& dimensions);
+  void setImageData(vtkImageData* data, QSize dimensions);
 
   void setLandmarksData(kwiver::vital::landmark_map const&);
 

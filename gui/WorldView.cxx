@@ -851,7 +851,7 @@ void WorldView::setActiveCamera(int id)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::setImageData(vtkImageData* data, QSize const& dimensions)
+void WorldView::setImageData(vtkImageData* data, QSize dimensions)
 {
   QTE_D();
 

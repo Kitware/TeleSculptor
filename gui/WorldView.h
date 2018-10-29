@@ -93,7 +93,7 @@ public slots:
   void setDepthGeometryFilter(vtkMaptkImageDataGeometryFilter*);
   void updateDepthMap();
 
-  void setImageData(vtkImageData* data, QSize const& dimensions);
+  void setImageData(vtkImageData* data, QSize dimensions);
 
   void setImageVisible(bool);
   void setCamerasVisible(bool);
