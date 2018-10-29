@@ -268,7 +268,7 @@ void MeshColoration::initializeDataList(int frameId)
   if (frameId < 0)
   {
     unsigned int counter = 0;
-    for (auto cam_itr : cam_map)
+    for (auto const& cam_itr : cam_map)
     {
       if ((counter++) % Sampling != 0)
       {

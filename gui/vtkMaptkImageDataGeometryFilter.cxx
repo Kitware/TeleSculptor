@@ -1,5 +1,5 @@
 /*ckwg +29
-* Copyright 2016-2017 by Kitware, Inc.
+* Copyright 2016-2018 by Kitware, Inc.
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
@@ -214,7 +214,7 @@ int vtkMaptkImageDataGeometryFilter::RequestData(
 
   // Check any / all constraints
   bool completelyFiltered = false;
-  for(auto const constraint : this->Internal->Constraints)
+  for(auto const& constraint : this->Internal->Constraints)
   {
     vtkDataArray* dataArray = pointData->GetArray(constraint.first.c_str());
     if (dataArray)
