@@ -43,7 +43,7 @@ public:
   AbstractToolPrivate(AbstractTool* q)
     : data(std::make_shared<ToolData>()), q_ptr(q) {}
 
-  virtual void run() QTE_OVERRIDE;
+  virtual void run() override;
 
   std::shared_ptr<ToolData> data;
 

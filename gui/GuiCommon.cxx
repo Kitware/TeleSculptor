@@ -66,8 +66,8 @@ frameName(kwiver::vital::frame_id_t frame,
   using kwiver::vital::basename_from_metadata;
   for (auto const& md : mdv)
   {
-    if (md->has(kwiver::vital::VITAL_META_IMAGE_FILENAME) ||
-        md->has(kwiver::vital::VITAL_META_VIDEO_FILENAME))
+    if (md->has(kwiver::vital::VITAL_META_IMAGE_URI) ||
+        md->has(kwiver::vital::VITAL_META_VIDEO_URI))
     {
       return basename_from_metadata(md, frame);
     }
@@ -134,7 +134,7 @@ kwiver::vital::path_t findConfig(std::string const& name)
 }
 
 //----------------------------------------------------------------------------
-vtkSmartPointer<vtkImageData> vitalToVtkImage(kwiver::vital::image& img)
+vtkSmartPointer<vtkImageData> vitalToVtkImage(kwiver::vital::image const& img)
 {
   kwiver::vital::image frameImg;
   // If image is interlaced it is already compatible with VTK

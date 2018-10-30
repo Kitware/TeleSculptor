@@ -58,9 +58,9 @@ public:
 
 protected:
   vtkMaptkImageUnprojectDepth();
-  ~vtkMaptkImageUnprojectDepth();
+  ~vtkMaptkImageUnprojectDepth() override;
 
-  virtual void SimpleExecute(vtkImageData* input, vtkImageData* output);
+  void SimpleExecute(vtkImageData* input, vtkImageData* output) override;
 private:
   vtkMaptkImageUnprojectDepth(const vtkMaptkImageUnprojectDepth&);  // Not implemented.
   void operator=(const vtkMaptkImageUnprojectDepth&);  // Not implemented.

@@ -27,8 +27,8 @@ find_package(VTK REQUIRED
   vtkRenderingAnnotation
   vtkRenderingFreeType
   )
-if(VTK_VERSION VERSION_LESS 8.0)
-  message(FATAL_ERROR "${PROJECT_NAME} supports VTK >= v8.0 "
+if(VTK_VERSION VERSION_LESS 8.1)
+  message(FATAL_ERROR "${PROJECT_NAME} supports VTK >= v8.1 "
     "(Found ${VTK_VERSION})")
 endif()
 include(${VTK_USE_FILE})
@@ -104,6 +104,8 @@ set(gui_sources
   DepthMapViewOptions.cxx
   FeatureOptions.cxx
   GradientSelector.cxx
+  GroundControlPointsHelper.cxx
+  GroundControlPointsWidget.cxx
   GuiCommon.cxx
   ImageOptions.cxx
   MainWindow.cxx
@@ -123,18 +125,19 @@ set(gui_sources
   vtkMaptkImageUnprojectDepth.cxx
   vtkMaptkScalarDataFilter.cxx
   vtkMaptkScalarsToGradient.cxx
+  vtkMaptkSeedWidget.cxx
   tools/AbstractTool.cxx
   tools/BundleAdjustTool.cxx
   tools/CanonicalTransformTool.cxx
   tools/ComputeDepthTool.cxx
   tools/InitCamerasLandmarksTool.cxx
-  tools/NeckerReversalTool.cxx
   tools/MeshColoration.cxx
+  tools/NeckerReversalTool.cxx
   tools/SaveFrameTool.cxx
   tools/SaveKeyFrameTool.cxx
-  tools/TrackFilterTool.cxx
   tools/TrackFeaturesSprokitTool.cxx
   tools/TrackFeaturesTool.cxx
+  tools/TrackFilterTool.cxx
   tools/TriangulateTool.cxx
 )
 

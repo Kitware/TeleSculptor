@@ -49,7 +49,7 @@ class PointOptions : public QWidget
 public:
   explicit PointOptions(QString const& settingsGroup,
                         QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~PointOptions();
+  ~PointOptions() override;
 
   void addActor(vtkActor*);
   void addMapper(vtkMapper*);

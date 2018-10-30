@@ -139,6 +139,19 @@ kwiver::vital::vector_3d vtkMaptkCamera::UnprojectPoint(
 }
 
 //-----------------------------------------------------------------------------
+kwiver::vital::vector_3d vtkMaptkCamera::UnprojectPoint(double pixel[2])
+{
+  auto const depth = this->MaptkCamera->depth(kwiver::vital::vector_3d(0, 0, 0));
+  return this->UnprojectPoint(pixel, depth);
+}
+
+//-----------------------------------------------------------------------------
+double vtkMaptkCamera::Depth(kwiver::vital::vector_3d point) const
+{
+  return this->MaptkCamera->depth(point);
+}
+
+//-----------------------------------------------------------------------------
 void vtkMaptkCamera::ScaleK(double factor)
 {
   auto K = this->MaptkCamera->intrinsics()->as_matrix();
