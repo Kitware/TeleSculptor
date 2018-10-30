@@ -97,7 +97,7 @@ class ActorColorOption : public QWidget
 {
 public:
   ActorColorOption(QString const& settingsGroup, QWidget* parent);
-  virtual ~ActorColorOption();
+  ~ActorColorOption() override;
 
   void setDefaultColor(QColor const&);
 

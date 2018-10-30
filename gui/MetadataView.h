@@ -45,9 +45,9 @@ class MetadataView : public QScrollArea
 
 public:
   explicit MetadataView(QWidget* parent = 0);
-  virtual ~MetadataView();
+  ~MetadataView() override;
 
-  virtual bool eventFilter(QObject* sender, QEvent* e) override;
+  bool eventFilter(QObject* sender, QEvent* e) override;
 
 public slots:
   void updateMetadata(
@@ -55,7 +55,7 @@ public slots:
   void updateMetadata(kwiver::vital::metadata_vector const&);
 
 protected:
-  virtual void changeEvent(QEvent* e) override;
+  void changeEvent(QEvent* e) override;
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(MetadataView)

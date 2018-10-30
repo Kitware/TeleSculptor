@@ -53,7 +53,7 @@ public:
 public:
   explicit DepthMapOptions(const QString& settingsGroup,
                            QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~DepthMapOptions();
+  ~DepthMapOptions() override;
 
   DisplayMode displayMode() const;
 

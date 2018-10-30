@@ -38,7 +38,7 @@ class vtkMaptkScalarDataFilter : public vtkDataSetAlgorithm
 public:
   static vtkMaptkScalarDataFilter *New();
   vtkTypeMacro(vtkMaptkScalarDataFilter,vtkDataSetAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Get/Set the point data array name to set as active scalars on the output.
@@ -47,11 +47,11 @@ public:
 
 protected:
   vtkMaptkScalarDataFilter();
-  ~vtkMaptkScalarDataFilter();
+  ~vtkMaptkScalarDataFilter() override;
 
-  virtual int RequestData(vtkInformation* request,
+  int RequestData(vtkInformation* request,
                           vtkInformationVector** inputVector,
-                          vtkInformationVector* outputVector);
+                          vtkInformationVector* outputVector) override;
 
   char* ScalarArrayName;
 

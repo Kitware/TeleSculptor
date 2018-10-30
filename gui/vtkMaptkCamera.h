@@ -96,7 +96,7 @@ public:
 
 protected:
   vtkMaptkCamera();
-  ~vtkMaptkCamera();
+  ~vtkMaptkCamera() override;
 
   using vtkCamera::GetFrustumPlanes; // Hide overloaded virtual
 

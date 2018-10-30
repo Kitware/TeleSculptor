@@ -47,7 +47,7 @@ class MatchMatrixWindow : public QMainWindow
 
 public:
   explicit MatchMatrixWindow(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~MatchMatrixWindow();
+  ~MatchMatrixWindow() override;
 
 public slots:
   void setMatrix(Eigen::SparseMatrix<uint> const&,

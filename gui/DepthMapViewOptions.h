@@ -49,7 +49,7 @@ class DepthMapViewOptions : public QWidget
 public:
   explicit DepthMapViewOptions(const QString& settingsGroup,
                                QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~DepthMapViewOptions();
+  ~DepthMapViewOptions() override;
 
   void setActor(vtkActor*);
 
