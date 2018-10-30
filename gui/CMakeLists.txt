@@ -1,6 +1,6 @@
 set(CMAKE_AUTOMOC ON)
 set(Qt5_MODULES Core Designer UiPlugin Widgets Xml)
-find_package(Qt5 COMPONENTS ${Qt5_MODULES} REQUIRED)
+find_package(Qt5 5.7 COMPONENTS ${Qt5_MODULES} REQUIRED)
 set(QT_LIBRARIES )
 foreach(module ${Qt5_MODULES})
   list(APPEND QT_LIBRARIES Qt5::${module})

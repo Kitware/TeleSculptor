@@ -128,14 +128,15 @@ FeatureOptions::FeatureOptions(vtkMaptkFeatureTrackRepresentation* rep,
   this->addActor(d->representation->GetActivePointsWithoutDescActor());
 
   // Connect signals/slots
-  connect(d->UI.showTrailsWithDesc, SIGNAL(toggled(bool)),
-          this, SLOT(setTrailsWithDescVisible(bool)));
-  connect(d->UI.showTrailsWithoutDesc, SIGNAL(toggled(bool)),
-          this, SLOT(setTrailsWithoutDescVisible(bool)));
-  connect(d->UI.trailLength, SIGNAL(valueChanged(int)),
-          this, SLOT(setTrailsLength(int)));
-  connect(d->UI.trailStyle, SIGNAL(currentIndexChanged(int)),
-          this, SLOT(setTrailsStyle(int)));
+  connect(d->UI.showTrailsWithDesc, &QAbstractButton::toggled,
+          this, &FeatureOptions::setTrailsWithDescVisible);
+  connect(d->UI.showTrailsWithoutDesc, &QAbstractButton::toggled,
+          this, &FeatureOptions::setTrailsWithoutDescVisible);
+  connect(d->UI.trailLength, &QAbstractSlider::valueChanged,
+          this, &FeatureOptions::setTrailsLength);
+  connect(d->UI.trailStyle,
+          QOverload<int>::of(&QComboBox::currentIndexChanged),
+          this, &FeatureOptions::setTrailsStyle);
 }
 
 //-----------------------------------------------------------------------------

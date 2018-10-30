@@ -30,7 +30,9 @@
 
 #include "VolumeOptions.h"
 #include "ui_VolumeOptions.h"
+
 #include "ColorizeSurfaceOptions.h"
+#include "WorldView.h"
 
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
@@ -96,17 +98,18 @@ VolumeOptions::VolumeOptions(const QString &settingsGroup, QWidget* parent,
   d->setPopup(d->UI.toolButtonColorizeSurfaceMenu, d->colorizeSurfaceOptions);
 
   // Connect signals/slots
-  connect(d->UI.checkBoxColorizeSurface, SIGNAL(toggled(bool)),
-          this, SLOT(showColorizeSurfaceMenu(bool)));
+  connect(d->UI.checkBoxColorizeSurface, &QAbstractButton::toggled,
+          this, &VolumeOptions::showColorizeSurfaceMenu);
 
-  connect(d->UI.checkBoxColorizeSurface, SIGNAL(toggled(bool)),
-          this, SIGNAL(colorOptionsEnabled(bool)));
+  connect(d->UI.checkBoxColorizeSurface, &QAbstractButton::toggled,
+          this, &VolumeOptions::colorOptionsEnabled);
 
-  connect(d->colorizeSurfaceOptions, SIGNAL(colorModeChanged(QString)),
-          this, SLOT(updateColorizeSurfaceMenu(QString)));
+  connect(d->colorizeSurfaceOptions, &ColorizeSurfaceOptions::colorModeChanged,
+          this, &VolumeOptions::updateColorizeSurfaceMenu);
 
-  connect(d->UI.doubleSpinBoxSurfaceThreshold, SIGNAL(valueChanged(double)),
-    parent, SLOT(computeContour(double)));
+  connect(d->UI.doubleSpinBoxSurfaceThreshold,
+          QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+          qobject_cast<WorldView*>(parent), &WorldView::computeContour);
 }
 
 //-----------------------------------------------------------------------------

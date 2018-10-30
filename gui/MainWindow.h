@@ -122,8 +122,8 @@ protected slots:
 
   void executeTool(QObject*);
   void reportToolError(QString const&);
+  void acceptToolInterimResults(std::shared_ptr<ToolData> data);
   void acceptToolFinalResults();
-  void acceptToolResults(std::shared_ptr<ToolData> data, bool isFinal = false);
   void updateToolResults();
   void addFrame(int);
   void updateFrames(
@@ -132,6 +132,8 @@ protected slots:
   void enableAntiAliasing(bool enable);
 
 private:
+  void acceptToolResults(std::shared_ptr<ToolData> data, bool isFinal);
+
   QTE_DECLARE_PRIVATE_RPTR(MainWindow)
   QTE_DECLARE_PRIVATE(MainWindow)
 

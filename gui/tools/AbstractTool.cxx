@@ -138,7 +138,7 @@ AbstractTool::AbstractTool(QObject* parent)
   : QAction(parent), d_ptr(new AbstractToolPrivate(this))
 {
   QTE_D();
-  connect(d, SIGNAL(finished()), this, SIGNAL(completed()));
+  connect(d, &QThread::finished, this, &AbstractTool::completed);
 }
 
 //-----------------------------------------------------------------------------

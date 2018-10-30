@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -69,8 +69,8 @@ ImageOptions::ImageOptions(QString const& settingsGroup,
   d->uiState.restore();
 
   // Connect signals/slots
-  connect(d->UI.opacity, SIGNAL(valueChanged(double)),
-          this, SLOT(setOpacity(double)));
+  connect(d->UI.opacity, &qtDoubleSlider::valueChanged,
+          this, &ImageOptions::setOpacity);
 }
 
 //-----------------------------------------------------------------------------

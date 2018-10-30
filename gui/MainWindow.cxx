@@ -363,15 +363,12 @@ QTE_IMPLEMENT_D_FUNC(MainWindow)
 //-----------------------------------------------------------------------------
 MainWindowPrivate::MainWindowPrivate(MainWindow* mainWindow)
 {
-  QObject::connect(&videoImporter, SIGNAL(updated(int)),
-                   mainWindow, SLOT(addFrame(int)));
-  QObject::connect(&videoImporter, SIGNAL(updateProgress(QString, int)),
-                   mainWindow, SLOT(updateVideoImportProgress(QString, int)));
-  QObject::connect(
-    &videoImporter,
-    SIGNAL(completed(std::shared_ptr<kwiver::vital::metadata_map::map_metadata_t>)),
-    mainWindow,
-    SLOT(updateFrames(std::shared_ptr<kwiver::vital::metadata_map::map_metadata_t>)));
+  QObject::connect(&videoImporter, &VideoImport::updated,
+                   mainWindow, &MainWindow::addFrame);
+  QObject::connect(&videoImporter, &VideoImport::progressChanged,
+                   mainWindow, &MainWindow::updateVideoImportProgress);
+  QObject::connect(&videoImporter, &VideoImport::completed,
+                   mainWindow, &MainWindow::updateFrames);
 }
 
 //-----------------------------------------------------------------------------
@@ -381,14 +378,14 @@ void MainWindowPrivate::addTool(AbstractTool* tool, MainWindow* mainWindow)
 
   this->toolDispatcher.setMapping(tool, tool);
 
-  QObject::connect(tool, SIGNAL(triggered()),
-                   &this->toolDispatcher, SLOT(map()));
-  QObject::connect(tool, SIGNAL(updated(std::shared_ptr<ToolData>)),
-                   mainWindow, SLOT(acceptToolResults(std::shared_ptr<ToolData>)));
-  QObject::connect(tool, SIGNAL(completed()),
-                   mainWindow, SLOT(acceptToolFinalResults()));
-  QObject::connect(tool, SIGNAL(failed(QString)),
-                   mainWindow, SLOT(reportToolError(QString)));
+  QObject::connect(tool, &AbstractTool::triggered, &this->toolDispatcher,
+                   QOverload<>::of(&QSignalMapper::map));
+  QObject::connect(tool, &AbstractTool::updated,
+                   mainWindow, &MainWindow::acceptToolInterimResults);
+  QObject::connect(tool, &AbstractTool::completed,
+                   mainWindow, &MainWindow::acceptToolFinalResults);
+  QObject::connect(tool, &AbstractTool::failed,
+                   mainWindow, &MainWindow::reportToolError);
 
   tool->setEnabled(false);
 
@@ -1096,14 +1093,14 @@ void MainWindowPrivate::setActiveTool(AbstractTool* tool)
   // Connect actions
   if (tool)
   {
-    QObject::connect(this->UI.actionCancelComputation, SIGNAL(triggered()),
-                     tool, SLOT(cancel()));
-    QObject::connect(this->UI.actionCancelComputation, SIGNAL(triggered()),
-                     project.data(), SLOT(write()));
-    QObject::connect(this->UI.actionQuit, SIGNAL(triggered()),
-                     tool, SLOT(cancel()));
-    QObject::connect(tool, SIGNAL(completed()),
-                     project.data(), SLOT(write()));
+    QObject::connect(this->UI.actionCancelComputation, &QAction::triggered,
+                     tool, &AbstractTool::cancel);
+    QObject::connect(this->UI.actionCancelComputation, &QAction::triggered,
+                     project.data(), &Project::write);
+    QObject::connect(this->UI.actionQuit, &QAction::triggered,
+                     tool, &AbstractTool::cancel);
+    QObject::connect(tool, &AbstractTool::completed,
+                     project.data(), &Project::write);
   }
 
   auto const enableTools = !tool;
@@ -1204,89 +1201,90 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->UI.playSlideshowButton->setDefaultAction(d->UI.actionSlideshowPlay);
   d->UI.loopSlideshowButton->setDefaultAction(d->UI.actionSlideshowLoop);
 
-  connect(d->UI.actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
+  connect(d->UI.actionQuit, &QAction::triggered,
+          qApp, &QCoreApplication::quit);
 
-  connect(d->UI.actionNewProject, SIGNAL(triggered()),
-          this, SLOT(newProject()));
-  connect(d->UI.actionOpenProject, SIGNAL(triggered()),
-          this, SLOT(openProject()));
-  connect(d->UI.actionImportImagery, SIGNAL(triggered()),
-          this, SLOT(openImagery()));
-  connect(d->UI.actionImportMasks, SIGNAL(triggered()),
-          this, SLOT(openMaskImagery()));
-  connect(d->UI.actionImportCameras, SIGNAL(triggered()),
-          this, SLOT(openCameras()));
-  connect(d->UI.actionImportTracks, SIGNAL(triggered()),
-          this, SLOT(openTracks()));
-  connect(d->UI.actionImportLandmarks, SIGNAL(triggered()),
-          this, SLOT(openLandmarks()));
-  connect(d->UI.actionImportGroundControlPoints, SIGNAL(triggered()),
-          this, SLOT(openGroundControlPoints()));
+  connect(d->UI.actionNewProject, &QAction::triggered,
+          this, &MainWindow::newProject);
+  connect(d->UI.actionOpenProject, &QAction::triggered,
+          this, &MainWindow::openProject);
+  connect(d->UI.actionImportImagery, &QAction::triggered,
+          this, &MainWindow::openImagery);
+  connect(d->UI.actionImportMasks, &QAction::triggered,
+          this, &MainWindow::openMaskImagery);
+  connect(d->UI.actionImportCameras, &QAction::triggered,
+          this, &MainWindow::openCameras);
+  connect(d->UI.actionImportTracks, &QAction::triggered,
+          this, &MainWindow::openTracks);
+  connect(d->UI.actionImportLandmarks, &QAction::triggered,
+          this, &MainWindow::openLandmarks);
+  connect(d->UI.actionImportGroundControlPoints, &QAction::triggered,
+          this, &MainWindow::openGroundControlPoints);
 
-  connect(d->UI.actionShowWorldAxes, SIGNAL(toggled(bool)),
-          d->UI.worldView, SLOT(setAxesVisible(bool)));
+  connect(d->UI.actionShowWorldAxes, &QAction::toggled,
+          d->UI.worldView, &WorldView::setAxesVisible);
 
-  connect(d->UI.actionExportCameras, SIGNAL(triggered()),
-          this, SLOT(saveCameras()));
-  connect(d->UI.actionExportLandmarks, SIGNAL(triggered()),
-          this, SLOT(saveLandmarks()));
-  connect(d->UI.actionExportGroundControlPoints, SIGNAL(triggered()),
-          this, SLOT(saveGroundControlPoints()));
-  connect(d->UI.actionExportVolume, SIGNAL(triggered()),
-          this, SLOT(saveVolume()));
-  connect(d->UI.actionExportMesh, SIGNAL(triggered()),
-          this, SLOT(saveMesh()));
-  connect(d->UI.actionExportColoredMesh, SIGNAL(triggered()),
-          this, SLOT(saveColoredMesh()));
-  connect(d->UI.actionExportDepthPoints, SIGNAL(triggered()),
-          this, SLOT(saveDepthPoints()));
-  connect(d->UI.actionExportTracks, SIGNAL(triggered()),
-          this, SLOT(saveTracks()));
+  connect(d->UI.actionExportCameras, &QAction::triggered,
+          this, QOverload<>::of(&MainWindow::saveCameras));
+  connect(d->UI.actionExportLandmarks, &QAction::triggered,
+          this, QOverload<>::of(&MainWindow::saveLandmarks));
+  connect(d->UI.actionExportGroundControlPoints, &QAction::triggered,
+          this, QOverload<>::of(&MainWindow::saveGroundControlPoints));
+  connect(d->UI.actionExportVolume, &QAction::triggered,
+          this, &MainWindow::saveVolume);
+  connect(d->UI.actionExportMesh, &QAction::triggered,
+          this, &MainWindow::saveMesh);
+  connect(d->UI.actionExportColoredMesh, &QAction::triggered,
+          this, &MainWindow::saveColoredMesh);
+  connect(d->UI.actionExportDepthPoints, &QAction::triggered,
+          this, QOverload<>::of(&MainWindow::saveDepthPoints));
+  connect(d->UI.actionExportTracks, &QAction::triggered,
+          this, QOverload<>::of(&MainWindow::saveTracks));
 
-  connect(d->UI.worldView, SIGNAL(depthMapEnabled(bool)),
-          this, SLOT(enableSaveDepthPoints(bool)));
+  connect(d->UI.worldView, &WorldView::depthMapEnabled,
+          this, &MainWindow::enableSaveDepthPoints);
 
-  connect(d->UI.actionShowMatchMatrix, SIGNAL(triggered()),
-          this, SLOT(showMatchMatrix()));
+  connect(d->UI.actionShowMatchMatrix, &QAction::triggered,
+          this, &MainWindow::showMatchMatrix);
 
-  connect(&d->toolDispatcher, SIGNAL(mapped(QObject*)),
-          this, SLOT(executeTool(QObject*)));
+  connect(&d->toolDispatcher, QOverload<QObject*>::of(&QSignalMapper::mapped),
+          this, &MainWindow::executeTool);
 
-  connect(d->UI.actionSetBackgroundColor, SIGNAL(triggered()),
-          this, SLOT(setViewBackroundColor()));
+  connect(d->UI.actionSetBackgroundColor, &QAction::triggered,
+          this, &MainWindow::setViewBackroundColor);
 
-  connect(d->UI.actionAbout, SIGNAL(triggered()),
-          this, SLOT(showAboutDialog()));
-  connect(d->UI.actionShowManual, SIGNAL(triggered()),
-          this, SLOT(showUserManual()));
+  connect(d->UI.actionAbout, &QAction::triggered,
+          this, &MainWindow::showAboutDialog);
+  connect(d->UI.actionShowManual, &QAction::triggered,
+          this, &MainWindow::showUserManual);
 
-  connect(&d->slideTimer, SIGNAL(timeout()), this, SLOT(nextSlide()));
-  connect(d->UI.actionSlideshowPlay, SIGNAL(toggled(bool)),
-          this, SLOT(setSlideshowPlaying(bool)));
-  connect(d->UI.slideSpeed, SIGNAL(valueChanged(int)),
-          this, SLOT(setSlideSpeed(int)));
+  connect(&d->slideTimer, &QTimer::timeout, this, &MainWindow::nextSlide);
+  connect(d->UI.actionSlideshowPlay, &QAction::toggled,
+          this, &MainWindow::setSlideshowPlaying);
+  connect(d->UI.slideSpeed, &QAbstractSlider::valueChanged,
+          this, &MainWindow::setSlideSpeed);
 
-  connect(d->UI.camera, SIGNAL(valueChanged(int)),
-          this, SLOT(setActiveCamera(int)));
+  connect(d->UI.camera, &QAbstractSlider::valueChanged,
+          this, &MainWindow::setActiveCamera);
 
-  connect(d->UI.worldView, SIGNAL(meshEnabled(bool)),
-          this, SLOT(enableSaveMesh(bool)));
+  connect(d->UI.worldView, &WorldView::meshEnabled,
+          this, &MainWindow::enableSaveMesh);
 
-  connect(d->UI.worldView, SIGNAL(coloredMeshEnabled(bool)),
-          this, SLOT(enableSaveColoredMesh(bool)));
+  connect(d->UI.worldView, &WorldView::coloredMeshEnabled,
+          this, &MainWindow::enableSaveColoredMesh);
 
-  connect(d->UI.worldView, SIGNAL(depthMapThresholdsChanged()),
-          d->UI.depthMapView, SLOT(updateThresholds()));
+  connect(d->UI.worldView, &WorldView::depthMapThresholdsChanged,
+          d->UI.depthMapView, &DepthMapView::updateThresholds);
 
-  connect(d->UI.depthMapViewDock, SIGNAL(visibilityChanged(bool)),
-          d->UI.depthMapView, SLOT(updateView(bool)));
+  connect(d->UI.depthMapViewDock, &QDockWidget::visibilityChanged,
+          d->UI.depthMapView, &DepthMapView::updateView);
 
   this->setSlideSpeed(d->UI.slideSpeed->value());
 
 #ifdef VTKWEBGLEXPORTER
   d->UI.actionWebGLScene->setVisible(true);
-  connect(d->UI.actionWebGLScene, SIGNAL(triggered(bool)),
-          this, SLOT(saveWebGLScene()));
+  connect(d->UI.actionWebGLScene, &QAction::triggered,
+          this, &MainWindow::saveWebGLScene);
 #endif
 
   // Set up UI persistence and restore previous state
@@ -1332,8 +1330,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           &GroundControlPointsHelper::enableWidgets);
 
   // Antialiasing
-  connect(d->UI.actionAntialiasing, SIGNAL(toggled(bool)),
-          this, SLOT(enableAntiAliasing(bool)));
+  connect(d->UI.actionAntialiasing, &QAction::toggled,
+          this, &MainWindow::enableAntiAliasing);
   this->enableAntiAliasing(d->UI.actionAntialiasing->isChecked());
 
   // Common ROI
@@ -2369,13 +2367,20 @@ void MainWindow::reportToolError(QString const& msg)
 }
 
 //-----------------------------------------------------------------------------
+void MainWindow::acceptToolInterimResults(std::shared_ptr<ToolData> data)
+{
+  this->acceptToolResults(data, false);
+}
+
+//-----------------------------------------------------------------------------
 void MainWindow::acceptToolFinalResults()
 {
   QTE_D();
+
   if (d->activeTool)
   {
-    acceptToolResults(d->activeTool->data(), true);
-    saveToolResults();
+    this->acceptToolResults(d->activeTool->data(), true);
+    this->saveToolResults();
     // Signal tool execution as complete to the progress widget
     d->updateProgress(d->activeTool,
                       d->activeTool->description(),
@@ -2440,7 +2445,7 @@ void MainWindow::acceptToolResults(
   }
   else if(updateNeeded)
   {
-    QTimer::singleShot(1000, this, SLOT(updateToolResults()));
+    QTimer::singleShot(1000, this, &MainWindow::updateToolResults);
   }
 }
 
