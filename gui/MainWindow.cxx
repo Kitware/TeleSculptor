@@ -399,8 +399,7 @@ void MainWindowPrivate::addCamera(kv::camera_perspective_sptr const& camera)
   {
     auto orphanIndex = this->orphanFrames.dequeue();
 
-    auto fd = this->frames.find(orphanIndex);
-    if (fd != this->frames.end())
+    if (auto* const fd = qtGet(this->frames, orphanIndex))
     {
       fd->camera = vtkSmartPointer<vtkMaptkCamera>::New();
       fd->camera->SetCamera(camera);
@@ -727,11 +726,17 @@ void MainWindowPrivate::updateCameras(
 bool MainWindowPrivate::updateCamera(kv::frame_id_t frame,
                                      kv::camera_perspective_sptr cam)
 {
-  auto fr = this->frames.find(frame);
-  if (fr == this->frames.end() || !cam)
+  if (!cam)
   {
     return false;
   }
+
+  auto* const fr = qtGet(this->frames, frame);
+  if (!fr)
+  {
+    return false;
+  }
+
   if (!fr->camera)
   {
     fr->camera = vtkSmartPointer<vtkMaptkCamera>::New();
@@ -848,8 +853,7 @@ void MainWindowPrivate::setActiveCamera(int id)
     this->UI.depthMapView->setValidDepthInput(true);
     this->UI.worldView->setValidDepthInput(true);
 
-    auto fr = this->frames.find(id);
-    if (fr != this->frames.end())
+    if (auto* const fr = qtGet(qAsConst(this->frames), id))
     {
       this->depthFilter->SetCamera(fr->camera);
     }
@@ -859,8 +863,7 @@ void MainWindowPrivate::setActiveCamera(int id)
   }
   else // load from file
   {
-    auto fr = this->frames.find(id);
-    if (fr != this->frames.end())
+    if (auto* const fr = qtGet(qAsConst(this->frames), id))
     {
       if (!fr->depthMapPath.isEmpty())
       {
@@ -887,9 +890,10 @@ void MainWindowPrivate::updateCameraView()
   this->UI.cameraView->setActiveFrame(
     static_cast<unsigned>(this->activeCameraIndex));
 
-  auto activeFrame = this->frames.find(this->activeCameraIndex);
+  auto* const activeFrame =
+    qtGet(qAsConst(this->frames), this->activeCameraIndex);
 
-  if (activeFrame == this->frames.end())
+  if (!activeFrame)
   {
     this->loadEmptyImage(0);
     this->UI.cameraView->clearLandmarks();
@@ -898,7 +902,6 @@ void MainWindowPrivate::updateCameraView()
 
   // Show camera image
   this->loadImage(*activeFrame);
-
 
   if (!activeFrame->camera)
   {
@@ -959,11 +962,13 @@ void MainWindowPrivate::updateCameraView()
   this->UI.cameraView->render();
 }
 
+//-----------------------------------------------------------------------------
 std::string MainWindowPrivate::getFrameName(kv::frame_id_t frameId)
 {
   return frameName(frameId, this->videoMetadataMap);
 }
 
+//-----------------------------------------------------------------------------
 void MainWindowPrivate::loadEmptyImage(vtkMaptkCamera* camera)
 {
   auto imageDimensions = QSize(1, 1);
@@ -1070,8 +1075,8 @@ void MainWindowPrivate::loadDepthMap(QString const& imagePath)
   this->UI.depthMapView->setValidDepthInput(true);
   this->UI.worldView->setValidDepthInput(true);
 
-  auto activeFrame = this->frames.find(this->activeCameraIndex);
-  if (activeFrame != this->frames.end())
+  auto const ci = this->activeCameraIndex;
+  if (auto* const activeFrame = qtGet(qAsConst(this->frames), ci))
   {
     this->depthFilter->SetCamera(activeFrame->camera);
   }
@@ -2096,8 +2101,7 @@ void MainWindow::saveDepthImage(QString const& path)
   writerI->SetDataModeToBinary();
   writerI->Write();
 
-  auto activeFrame = d->frames.find(d->activeDepthFrame);
-  if (activeFrame != d->frames.end())
+  if (auto* const activeFrame = qtGet(d->frames, d->activeDepthFrame))
   {
     activeFrame->depthMapPath = filepath;
   }
