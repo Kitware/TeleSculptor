@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -114,7 +114,7 @@ QIcon DataColorOptions::icon() const
 vtkScalarsToColors* DataColorOptions::scalarsToColors() const
 {
   QTE_D();
-  return d->scalarsToGradient.GetPointer();
+  return d->scalarsToGradient;
 }
 
 //-----------------------------------------------------------------------------

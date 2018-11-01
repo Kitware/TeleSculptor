@@ -51,7 +51,7 @@ public:
 
   explicit DataFilterOptions(QString const& settingsGroup, QWidget* parent = 0,
                              Qt::WindowFlags flags = 0);
-  virtual ~DataFilterOptions();
+  ~DataFilterOptions() override;
 
   double minimum() const;
   double maximum() const;

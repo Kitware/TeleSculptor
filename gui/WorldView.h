@@ -46,6 +46,7 @@ class vtkPolyData;
 
 namespace kwiver { namespace vital { class landmark_map; } }
 
+class GroundControlPointsWidget;
 class vtkMaptkCamera;
 
 class WorldViewPrivate;
@@ -56,7 +57,7 @@ class WorldView : public QWidget
 
 public:
   explicit WorldView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~WorldView();
+  ~WorldView() override;
 
   void initFrameSampling(int nbFrames);
 
@@ -68,6 +69,8 @@ public:
 
   void enableAntiAliasing(bool enable);
   void setROI(vtkBox*);
+
+  GroundControlPointsWidget* groundControlPointsWidget() const;
 signals:
   void depthMapThresholdsChanged();
   void depthMapEnabled(bool);
@@ -76,6 +79,7 @@ signals:
   void updateThresholds(double,double,double,double);
   void meshEnabled(bool);
   void coloredMeshEnabled(bool);
+  void pointPlacementEnabled(bool);
 
 public slots:
   void setBackgroundColor(QColor const&);

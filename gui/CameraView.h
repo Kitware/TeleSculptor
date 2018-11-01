@@ -43,6 +43,7 @@ namespace kwiver { namespace vital { class landmark_map; } }
 namespace kwiver { namespace vital { class track; } }
 
 class vtkMaptkCamera;
+class GroundControlPointsWidget;
 
 class CameraViewPrivate;
 
@@ -52,9 +53,10 @@ class CameraView : public QWidget
 
 public:
   explicit CameraView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~CameraView();
+  ~CameraView() override;
 
   void addFeatureTrack(kwiver::vital::track const&);
+  GroundControlPointsWidget* groundControlPointsWidget() const;
 
   void enableAntiAliasing(bool enable);
 public slots:
@@ -75,6 +77,7 @@ public slots:
   void clearLandmarks();
   void clearResiduals();
   void clearFeatureTracks();
+  void clearGroundControlPoints();
 
   void resetView();
   void resetViewToFullExtents();

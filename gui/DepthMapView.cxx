@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -132,7 +132,7 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
 
 
   d->depthMapViewOptions = new DepthMapViewOptions("DepthMapView", this);
-  d->depthMapViewOptions->setActor(d->actor.GetPointer());
+  d->depthMapViewOptions->setActor(d->actor);
   d->setPopup(d->UI.actionDisplayMode, d->depthMapViewOptions);
 
   connect(d->depthMapViewOptions, SIGNAL(modified()),
@@ -151,16 +151,16 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
 
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
-  d->renderWindow->AddRenderer(d->renderer.GetPointer());
-  d->UI.renderWidget->SetRenderWindow(d->renderWindow.GetPointer());
+  d->renderWindow->AddRenderer(d->renderer);
+  d->UI.renderWidget->SetRenderWindow(d->renderWindow);
 
   // Set up depth map actor
   d->scalarFilter->SetScalarArrayName(DepthMapArrays::Depth);
   d->mapper->SetInputConnection(d->scalarFilter->GetOutputPort());
-  d->actor->SetMapper(d->mapper.GetPointer());
+  d->actor->SetMapper(d->mapper);
   d->actor->GetProperty()->SetPointSize(2.0);
   d->actor->VisibilityOff();
-  d->renderer->AddViewProp(d->actor.GetPointer());
+  d->renderer->AddViewProp(d->actor);
 
   // Enable antialiasing by default
   d->renderer->UseFXAAOn();
@@ -182,14 +182,12 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
 
   // Set interactor
   vtkNew<vtkInteractorStyleRubberBand2D> is;
-  d->UI.renderWidget->GetInteractor()->SetInteractorStyle(is.GetPointer());
+  d->UI.renderWidget->GetInteractor()->SetInteractorStyle(is);
 }
 
 //-----------------------------------------------------------------------------
 void DepthMapView::updateThresholds()
 {
-  QTE_D();
-
   if (this->isVisible())
   {
     this->render();
@@ -258,7 +256,8 @@ void DepthMapView::setBackgroundColor(QColor const& color)
 }
 
 //-----------------------------------------------------------------------------
-void DepthMapView::setDepthGeometryFilter(vtkMaptkImageDataGeometryFilter* geometryFilter)
+void DepthMapView::setDepthGeometryFilter(
+  vtkMaptkImageDataGeometryFilter* geometryFilter)
 {
   QTE_D();
 

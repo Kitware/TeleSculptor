@@ -71,7 +71,7 @@ public:
   };
 
   explicit GradientSelector(QWidget* parent = 0);
-  virtual ~GradientSelector();
+  ~GradientSelector() override;
 
   qtGradient currentGradient() const;
   qtGradient gradient(Preset) const;

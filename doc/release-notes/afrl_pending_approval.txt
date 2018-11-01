@@ -46,6 +46,9 @@ TeleSculptor
  * Added ability to specify image masks.  Currently these are supported by
    dense feature tracking.
 
+ * Added ability to place and edit ground control points that are synchronized
+   across the world and camera views. The points can be exported to a PLY file
+   and get imported using the standard import project infrastructure.
 
 Fixes since last public release
 -------------------------------
