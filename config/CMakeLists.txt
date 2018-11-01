@@ -15,7 +15,7 @@ add_custom_target(maptk-data-config ALL DEPENDS "${out_dir}")
 foreach(file ${config_files})
   get_filename_component(basename ${file} NAME_WE)
   get_filename_component(filename ${file} NAME)
-  set(target maptk-data-config-${basename})
+  set(target ${basename})
   kwiver_configure_file(${target}
     "${CMAKE_CURRENT_SOURCE_DIR}/${filename}"
     "${out_dir}/${filename}"
