@@ -46,7 +46,7 @@ class ImageOptions : public QWidget
 public:
   explicit ImageOptions(QString const& settingsGroup,
                         QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~ImageOptions();
+  ~ImageOptions() override;
 
   void addActor(vtkImageActor*);
 

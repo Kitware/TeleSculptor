@@ -37,6 +37,7 @@
 #include "DataArrays.h"
 #include "DepthMapOptions.h"
 #include "FieldInformation.h"
+#include "GroundControlPointsWidget.h"
 #include "ImageOptions.h"
 #include "PointOptions.h"
 #include "VolumeOptions.h"
@@ -164,6 +165,7 @@ public:
   CameraOptions* cameraOptions;
   PointOptions* landmarkOptions;
   DepthMapOptions* depthMapOptions;
+  GroundControlPointsWidget* groundControlPointsWidget;
 
   VolumeOptions* volumeOptions;
   vtkContourFilter* contourFilter;
@@ -333,47 +335,48 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->imageOptions->addActor(d->imageActor);
   d->setPopup(d->UI.actionShowFrameImage, d->imageOptions);
 
-  connect(d->imageOptions, SIGNAL(modified()),
-          this, SLOT(render()));
+  connect(d->imageOptions, &ImageOptions::modified,
+          this, &WorldView::render);
 
   d->cameraOptions = new CameraOptions{d->cameraRep, this};
   d->setPopup(d->UI.actionShowCameras, d->cameraOptions);
 
-  connect(d->cameraOptions, SIGNAL(modified()),
-          this, SLOT(invalidateGeometry()));
+  connect(d->cameraOptions, &CameraOptions::modified,
+          this, &WorldView::invalidateGeometry);
 
   d->landmarkOptions = new PointOptions("WorldView/Landmarks", this);
   d->landmarkOptions->addActor(d->landmarkActor);
   d->setPopup(d->UI.actionShowLandmarks, d->landmarkOptions);
 
-  connect(d->landmarkOptions, SIGNAL(modified()),
-          this, SLOT(render()));
+  connect(d->landmarkOptions, &PointOptions::modified,
+          this, &WorldView::render);
 
   d->depthMapOptions = new DepthMapOptions("WorldView/DepthMap", this);
   d->setPopup(d->UI.actionShowDepthMap, d->depthMapOptions);
 
   d->depthMapOptions->setEnabled(false);
 
-  connect(d->UI.actionShowVolume, SIGNAL(triggered(bool)),
-          this, SIGNAL(meshEnabled(bool)));
-  connect(d->depthMapOptions, SIGNAL(displayModeChanged()),
-          this, SLOT(updateDepthMapDisplayMode()));
-  connect(d->depthMapOptions, SIGNAL(thresholdsChanged(bool)),
-          this, SLOT(updateDepthMapThresholds(bool)));
+  connect(d->UI.actionShowVolume, &QAction::triggered,
+          this, &WorldView::meshEnabled);
+  connect(d->depthMapOptions, &DepthMapOptions::displayModeChanged,
+          this, &WorldView::updateDepthMapDisplayMode);
+  connect(d->depthMapOptions,
+          QOverload<bool>::of(&DepthMapOptions::thresholdsChanged),
+          this, &WorldView::updateDepthMapThresholds);
 
   d->volumeOptions = new VolumeOptions("WorldView/Volume", this);
   d->setPopup(d->UI.actionShowVolume, d->volumeOptions);
 
   d->volumeOptions->setEnabled(false);
 
-  connect(d->volumeOptions, SIGNAL(modified()),
-          this, SLOT(render()));
+  connect(d->volumeOptions, &VolumeOptions::modified,
+          this, &WorldView::render);
 
-  connect(d->volumeOptions, SIGNAL(colorOptionsEnabled(bool)),
-          this, SIGNAL(coloredMeshEnabled(bool)));
+  connect(d->volumeOptions, &VolumeOptions::colorOptionsEnabled,
+          this, &WorldView::coloredMeshEnabled);
 
-  connect(this, SIGNAL(contourChanged()),
-          this, SLOT(render()));
+  connect(this, &WorldView::contourChanged,
+          this, &WorldView::render);
 
   auto const roiMenu = new QMenu(this);
   roiMenu->addAction(d->UI.actionResetROI);
@@ -389,52 +392,57 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   this->addAction(d->UI.actionShowGroundPlane);
   this->addAction(d->UI.actionShowDepthMap);
   this->addAction(d->UI.actionShowVolume);
+  this->addAction(d->UI.PlaceGroundControlPoint);
 
-  connect(d->UI.actionViewReset, SIGNAL(triggered()),
-          this, SLOT(resetView()));
-  connect(d->UI.actionViewResetLandmarks, SIGNAL(triggered()),
-          this, SLOT(resetViewToLandmarks()));
-  connect(d->UI.actionViewToWorldTop, SIGNAL(triggered()),
-          this, SLOT(viewToWorldTop()));
-  connect(d->UI.actionViewToWorldLeft, SIGNAL(triggered()),
-          this, SLOT(viewToWorldLeft()));
-  connect(d->UI.actionViewToWorldRight, SIGNAL(triggered()),
-          this, SLOT(viewToWorldRight()));
-  connect(d->UI.actionViewToWorldFront, SIGNAL(triggered()),
-          this, SLOT(viewToWorldFront()));
-  connect(d->UI.actionViewToWorldBack, SIGNAL(triggered()),
-          this, SLOT(viewToWorldBack()));
-  connect(d->UI.actionViewPerspective, SIGNAL(toggled(bool)),
-          this, SLOT(setPerspective(bool)));
+  connect(d->UI.actionViewReset, &QAction::triggered,
+          this, &WorldView::resetView);
+  connect(d->UI.actionViewResetLandmarks, &QAction::triggered,
+          this, &WorldView::resetViewToLandmarks);
+  connect(d->UI.actionViewToWorldTop, &QAction::triggered,
+          this, &WorldView::viewToWorldTop);
+  connect(d->UI.actionViewToWorldLeft, &QAction::triggered,
+          this, &WorldView::viewToWorldLeft);
+  connect(d->UI.actionViewToWorldRight, &QAction::triggered,
+          this, &WorldView::viewToWorldRight);
+  connect(d->UI.actionViewToWorldFront, &QAction::triggered,
+          this, &WorldView::viewToWorldFront);
+  connect(d->UI.actionViewToWorldBack, &QAction::triggered,
+          this, &WorldView::viewToWorldBack);
+  connect(d->UI.actionViewPerspective, &QAction::toggled,
+          this, &WorldView::setPerspective);
 
-  connect(d->UI.actionShowFrameImage, SIGNAL(toggled(bool)),
-          this, SLOT(setImageVisible(bool)));
-  connect(d->UI.actionShowCameras, SIGNAL(toggled(bool)),
-          this, SLOT(setCamerasVisible(bool)));
-  connect(d->UI.actionShowLandmarks, SIGNAL(toggled(bool)),
-          this, SLOT(setLandmarksVisible(bool)));
-  connect(d->UI.actionShowGroundPlane, SIGNAL(toggled(bool)),
-          this, SLOT(setGroundPlaneVisible(bool)));
-  connect(d->UI.actionShowDepthMap, SIGNAL(toggled(bool)),
-          this, SLOT(setDepthMapVisible(bool)));
-  connect(d->UI.actionShowDepthMap, SIGNAL(toggled(bool)),
-          this, SIGNAL(depthMapEnabled(bool)));
-  connect(d->UI.actionSelectROI, SIGNAL(toggled(bool)),
-          this, SLOT(selectROI(bool)));
-  connect(d->UI.actionResetROI, SIGNAL(triggered()),
-          this, SLOT(resetROI()));
+  connect(d->UI.actionShowFrameImage, &QAction::toggled,
+          this, &WorldView::setImageVisible);
+  connect(d->UI.actionShowCameras, &QAction::toggled,
+          this, &WorldView::setCamerasVisible);
+  connect(d->UI.actionShowLandmarks, &QAction::toggled,
+          this, &WorldView::setLandmarksVisible);
+  connect(d->UI.actionShowGroundPlane, &QAction::toggled,
+          this, &WorldView::setGroundPlaneVisible);
+  connect(d->UI.actionShowDepthMap, &QAction::toggled,
+          this, &WorldView::setDepthMapVisible);
+  connect(d->UI.actionShowDepthMap, &QAction::toggled,
+          this, &WorldView::depthMapEnabled);
+  connect(d->UI.actionSelectROI, &QAction::toggled,
+          this, &WorldView::selectROI);
+  connect(d->UI.actionResetROI, &QAction::triggered,
+          this, &WorldView::resetROI);
 
-  connect(d->UI.actionShowVolume, SIGNAL(toggled(bool)),
-          this, SLOT(setVolumeVisible(bool)));
-  connect(d->UI.actionShowVolume, SIGNAL(toggled(bool)),
-          this, SIGNAL(meshEnabled(bool)));
-  connect(d->volumeOptions, SIGNAL(colorOptionsEnabled(bool)),
-          this, SIGNAL(coloredMeshEnabled(bool)));
+  connect(d->UI.actionShowVolume, &QAction::toggled,
+          this, &WorldView::setVolumeVisible);
+  connect(d->UI.actionShowVolume, &QAction::toggled,
+          this, &WorldView::meshEnabled);
+  connect(d->volumeOptions, &VolumeOptions::colorOptionsEnabled,
+          this, &WorldView::coloredMeshEnabled);
 
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
   d->renderWindow->AddRenderer(d->renderer);
   d->UI.renderWidget->SetRenderWindow(d->renderWindow);
+  d->groundControlPointsWidget = new GroundControlPointsWidget(this);
+  d->groundControlPointsWidget->setInteractor(d->UI.renderWidget->GetInteractor());
+  connect(d->UI.PlaceGroundControlPoint, &QAction::toggled,
+          this, &WorldView::pointPlacementEnabled);
 
   vtkNew<vtkMaptkInteractorStyle> iren;
   d->renderWindow->GetInteractor()->SetInteractorStyle(iren);
@@ -543,15 +551,15 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   actionIncreasePointSize->setShortcut(Qt::Key_Plus);
   actionIncreasePointSize->setShortcutContext(Qt::WidgetWithChildrenShortcut);
   d->UI.renderWidget->addAction(actionIncreasePointSize);
-  connect(actionIncreasePointSize, SIGNAL(triggered()),
-    this, SLOT(increaseDepthMapPointSize()));
+  connect(actionIncreasePointSize, &QAction::triggered,
+          this, &WorldView::increaseDepthMapPointSize);
 
   QAction* actionDecreasePointSize = new QAction(this);
   actionDecreasePointSize->setShortcut(Qt::Key_Minus);
   actionDecreasePointSize->setShortcutContext(Qt::WidgetWithChildrenShortcut);
   d->UI.renderWidget->addAction(actionDecreasePointSize);
-  connect(actionDecreasePointSize, SIGNAL(triggered()),
-    this, SLOT(decreaseDepthMapPointSize()));
+  connect(actionDecreasePointSize, &QAction::triggered,
+          this, &WorldView::decreaseDepthMapPointSize);
 }
 
 //-----------------------------------------------------------------------------
@@ -1125,7 +1133,8 @@ void WorldView::updateAxes()
           prop == d->groundActor ||
           prop == d->cameraRep->GetActiveActor() ||
           prop == d->cameraRep->GetNonActiveActor() ||
-          !prop->GetVisibility())
+          !prop->GetVisibility() ||
+          !prop->GetBounds())
       {
         continue;
       }
@@ -1502,4 +1511,12 @@ void WorldView::updateROI(vtkObject* caller,
   {
     d->roi->SetBounds(rep->GetBounds());
   }
+}
+
+//-----------------------------------------------------------------------------
+GroundControlPointsWidget* WorldView::groundControlPointsWidget() const
+{
+  QTE_D();
+
+  return d->groundControlPointsWidget;
 }

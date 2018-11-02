@@ -136,12 +136,12 @@ void VideoImport::run()
     }
 
     QString desc = description.arg(frame);
-    emit updateProgress(desc, 0.0);
-    emit updated(frame);
+    emit this->progressChanged(desc, 0.0);
+    emit this->updated(frame);
   }
 
-  emit updateProgress(description, 100);
-  emit completed(metadataMap);
+  emit this->progressChanged(description, 100);
+  emit this->completed(metadataMap);
 
   d->video_reader->close();
 }

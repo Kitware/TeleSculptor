@@ -135,14 +135,14 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   d->depthMapViewOptions->setActor(d->actor);
   d->setPopup(d->UI.actionDisplayMode, d->depthMapViewOptions);
 
-  connect(d->depthMapViewOptions, SIGNAL(modified()),
-          this, SLOT(render()));
+  connect(d->depthMapViewOptions, &DepthMapViewOptions::modified,
+          this, &DepthMapView::render);
 
   // Connect actions
   this->addAction(d->UI.actionViewReset);
 
-  connect(d->UI.actionViewReset, SIGNAL(triggered()),
-          this, SLOT(resetView()));
+  connect(d->UI.actionViewReset, &QAction::triggered,
+          this, &DepthMapView::resetView);
 
   // Set up ortho view
   d->renderer->GetActiveCamera()->ParallelProjectionOn();
@@ -170,15 +170,15 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   actionIncreasePointSize->setShortcut(Qt::Key_Plus);
   actionIncreasePointSize->setShortcutContext(Qt::WidgetWithChildrenShortcut);
   d->UI.renderWidget->addAction(actionIncreasePointSize);
-  connect(actionIncreasePointSize, SIGNAL(triggered()),
-    this, SLOT(increasePointSize()));
+  connect(actionIncreasePointSize, &QAction::triggered,
+          this, &DepthMapView::increasePointSize);
 
   QAction* actionDecreasePointSize = new QAction(this);
   actionDecreasePointSize->setShortcut(Qt::Key_Minus);
   actionDecreasePointSize->setShortcutContext(Qt::WidgetWithChildrenShortcut);
   d->UI.renderWidget->addAction(actionDecreasePointSize);
-  connect(actionDecreasePointSize, SIGNAL(triggered()),
-    this, SLOT(decreasePointSize()));
+  connect(actionDecreasePointSize, &QAction::triggered,
+          this, &DepthMapView::decreasePointSize);
 
   // Set interactor
   vtkNew<vtkInteractorStyleRubberBand2D> is;
@@ -188,8 +188,6 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
 //-----------------------------------------------------------------------------
 void DepthMapView::updateThresholds()
 {
-  QTE_D();
-
   if (this->isVisible())
   {
     this->render();

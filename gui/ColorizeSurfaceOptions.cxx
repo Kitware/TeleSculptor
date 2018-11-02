@@ -71,9 +71,8 @@ public:
 QTE_IMPLEMENT_D_FUNC(ColorizeSurfaceOptions)
 
 //-----------------------------------------------------------------------------
-ColorizeSurfaceOptions::ColorizeSurfaceOptions(const QString &settingsGroup,
-                                               QWidget* parent,
-                                               Qt::WindowFlags flags)
+ColorizeSurfaceOptions::ColorizeSurfaceOptions(
+  const QString &settingsGroup, QWidget* parent, Qt::WindowFlags flags)
   : QWidget(parent, flags), d_ptr(new ColorizeSurfaceOptionsPrivate)
 {
   QTE_D();
@@ -87,19 +86,20 @@ ColorizeSurfaceOptions::ColorizeSurfaceOptions(const QString &settingsGroup,
   d->uiState.restore();
 
   // Connect signals/slots
-  connect(d->UI.radioButtonCurrentFrame, SIGNAL(clicked()),
-    this, SLOT(currentFrameSelected()));
+  connect(d->UI.radioButtonCurrentFrame, &QAbstractButton::clicked,
+          this, &ColorizeSurfaceOptions::currentFrameSelected);
 
-  connect(d->UI.radioButtonAllFrames, SIGNAL(clicked()),
-    this, SLOT(allFrameSelected()));
-
-
-  connect(d->UI.buttonCompute, SIGNAL(clicked()),
-    this, SLOT(colorize()));
+  connect(d->UI.radioButtonAllFrames, &QAbstractButton::clicked,
+          this, &ColorizeSurfaceOptions::allFrameSelected);
 
 
-  connect(d->UI.comboBoxColorDisplay, SIGNAL(currentIndexChanged(int)),
-    this, SLOT(changeColorDisplay()));
+  connect(d->UI.buttonCompute, &QAbstractButton::clicked,
+          this, &ColorizeSurfaceOptions::colorize);
+
+
+  connect(d->UI.comboBoxColorDisplay,
+          QOverload<int>::of(&QComboBox::currentIndexChanged),
+          this, &ColorizeSurfaceOptions::changeColorDisplay);
 
   d->krtdFile = QString();
   d->frameFile = QString();

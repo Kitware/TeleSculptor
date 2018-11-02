@@ -43,7 +43,7 @@ public:
   AbstractToolPrivate(AbstractTool* q)
     : data(std::make_shared<ToolData>()), q_ptr(q) {}
 
-  virtual void run() QTE_OVERRIDE;
+  virtual void run() override;
 
   std::shared_ptr<ToolData> data;
 
@@ -138,7 +138,7 @@ AbstractTool::AbstractTool(QObject* parent)
   : QAction(parent), d_ptr(new AbstractToolPrivate(this))
 {
   QTE_D();
-  connect(d, SIGNAL(finished()), this, SIGNAL(completed()));
+  connect(d, &QThread::finished, this, &AbstractTool::completed);
 }
 
 //-----------------------------------------------------------------------------

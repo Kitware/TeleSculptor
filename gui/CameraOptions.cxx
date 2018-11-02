@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -158,27 +158,28 @@ CameraOptions::CameraOptions(vtkMaptkCameraRepresentation* rep,
   setInactiveVisible(d->UI.showInactive->isChecked());
 
   // Connect signals/slots
-  connect(d->UI.pathColor, SIGNAL(colorChanged(QColor)),
-          this, SIGNAL(modified()));
-  connect(d->UI.activeColor, SIGNAL(colorChanged(QColor)),
-          this, SIGNAL(modified()));
-  connect(d->UI.inactiveColor, SIGNAL(colorChanged(QColor)),
-          this, SIGNAL(modified()));
+  connect(d->UI.pathColor, &qtColorButton::colorChanged,
+          this, &CameraOptions::modified);
+  connect(d->UI.activeColor, &qtColorButton::colorChanged,
+          this, &CameraOptions::modified);
+  connect(d->UI.inactiveColor, &qtColorButton::colorChanged,
+          this, &CameraOptions::modified);
 
-  connect(d->UI.scale, SIGNAL(valueChanged(double)),
-          this, SLOT(updateScale()));
+  connect(d->UI.scale, &qtDoubleSlider::valueChanged,
+          this, &CameraOptions::updateScale);
 
-  connect(inactiveModeGroup, SIGNAL(buttonClicked(QAbstractButton*)),
-          this, SLOT(updateInactiveDisplayOptions()));
-  connect(d->UI.inactivePointSize, SIGNAL(valueChanged(int)),
-          this, SLOT(updateInactiveDisplayOptions()));
-  connect(d->UI.inactiveScale, SIGNAL(valueChanged(double)),
-          this, SLOT(updateInactiveDisplayOptions()));
+  connect(inactiveModeGroup,
+          QOverload<QAbstractButton*>::of(&QButtonGroup::buttonClicked),
+          this, &CameraOptions::updateInactiveDisplayOptions);
+  connect(d->UI.inactivePointSize, &QSlider::valueChanged,
+          this, &CameraOptions::updateInactiveDisplayOptions);
+  connect(d->UI.inactiveScale, &qtDoubleSlider::valueChanged,
+          this, &CameraOptions::updateInactiveDisplayOptions);
 
-  connect(d->UI.showPath, SIGNAL(toggled(bool)),
-          this, SLOT(setPathVisible(bool)));
-  connect(d->UI.showInactive, SIGNAL(toggled(bool)),
-          this, SLOT(setInactiveVisible(bool)));
+  connect(d->UI.showPath, &QAbstractButton::toggled,
+          this, &CameraOptions::setPathVisible);
+  connect(d->UI.showInactive, &QAbstractButton::toggled,
+          this, &CameraOptions::setInactiveVisible);
 }
 
 //-----------------------------------------------------------------------------

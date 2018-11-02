@@ -39,7 +39,7 @@ class vtkMaptkImageDataGeometryFilter : public vtkPolyDataAlgorithm
 {
 public:
   vtkTypeMacro(vtkMaptkImageDataGeometryFilter,vtkPolyDataAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Construct with initial extent of all the data
@@ -70,10 +70,12 @@ public:
 
 protected:
   vtkMaptkImageDataGeometryFilter();
-  ~vtkMaptkImageDataGeometryFilter();
+  ~vtkMaptkImageDataGeometryFilter() override;
 
-  virtual int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
-  virtual int FillInputPortInformation(int port, vtkInformation *info);
+  int RequestData(vtkInformation*,
+                  vtkInformationVector**,
+                  vtkInformationVector*) override;
+  int FillInputPortInformation(int port, vtkInformation* info) override;
 
   int    ThresholdCells;
   int    GenerateTriangleOutput;

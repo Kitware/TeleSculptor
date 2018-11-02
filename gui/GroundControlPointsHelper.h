@@ -28,35 +28,52 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_SAVEFRAMETOOL_H_
-#define MAPTK_SAVEFRAMETOOL_H_
+#ifndef MAPTK_GROUNDCONTROLPOINTSHELPER_H_
+#define MAPTK_GROUNDCONTROLPOINTSHELPER_H_
 
-#include "AbstractTool.h"
+// qtExtensions includes
+#include <qtGlobal.h>
 
-class SaveFrameToolPrivate;
+// Qt declarations
+#include <QObject>
 
-class SaveFrameTool : public AbstractTool
+// Kwiver includes
+#include <vital/types/landmark_map.h>
+
+// Forward declarations
+class GroundControlPointsHelperPrivate;
+
+class GroundControlPointsHelper : public QObject
 {
   Q_OBJECT
 
 public:
-  explicit SaveFrameTool(QObject* parent = 0);
-  ~SaveFrameTool() override;
+  GroundControlPointsHelper(QObject* parent = nullptr);
+  ~GroundControlPointsHelper();
 
-  Outputs outputs() const override;
+  void updateCameraViewPoints();
 
-  /// Get if the tool can be canceled.
-  bool isCancelable() const override { return true; }
+  void setGroundControlPoints(kwiver::vital::landmark_map const&);
+  kwiver::vital::landmark_map_sptr groundControlPoints() const;
 
-  bool execute(QWidget* window = 0) override;
+public slots:
+  void enableWidgets(bool);
 
-protected:
-  void run() override;
+signals:
+  void pointCountChanged(int);
+
+protected slots:
+  void addCameraViewPoint();
+  void addWorldViewPoint();
+
+  void moveCameraViewPoint();
+  void moveWorldViewPoint();
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(SaveFrameTool)
-  QTE_DECLARE_PRIVATE(SaveFrameTool)
-  QTE_DISABLE_COPY(SaveFrameTool)
+  QTE_DECLARE_PRIVATE_RPTR(GroundControlPointsHelper)
+  QTE_DECLARE_PRIVATE(GroundControlPointsHelper)
+
+  QTE_DISABLE_COPY(GroundControlPointsHelper)
 };
 
 #endif

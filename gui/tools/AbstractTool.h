@@ -108,7 +108,7 @@ public:
   Q_DECLARE_FLAGS(Outputs, Output)
 
   explicit AbstractTool(QObject* parent = 0);
-  virtual ~AbstractTool();
+  ~AbstractTool() override;
 
   /// Get the types of output produced by the tool.
   virtual Outputs outputs() const = 0;

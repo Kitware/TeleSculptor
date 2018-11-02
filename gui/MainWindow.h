@@ -39,7 +39,10 @@
 
 #include <vital/types/metadata_map.h>
 
+class CameraView;
 class ToolData;
+class WorldView;
+class vtkMaptkCamera;
 
 class MainWindowPrivate;
 
@@ -49,7 +52,11 @@ class MainWindow : public QMainWindow
 
 public:
   explicit MainWindow(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~MainWindow();
+  ~MainWindow() override;
+
+  vtkMaptkCamera* activeCamera();
+  WorldView* worldView();
+  CameraView* cameraView();
 
 public slots:
   void newProject();
@@ -60,6 +67,7 @@ public slots:
   void openCameras();
   void openTracks();
   void openLandmarks();
+  void openGroundControlPoints();
 
   void loadProject(QString const& path);
   void loadImagery(QString const& path);
@@ -71,11 +79,14 @@ public slots:
   void loadCamera(QString const& path);
   void loadTracks(QString const& path);
   void loadLandmarks(QString const& path);
+  void loadGroundControlPoints(QString const& path);
 
   void saveCameras();
   void saveCameras(QString const& path, bool writeToProject = true);
   void saveLandmarks();
   void saveLandmarks(QString const& path, bool writeToProject = true);
+  void saveGroundControlPoints();
+  void saveGroundControlPoints(QString const& path, bool writeToProject = true);
   void saveTracks();
   void saveTracks(QString const& path, bool writeToProject = true);
   void saveDepthPoints();
@@ -111,8 +122,8 @@ protected slots:
 
   void executeTool(QObject*);
   void reportToolError(QString const&);
+  void acceptToolInterimResults(std::shared_ptr<ToolData> data);
   void acceptToolFinalResults();
-  void acceptToolResults(std::shared_ptr<ToolData> data, bool isFinal = false);
   void updateToolResults();
   void addFrame(int);
   void updateFrames(
@@ -121,6 +132,8 @@ protected slots:
   void enableAntiAliasing(bool enable);
 
 private:
+  void acceptToolResults(std::shared_ptr<ToolData> data, bool isFinal);
+
   QTE_DECLARE_PRIVATE_RPTR(MainWindow)
   QTE_DECLARE_PRIVATE(MainWindow)
 

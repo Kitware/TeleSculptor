@@ -54,6 +54,7 @@
      <addaction name="actionExportLandmarks"/>
      <addaction name="actionExportDepthPoints"/>
      <addaction name="actionExportTracks"/>
+     <addaction name="actionExportGroundControlPoints"/>
      <addaction name="separator"/>
      <addaction name="actionWebGLScene"/>
      <addaction name="separator"/>
@@ -70,6 +71,7 @@
      <addaction name="actionImportCameras"/>
      <addaction name="actionImportTracks"/>
      <addaction name="actionImportLandmarks"/>
+     <addaction name="actionImportGroundControlPoints"/>
     </widget>
     <addaction name="actionNewProject"/>
     <addaction name="actionOpenProject"/>
@@ -469,21 +471,32 @@
     <string>Keyframes Only</string>
    </property>
   </action>
-  <action name="actionAntialiasing">
+  <action name="actionExportGroundControlPoints">
    <property name="enabled">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
+   <property name="text">
+    <string>&amp;Ground Control Points</string>
+   </property>
+   <property name="toolTip">
+    <string>Export the ground control points in the current project</string>
+   </property>
+  </action>
+  <action name="actionAntialiasing">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="checked">
     <bool>true</bool>
    </property>
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Antialias views</string>
    </property>
    <property name="toolTip">
-     <string>Enable antialiasing for smoother geometry in each view</string>
+    <string>Enable antialiasing for smoother geometry in each view</string>
    </property>
   </action>
   <action name="actionImportImagery">
@@ -524,6 +537,17 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+O, L</string>
+   </property>
+  </action>
+  <action name="actionImportGroundControlPoints">
+   <property name="text">
+    <string>&amp;Ground Control Points</string>
+   </property>
+   <property name="toolTip">
+    <string>Ground Control Points</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O, G</string>
    </property>
   </action>
  </widget>

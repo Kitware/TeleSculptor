@@ -49,6 +49,7 @@ static QString const TRACKS_PATH = "results/tracks.txt";
 static QString const LANDMARKS_PATH = "results/landmarks.ply";
 static QString const GEO_ORIGIN_PATH = "results/geo_origin.txt";
 static QString const DEPTH_PATH = "results/depth";
+static QString const GROUND_CONTROL_PATH = "results/ground_control_points.ply";
 }
 
 //-----------------------------------------------------------------------------
@@ -85,6 +86,7 @@ Project::Project(QString dir)
   landmarksPath = LANDMARKS_PATH;
   geoOriginFile = GEO_ORIGIN_PATH;
   depthPath = DEPTH_PATH;
+  groundControlPath = GROUND_CONTROL_PATH;
 }
 
 //-----------------------------------------------------------------------------
@@ -117,6 +119,13 @@ bool Project::read(QString const& path)
     this->landmarksPath = getPath(this, "output_ply_file", LANDMARKS_PATH);
     this->tracksPath = getPath(this, "input_track_file", TRACKS_PATH,
                                "output_tracks_file");
+
+    if (config->has_value("ground_control_points_file"))
+    {
+      this->groundControlPath = getPath(this,
+                                        "ground_control_points_file",
+                                        GROUND_CONTROL_PATH);
+    }
 
     // Read Volume file
     if (this->config->has_value("volume_file"))

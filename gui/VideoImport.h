@@ -57,7 +57,7 @@ public:
   typedef kwiver::vital::config_block_sptr config_block_sptr;
 
   VideoImport();
-  virtual ~VideoImport();
+  ~VideoImport() override;
 
   void setData(config_block_sptr const&,
                std::string const&,
@@ -69,7 +69,7 @@ signals:
   /// Emitted when an intermediate update of the data is available to show progress.
   void updated(int);
   /// Update progress
-  void updateProgress(QString, int);
+  void progressChanged(QString, int);
 
 public slots:
   void cancel();
@@ -79,7 +79,7 @@ protected:
   ///
   /// This method must be overridden by tool implementations. The default
   /// implementation of execute() calls this method in a separate thread.
-  virtual void run();
+  void run() override;
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(VideoImport)

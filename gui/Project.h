@@ -63,6 +63,7 @@ public:
   QString cameraPath;
   QString geoOriginFile;
   QString depthPath;
+  QString groundControlPath;
 
   kwiver::vital::config_block_sptr config =
     kwiver::vital::config_block::empty_config();

@@ -1,6 +1,6 @@
 set(CMAKE_AUTOMOC ON)
 set(Qt5_MODULES Core Designer UiPlugin Widgets Xml)
-find_package(Qt5 COMPONENTS ${Qt5_MODULES} REQUIRED)
+find_package(Qt5 5.7 COMPONENTS ${Qt5_MODULES} REQUIRED)
 set(QT_LIBRARIES )
 foreach(module ${Qt5_MODULES})
   list(APPEND QT_LIBRARIES Qt5::${module})
@@ -104,6 +104,8 @@ set(gui_sources
   DepthMapViewOptions.cxx
   FeatureOptions.cxx
   GradientSelector.cxx
+  GroundControlPointsHelper.cxx
+  GroundControlPointsWidget.cxx
   GuiCommon.cxx
   ImageOptions.cxx
   MainWindow.cxx
@@ -124,19 +126,20 @@ set(gui_sources
   vtkMaptkInteractorStyle.cxx
   vtkMaptkScalarDataFilter.cxx
   vtkMaptkScalarsToGradient.cxx
+  vtkMaptkSeedWidget.cxx
   tools/AbstractTool.cxx
   tools/BundleAdjustTool.cxx
   tools/CanonicalTransformTool.cxx
   tools/ComputeDepthTool.cxx
   tools/InitCamerasLandmarksTool.cxx
-  tools/NeckerReversalTool.cxx
   tools/MeshColoration.cxx
+  tools/NeckerReversalTool.cxx
   tools/ReconstructionData.cxx
   tools/SaveFrameTool.cxx
   tools/SaveKeyFrameTool.cxx
-  tools/TrackFilterTool.cxx
   tools/TrackFeaturesSprokitTool.cxx
   tools/TrackFeaturesTool.cxx
+  tools/TrackFilterTool.cxx
   tools/TriangulateTool.cxx
 )
 
