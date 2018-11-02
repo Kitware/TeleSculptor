@@ -101,8 +101,8 @@ protected:
   using vtkCamera::GetFrustumPlanes; // Hide overloaded virtual
 
 private:
-  vtkMaptkCamera(const vtkMaptkCamera&); // Not implemented.
-  void operator=(const vtkMaptkCamera&); // Not implemented.
+  vtkMaptkCamera(vtkMaptkCamera const&) = delete;
+  void operator=(vtkMaptkCamera const&) = delete;
 
   int ImageDimensions[2];
   double AspectRatio;

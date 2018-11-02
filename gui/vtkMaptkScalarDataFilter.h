@@ -1,5 +1,5 @@
 /*ckwg +29
-* Copyright 2016 by Kitware, Inc.
+* Copyright 2016-2018 by Kitware, Inc.
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
@@ -56,8 +56,8 @@ protected:
   char* ScalarArrayName;
 
 private:
-  vtkMaptkScalarDataFilter(const vtkMaptkScalarDataFilter&);  // Not implemented.
-  void operator=(const vtkMaptkScalarDataFilter&);  // Not implemented.
+  vtkMaptkScalarDataFilter(vtkMaptkScalarDataFilter const&) = delete;
+  void operator=(vtkMaptkScalarDataFilter const&) = delete;
 };
 
 #endif
