@@ -55,6 +55,9 @@ public:
                  kwiver::vital::camera_map_sptr& cameras);
   ~MeshColoration();
 
+  MeshColoration(MeshColoration const&) = delete;
+  MeshColoration& operator=(MeshColoration const&) = delete;
+
   // SETTER
   void SetInput(vtkPolyData* mesh);
   void SetFrameSampling(int sample);
