@@ -288,7 +288,8 @@ void ComputeDepthTool::run()
   }
 
 
-  //convert landmarks to vector
+  // Convert landmarks to vector
+  landmarks_out.reserve(lm.size());
   foreach(auto const& l, lm)
   {
     landmarks_out.push_back(l.second);
