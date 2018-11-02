@@ -72,7 +72,8 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-VideoImport::VideoImport() : d_ptr(new VideoImportPrivate())
+VideoImport::VideoImport(QObject* parent)
+  : QThread{parent}, d_ptr{new VideoImportPrivate{}}
 {}
 
 //-----------------------------------------------------------------------------

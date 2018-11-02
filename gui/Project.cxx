@@ -70,12 +70,12 @@ QString getPath(Project const* project, std::string const& key,
 }
 
 //-----------------------------------------------------------------------------
-Project::Project()
+Project::Project(QObject* parent) : QObject{parent}
 {
 }
 
 //-----------------------------------------------------------------------------
-Project::Project(QString const& dir)
+Project::Project(QString const& dir, QObject* parent) : QObject{parent}
 {
   workingDir = dir;
   filePath = workingDir.absoluteFilePath(workingDir.dirName() + ".conf");

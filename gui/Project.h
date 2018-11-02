@@ -44,8 +44,8 @@ class Project : public QObject
 // TODO: Encapsulate data and add accessors
 public:
 
-  Project();
-  Project(QString const& dir);
+  Project(QObject* parent = nullptr);
+  Project(QString const& dir, QObject* parent = nullptr);
 
   bool read(QString const& path);
 
