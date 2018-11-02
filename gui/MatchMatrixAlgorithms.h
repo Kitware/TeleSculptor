@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,7 +45,11 @@ public:
   typedef Eigen::SparseMatrix<uint> Matrix;
   typedef Matrix::InnerIterator MatrixIterator;
 
-  virtual ~AbstractValueAlgorithm() VITAL_DEFAULT_DTOR;
+  AbstractValueAlgorithm() = default;
+  virtual ~AbstractValueAlgorithm() = default;
+
+  AbstractValueAlgorithm(AbstractValueAlgorithm const&) = delete;
+  AbstractValueAlgorithm& operator=(AbstractValueAlgorithm const&) = delete;
 
   virtual double operator()(Matrix const&, MatrixIterator const&) const = 0;
   virtual double max(double maxRawValue) const = 0;
@@ -92,7 +96,11 @@ class RelativeXYValueAlgorithm : public AbstractRelativeValueAlgorithm
 class AbstractScaleAlgorithm
 {
 public:
-  virtual ~AbstractScaleAlgorithm() VITAL_DEFAULT_DTOR
+  AbstractScaleAlgorithm() = default;
+  virtual ~AbstractScaleAlgorithm() = default;
+
+  AbstractScaleAlgorithm(AbstractScaleAlgorithm const&) = delete;
+  AbstractScaleAlgorithm& operator=(AbstractScaleAlgorithm const&) = delete;
 
   virtual double operator()(double rawValue) const = 0;
 };
