@@ -60,11 +60,11 @@ void vtkMaptkInteractorStyle::OnLeftButtonDown()
       this->Interactor->GetRenderWindow()->GetRenderers()->GetFirstRenderer();
     if (ren)
     {
-
-      int picked =
-        this->Interactor->GetPicker()->Pick(eventPos[0], eventPos[1], 0, ren);
       double worldPt[3];
-      this->Interactor->GetPicker()->GetPickPosition(worldPt);
+      vtkNew<vtkPointPicker> picker;
+      picker->SetTolerance(0.01);
+      int picked = picker->Pick(eventPos[0], eventPos[1], 0, ren);
+      picker->GetPickPosition(worldPt);
       if (!picked)
       {
         ren->SetDisplayPoint(eventPos[0], eventPos[1], 0);
