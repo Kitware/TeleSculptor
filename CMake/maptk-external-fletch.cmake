@@ -10,7 +10,7 @@ list(APPEND MAPTK_DEPENDENCIES fletch)
 ExternalProject_Add(fletch
   PREFIX ${MAPTK_BINARY_DIR}
   GIT_REPOSITORY "git://github.com/Kitware/fletch.git"
-  GIT_TAG c67592d2712f9fc35d9ad4d884f5a09c4c68b7de
+  GIT_TAG c3ba1e0b5b2d18a26d1fb0ffd9f67b388baf7b9e
   #GIT_SHALLOW 1
   SOURCE_DIR ${MAPTK_EXTERNAL_DIR}/fletch
   BINARY_DIR ${MAPTK_EXTERNAL_DIR}/fletch-build
