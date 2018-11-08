@@ -10,7 +10,7 @@ list(APPEND MAPTK_DEPENDENCIES fletch)
 ExternalProject_Add(fletch
   PREFIX ${MAPTK_BINARY_DIR}
   GIT_REPOSITORY "git://github.com/Kitware/fletch.git"
-  GIT_TAG 022ef09a90cb4ec1d45dd848da6aeb939da003ee
+  GIT_TAG c67592d2712f9fc35d9ad4d884f5a09c4c68b7de
   #GIT_SHALLOW 1
   SOURCE_DIR ${MAPTK_EXTERNAL_DIR}/fletch
   BINARY_DIR ${MAPTK_EXTERNAL_DIR}/fletch-build
@@ -51,12 +51,12 @@ ExternalProject_Add(fletch
     -Dfletch_ENABLE_PostgresSQL:BOOL=OFF
     -Dfletch_ENABLE_Protobuf:BOOL=OFF
     -Dfletch_ENABLE_Qt:BOOL=${MAPTK_ENABLE_GUI}
-    -DQt_SELECT_VERSION:STRING=5.10.0
+    -DQt_SELECT_VERSION:STRING=5.11.2
     -Dfletch_ENABLE_Snappy:BOOL=OFF
     -Dfletch_ENABLE_SuiteSparse:BOOL=ON
     -Dfletch_ENABLE_TinyXML:BOOL=OFF
     -Dfletch_ENABLE_VTK:BOOL=ON
-    -DVTK_SELECT_VERSION:STRING=8.0
+    -DVTK_SELECT_VERSION:STRING=8.2-pre
     -Dfletch_ENABLE_VXL:BOOL=ON
     -Dfletch_ENABLE_YAMLcpp:BOOL=OFF
     -Dfletch_ENABLE_ZLib:BOOL=ON
