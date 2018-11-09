@@ -59,7 +59,7 @@ ExternalProject_Add(kwiver
     -DMAKECOMMAND:STRING=${MAKECOMMAND}
     -DADDITIONAL_C_FLAGS:STRING=${ADDITIONAL_C_FLAGS}
     -DADDITIONAL_CXX_FLAGS:STRING=${ADDITIONAL_CXX_FLAGS}
-  INSTALL_COMMAND cmake -E echo "Skipping install step."
+  INSTALL_COMMAND ${CMAKE_COMMAND} -E echo "Skipping install step."
 )
 
 set(KWIVER_DIR "${MAPTK_EXTERNAL_DIR}/kwiver-build")

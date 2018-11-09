@@ -86,7 +86,7 @@ ExternalProject_Add(fletch
     -DCMAKE_SHARED_LINKER_FLAGS:STRING=${CMAKE_SHARED_LINKER_FLAGS}
     -DADDITIONAL_C_FLAGS:STRING=${ADDITIONAL_C_FLAGS}
     -DADDITIONAL_CXX_FLAGS:STRING=${ADDITIONAL_CXX_FLAGS}
-  INSTALL_COMMAND cmake -E echo "Skipping install step."
+  INSTALL_COMMAND ${CMAKE_COMMAND} -E echo "Skipping install step."
 )
 
 set(fletch_DIR "${MAPTK_EXTERNAL_DIR}/fletch-build")
