@@ -10,7 +10,7 @@ list(APPEND MAPTK_DEPENDENCIES fletch)
 ExternalProject_Add(fletch
   PREFIX ${MAPTK_BINARY_DIR}
   GIT_REPOSITORY "git://github.com/Kitware/fletch.git"
-  GIT_TAG 022ef09a90cb4ec1d45dd848da6aeb939da003ee
+  GIT_TAG c3ba1e0b5b2d18a26d1fb0ffd9f67b388baf7b9e
   #GIT_SHALLOW 1
   SOURCE_DIR ${MAPTK_EXTERNAL_DIR}/fletch
   BINARY_DIR ${MAPTK_EXTERNAL_DIR}/fletch-build
@@ -51,12 +51,12 @@ ExternalProject_Add(fletch
     -Dfletch_ENABLE_PostgresSQL:BOOL=OFF
     -Dfletch_ENABLE_Protobuf:BOOL=OFF
     -Dfletch_ENABLE_Qt:BOOL=${MAPTK_ENABLE_GUI}
-    -DQt_SELECT_VERSION:STRING=5.10.0
+    -DQt_SELECT_VERSION:STRING=5.11.2
     -Dfletch_ENABLE_Snappy:BOOL=OFF
     -Dfletch_ENABLE_SuiteSparse:BOOL=ON
     -Dfletch_ENABLE_TinyXML:BOOL=OFF
     -Dfletch_ENABLE_VTK:BOOL=ON
-    -DVTK_SELECT_VERSION:STRING=8.0
+    -DVTK_SELECT_VERSION:STRING=8.2-pre
     -Dfletch_ENABLE_VXL:BOOL=ON
     -Dfletch_ENABLE_YAMLcpp:BOOL=OFF
     -Dfletch_ENABLE_ZLib:BOOL=ON
@@ -86,7 +86,7 @@ ExternalProject_Add(fletch
     -DCMAKE_SHARED_LINKER_FLAGS:STRING=${CMAKE_SHARED_LINKER_FLAGS}
     -DADDITIONAL_C_FLAGS:STRING=${ADDITIONAL_C_FLAGS}
     -DADDITIONAL_CXX_FLAGS:STRING=${ADDITIONAL_CXX_FLAGS}
-  INSTALL_COMMAND cmake -E echo "Skipping install step."
+  INSTALL_COMMAND ${CMAKE_COMMAND} -E echo "Skipping install step."
 )
 
 set(fletch_DIR "${MAPTK_EXTERNAL_DIR}/fletch-build")

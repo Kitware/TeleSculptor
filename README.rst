@@ -125,18 +125,13 @@ Here is the quickest way to build via a cmd/bash shell
   # Build the install target/project
   # On Linux/OSX/MinGW 
   make
-  # Once the Superbuild is complete, the makefile will be replace with 
-  # the MAP-Tk makefile with all of its specific targets
+  # Once the Superbuild is complete, 
+  # the maptk makefile will be placed in the build/external/maptk-build directory
   
   # For MSVC
   # Open the MAPTK-Superbuild.sln, choose your build configuration, from the 'Build' menu choose 'Build Solution'
   # When the build is complete you may close this solution.
-  # Next, run the following script based on the chosen CMAKE_BUILD_TYPE 
-  #  'start_MSVC.bat debug'
-  #  'start_MSVC.bat release' (This is the default if you wish to double-click this bat file)
-  #  'start_MSVC.bat relwithdebinfo'
-  # This will configure the MSVC PATH so you can execute executables from Visual Studio
-  # See 'Mulit-Configuration Build Tools' for more details on running with MSVC
+  # To edit maptk code, open the build/external/maptk-build/MATPTK.sln
 
 CMake Options
 -------------
@@ -164,9 +159,6 @@ Release and RelWithDebInfo are compatible with each other, and Fletch will build
 MSVC solutions will provide both Release and RelWithDebInfo configuration options.
 You will need to open the ``<build/directory>/external/kwiver-build/KWIVER.sln`` and
 build this solution with the RelWithDebInfo configuration.
-To execute through MSVC against the RelWithDebInfo binaries,
-you will need to start another MSVC instance with the proper environment by calling ``start_MSVC.bat RelWithDebInfo``.
-
 
 
 TeleSculptor
