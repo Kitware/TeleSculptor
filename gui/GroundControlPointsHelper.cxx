@@ -144,7 +144,13 @@ void GroundControlPointsHelper::addWorldViewPoint()
   GroundControlPointsWidget* cameraWidget =
     d->mainWindow->cameraView()->groundControlPointsWidget();
   kwiver::vital::vector_3d cameraPt = cameraWidget->activePoint();
-  kwiver::vital::vector_3d p = camera->UnprojectPoint(cameraPt.data());
+  // Use an arbitarily value for depth to ensure that the landmarks would
+  // be between the camera center and the back-projected point.
+  kwiver::vital::vector_3d p =
+    camera->UnprojectPoint(cameraPt.data(), 1.1 * camera->GetDistance());
+
+  // Pick a point along the active camera direction and use the depth of the
+  // point to back-project the camera view ground control point.
   GroundControlPointsWidget* worldWidget =
     d->mainWindow->worldView()->groundControlPointsWidget();
   vtkNew<vtkMaptkPointPicker> picker;
@@ -153,6 +159,12 @@ void GroundControlPointsHelper::addWorldViewPoint()
   {
     p = kwiver::vital::vector_3d(picker->GetPickPosition());
     p = camera->UnprojectPoint(cameraPt.data(), camera->Depth(p));
+  }
+  else
+  {
+    // If nothing was picked, ensure that the back-projection uses the depth of
+    // camera origin point
+    p = camera->UnprojectPoint(cameraPt.data());
   }
   worldWidget->addPoint(p);
   worldWidget->render();
