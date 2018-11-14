@@ -36,6 +36,10 @@
 #include "MainWindow.h"
 #include "WorldView.h"
 #include "vtkMaptkCamera.h"
+#include "vtkMaptkPointPicker.h"
+
+// VTK includes
+#include <vtkRenderer.h>
 
 QTE_IMPLEMENT_D_FUNC(GroundControlPointsHelper)
 
@@ -61,23 +65,39 @@ GroundControlPointsHelper::GroundControlPointsHelper(QObject* parent)
   GroundControlPointsWidget* cameraWidget =
     d->mainWindow->cameraView()->groundControlPointsWidget();
 
-  connect(worldWidget, &GroundControlPointsWidget::pointPlaced,
-          this, &GroundControlPointsHelper::addCameraViewPoint);
-  connect(cameraWidget, &GroundControlPointsWidget::pointPlaced,
-          this, &GroundControlPointsHelper::addWorldViewPoint);
+  connect(worldWidget,
+          &GroundControlPointsWidget::pointPlaced,
+          this,
+          &GroundControlPointsHelper::addCameraViewPoint);
+  connect(cameraWidget,
+          &GroundControlPointsWidget::pointPlaced,
+          this,
+          &GroundControlPointsHelper::addWorldViewPoint);
 
-  connect(worldWidget, &GroundControlPointsWidget::pointMoved,
-          this, &GroundControlPointsHelper::moveCameraViewPoint);
-  connect(cameraWidget, &GroundControlPointsWidget::pointMoved,
-          this, &GroundControlPointsHelper::moveWorldViewPoint);
-  connect(worldWidget, &GroundControlPointsWidget::pointDeleted,
-          cameraWidget, &GroundControlPointsWidget::deletePoint);
-  connect(cameraWidget, &GroundControlPointsWidget::pointDeleted,
-          worldWidget, &GroundControlPointsWidget::deletePoint);
-  connect(cameraWidget, &GroundControlPointsWidget::activePointChanged,
-          worldWidget, &GroundControlPointsWidget::setActivePoint);
-  connect(worldWidget, &GroundControlPointsWidget::activePointChanged,
-          cameraWidget, &GroundControlPointsWidget::setActivePoint);
+  connect(worldWidget,
+          &GroundControlPointsWidget::pointMoved,
+          this,
+          &GroundControlPointsHelper::moveCameraViewPoint);
+  connect(cameraWidget,
+          &GroundControlPointsWidget::pointMoved,
+          this,
+          &GroundControlPointsHelper::moveWorldViewPoint);
+  connect(worldWidget,
+          &GroundControlPointsWidget::pointDeleted,
+          cameraWidget,
+          &GroundControlPointsWidget::deletePoint);
+  connect(cameraWidget,
+          &GroundControlPointsWidget::pointDeleted,
+          worldWidget,
+          &GroundControlPointsWidget::deletePoint);
+  connect(cameraWidget,
+          &GroundControlPointsWidget::activePointChanged,
+          worldWidget,
+          &GroundControlPointsWidget::setActivePoint);
+  connect(worldWidget,
+          &GroundControlPointsWidget::activePointChanged,
+          cameraWidget,
+          &GroundControlPointsWidget::setActivePoint);
 }
 
 //-----------------------------------------------------------------------------
@@ -127,6 +147,13 @@ void GroundControlPointsHelper::addWorldViewPoint()
   kwiver::vital::vector_3d p = camera->UnprojectPoint(cameraPt.data());
   GroundControlPointsWidget* worldWidget =
     d->mainWindow->worldView()->groundControlPointsWidget();
+  vtkNew<vtkMaptkPointPicker> picker;
+  if (picker->Pick3DPoint(
+        camera->GetPosition(), p.data(), worldWidget->renderer()))
+  {
+    p = kwiver::vital::vector_3d(picker->GetPickPosition());
+    p = camera->UnprojectPoint(cameraPt.data(), camera->Depth(p));
+  }
   worldWidget->addPoint(p);
   this->moveWorldViewPoint();
   cameraWidget->render();
@@ -276,8 +303,7 @@ GroundControlPointsHelper::groundControlPoints() const
 void GroundControlPointsHelper::enableWidgets(bool enable)
 {
   QTE_D();
-  d->mainWindow->worldView()->groundControlPointsWidget()->enableWidget(
-    enable);
+  d->mainWindow->worldView()->groundControlPointsWidget()->enableWidget(enable);
   d->mainWindow->cameraView()->groundControlPointsWidget()->enableWidget(
     enable);
 }

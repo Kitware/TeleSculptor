@@ -49,6 +49,7 @@ class vtkAbstractWidget;
 class vtkMatrix4x4;
 class vtkObject;
 class vtkRenderWindowInteractor;
+class vtkRenderer;
 
 class GroundControlPointsWidget : public QObject
 {
@@ -59,6 +60,9 @@ public:
   ~GroundControlPointsWidget();
 
   void setInteractor(vtkRenderWindowInteractor* iren);
+
+  // Get the renderer
+  vtkRenderer* renderer();
 
   // Get active handle and point coordintes
   int activeHandle() const;

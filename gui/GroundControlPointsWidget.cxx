@@ -190,6 +190,13 @@ void GroundControlPointsWidget::setInteractor(vtkRenderWindowInteractor* iren)
 }
 
 //-----------------------------------------------------------------------------
+vtkRenderer* GroundControlPointsWidget::renderer()
+{
+  QTE_D();
+  return d->renderer;
+}
+
+//-----------------------------------------------------------------------------
 void GroundControlPointsWidget::cursorChangedCallback(
   vtkObject* vtkNotUsed(object),
   unsigned long vtkNotUsed(event),
