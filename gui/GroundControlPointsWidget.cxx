@@ -74,7 +74,7 @@ public:
 
   vtkMatrix4x4* transformMatrix = nullptr;
   vtkNew<vtkMatrix4x4> transformMatrixInverse;
-  vtkMTimeType transformMatrixMTime;
+  vtkMTimeType transformMatrixMTime = 0;
 };
 
 //-----------------------------------------------------------------------------

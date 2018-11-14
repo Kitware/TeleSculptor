@@ -155,8 +155,6 @@ void GroundControlPointsHelper::addWorldViewPoint()
     p = camera->UnprojectPoint(cameraPt.data(), camera->Depth(p));
   }
   worldWidget->addPoint(p);
-  this->moveWorldViewPoint();
-  cameraWidget->render();
   worldWidget->render();
 
   emit this->pointCountChanged(worldWidget->numberOfPoints());
