@@ -284,17 +284,17 @@ if (MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
   list(APPEND FIXUP_DIRS "${QT_LIBRARY_DIR}")
   list(APPEND FIXUP_DIRS "${QT_BINARY_DIR}")
 
-  install(DIRECTORY "${KWIVER_DIR}/lib/${BINARY_DIR}/modules" DESTINATION lib
+  install(DIRECTORY "${KWIVER_DIR}/lib/${BINARY_DIR}/kwiver/modules" DESTINATION lib
           COMPONENT Runtime
           FILES_MATCHING PATTERN "*plugin${CMAKE_SHARED_MODULE_SUFFIX}" )
 
-  install(DIRECTORY "${KWIVER_DIR}/lib/${BINARY_DIR}/modules/"
+  install(DIRECTORY "${KWIVER_DIR}/lib/${BINARY_DIR}/kwiver/modules/"
           DESTINATION ${plugin_dest_dir}
           COMPONENT Runtime
           FILES_MATCHING PATTERN "*logger${CMAKE_SHARED_MODULE_SUFFIX}"
           PATTERN "plugin_explorer" EXCLUDE )
 
-  install(DIRECTORY "${KWIVER_DIR}/lib/${BINARY_DIR}/sprokit" DESTINATION lib
+  install(DIRECTORY "${KWIVER_DIR}/lib/${BINARY_DIR}/kwiver/processes" DESTINATION lib
           COMPONENT Runtime
           FILES_MATCHING PATTERN "*${CMAKE_SHARED_MODULE_SUFFIX}" )
 
