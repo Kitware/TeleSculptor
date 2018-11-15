@@ -704,7 +704,7 @@ void WorldView::initFrameSampling(int nbFrames)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::setVideoConfig(QString videoPath,
+void WorldView::setVideoConfig(QString const& videoPath,
                                kwiver::vital::config_block_sptr config)
 {
   QTE_D();
@@ -721,7 +721,7 @@ void WorldView::setCameras(kwiver::vital::camera_map_sptr cameras)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::loadVolume(QString path)
+void WorldView::loadVolume(QString const& path)
 {
   QTE_D();
 
@@ -761,7 +761,7 @@ void WorldView::loadVolume(QString path)
 
   // Add this actor to the renderer
   d->renderer->AddActor(d->volumeActor.Get());
-  emit(contourChanged());
+  emit contourChanged();
 }
 
 //-----------------------------------------------------------------------------
@@ -851,7 +851,7 @@ void WorldView::setActiveCamera(int id)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::setImageData(vtkImageData* data, QSize const& dimensions)
+void WorldView::setImageData(vtkImageData* data, QSize dimensions)
 {
   QTE_D();
 
@@ -1405,7 +1405,7 @@ void WorldView::render()
 
   if (!d->renderQueued)
   {
-    QTimer::singleShot(0, [d]() {
+    QTimer::singleShot(0, this, [d]() {
       d->renderWindow->Render();
       d->renderQueued = false;
     });

@@ -1,5 +1,5 @@
 /*ckwg +29
-* Copyright 2016 by Kitware, Inc.
+* Copyright 2016-2018 by Kitware, Inc.
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
@@ -62,8 +62,8 @@ protected:
 
   void SimpleExecute(vtkImageData* input, vtkImageData* output) override;
 private:
-  vtkMaptkImageUnprojectDepth(const vtkMaptkImageUnprojectDepth&);  // Not implemented.
-  void operator=(const vtkMaptkImageUnprojectDepth&);  // Not implemented.
+  vtkMaptkImageUnprojectDepth(vtkMaptkImageUnprojectDepth const&) = delete;
+  void operator=(vtkMaptkImageUnprojectDepth const&) = delete;
 
   vtkMaptkCamera* Camera;
 

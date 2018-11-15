@@ -207,7 +207,7 @@ void DepthMapViewOptions::updateActor()
   auto const mode = d->modeButtons->checkedId();
   Q_ASSERT(mode >= 0 && mode < d->modes.count());
 
-  auto const& mi = d->modes[mode];
+  auto const& mi = d->modes.value(mode);
 
   auto const mapper = d->actor->GetMapper();
   vtkMaptkScalarDataFilter* filter =

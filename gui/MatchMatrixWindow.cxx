@@ -293,7 +293,7 @@ protected:
   void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
   void hoverMoveEvent(QGraphicsSceneHoverEvent* event) override;
 
-  void updateStatusText(QPointF const& pos);
+  void updateStatusText(QPointF pos);
 
   QTE_DECLARE_PUBLIC_PTR(MatchMatrixWindowPrivate);
   QTE_DECLARE_PUBLIC(MatchMatrixWindowPrivate);
@@ -332,7 +332,7 @@ void MatchMatrixImageItem::hoverMoveEvent(QGraphicsSceneHoverEvent* event)
 }
 
 //-----------------------------------------------------------------------------
-void MatchMatrixImageItem::updateStatusText(const QPointF& pos)
+void MatchMatrixImageItem::updateStatusText(QPointF pos)
 {
   QTE_Q();
 

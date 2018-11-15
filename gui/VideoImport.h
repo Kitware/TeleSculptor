@@ -56,7 +56,7 @@ class VideoImport : public QThread
 public:
   typedef kwiver::vital::config_block_sptr config_block_sptr;
 
-  VideoImport();
+  VideoImport(QObject* parent = nullptr);
   ~VideoImport() override;
 
   void setData(config_block_sptr const&,

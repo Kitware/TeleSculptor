@@ -70,12 +70,12 @@ QString getPath(Project const* project, std::string const& key,
 }
 
 //-----------------------------------------------------------------------------
-Project::Project()
+Project::Project(QObject* parent) : QObject{parent}
 {
 }
 
 //-----------------------------------------------------------------------------
-Project::Project(QString dir)
+Project::Project(QString const& dir, QObject* parent) : QObject{parent}
 {
   workingDir = dir;
   filePath = workingDir.absoluteFilePath(workingDir.dirName() + ".conf");
@@ -161,7 +161,7 @@ bool Project::read(QString const& path)
 //-----------------------------------------------------------------------------
 // Returns the relative path if the filepath is contained in the directory and
 // returns the absolute path if not.
-QString Project::getContingentRelativePath(QString filepath)
+QString Project::getContingentRelativePath(QString const& filepath)
 {
   auto rel = workingDir.relativeFilePath(filepath);
   if (rel.startsWith(".."))

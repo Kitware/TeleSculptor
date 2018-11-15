@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,7 +59,7 @@ public:
   // specified depth
   kwiver::vital::vector_3d UnprojectPoint(double point[2], double depth);
   kwiver::vital::vector_3d UnprojectPoint(double point[2]);
-  double Depth(kwiver::vital::vector_3d point) const;
+  double Depth(kwiver::vital::vector_3d const& point) const;
 
   void ScaleK(double factor);
 
@@ -101,8 +101,8 @@ protected:
   using vtkCamera::GetFrustumPlanes; // Hide overloaded virtual
 
 private:
-  vtkMaptkCamera(const vtkMaptkCamera&); // Not implemented.
-  void operator=(const vtkMaptkCamera&); // Not implemented.
+  vtkMaptkCamera(vtkMaptkCamera const&) = delete;
+  void operator=(vtkMaptkCamera const&) = delete;
 
   int ImageDimensions[2];
   double AspectRatio;

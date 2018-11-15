@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, SAS; Copyright 2017 by Kitware, Inc.
+ * Copyright 2016 by Kitware, SAS; Copyright 2017-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -87,7 +87,7 @@ MeshColoration::MeshColoration()
 
 MeshColoration::MeshColoration(vtkPolyData* mesh,
                                kwiver::vital::config_block_sptr& config,
-                               std::string videoPath,
+                               std::string const& videoPath,
                                kwiver::vital::camera_map_sptr& cameras)
   : MeshColoration()
 {
@@ -268,7 +268,7 @@ void MeshColoration::initializeDataList(int frameId)
   if (frameId < 0)
   {
     unsigned int counter = 0;
-    for (auto cam_itr : cam_map)
+    for (auto const& cam_itr : cam_map)
     {
       if ((counter++) % Sampling != 0)
       {

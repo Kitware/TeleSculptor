@@ -44,12 +44,12 @@ class Project : public QObject
 // TODO: Encapsulate data and add accessors
 public:
 
-  Project();
-  Project(QString dir);
+  Project(QObject* parent = nullptr);
+  Project(QString const& dir, QObject* parent = nullptr);
 
   bool read(QString const& path);
 
-  QString getContingentRelativePath(QString filepath);
+  QString getContingentRelativePath(QString const& filepath);
 
   QDir workingDir;
 
