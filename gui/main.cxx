@@ -77,7 +77,7 @@ int main(int argc, char** argv)
   auto const rel_path = stdString(exeDir.absoluteFilePath(".."));
   auto & vpm = kwiver::vital::plugin_manager::instance();
   vpm.add_search_path(rel_path + "/lib/modules");
-  vpm.add_search_path(rel_path + "/lib/sprokit");
+  vpm.add_search_path(rel_path + "/lib/processes");
   vpm.load_all_plugins();
 
   // Tell PROJ where to find its data files
