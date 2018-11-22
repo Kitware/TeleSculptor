@@ -52,7 +52,7 @@ public:
    *
    * Returns non-zero if something was successfully picked.
    */
-  using vtkPointPicker::Pick3DPoint;
+  using vtkPicker::Pick3DPoint;
   virtual int Pick3DPoint(double p1World[3],
                           double p2World[3],
                           vtkRenderer* ren);

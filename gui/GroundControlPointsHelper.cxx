@@ -39,6 +39,7 @@
 #include "vtkMaptkPointPicker.h"
 
 // VTK includes
+#include <vtkPlane.h>
 #include <vtkRenderer.h>
 
 QTE_IMPLEMENT_D_FUNC(GroundControlPointsHelper)
@@ -147,18 +148,30 @@ void GroundControlPointsHelper::addWorldViewPoint()
   // Use an arbitarily value for depth to ensure that the landmarks would
   // be between the camera center and the back-projected point.
   kwiver::vital::vector_3d p =
-    camera->UnprojectPoint(cameraPt.data(), 1.1 * camera->GetDistance());
+    camera->UnprojectPoint(cameraPt.data(), 100 * camera->GetDistance());
 
   // Pick a point along the active camera direction and use the depth of the
   // point to back-project the camera view ground control point.
   GroundControlPointsWidget* worldWidget =
     d->mainWindow->worldView()->groundControlPointsWidget();
-  vtkNew<vtkMaptkPointPicker> picker;
-  if (picker->Pick3DPoint(
+  vtkNew<vtkMaptkPointPicker> pointPicker;
+  double paramCoord = 0;
+  double gOrigin[3] = { 0, 0, 0 };
+  double gNormal[3] = { 0, 0, 1 };
+  if (pointPicker->Pick3DPoint(
         camera->GetPosition(), p.data(), worldWidget->renderer()))
   {
-    p = kwiver::vital::vector_3d(picker->GetPickPosition());
+    p = kwiver::vital::vector_3d(pointPicker->GetPickPosition());
     p = camera->UnprojectPoint(cameraPt.data(), camera->Depth(p));
+  }
+  else if (vtkPlane::IntersectWithLine(camera->GetPosition(),
+                                       p.data(),
+                                       gNormal,
+                                       gOrigin,
+                                       paramCoord,
+                                       p.data()))
+  {
+    // Find the point where the ray intersects the ground plane and use that.
   }
   else
   {
