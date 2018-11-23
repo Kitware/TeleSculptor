@@ -50,6 +50,9 @@ TeleSculptor
    across the world and camera views. The points can be exported to a PLY file
    and get imported using the standard import project infrastructure.
 
+ * Double-clicking the mouse pointer in the WorldView allows to set the center
+   of rotation of the view camera about the nearest picked point in the view.
+
 Fixes since last public release
 -------------------------------
 
