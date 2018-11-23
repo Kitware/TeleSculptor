@@ -31,6 +31,8 @@
 // maptk includes
 #include "vtkMaptkInteractorStyle.h"
 
+#include "Utils.h"
+
 // VTK includes
 #include <vtkCamera.h>
 #include <vtkNew.h>
@@ -45,8 +47,39 @@
 vtkStandardNewMacro(vtkMaptkInteractorStyle);
 
 //----------------------------------------------------------------------------
+vtkMaptkInteractorStyle::vtkMaptkInteractorStyle()
+{
+  this->AddObserver(
+    vtkCommand::TimerEvent, this, &vtkMaptkInteractorStyle::TimerCallback);
+}
+
+//----------------------------------------------------------------------------
 void vtkMaptkInteractorStyle::PrintSelf(ostream& os, vtkIndent indent)
 {
+  this->Superclass::PrintSelf(os, indent);
+}
+
+//----------------------------------------------------------------------------
+void vtkMaptkInteractorStyle::TimerCallback(vtkObject* vtkNotUsed(caller),
+                                            unsigned long vtkNotUsed(eventId),
+                                            void* callData)
+{
+  int timerId = (callData ? *(reinterpret_cast<int*>(callData)) : 1);
+  if (timerId != this->TimerId)
+  {
+    // This is a timer event for another timer that we are not interested in.
+    return;
+  }
+  // If the time is up, destroy the timer and reset timer Id.
+  this->DestroyTimer();
+}
+
+//----------------------------------------------------------------------------
+void vtkMaptkInteractorStyle::DestroyTimer()
+{
+  this->Interactor->DestroyTimer(this->TimerId);
+  this->TimerId = -1;
+  this->TimerStatus = TimedOut;
 }
 
 //----------------------------------------------------------------------------
@@ -54,8 +87,17 @@ void vtkMaptkInteractorStyle::OnLeftButtonDown()
 {
   int* eventPos = this->Interactor->GetEventPosition();
 
-  if (this->Interactor->GetShiftKey())
+  if (this->TimerStatus == TimedOut)
   {
+    // This is the first click. Create timer.
+    this->TimerId =
+      this->Interactor->CreateOneShotTimer(GetDoubleClickInterval());
+    this->TimerStatus = Timing;
+  }
+  else
+  {
+    // Still timing, i.e. double clicked
+    this->DestroyTimer();
     vtkRenderer* ren =
       this->Interactor->GetRenderWindow()->GetRenderers()->GetFirstRenderer();
     if (ren)

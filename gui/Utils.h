@@ -28,41 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_VTKMAPTKINTERACTORSTYLE_H
-#define MAPTK_VTKMAPTKINTERACTORSTYLE_H
+#ifndef MAPTK_UTILS_H
+#define MAPTK_UTILS_H
 
-// VTK includes
-#include <vtkInteractorStyleTrackballCamera.h>
-
-class vtkMaptkInteractorStyle : public vtkInteractorStyleTrackballCamera
-{
-public:
-  vtkTypeMacro(vtkMaptkInteractorStyle, vtkInteractorStyleTrackballCamera);
-  void PrintSelf(ostream& os, vtkIndent indent) override;
-
-  static vtkMaptkInteractorStyle* New();
-
-  virtual void OnLeftButtonDown() override;
-
-protected:
-  vtkMaptkInteractorStyle();
-  ~vtkMaptkInteractorStyle() = default;
-
-  enum Timer
-  {
-    Timing = 0,
-    TimedOut,
-  };
-
-  int TimerStatus = TimedOut;
-  int TimerId = -1;
-
-  void TimerCallback(vtkObject*, unsigned long, void*);
-  void DestroyTimer();
-
-private:
-  vtkMaptkInteractorStyle(vtkMaptkInteractorStyle const&) = delete;
-  void operator=(vtkMaptkInteractorStyle const&) = delete;
-};
+double GetDoubleClickInterval();
 
 #endif

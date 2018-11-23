@@ -28,41 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_VTKMAPTKINTERACTORSTYLE_H
-#define MAPTK_VTKMAPTKINTERACTORSTYLE_H
+#include <AppKit/AppKit.h>
 
-// VTK includes
-#include <vtkInteractorStyleTrackballCamera.h>
-
-class vtkMaptkInteractorStyle : public vtkInteractorStyleTrackballCamera
+//-----------------------------------------------------------------------------
+#ifdef __APPLE__
+double GetDoubleClickInterval()
 {
-public:
-  vtkTypeMacro(vtkMaptkInteractorStyle, vtkInteractorStyleTrackballCamera);
-  void PrintSelf(ostream& os, vtkIndent indent) override;
-
-  static vtkMaptkInteractorStyle* New();
-
-  virtual void OnLeftButtonDown() override;
-
-protected:
-  vtkMaptkInteractorStyle();
-  ~vtkMaptkInteractorStyle() = default;
-
-  enum Timer
-  {
-    Timing = 0,
-    TimedOut,
-  };
-
-  int TimerStatus = TimedOut;
-  int TimerId = -1;
-
-  void TimerCallback(vtkObject*, unsigned long, void*);
-  void DestroyTimer();
-
-private:
-  vtkMaptkInteractorStyle(vtkMaptkInteractorStyle const&) = delete;
-  void operator=(vtkMaptkInteractorStyle const&) = delete;
-};
-
+  // Convert to milliseconds
+  return 1000 * [NSEvent doubleClickInterval];
+}
 #endif
+
