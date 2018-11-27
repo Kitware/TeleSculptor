@@ -68,8 +68,6 @@
 #include <vital/types/metadata_map.h>
 #include <vital/types/sfm_constraints.h>
 
-#include <kwiversys/SystemTools.hxx>
-
 #include <vtkBox.h>
 #include <vtkImageData.h>
 #include <vtkImageReader2.h>
