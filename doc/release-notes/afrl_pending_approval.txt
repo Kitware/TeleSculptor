@@ -50,6 +50,12 @@ TeleSculptor
    across the world and camera views. The points can be exported to a PLY file
    and get imported using the standard import project infrastructure.
 
+MAP-Tk Library
+
+ * Moved local_geo_cs class into KWIVER and updated TeleSculptor to used the
+   KWIVER version.
+
+
 Fixes since last public release
 -------------------------------
 
