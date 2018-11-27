@@ -336,7 +336,7 @@ public:
   vtkSmartPointer<vtkImageData> activeDepth;
   int activeDepthFrame = -1;
 
-  kwiver::vital::sfm_constraints_sptr sfmConstraints;
+  kv::sfm_constraints_sptr sfmConstraints;
 
   int activeCameraIndex = -1;
 
@@ -373,7 +373,7 @@ MainWindowPrivate::MainWindowPrivate(MainWindow* mainWindow)
   QObject::connect(&videoImporter, &VideoImport::completed,
                    mainWindow, &MainWindow::updateFrames);
 
-  sfmConstraints = std::make_shared<kwiver::vital::sfm_constraints>();
+  sfmConstraints = std::make_shared<kv::sfm_constraints>();
 }
 
 //-----------------------------------------------------------------------------
@@ -567,7 +567,7 @@ void MainWindowPrivate::addFrame(
 void MainWindowPrivate::updateFrames(
   std::shared_ptr<kv::metadata_map::map_metadata_t> mdMap)
 {
-  this->videoMetadataMap = std::make_shared<kwiver::vital::simple_metadata_map>(*mdMap);
+  this->videoMetadataMap = std::make_shared<kv::simple_metadata_map>(*mdMap);
 
   sfmConstraints->set_metadata(videoMetadataMap);
 
@@ -641,11 +641,11 @@ void MainWindowPrivate::updateFrames(
             "initialize_intrinsics_with_metadata", true);
         if (init_intrinsics_with_metadata)
         {
-          kwiver::vital::set_intrinsics_from_metadata(baseCamera, mdMap, im);
+          kv::set_intrinsics_from_metadata(baseCamera, mdMap, im);
         }
 
-        kwiver::vital::local_geo_cs lgcs;
-        camMap = kwiver::vital::initialize_cameras_with_metadata(
+        kv::local_geo_cs lgcs;
+        camMap = kv::initialize_cameras_with_metadata(
           mdMap, baseCamera, lgcs);
 
         sfmConstraints->set_local_geo_cs(lgcs);
@@ -1585,8 +1585,8 @@ void MainWindow::loadProject(QString const& path)
   {
     if (QFileInfo{d->project->geoOriginFile}.isFile())
     {
-      kwiver::vital::local_geo_cs lgcs;
-      kwiver::vital::read_local_geo_cs_from_file(
+      kv::local_geo_cs lgcs;
+      kv::read_local_geo_cs_from_file(
         lgcs, stdString(d->project->geoOriginFile));
 
       d->sfmConstraints->set_local_geo_cs(lgcs);
@@ -1863,7 +1863,7 @@ void MainWindow::loadGroundControlPoints(QString const& path)
 
   try
   {
-    auto const& gcp = kwiver::vital::read_ply_file(kvPath(path));
+    auto const& gcp = kv::read_ply_file(kvPath(path));
     if (gcp)
     {
       d->groundControlPointsHelper->setGroundControlPoints(*gcp);
@@ -1939,7 +1939,7 @@ void MainWindow::saveGroundControlPoints(QString const& path, bool writeToProjec
 
   try
   {
-    kwiver::vital::write_ply_file(
+    kv::write_ply_file(
       d->groundControlPointsHelper->groundControlPoints(),
       kvPath(path));
 
