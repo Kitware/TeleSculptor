@@ -642,7 +642,7 @@ void MainWindowPrivate::updateFrames(
           kv::set_intrinsics_from_metadata(baseCamera, mdMap, im);
         }
 
-        kv::local_geo_cs lgcs;
+        kv::local_geo_cs lgcs = sfmConstraints->get_local_geo_cs();
         camMap = kv::initialize_cameras_with_metadata(
           mdMap, baseCamera, lgcs);
 
