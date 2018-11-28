@@ -37,6 +37,7 @@
 #include "WorldView.h"
 #include "vtkMaptkCamera.h"
 #include "vtkMaptkPointPicker.h"
+#include "vtkMaptkPointPlacer.h"
 
 // VTK includes
 #include <vtkPlane.h>
@@ -66,6 +67,11 @@ GroundControlPointsHelper::GroundControlPointsHelper(QObject* parent)
   GroundControlPointsWidget* cameraWidget =
     d->mainWindow->cameraView()->groundControlPointsWidget();
 
+  // Set a point placer on the world widget.
+  // This has to be set before the widget is enabled.
+  worldWidget->setPointPlacer(vtkNew<vtkMaptkPointPlacer>());
+
+  // connections
   connect(worldWidget,
           &GroundControlPointsWidget::pointPlaced,
           this,
@@ -155,7 +161,7 @@ void GroundControlPointsHelper::addWorldViewPoint()
   GroundControlPointsWidget* worldWidget =
     d->mainWindow->worldView()->groundControlPointsWidget();
   vtkNew<vtkMaptkPointPicker> pointPicker;
-  double paramCoord = 0;
+  double distance = 0;
   double gOrigin[3] = { 0, 0, 0 };
   double gNormal[3] = { 0, 0, 1 };
   if (pointPicker->Pick3DPoint(
@@ -168,7 +174,7 @@ void GroundControlPointsHelper::addWorldViewPoint()
                                        p.data(),
                                        gNormal,
                                        gOrigin,
-                                       paramCoord,
+                                       distance,
                                        p.data()))
   {
     // Find the point where the ray intersects the ground plane and use that.

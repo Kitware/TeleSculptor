@@ -48,6 +48,7 @@ class GroundControlPointsWidgetPrivate;
 class vtkAbstractWidget;
 class vtkMatrix4x4;
 class vtkObject;
+class vtkPointPlacer;
 class vtkRenderWindowInteractor;
 class vtkRenderer;
 
@@ -60,6 +61,8 @@ public:
   ~GroundControlPointsWidget();
 
   void setInteractor(vtkRenderWindowInteractor* iren);
+
+  void setPointPlacer(vtkPointPlacer* placer);
 
   // Get the renderer
   vtkRenderer* renderer();

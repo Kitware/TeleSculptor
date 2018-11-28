@@ -28,39 +28,41 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// maptk includes
-#include "vtkMaptkPointPicker.h"
+#ifndef MAPTK_VTKMAPTKPOINTPLACER_H_
+#define MAPTK_VTKMAPTKPOINTPLACER_H_
 
 // VTK includes
-#include <vtkCommand.h>
-#include <vtkNew.h>
-#include <vtkObjectFactory.h>
-#include <vtkRenderer.h>
+#include <vtkPointPlacer.h>
 
-vtkStandardNewMacro(vtkMaptkPointPicker);
+// Forward declarations
 
-//----------------------------------------------------------------------------
-int vtkMaptkPointPicker::Pick3DPoint(double selectionPt[3],
-                                     double focalPt[3],
-                                     vtkRenderer* ren)
+class vtkMaptkPointPlacer : public vtkPointPlacer
 {
-  // Initialize the picking process
-  this->Initialize();
-  this->Renderer = ren;
+public:
+  vtkTypeMacro(vtkMaptkPointPlacer, vtkPointPlacer);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
-  // Invoke start pick method if defined
-  this->InvokeEvent(vtkCommand::StartPickEvent, nullptr);
+  static vtkMaptkPointPlacer* New();
 
-  int result = this->Pick3DInternal(ren, selectionPt, focalPt);
+  /**
+   * Given a renderer and a display position in pixel coordinates,
+   * compute the world position and orientation where this point
+   * will be placed. This method is typically used by the
+   * representation to place the point initially. A return value of 1
+   * indicates that constraints of the placer are met.
+   */
+  virtual int ComputeWorldPosition(vtkRenderer* ren,
+                                   double displayPos[2],
+                                   double worldPos[3],
+                                   double worldOrient[9]) override;
 
-  // Invoke end pick method if defined
-  this->InvokeEvent(vtkCommand::EndPickEvent, nullptr);
+protected:
+  vtkMaptkPointPlacer() = default;
+  ~vtkMaptkPointPlacer() = default;
 
-  return result;
-}
+private:
+  vtkMaptkPointPlacer(const vtkMaptkPointPlacer&) = delete;
+  void operator=(const vtkMaptkPointPlacer) = delete;
+};
 
-//----------------------------------------------------------------------------
-void vtkMaptkPointPicker::PrintSelf(ostream& os, vtkIndent indent)
-{
-  this->Superclass::PrintSelf(os, indent.GetNextIndent());
-}
+#endif // vtkMaptkPointPlacer_h

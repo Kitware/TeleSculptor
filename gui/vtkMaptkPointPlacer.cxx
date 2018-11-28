@@ -29,38 +29,79 @@
  */
 
 // maptk includes
-#include "vtkMaptkPointPicker.h"
+#include "vtkMaptkPointPlacer.h"
 
 // VTK includes
-#include <vtkCommand.h>
 #include <vtkNew.h>
 #include <vtkObjectFactory.h>
+#include <vtkPlane.h>
+#include <vtkPointPicker.h>
 #include <vtkRenderer.h>
 
-vtkStandardNewMacro(vtkMaptkPointPicker);
+vtkStandardNewMacro(vtkMaptkPointPlacer);
 
 //----------------------------------------------------------------------------
-int vtkMaptkPointPicker::Pick3DPoint(double selectionPt[3],
-                                     double focalPt[3],
-                                     vtkRenderer* ren)
+int vtkMaptkPointPlacer::ComputeWorldPosition(vtkRenderer* ren,
+                                              double displayPos[2],
+                                              double worldPos[3],
+                                              double vtkNotUsed(worldOrient)[9])
 {
-  // Initialize the picking process
-  this->Initialize();
-  this->Renderer = ren;
+  if (!ren)
+  {
+    return 0;
+  }
 
-  // Invoke start pick method if defined
-  this->InvokeEvent(vtkCommand::StartPickEvent, nullptr);
+  int valid = 0;
+  double position[3];
+  vtkNew<vtkPointPicker> pointPicker;
+  if (pointPicker->Pick(displayPos[0], displayPos[1], 0, ren))
+  {
+    pointPicker->GetPickPosition(position);
+    valid = 1;
+  }
+  else
+  {
+    // If the picker failed to pick a point, place the point on the z=0 plane.
+    double nearWorldPoint[4];
+    double farWorldPoint[4];
+    double tmp[3];
 
-  int result = this->Pick3DInternal(ren, selectionPt, focalPt);
+    tmp[0] = displayPos[0];
+    tmp[1] = displayPos[1];
+    tmp[2] = 0.0; // near plane
 
-  // Invoke end pick method if defined
-  this->InvokeEvent(vtkCommand::EndPickEvent, nullptr);
+    ren->SetDisplayPoint(tmp);
+    ren->DisplayToWorld();
+    ren->GetWorldPoint(nearWorldPoint);
 
-  return result;
+    tmp[2] = 1.0; // far plane
+    ren->SetDisplayPoint(tmp);
+    ren->DisplayToWorld();
+    ren->GetWorldPoint(farWorldPoint);
+
+    double normal[3] = { 0, 0, 1 };
+    double origin[3] = { 0, 0, 0 };
+    double distance;
+
+    if (vtkPlane::IntersectWithLine(
+          nearWorldPoint, farWorldPoint, normal, origin, distance, position))
+    {
+      valid = 1;
+    }
+  }
+  if (valid)
+  {
+    worldPos[0] = position[0];
+    worldPos[1] = position[1];
+    worldPos[2] = position[2];
+    return 1;
+  }
+  return 0;
 }
 
 //----------------------------------------------------------------------------
-void vtkMaptkPointPicker::PrintSelf(ostream& os, vtkIndent indent)
+void vtkMaptkPointPlacer::PrintSelf(ostream& os, vtkIndent indent)
 {
-  this->Superclass::PrintSelf(os, indent.GetNextIndent());
+  // os << indent << " = " << this-> << endl;
+  this->Superclass::PrintSelf(os, indent);
 }

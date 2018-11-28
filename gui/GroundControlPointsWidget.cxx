@@ -190,6 +190,13 @@ void GroundControlPointsWidget::setInteractor(vtkRenderWindowInteractor* iren)
 }
 
 //-----------------------------------------------------------------------------
+void GroundControlPointsWidget::setPointPlacer(vtkPointPlacer* placer)
+{
+  QTE_D();
+  d->pointRepr->SetPointPlacer(placer);
+}
+
+//-----------------------------------------------------------------------------
 vtkRenderer* GroundControlPointsWidget::renderer()
 {
   QTE_D();
@@ -266,6 +273,9 @@ void GroundControlPointsWidget::addDisplayPoint(double pt[3])
 
   int handleId = d->repr->CreateHandle(pt);
   d->repr->SetSeedWorldPosition(handleId, pt);
+  // Now that the seed is placed, reset the point placer to ensure free
+  // motion of the handle
+  d->repr->GetHandleRepresentation(handleId)->SetPointPlacer(nullptr);
   vtkHandleWidget* currentHandle = d->widget->CreateNewHandle();
   currentHandle->SetEnabled(1);
 }

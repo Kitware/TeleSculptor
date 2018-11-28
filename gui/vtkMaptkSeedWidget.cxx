@@ -133,6 +133,9 @@ void vtkMaptkSeedWidget::AddPointAction(vtkAbstractWidget* w)
     int currentHandleNumber = rep->CreateHandle(e);
     vtkHandleWidget* currentHandle = self->CreateNewHandle();
     rep->SetSeedDisplayPosition(currentHandleNumber, e);
+    // Now that the seed is placed, reset the point placer to ensure free
+    // motion of the handle
+    rep->GetHandleRepresentation(currentHandleNumber)->SetPointPlacer(nullptr);
     currentHandle->SetEnabled(1);
     self->InvokeEvent(vtkCommand::PlacePointEvent, &(currentHandleNumber));
     self->InvokeEvent(vtkCommand::InteractionEvent, &(currentHandleNumber));
