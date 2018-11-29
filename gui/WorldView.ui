@@ -298,7 +298,7 @@
    </property>
    <property name="icon">
     <iconset resource="icons/icons.qrc">
-     <normaloff>:/icons/22x22/crosshair</normaloff>:/icons/22x22/crosshair</iconset>
+     <normaloff>:/icons/22x22/location</normaloff>:/icons/22x22/location</iconset>
    </property>
    <property name="text">
     <string>Control Points</string>

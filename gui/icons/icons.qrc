@@ -1,7 +1,6 @@
 <RCC>
   <qresource prefix="icons/16x16">
     <file alias="camera">16x16/camera.png</file>
-    <file alias="crosshair">16x16/crosshair.png</file>
     <file alias="cancel">16x16/cancel.png</file>
     <file alias="close">16x16/close.png</file>
     <file alias="depthmap">16x16/depthmap.png</file>
@@ -11,18 +10,19 @@
     <file alias="help-manual">16x16/help-manual.png</file>
     <file alias="image">16x16/image.png</file>
     <file alias="landmark">16x16/landmark.png</file>
-    <file alias="telesculptor">16x16/telesculptor.png</file>
+    <file alias="location">16x16/location.png</file>
     <file alias="open">16x16/open.png</file>
     <file alias="playback-loop">16x16/playback-loop.png</file>
     <file alias="playback-play">16x16/playback-play.png</file>
     <file alias="quit">16x16/quit.png</file>
     <file alias="residual">16x16/residual.png</file>
+    <file alias="roi">16x16/roi.png</file>
     <file alias="save">16x16/save.png</file>
+    <file alias="telesculptor">16x16/telesculptor.png</file>
     <file alias="view-reset">16x16/view-reset.png</file>
     <file alias="volume">16x16/volume.png</file>
   </qresource>
   <qresource prefix="icons/22x22">
-    <file alias="crosshair">22x22/crosshair.png</file>
     <file alias="camera">22x22/camera.png</file>
     <file alias="cancel">22x22/cancel.png</file>
     <file alias="close">22x22/close.png</file>
@@ -33,15 +33,16 @@
     <file alias="help-manual">22x22/help-manual.png</file>
     <file alias="image">22x22/image.png</file>
     <file alias="landmark">22x22/landmark.png</file>
+    <file alias="location">22x22/location.png</file>
     <file alias="open">22x22/open.png</file>
     <file alias="playback-loop">22x22/playback-loop.png</file>
     <file alias="playback-play">22x22/playback-play.png</file>
     <file alias="quit">22x22/quit.png</file>
     <file alias="residual">22x22/residual.png</file>
+    <file alias="roi">22x22/roi.png</file>
     <file alias="save">22x22/save.png</file>
     <file alias="view-reset">22x22/view-reset.png</file>
     <file alias="volume">22x22/volume.png</file>
-	<file alias="roi">22x22/roi.png</file>
   </qresource>
   <qresource prefix="icons/32x32">
     <file alias="telesculptor">32x32/telesculptor.png</file>

@@ -44,6 +44,7 @@
 #include "vtkMaptkCamera.h"
 #include "vtkMaptkCameraRepresentation.h"
 #include "vtkMaptkImageUnprojectDepth.h"
+#include "vtkMaptkInteractorStyle.h"
 #include "vtkMaptkScalarDataFilter.h"
 
 #include <vital/types/camera.h>
@@ -73,6 +74,7 @@
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
 #include <vtkRenderWindow.h>
+#include <vtkRenderWindowInteractor.h>
 #include <vtkRenderer.h>
 #include <vtkStructuredGrid.h>
 #include <vtkTextProperty.h>
@@ -441,6 +443,9 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->groundControlPointsWidget->setInteractor(d->UI.renderWidget->GetInteractor());
   connect(d->UI.PlaceGroundControlPoint, &QAction::toggled,
           this, &WorldView::pointPlacementEnabled);
+
+  vtkNew<vtkMaptkInteractorStyle> iren;
+  d->renderWindow->GetInteractor()->SetInteractorStyle(iren);
 
   d->renderer->AddActor(d->cameraRep->GetNonActiveActor());
   d->renderer->AddActor(d->cameraRep->GetActiveActor());

@@ -114,6 +114,7 @@ set(gui_sources
   MetadataView.cxx
   PointOptions.cxx
   Project.cxx
+  Utils.cxx
   VideoImport.cxx
   VolumeOptions.cxx
   WorldView.cxx
@@ -123,6 +124,7 @@ set(gui_sources
   vtkMaptkFeatureTrackRepresentation.cxx
   vtkMaptkImageDataGeometryFilter.cxx
   vtkMaptkImageUnprojectDepth.cxx
+  vtkMaptkInteractorStyle.cxx
   vtkMaptkScalarDataFilter.cxx
   vtkMaptkScalarsToGradient.cxx
   vtkMaptkSeedWidget.cxx
@@ -141,6 +143,13 @@ set(gui_sources
   tools/TrackFilterTool.cxx
   tools/TriangulateTool.cxx
 )
+
+if (APPLE)
+  find_library(AppKit AppKit)
+  list(APPEND gui_sources
+    Utils.mm
+  )
+endif()
 
 maptk_use_appdata(
   ACKNOWLEDGMENTS
@@ -186,6 +195,7 @@ target_link_libraries(TeleSculptor
   kwiver::sprokit_pipeline
   kwiver::vital_vpm
   qtExtensions
+  ${AppKit}
   ${VTK_LIBRARIES}
   ${QT_LIBRARIES}
 )
