@@ -55,7 +55,6 @@
 #include "vtkMaptkImageDataGeometryFilter.h"
 #include "vtkMaptkImageUnprojectDepth.h"
 
-#include <maptk/local_geo_cs.h>
 #include <maptk/version.h>
 
 #include <arrows/core/match_matrix.h>
@@ -65,7 +64,9 @@
 #include <vital/io/landmark_map_io.h>
 #include <vital/io/track_set_io.h>
 #include <vital/types/camera_perspective.h>
+#include <vital/types/local_geo_cs.h>
 #include <vital/types/metadata_map.h>
+#include <vital/types/sfm_constraints.h>
 
 #include <vtkBox.h>
 #include <vtkImageData.h>
@@ -324,7 +325,7 @@ public:
   kv::algo::video_input_sptr videoSource;
   kv::algo::video_input_sptr maskSource;
   kv::timestamp currentVideoTimestamp;
-  kv::metadata_map::map_metadata_t videoMetadataMap;
+  kv::metadata_map_sptr videoMetadataMap;
   kv::frame_id_t advanceInterval = 1;
 
   QMap<kv::frame_id_t, FrameData> frames;
@@ -333,7 +334,7 @@ public:
   vtkSmartPointer<vtkImageData> activeDepth;
   int activeDepthFrame = -1;
 
-  kwiver::maptk::local_geo_cs localGeoCs;
+  kv::sfm_constraints_sptr sfmConstraints;
 
   int activeCameraIndex = -1;
 
@@ -369,6 +370,8 @@ MainWindowPrivate::MainWindowPrivate(MainWindow* mainWindow)
                    mainWindow, &MainWindow::updateVideoImportProgress);
   QObject::connect(&videoImporter, &VideoImport::completed,
                    mainWindow, &MainWindow::updateFrames);
+
+  sfmConstraints = std::make_shared<kv::sfm_constraints>();
 }
 
 //-----------------------------------------------------------------------------
@@ -453,7 +456,8 @@ void MainWindowPrivate::addVideoSource(
   kv::algo::video_input::set_nested_algo_configuration(
     "video_reader", config, this->videoSource);
 
-  videoImporter.setData(config, stdString(videoPath), this->localGeoCs);
+  auto lgcs = sfmConstraints->get_local_geo_cs();
+  videoImporter.setData(config, stdString(videoPath), lgcs);
 
   try
   {
@@ -561,7 +565,11 @@ void MainWindowPrivate::addFrame(
 void MainWindowPrivate::updateFrames(
   std::shared_ptr<kv::metadata_map::map_metadata_t> mdMap)
 {
-  this->videoMetadataMap = *mdMap;
+  this->videoMetadataMap = std::make_shared<kv::simple_metadata_map>(*mdMap);
+
+  sfmConstraints->set_metadata(videoMetadataMap);
+
+
 
   this->UI.metadata->updateMetadata(mdMap);
 
@@ -606,11 +614,13 @@ void MainWindowPrivate::updateFrames(
     auto baseCamera = kv::simple_camera_perspective();
     baseCamera.set_intrinsics(K);
 
+    auto md = videoMetadataMap->metadata();
     kv::camera_map::map_camera_t camMap;
-    if (videoMetadataMap.size() > 0)
+    if (!md.empty())
     {
       std::map<kv::frame_id_t, kv::metadata_sptr> mdMap;
-      for (auto const& mdIter: this->videoMetadataMap)
+
+      for (auto const& mdIter: md)
       {
         // TODO: just using first element of metadata vector for now
         mdMap[mdIter.first] = mdIter.second[0];
@@ -629,11 +639,14 @@ void MainWindowPrivate::updateFrames(
             "initialize_intrinsics_with_metadata", true);
         if (init_intrinsics_with_metadata)
         {
-          kwiver::maptk::set_intrinsics_from_metadata(baseCamera, mdMap, im);
+          kv::set_intrinsics_from_metadata(baseCamera, mdMap, im);
         }
 
-        camMap = kwiver::maptk::initialize_cameras_with_metadata(
-          mdMap, baseCamera, this->localGeoCs);
+        kv::local_geo_cs lgcs = sfmConstraints->get_local_geo_cs();
+        camMap = kv::initialize_cameras_with_metadata(
+          mdMap, baseCamera, lgcs);
+
+        sfmConstraints->set_local_geo_cs(lgcs);
       }
     }
 
@@ -965,7 +978,8 @@ void MainWindowPrivate::updateCameraView()
 //-----------------------------------------------------------------------------
 std::string MainWindowPrivate::getFrameName(kv::frame_id_t frameId)
 {
-  return frameName(frameId, this->videoMetadataMap);
+  auto md = videoMetadataMap->metadata();
+  return frameName(frameId, md);
 }
 
 //-----------------------------------------------------------------------------
@@ -1034,13 +1048,14 @@ void MainWindowPrivate::loadImage(FrameData frame)
       this->UI.worldView->setImageData(imageData, size);
 
       // Update metadata view
-      if (this->videoMetadataMap.empty())
+      auto md = this->videoMetadataMap->metadata();
+      if (md.empty())
       {
         this->UI.metadata->updateMetadata(kv::metadata_vector{});
       }
       else
       {
-        auto mdi = --(this->videoMetadataMap.upper_bound(frame.id));
+        auto mdi = --(md.upper_bound(frame.id));
         this->UI.metadata->updateMetadata(mdi->second);
       }
     }
@@ -1494,7 +1509,7 @@ void MainWindow::newProject()
     d->project->config->set_value("output_krtd_dir", kvPath(
       d->project->getContingentRelativePath(d->project->cameraPath)));
 
-    if (!d->localGeoCs.origin().is_empty() &&
+    if (!d->sfmConstraints->get_local_geo_cs().origin().is_empty() &&
         !d->project->geoOriginFile.isEmpty())
     {
       saveGeoOrigin(d->project->geoOriginFile);
@@ -1568,8 +1583,11 @@ void MainWindow::loadProject(QString const& path)
   {
     if (QFileInfo{d->project->geoOriginFile}.isFile())
     {
-      kwiver::maptk::read_local_geo_cs_from_file(
-        d->localGeoCs, stdString(d->project->geoOriginFile));
+      kv::local_geo_cs lgcs;
+      kv::read_local_geo_cs_from_file(
+        lgcs, stdString(d->project->geoOriginFile));
+
+      d->sfmConstraints->set_local_geo_cs(lgcs);
     }
     else
     {
@@ -1677,7 +1695,7 @@ void MainWindow::loadVideo(QString const& path)
     d->project->config->set_value("output_krtd_dir", kvPath(
       d->project->getContingentRelativePath(d->project->cameraPath)));
 
-    if (!d->localGeoCs.origin().is_empty() &&
+    if (!d->sfmConstraints->get_local_geo_cs().origin().is_empty() &&
         !d->project->geoOriginFile.isEmpty())
     {
       saveGeoOrigin(d->project->geoOriginFile);
@@ -1843,7 +1861,7 @@ void MainWindow::loadGroundControlPoints(QString const& path)
 
   try
   {
-    auto const& gcp = kwiver::vital::read_ply_file(kvPath(path));
+    auto const& gcp = kv::read_ply_file(kvPath(path));
     if (gcp)
     {
       d->groundControlPointsHelper->setGroundControlPoints(*gcp);
@@ -1919,7 +1937,7 @@ void MainWindow::saveGroundControlPoints(QString const& path, bool writeToProjec
 
   try
   {
-    kwiver::vital::write_ply_file(
+    kv::write_ply_file(
       d->groundControlPointsHelper->groundControlPoints(),
       kvPath(path));
 
@@ -2160,7 +2178,7 @@ void MainWindow::saveGeoOrigin(QString const& path)
 
   d->project->config->set_value("geo_origin_file", kvPath(
     d->project->getContingentRelativePath(path)));
-  kwiver::maptk::write_local_geo_cs_to_file(d->localGeoCs, stdString(path));
+  kv::write_local_geo_cs_to_file(d->sfmConstraints->get_local_geo_cs(), stdString(path));
 }
 
 //-----------------------------------------------------------------------------
@@ -2343,6 +2361,7 @@ void MainWindow::executeTool(QObject* object)
     tool->setTracks(d->tracks);
     tool->setCameras(d->cameraMap());
     tool->setLandmarks(d->landmarks);
+    tool->setSfmConstraints(d->sfmConstraints);
     tool->setVideoPath(stdString(d->videoPath));
     tool->setMaskPath(stdString(d->maskPath));
     tool->setConfig(d->project->config);
@@ -2475,7 +2494,7 @@ void MainWindow::saveToolResults()
       saveTracks(d->project->tracksPath);
     }
 
-    if (!d->localGeoCs.origin().is_empty() &&
+    if (!d->sfmConstraints->get_local_geo_cs().origin().is_empty() &&
         !d->project->geoOriginFile.isEmpty())
     {
       saveGeoOrigin(d->project->geoOriginFile);

@@ -37,6 +37,7 @@
 #include <vital/types/landmark_map.h>
 #include <vital/types/feature_track_set.h>
 #include <vital/types/image_container.h>
+#include <vital/types/sfm_constraints.h>
 
 #include <vtkSmartPointer.h>
 #include <vtkImageData.h>
@@ -54,6 +55,7 @@ public:
   typedef kwiver::vital::feature_track_set_sptr feature_track_set_sptr;
   typedef kwiver::vital::camera_map_sptr camera_map_sptr;
   typedef kwiver::vital::landmark_map_sptr landmark_map_sptr;
+  typedef kwiver::vital::sfm_constraints_sptr sfm_constraints_sptr;
   typedef kwiver::vital::config_block_sptr config_block_sptr;
   typedef vtkSmartPointer<vtkImageData> depth_sptr;
 
@@ -77,6 +79,7 @@ public:
   depth_sptr active_depth;
   camera_map_sptr cameras;
   landmark_map_sptr landmarks;
+  sfm_constraints_sptr constraints;
   config_block_sptr config;
   kwiver::vital::logger_handle_t logger;
   int progress;
@@ -93,6 +96,7 @@ public:
   typedef kwiver::vital::feature_track_set_sptr feature_track_set_sptr;
   typedef kwiver::vital::camera_map_sptr camera_map_sptr;
   typedef kwiver::vital::landmark_map_sptr landmark_map_sptr;
+  typedef kwiver::vital::sfm_constraints_sptr sfm_constraints_sptr;
   typedef kwiver::vital::config_block_sptr config_block_sptr;
   typedef vtkSmartPointer<vtkImageData> depth_sptr;
 
@@ -143,6 +147,9 @@ public:
 
   /// Set the landmarks to be used as input to the tool.
   void setLandmarks(landmark_map_sptr const&);
+
+  /// Set the sfm constraints to be used as input to the tool.
+  void setSfmConstraints(sfm_constraints_sptr const&);
 
   /// Set the video source path.
   void setVideoPath(std::string const&);
@@ -206,6 +213,17 @@ public:
   /// \warning Users must not call this method while the tool is executing,
   ///          as doing so may not be thread safe.
   landmark_map_sptr landmarks() const;
+
+  /// Get sfm constraints.
+  ///
+  /// This returns the SfM constraints used by the tool.
+  ///
+  /// This may also be used by tool implementations to get the input Sfm constraints.
+  /// (The constraints will be a copy that can be safely modified.)
+  ///
+  /// \warning Users must not call this method while the tool is executing,
+  ///          as doing so may not be thread safe.
+  sfm_constraints_sptr sfmConstraints() const;
 
   /// Get tool progress.
   ///

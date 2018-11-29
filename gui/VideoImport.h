@@ -31,7 +31,7 @@
 #ifndef MAPTK_VIDEOINPUT_H_
 #define MAPTK_VIDEOINPUT_H_
 
-#include <maptk/local_geo_cs.h>
+#include <vital/types/local_geo_cs.h>
 
 #include <vital/vital_types.h>
 #include <vital/config/config_block_types.h>
@@ -61,7 +61,7 @@ public:
 
   void setData(config_block_sptr const&,
                std::string const&,
-               kwiver::maptk::local_geo_cs& lgcs);
+               kwiver::vital::local_geo_cs& lgcs);
 
 signals:
   /// Emitted when the tool execution is completed.

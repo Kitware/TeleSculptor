@@ -184,6 +184,14 @@ AbstractTool::landmark_map_sptr AbstractTool::landmarks() const
 }
 
 //-----------------------------------------------------------------------------
+AbstractTool::sfm_constraints_sptr AbstractTool::sfmConstraints() const
+{
+  QTE_D();
+  return d->data->constraints;
+}
+
+
+//-----------------------------------------------------------------------------
 void AbstractTool::cancel()
 {
   QTE_D();
@@ -223,6 +231,20 @@ void AbstractTool::setLandmarks(landmark_map_sptr const& newLandmarks)
 {
   QTE_D();
   d->data->copyLandmarks(newLandmarks);
+}
+
+//-----------------------------------------------------------------------------
+void AbstractTool::setSfmConstraints(sfm_constraints_sptr const& newConstraints)
+{
+  QTE_D();
+  if (newConstraints)
+  {
+    d->data->constraints = std::make_shared<kwiver::vital::sfm_constraints>(*newConstraints);
+  }
+  else
+  {
+    d->data->constraints = std::make_shared<kwiver::vital::sfm_constraints>();
+  }
 }
 
 //-----------------------------------------------------------------------------
