@@ -85,6 +85,7 @@ protected:
   // placing the widget.
   static void AddPointAction(vtkAbstractWidget*);
   static void MoveAction(vtkAbstractWidget*);
+  static void EndSelectAction(vtkAbstractWidget*);
 
 private:
   vtkMaptkSeedWidget(const vtkMaptkSeedWidget&) = delete;

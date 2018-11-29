@@ -51,6 +51,10 @@ vtkMaptkSeedWidget::vtkMaptkSeedWidget()
                                           vtkWidgetEvent::Move,
                                           this,
                                           vtkMaptkSeedWidget::MoveAction);
+  this->CallbackMapper->SetCallbackMethod(vtkCommand::LeftButtonReleaseEvent,
+                                          vtkWidgetEvent::EndSelect,
+                                          this,
+                                          vtkMaptkSeedWidget::EndSelectAction);
 }
 
 //----------------------------------------------------------------------
@@ -80,6 +84,7 @@ void vtkMaptkSeedWidget::AddPointAction(vtkAbstractWidget* w)
   // Need to distinguish between placing handles and manipulating handles
   if (self->WidgetState == vtkMaptkSeedWidget::MovingSeed)
   {
+    // self->HighlightActiveSeed();
     return;
   }
 
@@ -101,10 +106,9 @@ void vtkMaptkSeedWidget::AddPointAction(vtkAbstractWidget* w)
     int seedIdx = rep->GetActiveHandle();
     self->InvokeEvent(vtkCommand::StartInteractionEvent, &seedIdx);
 
-    self->EventCallbackCommand->SetAbortFlag(1);
     self->HighlightActiveSeed();
+    self->EventCallbackCommand->SetAbortFlag(1);
   }
-
   else if (self->WidgetState != vtkMaptkSeedWidget::PlacedSeeds)
   {
     if (!self->Interactor->GetControlKey())
@@ -140,9 +144,8 @@ void vtkMaptkSeedWidget::AddPointAction(vtkAbstractWidget* w)
     self->InvokeEvent(vtkCommand::PlacePointEvent, &(currentHandleNumber));
     self->InvokeEvent(vtkCommand::InteractionEvent, &(currentHandleNumber));
 
-    self->EventCallbackCommand->SetAbortFlag(1);
     self->HighlightActiveSeed();
-    self->Render();
+    self->EventCallbackCommand->SetAbortFlag(1);
   }
 }
 
@@ -183,6 +186,29 @@ void vtkMaptkSeedWidget::MoveAction(vtkAbstractWidget* w)
   self->Render();
 }
 
+//-------------------------------------------------------------------------
+void vtkMaptkSeedWidget::EndSelectAction(vtkAbstractWidget* w)
+{
+  vtkMaptkSeedWidget* self = reinterpret_cast<vtkMaptkSeedWidget*>(w);
+
+  // Do nothing if outside
+  if (self->WidgetState != vtkMaptkSeedWidget::MovingSeed)
+  {
+    return;
+  }
+
+  // Revert back to the mode we were in prior to selection.
+  self->WidgetState = self->Defining ? vtkMaptkSeedWidget::PlacingSeeds
+                                     : vtkMaptkSeedWidget::PlacedSeeds;
+
+  // Invoke event for seed handle
+  self->InvokeEvent(vtkCommand::LeftButtonReleaseEvent, nullptr);
+  self->EventCallbackCommand->SetAbortFlag(1);
+  self->InvokeEvent(vtkCommand::EndInteractionEvent, nullptr);
+  self->Superclass::EndInteraction();
+  self->HighlightActiveSeed();
+}
+
 //----------------------------------------------------------------------
 vtkHandleWidget* vtkMaptkSeedWidget::CreateNewHandle()
 {
@@ -205,13 +231,16 @@ void vtkMaptkSeedWidget::HighlightActiveSeed()
   }
   for (; iter != this->Seeds->end(); ++iter)
   {
-    (*iter)->GetHandleRepresentation()->Highlight(0);
     if (this->GetEnabled() &&
         (std::distance(this->Seeds->begin(), iter) == activeHandle))
     {
       (*iter)->GetHandleRepresentation()->Highlight(1);
       this->InvokeEvent(vtkMaptkSeedWidget::ActiveSeedChangedEvent,
                         &activeHandle);
+    }
+    else
+    {
+      (*iter)->GetHandleRepresentation()->Highlight(0);
     }
   }
   this->Render();
