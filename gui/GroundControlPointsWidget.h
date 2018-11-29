@@ -113,7 +113,6 @@ protected slots:
   // void addInternalPoint();
   void movePointEvent();
   void pointDeletedCallback(vtkObject*, unsigned long, void*, void*);
-  void cursorChangedCallback(vtkObject*, unsigned long, void*, void*);
   void activeHandleChangedCallback(vtkObject*, unsigned long, void*, void*);
 
 private:

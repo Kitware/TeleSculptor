@@ -47,10 +47,6 @@ vtkMaptkSeedWidget::vtkMaptkSeedWidget()
                                           vtkWidgetEvent::AddPoint,
                                           this,
                                           vtkMaptkSeedWidget::AddPointAction);
-  this->CallbackMapper->SetCallbackMethod(vtkCommand::MouseMoveEvent,
-                                          vtkWidgetEvent::Move,
-                                          this,
-                                          vtkMaptkSeedWidget::MoveAction);
   this->CallbackMapper->SetCallbackMethod(vtkCommand::LeftButtonReleaseEvent,
                                           vtkWidgetEvent::EndSelect,
                                           this,
@@ -147,43 +143,6 @@ void vtkMaptkSeedWidget::AddPointAction(vtkAbstractWidget* w)
     self->HighlightActiveSeed();
     self->EventCallbackCommand->SetAbortFlag(1);
   }
-}
-
-//-------------------------------------------------------------------------
-void vtkMaptkSeedWidget::MoveAction(vtkAbstractWidget* w)
-{
-  vtkMaptkSeedWidget* self = reinterpret_cast<vtkMaptkSeedWidget*>(w);
-
-  self->InvokeEvent(vtkCommand::MouseMoveEvent, nullptr);
-
-  // set the cursor shape to a hand if we are near a seed.
-  int X = self->Interactor->GetEventPosition()[0];
-  int Y = self->Interactor->GetEventPosition()[1];
-  int state = self->WidgetRep->ComputeInteractionState(X, Y);
-
-  // Change the cursor shape to a hand and invoke an interaction event if we
-  // are near the seed
-  if (state == vtkSeedRepresentation::NearSeed)
-  {
-    int cShape = VTK_CURSOR_HAND;
-    self->RequestCursorShape(cShape);
-    self->InvokeEvent(vtkCommand::CursorChangedEvent, &cShape);
-
-    vtkSeedRepresentation* rep =
-      static_cast<vtkSeedRepresentation*>(self->WidgetRep);
-    int seedIdx = rep->GetActiveHandle();
-    self->InvokeEvent(vtkCommand::InteractionEvent, &seedIdx);
-
-    self->EventCallbackCommand->SetAbortFlag(1);
-  }
-  else
-  {
-    int cShape = VTK_CURSOR_DEFAULT;
-    self->RequestCursorShape(cShape);
-    self->InvokeEvent(vtkCommand::CursorChangedEvent, &cShape);
-  }
-
-  self->Render();
 }
 
 //-------------------------------------------------------------------------

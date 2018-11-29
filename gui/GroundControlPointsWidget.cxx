@@ -176,11 +176,6 @@ void GroundControlPointsWidget::setInteractor(vtkRenderWindowInteractor* iren)
 {
   QTE_D();
   d->widget->SetInteractor(iren);
-  d->connections->Connect(
-    d->widget.GetPointer(),
-    vtkCommand::CursorChangedEvent,
-    this,
-    SLOT(cursorChangedCallback(vtkObject*, unsigned long, void*, void*)));
 
   // Compute an appropriate scale factor for the glyphs
   vtkRenderer* ren = iren->FindPokedRenderer(0, 0);
@@ -202,31 +197,6 @@ vtkRenderer* GroundControlPointsWidget::renderer()
 {
   QTE_D();
   return d->renderer;
-}
-
-//-----------------------------------------------------------------------------
-void GroundControlPointsWidget::cursorChangedCallback(
-  vtkObject* vtkNotUsed(object),
-  unsigned long vtkNotUsed(event),
-  void* vtkNotUsed(clientData),
-  void* callData)
-{
-  int* cursorShape = reinterpret_cast<int*>(callData);
-  if (cursorShape && (cursorShape[0] == VTK_CURSOR_HAND))
-  {
-    if (!QApplication::overrideCursor())
-    {
-      QApplication::setOverrideCursor(Qt::PointingHandCursor);
-    }
-    else
-    {
-      QApplication::changeOverrideCursor(Qt::PointingHandCursor);
-    }
-  }
-  else
-  {
-    QApplication::restoreOverrideCursor();
-  }
 }
 
 //-----------------------------------------------------------------------------
