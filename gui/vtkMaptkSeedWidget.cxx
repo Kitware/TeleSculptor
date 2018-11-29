@@ -69,6 +69,8 @@ void vtkMaptkSeedWidget::DeleteSeed(int i)
 void vtkMaptkSeedWidget::SetEnabled(int enabling)
 {
   this->Superclass::SetEnabled(enabling);
+  this->WidgetState =
+    enabling ? vtkMaptkSeedWidget::PlacingSeeds : vtkMaptkSeedWidget::Start;
   this->HighlightActiveSeed();
 }
 
@@ -80,7 +82,6 @@ void vtkMaptkSeedWidget::AddPointAction(vtkAbstractWidget* w)
   // Need to distinguish between placing handles and manipulating handles
   if (self->WidgetState == vtkMaptkSeedWidget::MovingSeed)
   {
-    // self->HighlightActiveSeed();
     return;
   }
 
