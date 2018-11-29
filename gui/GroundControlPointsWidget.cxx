@@ -85,6 +85,7 @@ GroundControlPointsWidgetPrivate::GroundControlPointsWidgetPrivate()
 
   // Set up the representation
   this->widget->ManagesCursorOn();
+  this->pointRepr->SetTolerance(1);
   this->repr->SetHandleRepresentation(this->pointRepr.GetPointer());
   vtkNew<vtkProperty> property;
   property->SetColor(1, 1, 1);
