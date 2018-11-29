@@ -325,7 +325,8 @@ public:
   kv::algo::video_input_sptr videoSource;
   kv::algo::video_input_sptr maskSource;
   kv::timestamp currentVideoTimestamp;
-  kv::metadata_map_sptr videoMetadataMap;
+  kv::metadata_map_sptr videoMetadataMap =
+    std::make_shared<kv::simple_metadata_map>();
   kv::frame_id_t advanceInterval = 1;
 
   QMap<kv::frame_id_t, FrameData> frames;
