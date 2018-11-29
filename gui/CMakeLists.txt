@@ -63,6 +63,7 @@ include_directories(
 
 set(gui_am_ui
   CameraView.ui
+  GroundControlPointsView.ui
   MainWindow.ui
   MatchMatrixWindow.ui
   WorldView.ui
@@ -105,6 +106,7 @@ set(gui_sources
   FeatureOptions.cxx
   GradientSelector.cxx
   GroundControlPointsHelper.cxx
+  GroundControlPointsView.cxx
   GroundControlPointsWidget.cxx
   GuiCommon.cxx
   ImageOptions.cxx
