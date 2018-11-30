@@ -32,6 +32,7 @@
 #include "ComputeAllDepthTool.h"
 #include "GuiCommon.h"
 
+#include <arrows/core/depth_utils.h>
 #include <vital/algo/compute_depth.h>
 #include <vital/algo/image_io.h>
 #include <vital/algo/video_input.h>
@@ -261,21 +262,24 @@ void ComputeAllDepthTool::run()
     kwiver::vital::image_container_sptr ref_img = frames_out[ref_frame];
 
     vtkBox* roi = this->ROI();
-    double minptd[3];
+    double minptd[3], maxptd[3];
     roi->GetXMin(minptd);
-    kwiver::vital::vector_3d minpt(minptd);
-
-    double maxptd[3];
     roi->GetXMax(maxptd);
+    kwiver::vital::vector_3d minpt(minptd);
     kwiver::vital::vector_3d maxpt(maxptd);
-    int i0, ni, j0, nj;
-    d->depth_algo->set_roi(minpt, maxpt, cameras_out[ref_frame], ref_img->width(), ref_img->height(),
-                           i0, ni, j0, nj);
+
+    kwiver::vital::bounding_box<int> crop = kwiver::arrows::core::project_3d_bounds(
+      minpt, maxpt, *cameras_out[ref_frame], ref_img->width(), ref_img->height());
+
+    double height_min, height_max;
+    kwiver::arrows::core::height_range_from_3d_bounds(minpt, maxpt, height_min, height_max);
 
     //compute depth
     auto depth = d->depth_algo->compute(frames_out, cameras_out,
-                                        landmarks_out, ref_frame);
-    auto image_data = depth_to_vtk(depth, frames_out[ref_frame], i0, ni, j0, nj);
+                                        height_min, height_max,
+                                        ref_frame, crop);
+    auto image_data = depth_to_vtk(depth, frames_out[ref_frame], crop.min_x(), crop.width(),
+                                   crop.min_y(), crop.height());
 
     auto data = std::make_shared<ToolData>();
     data->copyDepth(image_data);
