@@ -53,6 +53,9 @@ TeleSculptor
  * Double-clicking the mouse pointer in the WorldView allows to set the center
    of rotation of the view camera about the nearest picked point in the view.
 
+ * Refactored the code to remove the ReconstructionData class that was left
+   over from when surface extraction was part of a separate repository.
+
 MAP-Tk Library
 
  * Moved local_geo_cs class into KWIVER and updated TeleSculptor to used the
