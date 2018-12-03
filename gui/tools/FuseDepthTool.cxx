@@ -196,7 +196,10 @@ volume_to_vtk(kwiver::vital::image_container_sptr volume, const kwiver::vital::v
                              volume->height() + 1,
                              volume->depth() + 1));
   grid->SetOrigin(origin[0], origin[1], origin[2]);
-  grid->SetDimensions(volume->width() + 1, volume->height() + 1, volume->depth() + 1); //vtk cells are dim - 1 for some reason
+  // vtk cells are dim - 1 for some reason
+  grid->SetDimensions(static_cast<int>(volume->width() + 1),
+                      static_cast<int>(volume->height() + 1),
+                      static_cast<int>(volume->depth() + 1));
   grid->SetSpacing(spacing[0], spacing[1], spacing[2]);
 
   // initialize output
