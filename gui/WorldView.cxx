@@ -112,7 +112,8 @@ class WorldViewPrivate
 {
 public:
   WorldViewPrivate()
-    : rangeUpdateNeeded(false),
+   :  initroi(false),
+      rangeUpdateNeeded(false),
       validDepthInput(false),
       validImage(false),
       validTransform(false),
@@ -120,8 +121,7 @@ public:
       scaleDirty(false),
       axesDirty(false),
       axesVisible(false),
-      renderQueued(false),
-      initroi(false)
+      renderQueued(false)
   {
   }
 
