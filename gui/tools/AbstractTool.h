@@ -41,6 +41,9 @@
 
 #include <vtkSmartPointer.h>
 #include <vtkImageData.h>
+#include <vtkBox.h>
+#include <vtkNew.h>
+#include <vtkStructuredGrid.h>
 
 #include <qtGlobal.h>
 
@@ -58,6 +61,7 @@ public:
   typedef kwiver::vital::sfm_constraints_sptr sfm_constraints_sptr;
   typedef kwiver::vital::config_block_sptr config_block_sptr;
   typedef vtkSmartPointer<vtkImageData> depth_sptr;
+  typedef std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string> > depth_lookup_sptr;
 
   /// Deep copy the feature tracks into this data class
   void copyTracks(feature_track_set_sptr const&);
@@ -70,6 +74,9 @@ public:
 
   /// Deep copy a depth image into this data class
   void copyDepth(depth_sptr const&);
+
+  /// Deep copy the list of depthmaps into this data class
+  void copyDepthLookup(depth_lookup_sptr const&);
 
   int maxFrame;
   unsigned int activeFrame;
@@ -84,6 +91,9 @@ public:
   kwiver::vital::logger_handle_t logger;
   int progress;
   std::string description;
+  vtkNew<vtkBox> roi;
+  depth_lookup_sptr depthLookup;
+  vtkSmartPointer<vtkStructuredGrid> volume;
 };
 
 Q_DECLARE_METATYPE(std::shared_ptr<ToolData>)
@@ -107,7 +117,9 @@ public:
     Landmarks = 0x4,
     ActiveFrame = 0x8,
     KeyFrames = 0x10,
-    Depth = 0x20
+    Depth = 0x20,
+    BatchDepth = 0x40,
+    Fusion = 0x80
   };
   Q_DECLARE_FLAGS(Outputs, Output)
 
@@ -151,6 +163,12 @@ public:
   /// Set the sfm constraints to be used as input to the tool.
   void setSfmConstraints(sfm_constraints_sptr const&);
 
+  /// Set the 3D region of interest
+  void setROI(vtkBox *);
+
+  /// Set the depth map lookup (frame to filename)
+  void setDepthLookup(std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string> > const&);
+
   /// Set the video source path.
   void setVideoPath(std::string const&);
 
@@ -174,6 +192,9 @@ public:
 
   /// Get the active frame.
   unsigned int activeFrame() const;
+
+  std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string> > depthLookup() const;
+  vtkBox *ROI() const;
 
   /// Get tracks.
   ///
@@ -284,6 +305,12 @@ protected:
   ///         otherwise \c false
   bool hasLandmarks() const;
 
+  /// Test if the tool has depth maps
+  ///
+  /// \return \c true if the tool data has a non-zero number of depthMaps,
+  ///         otherwise \c false
+  bool hasDepthLookup() const;
+
   /// Test if the tool has video data.
   ///
   /// \return \c true if the tool data has an associated video source,
@@ -315,6 +342,9 @@ protected:
   ///
   /// This returns the tool execution progress as an integer.
   void updateProgress(int value, int maximum = 100);
+
+  /// Set the volume produced by the tool
+  void updateFusion(vtkSmartPointer<vtkStructuredGrid>);
 
   /// Set tool execution description.
   ///

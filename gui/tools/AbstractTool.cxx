@@ -134,6 +134,21 @@ void ToolData::copyDepth(depth_sptr const& newDepth)
 }
 
 //-----------------------------------------------------------------------------
+void  ToolData::copyDepthLookup(depth_lookup_sptr const& newDepthLookup)
+{
+  if (newDepthLookup)
+  {
+    depth_lookup_sptr depths(new std::map<kwiver::vital::frame_id_t, std::string>());
+    *depths = *newDepthLookup;
+    this->depthLookup = depths;
+  }
+  else
+  {
+    this->cameras = camera_map_sptr();
+  }
+}
+
+//-----------------------------------------------------------------------------
 AbstractTool::AbstractTool(QObject* parent)
   : QAction(parent), d_ptr(new AbstractToolPrivate(this))
 {
@@ -160,6 +175,20 @@ unsigned int AbstractTool::activeFrame() const
 {
   QTE_D();
   return d->data->activeFrame;
+}
+
+//-----------------------------------------------------------------------------
+std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string> > AbstractTool::depthLookup() const
+{
+  QTE_D();
+  return d->data->depthLookup;
+}
+
+//-----------------------------------------------------------------------------
+vtkBox *AbstractTool::ROI() const
+{
+  QTE_D();
+  return d->data->roi.Get();
 }
 
 //-----------------------------------------------------------------------------
@@ -248,6 +277,20 @@ void AbstractTool::setSfmConstraints(sfm_constraints_sptr const& newConstraints)
 }
 
 //-----------------------------------------------------------------------------
+void AbstractTool::setROI(vtkBox *newROI)
+{
+  QTE_D();
+  d->data->roi->SetBounds(newROI->GetBounds());
+}
+
+//-----------------------------------------------------------------------------
+void AbstractTool::setDepthLookup(std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string> > const& newDepthLookup)
+{
+  QTE_D();
+  d->data->copyDepthLookup(newDepthLookup);
+}
+
+//-----------------------------------------------------------------------------
 void AbstractTool::setVideoPath(std::string const& path)
 {
   QTE_D();
@@ -310,6 +353,13 @@ bool AbstractTool::hasLandmarks() const
 }
 
 //-----------------------------------------------------------------------------
+bool AbstractTool::hasDepthLookup() const
+{
+  QTE_D();
+  return !d->data->depthLookup->empty();
+}
+
+//-----------------------------------------------------------------------------
 bool AbstractTool::hasVideoSource() const
 {
   QTE_D();
@@ -367,6 +417,13 @@ void AbstractTool::updateProgress(int value, int maximum)
   QTE_D();
   // FIXME also report progress range rather than forcing to 0-100
   d->data->progress = (100 * value) / maximum;
+}
+
+//-----------------------------------------------------------------------------
+void AbstractTool::updateFusion(vtkSmartPointer<vtkStructuredGrid> newVolume)
+{
+  QTE_D();
+  d->data->volume = newVolume;
 }
 
 //-----------------------------------------------------------------------------

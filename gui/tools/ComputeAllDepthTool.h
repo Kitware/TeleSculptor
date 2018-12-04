@@ -28,42 +28,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_COMPUTEDEPTHTOOL_H_
-#define MAPTK_COMPUTEDEPTHTOOL_H_
+#ifndef MAPTK_COMPUTEALLDEPTHTOOL_H_
+#define MAPTK_COMPUTEALLDEPTHTOOL_H_
 
 #include "AbstractTool.h"
 
-class ComputeDepthToolPrivate;
+class ComputeAllDepthToolPrivate;
 
-class ComputeDepthTool : public AbstractTool
+class ComputeAllDepthTool : public AbstractTool
 {
   Q_OBJECT
 
 public:
-  explicit ComputeDepthTool(QObject* parent = 0);
-  ~ComputeDepthTool() override;
+  explicit ComputeAllDepthTool(QObject* parent = 0);
+  virtual ~ComputeAllDepthTool();
 
-  Outputs outputs() const override;
+  virtual Outputs outputs() const QTE_OVERRIDE;
 
   /// Get if the tool can be canceled.
-  bool isCancelable() const override { return true; }
+  virtual bool isCancelable() const QTE_OVERRIDE { return true; }
 
-  bool execute(QWidget* window = 0) override;
-
-  bool callback_handler(kwiver::vital::image_container_sptr depth,
-                        unsigned int iterations);
+  virtual bool execute(QWidget* window = 0) QTE_OVERRIDE;
 
 protected:
-  void run() override;
+  virtual void run() QTE_OVERRIDE;
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(ComputeDepthTool)
-  QTE_DECLARE_PRIVATE(ComputeDepthTool)
-  QTE_DISABLE_COPY(ComputeDepthTool)
+  QTE_DECLARE_PRIVATE_RPTR(ComputeAllDepthTool)
+  QTE_DECLARE_PRIVATE(ComputeAllDepthTool)
+  QTE_DISABLE_COPY(ComputeAllDepthTool)
 };
-
-vtkSmartPointer<vtkImageData>
-depth_to_vtk(kwiver::vital::image_container_sptr depth_img, kwiver::vital::image_container_sptr color_img,
-             int i0, int ni, int j0, int nj);
 
 #endif

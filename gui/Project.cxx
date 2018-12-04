@@ -64,8 +64,7 @@ QString getPath(Project const* project, std::string const& key,
   }
   catch (...)
   {
-    return (!altKey.empty() ? getPath(project, altKey, defaultPath) :
-            QString(defaultPath));
+    return (!altKey.empty() ? getPath(project, altKey, defaultPath) : QString(defaultPath));
   }
 }
 
@@ -143,7 +142,16 @@ bool Project::read(QString const& path)
     this->videoPath = getPath(this, "video_source", {}, "image_list_file");
     this->maskPath = getPath(this, "mask_source");
 
-    return true;
+    if (this->config->has_value("ROI"))
+    {
+      this->ROI = this->config->get_value<std::string>("ROI");
+    }
+    else
+    {
+      this->ROI = std::string("");
+    }
+
+     return true;
   }
   catch (kwiver::vital::config_block_exception e)
   {
@@ -180,12 +188,12 @@ void Project::write()
   if (!this->videoPath.isEmpty())
   {
     this->config->set_value("video_source",
-      stdString(this->getContingentRelativePath(this->videoPath)));
+                            stdString(this->getContingentRelativePath(this->videoPath)));
   }
   if (!this->maskPath.isEmpty())
   {
     this->config->set_value("mask_source",
-      stdString(this->getContingentRelativePath(this->maskPath)));
+                            stdString(this->getContingentRelativePath(this->maskPath)));
   }
 
   if (this->config->available_values().size() > 0)

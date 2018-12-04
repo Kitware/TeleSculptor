@@ -131,7 +131,9 @@ set(gui_sources
   tools/AbstractTool.cxx
   tools/BundleAdjustTool.cxx
   tools/CanonicalTransformTool.cxx
+  tools/ComputeAllDepthTool.cxx
   tools/ComputeDepthTool.cxx
+  tools/FuseDepthTool.cxx
   tools/InitCamerasLandmarksTool.cxx
   tools/MeshColoration.cxx
   tools/NeckerReversalTool.cxx

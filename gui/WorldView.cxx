@@ -112,7 +112,8 @@ class WorldViewPrivate
 {
 public:
   WorldViewPrivate()
-    : rangeUpdateNeeded(false),
+   :  initroi(false),
+      rangeUpdateNeeded(false),
       validDepthInput(false),
       validImage(false),
       validTransform(false),
@@ -182,6 +183,7 @@ public:
 
   vtkSmartPointer<vtkBoxWidget2> boxWidget;
   vtkSmartPointer<vtkBox> roi;
+  bool initroi;
   vtkNew<vtkEventQtSlotConnect> connections;
 
   bool rangeUpdateNeeded;
@@ -752,6 +754,46 @@ void WorldView::loadVolume(QString const& path)
   // Declare which table will be use for the contour
   d->contourFilter->SetInputArrayToProcess(
     0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS,
+    "reconstruction_scalar");
+
+  // Create mapper
+  vtkNew<vtkPolyDataMapper> contourMapper;
+  contourMapper->SetInputConnection(d->contourFilter->GetOutputPort());
+  contourMapper->SetColorModeToDirectScalars();
+
+  // Set the actor's mapper
+  d->volumeActor->SetMapper(contourMapper.Get());
+  d->volumeActor->SetVisibility(false);
+  d->volumeOptions->setActor(d->volumeActor.Get());
+
+  // Add this actor to the renderer
+  d->renderer->AddActor(d->volumeActor.Get());
+  emit contourChanged();
+}
+
+//-----------------------------------------------------------------------------
+//TODO: add camera and video for coloring
+void WorldView::setVolume(vtkSmartPointer<vtkStructuredGrid> volume)
+{
+  QTE_D();
+
+  d->UI.actionShowVolume->setEnabled(true);
+
+  d->volume = volume;
+
+  // Transform cell data to point data for contour filter
+  vtkNew<vtkCellDataToPointData> transformCellToPointData;
+  transformCellToPointData->SetInputData(volume);
+  transformCellToPointData->PassCellDataOn();
+
+  // Apply contour
+  d->contourFilter = vtkContourFilter::New();
+  d->contourFilter->SetInputConnection(transformCellToPointData->GetOutputPort());
+  d->contourFilter->SetNumberOfContours(1);
+  d->contourFilter->SetValue(0, 0.5);
+  // Declare which table will be use for the contour
+  d->contourFilter->SetInputArrayToProcess(0, 0, 0,
+    vtkDataObject::FIELD_ASSOCIATION_POINTS,
     "reconstruction_scalar");
 
   // Create mapper
@@ -1431,7 +1473,7 @@ void WorldView::selectROI(bool toggled)
 {
   QTE_D();
 
-  if (toggled && d->landmarkPoints->GetNumberOfPoints() > 1)
+  if (toggled && (d->landmarkPoints->GetNumberOfPoints() > 1 || d->initroi))
   {
     if (!d->boxWidget)
     {
@@ -1444,7 +1486,13 @@ void WorldView::selectROI(bool toggled)
       if (rep)
       {
         rep->SetPlaceFactor(1); // Default is 0.5
-        rep->PlaceWidget(d->landmarkActor->GetBounds());
+        if (d->initroi)
+        {
+          rep->PlaceWidget(d->roi->GetBounds());
+          d->initroi = false;
+        }
+        else
+          rep->PlaceWidget(d->landmarkActor->GetBounds());
         d->connections->Connect(
           d->boxWidget,
           vtkCommand::InteractionEvent,
@@ -1485,7 +1533,7 @@ void WorldView::resetROI()
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::setROI(vtkBox* box)
+void WorldView::setROI(vtkBox* box, bool init)
 {
   if (!box)
   {
@@ -1494,6 +1542,7 @@ void WorldView::setROI(vtkBox* box)
 
   QTE_D();
   d->roi = box;
+  d->initroi = init;
 }
 
 //-----------------------------------------------------------------------------

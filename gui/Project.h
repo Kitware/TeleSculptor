@@ -65,6 +65,8 @@ public:
   QString depthPath;
   QString groundControlPath;
 
+  std::string ROI;
+
   kwiver::vital::config_block_sptr config =
     kwiver::vital::config_block::empty_config();
 
