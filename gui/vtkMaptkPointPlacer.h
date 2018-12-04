@@ -51,6 +51,7 @@ public:
    * representation to place the point initially. A return value of 1
    * indicates that constraints of the placer are met.
    */
+  using vtkPointPlacer::ComputeWorldPosition;
   virtual int ComputeWorldPosition(vtkRenderer* ren,
                                    double displayPos[2],
                                    double worldPos[3],
