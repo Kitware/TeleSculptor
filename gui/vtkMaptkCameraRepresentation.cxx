@@ -223,6 +223,7 @@ vtkMaptkCameraRepresentation::vtkMaptkCameraRepresentation()
 
   this->PathActor = vtkActor::New();
   this->PathActor->SetMapper(pathMapper.GetPointer());
+  this->PathActor->PickableOff();
 }
 
 //-----------------------------------------------------------------------------
