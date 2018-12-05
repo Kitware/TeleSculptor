@@ -56,6 +56,9 @@ TeleSculptor
  * Refactored the code to remove the ReconstructionData class that was left
    over from when surface extraction was part of a separate repository.
 
+ * Switched the iso-surfacing algorithm to
+   [flying edges](https://ieeexplore.ieee.org/document/7348069).
+
 MAP-Tk Library
 
  * Moved local_geo_cs class into KWIVER and updated TeleSculptor to used the
