@@ -54,6 +54,7 @@ int vtkMaptkPointPlacer::ComputeWorldPosition(vtkRenderer* ren,
   int valid = 0;
   double position[3];
   vtkNew<vtkPointPicker> pointPicker;
+  pointPicker->SetTolerance(0.005);
   if (pointPicker->Pick(displayPos[0], displayPos[1], 0, ren))
   {
     pointPicker->GetPickPosition(position);
