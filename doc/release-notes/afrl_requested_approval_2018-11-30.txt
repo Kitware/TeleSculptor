@@ -1,0 +1,79 @@
+MAP-Tk Release Notes for changes pending release approval by AFRL
+=================================================================
+
+This file documents release notes for changes made to MAP-Tk which require
+public release approval from AFRL.  After approval, the changes and
+corresponding notes below will be incorporated into a public numbered
+release version, and the content of this file will be reset.
+
+
+Updates since last public release
+---------------------------------
+
+TeleSculptor
+
+ * The loop over video frames to extract metadata for camera initialization now
+   occurs in a separate thread. This allows the user to interact with the GUI
+   and view the video while the camera initialization occurs.
+
+ * The slideshow delay slider has been replaced by a speed slider that controls
+   the slideshow playback speed. When the slider is to the far left, slideshow
+   speed is 0.25Hz and when to the far right, the slideshow plays without any
+   delay between frames.
+
+ * Added separate visibility and color options for display of feature tracks
+   that have descriptors and those that do not have descriptors.  This allows
+   for visual distinction between KLT tracks (without descriptors) on each
+   frame of video and ORB, or similar, tracks (with descriptors) on keyframes.
+
+ * Added a progress bar that appears below the World View to show progress when
+   tools are running.  It can also display a status message.
+
+ * Added CMake superbuild to automatically pull and build a specified version of all
+   the necessary libraries from Fletch and KWIVER. This allows MAP-Tk to be fully built
+   from a single build, rather than having to manually build and connect multiple builds.
+   The superbuild does still allow using a manually built KWIVER/Fletch if so desired.
+
+ * Updated TeleSculptor to use Qt version 5.10 instead of 4.8.  This also
+   enables the OpenGL2 backend in VTK 8.0 which provides faster rendering.
+   Qt5 now requires Python to build, so we are also requiring Python for
+   the superbuild, which enables Python in KWIVER.  We are not yet taking
+   advantage of KWIVER Python bindings in TeleSculptor, but may in the future.
+
+ * Added ability to interactively add and edit a region of interest in the
+   world view.
+
+ * Added ability to specify image masks.  Currently these are supported by
+   dense feature tracking.
+
+ * Added ability to place and edit ground control points that are synchronized
+   across the world and camera views. The points can be exported to a PLY file
+   and get imported using the standard import project infrastructure.
+
+ * Double-clicking the mouse pointer in the WorldView allows to set the center
+   of rotation of the view camera about the nearest picked point in the view.
+
+ * Refactored the code to remove the ReconstructionData class that was left
+   over from when surface extraction was part of a separate repository.
+
+MAP-Tk Library
+
+ * Moved local_geo_cs class into KWIVER and updated TeleSculptor to used the
+   KWIVER version.
+
+
+Fixes since last public release
+-------------------------------
+
+Packaging
+
+ * When packaging, CMake's fixup_bundle was not scanning sprokit plugins
+   for dependencies.  This has been corrected.
+
+TeleSculptor
+
+ * The functionality to color mesh surfaces was broken when TeleSculptor
+   switched to using the video_input API to load all imagery.  This code
+   has now been fixed to work with video_input.  It now works as it did
+   before.  It also no longer requires camera files to loaded again from
+   KRTD files and instead uses the in memory cameras.
