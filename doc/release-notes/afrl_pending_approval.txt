@@ -12,6 +12,9 @@ Updates since last public release
 
 TeleSculptor
 
+ * Switched the iso-surfacing algorithm to
+   [flying edges](https://ieeexplore.ieee.org/document/7348069).
+
 
 Fixes since last public release
 -------------------------------

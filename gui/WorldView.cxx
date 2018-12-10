@@ -56,10 +56,10 @@
 #include <vtkBoxWidget2.h>
 #include <vtkCellArray.h>
 #include <vtkCellDataToPointData.h>
-#include <vtkContourFilter.h>
 #include <vtkCubeAxesActor.h>
 #include <vtkDoubleArray.h>
 #include <vtkEventQtSlotConnect.h>
+#include <vtkFlyingEdges3D.h>
 #include <vtkGenericOpenGLRenderWindow.h>
 #include <vtkGeometryFilter.h>
 #include <vtkImageActor.h>
@@ -169,7 +169,7 @@ public:
   GroundControlPointsWidget* groundControlPointsWidget;
 
   VolumeOptions* volumeOptions;
-  vtkContourFilter* contourFilter;
+  vtkFlyingEdges3D* contourFilter;
 
   vtkNew<vtkMatrix4x4> imageProjection;
   vtkNew<vtkMatrix4x4> imageLocalTransform;
@@ -746,7 +746,7 @@ void WorldView::loadVolume(QString const& path)
   transformCellToPointData->PassCellDataOn();
 
   // Apply contour
-  d->contourFilter = vtkContourFilter::New();
+  d->contourFilter = vtkFlyingEdges3D::New();
   d->contourFilter->SetInputConnection(
     transformCellToPointData->GetOutputPort());
   d->contourFilter->SetNumberOfContours(1);
