@@ -789,7 +789,7 @@ void WorldView::setVolume(vtkSmartPointer<vtkStructuredGrid> volume)
   transformCellToPointData->PassCellDataOn();
 
   // Apply contour
-  d->contourFilter = vtkContourFilter::New();
+  d->contourFilter = vtkFlyingEdges3D::New();
   d->contourFilter->SetInputConnection(transformCellToPointData->GetOutputPort());
   d->contourFilter->SetNumberOfContours(1);
   d->contourFilter->SetValue(0, 0.5);
