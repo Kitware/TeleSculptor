@@ -30,6 +30,7 @@
 
 // MAPTK includes
 #include "GroundControlPointsWidget.h"
+#include "vtkMaptkPointHandleRepresentation3D.h"
 #include "vtkMaptkSeedWidget.h"
 
 // VTK includes
@@ -40,7 +41,6 @@
 #include <vtkHandleWidget.h>
 #include <vtkMatrix4x4.h>
 #include <vtkNew.h>
-#include <vtkPointHandleRepresentation3D.h>
 #include <vtkProperty.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
@@ -68,7 +68,7 @@ public:
   vtkNew<vtkMaptkSeedWidget> widget;
   vtkNew<vtkSeedRepresentation> repr;
   vtkNew<vtkEventQtSlotConnect> connections;
-  vtkNew<vtkPointHandleRepresentation3D> pointRepr;
+  vtkNew<vtkMaptkPointHandleRepresentation3D> pointRepr;
 
   vtkRenderer* renderer = nullptr;
 
@@ -85,7 +85,6 @@ GroundControlPointsWidgetPrivate::GroundControlPointsWidgetPrivate()
 
   // Set up the representation
   this->widget->ManagesCursorOn();
-  this->pointRepr->SetTolerance(1);
   this->repr->SetHandleRepresentation(this->pointRepr.GetPointer());
   vtkNew<vtkProperty> property;
   property->SetColor(1, 1, 1);

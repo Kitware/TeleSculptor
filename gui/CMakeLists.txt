@@ -125,6 +125,7 @@ set(gui_sources
   vtkMaptkImageDataGeometryFilter.cxx
   vtkMaptkImageUnprojectDepth.cxx
   vtkMaptkInteractorStyle.cxx
+  vtkMaptkPointHandleRepresentation3D.cxx
   vtkMaptkPointPicker.cxx
   vtkMaptkPointPlacer.cxx
   vtkMaptkScalarDataFilter.cxx
