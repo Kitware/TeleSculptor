@@ -32,6 +32,7 @@
 #include "vtkMaptkPointPlacer.h"
 
 // VTK includes
+#include <vtkInteractorObserver.h>
 #include <vtkNew.h>
 #include <vtkObjectFactory.h>
 #include <vtkPlane.h>
@@ -54,10 +55,20 @@ int vtkMaptkPointPlacer::ComputeWorldPosition(vtkRenderer* ren,
   int valid = 0;
   double position[3];
   vtkNew<vtkPointPicker> pointPicker;
-  pointPicker->SetTolerance(0.005);
+  // Compute tolerance for the point picker based on the render window size
+  int height = 0, width = 0;
+  ren->GetTiledSize(&height, &width);
+  double tolerance = 1.0 / (height + width);
+  pointPicker->SetTolerance(tolerance);
   if (pointPicker->Pick(displayPos[0], displayPos[1], 0, ren))
   {
-    pointPicker->GetPickPosition(position);
+    double pickedPos[3];
+    double focalPoint[4];
+    pointPicker->GetPickPosition(pickedPos);
+    vtkInteractorObserver::ComputeWorldToDisplay(
+      ren, pickedPos[0], pickedPos[1], pickedPos[2], focalPoint);
+    vtkInteractorObserver::ComputeDisplayToWorld(
+      ren, displayPos[0], displayPos[1], focalPoint[2], position);
     valid = 1;
   }
   else
@@ -103,6 +114,5 @@ int vtkMaptkPointPlacer::ComputeWorldPosition(vtkRenderer* ren,
 //----------------------------------------------------------------------------
 void vtkMaptkPointPlacer::PrintSelf(ostream& os, vtkIndent indent)
 {
-  // os << indent << " = " << this-> << endl;
   this->Superclass::PrintSelf(os, indent);
 }
