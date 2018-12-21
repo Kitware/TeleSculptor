@@ -58,7 +58,7 @@ int vtkMaptkPointPlacer::ComputeWorldPosition(vtkRenderer* ren,
   // Compute tolerance for the point picker based on the render window size
   int height = 0, width = 0;
   ren->GetTiledSize(&height, &width);
-  double tolerance = 1.0 / (height + width);
+  double tolerance = 3.0 / sqrt(height*height + width*width);
   pointPicker->SetTolerance(tolerance);
   if (pointPicker->Pick(displayPos[0], displayPos[1], 0, ren))
   {

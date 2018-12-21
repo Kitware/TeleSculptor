@@ -55,7 +55,7 @@ void vtkMaptkPointHandleRepresentation3D::SetRenderer(vtkRenderer* ren)
     // Compute tolerance for the cell picker based on viewport size
     int height = 0, width = 0;
     ren->GetTiledSize(&height, &width);
-    double tolerance = 0.5 / (height + width);
+    double tolerance = 0.5 / sqrt(height*height + width*width);
     this->CursorPicker->SetTolerance(tolerance);
   }
 }
