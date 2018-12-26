@@ -53,7 +53,7 @@ int vtkMaptkPointPlacer::ComputeWorldPosition(vtkRenderer* ren,
   }
 
   int valid = 0;
-  double position[3];
+  double position[4] = {0.0, 0.0, 0.0, 0.0};
   vtkNew<vtkPointPicker> pointPicker;
   // Compute tolerance for the point picker based on the render window size
   int height = 0, width = 0;
