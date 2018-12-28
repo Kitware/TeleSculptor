@@ -124,8 +124,8 @@ void GroundControlPointsWidgetPrivate::deletePoint(int handleId)
 {
   if (this->renderer)
   {
-    this->repr->RemoveHandle(handleId);
     this->widget->DeleteSeed(handleId);
+    this->repr->SetActiveHandle(handleId - 1);
   }
 }
 
