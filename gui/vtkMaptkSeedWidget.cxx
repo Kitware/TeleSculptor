@@ -16,6 +16,7 @@
 
 // VTK includes
 #include <vtkCallbackCommand.h>
+#include <vtkEvent.h>
 #include <vtkHandleRepresentation.h>
 #include <vtkHandleWidget.h>
 #include <vtkObjectFactory.h>
@@ -51,6 +52,14 @@ vtkMaptkSeedWidget::vtkMaptkSeedWidget()
                                           vtkWidgetEvent::EndSelect,
                                           this,
                                           vtkMaptkSeedWidget::EndSelectAction);
+  this->CallbackMapper->SetCallbackMethod(vtkCommand::KeyPressEvent,
+                                          vtkEvent::NoModifier,
+                                          127,
+                                          1,
+                                          "Delete",
+                                          vtkWidgetEvent::Delete,
+                                          this,
+                                          vtkMaptkSeedWidget::DeleteAction);
 }
 
 //----------------------------------------------------------------------
@@ -144,6 +153,34 @@ void vtkMaptkSeedWidget::AddPointAction(vtkAbstractWidget* w)
     self->HighlightActiveSeed();
     self->EventCallbackCommand->SetAbortFlag(1);
   }
+}
+
+//-------------------------------------------------------------------------
+// Implemented here to prevent the "RemoveHandle" call made by
+// vtkSeedWidget::DeleteAction
+void vtkMaptkSeedWidget::DeleteAction(vtkAbstractWidget* w)
+{
+  vtkMaptkSeedWidget* self = reinterpret_cast<vtkMaptkSeedWidget*>(w);
+
+  // Do nothing if outside
+  if (self->WidgetState != vtkSeedWidget::PlacingSeeds)
+  {
+    return;
+  }
+
+  // Remove last seed
+  vtkSeedRepresentation* rep =
+    reinterpret_cast<vtkSeedRepresentation*>(self->WidgetRep);
+  int removeId = rep->GetActiveHandle();
+  removeId =
+    removeId != -1 ? removeId : static_cast<int>(self->Seeds->size()) - 1;
+  // Invoke event for seed handle before actually deleting
+  self->InvokeEvent(vtkCommand::DeletePointEvent, &(removeId));
+
+  self->DeleteSeed(removeId);
+  // Got this event, abort processing if it
+  self->EventCallbackCommand->SetAbortFlag(1);
+  self->Render();
 }
 
 //-------------------------------------------------------------------------

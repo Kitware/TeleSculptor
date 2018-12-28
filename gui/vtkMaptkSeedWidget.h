@@ -84,6 +84,7 @@ protected:
   // Callback interface to capture events when
   // placing the widget.
   static void AddPointAction(vtkAbstractWidget*);
+  static void DeleteAction(vtkAbstractWidget*);
   static void EndSelectAction(vtkAbstractWidget*);
 
 private:
