@@ -287,7 +287,7 @@ void GroundControlPointsHelper::updateCameraViewPoints()
 
 //-----------------------------------------------------------------------------
 void GroundControlPointsHelper::setGroundControlPoints(
-  kv::landmark_map const& lm)
+  kv::ground_control_point_map const& gcpm)
 {
   QTE_D();
 
@@ -299,10 +299,10 @@ void GroundControlPointsHelper::setGroundControlPoints(
     d->mainWindow->worldView()->groundControlPointsWidget();
   worldWidget->clearPoints();
 
-  auto const& groundControlPoints = lm.landmarks();
-  foreach (auto const& lm, groundControlPoints)
+  auto const& groundControlPoints = gcpm.ground_control_points();
+  foreach (auto const& gcp, groundControlPoints)
   {
-    auto const& pos = lm.second->loc();
+    auto const& pos = gcp.second->loc();
 
     worldWidget->addPoint(pos);
     this->addCameraViewPoint();
@@ -310,7 +310,8 @@ void GroundControlPointsHelper::setGroundControlPoints(
 }
 
 //-----------------------------------------------------------------------------
-kv::landmark_map_sptr GroundControlPointsHelper::groundControlPoints() const
+kv::ground_control_point_map_sptr
+GroundControlPointsHelper::groundControlPoints() const
 {
   QTE_D();
 
@@ -318,14 +319,14 @@ kv::landmark_map_sptr GroundControlPointsHelper::groundControlPoints() const
     d->mainWindow->worldView()->groundControlPointsWidget();
   int numWorldPts = worldWidget->numberOfPoints();
 
-  kv::landmark_map::map_landmark_t groundControlPoints;
+  kv::ground_control_point_map::map_ground_control_point_t groundControlPoints;
   for (int i = 0; i < numWorldPts; ++i)
   {
-    kv::vector_3d pt = worldWidget->point(i);
-    groundControlPoints[i] = std::make_shared<kv::landmark_d>(pt);
+    auto const& pt = worldWidget->point(i);
+    groundControlPoints[i] = std::make_shared<kv::ground_control_point>(pt);
   }
 
-  return std::make_shared<kv::simple_landmark_map>(groundControlPoints);
+  return std::make_shared<kv::ground_control_point_map>(groundControlPoints);
 }
 
 //-----------------------------------------------------------------------------

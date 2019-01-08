@@ -31,6 +31,9 @@
 #ifndef MAPTK_GROUNDCONTROLPOINTSHELPER_H_
 #define MAPTK_GROUNDCONTROLPOINTSHELPER_H_
 
+// maptk includes
+#include <maptk/ground_control_point.h>
+
 // qtExtensions includes
 #include <qtGlobal.h>
 
@@ -53,8 +56,8 @@ public:
 
   void updateCameraViewPoints();
 
-  void setGroundControlPoints(kwiver::vital::landmark_map const&);
-  kwiver::vital::landmark_map_sptr groundControlPoints() const;
+  void setGroundControlPoints(kwiver::vital::ground_control_point_map const&);
+  kwiver::vital::ground_control_point_map_sptr groundControlPoints() const;
 
   bool readGroundControlPoints(QString const& path);
 
