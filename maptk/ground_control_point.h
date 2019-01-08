@@ -38,6 +38,8 @@
 #ifndef MAPTK_GROUND_CONTROL_POINT_H_
 #define MAPTK_GROUND_CONTROL_POINT_H_
 
+#include <maptk/maptk_export.h>
+
 #include <vital/types/geo_point.h>
 #include <vital/vital_export.h>
 
@@ -55,7 +57,7 @@ namespace vital
 using ground_control_point_id_t = uint32_t;
 
 /// A representation of a 3D ground control point.
-class ground_control_point
+class MAPTK_EXPORT ground_control_point
 {
 public:
   /// Constructor
@@ -141,7 +143,7 @@ using ground_control_point_sptr = std::shared_ptr<ground_control_point>;
 
 // ----------------------------------------------------------------------------
 /// A mapping between IDs and ground control points
-class ground_control_point_map
+class MAPTK_EXPORT ground_control_point_map
 {
 public:
   /// alias for std::map from integer IDs to ground control points
