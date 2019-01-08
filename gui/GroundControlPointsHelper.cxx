@@ -43,6 +43,8 @@
 #include <vtkPlane.h>
 #include <vtkRenderer.h>
 
+namespace kv = kwiver::vital;
+
 QTE_IMPLEMENT_D_FUNC(GroundControlPointsHelper)
 
 //-----------------------------------------------------------------------------
@@ -125,7 +127,7 @@ void GroundControlPointsHelper::addCameraViewPoint()
 
   GroundControlPointsWidget* worldWidget =
     d->mainWindow->worldView()->groundControlPointsWidget();
-  kwiver::vital::vector_3d p = worldWidget->activePoint();
+  kv::vector_3d p = worldWidget->activePoint();
 
   double cameraPt[2];
   camera->ProjectPoint(p, cameraPt);
@@ -150,10 +152,10 @@ void GroundControlPointsHelper::addWorldViewPoint()
 
   GroundControlPointsWidget* cameraWidget =
     d->mainWindow->cameraView()->groundControlPointsWidget();
-  kwiver::vital::vector_3d cameraPt = cameraWidget->activePoint();
+  kv::vector_3d cameraPt = cameraWidget->activePoint();
   // Use an arbitarily value for depth to ensure that the landmarks would
   // be between the camera center and the back-projected point.
-  kwiver::vital::vector_3d p =
+  kv::vector_3d p =
     camera->UnprojectPoint(cameraPt.data(), 100 * camera->GetDistance());
 
   // Pick a point along the active camera direction and use the depth of the
@@ -206,7 +208,7 @@ void GroundControlPointsHelper::moveCameraViewPoint()
     d->mainWindow->worldView()->groundControlPointsWidget();
   int handleId = worldWidget->activeHandle();
 
-  kwiver::vital::vector_3d p = worldWidget->activePoint();
+  kv::vector_3d p = worldWidget->activePoint();
 
   double cameraPt[2];
   camera->ProjectPoint(p, cameraPt);
@@ -234,11 +236,11 @@ void GroundControlPointsHelper::moveWorldViewPoint()
 
   int handleId = cameraWidget->activeHandle();
 
-  kwiver::vital::vector_3d cameraPt = cameraWidget->activePoint();
-  kwiver::vital::vector_3d pt = worldWidget->point(handleId);
+  kv::vector_3d cameraPt = cameraWidget->activePoint();
+  kv::vector_3d pt = worldWidget->point(handleId);
   double depth = d->mainWindow->activeCamera()->Depth(pt);
 
-  kwiver::vital::vector_3d p = camera->UnprojectPoint(cameraPt.data(), depth);
+  kv::vector_3d p = camera->UnprojectPoint(cameraPt.data(), depth);
   worldWidget->movePoint(handleId, p.x(), p.y(), p.z());
   worldWidget->render();
 }
@@ -269,7 +271,7 @@ void GroundControlPointsHelper::updateCameraViewPoints()
 
   for (int i = 0; i < numWorldPts; ++i)
   {
-    kwiver::vital::vector_3d worldPt = worldWidget->point(i);
+    kv::vector_3d worldPt = worldWidget->point(i);
     double cameraPt[2];
     camera->ProjectPoint(worldPt, cameraPt);
     if (i >= numCameraPts)
@@ -285,7 +287,7 @@ void GroundControlPointsHelper::updateCameraViewPoints()
 
 //-----------------------------------------------------------------------------
 void GroundControlPointsHelper::setGroundControlPoints(
-  kwiver::vital::landmark_map const& lm)
+  kv::landmark_map const& lm)
 {
   QTE_D();
 
@@ -308,8 +310,7 @@ void GroundControlPointsHelper::setGroundControlPoints(
 }
 
 //-----------------------------------------------------------------------------
-kwiver::vital::landmark_map_sptr
-GroundControlPointsHelper::groundControlPoints() const
+kv::landmark_map_sptr GroundControlPointsHelper::groundControlPoints() const
 {
   QTE_D();
 
@@ -317,15 +318,14 @@ GroundControlPointsHelper::groundControlPoints() const
     d->mainWindow->worldView()->groundControlPointsWidget();
   int numWorldPts = worldWidget->numberOfPoints();
 
-  kwiver::vital::landmark_map::map_landmark_t groundControlPoints;
+  kv::landmark_map::map_landmark_t groundControlPoints;
   for (int i = 0; i < numWorldPts; ++i)
   {
-    kwiver::vital::vector_3d pt = worldWidget->point(i);
-    groundControlPoints[i] = std::make_shared<kwiver::vital::landmark_d>(pt);
+    kv::vector_3d pt = worldWidget->point(i);
+    groundControlPoints[i] = std::make_shared<kv::landmark_d>(pt);
   }
 
-  return std::make_shared<kwiver::vital::simple_landmark_map>(
-    groundControlPoints);
+  return std::make_shared<kv::simple_landmark_map>(groundControlPoints);
 }
 
 //-----------------------------------------------------------------------------
