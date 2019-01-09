@@ -59,7 +59,8 @@ public:
   // Set ground control points
   void setGroundControlPoints(kwiver::vital::ground_control_point_map const&);
   // Get access to the ground control points
-  kwiver::vital::ground_control_point_map_sptr groundControlPoints() const;
+  kwiver::vital::ground_control_point_map::ground_control_point_map_t const&
+  groundControlPoints() const;
 
   // Get access to a single ground control point
   kwiver::vital::ground_control_point_sptr groundControlPoint(

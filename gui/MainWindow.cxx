@@ -1922,8 +1922,7 @@ void MainWindow::loadGroundControlPoints(QString const& path)
   if (d->groundControlPointsHelper->readGroundControlPoints(path))
   {
     d->UI.actionExportGroundControlPoints->setEnabled(
-      d->groundControlPointsHelper->groundControlPoints() &&
-      d->groundControlPointsHelper->groundControlPoints()->size());
+      d->groundControlPointsHelper->groundControlPoints().size());
   }
 }
 

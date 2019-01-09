@@ -116,6 +116,10 @@ GroundControlPointsHelper::GroundControlPointsHelper(QObject* parent)
   connect(cameraWidget, &GroundControlPointsWidget::pointMoved,
           this, &GroundControlPointsHelper::moveWorldViewPoint);
   connect(worldWidget, &GroundControlPointsWidget::pointDeleted,
+          this, &GroundControlPointsHelper::removePoint);
+  connect(cameraWidget, &GroundControlPointsWidget::pointDeleted,
+          this, &GroundControlPointsHelper::removePoint);
+  connect(worldWidget, &GroundControlPointsWidget::pointDeleted,
           cameraWidget, &GroundControlPointsWidget::deletePoint);
   connect(cameraWidget, &GroundControlPointsWidget::pointDeleted,
           worldWidget, &GroundControlPointsWidget::deletePoint);
@@ -342,12 +346,11 @@ void GroundControlPointsHelper::setGroundControlPoints(
 }
 
 //-----------------------------------------------------------------------------
-kv::ground_control_point_map_sptr
+kv::ground_control_point_map::ground_control_point_map_t const&
 GroundControlPointsHelper::groundControlPoints() const
 {
   QTE_D();
-  return std::make_shared<kv::ground_control_point_map>(
-    d->groundControlPoints);
+  return d->groundControlPoints;
 }
 
 //-----------------------------------------------------------------------------
