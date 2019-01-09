@@ -232,6 +232,14 @@ kwiver::vital::vector_3d GroundControlPointsWidget::point(int handle) const
 }
 
 //-----------------------------------------------------------------------------
+vtkHandleWidget* GroundControlPointsWidget::handleWidget(int handleId) const
+{
+  QTE_D();
+
+  return d->widget->GetSeed(handleId);
+}
+
+//-----------------------------------------------------------------------------
 void GroundControlPointsWidget::addDisplayPoint(double pt[3])
 {
   QTE_D();

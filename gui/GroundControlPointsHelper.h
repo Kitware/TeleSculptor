@@ -56,8 +56,14 @@ public:
 
   void updateCameraViewPoints();
 
+  // Set ground control points
   void setGroundControlPoints(kwiver::vital::ground_control_point_map const&);
+  // Get access to the ground control points
   kwiver::vital::ground_control_point_map_sptr groundControlPoints() const;
+
+  // Get access to a single ground control point
+  kwiver::vital::ground_control_point_sptr groundControlPoint(
+    kwiver::vital::ground_control_point_id_t pointId);
 
   bool readGroundControlPoints(QString const& path);
 
@@ -69,10 +75,15 @@ public slots:
 
 signals:
   void pointCountChanged(int);
+  void pointAdded(kwiver::vital::ground_control_point_id_t);
+  void pointRemoved(kwiver::vital::ground_control_point_id_t);
+  void pointChanged(kwiver::vital::ground_control_point_id_t);
 
 protected slots:
   void addCameraViewPoint();
   void addWorldViewPoint();
+
+  void removePoint(int handleId);
 
   void moveCameraViewPoint();
   void moveWorldViewPoint();

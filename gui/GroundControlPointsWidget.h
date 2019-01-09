@@ -46,6 +46,7 @@
 // Forward declarations
 class GroundControlPointsWidgetPrivate;
 class vtkAbstractWidget;
+class vtkHandleWidget;
 class vtkMatrix4x4;
 class vtkObject;
 class vtkPointPlacer;
@@ -71,6 +72,9 @@ public:
   int activeHandle() const;
   kwiver::vital::vector_3d activePoint();
   kwiver::vital::vector_3d point(int handle) const;
+
+  // Get access to the underlying handle widget
+  vtkHandleWidget* handleWidget(int handleId) const;
 
   // Add a point
   void addDisplayPoint(double pt[3]);

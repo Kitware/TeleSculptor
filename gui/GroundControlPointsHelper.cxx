@@ -43,7 +43,11 @@
 #include <vtkPlane.h>
 #include <vtkRenderer.h>
 
+// vtk includes
+#include <vtkHandleWidget.h>
+
 namespace kv = kwiver::vital;
+using id_t = kv::ground_control_point_id_t;
 
 QTE_IMPLEMENT_D_FUNC(GroundControlPointsHelper)
 
@@ -52,7 +56,35 @@ class GroundControlPointsHelperPrivate
 {
 public:
   MainWindow* mainWindow = nullptr;
+  id_t curId = 0;
+  kv::ground_control_point_map::map_ground_control_point_t groundControlPoints;
+  std::map<vtkHandleWidget*, id_t> gcpHandleIdMap;
+
+  id_t addPoint();
+  id_t removePoint(vtkHandleWidget*);
 };
+
+//-----------------------------------------------------------------------------
+id_t GroundControlPointsHelperPrivate::addPoint()
+{
+  GroundControlPointsWidget* worldWidget =
+    this->mainWindow->worldView()->groundControlPointsWidget();
+  auto const pt = worldWidget->activePoint();
+  this->groundControlPoints[curId] =
+    std::make_shared<kv::ground_control_point>(pt);
+  auto const w = worldWidget->handleWidget(worldWidget->activeHandle());
+  this->gcpHandleIdMap[w] = curId;
+  return curId++;
+}
+
+//-----------------------------------------------------------------------------
+id_t GroundControlPointsHelperPrivate::removePoint(vtkHandleWidget* handle)
+{
+  auto const id = this->gcpHandleIdMap[handle];
+  this->gcpHandleIdMap.erase(handle);
+  this->groundControlPoints.erase(id);
+  return id;
+}
 
 //-----------------------------------------------------------------------------
 GroundControlPointsHelper::GroundControlPointsHelper(QObject* parent)
@@ -74,39 +106,23 @@ GroundControlPointsHelper::GroundControlPointsHelper(QObject* parent)
   worldWidget->setPointPlacer(vtkNew<vtkMaptkPointPlacer>());
 
   // connections
-  connect(worldWidget,
-          &GroundControlPointsWidget::pointPlaced,
-          this,
-          &GroundControlPointsHelper::addCameraViewPoint);
-  connect(cameraWidget,
-          &GroundControlPointsWidget::pointPlaced,
-          this,
-          &GroundControlPointsHelper::addWorldViewPoint);
+  connect(worldWidget, &GroundControlPointsWidget::pointPlaced,
+          this, &GroundControlPointsHelper::addCameraViewPoint);
+  connect(cameraWidget, &GroundControlPointsWidget::pointPlaced,
+          this, &GroundControlPointsHelper::addWorldViewPoint);
 
-  connect(worldWidget,
-          &GroundControlPointsWidget::pointMoved,
-          this,
-          &GroundControlPointsHelper::moveCameraViewPoint);
-  connect(cameraWidget,
-          &GroundControlPointsWidget::pointMoved,
-          this,
-          &GroundControlPointsHelper::moveWorldViewPoint);
-  connect(worldWidget,
-          &GroundControlPointsWidget::pointDeleted,
-          cameraWidget,
-          &GroundControlPointsWidget::deletePoint);
-  connect(cameraWidget,
-          &GroundControlPointsWidget::pointDeleted,
-          worldWidget,
-          &GroundControlPointsWidget::deletePoint);
-  connect(cameraWidget,
-          &GroundControlPointsWidget::activePointChanged,
-          worldWidget,
-          &GroundControlPointsWidget::setActivePoint);
-  connect(worldWidget,
-          &GroundControlPointsWidget::activePointChanged,
-          cameraWidget,
-          &GroundControlPointsWidget::setActivePoint);
+  connect(worldWidget, &GroundControlPointsWidget::pointMoved,
+          this, &GroundControlPointsHelper::moveCameraViewPoint);
+  connect(cameraWidget, &GroundControlPointsWidget::pointMoved,
+          this, &GroundControlPointsHelper::moveWorldViewPoint);
+  connect(worldWidget, &GroundControlPointsWidget::pointDeleted,
+          cameraWidget, &GroundControlPointsWidget::deletePoint);
+  connect(cameraWidget, &GroundControlPointsWidget::pointDeleted,
+          worldWidget, &GroundControlPointsWidget::deletePoint);
+  connect(cameraWidget, &GroundControlPointsWidget::activePointChanged,
+          worldWidget, &GroundControlPointsWidget::setActivePoint);
+  connect(worldWidget, &GroundControlPointsWidget::activePointChanged,
+          cameraWidget, &GroundControlPointsWidget::setActivePoint);
 }
 
 //-----------------------------------------------------------------------------
@@ -136,7 +152,8 @@ void GroundControlPointsHelper::addCameraViewPoint()
   cameraWidget->addPoint(cameraPt[0], cameraPt[1], 0.0);
   cameraWidget->render();
 
-  emit this->pointCountChanged(worldWidget->numberOfPoints());
+  emit this->pointAdded(d->addPoint());
+  emit this->pointCountChanged(d->groundControlPoints.size());
 }
 
 //-----------------------------------------------------------------------------
@@ -190,7 +207,18 @@ void GroundControlPointsHelper::addWorldViewPoint()
   worldWidget->addPoint(p);
   worldWidget->render();
 
-  emit this->pointCountChanged(worldWidget->numberOfPoints());
+  emit this->pointAdded(d->addPoint());
+  emit this->pointCountChanged(d->groundControlPoints.size());
+}
+
+//-----------------------------------------------------------------------------
+void GroundControlPointsHelper::removePoint(int handleId)
+{
+  QTE_D();
+  GroundControlPointsWidget* worldWidget =
+    d->mainWindow->worldView()->groundControlPointsWidget();
+  emit this->pointRemoved(d->removePoint(worldWidget->handleWidget(handleId)));
+  emit this->pointCountChanged(d->groundControlPoints.size());
 }
 
 //-----------------------------------------------------------------------------
@@ -216,6 +244,8 @@ void GroundControlPointsHelper::moveCameraViewPoint()
     d->mainWindow->cameraView()->groundControlPointsWidget();
   cameraWidget->movePoint(handleId, cameraPt[0], cameraPt[1], 0.0);
   cameraWidget->render();
+  auto const gcpId = d->gcpHandleIdMap[worldWidget->handleWidget(handleId)];
+  emit this->pointChanged(gcpId);
 }
 
 //-----------------------------------------------------------------------------
@@ -243,6 +273,8 @@ void GroundControlPointsHelper::moveWorldViewPoint()
   kv::vector_3d p = camera->UnprojectPoint(cameraPt.data(), depth);
   worldWidget->movePoint(handleId, p.x(), p.y(), p.z());
   worldWidget->render();
+  auto const gcpId = d->gcpHandleIdMap[worldWidget->handleWidget(handleId)];
+  emit this->pointChanged(gcpId);
 }
 
 //-----------------------------------------------------------------------------
@@ -314,19 +346,8 @@ kv::ground_control_point_map_sptr
 GroundControlPointsHelper::groundControlPoints() const
 {
   QTE_D();
-
-  GroundControlPointsWidget* worldWidget =
-    d->mainWindow->worldView()->groundControlPointsWidget();
-  int numWorldPts = worldWidget->numberOfPoints();
-
-  kv::ground_control_point_map::map_ground_control_point_t groundControlPoints;
-  for (int i = 0; i < numWorldPts; ++i)
-  {
-    auto const& pt = worldWidget->point(i);
-    groundControlPoints[i] = std::make_shared<kv::ground_control_point>(pt);
-  }
-
-  return std::make_shared<kv::ground_control_point_map>(groundControlPoints);
+  return std::make_shared<kv::ground_control_point_map>(
+    d->groundControlPoints);
 }
 
 //-----------------------------------------------------------------------------
@@ -351,4 +372,12 @@ void GroundControlPointsHelper::enableWidgets(bool enable)
   d->mainWindow->worldView()->groundControlPointsWidget()->enableWidget(enable);
   d->mainWindow->cameraView()->groundControlPointsWidget()->enableWidget(
     enable);
+}
+
+//-----------------------------------------------------------------------------
+kv::ground_control_point_sptr GroundControlPointsHelper::groundControlPoint(
+  id_t pointId)
+{
+  QTE_D();
+  return d->groundControlPoints[pointId];
 }
