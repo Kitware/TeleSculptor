@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016-2018 by Kitware, Inc.
+ * Copyright 2016-2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1919,21 +1919,11 @@ void MainWindow::loadGroundControlPoints(QString const& path)
 {
   QTE_D();
 
-  try
+  if (d->groundControlPointsHelper->readGroundControlPoints(path))
   {
-    auto const& gcp = kv::read_ply_file(kvPath(path));
-    if (gcp)
-    {
-      d->groundControlPointsHelper->setGroundControlPoints(*gcp);
-
-      d->UI.actionExportGroundControlPoints->setEnabled(
-        d->groundControlPointsHelper->groundControlPoints() &&
-        d->groundControlPointsHelper->groundControlPoints()->size());
-    }
-  }
-  catch (...)
-  {
-    qWarning() << "failed to read landmarks from" << path;
+    d->UI.actionExportGroundControlPoints->setEnabled(
+      d->groundControlPointsHelper->groundControlPoints() &&
+      d->groundControlPointsHelper->groundControlPoints()->size());
   }
 }
 
@@ -1991,33 +1981,34 @@ void MainWindow::saveGroundControlPoints()
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::saveGroundControlPoints(QString const& path, bool writeToProject)
+void MainWindow::saveGroundControlPoints(
+  QString const& path, bool writeToProject)
 {
   QTE_D();
 
-  try
+  if (d->groundControlPointsHelper->writeGroundControlPoints(path, this))
   {
-    kv::write_ply_file(
-      d->groundControlPointsHelper->groundControlPoints(),
-      kvPath(path));
-
-    if (writeToProject && d->project)
+    try
     {
-      d->project->groundControlPath =
-        d->project->getContingentRelativePath(path);
-      d->project->config->set_value(
-        "ground_control_points_file",
-        kvPath(d->project->groundControlPath));
-      d->project->write();
+      if (writeToProject && d->project)
+      {
+        d->project->groundControlPath =
+          d->project->getContingentRelativePath(path);
+        d->project->config->set_value(
+          "ground_control_points_file",
+          kvPath(d->project->groundControlPath));
+        d->project->write();
+      }
     }
-  }
-  catch (...)
-  {
-    auto const msg =
-      QString("An error occurred while exporting ground control points to \"%1\". "
-              "The output file may not have been written correctly.");
-    QMessageBox::critical(this, "Export error",
-                          msg.arg(d->project->groundControlPath));
+    catch (...)
+    {
+      auto const msg =
+        QStringLiteral("An error occurred while exporting "
+                       "ground control points to \"%1\". "
+                       "The output file may not have been written correctly.");
+      QMessageBox::critical(this, QStringLiteral("Export error"),
+                            msg.arg(d->project->groundControlPath));
+    }
   }
 }
 

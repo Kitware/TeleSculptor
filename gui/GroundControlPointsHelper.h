@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2018 by Kitware, Inc.
+ * Copyright 2018-2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,6 +55,11 @@ public:
 
   void setGroundControlPoints(kwiver::vital::landmark_map const&);
   kwiver::vital::landmark_map_sptr groundControlPoints() const;
+
+  bool readGroundControlPoints(QString const& path);
+
+  bool writeGroundControlPoints(
+    QString const& path, QWidget* dialogParent) const;
 
 public slots:
   void enableWidgets(bool);
