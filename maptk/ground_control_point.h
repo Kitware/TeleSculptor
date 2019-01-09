@@ -41,7 +41,6 @@
 #include <maptk/maptk_export.h>
 
 #include <vital/types/geo_point.h>
-#include <vital/vital_export.h>
 
 #include <iostream>
 #include <map>
@@ -147,11 +146,11 @@ class MAPTK_EXPORT ground_control_point_map
 {
 public:
   /// alias for std::map from integer IDs to ground control points
-  using map_ground_control_point_t =
+  using ground_control_point_map_t =
     std::map<ground_control_point_id_t, ground_control_point_sptr>;
 
   /// Constructor
-  explicit ground_control_point_map(const map_ground_control_point_t& m)
+  explicit ground_control_point_map(const ground_control_point_map_t& m)
     : data_(m)
   {
   }
@@ -166,14 +165,14 @@ public:
   }
 
   /// Return a map from integer IDs to ground control point shared pointers
-  map_ground_control_point_t ground_control_points() const
+  ground_control_point_map_t ground_control_points() const
   {
     return data_;
   }
 
 protected:
   /// The map from integer IDs to ground control point shared pointers
-  map_ground_control_point_t data_;
+  ground_control_point_map_t data_;
 };
 
 /// alias for a ground control point shared pointer

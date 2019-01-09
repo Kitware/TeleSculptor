@@ -57,7 +57,7 @@ class GroundControlPointsHelperPrivate
 public:
   MainWindow* mainWindow = nullptr;
   id_t curId = 0;
-  kv::ground_control_point_map::map_ground_control_point_t groundControlPoints;
+  kv::ground_control_point_map::ground_control_point_map_t groundControlPoints;
   std::map<vtkHandleWidget*, id_t> gcpHandleIdMap;
 
   id_t addPoint();
