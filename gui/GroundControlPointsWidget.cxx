@@ -317,8 +317,6 @@ void GroundControlPointsWidget::movePoint(int handleId,
   if (d->renderer)
   {
     d->repr->SetSeedWorldPosition(handleId, p);
-    d->repr->SetActiveHandle(handleId);
-    d->widget->HighlightActiveSeed();
   }
 }
 
