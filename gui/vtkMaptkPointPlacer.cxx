@@ -52,13 +52,12 @@ int vtkMaptkPointPlacer::ComputeWorldPosition(vtkRenderer* ren,
     return 0;
   }
 
-  int valid = 0;
-  double position[4] = {0.0, 0.0, 0.0, 0.0};
+  double position[4] = { 0.0, 0.0, 0.0, 0.0 };
   vtkNew<vtkPointPicker> pointPicker;
   // Compute tolerance for the point picker based on the render window size
   int height = 0, width = 0;
   ren->GetTiledSize(&height, &width);
-  double tolerance = 3.0 / sqrt(height*height + width*width);
+  double tolerance = 3.0 / sqrt(height * height + width * width);
   pointPicker->SetTolerance(tolerance);
   if (pointPicker->Pick(displayPos[0], displayPos[1], 0, ren))
   {
@@ -69,7 +68,6 @@ int vtkMaptkPointPlacer::ComputeWorldPosition(vtkRenderer* ren,
       ren, pickedPos[0], pickedPos[1], pickedPos[2], focalPoint);
     vtkInteractorObserver::ComputeDisplayToWorld(
       ren, displayPos[0], displayPos[1], focalPoint[2], position);
-    valid = 1;
   }
   else
   {
@@ -95,20 +93,18 @@ int vtkMaptkPointPlacer::ComputeWorldPosition(vtkRenderer* ren,
     double origin[3] = { 0, 0, 0 };
     double distance;
 
-    if (vtkPlane::IntersectWithLine(
+    if (!vtkPlane::IntersectWithLine(
           nearWorldPoint, farWorldPoint, normal, origin, distance, position))
     {
-      valid = 1;
+      ren->SetDisplayPoint(displayPos[0], displayPos[1], 0.5);
+      ren->DisplayToWorld();
+      ren->GetWorldPoint(position);
     }
   }
-  if (valid)
-  {
-    worldPos[0] = position[0];
-    worldPos[1] = position[1];
-    worldPos[2] = position[2];
-    return 1;
-  }
-  return 0;
+  worldPos[0] = position[0];
+  worldPos[1] = position[1];
+  worldPos[2] = position[2];
+  return 1;
 }
 
 //----------------------------------------------------------------------------
