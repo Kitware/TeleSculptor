@@ -53,6 +53,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QMessageBox>
 
 namespace kv = kwiver::vital;
 namespace kvr = kwiver::vital::range;
@@ -75,7 +76,6 @@ const auto TAG_FEATURECOLLECTION  = QStringLiteral("FeatureCollection");
 const auto TAG_POINT              = QStringLiteral("Point");
 
 // Property keys (not part of GeoJSON specification)
-const auto TAG_ID                 = QStringLiteral("id");
 const auto TAG_NAME               = QStringLiteral("name");
 const auto TAG_LOCATION           = QStringLiteral("location");
 
@@ -148,6 +148,38 @@ kv::ground_control_point_sptr extractGroundControlPoint(QJsonObject const& f)
   }
 
   return gcp;
+}
+
+//-----------------------------------------------------------------------------
+QJsonValue buildFeature(kv::ground_control_point_sptr const& gcpp)
+{
+  if (!gcpp)
+  {
+    return {};
+  }
+
+  // Get point and point's locations (scene, world/geodetic)
+  auto const& gcp = *gcpp;
+  auto const& sl = gcp.loc();
+  auto const& wl = gcp.geo_loc().location(kv::SRID::lat_lon_WGS84);
+
+  // Create geometry
+  QJsonObject geom;
+  geom.insert(TAG_TYPE, TAG_POINT);
+  geom.insert(TAG_COORDINATES, QJsonArray{wl[0], wl[1], gcp.elevation()});
+
+  // Create properties
+  QJsonObject props;
+  props.insert(TAG_NAME, qtString(gcp.name()));
+  props.insert(TAG_LOCATION, QJsonArray{sl[0], sl[1], sl[2]});
+
+  // Create and return feature
+  QJsonObject f;
+  f.insert(TAG_TYPE, TAG_FEATURE);
+  f.insert(TAG_GEOMETRY, geom);
+  f.insert(TAG_PROPERTIES, props);
+
+  return f;
 }
 
 } // namespace (anonymous)
@@ -571,8 +603,36 @@ bool GroundControlPointsHelper::readGroundControlPoints(QString const& path)
 bool GroundControlPointsHelper::writeGroundControlPoints(
   QString const& path, QWidget* dialogParent) const
 {
-  // TODO
-  return false;
+  QTE_D();
+
+  QJsonArray features;
+  for (auto const& gcpi : d->groundControlPoints)
+  {
+    auto const& f = buildFeature(gcpi.second);
+    if (f.isObject())
+    {
+      features.append(f);
+    }
+  }
+
+  QJsonObject root;
+  root.insert(TAG_TYPE, TAG_FEATURECOLLECTION);
+  root.insert(TAG_FEATURES, features);
+
+  QJsonDocument doc{root};
+
+  QFile out{path};
+  if (!out.open(QIODevice::WriteOnly) || out.write(doc.toJson()) < 0)
+  {
+    auto const msg =
+      QStringLiteral("An error occurred while exporting "
+                     "ground control points to \"%1\": %2 ");
+    QMessageBox::critical(dialogParent, QStringLiteral("Export error"),
+                          msg.arg(path, out.errorString()));
+    return false;
+  }
+
+  return true;
 }
 
 //-----------------------------------------------------------------------------
