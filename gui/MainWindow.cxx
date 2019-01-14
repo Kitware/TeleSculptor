@@ -1395,7 +1395,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->groundControlPointsHelper = new GroundControlPointsHelper(this);
   connect(d->groundControlPointsHelper,
           &GroundControlPointsHelper::pointCountChanged,
-          this, [d](int count) {
+          this, [d](size_t count) {
             d->UI.actionExportGroundControlPoints->setEnabled(count > 0);
           });
   connect(d->UI.worldView, &WorldView::pointPlacementEnabled,
