@@ -28,7 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// MAPTK includes
 #include "GroundControlPointsHelper.h"
 
 #include "CameraView.h"
@@ -39,20 +38,119 @@
 #include "vtkMaptkPointPicker.h"
 #include "vtkMaptkPointPlacer.h"
 
-// VTK includes
+#include <vital/types/geodesy.h>
+
+#include <vital/range/transform.h>
+
+#include <vtkHandleWidget.h>
 #include <vtkPlane.h>
 #include <vtkRenderer.h>
 
-// vtk includes
-#include <vtkHandleWidget.h>
+#include <qtStlUtil.h>
 
-// Qt includes
 #include <QDebug>
+#include <QFile>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 
 namespace kv = kwiver::vital;
+namespace kvr = kwiver::vital::range;
+
 using id_t = kv::ground_control_point_id_t;
 
-QTE_IMPLEMENT_D_FUNC(GroundControlPointsHelper)
+namespace
+{
+
+// Keys
+const auto TAG_TYPE               = QStringLiteral("type");
+const auto TAG_FEATURES           = QStringLiteral("features");
+const auto TAG_GEOMETRY           = QStringLiteral("geometry");
+const auto TAG_PROPERTIES         = QStringLiteral("properties");
+const auto TAG_COORDINATES        = QStringLiteral("coordinates");
+
+// Values
+const auto TAG_FEATURE            = QStringLiteral("Feature");
+const auto TAG_FEATURECOLLECTION  = QStringLiteral("FeatureCollection");
+const auto TAG_POINT              = QStringLiteral("Point");
+
+// Property keys (not part of GeoJSON specification)
+const auto TAG_ID                 = QStringLiteral("id");
+const auto TAG_NAME               = QStringLiteral("name");
+const auto TAG_LOCATION           = QStringLiteral("location");
+
+//-----------------------------------------------------------------------------
+bool isDoubleArray(QJsonArray const& a)
+{
+  for (auto const& v : a)
+  {
+    if (!v.isDouble())
+    {
+      return false;
+    }
+  }
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+kv::ground_control_point_sptr extractGroundControlPoint(QJsonObject const& f)
+{
+  // Check for geometry
+  auto const& geom = f.value(TAG_GEOMETRY).toObject();
+  if (geom.isEmpty())
+  {
+    qDebug() << "ignoring feature" << f
+             << "with bad or missing geometry";
+    return nullptr;
+  }
+
+  // Check geometry type
+  if (geom.value(TAG_TYPE).toString() != TAG_POINT)
+  {
+    // Non-point features are silently ignored
+    return nullptr;
+  }
+
+  // Check for valid coordinates
+  auto const& coords = geom.value(TAG_COORDINATES).toArray();
+  if (coords.size() < 2 || coords.size() > 3 || !isDoubleArray(coords))
+  {
+    qDebug() << "ignoring point feature" << f
+             << "with bad or missing coordinate specification";
+    return nullptr;
+  }
+
+  // Create point
+  auto gcp = std::make_shared<kv::ground_control_point>();
+
+  // Set world location and elevation; per the GeoJSON specification
+  // (RFC 7946), the coordinates shall have been specified in WGS'84
+  constexpr static auto gcs = kv::SRID::lat_lon_WGS84;
+  gcp->set_geo_loc({{coords[0].toDouble(), coords[1].toDouble()}, gcs});
+
+  if (coords.size() > 2)
+  {
+    gcp->set_elevation(coords[2].toDouble());
+  }
+
+  // Get properties
+  auto const& props = f.value(TAG_PROPERTIES).toObject();
+  gcp->set_name(stdString(props.value(TAG_NAME).toString()));
+
+  auto const& loc = props.value(TAG_LOCATION).toArray();
+  if (loc.size() == 3 && isDoubleArray(loc))
+  {
+    gcp->set_loc({loc[0].toDouble(), loc[1].toDouble(), loc[2].toDouble()});
+  }
+  else
+  {
+    qDebug() << "bad or missing scene location in point" << f;
+  }
+
+  return gcp;
+}
+
+} // namespace (anonymous)
 
 //-----------------------------------------------------------------------------
 class GroundControlPointsHelperPrivate
@@ -71,6 +169,8 @@ public:
   id_t addPoint();
   id_t removePoint(vtkHandleWidget*);
 };
+
+QTE_IMPLEMENT_D_FUNC(GroundControlPointsHelper)
 
 //-----------------------------------------------------------------------------
 void GroundControlPointsHelperPrivate::movePoint(
@@ -410,8 +510,61 @@ GroundControlPointsHelper::groundControlPoints() const
 //-----------------------------------------------------------------------------
 bool GroundControlPointsHelper::readGroundControlPoints(QString const& path)
 {
-  // TODO
-  return false;
+  auto fail = [&path](char const* extra){
+    qWarning().nospace()
+      << "failed to read ground control points from "
+      << path << ": " << extra;
+    return false;
+  };
+
+  // Open input file
+  QFile f{path};
+  if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+  {
+    return fail(qPrintable(f.errorString()));
+  }
+
+  // Read raw JSON data
+  QJsonParseError err;
+  auto const& doc = QJsonDocument::fromJson(f.readAll(), &err);
+  if (doc.isNull())
+  {
+    return fail(qPrintable(err.errorString()));
+  }
+  if (!doc.isObject())
+  {
+    return fail("file does not contain a JSON object");
+  }
+
+  // Get feature collection and features
+  auto const& collection = doc.object();
+  if (collection.value(TAG_TYPE).toString() != TAG_FEATURECOLLECTION)
+  {
+    return fail("root object must be a FeatureCollection");
+  }
+  auto const& features = collection.value(TAG_FEATURES);
+  if (!features.isArray())
+  {
+    return fail("invalid FeatureCollection");
+  }
+
+  // Read points from feature collection
+  auto getJsonObject = [](QJsonValue const& v){ return v.toObject(); };
+  for (auto const& f : features.toArray() | kvr::transform(getJsonObject))
+  {
+    if (f.value(TAG_TYPE).toString() != TAG_FEATURE)
+    {
+      qWarning() << "ignoring non-feature object" << f
+                 << "in FeatureCollection";
+      continue;
+    }
+    if (auto gcp = extractGroundControlPoint(f))
+    {
+      // TODO do something with point!
+    }
+  }
+
+  return true;
 }
 
 //-----------------------------------------------------------------------------
