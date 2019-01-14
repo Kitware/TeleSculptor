@@ -63,9 +63,15 @@ public:
   ground_control_point();
   ground_control_point(vector_3d const& loc,
                        std::string const& name = std::string());
-  ground_control_point(ground_control_point const& other);
+
   /// Destructor
   ~ground_control_point() = default;
+
+  ground_control_point(ground_control_point const&) = default;
+  ground_control_point(ground_control_point&&) = default;
+
+  ground_control_point& operator=(ground_control_point const&) = default;
+  ground_control_point& operator=(ground_control_point&&) = default;
 
   /// Accessor for the world coordinates
   vector_3d loc() const
