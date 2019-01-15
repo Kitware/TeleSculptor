@@ -522,7 +522,7 @@ void GroundControlPointsHelper::setGroundControlPoints(
   worldWidget->clearPoints();
 
   auto const& groundControlPoints = gcpm.ground_control_points();
-  foreach (auto const& gcp, groundControlPoints)
+  for (auto const& gcp : groundControlPoints)
   {
     auto const& pos = gcp.second->loc();
 
