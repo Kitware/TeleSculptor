@@ -47,11 +47,13 @@ public:
 
   static vtkMaptkPointHandleRepresentation3D* New();
 
-  void SetRenderer(vtkRenderer* ren) override;
-
 protected:
   vtkMaptkPointHandleRepresentation3D() = default;
   ~vtkMaptkPointHandleRepresentation3D() = default;
+
+  // Override to ensure that the pick tolerance is always about the same as
+  // handle size.
+  int ComputeInteractionState(int X, int Y, int modify) override;
 
 private:
   vtkMaptkPointHandleRepresentation3D(

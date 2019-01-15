@@ -45,17 +45,36 @@ void vtkMaptkPointHandleRepresentation3D::PrintSelf(ostream& os,
   this->Superclass::PrintSelf(os, indent);
 }
 
+// Override to ensure that the pick tolerance is always about the same as
+// handle size.
 //----------------------------------------------------------------------------
-void vtkMaptkPointHandleRepresentation3D::SetRenderer(vtkRenderer* ren)
+int vtkMaptkPointHandleRepresentation3D::ComputeInteractionState(
+  int X,
+  int Y,
+  int vtkNotUsed(modify))
 {
-  this->Superclass::SetRenderer(ren);
+  this->VisibilityOn(); // actor must be on to be picked
 
-  if (ren)
+  vtkAssemblyPath* path = this->GetAssemblyPath(X, Y, 0., this->CursorPicker);
+
+  double focus[3];
+  this->Cursor3D->GetFocalPoint(focus);
+  double d[3];
+  this->GetDisplayPosition(d);
+
+  if (path != nullptr && (std::abs(d[0] - X) < this->GetHandleSize() / 2.0) &&
+      (std::abs(d[1] - Y) < this->GetHandleSize() / 2.0))
   {
-    // Compute tolerance for the cell picker based on viewport size
-    int height = 0, width = 0;
-    ren->GetTiledSize(&height, &width);
-    double tolerance = 0.5 / sqrt(height*height + width*width);
-    this->CursorPicker->SetTolerance(tolerance);
+    this->InteractionState = vtkHandleRepresentation::Nearby;
   }
+  else
+  {
+    this->InteractionState = vtkHandleRepresentation::Outside;
+    if (this->ActiveRepresentation)
+    {
+      this->VisibilityOff();
+    }
+  }
+
+  return this->InteractionState;
 }
