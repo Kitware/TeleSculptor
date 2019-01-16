@@ -455,6 +455,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
 
   // Set up image actor and "dummy" data for use when we have no "real" image
   d->imageActor->SetVisibility(false);
+  d->imageActor->PickableOff();
   d->renderer->AddViewProp(d->imageActor);
 
   // Enable antialiasing by default
@@ -507,6 +508,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->groundActor->GetProperty()->SetColor(0.5, 0.5, 0.5);
   d->groundActor->GetProperty()->SetLighting(false);
   d->groundActor->GetProperty()->SetRepresentationToWireframe();
+  d->groundActor->PickableOff();
   d->renderer->AddActor(d->groundActor);
 
   // Set up axes

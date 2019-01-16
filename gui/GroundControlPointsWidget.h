@@ -48,7 +48,9 @@ class GroundControlPointsWidgetPrivate;
 class vtkAbstractWidget;
 class vtkMatrix4x4;
 class vtkObject;
+class vtkPointPlacer;
 class vtkRenderWindowInteractor;
+class vtkRenderer;
 
 class GroundControlPointsWidget : public QObject
 {
@@ -59,6 +61,11 @@ public:
   ~GroundControlPointsWidget();
 
   void setInteractor(vtkRenderWindowInteractor* iren);
+
+  void setPointPlacer(vtkPointPlacer* placer);
+
+  // Get the renderer
+  vtkRenderer* renderer();
 
   // Get active handle and point coordintes
   int activeHandle() const;
@@ -106,7 +113,6 @@ protected slots:
   // void addInternalPoint();
   void movePointEvent();
   void pointDeletedCallback(vtkObject*, unsigned long, void*, void*);
-  void cursorChangedCallback(vtkObject*, unsigned long, void*, void*);
   void activeHandleChangedCallback(vtkObject*, unsigned long, void*, void*);
 
 private:
