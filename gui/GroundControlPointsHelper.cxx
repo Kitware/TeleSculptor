@@ -193,8 +193,7 @@ public:
   kv::ground_control_point_map::ground_control_point_map_t groundControlPoints;
   std::map<vtkHandleWidget*, id_t> gcpHandleIdMap;
 
-  void movePoint(GroundControlPointsHelper* q,
-                 int handleId,
+  void movePoint(GroundControlPointsHelper* q, int handleId,
                  GroundControlPointsWidget* widget,
                  kv::vector_3d const& newPosition);
 
@@ -206,10 +205,8 @@ QTE_IMPLEMENT_D_FUNC(GroundControlPointsHelper)
 
 //-----------------------------------------------------------------------------
 void GroundControlPointsHelperPrivate::movePoint(
-  GroundControlPointsHelper* q,
-  int handleId,
-  GroundControlPointsWidget* widget,
-  kv::vector_3d const& newPosition)
+  GroundControlPointsHelper* q, int handleId,
+  GroundControlPointsWidget* widget, kv::vector_3d const& newPosition)
 {
   // Actually move the point and update the view
   widget->movePoint(handleId, newPosition[0], newPosition[1], newPosition[2]);
@@ -368,12 +365,8 @@ void GroundControlPointsHelper::addWorldViewPoint()
     p = kwiver::vital::vector_3d(pointPicker->GetPickPosition());
     p = camera->UnprojectPoint(cameraPt.data(), camera->Depth(p));
   }
-  else if (vtkPlane::IntersectWithLine(camera->GetPosition(),
-                                       p.data(),
-                                       gNormal,
-                                       gOrigin,
-                                       distance,
-                                       p.data()))
+  else if (vtkPlane::IntersectWithLine(camera->GetPosition(), p.data(),
+                                       gNormal, gOrigin, distance, p.data()))
   {
     // Find the point where the ray intersects the ground plane and use that.
   }
@@ -639,7 +632,8 @@ bool GroundControlPointsHelper::writeGroundControlPoints(
 void GroundControlPointsHelper::enableWidgets(bool enable)
 {
   QTE_D();
-  d->mainWindow->worldView()->groundControlPointsWidget()->enableWidget(enable);
+  d->mainWindow->worldView()->groundControlPointsWidget()->enableWidget(
+    enable);
   d->mainWindow->cameraView()->groundControlPointsWidget()->enableWidget(
     enable);
 }
