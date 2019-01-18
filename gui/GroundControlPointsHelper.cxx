@@ -188,26 +188,56 @@ QJsonValue buildFeature(kv::ground_control_point_sptr const& gcpp)
 class GroundControlPointsHelperPrivate
 {
 public:
+  GroundControlPointsHelperPrivate(GroundControlPointsHelper* q) : q_ptr{q} {}
+
   MainWindow* mainWindow = nullptr;
   id_t curId = 0;
   kv::ground_control_point_map::ground_control_point_map_t groundControlPoints;
   std::map<vtkHandleWidget*, id_t> gcpHandleIdMap;
 
-  void movePoint(GroundControlPointsHelper* q, int handleId,
-                 GroundControlPointsWidget* widget,
+  void addPoint(id_t id, kv::ground_control_point_sptr const& point);
+
+  void movePoint(int handleId, GroundControlPointsWidget* widget,
                  kv::vector_3d const& newPosition);
 
   id_t addPoint();
   id_t removePoint(vtkHandleWidget*);
+
+private:
+  QTE_DECLARE_PUBLIC_PTR(GroundControlPointsHelper)
+  QTE_DECLARE_PUBLIC(GroundControlPointsHelper)
 };
 
 QTE_IMPLEMENT_D_FUNC(GroundControlPointsHelper)
 
 //-----------------------------------------------------------------------------
-void GroundControlPointsHelperPrivate::movePoint(
-  GroundControlPointsHelper* q, int handleId,
-  GroundControlPointsWidget* widget, kv::vector_3d const& newPosition)
+void GroundControlPointsHelperPrivate::addPoint(
+  id_t id, kv::ground_control_point_sptr const& point)
 {
+  QTE_Q();
+
+  // Add point to internal map
+  this->groundControlPoints[id] = point;
+
+  // Add point to VTK widgets
+  auto const& pos = point->loc();
+  this->mainWindow->worldView()->groundControlPointsWidget()->addPoint(pos);
+  q->addCameraViewPoint();
+
+  // Add handle to handle map
+  auto* const worldWidget =
+    this->mainWindow->worldView()->groundControlPointsWidget();
+  auto* const handle = worldWidget->handleWidget(worldWidget->activeHandle());
+  this->gcpHandleIdMap[handle] = curId;
+}
+
+//-----------------------------------------------------------------------------
+void GroundControlPointsHelperPrivate::movePoint(
+  int handleId, GroundControlPointsWidget* widget,
+  kv::vector_3d const& newPosition)
+{
+  QTE_Q();
+
   // Actually move the point and update the view
   widget->movePoint(handleId, newPosition[0], newPosition[1], newPosition[2]);
   widget->render();
@@ -260,8 +290,7 @@ id_t GroundControlPointsHelperPrivate::removePoint(vtkHandleWidget* handle)
 
 //-----------------------------------------------------------------------------
 GroundControlPointsHelper::GroundControlPointsHelper(QObject* parent)
-  : QObject(parent)
-  , d_ptr(new GroundControlPointsHelperPrivate)
+  : QObject{parent}, d_ptr{new GroundControlPointsHelperPrivate{this}}
 {
   QTE_D();
 
@@ -430,8 +459,7 @@ void GroundControlPointsHelper::moveCameraViewPoint()
   camera->ProjectPoint(p, cameraPt);
   GroundControlPointsWidget* cameraWidget =
     d->mainWindow->cameraView()->groundControlPointsWidget();
-  d->movePoint(this, handleId, cameraWidget,
-               { cameraPt[0], cameraPt[1], 0.0 });
+  d->movePoint(handleId, cameraWidget, { cameraPt[0], cameraPt[1], 0.0 });
 }
 
 //-----------------------------------------------------------------------------
@@ -457,7 +485,7 @@ void GroundControlPointsHelper::moveWorldViewPoint()
   double depth = d->mainWindow->activeCamera()->Depth(pt);
 
   kv::vector_3d p = camera->UnprojectPoint(cameraPt.data(), depth);
-  d->movePoint(this, handleId, worldWidget, p);
+  d->movePoint(handleId, worldWidget, p);
 }
 
 //-----------------------------------------------------------------------------
@@ -513,14 +541,12 @@ void GroundControlPointsHelper::setGroundControlPoints(
   GroundControlPointsWidget* worldWidget =
     d->mainWindow->worldView()->groundControlPointsWidget();
   worldWidget->clearPoints();
+  d->groundControlPoints.clear();
 
   auto const& groundControlPoints = gcpm.ground_control_points();
   for (auto const& gcp : groundControlPoints)
   {
-    auto const& pos = gcp.second->loc();
-
-    worldWidget->addPoint(pos);
-    this->addCameraViewPoint();
+    d->addPoint(gcp.first, gcp.second);
   }
 }
 
@@ -535,6 +561,8 @@ GroundControlPointsHelper::groundControlPoints() const
 //-----------------------------------------------------------------------------
 bool GroundControlPointsHelper::readGroundControlPoints(QString const& path)
 {
+  QTE_D();
+
   auto fail = [&path](char const* extra){
     qWarning().nospace()
       << "failed to read ground control points from "
@@ -585,7 +613,7 @@ bool GroundControlPointsHelper::readGroundControlPoints(QString const& path)
     }
     if (auto gcp = extractGroundControlPoint(f))
     {
-      // TODO do something with point!
+      d->addPoint(d->curId++, gcp);
     }
   }
 
