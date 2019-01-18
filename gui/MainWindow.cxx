@@ -1525,7 +1525,7 @@ void MainWindow::openGroundControlPoints()
 {
   auto const paths = QFileDialog::getOpenFileNames(
     this, "Open Ground Control Points", QString(),
-    "Ground Control Point Files (*.ply);;"
+    "GeoJSON Files (*.json);;"
     "All Files (*)");
 
   for (auto const& path : paths)
@@ -1970,7 +1970,7 @@ void MainWindow::saveGroundControlPoints()
 {
   auto const path = QFileDialog::getSaveFileName(
     this, "Export Ground Control Points", QString(),
-    "Landmark file (*.ply);;"
+    "GeoJSON file (*.json);;"
     "All Files (*)");
 
   if (!path.isEmpty())
