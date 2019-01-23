@@ -111,26 +111,22 @@ kv::ground_control_point_sptr extractGroundControlPoint(QJsonObject const& f)
     return nullptr;
   }
 
-  // Check for valid coordinates
-  auto const& coords = geom.value(TAG_COORDINATES).toArray();
-  if (coords.size() < 2 || coords.size() > 3 || !isDoubleArray(coords))
-  {
-    qDebug() << "ignoring point feature" << f
-             << "with bad or missing coordinate specification";
-    return nullptr;
-  }
-
   // Create point
   auto gcp = std::make_shared<kv::ground_control_point>();
 
-  // Set world location and elevation; per the GeoJSON specification
-  // (RFC 7946), the coordinates shall have been specified in WGS'84
-  constexpr static auto gcs = kv::SRID::lat_lon_WGS84;
-  gcp->set_geo_loc({{coords[0].toDouble(), coords[1].toDouble()}, gcs});
-
-  if (coords.size() > 2)
+  // Check for valid coordinates
+  auto const& coords = geom.value(TAG_COORDINATES).toArray();
+  if (coords.size() >= 2 && coords.size() <= 3 && isDoubleArray(coords))
   {
-    gcp->set_elevation(coords[2].toDouble());
+    // Set world location and elevation; per the GeoJSON specification
+    // (RFC 7946), the coordinates shall have been specified in WGS'84
+    constexpr static auto gcs = kv::SRID::lat_lon_WGS84;
+    gcp->set_geo_loc({{coords[0].toDouble(), coords[1].toDouble()}, gcs});
+
+    if (coords.size() > 2)
+    {
+      gcp->set_elevation(coords[2].toDouble());
+    }
   }
 
   // Get properties
@@ -142,9 +138,12 @@ kv::ground_control_point_sptr extractGroundControlPoint(QJsonObject const& f)
   {
     gcp->set_loc({loc[0].toDouble(), loc[1].toDouble(), loc[2].toDouble()});
   }
-  else
+  else if (gcp->geo_loc().is_empty())
   {
-    qDebug() << "bad or missing scene location in point" << f;
+    qDebug() << "ignoring point feature" << f
+             << "with bad or missing coordinate specification "
+                "and bad or missing scene location";
+    return nullptr;
   }
 
   return gcp;
@@ -161,12 +160,16 @@ QJsonValue buildFeature(kv::ground_control_point_sptr const& gcpp)
   // Get point and point's locations (scene, world/geodetic)
   auto const& gcp = *gcpp;
   auto const& sl = gcp.loc();
-  auto const& wl = gcp.geo_loc().location(kv::SRID::lat_lon_WGS84);
+  auto const& wl = gcp.geo_loc();
 
   // Create geometry
   QJsonObject geom;
   geom.insert(TAG_TYPE, TAG_POINT);
-  geom.insert(TAG_COORDINATES, QJsonArray{wl[0], wl[1], gcp.elevation()});
+  if (!wl.is_empty())
+  {
+    auto const& rwl = wl.location(kv::SRID::lat_lon_WGS84);
+    geom.insert(TAG_COORDINATES, QJsonArray{rwl[0], rwl[1], gcp.elevation()});
+  }
 
   // Create properties
   QJsonObject props;
