@@ -674,7 +674,7 @@ void MainWindowPrivate::setActiveCamera(int id)
   this->updateCameraView();
 
   //load from memory if cached
-  if (id == this->activeDepthFrame)
+  if (id >= 0 && id == this->activeDepthFrame)
   {
     this->depthReader->SetFileName("");
     this->depthFilter->RemoveAllInputConnections(0);
