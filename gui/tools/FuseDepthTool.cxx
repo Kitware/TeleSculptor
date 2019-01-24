@@ -31,6 +31,7 @@
 #include "FuseDepthTool.h"
 #include "GuiCommon.h"
 
+#include <arrows/core/depth_utils.h>
 #include <vital/algo/image_io.h>
 #include <vital/algo/integrate_depth_maps.h>
 #include <vital/algo/video_input.h>
@@ -188,13 +189,9 @@ kwiver::vital::image_container_sptr load_depth_map(const std::string &filename, 
 
 //-----------------------------------------------------------------------------
 vtkSmartPointer<vtkStructuredGrid>
-volume_to_vtk(kwiver::vital::image_container_sptr volume, const kwiver::vital::vector_3d &origin, const kwiver::vital::vector_3d &maxpt)
+volume_to_vtk(kwiver::vital::image_container_sptr volume, kwiver::vital::vector_3d const& origin, kwiver::vital::vector_3d const& spacing)
 {
   vtkSmartPointer<vtkImageData> grid = vtkSmartPointer<vtkImageData>::New();
-  kwiver::vital::vector_3d spacing = (maxpt - origin).cwiseQuotient(
-    kwiver::vital::vector_3d(volume->width() + 1,
-                             volume->height() + 1,
-                             volume->depth() + 1));
   grid->SetOrigin(origin[0], origin[1], origin[2]);
   // vtk cells are dim - 1 for some reason
   grid->SetDimensions(static_cast<int>(volume->width() + 1),
@@ -263,10 +260,12 @@ void FuseDepthTool::run()
 
   auto const& depths = this->depthLookup();
   auto const& cameras = this->cameras()->cameras();
+  auto const& lm = this->landmarks()->landmarks();
   vtkBox *roi = this->ROI();
 
   std::vector<kwiver::vital::camera_perspective_sptr> cameras_out;
   std::vector<kwiver::vital::image_container_sptr> depths_out;
+  std::vector<kwiver::vital::vector_3d> landmarks_locs;
 
   for (std::map<kwiver::vital::frame_id_t, std::string>::iterator itr = depths->begin(); itr != depths->end(); itr++)
   {
@@ -280,6 +279,16 @@ void FuseDepthTool::run()
     cameras_out.push_back(crop_camera(cam, i0, ni, j0, nj));
   }
 
+  // Convert landmarks to vector
+  landmarks_locs.reserve(lm.size());
+  foreach (auto const& l, lm)
+  {
+    landmarks_locs.push_back(l.second->loc());
+  }
+  double pixel_to_world_scale; 
+  pixel_to_world_scale = kwiver::arrows::core::compute_pixel_to_world_scale(landmarks_locs, cameras_out);
+  std::cout << "Pixel to world scale: " << pixel_to_world_scale << "\n";
+
   double minptd[3];
   roi->GetXMin(minptd);
   kwiver::vital::vector_3d minpt(minptd);
@@ -289,9 +298,10 @@ void FuseDepthTool::run()
   kwiver::vital::vector_3d maxpt(maxptd);
 
   kwiver::vital::image_container_sptr volume;
-  d->fuse_algo->integrate(minpt, maxpt, depths_out, cameras_out, volume);
+  kwiver::vital::vector_3d spacing;
+  d->fuse_algo->integrate(minpt, maxpt, pixel_to_world_scale, depths_out, cameras_out, volume, spacing);
 
-  vtkSmartPointer<vtkStructuredGrid> vtk_volume = volume_to_vtk(volume, minpt, maxpt);
+  vtkSmartPointer<vtkStructuredGrid> vtk_volume = volume_to_vtk(volume, minpt, spacing);
 
   this->updateFusion(vtk_volume);
 }
