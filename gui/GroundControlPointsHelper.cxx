@@ -36,6 +36,12 @@
 #include "MainWindow.h"
 #include "WorldView.h"
 #include "vtkMaptkCamera.h"
+#include "vtkMaptkPointPicker.h"
+#include "vtkMaptkPointPlacer.h"
+
+// VTK includes
+#include <vtkPlane.h>
+#include <vtkRenderer.h>
 
 QTE_IMPLEMENT_D_FUNC(GroundControlPointsHelper)
 
@@ -61,23 +67,44 @@ GroundControlPointsHelper::GroundControlPointsHelper(QObject* parent)
   GroundControlPointsWidget* cameraWidget =
     d->mainWindow->cameraView()->groundControlPointsWidget();
 
-  connect(worldWidget, &GroundControlPointsWidget::pointPlaced,
-          this, &GroundControlPointsHelper::addCameraViewPoint);
-  connect(cameraWidget, &GroundControlPointsWidget::pointPlaced,
-          this, &GroundControlPointsHelper::addWorldViewPoint);
+  // Set a point placer on the world widget.
+  // This has to be set before the widget is enabled.
+  worldWidget->setPointPlacer(vtkNew<vtkMaptkPointPlacer>());
 
-  connect(worldWidget, &GroundControlPointsWidget::pointMoved,
-          this, &GroundControlPointsHelper::moveCameraViewPoint);
-  connect(cameraWidget, &GroundControlPointsWidget::pointMoved,
-          this, &GroundControlPointsHelper::moveWorldViewPoint);
-  connect(worldWidget, &GroundControlPointsWidget::pointDeleted,
-          cameraWidget, &GroundControlPointsWidget::deletePoint);
-  connect(cameraWidget, &GroundControlPointsWidget::pointDeleted,
-          worldWidget, &GroundControlPointsWidget::deletePoint);
-  connect(cameraWidget, &GroundControlPointsWidget::activePointChanged,
-          worldWidget, &GroundControlPointsWidget::setActivePoint);
-  connect(worldWidget, &GroundControlPointsWidget::activePointChanged,
-          cameraWidget, &GroundControlPointsWidget::setActivePoint);
+  // connections
+  connect(worldWidget,
+          &GroundControlPointsWidget::pointPlaced,
+          this,
+          &GroundControlPointsHelper::addCameraViewPoint);
+  connect(cameraWidget,
+          &GroundControlPointsWidget::pointPlaced,
+          this,
+          &GroundControlPointsHelper::addWorldViewPoint);
+
+  connect(worldWidget,
+          &GroundControlPointsWidget::pointMoved,
+          this,
+          &GroundControlPointsHelper::moveCameraViewPoint);
+  connect(cameraWidget,
+          &GroundControlPointsWidget::pointMoved,
+          this,
+          &GroundControlPointsHelper::moveWorldViewPoint);
+  connect(worldWidget,
+          &GroundControlPointsWidget::pointDeleted,
+          cameraWidget,
+          &GroundControlPointsWidget::deletePoint);
+  connect(cameraWidget,
+          &GroundControlPointsWidget::pointDeleted,
+          worldWidget,
+          &GroundControlPointsWidget::deletePoint);
+  connect(cameraWidget,
+          &GroundControlPointsWidget::activePointChanged,
+          worldWidget,
+          &GroundControlPointsWidget::setActivePoint);
+  connect(worldWidget,
+          &GroundControlPointsWidget::activePointChanged,
+          cameraWidget,
+          &GroundControlPointsWidget::setActivePoint);
 }
 
 //-----------------------------------------------------------------------------
@@ -124,12 +151,41 @@ void GroundControlPointsHelper::addWorldViewPoint()
   GroundControlPointsWidget* cameraWidget =
     d->mainWindow->cameraView()->groundControlPointsWidget();
   kwiver::vital::vector_3d cameraPt = cameraWidget->activePoint();
-  kwiver::vital::vector_3d p = camera->UnprojectPoint(cameraPt.data());
+  // Use an arbitarily value for depth to ensure that the landmarks would
+  // be between the camera center and the back-projected point.
+  kwiver::vital::vector_3d p =
+    camera->UnprojectPoint(cameraPt.data(), 100 * camera->GetDistance());
+
+  // Pick a point along the active camera direction and use the depth of the
+  // point to back-project the camera view ground control point.
   GroundControlPointsWidget* worldWidget =
     d->mainWindow->worldView()->groundControlPointsWidget();
+  vtkNew<vtkMaptkPointPicker> pointPicker;
+  double distance = 0;
+  double gOrigin[3] = { 0, 0, 0 };
+  double gNormal[3] = { 0, 0, 1 };
+  if (pointPicker->Pick3DPoint(
+        camera->GetPosition(), p.data(), worldWidget->renderer()))
+  {
+    p = kwiver::vital::vector_3d(pointPicker->GetPickPosition());
+    p = camera->UnprojectPoint(cameraPt.data(), camera->Depth(p));
+  }
+  else if (vtkPlane::IntersectWithLine(camera->GetPosition(),
+                                       p.data(),
+                                       gNormal,
+                                       gOrigin,
+                                       distance,
+                                       p.data()))
+  {
+    // Find the point where the ray intersects the ground plane and use that.
+  }
+  else
+  {
+    // If nothing was picked, ensure that the back-projection uses the depth of
+    // camera origin point
+    p = camera->UnprojectPoint(cameraPt.data());
+  }
   worldWidget->addPoint(p);
-  this->moveWorldViewPoint();
-  cameraWidget->render();
   worldWidget->render();
 
   emit this->pointCountChanged(worldWidget->numberOfPoints());
@@ -276,8 +332,7 @@ GroundControlPointsHelper::groundControlPoints() const
 void GroundControlPointsHelper::enableWidgets(bool enable)
 {
   QTE_D();
-  d->mainWindow->worldView()->groundControlPointsWidget()->enableWidget(
-    enable);
+  d->mainWindow->worldView()->groundControlPointsWidget()->enableWidget(enable);
   d->mainWindow->cameraView()->groundControlPointsWidget()->enableWidget(
     enable);
 }

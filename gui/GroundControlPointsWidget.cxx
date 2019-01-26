@@ -30,6 +30,7 @@
 
 // MAPTK includes
 #include "GroundControlPointsWidget.h"
+#include "vtkMaptkPointHandleRepresentation3D.h"
 #include "vtkMaptkSeedWidget.h"
 
 // VTK includes
@@ -40,7 +41,6 @@
 #include <vtkHandleWidget.h>
 #include <vtkMatrix4x4.h>
 #include <vtkNew.h>
-#include <vtkPointHandleRepresentation3D.h>
 #include <vtkProperty.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
@@ -68,13 +68,13 @@ public:
   vtkNew<vtkMaptkSeedWidget> widget;
   vtkNew<vtkSeedRepresentation> repr;
   vtkNew<vtkEventQtSlotConnect> connections;
-  vtkNew<vtkPointHandleRepresentation3D> pointRepr;
+  vtkNew<vtkMaptkPointHandleRepresentation3D> pointRepr;
 
   vtkRenderer* renderer = nullptr;
 
   vtkMatrix4x4* transformMatrix = nullptr;
   vtkNew<vtkMatrix4x4> transformMatrixInverse;
-  vtkMTimeType transformMatrixMTime;
+  vtkMTimeType transformMatrixMTime = 0;
 };
 
 //-----------------------------------------------------------------------------
@@ -124,8 +124,8 @@ void GroundControlPointsWidgetPrivate::deletePoint(int handleId)
 {
   if (this->renderer)
   {
-    this->repr->RemoveHandle(handleId);
     this->widget->DeleteSeed(handleId);
+    this->repr->SetActiveHandle(handleId - 1);
   }
 }
 
@@ -175,11 +175,6 @@ void GroundControlPointsWidget::setInteractor(vtkRenderWindowInteractor* iren)
 {
   QTE_D();
   d->widget->SetInteractor(iren);
-  d->connections->Connect(
-    d->widget.GetPointer(),
-    vtkCommand::CursorChangedEvent,
-    this,
-    SLOT(cursorChangedCallback(vtkObject*, unsigned long, void*, void*)));
 
   // Compute an appropriate scale factor for the glyphs
   vtkRenderer* ren = iren->FindPokedRenderer(0, 0);
@@ -190,28 +185,17 @@ void GroundControlPointsWidget::setInteractor(vtkRenderWindowInteractor* iren)
 }
 
 //-----------------------------------------------------------------------------
-void GroundControlPointsWidget::cursorChangedCallback(
-  vtkObject* vtkNotUsed(object),
-  unsigned long vtkNotUsed(event),
-  void* vtkNotUsed(clientData),
-  void* callData)
+void GroundControlPointsWidget::setPointPlacer(vtkPointPlacer* placer)
 {
-  int* cursorShape = reinterpret_cast<int*>(callData);
-  if (cursorShape && (cursorShape[0] == VTK_CURSOR_HAND))
-  {
-    if (!QApplication::overrideCursor())
-    {
-      QApplication::setOverrideCursor(Qt::PointingHandCursor);
-    }
-    else
-    {
-      QApplication::changeOverrideCursor(Qt::PointingHandCursor);
-    }
-  }
-  else
-  {
-    QApplication::restoreOverrideCursor();
-  }
+  QTE_D();
+  d->pointRepr->SetPointPlacer(placer);
+}
+
+//-----------------------------------------------------------------------------
+vtkRenderer* GroundControlPointsWidget::renderer()
+{
+  QTE_D();
+  return d->renderer;
 }
 
 //-----------------------------------------------------------------------------
@@ -259,6 +243,9 @@ void GroundControlPointsWidget::addDisplayPoint(double pt[3])
 
   int handleId = d->repr->CreateHandle(pt);
   d->repr->SetSeedWorldPosition(handleId, pt);
+  // Now that the seed is placed, reset the point placer to ensure free
+  // motion of the handle
+  d->repr->GetHandleRepresentation(handleId)->SetPointPlacer(nullptr);
   vtkHandleWidget* currentHandle = d->widget->CreateNewHandle();
   currentHandle->SetEnabled(1);
 }
@@ -330,8 +317,6 @@ void GroundControlPointsWidget::movePoint(int handleId,
   if (d->renderer)
   {
     d->repr->SetSeedWorldPosition(handleId, p);
-    d->repr->SetActiveHandle(handleId);
-    d->widget->HighlightActiveSeed();
   }
 }
 

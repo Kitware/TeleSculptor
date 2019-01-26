@@ -15,6 +15,12 @@ TeleSculptor
  * Switched the iso-surfacing algorithm to
    [flying edges](https://ieeexplore.ieee.org/document/7348069).
 
+ * Placing ground control points in the view uses a smart guess initial position
+   method. When placing points in the world view, a point placer is used which
+   snaps the point to a nearby landmark or the ground plane. When placing points
+   in the camera view, the depth of the 3D point in the world view is determined
+   by picking along the active camera direction vector for landmarks or the
+   ground plane.
 
 Fixes since last public release
 -------------------------------

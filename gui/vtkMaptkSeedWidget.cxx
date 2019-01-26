@@ -16,6 +16,7 @@
 
 // VTK includes
 #include <vtkCallbackCommand.h>
+#include <vtkEvent.h>
 #include <vtkHandleRepresentation.h>
 #include <vtkHandleWidget.h>
 #include <vtkObjectFactory.h>
@@ -47,10 +48,18 @@ vtkMaptkSeedWidget::vtkMaptkSeedWidget()
                                           vtkWidgetEvent::AddPoint,
                                           this,
                                           vtkMaptkSeedWidget::AddPointAction);
-  this->CallbackMapper->SetCallbackMethod(vtkCommand::MouseMoveEvent,
-                                          vtkWidgetEvent::Move,
+  this->CallbackMapper->SetCallbackMethod(vtkCommand::LeftButtonReleaseEvent,
+                                          vtkWidgetEvent::EndSelect,
                                           this,
-                                          vtkMaptkSeedWidget::MoveAction);
+                                          vtkMaptkSeedWidget::EndSelectAction);
+  this->CallbackMapper->SetCallbackMethod(vtkCommand::KeyPressEvent,
+                                          vtkEvent::NoModifier,
+                                          127,
+                                          1,
+                                          "Delete",
+                                          vtkWidgetEvent::Delete,
+                                          this,
+                                          vtkMaptkSeedWidget::DeleteAction);
 }
 
 //----------------------------------------------------------------------
@@ -69,6 +78,8 @@ void vtkMaptkSeedWidget::DeleteSeed(int i)
 void vtkMaptkSeedWidget::SetEnabled(int enabling)
 {
   this->Superclass::SetEnabled(enabling);
+  this->WidgetState =
+    enabling ? vtkMaptkSeedWidget::PlacingSeeds : vtkMaptkSeedWidget::Start;
   this->HighlightActiveSeed();
 }
 
@@ -101,10 +112,9 @@ void vtkMaptkSeedWidget::AddPointAction(vtkAbstractWidget* w)
     int seedIdx = rep->GetActiveHandle();
     self->InvokeEvent(vtkCommand::StartInteractionEvent, &seedIdx);
 
-    self->EventCallbackCommand->SetAbortFlag(1);
     self->HighlightActiveSeed();
+    self->EventCallbackCommand->SetAbortFlag(1);
   }
-
   else if (self->WidgetState != vtkMaptkSeedWidget::PlacedSeeds)
   {
     if (!self->Interactor->GetControlKey())
@@ -133,51 +143,67 @@ void vtkMaptkSeedWidget::AddPointAction(vtkAbstractWidget* w)
     int currentHandleNumber = rep->CreateHandle(e);
     vtkHandleWidget* currentHandle = self->CreateNewHandle();
     rep->SetSeedDisplayPosition(currentHandleNumber, e);
+    // Now that the seed is placed, reset the point placer to ensure free
+    // motion of the handle
+    rep->GetHandleRepresentation(currentHandleNumber)->SetPointPlacer(nullptr);
     currentHandle->SetEnabled(1);
     self->InvokeEvent(vtkCommand::PlacePointEvent, &(currentHandleNumber));
     self->InvokeEvent(vtkCommand::InteractionEvent, &(currentHandleNumber));
 
-    self->EventCallbackCommand->SetAbortFlag(1);
     self->HighlightActiveSeed();
-    self->Render();
+    self->EventCallbackCommand->SetAbortFlag(1);
   }
 }
 
 //-------------------------------------------------------------------------
-void vtkMaptkSeedWidget::MoveAction(vtkAbstractWidget* w)
+// Implemented here to prevent the "RemoveHandle" call made by
+// vtkSeedWidget::DeleteAction
+void vtkMaptkSeedWidget::DeleteAction(vtkAbstractWidget* w)
 {
   vtkMaptkSeedWidget* self = reinterpret_cast<vtkMaptkSeedWidget*>(w);
 
-  self->InvokeEvent(vtkCommand::MouseMoveEvent, nullptr);
-
-  // set the cursor shape to a hand if we are near a seed.
-  int X = self->Interactor->GetEventPosition()[0];
-  int Y = self->Interactor->GetEventPosition()[1];
-  int state = self->WidgetRep->ComputeInteractionState(X, Y);
-
-  // Change the cursor shape to a hand and invoke an interaction event if we
-  // are near the seed
-  if (state == vtkSeedRepresentation::NearSeed)
+  // Do nothing if outside
+  if (self->WidgetState != vtkSeedWidget::PlacingSeeds)
   {
-    int cShape = VTK_CURSOR_HAND;
-    self->RequestCursorShape(cShape);
-    self->InvokeEvent(vtkCommand::CursorChangedEvent, &cShape);
-
-    vtkSeedRepresentation* rep =
-      static_cast<vtkSeedRepresentation*>(self->WidgetRep);
-    int seedIdx = rep->GetActiveHandle();
-    self->InvokeEvent(vtkCommand::InteractionEvent, &seedIdx);
-
-    self->EventCallbackCommand->SetAbortFlag(1);
-  }
-  else
-  {
-    int cShape = VTK_CURSOR_DEFAULT;
-    self->RequestCursorShape(cShape);
-    self->InvokeEvent(vtkCommand::CursorChangedEvent, &cShape);
+    return;
   }
 
+  // Remove last seed
+  vtkSeedRepresentation* rep =
+    reinterpret_cast<vtkSeedRepresentation*>(self->WidgetRep);
+  int removeId = rep->GetActiveHandle();
+  removeId =
+    removeId != -1 ? removeId : static_cast<int>(self->Seeds->size()) - 1;
+  // Invoke event for seed handle before actually deleting
+  self->InvokeEvent(vtkCommand::DeletePointEvent, &(removeId));
+
+  self->DeleteSeed(removeId);
+  // Got this event, abort processing if it
+  self->EventCallbackCommand->SetAbortFlag(1);
   self->Render();
+}
+
+//-------------------------------------------------------------------------
+void vtkMaptkSeedWidget::EndSelectAction(vtkAbstractWidget* w)
+{
+  vtkMaptkSeedWidget* self = reinterpret_cast<vtkMaptkSeedWidget*>(w);
+
+  // Do nothing if outside
+  if (self->WidgetState != vtkMaptkSeedWidget::MovingSeed)
+  {
+    return;
+  }
+
+  // Revert back to the mode we were in prior to selection.
+  self->WidgetState = self->Defining ? vtkMaptkSeedWidget::PlacingSeeds
+                                     : vtkMaptkSeedWidget::PlacedSeeds;
+
+  // Invoke event for seed handle
+  self->InvokeEvent(vtkCommand::LeftButtonReleaseEvent, nullptr);
+  self->EventCallbackCommand->SetAbortFlag(1);
+  self->InvokeEvent(vtkCommand::EndInteractionEvent, nullptr);
+  self->Superclass::EndInteraction();
+  self->HighlightActiveSeed();
 }
 
 //----------------------------------------------------------------------
@@ -202,13 +228,16 @@ void vtkMaptkSeedWidget::HighlightActiveSeed()
   }
   for (; iter != this->Seeds->end(); ++iter)
   {
-    (*iter)->GetHandleRepresentation()->Highlight(0);
     if (this->GetEnabled() &&
         (std::distance(this->Seeds->begin(), iter) == activeHandle))
     {
       (*iter)->GetHandleRepresentation()->Highlight(1);
       this->InvokeEvent(vtkMaptkSeedWidget::ActiveSeedChangedEvent,
                         &activeHandle);
+    }
+    else
+    {
+      (*iter)->GetHandleRepresentation()->Highlight(0);
     }
   }
   this->Render();
