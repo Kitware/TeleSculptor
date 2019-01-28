@@ -286,7 +286,8 @@ public:
   bool updateCamera(kv::frame_id_t frame,
                     kv::camera_perspective_sptr cam);
 
-  std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string>> depthLookup() const;
+  std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string>>
+  depthLookup() const;
 
   void setActiveCamera(int);
   void updateCameraView();
@@ -392,7 +393,8 @@ void MainWindowPrivate::saveGeoOrigin(QString const& path)
 {
   project->config->set_value("geo_origin_file", kvPath(
     project->getContingentRelativePath(path)));
-  kv::write_local_geo_cs_to_file(sfmConstraints->get_local_geo_cs(), stdString(path));
+  kv::write_local_geo_cs_to_file(sfmConstraints->get_local_geo_cs(),
+                                 stdString(path));
 }
 
 //-----------------------------------------------------------------------------
@@ -734,9 +736,11 @@ kv::camera_map_sptr MainWindowPrivate::cameraMap() const
 }
 
 //-----------------------------------------------------------------------------
-std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string>> MainWindowPrivate::depthLookup() const
+std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string>>
+MainWindowPrivate::depthLookup() const
 {
-  std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string>> lookup(new std::map<kwiver::vital::frame_id_t, std::string>());
+  auto lookup =
+    std::make_shared<std::map<kwiver::vital::frame_id_t, std::string>>();
 
   for (auto cd : this->frames)
   {
@@ -1257,7 +1261,8 @@ void MainWindowPrivate::loadroi(const std::string& roistr)
 {
   double minpt[3], maxpt[3];
   std::istringstream stream(roistr);
-  stream >> minpt[0] >> minpt[1] >> minpt[2] >> maxpt[0] >> maxpt[1] >> maxpt[2];
+  stream >> minpt[0] >> minpt[1] >> minpt[2]
+         >> maxpt[0] >> maxpt[1] >> maxpt[2];
   this->roi->SetXMin(minpt);
   this->roi->SetXMax(maxpt);
   UI.worldView->setROI(roi.GetPointer(), true);
@@ -1597,8 +1602,9 @@ void MainWindow::newProject()
     }
 
     saveCameras(d->project->cameraPath);
-    d->project->config->set_value("output_krtd_dir", kvPath(
-                                                       d->project->getContingentRelativePath(d->project->cameraPath)));
+    d->project->config->set_value(
+      "output_krtd_dir",
+      kvPath(d->project->getContingentRelativePath(d->project->cameraPath)));
 
     if (!d->sfmConstraints->get_local_geo_cs().origin().is_empty() &&
         !d->project->geoOriginFile.isEmpty())
@@ -1631,8 +1637,9 @@ void MainWindow::loadProject(QString const& path)
   // Set the current working directory to the project directory
   if (!QDir::setCurrent(d->project->workingDir.absolutePath()))
   {
-    qWarning() << "Unable to set current working directory to "
-               << "project directory: " << d->project->workingDir.absolutePath();
+    qWarning() << "Unable to set current working directory "
+                  "to project directory"
+               << d->project->workingDir.absolutePath();
   }
 
   // Get the video and mask sources
@@ -1788,8 +1795,9 @@ void MainWindow::loadVideo(QString const& path)
   if (d->project)
   {
     saveCameras(d->project->cameraPath);
-    d->project->config->set_value("output_krtd_dir", kvPath(
-                                                       d->project->getContingentRelativePath(d->project->cameraPath)));
+    d->project->config->set_value(
+      "output_krtd_dir",
+      kvPath(d->project->getContingentRelativePath(d->project->cameraPath)));
 
     if (!d->sfmConstraints->get_local_geo_cs().origin().is_empty() &&
         !d->project->geoOriginFile.isEmpty())
@@ -1987,8 +1995,9 @@ void MainWindow::saveLandmarks(QString const& path, bool writeToProject)
 
     if (writeToProject && d->project)
     {
-      d->project->config->set_value("output_ply_file", kvPath(
-                                                         d->project->getContingentRelativePath(path)));
+      d->project->config->set_value(
+        "output_ply_file",
+        kvPath(d->project->getContingentRelativePath(path)));
     }
   }
   catch (...)
@@ -2072,8 +2081,9 @@ void MainWindow::saveTracks(QString const& path, bool writeToProject)
 
     if (writeToProject && d->project)
     {
-      d->project->config->set_value("output_tracks_file", kvPath(
-                                                            d->project->getContingentRelativePath(path)));
+      d->project->config->set_value(
+        "output_tracks_file",
+        kvPath(d->project->getContingentRelativePath(path)));
     }
   }
   catch (...)
@@ -2176,8 +2186,9 @@ void MainWindow::saveCameras(QString const& path, bool writeToProject)
 
   if (writeToProject && d->project)
   {
-    d->project->config->set_value("output_krtd_dir", kvPath(
-                                                       d->project->getContingentRelativePath(path)));
+    d->project->config->set_value(
+      "output_krtd_dir",
+      kvPath(d->project->getContingentRelativePath(path)));
   }
 
   if (!errors.isEmpty())
@@ -2264,8 +2275,9 @@ void MainWindow::saveDepthPoints(QString const& path)
   try
   {
     d->UI.worldView->saveDepthPoints(path);
-    d->project->config->set_value("depthmaps_images_file",
-                                  kvPath(d->project->getContingentRelativePath(path)));
+    d->project->config->set_value(
+      "depthmaps_images_file",
+      kvPath(d->project->getContingentRelativePath(path)));
     d->project->write();
   }
   catch (...)
@@ -2277,6 +2289,7 @@ void MainWindow::saveDepthPoints(QString const& path)
   }
 }
 
+//-----------------------------------------------------------------------------
 void MainWindow::saveGeoOrigin(QString const& path)
 {
   QTE_D();
@@ -2623,7 +2636,8 @@ void MainWindow::saveToolResults()
       saveGeoOrigin(d->project->geoOriginFile);
     }
 
-    if (!outputs.testFlag(AbstractTool::BatchDepth) && outputs.testFlag(AbstractTool::Depth))
+    if (!outputs.testFlag(AbstractTool::BatchDepth) &&
+        outputs.testFlag(AbstractTool::Depth))
     {
       saveDepthImage(d->project->depthPath);
     }
@@ -2696,7 +2710,8 @@ void MainWindow::updateToolResults()
     d->activeDepth = d->toolUpdateDepth;
     d->activeDepthFrame = d->toolUpdateActiveFrame;
 
-    //In batch depth, each update is a full depth map from a different ref frame that must be saved
+    // In batch depth, each update is a full depth map from a different ref
+    // frame that must be saved
     if (d->toolSaveDepthFlag)
     {
       saveDepthImage(d->project->depthPath);
