@@ -726,8 +726,7 @@ kv::camera_map_sptr MainWindowPrivate::cameraMap() const
   {
     if (cd.camera)
     {
-      map.insert(std::make_pair(static_cast<kv::frame_id_t>(cd.id),
-                                cd.camera->GetCamera()));
+      map.emplace(static_cast<kv::frame_id_t>(cd.id), cd.camera->GetCamera());
     }
   }
 
@@ -743,8 +742,8 @@ std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string>> MainWindowPriv
   {
     if (!cd.depthMapPath.isEmpty())
     {
-      lookup->insert(std::make_pair(static_cast<kwiver::vital::frame_id_t>(cd.id),
-                                    qPrintable(cd.depthMapPath)));
+      lookup->emplace(static_cast<kwiver::vital::frame_id_t>(cd.id),
+                      qPrintable(cd.depthMapPath));
     }
   }
 
