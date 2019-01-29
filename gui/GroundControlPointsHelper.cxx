@@ -28,7 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// MAPTK includes
 #include "GroundControlPointsHelper.h"
 
 #include "CameraView.h"
@@ -39,46 +38,209 @@
 #include "vtkMaptkPointPicker.h"
 #include "vtkMaptkPointPlacer.h"
 
-// VTK includes
+#include <vital/types/geodesy.h>
+
+#include <vital/range/transform.h>
+
+#include <vtkHandleWidget.h>
 #include <vtkPlane.h>
 #include <vtkRenderer.h>
 
-// vtk includes
-#include <vtkHandleWidget.h>
+#include <qtStlUtil.h>
 
-// Qt includes
 #include <QDebug>
+#include <QFile>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QMessageBox>
 
 namespace kv = kwiver::vital;
+namespace kvr = kwiver::vital::range;
+
 using id_t = kv::ground_control_point_id_t;
 
-QTE_IMPLEMENT_D_FUNC(GroundControlPointsHelper)
+namespace
+{
+
+// Keys
+const auto TAG_TYPE               = QStringLiteral("type");
+const auto TAG_FEATURES           = QStringLiteral("features");
+const auto TAG_GEOMETRY           = QStringLiteral("geometry");
+const auto TAG_PROPERTIES         = QStringLiteral("properties");
+const auto TAG_COORDINATES        = QStringLiteral("coordinates");
+
+// Values
+const auto TAG_FEATURE            = QStringLiteral("Feature");
+const auto TAG_FEATURECOLLECTION  = QStringLiteral("FeatureCollection");
+const auto TAG_POINT              = QStringLiteral("Point");
+
+// Property keys (not part of GeoJSON specification)
+const auto TAG_NAME               = QStringLiteral("name");
+const auto TAG_LOCATION           = QStringLiteral("location");
+
+//-----------------------------------------------------------------------------
+bool isDoubleArray(QJsonArray const& a)
+{
+  for (auto const& v : a)
+  {
+    if (!v.isDouble())
+    {
+      return false;
+    }
+  }
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+kv::ground_control_point_sptr extractGroundControlPoint(QJsonObject const& f)
+{
+  // Check for geometry
+  auto const& geom = f.value(TAG_GEOMETRY).toObject();
+  if (geom.isEmpty())
+  {
+    qDebug() << "ignoring feature" << f
+             << "with bad or missing geometry";
+    return nullptr;
+  }
+
+  // Check geometry type
+  if (geom.value(TAG_TYPE).toString() != TAG_POINT)
+  {
+    // Non-point features are silently ignored
+    return nullptr;
+  }
+
+  // Create point
+  auto gcp = std::make_shared<kv::ground_control_point>();
+
+  // Check for valid coordinates
+  auto const& coords = geom.value(TAG_COORDINATES).toArray();
+  if (coords.size() >= 2 && coords.size() <= 3 && isDoubleArray(coords))
+  {
+    // Set world location and elevation; per the GeoJSON specification
+    // (RFC 7946), the coordinates shall have been specified in WGS'84
+    constexpr static auto gcs = kv::SRID::lat_lon_WGS84;
+    gcp->set_geo_loc({{coords[0].toDouble(), coords[1].toDouble()}, gcs});
+
+    if (coords.size() > 2)
+    {
+      gcp->set_elevation(coords[2].toDouble());
+    }
+  }
+
+  // Get properties
+  auto const& props = f.value(TAG_PROPERTIES).toObject();
+  gcp->set_name(stdString(props.value(TAG_NAME).toString()));
+
+  auto const& loc = props.value(TAG_LOCATION).toArray();
+  if (loc.size() == 3 && isDoubleArray(loc))
+  {
+    gcp->set_loc({loc[0].toDouble(), loc[1].toDouble(), loc[2].toDouble()});
+  }
+  else if (gcp->geo_loc().is_empty())
+  {
+    qDebug() << "ignoring point feature" << f
+             << "with bad or missing coordinate specification "
+                "and bad or missing scene location";
+    return nullptr;
+  }
+
+  return gcp;
+}
+
+//-----------------------------------------------------------------------------
+QJsonValue buildFeature(kv::ground_control_point_sptr const& gcpp)
+{
+  if (!gcpp)
+  {
+    return {};
+  }
+
+  // Get point and point's locations (scene, world/geodetic)
+  auto const& gcp = *gcpp;
+  auto const& sl = gcp.loc();
+  auto const& wl = gcp.geo_loc();
+
+  // Create geometry
+  QJsonObject geom;
+  geom.insert(TAG_TYPE, TAG_POINT);
+  if (!wl.is_empty())
+  {
+    auto const& rwl = wl.location(kv::SRID::lat_lon_WGS84);
+    geom.insert(TAG_COORDINATES, QJsonArray{rwl[0], rwl[1], gcp.elevation()});
+  }
+
+  // Create properties
+  QJsonObject props;
+  props.insert(TAG_NAME, qtString(gcp.name()));
+  props.insert(TAG_LOCATION, QJsonArray{sl[0], sl[1], sl[2]});
+
+  // Create and return feature
+  QJsonObject f;
+  f.insert(TAG_TYPE, TAG_FEATURE);
+  f.insert(TAG_GEOMETRY, geom);
+  f.insert(TAG_PROPERTIES, props);
+
+  return f;
+}
+
+} // namespace (anonymous)
 
 //-----------------------------------------------------------------------------
 class GroundControlPointsHelperPrivate
 {
 public:
+  GroundControlPointsHelperPrivate(GroundControlPointsHelper* q) : q_ptr{q} {}
+
   MainWindow* mainWindow = nullptr;
   id_t curId = 0;
   kv::ground_control_point_map::ground_control_point_map_t groundControlPoints;
   std::map<vtkHandleWidget*, id_t> gcpHandleIdMap;
 
-  void movePoint(GroundControlPointsHelper* q,
-                 int handleId,
-                 GroundControlPointsWidget* widget,
+  void addPoint(id_t id, kv::ground_control_point_sptr const& point);
+
+  void movePoint(int handleId, GroundControlPointsWidget* widget,
                  kv::vector_3d const& newPosition);
 
   id_t addPoint();
   id_t removePoint(vtkHandleWidget*);
+
+private:
+  QTE_DECLARE_PUBLIC_PTR(GroundControlPointsHelper)
+  QTE_DECLARE_PUBLIC(GroundControlPointsHelper)
 };
+
+QTE_IMPLEMENT_D_FUNC(GroundControlPointsHelper)
+
+//-----------------------------------------------------------------------------
+void GroundControlPointsHelperPrivate::addPoint(
+  id_t id, kv::ground_control_point_sptr const& point)
+{
+  QTE_Q();
+
+  // Add point to internal map
+  this->groundControlPoints[id] = point;
+
+  // Add point to VTK widgets
+  auto const& pos = point->loc();
+  this->mainWindow->worldView()->groundControlPointsWidget()->addPoint(pos);
+  q->addCameraViewPoint();
+
+  // Add handle to handle map
+  auto* const worldWidget =
+    this->mainWindow->worldView()->groundControlPointsWidget();
+  auto* const handle = worldWidget->handleWidget(worldWidget->activeHandle());
+  this->gcpHandleIdMap[handle] = curId;
+}
 
 //-----------------------------------------------------------------------------
 void GroundControlPointsHelperPrivate::movePoint(
-  GroundControlPointsHelper* q,
-  int handleId,
-  GroundControlPointsWidget* widget,
+  int handleId, GroundControlPointsWidget* widget,
   kv::vector_3d const& newPosition)
 {
+  QTE_Q();
+
   // Actually move the point and update the view
   widget->movePoint(handleId, newPosition[0], newPosition[1], newPosition[2]);
   widget->render();
@@ -131,8 +293,7 @@ id_t GroundControlPointsHelperPrivate::removePoint(vtkHandleWidget* handle)
 
 //-----------------------------------------------------------------------------
 GroundControlPointsHelper::GroundControlPointsHelper(QObject* parent)
-  : QObject(parent)
-  , d_ptr(new GroundControlPointsHelperPrivate)
+  : QObject{parent}, d_ptr{new GroundControlPointsHelperPrivate{this}}
 {
   QTE_D();
 
@@ -236,12 +397,8 @@ void GroundControlPointsHelper::addWorldViewPoint()
     p = kwiver::vital::vector_3d(pointPicker->GetPickPosition());
     p = camera->UnprojectPoint(cameraPt.data(), camera->Depth(p));
   }
-  else if (vtkPlane::IntersectWithLine(camera->GetPosition(),
-                                       p.data(),
-                                       gNormal,
-                                       gOrigin,
-                                       distance,
-                                       p.data()))
+  else if (vtkPlane::IntersectWithLine(camera->GetPosition(), p.data(),
+                                       gNormal, gOrigin, distance, p.data()))
   {
     // Find the point where the ray intersects the ground plane and use that.
   }
@@ -305,8 +462,7 @@ void GroundControlPointsHelper::moveCameraViewPoint()
   camera->ProjectPoint(p, cameraPt);
   GroundControlPointsWidget* cameraWidget =
     d->mainWindow->cameraView()->groundControlPointsWidget();
-  d->movePoint(this, handleId, cameraWidget,
-               { cameraPt[0], cameraPt[1], 0.0 });
+  d->movePoint(handleId, cameraWidget, { cameraPt[0], cameraPt[1], 0.0 });
 }
 
 //-----------------------------------------------------------------------------
@@ -332,7 +488,7 @@ void GroundControlPointsHelper::moveWorldViewPoint()
   double depth = d->mainWindow->activeCamera()->Depth(pt);
 
   kv::vector_3d p = camera->UnprojectPoint(cameraPt.data(), depth);
-  d->movePoint(this, handleId, worldWidget, p);
+  d->movePoint(handleId, worldWidget, p);
 }
 
 //-----------------------------------------------------------------------------
@@ -388,14 +544,12 @@ void GroundControlPointsHelper::setGroundControlPoints(
   GroundControlPointsWidget* worldWidget =
     d->mainWindow->worldView()->groundControlPointsWidget();
   worldWidget->clearPoints();
+  d->groundControlPoints.clear();
 
   auto const& groundControlPoints = gcpm.ground_control_points();
-  foreach (auto const& gcp, groundControlPoints)
+  for (auto const& gcp : groundControlPoints)
   {
-    auto const& pos = gcp.second->loc();
-
-    worldWidget->addPoint(pos);
-    this->addCameraViewPoint();
+    d->addPoint(gcp.first, gcp.second);
   }
 }
 
@@ -410,23 +564,107 @@ GroundControlPointsHelper::groundControlPoints() const
 //-----------------------------------------------------------------------------
 bool GroundControlPointsHelper::readGroundControlPoints(QString const& path)
 {
-  // TODO
-  return false;
+  QTE_D();
+
+  auto fail = [&path](char const* extra){
+    qWarning().nospace()
+      << "failed to read ground control points from "
+      << path << ": " << extra;
+    return false;
+  };
+
+  // Open input file
+  QFile f{path};
+  if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+  {
+    return fail(qPrintable(f.errorString()));
+  }
+
+  // Read raw JSON data
+  QJsonParseError err;
+  auto const& doc = QJsonDocument::fromJson(f.readAll(), &err);
+  if (doc.isNull())
+  {
+    return fail(qPrintable(err.errorString()));
+  }
+  if (!doc.isObject())
+  {
+    return fail("file does not contain a JSON object");
+  }
+
+  // Get feature collection and features
+  auto const& collection = doc.object();
+  if (collection.value(TAG_TYPE).toString() != TAG_FEATURECOLLECTION)
+  {
+    return fail("root object must be a FeatureCollection");
+  }
+  auto const& features = collection.value(TAG_FEATURES);
+  if (!features.isArray())
+  {
+    return fail("invalid FeatureCollection");
+  }
+
+  // Read points from feature collection
+  auto getJsonObject = [](QJsonValue const& v){ return v.toObject(); };
+  for (auto const& f : features.toArray() | kvr::transform(getJsonObject))
+  {
+    if (f.value(TAG_TYPE).toString() != TAG_FEATURE)
+    {
+      qWarning() << "ignoring non-feature object" << f
+                 << "in FeatureCollection";
+      continue;
+    }
+    if (auto gcp = extractGroundControlPoint(f))
+    {
+      d->addPoint(d->curId++, gcp);
+    }
+  }
+
+  return true;
 }
 
 //-----------------------------------------------------------------------------
 bool GroundControlPointsHelper::writeGroundControlPoints(
   QString const& path, QWidget* dialogParent) const
 {
-  // TODO
-  return false;
+  QTE_D();
+
+  QJsonArray features;
+  for (auto const& gcpi : d->groundControlPoints)
+  {
+    auto const& f = buildFeature(gcpi.second);
+    if (f.isObject())
+    {
+      features.append(f);
+    }
+  }
+
+  QJsonObject root;
+  root.insert(TAG_TYPE, TAG_FEATURECOLLECTION);
+  root.insert(TAG_FEATURES, features);
+
+  QJsonDocument doc{root};
+
+  QFile out{path};
+  if (!out.open(QIODevice::WriteOnly) || out.write(doc.toJson()) < 0)
+  {
+    auto const msg =
+      QStringLiteral("An error occurred while exporting "
+                     "ground control points to \"%1\": %2 ");
+    QMessageBox::critical(dialogParent, QStringLiteral("Export error"),
+                          msg.arg(path, out.errorString()));
+    return false;
+  }
+
+  return true;
 }
 
 //-----------------------------------------------------------------------------
 void GroundControlPointsHelper::enableWidgets(bool enable)
 {
   QTE_D();
-  d->mainWindow->worldView()->groundControlPointsWidget()->enableWidget(enable);
+  d->mainWindow->worldView()->groundControlPointsWidget()->enableWidget(
+    enable);
   d->mainWindow->cameraView()->groundControlPointsWidget()->enableWidget(
     enable);
 }
