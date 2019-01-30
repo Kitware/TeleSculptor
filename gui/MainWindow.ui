@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MAP-Tk TeleSculptor</string>
+   <string>TeleSculptor</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -313,7 +313,7 @@
      <normaloff>:/icons/16x16/help-manual</normaloff>:/icons/16x16/help-manual</iconset>
    </property>
    <property name="text">
-    <string>MAP-Tk TeleSculptor User &amp;Manual</string>
+    <string>TeleSculptor User &amp;Manual</string>
    </property>
    <property name="shortcut">
     <string>F1</string>
@@ -325,7 +325,7 @@
      <normaloff>:/icons/16x16/telesculptor</normaloff>:/icons/16x16/telesculptor</iconset>
    </property>
    <property name="text">
-    <string>&amp;About MAP-Tk TeleSculptor</string>
+    <string>&amp;About TeleSculptor</string>
    </property>
   </action>
   <action name="actionShowMatchMatrix">

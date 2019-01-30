@@ -57,7 +57,7 @@ int main(int argc, char** argv)
   vtkOpenGLRenderWindow::SetGlobalMaximumNumberOfMultiSamples(0);
   QSurfaceFormat::setDefaultFormat(QVTKOpenGLWidget::defaultFormat());
   // Set application information
-  QApplication::setApplicationName("MAP-Tk TeleSculptor");
+  QApplication::setApplicationName("TeleSculptor");
   QApplication::setOrganizationName("Kitware");
   QApplication::setOrganizationDomain("kitware.com");
   QApplication::setApplicationVersion(MAPTK_VERSION);

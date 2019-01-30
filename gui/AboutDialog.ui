@@ -65,7 +65,7 @@ p { margin-top: 0px; margin-bottom: 0px; }
       <property name="text">
        <string>&lt;html&gt;&lt;body&gt;
 &lt;p&gt;
-  MAP-Tk TeleSculptor:&lt;br/&gt;
+  TeleSculptor:&lt;br/&gt;
   Graphical tool for image and video structure-from-motion, photogrammetry, and 3D surface reconstruction.
 &lt;/p&gt;
 &lt;p&gt;

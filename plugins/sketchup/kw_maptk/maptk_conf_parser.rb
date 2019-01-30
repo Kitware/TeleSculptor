@@ -1,5 +1,5 @@
 #ckwg +28
-# Copyright 2015 by Kitware, Inc. All Rights Reserved. Please refer to
+# Copyright 2015-2019 by Kitware, Inc. All Rights Reserved. Please refer to
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -46,7 +46,7 @@ GCP_FILE_KW = 'ground_control_points_file'
 
 class MaptkConfImporter < Sketchup::Importer
   def description
-    return "MAP-Tk configuration file (*.conf)"
+    return "TeleSculptor project file (*.conf)"
   end
 
   def file_extension
@@ -88,13 +88,13 @@ class MaptkConfImporter < Sketchup::Importer
     # Check to ensure all of the required keywords were found and show a warning message
     # and return nil if they weren't
     if output_image_dir == ""
-      UI.messagebox("Error parsing MAP-Tk conf file: missing #{IMAGE_FOLDER_KW} keyword")
+      UI.messagebox("Error parsing TeleSculptor conf file: missing #{IMAGE_FOLDER_KW} keyword")
       return nil
     elsif output_ply_file == ""
-      UI.messagebox("Error parsing MAP-Tk conf file: missing #{OUTPUT_PLY_FILE_KW} keyword")
+      UI.messagebox("Error parsing TeleSculptor conf file: missing #{OUTPUT_PLY_FILE_KW} keyword")
       return nil
     elsif output_krtd_dir == ""
-      UI.messagebox("Error parsing MAP-Tk conf file: missing #{OUTPUT_KRTD_DIR_KW} keyword")
+      UI.messagebox("Error parsing TeleSculptor conf file: missing #{OUTPUT_KRTD_DIR_KW} keyword")
       return nil
     end
 
@@ -156,13 +156,13 @@ class MaptkConfImporter < Sketchup::Importer
     status_images = photo_krtd_importer.load_file(output_image_folder, 0)
     # And the ply importing to the PLYImporter plugin.
     ply_importer = PLYImporter.new
-    status_ply = ply_importer.load_file(output_ply_file, 'MAP-Tk Landmarks', true)
-    status_gcp = ply_importer.load_file(gcp_file, 'MAP-Tk Ground Control Points', false)
+    status_ply = ply_importer.load_file(output_ply_file, 'TeleSculptor Landmarks', true)
+    status_gcp = ply_importer.load_file(gcp_file, 'TeleSculptor Ground Control Points', false)
     return 0
   end
 
   def get_file
-    conf_file = UI.openpanel( "Open MAP-Tk Config File", "", "" )
+    conf_file = UI.openpanel( "Open TeleSculptor Project File", "", "" )
     if conf_file
       load_file(conf_file, 0)
     end

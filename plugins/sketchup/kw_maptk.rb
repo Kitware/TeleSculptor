@@ -1,5 +1,5 @@
 #ckwg +28
-# Copyright 2015 by Kitware, Inc. All Rights Reserved. Please refer to
+# Copyright 2015-2019 by Kitware, Inc. All Rights Reserved. Please refer to
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,11 +30,11 @@
 require 'sketchup.rb'
 require 'extensions.rb'
 
-ext = SketchupExtension.new('MAP-Tk Importer', File.join('kw_maptk', 'MaptkImporter.rb'))
+ext = SketchupExtension.new('TeleSculptor Importer', File.join('kw_maptk', 'MaptkImporter.rb'))
 
 ext.creator = 'Kitware, Inc.'
 ext.version = '0.11.0'
 ext.copyright = '2018'
-ext.description = 'Allows importing of MAP-Tk configuration files and ply files.'
+ext.description = 'Allows importing of TeleSculptor project files and ply files.'
 
 Sketchup.register_extension(ext, true)
