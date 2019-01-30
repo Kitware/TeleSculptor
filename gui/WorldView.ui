@@ -36,13 +36,15 @@
      <addaction name="actionShowFrameImage"/>
      <addaction name="actionShowCameras"/>
      <addaction name="actionShowLandmarks"/>
+     <addaction name="PlaceGroundControlPoint"/>
      <addaction name="actionShowGroundPlane"/>
+     <addaction name="actionSelectROI"/>
      <addaction name="actionShowDepthMap"/>
      <addaction name="actionShowVolume"/>
     </widget>
    </item>
    <item>
-    <widget class="QVTKWidget" name="renderWidget" native="true"/>
+    <widget class="QVTKOpenGLWidget" name="renderWidget" native="true"/>
    </item>
   </layout>
   <action name="actionViewReset">
@@ -273,12 +275,12 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="icons/icons.qrc">
      <normaloff>:/icons/22x22/volume</normaloff>:/icons/22x22/volume</iconset>
-   </property>
-   <property name="enabled">
-    <bool>false</bool>
    </property>
    <property name="text">
     <string>Volume</string>
@@ -287,12 +289,62 @@
     <string>Toggle volume display</string>
    </property>
   </action>
+  <action name="PlaceGroundControlPoint">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/22x22/location</normaloff>:/icons/22x22/location</iconset>
+   </property>
+   <property name="text">
+    <string>Control Points</string>
+   </property>
+   <property name="toolTip">
+    <string>Place/edit ground control points in the view</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+G</string>
+   </property>
+  </action>
+  <action name="actionSelectROI">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/22x22/roi</normaloff>:/icons/22x22/roi</iconset>
+   </property>
+   <property name="text">
+    <string>SelectROI</string>
+   </property>
+   <property name="toolTip">
+    <string>Select 3D region of interest</string>
+   </property>
+   <property name="shortcut">
+    <string>S</string>
+   </property>
+  </action>
+  <action name="actionResetROI">
+   <property name="text">
+    <string>ResetROI</string>
+   </property>
+   <property name="toolTip">
+    <string>Reset region of interest selection</string>
+   </property>
+   <property name="shortcut">
+    <string>Esc</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QVTKWidget</class>
+   <class>QVTKOpenGLWidget</class>
    <extends>QWidget</extends>
-   <header location="global">QVTKWidget.h</header>
+   <header location="global">QVTKOpenGLWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

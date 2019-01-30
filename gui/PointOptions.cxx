@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,8 +50,9 @@
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
 
-#include <QtGui/QMenu>
-#include <QtGui/QWidgetAction>
+#include <QButtonGroup>
+#include <QMenu>
+#include <QWidgetAction>
 
 namespace
 {
@@ -178,7 +179,7 @@ void PointOptionsPrivate::createFilters()
       pdMapper->SetInputConnection(filter->GetOutputPort());
 
       // Add to list of active filter objects
-      this->filters.insert(pdMapper, filter.GetPointer());
+      this->filters.insert(pdMapper, filter);
     }
   }
 }
@@ -261,22 +262,25 @@ PointOptions::PointOptions(QString const& settingsGroup,
   d->uiState.restore();
 
   // Connect signals/slots
-  connect(d->UI.size, SIGNAL(valueChanged(int)), this, SLOT(setSize(int)));
-  connect(d->UI.color, SIGNAL(colorChanged(QColor)), this, SIGNAL(modified()));
-  connect(d->dataColorOptions, SIGNAL(modified()), this, SIGNAL(modified()));
+  connect(d->UI.size, &QAbstractSlider::valueChanged,
+          this, &PointOptions::setSize);
+  connect(d->UI.color, &qtColorButton::colorChanged,
+          this, &PointOptions::modified);
+  connect(d->dataColorOptions, &DataColorOptions::modified,
+          this, &PointOptions::modified);
 
-  connect(d->UI.dataField, SIGNAL(currentIndexChanged(int)),
-          this, SLOT(updateActiveDataField()));
-  connect(d->dataFilterOptions, SIGNAL(modified()),
-          this, SLOT(updateFilters()));
-  connect(d->UI.dataFilter, SIGNAL(clicked()),
-          this, SLOT(updateFilters()));
+  connect(d->UI.dataField, QOverload<int>::of(&QComboBox::currentIndexChanged),
+          this, &PointOptions::updateActiveDataField);
+  connect(d->dataFilterOptions, &DataFilterOptions::modified,
+          this, &PointOptions::updateFilters);
+  connect(d->UI.dataFilter, &QAbstractButton::clicked,
+          this, &PointOptions::updateFilters);
 
-  connect(&d->colorMode, SIGNAL(buttonClicked(int)),
-          this, SLOT(setColorMode(int)));
+  connect(&d->colorMode, QOverload<int>::of(&QButtonGroup::buttonClicked),
+          this, &PointOptions::setColorMode);
 
-  connect(d->dataColorOptions, SIGNAL(iconChanged(QIcon)),
-          this, SLOT(setDataColorIcon(QIcon)));
+  connect(d->dataColorOptions, &DataColorOptions::iconChanged,
+          this, &PointOptions::setDataColorIcon);
 }
 
 //-----------------------------------------------------------------------------

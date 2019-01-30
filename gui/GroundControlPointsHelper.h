@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, SAS; Copyright 2017 by Kitware, Inc.
+ * Copyright 2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,56 +28,52 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_RECONSTRUCTIONDATA_H_
-#define MAPTK_RECONSTRUCTIONDATA_H_
+#ifndef MAPTK_GROUNDCONTROLPOINTSHELPER_H_
+#define MAPTK_GROUNDCONTROLPOINTSHELPER_H_
 
-// VTK includes
-class vtkImageData;
-class vtkMatrix3x3;
-class vtkMatrix4x4;
-class vtkTransform;
-class vtkVector3d;
+// qtExtensions includes
+#include <qtGlobal.h>
 
-#include <string>
+// Qt declarations
+#include <QObject>
 
-class ReconstructionData
+// Kwiver includes
+#include <vital/types/landmark_map.h>
+
+// Forward declarations
+class GroundControlPointsHelperPrivate;
+
+class GroundControlPointsHelper : public QObject
 {
+  Q_OBJECT
+
 public:
-  ReconstructionData();
-  ReconstructionData(std::string depthPath, std::string matrixPath);
-  ~ReconstructionData();
+  GroundControlPointsHelper(QObject* parent = nullptr);
+  ~GroundControlPointsHelper();
 
-  // GETTERS
-  int* GetDepthMapDimensions();
-  void GetColorValue(int* pixelPosition, double rgb[3]);
-  vtkImageData* GetDepthMap();
-  vtkMatrix3x3* Get3MatrixK();
-  vtkMatrix4x4* Get4MatrixK();
-  vtkMatrix4x4* GetMatrixTR();
-  vtkVector3d GetCameraCenter();
+  void updateCameraViewPoints();
 
-  // SETTERS
-  void SetDepthMap(vtkImageData* data);
-  void SetMatrixK(vtkMatrix3x3* matrix);
-  void SetMatrixRT(vtkMatrix4x4* matrix);
+  void setGroundControlPoints(kwiver::vital::landmark_map const&);
+  kwiver::vital::landmark_map_sptr groundControlPoints() const;
 
-  // FUNCTIONS
-  void ApplyDepthThresholdFilter(double thresholdBestCost);
-  void TransformWorldToDepthMapPosition(const double* worldCoordinate, int pixelCoordinate[2]);
+public slots:
+  void enableWidgets(bool);
 
-  // STATIC FUNCTIONS
-  static void ReadDepthMap(std::string path, vtkImageData* out);
+signals:
+  void pointCountChanged(int);
 
-protected:
+protected slots:
+  void addCameraViewPoint();
+  void addWorldViewPoint();
 
-  // Attributes
-  vtkImageData* DepthMap;
-  vtkMatrix3x3* MatrixK;
-  vtkMatrix4x4* Matrix4K;
-  vtkMatrix4x4* MatrixRT;
+  void moveCameraViewPoint();
+  void moveWorldViewPoint();
 
-  vtkTransform* TransformWorldToCamera;
-  vtkTransform* TransformCameraToDepthMap;
+private:
+  QTE_DECLARE_PRIVATE_RPTR(GroundControlPointsHelper)
+  QTE_DECLARE_PRIVATE(GroundControlPointsHelper)
+
+  QTE_DISABLE_COPY(GroundControlPointsHelper)
 };
 
 #endif

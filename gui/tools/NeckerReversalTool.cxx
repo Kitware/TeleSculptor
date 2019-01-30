@@ -32,7 +32,7 @@
 
 #include <arrows/core/transform.h>
 
-#include <QtGui/QMessageBox>
+#include <QMessageBox>
 
 //-----------------------------------------------------------------------------
 NeckerReversalTool::NeckerReversalTool(QObject* parent)

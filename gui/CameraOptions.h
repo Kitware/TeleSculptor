@@ -33,7 +33,7 @@
 
 #include <qtGlobal.h>
 
-#include <QtGui/QWidget>
+#include <QWidget>
 
 class vtkMaptkCameraRepresentation;
 
@@ -46,7 +46,7 @@ class CameraOptions : public QWidget
 public:
   explicit CameraOptions(vtkMaptkCameraRepresentation*,
                          QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~CameraOptions();
+  ~CameraOptions() override;
 
 signals:
   void modified();

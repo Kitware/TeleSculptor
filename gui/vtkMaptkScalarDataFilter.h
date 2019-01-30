@@ -1,5 +1,5 @@
 /*ckwg +29
-* Copyright 2016 by Kitware, Inc.
+* Copyright 2016-2018 by Kitware, Inc.
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,7 @@ class vtkMaptkScalarDataFilter : public vtkDataSetAlgorithm
 public:
   static vtkMaptkScalarDataFilter *New();
   vtkTypeMacro(vtkMaptkScalarDataFilter,vtkDataSetAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Get/Set the point data array name to set as active scalars on the output.
@@ -47,17 +47,17 @@ public:
 
 protected:
   vtkMaptkScalarDataFilter();
-  ~vtkMaptkScalarDataFilter();
+  ~vtkMaptkScalarDataFilter() override;
 
-  virtual int RequestData(vtkInformation* request,
+  int RequestData(vtkInformation* request,
                           vtkInformationVector** inputVector,
-                          vtkInformationVector* outputVector);
+                          vtkInformationVector* outputVector) override;
 
   char* ScalarArrayName;
 
 private:
-  vtkMaptkScalarDataFilter(const vtkMaptkScalarDataFilter&);  // Not implemented.
-  void operator=(const vtkMaptkScalarDataFilter&);  // Not implemented.
+  vtkMaptkScalarDataFilter(vtkMaptkScalarDataFilter const&) = delete;
+  void operator=(vtkMaptkScalarDataFilter const&) = delete;
 };
 
 #endif

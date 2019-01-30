@@ -34,8 +34,8 @@
 #include <qtGlobal.h>
 #include <qtMath.h>
 
-#include <QtGui/QIcon>
-#include <QtGui/QWidget>
+#include <QIcon>
+#include <QWidget>
 
 class vtkScalarsToColors;
 
@@ -48,7 +48,7 @@ class DataColorOptions : public QWidget
 public:
   explicit DataColorOptions(QString const& settingsGroup, QWidget* parent = 0,
                             Qt::WindowFlags flags = 0);
-  virtual ~DataColorOptions();
+  ~DataColorOptions() override;
 
   QIcon icon() const;
 

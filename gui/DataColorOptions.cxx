@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -83,17 +83,17 @@ DataColorOptions::DataColorOptions(
 
   d->scalarsToGradient->SetGradient(d->UI.gradient->currentGradient());
 
-  connect(d->UI.minimum, SIGNAL(valueChanged(double)),
-          this, SLOT(updateMinimum()));
-  connect(d->UI.maximum, SIGNAL(valueChanged(double)),
-          this, SLOT(updateMaximum()));
-  connect(d->UI.autoMinimum, SIGNAL(toggled(bool)),
-          this, SLOT(updateMinimum()));
-  connect(d->UI.autoMaximum, SIGNAL(toggled(bool)),
-          this, SLOT(updateMaximum()));
+  connect(d->UI.minimum, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+          this, &DataColorOptions::updateMinimum);
+  connect(d->UI.maximum, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+          this, &DataColorOptions::updateMaximum);
+  connect(d->UI.autoMinimum, &QAbstractButton::toggled,
+          this, &DataColorOptions::updateMinimum);
+  connect(d->UI.autoMaximum, &QAbstractButton::toggled,
+          this, &DataColorOptions::updateMaximum);
 
-  connect(d->UI.gradient, SIGNAL(currentIndexChanged(int)),
-          this, SLOT(setGradient(int)));
+  connect(d->UI.gradient, QOverload<int>::of(&QComboBox::currentIndexChanged),
+          this, &DataColorOptions::setGradient);
 }
 
 //-----------------------------------------------------------------------------
@@ -114,7 +114,7 @@ QIcon DataColorOptions::icon() const
 vtkScalarsToColors* DataColorOptions::scalarsToColors() const
 {
   QTE_D();
-  return d->scalarsToGradient.GetPointer();
+  return d->scalarsToGradient;
 }
 
 //-----------------------------------------------------------------------------

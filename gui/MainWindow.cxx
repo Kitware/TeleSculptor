@@ -28,15 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "MainWindow.h"
 #include "GuiCommon.h"
+#include "MainWindow.h"
 
-#include "ui_MainWindow.h"
 #include "am_MainWindow.h"
+#include "ui_MainWindow.h"
 
 #include "tools/BundleAdjustTool.h"
 #include "tools/CanonicalTransformTool.h"
+#include "tools/ComputeAllDepthTool.h"
 #include "tools/ComputeDepthTool.h"
+#include "tools/FuseDepthTool.h"
 #include "tools/InitCamerasLandmarksTool.h"
 #include "tools/NeckerReversalTool.h"
 #include "tools/SaveFrameTool.h"
@@ -47,29 +49,29 @@
 #include "tools/TriangulateTool.h"
 
 #include "AboutDialog.h"
+#include "GroundControlPointsHelper.h"
 #include "MatchMatrixWindow.h"
 #include "Project.h"
+#include "VideoImport.h"
+#include "vtkMaptkCamera.h"
 #include "vtkMaptkImageDataGeometryFilter.h"
 #include "vtkMaptkImageUnprojectDepth.h"
-#include "vtkMaptkCamera.h"
 
 #include <maptk/version.h>
-#include <maptk/local_geo_cs.h>
 
+#include <arrows/core/match_matrix.h>
+#include <arrows/core/track_set_impl.h>
 #include <vital/algo/video_input.h>
 #include <vital/io/camera_io.h>
 #include <vital/io/landmark_map_io.h>
 #include <vital/io/track_set_io.h>
 #include <vital/types/camera_perspective.h>
+#include <vital/types/local_geo_cs.h>
 #include <vital/types/metadata_map.h>
-#include <arrows/core/match_matrix.h>
+#include <vital/types/sfm_constraints.h>
 
-#include <kwiversys/SystemTools.hxx>
-
-#include <vtkXMLImageDataWriter.h>
+#include <vtkBox.h>
 #include <vtkImageData.h>
-#include <vtkImageFlip.h>
-#include <vtkImageImport.h>
 #include <vtkImageReader2.h>
 #include <vtkImageReader2Collection.h>
 #include <vtkImageReader2Factory.h>
@@ -77,26 +79,29 @@
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
 #include <vtkXMLImageDataReader.h>
+#include <vtkXMLImageDataWriter.h>
 
 #include <qtEnumerate.h>
+#include <qtGet.h>
 #include <qtIndexRange.h>
 #include <qtMath.h>
 #include <qtStlUtil.h>
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
 
-#include <QtGui/QApplication>
-#include <QtGui/QColorDialog>
-#include <QtGui/QDesktopServices>
-#include <QtGui/QFileDialog>
-#include <QtGui/QMessageBox>
-#include <QtGui/qpushbutton.h>
+#include <QApplication>
+#include <QColorDialog>
+#include <QDebug>
+#include <QDesktopServices>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QPushButton>
+#include <QQueue>
+#include <QSignalMapper>
+#include <QTimer>
+#include <QUrl>
 
-#include <QtCore/QDebug>
-#include <QtCore/QQueue>
-#include <QtCore/QSignalMapper>
-#include <QtCore/QTimer>
-#include <QtCore/QUrl>
+namespace kv = kwiver::vital;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -106,12 +111,12 @@ namespace // anonymous
 {
 
 //-----------------------------------------------------------------------------
-kwiver::vital::path_t kvPath(QString const& s)
+kv::path_t kvPath(QString const& s)
 {
   return stdString(s);
 }
 
-
+//-----------------------------------------------------------------------------
 QString findUserManual()
 {
   static auto const name = "telesculptor.html";
@@ -152,7 +157,7 @@ QSet<QString> supportedImageExtensions()
 
   // Get registered readers
   vtkNew<vtkImageReader2Collection> readers;
-  vtkImageReader2Factory::GetRegisteredReaders(readers.GetPointer());
+  vtkImageReader2Factory::GetRegisteredReaders(readers);
 
   // Extract extensions for each reader
   readers->InitTraversal();
@@ -172,6 +177,7 @@ QSet<QString> supportedImageExtensions()
   return result;
 }
 
+//-----------------------------------------------------------------------------
 QSet<QString> supportedVideoExtensions()
 {
   QSet<QString> result;
@@ -183,12 +189,23 @@ QSet<QString> supportedVideoExtensions()
   result.insert("avi");
   result.insert("wmw");
   result.insert("mov");
+  result.insert("txt"); // image list
 
   return result;
 }
 
 //-----------------------------------------------------------------------------
-QString makeFilters(QStringList extensions)
+std::string imageConfigForPath(QString const& path, QString const& type)
+{
+  static const auto configTemplate = QString{"gui_%1_%2_reader.conf"};
+
+  const auto ext = QFileInfo{path}.suffix();
+  const QString mode = (ext.toLower() == "txt" ? "list" : "video");
+  return stdString(configTemplate.arg(type, mode));
+}
+
+//-----------------------------------------------------------------------------
+QString makeFilters(QStringList const& extensions)
 {
   auto result = QStringList();
   foreach (auto const& extension, extensions)
@@ -203,7 +220,8 @@ template <typename T>
 class StateValue : public qtUiState::AbstractItem
 {
 public:
-  StateValue(T const& defaultValue = T{}) : data{defaultValue} {}
+  StateValue(T const& defaultValue = T{})
+    : data{defaultValue} {}
 
   operator T() const { return this->data; }
 
@@ -213,12 +231,12 @@ public:
     return *this;
   }
 
-  virtual QVariant value() const QTE_OVERRIDE
+  QVariant value() const override
   {
     return QVariant::fromValue(this->data);
   }
 
-  virtual void setValue(QVariant const& newValue) QTE_OVERRIDE
+  void setValue(QVariant const& newValue) override
   {
     this->data = newValue.value<T>();
   }
@@ -249,33 +267,31 @@ public:
   };
 
   // Methods
-  MainWindowPrivate()
-    : activeTool(0)
-    , toolUpdateActiveFrame(-1)
-    , framesToSkip(1)
-    , activeDepthFrame(-1)
-    , activeCameraIndex(-1) {}
+  MainWindowPrivate(MainWindow* mainWindow);
 
   void addTool(AbstractTool* tool, MainWindow* mainWindow);
 
-  void addCamera(kwiver::vital::camera_perspective_sptr const& camera);
+  void addCamera(kv::camera_perspective_sptr const& camera);
   void addImage(QString const& imagePath);
-  void addVideoSource(kwiver::vital::config_block_sptr const& config,
+  void addVideoSource(kv::config_block_sptr const& config,
                       QString const& videoPath);
+  void addMaskSource(kv::config_block_sptr const& config,
+                     QString const& maskPath);
 
-  void addFrame(kwiver::vital::camera_perspective_sptr const& camera, int id);
+  void addFrame(kv::camera_perspective_sptr const& camera, int id);
+  void updateFrames(std::shared_ptr<kv::metadata_map::map_metadata_t>);
 
-  kwiver::vital::camera_map_sptr cameraMap() const;
-  void updateCameras(kwiver::vital::camera_map_sptr const&);
-  bool updateCamera(kwiver::vital::frame_id_t frame,
-                    kwiver::vital::camera_perspective_sptr cam);
+  kv::camera_map_sptr cameraMap() const;
+  void updateCameras(kv::camera_map_sptr const&);
+  bool updateCamera(kv::frame_id_t frame,
+                    kv::camera_perspective_sptr cam);
+
+  std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string>> depthLookup() const;
 
   void setActiveCamera(int);
   void updateCameraView();
 
-  vtkSmartPointer<vtkImageData> vitalToVtkImage(kwiver::vital::image& img);
-
-  std::string getFrameName(kwiver::vital::frame_id_t frame);
+  std::string getFrameName(kv::frame_id_t frame);
 
   void loadImage(FrameData frame);
   void loadEmptyImage(vtkMaptkCamera* camera);
@@ -283,42 +299,57 @@ public:
   void loadDepthMap(QString const& imagePath);
 
   void setActiveTool(AbstractTool* tool);
+  void updateProgress(QObject* object,
+                      const QString& description = QString(""),
+                      int value = 0);
+
+  std::string roiToString();
+  void loadroi(const std::string& roistr);
 
   // Member variables
   Ui::MainWindow UI;
   Am::MainWindow AM;
   qtUiState uiState;
 
-  StateValue<QColor>* viewBackgroundColor;
+  StateValue<QColor>* viewBackgroundColor = nullptr;
 
   QTimer slideTimer;
   QSignalMapper toolDispatcher;
 
-  QAction* toolSeparator;
-  QMenu* toolMenu;
-  AbstractTool* activeTool;
+  QAction* toolSeparator = nullptr;
+  QMenu* toolMenu = nullptr;
+  AbstractTool* activeTool = nullptr;
   QList<AbstractTool*> tools;
-  int toolUpdateActiveFrame;
-  kwiver::vital::camera_map_sptr toolUpdateCameras;
-  kwiver::vital::landmark_map_sptr toolUpdateLandmarks;
-  kwiver::vital::feature_track_set_sptr toolUpdateTracks;
+  int toolUpdateActiveFrame = -1;
+  kv::camera_map_sptr toolUpdateCameras;
+  kv::landmark_map_sptr toolUpdateLandmarks;
+  kv::feature_track_set_sptr toolUpdateTracks;
   vtkSmartPointer<vtkImageData> toolUpdateDepth;
+  vtkSmartPointer<vtkStructuredGrid> toolUpdateVolume;
+  bool toolSaveDepthFlag = false;
+
+  kv::config_block_sptr freestandingConfig = kv::config_block::empty_config();
 
   QString videoPath;
-  kwiver::vital::algo::video_input_sptr videoSource;
-  kwiver::vital::timestamp currentVideoTimestamp;
-  kwiver::vital::metadata_map::map_metadata_t videoMetadataMap;
-  kwiver::vital::frame_id_t framesToSkip;
+  QString maskPath;
+  kv::algo::video_input_sptr videoSource;
+  kv::algo::video_input_sptr maskSource;
+  kv::timestamp currentVideoTimestamp;
+  kv::metadata_map_sptr videoMetadataMap =
+    std::make_shared<kv::simple_metadata_map>();
+  kv::frame_id_t advanceInterval = 1;
 
-  QList<FrameData> frames;
-  kwiver::vital::feature_track_set_sptr tracks;
-  kwiver::vital::landmark_map_sptr landmarks;
+  QMap<kv::frame_id_t, FrameData> frames;
+  kv::feature_track_set_sptr tracks;
+  kv::landmark_map_sptr landmarks;
   vtkSmartPointer<vtkImageData> activeDepth;
-  int activeDepthFrame;
+  int activeDepthFrame = -1;
 
-  kwiver::maptk::local_geo_cs localGeoCs;
+  kv::sfm_constraints_sptr sfmConstraints;
 
-  int activeCameraIndex;
+  int activeCameraIndex = -1;
+
+  VideoImport videoImporter;
 
   // Frames without a camera
   QQueue<int> orphanFrames;
@@ -327,11 +358,32 @@ public:
   vtkNew<vtkMaptkImageUnprojectDepth> depthFilter;
   vtkNew<vtkMaptkImageDataGeometryFilter> depthGeometryFilter;
 
+  vtkNew<vtkBox> roi;
+
   // Current project
-  std::shared_ptr<Project> currProject;
+  QScopedPointer<Project> project;
+
+  // Progress tracking
+  QHash<QObject*, int> progressIds;
+
+  // Manual landmarks
+  GroundControlPointsHelper* groundControlPointsHelper;
 };
 
 QTE_IMPLEMENT_D_FUNC(MainWindow)
+
+//-----------------------------------------------------------------------------
+MainWindowPrivate::MainWindowPrivate(MainWindow* mainWindow)
+{
+  QObject::connect(&videoImporter, &VideoImport::updated,
+                   mainWindow, &MainWindow::addFrame);
+  QObject::connect(&videoImporter, &VideoImport::progressChanged,
+                   mainWindow, &MainWindow::updateVideoImportProgress);
+  QObject::connect(&videoImporter, &VideoImport::completed,
+                   mainWindow, &MainWindow::updateFrames);
+
+  sfmConstraints = std::make_shared<kv::sfm_constraints>();
+}
 
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::addTool(AbstractTool* tool, MainWindow* mainWindow)
@@ -340,12 +392,14 @@ void MainWindowPrivate::addTool(AbstractTool* tool, MainWindow* mainWindow)
 
   this->toolDispatcher.setMapping(tool, tool);
 
-  QObject::connect(tool, SIGNAL(triggered()),
-                   &this->toolDispatcher, SLOT(map()));
-  QObject::connect(tool, SIGNAL(updated(std::shared_ptr<ToolData>)),
-                   mainWindow, SLOT(acceptToolResults(std::shared_ptr<ToolData>)));
-  QObject::connect(tool, SIGNAL(completed()),
-                   mainWindow, SLOT(acceptToolFinalResults()));
+  QObject::connect(tool, &AbstractTool::triggered, &this->toolDispatcher,
+                   QOverload<>::of(&QSignalMapper::map));
+  QObject::connect(tool, &AbstractTool::updated,
+                   mainWindow, &MainWindow::acceptToolInterimResults);
+  QObject::connect(tool, &AbstractTool::completed,
+                   mainWindow, &MainWindow::acceptToolFinalResults);
+  QObject::connect(tool, &AbstractTool::failed,
+                   mainWindow, &MainWindow::reportToolError);
 
   tool->setEnabled(false);
 
@@ -353,26 +407,33 @@ void MainWindowPrivate::addTool(AbstractTool* tool, MainWindow* mainWindow)
 }
 
 //-----------------------------------------------------------------------------
-void MainWindowPrivate::addCamera(kwiver::vital::camera_perspective_sptr const& camera)
+void MainWindowPrivate::addCamera(kv::camera_perspective_sptr const& camera)
 {
-  if (this->orphanFrames.isEmpty())
+  if (!this->orphanFrames.isEmpty())
   {
-    this->addFrame(camera, this->frames.count() + 1);
-    return;
+    auto orphanIndex = this->orphanFrames.dequeue();
+
+    if (auto* const fd = qtGet(this->frames, orphanIndex))
+    {
+      fd->camera = vtkSmartPointer<vtkMaptkCamera>::New();
+      fd->camera->SetCamera(camera);
+      fd->camera->Update();
+
+      this->UI.worldView->addCamera(fd->id, fd->camera);
+      if (fd->id == this->activeCameraIndex)
+      {
+        this->UI.worldView->setActiveCamera(fd->id);
+        this->updateCameraView();
+      }
+
+      return;
+    }
   }
 
-  auto& fd = this->frames[this->orphanFrames.dequeue()];
-
-  fd.camera = vtkSmartPointer<vtkMaptkCamera>::New();
-  fd.camera->SetCamera(camera);
-  fd.camera->Update();
-
-  this->UI.worldView->addCamera(fd.id, fd.camera);
-  if (fd.id == this->activeCameraIndex)
-  {
-    this->UI.worldView->setActiveCamera(fd.id);
-    this->updateCameraView();
-  }
+  // Add the camera to the end
+  unsigned int lastFrameId =
+    this->frames.isEmpty() ? 0 : this->frames.lastKey();
+  this->addFrame(camera, lastFrameId + 1);
 }
 
 //-----------------------------------------------------------------------------
@@ -382,110 +443,64 @@ void MainWindowPrivate::addImage(QString const& imagePath)
 }
 
 //-----------------------------------------------------------------------------
-void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& config,
-                                       QString const& videoPath)
+void MainWindowPrivate::addVideoSource(
+  kv::config_block_sptr const& config,
+  QString const& videoPath)
 {
-  // Save the configuration so independent video sources can be created for tools
-  if (this->currProject)
+  // Save the configuration so independent video sources can be created for
+  // tools
+  if (this->project)
   {
-    this->currProject->projectConfig = config;
+    this->project->config->merge_config(config);
   }
   this->videoPath = videoPath;
+  this->freestandingConfig->merge_config(config);
+  // Set video path and config for volume mesh coloring
+  this->UI.worldView->setVideoConfig(videoPath, config);
 
   // Close the existing video source if it exists
-  if(this->videoSource)
+  if (this->videoSource)
   {
     this->videoSource->close();
   }
 
-  kwiver::vital::algo::video_input::
-    set_nested_algo_configuration("video_reader", config, this->videoSource);
+  kv::algo::video_input::set_nested_algo_configuration(
+    "video_reader", config, this->videoSource);
 
-  using kwiver::vital::vector_2d;
-
-  kwiver::vital::simple_camera_intrinsics K_def;
-  const std::string bc = "video_reader:base_camera:";
-  auto K = std::make_shared<kwiver::vital::simple_camera_intrinsics>(
-    config->get_value<double>(bc + "focal_length", K_def.focal_length()),
-    config->get_value<vector_2d>(bc + "principal_point",
-                                 K_def.principal_point()),
-    config->get_value<double>(bc + "aspect_ratio", K_def.aspect_ratio()),
-    config->get_value<double>(bc + "skew", K_def.skew()));
+  auto lgcs = sfmConstraints->get_local_geo_cs();
+  videoImporter.setData(config, stdString(videoPath), lgcs);
 
   try
   {
     if (this->videoSource)
     {
-      this->videoSource->open(videoPath.toStdString());
+      this->videoSource->open(stdString(videoPath));
     }
 
     // Set the skip value if present
-    if (this->videoSource &&
-        config->has_value("video_reader:vidl_ffmpeg:output_nth_frame"))
-    {
-      this->framesToSkip =
-        config->get_value<int>("video_reader:vidl_ffmpeg:output_nth_frame");
-    }
-
-    // Get the video metadata
+    // TODO: fix kwiver so this is done with an adapter and it not in the video source
     if (this->videoSource)
     {
-      videoMetadataMap = this->videoSource->metadata_map()->metadata();
+      if (config->has_value("video_reader:vidl_ffmpeg:output_nth_frame"))
+      {
+        this->advanceInterval =
+          config->get_value<int>("video_reader:vidl_ffmpeg:output_nth_frame");
+      }
+      else if (config->has_value("video_reader:splice:output_nth_frame"))
+      {
+        this->advanceInterval =
+          config->get_value<int>("video_reader:splice:output_nth_frame");
+      }
     }
 
-    // If we have metadata try and initialize cameras
-    std::map<kwiver::vital::frame_id_t, kwiver::vital::camera_sptr> camMap;
-    if (videoMetadataMap.size() > 0)
+    foreach (auto const& tool, this->tools)
     {
-      std::map<kwiver::vital::frame_id_t, kwiver::vital::metadata_sptr> mdMap;
-      for (auto const& mdIter: this->videoMetadataMap)
-      {
-        // TODO: just using first element of metadata vector for now
-        mdMap[mdIter.first] = mdIter.second[0];
-      }
-
-      bool init_cams_with_metadata =
-        config->get_value<bool>("initialize_cameras_with_metadata", true);
-
-      if (init_cams_with_metadata)
-      {
-        auto im = this->videoSource->frame_image();
-
-        auto baseCamera = kwiver::vital::simple_camera_perspective();
-        baseCamera.set_intrinsics(K);
-
-        bool init_intrinsics_with_metadata =
-          config->get_value<bool>("initialize_intrinsics_with_metadata", true);
-        if (init_intrinsics_with_metadata)
-        {
-          kwiver::maptk::set_intrinsics_from_metadata(baseCamera, mdMap, im);
-        }
-
-        camMap = kwiver::maptk::initialize_cameras_with_metadata(
-          mdMap, baseCamera, this->localGeoCs);
-      }
+      tool->setEnabled(false);
     }
 
-    // Add frames for video if needed
-    auto numFrames = this->videoSource->num_frames();
-    for (unsigned int i = this->frames.count(); i < numFrames; ++i)
-    {
-      // frames start at 1, list index starts at 0
-      auto frameIdx = i + 1;
-      if (camMap.find(frameIdx) != camMap.end())
-      {
-        using kwiver::vital::simple_camera_perspective;
-        auto cam_ptr = std::dynamic_pointer_cast<simple_camera_perspective>(camMap[frameIdx]);
-        this->addFrame(cam_ptr, frameIdx);
-      }
-      else
-      {
-        this->orphanFrames.enqueue(i);
-        this->addFrame(nullptr, frameIdx);
-      }
-    }
+    videoImporter.start();
   }
-  catch (kwiver::vital::file_not_found_exception const& e)
+  catch (kv::file_not_found_exception const& e)
   {
     qWarning() << e.what();
     this->videoSource->close();
@@ -494,9 +509,29 @@ void MainWindowPrivate::addVideoSource(kwiver::vital::config_block_sptr const& c
 }
 
 //-----------------------------------------------------------------------------
-void MainWindowPrivate::addFrame(
-  kwiver::vital::camera_perspective_sptr const& camera, int id)
+void MainWindowPrivate::addMaskSource(
+  kv::config_block_sptr const& config, QString const& maskPath)
 {
+  // Save the configuration so independent video sources can be created for
+  // tools
+  if (this->project)
+  {
+    this->project->config->merge_config(config);
+  }
+  this->maskPath = maskPath;
+  this->freestandingConfig->merge_config(config);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::addFrame(
+  kv::camera_perspective_sptr const& camera, int id)
+{
+  if (this->frames.find(id) != this->frames.end())
+  {
+    qWarning() << "Frame " << id << " already exists.";
+    return;
+  }
+
   FrameData cd;
 
   cd.id = id;
@@ -512,14 +547,15 @@ void MainWindowPrivate::addFrame(
     this->UI.worldView->addCamera(cd.id, cd.camera);
     this->UI.actionExportCameras->setEnabled(true);
   }
+  else
+  {
+    this->orphanFrames.enqueue(id);
+  }
 
-  this->frames.append(cd);
-
-  this->UI.camera->setRange(1, this->frames.count());
-  this->UI.cameraSpin->setRange(1, this->frames.count());
+  this->frames.insert(id, cd);
 
   // When the first camera is added, show it immediately and reset the camera
-  // view, and enable slideshow controls
+  // view, enable slideshow controls, and set the frame number to one.
   if (this->frames.count() == 1)
   {
     this->UI.actionSlideshowPlay->setEnabled(true);
@@ -529,69 +565,241 @@ void MainWindowPrivate::addFrame(
     this->setActiveCamera(1);
     this->UI.cameraView->resetView();
   }
+
+  unsigned int lastFrameId =
+    this->frames.isEmpty() ? 1 : this->frames.lastKey();
+  this->UI.camera->setRange(1, lastFrameId);
+  this->UI.cameraSpin->setRange(1, lastFrameId);
 }
 
 //-----------------------------------------------------------------------------
-kwiver::vital::camera_map_sptr MainWindowPrivate::cameraMap() const
+void MainWindowPrivate::updateFrames(
+  std::shared_ptr<kv::metadata_map::map_metadata_t> mdMap)
 {
-  kwiver::vital::camera_map::map_camera_t map;
+  this->videoMetadataMap = std::make_shared<kv::simple_metadata_map>(*mdMap);
 
-  foreach (auto i, qtIndexRange(this->frames.count()))
+  sfmConstraints->set_metadata(videoMetadataMap);
+
+
+
+  this->UI.metadata->updateMetadata(mdMap);
+
+  if (this->project &&
+      this->project->config->has_value("output_krtd_dir"))
   {
-    auto const& cd = this->frames[i];
+    qWarning() << "Loading project cameras with frames.count = "
+               << this->frames.count();
+    for (auto const& frame : this->frames)
+    {
+      auto frameName = qtString(this->getFrameName(frame.id)) + ".krtd";
+
+      try
+      {
+        auto const& camera = kv::read_krtd_file(
+          kvPath(frameName), kvPath(this->project->cameraPath));
+
+        // Add camera to scene
+        this->updateCamera(frame.id, camera);
+      }
+      catch (...)
+      {
+        qWarning() << "failed to read camera file " << frameName
+                   << " from " << this->project->cameraPath;
+      }
+    }
+    this->UI.worldView->setCameras(this->cameraMap());
+  }
+  else
+  {
+#define GET_K_CONFIG(type, name) \
+  this->freestandingConfig->get_value<type>(bc + #name, K_def.name())
+
+    kv::simple_camera_intrinsics K_def;
+    const std::string bc = "video_reader:base_camera:";
+    auto K = std::make_shared<kv::simple_camera_intrinsics>(
+      GET_K_CONFIG(double, focal_length),
+      GET_K_CONFIG(kv::vector_2d, principal_point),
+      GET_K_CONFIG(double, aspect_ratio),
+      GET_K_CONFIG(double, skew));
+
+    auto baseCamera = kv::simple_camera_perspective();
+    baseCamera.set_intrinsics(K);
+
+    auto md = videoMetadataMap->metadata();
+    kv::camera_map::map_camera_t camMap;
+    if (!md.empty())
+    {
+      std::map<kv::frame_id_t, kv::metadata_sptr> mdMap;
+
+      for (auto const& mdIter : md)
+      {
+        // TODO: just using first element of metadata vector for now
+        mdMap[mdIter.first] = mdIter.second[0];
+      }
+
+      bool init_cams_with_metadata =
+        this->freestandingConfig->get_value<bool>(
+          "initialize_cameras_with_metadata", true);
+
+      if (init_cams_with_metadata)
+      {
+        auto im = this->videoSource->frame_image();
+
+        bool init_intrinsics_with_metadata =
+          this->freestandingConfig->get_value<bool>(
+            "initialize_intrinsics_with_metadata", true);
+        if (init_intrinsics_with_metadata)
+        {
+          kv::set_intrinsics_from_metadata(baseCamera, mdMap, im);
+        }
+
+        kv::local_geo_cs lgcs = sfmConstraints->get_local_geo_cs();
+        camMap = kv::initialize_cameras_with_metadata(
+          mdMap, baseCamera, lgcs);
+
+        sfmConstraints->set_local_geo_cs(lgcs);
+      }
+    }
+
+    this->updateCameras(std::make_shared<kv::simple_camera_map>(camMap));
+  }
+
+  //find depth map paths
+  if (this->project &&
+      this->project->config->has_value("output_depth_dir"))
+  {
+    foreach (auto& frame, this->frames)
+    {
+      auto depthName = qtString(this->getFrameName(frame.id)) + ".vti";
+      auto depthMapPath = QDir{this->project->depthPath}.filePath(depthName);
+      QFileInfo check_file(depthMapPath);
+      if (check_file.exists() && check_file.isFile())
+      {
+        frame.depthMapPath = depthMapPath;
+      }
+    }
+  }
+
+  this->UI.worldView->queueResetView();
+
+  this->UI.worldView->initFrameSampling(this->frames.size());
+
+  if (this->project)
+  {
+    for (auto const& tool : this->tools)
+    {
+      tool->setEnabled(true);
+    }
+  }
+}
+
+//-----------------------------------------------------------------------------
+kv::camera_map_sptr MainWindowPrivate::cameraMap() const
+{
+  kv::camera_map::map_camera_t map;
+
+  for (auto const& cd : this->frames)
+  {
     if (cd.camera)
     {
-      map.insert(std::make_pair(static_cast<kwiver::vital::frame_id_t>(cd.id),
+      map.insert(std::make_pair(static_cast<kv::frame_id_t>(cd.id),
                                 cd.camera->GetCamera()));
     }
   }
 
-  return std::make_shared<kwiver::vital::simple_camera_map>(map);
+  return std::make_shared<kv::simple_camera_map>(map);
+}
+
+//-----------------------------------------------------------------------------
+std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string>> MainWindowPrivate::depthLookup() const
+{
+  std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string>> lookup(new std::map<kwiver::vital::frame_id_t, std::string>());
+
+  for (auto cd : this->frames)
+  {
+    if (!cd.depthMapPath.isEmpty())
+    {
+      lookup->insert(std::make_pair(static_cast<kwiver::vital::frame_id_t>(cd.id),
+                                    qPrintable(cd.depthMapPath)));
+    }
+  }
+
+  return lookup;
 }
 
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::updateCameras(
-  kwiver::vital::camera_map_sptr const& cameras)
+  kv::camera_map_sptr const& cameras)
 {
   auto allowExport = false;
 
+  std::set<kv::frame_id_t> updated_frame_ids;
   foreach (auto const& iter, cameras->cameras())
   {
-    using kwiver::vital::camera_perspective;
-    auto cam_ptr = std::dynamic_pointer_cast<camera_perspective>(iter.second);
+    auto cam_ptr =
+      std::dynamic_pointer_cast<kv::camera_perspective>(iter.second);
     if (updateCamera(iter.first, cam_ptr))
     {
+      updated_frame_ids.insert(iter.first);
       allowExport = allowExport || iter.second;
     }
   }
+
+  for (auto& f : this->frames)
+  {
+    auto fid = f.id;
+    if (updated_frame_ids.find(fid) != updated_frame_ids.end())
+    {
+      continue;
+    }
+    if (f.camera)
+    {
+      f.camera = NULL;
+      this->UI.worldView->removeCamera(fid);
+    }
+  }
+  this->UI.worldView->setCameras(cameras);
 
   this->UI.actionExportCameras->setEnabled(allowExport);
 }
 
 //-----------------------------------------------------------------------------
-bool MainWindowPrivate::updateCamera(kwiver::vital::frame_id_t frame,
-                                     kwiver::vital::camera_perspective_sptr cam)
+bool MainWindowPrivate::updateCamera(kv::frame_id_t frame,
+                                     kv::camera_perspective_sptr cam)
 {
-  if (frame > 0 && frame <= this->frames.count() && cam)
+  if (!cam)
   {
-    auto& cd = this->frames[frame - 1];
-    if (!cd.camera)
-    {
-      cd.camera = vtkSmartPointer<vtkMaptkCamera>::New();
-      this->UI.worldView->addCamera(cd.id, cd.camera);
-    }
-    cd.camera->SetCamera(cam);
-    cd.camera->Update();
-
-    if (cd.id == this->activeCameraIndex)
-    {
-      this->UI.worldView->setActiveCamera(cd.id);
-      this->updateCameraView();
-    }
-
-    return true;
+    return false;
   }
-  return false;
+
+  auto* const fr = qtGet(this->frames, frame);
+  if (!fr)
+  {
+    return false;
+  }
+
+  if (!fr->camera)
+  {
+    fr->camera = vtkSmartPointer<vtkMaptkCamera>::New();
+    this->UI.worldView->addCamera(fr->id, fr->camera);
+  }
+  fr->camera->SetCamera(cam);
+  fr->camera->Update();
+
+  // Remove from orphanFrames if needed.
+  auto orphanIndex = orphanFrames.indexOf(frame);
+  if (orphanIndex >= 0)
+  {
+    orphanFrames.removeAt(orphanIndex);
+  }
+
+  if (fr->id == this->activeCameraIndex)
+  {
+    this->UI.worldView->setActiveCamera(fr->id);
+    this->updateCameraView();
+  }
+
+  return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -604,11 +812,13 @@ void MainWindowPrivate::setActiveCamera(int id)
   if (id >= this->activeCameraIndex)
   { //positive movement in sequence
     //find the next keyframe in the sequence
-    while (id <= this->frames.size())
+    int lastFrameId =
+      this->frames.isEmpty() ? 1 : this->frames.lastKey();
+    while (id <= lastFrameId)
     {
       if (only_keyframes)
       {
-        auto fd = std::dynamic_pointer_cast<kwiver::vital::feature_track_set_frame_data>(
+        auto fd = std::dynamic_pointer_cast<kv::feature_track_set_frame_data>(
           tracks->frame_data(id));
 
         if (fd && fd->is_keyframe)
@@ -619,7 +829,7 @@ void MainWindowPrivate::setActiveCamera(int id)
       }
       else
       {
-        if (id == 1 || (id - 1)%this->framesToSkip == 0)
+        if (id == 1 || (id - 1) % this->advanceInterval == 0)
         {
           next_frame_found = true;
           break;
@@ -635,7 +845,7 @@ void MainWindowPrivate::setActiveCamera(int id)
     {
       if (only_keyframes)
       {
-        auto fd = std::dynamic_pointer_cast<kwiver::vital::feature_track_set_frame_data>(
+        auto fd = std::dynamic_pointer_cast<kv::feature_track_set_frame_data>(
           tracks->frame_data(id));
 
         if (fd && fd->is_keyframe)
@@ -646,7 +856,7 @@ void MainWindowPrivate::setActiveCamera(int id)
       }
       else
       {
-        if (id == 1 || (id - 1)%this->framesToSkip ==0)
+        if (id == 1 || (id - 1) % this->advanceInterval == 0)
         {
           next_frame_found = true;
           break;
@@ -671,6 +881,7 @@ void MainWindowPrivate::setActiveCamera(int id)
 
   this->activeCameraIndex = id;
   this->UI.worldView->setActiveCamera(id);
+
   this->updateCameraView();
 
   //load from memory if cached
@@ -683,22 +894,26 @@ void MainWindowPrivate::setActiveCamera(int id)
     this->UI.depthMapView->setValidDepthInput(true);
     this->UI.worldView->setValidDepthInput(true);
 
-    this->depthFilter->SetCamera(this->frames[id - 1].camera);
+    if (auto* const fr = qtGet(qAsConst(this->frames), id))
+    {
+      this->depthFilter->SetCamera(fr->camera);
+    }
     this->UI.worldView->updateDepthMap();
     this->UI.depthMapView->updateView(true);
     this->UI.actionExportDepthPoints->setEnabled(true);
   }
   else // load from file
   {
-    auto& cd = this->frames[id - 1];
-    if (!cd.depthMapPath.isEmpty())
+    if (auto* const fr = qtGet(qAsConst(this->frames), id))
     {
-      this->loadDepthMap(cd.depthMapPath);
+      if (!fr->depthMapPath.isEmpty())
+      {
+        this->loadDepthMap(fr->depthMapPath);
+      }
     }
   }
 
-  // TODO: Uncomment once MeshColoration is working directly off video frames
-  // UI.worldView->setVolumeCurrentFramePath(cd.imagePath);
+  UI.worldView->setVolumeCurrentFrame(id);
 }
 
 //-----------------------------------------------------------------------------
@@ -709,28 +924,37 @@ void MainWindowPrivate::updateCameraView()
     this->loadEmptyImage(0);
     this->UI.cameraView->setActiveFrame(static_cast<unsigned>(-1));
     this->UI.cameraView->clearLandmarks();
+    this->UI.cameraView->clearGroundControlPoints();
     return;
   }
 
   this->UI.cameraView->setActiveFrame(
     static_cast<unsigned>(this->activeCameraIndex));
 
-  QHash<kwiver::vital::track_id_t, kwiver::vital::vector_2d> landmarkPoints;
+  auto* const activeFrame =
+    qtGet(qAsConst(this->frames), this->activeCameraIndex);
 
-  auto const& frame = this->frames[this->activeCameraIndex-1];
+  if (!activeFrame)
+  {
+    this->loadEmptyImage(0);
+    this->UI.cameraView->clearLandmarks();
+    return;
+  }
 
   // Show camera image
-  this->loadImage(frame);
+  this->loadImage(*activeFrame);
 
-  if (!frame.camera)
+  if (!activeFrame->camera)
   {
     // Can't show landmarks or residuals with no camera
     this->UI.cameraView->clearLandmarks();
     this->UI.cameraView->clearResiduals();
+    this->UI.cameraView->clearGroundControlPoints();
     return;
   }
 
   // Show landmarks
+  QHash<kv::track_id_t, kv::vector_2d> landmarkPoints;
   this->UI.cameraView->clearLandmarks();
   if (this->landmarks)
   {
@@ -739,12 +963,12 @@ void MainWindowPrivate::updateCameraView()
     foreach (auto const& lm, landmarks)
     {
       double pp[2];
-      if (frame.camera->ProjectPoint(lm.second->loc(), pp))
+      if (activeFrame->camera->ProjectPoint(lm.second->loc(), pp))
       {
         // Add projected landmark to camera view
         auto const id = lm.first;
         this->UI.cameraView->addLandmark(id, pp[0], pp[1]);
-        landmarkPoints.insert(id, kwiver::vital::vector_2d(pp[0], pp[1]));
+        landmarkPoints.insert(id, kv::vector_2d(pp[0], pp[1]));
       }
     }
   }
@@ -757,12 +981,12 @@ void MainWindowPrivate::updateCameraView()
     foreach (auto const& track, tracks)
     {
       auto const& state = track->find(this->activeCameraIndex);
-      if ( state == track->end() )
+      if (state == track->end())
       {
         continue;
       }
-      auto fts = std::dynamic_pointer_cast<kwiver::vital::feature_track_state>(*state);
-      if ( fts && fts->feature)
+      auto fts = std::dynamic_pointer_cast<kv::feature_track_state>(*state);
+      if (fts && fts->feature && fts->inlier)
       {
         auto const id = track->id();
         if (landmarkPoints.contains(id))
@@ -774,60 +998,19 @@ void MainWindowPrivate::updateCameraView()
       }
     }
   }
+
+  this->groundControlPointsHelper->updateCameraViewPoints();
+  this->UI.cameraView->render();
 }
 
 //-----------------------------------------------------------------------------
-// TODO: move this method to a new implementation of image_container in a new
-//       vtk arrow
-vtkSmartPointer<vtkImageData>
-MainWindowPrivate::vitalToVtkImage(kwiver::vital::image& img)
+std::string MainWindowPrivate::getFrameName(kv::frame_id_t frameId)
 {
-  auto imgTraits = img.pixel_traits();
-
-  // Get the image type
-  int imageType = VTK_VOID;
-  switch (imgTraits.type)
-  {
-    case kwiver::vital::image_pixel_traits::UNSIGNED:
-      imageType = VTK_UNSIGNED_CHAR;
-      break;
-    case kwiver::vital::image_pixel_traits::SIGNED:
-      imageType = VTK_SIGNED_CHAR;
-      break;
-    case kwiver::vital::image_pixel_traits::FLOAT:
-      imageType = VTK_FLOAT;
-      break;
-    default:
-      imageType = VTK_VOID;
-      break;
-    // TODO: exception or error/warning message?
-  }
-
-  // convert to vtkFrameData
-  vtkSmartPointer<vtkImageImport> imageImport =
-    vtkSmartPointer<vtkImageImport>::New();
-  imageImport->SetDataScalarType(imageType);
-  imageImport->SetNumberOfScalarComponents(img.depth());
-  imageImport->SetWholeExtent(0, img.width()-1, 0, img.height()-1, 0, 0);
-  imageImport->SetDataExtentToWholeExtent();
-  imageImport->SetImportVoidPointer(img.first_pixel());
-  imageImport->Update();
-
-  // Flip image so it has the correct axis for VTK
-  vtkSmartPointer<vtkImageFlip> flipFilter =
-    vtkSmartPointer<vtkImageFlip>::New();
-  flipFilter->SetFilteredAxis(1); // flip x axis
-  flipFilter->SetInputConnection(imageImport->GetOutputPort());
-  flipFilter->Update();
-
-  return flipFilter->GetOutput();
+  auto md = videoMetadataMap->metadata();
+  return frameName(frameId, md);
 }
 
-std::string MainWindowPrivate::getFrameName(kwiver::vital::frame_id_t frameId)
-{
-  return frameName(frameId, this->videoMetadataMap);
-}
-
+//-----------------------------------------------------------------------------
 void MainWindowPrivate::loadEmptyImage(vtkMaptkCamera* camera)
 {
   auto imageDimensions = QSize(1, 1);
@@ -864,25 +1047,8 @@ void MainWindowPrivate::loadImage(FrameData frame)
       videoSource->next_frame(this->currentVideoTimestamp);
     }
 
-    kwiver::vital::image frameImg;
     auto sourceImg = videoSource->frame_image()->get_image();
-
-    // If image is interlaced it is already compatible with VTK
-    if (sourceImg.d_step() == 1)
-    {
-      frameImg = sourceImg;
-    }
-    // Otherwise we need a deep copy to get it to be interlaced
-    else
-    {
-      frameImg = kwiver::vital::image(sourceImg.width(),
-                                      sourceImg.height(),
-                                      sourceImg.depth(),
-                                      true);
-      frameImg.copy_from(sourceImg);
-    }
-
-    auto imageData = this->vitalToVtkImage(frameImg);
+    auto imageData = vitalToVtkImage(sourceImg);
     int dimensions[3];
     imageData->GetDimensions(dimensions);
 
@@ -901,13 +1067,25 @@ void MainWindowPrivate::loadImage(FrameData frame)
       }
 
       // Set frame name in camera view
-      std::string frameName = this->getFrameName(frame.id);
-      this->UI.cameraView->setImagePath(QString::fromStdString(frameName));
+      this->UI.cameraView->setImagePath(
+        qtString(this->getFrameName(frame.id)));
 
       // Set image on views
       auto const size = QSize(dimensions[0], dimensions[1]);
       this->UI.cameraView->setImageData(imageData, size);
       this->UI.worldView->setImageData(imageData, size);
+
+      // Update metadata view
+      auto md = this->videoMetadataMap->metadata();
+      if (md.empty())
+      {
+        this->UI.metadata->updateMetadata(kv::metadata_vector{});
+      }
+      else
+      {
+        auto mdi = --(md.upper_bound(frame.id));
+        this->UI.metadata->updateMetadata(mdi->second);
+      }
     }
   }
   else
@@ -919,14 +1097,14 @@ void MainWindowPrivate::loadImage(FrameData frame)
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::loadDepthMap(QString const& imagePath)
 {
-  if (!kwiversys::SystemTools::FileExists(qPrintable(imagePath), true))
+  if (!QFileInfo{imagePath}.isFile())
   {
     qWarning() << "File doesn't exist: " << imagePath;
     return;
   }
 
   if (this->depthReader->GetFileName() &&
-    !strcmp(this->depthReader->GetFileName(), qPrintable(imagePath)))
+      !strcmp(this->depthReader->GetFileName(), qPrintable(imagePath)))
   {
     // No change to reader input... return without any update
     return;
@@ -940,7 +1118,11 @@ void MainWindowPrivate::loadDepthMap(QString const& imagePath)
   this->UI.depthMapView->setValidDepthInput(true);
   this->UI.worldView->setValidDepthInput(true);
 
-  this->depthFilter->SetCamera(this->frames[this->activeCameraIndex-1].camera);
+  auto const ci = this->activeCameraIndex;
+  if (auto* const activeFrame = qtGet(qAsConst(this->frames), ci))
+  {
+    this->depthFilter->SetCamera(activeFrame->camera);
+  }
   this->UI.worldView->updateDepthMap();
   this->UI.depthMapView->updateView(true);
   this->UI.actionExportDepthPoints->setEnabled(true);
@@ -950,20 +1132,23 @@ void MainWindowPrivate::loadDepthMap(QString const& imagePath)
 void MainWindowPrivate::setActiveTool(AbstractTool* tool)
 {
   // Disconnect cancel action
-  QObject::disconnect(this->UI.actionCancelComputation, 0, this->activeTool, 0);
+  QObject::disconnect(this->UI.actionCancelComputation, nullptr,
+                      this->activeTool, nullptr);
 
   // Update current tool
   this->activeTool = tool;
 
-  // Connect cancel action
+  // Connect actions
   if (tool)
   {
-    QObject::connect(this->UI.actionCancelComputation, SIGNAL(triggered()),
-                     tool, SLOT(cancel()));
-    QObject::connect(this->UI.actionCancelComputation, SIGNAL(triggered()),
-                     currProject.get(), SLOT(write()));
-    QObject::connect(tool, SIGNAL(completed()),
-                     currProject.get(), SLOT(write()));
+    QObject::connect(this->UI.actionCancelComputation, &QAction::triggered,
+                     tool, &AbstractTool::cancel);
+    QObject::connect(this->UI.actionCancelComputation, &QAction::triggered,
+                     project.data(), &Project::write);
+    QObject::connect(this->UI.actionQuit, &QAction::triggered,
+                     tool, &AbstractTool::cancel);
+    QObject::connect(tool, &AbstractTool::completed,
+                     project.data(), &Project::write);
   }
 
   auto const enableTools = !tool;
@@ -973,7 +1158,73 @@ void MainWindowPrivate::setActiveTool(AbstractTool* tool)
     tool->setEnabled(enableTools);
   }
   this->UI.actionCancelComputation->setEnabled(enableCancel);
-  this->UI.actionOpen->setEnabled(enableTools);
+  this->UI.actionOpenProject->setEnabled(enableTools);
+  // FIXME disable import actions
+}
+
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::updateProgress(QObject* object,
+                                       const QString& description,
+                                       int value)
+{
+  QString desc = description;
+  desc.replace('&', "");
+  int taskId = -1;
+  if (!this->progressIds.contains(object))
+  {
+    taskId = this->UI.progressWidget->addTask(desc, 0, 0, 0);
+    this->progressIds.insert(object, taskId);
+    return;
+  }
+  else
+  {
+    taskId = this->progressIds.value(object);
+  }
+
+  this->UI.progressWidget->setTaskText(taskId, desc);
+  this->UI.progressWidget->setProgressValue(taskId, value);
+  switch (value)
+  {
+    case 0:
+    {
+      this->UI.progressWidget->setProgressRange(taskId, 0, 0);
+      break;
+    }
+    case 100:
+    {
+      this->UI.progressWidget->removeTask(taskId);
+      this->progressIds.remove(object);
+      break;
+    }
+    default:
+    {
+      this->UI.progressWidget->setProgressRange(taskId, 0, 100);
+      break;
+    }
+  }
+}
+
+//-----------------------------------------------------------------------------
+std::string MainWindowPrivate::roiToString()
+{
+  double minpt[3], maxpt[3];
+  this->roi->GetXMin(minpt);
+  this->roi->GetXMax(maxpt);
+  std::ostringstream stream;
+  stream << minpt[0] << " " << minpt[1] << " " << minpt[2] << " "
+         << maxpt[0] << " " << maxpt[1] << " " << maxpt[2];
+  return stream.str();
+}
+
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::loadroi(const std::string& roistr)
+{
+  double minpt[3], maxpt[3];
+  std::istringstream stream(roistr);
+  stream >> minpt[0] >> minpt[1] >> minpt[2] >> maxpt[0] >> maxpt[1] >> maxpt[2];
+  this->roi->SetXMin(minpt);
+  this->roi->SetXMax(maxpt);
+  UI.worldView->setROI(roi.GetPointer(), true);
 }
 
 //END MainWindowPrivate
@@ -984,7 +1235,7 @@ void MainWindowPrivate::setActiveTool(AbstractTool* tool)
 
 //-----------------------------------------------------------------------------
 MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
-  : QMainWindow(parent, flags), d_ptr(new MainWindowPrivate)
+  : QMainWindow(parent, flags), d_ptr(new MainWindowPrivate(this))
 {
   QTE_D();
 
@@ -1001,6 +1252,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->addTool(new BundleAdjustTool(this), this);
   d->addTool(new SaveFrameTool(this), this);
   d->addTool(new ComputeDepthTool(this), this);
+  d->addTool(new ComputeAllDepthTool(this), this);
+  d->addTool(new FuseDepthTool(this), this);
 
   d->toolMenu = d->UI.menuAdvanced;
   d->toolSeparator =
@@ -1015,87 +1268,107 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->UI.menuView->addSeparator();
   d->UI.menuView->addAction(d->UI.cameraViewDock->toggleViewAction());
   d->UI.menuView->addAction(d->UI.cameraSelectorDock->toggleViewAction());
+  d->UI.menuView->addAction(d->UI.metadataDock->toggleViewAction());
   d->UI.menuView->addAction(d->UI.depthMapViewDock->toggleViewAction());
 
   d->UI.playSlideshowButton->setDefaultAction(d->UI.actionSlideshowPlay);
   d->UI.loopSlideshowButton->setDefaultAction(d->UI.actionSlideshowLoop);
 
-  connect(d->UI.actionOpen, SIGNAL(triggered()), this, SLOT(openFile()));
-  connect(d->UI.actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
+  connect(d->UI.actionQuit, &QAction::triggered,
+          qApp, &QCoreApplication::quit);
 
-  connect(d->UI.actionNewProject, SIGNAL(triggered()), this, SLOT(newProject()));
+  connect(d->UI.actionNewProject, &QAction::triggered,
+          this, &MainWindow::newProject);
+  connect(d->UI.actionOpenProject, &QAction::triggered,
+          this, &MainWindow::openProject);
+  connect(d->UI.actionImportImagery, &QAction::triggered,
+          this, &MainWindow::openImagery);
+  connect(d->UI.actionImportMasks, &QAction::triggered,
+          this, &MainWindow::openMaskImagery);
+  connect(d->UI.actionImportCameras, &QAction::triggered,
+          this, &MainWindow::openCameras);
+  connect(d->UI.actionImportTracks, &QAction::triggered,
+          this, &MainWindow::openTracks);
+  connect(d->UI.actionImportLandmarks, &QAction::triggered,
+          this, &MainWindow::openLandmarks);
+  connect(d->UI.actionImportGroundControlPoints, &QAction::triggered,
+          this, &MainWindow::openGroundControlPoints);
 
-  connect(d->UI.actionShowWorldAxes, SIGNAL(toggled(bool)),
-          d->UI.worldView, SLOT(setAxesVisible(bool)));
+  connect(d->UI.actionShowWorldAxes, &QAction::toggled,
+          d->UI.worldView, &WorldView::setAxesVisible);
 
-  connect(d->UI.actionExportCameras, SIGNAL(triggered()),
-          this, SLOT(saveCameras()));
-  connect(d->UI.actionExportLandmarks, SIGNAL(triggered()),
-          this, SLOT(saveLandmarks()));
-  connect(d->UI.actionExportVolume, SIGNAL(triggered()),
-          this, SLOT(saveVolume()));
-  connect(d->UI.actionExportMesh, SIGNAL(triggered()),
-          this, SLOT(saveMesh()));
-  connect(d->UI.actionExportColoredMesh, SIGNAL(triggered()),
-          this, SLOT(saveColoredMesh()));
-  connect(d->UI.actionExportDepthPoints, SIGNAL(triggered()),
-          this, SLOT(saveDepthPoints()));
-  connect(d->UI.actionExportTracks, SIGNAL(triggered()),
-          this, SLOT(saveTracks()));
+  connect(d->UI.actionExportCameras, &QAction::triggered,
+          this, QOverload<>::of(&MainWindow::saveCameras));
+  connect(d->UI.actionExportLandmarks, &QAction::triggered,
+          this, QOverload<>::of(&MainWindow::saveLandmarks));
+  connect(d->UI.actionExportGroundControlPoints, &QAction::triggered,
+          this, QOverload<>::of(&MainWindow::saveGroundControlPoints));
+  connect(d->UI.actionExportVolume, &QAction::triggered,
+          this, &MainWindow::saveVolume);
+  connect(d->UI.actionExportMesh, &QAction::triggered,
+          this, &MainWindow::saveMesh);
+  connect(d->UI.actionExportColoredMesh, &QAction::triggered,
+          this, &MainWindow::saveColoredMesh);
+  connect(d->UI.actionExportDepthPoints, &QAction::triggered,
+          this, QOverload<>::of(&MainWindow::saveDepthPoints));
+  connect(d->UI.actionExportTracks, &QAction::triggered,
+          this, QOverload<>::of(&MainWindow::saveTracks));
 
-  connect(d->UI.worldView, SIGNAL(depthMapEnabled(bool)),
-          this, SLOT(enableSaveDepthPoints(bool)));
+  connect(d->UI.worldView, &WorldView::depthMapEnabled,
+          this, &MainWindow::enableSaveDepthPoints);
 
-  connect(d->UI.actionShowMatchMatrix, SIGNAL(triggered()),
-          this, SLOT(showMatchMatrix()));
+  connect(d->UI.actionShowMatchMatrix, &QAction::triggered,
+          this, &MainWindow::showMatchMatrix);
 
-  connect(&d->toolDispatcher, SIGNAL(mapped(QObject*)),
-          this, SLOT(executeTool(QObject*)));
+  connect(&d->toolDispatcher, QOverload<QObject*>::of(&QSignalMapper::mapped),
+          this, &MainWindow::executeTool);
 
-  connect(d->UI.actionSetBackgroundColor, SIGNAL(triggered()),
-          this, SLOT(setViewBackroundColor()));
+  connect(d->UI.actionSetBackgroundColor, &QAction::triggered,
+          this, &MainWindow::setViewBackroundColor);
 
-  connect(d->UI.actionAbout, SIGNAL(triggered()),
-          this, SLOT(showAboutDialog()));
-  connect(d->UI.actionShowManual, SIGNAL(triggered()),
-          this, SLOT(showUserManual()));
+  connect(d->UI.actionAbout, &QAction::triggered,
+          this, &MainWindow::showAboutDialog);
+  connect(d->UI.actionShowManual, &QAction::triggered,
+          this, &MainWindow::showUserManual);
 
-  connect(&d->slideTimer, SIGNAL(timeout()), this, SLOT(nextSlide()));
-  connect(d->UI.actionSlideshowPlay, SIGNAL(toggled(bool)),
-          this, SLOT(setSlideshowPlaying(bool)));
-  connect(d->UI.slideDelay, SIGNAL(valueChanged(int)),
-          this, SLOT(setSlideDelay(int)));
+  connect(&d->slideTimer, &QTimer::timeout, this, &MainWindow::nextSlide);
+  connect(d->UI.actionSlideshowPlay, &QAction::toggled,
+          this, &MainWindow::setSlideshowPlaying);
+  connect(d->UI.slideSpeed, &QAbstractSlider::valueChanged,
+          this, &MainWindow::setSlideSpeed);
 
-  connect(d->UI.camera, SIGNAL(valueChanged(int)),
-          this, SLOT(setActiveCamera(int)));
+  connect(d->UI.camera, &QAbstractSlider::valueChanged,
+          this, &MainWindow::setActiveCamera);
 
-  connect(d->UI.worldView, SIGNAL(meshEnabled(bool)),
-          this, SLOT(enableSaveMesh(bool)));
+  connect(d->UI.worldView, &WorldView::meshEnabled,
+          this, &MainWindow::enableSaveMesh);
 
-  connect(d->UI.worldView, SIGNAL(coloredMeshEnabled(bool)),
-          this, SLOT(enableSaveColoredMesh(bool)));
+  connect(d->UI.worldView, &WorldView::coloredMeshEnabled,
+          this, &MainWindow::enableSaveColoredMesh);
 
-  connect(d->UI.worldView, SIGNAL(depthMapThresholdsChanged()),
-          d->UI.depthMapView, SLOT(updateThresholds()));
+  connect(d->UI.worldView, &WorldView::depthMapThresholdsChanged,
+          d->UI.depthMapView, &DepthMapView::updateThresholds);
 
-  connect(d->UI.depthMapViewDock, SIGNAL(visibilityChanged(bool)),
-          d->UI.depthMapView, SLOT(updateView(bool)));
+  connect(d->UI.depthMapViewDock, &QDockWidget::visibilityChanged,
+          d->UI.depthMapView, &DepthMapView::updateView);
 
-  this->setSlideDelay(d->UI.slideDelay->value());
+  this->setSlideSpeed(d->UI.slideSpeed->value());
 
 #ifdef VTKWEBGLEXPORTER
   d->UI.actionWebGLScene->setVisible(true);
-  connect(d->UI.actionWebGLScene, SIGNAL(triggered(bool)),
-          this, SLOT(saveWebGLScene()));
+  connect(d->UI.actionWebGLScene, &QAction::triggered,
+          this, &MainWindow::saveWebGLScene);
 #endif
 
   // Set up UI persistence and restore previous state
   auto const sdItem = new qtUiState::Item<int, QSlider>(
-    d->UI.slideDelay, &QSlider::value, &QSlider::setValue);
-  d->uiState.map("SlideDelay", sdItem);
+    d->UI.slideSpeed, &QSlider::value, &QSlider::setValue);
+  d->uiState.map("SlideSpeed", sdItem);
 
   d->viewBackgroundColor = new StateValue<QColor>{Qt::black},
   d->uiState.map("ViewBackground", d->viewBackgroundColor);
+
+  d->uiState.mapChecked("Antialiasing", d->UI.actionAntialiasing);
 
   d->uiState.mapChecked("WorldView/Axes", d->UI.actionShowWorldAxes);
 
@@ -1110,10 +1383,34 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   // Hookup basic depth pipeline and pass geometry filter to relevant views
   d->depthFilter->SetInputConnection(d->depthReader->GetOutputPort());
   d->depthGeometryFilter->SetInputConnection(d->depthFilter->GetOutputPort());
-  d->UI.worldView->setDepthGeometryFilter(d->depthGeometryFilter.GetPointer());
-  d->UI.depthMapView->setDepthGeometryFilter(d->depthGeometryFilter.GetPointer());
+  d->UI.worldView->setDepthGeometryFilter(d->depthGeometryFilter);
+  d->UI.depthMapView->setDepthGeometryFilter(d->depthGeometryFilter);
 
   d->UI.worldView->resetView();
+
+  // Set up the progress widget
+  d->UI.progressWidget->setAutoHide(true);
+
+  // Ground control points
+  d->groundControlPointsHelper = new GroundControlPointsHelper(this);
+  connect(d->groundControlPointsHelper,
+          &GroundControlPointsHelper::pointCountChanged,
+          this, [d](int count) {
+            d->UI.actionExportGroundControlPoints->setEnabled(count > 0);
+          });
+  connect(d->UI.worldView, &WorldView::pointPlacementEnabled,
+          d->groundControlPointsHelper,
+          &GroundControlPointsHelper::enableWidgets);
+
+  // Antialiasing
+  connect(d->UI.actionAntialiasing, &QAction::toggled,
+          this, &MainWindow::enableAntiAliasing);
+  this->enableAntiAliasing(d->UI.actionAntialiasing->isChecked());
+
+  // Common ROI
+  // Unitil the bounding box is initialized, the bounds are going to be
+  // [VTK_DOUBLE_MIN, VTK_DOUBLE_MAX] in all directions.
+  d->UI.worldView->setROI(d->roi);
 }
 
 //-----------------------------------------------------------------------------
@@ -1124,75 +1421,116 @@ MainWindow::~MainWindow()
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::openFile()
+void MainWindow::openProject()
+{
+  auto const path = QFileDialog::getOpenFileName(
+    this, "Open Project", QString(),
+    "Project configuration files (*.conf);;"
+    "All Files (*)");
+
+  if (!path.isEmpty())
+  {
+    this->loadProject(path);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::openImagery()
 {
   static auto const imageFilters =
     makeFilters(supportedImageExtensions().toList());
-
   static auto const videoFilters =
     makeFilters(supportedVideoExtensions().toList());
 
   // TODO: Add image filters back once that is supported again.
   auto const paths = QFileDialog::getOpenFileNames(
-    this, "Open File", QString(),
-    "All Supported Files (*.conf *.txt *.ply *.krtd " + videoFilters + ");;"
-    "Project configuration file (*.conf);;"
-    "Video file (" + videoFilters + ");;"
-    "Track file (*.txt);;"
-    "Landmark file (*.ply);;"
-    "Camera file (*.krtd);;"
-    "All Files (*)");
+    this, "Open Imagery", QString(),
+    "All Supported Files (" + videoFilters + ");;"
+                                             "Video files (" +
+      videoFilters + ");;"
+                     "All Files (*)");
 
-  if (!paths.isEmpty())
+  for (auto const& path : paths)
   {
-    this->openFiles(paths);
+    this->loadImagery(path);
   }
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::openFile(QString const& path)
+void MainWindow::openMaskImagery()
 {
-  static auto const imageExtensions = supportedImageExtensions();
-  static auto const videoExtensions = supportedVideoExtensions();
+  static auto const imageFilters =
+    makeFilters(supportedImageExtensions().toList());
+  static auto const videoFilters =
+    makeFilters(supportedVideoExtensions().toList());
 
-  auto const fi = QFileInfo(path);
-  if (fi.suffix().toLower() == "conf")
+  // TODO: Add image filters back once that is supported again.
+  auto const paths = QFileDialog::getOpenFileNames(
+    this, "Open Mask Imagery", QString(),
+    "All Supported Files (" + videoFilters + ");;"
+                                             "Video files (" +
+      videoFilters + ");;"
+                     "All Files (*)");
+
+  for (auto const& path : paths)
   {
-    this->loadProject(path);
+    this->loadMaskImagery(path);
   }
-  else if (fi.suffix().toLower() == "txt")
-  {
-    this->loadTracks(path);
-  }
-  else if (fi.suffix().toLower() == "ply")
-  {
-    this->loadLandmarks(path);
-  }
-  else if (fi.suffix().toLower() == "krtd")
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::openCameras()
+{
+  auto const paths = QFileDialog::getOpenFileNames(
+    this, "Open Cameras", QString(),
+    "Camera files (*.krtd);;"
+    "All Files (*)");
+
+  for (auto const& path : paths)
   {
     this->loadCamera(path);
   }
-  else if (imageExtensions.contains(fi.suffix().toLower()))
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::openTracks()
+{
+  auto const paths = QFileDialog::getOpenFileNames(
+    this, "Open Feature Tracks", QString(),
+    "Feature track files (*.txt);;"
+    "All Files (*)");
+
+  for (auto const& path : paths)
   {
-    this->loadImage(path);
-  }
-  else if (videoExtensions.contains(fi.suffix().toLower()))
-  {
-    this->loadVideo(path);
-  }
-  else
-  {
-    qWarning() << "Don't know how to read file" << path
-               << "(unrecognized extension)";
+    this->loadTracks(path);
   }
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::openFiles(QStringList const& paths)
+void MainWindow::openLandmarks()
 {
-  foreach (auto const& path, paths)
+  auto const paths = QFileDialog::getOpenFileNames(
+    this, "Open Landmarks", QString(),
+    "Landmark files (*.ply);;"
+    "All Files (*)");
+
+  for (auto const& path : paths)
   {
-    this->openFile(path);
+    this->loadLandmarks(path);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::openGroundControlPoints()
+{
+  auto const paths = QFileDialog::getOpenFileNames(
+    this, "Open Ground Control Points", QString(),
+    "Ground Control Point Files (*.ply);;"
+    "All Files (*)");
+
+  for (auto const& path : paths)
+  {
+    this->loadGroundControlPoints(path);
   }
 }
 
@@ -1213,27 +1551,26 @@ void MainWindow::newProject()
                  << "project directory: " << dirname;
     }
 
-    d->currProject.reset();
-    d->currProject = std::shared_ptr<Project>(new Project(dirname));
+    d->project.reset(new Project{dirname});
 
     if (d->videoSource)
     {
-      d->currProject->videoPath = d->videoPath;
-      auto config = readConfig("gui_video_reader.conf");
-      d->currProject->projectConfig->merge_config(config);
+      d->project->config->merge_config(d->freestandingConfig);
+      d->project->videoPath = d->videoPath;
+      d->project->maskPath = d->maskPath;
     }
 
-    saveCameras(d->currProject->cameraPath);
-    d->currProject->projectConfig->set_value("output_krtd_dir", kvPath(
-      d->currProject->getContingentRelativePath(d->currProject->cameraPath)));
+    saveCameras(d->project->cameraPath);
+    d->project->config->set_value("output_krtd_dir", kvPath(
+                                                       d->project->getContingentRelativePath(d->project->cameraPath)));
 
-    if (!d->localGeoCs.origin().is_empty() &&
-        !d->currProject->geoOriginFile.isEmpty())
+    if (!d->sfmConstraints->get_local_geo_cs().origin().is_empty() &&
+        !d->project->geoOriginFile.isEmpty())
     {
-      saveGeoOrigin(d->currProject->geoOriginFile);
+      saveGeoOrigin(d->project->geoOriginFile);
     }
 
-    d->currProject->write();
+    d->project->write();
   }
 
   foreach (auto const& tool, d->tools)
@@ -1247,102 +1584,76 @@ void MainWindow::loadProject(QString const& path)
 {
   QTE_D();
 
-  d->currProject = std::make_shared<Project>();
-  if (!d->currProject->read(path))
+  QScopedPointer<Project> project{new Project};
+  if (!project->read(path))
   {
     qWarning() << "Failed to load project from" << path; // TODO dialog?
-    d->currProject.reset();
     return;
   }
+  d->project.reset(project.take());
 
   // Set the current working directory to the project directory
-  if (!QDir::setCurrent(d->currProject->workingDir.absolutePath()))
+  if (!QDir::setCurrent(d->project->workingDir.absolutePath()))
   {
     qWarning() << "Unable to set current working directory to "
-      << "project directory: " << d->currProject->workingDir.absolutePath();
+               << "project directory: " << d->project->workingDir.absolutePath();
   }
 
-  // Get the video source
-  if (d->currProject->projectConfig->has_value("video_reader:type"))
+  // Get the video and mask sources
+  if (d->project->config->has_value("video_reader:type"))
   {
-    d->addVideoSource(d->currProject->projectConfig, d->currProject->videoPath);
+    d->addVideoSource(d->project->config, d->project->videoPath);
+  }
+  if (d->project->config->has_value("mask_reader:type"))
+  {
+    d->addMaskSource(d->project->config, d->project->maskPath);
   }
 
   // Load tracks
-  if (d->currProject->projectConfig->has_value("input_track_file") ||
-      d->currProject->projectConfig->has_value("output_tracks_file"))
+  if (d->project->config->has_value("input_track_file") ||
+      d->project->config->has_value("output_tracks_file"))
   {
-    this->loadTracks(d->currProject->tracksPath);
+    this->loadTracks(d->project->tracksPath);
   }
 
   // Load landmarks
-  if (d->currProject->projectConfig->has_value("output_ply_file"))
+  if (d->project->config->has_value("output_ply_file"))
   {
-    this->loadLandmarks(d->currProject->landmarksPath);
+    this->loadLandmarks(d->project->landmarksPath);
   }
 
-  // Load cameras
-  if (d->currProject->projectConfig->has_value("output_krtd_dir"))
-  {
-    foreach (auto const& frame, d->frames)
-    {
-      auto frameName = QString::fromStdString(d->getFrameName(frame.id) + ".krtd");
-
-      try
-      {
-        auto const& camera = kwiver::vital::read_krtd_file(
-          kvPath(frameName), kvPath(d->currProject->cameraPath));
-
-        // Add camera to scene
-        d->updateCamera(frame.id, camera);
-      }
-      catch (...)
-      {
-        qWarning() << "failed to read camera file " << frameName
-                   << " from " << d->currProject->cameraPath;
-      }
-    }
-  }
-
-  //find depth map paths
-  if (d->currProject->projectConfig->has_value("output_depth_dir"))
-  {
-    foreach(auto & frame, d->frames)
-    {
-      auto depthName = QString::fromStdString(d->getFrameName(frame.id) + ".vti");
-      QString depthMapPath = QString::fromStdString(kvPath(d->currProject->depthPath) + '/' + kvPath(depthName));
-      QFileInfo check_file(depthMapPath);
-      if (check_file.exists() && check_file.isFile())
-      {
-        frame.depthMapPath = depthMapPath;
-      }
-    }
-  }
+    // Cameras and depth maps are loaded after video importer is done
 
 #ifdef VTKWEBGLEXPORTER
   d->UI.actionWebGLScene->setEnabled(true);
 #endif
 
   // Load volume
-  if (d->currProject->projectConfig->has_value("volume_file"))
+  if (d->project->config->has_value("volume_file"))
   {
-    d->UI.worldView->loadVolume(d->currProject->volumePath, d->frames.size(),
-                                d->currProject->cameraPath, d->currProject->videoPath);
+    d->UI.worldView->loadVolume(d->project->volumePath);
   }
 
-  if (d->currProject->projectConfig->has_value("geo_origin_file"))
+  if (d->project->config->has_value("geo_origin_file"))
   {
-    if (kwiversys::SystemTools::FileExists(
-        d->currProject->geoOriginFile.toStdString(), true))
+    if (QFileInfo{d->project->geoOriginFile}.isFile())
     {
-      kwiver::maptk::read_local_geo_cs_from_file(
-        d->localGeoCs, d->currProject->geoOriginFile.toStdString());
+      kv::local_geo_cs lgcs;
+      kv::read_local_geo_cs_from_file(
+        lgcs, stdString(d->project->geoOriginFile));
+
+      d->sfmConstraints->set_local_geo_cs(lgcs);
     }
     else
     {
       qWarning() << "Failed to open geo origin file "
-        << d->currProject->geoOriginFile << ". File does not exist.";
+                 << d->project->geoOriginFile << ". File does not exist.";
     }
+  }
+
+  if (d->project->config->has_value("ROI"))
+  {
+    d->loadroi(d->project->ROI);
   }
 
   d->UI.worldView->queueResetView();
@@ -1353,6 +1664,59 @@ void MainWindow::loadProject(QString const& path)
   }
 
   d->setActiveCamera(d->activeCameraIndex);
+
+  // Load ground control points after cameras are loaded
+  if (d->project->config->has_value("ground_control_points_file"))
+  {
+    this->loadGroundControlPoints(d->project->groundControlPath);
+  }
+
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::loadImagery(QString const& path)
+{
+  static auto const imageExtensions = supportedImageExtensions();
+  static auto const videoExtensions = supportedVideoExtensions();
+
+  auto const ext = QFileInfo{path}.suffix().toLower();
+  if (imageExtensions.contains(ext))
+  {
+    this->loadImage(path);
+  }
+  else if (videoExtensions.contains(ext))
+  {
+    // TODO: Handle [selection of] multiple videos better
+    this->loadVideo(path);
+  }
+  else
+  {
+    qWarning() << "Don't know how to read file" << path
+               << "(unrecognized extension)";
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::loadMaskImagery(QString const& path)
+{
+  static auto const imageExtensions = supportedImageExtensions();
+  static auto const videoExtensions = supportedVideoExtensions();
+
+  auto const ext = QFileInfo{path}.suffix().toLower();
+  if (imageExtensions.contains(ext))
+  {
+    this->loadMaskImage(path);
+  }
+  else if (videoExtensions.contains(ext))
+  {
+    // TODO: Handle [selection of] multiple videos better
+    this->loadMaskVideo(path);
+  }
+  else
+  {
+    qWarning() << "Don't know how to read file" << path
+               << "(unrecognized extension)";
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -1362,15 +1726,16 @@ void MainWindow::loadImage(QString const& path)
   d->addImage(path);
 }
 
+//-----------------------------------------------------------------------------
 void MainWindow::loadVideo(QString const& path)
 {
   QTE_D();
 
-  auto config = readConfig("gui_video_reader.conf");
-  if (d->currProject)
+  auto config = readConfig(imageConfigForPath(path, "image"));
+  if (d->project)
   {
-    d->currProject->projectConfig->merge_config(config);
-    d->currProject->videoPath = path;
+    d->project->config->merge_config(config);
+    d->project->videoPath = path;
   }
 
   try
@@ -1384,22 +1749,57 @@ void MainWindow::loadVideo(QString const& path)
       e.what());
   }
 
-  if (d->currProject)
+  if (d->project)
   {
-    saveCameras(d->currProject->cameraPath);
-    d->currProject->projectConfig->set_value("output_krtd_dir", kvPath(
-      d->currProject->getContingentRelativePath(d->currProject->cameraPath)));
+    saveCameras(d->project->cameraPath);
+    d->project->config->set_value("output_krtd_dir", kvPath(
+                                                       d->project->getContingentRelativePath(d->project->cameraPath)));
 
-    if (!d->localGeoCs.origin().is_empty() &&
-        !d->currProject->geoOriginFile.isEmpty())
+    if (!d->sfmConstraints->get_local_geo_cs().origin().is_empty() &&
+        !d->project->geoOriginFile.isEmpty())
     {
-      saveGeoOrigin(d->currProject->geoOriginFile);
+      saveGeoOrigin(d->project->geoOriginFile);
     }
 
-    d->currProject->write();
+    d->project->write();
   }
 
   d->UI.worldView->queueResetView();
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::loadMaskImage(QString const& path)
+{
+  // TODO
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::loadMaskVideo(QString const& path)
+{
+  QTE_D();
+
+  auto config = readConfig(imageConfigForPath(path, "mask"));
+  if (d->project)
+  {
+    d->project->config->merge_config(config);
+    d->project->maskPath = path;
+  }
+
+  try
+  {
+    d->addMaskSource(config, path);
+  }
+  catch (std::exception const& e)
+  {
+    QMessageBox::critical(
+      this, "Error loading video\n",
+      e.what());
+  }
+
+  if (d->project)
+  {
+    d->project->write();
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -1409,7 +1809,7 @@ void MainWindow::loadCamera(QString const& path)
 
   try
   {
-    auto const& camera = kwiver::vital::read_krtd_file(kvPath(path));
+    auto const& camera = kv::read_krtd_file(kvPath(path));
     d->addCamera(camera);
   }
   catch (...)
@@ -1423,10 +1823,13 @@ void MainWindow::loadTracks(QString const& path)
 {
   QTE_D();
 
+  namespace kac = kwiver::arrows::core;
+
   try
   {
-    using namespace kwiver::vital;
-    auto tracks = read_feature_track_file(kvPath(path));
+    using tsi_uptr = std::unique_ptr<kv::track_set_implementation>;
+
+    auto tracks = kv::read_feature_track_file(kvPath(path));
     if (tracks)
     {
       // check for older zero-based track files
@@ -1435,33 +1838,44 @@ void MainWindow::loadTracks(QString const& path)
         qWarning() << "Loaded tracks have zero-based indexing, "
                       "shifting to one-based indexing";
         // shift tracks to start with frame one
-        std::vector<track_sptr> new_tracks;
-        for (auto track : tracks->tracks())
+        std::vector<kv::track_sptr> new_tracks;
+        for (auto const& track : tracks->tracks())
         {
-          auto new_track = track::create(track->data());
+          auto new_track = kv::track::create(track->data());
           new_track->set_id(track->id());
-          for (auto ts : *track)
+          for (auto const& ts : *track)
           {
-            auto fts = std::dynamic_pointer_cast<feature_track_state>(ts);
-            auto new_fts = std::make_shared<feature_track_state>(ts->frame()+1,
-                                                fts->feature, fts->descriptor);
+            auto fts = std::dynamic_pointer_cast<kv::feature_track_state>(ts);
+            auto new_fts = std::make_shared<kv::feature_track_state>(
+              ts->frame() + 1, fts->feature, fts->descriptor);
             new_track->append(new_fts);
           }
           new_tracks.push_back(new_track);
         }
-        tracks = std::make_shared<feature_track_set>(new_tracks);
+
+        auto tks_temp =
+          std::make_shared<kv::feature_track_set>(
+            tsi_uptr{new kac::frame_index_track_set_impl{new_tracks}});
+        tks_temp->set_frame_data(tracks->all_frame_data());
+        tracks = tks_temp;
+      }
+      else
+      {
+        auto tks_temp = std::make_shared<kv::feature_track_set>(
+          tsi_uptr{new kac::frame_index_track_set_impl{tracks->tracks()}});
+        tks_temp->set_frame_data(tracks->all_frame_data());
+        tracks = tks_temp;
       }
 
       d->tracks = tracks;
       d->updateCameraView();
-
       for (auto const& track : tracks->tracks())
       {
         d->UI.cameraView->addFeatureTrack(*track);
       }
 
       d->UI.actionExportTracks->setEnabled(
-          d->tracks && d->tracks->size());
+        d->tracks && d->tracks->size());
 
       d->UI.actionShowMatchMatrix->setEnabled(!tracks->tracks().empty());
       d->UI.actionKeyframesOnly->setEnabled(!tracks->tracks().empty());
@@ -1469,7 +1883,8 @@ void MainWindow::loadTracks(QString const& path)
   }
   catch (std::exception const& e)
   {
-    qWarning() << "failed to read tracks from" << path << " with error: " << e.what();
+    qWarning() << "failed to read tracks from" << path
+               << " with error: " << e.what();
   }
 }
 
@@ -1480,7 +1895,7 @@ void MainWindow::loadLandmarks(QString const& path)
 
   try
   {
-    auto const& landmarks = kwiver::vital::read_ply_file(kvPath(path));
+    auto const& landmarks = kv::read_ply_file(kvPath(path));
     if (landmarks)
     {
       d->landmarks = landmarks;
@@ -1491,6 +1906,29 @@ void MainWindow::loadLandmarks(QString const& path)
         d->landmarks && d->landmarks->size());
 
       d->updateCameraView();
+    }
+  }
+  catch (...)
+  {
+    qWarning() << "failed to read landmarks from" << path;
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::loadGroundControlPoints(QString const& path)
+{
+  QTE_D();
+
+  try
+  {
+    auto const& gcp = kv::read_ply_file(kvPath(path));
+    if (gcp)
+    {
+      d->groundControlPointsHelper->setGroundControlPoints(*gcp);
+
+      d->UI.actionExportGroundControlPoints->setEnabled(
+        d->groundControlPointsHelper->groundControlPoints() &&
+        d->groundControlPointsHelper->groundControlPoints()->size());
     }
   }
   catch (...)
@@ -1520,12 +1958,12 @@ void MainWindow::saveLandmarks(QString const& path, bool writeToProject)
 
   try
   {
-    kwiver::vital::write_ply_file(d->landmarks, kvPath(path));
+    kv::write_ply_file(d->landmarks, kvPath(path));
 
-    if (writeToProject && d->currProject)
+    if (writeToProject && d->project)
     {
-      d->currProject->projectConfig->set_value("output_ply_file", kvPath(
-        d->currProject->getContingentRelativePath(path)));
+      d->project->config->set_value("output_ply_file", kvPath(
+                                                         d->project->getContingentRelativePath(path)));
     }
   }
   catch (...)
@@ -1533,7 +1971,53 @@ void MainWindow::saveLandmarks(QString const& path, bool writeToProject)
     auto const msg =
       QString("An error occurred while exporting landmarks to \"%1\". "
               "The output file may not have been written correctly.");
-    QMessageBox::critical(this, "Export error", msg.arg(d->currProject->landmarksPath));
+    QMessageBox::critical(
+      this, "Export error", msg.arg(d->project->landmarksPath));
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::saveGroundControlPoints()
+{
+  auto const path = QFileDialog::getSaveFileName(
+    this, "Export Ground Control Points", QString(),
+    "Landmark file (*.ply);;"
+    "All Files (*)");
+
+  if (!path.isEmpty())
+  {
+    this->saveGroundControlPoints(path, true);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::saveGroundControlPoints(QString const& path, bool writeToProject)
+{
+  QTE_D();
+
+  try
+  {
+    kv::write_ply_file(
+      d->groundControlPointsHelper->groundControlPoints(),
+      kvPath(path));
+
+    if (writeToProject && d->project)
+    {
+      d->project->groundControlPath =
+        d->project->getContingentRelativePath(path);
+      d->project->config->set_value(
+        "ground_control_points_file",
+        kvPath(d->project->groundControlPath));
+      d->project->write();
+    }
+  }
+  catch (...)
+  {
+    auto const msg =
+      QString("An error occurred while exporting ground control points to \"%1\". "
+              "The output file may not have been written correctly.");
+    QMessageBox::critical(this, "Export error",
+                          msg.arg(d->project->groundControlPath));
   }
 }
 
@@ -1558,12 +2042,12 @@ void MainWindow::saveTracks(QString const& path, bool writeToProject)
 
   try
   {
-    kwiver::vital::write_feature_track_file(d->tracks, kvPath(path));
+    kv::write_feature_track_file(d->tracks, kvPath(path));
 
-    if (writeToProject && d->currProject)
+    if (writeToProject && d->project)
     {
-      d->currProject->projectConfig->set_value("output_tracks_file", kvPath(
-        d->currProject->getContingentRelativePath(path)));
+      d->project->config->set_value("output_tracks_file", kvPath(
+                                                            d->project->getContingentRelativePath(path)));
     }
   }
   catch (...)
@@ -1591,22 +2075,21 @@ void MainWindow::saveCameras(QString const& path, bool writeToProject)
 {
   QTE_D();
 
-  auto out = QHash<QString, kwiver::vital::camera_perspective_sptr>();
+  auto out = QHash<QString, kv::camera_perspective_sptr>();
   auto willOverwrite = QStringList();
 
-  foreach (auto i, qtIndexRange(d->frames.count()))
+  for (auto const& cd : d->frames)
   {
-    auto const& cd = d->frames[i];
     if (cd.camera)
     {
       auto const camera = cd.camera->GetCamera();
       if (camera)
       {
-        auto cameraName = QString::fromStdString(d->getFrameName(cd.id) + ".krtd");
-        auto const filepath = d->currProject->cameraPath + "/" + cameraName;
+        auto cameraName = qtString(d->getFrameName(cd.id)) + ".krtd";
+        auto const filepath = QDir{path}.filePath(cameraName);
         out.insert(filepath, camera);
 
-        if (QFileInfo(filepath).exists())
+        if (QFileInfo::exists(filepath))
         {
           willOverwrite.append(filepath);
         }
@@ -1619,11 +2102,13 @@ void MainWindow::saveCameras(QString const& path, bool writeToProject)
   {
     QMessageBox mb(QMessageBox::Warning, "Confirm overwrite",
                    "One or more files will be overwritten by this operation. "
-                   "Do you wish to continue?", QMessageBox::Cancel, this);
+                   "Do you wish to continue?",
+                   QMessageBox::Cancel, this);
 
-    QAbstractButton* myOverwrite = mb.addButton("&Overwrite", QMessageBox::AcceptRole);
+    auto* const myOverwrite =
+      mb.addButton("&Overwrite", QMessageBox::AcceptRole);
     mb.setDetailedText("The following file(s) will be overwritten:\n  " +
-                       willOverwrite.join("  \n"));
+                       willOverwrite.join("\n  "));
 
     mb.exec();
     if (mb.clickedButton() != myOverwrite)
@@ -1639,8 +2124,8 @@ void MainWindow::saveCameras(QString const& path, bool writeToProject)
     try
     {
       auto cam_ptr =
-        std::dynamic_pointer_cast<kwiver::vital::camera_perspective>(iter.value());
-      kwiver::vital::write_krtd_file(*cam_ptr, kvPath(iter.key()));
+        std::dynamic_pointer_cast<kv::camera_perspective>(iter.value());
+      kv::write_krtd_file(*cam_ptr, kvPath(iter.key()));
     }
     catch (...)
     {
@@ -1648,10 +2133,10 @@ void MainWindow::saveCameras(QString const& path, bool writeToProject)
     }
   }
 
-  if (writeToProject && d->currProject)
+  if (writeToProject && d->project)
   {
-    d->currProject->projectConfig->set_value("output_krtd_dir", kvPath(
-      d->currProject->getContingentRelativePath(path)));
+    d->project->config->set_value("output_krtd_dir", kvPath(
+                                                       d->project->getContingentRelativePath(path)));
   }
 
   if (!errors.isEmpty())
@@ -1661,7 +2146,7 @@ void MainWindow::saveCameras(QString const& path, bool writeToProject)
               "One or more output files may not have been written correctly.");
 
     QMessageBox mb(QMessageBox::Critical, "Export error",
-                   msg.arg(d->currProject->cameraPath), QMessageBox::Ok, this);
+                   msg.arg(d->project->cameraPath), QMessageBox::Ok, this);
 
     mb.setDetailedText("Error writing the following file(s):\n  " +
                        errors.join("  \n"));
@@ -1680,22 +2165,28 @@ void MainWindow::saveDepthImage(QString const& path)
     return;
   }
 
-  QString filename = QString::fromStdString(d->getFrameName(d->activeDepthFrame) + ".vti");
+  auto filename = qtString(d->getFrameName(d->activeDepthFrame)) + ".vti";
 
   if (!QDir(path).exists())
   {
     QDir().mkdir(path);
   }
 
+  d->project->config->set_value("output_depth_dir", kvPath(
+    d->project->getContingentRelativePath(d->project->depthPath)));
 
+  d->project->config->set_value("ROI", d->roiToString());
   vtkNew<vtkXMLImageDataWriter> writerI;
-  auto const filepath = path + "/" + filename;
-  writerI->SetFileName(stdString(filepath).c_str());
+  auto const filepath = QDir{path}.filePath(filename);
+  writerI->SetFileName(qPrintable(filepath));
   writerI->AddInputDataObject(d->activeDepth.Get());
   writerI->SetDataModeToBinary();
   writerI->Write();
 
-  d->frames[d->activeDepthFrame].depthMapPath = filepath;
+  if (auto* const activeFrame = qtGet(d->frames, d->activeDepthFrame))
+  {
+    activeFrame->depthMapPath = filepath;
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -1732,9 +2223,9 @@ void MainWindow::saveDepthPoints(QString const& path)
   try
   {
     d->UI.worldView->saveDepthPoints(path);
-    d->currProject->projectConfig->set_value("depthmaps_images_file",
-      kvPath(d->currProject->getContingentRelativePath(path)));
-    d->currProject->write();
+    d->project->config->set_value("depthmaps_images_file",
+                                  kvPath(d->project->getContingentRelativePath(path)));
+    d->project->write();
   }
   catch (...)
   {
@@ -1749,9 +2240,9 @@ void MainWindow::saveGeoOrigin(QString const& path)
 {
   QTE_D();
 
-  d->currProject->projectConfig->set_value("geo_origin_file", kvPath(
-    d->currProject->getContingentRelativePath(path)));
-  kwiver::maptk::write_local_geo_cs_to_file(d->localGeoCs, path.toStdString());
+  d->project->config->set_value("geo_origin_file", kvPath(
+    d->project->getContingentRelativePath(path)));
+  kv::write_local_geo_cs_to_file(d->sfmConstraints->get_local_geo_cs(), stdString(path));
 }
 
 //-----------------------------------------------------------------------------
@@ -1818,11 +2309,13 @@ void MainWindow::saveVolume()
   if (!path.isEmpty())
   {
     d->UI.worldView->saveVolume(path);
-    d->currProject->volumePath = d->currProject->getContingentRelativePath(path);
-    d->currProject->projectConfig->set_value("volume_file",
-      kvPath(d->currProject->volumePath));
-    d->currProject->write();
+    d->project->volumePath = d->project->getContingentRelativePath(path);
+    d->project->config->set_value("volume_file",
+                                  kvPath(d->project->volumePath));
+    d->project->write();
   }
+
+  d->project->config->set_value("ROI", d->roiToString());
 }
 
 //-----------------------------------------------------------------------------
@@ -1843,28 +2336,24 @@ void MainWindow::saveColoredMesh()
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::setSlideDelay(int delayExp)
+void MainWindow::setSlideSpeed(int speed)
 {
   QTE_D();
 
   static auto const ttFormat =
-    QString("%1 (%2)").arg(d->UI.slideDelay->toolTip());
+    QString("%1 (%2)").arg(d->UI.slideSpeed->toolTip());
 
-  auto const de = static_cast<double>(delayExp) * 0.1;
-  auto const delay = qRound(qPow(10.0, de));
+  auto dt = QString("Unconstrained");
+  auto delay = 0.0;
+  if (speed < 60)
+  {
+    auto const de = static_cast<double>(speed) * 0.1;
+    auto const fps = qPow(2.0, de);
+    delay = 1e3 / fps;
+    dt = QString("%1 / sec").arg(fps, 0, 'g', 2);
+  }
   d->slideTimer.setInterval(delay);
-
-  if (delay < 1000)
-  {
-    auto const fps = 1e3 / delay;
-    auto const dt = QString("%1 / sec").arg(fps, 0, 'f', 1);
-    d->UI.slideDelay->setToolTip(ttFormat.arg(dt));
-  }
-  else
-  {
-    auto const dt = QString("%1 sec").arg(delay / 1e3, 0, 'f', 1);
-    d->UI.slideDelay->setToolTip(ttFormat.arg(dt));
-  }
+  d->UI.slideSpeed->setToolTip(ttFormat.arg(dt));
 }
 
 //-----------------------------------------------------------------------------
@@ -1914,7 +2403,8 @@ void MainWindow::setActiveCamera(int id)
 {
   QTE_D();
 
-  if (id < 1 || id > d->frames.count())
+  int lastFrameId = d->frames.isEmpty() ? 1 : d->frames.lastKey();
+  if (id < 1 || id > lastFrameId)
   {
     qDebug() << "MainWindow::setActiveCamera:"
              << " requested ID" << id << "is invalid";
@@ -1929,49 +2419,70 @@ void MainWindow::executeTool(QObject* object)
 {
   QTE_D();
 
-  try
+  auto const tool = qobject_cast<AbstractTool*>(object);
+  if (tool && !d->activeTool)
   {
-    auto const tool = qobject_cast<AbstractTool*>(object);
-    if (tool && !d->activeTool)
+    d->setActiveTool(tool);
+    tool->setActiveFrame(d->activeCameraIndex);
+    tool->setTracks(d->tracks);
+    tool->setCameras(d->cameraMap());
+    tool->setLandmarks(d->landmarks);
+    tool->setSfmConstraints(d->sfmConstraints);
+    tool->setVideoPath(stdString(d->videoPath));
+    tool->setMaskPath(stdString(d->maskPath));
+    tool->setConfig(d->project->config);
+    tool->setROI(d->roi.Get());
+    tool->setDepthLookup(d->depthLookup());
+    if (!d->frames.empty())
     {
-      d->setActiveTool(tool);
-      tool->setActiveFrame(d->activeCameraIndex);
-      tool->setTracks(d->tracks);
-      tool->setCameras(d->cameraMap());
-      tool->setLandmarks(d->landmarks);
-      tool->setVideoPath(d->videoPath.toStdString());
-      tool->setConfig(d->currProject->projectConfig);
+      tool->setLastFrame(static_cast<int>(d->frames.lastKey()));
+    }
 
-      if (!tool->execute())
-      {
-        d->setActiveTool(0);
-      }
+    if (!tool->execute())
+    {
+      d->setActiveTool(0);
+    }
+    else
+    {
+      // Initialize the progress bar
+      d->updateProgress(tool, tool->description(), 0);
     }
   }
-  catch (std::exception const& e)
-  {
-    QString message("The tool failed with the following error:\n");
-    message += e.what();
-    QMessageBox::critical(
-      this, "Error in Tool",
-      message);
-  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::reportToolError(QString const& msg)
+{
+    QMessageBox::critical(this, "Error in Tool",
+                          "Tool execution failed: " + msg);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::acceptToolInterimResults(std::shared_ptr<ToolData> data)
+{
+  this->acceptToolResults(data, false);
 }
 
 //-----------------------------------------------------------------------------
 void MainWindow::acceptToolFinalResults()
 {
   QTE_D();
+
   if (d->activeTool)
   {
-    acceptToolResults(d->activeTool->data(), true);
-    saveToolResults();
+    this->acceptToolResults(d->activeTool->data(), true);
+    this->saveToolResults();
+    // Signal tool execution as complete to the progress widget
+    d->updateProgress(d->activeTool,
+                      d->activeTool->description(),
+                      100);
   }
   d->setActiveTool(0);
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::acceptToolResults(std::shared_ptr<ToolData> data, bool isFinal)
+void MainWindow::acceptToolResults(
+  std::shared_ptr<ToolData> data, bool isFinal)
 {
   QTE_D();
   // if all the update variables are Null then trigger a GUI update after
@@ -1981,6 +2492,7 @@ void MainWindow::acceptToolResults(std::shared_ptr<ToolData> data, bool isFinal)
                       !d->toolUpdateLandmarks &&
                       !d->toolUpdateTracks &&
                       !d->toolUpdateDepth &&
+                      !d->toolUpdateVolume &&
                       d->toolUpdateActiveFrame < 0;
 
   if (d->activeTool)
@@ -1992,6 +2504,7 @@ void MainWindow::acceptToolResults(std::shared_ptr<ToolData> data, bool isFinal)
     d->toolUpdateTracks = NULL;
     d->toolUpdateActiveFrame = -1;
     d->toolUpdateDepth = NULL;
+    d->toolUpdateVolume = NULL;
     if (outputs.testFlag(AbstractTool::Cameras))
     {
       d->toolUpdateCameras = data->cameras;
@@ -2012,18 +2525,30 @@ void MainWindow::acceptToolResults(std::shared_ptr<ToolData> data, bool isFinal)
     {
       d->toolUpdateActiveFrame = static_cast<int>(data->activeFrame);
     }
+    if (outputs.testFlag(AbstractTool::BatchDepth))
+    {
+      d->toolSaveDepthFlag = true;
+    }
+    if (outputs.testFlag(AbstractTool::Fusion))
+    {
+      d->toolUpdateVolume = data->volume;
+    }
+    // Update tool progress
+    d->updateProgress(d->activeTool,
+                      d->activeTool->description(),
+                      d->activeTool->progress());
   }
 
   if (isFinal)
   {
-    updateToolResults();  //force immediate update on tool finish so we ensure update before saving
+    // Force immediate update on tool finish so we ensure update before saving
+    updateToolResults();
   }
-  else if(updateNeeded)
+  else if (updateNeeded)
   {
-    QTimer::singleShot(1000, this, SLOT(updateToolResults()));
+    QTimer::singleShot(1000, this, &MainWindow::updateToolResults);
   }
 }
-
 
 //-----------------------------------------------------------------------------
 void MainWindow::saveToolResults()
@@ -2036,30 +2561,31 @@ void MainWindow::saveToolResults()
 
     if (outputs.testFlag(AbstractTool::Cameras))
     {
-      saveCameras(d->currProject->cameraPath);
+      saveCameras(d->project->cameraPath);
     }
     if (outputs.testFlag(AbstractTool::Landmarks))
     {
-      saveLandmarks(d->currProject->landmarksPath);
+      saveLandmarks(d->project->landmarksPath);
     }
     if (outputs.testFlag(AbstractTool::Tracks))
     {
-      saveTracks(d->currProject->tracksPath);
+      saveTracks(d->project->tracksPath);
     }
 
-    if (!d->localGeoCs.origin().is_empty() &&
-        !d->currProject->geoOriginFile.isEmpty())
+    if (!d->sfmConstraints->get_local_geo_cs().origin().is_empty() &&
+        !d->project->geoOriginFile.isEmpty())
     {
-      saveGeoOrigin(d->currProject->geoOriginFile);
-    }
-    if (outputs.testFlag(AbstractTool::Depth))
-    {
-      saveDepthImage(d->currProject->depthPath);
-      d->currProject->projectConfig->set_value("output_depth_dir", kvPath(
-        d->currProject->getContingentRelativePath(d->currProject->depthPath)));
+      saveGeoOrigin(d->project->geoOriginFile);
     }
 
-    d->currProject->write();
+    if (!outputs.testFlag(AbstractTool::BatchDepth) && outputs.testFlag(AbstractTool::Depth))
+    {
+      saveDepthImage(d->project->depthPath);
+      d->project->config->set_value("output_depth_dir", kvPath(
+        d->project->getContingentRelativePath(d->project->depthPath)));
+    }
+
+    d->project->write();
   }
 }
 
@@ -2086,14 +2612,12 @@ void MainWindow::updateToolResults()
   {
     d->tracks = d->toolUpdateTracks;
     d->UI.cameraView->clearFeatureTracks();
-    d->updateCameraView();
-
     foreach (auto const& track, d->tracks->tracks())
     {
       d->UI.cameraView->addFeatureTrack(*track);
     }
     d->UI.actionExportTracks->setEnabled(
-        d->tracks && d->tracks->size());
+      d->tracks && d->tracks->size());
 
     d->UI.actionShowMatchMatrix->setEnabled(!d->tracks->tracks().empty());
     d->UI.actionKeyframesOnly->setEnabled(!d->tracks->tracks().empty());
@@ -2104,7 +2628,19 @@ void MainWindow::updateToolResults()
     d->activeDepth = d->toolUpdateDepth;
     d->activeDepthFrame = d->toolUpdateActiveFrame;
 
+    //In batch depth, each update is a full depth map from a different ref frame that must be saved
+    if (d->toolSaveDepthFlag)
+    {
+      saveDepthImage(d->project->depthPath);
+      d->toolSaveDepthFlag = false;
+    }
+
     d->toolUpdateDepth = NULL;
+  }
+  if (d->toolUpdateVolume)
+  {
+    d->UI.worldView->setVolume(d->toolUpdateVolume);
+    d->toolUpdateVolume = NULL;
   }
   if (d->toolUpdateActiveFrame >= 0)
   {
@@ -2113,11 +2649,27 @@ void MainWindow::updateToolResults()
     d->toolUpdateActiveFrame = -1;
   }
 
-
   if (!d->frames.isEmpty())
   {
     d->setActiveCamera(d->activeCameraIndex);
   }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::addFrame(int frame)
+{
+  QTE_D();
+
+  d->addFrame(nullptr, frame);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::updateFrames(
+  std::shared_ptr<kv::metadata_map::map_metadata_t> mdMap)
+{
+  QTE_D();
+
+  d->updateFrames(mdMap);
 }
 
 //-----------------------------------------------------------------------------
@@ -2128,7 +2680,7 @@ void MainWindow::showMatchMatrix()
   if (d->tracks)
   {
     // Get matrix
-    auto frames = std::vector<kwiver::vital::frame_id_t>();
+    auto frames = std::vector<kv::frame_id_t>();
     auto const mm = kwiver::arrows::match_matrix(d->tracks, frames);
 
     // Show window
@@ -2176,6 +2728,54 @@ void MainWindow::showUserManual()
       this, "Not found",
       "The user manual could not be located. Please check your installation.");
   }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::updateVideoImportProgress(QString const& desc, int progress)
+{
+  QTE_D();
+
+  d->updateProgress(this->sender(), desc, progress);
+}
+
+//-----------------------------------------------------------------------------
+WorldView* MainWindow::worldView()
+{
+  QTE_D();
+
+  return d->UI.worldView;
+}
+
+//-----------------------------------------------------------------------------
+CameraView* MainWindow::cameraView()
+{
+  QTE_D();
+
+  return d->UI.cameraView;
+}
+
+//-----------------------------------------------------------------------------
+vtkMaptkCamera* MainWindow::activeCamera()
+{
+  QTE_D();
+
+  if (d->activeCameraIndex < 1 || d->frames.empty())
+  {
+    return nullptr;
+  }
+
+  auto* const activeFrame = qtGet(d->frames, d->activeCameraIndex);
+  return (activeFrame ? activeFrame->camera : nullptr);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::enableAntiAliasing(bool enable)
+{
+  QTE_D();
+
+  d->UI.worldView->enableAntiAliasing(enable);
+  d->UI.cameraView->enableAntiAliasing(enable);
+  d->UI.depthMapView->enableAntiAliasing(enable);
 }
 
 //END MainWindow

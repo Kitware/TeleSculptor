@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016-2017 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,13 +42,15 @@
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
 
-#include <QtGui/QFileDialog>
-#include <QtGui/QGraphicsSceneHoverEvent>
-#include <QtGui/QGraphicsPixmapItem>
-#include <QtGui/QImageWriter>
-#include <QtGui/QMessageBox>
+#include <QFileDialog>
+#include <QGraphicsSceneHoverEvent>
+#include <QGraphicsPixmapItem>
+#include <QImageWriter>
+#include <QMessageBox>
 
 #include <cmath>
+
+namespace kv = kwiver::vital;
 
 using std::floor;
 using std::pow;
@@ -104,7 +106,7 @@ T sparseMax(Eigen::SparseMatrix<T> const& m)
 {
   auto result = T(0);
 
-  foreach (auto it, kwiver::vital::enumerate(m))
+  foreach (auto it, kv::enumerate(m))
   {
     result = std::max(result, it.value());
   }
@@ -169,7 +171,7 @@ public:
 
   Eigen::SparseMatrix<uint> matrix;
   uint maxValue;
-  std::vector<kwiver::vital::frame_id_t> frames;
+  std::vector<kv::frame_id_t> frames;
 
   QImage image;
   int offset;
@@ -210,7 +212,7 @@ void MatchMatrixWindowPrivate::buildHorizontalImage(
   auto image = QImage(k, k * 2, QImage::Format_RGB32);
   image.fill(gradient.at(0.0));
 
-  foreach (auto it, kwiver::vital::enumerate(this->matrix))
+  foreach (auto it, kv::enumerate(this->matrix))
   {
     auto const y = it.col() + k - 1 - it.row();
     minY = qMin(minY, y);
@@ -238,7 +240,7 @@ void MatchMatrixWindowPrivate::buildVerticalImage(
   auto image = QImage(k * 2, k, QImage::Format_RGB32);
   image.fill(gradient.at(0.0));
 
-  foreach (auto it, kwiver::vital::enumerate(this->matrix))
+  foreach (auto it, kv::enumerate(this->matrix))
   {
     auto const x = it.row() + k - 1 - it.col();
     minX = qMin(minX, x);
@@ -263,7 +265,7 @@ void MatchMatrixWindowPrivate::buildDiagonalImage(
   auto image = QImage(k, k, QImage::Format_RGB32);
   image.fill(gradient.at(0.0));
 
-  foreach (auto it, kwiver::vital::enumerate(this->matrix))
+  foreach (auto it, kv::enumerate(this->matrix))
   {
     auto const a = scaleAlgorithm(valueAlgorithm(this->matrix, it));
     auto const c = gradient.at(a);
@@ -287,11 +289,11 @@ public:
   MatchMatrixImageItem(QImage const& image, MatchMatrixWindowPrivate* q);
 
 protected:
-  virtual void hoverEnterEvent(QGraphicsSceneHoverEvent* event) QTE_OVERRIDE;
-  virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) QTE_OVERRIDE;
-  virtual void hoverMoveEvent(QGraphicsSceneHoverEvent* event) QTE_OVERRIDE;
+  void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override;
+  void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
+  void hoverMoveEvent(QGraphicsSceneHoverEvent* event) override;
 
-  void updateStatusText(QPointF const& pos);
+  void updateStatusText(QPointF pos);
 
   QTE_DECLARE_PUBLIC_PTR(MatchMatrixWindowPrivate);
   QTE_DECLARE_PUBLIC(MatchMatrixWindowPrivate);
@@ -330,7 +332,7 @@ void MatchMatrixImageItem::hoverMoveEvent(QGraphicsSceneHoverEvent* event)
 }
 
 //-----------------------------------------------------------------------------
-void MatchMatrixImageItem::updateStatusText(const QPointF& pos)
+void MatchMatrixImageItem::updateStatusText(QPointF pos)
 {
   QTE_Q();
 
@@ -361,8 +363,8 @@ void MatchMatrixImageItem::updateStatusText(const QPointF& pos)
     return;
   }
 
-  kwiver::vital::frame_id_t fx = q->frames[x];
-  kwiver::vital::frame_id_t fy = q->frames[y];
+  kv::frame_id_t fx = q->frames[x];
+  kv::frame_id_t fy = q->frames[y];
 
   // Show status text
   if (x == y)
@@ -381,7 +383,8 @@ void MatchMatrixImageItem::updateStatusText(const QPointF& pos)
     auto const cy = q->matrix.coeff(y, y);
     auto const cxy = q->matrix.coeff(x, y);
 
-    q->UI.statusBar->showMessage(format.arg(fx).arg(fy).arg(cx).arg(cy).arg(cxy));
+    q->UI.statusBar->showMessage(
+      format.arg(fx).arg(fy).arg(cx).arg(cy).arg(cxy));
   }
 }
 
@@ -429,27 +432,30 @@ MatchMatrixWindow::MatchMatrixWindow(QWidget* parent, Qt::WindowFlags flags)
   this->updateImageTransform();
 
   // Set up signals/slots
-  connect(d->UI.actionSaveImage, SIGNAL(triggered()), this, SLOT(saveImage()));
+  connect(d->UI.actionSaveImage, &QAction::triggered,
+          this, QOverload<>::of(&MatchMatrixWindow::saveImage));
 
-  connect(d->UI.layout, SIGNAL(currentIndexChanged(QString)),
-          this, SLOT(updateImage()));
-  connect(d->UI.orientation, SIGNAL(currentIndexChanged(QString)),
-          this, SLOT(updateImageTransform()));
-  connect(d->UI.values, SIGNAL(currentIndexChanged(QString)),
-          this, SLOT(updateImage()));
-  connect(d->UI.scale, SIGNAL(currentIndexChanged(QString)),
-          this, SLOT(updateImage()));
-  connect(d->UI.color, SIGNAL(currentIndexChanged(QString)),
-          this, SLOT(updateImage()));
-  connect(d->UI.exponent, SIGNAL(valueChanged(double)),
-          this, SLOT(updateImage()));
-  connect(d->UI.range, SIGNAL(valueChanged(double)),
-          this, SLOT(updateImage()));
+  auto const indexChangedSignal =
+    QOverload<int>::of(&QComboBox::currentIndexChanged);
+  connect(d->UI.layout, indexChangedSignal,
+          this, &MatchMatrixWindow::updateImage);
+  connect(d->UI.orientation, indexChangedSignal,
+          this, &MatchMatrixWindow::updateImageTransform);
+  connect(d->UI.values, indexChangedSignal,
+          this, &MatchMatrixWindow::updateImage);
+  connect(d->UI.scale, indexChangedSignal,
+          this, &MatchMatrixWindow::updateImage);
+  connect(d->UI.color, indexChangedSignal,
+          this, &MatchMatrixWindow::updateImage);
+  connect(d->UI.exponent, &qtDoubleSlider::valueChanged,
+          this, &MatchMatrixWindow::updateImage);
+  connect(d->UI.range, &qtDoubleSlider::valueChanged,
+          this, &MatchMatrixWindow::updateImage);
 
-  connect(d->UI.values, SIGNAL(currentIndexChanged(QString)),
-          this, SLOT(updateControls()));
-  connect(d->UI.scale, SIGNAL(currentIndexChanged(QString)),
-          this, SLOT(updateControls()));
+  connect(d->UI.values, indexChangedSignal,
+          this, &MatchMatrixWindow::updateControls);
+  connect(d->UI.scale, indexChangedSignal,
+          this, &MatchMatrixWindow::updateControls);
 }
 
 //-----------------------------------------------------------------------------
@@ -461,7 +467,7 @@ MatchMatrixWindow::~MatchMatrixWindow()
 
 //-----------------------------------------------------------------------------
 void MatchMatrixWindow::setMatrix(Eigen::SparseMatrix<uint> const& matrix,
-                                  std::vector<kwiver::vital::frame_id_t> const& frames)
+                                  std::vector<kv::frame_id_t> const& frames)
 {
   QTE_D();
 

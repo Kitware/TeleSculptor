@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,8 +34,8 @@
 
 #include "DepthMapFilterOptions.h"
 
-#include <QtGui/QMenu>
-#include <QtGui/QWidgetAction>
+#include <QMenu>
+#include <QWidgetAction>
 
 QTE_IMPLEMENT_D_FUNC(DepthMapOptions)
 
@@ -77,15 +77,15 @@ DepthMapOptions::DepthMapOptions(QString const& settingsGroup,
   d->UI.filterMenu->setEnabled(false);
 
   // Connect signals/slots
-  connect(d->UI.points, SIGNAL(toggled(bool)),
-          this, SIGNAL(displayModeChanged()));
-  connect(d->UI.surfaces, SIGNAL(toggled(bool)),
-          this, SIGNAL(displayModeChanged()));
+  connect(d->UI.points, &QAbstractButton::toggled,
+          this, &DepthMapOptions::displayModeChanged);
+  connect(d->UI.surfaces, &QAbstractButton::toggled,
+          this, &DepthMapOptions::displayModeChanged);
 
-  connect(d->UI.filter, SIGNAL(toggled(bool)),
-          this, SIGNAL(thresholdsChanged(bool)));
-  connect(d->filterOptions, SIGNAL(filtersChanged()),
-          this, SLOT(thresholdsChanged()));
+  connect(d->UI.filter, &QAbstractButton::toggled,
+          this, QOverload<bool>::of(&DepthMapOptions::thresholdsChanged));
+  connect(d->filterOptions, &DepthMapFilterOptions::filtersChanged,
+          this, QOverload<>::of(&DepthMapOptions::thresholdsChanged));
 }
 
 //-----------------------------------------------------------------------------

@@ -41,7 +41,7 @@
 #include <vital/types/metadata.h>
 
 #include <qtStlUtil.h>
-#include <QtGui/QMessageBox>
+#include <QMessageBox>
 
 #include <sprokit/pipeline/pipeline.h>
 #include <sprokit/processes/kwiver_type_traits.h>
@@ -85,7 +85,7 @@ TrackFeaturesSprokitTool::TrackFeaturesSprokitTool(QObject* parent)
 {
   this->setText("&Track Features");
   this->setToolTip(
-    "<nobr>Track features through a the video and identify keyframes. "
+    "<nobr>Track features through the video and identify keyframes. "
     "</nobr>Compute descriptors on the keyframes and match to a visual "
     "index to close loops.");
 }
@@ -261,10 +261,12 @@ TrackFeaturesSprokitTool
 {
   QTE_D();
 
+  auto const maxFrame = this->data()->maxFrame;
+
   // Start pipeline and wait for it to finish
   d->ep.start();
 
-  unsigned int frame = this->activeFrame();
+  kwiver::vital::frame_id_t frame = this->activeFrame();
   kwiver::vital::timestamp currentTimestamp;
 
   d->video_reader->open(this->data()->videoPath);
@@ -275,10 +277,17 @@ TrackFeaturesSprokitTool
     d->video_reader->seek_frame(currentTimestamp, frame - 1);
   }
 
+  this->updateProgress(static_cast<int>(frame), maxFrame);
+  this->setDescription("Parsing video frames");
+
   while (d->video_reader->next_frame(currentTimestamp))
   {
     auto const image = d->video_reader->frame_image();
     auto const converted_image = d->image_converter->convert(image);
+
+    // Update tool progress
+    this->updateProgress(
+      static_cast<int>(currentTimestamp.get_frame()), maxFrame);
 
     auto const mdv = d->video_reader->frame_metadata();
     if (!mdv.empty())
@@ -308,6 +317,8 @@ TrackFeaturesSprokitTool
         auto data = std::make_shared<ToolData>();
         data->copyTracks(out_tracks);
         data->activeFrame = out_tracks->last_frame();
+        data->progress = progress();
+        data->description = description().toStdString();
         emit updated(data);
       }
     }

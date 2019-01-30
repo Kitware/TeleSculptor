@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2017 by Kitware, Inc.
+ * Copyright 2017-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,13 +37,17 @@
 #include <vital/types/landmark_map.h>
 #include <vital/types/feature_track_set.h>
 #include <vital/types/image_container.h>
+#include <vital/types/sfm_constraints.h>
 
 #include <vtkSmartPointer.h>
 #include <vtkImageData.h>
+#include <vtkBox.h>
+#include <vtkNew.h>
+#include <vtkStructuredGrid.h>
 
 #include <qtGlobal.h>
 
-#include <QtGui/QAction>
+#include <QAction>
 
 class AbstractToolPrivate;
 
@@ -54,8 +58,10 @@ public:
   typedef kwiver::vital::feature_track_set_sptr feature_track_set_sptr;
   typedef kwiver::vital::camera_map_sptr camera_map_sptr;
   typedef kwiver::vital::landmark_map_sptr landmark_map_sptr;
+  typedef kwiver::vital::sfm_constraints_sptr sfm_constraints_sptr;
   typedef kwiver::vital::config_block_sptr config_block_sptr;
   typedef vtkSmartPointer<vtkImageData> depth_sptr;
+  typedef std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string> > depth_lookup_sptr;
 
   /// Deep copy the feature tracks into this data class
   void copyTracks(feature_track_set_sptr const&);
@@ -69,14 +75,25 @@ public:
   /// Deep copy a depth image into this data class
   void copyDepth(depth_sptr const&);
 
+  /// Deep copy the list of depthmaps into this data class
+  void copyDepthLookup(depth_lookup_sptr const&);
+
+  int maxFrame;
   unsigned int activeFrame;
   std::string videoPath;
+  std::string maskPath;
   feature_track_set_sptr tracks;
   depth_sptr active_depth;
   camera_map_sptr cameras;
   landmark_map_sptr landmarks;
+  sfm_constraints_sptr constraints;
   config_block_sptr config;
   kwiver::vital::logger_handle_t logger;
+  int progress;
+  std::string description;
+  vtkNew<vtkBox> roi;
+  depth_lookup_sptr depthLookup;
+  vtkSmartPointer<vtkStructuredGrid> volume;
 };
 
 Q_DECLARE_METATYPE(std::shared_ptr<ToolData>)
@@ -89,6 +106,7 @@ public:
   typedef kwiver::vital::feature_track_set_sptr feature_track_set_sptr;
   typedef kwiver::vital::camera_map_sptr camera_map_sptr;
   typedef kwiver::vital::landmark_map_sptr landmark_map_sptr;
+  typedef kwiver::vital::sfm_constraints_sptr sfm_constraints_sptr;
   typedef kwiver::vital::config_block_sptr config_block_sptr;
   typedef vtkSmartPointer<vtkImageData> depth_sptr;
 
@@ -99,12 +117,14 @@ public:
     Landmarks = 0x4,
     ActiveFrame = 0x8,
     KeyFrames = 0x10,
-    Depth = 0x20
+    Depth = 0x20,
+    BatchDepth = 0x40,
+    Fusion = 0x80
   };
   Q_DECLARE_FLAGS(Outputs, Output)
 
   explicit AbstractTool(QObject* parent = 0);
-  virtual ~AbstractTool();
+  ~AbstractTool() override;
 
   /// Get the types of output produced by the tool.
   virtual Outputs outputs() const = 0;
@@ -122,8 +142,14 @@ public:
   /// Set the active frame to be used by the tool.
   void setActiveFrame(unsigned int frame);
 
-  /// Set the image paths to be used as input to the tool.
-  void setImagePaths(std::vector<std::string> const&);
+  /// Set the frame number of the last frame.
+  ///
+  /// This sets the frame number of the last frame of the video. This is an
+  /// optimization in order to allow some tools to correctly report their
+  /// progress, since this value is expected to be known by the caller, but may
+  /// be expensive for the tool to determine. This does \em not affect how many
+  /// frames the tool will actually process.
+  void setLastFrame(int);
 
   /// Set the feature tracks to be used as input to the tool.
   void setTracks(feature_track_set_sptr const&);
@@ -134,8 +160,20 @@ public:
   /// Set the landmarks to be used as input to the tool.
   void setLandmarks(landmark_map_sptr const&);
 
+  /// Set the sfm constraints to be used as input to the tool.
+  void setSfmConstraints(sfm_constraints_sptr const&);
+
+  /// Set the 3D region of interest
+  void setROI(vtkBox *);
+
+  /// Set the depth map lookup (frame to filename)
+  void setDepthLookup(std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string> > const&);
+
   /// Set the video source path.
   void setVideoPath(std::string const&);
+
+  /// Set the mask video source path.
+  void setMaskPath(std::string const&);
 
   /// Set the config file if any
   void setConfig(config_block_sptr&);
@@ -154,6 +192,9 @@ public:
 
   /// Get the active frame.
   unsigned int activeFrame() const;
+
+  std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string> > depthLookup() const;
+  vtkBox *ROI() const;
 
   /// Get tracks.
   ///
@@ -194,6 +235,27 @@ public:
   ///          as doing so may not be thread safe.
   landmark_map_sptr landmarks() const;
 
+  /// Get sfm constraints.
+  ///
+  /// This returns the SfM constraints used by the tool.
+  ///
+  /// This may also be used by tool implementations to get the input Sfm constraints.
+  /// (The constraints will be a copy that can be safely modified.)
+  ///
+  /// \warning Users must not call this method while the tool is executing,
+  ///          as doing so may not be thread safe.
+  sfm_constraints_sptr sfmConstraints() const;
+
+  /// Get tool progress.
+  ///
+  /// This returns the tool execution progress as an integer.
+  int progress() const;
+
+  /// Get tool execution description.
+  ///
+  /// This returns a textual description of what the tool is doing.
+  QString description() const;
+
 signals:
   /// Emitted when the tool execution is completed.
   void completed();
@@ -202,6 +264,9 @@ signals:
 
   /// Emitted when the tool execution terminates due to user cancellation.
   void canceled();
+
+  /// Emitted when the tool execution terminates due to an execution error.
+  void failed(QString reason);
 
 public slots:
   /// Ask the tool to cancel execution.
@@ -240,6 +305,12 @@ protected:
   ///         otherwise \c false
   bool hasLandmarks() const;
 
+  /// Test if the tool has depth maps
+  ///
+  /// \return \c true if the tool data has a non-zero number of depthMaps,
+  ///         otherwise \c false
+  bool hasDepthLookup() const;
+
   /// Test if the tool has video data.
   ///
   /// \return \c true if the tool data has an associated video source,
@@ -266,6 +337,19 @@ protected:
   /// This sets the landmarks that are produced by the tool as output. Unlike
   /// setCameras, this does not make a deep copy of the provided landmarks.
   void updateLandmarks(landmark_map_sptr const&);
+
+  /// Set tool progress.
+  ///
+  /// This returns the tool execution progress as an integer.
+  void updateProgress(int value, int maximum = 100);
+
+  /// Set the volume produced by the tool
+  void updateFusion(vtkSmartPointer<vtkStructuredGrid>);
+
+  /// Set tool execution description.
+  ///
+  /// This returns a textual description of what the tool is doing.
+  void setDescription(const QString& desc);
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(AbstractTool)

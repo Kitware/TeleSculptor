@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,7 +34,7 @@
 
 #include <qtScopedValueChange.h>
 
-#include <QtGui/QPushButton>
+#include <QPushButton>
 
 QTE_IMPLEMENT_D_FUNC(DepthMapFilterOptions)
 
@@ -56,19 +56,25 @@ DepthMapFilterOptions::DepthMapFilterOptions(
 
   d->UI.setupUi(this);
 
-  connect(d->UI.bestCostMinimum, SIGNAL(valueChanged(double)),
-          this, SLOT(updateBestCostMinimum()));
-  connect(d->UI.bestCostMaximum, SIGNAL(valueChanged(double)),
-          this, SLOT(updateBestCostMaximum()));
-  connect(d->UI.uniquenessRatioMinimum, SIGNAL(valueChanged(double)),
-          this, SLOT(updateUniquenessRatioMinimum()));
-  connect(d->UI.uniquenessRatioMaximum, SIGNAL(valueChanged(double)),
-          this, SLOT(updateUniquenessRatioMaximum()));
+  connect(d->UI.bestCostMinimum,
+          QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+          this, &DepthMapFilterOptions::updateBestCostMinimum);
+  connect(d->UI.bestCostMaximum,
+          QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+          this, &DepthMapFilterOptions::updateBestCostMaximum);
+  connect(d->UI.uniquenessRatioMinimum,
+          QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+          this, &DepthMapFilterOptions::updateUniquenessRatioMinimum);
+  connect(d->UI.uniquenessRatioMaximum,
+          QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+          this, &DepthMapFilterOptions::updateUniquenessRatioMaximum);
 
-  connect(d->UI.buttonBox->button(QDialogButtonBox::Apply), SIGNAL(clicked()),
-          this, SIGNAL(filtersChanged()));
-  connect(d->UI.buttonBox->button(QDialogButtonBox::Reset), SIGNAL(clicked()),
-          this, SLOT(resetFilters()));
+  connect(d->UI.buttonBox->button(QDialogButtonBox::Apply),
+          &QAbstractButton::clicked,
+          this, &DepthMapFilterOptions::filtersChanged);
+  connect(d->UI.buttonBox->button(QDialogButtonBox::Reset),
+          &QAbstractButton::clicked,
+          this, &DepthMapFilterOptions::resetFilters);
 }
 
 //-----------------------------------------------------------------------------

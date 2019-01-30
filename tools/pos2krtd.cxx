@@ -58,7 +58,7 @@
 #include <kwiversys/CommandLineArguments.hxx>
 #include <kwiversys/Directory.hxx>
 
-#include <maptk/local_geo_cs.h>
+#include <vital/types/local_geo_cs.h>
 #include <maptk/version.h>
 
 typedef kwiversys::SystemTools     ST;
@@ -298,7 +298,7 @@ static int maptk_main(int argc, char const* argv[])
   //
   // Create the local coordinate system
   //
-  kwiver::maptk::local_geo_cs local_cs;
+  kwiver::vital::local_geo_cs local_cs;
   bool geo_origin_loaded_from_file = false;
   if (config->get_value<std::string>("geo_origin_file", "") != "")
   {
@@ -342,7 +342,7 @@ static int maptk_main(int argc, char const* argv[])
 
   LOG_INFO( main_logger, "Initializing cameras" );
   std::map<kwiver::vital::frame_id_t, kwiver::vital::camera_sptr> cam_map;
-  cam_map = kwiver::maptk::initialize_cameras_with_metadata(md_map, base_camera, local_cs, ins_rot_offset);
+  cam_map = kwiver::vital::initialize_cameras_with_metadata(md_map, base_camera, local_cs, ins_rot_offset);
 
   // create output KRTD directory
   if( ! ST::FileExists(output) )

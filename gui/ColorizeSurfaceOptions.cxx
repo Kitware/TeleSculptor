@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -12,9 +12,9 @@
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  *
- *  * Neither name of Kitware, Inc. nor the names of any contributors may be used
- *    to endorse or promote products derived from this software without specific
- *    prior written permission.
+ *  * Neither the name Kitware, Inc. nor the names of any contributors may be
+ *    used to endorse or promote products derived from this software without
+ *    specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -33,10 +33,6 @@
 
 #include "tools/MeshColoration.h"
 
-#include <qdebug.h>
-#include <qtUiState.h>
-#include <qtUiStateItem.h>
-
 #include <vtkActor.h>
 
 #include <vtkLookupTable.h>
@@ -44,6 +40,12 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
+
+#include <qtStlUtil.h>
+#include <qtUiState.h>
+#include <qtUiStateItem.h>
+
+#include <QDebug>
 
 //-----------------------------------------------------------------------------
 class ColorizeSurfaceOptionsPrivate
@@ -56,18 +58,21 @@ public:
 
   vtkActor* volumeActor;
 
+  kwiver::vital::config_block_sptr videoConfig;
+  std::string videoPath;
+  kwiver::vital::camera_map_sptr cameras;
+
   QString krtdFile;
   QString frameFile;
 
-  std::string currentFramePath;
+  int currentFrame;
 };
 
 QTE_IMPLEMENT_D_FUNC(ColorizeSurfaceOptions)
 
 //-----------------------------------------------------------------------------
-ColorizeSurfaceOptions::ColorizeSurfaceOptions(const QString &settingsGroup,
-                                               QWidget* parent,
-                                               Qt::WindowFlags flags)
+ColorizeSurfaceOptions::ColorizeSurfaceOptions(
+  const QString &settingsGroup, QWidget* parent, Qt::WindowFlags flags)
   : QWidget(parent, flags), d_ptr(new ColorizeSurfaceOptionsPrivate)
 {
   QTE_D();
@@ -81,19 +86,20 @@ ColorizeSurfaceOptions::ColorizeSurfaceOptions(const QString &settingsGroup,
   d->uiState.restore();
 
   // Connect signals/slots
-  connect(d->UI.radioButtonCurrentFrame, SIGNAL(clicked()),
-    this, SLOT(currentFrameSelected()));
+  connect(d->UI.radioButtonCurrentFrame, &QAbstractButton::clicked,
+          this, &ColorizeSurfaceOptions::currentFrameSelected);
 
-  connect(d->UI.radioButtonAllFrames, SIGNAL(clicked()),
-    this, SLOT(allFrameSelected()));
-
-
-  connect(d->UI.buttonCompute, SIGNAL(clicked()),
-    this, SLOT(colorize()));
+  connect(d->UI.radioButtonAllFrames, &QAbstractButton::clicked,
+          this, &ColorizeSurfaceOptions::allFrameSelected);
 
 
-  connect(d->UI.comboBoxColorDisplay, SIGNAL(currentIndexChanged(int)),
-    this, SLOT(changeColorDisplay()));
+  connect(d->UI.buttonCompute, &QAbstractButton::clicked,
+          this, &ColorizeSurfaceOptions::colorize);
+
+
+  connect(d->UI.comboBoxColorDisplay,
+          QOverload<int>::of(&QComboBox::currentIndexChanged),
+          this, &ColorizeSurfaceOptions::changeColorDisplay);
 
   d->krtdFile = QString();
   d->frameFile = QString();
@@ -119,13 +125,13 @@ void ColorizeSurfaceOptions::initFrameSampling(int nbFrames)
 }
 
 //-----------------------------------------------------------------------------
-void ColorizeSurfaceOptions::setCurrentFramePath(std::string path)
+void ColorizeSurfaceOptions::setCurrentFrame(int frame)
 {
   QTE_D();
 
-  if (d->currentFramePath != path)
+  if (d->currentFrame != frame)
   {
-    d->currentFramePath = path;
+    d->currentFrame = frame;
 
     if (d->UI.radioButtonCurrentFrame->isChecked()
         && d->UI.radioButtonCurrentFrame->isEnabled())
@@ -144,19 +150,21 @@ void ColorizeSurfaceOptions::setActor(vtkActor* actor)
 }
 
 //-----------------------------------------------------------------------------
-void ColorizeSurfaceOptions::setKrtdFile(QString file)
+void ColorizeSurfaceOptions::setVideoInfo(
+  kwiver::vital::config_block_sptr config, std::string const& path)
 {
   QTE_D();
 
-  d->krtdFile = file;
+  d->videoConfig = config;
+  d->videoPath = path;
 }
 
 //-----------------------------------------------------------------------------
-void ColorizeSurfaceOptions::setFrameFile(QString file)
+void ColorizeSurfaceOptions::setCameras(kwiver::vital::camera_map_sptr cameras)
 {
   QTE_D();
 
-  d->frameFile = file;
+  d->cameras = cameras;
 }
 
 //-----------------------------------------------------------------------------
@@ -173,16 +181,16 @@ void ColorizeSurfaceOptions::changeColorDisplay()
 {
   QTE_D();
 
-  vtkPolyData* volume = vtkPolyData::SafeDownCast(d->volumeActor->GetMapper()
-                                                  ->GetInput());
+  vtkPolyData* volume = vtkPolyData::SafeDownCast(
+    d->volumeActor->GetMapper()->GetInput());
 
-  volume->GetPointData()->SetActiveScalars(d->UI.comboBoxColorDisplay
-                                           ->currentText().toStdString().c_str());
+  volume->GetPointData()->SetActiveScalars(
+    qPrintable(d->UI.comboBoxColorDisplay->currentText()));
 
   vtkMapper* mapper = d->volumeActor->GetMapper();
 
-  if(volume->GetPointData()->GetScalars()
-     && volume->GetPointData()->GetScalars()->GetNumberOfComponents() != 3)
+  if(volume->GetPointData()->GetScalars() &&
+     volume->GetPointData()->GetScalars()->GetNumberOfComponents() != 3)
   {
     vtkNew<vtkLookupTable> table;
     table->SetRange(volume->GetPointData()->GetScalars()->GetRange());
@@ -208,21 +216,21 @@ void ColorizeSurfaceOptions::colorize()
 {
   QTE_D();
 
-  if (!d->frameFile.isEmpty() && !d->krtdFile.isEmpty())
+  if (d->cameras->size() > 0)
   {
     d->UI.comboBoxColorDisplay->clear();
 
     vtkPolyData* volume = vtkPolyData::SafeDownCast(d->volumeActor->GetMapper()
                                                     ->GetInput());
-    MeshColoration* coloration = new MeshColoration(volume, d->frameFile.toStdString(),
-                                                    d->krtdFile.toStdString());
+    MeshColoration* coloration = new MeshColoration(
+      volume, d->videoConfig, d->videoPath, d->cameras);
 
     coloration->SetInput(volume);
     coloration->SetFrameSampling(d->UI.spinBoxFrameSampling->value());
 
     if(d->UI.radioButtonCurrentFrame->isChecked())
     {
-      coloration->ProcessColoration(d->currentFramePath);
+      coloration->ProcessColoration(d->currentFrame);
     }
     else
     {
@@ -235,7 +243,7 @@ void ColorizeSurfaceOptions::colorize()
     for (int i = 0; i < nbArray; ++i)
     {
       name = volume->GetPointData()->GetArrayName(i);
-      d->UI.comboBoxColorDisplay->addItem(QString(name.c_str()));
+      d->UI.comboBoxColorDisplay->addItem(qtString(name));
     }
 
     volume->GetPointData()->SetActiveScalars("MeanColoration");
@@ -272,7 +280,7 @@ void ColorizeSurfaceOptions::currentFrameSelected()
 
   enableAllFramesParameters(false);
 
-  if (!d->currentFramePath.empty())
+  if (d->currentFrame != -1)
   {
     colorize();
   }

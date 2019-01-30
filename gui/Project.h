@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,17 +44,18 @@ class Project : public QObject
 // TODO: Encapsulate data and add accessors
 public:
 
-  Project();
-  Project(QString dir);
+  Project(QObject* parent = nullptr);
+  Project(QString const& dir, QObject* parent = nullptr);
 
   bool read(QString const& path);
 
-  QString getContingentRelativePath(QString filepath);
+  QString getContingentRelativePath(QString const& filepath);
 
   QDir workingDir;
 
   QString filePath;
   QString videoPath;
+  QString maskPath;
 
   QString tracksPath;
   QString landmarksPath;
@@ -62,12 +63,15 @@ public:
   QString cameraPath;
   QString geoOriginFile;
   QString depthPath;
+  QString groundControlPath;
 
-  kwiver::vital::config_block_sptr projectConfig;
+  std::string ROI;
+
+  kwiver::vital::config_block_sptr config =
+    kwiver::vital::config_block::empty_config();
 
 public slots:
   void write();
-
 };
 
 #endif

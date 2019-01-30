@@ -8,7 +8,6 @@ include_directories("${MAPTK_BINARY_DIR}")
 #
 set(maptk_public_headers
   geo_reference_points_io.h
-  local_geo_cs.h
   )
 
 set(maptk_private_headers
@@ -19,7 +18,6 @@ set(maptk_private_headers
 set(maptk_sources
   colorize.cxx
   geo_reference_points_io.cxx
-  local_geo_cs.cxx
   )
 
 kwiver_configure_file( version.h

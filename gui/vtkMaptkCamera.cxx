@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,11 +31,11 @@
 #include "vtkMaptkCamera.h"
 
 #include <vital/io/camera_io.h>
+#include <vital/types/vector.h>
 
 #include <vtkMath.h>
 #include <vtkMatrix4x4.h>
 #include <vtkObjectFactory.h>
-
 
 vtkStandardNewMacro(vtkMaptkCamera);
 
@@ -139,6 +139,19 @@ kwiver::vital::vector_3d vtkMaptkCamera::UnprojectPoint(
 }
 
 //-----------------------------------------------------------------------------
+kwiver::vital::vector_3d vtkMaptkCamera::UnprojectPoint(double pixel[2])
+{
+  auto const depth = this->MaptkCamera->depth(kwiver::vital::vector_3d(0, 0, 0));
+  return this->UnprojectPoint(pixel, depth);
+}
+
+//-----------------------------------------------------------------------------
+double vtkMaptkCamera::Depth(kwiver::vital::vector_3d const& point) const
+{
+  return this->MaptkCamera->depth(point);
+}
+
+//-----------------------------------------------------------------------------
 void vtkMaptkCamera::ScaleK(double factor)
 {
   auto K = this->MaptkCamera->intrinsics()->as_matrix();
@@ -167,6 +180,33 @@ vtkSmartPointer<vtkMaptkCamera> vtkMaptkCamera::ScaledK(double factor)
 
   newCam->ScaleK(factor);
 
+  return newCam;
+}
+
+//-----------------------------------------------------------------------------
+vtkSmartPointer<vtkMaptkCamera> vtkMaptkCamera::CropCamera(int i0, int ni, int j0, int nj)
+{
+  kwiver::vital::simple_camera_intrinsics newIntrinsics(*this->MaptkCamera->intrinsics());
+  kwiver::vital::vector_2d pp = newIntrinsics.principal_point();
+
+  pp[0] -= i0;
+  pp[1] -= j0;
+
+  newIntrinsics.set_principal_point(pp);
+
+
+  kwiver::vital::simple_camera_perspective cropCam(this->MaptkCamera->center(),
+                                                   this->MaptkCamera->rotation(),
+                                                   newIntrinsics);
+
+  auto cam_ptr =
+    std::dynamic_pointer_cast<kwiver::vital::camera_perspective>(cropCam.clone());
+
+  auto newCam = vtkSmartPointer<vtkMaptkCamera>::New();
+  newCam->DeepCopy(this);
+  newCam->SetCamera(cam_ptr);
+  newCam->SetImageDimensions(ni, nj);
+  
   return newCam;
 }
 

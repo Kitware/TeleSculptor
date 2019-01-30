@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016-2017 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -12,9 +12,9 @@
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  *
- *  * Neither name of Kitware, Inc. nor the names of any contributors may be used
- *    to endorse or promote products derived from this software without specific
- *    prior written permission.
+ *  * Neither the name Kitware, Inc. nor the names of any contributors may be
+ *    used to endorse or promote products derived from this software without
+ *    specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -31,9 +31,12 @@
 #ifndef MAPTK_COLORIZESURFACEOPTIONS_H_
 #define MAPTK_COLORIZESURFACEOPTIONS_H_
 
+#include <vital/config/config_block_types.h>
+#include <vital/types/camera_map.h>
+
 #include <qtGlobal.h>
 
-#include <QtGui/QWidget>
+#include <QWidget>
 
 class vtkActor;
 
@@ -46,17 +49,18 @@ class ColorizeSurfaceOptions : public QWidget
 public:
   explicit ColorizeSurfaceOptions(const QString &settingsGroup,
       QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~ColorizeSurfaceOptions();
+  ~ColorizeSurfaceOptions() override;
 
   void addColorDisplay(std::string name);
 
   void initFrameSampling(int nbFrames);
 
-  void setCurrentFramePath(std::string path);
+  void setCurrentFrame(int frame);
 
   void setActor(vtkActor* actor);
-  void setKrtdFile(QString file);
-  void setFrameFile(QString file);
+  void setVideoInfo(kwiver::vital::config_block_sptr config,
+                    std::string const& path);
+  void setCameras(kwiver::vital::camera_map_sptr cameras);
 
   void enableMenu(bool);
 

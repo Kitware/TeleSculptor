@@ -1,5 +1,5 @@
 /*ckwg +29
-* Copyright 2016 by Kitware, Inc.
+* Copyright 2016-2018 by Kitware, Inc.
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,7 @@ class vtkMaptkImageDataGeometryFilter : public vtkPolyDataAlgorithm
 {
 public:
   vtkTypeMacro(vtkMaptkImageDataGeometryFilter,vtkPolyDataAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Construct with initial extent of all the data
@@ -64,23 +64,25 @@ public:
   vtkBooleanMacro(GenerateTriangleOutput, int);
 
   // Description:
-  // Get/Set the unprojected point array name.  Default is "Points".
+  // Get/Set the unprojected point array name.  Default is "PointsWithDesc".
   vtkSetStringMacro(UnprojectedPointArrayName);
   vtkGetStringMacro(UnprojectedPointArrayName);
 
 protected:
   vtkMaptkImageDataGeometryFilter();
-  ~vtkMaptkImageDataGeometryFilter();
+  ~vtkMaptkImageDataGeometryFilter() override;
 
-  virtual int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
-  virtual int FillInputPortInformation(int port, vtkInformation *info);
+  int RequestData(vtkInformation*,
+                  vtkInformationVector**,
+                  vtkInformationVector*) override;
+  int FillInputPortInformation(int port, vtkInformation* info) override;
 
   int    ThresholdCells;
   int    GenerateTriangleOutput;
 
 private:
-  vtkMaptkImageDataGeometryFilter(const vtkMaptkImageDataGeometryFilter&);  // Not implemented.
-  void operator=(const vtkMaptkImageDataGeometryFilter&);  // Not implemented.
+  vtkMaptkImageDataGeometryFilter(vtkMaptkImageDataGeometryFilter const&) = delete;
+  void operator=(vtkMaptkImageDataGeometryFilter const&) = delete;
 
   char* UnprojectedPointArrayName;
 

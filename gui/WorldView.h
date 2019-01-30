@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,16 +31,24 @@
 #ifndef MAPTK_WORLDVIEW_H_
 #define MAPTK_WORLDVIEW_H_
 
+#include <vital/config/config_block_types.h>
+#include <vital/types/camera_map.h>
+
 #include <qtGlobal.h>
 
-#include <QtGui/QWidget>
+#include <QWidget>
+#include <vtkSmartPointer.h>
 
-class vtkMaptkImageDataGeometryFilter;
+class vtkBox;
 class vtkImageData;
+class vtkMaptkImageDataGeometryFilter;
+class vtkObject;
 class vtkPolyData;
+class vtkStructuredGrid;
 
 namespace kwiver { namespace vital { class landmark_map; } }
 
+class GroundControlPointsWidget;
 class vtkMaptkCamera;
 
 class WorldViewPrivate;
@@ -51,9 +59,22 @@ class WorldView : public QWidget
 
 public:
   explicit WorldView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~WorldView();
+  ~WorldView() override;
 
-  void loadVolume(QString path, int nbFrames, QString krtd, QString frame);
+  void initFrameSampling(int nbFrames);
+
+  void loadVolume(QString const& path);
+
+  void setVolume(vtkSmartPointer<vtkStructuredGrid> volume);
+
+  void setVideoConfig(QString const& videoPath,
+                      kwiver::vital::config_block_sptr config);
+  void setCameras(kwiver::vital::camera_map_sptr cameras);
+
+  void enableAntiAliasing(bool enable);
+  void setROI(vtkBox*, bool init = false);
+
+  GroundControlPointsWidget* groundControlPointsWidget() const;
 signals:
   void depthMapThresholdsChanged();
   void depthMapEnabled(bool);
@@ -62,11 +83,13 @@ signals:
   void updateThresholds(double,double,double,double);
   void meshEnabled(bool);
   void coloredMeshEnabled(bool);
+  void pointPlacementEnabled(bool);
 
 public slots:
   void setBackgroundColor(QColor const&);
 
   void addCamera(int id, vtkMaptkCamera* camera);
+  void removeCamera(int id);
   void setLandmarks(kwiver::vital::landmark_map const&);
 
   void setValidDepthInput(bool);
@@ -74,7 +97,7 @@ public slots:
   void setDepthGeometryFilter(vtkMaptkImageDataGeometryFilter*);
   void updateDepthMap();
 
-  void setImageData(vtkImageData* data, QSize const& dimensions);
+  void setImageData(vtkImageData* data, QSize dimensions);
 
   void setImageVisible(bool);
   void setCamerasVisible(bool);
@@ -82,6 +105,8 @@ public slots:
   void setGroundPlaneVisible(bool);
   void setAxesVisible(bool);
   void setDepthMapVisible(bool);
+  void selectROI(bool);
+  void resetROI();
 
   void setPerspective(bool);
 
@@ -107,9 +132,10 @@ public slots:
   void invalidateGeometry();
 
   void setVolumeVisible(bool);
-  void setVolumeCurrentFramePath(QString path);
+  void setVolumeCurrentFrame(int);
 
   void computeContour(double threshold);
+  void render();
 
 protected slots:
   void updateAxes();
@@ -120,6 +146,7 @@ protected slots:
   void increaseDepthMapPointSize();
   void decreaseDepthMapPointSize();
   void updateThresholdRanges();
+  void updateROI(vtkObject*, unsigned long, void*, void*);
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(WorldView)

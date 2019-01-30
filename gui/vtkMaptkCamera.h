@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,7 @@ class vtkMaptkCamera : public vtkCamera
 {
 public:
   vtkTypeMacro(vtkMaptkCamera, vtkCamera);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   static vtkMaptkCamera* New();
 
@@ -58,10 +58,14 @@ public:
   // Reverse project 2D point to 3D using the internal maptk camera and
   // specified depth
   kwiver::vital::vector_3d UnprojectPoint(double point[2], double depth);
+  kwiver::vital::vector_3d UnprojectPoint(double point[2]);
+  double Depth(kwiver::vital::vector_3d const& point) const;
 
   void ScaleK(double factor);
 
   vtkSmartPointer<vtkMaptkCamera> ScaledK(double factor);
+
+  vtkSmartPointer<vtkMaptkCamera> CropCamera(int i0, int ni, int j0, int nj);
 
   // Description:
   // Update self (the VTK camera) based on the maptk camera and
@@ -94,13 +98,13 @@ public:
 
 protected:
   vtkMaptkCamera();
-  ~vtkMaptkCamera();
+  ~vtkMaptkCamera() override;
 
   using vtkCamera::GetFrustumPlanes; // Hide overloaded virtual
 
 private:
-  vtkMaptkCamera(const vtkMaptkCamera&); // Not implemented.
-  void operator=(const vtkMaptkCamera&); // Not implemented.
+  vtkMaptkCamera(vtkMaptkCamera const&) = delete;
+  void operator=(vtkMaptkCamera const&) = delete;
 
   int ImageDimensions[2];
   double AspectRatio;

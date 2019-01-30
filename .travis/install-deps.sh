@@ -14,8 +14,8 @@ mkdir -p $HOME/install
 # check if directory is cached
 if [ ! -f "$INSTALL_DIR/bin/cmake" ]; then
   cd /tmp
-  wget --no-check-certificate https://cmake.org/files/v3.4/cmake-3.4.0-Linux-x86_64.sh
-  bash cmake-3.4.0-Linux-x86_64.sh --skip-license --prefix="$INSTALL_DIR/"
+  wget --no-check-certificate https://cmake.org/files/v3.9/cmake-3.9.6-Linux-x86_64.sh
+  bash cmake-3.9.6-Linux-x86_64.sh --skip-license --prefix="$INSTALL_DIR/"
 else
   echo 'Using cached CMake directory.';
 fi
@@ -118,8 +118,6 @@ kwiver_cmake_opts="\
  -DKWIVER_ENABLE_ARROWS=ON \
  -DKWIVER_ENABLE_SPROKIT=ON \
  -DKWIVER_ENABLE_PROCESSES=ON \
+ -DKWIVER_ENABLE_TOOLS=ON \
  -Dfletch_DIR=$KITWARE_DIR/fletch/share/cmake"
 build_repo kwiver https://github.com/Kitware/kwiver.git
-
-# Build and install QtExtensions
-build_repo qtextensions https://github.com/Kitware/qtextensions.git

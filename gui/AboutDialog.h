@@ -33,7 +33,7 @@
 
 #include <qtGlobal.h>
 
-#include <QtGui/QDialog>
+#include <QDialog>
 
 class AboutDialogPrivate;
 
@@ -43,7 +43,7 @@ class AboutDialog : public QDialog
 
 public:
   explicit AboutDialog(QWidget* parent = 0, Qt::WindowFlags f = 0);
-  virtual ~AboutDialog();
+  ~AboutDialog() override;
 
 protected slots:
   void openLink(QString const&);

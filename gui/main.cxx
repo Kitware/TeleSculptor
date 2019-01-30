@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016-2017 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,10 +30,10 @@
 
 #include "MainWindow.h"
 #include "tools/AbstractTool.h"
+#include "VideoImport.h"
 
 #include <maptk/version.h>
 
-#include <kwiversys/SystemTools.hxx>
 #include <vital/plugin_loader/plugin_manager.h>
 
 #include <qtCliArgs.h>
@@ -41,14 +41,21 @@
 #include <qtUtil.h>
 
 #include <QApplication>
+#include <QDir>
 #include <QMetaType>
-#include <QtCore/QDir>
+#include <QSurfaceFormat>
 
 #include <memory>
+
+#include <QVTKOpenGLWidget.h>
+#include <vtkOpenGLRenderWindow.h>
 
 //-----------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
+  // Set the default surface format for the OpenGL view
+  vtkOpenGLRenderWindow::SetGlobalMaximumNumberOfMultiSamples(0);
+  QSurfaceFormat::setDefaultFormat(QVTKOpenGLWidget::defaultFormat());
   // Set application information
   QApplication::setApplicationName("MAP-Tk TeleSculptor");
   QApplication::setOrganizationName("Kitware");
@@ -56,14 +63,27 @@ int main(int argc, char** argv)
   QApplication::setApplicationVersion(MAPTK_VERSION);
 
   // Register meta types
+  using map_metadata_t = kwiver::vital::metadata_map::map_metadata_t;
   qRegisterMetaType<std::shared_ptr<ToolData>>();
+  qRegisterMetaType<std::shared_ptr<map_metadata_t>>();
 
   // Set up command line options
   qtCliArgs args(argc, argv);
-  qtCliOptions nargs;
+  qtCliOptions options;
 
-  nargs.add("files", "List of files to open", qtCliOption::NamedList);
-  args.addNamedArguments(nargs);
+  options.add("project <file>", "Load specified project file")
+         .add("p", qtCliOption::Short);
+  options.add("imagery <file>", "Load imagery from 'file'")
+         .add("i", qtCliOption::Short | qtCliOption::NamedList);
+  options.add("mask <file>", "Load mask imagery from 'file'")
+         .add("m", qtCliOption::Short | qtCliOption::NamedList);
+  options.add("camera <file>", "Load camera(s) from 'file'")
+         .add("c", qtCliOption::Short | qtCliOption::NamedList);
+  options.add("tracks <file>", "Load feature tracks from 'file'")
+         .add("t", qtCliOption::Short | qtCliOption::NamedList);
+  options.add("landmarks <file>", "Load landmarks from 'file'")
+         .add("l", qtCliOption::Short | qtCliOption::NamedList);
+  args.addOptions(options);
 
   // Parse arguments
   args.parseOrDie();
@@ -73,25 +93,47 @@ int main(int argc, char** argv)
   qtUtil::setApplicationIcon("TeleSculptor");
 
   // Load KWIVER plugins
-  auto const exeDir = QDir(QApplication::applicationDirPath());
-  auto const rel_path = stdString(exeDir.absoluteFilePath(".."));
-  auto & vpm = kwiver::vital::plugin_manager::instance();
-  vpm.add_search_path(rel_path + "/lib/modules");
-  vpm.add_search_path(rel_path + "/lib/processes");
+  auto const exeDir = QDir{QApplication::applicationDirPath()};
+  auto& vpm = kwiver::vital::plugin_manager::instance();
+  vpm.add_search_path(stdString(exeDir.absoluteFilePath("../lib/modules")));
+  vpm.add_search_path(stdString(exeDir.absoluteFilePath("../lib/processes")));
   vpm.load_all_plugins();
 
   // Tell PROJ where to find its data files
-  std::string rel_proj_path = rel_path + "/share/proj";
-  if ( kwiversys::SystemTools::FileExists(rel_proj_path) &&
-       kwiversys::SystemTools::FileIsDirectory(rel_proj_path) )
+  auto projDataDir = exeDir.absoluteFilePath("../share/proj");
+  if (QFileInfo{projDataDir}.isDir())
   {
-    kwiversys::SystemTools::PutEnv("PROJ_LIB="+rel_proj_path);
+    qputenv("PROJ_LIB", projDataDir.toLocal8Bit());
   }
 
   // Create and show main window
   MainWindow window;
   window.show();
-  window.openFiles(args.values("files"));
+
+  if (args.isSet("project"))
+  {
+    window.loadProject(args.value("project"));
+  }
+  for (auto const& path : args.values("imagery"))
+  {
+    window.loadImagery(path);
+  }
+  for (auto const& path : args.values("mask"))
+  {
+    window.loadMaskImagery(path);
+  }
+  for (auto const& path : args.values("camera"))
+  {
+    window.loadCamera(path);
+  }
+  for (auto const& path : args.values("tracks"))
+  {
+    window.loadTracks(path);
+  }
+  for (auto const& path : args.values("landmarks"))
+  {
+    window.loadLandmarks(path);
+  }
 
   // Hand off to event loop
   return app.exec();

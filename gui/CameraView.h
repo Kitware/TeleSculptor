@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2017 by Kitware, Inc.
+ * Copyright 2017-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@
 
 #include <qtGlobal.h>
 
-#include <QtGui/QWidget>
+#include <QWidget>
 
 class vtkImageData;
 
@@ -43,6 +43,7 @@ namespace kwiver { namespace vital { class landmark_map; } }
 namespace kwiver { namespace vital { class track; } }
 
 class vtkMaptkCamera;
+class GroundControlPointsWidget;
 
 class CameraViewPrivate;
 
@@ -52,15 +53,17 @@ class CameraView : public QWidget
 
 public:
   explicit CameraView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~CameraView();
+  ~CameraView() override;
 
   void addFeatureTrack(kwiver::vital::track const&);
+  GroundControlPointsWidget* groundControlPointsWidget() const;
 
+  void enableAntiAliasing(bool enable);
 public slots:
   void setBackgroundColor(QColor const&);
 
   void setImagePath(QString const&);
-  void setImageData(vtkImageData* data, QSize const& dimensions);
+  void setImageData(vtkImageData* data, QSize dimensions);
 
   void setLandmarksData(kwiver::vital::landmark_map const&);
 
@@ -74,9 +77,11 @@ public slots:
   void clearLandmarks();
   void clearResiduals();
   void clearFeatureTracks();
+  void clearGroundControlPoints();
 
   void resetView();
   void resetViewToFullExtents();
+  void render();
 
 protected slots:
   void setImageVisible(bool);

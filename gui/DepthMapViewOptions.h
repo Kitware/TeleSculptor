@@ -33,9 +33,9 @@
 
 #include <qtGlobal.h>
 
-#include <QtGui/QButtonGroup>
-#include <QtGui/QVBoxLayout>
-#include <QtGui/QWidget>
+#include <QButtonGroup>
+#include <QVBoxLayout>
+#include <QWidget>
 
 class vtkActor;
 class vtkPointData;
@@ -49,7 +49,7 @@ class DepthMapViewOptions : public QWidget
 public:
   explicit DepthMapViewOptions(const QString& settingsGroup,
                                QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~DepthMapViewOptions();
+  ~DepthMapViewOptions() override;
 
   void setActor(vtkActor*);
 

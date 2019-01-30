@@ -1,0 +1,12 @@
+#
+# Script to source to setup the MAP-Tk environment
+#
+
+
+export @LIBRARY_PATH_VAR@=@MAPTK_BINARY_DIR@/lib:$@LIBRARY_PATH_VAR@
+export KWIVER_CONFIG_PATH=@KWIVER_CONFIG_PATH@:@MAPTK_BINARY_DIR@/share/maptk/@MAPTK_VERSION@/config
+
+cd @KWIVER_DIR@
+source setup_KWIVER.sh
+cd @MAPTK_BINARY_DIR@
+

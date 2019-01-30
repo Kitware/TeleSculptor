@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, SAS; Copyright 2017 by Kitware, Inc.
+ * Copyright 2016 by Kitware, SAS; Copyright 2017-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,9 +41,6 @@
 #include "vtkPolyData.h"
 #include "vtkSmartPointer.h"
 
-// Project includes
-#include "ReconstructionData.h"
-
 // Other includes
 #include <algorithm>
 #include <numeric>
@@ -53,94 +50,11 @@ typedef kwiversys::SystemTools  ST;
 
 namespace
 {
-
-//----------------------------------------------------------------------------
-/// Read global path and extract all contained path
-/**
- * This function is deprecated.  MeshColoration should be receiving image and
- * camera data directly from the application, not reloading it from disk.
- */
-static std::vector<std::string> ExtractAllFilePath(const char* globalPath)
-{
-  std::vector<std::string> pathList;
-
-  // Open file which contains the list of all file
-  std::ifstream container(globalPath);
-  if (!container.is_open())
-  {
-    std::cerr << "Unable to open : " << globalPath << std::endl;
-    return pathList;
-  }
-
-  // Extract path of globalPath from globalPath
-  //std::string pwd_str = globalPath;
-  std::string directoryPath = ST::GetFilenamePath(std::string(globalPath));
-  // Get current working directory
-  if (directoryPath == "")
-  {
-    directoryPath = ST::GetCurrentWorkingDirectory();
-  }
-
-  std::string path;
-  while (!container.eof())
-  {
-    std::getline(container, path);
-    // only get the file name, not the whole path
-    std::vector <kwiversys::String> elems = ST::SplitString(path, ' ');
-
-    // check if there are an empty line
-    if (elems.size() == 0)
-    {
-      continue;
-    }
-
-    // Create the real data path to access depth map file
-    pathList.push_back(directoryPath + "/" + elems[elems.size() - 1]);
-  }
-
-  return pathList;
+static char const* const BLOCK_VR = "video_reader";
 }
 
-
-//----------------------------------------------------------------------------
-/// Read global path and extract all contained path
-/**
- * This function is deprecated.  MeshColoration should be receiving image and
- * camera data directly from the application, not reloading it from disk.
- */
-static std::vector<std::string> ExtractAllKRTDFilePath(const char* globalPath, const char* framelist)
+namespace
 {
-  std::vector<std::string> pathList;
-
-  // Open file which contains the list of all file
-  std::ifstream container(framelist);
-  if (!container.is_open())
-  {
-    std::cerr << "Unable to open : " << framelist << std::endl;
-    return pathList;
-  }
-
-  std::string path;
-  while (!container.eof())
-  {
-    std::getline(container, path);
-    // only get the file name, not the whole path
-    std::vector <kwiversys::String> elems = ST::SplitString(path, ' ');
-    // check if there are an empty line
-    if( elems.empty() )
-    {
-      continue;
-    }
-    std::vector <kwiversys::String> filename = ST::SplitString(elems[elems.size() - 1], '/');
-
-    // Create the real data path to access depth map file
-    std::vector <kwiversys::String> elemsWithoutExtension = ST::SplitString(filename[filename.size() - 1], '.');
-    pathList.push_back(std::string(globalPath) + "/" + elemsWithoutExtension[0] + ".krtd");
-  }
-
-  return pathList;
-}
-
 
 //----------------------------------------------------------------------------
 /// Compute median of a vector
@@ -168,20 +82,19 @@ MeshColoration::MeshColoration()
   this->Sampling = 1;
 }
 
-MeshColoration::MeshColoration(vtkPolyData* mesh, std::string frameList, std::string krtdFolder)
-  :MeshColoration()
+MeshColoration::MeshColoration(vtkPolyData* mesh,
+                               kwiver::vital::config_block_sptr& config,
+                               std::string const& videoPath,
+                               kwiver::vital::camera_map_sptr& cameras)
+  : MeshColoration()
 {
   //this->OutputMesh = vtkPolyData::New();
   //this->OutputMesh->DeepCopy(mesh);
 
-  this->frameList = ExtractAllFilePath(frameList.c_str());
-  this->krtdFolder = ExtractAllKRTDFilePath(krtdFolder.c_str(), frameList.c_str());
-  if (this->krtdFolder.size() < frameList.size())
-  {
-    std::cerr << "Error, not enough krtd file for each vti file" << std::endl;
-    return;
-  }
-
+  this->videoPath = videoPath;
+  kwiver::vital::algo::video_input::set_nested_algo_configuration(
+    BLOCK_VR, config, this->videoReader);
+  this->cameras = cameras;
 }
 
 MeshColoration::~MeshColoration()
@@ -189,10 +102,6 @@ MeshColoration::~MeshColoration()
   if (this->OutputMesh != 0)
   {
     this->OutputMesh->Delete();
-  }
-  for (size_t i = 0; i < this->DataList.size(); i++)
-  {
-    delete this->DataList[i];
   }
   this->DataList.clear();
 }
@@ -220,13 +129,13 @@ vtkPolyData* MeshColoration::GetOutput()
   return this->OutputMesh;
 }
 
-bool MeshColoration::ProcessColoration(std::string currentVtiPath)
+bool MeshColoration::ProcessColoration(int frame)
 {
-  initializeDataList(currentVtiPath);
+  initializeDataList(frame);
 
-  int nbDepthMap = (int)this->DataList.size();
+  int numFrames = static_cast<int>(this->DataList.size());
 
-  if (this->OutputMesh == 0 || nbDepthMap == 0 /*|| this->Sampling >= nbDepthMap*/)
+  if (this->OutputMesh == 0 || numFrames == 0 )
   {
     std::cerr << "Error when input has been set or during reading vti/krtd file path" << std::endl;
     return false;
@@ -239,7 +148,6 @@ bool MeshColoration::ProcessColoration(std::string currentVtiPath)
     return false;
   }
   vtkIdType nbMeshPoint = meshPointList->GetNumberOfPoints();
-  int* depthMapDimensions = this->DataList[0]->GetDepthMap()->GetDimensions();
 
   // Contains rgb values
   vtkSmartPointer<vtkUnsignedCharArray> meanValues = vtkUnsignedCharArray::New();
@@ -271,47 +179,48 @@ bool MeshColoration::ProcessColoration(std::string currentVtiPath)
 
   for (vtkIdType id = 0; id < nbMeshPoint; id++)
   {
-    list0.reserve(nbDepthMap);
-    list1.reserve(nbDepthMap);
-    list2.reserve(nbDepthMap);
+    list0.reserve(numFrames);
+    list1.reserve(numFrames);
+    list2.reserve(numFrames);
 
     // Get mesh position from id
-    double position[3];
-    meshPointList->GetPoint(id, position);
-    double pointNormald[3];
-    OutputMesh->GetPointData()->GetArray("Normals")->GetTuple(id, pointNormald);
-    vtkVector3d pointNormal(pointNormald);
+    kwiver::vital::vector_3d position;
+    meshPointList->GetPoint(id, position.data());
+    kwiver::vital::vector_3d pointNormal;
+    OutputMesh->GetPointData()->GetArray("Normals")->GetTuple(id, pointNormal.data());
 
-
-
-    for (int idData = 0; idData < nbDepthMap; idData++)
+    for (int idData = 0; idData < numFrames; idData++)
     {
-      ReconstructionData* data = this->DataList[idData];
-      vtkVector3d cameraCenter = data->GetCameraCenter();
+      kwiver::vital::camera_perspective_sptr camera = this->DataList[idData].second;
       // Check if the 3D point is in front of the camera
-      vtkVector3d cameraPointVec = vtkVector3d( position[0] - cameraCenter(0),
-                                                position[1] - cameraCenter(1),
-                                                position[2] - cameraCenter(2) );
-      if (cameraPointVec.Dot(pointNormal)>0.0)
+      if (camera->depth(position) <= 0.0)
       {
         continue;
       }
+
+      // test that we are viewing the front side of the mesh
+      kwiver::vital::vector_3d cameraPointVec = position - camera->center();
+      if (cameraPointVec.dot(pointNormal)>0.0)
+      {
+        continue;
+      }
+
       // project 3D point to pixel coordinates
-      int pixelPosition[2];
-      data->TransformWorldToDepthMapPosition(position, pixelPosition);
-      // Test if pixel is inside depth map
-      if (pixelPosition[0] < 0 || pixelPosition[0] >= depthMapDimensions[0] ||
-          pixelPosition[1] < 0 || pixelPosition[1] >= depthMapDimensions[1])
+      auto pixelPosition = camera->project(position);
+      kwiver::vital::image_of<uint8_t> const& colorImage = this->DataList[idData].first;
+      try
+      {
+        unsigned i = static_cast<unsigned>(pixelPosition[0]);
+        unsigned j = static_cast<unsigned>(pixelPosition[1]);
+        kwiver::vital::rgb_color rgb = colorImage.at(i, j);
+        list0.push_back(rgb.r);
+        list1.push_back(rgb.g);
+        list2.push_back(rgb.b);
+      }
+      catch (std::out_of_range)
       {
         continue;
       }
-
-      double color[3];
-      data->GetColorValue(pixelPosition, color);
-
-      list0.push_back(color[0]);
-      list1.push_back(color[1]);
-      list2.push_back(color[2]);
     }
 
     // If we get elements
@@ -342,36 +251,59 @@ bool MeshColoration::ProcessColoration(std::string currentVtiPath)
   return true;
 }
 
-void MeshColoration::initializeDataList(std::string currentVtiPath)
+void MeshColoration::initializeDataList(int frameId)
 {
-  int nbDepthMap = (int)frameList.size();
+  this->videoReader->open(this->videoPath);
+  kwiver::vital::timestamp ts;
+  auto cam_map = this->cameras->cameras();
 
-  //Take a subset of depthmap
-  if (currentVtiPath == "")
+  //Take a subset of images
+  if (frameId < 0)
   {
-    for (int id = 0; id < nbDepthMap; id++)
+    unsigned int counter = 0;
+    for (auto const& cam_itr : cam_map)
     {
-      if (id%Sampling == 0)
+      if ((counter++) % Sampling != 0)
       {
-        ReconstructionData* data = new ReconstructionData(frameList[id], krtdFolder[id]);
-        this->DataList.push_back(data);
+        continue;
+      }
+      auto cam_ptr =
+        std::dynamic_pointer_cast<kwiver::vital::camera_perspective>(cam_itr.second);
+      if (cam_ptr && this->videoReader->seek_frame(ts, cam_itr.first))
+      {
+        try
+        {
+          kwiver::vital::image_of<uint8_t>
+            image(this->videoReader->frame_image()->get_image());
+          this->DataList.push_back(ColorationData(image, cam_ptr));
+        }
+        catch (kwiver::vital::image_type_mismatch_exception)
+        {
+        }
       }
     }
   }
-  //Take the current depthmap
+  //Take the current image
   else
   {
-    std::string currentDepthmapName = currentVtiPath.substr(currentVtiPath.find_last_of("/"));
-    for (int id = 0; id < nbDepthMap; id++)
+    auto cam_itr = cam_map.find(frameId);
+    if (cam_itr != cam_map.end())
     {
-      std::string depthmapName = frameList[id].substr(frameList[id].find_last_of("/"));
-      if (currentDepthmapName == depthmapName)
+      auto cam_ptr =
+        std::dynamic_pointer_cast<kwiver::vital::camera_perspective>(cam_itr->second);
+      if (cam_ptr && this->videoReader->seek_frame(ts, frameId))
       {
-        ReconstructionData* data = new ReconstructionData(frameList[id], krtdFolder[id]);
-        this->DataList.push_back(data);
-        break;
+        try
+        {
+          kwiver::vital::image_of<uint8_t>
+            image(this->videoReader->frame_image()->get_image());
+          this->DataList.push_back(ColorationData(image, cam_ptr));
+        }
+        catch (kwiver::vital::image_type_mismatch_exception)
+        {
+        }
       }
     }
   }
-
+  this->videoReader->close();
 }

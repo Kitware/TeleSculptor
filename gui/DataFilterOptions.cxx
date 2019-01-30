@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -69,16 +69,17 @@ DataFilterOptions::DataFilterOptions(
 
   d->uiState.restore();
 
-  connect(d->UI.minimum, SIGNAL(valueChanged(double)),
-          this, SLOT(updateMinimum()));
-  connect(d->UI.maximum, SIGNAL(valueChanged(double)),
-          this, SLOT(updateMaximum()));
-  connect(d->UI.useMinimum, SIGNAL(toggled(bool)),
-          this, SIGNAL(modified()));
-  connect(d->UI.useMaximum, SIGNAL(toggled(bool)),
-          this, SIGNAL(modified()));
+  connect(d->UI.minimum, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+          this, &DataFilterOptions::updateMinimum);
+  connect(d->UI.maximum, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+          this, &DataFilterOptions::updateMaximum);
+  connect(d->UI.useMinimum, &QAbstractButton::toggled,
+          this, &DataFilterOptions::modified);
+  connect(d->UI.useMaximum, &QAbstractButton::toggled,
+          this, &DataFilterOptions::modified);
 
-  connect(d->UI.reset, SIGNAL(clicked()), this, SLOT(resetRange()));
+  connect(d->UI.reset, &QAbstractButton::clicked,
+          this, &DataFilterOptions::resetRange);
 }
 
 //-----------------------------------------------------------------------------

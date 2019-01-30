@@ -34,9 +34,12 @@
 #include <qtStlUtil.h>
 
 #include <vital/config/config_block_io.h>
+#include <vital/types/image.h>
 #include <vital/types/metadata_map.h>
 #include <vital/vital_types.h>
 
+#include <vtkImageData.h>
+#include <vtkSmartPointer.h>
 
 // Generates frame name basename in a standard format
 // This version uses a map of all metadata
@@ -62,5 +65,11 @@ kwiver::vital::config_block_sptr readConfig(std::string const& name);
 
 // find the full path to the first matching file on the config search path
 kwiver::vital::path_t findConfig(std::string const& name);
+
+
+// converts a vital image to a vtkImage
+// TODO:  move this method to a new implementation of image_container in a new
+//        vtk arrow
+vtkSmartPointer<vtkImageData> vitalToVtkImage(kwiver::vital::image const& img);
 
 #endif

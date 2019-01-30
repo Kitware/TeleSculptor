@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016-2017 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -12,9 +12,9 @@
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  *
- *  * Neither name of Kitware, Inc. nor the names of any contributors may be used
- *    to endorse or promote products derived from this software without specific
- *    prior written permission.
+ *  * Neither the name Kitware, Inc. nor the names of any contributors may be
+ *    used to endorse or promote products derived from this software without
+ *    specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -31,9 +31,12 @@
 #ifndef MAPTK_VOLUMEOPTIONS_H_
 #define MAPTK_VOLUMEOPTIONS_H_
 
+#include <vital/config/config_block_types.h>
+#include <vital/types/camera_map.h>
+
 #include <qtGlobal.h>
 
-#include <QtGui/QWidget>
+#include <QWidget>
 
 class vtkPolyData;
 
@@ -46,18 +49,22 @@ class VolumeOptions : public QWidget
   Q_OBJECT
 
 public:
-  explicit VolumeOptions(const QString &settingsGroup,
+  explicit VolumeOptions(QString const& settingsGroup,
       QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~VolumeOptions();
+  ~VolumeOptions() override;
 
   void setActor(vtkActor* actor);
 
   void initFrameSampling(int nbFrames);
-  void setKrtdFrameFile(QString krtd, QString frame);
+
+  void setCameras(kwiver::vital::camera_map_sptr cameras);
+
+  void setVideoConfig(std::string const& videoPath,
+                      kwiver::vital::config_block_sptr config);
 
   void colorize();
 
-  void setCurrentFramePath(std::string path);
+  void setCurrentFrame(int);
 
   bool isColorOptionsEnabled();
 
@@ -68,7 +75,7 @@ signals:
 
 public slots:
   void showColorizeSurfaceMenu(bool state);
-  void updateColorizeSurfaceMenu(QString text);
+  void updateColorizeSurfaceMenu(QString const& text);
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(VolumeOptions)

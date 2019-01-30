@@ -41,25 +41,29 @@ class ComputeDepthTool : public AbstractTool
 
 public:
   explicit ComputeDepthTool(QObject* parent = 0);
-  virtual ~ComputeDepthTool();
+  ~ComputeDepthTool() override;
 
-  virtual Outputs outputs() const QTE_OVERRIDE;
+  Outputs outputs() const override;
 
   /// Get if the tool can be canceled.
-  virtual bool isCancelable() const QTE_OVERRIDE { return true; }
+  bool isCancelable() const override { return true; }
 
-  virtual bool execute(QWidget* window = 0) QTE_OVERRIDE;
+  bool execute(QWidget* window = 0) override;
 
   bool callback_handler(kwiver::vital::image_container_sptr depth,
                         unsigned int iterations);
 
 protected:
-  virtual void run() QTE_OVERRIDE;
+  void run() override;
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(ComputeDepthTool)
   QTE_DECLARE_PRIVATE(ComputeDepthTool)
   QTE_DISABLE_COPY(ComputeDepthTool)
 };
+
+vtkSmartPointer<vtkImageData>
+depth_to_vtk(kwiver::vital::image_container_sptr depth_img, kwiver::vital::image_container_sptr color_img,
+             int i0, int ni, int j0, int nj);
 
 #endif

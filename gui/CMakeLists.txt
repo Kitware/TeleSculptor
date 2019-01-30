@@ -1,10 +1,20 @@
-find_package(Qt4 4.8 REQUIRED)
-include(${QT_USE_FILE})
+set(CMAKE_AUTOMOC ON)
+set(Qt5_MODULES Core Designer UiPlugin Widgets Xml)
+find_package(Qt5 5.7 COMPONENTS ${Qt5_MODULES} REQUIRED)
+set(QT_LIBRARIES )
+foreach(module ${Qt5_MODULES})
+  list(APPEND QT_LIBRARIES Qt5::${module})
+endforeach()
 
 find_package(qtExtensions REQUIRED)
 include(${qtExtensions_USE_FILE})
+if(QTE_QT_VERSION VERSION_EQUAL "4")
+  message(FATAL_ERROR "${PROJECT_NAME} does not support Qt4. "
+    "But QTE_QT_VERSION is ${QTE_QT_VERSION}. "
+    "Please provide path to qtExtensions built with Qt version 5 or higher.")
+endif()
 
-find_package(VTK 8.0 REQUIRED
+find_package(VTK REQUIRED
   COMPONENTS
   vtkFiltersSources
   vtkGUISupportQt
@@ -13,10 +23,26 @@ find_package(VTK 8.0 REQUIRED
   vtkIOXML
   vtkImagingCore
   vtkInteractionStyle
+  vtkInteractionWidgets
   vtkRenderingAnnotation
   vtkRenderingFreeType
   )
+if(VTK_VERSION VERSION_LESS 8.1)
+  message(FATAL_ERROR "${PROJECT_NAME} supports VTK >= v8.1 "
+    "(Found ${VTK_VERSION})")
+endif()
 include(${VTK_USE_FILE})
+if(VTK_QT_VERSION VERSION_EQUAL "4")
+  message(FATAL_ERROR "${PROJECT_NAME} does not support Qt4. "
+    "But VTK_QT_VERSION is ${VTK_QT_VERSION}. "
+    "Please provide path to VTK built with Qt version 5 or higher.")
+endif()
+if(VTK_RENDERING_BACKEND STREQUAL "OpenGL")
+  message(FATAL_ERROR "${PROJECT_NAME} does not support VTK's OpenGL backend.\n"
+    "The old OpenGL backend is known to have rendering issues and "
+    "has been deprecated in newer versions of VTK.\n"
+    "Please provide path to VTK built with VTK_RENDERING_BACKEND = OpenGL2.")
+endif()
 
 #
 # This option should be set if you want to do a bundle fixup for
@@ -24,7 +50,9 @@ include(${VTK_USE_FILE})
 # unexpected behaviour, all libraries are installed in the .../bin
 # directory. This is okay for Windows and Mac, but unexpected for Linux.
 #
-option( MAPTK_FIXUP_BUNDLE_ON_PACKAGE "Perform bundle fixup when building a package. Only set when packaging." OFF )
+option( MAPTK_FIXUP_BUNDLE_ON_PACKAGE
+  "Perform bundle fixup when building a package. Only set when packaging."
+  OFF )
 
 include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
@@ -62,41 +90,6 @@ set(gui_resources
   "${CMAKE_CURRENT_BINARY_DIR}/appdata.qrc"
 )
 
-set(gui_moc_headers
-  AboutDialog.h
-  ActorColorButton.h
-  CameraOptions.h
-  CameraView.h
-  ColorizeSurfaceOptions.h
-  DataColorOptions.h
-  DataFilterOptions.h
-  DepthMapFilterOptions.h
-  DepthMapOptions.h
-  DepthMapView.h
-  DepthMapViewOptions.h
-  FeatureOptions.h
-  GradientSelector.h
-  ImageOptions.h
-  MainWindow.h
-  MatchMatrixWindow.h
-  PointOptions.h
-  Project.h
-  VolumeOptions.h
-  WorldView.h
-  tools/AbstractTool.h
-  tools/BundleAdjustTool.h
-  tools/CanonicalTransformTool.h
-  tools/ComputeDepthTool.h
-  tools/InitCamerasLandmarksTool.h
-  tools/NeckerReversalTool.h
-  tools/SaveFrameTool.h
-  tools/SaveKeyFrameTool.h
-  tools/TrackFilterTool.h
-  tools/TrackFeaturesSprokitTool.h
-  tools/TrackFeaturesTool.h
-  tools/TriangulateTool.h
-)
-
 set(gui_sources
   AboutDialog.cxx
   ActorColorButton.cxx
@@ -111,13 +104,18 @@ set(gui_sources
   DepthMapViewOptions.cxx
   FeatureOptions.cxx
   GradientSelector.cxx
+  GroundControlPointsHelper.cxx
+  GroundControlPointsWidget.cxx
   GuiCommon.cxx
   ImageOptions.cxx
   MainWindow.cxx
   MatchMatrixAlgorithms.cxx
   MatchMatrixWindow.cxx
+  MetadataView.cxx
   PointOptions.cxx
   Project.cxx
+  Utils.cxx
+  VideoImport.cxx
   VolumeOptions.cxx
   WorldView.cxx
   main.cxx
@@ -126,23 +124,33 @@ set(gui_sources
   vtkMaptkFeatureTrackRepresentation.cxx
   vtkMaptkImageDataGeometryFilter.cxx
   vtkMaptkImageUnprojectDepth.cxx
+  vtkMaptkInteractorStyle.cxx
   vtkMaptkScalarDataFilter.cxx
   vtkMaptkScalarsToGradient.cxx
+  vtkMaptkSeedWidget.cxx
   tools/AbstractTool.cxx
   tools/BundleAdjustTool.cxx
   tools/CanonicalTransformTool.cxx
+  tools/ComputeAllDepthTool.cxx
   tools/ComputeDepthTool.cxx
+  tools/FuseDepthTool.cxx
   tools/InitCamerasLandmarksTool.cxx
-  tools/NeckerReversalTool.cxx
   tools/MeshColoration.cxx
-  tools/ReconstructionData.cxx
+  tools/NeckerReversalTool.cxx
   tools/SaveFrameTool.cxx
   tools/SaveKeyFrameTool.cxx
-  tools/TrackFilterTool.cxx
   tools/TrackFeaturesSprokitTool.cxx
   tools/TrackFeaturesTool.cxx
+  tools/TrackFilterTool.cxx
   tools/TriangulateTool.cxx
 )
+
+if (APPLE)
+  find_library(AppKit AppKit)
+  list(APPEND gui_sources
+    Utils.mm
+  )
+endif()
 
 maptk_use_appdata(
   ACKNOWLEDGMENTS
@@ -155,9 +163,8 @@ configure_file(
   "${CMAKE_CURRENT_BINARY_DIR}/appdata.qrc"
 )
 
-qt4_wrap_ui(gui_ui_sources ${gui_ui})
-qt4_wrap_cpp(gui_moc_sources ${gui_moc_headers})
-qt4_add_resources(gui_res_sources ${gui_resources})
+qt5_wrap_ui(gui_ui_sources ${gui_ui})
+qt5_add_resources(gui_res_sources ${gui_resources})
 
 qte_amc_wrap_ui(gui_amc_sources ActionManagerDialog ${gui_am_ui})
 
@@ -176,7 +183,6 @@ kwiver_add_executable(TeleSculptor
   WIN32 MACOSX_BUNDLE
   ${gui_sources}
   ${gui_ui_sources}
-  ${gui_moc_sources}
   ${gui_res_sources}
   ${gui_amc_sources}
   ${gui_icon_source}
@@ -190,8 +196,8 @@ target_link_libraries(TeleSculptor
   kwiver::sprokit_pipeline
   kwiver::vital_vpm
   qtExtensions
+  ${AppKit}
   ${VTK_LIBRARIES}
-  ${QT_QTMAIN_LIBRARY}
   ${QT_LIBRARIES}
 )
 
@@ -236,6 +242,7 @@ endif()
 #    This could be conditional on APPLE || WIN32 also
 #
 if (MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
+  include(${MAPTK_SOURCE_DIR}/CMake/maptk-install-qt-utils.cmake)
 
   if (WIN32)
     # Add expected location of VTK dlls
@@ -280,6 +287,10 @@ if (MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
 
 
   # Location for QT libraries
+  if(WIN32 AND TARGET Qt5::Core)
+    get_property(_Qt5_Core_LOCATION TARGET Qt5::Core PROPERTY LOCATION)
+    get_filename_component(QT_BINARY_DIR "${_Qt5_Core_LOCATION}" PATH)
+  endif()
   list(APPEND FIXUP_DIRS "${QT_BIN_DIR}")
   list(APPEND FIXUP_DIRS "${QT_LIBRARY_DIR}")
   list(APPEND FIXUP_DIRS "${QT_BINARY_DIR}")
@@ -318,7 +329,9 @@ if (MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
 
   list(APPEND FIXUP_DIRS "${VTK_CMAKE_DIR}../..")
 
-  install(DIRECTORY "${QT_PLUGINS_DIR}/imageformats" DESTINATION ${plugin_dest_dir}/plugins COMPONENT Runtime)
+  # install(DIRECTORY "${QT_PLUGINS_DIR}/imageformats" DESTINATION ${plugin_dest_dir}/plugins COMPONENT Runtime)
+  set(QT5_MODULES "Gui;Widgets")
+  install_qt_plugins(QT5_MODULES "${plugin_dest_dir}/plugins" QT_PLUGINS)
   # install a qt.conf file
   install(CODE "
     file(WRITE \"${dest_prefix}/${qtconf_dest_dir}/qt.conf\" \"\")
@@ -332,10 +345,15 @@ set(bundle_path \"${bundle_path}\")
           ")
 
   install(CODE "
+        set(QT_PLUGINS_Release \"${QT_PLUGINS_Release}\")
+        set(QT_PLUGINS_Debug \"${QT_PLUGINS_Debug}\")
+        string(CONCAT QTPLUGINS \"QT_PLUGINS_\" \"\${CMAKE_INSTALL_CONFIG_NAME}\")
         file(GLOB_RECURSE QTPLUGINS
             \"${dest_prefix}/${plugin_dest_dir}/plugins/*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
         file(GLOB_RECURSE KWIVER_PLUGINS
             \"${dest_prefix}/lib/modules/*${CMAKE_SHARED_MODULE_SUFFIX}\")
+        file(GLOB_RECURSE SPROKIT_PLUGINS
+            \"${dest_prefix}/lib/sprokit/*${CMAKE_SHARED_MODULE_SUFFIX}\")
         file(GLOB_RECURSE LOGGER_PLUGINS
             \"${dest_prefix}/${plugin_dest_dir}/vital_*_logger${CMAKE_SHARED_LIBRARY_SUFFIX}\")
         set(BU_CHMOD_BUNDLE_ITEMS ON)
@@ -344,7 +362,7 @@ set(bundle_path \"${bundle_path}\")
         include( ${MAPTK_BINARY_DIR}/CMakeFiles/plugin-libs-\${CMAKE_INSTALL_CONFIG_NAME}.cmake )
         list(APPEND FIXUP_DIRS ${FIXUP_DIRS} \${bundle_path})
         list(REMOVE_DUPLICATES FIXUP_DIRS)
-        set(libs \${KWIVER_PLUGINS} \${LOGGER_PLUGINS} \${QTPLUGINS})
+        set(libs \${KWIVER_PLUGINS} \${SPROKIT_PLUGINS} \${LOGGER_PLUGINS} \${QTPLUGINS})
         include(BundleUtilities)
         fixup_bundle(\"${gui-exe}\" \"\${libs}\" \"\${FIXUP_DIRS}\")
         ")

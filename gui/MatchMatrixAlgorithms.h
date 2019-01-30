@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,7 +45,11 @@ public:
   typedef Eigen::SparseMatrix<uint> Matrix;
   typedef Matrix::InnerIterator MatrixIterator;
 
-  virtual ~AbstractValueAlgorithm() VITAL_DEFAULT_DTOR;
+  AbstractValueAlgorithm() = default;
+  virtual ~AbstractValueAlgorithm() = default;
+
+  AbstractValueAlgorithm(AbstractValueAlgorithm const&) = delete;
+  AbstractValueAlgorithm& operator=(AbstractValueAlgorithm const&) = delete;
 
   virtual double operator()(Matrix const&, MatrixIterator const&) const = 0;
   virtual double max(double maxRawValue) const = 0;
@@ -54,36 +58,32 @@ public:
 //-----------------------------------------------------------------------------
 class AbsoluteValueAlgorithm : public AbstractValueAlgorithm
 {
-  virtual double operator()(Matrix const&,
-                            MatrixIterator const&) const QTE_OVERRIDE;
-  virtual double max(double maxRawValue) const QTE_OVERRIDE;
+  double operator()(Matrix const&, MatrixIterator const&) const override;
+  double max(double maxRawValue) const override;
 };
 
 //-----------------------------------------------------------------------------
 class AbstractRelativeValueAlgorithm : public AbstractValueAlgorithm
 {
-  virtual double max(double maxRawValue) const QTE_OVERRIDE;
+  double max(double maxRawValue) const override;
 };
 
 //-----------------------------------------------------------------------------
 class RelativeXValueAlgorithm : public AbstractRelativeValueAlgorithm
 {
-  virtual double operator()(Matrix const&,
-                            MatrixIterator const&) const QTE_OVERRIDE;
+  double operator()(Matrix const&, MatrixIterator const&) const override;
 };
 
 //-----------------------------------------------------------------------------
 class RelativeYValueAlgorithm : public AbstractRelativeValueAlgorithm
 {
-  virtual double operator()(Matrix const&,
-                            MatrixIterator const&) const QTE_OVERRIDE;
+  double operator()(Matrix const&, MatrixIterator const&) const override;
 };
 
 //-----------------------------------------------------------------------------
 class RelativeXYValueAlgorithm : public AbstractRelativeValueAlgorithm
 {
-  virtual double operator()(Matrix const&,
-                            MatrixIterator const&) const QTE_OVERRIDE;
+  double operator()(Matrix const&, MatrixIterator const&) const override;
 };
 
 //END value algorithms
@@ -96,7 +96,11 @@ class RelativeXYValueAlgorithm : public AbstractRelativeValueAlgorithm
 class AbstractScaleAlgorithm
 {
 public:
-  virtual ~AbstractScaleAlgorithm() VITAL_DEFAULT_DTOR
+  AbstractScaleAlgorithm() = default;
+  virtual ~AbstractScaleAlgorithm() = default;
+
+  AbstractScaleAlgorithm(AbstractScaleAlgorithm const&) = delete;
+  AbstractScaleAlgorithm& operator=(AbstractScaleAlgorithm const&) = delete;
 
   virtual double operator()(double rawValue) const = 0;
 };
@@ -107,7 +111,7 @@ class LinearScaleAlgorithm : public AbstractScaleAlgorithm
 public:
   LinearScaleAlgorithm(double maxRawValue);
 
-  virtual double operator()(double rawValue) const QTE_OVERRIDE;
+  double operator()(double rawValue) const override;
 
 protected:
   double const scale;
@@ -119,7 +123,7 @@ class LogarithmicScaleAlgorithm : public AbstractScaleAlgorithm
 public:
   LogarithmicScaleAlgorithm(double maxRawValue, double rangeScale = 1.0);
 
-  virtual double operator()(double rawValue) const QTE_OVERRIDE;
+  double operator()(double rawValue) const override;
 
 protected:
   double const preScale;
@@ -132,7 +136,7 @@ class ExponentialScaleAlgorithm : public AbstractScaleAlgorithm
 public:
   ExponentialScaleAlgorithm(double maxRawValue, double exponent);
 
-  virtual double operator()(double rawValue) const QTE_OVERRIDE;
+  double operator()(double rawValue) const override;
 
 protected:
   double const scale;

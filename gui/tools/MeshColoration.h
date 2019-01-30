@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, SAS; Copyright 2017 by Kitware, Inc.
+ * Copyright 2016 by Kitware, SAS; Copyright 2017-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,11 +31,14 @@
 #ifndef MAPTK_MESHCOLORATION_H_
 #define MAPTK_MESHCOLORATION_H_
 
+// KWIVER includes
+#include <vital/algo/video_input.h>
+#include <vital/config/config_block_types.h>
+#include <vital/types/camera_map.h>
+#include <vital/types/camera_perspective.h>
+
 // VTK Class
 class vtkPolyData;
-
-// Project class
-class ReconstructionData;
 
 #include <string>
 #include <vector>
@@ -44,8 +47,14 @@ class MeshColoration
 {
 public:
   MeshColoration();
-  MeshColoration(vtkPolyData* mesh, std::string frameList, std::string krtdFolder);
+  MeshColoration(vtkPolyData* mesh,
+                 kwiver::vital::config_block_sptr& config,
+                 std::string const& videoPath,
+                 kwiver::vital::camera_map_sptr& cameras);
   ~MeshColoration();
+
+  MeshColoration(MeshColoration const&) = delete;
+  MeshColoration& operator=(MeshColoration const&) = delete;
 
   // SETTER
   void SetInput(vtkPolyData* mesh);
@@ -55,16 +64,20 @@ public:
   vtkPolyData* GetOutput();
 
   // Functions
-  bool ProcessColoration(std::string currentVtiPath ="");
-  void initializeDataList(std::string currentVtiPath ="");
+  bool ProcessColoration(int frame = -1);
+  void initializeDataList(int frameId);
 
 protected:
   // Attributes
   vtkPolyData* OutputMesh;
   int Sampling;
-  std::vector<ReconstructionData*> DataList;
-  std::vector<std::string> frameList;
-  std::vector<std::string> krtdFolder;
+  typedef std::pair<kwiver::vital::image_of<uint8_t>,
+                    kwiver::vital::camera_perspective_sptr> ColorationData;
+  std::vector<ColorationData> DataList;
+
+  std::string videoPath;
+  kwiver::vital::algo::video_input_sptr videoReader;
+  kwiver::vital::camera_map_sptr cameras;
 };
 
 #endif

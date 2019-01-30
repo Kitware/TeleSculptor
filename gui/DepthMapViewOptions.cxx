@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,8 +45,8 @@
 
 #include <qtScopedValueChange.h>
 
-#include <QtGui/QMenu>
-#include <QtGui/QWidgetAction>
+#include <QMenu>
+#include <QWidgetAction>
 
 QTE_IMPLEMENT_D_FUNC(DepthMapViewOptions)
 
@@ -117,22 +117,22 @@ DepthMapViewOptions::DepthMapViewOptions(
     new DataColorOptions(settingsGroup + "/Depth", this);
   d->setPopup(d->UI.depthOptions, d->depthOptions);
   setDepthIcon(d->depthOptions->icon());
-  connect(d->depthOptions, SIGNAL(iconChanged(QIcon)),
-          this, SLOT(setDepthIcon(QIcon)));
+  connect(d->depthOptions, &DataColorOptions::iconChanged,
+          this, &DepthMapViewOptions::setDepthIcon);
 
   d->bestCostValueOptions =
     new DataColorOptions(settingsGroup + "/BestCostValue", this);
   d->setPopup(d->UI.bestCostValueOptions, d->bestCostValueOptions);
   setBestCostValueIcon(d->bestCostValueOptions->icon());
-  connect(d->bestCostValueOptions, SIGNAL(iconChanged(QIcon)),
-          this, SLOT(setBestCostValueIcon(QIcon)));
+  connect(d->bestCostValueOptions, &DataColorOptions::iconChanged,
+          this, &DepthMapViewOptions::setBestCostValueIcon);
 
   d->uniquenessRatioOptions =
     new DataColorOptions(settingsGroup + "/UniquenessRatio", this);
   d->setPopup(d->UI.uniquenessRatioOptions, d->uniquenessRatioOptions);
   setUniquenessRatioIcon(d->uniquenessRatioOptions->icon());
-  connect(d->uniquenessRatioOptions, SIGNAL(iconChanged(QIcon)),
-          this, SLOT(setUniquenessRatioIcon(QIcon)));
+  connect(d->uniquenessRatioOptions, &DataColorOptions::iconChanged,
+          this, &DepthMapViewOptions::setUniquenessRatioIcon);
 
   d->modeButtons = new QButtonGroup(this);
   d->addMode(d->UI.color, DepthMapArrays::TrueColor, 0);
@@ -143,15 +143,15 @@ DepthMapViewOptions::DepthMapViewOptions(
   d->addMode(d->UI.uniquenessRatio, DepthMapArrays::UniquenessRatios,
              d->uniquenessRatioOptions);
 
-  connect(d->depthOptions, SIGNAL(modified()),
-          this, SLOT(updateActor()));
-  connect(d->bestCostValueOptions, SIGNAL(modified()),
-          this, SLOT(updateActor()));
-  connect(d->uniquenessRatioOptions, SIGNAL(modified()),
-          this, SLOT(updateActor()));
+  connect(d->depthOptions, &DataColorOptions::modified,
+          this, &DepthMapViewOptions::updateActor);
+  connect(d->bestCostValueOptions, &DataColorOptions::modified,
+          this, &DepthMapViewOptions::updateActor);
+  connect(d->uniquenessRatioOptions, &DataColorOptions::modified,
+          this, &DepthMapViewOptions::updateActor);
 
-  connect(d->modeButtons, SIGNAL(buttonClicked(int)),
-          this, SLOT(updateActor()));
+  connect(d->modeButtons, QOverload<int>::of(&QButtonGroup::buttonClicked),
+          this, &DepthMapViewOptions::updateActor);
 }
 
 //-----------------------------------------------------------------------------
@@ -207,7 +207,7 @@ void DepthMapViewOptions::updateActor()
   auto const mode = d->modeButtons->checkedId();
   Q_ASSERT(mode >= 0 && mode < d->modes.count());
 
-  auto const& mi = d->modes[mode];
+  auto const& mi = d->modes.value(mode);
 
   auto const mapper = d->actor->GetMapper();
   vtkMaptkScalarDataFilter* filter =

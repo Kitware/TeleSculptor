@@ -6,116 +6,157 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>207</width>
-    <height>93</height>
+    <width>364</width>
+    <height>279</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QFormLayout" name="formLayout">
-   <property name="margin">
-    <number>0</number>
-   </property>
-   <item row="0" column="0" colspan="2">
-    <layout class="QHBoxLayout" name="trailLayout" stretch="1,0">
-     <item>
-      <widget class="QCheckBox" name="showTrails">
-       <property name="text">
-        <string>Trails</string>
-       </property>
-      </widget>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QFormLayout" name="formLayout">
+     <item row="1" column="0" colspan="2">
+      <layout class="QHBoxLayout" name="trailLayoutWithDesc" stretch="0,0">
+       <item>
+        <widget class="QCheckBox" name="showTrailsWithDesc">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="text">
+          <string>Trails w Desc.</string>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="ActorColorButton" name="trailColorWithDesc">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="color" stdset="0">
+          <color>
+           <red>0</red>
+           <green>192</green>
+           <blue>0</blue>
+          </color>
+         </property>
+         <property name="alphaShown" stdset="0">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
-     <item>
-      <widget class="ActorColorButton" name="trailColor">
+     <item row="0" column="0" colspan="2">
+      <layout class="QHBoxLayout" name="trailLayout" stretch="1,0">
+       <item>
+        <widget class="QCheckBox" name="showTrailsWithoutDesc">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="text">
+          <string>Trails w/o Desc.</string>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="ActorColorButton" name="trailColorWithoutDesc">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="color" stdset="0">
+          <color>
+           <red>0</red>
+           <green>192</green>
+           <blue>0</blue>
+          </color>
+         </property>
+         <property name="alphaShown" stdset="0">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="2" column="0" colspan="2">
+      <widget class="QWidget" name="trailOptions" native="true">
        <property name="enabled">
         <bool>false</bool>
        </property>
-       <property name="color">
-        <color>
-         <red>0</red>
-         <green>192</green>
-         <blue>0</blue>
-        </color>
-       </property>
-       <property name="alphaShown">
-        <bool>true</bool>
-       </property>
+       <layout class="QGridLayout" name="gridLayout" columnstretch="0,0,1">
+        <property name="margin">
+         <number>0</number>
+        </property>
+        <item row="0" column="0" rowspan="2">
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>12</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLabel" name="lengthLabel">
+          <property name="text">
+           <string>Length</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QSlider" name="trailLength">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>500</number>
+          </property>
+          <property name="pageStep">
+           <number>4</number>
+          </property>
+          <property name="value">
+           <number>2</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLabel" name="styleLabel">
+          <property name="text">
+           <string>Style</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2">
+         <widget class="QComboBox" name="trailStyle">
+          <item>
+           <property name="text">
+            <string>Historic</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Symmetric</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+       </layout>
       </widget>
      </item>
     </layout>
-   </item>
-   <item row="1" column="0" colspan="2">
-    <widget class="QWidget" name="trailOptions" native="true">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <layout class="QGridLayout" name="gridLayout" columnstretch="0,0,1">
-      <property name="margin">
-       <number>0</number>
-      </property>
-      <item row="0" column="0" rowspan="2">
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>12</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLabel" name="lengthLabel">
-        <property name="text">
-         <string>Length</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
-       <widget class="QSlider" name="trailLength">
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>16</number>
-        </property>
-        <property name="pageStep">
-         <number>4</number>
-        </property>
-        <property name="value">
-         <number>2</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLabel" name="styleLabel">
-        <property name="text">
-         <string>Style</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="2">
-       <widget class="QComboBox" name="trailStyle">
-        <item>
-         <property name="text">
-          <string>Historic</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Symmetric</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-     </layout>
-    </widget>
    </item>
   </layout>
  </widget>
@@ -135,25 +176,9 @@
  <resources/>
  <connections>
   <connection>
-   <sender>showTrails</sender>
+   <sender>showTrailsWithoutDesc</sender>
    <signal>toggled(bool)</signal>
-   <receiver>trailOptions</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>71</x>
-     <y>16</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>103</x>
-     <y>49</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>showTrails</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>trailColor</receiver>
+   <receiver>trailColorWithoutDesc</receiver>
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
@@ -163,6 +188,22 @@
     <hint type="destinationlabel">
      <x>172</x>
      <y>16</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>showTrailsWithDesc</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>trailColorWithDesc</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>119</x>
+     <y>112</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>285</x>
+     <y>113</y>
     </hint>
    </hints>
   </connection>

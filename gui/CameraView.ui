@@ -14,7 +14,16 @@
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <property name="margin">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
     <number>0</number>
    </property>
    <item>
@@ -31,7 +40,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QVTKWidget" name="renderWidget" native="true">
+    <widget class="QVTKOpenGLWidget" name="renderWidget" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
        <horstretch>0</horstretch>
@@ -197,9 +206,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QVTKWidget</class>
+   <class>QVTKOpenGLWidget</class>
    <extends>QWidget</extends>
-   <header location="global">QVTKWidget.h</header>
+   <header location="global">QVTKOpenGLWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

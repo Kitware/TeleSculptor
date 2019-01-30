@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016-2017 by Kitware, Inc.
+ * Copyright 2016-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -12,9 +12,9 @@
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  *
- *  * Neither name of Kitware, Inc. nor the names of any contributors may be used
- *    to endorse or promote products derived from this software without specific
- *    prior written permission.
+ *  * Neither the name Kitware, Inc. nor the names of any contributors may be
+ *    used to endorse or promote products derived from this software without
+ *    specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -30,14 +30,16 @@
 
 #include "VolumeOptions.h"
 #include "ui_VolumeOptions.h"
+
 #include "ColorizeSurfaceOptions.h"
+#include "WorldView.h"
 
 #include <qtUiState.h>
 #include <qtUiStateItem.h>
 
-#include <QtGui/QMenu>
-#include <QtGui/QWidgetAction>
+#include <QMenu>
 #include <QToolButton>
+#include <QWidgetAction>
 
 #include <vtkActor.h>
 #include <vtkPolyDataMapper.h>
@@ -96,17 +98,18 @@ VolumeOptions::VolumeOptions(const QString &settingsGroup, QWidget* parent,
   d->setPopup(d->UI.toolButtonColorizeSurfaceMenu, d->colorizeSurfaceOptions);
 
   // Connect signals/slots
-  connect(d->UI.checkBoxColorizeSurface, SIGNAL(toggled(bool)),
-          this, SLOT(showColorizeSurfaceMenu(bool)));
+  connect(d->UI.checkBoxColorizeSurface, &QAbstractButton::toggled,
+          this, &VolumeOptions::showColorizeSurfaceMenu);
 
-  connect(d->UI.checkBoxColorizeSurface, SIGNAL(toggled(bool)),
-          this, SIGNAL(colorOptionsEnabled(bool)));
+  connect(d->UI.checkBoxColorizeSurface, &QAbstractButton::toggled,
+          this, &VolumeOptions::colorOptionsEnabled);
 
-  connect(d->colorizeSurfaceOptions, SIGNAL(colorModeChanged(QString)),
-          this, SLOT(updateColorizeSurfaceMenu(QString)));
+  connect(d->colorizeSurfaceOptions, &ColorizeSurfaceOptions::colorModeChanged,
+          this, &VolumeOptions::updateColorizeSurfaceMenu);
 
-  connect(d->UI.doubleSpinBoxSurfaceThreshold, SIGNAL(valueChanged(double)),
-    parent, SLOT(computeContour(double)));
+  connect(d->UI.doubleSpinBoxSurfaceThreshold,
+          QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+          qobject_cast<WorldView*>(parent), &WorldView::computeContour);
 }
 
 //-----------------------------------------------------------------------------
@@ -134,12 +137,20 @@ void VolumeOptions::initFrameSampling(int nbFrames)
 }
 
 //-----------------------------------------------------------------------------
-void VolumeOptions::setKrtdFrameFile(QString krtd, QString frame)
+void VolumeOptions::setCameras(kwiver::vital::camera_map_sptr cameras)
 {
   QTE_D();
 
-  d->colorizeSurfaceOptions->setKrtdFile(krtd);
-  d->colorizeSurfaceOptions->setFrameFile(frame);
+  d->colorizeSurfaceOptions->setCameras(cameras);
+}
+
+//-----------------------------------------------------------------------------
+void VolumeOptions::setVideoConfig(std::string const& videoPath,
+                                   kwiver::vital::config_block_sptr config)
+{
+  QTE_D();
+
+  d->colorizeSurfaceOptions->setVideoInfo(config, videoPath);
 }
 
 //-----------------------------------------------------------------------------
@@ -151,11 +162,11 @@ void VolumeOptions::colorize()
 }
 
 //-----------------------------------------------------------------------------
-void VolumeOptions::setCurrentFramePath(std::string path)
+void VolumeOptions::setCurrentFrame(int frame)
 {
   QTE_D();
 
-  d->colorizeSurfaceOptions->setCurrentFramePath(path);
+  d->colorizeSurfaceOptions->setCurrentFrame(frame);
 }
 
 //-----------------------------------------------------------------------------
@@ -177,7 +188,7 @@ void VolumeOptions::showColorizeSurfaceMenu(bool state)
 }
 
 //-----------------------------------------------------------------------------
-void VolumeOptions::updateColorizeSurfaceMenu(QString text)
+void VolumeOptions::updateColorizeSurfaceMenu(QString const& text)
 {
   QTE_D();
 

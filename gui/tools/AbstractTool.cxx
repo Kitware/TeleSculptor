@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2017 by Kitware, Inc.
+ * Copyright 2017-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,9 @@
 
 #include "AbstractTool.h"
 
-#include <QtCore/QThread>
+#include <qtStlUtil.h>
+
+#include <QThread>
 
 #include <atomic>
 
@@ -41,7 +43,7 @@ public:
   AbstractToolPrivate(AbstractTool* q)
     : data(std::make_shared<ToolData>()), q_ptr(q) {}
 
-  virtual void run() QTE_OVERRIDE;
+  virtual void run() override;
 
   std::shared_ptr<ToolData> data;
 
@@ -58,7 +60,15 @@ QTE_IMPLEMENT_D_FUNC(AbstractTool)
 void AbstractToolPrivate::run()
 {
   QTE_Q();
-  q->run();
+
+  try
+  {
+    q->run();
+  }
+  catch (const std::exception& e)
+  {
+    emit q->failed(QString::fromLocal8Bit(e.what()));
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -124,11 +134,26 @@ void ToolData::copyDepth(depth_sptr const& newDepth)
 }
 
 //-----------------------------------------------------------------------------
+void  ToolData::copyDepthLookup(depth_lookup_sptr const& newDepthLookup)
+{
+  if (newDepthLookup)
+  {
+    depth_lookup_sptr depths(new std::map<kwiver::vital::frame_id_t, std::string>());
+    *depths = *newDepthLookup;
+    this->depthLookup = depths;
+  }
+  else
+  {
+    this->cameras = camera_map_sptr();
+  }
+}
+
+//-----------------------------------------------------------------------------
 AbstractTool::AbstractTool(QObject* parent)
   : QAction(parent), d_ptr(new AbstractToolPrivate(this))
 {
   QTE_D();
-  connect(d, SIGNAL(finished()), this, SIGNAL(completed()));
+  connect(d, &QThread::finished, this, &AbstractTool::completed);
 }
 
 //-----------------------------------------------------------------------------
@@ -153,6 +178,20 @@ unsigned int AbstractTool::activeFrame() const
 }
 
 //-----------------------------------------------------------------------------
+std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string> > AbstractTool::depthLookup() const
+{
+  QTE_D();
+  return d->data->depthLookup;
+}
+
+//-----------------------------------------------------------------------------
+vtkBox *AbstractTool::ROI() const
+{
+  QTE_D();
+  return d->data->roi.Get();
+}
+
+//-----------------------------------------------------------------------------
 kwiver::vital::feature_track_set_sptr AbstractTool::tracks() const
 {
   QTE_D();
@@ -174,6 +213,14 @@ AbstractTool::landmark_map_sptr AbstractTool::landmarks() const
 }
 
 //-----------------------------------------------------------------------------
+AbstractTool::sfm_constraints_sptr AbstractTool::sfmConstraints() const
+{
+  QTE_D();
+  return d->data->constraints;
+}
+
+
+//-----------------------------------------------------------------------------
 void AbstractTool::cancel()
 {
   QTE_D();
@@ -185,6 +232,13 @@ void AbstractTool::setActiveFrame(unsigned int frame)
 {
   QTE_D();
   d->data->activeFrame = frame;
+}
+
+//-----------------------------------------------------------------------------
+void AbstractTool::setLastFrame(int count)
+{
+  QTE_D();
+  d->data->maxFrame = count;
 }
 
 //-----------------------------------------------------------------------------
@@ -209,12 +263,48 @@ void AbstractTool::setLandmarks(landmark_map_sptr const& newLandmarks)
 }
 
 //-----------------------------------------------------------------------------
+void AbstractTool::setSfmConstraints(sfm_constraints_sptr const& newConstraints)
+{
+  QTE_D();
+  if (newConstraints)
+  {
+    d->data->constraints = std::make_shared<kwiver::vital::sfm_constraints>(*newConstraints);
+  }
+  else
+  {
+    d->data->constraints = std::make_shared<kwiver::vital::sfm_constraints>();
+  }
+}
+
+//-----------------------------------------------------------------------------
+void AbstractTool::setROI(vtkBox *newROI)
+{
+  QTE_D();
+  d->data->roi->SetBounds(newROI->GetBounds());
+}
+
+//-----------------------------------------------------------------------------
+void AbstractTool::setDepthLookup(std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string> > const& newDepthLookup)
+{
+  QTE_D();
+  d->data->copyDepthLookup(newDepthLookup);
+}
+
+//-----------------------------------------------------------------------------
 void AbstractTool::setVideoPath(std::string const& path)
 {
   QTE_D();
   d->data->videoPath = path;
 }
 
+//-----------------------------------------------------------------------------
+void AbstractTool::setMaskPath(std::string const& path)
+{
+  QTE_D();
+  d->data->maskPath = path;
+}
+
+//-----------------------------------------------------------------------------
 void AbstractTool::setConfig(config_block_sptr& config)
 {
   QTE_D();
@@ -226,6 +316,9 @@ bool AbstractTool::execute(QWidget* window)
 {
   QTE_D();
 
+  // Reset progress reporting parameters
+  this->updateProgress(0);
+  this->setDescription("");
   d->cancelRequested = false;
   d->start();
   return true;
@@ -257,6 +350,13 @@ bool AbstractTool::hasLandmarks() const
 {
   QTE_D();
   return d->data->landmarks && d->data->landmarks->size();
+}
+
+//-----------------------------------------------------------------------------
+bool AbstractTool::hasDepthLookup() const
+{
+  QTE_D();
+  return !d->data->depthLookup->empty();
 }
 
 //-----------------------------------------------------------------------------
@@ -299,4 +399,43 @@ void AbstractTool::updateLandmarks(landmark_map_sptr const& newLandmarks)
 {
   QTE_D();
   d->data->landmarks = newLandmarks;
+}
+
+//-----------------------------------------------------------------------------
+int AbstractTool::progress() const
+{
+  QTE_D();
+  int p = d->data->progress;
+  p = p < 0 ? 0 : p;
+  p = p > 100 ? 100 : p;
+  return p;
+}
+
+//-----------------------------------------------------------------------------
+void AbstractTool::updateProgress(int value, int maximum)
+{
+  QTE_D();
+  // FIXME also report progress range rather than forcing to 0-100
+  d->data->progress = (100 * value) / maximum;
+}
+
+//-----------------------------------------------------------------------------
+void AbstractTool::updateFusion(vtkSmartPointer<vtkStructuredGrid> newVolume)
+{
+  QTE_D();
+  d->data->volume = newVolume;
+}
+
+//-----------------------------------------------------------------------------
+QString AbstractTool::description() const
+{
+  QTE_D();
+  return qtString(d->data->description);
+}
+
+//-----------------------------------------------------------------------------
+void AbstractTool::setDescription(QString const& desc)
+{
+  QTE_D();
+  d->data->description = stdString(desc);
 }

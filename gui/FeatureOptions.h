@@ -45,13 +45,15 @@ public:
   explicit FeatureOptions(vtkMaptkFeatureTrackRepresentation*,
                           QString const& settingsGroup,
                           QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  virtual ~FeatureOptions();
+  ~FeatureOptions() override;
 
 public slots:
-  void setFeaturesVisible(bool);
+  void setFeaturesWithDescVisible(bool);
+  void setFeaturesWithoutDescVisible(bool);
 
 protected slots:
-  void setTrailsVisible(bool);
+  void setTrailsWithDescVisible(bool);
+  void setTrailsWithoutDescVisible(bool);
   void setTrailsLength(int);
   void setTrailsStyle(int);
 

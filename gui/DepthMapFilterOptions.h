@@ -33,7 +33,7 @@
 
 #include <qtGlobal.h>
 
-#include <QtGui/QWidget>
+#include <QWidget>
 
 class DepthMapFilterOptionsPrivate;
 
@@ -45,7 +45,7 @@ public:
   explicit DepthMapFilterOptions(const QString& settingsGroup,
                                  QWidget* parent = 0,
                                  Qt::WindowFlags flags = 0);
-  virtual ~DepthMapFilterOptions();
+  ~DepthMapFilterOptions() override;
 
   double bestCostValueMinimum() const;
   double bestCostValueMaximum() const;

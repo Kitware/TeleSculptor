@@ -31,7 +31,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QVTKWidget" name="renderWidget" native="true"/>
+    <widget class="QVTKOpenGLWidget" name="renderWidget" native="true"/>
    </item>
   </layout>
   <action name="actionDisplayMode">
@@ -57,9 +57,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QVTKWidget</class>
+   <class>QVTKOpenGLWidget</class>
    <extends>QWidget</extends>
-   <header location="global">QVTKWidget.h</header>
+   <header location="global">QVTKOpenGLWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

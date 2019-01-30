@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2017 by Kitware, Inc.
+ * Copyright 2017-2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,8 +37,8 @@
 #include "DataArrays.h"
 #include "FeatureOptions.h"
 #include "FieldInformation.h"
+#include "GroundControlPointsWidget.h"
 #include "ImageOptions.h"
-#include "vtkMaptkCamera.h"
 #include "vtkMaptkFeatureTrackRepresentation.h"
 
 #include <vital/types/feature_track_set.h>
@@ -48,6 +48,7 @@
 #include <vtkCamera.h>
 #include <vtkCellArray.h>
 #include <vtkDoubleArray.h>
+#include <vtkGenericOpenGLRenderWindow.h>
 #include <vtkImageActor.h>
 #include <vtkImageData.h>
 #include <vtkInteractorStyleRubberBand2D.h>
@@ -57,18 +58,20 @@
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
-#include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
+#include <vtkRenderWindowInteractor.h>
+#include <vtkRenderer.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
 
 #include <qtMath.h>
 #include <qtUiState.h>
 
-#include <QtGui/QFormLayout>
-#include <QtGui/QMenu>
-#include <QtGui/QToolButton>
-#include <QtGui/QWidgetAction>
+#include <QFormLayout>
+#include <QMenu>
+#include <QTimer>
+#include <QToolButton>
+#include <QWidgetAction>
 
 QTE_IMPLEMENT_D_FUNC(CameraView)
 
@@ -94,7 +97,7 @@ class ActorColorOption : public QWidget
 {
 public:
   ActorColorOption(QString const& settingsGroup, QWidget* parent);
-  virtual ~ActorColorOption();
+  ~ActorColorOption() override;
 
   void setDefaultColor(QColor const&);
 
@@ -181,7 +184,7 @@ public:
     vtkNew<vtkDoubleArray> elevations;
   };
 
-  CameraViewPrivate() : featuresDirty(false) {}
+  CameraViewPrivate() : featuresDirty(false), renderQueued(false) {}
 
   void setPopup(QAction* action, QMenu* menu);
   void setPopup(QAction* action, QWidget* widget);
@@ -194,12 +197,14 @@ public:
   Am::CameraView AM;
 
   vtkNew<vtkRenderer> renderer;
-  vtkNew<vtkRenderWindow> renderWindow;
+  vtkSmartPointer<vtkRenderWindow> renderWindow;
 
   vtkNew<vtkImageActor> imageActor;
   vtkNew<vtkImageData> emptyImage;
 
   vtkNew<vtkMaptkFeatureTrackRepresentation> featureRep;
+
+  vtkNew<vtkMatrix4x4> transformMatrix;
 
   LandmarkCloud landmarks;
   SegmentCloud residuals;
@@ -207,10 +212,13 @@ public:
   QHash<kwiver::vital::landmark_id_t, LandmarkData> landmarkData;
 
   PointOptions* landmarkOptions;
+  GroundControlPointsWidget* groundControlPointsWidget;
 
   double imageBounds[6];
 
   bool featuresDirty;
+
+  bool renderQueued;
 };
 
 //END CameraViewPrivate definition
@@ -222,10 +230,10 @@ public:
 //-----------------------------------------------------------------------------
 CameraViewPrivate::VertexCloud::VertexCloud()
 {
-  this->data->SetPoints(this->points.GetPointer());
-  this->mapper->SetInputData(this->data.GetPointer());
+  this->data->SetPoints(this->points);
+  this->mapper->SetInputData(this->data);
 
-  this->actor->SetMapper(this->mapper.GetPointer());
+  this->actor->SetMapper(this->mapper);
   this->actor->GetProperty()->SetPointSize(2);
 }
 
@@ -242,7 +250,7 @@ void CameraViewPrivate::VertexCloud::clear()
 //-----------------------------------------------------------------------------
 CameraViewPrivate::PointCloud::PointCloud()
 {
-  this->data->SetVerts(this->verts.GetPointer());
+  this->data->SetVerts(this->verts);
 }
 
 //-----------------------------------------------------------------------------
@@ -260,8 +268,8 @@ void CameraViewPrivate::PointCloud::addPoint(double x, double y, double z)
 //-----------------------------------------------------------------------------
 CameraViewPrivate::SegmentCloud::SegmentCloud()
 {
-  this->data->SetVerts(this->verts.GetPointer());
-  this->data->SetLines(this->verts.GetPointer());
+  this->data->SetVerts(this->verts);
+  this->data->SetLines(this->verts);
 }
 
 //-----------------------------------------------------------------------------
@@ -292,9 +300,9 @@ CameraViewPrivate::LandmarkCloud::LandmarkCloud()
   this->elevations->SetName(Elevation);
   this->elevations->SetNumberOfComponents(1);
 
-  this->data->GetPointData()->AddArray(this->colors.GetPointer());
-  this->data->GetPointData()->AddArray(this->observations.GetPointer());
-  this->data->GetPointData()->AddArray(this->elevations.GetPointer());
+  this->data->GetPointData()->AddArray(this->colors);
+  this->data->GetPointData()->AddArray(this->observations);
+  this->data->GetPointData()->AddArray(this->elevations);
 }
 
 //-----------------------------------------------------------------------------
@@ -366,16 +374,17 @@ void CameraViewPrivate::setPopup(QAction* action, QWidget* widget)
 //-----------------------------------------------------------------------------
 void CameraViewPrivate::setTransforms(int imageHeight)
 {
-  vtkNew<vtkMatrix4x4> xf;
-
+  vtkMatrix4x4* xf = this->transformMatrix;
   xf->Identity();
   xf->SetElement(1, 1, -1.0);
   xf->SetElement(1, 3, imageHeight);
 
-  this->featureRep->GetActivePointsActor()->SetUserMatrix(xf.GetPointer());
-  this->featureRep->GetTrailsActor()->SetUserMatrix(xf.GetPointer());
-  this->landmarks.actor->SetUserMatrix(xf.GetPointer());
-  this->residuals.actor->SetUserMatrix(xf.GetPointer());
+  this->featureRep->GetActivePointsWithDescActor()->SetUserMatrix(xf);
+  this->featureRep->GetActivePointsWithoutDescActor()->SetUserMatrix(xf);
+  this->featureRep->GetTrailsWithDescActor()->SetUserMatrix(xf);
+  this->featureRep->GetTrailsWithoutDescActor()->SetUserMatrix(xf);
+  this->landmarks.actor->SetUserMatrix(xf);
+  this->residuals.actor->SetUserMatrix(xf);
 }
 
 //-----------------------------------------------------------------------------
@@ -403,6 +412,8 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   // Set up UI
   d->UI.setupUi(this);
   d->AM.setupActions(d->UI, this);
+  d->renderWindow =
+    vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
 
   auto const viewMenu = new QMenu(this);
   viewMenu->addAction(d->UI.actionViewReset);
@@ -410,40 +421,42 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->setPopup(d->UI.actionViewReset, viewMenu);
 
   auto const imageOptions = new ImageOptions("CameraView/Image", this);
-  imageOptions->addActor(d->imageActor.GetPointer());
+  imageOptions->addActor(d->imageActor);
   d->setPopup(d->UI.actionShowFrameImage, imageOptions);
 
-  connect(imageOptions, SIGNAL(modified()),
-          d->UI.renderWidget, SLOT(update()));
+  connect(imageOptions, &ImageOptions::modified,
+          this, &CameraView::render);
 
   auto const featureOptions =
-    new FeatureOptions(d->featureRep.GetPointer(),
-                       "CameraView/FeaturePoints", this);
+    new FeatureOptions{d->featureRep, "CameraView/FeaturePoints", this};
 
   d->setPopup(d->UI.actionShowFeatures, featureOptions);
 
-  connect(featureOptions, SIGNAL(modified()),
-          d->UI.renderWidget, SLOT(update()));
+  connect(featureOptions, &FeatureOptions::modified,
+          this, &CameraView::render);
 
   d->landmarkOptions = new PointOptions("CameraView/Landmarks", this);
   d->landmarkOptions->setDefaultColor(Qt::magenta);
-  d->landmarkOptions->addActor(d->landmarks.actor.GetPointer());
-  d->landmarkOptions->addMapper(d->landmarks.mapper.GetPointer());
+  d->landmarkOptions->addActor(d->landmarks.actor);
+  d->landmarkOptions->addMapper(d->landmarks.mapper);
 
   d->setPopup(d->UI.actionShowLandmarks, d->landmarkOptions);
 
-  connect(d->landmarkOptions, SIGNAL(modified()),
-          d->UI.renderWidget, SLOT(update()));
+  connect(d->landmarkOptions, &PointOptions::modified,
+          this, &CameraView::render);
+
+  d->groundControlPointsWidget = new GroundControlPointsWidget(this);
+  d->groundControlPointsWidget->setTransformMatrix(d->transformMatrix);
 
   auto const residualsOptions =
     new ActorColorOption("CameraView/Residuals", this);
   residualsOptions->setDefaultColor(QColor(255, 128, 0));
-  residualsOptions->button->addActor(d->residuals.actor.GetPointer());
+  residualsOptions->button->addActor(d->residuals.actor);
 
   d->setPopup(d->UI.actionShowResiduals, residualsOptions);
 
-  connect(residualsOptions->button, SIGNAL(colorChanged(QColor)),
-          d->UI.renderWidget, SLOT(update()));
+  connect(residualsOptions->button, &ActorColorButton::colorChanged,
+          this, &CameraView::render);
 
   // Connect actions
   this->addAction(d->UI.actionViewReset);
@@ -452,19 +465,21 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   this->addAction(d->UI.actionShowLandmarks);
   this->addAction(d->UI.actionShowResiduals);
 
-  connect(d->UI.actionViewReset, SIGNAL(triggered()),
-          this, SLOT(resetView()));
-  connect(d->UI.actionViewResetFullExtents, SIGNAL(triggered()),
-          this, SLOT(resetViewToFullExtents()));
+  connect(d->UI.actionViewReset, &QAction::triggered,
+          this, &CameraView::resetView);
+  connect(d->UI.actionViewResetFullExtents, &QAction::triggered,
+          this, &CameraView::resetViewToFullExtents);
 
-  connect(d->UI.actionShowFrameImage, SIGNAL(toggled(bool)),
-          this, SLOT(setImageVisible(bool)));
-  connect(d->UI.actionShowFeatures, SIGNAL(toggled(bool)),
-          featureOptions, SLOT(setFeaturesVisible(bool)));
-  connect(d->UI.actionShowLandmarks, SIGNAL(toggled(bool)),
-          this, SLOT(setLandmarksVisible(bool)));
-  connect(d->UI.actionShowResiduals, SIGNAL(toggled(bool)),
-          this, SLOT(setResidualsVisible(bool)));
+  connect(d->UI.actionShowFrameImage, &QAction::toggled,
+          this, &CameraView::setImageVisible);
+  connect(d->UI.actionShowFeatures, &QAction::toggled,
+          featureOptions, &FeatureOptions::setFeaturesWithDescVisible);
+  connect(d->UI.actionShowFeatures, &QAction::toggled,
+          featureOptions, &FeatureOptions::setFeaturesWithoutDescVisible);
+  connect(d->UI.actionShowLandmarks, &QAction::toggled,
+          this, &CameraView::setLandmarksVisible);
+  connect(d->UI.actionShowResiduals, &QAction::toggled,
+          this, &CameraView::setResidualsVisible);
 
   // Set up ortho view
   d->renderer->GetActiveCamera()->ParallelProjectionOn();
@@ -473,21 +488,27 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
 
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
-  d->renderWindow->AddRenderer(d->renderer.GetPointer());
-  d->UI.renderWidget->SetRenderWindow(d->renderWindow.GetPointer());
+  d->renderWindow->AddRenderer(d->renderer);
+  d->UI.renderWidget->SetRenderWindow(d->renderWindow);
 
   // Set interactor
   vtkNew<vtkInteractorStyleRubberBand2D> is;
-  d->renderWindow->GetInteractor()->SetInteractorStyle(is.GetPointer());
+  d->UI.renderWidget->GetInteractor()->SetInteractorStyle(is);
+  d->groundControlPointsWidget->setInteractor(d->UI.renderWidget->GetInteractor());
 
   // Set up actors
-  d->renderer->AddActor(d->featureRep->GetActivePointsActor());
-  d->renderer->AddActor(d->featureRep->GetTrailsActor());
-  d->renderer->AddActor(d->landmarks.actor.GetPointer());
-  d->renderer->AddActor(d->residuals.actor.GetPointer());
+  d->renderer->AddActor(d->featureRep->GetActivePointsWithDescActor());
+  d->renderer->AddActor(d->featureRep->GetActivePointsWithoutDescActor());
+  d->renderer->AddActor(d->featureRep->GetTrailsWithDescActor());
+  d->renderer->AddActor(d->featureRep->GetTrailsWithoutDescActor());
+  d->renderer->AddActor(d->landmarks.actor);
+  d->renderer->AddActor(d->residuals.actor);
 
-  d->renderer->AddViewProp(d->imageActor.GetPointer());
+  d->renderer->AddViewProp(d->imageActor);
   d->imageActor->SetPosition(0.0, 0.0, -0.5);
+
+  // Enable antialising by default
+  d->renderer->UseFXAAOn();
 
   // Create "dummy" image data for use when we have no "real" image
   d->emptyImage->SetExtent(0, 0, 0, 0, 0, 0);
@@ -507,7 +528,7 @@ void CameraView::setBackgroundColor(QColor const& color)
 {
   QTE_D();
   d->renderer->SetBackground(color.redF(), color.greenF(), color.blueF());
-  d->UI.renderWidget->update();
+  this->render();
 }
 
 //-----------------------------------------------------------------------------
@@ -518,14 +539,14 @@ void CameraView::setImagePath(QString const& path)
 }
 
 //-----------------------------------------------------------------------------
-void CameraView::setImageData(vtkImageData* data, QSize const& dimensions)
+void CameraView::setImageData(vtkImageData* data, QSize dimensions)
 {
   QTE_D();
 
   if (!data)
   {
     // If no image given, clear current image and replace with "empty" image
-    d->imageActor->SetInputData(d->emptyImage.GetPointer());
+    d->imageActor->SetInputData(d->emptyImage);
 
     d->imageBounds[0] = 0.0; d->imageBounds[1] = dimensions.width() - 1;
     d->imageBounds[2] = 0.0; d->imageBounds[3] = dimensions.height() - 1;
@@ -544,7 +565,7 @@ void CameraView::setImageData(vtkImageData* data, QSize const& dimensions)
     d->setTransforms(qMax(0, static_cast<int>(h)));
   }
 
-  d->UI.renderWidget->update();
+  this->render();
 }
 
 //-----------------------------------------------------------------------------
@@ -553,7 +574,7 @@ void CameraView::setActiveFrame(unsigned frame)
   QTE_D();
 
   d->featureRep->SetActiveFrame(frame);
-  d->UI.renderWidget->update();
+  this->render();
 }
 
 //-----------------------------------------------------------------------------
@@ -604,13 +625,23 @@ void CameraView::addFeatureTrack(kwiver::vital::track const& track)
 
   foreach (auto const& state, track)
   {
-    auto const& fts = std::dynamic_pointer_cast<kwiver::vital::feature_track_state>(state);
+    auto const& fts =
+      std::dynamic_pointer_cast<kwiver::vital::feature_track_state>(state);
     if ( !fts )
     {
       continue;
     }
     auto const& loc = fts->feature->loc();
-    d->featureRep->AddTrackPoint(id, state->frame(), loc[0], loc[1]);
+    if (fts->descriptor)
+    {
+      d->featureRep->AddTrackWithDescPoint(
+        id, state->frame(), loc[0], loc[1]);
+    }
+    else
+    {
+      d->featureRep->AddTrackWithoutDescPoint(
+        id, state->frame(), loc[0], loc[1]);
+    }
   }
 
   d->updateFeatures(this);
@@ -623,8 +654,6 @@ void CameraView::addLandmark(
   QTE_D();
 
   d->landmarks.addPoint(x, y, 0.0, d->landmarkData.value(id));
-
-  d->UI.renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -636,8 +665,6 @@ void CameraView::addResidual(
   Q_UNUSED(id)
 
   d->residuals.addSegment(x1, y1, -0.2, x2, y2, -0.2);
-
-  d->UI.renderWidget->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -668,7 +695,7 @@ void CameraView::setImageVisible(bool state)
   QTE_D();
 
   d->imageActor->SetVisibility(state);
-  d->UI.renderWidget->update();
+  this->render();
 }
 
 //-----------------------------------------------------------------------------
@@ -677,7 +704,7 @@ void CameraView::setLandmarksVisible(bool state)
   QTE_D();
 
   d->landmarks.actor->SetVisibility(state);
-  d->UI.renderWidget->update();
+  this->render();
 }
 
 //-----------------------------------------------------------------------------
@@ -686,7 +713,7 @@ void CameraView::setResidualsVisible(bool state)
   QTE_D();
 
   d->residuals.actor->SetVisibility(state);
-  d->UI.renderWidget->update();
+  this->render();
 }
 
 //-----------------------------------------------------------------------------
@@ -706,7 +733,7 @@ void CameraView::resetView()
   d->renderer->ResetCamera(d->imageBounds);
   d->renderer->GetActiveCamera()->SetParallelScale(s);
 
-  d->UI.renderWidget->update();
+  this->render();
 }
 
 //-----------------------------------------------------------------------------
@@ -715,7 +742,7 @@ void CameraView::resetViewToFullExtents()
   QTE_D();
 
   d->renderer->ResetCamera();
-  d->UI.renderWidget->update();
+  this->render();
 }
 
 //-----------------------------------------------------------------------------
@@ -726,10 +753,50 @@ void CameraView::updateFeatures()
   if (d->featuresDirty)
   {
     d->featureRep->Update();
-    d->UI.renderWidget->update();
+    this->render();
 
     d->featuresDirty = false;
   }
+}
+
+//-----------------------------------------------------------------------------
+GroundControlPointsWidget* CameraView::groundControlPointsWidget() const
+{
+  QTE_D();
+
+  return d->groundControlPointsWidget;
+}
+
+//-----------------------------------------------------------------------------
+void CameraView::render()
+{
+  QTE_D();
+
+  if (!d->renderQueued)
+  {
+    QTimer::singleShot(0, this, [d]() {
+      d->renderWindow->Render();
+      d->renderQueued = false;
+    });
+  }
+}
+
+//-----------------------------------------------------------------------------
+void CameraView::enableAntiAliasing(bool enable)
+{
+  QTE_D();
+
+  d->renderer->SetUseFXAA(enable);
+  this->render();
+}
+
+//-----------------------------------------------------------------------------
+void CameraView::clearGroundControlPoints()
+{
+  QTE_D();
+
+  d->groundControlPointsWidget->clearPoints();
+  this->render();
 }
 
 //END CameraView
