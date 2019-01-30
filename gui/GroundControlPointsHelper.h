@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2018 by Kitware, Inc.
+ * Copyright 2018-2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,9 @@
 #ifndef MAPTK_GROUNDCONTROLPOINTSHELPER_H_
 #define MAPTK_GROUNDCONTROLPOINTSHELPER_H_
 
+// maptk includes
+#include <maptk/ground_control_point.h>
+
 // qtExtensions includes
 #include <qtGlobal.h>
 
@@ -53,18 +56,35 @@ public:
 
   void updateCameraViewPoints();
 
-  void setGroundControlPoints(kwiver::vital::landmark_map const&);
-  kwiver::vital::landmark_map_sptr groundControlPoints() const;
+  // Set ground control points
+  void setGroundControlPoints(kwiver::vital::ground_control_point_map const&);
+  // Get access to the ground control points
+  kwiver::vital::ground_control_point_map::ground_control_point_map_t const&
+  groundControlPoints() const;
+
+  // Get access to a single ground control point
+  kwiver::vital::ground_control_point_sptr groundControlPoint(
+    kwiver::vital::ground_control_point_id_t pointId);
+
+  bool readGroundControlPoints(QString const& path);
+
+  bool writeGroundControlPoints(
+    QString const& path, QWidget* dialogParent) const;
 
 public slots:
   void enableWidgets(bool);
 
 signals:
-  void pointCountChanged(int);
+  void pointCountChanged(size_t);
+  void pointAdded(kwiver::vital::ground_control_point_id_t);
+  void pointRemoved(kwiver::vital::ground_control_point_id_t);
+  void pointChanged(kwiver::vital::ground_control_point_id_t);
 
 protected slots:
   void addCameraViewPoint();
   void addWorldViewPoint();
+
+  void removePoint(int handleId);
 
   void moveCameraViewPoint();
   void moveWorldViewPoint();

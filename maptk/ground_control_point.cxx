@@ -43,42 +43,32 @@ namespace kwiver
 namespace vital
 {
 
-/// Default Constructor
+//-----------------------------------------------------------------------------
 ground_control_point::ground_control_point()
   : loc_(0, 0, 0)
-  , geo_loc_()
   , elevation_(0)
-  , name_()
 {
 }
 
-/// Constructor for a ground_control_point
+//-----------------------------------------------------------------------------
 ground_control_point::ground_control_point(vector_3d const& loc,
                                            std::string const& name)
   : loc_(loc)
-  , geo_loc_()
   , elevation_(0)
   , name_(name)
 {
 }
 
-/// Constructor for a ground_control_point from a ground_control_point
-ground_control_point::ground_control_point(ground_control_point const& other)
-  : loc_(other.loc())
-  , geo_loc_(other.geo_loc())
-  , elevation_(other.elevation())
-  , name_(other.name())
-{
-}
-
-/// output stream operator for a ground_control_point
+//-----------------------------------------------------------------------------
 std::ostream& operator<<(std::ostream& s, ground_control_point const& m)
 {
-  s << m.loc() << " " << m.geo_loc() << " " << m.elevation() << " " << m.name();
+  s << m.loc() << ' '
+    << m.geo_loc() << ' ' << m.elevation() << ' '
+    << m.name();
   return s;
 }
 
-/// input stream operator for a ground_control_point
+//-----------------------------------------------------------------------------
 // The following code does not work since geo_point doesn't have an input stream
 // operator defined.
 // std::istream& operator>>(std::istream& s, ground_control_point& pt)
