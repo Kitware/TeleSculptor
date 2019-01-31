@@ -593,6 +593,8 @@ void MainWindowPrivate::updateFrames(
 
   this->UI.metadata->updateMetadata(mdMap);
 
+  int num_cams_loaded_from_krtd = 0;
+
   if (this->project &&
       this->project->config->has_value("output_krtd_dir"))
   {
@@ -608,7 +610,10 @@ void MainWindowPrivate::updateFrames(
           kvPath(frameName), kvPath(this->project->cameraPath));
 
         // Add camera to scene
-        this->updateCamera(frame.id, camera);
+        if (this->updateCamera(frame.id, camera))
+        {
+          ++num_cams_loaded_from_krtd;
+        }
       }
       catch (...)
       {
@@ -618,7 +623,8 @@ void MainWindowPrivate::updateFrames(
     }
     this->UI.worldView->setCameras(this->cameraMap());
   }
-  else
+
+  if(num_cams_loaded_from_krtd == 0)
   {
 #define GET_K_CONFIG(type, name) \
   this->freestandingConfig->get_value<type>(bc + #name, K_def.name())
