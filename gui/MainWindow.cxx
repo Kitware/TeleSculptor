@@ -1029,7 +1029,11 @@ void MainWindowPrivate::updateCameraView()
 //-----------------------------------------------------------------------------
 std::string MainWindowPrivate::getFrameName(kv::frame_id_t frameId)
 {
-  auto md = videoMetadataMap->metadata();
+  kwiver::vital::metadata_map::map_metadata_t md;
+  if (videoMetadataMap)
+  {
+    md = videoMetadataMap->metadata();
+  }
   return frameName(frameId, md);
 }
 
@@ -1089,6 +1093,8 @@ void MainWindowPrivate::loadImage(FrameData frame)
         frame.camera->SetImageDimensions(dimensions);
       }
 
+      sfmConstraints->store_image_size(frame.id, dimensions[0], dimensions[1]);
+
       // Set frame name in camera view
       this->UI.cameraView->setImagePath(
         qtString(this->getFrameName(frame.id)));
@@ -1099,15 +1105,22 @@ void MainWindowPrivate::loadImage(FrameData frame)
       this->UI.worldView->setImageData(imageData, size);
 
       // Update metadata view
-      auto md = this->videoMetadataMap->metadata();
-      if (md.empty())
+      if (!this->videoMetadataMap)
       {
         this->UI.metadata->updateMetadata(kv::metadata_vector{});
       }
       else
       {
-        auto mdi = --(md.upper_bound(frame.id));
-        this->UI.metadata->updateMetadata(mdi->second);
+        auto md_map = this->videoMetadataMap->metadata();
+        auto mdi = md_map.find(frame.id);
+        if (mdi == md_map.end())
+        {
+          this->UI.metadata->updateMetadata(kwiver::vital::metadata_vector{});
+        }
+        else
+        {
+          this->UI.metadata->updateMetadata(mdi->second);
+        }
       }
     }
   }
@@ -2101,6 +2114,20 @@ void MainWindow::saveCameras(QString const& path, bool writeToProject)
   auto out = QHash<QString, kv::camera_perspective_sptr>();
   auto willOverwrite = QStringList();
 
+  auto qdir = QDir(path);
+  auto entry_info_list = qdir.entryInfoList();
+  const QString cam_extension = "krtd";
+
+  for (auto &ent : entry_info_list)
+  {
+    if (ent.isFile() && ent.suffix() == cam_extension)
+    {
+      auto del_file_str = ent.absoluteFilePath();
+      QFile f(del_file_str);
+      f.remove();
+    }
+  }
+
   for (auto const& cd : d->frames)
   {
     if (cd.camera)
@@ -2108,7 +2135,8 @@ void MainWindow::saveCameras(QString const& path, bool writeToProject)
       auto const camera = cd.camera->GetCamera();
       if (camera)
       {
-        auto cameraName = qtString(d->getFrameName(cd.id)) + ".krtd";
+        auto cameraName = qtString(d->getFrameName(cd.id) + "."
+                                   + stdString(cam_extension));
         auto const filepath = QDir{path}.filePath(cameraName);
         out.insert(filepath, camera);
 
@@ -2602,8 +2630,6 @@ void MainWindow::saveToolResults()
     if (!outputs.testFlag(AbstractTool::BatchDepth) && outputs.testFlag(AbstractTool::Depth))
     {
       saveDepthImage(d->project->depthPath);
-      d->project->config->set_value("output_depth_dir", kvPath(
-        d->project->getContingentRelativePath(d->project->depthPath)));
     }
 
     d->project->write();
