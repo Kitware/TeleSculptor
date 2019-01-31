@@ -351,7 +351,7 @@ ComputeDepthTool::callback_handler(kwiver::vital::image_container_sptr depth,
   data->copyDepth(depthData);
   data->activeFrame = d->ref_frame;
   this->setDescription("Optimizing Depth");
-  this->updateProgress(iterations, d_ptr->max_iterations);
+  this->updateProgress(iterations, d->max_iterations);
 
   emit updated(data);
   return !this->isCanceled();
