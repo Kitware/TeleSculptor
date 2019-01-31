@@ -325,6 +325,7 @@ public:
   kv::camera_map_sptr toolUpdateCameras;
   kv::landmark_map_sptr toolUpdateLandmarks;
   kv::feature_track_set_sptr toolUpdateTracks;
+  kv::feature_track_set_changes_sptr toolUpdateTrackChanges;
   vtkSmartPointer<vtkImageData> toolUpdateDepth;
   vtkSmartPointer<vtkStructuredGrid> toolUpdateVolume;
   bool toolSaveDepthFlag = false;
@@ -2530,6 +2531,7 @@ void MainWindow::acceptToolResults(
   bool updateNeeded = !d->toolUpdateCameras &&
                       !d->toolUpdateLandmarks &&
                       !d->toolUpdateTracks &&
+                      !d->toolUpdateTrackChanges &&
                       !d->toolUpdateDepth &&
                       !d->toolUpdateVolume &&
                       d->toolUpdateActiveFrame < 0;
@@ -2541,6 +2543,7 @@ void MainWindow::acceptToolResults(
     d->toolUpdateCameras = NULL;
     d->toolUpdateLandmarks = NULL;
     d->toolUpdateTracks = NULL;
+    d->toolUpdateTrackChanges = NULL;
     d->toolUpdateActiveFrame = -1;
     d->toolUpdateDepth = NULL;
     d->toolUpdateVolume = NULL;
@@ -2555,6 +2558,10 @@ void MainWindow::acceptToolResults(
     if (outputs.testFlag(AbstractTool::Tracks))
     {
       d->toolUpdateTracks = data->tracks;
+    }
+    if (outputs.testFlag(AbstractTool::TrackChanges))
+    {
+      d->toolUpdateTrackChanges = data->track_changes;
     }
     if (outputs.testFlag(AbstractTool::Depth))
     {
@@ -2660,6 +2667,31 @@ void MainWindow::updateToolResults()
     d->UI.actionKeyframesOnly->setEnabled(!d->tracks->tracks().empty());
     d->toolUpdateTracks = NULL;
   }
+  if (d->toolUpdateTrackChanges)
+  {
+    //SET THE TRACK FLAGS HERE
+    if (d->tracks)
+    {
+      for (auto const& change: d->toolUpdateTrackChanges->m_changes)
+      {
+        auto tk = d->tracks->get_track(change.track_id_);
+        if (tk)
+        {
+          auto tsi = tk->find(change.frame_id_);
+          if (tsi != tk->end())
+          {
+            auto fts = std::dynamic_pointer_cast<kwiver::vital::feature_track_state>(*tsi);
+            if (fts)
+            {
+              fts->inlier = change.inlier_;
+            }
+          }
+        }
+      }
+    }
+    d->toolUpdateTrackChanges = NULL;
+  }
+
   if (d->toolUpdateDepth)
   {
     d->activeDepth = d->toolUpdateDepth;
