@@ -303,6 +303,7 @@ public:
                       const QString& description = QString(""),
                       int value = 0);
 
+  void saveGeoOrigin(QString const& path);
   std::string roiToString();
   void loadroi(const std::string& roistr);
 
@@ -383,6 +384,14 @@ MainWindowPrivate::MainWindowPrivate(MainWindow* mainWindow)
                    mainWindow, &MainWindow::updateFrames);
 
   sfmConstraints = std::make_shared<kv::sfm_constraints>();
+}
+
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::saveGeoOrigin(QString const& path)
+{
+  project->config->set_value("geo_origin_file", kvPath(
+    project->getContingentRelativePath(path)));
+  kv::write_local_geo_cs_to_file(sfmConstraints->get_local_geo_cs(), stdString(path));
 }
 
 //-----------------------------------------------------------------------------
@@ -658,6 +667,14 @@ void MainWindowPrivate::updateFrames(
           mdMap, baseCamera, lgcs);
 
         sfmConstraints->set_local_geo_cs(lgcs);
+
+        if (this->project &&
+            !sfmConstraints->get_local_geo_cs().origin().is_empty() &&
+            !project->geoOriginFile.isEmpty())
+        {
+          saveGeoOrigin(project->geoOriginFile);
+        }
+
       }
     }
 
@@ -2240,9 +2257,7 @@ void MainWindow::saveGeoOrigin(QString const& path)
 {
   QTE_D();
 
-  d->project->config->set_value("geo_origin_file", kvPath(
-    d->project->getContingentRelativePath(path)));
-  kv::write_local_geo_cs_to_file(d->sfmConstraints->get_local_geo_cs(), stdString(path));
+  d->saveGeoOrigin(path);
 }
 
 //-----------------------------------------------------------------------------
