@@ -303,6 +303,7 @@ public:
                       const QString& description = QString(""),
                       int value = 0);
 
+  void saveGeoOrigin(QString const& path);
   std::string roiToString();
   void loadroi(const std::string& roistr);
 
@@ -383,6 +384,14 @@ MainWindowPrivate::MainWindowPrivate(MainWindow* mainWindow)
                    mainWindow, &MainWindow::updateFrames);
 
   sfmConstraints = std::make_shared<kv::sfm_constraints>();
+}
+
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::saveGeoOrigin(QString const& path)
+{
+  project->config->set_value("geo_origin_file", kvPath(
+    project->getContingentRelativePath(path)));
+  kv::write_local_geo_cs_to_file(sfmConstraints->get_local_geo_cs(), stdString(path));
 }
 
 //-----------------------------------------------------------------------------
@@ -584,6 +593,8 @@ void MainWindowPrivate::updateFrames(
 
   this->UI.metadata->updateMetadata(mdMap);
 
+  int num_cams_loaded_from_krtd = 0;
+
   if (this->project &&
       this->project->config->has_value("output_krtd_dir"))
   {
@@ -599,7 +610,10 @@ void MainWindowPrivate::updateFrames(
           kvPath(frameName), kvPath(this->project->cameraPath));
 
         // Add camera to scene
-        this->updateCamera(frame.id, camera);
+        if (this->updateCamera(frame.id, camera))
+        {
+          ++num_cams_loaded_from_krtd;
+        }
       }
       catch (...)
       {
@@ -609,7 +623,8 @@ void MainWindowPrivate::updateFrames(
     }
     this->UI.worldView->setCameras(this->cameraMap());
   }
-  else
+
+  if(num_cams_loaded_from_krtd == 0)
   {
 #define GET_K_CONFIG(type, name) \
   this->freestandingConfig->get_value<type>(bc + #name, K_def.name())
@@ -658,6 +673,14 @@ void MainWindowPrivate::updateFrames(
           mdMap, baseCamera, lgcs);
 
         sfmConstraints->set_local_geo_cs(lgcs);
+
+        if (this->project &&
+            !sfmConstraints->get_local_geo_cs().origin().is_empty() &&
+            !project->geoOriginFile.isEmpty())
+        {
+          saveGeoOrigin(project->geoOriginFile);
+        }
+
       }
     }
 
@@ -1006,7 +1029,11 @@ void MainWindowPrivate::updateCameraView()
 //-----------------------------------------------------------------------------
 std::string MainWindowPrivate::getFrameName(kv::frame_id_t frameId)
 {
-  auto md = videoMetadataMap->metadata();
+  kwiver::vital::metadata_map::map_metadata_t md;
+  if (videoMetadataMap)
+  {
+    md = videoMetadataMap->metadata();
+  }
   return frameName(frameId, md);
 }
 
@@ -1066,6 +1093,8 @@ void MainWindowPrivate::loadImage(FrameData frame)
         frame.camera->SetImageDimensions(dimensions);
       }
 
+      sfmConstraints->store_image_size(frame.id, dimensions[0], dimensions[1]);
+
       // Set frame name in camera view
       this->UI.cameraView->setImagePath(
         qtString(this->getFrameName(frame.id)));
@@ -1076,15 +1105,22 @@ void MainWindowPrivate::loadImage(FrameData frame)
       this->UI.worldView->setImageData(imageData, size);
 
       // Update metadata view
-      auto md = this->videoMetadataMap->metadata();
-      if (md.empty())
+      if (!this->videoMetadataMap)
       {
         this->UI.metadata->updateMetadata(kv::metadata_vector{});
       }
       else
       {
-        auto mdi = --(md.upper_bound(frame.id));
-        this->UI.metadata->updateMetadata(mdi->second);
+        auto md_map = this->videoMetadataMap->metadata();
+        auto mdi = md_map.find(frame.id);
+        if (mdi == md_map.end())
+        {
+          this->UI.metadata->updateMetadata(kwiver::vital::metadata_vector{});
+        }
+        else
+        {
+          this->UI.metadata->updateMetadata(mdi->second);
+        }
       }
     }
   }
@@ -2068,6 +2104,20 @@ void MainWindow::saveCameras(QString const& path, bool writeToProject)
   auto out = QHash<QString, kv::camera_perspective_sptr>();
   auto willOverwrite = QStringList();
 
+  auto qdir = QDir(path);
+  auto entry_info_list = qdir.entryInfoList();
+  const QString cam_extension = "krtd";
+
+  for (auto &ent : entry_info_list)
+  {
+    if (ent.isFile() && ent.suffix() == cam_extension)
+    {
+      auto del_file_str = ent.absoluteFilePath();
+      QFile f(del_file_str);
+      f.remove();
+    }
+  }
+
   for (auto const& cd : d->frames)
   {
     if (cd.camera)
@@ -2075,7 +2125,8 @@ void MainWindow::saveCameras(QString const& path, bool writeToProject)
       auto const camera = cd.camera->GetCamera();
       if (camera)
       {
-        auto cameraName = qtString(d->getFrameName(cd.id)) + ".krtd";
+        auto cameraName = qtString(d->getFrameName(cd.id) + "."
+                                   + stdString(cam_extension));
         auto const filepath = QDir{path}.filePath(cameraName);
         out.insert(filepath, camera);
 
@@ -2230,9 +2281,7 @@ void MainWindow::saveGeoOrigin(QString const& path)
 {
   QTE_D();
 
-  d->project->config->set_value("geo_origin_file", kvPath(
-    d->project->getContingentRelativePath(path)));
-  kv::write_local_geo_cs_to_file(d->sfmConstraints->get_local_geo_cs(), stdString(path));
+  d->saveGeoOrigin(path);
 }
 
 //-----------------------------------------------------------------------------
@@ -2571,8 +2620,6 @@ void MainWindow::saveToolResults()
     if (!outputs.testFlag(AbstractTool::BatchDepth) && outputs.testFlag(AbstractTool::Depth))
     {
       saveDepthImage(d->project->depthPath);
-      d->project->config->set_value("output_depth_dir", kvPath(
-        d->project->getContingentRelativePath(d->project->depthPath)));
     }
 
     d->project->write();
