@@ -39,6 +39,7 @@
 #include "FieldInformation.h"
 #include "GroundControlPointsWidget.h"
 #include "ImageOptions.h"
+#include "RulerWidget.h"
 #include "vtkMaptkFeatureTrackRepresentation.h"
 
 #include <vital/types/feature_track_set.h>
@@ -213,6 +214,7 @@ public:
 
   PointOptions* landmarkOptions;
   GroundControlPointsWidget* groundControlPointsWidget;
+  RulerWidget* rulerWidget;
 
   double imageBounds[6];
 
@@ -448,6 +450,9 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->groundControlPointsWidget = new GroundControlPointsWidget(this);
   d->groundControlPointsWidget->setTransformMatrix(d->transformMatrix);
 
+  d->rulerWidget = new RulerWidget(this);
+  d->rulerWidget->setTransformMatrix(d->transformMatrix);
+
   auto const residualsOptions =
     new ActorColorOption("CameraView/Residuals", this);
   residualsOptions->setDefaultColor(QColor(255, 128, 0));
@@ -494,7 +499,9 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   // Set interactor
   vtkNew<vtkInteractorStyleRubberBand2D> is;
   d->UI.renderWidget->GetInteractor()->SetInteractorStyle(is);
-  d->groundControlPointsWidget->setInteractor(d->UI.renderWidget->GetInteractor());
+  d->groundControlPointsWidget->setInteractor(
+    d->UI.renderWidget->GetInteractor());
+  d->rulerWidget->setInteractor(d->UI.renderWidget->GetInteractor());
 
   // Set up actors
   d->renderer->AddActor(d->featureRep->GetActivePointsWithDescActor());
@@ -765,6 +772,14 @@ GroundControlPointsWidget* CameraView::groundControlPointsWidget() const
   QTE_D();
 
   return d->groundControlPointsWidget;
+}
+
+//-----------------------------------------------------------------------------
+RulerWidget* CameraView::rulerWidget() const
+{
+  QTE_D();
+
+  return d->rulerWidget;
 }
 
 //-----------------------------------------------------------------------------

@@ -117,6 +117,8 @@ set(gui_sources
   MetadataView.cxx
   PointOptions.cxx
   Project.cxx
+  RulerHelper.cxx
+  RulerWidget.cxx
   Utils.cxx
   VideoImport.cxx
   VolumeOptions.cxx

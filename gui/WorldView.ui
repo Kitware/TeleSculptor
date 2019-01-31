@@ -32,6 +32,7 @@
      <addaction name="actionSelectROI"/>
      <addaction name="actionShowDepthMap"/>
      <addaction name="actionShowVolume"/>
+     <addaction name="actionShowRuler"/>
     </widget>
    </item>
    <item>
@@ -328,6 +329,24 @@
    </property>
    <property name="shortcut">
     <string>Esc</string>
+   </property>
+  </action>
+  <action name="actionShowRuler">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/22x22/ruler</normaloff>:/icons/22x22/ruler</iconset>
+   </property>
+   <property name="text">
+    <string>Ruler</string>
+   </property>
+   <property name="toolTip">
+    <string>Measure distance using a ruler</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+M</string>
    </property>
   </action>
  </widget>

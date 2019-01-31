@@ -40,6 +40,7 @@
 #include "GroundControlPointsWidget.h"
 #include "ImageOptions.h"
 #include "PointOptions.h"
+#include "RulerWidget.h"
 #include "VolumeOptions.h"
 #include "vtkMaptkCamera.h"
 #include "vtkMaptkCameraRepresentation.h"
@@ -177,6 +178,7 @@ public:
   PointOptions* landmarkOptions;
   DepthMapOptions* depthMapOptions;
   GroundControlPointsWidget* groundControlPointsWidget;
+  RulerWidget* rulerWidget;
 
   VolumeOptions* volumeOptions;
   vtkFlyingEdges3D* contourFilter;
@@ -489,6 +491,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   this->addAction(d->UI.actionShowDepthMap);
   this->addAction(d->UI.actionShowVolume);
   this->addAction(d->UI.actionPlaceEditGCP);
+  this->addAction(d->UI.actionShowRuler);
 
   connect(d->UI.actionViewReset, &QAction::triggered,
           this, &WorldView::resetView);
@@ -536,9 +539,13 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->renderWindow->AddRenderer(d->renderer);
   d->UI.renderWidget->SetRenderWindow(d->renderWindow);
   d->groundControlPointsWidget = new GroundControlPointsWidget(this);
-  d->groundControlPointsWidget->setInteractor(d->UI.renderWidget->GetInteractor());
+  d->groundControlPointsWidget->setInteractor(
+    d->UI.renderWidget->GetInteractor());
   connect(d->UI.actionPlaceEditGCP, &QAction::toggled,
           this, &WorldView::pointPlacementEnabled);
+
+  d->rulerWidget = new RulerWidget(this);
+  d->rulerWidget->setInteractor(d->UI.renderWidget->GetInteractor());
 
   vtkNew<vtkMaptkInteractorStyle> iren;
   d->renderWindow->GetInteractor()->SetInteractorStyle(iren);
@@ -1689,4 +1696,12 @@ GroundControlPointsWidget* WorldView::groundControlPointsWidget() const
   QTE_D();
 
   return d->groundControlPointsWidget;
+}
+
+//-----------------------------------------------------------------------------
+RulerWidget* WorldView::rulerWidget() const
+{
+  QTE_D();
+
+  return d->rulerWidget;
 }

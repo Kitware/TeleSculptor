@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2017-2018 by Kitware, Inc.
+ * Copyright 2018 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,75 +28,72 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_CAMERAVIEW_H_
-#define MAPTK_CAMERAVIEW_H_
+#ifndef MAPTK_RULERWIDGET_H_
+#define MAPTK_RULERWIDGET_H_
 
-#include <vital/vital_types.h>
-
+// qtExtensions includes
 #include <qtGlobal.h>
 
-#include <QWidget>
+// kwiver includes
+#include <vital/types/vector.h>
 
-class vtkImageData;
+// Qt includes
+#include <QObject>
 
-namespace kwiver { namespace vital { class landmark_map; } }
-namespace kwiver { namespace vital { class track; } }
+// STL includes
+#include <list>
 
-class vtkMaptkCamera;
-class GroundControlPointsWidget;
-class RulerWidget;
+// Forward declarations
+class RulerWidgetPrivate;
+class vtkAbstractWidget;
+class vtkHandleWidget;
+class vtkMatrix4x4;
+class vtkObject;
+class vtkPointPlacer;
+class vtkRenderWindowInteractor;
+class vtkRenderer;
 
-class CameraViewPrivate;
-
-class CameraView : public QWidget
+class RulerWidget : public QObject
 {
   Q_OBJECT
 
 public:
-  explicit CameraView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  ~CameraView() override;
+  RulerWidget(QObject* parent = 0);
+  ~RulerWidget();
 
-  void addFeatureTrack(kwiver::vital::track const&);
-  GroundControlPointsWidget* groundControlPointsWidget() const;
-  RulerWidget* rulerWidget() const;
+  void setInteractor(vtkRenderWindowInteractor* iren);
 
-  void enableAntiAliasing(bool enable);
-public slots:
-  void setBackgroundColor(QColor const&);
+  void setPointPlacer(vtkPointPlacer* placer);
 
-  void setImagePath(QString const&);
-  void setImageData(vtkImageData* data, QSize dimensions);
+  // Get the renderer
+  vtkRenderer* renderer();
 
-  void setLandmarksData(kwiver::vital::landmark_map const&);
+  // If set, transform each point before adding
+  // Note that this just affects new points. Perhaps, this can be extended to
+  // transform each existing point in the future.
+  void setTransformMatrix(vtkMatrix4x4*);
+  vtkMatrix4x4* transformMatrix() const;
 
-  void setActiveFrame(unsigned);
-
-  void addLandmark(kwiver::vital::landmark_id_t id, double x, double y);
-  void addResidual(kwiver::vital::track_id_t id,
-                   double x1, double y1,
-                   double x2, double y2);
-
-  void clearLandmarks();
-  void clearResiduals();
-  void clearFeatureTracks();
-  void clearGroundControlPoints();
-
-  void resetView();
-  void resetViewToFullExtents();
+  // Render the widget
   void render();
 
-protected slots:
-  void setImageVisible(bool);
-  void setLandmarksVisible(bool);
-  void setResidualsVisible(bool);
+  /// Enable/disable the internal seed widget
+  void enableWidget(bool enable);
 
-  void updateFeatures();
+signals:
+  void pointPlaced();
+  void pointMoved();
+
+protected slots:
+  // void addInternalPoint();
+  void movePointEvent();
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(CameraView)
-  QTE_DECLARE_PRIVATE(CameraView)
+  QTE_DECLARE_PRIVATE_RPTR(RulerWidget)
+  QTE_DECLARE_PRIVATE(RulerWidget)
 
-  QTE_DISABLE_COPY(CameraView)
+  QTE_DISABLE_COPY(RulerWidget)
 };
 
 #endif
+
