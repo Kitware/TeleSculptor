@@ -240,7 +240,9 @@ void ComputeDepthTool::run()
   int ref_frame = 0;
 
   this->setDescription("Collecting Video Frames");
-  emit updated(std::make_shared<ToolData>());
+  auto data = std::make_shared<ToolData>();
+  data->activeFrame = frame;
+  emit updated(data);
 
   d->video_reader->open(this->data()->videoPath);
 
@@ -323,7 +325,9 @@ void ComputeDepthTool::run()
   
   //compute depth
   this->setDescription("Computing Cost Volume");
-  emit updated(std::make_shared<ToolData>());
+  data = std::make_shared<ToolData>();
+  data->activeFrame = frame;
+  emit updated(data);
   auto depth = d->depth_algo->compute(frames_out, cameras_out,
                                       height_min, height_max,
                                       ref_frame, d->crop);
@@ -347,7 +351,7 @@ ComputeDepthTool::callback_handler(kwiver::vital::image_container_sptr depth,
   data->copyDepth(depthData);
   data->activeFrame = d->ref_frame;
   this->setDescription("Optimizing Depth");
-  this->updateProgress(iterations, d_ptr->max_iterations);
+  this->updateProgress(iterations, d->max_iterations);
 
   emit updated(data);
   return !this->isCanceled();
