@@ -259,8 +259,6 @@ void FuseDepthTool::run()
 {
   QTE_D();
 
-  int frame = this->activeFrame();
-
   auto const& depths = this->depthLookup();
   auto const& cameras = this->cameras()->cameras();
   vtkBox *roi = this->ROI();
