@@ -14,16 +14,7 @@
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <property name="leftMargin">
-    <number>0</number>
-   </property>
-   <property name="topMargin">
-    <number>0</number>
-   </property>
-   <property name="rightMargin">
-    <number>0</number>
-   </property>
-   <property name="bottomMargin">
+   <property name="margin">
     <number>0</number>
    </property>
    <item>
@@ -36,7 +27,7 @@
      <addaction name="actionShowFrameImage"/>
      <addaction name="actionShowCameras"/>
      <addaction name="actionShowLandmarks"/>
-     <addaction name="actionEditGroundControlPoints"/>
+     <addaction name="actionPlaceEditGCP"/>
      <addaction name="actionShowGroundPlane"/>
      <addaction name="actionSelectROI"/>
      <addaction name="actionShowDepthMap"/>
@@ -289,7 +280,7 @@
     <string>Toggle volume display</string>
    </property>
   </action>
-  <action name="actionEditGroundControlPoints">
+  <action name="actionPlaceEditGCP">
    <property name="checkable">
     <bool>true</bool>
    </property>

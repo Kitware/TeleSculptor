@@ -488,7 +488,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   this->addAction(d->UI.actionShowGroundPlane);
   this->addAction(d->UI.actionShowDepthMap);
   this->addAction(d->UI.actionShowVolume);
-  this->addAction(d->UI.actionEditGroundControlPoints);
+  this->addAction(d->UI.actionPlaceEditGCP);
 
   connect(d->UI.actionViewReset, &QAction::triggered,
           this, &WorldView::resetView);
@@ -537,7 +537,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->UI.renderWidget->SetRenderWindow(d->renderWindow);
   d->groundControlPointsWidget = new GroundControlPointsWidget(this);
   d->groundControlPointsWidget->setInteractor(d->UI.renderWidget->GetInteractor());
-  connect(d->UI.actionEditGroundControlPoints, &QAction::toggled,
+  connect(d->UI.actionPlaceEditGCP, &QAction::toggled,
           this, &WorldView::pointPlacementEnabled);
 
   vtkNew<vtkMaptkInteractorStyle> iren;
