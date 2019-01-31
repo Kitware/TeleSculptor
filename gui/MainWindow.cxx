@@ -2609,8 +2609,6 @@ void MainWindow::saveToolResults()
     if (!outputs.testFlag(AbstractTool::BatchDepth) && outputs.testFlag(AbstractTool::Depth))
     {
       saveDepthImage(d->project->depthPath);
-      d->project->config->set_value("output_depth_dir", kvPath(
-        d->project->getContingentRelativePath(d->project->depthPath)));
     }
 
     d->project->write();
