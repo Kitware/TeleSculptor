@@ -3,12 +3,16 @@ include(CheckCXXCompilerFlag)
 include_directories("${MAPTK_SOURCE_DIR}")
 include_directories("${MAPTK_BINARY_DIR}")
 
+find_package(PDAL 1.0.0 REQUIRED)
+
+
 ###
 # Setting up main library
 #
 set(maptk_public_headers
   geo_reference_points_io.h
   ground_control_point.h
+  pdal_write.h
   )
 
 set(maptk_private_headers
@@ -20,6 +24,7 @@ set(maptk_sources
   colorize.cxx
   geo_reference_points_io.cxx
   ground_control_point.cxx
+  pdal_write.cxx
   )
 
 kwiver_configure_file( version.h
@@ -39,6 +44,12 @@ kwiver_add_library(
 target_link_libraries( maptk
   PUBLIC               kwiver::vital
                        kwiver::kwiversys
+  PRIVATE              ${PDAL_LIBRARIES}
+  )
+
+target_include_directories( maptk
+  PRIVATE                   ${PDAL_INCLUDE_DIRS}
+                            ${PDAL_INCLUDE_DIRS}/pdal
   )
 
 # Configuring/Adding compile definitions to target
