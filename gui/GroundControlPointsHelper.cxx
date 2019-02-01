@@ -46,6 +46,7 @@
 #include <vtkPlane.h>
 #include <vtkRenderer.h>
 
+#include <qtScopedValueChange.h>
 #include <qtStlUtil.h>
 
 #include <QDebug>
@@ -541,20 +542,27 @@ void GroundControlPointsHelper::setGroundControlPoints(
 {
   QTE_D();
 
-  // Clear all existing ground control points before adding new ones.
-  GroundControlPointsWidget* cameraWidget =
-    d->mainWindow->cameraView()->groundControlPointsWidget();
-  cameraWidget->clearPoints();
-  GroundControlPointsWidget* worldWidget =
-    d->mainWindow->worldView()->groundControlPointsWidget();
-  worldWidget->clearPoints();
-  d->groundControlPoints.clear();
-
-  auto const& groundControlPoints = gcpm.ground_control_points();
-  for (auto const& gcp : groundControlPoints)
+  // Don't signal addition of individual points
+  with_expr (qtScopedBlockSignals{this})
   {
-    d->addPoint(gcp.first, gcp.second);
+    // Clear all existing ground control points before adding new ones.
+    GroundControlPointsWidget* cameraWidget =
+      d->mainWindow->cameraView()->groundControlPointsWidget();
+    cameraWidget->clearPoints();
+    GroundControlPointsWidget* worldWidget =
+      d->mainWindow->worldView()->groundControlPointsWidget();
+    worldWidget->clearPoints();
+    d->groundControlPoints.clear();
+
+    auto const& groundControlPoints = gcpm.ground_control_points();
+    for (auto const& gcp : groundControlPoints)
+    {
+      d->addPoint(gcp.first, gcp.second);
+    }
   }
+
+  emit this->pointsReloaded();
+  emit this->pointCountChanged(d->groundControlPoints.size());
 }
 
 //-----------------------------------------------------------------------------
@@ -608,20 +616,34 @@ bool GroundControlPointsHelper::readGroundControlPoints(QString const& path)
     return fail("invalid FeatureCollection");
   }
 
-  // Read points from feature collection
-  auto getJsonObject = [](QJsonValue const& v){ return v.toObject(); };
-  for (auto const& f : features.toArray() | kvr::transform(getJsonObject))
+
+  // Don't signal addition of individual points
+  auto pointsAdded = false;
+  with_expr (qtScopedBlockSignals{this})
   {
-    if (f.value(TAG_TYPE).toString() != TAG_FEATURE)
+    // Read points from feature collection
+    auto getJsonObject = [](QJsonValue const& v){ return v.toObject(); };
+    for (auto const& f : features.toArray() | kvr::transform(getJsonObject))
     {
-      qWarning() << "ignoring non-feature object" << f
-                 << "in FeatureCollection";
-      continue;
+      if (f.value(TAG_TYPE).toString() != TAG_FEATURE)
+      {
+        qWarning() << "ignoring non-feature object" << f
+                   << "in FeatureCollection";
+        continue;
+      }
+      if (auto gcp = extractGroundControlPoint(f))
+      {
+        d->addPoint(d->curId++, gcp);
+        pointsAdded = true;
+      }
     }
-    if (auto gcp = extractGroundControlPoint(f))
-    {
-      d->addPoint(d->curId++, gcp);
-    }
+  }
+
+  // Signal that points were changed
+  if (pointsAdded)
+  {
+    emit this->pointsReloaded();
+    emit this->pointCountChanged(d->groundControlPoints.size());
   }
 
   return true;
