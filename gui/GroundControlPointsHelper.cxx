@@ -199,7 +199,7 @@ public:
   GroundControlPointsHelperPrivate(GroundControlPointsHelper* q) : q_ptr{q} {}
 
   MainWindow* mainWindow = nullptr;
-  id_t curId = 0;
+  id_t nextId = 0;
   kv::ground_control_point_map::ground_control_point_map_t groundControlPoints;
   std::map<vtkHandleWidget*, id_t> gcpHandleIdMap;
 
@@ -236,7 +236,7 @@ void GroundControlPointsHelperPrivate::addPoint(
   auto* const worldWidget =
     this->mainWindow->worldView()->groundControlPointsWidget();
   auto* const handle = worldWidget->handleWidget(worldWidget->activeHandle());
-  this->gcpHandleIdMap[handle] = curId;
+  this->gcpHandleIdMap[handle] = id;
 }
 
 //-----------------------------------------------------------------------------
@@ -274,12 +274,12 @@ id_t GroundControlPointsHelperPrivate::addPoint()
   GroundControlPointsWidget* worldWidget =
     this->mainWindow->worldView()->groundControlPointsWidget();
   auto const pt = worldWidget->activePoint();
-  this->groundControlPoints[curId] =
+  this->groundControlPoints[nextId] =
     std::make_shared<kv::ground_control_point>(pt);
   vtkHandleWidget* const handle =
     worldWidget->handleWidget(worldWidget->activeHandle());
-  this->gcpHandleIdMap[handle] = curId;
-  return curId++;
+  this->gcpHandleIdMap[handle] = nextId;
+  return nextId++;
 }
 
 //-----------------------------------------------------------------------------
@@ -553,11 +553,13 @@ void GroundControlPointsHelper::setGroundControlPoints(
       d->mainWindow->worldView()->groundControlPointsWidget();
     worldWidget->clearPoints();
     d->groundControlPoints.clear();
+    d->nextId = 0;
 
     auto const& groundControlPoints = gcpm.ground_control_points();
     for (auto const& gcp : groundControlPoints)
     {
       d->addPoint(gcp.first, gcp.second);
+      d->nextId = std::max(gcp.first + 1, d->nextId);
     }
   }
 
@@ -633,7 +635,7 @@ bool GroundControlPointsHelper::readGroundControlPoints(QString const& path)
       }
       if (auto gcp = extractGroundControlPoint(f))
       {
-        d->addPoint(d->curId++, gcp);
+        d->addPoint(d->nextId++, gcp);
         pointsAdded = true;
       }
     }
