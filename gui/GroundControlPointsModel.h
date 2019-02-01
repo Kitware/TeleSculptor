@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2018-2019 by Kitware, Inc.
+ * Copyright 2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,33 +28,56 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_GROUNDCONTROLPOINTSVIEW_H_
-#define MAPTK_GROUNDCONTROLPOINTSVIEW_H_
+#ifndef MAPTK_GROUNDCONTROLPOINTSMODEL_H_
+#define MAPTK_GROUNDCONTROLPOINTSMODEL_H_
+
+#include <maptk/ground_control_point.h>
 
 #include <qtGlobal.h>
 
-#include <QWidget>
+#include <QAbstractItemModel>
 
-class GroundControlPointsHelper;
+class GroundControlPointsModelPrivate;
 
-class GroundControlPointsViewPrivate;
-
-class GroundControlPointsView : public QWidget
+class GroundControlPointsModel : public QAbstractItemModel
 {
   Q_OBJECT
 
 public:
-  explicit GroundControlPointsView(
-    QWidget* parent = 0, Qt::WindowFlags flags = 0);
-  ~GroundControlPointsView();
+  GroundControlPointsModel(QObject* parent = nullptr);
+  ~GroundControlPointsModel();
 
-  void setHelper(GroundControlPointsHelper*);
+  kwiver::vital::ground_control_point_id_t id(QModelIndex const& index) const;
+
+  int rowCount(QModelIndex const& parent) const override;
+  int columnCount(QModelIndex const& parent) const override;
+
+  QModelIndex index(int row, int column,
+                    QModelIndex const& parent) const override;
+  QModelIndex parent(QModelIndex const& child) const override;
+
+  QVariant data(QModelIndex const& index, int role) const override;
+  Qt::ItemFlags flags(QModelIndex const& index) const override;
+  bool setData(QModelIndex const& index, QVariant const& value,
+               int role) override;
+
+  QVariant headerData(int section, Qt::Orientation orientation,
+                      int role) const override;
+
+  void setPointData(std::map<kwiver::vital::ground_control_point_id_t,
+                             kwiver::vital::ground_control_point_sptr> const&);
+
+public slots:
+  void addPoint(kwiver::vital::ground_control_point_id_t);
+  void removePoint(kwiver::vital::ground_control_point_id_t);
+
+  void resetPoints();
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(GroundControlPointsView)
-  QTE_DECLARE_PRIVATE(GroundControlPointsView)
+  QTE_DECLARE_PRIVATE_RPTR(GroundControlPointsModel)
+  QTE_DECLARE_PRIVATE(GroundControlPointsModel)
 
-  QTE_DISABLE_COPY(GroundControlPointsView)
+  QTE_DISABLE_COPY(GroundControlPointsModel)
 };
 
 #endif

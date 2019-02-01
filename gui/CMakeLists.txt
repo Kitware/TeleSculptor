@@ -106,6 +106,7 @@ set(gui_sources
   FeatureOptions.cxx
   GradientSelector.cxx
   GroundControlPointsHelper.cxx
+  GroundControlPointsModel.cxx
   GroundControlPointsView.cxx
   GroundControlPointsWidget.cxx
   GuiCommon.cxx

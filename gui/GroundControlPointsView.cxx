@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016-2018 by Kitware, Inc.
+ * Copyright 2018-2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,9 @@
 #include "ui_GroundControlPointsView.h"
 #include "am_GroundControlPointsView.h"
 
+#include "GroundControlPointsHelper.h"
+#include "GroundControlPointsModel.h"
+
 #include <qtUtil.h>
 
 #include <QMenu>
@@ -48,6 +51,9 @@ public:
   Am::GroundControlPointsView AM;
 
   QMenu* popupMenu;
+
+  GroundControlPointsModel model;
+  GroundControlPointsHelper* helper = nullptr;
 };
 
 //-----------------------------------------------------------------------------
@@ -60,6 +66,8 @@ GroundControlPointsView::GroundControlPointsView(
   // Set up UI
   d->UI.setupUi(this);
   d->AM.setupActions(d->UI, this);
+
+  d->UI.pointsList->setModel(&d->model);
 
   auto const clText = QStringLiteral("Copy Location");
 
@@ -92,4 +100,27 @@ GroundControlPointsView::GroundControlPointsView(
 //-----------------------------------------------------------------------------
 GroundControlPointsView::~GroundControlPointsView()
 {
+}
+
+//-----------------------------------------------------------------------------
+void GroundControlPointsView::setHelper(GroundControlPointsHelper* helper)
+{
+  QTE_D();
+
+  if (d->helper)
+  {
+    disconnect(d->helper, nullptr, this, nullptr);
+    disconnect(d->helper, nullptr, &d->model, nullptr);
+  }
+
+  d->helper = helper;
+
+  connect(helper, &GroundControlPointsHelper::pointAdded,
+          &d->model, &GroundControlPointsModel::addPoint);
+  connect(helper, &GroundControlPointsHelper::pointRemoved,
+          &d->model, &GroundControlPointsModel::removePoint);
+  connect(helper, &GroundControlPointsHelper::pointsReloaded,
+          &d->model, &GroundControlPointsModel::resetPoints);
+
+  d->model.setPointData(helper->groundControlPoints());
 }

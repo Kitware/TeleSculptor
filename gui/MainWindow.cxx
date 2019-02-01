@@ -1443,6 +1443,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.worldView, &WorldView::pointPlacementEnabled,
           d->groundControlPointsHelper,
           &GroundControlPointsHelper::enableWidgets);
+  d->UI.groundControlPoints->setHelper(d->groundControlPointsHelper);
 
   // Antialiasing
   connect(d->UI.actionAntialiasing, &QAction::toggled,
