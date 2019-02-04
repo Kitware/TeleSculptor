@@ -58,37 +58,51 @@ write_pdal(vital::path_t const& filename,
   namespace kv = kwiver::vital;
   kv::logger_handle_t logger( kv::get_logger( "write_pdal" ) );
 
-	pdal::Options options;
-	options.add("filename", filename);
+  pdal::Options options;
+  options.add("filename", filename);
 
-	pdal::PointTable table;
-	table.layout()->registerDim(pdal::Dimension::Id::X);
-	table.layout()->registerDim(pdal::Dimension::Id::Y);
-	table.layout()->registerDim(pdal::Dimension::Id::Z);
+  pdal::PointTable table;
+  table.layout()->registerDim(pdal::Dimension::Id::X);
+  table.layout()->registerDim(pdal::Dimension::Id::Y);
+  table.layout()->registerDim(pdal::Dimension::Id::Z);
+  table.layout()->registerDim(pdal::Dimension::Id::Red);
+  table.layout()->registerDim(pdal::Dimension::Id::Green);
+  table.layout()->registerDim(pdal::Dimension::Id::Blue);
 
-	pdal::PointViewPtr view(new pdal::PointView(table));
+  int crs = lgcs.origin().crs();
+  const kv::vector_2d offset_xy = lgcs.origin().location();
+  const double offset_z = lgcs.origin_altitude();
+  auto srs = pdal::SpatialReference("EPSG:" + std::to_string(crs));
+  pdal::PointViewPtr view(new pdal::PointView(table, srs));
 
-	for( auto const& lm : landmarks->landmarks() )
+  for( auto const& lm : landmarks->landmarks() )
   {
-    auto pt = lm.second->loc();
+    kv::vector_3d pt = lm.second->loc();
+    pt[0] += offset_xy[0];
+    pt[1] += offset_xy[1];
+    pt[2] += offset_z;
+    auto rgb = lm.second->color();
     view->setField(pdal::Dimension::Id::X, lm.first, pt.x());
     view->setField(pdal::Dimension::Id::Y, lm.first, pt.y());
     view->setField(pdal::Dimension::Id::Z, lm.first, pt.z());
+    view->setField(pdal::Dimension::Id::Red, lm.first, rgb.r);
+    view->setField(pdal::Dimension::Id::Green, lm.first, rgb.g);
+    view->setField(pdal::Dimension::Id::Blue, lm.first, rgb.b);
   }
 
-	pdal::BufferReader reader;
-	reader.addView(view);
+  pdal::BufferReader reader;
+  reader.addView(view);
 
-	pdal::StageFactory factory;
+  pdal::StageFactory factory;
 
-	// Set second argument to 'true' to let factory take ownership of
-	// stage and facilitate clean up.
-	pdal::Stage *writer = factory.createStage("writers.las");
+  // Set second argument to 'true' to let factory take ownership of
+  // stage and facilitate clean up.
+  pdal::Stage *writer = factory.createStage("writers.las");
 
-	writer->setInput(reader);
-	writer->setOptions(options);
-	writer->prepare(table);
-	writer->execute(table);
+  writer->setInput(reader);
+  writer->setOptions(options);
+  writer->prepare(table);
+  writer->execute(table);
 }
 
 
