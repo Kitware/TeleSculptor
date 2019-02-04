@@ -110,6 +110,16 @@ public:
     elevation_ = elev;
   }
   /// Accessor for the name of the ground control point
+  bool is_geo_loc_user_provided() const
+  {
+    return geo_loc_user_provided_;
+  }
+  /// Set the name of the ground control point
+  void set_geo_loc_user_provided(bool state)
+  {
+    geo_loc_user_provided_ = state;
+  }
+  /// Accessor for the name of the ground control point
   std::string name() const
   {
     return name_;
@@ -121,10 +131,11 @@ public:
   }
 
 protected:
-  vector_3d loc_;
+  vector_3d loc_{ 0.0, 0.0, 0.0 };
   geo_point geo_loc_;
-  double elevation_;
+  double elevation_ = 0.0;
   std::string name_;
+  bool geo_loc_user_provided_ = false;
 };
 
 /// output stream operator for a ground control point
