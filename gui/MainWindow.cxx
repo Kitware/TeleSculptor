@@ -58,6 +58,7 @@
 #include "vtkMaptkImageUnprojectDepth.h"
 
 #include <maptk/version.h>
+#include <maptk/pdal_write.h>
 
 #include <arrows/core/match_matrix.h>
 #include <arrows/core/track_set_impl.h>
@@ -1978,6 +1979,7 @@ void MainWindow::saveLandmarks()
   auto const path = QFileDialog::getSaveFileName(
     this, "Export Landmarks", QString(),
     "Landmark file (*.ply);;"
+    "LAS file (*.las);;"
     "All Files (*)");
 
   if (!path.isEmpty())
@@ -1993,13 +1995,21 @@ void MainWindow::saveLandmarks(QString const& path, bool writeToProject)
 
   try
   {
-    kv::write_ply_file(d->landmarks, kvPath(path));
-
-    if (writeToProject && d->project)
+    if (QFileInfo(path).suffix() == "las")
     {
-      d->project->config->set_value(
-        "output_ply_file",
-        kvPath(d->project->getContingentRelativePath(path)));
+      auto lgcs = d->sfmConstraints->get_local_geo_cs();
+      kwiver::maptk::write_pdal(stdString(path), lgcs, d->landmarks);
+    }
+    else
+    {
+      kv::write_ply_file(d->landmarks, kvPath(path));
+
+      if (writeToProject && d->project)
+      {
+        d->project->config->set_value(
+          "output_ply_file",
+          kvPath(d->project->getContingentRelativePath(path)));
+      }
     }
   }
   catch (...)
