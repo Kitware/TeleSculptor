@@ -67,9 +67,12 @@ public:
   void setPointData(std::map<kwiver::vital::ground_control_point_id_t,
                              kwiver::vital::ground_control_point_sptr> const&);
 
+  void setRegisteredIcon(QIcon const& icon);
+
 public slots:
   void addPoint(kwiver::vital::ground_control_point_id_t);
   void removePoint(kwiver::vital::ground_control_point_id_t);
+  void modifyPoint(kwiver::vital::ground_control_point_id_t);
 
   void resetPoints();
 

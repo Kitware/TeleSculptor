@@ -34,6 +34,7 @@
 #include <qtStlUtil.h>
 
 #include <QDebug>
+#include <QIcon>
 
 #include <limits>
 
@@ -77,6 +78,9 @@ class GroundControlPointsModelPrivate
 public:
   std::map<id_t, kv::ground_control_point_sptr> const* data = nullptr;
   QVector<gcp_ref> points;
+
+  QIcon registeredIcon;
+  QIcon emptyIcon;
 };
 
 QTE_IMPLEMENT_D_FUNC(GroundControlPointsModel)
@@ -163,6 +167,13 @@ QVariant GroundControlPointsModel::data(
 
         case Qt::TextAlignmentRole:
           return int{Qt::AlignRight | Qt::AlignVCenter};
+
+        case Qt::DecorationRole:
+          if (item.gcp && item.gcp->is_geo_loc_user_provided())
+          {
+            return d->registeredIcon;
+          }
+          return d->emptyIcon;
 
         default:
           return {};
@@ -309,6 +320,23 @@ void GroundControlPointsModel::removePoint(id_t id)
 }
 
 //-----------------------------------------------------------------------------
+void GroundControlPointsModel::modifyPoint(id_t id)
+{
+  QTE_D();
+
+  auto const begin = d->points.begin();
+  auto const end = d->points.end();
+
+  auto const i = std::lower_bound(begin, end, id);
+  if (i != end)
+  {
+    auto const r = static_cast<int>(i - begin);
+    auto const index = this->index(r, COLUMN_ID, {});
+    emit this->dataChanged(index, index, {Qt::DecorationRole});
+  }
+}
+
+//-----------------------------------------------------------------------------
 void GroundControlPointsModel::resetPoints()
 {
   QTE_D();
@@ -335,4 +363,24 @@ void GroundControlPointsModel::setPointData(
 
   d->data = &data;
   this->resetPoints();
+}
+
+//-----------------------------------------------------------------------------
+void GroundControlPointsModel::setRegisteredIcon(QIcon const& icon)
+{
+  QTE_D();
+
+  d->registeredIcon = icon;
+
+  for (auto const s : icon.availableSizes())
+  {
+    QPixmap p{s};
+    p.fill(Qt::transparent);
+    d->emptyIcon.addPixmap(p);
+  }
+
+  emit this->dataChanged(
+    this->index(0, COLUMN_ID, {}),
+    this->index(this->rowCount({}), COLUMN_ID, {}),
+    {Qt::DecorationRole});
 }

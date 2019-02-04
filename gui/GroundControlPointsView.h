@@ -50,6 +50,9 @@ public:
 
   void setHelper(GroundControlPointsHelper*);
 
+protected:
+  void changeEvent(QEvent* e) override;
+
 private:
   QTE_DECLARE_PRIVATE_RPTR(GroundControlPointsView)
   QTE_DECLARE_PRIVATE(GroundControlPointsView)

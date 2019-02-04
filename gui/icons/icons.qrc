@@ -62,4 +62,7 @@
   <qresource prefix="icons/128x128">
     <file alias="telesculptor">128x128/telesculptor.png</file>
   </qresource>
+  <qresource prefix="icons/scalable">
+    <file alias="registered">scalable/registered.svg</file>
+  </qresource>
 </RCC>
