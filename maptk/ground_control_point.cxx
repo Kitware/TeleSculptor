@@ -44,18 +44,12 @@ namespace vital
 {
 
 //-----------------------------------------------------------------------------
-ground_control_point::ground_control_point()
-  : loc_(0, 0, 0)
-  , elevation_(0)
-{
-}
+ground_control_point::ground_control_point() = default;
 
 //-----------------------------------------------------------------------------
 ground_control_point::ground_control_point(vector_3d const& loc,
                                            std::string const& name)
-  : loc_(loc)
-  , elevation_(0)
-  , name_(name)
+  : loc_{loc}, name_{name}
 {
 }
 

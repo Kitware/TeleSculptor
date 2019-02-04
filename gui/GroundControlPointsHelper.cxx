@@ -78,6 +78,7 @@ const auto TAG_POINT              = QStringLiteral("Point");
 // Property keys (not part of GeoJSON specification)
 const auto TAG_NAME               = QStringLiteral("name");
 const auto TAG_LOCATION           = QStringLiteral("location");
+const auto TAG_USER_REGISTERED    = QStringLiteral("userRegistered");
 
 //-----------------------------------------------------------------------------
 bool isDoubleArray(QJsonArray const& a)
@@ -146,6 +147,8 @@ kv::ground_control_point_sptr extractGroundControlPoint(QJsonObject const& f)
     return nullptr;
   }
 
+  gcp->set_geo_loc_user_provided(props.value(TAG_USER_REGISTERED).toBool());
+
   return gcp;
 }
 
@@ -175,6 +178,7 @@ QJsonValue buildFeature(kv::ground_control_point_sptr const& gcpp)
   QJsonObject props;
   props.insert(TAG_NAME, qtString(gcp.name()));
   props.insert(TAG_LOCATION, QJsonArray{sl[0], sl[1], sl[2]});
+  props.insert(TAG_USER_REGISTERED, gcp.is_geo_loc_user_provided());
 
   // Create and return feature
   QJsonObject f;
