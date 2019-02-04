@@ -42,7 +42,7 @@
 class AbstractValueAlgorithm
 {
 public:
-  typedef Eigen::SparseMatrix<uint> Matrix;
+  typedef Eigen::SparseMatrix<unsigned int> Matrix;
   typedef Matrix::InnerIterator MatrixIterator;
 
   AbstractValueAlgorithm() = default;
