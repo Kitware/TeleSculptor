@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2018 by Kitware, Inc.
+ * Copyright 2018-2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -237,6 +237,24 @@ vtkHandleWidget* GroundControlPointsWidget::handleWidget(int handleId) const
   QTE_D();
 
   return d->widget->GetSeed(handleId);
+}
+
+//-----------------------------------------------------------------------------
+int GroundControlPointsWidget::findHandleWidget(vtkHandleWidget* handle) const
+{
+  QTE_D();
+
+  // NOTE: This is APPALLINGLY inefficient! (O(n²))
+  vtkHandleWidget* candidate;
+  for (int n = 0; (candidate = d->widget->GetSeed(n)); ++n)
+  {
+    if (candidate == handle)
+    {
+      return n;
+    }
+  }
+
+  return -1;
 }
 
 //-----------------------------------------------------------------------------

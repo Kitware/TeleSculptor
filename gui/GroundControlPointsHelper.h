@@ -74,6 +74,9 @@ public:
 public slots:
   void enableWidgets(bool);
 
+  void resetPoint(kwiver::vital::ground_control_point_id_t);
+  void removePoint(kwiver::vital::ground_control_point_id_t);
+
 signals:
   void pointsReloaded();
   void pointCountChanged(size_t);
@@ -85,7 +88,7 @@ protected slots:
   void addCameraViewPoint();
   void addWorldViewPoint();
 
-  void removePoint(int handleId);
+  void removePointByHandle(int handleId);
 
   void moveCameraViewPoint();
   void moveWorldViewPoint();
