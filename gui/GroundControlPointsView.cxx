@@ -36,6 +36,9 @@
 #include "GroundControlPointsHelper.h"
 #include "GroundControlPointsModel.h"
 
+#include <vital/types/geodesy.h>
+
+#include <qtScopedValueChange.h>
 #include <qtUtil.h>
 
 #include <QEvent>
@@ -47,8 +50,16 @@
 #include <QToolButton>
 #include <QWindow>
 
+#include <limits>
+
+namespace kv = kwiver::vital;
+
+using id_t = kv::ground_control_point_id_t;
+
 namespace
 {
+
+constexpr auto INVALID_POINT = std::numeric_limits<id_t>::max();
 
 //-----------------------------------------------------------------------------
 QPixmap colorize(QByteArray svg, int physicalSize, int logicalSize,
@@ -75,13 +86,22 @@ class GroundControlPointsViewPrivate
 public:
   void updateRegisteredIcon(QWidget* widget);
 
+  void enableControls(bool state);
+
+  void showPoint(id_t id);
+  void setPointPosition(id_t id);
+  id_t selectedPoint() const;
+
   Ui::GroundControlPointsView UI;
   Am::GroundControlPointsView AM;
 
   QMenu* popupMenu;
+  QToolButton* copyLocationButton;
 
   GroundControlPointsModel model;
   GroundControlPointsHelper* helper = nullptr;
+
+  id_t currentPoint = INVALID_POINT;
 };
 
 QTE_IMPLEMENT_D_FUNC(GroundControlPointsView)
@@ -120,6 +140,99 @@ void GroundControlPointsViewPrivate::updateRegisteredIcon(QWidget* widget)
 }
 
 //-----------------------------------------------------------------------------
+void GroundControlPointsViewPrivate::enableControls(bool state)
+{
+  this->UI.easting->setEnabled(state);
+  this->UI.northing->setEnabled(state);
+  this->UI.elevation->setEnabled(state);
+
+  this->UI.actionDelete->setEnabled(state);
+  this->UI.actionRevert->setEnabled(state);
+  this->UI.actionCopyLocationLatLon->setEnabled(state);
+  this->UI.actionCopyLocationLatLonElev->setEnabled(state);
+  this->UI.actionCopyLocationLonLat->setEnabled(state);
+  this->UI.actionCopyLocationLonLatElev->setEnabled(state);
+
+  this->copyLocationButton->setEnabled(state);
+}
+
+//-----------------------------------------------------------------------------
+void GroundControlPointsViewPrivate::showPoint(id_t id)
+{
+  if (this->helper && id != INVALID_POINT)
+  {
+    auto const& gcp = this->helper->groundControlPoint(id);
+    if (gcp)
+    {
+      this->currentPoint = id;
+
+      auto const& gl = gcp->geo_loc();
+      auto const grl = [&gl]() -> kv::vector_2d {
+        if (!gl.is_empty())
+        {
+          try
+          {
+            return gl.location(kv::SRID::lat_lon_WGS84);
+          }
+          catch (...) {}
+        }
+        return { 0.0, 0.0 };
+      }();
+
+      with_expr (qtScopedBlockSignals{this->UI.easting})
+      {
+        this->UI.easting->setValue(grl.x());
+      }
+      with_expr (qtScopedBlockSignals{this->UI.northing})
+      {
+        this->UI.northing->setValue(grl.y());
+      }
+      with_expr (qtScopedBlockSignals{this->UI.elevation})
+      {
+        this->UI.elevation->setValue(gcp->elevation());
+      }
+
+      this->enableControls(true);
+
+      return;
+    }
+  }
+
+  this->currentPoint = INVALID_POINT;
+  this->enableControls(false);
+  return;
+}
+
+//-----------------------------------------------------------------------------
+void GroundControlPointsViewPrivate::setPointPosition(id_t id)
+{
+  if (this->helper && id != INVALID_POINT)
+  {
+    auto const& gcp = this->helper->groundControlPoint(id);
+    if (gcp)
+    {
+      auto const grl =
+        kv::vector_2d{this->UI.easting->value(), this->UI.northing->value()};
+
+      gcp->set_geo_loc({grl, kv::SRID::lat_lon_WGS84},
+                       this->UI.elevation->value());
+      gcp->set_geo_loc_user_provided(true);
+
+      this->model.modifyPoint(id);
+    }
+  }
+}
+
+//-----------------------------------------------------------------------------
+id_t GroundControlPointsViewPrivate::selectedPoint() const
+{
+  auto const& i = this->UI.pointsList->selectionModel()->currentIndex();
+  auto const& ni = this->model.index(i.row(), 0, i.parent());
+  auto const& id = this->model.data(ni, Qt::EditRole);
+  return (id.isValid() ? id.value<id_t>() : INVALID_POINT);
+}
+
+//-----------------------------------------------------------------------------
 GroundControlPointsView::GroundControlPointsView(
   QWidget* parent, Qt::WindowFlags flags)
   : QWidget{parent, flags}, d_ptr{new GroundControlPointsViewPrivate}
@@ -131,6 +244,11 @@ GroundControlPointsView::GroundControlPointsView(
   d->AM.setupActions(d->UI, this);
 
   d->UI.pointsList->setModel(&d->model);
+  d->UI.pointsList->setContextMenuPolicy(Qt::CustomContextMenu);
+
+  connect(d->UI.pointsList->selectionModel(),
+          &QItemSelectionModel::currentChanged,
+          this, [d]{ d->showPoint(d->selectedPoint()); });
 
   d->updateRegisteredIcon(this);
 
@@ -145,24 +263,60 @@ GroundControlPointsView::GroundControlPointsView(
   clMenu->addAction(d->UI.actionCopyLocationLonLat);
   clMenu->addAction(d->UI.actionCopyLocationLonLatElev);
 
-  auto* const clButton = new QToolButton{d->UI.toolBar};
-  clButton->setText(clText);
-  clButton->setToolTip(clText);
-  clButton->setIcon(
+  d->copyLocationButton = new QToolButton{d->UI.toolBar};
+  d->copyLocationButton->setText(clText);
+  d->copyLocationButton->setToolTip(clText);
+  d->copyLocationButton->setIcon(
     qtUtil::standardActionIcon(QStringLiteral("copy-location")));
-  clButton->setMenu(clMenu);
-  clButton->setPopupMode(QToolButton::InstantPopup);
+  d->copyLocationButton->setMenu(clMenu);
+  d->copyLocationButton->setPopupMode(QToolButton::InstantPopup);
 
   auto* const spacer = new QWidget{d->UI.toolBar};
   spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-  d->UI.toolBar->insertWidget(d->UI.actionRevert, clButton);
+  d->UI.toolBar->insertWidget(d->UI.actionRevert, d->copyLocationButton);
   d->UI.toolBar->insertWidget(d->UI.actionRevert, spacer);
 
   d->popupMenu = new QMenu{this};
   d->popupMenu->addMenu(clMenu);
   d->popupMenu->addAction(d->UI.actionRevert);
   d->popupMenu->addAction(d->UI.actionDelete);
+
+  connect(d->UI.pointsList, &QWidget::customContextMenuRequested,
+          this, [d](QPoint const& pt){
+            auto const i = d->UI.pointsList->indexAt(pt);
+            if (i.isValid())
+            {
+              auto const gp = d->UI.pointsList->viewport()->mapToGlobal(pt);
+              d->popupMenu->exec(gp);
+            }
+          });
+
+  connect(d->UI.actionDelete, &QAction::triggered,
+          this, [d]{
+            if (d->helper && d->currentPoint != INVALID_POINT)
+            {
+              d->helper->removePoint(d->currentPoint);
+            }
+          });
+
+  connect(d->UI.actionRevert, &QAction::triggered,
+          this, [d]{
+            if (d->helper && d->currentPoint != INVALID_POINT)
+            {
+              d->helper->resetPoint(d->currentPoint);
+            }
+          });
+
+  // TODO connect copy-location actions
+
+  auto const dsvc = QOverload<double>::of(&QDoubleSpinBox::valueChanged);
+  auto const spp = [d]{ d->setPointPosition(d->currentPoint); };
+  connect(d->UI.easting, dsvc, this, spp);
+  connect(d->UI.northing, dsvc, this, spp);
+  connect(d->UI.elevation, dsvc, this, spp);
+
+  d->enableControls(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -182,6 +336,14 @@ void GroundControlPointsView::setHelper(GroundControlPointsHelper* helper)
   }
 
   d->helper = helper;
+
+  connect(helper, &GroundControlPointsHelper::pointChanged,
+          this, [d](id_t id){
+            if (d->currentPoint == id)
+            {
+              d->showPoint(id);
+            }
+          });
 
   connect(helper, &GroundControlPointsHelper::pointAdded,
           &d->model, &GroundControlPointsModel::addPoint);
