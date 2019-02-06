@@ -41,6 +41,8 @@
 #include <qtScopedValueChange.h>
 #include <qtUtil.h>
 
+#include <QClipboard>
+#include <QDebug>
 #include <QEvent>
 #include <QFile>
 #include <QMenu>
@@ -86,11 +88,13 @@ class GroundControlPointsViewPrivate
 public:
   void updateRegisteredIcon(QWidget* widget);
 
-  void enableControls(bool state);
+  void enableControls(bool state, bool haveLocation = true);
 
   void showPoint(id_t id);
   void setPointPosition(id_t id);
   id_t selectedPoint() const;
+
+  void copyLocation(bool northingFirst, bool includeElevation);
 
   Ui::GroundControlPointsView UI;
   Am::GroundControlPointsView AM;
@@ -140,7 +144,8 @@ void GroundControlPointsViewPrivate::updateRegisteredIcon(QWidget* widget)
 }
 
 //-----------------------------------------------------------------------------
-void GroundControlPointsViewPrivate::enableControls(bool state)
+void GroundControlPointsViewPrivate::enableControls(
+  bool state, bool haveLocation)
 {
   this->UI.easting->setEnabled(state);
   this->UI.northing->setEnabled(state);
@@ -148,10 +153,10 @@ void GroundControlPointsViewPrivate::enableControls(bool state)
 
   this->UI.actionDelete->setEnabled(state);
   this->UI.actionRevert->setEnabled(state);
-  this->UI.actionCopyLocationLatLon->setEnabled(state);
-  this->UI.actionCopyLocationLatLonElev->setEnabled(state);
-  this->UI.actionCopyLocationLonLat->setEnabled(state);
-  this->UI.actionCopyLocationLonLatElev->setEnabled(state);
+  this->UI.actionCopyLocationLatLon->setEnabled(state && haveLocation);
+  this->UI.actionCopyLocationLatLonElev->setEnabled(state && haveLocation);
+  this->UI.actionCopyLocationLonLat->setEnabled(state && haveLocation);
+  this->UI.actionCopyLocationLonLatElev->setEnabled(state && haveLocation);
 
   this->copyLocationButton->setEnabled(state);
 }
@@ -174,7 +179,10 @@ void GroundControlPointsViewPrivate::showPoint(id_t id)
           {
             return gl.location(kv::SRID::lat_lon_WGS84);
           }
-          catch (...) {}
+          catch (...)
+          {
+            qWarning() << "Geo-conversion from GCS" << gl.crs() << "failed";
+          }
         }
         return { 0.0, 0.0 };
       }();
@@ -192,7 +200,7 @@ void GroundControlPointsViewPrivate::showPoint(id_t id)
         this->UI.elevation->setValue(gcp->elevation());
       }
 
-      this->enableControls(true);
+      this->enableControls(true, !gl.is_empty());
 
       return;
     }
@@ -230,6 +238,49 @@ id_t GroundControlPointsViewPrivate::selectedPoint() const
   auto const& ni = this->model.index(i.row(), 0, i.parent());
   auto const& id = this->model.data(ni, Qt::EditRole);
   return (id.isValid() ? id.value<id_t>() : INVALID_POINT);
+}
+
+//-----------------------------------------------------------------------------
+void GroundControlPointsViewPrivate::copyLocation(
+  bool northingFirst, bool includeElevation)
+{
+  auto const& gcp = this->helper->groundControlPoint(this->currentPoint);
+  if (gcp)
+  {
+    auto const& gl = gcp->geo_loc();
+    if (!gl.is_empty())
+    {
+      auto const grl = [&gl]() -> kv::vector_2d {
+        try
+        {
+          return gl.location(kv::SRID::lat_lon_WGS84);
+        }
+        catch (...)
+        {
+          qWarning() << "Geo-conversion from GCS" << gl.crs() << "failed";
+        }
+        return { 0.0, 0.0 };
+      }();
+
+      QStringList values;
+      if (northingFirst)
+      {
+        values.append(QString::number(grl.y(), 'f', 9));
+        values.append(QString::number(grl.x(), 'f', 9));
+      }
+      else
+      {
+        values.append(QString::number(grl.x(), 'f', 9));
+        values.append(QString::number(grl.y(), 'f', 9));
+      }
+      if (includeElevation)
+      {
+        values.append(QString::number(gcp->elevation(), 'f', 3));
+      }
+
+      QApplication::clipboard()->setText(values.join(','));
+    }
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -308,7 +359,14 @@ GroundControlPointsView::GroundControlPointsView(
             }
           });
 
-  // TODO connect copy-location actions
+  connect(d->UI.actionCopyLocationLatLon, &QAction::triggered,
+          this, [d]{ d->copyLocation(true, false); });
+  connect(d->UI.actionCopyLocationLatLonElev, &QAction::triggered,
+          this, [d]{ d->copyLocation(true, true); });
+  connect(d->UI.actionCopyLocationLonLat, &QAction::triggered,
+          this, [d]{ d->copyLocation(false, false); });
+  connect(d->UI.actionCopyLocationLonLatElev, &QAction::triggered,
+          this, [d]{ d->copyLocation(false, true); });
 
   auto const dsvc = QOverload<double>::of(&QDoubleSpinBox::valueChanged);
   auto const spp = [d]{ d->setPointPosition(d->currentPoint); };
