@@ -76,7 +76,7 @@ public:
   // Get access to the underlying handle widget
   vtkHandleWidget* handleWidget(int handleId) const;
 
-  // Get ID of underlying handle widget (slow!)
+  // Get ID of underlying handle widget
   int findHandleWidget(vtkHandleWidget* handle) const;
 
   // Add a point

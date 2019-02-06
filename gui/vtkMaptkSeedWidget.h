@@ -70,6 +70,11 @@ public:
   void DeleteSeed(int n);
 
   /**
+   * Find the index of the seed with the specified handle.
+   */
+  int FindSeed(vtkHandleWidget* handle);
+
+  /**
    * Custom event fired to notify that the active seed has changed.
    */
   enum vtkMaptkSeedWidgetEvents

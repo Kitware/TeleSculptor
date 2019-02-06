@@ -243,18 +243,7 @@ vtkHandleWidget* GroundControlPointsWidget::handleWidget(int handleId) const
 int GroundControlPointsWidget::findHandleWidget(vtkHandleWidget* handle) const
 {
   QTE_D();
-
-  // NOTE: This is APPALLINGLY inefficient! (O(n²))
-  vtkHandleWidget* candidate;
-  for (int n = 0; (candidate = d->widget->GetSeed(n)); ++n)
-  {
-    if (candidate == handle)
-    {
-      return n;
-    }
-  }
-
-  return -1;
+  return d->widget->FindSeed(handle);
 }
 
 //-----------------------------------------------------------------------------

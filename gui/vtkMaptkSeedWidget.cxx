@@ -75,6 +75,23 @@ void vtkMaptkSeedWidget::DeleteSeed(int i)
 }
 
 //----------------------------------------------------------------------
+int vtkMaptkSeedWidget::FindSeed(vtkHandleWidget* handle)
+{
+  auto iter = this->Seeds->begin();
+  auto const end = this->Seeds->end();
+
+  for (int n = 0; iter != end; ++n, ++iter)
+  {
+    if (*iter == handle)
+    {
+      return n;
+    }
+  }
+
+  return -1;
+}
+
+//----------------------------------------------------------------------
 void vtkMaptkSeedWidget::SetEnabled(int enabling)
 {
   this->Superclass::SetEnabled(enabling);
@@ -218,7 +235,6 @@ vtkHandleWidget* vtkMaptkSeedWidget::CreateNewHandle()
 //----------------------------------------------------------------------
 void vtkMaptkSeedWidget::HighlightActiveSeed()
 {
-  vtkSeedListIterator iter = this->Seeds->begin();
   vtkSeedRepresentation* rep =
     reinterpret_cast<vtkSeedRepresentation*>(this->WidgetRep);
   int activeHandle = rep->GetActiveHandle();
@@ -226,10 +242,11 @@ void vtkMaptkSeedWidget::HighlightActiveSeed()
   {
     activeHandle = rep->GetNumberOfSeeds() - 1;
   }
-  for (; iter != this->Seeds->end(); ++iter)
+
+  vtkSeedListIterator iter = this->Seeds->begin();
+  for (int n = 0; iter != this->Seeds->end(); ++n, ++iter)
   {
-    if (this->GetEnabled() &&
-        (std::distance(this->Seeds->begin(), iter) == activeHandle))
+    if (this->GetEnabled() && n == activeHandle)
     {
       (*iter)->GetHandleRepresentation()->Highlight(1);
       this->InvokeEvent(vtkMaptkSeedWidget::ActiveSeedChangedEvent,
