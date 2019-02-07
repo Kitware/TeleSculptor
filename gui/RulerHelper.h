@@ -48,7 +48,7 @@ public:
   RulerHelper(QObject* parent = nullptr);
   ~RulerHelper();
 
-  void updateCameraViewRuler();
+  void updateCameraViewRuler(int pId = 2);
 
 public slots:
   void enableWidgets(bool);

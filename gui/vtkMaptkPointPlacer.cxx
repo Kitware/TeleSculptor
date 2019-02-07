@@ -47,6 +47,7 @@ int vtkMaptkPointPlacer::ComputeWorldPosition(vtkRenderer* ren,
                                               double worldPos[3],
                                               double vtkNotUsed(worldOrient)[9])
 {
+  std::cout << "Testing" << std::endl;
   if (!ren)
   {
     return 0;
@@ -68,6 +69,7 @@ int vtkMaptkPointPlacer::ComputeWorldPosition(vtkRenderer* ren,
       ren, pickedPos[0], pickedPos[1], pickedPos[2], focalPoint);
     vtkInteractorObserver::ComputeDisplayToWorld(
       ren, displayPos[0], displayPos[1], focalPoint[2], position);
+    std::cout << "Point picked" << std::endl;
   }
   else
   {
@@ -100,6 +102,7 @@ int vtkMaptkPointPlacer::ComputeWorldPosition(vtkRenderer* ren,
       ren->DisplayToWorld();
       ren->GetWorldPoint(position);
     }
+    std::cout << "Place using renderer" << std::endl;
   }
   worldPos[0] = position[0];
   worldPos[1] = position[1];

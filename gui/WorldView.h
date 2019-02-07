@@ -87,6 +87,7 @@ signals:
   void meshEnabled(bool);
   void coloredMeshEnabled(bool);
   void pointPlacementEnabled(bool);
+  void rulerEnabled(bool);
 
 public slots:
   void setBackgroundColor(QColor const&);

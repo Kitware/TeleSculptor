@@ -546,6 +546,8 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
 
   d->rulerWidget = new RulerWidget(this);
   d->rulerWidget->setInteractor(d->UI.renderWidget->GetInteractor());
+  connect(d->UI.actionShowRuler, &QAction::toggled,
+          this, &WorldView::rulerEnabled);
 
   vtkNew<vtkMaptkInteractorStyle> iren;
   d->renderWindow->GetInteractor()->SetInteractorStyle(iren);

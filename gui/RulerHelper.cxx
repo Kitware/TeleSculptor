@@ -81,6 +81,11 @@ RulerHelper::RulerHelper(QObject* parent)
   RulerWidget* cameraWidget =
     d->mainWindow->cameraView()->rulerWidget();
 
+  QObject::connect(worldWidget, &RulerWidget::pointPlaced,
+                   this, &RulerHelper::updateCameraViewRuler);
+  QObject::connect(cameraWidget, &RulerWidget::pointPlaced,
+                   worldWidget, &RulerWidget::pointMoved);
+
   // Set a point placer on the world widget.
   // This has to be set before the widget is enabled.
   worldWidget->setPointPlacer(vtkNew<vtkMaptkPointPlacer>());
@@ -112,8 +117,32 @@ void RulerHelper::moveWorldViewPoint()
 }
 
 //-----------------------------------------------------------------------------
-void RulerHelper::updateCameraViewRuler()
+void RulerHelper::updateCameraViewRuler(int pointId)
 {
+  QTE_D();
+  vtkMaptkCamera* camera = d->mainWindow->activeCamera();
+  if (!camera)
+  {
+    return;
+  }
+
+  RulerWidget* worldWidget = d->mainWindow->worldView()->rulerWidget();
+  RulerWidget* cameraWidget = d->mainWindow->cameraView()->rulerWidget();
+
+  kv::vector_3d p(worldWidget->point1WorldPosition());
+  double cameraPt[2];
+  camera->ProjectPoint(p, cameraPt);
+  cameraWidget->setPoint1WorldPosition(cameraPt[0], cameraPt[1], 0.0);
+
+  if (pointId > 1)
+  {
+    std::cout << "Point 2" << std::endl;
+    kv::vector_3d p2(worldWidget->point2WorldPosition());
+    double cameraPt2[2];
+    camera->ProjectPoint(p2, cameraPt2);
+    cameraWidget->setPoint2WorldPosition(cameraPt2[0], cameraPt2[1], 0.0);
+    cameraWidget->render();
+  }
 }
 
 //-----------------------------------------------------------------------------

@@ -80,12 +80,20 @@ public:
   /// Enable/disable the internal seed widget
   void enableWidget(bool enable);
 
+  // Set/Get the handle positions
+  void setPoint1WorldPosition(double*);
+  void setPoint1WorldPosition(double, double, double);
+  double* point1WorldPosition() const;
+  void setPoint2WorldPosition(double*);
+  void setPoint2WorldPosition(double, double, double);
+  double* point2WorldPosition() const;
+
 signals:
-  void pointPlaced();
+  void pointPlaced(int pointId);
   void pointMoved();
 
 protected slots:
-  // void addInternalPoint();
+  void placePoint(vtkObject*, unsigned long, void*, void*);
   void movePointEvent();
 
 private:
@@ -96,4 +104,3 @@ private:
 };
 
 #endif
-

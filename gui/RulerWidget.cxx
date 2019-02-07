@@ -31,11 +31,13 @@
 // MAPTK includes
 #include "RulerWidget.h"
 #include "vtkMaptkPointHandleRepresentation3D.h"
-#include "vtkMaptkSeedWidget.h"
+#include "vtkMaptkPointPlacer.h"
 
 // VTK includes
 #include <vtkActor.h>
 #include <vtkCommand.h>
+#include <vtkDistanceRepresentation3D.h>
+#include <vtkDistanceWidget.h>
 #include <vtkEvent.h>
 #include <vtkEventQtSlotConnect.h>
 #include <vtkHandleWidget.h>
@@ -62,11 +64,10 @@ public:
 
   // Methods
   void updateTransformMatrixInverse();
-  void deletePoint(int handleId);
 
-  // Seed widget
-  vtkNew<vtkMaptkSeedWidget> widget;
-  vtkNew<vtkSeedRepresentation> repr;
+  // Distance widget
+  vtkNew<vtkDistanceWidget> widget;
+  vtkNew<vtkDistanceRepresentation3D> repr;
   vtkNew<vtkEventQtSlotConnect> connections;
   vtkNew<vtkMaptkPointHandleRepresentation3D> pointRepr;
 
@@ -96,9 +97,6 @@ RulerWidgetPrivate::RulerWidgetPrivate()
   selectedProperty->SetLineWidth(3.0);
   selectedProperty->SetRenderLinesAsTubes(true);
   this->pointRepr->SetSelectedProperty(selectedProperty.GetPointer());
-
-  this->widget->GetEventTranslator()->RemoveTranslation(
-    vtkCommand::RightButtonPressEvent);
 }
 
 //-----------------------------------------------------------------------------
@@ -120,41 +118,17 @@ void RulerWidgetPrivate::updateTransformMatrixInverse()
 }
 
 //-----------------------------------------------------------------------------
-void RulerWidgetPrivate::deletePoint(int handleId)
-{
-  if (this->renderer)
-  {
-    this->widget->DeleteSeed(handleId);
-    this->repr->SetActiveHandle(handleId - 1);
-  }
-}
-
-//-----------------------------------------------------------------------------
 RulerWidget::RulerWidget(QObject* parent)
   : QObject(parent)
   , d_ptr(new RulerWidgetPrivate)
 {
   QTE_D();
 
-  d->connections->Connect(d->widget.GetPointer(),
-                          vtkCommand::PlacePointEvent,
-                          this,
-                          SIGNAL(pointPlaced()));
-  d->connections->Connect(d->widget.GetPointer(),
-                          vtkCommand::InteractionEvent,
-                          this,
-                          SLOT(movePointEvent()));
-
   d->connections->Connect(
-    d->widget.GetPointer(),
-    vtkCommand::DeletePointEvent,
-    this,
-    SLOT(pointDeletedCallback(vtkObject*, unsigned long, void*, void*)));
+    d->widget, vtkCommand::PlacePointEvent, this,
+    SLOT(placePoint(vtkObject*, unsigned long, void*, void*)));
   d->connections->Connect(
-    d->widget.GetPointer(),
-    vtkMaptkSeedWidget::ActiveSeedChangedEvent,
-    this,
-    SLOT(activeHandleChangedCallback(vtkObject*, unsigned long, void*, void*)));
+    d->widget, vtkCommand::InteractionEvent, this, SLOT(movePointEvent()));
 }
 
 //-----------------------------------------------------------------------------
@@ -192,6 +166,49 @@ void RulerWidget::setPointPlacer(vtkPointPlacer* placer)
 }
 
 //-----------------------------------------------------------------------------
+void RulerWidget::placePoint(vtkObject* vtkNotUsed(ob),
+                             unsigned long vtkNotUsed(evId),
+                             void* vtkNotUsed(clientData),
+                             void* callData)
+{
+  QTE_D();
+  int* handleId = reinterpret_cast<int*>(callData);
+  if (handleId)
+  {
+    switch(*handleId)
+    {
+      case 0:
+      {
+        double pos[3], newPos[3];
+        d->repr->GetPoint1DisplayPosition(pos);
+        d->pointRepr->GetPointPlacer()->ComputeWorldPosition(this->renderer(),
+                                                             pos,
+                                                             newPos,
+                                                             nullptr);
+        d->repr->SetPoint1WorldPosition(newPos);
+        break;
+      }
+      case 1:
+      {
+        double pos[3], newPos[3];
+        d->repr->GetPoint2DisplayPosition(pos);
+        d->pointRepr->GetPointPlacer()->ComputeWorldPosition(this->renderer(),
+                                                             pos,
+                                                             newPos,
+                                                             nullptr);
+        d->repr->SetPoint2WorldPosition(newPos);
+        break;
+      }
+      default:
+      {
+        break;
+      }
+    }
+    emit this->pointPlaced(*handleId);
+  }
+}
+
+//-----------------------------------------------------------------------------
 vtkRenderer* RulerWidget::renderer()
 {
   QTE_D();
@@ -199,163 +216,14 @@ vtkRenderer* RulerWidget::renderer()
 }
 
 //-----------------------------------------------------------------------------
-int RulerWidget::activeHandle() const
-{
-  QTE_D();
-
-  return d->repr->GetActiveHandle();
-}
-
-//-----------------------------------------------------------------------------
-kwiver::vital::vector_3d RulerWidget::activePoint()
-{
-  QTE_D();
-
-  double pt[4] = { 0, 0, 0, 1 };
-  d->repr->GetSeedWorldPosition(this->activeHandle(), pt);
-  if (d->transformMatrix)
-  {
-    d->updateTransformMatrixInverse();
-    d->transformMatrixInverse->MultiplyPoint(pt, pt);
-  }
-
-  return kwiver::vital::vector_3d(pt[0] / pt[3], pt[1] / pt[3], pt[2] / pt[3]);
-}
-
-//-----------------------------------------------------------------------------
-kwiver::vital::vector_3d RulerWidget::point(int handle) const
-{
-  QTE_D();
-  kwiver::vital::vector_3d out;
-  d->repr->GetSeedWorldPosition(handle, out.data());
-  return out;
-}
-
-//-----------------------------------------------------------------------------
-vtkHandleWidget* RulerWidget::handleWidget(int handleId) const
-{
-  QTE_D();
-
-  return d->widget->GetSeed(handleId);
-}
-
-//-----------------------------------------------------------------------------
-void RulerWidget::addDisplayPoint(double pt[3])
-{
-  QTE_D();
-
-  if (!d->renderer)
-  {
-    return;
-  }
-
-  int handleId = d->repr->CreateHandle(pt);
-  d->repr->SetSeedWorldPosition(handleId, pt);
-  // Now that the seed is placed, reset the point placer to ensure free
-  // motion of the handle
-  d->repr->GetHandleRepresentation(handleId)->SetPointPlacer(nullptr);
-  vtkHandleWidget* currentHandle = d->widget->CreateNewHandle();
-  currentHandle->SetEnabled(1);
-}
-
-//-----------------------------------------------------------------------------
-void RulerWidget::addDisplayPoint(double x, double y, double z)
-{
-  double pt[3] = { x, y, z };
-  this->addDisplayPoint(pt);
-}
-
-//-----------------------------------------------------------------------------
-void RulerWidget::addDisplayPoint(kwiver::vital::vector_3d pt)
-{
-  this->addDisplayPoint(pt.data());
-}
-
-//-----------------------------------------------------------------------------
-void RulerWidget::addPoint(double x, double y, double z)
-{
-  QTE_D();
-
-  if (!d->renderer)
-  {
-    return;
-  }
-
-  double p[4] = { x, y, z, 1.0 };
-  if (d->transformMatrix)
-  {
-    d->transformMatrix->MultiplyPoint(p, p);
-  }
-
-  this->addDisplayPoint(p);
-  d->widget->HighlightActiveSeed();
-}
-
-//-----------------------------------------------------------------------------
-void RulerWidget::addPoint(double const p[3])
-{
-  this->addPoint(p[0], p[1], p[2]);
-}
-
-//-----------------------------------------------------------------------------
-void RulerWidget::addPoint(kwiver::vital::vector_3d p)
-{
-  this->addPoint(p.data());
-}
-
-//-----------------------------------------------------------------------------
-void RulerWidget::movePoint(int handleId,
-                                          double x,
-                                          double y,
-                                          double z)
-{
-  QTE_D();
-
-  if (this->numberOfPoints() <= handleId)
-  {
-    return;
-  }
-
-  double p[4] = { x, y, z, 1.0 };
-  if (d->transformMatrix)
-  {
-    d->transformMatrix->MultiplyPoint(p, p);
-  }
-
-  if (d->renderer)
-  {
-    d->repr->SetSeedWorldPosition(handleId, p);
-  }
-}
-
-//-----------------------------------------------------------------------------
 void RulerWidget::movePointEvent()
 {
   QTE_D();
 
-  if (d->widget->GetWidgetState() == vtkMaptkSeedWidget::MovingSeed)
+  if (d->widget->GetWidgetState() != vtkDistanceWidget::Define)
   {
     emit pointMoved();
   }
-}
-
-//-----------------------------------------------------------------------------
-void RulerWidget::deletePoint(int handleId)
-{
-  QTE_D();
-  d->deletePoint(handleId);
-  d->widget->GetInteractor()->Render();
-}
-
-//-----------------------------------------------------------------------------
-void RulerWidget::pointDeletedCallback(
-  vtkObject* caller,
-  unsigned long vtkNotUsed(event),
-  void* vtkNotUsed(clientData),
-  void* callData)
-{
-  int* handleId = reinterpret_cast<int*>(callData);
-  emit pointDeleted(*handleId);
 }
 
 //-----------------------------------------------------------------------------
@@ -374,14 +242,6 @@ vtkMatrix4x4* RulerWidget::transformMatrix() const
 }
 
 //-----------------------------------------------------------------------------
-int RulerWidget::numberOfPoints() const
-{
-  QTE_D();
-
-  return d->repr->GetNumberOfSeeds();
-}
-
-//-----------------------------------------------------------------------------
 void RulerWidget::render()
 {
   QTE_D();
@@ -389,45 +249,48 @@ void RulerWidget::render()
 }
 
 //-----------------------------------------------------------------------------
-void RulerWidget::clearPoints()
+void RulerWidget::setPoint1WorldPosition(double* pos)
 {
   QTE_D();
-
-  if (d->renderer)
-  {
-    int n = this->numberOfPoints();
-    while (n)
-    {
-      d->deletePoint(--n);
-    }
-    d->widget->GetInteractor()->Render();
-  }
+  d->repr->SetPoint1WorldPosition(pos);
 }
 
 //-----------------------------------------------------------------------------
-void RulerWidget::activeHandleChangedCallback(
-  vtkObject* vtkNotUsed(ob),
-  unsigned long vtkNotUsed(e),
-  void* vtkNotUsed(cD),
-  void* callData)
+void RulerWidget::setPoint1WorldPosition(double x, double y, double z)
 {
-  int* handleId = reinterpret_cast<int*>(callData);
-  if (handleId)
-  {
-    emit this->activePointChanged(*handleId);
-  }
+  QTE_D();
+  double pos[3] = {x, y, z};
+  d->repr->SetPoint1WorldPosition(pos);
 }
 
 //-----------------------------------------------------------------------------
-void RulerWidget::setActivePoint(int id)
+double* RulerWidget::point1WorldPosition() const
 {
   QTE_D();
-
-  if (d->repr->GetActiveHandle() == id)
-  {
-    return;
-  }
-  d->repr->SetActiveHandle(id);
-  d->widget->HighlightActiveSeed();
+  return d->repr->GetPoint1WorldPosition();
 }
 
+//-----------------------------------------------------------------------------
+void RulerWidget::setPoint2WorldPosition(double* pos)
+{
+  QTE_D();
+  d->repr->SetPoint2WorldPosition(pos);
+}
+
+//-----------------------------------------------------------------------------
+double* RulerWidget::point2WorldPosition() const
+{
+  QTE_D();
+  return d->repr->GetPoint2WorldPosition();
+}
+
+//-----------------------------------------------------------------------------
+void RulerWidget::setPoint2WorldPosition(double x, double y, double z)
+{
+  QTE_D();
+  double pos[3] = {x, y, z};
+  d->repr->SetPoint2WorldPosition(pos);
+  d->repr->VisibilityOn();
+  d->widget->SetWidgetStateToManipulate();
+  d->widget->SetEnabled(1);
+}
