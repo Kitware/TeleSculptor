@@ -48,6 +48,8 @@ public:
   ~GroundControlPointsModel();
 
   kwiver::vital::ground_control_point_id_t id(QModelIndex const& index) const;
+  QModelIndex find(kwiver::vital::ground_control_point_id_t,
+                   int column = 0) const;
 
   int rowCount(QModelIndex const& parent) const override;
   int columnCount(QModelIndex const& parent) const override;

@@ -77,12 +77,16 @@ public slots:
   void resetPoint(kwiver::vital::ground_control_point_id_t);
   void removePoint(kwiver::vital::ground_control_point_id_t);
 
+  void setActivePoint(kwiver::vital::ground_control_point_id_t);
+
 signals:
   void pointsReloaded();
   void pointCountChanged(size_t);
   void pointAdded(kwiver::vital::ground_control_point_id_t);
   void pointRemoved(kwiver::vital::ground_control_point_id_t);
   void pointChanged(kwiver::vital::ground_control_point_id_t);
+
+  void activePointChanged(kwiver::vital::ground_control_point_id_t);
 
 protected slots:
   void addCameraViewPoint();

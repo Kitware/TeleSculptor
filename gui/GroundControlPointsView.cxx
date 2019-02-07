@@ -299,7 +299,16 @@ GroundControlPointsView::GroundControlPointsView(
 
   connect(d->UI.pointsList->selectionModel(),
           &QItemSelectionModel::currentChanged,
-          this, [d]{ d->showPoint(d->selectedPoint()); });
+          this, [d]{
+            auto const id = d->selectedPoint();
+
+            d->showPoint(id);
+
+            if (d->helper)
+            {
+              d->helper->setActivePoint(id);
+            }
+          });
 
   d->updateRegisteredIcon(this);
 
@@ -400,6 +409,21 @@ void GroundControlPointsView::setHelper(GroundControlPointsHelper* helper)
             if (d->currentPoint == id)
             {
               d->showPoint(id);
+            }
+          });
+
+  connect(helper, &GroundControlPointsHelper::activePointChanged,
+          this, [d](id_t id){
+            if (d->currentPoint != id)
+            {
+              constexpr auto flags =
+                QItemSelectionModel::ClearAndSelect |
+                QItemSelectionModel::Current | QItemSelectionModel::Rows;
+
+              d->showPoint(id);
+
+              auto const& index = d->model.find(id);
+              d->UI.pointsList->selectionModel()->select(index, flags);
             }
           });
 

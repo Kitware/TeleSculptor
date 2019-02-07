@@ -111,6 +111,24 @@ id_t GroundControlPointsModel::id(QModelIndex const& index) const
 }
 
 //-----------------------------------------------------------------------------
+QModelIndex GroundControlPointsModel::find(id_t id, int column) const
+{
+  QTE_D();
+
+  auto const begin = d->points.begin();
+  auto const end = d->points.end();
+
+  auto const i = std::lower_bound(begin, end, id);
+  if (i != end)
+  {
+    auto const r = static_cast<int>(i - begin);
+    return this->index(r, column, {});
+  }
+
+  return {};
+}
+
+//-----------------------------------------------------------------------------
 int GroundControlPointsModel::rowCount(const QModelIndex& parent) const
 {
   QTE_D();
@@ -322,16 +340,9 @@ void GroundControlPointsModel::removePoint(id_t id)
 //-----------------------------------------------------------------------------
 void GroundControlPointsModel::modifyPoint(id_t id)
 {
-  QTE_D();
-
-  auto const begin = d->points.begin();
-  auto const end = d->points.end();
-
-  auto const i = std::lower_bound(begin, end, id);
-  if (i != end)
+  auto const& index = this->find(id, COLUMN_ID);
+  if (index.isValid())
   {
-    auto const r = static_cast<int>(i - begin);
-    auto const index = this->index(r, COLUMN_ID, {});
     emit this->dataChanged(index, index, {Qt::DecorationRole});
   }
 }
