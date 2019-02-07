@@ -493,10 +493,10 @@ void MainWindowPrivate::addVideoSource(
     // TODO: fix kwiver so this is done with an adapter and it not in the video source
     if (this->videoSource)
     {
-      if (config->has_value("video_reader:vidl_ffmpeg:output_nth_frame"))
+      if (config->has_value("video_reader:filter:output_nth_frame"))
       {
         this->advanceInterval =
-          config->get_value<int>("video_reader:vidl_ffmpeg:output_nth_frame");
+          config->get_value<int>("video_reader:filter:output_nth_frame");
       }
       else if (config->has_value("video_reader:splice:output_nth_frame"))
       {
