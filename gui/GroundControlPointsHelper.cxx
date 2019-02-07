@@ -568,26 +568,33 @@ void GroundControlPointsHelper::updateCameraViewPoints()
   GroundControlPointsWidget* cameraWidget =
     d->mainWindow->cameraView()->groundControlPointsWidget();
 
-  int numCameraPts = cameraWidget->numberOfPoints();
-  int numWorldPts = worldWidget->numberOfPoints();
-  while (numCameraPts > numWorldPts)
+  with_expr (qtScopedBlockSignals{cameraWidget})
   {
-    cameraWidget->deletePoint(--numCameraPts);
-  }
+    auto const activeHandle = worldWidget->activeHandle();
 
-  for (int i = 0; i < numWorldPts; ++i)
-  {
-    kv::vector_3d worldPt = worldWidget->point(i);
-    double cameraPt[2];
-    camera->ProjectPoint(worldPt, cameraPt);
-    if (i >= numCameraPts)
+    int numCameraPts = cameraWidget->numberOfPoints();
+    int numWorldPts = worldWidget->numberOfPoints();
+    while (numCameraPts > numWorldPts)
     {
-      cameraWidget->addPoint(cameraPt[0], cameraPt[1], 0.0);
+      cameraWidget->deletePoint(--numCameraPts);
     }
-    else
+
+    for (int i = 0; i < numWorldPts; ++i)
     {
-      cameraWidget->movePoint(i, cameraPt[0], cameraPt[1], 0.0);
+      kv::vector_3d worldPt = worldWidget->point(i);
+      double cameraPt[2];
+      camera->ProjectPoint(worldPt, cameraPt);
+      if (i >= numCameraPts)
+      {
+        cameraWidget->addPoint(cameraPt[0], cameraPt[1], 0.0);
+      }
+      else
+      {
+        cameraWidget->movePoint(i, cameraPt[0], cameraPt[1], 0.0);
+      }
     }
+
+    cameraWidget->setActivePoint(activeHandle);
   }
 }
 
