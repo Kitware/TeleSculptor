@@ -36,7 +36,7 @@
      <addaction name="actionShowFrameImage"/>
      <addaction name="actionShowCameras"/>
      <addaction name="actionShowLandmarks"/>
-     <addaction name="PlaceGroundControlPoint"/>
+     <addaction name="actionEditGroundControlPoints"/>
      <addaction name="actionShowGroundPlane"/>
      <addaction name="actionSelectROI"/>
      <addaction name="actionShowDepthMap"/>
@@ -289,7 +289,7 @@
     <string>Toggle volume display</string>
    </property>
   </action>
-  <action name="PlaceGroundControlPoint">
+  <action name="actionEditGroundControlPoints">
    <property name="checkable">
     <bool>true</bool>
    </property>

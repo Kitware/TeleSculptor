@@ -214,6 +214,8 @@ public:
 
   void removePoint(int handleId, vtkHandleWidget* handleWidget);
 
+  void updateActivePoint(int handleId);
+
   id_t addPoint();
 
 private:
@@ -333,6 +335,28 @@ id_t GroundControlPointsHelperPrivate::addPoint()
 }
 
 //-----------------------------------------------------------------------------
+void GroundControlPointsHelperPrivate::updateActivePoint(int handleId)
+{
+  QTE_Q();
+
+  // Find the corresponding GCP ID
+  GroundControlPointsWidget* const worldWidget =
+    this->mainWindow->worldView()->groundControlPointsWidget();
+  vtkHandleWidget* const handle = worldWidget->handleWidget(handleId);
+
+  // Signal that the point changed, or report error if ID was not found
+  try
+  {
+    emit q->activePointChanged(this->gcpHandleToIdMap.at(handle));
+  }
+  catch (std::out_of_range const&)
+  {
+    qWarning() << "Failed to find the ID associated with the handle widget"
+               << handle << "with VTK ID" << handleId;
+  }
+}
+
+//-----------------------------------------------------------------------------
 GroundControlPointsHelper::GroundControlPointsHelper(QObject* parent)
   : QObject{parent}, d_ptr{new GroundControlPointsHelperPrivate{this}}
 {
@@ -355,7 +379,6 @@ GroundControlPointsHelper::GroundControlPointsHelper(QObject* parent)
           this, &GroundControlPointsHelper::addCameraViewPoint);
   connect(cameraWidget, &GroundControlPointsWidget::pointPlaced,
           this, &GroundControlPointsHelper::addWorldViewPoint);
-
   connect(worldWidget, &GroundControlPointsWidget::pointMoved,
           this, &GroundControlPointsHelper::moveCameraViewPoint);
   connect(cameraWidget, &GroundControlPointsWidget::pointMoved,
@@ -364,6 +387,9 @@ GroundControlPointsHelper::GroundControlPointsHelper(QObject* parent)
           this, &GroundControlPointsHelper::removePointByHandle);
   connect(cameraWidget, &GroundControlPointsWidget::pointDeleted,
           this, &GroundControlPointsHelper::removePointByHandle);
+  connect(worldWidget, &GroundControlPointsWidget::activePointChanged,
+          this, [d](int handleId){ d->updateActivePoint(handleId); });
+
   connect(worldWidget, &GroundControlPointsWidget::pointDeleted,
           cameraWidget, &GroundControlPointsWidget::deletePoint);
   connect(cameraWidget, &GroundControlPointsWidget::pointDeleted,
@@ -542,26 +568,33 @@ void GroundControlPointsHelper::updateCameraViewPoints()
   GroundControlPointsWidget* cameraWidget =
     d->mainWindow->cameraView()->groundControlPointsWidget();
 
-  int numCameraPts = cameraWidget->numberOfPoints();
-  int numWorldPts = worldWidget->numberOfPoints();
-  while (numCameraPts > numWorldPts)
+  with_expr (qtScopedBlockSignals{cameraWidget})
   {
-    cameraWidget->deletePoint(--numCameraPts);
-  }
+    auto const activeHandle = worldWidget->activeHandle();
 
-  for (int i = 0; i < numWorldPts; ++i)
-  {
-    kv::vector_3d worldPt = worldWidget->point(i);
-    double cameraPt[2];
-    camera->ProjectPoint(worldPt, cameraPt);
-    if (i >= numCameraPts)
+    int numCameraPts = cameraWidget->numberOfPoints();
+    int numWorldPts = worldWidget->numberOfPoints();
+    while (numCameraPts > numWorldPts)
     {
-      cameraWidget->addPoint(cameraPt[0], cameraPt[1], 0.0);
+      cameraWidget->deletePoint(--numCameraPts);
     }
-    else
+
+    for (int i = 0; i < numWorldPts; ++i)
     {
-      cameraWidget->movePoint(i, cameraPt[0], cameraPt[1], 0.0);
+      kv::vector_3d worldPt = worldWidget->point(i);
+      double cameraPt[2];
+      camera->ProjectPoint(worldPt, cameraPt);
+      if (i >= numCameraPts)
+      {
+        cameraWidget->addPoint(cameraPt[0], cameraPt[1], 0.0);
+      }
+      else
+      {
+        cameraWidget->movePoint(i, cameraPt[0], cameraPt[1], 0.0);
+      }
     }
+
+    cameraWidget->setActivePoint(activeHandle);
   }
 }
 
@@ -600,6 +633,42 @@ void GroundControlPointsHelper::removePoint(id_t gcpId)
       worldWidget->deletePoint(handleId);
       cameraWidget->deletePoint(handleId);
       d->removePoint(handleId, handleWidget);
+    }
+  }
+  else
+  {
+    qWarning() << "Failed to find the VTK handle associated with "
+                  "the ground control point with ID" << gcpId;
+  }
+}
+
+//-----------------------------------------------------------------------------
+void GroundControlPointsHelper::setActivePoint(id_t gcpId)
+{
+  QTE_D();
+
+  auto* const hp = qtGet(d->gcpIdToHandleMap, gcpId);
+  auto* const handleWidget = (hp ? hp->second : nullptr);
+
+  if (handleWidget)
+  {
+    auto* const worldWidget =
+      d->mainWindow->worldView()->groundControlPointsWidget();
+    auto const handleId = worldWidget->findHandleWidget(handleWidget);
+
+    if (handleId < 0)
+    {
+      qWarning() << "Failed to find the VTK ID associated with the VTK handle"
+                 << handleId << " and the ground control point with ID"
+                 << gcpId;
+    }
+    else
+    {
+      auto* const cameraWidget =
+        d->mainWindow->cameraView()->groundControlPointsWidget();
+
+      worldWidget->setActivePoint(handleId);
+      cameraWidget->setActivePoint(handleId);
     }
   }
   else

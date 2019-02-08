@@ -239,6 +239,15 @@
     </property>
    </widget>
   </widget>
+  <widget class="QDockWidget" name="groundControlPointsDock">
+   <property name="windowTitle">
+    <string>&amp;Ground Control Points</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="GroundControlPointsView" name="groundControlPoints"/>
+  </widget>
   <action name="actionNewProject">
    <property name="text">
     <string>&amp;New Project</string>
@@ -582,6 +591,12 @@
    <class>qtProgressWidget</class>
    <extends>QWidget</extends>
    <header>qtProgressWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>GroundControlPointsView</class>
+   <extends>QWidget</extends>
+   <header>GroundControlPointsView.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

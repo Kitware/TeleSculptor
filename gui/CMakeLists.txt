@@ -1,5 +1,5 @@
 set(CMAKE_AUTOMOC ON)
-set(Qt5_MODULES Core Designer UiPlugin Widgets Xml)
+set(Qt5_MODULES Core Designer UiPlugin Widgets Svg Xml)
 find_package(Qt5 5.7 COMPONENTS ${Qt5_MODULES} REQUIRED)
 set(QT_LIBRARIES )
 foreach(module ${Qt5_MODULES})
@@ -63,6 +63,7 @@ include_directories(
 
 set(gui_am_ui
   CameraView.ui
+  GroundControlPointsView.ui
   MainWindow.ui
   MatchMatrixWindow.ui
   WorldView.ui
@@ -105,6 +106,8 @@ set(gui_sources
   FeatureOptions.cxx
   GradientSelector.cxx
   GroundControlPointsHelper.cxx
+  GroundControlPointsModel.cxx
+  GroundControlPointsView.cxx
   GroundControlPointsWidget.cxx
   GuiCommon.cxx
   ImageOptions.cxx
