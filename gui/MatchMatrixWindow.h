@@ -50,7 +50,7 @@ public:
   ~MatchMatrixWindow() override;
 
 public slots:
-  void setMatrix(Eigen::SparseMatrix<uint> const&,
+  void setMatrix(Eigen::SparseMatrix<unsigned int> const&,
                  std::vector<kwiver::vital::frame_id_t> const&);
 
   void saveImage();
