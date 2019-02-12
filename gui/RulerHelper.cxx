@@ -134,9 +134,8 @@ void RulerHelper::updateCameraViewRuler(int pointId)
   camera->ProjectPoint(p, cameraPt);
   cameraWidget->setPoint1WorldPosition(cameraPt[0], cameraPt[1], 0.0);
 
-  if (pointId > 1)
+  if (pointId == 1)
   {
-    std::cout << "Point 2" << std::endl;
     kv::vector_3d p2(worldWidget->point2WorldPosition());
     double cameraPt2[2];
     camera->ProjectPoint(p2, cameraPt2);
