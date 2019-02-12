@@ -83,10 +83,10 @@ public:
   // Set/Get the handle positions
   void setPoint1WorldPosition(double*);
   void setPoint1WorldPosition(double, double, double);
-  double* point1WorldPosition() const;
+  kwiver::vital::vector_3d point1WorldPosition();
   void setPoint2WorldPosition(double*);
   void setPoint2WorldPosition(double, double, double);
-  double* point2WorldPosition() const;
+  kwiver::vital::vector_3d point2WorldPosition();
 
 signals:
   void pointPlaced(int pointId);

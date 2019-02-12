@@ -58,7 +58,7 @@ signals:
 
 protected slots:
   void addCameraViewPoint();
-  void addWorldViewPoint();
+  void addWorldViewPoint(int pointId);
 
   void moveCameraViewPoint();
   void moveWorldViewPoint();

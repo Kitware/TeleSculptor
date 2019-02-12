@@ -36,7 +36,7 @@
 // VTK includes
 #include <vtkActor.h>
 #include <vtkCommand.h>
-#include <vtkDistanceRepresentation3D.h>
+#include <vtkDistanceRepresentation2D.h>
 #include <vtkDistanceWidget.h>
 #include <vtkEvent.h>
 #include <vtkEventQtSlotConnect.h>
@@ -67,7 +67,7 @@ public:
 
   // Distance widget
   vtkNew<vtkDistanceWidget> widget;
-  vtkNew<vtkDistanceRepresentation3D> repr;
+  vtkNew<vtkDistanceRepresentation2D> repr;
   vtkNew<vtkEventQtSlotConnect> connections;
   vtkNew<vtkMaptkPointHandleRepresentation3D> pointRepr;
 
@@ -76,6 +76,9 @@ public:
   vtkMatrix4x4* transformMatrix = nullptr;
   vtkNew<vtkMatrix4x4> transformMatrixInverse;
   vtkMTimeType transformMatrixMTime = 0;
+
+  kwiver::vital::vector_3d invTransformPoint(double* pt);
+  void transformPoint(double* pt);
 };
 
 //-----------------------------------------------------------------------------
@@ -118,6 +121,32 @@ void RulerWidgetPrivate::updateTransformMatrixInverse()
 }
 
 //-----------------------------------------------------------------------------
+kwiver::vital::vector_3d RulerWidgetPrivate::invTransformPoint(double* pt)
+{
+  if (this->transformMatrix)
+  {
+    this->updateTransformMatrixInverse();
+    this->transformMatrixInverse->MultiplyPoint(pt, pt);
+    pt[0] /= pt[3];
+    pt[1] /= pt[3];
+    pt[2] /= pt[3];
+  }
+  return kwiver::vital::vector_3d(pt[0], pt[1], pt[2]);
+}
+
+//-----------------------------------------------------------------------------
+void RulerWidgetPrivate::transformPoint(double* pt)
+{
+  if (this->transformMatrix)
+  {
+    this->transformMatrix->MultiplyPoint(pt, pt);
+    pt[0] /= pt[3];
+    pt[1] /= pt[3];
+    pt[2] /= pt[3];
+  }
+}
+
+//-----------------------------------------------------------------------------
 RulerWidget::RulerWidget(QObject* parent)
   : QObject(parent)
   , d_ptr(new RulerWidgetPrivate)
@@ -125,7 +154,9 @@ RulerWidget::RulerWidget(QObject* parent)
   QTE_D();
 
   d->connections->Connect(
-    d->widget, vtkCommand::PlacePointEvent, this,
+    d->widget,
+    vtkCommand::PlacePointEvent,
+    this,
     SLOT(placePoint(vtkObject*, unsigned long, void*, void*)));
   d->connections->Connect(
     d->widget, vtkCommand::InteractionEvent, this, SLOT(movePointEvent()));
@@ -175,33 +206,33 @@ void RulerWidget::placePoint(vtkObject* vtkNotUsed(ob),
   int* handleId = reinterpret_cast<int*>(callData);
   if (handleId)
   {
-    switch(*handleId)
+    // adjust point based on point placer
+    if (vtkMaptkPointPlacer::SafeDownCast(d->pointRepr->GetPointPlacer()))
     {
-      case 0:
+      switch (*handleId)
       {
-        double pos[3], newPos[3];
-        d->repr->GetPoint1DisplayPosition(pos);
-        d->pointRepr->GetPointPlacer()->ComputeWorldPosition(this->renderer(),
-                                                             pos,
-                                                             newPos,
-                                                             nullptr);
-        d->repr->SetPoint1WorldPosition(newPos);
-        break;
-      }
-      case 1:
-      {
-        double pos[3], newPos[3];
-        d->repr->GetPoint2DisplayPosition(pos);
-        d->pointRepr->GetPointPlacer()->ComputeWorldPosition(this->renderer(),
-                                                             pos,
-                                                             newPos,
-                                                             nullptr);
-        d->repr->SetPoint2WorldPosition(newPos);
-        break;
-      }
-      default:
-      {
-        break;
+        case 0:
+        {
+          double pos[3], newPos[3];
+          d->repr->GetPoint1DisplayPosition(pos);
+          d->pointRepr->GetPointPlacer()->ComputeWorldPosition(
+            this->renderer(), pos, newPos, nullptr);
+          d->repr->SetPoint1WorldPosition(newPos);
+          break;
+        }
+        case 1:
+        {
+          double pos[3], newPos[3];
+          d->repr->GetPoint2DisplayPosition(pos);
+          d->pointRepr->GetPointPlacer()->ComputeWorldPosition(
+            this->renderer(), pos, newPos, nullptr);
+          d->repr->SetPoint2WorldPosition(newPos);
+          break;
+        }
+        default:
+        {
+          break;
+        }
       }
     }
     emit this->pointPlaced(*handleId);
@@ -251,46 +282,56 @@ void RulerWidget::render()
 //-----------------------------------------------------------------------------
 void RulerWidget::setPoint1WorldPosition(double* pos)
 {
-  QTE_D();
-  d->repr->SetPoint1WorldPosition(pos);
+  this->setPoint1WorldPosition(pos[0], pos[1], pos[2]);
 }
 
 //-----------------------------------------------------------------------------
 void RulerWidget::setPoint1WorldPosition(double x, double y, double z)
 {
   QTE_D();
-  double pos[3] = {x, y, z};
+  double pos[4] = { x, y, z, 1.0 };
+  d->transformPoint(pos);
   d->repr->SetPoint1WorldPosition(pos);
 }
 
 //-----------------------------------------------------------------------------
-double* RulerWidget::point1WorldPosition() const
+kwiver::vital::vector_3d RulerWidget::point1WorldPosition()
 {
   QTE_D();
-  return d->repr->GetPoint1WorldPosition();
+  double pt[4] = { 0, 0, 0, 1 };
+  if (d->repr->GetPoint1Representation())
+  {
+    d->repr->GetPoint1WorldPosition(pt);
+  }
+  return d->invTransformPoint(pt);
 }
 
 //-----------------------------------------------------------------------------
 void RulerWidget::setPoint2WorldPosition(double* pos)
 {
-  QTE_D();
-  d->repr->SetPoint2WorldPosition(pos);
-}
-
-//-----------------------------------------------------------------------------
-double* RulerWidget::point2WorldPosition() const
-{
-  QTE_D();
-  return d->repr->GetPoint2WorldPosition();
+  this->setPoint2WorldPosition(pos[0], pos[1], pos[2]);
 }
 
 //-----------------------------------------------------------------------------
 void RulerWidget::setPoint2WorldPosition(double x, double y, double z)
 {
   QTE_D();
-  double pos[3] = {x, y, z};
+  double pos[4] = { x, y, z, 1.0 };
+  d->transformPoint(pos);
   d->repr->SetPoint2WorldPosition(pos);
   d->repr->VisibilityOn();
   d->widget->SetWidgetStateToManipulate();
   d->widget->SetEnabled(1);
+}
+
+//-----------------------------------------------------------------------------
+kwiver::vital::vector_3d RulerWidget::point2WorldPosition()
+{
+  QTE_D();
+  double pt[4] = { 0, 0, 0, 1 };
+  if (d->repr->GetPoint2Representation())
+  {
+    d->repr->GetPoint2WorldPosition(pt);
+  }
+  return d->invTransformPoint(pt);
 }
