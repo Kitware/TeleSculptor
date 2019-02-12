@@ -70,10 +70,26 @@ write_pdal(vital::path_t const& filename,
   table.layout()->registerDim(pdal::Dimension::Id::Blue);
 
   int crs = lgcs.origin().crs();
-  const kv::vector_2d offset_xy = lgcs.origin().location();
-  const double offset_z = lgcs.origin_altitude();
-  auto srs = pdal::SpatialReference("EPSG:" + std::to_string(crs));
-  pdal::PointViewPtr view(new pdal::PointView(table, srs));
+  kv::vector_2d offset_xy(0.0, 0.0);
+  double offset_z = 0.0;
+  pdal::PointViewPtr view;
+  // handle special cases of non-geographic coordinates
+  if( crs < 0 )
+  {
+    view = std::make_shared<pdal::PointView>(table);
+    options.add("scale_x", 1e-4);
+    options.add("scale_y", 1e-4);
+    options.add("scale_z", 1e-4);
+  }
+  else
+  {
+    offset_xy = lgcs.origin().location();
+    offset_z = lgcs.origin_altitude();
+    std::string srs_name = "EPSG:" + std::to_string(crs);
+    pdal::SpatialReference srs;
+    srs = pdal::SpatialReference(srs_name);
+    view = std::make_shared<pdal::PointView>(table, srs);
+  }
 
   unsigned int id = 0;
   for( auto const& lm : landmarks->landmarks() )
