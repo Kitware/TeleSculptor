@@ -60,6 +60,10 @@ write_pdal(vital::path_t const& filename,
 
   pdal::Options options;
   options.add("filename", filename);
+  options.add("system_id", "TeleSculptor");
+  options.add("offset_x", "auto");
+  options.add("offset_y", "auto");
+  options.add("offset_z", "auto");
 
   pdal::PointTable table;
   table.layout()->registerDim(pdal::Dimension::Id::X);
