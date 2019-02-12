@@ -75,6 +75,7 @@ write_pdal(vital::path_t const& filename,
   auto srs = pdal::SpatialReference("EPSG:" + std::to_string(crs));
   pdal::PointViewPtr view(new pdal::PointView(table, srs));
 
+  unsigned int id = 0;
   for( auto const& lm : landmarks->landmarks() )
   {
     kv::vector_3d pt = lm.second->loc();
@@ -82,12 +83,13 @@ write_pdal(vital::path_t const& filename,
     pt[1] += offset_xy[1];
     pt[2] += offset_z;
     auto rgb = lm.second->color();
-    view->setField(pdal::Dimension::Id::X, lm.first, pt.x());
-    view->setField(pdal::Dimension::Id::Y, lm.first, pt.y());
-    view->setField(pdal::Dimension::Id::Z, lm.first, pt.z());
-    view->setField(pdal::Dimension::Id::Red, lm.first, rgb.r);
-    view->setField(pdal::Dimension::Id::Green, lm.first, rgb.g);
-    view->setField(pdal::Dimension::Id::Blue, lm.first, rgb.b);
+    view->setField(pdal::Dimension::Id::X, id, pt.x());
+    view->setField(pdal::Dimension::Id::Y, id, pt.y());
+    view->setField(pdal::Dimension::Id::Z, id, pt.z());
+    view->setField(pdal::Dimension::Id::Red, id, rgb.r);
+    view->setField(pdal::Dimension::Id::Green, id, rgb.g);
+    view->setField(pdal::Dimension::Id::Blue, id, rgb.b);
+    ++id;
   }
 
   pdal::BufferReader reader;
