@@ -106,6 +106,13 @@ int main(int argc, char** argv)
     qputenv("PROJ_LIB", projDataDir.toLocal8Bit());
   }
 
+  // Tell GDAL where to find its data files
+  auto gdalDataDir = exeDir.absoluteFilePath("../share/gdal");
+  if (QFileInfo{ gdalDataDir }.isDir())
+  {
+    qputenv("GDAL_DATA", gdalDataDir.toLocal8Bit());
+  }
+
   // Create and show main window
   MainWindow window;
   window.show();

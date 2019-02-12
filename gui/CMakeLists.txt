@@ -326,6 +326,9 @@ if (MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
   install(DIRECTORY "${fletch_ROOT}/share/proj"
           DESTINATION share COMPONENT Runtime)
 
+  install(DIRECTORY "${fletch_ROOT}/share/gdal"
+          DESTINATION share COMPONENT Runtime)
+
   set(kwiver_tools
       kwiver
       pipe_config
