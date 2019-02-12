@@ -498,11 +498,6 @@ void MainWindowPrivate::addVideoSource(
         this->advanceInterval =
           config->get_value<int>("video_reader:filter:output_nth_frame");
       }
-      else if (config->has_value("video_reader:splice:output_nth_frame"))
-      {
-        this->advanceInterval =
-          config->get_value<int>("video_reader:splice:output_nth_frame");
-      }
     }
 
     foreach (auto const& tool, this->tools)
