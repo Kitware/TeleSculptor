@@ -140,6 +140,10 @@ public:
   void updateScale(WorldView*);
   void updateAxes(WorldView*, bool immediate = false);
 
+  kwiver::vital::landmark_map_sptr
+  vtkToLandmarks(vtkSmartPointer<vtkPolyData> mesh,
+                 std::string const& colorArrayName);
+
   Ui::WorldView UI;
   Am::WorldView AM;
 
@@ -307,6 +311,42 @@ void WorldViewPrivate::updateAxes(WorldView* q, bool immediate)
     this->axesDirty = true;
     QMetaObject::invokeMethod(q, "updateAxes", Qt::QueuedConnection);
   }
+}
+
+//-----------------------------------------------------------------------------
+kwiver::vital::landmark_map_sptr
+WorldViewPrivate::vtkToLandmarks(vtkSmartPointer<vtkPolyData> data,
+                                 std::string const& colorArrayName)
+{
+  namespace kv = kwiver::vital;
+  vtkPoints *inPts = data->GetPoints();
+  vtkIdType numPts = inPts->GetNumberOfPoints();
+
+  vtkDataArray* da = data->GetPointData()->GetArray(colorArrayName.c_str());
+  vtkUnsignedCharArray* rgbArray = nullptr;
+  if (da != nullptr && da->GetNumberOfComponents() == 3)
+  {
+    rgbArray = vtkArrayDownCast<vtkUnsignedCharArray>(da);
+  }
+
+  double dpt[3];
+  kv::landmark_map::map_landmark_t depth_lms;
+  for (vtkIdType i = 0; i < numPts; ++i)
+  {
+    inPts->GetPoint(i, dpt);
+    std::shared_ptr<kv::landmark_d> lm =
+      std::make_shared<kv::landmark_d>(kv::vector_3d(dpt[0], dpt[1], dpt[2]));
+    if (rgbArray)
+    {
+      vtkIdType idx = 3 * i;
+      kv::rgb_color rgb(rgbArray->GetValue(idx),
+        rgbArray->GetValue(idx + 1),
+        rgbArray->GetValue(idx + 2));
+      lm->set_color(rgb);
+    }
+    depth_lms[i] = lm;
+  }
+  return std::make_shared<kv::simple_landmark_map>(depth_lms);
 }
 
 //-----------------------------------------------------------------------------
@@ -1310,37 +1350,13 @@ void WorldView::saveDepthPoints(QString const& path,
 {
   QTE_D();
   namespace kv = kwiver::vital;
-  if (QFileInfo(path).suffix() == "las")
+  if (QFileInfo(path).suffix().toLower() == "las")
   {
-    vtkPolyData *data = vtkPolyData::SafeDownCast(d->depthScalarFilter->GetOutput());
-    vtkPoints *inPts = data->GetPoints();
-    vtkIdType numPts = inPts->GetNumberOfPoints();
-
-    vtkDataArray* da = data->GetPointData()->GetArray(DepthMapArrays::TrueColor);
-    vtkUnsignedCharArray* rgbArray = nullptr;
-    if (da != nullptr && da->GetNumberOfComponents() == 3)
-    {
-      rgbArray = vtkArrayDownCast<vtkUnsignedCharArray>(da);
-    }
-
-    double dpt[3];
-    kv::landmark_map::map_landmark_t depth_lms;
-    for (vtkIdType i = 0; i < numPts; ++i)
-    {
-      inPts->GetPoint(i, dpt);
-      std::shared_ptr<kv::landmark_d> lm =
-        std::make_shared<kv::landmark_d>(kv::vector_3d(dpt[0], dpt[1], dpt[2]));
-      if (rgbArray)
-      {
-        vtkIdType idx = 3 * i;
-        kv::rgb_color rgb(rgbArray->GetValue(idx),
-                          rgbArray->GetValue(idx + 1),
-                          rgbArray->GetValue(idx + 2));
-        lm->set_color(rgb);
-      }
-      depth_lms[i] = lm;
-    }
-    auto depth_landmarks = std::make_shared<kv::simple_landmark_map>(depth_lms);
+    // convert the point cloud into a set of landmarks,
+    // then use the PDAL writer for landmarks
+    vtkSmartPointer<vtkPolyData> data =
+      vtkPolyData::SafeDownCast(d->depthScalarFilter->GetOutput());
+    auto depth_landmarks = d->vtkToLandmarks(data, DepthMapArrays::TrueColor);
     kwiver::maptk::write_pdal(stdString(path), lgcs, depth_landmarks);
   }
   else
