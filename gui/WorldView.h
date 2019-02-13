@@ -130,7 +130,8 @@ public slots:
 
   void saveMesh(QString const& path);
   void saveVolume(QString const& path);
-  void saveColoredMesh(QString const& path);
+  void saveColoredMesh(QString const& path,
+                       kwiver::vital::local_geo_cs const & lgcs);
 
   void invalidateGeometry();
 

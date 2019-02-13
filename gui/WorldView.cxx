@@ -1452,7 +1452,8 @@ void WorldView::saveVolume(const QString &path)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::saveColoredMesh(const QString &path)
+void WorldView::saveColoredMesh(const QString &path,
+                                kwiver::vital::local_geo_cs const& lgcs)
 {
   QTE_D();
 
@@ -1467,6 +1468,12 @@ void WorldView::saveColoredMesh(const QString &path)
     writer->SetLookupTable(d->volumeActor->GetMapper()->GetLookupTable());
     writer->AddInputDataObject(mesh);
     writer->Write();
+  }
+  else if (ext == "las")
+  {
+    vtkSmartPointer<vtkPolyData> mesh = d->contourFilter->GetOutput();
+    auto depth_landmarks = d->vtkToLandmarks(mesh, mesh->GetPointData()->GetScalars()->GetName());
+    kwiver::maptk::write_pdal(stdString(path), lgcs, depth_landmarks);
   }
   else
   {

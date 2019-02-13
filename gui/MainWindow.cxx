@@ -2391,13 +2391,25 @@ void MainWindow::saveColoredMesh()
 
   auto const path = QFileDialog::getSaveFileName(
     this, "Export Colored Mesh", QString("colored_mesh.vtp"),
+    "LAS File (*.las);;"
     "VTK Polydata (*.vtp);;"
     "PLY File (*.ply);;"
     "All Files (*)");
 
-  if (!path.isEmpty())
+  try
   {
-    d->UI.worldView->saveColoredMesh(path);
+    if (!path.isEmpty())
+    {
+      auto lgcs = d->sfmConstraints->get_local_geo_cs();
+      d->UI.worldView->saveColoredMesh(path, lgcs);
+    }
+  }
+  catch (...)
+  {
+    auto const msg =
+      QString("An error occurred while exporting the mesh to \"%1\". "
+        "The output file may not have been written correctly.");
+    QMessageBox::critical(this, "Export error", msg.arg(path));
   }
 }
 
