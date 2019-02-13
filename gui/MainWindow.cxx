@@ -2271,6 +2271,7 @@ void MainWindow::saveDepthPoints()
   auto const path = QFileDialog::getSaveFileName(
     this, "Export Depth Point Cloud", QString(),
     "PLY file (*.ply);;"
+    "LAS file (*.las);;"
     "All Files (*)");
 
   if (!path.isEmpty())
@@ -2286,7 +2287,8 @@ void MainWindow::saveDepthPoints(QString const& path)
 
   try
   {
-    d->UI.worldView->saveDepthPoints(path);
+    auto lgcs = d->sfmConstraints->get_local_geo_cs();
+    d->UI.worldView->saveDepthPoints(path, lgcs);
     d->project->config->set_value(
       "depthmaps_images_file",
       kvPath(d->project->getContingentRelativePath(path)));

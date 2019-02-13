@@ -47,6 +47,8 @@
 #include "vtkMaptkInteractorStyle.h"
 #include "vtkMaptkScalarDataFilter.h"
 
+#include <maptk/pdal_write.h>
+
 #include <vital/types/camera.h>
 #include <vital/types/landmark_map.h>
 
@@ -1303,17 +1305,54 @@ void WorldView::updateDepthMapThresholds(bool filterState)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::saveDepthPoints(QString const& path)
+void WorldView::saveDepthPoints(QString const& path,
+                                kwiver::vital::local_geo_cs const& lgcs)
 {
   QTE_D();
+  namespace kv = kwiver::vital;
+  if (QFileInfo(path).suffix() == "las")
+  {
+    vtkPolyData *data = vtkPolyData::SafeDownCast(d->depthScalarFilter->GetOutput());
+    vtkPoints *inPts = data->GetPoints();
+    vtkIdType numPts = inPts->GetNumberOfPoints();
 
-  vtkNew<vtkPLYWriter> writer;
+    vtkDataArray* da = data->GetPointData()->GetArray(DepthMapArrays::TrueColor);
+    vtkUnsignedCharArray* rgbArray = nullptr;
+    if (da != nullptr && da->GetNumberOfComponents() == 3)
+    {
+      rgbArray = vtkArrayDownCast<vtkUnsignedCharArray>(da);
+    }
 
-  writer->SetFileName(qPrintable(path));
-  writer->SetInputConnection(d->depthScalarFilter->GetOutputPort());
-  writer->SetColorMode(0);
-  writer->SetArrayName(DepthMapArrays::TrueColor);
-  writer->Write();
+    double dpt[3];
+    kv::landmark_map::map_landmark_t depth_lms;
+    for (vtkIdType i = 0; i < numPts; ++i)
+    {
+      inPts->GetPoint(i, dpt);
+      std::shared_ptr<kv::landmark_d> lm =
+        std::make_shared<kv::landmark_d>(kv::vector_3d(dpt[0], dpt[1], dpt[2]));
+      if (rgbArray)
+      {
+        vtkIdType idx = 3 * i;
+        kv::rgb_color rgb(rgbArray->GetValue(idx),
+                          rgbArray->GetValue(idx + 1),
+                          rgbArray->GetValue(idx + 2));
+        lm->set_color(rgb);
+      }
+      depth_lms[i] = lm;
+    }
+    auto depth_landmarks = std::make_shared<kv::simple_landmark_map>(depth_lms);
+    kwiver::maptk::write_pdal(stdString(path), lgcs, depth_landmarks);
+  }
+  else
+  {
+    vtkNew<vtkPLYWriter> writer;
+
+    writer->SetFileName(qPrintable(path));
+    writer->SetInputConnection(d->depthScalarFilter->GetOutputPort());
+    writer->SetColorMode(0);
+    writer->SetArrayName(DepthMapArrays::TrueColor);
+    writer->Write();
+  }
 }
 
 //-----------------------------------------------------------------------------

@@ -33,6 +33,7 @@
 
 #include <vital/config/config_block_types.h>
 #include <vital/types/camera_map.h>
+#include <vital/types/local_geo_cs.h>
 
 #include <qtGlobal.h>
 
@@ -122,7 +123,9 @@ public slots:
   void viewToWorldFront();
   void viewToWorldBack();
 
-  void saveDepthPoints(QString const& path);
+
+  void saveDepthPoints(QString const & path,
+                       kwiver::vital::local_geo_cs const & lgcs);
   void exportWebGLScene(QString const& path);
 
   void saveMesh(QString const& path);
