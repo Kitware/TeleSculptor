@@ -88,6 +88,14 @@ RulerHelper::RulerHelper(QObject* parent)
                    &RulerWidget::pointPlaced,
                    this,
                    &RulerHelper::addWorldViewPoint);
+  QObject::connect(worldWidget,
+                   &RulerWidget::pointMoved,
+                   this,
+                   &RulerHelper::updateCameraViewRulerPoint);
+  QObject::connect(cameraWidget,
+                   &RulerWidget::pointMoved,
+                   this,
+                   &RulerHelper::updateWorldViewRulerPoint);
 
   // Set a point placer on the world widget.
   // This has to be set before the widget is enabled.
@@ -96,11 +104,6 @@ RulerHelper::RulerHelper(QObject* parent)
 
 //-----------------------------------------------------------------------------
 RulerHelper::~RulerHelper()
-{
-}
-
-//-----------------------------------------------------------------------------
-void RulerHelper::addCameraViewPoint()
 {
 }
 

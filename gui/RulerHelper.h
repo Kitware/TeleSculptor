@@ -48,20 +48,28 @@ public:
   RulerHelper(QObject* parent = nullptr);
   ~RulerHelper();
 
-  void updateCameraViewRuler(int pId = 2);
-
 public slots:
   void enableWidgets(bool);
+  void updateCameraViewRulerPoint()
+  {
+    this->updateCameraViewRuler(1);
+  }
+  void updateWorldViewRulerPoint()
+  {
+    this->addWorldViewPoint(0);
+    this->addWorldViewPoint(1);
+  }
 
 signals:
   void pointCountChanged(size_t);
 
 protected slots:
-  void addCameraViewPoint();
-  void addWorldViewPoint(int pointId);
+  void addWorldViewPoint(int pId);
 
   void moveCameraViewPoint();
   void moveWorldViewPoint();
+
+  void updateCameraViewRuler(int pId);
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(RulerHelper)
@@ -71,4 +79,3 @@ private:
 };
 
 #endif
-
