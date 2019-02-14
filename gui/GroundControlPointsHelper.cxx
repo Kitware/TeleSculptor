@@ -82,6 +82,15 @@ const auto TAG_NAME               = QStringLiteral("name");
 const auto TAG_LOCATION           = QStringLiteral("location");
 const auto TAG_USER_REGISTERED    = QStringLiteral("userRegistered");
 
+enum class Reset
+{
+  Force = 1<<0,
+  Silent = 1<<1,
+};
+
+Q_DECLARE_FLAGS(ResetFlags, Reset)
+Q_DECLARE_OPERATORS_FOR_FLAGS(ResetFlags)
+
 //-----------------------------------------------------------------------------
 bool isDoubleArray(QJsonArray const& a)
 {
@@ -210,7 +219,7 @@ public:
   void movePoint(int handleId, GroundControlPointsWidget* widget,
                  kv::vector_3d const& newPosition);
 
-  void resetPoint(id_t gcpId, bool force);
+  void resetPoint(id_t gcpId, ResetFlags options = {});
 
   void removePoint(int handleId, vtkHandleWidget* handleWidget);
 
@@ -248,7 +257,8 @@ void GroundControlPointsHelperPrivate::addPoint(
 }
 
 //-----------------------------------------------------------------------------
-void GroundControlPointsHelperPrivate::resetPoint(id_t gcpId, bool force)
+void GroundControlPointsHelperPrivate::resetPoint(
+  id_t gcpId, ResetFlags options)
 {
   auto const gcpp = qtGet(this->groundControlPoints, gcpId);
   auto const gcp = (gcpp ? gcpp->second : nullptr);
@@ -259,14 +269,17 @@ void GroundControlPointsHelperPrivate::resetPoint(id_t gcpId, bool force)
     return;
   }
 
-  if (force || !gcp->is_geo_loc_user_provided())
+  if ((options & Reset::Force) || !gcp->is_geo_loc_user_provided())
   {
     QTE_Q();
 
     gcp->set_geo_loc_user_provided(false);
     // TODO recompute geodetic location
 
-    emit q->pointChanged(gcpId);
+    if (!(options & Reset::Silent))
+    {
+      emit q->pointChanged(gcpId);
+    }
   }
 }
 
@@ -287,7 +300,7 @@ void GroundControlPointsHelperPrivate::movePoint(
   // Signal that the point changed, or report error if ID was not found
   try
   {
-    this->resetPoint(this->gcpHandleToIdMap.at(handle), false);
+    this->resetPoint(this->gcpHandleToIdMap.at(handle));
   }
   catch (std::out_of_range const&)
   {
@@ -329,8 +342,12 @@ id_t GroundControlPointsHelperPrivate::addPoint()
     std::make_shared<kv::ground_control_point>(pt);
   vtkHandleWidget* const handle =
     worldWidget->handleWidget(worldWidget->activeHandle());
+
   this->gcpHandleToIdMap[handle] = nextId;
   this->gcpIdToHandleMap[nextId] = handle;
+
+  this->resetPoint(nextId, Reset::Silent);
+
   return nextId++;
 }
 
@@ -602,7 +619,7 @@ void GroundControlPointsHelper::updateCameraViewPoints()
 void GroundControlPointsHelper::resetPoint(id_t gcpId)
 {
   QTE_D();
-  d->resetPoint(gcpId, true);
+  d->resetPoint(gcpId, Reset::Force);
 }
 
 //-----------------------------------------------------------------------------
