@@ -452,6 +452,7 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
 
   d->rulerWidget = new RulerWidget(this);
   d->rulerWidget->setTransformMatrix(d->transformMatrix);
+  d->rulerWidget->setComputeDistance(false);
 
   auto const residualsOptions =
     new ActorColorOption("CameraView/Residuals", this);

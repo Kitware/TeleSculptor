@@ -88,13 +88,20 @@ public:
   void setPoint2WorldPosition(double, double, double);
   kwiver::vital::vector_3d point2WorldPosition();
 
+  // Set/get whether the distance label should be computed on the widget
+  void setComputeDistance(bool compute);
+
+  // Set/Get the distance measurement
+  void setDistance(double distance);
+  double distance() const;
+
 signals:
   void pointPlaced(int pointId);
-  void pointMoved();
+  void pointMoved(int pointId);
 
 protected slots:
   void placePoint(vtkObject*, unsigned long, void*, void*);
-  void movePointEvent();
+  void movePointEvent(vtkObject*, unsigned long, void*, void*);
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(RulerWidget)

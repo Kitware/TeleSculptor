@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2018-2019 by Kitware, Inc.
+ * Copyright 2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,41 +28,47 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_RULERHELPER_H_
-#define MAPTK_RULERHELPER_H_
+#ifndef MAPTK_VTKMAPTKDISTANCEREPRESENTATION2D_H_
+#define MAPTK_VTKMAPTKDISTANCEREPRESENTATION2D_H_
 
-// qtExtensions includes
-#include <qtGlobal.h>
+// VTK includes
+#include <vtkDistanceRepresentation2D.h>
 
-// Qt declarations
-#include <QObject>
-
-// Forward declarations
-class RulerHelperPrivate;
-
-class RulerHelper : public QObject
+class vtkMaptkDistanceRepresentation2D : public vtkDistanceRepresentation2D
 {
-  Q_OBJECT
-
 public:
-  RulerHelper(QObject* parent = nullptr);
-  ~RulerHelper();
+  vtkTypeMacro(vtkMaptkDistanceRepresentation2D, vtkDistanceRepresentation2D);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
-public slots:
-  void enableWidgets(bool);
-  void updateCameraViewRuler(int pId = 1);
+  static vtkMaptkDistanceRepresentation2D* New();
 
-protected slots:
-  void addWorldViewPoint(int pId);
+  /**
+   * Set the distance measurement
+   */
+  vtkSetMacro(Distance, double);
 
-  void moveCameraViewPoint(int pId);
-  void moveWorldViewPoint(int pId);
+  /**
+   * Override to use the pre-set distance measurement
+   */
+  void BuildRepresentation() override;
+
+  /**
+   * Set/Get whether to compute the distance label
+   */
+  vtkSetMacro(ComputeDistance, vtkTypeBool);
+  vtkGetMacro(ComputeDistance, vtkTypeBool);
+  vtkBooleanMacro(ComputeDistance, vtkTypeBool);
+
+protected:
+  vtkMaptkDistanceRepresentation2D() = default;
+  ~vtkMaptkDistanceRepresentation2D() = default;
+
+  vtkTypeBool ComputeDistance = true;
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(RulerHelper)
-  QTE_DECLARE_PRIVATE(RulerHelper)
-
-  QTE_DISABLE_COPY(RulerHelper)
+  vtkMaptkDistanceRepresentation2D(
+    const vtkMaptkDistanceRepresentation2D&) = delete;
+  void operator=(const vtkMaptkDistanceRepresentation2D) = delete;
 };
 
 #endif

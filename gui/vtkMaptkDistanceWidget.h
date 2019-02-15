@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2018-2019 by Kitware, Inc.
+ * Copyright 2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,41 +28,39 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_RULERHELPER_H_
-#define MAPTK_RULERHELPER_H_
+#ifndef MAPTK_VTKMAPTKDISTANCEWIDGET_H_
+#define MAPTK_VTKMAPTKDISTANCEWIDGET_H_
 
-// qtExtensions includes
-#include <qtGlobal.h>
-
-// Qt declarations
-#include <QObject>
+// VTK includes
+#include <vtkDistanceWidget.h>
 
 // Forward declarations
-class RulerHelperPrivate;
+class vtkMaptkDistanceWidgetCallback;
 
-class RulerHelper : public QObject
+class vtkMaptkDistanceWidget : public vtkDistanceWidget
 {
-  Q_OBJECT
-
 public:
-  RulerHelper(QObject* parent = nullptr);
-  ~RulerHelper();
+  vtkTypeMacro(vtkMaptkDistanceWidget, vtkDistanceWidget);
+  void PrintSelf(ostream &os, vtkIndent indent) override;
 
-public slots:
-  void enableWidgets(bool);
-  void updateCameraViewRuler(int pId = 1);
+  static vtkMaptkDistanceWidget* New();
 
-protected slots:
-  void addWorldViewPoint(int pId);
+  int DistanceInteractionEvent;
+protected:
+  vtkMaptkDistanceWidget();
+  ~vtkMaptkDistanceWidget();
 
-  void moveCameraViewPoint(int pId);
-  void moveWorldViewPoint(int pId);
+  // Methods invoked when the handles at the
+  // end points of the widget are manipulated
+  void DistanceInteraction(int handleNum);
+
+  friend class vtkMaptkDistanceWidgetCallback;
+  vtkMaptkDistanceWidgetCallback *MaptkDistanceWidgetCallback1;
+  vtkMaptkDistanceWidgetCallback *MaptkDistanceWidgetCallback2;
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(RulerHelper)
-  QTE_DECLARE_PRIVATE(RulerHelper)
-
-  QTE_DISABLE_COPY(RulerHelper)
+  vtkMaptkDistanceWidget(const vtkMaptkDistanceWidget&) = delete;
+  void operator=(const vtkMaptkDistanceWidget) = delete;
 };
 
 #endif

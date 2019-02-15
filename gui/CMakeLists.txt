@@ -126,6 +126,8 @@ set(gui_sources
   main.cxx
   vtkMaptkCamera.cxx
   vtkMaptkCameraRepresentation.cxx
+  vtkMaptkDistanceRepresentation2D.cxx
+  vtkMaptkDistanceWidget.cxx
   vtkMaptkFeatureTrackRepresentation.cxx
   vtkMaptkImageDataGeometryFilter.cxx
   vtkMaptkImageUnprojectDepth.cxx

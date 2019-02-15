@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2018-2019 by Kitware, Inc.
+ * Copyright 2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,41 +28,49 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_RULERHELPER_H_
-#define MAPTK_RULERHELPER_H_
+// MAPTK includes
+#include "vtkMaptkDistanceRepresentation2D.h"
 
-// qtExtensions includes
-#include <qtGlobal.h>
+// VTK includes
+#include <vtkAxisActor2D.h>
+#include <vtkHandleRepresentation.h>
+#include <vtkObjectFactory.h>
+#include <vtkRenderWindow.h>
+#include <vtkRenderer.h>
+#include <vtkTextProperty.h>
 
-// Qt declarations
-#include <QObject>
+vtkStandardNewMacro(vtkMaptkDistanceRepresentation2D);
 
-// Forward declarations
-class RulerHelperPrivate;
-
-class RulerHelper : public QObject
+//----------------------------------------------------------------------------
+void vtkMaptkDistanceRepresentation2D::PrintSelf(ostream& os, vtkIndent indent)
 {
-  Q_OBJECT
+  this->Superclass::PrintSelf(os, indent);
+}
 
-public:
-  RulerHelper(QObject* parent = nullptr);
-  ~RulerHelper();
+//----------------------------------------------------------------------------
+void vtkMaptkDistanceRepresentation2D::BuildRepresentation()
+{
+  if (this->GetMTime() > this->BuildTime ||
+      this->AxisActor->GetMTime() > this->BuildTime ||
+      this->AxisActor->GetTitleTextProperty()->GetMTime() > this->BuildTime ||
+      this->Point1Representation->GetMTime() > this->BuildTime ||
+      this->Point2Representation->GetMTime() > this->BuildTime ||
+      (this->Renderer && this->Renderer->GetVTKWindow() &&
+       this->Renderer->GetVTKWindow()->GetMTime() > this->BuildTime))
+  {
+    double oldDist = this->Distance;
+    this->Superclass::BuildRepresentation();
+    if (!this->GetComputeDistance())
+    {
+      this->Distance = oldDist;
 
-public slots:
-  void enableWidgets(bool);
-  void updateCameraViewRuler(int pId = 1);
-
-protected slots:
-  void addWorldViewPoint(int pId);
-
-  void moveCameraViewPoint(int pId);
-  void moveWorldViewPoint(int pId);
-
-private:
-  QTE_DECLARE_PRIVATE_RPTR(RulerHelper)
-  QTE_DECLARE_PRIVATE(RulerHelper)
-
-  QTE_DISABLE_COPY(RulerHelper)
-};
-
-#endif
+      char string[512];
+      snprintf(string,
+               sizeof(string),
+               this->LabelFormat,
+               this->Distance * this->Scale);
+      this->AxisActor->SetTitle(string);
+      this->BuildTime.Modified();
+    }
+  }
+}

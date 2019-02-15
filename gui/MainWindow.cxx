@@ -1100,7 +1100,7 @@ void MainWindowPrivate::updateCameraView()
   }
 
   this->groundControlPointsHelper->updateCameraViewPoints();
-  this->rulerHelper->updateCameraViewRulerPoint();
+  this->rulerHelper->updateCameraViewRuler();
   this->UI.cameraView->render();
 }
 

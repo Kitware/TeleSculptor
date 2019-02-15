@@ -30,14 +30,14 @@
 
 // MAPTK includes
 #include "RulerWidget.h"
+#include "vtkMaptkDistanceRepresentation2D.h"
+#include "vtkMaptkDistanceWidget.h"
 #include "vtkMaptkPointHandleRepresentation3D.h"
 #include "vtkMaptkPointPlacer.h"
 
 // VTK includes
 #include <vtkActor.h>
 #include <vtkCommand.h>
-#include <vtkDistanceRepresentation2D.h>
-#include <vtkDistanceWidget.h>
 #include <vtkEvent.h>
 #include <vtkEventQtSlotConnect.h>
 #include <vtkHandleWidget.h>
@@ -66,8 +66,8 @@ public:
   void updateTransformMatrixInverse();
 
   // Distance widget
-  vtkNew<vtkDistanceWidget> widget;
-  vtkNew<vtkDistanceRepresentation2D> repr;
+  vtkNew<vtkMaptkDistanceWidget> widget;
+  vtkNew<vtkMaptkDistanceRepresentation2D> repr;
   vtkNew<vtkEventQtSlotConnect> connections;
   vtkNew<vtkMaptkPointHandleRepresentation3D> pointRepr;
 
@@ -90,6 +90,7 @@ RulerWidgetPrivate::RulerWidgetPrivate()
   // Set up the representation
   this->widget->ManagesCursorOn();
   this->repr->SetHandleRepresentation(this->pointRepr.GetPointer());
+  this->repr->SetLabelFormat("%-#6.2f");
   vtkNew<vtkProperty> property;
   property->SetColor(1, 1, 1);
   property->SetLineWidth(1.0);
@@ -159,7 +160,15 @@ RulerWidget::RulerWidget(QObject* parent)
     this,
     SLOT(placePoint(vtkObject*, unsigned long, void*, void*)));
   d->connections->Connect(
-    d->widget, vtkCommand::InteractionEvent, this, SLOT(movePointEvent()));
+    d->widget,
+    d->widget->DistanceInteractionEvent,
+    this,
+    SLOT(movePointEvent(vtkObject*, unsigned long, void*, void*)));
+  d->connections->Connect(
+    d->widget,
+    vtkCommand::InteractionEvent,
+    this,
+    SLOT(movePointEvent(vtkObject*, unsigned long, void*, void*)));
 }
 
 //-----------------------------------------------------------------------------
@@ -247,13 +256,28 @@ vtkRenderer* RulerWidget::renderer()
 }
 
 //-----------------------------------------------------------------------------
-void RulerWidget::movePointEvent()
+void RulerWidget::movePointEvent(vtkObject* vtkNotUsed(da),
+                                 unsigned long vtkNotUsed(evId),
+                                 void* vtkNotUsed(clientData),
+                                 void* callData)
 {
   QTE_D();
 
-  if (d->widget->GetWidgetState() != vtkDistanceWidget::Define)
+  if (d->widget->GetWidgetState() != vtkMaptkDistanceWidget::Define)
   {
-    emit pointMoved();
+    // Got here via DistanceInteractionEvent or InteractionEvent
+    int* handleId = reinterpret_cast<int*>(callData);
+    if (handleId)
+    {
+      // Do not fire signal if the handleId is not know i.e. if we got here from
+      // the superclass' interaction event.
+      emit pointMoved(*handleId);
+    }
+  }
+  else
+  {
+    // Got here via InteractionEvent while defining the second point
+    emit pointPlaced(1);
   }
 }
 
@@ -334,4 +358,25 @@ kwiver::vital::vector_3d RulerWidget::point2WorldPosition()
     d->repr->GetPoint2WorldPosition(pt);
   }
   return d->invTransformPoint(pt);
+}
+
+//-----------------------------------------------------------------------------
+void RulerWidget::setComputeDistance(bool compute)
+{
+  QTE_D();
+  d->repr->SetComputeDistance(compute);
+}
+
+//-----------------------------------------------------------------------------
+void RulerWidget::setDistance(double distance)
+{
+  QTE_D();
+  d->repr->SetDistance(distance);
+}
+
+//-----------------------------------------------------------------------------
+double RulerWidget::distance() const
+{
+  QTE_D();
+  return d->repr->GetDistance();
 }
