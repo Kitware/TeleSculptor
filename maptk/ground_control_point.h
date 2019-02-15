@@ -38,8 +38,9 @@
 #ifndef MAPTK_GROUND_CONTROL_POINT_H_
 #define MAPTK_GROUND_CONTROL_POINT_H_
 
+#include <maptk/maptk_export.h>
+
 #include <vital/types/geo_point.h>
-#include <vital/vital_export.h>
 
 #include <iostream>
 #include <map>
@@ -55,16 +56,22 @@ namespace vital
 using ground_control_point_id_t = uint32_t;
 
 /// A representation of a 3D ground control point.
-class ground_control_point
+class MAPTK_EXPORT ground_control_point
 {
 public:
   /// Constructor
   ground_control_point();
   ground_control_point(vector_3d const& loc,
                        std::string const& name = std::string());
-  ground_control_point(ground_control_point const& other);
+
   /// Destructor
   ~ground_control_point() = default;
+
+  ground_control_point(ground_control_point const&) = default;
+  ground_control_point(ground_control_point&&) = default;
+
+  ground_control_point& operator=(ground_control_point const&) = default;
+  ground_control_point& operator=(ground_control_point&&) = default;
 
   /// Accessor for the world coordinates
   vector_3d loc() const
@@ -103,6 +110,16 @@ public:
     elevation_ = elev;
   }
   /// Accessor for the name of the ground control point
+  bool is_geo_loc_user_provided() const
+  {
+    return geo_loc_user_provided_;
+  }
+  /// Set the name of the ground control point
+  void set_geo_loc_user_provided(bool state)
+  {
+    geo_loc_user_provided_ = state;
+  }
+  /// Accessor for the name of the ground control point
   std::string name() const
   {
     return name_;
@@ -114,10 +131,11 @@ public:
   }
 
 protected:
-  vector_3d loc_;
+  vector_3d loc_{ 0.0, 0.0, 0.0 };
   geo_point geo_loc_;
-  double elevation_;
+  double elevation_ = 0.0;
   std::string name_;
+  bool geo_loc_user_provided_ = false;
 };
 
 /// output stream operator for a ground control point
@@ -141,15 +159,15 @@ using ground_control_point_sptr = std::shared_ptr<ground_control_point>;
 
 // ----------------------------------------------------------------------------
 /// A mapping between IDs and ground control points
-class ground_control_point_map
+class MAPTK_EXPORT ground_control_point_map
 {
 public:
   /// alias for std::map from integer IDs to ground control points
-  using map_ground_control_point_t =
+  using ground_control_point_map_t =
     std::map<ground_control_point_id_t, ground_control_point_sptr>;
 
   /// Constructor
-  explicit ground_control_point_map(const map_ground_control_point_t& m)
+  explicit ground_control_point_map(const ground_control_point_map_t& m)
     : data_(m)
   {
   }
@@ -164,14 +182,14 @@ public:
   }
 
   /// Return a map from integer IDs to ground control point shared pointers
-  map_ground_control_point_t ground_control_points() const
+  ground_control_point_map_t ground_control_points() const
   {
     return data_;
   }
 
 protected:
   /// The map from integer IDs to ground control point shared pointers
-  map_ground_control_point_t data_;
+  ground_control_point_map_t data_;
 };
 
 /// alias for a ground control point shared pointer

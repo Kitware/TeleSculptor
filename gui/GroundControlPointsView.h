@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2018-2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,39 +28,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_INITCAMERASLANDMARKSTOOL_H_
-#define MAPTK_INITCAMERASLANDMARKSTOOL_H_
+#ifndef MAPTK_GROUNDCONTROLPOINTSVIEW_H_
+#define MAPTK_GROUNDCONTROLPOINTSVIEW_H_
 
-#include "AbstractTool.h"
+#include <qtGlobal.h>
 
-class InitCamerasLandmarksToolPrivate;
+#include <QWidget>
 
-class InitCamerasLandmarksTool : public AbstractTool
+class GroundControlPointsHelper;
+
+class GroundControlPointsViewPrivate;
+
+class GroundControlPointsView : public QWidget
 {
   Q_OBJECT
 
 public:
-  explicit InitCamerasLandmarksTool(QObject* parent = 0);
-  ~InitCamerasLandmarksTool() override;
+  explicit GroundControlPointsView(
+    QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  ~GroundControlPointsView();
 
-  Outputs outputs() const override;
-
-  /// Get if the tool can be canceled.
-  bool isCancelable() const override { return true; }
-
-  bool execute(QWidget* window = 0) override;
-
-  bool callback_handler(camera_map_sptr cameras, landmark_map_sptr landmarks,
-                        feature_track_set_changes_sptr track_changes);
+  void setHelper(GroundControlPointsHelper*);
 
 protected:
-  void run() override;
+  void changeEvent(QEvent* e) override;
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(InitCamerasLandmarksTool)
-  QTE_DECLARE_PRIVATE(InitCamerasLandmarksTool)
-  QTE_DISABLE_COPY(InitCamerasLandmarksTool)
+  QTE_DECLARE_PRIVATE_RPTR(GroundControlPointsView)
+  QTE_DECLARE_PRIVATE(GroundControlPointsView)
+
+  QTE_DISABLE_COPY(GroundControlPointsView)
 };
 
 #endif
-#define MAPTK_INITCAMERASLANDMARKSTOOL_H_

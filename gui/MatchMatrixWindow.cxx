@@ -169,8 +169,8 @@ public:
   Am::MatchMatrixWindow AM;
   qtUiState uiState;
 
-  Eigen::SparseMatrix<uint> matrix;
-  uint maxValue;
+  Eigen::SparseMatrix<unsigned int> matrix;
+  unsigned int maxValue;
   std::vector<kv::frame_id_t> frames;
 
   QImage image;
@@ -466,7 +466,7 @@ MatchMatrixWindow::~MatchMatrixWindow()
 }
 
 //-----------------------------------------------------------------------------
-void MatchMatrixWindow::setMatrix(Eigen::SparseMatrix<uint> const& matrix,
+void MatchMatrixWindow::setMatrix(Eigen::SparseMatrix<unsigned int> const& matrix,
                                   std::vector<kv::frame_id_t> const& frames)
 {
   QTE_D();

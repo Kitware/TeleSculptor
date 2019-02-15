@@ -1,5 +1,5 @@
 set(CMAKE_AUTOMOC ON)
-set(Qt5_MODULES Core Designer UiPlugin Widgets Xml)
+set(Qt5_MODULES Core Designer UiPlugin Widgets Svg Xml)
 find_package(Qt5 5.7 COMPONENTS ${Qt5_MODULES} REQUIRED)
 set(QT_LIBRARIES )
 foreach(module ${Qt5_MODULES})
@@ -63,6 +63,7 @@ include_directories(
 
 set(gui_am_ui
   CameraView.ui
+  GroundControlPointsView.ui
   MainWindow.ui
   MatchMatrixWindow.ui
   WorldView.ui
@@ -105,6 +106,8 @@ set(gui_sources
   FeatureOptions.cxx
   GradientSelector.cxx
   GroundControlPointsHelper.cxx
+  GroundControlPointsModel.cxx
+  GroundControlPointsView.cxx
   GroundControlPointsWidget.cxx
   GuiCommon.cxx
   ImageOptions.cxx
@@ -298,17 +301,25 @@ if (MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
   list(APPEND FIXUP_DIRS "${QT_LIBRARY_DIR}")
   list(APPEND FIXUP_DIRS "${QT_BINARY_DIR}")
 
-  install(DIRECTORY "${KWIVER_DIR}/lib/${BINARY_DIR}/kwiver/modules" DESTINATION lib
+  install(DIRECTORY "${KWIVER_DIR}/lib/${BINARY_DIR}/kwiver/modules"
+          DESTINATION lib/kwiver
           COMPONENT Runtime
           FILES_MATCHING PATTERN "*plugin${CMAKE_SHARED_MODULE_SUFFIX}" )
+
+  install(DIRECTORY "${KWIVER_DIR}/lib/${BINARY_DIR}/kwiver/modules/applets"
+          DESTINATION lib/kwiver/modules
+          COMPONENT Runtime
+          FILES_MATCHING PATTERN "*${CMAKE_SHARED_MODULE_SUFFIX}" )
 
   install(DIRECTORY "${KWIVER_DIR}/lib/${BINARY_DIR}/kwiver/modules/"
           DESTINATION ${plugin_dest_dir}
           COMPONENT Runtime
           FILES_MATCHING PATTERN "*logger${CMAKE_SHARED_MODULE_SUFFIX}"
+          PATTERN "applets" EXCLUDE
           PATTERN "plugin_explorer" EXCLUDE )
 
-  install(DIRECTORY "${KWIVER_DIR}/lib/${BINARY_DIR}/kwiver/processes" DESTINATION lib
+  install(DIRECTORY "${KWIVER_DIR}/lib/${BINARY_DIR}/kwiver/processes"
+          DESTINATION lib/kwiver
           COMPONENT Runtime
           FILES_MATCHING PATTERN "*${CMAKE_SHARED_MODULE_SUFFIX}" )
 
@@ -316,8 +327,7 @@ if (MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
           DESTINATION share COMPONENT Runtime)
 
   set(kwiver_tools
-      config_explorer
-      dump_klv
+      kwiver
       pipe_config
       pipe_to_dot
       pipeline_runner
@@ -354,9 +364,9 @@ set(bundle_path \"${bundle_path}\")
         file(GLOB_RECURSE QTPLUGINS
             \"${dest_prefix}/${plugin_dest_dir}/plugins/*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
         file(GLOB_RECURSE KWIVER_PLUGINS
-            \"${dest_prefix}/lib/modules/*${CMAKE_SHARED_MODULE_SUFFIX}\")
+            \"${dest_prefix}/lib/kwiver/modules/*${CMAKE_SHARED_MODULE_SUFFIX}\")
         file(GLOB_RECURSE SPROKIT_PLUGINS
-            \"${dest_prefix}/lib/sprokit/*${CMAKE_SHARED_MODULE_SUFFIX}\")
+            \"${dest_prefix}/lib/kwiver/processes/*${CMAKE_SHARED_MODULE_SUFFIX}\")
         file(GLOB_RECURSE LOGGER_PLUGINS
             \"${dest_prefix}/${plugin_dest_dir}/vital_*_logger${CMAKE_SHARED_LIBRARY_SUFFIX}\")
         set(BU_CHMOD_BUNDLE_ITEMS ON)

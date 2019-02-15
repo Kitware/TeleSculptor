@@ -10,8 +10,8 @@ ExternalProject_Add(kwiver
   SOURCE_DIR ${MAPTK_EXTERNAL_DIR}/kwiver
   BINARY_DIR ${MAPTK_EXTERNAL_DIR}/kwiver-build
   STAMP_DIR ${MAPTK_STAMP_DIR}
-  GIT_REPOSITORY "https://kwgitlab.kitware.com/computer-vision/KWIVER.git"
-  GIT_TAG 16a1a304fc44b4005d98f0677bf75dbce633f932
+  GIT_REPOSITORY "https://github.com/Kitware/kwiver.git"
+  GIT_TAG 73221e7457eed931c1aa0213bfd79cfca09209f9
   #GIT_SHALLOW 1
   CMAKE_CACHE_ARGS
     -DBUILD_SHARED_LIBS:BOOL=ON

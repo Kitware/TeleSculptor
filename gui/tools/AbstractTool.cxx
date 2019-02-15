@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2017-2018 by Kitware, Inc.
+ * Copyright 2017-2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -86,6 +86,20 @@ void ToolData::copyTracks(feature_track_set_sptr const& newTracks)
 }
 
 //-----------------------------------------------------------------------------
+void ToolData::copyTrackChanges(feature_track_set_changes_sptr const& newTrackChanges)
+{
+  if (newTrackChanges)
+  {
+    this->track_changes = std::dynamic_pointer_cast<kwiver::vital::feature_track_set_changes>(
+      newTrackChanges->clone());
+  }
+  else
+  {
+    this->track_changes = feature_track_set_changes_sptr();
+  }
+}
+
+//-----------------------------------------------------------------------------
 void ToolData::copyCameras(camera_map_sptr const& newCameras)
 {
   if (newCameras)
@@ -93,7 +107,7 @@ void ToolData::copyCameras(camera_map_sptr const& newCameras)
     auto copiedCameras = kwiver::vital::camera_map::map_camera_t{};
     foreach (auto const& ci, newCameras->cameras())
     {
-      copiedCameras.insert(std::make_pair(ci.first, ci.second->clone()));
+      copiedCameras.emplace(ci.first, ci.second->clone());
     }
     this->cameras =
       std::make_shared<kwiver::vital::simple_camera_map>(copiedCameras);
@@ -112,7 +126,7 @@ void ToolData::copyLandmarks(landmark_map_sptr const& newLandmarks)
     auto copiedLandmarks = kwiver::vital::landmark_map::map_landmark_t{};
     foreach (auto const& ci, newLandmarks->landmarks())
     {
-      copiedLandmarks.insert(std::make_pair(ci.first, ci.second->clone()));
+      copiedLandmarks.emplace(ci.first, ci.second->clone());
     }
     this->landmarks =
       std::make_shared<kwiver::vital::simple_landmark_map>(copiedLandmarks);
@@ -246,6 +260,13 @@ void AbstractTool::setTracks(feature_track_set_sptr const& newTracks)
 {
   QTE_D();
   d->data->copyTracks(newTracks);
+}
+
+//-----------------------------------------------------------------------------
+void AbstractTool::setTrackChanges(feature_track_set_changes_sptr const& newTrackChanges)
+{
+  QTE_D();
+  d->data->copyTrackChanges(newTrackChanges);
 }
 
 //-----------------------------------------------------------------------------
