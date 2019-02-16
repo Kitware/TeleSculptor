@@ -491,7 +491,11 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   this->addAction(d->UI.actionShowDepthMap);
   this->addAction(d->UI.actionShowVolume);
   this->addAction(d->UI.actionPlaceEditGCP);
-  this->addAction(d->UI.actionShowRuler);
+
+  auto const rulerMenu = new QMenu(this);
+  rulerMenu->addAction(d->UI.actionResetRuler);
+  d->UI.actionResetRuler->setDisabled(true);
+  d->setPopup(d->UI.actionShowRuler, rulerMenu);
 
   connect(d->UI.actionViewReset, &QAction::triggered,
           this, &WorldView::resetView);
@@ -548,6 +552,12 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->rulerWidget->setInteractor(d->UI.renderWidget->GetInteractor());
   connect(d->UI.actionShowRuler, &QAction::toggled,
           this, &WorldView::rulerEnabled);
+  connect(d->rulerWidget, &RulerWidget::rulerPlaced,
+          d->UI.actionResetRuler, &QAction::setEnabled);
+  connect(d->UI.actionResetRuler, &QAction::triggered,
+          this, &WorldView::rulerReset);
+  connect(d->UI.actionResetRuler, &QAction::triggered,
+          this, [=](){d->UI.actionShowRuler->setChecked(false);});
 
   vtkNew<vtkMaptkInteractorStyle> iren;
   d->renderWindow->GetInteractor()->SetInteractorStyle(iren);

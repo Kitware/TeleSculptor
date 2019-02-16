@@ -98,9 +98,13 @@ public:
   // Get whether the ruler is placed
   bool isRulerPlaced() const;
 
+  // Remove the ruler from the view
+  void removeRuler();
+
 signals:
   void pointPlaced(int pointId);
   void pointMoved(int pointId);
+  void rulerPlaced(bool);
 
 protected slots:
   void placePoint(vtkObject*, unsigned long, void*, void*);

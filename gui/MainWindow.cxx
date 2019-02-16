@@ -1523,6 +1523,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->rulerHelper = new RulerHelper(this);
   connect(d->UI.worldView, &WorldView::rulerEnabled,
           d->rulerHelper, &RulerHelper::enableWidgets);
+  connect(d->UI.worldView, &WorldView::rulerReset,
+          d->rulerHelper, &RulerHelper::resetRuler);
 
   // Antialiasing
   connect(d->UI.actionAntialiasing, &QAction::toggled,

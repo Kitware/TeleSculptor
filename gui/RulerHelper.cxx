@@ -289,3 +289,11 @@ void RulerHelper::enableWidgets(bool enable)
   d->mainWindow->worldView()->rulerWidget()->enableWidget(enable);
   d->mainWindow->cameraView()->rulerWidget()->enableWidget(enable);
 }
+
+//-----------------------------------------------------------------------------
+void RulerHelper::resetRuler()
+{
+  QTE_D();
+  d->mainWindow->worldView()->rulerWidget()->removeRuler();
+  d->mainWindow->cameraView()->rulerWidget()->removeRuler();
+}

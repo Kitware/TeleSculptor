@@ -80,6 +80,8 @@ public:
 
   kwiver::vital::vector_3d invTransformPoint(double* pt);
   void transformPoint(double* pt);
+
+  void resetRuler();
 };
 
 //-----------------------------------------------------------------------------
@@ -146,6 +148,15 @@ void RulerWidgetPrivate::transformPoint(double* pt)
     pt[1] /= pt[3];
     pt[2] /= pt[3];
   }
+}
+
+//-----------------------------------------------------------------------------
+void RulerWidgetPrivate::resetRuler()
+{
+  this->repr->VisibilityOff();
+  this->widget->SetEnabled(0);
+  this->widget->SetWidgetStateToStart();
+  this->rulerPlaced = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -248,6 +259,7 @@ void RulerWidget::placePoint(vtkObject* vtkNotUsed(ob),
     if (*handleId == 1)
     {
       d->rulerPlaced = true;
+      emit this->rulerPlaced(d->rulerPlaced);
     }
     emit this->pointPlaced(*handleId);
   }
@@ -352,6 +364,7 @@ void RulerWidget::setPoint2WorldPosition(double x, double y, double z)
   d->widget->SetWidgetStateToManipulate();
   d->widget->SetEnabled(1);
   d->rulerPlaced = true;
+  emit this->rulerPlaced(d->rulerPlaced);
 }
 
 //-----------------------------------------------------------------------------
@@ -392,4 +405,12 @@ bool RulerWidget::isRulerPlaced() const
 {
   QTE_D();
   return d->rulerPlaced;
+}
+
+//-----------------------------------------------------------------------------
+void RulerWidget::removeRuler()
+{
+  QTE_D();
+  d->resetRuler();
+  emit this->rulerPlaced(d->rulerPlaced);
 }

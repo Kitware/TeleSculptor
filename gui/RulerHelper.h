@@ -53,6 +53,7 @@ public:
 
 public slots:
   void enableWidgets(bool);
+  void resetRuler();
 
 protected slots:
   void addWorldViewPoint(int pId);
