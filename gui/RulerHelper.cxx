@@ -83,7 +83,7 @@ RulerHelper::RulerHelper(QObject* parent)
   QObject::connect(worldWidget,
                    &RulerWidget::pointPlaced,
                    this,
-                   &RulerHelper::updateCameraViewRuler);
+                   &RulerHelper::addCameraViewPoint);
   QObject::connect(cameraWidget,
                    &RulerWidget::pointPlaced,
                    this,
@@ -185,8 +185,7 @@ void RulerHelper::moveCameraViewPoint(int pointId)
   RulerWidget* cameraWidget = d->mainWindow->cameraView()->rulerWidget();
 
   kv::vector_3d worldPt = (pointId == 0 ? worldWidget->point1WorldPosition()
-                                         : worldWidget->point2WorldPosition());
-
+                                        : worldWidget->point2WorldPosition());
 
   double cameraPt[2];
   camera->ProjectPoint(worldPt, cameraPt);
@@ -220,7 +219,7 @@ void RulerHelper::moveWorldViewPoint(int pointId)
                                          : cameraWidget->point2WorldPosition());
 
   kv::vector_3d worldPt = (pointId == 0 ? worldWidget->point1WorldPosition()
-                                         : worldWidget->point2WorldPosition());
+                                        : worldWidget->point2WorldPosition());
 
   double depth = camera->Depth(worldPt);
   kv::vector_3d p = camera->UnprojectPoint(cameraPt.data(), depth);
@@ -238,7 +237,7 @@ void RulerHelper::moveWorldViewPoint(int pointId)
 }
 
 //-----------------------------------------------------------------------------
-void RulerHelper::updateCameraViewRuler(int pointId)
+void RulerHelper::addCameraViewPoint(int pointId)
 {
   QTE_D();
   vtkMaptkCamera* camera = d->mainWindow->activeCamera();
@@ -263,6 +262,23 @@ void RulerHelper::updateCameraViewRuler(int pointId)
     camera->ProjectPoint(p2, cameraPt2);
     cameraWidget->setPoint2WorldPosition(cameraPt2[0], cameraPt2[1], 0.0);
     cameraWidget->render();
+  }
+}
+
+//-----------------------------------------------------------------------------
+void RulerHelper::updateCameraViewRuler()
+{
+  QTE_D();
+  vtkMaptkCamera* camera = d->mainWindow->activeCamera();
+  if (!camera)
+  {
+    return;
+  }
+
+  RulerWidget* worldWidget = d->mainWindow->worldView()->rulerWidget();
+  if (worldWidget->isRulerPlaced())
+  {
+    this->addCameraViewPoint(1);
   }
 }
 

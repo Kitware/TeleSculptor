@@ -48,12 +48,15 @@ public:
   RulerHelper(QObject* parent = nullptr);
   ~RulerHelper();
 
+  // Update the camera view ruler from the world view
+  void updateCameraViewRuler();
+
 public slots:
   void enableWidgets(bool);
-  void updateCameraViewRuler(int pId = 1);
 
 protected slots:
   void addWorldViewPoint(int pId);
+  void addCameraViewPoint(int pId);
 
   void moveCameraViewPoint(int pId);
   void moveWorldViewPoint(int pId);

@@ -95,6 +95,9 @@ public:
   void setDistance(double distance);
   double distance() const;
 
+  // Get whether the ruler is placed
+  bool isRulerPlaced() const;
+
 signals:
   void pointPlaced(int pointId);
   void pointMoved(int pointId);

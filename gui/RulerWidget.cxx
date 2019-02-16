@@ -72,6 +72,7 @@ public:
   vtkNew<vtkMaptkPointHandleRepresentation3D> pointRepr;
 
   vtkRenderer* renderer = nullptr;
+  bool rulerPlaced = false;
 
   vtkMatrix4x4* transformMatrix = nullptr;
   vtkNew<vtkMatrix4x4> transformMatrixInverse;
@@ -244,6 +245,10 @@ void RulerWidget::placePoint(vtkObject* vtkNotUsed(ob),
         }
       }
     }
+    if (*handleId == 1)
+    {
+      d->rulerPlaced = true;
+    }
     emit this->pointPlaced(*handleId);
   }
 }
@@ -346,6 +351,7 @@ void RulerWidget::setPoint2WorldPosition(double x, double y, double z)
   d->repr->VisibilityOn();
   d->widget->SetWidgetStateToManipulate();
   d->widget->SetEnabled(1);
+  d->rulerPlaced = true;
 }
 
 //-----------------------------------------------------------------------------
@@ -379,4 +385,11 @@ double RulerWidget::distance() const
 {
   QTE_D();
   return d->repr->GetDistance();
+}
+
+//-----------------------------------------------------------------------------
+bool RulerWidget::isRulerPlaced() const
+{
+  QTE_D();
+  return d->rulerPlaced;
 }
