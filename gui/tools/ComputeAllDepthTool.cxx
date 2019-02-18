@@ -63,7 +63,6 @@ namespace
 {
 static char const* const BLOCK_VR = "video_reader";
 static char const* const BLOCK_CD = "compute_depth";
-static char const* const BLOCK_BD = "batch_depth";
 }
 
 //-----------------------------------------------------------------------------
@@ -174,8 +173,8 @@ void ComputeAllDepthTool::run()
   {
     if (itr->first >= d->start_frame && (d->end_frame < 0 || itr->first <= d->end_frame))
       frames_in_range.push_back(itr->first);
-  }  
-  
+  }
+
   kwiver::vital::frame_id_t total_frames = frames_in_range.size() - halfsupport;
 
   int stride = 1;
