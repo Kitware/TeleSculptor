@@ -22,6 +22,9 @@ TeleSculptor
    by picking along the active camera direction vector for landmarks or the
    ground plane.
 
+ * We now recompute the geographic origin whenever the landmarks are updated.
+   This keeps the ground plane aligned with the data.
+
 Fixes since last public release
 -------------------------------
 
