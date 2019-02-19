@@ -284,7 +284,15 @@ void GroundControlPointsHelperPrivate::resetPoint(
     QTE_Q();
 
     gcp->set_geo_loc_user_provided(false);
-    // TODO recompute geodetic location
+    auto lgcs = this->mainWindow->localGeoCoordinateSystem();
+    if (lgcs.origin().crs() >= 0)
+    {
+      auto const& loc = gcp->loc();
+      gcp->set_geo_loc({
+        lgcs.origin().location() + kv::vector_2d{loc[0], loc[1]},
+        lgcs.origin().crs()});
+      gcp->set_elevation(lgcs.origin_altitude() + loc[2]);
+    }
 
     if (!(options & Reset::Silent))
     {
