@@ -74,6 +74,8 @@ public:
 public slots:
   void enableWidgets(bool);
 
+  void recomputePoints();
+
   void resetPoint(kwiver::vital::ground_control_point_id_t);
   void removePoint(kwiver::vital::ground_control_point_id_t);
 

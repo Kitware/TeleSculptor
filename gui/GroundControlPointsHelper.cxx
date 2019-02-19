@@ -656,6 +656,19 @@ void GroundControlPointsHelper::updateCameraViewPoints()
 }
 
 //-----------------------------------------------------------------------------
+void GroundControlPointsHelper::recomputePoints()
+{
+  QTE_D();
+
+  for (auto const& i : d->groundControlPoints)
+  {
+    d->resetPoint(i.second, i.first, Reset::Silent);
+  }
+
+  emit this->pointsRecomputed();
+}
+
+//-----------------------------------------------------------------------------
 void GroundControlPointsHelper::resetPoint(id_t gcpId)
 {
   QTE_D();
