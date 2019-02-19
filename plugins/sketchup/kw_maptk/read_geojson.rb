@@ -30,7 +30,6 @@
 ## Author = 'matt.leotta'
 
 require 'sketchup.rb'
-require 'json'
 
 class GeoJsonImporter < Sketchup::Importer
   def description
@@ -60,9 +59,17 @@ class GeoJsonImporter < Sketchup::Importer
     pt_group = entities.add_group
     pt_group.layer = pt_layer
 
-    parsed = JSON.parse(file)
-    parsed["features"].each do |point|
-      loc = point["properties"]["location"]
+    gcp_format = %r{
+        "location"\s*:\s*\[
+        (\s*[+-]?\d*\.?\d*e?[+-]?\d*),
+        (\s*[+-]?\d*\.?\d*e?[+-]?\d*),
+        (\s*[+-]?\d*\.?\d*e?[+-]?\d*)
+        \s*\]
+    }x
+
+    gcp_values = f.scan(gcp_format)
+
+    gcp_values.each do |loc|
       pt = Geom::Point3d::new(loc[0].to_f.m,
                               loc[1].to_f.m,
                               loc[2].to_f.m)
