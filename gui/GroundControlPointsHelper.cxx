@@ -857,12 +857,20 @@ bool GroundControlPointsHelper::writeGroundControlPoints(
   QTE_D();
 
   QJsonArray features;
+  QStringList errors;
   for (auto const& gcpi : d->groundControlPoints)
   {
-    auto const& f = buildFeature(gcpi.second);
-    if (f.isObject())
+    try
     {
-      features.append(f);
+      auto const& f = buildFeature(gcpi.second);
+      if (f.isObject())
+      {
+        features.append(f);
+      }
+    }
+    catch (std::exception const& e)
+    {
+      errors.append(QString::fromLocal8Bit(e.what()));
     }
   }
 
@@ -881,6 +889,21 @@ bool GroundControlPointsHelper::writeGroundControlPoints(
     QMessageBox::critical(dialogParent, QStringLiteral("Export error"),
                           msg.arg(path, out.errorString()));
     return false;
+  }
+
+  if (!errors.isEmpty())
+  {
+    auto const msg =
+      QStringLiteral("One or more errors occurred while exporting "
+                     "ground control points to \"%1\". "
+                     "The output file may not have been written correctly.");
+
+    QMessageBox mb{dialogParent};
+    mb.setIcon(QMessageBox::Warning);
+    mb.setText(msg.arg(path));
+    mb.setDetailedText(errors.join('\n'));
+    mb.setWindowTitle(QStringLiteral("Export error"));
+    mb.exec();
   }
 
   return true;
