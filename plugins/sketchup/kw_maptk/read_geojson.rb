@@ -49,7 +49,7 @@ class GeoJsonImporter < Sketchup::Importer
   end
     
   def load_file(file_path, layer_name, is_hidden)
-    file = File.new(file_path, "r")
+    file = IO.read(file_path)
     model = Sketchup.active_model
     pt_layer = model.layers.add(layer_name)
     if is_hidden == true
@@ -67,7 +67,7 @@ class GeoJsonImporter < Sketchup::Importer
         \s*\]
     }x
 
-    gcp_values = f.scan(gcp_format)
+    gcp_values = file.scan(gcp_format)
 
     gcp_values.each do |loc|
       pt = Geom::Point3d::new(loc[0].to_f.m,
