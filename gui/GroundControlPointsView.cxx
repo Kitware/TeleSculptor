@@ -365,6 +365,7 @@ GroundControlPointsView::GroundControlPointsView(
             if (d->helper && d->currentPoint != INVALID_POINT)
             {
               d->helper->resetPoint(d->currentPoint);
+              d->model.modifyPoint(d->currentPoint);
             }
           });
 
