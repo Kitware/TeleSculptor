@@ -34,6 +34,7 @@ require 'sketchup.rb'
 
 #SketchUp 8 comes with Ruby 1.8.6, which doesn't support require_relative
 require File.join(File.dirname(__FILE__),'read_ply.rb')
+require File.join(File.dirname(__FILE__),'read_geojson.rb')
 require File.join(File.dirname(__FILE__),'matchphoto_import_plugin.rb')
 
 
@@ -128,7 +129,7 @@ class MaptkConfImporter < Sketchup::Importer
     # if not a valid file, try prepending the directory of the conf file
     if ! File.file?(gcp_file)
       gcp_file = File.join(File.dirname(fp), gcp_file)
-      if ! File.file?(output_ply_file)
+      if ! File.file?(gcp_file)
         UI.messagebox("The value of #{GCP_FILE_KW} is incorrect. #{gcp_file} is not a valid file.")
         return nil
       end
@@ -154,10 +155,12 @@ class MaptkConfImporter < Sketchup::Importer
     photo_krtd_importer = MatchphotoMaptkImporter.new
     photo_krtd_importer.instantiate(output_krtd_dir)
     status_images = photo_krtd_importer.load_file(output_image_folder, 0)
-    # And the ply importing to the PLYImporter plugin.
+    # Add the ply importing to the PLYImporter plugin.
     ply_importer = PLYImporter.new
     status_ply = ply_importer.load_file(output_ply_file, 'MAP-Tk Landmarks', true)
-    status_gcp = ply_importer.load_file(gcp_file, 'MAP-Tk Ground Control Points', false)
+    # Add the geojson importing to the GeoJsonImporter plugin.
+    geojson_importer = GeoJsonImporter.new
+    status_gcp = geojson_importer.load_file(gcp_file, 'MAP-Tk Ground Control Points', false)
     return 0
   end
 
