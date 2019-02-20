@@ -449,6 +449,7 @@ void MainWindowPrivate::shiftGeoOrigin(kv::vector_3d const& offset)
   this->UI.worldView->setLandmarks(*landmarks);
   this->UI.cameraView->setLandmarksData(*landmarks);
 
+  // shift the cameras
   auto cameras = this->cameraMap();
   for (auto cam : cameras->cameras())
   {
@@ -461,6 +462,7 @@ void MainWindowPrivate::shiftGeoOrigin(kv::vector_3d const& offset)
   }
   this->updateCameras(cameras);
 
+  // shift the GCPs
   for (auto gcp : this->groundControlPointsHelper->groundControlPoints())
   {
     gcp.second->set_loc(gcp.second->loc() - offset);
