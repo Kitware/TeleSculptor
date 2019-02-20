@@ -467,6 +467,17 @@ void MainWindowPrivate::shiftGeoOrigin(kv::vector_3d const& offset)
     gcp.second->set_loc(gcp.second->loc() - offset);
   }
   this->groundControlPointsHelper->pointsReloaded();
+
+  // shift the ROI
+  kv::vector_3d pt;
+  this->roi->GetXMin(pt.data());
+  pt -= offset;
+  this->roi->SetXMin(pt.data());
+  this->roi->GetXMax(pt.data());
+  pt -= offset;
+  this->roi->SetXMax(pt.data());
+  UI.worldView->setROI(roi.GetPointer(), true);
+  project->config->set_value("ROI", roiToString());
 }
 
 //-----------------------------------------------------------------------------
