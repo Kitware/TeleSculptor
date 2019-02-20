@@ -12,7 +12,7 @@ find_package(PDAL 1.0.0 REQUIRED)
 set(maptk_public_headers
   geo_reference_points_io.h
   ground_control_point.h
-  pdal_write.h
+  write_pdal.h
   )
 
 set(maptk_private_headers
@@ -24,7 +24,7 @@ set(maptk_sources
   colorize.cxx
   geo_reference_points_io.cxx
   ground_control_point.cxx
-  pdal_write.cxx
+  write_pdal.cxx
   )
 
 kwiver_configure_file( version.h

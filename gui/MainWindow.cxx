@@ -58,7 +58,7 @@
 #include "vtkMaptkImageUnprojectDepth.h"
 
 #include <maptk/version.h>
-#include <maptk/pdal_write.h>
+#include <maptk/write_pdal.h>
 
 #include <arrows/core/match_matrix.h>
 #include <arrows/core/track_set_impl.h>

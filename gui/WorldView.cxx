@@ -47,7 +47,7 @@
 #include "vtkMaptkInteractorStyle.h"
 #include "vtkMaptkScalarDataFilter.h"
 
-#include <maptk/pdal_write.h>
+#include <maptk/write_pdal.h>
 
 #include <vital/types/camera.h>
 #include <vital/types/landmark_map.h>

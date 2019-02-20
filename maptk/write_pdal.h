@@ -33,8 +33,8 @@
  * \brief Definition for PDAL point cloud writer
  */
 
-#ifndef MAPTK_PDAL_WRITE_H_
-#define MAPTK_PDAL_WRITE_H_
+#ifndef MAPTK_WRITE_PDAL_H_
+#define MAPTK_WRITE_PDAL_H_
 
 
 #include <maptk/maptk_export.h>
@@ -66,4 +66,4 @@ write_pdal(vital::path_t const& filename,
 } // end namespace maptk
 } // end namespace kwiver
 
-#endif // MAPTK_PDAL_WRITE_H_
+#endif // MAPTK_WRITE_PDAL_H_

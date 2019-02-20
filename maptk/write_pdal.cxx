@@ -33,7 +33,7 @@
  * \brief Implementation of PDAL point cloud writer
  */
 
-#include "pdal_write.h"
+#include "write_pdal.h"
 #include <vital/logger/logger.h>
 #include <vital/exceptions/base.h>
 
