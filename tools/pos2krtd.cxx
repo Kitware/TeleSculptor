@@ -228,7 +228,7 @@ static int maptk_main(int argc, char const* argv[])
 
 
   // register the algorithm implementations
-  std::string rel_plugin_path = kwiver::vital::get_executable_path() + "/../lib/modules";
+  std::string rel_plugin_path = kwiver::vital::get_executable_path() + "/../lib/kwiver/modules";
   kwiver::vital::plugin_manager::instance().add_search_path(rel_plugin_path);
   kwiver::vital::plugin_manager::instance().load_all_plugins();
 

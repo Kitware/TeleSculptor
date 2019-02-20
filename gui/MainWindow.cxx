@@ -340,7 +340,6 @@ public:
   kv::timestamp currentVideoTimestamp;
   kv::metadata_map_sptr videoMetadataMap =
     std::make_shared<kv::simple_metadata_map>();
-  kv::frame_id_t advanceInterval = 1;
 
   QMap<kv::frame_id_t, FrameData> frames;
   kv::feature_track_set_sptr tracks;
@@ -487,22 +486,6 @@ void MainWindowPrivate::addVideoSource(
     if (this->videoSource)
     {
       this->videoSource->open(stdString(videoPath));
-    }
-
-    // Set the skip value if present
-    // TODO: fix kwiver so this is done with an adapter and it not in the video source
-    if (this->videoSource)
-    {
-      if (config->has_value("video_reader:vidl_ffmpeg:output_nth_frame"))
-      {
-        this->advanceInterval =
-          config->get_value<int>("video_reader:vidl_ffmpeg:output_nth_frame");
-      }
-      else if (config->has_value("video_reader:splice:output_nth_frame"))
-      {
-        this->advanceInterval =
-          config->get_value<int>("video_reader:splice:output_nth_frame");
-      }
     }
 
     foreach (auto const& tool, this->tools)
@@ -856,7 +839,7 @@ void MainWindowPrivate::setActiveCamera(int id)
       }
       else
       {
-        if (id == 1 || (id - 1) % this->advanceInterval == 0)
+        if (this->frames.find(id) != this->frames.end())
         {
           next_frame_found = true;
           break;
@@ -883,7 +866,7 @@ void MainWindowPrivate::setActiveCamera(int id)
       }
       else
       {
-        if (id == 1 || (id - 1) % this->advanceInterval == 0)
+        if (this->frames.find(id) != this->frames.end())
         {
           next_frame_found = true;
           break;

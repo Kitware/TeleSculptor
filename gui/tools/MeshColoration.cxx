@@ -208,6 +208,13 @@ bool MeshColoration::ProcessColoration(int frame)
       // project 3D point to pixel coordinates
       auto pixelPosition = camera->project(position);
       kwiver::vital::image_of<uint8_t> const& colorImage = this->DataList[idData].first;
+      if (pixelPosition[0] < 0.0 ||
+          pixelPosition[1] < 0.0 ||
+          pixelPosition[0] >= colorImage.width() ||
+          pixelPosition[1] >= colorImage.height())
+      {
+        continue;
+      }
       try
       {
         unsigned i = static_cast<unsigned>(pixelPosition[0]);
