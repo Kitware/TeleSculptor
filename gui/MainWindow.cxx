@@ -2823,6 +2823,14 @@ CameraView* MainWindow::cameraView()
 }
 
 //-----------------------------------------------------------------------------
+kwiver::vital::local_geo_cs MainWindow::localGeoCoordinateSystem() const
+{
+  QTE_D();
+
+  return d->sfmConstraints->get_local_geo_cs();
+}
+
+//-----------------------------------------------------------------------------
 vtkMaptkCamera* MainWindow::activeCamera()
 {
   QTE_D();

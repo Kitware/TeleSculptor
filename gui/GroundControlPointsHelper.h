@@ -74,6 +74,8 @@ public:
 public slots:
   void enableWidgets(bool);
 
+  void recomputePoints();
+
   void resetPoint(kwiver::vital::ground_control_point_id_t);
   void removePoint(kwiver::vital::ground_control_point_id_t);
 
@@ -81,6 +83,7 @@ public slots:
 
 signals:
   void pointsReloaded();
+  void pointsRecomputed();
   void pointCountChanged(size_t);
   void pointAdded(kwiver::vital::ground_control_point_id_t);
   void pointRemoved(kwiver::vital::ground_control_point_id_t);

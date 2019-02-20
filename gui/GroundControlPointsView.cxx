@@ -411,6 +411,13 @@ void GroundControlPointsView::setHelper(GroundControlPointsHelper* helper)
               d->showPoint(id);
             }
           });
+  connect(helper, &GroundControlPointsHelper::pointsRecomputed,
+          this, [d](){
+            if (d->currentPoint != INVALID_POINT)
+            {
+              d->showPoint(d->currentPoint);
+            }
+          });
 
   connect(helper, &GroundControlPointsHelper::activePointChanged,
           this, [d](id_t id){

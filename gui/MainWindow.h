@@ -37,6 +37,7 @@
 
 #include <memory>
 
+#include <vital/types/local_geo_cs.h>
 #include <vital/types/metadata_map.h>
 
 class CameraView;
@@ -57,6 +58,7 @@ public:
   vtkMaptkCamera* activeCamera();
   WorldView* worldView();
   CameraView* cameraView();
+  kwiver::vital::local_geo_cs localGeoCoordinateSystem() const;
 
 public slots:
   void newProject();

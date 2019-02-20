@@ -82,6 +82,15 @@ const auto TAG_NAME               = QStringLiteral("name");
 const auto TAG_LOCATION           = QStringLiteral("location");
 const auto TAG_USER_REGISTERED    = QStringLiteral("userRegistered");
 
+enum class Reset
+{
+  Force = 1<<0,
+  Silent = 1<<1,
+};
+
+Q_DECLARE_FLAGS(ResetFlags, Reset)
+Q_DECLARE_OPERATORS_FOR_FLAGS(ResetFlags)
+
 //-----------------------------------------------------------------------------
 bool isDoubleArray(QJsonArray const& a)
 {
@@ -207,10 +216,13 @@ public:
 
   void addPoint(id_t id, kv::ground_control_point_sptr const& point);
 
+  void updatePoint(int handleId);
   void movePoint(int handleId, GroundControlPointsWidget* widget,
                  kv::vector_3d const& newPosition);
 
-  void resetPoint(id_t gcpId, bool force);
+  void resetPoint(id_t gcpId, ResetFlags options = {});
+  void resetPoint(kv::ground_control_point_sptr const& gcp,
+                  id_t gcpId, ResetFlags options = {});
 
   void removePoint(int handleId, vtkHandleWidget* handleWidget);
 
@@ -248,7 +260,8 @@ void GroundControlPointsHelperPrivate::addPoint(
 }
 
 //-----------------------------------------------------------------------------
-void GroundControlPointsHelperPrivate::resetPoint(id_t gcpId, bool force)
+void GroundControlPointsHelperPrivate::resetPoint(
+  id_t gcpId, ResetFlags options)
 {
   auto const gcpp = qtGet(this->groundControlPoints, gcpId);
   auto const gcp = (gcpp ? gcpp->second : nullptr);
@@ -259,14 +272,67 @@ void GroundControlPointsHelperPrivate::resetPoint(id_t gcpId, bool force)
     return;
   }
 
-  if (force || !gcp->is_geo_loc_user_provided())
+  this->resetPoint(gcp, gcpId, options);
+}
+
+//-----------------------------------------------------------------------------
+void GroundControlPointsHelperPrivate::resetPoint(
+  kv::ground_control_point_sptr const& gcp, id_t gcpId, ResetFlags options)
+{
+  if ((options & Reset::Force) || !gcp->is_geo_loc_user_provided())
   {
     QTE_Q();
 
     gcp->set_geo_loc_user_provided(false);
-    // TODO recompute geodetic location
+    auto lgcs = this->mainWindow->localGeoCoordinateSystem();
+    if (lgcs.origin().crs() >= 0)
+    {
+      auto const& loc = gcp->loc();
+      gcp->set_geo_loc({
+        lgcs.origin().location() + kv::vector_2d{loc[0], loc[1]},
+        lgcs.origin().crs()});
+      gcp->set_elevation(lgcs.origin_altitude() + loc[2]);
+    }
 
-    emit q->pointChanged(gcpId);
+    if (!(options & Reset::Silent))
+    {
+      emit q->pointChanged(gcpId);
+    }
+  }
+}
+
+//-----------------------------------------------------------------------------
+void GroundControlPointsHelperPrivate::updatePoint(int handleId)
+{
+  // Find the corresponding GCP ID
+  GroundControlPointsWidget* const worldWidget =
+    this->mainWindow->worldView()->groundControlPointsWidget();
+  vtkHandleWidget* const handle = worldWidget->handleWidget(handleId);
+
+  if (auto const gcpIdIter = qtGet(this->gcpHandleToIdMap, handle))
+  {
+    // Find the corresponding GCP
+    auto const gcpId = gcpIdIter->second;
+    auto const gcpIter = qtGet(this->groundControlPoints, gcpId);
+    auto const gcp = (gcpIter ? gcpIter->second : nullptr);
+
+    if (gcp)
+    {
+      // Update the GCP's scene location
+      gcp->set_loc(worldWidget->point(handleId));
+
+      // (Possibly) reset the point's geodetic location and signal the change
+      this->resetPoint(gcpId);
+    }
+    else
+    {
+      qWarning() << "No ground control point with id" << gcpId;
+    }
+  }
+  else
+  {
+    qWarning() << "Failed to find the ID associated with the handle widget"
+               << handle << "with VTK ID" << handleId;
   }
 }
 
@@ -279,21 +345,7 @@ void GroundControlPointsHelperPrivate::movePoint(
   widget->movePoint(handleId, newPosition[0], newPosition[1], newPosition[2]);
   widget->render();
 
-  // Find the corresponding GCP ID
-  GroundControlPointsWidget* const worldWidget =
-    this->mainWindow->worldView()->groundControlPointsWidget();
-  vtkHandleWidget* const handle = worldWidget->handleWidget(handleId);
-
-  // Signal that the point changed, or report error if ID was not found
-  try
-  {
-    this->resetPoint(this->gcpHandleToIdMap.at(handle), false);
-  }
-  catch (std::out_of_range const&)
-  {
-    qWarning() << "Failed to find the ID associated with the handle widget"
-               << handle << "with VTK ID" << handleId;
-  }
+  this->updatePoint(handleId);
 }
 
 //-----------------------------------------------------------------------------
@@ -329,8 +381,12 @@ id_t GroundControlPointsHelperPrivate::addPoint()
     std::make_shared<kv::ground_control_point>(pt);
   vtkHandleWidget* const handle =
     worldWidget->handleWidget(worldWidget->activeHandle());
+
   this->gcpHandleToIdMap[handle] = nextId;
   this->gcpIdToHandleMap[nextId] = handle;
+
+  this->resetPoint(nextId, Reset::Silent);
+
   return nextId++;
 }
 
@@ -506,15 +562,16 @@ void GroundControlPointsHelper::moveCameraViewPoint()
 {
   QTE_D();
 
-  vtkMaptkCamera* camera = d->mainWindow->activeCamera();
-  if (!camera)
-  {
-    return;
-  }
-
   GroundControlPointsWidget* worldWidget =
     d->mainWindow->worldView()->groundControlPointsWidget();
   int handleId = worldWidget->activeHandle();
+
+  vtkMaptkCamera* camera = d->mainWindow->activeCamera();
+  if (!camera)
+  {
+    d->updatePoint(handleId);
+    return;
+  }
 
   kv::vector_3d p = worldWidget->activePoint();
 
@@ -599,10 +656,23 @@ void GroundControlPointsHelper::updateCameraViewPoints()
 }
 
 //-----------------------------------------------------------------------------
+void GroundControlPointsHelper::recomputePoints()
+{
+  QTE_D();
+
+  for (auto const& i : d->groundControlPoints)
+  {
+    d->resetPoint(i.second, i.first, Reset::Silent);
+  }
+
+  emit this->pointsRecomputed();
+}
+
+//-----------------------------------------------------------------------------
 void GroundControlPointsHelper::resetPoint(id_t gcpId)
 {
   QTE_D();
-  d->resetPoint(gcpId, true);
+  d->resetPoint(gcpId, Reset::Force);
 }
 
 //-----------------------------------------------------------------------------
@@ -800,12 +870,20 @@ bool GroundControlPointsHelper::writeGroundControlPoints(
   QTE_D();
 
   QJsonArray features;
+  QStringList errors;
   for (auto const& gcpi : d->groundControlPoints)
   {
-    auto const& f = buildFeature(gcpi.second);
-    if (f.isObject())
+    try
     {
-      features.append(f);
+      auto const& f = buildFeature(gcpi.second);
+      if (f.isObject())
+      {
+        features.append(f);
+      }
+    }
+    catch (std::exception const& e)
+    {
+      errors.append(QString::fromLocal8Bit(e.what()));
     }
   }
 
@@ -824,6 +902,21 @@ bool GroundControlPointsHelper::writeGroundControlPoints(
     QMessageBox::critical(dialogParent, QStringLiteral("Export error"),
                           msg.arg(path, out.errorString()));
     return false;
+  }
+
+  if (!errors.isEmpty())
+  {
+    auto const msg =
+      QStringLiteral("One or more errors occurred while exporting "
+                     "ground control points to \"%1\". "
+                     "The output file may not have been written correctly.");
+
+    QMessageBox mb{dialogParent};
+    mb.setIcon(QMessageBox::Warning);
+    mb.setText(msg.arg(path));
+    mb.setDetailedText(errors.join('\n'));
+    mb.setWindowTitle(QStringLiteral("Export error"));
+    mb.exec();
   }
 
   return true;
