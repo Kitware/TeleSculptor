@@ -47,12 +47,20 @@ namespace kwiver {
 namespace maptk {
 
 
-/// Write point cloud to a file with PDAL
+/// Write landmarks to a file with PDAL
 MAPTK_EXPORT
 void
 write_pdal(vital::path_t const& filename,
            vital::local_geo_cs const& lgcs,
            vital::landmark_map_sptr const& landmarks);
+
+/// Write point cloud to a file with PDAL
+MAPTK_EXPORT
+void
+write_pdal(vital::path_t const& filename,
+           vital::local_geo_cs const& lgcs,
+           std::vector<vital::vector_3d> const& points,
+           std::vector<vital::rgb_color> const& colors = {});
 
 
 } // end namespace maptk

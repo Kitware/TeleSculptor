@@ -35,6 +35,7 @@
 
 #include "pdal_write.h"
 #include <vital/logger/logger.h>
+#include <vital/exceptions/base.h>
 
 #include <pdal/PointView.hpp>
 #include <pdal/PointTable.hpp>
@@ -48,15 +49,39 @@
 namespace kwiver {
 namespace maptk {
 
+/// Write landmarks to a file with PDAL
+void
+  write_pdal(vital::path_t const& filename,
+             vital::local_geo_cs const& lgcs,
+             vital::landmark_map_sptr const& landmarks)
+{
+  std::vector<vital::vector_3d> points;
+  std::vector<vital::rgb_color> colors;
+  points.reserve(landmarks->size());
+  colors.reserve(landmarks->size());
+  for (auto lm : landmarks->landmarks())
+  {
+    points.push_back(lm.second->loc());
+    colors.push_back(lm.second->color());
+  }
+  write_pdal(filename, lgcs, points, colors);
+}
 
 /// Write point cloud to a file with PDAL
 void
 write_pdal(vital::path_t const& filename,
            vital::local_geo_cs const& lgcs,
-           vital::landmark_map_sptr const& landmarks)
+           std::vector<vital::vector_3d> const& points,
+           std::vector<vital::rgb_color> const& colors)
 {
   namespace kv = kwiver::vital;
   kv::logger_handle_t logger( kv::get_logger( "write_pdal" ) );
+
+  if( !colors.empty() && colors.size() != points.size() )
+  {
+    throw vital::invalid_value("write_pdal: number of colors provided does "
+                               "not match the number of points");
+  }
 
   pdal::Options options;
   options.add("filename", filename);
@@ -69,9 +94,12 @@ write_pdal(vital::path_t const& filename,
   table.layout()->registerDim(pdal::Dimension::Id::X);
   table.layout()->registerDim(pdal::Dimension::Id::Y);
   table.layout()->registerDim(pdal::Dimension::Id::Z);
-  table.layout()->registerDim(pdal::Dimension::Id::Red);
-  table.layout()->registerDim(pdal::Dimension::Id::Green);
-  table.layout()->registerDim(pdal::Dimension::Id::Blue);
+  if( !colors.empty() )
+  {
+    table.layout()->registerDim(pdal::Dimension::Id::Red);
+    table.layout()->registerDim(pdal::Dimension::Id::Green);
+    table.layout()->registerDim(pdal::Dimension::Id::Blue);
+  }
 
   int crs = lgcs.origin().crs();
   kv::vector_2d offset_xy(0.0, 0.0);
@@ -96,29 +124,28 @@ write_pdal(vital::path_t const& filename,
   }
 
   unsigned int id = 0;
-  for( auto const& lm : landmarks->landmarks() )
+  for( unsigned int id=0; id < points.size(); ++id )
   {
-    kv::vector_3d pt = lm.second->loc();
+    kv::vector_3d pt = points[id];
     pt[0] += offset_xy[0];
     pt[1] += offset_xy[1];
     pt[2] += offset_z;
-    auto rgb = lm.second->color();
     view->setField(pdal::Dimension::Id::X, id, pt.x());
     view->setField(pdal::Dimension::Id::Y, id, pt.y());
     view->setField(pdal::Dimension::Id::Z, id, pt.z());
-    view->setField(pdal::Dimension::Id::Red, id, rgb.r);
-    view->setField(pdal::Dimension::Id::Green, id, rgb.g);
-    view->setField(pdal::Dimension::Id::Blue, id, rgb.b);
-    ++id;
+    if (!colors.empty())
+    {
+      kv::rgb_color const& rgb = colors[id];
+      view->setField(pdal::Dimension::Id::Red, id, rgb.r);
+      view->setField(pdal::Dimension::Id::Green, id, rgb.g);
+      view->setField(pdal::Dimension::Id::Blue, id, rgb.b);
+    }
   }
 
   pdal::BufferReader reader;
   reader.addView(view);
 
   pdal::StageFactory factory;
-
-  // Set second argument to 'true' to let factory take ownership of
-  // stage and facilitate clean up.
   pdal::Stage *writer = factory.createStage("writers.las");
 
   writer->setInput(reader);
